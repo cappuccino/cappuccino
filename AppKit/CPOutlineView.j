@@ -268,7 +268,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     if ([_outlineViewDataSource respondsToSelector:@selector(outlineView:sortDescriptorsDidChange:)])
         _implementedOutlineViewDataSourceMethods |= CPOutlineViewDataSource_outlineView_sortDescriptorsDidChange_;
 
-    [self reloadData];
+    [self _reloadDataViews];
 }
 
 /*!
@@ -506,7 +506,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     else
         _reloadItem(self, anItem);
 
-    [super reloadData];
+    [super _reloadDataViews];
 }
 
 /*!
@@ -553,7 +553,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     _outlineTableColumn = aTableColumn;
 
     // FIXME: efficiency.
-    [self reloadData];
+    [self _reloadDataViews];
 }
 
 /*!
@@ -612,7 +612,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     _indentationPerLevel = anIndentationWidth;
 
     // FIXME: efficiency!!!!
-    [self reloadData];
+    [self _reloadDataViews];
 }
 
 /*!
@@ -640,7 +640,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     _indentationMarkerFollowsDataView = indentationMarkerShouldFollowDataView;
 
     // !!!!
-    [self reloadData];
+    [self _reloadDataViews];
 }
 
 /*!
@@ -1004,13 +1004,13 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     _disclosureControlQueue = [];
 
     // FIXME: really?
-    [self reloadData];
+    [self _reloadDataViews];
 }
 
 /*!
     Reloads all the data of the outlineview.
 */
-- (void)reloadData
+- (void)_reloadDataViews
 {
     [self reloadItem:nil reloadChildren:YES];
 }
@@ -1241,43 +1241,22 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     @ignore
     We need to move the disclosure control too.
 */
-- (void)_layoutDataViewsInRows:(CPIndexSet)rows columns:(CPIndexSet)columns
+- (void)_layoutViewsForRowIndexes:(CPIndexSet)rowIndexes columnIndexes:(CPIndexSet)columnIndexes
 {
-    var rowArray = [],
-        columnArray = [];
-
-    [rows getIndexes:rowArray maxCount:-1 inIndexRange:nil];
-    [columns getIndexes:columnArray maxCount:-1 inIndexRange:nil];
-
-    var columnIndex = 0,
-        columnsCount = columnArray.length;
-
-    for (; columnIndex < columnsCount; ++columnIndex)
+    [self _enumerateViewsInRows:rowIndexes columns:columnIndexes usingBlock:function(view, row, column, stop)
     {
-        var column = columnArray[columnIndex],
-            tableColumn = _tableColumns[column],
-            tableColumnUID = [tableColumn UID],
-            dataViewsForTableColumn = _dataViewsForTableColumns[tableColumnUID],
-            rowIndex = 0,
-            rowsCount = rowArray.length;
+        var control;
 
-        for (; rowIndex < rowsCount; ++rowIndex)
+        [view setFrame:[self frameOfDataViewAtColumn:column row:row]];
+
+        if (_tableColumns[column] === _outlineTableColumn && (control = _disclosureControlsForRows[row]))
         {
-            var row = rowArray[rowIndex],
-                dataView = dataViewsForTableColumn[row],
-                dataViewFrame = [self frameOfDataViewAtColumn:column row:row];
-
-            [dataView setFrame:dataViewFrame];
-
-            if (tableColumn === _outlineTableColumn)
-            {
-                var control = _disclosureControlsForRows[row],
-                    frame = [self frameOfOutlineDisclosureControlAtRow:row];
-
-                [control setFrame:frame];
-            }
+            var frame = [self frameOfOutlineDisclosureControlAtRow:row];
+            [control setFrame:frame];
         }
-    }
+    }];
+
+    [self setNeedsDisplay:YES];
 }
 
 /*!
