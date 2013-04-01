@@ -851,6 +851,8 @@ var _CPMenuBarVisible               = NO,
     var theWindow = [aView window],
         menuWindow = [_CPMenuWindow menuWindowWithMenu:aMenu font:aFont];
 
+    [_CPMenuWindow poolMenuWindow:menuWindow];
+
     [menuWindow setBackgroundStyle:_CPMenuWindowPopUpBackgroundStyle];
 
     var constraintRect = [CPMenu _constraintRectForView:aView],
