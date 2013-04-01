@@ -28,13 +28,18 @@
 
 @implementation _CPMenuItemMenuBarView : CPView
 {
+    CPColor                 _highlightColor @accessors(property=highlightColor);
+    CPColor                 _textColor @accessors(property=textColor);
+    CPColor                 _textShadowColor @accessors(property=textShadowColor);
+    CPColor                 _highlightTextColor @accessors(property=highlightTextColor);
+    CPColor                 _highlightTextShadowColor @accessors(property=highlightTextShadowColor);
+
     CPMenuItem              _menuItem @accessors(property=menuItem);
 
     CPFont                  _font;
-    CPColor                 _textColor;
-    CPColor                 _textShadowColor;
 
     BOOL                    _isDirty;
+    BOOL                    _shouldHighlight;
 
     _CPImageAndTextView     _imageAndTextView;
 }
@@ -47,8 +52,6 @@
 + (id)themeAttributes
 {
     return @{
-            @"menu-item-selection-color": [CPNull null],
-            @"menu-item-text-shadow-color": [CPNull null],
             @"horizontal-margin": 9.0,
             @"submenu-indicator-margin": 3.0,
             @"vertical-margin": 4.0,
@@ -81,12 +84,36 @@
     return self;
 }
 
+- (CPColor)setTextColor:(CPColor)aColor
+{
+    _textColor = aColor;
+    [self setNeedsLayout];
+}
+
+- (CPColor)setTextShadowColor:(CPColor)aColor
+{
+    _textShadowColor = aColor;
+    [self setNeedsLayout];
+}
+
+- (CPColor)setHighlightTextColor:(CPColor)aColor
+{
+    _highlightTextColor = aColor;
+    [self setNeedsLayout];
+}
+
+- (CPColor)setHighlightTextShadowColor:(CPColor)aColor
+{
+    _highlightTextShadowColor = aColor;
+    [self setNeedsLayout];
+}
+
 - (CPColor)textColor
 {
     if (![_menuItem isEnabled])
         return [CPColor lightGrayColor];
 
-    return _textColor || [CPColor colorWithCalibratedRed:70.0 / 255.0 green:69.0 / 255.0 blue:69.0 / 255.0 alpha:1.0];
+    return _textColor || [[CPTheme defaultTheme] valueForAttributeWithName:@"menu-bar-text-color" forClass:_CPMenuView];
 }
 
 - (CPColor)textShadowColor
@@ -94,7 +121,28 @@
     if (![_menuItem isEnabled])
         return [CPColor clearColor];
 
-    return _textShadowColor || [CPColor colorWithWhite:1.0 alpha:0.8];
+    return _textShadowColor || [[CPTheme defaultTheme] valueForAttributeWithName:@"menu-bar-text-shadow-color" forClass:_CPMenuView];
+}
+
+- (CPColor)highlightTextColor
+{
+    if (![_menuItem isEnabled])
+        return [CPColor lightGrayColor];
+
+    return _highlightTextColor || [[CPTheme defaultTheme] valueForAttributeWithName:@"menu-bar-highlight-text-color" forClass:_CPMenuView];
+}
+
+- (CPColor)highlightTextShadowColor
+{
+    if (![_menuItem isEnabled])
+        return [CPColor clearColor];
+
+    return _highlightTextShadowColor || [[CPTheme defaultTheme] valueForAttributeWithName:@"menu-bar-highlight-text-shadow-color" forClass:_CPMenuView];
+}
+
+- (CPColor)highlightColor
+{
+    return _highlightColor || [[CPTheme defaultTheme] valueForAttributeWithName:@"menu-bar-window-background-selected-color" forClass:_CPMenuView];
 }
 
 - (void)update
@@ -102,13 +150,11 @@
     var x = [self valueForThemeAttribute:@"horizontal-margin"],
         height = 0.0;
 
+    [_imageAndTextView setText:[_menuItem title]];
     [_imageAndTextView setFont:[_menuItem font] || [_CPMenuBarWindow font]];
     [_imageAndTextView setVerticalAlignment:CPCenterVerticalTextAlignment];
-    [_imageAndTextView setImage:[_menuItem image]];
-    [_imageAndTextView setText:[_menuItem title]];
-    [_imageAndTextView setTextColor:[self textColor]];
-    [_imageAndTextView setTextShadowColor:[self textShadowColor]];
     [_imageAndTextView setTextShadowOffset:CGSizeMake(0.0, 1.0)];
+    [_imageAndTextView setImage:[_menuItem image]];
     [_imageAndTextView sizeToFit];
 
     var imageAndTextViewFrame = [_imageAndTextView frame];
@@ -123,6 +169,7 @@
     [self setAutoresizesSubviews:NO];
     [self setFrameSize:CGSizeMake(x + [self valueForThemeAttribute:@"horizontal-margin"], height)];
     [self setAutoresizesSubviews:YES];
+    [self setNeedsLayout];
 }
 
 - (void)highlight:(BOOL)shouldHighlight
@@ -131,14 +178,20 @@
     if (![_menuItem isEnabled])
         shouldHighlight = NO;
 
-    if (shouldHighlight)
+    _shouldHighlight = shouldHighlight;
+    [self setNeedsLayout];
+}
+
+- (void)layoutSubviews
+{
+    if (_shouldHighlight)
     {
         if (![_menuItem _isMenuBarButton])
-            [self setBackgroundColor:[[CPTheme defaultTheme] valueForAttributeWithName:@"menu-bar-window-background-selected-color" forClass:_CPMenuView]];
+            [self setBackgroundColor:[self highlightColor]];
 
         [_imageAndTextView setImage:[_menuItem alternateImage] || [_menuItem image]];
-        [_imageAndTextView setTextColor:[CPColor whiteColor]];
-        [_imageAndTextView setTextShadowColor:[self valueForThemeAttribute:@"menu-item-text-shadow-color"]];
+        [_imageAndTextView setTextColor:[self highlightTextColor]];
+        [_imageAndTextView setTextShadowColor:[self highlightTextShadowColor]];
     }
     else
     {
