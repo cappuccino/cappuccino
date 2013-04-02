@@ -157,6 +157,7 @@ var CALayerRegisteredRunLoopUpdates             = nil;
 
         _sublayers = [];
 
+#if PLATFORM(DOM)
         _DOMElement = document.createElement("div");
 
         _DOMElement.style.overflow = "visible";
@@ -167,6 +168,7 @@ var CALayerRegisteredRunLoopUpdates             = nil;
         _DOMElement.style.zIndex = 0;
         _DOMElement.style.width = "0px";
         _DOMElement.style.height = "0px";
+#endif
     }
 
     return self;
@@ -711,10 +713,12 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
 
     [_sublayers insertObject:aLayer atIndex:anIndex];
 
+#if PLATFORM(DOM)
     if (anIndex >= _sublayers.length - 1)
         _DOMElement.appendChild(DOM(aLayer));
     else
         _DOMElement.insertBefore(DOM(aLayer), _sublayers[anIndex + 1]._DOMElement);
+#endif
 
     aLayer._superlayer = self;
 

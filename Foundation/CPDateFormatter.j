@@ -23,6 +23,7 @@
 @import "CPDate.j"
 @import "CPString.j"
 @import "CPFormatter.j"
+@import "CPLocale.j"
 
 CPDateFormatterNoStyle     = 0;
 CPDateFormatterShortStyle  = 1;
@@ -42,7 +43,8 @@ CPDateFormatterFullStyle   = 4;
 */
 @implementation CPDateFormatter : CPFormatter
 {
-    CPDateFormatterStyle _dateStyle @accessors(property=dateStyle);
+    CPDateFormatterStyle    _dateStyle  @accessors(property=dateStyle);
+    CPLocale                _locale     @accessors(property=locale);
 }
 
 - (id)init
@@ -109,7 +111,8 @@ CPDateFormatterFullStyle   = 4;
 
 @end
 
-var CPDateFormatterStyleKey = "CPDateFormatterStyle";
+var CPDateFormatterStyleKey = @"CPDateFormatterStyle",
+    CPDateFormatterLocaleKey = @"CPDateFormatterLocaleKey";
 
 @implementation CPDateFormatter (CPCoding)
 
@@ -120,6 +123,7 @@ var CPDateFormatterStyleKey = "CPDateFormatterStyle";
     if (self)
     {
         _dateStyle = [aCoder decodeIntForKey:CPDateFormatterStyleKey];
+        _locale = [aCoder decodeObjectForKey:CPDateFormatterLocaleKey];
     }
 
     return self;
@@ -130,6 +134,7 @@ var CPDateFormatterStyleKey = "CPDateFormatterStyle";
     [super encodeWithCoder:aCoder];
 
     [aCoder encodeInt:_dateStyle forKey:CPDateFormatterStyleKey];
+    [aCoder encodeInt:_locale forKey:CPDateFormatterLocaleKey];
 }
 
 @end

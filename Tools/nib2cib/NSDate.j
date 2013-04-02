@@ -1,9 +1,8 @@
 /*
- * NSFoundation.j
+ * NSDatePicker.j
  * nib2cib
  *
- * Created by Francisco Tolmasky.
- * Copyright 2008, 280 North, Inc.
+ * Created by cacaodev.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,15 +19,22 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "NSArray.j"
-@import "NSAttributedString.j"
-@import "NSByteCountFormatter.j"
-@import "NSDate.j"
-@import "NSDateFormatter.j"
-@import "NSDictionary.j"
-@import "NSExpression.j"
-@import "NSFormatter.j"
-@import "NSMutableString.j"
-@import "NSNull.j"
-@import "NSNumberFormatter.j"
-@import "NSSet.j"
+@import <Foundation/CPDate.j>
+
+@implementation NSDate : CPDate
+{
+}
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    var interval = [aCoder decodeDoubleForKey:@"NS.time"] || 0;
+
+    return [CPDate dateWithTimeIntervalSinceReferenceDate:interval];
+}
+
+- (Class)classForKeyedArchiver
+{
+    return [CPDate class];
+}
+
+@end
