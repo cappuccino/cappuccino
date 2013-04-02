@@ -532,7 +532,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 /* @ignore */
 - (BOOL)acceptsFirstResponder
 {
-    return [self isEditable] && [self isEnabled];
+    return [self isEditable] && [self isEnabled] && [self _isWithinUsablePlatformRect];
 }
 
 /* @ignore */
@@ -1585,9 +1585,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (BOOL)_isWithinUsablePlatformRect
 {
-    // Make sure the text field is visible so the browser will not scroll
-    // without the NSScrollView knowing about it.
-    [self scrollRectToVisible:[self bounds]];
+    // Make sure the text field is completely within the platform window
+    // so the browser will not scroll it into view.
 
     var wind = [self window],
         frame = [self convertRectToBase:[self bounds]],
