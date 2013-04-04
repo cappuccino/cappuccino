@@ -564,15 +564,22 @@ NOT YET IMPLEMENTED
 */
 - (void)reloadDataForRowIndexes:(CPIndexSet)rowIndexes columnIndexes:(CPIndexSet)columnIndexes
 {
-    var oldnumberOfRows = _numberOfRows;
-
-    if (oldnumberOfRows == 0 || oldnumberOfRows !== [self numberOfRows])
+    if ([self _numberOfRowsDidChange])
         [self _reloadDataViews];
     else
         [self _enumerateViewsInRows:rowIndexes columns:columnIndexes usingBlock:function(view, row, column, stop)
         {
             [self _setObjectValueForTableColumn:_tableColumns[column] row:row forView:view useCache:NO];
         }];
+}
+
+- (BOOL)_numberOfRowsDidChange
+{
+    var oldnumberOfRows = _numberOfRows;
+
+    _numberOfRows = nil;
+
+    return (oldnumberOfRows !== [self numberOfRows]);
 }
 
 - (void)_reloadDataViews
