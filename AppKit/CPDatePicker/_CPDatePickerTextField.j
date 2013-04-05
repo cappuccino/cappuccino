@@ -292,7 +292,7 @@ var CPZeroKeyCode = 48,
 
     if (key == CPLeftArrowFunctionKey || [anEvent keyCode] == CPTabKeyCode && [anEvent modifierFlags] & CPShiftKeyMask)
     {
-        if (_currentTextField == _firstTextField)
+        if (_currentTextField == _firstTextField && [anEvent keyCode] == CPTabKeyCode)
         {
             if ([_datePicker previousKeyView])
                 [[self window] makeFirstResponder:[_datePicker previousKeyView]];
