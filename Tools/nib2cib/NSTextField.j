@@ -38,6 +38,7 @@
     [super NS_initWithCell:cell];
 
     [self setEditable:[cell isEditable]];
+    [self setEnabled:[cell isEnabled]];
     [self setSelectable:[cell isSelectable]];
     [self setSendsActionOnEndEditing:[cell sendsActionOnEndEditing]];
 
