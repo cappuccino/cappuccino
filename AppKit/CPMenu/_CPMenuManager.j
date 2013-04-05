@@ -214,15 +214,6 @@ var STICKY_TIME_INTERVAL            = 0.4,
 
     [self _trackAgain];
 
-    if (_keyBuffer)
-    {
-        if (([anEvent timestamp] - _startTime) > (STICKY_TIME_INTERVAL + [activeMenu numberOfItems] / 2))
-            [self selectNextItemBeginningWith:_keyBuffer inMenu:menu clearBuffer:YES];
-
-        if (type === CPPeriodic)
-            return;
-    }
-
     // unhighlight when mouse is moved off the menu
     if (_lastGlobalLocation && CGRectContainsPoint([activeMenuContainer globalFrame], _lastGlobalLocation)
                             && !CGRectContainsPoint([activeMenuContainer globalFrame], globalLocation))
@@ -563,6 +554,9 @@ var STICKY_TIME_INTERVAL            = 0.4,
     }
     else if (!(modifierFlags & (CPCommandKeyMask | CPControlKeyMask)))
     {
+        if (([anEvent timestamp] - _startTime) > STICKY_TIME_INTERVAL)
+            _keyBuffer = nil;
+
         if (!_keyBuffer)
         {
             _startTime = [anEvent timestamp];
@@ -574,12 +568,12 @@ var STICKY_TIME_INTERVAL            = 0.4,
         else
             _keyBuffer += character;
 
-        [self selectNextItemBeginningWith:_keyBuffer inMenu:menu clearBuffer:NO];
-        _lastGlobalLocation = Nil;
+        [self selectNextItemBeginningWith:_keyBuffer inMenu:menu];
+        _lastGlobalLocation = nil;
     }
 }
 
-- (void)selectNextItemBeginningWith:(CPString)characters inMenu:(CPMenu)menu clearBuffer:(BOOL)shouldClear
+- (void)selectNextItemBeginningWith:(CPString)characters inMenu:(CPMenu)menu
 {
     var iter = [[menu itemArray] objectEnumerator],
         obj;
@@ -596,13 +590,7 @@ var STICKY_TIME_INTERVAL            = 0.4,
         }
     }
 
-    if (shouldClear)
-    {
-        [CPEvent stopPeriodicEvents];
-        _keyBuffer = Nil;
-    }
-    else
-        _startTime = [CPEvent currentTimestamp];
+    _startTime = [CPEvent currentTimestamp];
 }
 
 - (void)scrollToBeginningOfDocument:(CPMenu)menu
