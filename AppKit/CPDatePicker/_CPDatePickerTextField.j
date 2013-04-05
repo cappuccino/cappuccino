@@ -710,7 +710,7 @@ var CPZeroKeyCode = 48,
         CGContextAddLineToPoint(context, [self bounds].size.width + bezelInset.left - borderWidth, borderWidth);
         CGContextAddLineToPoint(context, [self bounds].size.width + bezelInset.left - borderWidth, [self bounds].size.height - borderWidth);
         CGContextAddLineToPoint(context, borderWidth - bezelInset.left, [self bounds].size.height - borderWidth);
-        CGContextAddLineToPoint(context, borderWidth-bezelInset.left, borderWidth);
+        CGContextAddLineToPoint(context, borderWidth - bezelInset.left, borderWidth);
 
         CGContextStrokePath(context);
         CGContextClosePath(context);
