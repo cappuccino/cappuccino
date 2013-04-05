@@ -22,6 +22,9 @@ def update_general_include(project, projectBaseURL):
 def add_file(project, shadowGroup, sourceGroup, shadowHeaderPath, shadowImplementationFilePath, sourcePath, projectBaseURL):
     project.add_file(shadowHeaderPath, parent=shadowGroup)
     project.add_file(shadowImplementationFilePath, parent=shadowGroup)
+
+    if sourcePath in project.get_files_by_os_path(os.path.relpath(sourcePath, projectBaseURL)):
+        return
     project.add_file(sourcePath, parent=sourceGroup)
 
 def remove_file(project, shadowGroup, sourceGroup, shadowHeaderPath, shadowImplementationFilePath, sourcePath, projectBaseURL):
