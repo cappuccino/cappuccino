@@ -292,7 +292,7 @@ var CPZeroKeyCode = 48,
 
     if (key == CPLeftArrowFunctionKey || [anEvent keyCode] == CPTabKeyCode && [anEvent modifierFlags] & CPShiftKeyMask)
     {
-        if (_currentTextField == _firstTextField)
+        if (_currentTextField == _firstTextField && [anEvent keyCode] == CPTabKeyCode)
         {
             if ([_datePicker previousKeyView])
                 [[self window] makeFirstResponder:[_datePicker previousKeyView]];
@@ -710,7 +710,7 @@ var CPZeroKeyCode = 48,
         CGContextAddLineToPoint(context, [self bounds].size.width + bezelInset.left - borderWidth, borderWidth);
         CGContextAddLineToPoint(context, [self bounds].size.width + bezelInset.left - borderWidth, [self bounds].size.height - borderWidth);
         CGContextAddLineToPoint(context, borderWidth - bezelInset.left, [self bounds].size.height - borderWidth);
-        CGContextAddLineToPoint(context, borderWidth-bezelInset.left, borderWidth);
+        CGContextAddLineToPoint(context, borderWidth - bezelInset.left, borderWidth);
 
         CGContextStrokePath(context);
         CGContextClosePath(context);

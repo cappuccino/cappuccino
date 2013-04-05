@@ -327,12 +327,15 @@ CPEraDatePickerElementFlag              = 0x0100;
     [self willChangeValueForKey:@"objectValue"];
     [self willChangeValueForKey:@"dateValue"];
     _dateValue = aDateValue;
+    [super setObjectValue:_dateValue];
     [self didChangeValueForKey:@"dateValue"];
     [self didChangeValueForKey:@"objectValue"];
 
     [self willChangeValueForKey:@"timeInterval"];
     _timeInterval = (_datePickerMode == CPSingleDateMode)? 0 : aTimeInterval;
     [self didChangeValueForKey:@"timeInterval"];
+
+    [self sendAction:[self action] to:[self target]];
 
     if (_datePickerStyle == CPTextFieldAndStepperDatePickerStyle || _datePickerStyle == CPTextFieldDatePickerStyle)
         [_datePickerTextfield setDateValue:_dateValue];
