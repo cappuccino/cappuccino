@@ -56,9 +56,17 @@ var CPBundlesForURLStrings = { };
     var bundle = CFBundle.bundleWithIdentifier(anIdentifier);
 
     if (bundle)
-        bundle = CPBundlesForURLStrings[bundle.bundleURL().absoluteString()] || nil;
+    {
+        var url = bundle.bundleURL(),
+            cpBundle = CPBundlesForURLStrings[url.absoluteString()];
 
-    return bundle;
+        if (!cpBundle)
+            cpBundle = [self bundleWithURL:url];
+
+        return cpBundle;
+    }
+
+    return nil;
 }
 
 + (CPBundle)bundleForClass:(Class)aClass
