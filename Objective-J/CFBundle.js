@@ -133,7 +133,7 @@ DISPLAY_NAME(CFBundle.bundleWithIdentifier);
 
 CFBundle.prototype.bundleURL = function()
 {
-    return this._bundleURL;
+    return this._bundleURL.absoluteURL();
 };
 
 DISPLAY_NAME(CFBundle.prototype.bundleURL);
@@ -285,7 +285,7 @@ CFBundle.prototype.load = function(/*BOOL*/ shouldExecute)
 
     StaticResource.resolveResourceAtURL(parentURL, YES, function(aStaticResource)
     {
-        var resourceName = bundleURL.absoluteURL().lastPathComponent();
+        var resourceName = bundleURL.lastPathComponent();
 
         self._staticResource =  aStaticResource._children[resourceName] ||
                                 new StaticResource(bundleURL, aStaticResource, YES, NO);
@@ -721,7 +721,7 @@ DISPLAY_NAME(CFBundle.prototype.onerror);
 
 CFBundle.prototype.bundlePath = function()
 {
-    return this._bundleURL.absoluteURL().path();
+    return this.bundleURL().path();
 };
 
 CFBundle.prototype.path = function()
