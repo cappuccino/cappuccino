@@ -51,6 +51,16 @@ var CPBundlesForURLStrings = { };
     return [self bundleWithURL:aPath];
 }
 
++ (CPBundle)bundleWithIdentifier:(CPString)anIdentifier
+{
+    var bundle = CFBundle.bundleWithIdentifier(anIdentifier);
+
+    if (bundle)
+        bundle = CPBundlesForURLStrings[bundle.bundleURL().absoluteString()] || nil;
+
+    return bundle;
+}
+
 + (CPBundle)bundleForClass:(Class)aClass
 {
     return [self bundleWithURL:CFBundle.bundleForClass(aClass).bundleURL()];
@@ -118,12 +128,12 @@ var CPBundlesForURLStrings = { };
 
     //[self load];
 
-    return className ? CPClassFromString(className) : Nil;
+    return className ? CPClassFromString(className) : nil;
 }
 
 - (CPString)bundleIdentifier
 {
-    return [self objectForInfoDictionaryKey:@"CPBundleIdentifier"];
+    return _bundle.identifier();
 }
 
 - (BOOL)isLoaded

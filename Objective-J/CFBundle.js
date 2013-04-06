@@ -27,8 +27,9 @@ var CFBundleUnloaded                = 0,
     CFBundleLoadingSpritedImages    = 1 << 3,
     CFBundleLoaded                  = 1 << 4;
 
-var CFBundlesForURLStrings  = { },
-    CFBundlesForClasses     = { },
+var CFBundlesForURLStrings   = { },
+    CFBundlesForClasses      = { },
+    CFBundlesWithIdentifiers = { },
     CFCacheBuster       = new Date().getTime(),
     CFTotalBytesLoaded  = 0,
     CPApplicationSizeInBytes = 0;
@@ -108,8 +109,9 @@ function addClassToBundle(aClass, aBundle)
 
 function resetBundle()
 {
-    CFBundlesForURLStrings  = { };
-    CFBundlesForClasses     = { };
+    CFBundlesForURLStrings   = { };
+    CFBundlesForClasses      = { };
+    CFBundlesWithIdentifiers = { };
     //CFCacheBuster       = new Date().getTime(),
     CFTotalBytesLoaded  = 0;
     CPApplicationSizeInBytes = 0;
@@ -122,6 +124,12 @@ CFBundle.bundleForClass = function(/*Class*/ aClass)
 
 DISPLAY_NAME(CFBundle.bundleForClass);
 
+CFBundle.bundleWithIdentifier = function(/*String*/ bundleID)
+{
+    return CFBundlesWithIdentifiers[bundleID] || NULL;
+};
+
+DISPLAY_NAME(CFBundle.bundleContainingURL);
 CFBundle.prototype.bundleURL = function()
 {
     return this._bundleURL;
@@ -191,6 +199,13 @@ CFBundle.prototype.valueForInfoDictionaryKey = function(/*String*/ aKey)
 };
 
 DISPLAY_NAME(CFBundle.prototype.valueForInfoDictionaryKey);
+
+CFBundle.prototype.identifier = function()
+{
+    return this._infoDictionary.valueForKey("CPBundleIdentifier");
+};
+
+DISPLAY_NAME(CFBundle.prototype.identifier);
 
 CFBundle.prototype.hasSpritedImages = function()
 {
@@ -283,7 +298,14 @@ CFBundle.prototype.load = function(/*BOOL*/ shouldExecute)
             self._isValid = !!infoDictionary || CFBundle.mainBundle() === self;
 
             if (infoDictionary)
+            {
                 self._infoDictionary = infoDictionary;
+
+                var identifier = self._infoDictionary.valueForKey("CPBundleIdentifier");
+
+                if (identifier)
+                    CFBundlesWithIdentifiers[identifier] = self;
+            }
 
             if (!self._infoDictionary)
             {
