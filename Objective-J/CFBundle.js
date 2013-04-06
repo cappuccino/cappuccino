@@ -129,7 +129,8 @@ CFBundle.bundleWithIdentifier = function(/*String*/ bundleID)
     return CFBundlesWithIdentifiers[bundleID] || NULL;
 };
 
-DISPLAY_NAME(CFBundle.bundleContainingURL);
+DISPLAY_NAME(CFBundle.bundleWithIdentifier);
+
 CFBundle.prototype.bundleURL = function()
 {
     return this._bundleURL;
