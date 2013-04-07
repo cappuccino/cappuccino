@@ -382,12 +382,6 @@ CPRunContinuesResponse  = -1002;
             copyrightLabel = [contentView viewWithTag:4],
             standardPath = [[CPBundle bundleForClass:[self class]] pathForResource:@"standardApplicationIcon.png"];
 
-        // FIXME move this into the CIB eventually
-        [applicationLabel setFont:[CPFont boldSystemFontOfSize:[CPFont systemFontSize] + 2]];
-        [applicationLabel setAlignment:CPCenterTextAlignment];
-        [versionLabel setAlignment:CPCenterTextAlignment];
-        [copyrightLabel setAlignment:CPCenterTextAlignment];
-
         [imageView setImage:applicationIcon || [[CPImage alloc] initWithContentsOfFile:standardPath
                                                                                   size:CGSizeMake(256, 256)]];
 
@@ -400,7 +394,7 @@ CPRunContinuesResponse  = -1002;
         else
             [versionLabel setStringValue:@""];
 
-        [copyrightLabel setStringValue:copyright || ""];
+        [copyrightLabel setStringValue:copyright || @""];
         [aboutPanel center];
 
         _aboutPanel = aboutPanel;
