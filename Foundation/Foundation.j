@@ -48,6 +48,7 @@
 @import "CPKeyedUnarchiver.j"
 @import "CPKeyValueCoding.j"
 @import "CPKeyValueObserving.j"
+@import "CPLocale.j"
 @import "CPMutableArray.j"
 @import "CPMutableSet.j"
 @import "CPNotification.j"

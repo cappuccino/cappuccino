@@ -55,6 +55,7 @@
 @import "CPController.j"
 @import "CPCookie.j"
 @import "CPCursor.j"
+@import "CPDatePicker.j"
 @import "CPDocument.j"
 @import "CPDocumentController.j"
 @import "CPEvent.j"

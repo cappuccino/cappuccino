@@ -257,7 +257,11 @@ var CPBindingOperationAnd = 0,
     if (valueTransformer)
         aValue = [valueTransformer transformedValue:aValue];
 
-    if (aValue === undefined || aValue === nil || aValue === [CPNull null])
+    // If the value is nil AND the source doesn't respond to setPlaceholderString: then
+    // we set the value to the placeholder. Otherwise, we do not want to short cut the process
+    // of setting the placeholder that is based on the fact that the value is nil.
+    if ((aValue === undefined || aValue === nil || aValue === [CPNull null])
+        && ![_source respondsToSelector:@selector(setPlaceholderString:)])
         aValue = [options objectForKey:CPNullPlaceholderBindingOption] || nil;
 
     return aValue;

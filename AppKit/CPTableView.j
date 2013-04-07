@@ -3791,7 +3791,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     @discussion
     Typically identifier is associated with an external CIB and the table view will automatically instantiate the CIB with the provided owner. The owner of the CIB that may be loaded and instantiated to create a new view with the particular identifier is typically the table view’s delegate. The owner is useful in setting up outlets and target and actions from the view.
 
-    This method will typically be called by the delegate in tableView:dataViewForTableColumn:row:, but it can also be overridden to provide custom views for the identifier. This method may also return a reused view with the same identifier that was no longer available on screen.
+    This method will typically be called by the delegate in tableView:viewForTableColumn:row:, but it can also be overridden to provide custom views for the identifier. This method may also return a reused view with the same identifier that was no longer available on screen.
 */
 - (id)makeViewWithIdentifier:(CPString)anIdentifier owner:(id)anOwner
 {
