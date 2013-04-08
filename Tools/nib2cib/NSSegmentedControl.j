@@ -24,7 +24,7 @@
 
 @import "NSCell.j"
 
-@class Converter
+@class Nib2Cib
 
 
 @implementation CPSegmentedControl (CPCoding)
@@ -68,7 +68,7 @@
     // Adjust for differences between Cocoa and Cappuccino widget framing.
     frame.origin.x += 6;
 
-    if ([[[Converter sharedConverter] themes][0] name] == @"Aristo2")
+    if ([[Nib2Cib defaultTheme] name] == @"Aristo2")
         frame.size.height += 1;
 
     frame.size.width = originalWidth;

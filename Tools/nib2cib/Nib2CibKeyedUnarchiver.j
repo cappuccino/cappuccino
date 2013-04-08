@@ -22,22 +22,13 @@
 
 @import <Foundation/CPKeyedUnarchiver.j>
 
+@class Nib2Cib
+
 var FILE = require("file");
 
 
 @implementation Nib2CibKeyedUnarchiver : CPKeyedUnarchiver
 {
-    CPString    resourcesPath @accessors(readonly);
-}
-
-- (id)initForReadingWithData:(CPData)data resourcesPath:(CPString)aResourcesPath
-{
-    self = [super initForReadingWithData:data];
-
-    if (self)
-        resourcesPath = aResourcesPath;
-
-    return self;
 }
 
 - (CPArray)allObjects
@@ -45,12 +36,51 @@ var FILE = require("file");
     return _objects;
 }
 
-- (CPString)resourcePathForName:(CPString)aName
+- (JSObject)resourceInfoForName:(CPString)aName inFramework:(CPString)framework
 {
-    if (!resourcesPath)
-        return NULL;
+    var nib2cib = [Nib2Cib sharedNib2Cib],
+        frameworks = [nib2cib frameworks];
 
-    var pathGroups = [FILE.listPaths(resourcesPath)];
+    if (framework)
+    {
+        var info = [frameworks valueForKey:framework];
+
+        if (!info || !info.resourceDirectory)
+            return nil;
+
+        return { path:[self _resourcePathForName:aName inDirectory:info.resourceDirectory], framework:framework };
+    }
+    else
+    {
+        // Try the app's resource directory first
+        var resourcesDirectory = [nib2cib appResourceDirectory],
+            path = [self _resourcePathForName:aName inDirectory:resourcesDirectory];
+
+        if (path)
+            return { path:path, framework:framework };
+
+        var enumerator = [frameworks keyEnumerator];
+
+        while ((framework = [enumerator nextObject]))
+        {
+            var info = [frameworks valueForKey:framework];
+
+            if (!info || !info.resourceDirectory)
+                continue;
+
+            path = [self _resourcePathForName:aName inDirectory:info.resourceDirectory];
+
+            if (path)
+                return { path:path, framework:framework };
+        }
+    }
+
+    return nil;
+}
+
+- (CPString)_resourcePathForName:(CPString)aName inDirectory:(CPString)directory
+{
+    var pathGroups = [FILE.listPaths(directory)];
 
     while (pathGroups.length > 0)
     {
@@ -73,7 +103,7 @@ var FILE = require("file");
         }
     }
 
-    return NULL;
+    return nil;
 }
 
 @end

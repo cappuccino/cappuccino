@@ -22,7 +22,7 @@
 
 @import <AppKit/CPProgressIndicator.j>
 
-@class Converter
+@class Nib2Cib
 
 var NSProgressIndicatorSpinningFlag = 1 << 12;
 
@@ -59,7 +59,7 @@ var NSProgressIndicatorSpinningFlag = 1 << 12;
 
         if (_style !== CPProgressIndicatorSpinningStyle)
         {
-            var theme = [[Converter sharedConverter] themes][0],
+            var theme = [Nib2Cib defaultTheme],
                 height = [theme valueForAttributeWithName:@"default-height" forClass:CPProgressIndicator];
 
             currentFrameSize.height = height;

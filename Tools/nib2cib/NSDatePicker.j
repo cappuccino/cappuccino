@@ -24,7 +24,7 @@
 
 @import "NSCell.j"
 
-@class Converter
+@class Nib2Cib
 
 @global CPTextFieldDatePickerStyle
 @global CPTextFieldAndStepperDatePickerStyle
@@ -57,7 +57,7 @@ var NSDatePickerDefaultSize = 22,
     [self setBezeled:[cell isBezeled]];
     [self setBordered:[cell isBordered]];
 
-    var theme = [[Converter sharedConverter] themes][0];
+    var theme = [Nib2Cib defaultTheme];
 
     if (_datePickerStyle != CPClockAndCalendarDatePickerStyle)
     {

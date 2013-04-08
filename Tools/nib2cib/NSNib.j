@@ -34,23 +34,15 @@ var FILE = require("file"),
 {
     self = [super init];
 
+    // FIXME: change /tmp/ to os.tmpDir() in Node
     var nibPath = @"/tmp/" + UUID.uuid() + ".nib",
-        data = [aCoder decodeObjectForKey:@"NSNibFileData"],
-        sharedConverter = [Converter sharedConverter];
+        data = [aCoder decodeObjectForKey:@"NSNibFileData"];
 
     FILE.write(nibPath, data.bytes(), { charset:"UTF-16" });
 
-    var converter = [[Converter alloc] initWithInputPath:@""
-                                                  format:[sharedConverter format]
-                                                  themes:[sharedConverter themes]];
-    [converter setCompileNib:NO];
-    [converter setResourcesPath:[sharedConverter resourcesPath]];
-    [converter setUserNSClasses:[sharedConverter userNSClasses]];
+    var converter = [[Converter alloc] initWithInputPath:nibPath outputPath:nil];
 
-    CPLog.info("Converting sub nib to plist...");
-
-    var nibData = [converter CPCompliantNibDataAtFilePath:nibPath];
-    _data = [converter convertedDataFromMacData:nibData resourcesPath:[sharedConverter resourcesPath]];
+    _data = [converter convert];
 
     return self;
 }

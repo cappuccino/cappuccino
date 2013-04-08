@@ -30,7 +30,7 @@
 @import "NSCell.j"
 @import "NSControl.j"
 
-@class Converter
+@class Nib2Cib
 
 @global NIB_CONNECTION_EQUIVALENCY_TABLE
 
@@ -217,7 +217,7 @@ var NSButtonIsBorderedMask = 0x00800000,
             - If there is just a max height, use that for only for fixed height buttons.
             - If there is no max height either, don't do any height adjustments.
         */
-        var theme = [[Converter sharedConverter] themes][0],
+        var theme = [Nib2Cib defaultTheme],
             minSize = [theme valueForAttributeWithName:@"min-size" forClass:[self class]],
             maxSize = [theme valueForAttributeWithName:@"max-size" forClass:[self class]],
             adjustHeight = NO;

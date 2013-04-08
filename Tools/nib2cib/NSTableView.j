@@ -22,7 +22,7 @@
 
 @import <AppKit/CPTableView.j>
 
-@class Converter
+@class Nib2Cib
 
 
 @implementation CPTableView (NSCoding)
@@ -43,7 +43,7 @@
         // Convert xib default to cib default
         if (_rowHeight == 17)
         {
-            var theme = [[Converter sharedConverter] themes][0],
+            var theme = [Nib2Cib defaultTheme],
                 height = [theme valueForAttributeWithName:@"default-row-height" forClass:CPTableView];
 
             _rowHeight = height;
