@@ -328,6 +328,9 @@ var _CPMenuBarVisible               = NO,
 */
 - (void)removeItem:(CPMenuItem)aMenuItem
 {
+    if ([aMenuItem isHighlighted])
+        [[aMenuItem _menuItemView] highlight:NO];
+
     [self removeItemAtIndex:[_items indexOfObjectIdenticalTo:aMenuItem]];
 }
 
@@ -354,6 +357,11 @@ var _CPMenuBarVisible               = NO,
     // someone else has a reference to the menu item.
     while (count--)
         [_items[count] setMenu:nil];
+
+    // See Issue 1899. Ensure the highlight state of the underlying
+    // _CPMenuItemView is set to NO as well.
+    if (_highlightedIndex !== CPNotFound)
+        [[_items[_highlightedIndex] _menuItemView] highlight:NO];
 
     _highlightedIndex = CPNotFound;
 
@@ -1163,6 +1171,9 @@ var _CPMenuBarVisible               = NO,
 {
     if (anIndex < 0 || anIndex >= [_items count])
         return;
+
+    if (_highlightedIndex === anIndex)
+        [[[_items objectAtIndex:anIndex] _menuItemView] highlight:NO];
 
     [[_items objectAtIndex:anIndex] setMenu:nil];
     [_items removeObjectAtIndex:anIndex];
