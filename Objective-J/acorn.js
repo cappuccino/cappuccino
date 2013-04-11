@@ -421,7 +421,9 @@ if (typeof exports != "undefined" && !exports.acorn) {
 
   // Map Preprocessor keyword names to token types.
 
-  var keywordTypesPreprocess = {"define": _preDefine, "pragma": _prePragma, "ifdef": _preIfdef, "ifndef": _preIfndef, "undef": _preUndef, "if": _preIf, "endif": _preEndif, "else": _preElse, "elif": _preElseIf};
+  var keywordTypesPreprocess = {"define": _preDefine, "pragma": _prePragma, "ifdef": _preIfdef, "ifndef": _preIfndef,
+                                "undef": _preUndef, "if": _preIf, "endif": _preEndif, "else": _preElse, "elif": _preElseIf,
+                                "defined": _preDefined};
 
   // Punctuation token types. Again, the `type` property is purely for debugging.
 
@@ -544,7 +546,7 @@ if (typeof exports != "undefined" && !exports.acorn) {
 
   // The preprocessor keywords.
 
-  var isKeywordPreprocess = makePredicate("define pragma if ifdef ifndef else elif endif");
+  var isKeywordPreprocess = makePredicate("define pragma if ifdef ifndef else elif endif defined");
 
   // ## Character categories
 
@@ -890,7 +892,7 @@ var preIfLevel = 0;
       case _preDefine:
         preprocessReadToken();
         var macroIdentifierEnd = preTokEnd;
-        var macroIdentifier = preprocessParseIdent();
+        var macroIdentifier = preprocessGetIdent();
         // '(' Must follow directly after identifier to be a valid macro with parameters
         if (input.charCodeAt(macroIdentifierEnd) === 40) { // '('
           preprocessExpect(_parenL);
@@ -898,17 +900,19 @@ var preIfLevel = 0;
           var first = true;
           while (!preprocessEat(_parenR)) {
             if (!first) preprocessExpect(_comma, "Expected ',' between macro parameters"); else first = false;
-            parameters.push(preprocessParseIdent());
+            parameters.push(preprocessGetIdent());
           }
         }
         var start = tokPos = preTokStart;
         preprocesSkipRestOfLine();
-        options.preprocessAddMacro(new Macro(macroIdentifier, input.slice(start, tokPos), parameters));
+        var macroString = input.slice(start, tokPos);
+        macroString = macroString.replace(/\\/g, " ");
+        options.preprocessAddMacro(new Macro(macroIdentifier, macroString, parameters));
         break;
 
       case _preUndef:
         preprocessReadToken();
-        options.preprocessUndefineMacro(preprocessParseIdent());
+        options.preprocessUndefineMacro(preprocessGetIdent());
         preprocesSkipRestOfLine();
         break;
 
@@ -930,7 +934,7 @@ var preIfLevel = 0;
         if (preNotSkipping) {
           preIfLevel++;
           preprocessReadToken();
-          var ident = preprocessParseIdent();
+          var ident = preprocessGetIdent();
           var test = options.preprocessGetMacro(ident);
           if (!test)
             preNotSkipping = false
@@ -946,7 +950,7 @@ var preIfLevel = 0;
         if (preNotSkipping) {
           preIfLevel++;
           preprocessReadToken();
-          var ident = preprocessParseIdent();
+          var ident = preprocessGetIdent();
           var test = options.preprocessGetMacro(ident);
           if (test)
             preNotSkipping = false
@@ -1007,40 +1011,47 @@ var preIfLevel = 0;
   function preprocessEvalExpression(expr) {
     return exports.walk.recursive(expr, {}, {
       BinaryExpression: function(node, st, c) {
-        var left = c(node.left, st), right = c(node.right, st);
+        var left = node.left, right = node.right;
         switch(node.operator) {
           case "+":
-            return left + right;
+            return c(left, st) + c(right, st);
           case "-":
-            return left - right;
+            return c(left, st) - c(right, st);
           case "*":
-            return left * right;
+            return c(left, st) * c(right, st);
           case "/":
-            return left / right;
+            return c(left, st) / c(right, st);
           case "%":
-            return left % right;
+            return c(left, st) % c(right, st);
           case "<":
-            return left < right;
+            return c(left, st) < c(right, st);
           case ">":
-            return left > right;
+            return c(left, st) > c(right, st);
           case "=":
           case "==":
           case "===":
-            return left === right;
+            return c(left, st) === c(right, st);
           case "<=":
-            return left <= right;
+            return c(left, st) <= c(right, st);
           case ">=":
-            return left >= right;
+            return c(left, st) >= c(right, st);
           case "&&":
-            return left && right;
+            return c(left, st) && c(right, st);
           case "||":
-            return left || right;
+            return c(left, st) || c(right, st);
         }
       },
       Literal: function(node, st, c) {
         return node.value;
+      },
+      Identifier: function(node, st, c) {
+        var name = node.name,
+            macro = options.preprocessGetMacro(name);
+        return (macro && parseInt(macro.macro)) || 0;
+      },
+      DefinedExpression: function(node, st, c) {
+        return !!options.preprocessGetMacro(node.id.name);
       }
-
     }, {});
   }
 
@@ -1252,10 +1263,16 @@ var preIfLevel = 0;
     else raise(preTokStart, errorMessage || "Unexpected token");
   }
 
-  function preprocessParseIdent() {
-    var ident = preTokType === _name ? preTokVal : preTokType.keyword || raise(preTokStart, "Expected Macro identifier");
+  function preprocessGetIdent() {
+    var ident = preTokType === _name ? preTokVal : ((!options.forbidReserved || preTokType.okAsIdent) && preTokType.keyword) || raise(preTokStart, "Expected Macro identifier");
     preprocessNext();
     return ident;
+  }
+
+  function preprocessParseIdent() {
+    var node = startNode();
+    node.name = preprocessGetIdent();
+    return preprocessFinishNode(node, "Identifier");
   }
 
   // Parse an  expression — either a single token that is an
@@ -1288,7 +1305,7 @@ var preIfLevel = 0;
         node.operator = preTokVal;
         preprocessNext();
         node.right = preprocessParseExprOp(preprocessParseMaybeUnary(), prec);
-        var node = preprocessFinishNode(node, /&&|\|\|/.test(node.operator) ? "LogicalExpression" : "BinaryExpression");
+        var node = preprocessFinishNode(node, /*/&&|\|\|/.test(node.operator) ? "LogicalExpression" : */"BinaryExpression");
         return preprocessParseExprOp(node, minPrec);
       }
     }
@@ -1333,7 +1350,7 @@ var preIfLevel = 0;
     case _preDefined:
       var node = startNode();
       preprocessNext();
-      node.expr = preprocessParseExpression();
+      node.id = preprocessParseIdent();
       return preprocessFinishNode(node, "DefinedExpression");
 
     default:
