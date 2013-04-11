@@ -122,7 +122,7 @@ if (typeof exports != "undefined" && !exports.acorn) {
     preprocessAddMacro: defaultAddMacro,
     // Preprocess get macro function
     preprocessGetMacro: defaultGetMacro,
-    // Preprocess undefine macro function
+    // Preprocess undefine macro function. To delete a macro
     preprocessUndefineMacro: defaultUndefineMacro,
     // Preprocess is macro function
     preprocessIsMacro: defaultIsMacro
@@ -391,6 +391,7 @@ if (typeof exports != "undefined" && !exports.acorn) {
   var _preElseIf = {keyword: "elif"};
   var _prePragma = {keyword: "pragma"};
   var _preDefined = {keyword: "defined"};
+  var _preBackslash = {keyword: "\\"}
 
   var _preprocessParamItem = {type: "preprocessParamItem"}
 
@@ -699,7 +700,13 @@ var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _pr
 
   function preprocesSkipRestOfLine() {
     var ch = input.charCodeAt(tokPos);
-    while (tokPos < inputLen && ch !== 10 && ch !== 13 && ch !== 8232 && ch !== 8329) {
+    var last;
+    // If the last none whitespace character is a '\' the line will continue on the the next line.
+    // Here we break the way gcc works as it joins the lines first and then tokenize it. Because of
+    // this we can't have a newline in the middle of a word.
+    while (tokPos < inputLen && ((ch !== 10 && ch !== 13 && ch !== 8232 && ch !== 8329) || last === 92)) { // White space and '\'
+      if (ch != 32 && ch != 9 && ch != 160 && (ch < 5760 || !nonASCIIwhitespaceNoNewLine.test(String.fromCharCode(ch))))
+        last = ch;
       ch = input.charCodeAt(++tokPos);
     }
   }
@@ -1108,6 +1115,12 @@ var preIfLevel = 0;
         return readToken_preprocess(finishToken);
       }
       return false;
+
+    case 92: // '\'
+      if (options.preprocess) {
+        return finishOp(_preBackslash, 1, finishToken);
+      }
+      return false;
     }
 
     if (allowEndOfLineToken && newline.test(String.fromCharCode(code))) {
@@ -1190,7 +1203,7 @@ var preIfLevel = 0;
       }
       return preprocessFinishToken(_preprocessParamItem, input.slice(preTokStart, tokPos));
     }
-    if (isIdentifierStart(code) || code === 92 /* '\' */) return preprocessReadWord();
+    if (isIdentifierStart(code) || (code === 92 /* '\' */ && input.charCodeAt(tokPos +1) === 117 /* 'u' */)) return preprocessReadWord();
     if (getTokenFromCode(code, preprocessFinishToken, true) === false) {
       // If we are here, we either found a non-ASCII identifier
       // character, or something that's entirely disallowed.
