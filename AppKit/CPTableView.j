@@ -3591,9 +3591,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     {
         var columnIdentifier = [aTableColumn identifier];
 
-        // For Pre-Lion nibs, there is no automatic identifier for table column; use UID as identifier.
+        // For cell-based tables, use the dataView prototype identifier.
         if (!columnIdentifier)
-            columnIdentifier = [aTableColumn UID];
+            columnIdentifier = [[aTableColumn dataView] UID];
 
         view = [self makeViewWithIdentifier:columnIdentifier owner:_delegate];
 
