@@ -394,8 +394,8 @@ CPTableColumnUserResizingMask   = 1 << 1;
 */
 - (void)setDataView:(CPView)aView
 {
-    if (_dataView)
-        _dataViewData = nil;
+    if (_dataView === aView)
+        return;
 
     [aView setThemeState:CPThemeStateTableDataView];
 
