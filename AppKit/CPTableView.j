@@ -565,7 +565,7 @@ NOT YET IMPLEMENTED
 - (void)reloadDataForRowIndexes:(CPIndexSet)rowIndexes columnIndexes:(CPIndexSet)columnIndexes
 {
     if ([self _numberOfRowsDidChange])
-        [self _reloadDataViews];
+        [self _reloadDataViewsImmediately];
     else
         [self _enumerateViewsInRows:rowIndexes columns:columnIndexes usingBlock:function(view, row, column, stop)
         {
@@ -601,6 +601,13 @@ NOT YET IMPLEMENTED
 
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
+}
+
+// reload data views and process events to force a -load
+- (void)_reloadDataViewsImmediately
+{
+    [self _reloadDataViews];
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 }
 
 //Target-action Behavior
@@ -3470,12 +3477,13 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         [columnIndexes enumerateIndexesUsingBlock:function(columnIndex, stopCol)
         {
             var tableColumn = _tableColumns[columnIndex],
+                tableColumnUID = [tableColumn UID],
                 dataView = [self _preparedViewAtColumn:columnIndex row:row isRowSelected:isRowSelected];
 
             if ([dataView superview] !== self)
                 [self addSubview:dataView];
 
-            dataViewsForRow[[tableColumn UID]] = dataView;
+            dataViewsForRow[tableColumnUID] = dataView;
         }];
     }];
 }
@@ -3706,6 +3714,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
 - (void)enumerateAvailableViewsUsingBlock:(Function/*CPView *dataView, CPInteger row, CPInteger column*, @ref stop*/)handler
 {
+    [self _reloadDataViewsImmediately];
     [self _enumerateViewsInRows:_exposedRows columns:_exposedColumns usingBlock:handler];
 }
 
@@ -5128,6 +5137,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 {
     if (![self isRowSelected:rowIndex])
         [[CPException exceptionWithName:@"Error" reason:@"Attempt to edit row " + rowIndex + " when not selected." userInfo:nil] raise];
+
+    [self _reloadDataViewsImmediately];
 
     [self scrollRowToVisible:rowIndex];
     [self scrollColumnToVisible:columnIndex];
