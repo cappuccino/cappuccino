@@ -5357,10 +5357,10 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
 - (void)bind:(CPString)aBinding toObject:(id)anObject withKeyPath:(CPString)aKeyPath options:(CPDictionary)options
 {
-    [super bind:aBinding toObject:anObject withKeyPath:aKeyPath options:options];
-
     if (aBinding == @"content")
         _contentBindingExpicitelySet = YES;
+
+    [super bind:aBinding toObject:anObject withKeyPath:aKeyPath options:options];
 }
 
 @end
