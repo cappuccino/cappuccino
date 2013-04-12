@@ -96,19 +96,15 @@
     [self assert:0 equals:selectionIsChangingNotificationsReceived message:"no isChanging notifications when programmatically selecting rows"];
     [self assert:1 equals:selectionDidChangeNotificationsReceived message:"didChange notifications when selecting rows"];
 
-    // If we remove the last row, the selection should change and we should be notified.
-    [[dataSource tableEntries] removeObjectAtIndex:2];
-    [tableView reloadData];
-
-    [self assert:0 equals:selectionIsChangingNotificationsReceived message:"no isChanging notifications when selected rows disappear"];
-    [self assert:2 equals:selectionDidChangeNotificationsReceived message:"didChange notifications when selected rows disappear"];
+    selectionIsChangingNotificationsReceived = 0;
+    selectionDidChangeNotificationsReceived = 0;
 
     [tableView selectRowIndexes:[CPIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
-    [self assert:selectionDidChangeNotificationsReceived equals:3 message:"CPTableViewSelectionDidChangeNotification expected when selecting rows"];
+    [self assert:selectionDidChangeNotificationsReceived equals:1 message:"CPTableViewSelectionDidChangeNotification expected when selecting rows"];
     [[dataSource tableEntries] removeObjectAtIndex:1];
     [tableView reloadData];
 
-    [self assert:selectionDidChangeNotificationsReceived equals:3 message:"no CPTableViewSelectionDidChangeNotification expected when removing a row which does not change the selection"];
+    [self assert:selectionDidChangeNotificationsReceived equals:1 message:"no CPTableViewSelectionDidChangeNotification expected when removing a row which does not change the selection"];
 
     // Reset everything.
     [dataSource setTableEntries:["A", "B", "C"]];
@@ -123,7 +119,18 @@
     selectionIsChangingNotificationsReceived = 0;
     selectionDidChangeNotificationsReceived = 0;
     [tableView deselectAll];
-    [self assert:selectionDidChangeNotificationsReceived equals:2 message:"notification for deselect all"];
+    [self assert:1 equals:selectionDidChangeNotificationsReceived message:"notification for deselect all"];
+
+
+    [tableView selectRowIndexes:[CPIndexSet indexSetWithIndex:2] byExtendingSelection:NO];
+    selectionIsChangingNotificationsReceived = 0;
+    selectionDidChangeNotificationsReceived = 0;
+    // If we remove the last row, the selection should change and we should be notified.
+    [[dataSource tableEntries] removeObjectAtIndex:2];
+    [tableView reloadData];
+
+    [self assert:0 equals:selectionIsChangingNotificationsReceived message:"no isChanging notifications when selected rows disappear"];
+    [self assert:1 equals:selectionDidChangeNotificationsReceived message:"didChange notifications when selected rows disappear"];
 }
 
 - (void)selectionIsChanging:(CPNotification)aNotification
@@ -156,10 +163,10 @@
 
     // Now some text field should be the first responder.
     var fieldEditor = [theWindow firstResponder];
-    [self assert:[fieldEditor class] equals:CPTextField message:"table cell editor should be a text field"];
+    [self assert:CPTextField equals:[fieldEditor class] message:"table cell editor should be a text field"];
 
     [fieldEditor setStringValue:"edited text"];
-    [fieldEditor performClick:nil];
+    [theWindow makeFirstResponder:tableView];
 
     [self assert:"edited text" equals:[dataSource tableEntries][1] message:"table cell edit should propagate to model"]
 
@@ -198,6 +205,7 @@
     [tableColumn setDataView:[CustomTextView0 new]];
     [tableColumn1 setDataView:[CustomTextView1 new]];
 
+    // Process all events immediately to make sure table data views are reloaded.
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 
     [self assert:50 equals:[tableView numberOfRows] message:"tableView numberOfRows should reflect content array length"];
