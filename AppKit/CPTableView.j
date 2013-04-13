@@ -575,11 +575,7 @@ NOT YET IMPLEMENTED
 
 - (BOOL)_numberOfRowsDidChange
 {
-    var oldnumberOfRows = _numberOfRows;
-
-    _numberOfRows = nil;
-
-    return (oldnumberOfRows !== [self numberOfRows]);
+    return (_numberOfRows !== [self _numberOfRows]);
 }
 
 - (void)_reloadDataViews
@@ -1518,28 +1514,31 @@ NOT YET IMPLEMENTED
 */
 - (int)numberOfRows
 {
-    if (_numberOfRows !== nil)
-        return _numberOfRows;
+    return _numberOfRows;
+}
 
-    var contentBindingInfo = [self infoForBinding:@"content"];
+- (int)_numberOfRows
+{
+    var numberOfRows,
+        contentBindingInfo = [self infoForBinding:@"content"];
 
     if (contentBindingInfo)
     {
         var destination = [contentBindingInfo objectForKey:CPObservedObjectKey],
             keyPath = [contentBindingInfo objectForKey:CPObservedKeyPathKey];
 
-        _numberOfRows = [[destination valueForKeyPath:keyPath] count];
+        numberOfRows = [[destination valueForKeyPath:keyPath] count];
     }
     else if (_dataSource && (_implementedDataSourceMethods & CPTableViewDataSource_numberOfRowsInTableView_))
-        _numberOfRows = [_dataSource numberOfRowsInTableView:self] || 0;
+        numberOfRows = [_dataSource numberOfRowsInTableView:self] || 0;
     else
     {
         if (_dataSource)
             CPLog(@"no content binding established and data source " + [_dataSource description] + " does not implement numberOfRowsInTableView:");
-        _numberOfRows = 0;
+        numberOfRows = 0;
     }
 
-    return _numberOfRows;
+    return numberOfRows;
 }
 
 
@@ -2250,20 +2249,20 @@ NOT YET IMPLEMENTED
 {
     var oldNumberOfRows = _numberOfRows;
 
-    _numberOfRows = nil;
+    _numberOfRows = [self _numberOfRows];
+
     _cachedRowHeights = [];
 
     // this line serves two purposes
     // 1. it updates the _numberOfRows cache with the -numberOfRows call
     // 2. it updates the row height cache if needed
-    [self _noteHeightOfRowsWithIndexesChanged:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self numberOfRows])]];
+    [self _noteHeightOfRowsWithIndexesChanged:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, _numberOfRows)]];
 
     // remove row indexes from the selection if they no longer exist
     var hangingSelections = oldNumberOfRows - _numberOfRows;
 
     if (hangingSelections > 0)
     {
-
         var previousSelectionCount = [_selectedRowIndexes count];
         [_selectedRowIndexes removeIndexesInRange:CPMakeRange(_numberOfRows, hangingSelections)];
 
