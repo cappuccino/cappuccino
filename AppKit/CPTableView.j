@@ -4986,7 +4986,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         if (![self isRowSelected:row])
             return self;
     }
-    else if (!_isViewBased && _implementedDataSourceMethods & CPTableViewDataSource_tableView_setObjectValue_forTableColumn_row_ && [aView isKindOfClass:[CPControl class]] && ![aView isKindOfClass:[CPTextField class]])
+    else if (!_isViewBased && [aView isKindOfClass:[CPControl class]] && ![aView isKindOfClass:[CPTextField class]])
     {
         [self getColumn:@ref(column) row:@ref(row) forView:aView];
 
