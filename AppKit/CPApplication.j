@@ -371,22 +371,32 @@ CPRunContinuesResponse  = -1002;
             applicationVersion = [options objectForKey:@"ApplicationVersion"] || [mainInfo objectForKey:@"CPBundleShortVersionString"],
             copyright = [options objectForKey:@"Copyright"] || [mainInfo objectForKey:@"CPHumanReadableCopyright"];
 
-        var aboutPanelPath = [[CPBundle bundleForClass:[CPWindowController class]] pathForResource:@"AboutPanel.cib"],
-            aboutPanelController = [CPWindowController alloc],
-            aboutPanelController = [aboutPanelController initWithWindowCibPath:aboutPanelPath owner:aboutPanelController],
-            aboutPanel = [aboutPanelController window],
-            contentView = [aboutPanel contentView],
-            imageView = [contentView viewWithTag:1],
-            applicationLabel = [contentView viewWithTag:2],
-            versionLabel = [contentView viewWithTag:3],
-            copyrightLabel = [contentView viewWithTag:4],
-            standardPath = [[CPBundle bundleForClass:[self class]] pathForResource:@"standardApplicationIcon.png"];
+        var windowWidth = 275,
+            windowHeight = 223,
+            imgWidth = 100,
+            imgHeight = 100,
+            interField = 8,
+            aboutPanel = [[CPWindow alloc] initWithContentRect:CGRectMake(0, 0, windowWidth, windowHeight) styleMask:CPClosableWindowMask],
+            imageView = [[CPImageView alloc] initWithFrame:CGRectMake((windowWidth / 2) - (imgWidth / 2), interField, imgWidth, imgHeight)],
+            applicationLabel = [[CPTextField alloc] initWithFrame:CGRectMake(17, imgHeight + 16, windowWidth - 34, 24)],
+            versionLabel = [[CPTextField alloc] initWithFrame:CGRectMake(17, imgHeight + 48, windowWidth - 34, 16)],
+            copyrightLabel = [[CPTextField alloc] initWithFrame:CGRectMake(17, imgHeight + 72, windowWidth - 34, 32)],
+            contentView = [aboutPanel contentView];
 
-        // FIXME move this into the CIB eventually
         [applicationLabel setFont:[CPFont boldSystemFontOfSize:[CPFont systemFontSize] + 2]];
         [applicationLabel setAlignment:CPCenterTextAlignment];
+        [versionLabel setFont:[CPFont systemFontOfSize:[CPFont systemFontSize] - 1]];
         [versionLabel setAlignment:CPCenterTextAlignment];
+        [copyrightLabel setFont:[CPFont systemFontOfSize:[CPFont systemFontSize] - 1]];
         [copyrightLabel setAlignment:CPCenterTextAlignment];
+        [copyrightLabel setLineBreakMode:CPLineBreakByWordWrapping];
+
+        [contentView addSubview:imageView];
+        [contentView addSubview:applicationLabel];
+        [contentView addSubview:versionLabel];
+        [contentView addSubview:copyrightLabel];
+
+        var standardPath = [[CPBundle bundleForClass:[self class]] pathForResource:@"standardApplicationIcon.png"];
 
         [imageView setImage:applicationIcon || [[CPImage alloc] initWithContentsOfFile:standardPath
                                                                                   size:CGSizeMake(256, 256)]];
@@ -400,7 +410,7 @@ CPRunContinuesResponse  = -1002;
         else
             [versionLabel setStringValue:@""];
 
-        [copyrightLabel setStringValue:copyright || ""];
+        [copyrightLabel setStringValue:copyright || @""];
         [aboutPanel center];
 
         _aboutPanel = aboutPanel;

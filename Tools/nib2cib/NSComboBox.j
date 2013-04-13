@@ -25,7 +25,7 @@
 
 @import "NSTextField.j"
 
-@class Converter
+@class Nib2Cib
 
 
 @implementation CPComboBox (NSCoding)
@@ -48,12 +48,13 @@
     [self setEnabled:[cell isEnabled]];
 
     // Make sure the height is clipped to the max given by the theme
-    var maxSize = [[[Converter sharedConverter] themes][0] valueForAttributeWithName:@"max-size" forClass:[CPComboBox class]],
+    var theme = [Nib2Cib defaultTheme],
+        maxSize = [theme valueForAttributeWithName:@"max-size" forClass:[CPComboBox class]],
         size = [self frameSize],
         widthOffset = -3;
 
     // Adjust for differences between Cocoa and Cappuccino widget framing.
-    if ([[[Converter sharedConverter] themes][0] name] == @"Aristo")
+    if ([theme name] == @"Aristo")
     {
         _frame.origin.x += 1;
         widthOffset = -5;

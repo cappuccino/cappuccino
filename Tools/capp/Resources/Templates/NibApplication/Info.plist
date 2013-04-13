@@ -6,5 +6,9 @@
 	<string>MainMenu.cib</string>
 	<key>CPBundleName</key>
 	<string>__project.name__</string>
+    <key>CPBundleVersion</key>
+    <string>1.0</string>
+    <key>CPHumanReadableCopyright</key>
+    <string>Copyright © __project.year__, __organization.name__ All rights reserved.</string>
 </dict>
 </plist>

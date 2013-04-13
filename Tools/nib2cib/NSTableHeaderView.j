@@ -22,8 +22,8 @@
 
 @import <AppKit/CPTableHeaderView.j>
 
-@class Converter
 @class CPTableView
+@class Nib2Cib
 
 
 @implementation CPTableHeaderView (NSCoding)
@@ -37,7 +37,7 @@
         // change the default height
         if (_bounds.size.height === 17)
         {
-            var theme = [[Converter sharedConverter] themes][0],
+            var theme = [Nib2Cib defaultTheme],
                 height = [theme valueForAttributeWithName:@"default-row-height" forClass:CPTableView];
 
             _bounds.size.height = height;

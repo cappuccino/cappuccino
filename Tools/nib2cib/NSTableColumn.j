@@ -31,6 +31,7 @@
 @import "NSTextField.j"
 
 @class Converter
+@class Nib2Cib
 
 var IBDefaultFontSizeTableHeader = 11.0;
 
@@ -63,7 +64,7 @@ var IBDefaultFontSizeTableHeader = 11.0;
 
         var headerCell = [aCoder decodeObjectForKey:@"NSHeaderCell"],
             headerView = [[_CPTableColumnHeaderView alloc] initWithFrame:CGRectMakeZero()],
-            theme = [[Converter sharedConverter] themes][0];
+            theme = [Nib2Cib defaultTheme];
 
         [headerView setStringValue:[headerCell objectValue]];
         [headerView setFont:[headerCell font]];
@@ -124,7 +125,7 @@ var IBDefaultFontSizeTableHeader = 11.0;
 
 - (id)valueForDataViewThemeAttribute:(CPString)attribute inState:(int)state
 {
-    var themes = [[Converter sharedConverter] themes];
+    var themes = [[Nib2Cib sharedNib2Cib] themes];
 
     for (var i = 0; i < themes.length; ++i)
     {

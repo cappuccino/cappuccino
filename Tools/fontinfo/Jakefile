@@ -2,7 +2,8 @@
 require ("../../common.jake");
 
 var OS = require("os"),
-    task = require("jake").task;
+    task = require("jake").task,
+    SYSTEM = require("system");
 
 task ("build", function()
 {
@@ -16,7 +17,7 @@ task ("build", function()
         else
             args = "-sdk macosx " + args;
 
-        var xcodebuild = env.CAPP_BUILD ? "xcodebuild " : "CAPP_BUILD=../../Build xcodebuild ";
+        var xcodebuild = SYSTEM.env.CAPP_BUILD ? "xcodebuild " : "CAPP_BUILD=../../Build xcodebuild ";
 
         if (OS.system(xcodebuild + args))
             OS.exit(1);
