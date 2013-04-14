@@ -328,9 +328,6 @@ var _CPMenuBarVisible               = NO,
 */
 - (void)removeItem:(CPMenuItem)aMenuItem
 {
-    if ([aMenuItem isHighlighted])
-        [[aMenuItem _menuItemView] highlight:NO];
-
     [self removeItemAtIndex:[_items indexOfObjectIdenticalTo:aMenuItem]];
 }
 
@@ -358,12 +355,7 @@ var _CPMenuBarVisible               = NO,
     while (count--)
         [_items[count] setMenu:nil];
 
-    // See Issue 1899. Ensure the highlight state of the underlying
-    // _CPMenuItemView is set to NO as well.
-    if (_highlightedIndex !== CPNotFound)
-        [[_items[_highlightedIndex] _menuItemView] highlight:NO];
-
-    _highlightedIndex = CPNotFound;
+    [self _highlightItemAtIndex:CPNotFound];
 
     // Because we are changing _items directly, be sure to notify KVO
     [self willChangeValueForKey:@"items"];
@@ -1159,6 +1151,7 @@ var _CPMenuBarVisible               = NO,
             return;
 
     [aMenuItem setMenu:self];
+    [self _highlightItemAtIndex:CPNotFound];
     [_items insertObject:aMenuItem atIndex:anIndex];
 
     [[CPNotificationCenter defaultCenter]
@@ -1172,10 +1165,8 @@ var _CPMenuBarVisible               = NO,
     if (anIndex < 0 || anIndex >= [_items count])
         return;
 
-    if (_highlightedIndex === anIndex)
-        [[[_items objectAtIndex:anIndex] _menuItemView] highlight:NO];
-
     [[_items objectAtIndex:anIndex] setMenu:nil];
+    [self _highlightItemAtIndex:CPNotFound];
     [_items removeObjectAtIndex:anIndex];
 
     [[CPNotificationCenter defaultCenter]
