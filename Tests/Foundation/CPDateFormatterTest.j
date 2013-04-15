@@ -164,7 +164,7 @@
 
 - (void)testLocalizedStringFromDate
 {
-    var result = [CPDateFormatter localizedStringFromDate:_date dateStyle:CPDateFormatterMediumStyle timeStyle:CPDateFormatterNoStyle];
+    var result = [CPDateFormatter localizedStringFromDate:[[CPDate alloc] initWithString:@"2011-10-05 23:59:59 +1200"] dateStyle:CPDateFormatterMediumStyle timeStyle:CPDateFormatterNoStyle];
     [self assert:result equals:@"5 Oct 2011"];
 }
 
@@ -311,17 +311,14 @@
 
     var date = [CPDate date];
     date.setDate(date.getDate() + 1);
-    date.setHours(11);
-    date.setMinutes(10);
 
     var result = [_dateFormatter editingStringForObjectValue:date];
     [self assert:result equals:@"tomorrow"];
 
     date.setDate(date.getDate() - 2);
 
-    [_dateFormatter setTimeStyle:CPDateFormatterShortStyle];
     result = [_dateFormatter editingStringForObjectValue:date];
-    [self assert:result equals:@"yesterday 11:10 AM"];
+    [self assert:result equals:@"yesterday"];
 }
 
 - (void)testStringFromDateTokensYears
@@ -386,7 +383,8 @@
 
     [self assert:result equals:@"PM"];
 
-    _date.setHours(2);
+    _date = [[CPDate alloc] initWithString:@"2011-10-05 05:34:38 -0900"];
+
     var result = [_dateFormatter stringFromDate:_date];
     [self assert:result equals:@"AM"];
 }

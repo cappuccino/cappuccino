@@ -226,7 +226,7 @@
     var timeZone = [CPTimeZone localTimeZone],
         abbreviation = [timeZone abbreviationForDate:_date];
 
-    [self assert:abbreviation equals:@"PDT"];
+    [self assert:abbreviation equals:String(String(_date).split("(")[1]).split(")")[0]];
 }
 
 - (void)testAbbreviationWithNilDate
@@ -243,7 +243,7 @@
     var timeZone = [CPTimeZone localTimeZone],
         seconds = [timeZone secondsFromGMTForDate:_date];
 
-    [self assert:seconds equals:-25200];
+    [self assert:seconds equals:(_date.getTimezoneOffset() * -60)];
 }
 
 - (void)testSecondsFromGMTForDateWithNilDate

@@ -550,6 +550,8 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
         for (var i = 1; i < [relativeWords count]; i = i + 2)
         {
             var date = [CPDate date];
+            [date _dateWithTimeZone:_timeZone];
+
             date.setHours(aDate.getHours());
             date.setMinutes(aDate.getMinutes());
             date.setSeconds(aDate.getSeconds());
@@ -921,6 +923,7 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
                 return [[self veryShortStandaloneWeekdaySymbols] objectAtIndex:day];
 
         case @"a":
+
             if (aDate.getHours() > 11)
                 return [self PMSymbol];
             else
@@ -995,7 +998,7 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
                 return [timeZone localizedName:CPTimeZoneNameStyleDaylightSaving locale:_locale];
 
         case @"Z":
-            var seconds = [timeZone secondsFromGMTForDate:aDate],
+            var seconds = [timeZone secondsFromGMT],
                 minutes = seconds / 60,
                 hours = minutes / 60,
                 result,
