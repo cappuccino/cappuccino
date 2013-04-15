@@ -264,7 +264,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     BOOL                _lastColumnShouldSnap;
     BOOL                _implementsCustomDrawRow;
     BOOL                _isViewBased;
-    BOOL                _contentBindingExpicitelySet;
+    BOOL                _contentBindingExplicitlySet;
 
     SEL                 _viewForTableColumnRowSelector;
 
@@ -343,7 +343,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         _retargetedDropOperation = nil;
         _dragOperationDefaultMask = nil;
         _destinationDragStyle = CPTableViewDraggingDestinationFeedbackStyleRegular;
-        _contentBindingExpicitelySet = NO;
+        _contentBindingExplicitlySet = NO;
 
         [self setBackgroundColor:[CPColor whiteColor]];
         [self _init];
@@ -3626,7 +3626,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     // This gives the table column an opportunity to apply its bindings.
     // It will override the value set above if there is a binding.
 
-    if (_contentBindingExpicitelySet)
+    if (_contentBindingExplicitlySet)
         [self _prepareContentBindedDataView:aDataView forRow:aRow];
     else
         // For both cell-based and view-based
@@ -5316,11 +5316,11 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     if ([[self infoForBinding:@"content"] objectForKey:CPObservedObjectKey] !== destination)
     {
         [super bind:@"content" toObject:destination withKeyPath:@"arrangedObjects" options:nil];
-        _contentBindingExpicitelySet = NO;
+        _contentBindingExplicitlySet = NO;
     }
 
     // If the content binding was set manually assume the user is taking manual control of establishing bindings.
-    if (!_contentBindingExpicitelySet)
+    if (!_contentBindingExplicitlySet)
     {
         if ([[self infoForBinding:@"selectionIndexes"] objectForKey:CPObservedObjectKey] !== destination)
             [self bind:@"selectionIndexes" toObject:destination withKeyPath:@"selectionIndexes" options:nil];
@@ -5335,7 +5335,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     [super bind:aBinding toObject:anObject withKeyPath:aKeyPath options:options];
 
     if (aBinding == @"content")
-        _contentBindingExpicitelySet = YES;
+        _contentBindingExplicitlySet = YES;
 }
 
 @end
