@@ -493,6 +493,7 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
     if (!aDate)
         return;
 
+    aDate = [aDate copy];
     [aDate _dateWithTimeZone:_timeZone];
 
     if (_dateFormat)
@@ -720,8 +721,7 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
 
     var character = [aToken characterAtIndex:0],
         length = [aToken length],
-        abbreviation = [[CPTimeZone new] abbreviationForDate:aDate],
-        timeZone = [CPTimeZone timeZoneWithAbbreviation:abbreviation];
+        timeZone = _timeZone;
 
     switch (character)
     {
@@ -1346,7 +1346,7 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
 
 - (CPDate)_dateFromTokens:(CPArray)tokens dateComponents:(CPArray)dateComponents
 {
-    var defaultTimeZoneSeconds = [_timeZone secondsFromGMT],
+    var timeZoneseconds = [_timeZone secondsFromGMT],
         dateArray = [2000, 01, 01, 00, 00, 00, @"+0000"],
         isPM = NO,
         dayOfYear,
@@ -1722,51 +1722,59 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
 
             case @"z":
                 if (length < 4)
-                    var seconds = [self _secondsFromTimeZoneString:dateComponent style:CPTimeZoneNameStyleShortDaylightSaving];
+                    timeZoneseconds = [self _secondsFromTimeZoneString:dateComponent style:CPTimeZoneNameStyleShortDaylightSaving];
                 else
-                    var seconds = [self _secondsFromTimeZoneString:dateComponent style:CPTimeZoneNameStyleDaylightSaving];
+                    timeZoneseconds = [self _secondsFromTimeZoneString:dateComponent style:CPTimeZoneNameStyleDaylightSaving];
 
-                if (!seconds)
-                    seconds = [self _secondsFromTimeZoneDefaultFormatString:dateComponent];
+                if (!timeZoneseconds)
+                    timeZoneseconds = [self _secondsFromTimeZoneDefaultFormatString:dateComponent];
 
-                if (!seconds)
+                if (!timeZoneseconds)
                     return nil;
+
+                timeZoneseconds = timeZoneseconds + 60 * 60;
 
                 break;
 
             case @"Z":
-                var seconds = [self _secondsFromTimeZoneDefaultFormatString:dateComponent];
+                timeZoneseconds = [self _secondsFromTimeZoneDefaultFormatString:dateComponent];
 
-                if (!seconds)
+                if (!timeZoneseconds)
                     return nil;
+
+                timeZoneseconds = timeZoneseconds + 60 * 60;
 
                 break;
 
             case @"v":
                 if (length <= 3)
-                    var seconds = [self _secondsFromTimeZoneString:dateComponent style:CPTimeZoneNameStyleShortGeneric];
+                    timeZoneseconds = [self _secondsFromTimeZoneString:dateComponent style:CPTimeZoneNameStyleShortGeneric];
                 else
-                    var seconds = [self _secondsFromTimeZoneString:dateComponent style:CPTimeZoneNameStyleGeneric];
+                    timeZoneseconds = [self _secondsFromTimeZoneString:dateComponent style:CPTimeZoneNameStyleGeneric];
 
-                if (!seconds && length == 4)
-                    seconds = [self _secondsFromTimeZoneDefaultFormatString:dateComponent];
+                if (!timeZoneseconds && length == 4)
+                    timeZoneseconds = [self _secondsFromTimeZoneDefaultFormatString:dateComponent];
 
-                if (!seconds)
+                if (!timeZoneseconds)
                     return nil;
+
+                timeZoneseconds = timeZoneseconds + 60 * 60;
 
                 break;
 
             case @"V":
                 if (length <= 3)
-                    var seconds = [self _secondsFromTimeZoneString:dateComponent style:CPTimeZoneNameStyleShortStandard];
+                    timeZoneseconds = [self _secondsFromTimeZoneString:dateComponent style:CPTimeZoneNameStyleShortStandard];
                 else
-                    var seconds = [self _secondsFromTimeZoneString:dateComponent style:CPTimeZoneNameStyleStandard];
+                    timeZoneseconds = [self _secondsFromTimeZoneString:dateComponent style:CPTimeZoneNameStyleStandard];
 
-                if (!seconds)
-                    seconds = [self _secondsFromTimeZoneDefaultFormatString:dateComponent];
+                if (!timeZoneseconds)
+                    timeZoneseconds = [self _secondsFromTimeZoneDefaultFormatString:dateComponent];
 
-                if (!seconds)
+                if (!timeZoneseconds)
                     return nil;
+
+                timeZoneseconds = timeZoneseconds + 60 * 60;
 
                 break;
 
@@ -1824,7 +1832,7 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
         return nil;
 
     var dateResult = [[CPDate alloc] initWithString:[CPString stringWithFormat:@"%04d-%02d-%02d %02d:%02d:%02d %s", dateArray[0], dateArray[1], dateArray[2], dateArray[3], dateArray[4], dateArray[5], dateArray[6]]];
-    dateResult.setSeconds(dateResult.getSeconds() - defaultTimeZoneSeconds + 60 * 60);
+    dateResult.setSeconds(dateResult.getSeconds() - timeZoneseconds + 60 * 60);
 
     return dateResult;
 }
@@ -2077,6 +2085,8 @@ var CPDateFormatterDateStyleKey = @"CPDateFormatterDateStyle",
         _locale = [aCoder decodeObjectForKey:CPDateFormatterLocaleKey];
         _timeStyle = [aCoder decodeIntForKey:CPDateFormatterTimeStyleKey];
     }
+
+    [self _init];
 
     return self;
 }
