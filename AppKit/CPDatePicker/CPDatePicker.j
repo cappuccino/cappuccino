@@ -327,8 +327,6 @@ CPEraDatePickerElementFlag              = 0x0100;
     [self didChangeValueForKey:@"objectValue"];
     [self didChangeValueForKey:@"dateValue"];
 
-    [self sendAction:[self action] to:[self target]];
-
     [self willChangeValueForKey:@"timeInterval"];
     _timeInterval = (_datePickerMode == CPSingleDateMode)? 0 : aTimeInterval;
     [self didChangeValueForKey:@"timeInterval"];
