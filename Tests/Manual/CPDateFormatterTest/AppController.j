@@ -30,13 +30,12 @@
 
     // In this case, we want the window from Cib to become our full browser window
     [theWindow setFullPlatformWindow:YES];
-    [datePicker setTimeZone:[CPTimeZone timeZoneForSecondsFromGMT:0]];
+    [[datePicker formatter] setTimeZone:[CPTimeZone timeZoneForSecondsFromGMT:60 * 60 * 2]];
     [datePicker setDateValue:[CPDate date]];
 }
 
 - (@action)datePickerAction:(id)sender
 {
-    console.log([sender dateValue]);
     [labelDateFormatter setStringValue:[[sender formatter] stringFromDate:[sender dateValue]]];
 }
 
