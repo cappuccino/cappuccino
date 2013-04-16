@@ -371,7 +371,7 @@ var CPProgressIndicatorSpinningStyleColors = [];
 
 - (CPView)createEphemeralSubviewNamed:(CPString)aName
 {
-    return [[CPView alloc] initWithFrame:_CGRectMakeZero()];
+    return [[CPView alloc] initWithFrame:CGRectMakeZero()];
 }
 
 - (CGRect)rectForEphemeralSubviewNamed:(CPString)aViewName
@@ -387,7 +387,7 @@ var CPProgressIndicatorSpinningStyleColors = [];
         if (_indeterminate)
             barWidth = width;
 
-        return _CGRectMake(0, 0, barWidth, [self valueForThemeAttribute:@"default-height"]);
+        return CGRectMake(0, 0, barWidth, [self valueForThemeAttribute:@"default-height"]);
     }
 
     return nil;

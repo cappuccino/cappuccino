@@ -43,7 +43,7 @@ kCGPathElementAddArcToPoint         = 6;
 */
 function CGPathCreateMutable()
 {
-    return { count:0, start:_CGPointMake(0, 0), current:_CGPointMake(0, 0), elements:[] };
+    return { count:0, start:CGPointMake(0, 0), current:CGPointMake(0, 0), elements:[] };
 }
 
 /*!
@@ -79,15 +79,15 @@ function CGPathRetain(aPath)
 
 function CGPathAddArc(aPath, aTransform, x, y, aRadius, aStartAngle, anEndAngle, isClockwise)
 {
-    if (aTransform && !_CGAffineTransformIsIdentity(aTransform))
+    if (aTransform && !CGAffineTransformIsIdentity(aTransform))
     {
-        var center = _CGPointMake(x, y),
-            end = _CGPointMake(COS(anEndAngle), SIN(anEndAngle)),
-            start = _CGPointMake(COS(aStartAngle), SIN(aStartAngle));
+        var center = CGPointMake(x, y),
+            end = CGPointMake(COS(anEndAngle), SIN(anEndAngle)),
+            start = CGPointMake(COS(aStartAngle), SIN(aStartAngle));
 
-        end = _CGPointApplyAffineTransform(end, aTransform);
-        start = _CGPointApplyAffineTransform(start, aTransform);
-        center = _CGPointApplyAffineTransform(center, aTransform);
+        end = CGPointApplyAffineTransform(end, aTransform);
+        start = CGPointApplyAffineTransform(start, aTransform);
+        center = CGPointApplyAffineTransform(center, aTransform);
 
         x = center.x;
         y = center.y;
@@ -107,8 +107,8 @@ function CGPathAddArc(aPath, aTransform, x, y, aRadius, aStartAngle, anEndAngle,
             else
                 aStartAngle = aStartAngle - PI2;
 
-        aRadius = _CGSizeMake(aRadius, 0);
-        aRadius = _CGSizeApplyAffineTransform(aRadius, aTransform);
+        aRadius = CGSizeMake(aRadius, 0);
+        aRadius = CGSizeApplyAffineTransform(aRadius, aTransform);
         aRadius = SQRT(aRadius.width * aRadius.width + aRadius.height * aRadius.height);
     }
 
@@ -132,22 +132,22 @@ function CGPathAddArc(aPath, aTransform, x, y, aRadius, aStartAngle, anEndAngle,
         var arcStartX = x + aRadius * COS(aStartAngle),
             arcStartY = y + aRadius * SIN(aStartAngle);
 
-        aPath.start = _CGPointMake(arcStartX, arcStartY);
+        aPath.start = CGPointMake(arcStartX, arcStartY);
     }
 
-    aPath.current = _CGPointMake(arcEndX, arcEndY);
+    aPath.current = CGPointMake(arcEndX, arcEndY);
     aPath.elements[aPath.count++] = { type:kCGPathElementAddArc, x:x, y:y, radius:aRadius, startAngle:aStartAngle, endAngle:anEndAngle, clockwise:isClockwise };
 }
 
 function CGPathAddArcToPoint(aPath, aTransform, x1, y1, x2, y2, aRadius)
 {
-    var p1 = _CGPointMake(x1, y1),
-        p2 = _CGPointMake(x2, y2);
+    var p1 = CGPointMake(x1, y1),
+        p2 = CGPointMake(x2, y2);
 
     if (aTransform)
     {
-        p1 = _CGPointApplyAffineTransform(p1, aTransform);
-        p2 = _CGPointApplyAffineTransform(p2, aTransform);
+        p1 = CGPointApplyAffineTransform(p1, aTransform);
+        p2 = CGPointApplyAffineTransform(p2, aTransform);
     }
 
     /*
@@ -171,15 +171,15 @@ function CGPathAddArcToPoint(aPath, aTransform, x1, y1, x2, y2, aRadius)
 
 function CGPathAddCurveToPoint(aPath, aTransform, cp1x, cp1y, cp2x, cp2y, x, y)
 {
-    var cp1 = _CGPointMake(cp1x, cp1y),
-        cp2 = _CGPointMake(cp2x, cp2y),
-        end = _CGPointMake(x, y);
+    var cp1 = CGPointMake(cp1x, cp1y),
+        cp2 = CGPointMake(cp2x, cp2y),
+        end = CGPointMake(x, y);
 
     if (aTransform)
     {
-        cp1 = _CGPointApplyAffineTransform(cp1, aTransform);
-        cp2 = _CGPointApplyAffineTransform(cp2, aTransform);
-        end = _CGPointApplyAffineTransform(end, aTransform);
+        cp1 = CGPointApplyAffineTransform(cp1, aTransform);
+        cp2 = CGPointApplyAffineTransform(cp2, aTransform);
+        end = CGPointApplyAffineTransform(end, aTransform);
     }
 
     aPath.current = end;
@@ -202,10 +202,10 @@ function CGPathAddLines(aPath, aTransform, points, count)
 
 function CGPathAddLineToPoint(aPath, aTransform, x, y)
 {
-    var point = _CGPointMake(x, y);
+    var point = CGPointMake(x, y);
 
     if (aTransform !== NULL)
-        point = _CGPointApplyAffineTransform(point, aTransform);
+        point = CGPointApplyAffineTransform(point, aTransform);
 
     aPath.elements[aPath.count++] = { type: kCGPathElementAddLineToPoint, x:point.x, y:point.y };
     aPath.current = point;
@@ -262,13 +262,13 @@ function CGPathAddPath(aPath, aTransform, anotherPath)
 
 function CGPathAddQuadCurveToPoint(aPath, aTransform, cpx, cpy, x, y)
 {
-    var cp = _CGPointMake(cpx, cpy),
-        end = _CGPointMake(x, y);
+    var cp = CGPointMake(cpx, cpy),
+        end = CGPointMake(x, y);
 
     if (aTransform)
     {
-        cp = _CGPointApplyAffineTransform(cp, aTransform);
-        end = _CGPointApplyAffineTransform(end, aTransform);
+        cp = CGPointApplyAffineTransform(cp, aTransform);
+        end = CGPointApplyAffineTransform(end, aTransform);
     }
 
     aPath.elements[aPath.count++] = { type:kCGPathElementAddQuadCurveToPoint, cpx:cp.x, cpy:cp.y, x:end.x, y:end.y }
@@ -291,10 +291,10 @@ function CGPathAddRects(aPath, aTransform, rects, count)
     {
         var rect = rects[i];
 
-        CGPathMoveToPoint(aPath, aTransform, _CGRectGetMinX(rect), _CGRectGetMinY(rect));
-        CGPathAddLineToPoint(aPath, aTransform, _CGRectGetMaxX(rect), _CGRectGetMinY(rect));
-        CGPathAddLineToPoint(aPath, aTransform, _CGRectGetMaxX(rect), _CGRectGetMaxY(rect));
-        CGPathAddLineToPoint(aPath, aTransform, _CGRectGetMinX(rect), _CGRectGetMaxY(rect));
+        CGPathMoveToPoint(aPath, aTransform, CGRectGetMinX(rect), CGRectGetMinY(rect));
+        CGPathAddLineToPoint(aPath, aTransform, CGRectGetMaxX(rect), CGRectGetMinY(rect));
+        CGPathAddLineToPoint(aPath, aTransform, CGRectGetMaxX(rect), CGRectGetMaxY(rect));
+        CGPathAddLineToPoint(aPath, aTransform, CGRectGetMinX(rect), CGRectGetMaxY(rect));
 
         CGPathCloseSubpath(aPath);
     }
@@ -302,10 +302,10 @@ function CGPathAddRects(aPath, aTransform, rects, count)
 
 function CGPathMoveToPoint(aPath, aTransform, x, y)
 {
-    var point = _CGPointMake(x, y);
+    var point = CGPointMake(x, y);
 
     if (aTransform !== NULL)
-        point = _CGPointApplyAffineTransform(point, aTransform);
+        point = CGPointApplyAffineTransform(point, aTransform);
 
     aPath.start = aPath.current = point;
 
@@ -331,12 +331,12 @@ function CGPathWithEllipseInRect(aRect)
 {
     var path = CGPathCreateMutable();
 
-    if (_CGRectGetWidth(aRect) === _CGRectGetHeight(aRect))
-        CGPathAddArc(path, nil, _CGRectGetMidX(aRect), _CGRectGetMidY(aRect), _CGRectGetWidth(aRect) / 2.0, 0.0, 2 * PI, YES);
+    if (CGRectGetWidth(aRect) === CGRectGetHeight(aRect))
+        CGPathAddArc(path, nil, CGRectGetMidX(aRect), CGRectGetMidY(aRect), CGRectGetWidth(aRect) / 2.0, 0.0, 2 * PI, YES);
     else
     {
-        var axis = _CGSizeMake(_CGRectGetWidth(aRect) / 2.0, _CGRectGetHeight(aRect) / 2.0),
-            center = _CGPointMake(_CGRectGetMinX(aRect) + axis.width, _CGRectGetMinY(aRect) + axis.height);
+        var axis = CGSizeMake(CGRectGetWidth(aRect) / 2.0, CGRectGetHeight(aRect) / 2.0),
+            center = CGPointMake(CGRectGetMinX(aRect) + axis.width, CGRectGetMinY(aRect) + axis.height);
 
         CGPathMoveToPoint(path, nil, center.x, center.y - axis.height);
 
@@ -354,10 +354,10 @@ function CGPathWithEllipseInRect(aRect)
 function CGPathWithRoundedRectangleInRect(aRect, xRadius, yRadius/*not currently supported*/, ne, se, sw, nw)
 {
     var path = CGPathCreateMutable(),
-        xMin = _CGRectGetMinX(aRect),
-        xMax = _CGRectGetMaxX(aRect),
-        yMin = _CGRectGetMinY(aRect),
-        yMax = _CGRectGetMaxY(aRect);
+        xMin = CGRectGetMinX(aRect),
+        xMax = CGRectGetMaxX(aRect),
+        yMin = CGRectGetMinY(aRect),
+        yMax = CGRectGetMaxY(aRect);
 
     CGPathMoveToPoint(path, nil, xMin + xRadius, yMin);
 
@@ -407,7 +407,7 @@ function CGPathCloseSubpath(aPath)
         return;
 
     // After closing, the current point is the previous path's starting point
-    aPath.current = _CGPointCreateCopy(aPath.start);
+    aPath.current = CGPointCreateCopy(aPath.start);
     aPath.elements[aPath.count++] = { type:kCGPathElementCloseSubpath, start:aPath.start };
 }
 
@@ -416,7 +416,7 @@ function CGPathEqualToPath(aPath, anotherPath)
     if (aPath === anotherPath)
         return YES;
 
-    if (aPath.count !== anotherPath.count || !_CGPointEqualToPoint(aPath.start, anotherPath.start) || !_CGPointEqualToPoint(aPath.current, anotherPath.current))
+    if (aPath.count !== anotherPath.count || !CGPointEqualToPoint(aPath.start, anotherPath.start) || !CGPointEqualToPoint(aPath.current, anotherPath.current))
         return NO;
 
     var i = 0,
@@ -487,7 +487,7 @@ function CGPathEqualToPath(aPath, anotherPath)
                 break;
 
             case kCGPathElementCloseSubpath:
-                if (!_CGPointEqualToPoint(element.start, anotherElement.start))
+                if (!CGPointEqualToPoint(element.start, anotherElement.start))
                     return NO;
                 break;
         }
@@ -498,7 +498,7 @@ function CGPathEqualToPath(aPath, anotherPath)
 
 function CGPathGetCurrentPoint(aPath)
 {
-    return _CGPointCreateCopy(aPath.current);
+    return CGPointCreateCopy(aPath.current);
 }
 
 function CGPathIsEmpty(aPath)
@@ -512,7 +512,7 @@ function CGPathIsEmpty(aPath)
 function CGPathGetBoundingBox(aPath)
 {
     if (!aPath || !aPath.count)
-        return _CGRectMakeZero();
+        return CGRectMakeZero();
 
     var ox = 0,
         oy = 0,
@@ -591,7 +591,7 @@ function CGPathGetBoundingBox(aPath)
                 break;
 
             case kCGPathElementMoveToPoint:
-                movePoint = _CGPointMake(element.x, element.y);
+                movePoint = CGPointMake(element.x, element.y);
                 break;
 
             case kCGPathElementCloseSubpath:
@@ -605,7 +605,7 @@ function CGPathGetBoundingBox(aPath)
         }
     }
 
-    return _CGRectMake(ox, oy, rx - ox, ry - oy);
+    return CGRectMake(ox, oy, rx - ox, ry - oy);
 }
 
 /*!

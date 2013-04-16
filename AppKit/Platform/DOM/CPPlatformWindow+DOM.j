@@ -210,7 +210,7 @@ var resizeTimer = nil;
     if (self)
     {
         _DOMWindow = window;
-        _contentRect = _CGRectMakeZero();
+        _contentRect = CGRectMakeZero();
 
         _windowLevels = [];
         _windowLayers = @{};
@@ -232,25 +232,25 @@ var resizeTimer = nil;
     if (_DOMWindow.cpFrame)
         return _DOMWindow.cpFrame();
 
-    var contentRect = _CGRectMakeZero();
+    var contentRect = CGRectMakeZero();
 
     if (window.screenTop)
-        contentRect.origin = _CGPointMake(_DOMWindow.screenLeft, _DOMWindow.screenTop);
+        contentRect.origin = CGPointMake(_DOMWindow.screenLeft, _DOMWindow.screenTop);
 
     else if (window.screenX)
-        contentRect.origin = _CGPointMake(_DOMWindow.screenX, _DOMWindow.screenY);
+        contentRect.origin = CGPointMake(_DOMWindow.screenX, _DOMWindow.screenY);
 
     // Safari, Mozilla, Firefox, and Opera
     if (_DOMWindow.innerWidth)
-        contentRect.size = _CGSizeMake(_DOMWindow.innerWidth, _DOMWindow.innerHeight);
+        contentRect.size = CGSizeMake(_DOMWindow.innerWidth, _DOMWindow.innerHeight);
 
     // Internet Explorer 6 in Strict Mode
     else if (document.documentElement && document.documentElement.clientWidth)
-        contentRect.size = _CGSizeMake(_DOMWindow.document.documentElement.clientWidth, _DOMWindow.document.documentElement.clientHeight);
+        contentRect.size = CGSizeMake(_DOMWindow.document.documentElement.clientWidth, _DOMWindow.document.documentElement.clientHeight);
 
     // Internet Explorer X
     else
-        contentRect.size = _CGSizeMake(_DOMWindow.document.body.clientWidth, _DOMWindow.document.body.clientHeight);
+        contentRect.size = CGSizeMake(_DOMWindow.document.body.clientWidth, _DOMWindow.document.body.clientHeight);
 
     return contentRect;
 }
@@ -548,7 +548,7 @@ var resizeTimer = nil;
     if (_DOMWindow)
         return _DOMWindow.focus();
 
-    _DOMWindow = window.open("about:blank", "_blank", "menubar=no,location=no,resizable=yes,scrollbars=no,status=no,left=" + _CGRectGetMinX(_contentRect) + ",top=" + _CGRectGetMinY(_contentRect) + ",width=" + _CGRectGetWidth(_contentRect) + ",height=" + _CGRectGetHeight(_contentRect));
+    _DOMWindow = window.open("about:blank", "_blank", "menubar=no,location=no,resizable=yes,scrollbars=no,status=no,left=" + CGRectGetMinX(_contentRect) + ",top=" + CGRectGetMinY(_contentRect) + ",width=" + CGRectGetWidth(_contentRect) + ",height=" + CGRectGetHeight(_contentRect));
 
     [PlatformWindows addObject:self];
 
@@ -585,7 +585,7 @@ var resizeTimer = nil;
 {
     var type = aDOMEvent.type,
         dragServer = [CPDragServer sharedDragServer],
-        location = _CGPointMake(aDOMEvent.clientX, aDOMEvent.clientY),
+        location = CGPointMake(aDOMEvent.clientX, aDOMEvent.clientY),
         pasteboard = [_CPDOMDataTransferPasteboard DOMDataTransferPasteboard];
 
     [pasteboard _setDataTransfer:aDOMEvent.dataTransfer];
@@ -600,8 +600,8 @@ var resizeTimer = nil;
             draggedWindowFrame = [draggedWindow frame],
             DOMDragElement = draggedWindow._DOMElement;
 
-        DOMDragElement.style.left = -_CGRectGetWidth(draggedWindowFrame) + "px";
-        DOMDragElement.style.top = -_CGRectGetHeight(draggedWindowFrame) + "px";
+        DOMDragElement.style.left = -CGRectGetWidth(draggedWindowFrame) + "px";
+        DOMDragElement.style.top = -CGRectGetHeight(draggedWindowFrame) + "px";
 
         var parentNode = DOMDragElement.parentNode;
 
@@ -615,7 +615,7 @@ var resizeTimer = nil;
         aDOMEvent.dataTransfer.setDragImage(DOMDragElement, draggingOffset.width, draggingOffset.height);
         aDOMEvent.dataTransfer.effectAllowed = "all";
 
-        [dragServer draggingStartedInPlatformWindow:self globalLocation:[CPPlatform isBrowser] ? location : _CGPointMake(aDOMEvent.screenX, aDOMEvent.screenY)];
+        [dragServer draggingStartedInPlatformWindow:self globalLocation:[CPPlatform isBrowser] ? location : CGPointMake(aDOMEvent.screenX, aDOMEvent.screenY)];
     }
     else if (type === "drag")
     {
@@ -624,7 +624,7 @@ var resizeTimer = nil;
         if (CPFeatureIsCompatible(CPHTML5DragAndDropSourceYOffBy1))
             y -= 1;
 
-        [dragServer draggingSourceUpdatedWithGlobalLocation:[CPPlatform isBrowser] ? location : _CGPointMake(aDOMEvent.screenX, y)];
+        [dragServer draggingSourceUpdatedWithGlobalLocation:[CPPlatform isBrowser] ? location : CGPointMake(aDOMEvent.screenX, y)];
     }
     else if (type === "dragover" || type === "dragleave")
     {
@@ -656,7 +656,7 @@ var resizeTimer = nil;
         else
             dragOperation = CPDragOperationNone;
 
-        [dragServer draggingEndedInPlatformWindow:self globalLocation:[CPPlatform isBrowser] ? location : _CGPointMake(aDOMEvent.screenX, aDOMEvent.screenY) operation:dragOperation];
+        [dragServer draggingEndedInPlatformWindow:self globalLocation:[CPPlatform isBrowser] ? location : CGPointMake(aDOMEvent.screenX, aDOMEvent.screenY) operation:dragOperation];
     }
     else //if (type === "drop")
     {
@@ -676,7 +676,7 @@ var resizeTimer = nil;
 - (void)keyEvent:(DOMEvent)aDOMEvent
 {
     var event,
-        location = _lastMouseEventLocation || _CGPointMakeZero(),
+        location = _lastMouseEventLocation || CGPointMakeZero(),
         timestamp = [CPEvent currentTimestamp],
         sourceElement = aDOMEvent.target || aDOMEvent.srcElement,
         windowNumber = [[CPApp keyWindow] windowNumber],
@@ -897,7 +897,7 @@ var resizeTimer = nil;
             timestamp = [CPEvent currentTimestamp],  // fake event, might as well use current timestamp
             windowNumber = [[CPApp keyWindow] windowNumber],
             modifierFlags = CPPlatformActionKeyMask,
-            location = _lastMouseEventLocation || _CGPointMakeZero(),
+            location = _lastMouseEventLocation || CGPointMakeZero(),
             event = [CPEvent keyEventWithType:CPKeyDown location:location modifierFlags:modifierFlags
                     timestamp:timestamp windowNumber:windowNumber context:nil
                     characters:characters charactersIgnoringModifiers:characters isARepeat:NO keyCode:keyCode];
@@ -1018,12 +1018,12 @@ var resizeTimer = nil;
             } while (element = element.offsetParent);
         }
 
-        location = _CGPointMake((x + ((aDOMEvent.clientX - 8) / 15)), (y + ((aDOMEvent.clientY - 8) / 15)));
+        location = CGPointMake((x + ((aDOMEvent.clientX - 8) / 15)), (y + ((aDOMEvent.clientY - 8) / 15)));
     }
     else if (aDOMEvent._overrideLocation)
         location = aDOMEvent._overrideLocation;
     else
-        location = _CGPointMake(aDOMEvent.clientX, aDOMEvent.clientY);
+        location = CGPointMake(aDOMEvent.clientX, aDOMEvent.clientY);
 
     var deltaX = 0.0,
         deltaY = 0.0,
@@ -1212,7 +1212,7 @@ var resizeTimer = nil;
     }
 
     var event,
-        location = _CGPointMake(aDOMEvent.clientX, aDOMEvent.clientY),
+        location = CGPointMake(aDOMEvent.clientX, aDOMEvent.clientY),
         timestamp = [CPEvent currentTimestamp],
         sourceElement = (aDOMEvent.target || aDOMEvent.srcElement),
         windowNumber = 0,

@@ -179,6 +179,11 @@
     var oldValue = _tableViews.length - 1,
         indexPlusOne = columnIndex + 1; // unloads all later columns.
 
+    if (columnIndex > 0)
+        [_tableViews[columnIndex - 1] setNeedsDisplay:YES];
+        
+    [_tableViews[columnIndex] setNeedsDisplay:YES];
+
     [[_tableViews.slice(indexPlusOne) valueForKey:"enclosingScrollView"]
       makeObjectsPerformSelector:@selector(removeFromSuperview)];
 
@@ -818,6 +823,14 @@
 - (CPView)browserView
 {
     return _browser;
+}
+
+/*!
+    @ignore
+*/
+- (BOOL)_isFocused
+{
+    return ([super _isFocused] || [_browser tableViewInColumn:[_browser selectedColumn]] === self);
 }
 
 - (BOOL)canDragRowsWithIndexes:(CPIndexSet)rowIndexes atPoint:(CGPoint)mouseDownPoint

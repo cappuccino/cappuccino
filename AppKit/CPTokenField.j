@@ -20,9 +20,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#import "../Foundation/CPRange.h"
-#import "../Foundation/Ref.h"
-
 @import <Foundation/CPCharacterSet.j>
 @import <Foundation/CPIndexSet.j>
 @import <Foundation/CPTimer.j>
@@ -101,7 +98,7 @@ CPTokenFieldDeleteButtonType     = 1;
 
 + (id)themeAttributes
 {
-    return @{ @"editor-inset": _CGInsetMakeZero() };
+    return @{ @"editor-inset": CGInsetMakeZero() };
 }
 
 - (id)initWithFrame:(CGRect)frame
@@ -125,7 +122,7 @@ CPTokenFieldDeleteButtonType     = 1;
 
 - (void)_init
 {
-    _selectedRange = _CPMakeRange(0, 0);
+    _selectedRange = CPMakeRange(0, 0);
 
     var frame = [self frame];
 
@@ -215,7 +212,7 @@ CPTokenFieldDeleteButtonType     = 1;
 
     if (delegateApprovedObjectsCount)
         location += delegateApprovedObjectsCount;
-    _selectedRange = _CPMakeRange(location, 0);
+    _selectedRange = CPMakeRange(location, 0);
 
     [self _inputElement].value = @"";
     [self setNeedsLayout];
@@ -235,12 +232,12 @@ CPTokenFieldDeleteButtonType     = 1;
     if (indexOfToken == CPNotFound)
     {
         if (!extend)
-            _selectedRange = _CPMakeRange([[self _tokens] count], 0);
+            _selectedRange = CPMakeRange([[self _tokens] count], 0);
     }
     else if (extend)
-        _selectedRange = CPUnionRange(_selectedRange, _CPMakeRange(indexOfToken, 1));
+        _selectedRange = CPUnionRange(_selectedRange, CPMakeRange(indexOfToken, 1));
     else
-        _selectedRange = _CPMakeRange(indexOfToken, 1);
+        _selectedRange = CPMakeRange(indexOfToken, 1);
 
     [self setNeedsLayout];
 }
@@ -250,7 +247,7 @@ CPTokenFieldDeleteButtonType     = 1;
     var indexOfToken = [[self _tokens] indexOfObject:token];
 
     if (CPLocationInRange(indexOfToken, _selectedRange))
-        _selectedRange = _CPMakeRange(MAX(indexOfToken, _selectedRange.location), MIN(_selectedRange.length, indexOfToken - _selectedRange.location));
+        _selectedRange = CPMakeRange(MAX(indexOfToken, _selectedRange.location), MIN(_selectedRange.length, indexOfToken - _selectedRange.location));
 
     [self setNeedsLayout];
 }
@@ -303,7 +300,7 @@ CPTokenFieldDeleteButtonType     = 1;
     [self setObjectValue:tokens];
     // setObjectValue moves the cursor to the end of the selection. We want it to stay
     // where the selected tokens were.
-    _selectedRange = _CPMakeRange(collapsedSelection, 0);
+    _selectedRange = CPMakeRange(collapsedSelection, 0);
 
     [self _controlTextDidChange];
 }
@@ -333,13 +330,18 @@ CPTokenFieldDeleteButtonType     = 1;
     [self scrollRectToVisible:[self bounds]];
 
     if ([[self window] isKeyWindow])
-        [self _becomeFirstKeyResponder];
+        return [self _becomeFirstKeyResponder];
 
     return YES;
 }
 
-- (void)_becomeFirstKeyResponder
+- (BOOL)_becomeFirstKeyResponder
 {
+    // If the token field is still not completely on screen, refuse to become
+    // first responder, because the browser will scroll it into view out of our control.
+    if (![self _isWithinUsablePlatformRect])
+        return NO;
+
     [self setThemeState:CPThemeStateEditing];
 
     [self _updatePlaceholderState];
@@ -359,11 +361,16 @@ CPTokenFieldDeleteButtonType     = 1;
 
     switch ([self alignment])
     {
-        case CPCenterTextAlignment: element.style.textAlign = "center";
-                                    break;
-        case CPRightTextAlignment:  element.style.textAlign = "right";
-                                    break;
-        default:                    element.style.textAlign = "left";
+        case CPCenterTextAlignment:
+            element.style.textAlign = "center";
+            break;
+
+        case CPRightTextAlignment:
+            element.style.textAlign = "right";
+            break;
+
+        default:
+            element.style.textAlign = "left";
     }
 
     var contentRect = [self contentRectForBounds:[self bounds]];
@@ -401,6 +408,8 @@ CPTokenFieldDeleteButtonType     = 1;
     }
 
 #endif
+
+    return YES;
 }
 
 - (BOOL)resignFirstResponder
@@ -482,7 +491,7 @@ CPTokenFieldDeleteButtonType     = 1;
 
 - (void)_mouseUpOnToken:(_CPTokenFieldToken)aToken withEvent:(CPEvent)anEvent
 {
-    if (_mouseDownEvent && _CGPointEqualToPoint([_mouseDownEvent locationInWindow], [anEvent locationInWindow]))
+    if (_mouseDownEvent && CGPointEqualToPoint([_mouseDownEvent locationInWindow], [anEvent locationInWindow]))
     {
         [self _selectToken:aToken byExtendingSelection:[anEvent modifierFlags] & CPShiftKeyMask];
         [[self window] makeFirstResponder:self];
@@ -667,7 +676,7 @@ CPTokenFieldDeleteButtonType     = 1;
                         CPTokenFieldInputOwner ? [CPTokenFieldInputOwner._tokenScrollView documentView]._DOMElement : nil,
                         CPTokenFieldDOMInputElement,
                         CPTokenFieldInputResigning,
-                        AT_REF(CPTokenFieldInputDidBlur));
+                        @ref(CPTokenFieldInputDidBlur));
         };
 
         // FIXME make this not onblur
@@ -818,7 +827,7 @@ CPTokenFieldDeleteButtonType     = 1;
         if (_selectedRange.length)
         {
             // Place the cursor at the end of the selection and collapse.
-            _selectedRange.location = _CPMaxRange(_selectedRange);
+            _selectedRange.location = CPMaxRange(_selectedRange);
             _selectedRange.length = 0;
         }
         else
@@ -839,7 +848,7 @@ CPTokenFieldDeleteButtonType     = 1;
 
 - (void)moveRightAndModifySelection:(id)sender
 {
-    if (_CPMaxRange(_selectedRange) < [[self _tokens] count] && [self _editorValue] == "")
+    if (CPMaxRange(_selectedRange) < [[self _tokens] count] && [self _editorValue] == "")
     {
         // Leave the selection location in place but include the next token to the right.
         _selectedRange.length++;
@@ -918,7 +927,7 @@ CPTokenFieldDeleteButtonType     = 1;
 
         // Finish any editing.
         [self _autocomplete];
-        _selectedRange = _CPMakeRange(0, [[self _tokens] count]);
+        _selectedRange = CPMakeRange(0, [[self _tokens] count]);
 
         [self setNeedsLayout];
     }
@@ -1010,7 +1019,7 @@ CPTokenFieldDeleteButtonType     = 1;
         return;
 
     // Move each token into the right position.
-    var contentRect = _CGRectMakeCopy([contentView bounds]),
+    var contentRect = CGRectMakeCopy([contentView bounds]),
         contentOrigin = contentRect.origin,
         contentSize = contentRect.size,
         offset = CGPointMake(contentOrigin.x, contentOrigin.y),
@@ -1027,11 +1036,11 @@ CPTokenFieldDeleteButtonType     = 1;
     // Get the height of a typical token, or a token token if you will.
     [tokenToken sizeToFit];
 
-    var tokenHeight = _CGRectGetHeight([tokenToken bounds]);
+    var tokenHeight = CGRectGetHeight([tokenToken bounds]);
 
     var fitAndFrame = function(width, height)
     {
-        var r = _CGRectMake(0, 0, width, height);
+        var r = CGRectMake(0, 0, width, height);
 
         if (offset.x + width >= contentSize.width && offset.x > contentOrigin.x)
         {
@@ -1044,8 +1053,8 @@ CPTokenFieldDeleteButtonType     = 1;
 
         // Make sure the frame fits.
         var scrollHeight = offset.y + tokenHeight + CEIL(spaceBetweenTokens.height / 2.0);
-        if (_CGRectGetHeight([contentView bounds]) < scrollHeight)
-            [contentView setFrameSize:_CGSizeMake(_CGRectGetWidth([_tokenScrollView bounds]), scrollHeight)];
+        if (CGRectGetHeight([contentView bounds]) < scrollHeight)
+            [contentView setFrameSize:CGSizeMake(CGRectGetWidth([_tokenScrollView bounds]), scrollHeight)];
 
         offset.x += width + spaceBetweenTokens.width;
 
@@ -1079,12 +1088,12 @@ CPTokenFieldDeleteButtonType     = 1;
 
         // When editing, always scroll to the cursor.
         if (_selectedRange.length == 0)
-            [[_tokenScrollView documentView] scrollPoint:_CGPointMake(0, _inputFrame.origin.y)];
+            [[_tokenScrollView documentView] scrollPoint:CGPointMake(0, _inputFrame.origin.y)];
     };
 
     for (var i = 0, count = [tokens count]; i < count; i++)
     {
-        if (isEditing && !_selectedRange.length && i == _CPMaxRange(_selectedRange))
+        if (isEditing && !_selectedRange.length && i == CPMaxRange(_selectedRange))
             placeEditor(false);
 
         var tokenView = [tokens objectAtIndex:i];
@@ -1105,7 +1114,7 @@ CPTokenFieldDeleteButtonType     = 1;
         [tokenView setButtonType:_buttonType];
     }
 
-    if (isEditing && !_selectedRange.length && _CPMaxRange(_selectedRange) >= [tokens count])
+    if (isEditing && !_selectedRange.length && CPMaxRange(_selectedRange) >= [tokens count])
         placeEditor(true);
 
     // Hide the editor if there are selected tokens, but still keep it active
@@ -1126,8 +1135,8 @@ CPTokenFieldDeleteButtonType     = 1;
 
     // Trim off any excess height downwards (in case we shrank).
     var scrollHeight = offset.y + tokenHeight;
-    if (_CGRectGetHeight([contentView bounds]) > scrollHeight)
-        [contentView setFrameSize:_CGSizeMake(_CGRectGetWidth([_tokenScrollView bounds]), scrollHeight)];
+    if (CGRectGetHeight([contentView bounds]) > scrollHeight)
+        [contentView setFrameSize:CGSizeMake(CGRectGetWidth([_tokenScrollView bounds]), scrollHeight)];
 
     if (_shouldScrollTo !== CPScrollDestinationNone)
     {
@@ -1139,7 +1148,7 @@ CPTokenFieldDeleteButtonType     = 1;
             if (scrollToToken === CPScrollDestinationLeft)
                 scrollToToken = tokens[_selectedRange.location]
             else if (scrollToToken === CPScrollDestinationRight)
-                scrollToToken = tokens[MAX(0, _CPMaxRange(_selectedRange) - 1)];
+                scrollToToken = tokens[MAX(0, CPMaxRange(_selectedRange) - 1)];
             [self _scrollTokenViewToVisible:scrollToToken];
         }
 
@@ -1152,7 +1161,7 @@ CPTokenFieldDeleteButtonType     = 1;
     if (!aToken)
         return;
 
-    return [[_tokenScrollView documentView] scrollPoint:_CGPointMake(0, [aToken frameOrigin].y)];
+    return [[_tokenScrollView documentView] scrollPoint:CGPointMake(0, [aToken frameOrigin].y)];
 }
 
 @end
@@ -1184,7 +1193,7 @@ CPTokenFieldDeleteButtonType     = 1;
 - (CGPoint)_completionOrigin:(_CPAutocompleteMenu)anAutocompleteMenu
 {
     var relativeFrame = _inputFrame ? [[_tokenScrollView documentView] convertRect:_inputFrame toView:self ] : [self bounds];
-    return _CGPointMake(_CGRectGetMinX(relativeFrame), _CGRectGetMaxY(relativeFrame));
+    return CGPointMake(CGRectGetMinX(relativeFrame), CGRectGetMaxY(relativeFrame));
 }
 
 /*!
@@ -1404,7 +1413,7 @@ CPTokenFieldDeleteButtonType     = 1;
 
 - (CGSize)_minimumFrameSize
 {
-    var size = _CGSizeMakeZero(),
+    var size = CGSizeMakeZero(),
         minSize = [self currentValueForThemeAttribute:@"min-size"],
         contentInset = [self currentValueForThemeAttribute:@"content-inset"];
 
@@ -1479,7 +1488,7 @@ CPTokenFieldDeleteButtonType     = 1;
                     buttonOffset = [_disclosureButton currentValueForThemeAttribute:@"offset"],
                     buttonSize = [_disclosureButton currentValueForThemeAttribute:@"min-size"];
 
-                [_disclosureButton setFrame:_CGRectMake(CGRectGetMaxX(frame) - buttonOffset.x, CGRectGetMinY(frame) + buttonOffset.y, buttonSize.width, buttonSize.height)];
+                [_disclosureButton setFrame:CGRectMake(CGRectGetMaxX(frame) - buttonOffset.x, CGRectGetMinY(frame) + buttonOffset.y, buttonSize.width, buttonSize.height)];
                 break;
             case CPTokenFieldDeleteButtonType:
                 [_deleteButton setEnabled:[self isEditable] && [self isEnabled]];
@@ -1488,7 +1497,7 @@ CPTokenFieldDeleteButtonType     = 1;
                     buttonOffset = [_deleteButton currentValueForThemeAttribute:@"offset"],
                     buttonSize = [_deleteButton currentValueForThemeAttribute:@"min-size"];
 
-                [_deleteButton setFrame:_CGRectMake(CGRectGetMaxX(frame) - buttonOffset.x, CGRectGetMinY(frame) + buttonOffset.y, buttonSize.width, buttonSize.height)];
+                [_deleteButton setFrame:CGRectMake(CGRectGetMaxX(frame) - buttonOffset.x, CGRectGetMinY(frame) + buttonOffset.y, buttonSize.width, buttonSize.height)];
                 break;
         }
     }
@@ -1530,7 +1539,7 @@ CPTokenFieldDeleteButtonType     = 1;
 {
     var attributes = [CPButton themeAttributes];
 
-    [attributes setObject:_CGPointMake(15, 5) forKey:@"offset"];
+    [attributes setObject:CGPointMake(15, 5) forKey:@"offset"];
 
     return attributes;
 }
@@ -1560,7 +1569,7 @@ CPTokenFieldDeleteButtonType     = 1;
 {
     var attributes = [CPButton themeAttributes];
 
-    [attributes setObject:_CGPointMake(15, 5) forKey:@"offset"];
+    [attributes setObject:CGPointMake(15, 5) forKey:@"offset"];
 
     return attributes;
 }

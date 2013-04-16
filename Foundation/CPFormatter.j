@@ -33,8 +33,6 @@
            make sure that you cannot configure the public subclasses CPDateFormatter and CPNumberFormatter to satisfy your requirements.
 */
 
-#import "Ref.h"
-
 @import "CPException.j"
 @import "CPObject.j"
 
@@ -124,10 +122,10 @@
 */
 - (BOOL)isPartialStringValid:(CPString)aPartialString newEditingString:(CPStringRef)aNewString errorDescription:(CPStringRef)anError
 {
-    AT_DEREF(aPartialString, nil);
+    @deref(aPartialString) = nil;
 
     if (anError)
-        AT_DEREF(anError, nil);
+        @deref(anError) = nil;
 
     return YES;
 }
@@ -137,32 +135,32 @@
     not necessarily at the end of the string, and preserve the selection (or set a different one, such as selecting the erroneous part of
     the string the user has typed).
 
-    In a subclass implementation, evaluate aPartialString according to the context. Return \c YES if aPartialString is acceptable and \c NO if aPartialString
-    is unacceptable. Assign a new string by reference to aPartialString and a new range by reference to aProposedSelectedRange and return \c NO if you want to replace the string and
+    In a subclass implementation, evaluate aPartialStringRef according to the context. Return \c YES if aPartialStringRef is acceptable and \c NO if aPartialStringRef
+    is unacceptable. Assign a new string by reference to aPartialStringRef and a new range by reference to aProposedSelectedRangeRef and return \c NO if you want to replace the string and
     change the selection range. If you return \c NO, you can also return by reference a CPString object (in anError) that explains the reason why the
     validation failed; the delegate (if any) of the CPControl can then respond to the failure in
     control:didFailToValidatePartialString:errorDescription:.
 
-    @param aPartialString The new string to validate.
-    @param aProposedSelectedRange The selection range that will be used if the string is accepted or replaced.
+    @param aPartialStringRef The new string to validate.
+    @param aProposedSelectedRangeRef The selection range that will be used if the string is accepted or replaced.
     @param originalString The original string, before the proposed change.
     @param originalSelectedRange The selection range over which the change is to take place.
     @param anError If non-nil, if validation fails contains an CPString object that describes the problem.
-    @return \c YES if aPartialString is acceptable, otherwise \c NO.
+    @return \c YES if aPartialStringRef is acceptable, otherwise \c NO.
 
 */
-- (BOOL)isPartialStringValid:(CPStringRef)aPartialString proposedSelectedRange:(CPRangeRef)aProposedSelectedRange originalString:(CPString)originalString originalSelectedRange:(CPRange)originalSelectedRange errorDescription:(CPStringRef)anError
+- (BOOL)isPartialStringValid:(CPStringRef)aPartialStringRef proposedSelectedRange:(CPRangeRef)aProposedSelectedRangeRef originalString:(CPString)originalString originalSelectedRange:(CPRange)originalSelectedRange errorDescription:(CPStringRef)anError
 {
     var newString = nil,
-        valid = [self isPartialStringValid:aPartialString newEditingString:AT_REF(newString) errorDescription:anError];
+        valid = [self isPartialStringValid:aPartialStringRef newEditingString:@ref(newString) errorDescription:anError];
 
     if (!valid)
     {
-        AT_DEREF(aPartialString, newString);
+        @deref(aPartialStringRef) = newString;
 
         // If a new string is passed back, the selection is always put at the end
         if (newString !== nil)
-            AT_DEREF(aProposedSelectedRange, CPMakeRange(newString.length, 0));
+            @deref(aProposedSelectedRangeRef) = CPMakeRange(newString.length, 0);
     }
 
     return valid;

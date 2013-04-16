@@ -182,16 +182,15 @@ var _CPPopoverWindow_shouldClose_    = 1 << 0,
 {
     var mainWindow      = [positioningView window],
         platformWindow  = [mainWindow platformWindow],
-        nativeRect      = [platformWindow nativeContentRect],
+        nativeRect      = [platformWindow usableContentFrame],
         baseOrigin      = [positioningView convertPointToBase:aRect.origin],
         platformOrigin  = [mainWindow convertBaseToPlatformWindow:baseOrigin],
-        platformRect    = _CGRectMake(platformOrigin.x, platformOrigin.y, aRect.size.width, aRect.size.height),
-        originLeft      = _CGPointCreateCopy(platformOrigin),
-        originRight     = _CGPointCreateCopy(platformOrigin),
-        originTop       = _CGPointCreateCopy(platformOrigin),
-        originBottom    = _CGPointCreateCopy(platformOrigin),
-        frameSize       = [self frame].size,
-        menuBarHeight   = [CPMenu menuBarVisible] ? [CPMenu menuBarHeight] : 0;
+        platformRect    = CGRectMake(platformOrigin.x, platformOrigin.y, aRect.size.width, aRect.size.height),
+        originLeft      = CGPointCreateCopy(platformOrigin),
+        originRight     = CGPointCreateCopy(platformOrigin),
+        originTop       = CGPointCreateCopy(platformOrigin),
+        originBottom    = CGPointCreateCopy(platformOrigin),
+        frameSize       = [self frame].size;
 
     // CPMaxXEdge
     originRight.x += platformRect.size.width;
@@ -243,34 +242,34 @@ var _CPPopoverWindow_shouldClose_    = 1 << 0,
         [_windowView setArrowOffsetY:0];
         [_windowView setPreferredEdge:edge];
 
-        if (origin.x < 0)
+        if (origin.x < CGRectGetMinX(nativeRect))
         {
             [_windowView setArrowOffsetX:origin.x];
-            origin.x = 0;
+            origin.x = CGRectGetMinX(nativeRect);
         }
 
-        if (origin.x + frameSize.width > nativeRect.size.width)
+        if (origin.x + frameSize.width > CGRectGetMaxX(nativeRect))
         {
-            [_windowView setArrowOffsetX:(origin.x + frameSize.width - nativeRect.size.width)];
-            origin.x = nativeRect.size.width - frameSize.width;
+            [_windowView setArrowOffsetX:(origin.x + frameSize.width - CGRectGetMaxX(nativeRect))];
+            origin.x = CGRectGetMaxX(nativeRect) - frameSize.width;
         }
 
-        if (origin.y < 0)
+        if (origin.y < CGRectGetMinY(nativeRect))
         {
-            [_windowView setArrowOffsetY:origin.y - menuBarHeight];
-            origin.y = menuBarHeight;
+            [_windowView setArrowOffsetY:origin.y - CGRectGetMinY(nativeRect)];
+            origin.y = CGRectGetMinY(nativeRect);
         }
 
-        if (origin.y + frameSize.height > nativeRect.size.height)
+        if (origin.y + frameSize.height > CGRectGetMaxY(nativeRect))
         {
-            [_windowView setArrowOffsetY:(frameSize.height + origin.y - nativeRect.size.height)];
-            origin.y = nativeRect.size.height - frameSize.height;
+            [_windowView setArrowOffsetY:(frameSize.height + origin.y - CGRectGetMaxY(nativeRect))];
+            origin.y = CGRectGetMaxY(nativeRect) - frameSize.height;
         }
 
         switch (edge)
         {
             case CPMaxXEdge:
-                if (origin.x >= _CGRectGetMaxX(platformRect))
+                if (origin.x >= CGRectGetMaxX(platformRect))
                     return origin;
                 break;
 
@@ -280,7 +279,7 @@ var _CPPopoverWindow_shouldClose_    = 1 << 0,
                 break;
 
             case CPMaxYEdge:
-                if (origin.y >= _CGRectGetMaxY(platformRect))
+                if (origin.y >= CGRectGetMaxY(platformRect))
                     return origin;
                 break;
 
@@ -317,7 +316,7 @@ var _CPPopoverWindow_shouldClose_    = 1 << 0,
 {
     var wasVisible = [self isVisible];
 
-    if (!aRect || _CGRectIsEmpty(aRect))
+    if (!aRect || CGRectIsEmpty(aRect))
         aRect = [positioningView bounds];
 
     var point = [self computeOriginFromRect:aRect ofView:positioningView preferredEdge:anEdge];
@@ -543,6 +542,7 @@ var _CPPopoverWindow_shouldClose_    = 1 << 0,
 #endif
 
     [_targetView removeObserver:self forKeyPath:@"frame"];
+    [_parentWindow removeChildWindow:self];
     [super _orderOutRecursively:recursive];
 
     _shouldPerformAnimation = YES;
@@ -569,7 +569,9 @@ var _CPPopoverWindow_shouldClose_    = 1 << 0,
 
     var mouseWindow = [anEvent window];
 
-    if (mouseWindow === self)
+    // Consider clicks in child windows to be "inside". This keeps a transient popover from
+    // closing if e.g. the window containing the menu of a token field is clicked.
+    if (mouseWindow === self || [mouseWindow _hasAncestorWindow:self])
         [self _trapNextMouseDown];
     else
     {

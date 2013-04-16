@@ -106,7 +106,7 @@ var PrimaryPlatformWindow   = NULL;
 
     if (self)
     {
-        _contentRect = _CGRectMakeCopy(aRect);
+        _contentRect = CGRectMakeCopy(aRect);
 
 #if PLATFORM(DOM)
         _windowLevels = [];
@@ -121,19 +121,19 @@ var PrimaryPlatformWindow   = NULL;
 
 - (id)init
 {
-    return [self initWithContentRect:_CGRectMake(0.0, 0.0, 400.0, 500.0)];
+    return [self initWithContentRect:CGRectMake(0.0, 0.0, 400.0, 500.0)];
 }
 
 - (CGRect)contentRect
 {
-    return _CGRectMakeCopy(_contentRect);
+    return CGRectMakeCopy(_contentRect);
 }
 
 - (CGRect)contentBounds
 {
     var contentBounds = [self contentRect];
 
-    contentBounds.origin = _CGPointMakeZero();
+    contentBounds.origin = CGPointMakeZero();
 
     return contentBounds;
 }
@@ -142,7 +142,7 @@ var PrimaryPlatformWindow   = NULL;
 {
     var frame = [self contentBounds];
 
-    frame.origin = _CGPointMakeZero();
+    frame.origin = CGPointMakeZero();
 
     if ([CPMenu menuBarVisible] && [CPPlatformWindow primaryPlatformWindow] === self)
     {
@@ -162,10 +162,10 @@ var PrimaryPlatformWindow   = NULL;
 
 - (void)setContentRect:(CGRect)aRect
 {
-    if (!aRect || _CGRectEqualToRect(_contentRect, aRect))
+    if (!aRect || CGRectEqualToRect(_contentRect, aRect))
         return;
 
-    _contentRect = _CGRectMakeCopy(aRect);
+    _contentRect = CGRectMakeCopy(aRect);
 
 #if PLATFORM(DOM)
      [self updateNativeContentRect];
@@ -181,14 +181,14 @@ var PrimaryPlatformWindow   = NULL;
 {
     var contentRect = [self contentRect];
 
-    return _CGPointMake(aPoint.x + _CGRectGetMinX(contentRect), aPoint.y + _CGRectGetMinY(contentRect));
+    return CGPointMake(aPoint.x + CGRectGetMinX(contentRect), aPoint.y + CGRectGetMinY(contentRect));
 }
 
 - (CGPoint)convertScreenToBase:(CGPoint)aPoint
 {
     var contentRect = [self contentRect];
 
-    return _CGPointMake(aPoint.x - _CGRectGetMinX(contentRect), aPoint.y - _CGRectGetMinY(contentRect));
+    return CGPointMake(aPoint.x - CGRectGetMinX(contentRect), aPoint.y - CGRectGetMinY(contentRect));
 }
 
 - (BOOL)isVisible

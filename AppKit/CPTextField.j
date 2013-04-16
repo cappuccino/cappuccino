@@ -20,8 +20,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#import "../Foundation/Ref.h"
-
 @import "CPControl.j"
 @import "CPStringDrawing.j"
 @import "CPCompatibility.j"
@@ -61,26 +59,33 @@ function CPTextFieldBlurFunction(anEvent, owner, domElement, inputElement, resig
     if (owner && domElement != inputElement.parentNode)
         return;
 
-    if (!resigning && [[owner window] isKeyWindow])
+    var ownerWindow = [owner window];
+
+    if (!resigning && [ownerWindow isKeyWindow])
     {
         /*
-            Browsers blur text fields when a click occurs anywhere outside the text field. That is normal for browsers, but in Cocoa the key view retains focus unless the click target accepts first responder. So if we lost focus but were not told to resign and our window is still key, restore focus.
+            Browsers blur text fields when a click occurs anywhere outside the text field. That is normal for browsers, but in Cocoa the key view retains focus unless the click target accepts first responder. So if we lost focus but were not told to resign and our window is still key, restore focus,
+            but only if the text field is completely within the browser window. If we restore focus when it
+            is off screen, the entire body scrolls out of our control.
         */
-        window.setTimeout(function()
+        if ([owner _isWithinUsablePlatformRect])
         {
-            inputElement.focus();
-        }, 0.0);
+            window.setTimeout(function()
+            {
+                inputElement.focus();
+            }, 0.0);
+        }
     }
 
-    CPTextFieldHandleBlur(anEvent, AT_REF(owner));
-    AT_DEREF(didBlurRef, YES);
+    CPTextFieldHandleBlur(anEvent, @ref(owner));
+    @deref(didBlurRef) = YES;
 
     return true;
 }
 
 function CPTextFieldHandleBlur(anEvent, ownerRef)
 {
-    AT_DEREF(ownerRef, nil);
+    @deref(ownerRef) = nil;
 
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 }
@@ -207,8 +212,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 + (id)themeAttributes
 {
     return @{
-            @"bezel-inset": _CGInsetMakeZero(),
-            @"content-inset": _CGInsetMake(1.0, 0.0, 0.0, 0.0),
+            @"bezel-inset": CGInsetMakeZero(),
+            @"content-inset": CGInsetMake(1.0, 0.0, 0.0, 0.0),
             @"bezel-color": [CPNull null],
         };
 }
@@ -233,10 +238,10 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
             return CPTextFieldBlurFunction(
                         anEvent,
                         CPTextFieldInputOwner,
-                        CPTextFieldInputOwner._DOMElement,
+                        CPTextFieldInputOwner ? CPTextFieldInputOwner._DOMElement : nil,
                         CPTextFieldDOMInputElement,
                         CPTextFieldInputResigning,
-                        AT_REF(CPTextFieldInputDidBlur));
+                        @ref(CPTextFieldInputDidBlur));
         };
 
         if (CPFeatureIsCompatible(CPInputOnInputEventFeature))
@@ -247,7 +252,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
                     return;
 
                 var cappEvent = [CPEvent keyEventWithType:CPKeyUp
-                                                 location:_CGPointMakeZero()
+                                                 location:CGPointMakeZero()
                                             modifierFlags:0
                                                 timestamp:[CPEvent currentTimestamp]
                                              windowNumber:[[CPApp keyWindow] windowNumber]
@@ -527,7 +532,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 /* @ignore */
 - (BOOL)acceptsFirstResponder
 {
-    return [self isEditable] && [self isEnabled];
+    return [self isEditable] && [self isEnabled] && [self _isWithinUsablePlatformRect];
 }
 
 /* @ignore */
@@ -539,7 +544,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     _isEditing = NO;
 
     if ([[self window] isKeyWindow])
-        [self _becomeFirstKeyResponder];
+        return [self _becomeFirstKeyResponder];
 
     return YES;
 }
@@ -549,10 +554,12 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     Since a first responder but non-key window text field can't receive input it should not even look like an active text field (Cocoa has a "slightly active" text field look it uses when another window is the key window, but Cappuccino doesn't today.)
 */
-- (void)_becomeFirstKeyResponder
+- (BOOL)_becomeFirstKeyResponder
 {
-    // Make sure the text field is visible so the browser will not scroll without the NSScrollView knowing about it.
-    [self scrollRectToVisible:[self bounds]];
+    // If the text field is still not completely on screen, refuse to become
+    // first responder, because the browser will scroll it into view out of our control.
+    if (![self _isWithinUsablePlatformRect])
+        return NO;
 
     [self setThemeState:CPThemeStateEditing];
 
@@ -578,11 +585,16 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     switch ([self alignment])
     {
-        case CPCenterTextAlignment: element.style.textAlign = "center";
-                                    break;
-        case CPRightTextAlignment:  element.style.textAlign = "right";
-                                    break;
-        default:                    element.style.textAlign = "left";
+        case CPCenterTextAlignment:
+            element.style.textAlign = "center";
+            break;
+
+        case CPRightTextAlignment:
+            element.style.textAlign = "right";
+            break;
+
+        default:
+            element.style.textAlign = "left";
     }
 
     var contentRect = [self contentRectForBounds:[self bounds]],
@@ -591,31 +603,32 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     switch (verticalAlign)
     {
         case CPTopVerticalTextAlignment:
-            var topPoint = _CGRectGetMinY(contentRect) + "px";
+            var topPoint = CGRectGetMinY(contentRect) + "px";
             break;
 
         case CPCenterVerticalTextAlignment:
-            var topPoint = (_CGRectGetMidY(contentRect) - (lineHeight / 2)) + "px";
+            var topPoint = (CGRectGetMidY(contentRect) - (lineHeight / 2)) + "px";
             break;
 
         case CPBottomVerticalTextAlignment:
-            var topPoint = (_CGRectGetMaxY(contentRect) - lineHeight) + "px";
+            var topPoint = (CGRectGetMaxY(contentRect) - lineHeight) + "px";
             break;
 
         default:
-            var topPoint = _CGRectGetMinY(contentRect) + "px";
+            var topPoint = CGRectGetMinY(contentRect) + "px";
             break;
     }
 
     element.style.top = topPoint;
-    var left = _CGRectGetMinX(contentRect);
+
+    var left = CGRectGetMinX(contentRect);
 
     // If the browser has a built in left padding, compensate for it. We need the input text to be exactly on top of the original text.
     if (CPFeatureIsCompatible(CPInput1PxLeftPadding))
         left -= 1;
 
     element.style.left = left + "px";
-    element.style.width = _CGRectGetWidth(contentRect) + "px";
+    element.style.width = CGRectGetWidth(contentRect) + "px";
     element.style.height = ROUND(lineHeight) + "px";
     element.style.lineHeight = ROUND(lineHeight) + "px";
     element.style.verticalAlign = "top";
@@ -660,6 +673,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     }, 0.0);
 
 #endif
+
+    return YES;
 }
 
 /* @ignore */
@@ -769,7 +784,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 - (void)_windowDidBecomeKey:(CPNotification)aNotification
 {
     if ([[self window] isKeyWindow] && [[self window] firstResponder] === self)
-        [self _becomeFirstKeyResponder];
+        if (![self _becomeFirstKeyResponder])
+            [[self window] makeFirstResponder:nil];
 }
 
 - (BOOL)_valueIsValid:(CPString)aValue
@@ -778,7 +794,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     var error = @"";
 
-    if ([self _setStringValue:aValue isNewValue:NO errorDescription:AT_REF(error)] === NO)
+    if ([self _setStringValue:aValue isNewValue:NO errorDescription:@ref(error)] === NO)
     {
         var acceptInvalidValue = NO;
 
@@ -1045,7 +1061,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     {
         var object = nil;
 
-        if ([formatter getObjectValue:AT_REF(object) forString:aValue errorDescription:anError])
+        if ([formatter getObjectValue:@ref(object) forString:aValue errorDescription:anError])
             objectValue = object;
         else
         {
@@ -1084,7 +1100,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
             // Formatting failed, get an "empty" object by formatting an empty string.
             // If that fails, the value is undefined.
-            if ([formatter getObjectValue:AT_REF(value) forString:@"" errorDescription:nil] === NO)
+            if ([formatter getObjectValue:@ref(value) forString:@"" errorDescription:nil] === NO)
                 value = undefined;
 
             [super setObjectValue:value];
@@ -1171,7 +1187,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         maxSize = [self currentValueForThemeAttribute:@"max-size"],
         lineBreakMode = [self lineBreakMode],
         text = (_stringValue || @" "),
-        textSize = _CGSizeMakeCopy(frameSize),
+        textSize = CGSizeMakeCopy(frameSize),
         font = [self currentValueForThemeAttribute:@"font"];
 
     textSize.width -= contentInset.left + contentInset.right;
@@ -1465,14 +1481,14 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 {
     var contentInset = [self currentValueForThemeAttribute:@"content-inset"];
 
-    return _CGRectInsetByInset(bounds, contentInset);
+    return CGRectInsetByInset(bounds, contentInset);
 }
 
 - (CGRect)bezelRectForBounds:(CGRect)bounds
 {
     var bezelInset = [self currentValueForThemeAttribute:@"bezel-inset"];
 
-    return _CGRectInsetByInset(bounds, bezelInset);
+    return CGRectInsetByInset(bounds, bezelInset);
 }
 
 - (CGRect)rectForEphemeralSubviewNamed:(CPString)aName
@@ -1490,7 +1506,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 {
     if (aName === "bezel-view")
     {
-        var view = [[CPView alloc] initWithFrame:_CGRectMakeZero()];
+        var view = [[CPView alloc] initWithFrame:CGRectMakeZero()];
 
         [view setHitTests:NO];
 
@@ -1498,7 +1514,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     }
     else
     {
-        var view = [[_CPImageAndTextView alloc] initWithFrame:_CGRectMakeZero()];
+        var view = [[_CPImageAndTextView alloc] initWithFrame:CGRectMakeZero()];
 
         [view setHitTests:NO];
 
@@ -1563,6 +1579,25 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
             [self setPlaceholderString:@"Multiple Values"];
             [self setStringValue:@""];
         }
+}
+
+#pragma mark Private
+
+- (BOOL)_isWithinUsablePlatformRect
+{
+    // Make sure the text field is completely within the platform window
+    // so the browser will not scroll it into view.
+
+    var wind = [self window],
+        frame = [self convertRectToBase:[self bounds]],
+        usableRect = [[wind platformWindow] usableContentFrame];
+
+    frame.origin = [wind convertBaseToGlobal:frame.origin];
+
+    return (CGRectGetMinX(frame) >= CGRectGetMinX(usableRect) &&
+            CGRectGetMaxX(frame) <= CGRectGetMaxX(usableRect) &&
+            CGRectGetMinY(frame) >= CGRectGetMinY(usableRect) &&
+            CGRectGetMaxY(frame) <= CGRectGetMaxY(usableRect));
 }
 
 @end

@@ -23,35 +23,110 @@
 @import "CGGeometry.j"
 
 
-#define _function(inline) function inline { return _##inline; }
+function CGAffineTransformMake(a, b, c, d, tx, ty)
+{
+    return { a:a, b:b, c:c, d:d, tx:tx, ty:ty };
+}
 
-_function(CGAffineTransformMake(a, b, c, d, tx, ty))
-_function(CGAffineTransformMakeIdentity())
-_function(CGAffineTransformMakeCopy(anAffineTransform))
+function CGAffineTransformMakeIdentity()
+{
+    return { a:1.0, b:0.0, c:0.0, d:1.0, tx:0.0, ty:0.0 };
+}
 
-_function(CGAffineTransformMakeScale(sx, sy))
-_function(CGAffineTransformMakeTranslation(tx, ty))
-_function(CGAffineTransformTranslate(aTransform, tx, ty))
-_function(CGAffineTransformScale(aTransform, sx, sy))
+function CGAffineTransformMakeCopy(anAffineTransform)
+{
+    return { a:anAffineTransform.a, b:anAffineTransform.b, c:anAffineTransform.c, d:anAffineTransform.d, tx:anAffineTransform.tx, ty:anAffineTransform.ty };
+}
 
-_function(CGAffineTransformConcat(lhs, rhs))
-_function(CGPointApplyAffineTransform(aPoint, aTransform))
-_function(CGSizeApplyAffineTransform(aSize, aTransform))
+function CGAffineTransformMakeScale(sx, sy)
+{
+    return { a:sx, b:0.0, c:0.0, d:sy, tx:0.0, ty:0.0 };
+}
 
-_function(CGAffineTransformIsIdentity(aTransform))
-_function(CGAffineTransformEqualToTransform(lhs, rhs))
+function CGAffineTransformMakeTranslation(tx, ty)
+{
+    return { a:1.0, b:0.0, c:0.0, d:1.0, tx:tx, ty:ty };
+}
 
-_function(CGStringCreateWithCGAffineTransform(aTransform))
+function CGAffineTransformTranslate(aTransform, tx, ty)
+{
+    return CGAffineTransformMake(aTransform.a, aTransform.b, aTransform.c, aTransform.d, aTransform.tx + aTransform.a * tx + aTransform.c * ty, aTransform.ty + aTransform.b * tx + aTransform.d * ty);
+}
+
+function CGAffineTransformScale(aTransform, sx, sy)
+{
+    return CGAffineTransformMake(aTransform.a * sx, aTransform.b * sx, aTransform.c * sy, aTransform.d * sy, aTransform.tx, aTransform.ty);
+}
+
+
+function CGAffineTransformConcat(lhs, rhs)
+{
+    return CGAffineTransformMake(lhs.a * rhs.a + lhs.b * rhs.c, lhs.a * rhs.b + lhs.b * rhs.d, lhs.c * rhs.a + lhs.d * rhs.c, lhs.c * rhs.b + lhs.d * rhs.d, lhs.tx * rhs.a + lhs.ty * rhs.c + rhs.tx, lhs.tx * rhs.b + lhs.ty * rhs.d + rhs.ty);
+}
+
+function CGAffineTransformConcatTo(lhs, rhs, to)
+{
+    var tx = lhs.tx * rhs.a + lhs.ty * rhs.c + rhs.tx;
+
+    to.ty = lhs.tx * rhs.b + lhs.ty * rhs.d + rhs.ty;
+    to.tx = tx;
+
+    var a = lhs.a * rhs.a + lhs.b * rhs.c,
+        b = lhs.a * rhs.b + lhs.b * rhs.d,
+        c = lhs.c * rhs.a + lhs.d * rhs.c;
+
+    to.d = lhs.c * rhs.b + lhs.d * rhs.d;
+    to.a = a;
+    to.b = b;
+    to.c = c;
+}
+
+function CGPointApplyAffineTransform(aPoint, aTransform)
+{
+    return { x:aPoint.x * aTransform.a + aPoint.y * aTransform.c + aTransform.tx,
+             y:aPoint.x * aTransform.b + aPoint.y * aTransform.d + aTransform.ty };
+}
+
+function CGSizeApplyAffineTransform(aSize, aTransform)
+{
+    return { width:aSize.width * aTransform.a + aSize.height * aTransform.c,
+             height:aSize.width * aTransform.b + aSize.height * aTransform.d };
+}
+
+
+function CGAffineTransformIsIdentity(aTransform)
+{
+    return (aTransform.a === 1.0 &&
+            aTransform.b === 0.0 &&
+            aTransform.c === 0.0 &&
+            aTransform.d === 1.0 &&
+            aTransform.tx === 0.0 &&
+            aTransform.ty === 0.0);
+}
+
+function CGAffineTransformEqualToTransform(lhs, rhs)
+{
+    return (lhs.a === rhs.a &&
+            lhs.b === rhs.b &&
+            lhs.c === rhs.c &&
+            lhs.d === rhs.d &&
+            lhs.tx === rhs.tx &&
+            lhs.ty === rhs.ty);
+}
+
+
+function CGStringCreateWithCGAffineTransform(aTransform)
+{
+    return (" [[ " + aTransform.a + ", " + aTransform.b + ", 0 ], [ " + aTransform.c + ", " + aTransform.d + ", 0 ], [ " + aTransform.tx + ", " + aTransform.ty + ", 1]]");
+}
+
 
 /*
     FIXME: !!!!
     @return void
     @group CGAffineTransform
 */
-function CGAffineTransformCreateCopy(aTransform)
-{
-    return _CGAffineTransformMakeCopy(aTransform);
-}
+CGAffineTransformCreateCopy = CGAffineTransformMakeCopy;
 
 /*!
     Returns a transform that rotates a coordinate system.
@@ -66,7 +141,7 @@ function CGAffineTransformMakeRotation(anAngle)
     var sin = SIN(anAngle),
         cos = COS(anAngle);
 
-    return _CGAffineTransformMake(cos, sin, -sin, cos, 0.0, 0.0);
+    return CGAffineTransformMake(cos, sin, -sin, cos, 0.0, 0.0);
 }
 
 /*!
@@ -121,20 +196,20 @@ function CGAffineTransformInvert(aTransform)
 */
 function CGRectApplyAffineTransform(aRect, anAffineTransform)
 {
-    var top = _CGRectGetMinY(aRect),
-        left = _CGRectGetMinX(aRect),
-        right = _CGRectGetMaxX(aRect),
-        bottom = _CGRectGetMaxY(aRect),
-        topLeft = CGPointApplyAffineTransform(_CGPointMake(left, top), anAffineTransform),
-        topRight = CGPointApplyAffineTransform(_CGPointMake(right, top), anAffineTransform),
-        bottomLeft = CGPointApplyAffineTransform(_CGPointMake(left, bottom), anAffineTransform),
-        bottomRight = CGPointApplyAffineTransform(_CGPointMake(right, bottom), anAffineTransform),
+    var top = CGRectGetMinY(aRect),
+        left = CGRectGetMinX(aRect),
+        right = CGRectGetMaxX(aRect),
+        bottom = CGRectGetMaxY(aRect),
+        topLeft = CGPointApplyAffineTransform(CGPointMake(left, top), anAffineTransform),
+        topRight = CGPointApplyAffineTransform(CGPointMake(right, top), anAffineTransform),
+        bottomLeft = CGPointApplyAffineTransform(CGPointMake(left, bottom), anAffineTransform),
+        bottomRight = CGPointApplyAffineTransform(CGPointMake(right, bottom), anAffineTransform),
         minX = MIN(topLeft.x, topRight.x, bottomLeft.x, bottomRight.x),
         maxX = MAX(topLeft.x, topRight.x, bottomLeft.x, bottomRight.x),
         minY = MIN(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y),
         maxY = MAX(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y);
 
-    return _CGRectMake(minX, minY, (maxX - minX), (maxY - minY));
+    return CGRectMake(minX, minY, (maxX - minX), (maxY - minY));
 }
 
 /*!

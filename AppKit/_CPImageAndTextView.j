@@ -80,7 +80,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
 
     if (self)
     {
-        _textShadowOffset = _CGSizeMakeZero();
+        _textShadowOffset = CGSizeMakeZero();
         [self setVerticalAlignment:CPTopVerticalTextAlignment];
 
         if (aControl)
@@ -277,10 +277,10 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
 
 - (void)setTextShadowOffset:(CGSize)anOffset
 {
-    if (_CGSizeEqualToSize(_textShadowOffset, anOffset))
+    if (CGSizeEqualToSize(_textShadowOffset, anOffset))
         return;
 
-    _textShadowOffset = _CGSizeMakeCopy(anOffset);
+    _textShadowOffset = CGSizeMakeCopy(anOffset);
 
     [self setNeedsLayout];
 }
@@ -294,7 +294,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
 {
     [self layoutIfNeeded];
 
-    var textFrame = _CGRectMakeZero();
+    var textFrame = CGRectMakeZero();
 
 #if PLATFORM(DOM)
     if (_DOMTextElement)
@@ -318,9 +318,6 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
 {
     if (_image == anImage)
         return;
-
-    if ([_image delegate] === self)
-        [[CPNotificationCenter defaultCenter] removeObserver:self name:CPImageDidLoadNotification object:_image];
 
     _image = anImage;
     _flags |= _CPImageAndTextViewImageChangedFlag;
@@ -347,6 +344,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
 
 - (void)imageDidLoad:(CPNotification)aNotification
 {
+    [[CPNotificationCenter defaultCenter] removeObserver:self name:CPImageDidLoadNotification object:_image];
     _flags |= _CPImageAndTextViewImageChangedFlag;
     [self setNeedsLayout];
 }
@@ -602,7 +600,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
     }
 
     var size = [self bounds].size,
-        textRect = _CGRectMake(0.0, 0.0, size.width, size.height);
+        textRect = CGRectMake(0.0, 0.0, size.width, size.height);
 
     if (hasDOMImageElement)
     {
@@ -680,10 +678,10 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
 
     if (hasDOMTextElement)
     {
-        var textRectX = _CGRectGetMinX(textRect),
-            textRectY = _CGRectGetMinY(textRect),
-            textRectWidth = _CGRectGetWidth(textRect),
-            textRectHeight = _CGRectGetHeight(textRect);
+        var textRectX = CGRectGetMinX(textRect),
+            textRectY = CGRectGetMinY(textRect),
+            textRectWidth = CGRectGetWidth(textRect),
+            textRectHeight = CGRectGetHeight(textRect);
 
         if (textRectWidth <= 0 || textRectHeight <= 0)
         {
@@ -753,7 +751,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
 
 - (void)sizeToFit
 {
-    var size = _CGSizeMakeZero();
+    var size = CGSizeMakeZero();
 
     if ((_imagePosition !== CPNoImage) && _image)
     {

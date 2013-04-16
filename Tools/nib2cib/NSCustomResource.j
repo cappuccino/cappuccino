@@ -41,7 +41,8 @@ var FILE = require("file"),
         _className = CP_NSMapClassName([aCoder decodeObjectForKey:@"NSClassName"]);
         _resourceName = [aCoder decodeObjectForKey:@"NSResourceName"];
 
-        var size = CGSizeMakeZero();
+        var size = CGSizeMakeZero(),
+            framework = @"";
 
         if (_resourceName == "NSSwitch")
             return nil;
@@ -50,27 +51,49 @@ var FILE = require("file"),
             // Defer resolving this path until runtime.
             _resourceName = _resourceName.replace("NS", "CP");
         }
-        else if (![[aCoder resourcesPath] length])
-        {
-            CPLog.warn("Resources found in nib, but no resources path specified with -R option.");
-        }
         else
         {
-            var resourcePath = [aCoder resourcePathForName:_resourceName];
+            var match = /^(.+)@(.+)$/.exec(_resourceName),
+                framework = @"",
+                bundleIdentifier = @"";
 
-            if (!resourcePath)
-                CPLog.warn("Resource \"" + _resourceName + "\" not found in the resources path: " + [aCoder resourcesPath]);
+            if (match)
+            {
+                framework = match[1];
+                _resourceName = match[2];
+            }
+
+            var resourceInfo = [aCoder resourceInfoForName:_resourceName inFramework:framework];
+
+            if (!resourceInfo)
+                CPLog.warn("Resource \"" + _resourceName + "\" not found in the Resources directories");
             else
-                size = imageSize(FILE.canonical(resourcePath)) || CGSizeMakeZero();
+            {
+                size = imageSize(FILE.canonical(resourceInfo.path)) || CGSizeMakeZero();
+                framework = resourceInfo.framework;
+            }
 
             // Account for the fact that an extension may have been inferred.
-            if (resourcePath && FILE.extension(resourcePath) !== FILE.extension(_resourceName))
-                _resourceName += FILE.extension(resourcePath);
+            if (resourceInfo &&
+                resourceInfo.path &&
+                FILE.extension(resourceInfo.path) !== FILE.extension(_resourceName))
+            {
+                _resourceName += FILE.extension(resourceInfo.path);
+            }
 
-            CPLog.debug("   Path: %s\n   Size: %d x %d", FILE.canonical(resourcePath), size.width, size.height);
+            CPLog.debug("    Resource: %s\n   Framework: %s\n        Path: %s\n        Size: %d x %d", _resourceName, framework, resourceInfo ? FILE.canonical(resourceInfo.path) : "", size.width, size.height);
         }
 
-        _properties = [CPDictionary dictionaryWithObject:size forKey:@"size"];
+        if (resourceInfo && resourceInfo.path && resourceInfo.framework)
+        {
+            var frameworkPath = FILE.dirname(FILE.dirname(resourceInfo.path)),
+                bundle = [CPBundle bundleWithPath:frameworkPath];
+
+            [bundle loadWithDelegate:nil];
+            bundleIdentifier = [bundle bundleIdentifier] || @"";
+        }
+
+        _properties = @{ @"size":size, @"bundleIdentifier":bundleIdentifier, @"framework":framework };
     }
 
     return self;

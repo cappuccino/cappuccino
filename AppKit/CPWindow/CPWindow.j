@@ -56,7 +56,10 @@
 var CPWindowSaveImage       = nil,
 
     CPWindowResizeTime      = 0.2,
-    CPWindowResizeStyleGlobalChangeNotification = @"CPWindowResizeStyleGlobalChangeNotification";
+    CPWindowResizeStyleGlobalChangeNotification = @"CPWindowResizeStyleGlobalChangeNotification",
+
+    CPWindowMinVisibleHorizontalMargin = 40,
+    CPWindowMinVisibleVerticalMargin = 2;
 
 /*
     Keys for which action messages will be sent by default when unhandled, e.g. complete:.
@@ -144,6 +147,7 @@ var CPWindowActionMessageKeys = [
     BOOL                                _hasShadow;
     BOOL                                _isMovableByWindowBackground;
     BOOL                                _isMovable;
+    BOOL                                _constrainsToUsableScreen;
     unsigned                            _shadowStyle;
     BOOL                                _showsResizeIndicator;
 
@@ -226,7 +230,7 @@ var CPWindowActionMessageKeys = [
 
 - (id)init
 {
-    return [self initWithContentRect:_CGRectMakeZero() styleMask:CPTitledWindowMask];
+    return [self initWithContentRect:CGRectMakeZero() styleMask:CPTitledWindowMask];
 }
 
 /*!
@@ -253,6 +257,7 @@ CPTexturedBackgroundWindowMask
         var windowViewClass = [[self class] _windowViewClassForStyleMask:aStyleMask];
 
         _frame = [windowViewClass frameRectForContentRect:aContentRect];
+        _constrainsToUsableScreen = YES;
 
         [self _setSharesChromeWithPlatformWindow:![CPPlatform isBrowser]];
 
@@ -298,19 +303,19 @@ CPTexturedBackgroundWindowMask
         [self setLevel:CPNormalWindowLevel];
 
         // Create our border view which is the actual root of our view hierarchy.
-        _windowView = [[windowViewClass alloc] initWithFrame:_CGRectMake(0.0, 0.0, _CGRectGetWidth(_frame), _CGRectGetHeight(_frame)) styleMask:aStyleMask];
+        _windowView = [[windowViewClass alloc] initWithFrame:CGRectMake(0.0, 0.0, CGRectGetWidth(_frame), CGRectGetHeight(_frame)) styleMask:aStyleMask];
 
         [_windowView _setWindow:self];
         [_windowView setNextResponder:self];
 
         // Size calculation needs _windowView
-        _minSize = [self _calculateMinSizeForProposedSize:_CGSizeMake(0.0, 0.0)];
-        _maxSize = _CGSizeMake(1000000.0, 1000000.0);
+        _minSize = [self _calculateMinSizeForProposedSize:CGSizeMake(0.0, 0.0)];
+        _maxSize = CGSizeMake(1000000.0, 1000000.0);
 
         [self setMovableByWindowBackground:aStyleMask & CPHUDBackgroundWindowMask];
 
         // Create a generic content view.
-        [self setContentView:[[CPView alloc] initWithFrame:_CGRectMakeZero()]];
+        [self setContentView:[[CPView alloc] initWithFrame:CGRectMakeZero()]];
 
         _firstResponder = self;
 
@@ -323,7 +328,7 @@ CPTexturedBackgroundWindowMask
 
         if (![self _sharesChromeWithPlatformWindow])
         {
-            CPDOMDisplayServerSetStyleLeftTop(_DOMElement, NULL, _CGRectGetMinX(_frame), _CGRectGetMinY(_frame));
+            CPDOMDisplayServerSetStyleLeftTop(_DOMElement, NULL, CGRectGetMinX(_frame), CGRectGetMinY(_frame));
         }
 
         CPDOMDisplayServerSetStyleSize(_DOMElement, 1, 1);
@@ -542,7 +547,7 @@ CPTexturedBackgroundWindowMask
         _fullPlatformWindowSession = _CPWindowFullPlatformWindowSessionMake(_windowView, [self contentRectForFrameRect:[self frame]], [self hasShadow], [self level]);
 
         var fullPlatformWindowViewClass = [[self class] _windowViewClassForFullPlatformWindowStyleMask:_styleMask],
-            windowView = [[fullPlatformWindowViewClass alloc] initWithFrame:_CGRectMakeZero() styleMask:_styleMask];
+            windowView = [[fullPlatformWindowViewClass alloc] initWithFrame:CGRectMakeZero() styleMask:_styleMask];
 
         [self _setWindowView:windowView];
 
@@ -628,7 +633,7 @@ CPTexturedBackgroundWindowMask
 */
 - (CGRect)frame
 {
-    return _CGRectMakeCopy(_frame);
+    return CGRectMakeCopy(_frame);
 }
 
 /*!
@@ -640,48 +645,54 @@ CPTexturedBackgroundWindowMask
 */
 - (void)setFrame:(CGRect)aFrame display:(BOOL)shouldDisplay animate:(BOOL)shouldAnimate
 {
-    aFrame = _CGRectMakeCopy(aFrame);
+    [self _setFrame:aFrame display:shouldDisplay animate:shouldAnimate constrainWidth:NO constrainHeight:YES];
+}
 
-    var value = aFrame.origin.x,
+- (void)_setFrame:(CGRect)aFrame display:(BOOL)shouldDisplay animate:(BOOL)shouldAnimate constrainWidth:(BOOL)shouldConstrainWidth constrainHeight:(BOOL)shouldConstrainHeight
+{
+    var frame = CGRectMakeCopy(aFrame),
+        value = frame.origin.x,
         delta = value - FLOOR(value);
 
     if (delta)
-        aFrame.origin.x = value > 0.879 ? CEIL(value) : FLOOR(value);
+        frame.origin.x = value > 0.879 ? CEIL(value) : FLOOR(value);
 
-    value = aFrame.origin.y;
+    value = frame.origin.y;
     delta = value - FLOOR(value);
 
     if (delta)
-        aFrame.origin.y = value > 0.879 ? CEIL(value) : FLOOR(value);
+        frame.origin.y = value > 0.879 ? CEIL(value) : FLOOR(value);
 
-    value = aFrame.size.width;
+    value = frame.size.width;
     delta = value - FLOOR(value);
 
     if (delta)
-        aFrame.size.width = value > 0.15 ? CEIL(value) : FLOOR(value);
+        frame.size.width = value > 0.15 ? CEIL(value) : FLOOR(value);
 
-    value = aFrame.size.height;
+    value = frame.size.height;
     delta = value - FLOOR(value);
 
     if (delta)
-        aFrame.size.height = value > 0.15 ? CEIL(value) : FLOOR(value);
+        frame.size.height = value > 0.15 ? CEIL(value) : FLOOR(value);
+
+    frame = [self _constrainFrame:frame toUsableScreenWidth:shouldConstrainWidth andHeight:shouldConstrainHeight];
 
     if (shouldAnimate)
     {
         [_frameAnimation stopAnimation];
-        _frameAnimation = [[_CPWindowFrameAnimation alloc] initWithWindow:self targetFrame:aFrame];
+        _frameAnimation = [[_CPWindowFrameAnimation alloc] initWithWindow:self targetFrame:frame];
 
         [_frameAnimation startAnimation];
     }
     else
     {
         var origin = _frame.origin,
-            newOrigin = aFrame.origin,
-            originMoved = !_CGPointEqualToPoint(origin, newOrigin);
+            newOrigin = frame.origin,
+            originMoved = !CGPointEqualToPoint(origin, newOrigin);
 
         if (originMoved)
         {
-            delta = _CGPointMake(newOrigin.x - origin.x, newOrigin.y - origin.y);
+            delta = CGPointMake(newOrigin.x - origin.x, newOrigin.y - origin.y);
             origin.x = newOrigin.x;
             origin.y = newOrigin.y;
 
@@ -692,13 +703,17 @@ CPTexturedBackgroundWindowMask
             }
 #endif
 
+            // reposition sheet
+            if ([self attachedSheet])
+                [self _setAttachedSheetFrameOrigin];
+
             [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowDidMoveNotification object:self];
         }
 
         var size = _frame.size,
-            newSize = aFrame.size;
+            newSize = frame.size;
 
-        if (!_CGSizeEqualToSize(size, newSize))
+        if (!CGSizeEqualToSize(size, newSize))
         {
             size.width = newSize.width;
             size.height = newSize.height;
@@ -720,13 +735,87 @@ CPTexturedBackgroundWindowMask
     }
 }
 
+- (CGRect)_constrainFrame:(CGRect)aFrame toUsableScreenWidth:(BOOL)constrainWidth andHeight:(BOOL)constrainHeight
+{
+    var frame = CGRectMakeCopy(aFrame);
+
+    if (!_constrainsToUsableScreen || !_isVisible)
+        return frame;
+
+    var usableRect = [_platformWindow usableContentFrame];
+
+    if (constrainWidth)
+    {
+        // First move the frame right to ensure the left side is within the usable rect.
+        frame.origin.x = MAX(frame.origin.x, usableRect.origin.x);
+
+        // Now move the frame left so that the right side is within the usable rect.
+        var maxX = MIN(CGRectGetMaxX(frame), CGRectGetMaxX(usableRect));
+        frame.origin.x = maxX - frame.size.width;
+
+        // Finally, adjust the left + width to ensure the left side is within the usable rect.
+        var usableWidth = CGRectGetWidth(usableRect);
+
+        if (CGRectGetWidth(frame) > usableWidth)
+        {
+            frame.origin.x = CGRectGetMinX(usableRect);
+            frame.size.width = usableWidth;
+        }
+    }
+
+    if (constrainHeight)
+    {
+        // First move the frame down to ensure the top is within the usable rect.
+        frame.origin.y = MAX(frame.origin.y, usableRect.origin.y);
+
+        // Now move the frame up so that the bottom is within the usable rect.
+        var maxY = MIN(CGRectGetMaxY(frame), CGRectGetMaxY(usableRect));
+        frame.origin.y = maxY - frame.size.height;
+
+        // Finally, adjust the top + height to ensure the top is within the usable rect.
+        var usableHeight = CGRectGetHeight(usableRect);
+
+        if (CGRectGetHeight(frame) > usableHeight)
+        {
+            frame.origin.y = CGRectGetMinY(usableRect);
+            frame.size.height = usableHeight;
+        }
+    }
+
+    return frame;
+}
+
+- (CGRect)_constrainOriginOfFrame:(CGRect)aFrame
+{
+    var frame = CGRectMakeCopy(aFrame);
+
+    if (!_constrainsToUsableScreen || !_isVisible)
+        return frame;
+
+    /*
+        - CPWindowMinVisibleHorizontalMargin is kept onscreen at the left/right of the window.
+        - The top of the window is kept below the top of the usable content.
+        - The top of the contentView + CPWindowMinVisibleVerticalMargin is kept above the bottom of the usable content.
+    */
+    var usableRect = [_platformWindow usableContentFrame],
+        maxUsableY = CGRectGetMaxY(usableRect) - CGRectGetMinY([_contentView frame]) - CPWindowMinVisibleVerticalMargin;
+
+    frame.origin.x = MAX(frame.origin.x, CGRectGetMinX(usableRect) + CPWindowMinVisibleHorizontalMargin - CGRectGetWidth(frame));
+    frame.origin.x = MIN(frame.origin.x, CGRectGetMaxX(usableRect) - CPWindowMinVisibleHorizontalMargin);
+
+    frame.origin.y = MAX(frame.origin.y, CGRectGetMinY(usableRect));
+    frame.origin.y = MIN(frame.origin.y, maxUsableY);
+
+    return frame;
+}
+
 - (void)_moveChildWindows:(CGPoint)delta
 {
     [_childWindows enumerateObjectsUsingBlock:function(childWindow)
         {
             var origin = [childWindow frame].origin;
 
-            [childWindow setFrameOrigin:_CGPointMake(origin.x + delta.x, origin.y + delta.y)];
+            [childWindow setFrameOrigin:CGPointMake(origin.x + delta.x, origin.y + delta.y)];
         }
     ];
 }
@@ -756,11 +845,8 @@ CPTexturedBackgroundWindowMask
 */
 - (void)setFrameOrigin:(CGPoint)anOrigin
 {
-    [self setFrame:_CGRectMake(anOrigin.x, anOrigin.y, _CGRectGetWidth(_frame), _CGRectGetHeight(_frame)) display:YES animate:NO];
-
-    // reposition sheet
-    if ([self attachedSheet])
-        [self _setAttachedSheetFrameOrigin];
+    var frame = [self _constrainOriginOfFrame:CGRectMake(anOrigin.x, anOrigin.y, _frame.size.width, _frame.size.height)];
+    [self _setFrame:frame display:YES animate:NO constrainWidth:NO constrainHeight:NO];
 }
 
 /*!
@@ -769,7 +855,7 @@ CPTexturedBackgroundWindowMask
 */
 - (void)setFrameSize:(CGSize)aSize
 {
-    [self setFrame:_CGRectMake(_CGRectGetMinX(_frame), _CGRectGetMinY(_frame), aSize.width, aSize.height) display:YES animate:NO];
+    [self setFrame:CGRectMake(CGRectGetMinX(_frame), CGRectGetMinY(_frame), aSize.width, aSize.height) display:YES animate:NO];
 }
 
 /*!
@@ -785,8 +871,11 @@ CPTexturedBackgroundWindowMask
 {
 #if PLATFORM(DOM)
     // -dw- if a sheet is clicked, the parent window should come up too
-    if ([self isSheet])
+    if (_isSheet)
         [_parentView orderFront:self];
+
+    if (!_isVisible)
+        [self _setFrame:_frame display:YES animate:NO constrainWidth:YES constrainHeight:YES];
 
     [_platformWindow orderFront:self];
     [_platformWindow order:CPWindowAbove window:self relativeTo:nil];
@@ -994,7 +1083,7 @@ CPTexturedBackgroundWindowMask
     if (_contentView)
         [_contentView removeFromSuperview];
 
-    var bounds = _CGRectMake(0.0, 0.0, _CGRectGetWidth(_frame), _CGRectGetHeight(_frame));
+    var bounds = CGRectMake(0.0, 0.0, CGRectGetWidth(_frame), CGRectGetHeight(_frame));
 
     _contentView = aView;
     [_contentView setFrame:[self contentRectForFrameRect:bounds]];
@@ -1061,12 +1150,12 @@ CPTexturedBackgroundWindowMask
 */
 - (void)setMinSize:(CGSize)aSize
 {
-    if (_CGSizeEqualToSize(_minSize, aSize))
+    if (CGSizeEqualToSize(_minSize, aSize))
         return;
 
     _minSize = [self _calculateMinSizeForProposedSize:aSize];
 
-    var size = _CGSizeMakeCopy([self frame].size),
+    var size = CGSizeMakeCopy([self frame].size),
         needsFrameChange = NO;
 
     if (size.width < _minSize.width)
@@ -1097,9 +1186,9 @@ CPTexturedBackgroundWindowMask
 - (CGSize)_calculateMinSizeForProposedSize:(CGSize)proposedSize
 {
     var contentFrame = [self contentRectForFrameRect:_frame],
-        minHeight = _CGRectGetHeight(_frame) - _CGRectGetHeight(contentFrame);
+        minHeight = CGRectGetHeight(_frame) - CGRectGetHeight(contentFrame);
 
-    return _CGSizeMake(MAX(proposedSize.width, 0), MAX(proposedSize.height, minHeight));
+    return CGSizeMake(MAX(proposedSize.width, 0), MAX(proposedSize.height, minHeight));
 }
 
 /*!
@@ -1110,12 +1199,12 @@ CPTexturedBackgroundWindowMask
 */
 - (void)setMaxSize:(CGSize)aSize
 {
-    if (_CGSizeEqualToSize(_maxSize, aSize))
+    if (CGSizeEqualToSize(_maxSize, aSize))
         return;
 
-    _maxSize = _CGSizeMakeCopy(aSize);
+    _maxSize = CGSizeMakeCopy(aSize);
 
-    var size = _CGSizeMakeCopy([self frame].size),
+    var size = CGSizeMakeCopy([self frame].size),
         needsFrameChange = NO;
 
     if (size.width > _maxSize.width)
@@ -1169,7 +1258,7 @@ CPTexturedBackgroundWindowMask
 
     if (_hasShadow && !_shadowView)
     {
-         _shadowView = [[_CPShadowWindowView alloc] initWithFrame:CGRectMakeZero()];
+        _shadowView = [[_CPShadowWindowView alloc] initWithFrame:CGRectMakeZero()];
 
         [_shadowView setWindowView:_windowView];
         [_shadowView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
@@ -1454,8 +1543,6 @@ CPTexturedBackgroundWindowMask
 
     [_windowView setTitle:aTitle];
     [_platformWindow _setTitle:_title window:self];
-
-    [self _synchronizeMenuBarTitleWithWindowTitle];
 }
 
 /*!
@@ -1552,7 +1639,7 @@ CPTexturedBackgroundWindowMask
     var size = [self frame].size,
         containerSize = [CPPlatform isBrowser] ? [_platformWindow contentBounds].size : [[self screen] visibleFrame].size;
 
-    var origin = _CGPointMake((containerSize.width - size.width) / 2.0, (containerSize.height - size.height) / 2.0);
+    var origin = CGPointMake((containerSize.width - size.width) / 2.0, (containerSize.height - size.height) / 2.0);
 
     if (origin.x < 0.0)
         origin.x = 0.0;
@@ -1570,13 +1657,12 @@ CPTexturedBackgroundWindowMask
 - (void)sendEvent:(CPEvent)anEvent
 {
     var type = [anEvent type],
-        point = [anEvent locationInWindow];
+        sheet = [self attachedSheet];
 
     // If a sheet is attached events get filtered here.
     // It is not clear what events should be passed to the view, perhaps all?
     // CPLeftMouseDown is needed for window moving and resizing to work.
     // CPMouseMoved is needed for rollover effects on title bar buttons.
-    var sheet = [self attachedSheet];
 
     if (sheet)
     {
@@ -1588,14 +1674,19 @@ CPTexturedBackgroundWindowMask
                 // -dw- if the window is clicked, the sheet should come to front, and become key,
                 // and the window should be immediately behind
                 [sheet makeKeyAndOrderFront:self];
-                break;
-            case CPMouseMoved:
-                [_windowView mouseMoved:anEvent];
-                break;
-        }
+                return;
 
-        return;
+            case CPMouseMoved:
+                // Allow these through to the parent
+                break;
+
+            default:
+                // Everything else is filtered
+                return;
+        }
     }
+
+    var point = [anEvent locationInWindow];
 
     switch (type)
     {
@@ -1717,7 +1808,8 @@ CPTexturedBackgroundWindowMask
         case CPMouseMoved:
             [_windowView setCursorForLocation:point resizing:NO];
 
-            if (!_acceptsMouseMovedEvents)
+            // Ignore mouse moves for parents of sheets
+            if (!_acceptsMouseMovedEvents || sheet)
                 return;
 
             if (!_mouseEnteredStack)
@@ -2234,6 +2326,13 @@ CPTexturedBackgroundWindowMask
 */
 - (void)makeMainWindow
 {
+    // Sheets cannot be main. Their parent window becomes main.
+    if (_isSheet)
+    {
+        [_parentView makeMainWindow];
+        return;
+    }
+
     if ([CPApp mainWindow] === self || ![self canBecomeMainWindow])
         return;
 
@@ -2248,7 +2347,6 @@ CPTexturedBackgroundWindowMask
 {
     CPApp._mainWindow = self;
 
-    [self _synchronizeMenuBarTitleWithWindowTitle];
     [self _synchronizeSaveMenuWithDocumentSaving];
 
     [_windowView noteMainWindowStateChanged];
@@ -2387,7 +2485,7 @@ CPTexturedBackgroundWindowMask
 
 - (void)_noteToolbarChanged
 {
-    var frame = _CGRectMakeCopy([self frame]),
+    var frame = CGRectMakeCopy([self frame]),
         newFrame;
 
     [_windowView noteToolbarChanged];
@@ -2396,7 +2494,7 @@ CPTexturedBackgroundWindowMask
         newFrame = [_platformWindow visibleFrame];
     else
     {
-        newFrame = _CGRectMakeCopy([self frame]);
+        newFrame = CGRectMakeCopy([self frame]);
 
         newFrame.origin = frame.origin;
     }
@@ -2453,6 +2551,22 @@ CPTexturedBackgroundWindowMask
     return _parentWindow;
 }
 
+/*!
+    Return YES if anAncestor is the parent or a higher ancestor of the receiver.
+
+    @ignore
+*/
+- (BOOL)_hasAncestorWindow:(CPWindow)anAncestor
+{
+    if (!_parentWindow || !anAncestor)
+        return NO;
+
+    if (anAncestor === _parentWindow)
+        return YES;
+
+    return [_parentWindow _hasAncestorWindow:anAncestor];
+}
+
 - (CPWindow)setParentWindow:(CPWindow)parentWindow
 {
     _parentWindow = parentWindow;
@@ -2473,25 +2587,24 @@ CPTexturedBackgroundWindowMask
     return CPWindowResizeTime;
 }
 
-/* @ignore */
 - (void)_setAttachedSheetFrameOrigin
 {
     // Position the sheet above the contentRect.
     var attachedSheet = [self attachedSheet],
         contentRect = [_contentView frame],
-        sheetFrame = _CGRectMakeCopy([attachedSheet frame]);
+        sheetFrame = CGRectMakeCopy([attachedSheet frame]);
 
-    sheetFrame.origin.y = _CGRectGetMinY(_frame) + _CGRectGetMinY(contentRect);
-    sheetFrame.origin.x = _CGRectGetMinX(_frame) + FLOOR((_CGRectGetWidth(_frame) - _CGRectGetWidth(sheetFrame)) / 2.0);
+    sheetFrame.origin.y = CGRectGetMinY(_frame) + CGRectGetMinY(contentRect);
+    sheetFrame.origin.x = CGRectGetMinX(_frame) + FLOOR((CGRectGetWidth(_frame) - CGRectGetWidth(sheetFrame)) / 2.0);
 
     [attachedSheet setFrame:sheetFrame display:YES animate:NO];
 }
 
-/* @ignore
+/*
     Starting point for sheet session, called from CPApplication beginSheet:
 */
 - (void)_attachSheet:(CPWindow)aSheet modalDelegate:(id)aModalDelegate
-        didEndSelector:(SEL)aDidEndSelector contextInfo:(id)aContextInfo
+        didEndSelector:(SEL)didEndSelector contextInfo:(id)contextInfo
 {
     if (_sheetContext)
     {
@@ -2500,24 +2613,21 @@ CPTexturedBackgroundWindowMask
         return;
     }
 
-    var sheetFrame = [aSheet frame];
+    _sheetContext = {
+        "sheet": aSheet,
+        "modalDelegate": aModalDelegate,
+        "endSelector": didEndSelector,
+        "contextInfo": contextInfo,
+        "returnCode": -1,
+        "opened": NO,
+        "isAttached": YES,
+        "savedConstrains": aSheet._constrainsToUsableScreen
+    };
 
-    _sheetContext = {"sheet": aSheet, "modalDelegate": aModalDelegate, "endSelector": aDidEndSelector,
-        "contextInfo": aContextInfo, "frame": _CGRectMakeCopy(sheetFrame), "returnCode": -1,
-        "opened": NO};
+    // Sheets are not constrained, they are controlled by their parent
+    aSheet._constrainsToUsableScreen = NO;
 
-    [self _attachSheetWindow];
-}
-
-/* @ignore
-    Called to animate the sheet in. The timer seems to solve a bug where sheets would
-    be partially animated under certain conditions.
-*/
-- (void)_attachSheetWindow
-{
-    _sheetContext["isAttached"] = YES;
-
-    // it would be ideal to block here and spin an event loop, until attach is complete
+    // A timer seems to be necessary for the animation to work correctly
     [CPTimer scheduledTimerWithTimeInterval:0.0
         target:self
         selector:@selector(_sheetShouldAnimateIn:)
@@ -2525,7 +2635,7 @@ CPTexturedBackgroundWindowMask
         repeats:NO];
 }
 
-/* @ignore
+/*
     Called to end the sheet. Note that orderOut: is needed to animate the sheet out, as in Cocoa.
     The sheet isn't completely gone until _cleanupSheetWindow gets called.
 */
@@ -2546,7 +2656,7 @@ CPTexturedBackgroundWindowMask
     }
 }
 
-/* @ignore
+/*
     Called to animate the sheet out. If called while animating in, schedules an animate
     out at completion
 */
@@ -2554,7 +2664,8 @@ CPTexturedBackgroundWindowMask
 {
     _sheetContext["isAttached"] = NO;
 
-    // it would be ideal to block here and spin the event loop, until attach is complete
+    // A timer seems to be necessary for the animation to work correctly.
+    // It would be ideal to block here and spin the event loop, until attach is complete.
     [CPTimer scheduledTimerWithTimeInterval:0.0
         target:self
         selector:@selector(_sheetShouldAnimateOut:)
@@ -2562,27 +2673,26 @@ CPTexturedBackgroundWindowMask
         repeats:NO];
 }
 
-/* @ignore
+/*
     Called to cleanup sheet, when we are definitely done with it
 */
 - (void)_cleanupSheetWindow
 {
     var sheet = _sheetContext["sheet"],
-        lastFrame = _sheetContext["frame"],
         deferDidEnd = _sheetContext["deferDidEndSelector"];
 
-    [sheet setFrame:lastFrame];
-    [self _restoreMasksForView:[sheet contentView]];
-
-    // if the parent window is modal, the sheet started its own modal session
+    // If the parent window is modal, the sheet started its own modal session
     if (sheet._isModal)
         [CPApp stopModal];
 
-    // restore the state of window before it was sheetified
-    [sheet._windowView _enableSheet:NO];
+    [self _removeClipForSheet:sheet];
 
-    // close it
+    // Restore the state of window before it was sheetified
     sheet._isSheet = NO;
+    [sheet._windowView _enableSheet:NO inWindow:self];
+    sheet._constrainsToUsableScreen = _sheetContext["savedConstrains"];
+
+    // Close it
     [sheet orderOut:self];
 
     [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowDidEndSheetNotification object:self];
@@ -2594,7 +2704,7 @@ CPTexturedBackgroundWindowMask
             returnCode = _sheetContext["returnCode"],
             contextInfo = _sheetContext["contextInfo"];
 
-        // context must be destroyed, since didEnd might want to attach another sheet
+        // Context must be destroyed, since didEnd might want to attach another sheet
         _sheetContext = nil;
         sheet._parentView = nil;
 
@@ -2622,31 +2732,19 @@ CPTexturedBackgroundWindowMask
         repeats:NO];
 }
 
-/* @ignore */
 - (void)_sheetShouldAnimateIn:(CPTimer)timer
 {
-    // can't open sheet while opening or closing animation is going on
-    if (_sheetContext["isOpening"] ||
-        _sheetContext["isClosing"])
+    // Can't open sheet while opening or closing animation is going on
+    if (_sheetContext["isOpening"] || _sheetContext["isClosing"])
         return;
 
-    var sheet = _sheetContext["sheet"],
-        sheetFrame = [sheet frame],
-        frame = [self frame];
-
-    [self _setUpMasksForView:[sheet contentView]];
-
+    var sheet = _sheetContext["sheet"];
     sheet._isSheet = YES;
     sheet._parentView = self;
 
-    var originx = frame.origin.x + FLOOR((frame.size.width - sheetFrame.size.width) / 2),
-        originy = frame.origin.y + [_contentView frame].origin.y,
-        startFrame = _CGRectMake(originx, originy, sheetFrame.size.width, 0),
-        endFrame = _CGRectMake(originx, originy, sheetFrame.size.width, sheetFrame.size.height);
-
     [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowWillBeginSheetNotification object:self];
 
-    // if sheet is attached to a modal window, the sheet runs
+    // If sheet is attached to a modal window, the sheet runs
     // as if itself and the parent window are modal
     sheet._isModal = NO;
 
@@ -2656,7 +2754,22 @@ CPTexturedBackgroundWindowMask
         sheet._isModal = YES;
     }
 
+    // The sheet starts hidden just above the top of a clip rect
+    var sheetFrame = [sheet frame],
+        sheetShadowFrame = sheet._hasShadow ? [sheet._shadowView frame] : sheetFrame,
+        frame = [self frame],
+        originX = frame.origin.x + FLOOR((frame.size.width - sheetFrame.size.width) / 2),
+        startFrame = CGRectMake(originX, -sheetShadowFrame.size.height, sheetFrame.size.width, sheetFrame.size.height),
+        endY = [_windowView bodyOffset] - [[self contentView] frame].origin.y,
+        endFrame = CGRectMake(originX, endY, sheetFrame.size.width, sheetFrame.size.height);
+
+    // Move the sheet offscreen before ordering front so it doesn't appear briefly
+    [sheet setFrameOrigin:CGPointMake(0, -13000)];
+
+    // Because clipping does funny thing with the DOM, we have to orderFront before clipping
     [sheet orderFront:self];
+    [self _clipSheet:sheet];
+
     [sheet setFrame:startFrame display:YES animate:NO];
 
     _sheetContext["opened"] = YES;
@@ -2664,23 +2777,13 @@ CPTexturedBackgroundWindowMask
     _sheetContext["isOpening"] = YES;
 
     [sheet _setFrame:endFrame delegate:self duration:[self animationResizeTime:endFrame] curve:CPAnimationEaseOut];
-
-    // NOTE: cocoa doesn't make window key until animation is done, but a
-    // keypress while animating eventually gets to the window. Therefore,
-    // there must be a runloop specifically designed for sheets?
-    [sheet makeKeyWindow];
 }
 
-/* @ignore */
 - (void)_sheetShouldAnimateOut:(CPTimer)timer
 {
-    var sheet = _sheetContext["sheet"],
-        startFrame = [sheet frame],
-        endFrame = _CGRectMakeCopy(startFrame);
-
     if (_sheetContext["isOpening"])
     {
-        // allow sheet to be closed while opening, it will close when animate in completes
+        // Allow sheet to be closed while opening, it will close when animate in completes
         _sheetContext["shouldClose"] = YES;
         return;
     }
@@ -2689,14 +2792,24 @@ CPTexturedBackgroundWindowMask
         return;
 
     _sheetContext["opened"] = NO;
-    _sheetContext["frame"] = startFrame;
     _sheetContext["isClosing"] = YES;
 
-    // the parent window can be orderedOut to disable the sheet animate out, as in Cocoa
+    // The parent window can be orderedOut to disable the sheet animate out, as in Cocoa
     if ([self isVisible])
     {
-        endFrame.size.height = 0;
-        [self _setUpMasksForView:[sheet contentView]];
+        var sheet = _sheetContext["sheet"],
+            sheetFrame = [sheet frame],
+            fullHeight = sheet._hasShadow ? [sheet._shadowView frame].size.height : sheetFrame.size.height,
+            endFrame = CGRectMakeCopy(sheetFrame),
+            contentOrigin = [self convertBaseToGlobal:[[self contentView] frame].origin];
+
+        // Don't constrain sheets, they are controlled by the parent
+        sheet._constrainsToUsableScreen = NO;
+
+        [sheet setFrameOrigin:CGPointMake(sheetFrame.origin.x, sheetFrame.origin.y - contentOrigin.y)];
+        [self _clipSheet:sheet];
+
+        endFrame.origin.y = -fullHeight;
         [sheet _setFrame:endFrame delegate:self duration:[self animationResizeTime:endFrame] curve:CPAnimationEaseIn];
     }
     else
@@ -2705,7 +2818,6 @@ CPTexturedBackgroundWindowMask
     }
 }
 
-/* @ignore */
 - (void)_sheetAnimationDidEnd:(CPTimer)timer
 {
     var sheet = _sheetContext["sheet"];
@@ -2715,12 +2827,17 @@ CPTexturedBackgroundWindowMask
 
     if (_sheetContext["opened"] === YES)
     {
-        // sheet is open and completely visible
-        [self _restoreMasksForView:[sheet contentView]];
+        var sheetFrame = [sheet frame],
+            sheetOrigin = CGPointMakeCopy(sheetFrame.origin);
+
+        [self _removeClipForSheet:sheet];
+        [sheet setFrameOrigin:CGPointMake(sheetOrigin.x, [sheet frame].origin.y + sheetOrigin.y)];
 
         // we wanted to close the sheet while it animated in, do that now
         if (_sheetContext["shouldClose"] === YES)
             [self _detachSheetWindow];
+        else
+            [sheet makeKeyWindow];
     }
     else
     {
@@ -2729,36 +2846,17 @@ CPTexturedBackgroundWindowMask
     }
 }
 
-- (void)_setUpMasksForView:(CPView)aView
+- (void)_clipSheet:(CPWindow)aSheet
 {
-    var views = [aView subviews];
+    var clipRect = [_platformWindow contentBounds];
+    clipRect.origin.y = [self frame].origin.y + [[self contentView] frame].origin.y;
 
-    [views addObject:aView];
-
-    for (var i = 0, count = [views count]; i < count; i++)
-    {
-        var view = [views objectAtIndex:i],
-            mask = [view autoresizingMask],
-            maskToAdd = (mask & CPViewMinYMargin) ? 128 : CPViewMinYMargin;
-
-        [view setAutoresizingMask:(mask | maskToAdd)];
-    }
+    [[_platformWindow layerAtLevel:_level create:NO] clipWindow:aSheet toRect:clipRect];
 }
 
-- (void)_restoreMasksForView:(CPView)aView
+- (void)_removeClipForSheet:(CPWindow)aSheet
 {
-    var views = [aView subviews];
-
-    [views addObject:aView];
-
-    for (var i = 0, count = [views count]; i < count; i++)
-    {
-        var view = [views objectAtIndex:i],
-            mask = [view autoresizingMask],
-            maskToRemove = (mask & 128) ? 128 : CPViewMinYMargin;
-
-        [view setAutoresizingMask:(mask & (~ maskToRemove))];
-    }
+    [[_platformWindow layerAtLevel:_level create:NO] removeClipForWindow:aSheet];
 }
 
 /*!
@@ -3125,11 +3223,11 @@ var keyViewComparator = function(lhs, rhs, context)
 {
     var lhsBounds = [lhs convertRect:[lhs bounds] toView:nil],
         rhsBounds = [rhs convertRect:[rhs bounds] toView:nil],
-        lhsY = _CGRectGetMinY(lhsBounds),
-        rhsY = _CGRectGetMinY(rhsBounds),
-        lhsX = _CGRectGetMinX(lhsBounds),
-        rhsX = _CGRectGetMinX(rhsBounds),
-        intersectsVertically = MIN(_CGRectGetMaxY(lhsBounds), _CGRectGetMaxY(rhsBounds)) - MAX(lhsY, rhsY);
+        lhsY = CGRectGetMinY(lhsBounds),
+        rhsY = CGRectGetMinY(rhsBounds),
+        lhsX = CGRectGetMinX(lhsBounds),
+        rhsX = CGRectGetMinX(rhsBounds),
+        intersectsVertically = MIN(CGRectGetMaxY(lhsBounds), CGRectGetMaxY(rhsBounds)) - MAX(lhsY, rhsY);
 
     // If two views are "on the same line" (intersect vertically), then rely on the x comparison.
     if (intersectsVertically > 0)
@@ -3152,19 +3250,6 @@ var keyViewComparator = function(lhs, rhs, context)
     return CPOrderedDescending;
 };
 
-@implementation CPWindow (MenuBar)
-
-- (void)_synchronizeMenuBarTitleWithWindowTitle
-{
-    // Windows with Documents automatically update the native window title and the menu bar title.
-    if (![_windowController document] || ![self isMainWindow])
-        return;
-
-    [CPMenu setMenuBarTitle:_title];
-}
-
-@end
-
 @implementation CPWindow (BridgeSupport)
 
 /*
@@ -3175,23 +3260,25 @@ var keyViewComparator = function(lhs, rhs, context)
     if ([self isFullPlatformWindow])
         return [self setFrame:[_platformWindow visibleFrame]];
 
-    if (_autoresizingMask == CPWindowNotSizable)
+    if (_autoresizingMask === CPWindowNotSizable)
         return;
 
     var frame = [_platformWindow contentBounds],
-        newFrame = _CGRectMakeCopy(_frame),
-        dX = (_CGRectGetWidth(frame) - aSize.width) /
+        newFrame = CGRectMakeCopy(_frame),
+        dX = (CGRectGetWidth(frame) - aSize.width) /
             (((_autoresizingMask & CPWindowMinXMargin) ? 1 : 0) + (_autoresizingMask & CPWindowWidthSizable ? 1 : 0) + (_autoresizingMask & CPWindowMaxXMargin ? 1 : 0)),
-        dY = (_CGRectGetHeight(frame) - aSize.height) /
+        dY = (CGRectGetHeight(frame) - aSize.height) /
             ((_autoresizingMask & CPWindowMinYMargin ? 1 : 0) + (_autoresizingMask & CPWindowHeightSizable ? 1 : 0) + (_autoresizingMask & CPWindowMaxYMargin ? 1 : 0));
 
     if (_autoresizingMask & CPWindowMinXMargin)
         newFrame.origin.x += dX;
+
     if (_autoresizingMask & CPWindowWidthSizable)
         newFrame.size.width += dX;
 
     if (_autoresizingMask & CPWindowMinYMargin)
         newFrame.origin.y += dY;
+
     if (_autoresizingMask & CPWindowHeightSizable)
         newFrame.size.height += dY;
 
@@ -3236,11 +3323,11 @@ var keyViewComparator = function(lhs, rhs, context)
 - (CGPoint)convertBaseToPlatformWindow:(CGPoint)aPoint
 {
     if ([self _sharesChromeWithPlatformWindow])
-        return _CGPointMakeCopy(aPoint);
+        return CGPointMakeCopy(aPoint);
 
     var origin = [self frame].origin;
 
-    return _CGPointMake(aPoint.x + origin.x, aPoint.y + origin.y);
+    return CGPointMake(aPoint.x + origin.x, aPoint.y + origin.y);
 }
 
 /*!
@@ -3249,11 +3336,11 @@ var keyViewComparator = function(lhs, rhs, context)
 - (CGPoint)convertPlatformWindowToBase:(CGPoint)aPoint
 {
     if ([self _sharesChromeWithPlatformWindow])
-        return _CGPointMakeCopy(aPoint);
+        return CGPointMakeCopy(aPoint);
 
     var origin = [self frame].origin;
 
-    return _CGPointMake(aPoint.x - origin.x, aPoint.y - origin.y);
+    return CGPointMake(aPoint.x - origin.x, aPoint.y - origin.y);
 }
 
 - (CGPoint)convertScreenToBase:(CGPoint)aPoint
@@ -3329,7 +3416,7 @@ var keyViewComparator = function(lhs, rhs, context)
 
 - (BOOL)containsPoint:(CGPoint)aPoint
 {
-    return _CGRectContainsPoint(_frame, aPoint);
+    return CGRectContainsPoint(_frame, aPoint);
 }
 
 /* aPoint should be global */
@@ -3337,9 +3424,9 @@ var keyViewComparator = function(lhs, rhs, context)
 {
     // If we are using the new resizing mode, mouse events are valid
     // outside the window's frame for non-full platform windows.
-    var mouseFrame = (!_isFullPlatformWindow && (_styleMask & CPResizableWindowMask) && (CPWindowResizeStyle === CPWindowResizeStyleModern)) ? _CGRectInset(_frame, -_CPWindowViewResizeSlop, -_CPWindowViewResizeSlop) : _frame;
+    var mouseFrame = (!_isFullPlatformWindow && (_styleMask & CPResizableWindowMask) && (CPWindowResizeStyle === CPWindowResizeStyleModern)) ? CGRectInset(_frame, -_CPWindowViewResizeSlop, -_CPWindowViewResizeSlop) : _frame;
 
-    return _CGRectContainsPoint(mouseFrame, aPoint);
+    return CGRectContainsPoint(mouseFrame, aPoint);
 }
 
 @end
@@ -3405,8 +3492,8 @@ var interpolate = function(fromValue, toValue, progress)
     {
         _window = aWindow;
 
-        _targetFrame = _CGRectMakeCopy(aTargetFrame);
-        _startFrame = _CGRectMakeCopy([_window frame]);
+        _targetFrame = CGRectMakeCopy(aTargetFrame);
+        _startFrame = CGRectMakeCopy([_window frame]);
     }
 
     return self;
@@ -3428,11 +3515,11 @@ var interpolate = function(fromValue, toValue, progress)
     if (value == 1.0)
         _window._isAnimating = NO;
 
-    var newFrame = _CGRectMake(
-            interpolate(_CGRectGetMinX(_startFrame), _CGRectGetMinX(_targetFrame), value),
-            interpolate(_CGRectGetMinY(_startFrame), _CGRectGetMinY(_targetFrame), value),
-            interpolate(_CGRectGetWidth(_startFrame), _CGRectGetWidth(_targetFrame), value),
-            interpolate(_CGRectGetHeight(_startFrame), _CGRectGetHeight(_targetFrame), value));
+    var newFrame = CGRectMake(
+            interpolate(CGRectGetMinX(_startFrame), CGRectGetMinX(_targetFrame), value),
+            interpolate(CGRectGetMinY(_startFrame), CGRectGetMinY(_targetFrame), value),
+            interpolate(CGRectGetWidth(_startFrame), CGRectGetWidth(_targetFrame), value),
+            interpolate(CGRectGetHeight(_startFrame), CGRectGetHeight(_targetFrame), value));
 
     [_window setFrame:newFrame display:YES animate:NO];
 }

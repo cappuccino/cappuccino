@@ -283,7 +283,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
 */
 - (void)sizeToFit
 {
-    var width = _CGRectGetWidth([_headerView frame]);
+    var width = CGRectGetWidth([_headerView frame]);
 
     if (width < [self minWidth])
         [self setMinWidth:width];

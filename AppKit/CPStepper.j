@@ -55,7 +55,7 @@
 */
 + (CPStepper)stepperWithInitialValue:(float)aValue minValue:(float)aMinValue maxValue:(float)aMaxValue
 {
-    var stepper = [[CPStepper alloc] initWithFrame:_CGRectMakeZero()];
+    var stepper = [[CPStepper alloc] initWithFrame:CGRectMakeZero()];
 
     [stepper setDoubleValue:aValue];
     [stepper setMinValue:aMinValue];
@@ -122,14 +122,14 @@
 
 - (void)_init
 {
-    _buttonUp = [[CPButton alloc] initWithFrame:_CGRectMakeZero()];
+    _buttonUp = [[CPButton alloc] initWithFrame:CGRectMakeZero()];
     [_buttonUp setContinuous:_autorepeat];
     [_buttonUp setTarget:self];
     [_buttonUp setAction:@selector(_buttonDidClick:)];
     [_buttonUp setAutoresizingMask:CPViewNotSizable];
     [self addSubview:_buttonUp];
 
-    _buttonDown = [[CPButton alloc] initWithFrame:_CGRectMakeZero()];
+    _buttonDown = [[CPButton alloc] initWithFrame:CGRectMakeZero()];
     [_buttonDown setContinuous:_autorepeat];
     [_buttonDown setTarget:self];
     [_buttonDown setAction:@selector(_buttonDidClick:)];
@@ -161,8 +161,8 @@
 {
     var upSize = [self valueForThemeAttribute:@"up-button-size"],
         downSize = [self valueForThemeAttribute:@"down-button-size"],
-        minSize = _CGSizeMake(upSize.width, upSize.height + downSize.height),
-        frame = _CGRectMakeCopy(aFrame);
+        minSize = CGSizeMake(upSize.width, upSize.height + downSize.height),
+        frame = CGRectMakeCopy(aFrame);
 
     frame.size.width = MAX(minSize.width, frame.size.width);
     frame.size.height = MAX(minSize.height, frame.size.height);
@@ -175,8 +175,8 @@
     var aFrame = [self frame],
         upSize = [self valueForThemeAttribute:@"up-button-size"],
         downSize = [self valueForThemeAttribute:@"down-button-size"],
-        upFrame = _CGRectMake(aFrame.size.width - upSize.width, 0, upSize.width, upSize.height),
-        downFrame = _CGRectMake(aFrame.size.width - downSize.width, upSize.height, downSize.width, downSize.height);
+        upFrame = CGRectMake(aFrame.size.width - upSize.width, 0, upSize.width, upSize.height),
+        downFrame = CGRectMake(aFrame.size.width - downSize.width, upSize.height, downSize.width, downSize.height);
 
     [_buttonUp setFrame:upFrame];
     [_buttonDown setFrame:downFrame];
@@ -272,8 +272,8 @@
     return @{
             @"bezel-color-up-button": [CPNull null],
             @"bezel-color-down-button": [CPNull null],
-            @"up-button-size": _CGSizeMakeZero(),
-            @"down-button-size": _CGSizeMakeZero(),
+            @"up-button-size": CGSizeMakeZero(),
+            @"down-button-size": CGSizeMakeZero(),
         };
 }
 

@@ -330,6 +330,9 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
     Object          _observersForKey;
     int             _observersForKeyLength;
     CPSet           _replacedKeys;
+
+    // TODO: Remove this line when granular notifications are implemented
+    BOOL            _adding @accessors(property=adding);
 }
 
 + (id)proxyForObject:(CPObject)anObject
@@ -729,9 +732,9 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
 {
     // Fire change events for the dependent keys
     var dependentKeysForClass = _nativeClass[DependentKeysKey],
-        dependantKeys = [dependentKeysForClass[theKeyPath] allObjects];
+        dependantKeys = [dependentKeysForClass[theKeyPath] allObjects],
+        isBeforeFlag = !![theChanges objectForKey:CPKeyValueChangeNotificationIsPriorKey];
 
-    var isBeforeFlag = !![theChanges objectForKey:CPKeyValueChangeNotificationIsPriorKey];
     for (var i = 0; i < [dependantKeys count]; i++)
     {
         var dependantKey = [dependantKeys objectAtIndex:i];
@@ -780,8 +783,9 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
 
     if (!observers)
     {
-        CPLog.warn(@"Cannot remove an observer %@ for the key path \"%@\" from %@ because it is not registered as an observer.",
-            _targetObject, aPath, anObserver);
+        // TODO: Remove this line when granular notifications are implemented
+        if (!_adding)
+            CPLog.warn(@"Cannot remove an observer %@ for the key path \"%@\" from %@ because it is not registered as an observer.", _targetObject, aPath, anObserver);
 
         return;
     }
@@ -823,12 +827,15 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
         {
             // "willChange:X" nesting.
             var level = _nestingForKey[aKey];
+
             if (!level)
                 [CPException raise:CPInternalInconsistencyException reason:@"_changesForKey without _nestingForKey"];
+
             _nestingForKey[aKey] = level + 1;
             // Only notify on the first willChange..., silently note any following nested calls.
             return;
         }
+
         _nestingForKey[aKey] = 1;
 
         changes = changeOptions;
@@ -864,6 +871,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
         else if (indexes)
         {
             var type = [changes objectForKey:CPKeyValueChangeKindKey];
+
             // for ordered to-many relationships, oldvalue is only sensible for replace and remove
             if (type === CPKeyValueChangeReplacement || type === CPKeyValueChangeRemoval)
             {
@@ -889,6 +897,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
     else
     {
         var level = _nestingForKey[aKey];
+
         if (!changes || !level)
         {
             if (_targetObject._willChangeMessageCounter && _targetObject._willChangeMessageCounter[aKey])
@@ -906,12 +915,14 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
         }
 
         _nestingForKey[aKey] = level - 1;
+
         if (level - 1 > 0)
         {
             // willChange... was called multiple times. Only fire observation notifications when
             // didChange... has been called an equal number of times.
             return;
         }
+
         delete _nestingForKey[aKey];
 
         [changes removeObjectForKey:CPKeyValueChangeNotificationIsPriorKey];
@@ -934,6 +945,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
         else if (indexes)
         {
             var type = [changes objectForKey:CPKeyValueChangeKindKey];
+
             // for ordered to-many relationships, newvalue is only sensible for replace and insert
             if (type == CPKeyValueChangeReplacement || type == CPKeyValueChangeInsertion)
             {
@@ -1068,6 +1080,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
 
     var changeKind = _changeKindForSetMutationKind(mutationKind),
         changeOptions = @{ CPKeyValueChangeKindKey: changeKind };
+
     //set hidden change-dict ivars to support unordered to-many relationships
     changeOptions[_CPKeyValueChangeSetMutationObjectsKey] = objects;
     changeOptions[_CPKeyValueChangeSetMutationKindKey] = mutationKind;
@@ -1254,7 +1267,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
 
 @end
 
-var _CPKVOInfoMake = function _CPKVOInfoMake(anObserver, theOptions, aContext, aForwarder)
+var _CPKVOInfoMake = function(anObserver, theOptions, aContext, aForwarder)
 {
     return {
         observer: anObserver,

@@ -220,6 +220,36 @@
     return [_menuItem isEnabled] ? (_textShadowColor ? _textShadowColor : [CPColor colorWithWhite:1.0 alpha:0.8]) : [CPColor colorWithWhite:0.8 alpha:0.8];
 }
 
+- (void)setParentMenuHighlightColor:(CPColor)aColor
+{
+    if ([_view respondsToSelector:@selector(setHighlightColor:)])
+        [_view setHighlightColor:aColor];
+}
+
+- (void)setParentMenuHighlightTextColor:(CPColor)aColor
+{
+    if ([_view respondsToSelector:@selector(setHighlightTextColor:)])
+        [_view setHighlightTextColor:aColor];
+}
+
+- (void)setParentMenuHighlightTextShadowColor:(CPColor)aColor
+{
+    if ([_view respondsToSelector:@selector(setHighlightTextShadowColor:)])
+        [_view setHighlightTextShadowColor:aColor];
+}
+
+- (void)setParentMenuTextColor:(CPColor)aColor
+{
+    if ([_view respondsToSelector:@selector(setTextColor:)])
+        [_view setTextColor:aColor];
+}
+
+- (void)setParentMenuTextShadowColor:(CPColor)aColor
+{
+    if ([_view respondsToSelector:@selector(setTextShadowColor:)])
+        [_view setTextShadowColor:aColor];
+}
+
 @end
 
 @implementation _CPMenuItemArrowView : CPView

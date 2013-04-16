@@ -165,7 +165,14 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
 
 - (BOOL)instantiateCibWithOwner:(id)anOwner topLevelObjects:(CPArray)topLevelObjects
 {
-    return [self instantiateCibWithExternalNameTable:@{ CPCibOwner: anOwner, CPCibTopLevelObjects: topLevelObjects }];
+    // anOwner can be nil, and we can't store nil in a dictionary. If we leave it out,
+    // anyone who asks for CPCibOwner will get nil back.
+    var nameTable = @{ CPCibTopLevelObjects: topLevelObjects };
+
+    if (anOwner)
+        [nameTable setObject:anOwner forKey:CPCibOwner];
+
+    return [self instantiateCibWithExternalNameTable:nameTable];
 }
 
 @end

@@ -57,7 +57,7 @@ _CPWindowViewResizeSlop = 3;
     CGSize      _toolbarOffset;
 //    BOOL        _isAnimatingToolbar;
 
-    CGRect      _resizeFrame;
+    CGRect      _cachedFrame;
     int         _resizeRegion;
     CGPoint     _mouseDraggedPoint;
 
@@ -68,12 +68,12 @@ _CPWindowViewResizeSlop = 3;
 
 + (CGRect)contentRectForFrameRect:(CGRect)aFrameRect
 {
-    return _CGRectMakeCopy(aFrameRect);
+    return CGRectMakeCopy(aFrameRect);
 }
 
 + (CGRect)frameRectForContentRect:(CGRect)aContentRect
 {
-    return _CGRectMakeCopy(aContentRect);
+    return CGRectMakeCopy(aContentRect);
 }
 
 + (CPString)defaultThemeClass
@@ -91,6 +91,7 @@ _CPWindowViewResizeSlop = 3;
             @"size-indicator": CGSizeMakeZero(),
             @"resize-indicator": [CPNull null],
             @"attached-sheet-shadow-color": [CPColor blackColor],
+            @"shadow-height": 8,
             @"close-image-origin": [CPNull null],
             @"close-image-size": [CPNull null],
             @"close-image": [CPNull null],
@@ -99,7 +100,7 @@ _CPWindowViewResizeSlop = 3;
             @"title-text-color": [CPColor blackColor],
             @"title-font": [CPFont systemFontOfSize:CPFontCurrentSystemSize],
             @"title-text-shadow-color": [CPNull null],
-            @"title-text-shadow-offset": _CGSizeMakeZero(),
+            @"title-text-shadow-offset": CGSizeMakeZero(),
             @"title-alignment": CPCenterTextAlignment,
             @"title-line-break-mode": CPLineBreakByTruncatingTail,
             @"title-vertical-alignment": CPTopVerticalTextAlignment,
@@ -113,7 +114,7 @@ _CPWindowViewResizeSlop = 3;
 
     if ([theToolbar isVisible])
     {
-        var toolbarHeight = _CGRectGetHeight([[theToolbar _toolbarView] frame]);
+        var toolbarHeight = CGRectGetHeight([[theToolbar _toolbarView] frame]);
 
         contentRect.origin.y += toolbarHeight;
         contentRect.size.height -= toolbarHeight;
@@ -129,7 +130,7 @@ _CPWindowViewResizeSlop = 3;
 
     if ([theToolbar isVisible])
     {
-        var toolbarHeight = _CGRectGetHeight([[theToolbar _toolbarView] frame]);
+        var toolbarHeight = CGRectGetHeight([[theToolbar _toolbarView] frame]);
 
         frameRect.origin.y -= toolbarHeight;
         frameRect.size.height += toolbarHeight;
@@ -145,8 +146,8 @@ _CPWindowViewResizeSlop = 3;
     if (self)
     {
         _styleMask = aStyleMask;
-        _resizeIndicatorOffset = _CGSizeMakeZero();
-        _toolbarOffset = _CGSizeMakeZero();
+        _resizeIndicatorOffset = CGSizeMakeZero();
+        _toolbarOffset = CGSizeMakeZero();
     }
 
     return self;
@@ -178,7 +179,7 @@ _CPWindowViewResizeSlop = 3;
 - (void)mouseDown:(CPEvent)anEvent
 {
     var theWindow = [self window],
-        couldResize = _styleMask & CPResizableWindowMask;
+        couldResize = _styleMask & CPResizableWindowMask && ![theWindow isFullPlatformWindow];
 
     couldResize = couldResize && (
         (CPWindowResizeStyle === CPWindowResizeStyleModern) ||
@@ -201,8 +202,8 @@ _CPWindowViewResizeSlop = 3;
         {
             // Extend the resize frame to the edge of the window frame
             var resizeFrame = [_resizeIndicator frame];
-            resizeFrame.size.width = _CGRectGetWidth(windowFrame) - _CGRectGetMinX(resizeFrame);
-            resizeFrame.size.height = _CGRectGetHeight(windowFrame) - _CGRectGetMinY(resizeFrame);
+            resizeFrame.size.width = CGRectGetWidth(windowFrame) - CGRectGetMinX(resizeFrame);
+            resizeFrame.size.height = CGRectGetHeight(windowFrame) - CGRectGetMinY(resizeFrame);
 
             var localPoint = [self convertPoint:[anEvent locationInWindow] fromView:nil];
             shouldResize = CGRectContainsPoint(resizeFrame, localPoint);
@@ -245,6 +246,8 @@ _CPWindowViewResizeSlop = 3;
         rects are the same size. So to save calculations, we can just create
         3 rects and move them around to do hit testing. Start with the corners
         and then do left/right and top/bottom.
+
+        NOTE: If the window is a sheet, the top is never eligible for resizing.
     */
     var wind = [self window],
         frame = [wind frame],
@@ -252,87 +255,88 @@ _CPWindowViewResizeSlop = 3;
         minSize = [wind minSize],
         maxSize = [wind maxSize],
         isFixedWidth = minSize.width === maxSize.width,
-        isFixedHeight = minSize.height === maxSize.height;
+        isFixedHeight = minSize.height === maxSize.height,
+        isSheet = wind._isSheet;
 
     if (isFixedWidth)
     {
-        rect = _CGRectMake(frame.origin.x - _CPWindowViewResizeSlop,
+        rect = CGRectMake(frame.origin.x - _CPWindowViewResizeSlop,
                            frame.origin.y - _CPWindowViewResizeSlop,
                            frame.size.width + (_CPWindowViewResizeSlop * 2),
                            _CPWindowViewResizeSlop * 2);
 
-        if (_CGRectContainsPoint(rect, aPoint))
-            return _CPWindowViewResizeRegionTop;
+        if (CGRectContainsPoint(rect, aPoint))
+            return isSheet ? _CPWindowViewResizeRegionNone : _CPWindowViewResizeRegionTop;
 
-        rect.origin.y = _CGRectGetMaxY(frame) - _CPWindowViewResizeSlop;
+        rect.origin.y = CGRectGetMaxY(frame) - _CPWindowViewResizeSlop;
 
-        if (_CGRectContainsPoint(rect, aPoint))
+        if (CGRectContainsPoint(rect, aPoint))
             return _CPWindowViewResizeRegionBottom;
     }
     else if (isFixedHeight)
     {
-        rect = _CGRectMake(frame.origin.x - _CPWindowViewResizeSlop,
+        rect = CGRectMake(frame.origin.x - _CPWindowViewResizeSlop,
                            frame.origin.y - _CPWindowViewResizeSlop,
                            _CPWindowViewResizeSlop * 2,
                            frame.size.height + (_CPWindowViewResizeSlop * 2));
 
-        if (_CGRectContainsPoint(rect, aPoint))
+        if (CGRectContainsPoint(rect, aPoint))
             return _CPWindowViewResizeRegionLeft;
 
-        rect.origin.x = _CGRectGetMaxX(frame) - _CPWindowViewResizeSlop;
+        rect.origin.x = CGRectGetMaxX(frame) - _CPWindowViewResizeSlop;
 
-        if (_CGRectContainsPoint(rect, aPoint))
+        if (CGRectContainsPoint(rect, aPoint))
             return _CPWindowViewResizeRegionRight;
     }
     else
     {
-        rect = _CGRectMake(frame.origin.x - _CPWindowViewResizeSlop,
+        rect = CGRectMake(frame.origin.x - _CPWindowViewResizeSlop,
                            frame.origin.y - _CPWindowViewResizeSlop,
                            _CPWindowViewCornerResizeRectWidth + _CPWindowViewResizeSlop,
                            _CPWindowViewCornerResizeRectWidth + _CPWindowViewResizeSlop);
 
-        if (_CGRectContainsPoint(rect, aPoint))
-            return _CPWindowViewResizeRegionTopLeft;
+        if (CGRectContainsPoint(rect, aPoint))
+            return isSheet ? _CPWindowViewResizeRegionNone : _CPWindowViewResizeRegionTopLeft;
 
-        rect.origin.x = _CGRectGetMaxX(frame) - _CPWindowViewCornerResizeRectWidth;
+        rect.origin.x = CGRectGetMaxX(frame) - _CPWindowViewCornerResizeRectWidth;
 
-        if (_CGRectContainsPoint(rect, aPoint))
-            return _CPWindowViewResizeRegionTopRight;
+        if (CGRectContainsPoint(rect, aPoint))
+            return isSheet ? _CPWindowViewResizeRegionNone : _CPWindowViewResizeRegionTopRight;
 
-        rect.origin.y = _CGRectGetMaxY(frame) - _CPWindowViewCornerResizeRectWidth;
+        rect.origin.y = CGRectGetMaxY(frame) - _CPWindowViewCornerResizeRectWidth;
 
-        if (_CGRectContainsPoint(rect, aPoint))
+        if (CGRectContainsPoint(rect, aPoint))
             return _CPWindowViewResizeRegionBottomRight;
 
         rect.origin.x = frame.origin.x - _CPWindowViewResizeSlop;
 
-        if (_CGRectContainsPoint(rect, aPoint))
+        if (CGRectContainsPoint(rect, aPoint))
             return _CPWindowViewResizeRegionBottomLeft;
 
-        rect = _CGRectMake(rect.origin.x,
+        rect = CGRectMake(rect.origin.x,
                            frame.origin.y + _CPWindowViewCornerResizeRectWidth,
                            _CPWindowViewResizeSlop * 2,
-                           _CGRectGetHeight(frame) - (_CPWindowViewCornerResizeRectWidth * 2));
+                           CGRectGetHeight(frame) - (_CPWindowViewCornerResizeRectWidth * 2));
 
-        if (_CGRectContainsPoint(rect, aPoint))
+        if (CGRectContainsPoint(rect, aPoint))
             return _CPWindowViewResizeRegionLeft;
 
-        rect.origin.x = _CGRectGetMaxX(frame) - _CPWindowViewResizeSlop;
+        rect.origin.x = CGRectGetMaxX(frame) - _CPWindowViewResizeSlop;
 
-        if (_CGRectContainsPoint(rect, aPoint))
+        if (CGRectContainsPoint(rect, aPoint))
             return _CPWindowViewResizeRegionRight;
 
-        rect = _CGRectMake(frame.origin.x + _CPWindowViewCornerResizeRectWidth,
+        rect = CGRectMake(frame.origin.x + _CPWindowViewCornerResizeRectWidth,
                            frame.origin.y - _CPWindowViewResizeSlop,
-                           _CGRectGetWidth(frame) - (_CPWindowViewCornerResizeRectWidth * 2),
+                           CGRectGetWidth(frame) - (_CPWindowViewCornerResizeRectWidth * 2),
                            _CPWindowViewResizeSlop * 2);
 
-        if (_CGRectContainsPoint(rect, aPoint))
-            return _CPWindowViewResizeRegionTop;
+        if (CGRectContainsPoint(rect, aPoint))
+            return isSheet ? _CPWindowViewResizeRegionNone : _CPWindowViewResizeRegionTop;
 
-        rect.origin.y = _CGRectGetMaxY(frame) - _CPWindowViewResizeSlop;
+        rect.origin.y = CGRectGetMaxY(frame) - _CPWindowViewResizeSlop;
 
-        if (_CGRectContainsPoint(rect, aPoint))
+        if (CGRectContainsPoint(rect, aPoint))
             return _CPWindowViewResizeRegionBottom;
     }
 
@@ -367,9 +371,9 @@ _CPWindowViewResizeSlop = 3;
     switch (resizeRegion)
     {
         case _CPWindowViewResizeRegionTopLeft:
-            if (minSize && _CGSizeEqualToSize(frameSize, minSize))
+            if (minSize && CGSizeEqualToSize(frameSize, minSize))
                 [[CPCursor resizeNorthwestCursor] set];
-            else if (maxSize && _CGSizeEqualToSize(frameSize, maxSize))
+            else if (maxSize && CGSizeEqualToSize(frameSize, maxSize))
                 [[CPCursor resizeSoutheastCursor] set];
             else
                 [[CPCursor resizeNorthwestSoutheastCursor] set];
@@ -380,16 +384,16 @@ _CPWindowViewResizeSlop = 3;
                 [[CPCursor resizeUpCursor] set];
             else if (maxSize && (frameSize.height === maxSize.height))
                 [[CPCursor resizeDownCursor] set];
-            else if ([CPMenu menuBarVisible] && (_CGRectGetMinY([theWindow frame]) <= [CPMenu menuBarHeight]))
+            else if ([CPMenu menuBarVisible] && (CGRectGetMinY([theWindow frame]) <= [CPMenu menuBarHeight]))
                 [[CPCursor resizeDownCursor] set];
             else
                 [[CPCursor resizeNorthSouthCursor] set];
             break;
 
         case _CPWindowViewResizeRegionTopRight:
-            if (minSize && _CGSizeEqualToSize(frameSize, minSize))
+            if (minSize && CGSizeEqualToSize(frameSize, minSize))
                 [[CPCursor resizeNortheastCursor] set];
-            else if (maxSize && _CGSizeEqualToSize(frameSize, maxSize))
+            else if (maxSize && CGSizeEqualToSize(frameSize, maxSize))
                 [[CPCursor resizeSouthwestCursor] set];
             else
                 [[CPCursor resizeNortheastSouthwestCursor] set];
@@ -405,9 +409,9 @@ _CPWindowViewResizeSlop = 3;
             break;
 
         case _CPWindowViewResizeRegionBottomRight:
-            if (minSize && _CGSizeEqualToSize(frameSize, minSize))
+            if (minSize && CGSizeEqualToSize(frameSize, minSize))
                 [[CPCursor resizeSoutheastCursor] set];
-            else if (maxSize && _CGSizeEqualToSize(frameSize, maxSize))
+            else if (maxSize && CGSizeEqualToSize(frameSize, maxSize))
                 [[CPCursor resizeNorthwestCursor] set];
             else
                 [[CPCursor resizeNorthwestSoutheastCursor] set];
@@ -423,9 +427,9 @@ _CPWindowViewResizeSlop = 3;
             break;
 
         case _CPWindowViewResizeRegionBottomLeft:
-            if (minSize && _CGSizeEqualToSize(frameSize, minSize))
+            if (minSize && CGSizeEqualToSize(frameSize, minSize))
                 [[CPCursor resizeSouthwestCursor] set];
-            else if (maxSize && _CGSizeEqualToSize(frameSize, maxSize))
+            else if (maxSize && CGSizeEqualToSize(frameSize, maxSize))
                 [[CPCursor resizeNortheastCursor] set];
             else
                 [[CPCursor resizeNortheastSouthwestCursor] set];
@@ -450,7 +454,10 @@ _CPWindowViewResizeSlop = 3;
     var type = [anEvent type];
 
     if (type === CPLeftMouseUp)
+    {
+        _cachedScreenFrame = nil;
         return;
+    }
 
     var location = [anEvent locationInWindow],
         theWindow = [self window],
@@ -459,28 +466,31 @@ _CPWindowViewResizeSlop = 3;
 
     if (type === CPLeftMouseDown)
     {
-        _mouseDraggedPoint = _CGPointMakeCopy(globalLocation);
-        _resizeFrame = _CGRectMakeCopy(frame);
+        _mouseDraggedPoint = CGPointMake(globalLocation.x, globalLocation.y);
+        _cachedFrame = CGRectMakeCopy(frame);
+        _cachedScreenFrame = [[CPPlatformWindow primaryPlatformWindow] visibleFrame];
     }
-
     else if (type === CPLeftMouseDragged)
     {
         var deltaX = globalLocation.x - _mouseDraggedPoint.x,
             deltaY = globalLocation.y - _mouseDraggedPoint.y,
-            startX = _CGRectGetMinX(_resizeFrame),
-            startY = _CGRectGetMinY(_resizeFrame),
-            startWidth = _CGRectGetWidth(_resizeFrame),
-            startHeight = _CGRectGetHeight(_resizeFrame),
+            startX = CGRectGetMinX(_cachedFrame),
+            startY = CGRectGetMinY(_cachedFrame),
+            startWidth = CGRectGetWidth(_cachedFrame),
+            startHeight = CGRectGetHeight(_cachedFrame),
             newX,
             newY,
             newWidth,
             newHeight,
-            platformFrame = [[theWindow platformWindow] usableContentFrame],
             resizeMinSize = [self _minimumResizeSize],
             minSize = [theWindow minSize],
             maxSize = [theWindow maxSize];
 
-        minSize = _CGSizeMake(MAX(minSize.width, resizeMinSize.width), MAX(minSize.height, resizeMinSize.height));
+        minSize = CGSizeMake(MAX(minSize.width, resizeMinSize.width), MAX(minSize.height, resizeMinSize.height));
+
+        // If it's a sheet, horizontal resizing is symmetrical, so the movement is effectively doubled
+        if (theWindow._isSheet)
+            deltaX *= 2;
 
         // Calculate x and width first
         switch (_resizeRegion)
@@ -498,8 +508,24 @@ _CPWindowViewResizeSlop = 3;
                 else if (deltaX < 0)
                     deltaX = -MIN(maxSize.width - startWidth, ABS(deltaX));
 
-                // When resizing from the left, we change the origin and the width
+                if (theWindow._isSheet)
+                    deltaX = FLOOR(deltaX / 2);
+
                 newX = startX + deltaX;
+
+                // Pin the left edge to the usable screen left edge
+                var pinnedX = MAX(newX, CGRectGetMinX(_cachedScreenFrame));
+
+                if (pinnedX !== newX)
+                {
+                    deltaX += pinnedX - newX;
+                    newX = pinnedX;
+                }
+
+                // When resizing from the left, we change the origin and the width
+                if (theWindow._isSheet)
+                    deltaX *= 2;
+
                 newWidth = startWidth - deltaX;
                 break;
 
@@ -516,9 +542,26 @@ _CPWindowViewResizeSlop = 3;
                 else if (deltaX < 0)
                     deltaX = -MIN(startWidth - minSize.width, ABS(deltaX));
 
-                // When resizing from the right, change only the width
-                newX = startX;
-                newWidth = startWidth + deltaX;
+                if (theWindow._isSheet)
+                    deltaX = FLOOR(deltaX / 2);
+
+                // Pin the right edge to the usable screen right edge
+                var newMaxX = startX + startWidth + deltaX,
+                    pinnedX = MIN(newMaxX, CGRectGetMaxX(_cachedScreenFrame));
+
+                if (pinnedX !== newMaxX)
+                    deltaX += pinnedX - newMaxX;
+
+                if (theWindow._isSheet)
+                {
+                    newWidth = startWidth + (deltaX * 2);
+                    newX = startX - FLOOR((newWidth - startWidth) / 2);
+                }
+                else
+                {
+                    newWidth = startWidth + deltaX;
+                    newX = startX;
+                }
                 break;
 
             default:
@@ -542,8 +585,18 @@ _CPWindowViewResizeSlop = 3;
                 else if (deltaY < 0)
                     deltaY = -MIN(maxSize.height - startHeight, ABS(deltaY));
 
-                // When resizing from the top, change the origin and the height
                 newY = startY + deltaY;
+
+                // Pin the top edge to the usable screen top edge
+                var pinnedY = MAX(newY, CGRectGetMinY(_cachedScreenFrame));
+
+                if (pinnedY !== newY)
+                {
+                    deltaY += pinnedY - newY;
+                    newY = pinnedY;
+                }
+
+                // When resizing from the top, change the origin and the height
                 newHeight = startHeight - deltaY;
                 break;
 
@@ -560,8 +613,16 @@ _CPWindowViewResizeSlop = 3;
                 else if (deltaY < 0)
                     deltaY = -MIN(startHeight - minSize.height, ABS(deltaY));
 
-                // When resizing from the bottom, change only the height
                 newY = startY;
+
+                // Pin the bottom edge to the usable screen bottom edge
+                var newMaxY = startY + startHeight + deltaY,
+                    pinnedY = MIN(newMaxY, CGRectGetMaxY(_cachedScreenFrame));
+
+                if (pinnedY !== newMaxY)
+                    deltaY += pinnedY - newMaxY;
+
+                // When resizing from the bottom, change only the height
                 newHeight = startHeight + deltaY;
                 break;
 
@@ -570,72 +631,40 @@ _CPWindowViewResizeSlop = 3;
                 newHeight = startHeight;
         }
 
-        if (theWindow._isSheet && theWindow._parentView && (frame.size.width !== newWidth))
-            [theWindow._parentView _setAttachedSheetFrameOrigin];
-
-        // Constrain resize to fit within the platform window.
-        var newFrame = CGRectIntersection(_CGRectMake(newX, newY, newWidth, newHeight), platformFrame);
-
-        [theWindow setFrame:newFrame];
+        [theWindow _setFrame:CGRectMake(newX, newY, newWidth, newHeight) display:YES animate:NO constrainWidth:NO constrainHeight:NO];
         [self setCursorForLocation:location resizing:YES];
     }
 
     [CPApp setTarget:self selector:@selector(trackResizeWithEvent:) forNextEventMatchingMask:CPLeftMouseDraggedMask | CPLeftMouseUpMask untilDate:nil inMode:nil dequeue:YES];
 }
 
-- (CGPoint)_pointWithinScreenFrame:(CGPoint)aPoint
-{
-    // FIXME: this is WRONG, all of this is WRONG
-    if (![CPPlatform isBrowser])
-        return aPoint;
-
-    var visibleFrame = _cachedScreenFrame;
-
-    if (!visibleFrame)
-        visibleFrame = [[CPPlatformWindow primaryPlatformWindow] visibleFrame];
-
-    var minPointY = 0;
-
-    if ([CPMenu menuBarVisible])
-        minPointY = [[CPApp mainMenu] menuBarHeight];
-
-    var restrictedPoint = _CGPointMake(0, 0);
-
-    restrictedPoint.x = MIN(MAX(aPoint.x, -_frame.size.width + 4.0), _CGRectGetMaxX(visibleFrame) - 4.0);
-    restrictedPoint.y = MIN(MAX(aPoint.y, minPointY), _CGRectGetMaxY(visibleFrame) - 8.0);
-
-    return restrictedPoint;
-}
-
 - (void)trackMoveWithEvent:(CPEvent)anEvent
 {
-    if (![[self window] isMovable])
+    var theWindow = [self window];
+
+    if (![theWindow isMovable])
         return;
 
     var type = [anEvent type];
 
     if (type === CPLeftMouseUp)
     {
-        _cachedScreenFrame = nil;
         return;
     }
     else if (type === CPLeftMouseDown)
     {
-        _mouseDraggedPoint = [[self window] convertBaseToGlobal:[anEvent locationInWindow]];
-        _cachedScreenFrame = [[CPPlatformWindow primaryPlatformWindow] visibleFrame];
+        _mouseDraggedPoint = [theWindow convertBaseToGlobal:[anEvent locationInWindow]];
+        _cachedFrame = CGRectMakeCopy([theWindow frame]);
     }
     else if (type === CPLeftMouseDragged)
     {
         var theWindow = [self window],
-            frame = [theWindow frame],
             location = [theWindow convertBaseToGlobal:[anEvent locationInWindow]],
             deltaX = location.x - _mouseDraggedPoint.x,
             deltaY = location.y - _mouseDraggedPoint.y,
-            origin = [self _pointWithinScreenFrame:_CGPointMake(frame.origin.x + deltaX,
-                                                                frame.origin.y + deltaY)];
-        [theWindow setFrameOrigin:origin];
+            origin = CGPointMake(_cachedFrame.origin.x + deltaX, _cachedFrame.origin.y + deltaY);
 
-        _mouseDraggedPoint = [self _pointWithinScreenFrame:location];
+        [theWindow setFrameOrigin:origin];
     }
 
     [CPApp setTarget:self selector:@selector(trackMoveWithEvent:) forNextEventMatchingMask:CPLeftMouseDraggedMask | CPLeftMouseUpMask untilDate:nil inMode:nil dequeue:YES];
@@ -646,10 +675,16 @@ _CPWindowViewResizeSlop = 3;
     [super setFrameSize:newSize];
 
     // reposition sheet if the parent window resizes or moves
-    var theWindow = [self window];
+    var theWindow = [self window],
+        sheet = [theWindow attachedSheet];
 
-    if ([theWindow attachedSheet])
+    if (sheet)
+    {
         [theWindow _setAttachedSheetFrameOrigin];
+        [sheet._windowView _adjustShadowViewSize];
+    }
+    else if (theWindow._isSheet)
+        [self _adjustShadowViewSize];
 }
 
 - (void)setShowsResizeIndicator:(BOOL)shouldShowResizeIndicator
@@ -678,7 +713,7 @@ _CPWindowViewResizeSlop = 3;
 
 - (void)setResizeIndicatorOffset:(CGSize)anOffset
 {
-    if (_CGSizeEqualToSize(_resizeIndicatorOffset, anOffset))
+    if (CGSizeEqualToSize(_resizeIndicatorOffset, anOffset))
         return;
 
     _resizeIndicatorOffset = anOffset;
@@ -689,7 +724,7 @@ _CPWindowViewResizeSlop = 3;
     var size = [_resizeIndicator frame].size,
         boundsSize = [self frame].size;
 
-    [_resizeIndicator setFrameOrigin:_CGPointMake(boundsSize.width - size.width - anOffset.width, boundsSize.height - size.height - anOffset.height)];
+    [_resizeIndicator setFrameOrigin:CGPointMake(boundsSize.width - size.width - anOffset.width, boundsSize.height - size.height - anOffset.height)];
 }
 
 - (CGSize)resizeIndicatorOffset
@@ -725,7 +760,7 @@ _CPWindowViewResizeSlop = 3;
     if (!_toolbarView || [_toolbarView isHidden])
         return [self toolbarOffset].height;
 
-    return _CGRectGetMaxY([_toolbarView frame]);
+    return CGRectGetMaxY([_toolbarView frame]);
 }
 
 - (_CPToolbarView)toolbarView
@@ -737,14 +772,14 @@ _CPWindowViewResizeSlop = 3;
 {
     var theWindow = [self window],
         bounds = [self bounds],
-        width = _CGRectGetWidth(bounds);
+        width = CGRectGetWidth(bounds);
 
     if ([[theWindow toolbar] isVisible])
     {
         var toolbarView = [self toolbarView],
             toolbarOffset = [self toolbarOffset];
 
-        [toolbarView setFrame:_CGRectMake(toolbarOffset.width, toolbarOffset.height, width, _CGRectGetHeight([toolbarView frame]))];
+        [toolbarView setFrame:CGRectMake(toolbarOffset.width, toolbarOffset.height, width, CGRectGetHeight([toolbarView frame]))];
     }
 
     if ([self showsResizeIndicator])
@@ -752,7 +787,7 @@ _CPWindowViewResizeSlop = 3;
         var size = [_resizeIndicator frame].size,
             boundsSize = [self bounds].size;
 
-        [_resizeIndicator setFrameOrigin:_CGPointMake(boundsSize.width - size.width - _resizeIndicatorOffset.width, boundsSize.height - size.height - _resizeIndicatorOffset.height)];
+        [_resizeIndicator setFrameOrigin:CGPointMake(boundsSize.width - size.width - _resizeIndicatorOffset.width, boundsSize.height - size.height - _resizeIndicatorOffset.height)];
     }
 }
 
@@ -829,20 +864,34 @@ _CPWindowViewResizeSlop = 3;
     [self addSubview:_resizeIndicator];
 }
 
-- (void)_enableSheet:(BOOL)enable
+- (void)_enableSheet:(BOOL)enable inWindow:(CPWindow)parentWindow
 {
     if (enable)
     {
-        _sheetShadowView = [[CPView alloc] initWithFrame:_CGRectMake(0, 0, _CGRectGetWidth([self bounds]), 8)];
+        // Clip the shadow view width to the parent's content view
+        var myWidth = [self bounds].size.width,
+            shadowWidth = [self _shadowViewWidthForParentWindow:parentWindow],
+            shadowHeight = [self currentValueForThemeAttribute:@"shadow-height"];
+
+        _sheetShadowView = [[CPView alloc] initWithFrame:CGRectMake(FLOOR((myWidth - shadowWidth) / 2), 0, shadowWidth, shadowHeight)];
         [_sheetShadowView setAutoresizingMask:CPViewWidthSizable];
         [self addSubview:_sheetShadowView];
     }
     else
     {
         [_sheetShadowView removeFromSuperview];
+        _sheetShadowView = nil;
     }
 
     [self setNeedsLayout];
+}
+
+- (CGRect)_shadowViewWidthForParentWindow:(CPWindow)parentWindow
+{
+    var myWidth = [self bounds].size.width,
+        parentWidth = [[parentWindow contentView] bounds].size.width;
+
+    return MIN(myWidth, parentWidth);
 }
 
 - (void)layoutSubviews
@@ -861,9 +910,28 @@ _CPWindowViewResizeSlop = 3;
     }
 }
 
+- (void)_adjustShadowViewSize
+{
+    if (!_sheetShadowView)
+        return;
+
+    var myWidth = [self frame].size.width,
+        shadowFrame = [_sheetShadowView frame],
+        shadowWidth = [self _shadowViewWidthForParentWindow:_window._parentView];
+
+    shadowFrame.origin.x = FLOOR((myWidth - shadowWidth) / 2);
+    shadowFrame.size.width = shadowWidth;
+    [_sheetShadowView setFrame:shadowFrame];
+}
+
 - (CGSize)_minimumResizeSize
 {
-    return _CGSizeMake(0, _CPWindowViewMinContentHeight);
+    return CGSizeMake(0, _CPWindowViewMinContentHeight);
+}
+
+- (int)bodyOffset
+{
+    return [self frame].origin.y;
 }
 
 @end

@@ -108,19 +108,19 @@
 - (CGPoint)constrainScrollPoint:(CGPoint)aPoint
 {
     if (!_documentView)
-        return _CGPointMakeZero();
+        return CGPointMakeZero();
 
     var documentFrame = [_documentView frame];
 
-    aPoint.x = MAX(0.0, MIN(aPoint.x, MAX(_CGRectGetWidth(documentFrame) - _CGRectGetWidth(_bounds), 0.0)));
-    aPoint.y = MAX(0.0, MIN(aPoint.y, MAX(_CGRectGetHeight(documentFrame) - _CGRectGetHeight(_bounds), 0.0)));
+    aPoint.x = MAX(0.0, MIN(aPoint.x, MAX(CGRectGetWidth(documentFrame) - CGRectGetWidth(_bounds), 0.0)));
+    aPoint.y = MAX(0.0, MIN(aPoint.y, MAX(CGRectGetHeight(documentFrame) - CGRectGetHeight(_bounds), 0.0)));
 
     return aPoint;
 }
 
 - (void)setBoundsOrigin:(CGPoint)aPoint
 {
-    if (_CGPointEqualToPoint(_bounds.origin, aPoint))
+    if (CGPointEqualToPoint(_bounds.origin, aPoint))
         return;
 
     [super setBoundsOrigin:aPoint];

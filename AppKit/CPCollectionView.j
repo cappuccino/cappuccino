@@ -20,9 +20,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#import "../Foundation/CPRange.h"
-#import "../Foundation/Ref.h"
-
 @import <Foundation/CPArray.j>
 @import <Foundation/CPData.j>
 @import <Foundation/CPIndexSet.j>
@@ -34,9 +31,6 @@
 @import "CPDragServer_Constants.j"
 @import "CPPasteboard.j"
 @import "CPView.j"
-
-@class CPClipView
-
 
 /*!
     @ingroup appkit
@@ -131,8 +125,8 @@ var HORIZONTAL_MARGIN = 2;
         _maxNumberOfRows = 0;
         _maxNumberOfColumns = 0;
 
-        _minItemSize = _CGSizeMakeZero();
-        _maxItemSize = _CGSizeMakeZero();
+        _minItemSize = CGSizeMakeZero();
+        _maxItemSize = CGSizeMakeZero();
 
         [self setBackgroundColors:nil];
 
@@ -156,11 +150,11 @@ var HORIZONTAL_MARGIN = 2;
     _numberOfColumns = CPNotFound;
     _numberOfRows = CPNotFound;
 
-    _itemSize = _CGSizeMakeZero();
+    _itemSize = CGSizeMakeZero();
 
     _selectionIndexes = [CPIndexSet indexSet];
 
-    _storedFrameSize = _CGSizeMakeZero();
+    _storedFrameSize = CGSizeMakeZero();
 
     _needsMinMaxItemSizeUpdate = YES;
     _uniformSubviewsResizing = NO;
@@ -176,50 +170,47 @@ var HORIZONTAL_MARGIN = 2;
 
 /*!
     Sets the item prototype to \c anItem
+    @param anItem the new item prototype.
 
-    The item prototype should implement the CPCoding protocol
-    because the item is copied by archiving and unarchiving the
-    prototypal view.
+    @note
+    - If anItem is located in an external cib file, representedObject, outlets, and bindings will be automatically restored when an item is created.
+    - If anItem and its view belong to the same cib as the collection view, the item prototype should implement the CPCoding protocol because the item is copied by archiving and unarchiving the prototypal view.
+    @note
+        Bindings won't be restored through archiving, instead you need to subclass the -representedObject: method and update the view there.
 
-    Example:
+    @par Example:
 
-    <pre>
-      @implement MyCustomView : CPCollectionViewItem
-      {
-          CPArray   items   @accessors;
-      }
+@code
+@implementation MyCustomPrototypeItem: CPCollectionViewItem
+{
+    @outlet CPTextField textField;
+}
 
-      - (id)initWithFrame:(CGRect)aFrame
-      {
-        self = [super initWithFrame:aFrame];
-        if (self)
-        {
-          items = [];
-        }
-        return self;
-      }
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super initWithCoder:aCoder];
 
-      - (id)initWithCoder:(CPCoder)aCoder
-      {
-        self = [super initWithCoder:aCoder];
-        items = [aCoder decodeObjectForKey:@"KEY"];
-        return self;
-      }
+    textField = [aCoder decodeObjectForKey:@"TextField"];
 
-      - (void)encodeWithCoder:(CPCoder)aCoder
-      {
-        [aCoder encodeObject:items forKey:@"KEY"];
-        [super encodeWithCoder:aCoder];
-      }
+    return self;
+}
 
-      @end
-    </pre>
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [super encodeWithCoder:aCoder];
+    [aCoder encodeConditionalObject:textField forKey:@"TextField"];
+}
 
-    This will allow the collection view to create multiple 'clean' copies
-    of the item prototype which will maintain the original values for item
-    and all of the properties archived by the super class.
+- (void)setRepresentedObject:(id)anObject
+{
+    [super setRepresentedObject:anObject];
+    [textField setStringValue:[anObject objectForKey:@"value"]];
+    [[self view] setColor:[anObject objectForKey:@"color"]];
+}
 
-    @param anItem the new item prototype
+@end
+@endcode
+
 */
 - (void)setItemPrototype:(CPCollectionViewItem)anItem
 {
@@ -501,7 +492,7 @@ var HORIZONTAL_MARGIN = 2;
 
     [self _updateMinMaxItemSizeIfNeeded];
 
-    [self _computeGridWithSize:frameSize count:AT_REF(count)];
+    [self _computeGridWithSize:frameSize count:@ref(count)];
 
     //CPLog.debug("frameSize="+CPStringFromSize(frameSize) + "itemSize="+CPStringFromSize(itemSize) + " ncols=" +  colsRowsCount[0] +" nrows="+ colsRowsCount[1]+" displayCount="+ colsRowsCount[2]);
 
@@ -511,7 +502,7 @@ var HORIZONTAL_MARGIN = 2;
     if (!lazyFlag ||
         _numberOfColumns !== oldNumberOfColumns ||
         _numberOfRows    !== oldNumberOfRows ||
-        !_CGSizeEqualToSize(_itemSize, oldItemSize))
+        !CGSizeEqualToSize(_itemSize, oldItemSize))
 
         [self displayItems:_items frameSize:_storedFrameSize itemSize:_itemSize columns:_numberOfColumns rows:_numberOfRows count:count];
 }
@@ -520,7 +511,7 @@ var HORIZONTAL_MARGIN = 2;
 {
     var width               = aSuperviewSize.width,
         height              = aSuperviewSize.height,
-        itemSize            = _CGSizeMakeCopy(_minItemSize),
+        itemSize            = CGSizeMakeCopy(_minItemSize),
         maxItemSizeWidth    = _maxItemSize.width,
         maxItemSizeHeight   = _maxItemSize.height,
         itemsCount          = [_items count],
@@ -559,8 +550,8 @@ var HORIZONTAL_MARGIN = 2;
     if (maxItemSizeHeight > 0)
         itemSizeHeight = MIN(itemSizeHeight, maxItemSizeHeight);
 
-    _itemSize        = _CGSizeMake(MAX(_minItemSize.width, itemSize.width), MAX(_minItemSize.height, itemSizeHeight));
-    _storedFrameSize = _CGSizeMake(MAX(width, _minItemSize.width), height);
+    _itemSize        = CGSizeMake(MAX(_minItemSize.width, itemSize.width), MAX(_minItemSize.height, itemSizeHeight));
+    _storedFrameSize = CGSizeMake(MAX(width, _minItemSize.width), height);
     _numberOfColumns = numberOfColumns;
     _numberOfRows    = numberOfRows;
     countRef(MIN(itemsCount, numberOfColumns * numberOfRows));
@@ -581,7 +572,7 @@ var HORIZONTAL_MARGIN = 2;
 
         if (idx >= displayCount)
         {
-            [view setFrameOrigin:_CGPointMake(-anItemSize.width, -anItemSize.height)];
+            [view setFrameOrigin:CGPointMake(-anItemSize.width, -anItemSize.height)];
             return;
         }
 
@@ -591,7 +582,7 @@ var HORIZONTAL_MARGIN = 2;
             y += _verticalMargin + anItemSize.height;
         }
 
-        [view setFrameOrigin:_CGPointMake(x, y)];
+        [view setFrameOrigin:CGPointMake(x, y)];
         [view setFrameSize:anItemSize];
 
         x += anItemSize.width + _horizontalMargin;
@@ -694,12 +685,12 @@ var HORIZONTAL_MARGIN = 2;
     if (aSize === nil || aSize === undefined)
         [CPException raise:CPInvalidArgumentException reason:"Invalid value provided for minimum size"];
 
-    if (_CGSizeEqualToSize(_minItemSize, aSize))
+    if (CGSizeEqualToSize(_minItemSize, aSize))
         return;
 
-    _minItemSize = _CGSizeMakeCopy(aSize);
+    _minItemSize = CGSizeMakeCopy(aSize);
 
-    if (_CGSizeEqualToSize(_minItemSize, _CGSizeMakeZero()))
+    if (CGSizeEqualToSize(_minItemSize, CGSizeMakeZero()))
         _needsMinMaxItemSizeUpdate = YES;
 
     [self tile];
@@ -719,10 +710,10 @@ var HORIZONTAL_MARGIN = 2;
 */
 - (void)setMaxItemSize:(CGSize)aSize
 {
-    if (_CGSizeEqualToSize(_maxItemSize, aSize))
+    if (CGSizeEqualToSize(_maxItemSize, aSize))
         return;
 
-    _maxItemSize = _CGSizeMakeCopy(aSize);
+    _maxItemSize = CGSizeMakeCopy(aSize);
 
 //    if (_maxItemSize.width == 0 || _maxItemSize.height == 0)
 //        _needsMinMaxItemSizeUpdate = YES;
@@ -794,9 +785,9 @@ var HORIZONTAL_MARGIN = 2;
                     newSelectedRange = nil;
 
                 if (index < firstSelectedIndex)
-                    newSelectedRange = _CPMakeRange(index, (firstSelectedIndex - index) + 1);
+                    newSelectedRange = CPMakeRange(index, (firstSelectedIndex - index) + 1);
                 else
-                    newSelectedRange = _CPMakeRange(firstSelectedIndex, (index - firstSelectedIndex) + 1);
+                    newSelectedRange = CPMakeRange(firstSelectedIndex, (index - firstSelectedIndex) + 1);
 
                 indexes = [[self selectionIndexes] copy];
                 [indexes addIndexesInRange:newSelectedRange];
@@ -945,9 +936,9 @@ var HORIZONTAL_MARGIN = 2;
     // Create and position the drop indicator view.
 
     if (!_dropView)
-        _dropView = [[_CPCollectionViewDropIndicator alloc] initWithFrame:_CGRectMake(-8, -8, 0, 0)];
+        _dropView = [[_CPCollectionViewDropIndicator alloc] initWithFrame:CGRectMake(-8, -8, 0, 0)];
 
-    [_dropView setFrameSize:_CGSizeMake(10, _itemSize.height + _verticalMargin)];
+    [_dropView setFrameSize:CGSizeMake(10, _itemSize.height + _verticalMargin)];
     [self addSubview:_dropView];
 }
 
@@ -983,14 +974,14 @@ var HORIZONTAL_MARGIN = 2;
 
     [[CPPasteboard pasteboardWithName:CPDragPboard] declareTypes:dragTypes owner:self];
 
-    var dragImageOffset = _CGSizeMakeZero(),
+    var dragImageOffset = CGSizeMakeZero(),
         view = [self _draggingViewForItemsAtIndexes:_selectionIndexes withEvent:_mouseDownEvent offset:dragImageOffset];
 
     [view setFrameSize:_itemSize];
     [view setAlphaValue:0.7];
 
     var dragLocation = [self convertPoint:locationInWindow fromView:nil],
-        dragPoint = _CGPointMake(dragLocation.x - _itemSize.width / 2 , dragLocation.y - _itemSize.height / 2);
+        dragPoint = CGPointMake(dragLocation.x - _itemSize.width / 2 , dragLocation.y - _itemSize.height / 2);
 
     [self dragView:view
         at:dragPoint
@@ -1032,7 +1023,7 @@ var HORIZONTAL_MARGIN = 2;
 - (CPDragOperation)draggingEntered:(id)draggingInfo
 {
     var dropIndex = -1,
-        dropIndexRef = AT_REF(dropIndex),
+        dropIndexRef = @ref(dropIndex),
         dragOp = [self _validateDragWithInfo:draggingInfo dropIndex:dropIndexRef dropOperation:1];
 
     dropIndex = dropIndexRef();
@@ -1050,7 +1041,7 @@ var HORIZONTAL_MARGIN = 2;
         return _currentDragOperation;
 
     var dropIndex,
-        dropIndexRef = AT_REF(dropIndex);
+        dropIndexRef = @ref(dropIndex);
 
     var dragOperation = [self _validateDragWithInfo:draggingInfo dropIndex:dropIndexRef dropOperation:1];
 
@@ -1068,7 +1059,7 @@ var HORIZONTAL_MARGIN = 2;
 
     if ([_delegate respondsToSelector:@selector(collectionView:validateDrop:proposedIndex:dropOperation:)])
     {
-        var dropIndexRef2 = AT_REF(dropIndex);
+        var dropIndexRef2 = @ref(dropIndex);
 
         result = [_delegate collectionView:self validateDrop:draggingInfo proposedIndex:dropIndexRef2  dropOperation:dropOperation];
 
@@ -1122,12 +1113,12 @@ Not supported. Use -collectionView:dataForItemsAtIndexes:fortype:
     _currentDragOperation = dragOperation;
 
     var frameOrigin,
-        dropviewFrameWidth = _CGRectGetWidth([_dropView frame]);
+        dropviewFrameWidth = CGRectGetWidth([_dropView frame]);
 
     if (_currentDropIndex == -1 || _currentDragOperation == CPDragOperationNone)
-        frameOrigin = _CGPointMake(-dropviewFrameWidth, 0);
+        frameOrigin = CGPointMake(-dropviewFrameWidth, 0);
     else if (_currentDropIndex == 0)
-        frameOrigin = _CGPointMake(0, 0);
+        frameOrigin = CGPointMake(0, 0);
     else
     {
         var offset;
@@ -1144,7 +1135,7 @@ Not supported. Use -collectionView:dataForItemsAtIndexes:fortype:
 
         var rect = [self frameForItemAtIndex:dropIndex];
 
-        frameOrigin = _CGPointMake(_CGRectGetMaxX(rect) + offset, rect.origin.y - _verticalMargin);
+        frameOrigin = CGPointMake(CGRectGetMaxX(rect) + offset, rect.origin.y - _verticalMargin);
     }
 
     [_dropView setFrameOrigin:frameOrigin];
@@ -1191,8 +1182,8 @@ Not supported. Use -collectionView:dataForItemsAtIndexes:fortype:
 - (void)drawRect:(CGRect)aRect
 {
     var context = [[CPGraphicsContext currentContext] graphicsPort],
-        width = _CGRectGetWidth(aRect),
-        circleRect = _CGRectMake(1, 1, width - 2, width - 2);
+        width = CGRectGetWidth(aRect),
+        circleRect = CGRectMake(1, 1, width - 2, width - 2);
 
     CGContextSetStrokeColor(context, [CPColor colorWithHexString:@"4886ca"]);
     CGContextSetFillColor(context, [CPColor whiteColor]);
@@ -1206,8 +1197,8 @@ Not supported. Use -collectionView:dataForItemsAtIndexes:fortype:
 
     //then draw the line
     CGContextBeginPath(context);
-    CGContextMoveToPoint(context, FLOOR(width / 2), _CGRectGetMinY(aRect) + width);
-    CGContextAddLineToPoint(context, FLOOR(width / 2), _CGRectGetHeight(aRect));
+    CGContextMoveToPoint(context, FLOOR(width / 2), CGRectGetMinY(aRect) + width);
+    CGContextAddLineToPoint(context, FLOOR(width / 2), CGRectGetHeight(aRect));
     CGContextStrokePath(context);
 }
 
@@ -1217,7 +1208,12 @@ Not supported. Use -collectionView:dataForItemsAtIndexes:fortype:
 
 - (void)_modifySelectionWithNewIndex:(int)anIndex direction:(int)aDirection expand:(BOOL)shouldExpand
 {
-    anIndex = MIN(MAX(anIndex, 0), [[self items] count] - 1);
+    var count = [[self items] count];
+
+    if (count === 0)
+        return;
+
+    anIndex = MIN(MAX(anIndex, 0), count - 1);
 
     if (_allowsMultipleSelection && shouldExpand)
     {
@@ -1227,9 +1223,9 @@ Not supported. Use -collectionView:dataForItemsAtIndexes:fortype:
 
         // if the direction is backward (-1) check with the bottom anchor
         if (aDirection === -1)
-            [indexes addIndexesInRange:_CPMakeRange(anIndex, bottomAnchor - anIndex + 1)];
+            [indexes addIndexesInRange:CPMakeRange(anIndex, bottomAnchor - anIndex + 1)];
         else
-            [indexes addIndexesInRange:_CPMakeRange(topAnchor, anIndex -  topAnchor + 1)];
+            [indexes addIndexesInRange:CPMakeRange(topAnchor, anIndex -  topAnchor + 1)];
     }
     else
         indexes = [CPIndexSet indexSetWithIndex:anIndex];
@@ -1242,7 +1238,7 @@ Not supported. Use -collectionView:dataForItemsAtIndexes:fortype:
 {
     var frame = [self frameForItemsAtIndexes:[self selectionIndexes]];
 
-    if (!_CGRectIsNull(frame))
+    if (!CGRectIsEmpty(frame))
         [self scrollRectToVisible:frame];
 }
 
@@ -1390,10 +1386,10 @@ var CPCollectionViewMinItemSizeKey              = @"CPCollectionViewMinItemSizeK
 {
     [super encodeWithCoder:aCoder];
 
-    if (!_CGSizeEqualToSize(_minItemSize, _CGSizeMakeZero()))
+    if (!CGSizeEqualToSize(_minItemSize, CGSizeMakeZero()))
       [aCoder encodeSize:_minItemSize forKey:CPCollectionViewMinItemSizeKey];
 
-    if (!_CGSizeEqualToSize(_maxItemSize, _CGSizeMakeZero()))
+    if (!CGSizeEqualToSize(_maxItemSize, CGSizeMakeZero()))
       [aCoder encodeSize:_maxItemSize forKey:CPCollectionViewMaxItemSizeKey];
 
     [aCoder encodeInt:_maxNumberOfRows forKey:CPCollectionViewMaxNumberOfRowsKey];

@@ -28,10 +28,10 @@
 
 @global CPPopoverAppearanceMinimal
 
-var _CPPopoverWindowViewDefaultCursorSize = _CGSizeMake(16, 10),
+var _CPPopoverWindowViewDefaultCursorSize = CGSizeMake(16, 10),
     _CPPopoverWindowViewRadius = 5.0,
     _CPPopoverWindowViewStrokeWidth = 1.0,
-    _CPPopoverWindowViewShadowSize = _CGSizeMake(0, 6),
+    _CPPopoverWindowViewShadowSize = CGSizeMake(0, 6),
     _CPPopoverWindowViewShadowBlur = 15.0;
 
 /*!
@@ -71,7 +71,7 @@ var _CPPopoverWindowViewDefaultCursorSize = _CGSizeMake(16, 10),
 */
 - (CGRect)contentRectForFrameRect:(CGRect)aFrameRect
 {
-    var contentRect = _CGRectMakeCopy(aFrameRect),
+    var contentRect = CGRectMakeCopy(aFrameRect),
         modifierX = 16,
         modifierY = 19;
 
@@ -79,7 +79,7 @@ var _CPPopoverWindowViewDefaultCursorSize = _CGSizeMake(16, 10),
     //
     // @comment: If we use this, each time we open the popover, the content
     // view is reduced a little over and over
-    // return _CGRectInset(contentRect, modifierX, modifierY);
+    // return CGRectInset(contentRect, modifierX, modifierY);
 
     contentRect.origin.x += modifierX;
     contentRect.origin.y += modifierY;
@@ -96,7 +96,7 @@ var _CPPopoverWindowViewDefaultCursorSize = _CGSizeMake(16, 10),
 */
 + (CGRect)frameRectForContentRect:(CGRect)aContentRect
 {
-    var frameRect = _CGRectMakeCopy(aContentRect),
+    var frameRect = CGRectMakeCopy(aContentRect),
         modifierX = 16,
         modifierY = 19;
 
@@ -104,7 +104,7 @@ var _CPPopoverWindowViewDefaultCursorSize = _CGSizeMake(16, 10),
     // @comment: If we use this, each time we open the popover, the content
     //
     // view is reduced a little over and over
-    // return _CGRectOffset(frameRect, modifierX, modifierY);
+    // return CGRectOffset(frameRect, modifierX, modifierY);
 
     frameRect.origin.x -= modifierX;
     frameRect.origin.y -= modifierY;
@@ -124,7 +124,7 @@ var _CPPopoverWindowViewDefaultCursorSize = _CGSizeMake(16, 10),
         _arrowOffsetX = 0.0;
         _arrowOffsetY = 0.0;
         _appearance = CPPopoverAppearanceMinimal;
-        _cursorSize = _CGSizeMakeCopy(_CPPopoverWindowViewDefaultCursorSize);
+        _cursorSize = CGSizeMakeCopy(_CPPopoverWindowViewDefaultCursorSize);
     }
 
     return self;
@@ -135,7 +135,7 @@ var _CPPopoverWindowViewDefaultCursorSize = _CGSizeMake(16, 10),
 */
 - (void)hideCursor
 {
-    _cursorSize = _CGSizeMakeZero();
+    _cursorSize = CGSizeMakeZero();
     [self setNeedsDisplay:YES];
 }
 
@@ -144,7 +144,7 @@ var _CPPopoverWindowViewDefaultCursorSize = _CGSizeMake(16, 10),
 */
 - (void)showCursor
 {
-    _cursorSize = _CGSizeMakeCopy(_CPPopoverWindowViewDefaultCursorSize);
+    _cursorSize = CGSizeMakeCopy(_CPPopoverWindowViewDefaultCursorSize);
     [self setNeedsDisplay:YES];
 }
 
@@ -190,19 +190,19 @@ var _CPPopoverWindowViewDefaultCursorSize = _CGSizeMake(16, 10),
 
     CGContextBeginPath(context);
     CGContextSetShadowWithColor(context, shadowSize, shadowBlur, shadowColor);
-    CGContextDrawLinearGradient(context, gradient, _CGPointMake(_CGRectGetMidX(frame), 0.0), _CGPointMake(_CGRectGetMidX(frame), frame.size.height), 0);
+    CGContextDrawLinearGradient(context, gradient, CGPointMake(CGRectGetMidX(frame), 0.0), CGPointMake(CGRectGetMidX(frame), frame.size.height), 0);
 
-    var xMin = _CGRectGetMinX(frame),
-        xMax = _CGRectGetMaxX(frame),
-        yMin = _CGRectGetMinY(frame),
-        yMax = _CGRectGetMaxY(frame),
+    var xMin = CGRectGetMinX(frame),
+        xMax = CGRectGetMaxX(frame),
+        yMin = CGRectGetMinY(frame),
+        yMax = CGRectGetMaxY(frame),
         arrowMinX = CGAlignCoordinate(xMin + radius + strokeWidth),
         arrowMaxX = CGAlignCoordinate(xMax - radius - strokeWidth),
         arrowMinY = CGAlignCoordinate(yMin + radius + strokeWidth),
         arrowMaxY = CGAlignCoordinate(yMax - radius + strokeWidth),
-        arrowAnchor = _CGPointMakeZero(),
-        arrowStart = _CGPointMakeZero(),
-        pt = _CGPointMakeZero();
+        arrowAnchor = CGPointMakeZero(),
+        arrowStart = CGPointMakeZero(),
+        pt = CGPointMakeZero();
 
     // draw!
     var path = CGPathCreateMutable();
@@ -237,7 +237,7 @@ var _CPPopoverWindowViewDefaultCursorSize = _CGSizeMake(16, 10),
                     pt.y = arrowMaxY - arrowWidth;
 
                 pt.x = arrowAnchor.x;
-                arrowStart = _CGPointMakeCopy(pt);
+                arrowStart = CGPointMakeCopy(pt);
                 CGPathAddLineToPoint(path, NULL, pt.x, pt.y);
 
                 // top edge -> point
@@ -279,7 +279,7 @@ var _CPPopoverWindowViewDefaultCursorSize = _CGSizeMake(16, 10),
                     pt.y = arrowMaxY;
 
                 pt.x = arrowAnchor.x;
-                arrowStart = _CGPointMakeCopy(pt);
+                arrowStart = CGPointMakeCopy(pt);
                 CGPathAddLineToPoint(path, NULL, pt.x, pt.y);
 
                 // bottom edge -> point
@@ -328,7 +328,7 @@ var _CPPopoverWindowViewDefaultCursorSize = _CGSizeMake(16, 10),
                     pt.x = arrowMaxX - arrowWidth;
 
                 pt.y = arrowAnchor.y;
-                arrowStart = _CGPointMakeCopy(pt);
+                arrowStart = CGPointMakeCopy(pt);
                 CGPathAddLineToPoint(path, NULL, pt.x, pt.y);
 
                 // left edge -> point
@@ -370,7 +370,7 @@ var _CPPopoverWindowViewDefaultCursorSize = _CGSizeMake(16, 10),
                     pt.x = arrowMaxX;
 
                 pt.y = arrowAnchor.y;
-                arrowStart = _CGPointMakeCopy(pt);
+                arrowStart = CGPointMakeCopy(pt);
                 CGPathAddLineToPoint(path, NULL, pt.x, pt.y);
 
                 // right edge -> point

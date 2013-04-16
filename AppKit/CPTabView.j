@@ -79,11 +79,11 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 {
     _selectedIndex = CPNotFound;
 
-    _tabs = [[CPSegmentedControl alloc] initWithFrame:_CGRectMake(0, 0, 0, 0)];
+    _tabs = [[CPSegmentedControl alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
     [_tabs setHitTests:NO];
 
     var height = [_tabs valueForThemeAttribute:@"default-height"];
-    [_tabs setFrameSize:_CGSizeMake(0, height)];
+    [_tabs setFrameSize:CGSizeMake(0, height)];
 
     _box = [[CPBox alloc] initWithFrame:[self  bounds]];
     [self setBackgroundColor:[CPColor colorWithCalibratedWhite:0.95 alpha:1.0]];
@@ -373,11 +373,11 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
     else
     {
         var aFrame = [self frame],
-            segmentedHeight = _CGRectGetHeight([_tabs frame]),
+            segmentedHeight = CGRectGetHeight([_tabs frame]),
             origin = _type === CPTopTabsBezelBorder ? segmentedHeight / 2 : 0;
 
-        [_box setFrame:_CGRectMake(0, origin, _CGRectGetWidth(aFrame),
-                                   _CGRectGetHeight(aFrame) - segmentedHeight / 2)];
+        [_box setFrame:CGRectMake(0, origin, CGRectGetWidth(aFrame),
+                                   CGRectGetHeight(aFrame) - segmentedHeight / 2)];
 
         [self _repositionTabs];
     }
@@ -447,13 +447,13 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 
 - (void)_repositionTabs
 {
-    var horizontalCenterOfSelf = _CGRectGetWidth([self bounds]) / 2,
-        verticalCenterOfTabs = _CGRectGetHeight([_tabs bounds]) / 2;
+    var horizontalCenterOfSelf = CGRectGetWidth([self bounds]) / 2,
+        verticalCenterOfTabs = CGRectGetHeight([_tabs bounds]) / 2;
 
     if (_type === CPBottomTabsBezelBorder)
-        [_tabs setCenter:_CGPointMake(horizontalCenterOfSelf, _CGRectGetHeight([self bounds]) - verticalCenterOfTabs)];
+        [_tabs setCenter:CGPointMake(horizontalCenterOfSelf, CGRectGetHeight([self bounds]) - verticalCenterOfTabs)];
     else
-        [_tabs setCenter:_CGPointMake(horizontalCenterOfSelf, verticalCenterOfTabs)];
+        [_tabs setCenter:CGPointMake(horizontalCenterOfSelf, verticalCenterOfTabs)];
 }
 
 - (void)_setSelectedIndex:(CPNumber)index
@@ -504,8 +504,6 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
         _items = [aCoder decodeObjectForKey:CPTabViewItemsKey];
         [_items makeObjectsPerformSelector:@selector(_setTabView:) withObject:self];
 
-        [self _updateItems];
-
         [self setDelegate:[aCoder decodeObjectForKey:CPTabViewDelegateKey]];
 
         self.selectOnAwake = [aCoder decodeObjectForKey:CPTabViewSelectedItemKey];
@@ -517,6 +515,10 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
 
 - (void)awakeFromCib
 {
+    // This cannot be run in initWithCoder because it might call selectTabViewItem:, which is
+    // not safe to call before the views of the tab views items are fully decoded.
+    [self _updateItems];
+
     if (self.selectOnAwake)
     {
         [self selectTabViewItem:self.selectOnAwake];
@@ -532,7 +534,13 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
+    // Don't bother to encode the CPBox. We will recreate it on decode and its content view is already
+    // stored by the tab view item. Not encoding _box makes the resulting archive smaller and reduces
+    // the surface for decoding bugs (of which we've had many in tab view).
+    var subviews = [self subviews];
+    [_box removeFromSuperview];
     [super encodeWithCoder:aCoder];
+    [self setSubviews:subviews];
 
     [aCoder encodeObject:_items forKey:CPTabViewItemsKey];
 

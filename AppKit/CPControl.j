@@ -20,8 +20,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#import "../Foundation/Ref.h"
-
 @import <Foundation/CPFormatter.j>
 @import <Foundation/CPTimer.j>
 
@@ -119,11 +117,11 @@ var CPControlBlackColor = [CPColor blackColor];
             @"text-color": [CPColor blackColor],
             @"font": [CPFont systemFontOfSize:CPFontCurrentSystemSize],
             @"text-shadow-color": [CPNull null],
-            @"text-shadow-offset": _CGSizeMakeZero(),
+            @"text-shadow-offset": CGSizeMakeZero(),
             @"image-position": CPImageLeft,
             @"image-scaling": CPScaleToFit,
-            @"min-size": _CGSizeMakeZero(),
-            @"max-size": _CGSizeMake(-1.0, -1.0),
+            @"min-size": CGSizeMakeZero(),
+            @"max-size": CGSizeMake(-1.0, -1.0),
         };
 }
 
@@ -553,10 +551,10 @@ var CPControlBlackColor = [CPColor blackColor];
     {
         value = nil;
 
-        if ([_formatter getObjectValue:AT_REF(value) forString:aString errorDescription:nil] === NO)
+        if ([_formatter getObjectValue:@ref(value) forString:aString errorDescription:nil] === NO)
         {
             // If the given string is non-empty and doesn't work, Cocoa tries an empty string.
-            if (!aString || [_formatter getObjectValue:AT_REF(value) forString:@"" errorDescription:nil] === NO)
+            if (!aString || [_formatter getObjectValue:@ref(value) forString:@"" errorDescription:nil] === NO)
                 value = undefined;  // Means the value is invalid
         }
     }

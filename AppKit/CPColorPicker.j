@@ -115,12 +115,12 @@
 
 - (id)initView
 {
-    var aFrame = _CGRectMake(0, 0, CPColorPickerViewWidth, CPColorPickerViewHeight);
+    var aFrame = CGRectMake(0, 0, CPColorPickerViewWidth, CPColorPickerViewHeight);
 
     _pickerView = [[CPView alloc] initWithFrame:aFrame];
     [_pickerView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
 
-    _brightnessSlider = [[CPSlider alloc] initWithFrame:_CGRectMake(0, (aFrame.size.height - 34), aFrame.size.width, 15)];
+    _brightnessSlider = [[CPSlider alloc] initWithFrame:CGRectMake(0, (aFrame.size.height - 34), aFrame.size.width, 15)];
 
     [_brightnessSlider setValue:15.0 forThemeAttribute:@"track-width"];
     [_brightnessSlider setValue:[CPColor colorWithPatternImage:[[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPColorPicker class]] pathForResource:@"brightness_bar.png"]]] forThemeAttribute:@"track-color"];
@@ -133,7 +133,7 @@
     [_brightnessSlider setAction:@selector(brightnessSliderDidChange:)];
     [_brightnessSlider setAutoresizingMask:CPViewWidthSizable | CPViewMinYMargin];
 
-    _hueSaturationView = [[__CPColorWheel alloc] initWithFrame:_CGRectMake(0, 0, aFrame.size.width, aFrame.size.height - 38)];
+    _hueSaturationView = [[__CPColorWheel alloc] initWithFrame:CGRectMake(0, 0, aFrame.size.width, aFrame.size.height - 38)];
     [_hueSaturationView setDelegate:self];
     [_hueSaturationView setAutoresizingMask:(CPViewWidthSizable | CPViewHeightSizable)];
 

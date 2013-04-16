@@ -29,6 +29,7 @@
 @import <AppKit/CPCheckBox.j>
 @import <AppKit/CPComboBox.j>
 @import <AppKit/CPColorWell.j>
+@import <AppKit/CPDatePicker.j>
 @import <AppKit/CPLevelIndicator.j>
 @import <AppKit/CPPopUpButton.j>
 @import <AppKit/CPProgressIndicator.j>
@@ -532,7 +533,7 @@ var themedButtonValues = nil,
         [@"bezel-color",        bezelColor["@"],                    CPThemeStateBezeled],
         [@"bezel-color",        bezelFocusedColor,                  CPThemeStateBezeled | CPThemeStateEditing],
         [@"bezel-color",        bezelColor["disabled"],             CPThemeStateBezeled | CPThemeStateDisabled],
-        [@"font",               [CPFont systemFontOfSize:12.0],     CPThemeStateBezeled],
+        [@"font",               [CPFont systemFontOfSize:CPFontCurrentSystemSize],     CPThemeStateBezeled],
 
         [@"content-inset",      CGInsetMake(8.0, 7.0, 5.0, 10.0),   CPThemeStateBezeled],
         [@"content-inset",      CGInsetMake(8.0, 7.0, 5.0, 10.0),   CPThemeStateBezeled | CPThemeStateEditing],
@@ -546,20 +547,20 @@ var themedButtonValues = nil,
         [@"content-inset",      CGInsetMake(0.0, 0.0, 0.0, 5.0),    CPThemeStateTableDataView],
 
         [@"text-color",         [CPColor colorWithCalibratedWhite:51.0 / 255.0 alpha:1.0], CPThemeStateTableDataView],
-        [@"text-color",         [CPColor whiteColor],                CPThemeStateTableDataView | CPThemeStateSelectedTableDataView],
-        [@"font",               [CPFont boldSystemFontOfSize:12.0],  CPThemeStateTableDataView | CPThemeStateSelectedTableDataView],
+        [@"text-color",         [CPColor whiteColor],                CPThemeStateTableDataView | CPThemeStateSelectedDataView],
+        [@"font",               [CPFont systemFontOfSize:CPFontCurrentSystemSize],      CPThemeStateTableDataView | CPThemeStateSelectedDataView],
         [@"text-color",         [CPColor blackColor],                CPThemeStateTableDataView | CPThemeStateEditing],
-        [@"text-color",         [CPColor blackColor],                CPThemeStateTableDataView | CPThemeStateSelectedTableDataView | CPThemeStateEditable],
+        [@"text-color",         [CPColor blackColor],                CPThemeStateTableDataView | CPThemeStateSelectedDataView | CPThemeStateEditable],
         [@"content-inset",      CGInsetMake(7.0, 7.0, 5.0, 10.0),     CPThemeStateTableDataView | CPThemeStateEditable],
-        [@"font",               [CPFont systemFontOfSize:12.0],      CPThemeStateTableDataView | CPThemeStateEditing],
+        [@"font",               [CPFont systemFontOfSize:CPFontCurrentSystemSize],      CPThemeStateTableDataView | CPThemeStateEditing],
         [@"bezel-inset",        CGInsetMake(-2.0, -2.0, -2.0, -2.0), CPThemeStateTableDataView | CPThemeStateEditing],
 
         [@"text-color",         [CPColor colorWithCalibratedWhite:125.0 / 255.0 alpha:1.0], CPThemeStateTableDataView | CPThemeStateGroupRow],
-        [@"text-color",         [CPColor colorWithCalibratedWhite:1.0 alpha:1.0], CPThemeStateTableDataView | CPThemeStateGroupRow | CPThemeStateSelectedTableDataView],
+        [@"text-color",         [CPColor colorWithCalibratedWhite:1.0 alpha:1.0], CPThemeStateTableDataView | CPThemeStateGroupRow | CPThemeStateSelectedDataView],
         [@"text-shadow-color",  [CPColor whiteColor],                CPThemeStateTableDataView | CPThemeStateGroupRow],
         [@"text-shadow-offset",  CGSizeMake(0, 1),                   CPThemeStateTableDataView | CPThemeStateGroupRow],
-        [@"text-shadow-color",  [CPColor colorWithCalibratedWhite:0.0 alpha:0.6],                CPThemeStateTableDataView | CPThemeStateGroupRow | CPThemeStateSelectedTableDataView],
-        [@"font",               [CPFont boldSystemFontOfSize:12.0],  CPThemeStateTableDataView | CPThemeStateGroupRow]
+        [@"text-shadow-color",  [CPColor colorWithCalibratedWhite:0.0 alpha:0.6],                CPThemeStateTableDataView | CPThemeStateGroupRow | CPThemeStateSelectedDataView],
+        [@"font",               [CPFont boldSystemFontOfSize:CPFontCurrentSystemSize],  CPThemeStateTableDataView | CPThemeStateGroupRow]
     ];
 
     [self registerThemeValues:themedTextFieldValues forView:textfield];
@@ -650,6 +651,210 @@ var themedButtonValues = nil,
     [self registerThemeValues:overrides forView:searchField inherit:themedRoundedTextFieldValues];
 
     return searchField;
+}
+
++ (CPDatePicker)themedDatePicker
+{
+    var datePicker = [[CPDatePicker alloc] initWithFrame:CGRectMake(40,140,300,29)],
+
+        bezelColor = PatternColor(
+            "textfield-bezel-square{state}{position}.png",
+            {
+                states: ["", "disabled"],
+                positions: "#",
+                width: 4.0,
+                height: 4.0
+            }),
+
+        bezelColorDatePickerTextField = PatternColor(
+            [
+                [@"datepicker-date-segment-0.png", 4.0, 18.0],
+                [@"datepicker-date-segment-1.png", 1.0, 18.0],
+                [@"datepicker-date-segment-2.png", 4.0, 18.0]
+            ],  PatternIsHorizontal),
+
+        themeValues =
+        [
+            [@"bezel-color",        bezelColor["@"],                    CPThemeStateBezeled],
+            [@"bezel-color",        bezelColor["disabled"],             CPThemeStateBezeled | CPThemeStateDisabled],
+
+            [@"font",               [CPFont boldSystemFontOfSize:13.0]],
+            [@"text-color",         [CPColor colorWithWhite:0.2 alpha:0.8]],
+            [@"text-color",         [CPColor colorWithWhite:0.2 alpha:0.5], CPThemeStateDisabled],
+
+            [@"content-inset",      CGInsetMake(6.0, 0.0, 0.0, 3.0),    CPThemeStateNormal],
+            [@"content-inset",      CGInsetMake(3.0, 0.0, 0.0, 3.0),    CPThemeStateBezeled],
+            [@"bezel-inset",        CGInsetMake(3.0, 0.0, 3.0, 0.0),    CPThemeStateBezeled],
+
+            [@"datepicker-textfield-bezel-color", [CPColor clearColor],             CPThemeStateNormal],
+            [@"datepicker-textfield-bezel-color", bezelColorDatePickerTextField,    CPThemeStateSelected],
+            [@"datepicker-textfield-bezel-color", [CPColor clearColor],             CPThemeStateNormal | CPThemeStateDisabled],
+            [@"datepicker-textfield-bezel-color", [CPColor clearColor],             CPThemeStateSelected | CPThemeStateDisabled],
+
+            [@"min-size-datepicker-textfield", CGSizeMake(6.0, 18.0)],
+
+            [@"separator-content-inset", CGInsetMake(0.0, -2.0, 0.0, -1.0)],
+
+            [@"content-inset-datepicker-textfield",  CGInsetMake(2.0, 2.0, 0.0, 1.0),           CPThemeStateNormal],
+            [@"content-inset-datepicker-textfield-separator",CGInsetMake(2.0, 0.0, 0.0, 0.0),   CPThemeStateNormal],
+            [@"content-inset-datepicker-textfield",  CGInsetMake(2.0, 2.0, 0.0, 1.0) ,          CPThemeStateSelected],
+            [@"content-inset-datepicker-textfield-separator",CGInsetMake(2.0, 0.0, 0.0, 0.0),   CPThemeStateSelected],
+
+            [@"date-hour-margin", 7.0],
+            [@"stepper-margin", 5.0],
+
+            [@"min-size",       CGSizeMake(0.0, 29.0)],
+            [@"max-size",       CGSizeMake(-1.0, 29.0)]
+        ];
+
+    [self registerThemeValues:themeValues forView:datePicker];
+
+    return datePicker;
+}
+
++ (CPDatePicker)themedDatePickerCalendar
+{
+    var datePicker = [[CPDatePicker alloc] initWithFrame:CGRectMake(40,140,300,29)],
+
+        arrowImageLeft = PatternImage("datepicker-calendar-arrow-left.png", 7.0, 10.0),
+        arrowImageRight = PatternImage("datepicker-calendar-arrow-right.png", 7.0, 10.0),
+        circleImage = PatternImage("datepicker-circle-image.png", 9.0, 10.0),
+
+        arrowImageLeftHighlighted = PatternImage("datepicker-calendar-arrow-left-highlighted.png", 7.0, 10.0),
+        arrowImageRightHighlighted = PatternImage("datepicker-calendar-arrow-right-highlighted.png", 7.0, 10.0),
+        circleImageHighlighted = PatternImage("datepicker-circle-image-highlighted.png", 9.0, 10.0),
+
+        secondHandColor = PatternColor("datepicker-clock-second-hand.png", 89.0, 89.0),
+        minuteHandColor = PatternColor("datepicker-clock-minute-hand.png", 85.0, 85.0),
+        hourHandColor   = PatternColor("datepicker-clock-hour-hand.png", 47.0, 47.0),
+        middleHandColor = PatternColor("datepicker-clock-middle-hand.png", 13.0, 13.0),
+        clockImageColor = PatternColor("datepicker-clock.png", 122.0, 123.0),
+
+        secondHandColorDisabled = PatternColor("datepicker-clock-second-hand-disabled.png", 89.0, 89.0),
+        minuteHandColorDisabled = PatternColor("datepicker-clock-minute-hand-disabled.png", 85.0, 85.0),
+        hourHandColorDisabled   = PatternColor("datepicker-clock-hour-hand-disabled.png", 47.0, 47.0),
+        middleHandColorDisabled = PatternColor("datepicker-clock-middle-hand-disabled.png", 13.0, 13.0),
+        clockImageColorDisabled = PatternColor("datepicker-clock-disabled.png", 122.0, 123.0),
+
+        themeValues =
+        [
+            [@"border-color", [CPColor colorWithCalibratedRed:217.0 / 255.0 green:217.0 / 255.0 blue:211.0 / 255.0 alpha:1.0],  CPThemeStateNormal],
+            [@"border-color", [CPColor colorWithCalibratedRed:68.0 / 255.0 green:109.0 / 255.0 blue:198.0 / 255.0 alpha:1.0],   CPThemeStateSelected],
+            [@"border-color", [CPColor colorWithCalibratedRed:217.0 / 255.0 green:217.0 / 255.0 blue:211.0 / 255.0 alpha:0.5],  CPThemeStateNormal | CPThemeStateDisabled],
+            [@"border-color", [CPColor colorWithCalibratedRed:68.0 / 255.0 green:109.0 / 255.0 blue:198.0 / 255.0 alpha:0.5],   CPThemeStateSelected | CPThemeStateDisabled],
+
+            [@"bezel-color-calendar", [CPColor whiteColor]],
+            [@"bezel-color-calendar", [CPColor colorWithCalibratedRed:87.0 / 255.0 green:128.0 / 255.0 blue:216.0 / 255.0 alpha:1.0],   CPThemeStateSelected],
+            [@"bezel-color-calendar", [CPColor colorWithCalibratedRed:87.0 / 255.0 green:128.0 / 255.0 blue:216.0 / 255.0 alpha:0.5],   CPThemeStateSelected |CPThemeStateDisabled],
+            [@"bezel-color-clock",    clockImageColor],
+            [@"bezel-color-clock",    clockImageColorDisabled,                                                                          CPThemeStateDisabled],
+
+            [@"title-text-color",           [CPColor colorWithCalibratedRed:79.0 / 255.0 green:79.0 / 255.0 blue:79.0 / 255.0 alpha:1.0]],
+            [@"title-text-shadow-color",    [CPColor whiteColor]],
+            [@"title-text-shadow-offset",   CGSizeMake(0,1)],
+            [@"title-font",                 [CPFont boldSystemFontOfSize:12.0]],
+
+            [@"title-text-color",           [CPColor colorWithCalibratedRed:79.0 / 255.0 green:79.0 / 255.0 blue:79.0 / 255.0 alpha:0.5],       CPThemeStateDisabled],
+            [@"title-text-shadow-color",    [CPColor whiteColor],                                                                               CPThemeStateDisabled],
+            [@"title-text-shadow-offset",   CGSizeMake(0,1),                                                                                    CPThemeStateDisabled],
+            [@"title-font",                 [CPFont boldSystemFontOfSize:12.0],                                                                 CPThemeStateDisabled],
+
+            [@"weekday-text-color",         [CPColor colorWithCalibratedRed:79.0 / 255.0 green:79.0 / 255.0 blue:79.0 / 255.0 alpha:1.0]],
+            [@"weekday-text-shadow-color",  [CPColor whiteColor]],
+            [@"weekday-text-shadow-offset", CGSizeMake(0,1)],
+            [@"weekday-font",               [CPFont systemFontOfSize:11.0]],
+
+            [@"weekday-text-color",         [CPColor colorWithCalibratedRed:79.0 / 255.0 green:79.0 / 255.0 blue:79.0 / 255.0 alpha:0.5],       CPThemeStateDisabled],
+            [@"weekday-text-shadow-color",  [CPColor whiteColor],                                                                               CPThemeStateDisabled],
+            [@"weekday-text-shadow-offset", CGSizeMake(0,1),                                                                                    CPThemeStateDisabled],
+            [@"weekday-font",               [CPFont systemFontOfSize:11.0],                                                                     CPThemeStateDisabled],
+
+            [@"clock-text-color",           [CPColor colorWithCalibratedRed:153.0 / 255.0 green:153.0 / 255.0 blue:153.0 / 255.0 alpha:1.0]],
+            [@"clock-text-shadow-color",    [CPColor whiteColor]],
+            [@"clock-text-shadow-offset",   CGSizeMake(0,1)],
+            [@"clock-font",                 [CPFont systemFontOfSize:11.0]],
+
+            [@"clock-text-color",           [CPColor colorWithCalibratedRed:153.0 / 255.0 green:153.0 / 255.0 blue:153.0 / 255.0 alpha:0.5],    CPThemeStateDisabled],
+            [@"clock-text-shadow-color",    [CPColor whiteColor],                                                                               CPThemeStateDisabled],
+            [@"clock-text-shadow-offset",   CGSizeMake(0,1),                                                                                    CPThemeStateDisabled],
+            [@"clock-font",                 [CPFont systemFontOfSize:11.0],                                                                     CPThemeStateDisabled],
+
+            [@"tile-text-color",            [CPColor colorWithCalibratedRed:34.0 / 255.0 green:34.0 / 255.0 blue:34.0 / 255.0 alpha:1.0],       CPThemeStateNormal],
+            [@"tile-text-shadow-color",     [CPColor whiteColor],                                                                               CPThemeStateNormal],
+            [@"tile-text-shadow-offset",    CGSizeMake(0,1),                                                                                    CPThemeStateNormal],
+            [@"tile-font",                  [CPFont systemFontOfSize:10.0],                                                                     CPThemeStateNormal],
+
+            [@"tile-text-color",            [CPColor colorWithCalibratedRed:87.0 / 255.0 green:128.0 / 255.0 blue:216.0 / 255.0 alpha:1.0],     CPThemeStateHighlighted],
+            [@"tile-text-shadow-color",     [CPColor whiteColor],                                                                               CPThemeStateHighlighted],
+            [@"tile-text-shadow-offset",    CGSizeMake(0,1),                                                                                    CPThemeStateHighlighted],
+            [@"tile-font",                  [CPFont systemFontOfSize:10.0],                                                                     CPThemeStateHighlighted],
+
+            [@"tile-text-color",            [CPColor colorWithCalibratedRed:87.0 / 255.0 green:128.0 / 255.0 blue:216.0 / 255.0 alpha:0.5],     CPThemeStateHighlighted | CPThemeStateDisabled],
+            [@"tile-text-shadow-color",     [CPColor whiteColor],                                                                               CPThemeStateHighlighted | CPThemeStateDisabled],
+            [@"tile-text-shadow-offset",    CGSizeMake(0,1),                                                                                    CPThemeStateHighlighted | CPThemeStateDisabled],
+            [@"tile-font",                  [CPFont systemFontOfSize:10.0],                                                                     CPThemeStateHighlighted | CPThemeStateDisabled],
+
+            [@"tile-text-color",            [CPColor whiteColor],                                                                               CPThemeStateHighlighted | CPThemeStateSelected],
+            [@"tile-text-shadow-color",     [CPColor colorWithCalibratedRed:0.0 / 255.0 green:0.0 / 255.0 blue:0.0 / 255.0 alpha:0.2],          CPThemeStateHighlighted | CPThemeStateSelected],
+            [@"tile-text-shadow-offset",    CGSizeMake(0,1),                                                                                    CPThemeStateHighlighted | CPThemeStateSelected],
+            [@"tile-font",                  [CPFont systemFontOfSize:10.0],                                                                     CPThemeStateHighlighted | CPThemeStateSelected],
+
+            [@"tile-text-color",            [CPColor whiteColor],                                                                               CPThemeStateSelected],
+            [@"tile-text-shadow-color",     [CPColor colorWithCalibratedRed:0.0 / 255.0 green:0.0 / 255.0 blue:0.0 / 255.0 alpha:0.2],          CPThemeStateSelected],
+            [@"tile-text-shadow-offset",    CGSizeMake(0,1),                                                                                    CPThemeStateSelected],
+            [@"tile-font",                  [CPFont systemFontOfSize:10.0],                                                                     CPThemeStateSelected],
+
+            [@"tile-text-color",            [CPColor colorWithCalibratedRed:179.0 / 255.0 green:179.0 / 255.0 blue:179.0 / 255.0 alpha:1.0],    CPThemeStateDisabled],
+            [@"tile-text-shadow-color",     [CPColor whiteColor],                                                                               CPThemeStateDisabled],
+            [@"tile-text-shadow-offset",    CGSizeMake(0,1),                                                                                    CPThemeStateDisabled],
+            [@"tile-font",                  [CPFont systemFontOfSize:10.0],                                                                     CPThemeStateDisabled],
+
+            [@"tile-text-color",            [CPColor colorWithCalibratedRed:255.0 / 255.0 green:255.0 / 255.0 blue:255.0 / 255.0 alpha:0.5],    CPThemeStateDisabled | CPThemeStateSelected | CPThemeStateHighlighted],
+            [@"tile-text-shadow-color",     [CPColor colorWithCalibratedRed:0.0 / 255.0 green:0.0 / 255.0 blue:0.0 / 255.0 alpha:0.2],          CPThemeStateDisabled | CPThemeStateSelected | CPThemeStateHighlighted],
+            [@"tile-text-shadow-offset",    CGSizeMake(0,1),                                                                                    CPThemeStateDisabled | CPThemeStateSelected | CPThemeStateHighlighted],
+            [@"tile-font",                  [CPFont systemFontOfSize:10.0],                                                                     CPThemeStateDisabled | CPThemeStateSelected | CPThemeStateHighlighted],
+
+            [@"tile-text-color",            [CPColor colorWithCalibratedRed:255.0 / 255.0 green:255.0 / 255.0 blue:255.0 / 255.0 alpha:0.5],    CPThemeStateDisabled | CPThemeStateSelected],
+            [@"tile-text-shadow-color",     [CPColor colorWithCalibratedRed:0.0 / 255.0 green:0.0 / 255.0 blue:0.0 / 255.0 alpha:0.2],          CPThemeStateDisabled | CPThemeStateSelected],
+            [@"tile-text-shadow-offset",    CGSizeMake(0,1),                                                                                    CPThemeStateDisabled | CPThemeStateSelected],
+            [@"tile-font",                  [CPFont systemFontOfSize:10.0],                                                                     CPThemeStateDisabled | CPThemeStateSelected],
+
+            [@"arrow-image-left",               arrowImageLeft],
+            [@"arrow-image-right",              arrowImageRight],
+            [@"arrow-image-left-highlighted",   arrowImageLeftHighlighted],
+            [@"arrow-image-right-highlighted",  arrowImageRightHighlighted],
+            [@"circle-image",                   circleImage],
+            [@"circle-image-highlighted",       circleImageHighlighted],
+            [@"arrow-inset",                    CGInsetMake(9.0, 4.0, 0.0, 0.0)],
+
+            [@"second-hand-color",  secondHandColor],
+            [@"hour-hand-color",    hourHandColor],
+            [@"middle-hand-color",  middleHandColor],
+            [@"minute-hand-color",  minuteHandColor],
+
+            [@"second-hand-color",  secondHandColorDisabled,    CPThemeStateDisabled],
+            [@"hour-hand-color",    hourHandColorDisabled,      CPThemeStateDisabled],
+            [@"middle-hand-color",  middleHandColorDisabled,    CPThemeStateDisabled],
+            [@"minute-hand-color",  minuteHandColorDisabled,    CPThemeStateDisabled],
+
+            [@"second-hand-size",   CGSizeMake(89.0, 89.0)],
+            [@"hour-hand-size",     CGSizeMake(47.0, 47.0)],
+            [@"middle-hand-size",   CGSizeMake(13.0, 13.0)],
+            [@"minute-hand-size",   CGSizeMake(85.0, 85.0)],
+
+            [@"border-width",            1.0],
+            [@"size-header",             CGSizeMake(141.0, 39.0)],
+            [@"size-tile",               CGSizeMake(20.0, 18.0)],
+            [@"size-clock",              CGSizeMake(122.0, 123.0)],
+            [@"size-calendar",           CGSizeMake(141.0, 109.0)],
+            [@"min-size-calendar",       CGSizeMake(141.0, 148.0)],
+            [@"max-size-calendar",       CGSizeMake(141.0, 148.0)]
+        ];
+
+    [datePicker setDatePickerStyle:CPClockAndCalendarDatePickerStyle];
+    [self registerThemeValues:themeValues forView:datePicker];
+
+    return datePicker;
 }
 
 + (CPTokenField)themedTokenField
@@ -1303,8 +1508,8 @@ var themedButtonValues = nil,
                 [0, 1],
                 2
             ),
-            CPSourceListTopLineColor: [CPColor colorWithCalibratedRed:73.0 / 255.0 green:109.0 / 255.0 blue:187.0 / 255.0 alpha:1.0],
-            CPSourceListBottomLineColor: [CPColor colorWithCalibratedRed:44.0 / 255.0 green:79.0 / 255.0 blue:155.0 / 255.0 alpha:1.0],
+            CPSourceListTopLineColor: [CPColor colorWithCalibratedRed:70.0 / 255.0 green:107.0 / 255.0 blue:215.0 / 255.0 alpha:1.0],
+            CPSourceListBottomLineColor: [CPColor colorWithCalibratedRed:42.0 / 255.0 green:74.0 / 255.0 blue:177.0 / 255.0 alpha:1.0]
         },
 
         themedTableViewValues =
@@ -1773,7 +1978,7 @@ var themedButtonValues = nil,
 {
     var windowView = [[_CPWindowView alloc] initWithFrame:CGRectMakeZero(0.0, 0.0, 200, 200)],
 
-        sheetShadow = PatternColor(@"window-attached-sheet-shadow.png", 9, 8),
+        sheetShadow = PatternColor(@"window-attached-sheet-shadow.png", 1, 8),
         resizeIndicator = PatternImage(@"window-resize-indicator.png", 12, 12),
 
         shadowColor = PatternColor(
@@ -1794,6 +1999,7 @@ var themedButtonValues = nil,
         [@"window-shadow-color",            shadowColor],
         [@"resize-indicator",               resizeIndicator],
         [@"attached-sheet-shadow-color",    sheetShadow],
+        [@"shadow-height",                  8],
         [@"size-indicator",                 CGSizeMake(12, 12)]
     ];
 
@@ -1890,7 +2096,6 @@ var themedButtonValues = nil,
         minimizeButtonImage =               PatternImage(@"window-standard-minimize-button.png", 16, 16),
         minimizeButtonImageHighlighted =    PatternImage(@"window-standard-minimize-button-highlighted.png", 16, 16),
 
-        sheetShadow = PatternColor(@"window-attached-sheet-shadow.png", 9, 8),
         resizeIndicator = PatternImage(@"window-resize-indicator.png", 12, 12),
 
         themeValues =
@@ -1930,7 +2135,6 @@ var themedButtonValues = nil,
             [@"close-image-origin",             CGPointMake(8.0, 10.0)],
 
             [@"resize-indicator",               resizeIndicator],
-            [@"attached-sheet-shadow-color",    sheetShadow],
             [@"size-indicator",                 CGSizeMake(12, 12)]
         ];
 
@@ -1951,13 +2155,9 @@ var themedButtonValues = nil,
                 height: 5.0
             }),
 
-        sheetShadow = PatternColor(@"window-attached-sheet-shadow.png", 9, 8),
-
         themeValues =
         [
-            [@"body-color",                     bezelColor],
-            [@"height-shadow",                  8],
-            [@"attached-sheet-shadow-color",    sheetShadow]
+            [@"body-color", bezelColor]
         ];
 
     [self registerThemeValues:themeValues forView:docModalWindowView inherit:themedWindowViewValues];
@@ -2026,9 +2226,7 @@ var themedButtonValues = nil,
 
         themeValues =
         [
-            [@"menu-item-selection-color",                              [CPColor colorWithHexString:@"5C85D8"]],
-            [@"menu-item-text-shadow-color",                            [CPColor colorWithCalibratedRed:26.0 / 255.0 green: 73.0 / 255.0 blue:109.0 / 255.0 alpha:1.0]],
-            [@"horizontal-margin",                                      12.0],
+            [@"horizontal-margin",                                      9.0],
             [@"submenu-indicator-margin",                               3.0],
             [@"vertical-margin",                                        4.0]
         ];

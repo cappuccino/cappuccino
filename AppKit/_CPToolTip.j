@@ -167,6 +167,8 @@ var _CPToolTipHeight = 24.0,
 
     if (self = [super initWithContentRect:toolTipFrame styleMask:aStyleMask])
     {
+        _constrainsToUsableScreen = NO;
+
         textFrameSize.height += 4;
 
         _content = [CPTextField labelWithTitle:aString];

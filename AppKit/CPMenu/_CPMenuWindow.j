@@ -80,13 +80,15 @@ _CPMenuWindowAttachedMenuBackgroundStyle    = 2;
 
 - (id)initWithContentRect:(CGRect)aRect styleMask:(unsigned)aStyleMask
 {
-    _constraintRect = _CGRectMakeZero();
-    _unconstrainedFrame = _CGRectMakeZero();
+    _constraintRect = CGRectMakeZero();
+    _unconstrainedFrame = CGRectMakeZero();
 
     self = [super initWithContentRect:aRect styleMask:CPBorderlessWindowMask];
 
     if (self)
     {
+        _constrainsToUsableScreen = NO;
+
         [self setLevel:CPPopUpMenuWindowLevel];
         [self setHasShadow:YES];
         [self setShadowStyle:CPMenuWindowShadowStyle];
@@ -207,26 +209,26 @@ _CPMenuWindowAttachedMenuBackgroundStyle    = 2;
 
 - (CGRect)unconstrainedFrame
 {
-    return _CGRectMakeCopy(_unconstrainedFrame);
+    return CGRectMakeCopy(_unconstrainedFrame);
 }
 
 // We need this because if not this will call setFrame: with -frame instead of -unconstrainedFrame, turning
 // the constrained frame into the unconstrained frame.
 - (void)setFrameOrigin:(CGPoint)aPoint
 {
-    [super setFrame:_CGRectMake(aPoint.x, aPoint.y, _CGRectGetWidth(_unconstrainedFrame), _CGRectGetHeight(_unconstrainedFrame))];
+    [super setFrame:CGRectMake(aPoint.x, aPoint.y, CGRectGetWidth(_unconstrainedFrame), CGRectGetHeight(_unconstrainedFrame))];
 }
 
 - (void)setFrameSize:(CGSize)aSize
 {
-    [super setFrame:_CGRectMake(_CGRectGetMinX(_unconstrainedFrame), _CGRectGetMinY(_unconstrainedFrame), aSize.width, aSize.height)];
+    [super setFrame:CGRectMake(CGRectGetMinX(_unconstrainedFrame), CGRectGetMinY(_unconstrainedFrame), aSize.width, aSize.height)];
 }
 
 - (void)setFrame:(CGRect)aFrame display:(BOOL)shouldDisplay animate:(BOOL)shouldAnimate
 {
     // FIXME: There are integral window issues with platform windows.
     // FIXME: This gets called far too often.
-    _unconstrainedFrame = _CGRectMakeCopy(aFrame);
+    _unconstrainedFrame = CGRectMakeCopy(aFrame);
 
     var constrainedFrame = CGRectIntersection(_unconstrainedFrame, _constraintRect),
         marginInset = [_menuView valueForThemeAttribute:@"menu-window-margin-inset"],

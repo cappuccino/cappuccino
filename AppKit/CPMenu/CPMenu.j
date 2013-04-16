@@ -68,6 +68,8 @@ var _CPMenuBarVisible               = NO,
 
     int             _highlightedIndex;
     _CPMenuWindow   _menuWindow;
+
+    CPEvent         _lastCloseEvent;
 }
 
 // Managing the Menu Bar
@@ -849,6 +851,8 @@ var _CPMenuBarVisible               = NO,
     var theWindow = [aView window],
         menuWindow = [_CPMenuWindow menuWindowWithMenu:aMenu font:aFont];
 
+    [_CPMenuWindow poolMenuWindow:menuWindow];
+
     [menuWindow setBackgroundStyle:_CPMenuWindowPopUpBackgroundStyle];
 
     var constraintRect = [CPMenu _constraintRectForView:aView],
@@ -944,6 +948,10 @@ var _CPMenuBarVisible               = NO,
 
 - (void)_menuDidClose
 {
+    // Remember which event caused this menu to close, if any. CPPopUpButton uses this to detect
+    // when a click on the button itself caused the menu to close.
+    _lastCloseEvent = [CPApp currentEvent];
+
     var delegate = [self delegate];
 
     if ([delegate respondsToSelector:@selector(menuDidClose:)])
@@ -963,7 +971,7 @@ var _CPMenuBarVisible               = NO,
 {
     [CPApp sendEvent:[CPEvent
         otherEventWithType:CPAppKitDefined
-                  location:_CGPointMakeZero()
+                  location:CGPointMakeZero()
              modifierFlags:0
                  timestamp:0
               windowNumber:0

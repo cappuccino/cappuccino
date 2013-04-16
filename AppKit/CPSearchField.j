@@ -229,22 +229,22 @@ var RECENT_SEARCH_PREFIX = @"   ";
 - (CGRect)searchTextRectForBounds:(CGRect)rect
 {
     var leftOffset = 0,
-        width = _CGRectGetWidth(rect),
+        width = CGRectGetWidth(rect),
         bounds = [self bounds];
 
     if (_searchButton)
     {
         var searchBounds = [self searchButtonRectForBounds:bounds];
-        leftOffset = _CGRectGetMaxX(searchBounds) + 2;
+        leftOffset = CGRectGetMaxX(searchBounds) + 2;
     }
 
     if (_cancelButton)
     {
         var cancelRect = [self cancelButtonRectForBounds:bounds];
-        width = _CGRectGetMinX(cancelRect) - leftOffset;
+        width = CGRectGetMinX(cancelRect) - leftOffset;
     }
 
-    return _CGRectMake(leftOffset, _CGRectGetMinY(rect), width, _CGRectGetHeight(rect));
+    return CGRectMake(leftOffset, CGRectGetMinY(rect), width, CGRectGetHeight(rect));
 }
 
 /*!
@@ -256,7 +256,7 @@ var RECENT_SEARCH_PREFIX = @"   ";
 {
     var size = [[self valueForThemeAttribute:@"image-search"] size] || CGSizeMakeZero();
 
-    return _CGRectMake(5, (_CGRectGetHeight(rect) - size.height) / 2, size.width, size.height);
+    return CGRectMake(5, (CGRectGetHeight(rect) - size.height) / 2, size.width, size.height);
 }
 
 /*!
@@ -268,7 +268,7 @@ var RECENT_SEARCH_PREFIX = @"   ";
 {
     var size = [[self valueForThemeAttribute:@"image-cancel"] size] || CGSizeMakeZero();
 
-    return _CGRectMake(_CGRectGetWidth(rect) - size.width - 5, (_CGRectGetHeight(rect) - size.width) / 2, size.height, size.height);
+    return CGRectMake(CGRectGetWidth(rect) - size.width - 5, (CGRectGetHeight(rect) - size.width) / 2, size.height, size.height);
 }
 
 // Managing Menu Templates
@@ -482,7 +482,7 @@ var RECENT_SEARCH_PREFIX = @"   ";
 - (CPView)hitTest:(CGPoint)aPoint
 {
     // Make sure a hit anywhere within the search field returns the search field itself
-    if (_CGRectContainsPoint([self frame], aPoint))
+    if (CGRectContainsPoint([self frame], aPoint))
         return self;
     else
         return nil;
@@ -498,7 +498,7 @@ var RECENT_SEARCH_PREFIX = @"   ";
     var location = [anEvent locationInWindow],
         point = [self convertPoint:location fromView:nil];
 
-    if (_CGRectContainsPoint([self searchButtonRectForBounds:[self bounds]], point))
+    if (CGRectContainsPoint([self searchButtonRectForBounds:[self bounds]], point))
     {
         if (_searchMenuTemplate == nil)
         {
@@ -510,7 +510,7 @@ var RECENT_SEARCH_PREFIX = @"   ";
         else
            [self _showMenu];
     }
-    else if (_CGRectContainsPoint([self cancelButtonRectForBounds:[self bounds]], point))
+    else if (CGRectContainsPoint([self cancelButtonRectForBounds:[self bounds]], point))
         [_cancelButton mouseDown:anEvent];
     else
         [super mouseDown:anEvent];

@@ -34,8 +34,6 @@
 @global CPInvalidArgumentException
 @global CPRangeException
 
-#define _CPMaxRange(aRange) ((aRange).location + (aRange).length)
-
 /*!
     A case insensitive search
     @global
@@ -305,7 +303,7 @@ var CPStringUIDs = new CFMutableDictionary(),
 */
 - (CPString)substringWithRange:(CPRange)aRange
 {
-    if (aRange.location < 0 || _CPMaxRange(aRange) > self.length)
+    if (aRange.location < 0 || CPMaxRange(aRange) > self.length)
         [CPException raise:CPRangeException reason:"aRange out of bounds"];
 
     return self.substr(aRange.location, aRange.length);

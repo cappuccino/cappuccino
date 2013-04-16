@@ -444,9 +444,9 @@ CPBelowBottom = 6;
         case CPBoxSeparator:
             // NSBox does not include a horizontal flag for the separator type. We have to determine
             // the type of separator to draw by the width and height of the frame.
-            if (_CGRectGetWidth(bounds) === 5.0)
+            if (CGRectGetWidth(bounds) === 5.0)
                 return [self _drawVerticalSeparatorInRect:bounds];
-            else if (_CGRectGetHeight(bounds) === 5.0)
+            else if (CGRectGetHeight(bounds) === 5.0)
                 return [self _drawHorizontalSeparatorInRect:bounds];
 
             break;
@@ -493,8 +493,8 @@ CPBelowBottom = 6;
     CGContextSetStrokeColor(context, [self borderColor]);
     CGContextSetLineWidth(context, 1.0);
 
-    CGContextMoveToPoint(context, _CGRectGetMinX(aRect), _CGRectGetMidY(aRect));
-    CGContextAddLineToPoint(context, _CGRectGetWidth(aRect), _CGRectGetMidY(aRect));
+    CGContextMoveToPoint(context, CGRectGetMinX(aRect), CGRectGetMidY(aRect));
+    CGContextAddLineToPoint(context, CGRectGetWidth(aRect), CGRectGetMidY(aRect));
     CGContextStrokePath(context);
 }
 
@@ -505,8 +505,8 @@ CPBelowBottom = 6;
     CGContextSetStrokeColor(context, [self borderColor]);
     CGContextSetLineWidth(context, 1.0);
 
-    CGContextMoveToPoint(context, _CGRectGetMidX(aRect), _CGRectGetMinY(aRect));
-    CGContextAddLineToPoint(context, _CGRectGetMidX(aRect), _CGRectGetHeight(aRect));
+    CGContextMoveToPoint(context, CGRectGetMidX(aRect), CGRectGetMinY(aRect));
+    CGContextAddLineToPoint(context, CGRectGetMidX(aRect), CGRectGetHeight(aRect));
     CGContextStrokePath(context);
 }
 

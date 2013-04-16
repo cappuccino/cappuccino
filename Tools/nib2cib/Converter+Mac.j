@@ -20,17 +20,18 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-
 @import "Converter.j"
 @import "Nib2CibKeyedUnarchiver.j"
 @import "NSFont.j"
 
+@class Nib2Cib
+
 @implementation Converter (Mac)
 
-- (void)convertedDataFromMacData:(CPData)data resourcesPath:(CPString)aResourcesPath
+- (void)convertedDataFromMacData:(CPData)data
 {
     // Unarchive the NS data
-    var unarchiver = [[Nib2CibKeyedUnarchiver alloc] initForReadingWithData:data resourcesPath:aResourcesPath],
+    var unarchiver = [[Nib2CibKeyedUnarchiver alloc] initForReadingWithData:data],
         objectData = [unarchiver decodeObjectForKey:@"IB.objectdata"],
         objects = [unarchiver allObjects],
         count = [objects count];
@@ -107,7 +108,8 @@
         // nil cibFont means try to use theme font
         if (!cibFont)
         {
-            var bold = [nibFont isBold];
+            var bold = [nibFont isBold],
+                themes = [[Nib2Cib sharedNib2Cib] themes];
 
             for (var i = 0; i < themes.length; ++i)
             {

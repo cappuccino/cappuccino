@@ -31,6 +31,7 @@
 @import "NSTextField.j"
 
 @class Converter
+@class Nib2Cib
 
 var IBDefaultFontSizeTableHeader = 11.0;
 
@@ -44,48 +45,26 @@ var IBDefaultFontSizeTableHeader = 11.0;
     {
         _identifier = [aCoder decodeObjectForKey:@"NSIdentifier"];
 
-        var dataViewCell = [aCoder decodeObjectForKey:@"NSDataCell"];
+        var dataViewCell = [aCoder decodeObjectForKey:@"NSDataCell"],
+            viewClass = nil;
 
         if ([dataViewCell isKindOfClass:[NSImageCell class]])
-        {
-            _dataView = [[CPImageView alloc] initWithFrame:CGRectMakeZero()];
-            [_dataView NS_initWithCell:dataViewCell];
-        }
+            viewClass = CPImageView;
         else if ([dataViewCell isKindOfClass:[NSTextFieldCell class]])
-        {
-            _dataView = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
-            [_dataView NS_initWithCell:dataViewCell];
-
-            var font = [_dataView font],
-                selectedFont = nil;
-
-            if (font)
-                font = [font cibFontForNibFont];
-
-            if (!font)
-                font = [CPFont systemFontOfSize:[CPFont systemFontSize]];
-
-            var selectedFont = [CPFont boldFontWithName:[font familyName] size:[font size]];
-
-            [_dataView setFont:font];
-            [_dataView setValue:selectedFont forThemeAttribute:@"font" inState:CPThemeStateSelectedDataView];
-        }
+            viewClass = CPTextField;
         else if ([dataViewCell isKindOfClass:[NSButtonCell class]])
-        {
-            _dataView = [[CPButton alloc] initWithFrame:CGRectMakeZero()];
-            [_dataView NS_initWithCell:dataViewCell];
-        }
+            viewClass = CPButton;
         else if ([dataViewCell isKindOfClass:[NSLevelIndicatorCell class]])
-        {
-            _dataView = [[CPLevelIndicator alloc] initWithFrame:CGRectMakeZero()];
-            [_dataView NS_initWithCell:dataViewCell];
-        }
+            viewClass = CPLevelIndicator;
+
+        if (viewClass)
+            _dataView = [self makeDataViewOfClass:viewClass withCell:dataViewCell];
 
         [_dataView setValue:[dataViewCell alignment] forThemeAttribute:@"alignment"];
 
         var headerCell = [aCoder decodeObjectForKey:@"NSHeaderCell"],
             headerView = [[_CPTableColumnHeaderView alloc] initWithFrame:CGRectMakeZero()],
-            theme = [[Converter sharedConverter] themes][0];
+            theme = [Nib2Cib defaultTheme];
 
         [headerView setStringValue:[headerCell objectValue]];
         [headerView setFont:[headerCell font]];
@@ -112,6 +91,51 @@ var IBDefaultFontSizeTableHeader = 11.0;
     }
 
     return self;
+}
+
+- (id)makeDataViewOfClass:(Class)aClass withCell:(NSCell)aCell
+{
+    var dataView = [[aClass alloc] initWithFrame:CGRectMakeZero()];
+
+    // Set the theme state to make sure the data view's theme attributes are correct
+    [dataView setThemeState:CPThemeStateTableDataView];
+    [dataView NS_initWithCell:aCell];
+
+    if (aClass === CPTextField)
+    {
+        // Text cells have to have their font replaced
+        [[Converter sharedConverter] replaceFontForObject:dataView];
+
+        // If a text cell has a custom color, we have to set the selected color,
+        // otherwise it defaults to the custom color.
+        var textColor = [aCell textColor],
+            defaultColor = [self valueForDataViewThemeAttribute:@"text-color" inState:CPThemeStateNormal];
+
+        if (![textColor isEqual:defaultColor])
+        {
+            var selectedColor = [self valueForDataViewThemeAttribute:@"text-color" inState:CPThemeStateTableDataView | CPThemeStateSelectedDataView];
+
+            [dataView setValue:selectedColor forThemeAttribute:@"text-color" inState:CPThemeStateTableDataView | CPThemeStateSelectedDataView];
+            [dataView setValue:textColor forThemeAttribute:@"text-color" inState:CPThemeStateTableDataView | CPThemeStateSelectedDataView | CPThemeStateEditing];
+        }
+    }
+
+    return dataView;
+}
+
+- (id)valueForDataViewThemeAttribute:(CPString)attribute inState:(int)state
+{
+    var themes = [[Nib2Cib sharedNib2Cib] themes];
+
+    for (var i = 0; i < themes.length; ++i)
+    {
+        var value = [themes[i] valueForAttributeWithName:attribute inState:state forClass:CPTextField];
+
+        if (value)
+            return value;
+    }
+
+    return nil;
 }
 
 @end

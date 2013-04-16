@@ -82,7 +82,7 @@ function CGContextDrawImage(aContext, aRect, anImage)
         {
             var angle = CGPointMake(1.0, 0.0);
 
-            angle = _CGPointApplyAffineTransform(angle, ctm);
+            angle = CGPointApplyAffineTransform(angle, ctm);
 
             vml.push(";rotation:", ATAN2(angle.y - ctm.ty, angle.x - ctm.tx) * 180 / PI);
         }*/
@@ -95,7 +95,7 @@ function CGContextDrawImage(aContext, aRect, anImage)
         {
             var transformedRect = CGRectApplyAffineTransform(aRect, ctm);
 
-            vml.push(   ";padding:0 ", ROUND(_CGRectGetMaxX(transformedRect)), "px ", ROUND(_CGRectGetMaxY(transformedRect)),
+            vml.push(   ";padding:0 ", ROUND(CGRectGetMaxX(transformedRect)), "px ", ROUND(CGRectGetMaxY(transformedRect)),
                         "px 0;filter:progid:DXImageTransform.Microsoft.Matrix(",
                         "M11='", ctm.a, "',M12='", ctm.c, "',M21='", ctm.b, "',M22='", ctm.d, "',",
                         "Dx='", ROUND(origin.x), "', Dy='", ROUND(origin.y), "', sizingmethod='clip');");
@@ -104,7 +104,7 @@ function CGContextDrawImage(aContext, aRect, anImage)
         //    vml.push(";top:", ROUND(origin.y - 0.5), "px;left:", ROUND(origin.x - 0.5), "px;");
 
         vml.push(   "\"><cg_vml_:image src=\"", anImage._image.src,
-                    "\" style=\"width:", _CGRectGetWidth(aRect), "px;height:", _CGRectGetHeight(aRect),
+                    "\" style=\"width:", CGRectGetWidth(aRect), "px;height:", CGRectGetHeight(aRect),
                     "px;\"/></g_vml_:group>");
 
         string = vml.join("");
@@ -175,7 +175,7 @@ function CGContextDrawPath(aContext, aMode)
                                                         endAngle = element.endAngle,
                                                         startAngle = element.startAngle,
 
-                                                        start = _CGPointMake(x + radius * COS(startAngle), y + radius * SIN(startAngle));
+                                                        start = CGPointMake(x + radius * COS(startAngle), y + radius * SIN(startAngle));
 
                                                     // If the angle's are equal, then we won't actually draw an arc, but instead
                                                     // simply move to its start/end to get the proper fill.
@@ -188,12 +188,12 @@ function CGContextDrawPath(aContext, aMode)
                                                         continue;
                                                     }
 
-                                                    var end = _CGPointMake(x + radius * COS(endAngle), y + radius * SIN(endAngle));
+                                                    var end = CGPointMake(x + radius * COS(endAngle), y + radius * SIN(endAngle));
 
                                                     // Only do the start correction if the angles aren't equal.  If they are, then
                                                     // let the circle be empty.
                                                     // FIXME: Should this be |star.x - end.x| < 0.125 ?
-                                                    if (clockwise && startAngle != endAngle && _CGPointEqualToPoint(start, end))
+                                                    if (clockwise && startAngle != endAngle && CGPointEqualToPoint(start, end))
                                                         if (start.x >= x)
                                                         {
                                                             if (start.y < y)

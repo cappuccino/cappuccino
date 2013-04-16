@@ -163,7 +163,7 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
 
     if (self)
     {
-        _draggedWindow = [[CPWindow alloc] initWithContentRect:_CGRectMakeZero() styleMask:CPBorderlessWindowMask];
+        _draggedWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessWindowMask];
 
         [_draggedWindow setLevel:CPDraggingWindowLevel];
     }
@@ -201,7 +201,12 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
 - (void)draggingSourceUpdatedWithGlobalLocation:(CGPoint)aGlobalLocation
 {
     if (![CPPlatform supportsDragAndDrop])
-        [_draggedWindow setFrameOrigin:_CGPointMake(aGlobalLocation.x - _draggingOffset.width, aGlobalLocation.y - _draggingOffset.height)];
+    {
+        var frame = [_draggedWindow frame];
+        frame.origin.x = aGlobalLocation.x - _draggingOffset.width;
+        frame.origin.y = aGlobalLocation.y - _draggingOffset.height;
+        [_draggedWindow _setFrame:frame display:YES animate:NO constrainWidth:NO constrainHeight:NO];
+    }
 
     if (_implementedDraggingSourceMethods & CPDraggingSource_draggedImage_movedTo_)
         [_draggingSource draggedImage:[_draggedView image] movedTo:aGlobalLocation];
@@ -265,10 +270,10 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
             {
                 if ([scrollView hasVerticalScroller])
                 {
-                    if (eventLocation.y < _CGRectGetMinY(insetBounds))
-                        deltaY = _CGRectGetMinY(insetBounds) - eventLocation.y;
-                    else if (eventLocation.y > _CGRectGetMaxY(insetBounds))
-                        deltaY = _CGRectGetMaxY(insetBounds) - eventLocation.y;
+                    if (eventLocation.y < CGRectGetMinY(insetBounds))
+                        deltaY = CGRectGetMinY(insetBounds) - eventLocation.y;
+                    else if (eventLocation.y > CGRectGetMaxY(insetBounds))
+                        deltaY = CGRectGetMaxY(insetBounds) - eventLocation.y;
                     if (deltaY < -insetBounds.size.height)
                         deltaY = -insetBounds.size.height;
                     if (deltaY > insetBounds.size.height)
@@ -277,17 +282,17 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
 
                 if ([scrollView hasHorizontalScroller])
                 {
-                    if (eventLocation.x < _CGRectGetMinX(insetBounds))
-                        deltaX = _CGRectGetMinX(insetBounds) - eventLocation.x;
-                    else if (eventLocation.x > _CGRectGetMaxX(insetBounds))
-                        deltaX = _CGRectGetMaxX(insetBounds) - eventLocation.x;
+                    if (eventLocation.x < CGRectGetMinX(insetBounds))
+                        deltaX = CGRectGetMinX(insetBounds) - eventLocation.x;
+                    else if (eventLocation.x > CGRectGetMaxX(insetBounds))
+                        deltaX = CGRectGetMaxX(insetBounds) - eventLocation.x;
                     if (deltaX < -insetBounds.size.width)
                         deltaX = -insetBounds.size.width;
                     if (deltaX > insetBounds.size.width)
                         deltaX = insetBounds.size.width;
                 }
 
-                var scrollPoint = _CGPointMake(bounds.origin.x - deltaX, bounds.origin.y - deltaY);
+                var scrollPoint = CGPointMake(bounds.origin.x - deltaX, bounds.origin.y - deltaY);
 
                 [contentView scrollToPoint:scrollPoint];
                 [[scrollView _headerView] scrollPoint:scrollPoint];
@@ -365,22 +370,26 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
         if (mouseDownWindow)
             mouseDownEventLocation = [mouseDownWindow convertBaseToGlobal:mouseDownEventLocation];
 
-        _draggingOffset = _CGSizeMake(mouseDownEventLocation.x - viewLocation.x, mouseDownEventLocation.y - viewLocation.y);
+        _draggingOffset = CGSizeMake(mouseDownEventLocation.x - viewLocation.x, mouseDownEventLocation.y - viewLocation.y);
     }
     else
-        _draggingOffset = _CGSizeMakeZero();
+        _draggingOffset = CGSizeMakeZero();
 
     if ([CPPlatform isBrowser])
         [_draggedWindow setPlatformWindow:[aWindow platformWindow]];
 
-    [aView setFrameOrigin:_CGPointMakeZero()];
+    [aView setFrameOrigin:CGPointMakeZero()];
 
-    var mouseLocation = [CPEvent mouseLocation];
+    var mouseLocation = [CPEvent mouseLocation],
+        viewSize = [aView frameSize],
+        startDragLocationX = mouseLocation.x - _draggingOffset.width,
+        startDragLocationY = mouseLocation.y - _draggingOffset.height,
+        draggedWindowFrame = CGRectMake(startDragLocationX, startDragLocationY, viewSize.width, viewSize.height);
 
     // Place it where the mouse pointer is.
-    _startDragLocation = _CGPointMake(mouseLocation.x - _draggingOffset.width, mouseLocation.y - _draggingOffset.height);
-    [_draggedWindow setFrameOrigin:_startDragLocation];
-    [_draggedWindow setFrameSize:[aView frame].size];
+    _startDragLocation = CGPointMake(startDragLocationX, startDragLocationY);
+
+    [_draggedWindow _setFrame:draggedWindowFrame display:YES animate:NO constrainWidth:NO constrainHeight:NO];
 
     [[_draggedWindow contentView] addSubview:aView];
 
@@ -429,7 +438,7 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
     var imageSize = [anImage size];
 
     if (!_imageView)
-        _imageView = [[CPImageView alloc] initWithFrame:_CGRectMake(0.0, 0.0, imageSize.width, imageSize.height)];
+        _imageView = [[CPImageView alloc] initWithFrame:CGRectMake(0.0, 0.0, imageSize.width, imageSize.height)];
 
     [_imageView setImage:anImage];
 

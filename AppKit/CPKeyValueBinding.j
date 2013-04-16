@@ -257,7 +257,11 @@ var CPBindingOperationAnd = 0,
     if (valueTransformer)
         aValue = [valueTransformer transformedValue:aValue];
 
-    if (aValue === undefined || aValue === nil || aValue === [CPNull null])
+    // If the value is nil AND the source doesn't respond to setPlaceholderString: then
+    // we set the value to the placeholder. Otherwise, we do not want to short cut the process
+    // of setting the placeholder that is based on the fact that the value is nil.
+    if ((aValue === undefined || aValue === nil || aValue === [CPNull null])
+        && ![_source respondsToSelector:@selector(setPlaceholderString:)])
         aValue = [options objectForKey:CPNullPlaceholderBindingOption] || nil;
 
     return aValue;
@@ -345,12 +349,12 @@ var CPBindingOperationAnd = 0,
     [self _updatePlaceholdersWithOptions:options];
 }
 
-- (void)_placeholderForMarker:aMarker
+- (JSObject)_placeholderForMarker:(id)aMarker
 {
-    var placeholder = _placeholderForMarker[aMarker];
+    var placeholder = _placeholderForMarker[[aMarker UID]];
 
     if (placeholder)
-        return placeholder['value'];
+        return placeholder.value;
 
     return nil;
 }
@@ -359,14 +363,14 @@ var CPBindingOperationAnd = 0,
 {
     if (isDefault)
     {
-        var existingPlaceholder = _placeholderForMarker[aMarker];
+        var existingPlaceholder = _placeholderForMarker[[aMarker UID]];
 
         // Don't overwrite an explicitly set placeholder with a default.
-        if (existingPlaceholder && !existingPlaceholder['isDefault'])
+        if (existingPlaceholder && !existingPlaceholder.isDefault)
             return;
     }
 
-    _placeholderForMarker[aMarker] = { 'isDefault': isDefault, 'value': aPlaceholder };
+    _placeholderForMarker[[aMarker UID]] = { 'isDefault': isDefault, 'value': aPlaceholder };
 }
 
 @end
@@ -802,6 +806,26 @@ var CPBindingOperationAnd = 0,
 
 @end
 
+@implementation _CPStateMarker : CPObject
+{
+    CPString _name;
+}
+
+- (id)initWithName:(CPString)aName
+{
+    if (self = [super init])
+        _name = aName
+
+    return self;
+}
+
+- (CPString)description
+{
+    return "<" + _name + ">";
+}
+
+@end
+
 
 // Keys in options dictionary
 
@@ -811,10 +835,10 @@ CPObservedKeyPathKey    = @"CPObservedKeyPathKey";
 CPOptionsKey            = @"CPOptionsKey";
 
 // special markers
-CPMultipleValuesMarker  = @"CPMultipleValuesMarker";
-CPNoSelectionMarker     = @"CPNoSelectionMarker";
-CPNotApplicableMarker   = @"CPNotApplicableMarker";
-CPNullMarker            = @"CPNullMarker";
+CPNoSelectionMarker     = [[_CPStateMarker alloc] initWithName:@"NO SELECTION MARKER"];
+CPMultipleValuesMarker  = [[_CPStateMarker alloc] initWithName:@"MULTIPLE VALUES MARKER"];
+CPNotApplicableMarker   = [[_CPStateMarker alloc] initWithName:@"NOT APPLICABLE MARKER"];
+CPNullMarker            = [[_CPStateMarker alloc] initWithName:@"NULL MARKER"];
 
 // Binding name constants
 CPAlignmentBinding                        = @"alignment";

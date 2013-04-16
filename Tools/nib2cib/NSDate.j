@@ -1,9 +1,8 @@
 /*
- * Ref.h
- * Foundation
+ * NSDatePicker.j
+ * nib2cib
  *
- * Created by Alexander Ljungberg.
- * Copyright 2011, WireLoad Inc.
+ * Created by cacaodev.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,11 +19,22 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-/*
-Temporary macros to substitute for @ref and @deref functionality in a future version of Objective-J. Since these are C macros rather than a part of Preprocessor.js they can only be used within Cappuccino itself.
-*/
+@import <Foundation/CPDate.j>
 
-// @ref
-#define AT_REF(x) function(__input) { if (arguments.length) return x = __input; return x; }
-// @deref (kind of)
-#define AT_DEREF(x, ...) x(##__VA_ARGS__)
+@implementation NSDate : CPDate
+{
+}
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    var interval = [aCoder decodeDoubleForKey:@"NS.time"] || 0;
+
+    return [CPDate dateWithTimeIntervalSinceReferenceDate:interval];
+}
+
+- (Class)classForKeyedArchiver
+{
+    return [CPDate class];
+}
+
+@end
