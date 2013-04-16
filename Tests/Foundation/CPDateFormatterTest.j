@@ -165,7 +165,11 @@
 - (void)testLocalizedStringFromDate
 {
     var result = [CPDateFormatter localizedStringFromDate:[[CPDate alloc] initWithString:@"2011-10-05 23:59:59 +1200"] dateStyle:CPDateFormatterMediumStyle timeStyle:CPDateFormatterNoStyle];
-    [self assert:result equals:@"5 Oct 2011"];
+
+    if (![[[CPLocale currentLocale] objectForKey:CPLocaleCountryCode] isEqualToString:@"US"])
+        [self assert:result equals:@"5 Oct 2011"];
+    else
+        [self assert:result equals:@"Oct 5, 2011"];
 }
 
 - (void)testInit
