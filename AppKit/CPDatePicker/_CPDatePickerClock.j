@@ -125,7 +125,10 @@
 {
     [super layoutSubviews];
 
-    var bounds = [self bounds];
+    var bounds = [self bounds],
+        dateValue = [[_datePicker dateValue] copy];
+
+    [dateValue _dateWithTimeZone:[_datePicker timeZone]];
 
     [self setBackgroundColor:[_datePicker valueForThemeAttribute:@"bezel-color-clock" inState:[_datePicker themeState]]];
     [_middleHandLayer setBackgroundHandColor:[_datePicker valueForThemeAttribute:@"middle-hand-color" inState:[_datePicker themeState]]];
@@ -135,7 +138,7 @@
 
     if ([_datePicker _isEnglishFormat])
     {
-        if ([_datePicker dateValue].getHours() > 11)
+        if (dateValue.getHours() > 11)
             [_PMAMTextField setStringValue:@"PM"]
         else
             [_PMAMTextField setStringValue:@"AM"];
@@ -149,9 +152,9 @@
         [_PMAMTextField setHidden:YES];
     }
 
-    [_hourHandLayer setRotationRadians:[self _hourPositionRadianForDate:[_datePicker dateValue]]];
-    [_minuteHandLayer setRotationRadians:[self _minutePositionRadianForDate:[_datePicker dateValue]]];
-    [_secondHandLayer setRotationRadians:[self _secondPositionRadianForDate:[_datePicker dateValue]]];
+    [_hourHandLayer setRotationRadians:[self _hourPositionRadianForDate:dateValue]];
+    [_minuteHandLayer setRotationRadians:[self _minutePositionRadianForDate:dateValue]];
+    [_secondHandLayer setRotationRadians:[self _secondPositionRadianForDate:dateValue]];
 
     // Check if we have to display the hand second
     if (([_datePicker datePickerElements] & CPHourMinuteSecondDatePickerElementFlag) == CPHourMinuteSecondDatePickerElementFlag)

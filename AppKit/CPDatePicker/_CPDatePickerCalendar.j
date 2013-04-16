@@ -132,7 +132,10 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
 */
 - (void)setDateValue:(CPDate)aDateValue
 {
-    [_monthView setMonthForDate:aDateValue];
+    var dateValue = [aDateValue copy];
+    [dateValue _dateWithTimeZone:[_datePicker timeZone]];
+
+    [_monthView setMonthForDate:dateValue];
     [_headerView setMonthForDate:[_monthView monthDate]];
 
     [self setNeedsLayout];
