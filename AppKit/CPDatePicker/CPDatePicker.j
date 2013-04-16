@@ -499,6 +499,18 @@ CPEraDatePickerElementFlag              = 0x0100;
     [self setNeedsLayout];
 }
 
+/*! Set the timeZone
+    @param aTimeZone
+*/
+- (void)setTimeZone:(CPTimeZone)aTimeZone
+{
+    [self willChangeValueForKey:@"timeZone"];
+    _timeZone = aTimeZone;
+    [self didChangeValueForKey:@"timeZone"];
+
+    [self setNeedsLayout];
+}
+
 
 #pragma mark -
 #pragma mark First responder methods
