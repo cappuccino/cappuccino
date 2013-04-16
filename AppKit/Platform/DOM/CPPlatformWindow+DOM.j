@@ -1091,7 +1091,7 @@ var resizeTimer = nil;
                                   timestamp:timestamp windowNumber:windowNumber context:nil eventNumber:-1 clickCount:1 pressure:0];
     event._DOMEvent = aDOMEvent;
 
-    // We lag 1 event behind without this timeout.
+    // We lag many events behind without this closure depending on browser.
     var eventCaller = (function(scrollLeft,scrollTop,DOMEventDeltaY)
     {
 		return function() {
