@@ -45,4 +45,12 @@ CPLogRegister(CPLogConsole);
         return String((row + 1) * [[tableColumn identifier] intValue]);
 }
 
+- (BOOL)tableView:(CPTableView)tableView shouldReorderColumn:(int)columnIndex toColumn:(int)newColumnIndex
+{
+    if (columnIndex === 0 || newColumnIndex === 4)
+        return NO;
+    else
+        return YES;
+}
+
 @end
