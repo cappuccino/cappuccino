@@ -355,7 +355,7 @@ var _CPMenuBarVisible               = NO,
     while (count--)
         [_items[count] setMenu:nil];
 
-    _highlightedIndex = CPNotFound;
+    [self _highlightItemAtIndex:CPNotFound];
 
     // Because we are changing _items directly, be sure to notify KVO
     [self willChangeValueForKey:@"items"];
@@ -1151,6 +1151,7 @@ var _CPMenuBarVisible               = NO,
             return;
 
     [aMenuItem setMenu:self];
+    [self _highlightItemAtIndex:CPNotFound];
     [_items insertObject:aMenuItem atIndex:anIndex];
 
     [[CPNotificationCenter defaultCenter]
@@ -1165,6 +1166,7 @@ var _CPMenuBarVisible               = NO,
         return;
 
     [[_items objectAtIndex:anIndex] setMenu:nil];
+    [self _highlightItemAtIndex:CPNotFound];
     [_items removeObjectAtIndex:anIndex];
 
     [[CPNotificationCenter defaultCenter]
