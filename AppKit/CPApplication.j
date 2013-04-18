@@ -34,6 +34,7 @@
 @import "CPPanel.j"
 @import "CPPlatform.j"
 @import "CPWindowController.j"
+@import "_CPPopoverWindow.j"
 
 var CPMainCibFile               = @"CPMainCibFile",
     CPMainCibFileHumanFriendly  = @"Main cib file base name",
