@@ -1,6 +1,7 @@
 
 var FILE = require("file"),
     OS = require("os"),
+    TERM = require("narwhal/term"),
     Jake = require("jake"),
     BundleTask = require("objective-j/jake/bundletask").BundleTask;
 
@@ -81,17 +82,69 @@ ApplicationTask.prototype.defineFrameworksTask = function()
     var buildPath = this.buildProductPath(),
         newFrameworks = FILE.join(buildPath, "Frameworks"),
         thisTask = this;
-    
-    Jake.fileCreate(newFrameworks, function()
+
+    var FileList = Jake.FileList,
+        ENV = require("system").env
+
+    // this list appears in jake//lib/jake/applications.js but I can't work out how to import it properly
+    // also, there seems to be some case confusion....
+    var jakefiles = ["jakefile", /*"Jakefile",*/ "jakefile.js", /*"Jakefile.js",*/ "jakefile.j", /*"Jakefile.j"*/];
+    var extensions = new FileList(this._frameworksPath+"/*/");
+    var env = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Debug"
+    extensions.forEach(function( aFilename)
     {
-        if (thisTask._frameworksPath === "capp")
-            OS.system(["capp", "gen", "-f", "--force", buildPath]);
-        else if (thisTask._frameworksPath)
-        {
-            if (FILE.exists(newFrameworks))
-                FILE.rmtree(newFrameworks);
-            
-            FILE.copyTree(thisTask._frameworksPath, newFrameworks);
+        var found = false;
+        for (var i=0; i < jakefiles.length; i++) {
+            if (FILE.exists(FILE.join(aFilename, jakefiles[i]))) {
+                found = true;
+            }
+        }
+        if (found) {
+            TERM.stream.print('Calling subjake process for '+aFilename+' and type '+env);
+            Jake.subjake([aFilename], "build", ENV);
+
+            // Now copy to the frameworks folder
+            TERM.stream.print('Copying framework to main build folder');
+            var dirname = new FileList(aFilename+"/Build/Release/*");
+            if (dirname.length > 1) {
+                TERM.stream.print('Found more than one name in the build directory');
+                TERM.stream.print('Exiting');
+                return;
+            } else {
+                Jake.fileCreate(newFrameworks, function() {
+                    if (!FILE.exists(newFrameworks)) {
+                        TERM.stream.print(newFrameworks+' does not exist; creating.');
+                        FILE.mkdir(newFrameworks);
+                    }
+                    var files = new FileList(aFilename+'/Build/Release/*');
+                    files.forEach(function(morefile) {
+                        var newname = FILE.split(morefile)[1]; // ::FIXME::
+                        TERM.stream.print('Copying '+morefile+' to '+newFrameworks+'/'+newname);
+                        FILE.copyTree(morefile, FILE.join(newFrameworks,newname));
+                    });
+                });
+            }
+        } else {
+            var fwname = FILE.split(aFilename).pop();
+            Jake.fileCreate(newFrameworks, function() {
+                var newpath = FILE.join(newFrameworks, fwname, "");
+                var oldpath = FILE.join(aFilename, "");
+                TERM.stream.print('Attempting to copy '+oldpath+' to '+newpath);
+                if (!FILE.exists(newFrameworks)) {
+                    TERM.stream.print(newFrameworks+' does not exist; creating.');
+                    FILE.mkdir(newFrameworks);
+                }
+                if (!FILE.exists(newpath)) {
+                    TERM.stream.print(newpath+' does not exist; creating.');
+                    FILE.mkdir(newpath);
+                }
+                var files = new FileList(oldpath+'*');
+                files.forEach(function(morefile) {
+                    var morename = FILE.split(morefile).pop();
+                    TERM.stream.print('Copying '+morefile+' to '+newpath+morename);
+                    FILE.copyTree(morefile, FILE.join(newpath,morename));
+                });
+            });
         }
     });
     
