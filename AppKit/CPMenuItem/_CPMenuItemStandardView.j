@@ -336,6 +336,11 @@
     }
 }
 
+- (BOOL)isHighlighted
+{
+    return _highlighted;
+}
+
 @end
 
 @implementation _CPMenuItemSubmenuIndicatorView : CPView
