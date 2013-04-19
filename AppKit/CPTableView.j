@@ -5236,6 +5236,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     if (_implementedDelegateMethods & CPTableViewDelegate_tableView_shouldSelectRow_)
     {
         var shouldSelect = [_delegate tableView:self shouldSelectRow:i];
+
         if (!shouldSelect)
         {
             /* If shouldSelect returns NO it means this row cannot be selected.
@@ -5244,10 +5245,11 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
             */
             while (!shouldSelect && (i < [self numberOfRows] && i > 0))
             {
-                shouldGoUpward ? i-- : i++; //check to see if the row can be selected if it can't be then see if the next row can be selected
+                shouldGoUpward ? --i : ++i; //check to see if the row can be selected if it can't be then see if the next row can be selected
                 shouldSelect = [_delegate tableView:self shouldSelectRow:i];
             }
         }
+
     }
 
     // If we go upward and see that this row is already selected we should deselect the row below.
