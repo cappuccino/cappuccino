@@ -1034,6 +1034,42 @@ var resizeTimer = nil;
                         (aDOMEvent.altKey ? CPAlternateKeyMask : 0) |
                         (aDOMEvent.metaKey ? CPCommandKeyMask : 0);
 
+    // Don't miss scroll events
+    if( aDOMEvent.axis )
+    {
+        if( aDOMEvent.axis == aDOMEvent.VERTICAL_AXIS )
+        {
+            if( aDOMEvent.detail > 0 )
+                _DOMScrollingElement.scrollTop = 203;
+            else if( aDOMEvent.detail < 0 )
+                _DOMScrollingElement.scrollTop = 97;
+        }
+        else if( aDOMEvent.axis == aDOMEvent.HORIZONTAL_AXIS )
+        {
+            if( aDOMEvent.detail > 0 )
+                _DOMScrollingElement.scrollLeft = 203;
+            else if( aDOMEvent.detail < 0 )
+                _DOMScrollingElement.scrollLeft = 97;
+        }
+    }
+    else
+    {
+        if( _DOMScrollingElement.scrollTop == 150 )
+        {
+            if( aDOMEvent.wheelDeltaY > 0 )
+                _DOMScrollingElement.scrollTop = 97;
+            else if( aDOMEvent.wheelDeltaY < 0 )
+                _DOMScrollingElement.scrollTop = 203;
+        }
+        if( _DOMScrollingElement.scrollLeft == 150 )
+        {
+            if( aDOMEvent.wheelDeltaX > 0 )
+                _DOMScrollingElement.scrollLeft = 203;
+            else if( aDOMEvent.wheelDeltaX < 0 )
+                _DOMScrollingElement.scrollLeft = 97;
+        }
+    }
+ 
     // Show the dom element
     _DOMScrollingElement.style.visibility = "visible";
     _DOMScrollingElement.style.top = (location.y - 15) + @"px";
@@ -1055,42 +1091,46 @@ var resizeTimer = nil;
                                   timestamp:timestamp windowNumber:windowNumber context:nil eventNumber:-1 clickCount:1 pressure:0];
     event._DOMEvent = aDOMEvent;
 
-    // We lag 1 event behind without this timeout.
-    setTimeout(function()
+    // We lag many events behind without this closure, depending on browser.
+    var eventCaller = (function(scrollLeft,scrollTop,DOMEventDeltaY)
     {
-        // Find the scroll delta
-        var deltaX = _DOMScrollingElement.scrollLeft - 150,
-            deltaY = (_DOMScrollingElement.scrollTop - 150) || (aDOMEvent.deltaY===undefined?0: aDOMEvent.deltaY);
+        return function() {
+            // Find the scroll delta
+            var deltaX = scrollLeft - 150,
+                deltaY = (scrollTop - 150) || (DOMEventDeltaY===undefined?0: DOMEventDeltaY);
 
-        // If we scroll super with momentum,
-        // there are so many events going off that
-        // a tiny percent don't actually have any deltas.
-        //
-        // This does *not* make scrolling appear sluggish,
-        // it just seems like that is something that happens.
-        //
-        // We get free performance boost if we skip sending these events,
-        // as sending a scroll event with no deltas doesn't do anything.
-        if (deltaX || deltaY)
-        {
-            event._deltaX = deltaX;
-            event._deltaY = deltaY;
+            // If we scroll super with momentum,
+            // there are so many events going off that
+            // a tiny percent don't actually have any deltas.
+            //
+            // This does *not* make scrolling appear sluggish,
+            // it just seems like that is something that happens.
+            //
+            // We get free performance boost if we skip sending these events,
+            // as sending a scroll event with no deltas doesn't do anything.
+            if (deltaX || deltaY)
+            {
+                event._deltaX = deltaX;
+                event._deltaY = deltaY;
 
-            [CPApp sendEvent:event];
-        }
+                [CPApp sendEvent:event];
+            }
 
-        // We set StopDOMEventPropagation = NO on line 1008
-        //if (StopDOMEventPropagation)
-        //    CPDOMEventStop(aDOMEvent, self);
+            // We set StopDOMEventPropagation = NO on line 1008
+            //if (StopDOMEventPropagation)
+            //    CPDOMEventStop(aDOMEvent, self);
 
-        // Reset the DOM elements scroll offset
-        _DOMScrollingElement.scrollLeft = 150;
-        _DOMScrollingElement.scrollTop = 150;
+            // Reset the DOM elements scroll offset
+            _DOMScrollingElement.scrollLeft = 150;
+            _DOMScrollingElement.scrollTop = 150;
 
-        // Is this needed?
-        //[[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+            // Is this needed?
+            //[[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+        };
 
-    }, 0);
+    })(_DOMScrollingElement.scrollLeft,_DOMScrollingElement.scrollTop,aDOMEvent.deltaY);
+
+    setTimeout( eventCaller, 0 );
 
     // We hide the dom element after a little bit
     // so that other DOM elements such as inputs
