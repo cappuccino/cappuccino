@@ -603,6 +603,9 @@ var cachedBlackColor,
 
 /*!
     Returns an array with the HSB values for this color.
+
+    The values are expressed as fractions between 0.0-1.0.
+
     The index values are ordered as:
 <pre>
 <b>Index</b>   <b>Component</b>
@@ -649,9 +652,9 @@ var cachedBlackColor,
     }
 
     return [
-        ROUND(hue * 360.0),
-        ROUND(saturation * 100.0),
-        ROUND(brightness * 100.0)
+        hue,
+        saturation,
+        brightness
     ];
 }
 
