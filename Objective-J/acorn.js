@@ -215,6 +215,7 @@ if (!exports.acorn) {
     syntaxError.column = pos.column;
     syntaxError.lineStart = pos.lineStart;
     syntaxError.lineEnd = pos.lineEnd;
+    syntaxError.fileName = sourceFile;
 
     throw syntaxError;
   }
