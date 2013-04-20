@@ -156,11 +156,15 @@ var cachedBlackColor,
 }
 
 /*!
-    Creates a new color in HSB space.
+    Creates a new color based on the given HSB components.
 
-    @param hue the hue value
-    @param saturation the saturation value
-    @param brightness the brightness value
+    Note: earlier versions of this method took a hue component as degrees between 0-360,
+    and saturation and brightness components as percent between 0-100. This method has
+    now been corrected to take all components in the 0-1 range as in Cocoa.
+
+    @param hue the hue component (0.0-1.0)
+    @param saturation the saturation component (0.0-1.0)
+    @param brightness the brightness component (0.0-1.0)
 
     @return the initialized color
 */
@@ -169,18 +173,42 @@ var cachedBlackColor,
     return [self colorWithHue:hue saturation:saturation brightness:brightness alpha:1.0];
 }
 
+/*!
+    Calibrated colors are not supported in Cappuccino.
+
+    This method has the same result as [CPColor colorWithHue:saturation:brightness:alpha:].
+*/
++ (CPColor)colorWithCalibratedHue:(float)hue saturation:(float)saturation brightness:(float)brightness alpha:(float)alpha
+{
+    return [self colorWithHue:hue saturation:saturation brightness:brightness alpha:alpha];
+}
+
+/*!
+    Creates a new color based on the given HSB components.
+
+    Note: earlier versions of this method took a hue component as degrees between 0-360,
+    and saturation and brightness components as percent between 0-100. This method has
+    now been corrected to take all components in the 0-1 range as in Cocoa.
+
+    @param hue the hue component (0.0-1.0)
+    @param saturation the saturation component (0.0-1.0)
+    @param brightness the brightness component (0.0-1.0)
+    @param alpha the opacity component (0.0-1.0)
+
+    @return the initialized color
+*/
 + (CPColor)colorWithHue:(float)hue saturation:(float)saturation brightness:(float)brightness alpha:(float)alpha
 {
     if (saturation === 0.0)
-        return [CPColor colorWithCalibratedWhite:brightness / 100.0 alpha:alpha];
+        return [CPColor colorWithCalibratedWhite:brightness alpha:alpha];
 
-    var f = hue % 60,
-        p = (brightness * (100 - saturation)) / 10000,
-        q = (brightness * (6000 - saturation * f)) / 600000,
-        t = (brightness * (6000 - saturation * (60 -f))) / 600000,
-        b =  brightness / 100.0;
+    var f = (hue * 360) % 60,
+        p = (brightness * (1 - saturation)),
+        q = (brightness * (60 - saturation * f)) / 60,
+        t = (brightness * (60 - saturation * (60 - f))) / 60,
+        b = brightness;
 
-    switch (FLOOR(hue / 60))
+    switch (FLOOR(hue * 6))
     {
         case 0: return [CPColor colorWithCalibratedRed:b green:t blue:p alpha:alpha];
         case 1: return [CPColor colorWithCalibratedRed:q green:b blue:p alpha:alpha];
