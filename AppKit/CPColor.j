@@ -659,6 +659,30 @@ var cachedBlackColor,
 }
 
 /*!
+    Returns the hue component, the H in HSB, of the receiver.
+*/
+- (float)hueComponent
+{
+    return [self hsbComponents][0];
+}
+
+/*!
+    Returns the saturation component, the S in HSB, of the receiver.
+*/
+- (float)saturationComponent
+{
+    return [self hsbComponents][1];
+}
+
+/*!
+    Returns the brightness component, the B in HSB, of the receiver.
+*/
+- (float)brightnessComponent
+{
+    return [self hsbComponents][2];
+}
+
+/*!
     Returns the CSS representation of this color. The color will
     be in one of the following forms:
 <pre>
