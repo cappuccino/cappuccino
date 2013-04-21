@@ -215,12 +215,19 @@ var cachedBlackColor,
 
     switch (FLOOR(hue * 6))
     {
-        case 0: return [CPColor colorWithCalibratedRed:b green:t blue:p alpha:alpha];
-        case 1: return [CPColor colorWithCalibratedRed:q green:b blue:p alpha:alpha];
-        case 2: return [CPColor colorWithCalibratedRed:p green:b blue:t alpha:alpha];
-        case 3: return [CPColor colorWithCalibratedRed:p green:q blue:b alpha:alpha];
-        case 4: return [CPColor colorWithCalibratedRed:t green:p blue:b alpha:alpha];
-        case 5: return [CPColor colorWithCalibratedRed:b green:p blue:q alpha:alpha];
+        case 0:
+        case 6:
+            return [CPColor colorWithCalibratedRed:b green:t blue:p alpha:alpha];
+        case 1:
+            return [CPColor colorWithCalibratedRed:q green:b blue:p alpha:alpha];
+        case 2:
+            return [CPColor colorWithCalibratedRed:p green:b blue:t alpha:alpha];
+        case 3:
+            return [CPColor colorWithCalibratedRed:p green:q blue:b alpha:alpha];
+        case 4:
+            return [CPColor colorWithCalibratedRed:t green:p blue:b alpha:alpha];
+        case 5:
+            return [CPColor colorWithCalibratedRed:b green:p blue:q alpha:alpha];
     }
 }
 
