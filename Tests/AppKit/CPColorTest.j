@@ -43,6 +43,9 @@
 
     var hsb = [[CPColor colorWithHue:0.9 saturation:0.8 brightness:0.7] hsbComponents];
     [self assert:[0.9, 0.8, 0.7] equals:[Math.round(hsb[0] * 10) / 10, Math.round(hsb[1] * 10) / 10, Math.round(hsb[2] * 10) / 10]];
+
+    hsb = [[CPColor colorWithHue:0.999 saturation:0.8 brightness:0.7] hsbComponents];
+    [self assert:[0.999, 0.8, 0.7] equals:[Math.round(hsb[0] * 1000) / 1000, Math.round(hsb[1] * 10) / 10, Math.round(hsb[2] * 10) / 10]];
 }
 
 - (void)testIsEqual_
