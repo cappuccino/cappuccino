@@ -199,6 +199,11 @@ var cachedBlackColor,
 */
 + (CPColor)colorWithHue:(float)hue saturation:(float)saturation brightness:(float)brightness alpha:(float)alpha
 {
+    // Clamp values.
+    hue = MAX(MIN(hue, 1.0), 0.0);
+    saturation = MAX(MIN(saturation, 1.0), 0.0);
+    brightness = MAX(MIN(brightness, 1.0), 0.0);
+
     if (saturation === 0.0)
         return [CPColor colorWithCalibratedWhite:brightness alpha:alpha];
 
