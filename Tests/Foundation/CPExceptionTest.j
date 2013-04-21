@@ -27,6 +27,22 @@
     [self assertThrows:function(){[CPException raise:@"CPGenericException" reason:@"Margins must be positive"];}];
 }
 
+- (void)testRaise_format_
+{
+    var success = NO;
+    try
+    {
+        [CPException raise:CPGenericException format:@"Expected %.2f for %s", 0.789, "hello"];
+    }
+    catch (anException)
+    {
+        success = YES;
+        [self assert:CPGenericException equals:[anException name]];
+        [self assert:@"Expected 0.79 for hello" equals:[anException reason]];
+    }
+    [self assertTrue:success];
+}
+
 - (void)testName
 {
     [self assert:[exception name] equals:@"CPGenericException"];
