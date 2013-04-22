@@ -957,11 +957,13 @@ CPTexturedBackgroundWindowMask
 {
     if (orderingMode === CPWindowOut)
     {
-        // Directly ordering out will detach a child window
-        [_parentWindow removeChildWindow:self];
-
+        // It's important to order out child window before cleaning up parent's child windows
+        // because its layer is determined from the parent's layer.
         // In Cocoa, a window orders out its child windows only if it has no parent
         [self _orderOutRecursively:!_parentWindow];
+
+        // Directly ordering out will detach a child window
+        [_parentWindow removeChildWindow:self];
     }
     else if (orderingMode === CPWindowAbove && otherWindowNumber === 0)
         [self _orderFront];
