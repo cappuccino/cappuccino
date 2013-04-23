@@ -564,7 +564,10 @@ IfStatement: function(node, st, c) {
         buffer;
     if (generate) {
       buffer = compiler.jsBuffer;
-      CONCAT(buffer, indentation);
+      if (!st.superNodeIsElse)
+        CONCAT(buffer, indentation);
+      else
+        delete st.superNodeIsElse;
       CONCAT(buffer, "if (");
     }
     c(node.test, st, "Expression");
@@ -579,7 +582,11 @@ IfStatement: function(node, st, c) {
         CONCAT(buffer, indentation);
         CONCAT(buffer, alternateNotIf ? "else\n" : "else ");
       }
-      if (alternateNotIf) indentation += indentStep;
+      if (alternateNotIf)
+        indentation += indentStep;
+      else
+        st.superNodeIsElse = true;
+
       c(alternate, st, "Statement");
       if (alternateNotIf) indentation = indentation.substring(indentationSpaces);
     }
