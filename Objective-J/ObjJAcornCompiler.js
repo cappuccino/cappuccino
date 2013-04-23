@@ -572,14 +572,16 @@ IfStatement: function(node, st, c) {
     indentation += indentStep;
     c(node.consequent, st, "Statement");
     indentation = indentation.substring(indentationSpaces);
-    if (node.alternate) {
+    var alternate = node.alternate;
+    if (alternate) {
+      var alternateNotIf = alternate.type !== "IfStatement";
       if (generate) {
         CONCAT(buffer, indentation);
-        CONCAT(buffer, "else\n");
+        CONCAT(buffer, alternateNotIf ? "else\n" : "else ");
       }
-      indentation += indentStep;
-      c(node.alternate, st, "Statement");
-      indentation = indentation.substring(indentationSpaces);
+      if (alternateNotIf) indentation += indentStep;
+      c(alternate, st, "Statement");
+      if (alternateNotIf) indentation = indentation.substring(indentationSpaces);
     }
 },
 LabeledStatement: function(node, st, c) {
