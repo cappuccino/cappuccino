@@ -71,6 +71,7 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
 @property NSDate                *appStartedTimestamp;
 @property NSMutableDictionary   *pathModificationDates;
 @property NSMutableDictionary	*projectPathsForSourcePaths;
+@property NSString				*xcodecappIgnorePath;
 
 @end
 
@@ -98,7 +99,8 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
 		@"*/.*/",
         @"*/NS_*.j",
         @"*/main.j",
-        @"*/.*"
+        @"*/.*",
+        @"!*/.xcodecapp-ignore"
     ];
 
     XCCDefaultIgnoredPathRegexes = [self parseIgnorePaths:defaultIgnoredPaths];
@@ -117,6 +119,7 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
         self.lastEventId = [[NSUserDefaults standardUserDefaults] objectForKey:kDefaultLastEventId];
         self.appStartedTimestamp = [NSDate date];
         self.projectPathsForSourcePaths = [NSMutableDictionary new];
+        self.xcodecappIgnorePath = @"";
 
         self.isListening = NO;
         self.isUsingFileLevelAPI = NO;
@@ -329,6 +332,7 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
     
     [self clearErrors:self];
     self.currentProjectPath = path;
+    self.xcodecappIgnorePath = [self.currentProjectPath stringByAppendingPathComponent:@".xcodecapp-ignore"];
     self.projectPathsForSourcePaths = [NSMutableDictionary new];
     [self computeIgnoredPaths];
 
@@ -783,7 +787,7 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
 
 - (BOOL)isXCCIgnoreFile:(NSString *)path
 {
-    return [path.lastPathComponent isEqual:@".xcodecapp-ignore"];
+    return [path isEqualToString:self.xcodecappIgnorePath];
 }
 
 - (NSString *)projectPathForSourcePath:(NSString *)path
