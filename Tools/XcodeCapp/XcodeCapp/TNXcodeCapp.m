@@ -134,6 +134,7 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
         [self configureFileAPI];
         [self getShellProfilePath];
 
+        NSUserNotificationCenter.defaultUserNotificationCenter.delegate = self;
         [GrowlApplicationBridge setGrowlDelegate:self];
     }
 
@@ -223,7 +224,7 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
 - (void)populateXcodeProject:(BOOL)shouldNotify
 {
     if (shouldNotify)
-        [self growlWithTitle:@"Loading project" message:self.currentProjectPath.lastPathComponent];
+        [self notifyUserWithTitle:@"Loading project" message:self.currentProjectPath.lastPathComponent];
 
 	// First populate with all non-framework code
     [self populateXcodeProjectWithProjectRelativePath:@""];
@@ -240,7 +241,7 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
     if (shouldNotify)
     {
         [[NSNotificationCenter defaultCenter] postNotificationName:XCCDidPopulateProjectNotification object:self userInfo:nil];
-        [self growlWithTitle:@"Project loaded" message:self.currentProjectPath.lastPathComponent];
+        [self notifyUserWithTitle:@"Project loaded" message:self.currentProjectPath.lastPathComponent];
 	}
 }
 
@@ -343,7 +344,7 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
 
     [[NSUserDefaults standardUserDefaults] setObject:self.currentProjectPath forKey:kDefaultLastOpenedPath];
 
-    [self growlWithTitle:@"Listening to project" message:self.currentProjectPath.lastPathComponent];
+    [self notifyUserWithTitle:@"Listening to project" message:self.currentProjectPath.lastPathComponent];
 }
 
 
@@ -613,7 +614,7 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
     BOOL success = [self processModifiedFileAtPath:path projectSourcePath:projectPath notify:shouldNotify];
 
     if (success)
-        [self growlWithTitle:@"File successfully processed" message:path.lastPathComponent];
+        [self notifyUserWithTitle:@"File successfully processed" message:path.lastPathComponent];
 }
 
 - (BOOL)processModifiedFileAtPath:(NSString *)realSourcePath projectSourcePath:(NSString *)projectSourcePath notify:(BOOL)shouldNotify
@@ -690,7 +691,7 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
     {
         DLog(@"%@ Running conversion task...", NSStringFromSelector(_cmd));
 
-        [self growlWithTitle:growlTitle message:growlMessage];
+        [self notifyUserWithTitle:growlTitle message:growlMessage];
         
 		NSDictionary *taskResult = [self runTaskWithLaunchPath:self.shellPath
                                                      arguments:arguments
@@ -728,7 +729,7 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
             if ([[NSUserDefaults standardUserDefaults] boolForKey:kDefaultXCCAutoOpenErrorsPanel])
                 [self openErrorsPanel:self];
 
-            [self growlWithTitle:@"Error processing file" message:projectRelativePath.lastPathComponent];
+            [self notifyUserWithTitle:@"Error processing file" message:projectRelativePath.lastPathComponent];
         }
     }
 
@@ -761,7 +762,7 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
     if ([self isObjjFile:path])
     {
         [self removeReferencesToSourcePath:path];
-        [self growlWithTitle:@"Removed Objective-J file" message:path.lastPathComponent];
+        [self notifyUserWithTitle:@"Removed Objective-J file" message:path.lastPathComponent];
     }
     else if ([self isXCCIgnoreFile:path])
         [self computeIgnoredPaths];
@@ -1071,14 +1072,14 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
     self.errorListController.content = self.errorList;
 }
 
-#pragma mark - Growl
+#pragma mark - User notifications
 
 - (NSString *)applicationNameForGrowl
 {
     return @"XcodeCapp";
 }
 
-- (void)growlWithTitle:(NSString *)aTitle message:(NSString *)aMessage
+- (void)notifyUserWithTitle:(NSString *)aTitle message:(NSString *)aMessage
 {
     if ([NSUserNotificationCenter class])
     {
@@ -1098,6 +1099,12 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
                                        isSticky:NO
                                    clickContext:nil];
     }
+}
+
+- (BOOL)userNotificationCenter:(NSUserNotificationCenter *)center shouldPresentNotification:(NSUserNotification *)notification
+{
+    // Notification Center may decide not to show a notification. We always want them to show.
+    return YES;
 }
 
 @end

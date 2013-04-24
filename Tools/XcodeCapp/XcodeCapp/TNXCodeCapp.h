@@ -31,7 +31,7 @@ extern NSString * const XCCConversionDidStopNotification;
 extern NSString * const XCCListeningDidStartNotification;
 
 
-@interface TNXcodeCapp : NSObject <NSTableViewDelegate, GrowlApplicationBridgeDelegate>
+@interface TNXcodeCapp : NSObject <NSTableViewDelegate, NSUserNotificationCenterDelegate, GrowlApplicationBridgeDelegate>
 
 @property NSURL* XcodeSupportProjectURL;
 @property NSString* currentProjectPath;
