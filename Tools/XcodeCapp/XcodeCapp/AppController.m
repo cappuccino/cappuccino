@@ -204,7 +204,7 @@ AppController *SharedAppControllerInstance = nil;
 - (void)XcodeCappListeningDidStart:(NSNotification *)aNotification
 {
     self.statusItem.image = self.iconActive;
-    self.menuItemListen.title = [NSString stringWithFormat:@"Stop Listening to “%@”", self.xcc.currentProjectPath.lastPathComponent];
+    self.menuItemListen.title = [NSString stringWithFormat:@"Close “%@”", self.xcc.currentProjectPath.lastPathComponent];
     self.menuItemListen.action = @selector(stopListening:);
 }
 
@@ -277,7 +277,7 @@ AppController *SharedAppControllerInstance = nil;
     [self.xcc stop];
     
     self.statusItem.image = self.iconInactive;
-    self.menuItemListen.title = @"Listen to Project…";
+    self.menuItemListen.title = @"Open Project…";
     self.menuItemListen.action = @selector(listenToProject:);
 
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:kDefaultLastOpenedPath];
