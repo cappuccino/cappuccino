@@ -7,7 +7,7 @@ from mod_pbxproj import XcodeProject
 XCODE_SUPPORT_FOLDER = "XcodeSupport"
 SLASH_REPLACEMENT  = u"∕"  # DIVISION SLASH  Unicode U+2215
 STRING_RE = re.compile(ur"^\s*<string>(.*)</string>\s*$", re.MULTILINE)
-FRAMEWORKS_RE = re.compile(ur"^(.+/Frameworks/Debug/([^/]+))/.+$")
+FRAMEWORKS_RE = re.compile(ur"^(.+/Frameworks/(?:Debug|Source)/([^/]+))/.+$")
 XCC_GENERAL_INCLUDE = u"xcc_general_include.h"
 
 
@@ -79,15 +79,13 @@ def convert_unicode_to_xml(path):
         content = STRING_RE.sub(xml_converter, content)
         f.write(content)
 
-def add_framework_resources(project, resourcesPath):
-    realPath = os.path.realpath(resourcesPath)
-    files = project.get_files_by_os_path(realPath, tree="<absolute>")
+def add_framework_resources(project, framework, resourcesPath):
+    files = project.get_files_by_os_path(resourcesPath, tree="<absolute>")
 
     if not files:
-        files = project.add_file(realPath, parent=None, tree="<absolute>", create_build_files=False)
+        files = project.add_file(resourcesPath, parent=None, tree="<absolute>", create_build_files=False)
 
         if files:
-            framework = os.path.basename(os.path.dirname(resourcesPath))
             files[0]['name'] = framework + " Resources"
 
 def save_project(project, pbxPath):
@@ -127,10 +125,10 @@ if __name__ == "__main__":
 
             if match:
                 framework = match.group(2)
-                resourcesPath = os.path.join(match.group(1), "Resources")
+                resourcesPath = os.path.realpath(os.path.join(match.group(1), "Resources"))
 
                 if os.path.isdir(resourcesPath):
-                    add_framework_resources(project, resourcesPath)
+                    add_framework_resources(project, framework, resourcesPath)
 
             save_project(project, pbxPath)
 
