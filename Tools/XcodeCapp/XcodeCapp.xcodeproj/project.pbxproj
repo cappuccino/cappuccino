@@ -7,419 +7,346 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0218442515D32B5D00A782B8 /* pbxprojModifier.py in Resources */ = {isa = PBXBuildFile; fileRef = 0218442415D32B5D00A782B8 /* pbxprojModifier.py */; };
-		022BCEA71468632000B72910 /* project.pbxproj.sample in Resources */ = {isa = PBXBuildFile; fileRef = 022BCEA61468632000B72910 /* project.pbxproj.sample */; };
-		024A041413699DD400DCBE4D /* parser.j in Resources */ = {isa = PBXBuildFile; fileRef = 024A041113699D6800DCBE4D /* parser.j */; };
-		026F3B6213866B0B00EE5B83 /* xcodecapp-icon-inactive.png in Resources */ = {isa = PBXBuildFile; fileRef = 026F3B6113866B0B00EE5B83 /* xcodecapp-icon-inactive.png */; };
-		026F3B6513866E7D00EE5B83 /* xcodecapp-icon-active.png in Resources */ = {isa = PBXBuildFile; fileRef = 026F3B6413866E7D00EE5B83 /* xcodecapp-icon-active.png */; };
-		027D999B13696A7000D3DB13 /* MainMenu.nib in Resources */ = {isa = PBXBuildFile; fileRef = 29B97318FDCFA39411CA2CEA /* MainMenu.nib */; };
-		027D999C13696A7000D3DB13 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
-		027D999E13696A7000D3DB13 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
-		027D999F13696A7000D3DB13 /* AppController.m in Sources */ = {isa = PBXBuildFile; fileRef = 8E01A91E0DE9EED20008BB35 /* AppController.m */; };
-		027D99A113696A7000D3DB13 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
-		027D99A213696A7000D3DB13 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8E01A8DD0DE51A7C0008BB35 /* CoreServices.framework */; };
-		027FE49D1462D74C00B1AB92 /* TNXCodeCapp.m in Sources */ = {isa = PBXBuildFile; fileRef = 027FE49C1462D74C00B1AB92 /* TNXCodeCapp.m */; };
-		027FE4BA1462F64E00B1AB92 /* xcodecapp-icon-working.png in Resources */ = {isa = PBXBuildFile; fileRef = 027FE4B91462F64E00B1AB92 /* xcodecapp-icon-working.png */; };
-		027FE4BD1462F7EB00B1AB92 /* FSEventCallback.m in Sources */ = {isa = PBXBuildFile; fileRef = 027FE4BC1462F7EB00B1AB92 /* FSEventCallback.m */; };
-		0289AC9414668CAF003CD975 /* XcodeCapp.icns in Resources */ = {isa = PBXBuildFile; fileRef = 0289AC9314668CAF003CD975 /* XcodeCapp.icns */; };
-		0294F09315D345A500840547 /* mod_pbxproj.py in Resources */ = {isa = PBXBuildFile; fileRef = 0294F09215D345A500840547 /* mod_pbxproj.py */; };
-		02998CEB1369BF7D006C73DB /* Growl Registration Ticket.growlRegDict in Resources */ = {isa = PBXBuildFile; fileRef = 02998CEA1369BF7D006C73DB /* Growl Registration Ticket.growlRegDict */; };
-		02998CF71369C339006C73DB /* Growl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02998CF61369C339006C73DB /* Growl.framework */; };
-		02998CF91369C38A006C73DB /* Growl.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 02998CF61369C339006C73DB /* Growl.framework */; };
-		02B1C8D816B25C74003C6E82 /* TNErrorDataView.m in Sources */ = {isa = PBXBuildFile; fileRef = 02B1C8D716B25C74003C6E82 /* TNErrorDataView.m */; };
-		4E2D0D01154840B400475C01 /* help.rtfd in Resources */ = {isa = PBXBuildFile; fileRef = 4E2D0D00154840B400475C01 /* help.rtfd */; };
-		4E2D0D03154840BC00475C01 /* help.rtfd in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4E2D0D00154840B400475C01 /* help.rtfd */; };
-		651DAE1F13B0CAB900ECA3F0 /* PRHEmptyGrowlDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 651DAE1D13B0CAB900ECA3F0 /* PRHEmptyGrowlDelegate.m */; };
+		E132ED951724B64C00D870AE /* FSEventCallback.m in Sources */ = {isa = PBXBuildFile; fileRef = E132ED941724B64C00D870AE /* FSEventCallback.m */; };
+		E164FDD31720E77100263CE3 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E164FDD21720E77100263CE3 /* Cocoa.framework */; };
+		E164FDDF1720E77100263CE3 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = E164FDDE1720E77100263CE3 /* main.m */; };
+		E164FDE91720E77100263CE3 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = E164FDE71720E77100263CE3 /* MainMenu.xib */; };
+		E164FDF51720EBC100263CE3 /* AppController.m in Sources */ = {isa = PBXBuildFile; fileRef = E164FDF41720EBC100263CE3 /* AppController.m */; };
+		E164FDF71720EBD600263CE3 /* Growl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E164FDF61720EBD600263CE3 /* Growl.framework */; };
+		E164FDFF1720EC5B00263CE3 /* TNXcodeCapp.m in Sources */ = {isa = PBXBuildFile; fileRef = E164FDFB1720EC5B00263CE3 /* TNXcodeCapp.m */; };
+		E164FE001720EC5B00263CE3 /* UserDefaults.m in Sources */ = {isa = PBXBuildFile; fileRef = E164FDFD1720EC5B00263CE3 /* UserDefaults.m */; };
+		E164FE061720ED4500263CE3 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = E164FE041720ED4400263CE3 /* InfoPlist.strings */; };
+		E164FE0D1720F26C00263CE3 /* help.rtfd in Resources */ = {isa = PBXBuildFile; fileRef = E164FE081720F26C00263CE3 /* help.rtfd */; };
+		E164FE151720F40400263CE3 /* mod_pbxproj.py in Resources */ = {isa = PBXBuildFile; fileRef = E164FE131720F40400263CE3 /* mod_pbxproj.py */; };
+		E164FE161720F40400263CE3 /* pbxprojModifier.py in Resources */ = {isa = PBXBuildFile; fileRef = E164FE141720F40400263CE3 /* pbxprojModifier.py */; };
+		E164FE181720F44B00263CE3 /* parser.j in Resources */ = {isa = PBXBuildFile; fileRef = E164FE171720F44B00263CE3 /* parser.j */; };
+		E164FE1A1720F49A00263CE3 /* Growl Registration Ticket.growlRegDict in Resources */ = {isa = PBXBuildFile; fileRef = E164FE191720F49A00263CE3 /* Growl Registration Ticket.growlRegDict */; };
+		E164FE1F1720F51E00263CE3 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E164FE1D1720F50100263CE3 /* CoreServices.framework */; };
+		E164FE211720F55600263CE3 /* Growl.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = E164FDF61720EBD600263CE3 /* Growl.framework */; };
+		E164FE2B172188F300263CE3 /* project.pbxproj in Resources */ = {isa = PBXBuildFile; fileRef = E164FE2A172188F300263CE3 /* project.pbxproj */; };
+		E164FE2F1721A34900263CE3 /* icon-active.png in Resources */ = {isa = PBXBuildFile; fileRef = E164FE2C1721A34900263CE3 /* icon-active.png */; };
+		E164FE301721A34900263CE3 /* icon-inactive.png in Resources */ = {isa = PBXBuildFile; fileRef = E164FE2D1721A34900263CE3 /* icon-inactive.png */; };
+		E164FE311721A34900263CE3 /* icon-working.png in Resources */ = {isa = PBXBuildFile; fileRef = E164FE2E1721A34900263CE3 /* icon-working.png */; };
+		E17A822D172700B90095CD83 /* XcodeCapp.iconset in Resources */ = {isa = PBXBuildFile; fileRef = E17A822C172700B90095CD83 /* XcodeCapp.iconset */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		02998CF81369C383006C73DB /* CopyFiles */ = {
+		E164FE201720F54800263CE3 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				02998CF91369C38A006C73DB /* Growl.framework in CopyFiles */,
-				4E2D0D03154840BC00475C01 /* help.rtfd in CopyFiles */,
+				E164FE211720F55600263CE3 /* Growl.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		0218442415D32B5D00A782B8 /* pbxprojModifier.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = pbxprojModifier.py; sourceTree = "<group>"; };
-		022BCEA61468632000B72910 /* project.pbxproj.sample */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = project.pbxproj.sample; sourceTree = "<group>"; };
-		024A041113699D6800DCBE4D /* parser.j */ = {isa = PBXFileReference; explicitFileType = sourcecode.javascript; fileEncoding = 4; path = parser.j; sourceTree = "<group>"; };
-		026F3B6113866B0B00EE5B83 /* xcodecapp-icon-inactive.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "xcodecapp-icon-inactive.png"; sourceTree = "<group>"; };
-		026F3B6413866E7D00EE5B83 /* xcodecapp-icon-active.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "xcodecapp-icon-active.png"; sourceTree = "<group>"; };
-		027D9989136969DD00D3DB13 /* XcodeCapp.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XcodeCapp.pch; sourceTree = "<group>"; };
-		027D99A613696A7000D3DB13 /* XcodeCapp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = XcodeCapp.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		027FE49B1462D74C00B1AB92 /* TNXCodeCapp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TNXCodeCapp.h; sourceTree = "<group>"; };
-		027FE49C1462D74C00B1AB92 /* TNXCodeCapp.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TNXCodeCapp.m; sourceTree = "<group>"; };
-		027FE4B91462F64E00B1AB92 /* xcodecapp-icon-working.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "xcodecapp-icon-working.png"; sourceTree = "<group>"; };
-		027FE4BB1462F7D600B1AB92 /* FSEventCallback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FSEventCallback.h; sourceTree = "<group>"; };
-		027FE4BC1462F7EB00B1AB92 /* FSEventCallback.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FSEventCallback.m; sourceTree = "<group>"; };
-		0289AC9314668CAF003CD975 /* XcodeCapp.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = XcodeCapp.icns; sourceTree = "<group>"; };
-		0294F09215D345A500840547 /* mod_pbxproj.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = mod_pbxproj.py; sourceTree = "<group>"; };
-		02998CEA1369BF7D006C73DB /* Growl Registration Ticket.growlRegDict */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = "Growl Registration Ticket.growlRegDict"; sourceTree = "<group>"; };
-		02998CF61369C339006C73DB /* Growl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Growl.framework; sourceTree = "<group>"; };
-		02B1C8D616B25C74003C6E82 /* TNErrorDataView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TNErrorDataView.h; sourceTree = "<group>"; };
-		02B1C8D716B25C74003C6E82 /* TNErrorDataView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TNErrorDataView.m; sourceTree = "<group>"; };
-		089C165DFE840E0CC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
-		13E42FB307B3F0F600E4EEF1 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
-		29B97316FDCFA39411CA2CEA /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		29B97319FDCFA39411CA2CEA /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/MainMenu.nib; sourceTree = "<group>"; };
-		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
-		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
-		4E2D0D00154840B400475C01 /* help.rtfd */ = {isa = PBXFileReference; lastKnownFileType = wrapper.rtfd; path = help.rtfd; sourceTree = "<group>"; };
-		651DAE1C13B0CAB900ECA3F0 /* PRHEmptyGrowlDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.objj.h; path = PRHEmptyGrowlDelegate.h; sourceTree = "<group>"; };
-		651DAE1D13B0CAB900ECA3F0 /* PRHEmptyGrowlDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PRHEmptyGrowlDelegate.m; sourceTree = "<group>"; };
-		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		8E01A8DD0DE51A7C0008BB35 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = /System/Library/Frameworks/CoreServices.framework; sourceTree = "<absolute>"; };
-		8E01A91D0DE9EED20008BB35 /* AppController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppController.h; sourceTree = "<group>"; };
-		8E01A91E0DE9EED20008BB35 /* AppController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = AppController.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
-		E12AA95F14637828006F55D6 /* macros.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.objj.h; path = macros.h; sourceTree = "<group>"; };
+		E132ED941724B64C00D870AE /* FSEventCallback.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FSEventCallback.m; sourceTree = "<group>"; };
+		E132ED961724B6C400D870AE /* FSEventCallback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FSEventCallback.h; sourceTree = "<group>"; };
+		E132ED991724B71600D870AE /* TNXCodeCapp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TNXCodeCapp.h; sourceTree = "<group>"; };
+		E132ED9A1724B71D00D870AE /* AppController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppController.h; sourceTree = "<group>"; };
+		E164FDCF1720E77100263CE3 /* XcodeCapp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = XcodeCapp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E164FDD21720E77100263CE3 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		E164FDD51720E77100263CE3 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
+		E164FDD61720E77100263CE3 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
+		E164FDD71720E77100263CE3 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		E164FDDA1720E77100263CE3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		E164FDDE1720E77100263CE3 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		E164FDE01720E77100263CE3 /* XcodeCapp-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "XcodeCapp-Prefix.pch"; sourceTree = "<group>"; };
+		E164FDE81720E77100263CE3 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		E164FDEF1720E7FA00263CE3 /* Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
+		E164FDF01720E7FA00263CE3 /* Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
+		E164FDF41720EBC100263CE3 /* AppController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppController.m; sourceTree = "<group>"; };
+		E164FDF61720EBD600263CE3 /* Growl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Growl.framework; path = XcodeCapp/Growl.framework; sourceTree = SOURCE_ROOT; };
+		E164FDFB1720EC5B00263CE3 /* TNXcodeCapp.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TNXcodeCapp.m; sourceTree = "<group>"; };
+		E164FDFD1720EC5B00263CE3 /* UserDefaults.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UserDefaults.m; sourceTree = "<group>"; };
+		E164FE051720ED4500263CE3 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = XcodeCapp/en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		E164FE081720F26C00263CE3 /* help.rtfd */ = {isa = PBXFileReference; lastKnownFileType = wrapper.rtfd; name = help.rtfd; path = Resources/help.rtfd; sourceTree = "<group>"; };
+		E164FE131720F40400263CE3 /* mod_pbxproj.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = mod_pbxproj.py; sourceTree = "<group>"; };
+		E164FE141720F40400263CE3 /* pbxprojModifier.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = pbxprojModifier.py; sourceTree = "<group>"; };
+		E164FE171720F44B00263CE3 /* parser.j */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = parser.j; sourceTree = "<group>"; };
+		E164FE191720F49A00263CE3 /* Growl Registration Ticket.growlRegDict */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = "Growl Registration Ticket.growlRegDict"; sourceTree = "<group>"; };
+		E164FE1D1720F50100263CE3 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
+		E164FE2A172188F300263CE3 /* project.pbxproj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.pbxproject; name = project.pbxproj; path = Resources/project.pbxproj; sourceTree = "<group>"; };
+		E164FE2C1721A34900263CE3 /* icon-active.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "icon-active.png"; path = "Resources/icon-active.png"; sourceTree = "<group>"; };
+		E164FE2D1721A34900263CE3 /* icon-inactive.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "icon-inactive.png"; path = "Resources/icon-inactive.png"; sourceTree = "<group>"; };
+		E164FE2E1721A34900263CE3 /* icon-working.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "icon-working.png"; path = "Resources/icon-working.png"; sourceTree = "<group>"; };
+		E17A822C172700B90095CD83 /* XcodeCapp.iconset */ = {isa = PBXFileReference; lastKnownFileType = folder.iconset; name = XcodeCapp.iconset; path = Resources/XcodeCapp.iconset; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		027D99A013696A7000D3DB13 /* Frameworks */ = {
+		E164FDCC1720E77100263CE3 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				027D99A113696A7000D3DB13 /* Cocoa.framework in Frameworks */,
-				027D99A213696A7000D3DB13 /* CoreServices.framework in Frameworks */,
-				02998CF71369C339006C73DB /* Growl.framework in Frameworks */,
+				E164FDD31720E77100263CE3 /* Cocoa.framework in Frameworks */,
+				E164FE1F1720F51E00263CE3 /* CoreServices.framework in Frameworks */,
+				E164FDF71720EBD600263CE3 /* Growl.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		080E96DDFE201D6D7F000001 /* Classes */ = {
+		E164FDC61720E77100263CE3 = {
 			isa = PBXGroup;
 			children = (
-				651DAE1C13B0CAB900ECA3F0 /* PRHEmptyGrowlDelegate.h */,
-				651DAE1D13B0CAB900ECA3F0 /* PRHEmptyGrowlDelegate.m */,
-				02B1C8D616B25C74003C6E82 /* TNErrorDataView.h */,
-				02B1C8D716B25C74003C6E82 /* TNErrorDataView.m */,
-				8E01A91D0DE9EED20008BB35 /* AppController.h */,
-				8E01A91E0DE9EED20008BB35 /* AppController.m */,
-				027FE49B1462D74C00B1AB92 /* TNXCodeCapp.h */,
-				027FE49C1462D74C00B1AB92 /* TNXCodeCapp.m */,
-				027FE4BB1462F7D600B1AB92 /* FSEventCallback.h */,
-				027FE4BC1462F7EB00B1AB92 /* FSEventCallback.m */,
+				E164FDD81720E77100263CE3 /* XcodeCapp */,
+				E164FDD11720E77100263CE3 /* Frameworks */,
+				E164FDD01720E77100263CE3 /* Products */,
 			);
-			name = Classes;
 			sourceTree = "<group>";
 		};
-		1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */ = {
+		E164FDD01720E77100263CE3 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8E01A8DD0DE51A7C0008BB35 /* CoreServices.framework */,
-				1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */,
-			);
-			name = "Linked Frameworks";
-			sourceTree = "<group>";
-		};
-		1058C7A2FEA54F0111CA2CBB /* Other Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				29B97324FDCFA39411CA2CEA /* AppKit.framework */,
-				13E42FB307B3F0F600E4EEF1 /* CoreData.framework */,
-				29B97325FDCFA39411CA2CEA /* Foundation.framework */,
-			);
-			name = "Other Frameworks";
-			sourceTree = "<group>";
-		};
-		19C28FACFE9D520D11CA2CBB /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				027D99A613696A7000D3DB13 /* XcodeCapp.app */,
+				E164FDCF1720E77100263CE3 /* XcodeCapp.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		29B97314FDCFA39411CA2CEA /* xcodecapp-cocoa */ = {
+		E164FDD11720E77100263CE3 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				080E96DDFE201D6D7F000001 /* Classes */,
-				29B97315FDCFA39411CA2CEA /* Other Sources */,
-				29B97317FDCFA39411CA2CEA /* Resources */,
-				29B97323FDCFA39411CA2CEA /* Frameworks */,
-				19C28FACFE9D520D11CA2CBB /* Products */,
+				E164FDD21720E77100263CE3 /* Cocoa.framework */,
+				E164FE1D1720F50100263CE3 /* CoreServices.framework */,
+				E164FDF61720EBD600263CE3 /* Growl.framework */,
+				E164FDD41720E77100263CE3 /* Other Frameworks */,
 			);
-			name = "xcodecapp-cocoa";
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		29B97315FDCFA39411CA2CEA /* Other Sources */ = {
+		E164FDD41720E77100263CE3 /* Other Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				027D9989136969DD00D3DB13 /* XcodeCapp.pch */,
-				29B97316FDCFA39411CA2CEA /* main.m */,
-				E12AA95F14637828006F55D6 /* macros.h */,
+				E164FDD51720E77100263CE3 /* AppKit.framework */,
+				E164FDD61720E77100263CE3 /* CoreData.framework */,
+				E164FDD71720E77100263CE3 /* Foundation.framework */,
 			);
-			name = "Other Sources";
+			name = "Other Frameworks";
 			sourceTree = "<group>";
 		};
-		29B97317FDCFA39411CA2CEA /* Resources */ = {
+		E164FDD81720E77100263CE3 /* XcodeCapp */ = {
 			isa = PBXGroup;
 			children = (
-				0294F09215D345A500840547 /* mod_pbxproj.py */,
-				0218442415D32B5D00A782B8 /* pbxprojModifier.py */,
-				4E2D0D00154840B400475C01 /* help.rtfd */,
-				022BCEA61468632000B72910 /* project.pbxproj.sample */,
-				027FE4B91462F64E00B1AB92 /* xcodecapp-icon-working.png */,
-				026F3B6413866E7D00EE5B83 /* xcodecapp-icon-active.png */,
-				026F3B6113866B0B00EE5B83 /* xcodecapp-icon-inactive.png */,
-				024A041113699D6800DCBE4D /* parser.j */,
-				8D1107310486CEB800E47090 /* Info.plist */,
-				0289AC9314668CAF003CD975 /* XcodeCapp.icns */,
-				089C165CFE840E0CC02AAC07 /* InfoPlist.strings */,
-				29B97318FDCFA39411CA2CEA /* MainMenu.nib */,
-				02998CEA1369BF7D006C73DB /* Growl Registration Ticket.growlRegDict */,
+				E164FDF41720EBC100263CE3 /* AppController.m */,
+				E132ED9A1724B71D00D870AE /* AppController.h */,
+				E164FDFB1720EC5B00263CE3 /* TNXcodeCapp.m */,
+				E132ED991724B71600D870AE /* TNXCodeCapp.h */,
+				E132ED941724B64C00D870AE /* FSEventCallback.m */,
+				E132ED961724B6C400D870AE /* FSEventCallback.h */,
+				E164FDFD1720EC5B00263CE3 /* UserDefaults.m */,
+				E164FDEF1720E7FA00263CE3 /* Debug.xcconfig */,
+				E164FDF01720E7FA00263CE3 /* Release.xcconfig */,
+				E164FE121720F3E100263CE3 /* Scripts */,
+				E164FE071720F25400263CE3 /* Resources */,
+				E164FDD91720E77100263CE3 /* Supporting Files */,
+			);
+			path = XcodeCapp;
+			sourceTree = "<group>";
+		};
+		E164FDD91720E77100263CE3 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				E164FDDA1720E77100263CE3 /* Info.plist */,
+				E164FE041720ED4400263CE3 /* InfoPlist.strings */,
+				E164FDDE1720E77100263CE3 /* main.m */,
+				E164FDE01720E77100263CE3 /* XcodeCapp-Prefix.pch */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		E164FE071720F25400263CE3 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				E17A822C172700B90095CD83 /* XcodeCapp.iconset */,
+				E164FE2C1721A34900263CE3 /* icon-active.png */,
+				E164FE2D1721A34900263CE3 /* icon-inactive.png */,
+				E164FE2E1721A34900263CE3 /* icon-working.png */,
+				E164FDE71720E77100263CE3 /* MainMenu.xib */,
+				E164FE2A172188F300263CE3 /* project.pbxproj */,
+				E164FE191720F49A00263CE3 /* Growl Registration Ticket.growlRegDict */,
+				E164FE081720F26C00263CE3 /* help.rtfd */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
 		};
-		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
+		E164FE121720F3E100263CE3 /* Scripts */ = {
 			isa = PBXGroup;
 			children = (
-				02998CF61369C339006C73DB /* Growl.framework */,
-				1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */,
-				1058C7A2FEA54F0111CA2CBB /* Other Frameworks */,
+				E164FE141720F40400263CE3 /* pbxprojModifier.py */,
+				E164FE131720F40400263CE3 /* mod_pbxproj.py */,
+				E164FE171720F44B00263CE3 /* parser.j */,
 			);
-			name = Frameworks;
+			path = Scripts;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		027D999913696A7000D3DB13 /* XcodeCapp */ = {
+		E164FDCE1720E77100263CE3 /* XcodeCapp */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 027D99A313696A7000D3DB13 /* Build configuration list for PBXNativeTarget "XcodeCapp" */;
+			buildConfigurationList = E164FDEC1720E77100263CE3 /* Build configuration list for PBXNativeTarget "XcodeCapp" */;
 			buildPhases = (
-				024699001602C04A00F0AE43 /* ShellScript */,
-				027D999A13696A7000D3DB13 /* Resources */,
-				027D999D13696A7000D3DB13 /* Sources */,
-				02998CF81369C383006C73DB /* CopyFiles */,
-				027D99A013696A7000D3DB13 /* Frameworks */,
+				E164FDCB1720E77100263CE3 /* Sources */,
+				E164FDCC1720E77100263CE3 /* Frameworks */,
+				E164FDCD1720E77100263CE3 /* Resources */,
+				E164FE201720F54800263CE3 /* CopyFiles */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			name = XcodeCapp;
-			productInstallPath = "$(HOME)/Applications";
-			productName = "xcodecapp-cocoa";
-			productReference = 027D99A613696A7000D3DB13 /* XcodeCapp.app */;
+			productName = XcodeCapp;
+			productReference = E164FDCF1720E77100263CE3 /* XcodeCapp.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		29B97313FDCFA39411CA2CEA /* Project object */ = {
+		E164FDC71720E77100263CE3 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0440;
+				LastUpgradeCheck = 0460;
+				ORGANIZATIONNAME = "Cappuccino Project";
 			};
-			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "XcodeCapp" */;
+			buildConfigurationList = E164FDCA1720E77100263CE3 /* Build configuration list for PBXProject "XcodeCapp" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
-			hasScannedForEncodings = 1;
+			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 			);
-			mainGroup = 29B97314FDCFA39411CA2CEA /* xcodecapp-cocoa */;
+			mainGroup = E164FDC61720E77100263CE3;
+			productRefGroup = E164FDD01720E77100263CE3 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				027D999913696A7000D3DB13 /* XcodeCapp */,
+				E164FDCE1720E77100263CE3 /* XcodeCapp */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		027D999A13696A7000D3DB13 /* Resources */ = {
+		E164FDCD1720E77100263CE3 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				027D999B13696A7000D3DB13 /* MainMenu.nib in Resources */,
-				027D999C13696A7000D3DB13 /* InfoPlist.strings in Resources */,
-				024A041413699DD400DCBE4D /* parser.j in Resources */,
-				02998CEB1369BF7D006C73DB /* Growl Registration Ticket.growlRegDict in Resources */,
-				026F3B6213866B0B00EE5B83 /* xcodecapp-icon-inactive.png in Resources */,
-				026F3B6513866E7D00EE5B83 /* xcodecapp-icon-active.png in Resources */,
-				027FE4BA1462F64E00B1AB92 /* xcodecapp-icon-working.png in Resources */,
-				0289AC9414668CAF003CD975 /* XcodeCapp.icns in Resources */,
-				022BCEA71468632000B72910 /* project.pbxproj.sample in Resources */,
-				4E2D0D01154840B400475C01 /* help.rtfd in Resources */,
-				0218442515D32B5D00A782B8 /* pbxprojModifier.py in Resources */,
-				0294F09315D345A500840547 /* mod_pbxproj.py in Resources */,
+				E164FDE91720E77100263CE3 /* MainMenu.xib in Resources */,
+				E164FE061720ED4500263CE3 /* InfoPlist.strings in Resources */,
+				E164FE0D1720F26C00263CE3 /* help.rtfd in Resources */,
+				E164FE151720F40400263CE3 /* mod_pbxproj.py in Resources */,
+				E164FE161720F40400263CE3 /* pbxprojModifier.py in Resources */,
+				E164FE181720F44B00263CE3 /* parser.j in Resources */,
+				E164FE1A1720F49A00263CE3 /* Growl Registration Ticket.growlRegDict in Resources */,
+				E164FE2B172188F300263CE3 /* project.pbxproj in Resources */,
+				E164FE2F1721A34900263CE3 /* icon-active.png in Resources */,
+				E164FE301721A34900263CE3 /* icon-inactive.png in Resources */,
+				E164FE311721A34900263CE3 /* icon-working.png in Resources */,
+				E17A822D172700B90095CD83 /* XcodeCapp.iconset in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
-/* Begin PBXShellScriptBuildPhase section */
-		024699001602C04A00F0AE43 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/*.m",
-				"$(SRCROOT)/*.h",
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /usr/bin/perl;
-			shellScript = "#!/usr/bin/perl\n\nwhile (<>) {\n    s/\\s+$//;\n    print \"$_\\n\";\n}";
-			showEnvVarsInLog = 0;
-		};
-/* End PBXShellScriptBuildPhase section */
-
 /* Begin PBXSourcesBuildPhase section */
-		027D999D13696A7000D3DB13 /* Sources */ = {
+		E164FDCB1720E77100263CE3 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				027D999E13696A7000D3DB13 /* main.m in Sources */,
-				027D999F13696A7000D3DB13 /* AppController.m in Sources */,
-				651DAE1F13B0CAB900ECA3F0 /* PRHEmptyGrowlDelegate.m in Sources */,
-				027FE49D1462D74C00B1AB92 /* TNXCodeCapp.m in Sources */,
-				027FE4BD1462F7EB00B1AB92 /* FSEventCallback.m in Sources */,
-				02B1C8D816B25C74003C6E82 /* TNErrorDataView.m in Sources */,
+				E164FDDF1720E77100263CE3 /* main.m in Sources */,
+				E164FDF51720EBC100263CE3 /* AppController.m in Sources */,
+				E164FDFF1720EC5B00263CE3 /* TNXcodeCapp.m in Sources */,
+				E164FE001720EC5B00263CE3 /* UserDefaults.m in Sources */,
+				E132ED951724B64C00D870AE /* FSEventCallback.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXVariantGroup section */
-		089C165CFE840E0CC02AAC07 /* InfoPlist.strings */ = {
+		E164FDE71720E77100263CE3 /* MainMenu.xib */ = {
 			isa = PBXVariantGroup;
 			children = (
-				089C165DFE840E0CC02AAC07 /* English */,
+				E164FDE81720E77100263CE3 /* en */,
 			);
-			name = InfoPlist.strings;
+			name = MainMenu.xib;
 			sourceTree = "<group>";
 		};
-		29B97318FDCFA39411CA2CEA /* MainMenu.nib */ = {
+		E164FE041720ED4400263CE3 /* InfoPlist.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
-				29B97319FDCFA39411CA2CEA /* English */,
+				E164FE051720ED4500263CE3 /* en */,
 			);
-			name = MainMenu.nib;
+			name = InfoPlist.strings;
+			path = ..;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
-		027D99A413696A7000D3DB13 /* Debug */ = {
+		E164FDEA1720E77100263CE3 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = E164FDEF1720E7FA00263CE3 /* Debug.xcconfig */;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
-				CLANG_ENABLE_OBJC_ARC = YES;
-				COMBINE_HIDPI_IMAGES = YES;
-				COPY_PHASE_STRIP = NO;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(SRCROOT)\"",
-				);
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_OBJC_GC = unsupported;
-				GCC_MODEL_TUNING = G5;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = XcodeCapp.pch;
-				INFOPLIST_FILE = Info.plist;
-				INSTALL_PATH = /Applications;
-				MACOSX_DEPLOYMENT_TARGET = 10.6.8;
-				PRODUCT_NAME = XcodeCapp;
 			};
 			name = Debug;
 		};
-		027D99A513696A7000D3DB13 /* Release */ = {
+		E164FDEB1720E77100263CE3 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = E164FDF01720E7FA00263CE3 /* Release.xcconfig */;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
-				CLANG_ENABLE_OBJC_ARC = YES;
-				COMBINE_HIDPI_IMAGES = YES;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(SRCROOT)\"",
-				);
-				GCC_ENABLE_OBJC_GC = unsupported;
-				GCC_MODEL_TUNING = G5;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = XcodeCapp.pch;
-				INFOPLIST_FILE = Info.plist;
-				INSTALL_PATH = /Applications;
-				MACOSX_DEPLOYMENT_TARGET = 10.6.8;
-				PRODUCT_NAME = XcodeCapp;
 			};
 			name = Release;
 		};
-		C01FCF4F08A954540054247B /* Debug */ = {
+		E164FDED1720E77100263CE3 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
-				FRAMEWORK_SEARCH_PATHS = "";
-				GCC_ENABLE_OBJC_GC = required;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = "DEBUG=1";
-				GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS = "";
-				GCC_WARN_ABOUT_RETURN_TYPE = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.5;
-				ONLY_ACTIVE_ARCH = YES;
-				SDKROOT = macosx;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/XcodeCapp\"",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.6.8;
 			};
 			name = Debug;
 		};
-		C01FCF5008A954540054247B /* Release */ = {
+		E164FDEE1720E77100263CE3 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
-				FRAMEWORK_SEARCH_PATHS = "";
-				GCC_ENABLE_OBJC_GC = required;
-				GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS = "";
-				GCC_WARN_ABOUT_RETURN_TYPE = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.5;
-				ONLY_ACTIVE_ARCH = YES;
-				SDKROOT = macosx;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/XcodeCapp\"",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.6.8;
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		027D99A313696A7000D3DB13 /* Build configuration list for PBXNativeTarget "XcodeCapp" */ = {
+		E164FDCA1720E77100263CE3 /* Build configuration list for PBXProject "XcodeCapp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				027D99A413696A7000D3DB13 /* Debug */,
-				027D99A513696A7000D3DB13 /* Release */,
+				E164FDEA1720E77100263CE3 /* Debug */,
+				E164FDEB1720E77100263CE3 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		C01FCF4E08A954540054247B /* Build configuration list for PBXProject "XcodeCapp" */ = {
+		E164FDEC1720E77100263CE3 /* Build configuration list for PBXNativeTarget "XcodeCapp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				C01FCF4F08A954540054247B /* Debug */,
-				C01FCF5008A954540054247B /* Release */,
+				E164FDED1720E77100263CE3 /* Debug */,
+				E164FDEE1720E77100263CE3 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
-	rootObject = 29B97313FDCFA39411CA2CEA /* Project object */;
+	rootObject = E164FDC71720E77100263CE3 /* Project object */;
 }

@@ -2,7 +2,7 @@
  * parser.j
  *
  * Created by Francisco Tolmasky.
- * Modified by Antoine Mercadal, with great help of Martin Carlberg
+ * Modified by Antoine Mercadal, with great help from Martin Carlberg
  * Copyright 2008-2013, 280 North, Inc.
  *
  * This library is free software; you can redistribute it and/or
@@ -23,7 +23,9 @@
 @import <Foundation/Foundation.j>
 
 var FILE = require("file"),
-    OS = require("os");
+    OS = require("os"),
+
+    SLASH_REPLACEMENT = "∕";  // DIVISION SLASH, Unicode: U+2215
 
 // Debug function to print some JS objects
 function dump(obj)
@@ -35,22 +37,23 @@ function raise(pos, message)
 {
     var syntaxError = new SyntaxError(message);
     syntaxError.line = pos.line;
-    syntaxError.column = pos.column;
-    syntaxError.lineStart = pos.lineStart;
-    syntaxError.lineEnd = pos.lineEnd;
 
     throw syntaxError;
 }
 
 var hasWarnings = false,
+    errors = [],
     xcc = ObjectiveJ.acorn.walk.make(
     {
         ClassDeclarationStatement: function(node, st, c)
         {
             if (node.categoryname)
             {
-                print("Line " + node.loc.start.line + ", " + node.loc.source);
-                print("Categories are not supported yet. Ignoring it.");
+                [errors addObject:@{
+                    @"message": "Categories are not supported yet, ignoring it.",
+                    @"path": node.loc.source,
+                    @"line": node.loc.start.line
+                }];
                 hasWarnings = true;
                 return;
             }
@@ -135,18 +138,25 @@ function compile(node, state, visitor)
     c(node, state);
 };
 
+function shadowBaseNameForPath(path)
+{
+    // strip the extension and replace slashes
+    return path.substring(0, path.length - 2).replace(/[/]/g, SLASH_REPLACEMENT);
+}
 
 function main(args)
 {
     try
     {
         var fileURL = new CFURL(args[1]),
-            outputBaseURL = new CFURL(args[2]),
-            outputHeaderURL = new CFURL(outputBaseURL.path() + ".h"),
-            outputSourceURL = new CFURL(outputBaseURL.path() + ".m"),
+            outputDirectory = args[2],
+            baseFilename = shadowBaseNameForPath(fileURL.path()),
+            outputHeaderURL = new CFURL([outputDirectory stringByAppendingPathComponent:baseFilename + ".h"]),
+            outputImplementationURL = new CFURL([outputDirectory stringByAppendingPathComponent:baseFilename + ".m"]),
             source = FILE.read(fileURL, { charset: "UTF-8" }),
             flags = ObjectiveJ.Preprocessor.Flags.IncludeDebugSymbols | ObjectiveJ.Preprocessor.Flags.IncludeTypeSignatures,
-            tokens = ObjectiveJ.acorn.parse(source, { locations:true, sourceFile:fileURL.path() }),
+            sourceFile = fileURL.path(),
+            tokens = ObjectiveJ.acorn.parse(source, { locations:true, sourceFile:sourceFile }),
             classesInformation = [],
             ObjectiveCSource = "",
             ObjectiveCHeader = "";
@@ -158,54 +168,65 @@ function main(args)
         ObjectiveCHeader +=
             "#import <Foundation/Foundation.h>\n" +
             "#import <Cocoa/Cocoa.h>\n" +
-            "#import \"xcc_general_include.h\"\n\n";
+            '#import "xcc_general_include.h"\n';
 
-        ObjectiveCSource += "#import \"" + outputHeaderURL.lastPathComponent() + "\"\n\n";
+        ObjectiveCSource += "#import \"" + outputHeaderURL.lastPathComponent() + "\"\n";
 
         // Traverse each found classes
         classesInformation.forEach(function(aClass)
         {
             // add new class definition
-            ObjectiveCHeader += "@interface " + aClass.name + " : " + NSCompatibleClassName(aClass.superClass) + "\n\n";
+            ObjectiveCHeader += [CPString stringWithFormat:@"\n@interface %@ : %@", aClass.name, NSCompatibleClassName(aClass.superClass)];
 
-            // Add each outlets in header
+            // add each outlet in header
+            if (aClass.outlets.length > 0)
+                ObjectiveCHeader += "\n";
+
             aClass.outlets.forEach(function(anOutlet)
             {
-                ObjectiveCHeader += "@property (assign) IBOutlet " + NSCompatibleClassName(anOutlet.type, YES) + " " + anOutlet.name + ";\n";
+                ObjectiveCHeader += [CPString stringWithFormat:@"\n@property (assign) IBOutlet %@ %@;", NSCompatibleClassName(anOutlet.type, YES), anOutlet.name];
             });
 
-            ObjectiveCHeader += "\n";
+            if (aClass.actions.length > 0)
+            	ObjectiveCHeader += "\n";
 
-            // Add each actions in header
+            // add each action in header
             aClass.actions.forEach(function(anAction)
             {
-                ObjectiveCHeader += "- (IBAction)" + anAction.name + ":(" + anAction.arguments[0].type + ")" + anAction.arguments[0].name + ";\n";
+                ObjectiveCHeader += [CPString stringWithFormat:@"\n- (IBAction)%@:(%@)%@;", anAction.name, anAction.arguments[0].type, anAction.arguments[0].name];
             });
 
-            ObjectiveCHeader += "\n@end\n\n\n";
+            if (aClass.outlets.length > 0 || aClass.actions.length > 0)
+                ObjectiveCHeader += "\n";
+
+            ObjectiveCHeader += "\n@end\n";
 
             // fill up the implementation file
-            ObjectiveCSource += "@implementation " + aClass.name + "\n@end\n\n";
+            ObjectiveCSource += "\n@implementation " + aClass.name + "\n@end\n";
         });
 
-        // write files
-       if (ObjectiveCSource.length)
-           FILE.write(outputSourceURL, ObjectiveCSource, { charset:"UTF-8" });
+        if (ObjectiveCSource.length)
+            FILE.write(outputImplementationURL, ObjectiveCSource, { charset:"UTF-8" });
 
-       if (ObjectiveCHeader.length)
-           FILE.write(outputHeaderURL, ObjectiveCHeader, { charset:"UTF-8" });
+        if (ObjectiveCHeader.length)
+            FILE.write(outputHeaderURL, ObjectiveCHeader, { charset:"UTF-8" });
     }
     catch (e)
     {
-        if (e instanceof SyntaxError)
-            print("Line " + e.line + ", " + fileURL.path());
-
-        print(e.name + ": " + e.message);
-        OS.exit(1);
+        [errors addObject:@{
+            @"message": e.message,
+            @"path": sourceFile,
+            @"line": e.line
+        }];
     }
 
-    if (hasWarnings)
-        OS.exit(2);
+    if ([errors count])
+    {
+        var plist = [CPPropertyListSerialization dataFromPropertyList:errors format:CPPropertyListXMLFormat_v1_0];
+
+        print([plist rawString]);
+        OS.exit(1);
+    }
 }
 
 function NSCompatibleClassName(aClassName, asPointer)

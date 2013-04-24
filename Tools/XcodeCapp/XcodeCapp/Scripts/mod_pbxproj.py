@@ -1,16 +1,16 @@
 #  Copyright 2012 Calvin Rien
 #
-#	 Licensed under the Apache License, Version 2.0 (the "License");
-#	 you may not use this file except in compliance with the License.
-#	 You may obtain a copy of the License at
+#    Licensed under the Apache License, Version 2.0 (the "License");
+#    you may not use this file except in compliance with the License.
+#    You may obtain a copy of the License at
 #
-#	   http://www.apache.org/licenses/LICENSE-2.0
+#      http://www.apache.org/licenses/LICENSE-2.0
 #
-#	 Unless required by applicable law or agreed to in writing, software
-#	 distributed under the License is distributed on an "AS IS" BASIS,
-#	 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#	 See the License for the specific language governing permissions and
-#	 limitations under the License.
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS,
+#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    See the License for the specific language governing permissions and
+#    limitations under the License.
 
 #  A pbxproj file is an OpenStep format plist
 #  {} represents dictionary of key=value pairs delimited by ;
@@ -143,39 +143,39 @@ class PBXFileReference(PBXType):
         self.build_phase = None
 
     types = {
-    '.a':('archive.ar', 'PBXFrameworksBuildPhase'),
-    '.app': ('wrapper.application', None),
-    '.s': ('sourcecode.asm', 'PBXSourcesBuildPhase'),
-    '.c': ('sourcecode.c.c', 'PBXSourcesBuildPhase'),
-    '.cpp': ('sourcecode.cpp.cpp', 'PBXSourcesBuildPhase'),
-    '.framework': ('wrapper.framework','PBXFrameworksBuildPhase'),
-    '.h': ('sourcecode.c.h', None),
-    '.icns': ('image.icns','PBXResourcesBuildPhase'),
-    '.m': ('sourcecode.c.objc', 'PBXSourcesBuildPhase'),
-    '.j': ('sourcecode.c.objc', 'PBXSourcesBuildPhase'),
-    '.mm': ('sourcecode.cpp.objcpp', 'PBXSourcesBuildPhase'),
-    '.nib': ('wrapper.nib', 'PBXResourcesBuildPhase'),
-    '.plist': ('text.plist.xml', 'PBXResourcesBuildPhase'),
-    '.json': ('text.json', 'PBXResourcesBuildPhase'),
-    '.png': ('image.png', 'PBXResourcesBuildPhase'),
-    '.rtf': ('text.rtf', 'PBXResourcesBuildPhase'),
-    '.tiff': ('image.tiff', 'PBXResourcesBuildPhase'),
-    '.txt': ('text', 'PBXResourcesBuildPhase'),
-    '.xcodeproj': ('wrapper.pb-project', None),
-    '.xib': ('file.xib', 'PBXResourcesBuildPhase'),
-    '.strings': ('text.plist.strings', 'PBXResourcesBuildPhase'),
-    '.bundle': ('wrapper.plug-in', 'PBXResourcesBuildPhase'),
-    '.dylib': ('compiled.mach-o.dylib', 'PBXFrameworksBuildPhase')
+        '.a':('archive.ar', 'PBXFrameworksBuildPhase'),
+        '.app': ('wrapper.application', None),
+        '.s': ('sourcecode.asm', 'PBXSourcesBuildPhase'),
+        '.c': ('sourcecode.c.c', 'PBXSourcesBuildPhase'),
+        '.cpp': ('sourcecode.cpp.cpp', 'PBXSourcesBuildPhase'),
+        '.framework': ('wrapper.framework','PBXFrameworksBuildPhase'),
+        '.h': ('sourcecode.c.h', None),
+        '.icns': ('image.icns','PBXResourcesBuildPhase'),
+        '.m': ('sourcecode.c.objc', 'PBXSourcesBuildPhase'),
+        '.j': ('sourcecode.c.objc', 'PBXSourcesBuildPhase'),
+        '.mm': ('sourcecode.cpp.objcpp', 'PBXSourcesBuildPhase'),
+        '.nib': ('wrapper.nib', 'PBXResourcesBuildPhase'),
+        '.plist': ('text.plist.xml', 'PBXResourcesBuildPhase'),
+        '.json': ('text.json', 'PBXResourcesBuildPhase'),
+        '.png': ('image.png', 'PBXResourcesBuildPhase'),
+        '.rtf': ('text.rtf', 'PBXResourcesBuildPhase'),
+        '.tiff': ('image.tiff', 'PBXResourcesBuildPhase'),
+        '.txt': ('text', 'PBXResourcesBuildPhase'),
+        '.xcodeproj': ('wrapper.pb-project', None),
+        '.xib': ('file.xib', 'PBXResourcesBuildPhase'),
+        '.strings': ('text.plist.strings', 'PBXResourcesBuildPhase'),
+        '.bundle': ('wrapper.plug-in', 'PBXResourcesBuildPhase'),
+        '.dylib': ('compiled.mach-o.dylib', 'PBXFrameworksBuildPhase')
     }
 
     trees = [
-             '<absolute>',
-             '<group>',
-             'BUILT_PRODUCTS_DIR',
-             'DEVELOPER_DIR',
-             'SDKROOT',
-             'SOURCE_ROOT',
-             ]
+        '<absolute>',
+        '<group>',
+        'BUILT_PRODUCTS_DIR',
+        'DEVELOPER_DIR',
+        'SDKROOT',
+        'SOURCE_ROOT',
+    ]
 
     def guess_file_type(self):
         self.remove('explicitFileType')
@@ -352,6 +352,10 @@ class PBXReferenceProxy(PBXType):
 
 
 class PBXVariantGroup(PBXType):
+    pass
+
+
+class PBXTargetDependency(PBXType):
     pass
 
 
@@ -590,7 +594,7 @@ class XcodeProject(PBXDict):
             if b.add_library_search_paths(paths, recursive):
                 self.modified = True
 
-    # TODO: need to return value if project has been modified
+        # TODO: need to return value if project has been modified
 
     def get_obj(self, id):
         return self.objects.get(id)
@@ -600,36 +604,36 @@ class XcodeProject(PBXDict):
 
     def get_files_by_os_path(self, os_path, tree='SOURCE_ROOT'):
         files = [f for f in self.objects.values() if f.get('isa') == 'PBXFileReference'
-                 and f.get('path') == os_path
-                 and f.get('sourceTree') == tree]
+                                            and f.get('path') == os_path
+                                            and f.get('sourceTree') == tree]
 
         return files
 
     def get_files_by_name(self, name, parent=None):
         if parent:
             files = [f for f in self.objects.values() if f.get('isa') == 'PBXFileReference'
-                     and f.get(name) == name
-                     and parent.has_child(f)]
+                                            and f.get(name) == name
+                                            and parent.has_child(f)]
         else:
             files = [f for f in self.objects.values() if f.get('isa') == 'PBXFileReference'
-                     and f.get(name) == name]
+                                            and f.get(name) == name]
 
         return files
 
     def get_build_files(self, id):
         files = [f for f in self.objects.values() if f.get('isa') == 'PBXBuildFile'
-                 and f.get('fileRef') == id]
+                                            and f.get('fileRef') == id]
 
         return files
 
     def get_groups_by_name(self, name, parent=None):
         if parent:
             groups = [g for g in self.objects.values() if g.get('isa') == 'PBXGroup'
-                      and g.get_name() == name
-                      and parent.has_child(g)]
+                    and g.get_name() == name
+                    and parent.has_child(g)]
         else:
             groups = [g for g in self.objects.values() if g.get('isa') == 'PBXGroup'
-                      and g.get_name() == name]
+                    and g.get_name() == name]
 
         return groups
 
@@ -662,7 +666,7 @@ class XcodeProject(PBXDict):
         path = os.path.abspath(path)
 
         groups = [g for g in self.objects.values() if g.get('isa') == 'PBXGroup'
-                  and os.path.abspath(g.get('path','/dev/null')) == path]
+                    and os.path.abspath(g.get('path','/dev/null')) == path]
 
         return groups
 
@@ -739,9 +743,9 @@ class XcodeProject(PBXDict):
                     continue
 
                 kwds = {
-                'create_build_files': create_build_files,
-                'parent': grp,
-                'name': f
+                    'create_build_files': create_build_files,
+                    'parent': grp,
+                    'name': f
                 }
 
                 f_path = os.path.join(grp_path, f)
@@ -812,12 +816,12 @@ class XcodeProject(PBXDict):
                 results.append(build_file)
 
             if abs_path and tree == 'SOURCE_ROOT' and os.path.isfile(abs_path)\
-            and file_ref.build_phase == 'PBXFrameworksBuildPhase':
+                and file_ref.build_phase == 'PBXFrameworksBuildPhase':
                 library_path = os.path.join('$(SRCROOT)', os.path.split(f_path)[0])
                 self.add_library_search_paths([library_path], recursive=False)
 
             if abs_path and tree == 'SOURCE_ROOT' and not os.path.isfile(abs_path)\
-            and file_ref.build_phase == 'PBXFrameworksBuildPhase':
+                and file_ref.build_phase == 'PBXFrameworksBuildPhase':
 
                 framework_path = os.path.join('$(SRCROOT)', os.path.split(f_path)[0])
                 self.add_framework_search_paths([framework_path,'$(inherited)'], recursive=False)
@@ -849,12 +853,24 @@ class XcodeProject(PBXDict):
             if(not os.path.exists(finalLib)):
                 os.symlink(srcLib, finalLib);
 
-
     def remove_group(self, grp):
         pass
 
-    def remove_file(self, id):
-        pass
+    def remove_file(self, id, recursive=True):
+        if not PBXType.IsGuid(id):
+            id = id.id
+
+        if id in self.objects:
+            self.objects.remove(id)
+
+            if recursive:
+                groups = [g for g in self.objects.values() if g.get('isa') == 'PBXGroup']
+
+                for group in groups:
+                    if id in group['children']:
+                        group.remove_child(id)
+
+            self.modified = True
 
     def move_file(self, id, dest_grp=None):
         pass
@@ -1023,11 +1039,11 @@ class XcodeProject(PBXDict):
 
                 for f in v:
                     filerefs.extend([fr.id for fr in self.objects.values() if fr.get('isa') == 'PBXFileReference'
-                                     and fr.get('name') == f])
+                                            and fr.get('name') == f])
 
 
                 buildfiles = [bf for bf in self.objects.values() if bf.get('isa') == 'PBXBuildFile'
-                              and bf.get('fileRef') in filerefs]
+                                        and bf.get('fileRef') in filerefs]
 
                 for bf in buildfiles:
                     if bf.add_compiler_flag(k):
@@ -1137,26 +1153,30 @@ class XcodeProject(PBXDict):
                     #root.remove('objects') #remove it to avoid problems
 
                     sections = [
-                                ('PBXBuildFile',False),
-                                ('PBXCopyFilesBuildPhase',True),
-                                ('PBXFileReference',False),
-                                ('PBXFrameworksBuildPhase',True),
-                                ('PBXGroup',True),
-                                ('PBXNativeTarget',True),
-                                ('PBXProject',True),
-                                ('PBXResourcesBuildPhase',True),
-                                ('PBXShellScriptBuildPhase',True),
-                                ('PBXSourcesBuildPhase',True),
-                                ('XCBuildConfiguration',True),
-                                ('XCConfigurationList',True)]
+                    ('PBXBuildFile',False),
+                    ('PBXCopyFilesBuildPhase',True),
+                    ('PBXFileReference',False),
+                    ('PBXFrameworksBuildPhase',True),
+                    ('PBXGroup',True),
+                    ('PBXNativeTarget',True),
+                    ('PBXProject',True),
+                    ('PBXResourcesBuildPhase',True),
+                    ('PBXShellScriptBuildPhase',True),
+                    ('PBXSourcesBuildPhase',True),
+                    ('XCBuildConfiguration',True),
+                    ('XCConfigurationList',True),
+                    ('PBXTargetDependency', True),
+                    ('PBXVariantGroup', True),
+                    ('PBXReferenceProxy', True),
+                    ('PBXContainerItemProxy', True)]
 
-                    for section in sections:	#iterate over the sections
+                    for section in sections:    #iterate over the sections
                         if(self.sections.get(section[0]) == None):
                             continue;
 
                         out.write('\n/* Begin %s section */'%section[0]);
                         self.sections.get(section[0]).sort(cmp=lambda x,y: cmp(x[0],y[0]))
-                        #if(self.sections.get(section[0])=='PBXGroup' and ):	//add the patch to add the missing but existing files.
+                        #if(self.sections.get(section[0])=='PBXGroup' and ):    //add the patch to add the missing but existing files.
 
                         for pair in self.sections.get(section[0]):
                             key = pair[0]
@@ -1206,7 +1226,7 @@ class XcodeProject(PBXDict):
                 out.write('"'+XcodeProject.addslashes(root)+'"')
             if(root in self.uuids):
                 out.write(" /* "+self.uuids[root]+" */");
-    
+
     @classmethod
     def getJSONFromXML(cls, root):
         result = ''
@@ -1232,7 +1252,7 @@ class XcodeProject(PBXDict):
             for child in root.childNodes:
                 if child.nodeType != Node.ELEMENT_NODE:
                     continue;
-                
+
                 if(i>0):
                     result += ","
                 result += XcodeProject.getJSONFromXML(child);
@@ -1242,28 +1262,28 @@ class XcodeProject(PBXDict):
             data = '""'
             for node in root.childNodes:
                 if node.nodeType == node.TEXT_NODE:
-                    data = '"'+XcodeProject.addslashes(node.data).replace('\n','\\n')+'"'
+                    data = '"'+XcodeProject.addslashes(node.data).replace('\n','\\n').replace('\\\'', '\'')+'"'
                     break
             result += data
         return result;
-    
+
     @classmethod
     def Load(cls, path):
         cls.plutil_path = os.path.join(os.path.split(__file__)[0], 'plutil')
-        
+
         if not os.path.isfile(XcodeProject.plutil_path):
             cls.plutil_path = 'plutil'
-        
+
         if subprocess.call([XcodeProject.plutil_path,'-lint','-s',path]):
             print 'ERROR: not a valid .pbxproj file'
             return None
-        
+
         # load project by converting to JSON and parse
         p = subprocess.Popen([XcodeProject.plutil_path, '-convert', 'xml1', '-o', '-', path], stdout=subprocess.PIPE)
         rawXML = p.communicate()[0]
-        
+
         xml = parseString(rawXML);
         jsonStr = XcodeProject.getJSONFromXML(xml.getElementsByTagName('dict')[0]);
-        
+
         tree = json.loads(jsonStr)
         return XcodeProject(tree, path)

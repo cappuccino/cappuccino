@@ -4,40 +4,64 @@ import re
 import sys
 from mod_pbxproj import XcodeProject
 
-XCODESUPPORTFOLDER = ".XcodeSupport"
+XCODE_SUPPORT_FOLDER = "XcodeSupport"
 SLASH_REPLACEMENT  = u"∕"  # DIVISION SLASH  Unicode U+2215
 STRING_RE = re.compile(ur"^\s*<string>(.*)</string>\s*$", re.MULTILINE)
 FRAMEWORKS_RE = re.compile(ur"^(.+/Frameworks/Debug/([^/]+))/.+$")
+XCC_GENERAL_INCLUDE = u"xcc_general_include.h"
 
 
-def update_general_include(project, projectBasePath):
-    xcc_general_include_file = os.path.join(projectBasePath, XCODESUPPORTFOLDER, u"xcc_general_include.h")
+def update_general_include(project, projectBasePath, shadowGroup):
+    xcc_general_include_path = os.path.join(projectBasePath, XCODE_SUPPORT_FOLDER, XCC_GENERAL_INCLUDE)
     content = u""
 
-    for file in os.listdir(os.path.join(projectBasePath, XCODESUPPORTFOLDER)):
-        if file.endswith(".h"):
-            content += u'#include "{0}"\n'.format(os.path.basename(unicode(file)))
+    for path in os.listdir(os.path.join(projectBasePath, XCODE_SUPPORT_FOLDER)):
+        filename = unicode(os.path.basename(path))
 
-    f = open(xcc_general_include_file, "w")
+        if filename.endswith(".h") and filename != XCC_GENERAL_INCLUDE:
+            content += u'#include "{0}"\n'.format(filename)
+
+    f = open(xcc_general_include_path, "w")
     f.write(content.encode("utf-8"))
     f.close()
 
-    if len(project.get_files_by_os_path(os.path.join(XCODESUPPORTFOLDER, os.path.basename(xcc_general_include_file)))) == 0:
-        project.add_file(xcc_general_include_file, parent=shadowGroup)
+    if len(project.get_files_by_os_path(os.path.join(XCODE_SUPPORT_FOLDER, XCC_GENERAL_INCLUDE))) == 0:
+        project.add_file(xcc_general_include_path, parent=shadowGroup)
 
-def add_file(project, shadowGroup, sourceGroup, shadowHeaderPath, shadowImplementationFilePath, sourcePath, projectBasePath):
-    project.add_file(shadowHeaderPath, parent=shadowGroup)
-    project.add_file(shadowImplementationFilePath, parent=shadowGroup)
+def file_with_path(path, projectPath, project):
+    relPath = os.path.relpath(path, projectPath)
 
-    if sourcePath in project.get_files_by_os_path(os.path.relpath(sourcePath, projectBasePath)):
-        return
+    for fileRef in [f for f in project.objects.values() if f.get("isa") == "PBXFileReference"]:
+        filePath = path if fileRef.get("sourceTree") == "<absolute>" else relPath
 
-    project.add_file(sourcePath, parent=sourceGroup)
+        if fileRef.get("path") == filePath:
+            return fileRef
 
-def remove_file(project, shadowGroup, sourceGroup, shadowHeaderPath, shadowImplementationFilePath, sourcePath, projectBasePath):
-    project.remove_file(os.path.join(XCODESUPPORTFOLDER, os.path.basename(shadowHeaderPath)), parent=shadowGroup)
-    project.remove_file(os.path.join(XCODESUPPORTFOLDER, os.path.basename(shadowImplementationFilePath)), parent=shadowGroup)
-    project.remove_file(os.path.relpath(sourcePath, projectBasePath), parent=sourceGroup)
+    return None
+
+def add_file(project, shadowGroup, sourceGroup, shadowHeaderPath, shadowImplementationPath, sourcePath, projectBasePath):
+    # Shadow files are always project-relative
+    if not file_with_path(shadowHeaderPath, projectBasePath, project):
+        project.add_file(shadowHeaderPath, parent=shadowGroup, tree="SOURCE_ROOT", create_build_files=False)
+
+    if not file_with_path(shadowImplementationPath, projectBasePath, project):
+        project.add_file(shadowImplementationPath, parent=shadowGroup, tree="SOURCE_ROOT", create_build_files=False)
+
+    # If the file is within the project directory, the file reference will be project-relative, otherwise absolute
+    if sourcePath.startswith(projectBasePath):
+        tree = "SOURCE_ROOT"
+    else:
+        tree = "<absolute>"
+
+    if not file_with_path(sourcePath, projectBasePath, project):
+        project.add_file(sourcePath, parent=sourceGroup, tree=tree, create_build_files=False)
+
+def remove_file(project, shadowGroup, sourceGroup, shadowHeaderPath, shadowImplementationPath, sourcePath, projectBasePath):
+    for path in (shadowHeaderPath, shadowImplementationPath, sourcePath):
+        fileRef = file_with_path(path, projectBasePath, project)
+
+        if fileRef:
+            project.remove_file(fileRef)
 
 def xml_converter(matchObj):
     return "<string>{0}</string>".format(matchObj.group(1).encode('ascii', 'xmlcharrefreplace'))
@@ -66,6 +90,10 @@ def add_framework_resources(project, resourcesPath):
             framework = os.path.basename(os.path.dirname(resourcesPath))
             files[0]['name'] = framework + " Resources"
 
+def save_project(project, pbxPath):
+    project.save()
+    convert_unicode_to_xml(pbxPath)
+
 
 if __name__ == "__main__":
 
@@ -76,10 +104,10 @@ if __name__ == "__main__":
         projectSourcePath = unicode(sys.argv[3])
         sourcePath = os.path.realpath(projectSourcePath)
 
-        shadowBasePath = os.path.join(projectBasePath, ".XcodeSupport")
-        shadowBasename = os.path.splitext(sourcePath)[0].replace(u"/", SLASH_REPLACEMENT)
-        shadowHeaderPath = os.path.join(shadowBasePath, shadowBasename + ".h")
-        shadowImplementationPath = os.path.join(shadowBasePath, shadowBasename + ".m")
+        shadowBasePath = os.path.join(projectBasePath, XCODE_SUPPORT_FOLDER)
+        shadowBaseName = os.path.splitext(sourcePath)[0].replace(u"/", SLASH_REPLACEMENT)
+        shadowHeaderPath = os.path.join(shadowBasePath, shadowBaseName + ".h")
+        shadowImplementationPath = os.path.join(shadowBasePath, shadowBaseName + ".m")
         projectName = os.path.basename(projectBasePath)
         pbxPath = os.path.join(projectBasePath, projectName + ".xcodeproj", "project.pbxproj")
 
@@ -88,11 +116,11 @@ if __name__ == "__main__":
         shadowGroup = project.get_or_create_group("Classes")
         sourceGroup = project.get_or_create_group("Sources")
 
-        files = project.get_files_by_os_path(os.path.join(XCODESUPPORTFOLDER, os.path.basename(shadowHeaderPath)))
-
         if action == "add":
-            if len(files) == 0:
-                update_general_include(project, projectBasePath)
+            fileRef = file_with_path(shadowHeaderPath, projectBasePath, project)
+
+            if not fileRef:
+                update_general_include(project, projectBasePath, shadowGroup)
                 add_file(project, shadowGroup, sourceGroup, shadowHeaderPath, shadowImplementationPath, sourcePath, projectBasePath)
 
             match = FRAMEWORKS_RE.match(projectSourcePath)
@@ -104,10 +132,9 @@ if __name__ == "__main__":
                 if os.path.isdir(resourcesPath):
                     add_framework_resources(project, resourcesPath)
 
-            project.save()
-            convert_unicode_to_xml(pbxPath)
+            save_project(project, pbxPath)
 
-        elif action == "remove" and len(files) == 1:
-            update_general_include(project, projectBasePath)
+        elif action == "remove":
+            update_general_include(project, projectBasePath, shadowGroup)
             remove_file(project, shadowGroup, sourceGroup, shadowHeaderPath, shadowImplementationPath, sourcePath, projectBasePath)
-            project.save()
+            save_project(project, pbxPath)
