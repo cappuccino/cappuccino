@@ -18,3 +18,4 @@ NSString * const kDefaultXCCAutoOpenErrorsPanel = @"XCCAutoOpenErrorsPanel";
 NSString * const kDefaultXCCProjectHistory = @"XCCProjectHistory";
 NSString * const kDefaultLastOpenedPath = @"LastOpenedPath";
 NSString * const kDefaultPathModificationDates = @"pathModificationDates";
+NSString * const kDefaultMaxRecentProjects = @"maxRecentProjects";

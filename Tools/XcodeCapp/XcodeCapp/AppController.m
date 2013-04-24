@@ -100,10 +100,18 @@ AppController *SharedAppControllerInstance = nil;
         kDefaultXCCReactMode: 			@YES,
         kDefaultXCCReopenLastProject: 	@YES,
         kDefaultXCCAutoOpenErrorsPanel:	@YES,
-        kDefaultXCCProjectHistory:		[NSArray new]
+        kDefaultXCCProjectHistory:		[NSArray new],
+        kDefaultMaxRecentProjects:		@20
     };
     
-    [[NSUserDefaults standardUserDefaults] registerDefaults:appDefaults];
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+
+	[defaults registerDefaults:appDefaults];
+
+	[defaults addObserver:self
+               forKeyPath:kDefaultMaxRecentProjects
+                  options:NSKeyValueObservingOptionNew
+                  context:NULL];
 }
 
 - (void)pruneProjectHistory
@@ -118,11 +126,15 @@ AppController *SharedAppControllerInstance = nil;
 			[projectHistory removeObjectAtIndex:i];
     }
 
+    NSInteger maxProjects = [defaults integerForKey:kDefaultMaxRecentProjects];
+
+    if (projectHistory.count > maxProjects)
+        [projectHistory removeObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(maxProjects, projectHistory.count - maxProjects)]];
+
     [defaults setObject:projectHistory forKey:kDefaultXCCProjectHistory];
 }
 
-#pragma mark -
-#pragma mark Properties
+#pragma mark - Properties
 
 - (NSImage *)iconActive
 {
@@ -160,8 +172,8 @@ AppController *SharedAppControllerInstance = nil;
     return _menuHistory;
 }
 
-#pragma mark -
-#pragma mark Notification handlers
+
+#pragma mark - Notification handlers
 
 /*!
 	Clean up when the application stops.
@@ -196,9 +208,13 @@ AppController *SharedAppControllerInstance = nil;
     self.menuItemListen.action = @selector(stopListening:);
 }
 
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
+{
+	if ([keyPath isEqualToString:kDefaultMaxRecentProjects])
+        [self pruneProjectHistory];
+}
 
-#pragma mark -
-#pragma mark Utilities
+#pragma mark - Utilities
 
 - (void)updateHistoryMenu
 {
@@ -219,8 +235,7 @@ AppController *SharedAppControllerInstance = nil;
 }
 
 
-#pragma mark -
-#pragma mark Actions
+#pragma mark - Actions
 
 - (IBAction)listenToProject:(id)aSender
 {
@@ -250,6 +265,7 @@ AppController *SharedAppControllerInstance = nil;
     [projectHistory insertObject:path atIndex:0];
 
     [defaults setObject:projectHistory forKey:kDefaultXCCProjectHistory];
+    [self pruneProjectHistory];
     [self updateHistoryMenu];
 
     [self stopListening:self];

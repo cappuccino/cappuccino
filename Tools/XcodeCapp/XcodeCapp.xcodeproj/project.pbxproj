@@ -75,6 +75,7 @@
 		E164FE2D1721A34900263CE3 /* icon-inactive.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "icon-inactive.png"; path = "Resources/icon-inactive.png"; sourceTree = "<group>"; };
 		E164FE2E1721A34900263CE3 /* icon-working.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "icon-working.png"; path = "Resources/icon-working.png"; sourceTree = "<group>"; };
 		E17A822C172700B90095CD83 /* XcodeCapp.iconset */ = {isa = PBXFileReference; lastKnownFileType = folder.iconset; name = XcodeCapp.iconset; path = Resources/XcodeCapp.iconset; sourceTree = "<group>"; };
+		E1DD4DF517282BFC0063C0D7 /* UserDefaults.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = UserDefaults.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -139,6 +140,7 @@
 				E132ED941724B64C00D870AE /* FSEventCallback.m */,
 				E132ED961724B6C400D870AE /* FSEventCallback.h */,
 				E164FDFD1720EC5B00263CE3 /* UserDefaults.m */,
+				E1DD4DF517282BFC0063C0D7 /* UserDefaults.h */,
 				E164FDEF1720E7FA00263CE3 /* Debug.xcconfig */,
 				E164FDF01720E7FA00263CE3 /* Release.xcconfig */,
 				E164FE121720F3E100263CE3 /* Scripts */,

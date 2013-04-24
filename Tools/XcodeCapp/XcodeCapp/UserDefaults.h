@@ -20,5 +20,6 @@ extern NSString * const kDefaultXCCAutoOpenErrorsPanel;
 extern NSString * const kDefaultXCCProjectHistory;
 extern NSString * const kDefaultLastOpenedPath;
 extern NSString * const kDefaultPathModificationDates;
+extern NSString * const kDefaultMaxRecentProjects;
 
 #endif
