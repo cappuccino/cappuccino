@@ -58,8 +58,8 @@ var FILE = require("file"),
 
             if (match)
             {
-                framework = match[1];
-                _resourceName = match[2];
+                _resourceName = match[1];
+                framework = match[2];
             }
 
             var resourceInfo = [aCoder resourceInfoForName:_resourceName inFramework:framework];
