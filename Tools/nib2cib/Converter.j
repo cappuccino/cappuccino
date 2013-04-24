@@ -102,7 +102,7 @@ ConverterConversionException = @"ConverterConversionException";
     if ([outputPath length])
         FILE.write(outputPath, [convertedData rawString], { charset:"UTF-8" });
 
-    CPLog.info(CPLogColorize("Conversion successful", "warn"));
+    CPLog.info("Conversion successful");
 
     return convertedData;
 }
