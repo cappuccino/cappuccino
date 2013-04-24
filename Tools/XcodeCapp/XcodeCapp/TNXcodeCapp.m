@@ -740,7 +740,10 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
     if (pbxArguments)
     {
         DLog(@"%@ Running update PBX task...", NSStringFromSelector(_cmd));
-        NSDictionary *taskResult = [self runTaskWithLaunchPath:self.shellPath arguments:pbxArguments returnType:kTaskReturnTypeStdOut];
+        
+        NSDictionary *taskResult;
+        taskResult = [self runTaskWithLaunchPath:self.shellPath arguments:pbxArguments returnType:kTaskReturnTypeStdOut];
+        
         DLog(@"%@ Update PBX Task result/response: %@/%@", NSStringFromSelector(_cmd), taskResult[@"status"], taskResult[@"response"]);
     }
 
@@ -838,7 +841,10 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
                                     projectSourcePath]
                             ];
 
-    NSDictionary *taskResult = [self runTaskWithLaunchPath:self.shellPath arguments:pbxArguments returnType:kTaskReturnTypeStdOut];
+    NSDictionary *taskResult;
+
+    taskResult = [self runTaskWithLaunchPath:self.shellPath arguments:pbxArguments returnType:kTaskReturnTypeStdOut];
+
     DLog(@"%@ PBX Reference removal status/response: %@/%@", NSStringFromSelector(_cmd), taskResult[@"status"], taskResult[@"response"]);
 }
 

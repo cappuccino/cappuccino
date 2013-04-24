@@ -314,6 +314,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = E164FDF01720E7FA00263CE3 /* Release.xcconfig */;
 			buildSettings = {
+				COPY_PHASE_STRIP = NO;
 			};
 			name = Release;
 		};
