@@ -139,7 +139,7 @@ AppController *SharedAppControllerInstance = nil;
 - (NSImage *)iconActive
 {
     if (!_iconActive)
-        _iconActive = [[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForImageResource:@"icon-active.png"]];
+        _iconActive = [NSImage imageNamed:@"icon-active"];
 
     return _iconActive;
 }
@@ -147,7 +147,7 @@ AppController *SharedAppControllerInstance = nil;
 - (NSImage *)iconInactive
 {
     if (!_iconInactive)
-        _iconInactive = [[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForImageResource:@"icon-inactive.png"]];
+        _iconInactive = [NSImage imageNamed:@"icon-inactive"];
 
     return _iconInactive;
 }
@@ -155,7 +155,7 @@ AppController *SharedAppControllerInstance = nil;
 - (NSImage *)iconWorking
 {
     if (!_iconWorking)
-        _iconWorking = [[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForImageResource:@"icon-working.png"]];
+        _iconWorking = [NSImage imageNamed:@"icon-working"];
 
     return _iconWorking;
 }
