@@ -66,9 +66,19 @@ AppController *SharedAppControllerInstance = nil;
     self.statusMenu.delegate = self;
     self.helpTextView.textContainerInset = NSMakeSize(10.0, 10.0);
 
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:kDefaultFirstLaunch])
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+
+    double firstLaunchVersion = [defaults doubleForKey:kDefaultFirstLaunchVersion];
+
+    // Note: the scanner will only get the major.minor version numbers, which is what we want.
+    NSScanner *scanner = [NSScanner scannerWithString:[self bundleVersion]];
+    double appVersion = 0.0;
+    [scanner scanDouble:&appVersion];
+
+    if ([defaults boolForKey:kDefaultFirstLaunch] || appVersion > firstLaunchVersion)
     {
-        [[NSUserDefaults standardUserDefaults] setBool:NO forKey:kDefaultFirstLaunch];
+        [defaults setBool:NO forKey:kDefaultFirstLaunch];
+        [defaults setDouble:appVersion forKey:kDefaultFirstLaunchVersion];
         [self openHelp:self];
     }
 
@@ -96,6 +106,7 @@ AppController *SharedAppControllerInstance = nil;
     NSDictionary *appDefaults = @{
         kDefaultLastEventId:  			[NSNumber numberWithUnsignedLongLong:kFSEventStreamEventIdSinceNow],
         kDefaultFirstLaunch:  			@YES,
+        kDefaultFirstLaunchVersion:  	@2.0,
         kDefaultXCCAPIMode:   			[NSNumber numberWithInt:kXCCAPIModeAuto],
         kDefaultXCCReactMode: 			@YES,
         kDefaultXCCReopenLastProject: 	@YES,
@@ -348,7 +359,7 @@ AppController *SharedAppControllerInstance = nil;
 
 - (NSString *)bundleVersion
 {
-    return [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
+    return [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"];
 }
 
 @end

@@ -13,6 +13,7 @@
 
 extern NSString * const kDefaultLastEventId;
 extern NSString * const kDefaultFirstLaunch;
+extern NSString * const kDefaultFirstLaunchVersion;
 extern NSString * const kDefaultXCCAPIMode;
 extern NSString * const kDefaultXCCReactMode;
 extern NSString * const kDefaultXCCReopenLastProject;

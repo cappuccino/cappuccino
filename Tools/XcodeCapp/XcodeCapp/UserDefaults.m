@@ -11,6 +11,7 @@
 
 NSString * const kDefaultLastEventId = @"lastEventId";
 NSString * const kDefaultFirstLaunch = @"FirstLaunch";
+NSString * const kDefaultFirstLaunchVersion = @"firstLaunchVersion";
 NSString * const kDefaultXCCAPIMode = @"XCCAPIMode";
 NSString * const kDefaultXCCReactMode = @"XCCReactMode";
 NSString * const kDefaultXCCReopenLastProject = @"XCCReopenLastProject";
