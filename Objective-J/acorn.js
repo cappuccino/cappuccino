@@ -1845,7 +1845,7 @@ var preIfLevel = 0;
   // pretend that there is a semicolon at this position.
 
   function semicolon() {
-    if (!eat(_semi) && !canInsertSemicolon()) raise(lastEnd, "Expected a semicolon");
+    if (!eat(_semi) && !canInsertSemicolon()) raise(tokStart, "Expected a semicolon");
   }
 
   // Expect a token of a given type. If found, consume it, otherwise,
