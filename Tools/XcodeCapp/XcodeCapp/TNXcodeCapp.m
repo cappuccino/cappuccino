@@ -39,6 +39,27 @@ enum XCCLineSpecifier {
 };
 typedef enum XCCLineSpecifier XCCLineSpecifier;
 
+enum {
+    XCCStatusCodeError = 1,
+	XCCStatusCodeWarning = 2
+};
+
+const char *XCCCloseProjectScript =
+	"tell application \"Xcode\"\n"
+		"set docs to (document of every window)\n"
+		"repeat with doc in docs\n"
+            "if class of doc is workspace document then\n"
+                "set docURL to file of doc\n"
+				"set docPath to docURL as text\n"
+                "set docPath to POSIX path of docPath\n"
+				"if docPath begins with \"%@\" then\n"
+					"close doc\n"
+					"return\n"
+				"end if\n"
+			"end if\n"
+		"end repeat\n"
+	"end tell";
+
 NSString * const XCCDidPopulateProjectNotification = @"XCCDidPopulateProjectNotification";
 NSString * const XCCConversionDidStartNotification = @"XCCConversionDidStartNotification";
 NSString * const XCCConversionDidStopNotification = @"XCCConversionDidStopNotification";
@@ -67,6 +88,7 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
 @property NSString          	*profilePath;
 @property NSString          	*shellPath;
 @property NSString          	*PBXModifierScriptPath;
+@property NSString				*closeProjectScriptSource;
 @property NSString              *supportPath;
 @property NSDate                *appStartedTimestamp;
 @property NSMutableDictionary   *pathModificationDates;
@@ -115,7 +137,8 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
         self.errorList = [NSMutableArray arrayWithCapacity:10];
         self.fm = [NSFileManager defaultManager];
         self.ignoredPathRegexes = [NSMutableArray new];
-        self.parserPath = [[NSBundle mainBundle] pathForResource:@"parser" ofType:@"j"];
+        self.parserPath = [[[NSBundle mainBundle] sharedSupportPath] stringByAppendingPathComponent:@"parser.j"];
+        self.closeProjectScriptSource = [NSString stringWithUTF8String:XCCCloseProjectScript];
         self.lastEventId = [[NSUserDefaults standardUserDefaults] objectForKey:kDefaultLastEventId];
         self.appStartedTimestamp = [NSDate date];
         self.projectPathsForSourcePaths = [NSMutableDictionary new];
@@ -192,24 +215,24 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
 
     NSURL *projectURL = [NSURL fileURLWithPath:self.currentProjectPath];
     self.XcodeSupportProjectURL     = [NSURL URLWithString:self.XcodeSupportProjectName relativeToURL:projectURL];
-    self.supportPath 				= [[NSURL URLWithString:@"XcodeSupport" relativeToURL:projectURL] path];
+    self.supportPath 				= [[NSURL URLWithString:@".XcodeSupport" relativeToURL:projectURL] path];
     self.XcodeSupportPBXPath        = [self.XcodeSupportProjectURL.path stringByAppendingPathComponent:@"project.pbxproj"];
-    self.PBXModifierScriptPath      = [[NSBundle mainBundle] pathForResource:@"pbxprojModifier" ofType:@"py"];
+    self.PBXModifierScriptPath      = [[[NSBundle mainBundle] sharedSupportPath] stringByAppendingPathComponent:@"pbxprojModifier.py"];
 
     // Create the template project if it doesn't exist
     if (![self.fm fileExistsAtPath:self.supportPath])
     {
-        NSLog(@"%@ Xcode support folder created at: %@", NSStringFromSelector(_cmd), self.XcodeSupportProjectURL.path);
+        NSLog(@"Xcode support folder created at: %@", self.XcodeSupportProjectURL.path);
         [self.fm createDirectoryAtPath:self.XcodeSupportProjectURL.path withIntermediateDirectories:YES attributes:nil error:nil];
 
-        DLog(@"%@ Copying project.pbxproj from %@ to %@", NSStringFromSelector(_cmd), self.XcodeTemplatePBXPath, self.XcodeSupportProjectURL.path);
+        DLog(@"Copying project.pbxproj from %@ to %@", self.XcodeTemplatePBXPath, self.XcodeSupportProjectURL.path);
         [self.fm copyItemAtPath:self.XcodeTemplatePBXPath toPath:self.XcodeSupportPBXPath error:nil];
 
-        DLog(@"%@ Reading the content of the project.pbxproj", NSStringFromSelector(_cmd));
+        DLog(@"Reading the content of the project.pbxproj");
         NSMutableString *PBXContent = [NSMutableString stringWithContentsOfFile:self.XcodeSupportPBXPath encoding:NSUTF8StringEncoding error:nil];
 
         [PBXContent writeToFile:self.XcodeSupportPBXPath atomically:YES encoding:NSUTF8StringEncoding error:nil];
-        DLog(@"%@ PBX file adapted to the project", NSStringFromSelector(_cmd));
+        DLog(@"PBX file adapted to the project");
 
         [self.fm createDirectoryAtPath:self.supportPath withIntermediateDirectories:YES attributes:nil error:nil];
 
@@ -226,9 +249,6 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
 */
 - (void)populateXcodeProject:(BOOL)shouldNotify
 {
-    if (shouldNotify)
-        [self notifyUserWithTitle:@"Loading project" message:self.currentProjectPath.lastPathComponent];
-
 	// First populate with all non-framework code
     [self populateXcodeProjectWithProjectRelativePath:@""];
 
@@ -242,10 +262,7 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
     [self populateXcodeProjectWithProjectRelativePath:@"Resources"];
 
     if (shouldNotify)
-    {
         [[NSNotificationCenter defaultCenter] postNotificationName:XCCDidPopulateProjectNotification object:self userInfo:nil];
-        [self notifyUserWithTitle:@"Project loaded" message:self.currentProjectPath.lastPathComponent];
-	}
 }
 
 - (void)populateXcodeProjectWithProjectRelativePath:(NSString *)aProjectPath
@@ -329,6 +346,8 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
 - (void)listenToProjectAtPath:(NSString *)path
 {
     self.isLoadingProject = YES;
+
+    [self notifyUserWithTitle:@"Loading project…" message:path.lastPathComponent];
     
     [self clearErrors:self];
     self.currentProjectPath = path;
@@ -348,9 +367,36 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
 
     [[NSUserDefaults standardUserDefaults] setObject:self.currentProjectPath forKey:kDefaultLastOpenedPath];
 
-    [self notifyUserWithTitle:@"Listening to project" message:self.currentProjectPath.lastPathComponent];
+    [self notifyUserWithTitle:@"Project loaded" message:self.currentProjectPath.lastPathComponent];
 }
 
+- (IBAction)openInXcode:(id)aSender
+{
+    if (!self.currentProjectPath)
+        return;
+
+    DLog(@"Opening Xcode project at: %@", self.XcodeSupportProjectURL.path);
+    system([[NSString stringWithFormat:@"open \"%@\"", self.XcodeSupportProjectURL.path] UTF8String]);
+}
+
+- (IBAction)resetProject:(id)aSender
+{
+    NSString *projectPath = self.currentProjectPath;
+    
+    [self stop];
+
+    // Close the project in Xcode if it's open
+    NSString *source = [NSString stringWithFormat:self.closeProjectScriptSource, projectPath];
+    NSAppleScript *script = [[NSAppleScript alloc] initWithSource:source];
+    
+    NSAppleEventDescriptor *descriptor;
+    descriptor = [script executeAndReturnError:nil];
+    
+	[self.fm removeItemAtURL:self.XcodeSupportProjectURL error:nil];
+    [self.fm removeItemAtPath:self.supportPath error:nil];
+
+    [self listenToProjectAtPath:projectPath];
+}
 
 #pragma mark - Event Stream
 
@@ -371,7 +417,7 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
 
     if (self.supportsFileBasedListening)
     {
-        DLog(@"%@ Initializing the FSEventStream at file level (clean)", NSStringFromSelector(_cmd));
+        DLog(@"Initializing the FSEventStream at file level (clean)");
         flags = kFSEventStreamCreateFlagUseCFTypes | kFSEventStreamCreateFlagNoDefer | kFSEventStreamCreateFlagFileEvents;
     }
     else
@@ -464,7 +510,7 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
 
     if (!self.supportsFileLevelAPI)
     {
-        DLog(@"%@ System doesn't support file level API", NSStringFromSelector(_cmd));
+        DLog(@"System doesn't support file level API");
         [defaults setObject:[NSNumber numberWithInt:kXCCAPIModeFolder] forKey:kDefaultXCCAPIMode];
     }
 
@@ -485,7 +531,7 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
 
     if (self.supportsFileBasedListening)
     {
-        DLog(@"%@ using 10.7+ mode listening (clean)", NSStringFromSelector(_cmd));
+        DLog(@"using 10.7+ mode listening (clean)");
 
         self.currentAPIMode = @"File level (Lion)";
         self.isUsingFileLevelAPI = YES;
@@ -493,7 +539,7 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
     }
     else
     {
-        DLog(@"%@ using 10.6 mode listening (dirty)", NSStringFromSelector(_cmd));
+        DLog(@"using 10.6 mode listening (dirty)");
         self.reactToInodeModification = NO;
         self.currentAPIMode = @"Folder level (Snow Leopard)";
         self.isUsingFileLevelAPI = NO;
@@ -615,10 +661,7 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
         return;
 
     NSString *projectPath = [self projectPathForSourcePath:path];
-    BOOL success = [self processModifiedFileAtPath:path projectSourcePath:projectPath notify:shouldNotify];
-
-    if (success)
-        [self notifyUserWithTitle:@"File successfully processed" message:path.lastPathComponent];
+    [self processModifiedFileAtPath:path projectSourcePath:projectPath notify:shouldNotify];
 }
 
 - (BOOL)processModifiedFileAtPath:(NSString *)realSourcePath projectSourcePath:(NSString *)projectSourcePath notify:(BOOL)shouldNotify
@@ -629,35 +672,33 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
     
     NSArray *arguments = nil;
     NSArray *pbxArguments = nil;
-    NSString *growlTitle = nil;
-    NSString *growlMessage = nil;
     NSString *response = nil;
-
     NSString *projectRelativePath = [projectSourcePath substringFromIndex:self.currentProjectPath.length + 1];
+    NSString *notificationTitle = nil;
+    NSString *notificationMessage = projectRelativePath.lastPathComponent;
 
     [[NSNotificationCenter defaultCenter] postNotificationName:XCCConversionDidStartNotification object:self];
 
     // Remove all errors for the path being processed
-    BOOL (^pathMatcher)(id obj, NSUInteger idx, BOOL *stop);
-
-    pathMatcher = ^(id obj, NSUInteger idx, BOOL *stop)
-    				{
-                        return [[obj valueForKey:@"path"] isEqualToString:realSourcePath];
-                    };
-
-    NSIndexSet *matchingErrors = [self.errorList indexesOfObjectsPassingTest:pathMatcher];
+    NSIndexSet *matchingErrors = [self.errorList indexesOfObjectsPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop)
+    {
+        return [[obj valueForKey:@"path"] isEqualToString:realSourcePath];
+    }];
+    
     [self.errorListController removeObjectsAtArrangedObjectIndexes:matchingErrors];
 
     if ([self isXibFile:realSourcePath])
     {
+        // nib2cib can take a while to run, show a message while the conversion is happening
+        [self notifyUserWithTitle:@"Converting xib…" message:projectRelativePath.lastPathComponent];
+        
         arguments = @[
                       	@"-c",
                      	[NSString stringWithFormat:@"source '%@'; nib2cib --no-colors '%@'", self.profilePath, realSourcePath],
 						@""
                     ];
 
-        growlTitle = @"Converting xib...";
-        growlMessage = projectRelativePath.lastPathComponent;
+        notificationTitle = @"Xib converted";
     }
     else if ([self isObjjFile:realSourcePath])
     {
@@ -679,23 +720,20 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
                              			projectSourcePath]
                         ];
 
-        growlTitle = @"Processing Objective-J source...";
-        growlMessage = projectRelativePath.lastPathComponent;
+        notificationTitle = @"Objective-J source processed";
     }
     else if ([self isXCCIgnoreFile:realSourcePath])
     {
         [self computeIgnoredPaths];
-        growlTitle = @"Parsing .xcodecapp-ignore...";
-        growlMessage = @"Updating ignored paths";
+        notificationTitle = @"Parsed .xcodecapp-ignore";
+        notificationMessage = @"Ignored paths updated";
         arguments = nil;
     }
 
     // Run the task and get the response if needed
     if (arguments)
     {
-        DLog(@"%@ Running conversion task...", NSStringFromSelector(_cmd));
-
-        [self notifyUserWithTitle:growlTitle message:growlMessage];
+        DLog(@"Running conversion task...");
         
 		NSDictionary *taskResult = [self runTaskWithLaunchPath:self.shellPath
                                                      arguments:arguments
@@ -704,7 +742,7 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
         NSInteger status = [taskResult[@"status"] intValue];
         response = taskResult[@"response"];
 
-        DLog(@"%@ Conversion task result/response: %ld/%@", NSStringFromSelector(_cmd), status, response);
+        DLog(@"Conversion task result/response: %ld/%@", status, response);
 
         if (status != 0)
         {
@@ -715,40 +753,54 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
             
             if ([self isXibFile:realSourcePath])
             {
+                notificationTitle = @"Error converting xib";
+                
                 NSString *message = [NSString stringWithFormat:@"%@\n%@", realSourcePath.lastPathComponent, response];
-                [self.errorListController addObject:@{ @"message":message, @"path":realSourcePath }];
+                [self.errorListController addObject:@{ @"message":message, @"path":realSourcePath, @"status":taskResult[@"status"] }];
             }
             else
             {
+                notificationTitle = [(XCCStatusCodeError ? @"Error" : @"Warning") stringByAppendingString:@" parsing Objective-J source"];
+                
                 NSArray *errors = [response propertyList];
 
                 for (NSDictionary *error in errors)
                 {
                     NSMutableDictionary *newError = [error mutableCopy];
                     newError[@"message"] = [NSString stringWithFormat:@"%@, line %d\n%@", [error[@"path"] lastPathComponent], [error[@"line"] intValue], error[@"message"]];
+                    newError[@"status"] = taskResult[@"status"];
                     [self.errorListController addObject:newError];
                 }
             }
 
-            if ([[NSUserDefaults standardUserDefaults] boolForKey:kDefaultXCCAutoOpenErrorsPanel])
+			NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+            
+            if ((status == XCCStatusCodeError && [defaults boolForKey:kDefaultXCCAutoOpenErrorsPanelOnErrors]) ||
+                (status == XCCStatusCodeWarning && [defaults boolForKey:kDefaultXCCAutoOpenErrorsPanelOnWarnings]))
+            {
                 [self openErrorsPanel:self];
+            }
 
-            [self notifyUserWithTitle:@"Error processing file" message:projectRelativePath.lastPathComponent];
+            [self notifyUserWithTitle:notificationTitle message:notificationMessage];
+        }
+        else if (!self.isLoadingProject)
+        {
+			[self notifyUserWithTitle:notificationTitle message:notificationMessage];
         }
     }
 
     if (pbxArguments)
     {
-        DLog(@"%@ Running update PBX task...", NSStringFromSelector(_cmd));
+        DLog(@"Running update PBX task...");
         
         NSDictionary *taskResult;
         taskResult = [self runTaskWithLaunchPath:self.shellPath arguments:pbxArguments returnType:kTaskReturnTypeStdOut];
         
-        DLog(@"%@ Update PBX Task result/response: %@/%@", NSStringFromSelector(_cmd), taskResult[@"status"], taskResult[@"response"]);
+        DLog(@"Update PBX Task result/response: %@/%@", taskResult[@"status"], taskResult[@"response"]);
     }
 
     [[NSNotificationCenter defaultCenter] postNotificationName:XCCConversionDidStopNotification object:self];
-    DLog(@"%@ Processed: %@", NSStringFromSelector(_cmd), realSourcePath);
+    DLog(@"Processed: %@", realSourcePath);
 
     return success;
 }
@@ -823,13 +875,13 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
     NSString *shadowHeaderPath = [shadowBasePath stringByAppendingPathExtension:@"h"];
     NSString *shadowImplementationPath = [shadowBasePath stringByAppendingPathExtension:@"m"];
 
-    DLog(@"%@ Removing shadow header file: %@", NSStringFromSelector(_cmd), shadowHeaderPath);
+    DLog(@"Removing shadow header file: %@", shadowHeaderPath);
     [self.fm removeItemAtPath:shadowHeaderPath error:nil];
 
-    DLog(@"%@ Removing shadow implementation file: %@", NSStringFromSelector(_cmd), shadowImplementationPath);
+    DLog(@"Removing shadow implementation file: %@", shadowImplementationPath);
     [self.fm removeItemAtPath:shadowImplementationPath error:nil];
 
-    DLog(@"%@ Removing PBX reference", NSStringFromSelector(_cmd));
+    DLog(@"Removing PBX reference");
     NSString *projectSourcePath = [self projectPathForSourcePath:sourcePath];
 
     NSArray *pbxArguments = @[
@@ -845,7 +897,7 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
 
     taskResult = [self runTaskWithLaunchPath:self.shellPath arguments:pbxArguments returnType:kTaskReturnTypeStdOut];
 
-    DLog(@"%@ PBX Reference removal status/response: %@/%@", NSStringFromSelector(_cmd), taskResult[@"status"], taskResult[@"response"]);
+    DLog(@"PBX Reference removal status/response: %@/%@", taskResult[@"status"], taskResult[@"response"]);
 }
 
 /*!
@@ -951,7 +1003,7 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
     return ignore;
 }
 
-#pragma mark - Errors panel
+#pragma mark - Errors
 
 - (IBAction)openErrorsPanel:(id)aSender
 {
@@ -1080,6 +1132,16 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
 {
     [self.errorList removeAllObjects];
     self.errorListController.content = self.errorList;
+}
+
+- (BOOL)hasErrors
+{
+	NSInteger index = [self.errorList indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop)
+    {
+    	return [[obj valueForKey:@"status"] intValue] == XCCStatusCodeError;
+    }];
+
+    return index != NSNotFound;
 }
 
 #pragma mark - User notifications

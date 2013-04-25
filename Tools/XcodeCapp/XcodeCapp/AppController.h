@@ -40,7 +40,6 @@
 + (AppController *)sharedAppController;
 
 - (IBAction)listenToProject:(id)aSender;
-- (IBAction)openInXcode:(id)aSender;
 - (IBAction)openHelp:(id)aSender;
 - (IBAction)openAbout:(id)aSender;
 

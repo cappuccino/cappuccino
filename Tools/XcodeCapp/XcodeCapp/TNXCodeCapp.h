@@ -51,6 +51,9 @@ extern NSString * const XCCListeningDidStartNotification;
 - (IBAction)openErrorsPanel:(id)sender;
 - (IBAction)clearErrors:(id)sender;
 - (IBAction)openErrorInEditor:(id)sender;
+- (IBAction)openInXcode:(id)aSender;
+- (IBAction)resetProject:(id)aSender;
+
 - (void)start;
 - (void)stop;
 - (void)listenToProjectAtPath:(NSString *)path;
@@ -63,6 +66,7 @@ extern NSString * const XCCListeningDidStartNotification;
 - (void)handleFileModificationAtPath:(NSString*)path notify:(BOOL)shouldNotify;
 - (void)handleFileRemovalAtPath:(NSString*)path;
 - (void)updateUserDefaultsWithLastEventId;
+- (BOOL)hasErrors;
 
 @end
 

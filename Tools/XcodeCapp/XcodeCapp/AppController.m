@@ -37,6 +37,7 @@ AppController *SharedAppControllerInstance = nil;
 @property (nonatomic) NSImage	*iconActive;
 @property (nonatomic) NSImage 	*iconInactive;
 @property (nonatomic) NSImage 	*iconWorking;
+@property (nonatomic) NSImage 	*iconError;
 @property (nonatomic) NSMenu	*menuHistory;
 @property NSStatusItem			*statusItem;
 
@@ -104,15 +105,16 @@ AppController *SharedAppControllerInstance = nil;
 - (void)registerDefaults
 {
     NSDictionary *appDefaults = @{
-        kDefaultLastEventId:  			[NSNumber numberWithUnsignedLongLong:kFSEventStreamEventIdSinceNow],
-        kDefaultFirstLaunch:  			@YES,
-        kDefaultFirstLaunchVersion:  	@2.0,
-        kDefaultXCCAPIMode:   			[NSNumber numberWithInt:kXCCAPIModeAuto],
-        kDefaultXCCReactMode: 			@YES,
-        kDefaultXCCReopenLastProject: 	@YES,
-        kDefaultXCCAutoOpenErrorsPanel:	@YES,
-        kDefaultXCCProjectHistory:		[NSArray new],
-        kDefaultMaxRecentProjects:		@20
+        kDefaultLastEventId:  						[NSNumber numberWithUnsignedLongLong:kFSEventStreamEventIdSinceNow],
+        kDefaultFirstLaunch:  						@YES,
+        kDefaultFirstLaunchVersion:  				@2.0,
+        kDefaultXCCAPIMode:   						[NSNumber numberWithInt:kXCCAPIModeAuto],
+        kDefaultXCCReactMode: 						@YES,
+        kDefaultXCCReopenLastProject: 				@YES,
+        kDefaultXCCAutoOpenErrorsPanelOnWarnings:	@YES,
+        kDefaultXCCAutoOpenErrorsPanelOnErrors:		@YES,
+        kDefaultXCCProjectHistory:					[NSArray new],
+        kDefaultMaxRecentProjects:					@20
     };
     
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
@@ -171,6 +173,14 @@ AppController *SharedAppControllerInstance = nil;
     return _iconWorking;
 }
 
+- (NSImage *)iconError
+{
+    if (!_iconError)
+        _iconError = [NSImage imageNamed:@"icon-error"];
+
+    return _iconError;
+}
+
 - (NSMenu *)menuHistory
 {
     if (!_menuHistory)
@@ -205,7 +215,7 @@ AppController *SharedAppControllerInstance = nil;
 - (void)XcodeCappConversionDidStop:(NSNotification *)aNotification
 {
     if (!self.xcc.isLoadingProject)
-        self.statusItem.image = self.iconActive;
+        self.statusItem.image = self.xcc.hasErrors ? self.iconError : self.iconActive;
 }
 
 - (void)XcodeCappDidPopulateProject:(NSNotification *)aNotification
@@ -214,7 +224,7 @@ AppController *SharedAppControllerInstance = nil;
 
 - (void)XcodeCappListeningDidStart:(NSNotification *)aNotification
 {
-    self.statusItem.image = self.iconActive;
+    self.statusItem.image = self.xcc.hasErrors ? self.iconError : self.iconActive;
     self.menuItemListen.title = [NSString stringWithFormat:@"Close “%@”", self.xcc.currentProjectPath.lastPathComponent];
     self.menuItemListen.action = @selector(stopListening:);
 }
@@ -306,15 +316,6 @@ AppController *SharedAppControllerInstance = nil;
 {
     [[NSUserDefaults standardUserDefaults] setObject:[NSArray array] forKey:kDefaultXCCProjectHistory];
     [self updateHistoryMenu];
-}
-
-- (IBAction)openInXcode:(id)aSender
-{
-    if (!self.xcc.currentProjectPath)
-        return;
-    
-    DLog(@"Opening Xcode project at: %@", self.xcc.XcodeSupportProjectURL.path);
-    system([[NSString stringWithFormat:@"open \"%@\"", self.xcc.XcodeSupportProjectURL.path] UTF8String]);
 }
 
 - (IBAction)openHelp:(id)aSender

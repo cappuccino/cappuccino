@@ -41,8 +41,7 @@ function raise(pos, message)
     throw syntaxError;
 }
 
-var hasWarnings = false,
-    errors = [],
+var errors = [],
     xcc = ObjectiveJ.acorn.walk.make(
     {
         ClassDeclarationStatement: function(node, st, c)
@@ -54,7 +53,7 @@ var hasWarnings = false,
                     @"path": node.loc.source,
                     @"line": node.loc.start.line
                 }];
-                hasWarnings = true;
+
                 return;
             }
 
@@ -159,7 +158,8 @@ function main(args)
             tokens = ObjectiveJ.acorn.parse(source, { locations:true, sourceFile:sourceFile }),
             classesInformation = [],
             ObjectiveCSource = "",
-            ObjectiveCHeader = "";
+            ObjectiveCHeader = "",
+            hasErrors = NO;
 
         compile(tokens, classesInformation, xcc);
 
@@ -218,6 +218,8 @@ function main(args)
             @"path": sourceFile,
             @"line": e.line
         }];
+        
+        hasErrors = YES;
     }
 
     if ([errors count])
@@ -225,7 +227,9 @@ function main(args)
         var plist = [CPPropertyListSerialization dataFromPropertyList:errors format:CPPropertyListXMLFormat_v1_0];
 
         print([plist rawString]);
-        OS.exit(1);
+        
+        // If there were category warnings, hasErrors is NO, so return a warning status
+        OS.exit(hasErrors ? 1 : 2);
     }
 }
 

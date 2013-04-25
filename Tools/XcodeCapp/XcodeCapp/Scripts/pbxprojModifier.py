@@ -4,7 +4,7 @@ import re
 import sys
 from mod_pbxproj import XcodeProject
 
-XCODE_SUPPORT_FOLDER = "XcodeSupport"
+XCODE_SUPPORT_FOLDER = ".XcodeSupport"
 SLASH_REPLACEMENT  = u"∕"  # DIVISION SLASH  Unicode U+2215
 STRING_RE = re.compile(ur"^\s*<string>(.*)</string>\s*$", re.MULTILINE)
 FRAMEWORKS_RE = re.compile(ur"^(.+/Frameworks/(?:Debug|Source)/([^/]+))/.+$")

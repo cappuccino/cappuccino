@@ -7,9 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		E1310C96172863BE002E0A59 /* icon-active@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E1310C93172863BE002E0A59 /* icon-active@2x.png */; };
-		E1310C97172863BE002E0A59 /* icon-inactive@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E1310C94172863BE002E0A59 /* icon-inactive@2x.png */; };
-		E1310C98172863BE002E0A59 /* icon-working@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E1310C95172863BE002E0A59 /* icon-working@2x.png */; };
+		E10E4CD717298E5F004AB09E /* project.pbxproj in Resources */ = {isa = PBXBuildFile; fileRef = E164FE2A172188F300263CE3 /* project.pbxproj */; };
 		E132ED951724B64C00D870AE /* FSEventCallback.m in Sources */ = {isa = PBXBuildFile; fileRef = E132ED941724B64C00D870AE /* FSEventCallback.m */; };
 		E164FDD31720E77100263CE3 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E164FDD21720E77100263CE3 /* Cocoa.framework */; };
 		E164FDDF1720E77100263CE3 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = E164FDDE1720E77100263CE3 /* main.m */; };
@@ -20,16 +18,21 @@
 		E164FE001720EC5B00263CE3 /* UserDefaults.m in Sources */ = {isa = PBXBuildFile; fileRef = E164FDFD1720EC5B00263CE3 /* UserDefaults.m */; };
 		E164FE061720ED4500263CE3 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = E164FE041720ED4400263CE3 /* InfoPlist.strings */; };
 		E164FE0D1720F26C00263CE3 /* help.rtfd in Resources */ = {isa = PBXBuildFile; fileRef = E164FE081720F26C00263CE3 /* help.rtfd */; };
-		E164FE151720F40400263CE3 /* mod_pbxproj.py in Resources */ = {isa = PBXBuildFile; fileRef = E164FE131720F40400263CE3 /* mod_pbxproj.py */; };
-		E164FE161720F40400263CE3 /* pbxprojModifier.py in Resources */ = {isa = PBXBuildFile; fileRef = E164FE141720F40400263CE3 /* pbxprojModifier.py */; };
 		E164FE181720F44B00263CE3 /* parser.j in Resources */ = {isa = PBXBuildFile; fileRef = E164FE171720F44B00263CE3 /* parser.j */; };
 		E164FE1A1720F49A00263CE3 /* Growl Registration Ticket.growlRegDict in Resources */ = {isa = PBXBuildFile; fileRef = E164FE191720F49A00263CE3 /* Growl Registration Ticket.growlRegDict */; };
 		E164FE1F1720F51E00263CE3 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E164FE1D1720F50100263CE3 /* CoreServices.framework */; };
 		E164FE211720F55600263CE3 /* Growl.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = E164FDF61720EBD600263CE3 /* Growl.framework */; };
-		E164FE2B172188F300263CE3 /* project.pbxproj in Resources */ = {isa = PBXBuildFile; fileRef = E164FE2A172188F300263CE3 /* project.pbxproj */; };
 		E164FE2F1721A34900263CE3 /* icon-active.png in Resources */ = {isa = PBXBuildFile; fileRef = E164FE2C1721A34900263CE3 /* icon-active.png */; };
 		E164FE301721A34900263CE3 /* icon-inactive.png in Resources */ = {isa = PBXBuildFile; fileRef = E164FE2D1721A34900263CE3 /* icon-inactive.png */; };
 		E164FE311721A34900263CE3 /* icon-working.png in Resources */ = {isa = PBXBuildFile; fileRef = E164FE2E1721A34900263CE3 /* icon-working.png */; };
+		E170C3FB17296205003DC489 /* pbxprojModifier.py in CopyFiles */ = {isa = PBXBuildFile; fileRef = E164FE141720F40400263CE3 /* pbxprojModifier.py */; };
+		E170C3FC1729620C003DC489 /* mod_pbxproj.py in CopyFiles */ = {isa = PBXBuildFile; fileRef = E164FE131720F40400263CE3 /* mod_pbxproj.py */; };
+		E170C3FD1729620F003DC489 /* parser.j in CopyFiles */ = {isa = PBXBuildFile; fileRef = E164FE171720F44B00263CE3 /* parser.j */; };
+		E170C40317298833003DC489 /* icon-active@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E170C3FE17298833003DC489 /* icon-active@2x.png */; };
+		E170C40417298833003DC489 /* icon-error.png in Resources */ = {isa = PBXBuildFile; fileRef = E170C3FF17298833003DC489 /* icon-error.png */; };
+		E170C40517298833003DC489 /* icon-error@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E170C40017298833003DC489 /* icon-error@2x.png */; };
+		E170C40617298833003DC489 /* icon-inactive@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E170C40117298833003DC489 /* icon-inactive@2x.png */; };
+		E170C40717298833003DC489 /* icon-working@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E170C40217298833003DC489 /* icon-working@2x.png */; };
 		E17A822D172700B90095CD83 /* XcodeCapp.iconset in Resources */ = {isa = PBXBuildFile; fileRef = E17A822C172700B90095CD83 /* XcodeCapp.iconset */; };
 /* End PBXBuildFile section */
 
@@ -44,12 +47,21 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E170C3F9172961E6003DC489 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 12;
+			files = (
+				E170C3FB17296205003DC489 /* pbxprojModifier.py in CopyFiles */,
+				E170C3FC1729620C003DC489 /* mod_pbxproj.py in CopyFiles */,
+				E170C3FD1729620F003DC489 /* parser.j in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		E1310C93172863BE002E0A59 /* icon-active@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "icon-active@2x.png"; path = "Resources/icon-active@2x.png"; sourceTree = "<group>"; };
-		E1310C94172863BE002E0A59 /* icon-inactive@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "icon-inactive@2x.png"; path = "Resources/icon-inactive@2x.png"; sourceTree = "<group>"; };
-		E1310C95172863BE002E0A59 /* icon-working@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "icon-working@2x.png"; path = "Resources/icon-working@2x.png"; sourceTree = "<group>"; };
 		E132ED941724B64C00D870AE /* FSEventCallback.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FSEventCallback.m; sourceTree = "<group>"; };
 		E132ED961724B6C400D870AE /* FSEventCallback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FSEventCallback.h; sourceTree = "<group>"; };
 		E132ED991724B71600D870AE /* TNXCodeCapp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TNXCodeCapp.h; sourceTree = "<group>"; };
@@ -80,6 +92,11 @@
 		E164FE2C1721A34900263CE3 /* icon-active.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "icon-active.png"; path = "Resources/icon-active.png"; sourceTree = "<group>"; };
 		E164FE2D1721A34900263CE3 /* icon-inactive.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "icon-inactive.png"; path = "Resources/icon-inactive.png"; sourceTree = "<group>"; };
 		E164FE2E1721A34900263CE3 /* icon-working.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "icon-working.png"; path = "Resources/icon-working.png"; sourceTree = "<group>"; };
+		E170C3FE17298833003DC489 /* icon-active@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "icon-active@2x.png"; path = "Resources/icon-active@2x.png"; sourceTree = "<group>"; };
+		E170C3FF17298833003DC489 /* icon-error.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "icon-error.png"; path = "Resources/icon-error.png"; sourceTree = "<group>"; };
+		E170C40017298833003DC489 /* icon-error@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "icon-error@2x.png"; path = "Resources/icon-error@2x.png"; sourceTree = "<group>"; };
+		E170C40117298833003DC489 /* icon-inactive@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "icon-inactive@2x.png"; path = "Resources/icon-inactive@2x.png"; sourceTree = "<group>"; };
+		E170C40217298833003DC489 /* icon-working@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "icon-working@2x.png"; path = "Resources/icon-working@2x.png"; sourceTree = "<group>"; };
 		E17A822C172700B90095CD83 /* XcodeCapp.iconset */ = {isa = PBXFileReference; lastKnownFileType = folder.iconset; name = XcodeCapp.iconset; path = Resources/XcodeCapp.iconset; sourceTree = "<group>"; };
 		E1DD4DF517282BFC0063C0D7 /* UserDefaults.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = UserDefaults.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -170,12 +187,14 @@
 		E164FE071720F25400263CE3 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				E164FE2C1721A34900263CE3 /* icon-active.png */,
 				E164FE2D1721A34900263CE3 /* icon-inactive.png */,
+				E170C40117298833003DC489 /* icon-inactive@2x.png */,
 				E164FE2E1721A34900263CE3 /* icon-working.png */,
-				E1310C93172863BE002E0A59 /* icon-active@2x.png */,
-				E1310C94172863BE002E0A59 /* icon-inactive@2x.png */,
-				E1310C95172863BE002E0A59 /* icon-working@2x.png */,
+				E170C40217298833003DC489 /* icon-working@2x.png */,
+				E164FE2C1721A34900263CE3 /* icon-active.png */,
+				E170C3FE17298833003DC489 /* icon-active@2x.png */,
+				E170C3FF17298833003DC489 /* icon-error.png */,
+				E170C40017298833003DC489 /* icon-error@2x.png */,
 				E17A822C172700B90095CD83 /* XcodeCapp.iconset */,
 				E164FDE71720E77100263CE3 /* MainMenu.xib */,
 				E164FE2A172188F300263CE3 /* project.pbxproj */,
@@ -188,9 +207,9 @@
 		E164FE121720F3E100263CE3 /* Scripts */ = {
 			isa = PBXGroup;
 			children = (
+				E164FE171720F44B00263CE3 /* parser.j */,
 				E164FE141720F40400263CE3 /* pbxprojModifier.py */,
 				E164FE131720F40400263CE3 /* mod_pbxproj.py */,
-				E164FE171720F44B00263CE3 /* parser.j */,
 			);
 			path = Scripts;
 			sourceTree = "<group>";
@@ -206,6 +225,7 @@
 				E164FDCC1720E77100263CE3 /* Frameworks */,
 				E164FDCD1720E77100263CE3 /* Resources */,
 				E164FE201720F54800263CE3 /* CopyFiles */,
+				E170C3F9172961E6003DC489 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -250,18 +270,18 @@
 				E164FDE91720E77100263CE3 /* MainMenu.xib in Resources */,
 				E164FE061720ED4500263CE3 /* InfoPlist.strings in Resources */,
 				E164FE0D1720F26C00263CE3 /* help.rtfd in Resources */,
-				E164FE151720F40400263CE3 /* mod_pbxproj.py in Resources */,
-				E164FE161720F40400263CE3 /* pbxprojModifier.py in Resources */,
+				E10E4CD717298E5F004AB09E /* project.pbxproj in Resources */,
 				E164FE181720F44B00263CE3 /* parser.j in Resources */,
 				E164FE1A1720F49A00263CE3 /* Growl Registration Ticket.growlRegDict in Resources */,
-				E164FE2B172188F300263CE3 /* project.pbxproj in Resources */,
 				E164FE2F1721A34900263CE3 /* icon-active.png in Resources */,
 				E164FE301721A34900263CE3 /* icon-inactive.png in Resources */,
 				E164FE311721A34900263CE3 /* icon-working.png in Resources */,
 				E17A822D172700B90095CD83 /* XcodeCapp.iconset in Resources */,
-				E1310C96172863BE002E0A59 /* icon-active@2x.png in Resources */,
-				E1310C97172863BE002E0A59 /* icon-inactive@2x.png in Resources */,
-				E1310C98172863BE002E0A59 /* icon-working@2x.png in Resources */,
+				E170C40317298833003DC489 /* icon-active@2x.png in Resources */,
+				E170C40417298833003DC489 /* icon-error.png in Resources */,
+				E170C40517298833003DC489 /* icon-error@2x.png in Resources */,
+				E170C40617298833003DC489 /* icon-inactive@2x.png in Resources */,
+				E170C40717298833003DC489 /* icon-working@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
