@@ -177,6 +177,8 @@ var CPZeroKeyCode = 48,
 
 - (void)_selecteTextFieldWithFlags:(unsigned)flags
 {
+    [_datePickerElementView _updateResponderTextField];
+
     // We select the firstTextField when the datePicker becomes firstResponder if _currentTextField is null. It can be null just when using tab
     if (!_currentTextField)
     {
@@ -300,7 +302,7 @@ var CPZeroKeyCode = 48,
             return YES;
         }
 
-        [self _selectTextField:[_currentTextField previousKeyView]];
+        [self _selectTextField:[_currentTextField previousTextField]];
         return YES;
     }
 
@@ -313,11 +315,8 @@ var CPZeroKeyCode = 48,
                 [[self window] makeFirstResponder:[_datePicker nextKeyView]];
 
             return YES;
-        }
 
-        [self _selectTextField:[_currentTextField nextKeyView]];
-        return YES;
-    }
+        } [self _selectTextField:[_currentTextField nextTextField]]; return YES; }
 
     if ([anEvent keyCode] == CPReturnKeyCode && _timerEdition)
     {
@@ -1077,6 +1076,12 @@ var CPZeroKeyCode = 48,
 */
 - (void)_updateKeyView
 {
+    [self _updateNextTextField];
+    [self _updatePreviousTextField]
+}
+
+- (void)_updateNextTextField
+{
     var datePickerElements = [_datePicker datePickerElements],
         firstTexField = _textFieldMonth,
         secondTextField = _textFieldDay,
@@ -1089,45 +1094,94 @@ var CPZeroKeyCode = 48,
     }
 
     if ((datePickerElements & CPYearMonthDayDatePickerElementFlag) == CPYearMonthDayDatePickerElementFlag)
-        [firstTexField setNextKeyView:secondTextField];
+        [firstTexField setNextTextField:secondTextField];
     else
-        [firstTexField setNextKeyView:_textFieldYear];
+        [firstTexField setNextTextField:_textFieldYear];
 
-    [secondTextField setNextKeyView:_textFieldYear];
+    [secondTextField setNextTextField:_textFieldYear];
 
     if (datePickerElements & CPHourMinuteSecondDatePickerElementFlag || datePickerElements & CPHourMinuteDatePickerElementFlag)
-        [_textFieldYear setNextKeyView:_textFieldHour];
+        [_textFieldYear setNextTextField:_textFieldHour];
     else if (isEnglishFormat || (datePickerElements & CPYearMonthDayDatePickerElementFlag) == CPYearMonthDayDatePickerElementFlag)
-        [_textFieldYear setNextKeyView:firstTexField];
+        [_textFieldYear setNextTextField:firstTexField];
     else
-        [_textFieldYear setNextKeyView:secondTextField];
+        [_textFieldYear setNextTextField:secondTextField];
 
-    [_textFieldHour setNextKeyView:_textFieldMinute];
+    [_textFieldHour setNextTextField:_textFieldMinute];
 
     if ((datePickerElements & CPHourMinuteSecondDatePickerElementFlag) == CPHourMinuteSecondDatePickerElementFlag)
-        [_textFieldMinute setNextKeyView:_textFieldSecond];
+        [_textFieldMinute setNextTextField:_textFieldSecond];
     else if (isEnglishFormat)
-        [_textFieldMinute setNextKeyView:_textFieldPMAM];
+        [_textFieldMinute setNextTextField:_textFieldPMAM];
     else if ((datePickerElements & CPYearMonthDayDatePickerElementFlag) == CPYearMonthDayDatePickerElementFlag)
-        [_textFieldMinute setNextKeyView:firstTexField];
+        [_textFieldMinute setNextTextField:firstTexField];
     else if (datePickerElements & CPYearMonthDatePickerElementFlag)
-        [_textFieldMinute setNextKeyView:secondTextField];
+        [_textFieldMinute setNextTextField:secondTextField];
     else
-        [_textFieldMinute setNextKeyView:_textFieldHour];
+        [_textFieldMinute setNextTextField:_textFieldHour];
 
     if (isEnglishFormat)
-        [_textFieldSecond setNextKeyView:_textFieldPMAM];
+        [_textFieldSecond setNextTextField:_textFieldPMAM];
     else if ((datePickerElements & CPYearMonthDayDatePickerElementFlag) == CPYearMonthDayDatePickerElementFlag)
-        [_textFieldSecond setNextKeyView:firstTexField];
+        [_textFieldSecond setNextTextField:firstTexField];
     else if (datePickerElements & CPYearMonthDatePickerElementFlag)
-        [_textFieldSecond setNextKeyView:secondTextField];
+        [_textFieldSecond setNextTextField:secondTextField];
     else
-        [_textFieldSecond setNextKeyView:_textFieldHour];
+        [_textFieldSecond setNextTextField:_textFieldHour];
 
     if (datePickerElements & CPYearMonthDayDatePickerElementFlag)
-        [_textFieldPMAM setNextKeyView:_textFieldMonth];
+        [_textFieldPMAM setNextTextField:_textFieldMonth];
     else
-        [_textFieldPMAM setNextKeyView:_textFieldHour];
+        [_textFieldPMAM setNextTextField:_textFieldHour];
+}
+
+- (void)_updatePreviousTextField
+{
+    var datePickerElements = [_datePicker datePickerElements],
+        firstTexField = _textFieldMonth,
+        secondTextField = _textFieldDay,
+        isEnglishFormat = [_datePicker _isEnglishFormat];
+
+    if (!isEnglishFormat)
+    {
+        firstTexField = _textFieldDay;
+        secondTextField = _textFieldMonth;
+    }
+
+    if ((datePickerElements & CPHourMinuteSecondDatePickerElementFlag) == CPHourMinuteSecondDatePickerElementFlag)
+        [_textFieldPMAM setPreviousTextField:_textFieldSecond];
+    else if (datePickerElements & CPHourMinuteDatePickerElementFlag)
+        [_textFieldPMAM setPreviousTextField:_textFieldMinute];
+
+    [_textFieldSecond setPreviousTextField:_textFieldMinute];
+    [_textFieldMinute setPreviousTextField:_textFieldHour];
+
+    if (datePickerElements & CPYearMonthDatePickerElementFlag)
+        [_textFieldHour setPreviousTextField:_textFieldYear];
+    else if (isEnglishFormat)
+        [_textFieldHour setPreviousTextField:_textFieldPMAM];
+    else if ((datePickerElements & CPHourMinuteSecondDatePickerElementFlag) == CPHourMinuteSecondDatePickerElementFlag)
+        [_textFieldHour setPreviousTextField:_textFieldSecond];
+    else
+        [_textFieldHour setPreviousTextField:_textFieldMinute];
+
+    if (!isEnglishFormat)
+        [_textFieldYear setPreviousTextField:_textFieldMonth];
+    else if ((datePickerElements & CPYearMonthDayDatePickerElementFlag) == CPYearMonthDayDatePickerElementFlag)
+        [_textFieldYear setPreviousTextField:_textFieldDay];
+    else
+        [_textFieldYear setPreviousTextField:_textFieldMonth];
+
+    [secondTextField setPreviousTextField:firstTexField];
+
+    if (isEnglishFormat && datePickerElements & CPHourMinuteDatePickerElementFlag)
+        [firstTexField setPreviousTextField:_textFieldPMAM];
+    else if ((datePickerElements & CPHourMinuteSecondDatePickerElementFlag) == CPHourMinuteSecondDatePickerElementFlag)
+        [firstTexField setPreviousTextField:_textFieldSecond];
+    else if (datePickerElements & CPHourMinuteDatePickerElementFlag)
+        [firstTexField setPreviousTextField:_textFieldMinute];
+    else
+        [firstTexField setPreviousTextField:_textFieldYear];
 }
 
 @end
@@ -1145,6 +1199,9 @@ var CPMonthDateType = 0,
 */
 @implementation _CPDatePickerElementTextField : CPTextField
 {
+    _CPDatePickerElementTextField _nextTextField        @accessors(property=nextTextField);
+    _CPDatePickerElementTextField _previousTextField    @accessors(property=previousTextField);
+
     CPDatePicker    _datePicker @accessors(setter=setDatePicker:);
 
     int _dateType  @accessors(getter=dateType);
