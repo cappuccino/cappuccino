@@ -1008,10 +1008,19 @@ var themedButtonValues = nil,
         bezelNoBorderColor = PatternColor(
             "combobox-bezel-no-border{state}{position}.png",
             {
-                states: ["", "focused", "disabled"],
-                width: 6.0,
-                height: 29.0,
-                rightWidth: 24.0,
+                states: ["", "disabled"],
+                width: 4.0,
+                height: 25.0,
+                rightWidth: 25.0,
+                orientation: PatternIsHorizontal
+            }),
+
+        bezelNoBorderFocusedColor = PatternColor(
+            "combobox-bezel-no-border-focused{position}.png",
+            {
+                width: 9.0,
+                height: 31.0,
+                rightWidth: 27.0,
                 orientation: PatternIsHorizontal
             }),
 
@@ -1022,16 +1031,20 @@ var themedButtonValues = nil,
             [@"bezel-color",        bezelColor["disabled"],          CPThemeStateBezeled | CPComboBoxStateButtonBordered | CPThemeStateDisabled],
 
             [@"bezel-color",        bezelNoBorderColor["@"],         CPThemeStateBezeled],
-            [@"bezel-color",        bezelNoBorderColor["focused"],   CPThemeStateBezeled | CPThemeStateEditing],
+            [@"bezel-color",        bezelNoBorderFocusedColor,       CPThemeStateBezeled | CPThemeStateEditing],
             [@"bezel-color",        bezelNoBorderColor["disabled"],  CPThemeStateBezeled | CPThemeStateDisabled],
 
             [@"border-inset",       CGInsetMake(3.0, 3.0, 3.0, 3.0),    CPThemeStateBezeled],
 
-            [@"bezel-inset",        CGInsetMake(0.0, 1.0, 0.0, 1.0),    CPThemeStateBezeled | CPThemeStateEditing],
+            [@"bezel-inset",        CGInsetMake(0.0, 1.0, 0.0, 1.0),    CPThemeStateBezeled | CPThemeStateEditing | CPComboBoxStateButtonBordered],
+			[@"bezel-inset",        CGInsetMake(3.0, 4.0, 3.0, 4.0),    CPThemeStateBezeled | CPThemeStateDisabled | CPComboBoxStateButtonBordered],
+
+			[@"bezel-inset",        CGInsetMake(0.0, 4.0, 0.0, 1.0),    CPThemeStateBezeled | CPThemeStateEditing],
+			[@"bezel-inset",        CGInsetMake(3.0, 5.0, 3.0, 4.0),    CPThemeStateBezeled | CPThemeStateDisabled],
 
             // The right border inset has to make room for the focus ring and popup button
             [@"content-inset",      CGInsetMake(9.0, 26.0, 7.0, 10.0),    CPThemeStateBezeled | CPComboBoxStateButtonBordered],
-            [@"content-inset",      CGInsetMake(9.0, 24.0, 7.0, 10.0),    CPThemeStateBezeled],
+            [@"content-inset",      CGInsetMake(9.0, 26.0, 7.0, 10.0),    CPThemeStateBezeled],
             [@"content-inset",      CGInsetMake(9.0, 24.0, 7.0, 10.0),    CPThemeStateBezeled | CPThemeStateEditing],
 
             [@"popup-button-size",  CGSizeMake(21.0, 23.0), CPThemeStateBezeled | CPComboBoxStateButtonBordered],
