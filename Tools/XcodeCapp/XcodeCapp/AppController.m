@@ -63,7 +63,7 @@ AppController *SharedAppControllerInstance = nil;
     self.statusItem.menu = self.statusMenu;
     self.statusItem.image = self.iconInactive;
     self.statusItem.highlightMode = YES;
-    self.statusItem.length = self.iconInactive.size.width + 8;  // Add some space around the icon
+    self.statusItem.length = self.iconInactive.size.width + 12;  // Add some space around the icon
     self.statusMenu.delegate = self;
     self.helpTextView.textContainerInset = NSMakeSize(10.0, 10.0);
 
