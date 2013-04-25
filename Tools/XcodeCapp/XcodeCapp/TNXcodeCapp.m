@@ -270,7 +270,7 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
     NSError *error = NULL;
     NSString *projectPath = [self.currentProjectPath stringByAppendingPathComponent:aProjectPath];
     
-	NSArray *urls = [self.fm contentsOfDirectoryAtURL:[NSURL fileURLWithPath:[projectPath stringByResolvingSymlinksInPath]]
+	NSArray *urls = [self.fm contentsOfDirectoryAtURL:[NSURL fileURLWithPath:projectPath.stringByResolvingSymlinksInPath]
                            includingPropertiesForKeys:@[NSURLIsDirectoryKey, NSURLIsSymbolicLinkKey]
                                               options:NSDirectoryEnumerationSkipsHiddenFiles | NSDirectoryEnumerationSkipsPackageDescendants | NSDirectoryEnumerationSkipsSubdirectoryDescendants
                                          		error:&error];
@@ -335,7 +335,7 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
             if ([self isObjjFile:filename])
                 processedPath = [[self shadowBasePathForSourcePath:realPath] stringByAppendingPathExtension:@"h"];
             else
-                processedPath = [[realPath stringByDeletingPathExtension] stringByAppendingPathExtension:@"cib"];
+                processedPath = [realPath.stringByDeletingPathExtension stringByAppendingPathExtension:@"cib"];
 
             if (![self.fm fileExistsAtPath:processedPath])
                 [self processModifiedFileAtPath:realPath projectSourcePath:projectSourcePath notify:YES];
@@ -632,7 +632,7 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
 
     for (NSString *profile in profiles)
     {
-        path = [profile stringByExpandingTildeInPath];
+        path = profile.stringByExpandingTildeInPath;
 
         if ([self.fm fileExistsAtPath:path])
         {
@@ -837,7 +837,16 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
 - (BOOL)isXibFile:(NSString *)path
 {
     NSString *extension = path.pathExtension.lowercaseString;
-    return  [extension isEqual:@"xib"] || [extension isEqual:@"nib"];
+
+    if ([extension isEqual:@"xib"] || [extension isEqual:@"nib"])
+    {
+        // Xcode creates temp files called <filename>~.xib. Filter those out.
+        NSString *baseFilename = path.lastPathComponent.stringByDeletingPathExtension;
+
+        return [baseFilename characterAtIndex:baseFilename.length - 1] != '~';
+    }
+
+    return NO;
 }
 
 - (BOOL)isXCCIgnoreFile:(NSString *)path
@@ -847,7 +856,7 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
 
 - (NSString *)projectPathForSourcePath:(NSString *)path
 {
-    NSString *base = [path stringByDeletingLastPathComponent];
+    NSString *base = path.stringByDeletingLastPathComponent;
 	NSString *projectPath = self.projectPathsForSourcePaths[base];
 
     return projectPath ? [projectPath stringByAppendingPathComponent:path.lastPathComponent] : path;
@@ -857,13 +866,13 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
 
 - (NSString *)shadowBasePathForSourcePath:(NSString *)path
 {
-    return [self.supportPath stringByAppendingPathComponent:[[path stringByDeletingPathExtension] stringByReplacingOccurrencesOfString:@"/" withString:XCCSlashReplacement]];
+    return [self.supportPath stringByAppendingPathComponent:[path.stringByDeletingPathExtension stringByReplacingOccurrencesOfString:@"/" withString:XCCSlashReplacement]];
 }
 
 - (NSString *)sourcePathForShadowPath:(NSString *)path
 {
     path = [path stringByReplacingOccurrencesOfString:XCCSlashReplacement withString:@"/"];
-    return [[path stringByDeletingPathExtension] stringByAppendingPathExtension:@"j"];
+    return [path.stringByDeletingPathExtension stringByAppendingPathExtension:@"j"];
 }
 
 /*!
