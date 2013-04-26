@@ -858,7 +858,7 @@ var _CPPopUpListDataSourceKey   = @"_CPPopUpListDataSourceKey",
     if (self = [super initWithContentRect:aContentRect styleMask:aStyleMask])
         _constrainsToUsableScreen = NO;
 
-	[self _trapNextMouseDown];
+    [self _trapNextMouseDown];
 
     return self;
 }
@@ -875,20 +875,20 @@ var _CPPopUpListDataSourceKey   = @"_CPPopUpListDataSourceKey",
 
 - (void)orderFront:(id)sender
 {
-	[self _trapNextMouseDown];
-	[super orderFront:sender];
+    [self _trapNextMouseDown];
+    [super orderFront:sender];
 }
 
 - (void)_mouseWasClicked:(CPEvent)anEvent
 {
-	var mouseWindow = [anEvent window],
-		rect = [[[self delegate] dataSource] bounds],
-		point = [[[self delegate] dataSource] convertPoint:[anEvent locationInWindow] fromView:nil];
+    var mouseWindow = [anEvent window],
+        rect = [[[self delegate] dataSource] bounds],
+        point = [[[self delegate] dataSource] convertPoint:[anEvent locationInWindow] fromView:nil];
 
-	if (mouseWindow != self && !CGRectContainsPoint(rect, point))
-		[[self delegate] close];
-	else if ([mouseWindow firstResponder] == [[self delegate] dataSource])
-		[self _trapNextMouseDown];
+    if (mouseWindow != self && !CGRectContainsPoint(rect, point))
+        [[self delegate] close];
+    else if ([mouseWindow firstResponder] == [[self delegate] dataSource])
+        [self _trapNextMouseDown];
 }
 
 - (void)_trapNextMouseDown

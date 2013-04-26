@@ -745,7 +745,7 @@ var themedButtonValues = nil,
 
             [@"bezel-color-calendar", [CPColor whiteColor]],
             [@"bezel-color-calendar", [CPColor colorWithCalibratedRed:87.0 / 255.0 green:128.0 / 255.0 blue:216.0 / 255.0 alpha:1.0],   CPThemeStateSelected],
-            [@"bezel-color-calendar", [CPColor colorWithCalibratedRed:87.0 / 255.0 green:128.0 / 255.0 blue:216.0 / 255.0 alpha:0.5],   CPThemeStateSelected |CPThemeStateDisabled],
+            [@"bezel-color-calendar", [CPColor colorWithCalibratedRed:87.0 / 255.0 green:128.0 / 255.0 blue:216.0 / 255.0 alpha:0.5],   CPThemeStateSelected | CPThemeStateDisabled],
             [@"bezel-color-clock",    clockImageColor],
             [@"bezel-color-clock",    clockImageColorDisabled,                                                                          CPThemeStateDisabled],
 
@@ -1037,10 +1037,10 @@ var themedButtonValues = nil,
             [@"border-inset",       CGInsetMake(3.0, 3.0, 3.0, 3.0),    CPThemeStateBezeled],
 
             [@"bezel-inset",        CGInsetMake(0.0, 1.0, 0.0, 1.0),    CPThemeStateBezeled | CPThemeStateEditing | CPComboBoxStateButtonBordered],
-			[@"bezel-inset",        CGInsetMake(3.0, 4.0, 3.0, 4.0),    CPThemeStateBezeled | CPThemeStateDisabled | CPComboBoxStateButtonBordered],
+            [@"bezel-inset",        CGInsetMake(3.0, 4.0, 3.0, 4.0),    CPThemeStateBezeled | CPThemeStateDisabled | CPComboBoxStateButtonBordered],
 
-			[@"bezel-inset",        CGInsetMake(0.0, 4.0, 0.0, 1.0),    CPThemeStateBezeled | CPThemeStateEditing],
-			[@"bezel-inset",        CGInsetMake(3.0, 5.0, 3.0, 4.0),    CPThemeStateBezeled | CPThemeStateDisabled],
+            [@"bezel-inset",        CGInsetMake(0.0, 4.0, 0.0, 1.0),    CPThemeStateBezeled | CPThemeStateEditing],
+            [@"bezel-inset",        CGInsetMake(3.0, 5.0, 3.0, 4.0),    CPThemeStateBezeled | CPThemeStateDisabled],
 
             // The right border inset has to make room for the focus ring and popup button
             [@"content-inset",      CGInsetMake(9.0, 26.0, 7.0, 10.0),    CPThemeStateBezeled | CPComboBoxStateButtonBordered],
