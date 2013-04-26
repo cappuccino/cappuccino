@@ -34,12 +34,12 @@ AppController *SharedAppControllerInstance = nil;
 @interface AppController ()
 
 @property BOOL 					supportsFileModeListening;
-@property (nonatomic) NSImage	*iconActive;
+@property (nonatomic) NSImage   *iconActive;
 @property (nonatomic) NSImage 	*iconInactive;
 @property (nonatomic) NSImage 	*iconWorking;
 @property (nonatomic) NSImage 	*iconError;
-@property (nonatomic) NSMenu	*menuHistory;
-@property NSStatusItem			*statusItem;
+@property (nonatomic) NSMenu    *recentMenu;
+@property NSStatusItem    		*statusItem;
 
 @end
 
@@ -181,16 +181,16 @@ AppController *SharedAppControllerInstance = nil;
     return _iconError;
 }
 
-- (NSMenu *)menuHistory
+- (NSMenu *)recentMenu
 {
-    if (!_menuHistory)
+    if (!_recentMenu)
     {
-        _menuHistory = [NSMenu new];
-        _menuHistory.autoenablesItems = NO;
-        self.menuItemHistory.submenu = _menuHistory;
+        _recentMenu = [NSMenu new];
+        _recentMenu.delegate = self;
+        self.menuItemHistory.submenu = _recentMenu;
 	}
 
-    return _menuHistory;
+    return _recentMenu;
 }
 
 
@@ -239,18 +239,18 @@ AppController *SharedAppControllerInstance = nil;
 
 - (void)updateHistoryMenu
 {
-    [self.menuHistory removeAllItems];
+    [self.recentMenu removeAllItems];
     NSArray *projectHistory = [[NSUserDefaults standardUserDefaults] arrayForKey:kDefaultXCCProjectHistory];
 
     for (NSString *path in projectHistory)
     {
-        NSMenuItem *item = [self.menuHistory addItemWithTitle:path.lastPathComponent action:@selector(switchToProject:) keyEquivalent:@""];
+        NSMenuItem *item = [self.recentMenu addItemWithTitle:path.lastPathComponent action:@selector(switchToProject:) keyEquivalent:@""];
         [item setEnabled:YES];
         item.representedObject = path;
     }
 
-    [self.menuHistory addItem:[NSMenuItem separatorItem]];
-    [self.menuHistory addItemWithTitle:@"Clear history" action:@selector(clearProjectHistory:) keyEquivalent:@""];
+    [self.recentMenu addItem:[NSMenuItem separatorItem]];
+    [self.recentMenu addItemWithTitle:@"Clear history" action:@selector(clearProjectHistory:) keyEquivalent:@""];
 
     self.menuItemHistory.enabled = [projectHistory count] > 0;
 }
@@ -277,20 +277,39 @@ AppController *SharedAppControllerInstance = nil;
 
 - (void)listenToProjectAtPath:(NSString *)path
 {
+    [self stopListening:self];
+    
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     NSMutableArray *projectHistory = [[defaults arrayForKey:kDefaultXCCProjectHistory] mutableCopy];
 
     if ([projectHistory containsObject:path])
         [projectHistory removeObject:path];
 
-    [projectHistory insertObject:path atIndex:0];
+    // The path may no longer be there, validate it
+    NSFileManager *fm = [NSFileManager defaultManager];
+    
+    BOOL exists, isDirectory;
+    exists = [fm fileExistsAtPath:path isDirectory:&isDirectory];
+
+    if (exists && isDirectory)
+    {
+        [projectHistory insertObject:path atIndex:0];
+    }
+    else
+    {
+        [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
+        NSAlert *alert = [[NSAlert alloc] init];
+        alert.messageText = @"Project not found.";
+        alert.informativeText = [NSString stringWithFormat:@"%@ %@", path, !exists ? @"no longer exists." : @"is not a directory."];
+        [alert runModal];
+    }
 
     [defaults setObject:projectHistory forKey:kDefaultXCCProjectHistory];
     [self pruneProjectHistory];
     [self updateHistoryMenu];
 
-    [self stopListening:self];
-    [self.xcc listenToProjectAtPath:path];
+    if (exists && isDirectory)
+        [self.xcc listenToProjectAtPath:path];
 }
 
 - (void)stopListening:(id)aSender
@@ -306,10 +325,7 @@ AppController *SharedAppControllerInstance = nil;
 
 - (void)switchToProject:(id)aSender
 {
-    NSString *projectPath = [aSender representedObject];
-
-    [self stopListening:aSender];
-    [self listenToProjectAtPath:projectPath];
+    [self listenToProjectAtPath:[aSender representedObject]];
 }
 
 - (void)clearProjectHistory:(id)aSender
@@ -350,8 +366,26 @@ AppController *SharedAppControllerInstance = nil;
 
 - (BOOL)validateMenuItem:(NSMenuItem *)aMenuItem
 {
+    NSMenu *menu = aMenuItem.menu;
+    
     if (aMenuItem == self.menuItemListen)
+    {
         return !!self.xcc.currentProjectPath;
+    }
+    else if (menu == self.recentMenu)
+    {
+        // Disable recent items if they don't exist or are not directories,
+        // but enable the Clear History item, which is last in the menu.
+        if ([menu indexOfItem:aMenuItem] == menu.itemArray.count - 1)
+            return YES;
+        
+        NSFileManager *fm = [NSFileManager defaultManager];
+
+        BOOL exists, isDirectory;
+        exists = [fm fileExistsAtPath:aMenuItem.representedObject isDirectory:&isDirectory];
+
+        return exists && isDirectory;
+    }
     
     return YES;
 }
