@@ -83,7 +83,6 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
 @property NSNumber          	*lastEventId;
 @property NSString          	*parserPath;
 @property NSString          	*XcodeSupportPBXPath;
-@property NSString          	*XcodeSupportProjectName;
 @property NSString          	*XcodeTemplatePBXPath;
 @property NSString          	*profilePath;
 @property NSString          	*shellPath;
@@ -202,30 +201,37 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
 #pragma mark - Project Management
 
 /*!
-	Check if XcodeSupport needs to be initialized.
-	If not needed, check that all .j files are mirrored.
-	If not, then launch conversion for missing mirrored .h files.
+	Create Xcode project and .XcodeSupport directory if necessary.
  
- 	@return YES if Xcode project exists, NO if not 
+    @return YES if both exist
 */
 - (BOOL)prepareXcodeSupportProject
 {
-    self.XcodeSupportProjectName    = [NSString stringWithFormat:@"%@.xcodeproj", self.currentProjectPath.lastPathComponent];
     self.XcodeTemplatePBXPath       = [[NSBundle mainBundle] pathForResource:@"project" ofType:@"pbxproj"];
 
-    NSURL *projectURL = [NSURL fileURLWithPath:self.currentProjectPath];
-    self.XcodeSupportProjectURL     = [NSURL URLWithString:self.XcodeSupportProjectName relativeToURL:projectURL];
-    self.supportPath 				= [[NSURL URLWithString:@".XcodeSupport" relativeToURL:projectURL] path];
-    self.XcodeSupportPBXPath        = [self.XcodeSupportProjectURL.path stringByAppendingPathComponent:@"project.pbxproj"];
+    NSString *projectName = [self.currentProjectPath.lastPathComponent stringByAppendingString:@".xcodeproj"];
+
+    self.XcodeSupportProjectPath     = [self.currentProjectPath stringByAppendingPathComponent:projectName];
+    self.supportPath 				= [self.currentProjectPath stringByAppendingPathComponent:@".XcodeSupport"];
+    self.XcodeSupportPBXPath        = [self.XcodeSupportProjectPath stringByAppendingPathComponent:@"project.pbxproj"];
     self.PBXModifierScriptPath      = [[[NSBundle mainBundle] sharedSupportPath] stringByAppendingPathComponent:@"pbxprojModifier.py"];
 
-    // Create the template project if it doesn't exist
-    if (![self.fm fileExistsAtPath:self.supportPath])
-    {
-        NSLog(@"Xcode support folder created at: %@", self.XcodeSupportProjectURL.path);
-        [self.fm createDirectoryAtPath:self.XcodeSupportProjectURL.path withIntermediateDirectories:YES attributes:nil error:nil];
+    // If either the project or the support directory are missing, recreate them both to ensure they are in sync
+    BOOL projectExists, projectIsDirectory;
+    projectExists = [self.fm fileExistsAtPath:self.XcodeSupportProjectPath isDirectory:&projectIsDirectory];
 
-        DLog(@"Copying project.pbxproj from %@ to %@", self.XcodeTemplatePBXPath, self.XcodeSupportProjectURL.path);
+    BOOL supportExists, supportIsDirectory;
+    supportExists = [self.fm fileExistsAtPath:self.supportPath isDirectory:&supportIsDirectory];
+
+    if (!projectExists || !projectIsDirectory || !supportExists)
+    {
+        if (projectExists)
+            [self.fm removeItemAtPath:self.XcodeSupportProjectPath error:nil];
+        
+        [self.fm createDirectoryAtPath:self.XcodeSupportProjectPath withIntermediateDirectories:YES attributes:nil error:nil];
+        NSLog(@"Xcode support folder created at: %@", self.XcodeSupportProjectPath);
+
+        DLog(@"Copying project.pbxproj from %@ to %@", self.XcodeTemplatePBXPath, self.XcodeSupportProjectPath);
         [self.fm copyItemAtPath:self.XcodeTemplatePBXPath toPath:self.XcodeSupportPBXPath error:nil];
 
         DLog(@"Reading the content of the project.pbxproj");
@@ -233,19 +239,23 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
 
         [PBXContent writeToFile:self.XcodeSupportPBXPath atomically:YES encoding:NSUTF8StringEncoding error:nil];
         DLog(@"PBX file adapted to the project");
-
-        [self.fm createDirectoryAtPath:self.supportPath withIntermediateDirectories:YES attributes:nil error:nil];
-
-        return NO;
     }
 
-    return YES;
+    // If the project did not exist, reset the XcodeSupport directory to force the new empty project to be populated
+    if (!supportExists || !supportIsDirectory || !projectExists)
+    {
+        if (supportExists)
+            [self.fm removeItemAtPath:self.supportPath error:nil];
+
+        [self.fm createDirectoryAtPath:self.supportPath withIntermediateDirectories:YES attributes:nil error:nil];
+        DLog(@"Created XcodeSupport directory");
+    }
+
+    return projectExists && supportExists;
 }
 
 /*!
  	Create and initialize the Xcode project.
-
-	@param shouldNotify If YES, XCCDidPopulateProjectNotification will be sent
 */
 - (void)populateXcodeProject:(BOOL)shouldNotify
 {
@@ -355,16 +365,13 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
     self.projectPathsForSourcePaths = [NSMutableDictionary new];
     [self computeIgnoredPaths];
 
-    BOOL isProjectReady = [self prepareXcodeSupportProject];
-    [self populateXcodeProject:!isProjectReady];
+    BOOL projectNeedsPopulation = [self prepareXcodeSupportProject];
+    [self populateXcodeProject:projectNeedsPopulation];
 
     self.isLoadingProject = NO;
-    
     [self initializeEventStreamWithPath:self.currentProjectPath];
 
-    NSDictionary *info = @{ @"path": path, @"ready": [NSNumber numberWithBool:isProjectReady] };
-    [[NSNotificationCenter defaultCenter] postNotificationName:XCCListeningDidStartNotification object:self userInfo:info];
-
+    [[NSNotificationCenter defaultCenter] postNotificationName:XCCListeningDidStartNotification object:self userInfo:nil];
     [[NSUserDefaults standardUserDefaults] setObject:self.currentProjectPath forKey:kDefaultLastOpenedPath];
 
     [self notifyUserWithTitle:@"Project loaded" message:self.currentProjectPath.lastPathComponent];
@@ -372,11 +379,30 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
 
 - (IBAction)openInXcode:(id)aSender
 {
-    if (!self.currentProjectPath)
-        return;
+    BOOL isDirectory, opened = YES;
+    BOOL exists = [self.fm fileExistsAtPath:self.XcodeSupportProjectPath isDirectory:&isDirectory];
 
-    DLog(@"Opening Xcode project at: %@", self.XcodeSupportProjectURL.path);
-    system([[NSString stringWithFormat:@"open \"%@\"", self.XcodeSupportProjectURL.path] UTF8String]);
+    if (exists && isDirectory)
+    {
+        DLog(@"Opening Xcode project at: %@", self.XcodeSupportProjectPath);
+        opened = [[NSWorkspace sharedWorkspace] openFile:self.XcodeSupportProjectPath];
+    }
+
+    if (!exists || !isDirectory || !opened)
+    {
+        NSString *text;
+
+        if (!opened)
+            text = @"The project exists, but failed to open.";
+        else
+            text = [NSString stringWithFormat:@"%@ %@.", self.XcodeSupportProjectPath, !exists ? @"does not exist" : @"is not an Xcode project"];
+
+        [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
+        NSInteger response = NSRunAlertPanel(@"The project could not be opened.", @"%@\n\nWould you like to regenerate the project?", @"Yes", @"No", nil, text);
+
+        if (response == NSAlertDefaultReturn)
+            [self resetProject:self];
+    }
 }
 
 - (IBAction)resetProject:(id)aSender
@@ -392,7 +418,7 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
     NSAppleEventDescriptor *descriptor;
     descriptor = [script executeAndReturnError:nil];
     
-	[self.fm removeItemAtURL:self.XcodeSupportProjectURL error:nil];
+	[self.fm removeItemAtPath:self.XcodeSupportProjectPath error:nil];
     [self.fm removeItemAtPath:self.supportPath error:nil];
 
     [self listenToProjectAtPath:projectPath];
@@ -619,12 +645,8 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
     }
     else
     {
-        NSAlert *alert = [NSAlert alertWithMessageText:@"Unsupported shell."
-                                         defaultButton:@"OK"
-                                       alternateButton:nil
-                                           otherButton:nil
-                             informativeTextWithFormat:@"You are using %@ as your shell. XcodeCapp requires either bash or zsh to run.", self.shellPath];
-        [alert runModal];
+        [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
+        NSRunAlertPanel(@"Unsupported shell.", @"You are using %@ as your shell. XcodeCapp requires either bash or zsh to run.", nil, nil, nil, self.shellPath);
 
         [[NSRunningApplication currentApplication] terminate];
         return;

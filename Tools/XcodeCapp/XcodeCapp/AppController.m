@@ -298,10 +298,7 @@ AppController *SharedAppControllerInstance = nil;
     else
     {
         [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
-        NSAlert *alert = [[NSAlert alloc] init];
-        alert.messageText = @"Project not found.";
-        alert.informativeText = [NSString stringWithFormat:@"%@ %@", path, !exists ? @"no longer exists." : @"is not a directory."];
-        [alert runModal];
+        NSRunAlertPanel(@"Project not found.", @"%@ %@", nil, nil, nil, path, !exists ? @"no longer exists." : @"is not a directory.");
     }
 
     [defaults setObject:projectHistory forKey:kDefaultXCCProjectHistory];

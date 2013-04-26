@@ -33,7 +33,7 @@ extern NSString * const XCCListeningDidStartNotification;
 
 @interface TNXcodeCapp : NSObject <NSTableViewDelegate, NSUserNotificationCenterDelegate, GrowlApplicationBridgeDelegate>
 
-@property NSURL* XcodeSupportProjectURL;
+@property NSString* XcodeSupportProjectPath;
 @property NSString* currentProjectPath;
 @property NSString* currentAPIMode;
 @property BOOL supportsFileBasedListening;
