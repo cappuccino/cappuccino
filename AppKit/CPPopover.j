@@ -238,6 +238,7 @@ Set the behavior of the CPPopover. It can be:
         _popoverWindow = [[_CPPopoverWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:[self styleMaskForBehavior]];
     }
 
+    [_popoverWindow setPlatformWindow:[[positioningView window] platformWindow]];
     [_popoverWindow setAppearance:_appearance];
     [_popoverWindow setAnimates:_animates];
     [_popoverWindow setDelegate:self];
