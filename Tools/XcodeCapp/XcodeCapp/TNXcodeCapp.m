@@ -760,7 +760,7 @@ NSArray *XCCDefaultIgnoredPathRegexes = nil;
             }
             else
             {
-                notificationTitle = [(XCCStatusCodeError ? @"Error" : @"Warning") stringByAppendingString:@" parsing Objective-J source"];
+                notificationTitle = [(status == XCCStatusCodeError ? @"Error" : @"Warning") stringByAppendingString:@" parsing Objective-J source"];
                 
                 NSArray *errors = [response propertyList];
 
