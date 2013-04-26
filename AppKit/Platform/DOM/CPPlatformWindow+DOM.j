@@ -1413,8 +1413,7 @@ var resizeTimer = nil;
 
     // Grab the appropriate level for the layer, and create it if
     // necessary (if we are not simply removing the window).
-    var layer = [self layerAtLevel:[[self _furthestParentOf:aWindow] level]
-                            create:orderingMode !== CPWindowOut];
+    var layer = [self layerAtLevel:[aWindow level] create:orderingMode !== CPWindowOut];
 
     // When ordering out, ignore otherWindow, simply remove aWindow from its level.
     // If layer is nil, this will be a no-op.
