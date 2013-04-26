@@ -22,10 +22,7 @@ task ("build", function()
         cp_r(FILE.join("build", "Release", "XcodeCapp.app"), supportPath);
         FILE.chmod(FILE.join(supportPath, "Contents", "MacOS", "XcodeCapp"), 0755);
 
-        if (FILE.exists(installPath))
-            FILE.remove(installPath);
-
-        OS.system(["ln", "-s", supportPath, installPath]);
+        OS.system(["/bin/ln", "-sfh", supportPath, installPath]);
     }
     else
     {
