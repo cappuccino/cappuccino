@@ -26,8 +26,6 @@
 #include "macros.h"
 
 
-const NSInteger kHelpMenuItemTag = 7;
-
 AppController *SharedAppControllerInstance = nil;
 
 
