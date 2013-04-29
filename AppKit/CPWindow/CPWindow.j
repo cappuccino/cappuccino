@@ -2763,6 +2763,15 @@ CPTexturedBackgroundWindowMask
         endY = [_windowView bodyOffset] - [[self contentView] frame].origin.y,
         endFrame = CGRectMake(originX, endY, sheetFrame.size.width, sheetFrame.size.height);
 
+    if (_toolbar && [_windowView showsToolbar] && [self isFullPlatformWindow])
+    {
+        originX += [[_toolbar _toolbarView] frameSize].height;
+        endY    += [[_toolbar _toolbarView] frameSize].height;
+
+        startFrame = CGRectMake(originX, -sheetShadowFrame.size.height, sheetFrame.size.width, sheetFrame.size.height);
+        endFrame = CGRectMake(originX, endY, sheetFrame.size.width, sheetFrame.size.height);
+    }
+
     // Move the sheet offscreen before ordering front so it doesn't appear briefly
     [sheet setFrameOrigin:CGPointMake(0, -13000)];
 
