@@ -1490,7 +1490,8 @@ var resizeTimer = nil;
     // relative to it or the furthest parent.
     var children = [aWindow childWindows],
         count = [children count],
-        parent = aWindow;
+        parent = aWindow,
+        parentLevel = [parent level];
 
     for (var i = 0; i < count; ++i)
     {
@@ -1499,6 +1500,10 @@ var resizeTimer = nil;
 
         // If a child is not visible and has not yet been ordered in, skip it
         if (!childWasVisible && ![child _hasBeenOrderedIn])
+            continue;
+
+        // If a user moved level of the child window, we should respect that
+        if ([child level] !== parentLevel)
             continue;
 
         var ordering = [child _childOrdering];

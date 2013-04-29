@@ -985,6 +985,7 @@ CPTexturedBackgroundWindowMask
     [_platformWindow moveWindow:self fromLevel:_level toLevel:aLevel];
 
     _level = aLevel;
+    [_childWindows makeObjectsPerformSelector:@selector(setLevel:) withObject:_level];
 
     if ([self _sharesChromeWithPlatformWindow])
         [_platformWindow setLevel:aLevel];
@@ -2530,6 +2531,7 @@ CPTexturedBackgroundWindowMask
 
     [childWindow setParentWindow:self];
     [childWindow _setChildOrdering:orderingMode];
+    [childWindow setLevel:[self level]];
 
     if ([self isVisible] && ![childWindow isVisible])
         [childWindow orderWindow:orderingMode relativeTo:_windowNumber];
