@@ -12,8 +12,8 @@
 {
     CPWindow    wind;
     CPWindow    sheet;
+    CPWindow    secondSheet;
     CPTextField textField;
-    CPToolbar   toolbar;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
@@ -26,9 +26,14 @@
     [sheet setMinSize:CGSizeMake(300, 100)];
     [sheet setMaxSize:CGSizeMake(600, 300)];
 
+    secondSheet = [[CPWindow alloc] initWithContentRect:CGRectMake(50, 50, 300, 50) styleMask:CPTitledWindowMask | CPResizableWindowMask];
+    [secondSheet setMinSize:CGSizeMake(300, 100)];
+    [secondSheet setMaxSize:CGSizeMake(600, 300)];
+
     toolbar = [CPToolbar new];
     [toolbar setDisplayMode:CPToolbarDisplayModeIconAndLabel]
     [toolbar setDelegate:self];
+    [secondSheet setToolbar:toolbar];
 
     var sheetContent = [sheet contentView];
 
@@ -56,6 +61,25 @@
     [sheetContent addSubview:okButton];
     [sheetContent addSubview:cancelButton];
 
+    var secondSheetContent = [secondSheet contentView];
+
+    var okButton2 = [[CPButton alloc] initWithFrame:CGRectMake(180, 25, 50, buttonHeight)];
+    [okButton2 setTitle:"OK"];
+    [okButton2 setTarget:self];
+    [okButton2 setTag:1];
+    [okButton2 setAction:@selector(closeSecondSheet:)];
+    [okButton2 setAutoresizingMask:CPViewMinXMargin | CPViewMinYMargin];
+
+    var cancelButton2 = [[CPButton alloc] initWithFrame:CGRectMake(70, 25, 100, buttonHeight)];
+    [cancelButton2 setTitle:"Cancel"];
+    [cancelButton2 setTarget:self];
+    [cancelButton2 setTag:0];
+    [cancelButton2 setAction:@selector(closeSecondSheet:)];
+    [cancelButton2 setAutoresizingMask:CPViewMinXMargin | CPViewMinYMargin];
+
+    [secondSheetContent addSubview:okButton2];
+    [secondSheetContent addSubview:cancelButton2];
+
     var displayButton = [[CPButton alloc] initWithFrame:CGRectMake(200, 150, 100, buttonHeight)];
     [displayButton setTitle:"Display Sheet"];
     [displayButton setTarget:self];
@@ -73,12 +97,7 @@
 
 - (void)displaySheetWithToolBar:(id)sender
 {
-    [textField setStringValue:""];
-    [sheet makeFirstResponder:textField];
-    [sheet setToolbar:toolbar];
-
-    [CPApp beginSheet:sheet modalForWindow:wind modalDelegate:self didEndSelector:@selector(didEndSheet:returnCode:contextInfo:) contextInfo:nil];
-
+    [CPApp beginSheet:secondSheet modalForWindow:wind modalDelegate:self didEndSelector:@selector(didEndSheet:returnCode:contextInfo:) contextInfo:nil];
 }
 
 - (void)displaySheet:(id)sender
@@ -95,11 +114,16 @@
     [CPApp endSheet:sheet returnCode:[sender tag]];
 }
 
+- (void)closeSecondSheet:(id)sender
+{
+    [CPApp endSheet:secondSheet returnCode:0];
+}
+
 - (void)didEndSheet:(CPWindow)aSheet returnCode:(int)returnCode contextInfo:(id)contextInfo
 {
     var str = [textField stringValue];
 
-    [sheet orderOut:self];
+    [aSheet orderOut:self];
 
     if (returnCode == CPOKButton && [str length] > 0)
         [wind setTitle:str];
