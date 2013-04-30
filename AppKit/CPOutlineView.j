@@ -725,11 +725,13 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 */
 - (void)_setSelectedRowIndexes:(CPIndexSet)rows
 {
-    [[_disclosureControlsForRows objectsAtIndexes:_selectedRowIndexes] makeObjectsPerformSelector:@selector(unsetThemeState:) withObject:CPThemeStateSelected];
+    if (_disclosureControlsForRows.length)
+        [[_disclosureControlsForRows objectsAtIndexes:_selectedRowIndexes] makeObjectsPerformSelector:@selector(unsetThemeState:) withObject:CPThemeStateSelected];
 
     [super _setSelectedRowIndexes:rows];
 
-    [[_disclosureControlsForRows objectsAtIndexes:_selectedRowIndexes] makeObjectsPerformSelector:@selector(setThemeState:) withObject:CPThemeStateSelected];
+    if (_disclosureControlsForRows.length)
+        [[_disclosureControlsForRows objectsAtIndexes:_selectedRowIndexes] makeObjectsPerformSelector:@selector(setThemeState:) withObject:CPThemeStateSelected];
 }
 
 /*!
