@@ -68,14 +68,11 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
     [super layoutSubviews];
 
     var gradientHeight = [[CPTheme defaultTheme] valueForAttributeWithName:@"gradient-height" forClass:_CPStandardWindowView],
-        bounds = [self bounds];
+        bounds = [self bounds],
+        bezelHeadColor = [[CPTheme defaultTheme] valueForAttributeWithName:_isSheet ? @"bezel-head-sheet-color" : @"bezel-head-color" inState:[_parentView themeState] forClass:_CPStandardWindowView];
 
     [_gradientView setFrame:CGRectMake(0.0, 0.0, CGRectGetWidth(bounds), gradientHeight)];
-
-    if (_isSheet)
-        [_gradientView setBackgroundColor:[[CPTheme defaultTheme] valueForAttributeWithName:@"bezel-head-sheet-color" inState:[_parentView themeState] forClass:_CPStandardWindowView]];
-    else
-        [_gradientView setBackgroundColor:[[CPTheme defaultTheme] valueForAttributeWithName:@"bezel-head-color" inState:[_parentView themeState] forClass:_CPStandardWindowView]];
+    [_gradientView setBackgroundColor:bezelHeadColor];
 
     [_solidView setFrame:CGRectMake(0.0, gradientHeight, CGRectGetWidth(bounds), CGRectGetHeight(bounds) - gradientHeight)];
     [_solidView setBackgroundColor:[[CPTheme defaultTheme] valueForAttributeWithName:@"solid-color" forClass:_CPStandardWindowView]];
