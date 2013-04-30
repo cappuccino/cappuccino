@@ -13,6 +13,7 @@
     CPWindow    wind;
     CPWindow    sheet;
     CPTextField textField;
+    CPToolbar   toolbar;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
@@ -21,9 +22,13 @@
     [wind setMinSize:CGSizeMake(300, 200)];
     [wind setTitle:@"Untitled"];
 
-    sheet = [[CPWindow alloc] initWithContentRect:CGRectMake(0, 0, 300, 100) styleMask:CPDocModalWindowMask | CPResizableWindowMask];
+    sheet = [[CPWindow alloc] initWithContentRect:CGRectMake(50, 50, 300, 100) styleMask:CPTitledWindowMask | CPResizableWindowMask];
     [sheet setMinSize:CGSizeMake(300, 100)];
     [sheet setMaxSize:CGSizeMake(600, 300)];
+
+    toolbar = [CPToolbar new];
+    [toolbar setDisplayMode:CPToolbarDisplayModeIconAndLabel]
+    [toolbar setDelegate:self];
 
     var sheetContent = [sheet contentView];
 
@@ -57,13 +62,30 @@
     [displayButton setAction:@selector(displaySheet:)];
     [[wind contentView] addSubview:displayButton];
 
+    var displayButton = [[CPButton alloc] initWithFrame:CGRectMake(160, 180, 180, buttonHeight)];
+    [displayButton setTitle:"Display Sheet with toolbar"];
+    [displayButton setTarget:self];
+    [displayButton setAction:@selector(displaySheetWithToolBar:)];
+    [[wind contentView] addSubview:displayButton];
+
     [wind orderFront:self]
+}
+
+- (void)displaySheetWithToolBar:(id)sender
+{
+    [textField setStringValue:""];
+    [sheet makeFirstResponder:textField];
+    [sheet setToolbar:toolbar];
+
+    [CPApp beginSheet:sheet modalForWindow:wind modalDelegate:self didEndSelector:@selector(didEndSheet:returnCode:contextInfo:) contextInfo:nil];
+
 }
 
 - (void)displaySheet:(id)sender
 {
     [textField setStringValue:""];
     [sheet makeFirstResponder:textField];
+    [sheet setToolbar:nil];
 
     [CPApp beginSheet:sheet modalForWindow:wind modalDelegate:self didEndSelector:@selector(didEndSheet:returnCode:contextInfo:) contextInfo:nil];
 }
@@ -81,6 +103,33 @@
 
     if (returnCode == CPOKButton && [str length] > 0)
         [wind setTitle:str];
+}
+
+- (CPArray)toolbarDefaultItemIdentifiers:(CPToolbar)toolbar
+{
+    return ["item1", "item2"];
+}
+
+- (CPArray)toolbarAllowedItemIdentifiers:(CPToolbar)toolbar
+{
+    return ["item1", "item2"];
+}
+
+- (CPToolbarItem)toolbar:(CPToolbar)toolbar itemForItemIdentifier:(CPString)itemIdentifier willBeInsertedIntoToolbar:(BOOL)flag
+{
+    var toolbarItem = [[CPToolbarItem alloc] initWithItemIdentifier:itemIdentifier];
+    if (itemIdentifier == "item1")
+    {
+        [toolbarItem setLabel:@"Color"];
+        [toolbarItem setImage:[[CPImage alloc] initWithContentsOfFile:[[CPBundle mainBundle] pathForResource:@"CPImageNameColorPanel.png"] size:CGSizeMake(26, 29)]];
+        return toolbarItem;
+    }
+    else if (itemIdentifier == "item2")
+    {
+        [toolbarItem setLabel:@"Small New"];
+        [toolbarItem setImage:[[CPImage alloc] initWithContentsOfFile:[[CPBundle mainBundle] pathForResource:@"New.png"] size:CGSizeMake(16, 16)]];
+        return toolbarItem;
+    }
 }
 
 @end
