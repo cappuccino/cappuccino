@@ -1083,7 +1083,7 @@ NOT YET IMPLEMENTED
     else
         _dirtyTableColumnRangeIndex = MIN(index, _dirtyTableColumnRangeIndex);
 
-    [self setNeedsLayout];
+    [self _reloadDataViewsImmediately];
 }
 
 /*!
