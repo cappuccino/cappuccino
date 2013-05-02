@@ -24,6 +24,7 @@
 
 var FILE = require("file"),
     OS = require("os"),
+	stream = require("narwhal/term").stream,
 
     SLASH_REPLACEMENT = "∕";  // DIVISION SLASH, Unicode: U+2215
 
@@ -46,22 +47,12 @@ var errors = [],
     {
         ClassDeclarationStatement: function(node, st, c)
         {
-            if (node.categoryname)
-            {
-                [errors addObject:@{
-                    @"message": "Categories are not supported yet, ignoring it.",
-                    @"path": node.loc.source,
-                    @"line": node.loc.start.line
-                }];
-
-                return;
-            }
-
             var className = node.classname.name,
-                superclassname = node.superclassname.name,
+                superclassname = node.superclassname ? node.superclassname.name : "",
                 declaredOutletsName = [],
                 classInfo = {
                         "name": className,
+                        "category": node.categoryname ? node.categoryname.name : "",
                         "superClass": superclassname,
                         "outlets": [],
                         "actions": [],
@@ -101,28 +92,31 @@ var errors = [],
                 methodReturnType = [node.returntype ? node.returntype.name : "id"],
                 methodHasAction = node.action ? "IBAction" : null,
                 selector = selectors[0].name,
-                actionInformations = {"name": selector, "arguments":[]};
+                actionInfo = {"name": selector, "arguments":[]};
 
-            if (methodHasAction && arguments.length == 1)
+            if (methodHasAction)
             {
-                if (st.actionNames.indexOf(selector) !== -1)
-                    raise(node.loc.start, "Action named '" + selector + "' is declared multiple times.");
-
-                st.actionNames.push(selector);
-
-                for (var i = 0; i < arguments.length; i++)
+                if (arguments.length == 1)
                 {
-                    var argument = arguments[i],
-                        argumentName = argument.identifier.name,
-                        argumentType = argument.type ? argument.type.name : null;
+                    if (st.actionNames.indexOf(selector) !== -1)
+                        raise(node.loc.start, "Action named '" + selector + "' is declared multiple times.");
 
-                    actionInformations.arguments.push({"type": argumentType, "name": argumentName});
+                    st.actionNames.push(selector);
+
+                    for (var i = 0; i < arguments.length; i++)
+                    {
+                        var argument = arguments[i],
+                            argumentName = argument.identifier.name,
+                            argumentType = argument.type ? argument.type.name : null;
+
+                        actionInfo.arguments.push({"type": argumentType, "name": argumentName});
+                    }
+
+                    st.actions.push(actionInfo)
                 }
-
-                st.actions.push(actionInformations)
+                else
+                    raise(node.loc.start, "Action methods must have exactly one parameter.");
             }
-            else if (methodHasAction)
-                raise(node.loc.start, "Method '" + selector + "' is an action but has more than one parameter.");
         }
     }
 );
@@ -137,25 +131,32 @@ function compile(node, state, visitor)
     c(node, state);
 };
 
-function shadowBaseNameForPath(path)
+function shadowBaseNameForPath(projectBasePath, path)
 {
+    // Make the path project-relative
+    path = path.substring(projectBasePath.length + 1, path.length);
+
     // strip the extension and replace slashes
     return path.substring(0, path.length - 2).replace(/[/]/g, SLASH_REPLACEMENT);
 }
 
+/*
+    $1  Project base path
+    $2  Full project source path
+*/
 function main(args)
 {
     try
     {
-        var fileURL = new CFURL(args[1]),
-            outputDirectory = args[2],
-            baseFilename = shadowBaseNameForPath(fileURL.path()),
+        var projectBasePath = args[1],
+            sourcePath = args[2],
+            outputDirectory = [projectBasePath stringByAppendingPathComponent:@".XcodeSupport"],
+            baseFilename = shadowBaseNameForPath(projectBasePath, sourcePath),
             outputHeaderURL = new CFURL([outputDirectory stringByAppendingPathComponent:baseFilename + ".h"]),
             outputImplementationURL = new CFURL([outputDirectory stringByAppendingPathComponent:baseFilename + ".m"]),
-            source = FILE.read(fileURL, { charset: "UTF-8" }),
+            source = FILE.read(sourcePath, { charset: "UTF-8" }),
             flags = ObjectiveJ.Preprocessor.Flags.IncludeDebugSymbols | ObjectiveJ.Preprocessor.Flags.IncludeTypeSignatures,
-            sourceFile = fileURL.path(),
-            tokens = ObjectiveJ.acorn.parse(source, { locations:true, sourceFile:sourceFile }),
+            tokens = ObjectiveJ.acorn.parse(source, { locations:true, sourceFile:sourcePath }),
             classesInformation = [],
             ObjectiveCSource = "",
             ObjectiveCHeader = "",
@@ -166,7 +167,6 @@ function main(args)
         // dump(classesInformation)
 
         ObjectiveCHeader +=
-            "#import <Foundation/Foundation.h>\n" +
             "#import <Cocoa/Cocoa.h>\n" +
             '#import "xcc_general_include.h"\n';
 
@@ -176,7 +176,10 @@ function main(args)
         classesInformation.forEach(function(aClass)
         {
             // add new class definition
-            ObjectiveCHeader += [CPString stringWithFormat:@"\n@interface %@ : %@", aClass.name, NSCompatibleClassName(aClass.superClass)];
+            if (aClass.superClass)
+                ObjectiveCHeader += [CPString stringWithFormat:@"\n@interface %@ : %@", aClass.name, NSCompatibleClassName(aClass.superClass)];
+            else
+                ObjectiveCHeader += [CPString stringWithFormat:@"\n@interface %@ (%@)", aClass.name, aClass.category];
 
             // add each outlet in header
             if (aClass.outlets.length > 0)
@@ -215,10 +218,10 @@ function main(args)
     {
         [errors addObject:@{
             @"message": e.message,
-            @"path": sourceFile,
+            @"path": sourcePath,
             @"line": e.line
         }];
-        
+
         hasErrors = YES;
     }
 
@@ -226,8 +229,8 @@ function main(args)
     {
         var plist = [CPPropertyListSerialization dataFromPropertyList:errors format:CPPropertyListXMLFormat_v1_0];
 
-        print([plist rawString]);
-        
+        stream.printError([plist rawString]);
+
         // If there were category warnings, hasErrors is NO, so return a warning status
         OS.exit(hasErrors ? 1 : 2);
     }
@@ -567,6 +570,7 @@ var NSClasses = {
         "NSStepper" : YES,
         "NSStepperCell" : YES,
         "NSString Application Kit Additions" : YES,
+        "NSTableCellView" : YES,
         "NSTableColumn" : YES,
         "NSTableHeaderCell" : YES,
         "NSTableHeaderView" : YES,

@@ -18,8 +18,9 @@
 
 #import <Cocoa/Cocoa.h>
 #import <CoreServices/CoreServices.h>
+#import <Quartz/Quartz.h>
 
-#import "TNXcodeCapp.h"
+@class XcodeCapp;
 
 @interface AppController : NSObject <NSApplicationDelegate, NSMenuDelegate>
 
@@ -32,16 +33,18 @@
 @property (strong) IBOutlet NSWindow   *preferencesWindow;
 
 @property (strong) IBOutlet NSWindow   *helpWindow;
-@property (assign) IBOutlet NSTextView *helpTextView;
+@property (assign) IBOutlet PDFView    *helpView;
 
-@property (strong) IBOutlet NSUserDefaultsController	*preferencesController;
-@property (strong) IBOutlet TNXcodeCapp                	*xcc;
+@property (strong) IBOutlet NSUserDefaultsController    *preferencesController;
+@property (strong) IBOutlet XcodeCapp                   *xcc;
 
 + (AppController *)sharedAppController;
 
-- (IBAction)listenToProject:(id)aSender;
+- (IBAction)loadProject:(id)aSender;
 - (IBAction)openHelp:(id)aSender;
 - (IBAction)openAbout:(id)aSender;
+
+- (void)loadProjectAtPath:(NSString *)path;
 
 @end
 

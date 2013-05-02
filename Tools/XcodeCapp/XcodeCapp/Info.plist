@@ -30,5 +30,7 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>XCCCompatibilityVersion</key>
+	<real>3</real>
 </dict>
 </plist>
