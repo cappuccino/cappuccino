@@ -8,7 +8,7 @@
 {
     var colors = ['000000', '0099CC', '7E8EAB', 'FFFFFF'];
     for (var i = 0; i < colors.length; ++i)
-        [self assert: colors[i] equals: [[CPColor colorWithHexString: colors[i]] hexString]];
+        [self assert:colors[i] equals:[[CPColor colorWithHexString:colors[i]] hexString]];
 }
 
 - (void)testColorWithCSSString
@@ -19,6 +19,33 @@
     [self assert:64 equals:ROUND([rgbaColour greenComponent] * 255) message:"green component"];
     [self assert:128 equals:ROUND([rgbaColour blueComponent] * 255) message:"blue component"];
     [self assert:128 equals:ROUND([rgbaColour alphaComponent] * 255) message:"alpha component"];
+}
+
+- (void)testColorWithHue_saturation_brightness_
+{
+    var tests = [
+            [[0, 0, 0], [0, 0, 0]],
+            [[0, 0, 1], [1, 1, 1]],
+            [[0, 1, 1], [1, 0, 0]],
+            [[0.75, 1, 1], [0.5, 0, 1]],
+            [[0.5, 0.5, 0.5], [0.25, 0.5, 0.5]],
+            [[0.9, 0.8, 0.7], [0.7, 0.14, 0.476]]
+        ];
+
+    for (var i = 0; i < tests.length; i++)
+    {
+        var test = tests[i],
+            input = test[0],
+            expected = test[1],
+            c = [CPColor colorWithCalibratedHue:input[0] saturation:input[1] brightness:input[2] alpha:0.5];
+        [self assert:expected equals:[Math.round([c redComponent] * 1000) / 1000, Math.round([c greenComponent] * 1000) / 1000, Math.round([c blueComponent] * 1000) / 1000] message:@"hue: " + input[0] + " saturation: " + input[1] + " brightness: " + input[2]];
+    }
+
+    var hsb = [[CPColor colorWithHue:0.9 saturation:0.8 brightness:0.7] hsbComponents];
+    [self assert:[0.9, 0.8, 0.7] equals:[Math.round(hsb[0] * 10) / 10, Math.round(hsb[1] * 10) / 10, Math.round(hsb[2] * 10) / 10]];
+
+    hsb = [[CPColor colorWithHue:0.999 saturation:0.8 brightness:0.7] hsbComponents];
+    [self assert:[0.999, 0.8, 0.7] equals:[Math.round(hsb[0] * 1000) / 1000, Math.round(hsb[1] * 10) / 10, Math.round(hsb[2] * 10) / 10]];
 }
 
 - (void)testIsEqual_

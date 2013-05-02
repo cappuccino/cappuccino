@@ -72,6 +72,22 @@ if (input == nil)
 }
 
 /*!
+    Raises an exception with a name and a formatted reason.
+    @param aName the name of the exception to raise
+    @param aFormat the reason for the exception in sprintf style
+    @param ... the arguments for the sprintf format
+*/
++ (void)raise:(CPString)aName format:(CPString)aFormat, ...
+{
+    if (!aFormat)
+        [CPException raise:CPInvalidArgumentException
+                    reason:"raise:format: the format can't be 'nil'"];
+
+    var aReason = ObjectiveJ.sprintf.apply(this, Array.prototype.slice.call(arguments, 3));
+    [[self exceptionWithName:aName reason:aReason userInfo:nil] raise];
+}
+
+/*!
     Creates an exception with a name, reason and user info.
     @param aName the name of the exception
     @param aReason the reason the exception occurred

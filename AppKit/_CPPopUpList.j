@@ -26,6 +26,7 @@
 @import "_CPPopUpListDataSource.j"
 
 @class CPScrollView
+@class CPApp
 
 @global CPLineBorder
 
@@ -857,6 +858,8 @@ var _CPPopUpListDataSourceKey   = @"_CPPopUpListDataSourceKey",
     if (self = [super initWithContentRect:aContentRect styleMask:aStyleMask])
         _constrainsToUsableScreen = NO;
 
+	[self _trapNextMouseDown];
+
     return self;
 }
 
@@ -868,6 +871,30 @@ var _CPPopUpListDataSourceKey   = @"_CPPopUpListDataSourceKey",
         [[self delegate] setListWasClicked:YES];
 
     return [super sendEvent:anEvent];
+}
+
+- (void)orderFront:(id)sender
+{
+	[self _trapNextMouseDown];
+	[super orderFront:sender];
+}
+
+- (void)_mouseWasClicked:(CPEvent)anEvent
+{
+	var mouseWindow = [anEvent window],
+		rect = [[[self delegate] dataSource] bounds],
+		point = [[[self delegate] dataSource] convertPoint:[anEvent locationInWindow] fromView:nil];
+
+	if (mouseWindow != self && !CGRectContainsPoint(rect, point))
+		[[self delegate] close];
+	else if ([mouseWindow firstResponder] == [[self delegate] dataSource])
+		[self _trapNextMouseDown];
+}
+
+- (void)_trapNextMouseDown
+{
+    // Don't dequeue the event so clicks in controls will work
+    [CPApp setTarget:self selector:@selector(_mouseWasClicked:) forNextEventMatchingMask:CPLeftMouseDownMask untilDate:nil inMode:CPDefaultRunLoopMode dequeue:NO];
 }
 
 @end

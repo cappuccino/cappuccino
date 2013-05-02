@@ -15,6 +15,8 @@
     BOOL    saveDocumentWasCalled;
     BOOL    saveDocumentAsWasCalled;
     BOOL    undoWasCalled;
+
+    CPMenuItem anInstantiatedMenuItem;
 }
 
 - (void)setUp
@@ -67,6 +69,10 @@
 
     [menu addItem:editMenuItem];
     [menu addItem:[CPMenuItem separatorItem]];
+
+    // Test Issue 1899
+    anInstantiatedMenuItem = [[CPMenuItem alloc] initWithTitle:@"Highlight" action:nil keyEquivalent:@""];
+    [menu addItem:anInstantiatedMenuItem];
 }
 
 - (void)_retarget:(CPMenuItem)aMenu
@@ -80,6 +86,47 @@
         [item setTarget:self];
         [self _retarget:[item submenu]];
     }
+}
+
+- (void)testRemoveAllItemsHighlighting
+{
+    // hack it so that this menu item is highlighted
+    [menu _highlightItemAtIndex:[menu indexOfItem:anInstantiatedMenuItem]];
+
+    // test both the public isHighlighted method, as well as the underlying view highlighting
+    [self assertTrue:[anInstantiatedMenuItem isHighlighted]];
+    [self assertTrue:[[[anInstantiatedMenuItem _menuItemView] view] isHighlighted] message:@"Underlying view was not highlighted in removeAll"];
+
+    [menu removeAllItems];
+
+    [self assertFalse:[anInstantiatedMenuItem isHighlighted]];
+    [self assertFalse:[[[anInstantiatedMenuItem _menuItemView] view] isHighlighted] message:@"Underlying view was still highlighted after removeAll"];
+}
+
+- (void)testRemoveOneItemHighlighting
+{
+    [menu _highlightItemAtIndex:[menu indexOfItem:anInstantiatedMenuItem]];
+
+    [self assertTrue:[anInstantiatedMenuItem isHighlighted]];
+    [self assertTrue:[[[anInstantiatedMenuItem _menuItemView] view] isHighlighted] message:@"Underlying view was not highlighted in removeItem"];
+
+    [menu removeItem:anInstantiatedMenuItem];
+
+    [self assertFalse:[anInstantiatedMenuItem isHighlighted]];
+    [self assertFalse:[[[anInstantiatedMenuItem _menuItemView] view] isHighlighted] message:@"Underlying view was still highlighted after removeItem"];
+}
+
+- (void)testRemoveOneItemByIndexHighlighting
+{
+    [menu _highlightItemAtIndex:[menu indexOfItem:anInstantiatedMenuItem]];
+
+    [self assertTrue:[anInstantiatedMenuItem isHighlighted]];
+    [self assertTrue:[[[anInstantiatedMenuItem _menuItemView] view] isHighlighted] message:@"Underlying view was not highlighted in removeItemAtIndex"];
+
+    [menu removeItemAtIndex:[menu indexOfItem:anInstantiatedMenuItem]];
+
+    [self assertFalse:[anInstantiatedMenuItem isHighlighted]];
+    [self assertFalse:[[[anInstantiatedMenuItem _menuItemView] view] isHighlighted] message:@"Underlying view was still highlighted after removeItemAtIndex"];
 }
 
 - (void)testKeyEquivalent

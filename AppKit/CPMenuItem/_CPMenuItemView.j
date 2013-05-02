@@ -34,7 +34,7 @@
 @implementation _CPMenuItemView : CPView
 {
     CPMenuItem              _menuItem;
-    CPView                  _view;
+    CPView                  _view       @accessors(property=view, readonly);
 
     CPFont                  _font;
     CPColor                 _textColor;
