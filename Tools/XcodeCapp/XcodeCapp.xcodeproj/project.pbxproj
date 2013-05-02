@@ -7,8 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		E100444B172E25690062E953 /* DDLog.m in Sources */ = {isa = PBXBuildFile; fileRef = E1004448172E25690062E953 /* DDLog.m */; };
-		E100444C172E25690062E953 /* DDTTYLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = E100444A172E25690062E953 /* DDTTYLogger.m */; };
 		E10E4CD717298E5F004AB09E /* project.pbxproj in Resources */ = {isa = PBXBuildFile; fileRef = E164FE2A172188F300263CE3 /* project.pbxproj */; };
 		E164FDD31720E77100263CE3 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E164FDD21720E77100263CE3 /* Cocoa.framework */; };
 		E164FDDF1720E77100263CE3 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = E164FDDE1720E77100263CE3 /* main.m */; };
@@ -36,6 +34,9 @@
 		E17A822D172700B90095CD83 /* XcodeCapp.iconset in Resources */ = {isa = PBXBuildFile; fileRef = E17A822C172700B90095CD83 /* XcodeCapp.iconset */; };
 		E17B55411732F57700809FFB /* Quartz.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E17B55401732F57700809FFB /* Quartz.framework */; };
 		E17B55431732F72700809FFB /* help.pdf in Resources */ = {isa = PBXBuildFile; fileRef = E17B55421732F72700809FFB /* help.pdf */; };
+		E17B554D17330E2800809FFB /* DDASLLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = E17B554817330E2800809FFB /* DDASLLogger.m */; };
+		E17B554E17330E2800809FFB /* DDLog.m in Sources */ = {isa = PBXBuildFile; fileRef = E17B554A17330E2800809FFB /* DDLog.m */; };
+		E17B554F17330E2800809FFB /* DDTTYLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = E17B554C17330E2800809FFB /* DDTTYLogger.m */; };
 		E1A5594A172C5EE20088FB61 /* FindSourceFilesOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = E1A55949172C5EE20088FB61 /* FindSourceFilesOperation.m */; };
 		E1A5594D172CA8D40088FB61 /* ProcessSourceOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = E1A5594C172CA8D40088FB61 /* ProcessSourceOperation.m */; };
 		E1A55954172CBA8E0088FB61 /* Notifications.m in Sources */ = {isa = PBXBuildFile; fileRef = E1A55953172CBA8E0088FB61 /* Notifications.m */; };
@@ -68,10 +69,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		E1004447172E25690062E953 /* DDLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; name = DDLog.h; path = ../../../../../Cocoa/CocoaLumberjack/Lumberjack/DDLog.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
-		E1004448172E25690062E953 /* DDLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; name = DDLog.m; path = ../../../../../Cocoa/CocoaLumberjack/Lumberjack/DDLog.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
-		E1004449172E25690062E953 /* DDTTYLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; name = DDTTYLogger.h; path = ../../../../../Cocoa/CocoaLumberjack/Lumberjack/DDTTYLogger.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
-		E100444A172E25690062E953 /* DDTTYLogger.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DDTTYLogger.m; path = ../../../../../Cocoa/CocoaLumberjack/Lumberjack/DDTTYLogger.m; sourceTree = "<group>"; };
 		E132ED991724B71600D870AE /* XcodeCapp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XcodeCapp.h; sourceTree = "<group>"; };
 		E132ED9A1724B71D00D870AE /* AppController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppController.h; sourceTree = "<group>"; };
 		E164FDCF1720E77100263CE3 /* XcodeCapp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = XcodeCapp.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -107,6 +104,12 @@
 		E17A822C172700B90095CD83 /* XcodeCapp.iconset */ = {isa = PBXFileReference; lastKnownFileType = folder.iconset; name = XcodeCapp.iconset; path = Resources/XcodeCapp.iconset; sourceTree = "<group>"; };
 		E17B55401732F57700809FFB /* Quartz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Quartz.framework; path = System/Library/Frameworks/Quartz.framework; sourceTree = SDKROOT; };
 		E17B55421732F72700809FFB /* help.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; name = help.pdf; path = Resources/help.pdf; sourceTree = "<group>"; };
+		E17B554717330E2800809FFB /* DDASLLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DDASLLogger.h; sourceTree = "<group>"; };
+		E17B554817330E2800809FFB /* DDASLLogger.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DDASLLogger.m; sourceTree = "<group>"; };
+		E17B554917330E2800809FFB /* DDLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DDLog.h; sourceTree = "<group>"; };
+		E17B554A17330E2800809FFB /* DDLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DDLog.m; sourceTree = "<group>"; };
+		E17B554B17330E2800809FFB /* DDTTYLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DDTTYLogger.h; sourceTree = "<group>"; };
+		E17B554C17330E2800809FFB /* DDTTYLogger.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DDTTYLogger.m; sourceTree = "<group>"; };
 		E1A55948172C5EE20088FB61 /* FindSourceFilesOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = FindSourceFilesOperation.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		E1A55949172C5EE20088FB61 /* FindSourceFilesOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = FindSourceFilesOperation.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		E1A5594B172CA8D40088FB61 /* ProcessSourceOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProcessSourceOperation.h; sourceTree = "<group>"; };
@@ -133,17 +136,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		E1004446172E252C0062E953 /* Lumberjack (logging) */ = {
-			isa = PBXGroup;
-			children = (
-				E1004447172E25690062E953 /* DDLog.h */,
-				E1004448172E25690062E953 /* DDLog.m */,
-				E1004449172E25690062E953 /* DDTTYLogger.h */,
-				E100444A172E25690062E953 /* DDTTYLogger.m */,
-			);
-			name = "Lumberjack (logging)";
-			sourceTree = "<group>";
-		};
 		E164FDC61720E77100263CE3 = {
 			isa = PBXGroup;
 			children = (
@@ -197,8 +189,8 @@
 				E1A55953172CBA8E0088FB61 /* Notifications.m */,
 				E1E167EF172F3B20003198BA /* DDLogLevel.h */,
 				E1E167F0172F3B20003198BA /* DDLogLevel.m */,
+				E17B554617330E2800809FFB /* Lumberjack */,
 				E164FE121720F3E100263CE3 /* Scripts */,
-				E1004446172E252C0062E953 /* Lumberjack (logging) */,
 				E164FE071720F25400263CE3 /* Resources */,
 				E164FDD91720E77100263CE3 /* Supporting Files */,
 			);
@@ -246,6 +238,19 @@
 				E164FE131720F40400263CE3 /* mod_pbxproj.py */,
 			);
 			path = Scripts;
+			sourceTree = "<group>";
+		};
+		E17B554617330E2800809FFB /* Lumberjack */ = {
+			isa = PBXGroup;
+			children = (
+				E17B554717330E2800809FFB /* DDASLLogger.h */,
+				E17B554817330E2800809FFB /* DDASLLogger.m */,
+				E17B554917330E2800809FFB /* DDLog.h */,
+				E17B554A17330E2800809FFB /* DDLog.m */,
+				E17B554B17330E2800809FFB /* DDTTYLogger.h */,
+				E17B554C17330E2800809FFB /* DDTTYLogger.m */,
+			);
+			path = Lumberjack;
 			sourceTree = "<group>";
 		};
 		E1A55947172C5EA80088FB61 /* Operations */ = {
@@ -344,9 +349,10 @@
 				E1A5594A172C5EE20088FB61 /* FindSourceFilesOperation.m in Sources */,
 				E1A5594D172CA8D40088FB61 /* ProcessSourceOperation.m in Sources */,
 				E1A55954172CBA8E0088FB61 /* Notifications.m in Sources */,
-				E100444B172E25690062E953 /* DDLog.m in Sources */,
-				E100444C172E25690062E953 /* DDTTYLogger.m in Sources */,
 				E1E167F1172F3B20003198BA /* DDLogLevel.m in Sources */,
+				E17B554D17330E2800809FFB /* DDASLLogger.m in Sources */,
+				E17B554E17330E2800809FFB /* DDLog.m in Sources */,
+				E17B554F17330E2800809FFB /* DDTTYLogger.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

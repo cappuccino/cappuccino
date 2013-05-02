@@ -145,6 +145,7 @@ AppController *SharedAppControllerInstance = nil;
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
 
     [defaults registerDefaults:appDefaults];
+    [defaults synchronize];
 
     [defaults addObserver:self
                forKeyPath:kDefaultMaxRecentProjects
