@@ -32,5 +32,12 @@
 	<string>NSApplication</string>
 	<key>XCCCompatibilityVersion</key>
 	<real>3</real>
+	<key>XCCMandatoryExecutables</key>
+	<array>
+		<string>python</string>
+		<string>narwhal-jsc</string>
+		<string>objj</string>
+		<string>nib2cib</string>
+	</array>
 </dict>
 </plist>

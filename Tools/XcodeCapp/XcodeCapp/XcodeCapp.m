@@ -81,12 +81,14 @@ static NSString * const XCCSlashReplacement = @"∕";  // DIVISION SLASH, Unicod
 // When scanning the project, we immediately ignore directories that match this regex.
 static NSString * const XCCDirectoriesToIgnorePattern = @"^(?:Build|F(?:rameworks|oundation)|AppKit|Objective-J|(?:Browser|CommonJS)\\.environment|Resources|XcodeSupport|.+\\.xcodeproj)$";
 
+// The key for an Info.plist array of the mandatory executables XCC needs.
+static NSString * const XCCMandatoryExecutablesKey = @"XCCMandatoryExecutables";
+
 // The regex above is used with this predicate for testing.
 static NSPredicate * XCCDirectoriesToIgnorePredicate = nil;
 
 // An array of the default predicates used to ignore paths.
 static NSArray *XCCDefaultIgnoredPathPredicates = nil;
-
 
 @interface XcodeCapp ()
 
@@ -1195,7 +1197,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
 
 - (BOOL)executablesAreAccessible
 {
-    NSArray *executables = @[@"python", @"jsc", @"objj", @"nib2cib"];
+    NSArray *executables = [[NSBundle mainBundle] objectForInfoDictionaryKey:XCCMandatoryExecutablesKey];
 
     for (NSString *executable in executables)
     {
