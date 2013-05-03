@@ -41,6 +41,8 @@
 		E1A5594D172CA8D40088FB61 /* ProcessSourceOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = E1A5594C172CA8D40088FB61 /* ProcessSourceOperation.m */; };
 		E1A55954172CBA8E0088FB61 /* Notifications.m in Sources */ = {isa = PBXBuildFile; fileRef = E1A55953172CBA8E0088FB61 /* Notifications.m */; };
 		E1E167F1172F3B20003198BA /* DDLogLevel.m in Sources */ = {isa = PBXBuildFile; fileRef = E1E167F0172F3B20003198BA /* DDLogLevel.m */; };
+		E1ED6B71173414E100641628 /* icon_128x128.png in Resources */ = {isa = PBXBuildFile; fileRef = E1ED6B6F173414E100641628 /* icon_128x128.png */; };
+		E1ED6B72173414E100641628 /* icon_128x128@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E1ED6B70173414E100641628 /* icon_128x128@2x.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -119,6 +121,8 @@
 		E1DD4DF517282BFC0063C0D7 /* UserDefaults.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = UserDefaults.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		E1E167EF172F3B20003198BA /* DDLogLevel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = DDLogLevel.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		E1E167F0172F3B20003198BA /* DDLogLevel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = DDLogLevel.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
+		E1ED6B6F173414E100641628 /* icon_128x128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = icon_128x128.png; path = Resources/icon_128x128.png; sourceTree = "<group>"; };
+		E1ED6B70173414E100641628 /* icon_128x128@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "icon_128x128@2x.png"; path = "Resources/icon_128x128@2x.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -213,6 +217,8 @@
 		E164FE071720F25400263CE3 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				E1ED6B6F173414E100641628 /* icon_128x128.png */,
+				E1ED6B70173414E100641628 /* icon_128x128@2x.png */,
 				E164FDE71720E77100263CE3 /* MainMenu.xib */,
 				E164FE2D1721A34900263CE3 /* icon-inactive.png */,
 				E170C40117298833003DC489 /* icon-inactive@2x.png */,
@@ -332,6 +338,8 @@
 				E170C40617298833003DC489 /* icon-inactive@2x.png in Resources */,
 				E170C40717298833003DC489 /* icon-working@2x.png in Resources */,
 				E17B55431732F72700809FFB /* help.pdf in Resources */,
+				E1ED6B71173414E100641628 /* icon_128x128.png in Resources */,
+				E1ED6B72173414E100641628 /* icon_128x128@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -383,6 +391,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = E164FDEF1720E7FA00263CE3 /* Debug.xcconfig */;
 			buildSettings = {
+				DSTROOT = "$(HOME)";
 			};
 			name = Debug;
 		};
@@ -391,6 +400,8 @@
 			baseConfigurationReference = E164FDF01720E7FA00263CE3 /* Release.xcconfig */;
 			buildSettings = {
 				COPY_PHASE_STRIP = NO;
+				DEPLOYMENT_LOCATION = YES;
+				DSTROOT = "$(HOME)";
 			};
 			name = Release;
 		};
