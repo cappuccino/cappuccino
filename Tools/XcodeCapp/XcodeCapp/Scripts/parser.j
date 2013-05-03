@@ -71,7 +71,7 @@ var errors = [],
                     if (ivarHasOutlet)
                     {
                         if (declaredOutletsName.indexOf(ivarName) !== -1)
-                            raise(ivarDecl.loc.start, "Outlet named '" + ivarName + "' is declared multiple times.");
+                            raise(ivarDecl.loc.start, "Outlet '" + ivarName + "' declared more than once");
 
                         declaredOutletsName.push(ivarName);
                         classInfo.outlets.push({"type": ivarType, "name": ivarName});
@@ -99,7 +99,7 @@ var errors = [],
                 if (arguments.length == 1)
                 {
                     if (st.actionNames.indexOf(selector) !== -1)
-                        raise(node.loc.start, "Action named '" + selector + "' is declared multiple times.");
+                        raise(node.loc.start, "Action '" + selector + "' declared more than once");
 
                     st.actionNames.push(selector);
 
@@ -115,7 +115,7 @@ var errors = [],
                     st.actions.push(actionInfo)
                 }
                 else
-                    raise(node.loc.start, "Action methods must have exactly one parameter.");
+                    raise(node.loc.start, "Action methods must have exactly one parameter");
             }
         }
     }
