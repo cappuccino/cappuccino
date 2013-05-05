@@ -391,7 +391,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = E164FDEF1720E7FA00263CE3 /* Debug.xcconfig */;
 			buildSettings = {
-				DSTROOT = "$(HOME)";
+				DSTROOT = /;
 			};
 			name = Debug;
 		};
@@ -401,7 +401,7 @@
 			buildSettings = {
 				COPY_PHASE_STRIP = NO;
 				DEPLOYMENT_LOCATION = YES;
-				DSTROOT = "$(HOME)";
+				DSTROOT = /;
 			};
 			name = Release;
 		};
