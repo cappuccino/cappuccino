@@ -14,7 +14,6 @@
 		E164FDF51720EBC100263CE3 /* AppController.m in Sources */ = {isa = PBXBuildFile; fileRef = E164FDF41720EBC100263CE3 /* AppController.m */; };
 		E164FDF71720EBD600263CE3 /* Growl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E164FDF61720EBD600263CE3 /* Growl.framework */; };
 		E164FDFF1720EC5B00263CE3 /* XcodeCapp.m in Sources */ = {isa = PBXBuildFile; fileRef = E164FDFB1720EC5B00263CE3 /* XcodeCapp.m */; };
-		E164FE001720EC5B00263CE3 /* UserDefaults.m in Sources */ = {isa = PBXBuildFile; fileRef = E164FDFD1720EC5B00263CE3 /* UserDefaults.m */; };
 		E164FE061720ED4500263CE3 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = E164FE041720ED4400263CE3 /* InfoPlist.strings */; };
 		E164FE181720F44B00263CE3 /* parser.j in Resources */ = {isa = PBXBuildFile; fileRef = E164FE171720F44B00263CE3 /* parser.j */; };
 		E164FE1A1720F49A00263CE3 /* Growl Registration Ticket.growlRegDict in Resources */ = {isa = PBXBuildFile; fileRef = E164FE191720F49A00263CE3 /* Growl Registration Ticket.growlRegDict */; };
@@ -34,13 +33,14 @@
 		E17A822D172700B90095CD83 /* XcodeCapp.iconset in Resources */ = {isa = PBXBuildFile; fileRef = E17A822C172700B90095CD83 /* XcodeCapp.iconset */; };
 		E17B55411732F57700809FFB /* Quartz.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E17B55401732F57700809FFB /* Quartz.framework */; };
 		E17B55431732F72700809FFB /* help.pdf in Resources */ = {isa = PBXBuildFile; fileRef = E17B55421732F72700809FFB /* help.pdf */; };
-		E17B554D17330E2800809FFB /* DDASLLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = E17B554817330E2800809FFB /* DDASLLogger.m */; };
-		E17B554E17330E2800809FFB /* DDLog.m in Sources */ = {isa = PBXBuildFile; fileRef = E17B554A17330E2800809FFB /* DDLog.m */; };
-		E17B554F17330E2800809FFB /* DDTTYLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = E17B554C17330E2800809FFB /* DDTTYLogger.m */; };
 		E1A5594A172C5EE20088FB61 /* FindSourceFilesOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = E1A55949172C5EE20088FB61 /* FindSourceFilesOperation.m */; };
 		E1A5594D172CA8D40088FB61 /* ProcessSourceOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = E1A5594C172CA8D40088FB61 /* ProcessSourceOperation.m */; };
-		E1A55954172CBA8E0088FB61 /* Notifications.m in Sources */ = {isa = PBXBuildFile; fileRef = E1A55953172CBA8E0088FB61 /* Notifications.m */; };
-		E1E167F1172F3B20003198BA /* DDLogLevel.m in Sources */ = {isa = PBXBuildFile; fileRef = E1E167F0172F3B20003198BA /* DDLogLevel.m */; };
+		E1E90C411735D846005C6D5B /* DDLogLevel.m in Sources */ = {isa = PBXBuildFile; fileRef = E1E90C391735D846005C6D5B /* DDLogLevel.m */; };
+		E1E90C421735D846005C6D5B /* Notifications.m in Sources */ = {isa = PBXBuildFile; fileRef = E1E90C3C1735D846005C6D5B /* Notifications.m */; };
+		E1E90C431735D846005C6D5B /* UserDefaults.m in Sources */ = {isa = PBXBuildFile; fileRef = E1E90C3F1735D846005C6D5B /* UserDefaults.m */; };
+		E1E90C4B1735D8A1005C6D5B /* DDASLLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = E1E90C461735D8A1005C6D5B /* DDASLLogger.m */; };
+		E1E90C4C1735D8A1005C6D5B /* DDLog.m in Sources */ = {isa = PBXBuildFile; fileRef = E1E90C481735D8A1005C6D5B /* DDLog.m */; };
+		E1E90C4D1735D8A1005C6D5B /* DDTTYLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = E1E90C4A1735D8A1005C6D5B /* DDTTYLogger.m */; };
 		E1ED6B71173414E100641628 /* icon_128x128.png in Resources */ = {isa = PBXBuildFile; fileRef = E1ED6B6F173414E100641628 /* icon_128x128.png */; };
 		E1ED6B72173414E100641628 /* icon_128x128@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E1ED6B70173414E100641628 /* icon_128x128@2x.png */; };
 /* End PBXBuildFile section */
@@ -71,8 +71,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		E132ED991724B71600D870AE /* XcodeCapp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XcodeCapp.h; sourceTree = "<group>"; };
-		E132ED9A1724B71D00D870AE /* AppController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppController.h; sourceTree = "<group>"; };
 		E164FDCF1720E77100263CE3 /* XcodeCapp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = XcodeCapp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E164FDD21720E77100263CE3 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		E164FDD51720E77100263CE3 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -87,7 +85,6 @@
 		E164FDF41720EBC100263CE3 /* AppController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = AppController.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		E164FDF61720EBD600263CE3 /* Growl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Growl.framework; path = XcodeCapp/Growl.framework; sourceTree = SOURCE_ROOT; };
 		E164FDFB1720EC5B00263CE3 /* XcodeCapp.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = XcodeCapp.m; sourceTree = "<group>"; usesTabs = 0; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
-		E164FDFD1720EC5B00263CE3 /* UserDefaults.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = UserDefaults.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		E164FE051720ED4500263CE3 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = XcodeCapp/en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		E164FE131720F40400263CE3 /* mod_pbxproj.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = mod_pbxproj.py; sourceTree = "<group>"; };
 		E164FE141720F40400263CE3 /* pbxprojModifier.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = pbxprojModifier.py; sourceTree = "<group>"; };
@@ -106,21 +103,24 @@
 		E17A822C172700B90095CD83 /* XcodeCapp.iconset */ = {isa = PBXFileReference; lastKnownFileType = folder.iconset; name = XcodeCapp.iconset; path = Resources/XcodeCapp.iconset; sourceTree = "<group>"; };
 		E17B55401732F57700809FFB /* Quartz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Quartz.framework; path = System/Library/Frameworks/Quartz.framework; sourceTree = SDKROOT; };
 		E17B55421732F72700809FFB /* help.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; name = help.pdf; path = Resources/help.pdf; sourceTree = "<group>"; };
-		E17B554717330E2800809FFB /* DDASLLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DDASLLogger.h; sourceTree = "<group>"; };
-		E17B554817330E2800809FFB /* DDASLLogger.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DDASLLogger.m; sourceTree = "<group>"; };
-		E17B554917330E2800809FFB /* DDLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DDLog.h; sourceTree = "<group>"; };
-		E17B554A17330E2800809FFB /* DDLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DDLog.m; sourceTree = "<group>"; };
-		E17B554B17330E2800809FFB /* DDTTYLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DDTTYLogger.h; sourceTree = "<group>"; };
-		E17B554C17330E2800809FFB /* DDTTYLogger.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DDTTYLogger.m; sourceTree = "<group>"; };
-		E1A55948172C5EE20088FB61 /* FindSourceFilesOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = FindSourceFilesOperation.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		E1A55949172C5EE20088FB61 /* FindSourceFilesOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = FindSourceFilesOperation.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
-		E1A5594B172CA8D40088FB61 /* ProcessSourceOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProcessSourceOperation.h; sourceTree = "<group>"; };
 		E1A5594C172CA8D40088FB61 /* ProcessSourceOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = ProcessSourceOperation.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
-		E1A55952172CBA6E0088FB61 /* Notifications.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Notifications.h; sourceTree = "<group>"; };
-		E1A55953172CBA8E0088FB61 /* Notifications.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Notifications.m; sourceTree = "<group>"; };
-		E1DD4DF517282BFC0063C0D7 /* UserDefaults.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = UserDefaults.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
-		E1E167EF172F3B20003198BA /* DDLogLevel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = DDLogLevel.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
-		E1E167F0172F3B20003198BA /* DDLogLevel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = DDLogLevel.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
+		E1E90C371735D82B005C6D5B /* AppController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppController.h; sourceTree = "<group>"; };
+		E1E90C381735D846005C6D5B /* DDLogLevel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DDLogLevel.h; sourceTree = "<group>"; };
+		E1E90C391735D846005C6D5B /* DDLogLevel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DDLogLevel.m; sourceTree = "<group>"; };
+		E1E90C3A1735D846005C6D5B /* FindSourceFilesOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FindSourceFilesOperation.h; sourceTree = "<group>"; };
+		E1E90C3B1735D846005C6D5B /* Notifications.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Notifications.h; sourceTree = "<group>"; };
+		E1E90C3C1735D846005C6D5B /* Notifications.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Notifications.m; sourceTree = "<group>"; };
+		E1E90C3D1735D846005C6D5B /* ProcessSourceOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProcessSourceOperation.h; sourceTree = "<group>"; };
+		E1E90C3E1735D846005C6D5B /* UserDefaults.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UserDefaults.h; sourceTree = "<group>"; };
+		E1E90C3F1735D846005C6D5B /* UserDefaults.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UserDefaults.m; sourceTree = "<group>"; };
+		E1E90C401735D846005C6D5B /* XcodeCapp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XcodeCapp.h; sourceTree = "<group>"; };
+		E1E90C451735D8A1005C6D5B /* DDASLLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DDASLLogger.h; sourceTree = "<group>"; };
+		E1E90C461735D8A1005C6D5B /* DDASLLogger.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DDASLLogger.m; sourceTree = "<group>"; };
+		E1E90C471735D8A1005C6D5B /* DDLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DDLog.h; sourceTree = "<group>"; };
+		E1E90C481735D8A1005C6D5B /* DDLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DDLog.m; sourceTree = "<group>"; };
+		E1E90C491735D8A1005C6D5B /* DDTTYLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DDTTYLogger.h; sourceTree = "<group>"; };
+		E1E90C4A1735D8A1005C6D5B /* DDTTYLogger.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DDTTYLogger.m; sourceTree = "<group>"; };
 		E1ED6B6F173414E100641628 /* icon_128x128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = icon_128x128.png; path = Resources/icon_128x128.png; sourceTree = "<group>"; };
 		E1ED6B70173414E100641628 /* icon_128x128@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "icon_128x128@2x.png"; path = "Resources/icon_128x128@2x.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -183,17 +183,17 @@
 			isa = PBXGroup;
 			children = (
 				E164FDF41720EBC100263CE3 /* AppController.m */,
-				E132ED9A1724B71D00D870AE /* AppController.h */,
+				E1E90C371735D82B005C6D5B /* AppController.h */,
 				E164FDFB1720EC5B00263CE3 /* XcodeCapp.m */,
-				E132ED991724B71600D870AE /* XcodeCapp.h */,
+				E1E90C401735D846005C6D5B /* XcodeCapp.h */,
+				E1E90C3C1735D846005C6D5B /* Notifications.m */,
+				E1E90C3B1735D846005C6D5B /* Notifications.h */,
+				E1E90C3F1735D846005C6D5B /* UserDefaults.m */,
+				E1E90C3E1735D846005C6D5B /* UserDefaults.h */,
+				E1E90C391735D846005C6D5B /* DDLogLevel.m */,
+				E1E90C381735D846005C6D5B /* DDLogLevel.h */,
 				E1A55947172C5EA80088FB61 /* Operations */,
-				E164FDFD1720EC5B00263CE3 /* UserDefaults.m */,
-				E1DD4DF517282BFC0063C0D7 /* UserDefaults.h */,
-				E1A55952172CBA6E0088FB61 /* Notifications.h */,
-				E1A55953172CBA8E0088FB61 /* Notifications.m */,
-				E1E167EF172F3B20003198BA /* DDLogLevel.h */,
-				E1E167F0172F3B20003198BA /* DDLogLevel.m */,
-				E17B554617330E2800809FFB /* Lumberjack */,
+				E1E90C441735D8A1005C6D5B /* Lumberjack */,
 				E164FE121720F3E100263CE3 /* Scripts */,
 				E164FE071720F25400263CE3 /* Resources */,
 				E164FDD91720E77100263CE3 /* Supporting Files */,
@@ -246,28 +246,28 @@
 			path = Scripts;
 			sourceTree = "<group>";
 		};
-		E17B554617330E2800809FFB /* Lumberjack */ = {
-			isa = PBXGroup;
-			children = (
-				E17B554717330E2800809FFB /* DDASLLogger.h */,
-				E17B554817330E2800809FFB /* DDASLLogger.m */,
-				E17B554917330E2800809FFB /* DDLog.h */,
-				E17B554A17330E2800809FFB /* DDLog.m */,
-				E17B554B17330E2800809FFB /* DDTTYLogger.h */,
-				E17B554C17330E2800809FFB /* DDTTYLogger.m */,
-			);
-			path = Lumberjack;
-			sourceTree = "<group>";
-		};
 		E1A55947172C5EA80088FB61 /* Operations */ = {
 			isa = PBXGroup;
 			children = (
 				E1A55949172C5EE20088FB61 /* FindSourceFilesOperation.m */,
-				E1A55948172C5EE20088FB61 /* FindSourceFilesOperation.h */,
+				E1E90C3A1735D846005C6D5B /* FindSourceFilesOperation.h */,
 				E1A5594C172CA8D40088FB61 /* ProcessSourceOperation.m */,
-				E1A5594B172CA8D40088FB61 /* ProcessSourceOperation.h */,
+				E1E90C3D1735D846005C6D5B /* ProcessSourceOperation.h */,
 			);
 			name = Operations;
+			sourceTree = "<group>";
+		};
+		E1E90C441735D8A1005C6D5B /* Lumberjack */ = {
+			isa = PBXGroup;
+			children = (
+				E1E90C451735D8A1005C6D5B /* DDASLLogger.h */,
+				E1E90C461735D8A1005C6D5B /* DDASLLogger.m */,
+				E1E90C471735D8A1005C6D5B /* DDLog.h */,
+				E1E90C481735D8A1005C6D5B /* DDLog.m */,
+				E1E90C491735D8A1005C6D5B /* DDTTYLogger.h */,
+				E1E90C4A1735D8A1005C6D5B /* DDTTYLogger.m */,
+			);
+			path = Lumberjack;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -353,14 +353,14 @@
 				E164FDDF1720E77100263CE3 /* main.m in Sources */,
 				E164FDF51720EBC100263CE3 /* AppController.m in Sources */,
 				E164FDFF1720EC5B00263CE3 /* XcodeCapp.m in Sources */,
-				E164FE001720EC5B00263CE3 /* UserDefaults.m in Sources */,
 				E1A5594A172C5EE20088FB61 /* FindSourceFilesOperation.m in Sources */,
 				E1A5594D172CA8D40088FB61 /* ProcessSourceOperation.m in Sources */,
-				E1A55954172CBA8E0088FB61 /* Notifications.m in Sources */,
-				E1E167F1172F3B20003198BA /* DDLogLevel.m in Sources */,
-				E17B554D17330E2800809FFB /* DDASLLogger.m in Sources */,
-				E17B554E17330E2800809FFB /* DDLog.m in Sources */,
-				E17B554F17330E2800809FFB /* DDTTYLogger.m in Sources */,
+				E1E90C411735D846005C6D5B /* DDLogLevel.m in Sources */,
+				E1E90C421735D846005C6D5B /* Notifications.m in Sources */,
+				E1E90C431735D846005C6D5B /* UserDefaults.m in Sources */,
+				E1E90C4B1735D8A1005C6D5B /* DDASLLogger.m in Sources */,
+				E1E90C4C1735D8A1005C6D5B /* DDLog.m in Sources */,
+				E1E90C4D1735D8A1005C6D5B /* DDTTYLogger.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

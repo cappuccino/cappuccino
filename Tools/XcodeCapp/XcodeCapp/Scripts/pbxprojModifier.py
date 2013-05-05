@@ -9,7 +9,6 @@ class PBXModifier (object):
 
     XCODE_SUPPORT_FOLDER = u".XcodeSupport"
     SLASH_REPLACEMENT  = u"∕"  # DIVISION SLASH  Unicode U+2215
-    STRING_RE = re.compile(ur"^\s*<string>(.*)</string>\s*$", re.MULTILINE)
     FRAMEWORKS_RE = re.compile(ur"^(.+/Frameworks/(?:Debug|Source)/([^/]+))/.+$")
     XCC_GENERAL_INCLUDE = u"xcc_general_include.h"
 
@@ -93,22 +92,6 @@ class PBXModifier (object):
             if fileRef:
                 self.project.remove_file(fileRef)
 
-    def xml_converter(self, matchObj):
-        return "<string>{0}</string>".format(matchObj.group(1).encode("ascii", "xmlcharrefreplace"))
-
-    def convert_unicode_to_xml(self):
-        """
-            mod_pbxproj writes unicode data as utf-8, but since it's an xml plist
-            all non-ascii characters should be converted to xml character references.
-            So we do that as a post-processing phase.
-            """
-        with open(self.pbxPath, 'rb') as f:
-            content = f.read().decode('utf-8')
-
-        with open(self.pbxPath, "wb") as f:
-            content = self.STRING_RE.sub(self.xml_converter, content)
-            f.write(content)
-
     def add_framework_resources(self, framework, resourcesPath):
         files = self.project.get_files_by_os_path(resourcesPath, tree="<absolute>")
 
@@ -186,9 +169,9 @@ class PBXModifier (object):
             root_ids.insert(0, id)
 
     def save_project(self):
+        self.project.backup(backup_name=self.project.pbxproj_path + ".backup")
         self.sort_project()
-        self.project.save()
-        self.convert_unicode_to_xml()
+        self.project.saveFormat3_2()
 
     def update_project_with_source(self, action, projectSourcePath):
         relativePath = os.path.relpath(projectSourcePath, self.projectRootPath)
