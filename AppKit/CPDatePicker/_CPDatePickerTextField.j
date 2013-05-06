@@ -22,6 +22,7 @@
 @import "CPControl.j"
 @import "CPFont.j"
 @import "CPTextField.j"
+@import "CPStepper.j"
 
 @import <Foundation/CPArray.j>
 @import <Foundation/CPObject.j>
@@ -30,7 +31,6 @@
 @import <Foundation/CPLocale.j>
 
 @class CPDatePicker
-@class CPStepper
 
 @global CPSingleDateMode
 @global CPRangeDateMode
