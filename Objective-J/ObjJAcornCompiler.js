@@ -124,17 +124,6 @@ GlobalVariableMaybeWarning.prototype.checkIfWarning = function(/* Scope */ st)
     return !st.getLvar(identifier) && typeof global[identifier] === "undefined" && typeof window[identifier] === "undefined" && !st.compiler.getClassDef(identifier);
 }
 
-// This is for IE8 support. It doesn't have the Object.create function
-if (typeof Object.create !== 'function')
-{
-   Object.create = function (o)
-   {
-       function F() {}
-       F.prototype = o;
-       return new F();
-   };
-}
-
 var currentCompilerFlags = "";
 
 var reservedIdentifiers = exports.acorn.makePredicate("self _cmd undefined localStorage arguments");
