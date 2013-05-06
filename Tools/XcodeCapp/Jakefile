@@ -8,6 +8,10 @@ var OS = require("os"),
 
 task ("build", function()
 {
+    // If sw_vers does not exist, we aren't on Mac OS X
+    if (!executableExists("sw_vers"))
+        OS.exit(0);
+
     // No building on 10.6
     var p = OS.popen(["sw_vers", "-productVersion"]);
 
