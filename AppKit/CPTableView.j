@@ -83,6 +83,7 @@ var CPTableViewDelegate_selectionShouldChangeInTableView_                       
     CPTableViewDelegate_tableViewSelectionDidChange_                                                    = 1 << 18,
     CPTableViewDelegate_tableViewSelectionIsChanging_                                                   = 1 << 19,
     CPTableViewDelegate_tableViewMenuForTableColumn_Row_                                                = 1 << 20;
+    CPTableViewDelegate_tableView_shouldReorderColumn_toColumn_                                         = 1 << 21;
 
 //CPTableViewDraggingDestinationFeedbackStyles
 CPTableViewDraggingDestinationFeedbackStyleNone = -1;
@@ -264,7 +265,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     BOOL                _lastColumnShouldSnap;
     BOOL                _implementsCustomDrawRow;
     BOOL                _isViewBased;
-    BOOL                _contentBindingExpicitelySet;
+    BOOL                _contentBindingExplicitlySet;
 
     SEL                 _viewForTableColumnRowSelector;
 
@@ -343,7 +344,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         _retargetedDropOperation = nil;
         _dragOperationDefaultMask = nil;
         _destinationDragStyle = CPTableViewDraggingDestinationFeedbackStyleRegular;
-        _contentBindingExpicitelySet = NO;
+        _contentBindingExplicitlySet = NO;
 
         [self setBackgroundColor:[CPColor whiteColor]];
         [self _init];
@@ -1065,6 +1066,23 @@ NOT YET IMPLEMENTED
     // when the column is dropped, we should also update it.
     if (previouslyDraggedColumn)
         [self reloadDataForRowIndexes:_exposedRows columnIndexes:[CPIndexSet indexSetWithIndex:[_tableColumns indexOfObject:previouslyDraggedColumn]]];
+}
+
+/*
+    @ignore
+    Returns YES if the column at columnIndex can be reordered.
+    It can be possible if column reordering is allowed and if the tableview
+    delegate also accept the reordering
+*/
+- (BOOL)_shouldReorderColumn:(int)columnIndex toColumn:(int)newColumnIndex
+{
+    if ([self allowsColumnReordering] &&
+        _implementedDelegateMethods & CPTableViewDelegate_tableView_shouldReorderColumn_toColumn_)
+    {
+        return [_delegate tableView:self shouldReorderColumn:columnIndex toColumn:newColumnIndex];
+    }
+
+    return [self allowsColumnReordering];
 }
 
 /*
@@ -2026,11 +2044,12 @@ NOT YET IMPLEMENTED
         return -1;
 
     var cellView = aView,
-        contentView = [[self window] contentView];
+        contentView = [[self window] contentView],
+        max_rec = 100;
 
-    while (1)
+    while (max_rec--)
     {
-        if (cellView == contentView)
+        if (!cellView || cellView === contentView)
         {
             return -1;
         }
@@ -2644,7 +2663,7 @@ Return YES if the table column given should be selected, otherwise NO to deny th
 - (BOOL)tableView:(CPTableView)aTableView shouldSelectTableColumn:(CPTableColumn)aTableColumn;
 @endcode
 
-Informs the delegate that the tableview is in the process of chaining the selection.
+Informs the delegate that the tableview is in the process of changing the selection.
 This usually happens when the user is dragging their mouse across rows.
 @code
 - (void)tableViewSelectionIsChanging:(CPNotification)aNotification
@@ -2659,6 +2678,8 @@ Informs the delegate that the tableview selection has changed.
 @section movingandresizingcolumns Moving and Resizing Columns:
 
 Return YES if the column at a given index should move to a new column index, otherwise NO.
+When a column is initially dragged by the user, the delegate is first called with a newColumnIndex value of -1
+
 @code
 - (BOOL)tableView:(CPTableView)tableView shouldReorderColumn:(int)columnIndex toColumn:(int)newColumnIndex;
 @endcode
@@ -2812,6 +2833,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     if ([_delegate respondsToSelector:@selector(tableView:menuForTableColumn:row:)])
         _implementedDelegateMethods |= CPTableViewDelegate_tableViewMenuForTableColumn_Row_;
+
+    if ([_delegate respondsToSelector:@selector(tableView:shouldReorderColumn:toColumn:)])
+        _implementedDelegateMethods |= CPTableViewDelegate_tableView_shouldReorderColumn_toColumn_;
 
     if ([_delegate respondsToSelector:@selector(tableViewColumnDidMove:)])
         [defaultCenter
@@ -3625,7 +3649,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     // This gives the table column an opportunity to apply its bindings.
     // It will override the value set above if there is a binding.
 
-    if (_contentBindingExpicitelySet)
+    if (_contentBindingExplicitlySet)
         [self _prepareContentBindedDataView:aDataView forRow:aRow];
     else
         // For both cell-based and view-based
@@ -3790,7 +3814,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     @discussion
     Typically identifier is associated with an external CIB and the table view will automatically instantiate the CIB with the provided owner. The owner of the CIB that may be loaded and instantiated to create a new view with the particular identifier is typically the table view’s delegate. The owner is useful in setting up outlets and target and actions from the view.
 
-    This method will typically be called by the delegate in tableView:dataViewForTableColumn:row:, but it can also be overridden to provide custom views for the identifier. This method may also return a reused view with the same identifier that was no longer available on screen.
+    This method will typically be called by the delegate in tableView:viewForTableColumn:row:, but it can also be overridden to provide custom views for the identifier. This method may also return a reused view with the same identifier that was no longer available on screen.
 */
 - (id)makeViewWithIdentifier:(CPString)anIdentifier owner:(id)anOwner
 {
@@ -5093,6 +5117,13 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 {
     var responder = [[self window] firstResponder];
 
+    if (![responder isKindOfClass:[CPView class]] || ![responder isDescendantOf:self])
+    {
+        _editingRow = CPNotFound;
+        _editingColumn = CPNotFound;
+        return;
+    }
+
     _editingRow = [self rowForView:responder];
     _editingColumn = [self columnForView:responder];
 
@@ -5308,11 +5339,11 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     if ([[self infoForBinding:@"content"] objectForKey:CPObservedObjectKey] !== destination)
     {
         [super bind:@"content" toObject:destination withKeyPath:@"arrangedObjects" options:nil];
-        _contentBindingExpicitelySet = NO;
+        _contentBindingExplicitlySet = NO;
     }
 
     // If the content binding was set manually assume the user is taking manual control of establishing bindings.
-    if (!_contentBindingExpicitelySet)
+    if (!_contentBindingExplicitlySet)
     {
         if ([[self infoForBinding:@"selectionIndexes"] objectForKey:CPObservedObjectKey] !== destination)
             [self bind:@"selectionIndexes" toObject:destination withKeyPath:@"selectionIndexes" options:nil];
@@ -5327,7 +5358,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     [super bind:aBinding toObject:anObject withKeyPath:aKeyPath options:options];
 
     if (aBinding == @"content")
-        _contentBindingExpicitelySet = YES;
+        _contentBindingExplicitlySet = YES;
 }
 
 @end

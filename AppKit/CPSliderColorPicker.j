@@ -146,7 +146,7 @@
     [_hueLabel setTextColor:[CPColor blackColor]];
 
     _hueSlider = [[CPSlider alloc] initWithFrame:CGRectMake(15, 143, aFrame.size.width - 70, 20)];
-    [_hueSlider setMaxValue:359.0];
+    [_hueSlider setMaxValue:0.999];
     [_hueSlider setMinValue:0.0];
     [_hueSlider setTarget:self];
     [_hueSlider setAction:@selector(sliderChanged:)];
@@ -165,7 +165,7 @@
     [_saturationLabel setTextColor:[CPColor blackColor]];
 
     _saturationSlider = [[CPSlider alloc] initWithFrame:CGRectMake(15, 168, aFrame.size.width - 70, 20)];
-    [_saturationSlider setMaxValue:100.0];
+    [_saturationSlider setMaxValue:1.0];
     [_saturationSlider setMinValue:0.0];
     [_saturationSlider setTarget:self];
     [_saturationSlider setAction:@selector(sliderChanged:)];
@@ -184,7 +184,7 @@
     [_brightnessLabel setTextColor:[CPColor blackColor]];
 
     _brightnessSlider = [[CPSlider alloc] initWithFrame:CGRectMake(15, 194, aFrame.size.width - 70, 20)];
-    [_brightnessSlider setMaxValue:100.0];
+    [_brightnessSlider setMaxValue:1.0];
     [_brightnessSlider setMinValue:0.0];
     [_brightnessSlider setTarget:self];
     [_brightnessSlider setAction:@selector(sliderChanged:)];
@@ -282,6 +282,9 @@
 
 - (void)setColor:(CPColor)aColor
 {
+    if (!aColor)
+        [CPException raise:CPInvalidArgumentException reason:"aColor can't be nil"];
+
     [self updateRGBSliders:aColor];
     [self updateHSBSliders:aColor];
     [self updateHex:aColor];
@@ -313,9 +316,9 @@
 
 - (void)updateLabels
 {
-    [_hueValue setStringValue:ROUND([_hueSlider floatValue])];
-    [_saturationValue setStringValue:ROUND([_saturationSlider floatValue])];
-    [_brightnessValue setStringValue:ROUND([_brightnessSlider floatValue])];
+    [_hueValue setStringValue:ROUND([_hueSlider floatValue] * 360.0)];
+    [_saturationValue setStringValue:ROUND([_saturationSlider floatValue] * 100.0)];
+    [_brightnessValue setStringValue:ROUND([_brightnessSlider floatValue] * 100.0)];
 
     [_redValue setStringValue:ROUND([_redSlider floatValue] * 255)];
     [_greenValue setStringValue:ROUND([_greenSlider floatValue] * 255)];
@@ -363,15 +366,15 @@
                                    [self sliderChanged:_blueSlider];
                                    break;
 
-            case _hueValue:        [_hueSlider setFloatValue:MAX(MIN(ROUND(value), 360), 0)];
+            case _hueValue:        [_hueSlider setFloatValue:MAX(MIN(ROUND(value), 360) / 360.0, 0)];
                                    [self sliderChanged:_hueSlider];
                                    break;
 
-            case _saturationValue: [_saturationSlider setFloatValue:MAX(MIN(ROUND(value), 100), 0)];
+            case _saturationValue: [_saturationSlider setFloatValue:MAX(MIN(ROUND(value), 100) / 100.0, 0)];
                                    [self sliderChanged:_saturationSlider];
                                    break;
 
-            case _brightnessValue: [_brightnessSlider setFloatValue:MAX(MIN(ROUND(value), 100), 0)];
+            case _brightnessValue: [_brightnessSlider setFloatValue:MAX(MIN(ROUND(value), 100) / 100.0, 0)];
                                    [self sliderChanged:_brightnessSlider];
                                    break;
         }

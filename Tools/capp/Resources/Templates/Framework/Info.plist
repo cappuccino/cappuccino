@@ -6,5 +6,7 @@
     <string>6.0</string>
     <key>CPBundlePackageType</key>
     <string>FMWK</string>
+    <key>CPPrincipalClass</key>
+    <string>__project.nameasidentifier__</string>
 </dict>
 </plist>

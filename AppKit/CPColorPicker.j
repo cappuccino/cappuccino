@@ -158,12 +158,12 @@
         brightness = [_brightnessSlider floatValue];
 
     [_hueSaturationView setWheelBrightness:brightness / 100.0];
-    [_brightnessSlider setBackgroundColor:[CPColor colorWithHue:hue saturation:saturation brightness:100]];
+    [_brightnessSlider setBackgroundColor:[CPColor colorWithHue:hue / 360.0 saturation:saturation / 100.0 brightness:1]];
 
     var colorPanel = [self colorPanel],
         opacity = [colorPanel opacity];
 
-    _cachedColor = [CPColor colorWithHue:hue saturation:saturation brightness:brightness alpha:opacity];
+    _cachedColor = [CPColor colorWithHue:hue / 360.0 saturation:saturation / 100.0 brightness:brightness / 100.0 alpha:opacity];
 
     [[self colorPanel] setColor:_cachedColor];
 }
@@ -194,10 +194,10 @@
     var hsb = [newColor hsbComponents];
 
     [_hueSaturationView setPositionToColor:newColor];
-    [_brightnessSlider setFloatValue:hsb[2]];
-    [_hueSaturationView setWheelBrightness:hsb[2] / 100.0];
+    [_brightnessSlider setFloatValue:hsb[2] * 100.0];
+    [_hueSaturationView setWheelBrightness:hsb[2]];
 
-    [_brightnessSlider setBackgroundColor:[CPColor colorWithHue:hsb[0] saturation:hsb[1] brightness:100]];
+    [_brightnessSlider setBackgroundColor:[CPColor colorWithHue:hsb[0] saturation:hsb[1] brightness:1]];
 }
 
 - (CPImage)provideNewButtonImage
@@ -366,8 +366,8 @@
 {
     var hsb    = [aColor hsbComponents],
         bounds = [self bounds],
-        angle    = [self degreesToRadians:hsb[0]],
-        distance = (hsb[1] / 100.0) * _radius;
+        angle    = [self degreesToRadians:hsb[0] * 360.0],
+        distance = hsb[1] * _radius;
 
     [self setAngle:angle distance:distance];
 }

@@ -392,12 +392,9 @@
     var dict = [[CPDictionary alloc] initWithObjects:[CGRectMake(1, 2, 3, 4), CGPointMake(5, 6)] forKeys:[@"key1", @"key2"]],
         d = [dict description];
 
-    [self assertTrue:d.indexOf("x:1") !== -1 message:"Can't find 'x: 1' in description of dictionary " + d];
-    [self assertTrue:d.indexOf("y:2") !== -1 message:"Can't find 'y: 2' in description of dictionary " + d];
-    [self assertTrue:d.indexOf("width:3") !== -1 message:"Can't find 'width: 3' in description of dictionary " + d];
-    [self assertTrue:d.indexOf("height:4") !== -1 message:"Can't find 'height: 4' in description of dictionary " + d];
-    [self assertTrue:d.indexOf("x:5") !== -1 message:"Can't find 'x: 5' in description of dictionary " + d];
-    [self assertTrue:d.indexOf("y:6") !== -1 message:"Can't find 'y: 6' in description of dictionary " + d];
+    [self assertTrue:d.indexOf("(1, 2)") !== -1 message:"Can't find '(1, 2)' in description of dictionary " + d];
+    [self assertTrue:d.indexOf("(3, 4)") !== -1 message:"Can't find '(3, 4)' in description of dictionary " + d];
+    [self assertTrue:d.indexOf("(5, 6)") !== -1 message:"Can't find '(5, 6)' in description of dictionary " + d];
 
     [self assert:'@{\n    @"key1": @[\n        @"1",\n        @"2",\n        @"3"\n    ],\n    @"key2": @"This is a string",\n    @"key3": @{\n        @"another": @"object"\n    }\n}' equals:[json_dict description]];
 }

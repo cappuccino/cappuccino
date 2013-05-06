@@ -490,10 +490,10 @@ _CPCharacterSetTrimAtEnd        = 1 << 2;
     {
         var cutEdgeEnd = str.length;
 
-        while (cutEdgeEnd > 0 && [set characterIsMember:self.charAt(cutEdgeEnd)])
+        while (cutEdgeEnd > 0 && [set characterIsMember:str.charAt(cutEdgeEnd - 1)])
             cutEdgeEnd--;
 
-        str = str.substr(0, cutEdgeEnd + 1);
+        str = str.substr(0, cutEdgeEnd);
     }
 
     return str;

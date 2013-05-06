@@ -143,6 +143,7 @@
     _textColor = aColor;
 
     [_menuItemViews makeObjectsPerformSelector:@selector(setTextColor:) withObject:_textColor];
+    [_menuItemViews makeObjectsPerformSelector:@selector(setParentMenuTextColor:) withObject:_textColor];
 }
 
 - (void)setTitleColor:(CPColor)aColor
@@ -163,6 +164,7 @@
     _textShadowColor = aColor;
 
     [_menuItemViews makeObjectsPerformSelector:@selector(setTextShadowColor:) withObject:_textShadowColor];
+    [_menuItemViews makeObjectsPerformSelector:@selector(setParentMenuTextShadowColor:) withObject:_textShadowColor];
 }
 
 - (void)setTitleShadowColor:(CPColor)aColor
@@ -181,6 +183,8 @@
         return;
 
     _highlightColor = aColor;
+
+    [_menuItemViews makeObjectsPerformSelector:@selector(setParentMenuHighlightColor:) withObject:_highlightColor];
 }
 
 - (void)setHighlightTextColor:(CPColor)aColor
@@ -190,7 +194,7 @@
 
     _highlightTextColor = aColor;
 
-//    [_menuItemViews makeObjectsPerformSelector:@selector(setActivateColor:) withObject:_highlightTextColor];
+    [_menuItemViews makeObjectsPerformSelector:@selector(setParentMenuHighlightTextColor:) withObject:_highlightTextColor];
 }
 
 - (void)setHighlightTextShadowColor:(CPColor)aColor
@@ -200,7 +204,7 @@
 
     _highlightTextShadowColor = aColor;
 
-//    [_menuItemViews makeObjectsPerformSelector:@selector(setActivateShadowColor:) withObject:_highlightTextShadowColor];
+    [_menuItemViews makeObjectsPerformSelector:@selector(setParentMenuHighlightTextShadowColor:) withObject:_highlightTextShadowColor];
 }
 
 - (void)setMenu:(CPMenu)aMenu

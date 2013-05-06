@@ -63,7 +63,7 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
     @outlet CPViewController    _contentViewController  @accessors(property=contentViewController);
     @outlet id                  _delegate               @accessors(getter=delegate);
 
-    BOOL                        _animates               @accessors(property=animates);
+    BOOL                        _animates               @accessors(getter=animates);
     int                         _appearance             @accessors(property=appearance);
     int                         _behavior               @accessors(getter=behavior);
 
@@ -154,6 +154,20 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 }
 
 /*!
+    Set if the popover should animate for open/close actions.
+
+    @param shouldAnimate if YES, the popover will be animated.
+*/
+- (void)setAnimates:(BOOL)shouldAnimate
+{
+    if (_animates == shouldAnimate)
+        return;
+
+    _animates = shouldAnimate;
+    [_popoverWindow setAnimates:_animates];
+}
+
+/*!
 Set the behavior of the CPPopover. It can be:
 
 - \c CPPopoverBehaviorTransient: the popover will close if another control outside the popover becomes the responder
@@ -224,6 +238,7 @@ Set the behavior of the CPPopover. It can be:
         _popoverWindow = [[_CPPopoverWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:[self styleMaskForBehavior]];
     }
 
+    [_popoverWindow setPlatformWindow:[[positioningView window] platformWindow]];
     [_popoverWindow setAppearance:_appearance];
     [_popoverWindow setAnimates:_animates];
     [_popoverWindow setDelegate:self];
