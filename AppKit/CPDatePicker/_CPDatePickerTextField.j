@@ -139,7 +139,10 @@ var CPZeroKeyCode = 48,
 */
 - (void)setDateValue:(CPDate)aDateValue
 {
-    [_datePickerElementView setDateValue:aDateValue];
+    var dateValue = [aDateValue copy];
+    [dateValue _dateWithTimeZone:[_datePicker timeZone]];
+
+    [_datePickerElementView setDateValue:dateValue];
 }
 
 /*! Set the widget enabled or not
@@ -648,16 +651,19 @@ var CPZeroKeyCode = 48,
 - (void)_datePickerElementTextFieldAMPMChangedNotification:(CPNotification)aNotification
 {
     var value = [[aNotification object] stringValue],
-        dateValue = [[_datePicker dateValue] copy];
+        dateValue = [[_datePicker dateValue] copy],
+        d = [dateValue copy];
+
+    [d _dateWithTimeZone:[_datePicker timeZone]];
 
     if ([value isEqualToString:@"PM"])
     {
-        if (dateValue.getHours() <= 11)
+        if (d.getHours() <= 11)
             dateValue.setHours(dateValue.getHours() + 12);
     }
     else
     {
-        if (dateValue.getHours() > 11)
+        if (d.getHours() > 11)
             dateValue.setHours(dateValue.getHours() - 12);
     }
 
