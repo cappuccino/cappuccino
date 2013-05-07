@@ -90,7 +90,7 @@
 					</object>
 					<object class="NSMenuItem" id="854121054">
 						<reference key="NSMenu" ref="280310327"/>
-						<string key="NSTitle">Reset Project</string>
+						<string key="NSTitle">Synchronize Project</string>
 						<string key="NSKeyEquiv"/>
 						<int key="NSMnemonicLoc">2147483647</int>
 						<reference key="NSOnImage" ref="457724053"/>
@@ -192,6 +192,7 @@
 							<string key="NSFrame">{{164, 20}, {203, 98}}</string>
 							<reference key="NSSuperview" ref="694242143"/>
 							<reference key="NSWindow"/>
+							<reference key="NSNextKeyView"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSTextFieldCell" key="NSCell" id="987022105">
 								<int key="NSCellFlags">68157504</int>
@@ -510,6 +511,7 @@ dG9pbmUgTWVyY2FkYWwKICAgIGFudG9pbmUubWVyY2FkYWxAZ21haWwuY29tA</string>
 							<string key="NSFrame">{{445, 8}, {85, 19}}</string>
 							<reference key="NSSuperview" ref="348787045"/>
 							<reference key="NSWindow"/>
+							<reference key="NSNextKeyView"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSButtonCell" key="NSCell" id="950035407">
 								<int key="NSCellFlags">-2080374784</int>
@@ -805,6 +807,7 @@ dG9pbmUgTWVyY2FkYWwKICAgIGFudG9pbmUubWVyY2FkYWxAZ21haWwuY29tA</string>
 											<string key="NSFrame">{{137, 17}, {60, 18}}</string>
 											<reference key="NSSuperview" ref="732728607"/>
 											<reference key="NSWindow"/>
+											<reference key="NSNextKeyView"/>
 											<bool key="NSEnabled">YES</bool>
 											<object class="NSButtonCell" key="NSCell" id="368407823">
 												<int key="NSCellFlags">-2080374784</int>
@@ -909,6 +912,7 @@ dG9pbmUgTWVyY2FkYWwKICAgIGFudG9pbmUubWVyY2FkYWxAZ21haWwuY29tA</string>
 							<string key="NSFrameSize">{716, 654}</string>
 							<reference key="NSSuperview" ref="537816561"/>
 							<reference key="NSWindow"/>
+							<reference key="NSNextKeyView"/>
 							<string key="NSReuseIdentifierKey">_NS:9</string>
 							<int key="DisplayMode">1</int>
 							<bool key="PageBreaks">NO</bool>
