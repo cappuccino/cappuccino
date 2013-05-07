@@ -721,16 +721,25 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
 /*!
     @ignore
-    Select or deselect rows, this is overridden because we need to change the color or the outline control.
+    Select or deselect rows, this is overridden because we need to change the color of the outline control.
 */
-- (void)_performSelection:(BOOL)select forRow:(CPInteger)rowIndex context:(id)context
+- (void)_setSelectedRowIndexes:(CPIndexSet)rows
 {
-    [super _performSelection:select forRow:rowIndex context:context];
+    if (_disclosureControlsForRows.length)
+    {
+        var indexes = [_selectedRowIndexes copy];
+        [indexes removeIndexesInRange:CPMakeRange(_disclosureControlsForRows.length, _itemsForRows.length - _disclosureControlsForRows.length)];
+        [[_disclosureControlsForRows objectsAtIndexes:indexes] makeObjectsPerformSelector:@selector(unsetThemeState:) withObject:CPThemeStateSelected];
+    }
 
-    var control = _disclosureControlsForRows[rowIndex],
-        selector = select ? @"setThemeState:" : @"unsetThemeState:";
+    [super _setSelectedRowIndexes:rows];
 
-    [control performSelector:CPSelectorFromString(selector) withObject:CPThemeStateSelected];
+    if (_disclosureControlsForRows.length)
+    {
+        var indexes = [_selectedRowIndexes copy];
+        [indexes removeIndexesInRange:CPMakeRange(_disclosureControlsForRows.length, _itemsForRows.length - _disclosureControlsForRows.length)];
+        [[_disclosureControlsForRows objectsAtIndexes:indexes] makeObjectsPerformSelector:@selector(setThemeState:) withObject:CPThemeStateSelected];
+    }
 }
 
 /*!
