@@ -171,6 +171,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     NSArray *defaultIgnoredPaths = @[
         @"*/Frameworks/",
         @"!*/Frameworks/Debug/",
+        @"!*/Frameworks/Source/",
         @"*/AppKit/",
         @"*/Foundation/",
         @"*/Objective-J/",

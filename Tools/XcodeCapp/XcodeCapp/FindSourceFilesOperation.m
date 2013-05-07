@@ -57,9 +57,9 @@ NSString * const XCCNeedSourceToProjectPathMappingNotification = @"XCCNeedSource
     NSFileManager *fm = [NSFileManager defaultManager];
 
     NSArray *urls = [fm contentsOfDirectoryAtURL:[NSURL fileURLWithPath:projectPath.stringByResolvingSymlinksInPath]
-                           includingPropertiesForKeys:@[NSURLIsDirectoryKey, NSURLIsSymbolicLinkKey]
-                                              options:NSDirectoryEnumerationSkipsHiddenFiles | NSDirectoryEnumerationSkipsPackageDescendants | NSDirectoryEnumerationSkipsSubdirectoryDescendants
-                                                 error:&error];
+                      includingPropertiesForKeys:@[NSURLIsDirectoryKey, NSURLIsSymbolicLinkKey]
+                                         options:NSDirectoryEnumerationSkipsHiddenFiles | NSDirectoryEnumerationSkipsPackageDescendants | NSDirectoryEnumerationSkipsSubdirectoryDescendants
+                                           error:&error];
 
     if (!urls)
         return;
@@ -98,7 +98,10 @@ NSString * const XCCNeedSourceToProjectPathMappingNotification = @"XCCNeedSource
         if (isDirectory.boolValue == YES)
         {
             if ([self.xcc shouldIgnoreDirectoryNamed:filename])
+            {
+                DDLogVerbose(@"ignored symlinked directory: %@", projectRelativePath);
                 continue;
+            }
 
             // If the resolved path is not within the project directory and is not ignored, add a mapping to it
             // so we can map the resolved path back to the project directory later.
@@ -108,18 +111,22 @@ NSString * const XCCNeedSourceToProjectPathMappingNotification = @"XCCNeedSource
 
                 if (![realPath hasPrefix:fullProjectPath] && ![self.xcc pathMatchesIgnoredPaths:fullProjectPath])
                 {
+                    DDLogVerbose(@"symlinked directory: %@ -> %@", projectRelativePath, realPath);
+
                     NSDictionary *info =
                           @{
-                            @"projectId":self.projectId,
-                               @"sourcePath":realPath,
-                            @"projectPath":fullProjectPath
+                                @"projectId":self.projectId,
+                                @"sourcePath":realPath,
+                                @"projectPath":fullProjectPath
                            };
 
                     if (self.isCancelled)
                         return;
-                    
+
                     [center postNotificationName:XCCNeedSourceToProjectPathMappingNotification object:self userInfo:info];
                 }
+                else
+                    DDLogVerbose(@"ignored symlinked directory: %@", projectRelativePath);
             }
 
             [self findSourceFilesAtProjectPath:projectRelativePath];
