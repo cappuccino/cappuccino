@@ -742,7 +742,9 @@ _CPWindowViewResizeSlop = 3;
 
 - (BOOL)showsToolbar
 {
-    return YES;
+    var styleMaskWindow = [[self window] styleMask];
+
+    return styleMaskWindow & CPBorderlessWindowMask || styleMaskWindow & CPTitledWindowMask || styleMaskWindow & CPHUDBackgroundWindowMask || styleMaskWindow & CPBorderlessBridgeWindowMask;
 }
 
 - (CGSize)toolbarOffset
