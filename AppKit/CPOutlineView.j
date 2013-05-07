@@ -733,7 +733,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     }
 
     [super _setSelectedRowIndexes:rows];
-    
+
     if (_disclosureControlsForRows.length)
     {
         var indexes = [_selectedRowIndexes copy];
