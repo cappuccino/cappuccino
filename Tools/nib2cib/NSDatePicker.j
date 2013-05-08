@@ -2,7 +2,8 @@
  * NSDatePicker.j
  * nib2cib
  *
- * Created by cacaodev.
+ * Created by Alexendre Wilhelm.
+ * Copyright 2013 The Cappuccino Foundation.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
