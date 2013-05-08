@@ -1002,8 +1002,34 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
 
                 if ([self.fm fileExistsAtPath:path])
                     [modifiedPaths addObject:path];
+                else if ([path.pathExtension isEqualToString:@"xib"])
+                {
+                    // If a xib is deleted, delete its cib. There is no need to update when a xib is deleted,
+                    // it is inside a folder in Xcode, which updates automatically.
+
+                    if (![self.fm fileExistsAtPath:path])
+                    {
+                        NSString *cibPath = [path.stringByDeletingPathExtension stringByAppendingPathExtension:@"cib"];
+
+                        if ([self.fm fileExistsAtPath:cibPath])
+                            [self.fm removeItemAtPath:cibPath error:nil];
+
+                        continue;
+                    }
+                }
 
                 needUpdate = YES;
+            }
+            else if (isFile && (renamed || removed) && !(modified || created) && [path.pathExtension isEqualToString:@"cib"])
+            {
+                // If a cib is deleted, mark its xib as needing update so the cib is regenerated
+                NSString *xibPath = [path.stringByDeletingPathExtension stringByAppendingPathExtension:@"xib"];
+
+                if ([self.fm fileExistsAtPath:xibPath])
+                {
+                    [modifiedPaths addObject:xibPath];
+                    needUpdate = YES;
+                }
             }
         }
         else  // directory-based listening
@@ -1087,14 +1113,15 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     // Make sure we don't get any more events while handling these events
     [self stopFSEventStream];
 
-    DDLogVerbose(@"Modified files: %@", modifiedPaths);
+    NSArray *removedFiles = [self tidyShadowedFiles];
 
-    [self tidyShadowedFiles];
+    if (removedFiles.count || modifiedPaths.count)
+    {
+        for (NSString *path in modifiedPaths)
+            [self handleFileModificationAtPath:path];
 
-    for (NSString *path in modifiedPaths)
-        [self handleFileModificationAtPath:path];
-
-    [self waitForOperationQueueToFinishWithSelector:@selector(batchDidFinish)];
+        [self waitForOperationQueueToFinishWithSelector:@selector(batchDidFinish)];
+    }
 }
 
 - (void)resetProjectForWatchedPath:(NSString *)path
@@ -1313,26 +1340,30 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
         DDLogVerbose(@"Removed shadow references to: %@", sourcePaths);
 }
 
-- (void)tidyShadowedFiles
+- (NSArray *)tidyShadowedFiles
 {
     NSArray *subpaths = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:self.supportPath error:nil];
     NSMutableArray *pathsToRemove = [NSMutableArray new];
 
     for (NSString *path in subpaths)
     {
-        if (![path.pathExtension isEqual:@"h"] || [path.lastPathComponent isEqualToString:@"xcc_general_include.h"])
-            continue;
+        NSString *extension = path.pathExtension;
+        
+        if ([extension isEqualToString:@"h"] && ![path.lastPathComponent isEqualToString:@"xcc_general_include.h"])
+        {
+            NSString *sourcePath = [self sourcePathForShadowPath:path];
 
-        NSString *sourcePath = [self sourcePathForShadowPath:path];
-
-        if (![self.fm fileExistsAtPath:sourcePath])
-            [pathsToRemove addObject:sourcePath];
+            if (![self.fm fileExistsAtPath:sourcePath])
+                [pathsToRemove addObject:sourcePath];
+        }
     }
 
     [self removeReferencesToSourcePaths:pathsToRemove];
     
     if (pathsToRemove.count)
         self.pbxOperations[@"remove"] = pathsToRemove;
+
+    return pathsToRemove;
 }
 
 #pragma mark - XCC Ignore management
