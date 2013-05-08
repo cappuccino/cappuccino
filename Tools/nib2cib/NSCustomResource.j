@@ -42,7 +42,8 @@ var FILE = require("file"),
         _resourceName = [aCoder decodeObjectForKey:@"NSResourceName"];
 
         var size = CGSizeMakeZero(),
-            framework = @"";
+            framework = @"",
+            bundleIdentifier = @"";
 
         if (_resourceName == "NSSwitch")
             return nil;
@@ -53,14 +54,12 @@ var FILE = require("file"),
         }
         else
         {
-            var match = /^(.+)@(.+)$/.exec(_resourceName),
-                framework = @"",
-                bundleIdentifier = @"";
+            var match = /^(.+)@(.+)$/.exec(_resourceName);
 
             if (match)
             {
-                framework = match[1];
-                _resourceName = match[2];
+                _resourceName = match[1];
+                framework = match[2];
             }
 
             var resourceInfo = [aCoder resourceInfoForName:_resourceName inFramework:framework];
@@ -80,8 +79,6 @@ var FILE = require("file"),
             {
                 _resourceName += FILE.extension(resourceInfo.path);
             }
-
-            CPLog.debug("    Resource: %s\n   Framework: %s\n        Path: %s\n        Size: %d x %d", _resourceName, framework, resourceInfo ? FILE.canonical(resourceInfo.path) : "", size.width, size.height);
         }
 
         if (resourceInfo && resourceInfo.path && resourceInfo.framework)
@@ -94,7 +91,16 @@ var FILE = require("file"),
         }
 
         _properties = @{ @"size":size, @"bundleIdentifier":bundleIdentifier, @"framework":framework };
-    }
+
+        CPLog.debug("    Resource: %s\n   Framework: %s%s\n        Path: %s\n        Size: %d x %d",
+                    _resourceName,
+                    framework ? framework : "<none>",
+                    bundleIdentifier ? " (" + bundleIdentifier + ")" :
+                                        framework ? " (<no bundle identifier>)" : "",
+                    resourceInfo ? FILE.canonical(resourceInfo.path) : "",
+                    size.width,
+                    size.height);
+   }
 
     return self;
 }
