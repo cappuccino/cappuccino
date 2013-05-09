@@ -101,8 +101,8 @@ extern NSString * const XCCProjectDidFinishLoadingNotification;
 - (IBAction)openErrorsPanel:(id)sender;
 - (IBAction)clearErrors:(id)sender;
 - (IBAction)openErrorInEditor:(id)sender;
-- (IBAction)openProjectInXcode:(id)aSender;
-- (IBAction)resetProject:(id)aSender;
+- (IBAction)openXcodeProject:(id)aSender;
+- (IBAction)synchronizeProject:(id)aSender;
 
 - (BOOL)executablesAreAccessible;
 - (void)stop;

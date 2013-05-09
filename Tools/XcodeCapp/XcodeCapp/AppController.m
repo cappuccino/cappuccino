@@ -36,6 +36,7 @@ AppController *SharedAppControllerInstance = nil;
 @property (nonatomic) NSImage *iconError;
 @property (nonatomic) NSMenu  *recentMenu;
 @property NSStatusItem        *statusItem;
+@property NSString            *finderName;
 
 @end
 
@@ -58,39 +59,13 @@ AppController *SharedAppControllerInstance = nil;
 
     DDLogVerbose(@"\n******************************\n**    XcodeCapp started     **\n******************************\n");
 
-    self.statusItem = [[NSStatusBar systemStatusBar] statusItemWithLength:NSVariableStatusItemLength];
-    self.statusItem.menu = self.statusMenu;
-    self.statusItem.image = self.iconInactive;
-    self.statusItem.highlightMode = YES;
-    self.statusItem.length = self.iconInactive.size.width + 12;  // Add some space around the icon
-    self.statusMenu.delegate = self;
-    
     self.aboutWindow.backgroundColor = [NSColor whiteColor];
-
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-
-    double firstLaunchVersion = [defaults doubleForKey:kDefaultFirstLaunchVersion];
-
-    // Note: the scanner will only get the major.minor version numbers, which is what we want.
-    NSScanner *scanner = [NSScanner scannerWithString:[self bundleVersion]];
-    double appVersion = 0.0;
-    [scanner scanDouble:&appVersion];
-
-    if ([defaults boolForKey:kDefaultFirstLaunch] || appVersion > firstLaunchVersion)
-    {
-        [defaults setBool:NO forKey:kDefaultFirstLaunch];
-        [defaults setDouble:appVersion forKey:kDefaultFirstLaunchVersion];
-        [self openHelp:self];
-    }
-
-    NSNotificationCenter *defaultCenter = [NSNotificationCenter defaultCenter];
-
-    [defaultCenter addObserver:self selector:@selector(batchDidStart:) name:XCCBatchDidStartNotification object:nil];
-    [defaultCenter addObserver:self selector:@selector(batchDidEnd:) name:XCCBatchDidEndNotification object:nil];
-    [defaultCenter addObserver:self selector:@selector(projectDidFinishLoading:) name:XCCProjectDidFinishLoadingNotification object:nil];
-
+    [self initStatusItem];
+    [self initObservers];
+    [self initShowInFinderItem];
     [self pruneProjectHistory];
     [self updateHistoryMenu];
+    [self checkFirstLaunch];
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification
@@ -167,6 +142,39 @@ AppController *SharedAppControllerInstance = nil;
 #endif
 }
 
+- (void)initStatusItem
+{
+    self.statusItem = [[NSStatusBar systemStatusBar] statusItemWithLength:NSVariableStatusItemLength];
+    self.statusItem.menu = self.statusMenu;
+    self.statusItem.image = self.iconInactive;
+    self.statusItem.highlightMode = YES;
+    self.statusItem.length = self.iconInactive.size.width + 12;  // Add some space around the icon
+    self.statusMenu.delegate = self;
+}
+
+- (void)initObservers
+{
+    NSNotificationCenter *defaultCenter = [NSNotificationCenter defaultCenter];
+
+    [defaultCenter addObserver:self selector:@selector(batchDidStart:) name:XCCBatchDidStartNotification object:nil];
+    [defaultCenter addObserver:self selector:@selector(batchDidEnd:) name:XCCBatchDidEndNotification object:nil];
+    [defaultCenter addObserver:self selector:@selector(projectDidFinishLoading:) name:XCCProjectDidFinishLoadingNotification object:nil];
+}
+
+- (void)initShowInFinderItem
+{
+    // See if PathFinder is available
+    NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
+    NSString *path = [workspace absolutePathForAppBundleWithIdentifier:@"com.cocoatech.PathFinder"];
+
+    if (path)
+        self.finderName = path.lastPathComponent.stringByDeletingPathExtension;
+    else
+        self.finderName = @"Finder";
+
+    self.menuItemShowInFinder.title = [NSString stringWithFormat:self.menuItemShowInFinder.title, self.finderName];
+}
+
 - (void)pruneProjectHistory
 {
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
@@ -185,6 +193,25 @@ AppController *SharedAppControllerInstance = nil;
         [projectHistory removeObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(maxProjects, projectHistory.count - maxProjects)]];
 
     [defaults setObject:projectHistory forKey:kDefaultXCCProjectHistory];
+}
+
+- (void)checkFirstLaunch
+{
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+
+    double firstLaunchVersion = [defaults doubleForKey:kDefaultFirstLaunchVersion];
+
+    // Note: the scanner will only get the major.minor version numbers, which is what we want.
+    NSScanner *scanner = [NSScanner scannerWithString:[self bundleVersion]];
+    double appVersion = 0.0;
+    [scanner scanDouble:&appVersion];
+
+    if ([defaults boolForKey:kDefaultFirstLaunch] || appVersion > firstLaunchVersion)
+    {
+        [defaults setBool:NO forKey:kDefaultFirstLaunch];
+        [defaults setDouble:appVersion forKey:kDefaultFirstLaunchVersion];
+        [self openHelp:self];
+    }
 }
 
 #pragma mark - Properties
@@ -253,8 +280,8 @@ AppController *SharedAppControllerInstance = nil;
 - (void)projectDidFinishLoading:(NSNotification *)note
 {
     self.statusItem.image = self.xcc.hasErrors ? self.iconError : self.iconActive;
-    self.menuItemListen.title = [NSString stringWithFormat:@"Close “%@”", self.xcc.projectPath.lastPathComponent];
-    self.menuItemListen.action = @selector(closeProject:);
+    self.menuItemOpenProject.title = [NSString stringWithFormat:@"Close “%@”", self.xcc.projectPath.lastPathComponent];
+    self.menuItemOpenProject.action = @selector(closeProject:);
 }
 
 // Watch changes to the max recent projects preference
@@ -288,8 +315,8 @@ AppController *SharedAppControllerInstance = nil;
     [self.xcc stop];
     
     self.statusItem.image = self.iconInactive;
-    self.menuItemListen.title = @"Open Project…";
-    self.menuItemListen.action = @selector(loadProject:);
+    self.menuItemOpenProject.title = @"Open Project…";
+    self.menuItemOpenProject.action = @selector(loadProject:);
 
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:kDefaultLastOpenedPath];
 }
@@ -303,6 +330,11 @@ AppController *SharedAppControllerInstance = nil;
 {
     [[NSUserDefaults standardUserDefaults] setObject:[NSArray array] forKey:kDefaultXCCProjectHistory];
     [self updateHistoryMenu];
+}
+
+- (IBAction)showInFinder:(id)aSender
+{
+    [[NSWorkspace sharedWorkspace] openFile:self.xcc.projectPath withApplication:self.finderName];
 }
 
 - (IBAction)openHelp:(id)aSender
@@ -340,7 +372,7 @@ AppController *SharedAppControllerInstance = nil;
 {
     NSMenu *menu = aMenuItem.menu;
     
-    if (aMenuItem == self.menuItemListen)
+    if (aMenuItem == self.menuItemOpenProject)
     {
         return !!self.xcc.projectPath;
     }

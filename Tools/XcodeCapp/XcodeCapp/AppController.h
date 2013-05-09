@@ -26,8 +26,8 @@
 
 @property (strong) IBOutlet NSMenu     *statusMenu;
 @property (assign) IBOutlet NSMenuItem *menuItemHistory;
-@property (assign) IBOutlet NSMenuItem *menuItemOpenInXcode;
-@property (assign) IBOutlet NSMenuItem *menuItemListen;
+@property (assign) IBOutlet NSMenuItem *menuItemOpenProject;
+@property (assign) IBOutlet NSMenuItem *menuItemShowInFinder;
 
 @property (strong) IBOutlet NSPanel    *aboutWindow;
 @property (strong) IBOutlet NSWindow   *preferencesWindow;

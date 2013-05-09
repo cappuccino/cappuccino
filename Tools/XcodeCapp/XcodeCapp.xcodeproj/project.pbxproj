@@ -182,6 +182,7 @@
 		E164FDD81720E77100263CE3 /* XcodeCapp */ = {
 			isa = PBXGroup;
 			children = (
+				E1E90C60173B42D0005C6D5B /* MainMenu.xib */,
 				E164FDF41720EBC100263CE3 /* AppController.m */,
 				E1E90C371735D82B005C6D5B /* AppController.h */,
 				E164FDFB1720EC5B00263CE3 /* XcodeCapp.m */,
@@ -217,7 +218,6 @@
 		E164FE071720F25400263CE3 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				E1E90C60173B42D0005C6D5B /* MainMenu.xib */,
 				E1ED6B6F173414E100641628 /* icon_128x128.png */,
 				E1ED6B70173414E100641628 /* icon_128x128@2x.png */,
 				E164FE2D1721A34900263CE3 /* icon-inactive.png */,

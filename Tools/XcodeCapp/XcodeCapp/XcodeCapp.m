@@ -401,7 +401,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     [self.operationQueue addOperation:op];
 }
 
-- (IBAction)openProjectInXcode:(id)aSender
+- (IBAction)openXcodeProject:(id)aSender
 {
     BOOL isDirectory, opened = YES;
     BOOL exists = [self.fm fileExistsAtPath:self.xcodeProjectPath isDirectory:&isDirectory];
@@ -426,11 +426,11 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
         NSInteger response = NSRunAlertPanel(@"The project could not be opened.", @"%@\n\nWould you like to regenerate the project?", @"Yes", @"No", nil, text);
 
         if (response == NSAlertDefaultReturn)
-            [self resetProject:self];
+            [self synchronizeProject:self];
     }
 }
 
-- (IBAction)resetProject:(id)aSender
+- (IBAction)synchronizeProject:(id)aSender
 {
     NSString *projectPath = self.projectPath;
     
@@ -571,7 +571,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     [self startEventStream];
 
     if ([[NSUserDefaults standardUserDefaults] boolForKey:kDefaultAutoOpenXcodeProject])
-        [self openProjectInXcode:self];
+        [self openXcodeProject:self];
 }
 
 #pragma mark - Notification handlers
@@ -1158,7 +1158,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
         }
     }
     
-    [self resetProject:self];
+    [self synchronizeProject:self];
 }
 
 /*!
