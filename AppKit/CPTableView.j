@@ -5260,19 +5260,18 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     {
         var shouldSelect = [_delegate tableView:self shouldSelectRow:i];
 
-        if (!shouldSelect)
+        /* If shouldSelect returns NO it means this row cannot be selected.
+            The proper behaviour is to then try to see if the next/previous
+            row(s) can be selected, until we hit the first one that can be.
+        */
+        while (!shouldSelect && (i < [self numberOfRows] && i > 0))
         {
-            /* If shouldSelect returns NO it means this row cannot be selected.
-                The proper behaviour is to then try to see if the next/previous
-                row(s) can be selected, until we hit the first one that can be.
-            */
-            while (!shouldSelect && (i < [self numberOfRows] && i > 0))
-            {
-                shouldGoUpward ? --i : ++i; //check to see if the row can be selected if it can't be then see if the next row can be selected
-                shouldSelect = [_delegate tableView:self shouldSelectRow:i];
-            }
+            shouldGoUpward ? --i : ++i; //check to see if the row can be selected. If it can't be then see if the next row can be selected.
+            shouldSelect = [_delegate tableView:self shouldSelectRow:i];
         }
 
+        if (!shouldSelect)
+            return;
     }
 
     // If we go upward and see that this row is already selected we should deselect the row below.
