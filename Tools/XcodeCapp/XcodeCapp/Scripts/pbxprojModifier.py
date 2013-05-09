@@ -18,8 +18,8 @@ class PBXModifier (object):
         self.pbxPath = os.path.join(projectRootPath, projectName + u".xcodeproj", u"project.pbxproj")
         self.project = XcodeProject.Load(self.pbxPath)
 
-        self.shadowGroup = self.project.get_or_create_group(u"Cocoa Classes")
-        self.sourceGroup = self.project.get_or_create_group(u"Cappuccino Source")
+        self._shadowGroup = None
+        self._sourceGroup = None
         self._frameworksGroup = None
 
     @property
@@ -28,6 +28,20 @@ class PBXModifier (object):
             self._frameworksGroup = self.project.get_or_create_group(u"Frameworks", parent=self.sourceGroup)
 
         return self._frameworksGroup
+
+    @property
+    def shadowGroup(self):
+        if self._shadowGroup is None:
+            self._shadowGroup = self.project.get_or_create_group(u"Cocoa Classes")
+
+        return self._shadowGroup
+
+    @property
+    def sourceGroup(self):
+        if self._sourceGroup is None:
+            self._sourceGroup = self.project.get_or_create_group(u"Cappuccino Source")
+
+        return self._sourceGroup
 
     def update_general_include(self):
         xcc_general_include_path = os.path.join(self.projectRootPath, self.XCODE_SUPPORT_FOLDER, self.XCC_GENERAL_INCLUDE)
@@ -56,6 +70,11 @@ class PBXModifier (object):
                 return fileRef
 
         return None
+
+    def group_with_name(self, name):
+        groups = self.project.get_groups_by_name(name)
+
+        return groups[0] if len(groups) == 1 else None
 
     def add_file(self, projectSourcePath, shadowHeaderPath, shadowImplementationPath):
         resolvedPath = os.path.realpath(projectSourcePath)
@@ -169,9 +188,10 @@ class PBXModifier (object):
             root_ids.insert(0, id)
 
     def save_project(self):
-        self.project.backup(backup_name=self.project.pbxproj_path + ".backup")
-        self.sort_project()
-        self.project.saveFormat3_2()
+        if self.project.modified:
+            self.project.backup(backup_name=self.project.pbxproj_path + ".backup")
+            self.sort_project()
+            self.project.saveFormat3_2()
 
     def update_project_with_source(self, action, projectSourcePath):
         relativePath = os.path.relpath(projectSourcePath, self.projectRootPath)
@@ -221,7 +241,6 @@ if __name__ == "__main__":
     if action in ("add", "remove"):
         projectSourcePath = unicode(sys.argv[3])
         modifier.update_project_with_source(action, projectSourcePath)
-        modifier.save_project()
 
     elif action == "update":
         # When the action is "update", it is followed by "add" or "remove", followed by 1+ paths
