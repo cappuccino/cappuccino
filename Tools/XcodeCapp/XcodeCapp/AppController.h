@@ -44,7 +44,7 @@
 - (IBAction)openHelp:(id)aSender;
 - (IBAction)openAbout:(id)aSender;
 
-- (void)loadProjectAtPath:(NSString *)path;
+- (BOOL)loadProjectAtPath:(NSString *)path;
 
 @end
 

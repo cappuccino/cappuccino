@@ -37,6 +37,8 @@ AppController *SharedAppControllerInstance = nil;
 @property (nonatomic) NSMenu  *recentMenu;
 @property NSStatusItem        *statusItem;
 @property NSString            *finderName;
+@property BOOL                appFinishedLaunching;
+@property NSString            *pathToOpenAtLaunch;
 
 @end
 
@@ -68,8 +70,25 @@ AppController *SharedAppControllerInstance = nil;
     [self checkFirstLaunch];
 }
 
+- (BOOL)application:(NSApplication *)sender openFile:(NSString *)filename
+{
+    if (filename)
+    {
+        NSString *path = filename.stringByStandardizingPath;
+        
+        if (self.appFinishedLaunching)
+            return [self loadProjectAtPath:path];
+        else
+            self.pathToOpenAtLaunch = path;
+    }
+
+    return YES;
+}
+
 - (void)applicationDidFinishLaunching:(NSNotification *)notification
 {
+    self.appFinishedLaunching = YES;
+    
     if (![self.xcc executablesAreAccessible])
     {
         [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
@@ -80,17 +99,21 @@ AppController *SharedAppControllerInstance = nil;
         return;
     }
 
+    // If we were opened from the command line, xcc.projectPath will be set.
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-
-    if (![defaults boolForKey:kDefaultXCCReopenLastProject])
-        return;
-
-    NSString *lastOpenedPath = [defaults objectForKey:kDefaultLastOpenedPath];
-
-    if (lastOpenedPath)
+    
+    if (!self.pathToOpenAtLaunch)
     {
-        if ([[NSFileManager defaultManager] fileExistsAtPath:lastOpenedPath])
-            [self loadProjectAtPath:lastOpenedPath];
+        if (![defaults boolForKey:kDefaultXCCReopenLastProject])
+            return;
+
+        self.pathToOpenAtLaunch = [defaults objectForKey:kDefaultLastOpenedPath];
+    }
+    
+    if (self.pathToOpenAtLaunch)
+    {
+        if ([[NSFileManager defaultManager] fileExistsAtPath:self.pathToOpenAtLaunch])
+            [self loadProjectAtPath:self.pathToOpenAtLaunch];
         else
             [defaults removeObjectForKey:kDefaultLastOpenedPath];
     }
@@ -403,10 +426,10 @@ AppController *SharedAppControllerInstance = nil;
 
 #pragma mark - Private Helpers
 
-- (void)loadProjectAtPath:(NSString *)path
+- (BOOL)loadProjectAtPath:(NSString *)path
 {
     if ([self.xcc.projectPath isEqualToString:path])
-        return;
+        return YES;
     
     [self closeProject:self];
 
@@ -437,7 +460,12 @@ AppController *SharedAppControllerInstance = nil;
     [self updateHistoryMenu];
 
     if (exists && isDirectory)
+    {
         [self.xcc loadProjectAtPath:path];
+        return YES;
+    }
+    else
+        return NO;
 }
 
 - (void)openWindow:(NSWindow *)aWindow
