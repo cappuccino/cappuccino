@@ -57,6 +57,12 @@ extern NSString * const XCCProjectDidFinishLoadingNotification;
 */
 @property NSInteger    projectId;
 
+// An array of paths we add to the NSTask environment
+@property NSArray *environmentPaths;
+
+// An array of executable names we need to have available
+@property NSArray *executables;
+
 // Full path to .XcodeSupport
 @property NSString *supportPath;
 

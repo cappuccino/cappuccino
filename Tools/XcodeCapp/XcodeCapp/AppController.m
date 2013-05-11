@@ -91,9 +91,20 @@ AppController *SharedAppControllerInstance = nil;
     
     if (![self.xcc executablesAreAccessible])
     {
-        [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
+        [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];            
 
-        NSRunAlertPanel(@"Executables are missing.", @"Please make sure that python, jsc, objj and nib2cib (or symlinks to them) are somewhere within one of these directories:\n\n/bin\n/usr/bin\n/usr/local/bin\n/usr/local/narwhal/bin\n~/bin\n\nThen launch XcodeCapp again.", @"Quit", nil, nil);
+        NSRunAlertPanel(
+                        @"Executables are missing.",
+                        @"Please make sure that each one of these executables:\n\n"
+                        @"%@\n\n"
+                        @"(or a symlink to it) is within one these directories:\n\n"
+                        @"%@\n\n"
+                        @"They do not all have to be in the same directory.",
+                        @"Quit",
+                        nil,
+                        nil,
+                        [self.xcc.executables componentsJoinedByString:@"\n"],
+                        [self.xcc.environmentPaths componentsJoinedByString:@"\n"]);
 
         [[NSApplication sharedApplication] terminate:self];
         return;

@@ -90,6 +90,7 @@ static NSPredicate * XCCDirectoriesToIgnorePredicate = nil;
 // An array of the default predicates used to ignore paths.
 static NSArray *XCCDefaultIgnoredPathPredicates = nil;
 
+
 @interface XcodeCapp ()
 
 // Only used with 10.6 when we don't have file-level FSEvents
@@ -175,7 +176,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
         @"*/AppKit/",
         @"*/Foundation/",
         @"*/Objective-J/",
-          @"*/*.environment/",
+        @"*/*.environment/",
         @"*/Build/",
         @"*/*.xcodeproj/",
         @"*/.*/",
@@ -240,11 +241,25 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     // Add possible executable paths to PATH
     self.environment = [NSProcessInfo processInfo].environment.mutableCopy;
 
-    NSArray *paths = @[@"/usr/local/bin", @"/usr/local/narwhal/bin", @"~/bin".stringByExpandingTildeInPath];
+    self.environmentPaths =
+        @[
+            @"/usr/local/bin",
+            @"/usr/local/narwhal/bin",
+            @"~/narwhal/bin",
+            @"~/bin"
+        ];
+
+    NSMutableArray *paths = [self.environmentPaths mutableCopy];
+
+    for (NSInteger i = 0; i < paths.count; ++i)
+        paths[i] = [paths[i] stringByExpandingTildeInPath];
+
     self.environment[@"PATH"] = [[paths componentsJoinedByString:@":"] stringByAppendingFormat:@":%@", self.environment[@"PATH"]];
 
     // Make sure we are using jsc as the narwhal engine!
     self.environment[@"NARWHAL_ENGINE"] = @"jsc";
+
+    self.executables = @[@"python", @"narwhal-jsc", @"objj", @"nib2cib"];
 }
 
 - (void)initObservers
@@ -1225,9 +1240,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
 
 - (BOOL)executablesAreAccessible
 {
-    NSArray *executables = [[NSBundle mainBundle] objectForInfoDictionaryKey:XCCMandatoryExecutablesKey];
-
-    for (NSString *executable in executables)
+    for (NSString *executable in self.executables)
     {
         NSDictionary *response = [self runTaskWithLaunchPath:@"/usr/bin/which"
                                                    arguments:@[executable]
@@ -1239,7 +1252,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
             self.executablePaths[executable] = path;
         else
         {
-            DDLogError(@"Could not find executable '%@' in PATH", executable);
+            DDLogError(@"Could not find executable '%@' in PATH: %@", executable, self.environment[@"PATH"]);
             return NO;
         }
     }

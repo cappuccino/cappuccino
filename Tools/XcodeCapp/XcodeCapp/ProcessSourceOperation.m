@@ -138,19 +138,26 @@
             {
                 notificationTitle = [(status == XCCStatusCodeError ? @"Error" : @"Warning") stringByAppendingString:@" parsing Objective-J source"];
 
-                NSArray *errors = [response propertyList];
-
-                for (NSDictionary *error in errors)
+                @try
                 {
-                    NSMutableDictionary *info = [error mutableCopy];
-                    info[@"projectId"] = self.projectId;
-                    info[@"message"] = [NSString stringWithFormat:@"%@, line %d\n%@", [error[@"path"] lastPathComponent], [error[@"line"] intValue], error[@"message"]];
-                    info[@"status"] = taskResult[@"status"];
+                    NSArray *errors = [response propertyList];
 
-                    if (self.isCancelled)
-                        return;
-                    
-                    [center postNotificationName:XCCConversionDidGenerateErrorNotification object:self userInfo:info];
+                    for (NSDictionary *error in errors)
+                    {
+                        NSMutableDictionary *info = [error mutableCopy];
+                        info[@"projectId"] = self.projectId;
+                        info[@"message"] = [NSString stringWithFormat:@"%@, line %d\n%@", [error[@"path"] lastPathComponent], [error[@"line"] intValue], error[@"message"]];
+                        info[@"status"] = taskResult[@"status"];
+
+                        if (self.isCancelled)
+                            return;
+
+                        [center postNotificationName:XCCConversionDidGenerateErrorNotification object:self userInfo:info];
+                    }
+                }
+                @catch (NSException *exception)
+                {
+                    DDLogError(@"%@\n%@", exception.reason, response);
                 }
             }
 
