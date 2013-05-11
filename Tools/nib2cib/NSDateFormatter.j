@@ -22,6 +22,10 @@
 
 @import <Foundation/CPDateFormatter.j>
 
+@global CPDateFormatterBehavior10_0
+@global CPDateFormatterBehavior10_4
+@global CPDateFormatterMediumStyle
+
 @implementation CPDateFormatter (CPCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
@@ -30,7 +34,24 @@
 
     if (self)
     {
-        _dateStyle = CPDateFormatterShortStyle;
+        var attributes = [aCoder decodeObjectForKey:@"NS.attributes"];
+
+        _dateStyle = [attributes valueForKey:@"dateStyle"];
+        _timeStyle = [attributes valueForKey:@"timeStyle"];
+        _formatterBehavior = [attributes valueForKey:@"formatterBehavior"];
+
+        if ([attributes containsKey:@"doesRelativeDateFormatting"])
+            _doesRelativeDateFormatting = [attributes valueForKey:@"doesRelativeDateFormatting"];
+
+        _dateFormat = [aCoder decodeObjectForKey:@"NS.format"];
+        _allowNaturalLanguage = [aCoder decodeBoolForKey:@"NS.natural"];
+
+        if (_formatterBehavior == CPDateFormatterBehavior10_0)
+        {
+            _formatterBehavior = CPDateFormatterBehavior10_4;
+            _timeStyle = CPDateFormatterMediumStyle;
+            _dateStyle = CPDateFormatterMediumStyle;
+        }
     }
 
     return self;

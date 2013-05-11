@@ -30,6 +30,8 @@
     [self assert:@"123,456" equals:[numberFormatter stringFromNumber:[CPNumber numberWithInt:123456]]];
     [self assert:@"1,234,567" equals:[numberFormatter stringFromNumber:[CPNumber numberWithInt:1234567]]];
 
+    [self assert:@"1,234,567" equals:[CPNumberFormatter localizedStringFromNumber:[CPNumber numberWithInt:1234567] numberStyle:CPNumberFormatterDecimalStyle]];
+
     [self assert:@"-1"          equals:[numberFormatter stringFromNumber:[CPNumber numberWithInt:-1]]];
     [self assert:@"-12"         equals:[numberFormatter stringFromNumber:[CPNumber numberWithInt:-12]]];
     [self assert:@"-123"        equals:[numberFormatter stringFromNumber:[CPNumber numberWithInt:-123]]];
@@ -37,6 +39,8 @@
     [self assert:@"-12,345"     equals:[numberFormatter stringFromNumber:[CPNumber numberWithInt:-12345]]];
     [self assert:@"-123,456"    equals:[numberFormatter stringFromNumber:[CPNumber numberWithInt:-123456]]];
     [self assert:@"-1,234,567"  equals:[numberFormatter stringFromNumber:[CPNumber numberWithInt:-1234567]]];
+
+    [self assert:@"-1,234,567" equals:[CPNumberFormatter localizedStringFromNumber:[CPNumber numberWithInt:-1234567] numberStyle:CPNumberFormatterDecimalStyle]];
 
     [numberFormatter setGroupingSeparator:@" "];
     [self assert:@"1" equals:[numberFormatter stringFromNumber:[CPNumber numberWithInt:1]]];

@@ -2687,6 +2687,7 @@ var themedButtonValues = nil,
         [
             [@"gradient-height",            31.0],
             [@"bezel-head-color",           bezelHeadColor],
+            [@"bezel-head-sheet-color",     solidColor],
             [@"solid-color",                solidColor],
 
             [@"title-font",                 [CPFont boldSystemFontOfSize:CPFontCurrentSystemSize]],

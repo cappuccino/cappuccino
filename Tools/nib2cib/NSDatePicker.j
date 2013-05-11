@@ -2,7 +2,8 @@
  * NSDatePicker.j
  * nib2cib
  *
- * Created by cacaodev.
+ * Created by Alexendre Wilhelm.
+ * Copyright 2013 The Cappuccino Foundation.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -53,6 +54,7 @@ var NSDatePickerDefaultSize = 22,
     _dateValue = [cell objectValue];
     _backgroundColor = [cell backgroundColor];
     _drawsBackground = [cell drawsBackground];
+    _formatter = [cell formatter];
 
     [self setBezeled:[cell isBezeled]];
     [self setBordered:[cell isBordered]];
@@ -172,15 +174,16 @@ var NSDatePickerDefaultSize = 22,
 
 @implementation NSDatePickerCell : NSCell
 {
-    BOOL        _drawsBackground    @accessors(getter=drawsBackground);
-    CPDate      _minDate            @accessors(getter=minDate);
-    CPDate      _maxDate            @accessors(getter=maxDate);
-    CPInteger   _datePickerMode     @accessors(getter=datePickerMode);
-    CPInteger   _datePickerElements @accessors(getter=datePickerElements);
-    CPinteger   _datePickerType     @accessors(getter=datePickerType);
-    double      _timeInterval       @accessors(getter=timeInterval);
-    CPColor     _textColor          @accessors(getter=textColor);
-    CPColor     _backgroundColor    @accessors(getter=backgroundColor);
+    BOOL            _drawsBackground    @accessors(getter=drawsBackground);
+    CPDate          _minDate            @accessors(getter=minDate);
+    CPDate          _maxDate            @accessors(getter=maxDate);
+    CPDateFormatter _formatter          @accessors(getter=formatter);
+    CPInteger       _datePickerMode     @accessors(getter=datePickerMode);
+    CPInteger       _datePickerElements @accessors(getter=datePickerElements);
+    CPinteger       _datePickerType     @accessors(getter=datePickerType);
+    double          _timeInterval       @accessors(getter=timeInterval);
+    CPColor         _textColor          @accessors(getter=textColor);
+    CPColor         _backgroundColor    @accessors(getter=backgroundColor);
 }
 
 - (id)initWithCoder:(CPCoder)aCoder
@@ -204,6 +207,9 @@ var NSDatePickerDefaultSize = 22,
         _textColor = [aCoder decodeObjectForKey:@"NSTextColor"];
         _backgroundColor = [aCoder decodeObjectForKey:@"NSBackgroundColor"];
         _isBordered = _isBezeled;
+
+        if ([aCoder containsValueForKey:@"NSFormatter"])
+            _formatter = [aCoder decodeObjectForKey:@"NSFormatter"];
 
         if ([aCoder containsValueForKey:@"NSDrawsBackground"])
             _drawsBackground = [aCoder decodeBoolForKey:@"NSDrawsBackground"];
