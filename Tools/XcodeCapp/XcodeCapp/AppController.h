@@ -24,16 +24,16 @@
 
 @interface AppController : NSObject <NSApplicationDelegate, NSMenuDelegate>
 
-@property (strong) IBOutlet NSMenu     *statusMenu;
-@property (assign) IBOutlet NSMenuItem *menuItemHistory;
-@property (assign) IBOutlet NSMenuItem *menuItemOpenProject;
-@property (assign) IBOutlet NSMenuItem *menuItemShowInFinder;
+@property (strong) IBOutlet NSMenu                *statusMenu;
+@property (unsafe_unretained) IBOutlet NSMenuItem *menuItemHistory;
+@property (unsafe_unretained) IBOutlet NSMenuItem *menuItemOpenProject;
+@property (unsafe_unretained) IBOutlet NSMenuItem *menuItemShowInFinder;
 
 @property (strong) IBOutlet NSPanel    *aboutWindow;
 @property (strong) IBOutlet NSWindow   *preferencesWindow;
 
-@property (strong) IBOutlet NSWindow   *helpWindow;
-@property (assign) IBOutlet PDFView    *helpView;
+@property (strong) IBOutlet NSWindow           *helpWindow;
+@property (unsafe_unretained) IBOutlet PDFView *helpView;
 
 @property (strong) IBOutlet NSUserDefaultsController    *preferencesController;
 @property (strong) IBOutlet XcodeCapp                   *xcc;
@@ -43,8 +43,6 @@
 - (IBAction)loadProject:(id)aSender;
 - (IBAction)openHelp:(id)aSender;
 - (IBAction)openAbout:(id)aSender;
-
-- (BOOL)loadProjectAtPath:(NSString *)path;
 
 @end
 
