@@ -39,6 +39,7 @@ AppController *SharedAppControllerInstance = nil;
 @property NSString            *finderName;
 @property BOOL                appFinishedLaunching;
 @property NSString            *pathToOpenAtLaunch;
+@property NSFileManager       *fm;
 
 @end
 
@@ -55,6 +56,7 @@ AppController *SharedAppControllerInstance = nil;
 - (void)awakeFromNib
 {    
     SharedAppControllerInstance = self;
+    self.fm = [NSFileManager defaultManager];
         
     [self registerDefaultPreferences];
     [self initLogging];
@@ -77,7 +79,7 @@ AppController *SharedAppControllerInstance = nil;
         NSString *path = filename.stringByStandardizingPath;
         
         if (self.appFinishedLaunching)
-            return [self loadProjectAtPath:path];
+            return [self loadProjectAtPath:path reopening:YES];
         else
             self.pathToOpenAtLaunch = path;
     }
@@ -110,7 +112,7 @@ AppController *SharedAppControllerInstance = nil;
         return;
     }
 
-    // If we were opened from the command line, xcc.projectPath will be set.
+    // If we were opened from the command line, self.pathToOpenAtLaunch will be set.
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     
     if (!self.pathToOpenAtLaunch)
@@ -124,7 +126,7 @@ AppController *SharedAppControllerInstance = nil;
     if (self.pathToOpenAtLaunch)
     {
         if ([[NSFileManager defaultManager] fileExistsAtPath:self.pathToOpenAtLaunch])
-            [self loadProjectAtPath:self.pathToOpenAtLaunch];
+            [self loadProjectAtPath:self.pathToOpenAtLaunch reopening:YES];
         else
             [defaults removeObjectForKey:kDefaultLastOpenedPath];
     }
@@ -170,9 +172,15 @@ AppController *SharedAppControllerInstance = nil;
     [DDLogLevel setLogLevel:LOG_LEVEL_VERBOSE];
 #else
     [DDLog addLogger:[DDASLLogger sharedInstance]];
-
+    
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    [DDLogLevel setLogLevel:(int)[defaults integerForKey:kDefaultLogLevel]];
+    int logLevel = (int)[defaults integerForKey:kDefaultLogLevel];
+    NSUInteger modifiers = [NSEvent modifierFlags];
+
+    if (modifiers & NSAlternateKeyMask)
+        logLevel = LOG_LEVEL_VERBOSE;
+
+    [DDLogLevel setLogLevel:logLevel];
 #endif
 }
 
@@ -341,7 +349,7 @@ AppController *SharedAppControllerInstance = nil;
         return;
 
     NSString *projectPath = [[openPanel.URLs[0] path] stringByStandardizingPath];
-    [self loadProjectAtPath:projectPath];
+    [self loadProjectAtPath:projectPath reopening:YES];
 }
 
 - (void)closeProject:(id)aSender
@@ -357,7 +365,7 @@ AppController *SharedAppControllerInstance = nil;
 
 - (void)switchToProject:(NSMenuItem *)aSender
 {
-    [self loadProjectAtPath:aSender.representedObject];
+    [self loadProjectAtPath:aSender.representedObject reopening:NO];
 }
 
 - (void)clearProjectHistory:(id)aSender
@@ -405,22 +413,16 @@ AppController *SharedAppControllerInstance = nil;
 - (BOOL)validateMenuItem:(NSMenuItem *)aMenuItem
 {
     NSMenu *menu = aMenuItem.menu;
-    
-    if (aMenuItem == self.menuItemOpenProject)
-    {
-        return !!self.xcc.projectPath;
-    }
-    else if (menu == self.recentMenu)
+
+    if (menu == self.recentMenu)
     {
         // Disable recent items if they don't exist or are not directories,
         // but enable the Clear History item, which is last in the menu.
         if ([menu indexOfItem:aMenuItem] == menu.itemArray.count - 1)
             return YES;
         
-        NSFileManager *fm = [NSFileManager defaultManager];
-
-        BOOL exists, isDirectory;
-        exists = [fm fileExistsAtPath:aMenuItem.representedObject isDirectory:&isDirectory];
+        BOOL isDirectory;
+        BOOL exists = [self.fm fileExistsAtPath:aMenuItem.representedObject isDirectory:&isDirectory];
 
         return exists && isDirectory;
     }
@@ -437,9 +439,9 @@ AppController *SharedAppControllerInstance = nil;
 
 #pragma mark - Private Helpers
 
-- (BOOL)loadProjectAtPath:(NSString *)path
+- (BOOL)loadProjectAtPath:(NSString *)path reopening:(BOOL)reopen
 {
-    if ([self.xcc.projectPath isEqualToString:path])
+    if (!reopen && [self.xcc.projectPath isEqualToString:path])
         return YES;
     
     [self closeProject:self];

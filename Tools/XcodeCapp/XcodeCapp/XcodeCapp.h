@@ -55,7 +55,7 @@ extern NSString * const XCCProjectDidFinishLoadingNotification;
     still queued from the previous load, we compare the projectId returned by a notification
     with the current projectId. If they don't match, we let the notification drain.
 */
-@property NSInteger    projectId;
+@property NSInteger projectId;
 
 // An array of paths we add to the NSTask environment
 @property NSArray *environmentPaths;
@@ -68,6 +68,9 @@ extern NSString * const XCCProjectDidFinishLoadingNotification;
 
 // Full path to the Cappuccino project root directory
 @property NSString *projectPath;
+
+// Full path to the <project>.xcodeproj
+@property NSString *xcodeProjectPath;
 
 // Full path to parser.j
 @property NSString *parserPath;
