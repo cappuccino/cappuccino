@@ -11,14 +11,15 @@
 
 @implementation AppController : CPObject
 {
+    CPImage iconImage;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
     var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask],
-        contentView = [theWindow contentView];
+        contentView = [theWindow contentView],
 
-    tableView = [[CPTableView alloc] initWithFrame:CGRectMake(0.0, 0.0, 400.0, 400.0)];
+        tableView = [[CPTableView alloc] initWithFrame:CGRectMake(0.0, 0.0, 400.0, 400.0)];
 
     [tableView setAllowsMultipleSelection:YES];
     [tableView setAllowsColumnSelection:YES];
@@ -28,7 +29,7 @@
     [tableView setDelegate:self];
     [tableView setDataSource:self];
 
-    var iconView = [[CPImageView alloc] initWithFrame:CGRectMake(16,16,0,0)];
+    var iconView = [[CPImageView alloc] initWithFrame:CGRectMake(16, 16, 0, 0)];
     [iconView setImageScaling:CPImageScaleNone];
     var iconColumn = [[CPTableColumn alloc] initWithIdentifier:"icons"];
     [iconColumn setWidth:32.0];
@@ -36,7 +37,7 @@
     [iconColumn setDataView:iconView];
     [tableView addTableColumn:iconColumn];
 
-    iconImage = [[CPImage alloc] initWithContentsOfFile:"http://cappuccino-project.org/images/favicon.png" size:CGSizeMake(16,16)];
+    iconImage = [[CPImage alloc] initWithContentsOfFile:"http://www.cappuccino-project.org/img/favicon.ico" size:CGSizeMake(16, 16)];
 
 
     for (var i = 1; i <= 5; i++)
@@ -68,16 +69,13 @@
     [tableView setDelegate:self];
     [tableView setDataSource:self];
 
-    var iconView = [[CPImageView alloc] initWithFrame:CGRectMake(16,16,0,0)];
+    var iconView = [[CPImageView alloc] initWithFrame:CGRectMake(16, 16, 0, 0)];
     [iconView setImageScaling:CPImageScaleNone];
     var iconColumn = [[CPTableColumn alloc] initWithIdentifier:"icons"];
     [iconColumn setWidth:32.0];
     [iconColumn setMinWidth:32.0];
     [iconColumn setDataView:iconView];
     [tableView addTableColumn:iconColumn];
-
-    iconImage = [[CPImage alloc] initWithContentsOfFile:"http://cappuccino-project.org/images/favicon.png" size:CGSizeMake(16,16)];
-
 
     for (var i = 1; i <= 5; i++)
     {

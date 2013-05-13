@@ -160,6 +160,14 @@ var NumberRegex = new RegExp('(-)?(\\d*)(\\.(\\d*))?');
     }
 }
 
++ (CPString)localizedStringFromNumber:(CPNumber)num numberStyle:(CPNumberFormatterStyle)localizationStyle
+{
+    var formatter = [[CPNumberFormatter alloc] init];
+    [formatter setNumberStyle:localizationStyle];
+
+    return [formatter stringFromNumber:num];
+}
+
 - (CPNumber)numberFromString:(CPString)aString
 {
     if (_generatesDecimalNumbers)

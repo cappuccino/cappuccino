@@ -2070,6 +2070,14 @@ var themedButtonValues = nil,
                 height: 1.0
             }),
 
+        bezelSheetHeadColor = PatternColor(
+            "window-standard-head-sheet-solid{position}.png",
+            {
+                positions: "full",
+                width: 5.0,
+                height: 1.0
+            }),
+
         bezelColor = PatternColor(
             "window-standard{position}.png",
             {
@@ -2104,6 +2112,7 @@ var themedButtonValues = nil,
             [@"bezel-head-color",           bezelHeadColor["inactive"], CPThemeStateNormal],
             [@"bezel-head-color",           bezelHeadColor["@"], CPThemeStateKeyWindow],
             [@"bezel-head-color",           bezelHeadColor["@"], CPThemeStateMainWindow],
+            [@"bezel-head-sheet-color",     bezelSheetHeadColor],
             [@"solid-color",                solidColor],
 
             [@"title-font",                 [CPFont boldSystemFontOfSize:CPFontCurrentSystemSize]],

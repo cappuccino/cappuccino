@@ -17,6 +17,11 @@ var ENV = require("system").env,
 
 app ("__project.nameasidentifier__", function(task)
 {
+    ENV["OBJJ_INCLUDE_PATHS"] = "Frameworks";
+
+    if (configuration === "Debug")
+        ENV["OBJJ_INCLUDE_PATHS"] = FILE.join(ENV["OBJJ_INCLUDE_PATHS"], configuration);
+
     task.setBuildIntermediatesPath(FILE.join("Build", "__project.nameasidentifier__.build", configuration));
     task.setBuildPath(FILE.join("Build", configuration));
 
@@ -26,7 +31,7 @@ app ("__project.nameasidentifier__", function(task)
     task.setAuthor("__organization.name__");
     task.setEmail("__organization.email__");
     task.setSummary("__project.name__");
-    task.setSources((new FileList("**/*.j")).exclude(FILE.join("Build", "**")));
+    task.setSources(new FileList("**/*.j").exclude(FILE.join("Build", "**")).exclude(FILE.join("Frameworks", "Source", "**")));
     task.setResources(new FileList("Resources/**"));
     task.setIndexFilePath("index.html");
     task.setInfoPlistPath("Info.plist");
