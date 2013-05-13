@@ -124,6 +124,26 @@ GlobalVariableMaybeWarning.prototype.checkIfWarning = function(/* Scope */ st)
     return !st.getLvar(identifier) && typeof global[identifier] === "undefined" && typeof window[identifier] === "undefined" && !st.compiler.getClassDef(identifier);
 }
 
+function StringBuffer()
+{
+    this.atoms = [];
+}
+
+StringBuffer.prototype.toString = function()
+{
+    return this.atoms.join("");
+}
+
+StringBuffer.prototype.concat = function(aString)
+{
+    this.atoms.push(aString);
+}
+
+StringBuffer.prototype.isEmpty = function()
+{
+    return this.atoms.length !== 0;
+}
+
 var currentCompilerFlags = "";
 
 var reservedIdentifiers = exports.acorn.makePredicate("self _cmd undefined localStorage arguments");
@@ -434,9 +454,9 @@ function checkCanDereference(st, node) {
 // Surround expression with parentheses
 function surroundExpression(c) {
     return function(node, st, override) {
-      CONCAT(st.compiler.jsBuffer, "(");
+      st.compiler.jsBuffer.concat("(");
       c(node, st, override);
-      CONCAT(st.compiler.jsBuffer, ")");
+      st.compiler.jsBuffer.concat(")");
     }
 }
 
@@ -508,7 +528,7 @@ Program: function(node, st, c) {
     for (var i = 0; i < node.body.length; ++i) {
       c(node.body[i], st, "Statement");
     }
-    if (!generate) CONCAT(compiler.jsBuffer,compiler.source.substring(compiler.lastPos, node.end));
+    if (!generate) compiler.jsBuffer.concat(compiler.source.substring(compiler.lastPos, node.end));
 
     // Check maybe warnings
     var maybeWarnings = st.maybeWarnings();
@@ -526,26 +546,26 @@ BlockStatement: function(node, st, c) {
     if (generate) {
       st.indentBlockLevel = typeof st.indentBlockLevel === "undefined" ? 0 : st.indentBlockLevel + 1;
       buffer = compiler.jsBuffer;
-      CONCAT(buffer, indentation.substring(2));
-      CONCAT(buffer, "{\n");
+      buffer.concat(indentation.substring(2));
+      buffer.concat("{\n");
     }
     for (var i = 0; i < node.body.length; ++i) {
       c(node.body[i], st, "Statement");
     }
     if (generate) {
-      CONCAT(buffer, indentation.substring(2));
-      CONCAT(buffer, "}");
+      buffer.concat(indentation.substring(2));
+      buffer.concat("}");
       if (st.isDecl || st.indentBlockLevel > 0)
-        CONCAT(buffer, "\n");
+        buffer.concat("\n");
       st.indentBlockLevel--;
     }
 },
 ExpressionStatement: function(node, st, c) {
     var compiler = st.compiler,
         generate = compiler.generate;
-    if (generate) CONCAT(compiler.jsBuffer, indentation);
+    if (generate) compiler.jsBuffer.concat(indentation);
     c(node.expression, st, "Expression");
-    if (generate) CONCAT(compiler.jsBuffer, ";\n");
+    if (generate) compiler.jsBuffer.concat(";\n");
 },
 IfStatement: function(node, st, c) {
     var compiler = st.compiler,
@@ -554,13 +574,13 @@ IfStatement: function(node, st, c) {
     if (generate) {
       buffer = compiler.jsBuffer;
       if (!st.superNodeIsElse)
-        CONCAT(buffer, indentation);
+        buffer.concat(indentation);
       else
         delete st.superNodeIsElse;
-      CONCAT(buffer, "if (");
+      buffer.concat("if (");
     }
     c(node.test, st, "Expression");
-    if (generate) CONCAT(buffer, ")\n");
+    if (generate) buffer.concat(")\n");
     indentation += indentStep;
     c(node.consequent, st, "Statement");
     indentation = indentation.substring(indentationSpaces);
@@ -568,8 +588,8 @@ IfStatement: function(node, st, c) {
     if (alternate) {
       var alternateNotIf = alternate.type !== "IfStatement";
       if (generate) {
-        CONCAT(buffer, indentation);
-        CONCAT(buffer, alternateNotIf ? "else\n" : "else ");
+        buffer.concat(indentation);
+        buffer.concat(alternateNotIf ? "else\n" : "else ");
       }
       if (alternateNotIf)
         indentation += indentStep;
@@ -584,35 +604,35 @@ LabeledStatement: function(node, st, c) {
     var compiler = st.compiler;
     if (compiler.generate) {
       var buffer = compiler.jsBuffer;
-      CONCAT(buffer, indentation);
-      CONCAT(buffer, node.label.name);
-      CONCAT(buffer, ": ");
+      buffer.concat(indentation);
+      buffer.concat(node.label.name);
+      buffer.concat(": ");
     }
     c(node.body, st, "Statement");
 },
 BreakStatement: function(node, st, c) {
     var compiler = st.compiler;
     if (compiler.generate) {
-      CONCAT(compiler.jsBuffer, indentation);
+      compiler.jsBuffer.concat(indentation);
       if (node.label) {
-        CONCAT(compiler.jsBuffer, "break ");
-        CONCAT(compiler.jsBuffer, node.label.name);
-        CONCAT(compiler.jsBuffer, ";\n");
+        compiler.jsBuffer.concat("break ");
+        compiler.jsBuffer.concat(node.label.name);
+        compiler.jsBuffer.concat(";\n");
       } else
-        CONCAT(compiler.jsBuffer, "break;\n");
+        compiler.jsBuffer.concat("break;\n");
     }
 },
 ContinueStatement: function(node, st, c) {
     var compiler = st.compiler;
     if (compiler.generate) {
       var buffer = compiler.jsBuffer;
-      CONCAT(buffer, indentation);
+      buffer.concat(indentation);
       if (node.label) {
-        CONCAT(buffer, "continue ");
-        CONCAT(buffer, node.label.name);
-        CONCAT(buffer, ";\n");
+        buffer.concat("continue ");
+        buffer.concat(node.label.name);
+        buffer.concat(";\n");
       } else
-        CONCAT(buffer, "continue;\n");
+        buffer.concat("continue;\n");
     }
 },
 WithStatement: function(node, st, c) {
@@ -621,11 +641,11 @@ WithStatement: function(node, st, c) {
         buffer;
     if (generate) {
       buffer = compiler.jsBuffer;
-      CONCAT(buffer, indentation);
-      CONCAT(buffer, "with(");
+      buffer.concat(indentation);
+      buffer.concat("with(");
     }
     c(node.object, st, "Expression");
-    if (generate) CONCAT(buffer, ")\n");
+    if (generate) buffer.concat(")\n");
     indentation += indentStep;
     c(node.body, st, "Statement");
     indentation = indentation.substring(indentationSpaces);
@@ -636,30 +656,30 @@ SwitchStatement: function(node, st, c) {
         buffer;
     if (generate) {
       buffer = compiler.jsBuffer;
-      CONCAT(buffer, indentation);
-      CONCAT(buffer, "switch(");
+      buffer.concat(indentation);
+      buffer.concat("switch(");
     }
     c(node.discriminant, st, "Expression");
-    if (generate) CONCAT(buffer, ") {\n");
+    if (generate) buffer.concat(") {\n");
     for (var i = 0; i < node.cases.length; ++i) {
       var cs = node.cases[i];
       if (cs.test) {
         if (generate) {
-          CONCAT(buffer, indentation);
-          CONCAT(buffer, "case ");
+          buffer.concat(indentation);
+          buffer.concat("case ");
         }
         c(cs.test, st, "Expression");
-        if (generate) CONCAT(buffer, ":\n");
+        if (generate) buffer.concat(":\n");
       } else
-        if (generate) CONCAT(buffer, "default:\n");
+        if (generate) buffer.concat("default:\n");
       indentation += indentStep;
       for (var j = 0; j < cs.consequent.length; ++j)
         c(cs.consequent[j], st, "Statement");
       indentation = indentation.substring(indentationSpaces);
     }
     if (generate) {
-      CONCAT(buffer, indentation);
-      CONCAT(buffer, "}\n");
+      buffer.concat(indentation);
+      buffer.concat("}\n");
     }
 },
 ReturnStatement: function(node, st, c) {
@@ -668,14 +688,14 @@ ReturnStatement: function(node, st, c) {
         buffer;
     if (generate) {
       buffer = compiler.jsBuffer;
-      CONCAT(buffer, indentation);
-      CONCAT(buffer, "return");
+      buffer.concat(indentation);
+      buffer.concat("return");
     }
     if (node.argument) {
-      if (generate) CONCAT(buffer, " ");
+      if (generate) buffer.concat(" ");
       c(node.argument, st, "Expression");
     }
-    if (generate) CONCAT(buffer, ";\n");
+    if (generate) buffer.concat(";\n");
 },
 ThrowStatement: function(node, st, c) {
     var compiler = st.compiler,
@@ -683,11 +703,11 @@ ThrowStatement: function(node, st, c) {
         buffer;
     if (generate) {
       buffer = compiler.jsBuffer;
-      CONCAT(buffer, indentation);
-      CONCAT(buffer, "throw ");
+      buffer.concat(indentation);
+      buffer.concat("throw ");
     }
     c(node.argument, st, "Expression");
-    if (generate) CONCAT(buffer, ";\n");
+    if (generate) buffer.concat(";\n");
 },
 TryStatement: function(node, st, c) {
     var compiler = st.compiler,
@@ -695,8 +715,8 @@ TryStatement: function(node, st, c) {
         buffer;
     if (generate) {
       buffer = compiler.jsBuffer;
-      CONCAT(buffer, indentation);
-      CONCAT(buffer, "try");
+      buffer.concat(indentation);
+      buffer.concat("try");
     }
     indentation += indentStep;
     c(node.block, st, "Statement");
@@ -707,10 +727,10 @@ TryStatement: function(node, st, c) {
           name = param.name;
       inner.vars[name] = {type: "catch clause", node: param};
       if (generate) {
-        CONCAT(buffer, indentation);
-        CONCAT(buffer, "catch(");
-        CONCAT(buffer, name);
-        CONCAT(buffer, ") ");
+        buffer.concat(indentation);
+        buffer.concat("catch(");
+        buffer.concat(name);
+        buffer.concat(") ");
       }
       indentation += indentStep;
       c(handler.body, inner, "ScopeBody");
@@ -719,8 +739,8 @@ TryStatement: function(node, st, c) {
     }
     if (node.finalizer) {
       if (generate) {
-        CONCAT(buffer, indentation);
-        CONCAT(buffer, "finally ");
+        buffer.concat(indentation);
+        buffer.concat("finally ");
       }
       indentation += indentStep;
       c(node.finalizer, st, "Statement");
@@ -733,11 +753,11 @@ WhileStatement: function(node, st, c) {
         buffer;
     if (generate) {
       buffer = compiler.jsBuffer;
-      CONCAT(buffer, indentation);
-      CONCAT(buffer, "while (");
+      buffer.concat(indentation);
+      buffer.concat("while (");
     }
     c(node.test, st, "Expression");
-    if (generate) CONCAT(buffer, ")\n");
+    if (generate) buffer.concat(")\n");
     indentation += indentStep;
     c(node.body, st, "Statement");
     indentation = indentation.substring(indentationSpaces);
@@ -748,18 +768,18 @@ DoWhileStatement: function(node, st, c) {
         buffer;
     if (generate) {
       buffer = compiler.jsBuffer;
-      CONCAT(buffer, indentation);
-      CONCAT(buffer, "do\n");
+      buffer.concat(indentation);
+      buffer.concat("do\n");
     }
     indentation += indentStep;
     c(node.body, st, "Statement");
     indentation = indentation.substring(indentationSpaces);
     if (generate) {
-      CONCAT(buffer, indentation);
-      CONCAT(buffer, "while (");
+      buffer.concat(indentation);
+      buffer.concat("while (");
     }
     c(node.test, st, "Expression");
-    if (generate) CONCAT(buffer, ");\n");
+    if (generate) buffer.concat(");\n");
 },
 ForStatement: function(node, st, c) {
     var compiler = st.compiler,
@@ -767,15 +787,15 @@ ForStatement: function(node, st, c) {
         buffer;
     if (generate) {
       buffer = compiler.jsBuffer;
-      CONCAT(buffer, indentation);
-      CONCAT(buffer, "for (");
+      buffer.concat(indentation);
+      buffer.concat("for (");
     }
     if (node.init) c(node.init, st, "ForInit");
-    if (generate) CONCAT(buffer, "; ");
+    if (generate) buffer.concat("; ");
     if (node.test) c(node.test, st, "Expression");
-    if (generate) CONCAT(buffer, "; ");
+    if (generate) buffer.concat("; ");
     if (node.update) c(node.update, st, "Expression");
-    if (generate) CONCAT(buffer, ")\n");
+    if (generate) buffer.concat(")\n");
     indentation += indentStep;
     c(node.body, st, "Statement");
     indentation = indentation.substring(indentationSpaces);
@@ -786,13 +806,13 @@ ForInStatement: function(node, st, c) {
         buffer;
     if (generate) {
       buffer = compiler.jsBuffer;
-      CONCAT(buffer, indentation);
-      CONCAT(buffer, "for (");
+      buffer.concat(indentation);
+      buffer.concat("for (");
     }
     c(node.left, st, "ForInit");
-    if (generate) CONCAT(buffer, " in ");
+    if (generate) buffer.concat(" in ");
     c(node.right, st, "Expression");
-    if (generate) CONCAT(buffer, ")\n");
+    if (generate) buffer.concat(")\n");
     indentation += indentStep;
     c(node.body, st, "Statement");
     indentation = indentation.substring(indentationSpaces);
@@ -811,8 +831,8 @@ DebuggerStatement: function(node, st, c) {
     var compiler = st.compiler;
     if (compiler.generate) {
       var buffer = compiler.jsBuffer;
-      CONCAT(buffer, indentation);
-      CONCAT(buffer, "debugger;\n");
+      buffer.concat(indentation);
+      buffer.concat("debugger;\n");
     }
 },
 Function: function(node, st, c) {
@@ -829,23 +849,23 @@ Function: function(node, st, c) {
     (decl ? st : inner).vars[node.id.name] =
       {type: decl ? "function" : "function name", node: node.id};
     if (generate) {
-      CONCAT(buffer, node.id.name);
-      CONCAT(buffer, " = ");
+      buffer.concat(node.id.name);
+      buffer.concat(" = ");
     } else {
-      CONCAT(buffer, compiler.source.substring(compiler.lastPos, node.start));
-      CONCAT(buffer, node.id.name);
-      CONCAT(buffer, " = function");
+      buffer.concat(compiler.source.substring(compiler.lastPos, node.start));
+      buffer.concat(node.id.name);
+      buffer.concat(" = function");
       compiler.lastPos = node.id.end;
     }
   }
   if (generate) {
-    CONCAT(buffer, "function(");
+    buffer.concat("function(");
     for (var i = 0; i < node.params.length; ++i) {
       if (i)
-        CONCAT(buffer, ", ");
-      CONCAT(buffer, node.params[i].name);
+        buffer.concat(", ");
+      buffer.concat(node.params[i].name);
     }
-    CONCAT(buffer, ")\n");
+    buffer.concat(")\n");
   }
   indentation += indentStep;
   c(node.body, inner, "ScopeBody");
@@ -858,8 +878,8 @@ VariableDeclaration: function(node, st, c) {
       buffer;
   if (generate) {
     buffer = compiler.jsBuffer;
-    if (!st.isFor) CONCAT(buffer, indentation);
-    CONCAT(buffer, "var ");
+    if (!st.isFor) buffer.concat(indentation);
+    buffer.concat("var ");
   }
   for (var i = 0; i < node.declarations.length; ++i) {
     var decl = node.declarations[i],
@@ -867,17 +887,17 @@ VariableDeclaration: function(node, st, c) {
     if (i)
       if (generate) {
         if (st.isFor)
-          CONCAT(buffer, ", ");
+          buffer.concat(", ");
         else {
-          CONCAT(buffer, ",\n");
-          CONCAT(buffer, indentation);
-          CONCAT(buffer, "    ");
+          buffer.concat(",\n");
+          buffer.concat(indentation);
+          buffer.concat("    ");
         }
       }
     st.vars[identifier] = {type: "var", node: decl.id};
-    if (generate) CONCAT(buffer, identifier);
+    if (generate) buffer.concat(identifier);
     if (decl.init) {
-      if (generate) CONCAT(buffer, " = ");
+      if (generate) buffer.concat(" = ");
       c(decl.init, st, "Expression");
     }
     // FIXME: Extract to function
@@ -894,58 +914,58 @@ VariableDeclaration: function(node, st, c) {
       }
     }
   }
-  if (generate && !st.isFor) CONCAT(compiler.jsBuffer, ";\n"); // Don't add ';' if this is a for statement but do it if this is a statement
+  if (generate && !st.isFor) compiler.jsBuffer.concat(";\n"); // Don't add ';' if this is a for statement but do it if this is a statement
 },
 ThisExpression: function(node, st, c) {
     var compiler = st.compiler;
-    if (compiler.generate) CONCAT(compiler.jsBuffer, "this");
+    if (compiler.generate) compiler.jsBuffer.concat("this");
 },
 ArrayExpression: function(node, st, c) {
   var compiler = st.compiler,
       generate = compiler.generate;
-  if (generate) CONCAT(compiler.jsBuffer, "[");
+  if (generate) compiler.jsBuffer.concat("[");
     for (var i = 0; i < node.elements.length; ++i) {
       var elt = node.elements[i];
       if (i !== 0)
-          if (generate) CONCAT(compiler.jsBuffer, ", ");
+          if (generate) compiler.jsBuffer.concat(", ");
 
       if (elt) c(elt, st, "Expression");
     }
-  if (generate) CONCAT(compiler.jsBuffer, "]");
+  if (generate) compiler.jsBuffer.concat("]");
 },
 ObjectExpression: function(node, st, c) {
     var compiler = st.compiler,
         generate = compiler.generate;
-    if (generate) CONCAT(compiler.jsBuffer, "{");
+    if (generate) compiler.jsBuffer.concat("{");
     for (var i = 0; i < node.properties.length; ++i)
     {
         var prop = node.properties[i];
         if (generate) {
           if (i)
-            CONCAT(compiler.jsBuffer, ", ");
+            compiler.jsBuffer.concat(", ");
           st.isPropertyKey = true;
           c(prop.key, st, "Expression");
           delete st.isPropertyKey;
-          CONCAT(compiler.jsBuffer, ": ");
+          compiler.jsBuffer.concat(": ");
         } else if (prop.key.raw && prop.key.raw.charAt(0) === "@") {
-          CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, prop.key.start));
+          compiler.jsBuffer.concat(compiler.source.substring(compiler.lastPos, prop.key.start));
           compiler.lastPos = prop.key.start + 1;
         }
 
         c(prop.value, st, "Expression");
     }
-    if (generate) CONCAT(compiler.jsBuffer, "}");
+    if (generate) compiler.jsBuffer.concat("}");
 },
 SequenceExpression: function(node, st, c) {
     var compiler = st.compiler,
         generate = compiler.generate;
-    if (generate) CONCAT(compiler.jsBuffer, "(");
+    if (generate) compiler.jsBuffer.concat("(");
     for (var i = 0; i < node.expressions.length; ++i) {
       if (generate && i !== 0)
-        CONCAT(compiler.jsBuffer, ", ");
+        compiler.jsBuffer.concat(", ");
       c(node.expressions[i], st, "Expression");
     }
-    if (generate) CONCAT(compiler.jsBuffer, ")");
+    if (generate) compiler.jsBuffer.concat(")");
 },
 UnaryExpression: function(node, st, c) {
     var compiler = st.compiler,
@@ -953,13 +973,13 @@ UnaryExpression: function(node, st, c) {
         argument = node.argument;
     if (generate) {
       if (node.prefix) {
-        CONCAT(compiler.jsBuffer, node.operator);
+        compiler.jsBuffer.concat(node.operator);
         if (wordPrefixOperators(node.operator))
-          CONCAT(compiler.jsBuffer, " ");
+          compiler.jsBuffer.concat(" ");
         (nodePrecedence(node, argument) ? surroundExpression(c) : c)(argument, st, "Expression");
       } else {
         (nodePrecedence(node, argument) ? surroundExpression(c) : c)(argument, st, "Expression");
-        CONCAT(compiler.jsBuffer, node.operator);
+        compiler.jsBuffer.concat(node.operator);
       }
     } else {
       c(argument, st, "Expression");
@@ -972,21 +992,21 @@ UpdateExpression: function(node, st, c) {
         checkCanDereference(st, node.argument);
 
         // @deref(x)++ and ++@deref(x) require special handling.
-        if (!generate) CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, node.start));
+        if (!generate) compiler.jsBuffer.concat(compiler.source.substring(compiler.lastPos, node.start));
 
         // Output the dereference function, "(...)(z)"
-        CONCAT(compiler.jsBuffer, (node.prefix ? "" : "(") + "(");
+        compiler.jsBuffer.concat((node.prefix ? "" : "(") + "(");
 
         // The thing being dereferenced.
         if (!generate) compiler.lastPos = node.argument.expr.start;
         c(node.argument.expr, st, "Expression");
-        if (!generate) CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, node.argument.expr.end));
-        CONCAT(compiler.jsBuffer, ")(");
+        if (!generate) compiler.jsBuffer.concat(compiler.source.substring(compiler.lastPos, node.argument.expr.end));
+        compiler.jsBuffer.concat(")(");
 
         if (!generate) compiler.lastPos = node.argument.start;
         c(node.argument, st, "Expression");
-        if (!generate) CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, node.argument.end));
-        CONCAT(compiler.jsBuffer, " " + node.operator.substring(0, 1) + " 1)" + (node.prefix ? "" : node.operator == '++' ? " - 1)" : " + 1)"));
+        if (!generate) compiler.jsBuffer.concat(compiler.source.substring(compiler.lastPos, node.argument.end));
+        compiler.jsBuffer.concat(" " + node.operator.substring(0, 1) + " 1)" + (node.prefix ? "" : node.operator == '++' ? " - 1)" : " + 1)"));
 
         if (!generate) compiler.lastPos = node.end;
         return;
@@ -994,14 +1014,14 @@ UpdateExpression: function(node, st, c) {
 
     if (node.prefix) {
       if (generate) {
-        CONCAT(compiler.jsBuffer, node.operator);
+        compiler.jsBuffer.concat(node.operator);
         if (wordPrefixOperators(node.operator))
-          CONCAT(compiler.jsBuffer, " ");
+          compiler.jsBuffer.concat(" ");
       }
       (generate && nodePrecedence(node, node.argument) ? surroundExpression(c) : c)(node.argument, st, "Expression");
     } else {
       (generate && nodePrecedence(node, node.argument) ? surroundExpression(c) : c)(node.argument, st, "Expression");
-      if (generate) CONCAT(compiler.jsBuffer, node.operator);
+      if (generate) compiler.jsBuffer.concat(node.operator);
     }
 },
 BinaryExpression: function(node, st, c) {
@@ -1011,9 +1031,9 @@ BinaryExpression: function(node, st, c) {
     (generate && nodePrecedence(node, node.left) ? surroundExpression(c) : c)(node.left, st, "Expression");
     if (generate) {
         var buffer = compiler.jsBuffer;
-        CONCAT(buffer, " ");
-        CONCAT(buffer, node.operator);
-        CONCAT(buffer, " ");
+        buffer.concat(" ");
+        buffer.concat(node.operator);
+        buffer.concat(" ");
     }
     (generate && nodePrecedence(node, node.right, true) ? surroundExpression(c) : c)(node.right, st, "Expression");
 },
@@ -1023,9 +1043,9 @@ LogicalExpression: function(node, st, c) {
     (generate && nodePrecedence(node, node.left) ? surroundExpression(c) : c)(node.left, st, "Expression");
     if (generate) {
         var buffer = compiler.jsBuffer;
-        CONCAT(buffer, " ");
-        CONCAT(buffer, node.operator);
-        CONCAT(buffer, " ");
+        buffer.concat(" ");
+        buffer.concat(node.operator);
+        buffer.concat(" ");
     }
     (generate && nodePrecedence(node, node.right, true) ? surroundExpression(c) : c)(node.right, st, "Expression");
 },
@@ -1039,29 +1059,29 @@ AssignmentExpression: function(node, st, c) {
         checkCanDereference(st, node.left);
 
         // @deref(x) = z    -> x(z) etc
-        if (!generate) CONCAT(buffer, compiler.source.substring(compiler.lastPos, node.start));
+        if (!generate) buffer.concat(compiler.source.substring(compiler.lastPos, node.start));
 
         // Output the dereference function, "(...)(z)"
-        CONCAT(buffer, "(");
+        buffer.concat("(");
         // What's being dereferenced could itself be an expression, such as when dereferencing a deref.
         if (!generate) compiler.lastPos = node.left.expr.start;
         c(node.left.expr, st, "Expression");
-        if (!generate) CONCAT(buffer, compiler.source.substring(compiler.lastPos, node.left.expr.end));
-        CONCAT(buffer, ")(");
+        if (!generate) buffer.concat(compiler.source.substring(compiler.lastPos, node.left.expr.end));
+        buffer.concat(")(");
 
         // Now "(x)(...)". We have to manually expand +=, -=, *= etc.
         if (node.operator !== "=") {
             // Output the whole .left, not just .left.expr.
             if (!generate) compiler.lastPos = node.left.start;
             c(node.left, st, "Expression");
-            if (!generate) CONCAT(buffer, compiler.source.substring(compiler.lastPos, node.left.end));
-            CONCAT(buffer, " " + node.operator.substring(0, 1) + " ");
+            if (!generate) buffer.concat(compiler.source.substring(compiler.lastPos, node.left.end));
+            buffer.concat(" " + node.operator.substring(0, 1) + " ");
         }
 
         if (!generate) compiler.lastPos = node.right.start;
         c(node.right, st, "Expression");
-        if (!generate) CONCAT(buffer, compiler.source.substring(compiler.lastPos, node.right.end));
-        CONCAT(buffer, ")");
+        if (!generate) buffer.concat(compiler.source.substring(compiler.lastPos, node.right.end));
+        buffer.concat(")");
 
         if (!generate) compiler.lastPos = node.end;
 
@@ -1072,9 +1092,9 @@ AssignmentExpression: function(node, st, c) {
     st.assignment = true;
     (generate && nodePrecedence(node, node.left) ? surroundExpression(c) : c)(node.left, st, "Expression");
     if (generate) {
-        CONCAT(buffer, " ");
-        CONCAT(buffer, node.operator);
-        CONCAT(buffer, " ");
+        buffer.concat(" ");
+        buffer.concat(node.operator);
+        buffer.concat(" ");
     }
     st.assignment = saveAssignment;
     (generate && nodePrecedence(node, node.right, true) ? surroundExpression(c) : c)(node.right, st, "Expression");
@@ -1086,39 +1106,39 @@ ConditionalExpression: function(node, st, c) {
         generate = compiler.generate;
     (generate && nodePrecedence(node, node.test) ? surroundExpression(c) : c)(node.test, st, "Expression");
     if (generate)
-      CONCAT(compiler.jsBuffer, " ? ");
+      compiler.jsBuffer.concat(" ? ");
     c(node.consequent, st, "Expression");
-    if (generate) CONCAT(compiler.jsBuffer, " : ");
+    if (generate) compiler.jsBuffer.concat(" : ");
     c(node.alternate, st, "Expression");
 },
 NewExpression: function(node, st, c) {
     var compiler = st.compiler,
         generate = compiler.generate;
-    if (generate) CONCAT(compiler.jsBuffer, "new ");
+    if (generate) compiler.jsBuffer.concat("new ");
     (generate && nodePrecedence(node, node.callee) ? surroundExpression(c) : c)(node.callee, st, "Expression");
-    if (generate) CONCAT(compiler.jsBuffer, "(");
+    if (generate) compiler.jsBuffer.concat("(");
     if (node.arguments) {
       for (var i = 0; i < node.arguments.length; ++i) {
         if (generate && i)
-          CONCAT(compiler.jsBuffer, ", ");
+          compiler.jsBuffer.concat(", ");
         c(node.arguments[i], st, "Expression");
       }
     }
-    if (generate) CONCAT(compiler.jsBuffer, ")");
+    if (generate) compiler.jsBuffer.concat(")");
 },
 CallExpression: function(node, st, c) {
     var compiler = st.compiler,
         generate = compiler.generate;
     (generate && nodePrecedence(node, node.callee) ? surroundExpression(c) : c)(node.callee, st, "Expression");
-    if (generate) CONCAT(compiler.jsBuffer, "(");
+    if (generate) compiler.jsBuffer.concat("(");
     if (node.arguments) {
       for (var i = 0; i < node.arguments.length; ++i) {
         if (generate && i)
-          CONCAT(compiler.jsBuffer, ", ");
+          compiler.jsBuffer.concat(", ");
         c(node.arguments[i], st, "Expression");
       }
     }
-    if (generate) CONCAT(compiler.jsBuffer, ")");
+    if (generate) compiler.jsBuffer.concat(")");
 },
 MemberExpression: function(node, st, c) {
     var compiler = st.compiler,
@@ -1127,16 +1147,16 @@ MemberExpression: function(node, st, c) {
     (generate && nodePrecedence(node, node.object) ? surroundExpression(c) : c)(node.object, st, "Expression");
     if (generate) {
       if (computed)
-        CONCAT(compiler.jsBuffer, "[");
+        compiler.jsBuffer.concat("[");
       else
-        CONCAT(compiler.jsBuffer, ".");
+        compiler.jsBuffer.concat(".");
     }
     st.secondMemberExpression = !computed;
     // No parentheses when it is computed, '[' amd ']' are the same thing. 
     (generate && !computed && nodePrecedence(node, node.property) ? surroundExpression(c) : c)(node.property, st, "Expression");
     st.secondMemberExpression = false;
     if (generate && computed)
-      CONCAT(compiler.jsBuffer, "]");
+      compiler.jsBuffer.concat("]");
 },
 Identifier: function(node, st, c) {
     var compiler = st.compiler,
@@ -1156,13 +1176,13 @@ Identifier: function(node, st, c) {
                 var nodeStart = node.start;
 
                 if (!generate) do {    // The Spider Monkey AST tree includes any parentheses in start and end properties so we have to make sure we skip those
-                    CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, nodeStart));
+                    compiler.jsBuffer.concat(compiler.source.substring(compiler.lastPos, nodeStart));
                     compiler.lastPos = nodeStart;
                 } while (compiler.source.substr(nodeStart++, 1) === "(")
                 // Save the index in where the "self." string is stored and the node.
                 // These will be used if we find a variable declaration that is hoisting this identifier.
                 ((st.addedSelfToIvars || (st.addedSelfToIvars = Object.create(null)))[identifier] || (st.addedSelfToIvars[identifier] = [])).push({node: node, index: compiler.jsBuffer.atoms.length});
-                CONCAT(compiler.jsBuffer, "self.");
+                compiler.jsBuffer.concat("self.");
             }
         } else if (!reservedIdentifiers(identifier)) {  // Don't check for warnings if it is a reserved word like self, localStorage, _cmd, etc...
             var message,
@@ -1186,18 +1206,18 @@ Identifier: function(node, st, c) {
                 st.addMaybeWarning(message);
         }
     }
-    if (generate) CONCAT(compiler.jsBuffer, identifier);
+    if (generate) compiler.jsBuffer.concat(identifier);
 },
 Literal: function(node, st, c) {
     var compiler = st.compiler,
         generate = compiler.generate;
     if (generate) {
       if (node.raw && node.raw.charAt(0) === "@")
-        CONCAT(compiler.jsBuffer, node.raw.substring(1));
+        compiler.jsBuffer.concat(node.raw.substring(1));
       else
-        CONCAT(compiler.jsBuffer, node.raw);
+        compiler.jsBuffer.concat(node.raw);
     } else if (node.raw.charAt(0) === "@") {
-        CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, node.start));
+        compiler.jsBuffer.concat(compiler.source.substring(compiler.lastPos, node.start));
         compiler.lastPos = node.start + 1;
     }
 },
@@ -1205,26 +1225,26 @@ ArrayLiteral: function(node, st, c) {
     var compiler = st.compiler,
         generate = compiler.generate;
     if (!generate) {
-        CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, node.start));
+        compiler.jsBuffer.concat(compiler.source.substring(compiler.lastPos, node.start));
         compiler.lastPos = node.start;
     }
 
-    if (!generate) CONCAT(buffer, " "); // Add an extra space if it looks something like this: "return(<expression>)". No space between return and expression.
+    if (!generate) buffer.concat(" "); // Add an extra space if it looks something like this: "return(<expression>)". No space between return and expression.
     if (!node.elements.length) {
-        CONCAT(compiler.jsBuffer, "objj_msgSend(objj_msgSend(CPArray, \"alloc\"), \"init\")");
+        compiler.jsBuffer.concat("objj_msgSend(objj_msgSend(CPArray, \"alloc\"), \"init\")");
     } else {
-        CONCAT(compiler.jsBuffer, "objj_msgSend(objj_msgSend(CPArray, \"alloc\"), \"initWithObjects:count:\", [");
+        compiler.jsBuffer.concat("objj_msgSend(objj_msgSend(CPArray, \"alloc\"), \"initWithObjects:count:\", [");
         for (var i = 0; i < node.elements.length; i++) {
             var elt = node.elements[i];
 
             if (i)
-                CONCAT(compiler.jsBuffer, ", ");
+                compiler.jsBuffer.concat(", ");
 
             if (!generate) compiler.lastPos = elt.start;
             c(elt, st, "Expression");
-            if (!generate) CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, elt.end));
+            if (!generate) compiler.jsBuffer.concat(compiler.source.substring(compiler.lastPos, elt.end));
         }
-        CONCAT(compiler.jsBuffer, "], " + node.elements.length + ")");
+        compiler.jsBuffer.concat("], " + node.elements.length + ")");
     }
 
     if (!generate) compiler.lastPos = node.end;
@@ -1233,32 +1253,32 @@ DictionaryLiteral: function(node, st, c) {
     var compiler = st.compiler,
         generate = compiler.generate;
     if (!generate) {
-        CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, node.start));
+        compiler.jsBuffer.concat(compiler.source.substring(compiler.lastPos, node.start));
         compiler.lastPos = node.start;
     }
 
-    if (!generate) CONCAT(buffer, " "); // Add an extra space if it looks something like this: "return(<expression>)". No space between return and expression.
+    if (!generate) buffer.concat(" "); // Add an extra space if it looks something like this: "return(<expression>)". No space between return and expression.
     if (!node.keys.length) {
-        CONCAT(compiler.jsBuffer, "objj_msgSend(objj_msgSend(CPDictionary, \"alloc\"), \"init\")");
+        compiler.jsBuffer.concat("objj_msgSend(objj_msgSend(CPDictionary, \"alloc\"), \"init\")");
     } else {
-        CONCAT(compiler.jsBuffer, "objj_msgSend(objj_msgSend(CPDictionary, \"alloc\"), \"initWithObjectsAndKeys:\"");
+        compiler.jsBuffer.concat("objj_msgSend(objj_msgSend(CPDictionary, \"alloc\"), \"initWithObjectsAndKeys:\"");
         for (var i = 0; i < node.keys.length; i++) {
             var key = node.keys[i],
                 value = node.values[i];
 
-            CONCAT(compiler.jsBuffer, ", ");
+            compiler.jsBuffer.concat(", ");
 
             if (!generate) compiler.lastPos = value.start;
             c(value, st, "Expression");
-            if (!generate) CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, value.end));
+            if (!generate) compiler.jsBuffer.concat(compiler.source.substring(compiler.lastPos, value.end));
 
-            CONCAT(compiler.jsBuffer, ", ");
+            compiler.jsBuffer.concat(", ");
 
             if (!generate) compiler.lastPos = key.start;
             c(key, st, "Expression");
-            if (!generate) CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, key.end));
+            if (!generate) compiler.jsBuffer.concat(compiler.source.substring(compiler.lastPos, key.end));
         }
-        CONCAT(compiler.jsBuffer, ")");
+        compiler.jsBuffer.concat(")");
     }
 
     if (!generate) compiler.lastPos = node.end;
@@ -1268,10 +1288,10 @@ ImportStatement: function(node, st, c) {
         generate = compiler.generate,
         buffer = compiler.jsBuffer;
 
-    if (!generate) CONCAT(buffer,compiler.source.substring(compiler.lastPos, node.start));
-    CONCAT(buffer, "objj_executeFile(\"");
-    CONCAT(buffer, node.filename.value);
-    CONCAT(buffer, node.localfilepath ? "\", YES);" : "\", NO);");
+    if (!generate) buffer.concat(compiler.source.substring(compiler.lastPos, node.start));
+    buffer.concat("objj_executeFile(\"");
+    buffer.concat(node.filename.value);
+    buffer.concat(node.localfilepath ? "\", YES);" : "\", NO);");
     if (!generate) compiler.lastPos = node.end;
 },
 ClassDeclarationStatement: function(node, st, c) {
@@ -1286,7 +1306,7 @@ ClassDeclarationStatement: function(node, st, c) {
     compiler.cmBuffer = new StringBuffer();
     compiler.classBodyBuffer = new StringBuffer();      // TODO: Check if this is needed
 
-    if (!generate) CONCAT(saveJSBuffer, compiler.source.substring(compiler.lastPos, node.start));
+    if (!generate) saveJSBuffer.concat(compiler.source.substring(compiler.lastPos, node.start));
 
     // First we declare the class
     if (node.superclassname)
@@ -1304,7 +1324,7 @@ ClassDeclarationStatement: function(node, st, c) {
 
         classDef = {"className": className, "superClassName": node.superclassname.name, "ivars": Object.create(null), "methods": Object.create(null)};
 
-        CONCAT(saveJSBuffer, "{var the_class = objj_allocateClassPair(" + node.superclassname.name + ", \"" + className + "\"),\nmeta_class = the_class.isa;");
+        saveJSBuffer.concat("{var the_class = objj_allocateClassPair(" + node.superclassname.name + ", \"" + className + "\"),\nmeta_class = the_class.isa;");
     }
     else if (node.categoryname)
     {
@@ -1312,15 +1332,15 @@ ClassDeclarationStatement: function(node, st, c) {
         if (!classDef)
             throw compiler.error_message("Class " + className + " not found ", node.classname);
 
-        CONCAT(saveJSBuffer, "{\nvar the_class = objj_getClass(\"" + className + "\")\n");
-        CONCAT(saveJSBuffer, "if(!the_class) throw new SyntaxError(\"*** Could not find definition for class \\\"" + className + "\\\"\");\n");
-        CONCAT(saveJSBuffer, "var meta_class = the_class.isa;");
+        saveJSBuffer.concat("{\nvar the_class = objj_getClass(\"" + className + "\")\n");
+        saveJSBuffer.concat("if(!the_class) throw new SyntaxError(\"*** Could not find definition for class \\\"" + className + "\\\"\");\n");
+        saveJSBuffer.concat("var meta_class = the_class.isa;");
     }
     else
     {
         classDef = {"className": className, "superClassName": null, "ivars": Object.create(null), "methods": Object.create(null)};
 
-        CONCAT(saveJSBuffer, "{var the_class = objj_allocateClassPair(Nil, \"" + className + "\"),\nmeta_class = the_class.isa;");
+        saveJSBuffer.concat("{var the_class = objj_allocateClassPair(Nil, \"" + className + "\"),\nmeta_class = the_class.isa;");
     }
 
     classScope.classDef = classDef;
@@ -1341,15 +1361,15 @@ ClassDeclarationStatement: function(node, st, c) {
         if (firstIvarDeclaration)
         {
             firstIvarDeclaration = false;
-            CONCAT(saveJSBuffer, "class_addIvars(the_class, [");
+            saveJSBuffer.concat("class_addIvars(the_class, [");
         }
         else
-            CONCAT(saveJSBuffer, ", ");
+            saveJSBuffer.concat(", ");
 
         if (compiler.flags & ObjJAcornCompiler.Flags.IncludeTypeSignatures)
-            CONCAT(saveJSBuffer, "new objj_ivar(\"" + ivarName + "\", \"" + ivarType + "\")");
+            saveJSBuffer.concat("new objj_ivar(\"" + ivarName + "\", \"" + ivarType + "\")");
         else
-            CONCAT(saveJSBuffer, "new objj_ivar(\"" + ivarName + "\")");
+            saveJSBuffer.concat("new objj_ivar(\"" + ivarName + "\")");
 
         if (ivarDecl.outlet)
             ivar.outlet = true;
@@ -1363,7 +1383,7 @@ ClassDeclarationStatement: function(node, st, c) {
     }
 
     if (!firstIvarDeclaration)
-        CONCAT(saveJSBuffer, "]);");
+        saveJSBuffer.concat("]);");
 
     // If we have accessors add get and set methods for them
     if (hasAccessors)
@@ -1371,8 +1391,8 @@ ClassDeclarationStatement: function(node, st, c) {
         var getterSetterBuffer = new StringBuffer();
 
         // Add the class declaration to compile accessors correctly
-        CONCAT(getterSetterBuffer, compiler.source.substring(node.start, node.endOfIvars));
-        CONCAT(getterSetterBuffer, "\n");
+        getterSetterBuffer.concat(compiler.source.substring(node.start, node.endOfIvars));
+        getterSetterBuffer.concat("\n");
 
         for (var i = 0; i < node.ivardeclarations.length; ++i)
         {
@@ -1388,7 +1408,7 @@ ClassDeclarationStatement: function(node, st, c) {
                 getterName = (accessors.getter && accessors.getter.name) || property,
                 getterCode = "- (" + (ivarType ? ivarType : "id") + ")" + getterName + "\n{\nreturn " + ivarName + ";\n}\n";
 
-            CONCAT(getterSetterBuffer, getterCode);
+            getterSetterBuffer.concat(getterCode);
 
             if (accessors.readonly)
                 continue;
@@ -1409,10 +1429,10 @@ ClassDeclarationStatement: function(node, st, c) {
             else
                 setterCode += ivarName + " = newValue;\n}\n";
 
-            CONCAT(getterSetterBuffer, setterCode);
+            getterSetterBuffer.concat(setterCode);
         }
 
-        CONCAT(getterSetterBuffer, "\n@end");
+        getterSetterBuffer.concat("\n@end");
 
         // Remove all @accessors or we will get a recursive loop in infinity
         var b = getterSetterBuffer.toString().replace(/@accessors(\(.*\))?/g, "");
@@ -1420,7 +1440,7 @@ ClassDeclarationStatement: function(node, st, c) {
 
         // Add the accessors methods first to instance method buffer.
         // This will allow manually added set and get methods to override the compiler generated
-        CONCAT(compiler.imBuffer, imBuffer);
+        compiler.imBuffer.concat(imBuffer);
     }
 
     // We will store the classDef first after accessors are done so we don't get a duplicate class error
@@ -1435,31 +1455,31 @@ ClassDeclarationStatement: function(node, st, c) {
             var body = node.body[i];
             c(body, classScope, "Statement");
         }
-        if (!generate) CONCAT(saveJSBuffer, compiler.source.substring(compiler.lastPos, body.end));
+        if (!generate) saveJSBuffer.concat(compiler.source.substring(compiler.lastPos, body.end));
     }
 
     // We must make a new class object for our class definition if it's not a category
     if (!node.categoryname) {
-        CONCAT(saveJSBuffer, "objj_registerClassPair(the_class);\n");
+        saveJSBuffer.concat("objj_registerClassPair(the_class);\n");
     }
 
     // Add instance methods
-    if (IS_NOT_EMPTY(compiler.imBuffer))
+    if (compiler.imBuffer.isEmpty())
     {
-        CONCAT(saveJSBuffer, "class_addMethods(the_class, [");
+        saveJSBuffer.concat("class_addMethods(the_class, [");
         saveJSBuffer.atoms.push.apply(saveJSBuffer.atoms, compiler.imBuffer.atoms); // FIXME: Move this append to StringBuffer
-        CONCAT(saveJSBuffer, "]);\n");
+        saveJSBuffer.concat("]);\n");
     }
 
     // Add class methods
-    if (IS_NOT_EMPTY(compiler.cmBuffer))
+    if (compiler.cmBuffer.isEmpty())
     {
-        CONCAT(saveJSBuffer, "class_addMethods(meta_class, [");
+        saveJSBuffer.concat("class_addMethods(meta_class, [");
         saveJSBuffer.atoms.push.apply(saveJSBuffer.atoms, compiler.cmBuffer.atoms); // FIXME: Move this append to StringBuffer
-        CONCAT(saveJSBuffer, "]);\n");
+        saveJSBuffer.concat("]);\n");
     }
 
-    CONCAT(saveJSBuffer, "}");
+    saveJSBuffer.concat("}");
 
     compiler.jsBuffer = saveJSBuffer;
 
@@ -1476,7 +1496,7 @@ MethodDeclarationStatement: function(node, st, c) {
         types = [node.returntype ? node.returntype.name : "id"],
         selector = selectors[0].name;    // There is always at least one selector
 
-    if (!generate) CONCAT(saveJSBuffer, compiler.source.substring(compiler.lastPos, node.start));
+    if (!generate) saveJSBuffer.concat(compiler.source.substring(compiler.lastPos, node.start));
 
     compiler.jsBuffer = node.methodtype === '-' ? compiler.imBuffer : compiler.cmBuffer;
 
@@ -1488,20 +1508,20 @@ MethodDeclarationStatement: function(node, st, c) {
             selector += (selectors[i] ? selectors[i].name : "") + ":";
     }
 
-    if (IS_NOT_EMPTY(compiler.jsBuffer))           // Add comma separator if this is not first method in this buffer
-        CONCAT(compiler.jsBuffer, ", ");
-    CONCAT(compiler.jsBuffer, "new objj_method(sel_getUid(\"");
-    CONCAT(compiler.jsBuffer, selector);
-    CONCAT(compiler.jsBuffer, "\"), function");
+    if (compiler.jsBuffer.isEmpty())           // Add comma separator if this is not first method in this buffer
+        compiler.jsBuffer.concat(", ");
+    compiler.jsBuffer.concat("new objj_method(sel_getUid(\"");
+    compiler.jsBuffer.concat(selector);
+    compiler.jsBuffer.concat("\"), function");
 
 //    this.currentSelector = selector;
 
     if (compiler.flags & ObjJAcornCompiler.Flags.IncludeDebugSymbols)
     {
-        CONCAT(compiler.jsBuffer, " $" + st.currentClassName() + "__" + selector.replace(/:/g, "_"));
+        compiler.jsBuffer.concat(" $" + st.currentClassName() + "__" + selector.replace(/:/g, "_"));
     }
 
-    CONCAT(compiler.jsBuffer, "(self, _cmd");
+    compiler.jsBuffer.concat("(self, _cmd");
 
     methodScope.methodType = node.methodtype;
     if (arguments) for (var i = 0; i < arguments.length; i++)
@@ -1509,24 +1529,24 @@ MethodDeclarationStatement: function(node, st, c) {
         var argument = arguments[i],
             argumentName = argument.identifier.name;
 
-        CONCAT(compiler.jsBuffer, ", ");
-        CONCAT(compiler.jsBuffer, argumentName);
+        compiler.jsBuffer.concat(", ");
+        compiler.jsBuffer.concat(argumentName);
         types.push(argument.type ? argument.type.name : null);
         methodScope.vars[argumentName] = {type: "method argument", node: argument};
     }
 
-    CONCAT(compiler.jsBuffer, ")\n");
+    compiler.jsBuffer.concat(")\n");
 
     if (!generate) compiler.lastPos = node.startOfBody;
     indentation += indentStep;
     c(node.body, methodScope, "Statement");
     indentation = indentation.substring(indentationSpaces);
-    if (!generate) CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, node.body.end));
+    if (!generate) compiler.jsBuffer.concat(compiler.source.substring(compiler.lastPos, node.body.end));
 
-    CONCAT(compiler.jsBuffer, "\n");
+    compiler.jsBuffer.concat("\n");
     if (compiler.flags & ObjJAcornCompiler.Flags.IncludeDebugSymbols)
-        CONCAT(compiler.jsBuffer, ","+JSON.stringify(types));
-    CONCAT(compiler.jsBuffer, ")");
+        compiler.jsBuffer.concat(","+JSON.stringify(types));
+    compiler.jsBuffer.concat(")");
     compiler.jsBuffer = saveJSBuffer;
     if (!generate) compiler.lastPos = node.end;
 },
@@ -1535,21 +1555,21 @@ MessageSendExpression: function(node, st, c) {
         generate = compiler.generate,
         buffer = compiler.jsBuffer;
     if (!generate) {
-        CONCAT(buffer, compiler.source.substring(compiler.lastPos, node.start));
+        buffer.concat(compiler.source.substring(compiler.lastPos, node.start));
         compiler.lastPos = node.object ? node.object.start : node.arguments.length ? node.arguments[0].start : node.end;
     }
     if (node.superObject)
     {
-        if (!generate) CONCAT(buffer, " "); // Add an extra space if it looks something like this: "return(<expression>)". No space between return and expression.
-        CONCAT(buffer, "objj_msgSendSuper(");
-        CONCAT(buffer, "{ receiver:self, super_class:" + (st.currentMethodType() === "+" ? compiler.currentSuperMetaClass : compiler.currentSuperClass ) + " }");
+        if (!generate) buffer.concat(" "); // Add an extra space if it looks something like this: "return(<expression>)". No space between return and expression.
+        buffer.concat("objj_msgSendSuper(");
+        buffer.concat("{ receiver:self, super_class:" + (st.currentMethodType() === "+" ? compiler.currentSuperMetaClass : compiler.currentSuperClass ) + " }");
     }
     else
     {
-        if (!generate) CONCAT(buffer, " "); // Add an extra space if it looks something like this: "return(<expression>)". No space between return and expression.
-        CONCAT(buffer, "objj_msgSend(");
+        if (!generate) buffer.concat(" "); // Add an extra space if it looks something like this: "return(<expression>)". No space between return and expression.
+        buffer.concat("objj_msgSend(");
         c(node.object, st, "Expression");
-        if (!generate) CONCAT(buffer, compiler.source.substring(compiler.lastPos, node.object.end));
+        if (!generate) buffer.concat(compiler.source.substring(compiler.lastPos, node.object.end));
     }
 
     var selectors = node.selectors,
@@ -1563,20 +1583,20 @@ MessageSendExpression: function(node, st, c) {
         else
             selector += (selectors[i] ? selectors[i].name : "") + ":";
 
-    CONCAT(buffer, ", \"");
-    CONCAT(buffer, selector); // FIXME: sel_getUid(selector + "") ? This FIXME is from the old preprocessor compiler
-    CONCAT(buffer, "\"");
+    buffer.concat(", \"");
+    buffer.concat(selector); // FIXME: sel_getUid(selector + "") ? This FIXME is from the old preprocessor compiler
+    buffer.concat("\"");
 
     if (node.arguments) for (var i = 0; i < node.arguments.length; i++)
     {
         var argument = node.arguments[i];
 
-        CONCAT(buffer, ", ");
+        buffer.concat(", ");
         if (!generate)
             compiler.lastPos = argument.start;
         c(argument, st, "Expression");
         if (!generate) {
-            CONCAT(buffer, compiler.source.substring(compiler.lastPos, argument.end));
+            buffer.concat(compiler.source.substring(compiler.lastPos, argument.end));
             compiler.lastPos = argument.end;
         }
     }
@@ -1586,37 +1606,37 @@ MessageSendExpression: function(node, st, c) {
     {
         var parameter = node.parameters[i];
 
-        CONCAT(buffer, ", ");
+        buffer.concat(", ");
         if (!generate)
             compiler.lastPos = parameter.start;
         c(parameter, st, "Expression");
         if (!generate) {
-            CONCAT(buffer, compiler.source.substring(compiler.lastPos, parameter.end));
+            buffer.concat(compiler.source.substring(compiler.lastPos, parameter.end));
             compiler.lastPos = parameter.end;
         }
     }
 
-    CONCAT(buffer, ")");
+    buffer.concat(")");
     if (!generate) compiler.lastPos = node.end;
 },
 SelectorLiteralExpression: function(node, st, c) {
     var compiler = st.compiler,
         generate = compiler.generate;
-    if (!generate) CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, node.start));
-    CONCAT(compiler.jsBuffer, " sel_getUid(\"");
-    CONCAT(compiler.jsBuffer, node.selector);
-    CONCAT(compiler.jsBuffer, "\")");
+    if (!generate) compiler.jsBuffer.concat(compiler.source.substring(compiler.lastPos, node.start));
+    compiler.jsBuffer.concat(" sel_getUid(\"");
+    compiler.jsBuffer.concat(node.selector);
+    compiler.jsBuffer.concat("\")");
     if (!generate) compiler.lastPos = node.end;
 },
 Reference: function(node, st, c) {
     var compiler = st.compiler,
         generate = compiler.generate;
-    if (!generate) CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, node.start));
-    CONCAT(compiler.jsBuffer, " function(__input) { if (arguments.length) return ");
-    CONCAT(compiler.jsBuffer, node.element.name);
-    CONCAT(compiler.jsBuffer, " = __input; return ");
-    CONCAT(compiler.jsBuffer, node.element.name);
-    CONCAT(compiler.jsBuffer, "; }");
+    if (!generate) compiler.jsBuffer.concat(compiler.source.substring(compiler.lastPos, node.start));
+    compiler.jsBuffer.concat(" function(__input) { if (arguments.length) return ");
+    compiler.jsBuffer.concat(node.element.name);
+    compiler.jsBuffer.concat(" = __input; return ");
+    compiler.jsBuffer.concat(node.element.name);
+    compiler.jsBuffer.concat("; }");
     if (!generate) compiler.lastPos = node.end;
 },
 Dereference: function(node, st, c) {
@@ -1628,20 +1648,20 @@ Dereference: function(node, st, c) {
     // @deref(y) -> y()
     // @deref(@deref(y)) -> y()()
     if (!generate) {
-        CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, node.start));
+        compiler.jsBuffer.concat(compiler.source.substring(compiler.lastPos, node.start));
         compiler.lastPos = node.expr.start;
     }
     c(node.expr, st, "Expression");
-    if (!generate) CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, node.expr.end));
-    CONCAT(compiler.jsBuffer, "()");
+    if (!generate) compiler.jsBuffer.concat(compiler.source.substring(compiler.lastPos, node.expr.end));
+    compiler.jsBuffer.concat("()");
     if (!generate) compiler.lastPos = node.end;
 },
 ClassStatement: function(node, st, c) {
     var compiler = st.compiler;
     if (!compiler.generate) {
-        CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, node.start));
+        compiler.jsBuffer.concat(compiler.source.substring(compiler.lastPos, node.start));
         compiler.lastPos = node.start;
-        CONCAT(compiler.jsBuffer, "//");
+        compiler.jsBuffer.concat("//");
     }
     var className = node.id.name;
     if (!compiler.getClassDef(className)) {
@@ -1653,18 +1673,18 @@ ClassStatement: function(node, st, c) {
 GlobalStatement: function(node, st, c) {
     var compiler = st.compiler;
     if (!compiler.generate) {
-        CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, node.start));
+        compiler.jsBuffer.concat(compiler.source.substring(compiler.lastPos, node.start));
         compiler.lastPos = node.start;
-        CONCAT(compiler.jsBuffer, "//");
+        compiler.jsBuffer.concat("//");
     }
     st.rootScope().vars[node.id.name] = {type: "global", node: node.id};
 },
 PreprocessStatement: function(node, st, c) {
     var compiler = st.compiler;
     if (!compiler.generate) {
-      CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, node.start));
+      compiler.jsBuffer.concat(compiler.source.substring(compiler.lastPos, node.start));
       compiler.lastPos = node.start;
-      CONCAT(compiler.jsBuffer, "//");
+      compiler.jsBuffer.concat("//");
     }
 }
 });
