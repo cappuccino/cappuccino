@@ -72,7 +72,7 @@
     if (self === object)
         return YES;
 
-    if (object.isa !== self.isa || ![[object _function] isEqual:_selector] || ![[object operand] isEqual:_operand] || ![[object arguments] isEqualToArray:_arguments])
+    if (object === nil || object.isa !== self.isa || ![[object _function] isEqual:_selector] || ![[object operand] isEqual:_operand] || ![[object arguments] isEqualToArray:_arguments])
         return NO;
 
     return YES;

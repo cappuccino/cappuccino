@@ -51,7 +51,7 @@
     if (object === self)
         return YES;
 
-    if (object.isa !== self.isa || ![[object keyPath] isEqualToString:[self keyPath]])
+    if (object === nil || object.isa !== self.isa || ![[object keyPath] isEqualToString:[self keyPath]])
         return NO;
 
     return YES;

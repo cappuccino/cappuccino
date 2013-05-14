@@ -275,7 +275,7 @@ var CPComparisonPredicateModifier,
     if (self === anObject)
         return YES;
 
-    if (anObject.isa !== self.isa || _modifier !== [anObject comparisonPredicateModifier] || _type !== [anObject predicateOperatorType] || _options !== [anObject options] || _customSelector !== [anObject customSelector] || ![_left isEqual:[anObject leftExpression]] || ![_right isEqual:[anObject rightExpression]])
+    if (anObject === nil || anObject.isa !== self.isa || _modifier !== [anObject comparisonPredicateModifier] || _type !== [anObject predicateOperatorType] || _options !== [anObject options] || _customSelector !== [anObject customSelector] || ![_left isEqual:[anObject leftExpression]] || ![_right isEqual:[anObject rightExpression]])
         return NO;
 
     return YES;
