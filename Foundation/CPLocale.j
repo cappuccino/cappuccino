@@ -23,43 +23,43 @@
 
 @class CPDictionary
 
-CPLocaleIdentifier = @"CPLocaleIdentifier";
-CPLocaleLanguageCode = @"CPLocaleLanguageCode";
-CPLocaleCountryCode = @"CPLocaleCountryCode";
-CPLocaleScriptCode = @"CPLocaleScriptCode";
-CPLocaleVariantCode = @"CPLocaleVariantCode";
-CPLocaleExemplarCharacterSet = @"CPLocaleExemplarCharacterSet";
-CPLocaleCalendar = @"CPLocaleCalendar";
-CPLocaleCollationIdentifier = @"CPLocaleCollationIdentifier";
-CPLocaleUsesMetricSystem = @"CPLocaleUsesMetricSystem";
-CPLocaleMeasurementSystem = @"CPLocaleMeasurementSystem";
-CPLocaleDecimalSeparator = @"CPLocaleDecimalSeparator";
-CPLocaleGroupingSeparator = @"CPLocaleGroupingSeparator";
-CPLocaleCurrencySymbol = @"CPLocaleCurrencySymbol";
-CPLocaleCurrencyCode = @"CPLocaleCurrencyCode";
-CPLocaleCollatorIdentifier = @"CPLocaleCollatorIdentifier";
-CPLocaleQuotationBeginDelimiterKey = @"CPLocaleQuotationBeginDelimiterKey";
-CPLocaleQuotationEndDelimiterKey = @"CPLocaleQuotationEndDelimiterKey";
+CPLocaleIdentifier                          = @"CPLocaleIdentifier";
+CPLocaleLanguageCode                        = @"CPLocaleLanguageCode";
+CPLocaleCountryCode                         = @"CPLocaleCountryCode";
+CPLocaleScriptCode                          = @"CPLocaleScriptCode";
+CPLocaleVariantCode                         = @"CPLocaleVariantCode";
+CPLocaleExemplarCharacterSet                = @"CPLocaleExemplarCharacterSet";
+CPLocaleCalendar                            = @"CPLocaleCalendar";
+CPLocaleCollationIdentifier                 = @"CPLocaleCollationIdentifier";
+CPLocaleUsesMetricSystem                    = @"CPLocaleUsesMetricSystem";
+CPLocaleMeasurementSystem                   = @"CPLocaleMeasurementSystem";
+CPLocaleDecimalSeparator                    = @"CPLocaleDecimalSeparator";
+CPLocaleGroupingSeparator                   = @"CPLocaleGroupingSeparator";
+CPLocaleCurrencySymbol                      = @"CPLocaleCurrencySymbol";
+CPLocaleCurrencyCode                        = @"CPLocaleCurrencyCode";
+CPLocaleCollatorIdentifier                  = @"CPLocaleCollatorIdentifier";
+CPLocaleQuotationBeginDelimiterKey          = @"CPLocaleQuotationBeginDelimiterKey";
+CPLocaleQuotationEndDelimiterKey            = @"CPLocaleQuotationEndDelimiterKey";
 CPLocaleAlternateQuotationBeginDelimiterKey = @"CPLocaleAlternateQuotationBeginDelimiterKey";
-CPLocaleAlternateQuotationEndDelimiterKey = @"CPLocaleAlternateQuotationEndDelimiterKey";
+CPLocaleAlternateQuotationEndDelimiterKey   = @"CPLocaleAlternateQuotationEndDelimiterKey";
 
-CPGregorianCalendar = @"CPGregorianCalendar";
-CPBuddhistCalendar = @"CPBuddhistCalendar";
-CPChineseCalendar = @"CPChineseCalendar";
-CPHebrewCalendar = @"CPHebrewCalendar";
-CPIslamicCalendar = @"CPIslamicCalendar";
-CPIslamicCivilCalendar = @"CPIslamicCivilCalendar";
-CPJapaneseCalendar = @"CPJapaneseCalendar";
-CPRepublicOfChinaCalendar = @"CPRepublicOfChinaCalendar";
-CPPersianCalendar = @"CPPersianCalendar";
-CPIndianCalendar = @"CPIndianCalendar";
-CPISO8601Calendar = @"CPISO8601Calendar";
+CPGregorianCalendar                         = @"CPGregorianCalendar";
+CPBuddhistCalendar                          = @"CPBuddhistCalendar";
+CPChineseCalendar                           = @"CPChineseCalendar";
+CPHebrewCalendar                            = @"CPHebrewCalendar";
+CPIslamicCalendar                           = @"CPIslamicCalendar";
+CPIslamicCivilCalendar                      = @"CPIslamicCivilCalendar";
+CPJapaneseCalendar                          = @"CPJapaneseCalendar";
+CPRepublicOfChinaCalendar                   = @"CPRepublicOfChinaCalendar";
+CPPersianCalendar                           = @"CPPersianCalendar";
+CPIndianCalendar                            = @"CPIndianCalendar";
+CPISO8601Calendar                           = @"CPISO8601Calendar";
 
-CPLocaleLanguageDirectionUnknown = @"CPLocaleLanguageDirectionUnknown";
-CPLocaleLanguageDirectionLeftToRight = @"CPLocaleLanguageDirectionLeftToRight";
-CPLocaleLanguageDirectionRightToLeft = @"CPLocaleLanguageDirectionRightToLeft";
-CPLocaleLanguageDirectionTopToBottom = @"CPLocaleLanguageDirectionTopToBottom";
-CPLocaleLanguageDirectionBottomToTop = @"CPLocaleLanguageDirectionBottomToTop";
+CPLocaleLanguageDirectionUnknown            = @"CPLocaleLanguageDirectionUnknown";
+CPLocaleLanguageDirectionLeftToRight        = @"CPLocaleLanguageDirectionLeftToRight";
+CPLocaleLanguageDirectionRightToLeft        = @"CPLocaleLanguageDirectionRightToLeft";
+CPLocaleLanguageDirectionTopToBottom        = @"CPLocaleLanguageDirectionTopToBottom";
+CPLocaleLanguageDirectionBottomToTop        = @"CPLocaleLanguageDirectionBottomToTop";
 
 var countryCodes = [@"DE", @"FR", @"ES", @"GB", @"US"],
     languageCodes = [@"en", @"de", @"es", @"fr"],
@@ -83,7 +83,7 @@ var sharedSystemLocale = nil,
     return sharedSystemLocale;
 }
 
-/*! Return the current locale base on the navigator
+/*! Return the current locale based on the navigator string.
 */
 + (id)currentLocale
 {
@@ -155,25 +155,25 @@ var sharedSystemLocale = nil,
 {
     if (self == [super init])
     {
-    	var parts = [anIdentifier componentsSeparatedByString:@"_"],
-    	    language = [parts objectAtIndex:0],
-    	    country = nil;
+        var parts = [anIdentifier componentsSeparatedByString:@"_"],
+            language = [parts objectAtIndex:0],
+            country = nil;
 
         if ([parts count] > 1)
-    		country = [parts objectAtIndex:1];
+            country = [parts objectAtIndex:1];
         else
-    	    country = anIdentifier;
+            country = anIdentifier;
 
         _locale = [[CPDictionary alloc] init];
         [_locale setObject:anIdentifier forKey:CPLocaleIdentifier];
         [_locale setObject:language forKey:CPLocaleLanguageCode];
         [_locale setObject:country forKey:CPLocaleCountryCode];
 
-        if([[self class] respondsToSelector:@selector(_platformLocaleAdditionalDescriptionForIdentifier:)])
+        if ([[self class] respondsToSelector:@selector(_platformLocaleAdditionalDescriptionForIdentifier:)])
         {
-        	// Use any platform specific method to fill the locale info if one is defined
-        	var info = [[self class] performSelector:@selector(_platformLocaleAdditionalDescriptionForIdentifier:) withObject:anIdentifier];
-        	[_locale addEntriesFromDictionary:info];
+            // Use any platform specific method to fill the locale info if one is defined
+            var info = [[self class] performSelector:@selector(_platformLocaleAdditionalDescriptionForIdentifier:) withObject:anIdentifier];
+            [_locale addEntriesFromDictionary:info];
         }
         else
         {
