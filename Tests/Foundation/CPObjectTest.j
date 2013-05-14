@@ -59,6 +59,13 @@
     [self assertTrue:d.indexOf("access:") !== -1 message:"Can't find 'access:' in description of json " + d];
 }
 
+- (void)testCPObjectNotEqualToNil
+{
+    var anObject = [[CPObject alloc] init];
+
+    [self assert:anObject notEqual:nil];
+}
+
 @end
 
 @implementation SuperReceiver : CPObject

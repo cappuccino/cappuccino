@@ -440,6 +440,64 @@
     [self assert:pred1 equals:pred2];
 }
 
+- (void)testExpressionAndPredicateIsNotEqualToNil
+{
+    var cexp1 = [CPExpression expressionForConstantValue:2],
+        cexp2 = [CPExpression expressionForConstantValue:2];
+    [self assert:cexp1 notEqual:nil];
+
+    var exp1 = [CPExpression expressionForKeyPath:"path"];
+
+    [self assert:exp1 notEqual:nil];
+
+    exp1 = [CPExpression expressionForEvaluatedObject];
+
+    [self assert:exp1 notEqual:nil];
+
+    exp1 = [CPExpression expressionForVariable:"toto"];
+
+    [self assert:exp1 notEqual:nil];
+
+    var left = [CPExpression expressionForConstantValue:[CPSet setWithObjects:@"a",@"b",@"c"]],
+        right = [CPExpression expressionForConstantValue:[CPArray arrayWithObjects:@"a",@"b",@"d"]];
+
+    exp1 = [CPExpression expressionForIntersectSet:left with:right];
+
+    [self assert:exp1 notEqual:nil];
+
+    exp1 = [CPExpression expressionForFunction:cexp1 selectorName:@"isEqual:" arguments:[CPArray arrayWithObjects:cexp2]];
+
+    [self assert:exp1 notEqual:nil];
+
+    var aexp1 = [CPExpression expressionForAggregate:[CPArray arrayWithObjects:cexp1,cexp2]];
+
+    [self assert:aexp1 notEqual:nil];
+
+    exp1 = [CPExpression expressionForSubquery:right usingIteratorVariable:@"self" predicate:[CPPredicate predicateWithValue:YES]];
+
+    [self assert:exp1 notEqual:nil];
+
+    var pred1 = [CPPredicate predicateWithFormat:@"FUNCTION('toto', 'stringByReplacingOccurrencesOfString:withString:', 'o', 'a') == 'tata'"];
+
+    [self assert:pred1 notEqual:nil];
+
+    pred1 = [CPPredicate predicateWithFormat:@"$record.$age = 34"];
+
+    [self assert:pred1 notEqual:nil];
+
+    pred1 = [CPPredicate predicateWithFormat:@"SUBQUERY(Record1.Children, $x, $x BEGINSWITH 'Kid')[SIZE] = 2"];
+
+    [self assert:pred1 notEqual:nil];
+
+    pred1 = [CPPredicate predicateWithFormat:@"$x CONTAINS 'a'"];
+
+    [self assert:pred1 notEqual:nil];
+
+    pred1 = [CPPredicate predicateWithFormat:@"a = 'a' AND b = 'b'"];
+
+    [self assert:pred1 notEqual:nil];
+}
+
 - (void)testProxyArrayFiltering
 {
     var proxyArray = [self mutableArrayValueForKey:@"simpleArray"],
