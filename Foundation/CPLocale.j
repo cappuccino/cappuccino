@@ -89,29 +89,32 @@ var sharedSystemLocale = nil,
 {
     if (!sharedCurrentLocale)
     {
-        var localeIdentifier,
+        var localeIdentifier = @"en_US",
             language;
 
-        if (typeof navigator != "undefined")
+        if (typeof navigator !== "undefined")
         {
-            if (navigator.appVersion.indexOf("MSIE") >= 0)
-                language = navigator.browserLanguage.substring(0,2);
-            else
-                language = navigator.language.substring(0,2);
+            // userLanguage is an IE only property.
+            language = (typeof navigator.language !== "undefined") ? navigator.language : navigator.userLanguage;
 
-            language = [CPString stringWithFormat:@"%s_%s", [language lowercaseString], [language uppercaseString]];
+            if (language)
+            {
+                // Browsers use locale strings such as "en-US", but CPLocale uses "en_US".
+                language = language.replace("-", "_").substring(0, 5);
+                // Some browsers have "en_us" at this point, while we want "en_US".
+                language = language.substring(0, 3).toLowerCase() + language.substring(3, 5).toUpperCase();
 
-            if ([availableLocaleIdentifiers indexOfObject:language] !== CPNotFound)
-                localeIdentifier = language;
+                CPLog.info("language: " + language);
+                if ([availableLocaleIdentifiers indexOfObject:language] !== CPNotFound)
+                    localeIdentifier = language;
+            }
         }
 
-        if (!localeIdentifier)
-            localeIdentifier = @"en_US";
-
+        CPLog.info("localeIdentifier: " + localeIdentifier);
         sharedCurrentLocale = [[CPLocale alloc] initWithLocaleIdentifier:localeIdentifier];
     }
 
-    return sharedCurrentLocale
+    return sharedCurrentLocale;
 }
 
 /*! Return an array of the availableLocaleIdentifiers
