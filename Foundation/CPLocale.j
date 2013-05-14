@@ -63,7 +63,7 @@ CPLocaleLanguageDirectionBottomToTop        = @"CPLocaleLanguageDirectionBottomT
 
 var countryCodes = [@"DE", @"FR", @"ES", @"GB", @"US"],
     languageCodes = [@"en", @"de", @"es", @"fr"],
-    availableLocaleIdentifiers = [@"de_DE", @"en_EN", @"en_US", @"es_ES", @"fr_FR"];
+    availableLocaleIdentifiers = [@"de_DE", @"en_GB", @"en_US", @"es_ES", @"fr_FR"];
 
 var sharedSystemLocale = nil,
     sharedCurrentLocale = nil;
@@ -104,13 +104,11 @@ var sharedSystemLocale = nil,
                 // Some browsers have "en_us" at this point, while we want "en_US".
                 language = language.substring(0, 3).toLowerCase() + language.substring(3, 5).toUpperCase();
 
-                CPLog.info("language: " + language);
                 if ([availableLocaleIdentifiers indexOfObject:language] !== CPNotFound)
                     localeIdentifier = language;
             }
         }
 
-        CPLog.info("localeIdentifier: " + localeIdentifier);
         sharedCurrentLocale = [[CPLocale alloc] initWithLocaleIdentifier:localeIdentifier];
     }
 
