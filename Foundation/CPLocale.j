@@ -101,7 +101,7 @@ var sharedSystemLocale = nil,
 
             language = [CPString stringWithFormat:@"%s_%s", [language lowercaseString], [language uppercaseString]];
 
-            if ([availableLocaleIdentifiers indexOfObject:language])
+            if ([availableLocaleIdentifiers indexOfObject:language] !== CPNotFound)
                 localeIdentifier = language;
         }
 
