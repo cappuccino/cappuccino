@@ -191,10 +191,12 @@ var CPPasteboards = nil,
     _owners = @{};
     _provided = @{};
 
-    var count = _types.length;
-
-    while (count--)
-        [_owners setObject:anOwner forKey:_types[count]];
+    if (anOwner)
+    {
+        var count = _types.length;
+        while (count--)
+            [_owners setObject:anOwner forKey:_types[count]];
+    }
 
     if (_nativePasteboard && shouldUpdate)
     {
@@ -205,6 +207,7 @@ var CPPasteboards = nil,
         _nativePasteboard.declareTypes_(nativeTypes);
         _changeCount = _nativePasteboard.changeCount();
     }
+
     return ++_changeCount;
 }
 
