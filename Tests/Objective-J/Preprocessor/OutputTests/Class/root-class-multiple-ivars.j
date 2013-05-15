@@ -5,6 +5,6 @@
     CPArray     array;
 
     CPString    string;
-    int         integer;
+    int *       pointer;
 }
 @end

@@ -11,7 +11,6 @@ var FILENAMES = [
         "Messages/one-parameter",
         "Messages/multiple-parameters",
         "Messages/ternary-operator-argument",
-        "Misc/preprocess-if-directives",
 
 // TODO Re-enable this test when the new Objective-J parser has been enabled.
 // Before that it will fail with "*** Expected "pragma" to follow # but instead saw "]".".
@@ -42,7 +41,7 @@ var FILENAMES = [
                     correct = FILE.read(FILE.join(FILE.dirname(module.path), filename + ".js"));
 
                 [self assertNoThrow:function() {
-                    preprocessed = ObjectiveJ.ObjJAcornCompiler.compileToExecutable(unpreprocessed).code(),
+                    preprocessed = ObjectiveJ.preprocess(unpreprocessed).code(),
                     preprocessed = compressor.compress(preprocessed, { charset : "UTF-8", useServer : true });
                     correct = compressor.compress(correct, { charset : "UTF-8", useServer : true });
                 }];
