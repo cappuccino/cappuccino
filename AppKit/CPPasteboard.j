@@ -246,6 +246,10 @@ var CPPasteboards = nil,
 */
 - (void)setString:(CPString)aString forType:(CPString)aType
 {
+    // Putting a non-string on the string pasteboard can lead to strange crashes.
+    if (aString && aString.isa && ![aString isKindOfClass:CPString])
+        [CPException raise:CPInvalidArgumentException reason:"CPPasteboard setString:forType: must be called with a string."];
+
     [self setPropertyList:aString forType:aType];
 }
 
