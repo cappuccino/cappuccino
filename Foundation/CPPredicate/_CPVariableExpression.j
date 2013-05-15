@@ -48,7 +48,7 @@
     if (self === object)
         return YES;
 
-    if (object.isa !== self.isa || ![[object variable] isEqual:_variable])
+    if (object === nil || object.isa !== self.isa || ![[object variable] isEqual:_variable])
         return NO;
 
     return YES;

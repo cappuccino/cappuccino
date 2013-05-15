@@ -190,7 +190,7 @@
     if (self === anObject)
         return YES;
 
-    if (self.isa !== anObject.isa || _value !== [anObject evaluateWithObject:nil])
+    if (anObject === nil || self.isa !== anObject.isa || _value !== [anObject evaluateWithObject:nil])
         return NO;
 
     return YES;

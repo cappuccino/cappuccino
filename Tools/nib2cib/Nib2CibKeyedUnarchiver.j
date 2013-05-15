@@ -52,7 +52,10 @@ var FILE = require("file");
         else if (!info.resourceDirectory)
             [CPException raise:Nib2CibException format:@"The framework “%@” specified by the image “%@@%@” has no Resources directory.", framework, aName, framework];
 
-        return { path:[self _resourcePathForName:aName inDirectory:info.resourceDirectory], framework:framework };
+        var path = [self _resourcePathForName:aName inDirectory:info.resourceDirectory];
+
+        if (path)
+            return { path:path, framework:framework };
     }
     else
     {
@@ -79,7 +82,7 @@ var FILE = require("file");
         }
     }
 
-    return nil;
+    [CPException raise:Nib2CibException format:@"The image “%@” cannot be found.", aName];
 }
 
 - (CPString)_resourcePathForName:(CPString)aName inDirectory:(CPString)directory
@@ -107,7 +110,7 @@ var FILE = require("file");
         }
     }
 
-    [CPException raise:Nib2CibException format:@"The image “%@” cannot be found in %@.", aName, directory];
+    return nil;
 }
 
 @end
