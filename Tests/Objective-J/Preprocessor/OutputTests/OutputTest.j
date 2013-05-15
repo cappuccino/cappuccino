@@ -41,7 +41,7 @@ var FILENAMES = [
                     correct = FILE.read(FILE.join(FILE.dirname(module.path), filename + ".js"));
 
                 [self assertNoThrow:function() {
-                    preprocessed = ObjectiveJ.preprocess(unpreprocessed).code(),
+                    preprocessed = ObjectiveJ.preprocess(unpreprocessed).code();
                     preprocessed = compressor.compress(preprocessed, { charset : "UTF-8", useServer : true });
                     correct = compressor.compress(correct, { charset : "UTF-8", useServer : true });
                 }];
