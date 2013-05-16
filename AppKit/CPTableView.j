@@ -1322,7 +1322,7 @@ NOT YET IMPLEMENTED
 
     for (var identifier in _dataViewsForTableColumns)
     {
-        var dataViewsInTableColumn = _dataViewsForTableColumns[identifier]
+        var dataViewsInTableColumn = _dataViewsForTableColumns[identifier];
 
         for (var i = 0; i < selectInfo.length; ++i)
         {

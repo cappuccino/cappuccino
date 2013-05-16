@@ -455,12 +455,12 @@ var HORIZONTAL_MARGIN = 2;
     [self tileIfNeeded:NO];
 }
 
-- (void)resizeSubviewsWithOldSize:(CPSize)oldBoundsSize
+- (void)resizeSubviewsWithOldSize:(CGSize)oldBoundsSize
 {
     // Desactivate subviews autoresizing
 }
 
-- (void)resizeWithOldSuperviewSize:(CPSize)oldBoundsSize
+- (void)resizeWithOldSuperviewSize:(CGSize)oldBoundsSize
 {
     if (_lockResizing)
         return;

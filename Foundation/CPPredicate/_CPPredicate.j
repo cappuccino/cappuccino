@@ -970,7 +970,7 @@
 
 @end
 
-var CPRaiseParseError = function CPRaiseParseError(aScanner, target)
+var CPRaiseParseError = function(aScanner, target)
 {
     [CPException raise:CPInvalidArgumentException reason:@"unable to parse " + target + " at index " + [aScanner scanLocation]];
 };
