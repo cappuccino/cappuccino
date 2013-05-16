@@ -13,13 +13,20 @@
 //
 // [ghbt]: https://github.com/marijnh/acorn/issues
 //
+// This file defines the main parser interface. The library also comes
+// with a [error-tolerant parser][dammit] and an
+// [abstract syntax tree walker][walk], defined in other files.
+//
+// [dammit]: acorn_loose.js
+// [walk]: util/walk.js
+//
 // Objective-J extensions made by Martin Carlberg
 //
 // Git repositories for Acorn with Objective-J extension is available at
 //
 //     https://github.com/mrcarlberg/acorn.git
 
-if (!exports.acorn) {
+if (typeof exports != "undefined" && !exports.acorn) {
   exports.acorn = {};
   exports.acorn.walk = {};
 }
@@ -27,7 +34,7 @@ if (!exports.acorn) {
 (function(exports) {
   "use strict";
 
-  exports.version = "0.0.1";
+  exports.version = "0.1.01";
 
   // The main exported interface (under `self.acorn` when in the
   // browser) is a `parse` function that takes a code string and
@@ -41,10 +48,8 @@ if (!exports.acorn) {
 
   exports.parse = function(inpt, opts) {
     input = String(inpt); inputLen = input.length;
-    options = opts || {};
-    for (var opt in defaultOptions) if (!options.hasOwnProperty(opt))
-      options[opt] = defaultOptions[opt];
-    sourceFile = options.sourceFile || null;
+    setOptions(opts);
+    initTokenState();
     return parseTopLevel(options.program);
   };
 
@@ -104,8 +109,53 @@ if (!exports.acorn) {
     // file in every node's `loc` object.
     sourceFile: null,
     // Turn on objj to allow Objective-J syntax
-    objj: true
+    objj: true,
+    // Turn on preprocess to allow C preprocess derectives.
+    // #define macro1
+    // #define macro2 console.log("Hello")
+    // #define macro3(x,y,z) if (x > y && y > z) console.log("Touchdown!!!")
+    // #if macro1
+    // #else
+    // #endif
+    preprocess: true,
+    // Preprocess add macro function
+    preprocessAddMacro: defaultAddMacro,
+    // Preprocess get macro function
+    preprocessGetMacro: defaultGetMacro,
+    // Preprocess undefine macro function. To delete a macro
+    preprocessUndefineMacro: defaultUndefineMacro,
+    // Preprocess is macro function
+    preprocessIsMacro: defaultIsMacro
   };
+
+  function setOptions(opts) {
+    options = opts || {};
+    for (var opt in defaultOptions) if (!options.hasOwnProperty(opt))
+      options[opt] = defaultOptions[opt];
+    sourceFile = options.sourceFile || null;
+  }
+
+  var macros;
+  var macrosIsPredicate;
+
+  function defaultAddMacro(macro) {
+    macros[macro.identifier] = macro;
+    macrosIsPredicate = null;
+  }
+
+  function defaultGetMacro(macroIdentifier) {
+    return macros[macroIdentifier];
+  }
+
+  function defaultUndefineMacro(macroIdentifier) {
+    delete macros[macroIdentifier];
+    macrosIsPredicate = null;
+  }
+
+  function defaultIsMacro(macroIdentifier) {
+    var x = Object.keys(macros).join(" ");
+    return (macrosIsPredicate || (macrosIsPredicate = makePredicate(x)))(macroIdentifier);
+  }
 
   // The `getLineInfo` function is mostly useful when the
   // `locations` option is off (for performance reasons) and you
@@ -126,9 +176,44 @@ if (!exports.acorn) {
   };
 
   // Acorn is organized as a tokenizer and a recursive-descent parser.
-  // Both use (closure-)global variables to keep their state and
-  // communicate. We already saw the `options`, `input`, and
-  // `inputLen` variables above (set in `parse`).
+  // The `tokenize` export provides an interface to the tokenizer.
+  // Because the tokenizer is optimized for being efficiently used by
+  // the Acorn parser itself, this interface is somewhat crude and not
+  // very modular. Performing another parse or call to `tokenize` will
+  // reset the internal state, and invalidate existing tokenizers.
+
+  exports.tokenize = function(inpt, opts) {
+    input = String(inpt); inputLen = input.length;
+    setOptions(opts);
+    initTokenState();
+
+    var t = {};
+    function getToken(forceRegexp) {
+      readToken(forceRegexp);
+      t.start = tokStart; t.end = tokEnd;
+      t.startLoc = tokStartLoc; t.endLoc = tokEndLoc;
+      t.type = tokType; t.value = tokVal;
+      return t;
+    }
+    getToken.jumpTo = function(pos, reAllowed) {
+      tokPos = pos;
+      if (options.locations) {
+        tokCurLine = tokLineStart = lineBreak.lastIndex = 0;
+        var match;
+        while ((match = lineBreak.exec(input)) && match.index < pos) {
+          ++tokCurLine;
+          tokLineStart = match.index + match[0].length;
+        }
+      }
+      var ch = input.charAt(pos - 1);
+      tokRegexpAllowed = reAllowed;
+      skipSpace();
+    };
+    return getToken;
+  };
+
+  // State is kept in (closure-)global variables. We already saw the
+  // `options`, `input`, and `inputLen` variables above.
 
   // The current position of the tokenizer in the input.
 
@@ -174,9 +259,14 @@ if (!exports.acorn) {
 
   // When `options.locations` is true, these are used to keep
   // track of the current line, and know when a new line has been
-  // entered. See the `curLineLoc` function.
+  // entered.
 
   var tokCurLine, tokLineStart, tokLineStartNext;
+
+  // Same as input but for the current token. If options.preprocess is used
+  // this can differ due to macros.
+
+  var tokInput, preTokInput;
 
   // These store the position of the previous token, which is useful
   // when finishing a node and assigning its `end` position.
@@ -201,6 +291,13 @@ if (!exports.acorn) {
   // indicates whether strict mode is on.
 
   var inFunction, labels, strict;
+
+  // These are used by the preprocess tokenizer.
+
+  var preTokPos, preTokType, preTokVal, preTokStart, preTokEnd;
+  var preLastStart, preLastEnd;
+  var preprocessStack = [];
+  var preprocessMacroParamterListMode = false;
 
   // This function is used to raise exceptions on parse errors. It
   // takes either a `{line, column}` object or an offset integer (into
@@ -233,7 +330,7 @@ if (!exports.acorn) {
   // make them recognizeable when debugging.
 
   var _num = {type: "num"}, _regexp = {type: "regexp"}, _string = {type: "string"};
-  var _name = {type: "name"}, _eof = {type: "eof"};
+  var _name = {type: "name"}, _eof = {type: "eof"}, _eol = {type: "eol"};
 
   // Keyword tokens. The `keyword` property (also used in keyword-like
   // operators) indicates that the token originated from an
@@ -256,7 +353,7 @@ if (!exports.acorn) {
   var _throw = {keyword: "throw", beforeExpr: true}, _try = {keyword: "try"}, _var = {keyword: "var"};
   var _while = {keyword: "while", isLoop: true}, _with = {keyword: "with"}, _new = {keyword: "new", beforeExpr: true};
   var _this = {keyword: "this"};
-  var _void = {keyword: "void", prefix: true};
+  var _void = {keyword: "void", prefix: true, beforeExpr: true};
 
   // The keywords that denote values.
 
@@ -283,6 +380,22 @@ if (!exports.acorn) {
   var _byte = {keyword: "byte", okAsIdent: true}, _char = {keyword: "char", okAsIdent: true}, _short = {keyword: "short", okAsIdent: true};
   var _int = {keyword: "int", okAsIdent: true}, _long = {keyword: "long", okAsIdent: true}, _preprocess = {keyword: "#"};
 
+  // Preprocessor keywords
+
+  var _preDefine = {keyword: "define"};
+  var _preUndef = {keyword: "undef"};
+  var _preIfdef = {keyword: "ifdef"};
+  var _preIfndef = {keyword: "ifndef"};
+  var _preIf = {keyword: "if"};
+  var _preElse = {keyword: "else"};
+  var _preEndif = {keyword: "endif"};
+  var _preElseIf = {keyword: "elif"};
+  var _prePragma = {keyword: "pragma"};
+  var _preDefined = {keyword: "defined"};
+  var _preBackslash = {keyword: "\\"}
+
+  var _preprocessParamItem = {type: "preprocessParamItem"}
+
   // Map keyword names to token types.
 
   var keywordTypes = {"break": _break, "case": _case, "catch": _catch,
@@ -291,10 +404,10 @@ if (!exports.acorn) {
                       "function": _function, "if": _if, "return": _return, "switch": _switch,
                       "throw": _throw, "try": _try, "var": _var, "while": _while, "with": _with,
                       "null": _null, "true": _true, "false": _false, "new": _new, "in": _in,
-                      "instanceof": {keyword: "instanceof", binop: 7}, "this": _this,
-                      "typeof": {keyword: "typeof", prefix: true},
+                      "instanceof": {keyword: "instanceof", binop: 7, beforeExpr: true}, "this": _this,
+                      "typeof": {keyword: "typeof", prefix: true, beforeExpr: true},
                       "void": _void,
-                      "delete": {keyword: "delete", prefix: true} };
+                      "delete": {keyword: "delete", prefix: true, beforeExpr: true} };
 
   // Map Objective-J keyword names to token types.
 
@@ -306,6 +419,12 @@ if (!exports.acorn) {
   var objJAtKeywordTypes = {"implementation": _implementation, "outlet": _outlet, "accessors": _accessors, "end": _end,
                             "import": _import, "action": _action, "selector": _selector, "class": _class, "global": _global,
                             "ref": _ref, "deref": _deref};
+
+  // Map Preprocessor keyword names to token types.
+
+  var keywordTypesPreprocess = {"define": _preDefine, "pragma": _prePragma, "ifdef": _preIfdef, "ifndef": _preIfndef,
+                                "undef": _preUndef, "if": _preIf, "endif": _preEndif, "else": _preElse, "elif": _preElseIf,
+                                "defined": _preDefined};
 
   // Punctuation token types. Again, the `type` property is purely for debugging.
 
@@ -334,14 +453,23 @@ if (!exports.acorn) {
   // binary operators with a very low precedence, that should result
   // in AssignmentExpression nodes.
 
-  var _slash = {binop: 10, beforeExpr: true}, _eq = {isAssign: true, beforeExpr: true};
-  var _assign = {isAssign: true, beforeExpr: true}, _plusmin = {binop: 9, prefix: true, beforeExpr: true};
+  var _slash = {binop: 10, beforeExpr: true, preprocess: true}, _eq = {isAssign: true, beforeExpr: true, preprocess: true};
+  var _assign = {isAssign: true, beforeExpr: true}, _plusmin = {binop: 9, prefix: true, beforeExpr: true, preprocess: true};
   var _incdec = {postfix: true, prefix: true, isUpdate: true}, _prefix = {prefix: true, beforeExpr: true};
-  var _bin1 = {binop: 1, beforeExpr: true}, _bin2 = {binop: 2, beforeExpr: true};
-  var _bin3 = {binop: 3, beforeExpr: true}, _bin4 = {binop: 4, beforeExpr: true};
-  var _bin5 = {binop: 5, beforeExpr: true}, _bin6 = {binop: 6, beforeExpr: true};
-  var _bin7 = {binop: 7, beforeExpr: true}, _bin8 = {binop: 8, beforeExpr: true};
-  var _bin10 = {binop: 10, beforeExpr: true};
+  var _bin1 = {binop: 1, beforeExpr: true, preprocess: true}, _bin2 = {binop: 2, beforeExpr: true, preprocess: true};
+  var _bin3 = {binop: 3, beforeExpr: true, preprocess: true}, _bin4 = {binop: 4, beforeExpr: true, preprocess: true};
+  var _bin5 = {binop: 5, beforeExpr: true, preprocess: true}, _bin6 = {binop: 6, beforeExpr: true, preprocess: true};
+  var _bin7 = {binop: 7, beforeExpr: true, preprocess: true}, _bin8 = {binop: 8, beforeExpr: true, preprocess: true};
+  var _bin10 = {binop: 10, beforeExpr: true, preprocess: true};
+
+  // Provide access to the token types for external users of the
+  // tokenizer.
+
+  exports.tokTypes = {bracketL: _bracketL, bracketR: _bracketR, braceL: _braceL, braceR: _braceR,
+                      parenL: _parenL, parenR: _parenR, comma: _comma, semi: _semi, colon: _colon,
+                      dot: _dot, question: _question, slash: _slash, eq: _eq, name: _name, eof: _eof,
+                      num: _num, regexp: _regexp, string: _string};
+  for (var kw in keywordTypes) exports.tokTypes[kw] = keywordTypes[kw];
 
   // This is a trick taken from Esprima. It turns out that, on
   // non-Chrome browsers, to check whether a string is in a set, a
@@ -417,6 +545,10 @@ if (!exports.acorn) {
 
   var isKeywordObjJ = makePredicate("IBAction IBOutlet byte char short int long unsigned signed");
 
+  // The preprocessor keywords.
+
+  var isKeywordPreprocess = makePredicate("define pragma if ifdef ifndef else elif endif defined");
+
   // ## Character categories
 
   // Big ugly regular expressions that match characters in the
@@ -425,6 +557,7 @@ if (!exports.acorn) {
   // code point above 128.
 
   var nonASCIIwhitespace = /[\u1680\u180e\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]/;
+  var nonASCIIwhitespaceNoNewLine = /[\u1680\u180e\u2000-\u200a\u202f\u205f\u3000\ufeff]/;
   var nonASCIIidentifierStartChars = "\xaa\xb5\xba\xc0-\xd6\xd8-\xf6\xf8-\u02c1\u02c6-\u02d1\u02e0-\u02e4\u02ec\u02ee\u0370-\u0374\u0376\u0377\u037a-\u037d\u0386\u0388-\u038a\u038c\u038e-\u03a1\u03a3-\u03f5\u03f7-\u0481\u048a-\u0527\u0531-\u0556\u0559\u0561-\u0587\u05d0-\u05ea\u05f0-\u05f2\u0620-\u064a\u066e\u066f\u0671-\u06d3\u06d5\u06e5\u06e6\u06ee\u06ef\u06fa-\u06fc\u06ff\u0710\u0712-\u072f\u074d-\u07a5\u07b1\u07ca-\u07ea\u07f4\u07f5\u07fa\u0800-\u0815\u081a\u0824\u0828\u0840-\u0858\u08a0\u08a2-\u08ac\u0904-\u0939\u093d\u0950\u0958-\u0961\u0971-\u0977\u0979-\u097f\u0985-\u098c\u098f\u0990\u0993-\u09a8\u09aa-\u09b0\u09b2\u09b6-\u09b9\u09bd\u09ce\u09dc\u09dd\u09df-\u09e1\u09f0\u09f1\u0a05-\u0a0a\u0a0f\u0a10\u0a13-\u0a28\u0a2a-\u0a30\u0a32\u0a33\u0a35\u0a36\u0a38\u0a39\u0a59-\u0a5c\u0a5e\u0a72-\u0a74\u0a85-\u0a8d\u0a8f-\u0a91\u0a93-\u0aa8\u0aaa-\u0ab0\u0ab2\u0ab3\u0ab5-\u0ab9\u0abd\u0ad0\u0ae0\u0ae1\u0b05-\u0b0c\u0b0f\u0b10\u0b13-\u0b28\u0b2a-\u0b30\u0b32\u0b33\u0b35-\u0b39\u0b3d\u0b5c\u0b5d\u0b5f-\u0b61\u0b71\u0b83\u0b85-\u0b8a\u0b8e-\u0b90\u0b92-\u0b95\u0b99\u0b9a\u0b9c\u0b9e\u0b9f\u0ba3\u0ba4\u0ba8-\u0baa\u0bae-\u0bb9\u0bd0\u0c05-\u0c0c\u0c0e-\u0c10\u0c12-\u0c28\u0c2a-\u0c33\u0c35-\u0c39\u0c3d\u0c58\u0c59\u0c60\u0c61\u0c85-\u0c8c\u0c8e-\u0c90\u0c92-\u0ca8\u0caa-\u0cb3\u0cb5-\u0cb9\u0cbd\u0cde\u0ce0\u0ce1\u0cf1\u0cf2\u0d05-\u0d0c\u0d0e-\u0d10\u0d12-\u0d3a\u0d3d\u0d4e\u0d60\u0d61\u0d7a-\u0d7f\u0d85-\u0d96\u0d9a-\u0db1\u0db3-\u0dbb\u0dbd\u0dc0-\u0dc6\u0e01-\u0e30\u0e32\u0e33\u0e40-\u0e46\u0e81\u0e82\u0e84\u0e87\u0e88\u0e8a\u0e8d\u0e94-\u0e97\u0e99-\u0e9f\u0ea1-\u0ea3\u0ea5\u0ea7\u0eaa\u0eab\u0ead-\u0eb0\u0eb2\u0eb3\u0ebd\u0ec0-\u0ec4\u0ec6\u0edc-\u0edf\u0f00\u0f40-\u0f47\u0f49-\u0f6c\u0f88-\u0f8c\u1000-\u102a\u103f\u1050-\u1055\u105a-\u105d\u1061\u1065\u1066\u106e-\u1070\u1075-\u1081\u108e\u10a0-\u10c5\u10c7\u10cd\u10d0-\u10fa\u10fc-\u1248\u124a-\u124d\u1250-\u1256\u1258\u125a-\u125d\u1260-\u1288\u128a-\u128d\u1290-\u12b0\u12b2-\u12b5\u12b8-\u12be\u12c0\u12c2-\u12c5\u12c8-\u12d6\u12d8-\u1310\u1312-\u1315\u1318-\u135a\u1380-\u138f\u13a0-\u13f4\u1401-\u166c\u166f-\u167f\u1681-\u169a\u16a0-\u16ea\u16ee-\u16f0\u1700-\u170c\u170e-\u1711\u1720-\u1731\u1740-\u1751\u1760-\u176c\u176e-\u1770\u1780-\u17b3\u17d7\u17dc\u1820-\u1877\u1880-\u18a8\u18aa\u18b0-\u18f5\u1900-\u191c\u1950-\u196d\u1970-\u1974\u1980-\u19ab\u19c1-\u19c7\u1a00-\u1a16\u1a20-\u1a54\u1aa7\u1b05-\u1b33\u1b45-\u1b4b\u1b83-\u1ba0\u1bae\u1baf\u1bba-\u1be5\u1c00-\u1c23\u1c4d-\u1c4f\u1c5a-\u1c7d\u1ce9-\u1cec\u1cee-\u1cf1\u1cf5\u1cf6\u1d00-\u1dbf\u1e00-\u1f15\u1f18-\u1f1d\u1f20-\u1f45\u1f48-\u1f4d\u1f50-\u1f57\u1f59\u1f5b\u1f5d\u1f5f-\u1f7d\u1f80-\u1fb4\u1fb6-\u1fbc\u1fbe\u1fc2-\u1fc4\u1fc6-\u1fcc\u1fd0-\u1fd3\u1fd6-\u1fdb\u1fe0-\u1fec\u1ff2-\u1ff4\u1ff6-\u1ffc\u2071\u207f\u2090-\u209c\u2102\u2107\u210a-\u2113\u2115\u2119-\u211d\u2124\u2126\u2128\u212a-\u212d\u212f-\u2139\u213c-\u213f\u2145-\u2149\u214e\u2160-\u2188\u2c00-\u2c2e\u2c30-\u2c5e\u2c60-\u2ce4\u2ceb-\u2cee\u2cf2\u2cf3\u2d00-\u2d25\u2d27\u2d2d\u2d30-\u2d67\u2d6f\u2d80-\u2d96\u2da0-\u2da6\u2da8-\u2dae\u2db0-\u2db6\u2db8-\u2dbe\u2dc0-\u2dc6\u2dc8-\u2dce\u2dd0-\u2dd6\u2dd8-\u2dde\u2e2f\u3005-\u3007\u3021-\u3029\u3031-\u3035\u3038-\u303c\u3041-\u3096\u309d-\u309f\u30a1-\u30fa\u30fc-\u30ff\u3105-\u312d\u3131-\u318e\u31a0-\u31ba\u31f0-\u31ff\u3400-\u4db5\u4e00-\u9fcc\ua000-\ua48c\ua4d0-\ua4fd\ua500-\ua60c\ua610-\ua61f\ua62a\ua62b\ua640-\ua66e\ua67f-\ua697\ua6a0-\ua6ef\ua717-\ua71f\ua722-\ua788\ua78b-\ua78e\ua790-\ua793\ua7a0-\ua7aa\ua7f8-\ua801\ua803-\ua805\ua807-\ua80a\ua80c-\ua822\ua840-\ua873\ua882-\ua8b3\ua8f2-\ua8f7\ua8fb\ua90a-\ua925\ua930-\ua946\ua960-\ua97c\ua984-\ua9b2\ua9cf\uaa00-\uaa28\uaa40-\uaa42\uaa44-\uaa4b\uaa60-\uaa76\uaa7a\uaa80-\uaaaf\uaab1\uaab5\uaab6\uaab9-\uaabd\uaac0\uaac2\uaadb-\uaadd\uaae0-\uaaea\uaaf2-\uaaf4\uab01-\uab06\uab09-\uab0e\uab11-\uab16\uab20-\uab26\uab28-\uab2e\uabc0-\uabe2\uac00-\ud7a3\ud7b0-\ud7c6\ud7cb-\ud7fb\uf900-\ufa6d\ufa70-\ufad9\ufb00-\ufb06\ufb13-\ufb17\ufb1d\ufb1f-\ufb28\ufb2a-\ufb36\ufb38-\ufb3c\ufb3e\ufb40\ufb41\ufb43\ufb44\ufb46-\ufbb1\ufbd3-\ufd3d\ufd50-\ufd8f\ufd92-\ufdc7\ufdf0-\ufdfb\ufe70-\ufe74\ufe76-\ufefc\uff21-\uff3a\uff41-\uff5a\uff66-\uffbe\uffc2-\uffc7\uffca-\uffcf\uffd2-\uffd7\uffda-\uffdc";
   var nonASCIIidentifierChars = "\u0371-\u0374\u0483-\u0487\u0591-\u05bd\u05bf\u05c1\u05c2\u05c4\u05c5\u05c7\u0610-\u061a\u0620-\u0649\u0672-\u06d3\u06e7-\u06e8\u06fb-\u06fc\u0730-\u074a\u0800-\u0814\u081b-\u0823\u0825-\u0827\u0829-\u082d\u0840-\u0857\u08e4-\u08fe\u0900-\u0903\u093a-\u093c\u093e-\u094f\u0951-\u0957\u0962-\u0963\u0966-\u096f\u0981-\u0983\u09bc\u09be-\u09c4\u09c7\u09c8\u09d7\u09df-\u09e0\u0a01-\u0a03\u0a3c\u0a3e-\u0a42\u0a47\u0a48\u0a4b-\u0a4d\u0a51\u0a66-\u0a71\u0a75\u0a81-\u0a83\u0abc\u0abe-\u0ac5\u0ac7-\u0ac9\u0acb-\u0acd\u0ae2-\u0ae3\u0ae6-\u0aef\u0b01-\u0b03\u0b3c\u0b3e-\u0b44\u0b47\u0b48\u0b4b-\u0b4d\u0b56\u0b57\u0b5f-\u0b60\u0b66-\u0b6f\u0b82\u0bbe-\u0bc2\u0bc6-\u0bc8\u0bca-\u0bcd\u0bd7\u0be6-\u0bef\u0c01-\u0c03\u0c46-\u0c48\u0c4a-\u0c4d\u0c55\u0c56\u0c62-\u0c63\u0c66-\u0c6f\u0c82\u0c83\u0cbc\u0cbe-\u0cc4\u0cc6-\u0cc8\u0cca-\u0ccd\u0cd5\u0cd6\u0ce2-\u0ce3\u0ce6-\u0cef\u0d02\u0d03\u0d46-\u0d48\u0d57\u0d62-\u0d63\u0d66-\u0d6f\u0d82\u0d83\u0dca\u0dcf-\u0dd4\u0dd6\u0dd8-\u0ddf\u0df2\u0df3\u0e34-\u0e3a\u0e40-\u0e45\u0e50-\u0e59\u0eb4-\u0eb9\u0ec8-\u0ecd\u0ed0-\u0ed9\u0f18\u0f19\u0f20-\u0f29\u0f35\u0f37\u0f39\u0f41-\u0f47\u0f71-\u0f84\u0f86-\u0f87\u0f8d-\u0f97\u0f99-\u0fbc\u0fc6\u1000-\u1029\u1040-\u1049\u1067-\u106d\u1071-\u1074\u1082-\u108d\u108f-\u109d\u135d-\u135f\u170e-\u1710\u1720-\u1730\u1740-\u1750\u1772\u1773\u1780-\u17b2\u17dd\u17e0-\u17e9\u180b-\u180d\u1810-\u1819\u1920-\u192b\u1930-\u193b\u1951-\u196d\u19b0-\u19c0\u19c8-\u19c9\u19d0-\u19d9\u1a00-\u1a15\u1a20-\u1a53\u1a60-\u1a7c\u1a7f-\u1a89\u1a90-\u1a99\u1b46-\u1b4b\u1b50-\u1b59\u1b6b-\u1b73\u1bb0-\u1bb9\u1be6-\u1bf3\u1c00-\u1c22\u1c40-\u1c49\u1c5b-\u1c7d\u1cd0-\u1cd2\u1d00-\u1dbe\u1e01-\u1f15\u200c\u200d\u203f\u2040\u2054\u20d0-\u20dc\u20e1\u20e5-\u20f0\u2d81-\u2d96\u2de0-\u2dff\u3021-\u3028\u3099\u309a\ua640-\ua66d\ua674-\ua67d\ua69f\ua6f0-\ua6f1\ua7f8-\ua800\ua806\ua80b\ua823-\ua827\ua880-\ua881\ua8b4-\ua8c4\ua8d0-\ua8d9\ua8f3-\ua8f7\ua900-\ua909\ua926-\ua92d\ua930-\ua945\ua980-\ua983\ua9b3-\ua9c0\uaa00-\uaa27\uaa40-\uaa41\uaa4c-\uaa4d\uaa50-\uaa59\uaa7b\uaae0-\uaae9\uaaf2-\uaaf3\uabc0-\uabe1\uabec\uabed\uabf0-\uabf9\ufb20-\ufb28\ufe00-\ufe0f\ufe20-\ufe26\ufe33\ufe34\ufe4d-\ufe4f\uff10-\uff19\uff3f";
   var nonASCIIidentifierStart = new RegExp("[" + nonASCIIidentifierStartChars + "]");
@@ -463,36 +596,20 @@ if (!exports.acorn) {
 
   // ## Tokenizer
 
-  // These are used when `options.locations` is on, in order to track
-  // the current line number and start of line offset, in order to set
-  // `tokStartLoc` and `tokEndLoc`.
+  // These are used when `options.locations` is on, for the
+  // `tokStartLoc` and `tokEndLoc` properties.
 
-  function nextLineStart() {
-    lineBreak.lastIndex = tokLineStart;
-    var match = lineBreak.exec(input);
-    return match ? match.index + match[0].length : input.length + 1;
-  }
-
-  var line_loc_t = function() {
+  function line_loc_t() {
     this.line = tokCurLine;
     this.column = tokPos - tokLineStart;
-  }
-
-  function curLineLoc() {
-    while (tokLineStartNext <= tokPos) {
-      ++tokCurLine;
-      tokLineStart = tokLineStartNext;
-      tokLineStartNext = nextLineStart();
-    }
-    return new line_loc_t();
   }
 
   // Reset the token state. Used at the start of a parse.
 
   function initTokenState() {
+    macros = Object.create(null);
     tokCurLine = 1;
     tokPos = tokLineStart = 0;
-    tokLineStartNext = nextLineStart();
     tokRegexpAllowed = true;
     tokComments = null;
     tokSpaces = null;
@@ -504,11 +621,43 @@ if (!exports.acorn) {
   // after the token, so that the next one's `tokStart` will point at
   // the right position.
 
+var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _preEndif];
+
   function finishToken(type, val) {
+    // If we get any of these preprocess tokens skip it and read next
+    if (type in preprocessTokens) return readToken();
     tokEnd = tokPos;
-    if (options.locations) tokEndLoc = curLineLoc();
+    if (options.locations) tokEndLoc = new line_loc_t;
     tokType = type;
     skipSpace();
+    if (options.preprocess && input.charCodeAt(tokPos) === 35 && input.charCodeAt(tokPos + 1) === 35) { // '##'
+      var val1 = type === _name ? val : type.keyword;
+      tokPos += 2;
+      if (val1) {
+        skipSpace();
+        readToken();
+        var val2 = tokType === _name ? tokVal : tokType.keyword;
+        if (val2) {
+          var concat = "" + val1 + val2,
+              code = concat.charCodeAt(0),
+              tok;
+          if (isIdentifierStart(code))
+            tok = readWord(concat) !== false;
+
+          // We might got a word token from the concatenation
+          if (tok) return tok;
+          // FIXME: Is not using the concatenated token
+          tok = getTokenFromCode(code, finishToken);
+          if (tok === false) {
+            unexpected();
+          }
+          // We have now got another type of token from the concatenation
+          return tok;
+        } else {
+          // FIXME: Second token was not of right type. Save second token and return the first. When readToken is called again return the second.
+        }
+      }
+    }
     tokVal = val;
     lastTokCommentsAfter = tokCommentsAfter;
     lastTokSpacesAfter = tokSpacesAfter;
@@ -519,32 +668,51 @@ if (!exports.acorn) {
   }
 
   function skipBlockComment() {
-    var end = input.indexOf("*/", tokPos += 2);
+    var startLoc = options.onComment && options.locations && new line_loc_t;
+    var start = tokPos, end = input.indexOf("*/", tokPos += 2);
     if (end === -1) raise(tokPos - 2, "Unterminated comment");
-    if (options.trackComments)
-      (tokComments || (tokComments = [])).push(input.slice(tokPos, end));
     tokPos = end + 2;
+    if (options.locations) {
+      lineBreak.lastIndex = start;
+      var match;
+      while ((match = lineBreak.exec(input)) && match.index < tokPos) {
+        ++tokCurLine;
+        tokLineStart = match.index + match[0].length;
+      }
+    }
+    if (options.onComment)
+      options.onComment(true, input.slice(start + 2, end), start, tokPos,
+                        startLoc, options.locations && new line_loc_t);
+    if (options.trackComments)
+      (tokComments || (tokComments = [])).push(input.slice(start, end));
   }
 
-  function skipLineComment(skipCharacters) {
+  function skipLineComment() {
     var start = tokPos;
-    var ch = input.charCodeAt(tokPos+=skipCharacters);
+    var startLoc = options.onComment && options.locations && new line_loc_t;
+    var ch = input.charCodeAt(tokPos+=2);
     while (tokPos < inputLen && ch !== 10 && ch !== 13 && ch !== 8232 && ch !== 8329) {
       ++tokPos;
       ch = input.charCodeAt(tokPos);
     }
+    if (options.onComment)
+      options.onComment(false, input.slice(start + 2, tokPos), start, tokPos,
+                        startLoc, options.locations && new line_loc_t);
     if (options.trackComments)
       (tokComments || (tokComments = [])).push(input.slice(start, tokPos));
   }
 
-  function skipWhiteSpaces() {
-    var start = tokPos;
-    var ch = input.charCodeAt(++tokPos);
-    while ((ch < 14 && ch > 8) || ch === 32 || ch === 160 || (ch >= 5760 && nonASCIIwhitespace.test(String.fromCharCode(ch)))) // 9 - 13, ' ', '\xa0' ....
+  function preprocesSkipRestOfLine() {
+    var ch = input.charCodeAt(tokPos);
+    var last;
+    // If the last none whitespace character is a '\' the line will continue on the the next line.
+    // Here we break the way gcc works as it joins the lines first and then tokenize it. Because of
+    // this we can't have a newline in the middle of a word.
+    while (tokPos < inputLen && ((ch !== 10 && ch !== 13 && ch !== 8232 && ch !== 8329) || last === 92)) { // White space and '\'
+      if (ch != 32 && ch != 9 && ch != 160 && (ch < 5760 || !nonASCIIwhitespaceNoNewLine.test(String.fromCharCode(ch))))
+        last = ch;
       ch = input.charCodeAt(++tokPos);
-    if (options.trackSpaces)
-      //tokSpaces = input.slice(start, tokPos);
-      (tokSpaces || (tokSpaces = [])).push(input.slice(start, tokPos));
+    }
   }
 
   // Called at the start of the parse and after every token. Skips
@@ -556,17 +724,56 @@ if (!exports.acorn) {
   function skipSpace() {
     tokComments = null;
     tokSpaces = null;
-    while (tokPos < inputLen) {
+    var spaceStart = tokPos;
+    for(;;) {
       var ch = input.charCodeAt(tokPos);
-      if (ch === 47) { // '/'
+      if (ch === 32) { // ' '
+        ++tokPos;
+      } else if(ch === 13) {
+        ++tokPos;
+        var next = input.charCodeAt(tokPos);
+        if(next === 10) {
+          ++tokPos;
+        }
+        if(options.locations) {
+          ++tokCurLine;
+          tokLineStart = tokPos;
+        }
+      } else if (ch === 10) {
+        ++tokPos;
+        ++tokCurLine;
+        tokLineStart = tokPos;
+      } else if(ch < 14 && ch > 8) {
+        ++tokPos;
+      } else if (ch === 47) { // '/'
         var next = input.charCodeAt(tokPos+1);
         if (next === 42) { // '*'
+          if (options.trackSpaces)
+            (tokSpaces || (tokSpaces = [])).push(input.slice(spaceStart, tokPos));
           skipBlockComment();
+          spaceStart = tokPos;
         } else if (next === 47) { // '/'
-          skipLineComment(2);
+          if (options.trackSpaces)
+            (tokSpaces || (tokSpaces = [])).push(input.slice(spaceStart, tokPos));
+          skipLineComment();
+          spaceStart = tokPos;
         } else break;
-      } else if ((ch < 14 && ch > 8) || ch === 32 || ch === 160 || (ch >= 5760 && nonASCIIwhitespace.test(String.fromCharCode(ch)))) { // 9 - 13, ' ', '\xa0' ....
-        skipWhiteSpaces();
+      } else if (ch === 160) { // '\xa0'
+        ++tokPos;
+      } else if (ch >= 5760 && nonASCIIwhitespace.test(String.fromCharCode(ch))) {
+        ++tokPos;
+      } else if (tokPos >= inputLen) {
+        if (options.preprocess && preprocessStack.length) {
+          // If we are at the end of the input inside a macro continue at last position
+          var lastItem = preprocessStack.pop();
+          tokPos = lastItem.end;
+          input = lastItem.input;
+          inputLen = lastItem.inputLen;
+          lastEnd = lastItem.lastEnd;
+          lastStart = lastItem.lastStart;
+        } else {
+          break;
+        }
       } else {
         break;
       }
@@ -585,9 +792,9 @@ if (!exports.acorn) {
   // The `forceRegexp` parameter is used in the one case where the
   // `tokRegexpAllowed` trick does not work. See `parseStatement`.
 
-  function readToken_dot(code) {
+  function readToken_dot(code, finishToken) {
     var next = input.charCodeAt(tokPos+1);
-    if (next >= 48 && next <= 57) return readNumber(String.fromCharCode(code));
+    if (next >= 48 && next <= 57) return readNumber(String.fromCharCode(code), finishToken);
     if (next === 46 && options.objj && input.charCodeAt(tokPos+2) === 46) { //'.'
       tokPos += 3;
       return finishToken(_dotdotdot);
@@ -596,40 +803,40 @@ if (!exports.acorn) {
     return finishToken(_dot);
   }
 
-  function readToken_slash() { // '/'
+  function readToken_slash(finishToken) { // '/'
     var next = input.charCodeAt(tokPos+1);
     if (tokRegexpAllowed) {++tokPos; return readRegexp();}
-    if (next === 61) return finishOp(_assign, 2);
-    return finishOp(_slash, 1);
+    if (next === 61) return finishOp(_assign, 2, finishToken);
+    return finishOp(_slash, 1, finishToken);
   }
 
-  function readToken_mult_modulo() { // '%*'
+  function readToken_mult_modulo(finishToken) { // '%*'
     var next = input.charCodeAt(tokPos+1);
-    if (next === 61) return finishOp(_assign, 2);
-    return finishOp(_bin10, 1);
+    if (next === 61) return finishOp(_assign, 2, finishToken);
+    return finishOp(_bin10, 1, finishToken);
   }
 
-  function readToken_pipe_amp(code) { // '|&'
+  function readToken_pipe_amp(code, finishToken) { // '|&'
     var next = input.charCodeAt(tokPos+1);
-    if (next === code) return finishOp(code === 124 ? _bin1 : _bin2, 2);
-    if (next === 61) return finishOp(_assign, 2);
-    return finishOp(code === 124 ? _bin3 : _bin5, 1);
+    if (next === code) return finishOp(code === 124 ? _bin1 : _bin2, 2, finishToken);
+    if (next === 61) return finishOp(_assign, 2, finishToken);
+    return finishOp(code === 124 ? _bin3 : _bin5, 1, finishToken);
   }
 
-  function readToken_caret() { // '^'
+  function readToken_caret(finishToken) { // '^'
     var next = input.charCodeAt(tokPos+1);
-    if (next === 61) return finishOp(_assign, 2);
-    return finishOp(_bin4, 1);
+    if (next === 61) return finishOp(_assign, 2, finishToken);
+    return finishOp(_bin4, 1, finishToken);
   }
 
-  function readToken_plus_min(code) { // '+-'
+  function readToken_plus_min(code, finishToken) { // '+-'
     var next = input.charCodeAt(tokPos+1);
-    if (next === code) return finishOp(_incdec, 2);
-    if (next === 61) return finishOp(_assign, 2);
-    return finishOp(_plusmin, 1);
+    if (next === code) return finishOp(_incdec, 2, finishToken);
+    if (next === 61) return finishOp(_assign, 2, finishToken);
+    return finishOp(_plusmin, 1, finishToken);
   }
 
-  function readToken_lt_gt(code) { // '<>'
+  function readToken_lt_gt(code, finishToken) { // '<>'
     if (tokAfterImport && options.objj && code === 60) {  // '<'
       var str = [];
       for (;;) {
@@ -646,24 +853,24 @@ if (!exports.acorn) {
     var size = 1;
     if (next === code) {
       size = code === 62 && input.charCodeAt(tokPos+2) === 62 ? 3 : 2;
-      if (input.charCodeAt(tokPos + size) === 61) return finishOp(_assign, size + 1);
-      return finishOp(_bin8, size);
+      if (input.charCodeAt(tokPos + size) === 61) return finishOp(_assign, size + 1, finishToken);
+      return finishOp(_bin8, size, finishToken);
     }
     if (next === 61)
       size = input.charCodeAt(tokPos+2) === 61 ? 3 : 2;
-    return finishOp(_bin7, size);
+    return finishOp(_bin7, size, finishToken);
   }
 
-  function readToken_eq_excl(code) { // '=!'
+  function readToken_eq_excl(code, finishToken) { // '=!'
     var next = input.charCodeAt(tokPos+1);
-    if (next === 61) return finishOp(_bin6, input.charCodeAt(tokPos+2) === 61 ? 3 : 2);
-    return finishOp(code === 61 ? _eq : _prefix, 1);
+    if (next === 61) return finishOp(_bin6, input.charCodeAt(tokPos+2) === 61 ? 3 : 2, finishToken);
+    return finishOp(code === 61 ? _eq : _prefix, 1, finishToken);
   }
 
-  function readToken_at(code) { // '@'
+  function readToken_at(code, finishToken) { // '@'
     var next = input.charCodeAt(++tokPos);
     if (next === 34 || next === 39)  // Read string if "'" or '"'
-      return readString(next);
+      return readString(next, finishToken);
     if (next === 123) // Read dictionary literal if "{"
       return finishToken(_dictionaryLiteral);
     if (next === 91) // Ready array literal if "["
@@ -671,16 +878,191 @@ if (!exports.acorn) {
 
     var word = readWord1(),
         token = objJAtKeywordTypes[word];
-    if (!token) raise(tokStart, "Unrecognized Objective-J keyword '@" + word + "'");
+    if (!token) raise(tokPos, "Unrecognized Objective-J keyword '@" + word + "'");
     return finishToken(token);
   }
 
-  function getTokenFromCode(code) {
+// True if we are skipping token when finding #else or #endif after and #if
+
+var preNotSkipping = true;
+var preIfLevel = 0;
+
+  function readToken_preprocess(finishTokenFunction) { // '#'
+    ++tokPos;
+    preprocessReadToken();
+    switch (preTokType) {
+      case _preDefine:
+        preprocessReadToken();
+        var macroIdentifierEnd = preTokEnd;
+        var macroIdentifier = preprocessGetIdent();
+        // '(' Must follow directly after identifier to be a valid macro with parameters
+        if (input.charCodeAt(macroIdentifierEnd) === 40) { // '('
+          preprocessExpect(_parenL);
+          var parameters = [];
+          var first = true;
+          while (!preprocessEat(_parenR)) {
+            if (!first) preprocessExpect(_comma, "Expected ',' between macro parameters"); else first = false;
+            parameters.push(preprocessGetIdent());
+          }
+        }
+        var start = tokPos = preTokStart;
+        preprocesSkipRestOfLine();
+        var macroString = input.slice(start, tokPos);
+        macroString = macroString.replace(/\\/g, " ");
+        options.preprocessAddMacro(new Macro(macroIdentifier, macroString, parameters));
+        break;
+
+      case _preUndef:
+        preprocessReadToken();
+        options.preprocessUndefineMacro(preprocessGetIdent());
+        preprocesSkipRestOfLine();
+        break;
+
+      case _preIf:
+        if (preNotSkipping) {
+          preIfLevel++;
+          preprocessReadToken();
+          var expr = preprocessParseExpression();
+          var test = preprocessEvalExpression(expr);
+          if (!test)
+            preNotSkipping = false
+          preprocessSkipToElseOrEndif(!test);
+        } else {
+          return finishTokenFunction(_preIf);
+        }
+        break;
+
+      case _preIfdef:
+        if (preNotSkipping) {
+          preIfLevel++;
+          preprocessReadToken();
+          var ident = preprocessGetIdent();
+          var test = options.preprocessGetMacro(ident);
+          if (!test)
+            preNotSkipping = false
+          //preprocessExpect(_eol);
+          preprocessSkipToElseOrEndif(!test);
+        } else {
+          //preprocesSkipRestOfLine();
+          return finishTokenFunction(_preIfdef);
+        }
+        break;
+
+      case _preIfndef:
+        if (preNotSkipping) {
+          preIfLevel++;
+          preprocessReadToken();
+          var ident = preprocessGetIdent();
+          var test = options.preprocessGetMacro(ident);
+          if (test)
+            preNotSkipping = false
+          //preprocessExpect(_eol);
+          preprocessSkipToElseOrEndif(test);
+        } else {
+          //preprocesSkipRestOfLine();
+          return finishTokenFunction(_preIfndef);
+        }
+        break;
+
+      case _preElse:
+        if (preIfLevel) {
+          if (preNotSkipping) {
+            preNotSkipping = false;
+            finishTokenFunction(_preElse);
+            preprocessReadToken();
+            preprocessSkipToElseOrEndif(true, true); // no else
+          } else {
+            return finishTokenFunction(_preElse);
+          }
+        } else
+          raise(preTokStart, "#else without #if");
+        break;
+
+      case _preEndif:
+        if (preIfLevel) {
+          if (preNotSkipping) {
+            preIfLevel--;
+            break;
+          }
+        } else {
+          raise(preTokStart, "#endif without #if");
+        }
+        return finishTokenFunction(_preEndif);
+        break;
+
+      case _prePragma:
+        preprocesSkipRestOfLine();
+        break;
+
+      case _prefix:
+        preprocesSkipRestOfLine();
+        break;
+
+      default:
+        raise(preTokStart, "Invalid preprocessing directive");
+        preprocesSkipRestOfLine();
+        // Return the complete line as a token to make it possible to create a PreProcessStatement if we are between two statements
+        return finishTokenFunction(_preprocess);
+        //raise(tokPos, "Invalid preprocessing directive '" + (preTokType.keyword || preTokVal) + "' " + input.slice(tokStart, tokPos));
+    }
+    // Drop this token and read next non preprocess token
+    finishToken(_preprocess);
+    return readToken();
+  }
+
+  function preprocessEvalExpression(expr) {
+    return exports.walk.recursive(expr, {}, {
+      BinaryExpression: function(node, st, c) {
+        var left = node.left, right = node.right;
+        switch(node.operator) {
+          case "+":
+            return c(left, st) + c(right, st);
+          case "-":
+            return c(left, st) - c(right, st);
+          case "*":
+            return c(left, st) * c(right, st);
+          case "/":
+            return c(left, st) / c(right, st);
+          case "%":
+            return c(left, st) % c(right, st);
+          case "<":
+            return c(left, st) < c(right, st);
+          case ">":
+            return c(left, st) > c(right, st);
+          case "=":
+          case "==":
+          case "===":
+            return c(left, st) === c(right, st);
+          case "<=":
+            return c(left, st) <= c(right, st);
+          case ">=":
+            return c(left, st) >= c(right, st);
+          case "&&":
+            return c(left, st) && c(right, st);
+          case "||":
+            return c(left, st) || c(right, st);
+        }
+      },
+      Literal: function(node, st, c) {
+        return node.value;
+      },
+      Identifier: function(node, st, c) {
+        var name = node.name,
+            macro = options.preprocessGetMacro(name);
+        return (macro && parseInt(macro.macro)) || 0;
+      },
+      DefinedExpression: function(node, st, c) {
+        return !!options.preprocessGetMacro(node.id.name);
+      }
+    }, {});
+  }
+
+  function getTokenFromCode(code, finishToken, allowEndOfLineToken) {
     switch(code) {
       // The interpretation of a dot depends on whether it is followed
       // by a digit.
     case 46: // '.'
-      return readToken_dot(code);
+      return readToken_dot(code, finishToken);
 
       // Punctuation tokens.
     case 40: ++tokPos; return finishToken(_parenL);
@@ -697,15 +1079,15 @@ if (!exports.acorn) {
       // '0x' is a hexadecimal number.
     case 48: // '0'
       var next = input.charCodeAt(tokPos+1);
-      if (next === 120 || next === 88) return readHexNumber();
+      if (next === 120 || next === 88) return readHexNumber(finishToken);
       // Anything else beginning with a digit is an integer, octal
       // number, or float.
     case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: // 1-9
-      return readNumber(String.fromCharCode(code));
+      return readNumber(false, finishToken);
 
       // Quotes produce strings.
     case 34: case 39: // '"', "'"
-      return readString(code);
+      return readString(code, finishToken);
 
     // Operators are parsed inline in tiny state machines. '=' (61) is
     // often referred to. `finishOp` simply skips the amount of
@@ -713,64 +1095,303 @@ if (!exports.acorn) {
     // of the type given by its first argument.
 
     case 47: // '/'
-      return readToken_slash(code);
+      return readToken_slash(finishToken);
 
     case 37: case 42: // '%*'
-      return readToken_mult_modulo();
+      return readToken_mult_modulo(finishToken);
 
     case 124: case 38: // '|&'
-      return readToken_pipe_amp(code);
+      return readToken_pipe_amp(code, finishToken);
 
     case 94: // '^'
-      return readToken_caret();
+      return readToken_caret(finishToken);
 
     case 43: case 45: // '+-'
-      return readToken_plus_min(code);
+      return readToken_plus_min(code, finishToken);
 
     case 60: case 62: // '<>'
-      return readToken_lt_gt(code);
+      return readToken_lt_gt(code, finishToken, finishToken);
 
     case 61: case 33: // '=!'
-      return readToken_eq_excl(code);
+      return readToken_eq_excl(code, finishToken);
+
+    case 126: // '~'
+      return finishOp(_prefix, 1, finishToken);
 
     case 64: // '@'
       if (options.objj)
-        return readToken_at(code);
+        return readToken_at(code, finishToken);
       return false;
 
     case 35: // '#'
-      if (options.objj) {
-        var start = tokPos;
-        var ch = input.charCodeAt(++tokPos);
-        while (tokPos < inputLen && ch !== 10 && ch !== 13 && ch !== 8232 && ch !== 8329) // End of line
-          ch = input.charCodeAt(++tokPos);
-        return finishToken(_preprocess, input.slice(start, tokPos));
+      if (options.preprocess) {
+        return readToken_preprocess(finishToken);
       }
       return false;
 
-    case 126: // '~'
-      return finishOp(_prefix, 1);
+    case 92: // '\'
+      if (options.preprocess) {
+        return finishOp(_preBackslash, 1, finishToken);
+      }
+      return false;
+    }
+
+    if (allowEndOfLineToken && newline.test(String.fromCharCode(code))) {
+      return finishOp(_eol, 1, finishToken);
     }
 
     return false;
+}
+
+// Returns true if it stops at a line break
+
+  function preprocessSkipSpace() {
+    while (tokPos < inputLen) {
+      var ch = input.charCodeAt(tokPos);
+      if (ch === 32 || ch === 9 || ch === 160 || (ch >= 5760 && nonASCIIwhitespaceNoNewLine.test(String.fromCharCode(ch)))) {
+        ++tokPos;
+      } else if (ch === 92) { // '\'
+        // Check if we have an escaped newline. We are using a relaxed treatment of escaped newlines like gcc.
+        // We allow spaces, horizontal and vertical tabs, and form feeds between the backslash and the subsequent newline
+        var pos = tokPos + 1;
+        ch = input.charCodeAt(pos);
+        while (pos < inputLen && (ch === 32 || ch === 9 || ch === 11 || ch === 12 || (ch >= 5760 && nonASCIIwhitespaceNoNewLine.test(String.fromCharCode(ch)))))
+          ch = input.charCodeAt(++pos);
+        lineBreak.lastIndex = 0;
+        var match = lineBreak.exec(input.slice(pos, pos + 2));
+        if (match && match.index === 0) {
+          tokPos = pos + match[0].length;
+        } else {
+          return false;
+        }
+      } else {
+        lineBreak.lastIndex = 0;
+        var match = lineBreak.exec(input.slice(tokPos, tokPos + 2));
+        return match && match.index === 0;
+      }
+    }
+  }
+
+  function preprocessSkipToElseOrEndif(test, skipElse) {
+    if (test) {
+      var ifLevel = 0;
+      while (ifLevel > 0 || (preTokType != _preEndif && (preTokType != _preElse || skipElse))) {
+        switch (preTokType) {
+          case _preIf:
+          case _preIfdef:
+          case _preIfndef:
+            ifLevel++;
+            break;
+
+          case _preEndif:
+            ifLevel--;
+            break;
+
+          case _eof:
+            preNotSkipping = true;
+            raise(preTokStart, "Missing #endif");
+        }
+        preprocessReadToken();
+      }
+      preNotSkipping = true;
+      if (preTokType === _preEndif)
+        preIfLevel--;
+    }
+  }
+
+  function preprocessReadToken() {
+    preTokStart = tokPos;
+    preTokInput = input;
+    if (tokPos >= inputLen) return _eof;
+    var code = input.charCodeAt(tokPos);
+    if (preprocessMacroParamterListMode && code !== 41 && code !== 44) { // ')', ','
+      var parenLevel = 0;
+      // If we are parsing a macro parameter list parentheses within each argument must balance
+      while(tokPos < inputLen && (parenLevel || (code !== 41 && code !== 44))) { // ')', ','
+        if (code === 40) // '('
+          parenLevel++;
+        if (code === 41) // ')'
+          parenLevel--;
+        code = input.charCodeAt(++tokPos);
+      }
+      return preprocessFinishToken(_preprocessParamItem, input.slice(preTokStart, tokPos));
+    }
+    if (isIdentifierStart(code) || (code === 92 /* '\' */ && input.charCodeAt(tokPos +1) === 117 /* 'u' */)) return preprocessReadWord();
+    if (getTokenFromCode(code, preprocessFinishToken, true) === false) {
+      // If we are here, we either found a non-ASCII identifier
+      // character, or something that's entirely disallowed.
+      var ch = String.fromCharCode(code);
+      if (ch === "\\" || nonASCIIidentifierStart.test(ch)) return preprocessReadWord();
+      raise(tokPos, "Unexpected character '" + ch + "'");
+    }
+  }
+
+  function preprocessReadWord() {
+    var word = readWord1();
+    preprocessFinishToken(isKeywordPreprocess(word) ? keywordTypesPreprocess[word] : _name, word);
+  }
+
+  function preprocessFinishToken(type, val) {
+    preTokType = type;
+    preTokVal = val;
+    preTokEnd = tokPos;
+    preprocessSkipSpace();
+  }
+
+  // Continue to the next token.
+
+  function preprocessNext() {
+    preLastStart = tokStart;
+    preLastEnd = tokEnd;
+    //lastEndLoc = tokEndLoc;
+    return preprocessReadToken();
+  }
+
+  // Predicate that tests whether the next token is of the given
+  // type, and if yes, consumes it as a side effect.
+
+  function preprocessEat(type) {
+    if (preTokType === type) {
+      preprocessNext();
+      return true;
+    }
+  }
+
+  // Expect a token of a given type. If found, consume it, otherwise,
+  // raise with errorMessage or an unexpected token error.
+
+  function preprocessExpect(type, errorMessage) {
+    if (preTokType === type) preprocessReadToken();
+    else raise(preTokStart, errorMessage || "Unexpected token");
+  }
+
+  function preprocessGetIdent() {
+    var ident = preTokType === _name ? preTokVal : ((!options.forbidReserved || preTokType.okAsIdent) && preTokType.keyword) || raise(preTokStart, "Expected Macro identifier");
+    preprocessNext();
+    return ident;
+  }
+
+  function preprocessParseIdent() {
+    var node = startNode();
+    node.name = preprocessGetIdent();
+    return preprocessFinishNode(node, "Identifier");
+  }
+
+  // Parse an  expression — either a single token that is an
+  // expression, an expression started by a keyword like `defined`,
+  // or an expression wrapped in punctuation like `()`.
+
+  function preprocessParseExpression() {
+    return preprocessParseExprOps();
+  }
+
+  // Start the precedence parser.
+
+  function preprocessParseExprOps() {
+    return preprocessParseExprOp(preprocessParseMaybeUnary(), -1);
+  }
+
+  // Parse binary operators with the operator precedence parsing
+  // algorithm. `left` is the left-hand side of the operator.
+  // `minPrec` provides context that allows the function to stop and
+  // defer further parser to one of its callers when it encounters an
+  // operator that has a lower precedence than the set it is parsing.
+
+  function preprocessParseExprOp(left, minPrec) {
+    var prec = preTokType.binop;
+    if (prec) {
+      if (!preTokType.preprocess) raise(preTokStart, "Unsupported macro operator");
+      if (prec > minPrec) {
+        var node = startNodeFrom(left);
+        node.left = left;
+        node.operator = preTokVal;
+        preprocessNext();
+        node.right = preprocessParseExprOp(preprocessParseMaybeUnary(), prec);
+        var node = preprocessFinishNode(node, /*/&&|\|\|/.test(node.operator) ? "LogicalExpression" : */"BinaryExpression");
+        return preprocessParseExprOp(node, minPrec);
+      }
+    }
+    return left;
+  }
+
+  // Parse an unary expression if possible
+
+  function preprocessParseMaybeUnary() {
+    if (preTokType.preprocess && preTokType.prefix) {
+      var node = startNode();
+      node.operator = tokVal;
+      node.prefix = true;
+      preprocessNext();
+      node.argument = preprocessParseMaybeUnary();
+      return preprocessFinishNode(node, "UnaryExpression");
+    }
+    return preprocessParseExprAtom();
+  }
+
+  // Parse an atomic macro expression — either a single token that is an
+  // expression, an expression started by a keyword like `defined`,
+  // or an expression wrapped in punctuation like `()`.
+
+  function preprocessParseExprAtom() {
+    switch (preTokType) {
+    case _name:
+      return preprocessParseIdent();
+
+    case _num: case _string:
+      return preprocessParseStringNumLiteral();
+
+    case _parenL:
+      var tokStart1 = preTokStart;
+      preprocessNext();
+      var val = preprocessParseExpression();
+      val.start = tokStart1;
+      val.end = preTokEnd;
+      preprocessExpect(_parenR, "Expected closing ')' in macro expression");
+      return val;
+
+    case _preDefined:
+      var node = startNode();
+      preprocessNext();
+      node.id = preprocessParseIdent();
+      return preprocessFinishNode(node, "DefinedExpression");
+
+    default:
+      unexpected();
+    }
+  }
+
+  function preprocessParseStringNumLiteral() {
+    var node = startNode();
+    node.value = preTokVal;
+    node.raw = preTokInput.slice(preTokStart, preTokEnd);
+    preprocessNext();
+    return preprocessFinishNode(node, "Literal");
+  }
+
+  function preprocessFinishNode(node, type) {
+    node.type = type;
+    node.end = preLastEnd;
+    return node;
   }
 
   function readToken(forceRegexp) {
     tokStart = tokPos;
-    if (options.locations) tokStartLoc = curLineLoc();
+    tokInput = input;
+    if (options.locations) tokStartLoc = new line_loc_t;
     tokCommentsBefore = tokComments;
     tokSpacesBefore = tokSpaces;
     if (forceRegexp) return readRegexp();
-    if (tokPos >= inputLen) return finishToken(_eof);
+    if (tokPos >= inputLen)
+      return finishToken(_eof);
 
     var code = input.charCodeAt(tokPos);
     // Identifier or keyword. '\uXXXX' sequences are allowed in
     // identifiers, so '\' also dispatches to that.
     if (isIdentifierStart(code) || code === 92 /* '\' */) return readWord();
 
-    var tok = getTokenFromCode(code);
+    var tok = getTokenFromCode(code, finishToken);
 
-    if(tok === false) {
+    if (tok === false) {
       // If we are here, we either found a non-ASCII identifier
       // character, or something that's entirely disallowed.
       var ch = String.fromCharCode(code);
@@ -780,7 +1401,7 @@ if (!exports.acorn) {
     return tok;
   }
 
-  function finishOp(type, size) {
+  function finishOp(type, size, finishToken) {
     var str = input.slice(tokPos, tokPos + size);
     tokPos += size;
     finishToken(type, str);
@@ -833,7 +1454,7 @@ if (!exports.acorn) {
     return total;
   }
 
-  function readHexNumber() {
+  function readHexNumber(finishToken) {
     tokPos += 2; // 0x
     var val = readInt(16);
     if (val == null) raise(tokStart + 2, "Expected hexadecimal number");
@@ -843,18 +1464,18 @@ if (!exports.acorn) {
 
   // Read an integer, octal integer, or floating-point number.
 
-  function readNumber(ch) {
-    var start = tokPos, isFloat = ch === ".";
-    if (!isFloat && readInt(10) == null) raise(start, "Invalid number");
-    if (isFloat || input.charAt(tokPos) === ".") {
-      var next = input.charAt(++tokPos);
-      if (next === "-" || next === "+") ++tokPos;
-      if (readInt(10) === null && ch === ".") raise(start, "Invalid number");
+  function readNumber(startsWithDot, finishToken) {
+    var start = tokPos, isFloat = false, octal = input.charCodeAt(tokPos) === 48;
+    if (!startsWithDot && readInt(10) === null) raise(start, "Invalid number");
+    if (input.charCodeAt(tokPos) === 46) {
+      ++tokPos;
+      readInt(10);
       isFloat = true;
     }
-    if (/e/i.test(input.charAt(tokPos))) {
-      var next = input.charAt(++tokPos);
-      if (next === "-" || next === "+") ++tokPos;
+    var next = input.charCodeAt(tokPos);
+    if (next === 69 || next === 101) { // 'eE'
+      next = input.charCodeAt(++tokPos);
+      if (next === 43 || next === 45) ++tokPos; // '+-'
       if (readInt(10) === null) raise(start, "Invalid number")
       isFloat = true;
     }
@@ -862,7 +1483,7 @@ if (!exports.acorn) {
 
     var str = input.slice(start, tokPos), val;
     if (isFloat) val = parseFloat(str);
-    else if (ch !== "0" || str.length === 1) val = parseInt(str, 10);
+    else if (!octal || str.length === 1) val = parseInt(str, 10);
     else if (/[89]/.test(str) || strict) raise(start, "Invalid number");
     else val = parseInt(str, 8);
     return finishToken(_num, val);
@@ -872,7 +1493,7 @@ if (!exports.acorn) {
 
   var rs_str = [];
 
-  function readString(quote) {
+  function readString(quote, finishToken) {
     tokPos++;
     rs_str.length = 0;
     for (;;) {
@@ -906,13 +1527,15 @@ if (!exports.acorn) {
           case 102: rs_str.push(12); break; // 'f' -> '\f'
           case 48: rs_str.push(0); break; // 0 -> '\0'
           case 13: if (input.charCodeAt(tokPos) === 10) ++tokPos; // '\r\n'
-          case 10: break; // ' \n'
+          case 10: // ' \n'
+            if (options.locations) { tokLineStart = tokPos; ++tokCurLine; }
+            break;
           default: rs_str.push(ch); break;
           }
         }
       } else {
         if (ch === 13 || ch === 10 || ch === 8232 || ch === 8329) raise(tokStart, "Unterminated string constant");
-        if (ch !== 92) rs_str.push(ch); // '\'   // This 'if' seems useless as the same thing is checked above..... - Martin
+        rs_str.push(ch); // '\'
         ++tokPos;
       }
     }
@@ -967,11 +1590,68 @@ if (!exports.acorn) {
   }
 
   // Read an identifier or keyword token. Will check for reserved
-  // words when necessary.
+  // words when necessary. Argument preReadWord is used to concatenate
+  // The word is then passed in from caller.
 
-  function readWord() {
-    var word = readWord1();
+  function readWord(preReadWord) {
+    var word = preReadWord || readWord1();
     var type = _name;
+    var reservedError;
+    if (options.preprocess) {
+      var macro;
+      var i = preprocessStack.length;
+      if (i > 0) {
+        var lastItem = preprocessStack[i - 1];
+        // If the current macro has parameters check if this word is one of them and should be translated
+        if (lastItem.parameterDict && lastItem.macro.isParameterFunction()(word)) {
+          macro = lastItem.parameterDict[word];
+        }
+      }
+      // Does the word match agains any of the know macro names
+      if (!macro && options.preprocessIsMacro(word))
+        macro = options.preprocessGetMacro(word);
+      if (macro) {
+        var macroStart = tokStart;
+        var parameters;
+        var hasParameters = macro.parameters;
+        var nextIsParenL;
+        if (hasParameters)
+          nextIsParenL = tokPos < inputLen && input.charCodeAt(tokPos) === 40; // '('
+        if (!hasParameters || nextIsParenL) {
+          // Now we know that we have a matching macro. Get parameters if needed
+          var macroString = macro.macro;
+          var lastTokPos = tokPos;
+          if (nextIsParenL) {
+            var first = true;
+            var noParams = 0;
+            parameters = Object.create(null);
+            preprocessReadToken();
+            preprocessMacroParamterListMode = true;
+            preprocessExpect(_parenL);
+            lastTokPos = tokPos;
+            while (!preprocessEat(_parenR)) {
+              if (!first) preprocessExpect(_comma, "Expected ',' between macro parameters"); else first = false;
+              var ident = hasParameters[noParams++];
+              var val = preTokVal;
+              preprocessExpect(_preprocessParamItem);
+              parameters[ident] = new Macro(ident, val);
+              lastTokPos = tokPos;
+            }
+            preprocessMacroParamterListMode = false;
+          }
+          // If the macro defines anything add it to the preprocess input stack
+          if (macroString) {
+            preprocessStack.push({macro: macro, parameterDict: parameters, start: macroStart, end:lastTokPos, input: input, inputLen: inputLen, lastStart: tokStart, lastEnd: lastTokPos});
+            input = macroString;
+            inputLen = macroString.length;
+            tokPos = 0;
+          }
+          // Now read the next token
+          return next();
+        }
+      }
+    }
+
     if (!containsEsc) {
       if (isKeyword(word)) type = keywordTypes[word];
       else if (options.objj && isKeywordObjJ(word)) type = keywordTypesObjJ[word];
@@ -981,6 +1661,17 @@ if (!exports.acorn) {
         raise(tokStart, "The keyword '" + word + "' is reserved");
     }
     return finishToken(type, word);
+  }
+
+  function Macro(ident, macro, parameters) {
+    this.identifier = ident;
+    if (macro) this.macro = macro;
+    if (parameters) this.parameters = parameters;
+  }
+
+  Macro.prototype.isParameterFunction = function() {
+    var y = (this.parameters || []).join(" ");
+    return this.isParameterFunctionVar || (this.isParameterFunctionVar = makePredicate(y));
   }
 
   // ## Parser
@@ -1012,7 +1703,7 @@ if (!exports.acorn) {
     lastEnd = tokEnd;
     lastEndLoc = tokEndLoc;
     nodeMessageSendObjectExpression = null;
-    readToken();
+    return readToken();
   }
 
   // Enter strict mode. Re-reads the next token to please pedantic
@@ -1028,17 +1719,17 @@ if (!exports.acorn) {
   // Start an AST node, attaching a start offset and optionally a
   // `commentsBefore` property to it.
 
-  var node_t = function(s) {
+  function node_t() {
     this.type = null;
     this.start = tokStart;
     this.end = null;
-  };
+  }
 
-  var node_loc_t = function(s) {
+  function node_loc_t() {
     this.start = tokStartLoc;
     this.end = null;
     if (sourceFile !== null) this.source = sourceFile;
-  };
+  }
 
   function startNode() {
     var node = new node_t();
@@ -1148,7 +1839,7 @@ if (!exports.acorn) {
 
   function canInsertSemicolon() {
     return !options.strictSemicolons &&
-      (tokType === _eof || tokType === _braceR || newline.test(input.slice(lastEnd, tokStart)) ||
+      (tokType === _eof || tokType === _braceR || newline.test(tokInput.slice(lastEnd, tokStart)) ||
         (nodeMessageSendObjectExpression && options.objj));
   }
 
@@ -1156,7 +1847,7 @@ if (!exports.acorn) {
   // pretend that there is a semicolon at this position.
 
   function semicolon() {
-    if (!eat(_semi) && !canInsertSemicolon()) raise(lastEnd, "Expected a semicolon");
+    if (!eat(_semi) && !canInsertSemicolon()) raise(tokStart, "Expected a semicolon");
   }
 
   // Expect a token of a given type. If found, consume it, otherwise,
@@ -1191,9 +1882,8 @@ if (!exports.acorn) {
   // to its body instead of creating a new node.
 
   function parseTopLevel(program) {
-    initTokenState();
     lastStart = lastEnd = tokPos;
-    if (options.locations) lastEndLoc = curLineLoc();
+    if (options.locations) lastEndLoc = new line_loc_t;
     inFunction = strict = null;
     labels = [];
     readToken();
@@ -1207,7 +1897,7 @@ if (!exports.acorn) {
       first = false;
     }
     return finishNode(node, "Program");
-  };
+  }
 
   var loopLabel = {kind: "loop"}, switchLabel = {kind: "switch"};
 
@@ -1219,13 +1909,17 @@ if (!exports.acorn) {
   // does not help.
 
   function parseStatement() {
-    if (nodeMessageSendObjectExpression)
-      return parseMessageSendExpression(nodeMessageSendObjectExpression, nodeMessageSendObjectExpression.object);
-
     if (tokType === _slash)
       readToken(true);
 
     var starttype = tokType, node = startNode();
+
+    // This is a special case when trying figure out if this is a subscript to the former line or a new send message statement on this line...
+    if (nodeMessageSendObjectExpression) {
+        node.expression = parseMessageSendExpression(nodeMessageSendObjectExpression, nodeMessageSendObjectExpression.object);
+        semicolon();
+        return finishNode(node, "ExpressionStatement");
+    }
 
     // Most types of statements are recognized by the keyword they
     // start with. Many are trivial to parse, some require a bit of
@@ -1353,7 +2047,7 @@ if (!exports.acorn) {
 
     case _throw:
       next();
-      if (newline.test(input.slice(lastEnd, tokStart)))
+      if (newline.test(tokInput.slice(lastEnd, tokStart)))
         raise(lastEnd, "Illegal newline after throw");
       node.argument = parseExpression();
       semicolon();
@@ -1887,6 +2581,7 @@ if (!exports.acorn) {
 
       node.elements = parseExprList(_bracketR, firstExpr, true, true);
       return finishNode(node, "ArrayLiteral");
+
     case _bracketL:
       var node = startNode(),
           firstExpr = null;
@@ -2039,7 +2734,7 @@ if (!exports.acorn) {
         isGetSet = sawGetSet = true;
         kind = prop.kind = prop.key.name;
         prop.key = parsePropertyName();
-        if (!tokType === _parenL) unexpected();
+        if (tokType !== _parenL) unexpected();
         prop.value = parseFunction(startNode(), false);
       } else unexpected();
 
@@ -2168,7 +2863,7 @@ if (!exports.acorn) {
   function parseStringNumRegExpLiteral() {
     var node = startNode();
     node.value = tokVal;
-    node.raw = input.slice(tokStart, tokEnd);
+    node.raw = tokInput.slice(tokStart, tokEnd);
     next();
     return finishNode(node, "Literal");
   }
