@@ -135,7 +135,7 @@ if (typeof exports != "undefined" && !exports.acorn) {
     sourceFile = options.sourceFile || null;
   }
 
-  var macros = Object.create(null);
+  var macros;
   var macrosIsPredicate;
 
   function defaultAddMacro(macro) {
@@ -607,6 +607,7 @@ if (typeof exports != "undefined" && !exports.acorn) {
   // Reset the token state. Used at the start of a parse.
 
   function initTokenState() {
+    macros = Object.create(null);
     tokCurLine = 1;
     tokPos = tokLineStart = 0;
     tokRegexpAllowed = true;
