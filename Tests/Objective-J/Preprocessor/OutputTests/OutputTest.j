@@ -11,6 +11,7 @@ var FILENAMES = [
         "Messages/one-parameter",
         "Messages/multiple-parameters",
         "Messages/ternary-operator-argument",
+        "Messages/keyword-in-selector",
 
         "Misc/preprocess-if-directives",
         "Misc/regex-simple-char-classes",
