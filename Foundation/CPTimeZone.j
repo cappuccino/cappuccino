@@ -359,7 +359,7 @@ var abbreviationDictionary,
     if ([abbreviationDictionary containsKey:aTimeZoneString])
         return [self timeZoneWithAbbreviation:aTimeZoneString];
 
-    var dict = [localizedName valueForKey:[_locale objectForKey:CPLocaleLanguageCode]];
+    var dict = [localizedName valueForKey:[_locale objectForKey:CPLocaleLanguageCode]],
         keys = [dict keyEnumerator],
         key;
 
@@ -379,7 +379,7 @@ var abbreviationDictionary,
 + (CPArray)_namesForStyle:(NSTimeZoneNameStyle)style locale:(CPLocale)aLocale
 {
     var array = [CPArray array],
-        dict = [localizedName valueForKey:[aLocale objectForKey:CPLocaleLanguageCode]];
+        dict = [localizedName valueForKey:[aLocale objectForKey:CPLocaleLanguageCode]],
         keys = [dict keyEnumerator],
         key;
 

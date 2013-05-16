@@ -470,7 +470,7 @@ var scale_rotate = function(a, b, c, d)
 
 var rotate_scale = function(a, b, c, d)
 {
-    var sign = (a * d < 0.0 || b * c > 0.0) ? -1.0 : 1.0;
+    var sign = (a * d < 0.0 || b * c > 0.0) ? -1.0 : 1.0,
         a1 = (ATAN2(sign * b, sign * a) + ATAN2(-c, d)) / 2.0,
         cos = COS(a1),
         sin = SIN(a1);

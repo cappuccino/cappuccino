@@ -41,9 +41,9 @@ if (!exports.acorn) {
   exports.recursive = function(node, state, funcs, base) {
     var visitor = exports.make(funcs, base);
     function c(node, st, override) {
-      visitor[override || node.type](node, st, c);
+      return visitor[override || node.type](node, st, c);
     }
-    c(node, state);
+    return c(node, state);
   };
 
   // Used to create a custom walker. Will fill in all missing node
