@@ -1204,7 +1204,7 @@ var themedButtonValues = nil,
 
             [@"bezel-color-calendar", [CPColor whiteColor]],
             [@"bezel-color-calendar", [CPColor colorWithCalibratedRed:159.0 / 255.0 green:201.0 / 255.0 blue:225.0 / 255.0 alpha:1.0],  CPThemeStateSelected],
-            [@"bezel-color-calendar", [CPColor colorWithCalibratedRed:159.0 / 255.0 green:201.0 / 255.0 blue:225.0 / 255.0 alpha:0.5],  CPThemeStateSelected |CPThemeStateDisabled],
+            [@"bezel-color-calendar", [CPColor colorWithCalibratedRed:159.0 / 255.0 green:201.0 / 255.0 blue:225.0 / 255.0 alpha:0.5],  CPThemeStateSelected | CPThemeStateDisabled],
             [@"bezel-color-clock",    clockImageColor],
             [@"bezel-color-clock",    clockImageColorDisabled,                                                                          CPThemeStateDisabled],
 

@@ -128,7 +128,7 @@ var concat = Array.prototype.concat,
     var ranges = indexes._ranges,
         count  = ranges.length,
         result = [],
-             i = 0;
+        i = 0;
 
     for (; i < count; i++)
     {

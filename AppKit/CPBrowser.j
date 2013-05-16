@@ -181,7 +181,7 @@
 
     if (columnIndex > 0)
         [_tableViews[columnIndex - 1] setNeedsDisplay:YES];
-        
+
     [_tableViews[columnIndex] setNeedsDisplay:YES];
 
     [[_tableViews.slice(indexPlusOne) valueForKey:"enclosingScrollView"]
