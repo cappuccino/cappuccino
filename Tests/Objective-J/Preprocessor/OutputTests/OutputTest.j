@@ -11,11 +11,9 @@ var FILENAMES = [
         "Messages/one-parameter",
         "Messages/multiple-parameters",
         "Messages/ternary-operator-argument",
-        "Misc/preprocess-if-directives",
 
-// TODO Re-enable this test when the new Objective-J parser has been enabled.
-// Before that it will fail with "*** Expected "pragma" to follow # but instead saw "]".".
-//        "Misc/regex-simple-char-classes"
+        "Misc/preprocess-if-directives",
+        "Misc/regex-simple-char-classes",
 ];
 
 @implementation OutputTest : OJTestCase
