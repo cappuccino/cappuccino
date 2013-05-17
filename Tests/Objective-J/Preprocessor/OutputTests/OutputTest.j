@@ -46,7 +46,7 @@ var FILENAMES = [
                     correct = compressor.compress(correct, { charset : "UTF-8", useServer : true });
                 }];
 
-                [self assert:preprocessed equals:correct];
+                [self assert:correct equals:preprocessed];
             });
         })();
     }
