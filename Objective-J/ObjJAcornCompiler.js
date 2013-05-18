@@ -516,7 +516,7 @@ ImportStatement: function(node, st, c) {
 }
 });
 
-var indentationSpaces = 2;
+var indentationSpaces = 4;
 var indentStep = Array(indentationSpaces + 1).join(" ");
 var indentation = "";
 
@@ -546,14 +546,14 @@ BlockStatement: function(node, st, c) {
     if (generate) {
       st.indentBlockLevel = typeof st.indentBlockLevel === "undefined" ? 0 : st.indentBlockLevel + 1;
       buffer = compiler.jsBuffer;
-      buffer.concat(indentation.substring(2));
+      buffer.concat(indentation.substring(indentationSpaces));
       buffer.concat("{\n");
     }
     for (var i = 0; i < node.body.length; ++i) {
       c(node.body[i], st, "Statement");
     }
     if (generate) {
-      buffer.concat(indentation.substring(2));
+      buffer.concat(indentation.substring(indentationSpaces));
       buffer.concat("}");
       if (st.isDecl || st.indentBlockLevel > 0)
         buffer.concat("\n");
@@ -1152,7 +1152,7 @@ MemberExpression: function(node, st, c) {
         compiler.jsBuffer.concat(".");
     }
     st.secondMemberExpression = !computed;
-    // No parentheses when it is computed, '[' amd ']' are the same thing. 
+    // No parentheses when it is computed, '[' amd ']' are the same thing.
     (generate && !computed && nodePrecedence(node, node.property) ? surroundExpression(c) : c)(node.property, st, "Expression");
     st.secondMemberExpression = false;
     if (generate && computed)
