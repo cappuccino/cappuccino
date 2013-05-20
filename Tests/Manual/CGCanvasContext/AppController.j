@@ -17,14 +17,15 @@
 {
     [super drawRect:aRect];
 
-    var points = [CPArray array];
-    var minX = CGRectGetMinX(aRect);
-    var midX = CGRectGetMidX(aRect);
-    var maxX = CGRectGetMaxX(aRect);
-    var minY = CGRectGetMinY(aRect);
-    var midY = CGRectGetMidY(aRect);
-    var maxY = CGRectGetMaxY(aRect);
-    var quarterX = minX + (maxX - minX)/4;
+    var points = [CPArray array],
+        minX = CGRectGetMinX(aRect),
+        midX = CGRectGetMidX(aRect),
+        maxX = CGRectGetMaxX(aRect),
+        minY = CGRectGetMinY(aRect),
+        midY = CGRectGetMidY(aRect),
+        maxY = CGRectGetMaxY(aRect),
+        quarterX = minX + (maxX - minX)/4;
+
     [points addObject:CGPointMake(midX, minY)];
     [points addObject:CGPointMake(maxX, midY)];
     [points addObject:CGPointMake(midX, maxY)];
@@ -54,6 +55,44 @@
 
 @end
 
+@implementation GradientView : CPView
+{
+}
+
+- (id)init
+{
+    if(self = [super init])
+    {
+    }
+    return self;
+}
+
+- (void)drawRect:(CGRect)aRect
+{
+    [super drawRect:aRect];
+
+    var context = [[CPGraphicsContext currentContext] graphicsPort],
+        linearGradientPointStart = CGPointMake(0, 50),
+        linearGradientPointEnd = CGPointMake(100, 50),
+        ellipseRect = CGRectMake(110, 10, 80, 80),
+        gradientColors = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [236 / 255, 126 / 255, 25 / 255, 1 , 255 / 255, 248 / 255, 197 / 255, 1], [0,1], 2);
+
+    // test CGContextDrawLinearGradient
+    CGContextBeginPath(context);
+    CGContextAddRect(context, CGRectMake(0, 0, 100, 100));
+    CGContextDrawLinearGradient(context, gradientColors, linearGradientPointStart, linearGradientPointEnd, 0);
+    CGContextClosePath(context);
+
+    // test CGContextDrawRadialGradient
+    CGContextBeginPath(context);
+    CGContextAddEllipseInRect(context, ellipseRect);
+    CGContextDrawRadialGradient(context, gradientColors, CGPointMake(CGRectGetMidX(ellipseRect), CGRectGetMidY(ellipseRect)), 0, CGPointMake(CGRectGetMidX(ellipseRect), CGRectGetMidY(ellipseRect)), 40,0);
+    CGContextClosePath(context);
+}
+
+@end
+
+
 
 @implementation AppController : CPObject
 {
@@ -76,6 +115,7 @@
 
     [contentView addSubview:label];
     [contentView addSubview:[[DiamondView alloc] initWithFrame:CGRectMake(100, 100, 200, 200)]];
+    [contentView addSubview:[[GradientView alloc] initWithFrame:CGRectMake(100, 320, 200, 200)]];
 
     [theWindow orderFront:self];
 
