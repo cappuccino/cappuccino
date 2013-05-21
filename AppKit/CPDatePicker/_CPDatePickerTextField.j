@@ -676,6 +676,9 @@ var CPZeroKeyCode = 48,
 
 - (void)layoutSubviews
 {
+    if ([_datePicker datePickerStyle] == CPClockAndCalendarDatePickerStyle)
+        return;
+
     [super layoutSubviews];
 
     var themeState = [_datePicker themeState];

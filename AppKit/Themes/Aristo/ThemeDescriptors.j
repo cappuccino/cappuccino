@@ -1173,7 +1173,8 @@ var themedButtonValues = nil,
 
 + (CPDatePicker)themedDatePickerCalendar
 {
-    var datePicker = [[CPDatePicker alloc] initWithFrame:CGRectMake(40,140,300,29)],
+    var bundle = [CPBundle mainBundle],
+        datePicker = [[CPDatePicker alloc] initWithFrame:CGRectMake(40,140,300,29)],
 
         arrowImageLeft = PatternImage("datepicker-calendar-arrow-left.png", 7.0, 10.0),
         arrowImageRight = PatternImage("datepicker-calendar-arrow-right.png", 7.0, 10.0),
@@ -1183,16 +1184,16 @@ var themedButtonValues = nil,
         arrowImageRightHighlighted = PatternImage("datepicker-calendar-arrow-right-highlighted.png", 7.0, 10.0),
         circleImageHighlighted = PatternImage("datepicker-circle-image-highlighted.png", 9.0, 10.0),
 
-        secondHandColor = PatternColor("datepicker-clock-second-hand.png", 89.0, 89.0),
-        minuteHandColor = PatternColor("datepicker-clock-minute-hand.png", 85.0, 85.0),
-        hourHandColor   = PatternColor("datepicker-clock-hour-hand.png", 47.0, 47.0),
-        middleHandColor = PatternColor("datepicker-clock-middle-hand.png", 13.0, 13.0),
+        secondHandImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"datepicker-clock-second-hand.png"] size:CGSizeMake(89, 89)],
+        minuteHandImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"datepicker-clock-minute-hand.png"] size:CGSizeMake(85, 85)],
+        hourHandImage   = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"datepicker-clock-hour-hand.png"] size:CGSizeMake(47, 47)],
+        middleHandImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"datepicker-clock-middle-hand.png"] size:CGSizeMake(13, 13)],
         clockImageColor = PatternColor("datepicker-clock.png", 122.0, 123.0),
 
-        secondHandColorDisabled = PatternColor("datepicker-clock-second-hand-disabled.png", 89.0, 89.0),
-        minuteHandColorDisabled = PatternColor("datepicker-clock-minute-hand-disabled.png", 85.0, 85.0),
-        hourHandColorDisabled   = PatternColor("datepicker-clock-hour-hand-disabled.png", 47.0, 47.0),
-        middleHandColorDisabled = PatternColor("datepicker-clock-middle-hand-disabled.png", 13.0, 13.0),
+        secondHandImageDisabled = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"datepicker-clock-second-hand-disabled.png"] size:CGSizeMake(89, 89)],
+        minuteHandImageDisabled = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"datepicker-clock-minute-hand-disabled.png"] size:CGSizeMake(85, 85)],
+        hourHandImageDisabled   = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"datepicker-clock-hour-hand-disabled.png"] size:CGSizeMake(47, 47)],
+        middleHandImageDisabled = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"datepicker-clock-middle-hand-disabled.png"] size:CGSizeMake(13, 13)],
         clockImageColorDisabled = PatternColor("datepicker-clock-disabled.png", 122.0, 123.0),
 
         themeValues =
@@ -1286,15 +1287,15 @@ var themedButtonValues = nil,
             [@"circle-image-highlighted",           circleImageHighlighted],
             [@"arrow-inset",                        CGInsetMake(9.0, 4.0, 0.0, 0.0)],
 
-            [@"second-hand-color",  secondHandColor],
-            [@"hour-hand-color",    hourHandColor],
-            [@"middle-hand-color",  middleHandColor],
-            [@"minute-hand-color",  minuteHandColor],
+            [@"second-hand-image",  secondHandImage],
+            [@"hour-hand-image",    hourHandImage],
+            [@"middle-hand-image",  middleHandImage],
+            [@"minute-hand-image",  minuteHandImage],
 
-            [@"second-hand-color",  secondHandColorDisabled,    CPThemeStateDisabled],
-            [@"hour-hand-color",    hourHandColorDisabled,      CPThemeStateDisabled],
-            [@"middle-hand-color",  middleHandColorDisabled,    CPThemeStateDisabled],
-            [@"minute-hand-color",  minuteHandColorDisabled,    CPThemeStateDisabled],
+            [@"second-hand-image",  secondHandImageDisabled,    CPThemeStateDisabled],
+            [@"hour-hand-image",    hourHandImageDisabled,      CPThemeStateDisabled],
+            [@"middle-hand-image",  middleHandImageDisabled,    CPThemeStateDisabled],
+            [@"minute-hand-image",  minuteHandImageDisabled,    CPThemeStateDisabled],
 
             [@"second-hand-size", CGSizeMake(89.0, 89.0)],
             [@"hour-hand-size",   CGSizeMake(47.0, 47.0)],

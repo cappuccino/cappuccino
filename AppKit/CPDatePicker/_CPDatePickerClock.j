@@ -27,6 +27,8 @@
 @class CPDatePicker
 
 @global CPHourMinuteSecondDatePickerElementFlag
+@global CPTextFieldAndStepperDatePickerStyle
+@global CPTextFieldDatePickerStyle
 
 @implementation _CPDatePickerClock : CPView
 {
@@ -123,6 +125,9 @@
 */
 - (void)layoutSubviews
 {
+    if ([_datePicker datePickerStyle] == CPTextFieldAndStepperDatePickerStyle || [_datePicker datePickerStyle] == CPTextFieldDatePickerStyle)
+        return;
+
     [super layoutSubviews];
 
     var bounds = [self bounds],
@@ -131,10 +136,10 @@
     [dateValue _dateWithTimeZone:[_datePicker timeZone]];
 
     [self setBackgroundColor:[_datePicker valueForThemeAttribute:@"bezel-color-clock" inState:[_datePicker themeState]]];
-    [_middleHandLayer setBackgroundHandColor:[_datePicker valueForThemeAttribute:@"middle-hand-color" inState:[_datePicker themeState]]];
-    [_hourHandLayer setBackgroundHandColor:[_datePicker valueForThemeAttribute:@"hour-hand-color" inState:[_datePicker themeState]]];
-    [_minuteHandLayer setBackgroundHandColor:[_datePicker valueForThemeAttribute:@"minute-hand-color" inState:[_datePicker themeState]]];
-    [_secondHandLayer setBackgroundHandColor:[_datePicker valueForThemeAttribute:@"second-hand-color" inState:[_datePicker themeState]]];
+    [_middleHandLayer setImage:[_datePicker valueForThemeAttribute:@"middle-hand-image" inState:[_datePicker themeState]]];
+    [_hourHandLayer setImage:[_datePicker valueForThemeAttribute:@"hour-hand-image" inState:[_datePicker themeState]]];
+    [_minuteHandLayer setImage:[_datePicker valueForThemeAttribute:@"minute-hand-image" inState:[_datePicker themeState]]];
+    [_secondHandLayer setImage:[_datePicker valueForThemeAttribute:@"second-hand-image" inState:[_datePicker themeState]]];
 
     if ([_datePicker _isEnglishFormat])
     {
@@ -155,6 +160,12 @@
     [_hourHandLayer setRotationRadians:[self _hourPositionRadianForDate:dateValue]];
     [_minuteHandLayer setRotationRadians:[self _minutePositionRadianForDate:dateValue]];
     [_secondHandLayer setRotationRadians:[self _secondPositionRadianForDate:dateValue]];
+
+    [_PMAMTextField setEnabled:_isEnabled];
+    [_hourHandLayer setEnabled:_isEnabled];
+    [_middleHandLayer setEnabled:_isEnabled];
+    [_secondHandLayer setEnabled:_isEnabled];
+    [_minuteHandLayer setEnabled:_isEnabled];
 
     // Check if we have to display the hand second
     if (([_datePicker datePickerElements] & CPHourMinuteSecondDatePickerElementFlag) == CPHourMinuteSecondDatePickerElementFlag)
@@ -200,12 +211,6 @@
 - (void)setEnabled:(BOOL)aBoolean
 {
     _isEnabled = aBoolean;
-    [_PMAMTextField setEnabled:aBoolean];
-    [_hourHandLayer setEnabled:aBoolean];
-    [_middleHandLayer setEnabled:aBoolean];
-    [_secondHandLayer setEnabled:aBoolean];
-    [_minuteHandLayer setEnabled:aBoolean];
-
     [self setNeedsLayout];
 }
 
@@ -216,6 +221,7 @@
 {
     BOOL    _isEnabled      @accessors(setter=setEnabled:, getter=isEnabled);
 
+    CPImage _image;
     CALayer _imageLayer;
     float   _rotationRadians;
 }
@@ -258,6 +264,16 @@
     [_imageLayer setPosition:CGPointMake(CGRectGetMidX(aRect), CGRectGetMidY(aRect))];
 }
 
+- (void)setImage:(CPImage)anImage
+{
+    if (_image == anImage)
+        return;
+
+    _image = anImage;
+
+    [_imageLayer setNeedsDisplay];
+}
+
 /*! Set the rotation of the imageLayer
     @param radians
 */
@@ -273,15 +289,26 @@
         1.0, 1.0)];
 }
 
-- (void)setBackgroundHandColor:(CPColor)aColor
-{
-    [_imageLayer setBackgroundColor:aColor];
-}
-
 - (void)setEnabled:(BOOL)aBoolean
 {
     _isEnabled = aBoolean;
     [self setNeedsDisplay];
+    [_imageLayer setNeedsDisplay];
+}
+
+- (void)imageDidLoad:(CPImage)anImage
+{
+    [_imageLayer setNeedsDisplay];
+}
+
+- (void)drawLayer:(CALayer)aLayer inContext:(CGContext)aContext
+{
+    var bounds = [aLayer bounds];
+
+    if ([_image loadStatus] != CPImageLoadStatusCompleted)
+        [_image setDelegate:self];
+    else
+        CGContextDrawImage(aContext, bounds, _image);
 }
 
 @end
