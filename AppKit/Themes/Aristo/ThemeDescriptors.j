@@ -1097,7 +1097,7 @@ var themedButtonValues = nil,
 
 + (CPDatePicker)themedDatePicker
 {
-    var datePicker = [[CPDatePicker alloc] initWithFrame:CGRectMake(40,40,170,29)],
+    var datePicker = [[CPDatePicker alloc] initWithFrame:CGRectMake(40.0, 40.0, 170.0, 29.0)],
 
         bezelColor = PatternColor(
         [
@@ -1174,8 +1174,7 @@ var themedButtonValues = nil,
 
 + (CPDatePicker)themedDatePickerCalendar
 {
-    var bundle = [CPBundle mainBundle],
-        datePicker = [[CPDatePicker alloc] initWithFrame:CGRectMake(40,140,276,148)],
+    var datePicker = [[CPDatePicker alloc] initWithFrame:CGRectMake(40.0, 140.0, 276.0, 148.0)],
 
         arrowImageLeft = PatternImage("datepicker-calendar-arrow-left.png", 7.0, 10.0),
         arrowImageRight = PatternImage("datepicker-calendar-arrow-right.png", 7.0, 10.0),
@@ -1185,16 +1184,16 @@ var themedButtonValues = nil,
         arrowImageRightHighlighted = PatternImage("datepicker-calendar-arrow-right-highlighted.png", 7.0, 10.0),
         circleImageHighlighted = PatternImage("datepicker-circle-image-highlighted.png", 9.0, 10.0),
 
-        secondHandImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"datepicker-clock-second-hand.png"] size:CGSizeMake(89, 89)],
-        minuteHandImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"datepicker-clock-minute-hand.png"] size:CGSizeMake(85, 85)],
-        hourHandImage   = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"datepicker-clock-hour-hand.png"] size:CGSizeMake(47, 47)],
-        middleHandImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"datepicker-clock-middle-hand.png"] size:CGSizeMake(13, 13)],
+        secondHandImage = CPImageInBundle(@"datepicker-clock-second-hand.png", CGSizeMake(89, 89)),
+        minuteHandImage = CPImageInBundle(@"datepicker-clock-minute-hand.png", CGSizeMake(85, 85)),
+        hourHandImage   = CPImageInBundle(@"datepicker-clock-hour-hand.png", CGSizeMake(47, 47)),
+        middleHandImage = CPImageInBundle(@"datepicker-clock-middle-hand.png", CGSizeMake(13, 13)),
         clockImageColor = PatternColor("datepicker-clock.png", 122.0, 123.0),
 
-        secondHandImageDisabled = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"datepicker-clock-second-hand-disabled.png"] size:CGSizeMake(89, 89)],
-        minuteHandImageDisabled = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"datepicker-clock-minute-hand-disabled.png"] size:CGSizeMake(85, 85)],
-        hourHandImageDisabled   = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"datepicker-clock-hour-hand-disabled.png"] size:CGSizeMake(47, 47)],
-        middleHandImageDisabled = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"datepicker-clock-middle-hand-disabled.png"] size:CGSizeMake(13, 13)],
+        secondHandImageDisabled = CPImageInBundle(@"datepicker-clock-second-hand-disabled.png", CGSizeMake(89, 89)),
+        minuteHandImageDisabled = CPImageInBundle(@"datepicker-clock-minute-hand-disabled.png", CGSizeMake(85, 85)),
+        hourHandImageDisabled   = CPImageInBundle(@"datepicker-clock-hour-hand-disabled.png", CGSizeMake(47, 47)),
+        middleHandImageDisabled = CPImageInBundle(@"datepicker-clock-middle-hand-disabled.png", CGSizeMake(13, 13)),
         clockImageColorDisabled = PatternColor("datepicker-clock-disabled.png", 122.0, 123.0),
 
         themeValues =
