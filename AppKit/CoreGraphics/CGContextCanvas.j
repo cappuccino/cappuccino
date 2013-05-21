@@ -596,8 +596,21 @@ function CGContextDrawLinearGradient(aContext, aGradient, aStartPoint, anEndPoin
 {
     var colors = aGradient.colors,
         count = colors.length,
-
         linearGradient = aContext.createLinearGradient(aStartPoint.x, aStartPoint.y, anEndPoint.x, anEndPoint.y);
+
+    while (count--)
+        linearGradient.addColorStop(aGradient.locations[count], to_string(colors[count]));
+
+    aContext.fillStyle = linearGradient;
+    aContext.fill();
+    aContext.hasPath = NO;
+}
+
+function CGContextDrawRadialGradient(aContext, aGradient, aStartCenter, aStartRadius, anEndCenter, anEndRadius, options)
+{
+    var colors = aGradient.colors,
+        count = colors.length,
+        linearGradient = aContext.createRadialGradient(aStartCenter.x, aStartCenter.y, aStartRadius, anEndCenter.x, anEndCenter.y, anEndRadius);
 
     while (count--)
         linearGradient.addColorStop(aGradient.locations[count], to_string(colors[count]));
