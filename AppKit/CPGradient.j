@@ -70,6 +70,10 @@ CPGradientDrawsAfterEndingLocation      = kCGGradientDrawsAfterEndLocation;
 {
     if (self = [super init])
     {
+        // We reverse the location because we reverse the colors in CGContextDrawLinearGradient
+        // This is needed to get the same behavior as Cocoa when drawing a CGContextDrawLinearGradient without the object CPGradient
+        someLocations.reverse();
+
         var cgColors = [],
             count = [someColors count],
             colorSpace = [aColorSpace CGColorSpace] || CGColorSpaceCreateDeviceRGB;

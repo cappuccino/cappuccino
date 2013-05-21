@@ -594,9 +594,8 @@ function to_string(aColor)
 
 function CGContextDrawLinearGradient(aContext, aGradient, aStartPoint, anEndPoint, options)
 {
-    var colors = aGradient.colors,
+    var colors = aGradient.colors.slice(0).reverse(),
         count = colors.length,
-
         linearGradient = aContext.createLinearGradient(aStartPoint.x, aStartPoint.y, anEndPoint.x, anEndPoint.y);
 
     while (count--)
@@ -611,7 +610,6 @@ function CGContextDrawRadialGradient(aContext, aGradient, aStartCenter, aStartRa
 {
     var colors = aGradient.colors,
         count = colors.length,
-
         linearGradient = aContext.createRadialGradient(aStartCenter.x, aStartCenter.y, aStartRadius, anEndCenter.x, anEndCenter.y, anEndRadius);
 
     while (count--)
