@@ -79,7 +79,7 @@ var themedButtonValues = nil,
             "themedMenuItemStandardView",
             "themedMenuItemMenuBarView",
             "themedToolbarView",
-            "themedBordelessBridgeWindowView",
+            "themedBorderlessBridgeWindowView",
             "themedWindowView",
             "themedBrowser",
             "themedRuleEditor",
@@ -2187,7 +2187,7 @@ var themedButtonValues = nil,
     return docModalWindowView;
 }
 
-+ (_CPBorderlessBridgeWindowView)themedBordelessBridgeWindowView
++ (_CPBorderlessBridgeWindowView)themedBorderlessBridgeWindowView
 {
     var bordelessBridgeWindowView = [[_CPBorderlessBridgeWindowView alloc] initWithFrame:CGRectMake(0,0,0,0)],
 

@@ -176,6 +176,11 @@ var _CPCibCustomResourceClassNameKey    = @"_CPCibCustomResourceClassNameKey",
     return [_properties objectForKey:@"size"];
 }
 
+- (BOOL)isSingleImage
+{
+    return YES;
+}
+
 - (BOOL)isThreePartImage
 {
     return NO;
