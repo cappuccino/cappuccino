@@ -594,7 +594,7 @@ function to_string(aColor)
 
 function CGContextDrawLinearGradient(aContext, aGradient, aStartPoint, anEndPoint, options)
 {
-    var colors = aGradient.colors.slice(0).reverse(),
+    var colors = aGradient.colors,
         count = colors.length,
         linearGradient = aContext.createLinearGradient(aStartPoint.x, aStartPoint.y, anEndPoint.x, anEndPoint.y);
 
