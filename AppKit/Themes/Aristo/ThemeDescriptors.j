@@ -1097,7 +1097,7 @@ var themedButtonValues = nil,
 
 + (CPDatePicker)themedDatePicker
 {
-    var datePicker = [[CPDatePicker alloc] initWithFrame:CGRectMake(40,140,300,29)],
+    var datePicker = [[CPDatePicker alloc] initWithFrame:CGRectMake(40,40,170,29)],
 
         bezelColor = PatternColor(
         [
@@ -1166,6 +1166,7 @@ var themedButtonValues = nil,
             [@"max-size",       CGSizeMake(-1.0, 29.0)]
         ];
 
+    [datePicker setDatePickerStyle:CPTextFieldDatePickerStyle];
     [self registerThemeValues:themeValues forView:datePicker];
 
     return datePicker;
@@ -1174,7 +1175,7 @@ var themedButtonValues = nil,
 + (CPDatePicker)themedDatePickerCalendar
 {
     var bundle = [CPBundle mainBundle],
-        datePicker = [[CPDatePicker alloc] initWithFrame:CGRectMake(40,140,300,29)],
+        datePicker = [[CPDatePicker alloc] initWithFrame:CGRectMake(40,140,276,148)],
 
         arrowImageLeft = PatternImage("datepicker-calendar-arrow-left.png", 7.0, 10.0),
         arrowImageRight = PatternImage("datepicker-calendar-arrow-right.png", 7.0, 10.0),
@@ -1313,6 +1314,7 @@ var themedButtonValues = nil,
         ];
 
     [datePicker setDatePickerStyle:CPClockAndCalendarDatePickerStyle];
+    [datePicker setBackgroundColor:[CPColor whiteColor]];
     [self registerThemeValues:themeValues forView:datePicker];
 
     return datePicker;
