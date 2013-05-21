@@ -126,16 +126,25 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
 #if PLATFORM(DOM)
     switch (_alignment)
     {
-        case CPLeftTextAlignment:       _DOMElement.style.textAlign = "left";
-                                        break;
-        case CPRightTextAlignment:      _DOMElement.style.textAlign = "right";
-                                        break;
-        case CPCenterTextAlignment:     _DOMElement.style.textAlign = "center";
-                                        break;
-        case CPJustifiedTextAlignment:  _DOMElement.style.textAlign = "justify";
-                                        break;
-        case CPNaturalTextAlignment:    _DOMElement.style.textAlign = "";
-                                        break;
+        case CPLeftTextAlignment:
+            _DOMElement.style.textAlign = "left";
+            break;
+
+        case CPRightTextAlignment:
+            _DOMElement.style.textAlign = "right";
+            break;
+
+        case CPCenterTextAlignment:
+            _DOMElement.style.textAlign = "center";
+            break;
+
+        case CPJustifiedTextAlignment:
+            _DOMElement.style.textAlign = "justify";
+            break;
+
+        case CPNaturalTextAlignment:
+            _DOMElement.style.textAlign = "";
+            break;
     }
 #endif
 }
@@ -384,26 +393,20 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
         if (hasDOMTextElement)
         {
             _DOMElement.removeChild(_DOMTextElement);
-
             _DOMTextElement = nil;
-
             hasDOMTextElement = NO;
         }
-
         else
         {
             _DOMTextElement = document.createElement("div");
 
             var textStyle = _DOMTextElement.style;
-
             textStyle.position = "absolute";
             textStyle.whiteSpace = "pre";
-
             textStyle.zIndex = 200;
             textStyle.overflow = "hidden";
 
             _DOMElement.appendChild(_DOMTextElement);
-
             hasDOMTextElement = YES;
 
             // We have to set all these values now.
@@ -505,41 +508,39 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
         {
             switch (_lineBreakMode)
             {
-                case CPLineBreakByClipping:         textStyle.overflow = "hidden";
-                                                    textStyle.textOverflow = "clip";
-                                                    textStyle.whiteSpace = "pre";
-                                                    textStyle.wordWrap = "normal";
-
-                                                    break;
+                case CPLineBreakByClipping:
+                    textStyle.overflow = "hidden";
+                    textStyle.textOverflow = "clip";
+                    textStyle.whiteSpace = "pre";
+                    textStyle.wordWrap = "normal";
+                    break;
 
                 case CPLineBreakByTruncatingHead:
                 case CPLineBreakByTruncatingMiddle: // Don't have support for these (yet?), so just degrade to truncating tail.
-
-                case CPLineBreakByTruncatingTail:   textStyle.textOverflow = "ellipsis";
-                                                    textStyle.whiteSpace = "nowrap";
-                                                    textStyle.overflow = "hidden";
-                                                    textStyle.wordWrap = "normal";
-
-                                                    break;
+                case CPLineBreakByTruncatingTail:
+                    textStyle.textOverflow = "ellipsis";
+                    textStyle.whiteSpace = "nowrap";
+                    textStyle.overflow = "hidden";
+                    textStyle.wordWrap = "normal";
+                    break;
 
                 case CPLineBreakByCharWrapping:
-                case CPLineBreakByWordWrapping:     textStyle.wordWrap = "break-word";
-                                                    try {
-                                                        textStyle.whiteSpace = "pre";
-                                                        textStyle.whiteSpace = "-o-pre-wrap";
-                                                        textStyle.whiteSpace = "-pre-wrap";
-                                                        textStyle.whiteSpace = "-moz-pre-wrap";
-                                                        textStyle.whiteSpace = "pre-wrap";
-                                                    }
-                                                    catch (e) {
-                                                        //internet explorer doesn't like these properties
-                                                        textStyle.whiteSpace = "pre";
-                                                    }
-
-                                                    textStyle.overflow = "hidden";
-                                                    textStyle.textOverflow = "clip";
-
-                                                    break;
+                case CPLineBreakByWordWrapping:
+                    textStyle.wordWrap = "break-word";
+                    try {
+                        textStyle.whiteSpace = "pre";
+                        textStyle.whiteSpace = "-o-pre-wrap";
+                        textStyle.whiteSpace = "-pre-wrap";
+                        textStyle.whiteSpace = "-moz-pre-wrap";
+                        textStyle.whiteSpace = "pre-wrap";
+                    }
+                    catch (e) {
+                        //internet explorer doesn't like these properties
+                        textStyle.whiteSpace = "pre";
+                    }
+                    textStyle.overflow = "hidden";
+                    textStyle.textOverflow = "clip";
+                    break;
             }
 
             if (shadowStyle)
@@ -630,9 +631,9 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
         }
 
         if (CPFeatureIsCompatible(CPOpacityRequiresFilterFeature))
-            imageStyle.filter = @"alpha(opacity=" + _shouldDimImage ? 35 : 100 + ")";
+            imageStyle.filter = @"alpha(opacity=" + _shouldDimImage ? 50 : 100 + ")";
         else
-            imageStyle.opacity = _shouldDimImage ? 0.35 : 1.0;
+            imageStyle.opacity = _shouldDimImage ? 0.5 : 1.0;
 
         _DOMImageElement.width = imageWidth;
         _DOMImageElement.height = imageHeight;
