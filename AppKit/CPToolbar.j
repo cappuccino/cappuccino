@@ -165,15 +165,6 @@ var CPToolbarsByIdentifier              = nil,
     return self;
 }
 
-
-/*!
-    Sets the toolbar's display mode. NOT YET IMPLEMENTED.
-*/
-- (void)setDisplayMode:(CPToolbarDisplayMode)aDisplayMode
-{
-
-}
-
 /*!
     Returns the toolbar's identifier
 */
