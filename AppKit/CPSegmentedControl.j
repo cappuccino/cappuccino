@@ -331,7 +331,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 - (void)setLabel:(CPString)aLabel forSegment:(unsigned)aSegment
 {
     [_segments[aSegment] setLabel:aLabel];
-    
+
     [self tileWithChangedSegment:aSegment];
 }
 
@@ -679,7 +679,7 @@ CPSegmentSwitchTrackingMomentary = 2;
         themeState = _themeStates[aSegment] | (_themeState & CPThemeStateDisabled),
         contentInset = [self valueForThemeAttribute:@"content-inset" inState:themeState],
         font = [self font];
-    
+
     if ([segment image] && [segment label])
         segmentWidth = [[segment label] sizeWithFont:font].width + [[segment image] size].width + contentInset.left + contentInset.right;
     else if (segment.image)
