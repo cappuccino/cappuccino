@@ -2217,6 +2217,9 @@ setBoundsOrigin:
         var graphicsPort = CGBitmapGraphicsContextCreate();
 
 #if PLATFORM(DOM)
+        var width = CGRectGetWidth(_frame),
+            height = CGRectGetHeight(_frame);
+
         _DOMContentsElement = graphicsPort.DOMElement;
 
         _DOMContentsElement.style.zIndex = -100;
@@ -2225,13 +2228,10 @@ setBoundsOrigin:
         _DOMContentsElement.style.position = "absolute";
         _DOMContentsElement.style.visibility = "visible";
 
-        _DOMContentsElement.width = ROUND(CGRectGetWidth(_frame));
-        _DOMContentsElement.height = ROUND(CGRectGetHeight(_frame));
+        CPDOMDisplayServerSetSize(_DOMContentsElement, width, height);
 
-        _DOMContentsElement.style.top = "0px";
-        _DOMContentsElement.style.left = "0px";
-        _DOMContentsElement.style.width = ROUND(CGRectGetWidth(_frame)) + "px";
-        _DOMContentsElement.style.height = ROUND(CGRectGetHeight(_frame)) + "px";
+        CPDOMDisplayServerSetStyleLeftTop(_DOMContentsElement, NULL, 0.0, 0.0);
+        CPDOMDisplayServerSetStyleSize(_DOMContentsElement, width, height);
 
         // The performance implications of this aren't clear, but without this subviews might not be redrawn when this
         // view moves.

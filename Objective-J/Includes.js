@@ -28,6 +28,7 @@
 
 #define GLOBAL(name) name
 
+#include "OldBrowserCompatibility.js"
 #include "DebugOptions.js"
 #include "json2.js"
 #include "sprintf.js"

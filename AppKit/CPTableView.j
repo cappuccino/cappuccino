@@ -82,7 +82,7 @@ var CPTableViewDelegate_selectionShouldChangeInTableView_                       
     CPTableViewDelegate_tableView_willDisplayView_forTableColumn_row_                                   = 1 << 17,
     CPTableViewDelegate_tableViewSelectionDidChange_                                                    = 1 << 18,
     CPTableViewDelegate_tableViewSelectionIsChanging_                                                   = 1 << 19,
-    CPTableViewDelegate_tableViewMenuForTableColumn_Row_                                                = 1 << 20;
+    CPTableViewDelegate_tableViewMenuForTableColumn_Row_                                                = 1 << 20,
     CPTableViewDelegate_tableView_shouldReorderColumn_toColumn_                                         = 1 << 21;
 
 //CPTableViewDraggingDestinationFeedbackStyles
@@ -1322,7 +1322,7 @@ NOT YET IMPLEMENTED
 
     for (var identifier in _dataViewsForTableColumns)
     {
-        var dataViewsInTableColumn = _dataViewsForTableColumns[identifier]
+        var dataViewsInTableColumn = _dataViewsForTableColumns[identifier];
 
         for (var i = 0; i < selectInfo.length; ++i)
         {

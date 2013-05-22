@@ -683,7 +683,7 @@ _CPWindowViewResizeSlop = 3;
         [theWindow _setAttachedSheetFrameOrigin];
         [sheet._windowView _adjustShadowViewSize];
     }
-    else if (theWindow._isSheet)
+    else if (theWindow && theWindow._isSheet)
         [self _adjustShadowViewSize];
 }
 

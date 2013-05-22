@@ -1,0 +1,1 @@
+objj_msgSend(object,"for:in:nil:",a,b,nil);

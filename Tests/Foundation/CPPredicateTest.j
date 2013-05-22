@@ -9,6 +9,7 @@
 - (id)init
 {
     self = [super init];
+
     if (self != nil)
     {
         var d,
@@ -117,18 +118,18 @@
 
 - (void)testVariableExpressionEvaluation
 {
-// Replace with constant
+    // Replace with constant
     var expression = [CPExpression expressionForVariable:@"variable"],
         bindings = [CPDictionary dictionaryWithObject:20 forKey:@"variable"],
         eval = [expression expressionValueWithObject:@"variable" context:bindings];
     [self assertTrue:(eval == 20) message:"'" + eval  + "' should be 20"];
 
-// Replace with constant expression
+    // Replace with constant expression
     bindings = [CPDictionary dictionaryWithObject:[CPExpression expressionForConstantValue:10] forKey:@"variable"];
     eval = [expression expressionValueWithObject:nil context:bindings];
     [self assertTrue:(eval == 10) message:"'" + eval  + "' should be 10"];
 
-// Replace with keypath expression
+    // Replace with keypath expression
     bindings = [CPDictionary dictionaryWithObject:[CPExpression expressionForKeyPath:@"Record1.Age"] forKey:@"variable"];
     eval = [expression expressionValueWithObject:dict context:bindings];
     [self assertTrue:(eval == 34) message:"'" + eval  + "' should be 34"];
@@ -213,7 +214,7 @@
 
 - (void)testNilComparisons
 {
-// Custom Selector Predicate
+    // Custom Selector Predicate
     var pred = [[CPComparisonPredicate alloc] initWithLeftExpression:[CPExpression expressionForKeyPath:@"Record1.Name"] rightExpression:[CPExpression expressionForConstantValue:nil] customSelector:@selector(yes:)];
 
     [self assertTrue:[pred evaluateWithObject:dict] message:"'" + [pred description]  + "' should be true"];
@@ -226,7 +227,7 @@
 
     [self assertFalse:[pred evaluateWithObject:dict] message:"'" + [pred description]  + "' should be false"];
 
-// Predicates with operators
+    // Predicates with operators
     pred = [[CPComparisonPredicate alloc] initWithLeftExpression:[CPExpression expressionForKeyPath:@"Record1.Age"] rightExpression:[CPExpression expressionForConstantValue:nil] modifier:CPDirectPredicateModifier type:CPGreaterThanPredicateOperatorType options:0];
 
     [self assertFalse:[pred evaluateWithObject:dict] message:"'" + [pred description]  + "' should be false"];
@@ -243,7 +244,7 @@
 - (void)testPredicateParsing
 {
     var predicate;
-// TEST String
+    // TEST String
     predicate = [CPPredicate predicateWithFormat: @"%K == %@", @"Record1.Name", @"John"];
     [self assertTrue:[predicate evaluateWithObject:dict] message:[predicate description] + " should be true"];
 
@@ -256,14 +257,14 @@
     predicate = [CPPredicate predicateWithFormat: @"(%K == %@) AND (%K == %@)", @"Record1.Name", @"John", @"Record2.Name", @"Mary"];
     [self assertTrue:[predicate evaluateWithObject:dict] message:[predicate description] + " should be true"];
 
-// TEST integer
+    // TEST integer
     predicate = [CPPredicate predicateWithFormat: @"%K == %d", @"Record1.Age", 34];
     [self assertTrue:[predicate evaluateWithObject:dict] message:[predicate description] + " should be true"];
 
     predicate = [CPPredicate predicateWithFormat: @"%K < %d", @"Record1.Age", 40];
     [self assertTrue:[predicate evaluateWithObject:dict] message:[predicate description] + " should be true"];
 
-    predicate = [CPPredicate predicateWithFormat: @"%K BETWEEN %@", @"Record1.Age", [CPArray arrayWithObjects:[CPNumber numberWithInt:20], [CPNumber numberWithInt:40]]];
+    predicate = [CPPredicate predicateWithFormat: @"%K BETWEEN %@", @"Record1.Age", @[20, 40]];
     [self assertTrue:[predicate evaluateWithObject:dict] message:[predicate description] + " should be true"];
 
     predicate = [CPPredicate predicateWithFormat: @"Record1.Age BETWEEN {%f,%f}", 20, 40];
@@ -272,14 +273,14 @@
     predicate = [CPPredicate predicateWithFormat: @"(%K == %d) OR (%K == %d)", @"Record1.Age", 34, @"Record2.Age", 34];
     [self assertTrue:[predicate evaluateWithObject:dict] message:[predicate description] + " should be true"];
 
-// TEST float
+    // TEST float
     predicate = [CPPredicate predicateWithFormat: @"%K < %f", @"Record1.Age", 40.5];
     [self assertTrue:[predicate evaluateWithObject:dict] message:[predicate description] + " should be true"];
 
     predicate = [CPPredicate predicateWithFormat: @"%f > %K", 40.5, @"Record1.Age"];
     [self assertTrue:[predicate evaluateWithObject:dict] message:[predicate description] + " should be true"];
 
-// TEST KeyPath
+    // TEST KeyPath
     predicate = [CPPredicate predicateWithFormat: @"%@ IN %K", @"Kid1", @"Record1.Children"];
     [self assertTrue:[predicate evaluateWithObject:dict] message:[predicate description] + " should be true"];
 
@@ -289,11 +290,11 @@
     predicate = [CPPredicate predicateWithFormat: @"ANY %K == %@", @"Record2.Children", @"Girl1"];
     [self assertTrue:[predicate evaluateWithObject:dict] message:[predicate description] + " should be true"];
 
-// Test Aggregate
+    // Test Aggregate
     predicate = [CPPredicate predicateWithFormat:@"{Record1.Name, Record1.Age} = {'John',34}"];
     [self assertTrue:[predicate evaluateWithObject:dict] message:[predicate description] + " should be true"];
 
-// Test Symbolic token
+    // Test Symbolic token
     predicate = [CPPredicate predicateWithFormat:@"Record1.Children[  FIRST ] = 'Kid1'"];
     [self assertTrue:[predicate evaluateWithObject:dict] message:[predicate description] + " should be true"];
 
@@ -303,7 +304,7 @@
     predicate = [CPPredicate predicateWithFormat:@"Record1.Children[count:(Record1.Children) - 1] = 'Kid2'"];
     [self assertTrue:[predicate evaluateWithObject:dict] message:[predicate description] + " should be true"];
 
-// Test arithm
+    // Test arithm
     var n = 2;
     predicate = [CPPredicate predicateWithFormat:@"SELF +1 = 3"];
     [self assertTrue:[predicate evaluateWithObject:n] message:[predicate description] + " should be true"];
@@ -323,22 +324,22 @@
     predicate = [CPPredicate predicateWithFormat:@"SELF** 3 = 8"];
     [self assertTrue:[predicate evaluateWithObject:n] message:[predicate description] + " should be true"];
 
-// TEST Operator type
+    // TEST Operator type
     predicate = [CPPredicate predicateWithFormat: @"a CONTAINS[c] \"b\""];
     [self assertTrue:([predicate predicateOperatorType] == CPContainsPredicateOperatorType) message:[predicate description] + " operator should be a CPContainsPredicateOperatorType"];
 
     predicate = [CPPredicate predicateWithFormat: @"a BETWEEN {%f,%f}", 20, 40];
     [self assertTrue:([predicate predicateOperatorType] == CPBetweenPredicateOperatorType) message:[predicate description] + " operator should be a CPBetweenPredicateOperatorType"];
 
-// TEST Empty string
+    // TEST Empty string
     predicate = [CPPredicate predicateWithFormat: @"a CONTAINS \"\""];
     [self assertNotNull:predicate message:[predicate description] + " should not be nil"];
 
-// TEST variable
+    // TEST variable
     predicate = [CPPredicate predicateWithFormat: @"$x CONTAINS \"\""];
     [self assertTrue:[[predicate leftExpression] expressionType] == CPVariableExpressionType message:"Left Expression should be a CPVariableExpressionType"];
 
-// TEST variable inside keypath
+    // TEST variable inside keypath
     predicate = [CPPredicate predicateWithFormat: @"Record1.$age = 34"];
     var bindings = [CPDictionary dictionaryWithObject:@"Age" forKey:@"age"];
     [self assertTrue:[predicate evaluateWithObject:dict substitutionVariables:bindings] message:"Predicate " + predicate + " should evaluate to TRUE"];
@@ -350,14 +351,14 @@
     predicate = [CPPredicate predicateWithFormat: @"$record.$age = 34"];
     [self assertTrue:[predicate evaluateWithObject:dict substitutionVariables:bindings] message:"Predicate " + predicate + " should evaluate to TRUE"];
 
-// TEST built-in functions
+    // TEST built-in functions
     predicate = [CPPredicate predicateWithFormat: @"sum:(1,1) = 2"];
     [self assertTrue:[predicate evaluateWithObject:nil] message:"Predicate " + predicate + " should evaluate to TRUE"];
 
     predicate = [CPPredicate predicateWithFormat: @"multiply:by:(5,3) = 15"];
     [self assertTrue:[predicate evaluateWithObject:nil] message:"Predicate " + predicate + " should evaluate to TRUE"];
 
-// TEST custom functions
+    // TEST custom functions
     predicate = [CPPredicate predicateWithFormat:@"FUNCTION('a/path', 'lastPathComponent') = 'path'"];
     [self assertTrue:[predicate evaluateWithObject:nil] message:"Predicate " + predicate + " should evaluate to TRUE"];
 
@@ -367,13 +368,13 @@
     predicate = [CPPredicate predicateWithFormat:@"FUNCTION('toto', 'stringByReplacingOccurrencesOfString:withString:', 'o', 'a') == 'tata'"];
     [self assertTrue:[predicate evaluateWithObject:nil] message:"Predicate " + predicate + " should be TRUE"];
 
-// TEST Subquery -- This means: search people who have 2 boys.
+    // TEST Subquery -- This means: search people who have 2 boys.
     predicate = [CPPredicate predicateWithFormat: @"SUBQUERY(Record1.Children, $x, $x BEGINSWITH 'Kid')[SIZE] = 2"];
     [self assertTrue:[predicate evaluateWithObject:dict] message:"Predicate " + predicate + " should evaluate to TRUE"];
 
-// Test Set expressions
-// Parsing is ok but the evaluation of this predicate will return NO because:
-// - lhs will evaluate to a CPSet and rhs to a CPArray (aggregate exp). Comparing sets against arrays will always fail in CPComparisonPredicate. This is also cocoa behavior but i guess it's for historical reasons (set expressions are 10.5+) and should be changed in capp in my opinion.
+    // Test Set expressions
+    // Parsing is ok but the evaluation of this predicate will return NO because:
+    // - lhs will evaluate to a CPSet and rhs to a CPArray (aggregate exp). Comparing sets against arrays will always fail in CPComparisonPredicate. This is also cocoa behavior but i guess it's for historical reasons (set expressions are 10.5+) and should be changed in capp in my opinion.
     var object = [CPDictionary dictionaryWithObject:[CPSet setWithObjects:@"a"] forKey:"a"],
         result = [CPSet setWithObjects:@"a",@"b"];
 
@@ -400,8 +401,8 @@
     exp2 = [CPExpression expressionForVariable:"toto"];
     [self assert:exp1 equals:exp2];
 
-    var left = [CPExpression expressionForConstantValue:[CPSet setWithObjects:@"a",@"b",@"c"]],
-        right = [CPExpression expressionForConstantValue:[CPArray arrayWithObjects:@"a",@"b",@"d"]];
+    var left = [CPExpression expressionForConstantValue:[CPSet setWithObjects:@"a", @"b", @"c"]],
+        right = [CPExpression expressionForConstantValue:[CPArray arrayWithObjects:@"a", @"b", @"d"]];
 
     exp1 = [CPExpression expressionForIntersectSet:left with:right];
     exp2 = [CPExpression expressionForIntersectSet:[left copy] with:[right copy]];
@@ -440,6 +441,64 @@
     [self assert:pred1 equals:pred2];
 }
 
+- (void)testExpressionAndPredicateIsNotEqualToNil
+{
+    var cexp1 = [CPExpression expressionForConstantValue:2],
+        cexp2 = [CPExpression expressionForConstantValue:2];
+    [self assert:cexp1 notEqual:nil];
+
+    var exp1 = [CPExpression expressionForKeyPath:"path"];
+
+    [self assert:exp1 notEqual:nil];
+
+    exp1 = [CPExpression expressionForEvaluatedObject];
+
+    [self assert:exp1 notEqual:nil];
+
+    exp1 = [CPExpression expressionForVariable:"toto"];
+
+    [self assert:exp1 notEqual:nil];
+
+    var left = [CPExpression expressionForConstantValue:[CPSet setWithObjects:@"a",@"b",@"c"]],
+        right = [CPExpression expressionForConstantValue:[CPArray arrayWithObjects:@"a",@"b",@"d"]];
+
+    exp1 = [CPExpression expressionForIntersectSet:left with:right];
+
+    [self assert:exp1 notEqual:nil];
+
+    exp1 = [CPExpression expressionForFunction:cexp1 selectorName:@"isEqual:" arguments:[CPArray arrayWithObjects:cexp2]];
+
+    [self assert:exp1 notEqual:nil];
+
+    var aexp1 = [CPExpression expressionForAggregate:[CPArray arrayWithObjects:cexp1,cexp2]];
+
+    [self assert:aexp1 notEqual:nil];
+
+    exp1 = [CPExpression expressionForSubquery:right usingIteratorVariable:@"self" predicate:[CPPredicate predicateWithValue:YES]];
+
+    [self assert:exp1 notEqual:nil];
+
+    var pred1 = [CPPredicate predicateWithFormat:@"FUNCTION('toto', 'stringByReplacingOccurrencesOfString:withString:', 'o', 'a') == 'tata'"];
+
+    [self assert:pred1 notEqual:nil];
+
+    pred1 = [CPPredicate predicateWithFormat:@"$record.$age = 34"];
+
+    [self assert:pred1 notEqual:nil];
+
+    pred1 = [CPPredicate predicateWithFormat:@"SUBQUERY(Record1.Children, $x, $x BEGINSWITH 'Kid')[SIZE] = 2"];
+
+    [self assert:pred1 notEqual:nil];
+
+    pred1 = [CPPredicate predicateWithFormat:@"$x CONTAINS 'a'"];
+
+    [self assert:pred1 notEqual:nil];
+
+    pred1 = [CPPredicate predicateWithFormat:@"a = 'a' AND b = 'b'"];
+
+    [self assert:pred1 notEqual:nil];
+}
+
 - (void)testProxyArrayFiltering
 {
     var proxyArray = [self mutableArrayValueForKey:@"simpleArray"],
@@ -455,8 +514,8 @@
     var data = [1, 2, 3],
         result;
 
-    var tpred = [CPPredicate predicateWithFormat:@"TRUEPREDICATE"];
-    var ctpred = [CPCompoundPredicate andPredicateWithSubpredicates:[tpred]];
+    var tpred = [CPPredicate predicateWithFormat:@"TRUEPREDICATE"],
+        ctpred = [CPCompoundPredicate andPredicateWithSubpredicates:[tpred]];
 
     // fails if evaluateWithObject: isn't implemented in CPPredicate_BOOL
     result = [tpred evaluateWithObject:"gazonk"];

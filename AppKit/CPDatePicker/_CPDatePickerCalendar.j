@@ -445,6 +445,9 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
 */
 - (void)layoutSubviews
 {
+    if ([_datePicker datePickerStyle] == CPTextFieldAndStepperDatePickerStyle || [_datePicker datePickerStyle] == CPTextFieldDatePickerStyle)
+        return;
+
     var bounds = [self bounds],
         dayNames = [self _dayNames],
         width = CGRectGetWidth(bounds),
@@ -753,6 +756,9 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
 */
 - (void)layoutSubviews
 {
+    if ([_datePicker datePickerStyle] == CPTextFieldAndStepperDatePickerStyle || [_datePicker datePickerStyle] == CPTextFieldDatePickerStyle)
+        return;
+
     [super layoutSubviews];
 
     [self tile];
@@ -1133,6 +1139,9 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
 */
 - (void)layoutSubviews
 {
+    if ([_datePicker datePickerStyle] == CPTextFieldAndStepperDatePickerStyle || [_datePicker datePickerStyle] == CPTextFieldDatePickerStyle)
+        return;
+
     var bounds = [self bounds];
     [_textField sizeToFit];
     [_textField setFrameOrigin:CGPointMake(bounds.size.width / 2 - [_textField frameSize].width / 2 + [_datePicker valueForThemeAttribute:@"border-width"], bounds.size.height / 2 - [_textField frameSize].height / 2)];
@@ -1205,6 +1214,9 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
 
 - (void)layoutSubviews
 {
+    if ([_datePicker datePickerStyle] == CPTextFieldAndStepperDatePickerStyle || [_datePicker datePickerStyle] == CPTextFieldDatePickerStyle)
+        return;
+
     if ([_datePicker drawsBackground])
         [self setBackgroundColor:[_datePicker backgroundColor]];
     else
