@@ -750,6 +750,7 @@ TryStatement: function(node, st, c) {
 WhileStatement: function(node, st, c) {
     var compiler = st.compiler,
         generate = compiler.generate,
+        body = node.body,
         buffer;
     if (generate) {
       buffer = compiler.jsBuffer;
@@ -757,9 +758,9 @@ WhileStatement: function(node, st, c) {
       buffer.concat("while (");
     }
     c(node.test, st, "Expression");
-    if (generate) buffer.concat(")\n");
+    if (generate) buffer.concat(body.type === "EmptyStatement" ? ");\n" : ")\n");
     indentation += indentStep;
-    c(node.body, st, "Statement");
+    c(body, st, "Statement");
     indentation = indentation.substring(indentationSpaces);
 },
 DoWhileStatement: function(node, st, c) {
@@ -784,6 +785,7 @@ DoWhileStatement: function(node, st, c) {
 ForStatement: function(node, st, c) {
     var compiler = st.compiler,
         generate = compiler.generate,
+        body = node.body,
         buffer;
     if (generate) {
       buffer = compiler.jsBuffer;
@@ -795,14 +797,15 @@ ForStatement: function(node, st, c) {
     if (node.test) c(node.test, st, "Expression");
     if (generate) buffer.concat("; ");
     if (node.update) c(node.update, st, "Expression");
-    if (generate) buffer.concat(")\n");
+    if (generate) buffer.concat(body.type === "EmptyStatement" ? ");\n" : ")\n");
     indentation += indentStep;
-    c(node.body, st, "Statement");
+    c(body, st, "Statement");
     indentation = indentation.substring(indentationSpaces);
 },
 ForInStatement: function(node, st, c) {
     var compiler = st.compiler,
         generate = compiler.generate,
+        body = node.body,
         buffer;
     if (generate) {
       buffer = compiler.jsBuffer;
@@ -812,9 +815,9 @@ ForInStatement: function(node, st, c) {
     c(node.left, st, "ForInit");
     if (generate) buffer.concat(" in ");
     c(node.right, st, "Expression");
-    if (generate) buffer.concat(")\n");
+    if (generate) buffer.concat(body.type === "EmptyStatement" ? ");\n" : ")\n");
     indentation += indentStep;
-    c(node.body, st, "Statement");
+    c(body, st, "Statement");
     indentation = indentation.substring(indentationSpaces);
 },
 ForInit: function(node, st, c) {
