@@ -1624,22 +1624,30 @@ MessageSendExpression: function(node, st, c) {
 },
 SelectorLiteralExpression: function(node, st, c) {
     var compiler = st.compiler,
+        buffer = compiler.jsBuffer,
         generate = compiler.generate;
-    if (!generate) compiler.jsBuffer.concat(compiler.source.substring(compiler.lastPos, node.start));
-    compiler.jsBuffer.concat(" sel_getUid(\"");
-    compiler.jsBuffer.concat(node.selector);
-    compiler.jsBuffer.concat("\")");
+    if (!generate) {
+        buffer.concat(compiler.source.substring(compiler.lastPos, node.start));
+        buffer.concat(" "); // Add an extra space if it looks something like this: "return(@selector(a:))". No space between return and expression.
+    }
+    buffer.concat("sel_getUid(\"");
+    buffer.concat(node.selector);
+    buffer.concat("\")");
     if (!generate) compiler.lastPos = node.end;
 },
 Reference: function(node, st, c) {
     var compiler = st.compiler,
+        buffer = compiler.jsBuffer,
         generate = compiler.generate;
-    if (!generate) compiler.jsBuffer.concat(compiler.source.substring(compiler.lastPos, node.start));
-    compiler.jsBuffer.concat(" function(__input) { if (arguments.length) return ");
-    compiler.jsBuffer.concat(node.element.name);
-    compiler.jsBuffer.concat(" = __input; return ");
-    compiler.jsBuffer.concat(node.element.name);
-    compiler.jsBuffer.concat("; }");
+    if (!generate) {
+        buffer.concat(compiler.source.substring(compiler.lastPos, node.start));
+        buffer.concat(" "); // Add an extra space if it looks something like this: "return(<expression>)". No space between return and expression.
+    }
+    buffer.concat("function(__input) { if (arguments.length) return ");
+    buffer.concat(node.element.name);
+    buffer.concat(" = __input; return ");
+    buffer.concat(node.element.name);
+    buffer.concat("; }");
     if (!generate) compiler.lastPos = node.end;
 },
 Dereference: function(node, st, c) {
