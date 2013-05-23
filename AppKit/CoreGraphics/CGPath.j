@@ -120,12 +120,14 @@ function CGPathAddArc(aPath, aTransform, x, y, aRadius, aStartAngle, anEndAngle,
         The ending point of the arc becomes the new current point of the path.
     */
     var arcEndX = x + aRadius * COS(anEndAngle),
-        arcEndY = y + aRadius * SIN(anEndAngle);
+        arcEndY = y + aRadius * SIN(anEndAngle),
+        arcStartX = x + aRadius * COS(aStartAngle),
+        arcStartY = y + aRadius * SIN(aStartAngle);
 
     if (aPath.count)
     {
-        if (aPath.current.x !== arcEndX || aPath.current.y !== arcEndY)
-            CGPathAddLineToPoint(aPath, aTransform, arcEndX, arcEndY);
+        if (aPath.current.x !== x || aPath.current.y !== y)
+            CGPathAddLineToPoint(aPath, aTransform, arcStartX, arcStartY);
     }
     else
     {
