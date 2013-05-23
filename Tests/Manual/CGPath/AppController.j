@@ -43,14 +43,7 @@
 
 @implementation PathView : CPView
 {
-}
 
-- (id)init
-{
-    if(self = [super init])
-    {
-    }
-    return self;
 }
 
 - (void)drawRect:(CGRect)aRect
