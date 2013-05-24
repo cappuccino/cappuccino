@@ -610,7 +610,23 @@ function CGPathGetBoundingBox(aPath)
     return CGRectMake(ox, oy, rx - ox, ry - oy);
 }
 
+function CGPathContainsPoint(aPath, aTransform, point, eoFill)
+{
+    if (!aPath.count)
+        return NO;
+
+    if (aTransform)
+        point = CGPointApplyAffineTransform(point, aTransform);
+
+    var context = CGBitmapGraphicsContextCreate();
+
+    CGContextBeginPath(context);
+    CGContextAddPath(context, aPath);
+    CGContextClosePath(context);
+
+    return context.isPointInPath(point.x, point.y);
+}
+
 /*!
     @}
 */
-
