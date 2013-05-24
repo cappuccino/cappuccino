@@ -25,9 +25,6 @@
     [contentView addSubview:pathMouseOverView];
 
     [theWindow orderFront:self];
-
-    // Uncomment the following line to turn on the standard menu bar.
-    //[CPMenu setMenuBarVisible:YES];
 }
 
 @end
