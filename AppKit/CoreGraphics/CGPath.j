@@ -138,7 +138,7 @@ function CGPathAddArc(aPath, aTransform, x, y, aRadius, aStartAngle, anEndAngle,
     }
 
     aPath.current = CGPointMake(arcEndX, arcEndY);
-    aPath.elements[aPath.count++] = { type:kCGPathElementAddArc, x:x, y:y, radius:aRadius, startAngle:aStartAngle, endAngle:anEndAngle, clockwise:isClockwise };
+    aPath.elements[aPath.count++] = { type:kCGPathElementAddArc, x:x, y:y, radius:aRadius, startAngle:aStartAngle, endAngle:anEndAngle, isClockwise:isClockwise };
 }
 
 function CGPathAddArcToPoint(aPath, aTransform, x1, y1, x2, y2, aRadius)
@@ -235,7 +235,7 @@ function CGPathAddPath(aPath, aTransform, anotherPath)
             case kCGPathElementAddArc:
                 CGPathAddArc(aPath, aTransform, element.x, element.y,
                              element.radius, element.startAngle,
-                             element.endAngle, element.clockwise);
+                             element.endAngle, element.isClockwise);
                 break;
 
             case kCGPathElementAddArcToPoint:
@@ -440,7 +440,7 @@ function CGPathEqualToPath(aPath, anotherPath)
                     element.radius !== anotherElement.radius ||
                     element.startAngle !== anotherElement.startAngle ||
                     element.endAngle !== anotherElement.endAngle ||
-                    element.clockwise !== anotherElement.clockwise)
+                    element.isClockwise !== anotherElement.isClockwise)
                 {
                     return NO;
                 }
