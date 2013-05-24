@@ -18,20 +18,11 @@
     var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask],
         contentView = [theWindow contentView];
 
-    var label = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
-
-    [label setStringValue:@"Hello World!"];
-    [label setFont:[CPFont boldSystemFontOfSize:24.0]];
-
-    [label sizeToFit];
-
-    [label setAutoresizingMask:CPViewMinXMargin | CPViewMaxXMargin | CPViewMinYMargin | CPViewMaxYMargin];
-    [label setCenter:[contentView center]];
-
-    [contentView addSubview:label];
-
     var pathView = [[PathView alloc] initWithFrame:CGRectMake(0.0, 0.0, 500.0, 500.0)];
     [contentView addSubview:pathView];
+
+    var pathMouseOverView = [[PathMouseOverView alloc] initWithFrame:CGRectMake(500.0, 0.0, 500.0, 500.0)];
+    [contentView addSubview:pathMouseOverView];
 
     [theWindow orderFront:self];
 
@@ -41,6 +32,61 @@
 
 @end
 
+@implementation PathMouseOverView : CPView
+{
+    id path1;
+    id path2;
+    id path3;
+}
+
+- (void)drawRect:(CGRect)aRect
+{
+    [super drawRect:aRect];
+
+    var context = [[CPGraphicsContext currentContext] graphicsPort];
+
+    CGContextBeginPath(context);
+    path1 = CGPathCreateMutable();
+    CGPathMoveToPoint(path1, nil, 100, 100);
+    CGPathAddLineToPoint(path1, nil, 150, 50);
+    CGPathAddLineToPoint(path1, nil, 200, 100);
+    CGContextAddPath(context, path1);
+    CGContextClosePath(context);
+    CGContextStrokePath(context);
+
+    CGContextBeginPath(context);
+    path2 = CGPathCreateMutable();
+    CGPathAddRect( path2, nil, CGRectMake(250, 50, 100, 100));
+    CGContextAddPath(context, path2);
+    CGContextClosePath(context);
+    CGContextStrokePath(context);
+
+    CGContextBeginPath(context);
+    path3 = CGPathWithEllipseInRect( CGRectMake(100, 150, 100, 100))
+    CGContextAddPath(context, path3);
+    CGContextClosePath(context);
+    CGContextStrokePath(context);
+}
+
+- (void)mouseMoved:(CPEvent)anEvent
+{
+    var location = [self convertPointFromBase:[anEvent locationInWindow]],
+        context = CGBitmapGraphicsContextCreate();
+
+    if (CGPathContainsPoint(path1, nil, location, nil))
+        console.log("Mouse is in the triangle");
+
+    if (CGPathContainsPoint(path2, nil, location, nil))
+        console.log("Mouse is in rectangle");
+
+    if (CGPathContainsPoint(path3, nil, location, nil))
+        console.log("Mouse is in the circle");
+}
+
+@end
+
+
+
 @implementation PathView : CPView
 {
 
@@ -48,6 +94,8 @@
 
 - (void)drawRect:(CGRect)aRect
 {
+    [super drawRect:aRect];
+
     var context = [[CPGraphicsContext currentContext] graphicsPort];
 
     // Test to create a pie chart
