@@ -1,4 +1,5 @@
-/* _CPDatePickerClock.j
+/*
+* _CPDatePickerClock.j
 * AppKit
 *
 * Created by Alexandre Wilhelm
@@ -24,11 +25,16 @@
 @import "CPImageView.j"
 @import "CALayer.j"
 
+
+@class _CPCibCustomResource
 @class CPDatePicker
 
 @global CPHourMinuteSecondDatePickerElementFlag
 @global CPTextFieldAndStepperDatePickerStyle
 @global CPTextFieldDatePickerStyle
+
+var RADIANS = Math.PI / 180;
+
 
 @implementation _CPDatePickerClock : CPView
 {
@@ -46,11 +52,6 @@
 #pragma mark -
 #pragma mark Init methods
 
-/*! Init a new _CPDatePickerClock
-    @param aFrame
-    @param aDatePicker
-    @return a new instance of _CPDatePickerClock
-*/
 - (id)initWithFrame:(CGRect)aFrame datePicker:(CPDatePicker)aDatePicker
 {
     if (self = [super initWithFrame:aFrame])
@@ -112,8 +113,8 @@
         [_rootLayer addSublayer:_middleHandLayer];
 
         [_rootLayer setNeedsDisplay];
-
     }
+
     return self;
 }
 
@@ -121,8 +122,6 @@
 #pragma mark -
 #pragma mark Layout methods
 
-/*! Layout the subviews
-*/
 - (void)layoutSubviews
 {
     if ([_datePicker datePickerStyle] == CPTextFieldAndStepperDatePickerStyle || [_datePicker datePickerStyle] == CPTextFieldDatePickerStyle)
@@ -135,11 +134,11 @@
 
     [dateValue _dateWithTimeZone:[_datePicker timeZone]];
 
-    [self setBackgroundColor:[_datePicker valueForThemeAttribute:@"bezel-color-clock" inState:[_datePicker themeState]]];
-    [_middleHandLayer setImage:[_datePicker valueForThemeAttribute:@"middle-hand-image" inState:[_datePicker themeState]]];
-    [_hourHandLayer setImage:[_datePicker valueForThemeAttribute:@"hour-hand-image" inState:[_datePicker themeState]]];
-    [_minuteHandLayer setImage:[_datePicker valueForThemeAttribute:@"minute-hand-image" inState:[_datePicker themeState]]];
-    [_secondHandLayer setImage:[_datePicker valueForThemeAttribute:@"second-hand-image" inState:[_datePicker themeState]]];
+    [self setBackgroundColor:[_datePicker currentValueForThemeAttribute:@"bezel-color-clock"]];
+    [_middleHandLayer setImage:[_datePicker currentValueForThemeAttribute:@"middle-hand-image"]];
+    [_hourHandLayer setImage:[_datePicker currentValueForThemeAttribute:@"hour-hand-image"]];
+    [_minuteHandLayer setImage:[_datePicker currentValueForThemeAttribute:@"minute-hand-image"]];
+    [_secondHandLayer setImage:[_datePicker currentValueForThemeAttribute:@"second-hand-image"]];
 
     if ([_datePicker _isEnglishFormat])
     {
@@ -178,40 +177,41 @@
 
 
 #pragma mark -
-#pragma mark Getter Setter methods
+#pragma mark Accessors
 
-/*! Return the radian position of the hour
-*/
 - (float)_hourPositionRadianForDate:(CPDate)aDate
 {
     var hours = aDate.getHours() + aDate.getMinutes() / 60;
 
-    return (360 * hours / 12) * (Math.PI / 180)
+    return (360 * hours / 12) * RADIANS;
 }
 
-/*! Return the radian position of the second
-*/
 - (float)_secondPositionRadianForDate:(CPDate)aDate
 {
-    return (360 * aDate.getSeconds() / 60) * (Math.PI / 180)
+    return (360 * aDate.getSeconds() / 60) * RADIANS;
 }
 
-/*! Return the radian position of the minute
-*/
 - (float)_minutePositionRadianForDate:(CPDate)aDate
 {
     var minutes = aDate.getMinutes() + aDate.getSeconds() / 60;
 
-    return (360 * minutes / 60) * (Math.PI / 180)
+    return (360 * minutes / 60) * RADIANS;
 }
 
-/*! Set enabled
-    @param aBoolean
-*/
-- (void)setEnabled:(BOOL)aBoolean
+- (void)setEnabled:(BOOL)shouldEnable
 {
-    _isEnabled = aBoolean;
+    shouldEnable = !!shouldEnable;
+
+    if (shouldEnable === _isEnabled)
+        return;
+
+    _isEnabled = shouldEnable;
     [self setNeedsLayout];
+
+    // FIXME: This is a workaround for an apparent bug in CALayer.
+    // Without pumping the event loop, the sublayers of _rootLayer
+    // (the hands) are not redrawn until an event occurs.
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 }
 
 @end
@@ -230,10 +230,6 @@
 #pragma mark -
 #pragma mark Init methods
 
-/*! Init a new hand layer with an image. The image will be draw in a ImageLayer
-    @param anImage
-    @return a new instance of handLayer
-*/
 - (id)initWithSize:(CGSize)aSize
 {
     if (self = [super init])
@@ -247,6 +243,7 @@
 
         [self addSublayer:_imageLayer];
     }
+
     return self;
 }
 
@@ -254,8 +251,8 @@
 #pragma mark -
 #pragma mark Setter Getter methods
 
-/*! Set the bounds of the layer. The imageLayer will be at the center of this bounds
-    @param aRect
+/*!
+    Set the bounds of the layer. The imageLayer will be at the center of this bounds.
 */
 - (void)setBounds:(CGRect)aRect
 {
@@ -266,20 +263,20 @@
 
 - (void)setImage:(CPImage)anImage
 {
-    if (_image == anImage)
+    if (_image === anImage)
         return;
 
-    _image = anImage;
+    if ([anImage isKindOfClass:[_CPCibCustomResource class]])
+        _image = [anImage imageFromCoder:nil];
+    else
+        _image = anImage;
 
     [_imageLayer setNeedsDisplay];
 }
 
-/*! Set the rotation of the imageLayer
-    @param radians
-*/
 - (void)setRotationRadians:(float)radians
 {
-    if (_rotationRadians == radians)
+    if (_rotationRadians === radians)
         return;
 
     _rotationRadians = radians;
@@ -289,9 +286,14 @@
         1.0, 1.0)];
 }
 
-- (void)setEnabled:(BOOL)aBoolean
+- (void)setEnabled:(BOOL)shouldEnable
 {
-    _isEnabled = aBoolean;
+    shouldEnable = !!shouldEnable;
+
+    if (_isEnabled === shouldEnable)
+        return;
+
+    _isEnabled = shouldEnable;
     [self setNeedsDisplay];
     [_imageLayer setNeedsDisplay];
 }
@@ -303,12 +305,10 @@
 
 - (void)drawLayer:(CALayer)aLayer inContext:(CGContext)aContext
 {
-    var bounds = [aLayer bounds];
-
     if ([_image loadStatus] != CPImageLoadStatusCompleted)
         [_image setDelegate:self];
     else
-        CGContextDrawImage(aContext, bounds, _image);
+        CGContextDrawImage(aContext, [aLayer bounds], _image);
 }
 
 @end

@@ -1184,17 +1184,26 @@ var themedButtonValues = nil,
         arrowImageRightHighlighted = PatternImage("datepicker-calendar-arrow-right-highlighted.png", 7.0, 10.0),
         circleImageHighlighted = PatternImage("datepicker-circle-image-highlighted.png", 9.0, 10.0),
 
-        secondHandImage = CPImageInBundle(@"datepicker-clock-second-hand.png", CGSizeMake(89, 89)),
-        minuteHandImage = CPImageInBundle(@"datepicker-clock-minute-hand.png", CGSizeMake(85, 85)),
-        hourHandImage   = CPImageInBundle(@"datepicker-clock-hour-hand.png", CGSizeMake(47, 47)),
-        middleHandImage = CPImageInBundle(@"datepicker-clock-middle-hand.png", CGSizeMake(13, 13)),
-        clockImageColor = PatternColor("datepicker-clock.png", 122.0, 123.0),
+        secondHandSize = CGSizeMake(89.0, 89.0),
+        secondHandImage = PatternImage("datepicker-clock-second-hand.png", secondHandSize.width, secondHandSize.height),
 
-        secondHandImageDisabled = CPImageInBundle(@"datepicker-clock-second-hand-disabled.png", CGSizeMake(89, 89)),
-        minuteHandImageDisabled = CPImageInBundle(@"datepicker-clock-minute-hand-disabled.png", CGSizeMake(85, 85)),
-        hourHandImageDisabled   = CPImageInBundle(@"datepicker-clock-hour-hand-disabled.png", CGSizeMake(47, 47)),
-        middleHandImageDisabled = CPImageInBundle(@"datepicker-clock-middle-hand-disabled.png", CGSizeMake(13, 13)),
-        clockImageColorDisabled = PatternColor("datepicker-clock-disabled.png", 122.0, 123.0),
+        minuteHandSize = CGSizeMake(85.0, 85.0),
+        minuteHandImage = PatternImage("datepicker-clock-minute-hand.png", minuteHandSize.width, minuteHandSize.height),
+
+        hourHandSize = CGSizeMake(47.0, 47.0),
+        hourHandImage   = PatternImage("datepicker-clock-hour-hand.png", hourHandSize.width, hourHandSize.height),
+
+        middleHandSize = CGSizeMake(13.0, 13.0),
+        middleHandImage = PatternImage("datepicker-clock-middle-hand.png", middleHandSize.width, middleHandSize.height),
+
+        clockSize = CGSizeMake(122.0, 123.0),
+        clockImageColor = PatternColor("datepicker-clock.png", clockSize.width, clockSize.height),
+
+        secondHandImageDisabled = PatternImage("datepicker-clock-second-hand-disabled.png", secondHandSize.width, secondHandSize.height),
+        minuteHandImageDisabled = PatternImage("datepicker-clock-minute-hand-disabled.png", minuteHandSize.width, minuteHandSize.height),
+        hourHandImageDisabled   = PatternImage("datepicker-clock-hour-hand-disabled.png", hourHandSize.width, hourHandSize.height),
+        middleHandImageDisabled = PatternImage("datepicker-clock-middle-hand-disabled.png", middleHandSize.width, middleHandSize.height),
+        clockImageColorDisabled = PatternColor("datepicker-clock-disabled.png", clockSize.width, clockSize.height),
 
         themeValues =
         [
@@ -1297,15 +1306,15 @@ var themedButtonValues = nil,
             [@"middle-hand-image",  middleHandImageDisabled,    CPThemeStateDisabled],
             [@"minute-hand-image",  minuteHandImageDisabled,    CPThemeStateDisabled],
 
-            [@"second-hand-size", CGSizeMake(89.0, 89.0)],
-            [@"hour-hand-size",   CGSizeMake(47.0, 47.0)],
-            [@"middle-hand-size", CGSizeMake(13.0, 13.0)],
-            [@"minute-hand-size", CGSizeMake(85.0, 85.0)],
+            [@"second-hand-size",   secondHandSize],
+            [@"hour-hand-size",     hourHandSize],
+            [@"middle-hand-size",   middleHandSize],
+            [@"minute-hand-size",   minuteHandSize],
 
             [@"border-width",            1.0],
             [@"size-header",             CGSizeMake(141.0, 39.0)],
             [@"size-tile",               CGSizeMake(20.0, 18.0)],
-            [@"size-clock",              CGSizeMake(122.0, 123.0)],
+            [@"size-clock",              clockSize],
             [@"size-calendar",           CGSizeMake(141.0, 109.0)],
             [@"min-size-calendar",       CGSizeMake(141.0, 148.0)],
             [@"max-size-calendar",       CGSizeMake(141.0, 148.0)]
