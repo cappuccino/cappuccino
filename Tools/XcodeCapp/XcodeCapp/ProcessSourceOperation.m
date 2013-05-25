@@ -101,7 +101,7 @@
         
         NSDictionary *taskResult = [self.xcc runTaskWithLaunchPath:launchPath
                                                          arguments:arguments
-                                                        returnType:kTaskReturnTypeStdError];
+                                                        returnType:kTaskReturnTypeAny];
 
         status = [taskResult[@"status"] intValue];
         response = taskResult[@"response"];
@@ -113,11 +113,11 @@
 
         if (status != 0)
         {
-            if (response.length == 0)
-                response = @"An unspecified error occurred";
-
             if ([self.xcc isXibFile:self.sourcePath])
             {
+                if (response.length == 0)
+                    response = @"An unspecified error occurred";
+
                 notificationTitle = @"Error converting xib";
                 NSString *message = [NSString stringWithFormat:@"%@\n%@", self.sourcePath.lastPathComponent, response];
                 
@@ -144,20 +144,12 @@
 
                     for (NSDictionary *error in errors)
                     {
-                        NSMutableDictionary *info = [error mutableCopy];
-                        info[@"projectId"] = self.projectId;
-                        info[@"message"] = [NSString stringWithFormat:@"%@, line %d\n%@", [error[@"path"] lastPathComponent], [error[@"line"] intValue], error[@"message"]];
-                        info[@"status"] = taskResult[@"status"];
-
-                        if (self.isCancelled)
-                            return;
-
-                        [center postNotificationName:XCCConversionDidGenerateErrorNotification object:self userInfo:info];
+                        [self postErrorNotificationForPath:error[@"path"] line:[error[@"line"] intValue] message:error[@"message"] status:status];
                     }
                 }
                 @catch (NSException *exception)
                 {
-                    DDLogError(@"%@\n%@", exception.reason, response);
+                    [self postErrorNotificationForPath:self.sourcePath line:0 message:response status:status];
                 }
             }
 
@@ -175,6 +167,23 @@
 
         [center postNotificationName:XCCConversionDidEndNotification object:self userInfo:@{ @"projectId":self.projectId, @"path":self.sourcePath }];
     }
+}
+
+- (void)postErrorNotificationForPath:(NSString *)path line:(int)line message:(NSString *)message status:(NSInteger)status
+{
+    NSMutableDictionary *info = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+                                 path, @"path",
+                                 [NSNumber numberWithInt:line], @"line",
+                                 [NSNumber numberWithInteger:status], @"status",
+                                 nil];
+
+    info[@"projectId"] = self.projectId;
+    info[@"message"] = [NSString stringWithFormat:@"%@, line %d\n%@", [self.sourcePath lastPathComponent], 0, message];
+
+    if (self.isCancelled)
+        return;
+
+    [[NSNotificationCenter defaultCenter] postNotificationName:XCCConversionDidGenerateErrorNotification object:self userInfo:info];
 }
 
 - (void)notifyUserWithTitle:(NSString *)title message:(NSString *)message

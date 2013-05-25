@@ -1188,7 +1188,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
  
      @param launchPath The executable to launch
      @param arguments NSArray containing the NSTask arguments
-     @param returnType Determines whether to return stdout, stderr, or nothing in the response
+     @param returnType Determines whether to return stdout, stderr, either, or nothing in the response
      @return NSDictionary containing the return status (NSNumber) and the response (NSString)
  */
 - (NSDictionary *)runTaskWithLaunchPath:(NSString *)launchPath arguments:(NSArray *)arguments returnType:(XCCTaskReturnType)returnType
@@ -1211,7 +1211,14 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
 
         DDLogVerbose(@"Task exited: %@:%d", launchPath, task.terminationStatus);
 
-        NSData *data = [[(returnType == kTaskReturnTypeStdOut ? task.standardOutput : task.standardError) fileHandleForReading] availableData];
+        NSData *data = nil;
+
+        if (returnType == kTaskReturnTypeStdOut || returnType == kTaskReturnTypeAny)
+            data = [[task.standardOutput fileHandleForReading] availableData];
+
+        if (returnType == kTaskReturnTypeStdError || (returnType == kTaskReturnTypeAny && [data length] == 0))
+            data = [[task.standardError fileHandleForReading] availableData];
+        
         NSString *response = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
         NSNumber *status = [NSNumber numberWithInt:task.terminationStatus];
 
