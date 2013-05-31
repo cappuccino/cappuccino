@@ -1045,7 +1045,6 @@ NOT YET IMPLEMENTED
         _dirtyTableColumnRangeIndex = MIN(index, _dirtyTableColumnRangeIndex);
 
     [_tableColumns removeObject:aTableColumn];
-    _reloadAllRows = YES;
 
     [self setNeedsLayout];
 }
