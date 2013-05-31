@@ -1044,6 +1044,9 @@ NOT YET IMPLEMENTED
     else
         _dirtyTableColumnRangeIndex = MIN(index, _dirtyTableColumnRangeIndex);
 
+    [_tableColumns removeObject:aTableColumn];
+    _reloadAllRows = YES;
+
     [self setNeedsLayout];
 }
 
@@ -3459,6 +3462,24 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     [self setNeedsDisplay:YES];
 
+    // if we have any columns to remove do that here
+    if ([_differedColumnDataToRemove count])
+    {
+        for (var i = 0; i < _differedColumnDataToRemove.length; i++)
+        {
+            var data = _differedColumnDataToRemove[i],
+                column = data.column,
+                tableColumnUID = [column UID],
+                dataViews = _dataViewsForTableColumns[tableColumnUID];
+
+            for (var j = 0; j < [dataViews count]; j++)
+            {
+                [self _enqueueReusableDataView:[dataViews objectAtIndex:j]];
+            }
+        }
+        [_differedColumnDataToRemove removeAllObjects];
+    }
+
     // Now clear all the leftovers
     // FIXME: this could be faster!
     for (var identifier in _cachedDataViews)
@@ -3469,21 +3490,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         while (count--)
             [dataViews[count] removeFromSuperview];
     }
-
-    // if we have any columns to remove do that here
-    if ([_differedColumnDataToRemove count])
-    {
-        for (var i = 0; i < _differedColumnDataToRemove.length; i++)
-        {
-            var data = _differedColumnDataToRemove[i],
-                column = data.column;
-
-            [column setHidden:data.shouldBeHidden];
-            [_tableColumns removeObject:column];
-        }
-        [_differedColumnDataToRemove removeAllObjects];
-    }
-
 }
 
 /*!
