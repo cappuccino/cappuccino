@@ -12,7 +12,7 @@ function ApplicationTask(aName)
         this._indexFilePath = "index.html";
     else
         this._indexFilePath = null;
-    
+
     if (FILE.exists("Frameworks"))
         this._frameworksPath = "Frameworks";
     else
@@ -53,7 +53,7 @@ ApplicationTask.prototype.setFrameworksPath = function(aFrameworksPath)
     // The default will use local app frameworks
     // Pass in ENV["CAPP_BUILD"] to use your built frameworks
     // Pass in "capp" to use installed frameworks
-    
+
     this._frameworksPath = aFrameworksPath;
 }
 
@@ -77,11 +77,11 @@ ApplicationTask.prototype.defineFrameworksTask = function()
     // FIXME: platform requires...
     if (!this._frameworksPath && this.environments().indexOf(require("objective-j/jake/environment").Browser) === -1)
         return;
-    
+
     var buildPath = this.buildProductPath(),
         newFrameworks = FILE.join(buildPath, "Frameworks"),
         thisTask = this;
-    
+
     Jake.fileCreate(newFrameworks, function()
     {
         if (thisTask._frameworksPath === "capp")
@@ -90,11 +90,23 @@ ApplicationTask.prototype.defineFrameworksTask = function()
         {
             if (FILE.exists(newFrameworks))
                 FILE.rmtree(newFrameworks);
-            
+
+            // If there is a Frameworks/Source directory, move it temporarily
+            // so it doesn't get copied.
+            var sourcePath = FILE.join(thisTask._frameworksPath, "Source"),
+                hasSource = FILE.exists(sourcePath),
+                tempPath = FILE.join(FILE.cwd(), ".__capp_Frameworks_Source__");
+
+            if (hasSource)
+                FILE.move(sourcePath, tempPath);
+
             FILE.copyTree(thisTask._frameworksPath, newFrameworks);
+
+            if (hasSource)
+                FILE.move(tempPath, sourcePath);
         }
     });
-    
+
     this.enhance([newFrameworks]);
 }
 
