@@ -4966,7 +4966,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     else if (_allowsMultipleSelection)
     {
         if (_selectionAnchorRow == CPNotFound)
-            _selectionAnchorRow =  [self numberOfRows] - 1;
+            _selectionAnchorRow = [self numberOfRows] - 1;
 
         newSelection = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(MIN(aRow, _selectionAnchorRow), ABS(aRow - _selectionAnchorRow) + 1)];
         shouldExtendSelection = [self mouseDownFlags] & CPShiftKeyMask &&
