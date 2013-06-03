@@ -1273,7 +1273,8 @@ NOT YET IMPLEMENTED
 - (void)selectRowIndexes:(CPIndexSet)rows byExtendingSelection:(BOOL)shouldExtendSelection
 {
     if ([rows isEqualToIndexSet:_selectedRowIndexes] ||
-        (([rows firstIndex] != CPNotFound && [rows firstIndex] < 0) || [rows lastIndex] >= [self numberOfRows]))
+        (([rows firstIndex] != CPNotFound && [rows firstIndex] < 0) || [rows lastIndex] >= [self numberOfRows]) ||
+        [self numberOfColumns] <= 0)
         return;
 
     // We deselect all columns when selecting rows.
@@ -3071,7 +3072,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (BOOL)canDragRowsWithIndexes:(CPIndexSet)rowIndexes atPoint:(CGPoint)mouseDownPoint
 {
-    return [rowIndexes count] > 0 && [self numberOfRows] > 0;
+    return [rowIndexes count] > 0 && [self numberOfRows] > 0 && [self numberOfColumns] > 0;
 }
 
 /*!
