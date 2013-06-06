@@ -64,6 +64,8 @@
 
     CPViewController    _viewController;
     CPView              _viewControllerContainerView;
+
+    CPString            _windowFrameAutosaveName;
 }
 
 - (id)init
@@ -193,7 +195,7 @@
             [CPException raise:CPInternalInconsistencyException reason:reason];
         }
 
-        [self windowDidLoad];
+        [self _windowDidLoad];
         [_document windowControllerDidLoadCib:self];
 
         [self synchronizeWindowTitleWithDocumentName];
@@ -212,8 +214,33 @@
 
     _window = aWindow;
 
+    if ([_window frameAutosaveName])
+        [self setWindowFrameAutosaveName:[_window frameAutosaveName]];
+
     [_window setWindowController:self];
     [_window setNextResponder:self];
+}
+
+- (CPString)windowFrameAutosaveName
+{
+    return  _windowFrameAutosaveName;
+}
+
+- (void)setWindowFrameAutosaveName:(CPString)name
+{
+    _windowFrameAutosaveName = name;
+    if ([self isWindowLoaded])
+        [[self window] setFrameAutosaveName:name ? name : @""];
+}
+
+- (void)_windowDidLoad
+{
+    if (_windowFrameAutosaveName)
+    {
+        [_window setFrameUsingName:_windowFrameAutosaveName];
+        [_window setFrameAutosaveName:_windowFrameAutosaveName];
+    }
+    [self windowDidLoad];
 }
 
 /*!

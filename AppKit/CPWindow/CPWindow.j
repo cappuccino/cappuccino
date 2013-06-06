@@ -23,6 +23,7 @@
 @import <Foundation/CPCountedSet.j>
 @import <Foundation/CPNotificationCenter.j>
 @import <Foundation/CPUndoManager.j>
+@import <Foundation/CPUserDefaults.j>
 
 @import "CGGeometry.j"
 @import "CPAnimation.j"
@@ -59,7 +60,9 @@ var CPWindowSaveImage       = nil,
     CPWindowResizeStyleGlobalChangeNotification = @"CPWindowResizeStyleGlobalChangeNotification",
 
     CPWindowMinVisibleHorizontalMargin = 40,
-    CPWindowMinVisibleVerticalMargin = 2;
+    CPWindowMinVisibleVerticalMargin = 2,
+
+    CPWindowFrameAutosaveNames = [CPSet set];
 
 /*
     Keys for which action messages will be sent by default when unhandled, e.g. complete:.
@@ -218,6 +221,9 @@ var CPWindowActionMessageKeys = [
     CPWindow                            _parentView;
     BOOL                                _isSheet;
     _CPWindowFrameAnimation             _frameAnimation;
+
+    CPString                            _windowFrameAutosaveName;
+    BOOL                                _delayAutosave;
 }
 
 + (Class)_binderClassForBinding:(CPString)aBinding
@@ -727,6 +733,9 @@ CPTexturedBackgroundWindowMask
                 [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowDidResizeNotification object:self];
         }
 
+        if (!_isAnimating && [_windowController windowFrameAutosaveName] && _windowFrameAutosaveName)
+            [self saveFrameUsingName:_windowFrameAutosaveName];
+
         if ([self _sharesChromeWithPlatformWindow])
             [_platformWindow setContentRect:_frame];
 
@@ -856,6 +865,140 @@ CPTexturedBackgroundWindowMask
 - (void)setFrameSize:(CGSize)aSize
 {
     [self setFrame:CGRectMake(CGRectGetMinX(_frame), CGRectGetMinY(_frame), aSize.width, aSize.height) display:YES animate:NO];
+}
+
+/*!
+    Removes the frame data stored under a given name from the application’s user defaults.
+    @param The name of the frame to remove
+*/
++ (void)removeFrameUsingName:(CPString)frameName
+{
+    if (frameName)
+    {
+        var userDefaults = [CPUserDefaults standardUserDefaults],
+            key = [CPString stringWithFormat: @"CPWindow Frame %@", frameName];
+
+        [userDefaults removeObjectForKey:key]
+    }
+
+}
+
+/*!
+    Sets the window’s frame rectangle by reading the rectangle data stored under a given name from the defaults system.
+    Returns \c YES when frameName is read and the frame is set successfully; otherwise, NO.
+*/
+- (BOOL)setFrameUsingName:(CPString)frameName
+{
+    return [self setFrameUsingName:frameName force:NO];
+}
+
+- (BOOL)setFrameUsingName:(CPString)frameName force:shouldForce
+{
+    if (!(_styleMask & CPResizableWindowMask) && !shouldForce)
+        return NO;
+
+    var userDefaults = [CPUserDefaults standardUserDefaults],
+        key = [CPString stringWithFormat: @"CPWindow Frame %@", frameName],
+        frameString = [userDefaults objectForKey:key];
+
+    if (!frameString)
+        return NO;
+
+    [self setFrameFromString:frameString];
+
+    return YES;
+}
+
+/*!
+    Saves the window’s frame rectangle in the user defaults system under a given name.
+    @param The name of the frame to remove
+*/
+- (void)saveFrameUsingName:(CPString)frameName
+{
+    if (!frameName || _delayAutosave)
+        return;
+
+    var userDefaults = [CPUserDefaults standardUserDefaults],
+        key = [CPString stringWithFormat: @"CPWindow Frame %@", frameName];
+
+    [userDefaults setObject:[self stringWithSavedFrame] forKey:key];
+}
+
+/*!
+    Returns the name used to automatically save the window’s frame rectangle data in the defaults system, as set through setFrameAutosaveName:.
+    Returns \c YES when frameName is read and the frame is set successfully; otherwise, NO.
+*/
+- (CPString)frameAutosaveName
+{
+    return _windowFrameAutosaveName;
+}
+
+/*!
+    Sets the name used to automatically save the window’s frame rectangle in the defaults system to a given name.
+    Returns \c NO when frameName is being used as an autosave name by another window otherwise YES.
+*/
+- (BOOL)setFrameAutosaveName:(CPString)frameName
+{
+    var  nameToRemove;
+
+    if (frameName === _windowFrameAutosaveName)
+      return YES;   // already our name
+
+    if ([CPWindowFrameAutosaveNames member:name])
+        return NO;  // frameName is already in use elsewhere
+
+    if (_windowFrameAutosaveName)
+    {
+        if (!frameName)
+            nameToRemove = _windowFrameAutosaveName;
+
+        [CPWindowFrameAutosaveNames removeObject:_windowFrameAutosaveName];
+        _windowFrameAutosaveName = nil;
+    }
+
+    if (frameName)
+    {
+        [CPWindowFrameAutosaveNames addObject:frameName];
+        _windowFrameAutosaveName = frameName;
+    }
+    else if (nameToRemove)
+    {
+        var userDefaults = [CPUserDefaults standardUserDefaults],
+            key = [CPString stringWithFormat: @"CPWindow Frame %@", nameToRemove];
+
+        [userDefaults removeObjectForKey:key];
+    }
+    return YES;
+}
+
+/*!
+    Returns a string representation of the window’s frame rectangle.
+*/
+- (CPString)stringWithSavedFrame
+{
+    return CGStringFromRect(_frame);
+}
+
+/*!
+    Sets the window’s frame rectangle from a given string representation.
+*/
+- (void)setFrameFromString:(CPString)frameString
+{
+    var newFrame = CGRectFromString(frameString);
+
+    if (_maxSize.width > 0 && newFrame.size.width > _maxSize.width)
+        newFrame.size.width = _maxSize.width;
+
+    if (_maxSize.height > 0 && newFrame.size.height > _maxSize.height)
+        newFrame.size.height = _maxSize.height;
+
+    if (newFrame.size.width < _minSize.width)
+        newFrame.size.width = _minSize.width;
+
+    if (newFrame.size.height < _minSize.height)
+        newFrame.size.height = _minSize.height;
+
+    [self setFrame:newFrame];
 }
 
 /*!
@@ -1759,11 +1902,11 @@ CPTexturedBackgroundWindowMask
             [hitTestedView performSelector:selector withObject:anEvent];
 
             _leftMouseDownView = nil;
-
             return;
 
         case CPLeftMouseDown:
         case CPRightMouseDown:
+            _delayAutosave = YES;
             // This will return _windowView if it is within a resize region
             _leftMouseDownView = [_windowView hitTest:point];
 
@@ -1808,6 +1951,11 @@ CPTexturedBackgroundWindowMask
 
         case CPMouseMoved:
             [_windowView setCursorForLocation:point resizing:NO];
+            if (_delayAutosave && [_windowController windowFrameAutosaveName] && _windowFrameAutosaveName)
+            {
+                _delayAutosave = NO;
+                [self saveFrameUsingName:_windowFrameAutosaveName];
+            }
 
             // Ignore mouse moves for parents of sheets
             if (!_acceptsMouseMovedEvents || sheet)

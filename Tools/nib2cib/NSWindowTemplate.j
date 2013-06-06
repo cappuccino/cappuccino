@@ -72,6 +72,7 @@ var NSBorderlessWindowMask              = 0x00,
         _windowStyleMask = [aCoder decodeIntForKey:@"NSWindowStyleMask"];
         _windowTitle = [aCoder decodeObjectForKey:@"NSWindowTitle"];
         _windowView = [aCoder decodeObjectForKey:@"NSWindowView"];
+        _windowFrameAutosaveName = [aCoder decodeObjectForKey:@"NSFrameAutosaveName"];
 
         // Flip Y coordinate
         _windowRect.origin.y = _screenRect.size.height - _windowRect.origin.y - _windowRect.size.height;
