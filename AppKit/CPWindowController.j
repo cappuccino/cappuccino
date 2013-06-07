@@ -195,6 +195,9 @@
             [CPException raise:CPInternalInconsistencyException reason:reason];
         }
 
+        if ([_window frameAutosaveName])
+            [self setWindowFrameAutosaveName:[_window frameAutosaveName]];
+    
         [self _windowDidLoad];
         [_document windowControllerDidLoadCib:self];
 
@@ -213,9 +216,6 @@
     [_window setWindowController:nil];
 
     _window = aWindow;
-
-    if ([_window frameAutosaveName])
-        [self setWindowFrameAutosaveName:[_window frameAutosaveName]];
 
     [_window setWindowController:self];
     [_window setNextResponder:self];
