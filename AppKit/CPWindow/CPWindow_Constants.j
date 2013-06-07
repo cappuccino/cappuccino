@@ -168,6 +168,7 @@ CPWindowDidResignMainNotification               = @"CPWindowDidResignMainNotific
 CPWindowDidBecomeKeyNotification                = @"CPWindowDidBecomeKeyNotification";
 CPWindowDidResignKeyNotification                = @"CPWindowDidResignKeyNotification";
 CPWindowDidResizeNotification                   = @"CPWindowDidResizeNotification";
+CPWindowWillMoveNotification                    = @"CPWindowWillMoveNotification";
 CPWindowDidMoveNotification                     = @"CPWindowDidMoveNotification";
 CPWindowWillBeginSheetNotification              = @"CPWindowWillBeginSheetNotification";
 CPWindowDidEndSheetNotification                 = @"CPWindowDidEndSheetNotification";
