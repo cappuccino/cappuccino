@@ -698,8 +698,6 @@ CPTexturedBackgroundWindowMask
 
         if (originMoved)
         {
-            [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowWillMoveNotification object:self];
-
             delta = CGPointMake(newOrigin.x - origin.x, newOrigin.y - origin.y);
             origin.x = newOrigin.x;
             origin.y = newOrigin.y;
@@ -723,22 +721,16 @@ CPTexturedBackgroundWindowMask
 
         if (!CGSizeEqualToSize(size, newSize))
         {
-            if (!_isAnimating && [_delegate respondsToSelector:@selector(windowWillResize:toSize:)])
-                newSize = [_delegate windowWillResize:self toSize:frame.size];
+            size.width = newSize.width;
+            size.height = newSize.height;
 
-            if (!CGSizeEqualToSize(size, newSize))
-            {
-                size.width = newSize.width;
-                size.height = newSize.height;
-    
-                [_windowView setFrameSize:size];
-    
-                if (_hasShadow)
-                    [_shadowView setNeedsLayout];
-    
-                if (!_isAnimating)
-                    [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowDidResizeNotification object:self];
-            }
+            [_windowView setFrameSize:size];
+
+            if (_hasShadow)
+                [_shadowView setNeedsLayout];
+
+            if (!_isAnimating)
+                [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowDidResizeNotification object:self];
         }
 
         if (!_isAnimating && [_windowController windowFrameAutosaveName] && _windowFrameAutosaveName)
@@ -1473,7 +1465,6 @@ CPTexturedBackgroundWindowMask
     [defaultCenter removeObserver:_delegate name:CPWindowDidBecomeKeyNotification object:self];
     [defaultCenter removeObserver:_delegate name:CPWindowDidBecomeMainNotification object:self];
     [defaultCenter removeObserver:_delegate name:CPWindowDidResignMainNotification object:self];
-    [defaultCenter removeObserver:_delegate name:CPWindowWillMoveNotification object:self];
     [defaultCenter removeObserver:_delegate name:CPWindowDidMoveNotification object:self];
     [defaultCenter removeObserver:_delegate name:CPWindowDidResizeNotification object:self];
     [defaultCenter removeObserver:_delegate name:CPWindowWillBeginSheetNotification object:self];
@@ -1508,13 +1499,6 @@ CPTexturedBackgroundWindowMask
             addObserver:_delegate
                selector:@selector(windowDidResignMain:)
                    name:CPWindowDidResignMainNotification
-                 object:self];
-
-    if ([_delegate respondsToSelector:@selector(windowWillMove:)])
-        [defaultCenter
-            addObserver:_delegate
-               selector:@selector(windowWillMove:)
-                   name:CPWindowWillMoveNotification
                  object:self];
 
     if ([_delegate respondsToSelector:@selector(windowDidMove:)])
