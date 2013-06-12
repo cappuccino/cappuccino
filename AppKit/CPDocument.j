@@ -244,11 +244,6 @@ var CPDocumentUntitledCount = 0;
 {
 }
 
-- (CPWindowController)firstEligibleExistingWindowController
-{
-    return nil;
-}
-
 // Creating and managing window controllers
 /*!
     Creates the window controller for this document.
