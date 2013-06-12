@@ -201,6 +201,9 @@ var ModifierKeyCodes = [
 var resizeTimer = nil;
 
 #if PLATFORM(DOM)
+
+#define HAS_INPUT_OR_TEXTAREA_TARGET(aDOMEvent) (((aDOMEvent).target || (aDOMEvent).srcElement).nodeName.toUpperCase() == "INPUT" || ((aDOMEvent).target || (aDOMEvent).srcElement).nodeName.toUpperCase() == "TEXTAREA")
+
 @implementation CPPlatformWindow (DOM)
 
 - (id)_init
@@ -423,7 +426,14 @@ var resizeTimer = nil;
 
         theDocument.addEventListener("beforecopy", copyEventCallback, NO);
         theDocument.addEventListener("beforecut", copyEventCallback, NO);
-        theDocument.addEventListener("beforepaste", pasteEventCallback, NO);
+
+        if (CPFeatureIsCompatible(CPJavaScriptClipboardEventsFeature))
+        {
+            _DOMWindow.addEventListener("beforepaste", function(anEvent) { console.log("beforepaste: ", anEvent); }, NO);
+            _DOMWindow.addEventListener("paste", pasteEventCallback, NO);
+        }
+        else
+            theDocument.addEventListener("beforepaste", pasteEventCallback, NO);
 
         theDocument.addEventListener("keyup", keyEventCallback, NO);
         theDocument.addEventListener("keydown", keyEventCallback, NO);
@@ -457,6 +467,13 @@ var resizeTimer = nil;
             theDocument.removeEventListener("beforecopy", copyEventCallback, NO);
             theDocument.removeEventListener("beforecut", copyEventCallback, NO);
             theDocument.removeEventListener("beforepaste", pasteEventCallback, NO);
+            if (CPFeatureIsCompatible(CPJavaScriptClipboardEventsFeature))
+            {
+                _DOMWindow.removeEventListener("beforepaste", pasteEventCallback, NO);
+                _DOMWindow.removeEventListener("paste", pasteEventCallback, NO);
+            }
+            else
+                theDocument.removeEventListener("beforepaste", pasteEventCallback, NO);
 
             theDocument.removeEventListener("touchstart", touchEventCallback, NO);
             theDocument.removeEventListener("touchend", touchEventCallback, NO);
@@ -826,7 +843,15 @@ var resizeTimer = nil;
             if (isNativePasteEvent)
             {
                 _pasteboardKeyDownEvent = event;
-                window.setNativeTimeout(function () { [self _checkPasteboardElement] }, 0);
+
+                // If we are using the paste into field hack, we need to check it in a moment.
+                if (!(CPFeatureIsCompatible(CPJavaScriptClipboardEventsFeature) && !CPFeatureIsCompatible(CPJavaScriptClipboardAccessFeature)))
+                {
+                    // Only stop the event if we're using the paste hack. Otherwise we'll handle it with
+                    // our onpaste handler.
+                    CPDOMEventStop(aDOMEvent);
+                    window.setNativeTimeout(function () { [self _checkPasteboardElement]; }, 0);
+                }
             }
 
             break;
@@ -864,6 +889,7 @@ var resizeTimer = nil;
             event = [CPEvent keyEventWithType:CPKeyUp location:location modifierFlags:modifierFlags
                         timestamp: timestamp windowNumber:windowNumber context:nil
                         characters:characters charactersIgnoringModifiers:charactersIgnoringModifiers isARepeat:NO keyCode:keyCode];
+
             break;
     }
 
@@ -915,13 +941,42 @@ var resizeTimer = nil;
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 }
 
-- (void)pasteEvent:(DOMEvent)aDOMEvent
+- (boolean)pasteEvent:(DOMEvent)aDOMEvent
 {
+    if (CPFeatureIsCompatible(CPJavaScriptClipboardEventsFeature) || CPFeatureIsCompatible(CPJavaScriptClipboardAccessFeature))
+    {
+        var value = CPFeatureIsCompatible(CPJavaScriptClipboardEventsFeature) ? aDOMEvent.clipboardData.getData('text/plain') : window.clipboardData.getData("Text");
+
+        if ([value length])
+        {
+            var pasteboard = [CPPasteboard generalPasteboard];
+
+            if ([pasteboard _stateUID] != value)
+            {
+                [pasteboard declareTypes:[CPStringPboardType] owner:self];
+                [pasteboard setString:value forType:CPStringPboardType];
+            }
+        }
+
+        [CPApp sendEvent:_pasteboardKeyDownEvent];
+
+        _pasteboardKeyDownEvent = nil;
+
+        [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+        if (!HAS_INPUT_OR_TEXTAREA_TARGET(aDOMEvent))
+            CPDOMEventStop(aDOMEvent, self);
+
+        return;
+    }
+
+    // Set up to capture the paste in a temporary input field. We'll send the event after capture.
     if ([self _validateCopyCutOrPasteEvent:aDOMEvent flags:CPPlatformActionKeyMask])
     {
         _DOMPasteboardElement.focus();
         _DOMPasteboardElement.select();
         _DOMPasteboardElement.value = "";
+
         _ignoreNativePastePreparation = YES;
     }
 
@@ -930,12 +985,7 @@ var resizeTimer = nil;
 
 - (void)_validateCopyCutOrPasteEvent:(DOMEvent)aDOMEvent flags:(unsigned)modifierFlags
 {
-    return (
-            ((aDOMEvent.target || aDOMEvent.srcElement).nodeName.toUpperCase() !== "INPUT" &&
-             (aDOMEvent.target || aDOMEvent.srcElement).nodeName.toUpperCase() !== "TEXTAREA"
-            ) || aDOMEvent.target === _DOMPasteboardElement
-           ) &&
-            (modifierFlags & CPPlatformActionKeyMask);
+    return (!HAS_INPUT_OR_TEXTAREA_TARGET(aDOMEvent) || aDOMEvent.target === _DOMPasteboardElement) && (modifierFlags & CPPlatformActionKeyMask);
 }
 
 - (void)_primePasteboardElement
