@@ -28,8 +28,8 @@
         "First Tab", "a label",
         "Second Tab", "another label",
         "Third Tab", "a third label",
-        "Fourth Tab", "label 4",
-        /*"5th Tab", "label 5",
+        /*"Fourth Tab", "label 4",
+        "5th Tab", "label 5",
         "6th Tab", "label 6",
         "7th Tab", "label 7",*/
         ];
@@ -45,9 +45,13 @@
         [tabView1 addTabViewItem:item];
     }
 
+    [tabView1 setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
     [contentView addSubview:tabView1];
 
-    [tabView1 setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+    var insertedItem = [[CPTabViewItem alloc] initWithIdentifier:"inserted"];
+    [insertedItem setView:[CPView new]];
+    [insertedItem setLabel:"Inserted Tab"];
+    [tabView1 insertTabViewItem:insertedItem atIndex:2];
 
     var toggleButton = [CPButton buttonWithTitle:@"Cycle Tab View Type"];
     [toggleButton setAction:@selector(switchTabType:)];
