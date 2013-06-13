@@ -408,6 +408,15 @@
     [self assert:'@{\n    @"Key": window\n}' equals:[dict description]];
 }
 
+- (void)testRecursiveJSObjectDescription
+{
+    var a = {};
+
+    a['a'] = a;
+
+    [self assert:'@{\n    @"a": {\n        a: {\n            a: {\n                a: {\n                    a: {\n                        a: {\n                            a: {\n                                a: {\n                                    a: {\n                                        a: {\n                                            a: ...\n                                        }\n                                    }\n                                }\n                            }\n                        }\n                    }\n                }\n            }\n        }\n    }\n}' equals:[@{ 'a': a } description]];
+}
+
 - (void)testInitWithObjectsAndKeys
 {
     var dict = [[CPDictionary alloc] initWithObjectsAndKeys:@"Value1", @"Key1", nil, @"Key2", @"Value3", @"Key3"];

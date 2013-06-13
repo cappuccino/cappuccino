@@ -536,7 +536,7 @@ CPLog(@"Got some class: %@", inst);
 
 @end
 
-function CPDescriptionOfObject(anObject)
+function CPDescriptionOfObject(anObject, maximumRecursionDepth)
 {
     if (anObject === nil)
         return "nil";
@@ -547,10 +547,16 @@ function CPDescriptionOfObject(anObject)
     if (anObject === window)
         return "window";
 
+    if (maximumRecursionDepth === 0)
+        return "...";
+
     if (anObject.isa)
     {
         if ([anObject isKindOfClass:CPString])
             return '@"' + [anObject description] + '"';
+
+        if ([anObject respondsToSelector:@selector(_descriptionWithMaximumDepth:)])
+            return [anObject _descriptionWithMaximumDepth:maximumRecursionDepth !== undefined ? maximumRecursionDepth - 1 : maximumRecursionDepth];
 
         return [anObject description];
     }
@@ -584,7 +590,10 @@ function CPDescriptionOfObject(anObject)
             if (i === 0)
                 desc += "\n";
 
-            desc += "    " + properties[i] + ": " + CPDescriptionOfObject(anObject[properties[i]]).split("\n").join("\n    ");
+            var value = anObject[properties[i]],
+                valueDescription = CPDescriptionOfObject(value, maximumRecursionDepth !== undefined ? maximumRecursionDepth - 1 : maximumRecursionDepth).split("\n").join("\n    ");
+
+            desc += "    " + properties[i] + ": " + valueDescription;
 
             if (i < properties.length - 1)
                 desc += ",\n";
