@@ -152,11 +152,13 @@ var CPURLConnectionDelegate = nil;
         _isCanceled = NO;
 
         var URL = [_request URL],
-            scheme = [URL scheme];
+            scheme = [URL scheme],
+            host = [URL host];
 
         // Browsers use "file:", Titanium uses "app:"
         _isLocalFileConnection =    scheme === "file" ||
                                     ((scheme === "http" || scheme === "https:") &&
+                                    (host === nil) &&
                                     window.location &&
                                     (window.location.protocol === "file:" || window.location.protocol === "app:"));
 
