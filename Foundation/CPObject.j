@@ -544,6 +544,9 @@ function CPDescriptionOfObject(anObject)
     if (anObject === undefined)
         return "undefined";
 
+    if (anObject === window)
+        return "window";
+
     if (anObject.isa)
     {
         if ([anObject isKindOfClass:CPString])
