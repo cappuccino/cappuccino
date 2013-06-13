@@ -423,7 +423,7 @@ function CGRectFromString(aString)
 {
     var comma = aString.indexOf(',', aString.indexOf(',') + 1);
 
-    return { origin:CGPointFromString(aString.substr(1, comma - 1)), size:CGSizeFromString(aString.substring(comma + 2, aString.length)) };
+    return { origin:CGPointFromString(aString.substr(1, comma - 1)), size:CGSizeFromString(aString.substring(comma + 2, aString.length - 1)) };
 }
 
 function CGPointFromEvent(anEvent)

@@ -24,4 +24,11 @@
     [self assert:@"{{-123.45, -234}, {345.5, 456}}" equals:CGStringFromRect(CGRectMake(-123.45, -234, 345.5, 456.))];
 }
 
+- (void)testCGRectFromString
+{
+    [self assertTrue:CGRectEqualToRect(CGRectMakeZero(), CGRectFromString(@"{{0, 0}, {0, 0}}"))];
+    [self assertTrue:CGRectEqualToRect(CGRectMake(123, 234, 345, 456), CGRectFromString(@"{{123, 234}, {345, 456}}"))];
+    [self assertTrue:CGRectEqualToRect(CGRectMake(-123.45, -234, 345.5, 456), CGRectFromString(@"{{-123.45, -234}, {345.5, 456}}"))];
+}
+
 @end
