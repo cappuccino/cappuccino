@@ -112,7 +112,6 @@ function CGStringFromRect(aRect)
     return "{" + CGStringFromPoint(aRect.origin) + ", " + CGStringFromSize(aRect.size) + "}";
 }
 
-
 function CGRectOffset(aRect, dX, dY)
 {
     return { origin:{ x:aRect.origin.x + dX, y:aRect.origin.y + dY }, size:{ width:aRect.size.width, height:aRect.size.height } };
