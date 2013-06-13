@@ -187,6 +187,12 @@ var CPObjectAccessorsForClassKey = @"$CPObjectAccessorsForClassKey",
 
 - (void)setValue:(id)aValue forKey:(CPString)aKey
 {
+    // setValue:forKey: should unwrap CPValue by default. In Objective-C we would need to care about which type
+    // the setter takes (or target ivar) and send [aValue rectValue], [aValue pointValue] etc, but in
+    // Objective-C we can use them interchangably.
+    if (aValue && aValue.isa && [aValue isKindOfClass:CPValue])
+        aValue = [aValue JSObject];
+
     var theClass = [self class],
         modifier = nil,
         modifiers = theClass[CPObjectModifiersForClassKey];
