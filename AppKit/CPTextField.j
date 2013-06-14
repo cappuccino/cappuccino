@@ -1269,37 +1269,39 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)copy:(id)sender
 {
-    if (![CPPlatform isBrowser])
+    // First write to the Cappuccino clipboard.
+    var selectedRange = [self selectedRange];
+
+    if (selectedRange.length < 1)
+        return;
+
+    var pasteboard = [CPPasteboard generalPasteboard],
+        stringForPasting = [_stringValue substringWithRange:selectedRange];
+
+    [pasteboard declareTypes:[CPStringPboardType] owner:nil];
+    [pasteboard setString:stringForPasting forType:CPStringPboardType];
+
+    if ([CPPlatform isBrowser])
     {
-        var selectedRange = [self selectedRange];
-
-        if (selectedRange.length < 1)
-            return;
-
-        var pasteboard = [CPPasteboard generalPasteboard],
-            stringForPasting = [_stringValue substringWithRange:selectedRange];
-
-        [pasteboard declareTypes:[CPStringPboardType] owner:nil];
-        [pasteboard setString:stringForPasting forType:CPStringPboardType];
-    }
-    else
-        // Allow the browser's standard copy handling.
+        // Then also allow the browser to capture the copied text into the system clipboard.
         [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
+    }
 }
 
 - (void)cut:(id)sender
 {
+    [self copy:sender];
+
     if (![CPPlatform isBrowser])
     {
-        [self copy:sender];
         [self deleteBackward:sender];
     }
-    // If we don't have an oninput listener, we won't detect the change made by the cut and need to fake a key up "soon".
     else
     {
-        // Allow the browser's standard cut handling.
+        // Allow the browser's standard cut handling. This should also result in the deleteBackward: happening.
         [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
 
+        // If we don't have an oninput listener, we won't detect the change made by the cut and need to fake a key up "soon".
         if (!CPFeatureIsCompatible(CPInputOnInputEventFeature))
             [CPTimer scheduledTimerWithTimeInterval:0.0 target:self selector:@selector(keyUp:) userInfo:nil repeats:NO];
     }
