@@ -48,8 +48,6 @@ CPJavaScriptInnerTextFeature            = 9;
 CPJavaScriptTextContentFeature          = 10;
 // In onpaste, oncopy and oncut events, the event has an event.clipboardData from which the current pasteboard contents can be read with event.clipboardData.getData.
 CPJavaScriptClipboardEventsFeature      = 11;
-// The paste event is only sent if an input or textarea has focus.
-CPJavaScriptClipboardEventsRequireInput = 32;
 // window.clipboardData exists and can be read and written to at any time using window.clipboardData.getData/setData.
 CPJavaScriptClipboardAccessFeature      = 12;
 CPJavaScriptCanvasDrawFeature           = 13;
@@ -86,6 +84,10 @@ CPFileAPIFeature                        = 31;
     When an absolutely positioned div (CPView) with an absolutely positioned canvas in it (CPView with drawRect:) moves things on top of the canvas (subviews) don't redraw correctly. E.g. if you have a bunch of text fields in a CPBox in a sheet which animates in, some of the text fields might not be visible because the CPBox has a canvas at the bottom and the box moved form offscreen to onscreen. This bug is probably very related: https://bugs.webkit.org/show_bug.cgi?id=67203
 */
 CPCanvasParentDrawErrorsOnMovementBug   = 1 << 0;
+
+// The paste event is only sent if an input or textarea has focus.
+CPJavaScriptPasteRequiresFocusedInput   = 1 << 1;
+
 
 var USER_AGENT                          = "",
     PLATFORM_ENGINE                     = CPUnknownBrowserEngine,
@@ -140,7 +142,6 @@ else if (USER_AGENT.indexOf("AppleWebKit/") != -1)
 
     PLATFORM_FEATURES[CPJavaScriptClipboardEventsFeature] = YES;
     PLATFORM_FEATURES[CPJavaScriptClipboardAccessFeature] = NO;
-    PLATFORM_FEATURES[CPJavaScriptClipboardEventsRequireInput] = YES;
     PLATFORM_FEATURES[CPJavaScriptShadowFeature] = YES;
 
     var versionStart = USER_AGENT.indexOf("AppleWebKit/") + "AppleWebKit/".length,
@@ -169,6 +170,8 @@ else if (USER_AGENT.indexOf("AppleWebKit/") != -1)
     {
         PLATFORM_FEATURES[CPSOPDisabledFromFileURLs] = YES;
         PLATFORM_FEATURES[CPHTMLDragAndDropFeature] = YES;
+        // https://bugs.webkit.org/show_bug.cgi?id=75891
+        PLATFORM_BUGS |= CPJavaScriptPasteRequiresFocusedInput;
     }
 
     // Assume this bug was introduced around Safari 5.1/Chrome 16. This could probably be tighter.

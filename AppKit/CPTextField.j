@@ -1282,6 +1282,9 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [pasteboard declareTypes:[CPStringPboardType] owner:nil];
         [pasteboard setString:stringForPasting forType:CPStringPboardType];
     }
+    else
+        // Allow the browser's standard copy handling.
+        [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
 }
 
 - (void)cut:(id)sender
@@ -1292,8 +1295,14 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [self deleteBackward:sender];
     }
     // If we don't have an oninput listener, we won't detect the change made by the cut and need to fake a key up "soon".
-    else if (!CPFeatureIsCompatible(CPInputOnInputEventFeature))
-        [CPTimer scheduledTimerWithTimeInterval:0.0 target:self selector:@selector(keyUp:) userInfo:nil repeats:NO];
+    else
+    {
+        // Allow the browser's standard cut handling.
+        [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
+
+        if (!CPFeatureIsCompatible(CPInputOnInputEventFeature))
+            [CPTimer scheduledTimerWithTimeInterval:0.0 target:self selector:@selector(keyUp:) userInfo:nil repeats:NO];
+    }
 }
 
 - (void)paste:(id)sender
@@ -1315,8 +1324,14 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [self setSelectedRange:CPMakeRange(selectedRange.location + pasteString.length, 0)];
     }
     // If we don't have an oninput listener, we won't detect the change made by the cut and need to fake a key up "soon".
-    else if (!CPFeatureIsCompatible(CPInputOnInputEventFeature))
-        [CPTimer scheduledTimerWithTimeInterval:0.0 target:self selector:@selector(keyUp:) userInfo:nil repeats:NO];
+    else
+    {
+        // Allow the browser's standard paste handling.
+        [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
+
+        if (!CPFeatureIsCompatible(CPInputOnInputEventFeature))
+            [CPTimer scheduledTimerWithTimeInterval:0.0 target:self selector:@selector(keyUp:) userInfo:nil repeats:NO];
+    }
 }
 
 - (CPRange)selectedRange
