@@ -825,6 +825,7 @@ var resizeTimer = nil;
                         _DOMPasteboardElement.select();
                         _DOMPasteboardElement.value = "";
 
+                        StopDOMEventPropagation = NO;
                         isNativePasteEvent = YES;
                     }
                 }
@@ -889,16 +890,10 @@ var resizeTimer = nil;
 
                 // If we are using the paste into field hack, we need to check it in a moment.
                 if (!supportsNativeCopyAndPaste)
-                {
-                    // Only stop the event if we're using the paste hack. Otherwise we'll handle it with
-                    // our onpaste handler.
-                    StopDOMEventPropagation = YES;
                     window.setNativeTimeout(function () { [self _checkPasteboardElement]; }, 0);
-                }
-                else
-                {
-                    StopDOMEventPropagation = NO;
-                }
+
+                // We need the event to propagate or nothing will be pasted.
+                StopDOMEventPropagation = NO;
             }
 
             break;
@@ -957,6 +952,8 @@ var resizeTimer = nil;
         CPDOMEventStop(aDOMEvent, self);
 
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+    return !StopDOMEventPropagation
 }
 
 - (CPEvent)_fakeClipboardEvent:(DOMEvent)aDOMEvent type:(CPString)aType
