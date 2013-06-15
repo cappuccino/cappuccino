@@ -1,5 +1,8 @@
 @import <AppKit/AppKit.j>
 @import <AppKit/CPCollectionViewItem.j>
+@import <AppKit/CPImage.j>
+@import <AppKit/CPImageView.j>
+@import <AppKit/CPTextField.j>
 
 @implementation CollectionViewItem : CPCollectionViewItem
 {
@@ -10,6 +13,7 @@
 @implementation CollectionViewView : CPView
 {
     @outlet CPTextField textField @accessors;
+    @outlet CPImageView imageView @accessors;
 
     boolean selected @accessors;
 }
@@ -24,7 +28,11 @@
 
 - (void)setRepresentedObject:(id)anObject
 {
-    [textField setStringValue:anObject || ""];
+    var stringValue = [anObject isKindOfClass:CPString] ? anObject : "",
+        image = [anObject isKindOfClass:CPImage] ? anObject : nil;
+
+    [textField setStringValue:stringValue];
+    [imageView setImage:image];
 }
 
 - (id)initWithCoder:(CPCoder)aCoder
@@ -33,7 +41,8 @@
 
     if (self)
     {
-        textField = [self subviews][0];
+        textField = [self subviews][1];
+        imageView = [self subviews][0];
     }
 
     return self;

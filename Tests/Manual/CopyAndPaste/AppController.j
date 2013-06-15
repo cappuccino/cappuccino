@@ -26,22 +26,39 @@
 
 - (void)awakeFromCib
 {
-    [anArrayController setContent:@[@"Cat", @"Rabbit", @"Dinosaur"]];
+    // http://www.flickr.com/photos/viamoi/2952609526/
+    var anImage = CPImageInBundle("2952609526_9fd245dfcd_q.jpg");
+
+    [anArrayController setContent:@[@"Cat", @"Rabbit", @"Dinosaur", anImage]];
 
     [theWindow setFullPlatformWindow:YES];
 }
 
 - (void)copy:(id)sender
 {
-    // For now just combine multiple selections into a single string.
     var selected = [anArrayController selectedObjects],
-        stringValue = selected.join(", "),
-        pasteboard = [CPPasteboard generalPasteboard];
+        strings = [],
+        images = [];
 
-    [pasteboard declareTypes:[CPStringPboardType] owner:nil];
-    [pasteboard setString:stringValue forType:CPStringPboardType];
+    for (var i = 0; i < selected.length; i++)
+        ([selected[i] isKindOfClass:CPImage] ? images : strings).push(selected[i]);
 
-    CPLog.info("Copied %@.", stringValue);
+    var stringValue = strings.join(", "),
+        pasteboard = [CPPasteboard generalPasteboard],
+        types = [];
+
+    if (stringValue)
+        [types addObject:CPStringPboardType]
+    if (images)
+        [types addObject:CPImagesPboardType]
+
+    [pasteboard declareTypes:types owner:nil];
+    if (stringValue)
+        [pasteboard setString:stringValue forType:CPStringPboardType];
+    if (images)
+        [pasteboard setData:[CPKeyedArchiver archivedDataWithRootObject:images] forType:CPImagesPboardType];
+
+    CPLog.info("Copied %@.", (stringValue || "") + " " + (images || ""));
 }
 
 - (void)cut:(id)sender
@@ -53,16 +70,24 @@
 - (void)paste:(id)sender
 {
     console.log(self + "paste: " + sender);
-    var pasteboard = [CPPasteboard generalPasteboard];
+    var pasteboard = [CPPasteboard generalPasteboard],
+        parts = [];
 
-    if (![[pasteboard types] containsObject:CPStringPboardType])
-        return;
+    if ([[pasteboard types] containsObject:CPStringPboardType])
+    {
+        var stringValue = [pasteboard stringForType:CPStringPboardType];
 
-    var stringValue = [pasteboard stringForType:CPStringPboardType],
-        parts = [stringValue componentsSeparatedByString:@", "];
+        [parts addObjectsFromArray:[stringValue componentsSeparatedByString:@", "]];
+    }
+
+    if ([[pasteboard types] containsObject:CPImagesPboardType])
+    {
+        var images = [CPKeyedUnarchiver unarchiveObjectWithData:[pasteboard dataForType:CPImagesPboardType]];
+
+        [parts addObjectsFromArray:images];
+    }
 
     [anArrayController addObjects:parts];
-
     CPLog.info("Pasted %@.", parts);
 }
 
