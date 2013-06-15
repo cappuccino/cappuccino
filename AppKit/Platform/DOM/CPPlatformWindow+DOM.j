@@ -206,7 +206,20 @@ var resizeTimer = nil;
 
 #if PLATFORM(DOM)
 
-#define HAS_INPUT_OR_TEXTAREA_TARGET(aDOMEvent) (((aDOMEvent).target || (aDOMEvent).srcElement).nodeName.toUpperCase() == "INPUT" || ((aDOMEvent).target || (aDOMEvent).srcElement).nodeName.toUpperCase() == "TEXTAREA")
+var hasEditableTarget = function(aDOMEvent)
+{
+    var target = (aDOMEvent).target || (aDOMEvent).srcElement;
+
+    if (!target)
+        return NO;
+
+    if (target.contentEditable == "true")
+        return YES;
+
+    var nodeName = target.nodeName.toUpperCase();
+
+    return nodeName === "INPUT" || nodeName == "TEXTAREA";
+}
 
 @implementation CPPlatformWindow (DOM)
 
@@ -804,7 +817,7 @@ var resizeTimer = nil;
                 // sending a CPEvent.  Select our element to see if anything gets pasted in it.
                 if (characters === "v" && mayRequireDOMPasteboardElement)
                 {
-                    if (hasBugWhichPreventsNonEditablePaste && !HAS_INPUT_OR_TEXTAREA_TARGET(aDOMEvent))
+                    if (hasBugWhichPreventsNonEditablePaste && !hasEditableTarget(aDOMEvent))
                     {
                         // You can't paste from the system clipboard into a non-editable area in Safari, neither using native
                         // copy and paste nor our _DOMPasteboardElement hack. We will paste from the Cappuccino pasteboard only
@@ -812,8 +825,6 @@ var resizeTimer = nil;
 
                         StopDOMEventPropagation = NO;
                         isNativePasteEvent = NO;
-
-                        var pasteboard = [CPPasteboard generalPasteboard];
                     }
                     else if (supportsNativeCopyAndPaste)
                         isNativePasteEvent = YES;
@@ -999,7 +1010,7 @@ var resizeTimer = nil;
     // the browser might normally grey the option out.
 
     // Allow these fields to do their own thing.
-    if (HAS_INPUT_OR_TEXTAREA_TARGET(aDOMEvent))
+    if (hasEditableTarget(aDOMEvent))
         return true;
 
     var returnValue = YES;
@@ -1117,7 +1128,7 @@ Return true if the event may be a copy and paste event, but the target is not an
 */
 - (void)_requiresDOMPasteboardElement:(DOMEvent)aDOMEvent flags:(unsigned)modifierFlags
 {
-    return !HAS_INPUT_OR_TEXTAREA_TARGET(aDOMEvent) && (modifierFlags & CPPlatformActionKeyMask);
+    return !hasEditableTarget(aDOMEvent) && (modifierFlags & CPPlatformActionKeyMask);
 }
 
 - (void)_primeDOMPasteboardElement
