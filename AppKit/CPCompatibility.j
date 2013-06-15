@@ -86,7 +86,9 @@ CPFileAPIFeature                        = 31;
 CPCanvasParentDrawErrorsOnMovementBug   = 1 << 0;
 
 // The paste event is only sent if an input or textarea has focus.
-CPJavaScriptPasteRequiresFocusedInput   = 1 << 1;
+CPJavaScriptPasteRequiresEditableTarget   = 1 << 1;
+// Redirecting the focus of the browser on keydown to an input for Cmd-V or Ctrl-V makes the paste fail.
+CPJavaScriptPasteCantRefocus            = 1 << 2;
 
 
 var USER_AGENT                          = "",
@@ -171,7 +173,9 @@ else if (USER_AGENT.indexOf("AppleWebKit/") != -1)
         PLATFORM_FEATURES[CPSOPDisabledFromFileURLs] = YES;
         PLATFORM_FEATURES[CPHTMLDragAndDropFeature] = YES;
         // https://bugs.webkit.org/show_bug.cgi?id=75891
-        PLATFORM_BUGS |= CPJavaScriptPasteRequiresFocusedInput;
+        PLATFORM_BUGS |= CPJavaScriptPasteRequiresEditableTarget;
+        // https://bugs.webkit.org/show_bug.cgi?id=39689
+        PLATFORM_BUGS |= CPJavaScriptPasteCantRefocus;
     }
 
     // Assume this bug was introduced around Safari 5.1/Chrome 16. This could probably be tighter.
@@ -204,8 +208,16 @@ else if (USER_AGENT.indexOf("Gecko") !== -1) // Must follow KHTML check.
     // Some day this might be fixed and should be version prefixed. No known fixed version yet.
     PLATFORM_FEATURES[CPInput1PxLeftPadding] = YES;
 
-    if (version >= 22.0)
-         PLATFORM_FEATURES[CPJavaScriptClipboardEventsFeature] = YES;
+    // This was supposed to be added in Firefox 22, but when testing with the latest beta as of 2013-06-14
+    // it does not seem to work. It seems to exhibit the CPJavaScriptPasteRequiresEditableTarget problem,
+    // and in addition doesn't seem to work with our native copy code either.
+    /*if (version >= 22.0)
+    {
+        PLATFORM_FEATURES[CPJavaScriptClipboardEventsFeature] = YES;
+        // TODO File a bug at https://bugzilla.mozilla.org/. In other browsers, one can return "false" from the
+        // beforepaste event to indicate a paste should be enabled even that the DOMEvent.target is not editable.
+        PLATFORM_BUGS |= CPJavaScriptPasteRequiresEditableTarget;
+    }*/
 }
 
 // Feature-specific checks

@@ -199,8 +199,9 @@ var ModifierKeyCodes = [
 
     supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop],
 
-    supportsNativeCopyAndPaste = CPFeatureIsCompatible(CPJavaScriptClipboardEventsFeature),
-    hasBugWhichPreventsNonEditablePaste = CPPlatformHasBug(CPJavaScriptPasteRequiresFocusedInput);
+    supportsNativeCopyAndPaste                  = CPFeatureIsCompatible(CPJavaScriptClipboardEventsFeature),
+    hasBugWhichPreventsNonEditablePaste         = CPPlatformHasBug(CPJavaScriptPasteRequiresEditableTarget),
+    hasBugWhichPreventsNonEditablePasteRedirect = CPPlatformHasBug(CPJavaScriptPasteCantRefocus);
 
 var resizeTimer = nil;
 
@@ -413,13 +414,13 @@ var hasEditableTarget = function(aDOMEvent)
 
         pasteEventSelector = @selector(pasteEvent:),
         pasteEventImplementation = class_getMethodImplementation(theClass, pasteEventSelector),
-        pasteEventCallback = function (anEvent) {pasteEventImplementation(self, nil, anEvent); },
+        pasteEventCallback = function (anEvent) { return pasteEventImplementation(self, nil, anEvent); },
 
         nativePasteEventCallback = function (anEvent) { return [self nativePasteEvent:anEvent]; },
 
         keyEventSelector = @selector(keyEvent:),
         keyEventImplementation = class_getMethodImplementation(theClass, keyEventSelector),
-        keyEventCallback = function (anEvent) { keyEventImplementation(self, nil, anEvent); },
+        keyEventCallback = function (anEvent) { return keyEventImplementation(self, nil, anEvent); },
 
         mouseEventSelector = @selector(mouseEvent:),
         mouseEventImplementation = class_getMethodImplementation(theClass, mouseEventSelector),
@@ -817,18 +818,17 @@ var hasEditableTarget = function(aDOMEvent)
                 // sending a CPEvent.  Select our element to see if anything gets pasted in it.
                 if (characters === "v" && mayRequireDOMPasteboardElement)
                 {
-                    if (hasBugWhichPreventsNonEditablePaste && !hasEditableTarget(aDOMEvent))
+                    StopDOMEventPropagation = NO;
+
+                    if (supportsNativeCopyAndPaste && hasBugWhichPreventsNonEditablePaste && hasBugWhichPreventsNonEditablePasteRedirect && !hasEditableTarget(aDOMEvent))
                     {
                         // You can't paste from the system clipboard into a non-editable area in Safari, neither using native
                         // copy and paste nor our _DOMPasteboardElement hack. We will paste from the Cappuccino pasteboard only
                         // and allow Safari to "beep" to indicate something went wrong.
 
-                        StopDOMEventPropagation = NO;
                         isNativePasteEvent = NO;
                     }
-                    else if (supportsNativeCopyAndPaste)
-                        isNativePasteEvent = YES;
-                    else if (!supportsNativeCopyAndPaste && !_ignoreNativePastePreparation)
+                    else if (!(supportsNativeCopyAndPaste || hasBugWhichPreventsNonEditablePaste) && !_ignoreNativePastePreparation)
                     {
                         // We don't support native copy and paste so we must focus the _DOMPasteboardElement to receive the
                         // paste content.
@@ -836,15 +836,17 @@ var hasEditableTarget = function(aDOMEvent)
                         _DOMPasteboardElement.select();
                         _DOMPasteboardElement.value = "";
 
-                        StopDOMEventPropagation = NO;
                         isNativePasteEvent = YES;
                     }
+                    else if (supportsNativeCopyAndPaste)
+                        isNativePasteEvent = YES;
                 }
 
                 // However, of this could be a native COPY event, we need to let the normal event-process take place so it
                 // can capture our internal Cappuccino pasteboard.
                 else if ((characters == "c" || characters == "x") && mayRequireDOMPasteboardElement)
                 {
+                    StopDOMEventPropagation = NO;
                     isNativeCopyOrCutEvent = YES;
 
                     if (!supportsNativeCopyAndPaste && _ignoreNativeCopyOrCutEvent)
@@ -946,7 +948,9 @@ var hasEditableTarget = function(aDOMEvent)
             break;
     }
 
-    if (event && !isNativePasteEvent)
+    // If we are going to use our native cut and paste handlers, they will fake the keydown later. So we need to
+    // not send it here too, or a single cut turns into 2 cuts, etc.
+    if (event && !isNativePasteEvent && (!supportsNativeCopyAndPaste || !isNativeCopyOrCutEvent))
     {
         event._DOMEvent = aDOMEvent;
 
@@ -957,10 +961,10 @@ var hasEditableTarget = function(aDOMEvent)
             // If this is a native copy event, then check if the pasteboard has anything in it.
             [self _primeDOMPasteboardElement];
         }
-    }
 
     if (StopDOMEventPropagation)
         CPDOMEventStop(aDOMEvent, self);
+    }
 
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 
