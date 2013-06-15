@@ -1003,7 +1003,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
 
 @end
 
-@implementation _CPKVOModelSubclass
+@implementation _CPKVOModelSubclass : CPObject
 {
 }
 
@@ -1129,7 +1129,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
 
 @end
 
-@implementation _CPKVOModelDictionarySubclass
+@implementation _CPKVOModelDictionarySubclass : CPObject
 {
 }
 
