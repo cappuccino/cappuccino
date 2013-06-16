@@ -32,19 +32,19 @@
     var i = numberOfRows;
     rowData = [];
     rowEdits = [];
-    while(i--)
+    while (i--)
     {
         rowData[i] = "Initial Value, Row " + i;
 
         var j = numberOfEditsKept;
         rowEdits[i] = [];
-        while(j--)
+        while (j--)
             rowEdits[i][j] = "";
     }
 
     // Build the table.
 
-    [scroll setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
+    [scroll setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
 
     var table = [[CPTableView alloc] initWithFrame:CGRectMakeZero()];
     [table setDataSource:self];
@@ -66,7 +66,7 @@
     [dataColumn setEditable:YES];
     [dataColumn setWidth:140];
 
-    for(i = 0; i < numberOfEditsKept; i++)
+    for (i = 0; i < numberOfEditsKept; i++)
     {
         var editColumn = [[CPTableColumn alloc] initWithIdentifier:"Edit" + i];
         [table addTableColumn:editColumn];
@@ -106,7 +106,7 @@
 {
     var name = [tableColumn identifier];
 
-    switch(name)
+    switch (name)
     {
         case "Current":
         {

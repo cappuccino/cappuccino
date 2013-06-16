@@ -27,7 +27,9 @@
 @import "CPObject.j"
 
 //FIXME: After release of 0.9.7 remove below variable
-var CPDictionaryShowNilDeprecationMessage = YES;
+var CPDictionaryShowNilDeprecationMessage = YES,
+
+    CPDictionaryMaxDescriptionRecursion = 10;
 
 /* @ignore */
 @implementation _CPDictionaryValueEnumerator : CPEnumerator
@@ -733,7 +735,7 @@ var CPDictionaryShowNilDeprecationMessage = YES;
         var key = keys[index],
             value = self.valueForKey(key);
 
-        string += "    @\"" + key + "\": " + CPDescriptionOfObject(value).split("\n").join("\n    ") + (index + 1 < count ? "," : "") + "\n";
+        string += "    @\"" + key + "\": " + CPDescriptionOfObject(value, CPDictionaryMaxDescriptionRecursion).split("\n").join("\n    ") + (index + 1 < count ? "," : "") + "\n";
     }
 
     return string + "}";

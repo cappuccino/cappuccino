@@ -37,6 +37,8 @@ CPBinarySearchingFirstEqual     = 1 << 8;
 CPBinarySearchingLastEqual      = 1 << 9;
 CPBinarySearchingInsertionIndex = 1 << 10;
 
+var CPArrayMaxDescriptionRecursion = 10;
+
 var concat = Array.prototype.concat,
     join = Array.prototype.join,
     push = Array.prototype.push;
@@ -875,6 +877,11 @@ var concat = Array.prototype.concat,
 */
 - (CPString)description
 {
+    return [self _descriptionWithMaximumDepth:CPArrayMaxDescriptionRecursion];
+}
+
+- (CPString)_descriptionWithMaximumDepth:(int)maximumDepth
+{
     var index = 0,
         count = [self count],
         description = "@[";
@@ -887,7 +894,7 @@ var concat = Array.prototype.concat,
         var object = [self objectAtIndex:index];
 
         // NOTE: replace(/^/mg, "    ") inserts 4 spaces at the beginning of every line
-        description += CPDescriptionOfObject(object).replace(/^/mg, "    ");
+        description += CPDescriptionOfObject(object, maximumDepth).replace(/^/mg, "    ");
 
         if (index < count - 1)
             description += ",\n";
