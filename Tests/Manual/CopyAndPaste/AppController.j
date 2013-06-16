@@ -9,7 +9,6 @@
 @import <Foundation/Foundation.j>
 @import <AppKit/AppKit.j>
 
-@import "../CPTrace.j"
 @import "CollectionViewItem.j"
 
 @implementation AppController : CPObject
