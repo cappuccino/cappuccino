@@ -633,14 +633,16 @@ var _CPMenuBarVisible               = NO,
         if ([item hasSubmenu])
             continue;
 
-        var validator = [CPApp targetForAction:[item action] to:[item target] from:item];
+        var validator = [CPApp targetForAction:[item action] to:[item target] from:item],
+
+            shouldBeEnabled = YES;
 
         if (!validator)
         {
             // If targetForAction: returns nil, it could be that there is no action.
             // If there is an action and nil is returned, no valid target could be found.
             if ([item action] || [item target])
-                [item setEnabled:NO];
+                shouldBeEnabled = NO;
             else
             {
                 // Check to see if there is a target binding with an invalid selector
@@ -655,16 +657,18 @@ var _CPMenuBarVisible               = NO,
                         selector = [options valueForKey:CPSelectorNameBindingOption];
 
                     if (target && selector && ![target respondsToSelector:CPSelectorFromString(selector)])
-                        [item setEnabled:NO];
+                        shouldBeEnabled = NO;
                 }
             }
         }
         else if (![validator respondsToSelector:[item action]])
-            [item setEnabled:NO];
+            shouldBeEnabled = NO;
         else if ([validator respondsToSelector:@selector(validateMenuItem:)])
-            [item setEnabled:[validator validateMenuItem:item]];
+            shouldBeEnabled = [validator validateMenuItem:item];
         else if ([validator respondsToSelector:@selector(validateUserInterfaceItem:)])
-            [item setEnabled:[validator validateUserInterfaceItem:item]];
+            shouldBeEnabled = [validator validateUserInterfaceItem:item];
+
+        [item setEnabled:shouldBeEnabled];
     }
 
     [[_menuWindow _menuView] tile];
