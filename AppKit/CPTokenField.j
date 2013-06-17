@@ -34,6 +34,8 @@
 @import "CPWindow_Constants.j"
 
 @global CPApp
+@global CPTextFieldDidFocusNotification
+@global CPTextFieldDidBlurNotification
 
 #if PLATFORM(DOM)
 
@@ -392,6 +394,8 @@ CPTokenFieldDeleteButtonType     = 1;
             element.focus();
             CPTokenFieldInputOwner = self;
         }, 0.0);
+
+        [self textDidFocus:[CPNotification notificationWithName:CPTextFieldDidFocusNotification object:self userInfo:nil]];
     }, 0.0);
 
     [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
@@ -429,6 +433,8 @@ CPTokenFieldDeleteButtonType     = 1;
         if ([self sendsActionOnEndEditing])
             [self sendAction:[self action] to:[self target]];
     }
+
+    [self textDidBlur:[CPNotification notificationWithName:CPTextFieldDidBlurNotification object:self userInfo:nil]];
 
     return YES;
 }

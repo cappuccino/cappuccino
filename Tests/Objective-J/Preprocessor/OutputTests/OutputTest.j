@@ -12,10 +12,12 @@ var FILENAMES = [
         "Messages/multiple-parameters",
         "Messages/ternary-operator-argument",
         "Messages/keyword-in-selector",
+        "Messages/colon-selector",
 
         "Misc/parenthesis-return",
         "Misc/preprocess-if-directives",
         "Misc/regex-simple-char-classes",
+        "Misc/empty-loops",
 ];
 
 @implementation OutputTest : OJTestCase

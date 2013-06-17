@@ -389,7 +389,7 @@
 
 - (void)testJSObjectDescription
 {
-    var dict = [[CPDictionary alloc] initWithObjects:[CGRectMake(1, 2, 3, 4), CGPointMake(5, 6)] forKeys:[@"key1", @"key2"]],
+    var dict = @{ "key1": CGRectMake(1, 2, 3, 4), "key2": CGPointMake(5, 6) },
         d = [dict description];
 
     [self assertTrue:d.indexOf("(1, 2)") !== -1 message:"Can't find '(1, 2)' in description of dictionary " + d];
@@ -397,6 +397,24 @@
     [self assertTrue:d.indexOf("(5, 6)") !== -1 message:"Can't find '(5, 6)' in description of dictionary " + d];
 
     [self assert:'@{\n    @"key1": @[\n        @"1",\n        @"2",\n        @"3"\n    ],\n    @"key2": @"This is a string",\n    @"key3": @{\n        @"another": @"object"\n    }\n}' equals:[json_dict description]];
+}
+
+- (void)testWindowJSObjectDescription
+{
+    var dict = @{ "Key": window };
+
+    // 'window' is the global namespace so we should never try to fully describe it. If we do, we're likely
+    // to get into an infinite loop, and even if we don't it'll be huge.
+    [self assert:'@{\n    @"Key": window\n}' equals:[dict description]];
+}
+
+- (void)testRecursiveJSObjectDescription
+{
+    var a = {};
+
+    a['a'] = a;
+
+    [self assert:'@{\n    @"a": {\n        a: {\n            a: {\n                a: {\n                    a: {\n                        a: {\n                            a: {\n                                a: {\n                                    a: {\n                                        a: {\n                                            a: ...\n                                        }\n                                    }\n                                }\n                            }\n                        }\n                    }\n                }\n            }\n        }\n    }\n}' equals:[@{ 'a': a } description]];
 }
 
 - (void)testInitWithObjectsAndKeys

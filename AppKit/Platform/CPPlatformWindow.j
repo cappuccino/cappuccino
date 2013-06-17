@@ -26,6 +26,7 @@
 @import "CPPlatform.j"
 
 @class CPMenu
+@class CPPlatformPasteboard
 
 @global CPApp
 
@@ -33,46 +34,42 @@ var PrimaryPlatformWindow   = NULL;
 
 @implementation CPPlatformWindow : CPObject
 {
-    CGRect          _contentRect;
+    CGRect                  _contentRect;
 
-    CPInteger       _level;
-    BOOL            _hasShadow;
-    unsigned        _shadowStyle;
-    CPString        _title;
+    CPInteger               _level;
+    BOOL                    _hasShadow;
+    unsigned                _shadowStyle;
+    CPString                _title;
 
 #if PLATFORM(DOM)
-    DOMWindow       _DOMWindow;
+    DOMWindow               _DOMWindow;
 
-    DOMElement      _DOMBodyElement;
-    DOMElement      _DOMFocusElement;
-    DOMElement      _DOMEventGuard;
-    DOMElement      _DOMScrollingElement;
-    id              _hideDOMScrollingElementTimeout;
+    DOMElement              _DOMBodyElement;
+    DOMElement              _DOMFocusElement;
+    DOMElement              _DOMEventGuard;
+    DOMElement              _DOMScrollingElement;
+    id                      _hideDOMScrollingElementTimeout;
 
-    CPArray         _windowLevels;
-    CPDictionary    _windowLayers;
+    CPArray                 _windowLevels;
+    CPDictionary            _windowLayers;
 
-    BOOL            _mouseIsDown;
-    BOOL            _mouseDownIsRightClick;
-    CGPoint         _lastMouseEventLocation;
-    CPWindow        _mouseDownWindow;
-    CPTimeInterval  _lastMouseUp;
-    CPTimeInterval  _lastMouseDown;
+    BOOL                    _mouseIsDown;
+    BOOL                    _mouseDownIsRightClick;
+    CGPoint                 _lastMouseEventLocation;
+    CPWindow                _mouseDownWindow;
+    CPTimeInterval          _lastMouseUp;
+    CPTimeInterval          _lastMouseDown;
 
-    Object          _charCodes;
-    unsigned        _keyCode;
-    unsigned        _lastKey;
-    BOOL            _capsLockActive;
-    BOOL            _ignoreNativeCopyOrCutEvent;
-    BOOL            _ignoreNativePastePreparation;
+    Object                  _charCodes;
+    unsigned                _keyCode;
+    unsigned                _lastKey;
+    BOOL                    _capsLockActive;
 
-    BOOL            _DOMEventMode;
+    BOOL                    _DOMEventMode;
 
-    // Native Pasteboard Support
-    DOMElement      _DOMPasteboardElement;
-    CPEvent         _pasteboardKeyDownEvent;
+    CPPlatformPasteboard    _platformPasteboard;
 
-    CPString        _overriddenEventType;
+    CPString                _overriddenEventType;
 #endif
 }
 

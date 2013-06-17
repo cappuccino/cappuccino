@@ -30,7 +30,8 @@ enum XCCAPIMode {
 enum XCCTaskReturnType {
     kTaskReturnTypeNone,
     kTaskReturnTypeStdOut,
-    kTaskReturnTypeStdError
+    kTaskReturnTypeStdError,
+    kTaskReturnTypeAny
 };
 typedef enum XCCTaskReturnType XCCTaskReturnType;
 

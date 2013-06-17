@@ -750,6 +750,7 @@ TryStatement: function(node, st, c) {
 WhileStatement: function(node, st, c) {
     var compiler = st.compiler,
         generate = compiler.generate,
+        body = node.body,
         buffer;
     if (generate) {
       buffer = compiler.jsBuffer;
@@ -757,9 +758,9 @@ WhileStatement: function(node, st, c) {
       buffer.concat("while (");
     }
     c(node.test, st, "Expression");
-    if (generate) buffer.concat(")\n");
+    if (generate) buffer.concat(body.type === "EmptyStatement" ? ");\n" : ")\n");
     indentation += indentStep;
-    c(node.body, st, "Statement");
+    c(body, st, "Statement");
     indentation = indentation.substring(indentationSpaces);
 },
 DoWhileStatement: function(node, st, c) {
@@ -784,6 +785,7 @@ DoWhileStatement: function(node, st, c) {
 ForStatement: function(node, st, c) {
     var compiler = st.compiler,
         generate = compiler.generate,
+        body = node.body,
         buffer;
     if (generate) {
       buffer = compiler.jsBuffer;
@@ -795,14 +797,15 @@ ForStatement: function(node, st, c) {
     if (node.test) c(node.test, st, "Expression");
     if (generate) buffer.concat("; ");
     if (node.update) c(node.update, st, "Expression");
-    if (generate) buffer.concat(")\n");
+    if (generate) buffer.concat(body.type === "EmptyStatement" ? ");\n" : ")\n");
     indentation += indentStep;
-    c(node.body, st, "Statement");
+    c(body, st, "Statement");
     indentation = indentation.substring(indentationSpaces);
 },
 ForInStatement: function(node, st, c) {
     var compiler = st.compiler,
         generate = compiler.generate,
+        body = node.body,
         buffer;
     if (generate) {
       buffer = compiler.jsBuffer;
@@ -812,9 +815,9 @@ ForInStatement: function(node, st, c) {
     c(node.left, st, "ForInit");
     if (generate) buffer.concat(" in ");
     c(node.right, st, "Expression");
-    if (generate) buffer.concat(")\n");
+    if (generate) buffer.concat(body.type === "EmptyStatement" ? ");\n" : ")\n");
     indentation += indentStep;
-    c(node.body, st, "Statement");
+    c(body, st, "Statement");
     indentation = indentation.substring(indentationSpaces);
 },
 ForInit: function(node, st, c) {
@@ -1574,7 +1577,8 @@ MessageSendExpression: function(node, st, c) {
 
     var selectors = node.selectors,
         arguments = node.arguments,
-        selector = selectors[0].name;    // There is always at least one selector
+        firstSelector = selectors[0],
+        selector = firstSelector ? firstSelector.name : "";    // There is always at least one selector
 
     // Put together the selector. Maybe this should be done in the parser...
     for (var i = 0; i < arguments.length; i++)
@@ -1621,22 +1625,30 @@ MessageSendExpression: function(node, st, c) {
 },
 SelectorLiteralExpression: function(node, st, c) {
     var compiler = st.compiler,
+        buffer = compiler.jsBuffer,
         generate = compiler.generate;
-    if (!generate) compiler.jsBuffer.concat(compiler.source.substring(compiler.lastPos, node.start));
-    compiler.jsBuffer.concat(" sel_getUid(\"");
-    compiler.jsBuffer.concat(node.selector);
-    compiler.jsBuffer.concat("\")");
+    if (!generate) {
+        buffer.concat(compiler.source.substring(compiler.lastPos, node.start));
+        buffer.concat(" "); // Add an extra space if it looks something like this: "return(@selector(a:))". No space between return and expression.
+    }
+    buffer.concat("sel_getUid(\"");
+    buffer.concat(node.selector);
+    buffer.concat("\")");
     if (!generate) compiler.lastPos = node.end;
 },
 Reference: function(node, st, c) {
     var compiler = st.compiler,
+        buffer = compiler.jsBuffer,
         generate = compiler.generate;
-    if (!generate) compiler.jsBuffer.concat(compiler.source.substring(compiler.lastPos, node.start));
-    compiler.jsBuffer.concat(" function(__input) { if (arguments.length) return ");
-    compiler.jsBuffer.concat(node.element.name);
-    compiler.jsBuffer.concat(" = __input; return ");
-    compiler.jsBuffer.concat(node.element.name);
-    compiler.jsBuffer.concat("; }");
+    if (!generate) {
+        buffer.concat(compiler.source.substring(compiler.lastPos, node.start));
+        buffer.concat(" "); // Add an extra space if it looks something like this: "return(<expression>)". No space between return and expression.
+    }
+    buffer.concat("function(__input) { if (arguments.length) return ");
+    buffer.concat(node.element.name);
+    buffer.concat(" = __input; return ");
+    buffer.concat(node.element.name);
+    buffer.concat("; }");
     if (!generate) compiler.lastPos = node.end;
 },
 Dereference: function(node, st, c) {

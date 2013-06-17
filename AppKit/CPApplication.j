@@ -587,8 +587,8 @@ CPRunContinuesResponse  = -1002;
 /* @ignore */
 - (BOOL)_handleKeyEquivalent:(CPEvent)anEvent
 {
-    return  [[self keyWindow] performKeyEquivalent:anEvent] ||
-            [[self mainMenu] performKeyEquivalent:anEvent];
+    return [[self keyWindow] performKeyEquivalent:anEvent] ||
+           [[self mainMenu] performKeyEquivalent:anEvent];
 }
 
 /*!
@@ -602,33 +602,10 @@ CPRunContinuesResponse  = -1002;
 
     var theWindow = [anEvent window];
 
-#if PLATFORM(DOM)
-    var willPropagate = [[theWindow platformWindow] _willPropagateCurrentDOMEvent];
-
-    // temporarily pretend we won't propagate the event. we'll restore the saved value later
-    // we do this outside the if so that changes user code might make in _handleKeyEquiv. are preserved
-    [[theWindow platformWindow] _propagateCurrentDOMEvent:NO];
-#endif
-
     // Check if this is a candidate for key equivalent...
     if ([anEvent _couldBeKeyEquivalent] && [self _handleKeyEquivalent:anEvent])
-    {
-#if PLATFORM(DOM)
-        var characters = [anEvent characters],
-            modifierFlags = [anEvent modifierFlags];
-
-        // Unconditionally propagate on these keys to solve browser copy paste bugs
-        if ((characters == "c" || characters == "x" || characters == "v") && (modifierFlags & CPPlatformActionKeyMask))
-            [[theWindow platformWindow] _propagateCurrentDOMEvent:YES];
-#endif
-
+        // The key equivalent was handled.
         return;
-    }
-
-#if PLATFORM(DOM)
-    // if we make it this far, then restore the original willPropagate value
-    [[theWindow platformWindow] _propagateCurrentDOMEvent:willPropagate];
-#endif
 
     if ([anEvent type] == CPMouseMoved)
     {

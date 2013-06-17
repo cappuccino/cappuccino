@@ -112,7 +112,6 @@ function CGStringFromRect(aRect)
     return "{" + CGStringFromPoint(aRect.origin) + ", " + CGStringFromSize(aRect.size) + "}";
 }
 
-
 function CGRectOffset(aRect, dX, dY)
 {
     return { origin:{ x:aRect.origin.x + dX, y:aRect.origin.y + dY }, size:{ width:aRect.size.width, height:aRect.size.height } };
@@ -424,7 +423,7 @@ function CGRectFromString(aString)
 {
     var comma = aString.indexOf(',', aString.indexOf(',') + 1);
 
-    return { origin:CGPointFromString(aString.substr(1, comma - 1)), size:CGSizeFromString(aString.substring(comma + 2, aString.length)) };
+    return { origin:CGPointFromString(aString.substr(1, comma - 1)), size:CGSizeFromString(aString.substring(comma + 2, aString.length - 1)) };
 }
 
 function CGPointFromEvent(anEvent)

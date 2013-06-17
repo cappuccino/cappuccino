@@ -547,6 +547,18 @@ GLOBAL(objj_getClass) = function(/*String*/ aName)
     return theClass ? theClass : Nil;
 }
 
+GLOBAL(objj_getClassList) = function(/*CPArray*/ buffer, /*int*/ bufferLen)
+{
+    for (var aName in REGISTERED_CLASSES)
+    {
+        buffer.push(REGISTERED_CLASSES[aName]);
+        if (bufferLen && --bufferLen === 0)
+            break;
+    }
+
+    return buffer.length;
+}
+
 //objc_getRequiredClass
 GLOBAL(objj_getMetaClass) = function(/*String*/ aName)
 {

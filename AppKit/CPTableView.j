@@ -1044,6 +1044,8 @@ NOT YET IMPLEMENTED
     else
         _dirtyTableColumnRangeIndex = MIN(index, _dirtyTableColumnRangeIndex);
 
+    [_tableColumns removeObject:aTableColumn];
+
     [self setNeedsLayout];
 }
 
@@ -1273,7 +1275,8 @@ NOT YET IMPLEMENTED
 - (void)selectRowIndexes:(CPIndexSet)rows byExtendingSelection:(BOOL)shouldExtendSelection
 {
     if ([rows isEqualToIndexSet:_selectedRowIndexes] ||
-        (([rows firstIndex] != CPNotFound && [rows firstIndex] < 0) || [rows lastIndex] >= [self numberOfRows]))
+        (([rows firstIndex] != CPNotFound && [rows firstIndex] < 0) || [rows lastIndex] >= [self numberOfRows]) ||
+        [self numberOfColumns] <= 0)
         return;
 
     // We deselect all columns when selecting rows.
@@ -3071,7 +3074,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (BOOL)canDragRowsWithIndexes:(CPIndexSet)rowIndexes atPoint:(CGPoint)mouseDownPoint
 {
-    return [rowIndexes count] > 0 && [self numberOfRows] > 0;
+    return [rowIndexes count] > 0 && [self numberOfRows] > 0 && [self numberOfColumns] > 0;
 }
 
 /*!
@@ -3459,6 +3462,24 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     [self setNeedsDisplay:YES];
 
+    // if we have any columns to remove do that here
+    if ([_differedColumnDataToRemove count])
+    {
+        for (var i = 0; i < _differedColumnDataToRemove.length; i++)
+        {
+            var data = _differedColumnDataToRemove[i],
+                column = data.column,
+                tableColumnUID = [column UID],
+                dataViews = _dataViewsForTableColumns[tableColumnUID];
+
+            for (var j = 0; j < [dataViews count]; j++)
+            {
+                [self _enqueueReusableDataView:[dataViews objectAtIndex:j]];
+            }
+        }
+        [_differedColumnDataToRemove removeAllObjects];
+    }
+
     // Now clear all the leftovers
     // FIXME: this could be faster!
     for (var identifier in _cachedDataViews)
@@ -3469,21 +3490,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         while (count--)
             [dataViews[count] removeFromSuperview];
     }
-
-    // if we have any columns to remove do that here
-    if ([_differedColumnDataToRemove count])
-    {
-        for (var i = 0; i < _differedColumnDataToRemove.length; i++)
-        {
-            var data = _differedColumnDataToRemove[i],
-                column = data.column;
-
-            [column setHidden:data.shouldBeHidden];
-            [_tableColumns removeObject:column];
-        }
-        [_differedColumnDataToRemove removeAllObjects];
-    }
-
 }
 
 /*!
@@ -4965,6 +4971,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     }
     else if (_allowsMultipleSelection)
     {
+        if (_selectionAnchorRow == CPNotFound)
+            _selectionAnchorRow = [self numberOfRows] - 1;
+
         newSelection = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(MIN(aRow, _selectionAnchorRow), ABS(aRow - _selectionAnchorRow) + 1)];
         shouldExtendSelection = [self mouseDownFlags] & CPShiftKeyMask &&
                                 ((_lastSelectedRow == [_selectedRowIndexes lastIndex] && aRow > _lastSelectedRow) ||

@@ -784,6 +784,10 @@ var HORIZONTAL_MARGIN = 2;
                 var firstSelectedIndex = [[self selectionIndexes] firstIndex],
                     newSelectedRange = nil;
 
+                // This catches the case where the shift key is held down for the first selection.
+                if (firstSelectedIndex === CPNotFound)
+                    firstSelectedIndex = index;
+
                 if (index < firstSelectedIndex)
                     newSelectedRange = CPMakeRange(index, (firstSelectedIndex - index) + 1);
                 else
