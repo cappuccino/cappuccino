@@ -49,6 +49,10 @@
 
     @note When creating the window programatically (instead of a cib) you should override the \c loadWindow method.\c loadWindow is called the first time the window object is needed. @endnote
 */
+
+var nextWindowLocation = CPPointMakeZero(),
+    firstWindow = YES;
+
 @implementation CPWindowController : CPResponder
 {
     CPWindow            _window;
@@ -56,6 +60,7 @@
     CPArray             _documents;
     CPDocument          _document;
     BOOL                _shouldCloseDocument;
+    BOOL                _shouldCascadeWindows;
     BOOL                _supportsMultipleDocuments;
 
     id                  _cibOwner;
@@ -86,7 +91,7 @@
     {
         [self setWindow:aWindow];
         [self setShouldCloseDocument:NO];
-
+        [self setShouldCascadeWindows:YES];
         [self setNextResponder:CPApp];
 
         _documents = [];
@@ -240,6 +245,19 @@
         [_window setFrameUsingName:_windowFrameAutosaveName];
         [_window setFrameAutosaveName:_windowFrameAutosaveName];
     }
+
+    if ([self shouldCascadeWindows])
+    {
+        if (firstWindow)
+        {
+            var windowFrame = [_window frame];
+            nextWindowLocation = CPMakePoint(CPRectGetMinX(windowFrame), CPRectGetMinY(windowFrame));
+            firstWindow = NO;
+        }
+        else
+            nextWindowLocation = [_window cascadeTopLeftFromPoint:nextWindowLocation];
+    }
+
     [self windowDidLoad];
 }
 
@@ -507,6 +525,16 @@
 - (BOOL)shouldCloseDocument
 {
     return _shouldCloseDocument;
+}
+
+- (void)setShouldCascadeWindows:(BOOL)shouldCascadeWindows
+{
+    _shouldCascadeWindows = shouldCascadeWindows;
+}
+
+- (BOOL)shouldCascadeWindows
+{
+    return _shouldCascadeWindows;
 }
 
 - (id)owner

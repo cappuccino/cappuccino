@@ -829,6 +829,34 @@ CPTexturedBackgroundWindowMask
     ];
 }
 
+- (CPPoint)cascadeTopLeftFromPoint:(CPPoint)aPoint
+{
+    var actualScreenRect = [CPPlatform isBrowser] ? [_platformWindow contentBounds] : [[self screen] visibleFrame],
+        proposedFrame = CGRectMakeCopy([self frame]);
+
+    aPoint.x += 30;
+    aPoint.y += 30;
+    proposedFrame.origin = aPoint;
+
+    if (CGRectContainsRect(actualScreenRect,proposedFrame))
+        [self setFrameOrigin:aPoint];
+    else
+    {
+        aPoint.y = 30;
+        proposedFrame.origin = aPoint;
+        if (CGRectContainsRect(actualScreenRect,proposedFrame))
+            [self setFrameOrigin:aPoint];
+        else
+        {                    
+            aPoint.x = 0;
+            aPoint.y = 30;
+            proposedFrame.origin = aPoint;
+            [self setFrameOrigin:proposedFrame];
+        }
+    }
+    return aPoint;
+}
+
 /*!
     Sets the window's frame rect.
     @param aFrame - The new CGRect of the window.
@@ -920,7 +948,6 @@ CPTexturedBackgroundWindowMask
 
     var userDefaults = [CPUserDefaults standardUserDefaults],
         key = [CPString stringWithFormat: @"CPWindow Frame %@", frameName];
-
     [userDefaults setObject:[self stringWithSavedFrame] forKey:key];
 }
 
