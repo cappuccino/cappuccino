@@ -2521,14 +2521,18 @@ setBoundsOrigin:
 - (CPView)nextValidKeyView
 {
     var result = [self nextKeyView],
-        firstResult = result;
+        resultUID = [result UID],
+        unsuitableResults = {};
 
     while (result && ![result canBecomeKeyView])
     {
+        unsuitableResults[resultUID] = 1;
         result = [result nextKeyView];
 
-        // Cycled.
-        if (result === firstResult)
+        resultUID = [result UID];
+
+        // Did we get back to a key view we already ruled out due to ![result canBecomeKeyView]?
+        if (unsuitableResults[resultUID])
             return nil;
     }
 

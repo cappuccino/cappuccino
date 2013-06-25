@@ -103,4 +103,26 @@
     [self assertFalse:[view _isVisible] message:"a superview does not belong to a visible window"];
 }
 
+- (void)testNextValidKeyView
+{
+    var viewA = [CPView new],
+        viewB = [CPView new],
+        viewC = [CPCollectionView new],
+        viewD = [CPView new],
+        viewE = [CPView new];
+
+    [viewA setNextKeyView:viewB];
+    [viewB setNextKeyView:viewC];
+
+    [self assert:viewC equals:[viewA nextValidKeyView]];
+
+    // Make a loop which is harder to detect.
+    [viewA setNextKeyView:viewB];
+    [viewB setNextKeyView:viewD];
+    [viewD setNextKeyView:viewE];
+    [viewE setNextKeyView:viewD];
+
+    [self assert:nil equals:[viewA nextValidKeyView]];
+}
+
 @end
