@@ -522,9 +522,12 @@ var nextWindowLocation = CPPointMakeZero(),
     _shouldCloseDocument = shouldCloseDocument;
 }
 
-- (BOOL)shouldCloseDocument
+- (BOOL)shouldCascadeWindows
 {
-    return _shouldCloseDocument;
+    if (_document)
+        return _shouldCascadeWindows;
+    else
+        return NO;
 }
 
 - (void)setShouldCascadeWindows:(BOOL)shouldCascadeWindows
