@@ -522,12 +522,9 @@ var nextWindowLocation = CPPointMakeZero(),
     _shouldCloseDocument = shouldCloseDocument;
 }
 
-- (BOOL)shouldCascadeWindows
+- (BOOL)shouldCloseDocument
 {
-    if (_document)
-        return _shouldCascadeWindows;
-    else
-        return NO;
+    return _shouldCloseDocument;
 }
 
 - (void)setShouldCascadeWindows:(BOOL)shouldCascadeWindows
@@ -537,7 +534,10 @@ var nextWindowLocation = CPPointMakeZero(),
 
 - (BOOL)shouldCascadeWindows
 {
-    return _shouldCascadeWindows;
+    if (_document)
+        return _shouldCascadeWindows;
+    else
+        return NO;
 }
 
 - (id)owner

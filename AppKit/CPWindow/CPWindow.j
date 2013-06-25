@@ -851,7 +851,7 @@ CPTexturedBackgroundWindowMask
             aPoint.x = 0;
             aPoint.y = 30;
             proposedFrame.origin = aPoint;
-            [self setFrameOrigin:proposedFrame];
+            [self setFrame:proposedFrame];
         }
     }
     return aPoint;
