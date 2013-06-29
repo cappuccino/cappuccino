@@ -28,11 +28,7 @@
 
 @global CPPopoverAppearanceMinimal
 
-var _CPPopoverWindowViewDefaultCursorSize = CGSizeMake(16, 10),
-    _CPPopoverWindowViewRadius = 5.0,
-    _CPPopoverWindowViewStrokeWidth = 1.0,
-    _CPPopoverWindowViewShadowSize = CGSizeMake(0, 6),
-    _CPPopoverWindowViewShadowBlur = 15.0;
+var _CPPopoverWindowViewDefaultCursorSize = CGSizeMake(16, 10);
 
 /*!
     @ignore
@@ -61,6 +57,10 @@ var _CPPopoverWindowViewDefaultCursorSize = CGSizeMake(16, 10),
             @"background-gradient-hud": [CPNull null],
             @"stroke-color": [CPNull null],
             @"stroke-color-hud": [CPNull null],
+            @"border-radius": 5.0,
+            @"stroke-width": 1.0,
+            @"shadow-size": CGSizeMake(0, 6),
+            @"shadow-blur": 15.0
         };
 }
 
@@ -156,15 +156,15 @@ var _CPPopoverWindowViewDefaultCursorSize = CGSizeMake(16, 10),
     [super drawRect:aRect];
 
     var context = [[CPGraphicsContext currentContext] graphicsPort],
-        radius = _CPPopoverWindowViewRadius,
+        radius = [self valueForThemeAttribute:@"border-radius"],
         arrowWidth = _cursorSize.width,
         arrowHeight = _cursorSize.height,
-        strokeWidth = _CPPopoverWindowViewStrokeWidth,
+        strokeWidth = [self valueForThemeAttribute:@"stroke-width"],
         halfStrokeWidth = strokeWidth / 2.0,
         strokeColor,
         shadowColor = [[CPColor blackColor] colorWithAlphaComponent:.2],
-        shadowSize = _CPPopoverWindowViewShadowSize,
-        shadowBlur = _CPPopoverWindowViewShadowBlur,
+        shadowSize = [self valueForThemeAttribute:@"shadow-size"],
+        shadowBlur = [self valueForThemeAttribute:@"shadow-blur"],
         gradient,
         frame = [self bounds];
 

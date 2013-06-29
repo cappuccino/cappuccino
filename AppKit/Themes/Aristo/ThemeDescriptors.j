@@ -2980,6 +2980,10 @@ var themedButtonValues = nil,
 
         themeValues =
         [
+            [@"border-radius",              5.0],
+            [@"stroke-width",               1.0],
+            [@"shadow-size",                CGSizeMake(0, 6)],
+            [@"shadow-blur",                15.0],
             [@"background-gradient",        gradient],
             [@"background-gradient-hud",    gradientHUD],
             [@"stroke-color",               strokeColor],
