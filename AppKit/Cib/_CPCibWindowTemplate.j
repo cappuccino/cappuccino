@@ -87,12 +87,17 @@
 
 - (id)_cibInstantiate
 {
-    var windowClass = CPClassFromString([self windowClass]),
-        theWindow = [[windowClass alloc] initWithContentRect:_windowRect styleMask:_windowStyleMask];
+    var windowClass = CPClassFromString([self windowClass]);
 
-/*    if (!windowClass)
-        [NSException raise:NSInvalidArgumentException format:@"Unable to locate NSWindow class %@, using NSWindow",_windowClass];
-        class=[NSWindow class];*/
+    if (!windowClass)
+    {
+#if DEBUG
+        CPLog.warn("Unknown class \"%@\" in cib file, using CPWindow instead.", [self windowClass]);
+#endif
+        windowClass = [CPWindow class];
+    }
+
+    var theWindow = [[windowClass alloc] initWithContentRect:_windowRect styleMask:_windowStyleMask];
 
     if (_minSize)
         [theWindow setMinSize:_minSize];
