@@ -88,8 +88,6 @@ var CPImageViewEmptyPlaceholderImage = nil;
     {
 #if PLATFORM(DOM)
         [self _createDOMImageElement];
-
-        CPDOMDisplayServerAppendChild(_DOMElement, _DOMImageElement);
 #endif
     }
 
@@ -111,8 +109,9 @@ var CPImageViewEmptyPlaceholderImage = nil;
 
     _DOMImageElement.style.visibility = "hidden";
 
-    if (typeof(appkit_tag_dom_elements) !== "undefined" && !!appkit_tag_dom_elements)
+    if (typeof(appkit_tag_dom_elements) !== "undefined" && appkit_tag_dom_elements)
         _DOMImageElement.setAttribute("data-cappuccino-view", [self className]);
+    CPDOMDisplayServerAppendChild(_DOMElement, _DOMImageElement);
 }
 
 /*!
@@ -525,16 +524,12 @@ var CPImageViewImageKey          = @"CPImageViewImageKey",
 */
 - (id)initWithCoder:(CPCoder)aCoder
 {
-#if PLATFORM(DOM)
-    [self _createDOMImageElement];
-#endif
-
     self = [super initWithCoder:aCoder];
 
     if (self)
     {
 #if PLATFORM(DOM)
-        _DOMElement.appendChild(_DOMImageElement);
+        [self _createDOMImageElement];
 #endif
 
         [self setHasShadow:[aCoder decodeBoolForKey:CPImageViewHasShadowKey]];
@@ -560,17 +555,12 @@ var CPImageViewImageKey          = @"CPImageViewImageKey",
     // We do this in order to avoid encoding the _shadowView, which
     // should just automatically be created programmatically as needed.
     if (_shadowView)
-    {
-        var actualSubviews = _subviews;
-
-        _subviews = [_subviews copy];
-        [_subviews removeObjectIdenticalTo:_shadowView];
-    }
+        [_shadowView removeFromSuperview];
 
     [super encodeWithCoder:aCoder];
 
     if (_shadowView)
-        _subviews = actualSubviews;
+        [self addSubview:_shadowView];
 
     [aCoder encodeBool:_hasShadow forKey:CPImageViewHasShadowKey];
     [aCoder encodeInt:_imageAlignment forKey:CPImageViewImageAlignmentKey];
