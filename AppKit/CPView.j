@@ -43,6 +43,8 @@
 
 @global appkit_tag_dom_elements
 
+#if PLATFORM(DOM)
+
 if (typeof(appkit_tag_dom_elements) !== "undefined" && appkit_tag_dom_elements)
 {
     AppKitTagDOMElement = function(owner, element)
@@ -58,6 +60,8 @@ else
        // By default, do nothing.
     }
 }
+
+#endif
 
 /*
     @global

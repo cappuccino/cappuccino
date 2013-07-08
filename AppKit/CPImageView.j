@@ -96,6 +96,7 @@ var CPImageViewEmptyPlaceholderImage = nil;
 
 - (void)_createDOMImageElement
 {
+#if PLATFORM(DOM)
     _DOMImageElement = document.createElement("img");
     _DOMImageElement.style.position = "absolute";
     _DOMImageElement.style.left = "0px";
@@ -111,6 +112,7 @@ var CPImageViewEmptyPlaceholderImage = nil;
     AppKitTagDOMElement(self, _DOMImageElement);
 
     CPDOMDisplayServerAppendChild(_DOMElement, _DOMImageElement);
+#endif
 }
 
 /*!
