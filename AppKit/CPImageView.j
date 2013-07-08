@@ -87,24 +87,32 @@ var CPImageViewEmptyPlaceholderImage = nil;
     if (self)
     {
 #if PLATFORM(DOM)
-        _DOMImageElement = document.createElement("img");
-        _DOMImageElement.style.position = "absolute";
-        _DOMImageElement.style.left = "0px";
-        _DOMImageElement.style.top = "0px";
-
-        if ([CPPlatform supportsDragAndDrop])
-        {
-            _DOMImageElement.setAttribute("draggable", "true");
-            _DOMImageElement.style["-khtml-user-drag"] = "element";
-        }
+        [self _createDOMImageElement];
 
         CPDOMDisplayServerAppendChild(_DOMElement, _DOMImageElement);
-
-        _DOMImageElement.style.visibility = "hidden";
 #endif
     }
 
     return self;
+}
+
+- (void)_createDOMImageElement
+{
+    _DOMImageElement = document.createElement("img");
+    _DOMImageElement.style.position = "absolute";
+    _DOMImageElement.style.left = "0px";
+    _DOMImageElement.style.top = "0px";
+
+    if ([CPPlatform supportsDragAndDrop])
+    {
+        _DOMImageElement.setAttribute("draggable", "true");
+        _DOMImageElement.style["-khtml-user-drag"] = "element";
+    }
+
+    _DOMImageElement.style.visibility = "hidden";
+
+    if (typeof(appkit_tag_dom_elements) !== "undefined" && !!appkit_tag_dom_elements)
+        _DOMImageElement.setAttribute("data-cappuccino-view", [self className]);
 }
 
 /*!
@@ -518,19 +526,7 @@ var CPImageViewImageKey          = @"CPImageViewImageKey",
 - (id)initWithCoder:(CPCoder)aCoder
 {
 #if PLATFORM(DOM)
-    _DOMImageElement = document.createElement("img");
-    _DOMImageElement.style.position = "absolute";
-    _DOMImageElement.style.left = "0px";
-    _DOMImageElement.style.top = "0px";
-    _DOMImageElement.style.visibility = "hidden";
-    if ([CPPlatform supportsDragAndDrop])
-    {
-        _DOMImageElement.setAttribute("draggable", "true");
-        _DOMImageElement.style["-khtml-user-drag"] = "element";
-    }
-
-    if (typeof(appkit_tag_dom_elements) !== "undefined" && !!appkit_tag_dom_elements)
-        _DOMImageElement.setAttribute("data-cappuccino-view", [self className]);
+    [self _createDOMImageElement];
 #endif
 
     self = [super initWithCoder:aCoder];
