@@ -43,6 +43,22 @@
 
 @global appkit_tag_dom_elements
 
+if (typeof(appkit_tag_dom_elements) !== "undefined" && appkit_tag_dom_elements)
+{
+    AppKitTagDOMElement = function(owner, element)
+    {
+        element.setAttribute("data-cappuccino-view", [owner className]);
+        element.setAttribute("data-cappuccino-uid", [owner UID]);
+    }
+}
+else
+{
+    AppKitTagDOMElement = function(owner, element)
+    {
+       // By default, do nothing.
+    }
+}
+
 /*
     @global
     @group CPViewAutoresizingMasks
@@ -316,12 +332,10 @@ var CPViewFlags                     = { },
 
 #if PLATFORM(DOM)
         _DOMElement = DOMElementPrototype.cloneNode(false);
+        AppKitTagDOMElement(self, _DOMElement);
 
         CPDOMDisplayServerSetStyleLeftTop(_DOMElement, NULL, CGRectGetMinX(aFrame), CGRectGetMinY(aFrame));
         CPDOMDisplayServerSetStyleSize(_DOMElement, width, height);
-
-        if (typeof(appkit_tag_dom_elements) !== "undefined" && !!appkit_tag_dom_elements)
-            _DOMElement.setAttribute("data-cappuccino-view", [self className]);
 
         _DOMImageParts = [];
         _DOMImageSizes = [];
@@ -3053,6 +3067,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     // a more "elegant" way to do this...?
 #if PLATFORM(DOM)
     _DOMElement = DOMElementPrototype.cloneNode(false);
+    AppKitTagDOMElement(self, _DOMElement);
 #endif
 
     // Also decode these "early".

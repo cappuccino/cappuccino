@@ -108,9 +108,8 @@ var CPImageViewEmptyPlaceholderImage = nil;
     }
 
     _DOMImageElement.style.visibility = "hidden";
+    AppKitTagDOMElement(self, _DOMImageElement);
 
-    if (typeof(appkit_tag_dom_elements) !== "undefined" && appkit_tag_dom_elements)
-        _DOMImageElement.setAttribute("data-cappuccino-view", [self className]);
     CPDOMDisplayServerAppendChild(_DOMElement, _DOMImageElement);
 }
 
