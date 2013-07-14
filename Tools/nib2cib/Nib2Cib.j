@@ -554,12 +554,13 @@ var FILE = require("file"),
 {
     appDirectory = @"";
 
-    var parentDir = FILE.dirname(aPath);
+    var parentDir = FILE.dirname(aPath),
+        match = /^(.+)(\/Resources(?:\/.+)?)$/.exec(parentDir);
 
-    if (FILE.basename(parentDir) === "Resources")
+    if (match)
     {
-        appDirectory = FILE.dirname(parentDir);
-        appResourceDirectory = parentDir;
+        appDirectory = match[1];
+        appResourceDirectory = FILE.join(appDirectory, "Resources");
     }
     else
     {

@@ -73,11 +73,11 @@ var FILE = require("file"),
             }
 
             // Account for the fact that an extension may have been inferred.
-            if (resourceInfo &&
-                resourceInfo.path &&
-                FILE.extension(resourceInfo.path) !== FILE.extension(_resourceName))
+            if (resourceInfo && resourceInfo.path)
             {
-                _resourceName += FILE.extension(resourceInfo.path);
+                // Include subdirectories in the name
+                match = /^.+\/Resources\/(.+)$/.exec(resourceInfo.path)
+                _resourceName = match[1];
             }
         }
 
@@ -100,7 +100,7 @@ var FILE = require("file"),
                     resourceInfo ? FILE.canonical(resourceInfo.path) : "",
                     size.width,
                     size.height);
-   }
+    }
 
     return self;
 }
