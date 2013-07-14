@@ -97,6 +97,9 @@ var CPImageViewEmptyPlaceholderImage = nil;
 - (void)_createDOMImageElement
 {
 #if PLATFORM(DOM)
+    if (_DOMImageElement)
+        return;
+
     _DOMImageElement = document.createElement("img");
     _DOMImageElement.style.position = "absolute";
     _DOMImageElement.style.left = "0px";
@@ -146,6 +149,9 @@ var CPImageViewEmptyPlaceholderImage = nil;
     var newImage = [self objectValue];
 
 #if PLATFORM(DOM)
+    if (!_DOMImageElement)
+        [self _createDOMImageElement];
+
     _DOMImageElement.src = newImage ? [newImage filename] : [CPImageViewEmptyPlaceholderImage filename];
 #endif
 
