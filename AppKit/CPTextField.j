@@ -1605,8 +1605,13 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     // Make sure the text field is completely within the platform window
     // so the browser will not scroll it into view.
 
-    var wind = [self window],
-        frame = [self convertRectToBase:[self bounds]],
+    var wind = [self window];
+
+    // If the field is not yet within a window, it can't be first responder
+    if (!wind)
+        return NO;
+
+    var frame = [self convertRectToBase:[self bounds]],
         usableRect = [[wind platformWindow] usableContentFrame];
 
     frame.origin = [wind convertBaseToGlobal:frame.origin];
