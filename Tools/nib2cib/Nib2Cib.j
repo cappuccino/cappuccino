@@ -561,6 +561,13 @@ var FILE = require("file"),
         appDirectory = FILE.dirname(parentDir);
         appResourceDirectory = parentDir;
     }
+    // without it we can't find Resources directory of locale specific xib files
+    // for example Resources/en.lproj/MainMenu.xib
+    else if ( ~aPath.indexOf('/Resources/') )
+    {
+        appResourceDirectory = aPath.substring(0, aPath.indexOf('/Resources/') + '/Resources'.length);
+        appDirectory = FILE.dirname( appResourceDirectory );
+    }
     else
     {
         appDirectory = parentDir;
