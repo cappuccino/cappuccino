@@ -99,7 +99,10 @@ var FILE = require("file");
         {
             var path = paths[index];
 
-            if (FILE.basename(path) === aName)
+            // if we just match against basename then resources that have
+            // directories are not findable. for example a resource like
+            // Backgrounds/background-icon.png (which archipel uses)
+            if (path.replace(directory, '').replace(new RegExp('^/'), '') === aName || FILE.basename(path) === aName)
                 return path;
 
             else if (FILE.isDirectory(path))
