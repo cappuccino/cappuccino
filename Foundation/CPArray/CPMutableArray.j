@@ -429,6 +429,9 @@ var sortArrayUsingFunction = function(array, aFunction, aContext)
     }
 }
 
+// This is for speed
+var CPMutableArrayNull = [CPNull null];
+
 // Observe that the sort descriptors has the reversed order by the caller
 var sortArrayUsingJSDescriptors = function(a, d)
 {
@@ -451,7 +454,10 @@ var sortArrayUsingJSDescriptors = function(a, d)
         aUID,
         bUID,
         key,
-        dd;
+        dd,
+        value1,
+        value2,
+        cpNull = CPMutableArrayNull;
 
     if (dl < 0)
         return;
@@ -519,7 +525,14 @@ var sortArrayUsingJSDescriptors = function(a, d)
                 {
                     dd = d[cn];
                     key = dd.k;
-                    o = objj_msgSend(C1[key], dd.s, C2[key]);
+                    value1 = C1[key];
+                    value2 = C2[key];
+                    if (value1 === nil || value1 === cpNull)
+                        o = value2 === nil || value2 === cpNull ? CPOrderedSame : CPOrderedAscending;
+                    else
+                    {
+                        o = value2 === nil || value2 === cpNull ? CPOrderedDescending : objj_msgSend(value1, dd.s, value2);
+                    }
 
                     if (o && !dd.a)
                         o = -o;
