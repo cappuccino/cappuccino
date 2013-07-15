@@ -27,6 +27,7 @@
 @import "CPSortDescriptor.j"
 @import "CPURL.j"
 @import "CPValue.j"
+@import "CPNull.j"
 
 @class CPException
 @class CPURL
@@ -496,6 +497,9 @@ var CPStringUIDs = new CFMutableDictionary(),
     return [self compare:aString options:CPCaseInsensitiveSearch];
 }
 
+// This is for speed
+var CPStringNull = [CPNull null];
+
 /*!
     Compares the receiver to the specified string, using options.
     @param aString the string with which to compare
@@ -504,6 +508,10 @@ var CPStringUIDs = new CFMutableDictionary(),
 */
 - (CPComparisonResult)compare:(CPString)aString options:(int)aMask
 {
+    if (aString === nil) return CPOrderedDescending;
+
+    if (aString === CPStringNull) [CPException raise:CPInvalidArgumentException reason:"compare: argument can't be 'CPNull'"];
+
     var lhs = self,
         rhs = aString;
 
