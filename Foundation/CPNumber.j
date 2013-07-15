@@ -20,6 +20,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import "CPException.j"
+@import "CPNull.j"
 @import "CPObject.j"
 @import "CPObjJRuntime.j"
 
@@ -314,6 +316,9 @@ FIXME: Do we need this?
 
 - (CPComparisonResult)compare:(CPNumber)aNumber
 {
+    if (aNumber === nil || aNumber['isa'] === CPNull)
+        [CPException raise:CPInvalidArgumentException reason:"nil argument"];
+
     if (self > aNumber)
         return CPOrderedDescending;
     else if (self < aNumber)
