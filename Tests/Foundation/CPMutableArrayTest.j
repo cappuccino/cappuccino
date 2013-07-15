@@ -470,16 +470,16 @@
     [self assert:[5, 4, 4, 3, 2, 2, 1, 1, 1, 1] equals:target];
 }
 
-- (void)testThatCPArrayDoesSortCorrectWithNilAndCPNull
+- (void)testThatCPArrayDoesSortCorrectlyWithNilAndCPNull
 {
     var descriptors = [[CPSortDescriptor sortDescriptorWithKey:@"number" ascending:NO]],
         target = [
-                    [[CPPrettyObject alloc] initWithValue:@"a" number:nil],
-                    [[CPPrettyObject alloc] initWithValue:@"a" number:[CPNull null]],
-                    [[CPPrettyObject alloc] initWithValue:@"a" number:@"Objective-J"],
-                    [[CPPrettyObject alloc] initWithValue:@"a" number:[CPNull null]],
-                    [[CPPrettyObject alloc] initWithValue:@"a" number:nil],
-                 ];
+            [[CPPrettyObject alloc] initWithValue:@"a" number:nil],
+            [[CPPrettyObject alloc] initWithValue:@"a" number:[CPNull null]],
+            [[CPPrettyObject alloc] initWithValue:@"a" number:@"Objective-J"],
+            [[CPPrettyObject alloc] initWithValue:@"a" number:[CPNull null]],
+            [[CPPrettyObject alloc] initWithValue:@"a" number:nil],
+        ];
 
     [target sortUsingDescriptors:descriptors];
 
