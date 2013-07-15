@@ -508,9 +508,11 @@ var CPStringNull = [CPNull null];
 */
 - (CPComparisonResult)compare:(CPString)aString options:(int)aMask
 {
-    if (aString === nil) return CPOrderedDescending;
+    if (aString === nil)
+        return CPOrderedDescending;
 
-    if (aString === CPStringNull) [CPException raise:CPInvalidArgumentException reason:"compare: argument can't be 'CPNull'"];
+    if (aString === CPStringNull)
+        [CPException raise:CPInvalidArgumentException reason:"compare: argument can't be 'CPNull'"];
 
     var lhs = self,
         rhs = aString;
