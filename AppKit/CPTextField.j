@@ -218,7 +218,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         };
 }
 
-/* @ignore */
 #if PLATFORM(DOM)
 - (DOMElement)_inputElement
 {
@@ -529,13 +528,13 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     return _textFieldBackgroundColor;
 }
 
-/* @ignore */
+/*! @ignore */
 - (BOOL)acceptsFirstResponder
 {
     return [self isEditable] && [self isEnabled] && [self _isWithinUsablePlatformRect];
 }
 
-/* @ignore */
+/*! @ignore */
 - (BOOL)becomeFirstResponder
 {
     // As long as we are the first responder we need to monitor the key status of our window.
@@ -549,7 +548,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     return YES;
 }
 
-/*!
+/*
     A text field can be the first responder without necessarily being the focus of keyboard input. For example, it might be the first responder of window A but window B is the main and key window. It's important we don't put a focused input field into a text field in a non-key window, even if that field is the first responder, because the key window might also have a first responder text field which the user will expect to receive keyboard input.
 
     Since a first responder but non-key window text field can't receive input it should not even look like an active text field (Cocoa has a "slightly active" text field look it uses when another window is the key window, but Cappuccino doesn't today.)
@@ -677,7 +676,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     return YES;
 }
 
-/* @ignore */
+/*! @ignore */
 - (BOOL)resignFirstResponder
 {
 #if PLATFORM(DOM)
@@ -783,9 +782,11 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)_windowDidBecomeKey:(CPNotification)aNotification
 {
-    if ([[self window] isKeyWindow] && [[self window] firstResponder] === self)
+    var wind = [self window];
+
+    if ([wind isKeyWindow] && [wind firstResponder] === self)
         if (![self _becomeFirstKeyResponder])
-            [[self window] makeFirstResponder:nil];
+            [wind makeFirstResponder:nil];
 }
 
 - (BOOL)_valueIsValid:(CPString)aValue
@@ -820,7 +821,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 }
 
 /*!
-    Only text fields that can become first responder accepts first mouse.
+    Only text fields that can become first responder accept first mouse.
 */
 - (BOOL)acceptsFirstMouse:(CPEvent)anEvent
 {
@@ -1035,7 +1036,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 }
 
 /*
-    @ignore
     Sets the internal string value without updating the value in the input element.
     This should only be invoked when the underlying text element's value has changed.
 */
@@ -1044,8 +1044,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     return [self _setStringValue:aValue isNewValue:YES errorDescription:nil];
 }
 
-/*
-    @ignore
+/*!
     Sets the internal string value without updating the value in the input element.
     If there is a formatter and formatting fails, returns NO. Otherwise returns YES.
 */
