@@ -561,6 +561,12 @@ var CPViewFlags                     = { },
     }
 
     [aSubview setNextResponder:self];
+
+    // If the subview is not hidden and one of its ancestors is hidden,
+    // notify the subview that it is now hidden.
+    if (![aSubview isHidden] && [self isHiddenOrHasHiddenAncestor])
+        [aSubview _notifyViewDidHide];
+
     [aSubview viewDidMoveToSuperview];
 
     [self didAddSubview:aSubview];
@@ -593,6 +599,12 @@ var CPViewFlags                     = { },
 #if PLATFORM(DOM)
     CPDOMDisplayServerRemoveChild(_superview._DOMElement, _DOMElement);
 #endif
+
+    // If the view is not hidden and one of its ancestors is hidden,
+    // notify the view that it is now unhidden.
+    if (!_isHidden && [_superview isHiddenOrHasHiddenAncestor])
+        [self _notifyViewDidUnhide];
+
     _superview = nil;
 
     [self _setWindow:nil];
@@ -1371,6 +1383,7 @@ var CPViewFlags                     = { },
 //  FIXME: Should we return to visibility?  This breaks in FireFox, Opera, and IE.
 //    _DOMElement.style.visibility = (_isHidden = aFlag) ? "hidden" : "visible";
     _isHidden = aFlag;
+
 #if PLATFORM(DOM)
     _DOMElement.style.display = _isHidden ? "none" : "block";
 #endif
@@ -1406,6 +1419,7 @@ var CPViewFlags                     = { },
     [self viewDidHide];
 
     var count = [_subviews count];
+
     while (count--)
         [_subviews[count] _notifyViewDidHide];
 }
@@ -1415,6 +1429,7 @@ var CPViewFlags                     = { },
     [self viewDidUnhide];
 
     var count = [_subviews count];
+
     while (count--)
         [_subviews[count] _notifyViewDidUnhide];
 }
@@ -3139,7 +3154,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         }
 #endif
 
-        [self setHidden:[aCoder decodeBoolForKey:CPViewIsHiddenKey]];
+        _isHidden = [aCoder decodeBoolForKey:CPViewIsHiddenKey];
 
         if ([aCoder containsValueForKey:CPViewOpacityKey])
             [self setAlphaValue:[aCoder decodeIntForKey:CPViewOpacityKey]];
