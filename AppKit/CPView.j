@@ -3154,7 +3154,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         }
 #endif
 
-        _isHidden = [aCoder decodeBoolForKey:CPViewIsHiddenKey];
+        [self setHidden:[aCoder decodeBoolForKey:CPViewIsHiddenKey]];
 
         if ([aCoder containsValueForKey:CPViewOpacityKey])
             [self setAlphaValue:[aCoder decodeIntForKey:CPViewOpacityKey]];
