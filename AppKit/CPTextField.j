@@ -1597,6 +1597,24 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         }
 }
 
+#pragma mark Overrides
+
+- (void)viewDidHide
+{
+    [super viewDidHide];
+
+    if ([[self window] firstResponder] === self)
+        [self _resignFirstKeyResponder];
+}
+
+- (void)viewDidUnhide
+{
+    [super viewDidUnhide];
+
+    if ([[self window] firstResponder] === self)
+        [self _becomeFirstKeyResponder];
+}
+
 #pragma mark Private
 
 - (BOOL)_isWithinUsablePlatformRect
