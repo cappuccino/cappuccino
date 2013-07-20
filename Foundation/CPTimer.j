@@ -112,7 +112,7 @@
 
     if (self)
     {
-        _timeInterval = seconds;
+        _timeInterval = MAX(seconds,0.1);
         _invocation = anInvocation;
         _repeats = shouldRepeat;
         _isValid = YES;
@@ -150,7 +150,7 @@
 
     if (self)
     {
-        _timeInterval = seconds;
+        _timeInterval = MAX(seconds,0.1);
         _callback = aFunction;
         _repeats = shouldRepeat;
         _isValid = YES;
