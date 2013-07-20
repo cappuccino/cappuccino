@@ -25,6 +25,8 @@
 @import "CPObject.j"
 @import "CPRunLoop.j"
 
+var CPTimerMinTimeInterval = 0.1;
+
 /*!
     @class CPTimer
     @ingroup foundation
@@ -112,7 +114,7 @@
 
     if (self)
     {
-        _timeInterval = MAX(seconds,0.1);
+        _timeInterval = MAX(seconds, CPTimerMinTimeInterval);
         _invocation = anInvocation;
         _repeats = shouldRepeat;
         _isValid = YES;
@@ -150,7 +152,7 @@
 
     if (self)
     {
-        _timeInterval = MAX(seconds,0.1);
+        _timeInterval = MAX(seconds, CPTimerMinTimeInterval);
         _callback = aFunction;
         _repeats = shouldRepeat;
         _isValid = YES;
