@@ -3814,7 +3814,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     Returns a view with the specified identifier.
 
     @param identifier The view identifier. Must not be nil.
-    @param owner The owner of the CIB that may be loaded and instituted to create a new view with the particular identifier.
+    @param owner The owner of the CIB that may be loaded and instantiated to create a new view with the particular identifier.
     @return A view for the row.
 
     @discussion
@@ -3828,7 +3828,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         return nil;
 
     var view,
-        // See if we have some reusable view available
+        // See if we have some reusable views available
         reusableViews = _cachedDataViews[anIdentifier];
 
     if (reusableViews && reusableViews.length)
