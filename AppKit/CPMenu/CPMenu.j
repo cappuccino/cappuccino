@@ -633,6 +633,15 @@ var _CPMenuBarVisible               = NO,
         if ([item hasSubmenu])
             continue;
 
+        // If there are enabled bindings for the item, they override anything else
+        var binder = [CPBinder getBinding:CPEnabledBinding forObject:item];
+
+        if (binder)
+        {
+            [binder setValueFor:CPEnabledBinding];
+            return;
+        }
+
         var validator = [CPApp targetForAction:[item action] to:[item target] from:item],
             shouldBeEnabled = YES;
 
