@@ -720,7 +720,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
                     textRectHeight = _textSize.height;
                 }
 
-                else //if (_verticalAlignment === CPBottomVerticalTextAlignment)
+                else // if (_verticalAlignment === CPBottomVerticalTextAlignment)
                 {
                     textRectY = textRectY + textRectHeight - _textSize.height;
                     textRectHeight = _textSize.height;
