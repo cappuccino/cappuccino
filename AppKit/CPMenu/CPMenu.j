@@ -621,7 +621,7 @@ var _CPMenuBarVisible               = NO,
 */
 - (void)update
 {
-    if (![self autoenablesItems])
+    if (!_autoenablesItems)
         return;
 
     var items = [self itemArray];
@@ -634,7 +634,6 @@ var _CPMenuBarVisible               = NO,
             continue;
 
         var validator = [CPApp targetForAction:[item action] to:[item target] from:item],
-
             shouldBeEnabled = YES;
 
         if (!validator)
@@ -1184,7 +1183,8 @@ var _CPMenuBarVisible               = NO,
 var CPMenuTitleKey              = @"CPMenuTitleKey",
     CPMenuNameKey               = @"CPMenuNameKey",
     CPMenuItemsKey              = @"CPMenuItemsKey",
-    CPMenuShowsStateColumnKey   = @"CPMenuShowsStateColumnKey";
+    CPMenuShowsStateColumnKey   = @"CPMenuShowsStateColumnKey",
+    CPMenuAutoEnablesItemsKey   = @"CPMenuAutoEnablesItemsKey";
 
 @implementation CPMenu (CPCoding)
 
@@ -1206,7 +1206,7 @@ var CPMenuTitleKey              = @"CPMenuTitleKey",
 
         _showsStateColumn = ![aCoder containsValueForKey:CPMenuShowsStateColumnKey] || [aCoder decodeBoolForKey:CPMenuShowsStateColumnKey];
 
-        _autoenablesItems = YES;
+        _autoenablesItems = ![aCoder containsValueForKey:CPMenuAutoEnablesItemsKey] || [aCoder decodeBoolForKey:CPMenuAutoEnablesItemsKey];
 
         [self setMinimumWidth:0];
     }
@@ -1229,6 +1229,9 @@ var CPMenuTitleKey              = @"CPMenuTitleKey",
 
     if (!_showsStateColumn)
         [aCoder encodeBool:_showsStateColumn forKey:CPMenuShowsStateColumnKey];
+
+    if (!_autoenablesItems)
+        [aCoder encodeBool:_autoenablesItems forKey:CPMenuAutoEnablesItemsKey];
 }
 
 @end
