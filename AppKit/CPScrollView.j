@@ -50,18 +50,20 @@ var _isSystemUsingOverlayScrollers = function()
     outer.style.width = "200px";
     outer.style.height = "150px";
     outer.style.overflow = "hidden";
-    outer.appendChild (inner);
+    outer.appendChild(inner);
 
-    document.body.appendChild (outer);
-    var w1 = inner.offsetWidth;
-    outer.style.overflow = 'scroll';
-    var w2 = inner.offsetWidth;
-    if (w1 == w2)
-        w2 = outer.clientWidth;
+    document.body.appendChild(outer);
+    outer.style.overflow = "scroll";
 
-    document.body.removeChild (outer);
+    var width1 = inner.offsetWidth,
+        width2 = inner.offsetWidth;
 
-    return (w1 - w2 == 0);
+    if (width1 === width2)
+        width2 = outer.clientWidth;
+
+    document.body.removeChild(outer);
+
+    return (width1 - width2 === 0);
 #else
     return NO;
 #endif
@@ -130,7 +132,7 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
 
     var globalValue = [[CPBundle mainBundle] objectForInfoDictionaryKey:@"CPScrollersGlobalStyle"];
 
-    if (globalValue == nil || globalValue == -1)
+    if (globalValue === nil || globalValue === -1)
         CPScrollerStyleGlobal = _isSystemUsingOverlayScrollers() ? CPScrollerStyleOverlay : CPScrollerStyleLegacy
     else
         CPScrollerStyleGlobal = globalValue;
