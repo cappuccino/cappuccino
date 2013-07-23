@@ -1103,10 +1103,13 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
                 value = undefined;
 
             [super setObjectValue:value];
+            _stringValue = (value === nil || value === undefined) ? @"" : String(value);
         }
+        else
+            _stringValue = formattedString;
     }
-
-    _stringValue = [self stringValue];
+    else
+        _stringValue = [self stringValue];
 
 #if PLATFORM(DOM)
 

@@ -530,7 +530,7 @@ var CPControlBlackColor = [CPColor blackColor];
             return formattedValue;
     }
 
-    return (_value === undefined || _value === nil) ? "" : String(_value);
+    return (_value === undefined || _value === nil) ? @"" : String(_value);
 }
 
 /*!
