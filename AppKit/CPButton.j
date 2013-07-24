@@ -292,7 +292,7 @@ CPButtonImageOffset   = 3.0;
 }
 
 /*!
-    Sets the button's next state to \c aState.
+    Sets the button's state to the next available state.
     @param aState Possible states are any of the CPButton globals:
     \c CPOffState, \c CPOnState, \c CPMixedState
 */
