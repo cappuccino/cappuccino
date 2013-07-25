@@ -117,7 +117,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 #define NUMBER_OF_COLUMNS() (_tableColumns.length)
 #define UPDATE_COLUMN_RANGES_IF_NECESSARY() if (_dirtyTableColumnRangeIndex !== CPNotFound) [self _recalculateTableColumnRanges];
-
+#define FULL_ROW_HEIGHT() (_rowHeight + _intercellSpacing.height)
+#define ROW_BOTTOM(__heightInfo) (__heightInfo.y + __heightInfo.height + _intercellSpacing.height)
+#define HAS_VARIABLE_ROW_HEIGHTS()  (_implementedDelegateMethods & CPTableViewDelegate_tableView_heightOfRow_)
 
 @implementation _CPTableDrawView : CPView
 {
@@ -1707,13 +1709,14 @@ NOT YET IMPLEMENTED
     [self setNeedsLayout];
 }
 
-// Complexity:
-// O(Columns)
 /*!
     @ignore
 */
 - (void)_recalculateTableColumnRanges
 {
+    // Complexity:
+    // O(Columns)
+
     if (_dirtyTableColumnRangeIndex < 0)
         return;
 
@@ -1746,8 +1749,6 @@ NOT YET IMPLEMENTED
     _dirtyTableColumnRangeIndex = CPNotFound;
 }
 
-// Complexity:
-// O(1)
 /*!
     Returns a CGRect with the location and size of the column
     If aColumnIndex lies outside the range of the table columns a CGZeroRect is returned
@@ -1756,15 +1757,16 @@ NOT YET IMPLEMENTED
 */
 - (CGRect)rectOfColumn:(CPInteger)aColumnIndex
 {
-    // Convert e.g. "0" to 0.
+    // Complexity:
+    // O(1)
+
+    // Coerce aColumnIndex to a number in case it is a string.
     aColumnIndex = +aColumnIndex;
 
     if (aColumnIndex < 0 || aColumnIndex >= NUMBER_OF_COLUMNS())
         return CGRectMakeZero();
 
-    var column = [[self tableColumns] objectAtIndex:aColumnIndex];
-
-    if ([column isHidden])
+    if ([[_tableColumns objectAtIndex:aColumnIndex] isHidden])
         return CGRectMakeZero();
 
     UPDATE_COLUMN_RANGES_IF_NECESSARY();
@@ -1774,51 +1776,64 @@ NOT YET IMPLEMENTED
     return CGRectMake(range.location, 0.0, range.length, CGRectGetHeight([self bounds]));
 }
 
-// Complexity:
-// O(1)
 /*!
     @ignore
     Returns a CGRect with the location and size of the row
 
     @param aRowIndex the index of the row to return the rect of
-    @param checkRange if YES this method will return a zero rect if the aRowIndex is outside of the range of valid indices
+    @param checkRange if YES this method will return a zero rect if aRowIndex is outside of the range of valid indices
 */
 - (CGRect)_rectOfRow:(CPInteger)aRowIndex checkRange:(BOOL)checkRange
 {
-    var lastIndex = [self numberOfRows] - 1;
+    // Complexity:
+    // O(1)
 
-    if (checkRange && (aRowIndex > lastIndex || aRowIndex < 0))
+    var lastIndex = [self numberOfRows] - 1,
+        validIndex = aRowIndex >= 0 && aRowIndex <= lastIndex;
+
+    if (checkRange && !validIndex)
         return CGRectMakeZero();
 
-    if (_implementedDelegateMethods & CPTableViewDelegate_tableView_heightOfRow_)
-    {
-        var rowToLookUp = MIN(aRowIndex, lastIndex);
+    var y = 0,
+        height,
+        fixedHeightRows = 0;
 
-        // if the row doesn't exist
-        if (rowToLookUp !== CPNotFound)
+    if (HAS_VARIABLE_ROW_HEIGHTS())
+    {
+        [self _populateRowHeightCacheIfNeeded];
+
+        // If the index is valid, we use the y and height of the given row.
+        // If the index is invalid, we start from the bottom of the last row and use the default row height.
+        var heightInfo;
+
+        if (validIndex)
         {
-            var y = _cachedRowHeights[rowToLookUp].heightAboveRow,
-                height = _cachedRowHeights[rowToLookUp].height + _intercellSpacing.height,
-                rowDelta = aRowIndex - rowToLookUp;
+            heightInfo = _cachedRowHeights[aRowIndex];
+            y = heightInfo.y;
+            height = heightInfo.height + _intercellSpacing.height;
         }
         else
         {
-            y = aRowIndex * (_rowHeight + _intercellSpacing.height);
-            height = _rowHeight + _intercellSpacing.height;
-        }
+            height = FULL_ROW_HEIGHT();
 
-        // if we need the rect of a row past the last index
-        if (rowDelta > 0)
-        {
-            y += rowDelta * (_rowHeight + _intercellSpacing.height);
-            height = _rowHeight + _intercellSpacing.height;
+            if (_numberOfRows > 0)
+            {
+                heightInfo = _cachedRowHeights[lastIndex];
+                y = ROW_BOTTOM(heightInfo);
+
+                // y is now at the top of the first row beyond the last valid row.
+                // Add the height of any rows beyond that.
+                fixedHeightRows = aRowIndex - _numberOfRows;
+            }
         }
     }
     else
     {
-        var y = aRowIndex * (_rowHeight + _intercellSpacing.height),
-            height = _rowHeight + _intercellSpacing.height;
+        fixedHeightRows = aRowIndex;
+        height = FULL_ROW_HEIGHT();
     }
+
+    y += fixedHeightRows * FULL_ROW_HEIGHT();
 
     return CGRectMake(0.0, y, CGRectGetWidth([self bounds]), height);
 }
@@ -1833,8 +1848,6 @@ NOT YET IMPLEMENTED
     return [self _rectOfRow:aRowIndex checkRange:YES];
 }
 
-// Complexity:
-// O(1)
 /*!
     Returns a range of indices for the rows that lie wholly or partially within the vertical boundaries of a given rectangle.
 
@@ -1842,6 +1855,9 @@ NOT YET IMPLEMENTED
 */
 - (CPRange)rowsInRect:(CGRect)aRect
 {
+    // Complexity:
+    // O(1)
+
     // If we have no rows, then we won't intersect anything.
     if (_numberOfRows <= 0)
         return CPMakeRange(0, 0);
@@ -1867,32 +1883,29 @@ NOT YET IMPLEMENTED
     return CPMakeRange(firstRow, lastRow - firstRow + 1);
 }
 
-/*!
-    @ignore
-    When we draw the row backgrounds we don't want an index bounding our range.
+/*
+    Return the range of rows that lie wholly or partially within aRect.
+    If the bottom of the last real row is above the bottom of aRect,
+    synthesized rows of the default height are added to fill aRect.
 */
-- (CPRange)_unboundedRowsInRect:(CGRect)aRect
+- (CPRange)_exposedRowsInRect:(CGRect)aRect
 {
-    var boundedRange = [self rowsInRect:aRect],
-        lastRow = CPMaxRange(boundedRange),
-        rectOfLastRow = [self _rectOfRow:lastRow checkRange:NO],
-        bottom = CGRectGetMaxY(aRect),
-        bottomOfBoundedRows = CGRectGetMaxY(rectOfLastRow);
+    var rowRange = [self rowsInRect:aRect],
+        lastRealRow = CPMaxRange(rowRange) - 1,
+        rectOfLastRealRow = [self _rectOfRow:lastRealRow checkRange:NO],
+        bottomOfRealRows = CGRectGetMaxY(rectOfLastRealRow),
+        rectBottom = CGRectGetMaxY(aRect);
 
-    // we only have to worry about the rows below the last...
-    if (bottom <= bottomOfBoundedRows)
-        return boundedRange;
+    // If the bottom of the last real row is at or below the bottom of aRect, we are done
+    if (bottomOfRealRows >= rectBottom)
+        return rowRange;
 
-    var numberOfNewRows = CEIL(bottom -  bottomOfBoundedRows) / ([self rowHeight] + _intercellSpacing.height);
+    var numberOfSynthesizedRows = CEIL((rectBottom - bottomOfRealRows) / FULL_ROW_HEIGHT());
 
-    boundedRange.length += numberOfNewRows + 1;
+    rowRange.length += numberOfSynthesizedRows;
 
-    return boundedRange;
+    return rowRange;
 }
-
-// Complexity:
-// O(lg Columns) if table view contains no hidden columns
-// O(Columns) if table view contains hidden columns
 
 /*!
     Returns the indexes of the receiver's columns that intersect the specified rectangle.
@@ -1901,6 +1914,10 @@ NOT YET IMPLEMENTED
 */
 - (CPIndexSet)columnIndexesInRect:(CGRect)aRect
 {
+    // Complexity:
+    // O(log numberOfColumns) if table view contains no hidden columns
+    // O(numberOfColumns) if table view contains hidden columns
+
     var column = MAX(0, [self columnAtPoint:CGPointMake(aRect.origin.x, 0.0)]),
         lastColumn = [self columnAtPoint:CGPointMake(CGRectGetMaxX(aRect), 0.0)];
 
@@ -1911,7 +1928,6 @@ NOT YET IMPLEMENTED
     if (_numberOfHiddenColumns <= 0)
         return [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(column, lastColumn - column + 1)];
 
-    //
     var indexSet = [CPIndexSet indexSet];
 
     for (; column <= lastColumn; ++column)
@@ -1925,9 +1941,6 @@ NOT YET IMPLEMENTED
     return indexSet;
 }
 
-// Complexity:
-// O(lg Columns) if table view contains now hidden columns
-// O(Columns) if table view contains hidden columns
 /*!
     Returns the index of a column at a given point. If no column is there CPNotFound is returned.
 
@@ -1935,6 +1948,10 @@ NOT YET IMPLEMENTED
 */
 - (CPInteger)columnAtPoint:(CGPoint)aPoint
 {
+    // Complexity:
+    // O(log numberOfColumns) if table view contains no hidden columns
+    // O(numberOfColumns) if table view contains hidden columns
+
     var bounds = [self bounds];
 
     if (!CGRectContainsPoint(bounds, aPoint))
@@ -1974,42 +1991,54 @@ NOT YET IMPLEMENTED
    return CPNotFound;
 }
 
-//Complexity
-// O(1) for static row height
-// 0(lg Rows) for variable row heights
 /*!
-    Returns the index of a row at a particular point. If no row exists CPNotFound is returned.
+    Returns the index of a row at a particular point. If no row exists at that point -1 is returned.
 
     @param aPoint a CGPoint
 */
 - (CPInteger)rowAtPoint:(CGPoint)aPoint
 {
-    if (_implementedDelegateMethods & CPTableViewDelegate_tableView_heightOfRow_)
+    // Complexity:
+    // O(1) for fixed height rows or point out of bounds
+    // O(log numberOfRows) for variable height rows
+
+    // aPoint.x must be within our bounds
+    var bounds = [self bounds];
+
+    if (aPoint.x < CGRectGetMinX(bounds) || aPoint.x >= CGRectGetMaxX(bounds))
+        return -1;
+
+    // aPoint.x is in bounds, now we just have to check aPoint.y
+
+    if (HAS_VARIABLE_ROW_HEIGHTS())
     {
-            return [_cachedRowHeights indexOfObject:aPoint
-                                            inSortedRange:nil
-                                                  options:0
-                                          usingComparator:function(aPoint, rowCache)
-                    {
-                          var upperBound = rowCache.heightAboveRow;
+        // First make sure aPoint.y is above the bottom of the last row, otherwise we might
+        // search the (potentially large number of) rows for nothing.
+        var heightInfo = [_cachedRowHeights lastObject];
 
-                          if (aPoint.y < upperBound)
-                              return CPOrderedAscending;
+        if (aPoint.y >= ROW_BOTTOM(heightInfo))
+            return -1;
 
-                          if (aPoint.y > upperBound + rowCache.height + _intercellSpacing.height)
-                              return CPOrderedDescending;
+        return [_cachedRowHeights indexOfObject:aPoint
+                                  inSortedRange:nil
+                                        options:0
+                                usingComparator:function(aPoint, heightInfo)
+                {
+                    if (aPoint.y < heightInfo.y)
+                        return CPOrderedAscending;
 
-                          return CPOrderedSame;
-                    }];
+                    if (aPoint.y > ROW_BOTTOM(heightInfo))
+                        return CPOrderedDescending;
+
+                    return CPOrderedSame;
+                }];
     }
+    else
+    {
+        var row = FLOOR(aPoint.y / FULL_ROW_HEIGHT());
 
-    var y = aPoint.y,
-        row = FLOOR(y / (_rowHeight + _intercellSpacing.height));
-
-    if (row >= _numberOfRows)
-        return CPNotFound;
-
-    return row;
+        return row >= _numberOfRows ? -1 : row;
+    }
 }
 
 /*!
@@ -2352,14 +2381,14 @@ NOT YET IMPLEMENTED
 
     if (hangingSelections > 0)
     {
-
-        var previousSelectionCount = [_selectedRowIndexes count];
         [_selectedRowIndexes removeIndexesInRange:CPMakeRange(_numberOfRows, hangingSelections)];
 
         if (![_selectedRowIndexes containsIndex:[self selectedRow]])
             _lastSelectedRow = CPNotFound;
 
         // For optimal performance, only send a notification if indices were actually removed.
+        var previousSelectionCount = [_selectedRowIndexes count];
+
         if (previousSelectionCount > [_selectedRowIndexes count])
             [self _noteSelectionDidChange];
     }
@@ -2367,6 +2396,14 @@ NOT YET IMPLEMENTED
     [self tile];
 }
 
+/*
+    Populates the row height cache if necessary.
+*/
+- (void)_populateRowHeightCacheIfNeeded
+{
+    if ([self numberOfRows] !== _cachedRowHeights.length)
+        [self noteHeightOfRowsWithIndexesChanged:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, _numberOfRows)]];
+}
 
 /*!
     Informs the receiver that the rows specified in indexSet have changed height.
@@ -2375,24 +2412,29 @@ NOT YET IMPLEMENTED
 */
 - (void)noteHeightOfRowsWithIndexesChanged:(CPIndexSet)anIndexSet
 {
-    if (!(_implementedDelegateMethods & CPTableViewDelegate_tableView_heightOfRow_))
+    if (!HAS_VARIABLE_ROW_HEIGHTS())
         return;
 
-    // this method will update the height of those rows, but since the cached array also contains
-    // the height above the row it needs to recalculate for the rows below it too
-    var i = [anIndexSet firstIndex],
-        count = _numberOfRows - i,
-        heightAbove = (i > 0) ? _cachedRowHeights[i - 1].height + _cachedRowHeights[i - 1].heightAboveRow + _intercellSpacing.height : 0;
+    // Update the height of the given rows by calling the delegate. Since the row height cache also contains
+    // y coordinates, we have to update the y coordinates of all rows below the first valid row in the range.
+    var i = [anIndexSet indexGreaterThanOrEqualToIndex:0];
 
-    for (; i < count; i++)
+    if (i === CPNotFound)
+        return;
+
+    var y = i < _cachedRowHeights.length ? _cachedRowHeights[i].y : 0;
+
+    for (var count = [self numberOfRows]; i < count; ++i)
     {
-        // update the cache if the user told us to
+        var height;
+
         if ([anIndexSet containsIndex:i])
-            var height = [_delegate tableView:self heightOfRow:i];
+            height = [_delegate tableView:self heightOfRow:i];
+        else
+            height = _cachedRowHeights[i].height || _rowHeight;  // in case the cache entry is empty
 
-            _cachedRowHeights[i] = {"height":height, "heightAboveRow":heightAbove};
-
-        heightAbove += height + _intercellSpacing.height;
+        _cachedRowHeights[i] = {y:y, height:height};
+        y += height + _intercellSpacing.height;
     }
 }
 
@@ -2404,20 +2446,18 @@ NOT YET IMPLEMENTED
     UPDATE_COLUMN_RANGES_IF_NECESSARY();
 
     var width = _tableColumnRanges.length > 0 ? CPMaxRange([_tableColumnRanges lastObject]) : 0.0,
-        superview = [self superview];
+        superview = [self superview],
+        height = 0;
 
-    if (!(_implementedDelegateMethods & CPTableViewDelegate_tableView_heightOfRow_))
-        var height =  (_rowHeight + _intercellSpacing.height) * _numberOfRows;
-    else if ([self numberOfRows] === 0)
-        var height = 0;
-    else
+    if (!HAS_VARIABLE_ROW_HEIGHTS())
+        height = FULL_ROW_HEIGHT() * _numberOfRows;
+    else if (_numberOfRows > 0)
     {
-        // if this is the fist run we need to populate the cache
-        if ([self numberOfRows] !== _cachedRowHeights.length)
-            [self noteHeightOfRowsWithIndexesChanged:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self numberOfRows])]];
+        [self _populateRowHeightCacheIfNeeded];
 
-        var heightObject = _cachedRowHeights[_cachedRowHeights.length - 1],
-            height = heightObject.heightAboveRow + heightObject.height + _intercellSpacing.height;
+        var heightInfo = _cachedRowHeights[_cachedRowHeights.length - 1];
+
+        height = ROW_BOTTOM(heightInfo);
     }
 
     if ([superview isKindOfClass:[CPClipView class]])
@@ -4028,9 +4068,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         return;
     }
 
-    var exposedRows = [self _unboundedRowsInRect:aRect],
+    var exposedRows = [self _exposedRowsInRect:aRect],
         firstRow = FLOOR(exposedRows.location / colorCount) * colorCount,
-        lastRow = CPMaxRange(exposedRows),
+        lastRow = CPMaxRange(exposedRows) - 1,
         colorIndex = 0,
         groupRowRects = [];
 
@@ -4075,7 +4115,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     if (gridStyleMask & CPTableViewSolidHorizontalGridLineMask)
     {
-        var exposedRows = [self _unboundedRowsInRect:aRect],
+        var exposedRows = [self _exposedRowsInRect:aRect],
             row = exposedRows.location,
             lastRow = CPMaxRange(exposedRows) - 1,
             rowY = -0.5,
@@ -4094,7 +4134,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
         if (_rowHeight > 0.0)
         {
-            var rowHeight = _rowHeight + _intercellSpacing.height,
+            var rowHeight = FULL_ROW_HEIGHT(),
                 totalHeight = CGRectGetMaxY(aRect);
 
             while (rowY < totalHeight)
