@@ -2381,13 +2381,13 @@ NOT YET IMPLEMENTED
 
     if (hangingSelections > 0)
     {
+        // For optimal performance, only send a notification if indices were actually removed.
+        var previousSelectionCount = [_selectedRowIndexes count];
+
         [_selectedRowIndexes removeIndexesInRange:CPMakeRange(_numberOfRows, hangingSelections)];
 
         if (![_selectedRowIndexes containsIndex:[self selectedRow]])
             _lastSelectedRow = CPNotFound;
-
-        // For optimal performance, only send a notification if indices were actually removed.
-        var previousSelectionCount = [_selectedRowIndexes count];
 
         if (previousSelectionCount > [_selectedRowIndexes count])
             [self _noteSelectionDidChange];
