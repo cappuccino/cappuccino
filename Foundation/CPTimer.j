@@ -25,7 +25,7 @@
 @import "CPObject.j"
 @import "CPRunLoop.j"
 
-var CPTimerMinTimeInterval = 0.1;
+#define CPTimerDefaultTimeInterval 0.1
 
 /*!
     @class CPTimer
@@ -114,7 +114,7 @@ var CPTimerMinTimeInterval = 0.1;
 
     if (self)
     {
-        _timeInterval = (seconds <= 0) ? CPTimerMinTimeInterval : seconds;
+        _timeInterval = (seconds <= 0) ? CPTimerDefaultTimeInterval : seconds;
         _invocation = anInvocation;
         _repeats = shouldRepeat;
         _isValid = YES;
@@ -152,7 +152,7 @@ var CPTimerMinTimeInterval = 0.1;
 
     if (self)
     {
-        _timeInterval = (seconds <= 0) ? CPTimerMinTimeInterval : seconds;
+        _timeInterval = (seconds <= 0) ? CPTimerDefaultTimeInterval : seconds;
         _callback = aFunction;
         _repeats = shouldRepeat;
         _isValid = YES;
