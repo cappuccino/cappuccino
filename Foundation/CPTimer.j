@@ -114,7 +114,7 @@ var CPTimerMinTimeInterval = 0.1;
 
     if (self)
     {
-        _timeInterval = MAX(seconds, CPTimerMinTimeInterval);
+        _timeInterval = (seconds <= 0) ? CPTimerMinTimeInterval : seconds;
         _invocation = anInvocation;
         _repeats = shouldRepeat;
         _isValid = YES;
@@ -152,7 +152,7 @@ var CPTimerMinTimeInterval = 0.1;
 
     if (self)
     {
-        _timeInterval = MAX(seconds, CPTimerMinTimeInterval);
+        _timeInterval = (seconds <= 0) ? CPTimerMinTimeInterval : seconds;
         _callback = aFunction;
         _repeats = shouldRepeat;
         _isValid = YES;
