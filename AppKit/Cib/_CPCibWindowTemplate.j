@@ -108,12 +108,11 @@
     //[result setHidesOnDeactivate:(_wtFlags&0x80000000)?YES:NO];
     [theWindow setTitle:_windowTitle];
 
-    // FIXME: we can't autoresize yet...
+    var contentViewAutoresizesSubviews = [_windowView autoresizesSubviews];
+
     [_windowView setAutoresizesSubviews:NO];
-
     [theWindow setContentView:_windowView];
-
-    [_windowView setAutoresizesSubviews:YES];
+    [_windowView setAutoresizesSubviews:contentViewAutoresizesSubviews];
 
     if ([_viewClass isKindOfClass:[CPToolbar class]])
        [theWindow setToolbar:_viewClass];
