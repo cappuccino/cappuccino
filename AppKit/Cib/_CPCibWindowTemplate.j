@@ -107,10 +107,7 @@
 
     [_windowView setAutoresizesSubviews:NO];
     [theWindow setContentView:_windowView];
-    [_windowView setAutoresizesSubviews:YES];
-
-    [[theWindow contentView] setAutoresizesSubviews:contentViewAutoresizesSubviews];
-
+    [_windowView setAutoresizesSubviews:contentViewAutoresizesSubviews];
 
     if ([_viewClass isKindOfClass:[CPToolbar class]])
        [theWindow setToolbar:_viewClass];
