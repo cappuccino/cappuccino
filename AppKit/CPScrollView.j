@@ -34,38 +34,44 @@
 
 
 /*! @ignore */
-var _isSystemUsingOverlayScrollers = function()
+var _isBrowserUsingOverlayScrollers = function()
 {
 #if PLATFORM(DOM)
-    var inner = document.createElement('p'),
-        outer = document.createElement('div');
+    /*
+        Even if the system supports overlay (Lion) scrollers,
+        the browser (e.g. FireFox *cough*) may not.
 
-    inner.style.width = "100%";
-    inner.style.height = "200px";
+        To determine if the browser is using overlay scrollbars,
+        we put a <p> element inside a shorter <div> and set its
+        overflow to scroll. If the browser is using visible scrollers,
+        the outer div's clientWidth will less than the offsetWidth, because
+        clientWidth does not include scrollbars, whereas offsetWidth does.
+        So if clientWidth === offsetWidth, the scrollers must be overlay.
+        Even IE gets this right.
+    */
+    var outer = document.createElement('div'),
+        inner = document.createElement('p');
 
+    // position it absolute so it doesn't affect existing DOM elements
     outer.style.position = "absolute";
     outer.style.top = "0px";
     outer.style.left = "0px";
     outer.style.visibility = "hidden";
     outer.style.width = "200px";
     outer.style.height = "150px";
-    outer.style.overflow = "hidden";
+    outer.style.overflow = "scroll";
+
+    inner.style.width = "100%";
+    inner.style.height = "200px";
     outer.appendChild(inner);
 
     document.body.appendChild(outer);
 
-    var w1 = inner.offsetWidth;
-
-    outer.style.overflow = 'scroll';
-
-    var w2 = inner.offsetWidth;
-
-    if (w1 === w2)
-        w2 = outer.clientWidth;
+    var usingOverlayScrollers = outer.clientWidth === outer.offsetWidth;
 
     document.body.removeChild(outer);
 
-    return (w1 === w2);
+    return usingOverlayScrollers;
 #else
     return NO;
 #endif
@@ -135,7 +141,7 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
     var globalValue = [[CPBundle mainBundle] objectForInfoDictionaryKey:@"CPScrollersGlobalStyle"];
 
     if (globalValue === nil || globalValue === -1)
-        CPScrollerStyleGlobal = _isSystemUsingOverlayScrollers() ? CPScrollerStyleOverlay : CPScrollerStyleLegacy
+        CPScrollerStyleGlobal = _isBrowserUsingOverlayScrollers() ? CPScrollerStyleOverlay : CPScrollerStyleLegacy
     else
         CPScrollerStyleGlobal = globalValue;
 }
