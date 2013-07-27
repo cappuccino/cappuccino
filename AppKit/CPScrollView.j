@@ -53,17 +53,19 @@ var _isSystemUsingOverlayScrollers = function()
     outer.appendChild(inner);
 
     document.body.appendChild(outer);
-    outer.style.overflow = "scroll";
 
-    var width1 = inner.offsetWidth,
-        width2 = inner.offsetWidth;
+    var w1 = inner.offsetWidth;
 
-    if (width1 === width2)
-        width2 = outer.clientWidth;
+    outer.style.overflow = 'scroll';
+
+    var w2 = inner.offsetWidth;
+
+    if (w1 === w2)
+        w2 = outer.clientWidth;
 
     document.body.removeChild(outer);
 
-    return (width1 - width2 === 0);
+    return (w1 === w2);
 #else
     return NO;
 #endif
