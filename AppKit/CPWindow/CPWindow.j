@@ -24,6 +24,7 @@
 @import <Foundation/CPNotificationCenter.j>
 @import <Foundation/CPUndoManager.j>
 @import <Foundation/CPUserDefaults.j>
+@import <Foundation/CPUserDefaultsController.j.
 
 @import "CGGeometry.j"
 @import "CPAnimation.j"
@@ -971,7 +972,7 @@ CPTexturedBackgroundWindowMask
     if (frameName === _windowFrameAutosaveName)
       return YES;   // already our name
 
-    if ([CPWindowFrameAutosaveNames member:name])
+    if ([CPWindowFrameAutosaveNames member:frameName])
         return NO;  // frameName is already in use elsewhere
 
     if (_windowFrameAutosaveName)
