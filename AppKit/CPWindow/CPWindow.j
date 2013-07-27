@@ -223,7 +223,6 @@ var CPWindowActionMessageKeys = [
     _CPWindowFrameAnimation             _frameAnimation;
 
     CPString                            _windowFrameAutosaveName;
-    BOOL                                _delayAutosave;
 }
 
 + (Class)_binderClassForBinding:(CPString)aBinding
@@ -939,16 +938,17 @@ CPTexturedBackgroundWindowMask
 
 /*!
     Saves the window’s frame rectangle in the user defaults system under a given name.
-    @param The name of the frame to remove
+    @param The name of the frame to save
 */
 - (void)saveFrameUsingName:(CPString)frameName
 {
-    if (!frameName || _delayAutosave || [self isSheet])
+    if (!frameName)
         return;
 
-    var userDefaults = [CPUserDefaults standardUserDefaults],
+    var values = [[CPUserDefaultsController sharedUserDefaultsController] values],
         key = [CPString stringWithFormat: @"CPWindow Frame %@", frameName];
-    [userDefaults setObject:[self stringWithSavedFrame] forKey:key];
+
+    [values setValue:[self stringWithSavedFrame] forKey:key];
 }
 
 /*!
@@ -1933,7 +1933,7 @@ CPTexturedBackgroundWindowMask
 
         case CPLeftMouseDown:
         case CPRightMouseDown:
-            _delayAutosave = YES;
+            [[CPUserDefaultsController sharedUserDefaultsController] setAppliesImmediately:NO];
             // This will return _windowView if it is within a resize region
             _leftMouseDownView = [_windowView hitTest:point];
 
@@ -1978,10 +1978,11 @@ CPTexturedBackgroundWindowMask
 
         case CPMouseMoved:
             [_windowView setCursorForLocation:point resizing:NO];
-            if (_delayAutosave && [_windowController windowFrameAutosaveName] && _windowFrameAutosaveName)
+            if (![[CPUserDefaultsController sharedUserDefaultsController] appliesImmediately])
             {
-                _delayAutosave = NO;
-                [self saveFrameUsingName:_windowFrameAutosaveName];
+                if ([[CPUserDefaultsController sharedUserDefaultsController] hasUnappliedChanges])
+                    [[CPUserDefaultsController sharedUserDefaultsController] save:nil];
+                [[CPUserDefaultsController sharedUserDefaultsController] setAppliesImmediately:YES];
             }
 
             // Ignore mouse moves for parents of sheets
