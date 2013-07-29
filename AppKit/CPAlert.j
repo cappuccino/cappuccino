@@ -96,7 +96,8 @@ var bottomHeight = 71;
 
     id                  _delegate               @accessors(property=delegate);
     id                  _modalDelegate;
-    SEL                 _didEndSelector;
+    SEL                 _didEndSelector         @accessors(property=didEndSelector);
+    Function            _didEndBlock;
 
     _CPAlertThemeView   _themeView              @accessors(property=themeView, readonly);
     CPWindow            _window                 @accessors(property=window, readonly);
@@ -224,16 +225,15 @@ var bottomHeight = 71;
 }
 
 
-/*! @deprecated
-*/
-- (void)setWindowStyle:(int)aStyle
+/*! @deprecated */
+- (void)setWindowStyle:(int)style
 {
     CPLog.warn("DEPRECATED: setWindowStyle: is deprecated. use setTheme: instead");
-    [self setTheme:(aStyle === CPHUDBackgroundWindowMask) ? [CPTheme defaultHudTheme] : [CPTheme defaultTheme]];
+
+    [self setTheme:(style === CPHUDBackgroundWindowMask) ? [CPTheme defaultHudTheme] : [CPTheme defaultTheme]];
 }
 
-/*! @deprecated
-*/
+/*! @deprecated */
 - (int)windowStyle
 {
     CPLog.warn("DEPRECATED: windowStyle: is deprecated. use theme instead");
@@ -242,18 +242,19 @@ var bottomHeight = 71;
 
 
 /*!
-    set the text of the alert's message
+    Set the text of the alert's message.
 
     @param aText CPString containing the text
 */
-- (void)setMessageText:(CPString)aText
+- (void)setMessageText:(CPString)text
 {
-    [_messageLabel setStringValue:aText];
+    [_messageLabel setStringValue:text];
     _needsLayout = YES;
 }
 
 /*!
-    return the content of the message text
+    Return the content of the message text.
+
     @return CPString containing the message text
 */
 - (CPString)messageText
@@ -262,13 +263,13 @@ var bottomHeight = 71;
 }
 
 /*!
-    set the text of the alert's informative text
+    Set the text of the alert's informative text.
 
     @param aText CPString containing the informative text
 */
-- (void)setInformativeText:(CPString)aText
+- (void)setInformativeText:(CPString)text
 {
-    [_informativeLabel setStringValue:aText];
+    [_informativeLabel setStringValue:text];
     _needsLayout = YES;
 }
 
@@ -285,6 +286,7 @@ var bottomHeight = 71;
 /*!
     Sets the title of the alert window.
     This API is not present in Cocoa.
+
     @param aTitle CPString containing the window title
 */
 - (void)setTitle:(CPString)aTitle
@@ -294,7 +296,7 @@ var bottomHeight = 71;
 }
 
 /*!
-    set the accessory view
+    Set the accessory view.
 
     @param aView the accessory view
 */
@@ -305,7 +307,7 @@ var bottomHeight = 71;
 }
 
 /*!
-    set if alert shows the suppression button
+    Set if the alert shows the suppression button.
 
     @param shouldShowSuppressionButton YES or NO
 */
@@ -597,6 +599,17 @@ var bottomHeight = 71;
 }
 
 /*!
+    The same as \c runModal, but executes the code in \c block when the
+    alert is dismissed.
+*/
+- (void)runModalWithDidEndBlock:(Function /*(CPAlert alert, int returnCode)*/)block
+{
+    _didEndBlock = block;
+
+    [self runModal];
+}
+
+/*!
     Runs the receiver modally as an alert sheet attached to a specified window.
 
     @param window The parent window for the sheet.
@@ -627,6 +640,20 @@ var bottomHeight = 71;
 */
 - (void)beginSheetModalForWindow:(CPWindow)aWindow
 {
+    [self beginSheetModalForWindow:aWindow modalDelegate:nil didEndSelector:nil contextInfo:nil];
+}
+
+/*!
+    Runs the receiver modally as an alert sheet attached to a specified window.
+    Executes the code in \c block when the alert is dismissed.
+
+    @param window The parent window for the sheet.
+    @param block  Code block to execute on dismissal
+*/
+- (void)beginSheetModalForWindow:(CPWindow)aWindow didEndBlock:(Function /*(CPAlert alert, int returnCode)*/)block
+{
+    _didEndBlock = block;
+
     [self beginSheetModalForWindow:aWindow modalDelegate:nil didEndSelector:nil contextInfo:nil];
 }
 
@@ -697,14 +724,28 @@ var bottomHeight = 71;
 */
 - (void)_alertDidEnd:(CPWindow)aWindow returnCode:(int)returnCode contextInfo:(id)contextInfo
 {
-    if (_didEndSelector)
-        objj_msgSend(_modalDelegate, _didEndSelector, self, returnCode, contextInfo);
+    if (_didEndBlock)
+    {
+        if (typeof(_didEndBlock) === "function")
+            _didEndBlock(self, returnCode);
+        else
+            CPLog.warn("%s: didEnd block is not a function", [self description]);
 
-    _modalDelegate = nil;
-    _didEndSelector = nil;
-
-    if ([_delegate respondsToSelector:@selector(alertDidEnd:returnCode:)])
-        [_delegate alertDidEnd:self returnCode:returnCode];
+        // didEnd blocks are transient
+        _didEndBlock = nil;
+    }
+    else if (_modalDelegate)
+    {
+        if (_didEndSelector)
+            objj_msgSend(_modalDelegate, _didEndSelector, self, returnCode, contextInfo);
+    }
+    else if (_delegate)
+    {
+        if (_didEndSelector)
+            objj_msgSend(_delegate, _didEndSelector, self, returnCode);
+        else if ([_delegate respondsToSelector:@selector(alertDidEnd:returnCode:)])
+            [_delegate alertDidEnd:self returnCode:returnCode];
+    }
 }
 
 @end
