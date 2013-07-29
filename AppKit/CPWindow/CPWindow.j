@@ -24,8 +24,8 @@
 @import <Foundation/CPNotificationCenter.j>
 @import <Foundation/CPUndoManager.j>
 @import <Foundation/CPUserDefaults.j>
-@import <AppKit/CPUserDefaultsController.j>
 
+@import "CPUserDefaultsController.j"
 @import "CGGeometry.j"
 @import "CPAnimation.j"
 @import "CPCursor.j"
