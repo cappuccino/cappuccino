@@ -63,8 +63,8 @@ var CPCibOwner = @"CPCibOwner";
 + (CPCib)loadCibFile:(CPString)anAbsolutePath externalNameTable:(CPDictionary)aNameTable loadDelegate:aDelegate
 {
     return ([[CPCib alloc]
-    initWithContentsOfURL:anAbsolutePath
-             loadDelegate:[[_CPCibLoadDelegate alloc]
+               initWithContentsOfURL:anAbsolutePath
+                        loadDelegate:[[_CPCibLoadDelegate alloc]
                 initWithLoadDelegate:aDelegate
                    externalNameTable:aNameTable]]);
 }
@@ -84,9 +84,9 @@ var CPCibOwner = @"CPCibOwner";
 - (CPCib)loadCibFile:(CPString)aFileName externalNameTable:(CPDictionary)aNameTable loadDelegate:(id)aDelegate
 {
     return ([[CPCib alloc]
-        initWithCibNamed:aFileName
-                  bundle:self
-            loadDelegate:[[_CPCibLoadDelegate alloc]
+                    initWithCibNamed:aFileName
+                              bundle:self
+                        loadDelegate:[[_CPCibLoadDelegate alloc]
                 initWithLoadDelegate:aDelegate
                    externalNameTable:aNameTable]]);
 }

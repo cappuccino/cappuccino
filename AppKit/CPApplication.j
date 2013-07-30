@@ -1358,8 +1358,8 @@ var _CPAppBootstrapperActions = nil;
     if (mainCibFile)
     {
         [mainBundle loadCibFile:mainCibFile
-            externalNameTable:@{ CPCibOwner: CPApp }
-                 loadDelegate:self];
+              externalNameTable:@{ CPCibOwner: CPApp }
+                   loadDelegate:self];
 
         return YES;
     }
@@ -1436,7 +1436,7 @@ var _CPAppBootstrapperActions = nil;
 
 + (void)cibDidFailToLoad:(CPCib)aCib
 {
-    throw new Error("Could not load main cib file (Did you forget to nib2cib it?).");
+    throw new Error("Could not load main cib file. Did you forget to nib2cib it?");
 }
 
 + (void)reset
