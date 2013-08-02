@@ -358,6 +358,7 @@ function FileRequest(/*CFURL*/ aURL, onsuccess, onfailure, onprogress)
         request.onfailure = onfailure;
     }
 
+#if BROWSER
     if (onprogress)
     {
         var supportsProgress = true;
@@ -380,6 +381,7 @@ function FileRequest(/*CFURL*/ aURL, onsuccess, onfailure, onprogress)
             }
         }
     }
+#endif
 
     request.open("GET", aURL.absoluteString(), exports.asyncLoader);
     request.send("");
