@@ -157,7 +157,8 @@ var CPMainCibFile               = @"CPMainCibFile",
             CPApplicationDidBecomeActiveNotification, @selector(applicationDidBecomeActive:),
             CPApplicationWillResignActiveNotification, @selector(applicationWillResignActive:),
             CPApplicationDidResignActiveNotification, @selector(applicationDidResignActive:),
-            CPApplicationWillTerminateNotification, @selector(applicationWillTerminate:)
+            CPApplicationWillTerminateNotification, @selector(applicationWillTerminate:),
+            CPApplicationDidChangeScreenParametersNotification, @selector(applicationDidChangeScreenParameters:)
         ],
         count = [delegateNotifications count];
 
