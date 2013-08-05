@@ -735,6 +735,10 @@ CPTexturedBackgroundWindowMask
     }
 }
 
+/*
+    Constrain a frame so that the window remains at least partially visible on screen,
+    moving or resizing the frame as necessary.
+*/
 - (CGRect)_constrainFrame:(CGRect)aFrame toUsableScreenWidth:(BOOL)constrainWidth andHeight:(BOOL)constrainHeight
 {
     var frame = CGRectMakeCopy(aFrame);
@@ -785,6 +789,13 @@ CPTexturedBackgroundWindowMask
     return frame;
 }
 
+/*
+    Constrain the origin of a frame such that:
+
+    - CPWindowMinVisibleHorizontalMargin is kept onscreen at the left/right of the window.
+    - The top of the window is kept below the top of the usable content.
+    - The top of the contentView + CPWindowMinVisibleVerticalMargin is kept above the bottom of the usable content.
+*/
 - (CGRect)_constrainOriginOfFrame:(CGRect)aFrame
 {
     var frame = CGRectMakeCopy(aFrame);
@@ -792,19 +803,19 @@ CPTexturedBackgroundWindowMask
     if (!_constrainsToUsableScreen || !_isVisible)
         return frame;
 
-    /*
-        - CPWindowMinVisibleHorizontalMargin is kept onscreen at the left/right of the window.
-        - The top of the window is kept below the top of the usable content.
-        - The top of the contentView + CPWindowMinVisibleVerticalMargin is kept above the bottom of the usable content.
-    */
-    var usableRect = [_platformWindow usableContentFrame],
-        maxUsableY = CGRectGetMaxY(usableRect) - CGRectGetMinY([_contentView frame]) - CPWindowMinVisibleVerticalMargin;
+    var usableRect = [_platformWindow usableContentFrame];
 
+    // First constrain x so that at least CPWindowMinVisibleHorizontalMargin is visible on the right
     frame.origin.x = MAX(frame.origin.x, CGRectGetMinX(usableRect) + CPWindowMinVisibleHorizontalMargin - CGRectGetWidth(frame));
+
+    // Now constrain x so that at least CPWindowMinVisibleHorizontalMargin is visible on the left
     frame.origin.x = MIN(frame.origin.x, CGRectGetMaxX(usableRect) - CPWindowMinVisibleHorizontalMargin);
 
+    // Now constrain y so that it is below the top of the usable content
     frame.origin.y = MAX(frame.origin.y, CGRectGetMinY(usableRect));
-    frame.origin.y = MIN(frame.origin.y, maxUsableY);
+
+    // Finally constrain y so that at least CPWindowMinVisibleHorizontalMargin is visible at the bottom
+    frame.origin.y = MIN(frame.origin.y, CGRectGetMaxY(usableRect) - CGRectGetMinY([_contentView frame]) - CPWindowMinVisibleVerticalMargin);
 
     return frame;
 }
