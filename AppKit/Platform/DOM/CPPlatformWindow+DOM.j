@@ -112,6 +112,7 @@
 @import <Foundation/CPSet.j>
 @import <Foundation/CPTimer.j>
 
+@import "CPApplication_Constants.j"
 @import "CPCompatibility.j"
 @import "CPCursor.j"
 @import "CPDOMWindowLayer.j"
@@ -128,7 +129,6 @@
 @class CPDragServer
 @class _CPToolTip
 
-@global CPApp
 @global _CPRunModalLoop
 
 // List of all open native windows
