@@ -1021,6 +1021,23 @@ CPTexturedBackgroundWindowMask
     [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowResizeStyleGlobalChangeNotification object:nil];
 }
 
+/*!
+    If set to NO, platform window (virtual screen) resizes will not attempt to move/resize user windows.
+    to the usable area.
+*/
++ (void)setConstrainWindowsToUsableScreen:(BOOL)shouldConstrain
+{
+    CPWindowConstrainToScreen = shouldConstrain;
+}
+
+/*!
+    Return whether platform window (virtual screen) resizes constrain user windows to the usable area.
+*/
++ (BOOL)constrainWindowsToUsableScreen
+{
+    return CPWindowConstrainToScreen;
+}
+
 - (void)_didReceiveResizeStyleChange:(CPNotification)aNotification
 {
     [_windowView setShowsResizeIndicator:_styleMask & CPResizableWindowMask];
@@ -3269,7 +3286,7 @@ var keyViewComparator = function(lhs, rhs, context)
     if ([self isFullPlatformWindow])
         return [self setFrame:[_platformWindow visibleFrame]];
 
-    if (_autoresizingMask === CPWindowNotSizable)
+    if (!CPWindowConstrainToScreen || _autoresizingMask === CPWindowNotSizable)
         return;
 
     var frame = [_platformWindow contentBounds],
