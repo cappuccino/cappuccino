@@ -3319,7 +3319,7 @@ var keyViewComparator = function(lhs, rhs, context)
     if (_autoresizingMask & CPWindowHeightSizable)
         newFrame.size.height += dY;
 
-    [self setFrame:newFrame];
+    [self _setFrame:newFrame display:YES animate:NO constrainWidth:YES constrainHeight:YES];
 }
 
 /*
