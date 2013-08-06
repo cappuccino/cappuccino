@@ -135,6 +135,16 @@ var _CPAutocompleteMenuMaximumHeight = 307;
 
 - (void)layoutSubviews
 {
+    /*
+    If the textField has no window, then we simply stop to layout the
+    subviews and close the _menuWindow.
+    */
+    if (![textField window])
+    {
+        [_menuWindow orderOut:self];
+        return;
+    }
+
     // TODO
     /*
     The autocompletion menu should be underneath the word/text being
