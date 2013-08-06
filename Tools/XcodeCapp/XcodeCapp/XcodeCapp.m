@@ -239,7 +239,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     // Make sure we are using jsc as the narwhal engine!
     self.environment[@"NARWHAL_ENGINE"] = @"jsc";
 
-    self.executables = @[@"python", @"narwhal-jsc", @"objj", @"nib2cib"];
+    self.executables = @[@"python", @"narwhal-jsc", @"objj", @"nib2cib", @"capp"];
 }
 
 - (void)initObservers
@@ -572,6 +572,37 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
 
     if ([[NSUserDefaults standardUserDefaults] boolForKey:kDefaultAutoOpenXcodeProject])
         [self openXcodeProject:self];
+}
+
+- (NSDictionary*)createProject:(NSString*)aPath
+{
+    // This is used when an user wants to replace an existing project
+    NSArray *argumentsRemove = [NSArray arrayWithObjects:@"-rf", aPath, nil];
+    [self runTaskWithLaunchPath:@"/bin/rm" arguments:argumentsRemove returnType:kTaskReturnTypeAny];
+
+    // Don't know if we have to use the argument -l or not. In this case we should add $CAPP_BUILD in the taskEnv
+    NSArray *arguments = [NSArray arrayWithObjects:@"gen", aPath ,@"-t", @"NibApplication", nil];
+    NSDictionary *taskResult = [self runTaskWithLaunchPath:self.executablePaths[@"capp"]
+                                                 arguments:arguments
+                                                returnType:kTaskReturnTypeStdOut];
+
+    NSInteger status = [taskResult[@"status"] intValue];
+    NSString *response = taskResult[@"response"];
+
+    if (!status)
+    {
+        DDLogVerbose(@"Created Xcode project: [%ld, %@]", status, status ? response : @"");
+        [self notifyUserWithTitle:@"Project created" message:aPath.lastPathComponent];
+    }
+    else
+    {
+        DDLogVerbose(@"Created Xcode project failed: [%ld, %@]", status, status ? response : @"");
+        NSDictionary *dictionary = [NSDictionary dictionaryWithObject:response forKey:@"message"];
+        [self.errorListController addObject:dictionary];
+        [self showErrors];
+    }
+
+    return taskResult;
 }
 
 #pragma mark - Notification handlers

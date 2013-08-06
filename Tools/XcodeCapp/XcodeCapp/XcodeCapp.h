@@ -134,6 +134,8 @@ extern NSString * const XCCProjectDidFinishLoadingNotification;
 - (void)wantUserNotificationWithInfo:(NSDictionary *)info;
 - (NSDictionary *)runTaskWithLaunchPath:(NSString *)launchPath arguments:(NSArray *)arguments returnType:(XCCTaskReturnType)returnType;
 
+- (NSDictionary*)createProject:(NSString*)aPath;
+
 @end
 
 @interface XcodeCapp (SnowLeopard)
