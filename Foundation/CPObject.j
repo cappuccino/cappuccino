@@ -254,6 +254,26 @@ CPLog(@"Got some class: %@", inst);
     return NO;
 }
 
+/*!
+    Test whether instances of this class conforms to the provided protocol.
+    @param aProtocol the protocol for which to test the class
+    @return \c YES if instances of the class conforms to the protocol
+*/
++ (BOOL)conformsToProtocol:(Protocol)aProtocol
+{
+    return class_conformsToProtocol(self, aProtocol);
+}
+
+/*!
+    Tests whether the receiver conforms to the provided protocol.
+    @param protocol the protocol for which to test the class
+    @return \c YES if instances of the class conforms to the protocol
+*/
+- (BOOL)conformsToProtocol:(Protocol)aProtocol
+{
+    return class_conformsToProtocol(isa, aProtocol);
+}
+
 // Obtaining method information
 
 /*!
