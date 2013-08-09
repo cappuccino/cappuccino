@@ -991,14 +991,12 @@ var resizeTimer = nil;
             windowCount = windows.length;
 
         while (windowCount--)
-        {
             [windows[windowCount] resizeWithOldPlatformWindowSize:oldSize];
-
-            [[CPNotificationCenter defaultCenter] postNotificationName:CPApplicationDidChangeScreenParametersNotification
-                                                                object:CPApp
-                                                              userInfo:nil];
-        }
     }
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPApplicationDidChangeScreenParametersNotification
+                                                        object:CPApp
+                                                      userInfo:nil];
 
     //window.liveResize = NO;
 
