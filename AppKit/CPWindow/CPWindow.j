@@ -763,7 +763,7 @@ CPTexturedBackgroundWindowMask
         if (CGRectGetWidth(frame) > usableWidth)
         {
             frame.origin.x = CGRectGetMinX(usableRect);
-            frame.size.width = usableWidth;
+            frame.size.width = MAX(usableWidth, _minSize.width);
         }
     }
 
@@ -782,7 +782,7 @@ CPTexturedBackgroundWindowMask
         if (CGRectGetHeight(frame) > usableHeight)
         {
             frame.origin.y = CGRectGetMinY(usableRect);
-            frame.size.height = usableHeight;
+            frame.size.height = MAX(usableHeight, _minSize.height);
         }
     }
 
@@ -792,7 +792,7 @@ CPTexturedBackgroundWindowMask
 /*
     Constrain the origin of a frame such that:
 
-    - CPWindowMinVisibleHorizontalMargin is kept onscreen at the left/right of the window.
+    - The window view's minimum resize width is kept onscreen at the left/right of the window.
     - The top of the window is kept below the top of the usable content.
     - The top of the contentView + CPWindowMinVisibleVerticalMargin is kept above the bottom of the usable content.
 */
