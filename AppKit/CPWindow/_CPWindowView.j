@@ -959,7 +959,8 @@ _CPWindowViewResizeSlop = 3;
 
 - (CGSize)_minimumResizeSize
 {
-    return CGSizeMake(0, _CPWindowViewMinContentHeight);
+    // Leave at least 4px so there is something visible.
+    return CGSizeMake(4, _CPWindowViewMinContentHeight);
 }
 
 - (int)bodyOffset

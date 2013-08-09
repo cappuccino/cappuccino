@@ -803,13 +803,14 @@ CPTexturedBackgroundWindowMask
     if (!_constrainsToUsableScreen || !_isVisible)
         return frame;
 
-    var usableRect = [_platformWindow usableContentFrame];
+    var usableRect = [_platformWindow usableContentFrame],
+        minimumSize = [_windowView _minimumResizeSize];
 
     // First constrain x so that at least CPWindowMinVisibleHorizontalMargin is visible on the right
-    frame.origin.x = MAX(frame.origin.x, CGRectGetMinX(usableRect) + CPWindowMinVisibleHorizontalMargin - CGRectGetWidth(frame));
+    frame.origin.x = MAX(frame.origin.x, CGRectGetMinX(usableRect) + minimumSize.width - CGRectGetWidth(frame));
 
     // Now constrain x so that at least CPWindowMinVisibleHorizontalMargin is visible on the left
-    frame.origin.x = MIN(frame.origin.x, CGRectGetMaxX(usableRect) - CPWindowMinVisibleHorizontalMargin);
+    frame.origin.x = MIN(frame.origin.x, CGRectGetMaxX(usableRect) - minimumSize.width);
 
     // Now constrain y so that it is below the top of the usable content
     frame.origin.y = MAX(frame.origin.y, CGRectGetMinY(usableRect));
