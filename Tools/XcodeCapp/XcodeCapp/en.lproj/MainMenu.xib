@@ -241,17 +241,17 @@ Original Cocoa version developed by:
         </window>
         <window title="Preferences" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" frameAutosaveName="xcc-prefs" animationBehavior="default" id="542">
             <windowStyleMask key="styleMask" titled="YES" closable="YES"/>
-            <rect key="contentRect" x="1964" y="505" width="431" height="292"/>
+            <rect key="contentRect" x="1964" y="505" width="431" height="321"/>
             <rect key="screenRect" x="0.0" y="0.0" width="2560" height="1418"/>
             <view key="contentView" id="558">
-                <rect key="frame" x="0.0" y="0.0" width="431" height="292"/>
+                <rect key="frame" x="0.0" y="0.0" width="431" height="321"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <box autoresizesSubviews="NO" title="Projects" borderType="line" id="847">
-                        <rect key="frame" x="17" y="149" width="397" height="128"/>
+                        <rect key="frame" x="17" y="151" width="397" height="155"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <view key="contentView">
-                            <rect key="frame" x="1" y="1" width="395" height="112"/>
+                            <rect key="frame" x="1" y="1" width="395" height="139"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <subviews>
                                 <button id="563">
@@ -284,6 +284,23 @@ Original Cocoa version developed by:
                                         </binding>
                                     </connections>
                                 </button>
+                                <button id="1qI-ol-J5k">
+                                    <rect key="frame" x="16" y="109" width="298" height="18"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <buttonCell key="cell" type="check" title="Symlink frameworks when creating projects" bezelStyle="regularSquare" imagePosition="left" alignment="left" state="on" inset="2" id="272-W8-Ygy">
+                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                        <font key="font" metaFont="system"/>
+                                    </buttonCell>
+                                    <connections>
+                                        <binding destination="545" name="enabled" keyPath="isCappBuildDefined" id="HUA-hI-eLR"/>
+                                        <binding destination="545" name="toolTip" keyPath="toolTipSymlinkRadioButton" id="bWz-Mw-z56"/>
+                                        <binding destination="544" name="value" keyPath="values.useSymlinkWhenCreatingProject" id="aRN-Fd-MPN">
+                                            <dictionary key="options">
+                                                <bool key="NSValidatesImmediately" value="YES"/>
+                                            </dictionary>
+                                        </binding>
+                                    </connections>
+                                </button>
                                 <textField verticalHuggingPriority="750" id="801">
                                     <rect key="frame" x="15" y="20" width="106" height="17"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
@@ -298,7 +315,7 @@ Original Cocoa version developed by:
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <popUpButtonCell key="cell" type="push" title="30" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="808" id="804">
                                         <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                        <font key="font" metaFont="system"/>
+                                        <font key="font" metaFont="menu"/>
                                         <menu key="menu" title="OtherViews" id="805">
                                             <items>
                                                 <menuItem title="10" id="806"/>
@@ -393,7 +410,7 @@ Original Cocoa version developed by:
                 <rect key="frame" x="0.0" y="0.0" width="716" height="654"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <pdfView autoresizesSubviews="NO" displaysPageBreaks="NO" scaleFactor="1.1454248428344727" autoScales="YES" id="857">
+                    <pdfView autoresizesSubviews="NO" displaysPageBreaks="NO" autoScales="YES" id="857">
                         <rect key="frame" x="0.0" y="0.0" width="716" height="654"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                     </pdfView>
@@ -408,6 +425,7 @@ Original Cocoa version developed by:
                 <action selector="save:" destination="839" id="841"/>
                 <action selector="save:" destination="803" id="849"/>
                 <action selector="save:" destination="843" id="854"/>
+                <action selector="save:" destination="1qI-ol-J5k" id="Qld-lL-7rM"/>
             </connections>
         </userDefaultsController>
         <customObject id="545" userLabel="XCodeCapp" customClass="XcodeCapp">
@@ -421,6 +439,7 @@ Original Cocoa version developed by:
                 <outlet property="errorListController" destination="759" id="760"/>
                 <outlet property="errorTable" destination="587" id="748"/>
                 <outlet property="errorsPanel" destination="541" id="775"/>
+                <outlet property="symlinkRadioButton" destination="1qI-ol-J5k" id="UhG-7c-NP8"/>
             </connections>
         </customObject>
         <arrayController selectsInsertedObjects="NO" avoidsEmptySelection="NO" id="759" userLabel="Errors Controller">
@@ -436,4 +455,40 @@ Original Cocoa version developed by:
     <resources>
         <image name="icon_128x128" width="128" height="128"/>
     </resources>
+    <classes>
+        <class className="AppController" superclassName="NSObject">
+            <source key="sourceIdentifier" type="project" relativePath="./Classes/AppController.h"/>
+            <relationships>
+                <relationship kind="action" name="createProject:"/>
+                <relationship kind="action" name="loadProject:"/>
+                <relationship kind="action" name="openAbout:"/>
+                <relationship kind="action" name="openHelp:"/>
+                <relationship kind="action" name="openPreferences:"/>
+                <relationship kind="action" name="showInFinder:"/>
+                <relationship kind="outlet" name="aboutWindow" candidateClass="NSPanel"/>
+                <relationship kind="outlet" name="helpView" candidateClass="PDFView"/>
+                <relationship kind="outlet" name="helpWindow" candidateClass="NSWindow"/>
+                <relationship kind="outlet" name="menuItemHistory" candidateClass="NSMenuItem"/>
+                <relationship kind="outlet" name="menuItemOpenProject" candidateClass="NSMenuItem"/>
+                <relationship kind="outlet" name="menuItemShowInFinder" candidateClass="NSMenuItem"/>
+                <relationship kind="outlet" name="preferencesController" candidateClass="NSUserDefaultsController"/>
+                <relationship kind="outlet" name="preferencesWindow" candidateClass="NSWindow"/>
+                <relationship kind="outlet" name="statusMenu" candidateClass="NSMenu"/>
+                <relationship kind="outlet" name="xcc" candidateClass="XcodeCapp"/>
+            </relationships>
+        </class>
+        <class className="XcodeCapp" superclassName="NSObject">
+            <source key="sourceIdentifier" type="project" relativePath="./Classes/XcodeCapp.h"/>
+            <relationships>
+                <relationship kind="action" name="clearErrors:"/>
+                <relationship kind="action" name="openErrorInEditor:"/>
+                <relationship kind="action" name="openErrorsPanel:"/>
+                <relationship kind="action" name="openXcodeProject:"/>
+                <relationship kind="action" name="synchronizeProject:"/>
+                <relationship kind="outlet" name="errorListController" candidateClass="NSArrayController"/>
+                <relationship kind="outlet" name="errorTable" candidateClass="NSTableView"/>
+                <relationship kind="outlet" name="errorsPanel" candidateClass="NSPanel"/>
+            </relationships>
+        </class>
+    </classes>
 </document>

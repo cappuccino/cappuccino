@@ -187,6 +187,8 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
         self.pbxOperations = [NSMutableDictionary new];
         self.executablePaths = [NSMutableDictionary new];
         self.projectPathFileDescriptor = -1;
+        self.isCappBuildDefined = YES;
+        self.toolTipSymlinkRadioButton = @"If this is checked, when a Cappuccino project is created, the frameworks of the new project will be symlinked from the $CAPP_BUILD";
 
         [self initTaskEnvironment];
 
@@ -240,6 +242,28 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     self.environment[@"NARWHAL_ENGINE"] = @"jsc";
 
     self.executables = @[@"python", @"narwhal-jsc", @"objj", @"nib2cib", @"capp"];
+
+    // This is used to get the env var of $CAPP_BUILD
+    NSDictionary *processEnvironment = [[NSProcessInfo processInfo] environment];
+    NSArray *arguments = [NSArray arrayWithObjects:@"-l", @"-c", @"echo $CAPP_BUID", nil];
+
+    NSDictionary *taskResult = [self runTaskWithLaunchPath:[processEnvironment objectForKey:@"SHELL"]
+                                   arguments:arguments
+                                  returnType:kTaskReturnTypeStdOut];
+
+    // Make sure to remove the \n at the end of the response
+    NSString *response = [taskResult[@"response"] stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]];
+
+    self.environment[@"CAPP_BUILD"] = response;
+
+    // Make sure we have found a CAPP_BUILD
+    if ([response length] == 0 || [taskResult[@"status"] intValue] == -1)
+    {
+        self.toolTipSymlinkRadioButton = @"To use this option you need to have the variable $CAPP_BUILD in your environement (export CAPP_BUILD='path/to/your/cappuccino/build')";
+        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        [defaults setObject:@NO forKey:kDefaultUseSymlinkWhenCreatingProject];
+        self.isCappBuildDefined = NO;
+    }
 }
 
 - (void)initObservers
@@ -576,15 +600,20 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
 
 - (NSDictionary*)createProject:(NSString*)aPath
 {
+    NSDictionary *taskResult;
+    NSMutableArray *arguments = [NSMutableArray arrayWithObjects:@"gen", aPath ,@"-t", @"NibApplication", nil];
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+
     // This is used when an user wants to replace an existing project
     NSArray *argumentsRemove = [NSArray arrayWithObjects:@"-rf", aPath, nil];
     [self runTaskWithLaunchPath:@"/bin/rm" arguments:argumentsRemove returnType:kTaskReturnTypeAny];
 
-    // Don't know if we have to use the argument -l or not. In this case we should add $CAPP_BUILD in the taskEnv
-    NSArray *arguments = [NSArray arrayWithObjects:@"gen", aPath ,@"-t", @"NibApplication", nil];
-    NSDictionary *taskResult = [self runTaskWithLaunchPath:self.executablePaths[@"capp"]
-                                                 arguments:arguments
-                                                returnType:kTaskReturnTypeStdOut];
+    if ([defaults boolForKey:kDefaultUseSymlinkWhenCreatingProject])
+        [arguments addObject:@"-l"];
+
+    taskResult = [self runTaskWithLaunchPath:self.executablePaths[@"capp"]
+                                   arguments:arguments
+                                  returnType:kTaskReturnTypeStdOut];
 
     NSInteger status = [taskResult[@"status"] intValue];
     NSString *response = taskResult[@"response"];
