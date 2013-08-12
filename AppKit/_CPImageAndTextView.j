@@ -802,4 +802,11 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
     [super setFrameSize:aSize];
 }
 
+- (void)setSelectedRange:(CPRange)aRange
+{
+#if PLATFORM(DOM)
+    [[[self window] platformWindow] setSelectedRange:aRange inElement:_DOMTextElement];
+#endif
+}
+
 @end

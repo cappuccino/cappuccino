@@ -351,8 +351,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     else
         [self unsetThemeState:CPThemeStateEditable];
 
-    // We only allow first responder status if the field is editable and enabled.
-    if (!shouldBeEditable && [[self window] firstResponder] === self)
+    // We only allow first responder status if the field is enable, and editable or selectable.
+    if (!(shouldBeEditable && ![self isSelectable]) && [[self window] firstResponder] === self)
         [[self window] makeFirstResponder:nil];
 
     if (shouldBeEditable)
@@ -377,7 +377,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 {
     [super setEnabled:shouldBeEnabled];
 
-    // We only allow first responder status if the field is editable and enabled.
+    // We only allow first responder status if the field is enabled.
     if (!shouldBeEnabled && [[self window] firstResponder] === self)
         [[self window] makeFirstResponder:nil];
 }
@@ -531,18 +531,21 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 /*! @ignore */
 - (BOOL)acceptsFirstResponder
 {
-    return [self isEditable] && [self isEnabled] && [self _isWithinUsablePlatformRect];
+    return ([self isEnabled] && [self isEditable] || [self isSelectable]) && [self _isWithinUsablePlatformRect];
 }
 
 /*! @ignore */
 - (BOOL)becomeFirstResponder
 {
+    if (![self isEnabled])
+        return NO;
+
     // As long as we are the first responder we need to monitor the key status of our window.
     [self _setObserveWindowKeyNotifications:YES];
 
     _isEditing = NO;
 
-    if ([[self window] isKeyWindow])
+    if ([[self window] isKeyWindow] && [self isEditable])
         return [self _becomeFirstKeyResponder];
 
     return YES;
@@ -552,12 +555,20 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     A text field can be the first responder without necessarily being the focus of keyboard input. For example, it might be the first responder of window A but window B is the main and key window. It's important we don't put a focused input field into a text field in a non-key window, even if that field is the first responder, because the key window might also have a first responder text field which the user will expect to receive keyboard input.
 
     Since a first responder but non-key window text field can't receive input it should not even look like an active text field (Cocoa has a "slightly active" text field look it uses when another window is the key window, but Cappuccino doesn't today.)
+
+    It's also possible for a text field to be non-editable but selectable in which case it can also become the first responder -
+    this is what allows text to be copied from it.
 */
 - (BOOL)_becomeFirstKeyResponder
 {
     // If the text field is still not completely on screen, refuse to become
     // first responder, because the browser will scroll it into view out of our control.
     if (![self _isWithinUsablePlatformRect])
+        return NO;
+
+    // A selectable but non-editable text field may be the first responder, but never the
+    // first key responder (first key responder indicating editability.)
+    if (![self isEditable])
         return NO;
 
     [self setThemeState:CPThemeStateEditing];
@@ -680,24 +691,26 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 - (BOOL)resignFirstResponder
 {
 #if PLATFORM(DOM)
-
-    var element = [self _inputElement],
-        newValue = element.value,
-        error = @"";
-
-    if (newValue !== _stringValue)
+    // We might have been the first responder without actually editing.
+    if (_isEditing)
     {
-        [self _setStringValue:newValue];
-    }
+        var element = [self _inputElement],
+            newValue = element.value,
+            error = @"";
 
-    // If there is a formatter, always give it a chance to reject the resignation,
-    // even if the value has not changed.
-    if ([self _valueIsValid:newValue] === NO)
-    {
-        element.focus();
-        return NO;
-    }
+        if (newValue !== _stringValue)
+        {
+            [self _setStringValue:newValue];
+        }
 
+        // If there is a formatter, always give it a chance to reject the resignation,
+        // even if the value has not changed.
+        if ([self _valueIsValid:newValue] === NO)
+        {
+            element.focus();
+            return NO;
+        }
+    }
 #endif
 
     // When we are no longer the first responder we don't worry about the key status of our window anymore.
@@ -706,10 +719,13 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     [self _resignFirstKeyResponder];
 
     _isEditing = NO;
-    [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:self userInfo:nil]];
+    if ([self isEditable])
+    {
+        [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:self userInfo:nil]];
 
-    if ([self sendsActionOnEndEditing])
-        [self sendAction:[self action] to:[self target]];
+        if ([self sendsActionOnEndEditing])
+            [self sendAction:[self action] to:[self target]];
+    }
 
     [self textDidBlur:[CPNotification notificationWithName:CPTextFieldDidBlurNotification object:self userInfo:nil]];
 
@@ -782,6 +798,9 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)_windowDidBecomeKey:(CPNotification)aNotification
 {
+    if (!([self isEnabled] && [self isEditable]))
+        return;
+
     var wind = [self window];
 
     if ([wind isKeyWindow] && [wind firstResponder] === self)
@@ -828,6 +847,17 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     return [self acceptsFirstResponder];
 }
 
+- (void)_didEdit
+{
+    if (!_isEditing)
+    {
+        _isEditing = YES;
+        [self textDidBeginEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
+    }
+
+    [self textDidChange:[CPNotification notificationWithName:CPControlTextDidChangeNotification object:self userInfo:nil]];
+}
+
 - (void)mouseDown:(CPEvent)anEvent
 {
     // Don't track! (ever?)
@@ -854,7 +884,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)mouseUp:(CPEvent)anEvent
 {
-    if (![self isSelectable] && (![self isEditable] || ![self isEnabled]))
+    if (![self isEnabled] || !([self isSelectable] || [self isEditable]))
         [[self nextResponder] mouseUp:anEvent];
     else if ([self isSelectable])
     {
@@ -866,13 +896,22 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
             CPTextFieldCachedSelectStartFunction = nil
             CPTextFieldCachedDragFunction = nil;
         }
+
+        // TODO clickCount === 2 should select the clicked word.
+
+        if ([[CPApp currentEvent] clickCount] === 3)
+        {
+            [self selectText:nil];
+            return;
+        }
+
         return [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:YES];
     }
 }
 
 - (void)mouseDragged:(CPEvent)anEvent
 {
-    if (![self isSelectable] && (![self isEditable] || ![self isEnabled]))
+    if (![self isEnabled] || !([self isSelectable] || [self isEditable]))
         [[self nextResponder] mouseDragged:anEvent];
     else if ([self isSelectable])
         return [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:YES];
@@ -880,26 +919,21 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)keyUp:(CPEvent)anEvent
 {
-#if PLATFORM(DOM)
+    if (!([self isEnabled] && [self isEditable]))
+        return;
 
+#if PLATFORM(DOM)
     var newValue = [self _inputElement].value;
 
     if (newValue !== _stringValue)
     {
         [self _setStringValue:newValue];
 
-        if (!_isEditing)
-        {
-            _isEditing = YES;
-            [self textDidBeginEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
-        }
-
-        [self textDidChange:[CPNotification notificationWithName:CPControlTextDidChangeNotification object:self userInfo:nil]];
+        [self _didEdit];
     }
 
-#endif
-
     [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
+#endif
 }
 
 - (void)keyDown:(CPEvent)anEvent
@@ -932,11 +966,15 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)insertNewline:(id)sender
 {
+    if (!([self isEnabled] && [self isEditable]))
+        return;
+
     var newValue = [self _inputElement].value;
 
     if (newValue !== _stringValue)
     {
         [self _setStringValue:newValue];
+        [self _didEdit];
     }
 
     if ([self _valueIsValid:_stringValue])
@@ -975,6 +1013,9 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)_insertCharacterIgnoringFieldEditor:(CPString)aCharacter
 {
+    if (!([self isEnabled] && [self isEditable]))
+        return;
+
 #if PLATFORM(DOM)
 
     var oldValue = _stringValue,
@@ -987,13 +1028,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     // NOTE: _stringValue is now the current input element value
     if (oldValue !== _stringValue)
     {
-        if (!_isEditing)
-        {
-            _isEditing = YES;
-            [self textDidBeginEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
-        }
-
-        [self textDidChange:[CPNotification notificationWithName:CPControlTextDidChangeNotification object:self userInfo:nil]];
+        [self _didEdit];
     }
 
 #endif
@@ -1243,22 +1278,29 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 - (void)_selectText:(id)sender immediately:(BOOL)immediately
 {
     // Selecting the text in a field makes it the first responder
-    if (([self isEditable] || [self isSelectable]))
+    if ([self isEditable] || [self isSelectable])
     {
         var wind = [self window];
 
 #if PLATFORM(DOM)
-        var element = [self _inputElement];
-
-        if ([wind firstResponder] === self)
+        if ([self isEditable])
         {
-            if (immediately)
-                element.select();
-            else
-                window.setTimeout(function() { element.select(); }, 0);
+            var element = [self _inputElement];
+
+            if ([wind firstResponder] === self)
+            {
+                if (immediately)
+                    element.select();
+                else
+                    window.setTimeout(function() { element.select(); }, 0);
+            }
+            else if (wind !== nil && [wind makeFirstResponder:self])
+                [self _selectText:sender immediately:immediately];
         }
-        else if (wind !== nil && [wind makeFirstResponder:self])
-            [self _selectText:sender immediately:immediately];
+        else
+        {
+            [self setSelectedRange:CPMakeRange(0, _stringValue.length)];
+        }
 #else
         // Even if we can't actually select the text we need to preserve the first
         // responder side effect.
@@ -1272,16 +1314,30 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 - (void)copy:(id)sender
 {
     // First write to the Cappuccino clipboard.
-    var selectedRange = [self selectedRange];
+    var stringToCopy = nil;
 
-    if (selectedRange.length < 1)
-        return;
+    if ([self isEditable])
+    {
+        var selectedRange = [self selectedRange];
 
-    var pasteboard = [CPPasteboard generalPasteboard],
-        stringForPasting = [_stringValue substringWithRange:selectedRange];
+        if (selectedRange.length < 1)
+            return;
+
+        stringToCopy = [_stringValue substringWithRange:selectedRange];
+    }
+    else
+    {
+        // selectedRange won't work if we're displaying our text using a <div>. Instead we have to ask the browser
+        // what's selected and hope it's right in a Cappuccino context as well.
+#if PLATFORM(DOM)
+        stringToCopy = [[[self window] platformWindow] _selectedText];
+#endif
+    }
+
+    var pasteboard = [CPPasteboard generalPasteboard];
 
     [pasteboard declareTypes:[CPStringPboardType] owner:nil];
-    [pasteboard setString:stringForPasting forType:CPStringPboardType];
+    [pasteboard setString:stringToCopy forType:CPStringPboardType];
 
     if ([CPPlatform isBrowser])
     {
@@ -1292,7 +1348,13 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)cut:(id)sender
 {
+    if (![self isEnabled])
+        return;
+
     [self copy:sender];
+
+    if (![self isEditable])
+        return;
 
     if (![CPPlatform isBrowser])
     {
@@ -1311,6 +1373,9 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)paste:(id)sender
 {
+    if (!([self isEnabled] && [self isEditable]))
+        return;
+
     if (![CPPlatform isBrowser])
     {
         var pasteboard = [CPPasteboard generalPasteboard];
@@ -1324,7 +1389,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
             pasteString = [pasteboard stringForType:CPStringPboardType],
             newValue = [_stringValue stringByReplacingCharactersInRange:selectedRange withString:pasteString];
 
-        [self setStringValue:newValue];
+        [self _setStringValue:newValue];
+        [self _didEdit];
         [self setSelectedRange:CPMakeRange(selectedRange.location + pasteString.length, 0)];
     }
     // If we don't have an oninput listener, we won't detect the change made by the cut and need to fake a key up "soon".
@@ -1383,35 +1449,48 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 #if PLATFORM(DOM)
 
-    var inputElement = [self _inputElement];
-
-    try
+    if (![self isEditable])
     {
-        if ([inputElement.selectionStart isKindOfClass:CPNumber])
-        {
-            inputElement.selectionStart = aRange.location;
-            inputElement.selectionEnd = CPMaxRange(aRange);
-        }
-        else
-        {
-            // browsers which don't support selectionStart/selectionEnd (aka IE).
-            var theDocument = inputElement.ownerDocument || inputElement.document,
-                existingRange = theDocument.selection.createRange(),
-                range = inputElement.createTextRange();
+        // No input element - selectable text field only.
+        var contentView = [self layoutEphemeralSubviewNamed:@"content-view"
+                                         positioned:CPWindowAbove
+                    relativeToEphemeralSubviewNamed:@"bezel-view"];
 
-            if (range.inRange(existingRange))
+        if (contentView)
+            [contentView setSelectedRange:aRange];
+    }
+    else
+    {
+        // Input element
+        var inputElement = [self _inputElement];
+
+        try
+        {
+            if ([inputElement.selectionStart isKindOfClass:CPNumber])
             {
-                range.collapse(true);
-                range.move('character', aRange.location);
-                range.moveEnd('character', aRange.length);
-                range.select();
+                inputElement.selectionStart = aRange.location;
+                inputElement.selectionEnd = CPMaxRange(aRange);
+            }
+            else
+            {
+                // browsers which don't support selectionStart/selectionEnd (aka IE).
+                var theDocument = inputElement.ownerDocument || inputElement.document,
+                    existingRange = theDocument.selection.createRange(),
+                    range = inputElement.createTextRange();
+
+                if (range.inRange(existingRange))
+                {
+                    range.collapse(true);
+                    range.move('character', aRange.location);
+                    range.moveEnd('character', aRange.length);
+                    range.select();
+                }
             }
         }
+        catch (e)
+        {
+        }
     }
-    catch (e)
-    {
-    }
-
 #endif
 }
 
@@ -1422,6 +1501,9 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)deleteBackward:(id)sender
 {
+    if (!([self isEnabled] && [self isEditable]))
+        return;
+
     var selectedRange = [self selectedRange];
 
     if (selectedRange.length < 2)
@@ -1432,8 +1514,9 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     var newValue = [_stringValue stringByReplacingCharactersInRange:selectedRange withString:""];
 
-    [self setStringValue:newValue];
+    [self _setStringValue:newValue];
     [self setSelectedRange:CPMakeRange(selectedRange.location, 0)];
+    [self _didEdit];
 }
 
 #pragma mark Setting the Delegate
@@ -1614,7 +1697,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 {
     [super viewDidUnhide];
 
-    if ([[self window] firstResponder] === self)
+    if ([self isEditable] && [[self window] firstResponder] === self)
         [self _becomeFirstKeyResponder];
 }
 
