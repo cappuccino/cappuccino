@@ -1274,17 +1274,24 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         var wind = [self window];
 
 #if PLATFORM(DOM)
-        var element = [self _inputElement];
-
-        if ([wind firstResponder] === self)
+        if ([self isEditable])
         {
-            if (immediately)
-                element.select();
-            else
-                window.setTimeout(function() { element.select(); }, 0);
+            var element = [self _inputElement];
+
+            if ([wind firstResponder] === self)
+            {
+                if (immediately)
+                    element.select();
+                else
+                    window.setTimeout(function() { element.select(); }, 0);
+            }
+            else if (wind !== nil && [wind makeFirstResponder:self])
+                [self _selectText:sender immediately:immediately];
         }
-        else if (wind !== nil && [wind makeFirstResponder:self])
-            [self _selectText:sender immediately:immediately];
+        else
+        {
+            [self setSelectedRange:CPMakeRange(0, _stringValue.length)];
+        }
 #else
         // Even if we can't actually select the text we need to preserve the first
         // responder side effect.
@@ -1433,35 +1440,48 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 #if PLATFORM(DOM)
 
-    var inputElement = [self _inputElement];
-
-    try
+    if (![self isEditable])
     {
-        if ([inputElement.selectionStart isKindOfClass:CPNumber])
-        {
-            inputElement.selectionStart = aRange.location;
-            inputElement.selectionEnd = CPMaxRange(aRange);
-        }
-        else
-        {
-            // browsers which don't support selectionStart/selectionEnd (aka IE).
-            var theDocument = inputElement.ownerDocument || inputElement.document,
-                existingRange = theDocument.selection.createRange(),
-                range = inputElement.createTextRange();
+        // No input element - selectable text field only.
+        var contentView = [self layoutEphemeralSubviewNamed:@"content-view"
+                                         positioned:CPWindowAbove
+                    relativeToEphemeralSubviewNamed:@"bezel-view"];
 
-            if (range.inRange(existingRange))
+        if (contentView)
+            [contentView setSelectedRange:aRange];
+    }
+    else
+    {
+        // Input element
+        var inputElement = [self _inputElement];
+
+        try
+        {
+            if ([inputElement.selectionStart isKindOfClass:CPNumber])
             {
-                range.collapse(true);
-                range.move('character', aRange.location);
-                range.moveEnd('character', aRange.length);
-                range.select();
+                inputElement.selectionStart = aRange.location;
+                inputElement.selectionEnd = CPMaxRange(aRange);
+            }
+            else
+            {
+                // browsers which don't support selectionStart/selectionEnd (aka IE).
+                var theDocument = inputElement.ownerDocument || inputElement.document,
+                    existingRange = theDocument.selection.createRange(),
+                    range = inputElement.createTextRange();
+
+                if (range.inRange(existingRange))
+                {
+                    range.collapse(true);
+                    range.move('character', aRange.location);
+                    range.moveEnd('character', aRange.length);
+                    range.select();
+                }
             }
         }
+        catch (e)
+        {
+        }
     }
-    catch (e)
-    {
-    }
-
 #endif
 }
 

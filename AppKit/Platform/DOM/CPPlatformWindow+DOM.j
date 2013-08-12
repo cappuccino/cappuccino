@@ -1516,6 +1516,31 @@ var resizeTimer = nil;
 }
 
 /*!
+    Set the text selection range to the given range within the given element, which must be a child of
+    this DOM window.
+*/
+- (void)setSelectedRange:(CPRange)aRange inElement:(DOMElement)anElement
+{
+    if (_DOMWindow.getSelection())
+    {
+        var domRange = _DOMWindow.document.createRange();
+        domRange.setStart(anElement.childNodes[0], aRange.location);
+        domRange.setEnd(anElement.childNodes[0], CPMaxRange(aRange));
+        _DOMWindow.getSelection().removeAllRanges();
+        _DOMWindow.getSelection().addRange(domRange);
+    }
+    else if (_DOMWindow.document.selection)
+    {
+        var domRange = _DOMWindow.document.body.createTextRange();
+        domRange.moveToElementText(anElement);
+        domRange.collapse(true);
+        domRange.moveStart('character', aRange.location);
+        domRange.moveEnd('character', aRange.length);
+        domRange.select();
+    }
+}
+
+/*!
     When using command (mac) or control (windows), keys are propagated to the browser by default.
     To prevent a character key from propagating (to prevent its default action, and instead use it
     in your own application), use these methods. These methods are additive -- the list builds until you clear it.
