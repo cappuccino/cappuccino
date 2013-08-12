@@ -14,7 +14,16 @@
 
 @protocol MyProtocol3 <MyProtocol, MyProtocol2>
 
+@required
+@optional
+@required
 - (int)myFunction3:(int)aValue;
+@optional
+@required
+
+@end
+
+@protocol MyProtocol4 <MyProtocol, MyProtocol2>
 
 @end
 
