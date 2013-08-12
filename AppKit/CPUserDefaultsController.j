@@ -92,6 +92,17 @@ var SharedUserDefaultsController = nil;
     [_valueProxy revertToInitialValues];
 }
 
+- (void)_saveUnappliedChanges
+{
+    if (!_appliesImmediately)
+    {
+        if ([self hasUnappliedChanges])
+            [self save:nil];
+        [self setAppliesImmediately:YES];
+    }
+}
+
+
 @end
 
 

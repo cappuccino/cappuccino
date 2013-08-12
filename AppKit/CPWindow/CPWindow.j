@@ -1979,12 +1979,6 @@ CPTexturedBackgroundWindowMask
 
         case CPMouseMoved:
             [_windowView setCursorForLocation:point resizing:NO];
-            if (![[CPUserDefaultsController sharedUserDefaultsController] appliesImmediately])
-            {
-                if ([[CPUserDefaultsController sharedUserDefaultsController] hasUnappliedChanges])
-                    [[CPUserDefaultsController sharedUserDefaultsController] save:nil];
-                [[CPUserDefaultsController sharedUserDefaultsController] setAppliesImmediately:YES];
-            }
 
             // Ignore mouse moves for parents of sheets
             if (!_acceptsMouseMovedEvents || sheet)
