@@ -1905,7 +1905,7 @@ MethodDeclarationStatement: function(node, st, c) {
         selectors = node.selectors,
         nodeArguments = node.arguments,
         returnType = node.returntype,
-        types = [returnType ? returnType.name : "id"],
+        types = [returnType ? returnType.name : (node.action ? "void" : "id")],
         returnTypeProtocols = returnType ? returnType.protocols : null;
         selector = selectors[0].name;    // There is always at least one selector
 
