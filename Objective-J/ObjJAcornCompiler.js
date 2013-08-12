@@ -2028,15 +2028,15 @@ MethodDeclarationStatement: function(node, st, c) {
                 // First type is return type
                 var returnType = declaredTypes[0];
 
-                if (returnType !== types[0])
+                if (returnType !== types[0] && !(returnType === 'id' && node.returntype.typeisclass))
                     compiler.addWarning(createMessage("Conflicting return type in implementation of '" + selector + "': '" + returnType + "' vs '" + types[0] + "'", node.returntype || node, compiler.source));
 
                 // Check the parameter types. The size of the two type arrays should be the same
                 for (var i = 1; i < typeSize; i++) {
                     var parameterType = declaredTypes[i];
 
-                    if (parameterType !== types[i])
-                        compiler.addWarning(createMessage("Conflicting parameter types in implementation of '" + selector + "': '" + parameterType + "' vs '" + types[i] + "'", node.arguments[i - 1].type || node.arguments[i - 1].identifier, compiler.source));
+                    if (parameterType !== types[i] && !(parameterType === 'id' && nodeArguments[i - 1].type.typeisclass))
+                        compiler.addWarning(createMessage("Conflicting parameter types in implementation of '" + selector + "': '" + parameterType + "' vs '" + types[i] + "'", nodeArguments[i - 1].type || nodeArguments[i - 1].identifier, compiler.source));
                 }
             }
         }
