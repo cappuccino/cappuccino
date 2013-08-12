@@ -245,7 +245,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
 
     // This is used to get the env var of $CAPP_BUILD
     NSDictionary *processEnvironment = [[NSProcessInfo processInfo] environment];
-    NSArray *arguments = [NSArray arrayWithObjects:@"-l", @"-c", @"echo $CAPP_BUID", nil];
+    NSArray *arguments = [NSArray arrayWithObjects:@"-l", @"-c", @"echo $CAPP_BUILD", nil];
 
     NSDictionary *taskResult = [self runTaskWithLaunchPath:[processEnvironment objectForKey:@"SHELL"]
                                    arguments:arguments
