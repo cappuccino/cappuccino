@@ -594,7 +594,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
     return @"toolbar-view";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{
             @"item-margin": 10.0,
@@ -1216,7 +1216,7 @@ var LABEL_MARGIN    = 2.0;
     [_labelField setTextShadowColor:[self FIXME_labelShadowColor]];
 }
 
-- (void)sendAction:(SEL)anAction to:(id)aSender
+- (BOOL)sendAction:(SEL)anAction to:(id)aSender
 {
     [CPApp sendAction:anAction to:aSender from:_toolbarItem];
 }

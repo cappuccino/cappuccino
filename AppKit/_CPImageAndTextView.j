@@ -218,7 +218,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
     [self setNeedsLayout];
 }
 
-- (void)imageScaling
+- (CPUInteger)imageScaling
 {
     return _imageScaling;
 }

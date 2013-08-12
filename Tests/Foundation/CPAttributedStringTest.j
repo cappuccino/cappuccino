@@ -116,7 +116,7 @@ var sharedObject = [CPObject new];
     testAttributesAtIndexWithValues(string, 33, expectedValues, self);
 }
 
-//- (CPDictionary)attributesAtIndex:(unsigned)anIndex longestEffectiveRange:(CPRangePointer)aRange inRange:(CPRange)rangeLimit
+//- (CPDictionary)attributesAtIndex:(CPUInteger)anIndex longestEffectiveRange:(CPRangePointer)aRange inRange:(CPRange)rangeLimit
 - (void)testAttributesAtIndexLongestEffectiveRangeInRange
 {
     var string = [self stringForTesting];
@@ -135,7 +135,7 @@ var sharedObject = [CPObject new];
     [self assertTrue:[attributes objectForKey:"f"] === 43 message:@"expecting 'f' to be 43, was: " + [attributes objectForKey:"f"]];
 }
 
-//- (id)attribute:(CPString)attribute atIndex:(unsigned)index effectiveRange:(CPRangePointer)aRange
+//- (id)attribute:(CPString)attribute atIndex:(CPUInteger)index effectiveRange:(CPRangePointer)aRange
 - (void)testAttributeAtIndexEffectiveRange
 {
     var string = [self stringForTesting];
@@ -144,7 +144,7 @@ var sharedObject = [CPObject new];
     testAttributeAtIndexWithValue(string, 20, "d", [CPNull null], self);
 }
 
-//- (id)attribute:(CPString)attribute atIndex:(unsigned)index longestEffectiveRange:(CPRangePointer)aRange inRange:(CPRange)rangeLimit
+//- (id)attribute:(CPString)attribute atIndex:(CPUInteger)index longestEffectiveRange:(CPRangePointer)aRange inRange:(CPRange)rangeLimit
 - (void)testAttributeAtIndexLongestEffectiveRangeInRange
 {
     var string = [self stringForTesting];

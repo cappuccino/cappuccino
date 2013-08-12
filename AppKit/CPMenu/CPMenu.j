@@ -278,7 +278,7 @@ var _CPMenuBarVisible               = NO,
     @param aMenuItem the item to insert
     @param anIndex the index in the menu to insert the item.
 */
-- (void)insertItem:(CPMenuItem)aMenuItem atIndex:(unsigned)anIndex
+- (void)insertItem:(CPMenuItem)aMenuItem atIndex:(CPUInteger)anIndex
 {
     [self insertObject:aMenuItem inItemsAtIndex:anIndex];
 }
@@ -291,7 +291,7 @@ var _CPMenuBarVisible               = NO,
     @param anIndex the index location in the menu for the new item
     @return the new menu item
 */
-- (CPMenuItem)insertItemWithTitle:(CPString)aTitle action:(SEL)anAction keyEquivalent:(CPString)aKeyEquivalent atIndex:(unsigned)anIndex
+- (CPMenuItem)insertItemWithTitle:(CPString)aTitle action:(SEL)anAction keyEquivalent:(CPString)aKeyEquivalent atIndex:(CPUInteger)anIndex
 {
     var item = [[CPMenuItem alloc] initWithTitle:aTitle action:anAction keyEquivalent:aKeyEquivalent];
 
@@ -335,7 +335,7 @@ var _CPMenuBarVisible               = NO,
     Removes the item at the specified index from the menu
     @param anIndex the index of the item to remove
 */
-- (void)removeItemAtIndex:(unsigned)anIndex
+- (void)removeItemAtIndex:(CPUInteger)anIndex
 {
     [self removeObjectFromItemsAtIndex:anIndex];
 }
@@ -1060,7 +1060,7 @@ var _CPMenuBarVisible               = NO,
     Sends the action of the menu item at the specified index.
     @param anIndex the index of the item
 */
-- (void)performActionForItemAtIndex:(unsigned)anIndex
+- (void)performActionForItemAtIndex:(CPUInteger)anIndex
 {
     var item = _items[anIndex];
 

@@ -78,7 +78,7 @@
     aWindow._isVisible = NO;
 }
 
-- (void)insertWindow:(CPWindow)aWindow atIndex:(unsigned)anIndex
+- (void)insertWindow:(CPWindow)aWindow atIndex:(CPUInteger)anIndex
 {
     // We will have to adjust the z-index of all windows starting at this index.
     var count = [_windows count],

@@ -1803,7 +1803,7 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     return [_outlineView itemAtRow:theRow];
 }
 
-- (CPDragOperation)tableView:(CPTableView)aTableView validateDrop:(id < CPDraggingInfo >)theInfo
+- (CPDragOperation)tableView:(CPTableView)aTableView validateDrop:(id /*< CPDraggingInfo >*/)theInfo
     proposedRow:(int)theRow proposedDropOperation:(CPTableViewDropOperation)theOperation
 {
     if (!(_outlineView._implementedOutlineViewDataSourceMethods & CPOutlineViewDataSource_outlineView_validateDrop_proposedItem_proposedChildIndex_))
@@ -1823,7 +1823,7 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     return [_outlineView._outlineViewDataSource outlineView:_outlineView validateDrop:theInfo proposedItem:parentItem proposedChildIndex:childIndex];
 }
 
-- (BOOL)tableView:(CPTableView)aTableView acceptDrop:(id <CPDraggingInfo>)theInfo row:(int)theRow dropOperation:(CPTableViewDropOperation)theOperation
+- (BOOL)tableView:(CPTableView)aTableView acceptDrop:(id /*<CPDraggingInfo>*/)theInfo row:(int)theRow dropOperation:(CPTableViewDropOperation)theOperation
 {
     if (!(_outlineView._implementedOutlineViewDataSourceMethods & CPOutlineViewDataSource_outlineView_acceptDrop_item_childIndex_))
         return NO;
@@ -1940,7 +1940,7 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     return self;
 }
 
-- (void)setState:(CPState)aState
+- (void)setState:(CPInteger)aState
 {
     [super setState:aState];
 

@@ -286,7 +286,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 /*!
     @ignore
 */
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{
             @"alternating-row-colors": [CPNull null],
@@ -5142,7 +5142,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 /*!
     @ignore
 */
-- (id)hitTest:(CGPoint)aPoint
+- (CPView)hitTest:(CGPoint)aPoint
 {
     var hit = [super hitTest:aPoint];
 
@@ -5368,7 +5368,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
 @implementation CPTableView (Bindings)
 
-+ (id)_binderClassForBinding:(CPString)aBinding
++ (Class)_binderClassForBinding:(CPString)aBinding
 {
     if (aBinding == @"content")
         return [CPTableContentBinder class];
@@ -5425,7 +5425,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     id _content @accessors(property=content);
 }
 
-- (void)setValueFor:(id)aBinding
+- (void)setValueFor:(CPString)aBinding
 {
     var destination = [_info objectForKey:CPObservedObjectKey],
         keyPath = [_info objectForKey:CPObservedKeyPathKey];
@@ -5738,13 +5738,13 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
     [self setThemeState:CPThemeStateTableDataView];
 }
 
-- (void)setThemeState:(CPThemeState)aState
+- (BOOL)setThemeState:(CPThemeState)aState
 {
     [super setThemeState:aState];
     [self recursivelyPerformSelector:@selector(setThemeState:) withObject:aState startingFrom:self];
 }
 
-- (void)unsetThemeState:(CPThemeState)aState
+- (BOOL)unsetThemeState:(CPThemeState)aState
 {
     [super unsetThemeState:aState];
     [self recursivelyPerformSelector:@selector(unsetThemeState:) withObject:aState startingFrom:self];

@@ -134,22 +134,22 @@ CPLogRegister(CPLogConsole);
     return [itemsArray count];
 }
 
-- (id)objectInItemsArrayAtIndex:(unsigned int)index
+- (id)objectInItemsArrayAtIndex:(CPUInteger)index
 {
     return [itemsArray objectAtIndex:index];
 }
 
-- (void)insertObject:(id)anObject inItemsArrayAtIndex:(unsigned int)index
+- (void)insertObject:(id)anObject inItemsArrayAtIndex:(CPUInteger)index
 {
     [itemsArray insertObject:anObject atIndex:index];
 }
 
-- (void)removeObjectFromItemsArrayAtIndex:(unsigned int)index
+- (void)removeObjectFromItemsArrayAtIndex:(CPUInteger)index
 {
     [itemsArray removeObjectAtIndex:index];
 }
 
-- (void)replaceObjectInItemsArrayAtIndex:(unsigned int)index withObject:(id)anObject
+- (void)replaceObjectInItemsArrayAtIndex:(CPUInteger)index withObject:(id)anObject
 {
     [itemsArray replaceObjectAtIndex:index withObject:anObject];
 }

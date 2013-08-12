@@ -81,7 +81,7 @@ _CPWindowViewResizeSlop = 3;
     return "window";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{
             @"title-bar-height": 25,

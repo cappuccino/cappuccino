@@ -53,7 +53,7 @@
     return "menu-item-view";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{};
 }

@@ -79,7 +79,7 @@
     return @"button-bar";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{
             @"resize-control-inset": CGInsetMake(0.0, 0.0, 0.0, 0.0),

@@ -122,7 +122,7 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
     return @"rule-editor";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{
             @"alternating-row-colors": [CPNull null],
@@ -1684,7 +1684,7 @@ TODO: implement
     [super bind:aBinding toObject:observableController withKeyPath:aKeyPath options:options];
 }
 
-- (void)unbind:(id)object
+- (void)unbind:(CPString)object
 {
     _rowClass = [_CPRuleEditorRowObject class];
     [super unbind:object];
@@ -2128,7 +2128,7 @@ TODO: implement
     return YES;
 }
 
-- (CPDragOperation)draggingEntered:(id < CPDraggingInfo >)sender
+- (CPDragOperation)draggingEntered:(id /*< CPDraggingInfo >*/)sender
 {
     if ([sender draggingSource] === self)
     {
@@ -2158,7 +2158,7 @@ TODO: implement
     _subviewIndexOfDropLine = CPNotFound;
 }
 
-- (CPDragOperation)draggingUpdated:(id <CPDraggingInfo>)sender
+- (CPDragOperation)draggingUpdated:(id /*<CPDraggingInfo>*/)sender
 {
     var point = [self convertPoint:[sender draggingLocation] fromView:nil],
         y = point.y + _sliceHeight / 2,
@@ -2195,12 +2195,12 @@ TODO: implement
     return CPDragOperationMove;
 }
 
-- (BOOL)prepareForDragOperation:(id < CPDraggingInfo >)sender
+- (BOOL)prepareForDragOperation:(id /*< CPDraggingInfo >*/)sender
 {
     return (_subviewIndexOfDropLine !== CPNotFound);
 }
 
-- (BOOL)performDragOperation:(id < CPDraggingInfo >)info
+- (BOOL)performDragOperation:(id /*< CPDraggingInfo >*/)info
 {
     var aboveInsertIndexCount = 0,
         object,
@@ -2262,7 +2262,7 @@ TODO: implement
 {
 }
 
-- (void)_setWindow:(id)window
+- (void)_setWindow:(CPWindow)window
 {
     [super _setWindow:window];
 }
@@ -2426,7 +2426,7 @@ var CPRuleEditorAlignmentGridWidthKey       = @"CPRuleEditorAlignmentGridWidth",
     return self;
 }
 
-- (void)encodeWithCoder:(id)coder
+- (void)encodeWithCoder:(CPCoder)coder
 {
     [super encodeWithCoder:coder];
 
@@ -2481,7 +2481,7 @@ var CriteriaKey         = @"criteria",
     return "<" + [self className] + ">\nsubrows = " + [subrows description] + "\ncriteria = " + [criteria description] + "\ndisplayValues = " + [displayValues description];
 }
 
-- (id)initWithCoder:(id)coder
+- (id)initWithCoder:(CPCoder)coder
 {
     self = [super init];
     if (self !== nil)
@@ -2495,7 +2495,7 @@ var CriteriaKey         = @"criteria",
     return self;
 }
 
-- (void)encodeWithCoder:(id)coder
+- (void)encodeWithCoder:(CPCoder)coder
 {
     [coder encodeObject:subrows forKey:SubrowsKey];
     [coder encodeObject:criteria forKey:CriteriaKey];
@@ -2534,7 +2534,7 @@ var CPBoundArrayKey = @"CPBoundArray";
     return self;
 }
 
-- (id)initWithCoder:(id)coder
+- (id)initWithCoder:(CPCoder)coder
 {
     if (self = [super init])
         boundArray = [coder decodeObjectForKey:CPBoundArrayKey];
@@ -2542,7 +2542,7 @@ var CPBoundArrayKey = @"CPBoundArray";
     return self;
 }
 
-- (void)encodeWithCoder:(id)coder
+- (void)encodeWithCoder:(CPCoder)coder
 {
     [coder encodeObject:boundArray forKey:CPBoundArrayKey];
 }

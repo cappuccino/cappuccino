@@ -31,7 +31,7 @@
     return @"cornerview";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{
         @"background-color": [CPNull null],

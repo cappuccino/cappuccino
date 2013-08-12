@@ -49,7 +49,7 @@
     return "menu-item-bar-view";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{
             @"horizontal-margin": 9.0,

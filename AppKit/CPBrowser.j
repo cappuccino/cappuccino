@@ -71,7 +71,7 @@
     return "browser";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{
         @"image-control-resize": [CPNull null],
@@ -771,7 +771,7 @@
     CPBrowser                _browser @accessors;
 }
 
-- (void)initWithFrame:(CGRect)aFrame
+- (id)initWithFrame:(CGRect)aFrame
 {
     if (self = [super initWithFrame:aFrame])
     {
@@ -902,7 +902,7 @@
     [_browser selectRowIndexes:selectedIndexes inColumn:_index];
 }
 
-- (id)childAtIndex:(unsigned)index
+- (id)childAtIndex:(CPUInteger)index
 {
     return [_delegate browser:_browser child:index ofItem:_item];
 }
@@ -995,7 +995,7 @@
     [aCoder encodeObject:_highlightedBranchImage forKey:"_CPBrowserLeafViewHighlightedBranchImageKey"];
 }
 
-- (void)initWithCoder:(CPCoder)aCoder
+- (id)initWithCoder:(CPCoder)aCoder
 {
     if (self = [super initWithCoder:aCoder])
     {

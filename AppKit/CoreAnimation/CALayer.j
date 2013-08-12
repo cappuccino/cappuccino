@@ -687,7 +687,7 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
     @param aLayer the layer to insert
     @param anIndex the index to insert the layer at
 */
-- (void)insertSublayer:(CALayer)aLayer atIndex:(unsigned)anIndex
+- (void)insertSublayer:(CALayer)aLayer atIndex:(CPUInteger)anIndex
 {
     if (!aLayer)
         return;

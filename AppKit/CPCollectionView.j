@@ -892,12 +892,12 @@ var HORIZONTAL_MARGIN = 2;
     return CPNotFound;
 }
 
-- (CPCollectionViewItem)itemAtIndex:(unsigned)anIndex
+- (CPCollectionViewItem)itemAtIndex:(CPUInteger)anIndex
 {
     return [_items objectAtIndex:anIndex];
 }
 
-- (CGRect)frameForItemAtIndex:(unsigned)anIndex
+- (CGRect)frameForItemAtIndex:(CPUInteger)anIndex
 {
     return [[[self itemAtIndex:anIndex] view] frame];
 }
@@ -1322,7 +1322,7 @@ Not supported. Use -collectionView:dataForItemsAtIndexes:fortype:
     [self interpretKeyEvents:[anEvent]];
 }
 
-- (void)setAutoresizingMask:(int)aMask
+- (void)setAutoresizingMask:(unsigned)aMask
 {
     [super setAutoresizingMask:0];
 }

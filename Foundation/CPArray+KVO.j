@@ -197,7 +197,7 @@
     [_proxyObject setValue:anObject forKey:_key];
 }
 
-- (unsigned)count
+- (CPUInteger)count
 {
     if (_count)
         return _count(_proxyObject, _countSEL);
@@ -205,7 +205,7 @@
     return [[self _representedObject] count];
 }
 
-- (int)indexOfObject:(CPObject)anObject inRange:(CPRange)aRange
+- (CPUInteger)indexOfObject:(id)anObject inRange:(CPRange)aRange
 {
     var index = aRange.location,
         count = aRange.length,
@@ -222,12 +222,12 @@
     return CPNotFound;
 }
 
-- (int)indexOfObject:(CPObject)anObject
+- (CPUInteger)indexOfObject:(id)anObject
 {
     return [self indexOfObject:anObject inRange:CPMakeRange(0, [self count])];
 }
 
-- (int)indexOfObjectIdenticalTo:(CPObject)anObject inRange:(CPRange)aRange
+- (CPUInteger)indexOfObjectIdenticalTo:(id)anObject inRange:(CPRange)aRange
 {
     var index = aRange.location,
         count = aRange.length;
@@ -239,12 +239,12 @@
     return CPNotFound;
 }
 
-- (int)indexOfObjectIdenticalTo:(CPObject)anObject
+- (CPUInteger)indexOfObjectIdenticalTo:(id)anObject
 {
     return [self indexOfObjectIdenticalTo:anObject inRange:CPMakeRange(0, [self count])];
 }
 
-- (id)objectAtIndex:(unsigned)anIndex
+- (id)objectAtIndex:(CPUInteger)anIndex
 {
     return [[self objectsAtIndexes:[CPIndexSet indexSetWithIndex:anIndex]] firstObject];
 }
@@ -281,7 +281,7 @@
     [self insertObjects:anArray atIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange([self count], count)]];
 }
 
-- (void)insertObject:(id)anObject atIndex:(unsigned)anIndex
+- (void)insertObject:(id)anObject atIndex:(CPUInteger)anIndex
 {
     [self insertObjects:[anObject] atIndexes:[CPIndexSet indexSetWithIndex:anIndex]];
 }
@@ -378,7 +378,7 @@
     [self removeObjectsAtIndexes:[CPIndexSet indexSetWithIndex:[self count] - 1]];
 }
 
-- (void)removeObjectAtIndex:(unsigned)anIndex
+- (void)removeObjectAtIndex:(CPUInteger)anIndex
 {
     [self removeObjectsAtIndexes:[CPIndexSet indexSetWithIndex:anIndex]];
 }
@@ -405,7 +405,7 @@
     }
 }
 
-- (void)replaceObjectAtIndex:(unsigned)anIndex withObject:(id)anObject
+- (void)replaceObjectAtIndex:(CPUInteger)anIndex withObject:(id)anObject
 {
     [self replaceObjectsAtIndexes:[CPIndexSet indexSetWithIndex:anIndex] withObjects:[anObject]]
 }
@@ -564,7 +564,7 @@
 /*!
     Registers an observer to receive key value observer notifications for the specified key-path relative to the objects at the indexes.
 */
-- (void)addObserver:(id)anObserver toObjectsAtIndexes:(CPIndexSet)indexes forKeyPath:(CPString)aKeyPath options:(unsigned)options context:(id)context
+- (void)addObserver:(id)anObserver toObjectsAtIndexes:(CPIndexSet)indexes forKeyPath:(CPString)aKeyPath options:(CPKeyValueObservingOptions)options context:(id)context
 {
     var index = [indexes firstIndex];
 

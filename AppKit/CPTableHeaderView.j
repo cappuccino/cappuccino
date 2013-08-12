@@ -43,7 +43,7 @@
     return @"columnHeader";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{
             @"background-color": [CPNull null],
@@ -57,7 +57,7 @@
         };
 }
 
-- (void)initWithFrame:(CGRect)frame
+- (id)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
 
@@ -246,7 +246,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     return @"tableHeaderRow";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{
             @"background-color": [CPNull null],

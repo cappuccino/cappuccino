@@ -90,7 +90,7 @@ CPEraDatePickerElementFlag              = 0x0100;
     return @"datePicker";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{
             @"bezel-color": [CPColor clearColor],
@@ -159,7 +159,7 @@ CPEraDatePickerElementFlag              = 0x0100;
     return [super _binderClassForBinding:theBinding];
 }
 
-- (id)_replacementKeyPathForBinding:(CPString)aBinding
+- (CPString)_replacementKeyPathForBinding:(CPString)aBinding
 {
     if (aBinding == CPValueBinding)
         return @"dateValue";
@@ -269,7 +269,7 @@ CPEraDatePickerElementFlag              = 0x0100;
 
 /*! Return the objectValue of the datePicker. The objectValue should take the timeZoneEffect
 */
-- (void)objectValue
+- (id)objectValue
 {
     // TODO : add timeZone effect. How to do it because js ???
     return _dateValue

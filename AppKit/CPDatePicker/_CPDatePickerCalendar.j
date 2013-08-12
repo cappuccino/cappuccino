@@ -1059,7 +1059,7 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
 
 /*! Set a theme
 */
-- (void)setThemeState:(CPThemeState)aState
+- (BOOL)setThemeState:(CPThemeState)aState
 {
     [_textField setThemeState:aState];
     [super setThemeState:aState];
@@ -1067,7 +1067,7 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
 
 /*! Unset a theme
 */
-- (void)unsetThemeState:(CPThemeState)aState
+- (BOOL)unsetThemeState:(CPThemeState)aState
 {
     [_textField unsetThemeState:aState];
     [super unsetThemeState:aState];

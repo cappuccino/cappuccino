@@ -214,7 +214,7 @@ var CPByteCountFormatterUnits = [ @"bytes", @"KB", @"MB", @"GB", @"TB", @"PB" ];
         return nil;
 }
 
-- (BOOL)getObjectValue:(id)anObject forString:(CPString)aString errorDescription:(CPString)anError
+- (BOOL)getObjectValue:(idRef)anObject forString:(CPString)aString errorDescription:(CPStringRef)anError
 {
     // Not implemented
     return NO;

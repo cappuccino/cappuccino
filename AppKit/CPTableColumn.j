@@ -595,7 +595,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
 
 @implementation CPTableColumn (Bindings)
 
-+ (id)_binderClassForBinding:(CPString)aBinding
++ (Class)_binderClassForBinding:(CPString)aBinding
 {
     if (aBinding == CPValueBinding)
         return [CPTableColumnValueBinder class];

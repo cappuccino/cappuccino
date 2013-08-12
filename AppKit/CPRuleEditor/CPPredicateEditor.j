@@ -484,7 +484,7 @@
 
 #pragma mark RuleEditor delegate methods
 
-- (int)_queryNumberOfChildrenOfItem:(id)rowItem withRowType:(int)type
+- (int)_queryNumberOfChildrenOfItem:(id)rowItem withRowType:(CPRuleEditorRowType)type
 {
     if (rowItem == nil)
     {
@@ -494,7 +494,7 @@
     return [[rowItem children] count];
 }
 
-- (id)_queryChild:(int)childIndex ofItem:(id)rowItem withRowType:(int)type
+- (id)_queryChild:(int)childIndex ofItem:(id)rowItem withRowType:(CPRuleEditorRowType)type
 {
     if (rowItem == nil)
     {
@@ -516,7 +516,7 @@ var CPPredicateTemplatesKey = @"CPPredicateTemplates";
 
 @implementation CPPredicateEditor (CPCoding)
 
-- (id)initWithCoder:(id)aCoder
+- (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super initWithCoder:aCoder];
 
@@ -531,7 +531,7 @@ var CPPredicateTemplatesKey = @"CPPredicateTemplates";
     return self;
 }
 
-- (void)encodeWithCoder:(id)aCoder
+- (void)encodeWithCoder:(CPCoder)aCoder
 {
     [super encodeWithCoder:aCoder];
     [aCoder encodeObject:_allTemplates forKey:CPPredicateTemplatesKey];

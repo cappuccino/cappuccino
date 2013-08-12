@@ -853,7 +853,7 @@ var _CPPopUpListDataSourceKey   = @"_CPPopUpListDataSourceKey",
 
 @implementation _CPPopUpPanel : CPPanel
 
-- (id)initWithContentRect:(CGRect)aContentRect styleMask:(unsigned int)aStyleMask
+- (id)initWithContentRect:(CGRect)aContentRect styleMask:(unsigned)aStyleMask
 {
     if (self = [super initWithContentRect:aContentRect styleMask:aStyleMask])
         _constrainsToUsableScreen = NO;

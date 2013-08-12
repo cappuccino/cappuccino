@@ -322,11 +322,11 @@ var CPControlBlackColor = [CPColor blackColor];
     _previousTrackingLocation = currentLocation;
 }
 
-- (void)setState:(int)state
+- (void)setState:(CPInteger)state
 {
 }
 
-- (int)nextState
+- (CPInteger)nextState
 {
     return 0;
 }
@@ -813,7 +813,7 @@ var CPControlBlackColor = [CPColor blackColor];
 /*!
     Returns the image scaling of the control.
 */
-- (CPImageScaling)imageScaling
+- (CPUInteger)imageScaling
 {
     return [self valueForThemeAttribute:@"image-scaling"];
 }

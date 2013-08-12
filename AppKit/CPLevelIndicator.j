@@ -62,7 +62,7 @@ CPRatingLevelIndicatorStyle                 = 3;
     return "level-indicator";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{
             @"bezel-color": [CPNull null],
