@@ -932,6 +932,9 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)insertNewline:(id)sender
 {
+    if (![self isEditable])
+        return;
+
     var newValue = [self _inputElement].value;
 
     if (newValue !== _stringValue)
@@ -975,6 +978,9 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)_insertCharacterIgnoringFieldEditor:(CPString)aCharacter
 {
+    if (![self isEditable])
+        return;
+
 #if PLATFORM(DOM)
 
     var oldValue = _stringValue,
@@ -1294,6 +1300,9 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 {
     [self copy:sender];
 
+    if (![self isEditable])
+        return;
+
     if (![CPPlatform isBrowser])
     {
         [self deleteBackward:sender];
@@ -1311,6 +1320,9 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)paste:(id)sender
 {
+    if (!([self isEnabled] && [self isEditable]))
+        return;
+
     if (![CPPlatform isBrowser])
     {
         var pasteboard = [CPPasteboard generalPasteboard];
@@ -1422,6 +1434,9 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)deleteBackward:(id)sender
 {
+    if (![self isEnabled] || ![self isEditable])
+        return;
+
     var selectedRange = [self selectedRange];
 
     if (selectedRange.length < 2)
