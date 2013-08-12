@@ -1294,17 +1294,32 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)copy:(id)sender
 {
+
     // First write to the Cappuccino clipboard.
-    var selectedRange = [self selectedRange];
+    var stringToCopy = nil;
 
-    if (selectedRange.length < 1)
-        return;
+    if ([self isEditable])
+    {
+        var selectedRange = [self selectedRange];
 
-    var pasteboard = [CPPasteboard generalPasteboard],
-        stringForPasting = [_stringValue substringWithRange:selectedRange];
+        if (selectedRange.length < 1)
+            return;
+
+        stringToCopy = [_stringValue substringWithRange:selectedRange];
+    }
+    else
+    {
+        // selectedRange won't work if we're displaying our text using a <div>. Instead we have to ask the browser
+        // what's selected and hope it's right in a Cappuccino context as well.
+#if PLATFORM(DOM)
+        stringToCopy = [[[self window] platformWindow] _selectedText];
+#endif
+    }
+
+    var pasteboard = [CPPasteboard generalPasteboard];
 
     [pasteboard declareTypes:[CPStringPboardType] owner:nil];
-    [pasteboard setString:stringForPasting forType:CPStringPboardType];
+    [pasteboard setString:stringToCopy forType:CPStringPboardType];
 
     if ([CPPlatform isBrowser])
     {

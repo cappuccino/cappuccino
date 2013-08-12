@@ -1502,6 +1502,19 @@ var resizeTimer = nil;
     return theWindow;
 }
 
+/*! @ignore Return the selected text in the DOM window if known. */
+- (CPString)_selectedText
+{
+    if (_DOMWindow.getSelection)
+        return "" + _DOMWindow.getSelection();
+    else if (_DOMWindow.document.getSelection)
+        return "" + _DOMWindow.document.getSelection();
+    else if (_DOMWindow.selection)
+        return "" + _DOMWindow.selection.createRange().text;
+    else
+        return nil;
+}
+
 /*!
     When using command (mac) or control (windows), keys are propagated to the browser by default.
     To prevent a character key from propagating (to prevent its default action, and instead use it
