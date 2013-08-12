@@ -2222,6 +2222,7 @@ var preIfLevel = 0;
         }
         while(!eat(_end)) {
           if (tokType === _eof) raise(tokPos, "Expected '@end' after '@protocol'");
+          if (eat(_required)) continue;
           if (eat(_optional)) {
             while(!eat(_required && tokType !== _end)) {
               (node.optional || (node.optional = [])).push(parseProtocolClassElement());
