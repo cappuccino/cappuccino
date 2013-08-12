@@ -531,12 +531,15 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 /*! @ignore */
 - (BOOL)acceptsFirstResponder
 {
-    return ([self isEditable] || [self isSelectable]) && [self isEnabled] && [self _isWithinUsablePlatformRect];
+    return ([self isEnabled] && [self isEditable] || [self isSelectable]) && [self _isWithinUsablePlatformRect];
 }
 
 /*! @ignore */
 - (BOOL)becomeFirstResponder
 {
+    if (![self isEnabled])
+        return NO;
+
     // As long as we are the first responder we need to monitor the key status of our window.
     [self _setObserveWindowKeyNotifications:YES];
 
@@ -795,7 +798,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)_windowDidBecomeKey:(CPNotification)aNotification
 {
-    if (![self isEditable])
+    if (!([self isEnabled] && [self isEditable]))
         return;
 
     var wind = [self window];
@@ -881,7 +884,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)mouseUp:(CPEvent)anEvent
 {
-    if (![self isSelectable] && (![self isEditable] || ![self isEnabled]))
+    if (![self isEnabled] || !([self isSelectable] || [self isEditable]))
         [[self nextResponder] mouseUp:anEvent];
     else if ([self isSelectable])
     {
@@ -899,7 +902,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)mouseDragged:(CPEvent)anEvent
 {
-    if (![self isSelectable] && (![self isEditable] || ![self isEnabled]))
+    if (![self isEnabled] || !([self isSelectable] || [self isEditable]))
         [[self nextResponder] mouseDragged:anEvent];
     else if ([self isSelectable])
         return [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:YES];
@@ -907,7 +910,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)keyUp:(CPEvent)anEvent
 {
-    if (![self isEditable])
+    if (!([self isEnabled] && [self isEditable]))
         return;
 
 #if PLATFORM(DOM)
@@ -954,7 +957,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)insertNewline:(id)sender
 {
-    if (![self isEditable])
+    if (!([self isEnabled] && [self isEditable]))
         return;
 
     var newValue = [self _inputElement].value;
@@ -1001,7 +1004,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)_insertCharacterIgnoringFieldEditor:(CPString)aCharacter
 {
-    if (![self isEditable])
+    if (!([self isEnabled] && [self isEditable]))
         return;
 
 #if PLATFORM(DOM)
@@ -1266,7 +1269,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 - (void)_selectText:(id)sender immediately:(BOOL)immediately
 {
     // Selecting the text in a field makes it the first responder
-    if (([self isEditable] || [self isSelectable]))
+    if ([self isEditable] || [self isSelectable])
     {
         var wind = [self window];
 
@@ -1294,7 +1297,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)copy:(id)sender
 {
-
     // First write to the Cappuccino clipboard.
     var stringToCopy = nil;
 
@@ -1470,7 +1472,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)deleteBackward:(id)sender
 {
-    if (![self isEnabled] || ![self isEditable])
+    if (!([self isEnabled] && [self isEditable]))
         return;
 
     var selectedRange = [self selectedRange];
