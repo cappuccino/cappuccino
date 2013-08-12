@@ -1857,18 +1857,21 @@ ProtocolDeclarationStatement: function(node, st, c) {
     compiler.protocolDefs[protocolName] = protocolDef;
     protocolScope.protocolDef = protocolDef;
 
-    var someRequired = node.required,
-        requiredLength = someRequired.length;
+    var someRequired = node.required;
 
-    if (requiredLength > 0)
-    {
-        // We only add the required methods
-        for (var i = 0; i < requiredLength; ++i) {
-            var required = someRequired[i];
-            if (!generate) compiler.lastPos = required.start;
-            c(required, protocolScope, "Statement");
+    if (someRequired) {
+        var requiredLength = someRequired.length;
+
+        if (requiredLength > 0)
+        {
+            // We only add the required methods
+            for (var i = 0; i < requiredLength; ++i) {
+                var required = someRequired[i];
+                if (!generate) compiler.lastPos = required.start;
+                c(required, protocolScope, "Statement");
+            }
+            if (!generate) buffer.concat(compiler.source.substring(compiler.lastPos, required.end));
         }
-        if (!generate) buffer.concat(compiler.source.substring(compiler.lastPos, required.end));
     }
 
     buffer.concat("\nobjc_registerProtocol(the_protocol);\n");
