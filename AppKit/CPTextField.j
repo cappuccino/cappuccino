@@ -896,6 +896,15 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
             CPTextFieldCachedSelectStartFunction = nil
             CPTextFieldCachedDragFunction = nil;
         }
+
+        // TODO clickCount === 2 should select the clicked word.
+
+        if ([[CPApp currentEvent] clickCount] === 3)
+        {
+            [self selectText:nil];
+            return;
+        }
+
         return [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:YES];
     }
 }
