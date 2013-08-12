@@ -25,10 +25,16 @@
 
 @import <AppKit/_CPCibCustomResource.j>
 
+@import "Nib2CibException.j"
+
 @global CP_NSMapClassName
 
 var FILE = require("file"),
-    imageSize = require("cappuccino/imagesize").imagesize;
+    imageSize = require("cappuccino/imagesize").imagesize,
+    supportedTemplateImages = [
+        "NSAddTemplate",
+        "NSRemoveTemplate"
+    ];
 
 @implementation _CPCibCustomResource (NSCoding)
 
@@ -47,10 +53,15 @@ var FILE = require("file"),
 
         if (_resourceName == "NSSwitch")
             return nil;
-        else if (_resourceName == "NSAddTemplate" || _resourceName == "NSRemoveTemplate")
+        else if (/^NS[A-Z][A-Za-z]+$/.test(_resourceName))
         {
-            // Defer resolving this path until runtime.
-            _resourceName = _resourceName.replace("NS", "CP");
+            if (supportedTemplateImages.indexOf(_resourceName) >= 0)
+            {
+                // Defer resolving this path until runtime.
+                _resourceName = _resourceName.replace("NS", "CP");
+            }
+            else
+                [CPException raise:Nib2CibException format:@"The built in image “%@” is not supported.", _resourceName];
         }
         else
         {
