@@ -380,7 +380,8 @@ if (typeof exports != "undefined" && !exports.acorn) {
 
   var _filename = {keyword: "filename"}, _unsigned = {keyword: "unsigned", okAsIdent: true}, _signed = {keyword: "signed", okAsIdent: true};
   var _byte = {keyword: "byte", okAsIdent: true}, _char = {keyword: "char", okAsIdent: true}, _short = {keyword: "short", okAsIdent: true};
-  var _int = {keyword: "int", okAsIdent: true}, _long = {keyword: "long", okAsIdent: true}, _preprocess = {keyword: "#"};
+  var _int = {keyword: "int", okAsIdent: true}, _long = {keyword: "long", okAsIdent: true}, _id = {keyword: "id", okAsIdent: true};
+  var _preprocess = {keyword: "#"};
 
   // Preprocessor keywords
 
@@ -414,7 +415,7 @@ if (typeof exports != "undefined" && !exports.acorn) {
   // Map Objective-J keyword names to token types.
 
   var keywordTypesObjJ = {"IBAction": _action, "IBOutlet": _outlet, "unsigned": _unsigned, "signed": _signed, "byte": _byte, "char": _char,
-                          "short": _short, "int": _int, "long": _long };
+                          "short": _short, "int": _int, "long": _long, "id": _id };
 
   // Map Objective-J "@" keyword names to token types.
 
@@ -546,7 +547,7 @@ if (typeof exports != "undefined" && !exports.acorn) {
 
   // The Objective-J keywords.
 
-  var isKeywordObjJ = makePredicate("IBAction IBOutlet byte char short int long unsigned signed");
+  var isKeywordObjJ = makePredicate("IBAction IBOutlet byte char short int long unsigned signed id");
 
   // The preprocessor keywords.
 
@@ -2999,8 +3000,8 @@ var preIfLevel = 0;
   }
 
   // Parse the next token as an Objective-J typ.
-  // It can be an identifier followed by a optional protocol '<CPKeyValueBinding>'
-  // It can be 'void'
+  // It can be 'id' followed by a optional protocol '<CPKeyValueBinding, ...>'
+  // It can be 'void' or 'id'
   // It can be 'signed' or 'unsigned' followed by an optional 'char', 'byte', 'short', 'int' or 'long'
   // It can be 'char', 'byte', 'short', 'int' or 'long'
   // 'int' can be followed by an optinal 'long'. 'long' can be followed by an optional extra 'long'
@@ -3008,51 +3009,60 @@ var preIfLevel = 0;
   function parseObjectiveJType() {
     var node = startNode();
     if (tokType === _name) {
-      var type = tokVal;
-      node.name = type;
+      // It should be a class name
+      node.name = tokVal;
+      node.typeisclass = true;
       next();
-      if (type === "id" && tokVal === '<') {
-        var first = true,
-            protocols = [];
-        node.protocols = protocols;
-        do {
-          next();
-          if (first)
-            first = false;
-          else
-            eat(_comma);
-          protocols.push(parseIdent(true));
-        } while (tokVal !== '>');
-        next();
-      }
     } else {
       node.name = tokType.keyword;
+      // Do nothing more if it is 'void'
       if (!eat(_void)) {
-        var nextKeyWord;
-        if (eat(_signed) || eat(_unsigned))
-          nextKeyWord = tokType.keyword || true;
-        if (eat(_char) || eat(_byte) || eat(_short)) {
-          if (nextKeyWord)
-            node.name += " " + nextKeyWord;
-          nextKeyWord = tokType.keyword || true;
-        } else {
-          if (eat(_int)) {
-            if (nextKeyWord)
-              node.name += " " + nextKeyWord;
-            nextKeyWord = tokType.keyword || true;
+        if (eat(_id)) {
+          // Is it 'id' followed by a '<' parse protocols. Do nothing more if it is only 'id'
+          if (tokVal === '<') {
+            var first = true,
+                protocols = [];
+            node.protocols = protocols;
+            do {
+              next();
+              if (first)
+                first = false;
+              else
+                eat(_comma);
+              protocols.push(parseIdent(true));
+            } while (tokVal !== '>');
+            next();
           }
-          if (eat(_long)) {
+        } else {
+          // Now check if it is some basic type or an approved combination of basic types
+          var nextKeyWord;
+          if (eat(_signed) || eat(_unsigned))
+            nextKeyWord = tokType.keyword || true;
+          if (eat(_char) || eat(_byte) || eat(_short)) {
             if (nextKeyWord)
               node.name += " " + nextKeyWord;
             nextKeyWord = tokType.keyword || true;
+          } else {
+            if (eat(_int)) {
+              if (nextKeyWord)
+                node.name += " " + nextKeyWord;
+              nextKeyWord = tokType.keyword || true;
+            }
             if (eat(_long)) {
-              node.name += " " + nextKeyWord;
+              if (nextKeyWord)
+                node.name += " " + nextKeyWord;
+              nextKeyWord = tokType.keyword || true;
+              if (eat(_long)) {
+                node.name += " " + nextKeyWord;
+              }
             }
           }
-        }
-        if (!nextKeyWord) {
-          node.name = (!options.forbidReserved && tokType.keyword) || unexpected();
-          next();
+          if (!nextKeyWord) {
+            // It must be a class name if it was not a basic type. // FIXME: This is not true
+            node.name = (!options.forbidReserved && tokType.keyword) || unexpected();
+            node.typeisclass = true;
+            next();
+          }
         }
       }
     }
