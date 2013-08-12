@@ -12,5 +12,6 @@ xcuserdata/
 *.xCodeSupport/
 *.XcodeSupport/
 *XcodeSupport/
+Tests/Manual/**/*.xcodeproj
 *.sublime-project
 *.sublime-workspace
