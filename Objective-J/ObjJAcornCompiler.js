@@ -1903,7 +1903,7 @@ MethodDeclarationStatement: function(node, st, c) {
         methodScope = new Scope(st),
         isInstanceMethodType = node.methodtype === '-';
         selectors = node.selectors,
-        arguments = node.arguments,
+        nodeArguments = node.arguments,
         returnType = node.returntype,
         types = [returnType ? returnType.name : "id"],
         returnTypeProtocols = returnType ? returnType.protocols : null;
@@ -1921,8 +1921,8 @@ MethodDeclarationStatement: function(node, st, c) {
     compiler.jsBuffer = isInstanceMethodType ? compiler.imBuffer : compiler.cmBuffer;
 
     // Put together the selector. Maybe this should be done in the parser...
-    for (var i = 0; i < arguments.length; i++) {
-        var argument = arguments[i],
+    for (var i = 0; i < nodeArguments.length; i++) {
+        var argument = nodeArguments[i],
             argumentType = argument.type,
             argumentTypeName = argumentType ? argumentType.name : "id",
             argumentProtocols = argumentType ? argumentType.protocols : null;
@@ -1960,9 +1960,9 @@ MethodDeclarationStatement: function(node, st, c) {
         compiler.jsBuffer.concat("(self, _cmd");
 
         methodScope.methodType = node.methodtype;
-        if (arguments) for (var i = 0; i < arguments.length; i++)
+        if (nodeArguments) for (var i = 0; i < nodeArguments.length; i++)
         {
-            var argument = arguments[i],
+            var argument = nodeArguments[i],
                 argumentName = argument.identifier.name;
 
             compiler.jsBuffer.concat(", ");
