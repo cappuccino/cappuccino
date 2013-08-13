@@ -223,7 +223,7 @@ var CPWindowActionMessageKeys = [
     BOOL                                _isSheet;
     _CPWindowFrameAnimation             _frameAnimation;
 
-    CPString                            _windowFrameAutosaveName;
+    CPString                            _windowFrameAutosaveName @accessors(property=windowFrameAutosaveName);
 }
 
 + (Class)_binderClassForBinding:(CPString)aBinding
@@ -922,7 +922,7 @@ CPTexturedBackgroundWindowMask
 
 - (BOOL)setFrameUsingName:(CPString)frameName force:shouldForce
 {
-    if (!(_styleMask & CPResizableWindowMask) && !shouldForce)
+    if (!(_styleMask & CPResizableWindowMask || [self isMovable]) && !shouldForce)
         return NO;
 
     var userDefaults = [CPUserDefaults standardUserDefaults],
