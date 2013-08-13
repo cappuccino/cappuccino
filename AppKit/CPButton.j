@@ -448,38 +448,47 @@ CPButtonImageOffset   = 3.0;
 {
     switch (aButtonType)
     {
-        case CPMomentaryLightButton:    [self setHighlightsBy:CPChangeGrayCellMask | CPChangeBackgroundCellMask];
-                                        [self setShowsStateBy:CPNoCellMask];
-                                        break;
+        case CPMomentaryLightButton:
+            [self setHighlightsBy:CPChangeGrayCellMask | CPChangeBackgroundCellMask];
+            [self setShowsStateBy:CPNoCellMask];
+            break;
 
-        case CPMomentaryPushInButton:   [self setHighlightsBy:CPPushInCellMask | CPChangeGrayCellMask | CPChangeBackgroundCellMask];
-                                        [self setShowsStateBy:CPNoCellMask];
-                                        break;
+        case CPMomentaryPushInButton:
+            [self setHighlightsBy:CPPushInCellMask | CPChangeGrayCellMask | CPChangeBackgroundCellMask];
+            [self setShowsStateBy:CPNoCellMask];
+            break;
 
-        case CPMomentaryChangeButton:   [self setHighlightsBy:CPContentsCellMask];
-                                        [self setShowsStateBy:CPNoCellMask];
-                                        break;
+        case CPMomentaryChangeButton:
+            [self setHighlightsBy:CPContentsCellMask];
+            [self setShowsStateBy:CPNoCellMask];
+            break;
 
-        case CPPushOnPushOffButton:     [self setHighlightsBy:CPPushInCellMask | CPChangeGrayCellMask | CPChangeBackgroundCellMask];
-                                        [self setShowsStateBy:CPChangeBackgroundCellMask | CPChangeGrayCellMask];
-                                        break;
+        case CPPushOnPushOffButton:
+            [self setHighlightsBy:CPPushInCellMask | CPChangeGrayCellMask | CPChangeBackgroundCellMask];
+            [self setShowsStateBy:CPChangeBackgroundCellMask | CPChangeGrayCellMask];
+            break;
 
-        case CPOnOffButton:             [self setHighlightsBy:CPChangeGrayCellMask | CPChangeBackgroundCellMask];
-                                        [self setShowsStateBy:CPChangeGrayCellMask | CPChangeBackgroundCellMask];
-                                        break;
+        case CPOnOffButton:
+            [self setHighlightsBy:CPChangeGrayCellMask | CPChangeBackgroundCellMask];
+            [self setShowsStateBy:CPChangeGrayCellMask | CPChangeBackgroundCellMask];
+            break;
 
-        case CPToggleButton:            [self setHighlightsBy:CPPushInCellMask | CPContentsCellMask];
-                                        [self setShowsStateBy:CPContentsCellMask];
-                                        break;
+        case CPToggleButton:
+            [self setHighlightsBy:CPPushInCellMask | CPContentsCellMask];
+            [self setShowsStateBy:CPContentsCellMask];
+            break;
 
-        case CPSwitchButton:            [CPException raise:CPInvalidArgumentException
-                                                    reason:"The CPSwitchButton type is not supported in Cappuccino, use the CPCheckBox class instead."];
+        case CPSwitchButton:
+            [CPException raise:CPInvalidArgumentException
+                        reason:"The CPSwitchButton type is not supported in Cappuccino, use the CPCheckBox class instead."];
 
-        case CPRadioButton:             [CPException raise:CPInvalidArgumentException
-                                                    reason:"The CPRadioButton type is not supported in Cappuccino, use the CPRadio class instead."];
+        case CPRadioButton:
+            [CPException raise:CPInvalidArgumentException
+                        reason:"The CPRadioButton type is not supported in Cappuccino, use the CPRadio class instead."];
 
-        default:                        [CPException raise:CPInvalidArgumentException
-                                                    reason:"Unknown button type."];
+        default:
+            [CPException raise:CPInvalidArgumentException
+                        reason:"Unknown button type."];
     }
 
     [self setImageDimsWhenDisabled:YES];
