@@ -2,8 +2,8 @@
  * AppController.j
  * CGPath
  *
- * Created by You on May 23, 2013.
- * Copyright 2013, Your Company All rights reserved.
+ * Created by Alexandre Wilhelm on May 23, 2013.
+ * Copyright 2013, Alexandre Wilhelm. All rights reserved.
  */
 
 @import <Foundation/Foundation.j>
@@ -53,13 +53,13 @@
 
     CGContextBeginPath(context);
     path2 = CGPathCreateMutable();
-    CGPathAddRect( path2, nil, CGRectMake(250, 50, 100, 100));
+    CGPathAddRect(path2, nil, CGRectMake(250, 50, 100, 100));
     CGContextAddPath(context, path2);
     CGContextClosePath(context);
     CGContextStrokePath(context);
 
     CGContextBeginPath(context);
-    path3 = CGPathWithEllipseInRect( CGRectMake(100, 150, 100, 100))
+    path3 = CGPathWithEllipseInRect(CGRectMake(100, 150, 100, 100))
     CGContextAddPath(context, path3);
     CGContextClosePath(context);
     CGContextStrokePath(context);
@@ -85,9 +85,6 @@
 
 
 @implementation PathView : CPView
-{
-
-}
 
 - (void)drawRect:(CGRect)aRect
 {
@@ -99,11 +96,11 @@
     CGContextBeginPath(context);
     var path = CGPathCreateMutable();
     CGPathMoveToPoint(path, nil, 100, 100);
-    CGPathAddArc(path, nil,100, 100, 70, 0, 2.615500255957057, YES);
+    CGPathAddArc(path, nil, 100, 100, 70, 0, 2.615500255957057, YES);
     CGPathAddLineToPoint(path, nil, 100, 100);
-    CGPathAddArc(path, nil,100, 100, 70, 2.615500255957057, 6.148960361810042, YES);
+    CGPathAddArc(path, nil, 100, 100, 70, 2.615500255957057, 6.148960361810042, YES);
     CGPathAddLineToPoint(path, nil, 100, 100);
-    CGPathAddArc(path, nil,100, 100, 70, 6.148960361810042, 0, YES);
+    CGPathAddArc(path, nil, 100, 100, 70, 6.148960361810042, 0, YES);
     CGPathAddLineToPoint(path, nil, 100, 100);
     CGContextAddPath(context, path);
     CGContextStrokePath(context);
@@ -112,7 +109,7 @@
     // Test to create an arc without a start point
     CGContextBeginPath(context);
     path = CGPathCreateMutable();
-    CGPathAddArc(path, nil,300, 100, 70, 0, 2.615500255957057, YES);
+    CGPathAddArc(path, nil, 300, 100, 70, 0, 2.615500255957057, YES);
     CGContextAddPath(context, path);
     CGContextStrokePath(context);
     CGContextClosePath(context);
@@ -121,7 +118,7 @@
     CGContextBeginPath(context);
     path = CGPathCreateMutable();
     CGPathMoveToPoint(path, nil, 100, 250);
-    CGPathAddArc(path, nil,100, 300, 70, 0, 2.615500255957057, YES);
+    CGPathAddArc(path, nil, 100, 300, 70, 0, 2.615500255957057, YES);
     CGContextAddPath(context, path);
     CGContextStrokePath(context);
     CGContextClosePath(context);
