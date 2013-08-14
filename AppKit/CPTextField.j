@@ -1389,7 +1389,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
             pasteString = [pasteboard stringForType:CPStringPboardType],
             newValue = [_stringValue stringByReplacingCharactersInRange:selectedRange withString:pasteString];
 
-        [self _setStringValue:newValue];
+        [self setStringValue:newValue];
         [self _didEdit];
         [self setSelectedRange:CPMakeRange(selectedRange.location + pasteString.length, 0)];
     }
@@ -1506,17 +1506,24 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     var selectedRange = [self selectedRange];
 
-    if (selectedRange.length < 2)
+    // FIXME Is deleteBackward: meant to delete the character before the caret if there's no
+    // selection? There's no official documentation on deleteBackward: in Cocoa.
+    if (selectedRange.length < 1)
          return;
-
-    selectedRange.location += 1;
-    selectedRange.length -= 1;
 
     var newValue = [_stringValue stringByReplacingCharactersInRange:selectedRange withString:""];
 
-    [self _setStringValue:newValue];
+    [self setStringValue:newValue];
     [self setSelectedRange:CPMakeRange(selectedRange.location, 0)];
     [self _didEdit];
+
+#if PLATFORM(DOM)
+    // Since we just performed the deletion manually, we don't need the browser to do anything else.
+    // (Previously we would allow the event to propagate for the browser to delete 1 character only,
+    // and we'd delete the rest manually. But this meant that if deleteBackward: was called without
+    // it being a browser backspace event, 1 character would be left behind.)
+    [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
+#endif
 }
 
 #pragma mark Setting the Delegate
