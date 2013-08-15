@@ -263,6 +263,9 @@
     [self setAutoresizesSubviews:NO];
     [self setFrameSize:_minSize];
     [self setAutoresizesSubviews:YES];
+
+    if (![_menuItem isEnabled])
+        [self setBackgroundColor:nil];
 }
 
 - (void)highlight:(BOOL)shouldHighlight
