@@ -109,8 +109,7 @@ ConverterConversionException = @"ConverterConversionException";
 
 - (CPData)CPCompliantNibDataAtFilePath:(CPString)aFilePath
 {
-    var temporaryNibFilePath = "",
-        temporaryPlistFilePath = "";
+    var temporaryNibFilePath = "";
 
     try
     {
@@ -128,15 +127,13 @@ ConverterConversionException = @"ConverterConversionException";
         }
 
         // Convert from binary plist to XML plist
-        var temporaryPlistFilePath = FILE.join("/tmp", FILE.basename(aFilePath) + ".tmp.plist");
+        var p = OS.popen(["/usr/bin/plutil", "-convert", "xml1", temporaryNibFilePath, "-o", "-"]),
+            plistContents;
 
-        if (OS.popen(["/usr/bin/plutil", "-convert", "xml1", temporaryNibFilePath, "-o", temporaryPlistFilePath]).wait() === 1)
+        if (p.wait() === 0)
+            plistContents = p.stdout.read()
+        else
             [CPException raise:ConverterConversionException reason:@"Could not convert to xml plist for file: " + aFilePath];
-
-        if (!FILE.isReadable(temporaryPlistFilePath))
-            [CPException raise:ConverterConversionException reason:@"Unable to convert nib file."];
-
-        var plistContents = FILE.read(temporaryPlistFilePath, { charset: "UTF-8" });
 
         // Minor NS keyed archive to CP keyed archive conversion.
         // Use Java directly because rhino's string.replace is *so slow*. 4 seconds vs. 1 millisecond.
@@ -156,9 +153,6 @@ ConverterConversionException = @"ConverterConversionException";
     {
         if (temporaryNibFilePath !== "" && FILE.isWritable(temporaryNibFilePath))
             FILE.remove(temporaryNibFilePath);
-
-        if (temporaryPlistFilePath !== "" && FILE.isWritable(temporaryPlistFilePath))
-            FILE.remove(temporaryPlistFilePath);
     }
 
     return [CPData dataWithRawString:plistContents];
