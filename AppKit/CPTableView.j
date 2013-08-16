@@ -1572,7 +1572,7 @@ NOT YET IMPLEMENTED
         _numberOfRows = [_dataSource numberOfRowsInTableView:self] || 0;
     else
     {
-        if (_dataSource)
+        if (_dataSource && _window)
             CPLog(@"no content binding established and data source " + [_dataSource description] + " does not implement numberOfRowsInTableView:");
         _numberOfRows = 0;
     }
