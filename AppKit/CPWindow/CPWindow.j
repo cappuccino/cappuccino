@@ -2558,7 +2558,6 @@ CPTexturedBackgroundWindowMask
         [CPException raise:CPInvalidArgumentException
                     reason:_cmd + @" unrecognized ordering mode " + orderingMode];
 
-    [childWindow setPlatformWindow:[self platformWindow]];
     [childWindow setParentWindow:self];
     [childWindow _setChildOrdering:orderingMode];
     [childWindow setLevel:[self level]];
