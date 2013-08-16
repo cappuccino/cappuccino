@@ -455,6 +455,7 @@ _CPWindowViewResizeSlop = 3;
 
     if (type === CPLeftMouseUp)
     {
+        [[CPUserDefaultsController sharedUserDefaultsController] _saveUnappliedChanges];
         _cachedScreenFrame = nil;
         return;
     }
@@ -680,6 +681,7 @@ _CPWindowViewResizeSlop = 3;
 
     if (type === CPLeftMouseUp)
     {
+        [[CPUserDefaultsController sharedUserDefaultsController] _saveUnappliedChanges];
         return;
     }
     else if (type === CPLeftMouseDown)

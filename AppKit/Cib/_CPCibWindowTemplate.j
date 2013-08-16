@@ -47,6 +47,8 @@
 
     BOOL        _windowAutorecalculatesKeyViewLoop;
     BOOL        _windowIsFullPlatformWindow;
+
+    CPString    _windowFrameAutosaveName;
 }
 
 - (id)init
@@ -105,6 +107,9 @@
     if (_maxSize)
         [theWindow setMaxSize:_maxSize];
 
+    if (_windowFrameAutosaveName)
+        theWindow._windowFrameAutosaveName = _windowFrameAutosaveName;
+
     //[result setHidesOnDeactivate:(_wtFlags&0x80000000)?YES:NO];
     [theWindow setTitle:_windowTitle];
 
@@ -130,6 +135,8 @@
 
 var _CPCibWindowTemplateMinSizeKey                          = @"_CPCibWindowTemplateMinSizeKey",
     _CPCibWindowTemplateMaxSizeKey                          = @"_CPCibWindowTemplateMaxSizeKey",
+
+    _CPCibWindowTemplateFrameAutosaveNameKey                = @"_CPCibWindowTemplateFrameAutosaveNameKey",
 
     _CPCibWindowTemplateViewClassKey                        = @"_CPCibWindowTemplateViewClassKey",
     _CPCibWindowTemplateWTFlagsKey                          = @"_CPCibWindowTemplateWTFlagsKey",
@@ -159,6 +166,8 @@ var _CPCibWindowTemplateMinSizeKey                          = @"_CPCibWindowTemp
 
         _viewClass = [aCoder decodeObjectForKey:_CPCibWindowTemplateViewClassKey];
 
+        _windowFrameAutosaveName = [aCoder decodeObjectForKey:_CPCibWindowTemplateFrameAutosaveNameKey];
+
         _windowClass = [aCoder decodeObjectForKey:_CPCibWindowTemplateWindowClassKey];
         _wtFlags = [aCoder decodeIntForKey:_CPCibWindowTemplateWTFlagsKey];
         _windowRect = [aCoder decodeRectForKey:_CPCibWindowTemplateWindowRectKey];
@@ -183,6 +192,8 @@ var _CPCibWindowTemplateMinSizeKey                          = @"_CPCibWindowTemp
         [aCoder encodeSize:_maxSize forKey:_CPCibWindowTemplateMaxSizeKey];
 
     [aCoder encodeObject:_viewClass forKey:_CPCibWindowTemplateViewClassKey];
+
+    [aCoder encodeObject:_windowFrameAutosaveName forKey:_CPCibWindowTemplateFrameAutosaveNameKey];
 
     [aCoder encodeObject:_windowClass forKey:_CPCibWindowTemplateWindowClassKey];
     [aCoder encodeInt:_wtFlags forKey:_CPCibWindowTemplateWTFlagsKey];
