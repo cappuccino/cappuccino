@@ -166,6 +166,9 @@ var CPMenuItemStringRepresentationDictionary = @{
     if (_isEnabled === isEnabled)
         return;
 
+    if (!isEnabled && [self isHighlighted])
+        [_menu _highlightItemAtIndex:CPNotFound];
+
     _isEnabled = !!isEnabled;
 
     [_menuItemView setDirty];
