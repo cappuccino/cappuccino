@@ -1658,12 +1658,6 @@ _CPDOMEventStop = function(aDOMEvent, aPlatformWindow)
 
     if (aDOMEvent.stopPropagation)
         aDOMEvent.stopPropagation();
-
-    if (aDOMEvent.type === CPDOMEventMouseDown)
-    {
-        aPlatformWindow._DOMFocusElement.focus();
-        aPlatformWindow._DOMFocusElement.blur();
-    }
 };
 
 function CPWindowObjectList()
