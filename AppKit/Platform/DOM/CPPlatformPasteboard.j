@@ -261,14 +261,15 @@ var hasEditableTarget = function(aDOMEvent)
         // In both of those cases we don't want to send the event on keydown too, or we'll get 2X copy/cut operations.
         if (supportsNativeCopyAndPaste || _ignoreNativeCopyOrCutEvent)
             currentEventShouldBeSuppressed = YES;
-
-        currentEventShouldDefinitelyBubble = YES;
     }
 
-    if (!currentEventShouldBeSuppressed && characters === "v")
-        SUPPRESS_CAPPUCCINO_PASTE_FOR_EVENT(anEvent);
-    else if (!currentEventShouldBeSuppressed && characters == "x")
-        SUPPRESS_CAPPUCCINO_CUT_FOR_EVENT(anEvent);
+    if (!currentEventShouldBeSuppressed)
+    {
+        if (characters === "v")
+            SUPPRESS_CAPPUCCINO_PASTE_FOR_EVENT(anEvent);
+        else if (characters === "x")
+            SUPPRESS_CAPPUCCINO_CUT_FOR_EVENT(anEvent);
+    }
 }
 
 - (BOOL)windowShouldSuppressKeyEvent
