@@ -1178,8 +1178,12 @@ var resizeTimer = nil;
         [CPApp sendEvent:event];
     }
 
+    var didStop = NO;
     if (StopDOMEventPropagation && (!supportsNativeDragAndDrop || type !== "mousedown" && !isDragging))
+    {
+        didStop = YES;
         _CPDOMEventStop(aDOMEvent, self);
+    }
 
     // If there are any tracking event listeners (listening for CPLeftMouseDraggedMask)
     // then show the event guard so we don't lose events to iframes
@@ -1201,6 +1205,7 @@ var resizeTimer = nil;
     _DOMEventGuard.style.display = hasTrackingEventListener ? "" : "none";
 
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+    return !didStop;
 }
 
 - (void)contextMenuEvent:(DOMEvent)aDOMEvent
