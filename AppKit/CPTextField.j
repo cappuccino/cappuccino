@@ -1531,6 +1531,29 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 #endif
 }
 
+- (void)delete:(id)sender
+{
+    if (!([self isEnabled] && [self isEditable]))
+        return;
+
+    // delete: only works when there's a selection (as opposed to deleteForward: and deleteBackward:).
+    var selectedRange = [self selectedRange];
+
+    if (selectedRange.length < 1)
+        return;
+
+    var newValue = [_stringValue stringByReplacingCharactersInRange:selectedRange withString:""];
+
+    [self setStringValue:newValue];
+    [self setSelectedRange:CPMakeRange(selectedRange.location, 0)];
+    [self _didEdit];
+
+#if PLATFORM(DOM)
+    // Since we just performed the deletion manually, we don't need the browser to do anything else.
+    [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
+#endif
+}
+
 #pragma mark Setting the Delegate
 
 - (void)setDelegate:(id)aDelegate
