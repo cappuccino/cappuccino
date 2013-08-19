@@ -1765,6 +1765,23 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [self _becomeFirstKeyResponder];
 }
 
+- (BOOL)validateUserInterfaceItem:(id <CPValidatedUserInterfaceItem>)anItem
+{
+    var theAction = [anItem action];
+
+    if (![self isEditable] && (theAction == @selector(cut:) || theAction == @selector(paste:) || theAction == @selector(delete:)))
+        return NO;
+
+    // FIXME - [self selectedRange] is always empty if we're not an editable field, so we must assume yes here.
+    if (![self isEditable])
+        return YES;
+
+    if (theAction == @selector(copy:) || theAction == @selector(cut:) || theAction == @selector(delete:))
+        return [self selectedRange].length;
+
+    return YES;
+}
+
 #pragma mark Private
 
 - (BOOL)_isWithinUsablePlatformRect
