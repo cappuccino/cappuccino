@@ -1406,6 +1406,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (CPRange)selectedRange
 {
+    // TODO Need a way to figure out the selected range if we're not using an input. Need
+    // to get whole document selection and somehow see which part is inside of this text field.
     if ([[self window] firstResponder] !== self)
         return CPMakeRange(0, 0);
 
@@ -1541,6 +1543,33 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     if (selectedRange.length < 1)
         return;
+
+    var newValue = [_stringValue stringByReplacingCharactersInRange:selectedRange withString:""];
+
+    [self setStringValue:newValue];
+    [self setSelectedRange:CPMakeRange(selectedRange.location, 0)];
+    [self _didEdit];
+
+#if PLATFORM(DOM)
+    // Since we just performed the deletion manually, we don't need the browser to do anything else.
+    [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
+#endif
+}
+
+- (void)deleteForward:(id)sender
+{
+    if (!([self isEnabled] && [self isEditable]))
+        return;
+
+    var selectedRange = [self selectedRange];
+
+    if (selectedRange.length < 1)
+    {
+        if (selectedRange.location + 1 >= _stringValue.length)
+            return;
+
+        selectedRange.length += 1;
+    }
 
     var newValue = [_stringValue stringByReplacingCharactersInRange:selectedRange withString:""];
 
