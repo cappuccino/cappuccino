@@ -68,6 +68,11 @@ var _CPEventPeriodicEventPeriod         = 0,
     float               _deltaX;
     float               _deltaY;
     float               _deltaZ;
+
+#if PLATFORM(DOM)
+    BOOL                _suppressCappuccinoCut;
+    BOOL                _suppressCappuccinoPaste;
+#endif
 }
 
 /*!
@@ -472,6 +477,24 @@ var _CPEventPeriodicEventPeriod         = 0,
 
     return !firstResponderIsText;
 }
+
+/*!
+    Return YES if this event is a part of processing a browser controlled cut or paste event
+    where the browser will go ahead and do the work of cutting or pasting within the input
+    element after processing of this event. The implication is that it should not be done by
+    the CPTextField (or whatever else is controlling the input) since this would result in
+    nothing being cut (because the field already cut the text out), or a double paste
+    (because the field pasted as well as the browser).
+*/
+- (BOOL)_platformIsEffectingCutOrPaste
+{
+#if PLATFORM(DOM)
+    return _suppressCappuccinoCut || _suppressCappuccinoPaste;
+#else
+    return NO;
+#endif
+}
+
 
 /*!
     Generates periodic events every \c aPeriod seconds.

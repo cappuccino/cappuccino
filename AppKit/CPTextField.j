@@ -1356,7 +1356,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     if (![self isEditable])
         return;
 
-    if (![CPPlatform isBrowser])
+    if (![[CPApp currentEvent] _platformIsEffectingCutOrPaste])
     {
         [self deleteBackward:sender];
     }
@@ -1376,7 +1376,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     if (!([self isEnabled] && [self isEditable]))
         return;
 
-    if (![CPPlatform isBrowser])
+    if (![[CPApp currentEvent] _platformIsEffectingCutOrPaste])
     {
         var pasteboard = [CPPasteboard generalPasteboard];
 
