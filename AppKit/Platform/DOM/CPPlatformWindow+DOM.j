@@ -107,6 +107,7 @@
  * P:     undefined      80 undefined
  */
 
+@import <Foundation/CPNotificationCenter.j>
 @import <Foundation/CPObject.j>
 @import <Foundation/CPRunLoop.j>
 @import <Foundation/CPSet.j>
