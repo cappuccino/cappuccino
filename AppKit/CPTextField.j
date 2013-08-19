@@ -1506,10 +1506,15 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     var selectedRange = [self selectedRange];
 
-    // FIXME Is deleteBackward: meant to delete the character before the caret if there's no
-    // selection? There's no official documentation on deleteBackward: in Cocoa.
     if (selectedRange.length < 1)
-         return;
+    {
+        if (selectedRange.location < 1)
+            return;
+
+        // Delete a single element backward from the insertion point if there's no selection.
+        selectedRange.location -= 1;
+        selectedRange.length += 1;
+    }
 
     var newValue = [_stringValue stringByReplacingCharactersInRange:selectedRange withString:""];
 
