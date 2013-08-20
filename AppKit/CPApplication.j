@@ -22,6 +22,7 @@
 
 @import <Foundation/CPBundle.j>
 
+@import "CPApplication_Constants.j"
 @import "CPCompatibility.j"
 @import "CPColorPanel.j"
 @import "CPCursor.j"
@@ -39,24 +40,6 @@
 var CPMainCibFile               = @"CPMainCibFile",
     CPMainCibFileHumanFriendly  = @"Main cib file base name",
     CPEventModifierFlags = 0;
-
-CPApp = nil;
-
-CPApplicationWillFinishLaunchingNotification    = @"CPApplicationWillFinishLaunchingNotification";
-CPApplicationDidFinishLaunchingNotification     = @"CPApplicationDidFinishLaunchingNotification";
-CPApplicationWillTerminateNotification          = @"CPApplicationWillTerminateNotification";
-CPApplicationWillBecomeActiveNotification       = @"CPApplicationWillBecomeActiveNotification";
-CPApplicationDidBecomeActiveNotification        = @"CPApplicationDidBecomeActiveNotification";
-CPApplicationWillResignActiveNotification       = @"CPApplicationWillResignActiveNotification";
-CPApplicationDidResignActiveNotification        = @"CPApplicationDidResignActiveNotification";
-
-CPTerminateNow      = YES;
-CPTerminateCancel   = NO;
-CPTerminateLater    = -1; // not currently supported
-
-CPRunStoppedResponse    = -1000;
-CPRunAbortedResponse    = -1001;
-CPRunContinuesResponse  = -1002;
 
 /*!
     @ingroup appkit
@@ -174,7 +157,8 @@ CPRunContinuesResponse  = -1002;
             CPApplicationDidBecomeActiveNotification, @selector(applicationDidBecomeActive:),
             CPApplicationWillResignActiveNotification, @selector(applicationWillResignActive:),
             CPApplicationDidResignActiveNotification, @selector(applicationDidResignActive:),
-            CPApplicationWillTerminateNotification, @selector(applicationWillTerminate:)
+            CPApplicationWillTerminateNotification, @selector(applicationWillTerminate:),
+            CPApplicationDidChangeScreenParametersNotification, @selector(applicationDidChangeScreenParameters:)
         ],
         count = [delegateNotifications count];
 

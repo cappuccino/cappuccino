@@ -24,10 +24,10 @@
 
     [contentView addSubview:label];
 
-    theSlider = [[CPSlider alloc] initWithFrame:CGRectMake(100,100,180,24)];
+    theSlider = [[CPSlider alloc] initWithFrame:CGRectMake(100, 100, 180, 24)];
     [theSlider setMinValue:36];
     [theSlider setMaxValue:238];
-    [theSlider setObjectValue:([theSlider minValue] + [theSlider maxValue])/2];
+    [theSlider setObjectValue:([theSlider minValue] + [theSlider maxValue]) / 2];
     [theSlider setTarget:self];
     [theSlider setAction:@selector(doSlider:)];
     [contentView addSubview:theSlider];
@@ -103,8 +103,6 @@
             return [anItem isEnabled];
     }
 }
-
-
 
 @end
 

@@ -35,7 +35,10 @@
 
 var _CPCibCustomResourceClassNameKey    = @"_CPCibCustomResourceClassNameKey",
     _CPCibCustomResourceResourceNameKey = @"_CPCibCustomResourceResourceNameKey",
-    _CPCibCustomResourcePropertiesKey   = @"_CPCibCustomResourcePropertiesKey";
+    _CPCibCustomResourcePropertiesKey   = @"_CPCibCustomResourcePropertiesKey",
+
+    _CPCibCustomResourceTemplateImageMap = nil;
+
 
 @implementation _CPCibCustomResource : CPObject
 {
@@ -45,6 +48,16 @@ var _CPCibCustomResourceClassNameKey    = @"_CPCibCustomResourceClassNameKey",
     CPBundle        _bundle;
 }
 
++ (void)initialize
+{
+    if (self !== [_CPCibCustomResource class])
+        return;
+
+    _CPCibCustomResourceTemplateImageMap = @{
+        "CPAddTemplate": "button-image-plus",
+        "CPRemoveTemplate": "button-image-minus"
+    };
+}
 + (id)imageResourceWithName:(CPString)aResourceName size:(CGSize)aSize
 {
     return [[self alloc] initWithClassName:@"CPImage" resourceName:aResourceName properties:@{ @"size": aSize }];
@@ -98,12 +111,12 @@ var _CPCibCustomResourceClassNameKey    = @"_CPCibCustomResourceClassNameKey",
         (![aCoder respondsToSelector:@selector(awakenCustomResources)] || [aCoder awakenCustomResources]))
         if (_className === @"CPImage")
         {
-            if (_resourceName == "CPAddTemplate")
-                return [[CPTheme defaultTheme] valueForAttributeWithName:@"button-image-plus" forClass:[CPButtonBar class]];
-            else if (_resourceName == "CPRemoveTemplate")
-                return [[CPTheme defaultTheme] valueForAttributeWithName:@"button-image-minus" forClass:[CPButtonBar class]];
+            var templateImage = [_CPCibCustomResourceTemplateImageMap objectForKey:_resourceName];
 
-            return [self imageFromCoder:aCoder];
+            if (templateImage)
+                return [[CPTheme defaultTheme] valueForAttributeWithName:templateImage forClass:[CPButtonBar class]];
+            else
+                return [self imageFromCoder:aCoder];
         }
 
     return self;

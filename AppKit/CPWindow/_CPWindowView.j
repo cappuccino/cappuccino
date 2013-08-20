@@ -631,7 +631,38 @@ _CPWindowViewResizeSlop = 3;
                 newHeight = startHeight;
         }
 
-        [theWindow _setFrame:CGRectMake(newX, newY, newWidth, newHeight) display:YES animate:NO constrainWidth:NO constrainHeight:NO];
+        // When resizing, we always constrain to the usable screen.
+        frame = CGRectMake(newX, newY, newWidth, newHeight);
+
+        var constrainedFrame = [theWindow _constrainOriginOfFrame:frame],
+            dx = constrainedFrame.origin.x - frame.origin.x,
+            dy = constrainedFrame.origin.y - frame.origin.y;
+
+        // When resizing from the left or top, we adjust the origin and size.
+        switch (_resizeRegion)
+        {
+            case _CPWindowViewResizeRegionBottomLeft:
+            case _CPWindowViewResizeRegionLeft:
+            case _CPWindowViewResizeRegionTopLeft:
+            case _CPWindowViewResizeRegionTop:
+            case _CPWindowViewResizeRegionTopRight:
+                frame.origin = constrainedFrame.origin;
+                frame.size.width -= dx;
+                frame.size.height -= dy;
+        }
+
+        // When resizing from the right or bottom, we only adjust the size.
+        switch (_resizeRegion)
+        {
+            case _CPWindowViewResizeRegionTopRight:
+            case _CPWindowViewResizeRegionRight:
+            case _CPWindowViewResizeRegionBottomRight:
+            case _CPWindowViewResizeRegionBottom:
+                frame.size.width += dx;
+                frame.size.height += dy;
+        }
+
+        [theWindow _setFrame:frame display:YES animate:NO constrainWidth:NO constrainHeight:NO];
         [self setCursorForLocation:location resizing:YES];
     }
 
@@ -928,7 +959,8 @@ _CPWindowViewResizeSlop = 3;
 
 - (CGSize)_minimumResizeSize
 {
-    return CGSizeMake(0, _CPWindowViewMinContentHeight);
+    // Leave at least 4px so there is something visible.
+    return CGSizeMake(4, _CPWindowViewMinContentHeight);
 }
 
 - (int)bodyOffset

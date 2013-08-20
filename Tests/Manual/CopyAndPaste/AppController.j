@@ -16,6 +16,7 @@
     @outlet CPWindow            theWindow;
     @outlet CPCollectionView    aCollectionView;
     @outlet CPArrayController   anArrayController;
+    @outlet CPTextField         selectableTextField;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
@@ -29,6 +30,8 @@
     var anImage = CPImageInBundle("2952609526_9fd245dfcd_q.jpg");
 
     [anArrayController setContent:@[@"Cat", @"Rabbit", @"Dinosaur", anImage]];
+
+    [selectableTextField setStringValue:@"Lion"];
 
     [theWindow setFullPlatformWindow:YES];
 }

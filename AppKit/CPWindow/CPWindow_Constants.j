@@ -194,3 +194,5 @@ CPStandardWindowShadowStyle = 0;
 CPMenuWindowShadowStyle     = 1;
 CPPanelWindowShadowStyle    = 2;
 CPCustomWindowShadowStyle   = 3;
+
+CPWindowConstrainToScreen = YES;
