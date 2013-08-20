@@ -53,8 +53,7 @@
             @"text-color": [CPNull null],
             @"font": [CPNull null],
             @"text-shadow-color": [CPNull null],
-            @"text-shadow-offset": CGSizeMakeZero(),
-            @"divider-thickness": 1.0
+            @"text-shadow-offset": CGSizeMakeZero()
         };
 }
 
@@ -252,6 +251,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     return @{
             @"background-color": [CPNull null],
             @"divider-color": [CPColor grayColor],
+            @"divider-thickness": 1.0
         };
 }
 
