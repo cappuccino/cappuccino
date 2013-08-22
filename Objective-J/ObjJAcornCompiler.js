@@ -1829,7 +1829,7 @@ ProtocolDeclarationStatement: function(node, st, c) {
         inheritFromProtocols = [];
 
     if (protocolDef)
-        throw compiler.error_message("Duplicate protocol " + protocolName, node.protocolName);
+        throw compiler.error_message("Duplicate protocol " + protocolName, node.protocolname);
 
     compiler.imBuffer = new StringBuffer();
     compiler.cmBuffer = new StringBuffer();
