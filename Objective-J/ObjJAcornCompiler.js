@@ -552,22 +552,22 @@ ObjJAcornCompiler.prototype.getProtocolDef = function(/* String */ aProtocolName
         var aProtocol = objj_getProtocol(aProtocolName);
         if (aProtocol)
         {
-            var protocol = protocols[i],
-                protocolName = protocol_getName(protocol),
-                requiredInstanceMethods = protocol_copyMethodDescriptionList(protocol, true, true),
+            var protocolName = protocol_getName(aProtocol),
+                requiredInstanceMethods = protocol_copyMethodDescriptionList(aProtocol, true, true),
                 requiredInstanceMethodDefs = ObjJAcornCompiler.methodDefsFromMethodList(requiredInstanceMethods),
-                requiredClassMethods = protocol_copyMethodDescriptionList(protocol, true, false),
+                requiredClassMethods = protocol_copyMethodDescriptionList(aProtocol, true, false),
                 requiredClassMethodDefs = ObjJAcornCompiler.methodDefsFromMethodList(requiredClassMethods),
-                protocols = protocol.protocols,
+                protocols = aProtocol.protocols,
                 inheritFromProtocols = [];
 
-            for (var i = 0, size = protocols.length; i < size; i++)
-                inheritFromProtocols.push(compiler.getProtocolDef(protocols[i].name));
+            if (protocols)
+                for (var i = 0, size = protocols.length; i < size; i++)
+                    inheritFromProtocols.push(compiler.getProtocolDef(protocols[i].name));
 
-            p = new ProtocolDef(protocolName, inheritFromProtocols, requiredInstanceMethodDefs, requiredClassMethodDefs); 
+            p = new ProtocolDef(protocolName, inheritFromProtocols, requiredInstanceMethodDefs, requiredClassMethodDefs);
 
             this.protocolDefs[aProtocolName] = p;
-            return c;
+            return p;
         }
     }
 
