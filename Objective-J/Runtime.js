@@ -594,6 +594,7 @@ GLOBAL(objj_resetRegisterClasses) = function()
         delete global[key];
 
     REGISTERED_CLASSES = {};
+    REGISTERED_PROTOCOLS = {};
 
     resetBundle();
 }
