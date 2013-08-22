@@ -420,7 +420,17 @@ GLOBAL(protocol_addMethodDescriptions) = function(/*Protocol*/ proto, /*Array*/ 
 
 GLOBAL(protocol_copyMethodDescriptionList) = function(/*Protocol*/ proto, /*BOOL*/ isRequiredMethod, /*BOOL*/ isInstanceMethod)
 {
-    return isRequiredMethod ? (isInstanceMethod ? proto.instance_methods : proto.class_methods).slice(0) : [];
+    if (!isRequiredMethod)
+        return [];
+
+    var method_dtable = isInstanceMethod ? proto.instance_methods : proto.class_methods,
+        methodList = [];
+
+    for (var selector in method_dtable)
+        if (method_dtable.hasOwnProperty(selector))
+            methodList.push(method_dtable[selector]);
+
+    return methodList;
 }
 
 GLOBAL(protocol_addProtocol) = function(/*Protocol*/ proto, /*Protocol*/ addition)
