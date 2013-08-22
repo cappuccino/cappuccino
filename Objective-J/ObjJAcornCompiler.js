@@ -499,7 +499,7 @@ ObjJAcornCompiler.prototype.getClassDef = function(/* String */ aClassName)
 
     if (c) return c;
 
-    if (objj_getClass)
+    if (typeof objj_getClass === 'function')
     {
         var aClass = objj_getClass(aClassName);
         if (aClass)
@@ -547,7 +547,7 @@ ObjJAcornCompiler.prototype.getProtocolDef = function(/* String */ aProtocolName
 
     if (p) return p;
 
-    if (objj_getProtocol)
+    if (typeof objj_getProtocol === 'function')
     {
         var aProtocol = objj_getProtocol(aProtocolName);
         if (aProtocol)
