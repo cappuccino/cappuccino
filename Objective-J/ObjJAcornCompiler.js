@@ -1881,7 +1881,7 @@ ProtocolDeclarationStatement: function(node, st, c) {
     {
         buffer.concat("protocol_addMethodDescriptions(the_protocol, [");
         buffer.atoms.push.apply(buffer.atoms, compiler.imBuffer.atoms); // FIXME: Move this append to StringBuffer
-        buffer.concat("], true, false);\n");
+        buffer.concat("], true, true);\n");
     }
 
     // Add class methods
@@ -1889,7 +1889,7 @@ ProtocolDeclarationStatement: function(node, st, c) {
     {
         buffer.concat("protocol_addMethodDescriptions(the_protocol, [");
         buffer.atoms.push.apply(buffer.atoms, compiler.cmBuffer.atoms); // FIXME: Move this append to StringBuffer
-        buffer.concat("], true, true);\n");
+        buffer.concat("], true, false);\n");
     }
 
     buffer.concat("}");
