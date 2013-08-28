@@ -2369,10 +2369,13 @@ var preIfLevel = 0;
     expect(_plusmin, "Method declaration must start with '+' or '-'");
     // If we find a '(' we have a return type to parse
     if (eat(_parenL)) {
-      if (eat(_action))
-        node.action = true;
+      var typeNode = startNode();
+      if (eat(_action)) {
+        node.action = finishNode(typeNode, "ObjectiveJActionType");
+        typeNode = startNode();
+      }
       if (!eat(_parenR)) {
-        node.returntype = parseObjectiveJType();
+        node.returntype = parseObjectiveJType(typeNode);
         expect(_parenR, "Expected closing ')' after method return type");
       }
     }
@@ -3010,8 +3013,8 @@ var preIfLevel = 0;
   // It can be 'char', 'byte', 'short', 'int' or 'long'
   // 'int' can be followed by an optinal 'long'. 'long' can be followed by an optional extra 'long'
 
-  function parseObjectiveJType() {
-    var node = startNode();
+  function parseObjectiveJType(startFrom) {
+    var node = startFrom ? startNodeFrom(startFrom) : startNode();
     if (tokType === _name) {
       // It should be a class name
       node.name = tokVal;

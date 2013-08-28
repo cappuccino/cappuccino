@@ -2029,12 +2029,13 @@ MethodDeclarationStatement: function(node, st, c) {
             var typeSize = declaredTypes.length;
             if (typeSize > 0) {
                 // First type is return type
-                var returnType = declaredTypes[0];
+                var declaredReturnType = declaredTypes[0];
 
-                if (returnType !== types[0] && !(returnType === 'id' && node.returntype.typeisclass))
-                    compiler.addWarning(createMessage("Conflicting return type in implementation of '" + selector + "': '" + returnType + "' vs '" + types[0] + "'", node.returntype || node, compiler.source));
+                // Create warning if return types is not the same. It is ok if superclass has 'id' and subclass has a class type
+                if (declaredReturnType !== types[0] && !(declaredReturnType === 'id' && returnType && returnType.typeisclass))
+                    compiler.addWarning(createMessage("Conflicting return type in implementation of '" + selector + "': '" + declaredReturnType + "' vs '" + types[0] + "'", returnType || node.action || selectors[0], compiler.source));
 
-                // Check the parameter types. The size of the two type arrays should be the same
+                // Check the parameter types. The size of the two type arrays should be the same as they have the same selector.
                 for (var i = 1; i < typeSize; i++) {
                     var parameterType = declaredTypes[i];
 
