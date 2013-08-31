@@ -376,14 +376,14 @@ GLOBAL(protocol_conformsToProtocol) = function(/*Protocol*/ p1, /*Protocol*/ p2)
 
 var REGISTERED_PROTOCOLS  = { };
 
-GLOBAL(objc_allocateProtocol) = function(/*String*/ aName)
+GLOBAL(objj_allocateProtocol) = function(/*String*/ aName)
 {
     var protocol = new objj_protocol(aName);
 
     return protocol;
 }
 
-GLOBAL(objc_registerProtocol) = function(/*Protocol*/ proto)
+GLOBAL(objj_registerProtocol) = function(/*Protocol*/ proto)
 {
     REGISTERED_PROTOCOLS[proto.name] = proto;
 }

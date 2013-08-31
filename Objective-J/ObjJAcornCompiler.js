@@ -1836,7 +1836,7 @@ ProtocolDeclarationStatement: function(node, st, c) {
 
     if (!generate) buffer.concat(compiler.source.substring(compiler.lastPos, node.start));
 
-    buffer.concat("{var the_protocol = objc_allocateProtocol(\"" + protocolName + "\");");
+    buffer.concat("{var the_protocol = objj_allocateProtocol(\"" + protocolName + "\");");
 
     if (protocols) for (var i = 0, size = protocols.length; i < size; i++)
     {
@@ -1874,7 +1874,7 @@ ProtocolDeclarationStatement: function(node, st, c) {
         }
     }
 
-    buffer.concat("\nobjc_registerProtocol(the_protocol);\n");
+    buffer.concat("\nobjj_registerProtocol(the_protocol);\n");
 
     // Add instance methods
     if (compiler.imBuffer.isEmpty())
@@ -1932,8 +1932,8 @@ MethodDeclarationStatement: function(node, st, c) {
 
         types.push(argumentType ? argumentType.name : "id");
 
-        if (argumentProtocols) for (var i = 0, size = argumentProtocols.length; i < size; i++) {
-            var argumentProtocol = argumentProtocols[i];
+        if (argumentProtocols) for (var j = 0, size = argumentProtocols.length; j < size; j++) {
+            var argumentProtocol = argumentProtocols[j];
             if (!compiler.getProtocolDef(argumentProtocol.name)) {
                 compiler.addWarning(createMessage("Cannot find protocol declaration for '" + argumentProtocol.name + "'", argumentProtocol, compiler.source));
             }
