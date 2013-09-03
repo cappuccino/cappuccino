@@ -58,10 +58,6 @@
         <script type="text/javascript" src="Frameworks/Objective-J/Objective-J.js" charset="UTF-8"></script>
 
         <style type="text/css">
-            html, body {
-                height: 100%;
-            }
-
             html, body, h1, p {
                 margin: 0;
                 padding: 0;
@@ -69,8 +65,14 @@
 
             /* We need a body wrapper because Cappuccino is unhappy if we change the body element */
             #cappuccino-body {
+                /* Position it absolutely so it will fill the height without content */
+                position: absolute;
+                top: 0;
+                bottom: 0;
                 width: 100%;
-                height: 100%;
+
+                /* Put it at the bottom of the stack so it doesn't interfere with UI */
+                z-index: -1000;
             }
 
             #cappuccino-body .container {
