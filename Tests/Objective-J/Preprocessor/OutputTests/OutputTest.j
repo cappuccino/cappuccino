@@ -18,6 +18,7 @@ var FILENAMES = [
         "Misc/preprocess-if-directives",
         "Misc/regex-simple-char-classes",
         "Misc/empty-loops",
+        "Misc/empty-statements",
 ];
 
 @implementation OutputTest : OJTestCase

@@ -580,7 +580,8 @@ IfStatement: function(node, st, c) {
       buffer.concat("if (");
     }
     c(node.test, st, "Expression");
-    if (generate) buffer.concat(")\n");
+    // We don't want EmptyStatements to generate an extra parenthesis except when it is in a while, for, ...
+    if (generate) buffer.concat(node.consequent.type === "EmptyStatement" ? ");\n" : ")\n");
     indentation += indentStep;
     c(node.consequent, st, "Statement");
     indentation = indentation.substring(indentationSpaces);
@@ -588,8 +589,10 @@ IfStatement: function(node, st, c) {
     if (alternate) {
       var alternateNotIf = alternate.type !== "IfStatement";
       if (generate) {
+        var emptyStatement = alternate.type === "EmptyStatement";
         buffer.concat(indentation);
-        buffer.concat(alternateNotIf ? "else\n" : "else ");
+        // We don't want EmptyStatements to generate an extra parenthesis except when it is in a while, for, ...
+        buffer.concat(alternateNotIf ? emptyStatement ? "else;\n" : "else\n" : "else ");
       }
       if (alternateNotIf)
         indentation += indentStep;
