@@ -413,9 +413,9 @@ exports.ObjJAcornCompiler.compileToExecutable = function(/*String*/ aString, /*C
     return new ObjJAcornCompiler(aString, aURL, flags, 2).executable();
 }
 
-exports.ObjJAcornCompiler.compileToIMBuffer = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ flags, classDefs)
+exports.ObjJAcornCompiler.compileToIMBuffer = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ flags, classDefs, protocolDefs)
 {
-    return new ObjJAcornCompiler(aString, aURL, flags, 2, classDefs).IMBuffer();
+    return new ObjJAcornCompiler(aString, aURL, flags, 2, classDefs, protocolDefs).IMBuffer();
 }
 
 exports.ObjJAcornCompiler.compileFileDependencies = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ flags)
@@ -1745,7 +1745,7 @@ ClassDeclarationStatement: function(node, st, c) {
 
         // Remove all @accessors or we will get a recursive loop in infinity
         var b = getterSetterBuffer.toString().replace(/@accessors(\(.*\))?/g, "");
-        var imBuffer = ObjJAcornCompiler.compileToIMBuffer(b, "Accessors", compiler.flags, compiler.classDefs);
+        var imBuffer = ObjJAcornCompiler.compileToIMBuffer(b, "Accessors", compiler.flags, compiler.classDefs, compiler.protocolDefs);
 
         // Add the accessors methods first to instance method buffer.
         // This will allow manually added set and get methods to override the compiler generated
