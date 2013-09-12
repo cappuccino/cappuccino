@@ -1662,7 +1662,8 @@ ClassDeclarationStatement: function(node, st, c) {
             ivarType = ivarDecl.ivartype ? ivarDecl.ivartype.name : null,
             ivarName = ivarDecl.id.name,
             ivars = classDef.ivars,
-            ivar = {"type": ivarType, "name": ivarName};
+            ivar = {"type": ivarType, "name": ivarName},
+            accessors = ivarDecl.accessors;
 
         if (ivars[ivarName])
             throw compiler.error_message("Instance variable '" + ivarName + "'is already declared for class " + className, ivarDecl.id);
@@ -1687,8 +1688,26 @@ ClassDeclarationStatement: function(node, st, c) {
             classScope.ivars = Object.create(null);
         classScope.ivars[ivarName] = {type: "ivar", name: ivarName, node: ivarDecl.id, ivar: ivar};
 
-        if (!hasAccessors && ivarDecl.accessors)
+        if (accessors) {
+            // TODO: This next couple of lines for getting getterName and setterName are duplicated from below. Create functions for this.
+            var property = (accessors.property && accessors.property.name) || ivarName,
+                getterName = (accessors.getter && accessors.getter.name) || property;
+
+            classDef.addInstanceMethod(new MethodDef(getterName, [ivarType]));
+
+            if (!accessors.readonly) {
+                var setterName = accessors.setter ? accessors.setter.name : null;
+
+                if (!setterName)
+                {
+                    var start = property.charAt(0) == '_' ? 1 : 0;
+
+                    setterName = (start ? "_" : "") + "set" + property.substr(start, 1).toUpperCase() + property.substring(start + 1) + ":";
+                }
+                classDef.addInstanceMethod(new MethodDef(setterName, ["void", ivarType]));
+            }
             hasAccessors = true;
+        }
     }
 
     if (!firstIvarDeclaration)
