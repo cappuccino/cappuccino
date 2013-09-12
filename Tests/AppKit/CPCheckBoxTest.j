@@ -77,7 +77,8 @@
     var content =
         [
             @{ @"state": YES },
-            @{ @"state": NO }
+            @{ @"state": NO },
+            @{}
         ],
         arrayController = [[CPArrayController alloc] initWithContent:content];
 
@@ -88,10 +89,18 @@
     [self assert:CPOffState equals:[control objectValue] message:"content[0] is negated"]
     [arrayController setSelectionIndexes:[CPIndexSet indexSetWithIndex:1]];
     [self assert:CPOnState equals:[control objectValue] message:"content[1] is negated"]
+    [arrayController setSelectionIndexes:[CPIndexSet indexSetWithIndex:2]];
+    [self assert:CPOnState equals:[control objectValue] message:"content[2] is negated"]
 
+    [arrayController setSelectionIndexes:[CPIndexSet indexSetWithIndex:1]];
     [control performClick:nil];
     [self assert:CPOffState equals:[control objectValue] message:"value was changed"]
     [self assert:YES equals:[content[1] valueForKey:@"state"] message:"content[1] was negated after change"]
+
+    [arrayController setSelectionIndexes:[CPIndexSet indexSetWithIndex:2]];
+    [control performClick:nil];
+    [self assert:CPOffState equals:[control objectValue] message:"value was changed"]
+    [self assert:YES equals:[content[2] valueForKey:@"state"] message:"content[2] was negated after change"]
 }
 
 @end
