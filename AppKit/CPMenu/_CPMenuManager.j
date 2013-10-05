@@ -407,6 +407,15 @@ var STICKY_TIME_INTERVAL            = 0.4,
         [menu cancelTracking];
 }
 
+- (void)cancelActiveMenu
+{
+    if (CPApp._activeMenu)
+    {
+        [self completeTracking];
+        _menuContainerStack = [];
+    }
+}
+
 - (void)completeTracking
 {
     var trackingMenu = [self trackingMenu];
