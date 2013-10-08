@@ -353,9 +353,8 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 - (void)expandItem:(id)anItem expandChildren:(BOOL)shouldExpandChildren
 {
     if ([self _delegateRespondsToShouldExpandItem])
-    {
-        if ([_outlineViewDelegate outlineView:self shouldExpandItem:anItem] == NO) return;
-    }
+        if ([_outlineViewDelegate outlineView:self shouldExpandItem:anItem] == NO)
+            return;
 
     var itemInfo = null;
 
@@ -433,9 +432,8 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
         return;
 
     if ([self _delegateRespondsToShouldCollapseItem])
-    {
-        if ([_outlineViewDelegate outlineView:self shouldCollapseItem:anItem] == NO) return;
-    }
+        if ([_outlineViewDelegate outlineView:self shouldCollapseItem:anItem] == NO)
+            return;
 
     var itemInfo = _itemInfosForItems[[anItem UID]];
 

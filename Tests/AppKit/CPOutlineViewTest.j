@@ -371,7 +371,8 @@
 
 - (BOOL)outlineView:(CPOutlineView)outlineView shouldExpandItem:(id)item
 {
-    if(item == @".1")  return NO;
+    if (item == @".1")
+        return NO;
     return YES;
 }
 @end
@@ -382,7 +383,8 @@
 
 - (BOOL)outlineView:(CPOutlineView)outlineView shouldCollapseItem:(id)item
 {
-    if(item == @".1")  return NO;
+    if (item == @".1")
+        return NO;
     return YES;
 }
 
