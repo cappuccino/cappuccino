@@ -855,6 +855,9 @@ var _CPMenuBarVisible               = NO,
 
 + (void)popUpContextMenu:(CPMenu)aMenu withEvent:(CPEvent)anEvent forView:(CPView)aView withFont:(CPFont)aFont
 {
+    // This is needed when we are making several rights click
+    [[_CPMenuManager sharedMenuManager] cancelActiveMenu];
+
     [aMenu _menuWillOpen];
 
     if (!aFont)
@@ -862,8 +865,6 @@ var _CPMenuBarVisible               = NO,
 
     var theWindow = [aView window],
         menuWindow = [_CPMenuWindow menuWindowWithMenu:aMenu font:aFont];
-
-    [_CPMenuWindow poolMenuWindow:menuWindow];
 
     [menuWindow setBackgroundStyle:_CPMenuWindowPopUpBackgroundStyle];
 
