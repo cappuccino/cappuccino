@@ -519,7 +519,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
                 case CPLineBreakByTruncatingMiddle: // Don't have support for these (yet?), so just degrade to truncating tail.
                 case CPLineBreakByTruncatingTail:
                     textStyle.textOverflow = "ellipsis";
-                    textStyle.whiteSpace = "nowrap";
+                    textStyle.whiteSpace = "pre";
                     textStyle.overflow = "hidden";
                     textStyle.wordWrap = "normal";
                     break;
