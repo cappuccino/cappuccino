@@ -40,6 +40,7 @@
 
 + (AppController *)sharedAppController;
 
+- (IBAction)createProject:(id)sender;
 - (IBAction)loadProject:(id)aSender;
 - (IBAction)openHelp:(id)aSender;
 - (IBAction)openAbout:(id)aSender;

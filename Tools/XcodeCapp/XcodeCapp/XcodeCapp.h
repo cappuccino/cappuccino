@@ -79,6 +79,9 @@ extern NSString * const XCCProjectDidFinishLoadingNotification;
 // Full path to pbxprojModifier.py
 @property NSString *pbxModifierScriptPath;
 
+// Tooltip for the radio button symlink
+@property NSString *toolTipSymlinkRadioButton;
+
 // Full paths to the executables we rely on: jsc, objj, nib2cib, python
 @property NSMutableDictionary *executablePaths;
 
@@ -96,6 +99,9 @@ extern NSString * const XCCProjectDidFinishLoadingNotification;
 
 // Whether we are currently processing source files
 @property BOOL isProcessing;
+
+// Whether $CAPP_BUILD is defined or not
+@property BOOL isCappBuildDefined;
 
 // A mapping from full paths to project-relative paths
 @property NSMutableDictionary *projectPathsForSourcePaths;
@@ -133,6 +139,8 @@ extern NSString * const XCCProjectDidFinishLoadingNotification;
 
 - (void)wantUserNotificationWithInfo:(NSDictionary *)info;
 - (NSDictionary *)runTaskWithLaunchPath:(NSString *)launchPath arguments:(NSArray *)arguments returnType:(XCCTaskReturnType)returnType;
+
+- (NSDictionary*)createProject:(NSString*)aPath;
 
 @end
 

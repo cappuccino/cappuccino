@@ -26,5 +26,6 @@ extern NSString * const kDefaultMaxRecentProjects;
 extern NSString * const kDefaultLogLevel;
 extern NSString * const kDefaultAutoOpenXcodeProject;
 extern NSString * const kDefaultShowProcessingNotices;
+extern NSString * const kDefaultUseSymlinkWhenCreatingProject;
 
 #endif
