@@ -352,6 +352,10 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 */
 - (void)expandItem:(id)anItem expandChildren:(BOOL)shouldExpandChildren
 {
+    if ([self _delegateRespondsToShouldExpandItem])
+        if ([_outlineViewDelegate outlineView:self shouldExpandItem:anItem] == NO)
+            return;
+
     var itemInfo = null;
 
     if (!anItem)
@@ -426,6 +430,10 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 {
     if (!anItem)
         return;
+
+    if ([self _delegateRespondsToShouldCollapseItem])
+        if ([_outlineViewDelegate outlineView:self shouldCollapseItem:anItem] == NO)
+            return;
 
     var itemInfo = _itemInfosForItems[[anItem UID]];
 
@@ -1574,6 +1582,15 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     return _implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_;
 }
 
+- (BOOL)_delegateRespondsToShouldExpandItem
+{
+    return _implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_shouldExpandItem_;
+}
+
+- (BOOL)_delegateRespondsToShouldCollapseItem
+{
+    return _implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_shouldCollapseItem_;
+}
 @end
 
 // FIX ME: We're using with() here because Safari fails if we use anOutlineView._itemInfosForItems or whatever...
