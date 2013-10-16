@@ -2973,32 +2973,34 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 {
     [self _changeSortDescriptorsForClickOnColumn:clickedColumn];
 
-    if (_allowsColumnSelection && _implementedDelegateMethods & CPTableViewDelegate_selectionShouldChangeInTableView_ &&
-            [_delegate selectionShouldChangeInTableView:self])
+    if (_allowsColumnSelection)
     {
-        [self _noteSelectionIsChanging];
-        if (modifierFlags & CPPlatformActionKeyMask)
+        if (!(_implementedDelegateMethods & CPTableViewDelegate_selectionShouldChangeInTableView_) || [_delegate selectionShouldChangeInTableView:self])
         {
-            if ([self isColumnSelected:clickedColumn])
-                [self deselectColumn:clickedColumn];
-            else if ([self allowsMultipleSelection] == YES)
-                [self selectColumnIndexes:[CPIndexSet indexSetWithIndex:clickedColumn] byExtendingSelection:YES];
+            [self _noteSelectionIsChanging];
+            if (modifierFlags & CPPlatformActionKeyMask)
+            {
+                if ([self isColumnSelected:clickedColumn])
+                    [self deselectColumn:clickedColumn];
+                else if ([self allowsMultipleSelection] == YES)
+                    [self selectColumnIndexes:[CPIndexSet indexSetWithIndex:clickedColumn] byExtendingSelection:YES];
 
-            return;
+                return;
+            }
+            else if (modifierFlags & CPShiftKeyMask)
+            {
+                // should be from clickedColumn to lastClickedColum with extending:(direction == previous selection)
+                var startColumn = MIN(clickedColumn, [_selectedColumnIndexes lastIndex]),
+                    endColumn = MAX(clickedColumn, [_selectedColumnIndexes firstIndex]);
+
+                [self selectColumnIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(startColumn, endColumn - startColumn + 1)]
+                     byExtendingSelection:YES];
+
+                return;
+            }
+            else
+                [self selectColumnIndexes:[CPIndexSet indexSetWithIndex:clickedColumn] byExtendingSelection:NO];
         }
-        else if (modifierFlags & CPShiftKeyMask)
-        {
-        // should be from clickedColumn to lastClickedColum with extending:(direction == previous selection)
-            var startColumn = MIN(clickedColumn, [_selectedColumnIndexes lastIndex]),
-                endColumn = MAX(clickedColumn, [_selectedColumnIndexes firstIndex]);
-
-            [self selectColumnIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(startColumn, endColumn - startColumn + 1)]
-                 byExtendingSelection:YES];
-
-            return;
-        }
-        else
-            [self selectColumnIndexes:[CPIndexSet indexSetWithIndex:clickedColumn] byExtendingSelection:NO];
     }
 
     [self _sendDelegateDidClickColumn:clickedColumn];
@@ -4521,10 +4523,13 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     var row = [self rowAtPoint:aPoint];
 
     // If the user clicks outside a row then deselect everything.
-    if (row < 0 && _allowsEmptySelection && (_implementedDelegateMethods & CPTableViewDelegate_selectionShouldChangeInTableView_ && [_delegate selectionShouldChangeInTableView:self]))
+    if (row < 0 && _allowsEmptySelection)
     {
-        [self _noteSelectionIsChanging];
-        [self selectRowIndexes:[CPIndexSet indexSet] byExtendingSelection:NO];
+        if (!(_implementedDelegateMethods & CPTableViewDelegate_selectionShouldChangeInTableView_) || [_delegate selectionShouldChangeInTableView:self])
+        {
+            [self _noteSelectionIsChanging];
+            [self selectRowIndexes:[CPIndexSet indexSet] byExtendingSelection:NO];
+        }
     }
 
     if ([self mouseDownFlags] & CPShiftKeyMask)
