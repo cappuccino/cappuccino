@@ -4533,7 +4533,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     else
         _selectionAnchorRow = row;
 
-
     //set ivars for startTrackingPoint and time...
     _startTrackingPoint = aPoint;
     _startTrackingTimestamp = new Date();
