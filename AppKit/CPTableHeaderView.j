@@ -382,7 +382,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
         _mouseDownLocation = currentLocation;
         _activeColumn = columnIndex;
 
-        [_tableView _sendDelegateDidMouseDownInHeader:columnIndex];
+        [_tableView _mouseDownInHeaderOfTableColumn:columnIndex];
 
         if (shouldResize)
             [self startResizingTableColumn:columnIndex at:currentLocation];
