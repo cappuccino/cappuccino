@@ -1940,6 +1940,14 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     return [_outlineView menu] || [[_outlineView class] defaultMenu];
 }
 
+- (CPIndexSet)tableView:(CPTableView)aTableView selectionIndexesForProposedSelection:(CPIndexSet)anIndexSet
+{
+    if ((_outlineView._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_selectionIndexesForProposedSelection_))
+        return [_outlineView._outlineViewDelegate outlineView:self selectionIndexesForProposedSelection:anIndexSet];
+
+    return anIndexSet;
+}
+
 @end
 
 @implementation CPDisclosureButton : CPButton
