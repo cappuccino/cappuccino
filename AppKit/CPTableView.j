@@ -3557,7 +3557,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
             else
                 [dataView unsetThemeState:CPThemeStateSelectedDataView];
 
-
+            // FIX ME: for performance reasons we might consider diverging from cocoa and moving this to the reloadData method
             if ([self _isGroupRow:row])
             {
                 [_groupRows addIndex:row];
@@ -3571,24 +3571,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
             }
 
             [self setNeedsDisplay:YES];
-
-            // // FIX ME: for performance reasons we might consider diverging from cocoa and moving this to the reloadData method
-            // if (_implementedDelegateMethods & CPTableViewDelegate_tableView_isGroupRow_)
-            // {
-            //     if ([_delegate tableView:self isGroupRow:row])
-            //     {
-            //         [_groupRows addIndex:row];
-            //         [dataView setThemeState:CPThemeStateGroupRow];
-            //     }
-            //     else
-            //     {
-            //         [_groupRows removeIndexesInRange:CPMakeRange(row, 1)];
-            //         [dataView unsetThemeState:CPThemeStateGroupRow];
-            //     }
-            //
-            //     [self setNeedsDisplay:YES];
-            // }
-
             [self _willDisplayView:dataView forTableColumn:tableColumn row:row];
 
             if ([dataView superview] !== self)
