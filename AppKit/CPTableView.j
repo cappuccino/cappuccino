@@ -3570,8 +3570,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
                 [dataView unsetThemeState:CPThemeStateGroupRow];
             }
 
-            [self setNeedsDisplay:YES];
             [self _sendDelegateWillDisplayView:dataView forTableColumn:tableColumn row:row];
+            [self setNeedsDisplay:YES];
 
             if ([dataView superview] !== self)
                 [self addSubview:dataView];
