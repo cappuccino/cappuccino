@@ -63,27 +63,27 @@ var CPTableViewDataSource_numberOfRowsInTableView_                              
 
 var CPTableViewDelegate_selectionShouldChangeInTableView_                                               = 1 << 0,
     CPTableViewDelegate_tableView_viewForTableColumn_row_                                               = 1 << 1,
-    CPTableViewDelegate_tableView_dataViewForTableColumn_row_                                           = 1 << 21,
-    CPTableViewDelegate_tableView_didClickTableColumn_                                                  = 1 << 2,
-    CPTableViewDelegate_tableView_didDragTableColumn_                                                   = 1 << 3,
-    CPTableViewDelegate_tableView_heightOfRow_                                                          = 1 << 4,
-    CPTableViewDelegate_tableView_isGroupRow_                                                           = 1 << 5,
-    CPTableViewDelegate_tableView_mouseDownInHeaderOfTableColumn_                                       = 1 << 6,
-    CPTableViewDelegate_tableView_nextTypeSelectMatchFromRow_toRow_forString_                           = 1 << 7,
-    CPTableViewDelegate_tableView_selectionIndexesForProposedSelection_                                 = 1 << 8,
-    CPTableViewDelegate_tableView_shouldEditTableColumn_row_                                            = 1 << 9,
-    CPTableViewDelegate_tableView_shouldSelectRow_                                                      = 1 << 10,
-    CPTableViewDelegate_tableView_shouldSelectTableColumn_                                              = 1 << 11,
-    CPTableViewDelegate_tableView_shouldShowViewExpansionForTableColumn_row_                            = 1 << 12,
-    CPTableViewDelegate_tableView_shouldTrackView_forTableColumn_row_                                   = 1 << 13,
-    CPTableViewDelegate_tableView_shouldTypeSelectForEvent_withCurrentSearchString_                     = 1 << 14,
-    CPTableViewDelegate_tableView_toolTipForView_rect_tableColumn_row_mouseLocation_                    = 1 << 15,
-    CPTableViewDelegate_tableView_typeSelectStringForTableColumn_row_                                   = 1 << 16,
-    CPTableViewDelegate_tableView_willDisplayView_forTableColumn_row_                                   = 1 << 17,
-    CPTableViewDelegate_tableViewSelectionDidChange_                                                    = 1 << 18,
-    CPTableViewDelegate_tableViewSelectionIsChanging_                                                   = 1 << 19,
-    CPTableViewDelegate_tableViewMenuForTableColumn_Row_                                                = 1 << 20,
-    CPTableViewDelegate_tableView_shouldReorderColumn_toColumn_                                         = 1 << 21;
+    CPTableViewDelegate_tableView_dataViewForTableColumn_row_                                           = 1 << 2,
+    CPTableViewDelegate_tableView_didClickTableColumn_                                                  = 1 << 3,
+    CPTableViewDelegate_tableView_didDragTableColumn_                                                   = 1 << 4,
+    CPTableViewDelegate_tableView_heightOfRow_                                                          = 1 << 5,
+    CPTableViewDelegate_tableView_isGroupRow_                                                           = 1 << 6,
+    CPTableViewDelegate_tableView_mouseDownInHeaderOfTableColumn_                                       = 1 << 7,
+    CPTableViewDelegate_tableView_nextTypeSelectMatchFromRow_toRow_forString_                           = 1 << 8,
+    CPTableViewDelegate_tableView_selectionIndexesForProposedSelection_                                 = 1 << 9,
+    CPTableViewDelegate_tableView_shouldEditTableColumn_row_                                            = 1 << 10,
+    CPTableViewDelegate_tableView_shouldSelectRow_                                                      = 1 << 11,
+    CPTableViewDelegate_tableView_shouldSelectTableColumn_                                              = 1 << 12,
+    CPTableViewDelegate_tableView_shouldShowViewExpansionForTableColumn_row_                            = 1 << 13,
+    CPTableViewDelegate_tableView_shouldTrackView_forTableColumn_row_                                   = 1 << 14,
+    CPTableViewDelegate_tableView_shouldTypeSelectForEvent_withCurrentSearchString_                     = 1 << 15,
+    CPTableViewDelegate_tableView_toolTipForView_rect_tableColumn_row_mouseLocation_                    = 1 << 16,
+    CPTableViewDelegate_tableView_typeSelectStringForTableColumn_row_                                   = 1 << 17,
+    CPTableViewDelegate_tableView_willDisplayView_forTableColumn_row_                                   = 1 << 18,
+    CPTableViewDelegate_tableViewSelectionDidChange_                                                    = 1 << 19,
+    CPTableViewDelegate_tableViewSelectionIsChanging_                                                   = 1 << 20,
+    CPTableViewDelegate_tableViewMenuForTableColumn_row_                                                = 1 << 21,
+    CPTableViewDelegate_tableView_shouldReorderColumn_toColumn_                                         = 1 << 22;
 
 //CPTableViewDraggingDestinationFeedbackStyles
 CPTableViewDraggingDestinationFeedbackStyleNone = -1;
@@ -2860,7 +2860,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         _implementedDelegateMethods |= CPTableViewDelegate_tableView_willDisplayView_forTableColumn_row_;
 
     if ([_delegate respondsToSelector:@selector(tableView:menuForTableColumn:row:)])
-        _implementedDelegateMethods |= CPTableViewDelegate_tableViewMenuForTableColumn_Row_;
+        _implementedDelegateMethods |= CPTableViewDelegate_tableViewMenuForTableColumn_row_;
 
     if ([_delegate respondsToSelector:@selector(tableView:shouldReorderColumn:toColumn:)])
         _implementedDelegateMethods |= CPTableViewDelegate_tableView_shouldReorderColumn_toColumn_;
@@ -4463,12 +4463,15 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (CPMenu)menuForEvent:(CPEvent)theEvent
 {
+    if (!([self _delegateRespondsToMenuForTableColumnRow]))
+        return [super menuForEvent:theEvent];
+
     var location = [self convertPoint:[theEvent locationInWindow] fromView:nil],
         row = [self rowAtPoint:location],
         column = [self columnAtPoint:location],
         tableColumn = [[self tableColumns] objectAtIndex:column];
 
-    return [self _sendDelegateMenuForTableColumn:tableColumn row:row event:theEvent];
+    return [self _sendDelegateMenuForTableColumn:tableColumn row:row];
 }
 
 /*
@@ -5465,6 +5468,15 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
 /*!
     @ignore
+    Return YES if the delegate implements tableView:menuForTableColumn:row
+*/
+- (BOOL)_delegateRespondsToMenuForTableColumnRow
+{
+    return _implementedDelegateMethods & CPTableViewDelegate_tableViewMenuForTableColumn_row_;
+}
+
+/*!
+    @ignore
     Call the delegate didClickTableColumn with the given tableColumn
 */
 - (void)_sendDelegateDidClickTableColumn:(int)column
@@ -5560,10 +5572,10 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     @ignore
     Return a CPMenu for the given tableColumn and row. By default return the menu of super.
 */
-- (CPMenu)_sendDelegateMenuForTableColumn:(CPTableColumn)aTableColumn row:aRowIndex event:(CPEvent)anEvent
+- (CPMenu)_sendDelegateMenuForTableColumn:(CPTableColumn)aTableColumn row:aRowIndex
 {
-    if (!(_implementedDelegateMethods & CPTableViewDelegate_tableViewMenuForTableColumn_Row_))
-        return [super menuForEvent:anEvent]
+    if (!(_implementedDelegateMethods & CPTableViewDelegate_tableViewMenuForTableColumn_row_))
+        return nil;
 
     return [_delegate tableView:self menuForTableColumn:aTableColumn row:aRowIndex];
 }
