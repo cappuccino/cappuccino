@@ -1503,7 +1503,7 @@ NOT YET IMPLEMENTED
 {
     if (_allowsMultipleSelection)
     {
-        if (![self _selectionShouldChangeInTableView])
+        if (![self _sendDelegateSelectionShouldChangeInTableView])
             return;
 
         if ([[self selectedColumnIndexes] count])
@@ -1517,7 +1517,7 @@ NOT YET IMPLEMENTED
 {
     if ([self allowsEmptySelection])
     {
-        if (![self _selectionShouldChangeInTableView])
+        if (![self _sendDelegateSelectionShouldChangeInTableView])
             return;
 
         [self deselectAll];
@@ -1551,7 +1551,7 @@ NOT YET IMPLEMENTED
     }
     else
     {
-        _numberOfRows = [self _numberOfRowsInTableView];
+        _numberOfRows = [self _sendDataSourceNumberOfRowsInTableView];
 
         if (!_numberOfRows)
         {
@@ -2414,7 +2414,7 @@ NOT YET IMPLEMENTED
         var height;
 
         if ([anIndexSet containsIndex:i])
-            height = [self _heightOfRow:i];
+            height = [self _sendDelegateHeightOfRow:i];
         else
             height = _cachedRowHeights[i].height || _rowHeight;  // in case the cache entry is empty
 
@@ -2911,7 +2911,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     if (_allowsColumnSelection)
     {
-        if ([self _selectionShouldChangeInTableView])
+        if ([self _sendDelegateSelectionShouldChangeInTableView])
         {
             [self _noteSelectionIsChanging];
             if (modifierFlags & CPPlatformActionKeyMask)
@@ -2939,7 +2939,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         }
     }
 
-    [self _didClickTableColumn:clickedColumn];
+    [self _sendDelegateDidClickTableColumn:clickedColumn];
 }
 
 // From GNUSTEP
@@ -3306,7 +3306,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     [self setIndicatorImage:nil inTableColumn:oldColumn];
     [self setIndicatorImage:image inTableColumn:newColumn];
 
-    [self _sortDescriptorsDidChange:oldSortDescriptors];
+    [self _sendDataSourceSortDescriptorsDidChange:oldSortDescriptors];
 
     var binderClass = [[self class] _binderClassForBinding:@"sortDescriptors"];
     [[binderClass getBinding:@"sortDescriptors" forObject:self] reverseSetValueFor:@"sortDescriptors"];
@@ -3341,7 +3341,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     {
         if ([self _dataSourceRespondsToObjectValueForTableColumn])
         {
-            objectValue = [self _dataSourceObjectValueForTableColumn:aTableColumn row:aRowIndex];
+            objectValue = [self _sendDataSourceObjectValueForTableColumn:aTableColumn row:aRowIndex];
             tableColumnObjectValues[aRowIndex] = objectValue;
         }
         else if (!_isViewBased && ![self infoForBinding:@"content"])
@@ -3558,7 +3558,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
                 [dataView unsetThemeState:CPThemeStateSelectedDataView];
 
             // FIX ME: for performance reasons we might consider diverging from cocoa and moving this to the reloadData method
-            if ([self _isGroupRow:row])
+            if ([self _sendDelegateIsGroupRow:row])
             {
                 [_groupRows addIndex:row];
                 [dataView setThemeState:CPThemeStateGroupRow];
@@ -3571,7 +3571,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
             }
 
             [self setNeedsDisplay:YES];
-            [self _willDisplayView:dataView forTableColumn:tableColumn row:row];
+            [self _sendDelegateWillDisplayView:dataView forTableColumn:tableColumn row:row];
 
             if ([dataView superview] !== self)
                 [self addSubview:dataView];
@@ -3684,7 +3684,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     _editingCellIndex = nil;
 
-    [self _setObjectValue:[sender objectValue] forTableColumn:sender.tableViewEditedColumnObj row:sender.tableViewEditedRowIndex];
+    [self _sendDataSourceSetObjectValue:[sender objectValue] forTableColumn:sender.tableViewEditedColumnObj row:sender.tableViewEditedRowIndex];
 
     // Allow the column binding to do a reverse set. Note that we do this even if the data source method above
     // is implemented.
@@ -3832,9 +3832,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 - (void)_updateIsViewBased
 {
     if ([self _delegateRespondsToViewForTableColumn])
-        _viewForTableColumnRowSelector = @selector(_viewForTableColumn:row:);
+        _viewForTableColumnRowSelector = @selector(_sendDelegateViewForTableColumn:row:);
     else if ([self _delegateRespondsToDataViewForTableColumn])
-        _viewForTableColumnRowSelector = @selector(_dataViewForTableColumn:row:);
+        _viewForTableColumnRowSelector = @selector(_sendDelegateDataViewForTableColumn:row:);
 
      _isViewBased = (_viewForTableColumnRowSelector !== nil || _archivedDataViews !== nil);
 }
@@ -4428,13 +4428,12 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     // If the user clicks outside a row then deselect everything.
     if (row < 0 && _allowsEmptySelection)
     {
-        if ([self _selectionShouldChangeInTableView])
+        if ([self _sendDelegateSelectionShouldChangeInTableView])
         {
-            var indexSet = [self _selectionIndexesForProposedSelection:[CPIndexSet indexSet]],
-                extend = [self allowsMultipleSelection];
+            var indexSet = [self _sendDelegateSelectionIndexesForProposedSelection:[CPIndexSet indexSet]];
 
             [self _noteSelectionIsChanging];
-            [self selectRowIndexes:indexSet byExtendingSelection:extend];
+            [self selectRowIndexes:indexSet byExtendingSelection:NO];
         }
     }
 
@@ -4469,7 +4468,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         column = [self columnAtPoint:location],
         tableColumn = [[self tableColumns] objectAtIndex:column];
 
-    return [self _menuForTableColumn:tableColumn row:row event:theEvent];
+    return [self _sendDelegateMenuForTableColumn:tableColumn row:row event:theEvent];
 }
 
 /*
@@ -4509,7 +4508,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
             //ask the datasource for the data
             var pboard = [CPPasteboard pasteboardWithName:CPDragPboard];
 
-            if ([self canDragRowsWithIndexes:_draggedRowIndexes atPoint:aPoint] && [self _writeRowsWithIndexes:_draggedRowIndexes toPasteboard:pboard])
+            if ([self canDragRowsWithIndexes:_draggedRowIndexes atPoint:aPoint] && [self _sendDataSourceWriteRowsWithIndexes:_draggedRowIndexes toPasteboard:pboard])
             {
                 var currentEvent = [CPApp currentEvent],
                     offset = CGPointMakeZero(),
@@ -4618,7 +4617,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
                 if (rowIndex !== -1)
                 {
-                    if ([self _shouldEditTableColumn:column row:rowIndex])
+                    if ([self _sendDelegateShouldEditTableColumn:column row:rowIndex])
                     {
                         [self editColumn:columnIndex row:rowIndex withEvent:nil select:YES];
                         return;
@@ -4657,7 +4656,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     for (; i < count; i++)
     {
         if ([[[sender draggingPasteboard] types] containsObject:[draggedTypes objectAtIndex: i]])
-            return [self _validateDrop:sender proposedRow:row proposedDropOperation:dropOperation];
+            return [self _sendDataSourceValidateDrop:sender proposedRow:row proposedDropOperation:dropOperation];
     }
 
     return CPDragOperationNone;
@@ -4781,7 +4780,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         dropOperation = [self _proposedDropOperationAtPoint:location],
         numberOfRows = [self numberOfRows],
         row = [self _proposedRowAtPoint:location],
-        dragOperation = [self _validateDrop:sender proposedRow:row proposedDropOperation:dropOperation];
+        dragOperation = [self _sendDataSourceValidateDrop:sender proposedRow:row proposedDropOperation:dropOperation];
 
     if (_retargetedDropRow !== nil)
         row = _retargetedDropRow;
@@ -4836,7 +4835,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     if (row === nil)
         var row = [self _proposedRowAtPoint:location];
 
-    return [self _acceptDrop:sender row:row dropOperation:operation];
+    return [self _sendDataSourceAcceptDrop:sender row:row dropOperation:operation];
 }
 
 /*
@@ -4915,10 +4914,10 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     if ([newSelection isEqualToIndexSet:_selectedRowIndexes])
         return;
 
-    if (![self _selectionShouldChangeInTableView])
+    if (![self _sendDelegateSelectionShouldChangeInTableView])
         return;
 
-    newSelection = [self _selectionIndexesForProposedSelection:newSelection];
+    newSelection = [self _sendDelegateSelectionIndexesForProposedSelection:newSelection];
 
     if (![self _delegateRespondsToSelectionIndexesForProposedSelection] && [self _delegateRespondsToShouldSelectRow])
     {
@@ -4932,7 +4931,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         {
             var index = indexArray[indexCount];
 
-            if (![self _shouldSelectRow:index])
+            if (![self _sendDelegateShouldSelectRow:index])
                 [newSelection removeIndex:index];
         }
 
@@ -5130,7 +5129,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     else if (character === CPDeleteCharacter || character === CPDeleteFunctionKey)
     {
         // Don't call super if the delegate is interested in the delete key
-        if ([self _deleteKeyPressed])
+        if ([self _sendDelegateDeleteKeyPressed])
             return;
     }
 
@@ -5154,7 +5153,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (void)_moveSelectionWithEvent:(CPEvent)theEvent upward:(BOOL)shouldGoUpward
 {
-    if (![self _selectionShouldChangeInTableView])
+    if (![self _sendDelegateSelectionShouldChangeInTableView])
         return;
 
     var selectedIndexes = [self selectedRowIndexes];
@@ -5195,7 +5194,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     if (![self _delegateRespondsToSelectionIndexesForProposedSelection] && [self _delegateRespondsToShouldSelectRow])
     {
-        var shouldSelect = [self _shouldSelectRow:i];
+        var shouldSelect = [self _sendDelegateShouldSelectRow:i];
 
         /* If shouldSelect returns NO it means this row cannot be selected.
             The proper behaviour is to then try to see if the next/previous
@@ -5204,7 +5203,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         while (!shouldSelect && (i < [self numberOfRows] && i > 0))
         {
             shouldGoUpward ? --i : ++i; //check to see if the row can be selected. If it can't be then see if the next row can be selected.
-            shouldSelect = [self _shouldSelectRow:i];
+            shouldSelect = [self _sendDelegateShouldSelectRow:i];
         }
 
         if (!shouldSelect)
@@ -5242,7 +5241,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         var differedLastSelectedRow = i;
     }
 
-    selectedIndexes = [self _selectionIndexesForProposedSelection:selectedIndexes];
+    selectedIndexes = [self _sendDelegateSelectionIndexesForProposedSelection:selectedIndexes];
 
     [self selectRowIndexes:selectedIndexes byExtendingSelection:extend];
 
@@ -5308,7 +5307,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     Return the number of rows of the tableView
     By default return 0.
 */
-- (int)_numberOfRowsInTableView
+- (int)_sendDataSourceNumberOfRowsInTableView
 {
     if (!(_implementedDataSourceMethods & CPTableViewDataSource_numberOfRowsInTableView_))
         return 0;
@@ -5321,7 +5320,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     Return the objectValue for the given column and row.
     By default return nil.
 */
-- (id)_dataSourceObjectValueForTableColumn:(CPTableColumn)aTableColumn row:(int)aRowIndex
+- (id)_sendDataSourceObjectValueForTableColumn:(CPTableColumn)aTableColumn row:(int)aRowIndex
 {
     if (!(_implementedDataSourceMethods & CPTableViewDataSource_tableView_objectValueForTableColumn_row_))
         return nil;
@@ -5333,7 +5332,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     @ignore
     Call the method tableView:setObjectValue:ForTableColum:row: of the dataSource
 */
-- (void)_setObjectValue:(id)anObject forTableColumn:(CPTableColumn)aTableColumn row:(int)aRowIndex
+- (void)_sendDataSourceSetObjectValue:(id)anObject forTableColumn:(CPTableColumn)aTableColumn row:(int)aRowIndex
 {
     if (!(_implementedDataSourceMethods & CPTableViewDataSource_tableView_setObjectValue_forTableColumn_row_))
         return;
@@ -5345,7 +5344,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     @ignore
     Call the method tableView:sortDescriptorsDidChange: of the dataSource
 */
-- (void)_sortDescriptorsDidChange:(CPArray)descriptors
+- (void)_sendDataSourceSortDescriptorsDidChange:(CPArray)descriptors
 {
     if (!(_implementedDataSourceMethods & CPTableViewDataSource_tableView_sortDescriptorsDidChange_))
         return;
@@ -5357,7 +5356,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     @ignore
     Return if the drop is accepted or not for the given dropOperation, info and row. By default return NO.
 */
-- (BOOL)_acceptDrop:(id)info row:(int)aRowIndex dropOperation:(CPTableViewDropOperation)operation
+- (BOOL)_sendDataSourceAcceptDrop:(id)info row:(int)aRowIndex dropOperation:(CPTableViewDropOperation)operation
 {
     if (!(_implementedDataSourceMethods & CPTableViewDataSource_tableView_acceptDrop_row_dropOperation_))
         return NO;
@@ -5369,7 +5368,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     @ignore
     Return the dragOperation for the given row and dropOperation. By default return CPDragOperationNone.
 */
-- (CPDragOperation)_validateDrop:(id)info proposedRow:(int)aRowIndex proposedDropOperation:(CPTableViewDropOperation)operation
+- (CPDragOperation)_sendDataSourceValidateDrop:(id)info proposedRow:(int)aRowIndex proposedDropOperation:(CPTableViewDropOperation)operation
 {
     if (!(_implementedDataSourceMethods & CPTableViewDataSource_tableView_validateDrop_proposedRow_proposedDropOperation_))
         return CPDragOperationNone;
@@ -5381,7 +5380,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     @ignore
     Return a boolean for writeRowsWithIndexes:toPasteroard for the given pasteboard and row. By default return NO
 */
-- (BOOL)_writeRowsWithIndexes:(CPIndexSet)rowIndexes toPasteboard:(CPPasteboard)pboard
+- (BOOL)_sendDataSourceWriteRowsWithIndexes:(CPIndexSet)rowIndexes toPasteboard:(CPPasteboard)pboard
 {
     if (!(_implementedDataSourceMethods & CPTableViewDataSource_tableView_writeRowsWithIndexes_toPasteboard_))
         return NO;
@@ -5406,7 +5405,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     @ignore
     Not yet implemented
 */
-- (CPArray)_namesOfPromisedFilesDroppedAtDestination:(CPURL)dropDestination forDraggedRowsWithIndexes:(CPIndexSet)indexSet
+- (CPArray)_sendDataSourceNamesOfPromisedFilesDroppedAtDestination:(CPURL)dropDestination forDraggedRowsWithIndexes:(CPIndexSet)indexSet
 {
     if (!(_implementedDataSourceMethods & CPTableViewDataSource_tableView_namesOfPromisedFilesDroppedAtDestination_forDraggedRowsWithIndexes_))
         return [];
@@ -5468,7 +5467,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     @ignore
     Call the delegate didClickTableColumn with the given tableColumn
 */
-- (void)_didClickTableColumn:(int)column
+- (void)_sendDelegateDidClickTableColumn:(int)column
 {
     if (_implementedDelegateMethods & CPTableViewDelegate_tableView_didClickTableColumn_)
             [_delegate tableView:self didClickTableColumn:_tableColumns[column]];
@@ -5478,7 +5477,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     @ignore
     Call the delegate didDragTableColumn with the given tableColumn
 */
-- (void)_didDragTableColumn:(int)column
+- (void)_sendDelegateDidDragTableColumn:(int)column
 {
     if (_implementedDelegateMethods & CPTableViewDelegate_tableView_didDragTableColumn_)
             [_delegate tableView:self didDragTableColumn:_tableColumns[column]];
@@ -5488,7 +5487,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     @ignore
     Call the delegate mouseDownInHeaderOfTableColumn with the given tableColumn
 */
-- (void)_mouseDownInHeaderOfTableColumn:(int)column
+- (void)_sendDelegateMouseDownInHeaderOfTableColumn:(int)column
 {
     if (_implementedDelegateMethods & CPTableViewDelegate_tableView_mouseDownInHeaderOfTableColumn_)
             [_delegate tableView:self mouseDownInHeaderOfTableColumn:_tableColumns[column]];
@@ -5498,7 +5497,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     @ignore
     Call the delegate tableViewDeleteKeyPressed
 */
-- (BOOL)_deleteKeyPressed
+- (BOOL)_sendDelegateDeleteKeyPressed
 {
     if ([_delegate respondsToSelector: @selector(tableViewDeleteKeyPressed:)])
     {
@@ -5513,7 +5512,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     @ignore
     Return if the selection should change. By default return YES
 */
-- (BOOL)_selectionShouldChangeInTableView
+- (BOOL)_sendDelegateSelectionShouldChangeInTableView
 {
     if (!(_implementedDelegateMethods & CPTableViewDelegate_selectionShouldChangeInTableView_))
         return YES;
@@ -5525,7 +5524,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     @ignore
     Return if the given row is a group or not. By default return NO.
 */
-- (BOOL)_isGroupRow:(int)anIndex
+- (BOOL)_sendDelegateIsGroupRow:(int)anIndex
 {
     if (!(_implementedDelegateMethods & CPTableViewDelegate_tableView_isGroupRow_))
         return NO;
@@ -5537,7 +5536,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     @ignore
     Return is we should select the given row. By Default return YES
 */
-- (BOOL)_shouldSelectRow:(int)anIndex
+- (BOOL)_sendDelegateShouldSelectRow:(int)anIndex
 {
     if (!(_implementedDelegateMethods & CPTableViewDelegate_tableView_shouldSelectRow_))
         return YES;
@@ -5549,7 +5548,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     @ignore
     Call the delegate tableView:willDisplayView:forTableColumn:row:
 */
-- (void)_willDisplayView:(id)aCell forTableColumn:(CPTableColumn)aTableColumn row:(int)aRowIndex
+- (void)_sendDelegateWillDisplayView:(id)aCell forTableColumn:(CPTableColumn)aTableColumn row:(int)aRowIndex
 {
     if (!(_implementedDelegateMethods & CPTableViewDelegate_tableView_willDisplayView_forTableColumn_row_))
         return;
@@ -5561,7 +5560,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     @ignore
     Return a CPMenu for the given tableColumn and row. By default return the menu of super.
 */
-- (CPMenu)_menuForTableColumn:(CPTableColumn)aTableColumn row:aRowIndex event:(CPEvent)anEvent
+- (CPMenu)_sendDelegateMenuForTableColumn:(CPTableColumn)aTableColumn row:aRowIndex event:(CPEvent)anEvent
 {
     if (!(_implementedDelegateMethods & CPTableViewDelegate_tableViewMenuForTableColumn_Row_))
         return [super menuForEvent:anEvent]
@@ -5575,7 +5574,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     It can be possible if column reordering is allowed and if the tableview
     delegate also accept the reordering
 */
-- (BOOL)_shouldReorderColumn:(int)columnIndex toColumn:(int)newColumnIndex
+- (BOOL)_sendDelegateShouldReorderColumn:(int)columnIndex toColumn:(int)newColumnIndex
 {
     if ([self allowsColumnReordering] &&
         _implementedDelegateMethods & CPTableViewDelegate_tableView_shouldReorderColumn_toColumn_)
@@ -5590,7 +5589,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     @ignore
     Return the height of the given row. By default return [self rowHeight].
 */
-- (float)_heightOfRow:(int)anIndex
+- (float)_sendDelegateHeightOfRow:(int)anIndex
 {
     if (!(_implementedDelegateMethods & CPTableViewDelegate_tableView_heightOfRow_))
         return [self rowHeight];
@@ -5602,7 +5601,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     @ignore
     Return a boolean to know if we should or not edit the given row. By default return YES.
 */
-- (BOOL)_shouldEditTableColumn:(CPTableColumn)aTableColumn row:(int)aRowIndex
+- (BOOL)_sendDelegateShouldEditTableColumn:(CPTableColumn)aTableColumn row:(int)aRowIndex
 {
     if (!(_implementedDelegateMethods & CPTableViewDelegate_tableView_shouldEditTableColumn_row_))
         return YES;
@@ -5614,7 +5613,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     @ignore
     Return a new CPIndexSet instead of the proposedSelection. By default return the proposedSelection.
 */
-- (CPIndexSet)_selectionIndexesForProposedSelection:(CPIndexSet)anIndexSet
+- (CPIndexSet)_sendDelegateSelectionIndexesForProposedSelection:(CPIndexSet)anIndexSet
 {
     if (!(_implementedDelegateMethods & CPTableViewDelegate_tableView_selectionIndexesForProposedSelection_))
         return anIndexSet;
@@ -5626,7 +5625,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     @ignore
     Return a view for the given tableColumn and row. By default return nil.
 */
-- (CPView)_viewForTableColumn:(CPTableColumn)aTableColumn row:(int)aRowIndex
+- (CPView)_sendDelegateViewForTableColumn:(CPTableColumn)aTableColumn row:(int)aRowIndex
 {
     if (!(_implementedDelegateMethods & CPTableViewDelegate_tableView_viewForTableColumn_row_))
         return nil;
@@ -5638,7 +5637,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     @ignore
     Return a view for the given tableColumn and row. By default return nil.
 */
-- (CPView)_dataViewForTableColumn:(CPTableColumn)aTableColumn row:(int)aRowIndex
+- (CPView)_sendDelegateDataViewForTableColumn:(CPTableColumn)aTableColumn row:(int)aRowIndex
 {
     if (!(_implementedDelegateMethods & CPTableViewDelegate_tableView_dataViewForTableColumn_row_))
         return nil;
@@ -5654,7 +5653,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     @ignore
     Not yet implemented !
 */
-- (BOOL)_shouldSelectTableColumn:(CPTableColumn)aTableColumn
+- (BOOL)_sendDelegateShouldSelectTableColumn:(CPTableColumn)aTableColumn
 {
     if (!(_implementedDelegateMethods & CPTableViewDelegate_tableView_shouldSelectTableColumn_))
         return YES;
@@ -5666,7 +5665,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     @ignore
     Not yet implemented
 */
-- (CPString)_toolTipForView:(id)aView rect:(CGRect)aRect tableColumn:(CPTableColumn)aTableColumn row:(int)aRowIndex mouseLocation:(CGPoint)aPoint
+- (CPString)_sendDelegateToolTipForView:(id)aView rect:(CGRect)aRect tableColumn:(CPTableColumn)aTableColumn row:(int)aRowIndex mouseLocation:(CGPoint)aPoint
 {
     if (!(_implementedDelegateMethods & CPTableViewDelegate_tableView_toolTipForView_rect_tableColumn_row_mouseLocation_))
         return nil;
@@ -5678,7 +5677,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     @ignore
     Not yet implemented
 */
-- (BOOL)_shouldTrackView:(id)aView forTableColumn:(CPTableColumn)aTableColumn row:(int)aRowIndex
+- (BOOL)_sendDelegateShouldTrackView:(id)aView forTableColumn:(CPTableColumn)aTableColumn row:(int)aRowIndex
 {
     if (!(_implementedDelegateMethods & CPTableViewDelegate_tableView_shouldTrackView_forTableColumn_row_))
         return YES;
@@ -5690,7 +5689,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     @ignore
     Not yet implemented
 */
-- (BOOL)_shouldShowViewExpansionForTableColumn:(CPTableColumn)aTableColumn row:(int)aRowIndex
+- (BOOL)_sendDelegateShouldShowViewExpansionForTableColumn:(CPTableColumn)aTableColumn row:(int)aRowIndex
 {
     if (!(_implementedDelegateMethods & CPTableViewDelegate_tableView_shouldShowViewExpansionForTableColumn_row_))
         return YES;
@@ -5702,7 +5701,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     @ignore
     Not yet implemented
 */
-- (BOOL)_shouldTypeSelectForEvent:(CPEvent)anEvent withCurrentSearchString:(CPString)aString
+- (BOOL)_sendDelegateShouldTypeSelectForEvent:(CPEvent)anEvent withCurrentSearchString:(CPString)aString
 {
     if (!(_implementedDelegateMethods & CPTableViewDelegate_tableView_shouldTypeSelectForEvent_withCurrentSearchString_))
         return NO;
@@ -5714,7 +5713,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     @ignore
     Not yet implemented
 */
-- (CPString)_typeSelectStringForTableColumn:(CPTableColumn)aTableColumn row:(int)aRowIndex
+- (CPString)_sendDelegateTypeSelectStringForTableColumn:(CPTableColumn)aTableColumn row:(int)aRowIndex
 {
     if (!(_implementedDelegateMethods & CPTableViewDelegate_tableView_typeSelectStringForTableColumn_row_))
         return nil;
@@ -5726,7 +5725,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     @ignore
     Not yet implemented !
 */
-- (int)_nextTypeSelectMatchFromRow:(int)aRowIndex toRow:(int)aSecondRowIndex forString:(CPString)aString
+- (int)_sendDelegateNextTypeSelectMatchFromRow:(int)aRowIndex toRow:(int)aSecondRowIndex forString:(CPString)aString
 {
     if (!(_implementedDelegateMethods & CPTableViewDelegate_tableView_nextTypeSelectMatchFromRow_toRow_forString_))
         return -1;
