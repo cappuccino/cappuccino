@@ -382,7 +382,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
         _mouseDownLocation = currentLocation;
         _activeColumn = columnIndex;
 
-        [_tableView _sendDelegateDidMouseDownInHeader:columnIndex];
+        [_tableView _sendDelegateMouseDownInHeaderOfTableColumn:columnIndex];
 
         if (shouldResize)
             [self startResizingTableColumn:columnIndex at:currentLocation];
@@ -457,7 +457,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 
 - (BOOL)_shouldDragTableColumn:(int)aColumnIndex at:(CGPoint)aPoint
 {
-    return ABS(aPoint.x - _mouseDownLocation.x) >= 10.0 && [_tableView _shouldReorderColumn:aColumnIndex toColumn:-1];
+    return ABS(aPoint.x - _mouseDownLocation.x) >= 10.0 && [_tableView _sendDelegateShouldReorderColumn:aColumnIndex toColumn:-1];
 }
 
 - (CGRect)_headerRectOfLastVisibleColumn
@@ -505,7 +505,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 
 - (void)_moveColumn:(int)aFromIndex toColumn:(int)aToIndex
 {
-    if ([_tableView _shouldReorderColumn:aFromIndex toColumn:aToIndex])
+    if ([_tableView _sendDelegateShouldReorderColumn:aFromIndex toColumn:aToIndex])
     {
         [_tableView moveColumn:aFromIndex toColumn:aToIndex];
         _activeColumn = aToIndex;

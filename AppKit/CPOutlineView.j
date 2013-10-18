@@ -1557,12 +1557,12 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     [super keyDown:anEvent];
 }
 
-- (CPView)_viewForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow
+- (CPView)_sendDelegateViewForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow
 {
     return [_outlineViewDelegate outlineView:self viewForTableColumn:aTableColumn item:[self itemAtRow:aRow]];
 }
 
-- (CPView)_dataViewForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow
+- (CPView)_sendDelegateDataViewForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow
 {
     return [_outlineViewDelegate outlineView:self dataViewForTableColumn:aTableColumn item:[self itemAtRow:aRow]];
 }
@@ -1938,6 +1938,14 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     // We reimplement CPView menuForEvent: because we can't call it directly. CPTableView implements menuForEvent:
     // to call this delegate method.
     return [_outlineView menu] || [[_outlineView class] defaultMenu];
+}
+
+- (CPIndexSet)tableView:(CPTableView)aTableView selectionIndexesForProposedSelection:(CPIndexSet)anIndexSet
+{
+    if ((_outlineView._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_selectionIndexesForProposedSelection_))
+        return [_outlineView._outlineViewDelegate outlineView:_outlineView selectionIndexesForProposedSelection:anIndexSet];
+
+    return anIndexSet;
 }
 
 @end
