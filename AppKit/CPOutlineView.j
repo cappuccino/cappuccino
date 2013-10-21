@@ -1603,7 +1603,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
 /*!
     @ignore
-    Return YES if the delegate implements tableView:shouldSelectItem:
+    Return YES if the delegate implements outlineView:shouldSelectItem:
 */
 - (BOOL)_delegateRespondsToShouldSelectRow
 {
