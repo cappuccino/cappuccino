@@ -1591,6 +1591,25 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 {
     return _implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_shouldCollapseItem_;
 }
+
+/*!
+    @ignore
+    Return YES if the delegate implements outlineView:selectionIndexesForProposedSelection
+*/
+- (BOOL)_delegateRespondsToSelectionIndexesForProposedSelection
+{
+    return _implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_selectionIndexesForProposedSelection_;
+}
+
+/*!
+    @ignore
+    Return YES if the delegate implements outlineView:shouldSelectItem:
+*/
+- (BOOL)_delegateRespondsToShouldSelectRow
+{
+    return _implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_shouldSelectItem_;
+}
+
 @end
 
 // FIX ME: We're using with() here because Safari fails if we use anOutlineView._itemInfosForItems or whatever...
