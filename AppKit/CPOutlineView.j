@@ -1948,6 +1948,14 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     return anIndexSet;
 }
 
+- (BOOL)tableView:(CPTableView)aTableView shouldSelectTableColumn:(CPTableColumn)aTableColumn
+{
+    if ((_outlineView._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_shouldSelectTableColumn_))
+        return [_outlineView._outlineViewDelegate outlineView:_outlineView shouldSelectTableColumn:aTableColumn];
+
+    return YES;
+}
+
 @end
 
 @implementation CPDisclosureButton : CPButton

@@ -2911,7 +2911,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     if (_allowsColumnSelection)
     {
-        if ([self _sendDelegateSelectionShouldChangeInTableView])
+        if ([self _sendDelegateSelectionShouldChangeInTableView] && [self _sendDelegateShouldSelectTableColumn:clickedColumn])
         {
             [self _noteSelectionIsChanging];
             if (modifierFlags & CPPlatformActionKeyMask)
