@@ -692,7 +692,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 {
 #if PLATFORM(DOM)
     // We might have been the first responder without actually editing.
-    if (_isEditing)
+    if (_isEditing && CPTextFieldInputOwner === self)
     {
         var element = [self _inputElement],
             newValue = element.value,
