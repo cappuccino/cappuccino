@@ -404,25 +404,26 @@ function CPThemeStateName(aState)
     return name;
 }
 
-CPThemeStateNames[0]         = "normal";
-CPThemeStateNormal           = CPThemeStates["normal"] = 0;
-CPThemeStateDisabled         = CPThemeState("disabled");
-CPThemeStateHovered          = CPThemeState("hovered");
-CPThemeStateHighlighted      = CPThemeState("highlighted");
-CPThemeStateSelected         = CPThemeState("selected");
-CPThemeStateTableDataView    = CPThemeState("tableDataView");
-CPThemeStateSelectedDataView = CPThemeState("selectedTableDataView");
-CPThemeStateGroupRow         = CPThemeState("CPThemeStateGroupRow");
-CPThemeStateBezeled          = CPThemeState("bezeled");
-CPThemeStateBordered         = CPThemeState("bordered");
-CPThemeStateEditable         = CPThemeState("editable");
-CPThemeStateEditing          = CPThemeState("editing");
-CPThemeStateVertical         = CPThemeState("vertical");
-CPThemeStateDefault          = CPThemeState("default");
-CPThemeStateCircular         = CPThemeState("circular");
-CPThemeStateAutocompleting   = CPThemeState("autocompleting");
-CPThemeStateMainWindow       = CPThemeState("mainWindow");
-CPThemeStateKeyWindow        = CPThemeState("keyWindow");
+CPThemeStateNames[0]                 = "normal";
+CPThemeStateNormal                   = CPThemeStates["normal"] = 0;
+CPThemeStateDisabled                 = CPThemeState("disabled");
+CPThemeStateHovered                  = CPThemeState("hovered");
+CPThemeStateHighlighted              = CPThemeState("highlighted");
+CPThemeStateSelected                 = CPThemeState("selected");
+CPThemeStateTableDataView            = CPThemeState("tableDataView");
+CPThemeStateSelectedDataViewFocussed = CPThemeState("selectedTableDataViewFocussed");
+CPThemeStateSelectedDataView         = CPThemeState("selectedTableDataView");
+CPThemeStateGroupRow                 = CPThemeState("CPThemeStateGroupRow");
+CPThemeStateBezeled                  = CPThemeState("bezeled");
+CPThemeStateBordered                 = CPThemeState("bordered");
+CPThemeStateEditable                 = CPThemeState("editable");
+CPThemeStateEditing                  = CPThemeState("editing");
+CPThemeStateVertical                 = CPThemeState("vertical");
+CPThemeStateDefault                  = CPThemeState("default");
+CPThemeStateCircular                 = CPThemeState("circular");
+CPThemeStateAutocompleting           = CPThemeState("autocompleting");
+CPThemeStateMainWindow               = CPThemeState("mainWindow");
+CPThemeStateKeyWindow                = CPThemeState("keyWindow");
 
 @implementation _CPThemeAttribute : CPObject
 {

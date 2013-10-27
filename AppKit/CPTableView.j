@@ -1320,7 +1320,7 @@ NOT YET IMPLEMENTED
             while (count--)
             {
                 var view = dataViewsInTableColumn[info.rows[count]];
-                [view performSelector:selectors[info.selectorIndex] withObject:CPThemeStateSelectedDataView];
+                [view performSelector:selectors[info.selectorIndex] withObject:([self _isFocused]? CPThemeStateSelectedDataViewFocussed:CPThemeStateSelectedDataView)];
             }
         }
     }
@@ -1380,7 +1380,7 @@ NOT YET IMPLEMENTED
                 var rowIndex = selectRows[i],
                     dataView = dataViewsInTableColumn[rowIndex];
 
-                [dataView performSelector:rowSelector withObject:CPThemeStateSelectedDataView];
+                [dataView performSelector:rowSelector withObject:([self _isFocused]? CPThemeStateSelectedDataViewFocussed:CPThemeStateSelectedDataView)];
             }
 
             if (_headerView)
@@ -3552,10 +3552,10 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
             if ((_selectionHighlightStyle !== CPTableViewSelectionHighlightStyleNone) &&
                 (isColumnSelected || [self isRowSelected:row]))
             {
-                [dataView setThemeState:CPThemeStateSelectedDataView];
+                [dataView setThemeState:([self _isFocused]? CPThemeStateSelectedDataViewFocussed:CPThemeStateSelectedDataView)];
             }
             else
-                [dataView unsetThemeState:CPThemeStateSelectedDataView];
+                [dataView unsetThemeState:([self _isFocused]? CPThemeStateSelectedDataViewFocussed:CPThemeStateSelectedDataView)];
 
             // FIX ME: for performance reasons we might consider diverging from cocoa and moving this to the reloadData method
             if ([self _sendDelegateIsGroupRow:row])
