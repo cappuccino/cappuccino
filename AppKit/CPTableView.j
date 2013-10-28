@@ -1341,53 +1341,52 @@ NOT YET IMPLEMENTED
     [_exposedRows getIndexes:selectRows maxCount:-1 inIndexRange:nil];
 
     var showsSelection = _selectionHighlightStyle !== CPTableViewSelectionHighlightStyleNone,
-        selectors = [@selector(unsetThemeState:), @selector(setThemeState:)],
-        selectors_args = [CPThemeStateSelectedDataViewFocused|CPThemeStateSelectedDataView, [self _isFocused]? CPThemeStateSelectedDataViewFocused:CPThemeStateSelectedDataView],
+        selectionState = [self _isFocused]? CPThemeStateSelectedDataViewFocused:CPThemeStateSelectedDataView;
 
-        // Rows do not show selection with CPTableViewSelectionHighlightStyleNone, but headers do
-        selectInfo = [
-            {
-                columns:deselectColumns,
-                rowSelectorIndex:0,
-                headerSelectorIndex:0
-            },
-            {
-                columns:selectColumns,
-                rowSelectorIndex:showsSelection ? 1 : 0,
-                headerSelectorIndex:1
-            }
-        ],
-        rowsCount = selectRows.length;
+	var count = deselectColumns.length;
+	while (count--)
+	{
+		var columnIndex = deselectColumns[count],
+			identifier = [_tableColumns[columnIndex] UID],
+			dataViewsInTableColumn = _dataViewsForTableColumns[identifier];
 
-    for (var selectIndex = 0; selectIndex < selectInfo.length; ++selectIndex)
-    {
-        var info = selectInfo[selectIndex],
-            count = info.columns.length,
-            rowSelector = selectors[info.rowSelectorIndex],
-            rowSelectorArg = selectors_args[info.rowSelectorIndex],
-            headerSelector = selectors[info.headerSelectorIndex];
+		for (var i = 0; i < rowsCount; i++)
+		{
+			var rowIndex = selectRows[i],
+				dataView = dataViewsInTableColumn[rowIndex];
 
-        while (count--)
-        {
-            var columnIndex = info.columns[count],
-                identifier = [_tableColumns[columnIndex] UID],
-                dataViewsInTableColumn = _dataViewsForTableColumns[identifier];
+			[dataView unsetThemeState: CPThemeStateSelectedDataViewFocused|CPThemeStateSelectedDataView];
+		}
 
-            for (var i = 0; i < rowsCount; i++)
-            {
-                var rowIndex = selectRows[i],
-                    dataView = dataViewsInTableColumn[rowIndex];
+		if (_headerView)
+		{
+			var headerView = [_tableColumns[columnIndex] headerView];
+			[headerView unsetThemeState: CPThemeStateSelectedDataViewFocused|CPThemeStateSelectedDataView];
+		}
+	}
+	var count = selectColumns.length;
+	while (count--)
+	{
+		var columnIndex = selectColumns[count],
+			identifier = [_tableColumns[columnIndex] UID],
+			dataViewsInTableColumn = _dataViewsForTableColumns[identifier];
 
-                [dataView performSelector:rowSelector withObject:rowSelectorArg];
-            }
+		for (var i = 0; i < rowsCount; i++)
+		{
+			var rowIndex = selectRows[i],
+				dataView = dataViewsInTableColumn[rowIndex];
 
-            if (_headerView)
-            {
-                var headerView = [_tableColumns[columnIndex] headerView];
-                [headerView performSelector:headerSelector withObject:CPThemeStateSelected];
-            }
-        }
-    }
+			[dataView unsetThemeState: CPThemeStateSelectedDataViewFocused|CPThemeStateSelectedDataView];
+			if(showsSelection) [dataView setThemeState: selectionState];
+		}
+
+		if (_headerView)
+		{
+			var headerView = [_tableColumns[columnIndex] headerView];
+			[headerView unsetThemeState: CPThemeStateSelectedDataViewFocused|CPThemeStateSelectedDataView];
+			[headerView setThemeState: selectionState];        // Rows do not show selection with CPTableViewSelectionHighlightStyleNone, but headers do
+		}
+	}
 }
 
 /*!
