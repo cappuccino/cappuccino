@@ -1303,6 +1303,7 @@ NOT YET IMPLEMENTED
 
     var showsSelection = _selectionHighlightStyle !== CPTableViewSelectionHighlightStyleNone,
         selectors = [@selector(unsetThemeState:), @selector(setThemeState:)],
+        selectors_args = [CPThemeStateSelectedDataViewFocused|CPThemeStateSelectedDataView, [self _isFocused]? CPThemeStateSelectedDataViewFocused:CPThemeStateSelectedDataView],
         selectInfo = [
             { rows:deselectRows, selectorIndex:0 },
             { rows:selectRows,   selectorIndex:showsSelection ? 1 : 0 }
@@ -1320,7 +1321,7 @@ NOT YET IMPLEMENTED
             while (count--)
             {
                 var view = dataViewsInTableColumn[info.rows[count]];
-                [view performSelector:selectors[info.selectorIndex] withObject:([self _isFocused]? CPThemeStateSelectedDataViewFocused:CPThemeStateSelectedDataView)];
+                [view performSelector:selectors[info.selectorIndex] withObject:selectors_args[info.selectorIndex]];
             }
         }
     }
@@ -1346,6 +1347,7 @@ NOT YET IMPLEMENTED
 
     var showsSelection = _selectionHighlightStyle !== CPTableViewSelectionHighlightStyleNone,
         selectors = [@selector(unsetThemeState:), @selector(setThemeState:)],
+        selectors_args = [CPThemeStateSelectedDataViewFocused|CPThemeStateSelectedDataView, [self _isFocused]? CPThemeStateSelectedDataViewFocused:CPThemeStateSelectedDataView],
 
         // Rows do not show selection with CPTableViewSelectionHighlightStyleNone, but headers do
         selectInfo = [
@@ -1367,6 +1369,7 @@ NOT YET IMPLEMENTED
         var info = selectInfo[selectIndex],
             count = info.columns.length,
             rowSelector = selectors[info.rowSelectorIndex],
+            rowSelectorArg = selectors_args[info.rowSelectorIndex],
             headerSelector = selectors[info.headerSelectorIndex];
 
         while (count--)
@@ -1380,7 +1383,7 @@ NOT YET IMPLEMENTED
                 var rowIndex = selectRows[i],
                     dataView = dataViewsInTableColumn[rowIndex];
 
-                [dataView performSelector:rowSelector withObject:([self _isFocused]? CPThemeStateSelectedDataViewFocused:CPThemeStateSelectedDataView)];
+                [dataView performSelector:rowSelector withObject:rowSelectorArg];
             }
 
             if (_headerView)
@@ -3555,7 +3558,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
                 [dataView setThemeState:([self _isFocused]? CPThemeStateSelectedDataViewFocused:CPThemeStateSelectedDataView)];
             }
             else
-                [dataView unsetThemeState:([self _isFocused]? CPThemeStateSelectedDataViewFocused:CPThemeStateSelectedDataView)];
+                [dataView unsetThemeState:CPThemeStateSelectedDataViewFocused|CPThemeStateSelectedDataView];
 
             // FIX ME: for performance reasons we might consider diverging from cocoa and moving this to the reloadData method
             if ([self _sendDelegateIsGroupRow:row])
@@ -4914,8 +4917,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     else
         newSelection = [CPIndexSet indexSet];
 
-    if ([newSelection isEqualToIndexSet:_selectedRowIndexes])
-        return;
+	// no corner-cutting in case selection equality because we need to adjust the themestates
 
     if (![self _sendDelegateSelectionShouldChangeInTableView])
         return;
@@ -5053,6 +5055,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
 - (void)_firstResponderDidChange:(CPNotification)aNotification
 {
+	[self setSelectionHighlightStyle:[self selectionHighlightStyle]];	// we have to reset the themestates of the "cells"
+
     var responder = [[self window] firstResponder];
 
     if (![responder isKindOfClass:[CPView class]] || ![responder isDescendantOf:self])
