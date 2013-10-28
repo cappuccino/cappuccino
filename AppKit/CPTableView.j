@@ -4420,7 +4420,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 	var oldResponder= [[self window] firstResponder];
     // Try to become the first responder, but if we can't, that's okay.
     [[self window] makeFirstResponder:self];
-    [self setSelectionHighlightStyle:[self selectionHighlightStyle]];
 	if(oldResponder && [oldResponder isKindOfClass:[CPTableView class]] && oldResponder !== self)
 		[oldResponder setSelectionHighlightStyle:[oldResponder selectionHighlightStyle]];	// we have to reset the themestates of the "cells"
 
@@ -5054,6 +5053,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
 - (void)_firstResponderDidChange:(CPNotification)aNotification
 {
+    [self setSelectionHighlightStyle:[self selectionHighlightStyle]];
     var responder = [[self window] firstResponder];
 
     if (![responder isKindOfClass:[CPView class]] || ![responder isDescendantOf:self])
