@@ -1305,20 +1305,21 @@ NOT YET IMPLEMENTED
         selectionState = [self _isFocused]? CPThemeStateSelectedDataViewFocused:CPThemeStateSelectedDataView;
 
     for (var identifier in _dataViewsForTableColumns)
-    {	var dataViewsInTableColumn = _dataViewsForTableColumns[identifier];
-		var count= deselectRows.length;
-		while (count--)
-		{
+    {
+        var dataViewsInTableColumn = _dataViewsForTableColumns[identifier];
+        var count= deselectRows.length;
+        while (count--)
+        {
             var view = dataViewsInTableColumn[deselectRows[count]];
             [view unsetThemeState: CPThemeStateSelectedDataViewFocused|CPThemeStateSelectedDataView];
-		}
-		var count= selectRows.length;
-		while (count--)
-		{
+        }
+        var count= selectRows.length;
+        while (count--)
+        {
             var view = dataViewsInTableColumn[selectRows[count]];
             [view unsetThemeState: CPThemeStateSelectedDataViewFocused|CPThemeStateSelectedDataView];
             if(showsSelection) [view setThemeState: selectionState];
-		}
+        }
     }
 }
 
@@ -1343,50 +1344,50 @@ NOT YET IMPLEMENTED
     var showsSelection = _selectionHighlightStyle !== CPTableViewSelectionHighlightStyleNone,
         selectionState = [self _isFocused]? CPThemeStateSelectedDataViewFocused:CPThemeStateSelectedDataView;
 
-	var count = deselectColumns.length;
-	while (count--)
-	{
-		var columnIndex = deselectColumns[count],
-			identifier = [_tableColumns[columnIndex] UID],
-			dataViewsInTableColumn = _dataViewsForTableColumns[identifier];
+    var count = deselectColumns.length;
+    while (count--)
+    {
+        var columnIndex = deselectColumns[count],
+            identifier = [_tableColumns[columnIndex] UID],
+            dataViewsInTableColumn = _dataViewsForTableColumns[identifier];
 
-		for (var i = 0; i < rowsCount; i++)
-		{
-			var rowIndex = selectRows[i],
-				dataView = dataViewsInTableColumn[rowIndex];
+        for (var i = 0; i < rowsCount; i++)
+        {
+            var rowIndex = selectRows[i],
+                dataView = dataViewsInTableColumn[rowIndex];
 
-			[dataView unsetThemeState: CPThemeStateSelectedDataViewFocused|CPThemeStateSelectedDataView];
-		}
+            [dataView unsetThemeState: CPThemeStateSelectedDataViewFocused|CPThemeStateSelectedDataView];
+        }
 
-		if (_headerView)
-		{
-			var headerView = [_tableColumns[columnIndex] headerView];
-			[headerView unsetThemeState: CPThemeStateSelectedDataViewFocused|CPThemeStateSelectedDataView];
-		}
-	}
-	var count = selectColumns.length;
-	while (count--)
-	{
-		var columnIndex = selectColumns[count],
-			identifier = [_tableColumns[columnIndex] UID],
-			dataViewsInTableColumn = _dataViewsForTableColumns[identifier];
+        if (_headerView)
+        {
+            var headerView = [_tableColumns[columnIndex] headerView];
+            [headerView unsetThemeState: CPThemeStateSelectedDataViewFocused|CPThemeStateSelectedDataView];
+        }
+    }
+    var count = selectColumns.length;
+    while (count--)
+    {
+        var columnIndex = selectColumns[count],
+            identifier = [_tableColumns[columnIndex] UID],
+            dataViewsInTableColumn = _dataViewsForTableColumns[identifier];
 
-		for (var i = 0; i < rowsCount; i++)
-		{
-			var rowIndex = selectRows[i],
-				dataView = dataViewsInTableColumn[rowIndex];
+        for (var i = 0; i < rowsCount; i++)
+        {
+            var rowIndex = selectRows[i],
+                dataView = dataViewsInTableColumn[rowIndex];
 
-			[dataView unsetThemeState: CPThemeStateSelectedDataViewFocused|CPThemeStateSelectedDataView];
-			if(showsSelection) [dataView setThemeState: selectionState];
-		}
+            [dataView unsetThemeState: CPThemeStateSelectedDataViewFocused|CPThemeStateSelectedDataView];
+            if(showsSelection) [dataView setThemeState: selectionState];
+        }
 
-		if (_headerView)
-		{
-			var headerView = [_tableColumns[columnIndex] headerView];
-			[headerView unsetThemeState: CPThemeStateSelectedDataViewFocused|CPThemeStateSelectedDataView];
-			[headerView setThemeState: selectionState];        // Rows do not show selection with CPTableViewSelectionHighlightStyleNone, but headers do
-		}
-	}
+        if (_headerView)
+        {
+            var headerView = [_tableColumns[columnIndex] headerView];
+            [headerView unsetThemeState: CPThemeStateSelectedDataViewFocused|CPThemeStateSelectedDataView];
+            [headerView setThemeState: selectionState];        // Rows do not show selection with CPTableViewSelectionHighlightStyleNone, but headers do
+        }
+    }
 }
 
 /*!
@@ -3517,7 +3518,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     var columnIndex = 0,
         columnsCount = columnArray.length,
-		focusedState = [self _isFocused]? CPThemeStateSelectedDataViewFocused:CPThemeStateSelectedDataView;
+        focusedState = [self _isFocused]? CPThemeStateSelectedDataViewFocused:CPThemeStateSelectedDataView;
 
     for (; columnIndex < columnsCount; ++columnIndex)
     {
@@ -4417,11 +4418,11 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (BOOL)startTrackingAt:(CGPoint)aPoint
 {
-	var oldResponder= [[self window] firstResponder];
+    var oldResponder= [[self window] firstResponder];
     // Try to become the first responder, but if we can't, that's okay.
     [[self window] makeFirstResponder:self];
-	if(oldResponder && [oldResponder isKindOfClass:[CPTableView class]] && oldResponder !== self)
-		[oldResponder setSelectionHighlightStyle:[oldResponder selectionHighlightStyle]];	// we have to reset the themestates of the "cells"
+    if(oldResponder && [oldResponder isKindOfClass:[CPTableView class]] && oldResponder !== self)
+        [oldResponder setSelectionHighlightStyle:[oldResponder selectionHighlightStyle]];    // we have to reset the themestates of the "cells"
 
     var row = [self rowAtPoint:aPoint];
 
