@@ -627,7 +627,7 @@ var CPControlBlackColor = [CPColor blackColor];
 
     [self _reverseSetBinding];
 
-    [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidEndEditingNotification object:self userInfo:@{ "CPTextMovement": [self _currentTextMovement] }];
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidEndEditingNotification object:self userInfo:[note userInfo]];
 }
 
 /*!
