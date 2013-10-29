@@ -117,7 +117,7 @@ var currentCursor = nil,
 - (void)push
 {
     cursorStack.push(self);
-    currentCursor = cursorStack[cursorStack.length - 1];
+    currentCursor = self;
 }
 
 - (void)set
