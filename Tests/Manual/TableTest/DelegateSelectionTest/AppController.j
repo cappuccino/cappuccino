@@ -78,6 +78,12 @@
     console.log(@"didClickTableColumn");
 }
 
+- (BOOL)tableView:(CPTableView)aTableView shouldSelectTableColumn:(CPTableColumn)aTableColumn
+{
+    console.log(@"shouldSelectTableColumn");
+    return YES;
+}
+
 @end
 
 @implementation DelegateSecondTableView : CPObject
@@ -112,6 +118,12 @@
 - (BOOL)tableView:(CPTableView)aTableView shouldSelectRow:(int)rowIndex
 {
     console.log(@"shouldSelectRow");
+    return YES;
+}
+
+- (BOOL)tableView:(CPTableView)aTableView shouldSelectTableColumn:(CPTableColumn)aTableColumn
+{
+    console.log(@"shouldSelectTableColumn");
     return YES;
 }
 
