@@ -428,7 +428,7 @@ CPTokenFieldDeleteButtonType     = 1;
     if (_shouldNotifyTarget)
     {
         _shouldNotifyTarget = NO;
-        [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:self userInfo:@{ "CPTextMovement": [self _currentTextMovement] }]];
+        [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:self userInfo:@{"CPTextMovement": [self _currentTextMovement]}]];
 
         if ([self sendsActionOnEndEditing])
             [self sendAction:[self action] to:[self target]];

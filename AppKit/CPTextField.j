@@ -721,7 +721,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     _isEditing = NO;
     if ([self isEditable])
     {
-        [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:self userInfo:@{ "CPTextMovement": [self _currentTextMovement] }]];
+        [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:self userInfo:@{"CPTextMovement": [self _currentTextMovement]}]];
 
         if ([self sendsActionOnEndEditing])
             [self sendAction:[self action] to:[self target]];
@@ -987,7 +987,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         if (_isEditing)
         {
             _isEditing = NO;
-            [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:self userInfo:@{ "CPTextMovement": [self _currentTextMovement] }]];
+            [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:self userInfo:@{"CPTextMovement": [self _currentTextMovement]}]];
         }
 
         // If there is no target action, or the sendAction call returns

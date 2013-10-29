@@ -607,7 +607,7 @@ var CPControlBlackColor = [CPColor blackColor];
     if ([note object] != self)
         return;
 
-    [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidBeginEditingNotification object:self userInfo:@{ "CPFieldEditor": [note object] }];
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidBeginEditingNotification object:self userInfo:@{"CPFieldEditor": [note object]}];
 }
 
 - (void)textDidChange:(CPNotification)note
@@ -616,7 +616,7 @@ var CPControlBlackColor = [CPColor blackColor];
     if ([note object] != self)
         return;
 
-    [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidChangeNotification object:self userInfo:@{ "CPFieldEditor": [note object] }];
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidChangeNotification object:self userInfo:@{"CPFieldEditor": [note object]}];
 }
 
 - (void)textDidEndEditing:(CPNotification)note
@@ -631,6 +631,7 @@ var CPControlBlackColor = [CPColor blackColor];
 }
 
 /*!
+    @ignore
     Return the currentTextMovement needed by the delegate textDidEndEditing
     This is going to check the currentEvent of the CPApp
 */
