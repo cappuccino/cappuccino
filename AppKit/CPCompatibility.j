@@ -351,6 +351,20 @@ function CPBrowserStyleProperty(aProperty)
 
                 r = candidates[PLATFORM_STYLE_JS_PROPERTIES['transition']] || nil;
                 break;
+
+            case 'transformorigin':
+
+                var candidates = {
+                        'WebkitTransform' : 'WebkitTransformOrigin',
+                        'MozTransform'    : 'MozTransformOrigin',
+                        'OTransform'      : 'OTransformOrigin',
+                        'msTransform'     : 'MSTransformOrigin',
+                        'transform'       : 'transformOrigin'
+                    };
+
+                r = candidates[PLATFORM_STYLE_JS_PROPERTIES['transform']] || nil;
+                break;
+
             default:
                 var prefixes = ["Webkit", "Moz", "O", "ms"],
                     strippedProperty = aProperty.split('-').join(' '),
