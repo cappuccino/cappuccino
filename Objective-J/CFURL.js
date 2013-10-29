@@ -277,9 +277,17 @@ function resolveURL(aURL)
         absoluteBaseURL = baseURL.absoluteURL(),
         baseParts = PARTS(absoluteBaseURL);
 
-    if (parts.scheme || parts.authority)
+    if (!parts.scheme && parts.authorityRoot)
+    {
+        // Handle "//domain.com/" style links which need to take their scheme from the base URL,
+        // but nothing else.
+        resolvedParts = CFURLPartsCreateCopy(parts);
+        resolvedParts.scheme = baseURL.scheme();
+    }
+    else if (parts.scheme || parts.authority)
+    {
         resolvedParts = parts;
-
+    }
     else
     {
         resolvedParts = { };
@@ -302,7 +310,6 @@ function resolveURL(aURL)
             resolvedParts.path = parts.path;
             resolvedParts.pathComponents = pathComponents;
         }
-
         else
         {
             var basePathComponents = baseParts.pathComponents,

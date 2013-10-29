@@ -103,6 +103,16 @@ var exampleProtocol = "http",
     [self assert:[url lastPathComponent] equals:examplePathRelative];
 }
 
+- (void)testUrlWithDoubleSlashRelativeToHttpUrl
+{
+    [self assert:"http://example2.com/b/a.html" equals:[[CPURL URLWithString:@"//example2.com/b/a.html" relativeToURL:[CPURL URLWithString:@"http://www.example.com/test/"]] absoluteString]];
+}
+
+- (void)testUrlWithDoubleSlashRelativeToHttpsUrl
+{
+    [self assert:"https://example2.com/b/a.html" equals:[[CPURL URLWithString:@"//example2.com/b/a.html" relativeToURL:[CPURL URLWithString:@"https://www.example.com/test/"]] absoluteString]];
+}
+
 - (void)testDeleteComponent
 {
     var url = [CPURL URLWithString:exampleFullPath];
