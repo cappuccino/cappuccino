@@ -627,7 +627,48 @@ var CPControlBlackColor = [CPColor blackColor];
 
     [self _reverseSetBinding];
 
-    [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidEndEditingNotification object:self userInfo:@{ "CPFieldEditor": [note object] }];
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidEndEditingNotification object:self userInfo:@{ "CPTextMovement": [self _currentTextMovement] }];
+}
+
+/*!
+    Return the currentTextMovement needed by the delegate textDidEndEditing
+    This is going to check the currentEvent of the CPApp
+*/
+- (unsigned)_currentTextMovement
+{
+    var currentEvent = [CPApp currentEvent],
+        keyCode = [currentEvent keyCode],
+        modifierFlags = [currentEvent modifierFlags];
+
+    switch (keyCode)
+    {
+        case CPEscapeKeyCode:
+            return CPCancelTextMovement;
+
+        case CPLeftArrowKeyCode:
+            return CPLeftTextMovement;
+
+        case CPRightArrowKeyCode:
+            return CPRightTextMovement;
+
+        case CPUpArrowKeyCode:
+            return CPUpTextMovement;
+
+        case CPDownArrowKeyCode:
+            return CPDownTextMovement;
+
+        case CPReturnKeyCode:
+            return CPReturnTextMovement;
+
+        case CPTabKeyCode:
+            if (modifierFlags & CPShiftKeyMask)
+                return CPBacktabTextMovement;
+
+            return CPTabTextMovement;
+
+        default:
+            return CPOtherTextMovement;
+    }
 }
 
 /*!
