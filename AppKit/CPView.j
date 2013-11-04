@@ -3516,7 +3516,6 @@ var _CPViewGetTransform = function(/*CPView*/ fromView, /*CPView */ toView)
             }
 
             view = view._superview;
-
         }
 
         // If we hit toView, then we're done.
@@ -3555,8 +3554,8 @@ var _CPViewGetTransform = function(/*CPView*/ fromView, /*CPView */ toView)
         if (view._boundsTransform)
         {
             var inverseBoundsTransform = CGAffineTransformMakeIdentity();
-            inverseBoundsTransform.tx -=  view._inverseBoundsTransform.tx * transform2.a;
-            inverseBoundsTransform.ty -=  view._inverseBoundsTransform.ty * transform2.d;
+            inverseBoundsTransform.tx -= view._inverseBoundsTransform.tx * transform2.a;
+            inverseBoundsTransform.ty -= view._inverseBoundsTransform.ty * transform2.d;
 
             CGAffineTransformConcatTo(transform2, inverseBoundsTransform, transform2);
         }
@@ -3567,10 +3566,17 @@ var _CPViewGetTransform = function(/*CPView*/ fromView, /*CPView */ toView)
     transform2.tx = -transform2.tx;
     transform2.ty = -transform2.ty;
 
-    if (sameWindow)
-        transform = transform2;
-    else
-        CGAffineTransformConcatTo(transform, transform2, transform);
+    if (view === fromView)
+    {
+        // toView is inside of fromView
+        return transform2;
+    }
+
+    CGAffineTransformConcatTo(transform, transform2, transform);
+
+    return transform;
+
+
 
 /*    var views = [],
         view = toView;
