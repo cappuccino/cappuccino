@@ -1307,13 +1307,13 @@ NOT YET IMPLEMENTED
     for (var identifier in _dataViewsForTableColumns)
     {
         var dataViewsInTableColumn = _dataViewsForTableColumns[identifier];
-        var count= deselectRows.length;
+        var count = deselectRows.length;
         while (count--)
         {
             var view = dataViewsInTableColumn[deselectRows[count]];
             [view unsetThemeState: CPThemeStateSelectedDataViewFocused|CPThemeStateSelectedDataView];
         }
-        var count= selectRows.length;
+        var count = selectRows.length;
         while (count--)
         {
             var view = dataViewsInTableColumn[selectRows[count]];
