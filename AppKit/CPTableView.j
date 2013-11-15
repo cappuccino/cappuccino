@@ -273,6 +273,10 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     CPTableColumn       _draggedColumn;
     CPArray             _differedColumnDataToRemove;
+
+    BOOL                _isFirstResponder;
+    BOOL                _isKeyWindow;
+
 }
 
 /*!
@@ -3925,7 +3929,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 {
     var isEditing = _editingRow !== CPNotFound || _editingCellIndex;
 
-    return [[self window] isKeyWindow] && ([[self window] firstResponder] === self || isEditing);
+    return ([[self window] isKeyWindow] || _isKeyWindow) && (([[self window] firstResponder] === self || _isFirstResponder) || isEditing);
 }
 
 /*!
@@ -4984,7 +4988,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (void)becomeKeyWindow
 {
+    _isKeyWindow = YES;
     [self setNeedsDisplay:YES];
+    [self setSelectionHighlightStyle:[self selectionHighlightStyle]];	// we have redraw the selection
 }
 
 /*!
@@ -4992,7 +4998,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (void)resignKeyWindow
 {
+    _isKeyWindow = NO;
     [self setNeedsDisplay:YES];
+    [self setSelectionHighlightStyle:[self selectionHighlightStyle]];	// we have redraw the selection
 }
 
 /*!
@@ -5000,7 +5008,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (BOOL)becomeFirstResponder
 {
+    _isFirstResponder = YES;
     [self setNeedsDisplay:YES];
+    [self setSelectionHighlightStyle:[self selectionHighlightStyle]];	// we have redraw the selection
     return YES;
 }
 
@@ -5009,7 +5019,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (BOOL)resignFirstResponder
 {
+    _isFirstResponder = NO;
     [self setNeedsDisplay:YES];
+    [self setSelectionHighlightStyle:[self selectionHighlightStyle]];	// we have redraw the selection
     return YES;
 }
 
