@@ -6027,6 +6027,7 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
         CGContextSetStrokeColor(context, borderColor);
         CGContextSetLineWidth(context, borderWidth);
         CGContextSetFillColor(context, backgroundColor);
+        CGContextFillRoundedRectangleInRect(context, newRect, borderRadius, YES, YES, YES, YES);
         CGContextStrokeRoundedRectangleInRect(context, newRect, borderRadius, YES, YES, YES, YES);
 
     }
