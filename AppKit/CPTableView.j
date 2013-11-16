@@ -299,6 +299,18 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
             @"selection-radius": [CPNull null],
             @"image-generic-file": [CPNull null],
             @"default-row-height": 25.0,
+            @"dropview-on-background-color": [CPNull null],
+            @"dropview-on-border-color": [CPNull null],
+            @"dropview-on-border-width": [CPNull null],
+            @"dropview-on-border-radius": [CPNull null],
+            @"dropview-on-selected-background-color": [CPNull null],
+            @"dropview-on-selected-border-color": [CPNull null],
+            @"dropview-on-selected-border-width": [CPNull null],
+            @"dropview-on-selected-border-radius": [CPNull null],
+            @"dropview-above-border-color": [CPNull null],
+            @"dropview-above-border-width": [CPNull null],
+            @"dropview-above-selected-border-color": [CPNull null],
+            @"dropview-above-selected-border-width": [CPNull null]
         };
 }
 
@@ -5975,13 +5987,19 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
     if (tableView._destinationDragStyle === CPTableViewDraggingDestinationFeedbackStyleNone || isBlinking)
         return;
 
-    var context = [[CPGraphicsContext currentContext] graphicsPort];
-
-    CGContextSetStrokeColor(context, [CPColor colorWithHexString:@"4886ca"]);
-    CGContextSetLineWidth(context, 3);
+    var context = [[CPGraphicsContext currentContext] graphicsPort],
+        borderRadius,
+        borderColor,
+        borderWidth,
+        backgroundColor;
 
     if (currentRow === -1)
     {
+        borderColor = [tableView valueForThemeAttribute:@"dropview-on-border-color"];
+        borderWidth = [tableView valueForThemeAttribute:@"dropview-on-border-width"];
+
+        CGContextSetStrokeColor(context, borderColor);
+        CGContextSetLineWidth(context, borderWidth);
         CGContextStrokeRect(context, [self bounds]);
     }
 
@@ -5993,16 +6011,23 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
         if ([selectedRows containsIndex:currentRow])
         {
-            CGContextSetLineWidth(context, 2);
-            CGContextSetStrokeColor(context, [CPColor whiteColor]);
+            borderRadius = [tableView valueForThemeAttribute:@"dropview-on-selected-border-radius"];
+            borderColor = [tableView valueForThemeAttribute:@"dropview-on-selected-border-color"];
+            borderWidth = [tableView valueForThemeAttribute:@"dropview-on-selected-border-width"];
+            backgroundColor = [tableView valueForThemeAttribute:@"dropview-on-selected-background-color"];
         }
         else
         {
-            CGContextSetFillColor(context, [CPColor colorWithRed:72 / 255 green:134 / 255 blue:202 / 255 alpha:0.25]);
-            CGContextFillRoundedRectangleInRect(context, newRect, 8, YES, YES, YES, YES);
+            borderRadius = [tableView valueForThemeAttribute:@"dropview-on-border-radius"];
+            borderColor = [tableView valueForThemeAttribute:@"dropview-on-border-color"];
+            borderWidth = [tableView valueForThemeAttribute:@"dropview-on-border-width"];
+            backgroundColor = [tableView valueForThemeAttribute:@"dropview-on-background-color"];
         }
 
-        CGContextStrokeRoundedRectangleInRect(context, newRect, 8, YES, YES, YES, YES);
+        CGContextSetStrokeColor(context, borderColor);
+        CGContextSetLineWidth(context, borderWidth);
+        CGContextSetFillColor(context, backgroundColor);
+        CGContextStrokeRoundedRectangleInRect(context, newRect, borderRadius, YES, YES, YES, YES);
 
     }
     else if (dropOperation === CPTableViewDropAbove)
@@ -6014,28 +6039,23 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
         if ([selectedRows containsIndex:currentRow - 1] || [selectedRows containsIndex:currentRow])
         {
-            CGContextSetStrokeColor(context, [CPColor whiteColor]);
-            CGContextSetLineWidth(context, 4);
-            //draw the circle thing
-            CGContextStrokeEllipseInRect(context, CGRectMake(aRect.origin.x + 4, aRect.origin.y + 4, 8, 8));
-            //then draw the line
-            CGContextBeginPath(context);
-            CGContextMoveToPoint(context, 10, aRect.origin.y + 8);
-            CGContextAddLineToPoint(context, aRect.size.width - aRect.origin.y - 8, aRect.origin.y + 8);
-            CGContextStrokePath(context);
-
-            CGContextSetStrokeColor(context, [CPColor colorWithHexString:@"4886ca"]);
-            CGContextSetLineWidth(context, 3);
+            borderColor = [tableView valueForThemeAttribute:@"dropview-above-selected-border-color"];
+            borderWidth = [tableView valueForThemeAttribute:@"dropview-above-selected-border-width"];
+        }
+        else
+        {
+            borderColor = [tableView valueForThemeAttribute:@"dropview-above-border-color"];
+            borderWidth = [tableView valueForThemeAttribute:@"dropview-above-border-width"];
         }
 
-        //draw the circle thing
-        CGContextStrokeEllipseInRect(context, CGRectMake(aRect.origin.x + 4, aRect.origin.y + 4, 8, 8));
-        //then draw the line
+        CGContextSetStrokeColor(context, borderColor);
+        CGContextSetLineWidth(context, borderWidth);
+        CGContextStrokeEllipseInRect(context, CGRectMake(aRect.origin.x + 4, aRect.origin.y + 4, 8, 8)); // circle
+
         CGContextBeginPath(context);
         CGContextMoveToPoint(context, 10, aRect.origin.y + 8);
         CGContextAddLineToPoint(context, aRect.size.width - aRect.origin.y - 8, aRect.origin.y + 8);
         CGContextStrokePath(context);
-        //CGContextStrokeLineSegments(context, [aRect.origin.x + 8,  aRect.origin.y + 8, 300 , aRect.origin.y + 8]);
     }
 }
 
