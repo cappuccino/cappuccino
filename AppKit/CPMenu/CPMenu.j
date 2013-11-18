@@ -27,6 +27,7 @@
 
 @import "CPKeyValueBinding.j"
 @import "CPMenuItem.j"
+@import "CALayer.j"
 
 @global CPApp
 
@@ -999,6 +1000,10 @@ var _CPMenuBarVisible               = NO,
     // an additional mouse move after all this, but not in other browsers.
     // This will be fixed correctly with the coming run loop changes.
     [_CPDisplayServer run];
+    
+    // If layers are updated within the menu callback, the re-draw & re-layout doesn't occur until a mouse move. 
+    // We force the update here.
+    [CALayer runLoopUpdateLayers];
 }
 
 /* @ignore */
