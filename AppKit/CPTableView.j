@@ -1302,7 +1302,7 @@ NOT YET IMPLEMENTED
     [selectRowIndexes getIndexes:selectRows maxCount:-1 inIndexRange:CPMakeRange(firstExposedRow, exposedLength)];
 
     var showsSelection = _selectionHighlightStyle !== CPTableViewSelectionHighlightStyleNone,
-        selectionState = [self _isFocused]? CPThemeStateSelectedDataViewFocused:CPThemeStateSelectedDataView;
+        selectionState = [self _isFocused]? CPThemeStateFirstResponder:CPThemeStateSelectedDataView;
 
     for (var identifier in _dataViewsForTableColumns)
     {
@@ -1311,13 +1311,13 @@ NOT YET IMPLEMENTED
         while (count--)
         {
             var view = dataViewsInTableColumn[deselectRows[count]];
-            [view unsetThemeState: CPThemeStateSelectedDataViewFocused|CPThemeStateSelectedDataView];
+            [view unsetThemeState: CPThemeStateFirstResponder|CPThemeStateSelectedDataView];
         }
         var count = selectRows.length;
         while (count--)
         {
             var view = dataViewsInTableColumn[selectRows[count]];
-            [view unsetThemeState: CPThemeStateSelectedDataViewFocused|CPThemeStateSelectedDataView];
+            [view unsetThemeState: CPThemeStateFirstResponder|CPThemeStateSelectedDataView];
             if(showsSelection) [view setThemeState: selectionState];
         }
     }
@@ -1342,7 +1342,7 @@ NOT YET IMPLEMENTED
     [_exposedRows getIndexes:selectRows maxCount:-1 inIndexRange:nil];
 
     var showsSelection = _selectionHighlightStyle !== CPTableViewSelectionHighlightStyleNone,
-        selectionState = [self _isFocused]? CPThemeStateSelectedDataViewFocused:CPThemeStateSelectedDataView;
+        selectionState = [self _isFocused]? CPThemeStateFirstResponder:CPThemeStateSelectedDataView;
 
     var count = deselectColumns.length;
     while (count--)
@@ -1356,13 +1356,13 @@ NOT YET IMPLEMENTED
             var rowIndex = selectRows[i],
                 dataView = dataViewsInTableColumn[rowIndex];
 
-            [dataView unsetThemeState: CPThemeStateSelectedDataViewFocused|CPThemeStateSelectedDataView];
+            [dataView unsetThemeState: CPThemeStateFirstResponder|CPThemeStateSelectedDataView];
         }
 
         if (_headerView)
         {
             var headerView = [_tableColumns[columnIndex] headerView];
-            [headerView unsetThemeState: CPThemeStateSelectedDataViewFocused|CPThemeStateSelectedDataView];
+            [headerView unsetThemeState: CPThemeStateFirstResponder|CPThemeStateSelectedDataView];
         }
     }
     var count = selectColumns.length;
@@ -1377,14 +1377,14 @@ NOT YET IMPLEMENTED
             var rowIndex = selectRows[i],
                 dataView = dataViewsInTableColumn[rowIndex];
 
-            [dataView unsetThemeState: CPThemeStateSelectedDataViewFocused|CPThemeStateSelectedDataView];
+            [dataView unsetThemeState: CPThemeStateFirstResponder|CPThemeStateSelectedDataView];
             if(showsSelection) [dataView setThemeState: selectionState];
         }
 
         if (_headerView)
         {
             var headerView = [_tableColumns[columnIndex] headerView];
-            [headerView unsetThemeState: CPThemeStateSelectedDataViewFocused|CPThemeStateSelectedDataView];
+            [headerView unsetThemeState: CPThemeStateFirstResponder|CPThemeStateSelectedDataView];
             [headerView setThemeState: selectionState];        // Rows do not show selection with CPTableViewSelectionHighlightStyleNone, but headers do
         }
     }
@@ -3518,7 +3518,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     var columnIndex = 0,
         columnsCount = columnArray.length,
-        focusedState = [self _isFocused]? CPThemeStateSelectedDataViewFocused:CPThemeStateSelectedDataView;
+        focusedState = [self _isFocused]? CPThemeStateFirstResponder:CPThemeStateSelectedDataView;
 
     for (; columnIndex < columnsCount; ++columnIndex)
     {
@@ -3548,7 +3548,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
             [self _setObjectValueForTableColumn:tableColumn row:row forView:dataView];
 
-            [dataView unsetThemeState:CPThemeStateSelectedDataViewFocused|CPThemeStateSelectedDataView];
+            [dataView unsetThemeState:CPThemeStateFirstResponder|CPThemeStateSelectedDataView];
             if ((_selectionHighlightStyle !== CPTableViewSelectionHighlightStyleNone) &&
                 (isColumnSelected || [self isRowSelected:row]))
             {
