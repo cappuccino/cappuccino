@@ -4038,7 +4038,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         var exposedRows = [self _exposedRowsInRect:aRect],
             row = exposedRows.location,
             lastRow = CPMaxRange(exposedRows) - 1,
-            rowY = -lineThinkness / 2,
+            rowY = -lineThickness / 2,
             minX = CGRectGetMinX(aRect),
             maxX = CGRectGetMaxX(aRect);
 
@@ -4046,7 +4046,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         {
             // grab each row rect and add the top and bottom lines
             var rowRect = [self _rectOfRow:row checkRange:NO],
-                rowY = CGRectGetMaxY(rowRect) - lineThinkness / 2;
+                rowY = CGRectGetMaxY(rowRect) - lineThickness / 2;
 
             CGContextMoveToPoint(context, minX, rowY);
             CGContextAddLineToPoint(context, maxX, rowY);
@@ -4055,7 +4055,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         if (_rowHeight > 0.0)
         {
             var rowHeight = FULL_ROW_HEIGHT(),
-                totalHeight = CGRectGetMaxY(aRect) - lineThinkness / 2;
+                totalHeight = CGRectGetMaxY(aRect) - lineThickness / 2;
 
             while (rowY < totalHeight)
             {
@@ -4082,7 +4082,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         for (; columnArrayIndex < columnArrayCount; ++columnArrayIndex)
         {
             var columnRect = [self rectOfColumn:columnsArray[columnArrayIndex]],
-                columnX = CGRectGetMaxX(columnRect) - lineThinkness / 2;
+                columnX = CGRectGetMaxX(columnRect) - lineThickness / 2;
 
             CGContextMoveToPoint(context, columnX, minY);
             CGContextAddLineToPoint(context, columnX, maxY);
@@ -4091,7 +4091,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     CGContextClosePath(context);
     CGContextSetStrokeColor(context, [self gridColor]);
-    CGContextSetLineWidth(context, lineThinkness);
+    CGContextSetLineWidth(context, lineThickness);
     CGContextStrokePath(context);
 }
 
