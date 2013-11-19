@@ -53,7 +53,7 @@
             @"text-color": [CPNull null],
             @"font": [CPNull null],
             @"text-shadow-color": [CPNull null],
-            @"text-shadow-offset": CGSizeMakeZero(),
+            @"text-shadow-offset": CGSizeMakeZero()
         };
 }
 
@@ -251,6 +251,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     return @{
             @"background-color": [CPNull null],
             @"divider-color": [CPColor grayColor],
+            @"divider-thickness": 1.0
         };
 }
 
@@ -679,7 +680,8 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 - (void)layoutSubviews
 {
     var tableColumns = [_tableView tableColumns],
-        count = [tableColumns count];
+        count = [tableColumns count],
+        lineThickness = [self currentValueForThemeAttribute:@"divider-thickness"];
 
     for (var i = 0; i < count; i++)
     {
@@ -689,7 +691,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 
         // Make space for the gridline on the right.
         frame.origin.x -= 0.5;
-        frame.size.width -= 1.0;
+        frame.size.width -= lineThickness;
         frame.size.height -= 0.5;
         // Note: we're not adding in intercell spacing here. This setting only affects the regular
         // table cell data views, not the header. Verified in Cocoa on March 29th, 2011.
@@ -714,9 +716,10 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
         tableColumns = [_tableView tableColumns],
         exposedTableColumns = _tableView._exposedColumns,
         firstIndex = [exposedTableColumns firstIndex],
-        exposedRange = CPMakeRange(firstIndex, [exposedTableColumns lastIndex] - firstIndex + 1);
+        exposedRange = CPMakeRange(firstIndex, [exposedTableColumns lastIndex] - firstIndex + 1),
+        lineThickness = [self currentValueForThemeAttribute:@"divider-thickness"];
 
-    CGContextSetLineWidth(context, 1);
+    CGContextSetLineWidth(context, lineThickness);
     CGContextSetStrokeColor(context, [self currentValueForThemeAttribute:@"divider-color"]);
 
     [exposedColumnIndexes getIndexes:columnsArray maxCount:-1 inIndexRange:exposedRange];
@@ -735,8 +738,8 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 
         columnMaxX = CGRectGetMaxX(columnToStroke);
 
-        CGContextMoveToPoint(context, FLOOR(columnMaxX) - 0.5, ROUND(CGRectGetMinY(columnToStroke)));
-        CGContextAddLineToPoint(context, FLOOR(columnMaxX) - 0.5, ROUND(CGRectGetMaxY(columnToStroke)) - 1.0);
+        CGContextMoveToPoint(context, FLOOR(columnMaxX) - 0.5 * lineThickness, ROUND(CGRectGetMinY(columnToStroke)));
+        CGContextAddLineToPoint(context, FLOOR(columnMaxX) - 0.5 * lineThickness, ROUND(CGRectGetMaxY(columnToStroke)) - 1.0);
     }
 
     CGContextClosePath(context);
