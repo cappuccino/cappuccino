@@ -913,7 +913,7 @@ var resizeTimer = nil;
     {
         // Find the scroll delta
         var deltaX = _DOMScrollingElement.scrollLeft - 150,
-            deltaY = (_DOMScrollingElement.scrollTop - 150) || (aDOMEvent.deltaY === undefined ? 0 : (aDOMEvent.deltaY*6));
+            deltaY = (_DOMScrollingElement.scrollTop - 150) || (aDOMEvent.deltaY === undefined ? 0 : (aDOMEvent.deltaY * 6));
 
         // If we scroll super with momentum,
         // there are so many events going off that
