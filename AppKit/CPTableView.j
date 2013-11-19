@@ -291,6 +291,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     return @{
             @"alternating-row-colors": [CPNull null],
             @"grid-color": [CPNull null],
+            @"grid-line-thickness": 1.0,
             @"highlighted-grid-color": [CPNull null],
             @"selection-color": [CPNull null],
             @"sourcelist-selection-color": [CPNull null],
@@ -4024,7 +4025,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 - (void)drawGridInClipRect:(CGRect)aRect
 {
     var context = [[CPGraphicsContext currentContext] graphicsPort],
-        gridStyleMask = [self gridStyleMask];
+        gridStyleMask = [self gridStyleMask],
+        lineThickness = [self currentValueForThemeAttribute:@"grid-line-thickness"];
 
     if (!(gridStyleMask & (CPTableViewSolidHorizontalGridLineMask | CPTableViewSolidVerticalGridLineMask)))
         return;
@@ -4036,7 +4038,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         var exposedRows = [self _exposedRowsInRect:aRect],
             row = exposedRows.location,
             lastRow = CPMaxRange(exposedRows) - 1,
-            rowY = -0.5,
+            rowY = -lineThinkness / 2,
             minX = CGRectGetMinX(aRect),
             maxX = CGRectGetMaxX(aRect);
 
@@ -4044,7 +4046,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         {
             // grab each row rect and add the top and bottom lines
             var rowRect = [self _rectOfRow:row checkRange:NO],
-                rowY = CGRectGetMaxY(rowRect) - 0.5;
+                rowY = CGRectGetMaxY(rowRect) - lineThinkness / 2;
 
             CGContextMoveToPoint(context, minX, rowY);
             CGContextAddLineToPoint(context, maxX, rowY);
@@ -4053,7 +4055,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         if (_rowHeight > 0.0)
         {
             var rowHeight = FULL_ROW_HEIGHT(),
-                totalHeight = CGRectGetMaxY(aRect);
+                totalHeight = CGRectGetMaxY(aRect) - lineThinkness / 2;
 
             while (rowY < totalHeight)
             {
@@ -4080,7 +4082,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         for (; columnArrayIndex < columnArrayCount; ++columnArrayIndex)
         {
             var columnRect = [self rectOfColumn:columnsArray[columnArrayIndex]],
-                columnX = CGRectGetMaxX(columnRect) - 0.5;
+                columnX = CGRectGetMaxX(columnRect) - lineThinkness / 2;
 
             CGContextMoveToPoint(context, columnX, minY);
             CGContextAddLineToPoint(context, columnX, maxY);
@@ -4089,6 +4091,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     CGContextClosePath(context);
     CGContextSetStrokeColor(context, [self gridColor]);
+    CGContextSetLineWidth(context, lineThinkness);
     CGContextStrokePath(context);
 }
 
