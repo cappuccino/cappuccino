@@ -63,27 +63,27 @@ var CPTableViewDataSource_numberOfRowsInTableView_                              
 
 var CPTableViewDelegate_selectionShouldChangeInTableView_                                               = 1 << 0,
     CPTableViewDelegate_tableView_viewForTableColumn_row_                                               = 1 << 1,
-    CPTableViewDelegate_tableView_dataViewForTableColumn_row_                                           = 1 << 21,
-    CPTableViewDelegate_tableView_didClickTableColumn_                                                  = 1 << 2,
-    CPTableViewDelegate_tableView_didDragTableColumn_                                                   = 1 << 3,
-    CPTableViewDelegate_tableView_heightOfRow_                                                          = 1 << 4,
-    CPTableViewDelegate_tableView_isGroupRow_                                                           = 1 << 5,
-    CPTableViewDelegate_tableView_mouseDownInHeaderOfTableColumn_                                       = 1 << 6,
-    CPTableViewDelegate_tableView_nextTypeSelectMatchFromRow_toRow_forString_                           = 1 << 7,
-    CPTableViewDelegate_tableView_selectionIndexesForProposedSelection_                                 = 1 << 8,
-    CPTableViewDelegate_tableView_shouldEditTableColumn_row_                                            = 1 << 9,
-    CPTableViewDelegate_tableView_shouldSelectRow_                                                      = 1 << 10,
-    CPTableViewDelegate_tableView_shouldSelectTableColumn_                                              = 1 << 11,
-    CPTableViewDelegate_tableView_shouldShowViewExpansionForTableColumn_row_                            = 1 << 12,
-    CPTableViewDelegate_tableView_shouldTrackView_forTableColumn_row_                                   = 1 << 13,
-    CPTableViewDelegate_tableView_shouldTypeSelectForEvent_withCurrentSearchString_                     = 1 << 14,
-    CPTableViewDelegate_tableView_toolTipForView_rect_tableColumn_row_mouseLocation_                    = 1 << 15,
-    CPTableViewDelegate_tableView_typeSelectStringForTableColumn_row_                                   = 1 << 16,
-    CPTableViewDelegate_tableView_willDisplayView_forTableColumn_row_                                   = 1 << 17,
-    CPTableViewDelegate_tableViewSelectionDidChange_                                                    = 1 << 18,
-    CPTableViewDelegate_tableViewSelectionIsChanging_                                                   = 1 << 19,
-    CPTableViewDelegate_tableViewMenuForTableColumn_Row_                                                = 1 << 20,
-    CPTableViewDelegate_tableView_shouldReorderColumn_toColumn_                                         = 1 << 21;
+    CPTableViewDelegate_tableView_dataViewForTableColumn_row_                                           = 1 << 2,
+    CPTableViewDelegate_tableView_didClickTableColumn_                                                  = 1 << 3,
+    CPTableViewDelegate_tableView_didDragTableColumn_                                                   = 1 << 4,
+    CPTableViewDelegate_tableView_heightOfRow_                                                          = 1 << 5,
+    CPTableViewDelegate_tableView_isGroupRow_                                                           = 1 << 6,
+    CPTableViewDelegate_tableView_mouseDownInHeaderOfTableColumn_                                       = 1 << 7,
+    CPTableViewDelegate_tableView_nextTypeSelectMatchFromRow_toRow_forString_                           = 1 << 8,
+    CPTableViewDelegate_tableView_selectionIndexesForProposedSelection_                                 = 1 << 9,
+    CPTableViewDelegate_tableView_shouldEditTableColumn_row_                                            = 1 << 10,
+    CPTableViewDelegate_tableView_shouldSelectRow_                                                      = 1 << 11,
+    CPTableViewDelegate_tableView_shouldSelectTableColumn_                                              = 1 << 12,
+    CPTableViewDelegate_tableView_shouldShowViewExpansionForTableColumn_row_                            = 1 << 13,
+    CPTableViewDelegate_tableView_shouldTrackView_forTableColumn_row_                                   = 1 << 14,
+    CPTableViewDelegate_tableView_shouldTypeSelectForEvent_withCurrentSearchString_                     = 1 << 15,
+    CPTableViewDelegate_tableView_toolTipForView_rect_tableColumn_row_mouseLocation_                    = 1 << 16,
+    CPTableViewDelegate_tableView_typeSelectStringForTableColumn_row_                                   = 1 << 17,
+    CPTableViewDelegate_tableView_willDisplayView_forTableColumn_row_                                   = 1 << 18,
+    CPTableViewDelegate_tableViewSelectionDidChange_                                                    = 1 << 19,
+    CPTableViewDelegate_tableViewSelectionIsChanging_                                                   = 1 << 20,
+    CPTableViewDelegate_tableViewMenuForTableColumn_row_                                                = 1 << 21,
+    CPTableViewDelegate_tableView_shouldReorderColumn_toColumn_                                         = 1 << 22;
 
 //CPTableViewDraggingDestinationFeedbackStyles
 CPTableViewDraggingDestinationFeedbackStyleNone = -1;
@@ -291,6 +291,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     return @{
             @"alternating-row-colors": [CPNull null],
             @"grid-color": [CPNull null],
+            @"grid-line-thickness": 1.0,
             @"highlighted-grid-color": [CPNull null],
             @"selection-color": [CPNull null],
             @"sourcelist-selection-color": [CPNull null],
@@ -299,6 +300,18 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
             @"selection-radius": [CPNull null],
             @"image-generic-file": [CPNull null],
             @"default-row-height": 25.0,
+            @"dropview-on-background-color": [CPNull null],
+            @"dropview-on-border-color": [CPNull null],
+            @"dropview-on-border-width": [CPNull null],
+            @"dropview-on-border-radius": [CPNull null],
+            @"dropview-on-selected-background-color": [CPNull null],
+            @"dropview-on-selected-border-color": [CPNull null],
+            @"dropview-on-selected-border-width": [CPNull null],
+            @"dropview-on-selected-border-radius": [CPNull null],
+            @"dropview-above-border-color": [CPNull null],
+            @"dropview-above-border-width": [CPNull null],
+            @"dropview-above-selected-border-color": [CPNull null],
+            @"dropview-above-selected-border-width": [CPNull null]
         };
 }
 
@@ -1074,23 +1087,6 @@ NOT YET IMPLEMENTED
 
 /*
     @ignore
-    Returns YES if the column at columnIndex can be reordered.
-    It can be possible if column reordering is allowed and if the tableview
-    delegate also accept the reordering
-*/
-- (BOOL)_shouldReorderColumn:(int)columnIndex toColumn:(int)newColumnIndex
-{
-    if ([self allowsColumnReordering] &&
-        _implementedDelegateMethods & CPTableViewDelegate_tableView_shouldReorderColumn_toColumn_)
-    {
-        return [_delegate tableView:self shouldReorderColumn:columnIndex toColumn:newColumnIndex];
-    }
-
-    return [self allowsColumnReordering];
-}
-
-/*
-    @ignore
     Same as moveColumn:toColumn: but doesn't trigger an autosave
 */
 - (void)_moveColumn:(unsigned)fromIndex toColumn:(unsigned)toIndex
@@ -1520,8 +1516,7 @@ NOT YET IMPLEMENTED
 {
     if (_allowsMultipleSelection)
     {
-        if (_implementedDelegateMethods & CPTableViewDelegate_selectionShouldChangeInTableView_ &&
-            ![_delegate selectionShouldChangeInTableView:self])
+        if (![self _sendDelegateSelectionShouldChangeInTableView])
             return;
 
         if ([[self selectedColumnIndexes] count])
@@ -1535,8 +1530,7 @@ NOT YET IMPLEMENTED
 {
     if ([self allowsEmptySelection])
     {
-        if (_implementedDelegateMethods & CPTableViewDelegate_selectionShouldChangeInTableView_ &&
-            ![_delegate selectionShouldChangeInTableView:self])
+        if (![self _sendDelegateSelectionShouldChangeInTableView])
             return;
 
         [self deselectAll];
@@ -1568,13 +1562,17 @@ NOT YET IMPLEMENTED
 
         _numberOfRows = [[destination valueForKeyPath:keyPath] count];
     }
-    else if (_dataSource && (_implementedDataSourceMethods & CPTableViewDataSource_numberOfRowsInTableView_))
-        _numberOfRows = [_dataSource numberOfRowsInTableView:self] || 0;
     else
     {
-        if (_dataSource)
-            CPLog(@"no content binding established and data source " + [_dataSource description] + " does not implement numberOfRowsInTableView:");
-        _numberOfRows = 0;
+        _numberOfRows = [self _sendDataSourceNumberOfRowsInTableView];
+
+        if (!_numberOfRows)
+        {
+            if (_dataSource && ![self _dataSourceRespondsToNumberOfRowsinTableView])
+                CPLog(@"no content binding established and data source " + [_dataSource description] + " does not implement numberOfRowsInTableView:");
+
+            _numberOfRows = 0;
+        }
     }
 
     return _numberOfRows;
@@ -2429,7 +2427,7 @@ NOT YET IMPLEMENTED
         var height;
 
         if ([anIndexSet containsIndex:i])
-            height = [_delegate tableView:self heightOfRow:i];
+            height = [self _sendDelegateHeightOfRow:i];
         else
             height = _cachedRowHeights[i].height || _rowHeight;  // in case the cache entry is empty
 
@@ -2875,7 +2873,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         _implementedDelegateMethods |= CPTableViewDelegate_tableView_willDisplayView_forTableColumn_row_;
 
     if ([_delegate respondsToSelector:@selector(tableView:menuForTableColumn:row:)])
-        _implementedDelegateMethods |= CPTableViewDelegate_tableViewMenuForTableColumn_Row_;
+        _implementedDelegateMethods |= CPTableViewDelegate_tableViewMenuForTableColumn_row_;
 
     if ([_delegate respondsToSelector:@selector(tableView:shouldReorderColumn:toColumn:)])
         _implementedDelegateMethods |= CPTableViewDelegate_tableView_shouldReorderColumn_toColumn_;
@@ -2920,87 +2918,41 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 /*!
     @ignore
 */
-- (void)_sendDelegateDidClickColumn:(int)column
-{
-    if (_implementedDelegateMethods & CPTableViewDelegate_tableView_didClickTableColumn_)
-            [_delegate tableView:self didClickTableColumn:_tableColumns[column]];
-}
-
-/*!
-    @ignore
-*/
-- (void)_sendDelegateDidDragColumn:(int)column
-{
-    if (_implementedDelegateMethods & CPTableViewDelegate_tableView_didDragTableColumn_)
-            [_delegate tableView:self didDragTableColumn:_tableColumns[column]];
-}
-
-- (void)_sendDelegateDidMouseDownInHeader:(int)column
-{
-    if (_implementedDelegateMethods & CPTableViewDelegate_tableView_mouseDownInHeaderOfTableColumn_)
-            [_delegate tableView:self mouseDownInHeaderOfTableColumn:_tableColumns[column]];
-}
-
-/*
-    @ignore
-*/
-- (BOOL)_sendDelegateDeleteKeyPressed
-{
-    if ([_delegate respondsToSelector: @selector(tableViewDeleteKeyPressed:)])
-    {
-        [_delegate tableViewDeleteKeyPressed:self];
-        return YES;
-    }
-
-    return NO;
-}
-
-
-/*!
-    @ignore
-*/
-- (void)_sendDataSourceSortDescriptorsDidChange:(CPArray)oldDescriptors
-{
-    if (_implementedDataSourceMethods & CPTableViewDataSource_tableView_sortDescriptorsDidChange_)
-        [_dataSource tableView:self sortDescriptorsDidChange:oldDescriptors];
-}
-
-
-/*!
-    @ignore
-*/
 - (void)_didClickTableColumn:(int)clickedColumn modifierFlags:(unsigned)modifierFlags
 {
-    [self _sendDelegateDidClickColumn:clickedColumn];
-
     [self _changeSortDescriptorsForClickOnColumn:clickedColumn];
 
     if (_allowsColumnSelection)
     {
-        [self _noteSelectionIsChanging];
-        if (modifierFlags & CPPlatformActionKeyMask)
+        if ([self _sendDelegateSelectionShouldChangeInTableView] && [self _sendDelegateShouldSelectTableColumn:clickedColumn])
         {
-            if ([self isColumnSelected:clickedColumn])
-                [self deselectColumn:clickedColumn];
-            else if ([self allowsMultipleSelection] == YES)
-                [self selectColumnIndexes:[CPIndexSet indexSetWithIndex:clickedColumn] byExtendingSelection:YES];
+            [self _noteSelectionIsChanging];
+            if (modifierFlags & CPPlatformActionKeyMask)
+            {
+                if ([self isColumnSelected:clickedColumn])
+                    [self deselectColumn:clickedColumn];
+                else if ([self allowsMultipleSelection] == YES)
+                    [self selectColumnIndexes:[CPIndexSet indexSetWithIndex:clickedColumn] byExtendingSelection:YES];
 
-            return;
+                return;
+            }
+            else if (modifierFlags & CPShiftKeyMask)
+            {
+                // should be from clickedColumn to lastClickedColum with extending:(direction == previous selection)
+                var startColumn = MIN(clickedColumn, [_selectedColumnIndexes lastIndex]),
+                    endColumn = MAX(clickedColumn, [_selectedColumnIndexes firstIndex]);
+
+                [self selectColumnIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(startColumn, endColumn - startColumn + 1)]
+                     byExtendingSelection:YES];
+
+                return;
+            }
+            else
+                [self selectColumnIndexes:[CPIndexSet indexSetWithIndex:clickedColumn] byExtendingSelection:NO];
         }
-        else if (modifierFlags & CPShiftKeyMask)
-        {
-        // should be from clickedColumn to lastClickedColum with extending:(direction == previous selection)
-            var startColumn = MIN(clickedColumn, [_selectedColumnIndexes lastIndex]),
-                endColumn = MAX(clickedColumn, [_selectedColumnIndexes firstIndex]);
-
-            [self selectColumnIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(startColumn, endColumn - startColumn + 1)]
-                 byExtendingSelection:YES];
-
-            return;
-        }
-        else
-            [self selectColumnIndexes:[CPIndexSet indexSetWithIndex:clickedColumn] byExtendingSelection:NO];
     }
+
+    [self _sendDelegateDidClickTableColumn:clickedColumn];
 }
 
 // From GNUSTEP
@@ -3381,21 +3333,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     return _sortDescriptors;
 }
 
-- (BOOL)_dataSourceRespondsToObjectValueForTableColumn
-{
-    return _implementedDataSourceMethods & CPTableViewDataSource_tableView_objectValueForTableColumn_row_;
-}
-
-- (BOOL)_delegateRespondsToDataViewForTableColumn
-{
-    return _implementedDelegateMethods & CPTableViewDelegate_tableView_dataViewForTableColumn_row_;
-}
-
-- (BOOL)_delegateRespondsToViewForTableColumn
-{
-    return _implementedDelegateMethods & CPTableViewDelegate_tableView_viewForTableColumn_row_;
-}
-
 /*!
     @ignore
 */
@@ -3417,7 +3354,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     {
         if ([self _dataSourceRespondsToObjectValueForTableColumn])
         {
-            objectValue = [_dataSource tableView:self objectValueForTableColumn:aTableColumn row:aRowIndex];
+            objectValue = [self _sendDataSourceObjectValueForTableColumn:aTableColumn row:aRowIndex];
             tableColumnObjectValues[aRowIndex] = objectValue;
         }
         else if (!_isViewBased && ![self infoForBinding:@"content"])
@@ -3634,24 +3571,20 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
                 [dataView unsetThemeState:CPThemeStateSelectedDataView];
 
             // FIX ME: for performance reasons we might consider diverging from cocoa and moving this to the reloadData method
-            if (_implementedDelegateMethods & CPTableViewDelegate_tableView_isGroupRow_)
+            if ([self _sendDelegateIsGroupRow:row])
             {
-                if ([_delegate tableView:self isGroupRow:row])
-                {
-                    [_groupRows addIndex:row];
-                    [dataView setThemeState:CPThemeStateGroupRow];
-                }
-                else
-                {
-                    [_groupRows removeIndexesInRange:CPMakeRange(row, 1)];
-                    [dataView unsetThemeState:CPThemeStateGroupRow];
-                }
+                [_groupRows addIndex:row];
+                [dataView setThemeState:CPThemeStateGroupRow];
 
-                [self setNeedsDisplay:YES];
+            }
+            else
+            {
+                [_groupRows removeIndexesInRange:CPMakeRange(row, 1)];
+                [dataView unsetThemeState:CPThemeStateGroupRow];
             }
 
-            if (_implementedDelegateMethods & CPTableViewDelegate_tableView_willDisplayView_forTableColumn_row_)
-                [_delegate tableView:self willDisplayView:dataView forTableColumn:tableColumn row:row];
+            [self _sendDelegateWillDisplayView:dataView forTableColumn:tableColumn row:row];
+            [self setNeedsDisplay:YES];
 
             if ([dataView superview] !== self)
                 [self addSubview:dataView];
@@ -3689,7 +3622,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
 - (void)_setObjectValueForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow forView:(CPView)aDataView
 {
-    if (_implementedDataSourceMethods & CPTableViewDataSource_tableView_objectValueForTableColumn_row_)
+    if ([self _dataSourceRespondsToObjectValueForTableColumn])
         [aDataView setObjectValue:[self _objectValueForTableColumn:aTableColumn row:aRow]];
 
     // This gives the table column an opportunity to apply its bindings.
@@ -3764,8 +3697,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     _editingCellIndex = nil;
 
-    if (_implementedDataSourceMethods & CPTableViewDataSource_tableView_setObjectValue_forTableColumn_row_)
-        [_dataSource tableView:self setObjectValue:[sender objectValue] forTableColumn:sender.tableViewEditedColumnObj row:sender.tableViewEditedRowIndex];
+    [self _sendDataSourceSetObjectValue:[sender objectValue] forTableColumn:sender.tableViewEditedColumnObj row:sender.tableViewEditedRowIndex];
 
     // Allow the column binding to do a reverse set. Note that we do this even if the data source method above
     // is implemented.
@@ -3806,19 +3738,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         [dataView setBezeled:NO];
 
     _editingCellIndex = nil;
-}
-
-/*!
-    @ignore
-*/
-- (CPView)_viewForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow
-{
-    return [_delegate tableView:self viewForTableColumn:aTableColumn row:aRow];
-}
-
-- (CPView)_dataViewForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow
-{
-    return [_delegate tableView:self dataViewForTableColumn:aTableColumn row:aRow];
 }
 
 /*!
@@ -3926,9 +3845,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 - (void)_updateIsViewBased
 {
     if ([self _delegateRespondsToViewForTableColumn])
-        _viewForTableColumnRowSelector = @selector(_viewForTableColumn:row:);
+        _viewForTableColumnRowSelector = @selector(_sendDelegateViewForTableColumn:row:);
     else if ([self _delegateRespondsToDataViewForTableColumn])
-        _viewForTableColumnRowSelector = @selector(_dataViewForTableColumn:row:);
+        _viewForTableColumnRowSelector = @selector(_sendDelegateDataViewForTableColumn:row:);
 
      _isViewBased = (_viewForTableColumnRowSelector !== nil || _archivedDataViews !== nil);
 }
@@ -4106,7 +4025,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 - (void)drawGridInClipRect:(CGRect)aRect
 {
     var context = [[CPGraphicsContext currentContext] graphicsPort],
-        gridStyleMask = [self gridStyleMask];
+        gridStyleMask = [self gridStyleMask],
+        lineThickness = [self currentValueForThemeAttribute:@"grid-line-thickness"];
 
     if (!(gridStyleMask & (CPTableViewSolidHorizontalGridLineMask | CPTableViewSolidVerticalGridLineMask)))
         return;
@@ -4118,7 +4038,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         var exposedRows = [self _exposedRowsInRect:aRect],
             row = exposedRows.location,
             lastRow = CPMaxRange(exposedRows) - 1,
-            rowY = -0.5,
+            rowY = -lineThickness / 2,
             minX = CGRectGetMinX(aRect),
             maxX = CGRectGetMaxX(aRect);
 
@@ -4126,7 +4046,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         {
             // grab each row rect and add the top and bottom lines
             var rowRect = [self _rectOfRow:row checkRange:NO],
-                rowY = CGRectGetMaxY(rowRect) - 0.5;
+                rowY = CGRectGetMaxY(rowRect) - lineThickness / 2;
 
             CGContextMoveToPoint(context, minX, rowY);
             CGContextAddLineToPoint(context, maxX, rowY);
@@ -4135,7 +4055,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         if (_rowHeight > 0.0)
         {
             var rowHeight = FULL_ROW_HEIGHT(),
-                totalHeight = CGRectGetMaxY(aRect);
+                totalHeight = CGRectGetMaxY(aRect) - lineThickness / 2;
 
             while (rowY < totalHeight)
             {
@@ -4162,7 +4082,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         for (; columnArrayIndex < columnArrayCount; ++columnArrayIndex)
         {
             var columnRect = [self rectOfColumn:columnsArray[columnArrayIndex]],
-                columnX = CGRectGetMaxX(columnRect) - 0.5;
+                columnX = CGRectGetMaxX(columnRect) - lineThickness / 2;
 
             CGContextMoveToPoint(context, columnX, minY);
             CGContextAddLineToPoint(context, columnX, maxY);
@@ -4171,6 +4091,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     CGContextClosePath(context);
     CGContextSetStrokeColor(context, [self gridColor]);
+    CGContextSetLineWidth(context, lineThickness);
     CGContextStrokePath(context);
 }
 
@@ -4521,9 +4442,15 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     // If the user clicks outside a row then deselect everything.
     if (row < 0 && _allowsEmptySelection)
-        [self selectRowIndexes:[CPIndexSet indexSet] byExtendingSelection:NO];
+    {
+        if ([self _sendDelegateSelectionShouldChangeInTableView])
+        {
+            var indexSet = [self _sendDelegateSelectionIndexesForProposedSelection:[CPIndexSet indexSet]];
 
-    [self _noteSelectionIsChanging];
+            [self _noteSelectionIsChanging];
+            [self selectRowIndexes:indexSet byExtendingSelection:NO];
+        }
+    }
 
     if ([self mouseDownFlags] & CPShiftKeyMask)
         _selectionAnchorRow = (ABS([_selectedRowIndexes firstIndex] - row) < ABS([_selectedRowIndexes lastIndex] - row)) ?
@@ -4535,12 +4462,12 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     _startTrackingPoint = aPoint;
     _startTrackingTimestamp = new Date();
 
-    if (_implementedDataSourceMethods & CPTableViewDataSource_tableView_setObjectValue_forTableColumn_row_)
+    if ([self _dataSourceRespondsToSetObjectValueForTableColumnRow])
         _trackingPointMovedOutOfClickSlop = NO;
 
     // if the table has drag support then we use mouseUp to select a single row.
     // otherwise it uses mouse down.
-    if (row >= 0 && !(_implementedDataSourceMethods & CPTableViewDataSource_tableView_writeRowsWithIndexes_toPasteboard_))
+    if (row >= 0 && !([self _dataSourceRespondsToWriteRowsWithIndexesToPasteboard]))
         [self _updateSelectionWithMouseAtRow:row];
 
     return YES;
@@ -4551,7 +4478,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (CPMenu)menuForEvent:(CPEvent)theEvent
 {
-    if (!(_implementedDelegateMethods & CPTableViewDelegate_tableViewMenuForTableColumn_Row_))
+    if (!([self _delegateRespondsToMenuForTableColumnRow]))
         return [super menuForEvent:theEvent];
 
     var location = [self convertPoint:[theEvent locationInWindow] fromView:nil],
@@ -4559,7 +4486,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         column = [self columnAtPoint:location],
         tableColumn = [[self tableColumns] objectAtIndex:column];
 
-    return [_delegate tableView:self menuForTableColumn:tableColumn row:row];
+    return [self _sendDelegateMenuForTableColumn:tableColumn row:row];
 }
 
 /*
@@ -4586,7 +4513,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     // begin the drag is the datasource lets us, we've move at least +-3px vertical or horizontal,
     // or we're dragging from selected rows and we haven't begun a drag session
-    if (!_isSelectingSession && _implementedDataSourceMethods & CPTableViewDataSource_tableView_writeRowsWithIndexes_toPasteboard_)
+    if (!_isSelectingSession && [self _dataSourceRespondsToWriteRowsWithIndexesToPasteboard])
     {
         if (row >= 0 && (ABS(_startTrackingPoint.x - aPoint.x) > 3 || (_verticalMotionCanDrag && ABS(_startTrackingPoint.y - aPoint.y) > 3)) ||
             ([_selectedRowIndexes containsIndex:row]))
@@ -4599,7 +4526,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
             //ask the datasource for the data
             var pboard = [CPPasteboard pasteboardWithName:CPDragPboard];
 
-            if ([self canDragRowsWithIndexes:_draggedRowIndexes atPoint:aPoint] && [_dataSource tableView:self writeRowsWithIndexes:_draggedRowIndexes toPasteboard:pboard])
+            if ([self canDragRowsWithIndexes:_draggedRowIndexes atPoint:aPoint] && [self _sendDataSourceWriteRowsWithIndexes:_draggedRowIndexes toPasteboard:pboard])
             {
                 var currentEvent = [CPApp currentEvent],
                     offset = CGPointMakeZero(),
@@ -4645,7 +4572,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         [self _updateSelectionWithMouseAtRow:row];
     }
 
-    if ((_implementedDataSourceMethods & CPTableViewDataSource_tableView_setObjectValue_forTableColumn_row_)
+    if ([self _dataSourceRespondsToSetObjectValueForTableColumnRow]
         && !_trackingPointMovedOutOfClickSlop)
     {
         var CLICK_SPACE_DELTA = 5.0; // Stolen from AppKit/Platform/DOM/CPPlatformWindow+DOM.j
@@ -4672,7 +4599,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         rowIndex,
         shouldEdit = YES;
 
-    if (_implementedDataSourceMethods & CPTableViewDataSource_tableView_writeRowsWithIndexes_toPasteboard_)
+    if ([self _dataSourceRespondsToWriteRowsWithIndexesToPasteboard])
     {
         rowIndex = [self rowAtPoint:aPoint];
 
@@ -4693,7 +4620,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     if (!_isViewBased && mouseIsUp
         && !_trackingPointMovedOutOfClickSlop
         && ([[CPApp currentEvent] clickCount] > 1)
-        && ((_implementedDataSourceMethods & CPTableViewDataSource_tableView_setObjectValue_forTableColumn_row_)
+        && ([self _dataSourceRespondsToSetObjectValueForTableColumnRow]
             || [self infoForBinding:@"content"]))
     {
         columnIndex = [self columnAtPoint:lastPoint];
@@ -4708,9 +4635,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
                 if (rowIndex !== -1)
                 {
-                    if (_implementedDelegateMethods & CPTableViewDelegate_tableView_shouldEditTableColumn_row_)
-                        shouldEdit = [_delegate tableView:self shouldEditTableColumn:column row:rowIndex];
-                    if (shouldEdit)
+                    if ([self _sendDelegateShouldEditTableColumn:column row:rowIndex])
                     {
                         [self editColumn:columnIndex row:rowIndex withEvent:nil select:YES];
                         return;
@@ -4749,7 +4674,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     for (; i < count; i++)
     {
         if ([[[sender draggingPasteboard] types] containsObject:[draggedTypes objectAtIndex: i]])
-            return [self _validateDrop:sender proposedRow:row proposedDropOperation:dropOperation];
+            return [self _sendDataSourceValidateDrop:sender proposedRow:row proposedDropOperation:dropOperation];
     }
 
     return CPDragOperationNone;
@@ -4842,17 +4767,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 /*!
     @ignore
 */
-- (void)_validateDrop:(id)info proposedRow:(CPInteger)row proposedDropOperation:(CPTableViewDropOperation)dropOperation
-{
-    if (_implementedDataSourceMethods & CPTableViewDataSource_tableView_validateDrop_proposedRow_proposedDropOperation_)
-        return [_dataSource tableView:self validateDrop:info proposedRow:row proposedDropOperation:dropOperation];
-
-    return CPDragOperationNone;
-}
-
-/*!
-    @ignore
-*/
 - (CGRect)_rectForDropHighlightViewOnRow:(int)theRowIndex
 {
     if (theRowIndex >= [self numberOfRows])
@@ -4884,7 +4798,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         dropOperation = [self _proposedDropOperationAtPoint:location],
         numberOfRows = [self numberOfRows],
         row = [self _proposedRowAtPoint:location],
-        dragOperation = [self _validateDrop:sender proposedRow:row proposedDropOperation:dropOperation];
+        dragOperation = [self _sendDataSourceValidateDrop:sender proposedRow:row proposedDropOperation:dropOperation];
 
     if (_retargetedDropRow !== nil)
         row = _retargetedDropRow;
@@ -4924,7 +4838,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     // actual validation is called in draggingUpdated:
     [_dropOperationFeedbackView removeFromSuperview];
 
-    return (_implementedDataSourceMethods & CPTableViewDataSource_tableView_validateDrop_proposedRow_proposedDropOperation_);
+    return [self _dataSourceRespondsToValidateDropProposedRowProposedDropOperation];
 }
 
 /*
@@ -4939,7 +4853,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     if (row === nil)
         var row = [self _proposedRowAtPoint:location];
 
-    return [_dataSource tableView:self acceptDrop:sender row:row dropOperation:operation];
+    return [self _sendDataSourceAcceptDrop:sender row:row dropOperation:operation];
 }
 
 /*
@@ -4948,15 +4862,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 - (void)concludeDragOperation:(id)sender
 {
     [self reloadData];
-}
-
-/*
-    This method is sent to the data source for convenience...
-*/
-- (void)draggedImage:(CPImage)anImage endedAt:(CGPoint)aLocation operation:(CPDragOperation)anOperation
-{
-    if ([_dataSource respondsToSelector:@selector(tableView:didEndDraggedImage:atPosition:operation:)])
-        [_dataSource tableView:self didEndDraggedImage:anImage atPosition:aLocation operation:anOperation];
 }
 
 /*
@@ -5027,14 +4932,12 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     if ([newSelection isEqualToIndexSet:_selectedRowIndexes])
         return;
 
-    if (_implementedDelegateMethods & CPTableViewDelegate_selectionShouldChangeInTableView_ &&
-        ![_delegate selectionShouldChangeInTableView:self])
+    if (![self _sendDelegateSelectionShouldChangeInTableView])
         return;
 
-    if (_implementedDelegateMethods & CPTableViewDelegate_tableView_selectionIndexesForProposedSelection_)
-        newSelection = [_delegate tableView:self selectionIndexesForProposedSelection:newSelection];
+    newSelection = [self _sendDelegateSelectionIndexesForProposedSelection:newSelection];
 
-    if (_implementedDelegateMethods & CPTableViewDelegate_tableView_shouldSelectRow_)
+    if (![self _delegateRespondsToSelectionIndexesForProposedSelection] && [self _delegateRespondsToShouldSelectRow])
     {
         var indexArray = [];
 
@@ -5046,7 +4949,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         {
             var index = indexArray[indexCount];
 
-            if (![_delegate tableView:self shouldSelectRow:index])
+            if (![self _sendDelegateShouldSelectRow:index])
                 [newSelection removeIndex:index];
         }
 
@@ -5062,6 +4965,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     if ([newSelection isEqualToIndexSet:_selectedRowIndexes])
         return;
 
+    [self _noteSelectionIsChanging];
     [self selectRowIndexes:newSelection byExtendingSelection:shouldExtendSelection];
 
     _lastSelectedRow = [newSelection containsIndex:aRow] ? aRow : [newSelection lastIndex];
@@ -5267,8 +5171,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (void)_moveSelectionWithEvent:(CPEvent)theEvent upward:(BOOL)shouldGoUpward
 {
-    if (_implementedDelegateMethods & CPTableViewDelegate_selectionShouldChangeInTableView_ && ![_delegate selectionShouldChangeInTableView:self])
+    if (![self _sendDelegateSelectionShouldChangeInTableView])
         return;
+
     var selectedIndexes = [self selectedRowIndexes];
 
     if ([selectedIndexes count] > 0)
@@ -5305,9 +5210,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     if (i >= [self numberOfRows] || i < 0)
         return;
 
-    if (_implementedDelegateMethods & CPTableViewDelegate_tableView_shouldSelectRow_)
+    if (![self _delegateRespondsToSelectionIndexesForProposedSelection] && [self _delegateRespondsToShouldSelectRow])
     {
-        var shouldSelect = [_delegate tableView:self shouldSelectRow:i];
+        var shouldSelect = [self _sendDelegateShouldSelectRow:i];
 
         /* If shouldSelect returns NO it means this row cannot be selected.
             The proper behaviour is to then try to see if the next/previous
@@ -5316,7 +5221,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         while (!shouldSelect && (i < [self numberOfRows] && i > 0))
         {
             shouldGoUpward ? --i : ++i; //check to see if the row can be selected. If it can't be then see if the next row can be selected.
-            shouldSelect = [_delegate tableView:self shouldSelectRow:i];
+            shouldSelect = [self _sendDelegateShouldSelectRow:i];
         }
 
         if (!shouldSelect)
@@ -5354,6 +5259,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         var differedLastSelectedRow = i;
     }
 
+    selectedIndexes = [self _sendDelegateSelectionIndexesForProposedSelection:selectedIndexes];
+
     [self selectRowIndexes:selectedIndexes byExtendingSelection:extend];
 
     // we differ because selectRowIndexes: does its own thing which would set the wrong index
@@ -5365,6 +5272,495 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
 @end
 
+
+@implementation CPTableView (TableViewDataSource)
+
+/*!
+    @ignore
+    Return YES if the dataSource implements tableView:objectValueForTableColumn:row
+*/
+- (BOOL)_dataSourceRespondsToObjectValueForTableColumn
+{
+    return _implementedDataSourceMethods & CPTableViewDataSource_tableView_objectValueForTableColumn_row_;
+}
+
+/*!
+    @ignore
+    Return YES if the dataSource implements tableView:writeRowsWithIndexes:toPasteboard:
+*/
+- (BOOL)_dataSourceRespondsToWriteRowsWithIndexesToPasteboard
+{
+    return _implementedDataSourceMethods & CPTableViewDataSource_tableView_writeRowsWithIndexes_toPasteboard_;
+}
+
+/*!
+    @ignore
+    Return YES if the dataSource implements tableView:setObjectValue:forTableColumn:row:
+*/
+- (BOOL)_dataSourceRespondsToSetObjectValueForTableColumnRow
+{
+    return CPTableViewDataSource_tableView_setObjectValue_forTableColumn_row_;
+}
+
+/*!
+    @ignore
+    Return YES if the dataSource implements tableView:validateDrop:proposedRow:proposedDropOperation:;
+*/
+- (BOOL)_dataSourceRespondsToValidateDropProposedRowProposedDropOperation
+{
+    return _implementedDataSourceMethods & CPTableViewDataSource_tableView_validateDrop_proposedRow_proposedDropOperation_;
+}
+
+/*!
+    @ignore
+    Return YES if the dataSource implements numberOfRowsInTableView
+*/
+- (BOOL)_dataSourceRespondsToNumberOfRowsinTableView
+{
+    return _implementedDataSourceMethods & CPTableViewDataSource_numberOfRowsInTableView_;
+}
+
+/*!
+    @ignore
+    Return the number of rows of the tableView
+    By default return 0.
+*/
+- (int)_sendDataSourceNumberOfRowsInTableView
+{
+    if (!(_implementedDataSourceMethods & CPTableViewDataSource_numberOfRowsInTableView_))
+        return 0;
+
+    return [_dataSource numberOfRowsInTableView:self];
+}
+
+/*!
+    @ignore
+    Return the objectValue for the given column and row.
+    By default return nil.
+*/
+- (id)_sendDataSourceObjectValueForTableColumn:(CPTableColumn)aTableColumn row:(int)aRowIndex
+{
+    if (!(_implementedDataSourceMethods & CPTableViewDataSource_tableView_objectValueForTableColumn_row_))
+        return nil;
+
+    return [_dataSource tableView:self objectValueForTableColumn:aTableColumn row:aRowIndex];
+}
+
+/*!
+    @ignore
+    Call the method tableView:setObjectValue:ForTableColum:row: of the dataSource
+*/
+- (void)_sendDataSourceSetObjectValue:(id)anObject forTableColumn:(CPTableColumn)aTableColumn row:(int)aRowIndex
+{
+    if (!(_implementedDataSourceMethods & CPTableViewDataSource_tableView_setObjectValue_forTableColumn_row_))
+        return;
+
+    [_dataSource tableView:self setObjectValue:anObject forTableColumn:aTableColumn row:aRowIndex];
+}
+
+/*!
+    @ignore
+    Call the method tableView:sortDescriptorsDidChange: of the dataSource
+*/
+- (void)_sendDataSourceSortDescriptorsDidChange:(CPArray)descriptors
+{
+    if (!(_implementedDataSourceMethods & CPTableViewDataSource_tableView_sortDescriptorsDidChange_))
+        return;
+
+    [_dataSource tableView:self sortDescriptorsDidChange:descriptors];
+}
+
+/*!
+    @ignore
+    Return if the drop is accepted or not for the given dropOperation, info and row. By default return NO.
+*/
+- (BOOL)_sendDataSourceAcceptDrop:(id)info row:(int)aRowIndex dropOperation:(CPTableViewDropOperation)operation
+{
+    if (!(_implementedDataSourceMethods & CPTableViewDataSource_tableView_acceptDrop_row_dropOperation_))
+        return NO;
+
+    return [_dataSource tableView:self acceptDrop:info row:aRowIndex dropOperation:operation];
+}
+
+/*!
+    @ignore
+    Return the dragOperation for the given row and dropOperation. By default return CPDragOperationNone.
+*/
+- (CPDragOperation)_sendDataSourceValidateDrop:(id)info proposedRow:(int)aRowIndex proposedDropOperation:(CPTableViewDropOperation)operation
+{
+    if (!(_implementedDataSourceMethods & CPTableViewDataSource_tableView_validateDrop_proposedRow_proposedDropOperation_))
+        return CPDragOperationNone;
+
+    return [_dataSource tableView:self validateDrop:info proposedRow:aRowIndex proposedDropOperation:operation];
+}
+
+/*!
+    @ignore
+    Return a boolean for writeRowsWithIndexes:toPasteroard for the given pasteboard and row. By default return NO
+*/
+- (BOOL)_sendDataSourceWriteRowsWithIndexes:(CPIndexSet)rowIndexes toPasteboard:(CPPasteboard)pboard
+{
+    if (!(_implementedDataSourceMethods & CPTableViewDataSource_tableView_writeRowsWithIndexes_toPasteboard_))
+        return NO;
+
+    return [_dataSource tableView:self writeRowsWithIndexes:rowIndexes toPasteboard:pboard];
+}
+
+/*
+    This method is sent to the data source for convenience...
+*/
+- (void)draggedImage:(CPImage)anImage endedAt:(CGPoint)aLocation operation:(CPDragOperation)anOperation
+{
+    if ([_dataSource respondsToSelector:@selector(tableView:didEndDraggedImage:atPosition:operation:)])
+        [_dataSource tableView:self didEndDraggedImage:anImage atPosition:aLocation operation:anOperation];
+}
+
+
+#pragma mark -
+#pragma mark DataSource methods to implement
+
+/*!
+    @ignore
+    Not yet implemented
+*/
+- (CPArray)_sendDataSourceNamesOfPromisedFilesDroppedAtDestination:(CPURL)dropDestination forDraggedRowsWithIndexes:(CPIndexSet)indexSet
+{
+    if (!(_implementedDataSourceMethods & CPTableViewDataSource_tableView_namesOfPromisedFilesDroppedAtDestination_forDraggedRowsWithIndexes_))
+        return [];
+
+    return [_dataSource tableView:self namesOfPromisedFilesDroppedAtDestination:dropDestination forDraggedRowsWithIndexes:indexSet];
+}
+
+@end
+
+
+@implementation CPTableView (TableViewDelegate)
+
+/*!
+    @ignore
+    Return YES if the delegate implements tableView:dataViewFortableColumn:row:
+*/
+- (BOOL)_delegateRespondsToDataViewForTableColumn
+{
+    return _implementedDelegateMethods & CPTableViewDelegate_tableView_dataViewForTableColumn_row_;
+}
+
+/*!
+    @ignore
+    Return YES if the delegate implements tableView:viewFortableColumn:row:
+*/
+- (BOOL)_delegateRespondsToViewForTableColumn
+{
+    return _implementedDelegateMethods & CPTableViewDelegate_tableView_viewForTableColumn_row_;
+}
+
+/*!
+    @ignore
+    Return YES if the delegate implements tableView:shouldSelectRow:
+*/
+- (BOOL)_delegateRespondsToShouldSelectRow
+{
+    return _implementedDelegateMethods & CPTableViewDelegate_tableView_shouldSelectRow_;
+}
+
+/*!
+    @ignore
+    Return YES if the delegate implements tableView:selectionShouldChangeInTableView
+*/
+- (BOOL)_delegateRespondsToSelectionShouldChangeInTableView
+{
+    return _implementedDelegateMethods & CPTableViewDelegate_selectionShouldChangeInTableView_;
+}
+
+/*!
+    @ignore
+    Return YES if the delegate implements tableView:selectionIndexesForProposedSelection
+*/
+- (BOOL)_delegateRespondsToSelectionIndexesForProposedSelection
+{
+    return _implementedDelegateMethods & CPTableViewDelegate_tableView_selectionIndexesForProposedSelection_;
+}
+
+/*!
+    @ignore
+    Return YES if the delegate implements tableView:menuForTableColumn:row
+*/
+- (BOOL)_delegateRespondsToMenuForTableColumnRow
+{
+    return _implementedDelegateMethods & CPTableViewDelegate_tableViewMenuForTableColumn_row_;
+}
+
+/*!
+    @ignore
+    Call the delegate didClickTableColumn with the given tableColumn
+*/
+- (void)_sendDelegateDidClickTableColumn:(int)column
+{
+    if (_implementedDelegateMethods & CPTableViewDelegate_tableView_didClickTableColumn_)
+            [_delegate tableView:self didClickTableColumn:_tableColumns[column]];
+}
+
+/*!
+    @ignore
+    Call the delegate didDragTableColumn with the given tableColumn
+*/
+- (void)_sendDelegateDidDragTableColumn:(int)column
+{
+    if (_implementedDelegateMethods & CPTableViewDelegate_tableView_didDragTableColumn_)
+            [_delegate tableView:self didDragTableColumn:_tableColumns[column]];
+}
+
+/*!
+    @ignore
+    Call the delegate mouseDownInHeaderOfTableColumn with the given tableColumn
+*/
+- (void)_sendDelegateMouseDownInHeaderOfTableColumn:(int)column
+{
+    if (_implementedDelegateMethods & CPTableViewDelegate_tableView_mouseDownInHeaderOfTableColumn_)
+            [_delegate tableView:self mouseDownInHeaderOfTableColumn:_tableColumns[column]];
+}
+
+/*
+    @ignore
+    Call the delegate tableViewDeleteKeyPressed
+*/
+- (BOOL)_sendDelegateDeleteKeyPressed
+{
+    if ([_delegate respondsToSelector: @selector(tableViewDeleteKeyPressed:)])
+    {
+        [_delegate tableViewDeleteKeyPressed:self];
+        return YES;
+    }
+
+    return NO;
+}
+
+/*!
+    @ignore
+    Return if the selection should change. By default return YES
+*/
+- (BOOL)_sendDelegateSelectionShouldChangeInTableView
+{
+    if (!(_implementedDelegateMethods & CPTableViewDelegate_selectionShouldChangeInTableView_))
+        return YES;
+
+    return [_delegate selectionShouldChangeInTableView:self];
+}
+
+/*!
+    @ignore
+    Return if the given row is a group or not. By default return NO.
+*/
+- (BOOL)_sendDelegateIsGroupRow:(int)anIndex
+{
+    if (!(_implementedDelegateMethods & CPTableViewDelegate_tableView_isGroupRow_))
+        return NO;
+
+    return [_delegate tableView:self isGroupRow:anIndex];
+}
+
+/*!
+    @ignore
+    Return is we should select the given row. By Default return YES
+*/
+- (BOOL)_sendDelegateShouldSelectRow:(int)anIndex
+{
+    if (!(_implementedDelegateMethods & CPTableViewDelegate_tableView_shouldSelectRow_))
+        return YES;
+
+    return [_delegate tableView:self shouldSelectRow:anIndex];
+}
+
+/*!
+    @ignore
+    Call the delegate tableView:willDisplayView:forTableColumn:row:
+*/
+- (void)_sendDelegateWillDisplayView:(id)aCell forTableColumn:(CPTableColumn)aTableColumn row:(int)aRowIndex
+{
+    if (!(_implementedDelegateMethods & CPTableViewDelegate_tableView_willDisplayView_forTableColumn_row_))
+        return;
+
+    [_delegate tableView:self willDisplayView:aCell forTableColumn:aTableColumn row:aRowIndex];
+}
+
+/*!
+    @ignore
+    Return a CPMenu for the given tableColumn and row. By default return the menu of super.
+*/
+- (CPMenu)_sendDelegateMenuForTableColumn:(CPTableColumn)aTableColumn row:aRowIndex
+{
+    if (!(_implementedDelegateMethods & CPTableViewDelegate_tableViewMenuForTableColumn_row_))
+        return nil;
+
+    return [_delegate tableView:self menuForTableColumn:aTableColumn row:aRowIndex];
+}
+
+/*
+    @ignore
+    Returns YES if the column at columnIndex can be reordered.
+    It can be possible if column reordering is allowed and if the tableview
+    delegate also accept the reordering
+*/
+- (BOOL)_sendDelegateShouldReorderColumn:(int)columnIndex toColumn:(int)newColumnIndex
+{
+    if ([self allowsColumnReordering] &&
+        _implementedDelegateMethods & CPTableViewDelegate_tableView_shouldReorderColumn_toColumn_)
+    {
+        return [_delegate tableView:self shouldReorderColumn:columnIndex toColumn:newColumnIndex];
+    }
+
+    return [self allowsColumnReordering];
+}
+
+/*!
+    @ignore
+    Return the height of the given row. By default return [self rowHeight].
+*/
+- (float)_sendDelegateHeightOfRow:(int)anIndex
+{
+    if (!(_implementedDelegateMethods & CPTableViewDelegate_tableView_heightOfRow_))
+        return [self rowHeight];
+
+    return [_delegate tableView:self heightOfRow:anIndex];
+}
+
+/*!
+    @ignore
+    Return a boolean to know if we should or not edit the given row. By default return YES.
+*/
+- (BOOL)_sendDelegateShouldEditTableColumn:(CPTableColumn)aTableColumn row:(int)aRowIndex
+{
+    if (!(_implementedDelegateMethods & CPTableViewDelegate_tableView_shouldEditTableColumn_row_))
+        return YES;
+
+    return [_delegate tableView:self shouldEditTableColumn:aTableColumn row:aRowIndex];
+}
+
+/*!
+    @ignore
+    Return a new CPIndexSet instead of the proposedSelection. By default return the proposedSelection.
+*/
+- (CPIndexSet)_sendDelegateSelectionIndexesForProposedSelection:(CPIndexSet)anIndexSet
+{
+    if (!(_implementedDelegateMethods & CPTableViewDelegate_tableView_selectionIndexesForProposedSelection_))
+        return anIndexSet;
+
+    return [_delegate tableView:self selectionIndexesForProposedSelection:anIndexSet];
+}
+
+/*!
+    @ignore
+    Return a view for the given tableColumn and row. By default return nil.
+*/
+- (CPView)_sendDelegateViewForTableColumn:(CPTableColumn)aTableColumn row:(int)aRowIndex
+{
+    if (!(_implementedDelegateMethods & CPTableViewDelegate_tableView_viewForTableColumn_row_))
+        return nil;
+
+    return [_delegate tableView:self viewForTableColumn:aTableColumn row:aRowIndex];
+}
+
+/*!
+    @ignore
+    Return a view for the given tableColumn and row. By default return nil.
+*/
+- (CPView)_sendDelegateDataViewForTableColumn:(CPTableColumn)aTableColumn row:(int)aRowIndex
+{
+    if (!(_implementedDelegateMethods & CPTableViewDelegate_tableView_dataViewForTableColumn_row_))
+        return nil;
+
+    return [_delegate tableView:self dataViewForTableColumn:aTableColumn row:aRowIndex];
+}
+
+
+#pragma mark -
+#pragma mark Delegate methods to implement
+
+/*!
+    @ignore
+    Not yet implemented !
+*/
+- (BOOL)_sendDelegateShouldSelectTableColumn:(CPTableColumn)aTableColumn
+{
+    if (!(_implementedDelegateMethods & CPTableViewDelegate_tableView_shouldSelectTableColumn_))
+        return YES;
+
+    return [_delegate tableView:self shouldSelectTableColumn:aTableColumn];
+}
+
+/*!
+    @ignore
+    Not yet implemented
+*/
+- (CPString)_sendDelegateToolTipForView:(id)aView rect:(CGRect)aRect tableColumn:(CPTableColumn)aTableColumn row:(int)aRowIndex mouseLocation:(CGPoint)aPoint
+{
+    if (!(_implementedDelegateMethods & CPTableViewDelegate_tableView_toolTipForView_rect_tableColumn_row_mouseLocation_))
+        return nil;
+
+    return [_delegate tableView:self toolTipForView:aView rect:aRect tableColumn:aTableColumn row:aRowIndex mouseLocation:aPoint];
+}
+
+/*!
+    @ignore
+    Not yet implemented
+*/
+- (BOOL)_sendDelegateShouldTrackView:(id)aView forTableColumn:(CPTableColumn)aTableColumn row:(int)aRowIndex
+{
+    if (!(_implementedDelegateMethods & CPTableViewDelegate_tableView_shouldTrackView_forTableColumn_row_))
+        return YES;
+
+    return [_delegate tableView:self shouldTrackView:aView forTableColumn:aTableColumn row:aRowIndex];
+}
+
+/*!
+    @ignore
+    Not yet implemented
+*/
+- (BOOL)_sendDelegateShouldShowViewExpansionForTableColumn:(CPTableColumn)aTableColumn row:(int)aRowIndex
+{
+    if (!(_implementedDelegateMethods & CPTableViewDelegate_tableView_shouldShowViewExpansionForTableColumn_row_))
+        return YES;
+
+    return [_delegate tableView:self shouldShowViewExpansionForTableColumn:aTableColumn row:aRowIndex];
+}
+
+/*!
+    @ignore
+    Not yet implemented
+*/
+- (BOOL)_sendDelegateShouldTypeSelectForEvent:(CPEvent)anEvent withCurrentSearchString:(CPString)aString
+{
+    if (!(_implementedDelegateMethods & CPTableViewDelegate_tableView_shouldTypeSelectForEvent_withCurrentSearchString_))
+        return NO;
+
+    return [_delegate tableView:self shouldTypeSelectForEvent:anEvent withCurrentSearchString:aString];
+}
+
+/*!
+    @ignore
+    Not yet implemented
+*/
+- (CPString)_sendDelegateTypeSelectStringForTableColumn:(CPTableColumn)aTableColumn row:(int)aRowIndex
+{
+    if (!(_implementedDelegateMethods & CPTableViewDelegate_tableView_typeSelectStringForTableColumn_row_))
+        return nil;
+
+    return [_delegate tableView:self typeSelectStringForTableColumn:aTableColumn row:aRowIndex];
+}
+
+/*!
+    @ignore
+    Not yet implemented !
+*/
+- (int)_sendDelegateNextTypeSelectMatchFromRow:(int)aRowIndex toRow:(int)aSecondRowIndex forString:(CPString)aString
+{
+    if (!(_implementedDelegateMethods & CPTableViewDelegate_tableView_nextTypeSelectMatchFromRow_toRow_forString_))
+        return -1;
+
+    return [_delegate tableView:self nextTypeSelectMatchFromRow:aRowIndex toRow:aSecondRowIndex forString:aString];
+}
+
+@end
 
 @implementation CPTableView (Bindings)
 
@@ -5594,13 +5990,19 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
     if (tableView._destinationDragStyle === CPTableViewDraggingDestinationFeedbackStyleNone || isBlinking)
         return;
 
-    var context = [[CPGraphicsContext currentContext] graphicsPort];
-
-    CGContextSetStrokeColor(context, [CPColor colorWithHexString:@"4886ca"]);
-    CGContextSetLineWidth(context, 3);
+    var context = [[CPGraphicsContext currentContext] graphicsPort],
+        borderRadius,
+        borderColor,
+        borderWidth,
+        backgroundColor;
 
     if (currentRow === -1)
     {
+        borderColor = [tableView valueForThemeAttribute:@"dropview-on-border-color"];
+        borderWidth = [tableView valueForThemeAttribute:@"dropview-on-border-width"];
+
+        CGContextSetStrokeColor(context, borderColor);
+        CGContextSetLineWidth(context, borderWidth);
         CGContextStrokeRect(context, [self bounds]);
     }
 
@@ -5612,16 +6014,24 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
         if ([selectedRows containsIndex:currentRow])
         {
-            CGContextSetLineWidth(context, 2);
-            CGContextSetStrokeColor(context, [CPColor whiteColor]);
+            borderRadius = [tableView valueForThemeAttribute:@"dropview-on-selected-border-radius"];
+            borderColor = [tableView valueForThemeAttribute:@"dropview-on-selected-border-color"];
+            borderWidth = [tableView valueForThemeAttribute:@"dropview-on-selected-border-width"];
+            backgroundColor = [tableView valueForThemeAttribute:@"dropview-on-selected-background-color"];
         }
         else
         {
-            CGContextSetFillColor(context, [CPColor colorWithRed:72 / 255 green:134 / 255 blue:202 / 255 alpha:0.25]);
-            CGContextFillRoundedRectangleInRect(context, newRect, 8, YES, YES, YES, YES);
+            borderRadius = [tableView valueForThemeAttribute:@"dropview-on-border-radius"];
+            borderColor = [tableView valueForThemeAttribute:@"dropview-on-border-color"];
+            borderWidth = [tableView valueForThemeAttribute:@"dropview-on-border-width"];
+            backgroundColor = [tableView valueForThemeAttribute:@"dropview-on-background-color"];
         }
 
-        CGContextStrokeRoundedRectangleInRect(context, newRect, 8, YES, YES, YES, YES);
+        CGContextSetStrokeColor(context, borderColor);
+        CGContextSetLineWidth(context, borderWidth);
+        CGContextSetFillColor(context, backgroundColor);
+        CGContextFillRoundedRectangleInRect(context, newRect, borderRadius, YES, YES, YES, YES);
+        CGContextStrokeRoundedRectangleInRect(context, newRect, borderRadius, YES, YES, YES, YES);
 
     }
     else if (dropOperation === CPTableViewDropAbove)
@@ -5633,28 +6043,23 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
         if ([selectedRows containsIndex:currentRow - 1] || [selectedRows containsIndex:currentRow])
         {
-            CGContextSetStrokeColor(context, [CPColor whiteColor]);
-            CGContextSetLineWidth(context, 4);
-            //draw the circle thing
-            CGContextStrokeEllipseInRect(context, CGRectMake(aRect.origin.x + 4, aRect.origin.y + 4, 8, 8));
-            //then draw the line
-            CGContextBeginPath(context);
-            CGContextMoveToPoint(context, 10, aRect.origin.y + 8);
-            CGContextAddLineToPoint(context, aRect.size.width - aRect.origin.y - 8, aRect.origin.y + 8);
-            CGContextStrokePath(context);
-
-            CGContextSetStrokeColor(context, [CPColor colorWithHexString:@"4886ca"]);
-            CGContextSetLineWidth(context, 3);
+            borderColor = [tableView valueForThemeAttribute:@"dropview-above-selected-border-color"];
+            borderWidth = [tableView valueForThemeAttribute:@"dropview-above-selected-border-width"];
+        }
+        else
+        {
+            borderColor = [tableView valueForThemeAttribute:@"dropview-above-border-color"];
+            borderWidth = [tableView valueForThemeAttribute:@"dropview-above-border-width"];
         }
 
-        //draw the circle thing
-        CGContextStrokeEllipseInRect(context, CGRectMake(aRect.origin.x + 4, aRect.origin.y + 4, 8, 8));
-        //then draw the line
+        CGContextSetStrokeColor(context, borderColor);
+        CGContextSetLineWidth(context, borderWidth);
+        CGContextStrokeEllipseInRect(context, CGRectMake(aRect.origin.x + 4, aRect.origin.y + 4, 8, 8)); // circle
+
         CGContextBeginPath(context);
         CGContextMoveToPoint(context, 10, aRect.origin.y + 8);
         CGContextAddLineToPoint(context, aRect.size.width - aRect.origin.y - 8, aRect.origin.y + 8);
         CGContextStrokePath(context);
-        //CGContextStrokeLineSegments(context, [aRect.origin.x + 8,  aRect.origin.y + 8, 300 , aRect.origin.y + 8]);
     }
 }
 

@@ -642,22 +642,29 @@ var CPToolbarItemItemIdentifierKey      = @"CPToolbarItemItemIdentifierKey",
 {
     switch (anItemIdentifier)
     {
-        case CPToolbarSeparatorItemIdentifier:          return [_CPToolbarSeparatorItem new];
-        case CPToolbarSpaceItemIdentifier:              return [_CPToolbarSpaceItem new];
-        case CPToolbarFlexibleSpaceItemIdentifier:      return [_CPToolbarFlexibleSpaceItem new];
-        case CPToolbarShowColorsItemIdentifier:         return [_CPToolbarShowColorsItem new];
-        case CPToolbarShowFontsItemIdentifier:          return nil;
-        case CPToolbarCustomizeToolbarItemIdentifier:   return nil;
-        case CPToolbarPrintItemIdentifier:              return nil;
+        case CPToolbarSeparatorItemIdentifier:
+            return [_CPToolbarSeparatorItem new];
+
+        case CPToolbarSpaceItemIdentifier:
+            return [_CPToolbarSpaceItem new];
+
+        case CPToolbarFlexibleSpaceItemIdentifier:
+            return [_CPToolbarFlexibleSpaceItem new];
+
+        case CPToolbarShowColorsItemIdentifier:
+            return [_CPToolbarShowColorsItem new];
+
+        case CPToolbarShowFontsItemIdentifier:
+            return nil;
+
+        case CPToolbarCustomizeToolbarItemIdentifier:
+            return nil;
+
+        case CPToolbarPrintItemIdentifier:
+            return nil;
     }
 
     return nil;
 }
 
 @end
-
-/*@import "_CPToolbarFlexibleSpaceItem.j"
-@import "_CPToolbarShowColorsItem.j"
-@import "_CPToolbarSeparatorItem.j"
-@import "_CPToolbarSpaceItem.j"
-*/

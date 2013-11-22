@@ -107,6 +107,7 @@
  * P:     undefined      80 undefined
  */
 
+@import <Foundation/CPNotificationCenter.j>
 @import <Foundation/CPObject.j>
 @import <Foundation/CPRunLoop.j>
 @import <Foundation/CPSet.j>
@@ -1178,8 +1179,12 @@ var resizeTimer = nil;
         [CPApp sendEvent:event];
     }
 
+    var didStop = NO;
     if (StopDOMEventPropagation && (!supportsNativeDragAndDrop || type !== "mousedown" && !isDragging))
+    {
+        didStop = YES;
         _CPDOMEventStop(aDOMEvent, self);
+    }
 
     // If there are any tracking event listeners (listening for CPLeftMouseDraggedMask)
     // then show the event guard so we don't lose events to iframes
@@ -1201,6 +1206,7 @@ var resizeTimer = nil;
     _DOMEventGuard.style.display = hasTrackingEventListener ? "" : "none";
 
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+    return !didStop;
 }
 
 - (void)contextMenuEvent:(DOMEvent)aDOMEvent
@@ -1658,12 +1664,6 @@ _CPDOMEventStop = function(aDOMEvent, aPlatformWindow)
 
     if (aDOMEvent.stopPropagation)
         aDOMEvent.stopPropagation();
-
-    if (aDOMEvent.type === CPDOMEventMouseDown)
-    {
-        aPlatformWindow._DOMFocusElement.focus();
-        aPlatformWindow._DOMFocusElement.blur();
-    }
 };
 
 function CPWindowObjectList()

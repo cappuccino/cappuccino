@@ -23,6 +23,7 @@
 @import <Foundation/CPArray.j>
 @import <Foundation/CPObject.j>
 
+@import "CGGeometry.j"
 
 @implementation CPDOMWindowLayer : CPObject
 {

@@ -50,7 +50,7 @@ var CPNumberUIDs    = new CFMutableDictionary();
 
 + (id)numberWithBool:(BOOL)aBoolean
 {
-    return aBoolean;
+    return aBoolean ? 1 : 0;
 }
 
 + (id)numberWithChar:(char)aChar

@@ -3298,7 +3298,8 @@ var keyViewComparator = function(lhs, rhs, context)
     if ([self isFullPlatformWindow])
         return [self setFrame:[_platformWindow visibleFrame]];
 
-    if (!CPWindowConstrainToScreen || _autoresizingMask === CPWindowNotSizable)
+    // If this window is constrainable and we are globally ignoring constraining, ignore the platform resize
+    if ((_constrainsToUsableScreen && !CPWindowConstrainToScreen) || _autoresizingMask === CPWindowNotSizable)
         return;
 
     var frame = [_platformWindow contentBounds],

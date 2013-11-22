@@ -531,7 +531,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 /*! @ignore */
 - (BOOL)acceptsFirstResponder
 {
-    return ([self isEnabled] && [self isEditable] || [self isSelectable]) && [self _isWithinUsablePlatformRect];
+    return [self isEnabled] && ([self isEditable] || [self isSelectable]) && [self _isWithinUsablePlatformRect];
 }
 
 /*! @ignore */
@@ -692,7 +692,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 {
 #if PLATFORM(DOM)
     // We might have been the first responder without actually editing.
-    if (_isEditing)
+    if (_isEditing && CPTextFieldInputOwner === self)
     {
         var element = [self _inputElement],
             newValue = element.value,
@@ -721,7 +721,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     _isEditing = NO;
     if ([self isEditable])
     {
-        [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:self userInfo:nil]];
+        [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:self userInfo:@{"CPTextMovement": [self _currentTextMovement]}]];
 
         if ([self sendsActionOnEndEditing])
             [self sendAction:[self action] to:[self target]];
@@ -987,7 +987,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         if (_isEditing)
         {
             _isEditing = NO;
-            [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:self userInfo:nil]];
+            [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:self userInfo:@{"CPTextMovement": [self _currentTextMovement]}]];
         }
 
         // If there is no target action, or the sendAction call returns
@@ -1356,7 +1356,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     if (![self isEditable])
         return;
 
-    if (![CPPlatform isBrowser])
+    if (![[CPApp currentEvent] _platformIsEffectingCutOrPaste])
     {
         [self deleteBackward:sender];
     }
@@ -1376,7 +1376,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     if (!([self isEnabled] && [self isEditable]))
         return;
 
-    if (![CPPlatform isBrowser])
+    if (![[CPApp currentEvent] _platformIsEffectingCutOrPaste])
     {
         var pasteboard = [CPPasteboard generalPasteboard];
 
@@ -1389,7 +1389,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
             pasteString = [pasteboard stringForType:CPStringPboardType],
             newValue = [_stringValue stringByReplacingCharactersInRange:selectedRange withString:pasteString];
 
-        [self _setStringValue:newValue];
+        [self setStringValue:newValue];
         [self _didEdit];
         [self setSelectedRange:CPMakeRange(selectedRange.location + pasteString.length, 0)];
     }
@@ -1406,6 +1406,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (CPRange)selectedRange
 {
+    // TODO Need a way to figure out the selected range if we're not using an input. Need
+    // to get whole document selection and somehow see which part is inside of this text field.
     if ([[self window] firstResponder] !== self)
         return CPMakeRange(0, 0);
 
@@ -1506,17 +1508,79 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     var selectedRange = [self selectedRange];
 
-    if (selectedRange.length < 2)
-         return;
+    if (selectedRange.length < 1)
+    {
+        if (selectedRange.location < 1)
+            return;
 
-    selectedRange.location += 1;
-    selectedRange.length -= 1;
+        // Delete a single element backward from the insertion point if there's no selection.
+        selectedRange.location -= 1;
+        selectedRange.length += 1;
+    }
 
     var newValue = [_stringValue stringByReplacingCharactersInRange:selectedRange withString:""];
 
-    [self _setStringValue:newValue];
+    [self setStringValue:newValue];
     [self setSelectedRange:CPMakeRange(selectedRange.location, 0)];
     [self _didEdit];
+
+#if PLATFORM(DOM)
+    // Since we just performed the deletion manually, we don't need the browser to do anything else.
+    // (Previously we would allow the event to propagate for the browser to delete 1 character only,
+    // and we'd delete the rest manually. But this meant that if deleteBackward: was called without
+    // it being a browser backspace event, 1 character would be left behind.)
+    [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
+#endif
+}
+
+- (void)delete:(id)sender
+{
+    if (!([self isEnabled] && [self isEditable]))
+        return;
+
+    // delete: only works when there's a selection (as opposed to deleteForward: and deleteBackward:).
+    var selectedRange = [self selectedRange];
+
+    if (selectedRange.length < 1)
+        return;
+
+    var newValue = [_stringValue stringByReplacingCharactersInRange:selectedRange withString:""];
+
+    [self setStringValue:newValue];
+    [self setSelectedRange:CPMakeRange(selectedRange.location, 0)];
+    [self _didEdit];
+
+#if PLATFORM(DOM)
+    // Since we just performed the deletion manually, we don't need the browser to do anything else.
+    [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
+#endif
+}
+
+- (void)deleteForward:(id)sender
+{
+    if (!([self isEnabled] && [self isEditable]))
+        return;
+
+    var selectedRange = [self selectedRange];
+
+    if (selectedRange.length < 1)
+    {
+        if (selectedRange.location + 1 >= _stringValue.length)
+            return;
+
+        selectedRange.length += 1;
+    }
+
+    var newValue = [_stringValue stringByReplacingCharactersInRange:selectedRange withString:""];
+
+    [self setStringValue:newValue];
+    [self setSelectedRange:CPMakeRange(selectedRange.location, 0)];
+    [self _didEdit];
+
+#if PLATFORM(DOM)
+    // Since we just performed the deletion manually, we don't need the browser to do anything else.
+    [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
+#endif
 }
 
 #pragma mark Setting the Delegate
@@ -1699,6 +1763,23 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     if ([self isEditable] && [[self window] firstResponder] === self)
         [self _becomeFirstKeyResponder];
+}
+
+- (BOOL)validateUserInterfaceItem:(id <CPValidatedUserInterfaceItem>)anItem
+{
+    var theAction = [anItem action];
+
+    if (![self isEditable] && (theAction == @selector(cut:) || theAction == @selector(paste:) || theAction == @selector(delete:)))
+        return NO;
+
+    // FIXME - [self selectedRange] is always empty if we're not an editable field, so we must assume yes here.
+    if (![self isEditable])
+        return YES;
+
+    if (theAction == @selector(copy:) || theAction == @selector(cut:) || theAction == @selector(delete:))
+        return [self selectedRange].length;
+
+    return YES;
 }
 
 #pragma mark Private

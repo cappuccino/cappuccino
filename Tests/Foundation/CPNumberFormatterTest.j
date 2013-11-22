@@ -251,4 +251,34 @@
     [self assert:1.23456 equals:generated];
 }
 
+- (void)testEncodingDecodingWithZeroMinMaxValues
+{
+    var numberFormatter = [CPNumberFormatter new];
+
+    [numberFormatter setMaximum:0];
+    [numberFormatter setMinimum:0];
+
+    var encoded = [CPKeyedArchiver archivedDataWithRootObject:numberFormatter],
+        decoded = [CPKeyedUnarchiver unarchiveObjectWithData:encoded];
+
+    [self assertNotNull:[decoded minimum]];
+    [self assertNotNull:[decoded maximum]];
+    [self assert:0 equals:[decoded minimum]];
+    [self assert:0 equals:[decoded maximum]];
+}
+
+- (void)testEncodingDecodingWithNilMinMaxValues
+{
+    var numberFormatter = [CPNumberFormatter new];
+
+    [numberFormatter setMaximum:nil];
+    [numberFormatter setMinimum:nil];
+
+    var encoded = [CPKeyedArchiver archivedDataWithRootObject:numberFormatter],
+        decoded = [CPKeyedUnarchiver unarchiveObjectWithData:encoded];
+
+    [self assertNull:[decoded minimum]];
+    [self assertNull:[decoded maximum]];
+}
+
 @end

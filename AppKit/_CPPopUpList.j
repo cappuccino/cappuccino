@@ -887,7 +887,7 @@ var _CPPopUpListDataSourceKey   = @"_CPPopUpListDataSourceKey",
 
     if (mouseWindow != self && !CGRectContainsPoint(rect, point))
         [[self delegate] close];
-    else if ([mouseWindow firstResponder] == [[self delegate] dataSource])
+    else
         [self _trapNextMouseDown];
 }
 

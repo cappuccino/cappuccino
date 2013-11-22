@@ -352,6 +352,10 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 */
 - (void)expandItem:(id)anItem expandChildren:(BOOL)shouldExpandChildren
 {
+    if ([self _delegateRespondsToShouldExpandItem])
+        if ([_outlineViewDelegate outlineView:self shouldExpandItem:anItem] == NO)
+            return;
+
     var itemInfo = null;
 
     if (!anItem)
@@ -426,6 +430,10 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 {
     if (!anItem)
         return;
+
+    if ([self _delegateRespondsToShouldCollapseItem])
+        if ([_outlineViewDelegate outlineView:self shouldCollapseItem:anItem] == NO)
+            return;
 
     var itemInfo = _itemInfosForItems[[anItem UID]];
 
@@ -1549,12 +1557,12 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     [super keyDown:anEvent];
 }
 
-- (CPView)_viewForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow
+- (CPView)_sendDelegateViewForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow
 {
     return [_outlineViewDelegate outlineView:self viewForTableColumn:aTableColumn item:[self itemAtRow:aRow]];
 }
 
-- (CPView)_dataViewForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow
+- (CPView)_sendDelegateDataViewForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow
 {
     return [_outlineViewDelegate outlineView:self dataViewForTableColumn:aTableColumn item:[self itemAtRow:aRow]];
 }
@@ -1572,6 +1580,34 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 - (BOOL)_delegateRespondsToDataViewForTableColumn
 {
     return _implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_;
+}
+
+- (BOOL)_delegateRespondsToShouldExpandItem
+{
+    return _implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_shouldExpandItem_;
+}
+
+- (BOOL)_delegateRespondsToShouldCollapseItem
+{
+    return _implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_shouldCollapseItem_;
+}
+
+/*!
+    @ignore
+    Return YES if the delegate implements outlineView:selectionIndexesForProposedSelection
+*/
+- (BOOL)_delegateRespondsToSelectionIndexesForProposedSelection
+{
+    return _implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_selectionIndexesForProposedSelection_;
+}
+
+/*!
+    @ignore
+    Return YES if the delegate implements outlineView:shouldSelectItem:
+*/
+- (BOOL)_delegateRespondsToShouldSelectRow
+{
+    return _implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_shouldSelectItem_;
 }
 
 @end
@@ -1921,6 +1957,22 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     // We reimplement CPView menuForEvent: because we can't call it directly. CPTableView implements menuForEvent:
     // to call this delegate method.
     return [_outlineView menu] || [[_outlineView class] defaultMenu];
+}
+
+- (CPIndexSet)tableView:(CPTableView)aTableView selectionIndexesForProposedSelection:(CPIndexSet)anIndexSet
+{
+    if ((_outlineView._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_selectionIndexesForProposedSelection_))
+        return [_outlineView._outlineViewDelegate outlineView:_outlineView selectionIndexesForProposedSelection:anIndexSet];
+
+    return anIndexSet;
+}
+
+- (BOOL)tableView:(CPTableView)aTableView shouldSelectTableColumn:(CPTableColumn)aTableColumn
+{
+    if ((_outlineView._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_shouldSelectTableColumn_))
+        return [_outlineView._outlineViewDelegate outlineView:_outlineView shouldSelectTableColumn:aTableColumn];
+
+    return YES;
 }
 
 @end

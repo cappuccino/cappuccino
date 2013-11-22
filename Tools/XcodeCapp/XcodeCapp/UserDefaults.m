@@ -24,3 +24,4 @@ NSString * const kDefaultMaxRecentProjects = @"maxRecentProjects";
 NSString * const kDefaultLogLevel = @"logLevel";
 NSString * const kDefaultAutoOpenXcodeProject = @"autoOpenXcodeProject";
 NSString * const kDefaultShowProcessingNotices = @"showProcessingNotices";
+NSString * const kDefaultUseSymlinkWhenCreatingProject = @"useSymlinkWhenCreatingProject";

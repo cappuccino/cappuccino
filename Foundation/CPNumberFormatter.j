@@ -309,13 +309,16 @@ var CPNumberFormatterStyleKey                   = @"CPNumberFormatterStyleKey",
         _numberStyle = [aCoder decodeIntForKey:CPNumberFormatterStyleKey];
         _minimumFractionDigits = [aCoder decodeIntForKey:CPNumberFormatterMinimumFractionDigitsKey];
         _maximumFractionDigits = [aCoder decodeIntForKey:CPNumberFormatterMaximumFractionDigitsKey];
-        _minimum = [aCoder decodeIntForKey:CPNumberFormatterMinimumKey];
-        _maximum = [aCoder decodeIntForKey:CPNumberFormatterMaximumKey];
         _roundingMode = [aCoder decodeIntForKey:CPNumberFormatterRoundingModeKey];
         _groupingSeparator = [aCoder decodeObjectForKey:CPNumberFormatterGroupingSeparatorKey];
         _currencyCode = [aCoder decodeObjectForKey:CPNumberFormatterCurrencyCodeKey];
         _currencySymbol = [aCoder decodeObjectForKey:CPNumberFormatterCurrencySymbolKey];
         _generatesDecimalNumbers = [aCoder decodeBoolForKey:CPNumberFormatterGeneratesDecimalNumbers];
+
+        // We decode _minimum and _maximum as object here because otherwise, nil values are not preserved
+        // causing a min and max always set to 0 after an decoding.
+        _minimum = [aCoder decodeObjectForKey:CPNumberFormatterMinimumKey];
+        _maximum = [aCoder decodeObjectForKey:CPNumberFormatterMaximumKey];
     }
 
     return self;

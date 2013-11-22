@@ -150,7 +150,8 @@ AppController *SharedAppControllerInstance = nil;
         kDefaultMaxRecentProjects:                  @20,
         kDefaultLogLevel:                           [NSNumber numberWithInt:LOG_LEVEL_WARN],
         kDefaultAutoOpenXcodeProject:               @YES,
-        kDefaultShowProcessingNotices:              @YES
+        kDefaultShowProcessingNotices:              @YES,
+        kDefaultUseSymlinkWhenCreatingProject:      @YES
     };
     
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
@@ -401,6 +402,25 @@ AppController *SharedAppControllerInstance = nil;
     [self openWindow:self.preferencesWindow];
 }
 
+- (IBAction)createProject:(id)sender
+{
+    NSSavePanel *savePanel = [NSSavePanel savePanel];
+    savePanel.title = @"Create a new Cappuccino Project";
+    savePanel.canCreateDirectories = YES;
+
+    if ([savePanel runModal] != NSFileHandlingPanelOKButton)
+        return;
+
+    NSString *projectPath = [[savePanel.URL path] stringByStandardizingPath];
+
+    NSDictionary *taskResult = [self.xcc createProject:projectPath];
+
+    if ([taskResult[@"status"] intValue])
+         return;
+
+    [self loadProjectAtPath:projectPath reopening:YES];
+}
+
 #pragma mark - Delegates
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)app
@@ -438,6 +458,7 @@ AppController *SharedAppControllerInstance = nil;
 }
 
 #pragma mark - Private Helpers
+
 
 - (BOOL)loadProjectAtPath:(NSString *)path reopening:(BOOL)reopen
 {

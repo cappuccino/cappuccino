@@ -72,7 +72,8 @@ _CPMenuWindowAttachedMenuBackgroundStyle    = 2;
 
 + (void)poolMenuWindow:(_CPMenuWindow)aMenuWindow
 {
-    if (!aMenuWindow || _CPMenuWindowPool.length >= _CPMenuWindowPoolCapacity)
+    // FIXME :the poolMenuWindow is called too many times somewhere....
+    if (!aMenuWindow || _CPMenuWindowPool.length >= _CPMenuWindowPoolCapacity || [_CPMenuWindowPool containsObject:aMenuWindow])
         return;
 
     _CPMenuWindowPool.push(aMenuWindow);
