@@ -203,7 +203,7 @@ var BrowserColumnTheme     = 0,
     return description;
 }
 
-- (CPString)browser:(id)aBrowser titleOfColumn:(int)column
+- (CPString)browser:(id)aBrowser titleOfColumn:(CPInteger)column
 {
     return ColumnTitles[column];
 }

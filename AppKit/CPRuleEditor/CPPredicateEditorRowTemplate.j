@@ -702,12 +702,12 @@ CPTransformableAttributeType = 1800;
     return textField;
 }
 
-- (void)_setOptions:(unsigned int)options
+- (void)_setOptions:(unsigned)options
 {
     _predicateOptions = options;
 }
 
-- (void)_setModifier:(unsigned int)modifier
+- (void)_setModifier:(unsigned)modifier
 {
     _predicateModifier = modifier;
 }

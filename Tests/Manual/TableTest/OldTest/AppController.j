@@ -287,7 +287,7 @@ tableTestDragType = @"CPTableViewTestDragType";
         return dataSet3.length;
 }
 
-- (id)tableView:(CPTableView)aTableView objectValueForTableColumn:(CPTableColumn)aColumn row:(int)aRow
+- (id)tableView:(CPTableView)aTableView objectValueForTableColumn:(CPTableColumn)aColumn row:(CPInteger)aRow
 {
     if ([aColumn identifier] === "icons")
         return iconImage;
@@ -310,7 +310,7 @@ tableTestDragType = @"CPTableViewTestDragType";
     [aTableView reloadData];
 }
 
-- (BOOL)tableView:(CPTableView)aTableView shouldSelectRow:(int)rowIndex
+- (BOOL)tableView:(CPTableView)aTableView shouldSelectRow:(CPInteger)rowIndex
 {
     CPLog.debug(@"tableView:shouldSelectRow");
     return true;
@@ -337,7 +337,7 @@ tableTestDragType = @"CPTableViewTestDragType";
     CPLogConsole(_cmd + [notification description]);
 }
 
-- (BOOL)tableView:(CPTableView)aTableView shouldEditTableColumn:(CPTableColumn)tableColumn row:(int)row
+- (BOOL)tableView:(CPTableView)aTableView shouldEditTableColumn:(CPTableColumn)tableColumn row:(CPInteger)row
 {
     if (aTableView === tableView3)
         return YES;
@@ -345,12 +345,12 @@ tableTestDragType = @"CPTableViewTestDragType";
         return NO;
 }
 
-- (void)tableView:(CPTableView)aTableView willDisplayView:(CPView)aView forTableColumn:(CPTableColumn)tableColumn row:(int)row
+- (void)tableView:(CPTableView)aTableView willDisplayView:(CPView)aView forTableColumn:(CPTableColumn)tableColumn row:(CPInteger)row
 {
     //CPLogConsole(_cmd + " column: " + [tableColumn identifier] + " row:" + row)
 }
 
-- (void)tableView:(CPTableView)aTableView setObjectValue:(id)aValue forTableColumn:(CPTableColumn)tableColumn row:(int)row
+- (void)tableView:(CPTableView)aTableView setObjectValue:(id)aValue forTableColumn:(CPTableColumn)tableColumn row:(CPInteger)row
 {
     if (aTableView === tableView3)
         dataSet3[row] = aValue;
@@ -396,7 +396,7 @@ tableTestDragType = @"CPTableViewTestDragType";
     return CPDragOperationMove;
 }
 
-- (BOOL)tableView:(CPTableView)aTableView acceptDrop:(id)info row:(int)row dropOperation:(CPTableViewDropOperation)operation
+- (BOOL)tableView:(CPTableView)aTableView acceptDrop:(id)info row:(CPInteger)row dropOperation:(CPTableViewDropOperation)operation
 {
     var pboard = [info draggingPasteboard],
         rowData = [pboard dataForType:tableTestDragType],

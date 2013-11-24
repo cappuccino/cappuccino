@@ -830,7 +830,7 @@ var HORIZONTAL_MARGIN = 2;
     [self tile];
 }
 
-- (void)setUniformSubviewsResizing:(float)flag
+- (void)setUniformSubviewsResizing:(BOOL)flag
 {
     _uniformSubviewsResizing = flag;
     [self tileIfNeeded:NO];

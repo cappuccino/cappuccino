@@ -505,7 +505,7 @@
     return [[rowItem children] objectAtIndex:childIndex];
 }
 
-- (id)_queryValueForItem:(id)rowItem inRow:(int)rowIndex
+- (id)_queryValueForItem:(id)rowItem inRow:(CPInteger)rowIndex
 {
     return [rowItem displayValue];
 }

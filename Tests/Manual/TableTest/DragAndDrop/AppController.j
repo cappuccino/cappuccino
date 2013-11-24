@@ -99,7 +99,7 @@ TableTestDragAndDropTableViewDataType = @"TableTestDragAndDropTableViewDataType"
     return [rowList count];
 }
 
-- (id)tableView:(id)tableView objectValueForTableColumn:(CPTableColumn)aColumn row:(int)aRow
+- (id)tableView:(id)tableView objectValueForTableColumn:(CPTableColumn)aColumn row:(CPInteger)aRow
 {
     if ([aColumn identifier] == "Row")
         return aRow;
@@ -118,13 +118,13 @@ TableTestDragAndDropTableViewDataType = @"TableTestDragAndDropTableViewDataType"
     return YES;
 }
 
-- (CPDragOperation)tableView:(CPTableView)aTableView validateDrop:(id)info proposedRow:(int)row proposedDropOperation:(CPTableViewDropOperation)operation
+- (CPDragOperation)tableView:(CPTableView)aTableView validateDrop:(id)info proposedRow:(CPInteger)row proposedDropOperation:(CPTableViewDropOperation)operation
 {
     [aTableView setDropRow:row dropOperation:CPTableViewDropAbove];
     return CPDragOperationMove;
 }
 
-- (BOOL)tableView:(CPTableView)aTableView acceptDrop:(id)info row:(int)row dropOperation:(CPTableViewDropOperation)operation
+- (BOOL)tableView:(CPTableView)aTableView acceptDrop:(id)info row:(CPInteger)row dropOperation:(CPTableViewDropOperation)operation
 {
     var pasteboard = [info draggingPasteboard],
         encodedData = [pasteboard dataForType:TableTestDragAndDropTableViewDataType],

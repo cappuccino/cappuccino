@@ -93,7 +93,7 @@ var CPToolbarsByIdentifier              = nil,
     BOOL                    _showsBaselineSeparator;
     BOOL                    _allowsUserCustomization;
     BOOL                    _isVisible;
-    int                     _sizeMode @accessors(property=sizeMode);
+    CPToolbarSizeMode       _sizeMode @accessors(property=sizeMode);
     int                     _desiredHeight;
 
     id                      _delegate;

@@ -416,7 +416,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
     to be invoked with row equal to -1 in cases where no actual row is involved but the table
     view needs to get some generic cell info.
 */
-- (id)dataViewForRow:(int)aRowIndex
+- (id)dataViewForRow:(CPInteger)aRowIndex
 {
     return [self dataView];
 }
@@ -828,7 +828,7 @@ var CPTableColumnIdentifierKey   = @"CPTableColumnIdentifierKey",
 /*!
     @ignore
 */
-- (id)dataCellForRow:(int)row
+- (id)dataCellForRow:(CPInteger)row
 {
     [CPException raise:CPUnsupportedMethodException
                 reason:@"dataCellForRow: is not supported. Use -dataViewForRow:row instead."];

@@ -1765,7 +1765,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [self _becomeFirstKeyResponder];
 }
 
-- (BOOL)validateUserInterfaceItem:(id <CPValidatedUserInterfaceItem>)anItem
+- (BOOL)validateUserInterfaceItem:(id /*<CPValidatedUserInterfaceItem>*/)anItem
 {
     var theAction = [anItem action];
 

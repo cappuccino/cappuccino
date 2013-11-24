@@ -24,7 +24,7 @@
                         [CPDictionary dictionaryWithObjects:[YES, NO, @"NO"] forKeys:keys],
                         [CPDictionary dictionaryWithObjects:[NO, YES, @"YES"] forKeys:keys]
                      ]];
-                      
+
     [self _selectSegment:0];
     [theWindow setFullPlatformWindow:YES];
 }
@@ -37,14 +37,14 @@
 - (void)_selectSegment:(CPInteger)anIndex
 {
     var EnumerateColumns;
-    
+
     if (anIndex == 0)
     {
         EnumerateColumns = function(column, idx)
         {
             [column bind:CPValueBinding toObject:arrayController withKeyPath:(@"arrangedObjects." + [column identifier]) options:nil];
         };
-        
+
         [tableView setDataSource:nil];
     }
     else
@@ -53,10 +53,10 @@
         {
             [column unbind:CPValueBinding];
         };
-        
+
         [tableView setDataSource:self];
     }
-    
+
     [[tableView tableColumns] enumerateObjectsUsingBlock:EnumerateColumns];
 }
 
@@ -70,12 +70,12 @@
     return [content count];
 }
 
-- (id)tableView:(id)aTableView objectValueForTableColumn:(CPTableColumn)aTableColumn row:(int)aRow
+- (id)tableView:(id)aTableView objectValueForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow
 {
     return [[content objectAtIndex:aRow] objectForKey:[aTableColumn identifier]];
 }
 
-- (void)tableView:(CPTableView)aTableView setObjectValue:(id)aValue forTableColumn:(CPTableColumn)aTableColumn row:(int)aRow
+- (void)tableView:(CPTableView)aTableView setObjectValue:(id)aValue forTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow
 {
     [[content objectAtIndex:aRow] setObject:aValue forKey:[aTableColumn identifier]];
 }

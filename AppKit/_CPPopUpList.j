@@ -416,7 +416,7 @@ var ListColumnIdentifier = @"1";
 /*!
     Selects a row and scrolls it to be visible. Returns YES if the selection actually changed.
 */
-- (BOOL)selectRow:(int)row
+- (BOOL)selectRow:(CPInteger)row
 {
     if (row === [_tableView selectedRow])
         return NO;
@@ -794,7 +794,7 @@ var _CPPopUpListDataSourceKey   = @"_CPPopUpListDataSourceKey",
     return MAX([_dataSource numberOfItemsInList:self], 1);
 }
 
-- (id)tableView:(id)aTableView objectValueForTableColumn:(CPTableColumn)aColumn row:(int)aRow
+- (id)tableView:(id)aTableView objectValueForTableColumn:(CPTableColumn)aColumn row:(CPInteger)aRow
 {
     return [_dataSource list:self displayValueForObjectValue:[_dataSource list:self objectValueForItemAtIndex:aRow]];
 }

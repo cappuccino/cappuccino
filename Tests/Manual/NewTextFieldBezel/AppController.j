@@ -108,12 +108,12 @@
     return 7;
 }
 
-- (id)tableView:(CPTableView)aTableView objectValueForTableColumn:(CPTableColumn)column row:(int)row
+- (id)tableView:(CPTableView)aTableView objectValueForTableColumn:(CPTableColumn)column row:(CPInteger)row
 {
     return "Double-click to edit";
 }
 
-- (void)tableView:(CPTableView)aTableView setObjectValue:(id)anObject forTableColumn:(CPTableColumn)aTableColumn row:(int)rowIndex
+- (void)tableView:(CPTableView)aTableView setObjectValue:(id)anObject forTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)rowIndex
 {
 
 }
