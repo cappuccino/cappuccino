@@ -248,7 +248,7 @@ CPTexturedBackgroundWindowMask
     @param aStyleMask a style mask
     @return the initialized window
 */
-- (id)initWithContentRect:(CGRect)aContentRect styleMask:(unsigned int)aStyleMask
+- (id)initWithContentRect:(CGRect)aContentRect styleMask:(unsigned)aStyleMask
 {
     self = [super init];
 

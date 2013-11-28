@@ -71,7 +71,7 @@
     return "browser";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{
         @"image-control-resize": [CPNull null],
@@ -171,7 +171,7 @@
     [self addColumn];
 }
 
-- (void)setLastColumn:(int)columnIndex
+- (void)setLastColumn:(CPInteger)columnIndex
 {
     if (columnIndex >= _tableViews.length)
         return;
@@ -291,7 +291,7 @@
     [aTableView addTableColumn:column];
 }
 
-- (void)reloadColumn:(int)column
+- (void)reloadColumn:(CPInteger)column
 {
     [[self tableViewInColumn:column] reloadData];
 }
@@ -359,7 +359,7 @@
 
 // ITEMS
 
-- (id)itemAtRow:(int)row inColumn:(int)column
+- (id)itemAtRow:(CPInteger)row inColumn:(CPInteger)column
 {
     return [_tableDelegates[column] childAtIndex:row];
 }
@@ -369,7 +369,7 @@
     return [_delegate respondsToSelector:@selector(browser:isLeafItem:)] && [_delegate browser:self isLeafItem:item];
 }
 
-- (id)parentForItemsInColumn:(int)column
+- (id)parentForItemsInColumn:(CPInteger)column
 {
     return [_tableDelegates[column] _item];
 }
@@ -652,7 +652,7 @@
     [_tableViews makeObjectsPerformSelector:@selector(registerForDraggedTypes:) withObject:types];
 }
 
-- (BOOL)canDragRowsWithIndexes:(CPIndexSet)rowIndexes inColumn:(int)columnIndex withEvent:(CPEvent)dragEvent
+- (BOOL)canDragRowsWithIndexes:(CPIndexSet)rowIndexes inColumn:(CPInteger)columnIndex withEvent:(CPEvent)dragEvent
 {
     if ([_delegate respondsToSelector:@selector(browser:canDragRowsWithIndexes:inColumn:withEvent:)])
         return [_delegate browser:self canDragRowsWithIndexes:rowIndexes inColumn:columnIndex withEvent:dragEvent];
@@ -660,7 +660,7 @@
     return YES;
 }
 
-- (CPImage)draggingImageForRowsWithIndexes:(CPIndexSet)rowIndexes inColumn:(int)columnIndex withEvent:(CPEvent)dragEvent offset:(CGPoint)dragImageOffset
+- (CPImage)draggingImageForRowsWithIndexes:(CPIndexSet)rowIndexes inColumn:(CPInteger)columnIndex withEvent:(CPEvent)dragEvent offset:(CGPoint)dragImageOffset
 {
     if ([_delegate respondsToSelector:@selector(browser:draggingImageForRowsWithIndexes:inColumn:withEvent:offset:)])
         return [_delegate browser:self draggingImageForRowsWithIndexes:rowIndexes inColumn:columnIndex withEvent:dragEvent offset:dragImageOffset];
@@ -668,7 +668,7 @@
     return nil;
 }
 
-- (CPView)draggingViewForRowsWithIndexes:(CPIndexSet)rowIndexes inColumn:(int)columnIndex withEvent:(CPEvent)dragEvent offset:(CGPoint)dragImageOffset
+- (CPView)draggingViewForRowsWithIndexes:(CPIndexSet)rowIndexes inColumn:(CPInteger)columnIndex withEvent:(CPEvent)dragEvent offset:(CGPoint)dragImageOffset
 {
     if ([_delegate respondsToSelector:@selector(browser:draggingViewForRowsWithIndexes:inColumn:withEvent:offset:)])
         return [_delegate browser:self draggingViewForRowsWithIndexes:rowIndexes inColumn:columnIndex withEvent:dragEvent offset:dragImageOffset];
@@ -771,7 +771,7 @@
     CPBrowser                _browser @accessors;
 }
 
-- (void)initWithFrame:(CGRect)aFrame
+- (id)initWithFrame:(CGRect)aFrame
 {
     if (self = [super initWithFrame:aFrame])
     {
@@ -902,12 +902,12 @@
     [_browser selectRowIndexes:selectedIndexes inColumn:_index];
 }
 
-- (id)childAtIndex:(unsigned)index
+- (id)childAtIndex:(CPUInteger)index
 {
     return [_delegate browser:_browser child:index ofItem:_item];
 }
 
-- (BOOL)tableView:(CPTableView)aTableView acceptDrop:(id)info row:(int)row dropOperation:(CPTableViewDropOperation)operation
+- (BOOL)tableView:(CPTableView)aTableView acceptDrop:(id)info row:(CPInteger)row dropOperation:(CPTableViewDropOperation)operation
 {
     if ([_delegate respondsToSelector:@selector(browser:acceptDrop:atRow:column:dropOperation:)])
         return [_delegate browser:_browser acceptDrop:info atRow:row column:_index dropOperation:operation];
@@ -915,7 +915,7 @@
         return NO;
 }
 
-- (CPDragOperation)tableView:(CPTableView)aTableView validateDrop:(id)info proposedRow:(int)row proposedDropOperation:(CPTableViewDropOperation)operation
+- (CPDragOperation)tableView:(CPTableView)aTableView validateDrop:(id)info proposedRow:(CPInteger)row proposedDropOperation:(CPTableViewDropOperation)operation
 {
     if ([_delegate respondsToSelector:@selector(browser:validateDrop:proposedRow:column:dropOperation:)])
         return [_delegate browser:_browser validateDrop:info proposedRow:row column:_index dropOperation:operation];
@@ -995,7 +995,7 @@
     [aCoder encodeObject:_highlightedBranchImage forKey:"_CPBrowserLeafViewHighlightedBranchImageKey"];
 }
 
-- (void)initWithCoder:(CPCoder)aCoder
+- (id)initWithCoder:(CPCoder)aCoder
 {
     if (self = [super initWithCoder:aCoder])
     {

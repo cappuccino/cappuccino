@@ -43,7 +43,7 @@
     return @"columnHeader";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{
             @"background-color": [CPNull null],
@@ -57,7 +57,7 @@
         };
 }
 
-- (void)initWithFrame:(CGRect)frame
+- (id)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
 
@@ -246,7 +246,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     return @"tableHeaderRow";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{
             @"background-color": [CPNull null],
@@ -287,7 +287,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     return [_tableView columnAtPoint:CGPointMake(aPoint.x, aPoint.y)];
 }
 
-- (CGRect)headerRectOfColumn:(int)aColumnIndex
+- (CGRect)headerRectOfColumn:(CPInteger)aColumnIndex
 {
     var headerRect = CGRectMakeCopy([self bounds]),
         columnRect = [_tableView rectOfColumn:aColumnIndex];
@@ -308,7 +308,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     return _drawsColumnLines;
 }
 
-- (CGRect)_cursorRectForColumn:(int)column
+- (CGRect)_cursorRectForColumn:(CPInteger)column
 {
     if (column == -1 || !([_tableView._tableColumns[column] resizingMask] & CPTableColumnUserResizingMask))
         return CGRectMakeZero();
@@ -417,13 +417,13 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     [CPApp setTarget:self selector:@selector(trackMouse:) forNextEventMatchingMask:CPLeftMouseDraggedMask | CPLeftMouseUpMask untilDate:nil inMode:nil dequeue:YES];
 }
 
-- (void)startTrackingTableColumn:(int)aColumnIndex at:(CGPoint)aPoint
+- (void)startTrackingTableColumn:(CPInteger)aColumnIndex at:(CGPoint)aPoint
 {
     _lastDragDestinationColumnIndex = -1;
     [self _setPressedColumn:aColumnIndex];
 }
 
-- (BOOL)continueTrackingTableColumn:(int)aColumnIndex at:(CGPoint)aPoint
+- (BOOL)continueTrackingTableColumn:(CPInteger)aColumnIndex at:(CGPoint)aPoint
 {
     if ([self _shouldDragTableColumn:aColumnIndex at:aPoint])
     {
@@ -444,19 +444,19 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     return YES;
 }
 
-- (BOOL)_shouldStopTrackingTableColumn:(int)aColumnIndex at:(CGPoint)aPoint
+- (BOOL)_shouldStopTrackingTableColumn:(CPInteger)aColumnIndex at:(CGPoint)aPoint
 {
     return _isTrackingColumn && _activeColumn === aColumnIndex &&
         CGRectContainsPoint([self headerRectOfColumn:aColumnIndex], aPoint);
 }
 
-- (void)stopTrackingTableColumn:(int)aColumnIndex at:(CGPoint)aPoint
+- (void)stopTrackingTableColumn:(CPInteger)aColumnIndex at:(CGPoint)aPoint
 {
     [self _setPressedColumn:CPNotFound];
     [self _updateResizeCursor:[CPApp currentEvent]];
 }
 
-- (BOOL)_shouldDragTableColumn:(int)aColumnIndex at:(CGPoint)aPoint
+- (BOOL)_shouldDragTableColumn:(CPInteger)aColumnIndex at:(CGPoint)aPoint
 {
     return ABS(aPoint.x - _mouseDownLocation.x) >= 10.0 && [_tableView _sendDelegateShouldReorderColumn:aColumnIndex toColumn:-1];
 }
@@ -504,7 +504,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     [dragWindow setFrame:frame];
 }
 
-- (void)_moveColumn:(int)aFromIndex toColumn:(int)aToIndex
+- (void)_moveColumn:(CPInteger)aFromIndex toColumn:(CPInteger)aToIndex
 {
     if ([_tableView _sendDelegateShouldReorderColumn:aFromIndex toColumn:aToIndex])
     {
@@ -581,7 +581,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     [_tableView _enqueueDraggingViews];
 }
 
-- (BOOL)shouldResizeTableColumn:(int)aColumnIndex at:(CGPoint)aPoint
+- (BOOL)shouldResizeTableColumn:(CPInteger)aColumnIndex at:(CGPoint)aPoint
 {
     if (_isResizing)
         return YES;
@@ -592,7 +592,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     return [_tableView allowsColumnResizing] && CGRectContainsPoint([self _cursorRectForColumn:aColumnIndex], aPoint);
 }
 
-- (void)startResizingTableColumn:(int)aColumnIndex at:(CGPoint)aPoint
+- (void)startResizingTableColumn:(CPInteger)aColumnIndex at:(CGPoint)aPoint
 {
     _isResizing = YES;
 
@@ -602,7 +602,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     [_tableView setDisableAutomaticResizing:YES];
 }
 
-- (void)continueResizingTableColumn:(int)aColumnIndex at:(CGPoint)aPoint
+- (void)continueResizingTableColumn:(CPInteger)aColumnIndex at:(CGPoint)aPoint
 {
     var tableColumn = [[_tableView tableColumns] objectAtIndex:aColumnIndex],
         newWidth = [tableColumn width] + aPoint.x - _previousTrackingLocation.x;
@@ -622,7 +622,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     }
 }
 
-- (void)stopResizingTableColumn:(int)aColumnIndex at:(CGPoint)aPoint
+- (void)stopResizingTableColumn:(CPInteger)aColumnIndex at:(CGPoint)aPoint
 {
     var tableColumn = [[_tableView tableColumns] objectAtIndex:aColumnIndex];
     [tableColumn _postDidResizeNotificationWithOldWidth:_columnOldWidth];

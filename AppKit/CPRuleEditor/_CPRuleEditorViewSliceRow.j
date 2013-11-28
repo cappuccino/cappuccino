@@ -522,7 +522,7 @@ var CONTROL_HEIGHT = 16.,
     return self;
 }
 
-- (id)hitTest:(CGPoint)point
+- (CPView)hitTest:(CGPoint)point
 {
     if (!CGRectContainsPoint([self frame], point))
         return nil;

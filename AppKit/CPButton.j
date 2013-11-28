@@ -149,7 +149,7 @@ CPButtonImageOffset   = 3.0;
     return @"button";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{
             @"image": [CPNull null],

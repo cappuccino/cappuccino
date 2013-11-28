@@ -105,7 +105,7 @@ CPViewAnimationFadeOutEffect = @"CPViewAnimationFadeOutEffect";
     [super startAnimation];
 }
 
-- (void)setCurrentProgress:(CPAnimationProgress)progress
+- (void)setCurrentProgress:(float)progress
 {
     [super setCurrentProgress:progress];
 

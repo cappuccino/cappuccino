@@ -189,7 +189,7 @@ var NumberRegex = new RegExp('(-)?(\\d*)(\\.(\\d*))?');
     return [self stringForObjectValue:anObject];
 }
 
-- (BOOL)getObjectValue:(id)anObjectRef forString:(CPString)aString errorDescription:(CPString)anErrorRef
+- (BOOL)getObjectValue:(idRef)anObjectRef forString:(CPString)aString errorDescription:(CPStringRef)anErrorRef
 {
     // Interpret an empty string as nil, like in Cocoa.
     if (aString === @"")

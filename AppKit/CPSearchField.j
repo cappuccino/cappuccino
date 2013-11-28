@@ -458,7 +458,7 @@ var RECENT_SEARCH_PREFIX = @"   ";
     [self sendAction:[self action] to:[self target]];
 }
 
-- (void)sendAction:(SEL)anAction to:(id)anObject
+- (BOOL)sendAction:(SEL)anAction to:(id)anObject
 {
     [super sendAction:anAction to:anObject];
 

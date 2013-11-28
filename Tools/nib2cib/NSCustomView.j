@@ -51,7 +51,7 @@ var _CPCibCustomViewClassNameKey = @"_CPCibCustomViewClassNameKey";
     [aCoder encodeObject:CP_NSMapClassName(_className) forKey:_CPCibCustomViewClassNameKey];
 }
 
-- (CPString)classForKeyedArchiver
+- (Class)classForKeyedArchiver
 {
     return [_CPCibCustomView class];
 }
