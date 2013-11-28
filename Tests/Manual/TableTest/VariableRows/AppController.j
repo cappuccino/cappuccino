@@ -83,18 +83,18 @@ var tableTestDragType = "tableTestDragType";
     return 2000;
 }
 
-- (id)tableView:(id)tableView objectValueForTableColumn:(CPTableColumn)aColumn row:(int)aRow
+- (id)tableView:(id)tableView objectValueForTableColumn:(CPTableColumn)aColumn row:(CPInteger)aRow
 {
     return "Column " + [aColumn identifier] + " Row " + aRow;
 }
 
-- (int)tableView:(CPTableView)aTableView heightOfRow:(int)aRow
+- (int)tableView:(CPTableView)aTableView heightOfRow:(CPInteger)aRow
 {
     return aRow % 2 ? 200 : 50;
     return aRow % 2 ? 1010 - (aRow * 10) : 10 + (aRow * 10);
 }
 
-- (BOOL)tableView:(CPTableView)aTableView isGroupRow:(int)aRow
+- (BOOL)tableView:(CPTableView)aTableView isGroupRow:(CPInteger)aRow
 {
     return !(aRow % 5);
 }
@@ -131,7 +131,7 @@ var tableTestDragType = "tableTestDragType";
     return CPDragOperationMove;
 }
 
-- (BOOL)tableView:(CPTableView)aTableView acceptDrop:(id)info row:(int)row dropOperation:(CPTableViewDropOperation)operation
+- (BOOL)tableView:(CPTableView)aTableView acceptDrop:(id)info row:(CPInteger)row dropOperation:(CPTableViewDropOperation)operation
 {
     return YES;
 }

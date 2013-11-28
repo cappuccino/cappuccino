@@ -41,7 +41,7 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
     return @"textured-window-head-view";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{};
 }
@@ -108,7 +108,7 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
     return @"standard-window-view";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{
             @"gradient-height": [CPNull null],

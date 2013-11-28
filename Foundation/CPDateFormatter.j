@@ -1201,7 +1201,7 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
     @param anError, if it returns NO the describe error will be in anError (use of ref)
     @return aBoolean for the success or fail of the method
 */
-- (BOOL)getObjectValue:(id)anObject forString:(CPString)aString errorDescription:(CPString)anError
+- (BOOL)getObjectValue:(idRef)anObject forString:(CPString)aString errorDescription:(CPStringRef)anError
 {
     var value = [self dateFromString:aString];
     @deref(anObject) = value;

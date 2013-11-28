@@ -1356,7 +1356,7 @@ var CPMonthDateType = 0,
 /*! Set the stringValue of the TextField. Add some zeros of there isn't 2/4 letters in the value. It's called at the end of the editing process
     @param aStringValue a CPString
 */
-- (void)setStringValue:(id)aStringValue
+- (void)setStringValue:(CPString)aStringValue
 {
     if (_dateType == CPYearDateType)
     {
@@ -1437,7 +1437,7 @@ var CPMonthDateType = 0,
 /*! Return the objectValue of the textField. Needed for the binding.
     This returns the objectValue relative to the dateValue
 */
-- (void)objectValue
+- (id)objectValue
 {
     var dateValue = [[_datePicker dateValue] copy];
 

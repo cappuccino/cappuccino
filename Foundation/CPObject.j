@@ -67,7 +67,42 @@ CPLog(@"Got some class: %@", inst);
 
 @global CPInvalidArgumentException
 
-@implementation CPObject
+
+@protocol CPObject
+
+- (BOOL)isEqual:(id)object;
+- (CPUInteger)hash;
+
+- (Class)superclass;
+- (Class)class;
+- (id)self;
+
+- (id)performSelector:(SEL)aSelector;
+- (id)performSelector:(SEL)aSelector withObject:(id)object;
+- (id)performSelector:(SEL)aSelector withObject:(id)object1 withObject:(id)object2;
+
+- (BOOL)isProxy;
+
+- (BOOL)isKindOfClass:(Class)aClass;
+- (BOOL)isMemberOfClass:(Class)aClass;
+- (BOOL)conformsToProtocol:(Protocol)aProtocol;
+
+- (BOOL)respondsToSelector:(SEL)aSelector;
+
+- (CPString)description;
+@optional
+- (CPString)debugDescription;
+
+@end
+
+@protocol CPCoding
+
+- (void)encodeWithCoder:(CPCoder)aCoder;
+- (id)initWithCoder:(CPCoder)aDecoder;
+
+@end
+
+@implementation CPObject <CPObject>
 {
     Class   isa;
 }
@@ -252,6 +287,26 @@ CPLog(@"Got some class: %@", inst);
             return YES;
 
     return NO;
+}
+
+/*!
+    Test whether instances of this class conforms to the provided protocol.
+    @param aProtocol the protocol for which to test the class
+    @return \c YES if instances of the class conforms to the protocol
+*/
++ (BOOL)conformsToProtocol:(Protocol)aProtocol
+{
+    return class_conformsToProtocol(self, aProtocol);
+}
+
+/*!
+    Tests whether the receiver conforms to the provided protocol.
+    @param protocol the protocol for which to test the class
+    @return \c YES if instances of the class conforms to the protocol
+*/
+- (BOOL)conformsToProtocol:(Protocol)aProtocol
+{
+    return class_conformsToProtocol(isa, aProtocol);
 }
 
 // Obtaining method information

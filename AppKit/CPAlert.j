@@ -757,7 +757,7 @@ var bottomHeight = 71;
     return @"alert";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{
             @"size": CGSizeMake(400.0, 110.0),

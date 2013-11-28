@@ -47,7 +47,7 @@ GLOBAL(objj_ivar) = function(/*String*/ aName, /*String*/ aType)
     this.type = aType;
 }
 
-GLOBAL(objj_method) = function(/*String*/ aName, /*IMP*/ anImplementation, /*String*/ types)
+GLOBAL(objj_method) = function(/*String*/ aName, /*IMP*/ anImplementation, /*Array<String>*/ types)
 {
     this.name = aName;
     this.method_imp = anImplementation;
@@ -74,6 +74,8 @@ GLOBAL(objj_class) = function(displayName)
     this.method_store   = function() { };
     this.method_dtable  = this.method_store.prototype;
 
+    this.protocol_list  = [];
+
 #if DEBUG
     // Naming the allocator allows the WebKit heap snapshot tool to display object class names correctly
     // HACK: displayName property is not respected so we must eval a function to name it
@@ -83,6 +85,13 @@ GLOBAL(objj_class) = function(displayName)
 #endif
 
     this._UID           = -1;
+}
+
+GLOBAL(objj_protocol) = function(/*String*/ aName)
+{
+    this.name = aName;
+    this.instance_methods = { };
+    this.class_methods = { };
 }
 
 GLOBAL(objj_object) = function()
@@ -288,6 +297,149 @@ GLOBAL(class_replaceMethod) = function(/*Class*/ aClass, /*SEL*/ aSelector, /*IM
     return method_imp;
 }
 
+GLOBAL(class_addProtocol) = function(/*Class*/ aClass, /*Protocol*/ aProtocol)
+{
+    if (!aProtocol || class_conformsToProtocol(aClass, aProtocol))
+    {
+        return;
+    }
+
+    (aClass.protocol_list || (aClass.protocol_list == [])).push(aProtocol);
+
+    return true;
+}
+
+GLOBAL(class_conformsToProtocol) = function(/*Class*/ aClass, /*Protocol*/ aProtocol)
+{
+    if (!aProtocol)
+        return false;
+
+    while (aClass)
+    {
+        var protocols = aClass.protocol_list,
+            size = protocols ? protocols.length : 0;
+
+        for (var i = 0; i < size; i++)
+        {
+            var p = protocols[i];
+
+            if (p.name === aProtocol.name)
+            {
+                return true;
+            }
+            if (protocol_conformsToProtocol(p, aProtocol))
+            {
+                return true;
+            }
+        }
+
+        aClass = class_getSuperclass(aClass);
+    }
+
+    return false;
+}
+
+GLOBAL(class_copyProtocolList) = function(/*Class*/ aClass)
+{
+    var protocols = aClass.protocol_list;
+
+    return protocols ? protocols.slice(0) : [];
+}
+
+GLOBAL(protocol_conformsToProtocol) = function(/*Protocol*/ p1, /*Protocol*/ p2)
+{
+    if (!p1 || !p2)
+        return false;
+
+    if (p1.name === p2.name)
+        return true;
+
+    var protocols = p1.protocol_list,
+        size = protocols ? protocols.length : 0;
+
+    for (var i = 0; i < size; i++)
+    {
+        var p = protocols[i];
+
+        if (p.name === p2.name)
+        {
+            return true;
+        }
+        if (protocol_conformsToProtocol(p, p2))
+        {
+            return true;
+        }
+    }
+
+   return false;
+}
+
+var REGISTERED_PROTOCOLS  = { };
+
+GLOBAL(objj_allocateProtocol) = function(/*String*/ aName)
+{
+    var protocol = new objj_protocol(aName);
+
+    return protocol;
+}
+
+GLOBAL(objj_registerProtocol) = function(/*Protocol*/ proto)
+{
+    REGISTERED_PROTOCOLS[proto.name] = proto;
+}
+
+GLOBAL(protocol_getName) = function(/*Protocol*/ proto)
+{
+    return proto.name;
+}
+
+// Right now we only register required methods. THis might need to change in the future
+GLOBAL(protocol_addMethodDescription) = function(/*Protocol*/ proto, /*SEL*/ selector, /*Array*/ types, /*BOOL*/ isRequiredMethod, /*BOOL*/ isInstanceMethod)
+{
+    if (!proto || !selector) return;
+
+    if (isRequiredMethod)
+        (isInstanceMethod ? proto.instance_methods : proto.class_methods)[selector] = new objj_method(selector, null, types);
+}
+
+GLOBAL(protocol_addMethodDescriptions) = function(/*Protocol*/ proto, /*Array*/ methods, /*BOOL*/ isRequiredMethod, /*BOOL*/ isInstanceMethod)
+{
+    if (!isRequiredMethod) return;
+
+    var index = 0,
+        count = methods.length,
+        method_dtable = isInstanceMethod ? proto.instance_methods : proto.class_methods;
+
+    for (; index < count; ++index)
+    {
+        var method = methods[index];
+
+        method_dtable[method.name] = method;
+    }
+}
+
+GLOBAL(protocol_copyMethodDescriptionList) = function(/*Protocol*/ proto, /*BOOL*/ isRequiredMethod, /*BOOL*/ isInstanceMethod)
+{
+    if (!isRequiredMethod)
+        return [];
+
+    var method_dtable = isInstanceMethod ? proto.instance_methods : proto.class_methods,
+        methodList = [];
+
+    for (var selector in method_dtable)
+        if (method_dtable.hasOwnProperty(selector))
+            methodList.push(method_dtable[selector]);
+
+    return methodList;
+}
+
+GLOBAL(protocol_addProtocol) = function(/*Protocol*/ proto, /*Protocol*/ addition)
+{
+    if (!proto || !addition) return;
+
+    (proto.protocol_list || (proto.protocol_list = [])).push(addition);
+}
+
 var _class_initialize = function(/*Class*/ aClass)
 {
     var meta = GETMETA(aClass);
@@ -442,6 +594,7 @@ GLOBAL(objj_resetRegisterClasses) = function()
         delete global[key];
 
     REGISTERED_CLASSES = {};
+    REGISTERED_PROTOCOLS = {};
 
     resetBundle();
 }
@@ -565,6 +718,13 @@ GLOBAL(objj_getMetaClass) = function(/*String*/ aName)
     var theClass = objj_getClass(aName);
 
     return GETMETA(theClass);
+}
+
+// Working with Protocol
+
+GLOBAL(objj_getProtocol) = function(/*String*/ aName)
+{
+    return REGISTERED_PROTOCOLS[aName];
 }
 
 // Working with Instance Variables

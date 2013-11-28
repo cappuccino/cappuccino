@@ -86,7 +86,7 @@
     return numberOfRows;
 }
 
-- (id)tableView:(id)tableView objectValueForTableColumn:(CPTableColumn)aColumn row:(int)aRow
+- (id)tableView:(id)tableView objectValueForTableColumn:(CPTableColumn)aColumn row:(CPInteger)aRow
 {
     if ([aColumn identifier] == "Row")
         return aRow;
@@ -102,7 +102,7 @@
     }
 }
 
-- (void)tableView:(CPTableView)tableView setObjectValue:(id)aValue forTableColumn:(CPTableColumn)tableColumn row:(int)aRow
+- (void)tableView:(CPTableView)tableView setObjectValue:(id)aValue forTableColumn:(CPTableColumn)tableColumn row:(CPInteger)aRow
 {
     var name = [tableColumn identifier];
 

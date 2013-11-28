@@ -356,7 +356,7 @@ CPDeleteForwardKeyCode  = 46;
 var CPResponderNextResponderKey = @"CPResponderNextResponderKey",
     CPResponderMenuKey = @"CPResponderMenuKey";
 
-@implementation CPResponder (CPCoding)
+@implementation CPResponder (CPCoding) <CPCoding>
 
 /*!
     Initializes the responder with data from a coder.

@@ -107,7 +107,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
     @param aTabViewItem the item to insert
     @param anIndex the index for the item
 */
-- (void)insertTabViewItem:(CPTabViewItem)aTabViewItem atIndex:(unsigned)anIndex
+- (void)insertTabViewItem:(CPTabViewItem)aTabViewItem atIndex:(CPUInteger)anIndex
 {
     [_items insertObject:aTabViewItem atIndex:anIndex];
 
@@ -183,7 +183,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
     Returns the CPTabViewItem at the specified index.
     @return a tab view item, or nil
 */
-- (CPTabViewItem)tabViewItemAtIndex:(unsigned)anIndex
+- (CPTabViewItem)tabViewItemAtIndex:(CPUInteger)anIndex
 {
     return [_items objectAtIndex:anIndex];
 }
@@ -270,7 +270,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
     Selects the item at the specified index.
     @param anIndex the index of the item to display.
 */
-- (BOOL)selectTabViewItemAtIndex:(unsigned)anIndex
+- (BOOL)selectTabViewItemAtIndex:(CPUInteger)anIndex
 {
     if (anIndex === _selectedIndex)
         return;

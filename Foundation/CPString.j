@@ -206,7 +206,7 @@ var CPStringUIDs = new CFMutableDictionary(),
     Returns the character at the specified index.
     @param anIndex the index of the desired character
 */
-- (CPString)characterAtIndex:(unsigned)anIndex
+- (CPString)characterAtIndex:(CPUInteger)anIndex
 {
     return self.charAt(anIndex);
 }
@@ -249,7 +249,7 @@ var CPStringUIDs = new CFMutableDictionary(),
     @param anIndex the index of the padding string to start from (if necessary to use)
     @return the new padded string
 */
-- (CPString)stringByPaddingToLength:(unsigned)aLength withString:(CPString)aString startingAtIndex:(unsigned)anIndex
+- (CPString)stringByPaddingToLength:(unsigned)aLength withString:(CPString)aString startingAtIndex:(CPUInteger)anIndex
 {
     if (self.length == aLength)
         return self;
@@ -596,7 +596,7 @@ var CPStringNull = [CPNull null];
 /*!
     Returns a hash of the string instance.
 */
-- (unsigned)UID
+- (CPString)UID
 {
     var UID = CPStringUIDs.valueForKey(self);
 

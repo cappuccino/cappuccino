@@ -209,7 +209,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     return "textfield";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{
             @"bezel-inset": CGInsetMakeZero(),
@@ -1765,7 +1765,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [self _becomeFirstKeyResponder];
 }
 
-- (BOOL)validateUserInterfaceItem:(id <CPValidatedUserInterfaceItem>)anItem
+- (BOOL)validateUserInterfaceItem:(id /*<CPValidatedUserInterfaceItem>*/)anItem
 {
     var theAction = [anItem action];
 
@@ -1883,7 +1883,7 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 
 @implementation _CPTextFieldValueBinder : CPBinder
 
-- (void)_updatePlaceholdersWithOptions:(CPDictionary)options forBinding:(CPBinder)aBinding
+- (void)_updatePlaceholdersWithOptions:(CPDictionary)options forBinding:(CPString)aBinding
 {
     [super _updatePlaceholdersWithOptions:options];
 

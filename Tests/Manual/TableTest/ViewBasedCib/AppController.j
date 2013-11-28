@@ -112,7 +112,7 @@ CPLogRegister(CPLogConsole)
 }
 
 // DELEGATE METHODS FOR THE TABLE VIEW
-- (void)tableView:(CPTableView)aTableView viewForTableColumn:(CPTableColumn)aTableColumn row:(int)aRow
+- (void)tableView:(CPTableView)aTableView viewForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow
 {
     var identifier = [aTableColumn identifier];
 
@@ -150,7 +150,7 @@ CPLogRegister(CPLogConsole)
     return CPDragOperationMove;
 }
 
-- (BOOL)tableView:(CPTableView)aTableView acceptDrop:(id)info row:(int)row dropOperation:(CPTableViewDropOperation)operation
+- (BOOL)tableView:(CPTableView)aTableView acceptDrop:(id)info row:(CPInteger)row dropOperation:(CPTableViewDropOperation)operation
 {
     var pboard = [info draggingPasteboard],
         sourceIndexes = [pboard dataForType:TABLE_DRAG_TYPE],
@@ -168,7 +168,7 @@ CPLogRegister(CPLogConsole)
     return YES;
 }
 
-- (int)tableView:(CPTableView)aTableView heightOfRow:(int)aRow
+- (int)tableView:(CPTableView)aTableView heightOfRow:(CPInteger)aRow
 {
     var height;
 
