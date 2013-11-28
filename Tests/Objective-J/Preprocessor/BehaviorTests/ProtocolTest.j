@@ -31,12 +31,12 @@
 
 - (int)myOtherFunction:(int)aValue
 {
-	return aValue * 2;
+    return aValue * 2;
 }
 
 - (int)myFunction:(int)aValue
 {
-	return aValue * 2;
+    return aValue * 2;
 }
 
 @end
@@ -45,22 +45,22 @@
 
 - (int)myOtherFunction:(int)aValue
 {
-	return aValue * 2;
+    return aValue * 2;
 }
 
 - (int)myFunction:(int)aValue
 {
-	return aValue * 2;
+    return aValue * 2;
 }
 
 - (int)myFunction2:(int)aValue
 {
-	return aValue * 2;
+    return aValue * 2;
 }
 
 - (int)myFunction3:(int)aValue
 {
-	return aValue * 2;
+    return aValue * 2;
 }
 
 @end
@@ -70,12 +70,12 @@
 
 - (void)testConformsToProtocol
 {
-	[self assert:true equals:[[[MyClass alloc] init] conformsToProtocol:@protocol(MyProtocol)]];
-	[self assert:false equals:[[[MyClass alloc] init] conformsToProtocol:@protocol(MyProtocol2)]];
-	[self assert:false equals:[[[MyClass alloc] init] conformsToProtocol:@protocol(xxxxxx)]];
-	[self assert:true equals:[[[MyClass2 alloc] init] conformsToProtocol:@protocol(MyProtocol)]];
-	[self assert:true equals:[[[MyClass2 alloc] init] conformsToProtocol:@protocol(MyProtocol2)]];
-	[self assert:true equals:[[[MyClass2 alloc] init] conformsToProtocol:@protocol(MyProtocol3)]];
+    [self assert:true equals:[[[MyClass alloc] init] conformsToProtocol:@protocol(MyProtocol)]];
+    [self assert:false equals:[[[MyClass alloc] init] conformsToProtocol:@protocol(MyProtocol2)]];
+    [self assert:false equals:[[[MyClass alloc] init] conformsToProtocol:@protocol(xxxxxx)]];
+    [self assert:true equals:[[[MyClass2 alloc] init] conformsToProtocol:@protocol(MyProtocol)]];
+    [self assert:true equals:[[[MyClass2 alloc] init] conformsToProtocol:@protocol(MyProtocol2)]];
+    [self assert:true equals:[[[MyClass2 alloc] init] conformsToProtocol:@protocol(MyProtocol3)]];
 }
 
 @end

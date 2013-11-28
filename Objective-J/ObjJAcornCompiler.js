@@ -188,19 +188,21 @@ ClassDef.prototype.listOfNotImplementedMethodsForProtocols = function(protocolDe
             protocolClassMethods = protocolDef.requiredClassMethods,
             inheritFromProtocols = protocolDef.protocols;
 
-        if (protocolInstanceMethods) for (var methodName in protocolInstanceMethods) {
-            var methodDef = protocolInstanceMethods[methodName];
+        if (protocolInstanceMethods)
+            for (var methodName in protocolInstanceMethods) {
+                var methodDef = protocolInstanceMethods[methodName];
 
-            if (!instanceMethods[methodName])
-                resultList.push({"methodDef": methodDef, "protocolDef": protocolDef});
-        }
+                if (!instanceMethods[methodName])
+                    resultList.push({"methodDef": methodDef, "protocolDef": protocolDef});
+            }
 
-        if (protocolClassMethods) for (var methodName in protocolClassMethods) {
-            var methodDef = protocolClassMethods[methodName];
+        if (protocolClassMethods)
+            for (var methodName in protocolClassMethods) {
+                var methodDef = protocolClassMethods[methodName];
 
-            if (!classMethods[methodName])
-                resultList.push({"methodDef": methodDef, "protocolDef": protocolDef});
-        }
+                if (!classMethods[methodName])
+                    resultList.push({"methodDef": methodDef, "protocolDef": protocolDef});
+            }
 
         if (inheritFromProtocols)
             resultList = resultList.concat(this.listOfNotImplementedMethodsForProtocols(inheritFromProtocols));
@@ -371,8 +373,8 @@ var ObjJAcornCompiler = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*
 {
     this.source = aString;
     this.URL = new CFURL(aURL);
-	this.pass = pass;
-	this.jsBuffer = new StringBuffer();
+    this.pass = pass;
+    this.jsBuffer = new StringBuffer();
     this.imBuffer = null;
     this.cmBuffer = null;
     this.warnings = [];
@@ -427,8 +429,8 @@ exports.ObjJAcornCompiler.compileFileDependencies = function(/*String*/ aString,
 ObjJAcornCompiler.prototype.compilePass2 = function()
 {
     ObjJAcornCompiler.currentCompileFile = this.URL;
-	this.pass = 2;
-	this.jsBuffer = new StringBuffer();
+    this.pass = 2;
+    this.jsBuffer = new StringBuffer();
     this.warnings = [];
     //print(this.URL + ": Compiling");
     compile(this.tokens, new Scope(null ,{ compiler: this }), pass2);
@@ -443,7 +445,7 @@ ObjJAcornCompiler.prototype.compilePass2 = function()
     }
 
     //print(this.URL + ": " + this.jsBuffer.toString());
-	return this.jsBuffer.toString();
+    return this.jsBuffer.toString();
 }
 
 var currentCompilerFlags = "";
@@ -493,11 +495,13 @@ ObjJAcornCompiler.prototype.getIvarForClass = function(/* String */ ivarName, /*
 
 ObjJAcornCompiler.prototype.getClassDef = function(/* String */ aClassName)
 {
-    if (!aClassName) return null;
+    if (!aClassName)
+        return null;
 
     var c = this.classDefs[aClassName];
 
-    if (c) return c;
+    if (c)
+        return c;
 
     if (typeof objj_getClass === 'function')
     {
@@ -541,11 +545,13 @@ ObjJAcornCompiler.prototype.getClassDef = function(/* String */ aClassName)
 
 ObjJAcornCompiler.prototype.getProtocolDef = function(/* String */ aProtocolName)
 {
-    if (!aProtocolName) return null;
+    if (!aProtocolName)
+        return null;
 
     var p = this.protocolDefs[aProtocolName];
 
-    if (p) return p;
+    if (p)
+        return p;
 
     if (typeof objj_getProtocol === 'function')
     {
@@ -1641,13 +1647,14 @@ ClassDeclarationStatement: function(node, st, c) {
         saveJSBuffer.concat("{var the_class = objj_allocateClassPair(Nil, \"" + className + "\"),\nmeta_class = the_class.isa;");
     }
 
-    if (protocols) for (var i = 0, size = protocols.length; i < size; i++)
-    {
-        saveJSBuffer.concat("\nvar aProtocol = objj_getProtocol(\"" + protocols[i].name + "\");");
-        saveJSBuffer.concat("\nif (!aProtocol) throw new SyntaxError(\"*** Could not find definition for protocol \\\"" + protocols[i].name + "\\\"\");");
-        saveJSBuffer.concat("\nclass_addProtocol(the_class, aProtocol);");
-    }
-/*
+    if (protocols)
+        for (var i = 0, size = protocols.length; i < size; i++)
+        {
+            saveJSBuffer.concat("\nvar aProtocol = objj_getProtocol(\"" + protocols[i].name + "\");");
+            saveJSBuffer.concat("\nif (!aProtocol) throw new SyntaxError(\"*** Could not find definition for protocol \\\"" + protocols[i].name + "\\\"\");");
+            saveJSBuffer.concat("\nclass_addProtocol(the_class, aProtocol);");
+        }
+    /*
     if (isInterfaceDeclaration)
         classDef.interfaceDeclaration = true;
 */
@@ -1659,59 +1666,62 @@ ClassDeclarationStatement: function(node, st, c) {
         hasAccessors = false;
 
     // Then we add all ivars
-    if (node.ivardeclarations) for (var i = 0; i < node.ivardeclarations.length; ++i)
-    {
-        var ivarDecl = node.ivardeclarations[i],
-            ivarType = ivarDecl.ivartype ? ivarDecl.ivartype.name : null,
-            ivarName = ivarDecl.id.name,
-            ivars = classDef.ivars,
-            ivar = {"type": ivarType, "name": ivarName},
-            accessors = ivarDecl.accessors;
-
-        if (ivars[ivarName])
-            throw compiler.error_message("Instance variable '" + ivarName + "'is already declared for class " + className, ivarDecl.id);
-
-        if (firstIvarDeclaration)
+    if (node.ivardeclarations)
+        for (var i = 0; i < node.ivardeclarations.length; ++i)
         {
-            firstIvarDeclaration = false;
-            saveJSBuffer.concat("class_addIvars(the_class, [");
-        }
-        else
-            saveJSBuffer.concat(", ");
+            var ivarDecl = node.ivardeclarations[i],
+                ivarType = ivarDecl.ivartype ? ivarDecl.ivartype.name : null,
+                ivarName = ivarDecl.id.name,
+                ivars = classDef.ivars,
+                ivar = {"type": ivarType, "name": ivarName},
+                accessors = ivarDecl.accessors;
 
-        if (compiler.flags & ObjJAcornCompiler.Flags.IncludeTypeSignatures)
-            saveJSBuffer.concat("new objj_ivar(\"" + ivarName + "\", \"" + ivarType + "\")");
-        else
-            saveJSBuffer.concat("new objj_ivar(\"" + ivarName + "\")");
+            if (ivars[ivarName])
+                throw compiler.error_message("Instance variable '" + ivarName + "'is already declared for class " + className, ivarDecl.id);
 
-        if (ivarDecl.outlet)
-            ivar.outlet = true;
-        ivars[ivarName] = ivar;
-        if (!classScope.ivars)
-            classScope.ivars = Object.create(null);
-        classScope.ivars[ivarName] = {type: "ivar", name: ivarName, node: ivarDecl.id, ivar: ivar};
-
-        if (accessors) {
-            // TODO: This next couple of lines for getting getterName and setterName are duplicated from below. Create functions for this.
-            var property = (accessors.property && accessors.property.name) || ivarName,
-                getterName = (accessors.getter && accessors.getter.name) || property;
-
-            classDef.addInstanceMethod(new MethodDef(getterName, [ivarType]));
-
-            if (!accessors.readonly) {
-                var setterName = accessors.setter ? accessors.setter.name : null;
-
-                if (!setterName)
-                {
-                    var start = property.charAt(0) == '_' ? 1 : 0;
-
-                    setterName = (start ? "_" : "") + "set" + property.substr(start, 1).toUpperCase() + property.substring(start + 1) + ":";
-                }
-                classDef.addInstanceMethod(new MethodDef(setterName, ["void", ivarType]));
+            if (firstIvarDeclaration)
+            {
+                firstIvarDeclaration = false;
+                saveJSBuffer.concat("class_addIvars(the_class, [");
             }
-            hasAccessors = true;
+            else
+                saveJSBuffer.concat(", ");
+
+            if (compiler.flags & ObjJAcornCompiler.Flags.IncludeTypeSignatures)
+                saveJSBuffer.concat("new objj_ivar(\"" + ivarName + "\", \"" + ivarType + "\")");
+            else
+                saveJSBuffer.concat("new objj_ivar(\"" + ivarName + "\")");
+
+            if (ivarDecl.outlet)
+                ivar.outlet = true;
+            ivars[ivarName] = ivar;
+            if (!classScope.ivars)
+                classScope.ivars = Object.create(null);
+            classScope.ivars[ivarName] = {type: "ivar", name: ivarName, node: ivarDecl.id, ivar: ivar};
+
+            if (accessors)
+            {
+                // TODO: This next couple of lines for getting getterName and setterName are duplicated from below. Create functions for this.
+                var property = (accessors.property && accessors.property.name) || ivarName,
+                    getterName = (accessors.getter && accessors.getter.name) || property;
+
+                classDef.addInstanceMethod(new MethodDef(getterName, [ivarType]));
+
+                if (!accessors.readonly)
+                {
+                    var setterName = accessors.setter ? accessors.setter.name : null;
+
+                    if (!setterName)
+                    {
+                        var start = property.charAt(0) == '_' ? 1 : 0;
+
+                        setterName = (start ? "_" : "") + "set" + property.substr(start, 1).toUpperCase() + property.substring(start + 1) + ":";
+                    }
+                    classDef.addInstanceMethod(new MethodDef(setterName, ["void", ivarType]));
+                }
+                hasAccessors = true;
+            }
         }
-    }
 
     if (!firstIvarDeclaration)
         saveJSBuffer.concat("]);");
@@ -1782,14 +1792,16 @@ ClassDeclarationStatement: function(node, st, c) {
 
     if (bodyLength > 0)
     {
-        if (!generate) compiler.lastPos = bodies[0].start;
+        if (!generate)
+            compiler.lastPos = bodies[0].start;
 
         // And last add methods and other statements
         for (var i = 0; i < bodyLength; ++i) {
             var body = bodies[i];
             c(body, classScope, "Statement");
         }
-        if (!generate) saveJSBuffer.concat(compiler.source.substring(compiler.lastPos, body.end));
+        if (!generate)
+            saveJSBuffer.concat(compiler.source.substring(compiler.lastPos, body.end));
     }
     // We must make a new class object for our class definition if it's not a category
     if (!isInterfaceDeclaration && !node.categoryname) {
@@ -1817,7 +1829,8 @@ ClassDeclarationStatement: function(node, st, c) {
     compiler.jsBuffer = saveJSBuffer;
 
     // Skip the "@end"
-    if (!generate) compiler.lastPos = node.end;
+    if (!generate)
+        compiler.lastPos = node.end;
 
     // If the class conforms to protocols check that all required methods are implemented
     if (protocols)
@@ -1856,24 +1869,26 @@ ProtocolDeclarationStatement: function(node, st, c) {
     compiler.imBuffer = new StringBuffer();
     compiler.cmBuffer = new StringBuffer();
 
-    if (!generate) buffer.concat(compiler.source.substring(compiler.lastPos, node.start));
+    if (!generate)
+        buffer.concat(compiler.source.substring(compiler.lastPos, node.start));
 
     buffer.concat("{var the_protocol = objj_allocateProtocol(\"" + protocolName + "\");");
 
-    if (protocols) for (var i = 0, size = protocols.length; i < size; i++)
-    {
-        var protocol = protocols[i],
-            inheritFromProtocolName = protocol.name;
-            inheritProtocolDef = compiler.getProtocolDef(inheritFromProtocolName);
+    if (protocols)
+        for (var i = 0, size = protocols.length; i < size; i++)
+        {
+            var protocol = protocols[i],
+                inheritFromProtocolName = protocol.name;
+                inheritProtocolDef = compiler.getProtocolDef(inheritFromProtocolName);
 
-        if (!inheritProtocolDef)
-            throw compiler.error_message("Can't find protocol " + inheritFromProtocolName, protocol);
+            if (!inheritProtocolDef)
+                throw compiler.error_message("Can't find protocol " + inheritFromProtocolName, protocol);
 
-        buffer.concat("\nvar aProtocol = objj_getProtocol(\"" + inheritFromProtocolName + "\");");
-        buffer.concat("\nif (!aProtocol) throw new SyntaxError(\"*** Could not find definition for protocol \\\"" + protocolName + "\\\"\");");
-        buffer.concat("\nprotocol_addProtocol(the_protocol, aProtocol);");
-        inheritFromProtocols.push(inheritProtocolDef);
-    }
+            buffer.concat("\nvar aProtocol = objj_getProtocol(\"" + inheritFromProtocolName + "\");");
+            buffer.concat("\nif (!aProtocol) throw new SyntaxError(\"*** Could not find definition for protocol \\\"" + protocolName + "\\\"\");");
+            buffer.concat("\nprotocol_addProtocol(the_protocol, aProtocol);");
+            inheritFromProtocols.push(inheritProtocolDef);
+        }
 
     protocolDef = new ProtocolDef(protocolName, inheritFromProtocols);
     compiler.protocolDefs[protocolName] = protocolDef;
@@ -1887,12 +1902,15 @@ ProtocolDeclarationStatement: function(node, st, c) {
         if (requiredLength > 0)
         {
             // We only add the required methods
-            for (var i = 0; i < requiredLength; ++i) {
+            for (var i = 0; i < requiredLength; ++i)
+            {
                 var required = someRequired[i];
-                if (!generate) compiler.lastPos = required.start;
+                if (!generate)
+                    compiler.lastPos = required.start;
                 c(required, protocolScope, "Statement");
             }
-            if (!generate) buffer.concat(compiler.source.substring(compiler.lastPos, required.end));
+            if (!generate)
+                buffer.concat(compiler.source.substring(compiler.lastPos, required.end));
         }
     }
 
@@ -1919,7 +1937,8 @@ ProtocolDeclarationStatement: function(node, st, c) {
     compiler.jsBuffer = buffer;
 
     // Skip the "@end"
-    if (!generate) compiler.lastPos = node.end;
+    if (!generate)
+        compiler.lastPos = node.end;
 },
 MethodDeclarationStatement: function(node, st, c) {
     var compiler = st.compiler,
@@ -1934,14 +1953,16 @@ MethodDeclarationStatement: function(node, st, c) {
         returnTypeProtocols = returnType ? returnType.protocols : null;
         selector = selectors[0].name;    // There is always at least one selector
 
-    if (returnTypeProtocols) for (var i = 0, size = returnTypeProtocols.length; i < size; i++) {
-        var returnTypeProtocol = returnTypeProtocols[i];
-        if (!compiler.getProtocolDef(returnTypeProtocol.name)) {
-            compiler.addWarning(createMessage("Cannot find protocol declaration for '" + returnTypeProtocol.name + "'", returnTypeProtocol, compiler.source));
+    if (returnTypeProtocols)
+        for (var i = 0, size = returnTypeProtocols.length; i < size; i++) {
+            var returnTypeProtocol = returnTypeProtocols[i];
+            if (!compiler.getProtocolDef(returnTypeProtocol.name)) {
+                compiler.addWarning(createMessage("Cannot find protocol declaration for '" + returnTypeProtocol.name + "'", returnTypeProtocol, compiler.source));
+            }
         }
-    }
 
-    if (!generate) saveJSBuffer.concat(compiler.source.substring(compiler.lastPos, node.start));
+    if (!generate)
+        saveJSBuffer.concat(compiler.source.substring(compiler.lastPos, node.start));
 
     compiler.jsBuffer = isInstanceMethodType ? compiler.imBuffer : compiler.cmBuffer;
 
@@ -1954,11 +1975,11 @@ MethodDeclarationStatement: function(node, st, c) {
 
         types.push(argumentType ? argumentType.name : "id");
 
-        if (argumentProtocols) for (var j = 0, size = argumentProtocols.length; j < size; j++) {
+        if (argumentProtocols) for (var j = 0, size = argumentProtocols.length; j < size; j++)
+        {
             var argumentProtocol = argumentProtocols[j];
-            if (!compiler.getProtocolDef(argumentProtocol.name)) {
+            if (!compiler.getProtocolDef(argumentProtocol.name))
                 compiler.addWarning(createMessage("Cannot find protocol declaration for '" + argumentProtocol.name + "'", argumentProtocol, compiler.source));
-            }
         }
 
         if (i === 0)
@@ -1974,7 +1995,8 @@ MethodDeclarationStatement: function(node, st, c) {
     compiler.jsBuffer.concat(selector);
     compiler.jsBuffer.concat("\"), ");
 
-    if (node.body) {
+    if (node.body)
+    {
         compiler.jsBuffer.concat("function");
 
         if (compiler.flags & ObjJAcornCompiler.Flags.IncludeDebugSymbols)
@@ -1997,11 +2019,13 @@ MethodDeclarationStatement: function(node, st, c) {
 
         compiler.jsBuffer.concat(")\n");
 
-        if (!generate) compiler.lastPos = node.startOfBody;
+        if (!generate)
+            compiler.lastPos = node.startOfBody;
         indentation += indentStep;
         c(node.body, methodScope, "Statement");
         indentation = indentation.substring(indentationSpaces);
-        if (!generate) compiler.jsBuffer.concat(compiler.source.substring(compiler.lastPos, node.body.end));
+        if (!generate)
+            compiler.jsBuffer.concat(compiler.source.substring(compiler.lastPos, node.body.end));
 
         compiler.jsBuffer.concat("\n");
     } else { // It is a interface or protocol declatartion and we don't have a method implementation
@@ -2014,7 +2038,8 @@ MethodDeclarationStatement: function(node, st, c) {
     compiler.jsBuffer.concat(")");
     compiler.jsBuffer = saveJSBuffer;
 
-    if (!generate) compiler.lastPos = node.end;
+    if (!generate)
+        compiler.lastPos = node.end;
 
     // Add the method to the class or protocol definition
     var def = st.classDef,
@@ -2030,18 +2055,19 @@ MethodDeclarationStatement: function(node, st, c) {
         throw "InternalError: MethodDeclaration without ClassDeclaration or ProtocolDeclaration at line: " + exports.acorn.getLineInfo(compiler.source, node.start).line;
 
     // Create warnings if types does not corresponds to method declaration in superclass or interface declarations
-    // If we don't find the method in superclass or interface declarations above or if it is a protocol 
+    // If we don't find the method in superclass or interface declarations above or if it is a protocol
     // declaration, try to find it in any of the conforming protocols
     if (!alreadyDeclared) {
         var protocols = def.protocols;
 
-        if (protocols) for (var i = 0, size = protocols.length; i < size; i++) {
-            var protocol = protocols[i],
-                alreadyDeclared = isInstanceMethodType ? protocol.getInstanceMethod(selector) : protocol.getClassMethod(selector);
+        if (protocols)
+            for (var i = 0, size = protocols.length; i < size; i++) {
+                var protocol = protocols[i],
+                    alreadyDeclared = isInstanceMethodType ? protocol.getInstanceMethod(selector) : protocol.getClassMethod(selector);
 
-            if (alreadyDeclared)
-                break;
-        }
+                if (alreadyDeclared)
+                    break;
+            }
     }
 
     if (alreadyDeclared) {
