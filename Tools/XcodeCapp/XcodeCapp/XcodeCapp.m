@@ -117,6 +117,11 @@ static NSArray *XCCDefaultIgnoredPathPredicates = nil;
 // A queue for threaded operations to perform
 @property NSOperationQueue *operationQueue;
 
+// Standard output used during build project process
+@property (strong) NSTask *task;
+@property (strong) NSPipe *stdOut;
+@property (strong) NSPipe *stdErr;
+
 // We have to declare this because it is referenced by the fsevents_callback function
 - (void)handleFSEventsWithPaths:(NSArray *)paths flags:(const FSEventStreamEventFlags[])eventFlags ids:(const FSEventStreamEventId[])eventIds;
 
@@ -241,7 +246,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     // Make sure we are using jsc as the narwhal engine!
     self.environment[@"NARWHAL_ENGINE"] = @"jsc";
 
-    self.executables = @[@"python", @"narwhal-jsc", @"objj", @"nib2cib", @"capp"];
+    self.executables = @[@"python", @"narwhal-jsc", @"objj", @"nib2cib", @"capp", @"jake"];
 
     // This is used to get the env var of $CAPP_BUILD
     NSDictionary *processEnvironment = [[NSProcessInfo processInfo] environment];
@@ -508,6 +513,47 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
+- (void)buildProject:(NSString*)config
+{
+    
+    DDLogVerbose(@"Build project launched with config: %@", config);
+
+    [self openConsolePanel:self];
+    self.task = nil;
+    self.task = [NSTask new];
+    
+    //setup system pipes and filehandles to process output data
+    self.stdOut = [[NSPipe alloc] init];
+    self.stdErr = [[NSPipe alloc] init];
+    NSFileHandle* fhOut = [self.stdOut fileHandleForReading];
+    NSFileHandle* fhErr = [self.stdErr fileHandleForReading];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(buildReceivedData:) name:NSFileHandleReadCompletionNotification object:fhOut];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(buildReceivedError:) name:NSFileHandleReadCompletionNotification object:fhErr];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(buildComplete:) name:NSTaskDidTerminateNotification object:self.task];
+    
+    //setup the task
+    self.task.launchPath     = self.executablePaths[@"jake"];
+    self.task.arguments      = [NSMutableArray arrayWithObjects:config , nil];
+    self.task.environment    = self.environment;
+    self.task.standardOutput = self.stdOut;
+    self.task.standardError  = self.stdErr;
+    
+    if(self.projectPath){
+        self.task.currentDirectoryPath = self.projectPath;
+    }
+    
+    [fhOut readInBackgroundAndNotify];
+    [fhErr readInBackgroundAndNotify];
+    
+    // Start building
+    [self.consoleProgressIndicator startAnimation:nil];
+    [self.task launch];
+    [self appendText:[NSString stringWithFormat:@"START building your app to %@\n", config] toTextView:self.consoleTextView withColor:[NSColor blackColor]];
+
+}
+
+
 #pragma mark - Processing
 
 - (void)waitForOperationQueueToFinishWithSelector:(SEL)selector
@@ -731,6 +777,55 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     }
 
     DDLogVerbose(@"%@ %@", NSStringFromSelector(_cmd), path);
+}
+
+-(void)buildReceivedData:(NSNotification*)notification
+
+{
+    if(self.task == nil)
+        return;
+    
+    NSData *data     = [[notification userInfo] objectForKey:NSFileHandleNotificationDataItem];
+    NSString *string = [[NSString alloc] initWithData:data encoding:NSASCIIStringEncoding];
+    
+    if ([string rangeOfString:@"ERROR"].location != NSNotFound) {
+        [self appendText:string toTextView:self.consoleTextView withColor:[NSColor redColor]];
+    }
+    else if ([string rangeOfString:@"WARNING"].location != NSNotFound) {
+        [self appendText:string toTextView:self.consoleTextView withColor:[NSColor orangeColor]];
+    }
+    else {
+        [self appendText:string toTextView:self.consoleTextView withColor:[NSColor blackColor]];
+    }
+    if([notification object] != nil)
+        [[notification object] readInBackgroundAndNotify];
+}
+
+-(void) buildReceivedError:(NSNotification*)notification
+{
+    if (self.task == nil) {
+        return;
+    }
+    
+    NSData *data     = [[notification userInfo] objectForKey:NSFileHandleNotificationDataItem];
+    NSString *string = [[NSString alloc] initWithData:data encoding:NSASCIIStringEncoding];
+    DDLogVerbose(@"Build project received error : %@", string);
+    [self appendText:string toTextView:self.consoleTextView withColor:[NSColor redColor]];
+    
+}
+
+-(void)buildComplete:(NSNotification*)notification
+{
+    DDLogVerbose(@"Build project complete");
+    [self.consoleProgressIndicator stopAnimation:nil];
+    [self appendText:@"\nBUILD COMPLETE\n" toTextView:self.consoleTextView withColor:[NSColor blueColor]];
+    
+    [self.task terminate];
+    self.task = nil;
+    [[self.stdOut fileHandleForReading] closeFile];
+    [[self.stdErr fileHandleForReading] closeFile];
+    self.stdOut = nil;
+    self.stdErr = nil;
 }
 
 #pragma mark - Event Stream
@@ -1522,6 +1617,13 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     [self.errorsPanel makeKeyAndOrderFront:nil];
 }
 
+- (IBAction)openConsolePanel:(id)sender
+{
+    [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
+    [self.consolePanel makeKeyAndOrderFront:nil];
+    
+}
+
 - (IBAction)openErrorInEditor:(id)sender
 {
     id info = self.errorListController.selection;
@@ -1664,6 +1766,11 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     self.errorListController.content = self.errorList;
 }
 
+- (IBAction)clearBuildConsole:(id)sender
+{
+    [self.consoleTextView setString:@""];
+}
+
 - (BOOL)hasErrors
 {
     NSInteger index = [self.errorList indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop)
@@ -1723,6 +1830,18 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     return YES;
 }
 
+#pragma mark - Utils
+- (void)appendText:(NSString*)text toTextView:(NSTextView*)textView withColor:(NSColor*)color
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
+        NSMutableAttributedString* attr = [[NSMutableAttributedString alloc] initWithString:text];
+        [attr addAttribute:NSForegroundColorAttributeName value:color range:NSMakeRange(0, attr.length)];
+        [[textView textStorage] appendAttributedString:attr];
+        [textView scrollRangeToVisible:NSMakeRange([[textView string] length], 0)];
+        
+    });
+}
 @end
 
 

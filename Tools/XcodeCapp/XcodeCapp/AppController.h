@@ -44,6 +44,6 @@
 - (IBAction)loadProject:(id)aSender;
 - (IBAction)openHelp:(id)aSender;
 - (IBAction)openAbout:(id)aSender;
-
+- (IBAction)buildProject:(id)sender;
 @end
 
