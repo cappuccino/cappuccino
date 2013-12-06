@@ -317,7 +317,7 @@ var CPZeroKeyCode = 48,
             var peek;
             if (peek=[_lastTextField nextKeyView])
             {   while ([peek isDescendantOf: _datePicker] && (peek=[peek nextKeyView])) {}
-                if ( ![peek canBecomeKeyView])
+                if (![peek canBecomeKeyView])
                     peek= nextValidKeyView;
                 [[self window] makeFirstResponder: peek];
             }
