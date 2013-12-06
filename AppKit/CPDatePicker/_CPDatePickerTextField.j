@@ -315,11 +315,11 @@ var CPZeroKeyCode = 48,
         if (_currentTextField == _lastTextField && [anEvent keyCode] == CPTabKeyCode)
         {
             var peek;
-		    if (peek=[_lastTextField nextKeyView])
-            {   while ([peek isDescendantOf: _datePicker]  && (peek=[peek nextKeyView])) {}
-			    if ( ![peek canBecomeKeyView])
+            if (peek=[_lastTextField nextKeyView])
+            {   while ([peek isDescendantOf: _datePicker] && (peek=[peek nextKeyView])) {}
+                if ( ![peek canBecomeKeyView])
                     peek= nextValidKeyView;
-			    [[self window] makeFirstResponder: peek];
+                [[self window] makeFirstResponder: peek];
             }
             return YES;
 
