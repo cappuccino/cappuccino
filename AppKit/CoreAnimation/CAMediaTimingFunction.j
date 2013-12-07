@@ -75,7 +75,7 @@ var CAMediaNamedTimingFunctions = nil;
     return self;
 }
 
-- (void)getControlPointAtIndex:(unsigned)anIndex values:(float/*[2]*/)reference
+- (void)getControlPointAtIndex:(CPUInteger)anIndex values:(float/*[2]*/)reference
 {
     if (anIndex == 0)
     {

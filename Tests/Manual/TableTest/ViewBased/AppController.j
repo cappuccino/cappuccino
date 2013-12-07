@@ -82,7 +82,7 @@ CPLogRegister(CPLogConsole)
     return content.length;
 }
 
-- (void)tableView:(CPTableView)aTableView dataViewForTableColumn:(CPTableColumn)aTableColumn row:(int)aRow
+- (void)tableView:(CPTableView)aTableView dataViewForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow
 {
     var n = (aRow % 3),
         viewKind = "view_kind_" + n,

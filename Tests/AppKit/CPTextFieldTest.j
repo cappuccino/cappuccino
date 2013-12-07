@@ -54,7 +54,7 @@
 
 }
 
-- (id)initWithFrame:aFrame
+- (id)initWithFrame:(CGRect)aFrame
 {
     if (self = [super initWithFrame:aFrame])
     {

@@ -42,7 +42,7 @@ CPLogRegister(CPLogConsole);
     return 10;
 }
 
-- (id)tableView:(CPTableView)tableView objectValueForTableColumn:(CPTableColumn)tableColumn row:(int)row
+- (id)tableView:(CPTableView)tableView objectValueForTableColumn:(CPTableColumn)tableColumn row:(CPInteger)row
 {
     return String((row + 1) * [[tableColumn identifier] intValue]);
 }

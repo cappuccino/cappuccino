@@ -268,7 +268,7 @@ var _CPAutocompleteMenuMaximumHeight = 307;
     return [contentArray count];
 }
 
-- (void)tableView:(CPTableView)tableView objectValueForTableColumn:(CPTableColumn)tableColumn row:(int)row
+- (void)tableView:(CPTableView)tableView objectValueForTableColumn:(CPTableColumn)tableColumn row:(CPInteger)row
 {
     return [contentArray objectAtIndex:row];
 }
@@ -282,7 +282,7 @@ var _CPAutocompleteMenuMaximumHeight = 307;
 
 @implementation _CPAutocompleteWindow : CPPanel
 
-- (id)initWithContentRect:(CGRect)aContentRect styleMask:(unsigned int)aStyleMask
+- (id)initWithContentRect:(CGRect)aContentRect styleMask:(unsigned)aStyleMask
 {
     if (self = [super initWithContentRect:aContentRect styleMask:aStyleMask])
         _constrainsToUsableScreen = NO;

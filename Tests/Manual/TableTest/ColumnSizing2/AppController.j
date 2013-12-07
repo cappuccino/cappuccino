@@ -97,7 +97,7 @@ HEIGHT = 600;
     return tableView._meta['x'] + tableView._meta['y'] * 2;
 }
 
-- (id)tableView:(id)tableView objectValueForTableColumn:(CPTableColumn)aColumn row:(int)aRow
+- (id)tableView:(id)tableView objectValueForTableColumn:(CPTableColumn)aColumn row:(CPInteger)aRow
 {
     return "Column " + [aColumn identifier] + " Row " + aRow;
 }

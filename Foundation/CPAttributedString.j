@@ -179,7 +179,7 @@
     character at index \c anIndex. Returns an empty dictionary if index
     is out of bounds.
 */
-- (CPDictionary)attributesAtIndex:(unsigned)anIndex effectiveRange:(CPRangePointer)aRange
+- (CPDictionary)attributesAtIndex:(CPUInteger)anIndex effectiveRange:(CPRangePointer)aRange
 {
     // find the range entry that contains anIndex.
     var entryIndex = [self _indexOfEntryWithIndex:anIndex];
@@ -219,7 +219,7 @@
     character at index \c anIndex. Returns an empty dictionary if index
     is out of bounds.
 */
-- (CPDictionary)attributesAtIndex:(unsigned)anIndex longestEffectiveRange:(CPRangePointer)aRange inRange:(CPRange)rangeLimit
+- (CPDictionary)attributesAtIndex:(CPUInteger)anIndex longestEffectiveRange:(CPRangePointer)aRange inRange:(CPRange)rangeLimit
 {
     var startingEntryIndex = [self _indexOfEntryWithIndex:anIndex];
 
@@ -295,7 +295,7 @@
     @return the named attribute or \c nil is the attribute does not
     exist.
 */
-- (id)attribute:(CPString)attribute atIndex:(unsigned)index effectiveRange:(CPRangePointer)aRange
+- (id)attribute:(CPString)attribute atIndex:(CPUInteger)index effectiveRange:(CPRangePointer)aRange
 {
     if (!attribute)
     {
@@ -332,7 +332,7 @@
     @return the named attribute or \c nil is the attribute does not
     exist.
 */
-- (id)attribute:(CPString)attribute atIndex:(unsigned)anIndex longestEffectiveRange:(CPRangePointer)aRange inRange:(CPRange)rangeLimit
+- (id)attribute:(CPString)attribute atIndex:(CPUInteger)anIndex longestEffectiveRange:(CPRangePointer)aRange inRange:(CPRange)rangeLimit
 {
     var startingEntryIndex = [self _indexOfEntryWithIndex:anIndex];
 
@@ -690,7 +690,7 @@
     @param anIndex the index at which the insert is to occur.
     @exception CPRangeException If the index is out of bounds.
 */
-- (void)insertAttributedString:(CPAttributedString)aString atIndex:(unsigned)anIndex
+- (void)insertAttributedString:(CPAttributedString)aString atIndex:(CPUInteger)anIndex
 {
     if (anIndex < 0 || anIndex > [self length])
         [CPException raise:CPRangeException reason:"tried to insert attributed string at an invalid index: "+anIndex];

@@ -46,7 +46,7 @@
     return [_names count];
 }
 
-- (id)tableView:(CPTableView)aTableView objectValueForTableColumn:(CPTableColumn)aColumn row:(int)aRowIndex
+- (id)tableView:(CPTableView)aTableView objectValueForTableColumn:(CPTableColumn)aColumn row:(CPInteger)aRowIndex
 {
     return _names[aRowIndex];
 }
@@ -62,7 +62,7 @@
     return YES;
 }
 
-- (BOOL)tableView:(CPTableView)aTableView shouldSelectRow:(int)rowIndex
+- (BOOL)tableView:(CPTableView)aTableView shouldSelectRow:(CPInteger)rowIndex
 {
     console.log(@"shouldSelectRow");
     return YES;
@@ -76,6 +76,12 @@
 - (void)tableView:(CPTableView)tableView didClickTableColumn:(CPTableColumn)tableColumn;
 {
     console.log(@"didClickTableColumn");
+}
+
+- (BOOL)tableView:(CPTableView)aTableView shouldSelectTableColumn:(CPTableColumn)aTableColumn
+{
+    console.log(@"shouldSelectTableColumn");
+    return YES;
 }
 
 @end
@@ -109,9 +115,15 @@
     return YES;
 }
 
-- (BOOL)tableView:(CPTableView)aTableView shouldSelectRow:(int)rowIndex
+- (BOOL)tableView:(CPTableView)aTableView shouldSelectRow:(CPInteger)rowIndex
 {
     console.log(@"shouldSelectRow");
+    return YES;
+}
+
+- (BOOL)tableView:(CPTableView)aTableView shouldSelectTableColumn:(CPTableColumn)aTableColumn
+{
+    console.log(@"shouldSelectTableColumn");
     return YES;
 }
 

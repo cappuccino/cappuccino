@@ -248,7 +248,7 @@ CPTexturedBackgroundWindowMask
     @param aStyleMask a style mask
     @return the initialized window
 */
-- (id)initWithContentRect:(CGRect)aContentRect styleMask:(unsigned int)aStyleMask
+- (id)initWithContentRect:(CGRect)aContentRect styleMask:(unsigned)aStyleMask
 {
     self = [super init];
 
@@ -1699,11 +1699,17 @@ CPTexturedBackgroundWindowMask
         switch (type)
         {
             case CPLeftMouseDown:
+
+                // This is needed when a doubleClick occurs when the sheet is closing or opening
+                if (!_parentWindow)
+                    return;
+
                 [_windowView mouseDown:anEvent];
 
                 // -dw- if the window is clicked, the sheet should come to front, and become key,
                 // and the window should be immediately behind
                 [sheet makeKeyAndOrderFront:self];
+
                 return;
 
             case CPMouseMoved:

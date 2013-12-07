@@ -168,7 +168,7 @@
     [_proxyObject setValue:anObject forKey:_key];
 }
 
-- (unsigned)count
+- (CPUInteger)count
 {
     if (_count)
         return _count(_proxyObject, _countSEL);

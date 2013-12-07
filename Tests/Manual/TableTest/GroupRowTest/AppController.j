@@ -105,7 +105,7 @@
     return 500;
 }
 
-- (id)tableView:(CPTableView)aTableView objectValueForTableColumn:(CPTableColumn)aColumn row:(int)aRow
+- (id)tableView:(CPTableView)aTableView objectValueForTableColumn:(CPTableColumn)aColumn row:(CPInteger)aRow
 {
     if ([aColumn identifier] === "icons")
         return iconImage;
@@ -113,7 +113,7 @@
     return aRow;
 }
 
-- (BOOL)tableView:(CPTableView)aTableView isGroupRow:(int)aRow
+- (BOOL)tableView:(CPTableView)aTableView isGroupRow:(CPInteger)aRow
 {
     var groups = [];
 

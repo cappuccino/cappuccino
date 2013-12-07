@@ -41,7 +41,7 @@
     return @"shadow-window-view";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{};
 }

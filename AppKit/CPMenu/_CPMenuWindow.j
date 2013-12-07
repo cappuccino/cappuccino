@@ -435,7 +435,7 @@ _CPMenuWindowAttachedMenuBackgroundStyle    = 2;
     return "menu-view";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{
             @"menu-window-more-above-image": [CPNull null],

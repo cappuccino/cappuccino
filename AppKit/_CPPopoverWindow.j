@@ -399,7 +399,7 @@ var _CPPopoverWindow_shouldClose_    = 1 << 0,
 
     @param sender the sender of the action
 */
-- (IBAction)orderFront:(is)aSender
+- (IBAction)orderFront:(id)aSender
 {
     if (![self isKeyWindow])
     {

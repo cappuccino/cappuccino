@@ -21,7 +21,7 @@
     items. Because CPArray is backed by JavaScript arrays,
     this method ends up simply returning a regular array.
 */
-+ (CPArray)arrayWithCapacity:(unsigned)aCapacity
++ (CPArray)arrayWithCapacity:(CPUInteger)aCapacity
 {
     return [[self alloc] initWithCapacity:aCapacity];
 }
@@ -30,7 +30,7 @@
     Initializes an array able to store at least \c aCapacity items. Because CPArray
     is backed by JavaScript arrays, this method ends up simply returning a regular array.
 */
-/*- (id)initWithCapacity:(unsigned)aCapacity
+/*- (id)initWithCapacity:(CPUInteger)aCapacity
 {
     return self;
 }*/
@@ -63,7 +63,7 @@
     @param anObject the object to insert into the array
     @param anIndex the location to insert \c anObject at
 */
-- (void)insertObject:(id)anObject atIndex:(int)anIndex
+- (void)insertObject:(id)anObject atIndex:(CPUInteger)anIndex
 {
     _CPRaiseInvalidAbstractInvocation(self, _cmd);
 }
@@ -93,7 +93,7 @@
         [self insertObject:[objects objectAtIndex:index] atIndex:currentIndex];
 }
 
-- (unsigned)insertObject:(id)anObject inArraySortedByDescriptors:(CPArray)descriptors
+- (CPUInteger)insertObject:(id)anObject inArraySortedByDescriptors:(CPArray)descriptors
 {
     var index,
         count = [descriptors count];
@@ -126,7 +126,7 @@
     The current element at position \c anIndex will be removed from the array.
     @param anIndex the position in the array to place \c anObject
 */
-- (void)replaceObjectAtIndex:(int)anIndex withObject:(id)anObject
+- (void)replaceObjectAtIndex:(CPUInteger)anIndex withObject:(id)anObject
 {
     _CPRaiseInvalidAbstractInvocation(self, _cmd);
 }
@@ -241,7 +241,7 @@
     Removes the object at \c anIndex.
     @param anIndex the location of the element to be removed
 */
-- (void)removeObjectAtIndex:(int)anIndex
+- (void)removeObjectAtIndex:(CPUInteger)anIndex
 {
     _CPRaiseInvalidAbstractInvocation(self, _cmd);
 }
@@ -322,7 +322,7 @@
     @param anIndex the first index to swap from
     @param otherIndex the second index to swap from
 */
-- (void)exchangeObjectAtIndex:(unsigned)anIndex withObjectAtIndex:(unsigned)otherIndex
+- (void)exchangeObjectAtIndex:(CPUInteger)anIndex withObjectAtIndex:(CPUInteger)otherIndex
 {
     if (anIndex === otherIndex)
         return;

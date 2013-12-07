@@ -75,13 +75,13 @@ CPLogRegister(CPLogConsole);
     return [itemsArray count];
 }
 
-- (id)tableView:(CPTableView)tableView objectValueForTableColumn:(CPTableColumn)tableColumn row:(int)row
+- (id)tableView:(CPTableView)tableView objectValueForTableColumn:(CPTableColumn)tableColumn row:(CPInteger)row
 {
     return "foo";
 }
 */
 
-- (BOOL)tableView:(CPTableView)aTableView shouldEditTableColumn:(CPTableColumn)aTableColumn row:(int)rowIndex
+- (BOOL)tableView:(CPTableView)aTableView shouldEditTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)rowIndex
 {
     return YES;
 }
@@ -134,22 +134,22 @@ CPLogRegister(CPLogConsole);
     return [itemsArray count];
 }
 
-- (id)objectInItemsArrayAtIndex:(unsigned int)index
+- (id)objectInItemsArrayAtIndex:(CPUInteger)index
 {
     return [itemsArray objectAtIndex:index];
 }
 
-- (void)insertObject:(id)anObject inItemsArrayAtIndex:(unsigned int)index
+- (void)insertObject:(id)anObject inItemsArrayAtIndex:(CPUInteger)index
 {
     [itemsArray insertObject:anObject atIndex:index];
 }
 
-- (void)removeObjectFromItemsArrayAtIndex:(unsigned int)index
+- (void)removeObjectFromItemsArrayAtIndex:(CPUInteger)index
 {
     [itemsArray removeObjectAtIndex:index];
 }
 
-- (void)replaceObjectInItemsArrayAtIndex:(unsigned int)index withObject:(id)anObject
+- (void)replaceObjectInItemsArrayAtIndex:(CPUInteger)index withObject:(id)anObject
 {
     [itemsArray replaceObjectAtIndex:index withObject:anObject];
 }

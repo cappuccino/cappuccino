@@ -49,7 +49,7 @@ CPCircularSlider    = 1;
     return "slider";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{
             @"knob-color": [CPNull null],

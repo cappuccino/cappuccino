@@ -54,7 +54,7 @@
     [tableView setNeedsDisplay:YES];
 }
 
-- (BOOL)tableView:(CPTableView)tableView isGroupRow:(int)row
+- (BOOL)tableView:(CPTableView)tableView isGroupRow:(CPInteger)row
 {
     return (row > 2 && row < 5);
 }

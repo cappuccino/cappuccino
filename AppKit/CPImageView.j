@@ -267,7 +267,7 @@ var CPImageViewEmptyPlaceholderImage = nil;
     [self setNeedsDisplay:YES];
 }
 
-- (unsigned)imageScaling
+- (CPUInteger)imageScaling
 {
     return [self currentValueForThemeAttribute:@"image-scaling"];
 }
@@ -502,7 +502,7 @@ var CPImageViewEmptyPlaceholderImage = nil;
     [_source setImage:image];
 }
 
-- (void)valueForBinding:(CPString)aBinding
+- (id)valueForBinding:(CPString)aBinding
 {
     var image = [_source image];
 

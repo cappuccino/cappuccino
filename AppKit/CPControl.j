@@ -322,11 +322,11 @@ var CPControlBlackColor = [CPColor blackColor];
     _previousTrackingLocation = currentLocation;
 }
 
-- (void)setState:(int)state
+- (void)setState:(CPInteger)state
 {
 }
 
-- (int)nextState
+- (CPInteger)nextState
 {
     return 0;
 }
@@ -607,7 +607,7 @@ var CPControlBlackColor = [CPColor blackColor];
     if ([note object] != self)
         return;
 
-    [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidBeginEditingNotification object:self userInfo:@{ "CPFieldEditor": [note object] }];
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidBeginEditingNotification object:self userInfo:@{"CPFieldEditor": [note object]}];
 }
 
 - (void)textDidChange:(CPNotification)note
@@ -616,7 +616,7 @@ var CPControlBlackColor = [CPColor blackColor];
     if ([note object] != self)
         return;
 
-    [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidChangeNotification object:self userInfo:@{ "CPFieldEditor": [note object] }];
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidChangeNotification object:self userInfo:@{"CPFieldEditor": [note object]}];
 }
 
 - (void)textDidEndEditing:(CPNotification)note
@@ -627,7 +627,49 @@ var CPControlBlackColor = [CPColor blackColor];
 
     [self _reverseSetBinding];
 
-    [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidEndEditingNotification object:self userInfo:@{ "CPFieldEditor": [note object] }];
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidEndEditingNotification object:self userInfo:[note userInfo]];
+}
+
+/*!
+    @ignore
+    Return the currentTextMovement needed by the delegate textDidEndEditing
+    This is going to check the currentEvent of the CPApp
+*/
+- (unsigned)_currentTextMovement
+{
+    var currentEvent = [CPApp currentEvent],
+        keyCode = [currentEvent keyCode],
+        modifierFlags = [currentEvent modifierFlags];
+
+    switch (keyCode)
+    {
+        case CPEscapeKeyCode:
+            return CPCancelTextMovement;
+
+        case CPLeftArrowKeyCode:
+            return CPLeftTextMovement;
+
+        case CPRightArrowKeyCode:
+            return CPRightTextMovement;
+
+        case CPUpArrowKeyCode:
+            return CPUpTextMovement;
+
+        case CPDownArrowKeyCode:
+            return CPDownTextMovement;
+
+        case CPReturnKeyCode:
+            return CPReturnTextMovement;
+
+        case CPTabKeyCode:
+            if (modifierFlags & CPShiftKeyMask)
+                return CPBacktabTextMovement;
+
+            return CPTabTextMovement;
+
+        default:
+            return CPOtherTextMovement;
+    }
 }
 
 /*!
@@ -813,7 +855,7 @@ var CPControlBlackColor = [CPColor blackColor];
 /*!
     Returns the image scaling of the control.
 */
-- (CPImageScaling)imageScaling
+- (CPUInteger)imageScaling
 {
     return [self valueForThemeAttribute:@"image-scaling"];
 }

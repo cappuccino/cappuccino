@@ -50,7 +50,7 @@ var _CPPopoverWindowViewDefaultCursorSize = CGSizeMake(16, 10);
     return @"popover-window-view";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{
             @"background-gradient": [CPNull null],

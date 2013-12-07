@@ -108,7 +108,7 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
     return "scroller";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{
             @"scroller-width": 7.0,

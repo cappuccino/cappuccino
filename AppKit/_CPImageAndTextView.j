@@ -40,7 +40,8 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
     _CPImageAndTextViewFontChangedFlag              = 1 << 7,
     _CPImageAndTextViewTextShadowColorChangedFlag   = 1 << 8,
     _CPImageAndTextViewImagePositionChangedFlag     = 1 << 9,
-    _CPImageAndTextViewImageScalingChangedFlag      = 1 << 10;
+    _CPImageAndTextViewImageScalingChangedFlag      = 1 << 10,
+    _CPImageAndTextViewTextUnderlineChangedFlag     = 1 << 11;
 
 /* @ignore */
 @implementation _CPImageAndTextView : CPView
@@ -51,6 +52,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
     CPLineBreakMode         _lineBreakMode;
     CPColor                 _textColor;
     CPFont                  _font;
+    BOOL                    _textUnderline;
 
     CPColor                 _textShadowColor;
     CGSize                  _textShadowOffset;
@@ -218,7 +220,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
     [self setNeedsLayout];
 }
 
-- (void)imageScaling
+- (CPUInteger)imageScaling
 {
     return _imageScaling;
 }
@@ -297,6 +299,22 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
 - (CGSize)textShadowOffset
 {
     return _textShadowOffset;
+}
+
+- (void)setTextUnderline:(BOOL)aFlag
+{
+    if (_textUnderline === aFlag)
+        return;
+
+    _textUnderline = aFlag;
+    _flags |= _CPImageAndTextViewTextUnderlineChangedFlag;
+
+    [self setNeedsLayout];
+}
+
+- (BOOL)textUnderline
+{
+    return _textUnderline;
 }
 
 - (CGRect)textFrame
@@ -410,7 +428,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
             hasDOMTextElement = YES;
 
             // We have to set all these values now.
-            _flags |= _CPImageAndTextViewTextChangedFlag | _CPImageAndTextViewFontChangedFlag | _CPImageAndTextViewLineBreakModeChangedFlag;
+            _flags |= _CPImageAndTextViewTextChangedFlag | _CPImageAndTextViewFontChangedFlag | _CPImageAndTextViewLineBreakModeChangedFlag | _CPImageAndTextViewTextUnderlineChangedFlag;
         }
     }
 
@@ -501,6 +519,11 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
                 shadowStyle.font = fontStyle;
                 shadowStyle.lineHeight = [font defaultLineHeightForFont] + "px";
             }
+        }
+
+        if (_flags & _CPImageAndTextViewTextUnderlineChangedFlag)
+        {
+            textStyle.textDecoration = _textUnderline ? "underline" : "";
         }
 
         // Update the line break mode if necessary.

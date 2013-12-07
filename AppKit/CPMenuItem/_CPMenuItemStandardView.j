@@ -45,7 +45,7 @@
     return "menu-item-standard-view";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{
             @"submenu-indicator-color": [CPNull null],

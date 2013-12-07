@@ -105,7 +105,7 @@
     @param anArgument the argument to add
     @param anIndex the index of the argument in the method
 */
-- (void)setArgument:(id)anArgument atIndex:(unsigned)anIndex
+- (void)setArgument:(id)anArgument atIndex:(CPUInteger)anIndex
 {
     _arguments[anIndex] = anArgument;
 }
@@ -116,7 +116,7 @@
     @param anIndex the index of the argument to return
     @throws CPInvalidArgumentException if anIndex is greater than or equal to the invocation's number of arguments.
 */
-- (id)argumentAtIndex:(unsigned)anIndex
+- (id)argumentAtIndex:(CPUInteger)anIndex
 {
     return _arguments[anIndex];
 }

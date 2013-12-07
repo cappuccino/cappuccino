@@ -209,7 +209,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     return "textfield";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{
             @"bezel-inset": CGInsetMakeZero(),
@@ -531,7 +531,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 /*! @ignore */
 - (BOOL)acceptsFirstResponder
 {
-    return ([self isEnabled] && [self isEditable] || [self isSelectable]) && [self _isWithinUsablePlatformRect];
+    return [self isEnabled] && ([self isEditable] || [self isSelectable]) && [self _isWithinUsablePlatformRect];
 }
 
 /*! @ignore */
@@ -692,7 +692,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 {
 #if PLATFORM(DOM)
     // We might have been the first responder without actually editing.
-    if (_isEditing)
+    if (_isEditing && CPTextFieldInputOwner === self)
     {
         var element = [self _inputElement],
             newValue = element.value,
@@ -721,7 +721,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     _isEditing = NO;
     if ([self isEditable])
     {
-        [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:self userInfo:nil]];
+        [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:self userInfo:@{"CPTextMovement": [self _currentTextMovement]}]];
 
         if ([self sendsActionOnEndEditing])
             [self sendAction:[self action] to:[self target]];
@@ -987,7 +987,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         if (_isEditing)
         {
             _isEditing = NO;
-            [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:self userInfo:nil]];
+            [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:self userInfo:@{"CPTextMovement": [self _currentTextMovement]}]];
         }
 
         // If there is no target action, or the sendAction call returns
@@ -1765,7 +1765,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [self _becomeFirstKeyResponder];
 }
 
-- (BOOL)validateUserInterfaceItem:(id <CPValidatedUserInterfaceItem>)anItem
+- (BOOL)validateUserInterfaceItem:(id /*<CPValidatedUserInterfaceItem>*/)anItem
 {
     var theAction = [anItem action];
 
@@ -1883,7 +1883,7 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 
 @implementation _CPTextFieldValueBinder : CPBinder
 
-- (void)_updatePlaceholdersWithOptions:(CPDictionary)options forBinding:(CPBinder)aBinding
+- (void)_updatePlaceholdersWithOptions:(CPDictionary)options forBinding:(CPString)aBinding
 {
     [super _updatePlaceholdersWithOptions:options];
 
