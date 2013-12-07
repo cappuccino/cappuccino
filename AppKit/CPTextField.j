@@ -1134,7 +1134,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
             // Formatting failed, get an "empty" object by formatting an empty string.
             // If that fails, the value is undefined.
-            if ([formatter getObjectValue:@ref(value) forString:@"" errorDescription:nil] === NO)
+            var formatterErrorMessage;
+            if ([formatter getObjectValue:@ref(value) forString:@"" errorDescription:@ref(formatterErrorMessage)] === NO)
                 value = undefined;
 
             [super setObjectValue:value];
