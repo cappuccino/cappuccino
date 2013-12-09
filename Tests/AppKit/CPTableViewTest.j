@@ -303,6 +303,18 @@
     [self assertTrue:[table bounds].size.width >= 200];
 }
 
+- (void)testProtocolTableViewDataSource
+{
+    var table = [[CPTableView alloc] initWithFrame:CGRectMake(0, 0, 400, 400)],
+        dataSource = [TestDataSource new],
+        falseObjectValueDataSource = [TestFalseObjectValueDataSource new],
+        falseNumberOfRowsDataSource = [TestFalseNumberRowsDataSource new];
+
+    [self assert:true equals:[dataSource conformsToProtocol:@protocol(CPTableViewDataSource)]];
+    [self assert:false equals:[falseObjectValueDataSource conformsToProtocol:@protocol(CPTableViewDataSource)]];
+    [self assert:false equals:[falseNumberOfRowsDataSource conformsToProtocol:@protocol(CPTableViewDataSource)]];
+}
+
 @end
 
 @implementation FirstResponderConfigurableTableView : CPTableView
@@ -317,7 +329,25 @@
 
 @end
 
-@implementation TestDataSource : CPObject
+@implementation TestFalseObjectValueDataSource : CPObject
+
+- (int)numberOfRowsInTableView:(CPTableView)aTableView
+{
+    return 0;
+}
+
+@end
+
+@implementation TestFalseNumberRowsDataSource : CPObject
+
+- (id)tableView:(CPTableView)aTableView objectValueForTableColumn:(CPTableColumn)aColumn row:(CPInteger)aRow
+{
+    return nil;
+}
+
+@end
+
+@implementation TestDataSource : CPObject <CPTableViewDataSource>
 {
     CPArray tableEntries @accessors;
 }
