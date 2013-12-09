@@ -62,7 +62,7 @@ CPCriticalAlertStyle        = 2;
 
 var bottomHeight = 71;
 
-@protocol CPAlertDelegate
+@protocol CPAlertDelegate <CPObject>
 
 @optional
 - (BOOL)alertShowHelp:(CPAlert)alert;
