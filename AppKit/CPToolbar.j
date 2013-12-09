@@ -67,7 +67,7 @@ var CPToolbarsByIdentifier              = nil,
     CPToolbarConfigurationsByIdentifier = nil;
 
 
-@protocol CPToolbarDelegate
+@protocol CPToolbarDelegate <CPObject>
 
 @optional
 - (CPToolbarItem)toolbar:(CPToolbar)toolbar itemForItemIdentifier:(CPString)itemIdentifier willBeInsertedIntoToolbar:(BOOL)flag;
