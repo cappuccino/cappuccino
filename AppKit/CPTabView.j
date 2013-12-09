@@ -39,7 +39,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
     CPTabViewDidChangeNumberOfTabViewItemsSelector  = 1 << 4;
 
 
-@protocol CPTabViewDelegate
+@protocol CPTabViewDelegate <CPObject>
 
 @optional
 - (BOOL)tabView:(CPTabView)tabView shouldSelectTabViewItem:(CPTabViewItem)tabViewItem;
