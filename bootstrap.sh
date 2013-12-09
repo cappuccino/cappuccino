@@ -307,7 +307,7 @@ if [ "$install_cappuccino" ]; then
         git clone "$git_repo" "$install_directory"
         (cd "$install_directory" && git checkout "origin/$github_ref")
     else
-        zip_ball="http://github.com/$github_path/zipball/$github_ref"
+        zip_ball="https://github.com/$github_path/zipball/$github_ref"
 
         echo "Downloading Cappuccino base from \"$zip_ball\"..."
         curl_quiet_arg=""
