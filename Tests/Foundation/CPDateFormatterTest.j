@@ -1171,6 +1171,15 @@
     [self assert:result equals:nil];
 }
 
+- (void)testGetObjectValueAcceptsNilErrorDescription
+{
+    var date = nil,
+        result = [_dateFormatter getObjectValue:@ref(date) forString:@"a" errorDescription:nil];
+
+    [self assertFalse:result];
+    [self assertTrue:date === nil];
+}
+
 - (void)testGetObjectValueReturnYes
 {
     [_dateFormatter setDateFormat:@"d mm"];
@@ -1179,7 +1188,7 @@
         error = @"",
         result = [_dateFormatter getObjectValue:@ref(date) forString:@"10 12" errorDescription:@ref(error)];
 
-    [self assert:result equals:YES];
+    [self assertTrue:result];
     [self assert:date equals:[[CPDate alloc] initWithString:@"2000-01-10 08:12:00 +0000"]];
     [self assert:error equals:@""];
 }

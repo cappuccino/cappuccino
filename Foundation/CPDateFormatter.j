@@ -1208,7 +1208,9 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
 
     if (!value)
     {
-        @deref(anError) = @"The value \"" + aString + "\" is invalid.";
+        if (anError)
+            @deref(anError) = @"The value \"" + aString + "\" is invalid.";
+
         return NO;
     }
 
