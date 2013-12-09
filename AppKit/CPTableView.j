@@ -121,7 +121,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 #define HAS_VARIABLE_ROW_HEIGHTS()  (_implementedDelegateMethods & CPTableViewDelegate_tableView_heightOfRow_)
 
 
-@protocol CPTableViewDataSource
+@protocol CPTableViewDataSource <CPObject>
 
 @required
 - (CPInteger)numberOfRowsInTableView:(CPTableView)aTableView;
@@ -137,7 +137,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 @end
 
-@protocol CPTableViewDelegate
+@protocol CPTableViewDelegate <CPObject>
 
 @optional
 - (BOOL)selectionShouldChangeInTableView:(CPTableView)aTableView;
