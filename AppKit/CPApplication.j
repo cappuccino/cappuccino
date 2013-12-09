@@ -42,7 +42,7 @@ var CPMainCibFile               = @"CPMainCibFile",
     CPEventModifierFlags = 0;
 
 
-@protocol CPApplicationDelegate
+@protocol CPApplicationDelegate <CPObject>
 
 @optional
 - (void)applicationDidBecomeActive:(CPNotification)aNotification;
