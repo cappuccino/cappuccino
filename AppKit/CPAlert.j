@@ -788,15 +788,6 @@ var bottomHeight = 71;
 
 @implementation CPAlert (CPAlertDelegate)
 
-/*
-    @ignore
-    Return YES if the delegate implements alertShowHelp:
-*/
-- (BOOL)_delegateRespondsToAlertShowHelp
-{
-    return _implementedDelegateMethods & CPAlertDelegate_alertShowHelp_;
-}
-
 /*!
     @ignore
     Call the delegate alertDidEnd:returnCode
