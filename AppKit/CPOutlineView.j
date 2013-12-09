@@ -89,7 +89,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 #define SHOULD_SELECT_ITEM(anOutlineView, anItem) (!((anOutlineView)._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_shouldSelectItem_) || [(anOutlineView)._outlineViewDelegate outlineView:(anOutlineView) shouldSelectItem:(anItem)])
 
 
-@protocol CPOutlineViewDelegate
+@protocol CPOutlineViewDelegate <CPObject>
 
 @optional
 - (BOOL)outlineView:(CPOutlineView)anOutlineView isGroupItem:(id)anItem;
@@ -122,7 +122,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 @end
 
 
-@protocol CPOutlineViewDataSource
+@protocol CPOutlineViewDataSource <CPObject>
 
 @optional
 - (BOOL)outlineView:(CPOutlineView)anOutlineView acceptDrop:(id /*<CPDraggingInfo>*/)info item:(id)anItem childIndex:(CPInteger)anIndex;
