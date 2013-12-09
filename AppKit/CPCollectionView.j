@@ -45,7 +45,7 @@ var CPCollectionViewDelegate_collectionView_acceptDrop_index_dropOperation_     
     CPCollectionViewDelegate_collectionView_draggingViewForItemsAtIndexes_withEvent_offset  = 1 << 9;
 
 
-@protocol CPCollectionViewDelegate
+@protocol CPCollectionViewDelegate <CPObject>
 
 @optional
 - (BOOL)collectionView:(CPCollectionView)collectionView acceptDrop:(id)draggingInfo index:(CPInteger)index dropOperation:(CPCollectionViewDropOperation)dropOperation;
