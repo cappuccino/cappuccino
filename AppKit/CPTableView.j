@@ -123,15 +123,13 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 @protocol CPTableViewDataSource <CPObject>
 
-@required
-- (CPInteger)numberOfRowsInTableView:(CPTableView)aTableView;
-- (id)tableView:(CPTableView)aTableView objectValueForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRowIndex;
-
 @optional
 - (BOOL)tableView:(CPTableView)aTableView acceptDrop:(id <CPDraggingInfo>)info row:(CPInteger)aRowIndex dropOperation:(CPTableViewDropOperation)operation;
 - (BOOL)tableView:(CPTableView)aTableView writeRowsWithIndexes:(CPIndexSet)rowIndexes toPasteboard:(CPPasteboard)pboard;
 - (CPArray)tableView:(CPTableView)aTableView namesOfPromisedFilesDroppedAtDestination:(CPURL)dropDestination forDraggedRowsWithIndexes:(CPIndexSet)anIndexSet;
 - (CPDragOperation)tableView:(CPTableView)aTableView validateDrop:(id <CPDraggingInfo>)info proposedRow:(CPInteger)aRowIndex proposedDropOperation:(CPTableViewDropOperation)anOperation;
+- (CPInteger)numberOfRowsInTableView:(CPTableView)aTableView;
+- (id)tableView:(CPTableView)aTableView objectValueForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRowIndex;
 - (void)tableView:(CPTableView)aTableView setObjectValue:(id)anObjectValue forTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRowIndex;
 - (void)tableView:(CPTableView)aTableView sortDescriptorsDidChange:(CPArray)oldDescriptors;
 
