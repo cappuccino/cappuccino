@@ -377,7 +377,7 @@ var CPZeroKeyCode = 48,
         if ([anEvent keyCode] == CPDeleteKeyCode || [anEvent keyCode] == CPDeleteForwardKeyCode)
             key = [[_currentTextField stringValue] substringToIndex:[[_currentTextField stringValue] length] - 1];
         else
-            key = [CPString stringWithFormat:@"%i%i",parseInt([_currentTextField stringValue]), parseInt([anEvent characters])];
+            key = [CPString stringWithFormat:@"%i%i",parseInt(+[_currentTextField stringValue], 10), parseInt(+[anEvent characters],10)];
 
         [_currentTextField setStringKeyValue:key];
     }
