@@ -149,7 +149,7 @@
     {
         // index is the character index we're searching for,
         // while range is the actual range entry we're comparing against
-        if (CPLocationInRange(index, entry.range))
+        if (CPLocationInRange(index, entry.range) || (!index && !CPMaxRange(entry.range)))
             return CPOrderedSame;
         else if (CPMaxRange(entry.range) <= index)
             return CPOrderedDescending;
@@ -523,41 +523,50 @@
 */
 - (void)replaceCharactersInRange:(CPRange)aRange withString:(CPString)aString
 {
-    if (!aString)
-        aString = @"";
+    if (!aString) aString = @"";
 
-    var startingIndex = [self _indexOfEntryWithIndex:aRange.location];
+    var    lastValidIndex= MAX(_rangeEntries.length-1, 0);
+    var startingIndex = [self _indexOfEntryWithIndex: aRange.location];
 
-    if (startingIndex === CPNotFound)
-        _CPRaiseRangeException(self, _cmd, aRange.location, _string.length);
+    if (startingIndex < 0) startingIndex = lastValidIndex;
+    var endingIndex = [self _indexOfEntryWithIndex: CPMaxRange(aRange)];
 
-    var startingRangeEntry = _rangeEntries[startingIndex],
-        endingIndex = [self _indexOfEntryWithIndex:MAX(CPMaxRange(aRange) - 1, 0)];
+    if (endingIndex < 0) endingIndex = lastValidIndex;
 
-    if (endingIndex === CPNotFound)
-        _CPRaiseRangeException(self, _cmd, MAX(CPMaxRange(aRange) - 1, 0), _string.length);
-
-    var endingRangeEntry = _rangeEntries[endingIndex],
-        additionalLength = aString.length - aRange.length;
+    var additionalLength = aString.length - aRange.length;
+    var patchPosition = startingIndex;
 
     _string = _string.substring(0, aRange.location) + aString + _string.substring(CPMaxRange(aRange));
+    var originalLength= _rangeEntries[patchPosition].range.length;
+    _rangeEntries[patchPosition].range.length += additionalLength;
 
-    if (startingIndex === endingIndex)
-        startingRangeEntry.range.length += additionalLength;
-    else
+    if (startingIndex !== endingIndex)
     {
-        endingRangeEntry.range.length = CPMaxRange(endingRangeEntry.range) - CPMaxRange(aRange);
-        endingRangeEntry.range.location = CPMaxRange(aRange);
+        if (CPIntersectionRange(_rangeEntries[patchPosition].range, aRange).length < _rangeEntries[patchPosition].range.length)
+        {
+            startingIndex++;
+        }
 
-        startingRangeEntry.range.length = CPMaxRange(aRange) - startingRangeEntry.range.location;
-
-        _rangeEntries.splice(startingIndex, endingIndex - startingIndex);
+        if (endingIndex > startingIndex)
+        {
+            var originalOffset= _rangeEntries[startingIndex].range.location;
+            var offsetFromSplicing = CPMaxRange(_rangeEntries[endingIndex].range)-originalOffset
+            _rangeEntries.splice(startingIndex, endingIndex - startingIndex);
+            _rangeEntries[startingIndex].range=CPMakeRange(originalOffset, offsetFromSplicing);
+        } else
+        {
+            var lhsOffset=aString.length -CPIntersectionRange(CPMakeRange(_rangeEntries[patchPosition].range.location, originalLength), aRange).length;
+            var rhsOffset=aString.length -CPIntersectionRange(_rangeEntries[endingIndex].range, aRange).length;
+            _rangeEntries[patchPosition].range.length = originalLength+lhsOffset;
+            _rangeEntries[startingIndex].range.location += lhsOffset;
+            _rangeEntries[startingIndex].range.length += rhsOffset;
+            patchPosition= startingIndex;
+        }
     }
 
-    endingIndex = startingIndex + 1;
-
-    while (endingIndex < _rangeEntries.length)
-        _rangeEntries[endingIndex++].range.location += additionalLength;
+    var l= _rangeEntries.length;
+    for (var patchIndex= patchPosition+1; patchIndex < l; patchIndex++)
+        _rangeEntries[patchIndex].range.location += additionalLength;
 }
 
 /*!
