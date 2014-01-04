@@ -542,7 +542,7 @@
 
     if (startingIndex !== endingIndex)
     {
-        if (CPIntersectionRange(_rangeEntries[patchPosition].range, aRange).length < _rangeEntries[patchPosition].range.length)
+        if (CPIntersectionRange(CPMakeRange(_rangeEntries[patchPosition].range.location, originalLength), aRange).length < originalLength)
         {
             startingIndex++;
         }
