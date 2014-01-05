@@ -556,11 +556,11 @@
             _rangeEntries.splice(startingIndex, endingIndex - startingIndex);
             _rangeEntries[startingIndex].range=CPMakeRange(originalOffset, offsetFromSplicing);
         }
-        var lhsOffset=aString.length -CPIntersectionRange(CPMakeRange(_rangeEntries[patchPosition].range.location, originalLength), aRange).length;
-        _rangeEntries[patchPosition].range.length = originalLength+lhsOffset;
 
 		if(patchPosition !== startingIndex) 
-        {   var rhsOffset=aString.length -CPIntersectionRange(_rangeEntries[startingIndex].range, aRange).length;
+        {   var lhsOffset=aString.length -CPIntersectionRange(CPMakeRange(_rangeEntries[patchPosition].range.location, originalLength), aRange).length;
+            _rangeEntries[patchPosition].range.length = originalLength+lhsOffset;
+            var rhsOffset=aString.length -CPIntersectionRange(_rangeEntries[startingIndex].range, aRange).length;
             _rangeEntries[startingIndex].range.location += lhsOffset;
             _rangeEntries[startingIndex].range.length += rhsOffset;
             patchPosition= startingIndex;
