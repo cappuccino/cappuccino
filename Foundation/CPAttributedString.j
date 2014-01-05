@@ -523,7 +523,8 @@
 */
 - (void)replaceCharactersInRange:(CPRange)aRange withString:(CPString)aString
 {
-    if (!aString) aString = @"";
+    if (!aString)
+        aString = @"";
 
     var    lastValidIndex= MAX(_rangeEntries.length-1, 0);
     var startingIndex = [self _indexOfEntryWithIndex: aRange.location];
@@ -538,11 +539,12 @@
 
     _string = _string.substring(0, aRange.location) + aString + _string.substring(CPMaxRange(aRange));
     var originalLength= _rangeEntries[patchPosition].range.length;
-    _rangeEntries[patchPosition].range.length += additionalLength;
 
-    if (startingIndex !== endingIndex)
+    if (startingIndex === endingIndex)
+        _rangeEntries[patchPosition].range.length += additionalLength;
+    else
     {
-        if (CPIntersectionRange(CPMakeRange(_rangeEntries[patchPosition].range.location, originalLength), aRange).length < originalLength)
+        if (CPIntersectionRange(_rangeEntries[patchPosition].range, aRange).length < originalLength)
         {
             startingIndex++;
         }
@@ -553,11 +555,12 @@
             var offsetFromSplicing = CPMaxRange(_rangeEntries[endingIndex].range)-originalOffset
             _rangeEntries.splice(startingIndex, endingIndex - startingIndex);
             _rangeEntries[startingIndex].range=CPMakeRange(originalOffset, offsetFromSplicing);
-        } else
-        {
-            var lhsOffset=aString.length -CPIntersectionRange(CPMakeRange(_rangeEntries[patchPosition].range.location, originalLength), aRange).length;
-            var rhsOffset=aString.length -CPIntersectionRange(_rangeEntries[endingIndex].range, aRange).length;
-            _rangeEntries[patchPosition].range.length = originalLength+lhsOffset;
+        }
+        var lhsOffset=aString.length -CPIntersectionRange(CPMakeRange(_rangeEntries[patchPosition].range.location, originalLength), aRange).length;
+        _rangeEntries[patchPosition].range.length = originalLength+lhsOffset;
+
+		if(patchPosition !== startingIndex) 
+        {   var rhsOffset=aString.length -CPIntersectionRange(_rangeEntries[startingIndex].range, aRange).length;
             _rangeEntries[startingIndex].range.location += lhsOffset;
             _rangeEntries[startingIndex].range.length += rhsOffset;
             patchPosition= startingIndex;
