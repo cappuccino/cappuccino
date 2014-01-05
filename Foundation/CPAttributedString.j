@@ -537,7 +537,7 @@
     var additionalLength = aString.length - aRange.length;
     var patchPosition = startingIndex;
 
-    _string = _string.substring(0, aRange.location) + aString + _string.substring(CPMaxRange(aRange));
+   _string = _string.substring(0, aRange.location) + aString + _string.substring(CPMaxRange(aRange));
     var originalLength= _rangeEntries[patchPosition].range.length;
 
     if (startingIndex === endingIndex)
@@ -564,6 +564,8 @@
             _rangeEntries[startingIndex].range.location += lhsOffset;
             _rangeEntries[startingIndex].range.length += rhsOffset;
             patchPosition= startingIndex;
+        } else
+        {   _rangeEntries[patchPosition].range.length += additionalLength;
         }
     }
 
