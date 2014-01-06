@@ -558,7 +558,7 @@
         }
 
 		if(patchPosition !== startingIndex) 
-        {   var lhsOffset=aString.length -CPIntersectionRange(CPMakeRange(_rangeEntries[patchPosition].range.location, originalLength), aRange).length;
+        {   var lhsOffset=aString.length -CPIntersectionRange(_rangeEntries[patchPosition].range, aRange).length;
             _rangeEntries[patchPosition].range.length = originalLength+lhsOffset;
             var rhsOffset=aString.length -CPIntersectionRange(_rangeEntries[startingIndex].range, aRange).length;
             _rangeEntries[startingIndex].range.location += lhsOffset;

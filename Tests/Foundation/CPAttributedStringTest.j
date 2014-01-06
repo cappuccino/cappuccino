@@ -5,6 +5,33 @@ var sharedObject = [CPObject new];
 
 @implementation CPAttributedStringTest : OJTestCase
 
+- (void)testAppendToEmptyString
+{
+    var string = [CPAttributedString new];
+	[string replaceCharactersInRange:CPMakeRange(0,0) withString:@"hi there"];
+    [self assertTrue:([string string] === @"hi there")
+             message:"testAppendToEmptyString: expected:" + @"hi there" + " actual:" + [string string]];
+}
+- (void)testAppendToEndOfString
+{
+    var string = [[CPAttributedString alloc] initWithString:@"hi there"];
+	[string replaceCharactersInRange:CPMakeRange(8,0) withString:@" it is me"];
+    [self assertTrue:([string string] === @"hi there it is me")
+             message:"testAppendToEndOfString: expected:" + @"hi there it is me" + " actual:" + [string string]];
+}
+- (void)testWriteOverRangeBoundaries
+{
+    var string=[[CPAttributedString alloc] initWithString:@"Fusce\n" attributes: [CPDictionary dictionaryWithObjects:[ 1 ] forKeys: ["testkey"]]]
+	[string replaceCharactersInRange:CPMakeRange(6, 0) withAttributedString:[[CPAttributedString alloc] initWithString:@"this is boldface" 
+                attributes:[CPDictionary dictionaryWithObjects:[ 2 ] forKeys: ["testkey"]]]];
+    [string replaceCharactersInRange:CPMakeRange(5, 3) withString:@" "];
+	var aRange=CPMakeRange(0, 0);
+    var attribs=[string attributesAtIndex:4 effectiveRange: aRange];
+
+    [self assertTrue:([attribs objectForKey:@"testkey"] === 1)
+             message:"testWriteOverRangeBoundaries: expected:" + @"1" + " actual:" + [attribs objectForKey:@"testkey"]];
+}
+
 - (CPAttributedString)stringForTesting
 {
     var string = [[CPAttributedString alloc] initWithString:"The quick brown fox jumped over the lazy dog."];
