@@ -601,6 +601,8 @@
         endingEntryIndex = [self _indexOfRangeEntryForIndex:CPMaxRange(aRange) splitOnMaxIndex:YES],
         current = startingEntryIndex;
 
+    if (current < 0) current = MAX(_rangeEntries.length-1, 0);
+
     if (endingEntryIndex === CPNotFound)
         endingEntryIndex = _rangeEntries.length;
 
@@ -800,7 +802,7 @@
         var a = _rangeEntries[current],
             b = _rangeEntries[current + 1];
 
-        if ([a.attributes isEqualToDictionary:b.attributes])
+        if (a && b && [a.attributes isEqualToDictionary:b.attributes])
         {
             a.range.length = CPMaxRange(b.range) - a.range.location;
             _rangeEntries.splice(current + 1, 1);
