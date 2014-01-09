@@ -79,8 +79,8 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
         return;
 
     relativeDateFormating = @{
-      @"fr" : [@"demain", 1440, @"apr" + String.fromCharCode(233) + @"s-demain", 2880, @"apr" + String.fromCharCode(233) + @"s-apr" + String.fromCharCode(233) + @"s-demain", 4320, @"hier", -1440, @"avant-hier", -2880, @"avant-avant-hier", -4320],
-      @"en" : [@"tomorrow", 1440, @"yesterday", -1440],
+      @"fr" : [@"demain", 1, @"apr" + String.fromCharCode(233) + @"s-demain", 2, @"apr" + String.fromCharCode(233) + @"s-apr" + String.fromCharCode(233) + @"s-demain", 3, @"hier", -1, @"avant-hier", -2, @"avant-avant-hier", -3],
+      @"en" : [@"tomorrow", 1, @"yesterday", -1],
       @"de" : [],
       @"es" : []
     };
@@ -552,13 +552,13 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
             var date = [CPDate date];
             [date _dateWithTimeZone:_timeZone];
 
-            date.setHours(aDate.getHours());
-            date.setMinutes(aDate.getMinutes());
-            date.setSeconds(aDate.getSeconds());
+            date.setHours(12);
+            date.setMinutes(0);
+            date.setSeconds(0);
 
-            date.setMinutes([relativeWords objectAtIndex:i]);
+            date.setDate([relativeWords objectAtIndex:i] + date.getDate());
 
-            if (date.getDate() == aDate.getDate() && date.getMonth() && aDate.getMonth() && date.getFullYear() == aDate.getFullYear())
+            if (date.getDate() == aDate.getDate() && date.getMonth() == aDate.getMonth() && date.getFullYear() == aDate.getFullYear())
             {
                 relativeWord = [relativeWords objectAtIndex:(i - 1)];
                 format = @"";
