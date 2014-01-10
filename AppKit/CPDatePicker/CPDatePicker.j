@@ -309,7 +309,14 @@ CPEraDatePickerElementFlag              = 0x0100;
     aTimeInterval = MAX(MIN(aTimeInterval, [_maxDate timeIntervalSinceDate:aDateValue]), [_minDate timeIntervalSinceDate:aDateValue]);
 
     if ([aDateValue isEqualToDate:_dateValue] && aTimeInterval == _timeInterval)
+    {
+        if (_datePickerStyle == CPTextFieldAndStepperDatePickerStyle || _datePickerStyle == CPTextFieldDatePickerStyle)
+            [_datePickerTextfield setDateValue:_dateValue];
+        else
+            [_datePickerCalendar setDateValue:_dateValue];
+
         return;
+    }
 
     if (_implementedCDatePickerDelegateMethods & CPDatePicker_validateProposedDateValue_timeInterval)
     {

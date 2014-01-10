@@ -66,7 +66,6 @@ var CPZeroKeyCode = 48,
     _CPDatePickerElementView            _datePickerElementView;
     CPDatePicker                        _datePicker;
     CPStepper                           _stepper;
-    CPTimer                             _timerEdition;
 }
 
 
@@ -101,7 +100,7 @@ var CPZeroKeyCode = 48,
 
 
 #pragma mark -
-#pragma mark Responder methods
+#pragma mark Override responder methods
 
 - (BOOL)becomeFirstResponder
 {
@@ -116,7 +115,7 @@ var CPZeroKeyCode = 48,
 - (BOOL)resignFirstResponder
 {
     // End the timer of editing
-    [self _endTimer];
+    [_currentTextField _endEditing];
 
     // Don't forget to unbind, otherwise several steppers will increase or decrease
     [_currentTextField unbind:@"objectValue"];
@@ -129,6 +128,10 @@ var CPZeroKeyCode = 48,
     return YES;
 }
 
+- (BOOL)canBecomeKeyView
+{
+    return NO;
+}
 
 #pragma mark -
 #pragma mark Setter Getter methods
@@ -202,7 +205,7 @@ var CPZeroKeyCode = 48,
         return;
 
     // End the timer of editing
-    [self _endTimer];
+    [_currentTextField _endEditing];
 
     // Don't forget to unbind, otherwise several steppers will increase or decrease
     [_currentTextField unbind:@"objectValue"];
@@ -281,7 +284,7 @@ var CPZeroKeyCode = 48,
 
     if (key == CPUpArrowFunctionKey)
     {
-        [self _endTimer];
+        [_currentTextField _invalidTimer];
         [_stepper setDoubleValue:parseInt([_currentTextField objectValue])];
         [_stepper performClickUp:self];
         return YES;
@@ -289,7 +292,7 @@ var CPZeroKeyCode = 48,
 
     if (key == CPDownArrowFunctionKey)
     {
-        [self _endTimer];
+        [_currentTextField _invalidTimer];
         [_stepper setDoubleValue:parseInt([_currentTextField objectValue])];
         [_stepper performClickDown:self];
         return YES;
@@ -299,8 +302,10 @@ var CPZeroKeyCode = 48,
     {
         if (_currentTextField == _firstTextField && [anEvent keyCode] == CPTabKeyCode)
         {
-            if ([_datePicker previousKeyView])
-                [[self window] makeFirstResponder:[_datePicker previousKeyView]];
+            var previousValidKeyView = [_datePicker previousValidKeyView];
+
+            if (previousValidKeyView)
+                [[self window] makeFirstResponder:previousValidKeyView];
 
             return YES;
         }
@@ -311,19 +316,23 @@ var CPZeroKeyCode = 48,
 
     if (key == CPRightArrowFunctionKey || [anEvent keyCode] == CPTabKeyCode)
     {
-
         if (_currentTextField == _lastTextField && [anEvent keyCode] == CPTabKeyCode)
         {
-            if ([_datePicker nextKeyView])
-                [[self window] makeFirstResponder:[_datePicker nextKeyView]];
+            var nextValidKeyView = [_datePicker nextValidKeyView];
+
+            if (nextValidKeyView)
+                [[self window] makeFirstResponder:nextValidKeyView];
 
             return YES;
+        }
 
-        } [self _selectTextField:[_currentTextField nextTextField]]; return YES; }
+        [self _selectTextField:[_currentTextField nextTextField]];
+        return YES;
+    }
 
-    if ([anEvent keyCode] == CPReturnKeyCode && _timerEdition)
+    if ([anEvent keyCode] == CPReturnKeyCode)
     {
-        [_timerEdition fire];
+        [_currentTextField _endEditing];
         return YES;
     }
 
@@ -350,84 +359,7 @@ var CPZeroKeyCode = 48,
         return;
     }
 
-    if ([anEvent keyCode] != CPDeleteKeyCode && [anEvent keyCode] != CPDeleteForwardKeyCode  && [anEvent keyCode] < CPZeroKeyCode || [anEvent keyCode] > CPNineKeyCode)
-        return;
-
-    // Here, at the first editing we launch a timer to auto-finish the editing. There is another behavior when the user has already edited something
-    if (!_timerEdition)
-    {
-         _timerEdition = [CPTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(_timerKeyEvent:) userInfo:nil repeats:NO];
-
-         // Take care about the delete key
-         if ([anEvent keyCode] == CPDeleteKeyCode || [anEvent keyCode] == CPDeleteForwardKeyCode)
-             [_currentTextField setStringKeyValue:@""];
-         else
-             [_currentTextField setStringKeyValue:[anEvent characters]];
-    }
-    else
-    {
-        var newFireDate = [CPDate date],
-            key;
-
-        newFireDate.setSeconds(newFireDate.getSeconds() + 2);
-
-        [_timerEdition setFireDate:newFireDate];
-
-        // Take care about the delete key
-        if ([anEvent keyCode] == CPDeleteKeyCode || [anEvent keyCode] == CPDeleteForwardKeyCode)
-            key = [[_currentTextField stringValue] substringToIndex:[[_currentTextField stringValue] length] - 1];
-        else
-            key = [CPString stringWithFormat:@"%i%i",parseInt([_currentTextField stringValue]), parseInt([anEvent characters])];
-
-        [_currentTextField setStringKeyValue:key];
-    }
-}
-
-
-#pragma mark -
-#pragma mark Timer event
-
-/*! End of the timer
-*/
-- (void)_timerKeyEvent:(id)sender
-{
-    _timerEdition = nil;
-
-    if (![[_currentTextField stringValue] isEqualToString:@"  "] && ![[_currentTextField stringValue] isEqualToString:@"    "])
-    {
-        var value = [_currentTextField stringValue];
-
-        if ([_datePicker _isEnglishFormat] && [_currentTextField dateType] == CPHourDateType)
-        {
-            if (![_datePickerElementView _isAMHour] && value != 12)
-                value = parseInt(value) + 12;
-
-            if (value == 12 && ![_datePickerElementView _isAMHour])
-                value = 12;
-            else if (value == 12)
-                value = 0;
-        }
-
-        [_currentTextField setObjectValue:value];
-    }
-    else
-    {
-        [_currentTextField setObjectValue:@"0"];
-    }
-
-
-}
-
-/*! We force to end the timer
-*/
-- (void)_endTimer
-{
-    if (_timerEdition)
-    {
-        [_timerEdition invalidate];
-        [self _timerKeyEvent:_timerEdition];
-        _timerEdition = nil;
-    }
+    [_currentTextField setValueForKeyEvent:anEvent];
 }
 
 
@@ -1216,6 +1148,8 @@ var CPMonthDateType = 0,
     int _dateType  @accessors(getter=dateType);
     int _maxNumber @accessors(getter=maxNumber);
     int _minNumber @accessors(getter=minNumber);
+
+    CPTimer _timerEdition;
 }
 
 
@@ -1325,32 +1259,120 @@ var CPMonthDateType = 0,
     It's called when the user is editing with the keyboard
     @param aStringValue a CPString
 */
-- (void)setStringKeyValue:(id)anObjectValue
+- (void)setValueForKeyEvent:(CPEvent)anEvent
 {
-    if (_dateType == CPYearDateType)
-    {
-        if ([anObjectValue length] > 4)
-            return
+    var keyCode = [anEvent keyCode];
 
-        while ([anObjectValue length] < 4)
-            anObjectValue = " " + anObjectValue;
+    if (keyCode != CPDeleteKeyCode && keyCode != CPDeleteForwardKeyCode  && keyCode < CPZeroKeyCode || keyCode > CPNineKeyCode)
+        return;
+
+    var newValue = [self stringValue],
+        length = [newValue length],
+        eventKeyValue = parseInt([anEvent characters]).toString();
+
+    if (keyCode == CPDeleteKeyCode || keyCode == CPDeleteForwardKeyCode)
+    {
+        [_timerEdition invalidate];
+        _timerEdition = nil;
+        newValue = [newValue substringToIndex:(length - 1)];
     }
     else
     {
-        if ([anObjectValue length] > 2)
-            return
+        if (!_timerEdition)
+        {
+            _timerEdition = [CPTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(_timerKeyEvent:) userInfo:nil repeats:NO];
 
-        while ([anObjectValue length] < 2)
-            anObjectValue = " " + anObjectValue;
+            if ((_dateType == CPYearDateType && length == 4) || (_dateType != CPYearDateType && length == 2) || !length)
+                newValue = eventKeyValue;
+            else
+                newValue = parseInt(newValue).toString() + eventKeyValue;
+        }
+        else
+        {
+            var newFireDate = [CPDate date];
+
+            newFireDate.setSeconds(newFireDate.getSeconds() + 2);
+            [_timerEdition setFireDate:newFireDate];
+
+            newValue = parseInt(newValue).toString() + eventKeyValue;
+        }
     }
 
-    if (parseInt(anObjectValue) > [self _maxNumberWithMaxDate])
+    if (parseInt(newValue) > [self _maxNumberWithMaxDate] || ([_datePicker _isEnglishFormat] && _dateType == CPHourDateType && parseInt(newValue) > 12))
         return;
 
-    if ([_datePicker _isEnglishFormat] && _dateType == CPHourDateType && parseInt(anObjectValue) > 12)
-        return;
+    [super setObjectValue:newValue];
+}
 
-    [super setObjectValue:anObjectValue];
+/*!
+    End of the timer
+*/
+- (void)_timerKeyEvent:(id)sender
+{
+    var stringValue = [self stringValue];
+
+    _timerEdition = nil;
+
+    if ([stringValue length])
+    {
+        if ([_datePicker _isEnglishFormat] && [self dateType] == CPHourDateType)
+        {
+            var isAMHour = [[self superview] _isAMHour];
+
+            if (!isAMHour && stringValue != 12)
+                stringValue = parseInt(stringValue) + 12;
+
+            if (stringValue == 12 && !isAMHour)
+                stringValue = 12;
+            else if (stringValue == 12)
+                stringValue = 0;
+        }
+
+        [self setObjectValue:stringValue];
+    }
+}
+
+/*!
+    We force to end the timer
+*/
+- (void)_invalidTimer
+{
+    if (_timerEdition)
+    {
+        [_timerEdition invalidate];
+        _timerEdition = nil;
+    }
+}
+
+/*!
+    We force to end the timer and to update the objectValue of the datePicker
+*/
+- (void)_endEditing
+{
+    if (_timerEdition)
+        [_timerEdition invalidate];
+
+    _timerEdition = nil;
+
+    var objectValue = [self stringValue];
+
+    if (![objectValue length])
+        objectValue = [self objectValue];
+
+    if ([_datePicker _isEnglishFormat] && [self dateType] == CPHourDateType)
+    {
+        var isAMHour = [[self superview] _isAMHour];
+
+        if (!isAMHour && objectValue != 12)
+            objectValue = parseInt(objectValue) + 12;
+
+        if (objectValue == 12 && !isAMHour)
+            objectValue = 12;
+        else if (objectValue == 12)
+            objectValue = 0;
+    }
+
+    [self setObjectValue:objectValue];
 }
 
 /*! Set the stringValue of the TextField. Add some zeros of there isn't 2/4 letters in the value. It's called at the end of the editing process
@@ -1391,11 +1413,19 @@ var CPMonthDateType = 0,
 */
 - (void)setObjectValue:(id)anObjectValue
 {
-    var dateValue = [[_datePicker dateValue] copy];
+    var dateValue = [[_datePicker dateValue] copy],
+        lengthString = [[self stringValue] length],
+        objectValue = parseInt(anObjectValue);
 
     switch (_dateType)
     {
         case CPMonthDateType:
+
+            if (objectValue == 0 || !lengthString)
+            {
+                [self setStringValue:(dateValue.getMonth() + 1).toString()];
+                return;
+            }
 
             var dateNextMonth = [dateValue copy];
 
@@ -1407,27 +1437,62 @@ var CPMonthDateType = 0,
             if (numberDayNextMonth < [dateValue _daysInMonth] && dateValue.getDate() > numberDayNextMonth)
                 dateValue.setDate(numberDayNextMonth);
 
-            dateValue.setMonth(parseInt(anObjectValue) - 1);
+            dateValue.setMonth(objectValue - 1);
             break;
 
         case CPDayDateType:
-            dateValue.setDate(parseInt(anObjectValue));
+
+            if (objectValue == 0 || !lengthString)
+            {
+                [self setStringValue:dateValue.getDate().toString()];
+                return;
+            }
+
+            dateValue.setDate(objectValue);
             break;
 
         case CPYearDateType:
-            dateValue.setFullYear(parseInt(anObjectValue));
+
+            if (objectValue == 0 || !lengthString)
+            {
+                [self setStringValue:dateValue.getFullYear().toString()];
+                return;
+            }
+
+            dateValue.setFullYear(objectValue);
             break;
 
         case CPHourDateType:
-            dateValue.setHours(parseInt(anObjectValue));
+
+            if (!lengthString)
+            {
+                [self setStringValue:dateValue.getHours().toString()];
+                return;
+            }
+
+            dateValue.setHours(objectValue);
             break;
 
         case CPSecondDateType:
-            dateValue.setSeconds(parseInt(anObjectValue));
+
+            if (!lengthString)
+            {
+                [self setStringValue:dateValue.getSeconds().toString()];
+                return;
+            }
+
+            dateValue.setSeconds(objectValue);
             break;
 
         case CPMinuteDateType:
-            dateValue.setMinutes(parseInt(anObjectValue));
+
+            if (!lengthString)
+            {
+                [self setStringValue:dateValue.getMinutes().toString()];
+                return;
+            }
+
+            dateValue.setMinutes(objectValue);
             break;
     }
 
@@ -1475,6 +1540,7 @@ var CPMonthDateType = 0,
     return [super objectValue];
 }
 
+
 #pragma mark -
 #pragma mark Mouse event
 
@@ -1505,6 +1571,67 @@ var CPMonthDateType = 0,
 - (void)makeDeselectable
 {
     [self unsetThemeState:CPThemeStateSelected];
+}
+
+
+#pragma mark -
+#pragma mark Override
+
+/*!
+    We override this method to get all the time the good width
+*/
+- (CGSize)_minimumFrameSize
+{
+    var frameSize = [self frameSize],
+        contentInset = [self currentValueForThemeAttribute:@"content-inset"],
+        minSize = [self currentValueForThemeAttribute:@"min-size"],
+        maxSize = [self currentValueForThemeAttribute:@"max-size"],
+        lineBreakMode = [self lineBreakMode],
+        text = (_dateType == CPYearDateType) ? @"0000" : @"00",
+        textSize = CGSizeMakeCopy(frameSize),
+        font = [self currentValueForThemeAttribute:@"font"];
+
+    textSize.width -= contentInset.left + contentInset.right;
+    textSize.height -= contentInset.top + contentInset.bottom;
+
+    if (_dateType == CPAMPMDateType)
+        text = [self stringValue];
+
+    if (frameSize.width !== 0 &&
+        ![self isBezeled]     &&
+        (lineBreakMode === CPLineBreakByWordWrapping || lineBreakMode === CPLineBreakByCharWrapping))
+    {
+        textSize = [text sizeWithFont:font inWidth:textSize.width];
+    }
+    else
+    {
+        textSize = [text sizeWithFont:font];
+
+        // Account for possible fractional pixels at right edge
+        textSize.width += 1;
+    }
+
+    // Account for possible fractional pixels at bottom edge
+    textSize.height += 1;
+
+    frameSize.height = textSize.height + contentInset.top + contentInset.bottom;
+
+    if ([self isBezeled])
+    {
+        frameSize.height = MAX(frameSize.height, minSize.height);
+
+        if (maxSize.width > 0.0)
+            frameSize.width = MIN(frameSize.width, maxSize.width);
+
+        if (maxSize.height > 0.0)
+            frameSize.height = MIN(frameSize.height, maxSize.height);
+    }
+    else
+        frameSize.width = textSize.width + contentInset.left + contentInset.right;
+
+    frameSize.width = MAX(frameSize.width, minSize.width);
+
+    return frameSize;
 }
 
 @end
