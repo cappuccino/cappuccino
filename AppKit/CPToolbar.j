@@ -30,6 +30,13 @@
 
 @global CPApp
 
+var CPToolbarDelegate_toolbar_itemForItemIdentifier_willBeInsertedIntoToolbar_  = 1 << 0,
+    CPToolbarDelegate_toolbarAllowedItemIdentifiers_                            = 1 << 1,
+    CPToolbarDelegate_toolbarDefaultItemIdentifiers_                            = 1 << 2,
+    CPToolbarDelegate_toolbarDidRemoveItem_                                     = 1 << 3,
+    CPToolbarDelegate_toolbarSelectableItemIdentifiers_                         = 1 << 4,
+    CPToolbarDelegate_toolbarWillAddItem_                                       = 1 << 5;
+
 /*
     @global
     @group CPToolbarDisplayMode
@@ -58,6 +65,20 @@ CPToolbarSizeModeSmall                  = 2;
 
 var CPToolbarsByIdentifier              = nil,
     CPToolbarConfigurationsByIdentifier = nil;
+
+
+@protocol CPToolbarDelegate <CPObject>
+
+@optional
+- (CPToolbarItem)toolbar:(CPToolbar)toolbar itemForItemIdentifier:(CPString)itemIdentifier willBeInsertedIntoToolbar:(BOOL)flag;
+- (CPArray)toolbarAllowedItemIdentifiers:(CPToolbar)toolbar;
+- (CPArray)toolbarDefaultItemIdentifiers:(CPToolbar)toolbar;
+- (void)toolbarDidRemoveItem:(CPNotification)notification;
+- (CPArray)toolbarSelectableItemIdentifiers:(CPToolbar)toolbar;
+- (void)toolbarWillAddItem:(CPNotification)notification;
+
+@end
+
 
 /*!
     @ingroup appkit
@@ -89,14 +110,15 @@ var CPToolbarsByIdentifier              = nil,
 @implementation CPToolbar : CPObject
 {
     CPString                _identifier;
-    CPToolbarDisplayMode    _displayMode @accessors(property=displayMode);
+    CPToolbarDisplayMode    _displayMode                @accessors(property=displayMode);
     BOOL                    _showsBaselineSeparator;
     BOOL                    _allowsUserCustomization;
     BOOL                    _isVisible;
-    CPToolbarSizeMode       _sizeMode @accessors(property=sizeMode);
+    CPToolbarSizeMode       _sizeMode                   @accessors(property=sizeMode);
     int                     _desiredHeight;
 
-    id                      _delegate;
+    id <CPToolbarDelegate>  _delegate;
+    unsigned                _implementedDelegateMethods;
 
     CPArray                 _itemIdentifiers;
 
@@ -239,6 +261,25 @@ var CPToolbarsByIdentifier              = nil,
         return;
 
     _delegate = aDelegate;
+    _implementedDelegateMethods = 0;
+
+    if ([_delegate respondsToSelector:@selector(toolbar:itemForItemIdentifier:willBeInsertedIntoToolbar:)])
+        _implementedDelegateMethods |= CPToolbarDelegate_toolbar_itemForItemIdentifier_willBeInsertedIntoToolbar_;
+
+    if ([_delegate respondsToSelector:@selector(toolbarAllowedItemIdentifiers:)])
+        _implementedDelegateMethods |= CPToolbarDelegate_toolbarAllowedItemIdentifiers_;
+
+    if ([_delegate respondsToSelector:@selector(toolbarDefaultItemIdentifiers:)])
+        _implementedDelegateMethods |= CPToolbarDelegate_toolbarDefaultItemIdentifiers_;
+
+    if ([_delegate respondsToSelector:@selector(toolbarDidRemoveItem:)])
+        _implementedDelegateMethods |= CPToolbarDelegate_toolbarDidRemoveItem_;
+
+    if ([_delegate respondsToSelector:@selector(toolbarSelectableItemIdentifiers:)])
+        _implementedDelegateMethods |= CPToolbarDelegate_toolbarSelectableItemIdentifiers_;
+
+    if ([_delegate respondsToSelector:@selector(toolbarWillAddItem:)])
+        _implementedDelegateMethods |= CPToolbarDelegate_toolbarWillAddItem_;
 
     [self _reloadToolbarItems];
 }
@@ -289,9 +330,9 @@ var CPToolbarsByIdentifier              = nil,
     // _defaultItems may have been loaded from Cib
     _itemIdentifiers = [_defaultItems valueForKey:@"itemIdentifier"] || [];
 
-    if ([_delegate respondsToSelector:@selector(toolbarDefaultItemIdentifiers:)])
+    if ([self _delegateRespondsToToolbarDefaultItemIdentifiers])
     {
-        var itemIdentifiersFromDelegate = [_delegate toolbarDefaultItemIdentifiers:self];
+        var itemIdentifiersFromDelegate = [self _sendDelegateToolbarDefaultItemIdentifiers];
 
         // If we get items both from the Cib and from the delegate method, put the delegate items before the
         // Cib ones.
@@ -316,7 +357,7 @@ var CPToolbarsByIdentifier              = nil,
             item = [_identifiedItems objectForKey:identifier];
 
         if (!item && _delegate)
-            item = [_delegate toolbar:self itemForItemIdentifier:identifier willBeInsertedIntoToolbar:YES];
+            item = [self _sendDelegateItemForItemIdentifier:identifier willBeInsertedIntoToolbar:YES];
 
         item = [item copy];
 
@@ -394,12 +435,14 @@ var CPToolbarsByIdentifier              = nil,
 - (id)_itemForItemIdentifier:(CPString)identifier willBeInsertedIntoToolbar:(BOOL)toolbar
 {
     var item = [_identifiedItems objectForKey:identifier];
+
     if (!item)
     {
         item = [CPToolbarItem _standardItemWithItemIdentifier:identifier];
+
         if (_delegate && !item)
         {
-            item = [[_delegate toolbar:self itemForItemIdentifier:identifier willBeInsertedIntoToolbar:toolbar] copy];
+            item = [[self _sendDelegateItemForItemIdentifier:identifier willBeInsertedIntoToolbar:toolbar] copy];
             if (!item)
                 [CPException raise:CPInvalidArgumentException
                             reason:@"Toolbar delegate " + _delegate + " returned nil toolbar item for identifier " + identifier];
@@ -424,11 +467,11 @@ var CPToolbarsByIdentifier              = nil,
 /* @ignore */
 - (id)_defaultToolbarItems
 {
-    if (!_defaultItems && [_delegate respondsToSelector:@selector(toolbarDefaultItemIdentifiers:)])
+    if (!_defaultItems && [self _delegateRespondsToToolbarDefaultItemIdentifiers])
     {
         _defaultItems = [];
 
-        var identifiers = [_delegate toolbarDefaultItemIdentifiers:self],
+        var identifiers = [self _sendDelegateToolbarDefaultItemIdentifiers],
             index = 0,
             count = [identifiers count];
 
@@ -1237,6 +1280,92 @@ var LABEL_MARGIN    = 2.0;
 
     else
         [self updateFromItem];
+}
+
+@end
+
+
+@implementation CPToolbar (CPToolbarDelegate)
+
+/*
+    @ignore
+    Return YES if the delegate implements toolbarDefaultItemIdentifiers:
+*/
+- (BOOL)_delegateRespondsToToolbarDefaultItemIdentifiers
+{
+    return _implementedDelegateMethods & CPToolbarDelegate_toolbarDefaultItemIdentifiers_;
+}
+
+/*!
+    @ignore
+    Call the delegate toolbar:itemForItemIdentifier:willBeInsertedIntoToolbar:
+*/
+- (CPToolbarItem)_sendDelegateItemForItemIdentifier:(CPString)itemIdentifier willBeInsertedIntoToolbar:(BOOL)flag
+{
+    if (!(_implementedDelegateMethods & CPToolbarDelegate_toolbar_itemForItemIdentifier_willBeInsertedIntoToolbar_))
+        return nil;
+
+    return [_delegate toolbar:self itemForItemIdentifier:itemIdentifier willBeInsertedIntoToolbar:flag];
+}
+
+/*!
+    @ignore
+    Call the delegate toolbarAllowedItemIdentifiers:
+*/
+- (CPArray)_sendDelegateToolbarAllowedItemIdentifiers
+{
+    if (!(_implementedDelegateMethods & CPToolbarDelegate_toolbarAllowedItemIdentifiers_))
+        return [];
+
+    return [_delegate toolbarAllowedItemIdentifiers:self];
+}
+
+/*!
+    @ignore
+    Call the delegate toolbarDefaultItemIdentifiers:
+*/
+- (CPArray)_sendDelegateToolbarDefaultItemIdentifiers
+{
+    if (!(_implementedDelegateMethods & CPToolbarDelegate_toolbarDefaultItemIdentifiers_))
+        return [];
+
+    return [_delegate toolbarDefaultItemIdentifiers:self];
+}
+
+/*!
+    @ignore
+    Call the delegate toolbarDidRemoveItem:
+*/
+- (void)_sendDelegateToolbarDidRemoveItem:(CPNotification)notification
+{
+    if (!(_delegate & CPToolbarDelegate_toolbarDidRemoveItem_))
+        return;
+
+    [_delegate toolbarDidRemoveItem:notification];
+}
+
+/*!
+    @ignore
+    Call the delegate toolbarSelectableItemIdentifiers:
+*/
+- (CPArray)_sendDelegateToolbarSelectableItemIdentifiers
+{
+    if (!(_implementedDelegateMethods & CPToolbarDelegate_toolbarSelectableItemIdentifiers_))
+        return [];
+
+    return [_delegate toolbarSelectableItemIdentifiers:self];
+}
+
+/*!
+    @ignore
+    Call the delegate toolbarWillAddItem:
+*/
+- (void)_sendDelegateToolbarWillAddItem:(CPNotification)notification
+{
+    if (!(_delegate & CPToolbarDelegate_toolbarWillAddItem_))
+        return;
+
+    [_delegate toolbarWillAddItem:notification];
 }
 
 @end
