@@ -144,7 +144,6 @@ var CPZeroKeyCode = 48,
 {
     var dateValue = [aDateValue copy];
     [dateValue _dateWithTimeZone:[_datePicker timeZone]];
-
     [_datePickerElementView setDateValue:dateValue];
 }
 
@@ -218,7 +217,7 @@ var CPZeroKeyCode = 48,
     if ([_currentTextField dateType] != CPAMPMDateType)
     {
         // We update the value of the stepper dependind on the textField
-        [_stepper setObjectValue:parseInt([_currentTextField objectValue])];
+        [_stepper setObjectValue:parseInt([_currentTextField stringValue])];
         [_stepper setMaxValue:[_currentTextField maxNumber]];
         [_stepper setMinValue:[_currentTextField minNumber]];
 
@@ -450,6 +449,7 @@ var CPZeroKeyCode = 48,
     [_textFieldDay setDateType:CPDayDateType];
     [_textFieldDay setDatePicker:_datePicker];
     [_textFieldDay setAlignment:CPRightTextAlignment];
+    [_textFieldDay setDatePickerElementView:self];
     [self addSubview:_textFieldDay];
 
     _textFieldMonth = [_CPDatePickerElementTextField new];
@@ -458,6 +458,7 @@ var CPZeroKeyCode = 48,
     [_textFieldMonth setDateType:CPMonthDateType];
     [_textFieldMonth setDatePicker:_datePicker];
     [_textFieldMonth setAlignment:CPRightTextAlignment];
+    [_textFieldMonth setDatePickerElementView:self];
     [self addSubview:_textFieldMonth];
 
     _textFieldYear = [_CPDatePickerElementTextField new];
@@ -466,6 +467,7 @@ var CPZeroKeyCode = 48,
     [_textFieldYear setDateType:CPYearDateType];
     [_textFieldYear setDatePicker:_datePicker];
     [_textFieldYear setAlignment:CPRightTextAlignment];
+    [_textFieldYear setDatePickerElementView:self];
     [self addSubview:_textFieldYear];
 
     _textFieldHour = [_CPDatePickerElementTextField new];
@@ -474,6 +476,7 @@ var CPZeroKeyCode = 48,
     [_textFieldHour setDateType:CPHourDateType];
     [_textFieldHour setDatePicker:_datePicker];
     [_textFieldHour setAlignment:CPRightTextAlignment];
+    [_textFieldHour setDatePickerElementView:self];
     [self addSubview:_textFieldHour];
 
     _textFieldMinute = [_CPDatePickerElementTextField new];
@@ -482,6 +485,7 @@ var CPZeroKeyCode = 48,
     [_textFieldMinute setDateType:CPMinuteDateType];
     [_textFieldMinute setDatePicker:_datePicker];
     [_textFieldMinute setAlignment:CPRightTextAlignment];
+    [_textFieldMinute setDatePickerElementView:self];
     [self addSubview:_textFieldMinute];
 
     _textFieldSecond = [_CPDatePickerElementTextField new];
@@ -490,6 +494,7 @@ var CPZeroKeyCode = 48,
     [_textFieldSecond setDateType:CPSecondDateType];
     [_textFieldSecond setDatePicker:_datePicker];
     [_textFieldSecond setAlignment:CPRightTextAlignment];
+    [_textFieldSecond setDatePickerElementView:self];
     [self addSubview:_textFieldSecond];
 
     _textFieldPMAM = [_CPDatePickerElementTextField new];
@@ -498,6 +503,7 @@ var CPZeroKeyCode = 48,
     [_textFieldPMAM setDateType:CPAMPMDateType];
     [_textFieldPMAM setDatePicker:_datePicker];
     [_textFieldPMAM setAlignment:CPRightTextAlignment];
+    [_textFieldPMAM setDatePickerElementView:self];
     [self addSubview:_textFieldPMAM];
 
     _textFieldSeparatorOne = [CPTextField labelWithTitle:@"/"];
@@ -546,6 +552,13 @@ var CPZeroKeyCode = 48,
         [_textFieldPMAM setStringValue:@"AM"];
 }
 
+/*! Set the day date value to the appropriate textField
+    @param aDayDateValue the day
+*/
+- (void)setDayDateValue:(CPString)aDayDateValue
+{
+    [_textFieldDay setStringValue:aDayDateValue];
+}
 
 /*! Set the widget enabled or not
     @param aBoolean
@@ -571,6 +584,65 @@ var CPZeroKeyCode = 48,
 - (BOOL)_isAMHour
 {
     return [[_textFieldPMAM stringValue] isEqualToString:@"AM"];
+}
+
+- (CPDate)dateValue
+{
+    var date = [[_datePicker dateValue] copy];
+
+    [date _dateWithTimeZone:[_datePicker timeZone]];
+
+    if (![_textFieldDay isHidden])
+        date.setDate([_textFieldDay stringValue]);
+
+    if (![_textFieldMonth isHidden])
+        date.setMonth(parseInt([_textFieldMonth stringValue]) - 1);
+
+    if (![_textFieldYear isHidden])
+        date.setFullYear([_textFieldYear stringValue]);
+
+    if (![_textFieldSecond isHidden])
+        date.setSeconds([_textFieldSecond stringValue]);
+
+    if (![_textFieldMinute isHidden])
+        date.setMinutes([_textFieldMinute stringValue]);
+
+    if (![_textFieldHour isHidden])
+    {
+        var hour = parseInt([_textFieldHour stringValue]),
+            currentHour = parseInt(date.getHours());
+
+        if (hour != currentHour)
+        {
+            if (([_datePicker _isEnglishFormat] || [_datePicker _isAmericanFormat]))
+            {
+                if (![self _isAMHour])
+                {
+                    if (!(currentHour == 12 && hour == 11) && hour < 13)
+                        hour = hour + 12;
+                }
+                else if (hour == 12 && currentHour != 11)
+                {
+                    hour = 0;
+                }
+                else if (currentHour == 0 && hour == 11)
+                {
+                    hour = 23;
+                }
+                else if (hour == 13)
+                {
+                    hour = 1;
+                }
+            }
+
+            if (hour == 24)
+                hour = 0;
+
+            date.setHours(hour);
+        }
+    }
+
+    return date;
 }
 
 
@@ -1140,8 +1212,9 @@ var CPMonthDateType = 0,
 */
 @implementation _CPDatePickerElementTextField : CPTextField
 {
-    _CPDatePickerElementTextField _nextTextField        @accessors(property=nextTextField);
-    _CPDatePickerElementTextField _previousTextField    @accessors(property=previousTextField);
+    _CPDatePickerElementTextField _nextTextField            @accessors(property=nextTextField);
+    _CPDatePickerElementTextField _previousTextField        @accessors(property=previousTextField);
+    _CPDatePickerElementView      _datePickerElementView    @accessors(property=datePickerElementView);
 
     CPDatePicker    _datePicker @accessors(setter=setDatePicker:);
 
@@ -1435,9 +1508,9 @@ var CPMonthDateType = 0,
             var numberDayNextMonth = [dateNextMonth _daysInMonth];
 
             if (numberDayNextMonth < [dateValue _daysInMonth] && dateValue.getDate() > numberDayNextMonth)
-                dateValue.setDate(numberDayNextMonth);
+                [_datePickerElementView setDayDateValue:numberDayNextMonth.toString()];
 
-            dateValue.setMonth(objectValue - 1);
+            [super setObjectValue:objectValue];
             break;
 
         case CPDayDateType:
@@ -1448,7 +1521,7 @@ var CPMonthDateType = 0,
                 return;
             }
 
-            dateValue.setDate(objectValue);
+            [super setObjectValue:objectValue];
             break;
 
         case CPYearDateType:
@@ -1459,7 +1532,7 @@ var CPMonthDateType = 0,
                 return;
             }
 
-            dateValue.setFullYear(objectValue);
+            [super setObjectValue:objectValue];
             break;
 
         case CPHourDateType:
@@ -1470,7 +1543,7 @@ var CPMonthDateType = 0,
                 return;
             }
 
-            dateValue.setHours(objectValue);
+            [super setObjectValue:objectValue];
             break;
 
         case CPSecondDateType:
@@ -1480,8 +1553,7 @@ var CPMonthDateType = 0,
                 [self setStringValue:dateValue.getSeconds().toString()];
                 return;
             }
-
-            dateValue.setSeconds(objectValue);
+            [super setObjectValue:objectValue];
             break;
 
         case CPMinuteDateType:
@@ -1492,52 +1564,22 @@ var CPMonthDateType = 0,
                 return;
             }
 
-            dateValue.setMinutes(objectValue);
+            [super setObjectValue:objectValue];
             break;
     }
 
-    [_datePicker setDateValue:dateValue];
-}
+    var newDateValue = [_datePickerElementView dateValue],
+        timeZone = [_datePicker timeZone];
 
-/*! Return the objectValue of the textField. Needed for the binding.
-    This returns the objectValue relative to the dateValue
-*/
-- (id)objectValue
-{
-    var dateValue = [[_datePicker dateValue] copy];
-
-    switch (_dateType)
+    if (timeZone)
     {
-        case CPMonthDateType:
-            return dateValue.getMonth() + 1;
-            break;
+        var secondsFromGMT = [timeZone secondsFromGMTForDate:newDateValue],
+            secondsFromGMTTimeZone = [timeZone secondsFromGMT];
 
-        case CPDayDateType:
-            return dateValue.getDate();
-            break;
-
-        case CPYearDateType:
-            return dateValue.getFullYear();
-            break;
-
-        case CPHourDateType:
-            return dateValue.getHours();
-            break;
-
-        case CPSecondDateType:
-            return dateValue.getSeconds();
-            break;
-
-        case CPMinuteDateType:
-            return dateValue.getMinutes();
-            break;
-
-        default:
-            return [super objectValue];
-            break;
+        newDateValue.setSeconds(newDateValue.getSeconds() + secondsFromGMT - secondsFromGMTTimeZone);
     }
 
-    return [super objectValue];
+    [_datePicker setDateValue:newDateValue];
 }
 
 
