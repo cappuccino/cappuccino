@@ -1224,7 +1224,7 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
     // Interpret @"" as the date 2000-01-01 00:00:00 +0000, like in Cocoa. No idea why they picked this particular date.
     if (!aString)
         return [[CPDate alloc] initWithTimeIntervalSinceReferenceDate:-31622400];
-    
+
     if (aFormat == nil)
         return nil;
 
@@ -2119,6 +2119,9 @@ var CPDateFormatterDateStyleKey = @"CPDateFormatterDateStyle",
 */
 - (void)_dateWithTimeZone:(CPTimeZone)aTimeZone
 {
+    if (!aTimeZone)
+        return;
+
     self.setSeconds(self.getSeconds() - [aTimeZone secondsFromGMTForDate:self]);
     self.setSeconds(self.getSeconds() + [aTimeZone secondsFromGMT]);
 }
