@@ -27,8 +27,7 @@
 @import "CPMenuItem.j"
 @import "CPTextField.j"
 
-// NOTE: CPDatePicker is not implemented yet
-@class CPDatePicker
+@import "CPDatePicker.j"
 
 
 CPUndefinedAttributeType     = 0;
@@ -488,7 +487,36 @@ CPTransformableAttributeType = 1800;
 
 - (id)copy
 {
-    return [CPKeyedUnarchiver unarchiveObjectWithData:[CPKeyedArchiver archivedDataWithRootObject:self]];
+    var views = [CPArray array];
+
+    var copy = [[[self class] alloc] init];
+    [copy _setTemplateType:_templateType];
+    [copy _setOptions:_predicateOptions];
+    [copy _setModifier:_predicateModifier];
+    [copy _setLeftAttributeType:_leftAttributeType];
+    [copy _setRightAttributeType:_rightAttributeType];
+    [copy setLeftIsWildcard:_leftIsWildcard];
+    [copy setRightIsWildcard:_rightIsWildcard];
+
+    [_views enumerateObjectsUsingBlock:function(aView, idx, stop)
+    {
+        var vcopy;
+
+        if ([aView implementsSelector:@selector(copy)])
+        {
+            vcopy = [aView copy];
+        }
+        else
+        {
+            vcopy = [CPKeyedUnarchiver unarchiveObjectWithData:[CPKeyedArchiver archivedDataWithRootObject:aView]];
+        }
+
+        [views addObject:vcopy];
+    }];
+
+    [copy setTemplateViews:views];
+
+    return copy;
 }
 
 + (id)_operatorsForAttributeType:(CPAttributeType)attributeType
@@ -680,7 +708,7 @@ CPTransformableAttributeType = 1800;
         view = [[CPCheckBox alloc] initWithFrame:CGRectMake(0, 0, 50, 26)];
     }
     else if (attributeType == CPDateAttributeType)
-        view = [[CPDatePicker alloc] initWithFrame:CGRectMake(0, 0, 150, 26)];
+        view = [[CPDatePicker alloc] initWithFrame:CGRectMake(0, 0, 180, 26)];
     else
         return nil;
 
@@ -795,6 +823,32 @@ var CPPredicateTemplateTypeKey = @"CPPredicateTemplateType",
     [coder encodeBool:_leftIsWildcard forKey:CPPredicateTemplateLeftIsWildcardKey];
     [coder encodeBool:_rightIsWildcard forKey:CPPredicateTemplateRightIsWildcardKey];
     [coder encodeObject:_views forKey:CPPredicateTemplateViewsKey];
+}
+
+@end
+
+// Copy support for built-in types
+@implementation CPDatePicker (CPCopying)
+
+- (id)copy
+{
+    var ret = [[[self class] alloc] initWithFrame:[self frame]];
+
+    [ret setTextFont:[self textFont]];
+    [ret setMinDate:[self minDate]];
+    [ret setMaxDate:[self maxDate]];
+    [ret setTimeInterval:[self timeInterval]];
+    [ret setDatePickerMode:[self datePickerMode]];
+    [ret setDatePickerElements:[self datePickerElements]];
+    [ret setDatePickerStyle:[self datePickerStyle]];
+    [ret setLocale:[self locale]];
+    [ret setDateValue:[self dateValue]];
+    [ret setBackgroundColor:[self backgroundColor]];
+    [ret setDrawsBackground:[self drawsBackground]];
+    [ret setBordered:[self isBordered]];
+    [ret _init];
+
+    return ret;
 }
 
 @end
