@@ -2057,7 +2057,7 @@ NOT YET IMPLEMENTED
         // search the (potentially large number of) rows for nothing.
         var heightInfo = [_cachedRowHeights lastObject];
 
-        if (aPoint.y >= ROW_BOTTOM(heightInfo))
+        if (!heightInfo || aPoint.y >= ROW_BOTTOM(heightInfo))
             return -1;
 
         return [_cachedRowHeights indexOfObject:aPoint
