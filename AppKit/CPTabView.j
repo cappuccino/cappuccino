@@ -33,10 +33,22 @@ CPNoTabsBezelBorder      = 4; //Displays no tabs and has a bezeled border.
 CPNoTabsLineBorder       = 5; //Has no tabs and displays a line border.
 CPNoTabsNoBorder         = 6; //Displays no tabs and no border.
 
-var CPTabViewDidSelectTabViewItemSelector           = 1,
-    CPTabViewShouldSelectTabViewItemSelector        = 2,
-    CPTabViewWillSelectTabViewItemSelector          = 4,
-    CPTabViewDidChangeNumberOfTabViewItemsSelector  = 8;
+var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
+    CPTabViewShouldSelectTabViewItemSelector        = 1 << 2,
+    CPTabViewWillSelectTabViewItemSelector          = 1 << 3,
+    CPTabViewDidChangeNumberOfTabViewItemsSelector  = 1 << 4;
+
+
+@protocol CPTabViewDelegate <CPObject>
+
+@optional
+- (BOOL)tabView:(CPTabView)tabView shouldSelectTabViewItem:(CPTabViewItem)tabViewItem;
+- (void)tabView:(CPTabView)tabView didSelectTabViewItem:(CPTabViewItem)tabViewItem;
+- (void)tabView:(CPTabView)tabView willSelectTabViewItem:(CPTabViewItem)tabViewItem;
+- (void)tabViewDidChangeNumberOfTabViewItems:(CPTabView)tabView;
+
+@end
+
 
 /*!
     @ingroup appkit
@@ -48,18 +60,18 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 */
 @implementation CPTabView : CPView
 {
-    CPArray             _items;
+    CPArray                 _items;
 
-    CPSegmentedControl  _tabs;
-    CPBox               _box;
+    CPSegmentedControl      _tabs;
+    CPBox                   _box;
 
-    CPNumber            _selectedIndex;
+    CPNumber                _selectedIndex;
 
-    CPTabViewType       _type;
-    CPFont              _font;
+    CPTabViewType           _type;
+    CPFont                  _font;
 
-    id                  _delegate;
-    unsigned            _delegateSelectors;
+    id <CPTabViewDelegate>  _delegate;
+    unsigned                _delegateSelectors;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -405,7 +417,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
     Sets the delegate for this tab view.
     @param aDelegate the tab view's delegate
 */
-- (void)setDelegate:(id)aDelegate
+- (void)setDelegate:(id <CPTabViewDelegate>)aDelegate
 {
     if (_delegate == aDelegate)
         return;

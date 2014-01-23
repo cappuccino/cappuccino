@@ -41,6 +41,21 @@ var CPMainCibFile               = @"CPMainCibFile",
     CPMainCibFileHumanFriendly  = @"Main cib file base name",
     CPEventModifierFlags = 0;
 
+
+@protocol CPApplicationDelegate <CPObject>
+
+@optional
+- (void)applicationDidBecomeActive:(CPNotification)aNotification;
+- (void)applicationDidChangeScreenParameters:(CPNotification)aNotification;
+- (void)applicationDidFinishLaunching:(CPNotification)aNotification;
+- (void)applicationDidResignActive:(CPNotification)aNotification;
+- (void)applicationWillBecomeActive:(CPNotification)aNotification;
+- (void)applicationWillFinishLaunching:(CPNotification)aNotification;
+- (void)applicationWillResignActive:(CPNotification)aNotification;
+- (void)applicationWillTerminate:(CPNotification)aNotification;
+
+@end
+
 /*!
     @ingroup appkit
     @class CPApplication
@@ -68,36 +83,36 @@ var CPMainCibFile               = @"CPMainCibFile",
 */
 @implementation CPApplication : CPResponder
 {
-    CPArray                 _eventListeners;
-    int                     _eventListenerInsertionIndex;
+    CPArray                     _eventListeners;
+    int                         _eventListenerInsertionIndex;
 
-    CPEvent                 _currentEvent;
-    CPWindow                _lastMouseMoveWindow;
+    CPEvent                     _currentEvent;
+    CPWindow                    _lastMouseMoveWindow;
 
-    CPArray                 _windows;
-    CPWindow                _keyWindow;
-    CPWindow                _mainWindow;
-    CPWindow                _previousKeyWindow;
-    CPWindow                _previousMainWindow;
+    CPArray                     _windows;
+    CPWindow                    _keyWindow;
+    CPWindow                    _mainWindow;
+    CPWindow                    _previousKeyWindow;
+    CPWindow                    _previousMainWindow;
 
-    CPDocumentController    _documentController;
+    CPDocumentController        _documentController;
 
-    CPModalSession          _currentSession;
+    CPModalSession              _currentSession;
 
     //
-    id                      _delegate;
-    BOOL                    _finishedLaunching;
-    BOOL                    _isActive;
+    id <CPApplicationDelegate>  _delegate;
+    BOOL                        _finishedLaunching;
+    BOOL                        _isActive;
 
-    CPDictionary            _namedArgs;
-    CPArray                 _args;
-    CPString                _fullArgsString;
+    CPDictionary                _namedArgs;
+    CPArray                     _args;
+    CPString                    _fullArgsString;
 
-    CPImage                 _applicationIconImage;
+    CPImage                     _applicationIconImage;
 
-    CPPanel                 _aboutPanel;
+    CPPanel                     _aboutPanel;
 
-    CPThemeBlend            _themeBlend @accessors(property=themeBlend);
+    CPThemeBlend                _themeBlend @accessors(property=themeBlend);
 }
 
 /*!
@@ -143,7 +158,7 @@ var CPMainCibFile               = @"CPMainCibFile",
     react to these events.
     @param aDelegate the delegate object
 */
-- (void)setDelegate:(id)aDelegate
+- (void)setDelegate:(id <CPApplicationDelegate>)aDelegate
 {
     if (_delegate == aDelegate)
         return;
