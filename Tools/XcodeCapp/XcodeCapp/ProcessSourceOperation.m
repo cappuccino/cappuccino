@@ -178,7 +178,7 @@
                                  nil];
 
     info[@"projectId"] = self.projectId;
-    info[@"message"] = [NSString stringWithFormat:@"%@, line %d\n%@", [self.sourcePath lastPathComponent], 0, message];
+    info[@"message"] = [NSString stringWithFormat:@"%@, line %d\n%@", [self.sourcePath lastPathComponent], line, message];
 
     if (self.isCancelled)
         return;
