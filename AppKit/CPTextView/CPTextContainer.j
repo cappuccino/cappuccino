@@ -1,0 +1,209 @@
+/*
+ *  CPTextContainer.j
+ *  AppKit
+ *
+ *  Created by Emmanuel Maillard on 27/02/2010.
+ *  Copyright Emmanuel Maillard 2010.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
+
+@import "CPLayoutManager.j"
+
+/*
+    @global
+    @group CPLineSweepDirection
+*/
+CPLineSweepLeft = 0;
+/*
+    @global
+    @group CPLineSweepDirection
+*/
+CPLineSweepRight = 1;
+/*
+    @global
+    @group CPLineSweepDirection
+*/
+CPLineSweepDown = 2;
+/*
+    @global
+    @group CPLineSweepDirection
+*/
+CPLineSweepUp = 3;
+
+/*
+    @global
+    @group CPLineMovementDirection
+*/
+CPLineDoesntMoves = 0;
+/*
+    @global
+    @group CPLineMovementDirection
+*/
+CPLineMovesLeft = 1;
+/*
+    @global
+    @group CPLineMovementDirection
+*/
+CPLineMovesRight = 2;
+/*
+    @global
+    @group CPLineMovementDirection
+*/
+CPLineMovesDown = 3;
+/*
+    @global
+    @group CPLineMovementDirection
+*/
+CPLineMovesUp = 4;
+
+/*!
+    @ingroup appkit
+    @class CPTextContainer
+*/
+@implementation CPTextContainer : CPObject
+{
+    CPSize _size;
+    CPTextView _textView;
+    CPLayoutManager _layoutManager;
+    float _lineFragmentPadding;
+}
+
+- (id)initWithContainerSize:(CPSize)aSize
+{
+    self = [super init];
+
+    if (self)
+    {
+        _size = aSize;
+        _lineFragmentPadding = 0.0;
+    }
+
+    return self;
+}
+
+- (id)init
+{
+    return [self initWithContainerSize:CPMakeSize(1e7, 1e7)];
+}
+
+- (CPSize)containerSize
+{
+    return _size;
+}
+
+- (void)setContainerSize:(CPSize)someSize
+{
+    var oldSize = _size;
+
+    _size = someSize;
+
+    if (oldSize.width != _size.width)
+        [_layoutManager invalidateLayoutForCharacterRange:CPMakeRange(0,[[_layoutManager textStorage] length])
+                        isSoft:NO
+                        actualCharacterRange:NULL];
+
+}
+
+- (void)setWidthTracksTextView:(BOOL)flag
+{
+    //<!> fixme: Controls whether the receiver adjusts the width of its bounding rectangle when its text view is resized.
+}
+
+- (void)setTextView:(CPTextView)aTextView
+{
+    if (_textView)
+    {
+        [self _removeAllLines];
+        [_textView setTextContainer:nil];
+    }
+
+    _textView = aTextView;
+
+    if (_textView != nil)
+        [_textView setTextContainer:self];
+
+    [_layoutManager textContainerChangedTextView:self];
+}
+
+- (CPTextView)textView
+{
+    return _textView;
+}
+
+- (void)setLayoutManager:(CPLayoutManager)aManager
+{
+    if (_layoutManager === aManager)
+        return;
+
+    _layoutManager = aManager;
+}
+
+- (CPLayoutManager)layoutManager
+{
+    return _layoutManager;
+}
+
+- (void)setLineFragmentPadding:(float)aFloat
+{
+    _lineFragmentPadding = aFloat;
+}
+
+- (float)lineFragmentPadding
+{
+    return _lineFragmentPadding;
+}
+
+- (BOOL)containsPoint:(CPPoint)aPoint
+{
+    return CPRectContainsPoint(CPRectMake(0, 0, _size.width, _size.height), aPoint);
+}
+
+- (BOOL)isSimpleRectangularTextContainer
+{
+    return YES;
+}
+
+- (CPRect)lineFragmentRectForProposedRect:(CPRect)proposedRect
+                           sweepDirection:(CPLineSweepDirection)sweep
+                        movementDirection:(CPLineMovementDirection)movement
+                            remainingRect:(CPRectPointer)remainingRect
+{
+    var resultRect = CPRectCreateCopy(proposedRect);
+
+    if (sweep != CPLineSweepRight || movement != CPLineMovesDown)
+    {
+        CPLog.trace(@"FIXME: unsupported sweep ("+sweep+") or movement ("+movement+")");
+        return CPRectMakeZero();
+    }
+
+    if (resultRect.origin.x + resultRect.size.width > _size.width)
+        resultRect.size.width = _size.width - resultRect.origin.x;
+
+    if (resultRect.size.width < 0)
+        resultRect = CPRectMakeZero();
+
+    if (remainingRect)
+    {
+        remainingRect.origin.x = resultRect.origin.x + resultRect.size.width;
+        remainingRect.origin.y = resultRect.origin.y;
+        remainingRect.size.height =  resultRect.size.height;
+        remainingRect.size.width = _size.width - (resultRect.origin.x + resultRect.size.width);
+    }
+
+    return resultRect;
+}
+
+@end
