@@ -25,6 +25,7 @@
  */
 
 @import <Foundation/CPObject.j>
+@import "CPText.j"
 
 var _sharedDefaultParagraphStyle,
     _defaultTabStopArray;

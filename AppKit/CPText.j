@@ -29,13 +29,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "CPView.j"
+@import "CPControl.j"
+
+/*
 @import "RTFProducer.j"
 @import "RTFParser.j"
+*/
 
-
-CPParagraphSeparatorCharacter = 0x2029;
-CPLineSeparatorCharacter      = 0x2028;
+CPParagraphSeparatorCharacter   = 0x2029;
+CPLineSeparatorCharacter        = 0x2028;
 CPEnterCharacter                = "\u0003";
 CPBackspaceCharacter            = "\u0008";
 CPTabCharacter                  = "\u0009";
