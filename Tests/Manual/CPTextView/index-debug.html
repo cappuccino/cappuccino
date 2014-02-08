@@ -1,0 +1,103 @@
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!--
+ index-debug.html
+ CPLevelIndicator
+
+ Created by Alexander Ljungberg on May 28, 2011.
+ Copyright 2011, WireLoad All rights reserved.
+-->
+    <head>
+        <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7, chrome=1" />
+
+        <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+
+        <link rel="apple-touch-icon" href="Resources/icon.png" />
+        <link rel="apple-touch-startup-image" href="Resources/default.png" />
+
+        <title>CPLevelIndicator</title>
+
+        <script type="text/javascript">
+            OBJJ_MAIN_FILE = "main.j";
+            OBJJ_INCLUDE_PATHS = ["Frameworks/Debug", "Frameworks", "SomethingElse"];
+        </script>
+
+        <script type="text/javascript" src="Frameworks/Debug/Objective-J/Objective-J.js" charset="UTF-8"></script>
+
+        <script type="text/javascript">
+            objj_msgSend_reset();
+
+            // DEBUG OPTIONS:
+
+            // Uncomment to enable printing of backtraces on exceptions:
+            //objj_msgSend_decorate(objj_backtrace_decorator);
+
+            // Uncomment to supress exceptions that take place inside a message
+            //objj_msgSend_decorate(objj_supress_exceptions_decorator)
+
+            // Uncomment to enable runtime type checking:
+            //objj_msgSend_decorate(objj_typecheck_decorator);
+
+            // Uncomment (along with both above) to print backtraces on type check errors:
+            //objj_typecheck_prints_backtrace = true;
+
+            // Uncomment to disable the default logger (CPLogConsole if window.console exists, CPLogPopup otherwise):
+            //CPLogUnregister(CPLogDefault);
+
+            // Uncomment to enable a specific logger:
+            //CPLogRegister(CPLogConsole);
+            //CPLogRegister(CPLogPopup);
+        </script>
+
+        <style type="text/css">
+            body{margin:0; padding:0;}
+            #container {position: absolute; top:50%; left:50%;}
+            #content {width:800px; text-align:center; margin-left: -400px; height:50px; margin-top:-25px; line-height: 50px;}
+            #content {font-family: "Helvetica", "Arial", sans-serif; font-size: 18px; color: black; text-shadow: 0px 1px 0px white; }
+            #loadgraphic {margin-right: 0.2em; margin-bottom:-2px;}
+        </style>
+
+        <!--[if lt IE 7]>
+        <STYLE type="text/css">
+            #container { position: relative; top: 50%; }
+            #content { position: relative;}
+        </STYLE>
+        <![endif]-->
+
+    </head>
+
+    <body style="">
+        <div id="cappuccino-body">
+            <div id="loadingcontainer" style="background-color: #eeeeee; overflow:hidden; width:100%; height:100%; position: absolute; top: 0; left: 0;">
+                <script type="text/javascript">
+                    document.write("<div id='container'><p id='content'>" +
+                                   "<img id='loadgraphic' width='16' height='16' src='Resources/spinner.gif' /> " +
+                                   "Loading CPLevelIndicator...</p></div>");
+                </script>
+
+                <noscript>
+                    <div id="container">
+                        <div style="width: 440px; padding: 10px 25px 20px 25px; font-family: sans-serif; background-color: #ffffff; position: relative; left: -245px; top: -120px; text-align: center; -moz-border-radius: 20px; -webkit-border-radius: 20px; color: #555555">
+                            <p style="line-height: 1.4em;">JavaScript is required for this site to work correctly but is either disabled or not supported by your browser.</p>
+                            <p style="font-size:120%; padding:10px;"><a href="http://cappuccino-project.org/noscript">Show me how to enable JavaScript</a></p>
+                            <p style="font-size:80%;">You may want to upgrade to a newer browser while you're at it:</p>
+                            <ul style="margin:0;padding:0; text-align: center; font-size:80%;" >
+                                <li style="display: inline;"><a href="http://www.apple.com/safari/download/">Safari</a></li>
+                                <li style="display: inline;"><a href="http://www.mozilla.com/en-US/firefox/">Firefox</a></li>
+                                <li style="display: inline;"><a href="http://www.google.com/chrome/">Chrome</a></li>
+                                <li style="display: inline;"><a href="http://www.opera.com/download/">Opera</a></li>
+                                <li style="display: inline;"><a href="http://www.microsoft.com/windows/downloads/ie/getitnow.mspx">Internet Explorer</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </noscript>
+            </div>
+        </div>
+    </body>
+
+</html>
