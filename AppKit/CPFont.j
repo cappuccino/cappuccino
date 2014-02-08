@@ -24,6 +24,7 @@
 @import <Foundation/CPBundle.j>
 
 @import "CPView.j"
+@import "CPFontDescriptor.j"
 
 CPFontDefaultSystemFontFace = @"Arial, sans-serif";
 CPFontDefaultSystemFontSize = 12;
@@ -432,6 +433,45 @@ following:
 }
 
 @end
+
+@implementation CPFont(DescriptorAdditions)
+
+- (id)_initWithFontDescriptor:(CPFontDescriptor)fontDescriptor
+{
+    var aName = [fontDescriptor objectForKey: CPFontNameAttribute] ,
+        aSize = [fontDescriptor pointSize],
+        isBold = [fontDescriptor symbolicTraits] & CPFontBoldTrait,
+        isItalic = [fontDescriptor symbolicTraits] & CPFontItalicTrait;
+
+    return [self _initWithName:aName size:aSize bold:isBold italic:isItalic system:NO];
+}
+
++ (CPFont)fontWithDescriptor:(CPFontDescriptor)fontDescriptor size:(float)aSize
+{
+    var aName = [fontDescriptor objectForKey: CPFontNameAttribute],
+        isBold = [fontDescriptor symbolicTraits] & CPFontBoldTrait,
+        isItalic = [fontDescriptor symbolicTraits] & CPFontItalicTrait;
+
+    return [self _fontWithName:aName size:aSize || [fontDescriptor pointSize] bold:isBold italic:isItalic];
+}
+
+- (CPFontDescriptor)fontDescriptor
+{
+    var traits = 0;
+
+    if ([self isBold])
+        traits |= CPFontBoldTrait;
+
+    if ([self isItalic])
+        traits |= CPFontItalicTrait;
+
+    var descriptor = [[CPFontDescriptor fontDescriptorWithName:_name size:_size] fontDescriptorWithSymbolicTraits:traits];
+
+    return descriptor;
+}
+
+@end
+
 
 var CPFontNameKey     = @"CPFontNameKey",
     CPFontSizeKey     = @"CPFontSizeKey",
