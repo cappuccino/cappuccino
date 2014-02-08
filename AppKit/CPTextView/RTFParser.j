@@ -24,10 +24,14 @@ e.g. using zaach/jison on github
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-//@import <Foundation/CPAttributedString.j>
+@import <Foundation/CPAttributedString.j>
+@import "CPControl.j"
+@import <Foundation/CPGeometry.j>
+
+var hexTable = [];
 
 // Hold the attributes of the current run
-@implementation _RTFAttribute: CPObject
+@implementation _RTFAttribute : CPObject
 {
     CPRange _range;
     CPParagraphStyle paragraph;
