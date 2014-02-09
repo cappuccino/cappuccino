@@ -27,8 +27,8 @@
  */
 
 @import <Foundation/CPObject.j>
-@import "CPTextStorage.j"
 @import "CPParagraphStyle.j"
+@import "CPTextStorage.j"
 
 /*
     CPTypesetterControlCharacterAction
@@ -110,7 +110,7 @@ var CPSystemTypesetterFactory = Nil;
 - (void)layoutGlyphsInLayoutManager:(CPLayoutManager)layoutManager
         startingAtGlyphIndex:(unsigned)startGlyphIndex
         maxNumberOfLineFragments:(unsigned)maxNumLines
-        nextGlyphIndex:(UIntegerPointer)nextGlyph
+        nextGlyphIndex:(UIntegerReference)nextGlyph
 {
    CPLog.error(@"-[CPTypesetter subclass responsibility");
 }

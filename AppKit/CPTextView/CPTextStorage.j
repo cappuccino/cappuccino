@@ -21,7 +21,8 @@
  */
 
 
-//@import <Foundation/CPAttributedString.j>
+@import <Foundation/CPNotificationCenter.j>
+@import <Foundation/CPAttributedString.j>
 @import "CPLayoutManager.j"
 
 
@@ -226,7 +227,7 @@ CPKernAttributeName = @"CPKernAttributeName";
     }
 }
 
-- (void)removeAttribute:(id)anAttribute range:(CPRange)aRange
+- (void)removeAttribute:(CPString)anAttribute range:(CPRange)aRange
 {
     [self beginEditing];
     [super removeAttribute:anAttribute range:aRange];

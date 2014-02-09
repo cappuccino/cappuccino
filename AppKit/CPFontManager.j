@@ -22,6 +22,7 @@
 
 @import <Foundation/CPObject.j>
 
+@import "CPControl.j"
 @import "CPFont.j"
 @import "CPFontPanel.j"
 @import "CPFontDescriptor.j"
@@ -74,6 +75,8 @@ CPRemoveTraitFontAction = 7;
     BOOL            _multiple @accessors(getter=isMultiple, setter=setMultiple:);
 
     CPDictionary    _activeChange;
+
+    unsigned        _fontAction;
 }
 
 // Getting the Shared Font Manager
@@ -98,6 +101,15 @@ CPRemoveTraitFontAction = 7;
 {
     CPFontManagerFactory = aClass;
 }
+/*!
+    Sets the class that will be used to create the application's
+    Font panel.
+*/
++ (void)setFontPanelFactory:(Class)aClass
+{
+    CPFontPanelFactory = aClass;
+}
+
 
 - (id)init
 {
@@ -380,7 +392,7 @@ CPRemoveTraitFontAction = 7;
             break;
 
         case CPAddTraitFontAction:
-            newFont = [self convertFont:aFont toHaveTrait:_currentFontTrait];
+            newFont = [self convertFont:aFont toHaveTrait:[self traitsOfFont:aFont]];
             break;
 
         case CPSizeUpFontAction:

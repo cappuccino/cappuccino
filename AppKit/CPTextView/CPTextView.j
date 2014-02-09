@@ -24,11 +24,12 @@
  */
 
 @import "CPText.j"
-@import "CPParagraphStyle.j"
 @import "CPTextStorage.j"
 @import "CPTextContainer.j"
-@import "CPLayoutManager.j"
 @import "CPFontManager.j"
+@import "_CPRTFProducer.j"
+@import "_CPRTFParser.j"
+@import "CPLayoutManager.j"
 
 _MakeRangeFromAbs = function(a1, a2)
 {
@@ -73,6 +74,203 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     kDelegateRespondsTo_textView_willChangeSelectionFromCharacterRange_toCharacterRange = 0x0004,
     kDelegateRespondsTo_textView_shouldChangeTextInRange_replacementString              = 0x0008,
     kDelegateRespondsTo_textView_shouldChangeTypingAttributes_toAttributes              = 0x0010;
+
+
+
+@implementation CPText : CPControl
+{
+}
+
+- (void)changeFont:(id)sender
+{
+    CPLog.error(@"-[CPText " + _cmd + "] subclass responsibility");
+}
+
+- (void)copy:(id)sender
+{
+    var selectedRange = [self selectedRange];
+
+    if (selectedRange.length < 1)
+            return;
+
+    var pasteboard = [CPPasteboard generalPasteboard],
+        stringForPasting = [[self stringValue] substringWithRange:selectedRange];
+
+    [pasteboard declareTypes:[CPStringPboardType] owner:nil];
+
+    if ([self isRichText])
+    {
+       // crude hack to make rich pasting possible in chrome and firefox. this requires a RTF roundtrip, unfortunately
+        var richData =  [_CPRTFProducer produceRTF:[[self textStorage] attributedSubstringFromRange:selectedRange] documentAttributes: @{}];
+        [pasteboard setString:richData forType:CPStringPboardType];
+    }
+    else
+        [pasteboard setString:stringForPasting forType:CPStringPboardType];
+
+}
+- (void)paste:(id)sender
+{
+    var pasteboard = [CPPasteboard generalPasteboard],
+      //  dataForPasting = [pasteboard dataForType:CPRichStringPboardType],
+        stringForPasting = [pasteboard stringForType:CPStringPboardType];
+
+    if ([stringForPasting hasPrefix:"{\\rtf1\\ansi"])
+        stringForPasting = [[_CPRTFParser new] parseRTF:stringForPasting];
+
+    if (![self isRichText] && [stringForPasting isKindOfClass:[CPAttributedString class]])
+        stringForPasting = stringForPasting._string;
+
+    if (stringForPasting)
+        [self insertText:stringForPasting];
+}
+
+- (void)copyFont:(id)sender
+{
+    CPLog.error(@"-[CPText " + _cmd + "] subclass responsibility");
+}
+
+- (void)cut:(id)sender
+{
+    [self copy:sender];
+
+    var loc = [self selectedRange].location;
+
+    [self replaceCharactersInRange:[self selectedRange] withString:""];
+    [self setSelectedRange:CPMakeRange(loc,0) ];
+}
+
+- (void)delete:(id)sender
+{
+    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+}
+
+- (CPFont)font:(CPFont)aFont
+{
+    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+    return nil;
+}
+
+- (BOOL)isHorizontallyResizable
+{
+    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+    return NO;
+}
+
+- (BOOL)isRichText
+{
+    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+    return NO;
+}
+
+- (BOOL)isRulerVisible
+{
+    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+    return NO;
+}
+
+- (BOOL)isVerticallyResizable
+{
+    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+    return NO;
+}
+
+- (CPSize)maxSize
+{
+    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+    return CPMakeSize(0,0);
+}
+
+- (CPSize)minSize
+{
+    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+    return CPMakeSize(0,0);
+}
+
+- (void)pasteFont:(id)sender
+{
+    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+}
+
+- (void)replaceCharactersInRange:(CPRange)aRange withString:(CPString)aString
+{
+    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+}
+
+- (void)scrollRangeToVisible:(CPRange)aRange
+{
+    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+}
+
+- (void)selectedAll:(id)sender
+{
+    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+}
+
+- (CPRange)selectedRange
+{
+    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+    return CPMakeRange(CPNotFound, 0);
+}
+
+- (void)setFont:(CPFont)aFont
+{
+    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+}
+
+- (void)setFont:(CPFont)aFont rang:(CPRange)aRange
+{
+    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+}
+
+- (void)setHorizontallyResizable:(BOOL)flag
+{
+    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+}
+
+- (void)setMaxSize:(CPSize)aSize
+{
+    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+}
+
+- (void)setMinSize:(CPSize)aSize
+{
+    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+}
+
+- (void)setString:(CPString)aString
+{
+    [self replaceCharactersInRange: CPMakeRange(0, [[self string] length]) withString:aString];
+}
+
+- (void)setUsesFontPanel:(BOOL)flag
+{
+    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+}
+
+- (void)setVerticallyResizable:(BOOL)flag
+{
+    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+}
+
+- (CPString)string
+{
+    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+    return nil;
+}
+
+- (void)underline:(id)sender
+{
+    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+}
+
+- (BOOL)usesFontPanel
+{
+    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+    return NO;
+}
+
+@end
+
 
 /*!
     @ingroup appkit
@@ -127,13 +325,13 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     int             _stickyXLocation;
 }
 
-- (id)initWithFrame:(CPRect)aFrame textContainer:(CPTextContainer)aContainer
+- (id)initWithFrame:(CGRect)aFrame textContainer:(CPTextContainer)aContainer
 {
     self = [super initWithFrame:aFrame];
 
     if (self)
     {
-        _DOMElement.style.cursor = "text";
+        self._DOMElement.style.cursor = "text";
         _textContainerInset = CPSizeMake(2,0);
         _textContainerOrigin = CPPointMake(_bounds.origin.x, _bounds.origin.y);
         [aContainer setTextView:self];
@@ -202,7 +400,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         [[[self window] undoManager] redo];
 }
 
-- (id)initWithFrame:(CPRect)aFrame
+- (id)initWithFrame:(CGRect)aFrame
 {
     var layoutManager = [[CPLayoutManager alloc] init],
         textStorage = [[CPTextStorage alloc] init],
@@ -403,7 +601,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     [self setNeedsDisplay:YES];
 }
 
-- (void)insertText:(id)aString
+- (void)insertText:(CPString)aString
 {
     var isAttributed = [aString isKindOfClass:CPAttributedString],
         string = (isAttributed)?[aString string]:aString;
@@ -454,7 +652,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     [self setNeedsDisplayInRect:_caretRect];
 }
 
-- (void)drawRect:(CPRect)aRect
+- (void)drawRect:(CGRect)aRect
 {
     var ctx = [[CPGraphicsContext currentContext] graphicsPort],
         range = [_layoutManager glyphRangeForBoundingRect:aRect inTextContainer:_textContainer];
@@ -1188,7 +1386,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     [self deleteBackward: sender];
 }
 
-- stringValue
+- (CPString)stringValue
 {
     return _textStorage._string;
 }
@@ -1297,7 +1495,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)setUsesFontPanel:(BOOL)flag
 {
-    _usesFontPanel = flags;
+    _usesFontPanel = flag;
 }
 
 - (BOOL)usesFontPanel
@@ -1415,7 +1613,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     _minSize = aSize;
 }
 
-- (void)setConstrainedFrameSize:(CPSize)desiredSize
+- (void)setConstrainedFrameSize:(CGSize)desiredSize
 {
     [self setFrameSize:desiredSize];
 }
@@ -1426,7 +1624,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 }
 
-- (void)setFrameSize:(CPSize) aSize
+- (void)setFrameSize:(CGSize) aSize
 {
     var minSize = [self minSize],
         maxSize = [self maxSize],
@@ -1636,7 +1834,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     return (_selectionRange.length === 0 && [self _isFocused])
 }
 
-- (void)drawInsertionPointInRect:(CPRect)aRect color:(CPColor)aColor turnedOn:(BOOL)flag
+- (void)drawInsertionPointInRect:(CGRect)aRect color:(CPColor)aColor turnedOn:(BOOL)flag
 {
     var style;
     if (!_caretDOM)
