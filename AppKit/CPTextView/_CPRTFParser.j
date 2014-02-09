@@ -25,8 +25,9 @@ e.g. using zaach/jison on github
 */
 
 @import <Foundation/CPAttributedString.j>
-@import "CPControl.j"
 @import <Foundation/CPGeometry.j>
+@import "CPControl.j"
+@import "CPFontManager.j"
 
 var hexTable = [];
 
@@ -87,20 +88,14 @@ var hexTable = [];
 	{
 	    var fontFamily = [fontName substringToIndex: range.location];
 
-	    font = [[CPFontManager sharedFontManager] fontWithFamily: fontFamily
-						    traits: traits
-						    weight: weight
-						    size: fontSize];
+	    font = [CPFont fontWithName:fontFamily size:fontSize];
 	}
       
         if (font == nil)
 	{
-	    console.log(@"RTFParser", 
-		         @"Could not find font %@ size %f traits %d weight %d", 
-		         fontName, fontSize, traits, weight);
 
 	  /* Last resort, default font.  :-(  */
-	    font = [CPFont systemFontOfSize: fontSize];
+	    font = [CPFont systemFontOfSize:fontSize];
 	}
     }
     return font;
@@ -258,7 +253,7 @@ var kRgsymRtf = {
         "\\"                                 : [ "\\",       0,        false,     kRTFParserType_char,    '\\']
 }
 
-@implementation _RTFParser : CPObject
+@implementation _CPRTFParser : CPObject
 {
     CPString _codePage;
     CPSize _paper;

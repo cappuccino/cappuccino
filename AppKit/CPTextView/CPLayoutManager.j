@@ -28,7 +28,7 @@
 
 @import "CPTextStorage.j"
 @import "CPTextContainer.j"
-@import "CPTypesetter.j"
+@import "CPTextView.j"
 
 function _RectEqualToRectHorizontally(lhsRect, rhsRect)
 {
@@ -918,100 +918,9 @@ var _objectsInRange = function(aList, aRange)
     [tempAttributes._attributes addEntriesFromDictionary:attributes];
 }
 
-// i did not touch this monster (yet)
 - (void)_handleTemporaryAttributes:(CPDictionary)attributes forCharacterRange:(CPRange)charRange withSelector:(SEL)attributesOperation
 {
-    if (!_temporaryAttributes)
-        _temporaryAttributes = [[CPMutableArray alloc] init];
-
-    var location = charRange.location,
-        length = 0,
-        dirtyRange = nil;
-
-    while (length != charRange.length)
-    {
-        var tempAttributesIndex = [_temporaryAttributes indexOfObject: location sortedByFunction:_sortRange context:nil];
-
-        if (tempAttributesIndex != CPNotFound)
-        {
-            var tempAttributes = _temporaryAttributes[tempAttributesIndex];
-
-            if (CPRangeInRange(charRange, tempAttributes._range))
-            {
-                [self performSelector:attributesOperation withObject:attributes withObject:tempAttributes];
-                dirtyRange = (dirtyRange)?CPUnionRange(dirtyRange, tempAttributes._range):CPMakeRangeCopy(tempAttributes._range);
-                location += tempAttributes._range.length;
-                length += tempAttributes._range.length;
-            }
-            else if (location == tempAttributes._range.location && CPMaxRange(tempAttributes._range) > CPMaxRange(charRange))
-            {
-                var maxRange = CPMaxRange(charRange),
-                    splittedAttribute = [[_CPTemporaryAttributes alloc] initWithRange:CPMakeRange(maxRange, CPMaxRange(tempAttributes._range) - maxRange)
-                                     attributes:[tempAttributes._attributes copy]];
-
-                if ([_temporaryAttributes count] == tempAttributesIndex + 1)
-                    [_temporaryAttributes addObject:splittedAttribute];
-                else
-                    [_temporaryAttributes insertObject:splittedAttribute atIndex:tempAttributesIndex + 1];
-
-                tempAttributes._range = CPMakeRange(tempAttributes._range.location, maxRange - tempAttributes._range.location);
-                [self performSelector:attributesOperation withObject:attributes withObject:tempAttributes];
-
-                location += tempAttributes._range.length;
-                length += tempAttributes._range.length;
-
-                dirtyRange = (dirtyRange)?CPUnionRange(dirtyRange, tempAttributes._range):CPMakeRangeCopy(tempAttributes._range);
-                dirtyRange = CPUnionRange(dirtyRange, splittedAttribute._range);
-            }
-            else
-            {
-                var splittedAttribute = [[_CPTemporaryAttributes alloc] initWithRange:CPMakeRange(location, CPMaxRange(tempAttributes._range) - location)
-                                         attributes:[tempAttributes._attributes copy]];
-
-                if ([_temporaryAttributes count] == tempAttributesIndex + 1)
-                    [_temporaryAttributes addObject:splittedAttribute];
-                else
-                    [_temporaryAttributes insertObject:splittedAttribute atIndex:tempAttributesIndex + 1];
-
-                tempAttributes._range = CPMakeRange(tempAttributes._range.location, location - tempAttributes._range.location);
-                dirtyRange = (dirtyRange)?CPUnionRange(dirtyRange, tempAttributes._range):CPMakeRangeCopy(tempAttributes._range);
-                dirtyRange = CPUnionRange(dirtyRange, splittedAttribute._range);
-
-                if (splittedAttribute._range.length <= charRange.length)
-                {
-                    location += splittedAttribute._range.length;
-                    length += splittedAttribute._range.length;
-                }
-                else
-                {
-                    var nextLocation = location + charRange.length,
-                        nextAttribute = [[_CPTemporaryAttributes alloc] initWithRange:CPMakeRange(nextLocation, CPMaxRange(splittedAttribute._range) - nextLocation)
-                                         attributes:[tempAttributes._attributes copy]];
-
-                    splittedAttribute._range = CPMakeRange(splittedAttribute._range.location, nextLocation - splittedAttribute._range.location);
-
-                    var insertIndex = [_temporaryAttributes indexOfObject:splittedAttribute];
-
-                    if ([_temporaryAttributes count] == insertIndex + 1)
-                        [_temporaryAttributes addObject:nextAttribute];
-                    else
-                        [_temporaryAttributes insertObject:nextAttribute atIndex:insertIndex + 1];
-
-                    length = charRange.length;
-                }
-                [self performSelector:attributesOperation withObject:attributes withObject:splittedAttribute];
-            }
-        }
-        else
-        {
-            [_temporaryAttributes addObject:[[_CPTemporaryAttributes alloc] initWithRange:charRange attributes:attributes]];
-            dirtyRange = CPMakeRangeCopy(charRange);
-            break;
-        }
-    }
-
-    if (dirtyRange)
-        [self invalidateDisplayForGlyphRange:dirtyRange];
+    // FIXME
 }
 
 - (void)setTemporaryAttributes:(CPDictionary)attributes forCharacterRange:(CPRange)charRange
@@ -1024,126 +933,19 @@ var _objectsInRange = function(aList, aRange)
     [self _handleTemporaryAttributes:attributes forCharacterRange:charRange withSelector:@selector(_addAttributes:toTemporaryAttributes:)];
 }
 
-// i did not touch this monster (yet)
 - (void)removeTemporaryAttribute:(CPString)attributeName forCharacterRange:(CPRange)charRange
 {
-    if (!_temporaryAttributes)
-        return;
-
-    var location = charRange.location,
-        length = 0,
-        dirtyRange = nil;
-    while (length != charRange.length)
-    {
-        var tempAttributesIndex = [_temporaryAttributes indexOfObject: location sortedByFunction:_sortRange context:nil];
-
-        if (tempAttributesIndex != CPNotFound)
-        {
-            var tempAttributes = _temporaryAttributes[tempAttributesIndex];
-
-            if (CPRangeInRange(charRange, tempAttributes._range))
-            {
-                location += tempAttributes._range.length;
-                length += tempAttributes._range.length;
-                dirtyRange = (dirtyRange)?CPUnionRange(dirtyRange, tempAttributes._range):CPMakeRangeCopy(tempAttributes._range);
-
-                [tempAttributes._attributes removeObjectForKey:attributeName];
-
-                if ([[tempAttributes._attributes allKeys] count] == 0)
-                    [_temporaryAttributes removeObjectAtIndex:tempAttributesIndex];
-            }
-            else if (location == tempAttributes._range.location && CPMaxRange(tempAttributes._range) > CPMaxRange(charRange))
-            {
-                var maxRange = CPMaxRange(charRange),
-                    splittedAttribute = [[_CPTemporaryAttributes alloc] initWithRange:CPMakeRange(maxRange, CPMaxRange(tempAttributes._range) - maxRange)
-                                     attributes:[tempAttributes._attributes copy]];
-
-                if ([_temporaryAttributes count] == tempAttributesIndex + 1)
-                    [_temporaryAttributes addObject:splittedAttribute];
-                else
-                    [_temporaryAttributes insertObject:splittedAttribute atIndex:tempAttributesIndex + 1];
-
-                tempAttributes._range = CPMakeRange(tempAttributes._range.location, maxRange - tempAttributes._range.location);
-                location += tempAttributes._range.length;
-                length += tempAttributes._range.length;
-
-                [tempAttributes._attributes removeObjectForKey:attributeName];
-                if ([[tempAttributes._attributes allKeys] count] == 0)
-                    [_temporaryAttributes removeObjectAtIndex:tempAttributesIndex];
-
-                dirtyRange = (dirtyRange)?CPUnionRange(dirtyRange, tempAttributes._range):CPMakeRangeCopy(tempAttributes._range);
-                dirtyRange = CPUnionRange(dirtyRange, splittedAttribute._range);
-            }
-            else
-            {
-                var splittedAttribute = [[_CPTemporaryAttributes alloc] initWithRange:CPMakeRange(location, CPMaxRange(tempAttributes._range) - location)
-                                         attributes:[tempAttributes._attributes copy]];
-
-                if ([_temporaryAttributes count] == tempAttributesIndex + 1)
-                    [_temporaryAttributes addObject:splittedAttribute];
-                else
-                    [_temporaryAttributes insertObject:splittedAttribute atIndex:tempAttributesIndex + 1];
-
-                tempAttributes._range = CPMakeRange(tempAttributes._range.location, location - tempAttributes._range.location);
-
-                dirtyRange = (dirtyRange)?CPUnionRange(dirtyRange, tempAttributes._range):CPMakeRangeCopy(tempAttributes._range);
-                dirtyRange = CPUnionRange(dirtyRange, splittedAttribute._range);
-
-                if (splittedAttribute._range.length < charRange.length)
-                {
-                    location += splittedAttribute._range.length;
-                    length += splittedAttribute._range.length;
-                }
-                else
-                {
-                    var nextLocation = location + charRange.length,
-                        nextAttribute = [[_CPTemporaryAttributes alloc] initWithRange:CPMakeRange(nextLocation, CPMaxRange(splittedAttribute._range) - nextLocation)
-                                         attributes:[tempAttributes._attributes copy]];
-
-                    splittedAttribute._range = CPMakeRange(splittedAttribute._range.location, nextLocation - splittedAttribute._range.location);
-                    var insertIndex = [_temporaryAttributes indexOfObject:splittedAttribute];
-
-                    if ([_temporaryAttributes count] == insertIndex + 1)
-                        [_temporaryAttributes addObject:nextAttribute];
-                    else
-                        [_temporaryAttributes insertObject:nextAttribute atIndex:insertIndex + 1];
-
-                    length = charRange.length;
-                }
-
-                [splittedAttribute._attributes removeObjectForKey:attributeName];
-                if ([[splittedAttribute._attributes allKeys] count] == 0)
-                    [_temporaryAttributes removeObject:splittedAttribute];
-            }
-        }
-        else
-            break;
-    }
-
-    if (dirtyRange)
-        [self invalidateDisplayForGlyphRange:dirtyRange];
-
+    // FIXME
 }
 
 - (CPDictionary)temporaryAttributesAtCharacterIndex:(unsigned)index effectiveRange:(CPRangePointer)effectiveRange
 {
-    var tempAttribute = _objectWithLocationInRange(_runs, index);  // <!> _runs is wild guess
-
-    if (!tempAttribute)
-        return nil;
-
-    if (effectiveRange)
-    {
-        effectiveRange.location = tempAttribute._range.location;
-        effectiveRange.length = tempAttribute._range.length;
-    }
-
-    return tempAttribute._attributes;
+    // FIXME
 }
 
 - (void)textContainerChangedTextView:(CPTextContainer)aContainer
 {
-    /* FIXME: stub */
+    // FIXME
 }
 
 - (CPTypesetter)typesetter

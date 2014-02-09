@@ -30,9 +30,11 @@
  */
 
 
+@import "CPTextStorage.j"
 @import "CPFontManager.j"
 @import "CPPanel.j"
-@import "CPLayoutManager.j"
+@import "CPColorWell.j"
+@import "CPColorPanel.j"
 
 /*
     Collection indexes
@@ -69,7 +71,7 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
     CPTextContainer _textContainer;
 }
 
-- (id)initWithFrame:(CPRect)rect
+- (id)initWithFrame:(CGRect)rect
 {
     self = [super initWithFrame:rect];
 
@@ -95,7 +97,7 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
     [self setNeedsDisplay:YES];
 }
 
-- (void)drawRect:(CPRect)rect
+- (void)drawRect:(CGRect)rect
 {
     var ctx = [[CPGraphicsContext currentContext] graphicsPort],
         glyphRange = [_layoutManager glyphRangeForTextContainer:_textContainer],
