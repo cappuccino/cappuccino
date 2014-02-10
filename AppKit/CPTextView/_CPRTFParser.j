@@ -26,8 +26,8 @@ e.g. using zaach/jison on github
 
 @import <Foundation/CPAttributedString.j>
 @import <Foundation/CPGeometry.j>
-@import "CPControl.j"
 @import "CPFontManager.j"
+@import "CPTextStorage.j"
 
 var hexTable = [];
 
@@ -143,8 +143,8 @@ var hexTable = [];
 
 - (void)addTab:(float)location type:(CPTextTabType)type
 {
-    var tab = [[CPTextTab alloc] initWithType: CPLeftTabStopType 
-				      location: location];
+    var tab = [[CPTextTab alloc] initWithType:CPLeftTabStopType 
+				      location:location];
 
     if (!_tabChanged)
     {

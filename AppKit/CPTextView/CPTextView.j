@@ -27,9 +27,13 @@
 @import "CPTextStorage.j"
 @import "CPTextContainer.j"
 @import "CPFontManager.j"
-@import "_CPRTFProducer.j"
-@import "_CPRTFParser.j"
+//@import "_CPRTFProducer.j"
+//@import "_CPRTFParser.j"
 @import "CPLayoutManager.j"
+
+@class _CPRTFProducer;
+@class _CPRTFParser;
+
 
 _MakeRangeFromAbs = function(a1, a2)
 {

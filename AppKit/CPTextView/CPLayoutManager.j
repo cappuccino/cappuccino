@@ -28,7 +28,7 @@
 
 @import "CPTextStorage.j"
 @import "CPTextContainer.j"
-@import "CPTextView.j"
+@import "CGContext.j"
 
 function _RectEqualToRectHorizontally(lhsRect, rhsRect)
 {
