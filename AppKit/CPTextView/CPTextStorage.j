@@ -23,7 +23,8 @@
 
 @import <Foundation/CPNotificationCenter.j>
 @import <Foundation/CPAttributedString.j>
-@import "CPLayoutManager.j"
+
+@class CPLayoutManager;
 
 
 CPTextStorageEditedAttributes = 1;

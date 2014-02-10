@@ -30,11 +30,17 @@
  */
 
 
-@import "CPTextStorage.j"
-@import "CPFontManager.j"
 @import "CPPanel.j"
 @import "CPColorWell.j"
 @import "CPColorPanel.j"
+@import "CPBrowser.j"
+@import "CPText.j"
+
+
+@class CPTextStorage
+@class CPLayoutManager
+@class CPTextContainer
+@class CPFontManager
 
 /*
     Collection indexes
