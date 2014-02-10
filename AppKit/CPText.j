@@ -10,10 +10,6 @@
  * Daniel Boehringer on 8/02/2014.
  *  Copyright Daniel Boehringer on 8/02/2014.
  *
- * and
- *
- * Emmanuel Maillard on 28/02/2010.
- *  Copyright Emmanuel Maillard 2010.
  *
  *
  * This library is free software; you can redistribute it and/or
@@ -60,3 +56,23 @@ CPTextDidBeginEditingNotification = @"CPTextDidBeginEditingNotification";
 CPTextDidChangeNotification = @"CPTextDidChangeNotification";
 CPTextDidEndEditingNotification = @"CPTextDidEndEditingNotification";
 
+/*
+    CPTextView Notifications
+*/
+CPTextViewDidChangeSelectionNotification        = @"CPTextViewDidChangeSelectionNotification";
+CPTextViewDidChangeTypingAttributesNotification = @"CPTextViewDidChangeTypingAttributesNotification";
+
+/*
+    FIXME: move these to CPAttributed string
+    Make use of attributed keys in AppKit
+*/
+CPFontAttributeName = @"CPFontAttributeName";
+CPForegroundColorAttributeName = @"CPForegroundColorAttributeName";
+CPBackgroundColorAttributeName = @"CPBackgroundColorAttributeName";
+CPShadowAttributeName = @"CPShadowAttributeName";
+CPUnderlineStyleAttributeName = @"CPUnderlineStyleAttributeName";
+CPSuperscriptAttributeName = @"CPSuperscriptAttributeName";
+CPBaselineOffsetAttributeName = @"CPBaselineOffsetAttributeName";
+CPAttachmentAttributeName = @"CPAttachmentAttributeName";
+CPLigatureAttributeName = @"CPLigatureAttributeName";
+CPKernAttributeName = @"CPKernAttributeName";

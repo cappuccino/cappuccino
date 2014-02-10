@@ -26,7 +26,7 @@
 @import "CPParagraphStyle.j"
 @import "CPColor.j"
 @import "CPGraphics.j"
-@import "CPTextStorage.j"
+@import "CPText.j"
 @import "CPFontManager.j"
 
 

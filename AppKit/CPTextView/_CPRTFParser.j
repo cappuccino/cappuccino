@@ -27,7 +27,8 @@ e.g. using zaach/jison on github
 @import <Foundation/CPAttributedString.j>
 @import <Foundation/CPGeometry.j>
 @import "CPFontManager.j"
-@import "CPTextStorage.j"
+@import "CPText.j"
+@import "CPParagraphStyle.j"
 
 var hexTable = [];
 

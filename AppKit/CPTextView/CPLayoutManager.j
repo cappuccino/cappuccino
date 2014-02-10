@@ -26,9 +26,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "CPTextStorage.j"
+@import "CPText.j"
 @import "CPTextContainer.j"
 @import "CGContext.j"
+@import "CPTypesetter.j"
+
+@global _MakeRangeFromAbs
 
 function _RectEqualToRectHorizontally(lhsRect, rhsRect)
 {

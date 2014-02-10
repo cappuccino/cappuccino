@@ -23,6 +23,7 @@
 
 @import <Foundation/CPNotificationCenter.j>
 @import <Foundation/CPAttributedString.j>
+@import "CPText.j"
 
 @class CPLayoutManager;
 
@@ -33,20 +34,6 @@ CPTextStorageEditedCharacters = 2;
 CPTextStorageWillProcessEditingNotification = @"CPTextStorageWillProcessEditingNotification";
 CPTextStorageDidProcessEditingNotification = @"CPTextStorageDidProcessEditingNotification";
 
-/*
-    FIXME: move these to CPAttributed string
-    Make use of attributed keys in AppKit
-*/
-CPFontAttributeName = @"CPFontAttributeName";
-CPForegroundColorAttributeName = @"CPForegroundColorAttributeName";
-CPBackgroundColorAttributeName = @"CPBackgroundColorAttributeName";
-CPShadowAttributeName = @"CPShadowAttributeName";
-CPUnderlineStyleAttributeName = @"CPUnderlineStyleAttributeName";
-CPSuperscriptAttributeName = @"CPSuperscriptAttributeName";
-CPBaselineOffsetAttributeName = @"CPBaselineOffsetAttributeName";
-CPAttachmentAttributeName = @"CPAttachmentAttributeName";
-CPLigatureAttributeName = @"CPLigatureAttributeName";
-CPKernAttributeName = @"CPKernAttributeName";
 
 /*!
     @ingroup appkit

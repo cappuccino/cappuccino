@@ -59,11 +59,6 @@ _MidRange = function(a1)
 
 @end
 
-/*
-    CPTextView Notifications
-*/
-CPTextViewDidChangeSelectionNotification        = @"CPTextViewDidChangeSelectionNotification";
-CPTextViewDidChangeTypingAttributesNotification = @"CPTextViewDidChangeTypingAttributesNotification";
 
 /*
     CPSelectionGranularity
@@ -1404,9 +1399,11 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 {
     _font = font;
     var length = [_layoutManager numberOfCharacters];
-    [_textStorage addAttribute:CPFontAttributeName value:_font range:CPMakeRange(0, length)];
-    [_textStorage setFont:_font];
-    [self scrollRangeToVisible:CPMakeRange(length, 0)];
+    if (length)
+    {   [_textStorage addAttribute:CPFontAttributeName value:_font range:CPMakeRange(0, length)];
+        [_textStorage setFont:_font];
+        [self scrollRangeToVisible:CPMakeRange(length, 0)];
+    }
 }
 
 - (void)setFont:(CPFont)font range:(CPRange)range
