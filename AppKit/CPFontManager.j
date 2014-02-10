@@ -24,10 +24,10 @@
 
 @import "CPControl.j"
 @import "CPFont.j"
-@import "CPFontPanel.j"
 @import "CPFontDescriptor.j"
 
 @global CPApp
+@class CPFontPanel
 
 CPItalicFontMask                    = 1 << 0;
 CPBoldFontMask                      = 1 << 1;
@@ -495,4 +495,3 @@ var _CPFontDetectPickTwoDifferentFonts = function(candidates)
 };
 
 [CPFontManager setFontManagerFactory:[CPFontManager class]];
-[CPFontManager setFontPanelFactory:CPFontPanel];

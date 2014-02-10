@@ -35,6 +35,7 @@
 @import "CPColorPanel.j"
 @import "CPBrowser.j"
 @import "CPText.j"
+@import "CPFontManager.j"
 
 
 @class CPTextStorage
@@ -493,3 +494,4 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
 }
 
 @end
+[CPFontManager setFontPanelFactory:CPFontPanel];
