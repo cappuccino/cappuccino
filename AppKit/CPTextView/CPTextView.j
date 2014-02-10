@@ -971,7 +971,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     if (_isSelectable)
     {
        [self _extendSelectionIntoDirection: -1 granularity:CPSelectByCharacter];
-   }
+    }
 }
 - (void)moveBackward:(id)sender
 {
@@ -1027,7 +1027,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 {
     if (_isSelectable)
     {
-	    [self _moveSelectionIntoDirection: +1 granularity:CPSelectByParagraph]
+       [self _moveSelectionIntoDirection: +1 granularity:CPSelectByParagraph]
     }
 }
 - (void) moveWordBackwardAndModifySelection:(id)sender
@@ -1080,7 +1080,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 {
     if (_isSelectable)
     {
-	    [self _moveSelectionIntoDirection: +1 granularity:CPSelectByWord]
+        [self _moveSelectionIntoDirection: +1 granularity:CPSelectByWord]
     }
 }
 
