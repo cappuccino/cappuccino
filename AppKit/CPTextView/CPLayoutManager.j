@@ -758,7 +758,8 @@ var _objectsInRange = function(aList, aRange)
         range = CPUnionRange(range, aRange);
 
     if (actualCharRange)
-    {    actualCharRange.length = range.length;
+    {
+        actualCharRange.length = range.length;
         actualCharRange.location = range.location;
     }
 }
