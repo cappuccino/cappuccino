@@ -374,6 +374,9 @@ var CPComparisonPredicateModifier,
     var leftValue = [_left expressionValueWithObject:object context:variables],
         rightValue = [_right expressionValueWithObject:object context:variables];
 
+    leftValue = (typeof leftValue == "boolean") ? [CPNumber numberWithBool:leftValue] : leftValue;
+    rightValue = (typeof rightValue == "boolean") ? [CPNumber numberWithBool:rightValue] : rightValue;
+
     if (_modifier == CPDirectPredicateModifier)
         return [self _evaluateValue:leftValue rightValue:rightValue];
     else
