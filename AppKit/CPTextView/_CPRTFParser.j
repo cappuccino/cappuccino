@@ -50,7 +50,7 @@ var hexTable = [];
     BOOL _tabChanged;
 }
 
-- (id) init
+- (id)init
 {
     [self resetFont];
     [self resetParagraphStyle];
@@ -59,7 +59,7 @@ var hexTable = [];
     return self;
 }
 
-- (id) copy
+- (id)copy
 {
     var mynew =  [_RTFAttribute new];
 
@@ -86,18 +86,18 @@ var hexTable = [];
         var range = [fontName rangeOfString:@"-"];
 
         if (range.location != CPNotFound)
-	{
-	    var fontFamily = [fontName substringToIndex: range.location];
+        {
+            var fontFamily = [fontName substringToIndex: range.location];
 
-	    font = [CPFont fontWithName:fontFamily size:fontSize];
-	}
-      
+            font = [CPFont fontWithName:fontFamily size:fontSize];
+        }
+
         if (font == nil)
-	{
+        {
 
-	  /* Last resort, default font.  :-(  */
-	    font = [CPFont systemFontOfSize:fontSize];
-	}
+             /* Last resort, default font.  :-(  */
+            font = [CPFont systemFontOfSize:fontSize];
+        }
     }
     return font;
 }
@@ -144,8 +144,8 @@ var hexTable = [];
 
 - (void)addTab:(float)location type:(CPTextTabType)type
 {
-    var tab = [[CPTextTab alloc] initWithType:CPLeftTabStopType 
-				      location:location];
+    var tab = [[CPTextTab alloc] initWithType:CPLeftTabStopType
+                                     location:location];
 
     if (!_tabChanged)
     {
@@ -158,7 +158,7 @@ var hexTable = [];
     }
 }
 
--(CPDictionary) dictionary
+- (CPDictionary)dictionary
 {
     var ret = @{};
     [ret setObject:[self currentFont] forKey:CPFontAttributeName];
@@ -252,12 +252,12 @@ var kRgsymRtf = {
         " "                                  : [ " ",        0,        false,     kRTFParserType_char,    ' '],
         "]"                                  : [ "]",        0,        false,     kRTFParserType_char,    ']'],
         "\\"                                 : [ "\\",       0,        false,     kRTFParserType_char,    '\\']
-}
+};
 
 @implementation _CPRTFParser : CPObject
 {
     CPString _codePage;
-    CPSize _paper;
+    CGSize _paper;
     CPString _rtf;
     unsigned _curState;
     CPArray _states;
@@ -293,7 +293,7 @@ var kRgsymRtf = {
 
 - (CPString)_checkChar:sym parameter:ch
 {
-    switch(_curState)
+    switch (_curState)
     {
         case 0:
             if (sym && sym[4])
@@ -316,24 +316,26 @@ var kRgsymRtf = {
 - (BOOL)popState
 {
     _states.pop();
-    if(_curState > 0) _curState--;
+
+    if (_curState > 0)
+        _curState--;
     return YES;
 }
 
 - (CPString)_parseSpec:sym parameter:v
 {
     var ch = '';
-    switch(sym[4])
+    switch (sym[4])
     {
-        case "ipfnDestSkip":                   
+        case "ipfnDestSkip":
              _curState++;
         return '';
         case "ipfnHex":
              ch = _rtf.charAt(++_currentParseIndex);
              var hex = '';
-             while(/[a-fA-F0-9\']/.test(ch))
+             while (/[a-fA-F0-9\']/.test(ch))
              {
-                 if(ch == "'")
+                 if (ch == "'")
                  {
                      _currentParseIndex++;
                      continue;
@@ -345,25 +347,26 @@ var kRgsymRtf = {
              console.log("hex : " + hex);
              _hexreturn = YES;
              _currentParseIndex--;
-             if (_curState !== 0) return '';
+             if (_curState !== 0)
+                return '';
              else return hex;
          break;
          case "codePage":
              ch = _rtf.charAt(++_currentParseIndex);
              var code = '';
-             while(/[0-9]/.test(ch))
+             while (/[0-9]/.test(ch))
              {
                  code += (ch + '');
                  ch = _rtf.charAt(++_currentParseIndex);
              }
-             _codePage=code;
+             _codePage = code;
              _currentParseIndex--;
          break;
     }
     return '';
 }
 
-- (void) _flushCurrentRun
+- (void)_flushCurrentRun
 {
     var newOffset = 0;
     if (_currentRun)
