@@ -453,7 +453,8 @@ var kRgsymRtf = {
 
 - (CPString)_translateKeyword:keyword parameter:param fParameter:(BOOL)fParam
 {
-    if (kRgsymRtf[keyword] !== undefined ){
+    if (kRgsymRtf[keyword] !== undefined)
+    {
         var sym = kRgsymRtf[keyword];
         switch (sym[3])
         {
@@ -523,17 +524,19 @@ var kRgsymRtf = {
                console.log("skip : " + keyword + " param: " + param);
 
         }
-        if (_states.length > 0) _curState = 1;
-            return '';
+        if (_states.length > 0)
+            _curState = 1;
+        return '';
     }
 }
 
 - (CPString)_parseKeyword:rtf length:len
 {
-    var ch = '';
-    var fParam = false, fNeg = false;
-    var keyword = '';
-    var param = '';
+    var ch = '',
+        fParam = false,
+        fNeg = false,
+        keyword = '',
+        param = '';
     _rtf = rtf;
 
     if (++_currentParseIndex >= len)
@@ -550,8 +553,8 @@ var kRgsymRtf = {
         keyword += ch;
         ch = rtf.charAt(++_currentParseIndex);
     }
-                
-    if( ch == '-' )
+
+    if (ch == '-')
     {
         fNeg = true;
         ch = rtf.charAt(++_currentParseIndex);
@@ -568,27 +571,27 @@ var kRgsymRtf = {
 
     if (fNeg)
         param *= -1;
-                
+
     return [self _translateKeyword:keyword parameter:param fParameter:fParam];
 }
-- (void) _appendPlainString:(CPString) aString
+- (void)_appendPlainString:(CPString) aString
 {
     [_result replaceCharactersInRange:CPMakeRange([_result length], 0) withString:aString];
 
 }
-- (CPAttributedString) parseRTF:(CPString)rtf
+- (CPAttributedString)parseRTF:(CPString)rtf
 {
-    if(rtf.length == 0)
+    if (rtf.length == 0)
     {
       //  alert("invalid rtf");
         return '';
     }
     _currentParseIndex = -1;
-    var len = rtf.length;
-    var tmp = '';
-    var ch = '';
-    var hex = '';
-    var lastchar = 0;
+    var len = rtf.length,
+        tmp = '',
+        ch = '',
+        hex = '',
+        lastchar = 0;
 
     while (_currentParseIndex < len)
     {
@@ -599,7 +602,7 @@ var kRgsymRtf = {
             [self _appendPlainString: String.fromCharCode(parseInt((hex), 16))];
             hex = '';
         }
-        switch(tmp)
+        switch (tmp)
         {
             case " ":
                 if (lastchar == 1)
@@ -647,9 +650,9 @@ var kRgsymRtf = {
                 }
                 if (_hexreturn)
                 {
-                    if(ch.length > 0)
+                    if (ch.length > 0)
                     {
-                        if(parseInt(ch, 16) & 0x80)
+                        if (parseInt(ch, 16) & 0x80)
                         {
                             hex += ch.toUpperCase();
                         } else

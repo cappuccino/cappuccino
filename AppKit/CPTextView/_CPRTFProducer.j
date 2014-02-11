@@ -1,4 +1,4 @@
-/* 
+/*
    RTFProducer.j
 
    Serialize CPAttributedString to a RTF String 
@@ -30,13 +30,13 @@
 @import "CPFontManager.j"
 
 
-var PAPERSIZE = @"PaperSize";
-var LEFTMARGIN = @"LeftMargin";
-var RIGHTMARGIN = @"RightMargin";
-var TOPMARGIN = @"TopMargin";
-var BUTTOMMARGIN = @"ButtomMargin";
+var PAPERSIZE = @"PaperSize",
+    LEFTMARGIN = @"LeftMargin",
+    RIGHTMARGIN = @"RightMargin",
+    TOPMARGIN = @"TopMargin",
+    BUTTOMMARGIN = @"ButtomMargin";
 
-function _points2twips(a) { return (a)*20.0; }
+function _points2twips(a) { return (a) * 20.0; }
 
 
 @implementation _CPRTFProducer:CPObject
@@ -53,13 +53,13 @@ function _points2twips(a) { return (a)*20.0; }
     CPColor ulColor;
 }
 
-+ (CPString)produceRTF:(CPAttributedString) aText documentAttributes:(CPDictionary)dict
++ (CPString)produceRTF:(CPAttributedString)aText documentAttributes:(CPDictionary)dict
 {
     var mynew = [self new],
         data;
 
     return [mynew RTFDStringFromAttributedString:aText
-	       documentAttributes:dict];
+               documentAttributes:dict];
 }
 
 - (id)init
@@ -74,7 +74,7 @@ function _points2twips(a) { return (a)*20.0; }
    * (for rtf-header generation)
    */
     fontDict = [CPMutableDictionary new];
-  
+
     currentFont = nil;
     fgColor = [CPColor blackColor];
     bgColor= [CPColor whiteColor];
@@ -83,48 +83,48 @@ function _points2twips(a) { return (a)*20.0; }
 }
 
 // private stuff follows
-- (CPString) fontTable
+- (CPString)fontTable
 {
   // write Font Table
     if ([fontDict count])
     {
-        var fontlistString = "";
-        var fontEnum;
-        var currFont;
-        var keyArray;
+        var fontlistString = "",
+            fontEnum,
+            currFont,
+            keyArray;
 
         keyArray = [fontDict allKeys];
         keyArray = [keyArray sortedArrayUsingSelector:@selector(compare:)];
 
         fontEnum = [keyArray objectEnumerator];
         while ((currFont = [fontEnum nextObject]) !== nil)
-	{
-	    var fontFamily;
-	    var detail;
+        {
+            var fontFamily,
+                detail;
 
-	    if ([currFont isEqualToString:@"Symbol"])
-	        fontFamily = @"tech";
-	    else if ([currFont isEqualToString:@"Helvetica"])
-	        fontFamily = @"swiss";
-	    else if ([currFont isEqualToString:@"Arial"])
-	        fontFamily = @"swiss";
-	    else if ([currFont isEqualToString:@"Courier"])
-	        fontFamily = @"modern";
-	    else if ([currFont isEqualToString:@"Times"])
-	        fontFamily = @"roman";
-	    else fontFamily = @"nil";
+            if ([currFont isEqualToString:@"Symbol"])
+                fontFamily = @"tech";
+            else if ([currFont isEqualToString:@"Helvetica"])
+                fontFamily = @"swiss";
+            else if ([currFont isEqualToString:@"Arial"])
+                fontFamily = @"swiss";
+            else if ([currFont isEqualToString:@"Courier"])
+                fontFamily = @"modern";
+            else if ([currFont isEqualToString:@"Times"])
+                fontFamily = @"roman";
+            else fontFamily = @"nil";
 
-	    detail = [CPString stringWithFormat:@"%@\\f%@ %@;",
-	        [fontDict objectForKey:currFont], fontFamily, currFont];
-	    fontlistString += detail;
-	}
+            detail = [CPString stringWithFormat:@"%@\\f%@ %@;",
+                [fontDict objectForKey:currFont], fontFamily, currFont];
+            fontlistString += detail;
+        }
         return [CPString stringWithFormat:@"{\\fonttbl%@}\n", fontlistString];
     }
     else
         return @"";
 }
 
-- (CPString) colorTable
+- (CPString)colorTable
 {
   // write Colour table
     if ([colorDict count])
@@ -137,22 +137,22 @@ function _points2twips(a) { return (a)*20.0; }
             i;
 
         while ((next = [keyEnum nextObject]) != nil)
-	{
-	    var cn = [colorDict objectForKey:next];
-	    [list insertObject:next atIndex:[cn intValue]-1];
-	}
+        {
+            var cn = [colorDict objectForKey:next];
+            [list insertObject:next atIndex:[cn intValue] - 1];
+        }
 
         result = [CPString stringWithString:@"{\\colortbl;"];
         for (i = 0; i < count; i++)
-	{
-	    var color = [[list objectAtIndex:i] 
-			       colorUsingColorSpaceName:CPCalibratedRGBColorSpace];
-	    result += [CPString stringWithFormat:
-					    @"\\red%d\\green%d\\blue%d;",
-					 ([color redComponent]*255),
-					 ([color greenComponent]*255),
-					 ([color blueComponent]*255)];
-	}
+        {
+            var color = [[list objectAtIndex:i]
+                               colorUsingColorSpaceName:CPCalibratedRGBColorSpace];
+            result += [CPString stringWithFormat:
+                                            @"\\red%d\\green%d\\blue%d;",
+                                         ([color redComponent] * 255),
+                                         ([color greenComponent] * 255),
+                                         ([color blueComponent] * 255)];
+        }
 
         result += @"}\n";
         return result;
@@ -161,59 +161,59 @@ function _points2twips(a) { return (a)*20.0; }
         return @"";
 }
 
-- (CPString) documentAttributes
+- (CPString)documentAttributes
 {
     if (docDict != nil)
     {
         var result,
             detail,
             val,
-            num,
+            num;
 
         result = [CPString string];
 
         val = [docDict objectForKey:PAPERSIZE];
         if (val != nil)
         {
-	    var size = [val sizeValue];
-	    detail = [CPString stringWithFormat:@"\\paperw%d \\paperh%d",
-			     _points2twips(size.width), 
-			     _points2twips(size.height)];
-	    result += detail;
-	}
+            var size = [val sizeValue];
+            detail = [CPString stringWithFormat:@"\\paperw%d \\paperh%d",
+                             _points2twips(size.width),
+                             _points2twips(size.height)];
+            result += detail;
+        }
 
         num = [docDict objectForKey:LEFTMARGIN];
         if (num != nil)
         {
-	    var f = [num floatValue];
-	    detail = [CPString stringWithFormat:@"\\margl%d",
-			     _points2twips(f)];
-	    result+= detail;
-	}
+            var f = [num floatValue];
+            detail = [CPString stringWithFormat:@"\\margl%d",
+                             _points2twips(f)];
+            result+= detail;
+        }
         num = [docDict objectForKey:RIGHTMARGIN];
         if (num != nil)
         {
-	    var f = [num floatValue];
-	    detail = [CPString stringWithFormat:@"\\margr%d",
-			     _points2twips(f)];
-	    result += detail;
-	}
+            var f = [num floatValue];
+            detail = [CPString stringWithFormat:@"\\margr%d",
+                             _points2twips(f)];
+            result += detail;
+        }
         num = [docDict objectForKey:TOPMARGIN];
         if (num != nil)
         {
-	    var f = [num floatValue];
-	    detail = [CPString stringWithFormat:@"\\margt%d",
-			     _points2twips(f)];
-	    result += detail;
-	}
+            var f = [num floatValue];
+            detail = [CPString stringWithFormat:@"\\margt%d",
+                             _points2twips(f)];
+            result += detail;
+        }
         num = [docDict objectForKey:BUTTOMMARGIN];
         if (num != nil)
         {
-	    var f = [num floatValue];
-	    detail = [CPString stringWithFormat:@"\\margb%d",
-			     _points2twips(f)];
-	    result += detail;
-	}
+            var f = [num floatValue];
+            detail = [CPString stringWithFormat:@"\\margb%d",
+                             _points2twips(f)];
+            result += detail;
+        }
 
         return result;
     }
@@ -221,7 +221,7 @@ function _points2twips(a) { return (a)*20.0; }
         return @"";
 }
 
-- (CPString) headerString
+- (CPString)headerString
 {
     var result;
 
@@ -234,7 +234,7 @@ function _points2twips(a) { return (a)*20.0; }
     return result;
 }
 
-- (CPString) trailerString
+- (CPString)trailerString
 {
     return @"}";
 }
@@ -246,7 +246,7 @@ function _points2twips(a) { return (a)*20.0; }
     if (fCount == nil)
     {
         var count = [fontDict count];
-      
+
         fCount = [CPString stringWithFormat:@"\\f%d", count];
         [fontDict setObject:fCount forKey:fontName];
     }
@@ -262,16 +262,16 @@ function _points2twips(a) { return (a)*20.0; }
     if (num == nil)
     {
         cn = [colorDict count] + 1;
-	    
+
         [colorDict setObject:[CPNumber numberWithInt:cn]
-		 forKey:color];
+                 forKey:color];
     }
     var cn = [num intValue];
 
     return cn + 1;
 }
 
-- (CPString) paragraphStyle:(CPParagraphStyle) paraStyle
+- (CPString)paragraphStyle:(CPParagraphStyle)paraStyle
 {
     var headerString = [CPString stringWithString:@"\\pard\\plain"],
         twips;
@@ -282,19 +282,19 @@ function _points2twips(a) { return (a)*20.0; }
     switch ([paraStyle alignment])
     {
         case CPRightTextAlignment:
-	    headerString += @"\\qr";
-	break;
+            headerString += @"\\qr";
+        break;
         case CPCenterTextAlignment:
-	    headerString += @"\\qc";
-	break;
+            headerString += @"\\qc";
+        break;
         case CPLeftTextAlignment:
-	    headerString += @"\\ql";
-	break;
+            headerString += @"\\ql";
+        break;
         case CPJustifiedTextAlignment:
-	    headerString += @"\\qj";
-	break;
+            headerString += @"\\qj";
+        break;
         default:
-	    headerString += @"\\ql";
+            headerString += @"\\ql";
         break;
     }
 
@@ -359,20 +359,20 @@ function _points2twips(a) { return (a)*20.0; }
 
           headerString += [CPString stringWithFormat:@"\\tx%d",_points2twips([tab location])];
       }
-    }  
+    }
     return headerString;
 }
 
-- (CPString) runStringForString:(CPString) substring
-		     attributes:(CPDictionary) attributes
-		 paragraphStart:(BOOL) first
+- (CPString)runStringForString:(CPString) substring
+                    attributes:(CPDictionary) attributes
+                paragraphStart:(BOOL) first
 {
     var result = "",
         headerString = "",
         trailerString = "",
         attribEnum,
         currAttrib;
-  
+
     if (first)
     {
         var paraStyle = [attributes objectForKey:CPParagraphStyleAttributeName];
@@ -392,118 +392,118 @@ function _points2twips(a) { return (a)*20.0; }
     {
         if ([currAttrib isEqualToString:CPFontAttributeName])
         {
-	  /*
-	   * handle fonts
-	   */
-	    var font,
-	        fontName,
-	        traits;
-	  
-	    font = [attributes objectForKey:CPFontAttributeName];
-	    fontName = [font familyName];
-	    traits = [[CPFontManager sharedFontManager] traitsOfFont:font];
-	  
-	  /*
-	   * font name
-	   */
-	    if (currentFont == nil || 
-	        ![fontName isEqualToString:[currentFont familyName]])
-	    {
-	        headerString += [self fontToken:fontName];
-	    }
-	  /*
-	   * font size
-	   */
-	    if (currentFont == nil || 
-	        [font size] != [currentFont size])
-	    {
-	        var points =[font size]*2,
-	            pString;
-	      
-	        pString = [CPString stringWithFormat:@"\\fs%d", points];
-	        headerString += pString;
-	    }
-	  /*
-	   * font attributes
-	   */
-	    if (traits & CPItalicFontMask)
-	    {
-	        headerString += @"\\i";
-	        trailerString += @"\\i0";
-	    }
-	    if (traits & CPBoldFontMask)
-	    {
-	        headerString += @"\\b";
-	        trailerString += @"\\b0";
-	    }
+          /*
+           * handle fonts
+           */
+            var font,
+                fontName,
+                traits;
 
-	    if (first)
-	        currentFont = font;
-	}
+            font = [attributes objectForKey:CPFontAttributeName];
+            fontName = [font familyName];
+            traits = [[CPFontManager sharedFontManager] traitsOfFont:font];
+
+          /*
+           * font name
+           */
+            if (currentFont == nil ||
+                ![fontName isEqualToString:[currentFont familyName]])
+            {
+                headerString += [self fontToken:fontName];
+            }
+          /*
+           * font size
+           */
+            if (currentFont == nil ||
+                [font size] != [currentFont size])
+            {
+                var points = [font size] * 2,
+                    pString;
+
+                pString = [CPString stringWithFormat:@"\\fs%d", points];
+                headerString += pString;
+            }
+          /*
+           * font attributes
+           */
+            if (traits & CPItalicFontMask)
+            {
+                headerString += @"\\i";
+                trailerString += @"\\i0";
+            }
+            if (traits & CPBoldFontMask)
+            {
+                headerString += @"\\b";
+                trailerString += @"\\b0";
+            }
+
+            if (first)
+                currentFont = font;
+        }
         else if ([currAttrib isEqualToString:CPForegroundColorAttributeName])
         {
-	    var color = [attributes objectForKey:CPForegroundColorAttributeName];
-	    if (![color isEqual:fgColor])
-	    {
-	        headerString += [CPString stringWithFormat:@"\\cf%d", [self numberForColor:color]];
-	        trailerString += @"\\cf0";
-	    }
-	}
+            var color = [attributes objectForKey:CPForegroundColorAttributeName];
+            if (![color isEqual:fgColor])
+            {
+                headerString += [CPString stringWithFormat:@"\\cf%d", [self numberForColor:color]];
+                trailerString += @"\\cf0";
+            }
+        }
         else if ([currAttrib isEqualToString:CPBackgroundColorAttributeName])
         {
-	  var color = [attributes objectForKey:CPBackgroundColorAttributeName];
-	  if (![color isEqual:bgColor])
-	    {
-	        headerString += [CPString stringWithFormat:@"\\cb%d", [self numberForColor:color]];
-	        trailerString += @"\\cb0";
-	    }
-	}
+          var color = [attributes objectForKey:CPBackgroundColorAttributeName];
+          if (![color isEqual:bgColor])
+            {
+                headerString += [CPString stringWithFormat:@"\\cb%d", [self numberForColor:color]];
+                trailerString += @"\\cb0";
+            }
+        }
         else if ([currAttrib isEqualToString:CPUnderlineStyleAttributeName])
         {
-	  headerString += @"\\ul";
-	  trailerString += @"\\ulnone";
-	}
+          headerString += @"\\ul";
+          trailerString += @"\\ulnone";
+        }
         else if ([currAttrib isEqualToString:CPSuperscriptAttributeName])
         {
-	    var value = [attributes objectForKey:CPSuperscriptAttributeName],
-	        svalue = [value intValue] * 6;
-	  
-	    if (svalue > 0)
-	    {
-	        headerString += [CPString stringWithFormat:@"\\up%d", svalue];
-	        trailerString += @"\\up0";
-	    }
-	    else if (svalue < 0)
-	    {
-	        headerString +=[CPString stringWithFormat:@"\\dn-%d", svalue];
-	        trailerString += @"\\dn0";
-	    }
-	}
+            var value = [attributes objectForKey:CPSuperscriptAttributeName],
+                svalue = [value intValue] * 6;
+
+            if (svalue > 0)
+            {
+                headerString += [CPString stringWithFormat:@"\\up%d", svalue];
+                trailerString += @"\\up0";
+            }
+            else if (svalue < 0)
+            {
+                headerString += [CPString stringWithFormat:@"\\dn-%d", svalue];
+                trailerString += @"\\dn0";
+            }
+        }
         else if ([currAttrib isEqualToString:CPBaselineOffsetAttributeName])
         {
-	    var value = [attributes objectForKey:CPBaselineOffsetAttributeName],
-	        svalue = [value floatValue] * 2;
-	  
-	    if (svalue > 0)
-	    {
-	        headerString +=[CPString stringWithFormat:@"\\up%d", svalue];
-	        trailerString += @"\\up0";
-	    }
-	    else if (svalue < 0)
-	    {
-	        headerString += [CPString stringWithFormat:@"\\dn-%d", svalue];
-	        trailerString += @"\\dn0";
-	    }
-	}
+            var value = [attributes objectForKey:CPBaselineOffsetAttributeName],
+                svalue = [value floatValue] * 2;
+
+            if (svalue > 0)
+            {
+                headerString += [CPString stringWithFormat:@"\\up%d", svalue];
+                trailerString += @"\\up0";
+            }
+            else if (svalue < 0)
+            {
+                headerString += [CPString stringWithFormat:@"\\dn-%d", svalue];
+                trailerString += @"\\dn0";
+            }
+        }
         else if ([currAttrib isEqualToString:CPAttachmentAttributeName])
         {
-	}
+        }
         else if ([currAttrib isEqualToString:CPLigatureAttributeName])
         {
-	}
+        }
         else if ([currAttrib isEqualToString:CPKernAttributeName])
         {
-	}
+        }
     }
 
     substring = substring.replace(/\\/g, '\\\\');
@@ -513,16 +513,16 @@ function _points2twips(a) { return (a)*20.0; }
     substring = substring.replace(/}/g, '\\}');
   // FIXME: All characters not in the standard encoding must be
   // replaced by \'xx
-  
+
     if (!first)
     {
         var braces;
-      
+
         if ([headerString length])
-	     braces = [CPString stringWithFormat:@"{%@ %@}", headerString, substring];
+             braces = [CPString stringWithFormat:@"{%@ %@}", headerString, substring];
         else
              braces = substring;
-      
+
       result += braces;
     }
     else
@@ -530,11 +530,10 @@ function _points2twips(a) { return (a)*20.0; }
         var nobraces;
 
         if ([headerString length])
-	    nobraces = [CPString stringWithFormat:@"%@ %@", headerString, substring];
+            nobraces = [CPString stringWithFormat:@"%@ %@", headerString, substring];
         else
             nobraces = substring;
 
-      
         result += nobraces;
     }
 
@@ -555,27 +554,27 @@ function _points2twips(a) { return (a)*20.0; }
 // FIXME <!> split along newline characters and run as outer loop
     while (CPMaxRange(currRange) < CPMaxRange(completeRange))  // save all "runs"
     {
-	var attributes,
-	    substring,
-	    runString;
-	  
-	attributes = [text attributesAtIndex:CPMaxRange(currRange)
-			     longestEffectiveRange:currRange
-			     inRange:completeRange];
-	substring = [string substringWithRange:currRange];
-	  
-	runString = [self runStringForString:substring
-			    attributes:attributes
-			    paragraphStart:YES];
-	result += runString;
-	first = NO;
+        var attributes,
+            substring,
+            runString;
+
+        attributes = [text attributesAtIndex:CPMaxRange(currRange)
+                             longestEffectiveRange:currRange
+                             inRange:completeRange];
+        substring = [string substringWithRange:currRange];
+
+        runString = [self runStringForString:substring
+                            attributes:attributes
+                            paragraphStart:YES];
+        result += runString;
+        first = NO;
     }
     return result;
 }
 
 
-- (CPString) RTFDStringFromAttributedString:(CPAttributedString)aText
-	       documentAttributes:(CPDictionary)dict
+- (CPString)RTFDStringFromAttributedString:(CPAttributedString)aText
+                        documentAttributes:(CPDictionary)dict
 {
     var output = [CPString string],
         headerString,
