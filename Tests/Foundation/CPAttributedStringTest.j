@@ -7,26 +7,27 @@ var sharedObject = [CPObject new];
 
 - (void)testAppendToEmptyString
 {
-    var string = [CPAttributedString new];
-    [string replaceCharactersInRange:CPMakeRange(0,0) withString:@"hi there"];
-    [self assertTrue:([string string] === @"hi there")
-             message:"testAppendToEmptyString: expected:" + @"hi there" + " actual:" + [string string]];
+    var string = [CPMutableAttributedString new];
+    [string replaceCharactersInRange:CPMakeRange(0, 0) withString:@"hi there"];
+    [self assert:[string string] equals:@"hi there"];
 }
+
 - (void)testAppendToEndOfString
 {
-    var string = [[CPAttributedString alloc] initWithString:@"hi there"];
-    [string replaceCharactersInRange:CPMakeRange(8,0) withString:@" it is me"];
-    [self assertTrue:([string string] === @"hi there it is me")
-             message:"testAppendToEndOfString: expected:" + @"hi there it is me" + " actual:" + [string string]];
+    var string = [[CPMutableAttributedString alloc] initWithString:@"hi there"];
+    [string replaceCharactersInRange:CPMakeRange(8, 0) withString:@" it is me"];
+    [self assert:[string string] equals:@"hi there it is me"];
 }
+
 - (void)testWriteOverRangeBoundaries
 {
-    var string=[[CPAttributedString alloc] initWithString:@"Fusce\n" attributes: [CPDictionary dictionaryWithObjects:[ 1 ] forKeys: ["testkey"]]]
-    [string replaceCharactersInRange:CPMakeRange(6, 0) withAttributedString:[[CPAttributedString alloc] initWithString:@"this is boldface" 
-                attributes:[CPDictionary dictionaryWithObjects:[ 2 ] forKeys: ["testkey"]]]];
+    var string = [[CPMutableAttributedString alloc] initWithString:@"Fusce\n" attributes:@{"testkey": 1}];
+    [string replaceCharactersInRange:CPMakeRange(6, 0) withAttributedString:[[CPAttributedString alloc] initWithString:@"this is boldface"
+                attributes:@{"testkey": 2}]];
     [string replaceCharactersInRange:CPMakeRange(5, 3) withString:@" "];
-    var aRange=CPMakeRange(0, 0);
-    var attribs=[string attributesAtIndex:4 effectiveRange: aRange];
+
+    var aRange = CPMakeRange(0, 0),
+        attribs = [string attributesAtIndex:4 effectiveRange:aRange];
 
     [self assertTrue:([attribs objectForKey:@"testkey"] === 1)
              message:"testWriteOverRangeBoundaries: expected:" + @"1" + " actual:" + [attribs objectForKey:@"testkey"]];
