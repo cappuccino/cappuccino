@@ -42,9 +42,10 @@ CPTypesetterContainerBreakAction  = (1 << 5);
 
 
 var _measuringContext;
-var _measuringContextFont;
-var _isCanvasSizingInvalid = 0;
-var _didTestCanvasSizingValid;
+    _measuringContextFont,
+    _isCanvasSizingInvalid,
+    _didTestCanvasSizingValid;
+
 function _widthOfStringForFont(aString, aFont)
 {
     if (!_measuringContext)
@@ -170,7 +171,7 @@ var _sharedSimpleTypesetter = nil;
     var i,
         l = tabStops.length;
 
-    if (aWidth > tabStops[l-1]._location)
+    if (aWidth > tabStops[l - 1]._location)
         return nil;
 
     for (i = l-1; i >= 0; i--)
@@ -185,13 +186,13 @@ var _sharedSimpleTypesetter = nil;
 }
 
 - (BOOL)_flushRange:(CPRange)lineRange
-        lineOrigin:(CPPoint)lineOrigin
-        currentContainerSize:(CPSize)containerSize
+        lineOrigin:(CGPoint)lineOrigin
+        currentContainerSize:(CGSize)containerSize
         advancements:(CPArray)advancements
         lineCount:(unsigned)lineCount
 {
     [_layoutManager setTextContainer:_currentTextContainer forGlyphRange:lineRange];  // creates a new lineFragment
-    var rect = CPRectMake(lineOrigin.x, lineOrigin.y, _lineWidth, _lineHeight);
+    var rect = CGRectMake(lineOrigin.x, lineOrigin.y, _lineWidth, _lineHeight);
     [_layoutManager setLineFragmentRect: rect forGlyphRange:lineRange usedRect:rect];
     var myX = 0;
 
@@ -248,7 +249,8 @@ var _sharedSimpleTypesetter = nil;
     var numLines = 0,
         theString = [_textStorage string],
         lineOrigin,
-        ascent, descent;
+        ascent,
+        descent;
 
     var advancements = [],
         prevRangeWidth = 0,
@@ -257,11 +259,11 @@ var _sharedSimpleTypesetter = nil;
         _previousFont = nil;
 
     if (glyphIndex > 0)
-        lineOrigin = CPPointCreateCopy([_layoutManager lineFragmentRectForGlyphAtIndex:glyphIndex effectiveRange:nil].origin);
+        lineOrigin = CGPointCreateCopy([_layoutManager lineFragmentRectForGlyphAtIndex:glyphIndex effectiveRange:nil].origin);
     else if ([_layoutManager extraLineFragmentTextContainer])
-         lineOrigin = CPPointMake(0, [_layoutManager extraLineFragmentUsedRect].origin.y);
+         lineOrigin = CGPointMake(0, [_layoutManager extraLineFragmentUsedRect].origin.y);
     else
-        lineOrigin = CPPointMake(0, 0);
+        lineOrigin = CGPointMake(0, 0);
 
     [_layoutManager _removeInvalidLineFragments];
 
@@ -383,9 +385,9 @@ var _sharedSimpleTypesetter = nil;
     if (lineRange.length)
         [self _flushRange:lineRange lineOrigin:lineOrigin currentContainerSize:containerSize advancements:advancements lineCount:numLines];
 
-    if ([theString.charAt(theString.length - 1) ==="\n"])
+    if ([theString.charAt(theString.length - 1) === "\n"])
     {
-        var rect = CPRectMake(0, lineOrigin.y, containerSize.width, [_layoutManager._lineFragments lastObject]._usedRect.size.height);   // fixme: row-height is crudely hacked
+        var rect = CGRectMake(0, lineOrigin.y, containerSize.width, [_layoutManager._lineFragments lastObject]._usedRect.size.height);   // fixme: row-height is crudely hacked
         [_layoutManager setExtraLineFragmentRect:rect usedRect:rect textContainer:_currentTextContainer];
     }
 }
