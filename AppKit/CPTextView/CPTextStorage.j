@@ -278,7 +278,7 @@ CPTextStorageDidProcessEditingNotification = @"CPTextStorageDidProcessEditingNot
 - (CPAttributedString)attributedSubstringFromRange:(CPRange)aRange
 {
     if (!aRange.length)
-	    return [CPAttributedString new];
+        return [CPAttributedString new];
     return [super attributedSubstringFromRange:aRange];
 }
 @end
