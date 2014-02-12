@@ -527,11 +527,12 @@
         aString = @"";
 
     var lastValidIndex = MAX(_rangeEntries.length - 1, 0),
-        startingIndex = [self _indexOfEntryWithIndex: aRange.location];
+        startingIndex = [self _indexOfEntryWithIndex:aRange.location];
 
     if (startingIndex < 0)
         startingIndex = lastValidIndex;
-    var endingIndex = [self _indexOfEntryWithIndex: CPMaxRange(aRange)];
+
+    var endingIndex = [self _indexOfEntryWithIndex:CPMaxRange(aRange)];
 
     if (endingIndex < 0)
         endingIndex = lastValidIndex;
@@ -539,8 +540,8 @@
     var additionalLength = aString.length - aRange.length,
         patchPosition = startingIndex;
 
-   _string = _string.substring(0, aRange.location) + aString + _string.substring(CPMaxRange(aRange));
-    var originalLength= _rangeEntries[patchPosition].range.length;
+    _string = _string.substring(0, aRange.location) + aString + _string.substring(CPMaxRange(aRange));
+    var originalLength = _rangeEntries[patchPosition].range.length;
 
     if (startingIndex === endingIndex)
         _rangeEntries[patchPosition].range.length += additionalLength;
@@ -554,25 +555,24 @@
         if (endingIndex > startingIndex)
         {
             var originalOffset= _rangeEntries[startingIndex].range.location,
-                offsetFromSplicing = CPMaxRange(_rangeEntries[endingIndex].range)-originalOffset;
+                offsetFromSplicing = CPMaxRange(_rangeEntries[endingIndex].range) - originalOffset;
             _rangeEntries.splice(startingIndex, endingIndex - startingIndex);
             _rangeEntries[startingIndex].range = CPMakeRange(originalOffset, offsetFromSplicing);
         }
 
         if (patchPosition !== startingIndex)
-        {   var lhsOffset = aString.length -CPIntersectionRange(_rangeEntries[patchPosition].range, aRange).length;
+        {
+            var lhsOffset = aString.length - CPIntersectionRange(_rangeEntries[patchPosition].range, aRange).length;
             _rangeEntries[patchPosition].range.length = originalLength + lhsOffset;
-            var rhsOffset = aString.length -CPIntersectionRange(_rangeEntries[startingIndex].range, aRange).length;
+            var rhsOffset = aString.length - CPIntersectionRange(_rangeEntries[startingIndex].range, aRange).length;
             _rangeEntries[startingIndex].range.location += lhsOffset;
             _rangeEntries[startingIndex].range.length += rhsOffset;
-            patchPosition= startingIndex;
+            patchPosition = startingIndex;
         } else
-        {   _rangeEntries[patchPosition].range.length += additionalLength;
-        }
+            _rangeEntries[patchPosition].range.length += additionalLength;
     }
 
-    var l= _rangeEntries.length;
-    for (var patchIndex= patchPosition+1; patchIndex < l; patchIndex++)
+    for (var patchIndex = patchPosition + 1, l = _rangeEntries.length; patchIndex < l; patchIndex++)
         _rangeEntries[patchIndex].range.location += additionalLength;
 }
 
@@ -712,7 +712,7 @@
 - (void)insertAttributedString:(CPAttributedString)aString atIndex:(CPUInteger)anIndex
 {
     if (anIndex < 0 || anIndex > [self length])
-        [CPException raise:CPRangeException reason:"tried to insert attributed string at an invalid index: "+anIndex];
+        [CPException raise:CPRangeException reason:"tried to insert attributed string at an invalid index: " + anIndex];
 
     var entryIndexOfNextEntry = [self _indexOfRangeEntryForIndex:anIndex splitOnMaxIndex:YES],
         otherRangeEntries = aString._rangeEntries,
