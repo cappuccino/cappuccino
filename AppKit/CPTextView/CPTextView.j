@@ -935,7 +935,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     [self _performSelectionFixupForRange:aSel];
     _startTrackingLocation = _selectionRange.location;
 }
-- (unsigned) _calculateMoveSelectionFromRange:(CPRange)aRange intoDirection:(integer)move granularity:(CPSelectionGranularity)granularity
+- (unsigned)_calculateMoveSelectionFromRange:(CPRange)aRange intoDirection:(integer)move granularity:(CPSelectionGranularity)granularity
 {
     var inWord = ![self _isCharacterAtIndex:(move > 0 ? CPMaxRange(aRange) : aRange.location) + move granularity:granularity],
         aSel = [self selectionRangeForProposedRange:CPMakeRange((move > 0 ? CPMaxRange(aRange) : aRange.location) + move, 0) granularity:granularity],
@@ -943,14 +943,14 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     return move > 0 ? CPMaxRange(inWord? aSel:bSel) : (inWord? aSel:bSel).location;
 }
 
-- (void) _moveSelectionIntoDirection:(integer)move granularity:(CPSelectionGranularity)granularity
+- (void)_moveSelectionIntoDirection:(integer)move granularity:(CPSelectionGranularity)granularity
 {
     var pos = [self _calculateMoveSelectionFromRange:_selectionRange intoDirection:move granularity:granularity];
     [self _performSelectionFixupForRange:CPMakeRange(pos, 0)];
     _startTrackingLocation = _selectionRange.location;
 }
 
-- (void) _extendSelectionIntoDirection:(integer)move granularity:(CPSelectionGranularity)granularity
+- (void)_extendSelectionIntoDirection:(integer)move granularity:(CPSelectionGranularity)granularity
 {
     var aSel = CPMakeRangeCopy(_selectionRange);
 
@@ -1009,52 +1009,52 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
          [self _establishSelection:CPMakeRange(CPMaxRange(parRange), 0) byExtending:NO];
     }
 }
-- (void) moveToEndOfParagraphAndModifySelection:(id)sender
+- (void)moveToEndOfParagraphAndModifySelection:(id)sender
 {
     if (_isSelectable)
     {
        [self _extendSelectionIntoDirection: +1 granularity:CPSelectByParagraph];
     }
 }
-- (void) moveParagraphForwardAndModifySelection:(id)sender
+- (void)moveParagraphForwardAndModifySelection:(id)sender
 {
     if (_isSelectable)
     {
        [self _extendSelectionIntoDirection: +1 granularity:CPSelectByParagraph];
     }
 }
-- (void) moveParagraphForward:(id)sender
+- (void)moveParagraphForward:(id)sender
 {
     if (_isSelectable)
     {
        [self _moveSelectionIntoDirection: +1 granularity:CPSelectByParagraph]
     }
 }
-- (void) moveWordBackwardAndModifySelection:(id)sender
+- (void)moveWordBackwardAndModifySelection:(id)sender
 {
     [self moveWordLeftAndModifySelection:sender];
 }
-- (void) moveWordBackward:(id)sender
+- (void)moveWordBackward:(id)sender
 {
     [self moveWordLeft:sender];
 }
-- (void) moveWordForwardAndModifySelection:(id)sender
+- (void)moveWordForwardAndModifySelection:(id)sender
 {
     [self moveWordRightAndModifySelection:sender];
 }
-- (void) moveWordForward:(id)sender
+- (void)moveWordForward:(id)sender
 {
     [self moveWordRight:sender];
 }
 
-- (void) moveToBeginningOfDocument:(id)sender
+- (void)moveToBeginningOfDocument:(id)sender
 {
     if (_isSelectable)
     {
          [self _establishSelection:CPMakeRange(0, 0) byExtending:NO];
     }
 }
-- (void) moveToBeginningOfDocumentAndModifySelection:(id)sender
+- (void)moveToBeginningOfDocumentAndModifySelection:(id)sender
 {
     if (_isSelectable)
     {
@@ -1713,7 +1713,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
         }
         // -> extend to the right
-        for(index = wordRange.location; setString.indexOf(string.charAt(++index)) !== CPNotFound && index < string.length; )
+        for (index = wordRange.location; setString.indexOf(string.charAt(++index)) !== CPNotFound && index < string.length;)
         {
              wordRange = _MakeRangeFromAbs(wordRange.location, MIN(string.length - 1, index + 1));
 
@@ -1804,7 +1804,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
                 parRange = CPUnionRange(parRange, [self _characterRangeForUnitAtIndex: CPMaxRange(proposedRange) inString: string asDefinedByCharArray: ['\n'] skip:NO]);
 
             return parRange;
- 
+
         default:
             return proposedRange;
     }
