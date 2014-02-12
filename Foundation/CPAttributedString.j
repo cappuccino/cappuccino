@@ -835,40 +835,48 @@
     //do nothing (says cocotron and gnustep)
 }
 
-- (id)initWithCoder:(id)aCoder
+@end
+
+var CPAttributedStringStringKey     = "CPAttributedStringString",
+    CPAttributedStringRangesKey     = "CPAttributedStringRanges",
+    CPAttributedStringAttributesKey = "CPAttributedStringAttributes";
+
+@implementation CPAttributedString (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
 {
     self = [self init];
-    if (self != nil)
-    {
-        _string=[aCoder decodeObjectForKey:"_string"];
-        var decoded_ranges = [aCoder decodeObjectForKey:"ranges"],
-            decoded_attribs = [aCoder decodeObjectForKey:"attributes"];
-        _rangeEntries=[];
 
-        var i, l= decoded_ranges.length;
-        for(i = 0; i < l; i++)
-        {
-            _rangeEntries.push(makeRangeEntry(decoded_ranges[i], decoded_attribs[i]));
-        }
+    if (self)
+    {
+        _string = [aCoder decodeObjectForKey:CPAttributedStringStringKey];
+        var decodedRanges = [aCoder decodeObjectForKey:CPAttributedStringRangesKey],
+            decodedAttributes = [aCoder decodeObjectForKey:CPAttributedStringAttributesKey];
+
+        _rangeEntries = [];
+
+        for (var i = 0, l = decodedRanges.length; i < l; i++)
+            _rangeEntries.push(makeRangeEntry(decodedRanges[i], decodedAttributes[i]));
     }
+
     return self;
 }
 
-- (void)encodeWithCoder:(id)aCoder
+- (void)encodeWithCoder:(CPCoder)aCoder
 {
-    [aCoder encodeObject:_string forKey:"_string"];
+    [aCoder encodeObject:_string forKey:CPAttributedStringStringKey];
 
-    var ranges_for_encoding = [],
-        dicts_for_encoding = [];
+    var rangesForEncoding = [],
+        dictsForEncoding = [];
 
-    var i, l = _rangeEntries.length;
-    for(i = 0; i < l; i++)
+    for (var i = 0, l = _rangeEntries.length; i < l; i++)
     {
-        ranges_for_encoding.push(_rangeEntries[i].range);
-        dicts_for_encoding.push(_rangeEntries[i].attributes);
+        rangesForEncoding.push(_rangeEntries[i].range);
+        dictsForEncoding.push(_rangeEntries[i].attributes);
     }
-    [aCoder encodeObject:ranges_for_encoding forKey:"ranges"];
-    [aCoder encodeObject:dicts_for_encoding forKey:"attributes"];
+
+    [aCoder encodeObject:rangesForEncoding forKey:CPAttributedStringRangesKey];
+    [aCoder encodeObject:dictsForEncoding forKey:CPAttributedStringAttributesKey];
 }
 
 @end
