@@ -149,7 +149,7 @@
     {
         // index is the character index we're searching for,
         // while range is the actual range entry we're comparing against
-        if (CPLocationInRange(index, entry.range))
+        if (CPLocationInRange(index, entry.range) || (!index && !CPMaxRange(entry.range)))
             return CPOrderedSame;
         else if (CPMaxRange(entry.range) <= index)
             return CPOrderedDescending;
@@ -526,38 +526,54 @@
     if (!aString)
         aString = @"";
 
-    var startingIndex = [self _indexOfEntryWithIndex:aRange.location];
+    var lastValidIndex = MAX(_rangeEntries.length - 1, 0),
+        startingIndex = [self _indexOfEntryWithIndex: aRange.location];
 
-    if (startingIndex === CPNotFound)
-        _CPRaiseRangeException(self, _cmd, aRange.location, _string.length);
+    if (startingIndex < 0)
+        startingIndex = lastValidIndex;
+    var endingIndex = [self _indexOfEntryWithIndex: CPMaxRange(aRange)];
 
-    var startingRangeEntry = _rangeEntries[startingIndex],
-        endingIndex = [self _indexOfEntryWithIndex:MAX(CPMaxRange(aRange) - 1, 0)];
+    if (endingIndex < 0)
+        endingIndex = lastValidIndex;
 
-    if (endingIndex === CPNotFound)
-        _CPRaiseRangeException(self, _cmd, MAX(CPMaxRange(aRange) - 1, 0), _string.length);
+    var additionalLength = aString.length - aRange.length,
+        patchPosition = startingIndex;
 
-    var endingRangeEntry = _rangeEntries[endingIndex],
-        additionalLength = aString.length - aRange.length;
-
-    _string = _string.substring(0, aRange.location) + aString + _string.substring(CPMaxRange(aRange));
+   _string = _string.substring(0, aRange.location) + aString + _string.substring(CPMaxRange(aRange));
+    var originalLength= _rangeEntries[patchPosition].range.length;
 
     if (startingIndex === endingIndex)
-        startingRangeEntry.range.length += additionalLength;
+        _rangeEntries[patchPosition].range.length += additionalLength;
     else
     {
-        endingRangeEntry.range.length = CPMaxRange(endingRangeEntry.range) - CPMaxRange(aRange);
-        endingRangeEntry.range.location = CPMaxRange(aRange);
+        if (CPIntersectionRange(_rangeEntries[patchPosition].range, aRange).length < originalLength)
+        {
+            startingIndex++;
+        }
 
-        startingRangeEntry.range.length = CPMaxRange(aRange) - startingRangeEntry.range.location;
+        if (endingIndex > startingIndex)
+        {
+            var originalOffset= _rangeEntries[startingIndex].range.location,
+                offsetFromSplicing = CPMaxRange(_rangeEntries[endingIndex].range)-originalOffset;
+            _rangeEntries.splice(startingIndex, endingIndex - startingIndex);
+            _rangeEntries[startingIndex].range = CPMakeRange(originalOffset, offsetFromSplicing);
+        }
 
-        _rangeEntries.splice(startingIndex, endingIndex - startingIndex);
+        if (patchPosition !== startingIndex)
+        {   var lhsOffset = aString.length -CPIntersectionRange(_rangeEntries[patchPosition].range, aRange).length;
+            _rangeEntries[patchPosition].range.length = originalLength + lhsOffset;
+            var rhsOffset = aString.length -CPIntersectionRange(_rangeEntries[startingIndex].range, aRange).length;
+            _rangeEntries[startingIndex].range.location += lhsOffset;
+            _rangeEntries[startingIndex].range.length += rhsOffset;
+            patchPosition= startingIndex;
+        } else
+        {   _rangeEntries[patchPosition].range.length += additionalLength;
+        }
     }
 
-    endingIndex = startingIndex + 1;
-
-    while (endingIndex < _rangeEntries.length)
-        _rangeEntries[endingIndex++].range.location += additionalLength;
+    var l= _rangeEntries.length;
+    for (var patchIndex= patchPosition+1; patchIndex < l; patchIndex++)
+        _rangeEntries[patchIndex].range.location += additionalLength;
 }
 
 /*!
@@ -586,6 +602,9 @@
     var startingEntryIndex = [self _indexOfRangeEntryForIndex:aRange.location splitOnMaxIndex:YES],
         endingEntryIndex = [self _indexOfRangeEntryForIndex:CPMaxRange(aRange) splitOnMaxIndex:YES],
         current = startingEntryIndex;
+
+    if (current < 0)
+        current = MAX(_rangeEntries.length - 1, 0);
 
     if (endingEntryIndex === CPNotFound)
         endingEntryIndex = _rangeEntries.length;
@@ -786,7 +805,7 @@
         var a = _rangeEntries[current],
             b = _rangeEntries[current + 1];
 
-        if ([a.attributes isEqualToDictionary:b.attributes])
+        if (a && b && [a.attributes isEqualToDictionary:b.attributes])
         {
             a.range.length = CPMaxRange(b.range) - a.range.location;
             _rangeEntries.splice(current + 1, 1);
