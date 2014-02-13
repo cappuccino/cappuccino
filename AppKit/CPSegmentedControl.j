@@ -918,6 +918,11 @@ var CPSegmentedControlSegmentsKey       = "CPSegmentedControlSegmentsKey",
         for (var i = 0; i < _segments.length; i++)
         {
             _themeStates[i] = [_segments[i] selected] ? CPThemeStateSelected : CPThemeStateNormal;
+        }
+
+        // We do this in a second loop because it relies on all the themeStates being set first
+        for (var i = 0; i < _segments.length; i++)
+        {
             [self tileWithChangedSegment:i];
         }
 
