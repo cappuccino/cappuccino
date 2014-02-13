@@ -413,7 +413,7 @@
         comparisonAttributes = [aString attributesAtIndex:0 effectiveRange:comparisonRange],
         length = _string.length;
 
-    while (CPMaxRange(CPUnionRange(myRange, comparisonRange)) < length)
+    do
     {
         if (CPIntersectionRange(myRange, comparisonRange).length > 0 &&
             ![myAttributes isEqualToDictionary:comparisonAttributes])
@@ -424,7 +424,7 @@
             myAttributes = [self attributesAtIndex:CPMaxRange(myRange) effectiveRange:myRange];
         else
             comparisonAttributes = [aString attributesAtIndex:CPMaxRange(comparisonRange) effectiveRange:comparisonRange];
-    }
+    } while (CPMaxRange(CPUnionRange(myRange, comparisonRange)) < length);
 
     return YES;
 }

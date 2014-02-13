@@ -207,6 +207,38 @@ var sharedObject = [CPObject new];
     [self assertFalse:[a isEqual:@"HELLO!"] message:"Expected a to not equal 'HELLO!', but it did"];
 }
 
+- (void)testIsEqualEmpty
+{
+    var a = [[CPMutableAttributedString alloc] initWithString:@""],
+        b = [[CPMutableAttributedString alloc] initWithString:@""];
+
+    [self assertTrue:[a isEqual:b]];
+}
+
+- (void)testIsEqualWithSimpleAttribute
+{
+    var a = [[CPMutableAttributedString alloc] initWithString:@"GREETINGS!"],
+        b = [[CPMutableAttributedString alloc] initWithString:@"GREETINGS!"];
+
+    [a addAttribute:"color" value:[CPColor redColor] range:CPMakeRange(0, 5)];
+    [self assertFalse:[a isEqual:b] message:"red string should not equal string without color attribute"];
+    [b addAttribute:"color" value:[CPColor redColor] range:CPMakeRange(0, 5)];
+    [self assertTrue:[a isEqual:b]];
+}
+
+- (void)testIsEqualWithTwoAttributes
+{
+    var a = [[CPMutableAttributedString alloc] initWithString:@"GREETINGS!"],
+        b = [[CPMutableAttributedString alloc] initWithString:@"GREETINGS!"];
+
+    [a addAttribute:"color" value:[CPColor redColor] range:CPMakeRange(0, 9)];
+    [b addAttribute:"color" value:[CPColor redColor] range:CPMakeRange(0, 9)];
+    [a addAttribute:"font" value:"Helvetica" range:CPMakeRange(1, 4)];
+    [self assertFalse:[a isEqual:b] message:"font difference from index 1 should be found"];
+    [b addAttribute:"font" value:"Helvetica" range:CPMakeRange(1, 4)];
+    [self assertTrue:[a isEqual:b]];
+}
+
 //Extracting a Substring
 //- (CPAttributedString)attributedSubstringFromRange:(CPRange)aRange
 - (void)testAttributedSubstringFromRange
