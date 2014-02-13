@@ -81,7 +81,7 @@ var sharedObject = [CPObject new];
              message:"testInitWithAttributedString: expected:" + [self stringForTesting] + " actual:" + string];
 }
 
-- (void)testIinitWithString_attributes
+- (void)testInitWithString_attributes
 {
     var string = [[CPAttributedString alloc] initWithString:@"hi there" attributes:@{}];
 
@@ -518,7 +518,6 @@ var sharedObject = [CPObject new];
     testAttributeAtIndexWithValue(string, 10, "duck", "goose", self);
     testAttributeAtIndexWithValue(string, 30, "duck", "goose", self);
     testAttributeAtIndexWithValue(string, 40, "duck", undefined, self);
-
 }
 
 //- (void)removeAttribute:(CPString)anAttribute range:(CPRange)aRange
