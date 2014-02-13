@@ -582,6 +582,23 @@ var sharedObject = [CPObject new];
     [self assertTrue:[[self stringForTesting] isEqual:string] message:"setAttributedString should have made strings equal, but they were not"];
 }
 
+- (void)testEncoding
+{
+    // We can't test using [self stringForTesting] because it contains attributes without coding support.
+    var original = [[CPMutableAttributedString alloc] initWithString:@"firstsecondthird"];
+    [original addAttribute:"color" value:[CPColor redColor] range:CPMakeRange(0, 5)];
+    [original addAttribute:"color" value:[CPColor greenColor] range:CPMakeRange(5, 6)];
+    [original addAttribute:"color" value:[CPColor blueColor] range:CPMakeRange(11, 5)];
+
+    var encoded = [CPKeyedArchiver archivedDataWithRootObject:original],
+        decoded = [CPKeyedUnarchiver unarchiveObjectWithData:encoded];
+    [self assert:original equals:decoded];
+
+    // Verify that the original and decoded are not incorrectly tied together.
+    [original addAttribute:"color" value:[CPColor blueColor] range:CPMakeRange(0, 5)];
+    [self assertFalse:[original isEqual:decoded]];
+}
+
 @end
 
 function isEqualAllowingUndefinedCast(a, b)
@@ -613,7 +630,7 @@ function testAttributeAtIndexWithValue(aString, anIndex, aKey, aValue, aSelf)
     var range = CPMakeRange(0, 0),
         attribute = [aString attribute:aKey atIndex:anIndex effectiveRange:range];
 
-    [aSelf assertTrue: isEqualAllowingUndefinedCast(attribute, aValue) message: "expecting '" + aKey + "' to be '" + aValue + "', was '" + attribute];
+    [aSelf assertTrue:isEqualAllowingUndefinedCast(attribute, aValue) message: "expecting '" + aKey + "' to be '" + aValue + "', was '" + attribute];
 
     var index = range.location;
 
@@ -621,7 +638,7 @@ function testAttributeAtIndexWithValue(aString, anIndex, aKey, aValue, aSelf)
     {
         attribute = [aString attribute:aKey atIndex:index++ effectiveRange:nil];
 
-        [aSelf assertTrue: isEqualAllowingUndefinedCast(attribute, aValue) message: "expecting '" + aKey + "' to be '" + aValue + "', was '" + attribute];
+        [aSelf assertTrue:isEqualAllowingUndefinedCast(attribute, aValue) message: "expecting '" + aKey + "' to be '" + aValue + "', was '" + attribute];
     }
 }
 
