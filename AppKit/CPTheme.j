@@ -420,7 +420,10 @@ function CPThemeState()
 
 CPThemeState.subtractThemeStates = function(aState1, aState2)
 {
-    if (aState2 === undefined || aState2 === nil || aState2._stateNames === undefined)
+    if (aState1 === undefined || aState1 === nil || aState1 === [CPNull null])
+        return CPThemeState._cacheThemeState(new ThemeState([]));
+
+    if (aState2 === undefined || aState2 === nil || aState2 === [CPNull null])
         return aState1;
 
     var statePointer1 = 0,
