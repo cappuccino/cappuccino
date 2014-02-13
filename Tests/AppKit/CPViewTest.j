@@ -53,7 +53,7 @@
     [view setThemeState:CPThemeStateHighlighted];
     [self assertTrue:[view hasThemeState:CPThemeStateHighlighted] message:@"Theme state should be CPThemeStateHighlighted"];
 
-    [view setThemeState:CPThemeStateNormal | CPThemeStateHighlighted];
+    [view setThemeState:CPThemeState(CPThemeStateNormal, CPThemeStateHighlighted)];
     [self assertFalse:[view hasThemeState:CPThemeStateNormal] message:@"CPThemeStateNormal cannot exist as part of a compound state"];
     [self assertTrue:[view hasThemeState:CPThemeStateHighlighted] message:@"The view should be CPThemeStateHighlighted"];
 }

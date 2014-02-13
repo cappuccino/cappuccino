@@ -285,7 +285,6 @@ CPSegmentSwitchTrackingMomentary = 2;
 - (void)setWidth:(float)aWidth forSegment:(unsigned)aSegment
 {
     [_segments[aSegment] setWidth:aWidth];
-
     [self tileWithChangedSegment:aSegment];
 }
 
@@ -432,9 +431,9 @@ CPSegmentSwitchTrackingMomentary = 2;
     [_segments[aSegment] setEnabled:shouldBeEnabled];
 
     if (shouldBeEnabled)
-        _themeStates[aSegment] &= ~CPThemeStateDisabled;
+        _themeStates[aSegment] = CPThemeState.subtractThemeStates(_themeStates[aSegment], CPThemeStateDisabled);
     else
-        _themeStates[aSegment] |= CPThemeStateDisabled;
+        _themeStates[aSegment] = CPThemeState(_themeStates[aSegment], CPThemeStateDisabled);
 
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
@@ -478,9 +477,9 @@ CPSegmentSwitchTrackingMomentary = 2;
 - (void)drawSegmentBezel:(int)aSegment highlight:(BOOL)shouldHighlight
 {
     if (shouldHighlight)
-        _themeStates[aSegment] |= CPThemeStateHighlighted;
+        _themeStates[aSegment] = CPThemeState(_themeStates[aSegment], CPThemeStateHighlighted);
     else
-        _themeStates[aSegment] &= ~CPThemeStateHighlighted;
+        _themeStates[aSegment] = CPThemeState.subtractThemeStates(_themeStates[aSegment], CPThemeStateHighlighted);
 
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
@@ -574,9 +573,10 @@ CPSegmentSwitchTrackingMomentary = 2;
     if (_segments.length <= 0)
         return;
 
-    var themeState = _themeStates[0];
+    var themeState = _themeStates[0],
+        isDisabled = [self hasThemeState:CPThemeStateDisabled];
 
-    themeState |= _themeState & CPThemeStateDisabled;
+    themeState = isDisabled ? CPThemeState(themeState, CPThemeStateDisabled) : themeState;
 
     var leftCapColor = [self valueForThemeAttribute:@"left-segment-bezel-color"
                                             inState:themeState],
@@ -589,7 +589,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 
     var themeState = _themeStates[_themeStates.length - 1];
 
-    themeState |= _themeState & CPThemeStateDisabled;
+    themeState = isDisabled ? CPThemeState(themeState, CPThemeStateDisabled) : themeState;
 
     var rightCapColor = [self valueForThemeAttribute:@"right-segment-bezel-color"
                                              inState:themeState],
@@ -604,7 +604,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     {
         var themeState = _themeStates[i];
 
-        themeState |= _themeState & CPThemeStateDisabled;
+        themeState = isDisabled ? CPThemeState(themeState, CPThemeStateDisabled) : themeState;
 
         var bezelColor = [self valueForThemeAttribute:@"center-segment-bezel-color"
                                               inState:themeState],
@@ -642,11 +642,12 @@ CPSegmentSwitchTrackingMomentary = 2;
         if (i == count - 1)
             continue;
 
-        var borderState = _themeStates[i] | _themeStates[i + 1];
+        var borderState = CPThemeState(_themeStates[i], _themeStates[i + 1]);
 
-        borderState = (borderState & CPThemeStateSelected & ~CPThemeStateHighlighted) ? CPThemeStateSelected : CPThemeStateNormal;
+        borderState = (borderState.hasThemeState(CPThemeStateSelected) && !borderState.hasThemeState(CPThemeStateHighlighted)) ? CPThemeStateSelected : CPThemeStateNormal;
 
-        borderState |= _themeState & CPThemeStateDisabled;
+        if (_themeState.hasThemeState(CPThemeStateDisabled))
+            borderState = CPThemeState(borderState, CPThemeStateDisabled);
 
         var borderColor = [self valueForThemeAttribute:@"divider-bezel-color"
                                                inState:borderState],
@@ -676,7 +677,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 
     var segment = _segments[aSegment],
         segmentWidth = [segment width],
-        themeState = _themeStates[aSegment] | (_themeState & CPThemeStateDisabled),
+        themeState = _themeState.hasThemeState(CPThemeStateDisabled) ? CPThemeState(_themeStates[aSegment], CPThemeStateDisabled) : _themeStates[aSegment];
         contentInset = [self valueForThemeAttribute:@"content-inset" inState:themeState],
         font = [self font];
 

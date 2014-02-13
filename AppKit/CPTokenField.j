@@ -1394,7 +1394,7 @@ CPTokenFieldDeleteButtonType     = 1;
     var r = [super setThemeState:aState];
 
     // Share hover state with the disclosure and delete buttons.
-    if (aState & CPThemeStateHovered)
+    if (aState.hasThemeState(CPThemeStateHovered))
     {
         [_disclosureButton setThemeState:CPThemeStateHovered];
         [_deleteButton setThemeState:CPThemeStateHovered];
@@ -1408,7 +1408,7 @@ CPTokenFieldDeleteButtonType     = 1;
     var r = [super unsetThemeState:aState];
 
     // Share hover state with the disclosure and delete button.
-    if (aState & CPThemeStateHovered)
+    if (aState.hasThemeState(CPThemeStateHovered))
     {
         [_disclosureButton unsetThemeState:CPThemeStateHovered];
         [_deleteButton unsetThemeState:CPThemeStateHovered];

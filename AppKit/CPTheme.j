@@ -314,6 +314,159 @@ var CPThemeNameKey          = @"CPThemeNameKey",
 
 @end
 
+function ThemeState(stateNames)
+{
+    // We sort here to make toString and hasThemeState more efficient since those get called more.
+    this._stateNames = stateNames.sort();
+}
+
+ThemeState.prototype.toString = function()
+{
+    if (typeof this._stateNames === 'undefined')
+        this._stateNames = [];
+
+    var stringOutput = this._stateNames[0];
+    if (stringOutput === undefined)
+        return ""
+
+    for (var stateIndex = 1; stateIndex < this._stateNames.length; stateIndex++)
+        stringOutput = stringOutput + "+" + this._stateNames[stateIndex];
+
+    return stringOutput;
+}
+
+ThemeState.prototype.hasThemeState = function(aState)
+{
+    if (aState === undefined || aState === nil || aState._stateNames === undefined)
+        return false;
+    // We can do this in O(n) because both states have their stateNames already sorted.
+    var statePointer1 = 0,
+        statePointer2 = 0,
+        array1 = this._stateNames,
+        array2 = aState._stateNames,
+        stateLength1 = array1.length,
+        stateLength2 = array2.length;
+
+    while (statePointer1 < stateLength1 && statePointer2 < stateLength2)
+    {
+        if (array1[statePointer1] < array2[statePointer2])
+            statePointer1++;
+
+        else if (array1[statePointer1] === array2[statePointer2])
+        {
+            statePointer1++;
+            statePointer2++;
+        }
+        if (array1[statePointer1] > array2[statePointer2])
+            return false;
+    }
+    if (statePointer2 < stateLength2)
+        return false;
+    else
+        return true;
+}
+
+var CPThemeStates = {};
+
+/*
+ * This method can be called in multiple ways:
+ *    CPThemeState('state1') - creates a new CPThemeState that corresponds to the string 'state1'
+ *    CPThemeState('state1', 'state2') - creates a new CPThemeState made up of both 'state1' or 'state2'
+ *    CPThemeState('state1+state2') - The same as CPThemeState('state1', 'state2')
+ *    CPThemeState(state1, state2) - creates a new CPThemeState that corresponds to both state1 or state2
+ *                                   where state1 and state2 are not strings but are themselves CPThemeStates.
+ */
+function CPThemeState()
+{
+    if (arguments.length < 1)
+        throw "CPThemeState() must be called with at least one string argument";
+
+    var stateNames = {};
+    for (var argIndex = 0; argIndex < arguments.length; argIndex++)
+    {
+        if (arguments[argIndex] === [CPNull null] || arguments[argIndex] === nil || arguments[argIndex] === undefined)
+            continue;
+
+        if (typeof arguments[argIndex] === 'object')
+        {
+            for (var stateIndex = 0; stateIndex < arguments[argIndex]._stateNames.length; stateIndex++)
+            {
+                var stateName = arguments[argIndex]._stateNames[stateIndex];
+                if (!stateNames[stateName])
+                    stateNames[stateName] = true;
+            }
+        }
+        else
+        {
+            var allNames = arguments[argIndex].split('+');
+            for (var nameIndex = 0; nameIndex < allNames.length; nameIndex++)
+            {
+                if (!stateNames[allNames[nameIndex]])
+                    stateNames[allNames[nameIndex]] = true;
+            }
+        }
+    }
+
+    var stateNameKeys = [];
+    for (key in stateNames)
+    {
+        if (!stateNames.hasOwnProperty(key))
+            continue;
+        stateNameKeys.push(key);
+    }
+    var themeState = CPThemeState._cacheThemeState(new ThemeState(stateNameKeys));
+    return themeState;
+}
+
+CPThemeState.subtractThemeStates = function(aState1, aState2)
+{
+    if (aState2 === undefined || aState2 === nil || aState2._stateNames === undefined)
+        return aState1;
+
+    var statePointer1 = 0,
+        statePointer2 = 0,
+        array1 = aState1._stateNames,
+        array2 = aState2._stateNames,
+        stateLength1 = array1.length,
+        stateLength2 = array2.length,
+        newThemeState = new ThemeState([]);
+
+    while (statePointer1 < stateLength1 && statePointer2 < stateLength2)
+    {
+        if (array1[statePointer1] == array2[statePointer2])
+        {
+            statePointer1++;
+            statePointer2++;
+        }
+        else
+        {
+            newThemeState._stateNames.push(array1[statePointer1]);
+            statePointer1++;
+        }
+    }
+
+    while (statePointer1 < stateLength1)
+    {
+        newThemeState._stateNames.push(array1[statePointer1]);
+        statePointer1++;
+    }
+    newThemeState._stateNames.sort();
+    return CPThemeState._cacheThemeState(newThemeState);
+
+}
+
+CPThemeState._cacheThemeState = function(aState)
+{
+    // We do this caching so themeState equality works.  Basically, doing CPThemeState('foo+bar') === CPThemeState('bar', 'foo') will return true.
+    var themeState = CPThemeStates[String(aState)];
+    if (themeState === undefined)
+    {
+        themeState = aState;
+        CPThemeState[String(themeState)] = themeState;
+    }
+    return themeState;
+}
+
 @implementation _CPThemeKeyedUnarchiver : CPKeyedUnarchiver
 {
     CPBundle    _bundle;
@@ -341,71 +494,7 @@ var CPThemeNameKey          = @"CPThemeNameKey",
 
 @end
 
-var CPThemeStates       = {},
-    CPThemeStateNames   = {},
-    CPThemeStateCount   = 0;
-
-function CPThemeState(aStateName)
-{
-    var state = CPThemeStates[aStateName];
-
-    if (state === undefined)
-    {
-        if (aStateName.indexOf('+') === -1)
-            state = 1 << CPThemeStateCount++;
-        else
-        {
-            var state = 0,
-                states = aStateName.split('+'),
-                count = states.length;
-
-            while (count--)
-            {
-                var stateName = states[count],
-                    individualState = CPThemeStates[stateName];
-
-                if (individualState === undefined)
-                {
-                    individualState = 1 << CPThemeStateCount++;
-                    CPThemeStates[stateName] = individualState;
-                    CPThemeStateNames[individualState] = stateName;
-                }
-
-                state |= individualState;
-            }
-        }
-
-        CPThemeStates[aStateName] = state;
-        CPThemeStateNames[state] = aStateName;
-    }
-
-    return state;
-}
-
-function CPThemeStateName(aState)
-{
-    var name = CPThemeStateNames[aState];
-
-    if (name !== undefined)
-        return name;
-
-    if (!(aState & (aState - 1)))
-        return "";
-
-    var state = 1,
-        name = "";
-
-    for (; state < aState; state <<= 1)
-        if (aState & state)
-            name += (name.length === 0 ? '' : '+') + CPThemeStateNames[state];
-
-    CPThemeStateNames[aState] = name;
-
-    return name;
-}
-
-CPThemeStateNames[0]         = "normal";
-CPThemeStateNormal           = CPThemeStates["normal"] = 0;
+CPThemeStateNormal           = CPThemeState("normal");
 CPThemeStateDisabled         = CPThemeState("disabled");
 CPThemeStateHovered          = CPThemeState("hovered");
 CPThemeStateHighlighted      = CPThemeState("highlighted");
@@ -466,7 +555,7 @@ CPThemeStateKeyWindow        = CPThemeState("keyWindow");
 
 - (BOOL)isTrivial
 {
-    return ([_values count] === 1) && (Number([_values allKeys][0]) === CPThemeStateNormal);
+    return ([_values count] === 1) && ([_values allKeys][0] === CPThemeStateNormal);
 }
 
 - (void)setValue:(id)aValue
@@ -483,10 +572,14 @@ CPThemeStateKeyWindow        = CPThemeState("keyWindow");
 {
     _cache = { };
 
-    if ((aValue === undefined) || (aValue === nil))
-        [_values removeObjectForKey:String(aState)];
-    else
-        [_values setObject:aValue forKey:String(aState)];
+    var componentStates = aState._stateNames;
+    for (var stateIndex = 0; stateIndex < [componentStates count]; stateIndex++)
+    {
+        if ((aValue === undefined) || (aValue === nil))
+            [_values removeObjectForKey:componentStates[stateIndex]];
+        else
+            [_values setObject:aValue forKey:componentStates[stateIndex]];
+    }
 }
 
 - (id)value
@@ -494,46 +587,27 @@ CPThemeStateKeyWindow        = CPThemeState("keyWindow");
     return [self valueForState:CPThemeStateNormal];
 }
 
+// If aState is a state comprised of multiple CPThemeStates, this will return the value for the first state it finds.
 - (id)valueForState:(CPThemeState)aState
 {
-    var value = _cache[aState];
+    var stateName = String(aState);
+    var value = _cache[stateName];
 
     // This can be nil.
     if (value !== undefined)
         return value;
 
-    value = [_values objectForKey:String(aState)];
+    value = [_values objectForKey:stateName];
 
     // If we don't have a value, and we have a non-normal state...
     if ((value === undefined || value === nil) && aState !== CPThemeStateNormal)
     {
-        // If this is a composite state (not a power of 2), find the closest partial subset match.
-        if (aState & (aState - 1))
+        var stateCount = [aState._stateNames count];
+        for (var stateIndex = 0; stateIndex < stateCount; stateIndex++)
         {
-            var highestOneCount = 0,
-                states = [_values allKeys],
-                count = states.length;
-
-            while (count--)
-            {
-                // states[count] is a string!
-                var state = Number(states[count]);
-
-                // A & B = A iff A < B
-                if ((state & aState) === state)
-                {
-                    var oneCount = cachedNumberOfOnes[state];
-
-                    if (oneCount === undefined)
-                        oneCount = numberOfOnes(state);
-
-                    if (oneCount > highestOneCount)
-                    {
-                        highestOneCount = oneCount;
-                        value = [_values objectForKey:String(state)];
-                    }
-                }
-            }
+            value = [_values objectForKey:aState._stateNames[stateIndex]];
+            if (value !== undefined && value !== nil)
+                break;
         }
 
         // Still don't have a value? OK, let's use the normal value.
@@ -554,7 +628,7 @@ CPThemeStateKeyWindow        = CPThemeState("keyWindow");
             value = nil;
     }
 
-    _cache[aState] = value;
+    _cache[stateName] = value;
 
     return value;
 }
@@ -633,8 +707,8 @@ CPThemeStateKeyWindow        = CPThemeState("keyWindow");
     {
         var onlyKey = keys[0];
 
-        if (Number(onlyKey) !== CPThemeStateNormal)
-            [aCoder encodeObject:CPThemeStateName(Number(onlyKey)) forKey:@"state"];
+        if (onlyKey !== CPThemeStateNormal)
+            [aCoder encodeObject:String(onlyKey) forKey:@"state"];
 
         [aCoder encodeObject:[_values objectForKey:onlyKey] forKey:@"value"];
     }
@@ -646,7 +720,7 @@ CPThemeStateKeyWindow        = CPThemeState("keyWindow");
         {
             var key = keys[count];
 
-            [encodedValues setObject:[_values objectForKey:key] forKey:CPThemeStateName(Number(key))];
+            [encodedValues setObject:[_values objectForKey:key] forKey:String(key)];
         }
 
         [aCoder encodeObject:encodedValues forKey:@"values"];
@@ -654,35 +728,6 @@ CPThemeStateKeyWindow        = CPThemeState("keyWindow");
 }
 
 @end
-
-var cachedNumberOfOnes = [  0 /*000000*/, 1 /*000001*/, 1 /*000010*/, 2 /*000011*/, 1 /*000100*/, 2 /*000101*/, 2 /*000110*/,
-                            3 /*000111*/, 1 /*001000*/, 2 /*001001*/, 2 /*001010*/, 3 /*001011*/, 2 /*001100*/, 3 /*001101*/,
-                            3 /*001110*/, 4 /*001111*/, 1 /*010000*/, 2 /*010001*/, 2 /*010010*/, 3 /*010011*/, 2 /*010100*/,
-                            3 /*010101*/, 3 /*010110*/, 4 /*010111*/, 2 /*011000*/, 3 /*011001*/, 3 /*011010*/, 4 /*011011*/,
-                            3 /*011100*/, 4 /*011101*/, 4 /*011110*/, 5 /*011111*/, 1 /*100000*/, 2 /*100001*/, 2 /*100010*/,
-                            3 /*100011*/, 2 /*100100*/, 3 /*100101*/, 3 /*100110*/, 4 /*100111*/, 2 /*101000*/, 3 /*101001*/,
-                            3 /*101010*/, 4 /*101011*/, 3 /*101100*/, 4 /*101101*/, 4 /*101110*/, 5 /*101111*/, 2 /*110000*/,
-                            3 /*110001*/, 3 /*110010*/, 4 /*110011*/, 3 /*110100*/, 4 /*110101*/, 4 /*110110*/, 5 /*110111*/,
-                            3 /*111000*/, 4 /*111001*/, 4 /*111010*/, 5 /*111011*/, 4 /*111100*/, 5 /*111101*/, 5 /*111110*/,
-                            6 /*111111*/ ];
-
-var numberOfOnes = function(aNumber)
-{
-    var count = 0,
-        slot = aNumber;
-
-    while (aNumber)
-    {
-        ++count;
-        aNumber &= (aNumber - 1);
-    }
-
-    cachedNumberOfOnes[slot] = count;
-
-    return count;
-};
-
-numberOfOnes.displayName = "numberOfOnes";
 
 function CPThemeAttributeEncode(aCoder, aThemeAttribute)
 {

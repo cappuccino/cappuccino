@@ -268,7 +268,7 @@ CPButtonImageOffset   = 3.0;
             break;
 
         case CPOffState:
-            [self unsetThemeState:CPThemeStateSelected | CPButtonStateMixed | CPThemeStateHighlighted];
+            [self unsetThemeState:CPThemeState(CPThemeStateSelected, CPButtonStateMixed, CPThemeStateHighlighted)];
     }
 }
 

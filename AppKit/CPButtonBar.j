@@ -250,15 +250,15 @@
             currentButtonOffset += width - 1;
         }
 
-        [button setValue:normalColor forThemeAttribute:@"bezel-color" inState:CPThemeStateNormal | CPThemeStateBordered];
-        [button setValue:highlightedColor forThemeAttribute:@"bezel-color" inState:CPThemeStateHighlighted | CPThemeStateBordered];
-        [button setValue:disabledColor forThemeAttribute:@"bezel-color" inState:CPThemeStateDisabled | CPThemeStateBordered];
+        [button setValue:normalColor forThemeAttribute:@"bezel-color" inState:CPThemeState(CPThemeStateNormal, CPThemeStateBordered)];
+        [button setValue:highlightedColor forThemeAttribute:@"bezel-color" inState:CPThemeState(CPThemeStateHighlighted,  CPThemeStateBordered)];
+        [button setValue:disabledColor forThemeAttribute:@"bezel-color" inState:CPThemeState(CPThemeStateDisabled, CPThemeStateBordered)];
         [button setValue:textColor forThemeAttribute:@"text-color" inState:CPThemeStateBordered];
 
         // FIXME shouldn't need this
-        [button setValue:normalColor forThemeAttribute:@"bezel-color" inState:CPThemeStateNormal | CPThemeStateBordered | CPPopUpButtonStatePullsDown];
-        [button setValue:highlightedColor forThemeAttribute:@"bezel-color" inState:CPThemeStateHighlighted | CPThemeStateBordered | CPPopUpButtonStatePullsDown];
-        [button setValue:disabledColor forThemeAttribute:@"bezel-color" inState:CPThemeStateDisabled | CPThemeStateBordered | CPPopUpButtonStatePullsDown];
+        [button setValue:normalColor forThemeAttribute:@"bezel-color" inState:CPThemeState(CPThemeStateNormal, CPThemeStateBordered, CPPopUpButtonStatePullsDown)];
+        [button setValue:highlightedColor forThemeAttribute:@"bezel-color" inState:CPThemeState(CPThemeStateHighlighted, CPThemeStateBordered, CPPopUpButtonStatePullsDown)];
+        [button setValue:disabledColor forThemeAttribute:@"bezel-color" inState:CPThemeState(CPThemeStateDisabled, CPThemeStateBordered, CPPopUpButtonStatePullsDown)];
 
         [self addSubview:button];
     }
