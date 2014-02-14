@@ -242,15 +242,15 @@ CPTextStorageDidProcessEditingNotification = @"CPTextStorageDidProcessEditingNot
 - (void)replaceCharactersInRange:(CPRange)aRange withString:(CPString)aString
 {
     [self beginEditing];
-    [super replaceCharactersInRange: aRange withString: aString];
-    [self edited: CPTextStorageEditedCharacters range:aRange changeInLength:([aString length] - aRange.length)];
+    [super replaceCharactersInRange:aRange withString:aString];
+    [self edited:CPTextStorageEditedCharacters range:aRange changeInLength:([aString length] - aRange.length)];
     [self endEditing];
 }
 
 - (void)replaceCharactersInRange:(CPRange)aRange withAttributedString:(CPAttributedString)aString
 {
     [self beginEditing];
-    [super replaceCharactersInRange: aRange withAttributedString:aString];
+    [super replaceCharactersInRange:aRange withAttributedString:aString];
     [self edited:(CPTextStorageEditedAttributes | CPTextStorageEditedCharacters) range:aRange changeInLength:([aString length] - aRange.length)];
     [self endEditing];
 }
