@@ -100,7 +100,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     if ([self isRichText])
     {
        // crude hack to make rich pasting possible in chrome and firefox. this requires a RTF roundtrip, unfortunately
-        var richData =  [_CPRTFProducer produceRTF:[[self textStorage] attributedSubstringFromRange:selectedRange] documentAttributes: @{}];
+        var richData =  [_CPRTFProducer produceRTF:[[self textStorage] attributedSubstringFromRange:selectedRange] documentAttributes:@{}];
         [pasteboard setString:richData forType:CPStringPboardType];
     }
     else
@@ -238,7 +238,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)setString:(CPString)aString
 {
-    [self replaceCharactersInRange: CPMakeRange(0, [[self string] length]) withString:aString];
+    [self replaceCharactersInRange:CPMakeRange(0, [[self string] length]) withString:aString];
 }
 
 - (void)setUsesFontPanel:(BOOL)flag
@@ -349,7 +349,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         _insertionPointColor = [CPColor blackColor];
         _textColor = [CPColor blackColor];
         _font = [CPFont systemFontOfSize:12.0];
-        [self setFont: _font];
+        [self setFont:_font];
 
         _typingAttributes = [[CPDictionary alloc] initWithObjects:[_font, _textColor] forKeys:[CPFontAttributeName, CPForegroundColorAttributeName]];
 
@@ -455,7 +455,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)setString:(CPString)aString
 {
-    [_textStorage replaceCharactersInRange: CPMakeRange(0, [_layoutManager numberOfCharacters]) withString:aString];
+    [_textStorage replaceCharactersInRange:CPMakeRange(0, [_layoutManager numberOfCharacters]) withString:aString];
     [self didChangeText];
     [_layoutManager _validateLayoutAndGlyphs];
     [self sizeToFit];
@@ -561,7 +561,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)didChangeText
 {
-    [[CPNotificationCenter defaultCenter] postNotificationName: CPTextDidChangeNotification object:self];
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPTextDidChangeNotification object:self];
 }
 
 - (BOOL)shouldChangeTextInRange:(CPRange)aRange replacementString:(CPString)aString
@@ -580,7 +580,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     return shouldChange;
 }
 
-- (void)_replaceCharactersInRange:aRange withAttributedString: aString
+- (void)_replaceCharactersInRange:aRange withAttributedString:(CPString)aString
 {
     [_textStorage replaceCharactersInRange:aRange withAttributedString:aString];
     [self setSelectedRange:CPMakeRange(aRange.location, [aString length])];
@@ -590,7 +590,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     [self setNeedsDisplay:YES];
 
 }
-- (void)_replaceCharactersInRange: aRange withString: aString
+- (void)_replaceCharactersInRange:(CPRange)aRange withString:(CPString)aString
 {
     [_textStorage replaceCharactersInRange:CPMakeRangeCopy(aRange) withString:aString];
     [self setSelectedRange:CPMakeRange(aRange.location, aString.length)];
@@ -611,12 +611,12 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     if (isAttributed)
     {
-        [[[[self window] undoManager] prepareWithInvocationTarget: self]
+        [[[[self window] undoManager] prepareWithInvocationTarget:self]
                 _replaceCharactersInRange:CPMakeRange(_selectionRange.location, [aString length])
                 withAttributedString:[_textStorage attributedSubstringFromRange:CPMakeRangeCopy(_selectionRange)]];
         [[[self window] undoManager] setActionName:@"Replace rich text"];
 
-        [_textStorage replaceCharactersInRange: CPMakeRangeCopy(_selectionRange) withAttributedString:aString];
+        [_textStorage replaceCharactersInRange:CPMakeRangeCopy(_selectionRange) withAttributedString:aString];
     }
     else
     {
@@ -626,13 +626,13 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
             aString = [[CPAttributedString alloc] initWithString:aString attributes:_typingAttributes];
             [[[[self window] undoManager] prepareWithInvocationTarget:self]
                 _replaceCharactersInRange:CPMakeRange(_selectionRange.location, [aString length])
-                withAttributedString: [_textStorage attributedSubstringFromRange:CPMakeRangeCopy(_selectionRange)]];
-            [_textStorage replaceCharactersInRange: CPMakeRangeCopy(_selectionRange) withAttributedString:aString];
+                withAttributedString:[_textStorage attributedSubstringFromRange:CPMakeRangeCopy(_selectionRange)]];
+            [_textStorage replaceCharactersInRange:CPMakeRangeCopy(_selectionRange) withAttributedString:aString];
         }
         else
         {
             [[[[self window] undoManager] prepareWithInvocationTarget:self] _replaceCharactersInRange:CPMakeRange(_selectionRange.location, [aString length]) withString:[[self string] substringWithRange:CPMakeRangeCopy(_selectionRange)]];
-            [_textStorage replaceCharactersInRange: CPMakeRangeCopy(_selectionRange) withString:aString];
+            [_textStorage replaceCharactersInRange:CPMakeRangeCopy(_selectionRange) withString:aString];
         }
     }
 
@@ -680,7 +680,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     }
 
     if (range.length)
-        [_layoutManager drawGlyphsForGlyphRange: range atPoint:_textContainerOrigin];
+        [_layoutManager drawGlyphsForGlyphRange:range atPoint:_textContainerOrigin];
 
     if ([self shouldDrawInsertionPoint])
     {
@@ -751,7 +751,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     point.x -= _textContainerOrigin.x;
     point.y -= _textContainerOrigin.y;
 
-    _startTrackingLocation = [_layoutManager glyphIndexForPoint: point inTextContainer:_textContainer fractionOfDistanceThroughGlyph:fraction];
+    _startTrackingLocation = [_layoutManager glyphIndexForPoint:point inTextContainer:_textContainer fractionOfDistanceThroughGlyph:fraction];
 
     if (_startTrackingLocation === CPNotFound)
         _startTrackingLocation = [_layoutManager numberOfCharacters];
@@ -834,7 +834,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     /* will post CPTextViewDidChangeSelectionNotification */
     [self setSelectionGranularity:CPSelectByCharacter];
     [self setSelectedRange:[self selectedRange] affinity:0 stillSelecting:NO];
-    var point = [_layoutManager locationForGlyphAtIndex: [self selectedRange].location];
+    var point = [_layoutManager locationForGlyphAtIndex:[self selectedRange].location];
     _stickyXLocation= point.x;
     _startTrackingLocation = _selectionRange.location;
 }
@@ -860,11 +860,11 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         point.y += 2 + rectSource.size.height;
         point.x += 2;
 
-        var dindex= [_layoutManager glyphIndexForPoint: point inTextContainer:_textContainer fractionOfDistanceThroughGlyph:fraction],
+        var dindex= [_layoutManager glyphIndexForPoint:point inTextContainer:_textContainer fractionOfDistanceThroughGlyph:fraction],
             oldStickyLoc = _stickyXLocation;
         [self _establishSelection:CPMakeRange(dindex,0) byExtending:NO];
         _stickyXLocation = oldStickyLoc;
-        [self scrollRangeToVisible: CPMakeRange(dindex, 0)]
+        [self scrollRangeToVisible:CPMakeRange(dindex, 0)]
     }
 }
 - (void)moveDownAndModifySelection:(id)sender
@@ -901,7 +901,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
             oldStickyLoc = _stickyXLocation;
         [self _establishSelection:CPMakeRange(dindex,0) byExtending:NO];
         _stickyXLocation = oldStickyLoc;
-        [self scrollRangeToVisible: CPMakeRange(dindex, 0)]
+        [self scrollRangeToVisible:CPMakeRange(dindex, 0)]
     }
 }
 - (void)moveUpAndModifySelection:(id)sender
@@ -970,7 +970,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 {
     if (_isSelectable)
     {
-       [self _extendSelectionIntoDirection: -1 granularity:CPSelectByCharacter];
+       [self _extendSelectionIntoDirection:-1 granularity:CPSelectByCharacter];
     }
 }
 - (void)moveBackward:(id)sender
@@ -987,7 +987,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 {
     if (_isSelectable)
     {
-       [self _extendSelectionIntoDirection: +1 granularity:CPSelectByCharacter];
+       [self _extendSelectionIntoDirection:+1 granularity:CPSelectByCharacter];
     }
 }
 - (void)moveLeft:(id)sender
@@ -1013,21 +1013,21 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 {
     if (_isSelectable)
     {
-       [self _extendSelectionIntoDirection: +1 granularity:CPSelectByParagraph];
+       [self _extendSelectionIntoDirection:+1 granularity:CPSelectByParagraph];
     }
 }
 - (void)moveParagraphForwardAndModifySelection:(id)sender
 {
     if (_isSelectable)
     {
-       [self _extendSelectionIntoDirection: +1 granularity:CPSelectByParagraph];
+       [self _extendSelectionIntoDirection:+1 granularity:CPSelectByParagraph];
     }
 }
 - (void)moveParagraphForward:(id)sender
 {
     if (_isSelectable)
     {
-       [self _moveSelectionIntoDirection: +1 granularity:CPSelectByParagraph]
+       [self _moveSelectionIntoDirection:+1 granularity:CPSelectByParagraph]
     }
 }
 - (void)moveWordBackwardAndModifySelection:(id)sender
@@ -1080,7 +1080,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 {
     if (_isSelectable)
     {
-        [self _moveSelectionIntoDirection: +1 granularity:CPSelectByWord]
+        [self _moveSelectionIntoDirection:+1 granularity:CPSelectByWord]
     }
 }
 
@@ -1091,7 +1091,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     {
         var parRange = [self _characterRangeForUnitAtIndex:_selectionRange.location
                                   inString:[self stringValue]
-                                  asDefinedByCharArray: ['\n'] skip:YES];
+                                  asDefinedByCharArray:['\n'] skip:YES];
 
         [self _establishSelection:CPMakeRange(parRange.location, 0) byExtending:NO];
     }
@@ -1100,28 +1100,28 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 {
     if (_isSelectable)
     {
-       [self _extendSelectionIntoDirection: -1 granularity:CPSelectByParagraph];
+       [self _extendSelectionIntoDirection:-1 granularity:CPSelectByParagraph];
     }
 }
 - (void)moveParagraphBackward:(id)sender
 {
     if (_isSelectable)
     {
-        [self _moveSelectionIntoDirection: -1 granularity:CPSelectByParagraph]
+        [self _moveSelectionIntoDirection:-1 granularity:CPSelectByParagraph]
     }
 }
 - (void)moveParagraphBackwardAndModifySelection:(id)sender
 {
     if (_isSelectable)
     {
-       [self _extendSelectionIntoDirection: -1 granularity:CPSelectByParagraph];
+       [self _extendSelectionIntoDirection:-1 granularity:CPSelectByParagraph];
     }
 }
 - (void)moveWordRightAndModifySelection:(id)sender
 {
     if (_isSelectable)
     {
-         [self _extendSelectionIntoDirection: +1 granularity:CPSelectByWord];
+         [self _extendSelectionIntoDirection:+1 granularity:CPSelectByWord];
 
     }
 }
@@ -1216,14 +1216,14 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 {
     if (_isSelectable)
     {
-        [self _extendSelectionIntoDirection: -1 granularity:CPSelectByWord];
+        [self _extendSelectionIntoDirection:-1 granularity:CPSelectByWord];
     }
 }
 - (void)moveWordLeft:(id)sender
 {
     if (_isSelectable)
     {
-        [self _moveSelectionIntoDirection: -1 granularity:CPSelectByWord]
+        [self _moveSelectionIntoDirection:-1 granularity:CPSelectByWord]
     }
 }
 
@@ -1255,7 +1255,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         return;
 
     [[[[self window] undoManager] prepareWithInvocationTarget:self] _replaceCharactersInRange:CPMakeRange(_selectionRange.location, 0) withAttributedString:[_textStorage attributedSubstringFromRange:CPMakeRangeCopy(changedRange)]];
-    [_textStorage deleteCharactersInRange: CPMakeRangeCopy(changedRange)];
+    [_textStorage deleteCharactersInRange:CPMakeRangeCopy(changedRange)];
 
     [self setSelectedRange:CPMakeRange(changedRange.location, 0)];
     [self didChangeText];
@@ -1273,7 +1273,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     else
         changedRange = _selectionRange;
 
-    [self _deleteForRange: changedRange];
+    [self _deleteForRange:changedRange];
 }
 
 - (void)deleteForward:(id)sender
@@ -1285,7 +1285,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     else
         changedRange = _selectionRange;
 
-    [self _deleteForRange: changedRange];
+    [self _deleteForRange:changedRange];
 }
 
 - (void)cut:(id)sender
@@ -1382,7 +1382,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)delete:(id)sender
 {
-    [self deleteBackward: sender];
+    [self deleteBackward:sender];
 }
 
 - (CPString)stringValue
@@ -1446,7 +1446,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
                                        longestEffectiveRange:currRange
                                                      inRange:_selectionRange];
                 oldFont = [attributes objectForKey:CPFontAttributeName] || [self font];
-                [self setFont:[sender convertFont:oldFont] range: currRange];
+                [self setFont:[sender convertFont:oldFont] range:currRange];
             }
         }
         else
@@ -1531,7 +1531,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     }
     else
     {
-        [_typingAttributes setObject: aColor forKey:CPForegroundColorAttributeName];
+        [_typingAttributes setObject:aColor forKey:CPForegroundColorAttributeName];
     }
     [_layoutManager _validateLayoutAndGlyphs];
     [self setNeedsDisplay:YES];
@@ -1566,7 +1566,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 - (void)replaceCharactersInRange:(CPRange)aRange withString:(CPString)aString
 {
 
-    [_textStorage replaceCharactersInRange: aRange withString:aString];
+    [_textStorage replaceCharactersInRange:aRange withString:aString];
 }
 
 - (CPString)string
@@ -1630,7 +1630,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     var minSize = [self minSize],
         maxSize = [self maxSize],
         desiredSize = aSize,
-        rect = [_layoutManager boundingRectForGlyphRange: CPMakeRange(0, MAX(0, [_layoutManager numberOfCharacters] - 1)) inTextContainer:_textContainer];
+        rect = [_layoutManager boundingRectForGlyphRange:CPMakeRange(0, MAX(0, [_layoutManager numberOfCharacters] - 1)) inTextContainer:_textContainer];
 
     if ([_layoutManager extraLineFragmentTextContainer] === _textContainer)
         rect = CGRectUnion(rect, [_layoutManager extraLineFragmentRect]);
@@ -1655,7 +1655,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
             desiredSize.height = maxSize.height;
     }
 
-    [super setFrameSize: desiredSize];
+    [super setFrameSize:desiredSize];
 }
 
 - (void)scrollRangeToVisible:(CPRange)aRange
@@ -1695,7 +1695,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     return characterSet.join("").indexOf([self string].charAt(index))  !== CPNotFound;
 }
 
-- (CPRange)_characterRangeForUnitAtIndex:(unsigned)index inString:(CPString)string asDefinedByCharArray: characterSet skip:(BOOL)flag
+- (CPRange)_characterRangeForUnitAtIndex:(unsigned)index inString:(CPString)string asDefinedByCharArray:characterSet skip:(BOOL)flag
 {
     var wordRange = CPMakeRange(0, 0),
         lastIndex = CPNotFound,
@@ -1790,18 +1790,18 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     switch (granularity)
     {
         case CPSelectByWord:
-            var wordRange = [self _characterRangeForUnitAtIndex:proposedRange.location inString:string asDefinedByCharArray: [[self class] _wordBoundaryCharacterArray] skip:YES];
+            var wordRange = [self _characterRangeForUnitAtIndex:proposedRange.location inString:string asDefinedByCharArray:[[self class] _wordBoundaryCharacterArray] skip:YES];
 
             if (proposedRange.length)
-                wordRange = CPUnionRange(wordRange, [self _characterRangeForUnitAtIndex:CPMaxRange(proposedRange) inString:string asDefinedByCharArray: [[self class] _wordBoundaryCharacterArray] skip:NO]);
+                wordRange = CPUnionRange(wordRange, [self _characterRangeForUnitAtIndex:CPMaxRange(proposedRange) inString:string asDefinedByCharArray:[[self class] _wordBoundaryCharacterArray] skip:NO]);
 
             return wordRange;
 
         case CPSelectByParagraph:
-            var parRange = [self _characterRangeForUnitAtIndex: proposedRange.location inString: string asDefinedByCharArray: ['\n'] skip:NO];
+            var parRange = [self _characterRangeForUnitAtIndex:proposedRange.location inString:string asDefinedByCharArray:['\n'] skip:NO];
 
             if (proposedRange.length)
-                parRange = CPUnionRange(parRange, [self _characterRangeForUnitAtIndex: CPMaxRange(proposedRange) inString: string asDefinedByCharArray: ['\n'] skip:NO]);
+                parRange = CPUnionRange(parRange, [self _characterRangeForUnitAtIndex:CPMaxRange(proposedRange) inString:string asDefinedByCharArray:['\n'] skip:NO]);
 
             return parRange;
 
@@ -1881,7 +1881,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         }
     }
     else
-        _caretRect = [_layoutManager boundingRectForGlyphRange: CPMakeRange(_selectionRange.location, 1) inTextContainer:_textContainer];
+        _caretRect = [_layoutManager boundingRectForGlyphRange:CPMakeRange(_selectionRange.location, 1) inTextContainer:_textContainer];
 
     _caretRect.origin.x += _textContainerOrigin.x;
     _caretRect.origin.y += _textContainerOrigin.y;
@@ -1902,7 +1902,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     if (![pasteboard availableTypeFromArray:[CPColorDragType]])
         return NO;
 
-   [self setTextColor:[CPKeyedUnarchiver unarchiveObjectWithData:[pasteboard dataForType:CPColorDragType]] range: _selectionRange ];
+   [self setTextColor:[CPKeyedUnarchiver unarchiveObjectWithData:[pasteboard dataForType:CPColorDragType]] range:_selectionRange ];
 }
 
 @end
