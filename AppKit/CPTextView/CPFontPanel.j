@@ -193,7 +193,7 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
 - (void)_setupToolbarView
 {
     _toolbarView = [[CPView alloc] initWithFrame:CGRectMake(0, kBorderSpacing, CGRectGetWidth([self frame]), kToolbarHeight)];
-    [_toolbarView setAutoresizingMask: CPViewWidthSizable];
+    [_toolbarView setAutoresizingMask:CPViewWidthSizable];
 
    /* text  color */
     _textColorWell = [[CPColorWell alloc] initWithFrame:CGRectMake(10, 0, 25, 25)];
@@ -204,13 +204,13 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
     [colorPanel setAction:@selector(changeColor:)];
 }
 
-- (void)_setupBrowser: aBrowser
+- (void)_setupBrowser:(CPBrowser)aBrowser
 {
     [aBrowser setTarget:self];
     [aBrowser setAction:@selector(browserClicked:)];
     [aBrowser setDoubleAction:@selector(dblClicked:)];
     [aBrowser setAllowsEmptySelection:NO];
-    [aBrowser setAllowsMultipleSelection: NO];
+    [aBrowser setAllowsMultipleSelection:NO];
     [aBrowser setDelegate:self];
     [[self contentView] addSubview:aBrowser];
 }
@@ -248,7 +248,7 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
 
 }
 
-- (void)_refreshWithTextView: textView
+- (void)_refreshWithTextView:(CPTextView)textView
 {
     if ([self isVisible])
     {
@@ -266,9 +266,9 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
             else if ([font isBold])
                 trait = kTypefaceIndex_Bold;
 
-            [self setCurrentFont: font];
-            [self setCurrentTrait: trait];
-            [self setCurrentSize: [font size] + ""];  //cast to string
+            [self setCurrentFont:font];
+            [self setCurrentTrait:trait];
+            [self setCurrentSize:[font size] + ""];  //cast to string
         }
     }
 }
@@ -277,7 +277,7 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
 {
     [self _setupContents];
     [super orderFront:sender];
-    [self _refreshWithTextView: [[CPApp keyWindow] firstResponder]];
+    [self _refreshWithTextView:[[CPApp keyWindow] firstResponder]];
 }
 
 - (void)reloadDefaultFontFamilies
@@ -303,7 +303,7 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
     {
         case kFontNameChanged:
             newFont = [CPFont fontWithDescriptor:[[aFont fontDescriptor] fontDescriptorByAddingAttributes:
-                      [CPDictionary dictionaryWithObject: [self currentFont] forKey:CPFontNameAttribute]] size:0.0];
+                      [CPDictionary dictionaryWithObject:[self currentFont] forKey:CPFontNameAttribute]] size:0.0];
             break;
 
         case kTypefaceChanged:
@@ -333,9 +333,9 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
     return newFont;
 }
 
-- (void)setCurrentSize: aSize
+- (void)setCurrentSize:(CGSize)aSize
 {
-    [_sizeBrowser selectRow: [_availableSizes indexOfObject: aSize]  inColumn:0];
+    [_sizeBrowser selectRow:[_availableSizes indexOfObject:aSize]  inColumn:0];
 }
 
 - (CPString)currentSize
@@ -343,9 +343,9 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
     return [_sizeBrowser selectedItem];
 }
 
-- (void)setCurrentFont: aFont
+- (void)setCurrentFont:(CPFont)aFont
 {
-    [_fontBrowser selectRow: [_availableFonts indexOfObject: [aFont familyName]]  inColumn:0];
+    [_fontBrowser selectRow:[_availableFonts indexOfObject:[aFont familyName]]  inColumn:0];
 }
 
 - (CPString)currentFont
@@ -353,7 +353,7 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
     return [_fontBrowser selectedItem];
 }
 
-- (void)setCurrentTrait: aTrait
+- (void)setCurrentTrait:(unsigned)aTrait
 {
     var row = 0;
 
@@ -372,7 +372,7 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
             break;
     }
 
-    [_traitBrowser selectRow: row  inColumn:0];
+    [_traitBrowser selectRow:row  inColumn:0];
 }
 
 // FIXME<!> Locale support
@@ -418,7 +418,7 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
         typefaceIndex = kTypefaceIndex_Bold;
 
     if ([self currentTrait] != typefaceIndex)
-        [self setCurrentTrait: typefaceIndex ];
+        [self setCurrentTrait:typefaceIndex ];
 
     [_sampleView setAttributedString:
                 [[CPAttributedString alloc] initWithString:[font familyName]
