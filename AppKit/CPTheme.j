@@ -316,23 +316,28 @@ var CPThemeNameKey          = @"CPThemeNameKey",
 
 function ThemeState(stateNames)
 {
-    // We sort here to make toString and hasThemeState more efficient since those get called more.
-    this._stateNames = stateNames.sort();
+    this._stateNames = stateNames;
+
+    var stateNameKeys = [];
+    for (key in stateNames)
+    {
+        if (!stateNames.hasOwnProperty(key))
+            continue;
+        stateNameKeys.push(key);
+    }
+    stateNameKeys.sort();
+    this._stateNameString = stateNameKeys[0];
+    if (this._stateNameString === undefined)
+        this._stateNameString = "";
+
+    var stateNameLength = stateNameKeys.length;
+    for (var stateIndex = 1; stateIndex < stateNameLength; stateIndex++)
+        this._stateNameString = this._stateNameString + "+" + stateNameKeys[stateIndex];
 }
 
 ThemeState.prototype.toString = function()
 {
-    if (typeof this._stateNames === 'undefined')
-        this._stateNames = [];
-
-    var stringOutput = this._stateNames[0];
-    if (stringOutput === undefined)
-        return ""
-
-    for (var stateIndex = 1; stateIndex < this._stateNames.length; stateIndex++)
-        stringOutput = stringOutput + "+" + this._stateNames[stateIndex];
-
-    return stringOutput;
+    return this._stateNameString;
 }
 
 ThemeState.prototype.hasThemeState = function(aState)
@@ -340,30 +345,14 @@ ThemeState.prototype.hasThemeState = function(aState)
     if (aState === undefined || aState === nil || aState._stateNames === undefined)
         return false;
     // We can do this in O(n) because both states have their stateNames already sorted.
-    var statePointer1 = 0,
-        statePointer2 = 0,
-        array1 = this._stateNames,
-        array2 = aState._stateNames,
-        stateLength1 = array1.length,
-        stateLength2 = array2.length;
-
-    while (statePointer1 < stateLength1 && statePointer2 < stateLength2)
+    for (var stateName in aState._stateNames)
     {
-        if (array1[statePointer1] < array2[statePointer2])
-            statePointer1++;
-
-        else if (array1[statePointer1] === array2[statePointer2])
-        {
-            statePointer1++;
-            statePointer2++;
-        }
-        if (array1[statePointer1] > array2[statePointer2])
+        if (!aState._stateNames.hasOwnProperty(stateName))
+            continue;
+        if (!this._stateNames[stateName])
             return false;
     }
-    if (statePointer2 < stateLength2)
-        return false;
-    else
-        return true;
+    return true;
 }
 
 var CPThemeStates = {};
@@ -389,73 +378,41 @@ function CPThemeState()
 
         if (typeof arguments[argIndex] === 'object')
         {
-            for (var stateIndex = 0; stateIndex < arguments[argIndex]._stateNames.length; stateIndex++)
+            for (var stateName in arguments[argIndex]._stateNames)
             {
-                var stateName = arguments[argIndex]._stateNames[stateIndex];
-                if (!stateNames[stateName])
-                    stateNames[stateName] = true;
+                if (!arguments[argIndex]._stateNames.hasOwnProperty(stateName))
+                    continue;
+                stateNames[stateName] = true;
             }
         }
         else
         {
             var allNames = arguments[argIndex].split('+');
             for (var nameIndex = 0; nameIndex < allNames.length; nameIndex++)
-            {
-                if (!stateNames[allNames[nameIndex]])
-                    stateNames[allNames[nameIndex]] = true;
-            }
+                stateNames[allNames[nameIndex]] = true;
         }
     }
 
-    var stateNameKeys = [];
-    for (key in stateNames)
-    {
-        if (!stateNames.hasOwnProperty(key))
-            continue;
-        stateNameKeys.push(key);
-    }
-    var themeState = CPThemeState._cacheThemeState(new ThemeState(stateNameKeys));
+    var themeState = CPThemeState._cacheThemeState(new ThemeState(stateNames));
     return themeState;
 }
 
 CPThemeState.subtractThemeStates = function(aState1, aState2)
 {
-    if (aState1 === undefined || aState1 === nil || aState1 === [CPNull null])
-        return CPThemeState._cacheThemeState(new ThemeState([]));
-
     if (aState2 === undefined || aState2 === nil || aState2 === [CPNull null])
         return aState1;
 
-    var statePointer1 = 0,
-        statePointer2 = 0,
-        array1 = aState1._stateNames,
-        array2 = aState2._stateNames,
-        stateLength1 = array1.length,
-        stateLength2 = array2.length,
-        newThemeState = new ThemeState([]);
-
-    while (statePointer1 < stateLength1 && statePointer2 < stateLength2)
+    var newThemeState = new ThemeState({});
+    for (var stateName in aState1._stateNames)
     {
-        if (array1[statePointer1] == array2[statePointer2])
-        {
-            statePointer1++;
-            statePointer2++;
-        }
-        else
-        {
-            newThemeState._stateNames.push(array1[statePointer1]);
-            statePointer1++;
-        }
+        if (!aState1._stateNames.hasOwnProperty(stateName))
+            continue;
+
+        if (!aState2._stateNames[stateName])
+            newThemeState[stateName] = true;
     }
 
-    while (statePointer1 < stateLength1)
-    {
-        newThemeState._stateNames.push(array1[statePointer1]);
-        statePointer1++;
-    }
-    newThemeState._stateNames.sort();
     return CPThemeState._cacheThemeState(newThemeState);
-
 }
 
 CPThemeState._cacheThemeState = function(aState)
@@ -576,12 +533,15 @@ CPThemeStateKeyWindow        = CPThemeState("keyWindow");
     _cache = { };
 
     var componentStates = aState._stateNames;
-    for (var stateIndex = 0; stateIndex < [componentStates count]; stateIndex++)
+    for (var state in componentStates)
     {
-        if ((aValue === undefined) || (aValue === nil))
-            [_values removeObjectForKey:componentStates[stateIndex]];
-        else
-            [_values setObject:aValue forKey:componentStates[stateIndex]];
+        if (componentStates.hasOwnProperty(state))
+        {
+            if ((aValue === undefined) || (aValue === nil))
+                [_values removeObjectForKey:componentStates[state]];
+            else
+                [_values setObject:aValue forKey:componentStates[state]];
+        }
     }
 }
 
@@ -605,10 +565,12 @@ CPThemeStateKeyWindow        = CPThemeState("keyWindow");
     // If we don't have a value, and we have a non-normal state...
     if ((value === undefined || value === nil) && aState !== CPThemeStateNormal)
     {
-        var stateCount = [aState._stateNames count];
-        for (var stateIndex = 0; stateIndex < stateCount; stateIndex++)
+        for (var state in aState._stateNames)
         {
-            value = [_values objectForKey:aState._stateNames[stateIndex]];
+            if (!aState._stateNames.hasOwnProperty(state))
+                continue;
+
+            value = [_values objectForKey:state];
             if (value !== undefined && value !== nil)
                 break;
         }

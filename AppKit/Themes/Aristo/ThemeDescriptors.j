@@ -2883,8 +2883,6 @@ var themedButtonValues = nil,
 + (_CPMenuView)themedMenuView
 {
     var menuView = [[_CPMenuView alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, 100.0)],
-
-
         menuWindowMoreAboveImage = PatternImage(@"menu-window-more-above.png", 38.0, 18.0),
         menuWindowMoreBelowImage = PatternImage(@"menu-window-more-below.png", 38.0, 18.0),
         generalIconNew = PatternImage(@"menu-general-icon-new.png", 16.0, 16.0),
@@ -3177,5 +3175,4 @@ var themedButtonValues = nil,
 
     return progressBar;
 }
-
 @end

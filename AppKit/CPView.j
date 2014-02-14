@@ -3142,7 +3142,7 @@ setBoundsOrigin:
 {
     for (var i = 0; i < themeValues.length; ++i)
     {
-        var attributeValueState = themeValues[i],
+        var attributeValueState = themeValues[i];
             attribute = attributeValueState[0],
             value = attributeValueState[1],
             state = attributeValueState[2];
