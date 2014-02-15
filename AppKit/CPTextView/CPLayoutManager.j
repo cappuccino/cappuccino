@@ -154,7 +154,7 @@ var _objectsInRange = function(aList, aRange)
     CPArray _glyphsFrames;
 }
 
-- (id)createDOMElementWithText:aString andFont:aFont andColor:aColor
+- (id)createDOMElementWithText:(CPString)aString andFont:(CPFont)aFont andColor: (CPColor)aColor
 {
     var style,
         span = document.createElement("span");
@@ -221,7 +221,7 @@ var _objectsInRange = function(aList, aRange)
     return self;
 }
 
-- (void)setAdvancements:someAdvancements
+- (void)setAdvancements:(CPArray)someAdvancements
 {
     _glyphsFrames = [];
 

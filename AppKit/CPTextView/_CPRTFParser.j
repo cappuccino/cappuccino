@@ -291,7 +291,7 @@ var kRgsymRtf = {
     return self;
 }
 
-- (CPString)_checkChar:sym parameter:ch
+- (CPString)_checkChar:(CPArray)sym parameter:(CPString)ch
 {
     switch (_curState)
     {
@@ -431,7 +431,7 @@ var kRgsymRtf = {
 }
 
 
-- (CPString)_changeDest:sym
+- (CPString)_changeDest:(CPArray)sym
 {
     switch (sym[0])
     {
@@ -451,7 +451,7 @@ var kRgsymRtf = {
     return '';
 }
 
-- (CPString)_translateKeyword:keyword parameter:param fParameter:(BOOL)fParam
+- (CPString)_translateKeyword:(CPString)keyword parameter:(CPString)param fParameter:(BOOL)fParam
 {
     if (kRgsymRtf[keyword] !== undefined)
     {
@@ -530,7 +530,7 @@ var kRgsymRtf = {
     }
 }
 
-- (CPString)_parseKeyword:rtf length:len
+- (CPString)_parseKeyword:(CPString)rtf length:(unsigned)len
 {
     var ch = '',
         fParam = false,
