@@ -136,7 +136,7 @@ CPParagraphStyleAttributeName = @"CPParagraphStyleAttributeName";
     var other = [[self class] alloc];
     return [other initWithParagraphStyle:self];
 }
-- initWithParagraphStyle:(CPParagraphStyle) other
+- (CPParagraphStyle)initWithParagraphStyle:(CPParagraphStyle)other
 {
     other._tabStops = [_tabStops copy];
     other._alignment = _alignment;

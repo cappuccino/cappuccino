@@ -1390,7 +1390,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     return _textStorage._string;
 }
 
-- objectValue
+// fixme: rich text should return attributed string, shouldn't it?
+- (CPString)objectValue
 {
     return [self stringValue];
 }
