@@ -107,11 +107,13 @@
  * P:     undefined      80 undefined
  */
 
+@import <Foundation/CPNotificationCenter.j>
 @import <Foundation/CPObject.j>
 @import <Foundation/CPRunLoop.j>
 @import <Foundation/CPSet.j>
 @import <Foundation/CPTimer.j>
 
+@import "CPApplication_Constants.j"
 @import "CPCompatibility.j"
 @import "CPCursor.j"
 @import "CPDOMWindowLayer.j"
@@ -128,7 +130,6 @@
 @class CPDragServer
 @class _CPToolTip
 
-@global CPApp
 @global _CPRunModalLoop
 
 // List of all open native windows
@@ -994,6 +995,10 @@ var resizeTimer = nil;
             [windows[windowCount] resizeWithOldPlatformWindowSize:oldSize];
     }
 
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPApplicationDidChangeScreenParametersNotification
+                                                        object:CPApp
+                                                      userInfo:nil];
+
     //window.liveResize = NO;
 
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
@@ -1174,8 +1179,12 @@ var resizeTimer = nil;
         [CPApp sendEvent:event];
     }
 
+    var didStop = NO;
     if (StopDOMEventPropagation && (!supportsNativeDragAndDrop || type !== "mousedown" && !isDragging))
+    {
+        didStop = YES;
         _CPDOMEventStop(aDOMEvent, self);
+    }
 
     // If there are any tracking event listeners (listening for CPLeftMouseDraggedMask)
     // then show the event guard so we don't lose events to iframes
@@ -1197,6 +1206,7 @@ var resizeTimer = nil;
     _DOMEventGuard.style.display = hasTrackingEventListener ? "" : "none";
 
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+    return !didStop;
 }
 
 - (void)contextMenuEvent:(DOMEvent)aDOMEvent
@@ -1498,6 +1508,44 @@ var resizeTimer = nil;
     return theWindow;
 }
 
+/*! @ignore Return the selected text in the DOM window if known. */
+- (CPString)_selectedText
+{
+    if (_DOMWindow.getSelection)
+        return "" + _DOMWindow.getSelection();
+    else if (_DOMWindow.document.getSelection)
+        return "" + _DOMWindow.document.getSelection();
+    else if (_DOMWindow.selection)
+        return "" + _DOMWindow.selection.createRange().text;
+    else
+        return nil;
+}
+
+/*!
+    Set the text selection range to the given range within the given element, which must be a child of
+    this DOM window.
+*/
+- (void)setSelectedRange:(CPRange)aRange inElement:(DOMElement)anElement
+{
+    if (_DOMWindow.getSelection())
+    {
+        var domRange = _DOMWindow.document.createRange();
+        domRange.setStart(anElement.childNodes[0], aRange.location);
+        domRange.setEnd(anElement.childNodes[0], CPMaxRange(aRange));
+        _DOMWindow.getSelection().removeAllRanges();
+        _DOMWindow.getSelection().addRange(domRange);
+    }
+    else if (_DOMWindow.document.selection)
+    {
+        var domRange = _DOMWindow.document.body.createTextRange();
+        domRange.moveToElementText(anElement);
+        domRange.collapse(true);
+        domRange.moveStart('character', aRange.location);
+        domRange.moveEnd('character', aRange.length);
+        domRange.select();
+    }
+}
+
 /*!
     When using command (mac) or control (windows), keys are propagated to the browser by default.
     To prevent a character key from propagating (to prevent its default action, and instead use it
@@ -1616,12 +1664,6 @@ _CPDOMEventStop = function(aDOMEvent, aPlatformWindow)
 
     if (aDOMEvent.stopPropagation)
         aDOMEvent.stopPropagation();
-
-    if (aDOMEvent.type === CPDOMEventMouseDown)
-    {
-        aPlatformWindow._DOMFocusElement.focus();
-        aPlatformWindow._DOMFocusElement.blur();
-    }
 };
 
 function CPWindowObjectList()

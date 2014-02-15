@@ -41,6 +41,9 @@
 
 @global CPApp
 
+var CPAlertDelegate_alertShowHelp_              = 1 << 0,
+    CPAlertDelegate_alertDidEnd_returnCode_     = 1 << 1;
+
 /*
     @global
     @group CPAlertStyle
@@ -58,6 +61,14 @@ CPInformationalAlertStyle   = 1;
 CPCriticalAlertStyle        = 2;
 
 var bottomHeight = 71;
+
+@protocol CPAlertDelegate <CPObject>
+
+@optional
+- (BOOL)alertShowHelp:(CPAlert)alert;
+- (void)alertDidEnd:(CPAlert)theAlert returnCode:(int)returnCode;
+
+@end
 
 /*!
     @ingroup appkit
@@ -83,31 +94,33 @@ var bottomHeight = 71;
 */
 @implementation CPAlert : CPObject
 {
-    BOOL                _showHelp               @accessors(property=showsHelp);
-    BOOL                _showSuppressionButton  @accessors(property=showsSuppressionButton);
+    BOOL                    _showHelp                   @accessors(property=showsHelp);
+    BOOL                    _showSuppressionButton      @accessors(property=showsSuppressionButton);
 
-    CPAlertStyle        _alertStyle             @accessors(property=alertStyle);
-    CPString            _title                  @accessors(property=title);
-    CPView              _accessoryView          @accessors(property=accessoryView);
-    CPImage             _icon                   @accessors(property=icon);
+    CPAlertStyle            _alertStyle                 @accessors(property=alertStyle);
+    CPString                _title                      @accessors(property=title);
+    CPView                  _accessoryView              @accessors(property=accessoryView);
+    CPImage                 _icon                       @accessors(property=icon);
 
-    CPArray             _buttons                @accessors(property=buttons, readonly);
-    CPCheckBox          _suppressionButton      @accessors(property=suppressionButton, readonly);
+    CPArray                 _buttons                    @accessors(property=buttons, readonly);
+    CPCheckBox              _suppressionButton          @accessors(property=suppressionButton, readonly);
 
-    id                  _delegate               @accessors(property=delegate);
-    id                  _modalDelegate;
-    SEL                 _didEndSelector;
+    id <CPAlertDelegate>    _delegate                   @accessors(property=delegate);
+    id                      _modalDelegate;
+    SEL                     _didEndSelector             @accessors(property=didEndSelector);
+    Function                _didEndBlock;
+    unsigned                _implementedDelegateMethods;
 
-    _CPAlertThemeView   _themeView              @accessors(property=themeView, readonly);
-    CPWindow            _window                 @accessors(property=window, readonly);
-    int                 _defaultWindowStyle;
+    _CPAlertThemeView       _themeView                  @accessors(property=themeView, readonly);
+    CPWindow                _window                     @accessors(property=window, readonly);
+    int                     _defaultWindowStyle;
 
-    CPImageView         _alertImageView;
-    CPTextField         _informativeLabel;
-    CPTextField         _messageLabel;
-    CPButton            _alertHelpButton;
+    CPImageView             _alertImageView;
+    CPTextField             _informativeLabel;
+    CPTextField             _messageLabel;
+    CPButton                _alertHelpButton;
 
-    BOOL                _needsLayout;
+    BOOL                    _needsLayout;
 }
 
 #pragma mark Creating Alerts
@@ -186,6 +199,30 @@ var bottomHeight = 71;
     return self;
 }
 
+
+#pragma mark -
+#pragma mark Delegate
+
+/*!
+    Set the delegate of the receiver
+    @param aDelegate the delegate object for the alert.
+*/
+- (void)setDelegate:(id <CPAlertDelegate>)aDelegate
+{
+    if (_delegate === aDelegate)
+        return;
+
+    _delegate = aDelegate;
+    _implementedDelegateMethods = 0;
+
+    if ([_delegate respondsToSelector:@selector(alertShowHelp:)])
+        _implementedDelegateMethods |= CPAlertDelegate_alertShowHelp_;
+
+    if ([_delegate respondsToSelector:@selector(alertDidEnd:returnCode:)])
+        _implementedDelegateMethods |= CPAlertDelegate_alertDidEnd_returnCode_;
+}
+
+
 #pragma mark Accessors
 
 - (CPTheme)theme
@@ -224,16 +261,15 @@ var bottomHeight = 71;
 }
 
 
-/*! @deprecated
-*/
-- (void)setWindowStyle:(int)aStyle
+/*! @deprecated */
+- (void)setWindowStyle:(int)style
 {
     CPLog.warn("DEPRECATED: setWindowStyle: is deprecated. use setTheme: instead");
-    [self setTheme:(aStyle === CPHUDBackgroundWindowMask) ? [CPTheme defaultHudTheme] : [CPTheme defaultTheme]];
+
+    [self setTheme:(style === CPHUDBackgroundWindowMask) ? [CPTheme defaultHudTheme] : [CPTheme defaultTheme]];
 }
 
-/*! @deprecated
-*/
+/*! @deprecated */
 - (int)windowStyle
 {
     CPLog.warn("DEPRECATED: windowStyle: is deprecated. use theme instead");
@@ -242,18 +278,19 @@ var bottomHeight = 71;
 
 
 /*!
-    set the text of the alert's message
+    Set the text of the alert's message.
 
     @param aText CPString containing the text
 */
-- (void)setMessageText:(CPString)aText
+- (void)setMessageText:(CPString)text
 {
-    [_messageLabel setStringValue:aText];
+    [_messageLabel setStringValue:text];
     _needsLayout = YES;
 }
 
 /*!
-    return the content of the message text
+    Return the content of the message text.
+
     @return CPString containing the message text
 */
 - (CPString)messageText
@@ -262,13 +299,13 @@ var bottomHeight = 71;
 }
 
 /*!
-    set the text of the alert's informative text
+    Set the text of the alert's informative text.
 
     @param aText CPString containing the informative text
 */
-- (void)setInformativeText:(CPString)aText
+- (void)setInformativeText:(CPString)text
 {
-    [_informativeLabel setStringValue:aText];
+    [_informativeLabel setStringValue:text];
     _needsLayout = YES;
 }
 
@@ -285,6 +322,7 @@ var bottomHeight = 71;
 /*!
     Sets the title of the alert window.
     This API is not present in Cocoa.
+
     @param aTitle CPString containing the window title
 */
 - (void)setTitle:(CPString)aTitle
@@ -294,7 +332,7 @@ var bottomHeight = 71;
 }
 
 /*!
-    set the accessory view
+    Set the accessory view.
 
     @param aView the accessory view
 */
@@ -305,7 +343,7 @@ var bottomHeight = 71;
 }
 
 /*!
-    set if alert shows the suppression button
+    Set if the alert shows the suppression button.
 
     @param shouldShowSuppressionButton YES or NO
 */
@@ -597,6 +635,17 @@ var bottomHeight = 71;
 }
 
 /*!
+    The same as \c runModal, but executes the code in \c block when the
+    alert is dismissed.
+*/
+- (void)runModalWithDidEndBlock:(Function /*(CPAlert alert, int returnCode)*/)block
+{
+    _didEndBlock = block;
+
+    [self runModal];
+}
+
+/*!
     Runs the receiver modally as an alert sheet attached to a specified window.
 
     @param window The parent window for the sheet.
@@ -627,6 +676,20 @@ var bottomHeight = 71;
 */
 - (void)beginSheetModalForWindow:(CPWindow)aWindow
 {
+    [self beginSheetModalForWindow:aWindow modalDelegate:nil didEndSelector:nil contextInfo:nil];
+}
+
+/*!
+    Runs the receiver modally as an alert sheet attached to a specified window.
+    Executes the code in \c block when the alert is dismissed.
+
+    @param window The parent window for the sheet.
+    @param block  Code block to execute on dismissal
+*/
+- (void)beginSheetModalForWindow:(CPWindow)aWindow didEndBlock:(Function /*(CPAlert alert, int returnCode)*/)block
+{
+    _didEndBlock = block;
+
     [self beginSheetModalForWindow:aWindow modalDelegate:nil didEndSelector:nil contextInfo:nil];
 }
 
@@ -669,8 +732,7 @@ var bottomHeight = 71;
 */
 - (@action)_showHelp:(id)aSender
 {
-    if ([_delegate respondsToSelector:@selector(alertShowHelp:)])
-        [_delegate alertShowHelp:self];
+    [self _sendDelegateAlertShowHelp];
 }
 
 /*
@@ -697,17 +759,61 @@ var bottomHeight = 71;
 */
 - (void)_alertDidEnd:(CPWindow)aWindow returnCode:(int)returnCode contextInfo:(id)contextInfo
 {
-    if (_didEndSelector)
-        objj_msgSend(_modalDelegate, _didEndSelector, self, returnCode, contextInfo);
+    if (_didEndBlock)
+    {
+        if (typeof(_didEndBlock) === "function")
+            _didEndBlock(self, returnCode);
+        else
+            CPLog.warn("%s: didEnd block is not a function", [self description]);
 
-    _modalDelegate = nil;
-    _didEndSelector = nil;
-
-    if ([_delegate respondsToSelector:@selector(alertDidEnd:returnCode:)])
-        [_delegate alertDidEnd:self returnCode:returnCode];
+        // didEnd blocks are transient
+        _didEndBlock = nil;
+    }
+    else if (_modalDelegate)
+    {
+        if (_didEndSelector)
+            objj_msgSend(_modalDelegate, _didEndSelector, self, returnCode, contextInfo);
+    }
+    else if (_delegate)
+    {
+        if (_didEndSelector)
+            objj_msgSend(_delegate, _didEndSelector, self, returnCode);
+        else
+            [self _sendDelegateAlertDidEndReturnCode:returnCode];
+    }
 }
 
 @end
+
+
+@implementation CPAlert (CPAlertDelegate)
+
+/*!
+    @ignore
+    Call the delegate alertDidEnd:returnCode
+*/
+- (void)_sendDelegateAlertDidEndReturnCode:(int)returnCode
+{
+    if (!(_implementedDelegateMethods & CPAlertDelegate_alertDidEnd_returnCode_))
+        return;
+
+    [_delegate alertDidEnd:self returnCode:returnCode];
+}
+
+/*!
+    @ignore
+    Call the delegate alertShowHelp:
+*/
+- (BOOL)_sendDelegateAlertShowHelp
+{
+    if (!(_implementedDelegateMethods & CPAlertDelegate_alertShowHelp_))
+        return YES;
+
+    return [_delegate alertShowHelp:self];
+}
+
+@end
+
 
 @implementation _CPAlertThemeView : CPView
 
@@ -716,7 +822,7 @@ var bottomHeight = 71;
     return @"alert";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{
             @"size": CGSizeMake(400.0, 110.0),

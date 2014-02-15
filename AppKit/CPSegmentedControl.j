@@ -56,7 +56,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     return "segmented-control";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{
             @"alignment": CPCenterTextAlignment,

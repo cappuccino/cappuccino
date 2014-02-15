@@ -152,7 +152,7 @@ CPRadioImageOffset = 4.0;
         [_radioGroup _setSelectedRadio:self];
 }
 
-- (void)sendAction:(SEL)anAction to:(id)anObject
+- (BOOL)sendAction:(SEL)anAction to:(id)anObject
 {
     [super sendAction:anAction to:anObject];
 

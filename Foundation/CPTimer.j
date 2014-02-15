@@ -25,6 +25,8 @@
 @import "CPObject.j"
 @import "CPRunLoop.j"
 
+#define CPTimerDefaultTimeInterval 0.1
+
 /*!
     @class CPTimer
     @ingroup foundation
@@ -112,7 +114,7 @@
 
     if (self)
     {
-        _timeInterval = seconds;
+        _timeInterval = (seconds <= 0) ? CPTimerDefaultTimeInterval : seconds;
         _invocation = anInvocation;
         _repeats = shouldRepeat;
         _isValid = YES;
@@ -150,7 +152,7 @@
 
     if (self)
     {
-        _timeInterval = seconds;
+        _timeInterval = (seconds <= 0) ? CPTimerDefaultTimeInterval : seconds;
         _callback = aFunction;
         _repeats = shouldRepeat;
         _isValid = YES;

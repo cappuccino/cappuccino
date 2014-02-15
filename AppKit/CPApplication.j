@@ -22,6 +22,7 @@
 
 @import <Foundation/CPBundle.j>
 
+@import "CPApplication_Constants.j"
 @import "CPCompatibility.j"
 @import "CPColorPanel.j"
 @import "CPCursor.j"
@@ -40,23 +41,20 @@ var CPMainCibFile               = @"CPMainCibFile",
     CPMainCibFileHumanFriendly  = @"Main cib file base name",
     CPEventModifierFlags = 0;
 
-CPApp = nil;
 
-CPApplicationWillFinishLaunchingNotification    = @"CPApplicationWillFinishLaunchingNotification";
-CPApplicationDidFinishLaunchingNotification     = @"CPApplicationDidFinishLaunchingNotification";
-CPApplicationWillTerminateNotification          = @"CPApplicationWillTerminateNotification";
-CPApplicationWillBecomeActiveNotification       = @"CPApplicationWillBecomeActiveNotification";
-CPApplicationDidBecomeActiveNotification        = @"CPApplicationDidBecomeActiveNotification";
-CPApplicationWillResignActiveNotification       = @"CPApplicationWillResignActiveNotification";
-CPApplicationDidResignActiveNotification        = @"CPApplicationDidResignActiveNotification";
+@protocol CPApplicationDelegate <CPObject>
 
-CPTerminateNow      = YES;
-CPTerminateCancel   = NO;
-CPTerminateLater    = -1; // not currently supported
+@optional
+- (void)applicationDidBecomeActive:(CPNotification)aNotification;
+- (void)applicationDidChangeScreenParameters:(CPNotification)aNotification;
+- (void)applicationDidFinishLaunching:(CPNotification)aNotification;
+- (void)applicationDidResignActive:(CPNotification)aNotification;
+- (void)applicationWillBecomeActive:(CPNotification)aNotification;
+- (void)applicationWillFinishLaunching:(CPNotification)aNotification;
+- (void)applicationWillResignActive:(CPNotification)aNotification;
+- (void)applicationWillTerminate:(CPNotification)aNotification;
 
-CPRunStoppedResponse    = -1000;
-CPRunAbortedResponse    = -1001;
-CPRunContinuesResponse  = -1002;
+@end
 
 /*!
     @ingroup appkit
@@ -85,36 +83,36 @@ CPRunContinuesResponse  = -1002;
 */
 @implementation CPApplication : CPResponder
 {
-    CPArray                 _eventListeners;
-    int                     _eventListenerInsertionIndex;
+    CPArray                     _eventListeners;
+    int                         _eventListenerInsertionIndex;
 
-    CPEvent                 _currentEvent;
-    CPWindow                _lastMouseMoveWindow;
+    CPEvent                     _currentEvent;
+    CPWindow                    _lastMouseMoveWindow;
 
-    CPArray                 _windows;
-    CPWindow                _keyWindow;
-    CPWindow                _mainWindow;
-    CPWindow                _previousKeyWindow;
-    CPWindow                _previousMainWindow;
+    CPArray                     _windows;
+    CPWindow                    _keyWindow;
+    CPWindow                    _mainWindow;
+    CPWindow                    _previousKeyWindow;
+    CPWindow                    _previousMainWindow;
 
-    CPDocumentController    _documentController;
+    CPDocumentController        _documentController;
 
-    CPModalSession          _currentSession;
+    CPModalSession              _currentSession;
 
     //
-    id                      _delegate;
-    BOOL                    _finishedLaunching;
-    BOOL                    _isActive;
+    id <CPApplicationDelegate>  _delegate;
+    BOOL                        _finishedLaunching;
+    BOOL                        _isActive;
 
-    CPDictionary            _namedArgs;
-    CPArray                 _args;
-    CPString                _fullArgsString;
+    CPDictionary                _namedArgs;
+    CPArray                     _args;
+    CPString                    _fullArgsString;
 
-    CPImage                 _applicationIconImage;
+    CPImage                     _applicationIconImage;
 
-    CPPanel                 _aboutPanel;
+    CPPanel                     _aboutPanel;
 
-    CPThemeBlend            _themeBlend @accessors(property=themeBlend);
+    CPThemeBlend                _themeBlend @accessors(property=themeBlend);
 }
 
 /*!
@@ -160,7 +158,7 @@ CPRunContinuesResponse  = -1002;
     react to these events.
     @param aDelegate the delegate object
 */
-- (void)setDelegate:(id)aDelegate
+- (void)setDelegate:(id <CPApplicationDelegate>)aDelegate
 {
     if (_delegate == aDelegate)
         return;
@@ -174,7 +172,8 @@ CPRunContinuesResponse  = -1002;
             CPApplicationDidBecomeActiveNotification, @selector(applicationDidBecomeActive:),
             CPApplicationWillResignActiveNotification, @selector(applicationWillResignActive:),
             CPApplicationDidResignActiveNotification, @selector(applicationDidResignActive:),
-            CPApplicationWillTerminateNotification, @selector(applicationWillTerminate:)
+            CPApplicationWillTerminateNotification, @selector(applicationWillTerminate:),
+            CPApplicationDidChangeScreenParametersNotification, @selector(applicationDidChangeScreenParameters:)
         ],
         count = [delegateNotifications count];
 
@@ -1358,8 +1357,8 @@ var _CPAppBootstrapperActions = nil;
     if (mainCibFile)
     {
         [mainBundle loadCibFile:mainCibFile
-            externalNameTable:@{ CPCibOwner: CPApp }
-                 loadDelegate:self];
+              externalNameTable:@{ CPCibOwner: CPApp }
+                   loadDelegate:self];
 
         return YES;
     }
@@ -1436,7 +1435,7 @@ var _CPAppBootstrapperActions = nil;
 
 + (void)cibDidFailToLoad:(CPCib)aCib
 {
-    throw new Error("Could not load main cib file (Did you forget to nib2cib it?).");
+    throw new Error("Could not load main cib file. Did you forget to nib2cib it?");
 }
 
 + (void)reset

@@ -13,7 +13,7 @@
 {
     CPWindow             window;
     CPPredicateEditor    predicateEditor;
-    
+
     CPTableView     leftTable;
     CPTableView     rightTable;
     CPPopUpButton   rightExpressionsType;
@@ -28,7 +28,7 @@
 + (void)initialize
 {
     var transformer = [[PredicateTransformer alloc] init];
-    [CPValueTransformer setValueTransformer:transformer forName:@"PredicateTransformer"];   
+    [CPValueTransformer setValueTransformer:transformer forName:@"PredicateTransformer"];
 }
 
 - (void)awakeFromCib
@@ -109,7 +109,7 @@
         template = [[CPPredicateEditorRowTemplate alloc] initWithLeftExpressions:leftExpressions rightExpressionAttributeType:CPStringAttributeType modifier:0 operators:operators options:0];
     else if (type == 1)
         template = [[CPPredicateEditorRowTemplate alloc] initWithLeftExpressions:leftExpressions rightExpressionAttributeType:CPInteger16AttributeType modifier:0 operators:operators options:0];
-    else if (type ==2)
+    else if (type == 2)
     {
         var rightExpressions = [CPMutableArray array],
             count = [rightConstants count];
@@ -121,6 +121,8 @@
 
         template = [[CPPredicateEditorRowTemplate alloc] initWithLeftExpressions:leftExpressions rightExpressions:rightExpressions modifier:0 operators:operators options:0];
     }
+    else if (type == 3)
+        template = [[CPPredicateEditorRowTemplate alloc] initWithLeftExpressions:leftExpressions rightExpressionAttributeType:CPDateAttributeType modifier:0 operators:operators options:0];
 
     var templates = [[predicateEditor rowTemplates] arrayByAddingObject:template];
     [predicateEditor setRowTemplates:templates];

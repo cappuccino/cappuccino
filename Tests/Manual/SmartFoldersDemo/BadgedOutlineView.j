@@ -198,7 +198,7 @@ var CPSourceListDataSource_sourceList_itemHasBadge_                   = 1 << 1,
 
 @implementation CPOutlineView (MyExtensions)
 
-- (CPView)preparedViewAtColumn:(int)column row:(int)row
+- (CPView)preparedViewAtColumn:(CPInteger)column row:(CPInteger)row
 {
     return [self _newDataViewForRow:row tableColumn:_tableColumns[column]];
 }

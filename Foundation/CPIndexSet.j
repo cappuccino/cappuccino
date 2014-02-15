@@ -1187,5 +1187,5 @@ X       - (void)addIndex:(unsigned int)value;
 X       - (void)removeIndex:(unsigned int)value;
 X       - (void)addIndexesInRange:(NSRange)range;
 X       - (void)removeIndexesInRange:(NSRange)range;
-        - (void)shiftIndexesStartingAtIndex:(unsigned int)index by:(int)delta;
+        - (void)shiftIndexesStartingAtIndex:(CPUInteger)index by:(int)delta;
 */

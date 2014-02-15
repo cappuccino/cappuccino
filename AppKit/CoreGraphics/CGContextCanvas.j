@@ -43,7 +43,7 @@ var CANVAS_LINECAP_TABLE    = [ "butt", "round", "square" ],
 #define _CGContextFillRectCanvas(aContext, aRect) aContext.fillRect(CGRectGetMinX(aRect), CGRectGetMinY(aRect), CGRectGetWidth(aRect), CGRectGetHeight(aRect))
 #define _CGContextClipCanvas(aContext) aContext.clip()
 
-// In Cocoa, all primitives excepts rects cannot be added to the context's path
+// In Cocoa, all primitives excepts rects and arcs cannot be added to the context's path
 // until a move to point has been done, because an empty path has no current point.
 var hasPath = function(aContext, methodName)
 {
@@ -113,12 +113,12 @@ function CGContextSetBlendMode(aContext, aBlendMode)
 
 function CGContextAddArc(aContext, x, y, radius, startAngle, endAngle, clockwise)
 {
-    if (!hasPath(aContext, "CGContextAddArc"))
-        return;
-
     // Despite the documentation saying otherwise, the last parameter is anti-clockwise not clockwise.
     // http://developer.mozilla.org/en/docs/Canvas_tutorial:Drawing_shapes#Arcs
     _CGContextAddArcCanvas(aContext, x, y, radius, startAngle, endAngle, !clockwise);
+
+    // AddArc implicitly starts a path
+    aContext.hasPath = YES;
 }
 
 function CGContextAddArcToPoint(aContext, x1, y1, x2, y2, radius)

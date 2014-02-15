@@ -37,6 +37,9 @@
 
 #if PLATFORM(DOM)
 
+#define SUPPRESS_CAPPUCCINO_CUT_FOR_EVENT(anEvent) anEvent._suppressCappuccinoCut = YES
+#define SUPPRESS_CAPPUCCINO_PASTE_FOR_EVENT(anEvent) anEvent._suppressCappuccinoPaste = YES
+
 var hasEditableTarget = function(aDOMEvent)
 {
     var target = aDOMEvent.target || aDOMEvent.srcElement;
@@ -258,8 +261,14 @@ var hasEditableTarget = function(aDOMEvent)
         // In both of those cases we don't want to send the event on keydown too, or we'll get 2X copy/cut operations.
         if (supportsNativeCopyAndPaste || _ignoreNativeCopyOrCutEvent)
             currentEventShouldBeSuppressed = YES;
+    }
 
-        currentEventShouldDefinitelyBubble = YES;
+    if (!currentEventShouldBeSuppressed)
+    {
+        if (characters === "v")
+            SUPPRESS_CAPPUCCINO_PASTE_FOR_EVENT(anEvent);
+        else if (characters === "x")
+            SUPPRESS_CAPPUCCINO_CUT_FOR_EVENT(anEvent);
     }
 }
 
@@ -456,6 +465,8 @@ Return true if the event may be a copy and paste event, but the target is not an
     var anEvent = [self _fakeClipboardEvent:aDOMEvent type:"v"],
         platformWindow = [[anEvent window] platformWindow];
 
+    SUPPRESS_CAPPUCCINO_PASTE_FOR_EVENT(anEvent);
+
     // By default we'll stop the native handling of the event since we're handling it ourselves. However, we need to
     // stop it before we send the event so that the event can overrule our choice. CPTextField for instance wants the
     // default handling when focused (which is to insert into the field).
@@ -479,6 +490,8 @@ Return true if the event may be a copy and paste event, but the target is not an
 
     var anEvent = [self _fakeClipboardEvent:aDOMEvent type:(aDOMEvent.type.indexOf("cut") != CPNotFound ? "x" : "c")],
         platformWindow = [[anEvent window] platformWindow];
+
+    SUPPRESS_CAPPUCCINO_CUT_FOR_EVENT(anEvent);
 
     [platformWindow _propagateCurrentDOMEvent:NO]
 

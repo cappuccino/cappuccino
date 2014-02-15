@@ -1,6 +1,6 @@
 language: node_js
 node_js:
     - 0.8
-install: ./bootstrap.sh --quiet --noprompt --directory ./narwhal
+install: ./bootstrap.sh --noprompt --directory ./narwhal
 script: jake test
 env: PATH="$TRAVIS_BUILD_DIR/narwhal/bin:$PATH" CAPP_BUILD="$TRAVIS_BUILD_DIR/Build" NARWHAL_ENGINE=rhino

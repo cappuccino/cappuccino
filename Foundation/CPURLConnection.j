@@ -156,9 +156,9 @@ var CPURLConnectionDelegate = nil;
 
         // Browsers use "file:", Titanium uses "app:"
         _isLocalFileConnection =    scheme === "file" ||
-                                    ((scheme === "http" || scheme === "https:") &&
-                                    window.location &&
-                                    (window.location.protocol === "file:" || window.location.protocol === "app:"));
+                                    ((scheme === "http" || scheme === "https") &&
+                                     window.location &&
+                                     (window.location.protocol === "file:" || window.location.protocol === "app:"));
 
         _HTTPRequest = new CFHTTPRequest();
 
@@ -257,6 +257,7 @@ var CPURLConnectionDelegate = nil;
                     [_delegate connection:self didReceiveResponse:response];
                 }
             }
+
             if (!_isCanceled)
             {
                 if ([_delegate respondsToSelector:@selector(connection:didReceiveData:)])

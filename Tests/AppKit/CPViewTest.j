@@ -103,4 +103,83 @@
     [self assertFalse:[view _isVisible] message:"a superview does not belong to a visible window"];
 }
 
+- (void)testNextValidKeyView
+{
+    var viewA = [CPView new],
+        viewB = [CPView new],
+        viewC = [CPCollectionView new],
+        viewD = [CPView new],
+        viewE = [CPView new];
+
+    [viewA setNextKeyView:viewB];
+    [viewB setNextKeyView:viewC];
+
+    [self assert:viewC equals:[viewA nextValidKeyView]];
+
+    // Make a loop which is harder to detect.
+    [viewA setNextKeyView:viewB];
+    [viewB setNextKeyView:viewD];
+    [viewD setNextKeyView:viewE];
+    [viewE setNextKeyView:viewD];
+
+    [self assert:nil equals:[viewA nextValidKeyView]];
+}
+
+- (void)testConvertPoint_fromView_shouldChangeNothingForSameView
+{
+    var tView0 = [CPView new],
+        aWindow = [CPWindow new];
+
+    [aWindow setContentView:tView0];
+
+    [tView0 setFrame:CGRectMake(3, 5, 13, 17)];
+
+    [self assertTrue:CGPointEqualToPoint(CGPointMake(7, 11), [tView0 convertPoint:CGPointMake(7, 11) fromView:tView0])]
+}
+
+- (void)testConvertPoint_fromView_shouldAddSubviewCoordinatesWhenMovingUp
+{
+    var tView0 = [CPView new],
+        subView0 = [CPView new],
+        aWindow = [CPWindow new];
+
+    [aWindow setContentView:tView0];
+
+    [tView0 addSubview:subView0];
+    [tView0 setFrame:CGRectMake(30, 50, 130, 170)];
+    [subView0 setFrame:CGRectMake(3, 5, 13, 17)];
+
+    [self assertTrue:CGPointEqualToPoint(CGPointMake(10, 16), [tView0 convertPoint:CGPointMake(7, 11) fromView:subView0])]
+}
+
+- (void)testConvertPoint_fromView_shouldWorkBetweenSiblingViews
+{
+    var tView0 = [CPView new],
+        subView0 = [CPView new],
+        aWindow = [CPWindow new];
+
+    [[aWindow contentView] addSubview:tView0];
+    [[aWindow contentView] addSubview:subView0];
+
+    [tView0 setFrame:CGRectMake(30, 50, 130, 170)];
+    [subView0 setFrame:CGRectMake(3, 5, 13, 17)];
+
+    [self assertTrue:CGPointEqualToPoint(CGPointMake(34, 56), [subView0 convertPoint:CGPointMake(7, 11) fromView:tView0])]
+}
+
+- (void)testConvertPoint_fromView_shouldSubtractSubviewCoordinatesWhenMovingDown
+{
+    var tView0 = [CPView new],
+        subView0 = [CPView new],
+        aWindow = [CPWindow new];
+
+    [aWindow setContentView:tView0];
+
+    [tView0 addSubview:subView0];
+    [tView0 setFrame:CGRectMake(30, 50, 130, 170)];
+    [subView0 setFrame:CGRectMake(3, 5, 13, 17)];
+
+    [self assertTrue:CGPointEqualToPoint(CGPointMake(4, 6), [subView0 convertPoint:CGPointMake(7, 11) fromView:tView0])]
+}
+
 @end

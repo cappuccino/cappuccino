@@ -352,8 +352,8 @@ function loadExecutableAndResources(/*Bundle*/ aBundle, /*BOOL*/ shouldExecute)
     if (!aBundle.mostEligibleEnvironment())
         return failure();
 
-    loadExecutableForBundle(aBundle, success, failure);
-    loadSpritedImagesForBundle(aBundle, success, failure);
+    loadExecutableForBundle(aBundle, success, failure, progress);
+    loadSpritedImagesForBundle(aBundle, success, failure, progress);
 
     if (aBundle._loadStatus === CFBundleLoading)
         return success();
@@ -373,14 +373,21 @@ function loadExecutableAndResources(/*Bundle*/ aBundle, /*BOOL*/ shouldExecute)
         finishBundleLoadingWithError(aBundle, anError || new Error("Could not recognize executable code format in Bundle " + aBundle));
     }
 
-    function success()
+    function progress(bytesLoaded)
     {
         if ((typeof CPApp === "undefined" || !CPApp || !CPApp._finishedLaunching) &&
-             typeof OBJJ_PROGRESS_CALLBACK === "function" && CPApplicationSizeInBytes)
+             typeof OBJJ_PROGRESS_CALLBACK === "function")
         {
-            OBJJ_PROGRESS_CALLBACK(MAX(MIN(1.0, CFTotalBytesLoaded / CPApplicationSizeInBytes), 0.0), CPApplicationSizeInBytes, aBundle.bundlePath());
-        }
+            CFTotalBytesLoaded += bytesLoaded;
 
+            var percent = CPApplicationSizeInBytes ? MAX(MIN(1.0, CFTotalBytesLoaded / CPApplicationSizeInBytes), 0.0) : 0;
+
+            OBJJ_PROGRESS_CALLBACK(percent, CPApplicationSizeInBytes, aBundle.bundlePath());
+        }
+    }
+
+    function success()
+    {
         if (aBundle._loadStatus === CFBundleLoading)
             aBundle._loadStatus = CFBundleLoaded;
         else
@@ -392,13 +399,13 @@ function loadExecutableAndResources(/*Bundle*/ aBundle, /*BOOL*/ shouldExecute)
 
         function complete()
         {
-
             aBundle._eventDispatcher.dispatchEvent(
             {
                 type:"load",
                 bundle:aBundle
             });
         }
+
         if (shouldExecute)
             executeBundle(aBundle, complete);
         else
@@ -406,7 +413,7 @@ function loadExecutableAndResources(/*Bundle*/ aBundle, /*BOOL*/ shouldExecute)
     }
 }
 
-function loadExecutableForBundle(/*Bundle*/ aBundle, success, failure)
+function loadExecutableForBundle(/*Bundle*/ aBundle, success, failure, progress)
 {
     var executableURL = aBundle.executableURL();
 
@@ -419,7 +426,6 @@ function loadExecutableForBundle(/*Bundle*/ aBundle, success, failure)
     {
         try
         {
-            CFTotalBytesLoaded += anEvent.request.responseText().length;
             decompileStaticFile(aBundle, anEvent.request.responseText(), executableURL);
             aBundle._loadStatus &= ~CFBundleLoadingExecutable;
             success();
@@ -428,7 +434,7 @@ function loadExecutableForBundle(/*Bundle*/ aBundle, success, failure)
         {
             failure(anException);
         }
-    }, failure);
+    }, failure, progress);
 }
 
 function spritedImagesTestURLStringForBundle(/*Bundle*/ aBundle)
@@ -448,7 +454,7 @@ function spritedImagesURLForBundle(/*Bundle*/ aBundle)
     return NULL;
 }
 
-function loadSpritedImagesForBundle(/*Bundle*/ aBundle, success, failure)
+function loadSpritedImagesForBundle(/*Bundle*/ aBundle, success, failure, progress)
 {
     if (!aBundle.hasSpritedImages())
         return;
@@ -458,7 +464,7 @@ function loadSpritedImagesForBundle(/*Bundle*/ aBundle, success, failure)
     if (!CFBundleHasTestedSpriteSupport())
         return CFBundleTestSpriteSupport(spritedImagesTestURLStringForBundle(aBundle), function()
         {
-            loadSpritedImagesForBundle(aBundle, success, failure);
+            loadSpritedImagesForBundle(aBundle, success, failure, progress);
         });
 
     var spritedImagesURL = spritedImagesURLForBundle(aBundle);
@@ -473,17 +479,15 @@ function loadSpritedImagesForBundle(/*Bundle*/ aBundle, success, failure)
     {
         try
         {
-            CFTotalBytesLoaded += anEvent.request.responseText().length;
             decompileStaticFile(aBundle, anEvent.request.responseText(), spritedImagesURL);
             aBundle._loadStatus &= ~CFBundleLoadingSpritedImages;
+            success();
         }
         catch(anException)
         {
             failure(anException);
         }
-
-        success();
-    }, failure);
+    }, failure, progress);
 }
 
 var CFBundleSpriteSupportListeners  = [],

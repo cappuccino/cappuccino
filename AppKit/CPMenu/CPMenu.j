@@ -278,7 +278,7 @@ var _CPMenuBarVisible               = NO,
     @param aMenuItem the item to insert
     @param anIndex the index in the menu to insert the item.
 */
-- (void)insertItem:(CPMenuItem)aMenuItem atIndex:(unsigned)anIndex
+- (void)insertItem:(CPMenuItem)aMenuItem atIndex:(CPUInteger)anIndex
 {
     [self insertObject:aMenuItem inItemsAtIndex:anIndex];
 }
@@ -291,7 +291,7 @@ var _CPMenuBarVisible               = NO,
     @param anIndex the index location in the menu for the new item
     @return the new menu item
 */
-- (CPMenuItem)insertItemWithTitle:(CPString)aTitle action:(SEL)anAction keyEquivalent:(CPString)aKeyEquivalent atIndex:(unsigned)anIndex
+- (CPMenuItem)insertItemWithTitle:(CPString)aTitle action:(SEL)anAction keyEquivalent:(CPString)aKeyEquivalent atIndex:(CPUInteger)anIndex
 {
     var item = [[CPMenuItem alloc] initWithTitle:aTitle action:anAction keyEquivalent:aKeyEquivalent];
 
@@ -335,7 +335,7 @@ var _CPMenuBarVisible               = NO,
     Removes the item at the specified index from the menu
     @param anIndex the index of the item to remove
 */
-- (void)removeItemAtIndex:(unsigned)anIndex
+- (void)removeItemAtIndex:(CPUInteger)anIndex
 {
     [self removeObjectFromItemsAtIndex:anIndex];
 }
@@ -621,7 +621,7 @@ var _CPMenuBarVisible               = NO,
 */
 - (void)update
 {
-    if (![self autoenablesItems])
+    if (!_autoenablesItems)
         return;
 
     var items = [self itemArray];
@@ -633,8 +633,16 @@ var _CPMenuBarVisible               = NO,
         if ([item hasSubmenu])
             continue;
 
-        var validator = [CPApp targetForAction:[item action] to:[item target] from:item],
+        // If there are enabled bindings for the item, they override anything else
+        var binder = [CPBinder getBinding:CPEnabledBinding forObject:item];
 
+        if (binder)
+        {
+            [binder setValueFor:CPEnabledBinding];
+            return;
+        }
+
+        var validator = [CPApp targetForAction:[item action] to:[item target] from:item],
             shouldBeEnabled = YES;
 
         if (!validator)
@@ -847,6 +855,9 @@ var _CPMenuBarVisible               = NO,
 
 + (void)popUpContextMenu:(CPMenu)aMenu withEvent:(CPEvent)anEvent forView:(CPView)aView withFont:(CPFont)aFont
 {
+    // This is needed when we are making several rights click
+    [[_CPMenuManager sharedMenuManager] cancelActiveMenu];
+
     [aMenu _menuWillOpen];
 
     if (!aFont)
@@ -854,8 +865,6 @@ var _CPMenuBarVisible               = NO,
 
     var theWindow = [aView window],
         menuWindow = [_CPMenuWindow menuWindowWithMenu:aMenu font:aFont];
-
-    [_CPMenuWindow poolMenuWindow:menuWindow];
 
     [menuWindow setBackgroundStyle:_CPMenuWindowPopUpBackgroundStyle];
 
@@ -1052,7 +1061,7 @@ var _CPMenuBarVisible               = NO,
     Sends the action of the menu item at the specified index.
     @param anIndex the index of the item
 */
-- (void)performActionForItemAtIndex:(unsigned)anIndex
+- (void)performActionForItemAtIndex:(CPUInteger)anIndex
 {
     var item = _items[anIndex];
 
@@ -1184,7 +1193,8 @@ var _CPMenuBarVisible               = NO,
 var CPMenuTitleKey              = @"CPMenuTitleKey",
     CPMenuNameKey               = @"CPMenuNameKey",
     CPMenuItemsKey              = @"CPMenuItemsKey",
-    CPMenuShowsStateColumnKey   = @"CPMenuShowsStateColumnKey";
+    CPMenuShowsStateColumnKey   = @"CPMenuShowsStateColumnKey",
+    CPMenuAutoEnablesItemsKey   = @"CPMenuAutoEnablesItemsKey";
 
 @implementation CPMenu (CPCoding)
 
@@ -1206,7 +1216,7 @@ var CPMenuTitleKey              = @"CPMenuTitleKey",
 
         _showsStateColumn = ![aCoder containsValueForKey:CPMenuShowsStateColumnKey] || [aCoder decodeBoolForKey:CPMenuShowsStateColumnKey];
 
-        _autoenablesItems = YES;
+        _autoenablesItems = ![aCoder containsValueForKey:CPMenuAutoEnablesItemsKey] || [aCoder decodeBoolForKey:CPMenuAutoEnablesItemsKey];
 
         [self setMinimumWidth:0];
     }
@@ -1229,6 +1239,9 @@ var CPMenuTitleKey              = @"CPMenuTitleKey",
 
     if (!_showsStateColumn)
         [aCoder encodeBool:_showsStateColumn forKey:CPMenuShowsStateColumnKey];
+
+    if (!_autoenablesItems)
+        [aCoder encodeBool:_autoenablesItems forKey:CPMenuAutoEnablesItemsKey];
 }
 
 @end

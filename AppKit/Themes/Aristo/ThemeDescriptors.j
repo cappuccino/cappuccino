@@ -2082,15 +2082,32 @@ var themedButtonValues = nil,
 
         themedTableViewValues =
         [
-            [@"alternating-row-colors",     alternatingRowColors],
-            [@"grid-color",                 gridColor],
-            [@"highlighted-grid-color",     [CPColor whiteColor]],
-            [@"selection-color",            selectionColor],
-            [@"sourcelist-selection-color", sourceListSelectionColor],
-            [@"sort-image",                 sortImage],
-            [@"sort-image-reversed",        sortImageReversed],
-            [@"image-generic-file",         imageGenericFile],
-            [@"default-row-height",         23.0],
+            [@"alternating-row-colors",                 alternatingRowColors],
+            [@"grid-color",                             gridColor],
+            [@"highlighted-grid-color",                 [CPColor whiteColor]],
+            [@"selection-color",                        selectionColor],
+            [@"sourcelist-selection-color",             sourceListSelectionColor],
+            [@"sort-image",                             sortImage],
+            [@"sort-image-reversed",                    sortImageReversed],
+            [@"image-generic-file",                     imageGenericFile],
+            [@"default-row-height",                     23.0],
+
+            [@"dropview-on-background-color",           [CPColor colorWithRed:72 / 255 green:134 / 255 blue:202 / 255 alpha:0.25]],
+            [@"dropview-on-border-color",               [CPColor colorWithHexString:@"4886ca"]],
+            [@"dropview-on-border-width",               3.0],
+            [@"dropview-on-border-radius",              8.0],
+
+            [@"dropview-on-selected-background-color",  [CPColor clearColor]],
+            [@"dropview-on-selected-border-color",      [CPColor whiteColor]],
+            [@"dropview-on-selected-border-width",      2.0],
+            [@"dropview-on-selected-border-radius",     8.0],
+
+            [@"dropview-above-border-color",            [CPColor colorWithHexString:@"4886ca"]],
+            [@"dropview-above-border-width",            3.0],
+
+            [@"dropview-above-selected-border-color",   [CPColor colorWithHexString:@"8BB6F0"]],
+            [@"dropview-above-selected-border-width",   2.0],
+
         ];
 
     [self registerThemeValues:themedTableViewValues forView:tableview];
@@ -2980,6 +2997,10 @@ var themedButtonValues = nil,
 
         themeValues =
         [
+            [@"border-radius",              5.0],
+            [@"stroke-width",               1.0],
+            [@"shadow-size",                CGSizeMake(0, 6)],
+            [@"shadow-blur",                15.0],
             [@"background-gradient",        gradient],
             [@"background-gradient-hud",    gradientHUD],
             [@"stroke-color",               strokeColor],

@@ -71,7 +71,7 @@ CPEraDatePickerElementFlag              = 0x0100;
     //CPCalendar  _calendar           @accessors(property=calendar);
     CPTimeZone      _timeZone           @accessors(property=timeZone);
     id              _delegate           @accessors(property=delegate);
-    unsigned        _datePickerElements @accessors(property=datePickerElements);
+    CPInteger       _datePickerElements @accessors(property=datePickerElements);
     CPInteger       _datePickerMode     @accessors(property=datePickerMode);
     CPInteger       _datePickerStyle    @accessors(property=datePickerStyle);
     CPInteger       _timeInterval       @accessors(property=timeInterval);
@@ -90,7 +90,7 @@ CPEraDatePickerElementFlag              = 0x0100;
     return @"datePicker";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{
             @"bezel-color": [CPColor clearColor],
@@ -159,7 +159,7 @@ CPEraDatePickerElementFlag              = 0x0100;
     return [super _binderClassForBinding:theBinding];
 }
 
-- (id)_replacementKeyPathForBinding:(CPString)aBinding
+- (CPString)_replacementKeyPathForBinding:(CPString)aBinding
 {
     if (aBinding == CPValueBinding)
         return @"dateValue";
@@ -205,9 +205,6 @@ CPEraDatePickerElementFlag              = 0x0100;
 {
     if (!_locale)
         _locale = [CPLocale currentLocale];
-
-    if (!_timeZone)
-        _timeZone = [CPTimeZone systemTimeZone];
 
     _datePickerTextfield = [[_CPDatePickerTextField alloc] initWithFrame:[self bounds] withDatePicker:self];
 
@@ -269,7 +266,7 @@ CPEraDatePickerElementFlag              = 0x0100;
 
 /*! Return the objectValue of the datePicker. The objectValue should take the timeZoneEffect
 */
-- (void)objectValue
+- (id)objectValue
 {
     // TODO : add timeZone effect. How to do it because js ???
     return _dateValue
@@ -309,7 +306,14 @@ CPEraDatePickerElementFlag              = 0x0100;
     aTimeInterval = MAX(MIN(aTimeInterval, [_maxDate timeIntervalSinceDate:aDateValue]), [_minDate timeIntervalSinceDate:aDateValue]);
 
     if ([aDateValue isEqualToDate:_dateValue] && aTimeInterval == _timeInterval)
+    {
+        if (_datePickerStyle == CPTextFieldAndStepperDatePickerStyle || _datePickerStyle == CPTextFieldDatePickerStyle)
+            [_datePickerTextfield setDateValue:_dateValue];
+        else
+            [_datePickerCalendar setDateValue:_dateValue];
+
         return;
+    }
 
     if (_implementedCDatePickerDelegateMethods & CPDatePicker_validateProposedDateValue_timeInterval)
     {
@@ -366,7 +370,7 @@ CPEraDatePickerElementFlag              = 0x0100;
 /*! Set the syle of the datePicker
     @param aDatePickerStyle the datePicker style
 */
-- (void)setDatePickerStyle:(CPDate)aDatePickerStyle
+- (void)setDatePickerStyle:(CPInteger)aDatePickerStyle
 {
     _datePickerStyle = aDatePickerStyle;
 
@@ -377,7 +381,7 @@ CPEraDatePickerElementFlag              = 0x0100;
 /*! Set the elements of the datePicker
     @param aDatePickerElements the datePicker elements
 */
-- (void)setDatePickerElements:(CPDate)aDatePickerElements
+- (void)setDatePickerElements:(CPInteger)aDatePickerElements
 {
     _datePickerElements = aDatePickerElements;
 
@@ -388,7 +392,7 @@ CPEraDatePickerElementFlag              = 0x0100;
 /*! Set the mode of the datePicker
     @param aDatePickerMode the datePicker mode
 */
-- (void)setDatePickerMode:(CPDate)aDatePickerMode
+- (void)setDatePickerMode:(CPInteger)aDatePickerMode
 {
     _datePickerMode = aDatePickerMode;
 
@@ -509,6 +513,11 @@ CPEraDatePickerElementFlag              = 0x0100;
     [self didChangeValueForKey:@"timeZone"];
 
     [self setNeedsLayout];
+
+    if (_datePickerStyle == CPTextFieldAndStepperDatePickerStyle || _datePickerStyle == CPTextFieldDatePickerStyle)
+        [_datePickerTextfield setDateValue:_dateValue];
+    else
+        [_datePickerCalendar setDateValue:_dateValue];
 }
 
 

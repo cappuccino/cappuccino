@@ -31,7 +31,7 @@
 - (void)observeValueForKeyPath:(CPString)keyPath
                       ofObject:(id)object
                         change:(CPDictionary)change
-                       context:(void)context
+                       context:(id)context
 {
     [changedKeyPaths addObject:keyPath];
 }

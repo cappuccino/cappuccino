@@ -76,7 +76,7 @@ CPBelowBottom = 6;
     return @"box";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{
             @"background-color": [CPNull null],

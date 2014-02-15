@@ -25,10 +25,16 @@
 
 @import <AppKit/_CPCibCustomResource.j>
 
+@import "Nib2CibException.j"
+
 @global CP_NSMapClassName
 
 var FILE = require("file"),
-    imageSize = require("cappuccino/imagesize").imagesize;
+    imageSize = require("cappuccino/imagesize").imagesize,
+    supportedTemplateImages = [
+        "NSAddTemplate",
+        "NSRemoveTemplate"
+    ];
 
 @implementation _CPCibCustomResource (NSCoding)
 
@@ -47,10 +53,15 @@ var FILE = require("file"),
 
         if (_resourceName == "NSSwitch")
             return nil;
-        else if (_resourceName == "NSAddTemplate" || _resourceName == "NSRemoveTemplate")
+        else if (/^NS[A-Z][A-Za-z]+$/.test(_resourceName))
         {
-            // Defer resolving this path until runtime.
-            _resourceName = _resourceName.replace("NS", "CP");
+            if (supportedTemplateImages.indexOf(_resourceName) >= 0)
+            {
+                // Defer resolving this path until runtime.
+                _resourceName = _resourceName.replace("NS", "CP");
+            }
+            else
+                [CPException raise:Nib2CibException format:@"The built in image “%@” is not supported.", _resourceName];
         }
         else
         {
@@ -73,11 +84,11 @@ var FILE = require("file"),
             }
 
             // Account for the fact that an extension may have been inferred.
-            if (resourceInfo &&
-                resourceInfo.path &&
-                FILE.extension(resourceInfo.path) !== FILE.extension(_resourceName))
+            if (resourceInfo && resourceInfo.path)
             {
-                _resourceName += FILE.extension(resourceInfo.path);
+                // Include subdirectories in the name
+                match = /^.+\/Resources\/(.+)$/.exec(resourceInfo.path)
+                _resourceName = match[1];
             }
         }
 
@@ -100,7 +111,7 @@ var FILE = require("file"),
                     resourceInfo ? FILE.canonical(resourceInfo.path) : "",
                     size.width,
                     size.height);
-   }
+    }
 
     return self;
 }

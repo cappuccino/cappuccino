@@ -79,8 +79,8 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
         return;
 
     relativeDateFormating = @{
-      @"fr" : [@"demain", 1440, @"apr" + String.fromCharCode(233) + @"s-demain", 2880, @"apr" + String.fromCharCode(233) + @"s-apr" + String.fromCharCode(233) + @"s-demain", 4320, @"hier", -1440, @"avant-hier", -2880, @"avant-avant-hier", -4320],
-      @"en" : [@"tomorrow", 1440, @"yesterday", -1440],
+      @"fr" : [@"demain", 1, @"apr" + String.fromCharCode(233) + @"s-demain", 2, @"apr" + String.fromCharCode(233) + @"s-apr" + String.fromCharCode(233) + @"s-demain", 3, @"hier", -1, @"avant-hier", -2, @"avant-avant-hier", -3],
+      @"en" : [@"tomorrow", 1, @"yesterday", -1],
       @"de" : [],
       @"es" : []
     };
@@ -552,13 +552,13 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
             var date = [CPDate date];
             [date _dateWithTimeZone:_timeZone];
 
-            date.setHours(aDate.getHours());
-            date.setMinutes(aDate.getMinutes());
-            date.setSeconds(aDate.getSeconds());
+            date.setHours(12);
+            date.setMinutes(0);
+            date.setSeconds(0);
 
-            date.setMinutes([relativeWords objectAtIndex:i]);
+            date.setDate([relativeWords objectAtIndex:i] + date.getDate());
 
-            if (date.getDate() == aDate.getDate() && date.getMonth() && aDate.getMonth() && date.getFullYear() == aDate.getFullYear())
+            if (date.getDate() == aDate.getDate() && date.getMonth() == aDate.getMonth() && date.getFullYear() == aDate.getFullYear())
             {
                 relativeWord = [relativeWords objectAtIndex:(i - 1)];
                 format = @"";
@@ -1104,9 +1104,6 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
 */
 - (CPDate)dateFromString:(CPString)aString
 {
-    if (aString == nil)
-        return nil;
-
     var format;
 
     if (_dateFormat != nil)
@@ -1201,14 +1198,16 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
     @param anError, if it returns NO the describe error will be in anError (use of ref)
     @return aBoolean for the success or fail of the method
 */
-- (BOOL)getObjectValue:(id)anObject forString:(CPString)aString errorDescription:(CPString)anError
+- (BOOL)getObjectValue:(idRef)anObject forString:(CPString)aString errorDescription:(CPStringRef)anError
 {
     var value = [self dateFromString:aString];
     @deref(anObject) = value;
 
     if (!value)
     {
-        @deref(anError) = @"The value \"" + aString + "\" is invalid.";
+        if (anError)
+            @deref(anError) = @"The value \"" + aString + "\" is invalid.";
+
         return NO;
     }
 
@@ -1222,7 +1221,11 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
 */
 - (CPDate)_dateFromString:(CPString)aString format:(CPString)aFormat
 {
-    if (aString == nil || aFormat == nil)
+    // Interpret @"" as the date 2000-01-01 00:00:00 +0000, like in Cocoa. No idea why they picked this particular date.
+    if (!aString)
+        return [[CPDate alloc] initWithTimeIntervalSinceReferenceDate:-31622400];
+
+    if (aFormat == nil)
         return nil;
 
     var currentToken = [CPString new],
@@ -2116,6 +2119,9 @@ var CPDateFormatterDateStyleKey = @"CPDateFormatterDateStyle",
 */
 - (void)_dateWithTimeZone:(CPTimeZone)aTimeZone
 {
+    if (!aTimeZone)
+        return;
+
     self.setSeconds(self.getSeconds() - [aTimeZone secondsFromGMTForDate:self]);
     self.setSeconds(self.getSeconds() + [aTimeZone secondsFromGMT]);
 }

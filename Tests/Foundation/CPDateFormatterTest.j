@@ -450,7 +450,7 @@
     [_dateFormatter setDateFormat:@""];
     var result = [_dateFormatter dateFromString:@""];
 
-    [self assert:[result isEqualToDate:[[CPDate alloc] initWithString:@"2000-01-01 08:00:00 +0000"]] equals:YES];
+    [self assert:[result isEqualToDate:[[CPDate alloc] initWithString:@"2000-01-01 00:00:00 +0000"]] equals:YES];
 }
 
 - (void)testDateFromStringTokeny
@@ -1171,6 +1171,28 @@
     [self assert:result equals:nil];
 }
 
+- (void)testGetObjectValueAcceptsNilErrorDescription
+{
+    var date = nil,
+        result = [_dateFormatter getObjectValue:@ref(date) forString:@"a" errorDescription:nil];
+
+    [self assertFalse:result];
+    [self assertTrue:date === nil];
+}
+
+- (void)testGetObjectValueForEmptyStringReturnsReferenceDate
+{
+    [_dateFormatter setDateFormat:@"d mm"];
+
+    var date = nil,
+        error = @"",
+        result = [_dateFormatter getObjectValue:@ref(date) forString:@"" errorDescription:@ref(error)];
+
+    [self assertTrue:result];
+    [self assert:[[CPDate alloc] initWithString:@"2000-01-01 00:00:00 +0000"] equals:date];
+    [self assert:error equals:@""];
+}
+
 - (void)testGetObjectValueReturnYes
 {
     [_dateFormatter setDateFormat:@"d mm"];
@@ -1179,7 +1201,7 @@
         error = @"",
         result = [_dateFormatter getObjectValue:@ref(date) forString:@"10 12" errorDescription:@ref(error)];
 
-    [self assert:result equals:YES];
+    [self assertTrue:result];
     [self assert:date equals:[[CPDate alloc] initWithString:@"2000-01-10 08:12:00 +0000"]];
     [self assert:error equals:@""];
 }

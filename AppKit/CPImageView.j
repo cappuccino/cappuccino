@@ -87,24 +87,35 @@ var CPImageViewEmptyPlaceholderImage = nil;
     if (self)
     {
 #if PLATFORM(DOM)
-        _DOMImageElement = document.createElement("img");
-        _DOMImageElement.style.position = "absolute";
-        _DOMImageElement.style.left = "0px";
-        _DOMImageElement.style.top = "0px";
-
-        if ([CPPlatform supportsDragAndDrop])
-        {
-            _DOMImageElement.setAttribute("draggable", "true");
-            _DOMImageElement.style["-khtml-user-drag"] = "element";
-        }
-
-        CPDOMDisplayServerAppendChild(_DOMElement, _DOMImageElement);
-
-        _DOMImageElement.style.visibility = "hidden";
+        [self _createDOMImageElement];
 #endif
     }
 
     return self;
+}
+
+- (void)_createDOMImageElement
+{
+#if PLATFORM(DOM)
+    if (_DOMImageElement)
+        return;
+
+    _DOMImageElement = document.createElement("img");
+    _DOMImageElement.style.position = "absolute";
+    _DOMImageElement.style.left = "0px";
+    _DOMImageElement.style.top = "0px";
+
+    if ([CPPlatform supportsDragAndDrop])
+    {
+        _DOMImageElement.setAttribute("draggable", "true");
+        _DOMImageElement.style["-khtml-user-drag"] = "element";
+    }
+
+    _DOMImageElement.style.visibility = "hidden";
+    AppKitTagDOMElement(self, _DOMImageElement);
+
+    CPDOMDisplayServerAppendChild(_DOMElement, _DOMImageElement);
+#endif
 }
 
 /*!
@@ -138,6 +149,9 @@ var CPImageViewEmptyPlaceholderImage = nil;
     var newImage = [self objectValue];
 
 #if PLATFORM(DOM)
+    if (!_DOMImageElement)
+        [self _createDOMImageElement];
+
     _DOMImageElement.src = newImage ? [newImage filename] : [CPImageViewEmptyPlaceholderImage filename];
 #endif
 
@@ -253,7 +267,7 @@ var CPImageViewEmptyPlaceholderImage = nil;
     [self setNeedsDisplay:YES];
 }
 
-- (unsigned)imageScaling
+- (CPUInteger)imageScaling
 {
     return [self currentValueForThemeAttribute:@"image-scaling"];
 }
@@ -488,7 +502,7 @@ var CPImageViewEmptyPlaceholderImage = nil;
     [_source setImage:image];
 }
 
-- (void)valueForBinding:(CPString)aBinding
+- (id)valueForBinding:(CPString)aBinding
 {
     var image = [_source image];
 
@@ -517,28 +531,12 @@ var CPImageViewImageKey          = @"CPImageViewImageKey",
 */
 - (id)initWithCoder:(CPCoder)aCoder
 {
-#if PLATFORM(DOM)
-    _DOMImageElement = document.createElement("img");
-    _DOMImageElement.style.position = "absolute";
-    _DOMImageElement.style.left = "0px";
-    _DOMImageElement.style.top = "0px";
-    _DOMImageElement.style.visibility = "hidden";
-    if ([CPPlatform supportsDragAndDrop])
-    {
-        _DOMImageElement.setAttribute("draggable", "true");
-        _DOMImageElement.style["-khtml-user-drag"] = "element";
-    }
-
-    if (typeof(appkit_tag_dom_elements) !== "undefined" && !!appkit_tag_dom_elements)
-        _DOMImageElement.setAttribute("data-cappuccino-view", [self className]);
-#endif
-
     self = [super initWithCoder:aCoder];
 
     if (self)
     {
 #if PLATFORM(DOM)
-        _DOMElement.appendChild(_DOMImageElement);
+        [self _createDOMImageElement];
 #endif
 
         [self setHasShadow:[aCoder decodeBoolForKey:CPImageViewHasShadowKey]];
@@ -564,17 +562,12 @@ var CPImageViewImageKey          = @"CPImageViewImageKey",
     // We do this in order to avoid encoding the _shadowView, which
     // should just automatically be created programmatically as needed.
     if (_shadowView)
-    {
-        var actualSubviews = _subviews;
-
-        _subviews = [_subviews copy];
-        [_subviews removeObjectIdenticalTo:_shadowView];
-    }
+        [_shadowView removeFromSuperview];
 
     [super encodeWithCoder:aCoder];
 
     if (_shadowView)
-        _subviews = actualSubviews;
+        [self addSubview:_shadowView];
 
     [aCoder encodeBool:_hasShadow forKey:CPImageViewHasShadowKey];
     [aCoder encodeInt:_imageAlignment forKey:CPImageViewImageAlignmentKey];

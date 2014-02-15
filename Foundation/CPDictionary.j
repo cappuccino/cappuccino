@@ -723,9 +723,11 @@ var CPDictionaryShowNilDeprecationMessage = YES,
 - (CPString)description
 {
     var string = "@{",
-        keys = self._keys,
+        keys = [self allKeys],
         index = 0,
         count = self._count;
+
+    keys.sort();
 
     for (; index < count; ++index)
     {

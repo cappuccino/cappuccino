@@ -279,7 +279,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     Selects the item at the specified index
     @param anIndex the index of the item to select
 */
-- (void)setObjectValue:(int)anIndex
+- (void)setObjectValue:(id)anIndex
 {
     var indexOfSelectedItem = [self objectValue];
 
@@ -344,7 +344,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     Returns the item at the specified index or \c nil if the item does not exist.
     @param anIndex the index of the item to obtain
 */
-- (CPMenuItem)itemAtIndex:(unsigned)anIndex
+- (CPMenuItem)itemAtIndex:(CPUInteger)anIndex
 {
     return [[self menu] itemAtIndex:anIndex];
 }
@@ -353,7 +353,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     Returns the title of the item at the specified index or \c nil if no item exists.
     @param anIndex the index of the item
 */
-- (CPString)itemTitleAtIndex:(unsigned)anIndex
+- (CPString)itemTitleAtIndex:(CPUInteger)anIndex
 {
     return [[[self menu] itemAtIndex:anIndex] title];
 }
@@ -838,7 +838,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     [self _setContentValuesIfNeeded:contentArray];
 }
 
-- (void)valueForBinding:(CPString)aBinding
+- (id)valueForBinding:(CPString)aBinding
 {
     return [self _content];
 }
@@ -910,7 +910,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 {
 }
 
-- (void)setValue:(id)aValue forBinding:(CPString)aBinding
+- (void)setValue:(CPArray)aValue forBinding:(CPString)aBinding
 {
     [super _setContent:aValue];
 }

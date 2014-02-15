@@ -108,7 +108,7 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
     return "scroller";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{
             @"scroller-width": 7.0,
@@ -182,6 +182,7 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
         _allowFadingOut = YES;
         _isMouseOver = NO;
         _style = CPScrollerStyleOverlay;
+
         var paramAnimFadeOut = @{
                 CPViewAnimationTargetKey: self,
                 CPViewAnimationEffectKey: CPViewAnimationFadeOutEffect,
