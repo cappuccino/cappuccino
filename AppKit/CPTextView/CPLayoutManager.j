@@ -154,7 +154,7 @@ var _objectsInRange = function(aList, aRange)
     CPArray _glyphsFrames;
 }
 
-- (id)createDOMElementWithText:(CPString)aString andFont:(CPFont)aFont andColor: (CPColor)aColor
+- (id)createDOMElementWithText:(CPString)aString andFont:(CPFont)aFont andColor:(CPColor)aColor
 {
     var style,
         span = document.createElement("span");
