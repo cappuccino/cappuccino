@@ -90,6 +90,7 @@ CPPressedTab    = 2;
 - (void)setLabel:(CPString)aLabel
 {
     _label = aLabel;
+    [_tabView setNeedsLayout];
 }
 
 /*!
