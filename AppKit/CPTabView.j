@@ -33,22 +33,10 @@ CPNoTabsBezelBorder      = 4; //Displays no tabs and has a bezeled border.
 CPNoTabsLineBorder       = 5; //Has no tabs and displays a line border.
 CPNoTabsNoBorder         = 6; //Displays no tabs and no border.
 
-var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
-    CPTabViewShouldSelectTabViewItemSelector        = 1 << 2,
-    CPTabViewWillSelectTabViewItemSelector          = 1 << 3,
-    CPTabViewDidChangeNumberOfTabViewItemsSelector  = 1 << 4;
-
-
-@protocol CPTabViewDelegate <CPObject>
-
-@optional
-- (BOOL)tabView:(CPTabView)tabView shouldSelectTabViewItem:(CPTabViewItem)tabViewItem;
-- (void)tabView:(CPTabView)tabView didSelectTabViewItem:(CPTabViewItem)tabViewItem;
-- (void)tabView:(CPTabView)tabView willSelectTabViewItem:(CPTabViewItem)tabViewItem;
-- (void)tabViewDidChangeNumberOfTabViewItems:(CPTabView)tabView;
-
-@end
-
+var CPTabViewDidSelectTabViewItemSelector           = 1,
+    CPTabViewShouldSelectTabViewItemSelector        = 2,
+    CPTabViewWillSelectTabViewItemSelector          = 4,
+    CPTabViewDidChangeNumberOfTabViewItemsSelector  = 8;
 
 /*!
     @ingroup appkit
@@ -60,18 +48,18 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 */
 @implementation CPTabView : CPView
 {
-    CPArray                 _items;
+    CPArray             _items;
 
-    CPSegmentedControl      _tabs;
-    CPBox                   _box;
+    CPSegmentedControl  _tabs;
+    CPBox               _box;
 
-    CPNumber                _selectedIndex;
+    CPNumber            _selectedIndex;
 
-    CPTabViewType           _type;
-    CPFont                  _font;
+    CPTabViewType       _type;
+    CPFont              _font;
 
-    id <CPTabViewDelegate>  _delegate;
-    unsigned                _delegateSelectors;
+    id                  _delegate;
+    unsigned            _delegateSelectors;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -119,7 +107,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
     @param aTabViewItem the item to insert
     @param anIndex the index for the item
 */
-- (void)insertTabViewItem:(CPTabViewItem)aTabViewItem atIndex:(CPUInteger)anIndex
+- (void)insertTabViewItem:(CPTabViewItem)aTabViewItem atIndex:(unsigned)anIndex
 {
     [_items insertObject:aTabViewItem atIndex:anIndex];
 
@@ -195,7 +183,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
     Returns the CPTabViewItem at the specified index.
     @return a tab view item, or nil
 */
-- (CPTabViewItem)tabViewItemAtIndex:(CPUInteger)anIndex
+- (CPTabViewItem)tabViewItemAtIndex:(unsigned)anIndex
 {
     return [_items objectAtIndex:anIndex];
 }
@@ -282,7 +270,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
     Selects the item at the specified index.
     @param anIndex the index of the item to display.
 */
-- (BOOL)selectTabViewItemAtIndex:(CPUInteger)anIndex
+- (BOOL)selectTabViewItemAtIndex:(unsigned)anIndex
 {
     if (anIndex === _selectedIndex)
         return;
@@ -390,6 +378,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 
         [_box setFrame:CGRectMake(0, origin, CGRectGetWidth(aFrame),
                                    CGRectGetHeight(aFrame) - segmentedHeight / 2)];
+
         [self _updateItems];
         [self _repositionTabs];
     }
@@ -417,7 +406,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
     Sets the delegate for this tab view.
     @param aDelegate the tab view's delegate
 */
-- (void)setDelegate:(id <CPTabViewDelegate>)aDelegate
+- (void)setDelegate:(id)aDelegate
 {
     if (_delegate == aDelegate)
         return;
