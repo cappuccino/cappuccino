@@ -1222,6 +1222,7 @@ var CPMonthDateType = 0,
     int _maxNumber @accessors(getter=maxNumber);
     int _minNumber @accessors(getter=minNumber);
 
+    BOOL    _firstEvent;
     CPTimer _timerEdition;
 }
 
@@ -1231,6 +1232,7 @@ var CPMonthDateType = 0,
 
 - (BOOL)acceptFirstResponder
 {
+    _firstEvent = YES;
     return NO;
 }
 
@@ -1339,7 +1341,7 @@ var CPMonthDateType = 0,
     if (keyCode != CPDeleteKeyCode && keyCode != CPDeleteForwardKeyCode  && keyCode < CPZeroKeyCode || keyCode > CPNineKeyCode)
         return;
 
-    var newValue = [self stringValue],
+    var newValue = [self stringValue].replace(/\s/g, ''),
         length = [newValue length],
         eventKeyValue = parseInt([anEvent characters]).toString();
 
@@ -1355,7 +1357,7 @@ var CPMonthDateType = 0,
         {
             _timerEdition = [CPTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(_timerKeyEvent:) userInfo:nil repeats:NO];
 
-            if ((_dateType == CPYearDateType && length == 4) || (_dateType != CPYearDateType && length == 2) || !length)
+            if (_firstEvent || !length)
                 newValue = eventKeyValue;
             else
                 newValue = parseInt(newValue).toString() + eventKeyValue;
@@ -1373,6 +1375,8 @@ var CPMonthDateType = 0,
 
     if (parseInt(newValue) > [self _maxNumberWithMaxDate] || ([_datePicker _isEnglishFormat] && _dateType == CPHourDateType && parseInt(newValue) > 12))
         return;
+
+    _firstEvent = NO;
 
     [super setObjectValue:newValue];
 }
@@ -1473,7 +1477,13 @@ var CPMonthDateType = 0,
         }
 
         while ([aStringValue length] < 2)
-            aStringValue = "0" + aStringValue;
+        {
+            if (_dateType == CPSecondDateType || _dateType == CPMinuteDateType)
+                aStringValue = @"0" + aStringValue;
+            else
+                aStringValue = @" " + aStringValue;
+        }
+
     }
 
     [super setObjectValue:aStringValue];
@@ -1612,6 +1622,7 @@ var CPMonthDateType = 0,
 */
 - (void)makeDeselectable
 {
+    _firstEvent = YES;
     [self unsetThemeState:CPThemeStateSelected];
 }
 
