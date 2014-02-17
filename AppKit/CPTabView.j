@@ -390,6 +390,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 
         [_box setFrame:CGRectMake(0, origin, CGRectGetWidth(aFrame),
                                    CGRectGetHeight(aFrame) - segmentedHeight / 2)];
+
         [self _updateItems];
         [self _repositionTabs];
     }
