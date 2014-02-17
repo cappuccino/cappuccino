@@ -1358,26 +1358,23 @@ NOT YET IMPLEMENTED
     [selectRowIndexes getIndexes:selectRows maxCount:-1 inIndexRange:CPMakeRange(firstExposedRow, exposedLength)];
 
     var showsSelection = _selectionHighlightStyle !== CPTableViewSelectionHighlightStyleNone,
-        selectors = [@selector(unsetThemeState:), @selector(setThemeState:)],
-        selectInfo = [
-            { rows:deselectRows, selectorIndex:0 },
-            { rows:selectRows,   selectorIndex:showsSelection ? 1 : 0 }
-        ];
+        selectionState = [self _isFocused]? CPThemeStateFirstResponder:CPThemeStateSelectedDataView;
 
     for (var identifier in _dataViewsForTableColumns)
     {
         var dataViewsInTableColumn = _dataViewsForTableColumns[identifier];
-
-        for (var i = 0; i < selectInfo.length; ++i)
+        var count = deselectRows.length;
+        while (count--)
         {
-            var info = selectInfo[i],
-                count = info.rows.length;
-
-            while (count--)
-            {
-                var view = dataViewsInTableColumn[info.rows[count]];
-                [view performSelector:selectors[info.selectorIndex] withObject:CPThemeStateSelectedDataView];
-            }
+            var view = dataViewsInTableColumn[deselectRows[count]];
+            [view unsetThemeState: CPThemeStateFirstResponder|CPThemeStateSelectedDataView];
+        }
+        var count = selectRows.length;
+        while (count--)
+        {
+            var view = dataViewsInTableColumn[selectRows[count]];
+            [view unsetThemeState: CPThemeStateFirstResponder|CPThemeStateSelectedDataView];
+            if(showsSelection) [view setThemeState: selectionState];
         }
     }
 }
@@ -1401,49 +1398,50 @@ NOT YET IMPLEMENTED
     [_exposedRows getIndexes:selectRows maxCount:-1 inIndexRange:nil];
 
     var showsSelection = _selectionHighlightStyle !== CPTableViewSelectionHighlightStyleNone,
-        selectors = [@selector(unsetThemeState:), @selector(setThemeState:)],
+        selectionState = [self _isFocused]? CPThemeStateFirstResponder:CPThemeStateSelectedDataView;
 
-        // Rows do not show selection with CPTableViewSelectionHighlightStyleNone, but headers do
-        selectInfo = [
-            {
-                columns:deselectColumns,
-                rowSelectorIndex:0,
-                headerSelectorIndex:0
-            },
-            {
-                columns:selectColumns,
-                rowSelectorIndex:showsSelection ? 1 : 0,
-                headerSelectorIndex:1
-            }
-        ],
-        rowsCount = selectRows.length;
-
-    for (var selectIndex = 0; selectIndex < selectInfo.length; ++selectIndex)
+    var count = deselectColumns.length;
+    while (count--)
     {
-        var info = selectInfo[selectIndex],
-            count = info.columns.length,
-            rowSelector = selectors[info.rowSelectorIndex],
-            headerSelector = selectors[info.headerSelectorIndex];
+        var columnIndex = deselectColumns[count],
+            identifier = [_tableColumns[columnIndex] UID],
+            dataViewsInTableColumn = _dataViewsForTableColumns[identifier];
 
-        while (count--)
+        for (var i = 0; i < rowsCount; i++)
         {
-            var columnIndex = info.columns[count],
-                identifier = [_tableColumns[columnIndex] UID],
-                dataViewsInTableColumn = _dataViewsForTableColumns[identifier];
+            var rowIndex = selectRows[i],
+                dataView = dataViewsInTableColumn[rowIndex];
 
-            for (var i = 0; i < rowsCount; i++)
-            {
-                var rowIndex = selectRows[i],
-                    dataView = dataViewsInTableColumn[rowIndex];
+            [dataView unsetThemeState: CPThemeStateFirstResponder|CPThemeStateSelectedDataView];
+        }
 
-                [dataView performSelector:rowSelector withObject:CPThemeStateSelectedDataView];
-            }
+        if (_headerView)
+        {
+            var headerView = [_tableColumns[columnIndex] headerView];
+            [headerView unsetThemeState: CPThemeStateFirstResponder|CPThemeStateSelectedDataView];
+        }
+    }
+    var count = selectColumns.length;
+    while (count--)
+    {
+        var columnIndex = selectColumns[count],
+            identifier = [_tableColumns[columnIndex] UID],
+            dataViewsInTableColumn = _dataViewsForTableColumns[identifier];
 
-            if (_headerView)
-            {
-                var headerView = [_tableColumns[columnIndex] headerView];
-                [headerView performSelector:headerSelector withObject:CPThemeStateSelected];
-            }
+        for (var i = 0; i < rowsCount; i++)
+        {
+            var rowIndex = selectRows[i],
+                dataView = dataViewsInTableColumn[rowIndex];
+
+            [dataView unsetThemeState: CPThemeStateFirstResponder|CPThemeStateSelectedDataView];
+            if(showsSelection) [dataView setThemeState: selectionState];
+        }
+
+        if (_headerView)
+        {
+            var headerView = [_tableColumns[columnIndex] headerView];
+            [headerView unsetThemeState: CPThemeStateFirstResponder|CPThemeStateSelectedDataView];
+            [headerView setThemeState: selectionState];        // Rows do not show selection with CPTableViewSelectionHighlightStyleNone, but headers do
         }
     }
 }
@@ -3575,7 +3573,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     UPDATE_COLUMN_RANGES_IF_NECESSARY();
 
     var columnIndex = 0,
-        columnsCount = columnArray.length;
+        columnsCount = columnArray.length,
+        focusedState = [self _isFocused]? CPThemeStateFirstResponder:CPThemeStateSelectedDataView;
 
     for (; columnIndex < columnsCount; ++columnIndex)
     {
@@ -3605,13 +3604,12 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
             [self _setObjectValueForTableColumn:tableColumn row:row forView:dataView];
 
+            [dataView unsetThemeState:CPThemeStateFirstResponder|CPThemeStateSelectedDataView];
             if ((_selectionHighlightStyle !== CPTableViewSelectionHighlightStyleNone) &&
                 (isColumnSelected || [self isRowSelected:row]))
             {
-                [dataView setThemeState:CPThemeStateSelectedDataView];
+                [dataView setThemeState: focusedState];
             }
-            else
-                [dataView unsetThemeState:CPThemeStateSelectedDataView];
 
             // FIX ME: for performance reasons we might consider diverging from cocoa and moving this to the reloadData method
             if ([self _sendDelegateIsGroupRow:row])
@@ -4478,8 +4476,11 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (BOOL)startTrackingAt:(CGPoint)aPoint
 {
+    var oldResponder= [[self window] firstResponder];
     // Try to become the first responder, but if we can't, that's okay.
     [[self window] makeFirstResponder:self];
+    if(oldResponder && [oldResponder isKindOfClass:[CPTableView class]] && oldResponder !== self)
+        [oldResponder setSelectionHighlightStyle:[oldResponder selectionHighlightStyle]];    // we have to reset the themestates of the "cells"
 
     var row = [self rowAtPoint:aPoint];
 
@@ -5042,6 +5043,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 - (void)becomeKeyWindow
 {
     [self setNeedsDisplay:YES];
+    [self setSelectionHighlightStyle:[self selectionHighlightStyle]];	// we have redraw the selection
 }
 
 /*!
@@ -5050,6 +5052,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 - (void)resignKeyWindow
 {
     [self setNeedsDisplay:YES];
+    [self setSelectionHighlightStyle:[self selectionHighlightStyle]];	// we have redraw the selection
 }
 
 /*!
@@ -5058,6 +5061,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 - (BOOL)becomeFirstResponder
 {
     [self setNeedsDisplay:YES];
+    [self setSelectionHighlightStyle:[self selectionHighlightStyle]];	// we have redraw the selection
     return YES;
 }
 
@@ -5067,6 +5071,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 - (BOOL)resignFirstResponder
 {
     [self setNeedsDisplay:YES];
+    [self setSelectionHighlightStyle:[self selectionHighlightStyle]];	// we have redraw the selection
     return YES;
 }
 
@@ -5111,6 +5116,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
 - (void)_firstResponderDidChange:(CPNotification)aNotification
 {
+    [self setSelectionHighlightStyle:[self selectionHighlightStyle]];
     var responder = [[self window] firstResponder];
 
     if (![responder isKindOfClass:[CPView class]] || ![responder isDescendantOf:self])
