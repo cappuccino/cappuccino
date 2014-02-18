@@ -538,9 +538,9 @@ CPThemeStateKeyWindow        = CPThemeState("keyWindow");
         if (componentStates.hasOwnProperty(state))
         {
             if ((aValue === undefined) || (aValue === nil))
-                [_values removeObjectForKey:componentStates[state]];
+                [_values removeObjectForKey:state];
             else
-                [_values setObject:aValue forKey:componentStates[state]];
+                [_values setObject:aValue forKey:state];
         }
     }
 }
