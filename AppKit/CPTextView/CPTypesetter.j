@@ -41,7 +41,7 @@ CPTypesetterParagraphBreakAction  = (1 << 4);
 CPTypesetterContainerBreakAction  = (1 << 5);
 
 
-var _measuringContext;
+var _measuringContext,
     _measuringContextFont,
     _isCanvasSizingInvalid,
     _didTestCanvasSizingValid;
