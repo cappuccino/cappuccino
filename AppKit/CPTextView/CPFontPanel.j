@@ -376,7 +376,7 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
 }
 
 // FIXME<!> Locale support
-- (void)currentTrait
+- (unsigned)currentTrait
 {
     var sel = [_traitBrowser selectedItem];
 

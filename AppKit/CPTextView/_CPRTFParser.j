@@ -322,7 +322,7 @@ var kRgsymRtf = {
     return YES;
 }
 
-- (CPString)_parseSpec:sym parameter:v
+- (CPString)_parseSpec:(CPArray)sym parameter:(CPString)v
 {
     var ch = '';
     switch (sym[4])
