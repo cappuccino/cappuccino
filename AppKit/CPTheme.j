@@ -333,6 +333,7 @@ function ThemeState(stateNames)
     var stateNameLength = stateNameKeys.length;
     for (var stateIndex = 1; stateIndex < stateNameLength; stateIndex++)
         this._stateNameString = this._stateNameString + "+" + stateNameKeys[stateIndex];
+    this._stateNameCount = stateNameLength;
 }
 
 ThemeState.prototype.toString = function()
@@ -355,6 +356,21 @@ ThemeState.prototype.hasThemeState = function(aState)
     return true;
 }
 
+ThemeState.prototype.isSubsetOf = function(aState)
+{
+    if (aState._stateNameCount < this._stateNameCount)
+        return false;
+
+    for (key in this._stateNames)
+    {
+        if (!this._stateNames.hasOwnProperty(key))
+            continue;
+        if (!aState._stateNames[key])
+            return false;
+    }
+    return true;
+}
+
 var CPThemeStates = {};
 
 /*
@@ -369,6 +385,13 @@ function CPThemeState()
 {
     if (arguments.length < 1)
         throw "CPThemeState() must be called with at least one string argument";
+
+    if (arguments.length === 1 && typeof arguments[0] === 'string')
+    {
+        var themeState = CPThemeStates[arguments[0]];
+        if (themeState !== undefined)
+            return themeState;
+    }
 
     var stateNames = {};
     for (var argIndex = 0; argIndex < arguments.length; argIndex++)
@@ -532,17 +555,10 @@ CPThemeStateKeyWindow        = CPThemeState("keyWindow");
 {
     _cache = { };
 
-    var componentStates = aState._stateNames;
-    for (var state in componentStates)
-    {
-        if (componentStates.hasOwnProperty(state))
-        {
-            if ((aValue === undefined) || (aValue === nil))
-                [_values removeObjectForKey:state];
-            else
-                [_values setObject:aValue forKey:state];
-        }
-    }
+    if ((aValue === undefined) || (aValue === nil))
+        [_values removeObjectForKey:String(aState)];
+    else
+        [_values setObject:aValue forKey:String(aState)];
 }
 
 - (id)value
@@ -565,14 +581,20 @@ CPThemeStateKeyWindow        = CPThemeState("keyWindow");
     // If we don't have a value, and we have a non-normal state...
     if ((value === undefined || value === nil) && aState !== CPThemeStateNormal)
     {
-        for (var state in aState._stateNames)
-        {
-            if (!aState._stateNames.hasOwnProperty(state))
-                continue;
+        // If this is a composite state, find the closest partial subset match.
+        var states = [_values allKeys],
+            count = states.length,
+            largestThemeState = 0;
 
-            value = [_values objectForKey:state];
-            if (value !== undefined && value !== nil)
-                break;
+        while (count--)
+        {
+            var stateObject = CPThemeState(states[count]);
+
+            if (stateObject.isSubsetOf(aState) && stateObject._stateNameCount > largestThemeState)
+            {
+                value = [_values objectForKey:String(states[count])];
+                largestThemeState = stateObject._stateNameCount;
+            }
         }
 
         // Still don't have a value? OK, let's use the normal value.
