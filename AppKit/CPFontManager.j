@@ -237,6 +237,7 @@ CPRemoveTraitFontAction = 7;
 {
     var tag = [sender tag];
     _activeChange = tag === nil ? @{} : @{ @"addTraits": tag };
+    _fontAction = CPAddTraitFontAction;
 
     [self sendAction];
 }
@@ -392,7 +393,14 @@ CPRemoveTraitFontAction = 7;
             break;
 
         case CPAddTraitFontAction:
-            newFont = [self convertFont:aFont toHaveTrait:[self traitsOfFont:aFont]];
+            newFont = aFont;
+            if (!_activeChange)
+                break;
+
+            var addTraits = [_activeChange valueForKey:@"addTraits"];
+
+            if (addTraits)
+                newFont = [self convertFont:aFont toHaveTrait:addTraits];
             break;
 
         case CPSizeUpFontAction:
