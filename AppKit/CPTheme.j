@@ -425,17 +425,17 @@ CPThemeState.subtractThemeStates = function(aState1, aState2)
     if (aState2 === undefined || aState2 === nil || aState2 === [CPNull null])
         return aState1;
 
-    var newThemeState = new ThemeState({});
+    var newStates = {};
     for (var stateName in aState1._stateNames)
     {
         if (!aState1._stateNames.hasOwnProperty(stateName))
             continue;
 
         if (!aState2._stateNames[stateName])
-            newThemeState[stateName] = true;
+            newStates[stateName] = true;
     }
 
-    return CPThemeState._cacheThemeState(newThemeState);
+    return CPThemeState._cacheThemeState(new ThemeState(newStates));
 }
 
 CPThemeState._cacheThemeState = function(aState)
