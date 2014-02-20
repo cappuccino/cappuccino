@@ -316,15 +316,26 @@ var CPThemeNameKey          = @"CPThemeNameKey",
 
 function ThemeState(stateNames)
 {
-    this._stateNames = stateNames;
-
     var stateNameKeys = [];
+    this._stateNames = {};
+
     for (key in stateNames)
     {
         if (!stateNames.hasOwnProperty(key))
             continue;
-        stateNameKeys.push(key);
+        if (key != 'normal')
+        {
+            this._stateNames[key] = true;
+            stateNameKeys.push(key);
+        }
     }
+
+    if (stateNameKeys.length === 0)
+    {
+        stateNameKeys.push('normal');
+        this._stateNames['normal'] = true;
+    }
+
     stateNameKeys.sort();
     this._stateNameString = stateNameKeys[0];
     if (this._stateNameString === undefined)
@@ -566,7 +577,6 @@ CPThemeStateKeyWindow        = CPThemeState("keyWindow");
     return [self valueForState:CPThemeStateNormal];
 }
 
-// If aState is a state comprised of multiple CPThemeStates, this will return the value for the first state it finds.
 - (id)valueForState:(CPThemeState)aState
 {
     var stateName = String(aState);
@@ -578,22 +588,24 @@ CPThemeStateKeyWindow        = CPThemeState("keyWindow");
 
     value = [_values objectForKey:stateName];
 
-    // If we don't have a value, and we have a non-normal state...
-    if ((value === undefined || value === nil) && aState !== CPThemeStateNormal)
+    if (value === undefined || value === nil)
     {
         // If this is a composite state, find the closest partial subset match.
-        var states = [_values allKeys],
-            count = states.length,
-            largestThemeState = 0;
-
-        while (count--)
+        if (aState._stateNameCount > 1)
         {
-            var stateObject = CPThemeState(states[count]);
+            var states = [_values allKeys],
+                count = states.length,
+                largestThemeState = 0;
 
-            if (stateObject.isSubsetOf(aState) && stateObject._stateNameCount > largestThemeState)
+            while (count--)
             {
-                value = [_values objectForKey:String(states[count])];
-                largestThemeState = stateObject._stateNameCount;
+                var stateObject = CPThemeState(states[count]);
+
+                if (stateObject.isSubsetOf(aState) && stateObject._stateNameCount > largestThemeState)
+                {
+                    value = [_values objectForKey:String(states[count])];
+                    largestThemeState = stateObject._stateNameCount;
+                }
             }
         }
 
