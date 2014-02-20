@@ -607,7 +607,7 @@ CPThemeStateKeyWindow        = CPThemeState("keyWindow");
 
                 if (stateObject.isSubsetOf(aState) && stateObject._stateNameCount > largestThemeState)
                 {
-                    value = [_values objectForKey:String(states[count])];
+                    value = [_values objectForKey:states[count]];
                     largestThemeState = stateObject._stateNameCount;
                 }
             }
@@ -710,8 +710,8 @@ CPThemeStateKeyWindow        = CPThemeState("keyWindow");
     {
         var onlyKey = keys[0];
 
-        if (onlyKey !== CPThemeStateNormal)
-            [aCoder encodeObject:String(onlyKey) forKey:@"state"];
+        if (onlyKey !== String(CPThemeStateNormal))
+            [aCoder encodeObject:onlyKey forKey:@"state"];
 
         [aCoder encodeObject:[_values objectForKey:onlyKey] forKey:@"value"];
     }
@@ -723,7 +723,7 @@ CPThemeStateKeyWindow        = CPThemeState("keyWindow");
         {
             var key = keys[count];
 
-            [encodedValues setObject:[_values objectForKey:key] forKey:String(key)];
+            [encodedValues setObject:[_values objectForKey:key] forKey:key];
         }
 
         [aCoder encodeObject:encodedValues forKey:@"values"];
@@ -742,7 +742,7 @@ function CPThemeAttributeEncode(aCoder, aThemeAttribute)
     {
         var state = [values allKeys][0];
 
-        if (Number(state) === 0)
+        if (state === String(CPThemeStateNormal))
         {
             [aCoder encodeObject:[values objectForKey:state] forKey:key];
 
