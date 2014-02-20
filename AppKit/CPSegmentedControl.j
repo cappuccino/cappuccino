@@ -646,8 +646,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 
         borderState = (borderState.hasThemeState(CPThemeStateSelected) && !borderState.hasThemeState(CPThemeStateHighlighted)) ? CPThemeStateSelected : CPThemeStateNormal;
 
-        if (_themeState.hasThemeState(CPThemeStateDisabled))
-            borderState = CPThemeState(borderState, CPThemeStateDisabled);
+        borderState = isDisabled ? CPThemeState(borderState, CPThemeStateDisabled) : borderState;
 
         var borderColor = [self valueForThemeAttribute:@"divider-bezel-color"
                                                inState:borderState],
@@ -916,15 +915,11 @@ var CPSegmentedControlSegmentsKey       = "CPSegmentedControlSegmentsKey",
         // HACK
 
         for (var i = 0; i < _segments.length; i++)
-        {
             _themeStates[i] = [_segments[i] selected] ? CPThemeStateSelected : CPThemeStateNormal;
-        }
 
         // We do this in a second loop because it relies on all the themeStates being set first
         for (var i = 0; i < _segments.length; i++)
-        {
             [self tileWithChangedSegment:i];
-        }
 
         var difference = MAX(originalWidth - [self frame].size.width, 0.0),
             remainingWidth = FLOOR(difference / _segments.length);
