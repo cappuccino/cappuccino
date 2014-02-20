@@ -314,6 +314,10 @@ var CPThemeNameKey          = @"CPThemeNameKey",
 
 @end
 
+/*!
+ * ThemeStates are immutable objects representing a particular ThemeState.  Applications should never be creating
+ * ThemeStates directly but should instead use the CPThemeState helper methods.
+ */
 function ThemeState(stateNames)
 {
     var stateNameKeys = [];
