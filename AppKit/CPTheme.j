@@ -384,12 +384,12 @@ ThemeState.prototype.isSubsetOf = function(aState)
 
 var CPThemeStates = {};
 
-/*
+/*!
  * This method can be called in multiple ways:
  *    CPThemeState('state1') - creates a new CPThemeState that corresponds to the string 'state1'
- *    CPThemeState('state1', 'state2') - creates a new CPThemeState made up of both 'state1' or 'state2'
+ *    CPThemeState('state1', 'state2') - creates a new composite CPThemeState made up of both 'state1' or 'state2'
  *    CPThemeState('state1+state2') - The same as CPThemeState('state1', 'state2')
- *    CPThemeState(state1, state2) - creates a new CPThemeState that corresponds to both state1 or state2
+ *    CPThemeState(state1, state2) - creates a new composite CPThemeState made up of state1 and state2
  *                                   where state1 and state2 are not strings but are themselves CPThemeStates.
  */
 function CPThemeState()
