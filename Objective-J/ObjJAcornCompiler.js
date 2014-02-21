@@ -1663,6 +1663,8 @@ ClassDeclarationStatement: function(node, st, c) {
     compiler.currentSuperMetaClass = "objj_getMetaClass(\"" + className + "\").super_class";
 
     var firstIvarDeclaration = true,
+        ivars = classDef.ivars,
+        classDefIvars = [],
         hasAccessors = false;
 
     // Then we add all ivars
@@ -1672,7 +1674,6 @@ ClassDeclarationStatement: function(node, st, c) {
             var ivarDecl = node.ivardeclarations[i],
                 ivarType = ivarDecl.ivartype ? ivarDecl.ivartype.name : null,
                 ivarName = ivarDecl.id.name,
-                ivars = classDef.ivars,
                 ivar = {"type": ivarType, "name": ivarName},
                 accessors = ivarDecl.accessors;
 
@@ -1694,7 +1695,10 @@ ClassDeclarationStatement: function(node, st, c) {
 
             if (ivarDecl.outlet)
                 ivar.outlet = true;
-            ivars[ivarName] = ivar;
+
+            // Store the classDef ivars into array and add them later when accessors are created to prevent ivar duplicate error when generating accessors
+            classDefIvars.push(ivar);
+
             if (!classScope.ivars)
                 classScope.ivars = Object.create(null);
             classScope.ivars[ivarName] = {type: "ivar", name: ivarName, node: ivarDecl.id, ivar: ivar};
@@ -1784,7 +1788,16 @@ ClassDeclarationStatement: function(node, st, c) {
         compiler.imBuffer.concat(imBuffer);
     }
 
-    // We will store the classDef first after accessors are done so we don't get a duplicate class error
+    // We will store the ivars into the classDef first after accessors are done so we don't get a duplicate ivars error when generating accessors
+    for (var ivarSize = classDefIvars.length, i = 0; i < ivarSize; i++) {
+        var ivar = classDefIvars[i],
+            ivarName = ivar.name;
+
+        // Store the ivar into the classDef
+        ivars[ivarName] = ivar;
+    }
+
+    // We will store the classDef first after accessors are done so we don't get a duplicate class error when generating accessors
     compiler.classDefs[className] = classDef;
 
     var bodies = node.body,
