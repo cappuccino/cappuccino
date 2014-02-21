@@ -549,11 +549,6 @@ CPThemeStateKeyWindow        = CPThemeState("keyWindow");
     return [_values count] > 0;
 }
 
-- (BOOL)isTrivial
-{
-    return ([_values count] === 1) && ([_values allKeys][0] === CPThemeStateNormal);
-}
-
 - (void)setValue:(id)aValue
 {
     _cache = {};
