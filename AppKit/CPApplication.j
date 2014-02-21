@@ -22,6 +22,7 @@
 
 @import <Foundation/CPBundle.j>
 
+@import "CPApplication_Constants.j"
 @import "CPCompatibility.j"
 @import "CPColorPanel.j"
 @import "CPCursor.j"
@@ -34,28 +35,26 @@
 @import "CPPanel.j"
 @import "CPPlatform.j"
 @import "CPWindowController.j"
+@import "_CPPopoverWindow.j"
 
 var CPMainCibFile               = @"CPMainCibFile",
     CPMainCibFileHumanFriendly  = @"Main cib file base name",
     CPEventModifierFlags = 0;
 
-CPApp = nil;
 
-CPApplicationWillFinishLaunchingNotification    = @"CPApplicationWillFinishLaunchingNotification";
-CPApplicationDidFinishLaunchingNotification     = @"CPApplicationDidFinishLaunchingNotification";
-CPApplicationWillTerminateNotification          = @"CPApplicationWillTerminateNotification";
-CPApplicationWillBecomeActiveNotification       = @"CPApplicationWillBecomeActiveNotification";
-CPApplicationDidBecomeActiveNotification        = @"CPApplicationDidBecomeActiveNotification";
-CPApplicationWillResignActiveNotification       = @"CPApplicationWillResignActiveNotification";
-CPApplicationDidResignActiveNotification        = @"CPApplicationDidResignActiveNotification";
+@protocol CPApplicationDelegate <CPObject>
 
-CPTerminateNow      = YES;
-CPTerminateCancel   = NO;
-CPTerminateLater    = -1; // not currently supported
+@optional
+- (void)applicationDidBecomeActive:(CPNotification)aNotification;
+- (void)applicationDidChangeScreenParameters:(CPNotification)aNotification;
+- (void)applicationDidFinishLaunching:(CPNotification)aNotification;
+- (void)applicationDidResignActive:(CPNotification)aNotification;
+- (void)applicationWillBecomeActive:(CPNotification)aNotification;
+- (void)applicationWillFinishLaunching:(CPNotification)aNotification;
+- (void)applicationWillResignActive:(CPNotification)aNotification;
+- (void)applicationWillTerminate:(CPNotification)aNotification;
 
-CPRunStoppedResponse    = -1000;
-CPRunAbortedResponse    = -1001;
-CPRunContinuesResponse  = -1002;
+@end
 
 /*!
     @ingroup appkit
@@ -84,36 +83,36 @@ CPRunContinuesResponse  = -1002;
 */
 @implementation CPApplication : CPResponder
 {
-    CPArray                 _eventListeners;
-    int                     _eventListenerInsertionIndex;
+    CPArray                     _eventListeners;
+    int                         _eventListenerInsertionIndex;
 
-    CPEvent                 _currentEvent;
-    CPWindow                _lastMouseMoveWindow;
+    CPEvent                     _currentEvent;
+    CPWindow                    _lastMouseMoveWindow;
 
-    CPArray                 _windows;
-    CPWindow                _keyWindow;
-    CPWindow                _mainWindow;
-    CPWindow                _previousKeyWindow;
-    CPWindow                _previousMainWindow;
+    CPArray                     _windows;
+    CPWindow                    _keyWindow;
+    CPWindow                    _mainWindow;
+    CPWindow                    _previousKeyWindow;
+    CPWindow                    _previousMainWindow;
 
-    CPDocumentController    _documentController;
+    CPDocumentController        _documentController;
 
-    CPModalSession          _currentSession;
+    CPModalSession              _currentSession;
 
     //
-    id                      _delegate;
-    BOOL                    _finishedLaunching;
-    BOOL                    _isActive;
+    id <CPApplicationDelegate>  _delegate;
+    BOOL                        _finishedLaunching;
+    BOOL                        _isActive;
 
-    CPDictionary            _namedArgs;
-    CPArray                 _args;
-    CPString                _fullArgsString;
+    CPDictionary                _namedArgs;
+    CPArray                     _args;
+    CPString                    _fullArgsString;
 
-    CPImage                 _applicationIconImage;
+    CPImage                     _applicationIconImage;
 
-    CPPanel                 _aboutPanel;
+    CPPanel                     _aboutPanel;
 
-    CPThemeBlend            _themeBlend @accessors(property=themeBlend);
+    CPThemeBlend                _themeBlend @accessors(property=themeBlend);
 }
 
 /*!
@@ -159,7 +158,7 @@ CPRunContinuesResponse  = -1002;
     react to these events.
     @param aDelegate the delegate object
 */
-- (void)setDelegate:(id)aDelegate
+- (void)setDelegate:(id <CPApplicationDelegate>)aDelegate
 {
     if (_delegate == aDelegate)
         return;
@@ -173,7 +172,8 @@ CPRunContinuesResponse  = -1002;
             CPApplicationDidBecomeActiveNotification, @selector(applicationDidBecomeActive:),
             CPApplicationWillResignActiveNotification, @selector(applicationWillResignActive:),
             CPApplicationDidResignActiveNotification, @selector(applicationDidResignActive:),
-            CPApplicationWillTerminateNotification, @selector(applicationWillTerminate:)
+            CPApplicationWillTerminateNotification, @selector(applicationWillTerminate:),
+            CPApplicationDidChangeScreenParametersNotification, @selector(applicationDidChangeScreenParameters:)
         ],
         count = [delegateNotifications count];
 
@@ -586,8 +586,8 @@ CPRunContinuesResponse  = -1002;
 /* @ignore */
 - (BOOL)_handleKeyEquivalent:(CPEvent)anEvent
 {
-    return  [[self keyWindow] performKeyEquivalent:anEvent] ||
-            [[self mainMenu] performKeyEquivalent:anEvent];
+    return [[self keyWindow] performKeyEquivalent:anEvent] ||
+           [[self mainMenu] performKeyEquivalent:anEvent];
 }
 
 /*!
@@ -601,33 +601,10 @@ CPRunContinuesResponse  = -1002;
 
     var theWindow = [anEvent window];
 
-#if PLATFORM(DOM)
-    var willPropagate = [[theWindow platformWindow] _willPropagateCurrentDOMEvent];
-
-    // temporarily pretend we won't propagate the event. we'll restore the saved value later
-    // we do this outside the if so that changes user code might make in _handleKeyEquiv. are preserved
-    [[theWindow platformWindow] _propagateCurrentDOMEvent:NO];
-#endif
-
     // Check if this is a candidate for key equivalent...
     if ([anEvent _couldBeKeyEquivalent] && [self _handleKeyEquivalent:anEvent])
-    {
-#if PLATFORM(DOM)
-        var characters = [anEvent characters],
-            modifierFlags = [anEvent modifierFlags];
-
-        // Unconditionally propagate on these keys to solve browser copy paste bugs
-        if ((characters == "c" || characters == "x" || characters == "v") && (modifierFlags & CPPlatformActionKeyMask))
-            [[theWindow platformWindow] _propagateCurrentDOMEvent:YES];
-#endif
-
+        // The key equivalent was handled.
         return;
-    }
-
-#if PLATFORM(DOM)
-    // if we make it this far, then restore the original willPropagate value
-    [[theWindow platformWindow] _propagateCurrentDOMEvent:willPropagate];
-#endif
 
     if ([anEvent type] == CPMouseMoved)
     {
@@ -1380,8 +1357,8 @@ var _CPAppBootstrapperActions = nil;
     if (mainCibFile)
     {
         [mainBundle loadCibFile:mainCibFile
-            externalNameTable:@{ CPCibOwner: CPApp }
-                 loadDelegate:self];
+              externalNameTable:@{ CPCibOwner: CPApp }
+                   loadDelegate:self];
 
         return YES;
     }
@@ -1458,7 +1435,7 @@ var _CPAppBootstrapperActions = nil;
 
 + (void)cibDidFailToLoad:(CPCib)aCib
 {
-    throw new Error("Could not load main cib file (Did you forget to nib2cib it?).");
+    throw new Error("Could not load main cib file. Did you forget to nib2cib it?");
 }
 
 + (void)reset

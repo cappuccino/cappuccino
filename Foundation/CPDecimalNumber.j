@@ -130,7 +130,20 @@ var CPDefaultDcmHandler = nil;
 @end
 
 // CPDecimalNumberBehaviors protocol
-@implementation CPDecimalNumberHandler (CPDecimalNumberBehaviors)
+
+@protocol CPDecimalNumberBehaviors
+
+- (CPRoundingMode)roundingMode;
+
+- (short)scale;
+    // The scale could return NO_SCALE for no defined scale.
+
+- (CPDecimalNumber)exceptionDuringOperation:(SEL)operation error:(CPCalculationError)error leftOperand:(CPDecimalNumber)leftOperand rightOperand:(CPDecimalNumber)rightOperand;
+    // Receiver can raise, return a new value, or return nil to ignore the exception.
+
+@end
+
+@implementation CPDecimalNumberHandler (CPDecimalNumberBehaviors) <CPDecimalNumberBehaviors>
 
 /*!
     Returns the current rounding mode. One of \e CPRoundingMode enum:

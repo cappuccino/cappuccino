@@ -103,7 +103,7 @@ var ShouldSuppressResizeNotifications   = 1,
     return @"splitview";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{
             @"divider-thickness": 1.0,
@@ -995,7 +995,7 @@ The sum of the views and the sum of the dividers should be equal to the size of 
     @param unsigned int - The divider index the button bar will be assigned to.
 */
 // FIXME Should be renamed to setButtonBar:ofDividerAtIndex:.
-- (void)setButtonBar:(CPButtonBar)aButtonBar forDividerAtIndex:(unsigned)dividerIndex
+- (void)setButtonBar:(CPButtonBar)aButtonBar forDividerAtIndex:(CPUInteger)dividerIndex
 {
     if (!aButtonBar)
     {

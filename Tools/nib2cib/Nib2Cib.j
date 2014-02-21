@@ -31,6 +31,9 @@
 @import "Converter.j"
 @import "Converter+Mac.j"
 
+
+Nib2CibColorizeOutput = YES;
+
 var FILE = require("file"),
     OS = require("os"),
     SYS = require("system"),
@@ -51,6 +54,7 @@ var FILE = require("file"),
 {
     CPArray         commandLineArgs;
     JSObject        parser;
+    JSObject        commandLineOptions;
     JSObject        nibInfo;
     CPString        appDirectory @accessors(readonly);
     CPDictionary    frameworks @accessors(readonly);
@@ -97,19 +101,25 @@ var FILE = require("file"),
 {
     try
     {
-        var options = [self parseOptionsFromArgs:commandLineArgs];
+        commandLineOptions = [self parseOptionsFromArgs:commandLineArgs];
 
-        [self setLogLevel:options.quiet ? -1 : options.verbosity];
+        Nib2CibColorizeOutput = !commandLineOptions.noColors;
+        [self setLogLevel:commandLineOptions.quiet ? -1 : commandLineOptions.verbosity];
         [self checkPrerequisites];
 
-        if (options.watch)
-            [self watchWithOptions:options];
+        if (commandLineOptions.watch)
+            [self watchWithOptions:commandLineOptions];
         else
-            [self convertWithOptions:options inputPath:nil];
+        {
+            var success = [self convertWithOptions:commandLineOptions inputPath:nil];
+
+            if (!success)
+                OS.exit(1);
+        }
     }
     catch (anException)
     {
-        CPLog.fatal([self exceptionReason:anException]);
+        [self logError:[self exceptionReason:anException]];
         OS.exit(1);
     }
 }
@@ -229,7 +239,7 @@ var FILE = require("file"),
     }
     catch (anException)
     {
-        CPLog.fatal([self exceptionReason:anException]);
+        [self logError:[self exceptionReason:anException]];
         return NO;
     }
 }
@@ -311,7 +321,7 @@ var FILE = require("file"),
                 if (verbosity > 0)
                     stream.print();
                 else
-                    CPLog.warn("Conversion successful");
+                    CPLog.info("Conversion successful");
             }
         }
 
@@ -358,6 +368,11 @@ var FILE = require("file"),
         .set(false)
         .def(true)
         .help("Do not read stored options");
+
+    parser.option("--no-colors", "noColors")
+        .set(true)
+        .def(false)
+        .help("Don't colorize output");
 
     parser.option("--version", "showVersion")
         .action(function() { [self printVersionAndExit]; })
@@ -539,12 +554,13 @@ var FILE = require("file"),
 {
     appDirectory = @"";
 
-    var parentDir = FILE.dirname(aPath);
+    var parentDir = FILE.dirname(aPath),
+        match = /^(.+)(\/Resources(?:\/.+)?)$/.exec(parentDir);
 
-    if (FILE.basename(parentDir) === "Resources")
+    if (match)
     {
-        appDirectory = FILE.dirname(parentDir);
-        appResourceDirectory = parentDir;
+        appDirectory = match[1];
+        appResourceDirectory = FILE.join(appDirectory, "Resources");
     }
     else
     {
@@ -987,11 +1003,19 @@ var FILE = require("file"),
     [CPException raise:ConverterConversionException reason:message];
 }
 
+- (void)logError:(CPString)message
+{
+    if (Nib2CibColorizeOutput)
+        message = CPLogColorize(message, "fatal");
+
+    stream.printError(message);
+}
+
 @end
 
 function logFormatter(aString, aLevel, aTitle)
 {
-    if (aLevel === "info")
+    if (!Nib2CibColorizeOutput || aLevel === "info")
         return aString;
     else
         return CPLogColorize(aString, aLevel);

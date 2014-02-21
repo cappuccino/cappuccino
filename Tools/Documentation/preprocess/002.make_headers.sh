@@ -28,7 +28,7 @@ bsdtar cf Foundation.doc.tar --exclude='_*' -s /^Foundation/Foundation.doc/ Foun
 bsdtar xf Foundation.doc.tar
 rm Foundation.doc.tar
 
-# Remove @import from the source files, doxygen doesn't know what to do with them
-processor_msg "Removing @import from source files..."
-find AppKit.doc -name *.j -exec sed -e '/@import.*/ d' -i '' {} \;
-find Foundation.doc -name *.j -exec sed -e '/@import.*/ d' -i '' {} \;
+# Remove @import and @class from the source files, doxygen doesn't know what to do with them
+processor_msg "Removing @import and @class from source files..."
+find AppKit.doc -name *.j -exec sed -e '/@import.*/ d' -e '/@class.*/ d' -i '' {} \;
+find Foundation.doc -name *.j -exec sed -e '/@import.*/ d' -e '/@class.*/ d' -i '' {} \;

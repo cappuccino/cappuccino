@@ -466,7 +466,7 @@ global.sudo = function(/*Array or String*/ command)
     // First try without sudo
     command = normalizeCommand(command);
 
-    var returnCode = OS.system(command + " >/dev/null 2>&1")
+    var returnCode = OS.system(command + " >/dev/null 2>&1");
 
     if (returnCode)
     {
@@ -505,7 +505,7 @@ global.copyManPage = function(/*String*/ name, /*int*/ section)
         if (sudo(["cp", "-f", pageFile, manDir]))
             stream.print("\0red(Unable to copy the man file.\0)");
     }
-}
+};
 
 global.xcodebuildCanListSDKs = function()
 {
@@ -591,12 +591,12 @@ task ("sudo-install-symlinks", function()
 
 task ("sudo-install-debug-symlinks", function()
 {
-    sudo("jake install-debug-symlinks")
+    sudo("jake install-debug-symlinks");
 });
 
 task ("clean-debug", function()
 {
-    SYSTEM.env['CONFIG'] = 'Debug'
+    SYSTEM.env['CONFIG'] = 'Debug';
     spawnJake("clean");
 });
 

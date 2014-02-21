@@ -469,11 +469,14 @@ var _CPKeyedUnarchiverDecodeObjectAtIndex = function(self, anIndex)
             if (!theClass)
                 theClass = CPClassFromString(className);
 
-            if (!theClass && (self._delegateSelectors & CPKeyedUnarchiverDelegate_unarchiver_cannotDecodeObjectOfClassName_originalClasses_))
-                theClass = [_delegate unarchiver:self cannotDecodeObjectOfClassName:className originalClasses:classes];
+            if (!theClass &&
+                (self._delegateSelectors & CPKeyedUnarchiverDelegate_unarchiver_cannotDecodeObjectOfClassName_originalClasses_))
+            {
+                theClass = [self._delegate unarchiver:self cannotDecodeObjectOfClassName:className originalClasses:classes];
+            }
 
             if (!theClass)
-                [CPException raise:CPInvalidUnarchiveOperationException reason:@"-[CPKeyedUnarchiver decodeObjectForKey:]: cannot decode object of class (" + className + @")"];
+                [CPException raise:CPInvalidUnarchiveOperationException format:@"-[CPKeyedUnarchiver decodeObjectForKey:]: cannot decode object of class (%@)", className];
 
             var savedPlistObject = self._plistObject;
 

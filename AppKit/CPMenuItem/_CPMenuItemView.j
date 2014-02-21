@@ -34,7 +34,7 @@
 @implementation _CPMenuItemView : CPView
 {
     CPMenuItem              _menuItem;
-    CPView                  _view;
+    CPView                  _view       @accessors(property=view, readonly);
 
     CPFont                  _font;
     CPColor                 _textColor;
@@ -53,7 +53,7 @@
     return "menu-item-view";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{};
 }
@@ -112,7 +112,6 @@
             _view = menuItemView;
         }
     }
-
     else if ([_menuItem menu] == [CPApp mainMenu])
     {
         if (![_view isKindOfClass:[_CPMenuItemMenuBarView class]])

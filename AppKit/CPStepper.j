@@ -213,7 +213,7 @@
     Set the current value of the stepper.
     @param aValue a float containing the value
 */
-- (void)setDoubleValue:(float)aValue
+- (void)setDoubleValue:(double)aValue
 {
     if (aValue > _maxValue)
         [super setDoubleValue:_valueWraps ? _minValue : _maxValue];
@@ -267,7 +267,7 @@
     return @"stepper";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{
             @"bezel-color-up-button": [CPNull null],

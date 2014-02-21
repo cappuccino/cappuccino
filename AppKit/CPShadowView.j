@@ -47,7 +47,7 @@ CPThemeStateShadowViewHeavy = CPThemeState("shadowview-style-heavy");
     return "shadow-view";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{
             @"bezel-color": [CPNull null],

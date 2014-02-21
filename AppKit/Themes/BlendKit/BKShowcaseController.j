@@ -421,6 +421,9 @@ var ShowcaseCellBackgroundColor = nil,
 
 - (void)setRepresentedObject:(id)anObject
 {
+    if (!anObject)
+        return;
+
     if (!_label)
     {
         _label = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];

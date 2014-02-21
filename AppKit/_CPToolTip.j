@@ -79,6 +79,7 @@ var _CPToolTipHeight = 24.0,
     var callbackFunction = function() {
         [_CPToolTip invalidateCurrentToolTipIfNeeded];
         _CPToolTipCurrentToolTip = [_CPToolTip toolTipWithString:[aView toolTip]];
+        [_CPToolTipCurrentToolTip setPlatformWindow:[[aView window] platformWindow]];
     };
 
     _CPToolTipCurrentToolTipTimer = [CPTimer scheduledTimerWithTimeInterval:_CPToolTipDelay
@@ -202,7 +203,7 @@ var _CPToolTipHeight = 24.0,
 - (void)showToolTip
 {
     var mousePosition = [[CPApp currentEvent] globalLocation],
-        nativeRect = [[CPPlatformWindow primaryPlatformWindow] nativeContentRect];
+        nativeRect = [[self platformWindow] nativeContentRect];
 
     mousePosition.y += 20;
 

@@ -375,7 +375,7 @@ var themedButtonValues = nil,
             "themedMenuItemStandardView",
             "themedMenuItemMenuBarView",
             "themedToolbarView",
-            "themedBordelessBridgeWindowView",
+            "themedBorderlessBridgeWindowView",
             "themedWindowView",
             "themedBrowser",
             "themedRuleEditor",
@@ -1097,7 +1097,7 @@ var themedButtonValues = nil,
 
 + (CPDatePicker)themedDatePicker
 {
-    var datePicker = [[CPDatePicker alloc] initWithFrame:CGRectMake(40,140,300,29)],
+    var datePicker = [[CPDatePicker alloc] initWithFrame:CGRectMake(40.0, 40.0, 170.0, 29.0)],
 
         bezelColor = PatternColor(
         [
@@ -1166,6 +1166,7 @@ var themedButtonValues = nil,
             [@"max-size",       CGSizeMake(-1.0, 29.0)]
         ];
 
+    [datePicker setDatePickerStyle:CPTextFieldDatePickerStyle];
     [self registerThemeValues:themeValues forView:datePicker];
 
     return datePicker;
@@ -1173,7 +1174,7 @@ var themedButtonValues = nil,
 
 + (CPDatePicker)themedDatePickerCalendar
 {
-    var datePicker = [[CPDatePicker alloc] initWithFrame:CGRectMake(40,140,300,29)],
+    var datePicker = [[CPDatePicker alloc] initWithFrame:CGRectMake(40.0, 140.0, 276.0, 148.0)],
 
         arrowImageLeft = PatternImage("datepicker-calendar-arrow-left.png", 7.0, 10.0),
         arrowImageRight = PatternImage("datepicker-calendar-arrow-right.png", 7.0, 10.0),
@@ -1183,17 +1184,26 @@ var themedButtonValues = nil,
         arrowImageRightHighlighted = PatternImage("datepicker-calendar-arrow-right-highlighted.png", 7.0, 10.0),
         circleImageHighlighted = PatternImage("datepicker-circle-image-highlighted.png", 9.0, 10.0),
 
-        secondHandColor = PatternColor("datepicker-clock-second-hand.png", 89.0, 89.0),
-        minuteHandColor = PatternColor("datepicker-clock-minute-hand.png", 85.0, 85.0),
-        hourHandColor   = PatternColor("datepicker-clock-hour-hand.png", 47.0, 47.0),
-        middleHandColor = PatternColor("datepicker-clock-middle-hand.png", 13.0, 13.0),
-        clockImageColor = PatternColor("datepicker-clock.png", 122.0, 123.0),
+        secondHandSize = CGSizeMake(89.0, 89.0),
+        secondHandImage = PatternImage("datepicker-clock-second-hand.png", secondHandSize.width, secondHandSize.height),
 
-        secondHandColorDisabled = PatternColor("datepicker-clock-second-hand-disabled.png", 89.0, 89.0),
-        minuteHandColorDisabled = PatternColor("datepicker-clock-minute-hand-disabled.png", 85.0, 85.0),
-        hourHandColorDisabled   = PatternColor("datepicker-clock-hour-hand-disabled.png", 47.0, 47.0),
-        middleHandColorDisabled = PatternColor("datepicker-clock-middle-hand-disabled.png", 13.0, 13.0),
-        clockImageColorDisabled = PatternColor("datepicker-clock-disabled.png", 122.0, 123.0),
+        minuteHandSize = CGSizeMake(85.0, 85.0),
+        minuteHandImage = PatternImage("datepicker-clock-minute-hand.png", minuteHandSize.width, minuteHandSize.height),
+
+        hourHandSize = CGSizeMake(47.0, 47.0),
+        hourHandImage   = PatternImage("datepicker-clock-hour-hand.png", hourHandSize.width, hourHandSize.height),
+
+        middleHandSize = CGSizeMake(13.0, 13.0),
+        middleHandImage = PatternImage("datepicker-clock-middle-hand.png", middleHandSize.width, middleHandSize.height),
+
+        clockSize = CGSizeMake(122.0, 123.0),
+        clockImageColor = PatternColor("datepicker-clock.png", clockSize.width, clockSize.height),
+
+        secondHandImageDisabled = PatternImage("datepicker-clock-second-hand-disabled.png", secondHandSize.width, secondHandSize.height),
+        minuteHandImageDisabled = PatternImage("datepicker-clock-minute-hand-disabled.png", minuteHandSize.width, minuteHandSize.height),
+        hourHandImageDisabled   = PatternImage("datepicker-clock-hour-hand-disabled.png", hourHandSize.width, hourHandSize.height),
+        middleHandImageDisabled = PatternImage("datepicker-clock-middle-hand-disabled.png", middleHandSize.width, middleHandSize.height),
+        clockImageColorDisabled = PatternColor("datepicker-clock-disabled.png", clockSize.width, clockSize.height),
 
         themeValues =
         [
@@ -1204,7 +1214,7 @@ var themedButtonValues = nil,
 
             [@"bezel-color-calendar", [CPColor whiteColor]],
             [@"bezel-color-calendar", [CPColor colorWithCalibratedRed:159.0 / 255.0 green:201.0 / 255.0 blue:225.0 / 255.0 alpha:1.0],  CPThemeStateSelected],
-            [@"bezel-color-calendar", [CPColor colorWithCalibratedRed:159.0 / 255.0 green:201.0 / 255.0 blue:225.0 / 255.0 alpha:0.5],  CPThemeStateSelected |CPThemeStateDisabled],
+            [@"bezel-color-calendar", [CPColor colorWithCalibratedRed:159.0 / 255.0 green:201.0 / 255.0 blue:225.0 / 255.0 alpha:0.5],  CPThemeStateSelected | CPThemeStateDisabled],
             [@"bezel-color-clock",    clockImageColor],
             [@"bezel-color-clock",    clockImageColorDisabled,                                                                          CPThemeStateDisabled],
 
@@ -1286,25 +1296,25 @@ var themedButtonValues = nil,
             [@"circle-image-highlighted",           circleImageHighlighted],
             [@"arrow-inset",                        CGInsetMake(9.0, 4.0, 0.0, 0.0)],
 
-            [@"second-hand-color",  secondHandColor],
-            [@"hour-hand-color",    hourHandColor],
-            [@"middle-hand-color",  middleHandColor],
-            [@"minute-hand-color",  minuteHandColor],
+            [@"second-hand-image",  secondHandImage],
+            [@"hour-hand-image",    hourHandImage],
+            [@"middle-hand-image",  middleHandImage],
+            [@"minute-hand-image",  minuteHandImage],
 
-            [@"second-hand-color",  secondHandColorDisabled,    CPThemeStateDisabled],
-            [@"hour-hand-color",    hourHandColorDisabled,      CPThemeStateDisabled],
-            [@"middle-hand-color",  middleHandColorDisabled,    CPThemeStateDisabled],
-            [@"minute-hand-color",  minuteHandColorDisabled,    CPThemeStateDisabled],
+            [@"second-hand-image",  secondHandImageDisabled,    CPThemeStateDisabled],
+            [@"hour-hand-image",    hourHandImageDisabled,      CPThemeStateDisabled],
+            [@"middle-hand-image",  middleHandImageDisabled,    CPThemeStateDisabled],
+            [@"minute-hand-image",  minuteHandImageDisabled,    CPThemeStateDisabled],
 
-            [@"second-hand-size", CGSizeMake(89.0, 89.0)],
-            [@"hour-hand-size",   CGSizeMake(47.0, 47.0)],
-            [@"middle-hand-size", CGSizeMake(13.0, 13.0)],
-            [@"minute-hand-size", CGSizeMake(85.0, 85.0)],
+            [@"second-hand-size",   secondHandSize],
+            [@"hour-hand-size",     hourHandSize],
+            [@"middle-hand-size",   middleHandSize],
+            [@"minute-hand-size",   minuteHandSize],
 
             [@"border-width",            1.0],
             [@"size-header",             CGSizeMake(141.0, 39.0)],
             [@"size-tile",               CGSizeMake(20.0, 18.0)],
-            [@"size-clock",              CGSizeMake(122.0, 123.0)],
+            [@"size-clock",              clockSize],
             [@"size-calendar",           CGSizeMake(141.0, 109.0)],
             [@"min-size-calendar",       CGSizeMake(141.0, 148.0)],
             [@"max-size-calendar",       CGSizeMake(141.0, 148.0)]
@@ -1312,6 +1322,7 @@ var themedButtonValues = nil,
         ];
 
     [datePicker setDatePickerStyle:CPClockAndCalendarDatePickerStyle];
+    [datePicker setBackgroundColor:[CPColor whiteColor]];
     [self registerThemeValues:themeValues forView:datePicker];
 
     return datePicker;
@@ -2071,15 +2082,32 @@ var themedButtonValues = nil,
 
         themedTableViewValues =
         [
-            [@"alternating-row-colors",     alternatingRowColors],
-            [@"grid-color",                 gridColor],
-            [@"highlighted-grid-color",     [CPColor whiteColor]],
-            [@"selection-color",            selectionColor],
-            [@"sourcelist-selection-color", sourceListSelectionColor],
-            [@"sort-image",                 sortImage],
-            [@"sort-image-reversed",        sortImageReversed],
-            [@"image-generic-file",         imageGenericFile],
-            [@"default-row-height",         23.0],
+            [@"alternating-row-colors",                 alternatingRowColors],
+            [@"grid-color",                             gridColor],
+            [@"highlighted-grid-color",                 [CPColor whiteColor]],
+            [@"selection-color",                        selectionColor],
+            [@"sourcelist-selection-color",             sourceListSelectionColor],
+            [@"sort-image",                             sortImage],
+            [@"sort-image-reversed",                    sortImageReversed],
+            [@"image-generic-file",                     imageGenericFile],
+            [@"default-row-height",                     23.0],
+
+            [@"dropview-on-background-color",           [CPColor colorWithRed:72 / 255 green:134 / 255 blue:202 / 255 alpha:0.25]],
+            [@"dropview-on-border-color",               [CPColor colorWithHexString:@"4886ca"]],
+            [@"dropview-on-border-width",               3.0],
+            [@"dropview-on-border-radius",              8.0],
+
+            [@"dropview-on-selected-background-color",  [CPColor clearColor]],
+            [@"dropview-on-selected-border-color",      [CPColor whiteColor]],
+            [@"dropview-on-selected-border-width",      2.0],
+            [@"dropview-on-selected-border-radius",     8.0],
+
+            [@"dropview-above-border-color",            [CPColor colorWithHexString:@"4886ca"]],
+            [@"dropview-above-border-width",            3.0],
+
+            [@"dropview-above-selected-border-color",   [CPColor colorWithHexString:@"8BB6F0"]],
+            [@"dropview-above-selected-border-width",   2.0],
+
         ];
 
     [self registerThemeValues:themedTableViewValues forView:tableview];
@@ -2687,6 +2715,7 @@ var themedButtonValues = nil,
         [
             [@"gradient-height",            31.0],
             [@"bezel-head-color",           bezelHeadColor],
+            [@"bezel-head-sheet-color",     solidColor],
             [@"solid-color",                solidColor],
 
             [@"title-font",                 [CPFont boldSystemFontOfSize:CPFontCurrentSystemSize]],
@@ -2750,7 +2779,7 @@ var themedButtonValues = nil,
     return docModalWindowView;
 }
 
-+ (_CPBorderlessBridgeWindowView)themedBordelessBridgeWindowView
++ (_CPBorderlessBridgeWindowView)themedBorderlessBridgeWindowView
 {
     var bordelessBridgeWindowView = [[_CPBorderlessBridgeWindowView alloc] initWithFrame:CGRectMake(0,0,0,0)],
 
@@ -2968,6 +2997,10 @@ var themedButtonValues = nil,
 
         themeValues =
         [
+            [@"border-radius",              5.0],
+            [@"stroke-width",               1.0],
+            [@"shadow-size",                CGSizeMake(0, 6)],
+            [@"shadow-blur",                15.0],
             [@"background-gradient",        gradient],
             [@"background-gradient-hud",    gradientHUD],
             [@"stroke-color",               strokeColor],

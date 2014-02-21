@@ -672,6 +672,7 @@
 							<string key="NSFrame">{{456, 167}, {277, 148}}</string>
 							<reference key="NSSuperview" ref="439893737"/>
 							<reference key="NSWindow"/>
+							<reference key="NSNextKeyView"/>
 							<string key="NSReuseIdentifierKey">_NS:9</string>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSDatePickerCell" key="NSCell" id="881012093">
@@ -730,7 +731,7 @@
 							<object class="NSTextFieldCell" key="NSCell" id="957696232">
 								<int key="NSCellFlags">68157504</int>
 								<int key="NSCellFlags2">272630784</int>
-								<string key="NSContents">CPDatePicket test</string>
+								<string key="NSContents">CPDatePicker test</string>
 								<object class="NSFont" key="NSSupport">
 									<string key="NSName">LucidaGrande-Bold</string>
 									<double key="NSSize">17</double>

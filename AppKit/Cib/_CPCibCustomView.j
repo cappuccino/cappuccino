@@ -48,7 +48,7 @@
 
 @end
 
-var _CPCibCustomViewClassNameKey    = @"_CPCibCustomViewClassNameKey";
+var _CPCibCustomViewClassNameKey = @"_CPCibCustomViewClassNameKey";
 
 @implementation _CPCibCustomView (CPCoding)
 

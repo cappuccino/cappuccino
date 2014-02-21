@@ -399,7 +399,7 @@ var _CPPopoverWindow_shouldClose_    = 1 << 0,
 
     @param sender the sender of the action
 */
-- (IBAction)orderFront:(is)aSender
+- (IBAction)orderFront:(id)aSender
 {
     if (![self isKeyWindow])
     {
@@ -410,7 +410,8 @@ var _CPPopoverWindow_shouldClose_    = 1 << 0,
             var transformOrigin = "50% 100%",
                 frame = [self frame],
                 preferredEdge = [_windowView preferredEdge],
-                posX, posY;
+                posX,
+                posY;
 
             switch (preferredEdge)
             {

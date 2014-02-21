@@ -40,7 +40,8 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
     _CPImageAndTextViewFontChangedFlag              = 1 << 7,
     _CPImageAndTextViewTextShadowColorChangedFlag   = 1 << 8,
     _CPImageAndTextViewImagePositionChangedFlag     = 1 << 9,
-    _CPImageAndTextViewImageScalingChangedFlag      = 1 << 10;
+    _CPImageAndTextViewImageScalingChangedFlag      = 1 << 10,
+    _CPImageAndTextViewTextUnderlineChangedFlag     = 1 << 11;
 
 /* @ignore */
 @implementation _CPImageAndTextView : CPView
@@ -51,6 +52,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
     CPLineBreakMode         _lineBreakMode;
     CPColor                 _textColor;
     CPFont                  _font;
+    BOOL                    _textUnderline;
 
     CPColor                 _textShadowColor;
     CGSize                  _textShadowOffset;
@@ -126,16 +128,25 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
 #if PLATFORM(DOM)
     switch (_alignment)
     {
-        case CPLeftTextAlignment:       _DOMElement.style.textAlign = "left";
-                                        break;
-        case CPRightTextAlignment:      _DOMElement.style.textAlign = "right";
-                                        break;
-        case CPCenterTextAlignment:     _DOMElement.style.textAlign = "center";
-                                        break;
-        case CPJustifiedTextAlignment:  _DOMElement.style.textAlign = "justify";
-                                        break;
-        case CPNaturalTextAlignment:    _DOMElement.style.textAlign = "";
-                                        break;
+        case CPLeftTextAlignment:
+            _DOMElement.style.textAlign = "left";
+            break;
+
+        case CPRightTextAlignment:
+            _DOMElement.style.textAlign = "right";
+            break;
+
+        case CPCenterTextAlignment:
+            _DOMElement.style.textAlign = "center";
+            break;
+
+        case CPJustifiedTextAlignment:
+            _DOMElement.style.textAlign = "justify";
+            break;
+
+        case CPNaturalTextAlignment:
+            _DOMElement.style.textAlign = "";
+            break;
     }
 #endif
 }
@@ -209,7 +220,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
     [self setNeedsLayout];
 }
 
-- (void)imageScaling
+- (CPUInteger)imageScaling
 {
     return _imageScaling;
 }
@@ -288,6 +299,22 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
 - (CGSize)textShadowOffset
 {
     return _textShadowOffset;
+}
+
+- (void)setTextUnderline:(BOOL)aFlag
+{
+    if (_textUnderline === aFlag)
+        return;
+
+    _textUnderline = aFlag;
+    _flags |= _CPImageAndTextViewTextUnderlineChangedFlag;
+
+    [self setNeedsLayout];
+}
+
+- (BOOL)textUnderline
+{
+    return _textUnderline;
 }
 
 - (CGRect)textFrame
@@ -384,30 +411,24 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
         if (hasDOMTextElement)
         {
             _DOMElement.removeChild(_DOMTextElement);
-
             _DOMTextElement = nil;
-
             hasDOMTextElement = NO;
         }
-
         else
         {
             _DOMTextElement = document.createElement("div");
 
             var textStyle = _DOMTextElement.style;
-
             textStyle.position = "absolute";
             textStyle.whiteSpace = "pre";
-
             textStyle.zIndex = 200;
             textStyle.overflow = "hidden";
 
             _DOMElement.appendChild(_DOMTextElement);
-
             hasDOMTextElement = YES;
 
             // We have to set all these values now.
-            _flags |= _CPImageAndTextViewTextChangedFlag | _CPImageAndTextViewFontChangedFlag | _CPImageAndTextViewLineBreakModeChangedFlag;
+            _flags |= _CPImageAndTextViewTextChangedFlag | _CPImageAndTextViewFontChangedFlag | _CPImageAndTextViewLineBreakModeChangedFlag | _CPImageAndTextViewTextUnderlineChangedFlag;
         }
     }
 
@@ -500,46 +521,49 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
             }
         }
 
+        if (_flags & _CPImageAndTextViewTextUnderlineChangedFlag)
+        {
+            textStyle.textDecoration = _textUnderline ? "underline" : "";
+        }
+
         // Update the line break mode if necessary.
         if (_flags & _CPImageAndTextViewLineBreakModeChangedFlag)
         {
             switch (_lineBreakMode)
             {
-                case CPLineBreakByClipping:         textStyle.overflow = "hidden";
-                                                    textStyle.textOverflow = "clip";
-                                                    textStyle.whiteSpace = "pre";
-                                                    textStyle.wordWrap = "normal";
-
-                                                    break;
+                case CPLineBreakByClipping:
+                    textStyle.overflow = "hidden";
+                    textStyle.textOverflow = "clip";
+                    textStyle.whiteSpace = "pre";
+                    textStyle.wordWrap = "normal";
+                    break;
 
                 case CPLineBreakByTruncatingHead:
                 case CPLineBreakByTruncatingMiddle: // Don't have support for these (yet?), so just degrade to truncating tail.
-
-                case CPLineBreakByTruncatingTail:   textStyle.textOverflow = "ellipsis";
-                                                    textStyle.whiteSpace = "nowrap";
-                                                    textStyle.overflow = "hidden";
-                                                    textStyle.wordWrap = "normal";
-
-                                                    break;
+                case CPLineBreakByTruncatingTail:
+                    textStyle.textOverflow = "ellipsis";
+                    textStyle.whiteSpace = "pre";
+                    textStyle.overflow = "hidden";
+                    textStyle.wordWrap = "normal";
+                    break;
 
                 case CPLineBreakByCharWrapping:
-                case CPLineBreakByWordWrapping:     textStyle.wordWrap = "break-word";
-                                                    try {
-                                                        textStyle.whiteSpace = "pre";
-                                                        textStyle.whiteSpace = "-o-pre-wrap";
-                                                        textStyle.whiteSpace = "-pre-wrap";
-                                                        textStyle.whiteSpace = "-moz-pre-wrap";
-                                                        textStyle.whiteSpace = "pre-wrap";
-                                                    }
-                                                    catch (e) {
-                                                        //internet explorer doesn't like these properties
-                                                        textStyle.whiteSpace = "pre";
-                                                    }
-
-                                                    textStyle.overflow = "hidden";
-                                                    textStyle.textOverflow = "clip";
-
-                                                    break;
+                case CPLineBreakByWordWrapping:
+                    textStyle.wordWrap = "break-word";
+                    try {
+                        textStyle.whiteSpace = "pre";
+                        textStyle.whiteSpace = "-o-pre-wrap";
+                        textStyle.whiteSpace = "-pre-wrap";
+                        textStyle.whiteSpace = "-moz-pre-wrap";
+                        textStyle.whiteSpace = "pre-wrap";
+                    }
+                    catch (e) {
+                        //internet explorer doesn't like these properties
+                        textStyle.whiteSpace = "pre";
+                    }
+                    textStyle.overflow = "hidden";
+                    textStyle.textOverflow = "clip";
+                    break;
             }
 
             if (shadowStyle)
@@ -630,9 +654,9 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
         }
 
         if (CPFeatureIsCompatible(CPOpacityRequiresFilterFeature))
-            imageStyle.filter = @"alpha(opacity=" + _shouldDimImage ? 35 : 100 + ")";
+            imageStyle.filter = @"alpha(opacity=" + _shouldDimImage ? 50 : 100 + ")";
         else
-            imageStyle.opacity = _shouldDimImage ? 0.35 : 1.0;
+            imageStyle.opacity = _shouldDimImage ? 0.5 : 1.0;
 
         _DOMImageElement.width = imageWidth;
         _DOMImageElement.height = imageHeight;
@@ -719,7 +743,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
                     textRectHeight = _textSize.height;
                 }
 
-                else //if (_verticalAlignment === CPBottomVerticalTextAlignment)
+                else // if (_verticalAlignment === CPBottomVerticalTextAlignment)
                 {
                     textRectY = textRectY + textRectHeight - _textSize.height;
                     textRectHeight = _textSize.height;
@@ -799,6 +823,13 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
         _textSize = nil;
 
     [super setFrameSize:aSize];
+}
+
+- (void)setSelectedRange:(CPRange)aRange
+{
+#if PLATFORM(DOM)
+    [[[self window] platformWindow] setSelectedRange:aRange inElement:_DOMTextElement];
+#endif
 }
 
 @end

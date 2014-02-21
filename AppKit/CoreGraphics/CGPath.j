@@ -120,12 +120,14 @@ function CGPathAddArc(aPath, aTransform, x, y, aRadius, aStartAngle, anEndAngle,
         The ending point of the arc becomes the new current point of the path.
     */
     var arcEndX = x + aRadius * COS(anEndAngle),
-        arcEndY = y + aRadius * SIN(anEndAngle);
+        arcEndY = y + aRadius * SIN(anEndAngle),
+        arcStartX = x + aRadius * COS(aStartAngle),
+        arcStartY = y + aRadius * SIN(aStartAngle);
 
     if (aPath.count)
     {
-        if (aPath.current.x !== arcEndX || aPath.current.y !== arcEndY)
-            CGPathAddLineToPoint(aPath, aTransform, arcEndX, arcEndY);
+        if (aPath.current.x !== x || aPath.current.y !== y)
+            CGPathAddLineToPoint(aPath, aTransform, arcStartX, arcStartY);
     }
     else
     {
@@ -136,7 +138,7 @@ function CGPathAddArc(aPath, aTransform, x, y, aRadius, aStartAngle, anEndAngle,
     }
 
     aPath.current = CGPointMake(arcEndX, arcEndY);
-    aPath.elements[aPath.count++] = { type:kCGPathElementAddArc, x:x, y:y, radius:aRadius, startAngle:aStartAngle, endAngle:anEndAngle, clockwise:isClockwise };
+    aPath.elements[aPath.count++] = { type:kCGPathElementAddArc, x:x, y:y, radius:aRadius, startAngle:aStartAngle, endAngle:anEndAngle, isClockwise:isClockwise };
 }
 
 function CGPathAddArcToPoint(aPath, aTransform, x1, y1, x2, y2, aRadius)
@@ -233,7 +235,7 @@ function CGPathAddPath(aPath, aTransform, anotherPath)
             case kCGPathElementAddArc:
                 CGPathAddArc(aPath, aTransform, element.x, element.y,
                              element.radius, element.startAngle,
-                             element.endAngle, element.clockwise);
+                             element.endAngle, element.isClockwise);
                 break;
 
             case kCGPathElementAddArcToPoint:
@@ -438,7 +440,7 @@ function CGPathEqualToPath(aPath, anotherPath)
                     element.radius !== anotherElement.radius ||
                     element.startAngle !== anotherElement.startAngle ||
                     element.endAngle !== anotherElement.endAngle ||
-                    element.clockwise !== anotherElement.clockwise)
+                    element.isClockwise !== anotherElement.isClockwise)
                 {
                     return NO;
                 }
@@ -608,7 +610,23 @@ function CGPathGetBoundingBox(aPath)
     return CGRectMake(ox, oy, rx - ox, ry - oy);
 }
 
+function CGPathContainsPoint(aPath, aTransform, point, eoFill)
+{
+    if (!aPath.count)
+        return NO;
+
+    if (aTransform)
+        point = CGPointApplyAffineTransform(point, aTransform);
+
+    var context = CGBitmapGraphicsContextCreate();
+
+    CGContextBeginPath(context);
+    CGContextAddPath(context, aPath);
+    CGContextClosePath(context);
+
+    return context.isPointInPath(point.x, point.y);
+}
+
 /*!
     @}
 */
-

@@ -116,6 +116,7 @@ div.qindex, div.navtab {
 div.qindex, div.navpath {
     width: 100%;
     line-height: 140%;
+    background: white;
 }
 
 div.qindex+table {
@@ -175,7 +176,11 @@ a.elRef {
 }
 
 a.code {
-    color: #4765A1;
+    color: #8AACE5;
+}
+
+a.code:visited {
+    color: #8AACE5;
 }
 
 a.codeRef {
@@ -188,24 +193,33 @@ dl.el {
     margin-left: -1cm;
 }
 
+.fragment {
+    margin-top: 20px;
+    background-color: #27292C;
+    width: 100%;
+    border-radius: 3px;
+}
+.fragment .line:first-child {
+    padding-top: 20px;
+}
 .fragment .line {
     font-family: Consolas, Courier, monospace, fixed;
     white-space: pre-wrap; /* css-3 */
     white-space: -moz-pre-wrap !important; /* Mozilla, since 1999 */
     white-space: -pre-wrap; /* Opera 4-6 */
     white-space: -o-pre-wrap; /* Opera 7 */
-    word-wrap: break-word; /* Internet Explorer 5.5+ */
     font-size: 11px;
     margin-bottom: 3px;
+    color: #d4d4d4;
 }
 
 .fragment .lineno {
-    color: #d4d4d4;
+    color: #555;
     margin-right: 10px;
 }
 
 .fragment .lineno a {
-    color: #d4d4d4;
+    color: #777;
 }
 
 pre.fragment {
@@ -221,21 +235,14 @@ pre.fragment {
 }
 
 div.ah {
-    background-color: black;
+    background-color: #333;
     font-weight: bold;
     color: #ffffff;
     margin-bottom: 3px;
     margin-top: 3px;
     padding: 0.2em;
     border: solid thin #333;
-    border-radius: 0.5em;
-    -webkit-border-radius: .5em;
-    -moz-border-radius: .5em;
-    box-shadow: 2px 2px 3px #999;
-    -webkit-box-shadow: 2px 2px 3px #999;
-    -moz-box-shadow: rgba(0, 0, 0, 0.15) 2px 2px 2px;
-    background-image: -webkit-gradient(linear, left top, left bottom, from(#eee), to(#000),color-stop(0.3, #444));
-    background-image: -moz-linear-gradient(center top, #eee 0%, #444 40%, #000);
+    background-color: #F6F6F6;
 }
 
 div.groupHeader {
@@ -252,8 +259,8 @@ div.groupText {
 
 body {
     background-color: white;
-    color: black;
-        margin: 0;
+    color: #333;
+    margin: 0;
 }
 
 div.contents {
@@ -301,7 +308,7 @@ table tr.memlist > td {
 tr.memlist td {
     font-family: Consolas, "Lucida Console", Courier, monospace;
     padding: .25em 0;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid #F6F6F6;
 }
 
 /* Don't show the [static] column in full member list */
@@ -340,16 +347,18 @@ address.footer {
 img.footer {
     border: 0px;
     vertical-align: middle;
+    height: 15px;
+    margin-top: -5px;
 }
 
 /* @group Code Colorization */
 
 span.keyword {
-    color: #008000
+    color: #D67C7B
 }
 
 span.keywordtype {
-    color: #604020
+    color: #C0A7C6
 }
 
 span.keywordflow {
@@ -357,7 +366,7 @@ span.keywordflow {
 }
 
 span.comment {
-    color: #A085E4
+    color: #6A6C73
 }
 
 span.preprocessor {
@@ -365,7 +374,7 @@ span.preprocessor {
 }
 
 span.stringliteral {
-    color: #002080
+    color: #C2C67F;
 }
 
 span.charliteral {
@@ -427,7 +436,7 @@ th.dirtab {
 hr {
     height: 0px;
     border: none;
-    border-top: 2px solid #ddd;
+    border-top: 1px solid #ddd;
     margin: 1em 0;
 }
 
@@ -458,7 +467,7 @@ table.memberdecls {
 }
 
 .memItemLeft, .memItemRight, .memTemplParams {
-    border-top: 1px solid #f3f3f3;
+    border-top: 1px solid #F3F3F3;
 }
 
 .memItemLeft, .memTemplItemLeft {
@@ -513,50 +522,27 @@ table.memberdecls {
 }
 
 .memproto, dl.reflist dt {
-        border-top: 1px solid #BDBDBD;
-        border-left: 1px solid #BDBDBD;
-        border-right: 1px solid #BDBDBD;
         padding: 6px 0px 6px 0px;
         color: #333;
-        font-weight: bold;
-        text-shadow: 0px 1px 1px rgba(255, 255, 255, 0.9);
-        /* opera specific markup */
-        box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.15);
-        border-top-right-radius: 8px;
-        border-top-left-radius: 8px;
-        /* firefox specific markup */
-        -moz-box-shadow: rgba(0, 0, 0, 0.15) 1px 1px 5px;
-        -moz-border-radius-topright: 3px;
-        -moz-border-radius-topleft: 3px;
-        /* webkit specific markup */
-        -webkit-box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.15);
-        -webkit-border-top-right-radius: 3px;
-        -webkit-border-top-left-radius: 3px;
-        background-color: #E2E2E2;
+        font-weight: normal;
+        background-color: #F6F6F6;
         padding-left: 9px;
 }
 
 .memdoc > p {
     margin-top: 0;
 }
+
+.memdoc > p:last-child {
+    color: #AAAAAA;
+    font-size: 80%;
+}
 .memdoc, dl.reflist dd {
-        border-bottom: 1px solid #BDBDBD;
-        border-left: 1px solid #BDBDBD;
-        border-right: 1px solid #BDBDBD;
+        border-bottom: 1px solid #F6F6F6;
+        border-left: 1px solid #F6F6F6;
+        border-right: 1px solid #F6F6F6;
         background-color: white;
         border-top-width: 0;
-        /* opera specific markup */
-        border-bottom-left-radius: 3px;
-        border-bottom-right-radius: 3px;
-        box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.15);
-        /* firefox specific markup */
-        -moz-border-radius-bottomleft: 3px;
-        -moz-border-radius-bottomright: 3px;
-        -moz-box-shadow: rgba(0, 0, 0, 0.15) 1px 1px 5px;
-        /* webkit specific markup */
-        -webkit-border-bottom-left-radius: 3px;
-        -webkit-border-bottom-right-radius: 3px;
-        -webkit-box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.15);
         padding: .8em 12px 0 12px;
 }
 
@@ -595,6 +581,15 @@ dl.reflist dt {
     color: #602020;
     white-space: nowrap;
 }
+
+.params .paramname {
+    color: #602020 !important;
+    white-space: nowrap;
+    text-align: right;
+    font-family: Consolas, "Lucida Console", Courier, monospace;
+    padding: 3px;
+}
+
 .paramname em {
     font-style: normal;
 }
@@ -751,12 +746,6 @@ table.fieldtable {
         margin-bottom: 10px;
         border: 1px solid #A9B9D8;
         border-spacing: 0px;
-        -moz-border-radius: 4px;
-        -webkit-border-radius: 4px;
-        border-radius: 4px;
-        -moz-box-shadow: rgba(0, 0, 0, 0.15) 2px 2px 2px;
-        -webkit-box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.15);
-        box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.15);
 }
 
 .fieldtable td, .fieldtable th {
@@ -788,12 +777,6 @@ table.fieldtable {
         padding-bottom: 4px;
         padding-top: 5px;
         text-align:left;
-        -moz-border-radius-topleft: 4px;
-        -moz-border-radius-topright: 4px;
-        -webkit-border-top-left-radius: 4px;
-        -webkit-border-top-right-radius: 4px;
-        border-top-left-radius: 4px;
-        border-top-right-radius: 4px;
         border-bottom: 1px solid #A9B9D8;
 }
 
@@ -811,12 +794,11 @@ table.fieldtable {
 .navpath ul
 {
     font-size: 11px;
-    background: -moz-linear-gradient(-90deg, whiteSmoke, #CCC);
-    background: -webkit-gradient(linear, left top, left bottom, from(whiteSmoke), to(#CCC));
+    background-color: white;
     height:30px;
     line-height:30px;
     color:#333;
-    border:solid 1px #CCC;
+    border:solid 1px #f3f3f3;
     overflow:hidden;
     margin:0px;
     padding:0px;
@@ -824,7 +806,7 @@ table.fieldtable {
 
 .navpath li
 {
-    list-style-type:none;
+    list-style-type: none;
     float:left;
     padding-left:10px;
     padding-right: 15px;
@@ -843,6 +825,7 @@ table.fieldtable {
     color: #333;
 }
 
+
 .navpath li.navelem a:hover
 {
     color:#6985BC;
@@ -858,7 +841,7 @@ table.fieldtable {
     background-image:none;
     background-repeat:no-repeat;
     background-position:right;
-    color:#374E7C;
+    color:#aaa;
     font-size: 8pt;
 }
 
@@ -902,17 +885,14 @@ div.header
 {
     background-color: #F9FAFC;
     margin: 0px;
-    border-bottom: 1px solid #C5CFE5;
+    border-bottom: 1px solid #eaeaea;
 }
 
 div.headertitle
 {
     padding: 10px 5px 10px 20px;
-    background: #333;
-    background: -moz-linear-gradient(-90deg, #444, #333);
-    background: -webkit-gradient(linear, left top, left bottom, from(#444), to(#333));
-    color: white;
-    text-shadow: -1px -1px black;
+    background-color: #f6f6f6;
+    color: #333;
     min-height: 36px;
 }
 
@@ -977,16 +957,24 @@ dl.bug
     border-collapse: separate;
 }
 
-#projectlogo img
+#projectlogo
 {
     border: 0px none;
-    max-height: 55px;
     padding-left: 5px;
+    margin-top: 8px;
+    display: block;
+    float: right;
+    width: 200px;
+}
+
+#projectlogo img
+{
+    max-height: 40px;
 }
 
 #projectname
 {
-    font: 300% Tahoma, Arial,sans-serif;
+    font: 200% Tahoma, Arial,sans-serif;
     margin: 0px;
     padding: 2px 0px;
 }
@@ -1010,13 +998,9 @@ dl.bug
     padding: 0px;
     margin: 0px;
     width: 100%;
-    border-bottom: 1px solid #CCC;
     color: white;
     font-weight: bold;
-    text-shadow: -1px -1px black;
-    background: #485D77;
-    background: -moz-linear-gradient(-90deg, #485D77, #252D38);
-    background: -webkit-gradient(linear, left top, left bottom, from(#485D77), to(#252D38));
+    background: #FA7622;
 }
 
 .image
@@ -1093,9 +1077,8 @@ dl.citelist dd {
 
 /* ADDITIONS */
 .tabs, .tabs2, .tabs3 {
-    background: -moz-linear-gradient(-90deg, #fff, #eee);
-    background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee));
-    border-bottom: 1px solid #ccc;
+    background: #F6F6F6 !important;
+    border-bottom: 1px solid #eaeaea;
     width: 100%;
     z-index: 101;
     font-size: 100%;
@@ -1128,17 +1111,15 @@ dl.citelist dd {
     display: block;
     padding: 0 20px;
     font-weight: bold;
-    text-shadow: 0px 1px 1px rgba(255, 255, 255, 0.9);
     text-decoration: none;
     outline: none;
     background: none;
     color: #444;
-    border-right: 1px solid #ccc;
+    border-right: 1px solid #eaeaea;
 }
 
 .tablist a:hover {
     background: inherit;
-    text-shadow: 0px 1px 1px rgba(0, 0, 0, 1.0);
     text-decoration: none;
     text-shadow: none;
     color: gray;
@@ -1164,10 +1145,9 @@ dl.citelist dd {
 }
 
 .tablist li.current a {
-    background: -moz-linear-gradient(-90deg, #eee, #fff);
-    background: -webkit-gradient(linear, left top, left bottom, from(#eee), to(#fff));
+    background: #ddd;
     color: #444;
-    text-shadow: 0px 1px 1px #f2f2f2;
+    text-shadow: none;
 }
 
 .tabs2 li{
@@ -1191,7 +1171,7 @@ dl.citelist dd {
 #nav-tree li {
     white-space:nowrap;
     margin:0px;
-    padding:0px;
+    padding-top: 5px;
 }
 
 #nav-tree .plus {
@@ -1199,17 +1179,23 @@ dl.citelist dd {
 }
 
 #nav-tree .selected {
-    background: -moz-linear-gradient(-90deg, #62B9ED, #308CD9) !important;
-    background: -webkit-gradient(linear, left top, left bottom, from(#62B9ED), to(#308CD9)) !important;
-    border-top: 1px solid #308CD9;
-    text-shadow: 0px 1px 1px rgba(0, 0, 0, 1.0);
+    background-color: #F87631 !important;
+    border-top: none;
+    background-image: none;
 }
 
 #nav-tree img {
   margin:0px;
   padding:0px;
   border:0px;
-  vertical-align: middle;
+  -webkit-filter: grayscale(1);
+  width: 8px;
+  height: 11px;
+  margin-top: -4px;
+}
+
+#nav-tree .selected img {
+     -webkit-filter: grayscale(0);
 }
 
 #nav-tree a {
@@ -1233,7 +1219,9 @@ dl.citelist dd {
   text-decoration:none;
   padding:2px;
   margin:0px;
-  color:#fff;
+  color: white;
+  text-shadow: none;
+  font-weight: bold;
 }
 
 #nav-tree .children_ul {
@@ -1243,17 +1231,16 @@ dl.citelist dd {
 
 #nav-tree .item {
   margin:0px;
-  padding:0px;
+  padding:0px;;
 }
 
 #nav-tree {
   padding: 0px 0px;
-  background: #E8EAEE;
+  background: white;
   font-size:14px;
   overflow:auto;
   padding-right: 0px !important;
   margin-right: -5px !important;
-  background: #E8EAEE !important;
 }
 
 #doc-content {
@@ -1280,7 +1267,7 @@ dl.citelist dd {
 }
 
 .ui-resizable-e {
-  background: #CCC !important;
+  background: #eaeaea !important;
   cursor:e-resize;
   height:100%;
   right:0;
@@ -1314,7 +1301,14 @@ dl.citelist dd {
 right: 5px;
 }
 #nav-sync img {
-    width: 16px;
+    width: 10px;
+    height: 10px;
 }
 
+.mlabels-right {
+    visibility: hidden;
+}
+
+.groupheader {
+    color: #FA7622;
 }

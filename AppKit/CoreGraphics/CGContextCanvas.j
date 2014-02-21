@@ -43,7 +43,7 @@ var CANVAS_LINECAP_TABLE    = [ "butt", "round", "square" ],
 #define _CGContextFillRectCanvas(aContext, aRect) aContext.fillRect(CGRectGetMinX(aRect), CGRectGetMinY(aRect), CGRectGetWidth(aRect), CGRectGetHeight(aRect))
 #define _CGContextClipCanvas(aContext) aContext.clip()
 
-// In Cocoa, all primitives excepts rects cannot be added to the context's path
+// In Cocoa, all primitives excepts rects and arcs cannot be added to the context's path
 // until a move to point has been done, because an empty path has no current point.
 var hasPath = function(aContext, methodName)
 {
@@ -113,12 +113,12 @@ function CGContextSetBlendMode(aContext, aBlendMode)
 
 function CGContextAddArc(aContext, x, y, radius, startAngle, endAngle, clockwise)
 {
-    if (!hasPath(aContext, "CGContextAddArc"))
-        return;
-
     // Despite the documentation saying otherwise, the last parameter is anti-clockwise not clockwise.
     // http://developer.mozilla.org/en/docs/Canvas_tutorial:Drawing_shapes#Arcs
     _CGContextAddArcCanvas(aContext, x, y, radius, startAngle, endAngle, !clockwise);
+
+    // AddArc implicitly starts a path
+    aContext.hasPath = YES;
 }
 
 function CGContextAddArcToPoint(aContext, x1, y1, x2, y2, radius)
@@ -470,7 +470,7 @@ var scale_rotate = function(a, b, c, d)
 
 var rotate_scale = function(a, b, c, d)
 {
-    var sign = (a * d < 0.0 || b * c > 0.0) ? -1.0 : 1.0;
+    var sign = (a * d < 0.0 || b * c > 0.0) ? -1.0 : 1.0,
         a1 = (ATAN2(sign * b, sign * a) + ATAN2(-c, d)) / 2.0,
         cos = COS(a1),
         sin = SIN(a1);
@@ -596,8 +596,21 @@ function CGContextDrawLinearGradient(aContext, aGradient, aStartPoint, anEndPoin
 {
     var colors = aGradient.colors,
         count = colors.length,
-
         linearGradient = aContext.createLinearGradient(aStartPoint.x, aStartPoint.y, anEndPoint.x, anEndPoint.y);
+
+    while (count--)
+        linearGradient.addColorStop(aGradient.locations[count], to_string(colors[count]));
+
+    aContext.fillStyle = linearGradient;
+    aContext.fill();
+    aContext.hasPath = NO;
+}
+
+function CGContextDrawRadialGradient(aContext, aGradient, aStartCenter, aStartRadius, anEndCenter, anEndRadius, options)
+{
+    var colors = aGradient.colors,
+        count = colors.length,
+        linearGradient = aContext.createRadialGradient(aStartCenter.x, aStartCenter.y, aStartRadius, anEndCenter.x, anEndCenter.y, anEndRadius);
 
     while (count--)
         linearGradient.addColorStop(aGradient.locations[count], to_string(colors[count]));

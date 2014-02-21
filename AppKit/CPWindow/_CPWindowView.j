@@ -81,7 +81,7 @@ _CPWindowViewResizeSlop = 3;
     return "window";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{
             @"title-bar-height": 25,
@@ -631,7 +631,38 @@ _CPWindowViewResizeSlop = 3;
                 newHeight = startHeight;
         }
 
-        [theWindow _setFrame:CGRectMake(newX, newY, newWidth, newHeight) display:YES animate:NO constrainWidth:NO constrainHeight:NO];
+        // When resizing, we always constrain to the usable screen.
+        frame = CGRectMake(newX, newY, newWidth, newHeight);
+
+        var constrainedFrame = [theWindow _constrainOriginOfFrame:frame],
+            dx = constrainedFrame.origin.x - frame.origin.x,
+            dy = constrainedFrame.origin.y - frame.origin.y;
+
+        // When resizing from the left or top, we adjust the origin and size.
+        switch (_resizeRegion)
+        {
+            case _CPWindowViewResizeRegionBottomLeft:
+            case _CPWindowViewResizeRegionLeft:
+            case _CPWindowViewResizeRegionTopLeft:
+            case _CPWindowViewResizeRegionTop:
+            case _CPWindowViewResizeRegionTopRight:
+                frame.origin = constrainedFrame.origin;
+                frame.size.width -= dx;
+                frame.size.height -= dy;
+        }
+
+        // When resizing from the right or bottom, we only adjust the size.
+        switch (_resizeRegion)
+        {
+            case _CPWindowViewResizeRegionTopRight:
+            case _CPWindowViewResizeRegionRight:
+            case _CPWindowViewResizeRegionBottomRight:
+            case _CPWindowViewResizeRegionBottom:
+                frame.size.width += dx;
+                frame.size.height += dy;
+        }
+
+        [theWindow _setFrame:frame display:YES animate:NO constrainWidth:NO constrainHeight:NO];
         [self setCursorForLocation:location resizing:YES];
     }
 
@@ -683,7 +714,7 @@ _CPWindowViewResizeSlop = 3;
         [theWindow _setAttachedSheetFrameOrigin];
         [sheet._windowView _adjustShadowViewSize];
     }
-    else if (theWindow._isSheet)
+    else if (theWindow && theWindow._isSheet)
         [self _adjustShadowViewSize];
 }
 
@@ -742,7 +773,9 @@ _CPWindowViewResizeSlop = 3;
 
 - (BOOL)showsToolbar
 {
-    return YES;
+    var styleMaskWindow = [[self window] styleMask];
+
+    return styleMaskWindow & CPBorderlessWindowMask || styleMaskWindow & CPTitledWindowMask || styleMaskWindow & CPHUDBackgroundWindowMask || styleMaskWindow & CPBorderlessBridgeWindowMask;
 }
 
 - (CGSize)toolbarOffset
@@ -926,7 +959,8 @@ _CPWindowViewResizeSlop = 3;
 
 - (CGSize)_minimumResizeSize
 {
-    return CGSizeMake(0, _CPWindowViewMinContentHeight);
+    // Leave at least 4px so there is something visible.
+    return CGSizeMake(4, _CPWindowViewMinContentHeight);
 }
 
 - (int)bodyOffset

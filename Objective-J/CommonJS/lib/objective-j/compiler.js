@@ -174,6 +174,9 @@ function resolveFlags(args)
         else if (argument.indexOf("-O") === 0)
             objjcFlags |= ObjectiveJ.ObjJAcornCompiler.Flags.Compress;
 
+        else if (argument.indexOf("-G") === 0)
+            objjcFlags |= ObjectiveJ.ObjJAcornCompiler.Flags.Generate;
+
         else
             filePaths.push(argument);
     }

@@ -8,21 +8,50 @@ var OS = require("os"),
 
 task ("build", function()
 {
+    // If sw_vers does not exist, we aren't on Mac OS X
+    if (!executableExists("sw_vers"))
+        OS.exit(0);
+
+    // No building on 10.6
+    var p = OS.popen(["sw_vers", "-productVersion"]);
+
+    if (p.wait() === 0)
+    {
+        var versions = p.stdout.read().split("."),
+            majorVersion = parseInt(versions[0], 10),
+            minorVersion = parseInt(versions[1], 10),
+            buildVersion = parseInt(versions[2], 10);
+
+        if (majorVersion < 10 || minorVersion < 7)
+        {
+            colorPrint("XcodeCapp can only be built on Mac OS X 10.7+. You can download the binary here: https://www.dropbox.com/sh/gxdgm356gyb9tqc/rFNyl8hcVG", "red");
+
+            OS.exit(0);
+        }
+    }
+
     if (executableExists("xcodebuild"))
     {
         var args = "-sdk macosx -alltargets -configuration Release",
-            supportPath = FILE.join($BUILD_CJS_CAPPUCCINO, "support", applicationName),
             installPath = FILE.join("/", "Applications", applicationName);
+
+        // Remove an old symlink, the application is built directly into /Applications now.
+        if (FILE.isLink(installPath))
+            FILE.remove(installPath);
 
         if (OS.system("xcodebuild " + args))
             OS.exit(1);
 
-        rm_rf(supportPath);
-        FILE.mkdirs(supportPath);
-        cp_r(FILE.join("build", "Release", "XcodeCapp.app"), supportPath);
-        FILE.chmod(FILE.join(supportPath, "Contents", "MacOS", "XcodeCapp"), 0755);
+        if (!executableExists("xcc"))
+        {
+            print("\nWould you like to install the xcc command line tool in /usr/local/bin? yes or no:");
 
-        OS.system(["ln", "-sf", supportPath, installPath]);
+            if (system.stdin.readLine() == "yes\n")
+            {
+                sudo(["mkdir", "-p", "/usr/local/bin"]);
+                sudo(["ln", "-s", "/Applications/XcodeCapp.app/Contents/MacOS/xcc", "/usr/local/bin/"]);
+            }
+        }
     }
     else
     {

@@ -368,7 +368,7 @@
     id lastKey;
 }
 
-- (void)setValue:value forKey:aKey
+- (void)setValue:(id)value forKey:(CPString)aKey
 {
     lastValue = value;
     lastKey = aKey;

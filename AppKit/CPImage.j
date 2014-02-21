@@ -136,14 +136,19 @@ function CPAppKitImage(aFilename, aSize)
 
 /*!
     Initializes the image, by associating it with a filename. The image
-    denoted in \c aFilename is not actually loaded. It will
-    be loaded once needed.
+    denoted in \c aFilename is not actually loaded. It will be loaded
+    once needed.
+
     @param aFilename the file containing the image
     @param aSize the image's size
     @return the initialized image
 */
 - (id)initByReferencingFile:(CPString)aFilename size:(CGSize)aSize
 {
+    // Quietly return nil like in Cocoa, rather than crashing later.
+    if (aFilename === undefined || aFilename === nil)
+        return nil;
+
     self = [super init];
 
     if (self)

@@ -162,6 +162,29 @@ item,
 .Nm
 will load them automatically, you do not have to do anything special.
 .\"-----------------------------------------------------------------------------------------
+.Ss "Framework Image Resources"
+.\"-----------------------------------------------------------------------------------------
+If you need to use image resources located in a framework -- for example in a button -- you have two choices:
+.Bl -dash -width 0n
+.It
+Use the plain image name in Xcode. During conversion,
+.Nm
+will first search the app’s Resources directory for an image with the given name, then it will
+search all of the Resources directories of the debug frameworks, followed by the release frameworks.
+The first match wins, and if the image was found in a framework, the framework's bundle identifier
+is recorded so the image can be loaded from the correct bundle at runtime.
+.It
+If you want to ensure you use an image from a specific framework, in Xcode use <image>@<framework>
+for the image name, where <image> is the base image name
+with no extension and <framework> is the framework name. For example, to use the image "cancel.png" 
+in the framework "JQueryFileUpload", you would use this as the image name in Xcode:
+.Pp
+   cancel@JQueryFileUpload
+.Pp
+During conversion, nib2cib will check the named framework for the given image, and if it is found
+the framework's bundle identifier is recorded so the image can be loaded from the correct bundle at runtime.
+.El
+.\"-----------------------------------------------------------------------------------------
 .Ss "Userland NS Classes"
 .\"-----------------------------------------------------------------------------------------
 Let's say you are working on a subclass of CPTextField called FormField. Obviously you will
@@ -240,14 +263,7 @@ times to increase the amount of information displayed. If passed once, general i
 is displayed. If passed more than once, detailed information about individual view conversions
 is displayed.
 .It Fl R Pa path
-NOTE: This option is for the most part no longer necessary.
-.Pp
-Specifies the path (relative or absolute) to a directory from which images
-and custom themes are retrieved. Formerly
-it was necessary to use this when your xib/nib contained references to images, but now
-.Nm
-infers the "Resources" directory from the input file, so usually you will not need to use
-this option.
+NOTE: This option is deprecated and has no effect.
 .It Fl \-default-theme Ar name
 Specifies the name of the default theme used by your application. This is only necessary
 if you are not using Aristo2 and you have not specified the default theme in your application's
@@ -304,6 +320,10 @@ Tells
 not to read stored options. See
 .Sy Stored Options
 below for more information.
+.It Fl \-no-colors
+Tells
+.Nm
+to strip any color information from the output. This is useful if you need to pipe the output.
 .It Fl \-version
 Prints the current version of
 .Nm

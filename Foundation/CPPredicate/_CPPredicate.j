@@ -190,7 +190,7 @@
     if (self === anObject)
         return YES;
 
-    if (self.isa !== anObject.isa || _value !== [anObject evaluateWithObject:nil])
+    if (anObject === nil || self.isa !== anObject.isa || _value !== [anObject evaluateWithObject:nil])
         return NO;
 
     return YES;
@@ -970,7 +970,7 @@
 
 @end
 
-var CPRaiseParseError = function CPRaiseParseError(aScanner, target)
+var CPRaiseParseError = function(aScanner, target)
 {
     [CPException raise:CPInvalidArgumentException reason:@"unable to parse " + target + " at index " + [aScanner scanLocation]];
 };

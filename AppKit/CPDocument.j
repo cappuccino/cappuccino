@@ -244,11 +244,6 @@ var CPDocumentUntitledCount = 0;
 {
 }
 
-- (CPWindowController)firstEligibleExistingWindowController
-{
-    return nil;
-}
-
 // Creating and managing window controllers
 /*!
     Creates the window controller for this document.
@@ -261,6 +256,7 @@ var CPDocumentUntitledCount = 0;
 - (void)makeViewAndWindowControllers
 {
     var viewCibName = [self viewCibName],
+        windowCibName = [self windowCibName],
         viewController = nil,
         windowController = nil;
 
@@ -268,31 +264,21 @@ var CPDocumentUntitledCount = 0;
     if ([viewCibName length])
         viewController = [[CPViewController alloc] initWithCibName:viewCibName bundle:nil owner:self];
 
-    // If we have a view controller, check if we have a free window for it.
-    if (viewController)
-        windowController = [self firstEligibleExistingWindowController];
+    // From a cib if we have one.
+    if ([windowCibName length])
+        windowController = [[CPWindowController alloc] initWithWindowCibName:windowCibName owner:self];
 
-    // If not, create one.
-    if (!windowController)
+    // If not you get a standard window capable of displaying multiple documents and view
+    else if (viewController)
     {
-        var windowCibName = [self windowCibName];
+        var view = [viewController view],
+            viewFrame = [view frame];
 
-        // From a cib if we have one.
-        if ([windowCibName length])
-            windowController = [[CPWindowController alloc] initWithWindowCibName:windowCibName owner:self];
+        viewFrame.origin = CGPointMake(50, 50);
 
-        // If not you get a standard window capable of displaying multiple documents and view
-        else if (viewController)
-        {
-            var view = [viewController view],
-                viewFrame = [view frame];
+        var theWindow = [[CPWindow alloc] initWithContentRect:viewFrame styleMask:CPTitledWindowMask | CPClosableWindowMask | CPMiniaturizableWindowMask | CPResizableWindowMask];
 
-            viewFrame.origin = CGPointMake(50, 50);
-
-            var theWindow = [[CPWindow alloc] initWithContentRect:viewFrame styleMask:CPTitledWindowMask | CPClosableWindowMask | CPMiniaturizableWindowMask | CPResizableWindowMask];
-
-            windowController = [[CPWindowController alloc] initWithWindow:theWindow];
-        }
+        windowController = [[CPWindowController alloc] initWithWindow:theWindow];
     }
 
     if (windowController && viewController)

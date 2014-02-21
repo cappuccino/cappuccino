@@ -329,7 +329,7 @@
 /* = Debug = */
 /* ========= */
 
-- (void)description
+- (CPString)description
 {
     return [super description] + " {" + CPStringFromClass([self class]) + ", state = '" + ([self string].substr(0, _scanLocation) + "{{ SCAN LOCATION ->}}" + [self string].substr(_scanLocation)) + "'; }";
 }

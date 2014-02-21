@@ -37,6 +37,8 @@ CPBinarySearchingFirstEqual     = 1 << 8;
 CPBinarySearchingLastEqual      = 1 << 9;
 CPBinarySearchingInsertionIndex = 1 << 10;
 
+var CPArrayMaxDescriptionRecursion = 10;
+
 var concat = Array.prototype.concat,
     join = Array.prototype.join,
     push = Array.prototype.push;
@@ -120,7 +122,7 @@ var concat = Array.prototype.concat,
     @param aCount the number of objects in the JS Array
     @return a new CPArray containing the specified objects
 */
-+ (id)arrayWithObjects:(id)objects count:(unsigned)aCount
++ (id)arrayWithObjects:(id)objects count:(CPUInteger)aCount
 {
     return [[self alloc] initWithObjects:objects count:aCount];
 }
@@ -172,13 +174,13 @@ var concat = Array.prototype.concat,
     @param aCount the number of objects in \c objects
     @return the initialized CPArray
 */
-- (id)initWithObjects:(id)objects count:(unsigned)aCount
+- (id)initWithObjects:(CPArray)objects count:(CPUInteger)aCount
 {
     FORWARD_TO_CONCRETE_CLASS();
 }
 
 // FIXME: This should be defined in CPMutableArray, not here.
-- (id)initWithCapacity:(unsigned)aCapacity
+- (id)initWithCapacity:(CPUInteger)aCapacity
 {
     FORWARD_TO_CONCRETE_CLASS();
 }
@@ -201,7 +203,7 @@ var concat = Array.prototype.concat,
 /*!
     Returns the number of elements in the array
 */
-- (int)count
+- (CPUInteger)count
 {
     _CPRaiseInvalidAbstractInvocation(self, _cmd);
 }
@@ -236,7 +238,7 @@ var concat = Array.prototype.concat,
     Returns the object at index \c anIndex.
     @throws CPRangeException if \c anIndex is out of bounds
 */
-- (id)objectAtIndex:(int)anIndex
+- (id)objectAtIndex:(CPUInteger)anIndex
 {
     _CPRaiseInvalidAbstractInvocation(self, _cmd);
 }
@@ -875,6 +877,11 @@ var concat = Array.prototype.concat,
 */
 - (CPString)description
 {
+    return [self _descriptionWithMaximumDepth:CPArrayMaxDescriptionRecursion];
+}
+
+- (CPString)_descriptionWithMaximumDepth:(int)maximumDepth
+{
     var index = 0,
         count = [self count],
         description = "@[";
@@ -887,7 +894,7 @@ var concat = Array.prototype.concat,
         var object = [self objectAtIndex:index];
 
         // NOTE: replace(/^/mg, "    ") inserts 4 spaces at the beginning of every line
-        description += CPDescriptionOfObject(object).replace(/^/mg, "    ");
+        description += CPDescriptionOfObject(object, maximumDepth).replace(/^/mg, "    ");
 
         if (index < count - 1)
             description += ",\n";

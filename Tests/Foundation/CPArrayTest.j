@@ -641,6 +641,15 @@
     [self assertTrue:d.indexOf("(5, 6)") !== -1 message:"Can't find '(5, 6)' in description of array " + d];
 }
 
+- (void)testRecursiveJSObjectDescription
+{
+    var a = [];
+
+    a.push(a);
+
+    [self assert:'@[\n    @[\n        @[\n            @[\n                @[\n                    @[\n                        @[\n                            @[\n                                @[\n                                    @[\n                                        @[\n                                            ...\n                                        ]\n                                    ]\n                                ]\n                            ]\n                        ]\n                    ]\n                ]\n            ]\n        ]\n    ]\n]' equals:[a description]];
+}
+
 - (void)testSortUsingDescriptorsWithDifferentSelectors
 {
     var a = [CPDictionary dictionaryWithJSObject:{"a": "AB", "b": "ba"}],

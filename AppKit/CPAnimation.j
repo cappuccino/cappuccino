@@ -236,7 +236,9 @@ ACTUAL_FRAME_RATE = 0;
     ACTUAL_FRAME_RATE = 0;
     _lastTime = new Date();
 
-    _timer = [CPTimer scheduledTimerWithTimeInterval:0.0 target:self selector:@selector(animationTimerDidFire:) userInfo:nil repeats:YES];
+    var timerInterval = _frameRate <= 0.0 ? 0.0001 : 1.0/_frameRate;
+
+    _timer = [CPTimer scheduledTimerWithTimeInterval:timerInterval target:self selector:@selector(animationTimerDidFire:) userInfo:nil repeats:YES];
 }
 
 /*

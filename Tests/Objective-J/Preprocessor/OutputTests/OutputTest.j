@@ -11,10 +11,14 @@ var FILENAMES = [
         "Messages/one-parameter",
         "Messages/multiple-parameters",
         "Messages/ternary-operator-argument",
+        "Messages/keyword-in-selector",
+        "Messages/colon-selector",
 
-// TODO Re-enable this test when the new Objective-J parser has been enabled.
-// Before that it will fail with "*** Expected "pragma" to follow # but instead saw "]".".
-//        "Misc/regex-simple-char-classes"
+        "Misc/parenthesis-return",
+        "Misc/preprocess-if-directives",
+        "Misc/regex-simple-char-classes",
+        "Misc/empty-loops",
+        "Misc/empty-statements",
 ];
 
 @implementation OutputTest : OJTestCase
@@ -41,12 +45,12 @@ var FILENAMES = [
                     correct = FILE.read(FILE.join(FILE.dirname(module.path), filename + ".js"));
 
                 [self assertNoThrow:function() {
-                    preprocessed = ObjectiveJ.preprocess(unpreprocessed).code(),
+                    preprocessed = ObjectiveJ.ObjJAcornCompiler.compileToExecutable(unpreprocessed).code();
                     preprocessed = compressor.compress(preprocessed, { charset : "UTF-8", useServer : true });
                     correct = compressor.compress(correct, { charset : "UTF-8", useServer : true });
                 }];
 
-                [self assert:preprocessed equals:correct];
+                [self assert:correct equals:preprocessed];
             });
         })();
     }

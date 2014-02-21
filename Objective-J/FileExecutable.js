@@ -118,7 +118,8 @@ function decompile(/*String*/ aString, /*CFURL*/ aURL)
             dependencies.push(new FileDependency(new CFURL(text), YES));
     }
 
-    var fn = FileExecutable._lookupCachedFunction(aURL)
+    var fn = FileExecutable._lookupCachedFunction(aURL);
+
     if (fn)
         return new Executable(code, dependencies, aURL, fn);
 

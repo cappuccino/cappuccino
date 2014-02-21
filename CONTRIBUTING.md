@@ -598,7 +598,7 @@ Use descriptive parameter types, despite not being fully supported in JavaScript
 
 ##### Right:
 
-    - (char)characterAtIndex:(unsigned)anIndex;
+    - (char)characterAtIndex:(CPUInteger)anIndex;
     - (void)insertObject:(id)anObject;
 
 ##### Wrong:

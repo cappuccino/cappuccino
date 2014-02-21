@@ -16,9 +16,10 @@
     CPArray     variations;
     CPArray     messages;
     int         messageIndex;
+    BOOL        useBlocks;
 }
 
-- (void)applicationDidFinishLaunching:(CPNotification)aNotification
+- (void)_init
 {
     messages = [
         [@"Are you sure you want to theorise before you have data?",
@@ -30,6 +31,7 @@
         [@"Sometimes a message can be really long and just appear to go on and on. It could be a speech. It could be the television.",
          nil]
     ];
+
     messageIndex = 0;
 
     variations = [
@@ -43,6 +45,11 @@
         [CPDocModalWindowMask, CPInformationalAlertStyle],
         [CPDocModalWindowMask, CPCriticalAlertStyle]
     ];
+}
+
+- (void)applicationDidFinishLaunching:(CPNotification)aNotification
+{
+    [self _init];
 
     theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(100, 100, 500, 500) styleMask:CPTitledWindowMask];
     [theWindow setTitle:@"CPAlert Test"];
@@ -54,6 +61,13 @@
     [label setStringValue:"Respond to the alert dialog with the mouse or the keyboard."];
     [contentView addSubview:label];
 
+    var button = [CPButton buttonWithTitle:@"Start again using didEnd blocks"];
+
+    [button setTarget:self];
+    [button setAction:@selector(testWithBlocks:)];
+    [button setCenter:[contentView center]];
+    [contentView addSubview:button];
+
     [theWindow orderFront:self];
 
     [self showNextAlertVariation];
@@ -62,9 +76,17 @@
     //[CPMenu setMenuBarVisible:YES];
 }
 
+- (@action)testWithBlocks:(id)sender
+{
+    useBlocks = YES;
+    [self _init];
+    [self showNextAlertVariation];
+}
+
 - (void)alertDidEnd:(CPAlert)anAlert returnCode:(CPInteger)returnCode
 {
-    CPLogConsole(_cmd);
+    CPLog.info("%s alert = %s, code = %d", _cmd, [anAlert description], returnCode);
+
     if (returnCode === 0)
         [label setStringValue:"You chose the default action."];
     else
@@ -75,7 +97,7 @@
 
 - (void)customDidEnd:(CPAlert)anAlert code:(id)code context:(id)context
 {
-    CPLogConsole(_cmd + anAlert + code + context);
+    CPLog.info("%s alert = %s, code = %d, context = %s", _cmd, [anAlert description], code, context);
 }
 
 - (void)showNextAlertVariation
@@ -92,17 +114,37 @@
 
     var windowStyle = variation[0];
     [alert setDelegate:self];
-    [alert setMessageText:message[0]];
-    [alert setInformativeText:message[1]];
+    [alert setMessageText:message[0] || @""];
+    [alert setInformativeText:message[1] || @""];
+
     if (message.length > 2)
         [alert addButtonWithTitle:message[2]];
+
     if (message.length > 3)
         [alert addButtonWithTitle:message[3]];
+
     [alert setTheme:(windowStyle === CPHUDBackgroundWindowMask) ? [CPTheme defaultHudTheme] : [CPTheme defaultTheme]];
     [alert setAlertStyle:variation[1]];
 
     if (windowStyle & CPDocModalWindowMask)
-        [alert beginSheetModalForWindow:theWindow modalDelegate:self didEndSelector:@selector(customDidEnd:code:context:) contextInfo:@"here is some context"];
+    {
+        if (useBlocks)
+            [alert beginSheetModalForWindow:theWindow didEndBlock:function(alert, returnCode)
+                {
+                    CPLog.info("didEndBlock: alert = %s, code = %d", [alert description], returnCode);
+
+                    [self showNextAlertVariation];
+                }];
+        else
+            [alert beginSheetModalForWindow:theWindow modalDelegate:self didEndSelector:@selector(customDidEnd:code:context:) contextInfo:@"here is some context"];
+    }
+    else if (useBlocks)
+        [alert runModalWithDidEndBlock:function(alert, returnCode)
+            {
+                CPLog.info("didEndBlock: alert = %s, code = %d", [alert description], returnCode);
+
+                [self showNextAlertVariation];
+            }];
     else
         [alert runModal];
 }

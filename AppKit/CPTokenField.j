@@ -34,6 +34,8 @@
 @import "CPWindow_Constants.j"
 
 @global CPApp
+@global CPTextFieldDidFocusNotification
+@global CPTextFieldDidBlurNotification
 
 #if PLATFORM(DOM)
 
@@ -96,7 +98,7 @@ CPTokenFieldDeleteButtonType     = 1;
     return "tokenfield";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{ @"editor-inset": CGInsetMakeZero() };
 }
@@ -392,6 +394,8 @@ CPTokenFieldDeleteButtonType     = 1;
             element.focus();
             CPTokenFieldInputOwner = self;
         }, 0.0);
+
+        [self textDidFocus:[CPNotification notificationWithName:CPTextFieldDidFocusNotification object:self userInfo:nil]];
     }, 0.0);
 
     [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
@@ -424,11 +428,13 @@ CPTokenFieldDeleteButtonType     = 1;
     if (_shouldNotifyTarget)
     {
         _shouldNotifyTarget = NO;
-        [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:self userInfo:nil]];
+        [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:self userInfo:@{"CPTextMovement": [self _currentTextMovement]}]];
 
         if ([self sendsActionOnEndEditing])
             [self sendAction:[self action] to:[self target]];
     }
+
+    [self textDidBlur:[CPNotification notificationWithName:CPTextFieldDidBlurNotification object:self userInfo:nil]];
 
     return YES;
 }
@@ -639,7 +645,7 @@ CPTokenFieldDeleteButtonType     = 1;
     [[self _tokens] makeObjectsPerformSelector:@selector(setEditable:) withObject:shouldBeEditable];
 }
 
-- (void)sendAction:(SEL)anAction to:(id)anObject
+- (BOOL)sendAction:(SEL)anAction to:(id)anObject
 {
     _shouldNotifyTarget = NO;
     [super sendAction:anAction to:anObject];
@@ -647,7 +653,7 @@ CPTokenFieldDeleteButtonType     = 1;
 
 // Incredible hack to disable supers implementation
 // so it cannot change our object value and break the tokenfield
-- (void)_setStringValue:(id)aValue
+- (BOOL)_setStringValue:(CPString)aValue
 {
 }
 
@@ -1535,7 +1541,7 @@ CPTokenFieldDeleteButtonType     = 1;
 {
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     var attributes = [CPButton themeAttributes];
 
@@ -1565,7 +1571,7 @@ CPTokenFieldDeleteButtonType     = 1;
 {
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     var attributes = [CPButton themeAttributes];
 

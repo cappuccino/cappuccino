@@ -27,6 +27,7 @@
 @import "CPSortDescriptor.j"
 @import "CPURL.j"
 @import "CPValue.j"
+@import "CPNull.j"
 
 @class CPException
 @class CPURL
@@ -205,7 +206,7 @@ var CPStringUIDs = new CFMutableDictionary(),
     Returns the character at the specified index.
     @param anIndex the index of the desired character
 */
-- (CPString)characterAtIndex:(unsigned)anIndex
+- (CPString)characterAtIndex:(CPUInteger)anIndex
 {
     return self.charAt(anIndex);
 }
@@ -248,7 +249,7 @@ var CPStringUIDs = new CFMutableDictionary(),
     @param anIndex the index of the padding string to start from (if necessary to use)
     @return the new padded string
 */
-- (CPString)stringByPaddingToLength:(unsigned)aLength withString:(CPString)aString startingAtIndex:(unsigned)anIndex
+- (CPString)stringByPaddingToLength:(unsigned)aLength withString:(CPString)aString startingAtIndex:(CPUInteger)anIndex
 {
     if (self.length == aLength)
         return self;
@@ -496,6 +497,9 @@ var CPStringUIDs = new CFMutableDictionary(),
     return [self compare:aString options:CPCaseInsensitiveSearch];
 }
 
+// This is for speed
+var CPStringNull = [CPNull null];
+
 /*!
     Compares the receiver to the specified string, using options.
     @param aString the string with which to compare
@@ -504,6 +508,12 @@ var CPStringUIDs = new CFMutableDictionary(),
 */
 - (CPComparisonResult)compare:(CPString)aString options:(int)aMask
 {
+    if (aString === nil)
+        return CPOrderedDescending;
+
+    if (aString === CPStringNull)
+        [CPException raise:CPInvalidArgumentException reason:"compare: argument can't be 'CPNull'"];
+
     var lhs = self,
         rhs = aString;
 
@@ -586,7 +596,7 @@ var CPStringUIDs = new CFMutableDictionary(),
 /*!
     Returns a hash of the string instance.
 */
-- (unsigned)UID
+- (CPString)UID
 {
     var UID = CPStringUIDs.valueForKey(self);
 

@@ -135,7 +135,7 @@
     }
 }
 
-- (void)addObserver:(id)anObserver forKeyPath:(CPString)aPath options:(unsigned)options context:(id)aContext
+- (void)addObserver:(id)anObserver forKeyPath:(CPString)aPath options:(CPKeyValueObservingOptions)options context:(id)aContext
 {
     if (!anObserver || !aPath)
         return;
@@ -742,7 +742,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
     }
 }
 
-- (void)_addObserver:(id)anObserver forKeyPath:(CPString)aPath options:(unsigned)options context:(id)aContext
+- (void)_addObserver:(id)anObserver forKeyPath:(CPString)aPath options:(CPKeyValueObservingOptions)options context:(id)aContext
 {
     if (!anObserver)
         return;
@@ -1003,7 +1003,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
 
 @end
 
-@implementation _CPKVOModelSubclass
+@implementation _CPKVOModelSubclass : CPObject
 {
 }
 
@@ -1129,7 +1129,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
 
 @end
 
-@implementation _CPKVOModelDictionarySubclass
+@implementation _CPKVOModelDictionarySubclass : CPObject
 {
 }
 
