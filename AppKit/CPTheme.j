@@ -666,10 +666,10 @@ CPThemeStateKeyWindow        = CPThemeState("keyWindow");
 
         if ([aCoder containsValueForKey:@"value"])
         {
-            var state = CPThemeStateNormal;
+            var state = String(CPThemeStateNormal);
 
             if ([aCoder containsValueForKey:@"state"])
-                state = CPThemeState([aCoder decodeObjectForKey:@"state"]);
+                state = [aCoder decodeObjectForKey:@"state"];
 
             [_values setObject:[aCoder decodeObjectForKey:"value"] forKey:state];
         }
@@ -683,7 +683,7 @@ CPThemeStateKeyWindow        = CPThemeState("keyWindow");
             {
                 var key = keys[count];
 
-                [_values setObject:[encodedValues objectForKey:key] forKey:CPThemeState(key)];
+                [_values setObject:[encodedValues objectForKey:key] forKey:key];
             }
         }
     }
