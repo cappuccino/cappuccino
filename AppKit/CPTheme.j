@@ -399,9 +399,10 @@ function CPThemeState()
     if (arguments.length < 1)
         throw "CPThemeState() must be called with at least one string argument";
 
+    var themeState;
     if (arguments.length === 1 && typeof arguments[0] === 'string')
     {
-        var themeState = CPThemeStates[arguments[0]];
+        themeState = CPThemeStates[arguments[0]];
         if (themeState !== undefined)
             return themeState;
     }
@@ -429,7 +430,7 @@ function CPThemeState()
         }
     }
 
-    var themeState = CPThemeState._cacheThemeState(new ThemeState(stateNames));
+    themeState = CPThemeState._cacheThemeState(new ThemeState(stateNames));
     return themeState;
 }
 
@@ -458,7 +459,7 @@ CPThemeState._cacheThemeState = function(aState)
     if (themeState === undefined)
     {
         themeState = aState;
-        CPThemeState[String(themeState)] = themeState;
+        CPThemeStates[String(themeState)] = themeState;
     }
     return themeState;
 }
