@@ -342,8 +342,6 @@ function ThemeState(stateNames)
 
     stateNameKeys.sort();
     this._stateNameString = stateNameKeys[0];
-    if (this._stateNameString === undefined)
-        this._stateNameString = "";
 
     var stateNameLength = stateNameKeys.length;
     for (var stateIndex = 1; stateIndex < stateNameLength; stateIndex++)
