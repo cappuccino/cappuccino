@@ -317,7 +317,7 @@
 
 @end
 
-@implementation TestDataSource : CPObject <CPTableViewDataSource>
+@implementation TestDataSource : CPObject
 {
     CPArray tableEntries @accessors;
 }

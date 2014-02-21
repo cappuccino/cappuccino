@@ -41,9 +41,6 @@
 
 @global CPApp
 
-var CPAlertDelegate_alertShowHelp_              = 1 << 0,
-    CPAlertDelegate_alertDidEnd_returnCode_     = 1 << 1;
-
 /*
     @global
     @group CPAlertStyle
@@ -61,14 +58,6 @@ CPInformationalAlertStyle   = 1;
 CPCriticalAlertStyle        = 2;
 
 var bottomHeight = 71;
-
-@protocol CPAlertDelegate <CPObject>
-
-@optional
-- (BOOL)alertShowHelp:(CPAlert)alert;
-- (void)alertDidEnd:(CPAlert)theAlert returnCode:(int)returnCode;
-
-@end
 
 /*!
     @ingroup appkit
@@ -94,33 +83,32 @@ var bottomHeight = 71;
 */
 @implementation CPAlert : CPObject
 {
-    BOOL                    _showHelp                   @accessors(property=showsHelp);
-    BOOL                    _showSuppressionButton      @accessors(property=showsSuppressionButton);
+    BOOL                _showHelp               @accessors(property=showsHelp);
+    BOOL                _showSuppressionButton  @accessors(property=showsSuppressionButton);
 
-    CPAlertStyle            _alertStyle                 @accessors(property=alertStyle);
-    CPString                _title                      @accessors(property=title);
-    CPView                  _accessoryView              @accessors(property=accessoryView);
-    CPImage                 _icon                       @accessors(property=icon);
+    CPAlertStyle        _alertStyle             @accessors(property=alertStyle);
+    CPString            _title                  @accessors(property=title);
+    CPView              _accessoryView          @accessors(property=accessoryView);
+    CPImage             _icon                   @accessors(property=icon);
 
-    CPArray                 _buttons                    @accessors(property=buttons, readonly);
-    CPCheckBox              _suppressionButton          @accessors(property=suppressionButton, readonly);
+    CPArray             _buttons                @accessors(property=buttons, readonly);
+    CPCheckBox          _suppressionButton      @accessors(property=suppressionButton, readonly);
 
-    id <CPAlertDelegate>    _delegate                   @accessors(property=delegate);
-    id                      _modalDelegate;
-    SEL                     _didEndSelector             @accessors(property=didEndSelector);
-    Function                _didEndBlock;
-    unsigned                _implementedDelegateMethods;
+    id                  _delegate               @accessors(property=delegate);
+    id                  _modalDelegate;
+    SEL                 _didEndSelector         @accessors(property=didEndSelector);
+    Function            _didEndBlock;
 
-    _CPAlertThemeView       _themeView                  @accessors(property=themeView, readonly);
-    CPWindow                _window                     @accessors(property=window, readonly);
-    int                     _defaultWindowStyle;
+    _CPAlertThemeView   _themeView              @accessors(property=themeView, readonly);
+    CPWindow            _window                 @accessors(property=window, readonly);
+    int                 _defaultWindowStyle;
 
-    CPImageView             _alertImageView;
-    CPTextField             _informativeLabel;
-    CPTextField             _messageLabel;
-    CPButton                _alertHelpButton;
+    CPImageView         _alertImageView;
+    CPTextField         _informativeLabel;
+    CPTextField         _messageLabel;
+    CPButton            _alertHelpButton;
 
-    BOOL                    _needsLayout;
+    BOOL                _needsLayout;
 }
 
 #pragma mark Creating Alerts
@@ -198,30 +186,6 @@ var bottomHeight = 71;
 
     return self;
 }
-
-
-#pragma mark -
-#pragma mark Delegate
-
-/*!
-    Set the delegate of the receiver
-    @param aDelegate the delegate object for the alert.
-*/
-- (void)setDelegate:(id <CPAlertDelegate>)aDelegate
-{
-    if (_delegate === aDelegate)
-        return;
-
-    _delegate = aDelegate;
-    _implementedDelegateMethods = 0;
-
-    if ([_delegate respondsToSelector:@selector(alertShowHelp:)])
-        _implementedDelegateMethods |= CPAlertDelegate_alertShowHelp_;
-
-    if ([_delegate respondsToSelector:@selector(alertDidEnd:returnCode:)])
-        _implementedDelegateMethods |= CPAlertDelegate_alertDidEnd_returnCode_;
-}
-
 
 #pragma mark Accessors
 
@@ -732,7 +696,8 @@ var bottomHeight = 71;
 */
 - (@action)_showHelp:(id)aSender
 {
-    [self _sendDelegateAlertShowHelp];
+    if ([_delegate respondsToSelector:@selector(alertShowHelp:)])
+        [_delegate alertShowHelp:self];
 }
 
 /*
@@ -778,42 +743,12 @@ var bottomHeight = 71;
     {
         if (_didEndSelector)
             objj_msgSend(_delegate, _didEndSelector, self, returnCode);
-        else
-            [self _sendDelegateAlertDidEndReturnCode:returnCode];
+        else if ([_delegate respondsToSelector:@selector(alertDidEnd:returnCode:)])
+            [_delegate alertDidEnd:self returnCode:returnCode];
     }
 }
 
 @end
-
-
-@implementation CPAlert (CPAlertDelegate)
-
-/*!
-    @ignore
-    Call the delegate alertDidEnd:returnCode
-*/
-- (void)_sendDelegateAlertDidEndReturnCode:(int)returnCode
-{
-    if (!(_implementedDelegateMethods & CPAlertDelegate_alertDidEnd_returnCode_))
-        return;
-
-    [_delegate alertDidEnd:self returnCode:returnCode];
-}
-
-/*!
-    @ignore
-    Call the delegate alertShowHelp:
-*/
-- (BOOL)_sendDelegateAlertShowHelp
-{
-    if (!(_implementedDelegateMethods & CPAlertDelegate_alertShowHelp_))
-        return YES;
-
-    return [_delegate alertShowHelp:self];
-}
-
-@end
-
 
 @implementation _CPAlertThemeView : CPView
 
