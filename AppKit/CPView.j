@@ -3353,7 +3353,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 
         _theme = [CPTheme defaultTheme];
         _themeClass = [aCoder decodeObjectForKey:CPViewThemeClassKey];
-        _themeState = CPThemeState([aCoder decodeIntForKey:CPViewThemeStateKey]);
+        _themeState = CPThemeState([aCoder decodeObjectForKey:CPViewThemeStateKey]);
         _themeAttributes = {};
 
         var theClass = [self class],
