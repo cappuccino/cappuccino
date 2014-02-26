@@ -733,7 +733,7 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
     var themeState = _themeState;
 
     if (NAMES_FOR_PARTS[_hitPart] + "-color" !== anAttributeName)
-        themeState = CPThemeState.subtractThemeStates(themeState, CPThemeStateHighlighted);
+        themeState = ThemeState.subtractThemeStates(themeState, CPThemeStateHighlighted);
 
     return [self valueForThemeAttribute:anAttributeName inState:themeState];
 }

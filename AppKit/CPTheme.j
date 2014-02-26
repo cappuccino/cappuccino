@@ -316,7 +316,7 @@ var CPThemeNameKey          = @"CPThemeNameKey",
 
 /*!
  * ThemeStates are immutable objects representing a particular ThemeState.  Applications should never be creating
- * ThemeStates directly but should instead use the CPThemeState helper methods.
+ * ThemeStates directly but should instead use the CPThemeState function.
  */
 function ThemeState(stateNames)
 {
@@ -384,6 +384,36 @@ ThemeState.prototype.isSubsetOf = function(aState)
     return true;
 }
 
+ThemeState.subtractThemeStates = function(aState1, aState2)
+{
+    if (aState2 === undefined || aState2 === nil || aState2 === [CPNull null])
+        return aState1;
+
+    var newStates = {};
+    for (var stateName in aState1._stateNames)
+    {
+        if (!aState1._stateNames.hasOwnProperty(stateName))
+            continue;
+
+        if (!aState2._stateNames[stateName])
+            newStates[stateName] = true;
+    }
+
+    return ThemeState._cacheThemeState(new ThemeState(newStates));
+}
+
+ThemeState._cacheThemeState = function(aState)
+{
+    // We do this caching so themeState equality works.  Basically, doing CPThemeState('foo+bar') === CPThemeState('bar', 'foo') will return true.
+    var themeState = CPThemeStates[String(aState)];
+    if (themeState === undefined)
+    {
+        themeState = aState;
+        CPThemeStates[String(themeState)] = themeState;
+    }
+    return themeState;
+}
+
 var CPThemeStates = {};
 
 /*!
@@ -430,37 +460,7 @@ function CPThemeState()
         }
     }
 
-    themeState = CPThemeState._cacheThemeState(new ThemeState(stateNames));
-    return themeState;
-}
-
-CPThemeState.subtractThemeStates = function(aState1, aState2)
-{
-    if (aState2 === undefined || aState2 === nil || aState2 === [CPNull null])
-        return aState1;
-
-    var newStates = {};
-    for (var stateName in aState1._stateNames)
-    {
-        if (!aState1._stateNames.hasOwnProperty(stateName))
-            continue;
-
-        if (!aState2._stateNames[stateName])
-            newStates[stateName] = true;
-    }
-
-    return CPThemeState._cacheThemeState(new ThemeState(newStates));
-}
-
-CPThemeState._cacheThemeState = function(aState)
-{
-    // We do this caching so themeState equality works.  Basically, doing CPThemeState('foo+bar') === CPThemeState('bar', 'foo') will return true.
-    var themeState = CPThemeStates[String(aState)];
-    if (themeState === undefined)
-    {
-        themeState = aState;
-        CPThemeStates[String(themeState)] = themeState;
-    }
+    themeState = ThemeState._cacheThemeState(new ThemeState(stateNames));
     return themeState;
 }
 

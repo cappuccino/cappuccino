@@ -431,7 +431,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     [_segments[aSegment] setEnabled:shouldBeEnabled];
 
     if (shouldBeEnabled)
-        _themeStates[aSegment] = CPThemeState.subtractThemeStates(_themeStates[aSegment], CPThemeStateDisabled);
+        _themeStates[aSegment] = ThemeState.subtractThemeStates(_themeStates[aSegment], CPThemeStateDisabled);
     else
         _themeStates[aSegment] = CPThemeState(_themeStates[aSegment], CPThemeStateDisabled);
 
@@ -479,7 +479,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     if (shouldHighlight)
         _themeStates[aSegment] = CPThemeState(_themeStates[aSegment], CPThemeStateHighlighted);
     else
-        _themeStates[aSegment] = CPThemeState.subtractThemeStates(_themeStates[aSegment], CPThemeStateHighlighted);
+        _themeStates[aSegment] = ThemeState.subtractThemeStates(_themeStates[aSegment], CPThemeStateHighlighted);
 
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];

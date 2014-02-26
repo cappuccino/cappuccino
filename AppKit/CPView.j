@@ -2910,7 +2910,7 @@ setBoundsOrigin:
     if (!_themeState.hasThemeState(aState))
         return NO;
 
-    _themeState = CPThemeState.subtractThemeStates(_themeState, aState);
+    _themeState = ThemeState.subtractThemeStates(_themeState, aState);
 
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
