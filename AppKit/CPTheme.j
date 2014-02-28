@@ -402,6 +402,8 @@ ThemeState.subtractThemeStates = function(aState1, aState2)
     return ThemeState._cacheThemeState(new ThemeState(newStates));
 }
 
+var CPThemeStates = {};
+
 ThemeState._cacheThemeState = function(aState)
 {
     // We do this caching so themeState equality works.  Basically, doing CPThemeState('foo+bar') === CPThemeState('bar', 'foo') will return true.
@@ -413,8 +415,6 @@ ThemeState._cacheThemeState = function(aState)
     }
     return themeState;
 }
-
-var CPThemeStates = {};
 
 /*!
  * This method can be called in multiple ways:
