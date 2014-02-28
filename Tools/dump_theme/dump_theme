@@ -136,7 +136,7 @@ function main(args)
                     value = [theme valueForAttributeWithName:attributeName inState:state forClass:className],
                     description = CPDescriptionOfObject(value).replace(/^/mg, "      ");
 
-                colorPrint("cyan", "   " + CPThemeStateName(state));
+                colorPrint("cyan", "   " + String(state));
                 stream.print(description + "\n");
             }
         }

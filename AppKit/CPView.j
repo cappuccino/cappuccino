@@ -2889,21 +2889,15 @@ setBoundsOrigin:
 
 - (BOOL)hasThemeState:(CPThemeState)aState
 {
-    // Because CPThemeStateNormal is defined as 0 we need to check for it explicitly here
-    if (aState === CPThemeStateNormal && _themeState === CPThemeStateNormal)
-        return YES;
-
-    return !!(_themeState & ((typeof aState === "string") ? CPThemeState(aState) : aState));
+    return _themeState.hasThemeState(aState);
 }
 
 - (BOOL)setThemeState:(CPThemeState)aState
 {
-    var newState = (typeof aState === "string") ? CPThemeState(aState) : aState;
-
-    if (_themeState & newState)
+    if (_themeState.hasThemeState(aState))
         return NO;
 
-    _themeState |= newState;
+    _themeState = CPThemeState(_themeState, aState);
 
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
@@ -2913,12 +2907,10 @@ setBoundsOrigin:
 
 - (BOOL)unsetThemeState:(CPThemeState)aState
 {
-    var newState = ((typeof aState === "string") ? CPThemeState(aState) : aState);
-
-    if (!(_themeState & newState))
+    if (!_themeState.hasThemeState(aState))
         return NO;
 
-    _themeState &= ~newState;
+    _themeState = ThemeState.subtractThemeStates(_themeState, aState);
 
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
@@ -3361,7 +3353,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 
         _theme = [CPTheme defaultTheme];
         _themeClass = [aCoder decodeObjectForKey:CPViewThemeClassKey];
-        _themeState = CPThemeState([aCoder decodeIntForKey:CPViewThemeStateKey]);
+        _themeState = CPThemeState([aCoder decodeObjectForKey:CPViewThemeStateKey]);
         _themeAttributes = {};
 
         var theClass = [self class],
@@ -3452,7 +3444,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         [aCoder encodeConditionalObject:previousKeyView forKey:CPViewPreviousKeyViewKey];
 
     [aCoder encodeObject:[self themeClass] forKey:CPViewThemeClassKey];
-    [aCoder encodeInt:CPThemeStateName(_themeState) forKey:CPViewThemeStateKey];
+    [aCoder encodeObject:String(_themeState) forKey:CPViewThemeStateKey];
 
     for (var attributeName in _themeAttributes)
         if (_themeAttributes.hasOwnProperty(attributeName))

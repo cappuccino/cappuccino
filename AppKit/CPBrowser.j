@@ -980,7 +980,7 @@
     var imageView = [self layoutEphemeralSubviewNamed:@"image-view"
                                            positioned:CPWindowAbove
                       relativeToEphemeralSubviewNamed:nil],
-        isHighlighted = [self themeState] & CPThemeStateSelectedDataView;
+        isHighlighted = [self hasThemeState:CPThemeStateSelectedDataView];
 
     [imageView setImage: _isLeaf ? (isHighlighted ? _highlightedBranchImage : _branchImage) : nil];
     [imageView setImageScaling:CPImageScaleNone];

@@ -113,7 +113,7 @@ var BrowserColumnTheme     = 0,
 
     var value = [theme valueForAttributeWithName:[attribute name] inState:state forClass:className];
 
-    [valueLabel setStringValue:[SCString stringWithTemplate:ValueLabelTemplate, [theme name], className, [attribute name], CPThemeStateName(state)]]
+    [valueLabel setStringValue:[SCString stringWithTemplate:ValueLabelTemplate, [theme name], className, [attribute name], String(state)]]
     [self showValueDescription:value];
 }
 
