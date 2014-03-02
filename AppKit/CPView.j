@@ -2887,23 +2887,23 @@ setBoundsOrigin:
     return _themeState;
 }
 
-- (BOOL)hasThemeState:(CPThemeState)aState
+- (BOOL)hasThemeState:(ThemeState)aState
 {
-    // Because CPThemeStateNormal is defined as 0 we need to check for it explicitly here
-    if (aState === CPThemeStateNormal && _themeState === CPThemeStateNormal)
-        return YES;
+    if (aState.isa && [aState isKindOfClass:CPArray])
+        return _themeState.hasThemeState.apply(_themeState, aState);
 
-    return !!(_themeState & ((typeof aState === "string") ? CPThemeState(aState) : aState));
+    return _themeState.hasThemeState(aState);
 }
 
-- (BOOL)setThemeState:(CPThemeState)aState
+- (BOOL)setThemeState:(ThemeState)aState
 {
-    var newState = (typeof aState === "string") ? CPThemeState(aState) : aState;
+    if (aState.isa && [aState isKindOfClass:CPArray])
+        aState = CPThemeState.apply(null, aState);
 
-    if (_themeState & newState)
+    if (_themeState.hasThemeState(aState))
         return NO;
 
-    _themeState |= newState;
+    _themeState = CPThemeState(_themeState, aState);
 
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
@@ -2911,14 +2911,15 @@ setBoundsOrigin:
     return YES;
 }
 
-- (BOOL)unsetThemeState:(CPThemeState)aState
+- (BOOL)unsetThemeState:(ThemeState)aState
 {
-    var newState = ((typeof aState === "string") ? CPThemeState(aState) : aState);
+     if (aState.isa && [aState isKindOfClass:CPArray])
+        aState = CPThemeState.apply(null, aState);
 
-    if (!(_themeState & newState))
+    if (!_themeState.hasThemeState(aState))
         return NO;
 
-    _themeState &= ~newState;
+    _themeState = _themeState.without(aState);
 
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
@@ -3077,8 +3078,11 @@ setBoundsOrigin:
     return dictionary;
 }
 
-- (void)setValue:(id)aValue forThemeAttribute:(CPString)aName inState:(CPThemeState)aState
+- (void)setValue:(id)aValue forThemeAttribute:(CPString)aName inState:(ThemeState)aState
 {
+   if (aState.isa && [aState isKindOfClass:CPArray])
+        aState = CPThemeState.apply(null, aState);
+
     if (!_themeAttributes || !_themeAttributes[aName])
         [CPException raise:CPInvalidArgumentException reason:[self className] + " does not contain theme attribute '" + aName + "'"];
 
@@ -3109,8 +3113,11 @@ setBoundsOrigin:
     [self setNeedsLayout];
 }
 
-- (id)valueForThemeAttribute:(CPString)aName inState:(CPThemeState)aState
+- (id)valueForThemeAttribute:(CPString)aName inState:(ThemeState)aState
 {
+   if (aState.isa && [aState isKindOfClass:CPArray])
+        aState = CPThemeState.apply(null, aState);
+
     if (!_themeAttributes || !_themeAttributes[aName])
         [CPException raise:CPInvalidArgumentException reason:[self className] + " does not contain theme attribute '" + aName + "'"];
 
@@ -3361,7 +3368,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 
         _theme = [CPTheme defaultTheme];
         _themeClass = [aCoder decodeObjectForKey:CPViewThemeClassKey];
-        _themeState = CPThemeState([aCoder decodeIntForKey:CPViewThemeStateKey]);
+        _themeState = CPThemeState([aCoder decodeObjectForKey:CPViewThemeStateKey]);
         _themeAttributes = {};
 
         var theClass = [self class],
@@ -3452,7 +3459,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         [aCoder encodeConditionalObject:previousKeyView forKey:CPViewPreviousKeyViewKey];
 
     [aCoder encodeObject:[self themeClass] forKey:CPViewThemeClassKey];
-    [aCoder encodeInt:CPThemeStateName(_themeState) forKey:CPViewThemeStateKey];
+    [aCoder encodeObject:String(_themeState) forKey:CPViewThemeStateKey];
 
     for (var attributeName in _themeAttributes)
         if (_themeAttributes.hasOwnProperty(attributeName))

@@ -51,7 +51,7 @@
     {
         var theme = [Nib2Cib defaultTheme],
             height = [theme valueForAttributeWithName:@"default-row-height" forClass:[CPTableView class]],
-            width = [theme valueForAttributeWithName:@"scroller-width" inState:CPThemeStateVertical | CPThemeStateScrollViewLegacy forClass:[CPScroller class]];
+            width = [theme valueForAttributeWithName:@"scroller-width" inState:CPThemeState(CPThemeStateVertical,  CPThemeStateScrollViewLegacy) forClass:[CPScroller class]];
 
         _frame.size.height = height;
         _bounds.size.height = height;
