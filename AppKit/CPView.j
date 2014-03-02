@@ -2919,7 +2919,7 @@ setBoundsOrigin:
     if (!_themeState.hasThemeState(aState))
         return NO;
 
-    _themeState = ThemeState.subtractThemeStates(_themeState, aState);
+    _themeState = _themeState.without(aState);
 
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
