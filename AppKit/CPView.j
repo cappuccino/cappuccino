@@ -2887,13 +2887,19 @@ setBoundsOrigin:
     return _themeState;
 }
 
-- (BOOL)hasThemeState:(CPThemeState)aState
+- (BOOL)hasThemeState:(ThemeState)aState
 {
+    if (aState.isa && [aState isKindOfClass:CPArray])
+        return _themeState.hasThemeState.apply(_themeState, aState);
+
     return _themeState.hasThemeState(aState);
 }
 
-- (BOOL)setThemeState:(CPThemeState)aState
+- (BOOL)setThemeState:(ThemeState)aState
 {
+    if (aState.isa && [aState isKindOfClass:CPArray])
+        aState = CPThemeState.apply(null, aState);
+
     if (_themeState.hasThemeState(aState))
         return NO;
 
@@ -2905,8 +2911,11 @@ setBoundsOrigin:
     return YES;
 }
 
-- (BOOL)unsetThemeState:(CPThemeState)aState
+- (BOOL)unsetThemeState:(ThemeState)aState
 {
+     if (aState.isa && [aState isKindOfClass:CPArray])
+        aState = CPThemeState.apply(null, aState);
+
     if (!_themeState.hasThemeState(aState))
         return NO;
 
@@ -3069,8 +3078,11 @@ setBoundsOrigin:
     return dictionary;
 }
 
-- (void)setValue:(id)aValue forThemeAttribute:(CPString)aName inState:(CPThemeState)aState
+- (void)setValue:(id)aValue forThemeAttribute:(CPString)aName inState:(ThemeState)aState
 {
+   if (aState.isa && [aState isKindOfClass:CPArray])
+        aState = CPThemeState.apply(null, aState);
+
     if (!_themeAttributes || !_themeAttributes[aName])
         [CPException raise:CPInvalidArgumentException reason:[self className] + " does not contain theme attribute '" + aName + "'"];
 
@@ -3101,8 +3113,11 @@ setBoundsOrigin:
     [self setNeedsLayout];
 }
 
-- (id)valueForThemeAttribute:(CPString)aName inState:(CPThemeState)aState
+- (id)valueForThemeAttribute:(CPString)aName inState:(ThemeState)aState
 {
+   if (aState.isa && [aState isKindOfClass:CPArray])
+        aState = CPThemeState.apply(null, aState);
+
     if (!_themeAttributes || !_themeAttributes[aName])
         [CPException raise:CPInvalidArgumentException reason:[self className] + " does not contain theme attribute '" + aName + "'"];
 

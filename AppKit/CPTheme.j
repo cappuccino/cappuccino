@@ -240,7 +240,7 @@ var CPThemesByName          = { },
     @param aClass The themed class in which to look for the attribute
     @return       A value or nil
 */
-- (id)valueForAttributeWithName:(CPString)aName inState:(CPThemeState)aState forClass:(id)aClass
+- (id)valueForAttributeWithName:(CPString)aName inState:(ThemeState)aState forClass:(id)aClass
 {
     var attribute = [self attributeWithName:aName forClass:aClass];
 
@@ -560,7 +560,7 @@ CPThemeStateKeyWindow        = CPThemeState("keyWindow");
         _values = @{ String(CPThemeStateNormal): aValue };
 }
 
-- (void)setValue:(id)aValue forState:(CPThemeState)aState
+- (void)setValue:(id)aValue forState:(ThemeState)aState
 {
     _cache = { };
 
@@ -575,7 +575,7 @@ CPThemeStateKeyWindow        = CPThemeState("keyWindow");
     return [self valueForState:CPThemeStateNormal];
 }
 
-- (id)valueForState:(CPThemeState)aState
+- (id)valueForState:(ThemeState)aState
 {
     var stateName = String(aState);
     var value = _cache[stateName];
