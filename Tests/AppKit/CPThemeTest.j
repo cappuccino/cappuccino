@@ -62,4 +62,5 @@
     [themeAttribute setValue:9 forState:CPThemeState('aState3')];
     [self assertTrue:([themeAttribute valueForState:CPThemeState("aState8+aState3+aState4")] == 10) message:"Return the largest partial subset match for a combined state that isn't a perfect match"];
 }
+
 @end

@@ -327,7 +327,7 @@ function ThemeState(stateNames)
     {
         if (!stateNames.hasOwnProperty(key))
             continue;
-        if (key != 'normal')
+        if (key !== 'normal')
         {
             this._stateNames[key] = true;
             stateNameKeys.push(key);
@@ -356,13 +356,15 @@ ThemeState.prototype.toString = function()
 
 ThemeState.prototype.hasThemeState = function(aState)
 {
-    if (aState === undefined || aState === nil || aState._stateNames === undefined)
+    if (!aState || !aState._stateNames)
         return false;
+        
     // We can do this in O(n) because both states have their stateNames already sorted.
     for (var stateName in aState._stateNames)
     {
         if (!aState._stateNames.hasOwnProperty(stateName))
             continue;
+            
         if (!this._stateNames[stateName])
             return false;
     }
@@ -374,10 +376,11 @@ ThemeState.prototype.isSubsetOf = function(aState)
     if (aState._stateNameCount < this._stateNameCount)
         return false;
 
-    for (key in this._stateNames)
+    for (var key in this._stateNames)
     {
         if (!this._stateNames.hasOwnProperty(key))
             continue;
+            
         if (!aState._stateNames[key])
             return false;
     }
@@ -386,7 +389,7 @@ ThemeState.prototype.isSubsetOf = function(aState)
 
 ThemeState.prototype.without = function(aState)
 {
-    if (aState === undefined || aState === nil || aState === [CPNull null])
+    if (!aState || aState === [CPNull null])
         return aState;
 
     var newStates = {};
@@ -445,7 +448,7 @@ function CPThemeState()
     var stateNames = {};
     for (var argIndex = 0; argIndex < arguments.length; argIndex++)
     {
-        if (arguments[argIndex] === [CPNull null] || arguments[argIndex] === nil || arguments[argIndex] === undefined)
+        if (arguments[argIndex] === [CPNull null] || !arguments[argIndex])
             continue;
 
         if (typeof arguments[argIndex] === 'object')
@@ -582,8 +585,8 @@ CPThemeStateKeyWindow        = CPThemeState("keyWindow");
 
 - (id)valueForState:(ThemeState)aState
 {
-    var stateName = String(aState);
-    var value = _cache[stateName];
+    var stateName = String(aState),
+        value = _cache[stateName];
 
     // This can be nil.
     if (value !== undefined)
