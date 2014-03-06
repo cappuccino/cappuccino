@@ -431,9 +431,9 @@ CPSegmentSwitchTrackingMomentary = 2;
     [_segments[aSegment] setEnabled:shouldBeEnabled];
 
     if (shouldBeEnabled)
-        _themeStates[aSegment] = ThemeState.subtractThemeStates(_themeStates[aSegment], CPThemeStateDisabled);
+        _themeStates[aSegment] = _themeStates[aSegment].without(CPThemeStateDisabled);
     else
-        _themeStates[aSegment] = CPThemeState(_themeStates[aSegment], CPThemeStateDisabled);
+        _themeStates[aSegment] = _themeStates[aSegment].and(CPThemeStateDisabled);
 
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
@@ -477,9 +477,9 @@ CPSegmentSwitchTrackingMomentary = 2;
 - (void)drawSegmentBezel:(int)aSegment highlight:(BOOL)shouldHighlight
 {
     if (shouldHighlight)
-        _themeStates[aSegment] = CPThemeState(_themeStates[aSegment], CPThemeStateHighlighted);
+        _themeStates[aSegment] = _themeStates[aSegment].and(CPThemeStateHighlighted);
     else
-        _themeStates[aSegment] = ThemeState.subtractThemeStates(_themeStates[aSegment], CPThemeStateHighlighted);
+        _themeStates[aSegment] = _themeStates[aSegment].without(CPThemeStateHighlighted);
 
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
@@ -576,7 +576,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     var themeState = _themeStates[0],
         isDisabled = [self hasThemeState:CPThemeStateDisabled];
 
-    themeState = isDisabled ? CPThemeState(themeState, CPThemeStateDisabled) : themeState;
+    themeState = isDisabled ? themeState.and(CPThemeStateDisabled) : themeState;
 
     var leftCapColor = [self valueForThemeAttribute:@"left-segment-bezel-color"
                                             inState:themeState],
@@ -589,7 +589,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 
     var themeState = _themeStates[_themeStates.length - 1];
 
-    themeState = isDisabled ? CPThemeState(themeState, CPThemeStateDisabled) : themeState;
+    themeState = isDisabled ? themeState.and(CPThemeStateDisabled) : themeState;
 
     var rightCapColor = [self valueForThemeAttribute:@"right-segment-bezel-color"
                                              inState:themeState],
@@ -604,7 +604,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     {
         var themeState = _themeStates[i];
 
-        themeState = isDisabled ? CPThemeState(themeState, CPThemeStateDisabled) : themeState;
+        themeState = isDisabled ? themeState.and(CPThemeStateDisabled) : themeState;
 
         var bezelColor = [self valueForThemeAttribute:@"center-segment-bezel-color"
                                               inState:themeState],
@@ -642,11 +642,11 @@ CPSegmentSwitchTrackingMomentary = 2;
         if (i == count - 1)
             continue;
 
-        var borderState = CPThemeState(_themeStates[i], _themeStates[i + 1]);
+        var borderState = _themeStates[i].and(_themeStates[i + 1]);
 
         borderState = (borderState.hasThemeState(CPThemeStateSelected) && !borderState.hasThemeState(CPThemeStateHighlighted)) ? CPThemeStateSelected : CPThemeStateNormal;
 
-        borderState = isDisabled ? CPThemeState(borderState, CPThemeStateDisabled) : borderState;
+        borderState = isDisabled ? borderState.and(CPThemeStateDisabled) : borderState;
 
         var borderColor = [self valueForThemeAttribute:@"divider-bezel-color"
                                                inState:borderState],
@@ -676,7 +676,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 
     var segment = _segments[aSegment],
         segmentWidth = [segment width],
-        themeState = _themeState.hasThemeState(CPThemeStateDisabled) ? CPThemeState(_themeStates[aSegment], CPThemeStateDisabled) : _themeStates[aSegment];
+        themeState = _themeState.hasThemeState(CPThemeStateDisabled) ? _themeStates[aSegment].and(CPThemeStateDisabled) : _themeStates[aSegment];
         contentInset = [self valueForThemeAttribute:@"content-inset" inState:themeState],
         font = [self font];
 

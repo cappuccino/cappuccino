@@ -6186,14 +6186,20 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
     [self setThemeState:CPThemeStateTableDataView];
 }
 
-- (BOOL)setThemeState:(CPThemeState)aState
+- (BOOL)setThemeState:(ThemeState)aState
 {
+     if (aState.isa && [aState isKindOfClass:CPArray])
+        aState = CPThemeState.apply(null, aState);
+
     [super setThemeState:aState];
     [self recursivelyPerformSelector:@selector(setThemeState:) withObject:aState startingFrom:self];
 }
 
-- (BOOL)unsetThemeState:(CPThemeState)aState
+- (BOOL)unsetThemeState:(ThemeState)aState
 {
+   if (aState.isa && [aState isKindOfClass:CPArray])
+        aState = CPThemeState.apply(null, aState);
+
     [super unsetThemeState:aState];
     [self recursivelyPerformSelector:@selector(unsetThemeState:) withObject:aState startingFrom:self];
 }

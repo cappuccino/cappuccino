@@ -240,7 +240,7 @@ var CPThemesByName          = { },
     @param aClass The themed class in which to look for the attribute
     @return       A value or nil
 */
-- (id)valueForAttributeWithName:(CPString)aName inState:(CPThemeState)aState forClass:(id)aClass
+- (id)valueForAttributeWithName:(CPString)aName inState:(ThemeState)aState forClass:(id)aClass
 {
     var attribute = [self attributeWithName:aName forClass:aClass];
 
@@ -384,23 +384,30 @@ ThemeState.prototype.isSubsetOf = function(aState)
     return true;
 }
 
-ThemeState.subtractThemeStates = function(aState1, aState2)
+ThemeState.prototype.without = function(aState)
 {
-    if (aState2 === undefined || aState2 === nil || aState2 === [CPNull null])
-        return aState1;
+    if (aState === undefined || aState === nil || aState === [CPNull null])
+        return aState;
 
     var newStates = {};
-    for (var stateName in aState1._stateNames)
+    for (var stateName in this._stateNames)
     {
-        if (!aState1._stateNames.hasOwnProperty(stateName))
+        if (!this._stateNames.hasOwnProperty(stateName))
             continue;
 
-        if (!aState2._stateNames[stateName])
+        if (!aState._stateNames[stateName])
             newStates[stateName] = true;
     }
 
     return ThemeState._cacheThemeState(new ThemeState(newStates));
 }
+
+ThemeState.prototype.and  = function(aState)
+{
+    return CPThemeState(this, aState);
+}
+
+var CPThemeStates = {};
 
 ThemeState._cacheThemeState = function(aState)
 {
@@ -413,8 +420,6 @@ ThemeState._cacheThemeState = function(aState)
     }
     return themeState;
 }
-
-var CPThemeStates = {};
 
 /*!
  * This method can be called in multiple ways:
@@ -560,7 +565,7 @@ CPThemeStateKeyWindow        = CPThemeState("keyWindow");
         _values = @{ String(CPThemeStateNormal): aValue };
 }
 
-- (void)setValue:(id)aValue forState:(CPThemeState)aState
+- (void)setValue:(id)aValue forState:(ThemeState)aState
 {
     _cache = { };
 
@@ -575,7 +580,7 @@ CPThemeStateKeyWindow        = CPThemeState("keyWindow");
     return [self valueForState:CPThemeStateNormal];
 }
 
-- (id)valueForState:(CPThemeState)aState
+- (id)valueForState:(ThemeState)aState
 {
     var stateName = String(aState);
     var value = _cache[stateName];
