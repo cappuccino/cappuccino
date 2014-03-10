@@ -2897,7 +2897,7 @@ setBoundsOrigin:
 
 - (BOOL)setThemeState:(ThemeState)aState
 {
-    if (aState.isa && [aState isKindOfClass:CPArray])
+    if (aState && aState.isa && [aState isKindOfClass:CPArray])
         aState = CPThemeState.apply(null, aState);
 
     if (_themeState.hasThemeState(aState))
@@ -2913,13 +2913,14 @@ setBoundsOrigin:
 
 - (BOOL)unsetThemeState:(ThemeState)aState
 {
-     if (aState.isa && [aState isKindOfClass:CPArray])
+     if (aState && aState.isa && [aState isKindOfClass:CPArray])
         aState = CPThemeState.apply(null, aState);
 
-    if (!_themeState.hasThemeState(aState))
-        return NO;
-
+    var oldThemeState = _themeState
     _themeState = _themeState.without(aState);
+
+    if (oldThemeState === _themeState)
+        return NO;
 
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];

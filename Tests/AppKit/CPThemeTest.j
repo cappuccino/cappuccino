@@ -42,6 +42,10 @@
 
     var themeState5 = CPThemeState('a', 'theme', 'state');
     [self assertTrue:(String(themeState5) === 'a+state+theme') message:"Creating a new ThemeState using multiple strings works."];
+
+    var themeState6 = CPThemeState('a')
+    var themeState7 = CPThemeState('a', 'b')
+    [self assertTrue:(String(CPThemeState(themeState6, themeState7)) === 'a+b') message:"Creating a new ThemeState where the same state repeats itself does not result in the state being in the new themestate twice"];
 }
 
 - (void)testThemeAttributeValueForState
