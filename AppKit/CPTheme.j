@@ -358,13 +358,13 @@ ThemeState.prototype.hasThemeState = function(aState)
 {
     if (!aState || !aState._stateNames)
         return false;
-        
+
     // We can do this in O(n) because both states have their stateNames already sorted.
     for (var stateName in aState._stateNames)
     {
         if (!aState._stateNames.hasOwnProperty(stateName))
             continue;
-            
+
         if (!this._stateNames[stateName])
             return false;
     }
@@ -380,7 +380,7 @@ ThemeState.prototype.isSubsetOf = function(aState)
     {
         if (!this._stateNames.hasOwnProperty(key))
             continue;
-            
+
         if (!aState._stateNames[key])
             return false;
     }
@@ -390,7 +390,7 @@ ThemeState.prototype.isSubsetOf = function(aState)
 ThemeState.prototype.without = function(aState)
 {
     if (!aState || aState === [CPNull null])
-        return aState;
+        return this;
 
     var newStates = {};
     for (var stateName in this._stateNames)
