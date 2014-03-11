@@ -72,13 +72,14 @@ CPPushInCellMask            = CPPushInButtonMask;
 CPChangeGrayCellMask        = CPGrayButtonMask;
 CPChangeBackgroundCellMask  = CPBackgroundButtonMask;
 
-CPButtonStateMixed             = CPThemeState("mixed");
-CPButtonStateBezelStyleRounded = CPThemeState("rounded");
+CPButtonStateMixed                  = CPThemeState("mixed");
+CPButtonStateBezelStyleRounded      = CPThemeState("rounded");
+CPButtonStateBezelStyleRoundRect    = CPThemeState("roundRect");
 
 // add all future correspondance between bezel styles and theme state here.
 var CPButtonBezelStyleStateMap = @{
         CPRoundedBezelStyle: CPButtonStateBezelStyleRounded,
-        CPRoundRectBezelStyle: [CPNull null],
+        CPRoundRectBezelStyle: CPButtonStateBezelStyleRoundRect,
     };
 
 /// @cond IGNORE
