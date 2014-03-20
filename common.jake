@@ -35,6 +35,8 @@ SYSTEM.args.slice(1).forEach(function(arg)
 
 function ensurePackageUpToDate(packageName, requiredVersion, options)
 {
+    return;
+
     options = options || {};
 
     var packageInfo = require("narwhal/packages").catalog[packageName];
@@ -94,23 +96,25 @@ function ensurePackageUpToDate(packageName, requiredVersion, options)
     }
 }
 
-// UPDATE THESE TO PICK UP CORRESPONDING CHANGES IN DEPENDENCIES
-ensurePackageUpToDate("jake",           "0.3");
-ensurePackageUpToDate("browserjs",      "0.1.1");
-ensurePackageUpToDate("shrinksafe",     "0.2");
-ensurePackageUpToDate("narwhal",        "0.3.1", {
-    noupdate : true,
-    message : "Update Narwhal by re-running bootstrap.sh, or pulling the latest from git (see: http://github.com/280north/narwhal)."
-});
-ensurePackageUpToDate("narwhal-jsc",    "0.3", {
-    optional : true,
-    after : function(dir) {
-        if (OS.system("cd " + OS.enquote(dir) + " && make webkit")) {
-            print("Problem building narwhal-jsc.");
-            OS.exit(1);
-        }
-    }
-});
+// This is disabled because tusk causes a lot of problems, and no packages will
+// never be updated anyway
+// // UPDATE THESE TO PICK UP CORRESPONDING CHANGES IN DEPENDENCIES
+// ensurePackageUpToDate("jake",           "0.3");
+// ensurePackageUpToDate("browserjs",      "0.1.1");
+// ensurePackageUpToDate("shrinksafe",     "0.2");
+// ensurePackageUpToDate("narwhal",        "0.3.1", {
+//     noupdate : true,
+//     message : "Update Narwhal by re-running bootstrap.sh, or pulling the latest from git (see: http://github.com/280north/narwhal)."
+// });
+// ensurePackageUpToDate("narwhal-jsc",    "0.3", {
+//     optional : true,
+//     after : function(dir) {
+//         if (OS.system("cd " + OS.enquote(dir) + " && make webkit")) {
+//             print("Problem building narwhal-jsc.");
+//             OS.exit(1);
+//         }
+//     }
+// });
 
 var JAKE = require("jake");
 
@@ -440,6 +444,39 @@ global.installSymlink = function(sourcePath)
                 target.remove();
 
             FILE.symlink(relative, target);
+        });
+    }
+};
+
+global.installCopy = function(sourcePath, useSudo)
+{
+    if (!FILE.isDirectory(sourcePath))
+        return;
+
+    var packageName = FILE.basename(sourcePath),
+        targetPath = FILE.join(SYSTEM.prefix, "packages", packageName);
+
+    if (FILE.isDirectory(targetPath))
+        FILE.rmtree(targetPath);
+    else if (FILE.linkExists(targetPath))
+        FILE.remove(targetPath);
+
+    stream.print("Copying \0cyan(" + sourcePath + "\0) ==> \0cyan(" + targetPath + "\0)");
+
+    // hacky way to do a sudo copy.
+    if (useSudo)
+        OS.system(["sudo", "cp", "-r", sourcePath, targetPath]);
+    else
+        FILE.copyTree(sourcePath, targetPath);
+
+    var binPath = FILE.Path(FILE.join(targetPath, "bin"));
+
+    if (binPath.isDirectory())
+    {
+        binPath.list().forEach(function (name)
+        {
+            var binary = binPath.join(name);
+            binary.chmod(0755);
         });
     }
 };
