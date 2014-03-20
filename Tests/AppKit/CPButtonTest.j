@@ -132,6 +132,16 @@
     [self assert:CPMixedState equals:[button state] message:@"Mixed state is allowed, state should be CPMixedState"];
 }
 
+- (void)testThemeStateWhenSettingObjectValue
+{
+    [button unsetThemeState:[button themeState]];
+    [button setObjectValue:CPOnState];
+    [self assert:String(CPThemeStateSelected) equals:String([button themeState]) message:@"object should be in the selected themestate"];
+
+    [button setObjectValue:CPOffState];
+    [self assert:String(CPThemeStateNormal) equals:String([button themeState]) message:@"object should be in the normal themestate"];
+}
+
 - (void)testThemeAttributes
 {
     var attributes = [CPButton themeAttributes];

@@ -1389,12 +1389,15 @@ CPTokenFieldDeleteButtonType     = 1;
     [self setNeedsLayout];
 }
 
-- (BOOL)setThemeState:(CPThemeState)aState
+- (BOOL)setThemeState:(ThemeState)aState
 {
+   if (aState.isa && [aState isKindOfClass:CPArray])
+        aState = CPThemeState.apply(null, aState);
+
     var r = [super setThemeState:aState];
 
     // Share hover state with the disclosure and delete buttons.
-    if (aState & CPThemeStateHovered)
+    if (aState.hasThemeState(CPThemeStateHovered))
     {
         [_disclosureButton setThemeState:CPThemeStateHovered];
         [_deleteButton setThemeState:CPThemeStateHovered];
@@ -1403,12 +1406,15 @@ CPTokenFieldDeleteButtonType     = 1;
     return r;
 }
 
-- (BOOL)unsetThemeState:(CPThemeState)aState
+- (BOOL)unsetThemeState:(ThemeState)aState
 {
+   if (aState.isa && [aState isKindOfClass:CPArray])
+        aState = CPThemeState.apply(null, aState);
+
     var r = [super unsetThemeState:aState];
 
     // Share hover state with the disclosure and delete button.
-    if (aState & CPThemeStateHovered)
+    if (aState.hasThemeState(CPThemeStateHovered))
     {
         [_disclosureButton unsetThemeState:CPThemeStateHovered];
         [_deleteButton unsetThemeState:CPThemeStateHovered];

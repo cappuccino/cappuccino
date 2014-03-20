@@ -255,7 +255,7 @@ var bottomHeight = 71;
     [_themeView setValue:aValue forThemeAttribute:aName];
 }
 
-- (void)setValue:(id)aValue forThemeAttribute:(CPString)aName inState:(CPThemeState)aState
+- (void)setValue:(id)aValue forThemeAttribute:(CPString)aName inState:(ThemeState)aState
 {
     [_themeView setValue:aValue forThemeAttribute:aName inState:aState];
 }

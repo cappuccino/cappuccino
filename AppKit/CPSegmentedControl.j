@@ -285,7 +285,6 @@ CPSegmentSwitchTrackingMomentary = 2;
 - (void)setWidth:(float)aWidth forSegment:(unsigned)aSegment
 {
     [_segments[aSegment] setWidth:aWidth];
-
     [self tileWithChangedSegment:aSegment];
 }
 
@@ -432,9 +431,9 @@ CPSegmentSwitchTrackingMomentary = 2;
     [_segments[aSegment] setEnabled:shouldBeEnabled];
 
     if (shouldBeEnabled)
-        _themeStates[aSegment] &= ~CPThemeStateDisabled;
+        _themeStates[aSegment] = _themeStates[aSegment].without(CPThemeStateDisabled);
     else
-        _themeStates[aSegment] |= CPThemeStateDisabled;
+        _themeStates[aSegment] = _themeStates[aSegment].and(CPThemeStateDisabled);
 
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
@@ -478,9 +477,9 @@ CPSegmentSwitchTrackingMomentary = 2;
 - (void)drawSegmentBezel:(int)aSegment highlight:(BOOL)shouldHighlight
 {
     if (shouldHighlight)
-        _themeStates[aSegment] |= CPThemeStateHighlighted;
+        _themeStates[aSegment] = _themeStates[aSegment].and(CPThemeStateHighlighted);
     else
-        _themeStates[aSegment] &= ~CPThemeStateHighlighted;
+        _themeStates[aSegment] = _themeStates[aSegment].without(CPThemeStateHighlighted);
 
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
@@ -574,9 +573,10 @@ CPSegmentSwitchTrackingMomentary = 2;
     if (_segments.length <= 0)
         return;
 
-    var themeState = _themeStates[0];
+    var themeState = _themeStates[0],
+        isDisabled = [self hasThemeState:CPThemeStateDisabled];
 
-    themeState |= _themeState & CPThemeStateDisabled;
+    themeState = isDisabled ? themeState.and(CPThemeStateDisabled) : themeState;
 
     var leftCapColor = [self valueForThemeAttribute:@"left-segment-bezel-color"
                                             inState:themeState],
@@ -589,7 +589,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 
     var themeState = _themeStates[_themeStates.length - 1];
 
-    themeState |= _themeState & CPThemeStateDisabled;
+    themeState = isDisabled ? themeState.and(CPThemeStateDisabled) : themeState;
 
     var rightCapColor = [self valueForThemeAttribute:@"right-segment-bezel-color"
                                              inState:themeState],
@@ -604,7 +604,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     {
         var themeState = _themeStates[i];
 
-        themeState |= _themeState & CPThemeStateDisabled;
+        themeState = isDisabled ? themeState.and(CPThemeStateDisabled) : themeState;
 
         var bezelColor = [self valueForThemeAttribute:@"center-segment-bezel-color"
                                               inState:themeState],
@@ -642,11 +642,11 @@ CPSegmentSwitchTrackingMomentary = 2;
         if (i == count - 1)
             continue;
 
-        var borderState = _themeStates[i] | _themeStates[i + 1];
+        var borderState = _themeStates[i].and(_themeStates[i + 1]);
 
-        borderState = (borderState & CPThemeStateSelected & ~CPThemeStateHighlighted) ? CPThemeStateSelected : CPThemeStateNormal;
+        borderState = (borderState.hasThemeState(CPThemeStateSelected) && !borderState.hasThemeState(CPThemeStateHighlighted)) ? CPThemeStateSelected : CPThemeStateNormal;
 
-        borderState |= _themeState & CPThemeStateDisabled;
+        borderState = isDisabled ? borderState.and(CPThemeStateDisabled) : borderState;
 
         var borderColor = [self valueForThemeAttribute:@"divider-bezel-color"
                                                inState:borderState],
@@ -676,7 +676,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 
     var segment = _segments[aSegment],
         segmentWidth = [segment width],
-        themeState = _themeStates[aSegment] | (_themeState & CPThemeStateDisabled),
+        themeState = _themeState.hasThemeState(CPThemeStateDisabled) ? _themeStates[aSegment].and(CPThemeStateDisabled) : _themeStates[aSegment];
         contentInset = [self valueForThemeAttribute:@"content-inset" inState:themeState],
         font = [self font];
 
@@ -915,10 +915,11 @@ var CPSegmentedControlSegmentsKey       = "CPSegmentedControlSegmentsKey",
         // HACK
 
         for (var i = 0; i < _segments.length; i++)
-        {
             _themeStates[i] = [_segments[i] selected] ? CPThemeStateSelected : CPThemeStateNormal;
+
+        // We do this in a second loop because it relies on all the themeStates being set first
+        for (var i = 0; i < _segments.length; i++)
             [self tileWithChangedSegment:i];
-        }
 
         var difference = MAX(originalWidth - [self frame].size.width, 0.0),
             remainingWidth = FLOOR(difference / _segments.length);
