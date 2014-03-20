@@ -165,6 +165,7 @@ fi
 
 install_directory=""
 tmp_zip="/tmp/cappuccino.zip"
+local_distrib=""
 
 github_user="cappuccino"
 github_ref="v0.9.7"
@@ -176,21 +177,23 @@ verbosity=1
 
 while [ $# -gt 0 ]; do
     case "$1" in
-        --noprompt)     noprompt="yes";;
-        --directory)    install_directory="$2"; shift;;
-        --clone)        install_method="clone";;
-        --clone-http)   install_method="clone --http";;
-        --github-user)  github_user="$2"; shift;;
-        --github-ref)   github_ref="$2"; shift;;
-        -q|--quiet)     verbosity=$[verbosity - 1];;
-        -v|--verbose)   verbosity=$[verbosity + 1];;
-        *)              cat >&2 <<-EOT
+        --noprompt)         noprompt="yes";;
+        --directory)        install_directory="$2"; shift;;
+        --clone)            install_method="clone";;
+        --clone-http)       install_method="clone --http";;
+        --copy-local)       local_distrib="$2"; shift;;
+        --github-user)      github_user="$2"; shift;;
+        --github-ref)       github_ref="$2"; shift;;
+        -q|--quiet)         verbosity=$[verbosity - 1];;
+        -v|--verbose)       verbosity=$[verbosity + 1];;
+        *)                  cat >&2 <<-EOT
 usage: ./bootstrap.sh [OPTIONS]
 
     --noprompt:             Don't prompt, use relatively safe defaults.
     --directory [DIR]:      Use a directory other than $default_directory.
     --clone:                Do "git clone git://" instead of downloading zips.
     --clone-http:           Do "git clone http://" instead of downloading zips.
+    --copy-local:           Use a local copy instead of downloading zips.
     --github-user [USER]:   Github user (default: $github_user).
     --github-ref [REF]:     Use another git ref (default: $github_ref).
     -q | --quiet:           Output less logging.
@@ -306,6 +309,18 @@ if [ "$install_cappuccino" ]; then
         echo "Cloning Cappuccino base from \"$git_repo\"..."
         git clone "$git_repo" "$install_directory"
         (cd "$install_directory" && git checkout "origin/$github_ref")
+    elif [ -n "$local_distrib" ]; then
+        echo "Extracting local copy of the distribution from $local_distrib to $install_directory"
+
+        quiet_arg=""
+        if (( $verbosity < 2 )); then quiet_arg="-q"; fi
+        unzip $quiet_arg "$local_distrib" -d "$install_directory"
+        check_and_exit
+
+        mv "$install_directory/$github_project-"*/* "$install_directory/."
+        check_and_exit
+        rm -rf "$install_directory/$github_project-"*
+        check_and_exit
     else
         zip_ball="https://github.com/$github_path/zipball/$github_ref"
 
