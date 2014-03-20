@@ -525,7 +525,7 @@ var CPZeroKeyCode = 48,
 #pragma mark -
 #pragma mark Responder methods
 
-- (BOOL)acceptFirstResponder
+- (BOOL)acceptsFirstResponder
 {
     return NO;
 }
