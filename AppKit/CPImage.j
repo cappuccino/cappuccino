@@ -334,7 +334,7 @@ function CPAppKitImage(aFilename, aSize)
     Sets the receiver's delegate.
     @param the delegate
 */
-- (void)setDelegate:(id)aDelegate
+- (void)setDelegate:(id <CPImageDelegate>)aDelegate
 {
     if (_delegate === aDelegate)
         return;
