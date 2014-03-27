@@ -28,6 +28,7 @@
 
 @protocol CPAnimationDelegate <CPObject>
 
+@optional
 - (BOOL)animationShouldStart:(CPAnimation)animation;
 - (float)animation:(CPAnimation)animation valueForProgress:(float)progress;
 - (void)animationDidEnd:(CPAnimation)animation;
