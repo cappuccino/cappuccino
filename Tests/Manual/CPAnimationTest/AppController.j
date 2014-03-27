@@ -2,7 +2,7 @@
 @import <AppKit/AppKit.j>
 
 
-@implementation AppController : CPObject
+@implementation AppController : CPObject <CPAnimationDelegate>
 {
     @outlet CPWindow    theWindow;
     @outlet CPView      view;
