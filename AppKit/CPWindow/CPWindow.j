@@ -3524,7 +3524,7 @@ var keyViewComparator = function(lhs, rhs, context)
 
     // If not, check to see if the delegate has one.
     if ([self _delegateRespondsToWindowWillUndoManager])
-        return [self _sendDelegateWindowWillReturnUndoManager:self];
+        return [self _sendDelegateWindowWillReturnUndoManager];
 
     // If not, create one.
     if (!_undoManager)
