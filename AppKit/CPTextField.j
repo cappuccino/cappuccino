@@ -595,7 +595,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         lineHeight = [font defaultLineHeightForFont];
 
     element.value = _stringValue;
-    element.style.color = [[self currentValueForThemeAttribute:@"text-color"] cssString];
+    element.style.color = [[self valueForThemeAttribute:@"text-color" inState:CPThemeStateEditing] cssString];
 
     if (CPFeatureIsCompatible(CPInputSetFontOutsideOfDOM))
         element.style.font = [font cssString];
@@ -1167,7 +1167,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)_updatePlaceholderState
 {
-    if ((!_stringValue || _stringValue.length === 0) && ![self hasThemeState:CPThemeStateEditing])
+    if (!_stringValue || _stringValue.length === 0)
         [self setThemeState:CPTextFieldStatePlaceholder];
     else
         [self unsetThemeState:CPTextFieldStatePlaceholder];
@@ -1718,7 +1718,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     if (contentView)
     {
-        [contentView setHidden:[self hasThemeState:CPThemeStateEditing]];
+        [contentView setHidden:(_stringValue && _stringValue.length > 0) && [self hasThemeState:CPThemeStateEditing]];
 
         var string = "";
 
