@@ -52,7 +52,6 @@ var CPOutlineViewDataSource_outlineView_objectValue_forTableColumn_byItem_      
     CPOutlineViewDataSource_outlineView_sortDescriptorsDidChange_                                   = 1 << 11;
 
 var CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_                                  = 1 << 1,
-    CPOutlineViewDelegate_outlineView_viewForTableColumn_item_                                      = 1 << 26,
     CPOutlineViewDelegate_outlineView_didClickTableColumn_                                          = 1 << 2,
     CPOutlineViewDelegate_outlineView_didDragTableColumn_                                           = 1 << 3,
     CPOutlineViewDelegate_outlineView_heightOfRowByItem_                                            = 1 << 4,
@@ -77,7 +76,8 @@ var CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_              
     CPOutlineViewDelegate_outlineView_willDisplayView_forTableColumn_item_                          = 1 << 23,
     CPOutlineViewDelegate_outlineView_willRemoveView_forTableColumn_item_                           = 1 << 24,
     CPOutlineViewDelegate_selectionShouldChangeInOutlineView_                                       = 1 << 25,
-    CPOutlineViewDelegate_outlineView_menuForTableColumn_item_                                      = 1 << 26;
+    CPOutlineViewDelegate_outlineView_menuForTableColumn_item_                                      = 1 << 26,
+    CPOutlineViewDelegate_outlineView_viewForTableColumn_item_                                      = 1 << 27;
 
 CPOutlineViewDropOnItemIndex = -1;
 
