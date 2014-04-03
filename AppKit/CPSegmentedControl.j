@@ -476,7 +476,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 */
 - (void)drawSegmentBezel:(int)aSegment highlight:(BOOL)shouldHighlight
 {
-    if(aSegment<_themeStates.length)
+    if(aSegment < _themeStates.length)
     {
         if (shouldHighlight)
             _themeStates[aSegment] = _themeStates[aSegment].and(CPThemeStateHighlighted);
