@@ -476,10 +476,13 @@ CPSegmentSwitchTrackingMomentary = 2;
 */
 - (void)drawSegmentBezel:(int)aSegment highlight:(BOOL)shouldHighlight
 {
-    if (shouldHighlight)
-        _themeStates[aSegment] = _themeStates[aSegment].and(CPThemeStateHighlighted);
-    else
-        _themeStates[aSegment] = _themeStates[aSegment].without(CPThemeStateHighlighted);
+    if(aSegment<_themeStates.length)
+    {
+        if (shouldHighlight)
+            _themeStates[aSegment] = _themeStates[aSegment].and(CPThemeStateHighlighted);
+        else
+            _themeStates[aSegment] = _themeStates[aSegment].without(CPThemeStateHighlighted);
+    }
 
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
