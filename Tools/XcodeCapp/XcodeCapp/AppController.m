@@ -27,6 +27,12 @@
 
 AppController *SharedAppControllerInstance = nil;
 
+static const NSInteger kBuildProjectDebugTag        = 1;
+static const NSInteger kBuildProjectReleaseTag      = 2;
+static const NSInteger kBuildProjectRunDebugTag     = 3;
+static const NSInteger kBuildProjectRunReleaseTag   = 4;
+static const NSInteger kBuildProjectDeployTag       = 5;
+static const NSInteger kBuildProjectCleanTag        = 6;
 
 @interface AppController ()
 
@@ -419,6 +425,29 @@ AppController *SharedAppControllerInstance = nil;
          return;
 
     [self loadProjectAtPath:projectPath reopening:YES];
+}
+
+- (IBAction)buildProject:(id)sender
+{
+    NSInteger tag = [sender tag];
+    if(tag == kBuildProjectDebugTag) {
+        [self.xcc buildProject:@"debug"];
+    }
+    else if (tag == kBuildProjectReleaseTag) {
+        [self.xcc buildProject:@"release"];
+    }
+    else if (tag == kBuildProjectRunDebugTag) {
+        [self.xcc buildProject:@"run"];
+    }
+    else if (tag == kBuildProjectRunReleaseTag) {
+        [self.xcc buildProject:@"run-release"];
+    }
+    else if (tag == kBuildProjectDeployTag) {
+        [self.xcc buildProject:@"deploy"];
+    }
+    else if (tag == kBuildProjectCleanTag) {
+        [self.xcc buildProject:@"clean"];
+    }
 }
 
 #pragma mark - Delegates

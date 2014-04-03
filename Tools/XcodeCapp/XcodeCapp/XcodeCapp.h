@@ -114,8 +114,15 @@ extern NSString * const XCCProjectDidFinishLoadingNotification;
 @property (unsafe_unretained) IBOutlet NSTableView *errorTable;
 @property (strong) IBOutlet NSArrayController *errorListController;
 
+// Panel, textView and progress indicator used to display build progress
+@property (strong) IBOutlet NSPanel *consolePanel;
+@property (strong) IBOutlet NSTextView* consoleTextView;
+@property (strong) IBOutlet NSProgressIndicator* consoleProgressIndicator;
+
 - (IBAction)openErrorsPanel:(id)sender;
+- (IBAction)openConsolePanel:(id)sender;
 - (IBAction)clearErrors:(id)sender;
+- (IBAction)clearBuildConsole:(id)sender;
 - (IBAction)openErrorInEditor:(id)sender;
 - (IBAction)openXcodeProject:(id)aSender;
 - (IBAction)synchronizeProject:(id)aSender;
@@ -142,6 +149,7 @@ extern NSString * const XCCProjectDidFinishLoadingNotification;
 
 - (NSDictionary*)createProject:(NSString*)aPath;
 
+- (void)buildProject:(NSString*)config;
 @end
 
 @interface XcodeCapp (SnowLeopard)
