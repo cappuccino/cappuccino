@@ -30,6 +30,20 @@
 @import "CGGeometry.j"
 @import "CPCompatibility.j"
 
+
+@protocol CPImageDelegate <CPObject>
+
+@optional
+- (void)imageDidLoad:(CPImage)anImage;
+- (void)imageDidError:(CPImage)anImage;
+- (void)imageDidAbort:(CPImage)anImage;
+
+@end
+
+var CPImageDelegate_imageDidLoad_   = 1 << 1,
+    CPImageDelegate_imageDidError_  = 1 << 2,
+    CPImageDelegate_imageDidAbort_  = 1 << 3;
+
 CPImageLoadStatusInitialized    = 0;
 CPImageLoadStatusLoading        = 1;
 CPImageLoadStatusCompleted      = 2;
@@ -119,14 +133,15 @@ function CPAppKitImage(aFilename, aSize)
 */
 @implementation CPImage : CPObject
 {
-    CGSize      _size;
-    CPString    _filename;
-    CPString    _name;
+    CGSize                  _size;
+    CPString                _filename;
+    CPString                _name;
 
-    id          _delegate;
-    unsigned    _loadStatus;
+    id <CPImageDelegate>    _delegate;
+    unsigned                _loadStatus;
+    unsigned                _implementedDelegateMethods;
 
-    Image       _image;
+    Image                   _image;
 }
 
 - (id)init
@@ -319,9 +334,22 @@ function CPAppKitImage(aFilename, aSize)
     Sets the receiver's delegate.
     @param the delegate
 */
-- (void)setDelegate:(id)aDelegate
+- (void)setDelegate:(id <CPImageDelegate>)aDelegate
 {
+    if (_delegate === aDelegate)
+        return;
+
     _delegate = aDelegate;
+    _implementedDelegateMethods = 0;
+
+    if ([_delegate respondsToSelector:@selector(imageDidLoad:)])
+        _implementedDelegateMethods |= CPImageDelegate_imageDidLoad_;
+
+    if ([_delegate respondsToSelector:@selector(imageDidError:)])
+        _implementedDelegateMethods |= CPImageDelegate_imageDidError_;
+
+    if ([_delegate respondsToSelector:@selector(imageDidAbort:)])
+        _implementedDelegateMethods |= CPImageDelegate_imageDidAbort_;
 }
 
 /*!
@@ -457,7 +485,7 @@ function CPAppKitImage(aFilename, aSize)
         postNotificationName:CPImageDidLoadNotification
         object:self];
 
-    if ([_delegate respondsToSelector:@selector(imageDidLoad:)])
+    if (_implementedDelegateMethods & CPImageDelegate_imageDidLoad_)
         [_delegate imageDidLoad:self];
 }
 
@@ -466,7 +494,7 @@ function CPAppKitImage(aFilename, aSize)
 {
     _loadStatus = CPImageLoadStatusReadError;
 
-    if ([_delegate respondsToSelector:@selector(imageDidError:)])
+    if (_implementedDelegateMethods & CPImageDelegate_imageDidError_)
         [_delegate imageDidError:self];
 }
 
@@ -475,7 +503,7 @@ function CPAppKitImage(aFilename, aSize)
 {
     _loadStatus = CPImageLoadStatusCancelled;
 
-    if ([_delegate respondsToSelector:@selector(imageDidAbort:)])
+    if (_implementedDelegateMethods & CPImageDelegate_imageDidAbort_)
         [_delegate imageDidAbort:self];
 }
 
