@@ -20,6 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import <Foundation/CPObject.j>
 @import <Foundation/CPIndexSet.j>
 
 @import "CPControl.j"
@@ -30,40 +31,86 @@
 
 @global CPApp
 
+@protocol CPBrowserDelegate <CPObject>
+
+@optional
+- (BOOL)browser:(CPBrowser)browser acceptDrop:(id)info atRow:(CPInteger)row column:(CPInteger)column dropOperation:(CPTableViewDropOperation)dropOperation;
+- (BOOL)browser:(CPBrowser)browser canDragRowsWithIndexes:(CPIndexSet)rowIndexes inColumn:(CPInteger)column withEvent:(CPEvent )event;
+- (BOOL)browser:(CPBrowser)browser isLeafItem:(id)item;
+- (BOOL)browser:(CPBrowser)browser shouldSelectRowIndexes:(CPIndexSet)anIndexSet inColumn:(CPInteger)column;
+- (BOOL)browser:(CPBrowser)browser writeRowsWithIndexes:(CPIndexSet)rowIndexes inColumn:(CPInteger)column toPasteboard:(CPPasteboard)pasteboard;
+- (CPDragOperation)browser:(CPBrowser)browser validateDrop:(id)info proposedRow:(CPInteger)row column:(CPInteger)column dropOperation:(CPTableViewDropOperation)dropOperation;
+- (CPImage)browser:(CPBrowser)browser imageValueForItem:(id)anItem;
+- (CPImage)browser:(CPBrowser)browser draggingImageForRowsWithIndexes:(CPIndexSet)rowIndexes inColumn:(CPInteger)column withEvent:(CPEvent)event offset:(CGPoint)dragImageOffset;
+- (CPImage)browser:(CPBrowser)browser imageValueForItem:(id)item;
+- (CPIndexSet)browser:(CPBrowser)browser selectionIndexesForProposedSelection:(CPIndexSet)proposedSelectionIndexes inColumn:(CPInteger)column;
+- (CPInteger)browser:(CPBrowser)browser numberOfChildrenOfItem:(id)item;
+- (CPView)browser:(CPBrowser)browser draggingViewForRowsWithIndexes:(CPIndexSet)rowIndexes inColumn:(CPInteger)column withEvent:(CPEvent)event offset:(CGPoint)dragImageOffset;
+- (id)browser:(CPBrowser)browser child:(CPInteger)index ofItem:(id)item;
+- (id)browser:(CPBrowser)browser objectValueForItem:(id)item;
+- (id)rootItemForBrowser:(CPBrowser)browser;
+- (void)browser:(CPBrowser)browser didChangeLastColumn:(CPInteger)oldLastColumn toColumn:(CPInteger)column;
+- (void)browser:(CPBrowser)browser didResizeColumn:(CPInteger)column;
+- (void)browserSelectionIsChanging:(CPBrowser)browser;
+- (void)browserSelectionDidChange:(CPBrowser)browser;
+
+@end
+
+var CPBrowserDelegate_browser_acceptDrop_atRow_column_dropOperation_                        = 1 << 1,
+    CPBrowserDelegate_browser_canDragRowsWithIndexes_inColumn_withEvent_                    = 1 << 2,
+    CPBrowserDelegate_browser_isLeafItem_                                                   = 1 << 3,
+    CPBrowserDelegate_browser_shouldSelectRowIndexes_inColumn_                              = 1 << 4,
+    CPBrowserDelegate_browser_writeRowsWithIndexes_inColumn_toPasteboard_                   = 1 << 5,
+    CPBrowserDelegate_browser_validateDrop_proposedRow_column_dropOperation_                = 1 << 6,
+    CPBrowserDelegate_browser_imageValueForItem_                                            = 1 << 7,
+    CPBrowserDelegate_browser_draggingImageForRowsWithIndexes_inColumn_withEvent_offset_    = 1 << 8,
+    CPBrowserDelegate_browser_imageValueForItem_                                            = 1 << 9,
+    CPBrowserDelegate_browser_selectionIndexesForProposedSelection_inColumn_                = 1 << 10,
+    CPBrowserDelegate_browser_numberOfChildrenOfItem_                                       = 1 << 11,
+    CPBrowserDelegate_browser_draggingViewForRowsWithIndexes_inColumn_withEvent_offset_     = 1 << 12,
+    CPBrowserDelegate_browser_child_ofItem_                                                 = 1 << 13,
+    CPBrowserDelegate_browser_objectValueForItem_                                           = 1 << 14,
+    CPBrowserDelegate_rootItemForBrowser_                                                   = 1 << 15,
+    CPBrowserDelegate_browser_didChangeLastColumn_toColumn_                                 = 1 << 16,
+    CPBrowserDelegate_browser_didResizeColumn_                                              = 1 << 17,
+    CPBrowserDelegate_browserSelectionIsChanging_                                           = 1 << 18,
+    CPBrowserDelegate_browserSelectionDidChange_                                            = 1 << 19;
+
 /*!
     @ingroup appkit
     @class CPBrowser
 */
 @implementation CPBrowser : CPControl
 {
-    id              _delegate;
-    CPString        _pathSeparator;
+    id <CPBrowserDelegate>  _delegate;
+    CPString                _pathSeparator;
+    unsigned                _implementedDelegateMethods;
 
-    CPView          _contentView;
-    CPScrollView    _horizontalScrollView;
-    CPView          _prototypeView;
+    CPView                  _contentView;
+    CPScrollView            _horizontalScrollView;
+    CPView                  _prototypeView;
 
-    CPArray         _tableViews;
-    CPArray         _tableDelegates;
+    CPArray                 _tableViews;
+    CPArray                 _tableDelegates;
 
-    id              _rootItem;
+    id                      _rootItem;
 
-    BOOL            _delegateSupportsImages;
+    BOOL                    _delegateSupportsImages;
 
-    SEL             _doubleAction @accessors(property=doubleAction);
+    SEL                     _doubleAction @accessors(property=doubleAction);
 
-    BOOL            _allowsMultipleSelection;
-    BOOL            _allowsEmptySelection;
+    BOOL                    _allowsMultipleSelection;
+    BOOL                    _allowsEmptySelection;
 
-    Class           _tableViewClass @accessors(property=tableViewClass);
+    Class                   _tableViewClass @accessors(property=tableViewClass);
 
-    float           _rowHeight;
-    float           _imageWidth;
-    float           _leafWidth;
-    float           _minColumnWidth;
-    float           _defaultColumnWidth @accessors(property=defaultColumnWidth);
+    float                   _rowHeight;
+    float                   _imageWidth;
+    float                   _leafWidth;
+    float                   _minColumnWidth;
+    float                   _defaultColumnWidth @accessors(property=defaultColumnWidth);
 
-    CPArray         _columnWidths;
+    CPArray                 _columnWidths;
 }
 
 + (CPString)defaultThemeClass
@@ -137,10 +184,74 @@
             [CPKeyedArchiver archivedDataWithRootObject:_prototypeView]];
 }
 
-- (void)setDelegate:(id)anObject
+- (void)setDelegate:(id <CPBrowserDelegate>)anObject
 {
+    if (_delegate === anObject)
+        return;
+
     _delegate = anObject;
-    _delegateSupportsImages = [_delegate respondsToSelector:@selector(browser:imageValueForItem:)];
+    _implementedDelegateMethods = 0;
+    _delegateSupportsImages = NO;
+
+    if ([_delegate respondsToSelector:@selector(browser:acceptDrop:atRow:column:dropOperation:)])
+        _implementedDelegateMethods |= CPBrowserDelegate_browser_acceptDrop_atRow_column_dropOperation_;
+
+    if ([_delegate respondsToSelector:@selector(browser:canDragRowsWithIndexes:inColumn:withEvent:)])
+        _implementedDelegateMethods |= CPBrowserDelegate_browser_canDragRowsWithIndexes_inColumn_withEvent_;
+
+    if ([_delegate respondsToSelector:@selector(browser:isLeafItem:)])
+        _implementedDelegateMethods |= CPBrowserDelegate_browser_isLeafItem_;
+
+    if ([_delegate respondsToSelector:@selector(browser:shouldSelectRowIndexes:inColumn:)])
+        _implementedDelegateMethods |= CPBrowserDelegate_browser_shouldSelectRowIndexes_inColumn_;
+
+    if ([_delegate respondsToSelector:@selector(browser:writeRowsWithIndexes:inColumn:toPasteboard:)])
+        _implementedDelegateMethods |= CPBrowserDelegate_browser_writeRowsWithIndexes_inColumn_toPasteboard_;
+
+    if ([_delegate respondsToSelector:@selector(browser:validateDrop:proposedRow:column:dropOperation:)])
+        _implementedDelegateMethods |= CPBrowserDelegate_browser_validateDrop_proposedRow_column_dropOperation_;
+
+    if ([_delegate respondsToSelector:@selector(browser:imageValueForItem:)])
+        _implementedDelegateMethods |= CPBrowserDelegate_browser_imageValueForItem_;
+
+    if ([_delegate respondsToSelector:@selector(browser:draggingImageForRowsWithIndexes:inColumn:withEvent:offset:)])
+        _implementedDelegateMethods |= CPBrowserDelegate_browser_draggingImageForRowsWithIndexes_inColumn_withEvent_offset_;
+
+    if ([_delegate respondsToSelector:@selector(browser:imageValueForItem:)])
+    {
+        _delegateSupportsImages = YES;
+        _implementedDelegateMethods |= CPBrowserDelegate_browser_imageValueForItem_;
+    }
+
+    if ([_delegate respondsToSelector:@selector(browser:selectionIndexesForProposedSelection:inColumn:)])
+        _implementedDelegateMethods |= CPBrowserDelegate_browser_selectionIndexesForProposedSelection_inColumn_;
+
+    if ([_delegate respondsToSelector:@selector(browser:numberOfChildrenOfItem:)])
+        _implementedDelegateMethods |= CPBrowserDelegate_browser_numberOfChildrenOfItem_;
+
+    if ([_delegate respondsToSelector:@selector(browser:draggingViewForRowsWithIndexes:inColumn:withEvent:offset:)])
+        _implementedDelegateMethods |= CPBrowserDelegate_browser_draggingViewForRowsWithIndexes_inColumn_withEvent_offset_;
+
+    if ([_delegate respondsToSelector:@selector(browser:child:ofItem:)])
+        _implementedDelegateMethods |= CPBrowserDelegate_browser_child_ofItem_;
+
+    if ([_delegate respondsToSelector:@selector(browser:objectValueForItem:)])
+        _implementedDelegateMethods |= CPBrowserDelegate_browser_objectValueForItem_;
+
+    if ([_delegate respondsToSelector:@selector(rootItemForBrowser:)])
+        _implementedDelegateMethods |= CPBrowserDelegate_rootItemForBrowser_;
+
+    if ([_delegate respondsToSelector:@selector(browser:didChangeLastColumn:toColumn:)])
+        _implementedDelegateMethods |= CPBrowserDelegate_browser_didChangeLastColumn_toColumn_;
+
+    if ([_delegate respondsToSelector:@selector(browser:didChangeLastColumn:)])
+        _implementedDelegateMethods |= CPBrowserDelegate_browser_didResizeColumn_;
+
+    if ([_delegate respondsToSelector:@selector(browserSelectionIsChanging:)])
+        _implementedDelegateMethods |= CPBrowserDelegate_browserSelectionIsChanging_;
+
+    if ([_delegate respondsToSelector:@selector(browserSelectionDidChange:)])
+        _implementedDelegateMethods |= CPBrowserDelegate_browserSelectionDidChange_;
 
     [self loadColumnZero];
 }
@@ -162,10 +273,7 @@
 
 - (void)loadColumnZero
 {
-    if ([_delegate respondsToSelector:@selector(rootItemForBrowser:)])
-        _rootItem = [_delegate rootItemForBrowser:self];
-    else
-        _rootItem = nil;
+    _rootItem = [self _sendDelegateRootItemForBrowser];
 
     [self setLastColumn:-1];
     [self addColumn];
@@ -190,8 +298,7 @@
     _tableViews = _tableViews.slice(0, indexPlusOne);
     _tableDelegates = _tableDelegates.slice(0, indexPlusOne);
 
-    if ([_delegate respondsToSelector:@selector(browser:didChangeLastColumn:toColumn:)])
-        [_delegate browser:self didChangeLastColumn:oldValue toColumn:columnIndex];
+    [self _sendDelegateBrowserDidChangeLastColumn:oldValue toColumn:columnIndex];
 
     [self tile];
 }
@@ -366,7 +473,7 @@
 
 - (BOOL)isLeafItem:(id)item
 {
-    return [_delegate respondsToSelector:@selector(browser:isLeafItem:)] && [_delegate browser:self isLeafItem:item];
+    return (_implementedDelegateMethods & CPBrowserDelegate_browser_isLeafItem_) && [_delegate browser:self isLeafItem:item];
 }
 
 - (id)parentForItemsInColumn:(CPInteger)column
@@ -493,9 +600,7 @@
 {
     _columnWidths[column] = aWidth;
 
-    if ([_delegate respondsToSelector:@selector(browser:didResizeColumn:)])
-        [_delegate browser:self didResizeColumn:column];
-
+    [self _sendDelegateBrowserDidResizeColumn:column];
     [self tile];
 }
 
@@ -610,15 +715,12 @@
     if (column < 0 || column > [self lastColumn] + 1)
         return;
 
-    if ([_delegate respondsToSelector:@selector(browser:selectionIndexesForProposedSelection:inColumn:)])
-        indexSet = [_delegate browser:self selectionIndexesForProposedSelection:indexSet inColumn:column];
+    indexSet = [self _sendDelegateBrowserSelectionIndexesForProposedSelection:indexSet inColumn:column];
 
-    if ([_delegate respondsToSelector:@selector(browser:shouldSelectRowIndexes:inColumn:)] &&
-       ![_delegate browser:self shouldSelectRowIndexes:indexSet inColumn:column])
+    if (![self _sendDelegateBrowserShouldSelectRowIndexes:indexSet inColumn:column])
         return;
 
-    if ([_delegate respondsToSelector:@selector(browserSelectionIsChanging:)])
-        [_delegate browserSelectionIsChanging:self];
+    [self _sendDelegateBrowserSelectionIsChanging];
 
     if (column > [self lastColumn])
         [self addColumn];
@@ -629,8 +731,7 @@
 
     [self scrollColumnToVisible:column];
 
-    if ([_delegate respondsToSelector:@selector(browserSelectionDidChange:)])
-        [_delegate browserSelectionDidChange:self];
+    [self _sendDelegateBrowserSelectionDidChange];
 }
 
 - (void)setBackgroundColor:(CPColor)aColor
@@ -650,30 +751,6 @@
 {
     [super registerForDraggedTypes:types];
     [_tableViews makeObjectsPerformSelector:@selector(registerForDraggedTypes:) withObject:types];
-}
-
-- (BOOL)canDragRowsWithIndexes:(CPIndexSet)rowIndexes inColumn:(CPInteger)columnIndex withEvent:(CPEvent)dragEvent
-{
-    if ([_delegate respondsToSelector:@selector(browser:canDragRowsWithIndexes:inColumn:withEvent:)])
-        return [_delegate browser:self canDragRowsWithIndexes:rowIndexes inColumn:columnIndex withEvent:dragEvent];
-
-    return YES;
-}
-
-- (CPImage)draggingImageForRowsWithIndexes:(CPIndexSet)rowIndexes inColumn:(CPInteger)columnIndex withEvent:(CPEvent)dragEvent offset:(CGPoint)dragImageOffset
-{
-    if ([_delegate respondsToSelector:@selector(browser:draggingImageForRowsWithIndexes:inColumn:withEvent:offset:)])
-        return [_delegate browser:self draggingImageForRowsWithIndexes:rowIndexes inColumn:columnIndex withEvent:dragEvent offset:dragImageOffset];
-
-    return nil;
-}
-
-- (CPView)draggingViewForRowsWithIndexes:(CPIndexSet)rowIndexes inColumn:(CPInteger)columnIndex withEvent:(CPEvent)dragEvent offset:(CGPoint)dragImageOffset
-{
-    if ([_delegate respondsToSelector:@selector(browser:draggingViewForRowsWithIndexes:inColumn:withEvent:offset:)])
-        return [_delegate browser:self draggingViewForRowsWithIndexes:rowIndexes inColumn:columnIndex withEvent:dragEvent offset:dragImageOffset];
-
-    return nil;
 }
 
 @end
@@ -860,8 +937,6 @@
 
 @end
 
-@import <Foundation/CPObject.j>
-
 @implementation _CPBrowserTableDelegate : CPObject
 {
     CPBrowser   _browser @accessors;
@@ -909,7 +984,7 @@
 
 - (BOOL)tableView:(CPTableView)aTableView acceptDrop:(id)info row:(CPInteger)row dropOperation:(CPTableViewDropOperation)operation
 {
-    if ([_delegate respondsToSelector:@selector(browser:acceptDrop:atRow:column:dropOperation:)])
+    if (_browser._implementedDelegateMethods & CPBrowserDelegate_browser_acceptDrop_atRow_column_dropOperation_)
         return [_delegate browser:_browser acceptDrop:info atRow:row column:_index dropOperation:operation];
     else
         return NO;
@@ -917,7 +992,7 @@
 
 - (CPDragOperation)tableView:(CPTableView)aTableView validateDrop:(id)info proposedRow:(CPInteger)row proposedDropOperation:(CPTableViewDropOperation)operation
 {
-    if ([_delegate respondsToSelector:@selector(browser:validateDrop:proposedRow:column:dropOperation:)])
+    if (_browser._implementedDelegateMethods & CPBrowserDelegate_browser_validateDrop_proposedRow_column_dropOperation_)
         return [_delegate browser:_browser validateDrop:info proposedRow:row column:_index dropOperation:operation];
     else
         return CPDragOperationNone;
@@ -925,7 +1000,7 @@
 
 - (BOOL)tableView:(CPTableView)aTableView writeRowsWithIndexes:(CPIndexSet)rowIndexes toPasteboard:(CPPasteboard)pboard
 {
-    if ([_delegate respondsToSelector:@selector(browser:writeRowsWithIndexes:inColumn:toPasteboard:)])
+    if (_browser._implementedDelegateMethods & CPBrowserDelegate_browser_writeRowsWithIndexes_inColumn_toPasteboard_)
         return [_delegate browser:_browser writeRowsWithIndexes:rowIndexes inColumn:_index toPasteboard:pboard];
     else
         return NO;
@@ -1005,6 +1080,118 @@
     }
 
     return self;
+}
+
+@end
+
+@implementation CPBrowser (CPBrowserDelegate)
+
+/*!
+    @ignore
+    Call delegate rootItemForBrowser:
+*/
+- (id)_sendDelegateRootItemForBrowser
+{
+    if (!(_implementedDelegateMethods & CPBrowserDelegate_rootItemForBrowser_))
+        return nil;
+
+    return [_delegate rootItemForBrowser:self];
+}
+
+/*!
+    @ignore
+    Call delegate browser:didChangeLastColumn:toColumn:
+*/
+- (void)_sendDelegateBrowserDidChangeLastColumn:(CPInteger)lastColumn toColumn:(CPInteger)newColumn
+{
+    if (!(_implementedDelegateMethods & CPBrowserDelegate_browser_didChangeLastColumn_toColumn_))
+        return;
+
+    [_delegate browser:self didChangeLastColumn:lastColumn toColumn:newColumn];
+}
+
+/*!
+    @ignore
+    Call delegate browser:didResizeColumn:
+*/
+- (void)_sendDelegateBrowserDidResizeColumn:(CPInteger)column
+{
+    if (!(_implementedDelegateMethods & CPBrowserDelegate_browser_didResizeColumn_))
+        return;
+
+    [_delegate browser:self didResizeColumn:column];
+}
+
+/*!
+    @ignore
+    Call delegate browserSelectionIsChanging:
+*/
+- (void)_sendDelegateBrowserSelectionIsChanging
+{
+    if (!(_implementedDelegateMethods & CPBrowserDelegate_browserSelectionIsChanging_))
+        return;
+
+    [_delegate browserSelectionIsChanging:self];
+}
+
+/*!
+    @ignore
+    Call delegate browser:shouldSelectRowIndexes:inColumn:
+*/
+- (BOOL)_sendDelegateBrowserShouldSelectRowIndexes:(CPIndexSet)anIndexSet inColumn:(CPInteger)aColumn
+{
+    if (!(_implementedDelegateMethods & CPBrowserDelegate_browser_shouldSelectRowIndexes_inColumn_))
+        return YES;
+
+    return [_delegate browser:self shouldSelectRowIndexes:anIndexSet inColumn:aColumn];
+}
+
+/*!
+    @ignore
+    Call delegate browser:selectionIndexesForProposedSelection:inColumn:
+*/
+- (CPIndexSet)_sendDelegateBrowserSelectionIndexesForProposedSelection:(CPIndexSet)anIndexSet inColumn:(CPInteger)aColumn
+{
+    if (!(_implementedDelegateMethods & CPBrowserDelegate_browser_selectionIndexesForProposedSelection_inColumn_))
+        return anIndexSet;
+
+    return [_delegate browser:self selectionIndexesForProposedSelection:anIndexSet inColumn:aColumn];
+}
+
+/*!
+    @ignore
+    Call delegate browserSelectionDidChange
+*/
+- (void)_sendDelegateBrowserSelectionDidChange
+{
+    if (!(_implementedDelegateMethods & CPBrowserDelegate_browserSelectionDidChange_))
+        return;
+
+    [_delegate browserSelectionDidChange:self];
+}
+
+- (BOOL)canDragRowsWithIndexes:(CPIndexSet)rowIndexes inColumn:(CPInteger)columnIndex withEvent:(CPEvent)dragEvent
+{
+    if (_implementedDelegateMethods & CPBrowserDelegate_browser_canDragRowsWithIndexes_inColumn_withEvent_)
+        return [_delegate browser:self canDragRowsWithIndexes:rowIndexes inColumn:columnIndex withEvent:dragEvent];
+
+    return YES;
+}
+
+- (CPImage)draggingImageForRowsWithIndexes:(CPIndexSet)rowIndexes inColumn:(CPInteger)columnIndex withEvent:(CPEvent)dragEvent offset:(CGPoint)dragImageOffset
+{
+    if (_implementedDelegateMethods & CPBrowserDelegate_browser_draggingImageForRowsWithIndexes_inColumn_withEvent_offset_)
+        return [_delegate browser:self draggingImageForRowsWithIndexes:rowIndexes inColumn:columnIndex withEvent:dragEvent offset:dragImageOffset];
+
+    return nil;
+}
+
+- (CPView)draggingViewForRowsWithIndexes:(CPIndexSet)rowIndexes inColumn:(CPInteger)columnIndex withEvent:(CPEvent)dragEvent offset:(CGPoint)dragImageOffset
+{
+    if (_implementedDelegateMethods & CPBrowserDelegate_browser_draggingViewForRowsWithIndexes_inColumn_withEvent_offset_)
+        return [_delegate browser:self draggingViewForRowsWithIndexes:rowIndexes inColumn:columnIndex withEvent:dragEvent offset:dragImageOffset];
+
+    return nil;
 }
 
 @end
