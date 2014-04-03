@@ -1345,6 +1345,38 @@ NOT YET IMPLEMENTED
 
 /*!
     @ignore
+    cleanup a an indexset from the indexes that cannot be selected
+    according to the table view delegate.
+*/
+- (CPIndexSet)_cleanUpSelectionRowIndexes:(CPIndexSet)anIndexSet
+{
+    if ([self _delegateRespondsToSelectionIndexesForProposedSelection])
+    {
+        return [self _sendDelegateSelectionIndexesForProposedSelection:anIndexSet];
+    }
+    else if ([self _delegateRespondsToShouldSelectRow])
+    {
+        var indexesToRemove = [CPIndexSet new],
+            currentIndex = [anIndexSet firstIndex];
+
+        while (currentIndex != CPNotFound)
+        {
+            if (![self _sendDelegateShouldSelectRow:currentIndex])
+                [indexesToRemove addIndex:currentIndex];
+
+            currentIndex = [anIndexSet indexGreaterThanIndex:currentIndex];
+        }
+
+        [anIndexSet removeIndexes:indexesToRemove];
+
+        return anIndexSet;
+    }
+    else
+        return anIndexSet;
+}
+
+/*!
+    @ignore
 */
 - (void)_updateHighlightWithOldRows:(CPIndexSet)oldRows newRows:(CPIndexSet)newRows
 {
@@ -1567,7 +1599,10 @@ NOT YET IMPLEMENTED
         if ([[self selectedColumnIndexes] count])
             [self selectColumnIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self numberOfColumns])] byExtendingSelection:NO];
         else
-            [self selectRowIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self numberOfRows])] byExtendingSelection:NO];
+        {
+            var range = [self _cleanUpSelectionRowIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self numberOfRows])]];
+            [self selectRowIndexes:range byExtendingSelection:NO];
+        }
     }
 }
 
@@ -5260,9 +5295,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     if (i >= [self numberOfRows] || i < 0)
         return;
 
-    if (![self _delegateRespondsToSelectionIndexesForProposedSelection] && [self _delegateRespondsToShouldSelectRow])
+    if ([self _delegateRespondsToSelectionIndexesForProposedSelection] || [self _delegateRespondsToShouldSelectRow])
     {
-        var shouldSelect = [self _sendDelegateShouldSelectRow:i];
+        var shouldSelect = !![[self _cleanUpSelectionRowIndexes:[CPIndexSet indexSetWithIndex:i]] count];
 
         /* If shouldSelect returns NO it means this row cannot be selected.
             The proper behaviour is to then try to see if the next/previous
@@ -5271,7 +5306,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         while (!shouldSelect && (i < [self numberOfRows] && i > 0))
         {
             shouldGoUpward ? --i : ++i; //check to see if the row can be selected. If it can't be then see if the next row can be selected.
-            shouldSelect = [self _sendDelegateShouldSelectRow:i];
+            shouldSelect = !![[self _cleanUpSelectionRowIndexes:[CPIndexSet indexSetWithIndex:i]] count];
         }
 
         if (!shouldSelect)
