@@ -32,6 +32,14 @@
 @global CPApp
 @global CPStringPboardType
 
+
+@protocol CPTextFieldDelegate <CPControlTextEditingDelegate>
+
+@end
+
+
+var CPTextFieldDelegate_control_didFailToFormatString_errorDescription_ = 1 << 1;
+
 CPTextFieldSquareBezel          = 0;    /*! A textfield bezel with squared corners. */
 CPTextFieldRoundedBezel         = 1;    /*! A textfield bezel with rounded corners. */
 
@@ -112,26 +120,27 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 */
 @implementation CPTextField : CPControl
 {
-    BOOL                    _isEditing;
+    BOOL                        _isEditing;
 
-    BOOL                    _isEditable;
-    BOOL                    _isSelectable;
-    BOOL                    _isSecure;
-    BOOL                    _willBecomeFirstResponderByClick;
+    BOOL                        _isEditable;
+    BOOL                        _isSelectable;
+    BOOL                        _isSecure;
+    BOOL                        _willBecomeFirstResponderByClick;
 
-    BOOL                    _drawsBackground;
+    BOOL                        _drawsBackground;
 
-    CPColor                 _textFieldBackgroundColor;
+    CPColor                     _textFieldBackgroundColor;
 
-    CPString                _placeholderString;
-    CPString                _stringValue;
+    CPString                    _placeholderString;
+    CPString                    _stringValue;
 
-    id                      _delegate;
+    id <CPTextFieldDelegate>    _delegate;
+    unsigned                    _implementedDelegateMethods;
 
     // NS-style Display Properties
-    CPTextFieldBezelStyle   _bezelStyle;
-    BOOL                    _isBordered;
-    CPControlSize           _controlSize;
+    CPTextFieldBezelStyle       _bezelStyle;
+    BOOL                        _isBordered;
+    CPControlSize               _controlSize;
 }
 
 + (Class)_binderClassForBinding:(CPString)aBinding
@@ -818,7 +827,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     {
         var acceptInvalidValue = NO;
 
-        if ([_delegate respondsToSelector:@selector(control:didFailToFormatString:errorDescription:)])
+        if (_implementedDelegateMethods & CPTextFieldDelegate_control_didFailToFormatString_errorDescription_)
             acceptInvalidValue = [_delegate control:self didFailToFormatString:aValue errorDescription:error];
 
         if (acceptInvalidValue === NO)
@@ -1585,7 +1594,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 #pragma mark Setting the Delegate
 
-- (void)setDelegate:(id)aDelegate
+- (void)setDelegate:(id <CPTextFieldDelegate>)aDelegate
 {
     var defaultCenter = [CPNotificationCenter defaultCenter];
 
@@ -1600,6 +1609,10 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     }
 
     _delegate = aDelegate;
+    _implementedDelegateMethods = 0;
+
+    if ([_delegate respondsToSelector:@selector(control:didFailToFormatString:errorDescription:)])
+        _implementedDelegateMethods |= CPTextFieldDelegate_control_didFailToFormatString_errorDescription_
 
     if ([_delegate respondsToSelector:@selector(controlTextDidBeginEditing:)])
         [defaultCenter
