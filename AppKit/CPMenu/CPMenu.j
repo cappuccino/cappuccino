@@ -30,6 +30,17 @@
 
 @global CPApp
 
+@protocol CPMenuDelegate <CPObject>
+
+@optional
+- (void)menuWillOpen:(CPMenu)aMenu;
+- (void)menuDidClose:(CPMenu)aMenu;
+
+@end
+
+var CPMenuDelegate_menuWillOpen_ = 1 << 1,
+    CPMenuDelegate_menuDidClose_ = 1 << 2;
+
 CPMenuDidAddItemNotification        = @"CPMenuDidAddItemNotification";
 CPMenuDidChangeItemNotification     = @"CPMenuDidChangeItemNotification";
 CPMenuDidRemoveItemNotification     = @"CPMenuDidRemoveItemNotification";
@@ -50,26 +61,27 @@ var _CPMenuBarVisible               = NO,
 */
 @implementation CPMenu : CPObject
 {
-    CPMenu          _supermenu;
+    CPMenu              _supermenu;
 
-    CPString        _title;
-    CPString        _name;
+    CPString            _title;
+    CPString            _name;
 
-    CPFont          _font;
+    CPFont              _font;
 
-    float           _minimumWidth;
+    float               _minimumWidth;
 
-    CPMutableArray  _items;
+    CPMutableArray      _items;
 
-    BOOL            _autoenablesItems;
-    BOOL            _showsStateColumn;
+    BOOL                _autoenablesItems;
+    BOOL                _showsStateColumn;
 
-    id              _delegate;
+    id <CPMenuDelegate> _delegate;
+    unsigned            _implementedDelegateMethods;
 
-    int             _highlightedIndex;
-    _CPMenuWindow   _menuWindow;
+    int                 _highlightedIndex;
+    _CPMenuWindow       _menuWindow;
 
-    CPEvent         _lastCloseEvent;
+    CPEvent             _lastCloseEvent;
 }
 
 // Managing the Menu Bar
@@ -941,9 +953,19 @@ var _CPMenuBarVisible               = NO,
 
 // Managing the Delegate
 
-- (void)setDelegate:(id)aDelegate
+- (void)setDelegate:(id <CPMenuDelegate>)aDelegate
 {
+    if (_delegate === aDelegate)
+        return;
+
     _delegate = aDelegate;
+    _implementedDelegateMethods = 0;
+
+    if ([_delegate respondsToSelector:@selector(menuWillOpen:)])
+         _implementedDelegateMethods |= CPMenuDelegate_menuWillOpen_;
+
+    if ([_delegate respondsToSelector:@selector(menuDidClose:)])
+        _implementedDelegateMethods |= CPMenuDelegate_menuDidClose_;
 }
 
 - (id)delegate
@@ -953,10 +975,7 @@ var _CPMenuBarVisible               = NO,
 
 - (void)_menuWillOpen
 {
-    var delegate = [self delegate];
-
-    if ([delegate respondsToSelector:@selector(menuWillOpen:)])
-        [delegate menuWillOpen:self];
+    [self _sendDelegateMenuWillOpen];
 }
 
 - (void)_menuDidClose
@@ -965,10 +984,7 @@ var _CPMenuBarVisible               = NO,
     // when a click on the button itself caused the menu to close.
     _lastCloseEvent = [CPApp currentEvent];
 
-    var delegate = [self delegate];
-
-    if ([delegate respondsToSelector:@selector(menuDidClose:)])
-        [delegate menuDidClose:self];
+    [self _sendDelegateMenuDidClose];
 }
 
 // Handling Tracking
@@ -1131,6 +1147,36 @@ var _CPMenuBarVisible               = NO,
 }
 
 @end
+
+
+@implementation CPMenu (CPMenuDelegate)
+
+/*!
+    @ignore
+    Call delegate menuWillOpen
+*/
+- (void)_sendDelegateMenuWillOpen
+{
+    if (!(_implementedDelegateMethods & CPMenuDelegate_menuWillOpen_))
+        return;
+
+    [_delegate menuWillOpen:self];
+}
+
+/*!
+    @ignore
+    Call delegate menuDidClose
+*/
+- (void)_sendDelegateMenuDidClose
+{
+    if (!(_implementedDelegateMethods & CPMenuDelegate_menuDidClose_))
+        return;
+
+    [_delegate menuDidClose:self];
+}
+
+@end
+
 
 @implementation CPMenu (CPKeyValueCoding)
 
