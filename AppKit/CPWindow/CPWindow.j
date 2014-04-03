@@ -1110,7 +1110,7 @@ CPTexturedBackgroundWindowMask
 */
 - (void)setContentView:(CPView)aView
 {
-    if (_contentView)
+    if (_contentView && _contentView !== aView)
         [_contentView removeFromSuperview];
 
     var bounds = CGRectMake(0.0, 0.0, CGRectGetWidth(_frame), CGRectGetHeight(_frame));
