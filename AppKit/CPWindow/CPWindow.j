@@ -53,6 +53,28 @@
 
 @global CPApp
 
+
+@protocol CPWindowDelegate <CPObject>
+
+@optional
+- (BOOL)windowShouldClose:(CPWindow)aWindow;
+- (CPUndoManager)windowWillReturnUndoManager:(CPWindow)window;
+- (void)windowDidBecomeKey:(CPNotification)aNotification;
+- (void)windowDidBecomeMain:(CPNotification)aNotification;
+- (void)windowDidEndSheet:(CPNotification)aNotification;
+- (void)windowDidMove:(CPNotification)aNotification;
+- (void)windowDidResignKey:(CPNotification)aNotification;
+- (void)windowDidResignMain:(CPNotification)aNotification;
+- (void)windowDidResize:(CPNotification)aNotification;
+- (void)windowWillBeginSheet:(CPNotification)aNotification;
+- (void)windowWillClose:(CPWindow)aWindow;
+
+@end
+
+var CPWindowDelegate_windowShouldClose_             = 1 << 1
+    CPWindowDelegate_windowWillReturnUndoManager_   = 1 << 2,
+    CPWindowDelegate_windowWillClose_               = 1 << 3;
+
 var CPWindowSaveImage       = nil,
 
     CPWindowResizeTime      = 0.2,
@@ -171,7 +193,8 @@ var CPWindowActionMessageKeys = [
     CPResponder                         _firstResponder;
     CPResponder                         _initialFirstResponder;
     BOOL                                _hasBecomeKeyWindow;
-    id                                  _delegate;
+    id <CPWindowDelegate>               _delegate;
+    unsigned                            _implementedDelegateMethods;
 
     CPString                            _title;
 
@@ -204,8 +227,6 @@ var CPWindowActionMessageKeys = [
 #endif
 
     unsigned                            _autoresizingMask;
-
-    BOOL                                _delegateRespondsToWindowWillReturnUndoManagerSelector;
 
     BOOL                                _isFullPlatformWindow;
     _CPWindowFullPlatformWindowSession  _fullPlatformWindowSession;
@@ -1343,8 +1364,11 @@ CPTexturedBackgroundWindowMask
     Sets the delegate for the window. Passing \c nil will just remove the window's current delegate.
     @param aDelegate an object to respond to the various delegate methods of CPWindow
 */
-- (void)setDelegate:(id)aDelegate
+- (void)setDelegate:(id <CPWindowDelegate>)aDelegate
 {
+    if (_delegate === aDelegate)
+        return;
+
     var defaultCenter = [CPNotificationCenter defaultCenter];
 
     [defaultCenter removeObserver:_delegate name:CPWindowDidResignKeyNotification object:self];
@@ -1357,7 +1381,16 @@ CPTexturedBackgroundWindowMask
     [defaultCenter removeObserver:_delegate name:CPWindowDidEndSheetNotification object:self];
 
     _delegate = aDelegate;
-    _delegateRespondsToWindowWillReturnUndoManagerSelector = [_delegate respondsToSelector:@selector(windowWillReturnUndoManager:)];
+    _implementedDelegateMethods = 0;
+
+    if ([_delegate respondsToSelector:@selector(windowShouldClose:)])
+        _implementedDelegateMethods |= CPWindowDelegate_windowShouldClose_;
+
+    if ([_delegate respondsToSelector:@selector(windowWillReturnUndoManager:)])
+        _implementedDelegateMethods |= CPWindowDelegate_windowWillReturnUndoManager_;
+
+    if ([_delegate respondsToSelector:@selector(windowWillClose:)])
+        _implementedDelegateMethods |= CPWindowDelegate_windowWillClose_;
 
     if ([_delegate respondsToSelector:@selector(windowDidResignKey:)])
         [defaultCenter
@@ -2243,9 +2276,9 @@ CPTexturedBackgroundWindowMask
 
     // The Cocoa docs say that if both the delegate and the window implement
     // windowShouldClose:, only the delegate receives the message.
-    if ([_delegate respondsToSelector:@selector(windowShouldClose:)])
+    if ([self _delegateRespondsToWindowShouldClose])
     {
-        if (![_delegate windowShouldClose:self])
+        if (![self _sendDelegateWindowShouldClose])
             return;
     }
     else if ([self respondsToSelector:@selector(windowShouldClose:)])
@@ -2301,8 +2334,7 @@ CPTexturedBackgroundWindowMask
 */
 - (void)close
 {
-    if ([_delegate respondsToSelector:@selector(windowWillClose:)])
-        [_delegate windowWillClose:self];
+    [self _sendDelegateWindowWillClose];
 
     [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowWillCloseNotification object:self];
 
@@ -3294,6 +3326,66 @@ var keyViewComparator = function(lhs, rhs, context)
     return CPOrderedDescending;
 };
 
+
+@implementation CPWindow (CPWindowDelegate)
+
+/*!
+    @ignore
+    Check if the delegate implements windowWillReturnUndoManager:
+*/
+- (BOOL)_delegateRespondsToWindowWillUndoManager
+{
+    return _implementedDelegateMethods & CPWindowDelegate_windowWillReturnUndoManager_;
+}
+
+/*!
+    @ignore
+    Check if the delegate implements windowShouldClose
+*/
+- (BOOL)_delegateRespondsToWindowShouldClose
+{
+    return _implementedDelegateMethods & CPWindowDelegate_windowShouldClose_
+}
+
+/*!
+    @ignore
+    Call delegate windowShouldClose:
+*/
+- (BOOL)_sendDelegateWindowShouldClose
+{
+    if (!(_implementedDelegateMethods & CPWindowDelegate_windowShouldClose_))
+        return YES;
+
+    return [_delegate windowShouldClose:self];
+}
+
+/*!
+    @ignore
+    Call delegate windowWillReturnUndoManager:
+*/
+- (BOOL)_sendDelegateWindowWillReturnUndoManager
+{
+    if (!(_implementedDelegateMethods & CPWindowDelegate_windowWillReturnUndoManager_))
+        return nil;
+
+    return [_delegate windowWillReturnUndoManager:self];
+}
+
+/*!
+    @ignore
+    Call delegate windowWillClose:
+*/
+- (void)_sendDelegateWindowWillClose
+{
+    if (!(_implementedDelegateMethods & CPWindowDelegate_windowWillClose_))
+        return;
+
+    [_delegate windowWillClose:self];
+}
+
+@end
+
+
 @implementation CPWindow (BridgeSupport)
 
 /*
@@ -3431,8 +3523,8 @@ var keyViewComparator = function(lhs, rhs, context)
         return documentUndoManager;
 
     // If not, check to see if the delegate has one.
-    if (_delegateRespondsToWindowWillReturnUndoManagerSelector)
-        return [_delegate windowWillReturnUndoManager:self];
+    if ([self _delegateRespondsToWindowWillUndoManager])
+        return [self _sendDelegateWindowWillReturnUndoManager];
 
     // If not, create one.
     if (!_undoManager)
