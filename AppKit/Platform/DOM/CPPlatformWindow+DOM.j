@@ -1661,16 +1661,15 @@ var CPDOMEventGetClickCount = function(aComparisonEvent, aTimestamp, aLocation)
 // Global.
 _CPDOMEventStop = function(aDOMEvent, aPlatformWindow)
 {
-    // IE Model
-    aDOMEvent.cancelBubble = true;
-    aDOMEvent.returnValue = false;
-
-    // W3C Model
-    if (aDOMEvent.preventDefault)
+    if (aDOMEvent.preventDefault) // W3C Model
         aDOMEvent.preventDefault();
+    else // IE Model
+        aDOMEvent.returnValue = false;
 
-    if (aDOMEvent.stopPropagation)
+    if (aDOMEvent.stopPropagation) // W3C Model
         aDOMEvent.stopPropagation();
+    else // IE Model
+        aDOMEvent.cancelBubble = true;
 };
 
 function CPWindowObjectList()
