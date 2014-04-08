@@ -454,6 +454,17 @@ var _class_initialize = function(/*Class*/ aClass)
     {
         SETINFO(meta, CLS_INITIALIZING);
 
+        aClass.objj_msgSend = objj_msgSendMany;
+        aClass.objj_msgSend0 = objj_msgSend0;
+        aClass.objj_msgSend1 = objj_msgSend1;
+        aClass.objj_msgSend2 = objj_msgSend2;
+        aClass.objj_msgSend3 = objj_msgSend3;
+        meta.objj_msgSend = objj_msgSendMany;
+        meta.objj_msgSend0 = objj_msgSend0;
+        meta.objj_msgSend1 = objj_msgSend1;
+        meta.objj_msgSend2 = objj_msgSend2;
+        meta.objj_msgSend3 = objj_msgSend3;
+
         objj_msgSend(aClass, "initialize");
 
         CHANGEINFO(meta, CLS_INITIALIZED, CLS_INITIALIZING);
@@ -570,10 +581,24 @@ GLOBAL(objj_allocateClassPair) = function(/*Class*/ superclass, /*String*/ aName
     classObject.info = CLS_CLASS;
     classObject._UID = objj_generateObjectUID();
 
+    // It needs initialize
+    classObject.objj_msgSend = objj_msgSendManyInitialize;
+    classObject.objj_msgSend0 = objj_msgSend0Initialize;
+    classObject.objj_msgSend1 = objj_msgSend1Initialize;
+    classObject.objj_msgSend2 = objj_msgSend2Initialize;
+    classObject.objj_msgSend3 = objj_msgSend3Initialize;
+
     metaClassObject.isa = rootClassObject.isa;
     metaClassObject.name = aName;
     metaClassObject.info = CLS_META;
     metaClassObject._UID = objj_generateObjectUID();
+
+    // It needs initialize
+    metaClassObject.objj_msgSend = objj_msgSendManyInitialize;
+    metaClassObject.objj_msgSend0 = objj_msgSend0Initialize;
+    metaClassObject.objj_msgSend1 = objj_msgSend1Initialize;
+    metaClassObject.objj_msgSend2 = objj_msgSend2Initialize;
+    metaClassObject.objj_msgSend3 = objj_msgSend3Initialize;
 
     return classObject;
 }
@@ -786,6 +811,141 @@ GLOBAL(objj_msgSendSuper) = function(/*id*/ aSuper, /*SEL*/ aSelector)
     CLASS_GET_METHOD_IMPLEMENTATION(var implementation, super_class, aSelector);
 
     return implementation.apply(aSuper.receiver, arguments);
+}
+
+var objj_msgSendMany = function(/*id*/ aReceiver, /*SEL*/ aSelector)
+{
+    var method = this.method_dtable[aSelector],
+        implementation = method ? method.method_imp : _objj_forward;
+
+#ifdef MAXIMUM_RECURSION_CHECKS
+    if (__objj_msgSend__StackDepth++ > MAXIMUM_RECURSION_DEPTH)
+        throw new Error("Maximum call stack depth exceeded.");
+
+    try {
+#endif
+
+    return implementation.apply(aReceiver, arguments);
+
+#ifdef MAXIMUM_RECURSION_CHECKS
+    } finally {
+        __objj_msgSend__StackDepth--;
+    }
+#endif
+}
+
+var objj_msgSendManyInitialize = function(/*id*/ aReceiver, /*SEL*/ aSelector)
+{
+    _class_initialize(this);
+    return this.objj_msgSend.apply(this, arguments);
+}
+
+var objj_msgSend0 = function(/*id*/ aReceiver, /*SEL*/ aSelector)
+{
+    var method = this.method_dtable[aSelector],
+        implementation = method ? method.method_imp : _objj_forward;
+
+#ifdef MAXIMUM_RECURSION_CHECKS
+    if (__objj_msgSend__StackDepth++ > MAXIMUM_RECURSION_DEPTH)
+        throw new Error("Maximum call stack depth exceeded.");
+
+    try {
+#endif
+
+    return implementation(aReceiver, aSelector);
+
+#ifdef MAXIMUM_RECURSION_CHECKS
+    } finally {
+        __objj_msgSend__StackDepth--;
+    }
+#endif
+}
+
+var objj_msgSend0Initialize = function(/*id*/ aReceiver, /*SEL*/ aSelector)
+{
+    _class_initialize(this);
+    return this.objj_msgSend0(aReceiver, aSelector);
+}
+
+var objj_msgSend1 = function(/*id*/ aReceiver, /*SEL*/ aSelector, arg0)
+{
+    var method = this.method_dtable[aSelector],
+        implementation = method ? method.method_imp : _objj_forward;
+
+#ifdef MAXIMUM_RECURSION_CHECKS
+    if (__objj_msgSend__StackDepth++ > MAXIMUM_RECURSION_DEPTH)
+        throw new Error("Maximum call stack depth exceeded.");
+
+    try {
+#endif
+
+    return implementation(aReceiver, aSelector, arg0);
+
+#ifdef MAXIMUM_RECURSION_CHECKS
+    } finally {
+        __objj_msgSend__StackDepth--;
+    }
+#endif
+}
+
+var objj_msgSend1Initialize = function(/*id*/ aReceiver, /*SEL*/ aSelector, arg0)
+{
+    _class_initialize(this);
+    return this.objj_msgSend1(aReceiver, aSelector, arg0);
+}
+
+var objj_msgSend2 = function(/*id*/ aReceiver, /*SEL*/ aSelector, arg0, arg1)
+{
+    var method = this.method_dtable[aSelector],
+        implementation = method ? method.method_imp : _objj_forward;
+
+#ifdef MAXIMUM_RECURSION_CHECKS
+    if (__objj_msgSend__StackDepth++ > MAXIMUM_RECURSION_DEPTH)
+        throw new Error("Maximum call stack depth exceeded.");
+
+    try {
+#endif
+
+    return implementation(aReceiver, aSelector, arg0, arg1);
+
+#ifdef MAXIMUM_RECURSION_CHECKS
+    } finally {
+        __objj_msgSend__StackDepth--;
+    }
+#endif
+}
+
+var objj_msgSend2Initialize = function(/*id*/ aReceiver, /*SEL*/ aSelector, arg0, arg1)
+{
+    _class_initialize(this);
+    return this.objj_msgSend2(aReceiver, aSelector, arg0, arg1);
+}
+
+var objj_msgSend3 = function(/*id*/ aReceiver, /*SEL*/ aSelector, arg0, arg1, arg2)
+{
+    var method = this.method_dtable[aSelector],
+        implementation = method ? method.method_imp : _objj_forward;
+
+#ifdef MAXIMUM_RECURSION_CHECKS
+    if (__objj_msgSend__StackDepth++ > MAXIMUM_RECURSION_DEPTH)
+        throw new Error("Maximum call stack depth exceeded.");
+
+    try {
+#endif
+
+    return implementation(aReceiver, aSelector, arg0, arg1, arg2);
+
+#ifdef MAXIMUM_RECURSION_CHECKS
+    } finally {
+        __objj_msgSend__StackDepth--;
+    }
+#endif
+}
+
+var objj_msgSend3Initialize = function(/*id*/ aReceiver, /*SEL*/ aSelector, arg0, arg1, arg2)
+{
+    _class_initialize(this);
+    return this.objj_msgSend3(aReceiver, aSelector, arg0, arg1, arg2);
 }
 
 // Working with Methods
