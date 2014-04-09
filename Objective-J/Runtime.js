@@ -374,7 +374,7 @@ GLOBAL(protocol_conformsToProtocol) = function(/*Protocol*/ p1, /*Protocol*/ p2)
    return false;
 }
 
-var REGISTERED_PROTOCOLS  = { };
+var REGISTERED_PROTOCOLS  = Object.create(null);
 
 GLOBAL(objj_allocateProtocol) = function(/*String*/ aName)
 {
@@ -454,16 +454,17 @@ var _class_initialize = function(/*Class*/ aClass)
     {
         SETINFO(meta, CLS_INITIALIZING);
 
-        aClass.objj_msgSend = objj_msgSendMany;
-        aClass.objj_msgSend0 = objj_msgSend0;
-        aClass.objj_msgSend1 = objj_msgSend1;
-        aClass.objj_msgSend2 = objj_msgSend2;
-        aClass.objj_msgSend3 = objj_msgSend3;
-        meta.objj_msgSend = objj_msgSendMany;
-        meta.objj_msgSend0 = objj_msgSend0;
-        meta.objj_msgSend1 = objj_msgSend1;
-        meta.objj_msgSend2 = objj_msgSend2;
-        meta.objj_msgSend3 = objj_msgSend3;
+        // We don't need to initialize any more.
+        aClass.objj_msgSend = objj_msgSendFast;
+        aClass.objj_msgSend0 = objj_msgSendFast0;
+        aClass.objj_msgSend1 = objj_msgSendFast1;
+        aClass.objj_msgSend2 = objj_msgSendFast2;
+        aClass.objj_msgSend3 = objj_msgSendFast3;
+        meta.objj_msgSend = objj_msgSendFast;
+        meta.objj_msgSend0 = objj_msgSendFast0;
+        meta.objj_msgSend1 = objj_msgSendFast1;
+        meta.objj_msgSend2 = objj_msgSendFast2;
+        meta.objj_msgSend3 = objj_msgSendFast3;
 
         objj_msgSend(aClass, "initialize");
 
@@ -544,7 +545,15 @@ GLOBAL(class_getMethodImplementation) = function(/*Class*/ aClass, /*SEL*/ aSele
 }
 
 // Adding Classes
-var REGISTERED_CLASSES  = { };
+var REGISTERED_CLASSES  = Object.create(null);
+
+GLOBAL(objj_enumerateClassesUsingBlock) = function(/* function(aClass) */aBlock)
+{
+    for (var key in REGISTERED_CLASSES)
+    {
+        aBlock(REGISTERED_CLASSES[key]);
+    }
+}
 
 GLOBAL(objj_allocateClassPair) = function(/*Class*/ superclass, /*String*/ aName)
 {
@@ -581,24 +590,10 @@ GLOBAL(objj_allocateClassPair) = function(/*Class*/ superclass, /*String*/ aName
     classObject.info = CLS_CLASS;
     classObject._UID = objj_generateObjectUID();
 
-    // It needs initialize
-    classObject.objj_msgSend = objj_msgSendManyInitialize;
-    classObject.objj_msgSend0 = objj_msgSend0Initialize;
-    classObject.objj_msgSend1 = objj_msgSend1Initialize;
-    classObject.objj_msgSend2 = objj_msgSend2Initialize;
-    classObject.objj_msgSend3 = objj_msgSend3Initialize;
-
     metaClassObject.isa = rootClassObject.isa;
     metaClassObject.name = aName;
     metaClassObject.info = CLS_META;
     metaClassObject._UID = objj_generateObjectUID();
-
-    // It needs initialize
-    metaClassObject.objj_msgSend = objj_msgSendManyInitialize;
-    metaClassObject.objj_msgSend0 = objj_msgSend0Initialize;
-    metaClassObject.objj_msgSend1 = objj_msgSend1Initialize;
-    metaClassObject.objj_msgSend2 = objj_msgSend2Initialize;
-    metaClassObject.objj_msgSend3 = objj_msgSend3Initialize;
 
     return classObject;
 }
@@ -618,8 +613,8 @@ GLOBAL(objj_resetRegisterClasses) = function()
     for (var key in REGISTERED_CLASSES)
         delete global[key];
 
-    REGISTERED_CLASSES = {};
-    REGISTERED_PROTOCOLS = {};
+    REGISTERED_CLASSES = Object.create(null);
+    REGISTERED_PROTOCOLS = Object.create(null);
 
     resetBundle();
 }
@@ -813,7 +808,7 @@ GLOBAL(objj_msgSendSuper) = function(/*id*/ aSuper, /*SEL*/ aSelector)
     return implementation.apply(aSuper.receiver, arguments);
 }
 
-var objj_msgSendMany = function(/*id*/ aReceiver, /*SEL*/ aSelector)
+GLOBAL(objj_msgSendFast) = function(/*id*/ aReceiver, /*SEL*/ aSelector)
 {
     var method = this.method_dtable[aSelector],
         implementation = method ? method.method_imp : _objj_forward;
@@ -834,13 +829,13 @@ var objj_msgSendMany = function(/*id*/ aReceiver, /*SEL*/ aSelector)
 #endif
 }
 
-var objj_msgSendManyInitialize = function(/*id*/ aReceiver, /*SEL*/ aSelector)
+var objj_msgSendFastInitialize = function(/*id*/ aReceiver, /*SEL*/ aSelector)
 {
     _class_initialize(this);
     return this.objj_msgSend.apply(this, arguments);
 }
 
-var objj_msgSend0 = function(/*id*/ aReceiver, /*SEL*/ aSelector)
+GLOBAL(objj_msgSendFast0) = function(/*id*/ aReceiver, /*SEL*/ aSelector)
 {
     var method = this.method_dtable[aSelector],
         implementation = method ? method.method_imp : _objj_forward;
@@ -861,13 +856,13 @@ var objj_msgSend0 = function(/*id*/ aReceiver, /*SEL*/ aSelector)
 #endif
 }
 
-var objj_msgSend0Initialize = function(/*id*/ aReceiver, /*SEL*/ aSelector)
+var objj_msgSendFast0Initialize = function(/*id*/ aReceiver, /*SEL*/ aSelector)
 {
     _class_initialize(this);
     return this.objj_msgSend0(aReceiver, aSelector);
 }
 
-var objj_msgSend1 = function(/*id*/ aReceiver, /*SEL*/ aSelector, arg0)
+GLOBAL(objj_msgSendFast1) = function(/*id*/ aReceiver, /*SEL*/ aSelector, arg0)
 {
     var method = this.method_dtable[aSelector],
         implementation = method ? method.method_imp : _objj_forward;
@@ -888,13 +883,13 @@ var objj_msgSend1 = function(/*id*/ aReceiver, /*SEL*/ aSelector, arg0)
 #endif
 }
 
-var objj_msgSend1Initialize = function(/*id*/ aReceiver, /*SEL*/ aSelector, arg0)
+var objj_msgSendFast1Initialize = function(/*id*/ aReceiver, /*SEL*/ aSelector, arg0)
 {
     _class_initialize(this);
     return this.objj_msgSend1(aReceiver, aSelector, arg0);
 }
 
-var objj_msgSend2 = function(/*id*/ aReceiver, /*SEL*/ aSelector, arg0, arg1)
+GLOBAL(objj_msgSendFast2) = function(/*id*/ aReceiver, /*SEL*/ aSelector, arg0, arg1)
 {
     var method = this.method_dtable[aSelector],
         implementation = method ? method.method_imp : _objj_forward;
@@ -915,13 +910,13 @@ var objj_msgSend2 = function(/*id*/ aReceiver, /*SEL*/ aSelector, arg0, arg1)
 #endif
 }
 
-var objj_msgSend2Initialize = function(/*id*/ aReceiver, /*SEL*/ aSelector, arg0, arg1)
+var objj_msgSendFast2Initialize = function(/*id*/ aReceiver, /*SEL*/ aSelector, arg0, arg1)
 {
     _class_initialize(this);
     return this.objj_msgSend2(aReceiver, aSelector, arg0, arg1);
 }
 
-var objj_msgSend3 = function(/*id*/ aReceiver, /*SEL*/ aSelector, arg0, arg1, arg2)
+GLOBAL(objj_msgSendFast3) = function(/*id*/ aReceiver, /*SEL*/ aSelector, arg0, arg1, arg2)
 {
     var method = this.method_dtable[aSelector],
         implementation = method ? method.method_imp : _objj_forward;
@@ -942,7 +937,7 @@ var objj_msgSend3 = function(/*id*/ aReceiver, /*SEL*/ aSelector, arg0, arg1, ar
 #endif
 }
 
-var objj_msgSend3Initialize = function(/*id*/ aReceiver, /*SEL*/ aSelector, arg0, arg1, arg2)
+var objj_msgSendFast3Initialize = function(/*id*/ aReceiver, /*SEL*/ aSelector, arg0, arg1, arg2)
 {
     _class_initialize(this);
     return this.objj_msgSend3(aReceiver, aSelector, arg0, arg1, arg2);
@@ -1012,6 +1007,12 @@ objj_class.prototype.toString = objj_object.prototype.toString = function()
 
     return "[" + isa.name + " Object](-description not implemented)";
 }
+
+objj_class.prototype.objj_msgSend = objj_msgSendFastInitialize;
+objj_class.prototype.objj_msgSend0 = objj_msgSendFast0Initialize;
+objj_class.prototype.objj_msgSend1 = objj_msgSendFast1Initialize;
+objj_class.prototype.objj_msgSend2 = objj_msgSendFast2Initialize;
+objj_class.prototype.objj_msgSend3 = objj_msgSendFast3Initialize;
 
 var SEL_description                     = sel_getUid("description"),
     SEL_forwardingTargetForSelector_    = sel_getUid("forwardingTargetForSelector:"),
