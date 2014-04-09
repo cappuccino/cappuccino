@@ -1,1 +1,1 @@
-objj_msgSend(object,"for:in:nil:",a,b,nil);
+((___r1=object),___r1==null?null:___r1.isa.objj_msgSend3(___r1,"for:in:nil:",a,b,nil));
