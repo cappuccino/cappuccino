@@ -466,7 +466,7 @@ var _class_initialize = function(/*Class*/ aClass)
         meta.objj_msgSend2 = objj_msgSendFast2;
         meta.objj_msgSend3 = objj_msgSendFast3;
 
-        objj_msgSend(aClass, "initialize");
+        meta.objj_msgSend0(aClass, "initialize");
 
         CHANGEINFO(meta, CLS_INITIALIZED, CLS_INITIALIZING);
     }
@@ -505,16 +505,20 @@ var _objj_forward = function(self, _cmd)
 
                 if (invocationClass)
                 {
-                    var invocation = objj_msgSend(invocationClass, SEL_invocationWithMethodSignature_, signature),
+                    var invocation = invocationClass.isa.objj_msgSend1(invocationClass, SEL_invocationWithMethodSignature_, signature),
                         index = 0,
                         count = arguments.length;
 
-                    for (; index < count; ++index)
-                        objj_msgSend(invocation, SEL_setArgument_atIndex_, arguments[index], index);
+                    if (invocation != null) {
+                        var invocationIsa = invocation.isa;
+
+                        for (; index < count; ++index)
+                            invocationIsa.objj_msgSend2(invocation, SEL_setArgument_atIndex_, arguments[index], index);
+                    }
 
                     forwardInvocationImplementation.method_imp.call(this, self, SEL_forwardInvocation_, invocation);
 
-                    return objj_msgSend(invocation, SEL_returnValue);
+                    return invocation == null ? null : invocationIsa.objj_msgSend0(invocation, SEL_returnValue);
                 }
             }
         }
@@ -1000,7 +1004,7 @@ objj_class.prototype.toString = objj_object.prototype.toString = function()
     var isa = this.isa;
 
     if (class_getInstanceMethod(isa, SEL_description))
-        return objj_msgSend(this, SEL_description);
+        return isa.objj_msgSend0(this, SEL_description);
 
     if (class_isMetaClass(isa))
         return this.name;
