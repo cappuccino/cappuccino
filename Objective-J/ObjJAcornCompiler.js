@@ -2125,10 +2125,11 @@ MethodDeclarationStatement: function(node, st, c) {
 MessageSendExpression: function(node, st, c) {
     var compiler = st.compiler,
         generate = compiler.generate,
-        buffer = compiler.jsBuffer;
+        buffer = compiler.jsBuffer,
+        nodeObject = node.object;
     if (!generate) {
         buffer.concat(compiler.source.substring(compiler.lastPos, node.start));
-        compiler.lastPos = node.object ? node.object.start : node.arguments.length ? node.arguments[0].start : node.end;
+        compiler.lastPos = nodeObject ? nodeObject.start : node.arguments.length ? node.arguments[0].start : node.end;
     }
     if (node.superObject)
     {
@@ -2138,20 +2139,38 @@ MessageSendExpression: function(node, st, c) {
     }
     else
     {
-        if (!st.receiverLevel) st.receiverLevel = 0;
-        if (!generate) buffer.concat(" "); // Add an extra space if it looks something like this: "return(<expression>)". No space between return and expression.
-        buffer.concat("((___r");
-        buffer.concat(++st.receiverLevel + "");
-        buffer.concat(" = ");
-        c(node.object, st, "Expression");
-        buffer.concat("), ___r");
-        buffer.concat(st.receiverLevel + "");
-        buffer.concat(" == null ? null : ___r");
-        buffer.concat(st.receiverLevel + "");
-        buffer.concat(".isa.objj_msgSend");
-        if (!generate) buffer.concat(compiler.source.substring(compiler.lastPos, node.object.end));
-        if (!(st.maxReceiverLevel >= st.receiverLevel))
-            st.maxReceiverLevel = st.receiverLevel;
+        if (generate) {
+            // If the recevier is not an identifier or an ivar that should have 'self.' infront we need to assign it to a temporary variable
+            // If it is 'self' we assume it will never be nil and remove that test
+            var receiverIsIdentifier = nodeObject.type === "Identifier" && !(st.currentMethodType() === "-" && compiler.getIvarForClass(nodeObject.name, st) && !st.getLvar(nodeObject.name, true)),
+                receiverIsNotSelf = !receiverIsIdentifier || nodeObject.name !== "self";
+
+            if (receiverIsIdentifier) {
+                if (receiverIsNotSelf) {
+                    buffer.concat("(");
+                    c(nodeObject, st, "Expression");
+                    buffer.concat(" == null ? null : ");
+                }
+                c(nodeObject, st, "Expression");
+            } else {
+                if (!st.receiverLevel) st.receiverLevel = 0;
+                buffer.concat("((___r");
+                buffer.concat(++st.receiverLevel + "");
+                buffer.concat(" = ");
+                c(nodeObject, st, "Expression");
+                buffer.concat("), ___r");
+                buffer.concat(st.receiverLevel + "");
+                buffer.concat(" == null ? null : ___r");
+                buffer.concat(st.receiverLevel + "");
+                if (!(st.maxReceiverLevel >= st.receiverLevel))
+                    st.maxReceiverLevel = st.receiverLevel;
+            }
+            buffer.concat(".isa.objj_msgSend");
+        } else {
+            buffer.concat(" "); // Add an extra space if it looks something like this: "return(<expression>)". No space between return and expression.
+            buffer.concat("objj_msgSend(");
+            buffer.concat(compiler.source.substring(compiler.lastPos, nodeObject.end));
+        }
     }
 
     var selectors = node.selectors,
@@ -2160,7 +2179,7 @@ MessageSendExpression: function(node, st, c) {
         firstSelector = selectors[0],
         selector = firstSelector ? firstSelector.name : "";    // There is always at least one selector
 
-    if (!node.superObject) {
+    if (generate && !node.superObject) {
         var totalNoOfParameters = argumentsLength;
 
         if (node.parameters)
@@ -2169,8 +2188,13 @@ MessageSendExpression: function(node, st, c) {
             buffer.concat("" + totalNoOfParameters);
         }
 
-        buffer.concat("(___r");
-        buffer.concat(st.receiverLevel + "");
+        if (receiverIsIdentifier) {
+            buffer.concat("(");
+            c(nodeObject, st, "Expression");
+        } else {
+            buffer.concat("(___r");
+            buffer.concat(st.receiverLevel + "");
+        }
     }
 
     // Put together the selector. Maybe this should be done in the parser...
@@ -2213,9 +2237,11 @@ MessageSendExpression: function(node, st, c) {
         }
     }
 
-    if (!node.superObject) {
-        buffer.concat(")");
-        st.receiverLevel--;
+    if (generate && !node.superObject) {
+        if (receiverIsNotSelf)
+            buffer.concat(")");
+        if (!receiverIsIdentifier)
+            st.receiverLevel--;
     }
 
     buffer.concat(")");
