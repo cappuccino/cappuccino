@@ -1400,9 +1400,18 @@ AssignmentExpression: function(node, st, c) {
         return;
     }
 
-    var saveAssignment = st.assignment;
+    var saveAssignment = st.assignment,
+        nodeLeft = node.left;
     st.assignment = true;
-    (generate && nodePrecedence(node, node.left) ? surroundExpression(c) : c)(node.left, st, "Expression");
+    if (nodeLeft.type === "Identifier" && nodeLeft.name === "self") {
+        var lVar = st.getLvar("self", true);
+        if (lVar) {
+            var lVarScope = lVar.scope;
+            if (lVarScope)
+                lVarScope.assignmentToSelf = true;
+        }
+    }
+    (generate && nodePrecedence(node, nodeLeft) ? surroundExpression(c) : c)(nodeLeft, st, "Expression");
     if (generate) {
         buffer.concat(" ");
         buffer.concat(node.operator);
@@ -1410,8 +1419,8 @@ AssignmentExpression: function(node, st, c) {
     }
     st.assignment = saveAssignment;
     (generate && nodePrecedence(node, node.right, true) ? surroundExpression(c) : c)(node.right, st, "Expression");
-    if (st.isRootScope() && node.left.type === "Identifier" && !st.getLvar(node.left.name))
-        st.vars[node.left.name] = {type: "global", node: node.left};
+    if (st.isRootScope() && nodeLeft.type === "Identifier" && !st.getLvar(nodeLeft.name))
+        st.vars[nodeLeft.name] = {type: "global", node: nodeLeft};
 },
 ConditionalExpression: function(node, st, c) {
     var compiler = st.compiler,
@@ -2026,6 +2035,9 @@ MethodDeclarationStatement: function(node, st, c) {
         compiler.jsBuffer.concat("(self, _cmd");
 
         methodScope.methodType = node.methodtype;
+        methodScope.vars["self"] = {type: "method base", scope: methodScope};
+        methodScope.vars["_cmd"] = {type: "method base", scope: methodScope};
+
         if (nodeArguments) for (var i = 0; i < nodeArguments.length; i++)
         {
             var argument = nodeArguments[i],
@@ -2143,7 +2155,8 @@ MessageSendExpression: function(node, st, c) {
             // If the recevier is not an identifier or an ivar that should have 'self.' infront we need to assign it to a temporary variable
             // If it is 'self' we assume it will never be nil and remove that test
             var receiverIsIdentifier = nodeObject.type === "Identifier" && !(st.currentMethodType() === "-" && compiler.getIvarForClass(nodeObject.name, st) && !st.getLvar(nodeObject.name, true)),
-                receiverIsNotSelf = !receiverIsIdentifier || nodeObject.name !== "self";
+                selfLvar,
+                receiverIsNotSelf = !receiverIsIdentifier || nodeObject.name !== "self" || !(selfLvar = st.getLvar("self", true)) || !selfLvar.scope || selfLvar.scope.assignmentToSelf;
 
             if (receiverIsIdentifier) {
                 if (receiverIsNotSelf) {
