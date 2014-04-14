@@ -1449,8 +1449,22 @@ NewExpression: function(node, st, c) {
 },
 CallExpression: function(node, st, c) {
     var compiler = st.compiler,
-        generate = compiler.generate;
-    (generate && nodePrecedence(node, node.callee) ? surroundExpression(c) : c)(node.callee, st, "Expression");
+        generate = compiler.generate,
+        callee = node.callee;
+
+    // If call to function 'eval' we assume that 'self' can be altered and from this point
+    // we check if 'self' is null before 'objj_msgSend' is called with 'self' as receiver.
+    if (callee.type === "Identifier" && callee.name === "eval") {
+        var selfLvar = st.getLvar("self", true);
+        if (selfLvar) {
+            var selfScope = selfLvar.scope;
+            if (selfScope) {
+                selfScope.assignmentToSelf = true;
+            }
+        }
+    }
+
+    (generate && nodePrecedence(node, callee) ? surroundExpression(c) : c)(callee, st, "Expression");
     if (generate) compiler.jsBuffer.concat("(");
     if (node.arguments) {
       for (var i = 0; i < node.arguments.length; ++i) {
