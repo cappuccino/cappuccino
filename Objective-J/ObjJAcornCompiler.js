@@ -2170,9 +2170,18 @@ MessageSendExpression: function(node, st, c) {
             // If it is 'self' we assume it will never be nil and remove that test
             var receiverIsIdentifier = nodeObject.type === "Identifier" && !(st.currentMethodType() === "-" && compiler.getIvarForClass(nodeObject.name, st) && !st.getLvar(nodeObject.name, true)),
                 selfLvar,
-                receiverIsNotSelf = !receiverIsIdentifier || nodeObject.name !== "self" || !(selfLvar = st.getLvar("self", true)) || !selfLvar.scope || selfLvar.scope.assignmentToSelf;
+                receiverIsNotSelf;
 
             if (receiverIsIdentifier) {
+                var name = nodeObject.name,
+                    selfLvar = st.getLvar(name);
+
+                if (name === "self") {
+                    receiverIsNotSelf = !selfLvar || !selfLvar.scope || selfLvar.scope.assignmentToSelf;
+                } else {
+                    receiverIsNotSelf = !!selfLvar || !compiler.getClassDef(name);
+                }
+
                 if (receiverIsNotSelf) {
                     buffer.concat("(");
                     c(nodeObject, st, "Expression");
@@ -2180,6 +2189,7 @@ MessageSendExpression: function(node, st, c) {
                 }
                 c(nodeObject, st, "Expression");
             } else {
+                receiverIsNotSelf = true;
                 if (!st.receiverLevel) st.receiverLevel = 0;
                 buffer.concat("((___r");
                 buffer.concat(++st.receiverLevel + "");
