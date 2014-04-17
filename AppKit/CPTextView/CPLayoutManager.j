@@ -224,6 +224,8 @@ var _objectsInRange = function(aList, aRange)
 - (void)setAdvancements:(CPArray)someAdvancements
 {
     _glyphsFrames = [];
+    debugger; // interestingly enough, this debugger statement fixes a serious chrome issue introduced in 34.0.1847.116.
+
 
     var count = someAdvancements.length,
         origin = CGPointMake(_fragmentRect.origin.x + _location.x, _fragmentRect.origin.y); // FIXME _location.y
