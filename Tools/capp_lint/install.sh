@@ -2,11 +2,11 @@
 
 chmod +x capp_lint
 
-if [[ ! -d /usr/local/bin ]]; then
-    sudo mkdir -p /usr/local/bin
+if [[ ! -d /usr/local/narwhal/bin ]]; then
+    sudo mkdir -p /usr/local/narwhal/bin
 fi
 
-sudo cp capp_lint /usr/local/bin
+sudo cp capp_lint /usr/local/narwhal/bin
 
 if [[ ! -d /usr/local/share/man/man1 ]]; then
     sudo mkdir -p /usr/local/share/man/man1
