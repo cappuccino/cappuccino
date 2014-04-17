@@ -125,7 +125,7 @@ CPLineMovesUp = 4;
     [_textView setPostsFrameChangedNotifications:flag];
 
     if (flag)
-	{
+    {
         [[CPNotificationCenter defaultCenter] addObserver:self
                 selector:@selector(textViewFrameChanged:)
                     name:CPViewFrameDidChangeNotification
@@ -141,7 +141,7 @@ CPLineMovesUp = 4;
 
 - (void) textViewFrameChanged:(CPNotification)aNotification
 {
-	var newSize=CPMakeSize([_textView frame].size.width, _size.height);
+    var newSize=CPMakeSize([_textView frame].size.width, _size.height);
 debugger 
    [self setContainerSize:newSize];
 }
