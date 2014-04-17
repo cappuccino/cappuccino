@@ -112,15 +112,38 @@ CPLineMovesUp = 4;
     _size = someSize;
 
     if (oldSize.width != _size.width)
-        [_layoutManager invalidateLayoutForCharacterRange:CPMakeRange(0,[[_layoutManager textStorage] length])
+    {   [_layoutManager invalidateLayoutForCharacterRange:CPMakeRange(0,[[_layoutManager textStorage] length])
                         isSoft:NO
                         actualCharacterRange:NULL];
-
+        [_layoutManager _validateLayoutAndGlyphs];
+    }
 }
 
+// Controls whether the receiver adjusts the width of its bounding rectangle when its text view is resized.
 - (void)setWidthTracksTextView:(BOOL)flag
 {
-    //<!> fixme: Controls whether the receiver adjusts the width of its bounding rectangle when its text view is resized.
+    [_textView setPostsFrameChangedNotifications:flag];
+
+    if (flag)
+	{
+        [[CPNotificationCenter defaultCenter] addObserver:self
+                selector:@selector(textViewFrameChanged:)
+                    name:CPViewFrameDidChangeNotification
+                  object:_textView];
+    }
+    else
+    {
+        [[CPNotificationCenter defaultCenter] removeObserver:self
+                    name:CPViewFrameDidChangeNotification
+                  object:_textView];
+    }
+}
+
+- (void) textViewFrameChanged:(CPNotification)aNotification
+{
+	var newSize=CPMakeSize([_textView frame].size.width, _size.height);
+debugger 
+   [self setContainerSize:newSize];
 }
 
 - (void)setTextView:(CPTextView)aTextView

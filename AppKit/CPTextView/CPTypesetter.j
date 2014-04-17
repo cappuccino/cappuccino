@@ -361,7 +361,9 @@ var _sharedSimpleTypesetter = nil;
                         lineOrigin.y += [_currentParagraph lineSpacing];
                     if (lineOrigin.y > [_currentTextContainer containerSize].height)
                     {
-                        _currentTextContainer = [[_layoutManager textContainers] objectAtIndex: ++_indexOfCurrentContainer];
+                        _indexOfCurrentContainer++;
+						_indexOfCurrentContainer=MAX(_indexOfCurrentContainer, [[_layoutManager textContainers] count]-1);
+                        _currentTextContainer = [[_layoutManager textContainers] objectAtIndex: _indexOfCurrentContainer];
                     }
                     lineOrigin.x = 0;
                     numLines++;
