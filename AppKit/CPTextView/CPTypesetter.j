@@ -377,6 +377,7 @@ var _sharedSimpleTypesetter = nil;
                _lineBase       = 0;
                _previousFont   = nil;
                 lineRange      = CPMakeRange(glyphIndex + 1, 0);
+                measuringRange = CPMakeRange(glyphIndex + 1, 0);
                 wrapRange      = CPMakeRange(0, 0);
                 wrapWidth      = 0;
                 isWordWrapped  = NO;
