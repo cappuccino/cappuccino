@@ -142,7 +142,7 @@ CPLineMovesUp = 4;
 - (void) textViewFrameChanged:(CPNotification)aNotification
 {
     var newSize=CPMakeSize([_textView frame].size.width, _size.height);
-   [self setContainerSize:newSize];
+    [self setContainerSize:newSize];
 }
 
 - (void)setTextView:(CPTextView)aTextView
