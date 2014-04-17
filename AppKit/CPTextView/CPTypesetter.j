@@ -362,7 +362,7 @@ var _sharedSimpleTypesetter = nil;
                     if (lineOrigin.y > [_currentTextContainer containerSize].height)
                     {
                         _indexOfCurrentContainer++;
-						_indexOfCurrentContainer=MAX(_indexOfCurrentContainer, [[_layoutManager textContainers] count]-1);
+                        _indexOfCurrentContainer=MAX(_indexOfCurrentContainer, [[_layoutManager textContainers] count]-1);
                         _currentTextContainer = [[_layoutManager textContainers] objectAtIndex: _indexOfCurrentContainer];
                     }
                     lineOrigin.x = 0;
