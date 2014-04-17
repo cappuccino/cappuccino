@@ -61,7 +61,7 @@ function _widthOfStringForFont(aString, aFont)
         return [aString sizeWithFont:aFont];
     if (_measuringContextFont !== aFont)
     {
-        _measuringContextFont = aFont
+        _measuringContextFont = aFont;
         _measuringContext.font = [aFont cssString];
     }
     return _measuringContext.measureText(aString);
@@ -279,7 +279,7 @@ var _sharedSimpleTypesetter = nil;
                 _currentParagraph = [_currentAttributes objectForKey:CPParagraphStyleAttributeName] || [CPParagraphStyle defaultParagraphStyle];
 
                 if (!_currentFont)
-                    _currentFont = [_textStorage font];
+                    _currentFont = [_textStorage font] || [CPFont systemFontOfSize:12.0];
 
                 ascent = ["x" sizeWithFont:_currentFont].height; //FIXME
                 descent = 0;    //FIXME
@@ -334,7 +334,7 @@ var _sharedSimpleTypesetter = nil;
 
                 isNewline = YES;
                 isWordWrapped = YES;
-                glyphIndex = CPMaxRange(lineRange) - 1;
+                glyphIndex = CPMaxRange(lineRange) - 1;  // start the line starts directly at current character 
             }
 
             _lineHeight = MAX(_lineHeight, ascent - descent + leading);
@@ -371,11 +371,12 @@ var _sharedSimpleTypesetter = nil;
                 }
                _lineWidth      = 0;
                 advancements   = [];
+                currentAnchor  = 0;
                 prevRangeWidth = 0;
                _lineHeight     = 0;
                _lineBase       = 0;
-               _previousFont   = nil; // resets currentAnchor and measuringRange;
                 lineRange      = CPMakeRange(glyphIndex + 1, 0);
+                measuringRange = CPMakeRange(glyphIndex + 1, 0);
                 wrapRange      = CPMakeRange(0, 0);
                 wrapWidth      = 0;
                 isWordWrapped  = NO;
