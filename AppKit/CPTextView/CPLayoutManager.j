@@ -296,7 +296,7 @@ var _objectsInRange = function(aList, aRange)
     {
         var run = runs[i];
 
-        if (run.DOMactive && !run.DOMpatched)
+        if (run.DOMactive && !run.DOMpatched || !run.elem)
         {
             continue;
         }
