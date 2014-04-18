@@ -1731,12 +1731,15 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
 - (IBAction)checkProjectWithCappLint:(id)aSender
 {
     [self clearErrors:self];
-    [self checkCappLintForPath:self.projectPath];
+    [self performSelectorInBackground:@selector(checkCappLintForPath:) withObject:self.projectPath];
 }
 
 - (void)checkCappLintForPath:(NSString*)aPath
 {
     DDLogVerbose(@"Checking path %@ with capp_lint", aPath);
+    
+    self.isProcessing = YES;
+    [[NSNotificationCenter defaultCenter] postNotificationName:XCCBatchDidStartNotification object:self];
     
     NSArray *arguments = [NSArray arrayWithObject:aPath];
     
@@ -1786,6 +1789,9 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     }
     
     [self showErrors];
+    
+    self.isProcessing = NO;
+    [[NSNotificationCenter defaultCenter] postNotificationName:XCCBatchDidEndNotification object:self];
 }
 
 @end
