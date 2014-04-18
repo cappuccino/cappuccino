@@ -241,7 +241,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     // Make sure we are using jsc as the narwhal engine!
     self.environment[@"NARWHAL_ENGINE"] = @"jsc";
 
-    self.executables = @[@"python", @"narwhal-jsc", @"objj", @"nib2cib", @"capp"];
+    self.executables = @[@"python", @"narwhal-jsc", @"objj", @"nib2cib", @"capp", @"capp_lint"];
 
     // This is used to get the env var of $CAPP_BUILD
     NSDictionary *processEnvironment = [[NSProcessInfo processInfo] environment];
@@ -729,7 +729,12 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
             self.pbxOperations[@"add"] = addPaths;
         }
     }
-
+    
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    
+    if ([defaults boolForKey:KDefaultUsesCappLintForEveryNotifications])
+        [self checkCappLintForPath:path];
+    
     DDLogVerbose(@"%@ %@", NSStringFromSelector(_cmd), path);
 }
 
@@ -1721,6 +1726,65 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
 {
     // Notification Center may decide not to show a notification. We always want them to show.
     return YES;
+}
+
+- (IBAction)checkProjectWithCappLint:(id)aSender
+{
+    [self checkCappLintForPath:self.projectPath];
+}
+
+- (void)checkCappLintForPath:(NSString*)aPath
+{
+    DDLogVerbose(@"Checking path %@ with capp_lint", aPath);
+    
+    NSArray *arguments = [NSArray arrayWithObject:aPath];
+    
+    NSDictionary *taskResult = [self runTaskWithLaunchPath:self.executablePaths[@"capp_lint"]
+                                                 arguments:arguments
+                                                returnType:kTaskReturnTypeStdOut];
+    
+    NSInteger status = [taskResult[@"status"] intValue];
+    NSString *response = taskResult[@"response"];
+    
+    if (status == 0)
+        return;
+    
+    NSMutableArray *errors = [NSMutableArray arrayWithArray:[response componentsSeparatedByString:@"\n\n"]];
+    
+    // We need to remove the first object who is the number of errors and the last object who is an empty line
+    [errors removeLastObject];
+    [errors removeObjectAtIndex:0];
+    
+    NSInteger i = 0;
+    NSInteger numberOfErrors = [errors count];
+    
+    for (i = 0; i < numberOfErrors; i++)
+    {
+        NSMutableString *error = (NSMutableString*)[errors objectAtIndex:i];
+        NSString *firstCaract = [NSString stringWithFormat:@"%c" ,[error characterAtIndex:0]];
+        NSString *path;
+        NSString *line;
+        
+        if ([[NSScanner scannerWithString:firstCaract] scanInt:nil])
+            error = (NSMutableString*)[NSString stringWithFormat:@"%@:%@",aPath,error];
+        
+        NSInteger positionOfFirstColon = [error rangeOfString:@":"].location;
+        path = [error substringToIndex:positionOfFirstColon];
+        
+        NSString *errorWithoutPath = [error substringFromIndex:(positionOfFirstColon + 1)];
+        NSInteger positionOfSecondColon = [errorWithoutPath rangeOfString:@":"].location;
+        line = [errorWithoutPath substringToIndex:positionOfSecondColon];
+        
+        NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+                                     [NSNumber numberWithInt:[line intValue]], @"line",
+                                     [NSString stringWithFormat:@"capp_lint error in %@ \n%@", path, errorWithoutPath], @"message",
+                                     path, @"path",
+                                     nil];
+        
+        [self.errorListController addObject:dict];
+    }
+    
+    [self showErrors];
 }
 
 @end

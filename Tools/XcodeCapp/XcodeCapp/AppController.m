@@ -151,7 +151,8 @@ AppController *SharedAppControllerInstance = nil;
         kDefaultLogLevel:                           [NSNumber numberWithInt:LOG_LEVEL_WARN],
         kDefaultAutoOpenXcodeProject:               @YES,
         kDefaultShowProcessingNotices:              @YES,
-        kDefaultUseSymlinkWhenCreatingProject:      @YES
+        kDefaultUseSymlinkWhenCreatingProject:      @YES,
+        KDefaultUsesCappLintForEveryNotifications:  @NO
     };
     
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
