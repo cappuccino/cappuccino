@@ -675,6 +675,9 @@ var _objectsInRange = function(aList, aRange)
         oldLength = CPMaxRange([_lineFragmentsForRescue lastObject]._range),
         newLength = [[_textStorage string].length];
 
+    if(ABS(newLength - oldLength) > 1)
+        return NO;
+
     if (![oldLineFragment isVisuallyIdenticalToFragment: newLineFragment])
     {
         isIdentical = NO;
