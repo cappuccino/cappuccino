@@ -1730,6 +1730,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
 
 - (IBAction)checkProjectWithCappLint:(id)aSender
 {
+    [self clearErrors:self];
     [self checkCappLintForPath:self.projectPath];
 }
 
