@@ -38,7 +38,7 @@
     return @"tooltip";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{
             @"stroke-color": [CPColor colorWithHexString:@"E3E3E3"],

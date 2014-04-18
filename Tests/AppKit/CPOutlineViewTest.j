@@ -172,6 +172,43 @@
     [outlineView expandItem:".1"];
 }
 
+- (void)testShouldExpandItemDelegate
+{
+    var delegate = [TestShouldExpandItemDelegate new];
+    // reset state
+    [outlineView collapseItem:".1"];
+    [self assertFalse:[outlineView isItemExpanded:".1"] message:".1 is collapsed by default"];
+    [outlineView expandItem:".1"];
+    [self assertTrue:[outlineView isItemExpanded:".1"] message:".1 is expanded, no restriction"];
+    [outlineView collapseItem:".1"];
+    [self assertFalse:[outlineView isItemExpanded:".1"] message:".1 is collapsed now"];
+
+    [outlineView setDelegate:delegate];
+
+    [outlineView expandItem:".1"];
+    [self assertFalse:[outlineView isItemExpanded:".1"] message:".1 is still collapsed, cannot expand"];
+}
+
+- (void)testShouldCollapseItemDelegate
+{
+    var delegate = [TestShouldCollapseItemDelegate new];
+    // reset state
+    [outlineView collapseItem:".1"];
+
+    [self assertFalse:[outlineView isItemExpanded:".1"] message:".1 is collapsed by default"];
+    [outlineView expandItem:".1"];
+    [self assertTrue:[outlineView isItemExpanded:".1"] message: ".1 is now expanded"];
+    [outlineView collapseItem:".1"];
+    [self assertFalse:[outlineView isItemExpanded:".1"] message: ".1 is now collapsed, no restriction"];
+
+    [outlineView setDelegate:delegate];
+
+    [outlineView expandItem:".1"];
+    [self assertTrue:[outlineView isItemExpanded:".1"] message:".1 is now expanded"];
+    [outlineView collapseItem:".1"];
+    [self assertTrue:[outlineView isItemExpanded:".1"] message:".1 is still expanded, cannot collapse"];
+}
+
 /*!
     Test that the outline view archives properly.
 */
@@ -325,6 +362,30 @@
     [tester assertTrue:[anOutlineView isItemExpanded:".1"]];
     [tester assert:0 equals:visibleRows.location];
     [tester assert:8 equals:visibleRows.length];
+}
+@end
+
+@implementation TestShouldExpandItemDelegate : CPObject
+{
+}
+
+- (BOOL)outlineView:(CPOutlineView)outlineView shouldExpandItem:(id)item
+{
+    if (item == @".1")
+        return NO;
+    return YES;
+}
+@end
+
+@implementation TestShouldCollapseItemDelegate : CPObject
+{
+}
+
+- (BOOL)outlineView:(CPOutlineView)outlineView shouldCollapseItem:(id)item
+{
+    if (item == @".1")
+        return NO;
+    return YES;
 }
 
 @end

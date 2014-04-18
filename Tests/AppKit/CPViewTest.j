@@ -42,20 +42,83 @@
     [self assert:undefined same:[_CPDisplayServer run]];
 }
 
-- (void)testThemeState
+- (void)testHasThemeState
 {
-    [self assertTrue:[view hasThemeState:CPThemeStateNormal] message:@"CPView should initialy have CPThemeStateNormal"];
-    [self assertFalse:[view hasThemeState:CPThemeStateDisabled] message:@"view should be disabled"];
+    [self assertTrue:[view hasThemeState:CPThemeStateNormal] message:@"By default, CPView should be in CPThemeStateNormal"];
+
+    view._themeState = CPThemeState(CPThemeStateDisabled, CPThemeStateBordered);
+    [self assertTrue:[view hasThemeState:CPThemeStateDisabled] message:@"CPView should be in state CPThemeStateDisabled"];
+    [self assertTrue:[view hasThemeState:CPThemeStateBordered] message:@"CPView should be in state CPThemeStateBordered"];
+    [self assertTrue:[view hasThemeState:CPThemeState(CPThemeStateBordered, CPThemeStateDisabled)] message:@"CPView should be in the combined state of CPThemeStateDisabled and CPThemeStateBordered"];
+    [self assertTrue:[view hasThemeState:[CPThemeStateBordered, CPThemeStateDisabled]] message:@"hasThemeState works with an array argument"];
+    [self assertFalse:[view hasThemeState:CPThemeState(CPThemeStateNormal)] message:@"CPView should not be in CPThemeStateNormal"];
+}
+
+- (void)testSetThemeState
+{
+    [self assert:String(CPThemeStateNormal) equals:String([view themeState]) message:@"CPView should initialy have CPThemeStateNormal"];
 
     [view setThemeState:CPThemeStateDisabled];
-    [self assertTrue:[view hasThemeState:CPThemeStateDisabled] message:@"The view should be CPThemeStateDisabled"];
+    [self assert:String(CPThemeStateDisabled) equals:String([view themeState]) message:@"The view should be CPThemeStateDisabled"];
 
     [view setThemeState:CPThemeStateHighlighted];
-    [self assertTrue:[view hasThemeState:CPThemeStateHighlighted] message:@"Theme state should be CPThemeStateHighlighted"];
+    [self assert:String(CPThemeState(CPThemeStateDisabled, CPThemeStateHighlighted)) equals:String([view themeState]) message:@"Theme state should be CPThemeStateHighlighted and CPThemeStateDisabled"];
 
-    [view setThemeState:CPThemeStateNormal | CPThemeStateHighlighted];
+    [view unsetThemeState:[view themeState]];
+    [view setThemeState:CPThemeState(CPThemeStateNormal, CPThemeStateHighlighted)];
     [self assertFalse:[view hasThemeState:CPThemeStateNormal] message:@"CPThemeStateNormal cannot exist as part of a compound state"];
+    [self assert:String([view themeState]) equals:String(CPThemeStateHighlighted) message:@"The view should be CPThemeStateHighlighted"];
+
+    [view setThemeState:CPThemeState(CPThemeStateHighlighted, CPThemeStateDisabled)];
     [self assertTrue:[view hasThemeState:CPThemeStateHighlighted] message:@"The view should be CPThemeStateHighlighted"];
+    [self assertTrue:[view hasThemeState:CPThemeStateDisabled] message:@"The view should be CPThemeStateDisabled"];
+    [self assert:String(CPThemeState(CPThemeStateDisabled, CPThemeStateHighlighted)) equals:String([view themeState]) message:@"The view should be in the combined state of CPThemeStateDisabled and CPThemeStateHighlighted"];
+
+    [view unsetThemeState:[view themeState]];
+    [view setThemeState:[CPThemeStateSelected, CPThemeStateDisabled]];
+    [self assert:String(CPThemeState(CPThemeStateDisabled, CPThemeStateSelected)) equals:String([view themeState]) message:@"setThemeState works with array argument"];
+}
+
+- (void)testUnsetThemeState
+{
+    [self assert:String(CPThemeStateNormal) equals:String([view themeState]) message:@"CPView should initialy have CPThemeStateNormal"];
+    [view unsetThemeState:CPThemeStateNormal];
+    [self assert:String(CPThemeStateNormal) equals:String([view themeState]) message:@"CPView always be in CPThemeStateNormal even if you try to unset it"];
+
+    [view setThemeState:CPThemeStateDisabled];
+    [view unsetThemeState:CPThemeStateDisabled];
+    [self assert:String(CPThemeStateNormal) equals:String([view themeState]) message:@"CPView should be in CPThemeStateNormal when all other theme states have been unset from it"];
+
+    [view setThemeState:CPThemeState(CPThemeStateDisabled, CPThemeStateHighlighted)];
+    [view unsetThemeState:CPThemeStateDisabled];
+    [self assert:String(CPThemeStateHighlighted) equals:String([view themeState]) message:"@CPView should have the remaining state when one of its combined states is unset"];
+
+    [view setThemeState:CPThemeState(CPThemeStateDisabled, CPThemeStateHighlighted, CPThemeStateBordered)];
+    [view unsetThemeState:CPThemeState(CPThemeStateBordered, CPThemeStateHighlighted, CPThemeStateDisabled)];
+    [self assert:String(CPThemeStateNormal) equals:String([view themeState]) message:@"CPView should be able to unset a combined theme state"];
+
+    [view setThemeState:CPThemeState(CPThemeStateDisabled, CPThemeStateHighlighted, CPThemeStateBordered)];
+    [view unsetThemeState:[CPThemeStateBordered, CPThemeStateHighlighted]];
+    [self assert:String(CPThemeStateDisabled) equals:String([view themeState]) message:@"unsetThemeState works with array argument"];
+
+    [view setThemeState:CPThemeStateDisabled];
+    [view unsetThemeState:[CPThemeStateDisabled, CPThemeStateHighlighted]];
+    [self assert:String(CPThemeStateNormal) equals:String([view themeState]) message:@"CPView should be able to unset a combined theme state that has more theme states than the view currently has"];
+
+    [view setThemeState:CPThemeState(CPThemeStateDisabled, CPThemeStateBordered)];
+    var returnValue = [view unsetThemeState:[CPThemeStateDisabled, CPThemeStateHighlighted]];
+    [self assert:String(CPThemeStateBordered) equals:String([view themeState]) message:@"CPView should be able to unset a combined theme state that has not entirely overlapping themestates"];
+    [self assertTrue:returnValue message:@"When unsetThemeState successfully unsets anything, it return YES"];
+
+    [view setThemeState:CPThemeState(CPThemeStateDisabled, CPThemeStateBordered)];
+    var returnValue = [view unsetThemeState:[CPThemeStateSelected, CPThemeStateHighlighted]];
+    [self assert:String(CPThemeState(CPThemeStateDisabled, CPThemeStateBordered)) equals:String([view themeState]) message:@"CPView not unset any theme states it does not have"];
+    [self assertFalse:returnValue message:@"When unsetThemeState doesn't unset anything, it returns NO"];
+
+    [view setThemeState:CPThemeState(CPThemeStateDisabled, CPThemeStateBordered)];
+    var returnValue = [view unsetThemeState:null];
+    [self assert:String(CPThemeState(CPThemeStateDisabled, CPThemeStateBordered)) equals:String([view themeState]) message:@"Trying to unset a null themestate does not change the current themestate of the view"];
+    [self assertFalse:returnValue message:@"Trying to unset a null themestate returns false"];
 }
 
 - (void)testThemeAttributes
@@ -101,6 +164,85 @@
     [contentView setHidden:NO];
     [contentView removeFromSuperview];
     [self assertFalse:[view _isVisible] message:"a superview does not belong to a visible window"];
+}
+
+- (void)testNextValidKeyView
+{
+    var viewA = [CPView new],
+        viewB = [CPView new],
+        viewC = [CPCollectionView new],
+        viewD = [CPView new],
+        viewE = [CPView new];
+
+    [viewA setNextKeyView:viewB];
+    [viewB setNextKeyView:viewC];
+
+    [self assert:viewC equals:[viewA nextValidKeyView]];
+
+    // Make a loop which is harder to detect.
+    [viewA setNextKeyView:viewB];
+    [viewB setNextKeyView:viewD];
+    [viewD setNextKeyView:viewE];
+    [viewE setNextKeyView:viewD];
+
+    [self assert:nil equals:[viewA nextValidKeyView]];
+}
+
+- (void)testConvertPoint_fromView_shouldChangeNothingForSameView
+{
+    var tView0 = [CPView new],
+        aWindow = [CPWindow new];
+
+    [aWindow setContentView:tView0];
+
+    [tView0 setFrame:CGRectMake(3, 5, 13, 17)];
+
+    [self assertTrue:CGPointEqualToPoint(CGPointMake(7, 11), [tView0 convertPoint:CGPointMake(7, 11) fromView:tView0])]
+}
+
+- (void)testConvertPoint_fromView_shouldAddSubviewCoordinatesWhenMovingUp
+{
+    var tView0 = [CPView new],
+        subView0 = [CPView new],
+        aWindow = [CPWindow new];
+
+    [aWindow setContentView:tView0];
+
+    [tView0 addSubview:subView0];
+    [tView0 setFrame:CGRectMake(30, 50, 130, 170)];
+    [subView0 setFrame:CGRectMake(3, 5, 13, 17)];
+
+    [self assertTrue:CGPointEqualToPoint(CGPointMake(10, 16), [tView0 convertPoint:CGPointMake(7, 11) fromView:subView0])]
+}
+
+- (void)testConvertPoint_fromView_shouldWorkBetweenSiblingViews
+{
+    var tView0 = [CPView new],
+        subView0 = [CPView new],
+        aWindow = [CPWindow new];
+
+    [[aWindow contentView] addSubview:tView0];
+    [[aWindow contentView] addSubview:subView0];
+
+    [tView0 setFrame:CGRectMake(30, 50, 130, 170)];
+    [subView0 setFrame:CGRectMake(3, 5, 13, 17)];
+
+    [self assertTrue:CGPointEqualToPoint(CGPointMake(34, 56), [subView0 convertPoint:CGPointMake(7, 11) fromView:tView0])]
+}
+
+- (void)testConvertPoint_fromView_shouldSubtractSubviewCoordinatesWhenMovingDown
+{
+    var tView0 = [CPView new],
+        subView0 = [CPView new],
+        aWindow = [CPWindow new];
+
+    [aWindow setContentView:tView0];
+
+    [tView0 addSubview:subView0];
+    [tView0 setFrame:CGRectMake(30, 50, 130, 170)];
+    [subView0 setFrame:CGRectMake(3, 5, 13, 17)];
+
+    [self assertTrue:CGPointEqualToPoint(CGPointMake(4, 6), [subView0 convertPoint:CGPointMake(7, 11) fromView:tView0])]
 }
 
 @end

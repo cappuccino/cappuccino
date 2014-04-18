@@ -135,6 +135,16 @@ var _CPAutocompleteMenuMaximumHeight = 307;
 
 - (void)layoutSubviews
 {
+    /*
+    If the textField has no window, then we simply stop to layout the
+    subviews and close the _menuWindow.
+    */
+    if (![textField window])
+    {
+        [_menuWindow orderOut:self];
+        return;
+    }
+
     // TODO
     /*
     The autocompletion menu should be underneath the word/text being
@@ -161,9 +171,9 @@ var _CPAutocompleteMenuMaximumHeight = 307;
 
         var dataView = [tableColumn dataView],
             fontNormal = [dataView valueForThemeAttribute:@"font" inState:CPThemeStateTableDataView],
-            fontSelected = [dataView valueForThemeAttribute:@"font" inState:CPThemeStateTableDataView | CPThemeStateSelectedDataView],
+            fontSelected = [dataView valueForThemeAttribute:@"font" inState:[CPThemeStateTableDataView, CPThemeStateSelectedDataView]],
             contentInsetNormal = [dataView valueForThemeAttribute:@"content-inset" inState:CPThemeStateTableDataView],
-            contentInsetSelected = [dataView valueForThemeAttribute:@"content-inset" inState:CPThemeStateTableDataView | CPThemeStateSelectedDataView];
+            contentInsetSelected = [dataView valueForThemeAttribute:@"content-inset" inState:[CPThemeStateTableDataView, CPThemeStateSelectedDataView]];
 
         var mergedString = contentArray.join("\n");
 
@@ -202,6 +212,8 @@ var _CPAutocompleteMenuMaximumHeight = 307;
     [self setIndexOfSelectedItem:indexOfSelectedItem];
 
     [textField setThemeState:CPThemeStateAutocompleting];
+
+    [_menuWindow setPlatformWindow:[[textField window] platformWindow]];
     [[textField window] addChildWindow:_menuWindow ordered:CPWindowAbove];
 
     [self layoutSubviews];
@@ -256,7 +268,7 @@ var _CPAutocompleteMenuMaximumHeight = 307;
     return [contentArray count];
 }
 
-- (void)tableView:(CPTableView)tableView objectValueForTableColumn:(CPTableColumn)tableColumn row:(int)row
+- (void)tableView:(CPTableView)tableView objectValueForTableColumn:(CPTableColumn)tableColumn row:(CPInteger)row
 {
     return [contentArray objectAtIndex:row];
 }
@@ -270,7 +282,7 @@ var _CPAutocompleteMenuMaximumHeight = 307;
 
 @implementation _CPAutocompleteWindow : CPPanel
 
-- (id)initWithContentRect:(CGRect)aContentRect styleMask:(unsigned int)aStyleMask
+- (id)initWithContentRect:(CGRect)aContentRect styleMask:(unsigned)aStyleMask
 {
     if (self = [super initWithContentRect:aContentRect styleMask:aStyleMask])
         _constrainsToUsableScreen = NO;

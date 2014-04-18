@@ -113,10 +113,10 @@ var IBDefaultFontSizeTableHeader = 11.0;
 
         if (![textColor isEqual:defaultColor])
         {
-            var selectedColor = [self valueForDataViewThemeAttribute:@"text-color" inState:CPThemeStateTableDataView | CPThemeStateSelectedDataView];
+            var selectedColor = [self valueForDataViewThemeAttribute:@"text-color" inState:CPThemeState(CPThemeStateTableDataView, CPThemeStateSelectedDataView)];
 
-            [dataView setValue:selectedColor forThemeAttribute:@"text-color" inState:CPThemeStateTableDataView | CPThemeStateSelectedDataView];
-            [dataView setValue:textColor forThemeAttribute:@"text-color" inState:CPThemeStateTableDataView | CPThemeStateSelectedDataView | CPThemeStateEditing];
+            [dataView setValue:selectedColor forThemeAttribute:@"text-color" inState:CPThemeState(CPThemeStateTableDataView, CPThemeStateSelectedDataView)];
+            [dataView setValue:textColor forThemeAttribute:@"text-color" inState:CPThemeState(CPThemeStateTableDataView, CPThemeStateSelectedDataView, CPThemeStateEditing)];
         }
     }
 

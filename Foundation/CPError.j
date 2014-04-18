@@ -91,7 +91,7 @@ CPFilePathErrorKey                      = @"CPFilePathErrorKey";
    return [_userInfo objectForKey:CPRecoveryAttempterErrorKey];
 }
 
-- (id)description
+- (CPString)description
 {
    return [CPString stringWithFormat:@"Error Domain=%@ Code=%d UserInfo=%p %@", _domain, _code, _userInfo, [self localizedDescription]];
 }

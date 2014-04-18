@@ -320,8 +320,8 @@ var XML_XML                 = "xml",
 #define IS_WHITESPACE(anXMLNode) (NODE_TYPE(anXMLNode) === 8 || NODE_TYPE(anXMLNode) === 3)
 #define IS_DOCUMENTTYPE(anXMLNode) (NODE_TYPE(anXMLNode) === 10)
 
-#define PLIST_NEXT_SIBLING(anXMLNode) while ((anXMLNode = NEXT_SIBLING(anXMLNode)) && IS_WHITESPACE(anXMLNode)) ;
-#define PLIST_FIRST_CHILD(anXMLNode) anXMLNode = FIRST_CHILD(anXMLNode); if (anXMLNode !== NULL && IS_WHITESPACE(anXMLNode)) PLIST_NEXT_SIBLING(anXMLNode)
+#define PLIST_NEXT_SIBLING(anXMLNode) while ((anXMLNode = NEXT_SIBLING(anXMLNode)) && IS_WHITESPACE(anXMLNode));
+#define PLIST_FIRST_CHILD(anXMLNode) { anXMLNode = FIRST_CHILD(anXMLNode); if (anXMLNode !== NULL && IS_WHITESPACE(anXMLNode)) PLIST_NEXT_SIBLING(anXMLNode) }
 
 var textContent = function(nodes)
 {

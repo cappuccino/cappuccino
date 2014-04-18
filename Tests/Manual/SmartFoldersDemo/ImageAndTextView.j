@@ -44,7 +44,7 @@
     [self setText:value];
 }
 
-- (void)setThemeState:(CPThemeState)state
+- (void)setThemeState:(ThemeState)state
 {
     if (state === CPThemeStateSelectedDataView)
     {
@@ -55,7 +55,7 @@
     [super setThemeState:state];
 }
 
-- (void)unsetThemeState:(CPThemeState)state
+- (void)unsetThemeState:(ThemeState)state
 {
     if (state === CPThemeStateSelectedDataView)
     {

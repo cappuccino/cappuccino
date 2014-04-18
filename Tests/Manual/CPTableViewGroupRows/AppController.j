@@ -47,12 +47,12 @@
     return [dataSource count];
 }
 
-- (id)tableView:(CPTableView)aTableView objectValueForTableColumn:(CPTableColumn)aTableColumn row:(int)rowIndex
+- (id)tableView:(CPTableView)aTableView objectValueForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)rowIndex
 {
     return dataSource[rowIndex];
 }
 
-- (BOOL)tableView:(CPTableView)aTableView isGroupRow:(int)rowIndex
+- (BOOL)tableView:(CPTableView)aTableView isGroupRow:(CPInteger)rowIndex
 {
     return rowIndex == 5;
 }

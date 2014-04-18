@@ -4,6 +4,16 @@
 {
 }
 
+- (void)testCPObjectIsSubclassOfClassCPObjectShouldBeTrue
+{
+    [self assertTrue:[CPObject isSubclassOfClass:[CPObject class]]];
+}
+
+- (void)testIsSubclassOfClassWithNonSubclassShouldBeFalse
+{
+    [self assertFalse:[CPObject isSubclassOfClass:[SuperReceiver class]]];
+}
+
 - (void)testImplementsSelector
 {
     var receiver = [[Receiver alloc] init];
@@ -57,6 +67,13 @@
 
     [self assertTrue:d.indexOf("name:") !== -1 message:"Can't find 'name:' in description of json " + d];
     [self assertTrue:d.indexOf("access:") !== -1 message:"Can't find 'access:' in description of json " + d];
+}
+
+- (void)testCPObjectNotEqualToNil
+{
+    var anObject = [[CPObject alloc] init];
+
+    [self assert:anObject notEqual:nil];
 }
 
 @end

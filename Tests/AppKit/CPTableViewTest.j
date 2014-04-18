@@ -325,7 +325,7 @@
 
 @end
 
-@implementation TestDataSource : CPObject
+@implementation TestDataSource : CPObject <CPTableViewDataSource>
 {
     CPArray tableEntries @accessors;
 }
@@ -335,12 +335,12 @@
     return [tableEntries count];
 }
 
-- (id)tableView:(CPTableView)aTableView objectValueForTableColumn:(CPTableColumn)aColumn row:(int)aRow
+- (id)tableView:(CPTableView)aTableView objectValueForTableColumn:(CPTableColumn)aColumn row:(CPInteger)aRow
 {
     return tableEntries[aRow];
 }
 
-- (void)tableView:(CPTableView)aTableView setObjectValue:(id)anObject forTableColumn:(CPTableColumn)aTableColumn row:(int)aRow
+- (void)tableView:(CPTableView)aTableView setObjectValue:(id)anObject forTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow
 {
     tableEntries[aRow] = anObject;
 }
@@ -351,7 +351,7 @@
 {
 }
 
-- (BOOL)tableView:(CPTableView)aTableView shouldEditTableColumn:(CPTableColumn)aTableColumn row:(int)anRow
+- (BOOL)tableView:(CPTableView)aTableView shouldEditTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)anRow
 {
     return YES;
 }
@@ -365,7 +365,7 @@
     CPTableViewTest tester @accessors;
 }
 
-- (void)tableView:(CPTableView)aTableView willDisplayView:(CPView)aView forTableColumn:(CPTableColumn)tableColumn row:(int)row
+- (void)tableView:(CPTableView)aTableView willDisplayView:(CPView)aView forTableColumn:(CPTableColumn)tableColumn row:(CPInteger)row
 {
     // Make sure each view contains the full row in its objectValue
     [tester assert:tableEntries[row] equals:[aView objectValue]];

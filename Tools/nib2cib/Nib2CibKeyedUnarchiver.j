@@ -22,6 +22,8 @@
 
 @import <Foundation/CPKeyedUnarchiver.j>
 
+@import "Nib2CibException.j"
+
 @class Nib2Cib
 
 var FILE = require("file");
@@ -45,10 +47,15 @@ var FILE = require("file");
     {
         var info = [frameworks valueForKey:framework];
 
-        if (!info || !info.resourceDirectory)
-            return nil;
+        if (!info)
+            [CPException raise:Nib2CibException format:@"The framework “%@” specified by the image “%@@%@” cannot be found.", framework, aName, framework];
+        else if (!info.resourceDirectory)
+            [CPException raise:Nib2CibException format:@"The framework “%@” specified by the image “%@@%@” has no Resources directory.", framework, aName, framework];
 
-        return { path:[self _resourcePathForName:aName inDirectory:info.resourceDirectory], framework:framework };
+        var path = [self _resourcePathForName:aName inDirectory:info.resourceDirectory];
+
+        if (path)
+            return { path:path, framework:framework };
     }
     else
     {
@@ -75,7 +82,7 @@ var FILE = require("file");
         }
     }
 
-    return nil;
+    [CPException raise:Nib2CibException format:@"The image “%@” cannot be found.", aName];
 }
 
 - (CPString)_resourcePathForName:(CPString)aName inDirectory:(CPString)directory

@@ -53,6 +53,28 @@
 
 @global CPApp
 
+
+@protocol CPWindowDelegate <CPObject>
+
+@optional
+- (BOOL)windowShouldClose:(CPWindow)aWindow;
+- (CPUndoManager)windowWillReturnUndoManager:(CPWindow)window;
+- (void)windowDidBecomeKey:(CPNotification)aNotification;
+- (void)windowDidBecomeMain:(CPNotification)aNotification;
+- (void)windowDidEndSheet:(CPNotification)aNotification;
+- (void)windowDidMove:(CPNotification)aNotification;
+- (void)windowDidResignKey:(CPNotification)aNotification;
+- (void)windowDidResignMain:(CPNotification)aNotification;
+- (void)windowDidResize:(CPNotification)aNotification;
+- (void)windowWillBeginSheet:(CPNotification)aNotification;
+- (void)windowWillClose:(CPWindow)aWindow;
+
+@end
+
+var CPWindowDelegate_windowShouldClose_             = 1 << 1
+    CPWindowDelegate_windowWillReturnUndoManager_   = 1 << 2,
+    CPWindowDelegate_windowWillClose_               = 1 << 3;
+
 var CPWindowSaveImage       = nil,
 
     CPWindowResizeTime      = 0.2,
@@ -171,7 +193,8 @@ var CPWindowActionMessageKeys = [
     CPResponder                         _firstResponder;
     CPResponder                         _initialFirstResponder;
     BOOL                                _hasBecomeKeyWindow;
-    id                                  _delegate;
+    id <CPWindowDelegate>               _delegate;
+    unsigned                            _implementedDelegateMethods;
 
     CPString                            _title;
 
@@ -204,8 +227,6 @@ var CPWindowActionMessageKeys = [
 #endif
 
     unsigned                            _autoresizingMask;
-
-    BOOL                                _delegateRespondsToWindowWillReturnUndoManagerSelector;
 
     BOOL                                _isFullPlatformWindow;
     _CPWindowFullPlatformWindowSession  _fullPlatformWindowSession;
@@ -248,7 +269,7 @@ CPTexturedBackgroundWindowMask
     @param aStyleMask a style mask
     @return the initialized window
 */
-- (id)initWithContentRect:(CGRect)aContentRect styleMask:(unsigned int)aStyleMask
+- (id)initWithContentRect:(CGRect)aContentRect styleMask:(unsigned)aStyleMask
 {
     self = [super init];
 
@@ -735,6 +756,10 @@ CPTexturedBackgroundWindowMask
     }
 }
 
+/*
+    Constrain a frame so that the window remains at least partially visible on screen,
+    moving or resizing the frame as necessary.
+*/
 - (CGRect)_constrainFrame:(CGRect)aFrame toUsableScreenWidth:(BOOL)constrainWidth andHeight:(BOOL)constrainHeight
 {
     var frame = CGRectMakeCopy(aFrame);
@@ -759,7 +784,7 @@ CPTexturedBackgroundWindowMask
         if (CGRectGetWidth(frame) > usableWidth)
         {
             frame.origin.x = CGRectGetMinX(usableRect);
-            frame.size.width = usableWidth;
+            frame.size.width = MAX(usableWidth, _minSize.width);
         }
     }
 
@@ -778,13 +803,20 @@ CPTexturedBackgroundWindowMask
         if (CGRectGetHeight(frame) > usableHeight)
         {
             frame.origin.y = CGRectGetMinY(usableRect);
-            frame.size.height = usableHeight;
+            frame.size.height = MAX(usableHeight, _minSize.height);
         }
     }
 
     return frame;
 }
 
+/*
+    Constrain the origin of a frame such that:
+
+    - The window view's minimum resize width is kept onscreen at the left/right of the window.
+    - The top of the window is kept below the top of the usable content.
+    - The top of the contentView + CPWindowMinVisibleVerticalMargin is kept above the bottom of the usable content.
+*/
 - (CGRect)_constrainOriginOfFrame:(CGRect)aFrame
 {
     var frame = CGRectMakeCopy(aFrame);
@@ -792,19 +824,20 @@ CPTexturedBackgroundWindowMask
     if (!_constrainsToUsableScreen || !_isVisible)
         return frame;
 
-    /*
-        - CPWindowMinVisibleHorizontalMargin is kept onscreen at the left/right of the window.
-        - The top of the window is kept below the top of the usable content.
-        - The top of the contentView + CPWindowMinVisibleVerticalMargin is kept above the bottom of the usable content.
-    */
     var usableRect = [_platformWindow usableContentFrame],
-        maxUsableY = CGRectGetMaxY(usableRect) - CGRectGetMinY([_contentView frame]) - CPWindowMinVisibleVerticalMargin;
+        minimumSize = [_windowView _minimumResizeSize];
 
-    frame.origin.x = MAX(frame.origin.x, CGRectGetMinX(usableRect) + CPWindowMinVisibleHorizontalMargin - CGRectGetWidth(frame));
-    frame.origin.x = MIN(frame.origin.x, CGRectGetMaxX(usableRect) - CPWindowMinVisibleHorizontalMargin);
+    // First constrain x so that at least CPWindowMinVisibleHorizontalMargin is visible on the right
+    frame.origin.x = MAX(frame.origin.x, CGRectGetMinX(usableRect) + minimumSize.width - CGRectGetWidth(frame));
 
+    // Now constrain x so that at least CPWindowMinVisibleHorizontalMargin is visible on the left
+    frame.origin.x = MIN(frame.origin.x, CGRectGetMaxX(usableRect) - minimumSize.width);
+
+    // Now constrain y so that it is below the top of the usable content
     frame.origin.y = MAX(frame.origin.y, CGRectGetMinY(usableRect));
-    frame.origin.y = MIN(frame.origin.y, maxUsableY);
+
+    // Finally constrain y so that at least CPWindowMinVisibleHorizontalMargin is visible at the bottom
+    frame.origin.y = MIN(frame.origin.y, CGRectGetMaxY(usableRect) - CGRectGetMinY([_contentView frame]) - CPWindowMinVisibleVerticalMargin);
 
     return frame;
 }
@@ -985,6 +1018,7 @@ CPTexturedBackgroundWindowMask
     [_platformWindow moveWindow:self fromLevel:_level toLevel:aLevel];
 
     _level = aLevel;
+    [_childWindows makeObjectsPerformSelector:@selector(setLevel:) withObject:_level];
 
     if ([self _sharesChromeWithPlatformWindow])
         [_platformWindow setLevel:aLevel];
@@ -1018,6 +1052,23 @@ CPTexturedBackgroundWindowMask
 
     CPWindowResizeStyle = aStyle;
     [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowResizeStyleGlobalChangeNotification object:nil];
+}
+
+/*!
+    If set to NO, platform window (virtual screen) resizes will not attempt to move/resize user windows.
+    to the usable area.
+*/
++ (void)setConstrainWindowsToUsableScreen:(BOOL)shouldConstrain
+{
+    CPWindowConstrainToScreen = shouldConstrain;
+}
+
+/*!
+    Return whether platform window (virtual screen) resizes constrain user windows to the usable area.
+*/
++ (BOOL)constrainWindowsToUsableScreen
+{
+    return CPWindowConstrainToScreen;
 }
 
 - (void)_didReceiveResizeStyleChange:(CPNotification)aNotification
@@ -1313,8 +1364,11 @@ CPTexturedBackgroundWindowMask
     Sets the delegate for the window. Passing \c nil will just remove the window's current delegate.
     @param aDelegate an object to respond to the various delegate methods of CPWindow
 */
-- (void)setDelegate:(id)aDelegate
+- (void)setDelegate:(id <CPWindowDelegate>)aDelegate
 {
+    if (_delegate === aDelegate)
+        return;
+
     var defaultCenter = [CPNotificationCenter defaultCenter];
 
     [defaultCenter removeObserver:_delegate name:CPWindowDidResignKeyNotification object:self];
@@ -1327,7 +1381,16 @@ CPTexturedBackgroundWindowMask
     [defaultCenter removeObserver:_delegate name:CPWindowDidEndSheetNotification object:self];
 
     _delegate = aDelegate;
-    _delegateRespondsToWindowWillReturnUndoManagerSelector = [_delegate respondsToSelector:@selector(windowWillReturnUndoManager:)];
+    _implementedDelegateMethods = 0;
+
+    if ([_delegate respondsToSelector:@selector(windowShouldClose:)])
+        _implementedDelegateMethods |= CPWindowDelegate_windowShouldClose_;
+
+    if ([_delegate respondsToSelector:@selector(windowWillReturnUndoManager:)])
+        _implementedDelegateMethods |= CPWindowDelegate_windowWillReturnUndoManager_;
+
+    if ([_delegate respondsToSelector:@selector(windowWillClose:)])
+        _implementedDelegateMethods |= CPWindowDelegate_windowWillClose_;
 
     if ([_delegate respondsToSelector:@selector(windowDidResignKey:)])
         [defaultCenter
@@ -1669,11 +1732,17 @@ CPTexturedBackgroundWindowMask
         switch (type)
         {
             case CPLeftMouseDown:
+
+                // This is needed when a doubleClick occurs when the sheet is closing or opening
+                if (!_parentWindow)
+                    return;
+
                 [_windowView mouseDown:anEvent];
 
                 // -dw- if the window is clicked, the sheet should come to front, and become key,
                 // and the window should be immediately behind
                 [sheet makeKeyAndOrderFront:self];
+
                 return;
 
             case CPMouseMoved:
@@ -2207,9 +2276,9 @@ CPTexturedBackgroundWindowMask
 
     // The Cocoa docs say that if both the delegate and the window implement
     // windowShouldClose:, only the delegate receives the message.
-    if ([_delegate respondsToSelector:@selector(windowShouldClose:)])
+    if ([self _delegateRespondsToWindowShouldClose])
     {
-        if (![_delegate windowShouldClose:self])
+        if (![self _sendDelegateWindowShouldClose])
             return;
     }
     else if ([self respondsToSelector:@selector(windowShouldClose:)])
@@ -2265,8 +2334,7 @@ CPTexturedBackgroundWindowMask
 */
 - (void)close
 {
-    if ([_delegate respondsToSelector:@selector(windowWillClose:)])
-        [_delegate windowWillClose:self];
+    [self _sendDelegateWindowWillClose];
 
     [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowWillCloseNotification object:self];
 
@@ -2465,7 +2533,7 @@ CPTexturedBackgroundWindowMask
     // If this has an owner, dump it!
     [[aToolbar _window] setToolbar:nil];
 
-    // This is no longer out toolbar.
+    // This is no longer our toolbar.
     [_toolbar _setWindow:nil];
 
     _toolbar = aToolbar;
@@ -2530,6 +2598,7 @@ CPTexturedBackgroundWindowMask
 
     [childWindow setParentWindow:self];
     [childWindow _setChildOrdering:orderingMode];
+    [childWindow setLevel:[self level]];
 
     if ([self isVisible] && ![childWindow isVisible])
         [childWindow orderWindow:orderingMode relativeTo:_windowNumber];
@@ -2755,13 +2824,20 @@ CPTexturedBackgroundWindowMask
     }
 
     // The sheet starts hidden just above the top of a clip rect
+    // TODO : Make properly for the -1 in endY
     var sheetFrame = [sheet frame],
         sheetShadowFrame = sheet._hasShadow ? [sheet._shadowView frame] : sheetFrame,
         frame = [self frame],
         originX = frame.origin.x + FLOOR((frame.size.width - sheetFrame.size.width) / 2),
         startFrame = CGRectMake(originX, -sheetShadowFrame.size.height, sheetFrame.size.width, sheetFrame.size.height),
-        endY = [_windowView bodyOffset] - [[self contentView] frame].origin.y,
+        endY = -1 + [_windowView bodyOffset] - [[self contentView] frame].origin.y,
         endFrame = CGRectMake(originX, endY, sheetFrame.size.width, sheetFrame.size.height);
+
+    if (_toolbar && [_windowView showsToolbar] && [self isFullPlatformWindow])
+    {
+        endY    += [[_toolbar _toolbarView] frameSize].height;
+        endFrame = CGRectMake(originX, endY, sheetFrame.size.width, sheetFrame.size.height);
+    }
 
     // Move the sheet offscreen before ordering front so it doesn't appear briefly
     [sheet setFrameOrigin:CGPointMake(0, -13000)];
@@ -3250,6 +3326,66 @@ var keyViewComparator = function(lhs, rhs, context)
     return CPOrderedDescending;
 };
 
+
+@implementation CPWindow (CPWindowDelegate)
+
+/*!
+    @ignore
+    Check if the delegate implements windowWillReturnUndoManager:
+*/
+- (BOOL)_delegateRespondsToWindowWillUndoManager
+{
+    return _implementedDelegateMethods & CPWindowDelegate_windowWillReturnUndoManager_;
+}
+
+/*!
+    @ignore
+    Check if the delegate implements windowShouldClose
+*/
+- (BOOL)_delegateRespondsToWindowShouldClose
+{
+    return _implementedDelegateMethods & CPWindowDelegate_windowShouldClose_
+}
+
+/*!
+    @ignore
+    Call delegate windowShouldClose:
+*/
+- (BOOL)_sendDelegateWindowShouldClose
+{
+    if (!(_implementedDelegateMethods & CPWindowDelegate_windowShouldClose_))
+        return YES;
+
+    return [_delegate windowShouldClose:self];
+}
+
+/*!
+    @ignore
+    Call delegate windowWillReturnUndoManager:
+*/
+- (BOOL)_sendDelegateWindowWillReturnUndoManager
+{
+    if (!(_implementedDelegateMethods & CPWindowDelegate_windowWillReturnUndoManager_))
+        return nil;
+
+    return [_delegate windowWillReturnUndoManager:self];
+}
+
+/*!
+    @ignore
+    Call delegate windowWillClose:
+*/
+- (void)_sendDelegateWindowWillClose
+{
+    if (!(_implementedDelegateMethods & CPWindowDelegate_windowWillClose_))
+        return;
+
+    [_delegate windowWillClose:self];
+}
+
+@end
+
+
 @implementation CPWindow (BridgeSupport)
 
 /*
@@ -3260,7 +3396,8 @@ var keyViewComparator = function(lhs, rhs, context)
     if ([self isFullPlatformWindow])
         return [self setFrame:[_platformWindow visibleFrame]];
 
-    if (_autoresizingMask === CPWindowNotSizable)
+    // If this window is constrainable and we are globally ignoring constraining, ignore the platform resize
+    if ((_constrainsToUsableScreen && !CPWindowConstrainToScreen) || _autoresizingMask === CPWindowNotSizable)
         return;
 
     var frame = [_platformWindow contentBounds],
@@ -3282,7 +3419,7 @@ var keyViewComparator = function(lhs, rhs, context)
     if (_autoresizingMask & CPWindowHeightSizable)
         newFrame.size.height += dY;
 
-    [self setFrame:newFrame];
+    [self _setFrame:newFrame display:YES animate:NO constrainWidth:YES constrainHeight:YES];
 }
 
 /*
@@ -3386,8 +3523,8 @@ var keyViewComparator = function(lhs, rhs, context)
         return documentUndoManager;
 
     // If not, check to see if the delegate has one.
-    if (_delegateRespondsToWindowWillReturnUndoManagerSelector)
-        return [_delegate windowWillReturnUndoManager:self];
+    if ([self _delegateRespondsToWindowWillUndoManager])
+        return [self _sendDelegateWindowWillReturnUndoManager];
 
     // If not, create one.
     if (!_undoManager)

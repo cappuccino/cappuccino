@@ -259,6 +259,23 @@
     [self disableUnlinkedButtons];
 
     [self showWindow:self];
+
+    // This code exposes the bug described in issue #1911 by adding a CPPanel child window at a different window
+    // level than the parent window and then immediately closing it. To test, click the Window button. If a
+    // crash ensues the #1911 fix is not operating. On the other hand if the panel widnow is never seen and
+    // the window opens like normal everything is correct.
+    var windows = [CPApp windows];
+
+    if ([windows count] >= 2)
+    {
+        var w = [[CPPanel alloc] initWithContentRect:CGRectMake(100, 100, 100, 100)
+                                           styleMask:CPTitledWindowMask | CPClosableWindowMask | CPResizableWindowMask | CPHUDBackgroundWindowMask];
+        [w setLevel:CPFloatingWindowLevel];
+        [[windows objectAtIndex:0] addChildWindow:w ordered:CPWindowAbove];
+        [[windows objectAtIndex:0] makeKeyAndOrderFront:nil];
+        [w orderOut:nil];
+        [[self window] makeKeyAndOrderFront:nil];
+    }
 }
 
 //

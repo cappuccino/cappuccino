@@ -29,6 +29,8 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
 
 @implementation _CPTexturedWindowHeadView : CPView
 {
+    BOOL            _isSheet    @accessors(setter=setSheet:);
+
     _CPWindowView   _parentView;
     CPView          _gradientView;
     CPView          _solidView;
@@ -39,7 +41,7 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
     return @"textured-window-head-view";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{};
 }
@@ -66,10 +68,11 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
     [super layoutSubviews];
 
     var gradientHeight = [[CPTheme defaultTheme] valueForAttributeWithName:@"gradient-height" forClass:_CPStandardWindowView],
-        bounds = [self bounds];
+        bounds = [self bounds],
+        bezelHeadColor = [[CPTheme defaultTheme] valueForAttributeWithName:_isSheet ? @"bezel-head-sheet-color" : @"bezel-head-color" inState:[_parentView themeState] forClass:_CPStandardWindowView];
 
     [_gradientView setFrame:CGRectMake(0.0, 0.0, CGRectGetWidth(bounds), gradientHeight)];
-    [_gradientView setBackgroundColor:[[CPTheme defaultTheme] valueForAttributeWithName:@"bezel-head-color" inState:[_parentView themeState] forClass:_CPStandardWindowView]];
+    [_gradientView setBackgroundColor:bezelHeadColor];
 
     [_solidView setFrame:CGRectMake(0.0, gradientHeight, CGRectGetWidth(bounds), CGRectGetHeight(bounds) - gradientHeight)];
     [_solidView setBackgroundColor:[[CPTheme defaultTheme] valueForAttributeWithName:@"solid-color" forClass:_CPStandardWindowView]];
@@ -97,6 +100,7 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
     CPButton                    _minimizeButton;
 
     BOOL                        _isDocumentEdited;
+    BOOL                        _isSheet;
 }
 
 + (CPString)defaultThemeClass
@@ -104,12 +108,13 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
     return @"standard-window-view";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{
             @"gradient-height": [CPNull null],
             @"solid-color": [CPNull null],
             @"bezel-head-color": [CPNull null],
+            @"bezel-head-sheet-color": [CPNull null],
             @"divider-color": [CPColor blackColor],
             @"body-color": [CPColor whiteColor],
             @"title-bar-height": 32,
@@ -224,7 +229,14 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
         width = CGRectGetWidth(bounds),
         headHeight = [self toolbarMaxY];
 
+    if (_isSheet && _toolbarView && [self showsToolbar])
+    {
+        headHeight = [_toolbarView frameSize].height;
+        [_toolbarView setFrameOrigin:CGPointMake(0.0, 0.0)];
+    }
+
     [_headView setFrameSize:CGSizeMake(width, headHeight)];
+
     [_dividerView setFrame:CGRectMake(0.0, headHeight, width, _CPStandardWindowViewDividerViewHeight)];
 
     var dividerMinY = 0,
@@ -312,11 +324,25 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
 {
     [super _enableSheet:enable inWindow:parentWindow];
 
-    [_headView setHidden:enable];
-    [_dividerView setHidden:enable];
+    _isSheet = enable;
+    [_headView setSheet:enable];
+
+    if (_toolbarView && [self showsToolbar])
+    {
+        [_headView setHidden:NO];
+        [_dividerView setHidden:NO];
+    }
+    else
+    {
+        [_headView setHidden:enable];
+        [_dividerView setHidden:enable];
+    }
+
     [_closeButton setHidden:enable];
     [_minimizeButton setHidden:enable];
     [_titleField setHidden:enable];
+
+    [[self window] setMovable:!enable];
 
     if (enable)
     {
@@ -333,12 +359,13 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
     var theWindow = [self window],
         frame = [theWindow frame],
         dividerHeight = [_dividerView frame].size.height,
-        dy;
+        dy = [self toolbarMaxY] + dividerHeight;
+
+    if (_toolbarView && [self showsToolbar])
+        dy = [[CPTheme defaultTheme] valueForAttributeWithName:@"gradient-height" forClass:_CPStandardWindowView];
 
     if (enable)
-        dy = -[_headView frame].size.height;
-    else
-        dy = [self toolbarMaxY] + dividerHeight;
+        dy = -dy;
 
     var newHeight = CGRectGetHeight(frame) + dy,
         newWidth = CGRectGetWidth(frame);

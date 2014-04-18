@@ -78,7 +78,7 @@ var CPRuleEditorCustomControlClass = @"CPRuleEditorCustomControlClass";
  (1) CPMenuItem: not implemented yet.
 */
 
-- (id)ruleEditor:(CPRuleEditor)editor displayValueForCriterion:(id)criterion inRow:(int)row
+- (id)ruleEditor:(CPRuleEditor)editor displayValueForCriterion:(id)criterion inRow:(CPInteger)row
 {
     var custom_control_class = [criterion objectForKey:CPRuleEditorCustomControlClass];
 
@@ -98,7 +98,7 @@ var CPRuleEditorCustomControlClass = @"CPRuleEditorCustomControlClass";
     return [criterion objectForKey:@"valeur"];
 }
 
-- (CPDictionary)ruleEditor:(CPRuleEditor)editor predicatePartsForCriterion:(id)criterion withDisplayValue:(id)value inRow:(int)row
+- (CPDictionary)ruleEditor:(CPRuleEditor)editor predicatePartsForCriterion:(id)criterion withDisplayValue:(id)value inRow:(CPInteger)row
 {
     var predicatePartsForCriterion = @{};
 

@@ -86,7 +86,7 @@ else if (CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
     return self;
 }
 
-- (id)hitTest:(CGPoint)point
+- (CPView)hitTest:(CGPoint)point
 {
     if (!CGRectContainsPoint([self frame], point) || ![self sliceIsEditable])
         return nil;
@@ -100,12 +100,12 @@ else if (CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
     return ![superview isKindOfClass:[_CPRuleEditorViewSlice]] || [superview isEditable];
 }
 
-- (BOOL)trackMouse:(CPEvent)theEvent
+- (void)trackMouse:(CPEvent)theEvent
 {
     if (![self sliceIsEditable])
-        return NO;
+        return;
 
-    return [super trackMouse:theEvent];
+    [super trackMouse:theEvent];
 }
 
 - (CGRect)contentRectForBounds:(CGRect)bounds

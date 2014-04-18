@@ -107,27 +107,29 @@
  * P:     undefined      80 undefined
  */
 
+@import <Foundation/CPNotificationCenter.j>
 @import <Foundation/CPObject.j>
 @import <Foundation/CPRunLoop.j>
 @import <Foundation/CPSet.j>
 @import <Foundation/CPTimer.j>
 
-@import "CPCursor.j"
+@import "CPApplication_Constants.j"
 @import "CPCompatibility.j"
+@import "CPCursor.j"
 @import "CPDOMWindowLayer.j"
 @import "CPDragServer_Constants.j"
 @import "CPEvent.j"
 @import "CPPasteboard.j"
 @import "CPPlatform.j"
-@import "CPPlatformWindow.j"
+@import "CPPlatformPasteboard.j"
 @import "CPPlatformWindow+DOMKeys.j"
+@import "CPPlatformWindow.j"
 @import "CPText.j"
 @import "CPWindow_Constants.j"
 
 @class CPDragServer
 @class _CPToolTip
 
-@global CPApp
 @global _CPRunModalLoop
 
 // List of all open native windows
@@ -135,7 +137,6 @@ var PlatformWindows = [CPSet set];
 
 // Define up here so compressor knows about them.
 var CPDOMEventGetClickCount,
-    CPDOMEventStop,
     StopDOMEventPropagation,
     StopContextMenuDOMEventPropagation;
 
@@ -196,11 +197,14 @@ var ModifierKeyCodes = [
         CPKeyCodes.ALT,
         CPKeyCodes.SHIFT
     ],
+
     supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
 var resizeTimer = nil;
+var PreventScroll = true;
 
 #if PLATFORM(DOM)
+
 @implementation CPPlatformWindow (DOM)
 
 - (id)_init
@@ -214,6 +218,8 @@ var resizeTimer = nil;
 
         _windowLevels = [];
         _windowLayers = @{};
+
+        _platformPasteboard = [CPPlatformPasteboard new];
 
         [self registerDOMWindow];
         [self updateFromNativeContentRect];
@@ -301,19 +307,6 @@ var resizeTimer = nil;
 
     _DOMBodyElement.appendChild(_DOMFocusElement);
 
-    // Create Native Pasteboard handler.
-    _DOMPasteboardElement = theDocument.createElement("textarea");
-
-    _DOMPasteboardElement.style.position = "absolute";
-    _DOMPasteboardElement.style.top = "-10000px";
-    _DOMPasteboardElement.style.zIndex = "999";
-    _DOMPasteboardElement.className = "cpdontremove";
-
-    _DOMBodyElement.appendChild(_DOMPasteboardElement);
-
-    // Make sure the pastboard element is blurred.
-    _DOMPasteboardElement.blur();
-
     // Create a full screen div to protect against iframes and other elements
     // from consuming events during tracking
     // FIXME: multiple windows
@@ -333,8 +326,8 @@ var resizeTimer = nil;
     _DOMScrollingElement.style.position = "absolute";
     _DOMScrollingElement.style.visibility = "hidden";
     _DOMScrollingElement.style.zIndex = @"999";
-    _DOMScrollingElement.style.height = "60px";
-    _DOMScrollingElement.style.width = "60px";
+    _DOMScrollingElement.style.height = "500px";
+    _DOMScrollingElement.style.width = "500px";
     _DOMScrollingElement.style.overflow = "scroll";
     //_DOMScrollingElement.style.backgroundColor = "rgba(0,0,0,1.0)"; // debug help.
     _DOMScrollingElement.style.opacity = "0";
@@ -343,8 +336,8 @@ var resizeTimer = nil;
     _DOMBodyElement.appendChild(_DOMScrollingElement);
 
     var _DOMInnerScrollingElement = theDocument.createElement("div");
-    _DOMInnerScrollingElement.style.width = "400px";
-    _DOMInnerScrollingElement.style.height = "400px";
+    _DOMInnerScrollingElement.style.width = "5000px";
+    _DOMInnerScrollingElement.style.height = "5000px";
     _DOMScrollingElement.appendChild(_DOMInnerScrollingElement);
 
     // Set an initial scroll offset
@@ -367,6 +360,8 @@ var resizeTimer = nil;
     [self createDOMElements];
     [self _addLayers];
 
+    [_platformPasteboard setDOMWindow:_DOMWindow];
+
     var theClass = [self class],
 
         dragEventImplementation = class_getMethodImplementation(theClass, @selector(dragEvent:)),
@@ -376,17 +371,9 @@ var resizeTimer = nil;
         resizeEventImplementation = class_getMethodImplementation(theClass, resizeEventSelector),
         resizeEventCallback = function (anEvent) { resizeEventImplementation(self, nil, anEvent); },
 
-        copyEventSelector = @selector(copyEvent:),
-        copyEventImplementation = class_getMethodImplementation(theClass, copyEventSelector),
-        copyEventCallback = function (anEvent) {copyEventImplementation(self, nil, anEvent); },
-
-        pasteEventSelector = @selector(pasteEvent:),
-        pasteEventImplementation = class_getMethodImplementation(theClass, pasteEventSelector),
-        pasteEventCallback = function (anEvent) {pasteEventImplementation(self, nil, anEvent); },
-
         keyEventSelector = @selector(keyEvent:),
         keyEventImplementation = class_getMethodImplementation(theClass, keyEventSelector),
-        keyEventCallback = function (anEvent) { keyEventImplementation(self, nil, anEvent); },
+        keyEventCallback = function (anEvent) { return keyEventImplementation(self, nil, anEvent); },
 
         mouseEventSelector = @selector(mouseEvent:),
         mouseEventImplementation = class_getMethodImplementation(theClass, mouseEventSelector),
@@ -421,10 +408,6 @@ var resizeTimer = nil;
         theDocument.addEventListener("mousemove", mouseEventCallback, NO);
         theDocument.addEventListener("contextmenu", contextMenuEventCallback, NO);
 
-        theDocument.addEventListener("beforecopy", copyEventCallback, NO);
-        theDocument.addEventListener("beforecut", copyEventCallback, NO);
-        theDocument.addEventListener("beforepaste", pasteEventCallback, NO);
-
         theDocument.addEventListener("keyup", keyEventCallback, NO);
         theDocument.addEventListener("keydown", keyEventCallback, NO);
         theDocument.addEventListener("keypress", keyEventCallback, NO);
@@ -454,10 +437,6 @@ var resizeTimer = nil;
             theDocument.removeEventListener("keydown", keyEventCallback, NO);
             theDocument.removeEventListener("keypress", keyEventCallback, NO);
 
-            theDocument.removeEventListener("beforecopy", copyEventCallback, NO);
-            theDocument.removeEventListener("beforecut", copyEventCallback, NO);
-            theDocument.removeEventListener("beforepaste", pasteEventCallback, NO);
-
             theDocument.removeEventListener("touchstart", touchEventCallback, NO);
             theDocument.removeEventListener("touchend", touchEventCallback, NO);
             theDocument.removeEventListener("touchmove", touchEventCallback, NO);
@@ -472,6 +451,8 @@ var resizeTimer = nil;
             //_DOMWindow.removeEventListener("beforeunload", this, NO);
 
             [PlatformWindows removeObject:self];
+
+            [_platformPasteboard setDOMWindow:nil];
 
             self._DOMWindow = nil;
         }, NO);
@@ -494,7 +475,7 @@ var resizeTimer = nil;
         theDocument.onmousewheel = scrollEventCallback;
 
         _DOMBodyElement.ondrag = function () { return NO; };
-        _DOMBodyElement.onselectstart = function () { return _DOMWindow.event.srcElement === _DOMPasteboardElement; };
+        _DOMBodyElement.onselectstart = function () { return _DOMWindow.event.srcElement === _platformPasteboard._DOMPasteboardElement; };
 
         _DOMWindow.attachEvent("onunload", function()
         {
@@ -522,6 +503,8 @@ var resizeTimer = nil;
             //_DOMWindow.removeEvent("beforeunload", this);
 
             [PlatformWindows removeObject:self];
+
+            [_platformPasteboard setDOMWindow:nil];
 
             self._DOMWindow = nil;
         }, NO);
@@ -709,9 +692,7 @@ var resizeTimer = nil;
             StopDOMEventPropagation = NO;
     }
 
-    var isNativePasteEvent = NO,
-        isNativeCopyOrCutEvent = NO,
-        overrideCharacters = nil,
+    var overrideCharacters = nil,
         charactersIgnoringModifiers = @"";
 
     switch (aDOMEvent.type)
@@ -753,31 +734,6 @@ var resizeTimer = nil;
                 //we are simply going to skip all keypress events that use cmd/ctrl key
                 //this lets us be consistent in all browsers and send on the keydown
                 //which means we can cancel the event early enough, but only if sendEvent needs to
-
-                var eligibleForCopyPaste = [self _validateCopyCutOrPasteEvent:aDOMEvent flags:modifierFlags];
-
-                // If this could be a native PASTE event, then we need to further examine it before
-                // sending a CPEvent.  Select our element to see if anything gets pasted in it.
-                if (characters === "v" && eligibleForCopyPaste)
-                {
-                    if (!_ignoreNativePastePreparation)
-                    {
-                        _DOMPasteboardElement.select();
-                        _DOMPasteboardElement.value = "";
-                    }
-
-                    isNativePasteEvent = YES;
-                }
-
-                // However, of this could be a native COPY event, we need to let the normal event-process take place so it
-                // can capture our internal Cappuccino pasteboard.
-                else if ((characters == "c" || characters == "x") && eligibleForCopyPaste)
-                {
-                    isNativeCopyOrCutEvent = YES;
-
-                    if (_ignoreNativeCopyOrCutEvent)
-                        break;
-                }
             }
             else if (CPKeyCodes.firesKeyPressEvent(_keyCode, _lastKey, aDOMEvent.shiftKey, aDOMEvent.ctrlKey, aDOMEvent.altKey))
             {
@@ -823,12 +779,6 @@ var resizeTimer = nil;
                         timestamp:timestamp windowNumber:windowNumber context:nil
                         characters:characters charactersIgnoringModifiers:charactersIgnoringModifiers isARepeat:isARepeat keyCode:charCode];
 
-            if (isNativePasteEvent)
-            {
-                _pasteboardKeyDownEvent = event;
-                window.setNativeTimeout(function () { [self _checkPasteboardElement] }, 0);
-            }
-
             break;
 
         case "keyup":
@@ -838,8 +788,6 @@ var resizeTimer = nil;
             _keyCode = -1;
             _lastKey = -1;
             _charCodes[keyCode] = nil;
-            _ignoreNativeCopyOrCutEvent = NO;
-            _ignoreNativePastePreparation = NO;
 
             // check for caps lock state
             if (keyCode === CPKeyCodes.CAPS_LOCK)
@@ -864,131 +812,43 @@ var resizeTimer = nil;
             event = [CPEvent keyEventWithType:CPKeyUp location:location modifierFlags:modifierFlags
                         timestamp: timestamp windowNumber:windowNumber context:nil
                         characters:characters charactersIgnoringModifiers:charactersIgnoringModifiers isARepeat:NO keyCode:keyCode];
+
             break;
     }
 
-    if (event && !isNativePasteEvent)
-    {
+    if (event)
         event._DOMEvent = aDOMEvent;
 
+    [_platformPasteboard windowMaySendKeyEvent:event];
+
+    if (event && ![_platformPasteboard windowShouldSuppressKeyEvent])
+    {
         [CPApp sendEvent:event];
 
-        if (isNativeCopyOrCutEvent)
-        {
-            // If this is a native copy event, then check if the pasteboard has anything in it.
-            [self _primePasteboardElement];
-        }
+        [_platformPasteboard windowDidSendKeyEvent:event];
     }
 
-    if (StopDOMEventPropagation)
-        CPDOMEventStop(aDOMEvent, self);
-
-    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-}
-
-- (void)copyEvent:(DOMEvent)aDOMEvent
-{
-    if ([self _validateCopyCutOrPasteEvent:aDOMEvent flags:CPPlatformActionKeyMask] && !_ignoreNativeCopyOrCutEvent)
+    var didStop = NO;
+    // Platform pasteboard can overrule the decision to stop propagation either way, or it might have no opinion.
+    if ([_platformPasteboard windowShouldStopPropagation] || (StopDOMEventPropagation && ![_platformPasteboard windowShouldNotStopPropagation]))
     {
-        // we have to send out a fake copy or cut event so that we can force the copy/cut mechanisms to take place
-        var cut = aDOMEvent.type === "beforecut",
-            keyCode = cut ? CPKeyCodes.X : CPKeyCodes.C,
-            characters = cut ? "x" : "c",
-            timestamp = [CPEvent currentTimestamp],  // fake event, might as well use current timestamp
-            windowNumber = [[CPApp keyWindow] windowNumber],
-            modifierFlags = CPPlatformActionKeyMask,
-            location = _lastMouseEventLocation || CGPointMakeZero(),
-            event = [CPEvent keyEventWithType:CPKeyDown location:location modifierFlags:modifierFlags
-                    timestamp:timestamp windowNumber:windowNumber context:nil
-                    characters:characters charactersIgnoringModifiers:characters isARepeat:NO keyCode:keyCode];
-
-        event._DOMEvent = aDOMEvent;
-        [CPApp sendEvent:event];
-
-        [self _primePasteboardElement];
-
-        //then we have to IGNORE the real keyboard event to prevent a double copy
-        //safari also sends the beforecopy event twice, so we additionally check here and prevent two events
-        _ignoreNativeCopyOrCutEvent = YES;
+        didStop = YES;
+        _CPDOMEventStop(aDOMEvent, self);
     }
 
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-}
 
-- (void)pasteEvent:(DOMEvent)aDOMEvent
-{
-    if ([self _validateCopyCutOrPasteEvent:aDOMEvent flags:CPPlatformActionKeyMask])
-    {
-        _DOMPasteboardElement.focus();
-        _DOMPasteboardElement.select();
-        _DOMPasteboardElement.value = "";
-        _ignoreNativePastePreparation = YES;
-    }
-
-    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-}
-
-- (void)_validateCopyCutOrPasteEvent:(DOMEvent)aDOMEvent flags:(unsigned)modifierFlags
-{
-    return (
-            ((aDOMEvent.target || aDOMEvent.srcElement).nodeName.toUpperCase() !== "INPUT" &&
-             (aDOMEvent.target || aDOMEvent.srcElement).nodeName.toUpperCase() !== "TEXTAREA"
-            ) || aDOMEvent.target === _DOMPasteboardElement
-           ) &&
-            (modifierFlags & CPPlatformActionKeyMask);
-}
-
-- (void)_primePasteboardElement
-{
-    var pasteboard = [CPPasteboard generalPasteboard],
-        types = [pasteboard types];
-
-    if (types.length)
-    {
-        if ([types indexOfObjectIdenticalTo:CPStringPboardType] != CPNotFound)
-            _DOMPasteboardElement.value = [pasteboard stringForType:CPStringPboardType];
-        else
-            _DOMPasteboardElement.value = [pasteboard _generateStateUID];
-
-        _DOMPasteboardElement.focus();
-        _DOMPasteboardElement.select();
-
-        window.setNativeTimeout(function() { [self _clearPasteboardElement]; }, 0);
-    }
-}
-
-- (void)_checkPasteboardElement
-{
-    var value = _DOMPasteboardElement.value;
-
-    if ([value length])
-    {
-        var pasteboard = [CPPasteboard generalPasteboard];
-
-        if ([pasteboard _stateUID] != value)
-        {
-            [pasteboard declareTypes:[CPStringPboardType] owner:self];
-            [pasteboard setString:value forType:CPStringPboardType];
-        }
-    }
-
-    [self _clearPasteboardElement];
-
-    [CPApp sendEvent:_pasteboardKeyDownEvent];
-
-    _pasteboardKeyDownEvent = nil;
-
-    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-}
-
-- (void)_clearPasteboardElement
-{
-    _DOMPasteboardElement.value = "";
-    _DOMPasteboardElement.blur();
+    return !didStop;
 }
 
 - (void)scrollEvent:(DOMEvent)aDOMEvent
 {
+    if (PreventScroll)
+    {
+        PreventScroll = false;
+        aDOMEvent.preventDefault();
+    }
+
     if (_hideDOMScrollingElementTimeout)
     {
         clearTimeout(_hideDOMScrollingElementTimeout);
@@ -999,7 +859,6 @@ var resizeTimer = nil;
         aDOMEvent = window.event;
 
     var location = nil;
-
     if (CPFeatureIsCompatible(CPJavaScriptMouseWheelValues_8_15))
     {
         var x = aDOMEvent._offsetX || 0.0,
@@ -1060,7 +919,7 @@ var resizeTimer = nil;
     {
         // Find the scroll delta
         var deltaX = _DOMScrollingElement.scrollLeft - 150,
-            deltaY = (_DOMScrollingElement.scrollTop - 150) || (aDOMEvent.deltaY===undefined?0: aDOMEvent.deltaY);
+            deltaY = (_DOMScrollingElement.scrollTop - 150) || (aDOMEvent.deltaY === undefined ? 0 : aDOMEvent.deltaY);
 
         // If we scroll super with momentum,
         // there are so many events going off that
@@ -1081,7 +940,7 @@ var resizeTimer = nil;
 
         // We set StopDOMEventPropagation = NO on line 1008
         //if (StopDOMEventPropagation)
-        //    CPDOMEventStop(aDOMEvent, self);
+        //    _CPDOMEventStop(aDOMEvent, self);
 
         // Reset the DOM elements scroll offset
         _DOMScrollingElement.scrollLeft = 150;
@@ -1097,6 +956,7 @@ var resizeTimer = nil;
     // can receive events.
     _hideDOMScrollingElementTimeout = setTimeout(function()
     {
+        PreventScroll = true;
         _DOMScrollingElement.style.visibility = "hidden";
     }, 300);
 }
@@ -1141,6 +1001,10 @@ var resizeTimer = nil;
         while (windowCount--)
             [windows[windowCount] resizeWithOldPlatformWindowSize:oldSize];
     }
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPApplicationDidChangeScreenParametersNotification
+                                                        object:CPApp
+                                                      userInfo:nil];
 
     //window.liveResize = NO;
 
@@ -1322,8 +1186,12 @@ var resizeTimer = nil;
         [CPApp sendEvent:event];
     }
 
+    var didStop = NO;
     if (StopDOMEventPropagation && (!supportsNativeDragAndDrop || type !== "mousedown" && !isDragging))
-        CPDOMEventStop(aDOMEvent, self);
+    {
+        didStop = YES;
+        _CPDOMEventStop(aDOMEvent, self);
+    }
 
     // If there are any tracking event listeners (listening for CPLeftMouseDraggedMask)
     // then show the event guard so we don't lose events to iframes
@@ -1345,12 +1213,13 @@ var resizeTimer = nil;
     _DOMEventGuard.style.display = hasTrackingEventListener ? "" : "none";
 
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+    return !didStop;
 }
 
 - (void)contextMenuEvent:(DOMEvent)aDOMEvent
 {
     if (StopContextMenuDOMEventPropagation)
-        CPDOMEventStop(aDOMEvent, self);
+        _CPDOMEventStop(aDOMEvent, self);
 
     return !StopContextMenuDOMEventPropagation;
 }
@@ -1490,7 +1359,8 @@ var resizeTimer = nil;
     // relative to it or the furthest parent.
     var children = [aWindow childWindows],
         count = [children count],
-        parent = aWindow;
+        parent = aWindow,
+        parentLevel = [parent level];
 
     for (var i = 0; i < count; ++i)
     {
@@ -1499,6 +1369,10 @@ var resizeTimer = nil;
 
         // If a child is not visible and has not yet been ordered in, skip it
         if (!childWasVisible && ![child _hasBeenOrderedIn])
+            continue;
+
+        // If a user moved level of the child window, we should respect that
+        if ([child level] !== parentLevel)
             continue;
 
         var ordering = [child _childOrdering];
@@ -1641,6 +1515,44 @@ var resizeTimer = nil;
     return theWindow;
 }
 
+/*! @ignore Return the selected text in the DOM window if known. */
+- (CPString)_selectedText
+{
+    if (_DOMWindow.getSelection)
+        return "" + _DOMWindow.getSelection();
+    else if (_DOMWindow.document.getSelection)
+        return "" + _DOMWindow.document.getSelection();
+    else if (_DOMWindow.selection)
+        return "" + _DOMWindow.selection.createRange().text;
+    else
+        return nil;
+}
+
+/*!
+    Set the text selection range to the given range within the given element, which must be a child of
+    this DOM window.
+*/
+- (void)setSelectedRange:(CPRange)aRange inElement:(DOMElement)anElement
+{
+    if (_DOMWindow.getSelection())
+    {
+        var domRange = _DOMWindow.document.createRange();
+        domRange.setStart(anElement.childNodes[0], aRange.location);
+        domRange.setEnd(anElement.childNodes[0], CPMaxRange(aRange));
+        _DOMWindow.getSelection().removeAllRanges();
+        _DOMWindow.getSelection().addRange(domRange);
+    }
+    else if (_DOMWindow.document.selection)
+    {
+        var domRange = _DOMWindow.document.body.createTextRange();
+        domRange.moveToElementText(anElement);
+        domRange.collapse(true);
+        domRange.moveStart('character', aRange.location);
+        domRange.moveEnd('character', aRange.length);
+        domRange.select();
+    }
+}
+
 /*!
     When using command (mac) or control (windows), keys are propagated to the browser by default.
     To prevent a character key from propagating (to prevent its default action, and instead use it
@@ -1746,24 +1658,18 @@ var CPDOMEventGetClickCount = function(aComparisonEvent, aTimestamp, aLocation)
         ABS(comparisonLocation.y - aLocation.y) < CLICK_SPACE_DELTA) ? [aComparisonEvent clickCount] + 1 : 1;
 };
 
-var CPDOMEventStop = function(aDOMEvent, aPlatformWindow)
+// Global.
+_CPDOMEventStop = function(aDOMEvent, aPlatformWindow)
 {
-    // IE Model
-    aDOMEvent.cancelBubble = true;
-    aDOMEvent.returnValue = false;
-
-    // W3C Model
-    if (aDOMEvent.preventDefault)
+    if (aDOMEvent.preventDefault) // W3C Model
         aDOMEvent.preventDefault();
+    else // IE Model
+        aDOMEvent.returnValue = false;
 
-    if (aDOMEvent.stopPropagation)
+    if (aDOMEvent.stopPropagation) // W3C Model
         aDOMEvent.stopPropagation();
-
-    if (aDOMEvent.type === CPDOMEventMouseDown)
-    {
-        aPlatformWindow._DOMFocusElement.focus();
-        aPlatformWindow._DOMFocusElement.blur();
-    }
+    else // IE Model
+        aDOMEvent.cancelBubble = true;
 };
 
 function CPWindowObjectList()

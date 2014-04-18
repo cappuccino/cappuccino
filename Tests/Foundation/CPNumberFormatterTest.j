@@ -30,6 +30,8 @@
     [self assert:@"123,456" equals:[numberFormatter stringFromNumber:[CPNumber numberWithInt:123456]]];
     [self assert:@"1,234,567" equals:[numberFormatter stringFromNumber:[CPNumber numberWithInt:1234567]]];
 
+    [self assert:@"1,234,567" equals:[CPNumberFormatter localizedStringFromNumber:[CPNumber numberWithInt:1234567] numberStyle:CPNumberFormatterDecimalStyle]];
+
     [self assert:@"-1"          equals:[numberFormatter stringFromNumber:[CPNumber numberWithInt:-1]]];
     [self assert:@"-12"         equals:[numberFormatter stringFromNumber:[CPNumber numberWithInt:-12]]];
     [self assert:@"-123"        equals:[numberFormatter stringFromNumber:[CPNumber numberWithInt:-123]]];
@@ -37,6 +39,8 @@
     [self assert:@"-12,345"     equals:[numberFormatter stringFromNumber:[CPNumber numberWithInt:-12345]]];
     [self assert:@"-123,456"    equals:[numberFormatter stringFromNumber:[CPNumber numberWithInt:-123456]]];
     [self assert:@"-1,234,567"  equals:[numberFormatter stringFromNumber:[CPNumber numberWithInt:-1234567]]];
+
+    [self assert:@"-1,234,567" equals:[CPNumberFormatter localizedStringFromNumber:[CPNumber numberWithInt:-1234567] numberStyle:CPNumberFormatterDecimalStyle]];
 
     [numberFormatter setGroupingSeparator:@" "];
     [self assert:@"1" equals:[numberFormatter stringFromNumber:[CPNumber numberWithInt:1]]];
@@ -245,6 +249,36 @@
     generated = [numberFormatter numberFromString:@"1.23456"];
     [self assertFalse:[generated isKindOfClass:CPDecimalNumber]];
     [self assert:1.23456 equals:generated];
+}
+
+- (void)testEncodingDecodingWithZeroMinMaxValues
+{
+    var numberFormatter = [CPNumberFormatter new];
+
+    [numberFormatter setMaximum:0];
+    [numberFormatter setMinimum:0];
+
+    var encoded = [CPKeyedArchiver archivedDataWithRootObject:numberFormatter],
+        decoded = [CPKeyedUnarchiver unarchiveObjectWithData:encoded];
+
+    [self assertNotNull:[decoded minimum]];
+    [self assertNotNull:[decoded maximum]];
+    [self assert:0 equals:[decoded minimum]];
+    [self assert:0 equals:[decoded maximum]];
+}
+
+- (void)testEncodingDecodingWithNilMinMaxValues
+{
+    var numberFormatter = [CPNumberFormatter new];
+
+    [numberFormatter setMaximum:nil];
+    [numberFormatter setMinimum:nil];
+
+    var encoded = [CPKeyedArchiver archivedDataWithRootObject:numberFormatter],
+        decoded = [CPKeyedUnarchiver unarchiveObjectWithData:encoded];
+
+    [self assertNull:[decoded minimum]];
+    [self assertNull:[decoded maximum]];
 }
 
 @end

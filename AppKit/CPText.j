@@ -28,3 +28,14 @@ CPFormFeedCharacter             = "\u000c";
 CPCarriageReturnCharacter       = "\u000d";
 CPBackTabCharacter              = "\u0019";
 CPDeleteCharacter               = "\u007f";
+
+CPIllegalTextMovement           = 0;
+CPOtherTextMovement             = 0;
+CPReturnTextMovement            = 16;
+CPTabTextMovement               = 17;
+CPBacktabTextMovement           = 18;
+CPLeftTextMovement              = 19;
+CPRightTextMovement             = 20;
+CPUpTextMovement                = 21;
+CPDownTextMovement              = 22;
+CPCancelTextMovement            = 23;

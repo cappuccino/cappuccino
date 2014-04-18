@@ -13,10 +13,16 @@ var ENV = require("system").env,
     FileList = JAKE.FileList,
     app = require("cappuccino/jake").app,
     configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Debug",
-    OS = require("os");
+    OS = require("os"),
+    projectName = "__project.nameasidentifier__";
 
-app ("__project.nameasidentifier__", function(task)
+app (projectName, function(task)
 {
+    ENV["OBJJ_INCLUDE_PATHS"] = "Frameworks";
+
+    if (configuration === "Debug")
+        ENV["OBJJ_INCLUDE_PATHS"] = FILE.join(ENV["OBJJ_INCLUDE_PATHS"], configuration);
+
     task.setBuildIntermediatesPath(FILE.join("Build", "__project.nameasidentifier__.build", configuration));
     task.setBuildPath(FILE.join("Build", configuration));
 
@@ -26,7 +32,7 @@ app ("__project.nameasidentifier__", function(task)
     task.setAuthor("__organization.name__");
     task.setEmail("__organization.email__");
     task.setSummary("__project.name__");
-    task.setSources((new FileList("**/*.j")).exclude(FILE.join("Build", "**")));
+    task.setSources(new FileList("**/*.j").exclude(FILE.join("Build", "**")).exclude(FILE.join("Frameworks", "Source", "**")));
     task.setResources(new FileList("Resources/**"));
     task.setIndexFilePath("index.html");
     task.setInfoPlistPath("Info.plist");
@@ -37,12 +43,15 @@ app ("__project.nameasidentifier__", function(task)
         task.setCompilerFlags("-O");
 });
 
-task ("default", ["__project.nameasidentifier__"], function()
+task ("default", [projectName], function()
 {
     printResults(configuration);
 });
 
-task ("build", ["default"]);
+task ("build", ["default"], function()
+{
+    updateApplicationSize();
+});
 
 task ("debug", function()
 {
@@ -58,36 +67,118 @@ task ("release", function()
 
 task ("run", ["debug"], function()
 {
-    OS.system(["open", FILE.join("Build", "Debug", "__project.nameasidentifier__", "index.html")]);
+    OS.system(["open", FILE.join("Build", "Debug", projectName, "index.html")]);
 });
 
 task ("run-release", ["release"], function()
 {
-    OS.system(["open", FILE.join("Build", "Release", "__project.nameasidentifier__", "index.html")]);
+    OS.system(["open", FILE.join("Build", "Release", projectName, "index.html")]);
 });
 
 task ("deploy", ["release"], function()
 {
-    FILE.mkdirs(FILE.join("Build", "Deployment", "__project.nameasidentifier__"));
-    OS.system(["press", "-f", FILE.join("Build", "Release", "__project.nameasidentifier__"), FILE.join("Build", "Deployment", "__project.nameasidentifier__")]);
+    FILE.mkdirs(FILE.join("Build", "Deployment", projectName));
+    OS.system(["press", "-f", FILE.join("Build", "Release", projectName), FILE.join("Build", "Deployment", projectName)]);
     printResults("Deployment")
 });
 
 task ("desktop", ["release"], function()
 {
-    FILE.mkdirs(FILE.join("Build", "Desktop", "__project.nameasidentifier__"));
-    require("cappuccino/nativehost").buildNativeHost(FILE.join("Build", "Release", "__project.nameasidentifier__"), FILE.join("Build", "Desktop", "__project.nameasidentifier__", "__project.nameasidentifier__.app"));
+    FILE.mkdirs(FILE.join("Build", "Desktop", projectName));
+    require("cappuccino/nativehost").buildNativeHost(FILE.join("Build", "Release", projectName), FILE.join("Build", "Desktop", projectName, "__project.nameasidentifier__.app"));
     printResults("Desktop")
 });
 
 task ("run-desktop", ["desktop"], function()
 {
-    OS.system([FILE.join("Build", "Desktop", "__project.nameasidentifier__", "__project.nameasidentifier__.app", "Contents", "MacOS", "NativeHost"), "-i"]);
+    OS.system([FILE.join("Build", "Desktop", projectName, "__project.nameasidentifier__.app", "Contents", "MacOS", "NativeHost"), "-i"]);
 });
 
 function printResults(configuration)
 {
     print("----------------------------");
-    print(configuration+" app built at path: "+FILE.join("Build", configuration, "__project.nameasidentifier__"));
+    print(configuration+" app built at path: "+FILE.join("Build", configuration, projectName));
     print("----------------------------");
+}
+
+function updateApplicationSize()
+{
+    print("Calculating application file sizes...");
+
+    var contents = FILE.read(FILE.join("Build", ENV["CONFIGURATION"], projectName, "Info.plist"), { charset:"UTF-8" }),
+        format = CFPropertyList.sniffedFormatOfString(contents),
+        plist = CFPropertyList.propertyListFromString(contents),
+        totalBytes = {executable:0, data:0, mhtml:0};
+
+    // Get the size of all framework executables and sprite data
+    var frameworksDir = "Frameworks";
+
+    if (ENV["CONFIGURATION"] === "Debug")
+        frameworksDir = FILE.join(frameworksDir, "Debug");
+
+    var frameworks = FILE.list(frameworksDir);
+
+    frameworks.forEach(function(framework)
+    {
+        if (framework !== "Source")
+            addBundleFileSizes(FILE.join(frameworksDir, framework), totalBytes);
+    });
+
+    // Read in the default theme name, and attempt to get its size
+    var themeName = plist.valueForKey("CPDefaultTheme") || "Aristo2",
+        themePath = nil;
+
+    if (themeName === "Aristo" || themeName === "Aristo2")
+        themePath = FILE.join(frameworksDir, "AppKit", "Resources", themeName + ".blend");
+    else
+        themePath = FILE.join("Frameworks", "Resources", themeName + ".blend");
+
+    if (FILE.isDirectory(themePath))
+        addBundleFileSizes(themePath, totalBytes);
+
+    // Add sizes for the app
+    addBundleFileSizes(FILE.join("Build", ENV["CONFIGURATION"], projectName), totalBytes);
+
+    print("Executables: " + totalBytes.executable + ", sprite data: " + totalBytes.data + ", total: " + (totalBytes.executable + totalBytes.data));
+
+    var dict = new CFMutableDictionary();
+
+    dict.setValueForKey("executable", totalBytes.executable);
+    dict.setValueForKey("data", totalBytes.data);
+    dict.setValueForKey("mhtml", totalBytes.mhtml);
+
+    plist.setValueForKey("CPApplicationSize", dict);
+
+    FILE.write(FILE.join("Build", ENV["CONFIGURATION"], projectName, "Info.plist"), CFPropertyList.stringFromPropertyList(plist, format), { charset:"UTF-8" });
+}
+
+function addBundleFileSizes(bundlePath, totalBytes)
+{
+    var bundleName = FILE.basename(bundlePath),
+        environment = bundleName === "Foundation" ? "Objj" : "Browser",
+        bundlePath = FILE.join(bundlePath, environment + ".environment");
+
+    if (FILE.isDirectory(bundlePath))
+    {
+        var filename = bundleName + ".sj",
+            filePath = new FILE.Path(FILE.join(bundlePath, filename));
+
+        if (filePath.exists())
+            totalBytes.executable += filePath.size();
+
+        filePath = new FILE.Path(FILE.join(bundlePath, "dataURLs.txt"));
+
+        if (filePath.exists())
+            totalBytes.data += filePath.size();
+
+        filePath = new FILE.Path(FILE.join(bundlePath, "MHTMLData.txt"));
+
+        if (filePath.exists())
+            totalBytes.mhtml += filePath.size();
+
+        filePath = new FILE.Path(FILE.join(bundlePath, "MHTMLPaths.txt"));
+
+        if (filePath.exists())
+            totalBytes.mhtml += filePath.size();
+    }
 }

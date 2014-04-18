@@ -46,7 +46,9 @@ CPHTMLDragAndDropFeature                = 8;
 
 CPJavaScriptInnerTextFeature            = 9;
 CPJavaScriptTextContentFeature          = 10;
+// In onpaste, oncopy and oncut events, the event has an event.clipboardData from which the current pasteboard contents can be read with event.clipboardData.getData.
 CPJavaScriptClipboardEventsFeature      = 11;
+// window.clipboardData exists and can be read and written to at any time using window.clipboardData.getData/setData.
 CPJavaScriptClipboardAccessFeature      = 12;
 CPJavaScriptCanvasDrawFeature           = 13;
 CPJavaScriptCanvasTransformFeature      = 14;
@@ -76,10 +78,18 @@ CPInputOnInputEventFeature              = 30;
 
 CPFileAPIFeature                        = 31;
 
+
+
 /*
     When an absolutely positioned div (CPView) with an absolutely positioned canvas in it (CPView with drawRect:) moves things on top of the canvas (subviews) don't redraw correctly. E.g. if you have a bunch of text fields in a CPBox in a sheet which animates in, some of the text fields might not be visible because the CPBox has a canvas at the bottom and the box moved form offscreen to onscreen. This bug is probably very related: https://bugs.webkit.org/show_bug.cgi?id=67203
 */
 CPCanvasParentDrawErrorsOnMovementBug   = 1 << 0;
+
+// The paste event is only sent if an input or textarea has focus.
+CPJavaScriptPasteRequiresEditableTarget   = 1 << 1;
+// Redirecting the focus of the browser on keydown to an input for Cmd-V or Ctrl-V makes the paste fail.
+CPJavaScriptPasteCantRefocus            = 1 << 2;
+
 
 var USER_AGENT                          = "",
     PLATFORM_ENGINE                     = CPUnknownBrowserEngine,
@@ -118,6 +128,9 @@ else if (typeof window !== "undefined" && window.attachEvent) // Must follow Ope
 
     // Tested in Internet Explore 8 and 9.
     PLATFORM_FEATURES[CPInputSetFontOutsideOfDOM] = NO;
+
+    // IE allows free clipboard access.
+    PLATFORM_FEATURES[CPJavaScriptClipboardAccessFeature] = YES;
 }
 
 // WebKit
@@ -129,11 +142,8 @@ else if (USER_AGENT.indexOf("AppleWebKit/") != -1)
     PLATFORM_FEATURES[CPCSSRGBAFeature] = YES;
     PLATFORM_FEATURES[CPHTMLContentEditableFeature] = YES;
 
-    if (USER_AGENT.indexOf("Chrome") === -1)
-        PLATFORM_FEATURES[CPHTMLDragAndDropFeature] = YES;
-
     PLATFORM_FEATURES[CPJavaScriptClipboardEventsFeature] = YES;
-    PLATFORM_FEATURES[CPJavaScriptClipboardAccessFeature] = YES;
+    PLATFORM_FEATURES[CPJavaScriptClipboardAccessFeature] = NO;
     PLATFORM_FEATURES[CPJavaScriptShadowFeature] = YES;
 
     var versionStart = USER_AGENT.indexOf("AppleWebKit/") + "AppleWebKit/".length,
@@ -159,7 +169,14 @@ else if (USER_AGENT.indexOf("AppleWebKit/") != -1)
         PLATFORM_FEATURES[CPInput1PxLeftPadding] = YES;
 
     if (USER_AGENT.indexOf("Chrome") === CPNotFound)
+    {
         PLATFORM_FEATURES[CPSOPDisabledFromFileURLs] = YES;
+        PLATFORM_FEATURES[CPHTMLDragAndDropFeature] = YES;
+        // https://bugs.webkit.org/show_bug.cgi?id=75891
+        PLATFORM_BUGS |= CPJavaScriptPasteRequiresEditableTarget;
+        // https://bugs.webkit.org/show_bug.cgi?id=39689
+        PLATFORM_BUGS |= CPJavaScriptPasteCantRefocus;
+    }
 
     // Assume this bug was introduced around Safari 5.1/Chrome 16. This could probably be tighter.
     if (majorVersion > 533)
@@ -190,6 +207,17 @@ else if (USER_AGENT.indexOf("Gecko") !== -1) // Must follow KHTML check.
 
     // Some day this might be fixed and should be version prefixed. No known fixed version yet.
     PLATFORM_FEATURES[CPInput1PxLeftPadding] = YES;
+
+    // This was supposed to be added in Firefox 22, but when testing with the latest beta as of 2013-06-14
+    // it does not seem to work. It seems to exhibit the CPJavaScriptPasteRequiresEditableTarget problem,
+    // and in addition doesn't seem to work with our native copy code either.
+    /*if (version >= 22.0)
+    {
+        PLATFORM_FEATURES[CPJavaScriptClipboardEventsFeature] = YES;
+        // TODO File a bug at https://bugzilla.mozilla.org/. In other browsers, one can return "false" from the
+        // beforepaste event to indicate a paste should be enabled even that the DOMEvent.target is not editable.
+        PLATFORM_BUGS |= CPJavaScriptPasteRequiresEditableTarget;
+    }*/
 }
 
 // Feature-specific checks
@@ -323,6 +351,20 @@ function CPBrowserStyleProperty(aProperty)
 
                 r = candidates[PLATFORM_STYLE_JS_PROPERTIES['transition']] || nil;
                 break;
+
+            case 'transformorigin':
+
+                var candidates = {
+                        'WebkitTransform' : 'WebkitTransformOrigin',
+                        'MozTransform'    : 'MozTransformOrigin',
+                        'OTransform'      : 'OTransformOrigin',
+                        'msTransform'     : 'MSTransformOrigin',
+                        'transform'       : 'transformOrigin'
+                    };
+
+                r = candidates[PLATFORM_STYLE_JS_PROPERTIES['transform']] || nil;
+                break;
+
             default:
                 var prefixes = ["Webkit", "Moz", "O", "ms"],
                     strippedProperty = aProperty.split('-').join(' '),

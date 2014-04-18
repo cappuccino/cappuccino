@@ -87,12 +87,17 @@
 
 - (id)_cibInstantiate
 {
-    var windowClass = CPClassFromString([self windowClass]),
-        theWindow = [[windowClass alloc] initWithContentRect:_windowRect styleMask:_windowStyleMask];
+    var windowClass = CPClassFromString([self windowClass]);
 
-/*    if (!windowClass)
-        [NSException raise:NSInvalidArgumentException format:@"Unable to locate NSWindow class %@, using NSWindow",_windowClass];
-        class=[NSWindow class];*/
+    if (!windowClass)
+    {
+#if DEBUG
+        CPLog.warn("Unknown class \"%@\" in cib file, using CPWindow instead.", [self windowClass]);
+#endif
+        windowClass = [CPWindow class];
+    }
+
+    var theWindow = [[windowClass alloc] initWithContentRect:_windowRect styleMask:_windowStyleMask];
 
     if (_minSize)
         [theWindow setMinSize:_minSize];
@@ -103,12 +108,11 @@
     //[result setHidesOnDeactivate:(_wtFlags&0x80000000)?YES:NO];
     [theWindow setTitle:_windowTitle];
 
-    // FIXME: we can't autoresize yet...
+    var contentViewAutoresizesSubviews = [_windowView autoresizesSubviews];
+
     [_windowView setAutoresizesSubviews:NO];
-
     [theWindow setContentView:_windowView];
-
-    [_windowView setAutoresizesSubviews:YES];
+    [_windowView setAutoresizesSubviews:contentViewAutoresizesSubviews];
 
     if ([_viewClass isKindOfClass:[CPToolbar class]])
        [theWindow setToolbar:_viewClass];

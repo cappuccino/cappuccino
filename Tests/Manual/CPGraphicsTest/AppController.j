@@ -11,6 +11,7 @@
 {
     @outlet CPWindow        window1;
     @outlet CPWindow        window2;
+    @outlet CPWindow        window3;
 
     @outlet CustomDrawView  view1;
     @outlet CustomDrawView  view2;
@@ -24,6 +25,9 @@
 
     @outlet CustomDrawView pathView0;
     @outlet CustomDrawView pathView1;
+
+    @outlet CustomDrawView linearGradientView;
+    @outlet CustomDrawView radialGradientView;
 }
 
 - (void)awakeFromCib
@@ -184,6 +188,34 @@
         [starPath setLineDash:starPattern phase:2];
         [starPath stroke];
         [CPGraphicsContext restoreGraphicsState];
+    }
+    // else
+    else if (aView == linearGradientView)
+    {
+        var linearRect = dirtyRect,
+            gradientColors = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [1, 0, 0, 1 , 0, 0, 1, 1], [0,1], 2);
+
+        CGContextSaveGState(context);
+        CGContextAddEllipseInRect(context, linearRect);
+        CGContextClip(context);
+
+        var startPoint = CGPointMake(CGRectGetMidX(linearRect), CGRectGetMinY(linearRect)),
+            endPoint = CGPointMake(CGRectGetMidX(linearRect), CGRectGetMaxY(linearRect));
+
+        CGContextDrawLinearGradient(context, gradientColors, startPoint, endPoint, 0);
+        CGContextRestoreGState(context);
+    }
+    else if(aView == radialGradientView)
+    {
+        var gradientRect = dirtyRect,
+            gradientColors = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [1, 0, 0, 1 , 0, 0, 1, 1], [0,1], 2);
+
+        CGContextSaveGState(context);
+        CGContextAddEllipseInRect(context, gradientRect);
+        CGContextClip(context);
+
+        CGContextDrawRadialGradient(context, gradientColors, CGPointMake(CGRectGetMidX(gradientRect), CGRectGetMidY(gradientRect)), 0, CGPointMake(CGRectGetMidX(gradientRect), CGRectGetMidY(gradientRect)), 50,0);
+        CGContextRestoreGState(context);
     }
 }
 

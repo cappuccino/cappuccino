@@ -1,0 +1,7 @@
+function x()
+{
+    while(false);
+    for(;;);
+    for(var a in []);
+    var b = 3;
+}

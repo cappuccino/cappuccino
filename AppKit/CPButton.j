@@ -72,13 +72,14 @@ CPPushInCellMask            = CPPushInButtonMask;
 CPChangeGrayCellMask        = CPGrayButtonMask;
 CPChangeBackgroundCellMask  = CPBackgroundButtonMask;
 
-CPButtonStateMixed             = CPThemeState("mixed");
-CPButtonStateBezelStyleRounded = CPThemeState("rounded");
+CPButtonStateMixed                  = CPThemeState("mixed");
+CPButtonStateBezelStyleRounded      = CPThemeState("rounded");
+CPButtonStateBezelStyleRoundRect    = CPThemeState("roundRect");
 
 // add all future correspondance between bezel styles and theme state here.
 var CPButtonBezelStyleStateMap = @{
         CPRoundedBezelStyle: CPButtonStateBezelStyleRounded,
-        CPRoundRectBezelStyle: [CPNull null],
+        CPRoundRectBezelStyle: CPButtonStateBezelStyleRoundRect,
     };
 
 /// @cond IGNORE
@@ -149,7 +150,7 @@ CPButtonImageOffset   = 3.0;
     return @"button";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{
             @"image": [CPNull null],
@@ -268,7 +269,7 @@ CPButtonImageOffset   = 3.0;
             break;
 
         case CPOffState:
-            [self unsetThemeState:CPThemeStateSelected | CPButtonStateMixed | CPThemeStateHighlighted];
+            [self unsetThemeState:[CPThemeStateSelected, CPButtonStateMixed, CPThemeStateHighlighted]];
     }
 }
 
@@ -292,7 +293,7 @@ CPButtonImageOffset   = 3.0;
 }
 
 /*!
-    Sets the button's next state to \c aState.
+    Sets the button's state to the next available state.
     @param aState Possible states are any of the CPButton globals:
     \c CPOffState, \c CPOnState, \c CPMixedState
 */
@@ -448,38 +449,47 @@ CPButtonImageOffset   = 3.0;
 {
     switch (aButtonType)
     {
-        case CPMomentaryLightButton:    [self setHighlightsBy:CPChangeGrayCellMask | CPChangeBackgroundCellMask];
-                                        [self setShowsStateBy:CPNoCellMask];
-                                        break;
+        case CPMomentaryLightButton:
+            [self setHighlightsBy:CPChangeGrayCellMask | CPChangeBackgroundCellMask];
+            [self setShowsStateBy:CPNoCellMask];
+            break;
 
-        case CPMomentaryPushInButton:   [self setHighlightsBy:CPPushInCellMask | CPChangeGrayCellMask | CPChangeBackgroundCellMask];
-                                        [self setShowsStateBy:CPNoCellMask];
-                                        break;
+        case CPMomentaryPushInButton:
+            [self setHighlightsBy:CPPushInCellMask | CPChangeGrayCellMask | CPChangeBackgroundCellMask];
+            [self setShowsStateBy:CPNoCellMask];
+            break;
 
-        case CPMomentaryChangeButton:   [self setHighlightsBy:CPContentsCellMask];
-                                        [self setShowsStateBy:CPNoCellMask];
-                                        break;
+        case CPMomentaryChangeButton:
+            [self setHighlightsBy:CPContentsCellMask];
+            [self setShowsStateBy:CPNoCellMask];
+            break;
 
-        case CPPushOnPushOffButton:     [self setHighlightsBy:CPPushInCellMask | CPChangeGrayCellMask | CPChangeBackgroundCellMask];
-                                        [self setShowsStateBy:CPChangeBackgroundCellMask | CPChangeGrayCellMask];
-                                        break;
+        case CPPushOnPushOffButton:
+            [self setHighlightsBy:CPPushInCellMask | CPChangeGrayCellMask | CPChangeBackgroundCellMask];
+            [self setShowsStateBy:CPChangeBackgroundCellMask | CPChangeGrayCellMask];
+            break;
 
-        case CPOnOffButton:             [self setHighlightsBy:CPChangeGrayCellMask | CPChangeBackgroundCellMask];
-                                        [self setShowsStateBy:CPChangeGrayCellMask | CPChangeBackgroundCellMask];
-                                        break;
+        case CPOnOffButton:
+            [self setHighlightsBy:CPChangeGrayCellMask | CPChangeBackgroundCellMask];
+            [self setShowsStateBy:CPChangeGrayCellMask | CPChangeBackgroundCellMask];
+            break;
 
-        case CPToggleButton:            [self setHighlightsBy:CPPushInCellMask | CPContentsCellMask];
-                                        [self setShowsStateBy:CPContentsCellMask];
-                                        break;
+        case CPToggleButton:
+            [self setHighlightsBy:CPPushInCellMask | CPContentsCellMask];
+            [self setShowsStateBy:CPContentsCellMask];
+            break;
 
-        case CPSwitchButton:            [CPException raise:CPInvalidArgumentException
-                                                    reason:"The CPSwitchButton type is not supported in Cappuccino, use the CPCheckBox class instead."];
+        case CPSwitchButton:
+            [CPException raise:CPInvalidArgumentException
+                        reason:"The CPSwitchButton type is not supported in Cappuccino, use the CPCheckBox class instead."];
 
-        case CPRadioButton:             [CPException raise:CPInvalidArgumentException
-                                                    reason:"The CPRadioButton type is not supported in Cappuccino, use the CPRadio class instead."];
+        case CPRadioButton:
+            [CPException raise:CPInvalidArgumentException
+                        reason:"The CPRadioButton type is not supported in Cappuccino, use the CPRadio class instead."];
 
-        default:                        [CPException raise:CPInvalidArgumentException
-                                                    reason:"Unknown button type."];
+        default:
+            [CPException raise:CPInvalidArgumentException
+                        reason:"Unknown button type."];
     }
 
     [self setImageDimsWhenDisabled:YES];

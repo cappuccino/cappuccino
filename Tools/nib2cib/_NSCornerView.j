@@ -22,6 +22,13 @@
 
 @import <AppKit/CPTableHeaderView.j>
 @import <AppKit/_CPCornerView.j>
+@import <AppKit/CPScroller.j>
+@import <AppKit/CPTableView.j>
+
+@class Nib2Cib
+
+@global CPThemeStateVertical
+@global CPThemeStateScrollViewLegacy
 
 @implementation _CPCornerView (NSCoding)
 
@@ -39,10 +46,17 @@
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self =  [super NS_initWithCoder:aCoder];
+
     if (self)
     {
-        _frame.size.height = 23.0;
-        _bounds.size.height = 23.0;
+        var theme = [Nib2Cib defaultTheme],
+            height = [theme valueForAttributeWithName:@"default-row-height" forClass:[CPTableView class]],
+            width = [theme valueForAttributeWithName:@"scroller-width" inState:CPThemeState(CPThemeStateVertical, CPThemeStateScrollViewLegacy) forClass:[CPScroller class]];
+
+        _frame.size.height = height;
+        _bounds.size.height = height;
+        _frame.size.width = width;
+        _bounds.size.width = width;
     }
 
     return self;

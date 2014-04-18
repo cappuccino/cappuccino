@@ -147,6 +147,8 @@ var DefaultLineWidth = 1.0;
     {
         _path = CGPathCreateMutable();
         _lineWidth = [[self class] defaultLineWidth];
+        _lineDashesPhase = 0;
+        _lineDashes = [];
     }
 
     return self;

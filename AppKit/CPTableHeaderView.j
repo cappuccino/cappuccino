@@ -38,7 +38,7 @@
     return @"columnHeader";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{
             @"background-color": [CPNull null],
@@ -48,11 +48,11 @@
             @"text-color": [CPNull null],
             @"font": [CPNull null],
             @"text-shadow-color": [CPNull null],
-            @"text-shadow-offset": CGSizeMakeZero(),
+            @"text-shadow-offset": CGSizeMakeZero()
         };
 }
 
-- (void)initWithFrame:(CGRect)frame
+- (id)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
 
@@ -272,11 +272,12 @@ var CPTableHeaderViewResizeZone = 3.0,
     return @"tableHeaderRow";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{
             @"background-color": [CPNull null],
             @"divider-color": [CPColor grayColor],
+            @"divider-thickness": 1.0
         };
 }
 
@@ -392,7 +393,7 @@ var CPTableHeaderViewResizeZone = 3.0,
     _activeColumn = columnIndex;
     _canDragColumn = YES;
 
-    [_tableView _sendDelegateDidMouseDownInHeader:columnIndex];
+        [_tableView _sendDelegateMouseDownInHeaderOfTableColumn:columnIndex];
 
     if ([self _shouldResizeTableColumn:columnIndex at:currentLocation])
         [self _startResizingTableColumn:columnIndex at:currentLocation];

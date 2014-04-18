@@ -30,6 +30,7 @@
 
 @class CPDatePicker
 
+@global CPApp
 @global CPSingleDateMode
 @global CPRangeDateMode
 
@@ -42,6 +43,10 @@
 @global CPYearMonthDatePickerElementFlag
 @global CPYearMonthDayDatePickerElementFlag
 @global CPEraDatePickerElementFlag
+
+@global CPAlternateKeyMask
+@global CPCommandKeyMask
+@global CPControlKeyMask
 
 var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"],
     CPShortWeekDayNameArrayUS = [@"Su", @"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa"],
@@ -132,7 +137,10 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
 */
 - (void)setDateValue:(CPDate)aDateValue
 {
-    [_monthView setMonthForDate:aDateValue];
+    var dateValue = [aDateValue copy];
+    [dateValue _dateWithTimeZone:[_datePicker timeZone]];
+
+    [_monthView setMonthForDate:dateValue];
     [_headerView setMonthForDate:[_monthView monthDate]];
 
     [self setNeedsLayout];
@@ -220,16 +228,62 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
 
 /*! Move to the nextMonth without changing the dateValue of the datePicker
 */
-- (void)_nextMonth:(id)sender
+- (void)_clickArrowNext:(id)sender
 {
-    [self setDateValue:[_monthView nextMonth]];
+    var currentEvent = [CPApp currentEvent],
+        modifierFlags = [currentEvent modifierFlags];
+
+    if (modifierFlags & (CPCommandKeyMask | CPControlKeyMask | CPAlternateKeyMask))
+    {
+        var date = [[_monthView monthDate] copy];
+        date.setDate(1);
+
+        if (modifierFlags & CPAlternateKeyMask)
+            date.setUTCFullYear(date.getUTCFullYear() + 10);
+        else
+            date.setUTCFullYear(date.getUTCFullYear() + 1);
+
+        [self setDateValue:date];
+    }
+    else
+    {
+         [self _displayNextMonth];
+    }
+}
+
+- (void)_displayNextMonth
+{
+     [self setDateValue:[_monthView nextMonth]];
+}
+
+- (void)_displayPreviousMonth
+{
+    [self setDateValue:[_monthView previousMonth]];
 }
 
 /*! Move to the previous month without changing the dateValue of the datePicker
 */
-- (void)_previousMonth:(id)sender
+- (void)_clickArrowPrevious:(id)sender
 {
-    [self setDateValue:[_monthView previousMonth]];
+    var currentEvent = [CPApp currentEvent],
+        modifierFlags = [currentEvent modifierFlags];
+
+    if (modifierFlags & (CPCommandKeyMask | CPControlKeyMask | CPAlternateKeyMask))
+    {
+        var date = [[_monthView monthDate] copy];
+        date.setDate(1);
+
+        if (modifierFlags & CPAlternateKeyMask)
+            date.setUTCFullYear(date.getUTCFullYear() - 10);
+        else
+            date.setUTCFullYear(date.getUTCFullYear() - 1);
+
+        [self setDateValue:date];
+    }
+    else
+    {
+         [self _displayPreviousMonth];
+    }
 }
 
 /*! Move to the current selected day
@@ -331,10 +385,10 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
         [self addSubview:_currentButton];
 
         [_previousButton setTarget:aDelegate];
-        [_previousButton setAction:@selector(_previousMonth:)];
+        [_previousButton setAction:@selector(_clickArrowPrevious:)];
 
         [_nextButton setTarget:aDelegate];
-        [_nextButton setAction:@selector(_nextMonth:)];
+        [_nextButton setAction:@selector(_clickArrowNext:)];
 
         [_currentButton setTarget:aDelegate];
         [_currentButton setAction:@selector(_currentMonth:)];
@@ -442,6 +496,9 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
 */
 - (void)layoutSubviews
 {
+    if ([_datePicker datePickerStyle] == CPTextFieldAndStepperDatePickerStyle || [_datePicker datePickerStyle] == CPTextFieldDatePickerStyle)
+        return;
+
     var bounds = [self bounds],
         dayNames = [self _dayNames],
         width = CGRectGetWidth(bounds),
@@ -750,6 +807,9 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
 */
 - (void)layoutSubviews
 {
+    if ([_datePicker datePickerStyle] == CPTextFieldAndStepperDatePickerStyle || [_datePicker datePickerStyle] == CPTextFieldDatePickerStyle)
+        return;
+
     [super layoutSubviews];
 
     [self tile];
@@ -852,9 +912,9 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
     {
         // Check the year and the month. The year is usefull when changing from Jan to Dec.
         if (_date.getMonth() - [dayTile date].getMonth() == 1 || _date.getFullYear() - [dayTile date].getFullYear() == 1)
-            [_delegate _previousMonth:self];
+            [_delegate _displayPreviousMonth];
         else
-            [_delegate _nextMonth:self];
+            [_delegate _displayNextMonth];
     }
 }
 
@@ -890,9 +950,9 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
 
             // Check the year and the month. The year is usefull when changing from Jan to Dec.
             if (_date.getMonth() - [dayTile date].getMonth() == 1 || _date.getFullYear() - [dayTile date].getFullYear() == 1)
-                [_delegate _previousMonth:self];
+                [_delegate _displayPreviousMonth];
             else
-                [_delegate _nextMonth:self];
+                [_delegate _displayNextMonth];
         }
     }
     else
@@ -935,7 +995,7 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
     if (_isMonthJustChanged)
     {
         _dragDate.setMonth(_date.getMonth() + 1);
-        [_delegate _nextMonth:self];
+        [_delegate _displayNextMonth];
     }
 }
 
@@ -944,7 +1004,7 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
     if (_isMonthJustChanged)
     {
         _dragDate.setMonth(_date.getMonth() - 1);
-        [_delegate _previousMonth:self];
+        [_delegate _displayPreviousMonth];
     }
 }
 
@@ -1011,30 +1071,30 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
         [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-shadow-color" inState:CPThemeStateDisabled] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateDisabled];
         [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-shadow-offset" inState:CPThemeStateDisabled] forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateDisabled];
 
-        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-font" inState:CPThemeStateDisabled | CPThemeStateSelected] forThemeAttribute:@"font" inState:CPThemeStateDisabled | CPThemeStateSelected];
-        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-color" inState:CPThemeStateDisabled | CPThemeStateSelected] forThemeAttribute:@"text-color" inState:CPThemeStateDisabled | CPThemeStateSelected];
-        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-shadow-color" inState:CPThemeStateDisabled | CPThemeStateSelected] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateDisabled | CPThemeStateSelected];
-        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-shadow-offset" inState:CPThemeStateDisabled | CPThemeStateSelected] forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateDisabled | CPThemeStateSelected];
+        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-font" inState:[CPThemeStateDisabled, CPThemeStateSelected]] forThemeAttribute:@"font" inState:[CPThemeStateDisabled, CPThemeStateSelected]];
+        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-color" inState:[CPThemeStateDisabled, CPThemeStateSelected]]forThemeAttribute:@"text-color" inState:[CPThemeStateDisabled, CPThemeStateSelected]];
+        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-shadow-color" inState:[CPThemeStateDisabled, CPThemeStateSelected]] forThemeAttribute:@"text-shadow-color" inState:[CPThemeStateDisabled, CPThemeStateSelected]];
+        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-shadow-offset" inState:[CPThemeStateDisabled, CPThemeStateSelected]] forThemeAttribute:@"text-shadow-offset" inState:[CPThemeStateDisabled, CPThemeStateSelected]];
 
         [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-font" inState:CPThemeStateHighlighted] forThemeAttribute:@"font" inState:CPThemeStateHighlighted];
         [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-color" inState:CPThemeStateHighlighted] forThemeAttribute:@"text-color" inState:CPThemeStateHighlighted];
         [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-shadow-color" inState:CPThemeStateHighlighted] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateHighlighted];
         [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-shadow-offset" inState:CPThemeStateHighlighted] forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateHighlighted];
 
-        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-font" inState:CPThemeStateHighlighted | CPThemeStateSelected] forThemeAttribute:@"font" inState:CPThemeStateHighlighted | CPThemeStateSelected];
-        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-color" inState:CPThemeStateHighlighted | CPThemeStateSelected] forThemeAttribute:@"text-color" inState:CPThemeStateHighlighted | CPThemeStateSelected];
-        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-shadow-color" inState:CPThemeStateHighlighted | CPThemeStateSelected] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateHighlighted | CPThemeStateSelected];
-        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-shadow-offset" inState:CPThemeStateHighlighted | CPThemeStateSelected] forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateHighlighted | CPThemeStateSelected];
+        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-font" inState:[CPThemeStateHighlighted, CPThemeStateSelected]] forThemeAttribute:@"font" inState:[CPThemeStateHighlighted, CPThemeStateSelected]];
+        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-color" inState:[CPThemeStateHighlighted, CPThemeStateSelected]] forThemeAttribute:@"text-color" inState:[CPThemeStateHighlighted, CPThemeStateSelected]];
+        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-shadow-color" inState:[CPThemeStateHighlighted, CPThemeStateSelected]] forThemeAttribute:@"text-shadow-color" inState:[CPThemeStateHighlighted, CPThemeStateSelected]];
+        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-shadow-offset" inState:[CPThemeStateHighlighted, CPThemeStateSelected]] forThemeAttribute:@"text-shadow-offset" inState:[CPThemeStateHighlighted, CPThemeStateSelected]];
 
-        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-font" inState: CPThemeStateDisabled | CPThemeStateHighlighted | CPThemeStateSelected] forThemeAttribute:@"font" inState: CPThemeStateDisabled | CPThemeStateHighlighted | CPThemeStateSelected];
-        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-color" inState: CPThemeStateDisabled | CPThemeStateHighlighted | CPThemeStateSelected] forThemeAttribute:@"text-color" inState: CPThemeStateDisabled | CPThemeStateHighlighted | CPThemeStateSelected];
-        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-shadow-color" inState: CPThemeStateDisabled | CPThemeStateHighlighted | CPThemeStateSelected] forThemeAttribute:@"text-shadow-color" inState: CPThemeStateDisabled | CPThemeStateHighlighted | CPThemeStateSelected];
-        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-shadow-offset" inState: CPThemeStateDisabled | CPThemeStateHighlighted | CPThemeStateSelected] forThemeAttribute:@"text-shadow-offset" inState: CPThemeStateDisabled | CPThemeStateHighlighted | CPThemeStateSelected];
+        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-font" inState:[CPThemeStateDisabled, CPThemeStateHighlighted, CPThemeStateSelected]] forThemeAttribute:@"font" inState:[CPThemeStateDisabled, CPThemeStateHighlighted, CPThemeStateSelected]];
+        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-color" inState:[CPThemeStateDisabled, CPThemeStateHighlighted, CPThemeStateSelected]] forThemeAttribute:@"text-color" inState:[CPThemeStateDisabled, CPThemeStateHighlighted, CPThemeStateSelected]];
+        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-shadow-color" inState:[CPThemeStateDisabled, CPThemeStateHighlighted, CPThemeStateSelected]] forThemeAttribute:@"text-shadow-color" inState:[CPThemeStateDisabled, CPThemeStateHighlighted, CPThemeStateSelected]];
+        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-shadow-offset" inState:[CPThemeStateDisabled, CPThemeStateHighlighted, CPThemeStateSelected]] forThemeAttribute:@"text-shadow-offset" inState:[CPThemeStateDisabled, CPThemeStateHighlighted, CPThemeStateSelected]];
 
-        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-font" inState: CPThemeStateDisabled | CPThemeStateHighlighted ] forThemeAttribute:@"font" inState: CPThemeStateDisabled | CPThemeStateHighlighted ];
-        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-color" inState: CPThemeStateDisabled | CPThemeStateHighlighted ] forThemeAttribute:@"text-color" inState: CPThemeStateDisabled | CPThemeStateHighlighted ];
-        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-shadow-color" inState: CPThemeStateDisabled | CPThemeStateHighlighted ] forThemeAttribute:@"text-shadow-color" inState: CPThemeStateDisabled | CPThemeStateHighlighted ];
-        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-shadow-offset" inState: CPThemeStateDisabled | CPThemeStateHighlighted ] forThemeAttribute:@"text-shadow-offset" inState: CPThemeStateDisabled | CPThemeStateHighlighted];
+        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-font" inState:[CPThemeStateDisabled, CPThemeStateHighlighted]] forThemeAttribute:@"font" inState:[CPThemeStateDisabled, CPThemeStateHighlighted]];
+        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-color" inState:[CPThemeStateDisabled, CPThemeStateHighlighted]] forThemeAttribute:@"text-color" inState:[CPThemeStateDisabled, CPThemeStateHighlighted]];
+        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-shadow-color" inState:[CPThemeStateDisabled, CPThemeStateHighlighted]] forThemeAttribute:@"text-shadow-color" inState:[CPThemeStateDisabled, CPThemeStateHighlighted]];
+        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-shadow-offset" inState:[CPThemeStateDisabled, CPThemeStateHighlighted]] forThemeAttribute:@"text-shadow-offset" inState:[CPThemeStateDisabled, CPThemeStateHighlighted]];
 
         [self addSubview:_textField];
 
@@ -1050,7 +1110,7 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
 
 /*! Set a theme
 */
-- (void)setThemeState:(CPThemeState)aState
+- (BOOL)setThemeState:(ThemeState)aState
 {
     [_textField setThemeState:aState];
     [super setThemeState:aState];
@@ -1058,7 +1118,7 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
 
 /*! Unset a theme
 */
-- (void)unsetThemeState:(CPThemeState)aState
+- (BOOL)unsetThemeState:(ThemeState)aState
 {
     [_textField unsetThemeState:aState];
     [super unsetThemeState:aState];
@@ -1130,6 +1190,9 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
 */
 - (void)layoutSubviews
 {
+    if ([_datePicker datePickerStyle] == CPTextFieldAndStepperDatePickerStyle || [_datePicker datePickerStyle] == CPTextFieldDatePickerStyle)
+        return;
+
     var bounds = [self bounds];
     [_textField sizeToFit];
     [_textField setFrameOrigin:CGPointMake(bounds.size.width / 2 - [_textField frameSize].width / 2 + [_datePicker valueForThemeAttribute:@"border-width"], bounds.size.height / 2 - [_textField frameSize].height / 2)];
@@ -1144,7 +1207,7 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
     var themeState = [self themeState],
         context = [[CPGraphicsContext currentContext] graphicsPort];
 
-    if (themeState & CPThemeStateSelected)
+    if (themeState.hasThemeState(CPThemeStateSelected))
     {
         [self setBackgroundColor:[_datePicker valueForThemeAttribute:@"bezel-color-calendar" inState:themeState]];
         CGContextSetLineWidth(context, [_datePicker valueForThemeAttribute:@"border-width"]);
@@ -1202,6 +1265,9 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
 
 - (void)layoutSubviews
 {
+    if ([_datePicker datePickerStyle] == CPTextFieldAndStepperDatePickerStyle || [_datePicker datePickerStyle] == CPTextFieldDatePickerStyle)
+        return;
+
     if ([_datePicker drawsBackground])
         [self setBackgroundColor:[_datePicker backgroundColor]];
     else

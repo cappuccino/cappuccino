@@ -566,4 +566,10 @@
     [self assert:"This is a test none" equals:[noneString stringByTrimmingCharactersInSet:set]];
 }
 
+- (void)testCompareWithNil
+{
+    [self assert:CPOrderedDescending equals:[@"Objective-J" compare:nil]];
+    [self assertThrows:function () { [@"Objective-J" compare:[CPNull null]] }];
+}
+
 @end

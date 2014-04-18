@@ -133,6 +133,17 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
 
     [[self class] createTokenfieldContents:contentView withDelegate:self];
 
+    [[CPNotificationCenter defaultCenter] addObserver:self
+                                    selector:@selector(checkDidFocusNotification:)
+                                    name:CPTextFieldDidFocusNotification
+                                    object:nil]
+
+    [[CPNotificationCenter defaultCenter] addObserver:self
+                                    selector:@selector(checkDidBlurNotification:)
+                                    name:CPTextFieldDidBlurNotification
+                                    object:nil]
+
+
     var popoverButton = [[CPButton alloc] initWithFrame:CGRectMake(15, 310, 0, 0)];
     [popoverButton setTitle:"Token Field in a Popover"];
     [popoverButton sizeToFit];
@@ -141,6 +152,16 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
     [contentView addSubview:popoverButton];
 
     [theWindow orderFront:self];
+}
+
+- (@action)checkDidFocusNotification:(CPNotification)aNotification
+{
+    console.log("Field did focus");
+}
+
+- (@action)checkDidBlurNotification:(CPNotification)aNotification
+{
+    console.log("Field did blur");
 }
 
 - (@action)openPopover:(id)sender

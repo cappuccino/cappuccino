@@ -63,7 +63,11 @@ var NativeRequest = null;
 
 // We check ActiveXObject first, because we require local file access and
 // overrideMimeType feature (which the native XMLHttpRequest does not have in IE).
-if (window.ActiveXObject !== undefined)
+if (window.XMLHttpRequest)
+{
+    NativeRequest = window.XMLHttpRequest;
+}
+else if (window.ActiveXObject !== undefined)
 {
     // DON'T try 4.0 and 5.0: http://bit.ly/microsoft-msxml-explanation
     var MSXML_XMLHTTP_OBJECTS = ["Msxml2.XMLHTTP.3.0", "Msxml2.XMLHTTP.6.0"],
@@ -89,9 +93,6 @@ if (window.ActiveXObject !== undefined)
         }
     }
 }
-
-if (!NativeRequest)
-    NativeRequest = window.XMLHttpRequest;
 
 GLOBAL(CFHTTPRequest) = function()
 {
@@ -171,7 +172,10 @@ CFHTTPRequest.prototype.responseXML = function()
 {
     var responseXML = this._nativeRequest.responseXML;
 
-    if (responseXML && (NativeRequest === window.XMLHttpRequest))
+    // Internet Explorer will return a non-null but empty request.responseXML if the response
+    // content type wasn't "text/html", so also check that responseXML.documentRoot is set.
+    // Otherwise fall back to regular parsing.
+    if (responseXML && (NativeRequest === window.XMLHttpRequest) && responseXML.documentRoot)
         return responseXML;
 
     return parseXML(this.responseText());
@@ -293,7 +297,7 @@ function determineAndDispatchHTTPRequestEvents(/*CFHTTPRequest*/ aRequest)
         eventDispatcher.dispatchEvent({ type:readyStates[aRequest.readyState()], request:aRequest});
 }
 
-function FileRequest(/*CFURL*/ aURL, onsuccess, onfailure)
+function FileRequest(/*CFURL*/ aURL, onsuccess, onfailure, onprogress)
 {
     var request = new CFHTTPRequest();
 
@@ -326,16 +330,61 @@ function FileRequest(/*CFURL*/ aURL, onsuccess, onfailure)
     }
 #endif
 
+    var loaded = 0,
+        progressHandler = null;
+
+    function progress(progressEvent)
+    {
+        onprogress(progressEvent.loaded - loaded);
+        loaded = progressEvent.loaded;
+    }
+
+    function success(anEvent)
+    {
+        // If the browser can't handle progress events,
+        // we need to send a progress message with the total
+        // size of the file when the file finishes loading.
+        if (onprogress && progressHandler === null)
+            onprogress(anEvent.request.responseText().length);
+
+        onsuccess(anEvent);
+    }
+
     if (exports.asyncLoader)
     {
-        request.onsuccess = Asynchronous(onsuccess);
+        request.onsuccess = Asynchronous(success);
         request.onfailure = Asynchronous(onfailure);
     }
     else
     {
-        request.onsuccess = onsuccess;
+        request.onsuccess = success;
         request.onfailure = onfailure;
     }
+
+#if BROWSER
+    if (onprogress)
+    {
+        var supportsProgress = true;
+
+        // document.all means IE, window.atob is only supported by IE 10+
+        if (document.all)
+            supportsProgress = !!window.atob;
+
+        if (supportsProgress)
+        {
+            try
+            {
+                progressHandler = exports.asyncLoader ? Asynchronous(progress) : progress;
+                request._nativeRequest.onprogress = progressHandler;
+            }
+            catch (anException)
+            {
+                // Must be <= IE 9
+                progressHandler = null;
+            }
+        }
+    }
+#endif
 
     request.open("GET", aURL.absoluteString(), exports.asyncLoader);
     request.send("");

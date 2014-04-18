@@ -25,6 +25,18 @@
 @import "_CPPopUpList.j"
 
 
+// TODO : should conform to protocol CPTextFieldDelegate
+@protocol CPComboBoxDelegate <CPObject>
+
+@optional
+- (void)comboBoxSelectionIsChanging:(CPNotification)aNotification;
+- (void)comboBoxSelectionDidChange:(CPNotification)aNotification;
+- (void)comboBoxWillPopUp:(CPNotification)aNotification;
+- (void)comboBoxWillDismiss:(CPNotification)aNotification;
+
+@end
+
+
 CPComboBoxSelectionDidChangeNotification  = @"CPComboBoxSelectionDidChangeNotification";
 CPComboBoxSelectionIsChangingNotification = @"CPComboBoxSelectionIsChangingNotification";
 CPComboBoxWillDismissNotification         = @"CPComboBoxWillDismissNotification";
@@ -58,7 +70,7 @@ var CPComboBoxTextSubview = @"text",
     return "combobox";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{
                 @"popup-button-size": CGSizeMake(21.0, 29.0),
@@ -171,7 +183,7 @@ var CPComboBoxTextSubview = @"text",
 
 #pragma mark Setting a Delegate
 
-- (id < CPComboBoxDelegate >)delegate
+- (id /*< CPComboBoxDelegate >*/)delegate
 {
     return [super delegate];
 }
@@ -182,7 +194,7 @@ var CPComboBoxTextSubview = @"text",
     protocol, in actual fact it doesn't. Also note that the same
     delegate may conform to the NSTextFieldDelegate protocol.
 */
-- (void)setDelegate:(id < CPComboBoxDelegate >)aDelegate
+- (void)setDelegate:(id <CPComboBoxDelegate>)aDelegate
 {
     var delegate = [self delegate];
 
@@ -231,7 +243,7 @@ var CPComboBoxTextSubview = @"text",
 
 #pragma mark Setting a Data Source
 
-- (id < CPComboBoxDataSource >)dataSource
+- (id /*< CPComboBoxDataSource >*/)dataSource
 {
     if (!_usesDataSource)
         [self _dataSourceWarningForMethod:_cmd condition:NO];
@@ -239,7 +251,7 @@ var CPComboBoxTextSubview = @"text",
     return _dataSource;
 }
 
-- (void)setDataSource:(id < CPComboBoxDataSource >)aSource
+- (void)setDataSource:(id /*< CPComboBoxDataSource >*/)aSource
 {
     if (!_usesDataSource)
         [self _dataSourceWarningForMethod:_cmd condition:NO];

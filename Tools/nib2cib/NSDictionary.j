@@ -33,7 +33,11 @@
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
-    return [CPDictionary dictionaryWithObjects:[aCoder decodeObjectForKey:@"NS.objects"] forKeys:[aCoder decodeObjectForKey:@"NS.keys"]];
+    if ([aCoder containsValueForKey:@"NS.objects"])
+        return [CPDictionary dictionaryWithObjects:[aCoder decodeObjectForKey:@"NS.objects"] forKeys:[aCoder decodeObjectForKey:@"NS.keys"]];
+
+    if ([aCoder containsValueForKey:@"dict.values"])
+        return [CPDictionary dictionaryWithObjects:[aCoder decodeObjectForKey:@"dict.values"] forKeys:[aCoder decodeObjectForKey:@"dict.sortedKeys"]];
 }
 
 @end

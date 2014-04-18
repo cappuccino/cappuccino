@@ -67,7 +67,7 @@
     return 10000;
 }
 
-- (id)tableView:(id)tableView objectValueForTableColumn:(CPTableColumn)aColumn row:(int)aRow
+- (id)tableView:(id)tableView objectValueForTableColumn:(CPTableColumn)aColumn row:(CPInteger)aRow
 {
     return "Column " + [aColumn identifier] + " Row " + aRow;
 }

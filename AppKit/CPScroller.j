@@ -108,7 +108,7 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
     return "scroller";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{
             @"scroller-width": 7.0,
@@ -182,6 +182,7 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
         _allowFadingOut = YES;
         _isMouseOver = NO;
         _style = CPScrollerStyleOverlay;
+
         var paramAnimFadeOut = @{
                 CPViewAnimationTargetKey: self,
                 CPViewAnimationEffectKey: CPViewAnimationFadeOutEffect,
@@ -732,7 +733,7 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
     var themeState = _themeState;
 
     if (NAMES_FOR_PARTS[_hitPart] + "-color" !== anAttributeName)
-        themeState &= ~CPThemeStateHighlighted;
+        themeState = themeState.without(CPThemeStateHighlighted);
 
     return [self valueForThemeAttribute:anAttributeName inState:themeState];
 }

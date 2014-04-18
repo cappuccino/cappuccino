@@ -32,7 +32,7 @@
     return @"bordeless-bridge-window-view";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{
             @"toolbar-background-color": [CPColor grayColor],

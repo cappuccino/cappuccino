@@ -22,8 +22,8 @@
 
 // sprintf:
 
-var formatRegex = new RegExp("([^%]+|%(?:\\d+\\$)?[\\+\\-\\ \\#0]*[0-9\\*]*(.[0-9\\*]+)?[hlL]?[cbBdieEfgGosuxXpn%@])", "g");
-var tagRegex = new RegExp("(%)(?:(\\d+)\\$)?([\\+\\-\\ \\#0]*)([0-9\\*]*)((?:.[0-9\\*]+)?)([hlL]?)([cbBdieEfgGosuxXpn%@])");
+var formatRegex = /([^%]+|%(?:\d+\$)?[\+\-\ \#0]*[0-9\*]*(.[0-9\*]+)?[hlL]?[cbBdieEfgGosuxXpn%@])/g,
+    tagRegex = /(%)(?:(\d+)\$)?([\+\-\ \#0]*)([0-9\*]*)((?:.[0-9\*]+)?)([hlL]?)([cbBdieEfgGosuxXpn%@])/;
 
 exports.sprintf = function(format)
 {
@@ -36,10 +36,10 @@ exports.sprintf = function(format)
     for (var i = 0; i < tokens.length; i++)
     {
         var t = tokens[i];
-        if (format.substring(index, index + t.length) != t)
-        {
+
+        if (format.substring(index, index + t.length) !== t)
             return result;
-        }
+
         index += t.length;
 
         if (t.charAt(0) !== "%")
@@ -51,10 +51,9 @@ exports.sprintf = function(format)
         else
         {
             var subtokens = t.match(tagRegex);
-            if (subtokens.length != 8 || subtokens[0] != t)
-            {
+
+            if (subtokens.length !== 8 || subtokens[0] !== t)
                 return result;
-            }
 
             var percentSign     = subtokens[1],
                 argIndex        = subtokens[2],
@@ -70,27 +69,28 @@ exports.sprintf = function(format)
                 argIndex = Number(argIndex);
 
             var width = null;
+
             if (widthString == "*")
                 width = arguments[argIndex];
-            else if (widthString != "")
+            else if (widthString !== "")
                 width = Number(widthString);
 
             var precision = null;
-            if (precisionString == ".*")
+
+            if (precisionString === ".*")
                 precision = arguments[argIndex];
-            else if (precisionString != "")
+            else if (precisionString !== "")
                 precision = Number(precisionString.substring(1));
 
-            var leftJustify = (flags.indexOf("-") >= 0);
-            var padZeros    = (flags.indexOf("0") >= 0);
+            var leftJustify = (flags.indexOf("-") >= 0),
+                padZeros    = (flags.indexOf("0") >= 0),
+                subresult   = "";
 
-            var subresult = "";
-
-            if (RegExp("[bBdiufeExXo]").test(specifier))
+            if (/[bBdiufeExXo]/.test(specifier))
             {
-                var num = Number(arguments[argIndex]);
+                var num = Number(arguments[argIndex]),
+                    sign = "";
 
-                var sign = "";
                 if (num < 0)
                 {
                     sign = "-";
@@ -103,7 +103,7 @@ exports.sprintf = function(format)
                         sign = " ";
                 }
 
-                if (specifier == "d" || specifier == "i" || specifier == "u")
+                if (specifier === "d" || specifier === "i" || specifier === "u")
                 {
                     var number = String(Math.abs(Math.floor(num)));
 
@@ -112,16 +112,16 @@ exports.sprintf = function(format)
 
                 if (specifier == "f")
                 {
-                    var number = String((precision != null) ? Math.abs(num).toFixed(precision) : Math.abs(num));
-                    var suffix = (flags.indexOf("#") >= 0 && number.indexOf(".") < 0) ? "." : "";
+                    var number = String((precision !== null) ? Math.abs(num).toFixed(precision) : Math.abs(num)),
+                        suffix = (flags.indexOf("#") >= 0 && number.indexOf(".") < 0) ? "." : "";
 
                     subresult = justify(sign, "", number, suffix, width, leftJustify, padZeros);
                 }
 
-                if (specifier == "e" || specifier == "E")
+                if (specifier === "e" || specifier === "E")
                 {
-                    var number = String(Math.abs(num).toExponential(precision != null ? precision : 21));
-                    var suffix = (flags.indexOf("#") >= 0 && number.indexOf(".") < 0) ? "." : "";
+                    var number = String(Math.abs(num).toExponential(precision !== null ? precision : 21)),
+                        suffix = (flags.indexOf("#") >= 0 && number.indexOf(".") < 0) ? "." : "";
 
                     subresult = justify(sign, "", number, suffix, width, leftJustify, padZeros);
                 }
@@ -150,7 +150,7 @@ exports.sprintf = function(format)
                     subresult = justify(sign, prefix, number, "", width, leftJustify, padZeros);
                 }
 
-                if (RegExp("[A-Z]").test(specifier))
+                if (/[A-Z]/.test(specifier))
                     subresult = subresult.toUpperCase();
                 else
                     subresult = subresult.toLowerCase();
@@ -159,16 +159,14 @@ exports.sprintf = function(format)
             {
                 var subresult = "";
 
-                if (specifier == "%")
+                if (specifier === "%")
                     subresult = "%";
-                else if (specifier == "c")
+                else if (specifier === "c")
                     subresult = String(arguments[argIndex]).charAt(0);
-                else if (specifier == "s" || specifier == "@")
+                else if (specifier === "s" || specifier === "@")
                     subresult = String(arguments[argIndex]);
-                else if (specifier == "p" || specifier == "n")
-                {
+                else if (specifier === "p" || specifier === "n")
                     subresult = "";
-                }
 
                 subresult = justify("", "", subresult, "", width, leftJustify, false);
             }
@@ -176,12 +174,14 @@ exports.sprintf = function(format)
             result += subresult;
         }
     }
+
     return result;
 }
 
 function justify(sign, prefix, string, suffix, width, leftJustify, padZeros)
 {
     var length = (sign.length + prefix.length + string.length + suffix.length);
+
     if (leftJustify)
     {
         return sign + prefix + string + suffix + pad(width - length, " ");

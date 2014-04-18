@@ -32,3 +32,4 @@
 @import "NSNull.j"
 @import "NSNumberFormatter.j"
 @import "NSSet.j"
+@import "NSValue.j"

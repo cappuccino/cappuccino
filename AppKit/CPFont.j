@@ -208,7 +208,7 @@ following:
     var systemSize = String(_CPFontSystemFontSize),
         currentSize = String(CPFontCurrentSystemSize);
 
-    for (key in _CPSystemFontCache)
+    for (var key in _CPSystemFontCache)
     {
         if (_CPSystemFontCache.hasOwnProperty(key) &&
             (key.indexOf(systemSize) === 0 || key.indexOf(currentSize) === 0))

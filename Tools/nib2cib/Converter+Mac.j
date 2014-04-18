@@ -31,8 +31,11 @@
 - (void)convertedDataFromMacData:(CPData)data
 {
     // Unarchive the NS data
-    var unarchiver = [[Nib2CibKeyedUnarchiver alloc] initForReadingWithData:data],
-        objectData = [unarchiver decodeObjectForKey:@"IB.objectdata"],
+    var unarchiver = [[Nib2CibKeyedUnarchiver alloc] initForReadingWithData:data];
+
+    [unarchiver setDelegate:self];
+
+    var objectData = [unarchiver decodeObjectForKey:@"IB.objectdata"],
         objects = [unarchiver allObjects],
         count = [objects count];
 
@@ -58,6 +61,14 @@
     [archiver finishEncoding];
 
     return convertedData;
+}
+
+- (Class)unarchiver:(CPKeyedUnarchiver)unarchiver cannotDecodeObjectOfClassName:(CPString)name originalClasses:(CPArray)classNames
+{
+    // The CPKeyedUnarchiver exception message is accurate, but not that helpful to nib2cib users.
+    // We will raise our own exception.
+
+    [CPException raise:CPInvalidUnarchiveOperationException format:@"%@ objects are not supported by nib2cib.", name];
 }
 
 - (void)replaceFontForObject:(id)object

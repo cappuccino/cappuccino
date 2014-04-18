@@ -1,0 +1,16 @@
+//
+// Prefix header for all source files of the 'XcodeCapp' target in the 'XcodeCapp' project
+//
+
+#ifdef __OBJC__
+    #import <Cocoa/Cocoa.h>
+    #import "DDLog.h"
+
+#if DEBUG
+    #import "DDTTYLogger.h"
+#else
+    #import "DDASLLogger.h"
+#endif
+
+    #import "DDLogLevel.h"
+#endif

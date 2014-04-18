@@ -77,7 +77,7 @@
     // [theWindow setFullPlatformWindow:YES];
 }
 
-- (BOOL)browser:(CPBrowser)aBrowser writeRowsWithIndexes:(CPIndexSet)indexes inColumn:(int)column toPasteboard:(CPPasteboard)pboard
+- (BOOL)browser:(CPBrowser)aBrowser writeRowsWithIndexes:(CPIndexSet)indexes inColumn:(CPInteger)column toPasteboard:(CPPasteboard)pboard
 {
     var encodedData = [CPKeyedArchiver archivedDataWithRootObject:"Foo"];
     [pboard declareTypes:["Type"] owner:self];
@@ -85,11 +85,11 @@
     return YES;
 }
 
-- (BOOL)browser:(id)aBrowser validateDrop:(id)info proposedRow:(int)row column:(int)column dropOperation:(id)op
+- (BOOL)browser:(id)aBrowser validateDrop:(id)info proposedRow:(CPInteger)row column:(CPInteger)column dropOperation:(id)op
 {
     return CPDragOperationMove;
 }
-- (BOOL)browser:(id)aBrowser acceptDrop:(id)info atRow:(int)row column:(int)column dropOperation:(id)op
+- (BOOL)browser:(id)aBrowser acceptDrop:(id)info atRow:(CPInteger)row column:(CPInteger)column dropOperation:(id)op
 {
     return YES;
 }

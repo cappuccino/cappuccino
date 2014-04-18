@@ -489,6 +489,51 @@ var accessIVARS = YES;
 
 @end
 
+// CPValue unwrapping (AKA Wrapping and Unwrapping Structs)
+
+@implementation CPKeyValueCodingTest (CPValueUnwrapping)
+
+- (void)testIfCPValueIsUnwrapped
+{
+    [KVCTestClass setAccessInstanceVariablesDirectly: YES];
+
+    var values = @[
+            [CPValue valueWithJSObject:CGPointMake(200, -100)],
+            [CPValue valueWithJSObject:CGSizeMake(100, 100)],
+            [CPValue valueWithJSObject:CGRectMake(100, 100, 50, 150)],
+        ];
+
+    for (var i = 0; i < values.length; i++)
+    {
+        var value = values[i];
+
+        [kvcTestObject setValue:value forKey:"privatePropertyWithoutAccessors"];
+        [kvcTestObject setValue:value forKey:"publicPropertyWithoutAccessors"];
+        [kvcTestObject setValue:value forKey:"privateBoolPropertyWithoutAccessors"];
+        [kvcTestObject setValue:value forKey:"publicBoolPropertyWithoutAccessors"];
+        [kvcTestObject setValue:value forKey:"propertyWithPublicAccessor"];
+        [kvcTestObject setValue:value forKey:"propertyWithPrivateAccessor"];
+
+        var allKeys = ["privatePropertyWithoutAccessors","publicPropertyWithoutAccessors",
+                        "privateBoolPropertyWithoutAccessors","publicBoolPropertyWithoutAccessors",
+                        "propertyWithPublicAccessor", "propertyWithPrivateAccessor"
+                       ],
+            dictForKeys = [kvcTestObject dictionaryWithValuesForKeys:allKeys],
+            key,
+            readBackValue,
+            keyEnumerator = [dictForKeys keyEnumerator];
+
+        while ((key = [keyEnumerator nextObject]) !== nil)
+        {
+            readBackValue = [dictForKeys objectForKey:key];
+            [self assertFalse:readBackValue.isa message:"Expected to read back an unwrapped value, not " + readBackValue + "."];
+            [self assert:JSON.stringify([value JSObject]) equals:JSON.stringify(readBackValue)];
+        }
+    }
+}
+
+@end
+
 @implementation Employee2 : CPObject
 {
     CPString                    _name @accessors(property=name);

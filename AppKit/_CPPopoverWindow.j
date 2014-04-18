@@ -399,7 +399,7 @@ var _CPPopoverWindow_shouldClose_    = 1 << 0,
 
     @param sender the sender of the action
 */
-- (IBAction)orderFront:(is)aSender
+- (IBAction)orderFront:(id)aSender
 {
     if (![self isKeyWindow])
     {
@@ -410,7 +410,8 @@ var _CPPopoverWindow_shouldClose_    = 1 << 0,
             var transformOrigin = "50% 100%",
                 frame = [self frame],
                 preferredEdge = [_windowView preferredEdge],
-                posX, posY;
+                posX,
+                posY;
 
             switch (preferredEdge)
             {
@@ -480,7 +481,9 @@ var _CPPopoverWindow_shouldClose_    = 1 << 0,
 #if PLATFORM(DOM)
                 _DOMElement.addEventListener(CPBrowserStyleProperty('transitionend'), orderFrontTransitionFunction, YES);
 #endif
-            }, 0);
+            }, 10); // There are some weird race conditions happening in Chrome 34. If this is set to 0
+                    // the transitionend is randomly not called correctly. Setting the timeout to 10ms is not noticealble for the
+                    // user, and seems to fix the issue.
         }
         else
         {

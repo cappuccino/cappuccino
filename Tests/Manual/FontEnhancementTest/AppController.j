@@ -51,7 +51,7 @@ var fontLabelField = nil,
     return 7;
 }
 
-- (id)tableView:(id)tableView objectValueForTableColumn:(CPTableColumn)aColumn row:(int)aRow
+- (id)tableView:(id)tableView objectValueForTableColumn:(CPTableColumn)aColumn row:(CPInteger)aRow
 {
     return ["one", "two", "three"][parseInt([aColumn identifier], 10)];
 }

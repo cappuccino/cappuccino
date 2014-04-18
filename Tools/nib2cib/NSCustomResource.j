@@ -25,10 +25,16 @@
 
 @import <AppKit/_CPCibCustomResource.j>
 
+@import "Nib2CibException.j"
+
 @global CP_NSMapClassName
 
 var FILE = require("file"),
-    imageSize = require("cappuccino/imagesize").imagesize;
+    imageSize = require("cappuccino/imagesize").imagesize,
+    supportedTemplateImages = [
+        "NSAddTemplate",
+        "NSRemoveTemplate"
+    ];
 
 @implementation _CPCibCustomResource (NSCoding)
 
@@ -42,25 +48,29 @@ var FILE = require("file"),
         _resourceName = [aCoder decodeObjectForKey:@"NSResourceName"];
 
         var size = CGSizeMakeZero(),
-            framework = @"";
+            framework = @"",
+            bundleIdentifier = @"";
 
         if (_resourceName == "NSSwitch")
             return nil;
-        else if (_resourceName == "NSAddTemplate" || _resourceName == "NSRemoveTemplate")
+        else if (/^NS[A-Z][A-Za-z]+$/.test(_resourceName))
         {
-            // Defer resolving this path until runtime.
-            _resourceName = _resourceName.replace("NS", "CP");
+            if (supportedTemplateImages.indexOf(_resourceName) >= 0)
+            {
+                // Defer resolving this path until runtime.
+                _resourceName = _resourceName.replace("NS", "CP");
+            }
+            else
+                [CPException raise:Nib2CibException format:@"The built in image “%@” is not supported.", _resourceName];
         }
         else
         {
-            var match = /^(.+)@(.+)$/.exec(_resourceName),
-                framework = @"",
-                bundleIdentifier = @"";
+            var match = /^(.+)@(.+)$/.exec(_resourceName);
 
             if (match)
             {
-                framework = match[1];
-                _resourceName = match[2];
+                _resourceName = match[1];
+                framework = match[2];
             }
 
             var resourceInfo = [aCoder resourceInfoForName:_resourceName inFramework:framework];
@@ -74,14 +84,12 @@ var FILE = require("file"),
             }
 
             // Account for the fact that an extension may have been inferred.
-            if (resourceInfo &&
-                resourceInfo.path &&
-                FILE.extension(resourceInfo.path) !== FILE.extension(_resourceName))
+            if (resourceInfo && resourceInfo.path)
             {
-                _resourceName += FILE.extension(resourceInfo.path);
+                // Include subdirectories in the name
+                match = /^.+\/Resources\/(.+)$/.exec(resourceInfo.path)
+                _resourceName = match[1];
             }
-
-            CPLog.debug("    Resource: %s\n   Framework: %s\n        Path: %s\n        Size: %d x %d", _resourceName, framework, resourceInfo ? FILE.canonical(resourceInfo.path) : "", size.width, size.height);
         }
 
         if (resourceInfo && resourceInfo.path && resourceInfo.framework)
@@ -94,6 +102,15 @@ var FILE = require("file"),
         }
 
         _properties = @{ @"size":size, @"bundleIdentifier":bundleIdentifier, @"framework":framework };
+
+        CPLog.debug("    Resource: %s\n   Framework: %s%s\n        Path: %s\n        Size: %d x %d",
+                    _resourceName,
+                    framework ? framework : "<none>",
+                    bundleIdentifier ? " (" + bundleIdentifier + ")" :
+                                        framework ? " (<no bundle identifier>)" : "",
+                    resourceInfo ? FILE.canonical(resourceInfo.path) : "",
+                    size.width,
+                    size.height);
     }
 
     return self;

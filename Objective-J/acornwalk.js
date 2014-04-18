@@ -41,9 +41,9 @@ if (!exports.acorn) {
   exports.recursive = function(node, state, funcs, base) {
     var visitor = exports.make(funcs, base);
     function c(node, st, override) {
-      visitor[override || node.type](node, st, c);
+      return visitor[override || node.type](node, st, c);
     }
-    c(node, state);
+    return c(node, state);
   };
 
   // Used to create a custom walker. Will fill in all missing node
@@ -208,14 +208,23 @@ if (!exports.acorn) {
 
   exports.IvarDeclaration = ignore;
 
-  exports.MethodDeclarationStatement = ignore;
-
   exports.PreprocessStatement = ignore;
   exports.ClassStatement = ignore;
   exports.GlobalStatement = ignore;
 
+  exports.ProtocolDeclarationStatement = function(node, st, c) {
+    if (node.required) for (var i = 0; i < node.required.length; ++i) {
+      c(node.required[i], st, "Statement");
+    }
+    if (node.optional) for (var i = 0; i < node.optional.length; ++i) {
+      c(node.optional[i], st, "Statement");
+    }
+  }
+
   exports.MethodDeclarationStatement = function(node, st, c) {
-    c(node.body, st, "Statement");
+    var body = node.body;
+    if (body)
+      c(body, st, "Statement");
   }
 
   exports.MessageSendExpression = function(node, st, c) {
@@ -227,6 +236,7 @@ if (!exports.acorn) {
   }
 
   exports.SelectorLiteralExpression = ignore;
+  exports.ProtocolLiteralExpression = ignore;
 
   exports.Reference = function(node, st, c) {
     c(node.element, st, "Identifier");

@@ -156,11 +156,15 @@ var cachedBlackColor,
 }
 
 /*!
-    Creates a new color in HSB space.
+    Creates a new color based on the given HSB components.
 
-    @param hue the hue value
-    @param saturation the saturation value
-    @param brightness the brightness value
+    Note: earlier versions of this method took a hue component as degrees between 0-360,
+    and saturation and brightness components as percent between 0-100. This method has
+    now been corrected to take all components in the 0-1 range as in Cocoa.
+
+    @param hue the hue component (0.0-1.0)
+    @param saturation the saturation component (0.0-1.0)
+    @param brightness the brightness component (0.0-1.0)
 
     @return the initialized color
 */
@@ -169,25 +173,61 @@ var cachedBlackColor,
     return [self colorWithHue:hue saturation:saturation brightness:brightness alpha:1.0];
 }
 
+/*!
+    Calibrated colors are not supported in Cappuccino.
+
+    This method has the same result as [CPColor colorWithHue:saturation:brightness:alpha:].
+*/
++ (CPColor)colorWithCalibratedHue:(float)hue saturation:(float)saturation brightness:(float)brightness alpha:(float)alpha
+{
+    return [self colorWithHue:hue saturation:saturation brightness:brightness alpha:alpha];
+}
+
+/*!
+    Creates a new color based on the given HSB components.
+
+    Note: earlier versions of this method took a hue component as degrees between 0-360,
+    and saturation and brightness components as percent between 0-100. This method has
+    now been corrected to take all components in the 0-1 range as in Cocoa.
+
+    @param hue the hue component (0.0-1.0)
+    @param saturation the saturation component (0.0-1.0)
+    @param brightness the brightness component (0.0-1.0)
+    @param alpha the opacity component (0.0-1.0)
+
+    @return the initialized color
+*/
 + (CPColor)colorWithHue:(float)hue saturation:(float)saturation brightness:(float)brightness alpha:(float)alpha
 {
+    // Clamp values.
+    hue = MAX(MIN(hue, 1.0), 0.0);
+    saturation = MAX(MIN(saturation, 1.0), 0.0);
+    brightness = MAX(MIN(brightness, 1.0), 0.0);
+
     if (saturation === 0.0)
-        return [CPColor colorWithCalibratedWhite:brightness / 100.0 alpha:alpha];
+        return [CPColor colorWithCalibratedWhite:brightness alpha:alpha];
 
-    var f = hue % 60,
-        p = (brightness * (100 - saturation)) / 10000,
-        q = (brightness * (6000 - saturation * f)) / 600000,
-        t = (brightness * (6000 - saturation * (60 -f))) / 600000,
-        b =  brightness / 100.0;
+    var f = (hue * 360) % 60,
+        p = (brightness * (1 - saturation)),
+        q = (brightness * (60 - saturation * f)) / 60,
+        t = (brightness * (60 - saturation * (60 - f))) / 60,
+        b = brightness;
 
-    switch (FLOOR(hue / 60))
+    switch (FLOOR(hue * 6))
     {
-        case 0: return [CPColor colorWithCalibratedRed:b green:t blue:p alpha:alpha];
-        case 1: return [CPColor colorWithCalibratedRed:q green:b blue:p alpha:alpha];
-        case 2: return [CPColor colorWithCalibratedRed:p green:b blue:t alpha:alpha];
-        case 3: return [CPColor colorWithCalibratedRed:p green:q blue:b alpha:alpha];
-        case 4: return [CPColor colorWithCalibratedRed:t green:p blue:b alpha:alpha];
-        case 5: return [CPColor colorWithCalibratedRed:b green:p blue:q alpha:alpha];
+        case 0:
+        case 6:
+            return [CPColor colorWithCalibratedRed:b green:t blue:p alpha:alpha];
+        case 1:
+            return [CPColor colorWithCalibratedRed:q green:b blue:p alpha:alpha];
+        case 2:
+            return [CPColor colorWithCalibratedRed:p green:b blue:t alpha:alpha];
+        case 3:
+            return [CPColor colorWithCalibratedRed:p green:q blue:b alpha:alpha];
+        case 4:
+            return [CPColor colorWithCalibratedRed:t green:p blue:b alpha:alpha];
+        case 5:
+            return [CPColor colorWithCalibratedRed:b green:p blue:q alpha:alpha];
     }
 }
 
@@ -575,6 +615,9 @@ var cachedBlackColor,
 
 /*!
     Returns an array with the HSB values for this color.
+
+    The values are expressed as fractions between 0.0-1.0.
+
     The index values are ordered as:
 <pre>
 <b>Index</b>   <b>Component</b>
@@ -621,10 +664,34 @@ var cachedBlackColor,
     }
 
     return [
-        ROUND(hue * 360.0),
-        ROUND(saturation * 100.0),
-        ROUND(brightness * 100.0)
+        hue,
+        saturation,
+        brightness
     ];
+}
+
+/*!
+    Returns the hue component, the H in HSB, of the receiver.
+*/
+- (float)hueComponent
+{
+    return [self hsbComponents][0];
+}
+
+/*!
+    Returns the saturation component, the S in HSB, of the receiver.
+*/
+- (float)saturationComponent
+{
+    return [self hsbComponents][1];
+}
+
+/*!
+    Returns the brightness component, the B in HSB, of the receiver.
+*/
+- (float)brightnessComponent
+{
+    return [self hsbComponents][2];
 }
 
 /*!
@@ -744,6 +811,12 @@ url("data:image/png;base64,BASE64ENCODEDDATA")  // if there is a pattern image
 + (CPColor)randomColor
 {
     return [CPColor colorWithRed:RAND() green:RAND() blue:RAND() alpha:1.0];
+}
+
++ (CPColor)checkerBoardColor
+{
+    // Thanks to cocco http://stackoverflow.com/a/18368212/76900.
+    return [CPColor colorWithPatternImage:[[CPImage alloc] initWithContentsOfFile:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAABlBMVEX////MzMw46qqDAAAAEElEQVQImWNg+M+AFeEQBgB+vw/xfUUZkgAAAABJRU5ErkJggg=="]];
 }
 
 @end

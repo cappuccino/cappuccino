@@ -36,8 +36,8 @@
 // TODO Drag and drop is not implemented since it's difficult to test in a unit test and not all that relevant in a bindings context anyhow.
 
 // - (BOOL)tableView:(CPTableView)aTableView writeRowsWithIndexes:(CPIndexSet)rowIndexes toPasteboard:(CPPasteboard)pboard
-// - (CPDragOperation)tableView:(CPTableView)tv validateDrop:(id)info proposedRow:(int)row proposedDropOperation:(CPTableViewDropOperation)op
-// - (BOOL)tableView:(CPTableView)tv acceptDrop:(id)info row:(int)row dropOperation:(CPTableViewDropOperation)op
+// - (CPDragOperation)tableView:(CPTableView)tv validateDrop:(id)info proposedRow:(CPInteger)row proposedDropOperation:(CPTableViewDropOperation)op
+// - (BOOL)tableView:(CPTableView)tv acceptDrop:(id)info row:(CPInteger)row dropOperation:(CPTableViewDropOperation)op
 // - (void)awakeFromNib
 
 @end

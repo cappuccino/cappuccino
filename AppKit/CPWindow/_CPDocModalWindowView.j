@@ -33,7 +33,7 @@
     return @"doc-modal-window-view";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{
             @"body-color": [CPColor whiteColor],

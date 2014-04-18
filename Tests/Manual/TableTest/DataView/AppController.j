@@ -83,7 +83,7 @@ var AppControllerInstance = nil;
 }
 
 // Don't allow files to be selected during an upload
-- (BOOL)tableView:(CPTableView)aTableView shouldSelectRow:(int)index
+- (BOOL)tableView:(CPTableView)aTableView shouldSelectRow:(CPInteger)index
 {
     return !uploading;
 }
