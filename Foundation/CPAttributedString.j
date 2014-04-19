@@ -738,8 +738,7 @@
         _rangeEntries.splice(entryIndexOfNextEntry - 1 + index, 0, entryCopy);
     }
 
-    //necessary?
-    //[self _coalesceRangeEntriesFromIndex:startingEntryIndex toIndex:startingEntryIndex+rangeEntries.length];
+    [self _coalesceRangeEntriesFromIndex:MAX(0, entryIndexOfNextEntry - 1) toIndex:MIN(entryIndexOfNextEntry + 1, _rangeEntries.length - 1)];
 }
 
 /*!
