@@ -337,7 +337,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     if ([_outlineViewDataSource respondsToSelector:@selector(outlineView:sortDescriptorsDidChange:)])
         _implementedOutlineViewDataSourceMethods |= CPOutlineViewDataSource_outlineView_sortDescriptorsDidChange_;
 
-    [self _reloadDataViews];
+    [self reloadData];
 }
 
 /*!
@@ -630,7 +630,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     _outlineTableColumn = aTableColumn;
 
     // FIXME: efficiency.
-    [self _reloadDataViews];
+    [self reloadData];
 }
 
 /*!
@@ -689,7 +689,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     _indentationPerLevel = anIndentationWidth;
 
     // FIXME: efficiency!!!!
-    [self _reloadDataViews];
+    [self reloadData];
 }
 
 /*!
@@ -717,7 +717,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     _indentationMarkerFollowsDataView = indentationMarkerShouldFollowDataView;
 
     // !!!!
-    [self _reloadDataViews];
+    [self reloadData];
 }
 
 /*!
@@ -1091,7 +1091,13 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     _disclosureControlQueue = [];
 
     // FIXME: really?
-    [self _reloadDataViews];
+    [self reloadData];
+}
+
+- (BOOL)_dataViewsNeedReloadAfterContentChange
+{
+    // Alternatively, check if the current tree of views mactches the current tree in the data source.
+    return YES;
 }
 
 /*!

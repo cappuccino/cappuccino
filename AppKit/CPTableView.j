@@ -614,6 +614,7 @@ NOT YET IMPLEMENTED
 */
 - (void)reloadData
 {
+    // Empty the data cache.
     _objectValues = { };
     [self reloadDataForRowIndexes:_exposedRows columnIndexes:_exposedColumns];
 }
@@ -625,20 +626,28 @@ NOT YET IMPLEMENTED
 */
 - (void)reloadDataForRowIndexes:(CPIndexSet)rowIndexes columnIndexes:(CPIndexSet)columnIndexes
 {
-    if ([self _numberOfRowsDidChange])
+    if ([self _dataViewsNeedReloadAfterContentChange])
         [self _reloadDataViewsImmediately];
     else
-        [self _enumerateViewsInRows:rowIndexes columns:columnIndexes usingBlock:function(view, row, column, stop)
-        {
-            [self _setObjectValueForTableColumn:_tableColumns[column] row:row forView:view useCache:NO];
-        }];
+        [self _reloadDataForRowIndexes:rowIndexes columnIndexes:columnIndexes];
 }
 
-- (BOOL)_numberOfRowsDidChange
+// Reloads the data, not the views
+- (void)_reloadDataForRowIndexes:(CPIndexSet)rowIndexes columnIndexes:(CPIndexSet)columnIndexes
+{
+    [self _enumerateViewsInRows:rowIndexes columns:columnIndexes usingBlock:function(view, row, column, stop)
+    {
+        var tableColumn = [_tableColumns objectAtIndex:column];
+        [self _setObjectValueForTableColumn:tableColumn row:row forView:view useCache:NO];
+    }];
+}
+
+- (BOOL)_dataViewsNeedReloadAfterContentChange
 {
     return (_numberOfRows !== [self _numberOfRows]);
 }
 
+// Reloads the views AND the data
 - (void)_reloadDataViews
 {
     //if (!_dataSource)
@@ -3484,11 +3493,13 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     [self setNeedsDisplay:YES];
 
     // if we have any columns to remove do that here
-    if ([_differedColumnDataToRemove count])
+    var removeCount = [_differedColumnDataToRemove count];
+
+    if (removeCount)
     {
         var removeIndexes = [CPIndexSet indexSet];
 
-        for (var i = 0; i < _differedColumnDataToRemove.length; i++)
+        for (var i = 0; i < removeCount; i++)
         {
             var data = _differedColumnDataToRemove[i],
                 tableColumn = data.column,
@@ -3497,7 +3508,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
             if (columnIdx !== CPNotFound)
                 [removeIndexes addIndex:columnIdx];
         }
-
+        // FIXME: do we also need to remove non exposed rows that may stay in the cache ?
         [self _unloadDataViewsInRows:_exposedRows columns:removeIndexes];
         [_differedColumnDataToRemove removeAllObjects];
     }
@@ -3592,9 +3603,11 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     [self _setObjectValueForTableColumn:tableColumn row:row forView:dataView];
 
-    var applyThemeStateBlock = (_selectionHighlightStyle !== CPTableViewSelectionHighlightStyleNone && (isRowSelected || [self isColumnSelected:column])) ? _BlockSelectView : _BlockDeselectView;
-
-    applyThemeStateBlock(dataView, row, column);
+    if (_selectionHighlightStyle !== CPTableViewSelectionHighlightStyleNone &&
+       (isRowSelected || [self isColumnSelected:column]))
+        _BlockSelectView(dataView, row, column);
+    else
+        _BlockDeselectView(dataView, row, column);
 
     // FIX ME: for performance reasons we might consider diverging from cocoa and moving this to the reloadData method
     if (_implementedDelegateMethods & CPTableViewDelegate_tableView_isGroupRow_)
