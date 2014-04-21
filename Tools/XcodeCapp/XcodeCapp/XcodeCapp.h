@@ -132,7 +132,6 @@ extern NSString * const XCCProjectDidFinishLoadingNotification;
 - (BOOL)isXibFile:(NSString *)path;
 - (BOOL)isXCCIgnoreFile:(NSString *)path;
 
-- (BOOL)shouldShowWarningNotification;
 - (BOOL)shouldShowErrorNotification;
 
 - (NSString *)shadowBasePathForProjectSourcePath:(NSString *)path;
@@ -145,6 +144,10 @@ extern NSString * const XCCProjectDidFinishLoadingNotification;
 - (NSDictionary *)runTaskWithLaunchPath:(NSString *)launchPath arguments:(NSArray *)arguments returnType:(XCCTaskReturnType)returnType;
 
 - (NSDictionary*)createProject:(NSString*)aPath;
+
+- (BOOL)shouldProcessWithCappLint;
+- (BOOL)checkCappLintForPath:(NSString*)aPath;
+- (void)showCappLintErrors;
 
 @end
 

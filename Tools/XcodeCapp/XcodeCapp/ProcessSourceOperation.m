@@ -153,12 +153,23 @@
                 }
             }
             
-            if ((status == XCCStatusCodeError && [self.xcc shouldShowErrorNotification]) || (status != XCCStatusCodeError && [self.xcc shouldShowWarningNotification]))
+            if ([self.xcc shouldShowErrorNotification])
                 [self notifyUserWithTitle:notificationTitle message:notificationMessage];
         }
         else if (!self.xcc.isLoadingProject)
         {
-            [self notifyUserWithTitle:notificationTitle message:notificationMessage];
+            BOOL showFinalNotification = YES;
+            
+            if ([self.xcc shouldProcessWithCappLint])
+            {
+                showFinalNotification = [self.xcc checkCappLintForPath:self.sourcePath];
+
+                if (!showFinalNotification)
+                    [self.xcc showCappLintErrors];
+            }
+                
+            if (showFinalNotification)
+                [self notifyUserWithTitle:notificationTitle message:notificationMessage];
         }
     }
 
@@ -179,7 +190,7 @@
                                  nil];
 
     info[@"projectId"] = self.projectId;
-    info[@"message"] = [NSString stringWithFormat:@"%@, line %d\n%@", [self.sourcePath lastPathComponent], 0, message];
+    info[@"message"] = [NSString stringWithFormat:@"Compilation issue: %@, line %d\n%@", [self.sourcePath lastPathComponent], 0, message];
 
     if (self.isCancelled)
         return;

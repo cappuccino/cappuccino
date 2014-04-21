@@ -730,11 +730,6 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
         }
     }
     
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    
-    if ([defaults boolForKey:KDefaultUsesCappLintForEveryNotifications])
-        [self checkCappLintForPath:path];
-    
     DDLogVerbose(@"%@ %@", NSStringFromSelector(_cmd), path);
 }
 
@@ -1641,22 +1636,24 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     [self runTaskWithLaunchPath:executablePath arguments:args returnType:kTaskReturnTypeNone];
 }
 
-- (BOOL)shouldShowWarningNotification
-{
-    return [[NSUserDefaults standardUserDefaults] boolForKey:kDefaultXCCAutoShowNotificationOnWarnings];
-}
-
 - (BOOL)shouldShowErrorNotification
 {
     return [[NSUserDefaults standardUserDefaults] boolForKey:kDefaultXCCAutoShowNotificationOnErrors];
+}
+
+- (BOOL)shouldProcessWithCappLint
+{
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    
+    return [defaults boolForKey:kDefaultXCCAutoOpenErrorsPanelOnCappLint]
+            || [defaults boolForKey:kDefaultXCCAutoShowNotificationOnCappLint];
 }
 
 - (void)showErrors
 {
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
 
-    if (([defaults boolForKey:kDefaultXCCAutoOpenErrorsPanelOnErrors] && self.hasErrors) ||
-        ([defaults boolForKey:kDefaultXCCAutoOpenErrorsPanelOnWarnings] && self.errorList.count))
+    if ([defaults boolForKey:kDefaultXCCAutoOpenErrorsPanelOnErrors] && self.errorList.count)
     {
         [self openErrorsPanel:self];
     }
@@ -1672,15 +1669,16 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     if ([defaults boolForKey:kDefaultXCCAutoShowNotificationOnCappLint])
     {
         NSUInteger numberError = [self.errorList count];
-        int i = 0;
         
-        for (i = 0; i < numberError; i++)
+        if (numberError)
         {
-            NSDictionary *error = [self.errorList objectAtIndex:i];
+            NSDictionary *error = [self.errorList objectAtIndex:0];
+            NSString *filename = [error objectForKey:@"path"];
+            
             NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
                                          [NSNumber numberWithInteger:self.projectId] , @"projectId",
-                                         @"Capp_lint error", @"title",
-                                         [error objectForKey:@"message"] , @"message",
+                                         @"Code Style Issues", @"title",
+                                         filename.lastPathComponent , @"message",
                                          nil];
             
             [self wantUserNotificationWithInfo:dict];
@@ -1754,8 +1752,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     if ([info[@"projectId"] intValue] != self.projectId)
         return;
 
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:kDefaultShowProcessingNotices])
-        [self notifyUserWithTitle:info[@"title"] message:info[@"message"]];
+    [self notifyUserWithTitle:info[@"title"] message:info[@"message"]];
 }
 
 - (BOOL)userNotificationCenter:(NSUserNotificationCenter *)center shouldPresentNotification:(NSUserNotification *)notification
@@ -1770,7 +1767,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     [self performSelectorInBackground:@selector(checkCappLintForPath:) withObject:self.projectPath];
 }
 
-- (void)checkCappLintForPath:(NSString*)aPath
+- (BOOL)checkCappLintForPath:(NSString*)aPath
 {
     DDLogVerbose(@"Checking path %@ with capp_lint", aPath);
     
@@ -1787,7 +1784,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     NSInteger status = [taskResult[@"status"] intValue];
     
     if (status == 0)
-        return;
+        return YES;
     
     NSString *response = taskResult[@"response"];
     NSMutableArray *errors = [NSMutableArray arrayWithArray:[response componentsSeparatedByString:@"\n\n"]];
@@ -1816,7 +1813,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
         NSInteger positionOfSecondColon = [errorWithoutPath rangeOfString:@":"].location;
         line = [errorWithoutPath substringToIndex:positionOfSecondColon];
         
-        NSString *messageError = [NSString stringWithFormat:@"capp_lint error in %@ \n%@", path, errorWithoutPath];
+        NSString *messageError = [NSString stringWithFormat:@"Code style issue: %@ \n%@", path.lastPathComponent, errorWithoutPath];
         
         NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
                                      [NSNumber numberWithInt:[line intValue]], @"line",
@@ -1827,11 +1824,10 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
         [self.errorListController addObject:dict];
     }
     
-    
-    [self showCappLintErrors];
-    
     self.isProcessing = NO;
     [[NSNotificationCenter defaultCenter] postNotificationName:XCCBatchDidEndNotification object:self];
+    
+    return NO;
 }
 
 @end

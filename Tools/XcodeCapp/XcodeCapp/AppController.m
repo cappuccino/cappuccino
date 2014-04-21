@@ -144,19 +144,15 @@ AppController *SharedAppControllerInstance = nil;
         kDefaultXCCAPIMode:                         [NSNumber numberWithInt:kXCCAPIModeAuto],
         kDefaultXCCReactToInodeMod:                 @YES,
         kDefaultXCCReopenLastProject:               @YES,
-        kDefaultXCCAutoOpenErrorsPanelOnWarnings:   @YES,
         kDefaultXCCAutoOpenErrorsPanelOnErrors:     @YES,
         kDefaultXCCAutoOpenErrorsPanelOnCappLint:   @YES,
-        kDefaultXCCAutoShowNotificationOnWarnings:  @YES,
         kDefaultXCCAutoShowNotificationOnErrors:    @YES,
         kDefaultXCCAutoShowNotificationOnCappLint:  @NO,
         kDefaultXCCProjectHistory:                  [NSArray new],
         kDefaultMaxRecentProjects:                  @20,
         kDefaultLogLevel:                           [NSNumber numberWithInt:LOG_LEVEL_WARN],
         kDefaultAutoOpenXcodeProject:               @YES,
-        kDefaultShowProcessingNotices:              @YES,
-        kDefaultUseSymlinkWhenCreatingProject:      @YES,
-        KDefaultUsesCappLintForEveryNotifications:  @NO
+        kDefaultUseSymlinkWhenCreatingProject:      @YES
     };
     
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
