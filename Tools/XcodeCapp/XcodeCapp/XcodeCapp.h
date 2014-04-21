@@ -119,6 +119,7 @@ extern NSString * const XCCProjectDidFinishLoadingNotification;
 - (IBAction)openErrorInEditor:(id)sender;
 - (IBAction)openXcodeProject:(id)aSender;
 - (IBAction)synchronizeProject:(id)aSender;
+- (IBAction)checkProjectWithCappLint:(id)aSender;
 
 - (BOOL)executablesAreAccessible;
 - (void)stop;
