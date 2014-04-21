@@ -1641,6 +1641,16 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     [self runTaskWithLaunchPath:executablePath arguments:args returnType:kTaskReturnTypeNone];
 }
 
+- (BOOL)shouldShowWarningNotification
+{
+    return [[NSUserDefaults standardUserDefaults] boolForKey:kDefaultXCCAutoShowNotificationOnWarnings];
+}
+
+- (BOOL)shouldShowErrorNotification
+{
+    return [[NSUserDefaults standardUserDefaults] boolForKey:kDefaultXCCAutoShowNotificationOnErrors];
+}
+
 - (void)showErrors
 {
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
@@ -1649,6 +1659,32 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
         ([defaults boolForKey:kDefaultXCCAutoOpenErrorsPanelOnWarnings] && self.errorList.count))
     {
         [self openErrorsPanel:self];
+    }
+}
+
+- (void)showCappLintErrors
+{
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    
+    if ([defaults boolForKey:kDefaultXCCAutoOpenErrorsPanelOnCappLint] && self.errorList.count)
+        [self openErrorsPanel:self];
+
+    if ([defaults boolForKey:kDefaultXCCAutoShowNotificationOnCappLint])
+    {
+        NSUInteger numberError = [self.errorList count];
+        int i = 0;
+        
+        for (i = 0; i < numberError; i++)
+        {
+            NSDictionary *error = [self.errorList objectAtIndex:i];
+            NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+                                         [NSNumber numberWithInteger:self.projectId] , @"projectId",
+                                         @"Capp_lint error", @"title",
+                                         [error objectForKey:@"message"] , @"message",
+                                         nil];
+            
+            [self wantUserNotificationWithInfo:dict];
+        }
     }
 }
 
@@ -1749,11 +1785,11 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
                                                 returnType:kTaskReturnTypeStdOut];
     
     NSInteger status = [taskResult[@"status"] intValue];
-    NSString *response = taskResult[@"response"];
     
     if (status == 0)
         return;
     
+    NSString *response = taskResult[@"response"];
     NSMutableArray *errors = [NSMutableArray arrayWithArray:[response componentsSeparatedByString:@"\n\n"]];
     
     // We need to remove the first object who is the number of errors and the last object who is an empty line
@@ -1780,16 +1816,19 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
         NSInteger positionOfSecondColon = [errorWithoutPath rangeOfString:@":"].location;
         line = [errorWithoutPath substringToIndex:positionOfSecondColon];
         
+        NSString *messageError = [NSString stringWithFormat:@"capp_lint error in %@ \n%@", path, errorWithoutPath];
+        
         NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
                                      [NSNumber numberWithInt:[line intValue]], @"line",
-                                     [NSString stringWithFormat:@"capp_lint error in %@ \n%@", path, errorWithoutPath], @"message",
+                                     messageError , @"message",
                                      path, @"path",
                                      nil];
         
         [self.errorListController addObject:dict];
     }
     
-    [self showErrors];
+    
+    [self showCappLintErrors];
     
     self.isProcessing = NO;
     [[NSNotificationCenter defaultCenter] postNotificationName:XCCBatchDidEndNotification object:self];

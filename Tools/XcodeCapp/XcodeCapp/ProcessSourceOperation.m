@@ -152,8 +152,9 @@
                     [self postErrorNotificationForPath:self.sourcePath line:0 message:response status:status];
                 }
             }
-
-            [self notifyUserWithTitle:notificationTitle message:notificationMessage];
+            
+            if ((status == XCCStatusCodeError && [self.xcc shouldShowErrorNotification]) || (status != XCCStatusCodeError && [self.xcc shouldShowWarningNotification]))
+                [self notifyUserWithTitle:notificationTitle message:notificationMessage];
         }
         else if (!self.xcc.isLoadingProject)
         {

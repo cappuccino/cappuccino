@@ -132,6 +132,9 @@ extern NSString * const XCCProjectDidFinishLoadingNotification;
 - (BOOL)isXibFile:(NSString *)path;
 - (BOOL)isXCCIgnoreFile:(NSString *)path;
 
+- (BOOL)shouldShowWarningNotification;
+- (BOOL)shouldShowErrorNotification;
+
 - (NSString *)shadowBasePathForProjectSourcePath:(NSString *)path;
 - (BOOL)hasErrors;
 
