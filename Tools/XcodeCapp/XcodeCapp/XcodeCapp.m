@@ -1741,7 +1741,8 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     self.isProcessing = YES;
     [[NSNotificationCenter defaultCenter] postNotificationName:XCCBatchDidStartNotification object:self];
     
-    NSArray *arguments = [NSArray arrayWithObject:aPath];
+    NSString *baseDirectory = [NSString stringWithFormat:@"--basedir='%@'", self.projectPath];
+    NSArray *arguments = [NSArray arrayWithObjects:baseDirectory, aPath, nil];
     
     NSDictionary *taskResult = [self runTaskWithLaunchPath:self.executablePaths[@"capp_lint"]
                                                  arguments:arguments
