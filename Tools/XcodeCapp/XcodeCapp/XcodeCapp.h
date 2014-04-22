@@ -45,7 +45,8 @@ enum {
 extern NSString * const XCCConversionDidStartNotification;
 extern NSString * const XCCConversionDidEndNotification;
 extern NSString * const XCCProjectDidFinishLoadingNotification;
-
+extern NSString * const XCCCappLintDidStartNotification;
+extern NSString * const XCCCappLintDidEndNotification;
 
 @interface XcodeCapp : NSObject <NSTableViewDelegate, NSUserNotificationCenterDelegate, GrowlApplicationBridgeDelegate>
 

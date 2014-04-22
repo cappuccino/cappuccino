@@ -74,6 +74,8 @@ static NSPredicate * XCCDirectoriesToIgnorePredicate = nil;
 // An array of the default predicates used to ignore paths.
 static NSArray *XCCDefaultIgnoredPathPredicates = nil;
 
+NSString * const XCCCappLintDidStartNotification = @"XCCCappLintDidStartNotification";
+NSString * const XCCCappLintDidEndNotification = @"XCCCappLintDidEndNotification";
 
 @interface XcodeCapp ()
 
@@ -1719,7 +1721,17 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
 - (IBAction)checkProjectWithCappLint:(id)aSender
 {
     [self clearErrors:self];
+    
+    NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+    [center addObserver:self selector:@selector(cappLintDidEndNotification:) name:XCCCappLintDidEndNotification object:nil];
+    
     [self performSelectorInBackground:@selector(checkCappLintForPath:) withObject:self.projectPath];
+}
+
+- (void)cappLintDidEndNotification:(NSNotification*)aNotification
+{
+    [self showCappLintErrors];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:XCCCappLintDidEndNotification object:nil];
 }
 
 - (BOOL)checkCappLintForPath:(NSString*)aPath
@@ -1728,6 +1740,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     
     self.isProcessing = YES;
     [[NSNotificationCenter defaultCenter] postNotificationName:XCCBatchDidStartNotification object:self];
+    [[NSNotificationCenter defaultCenter] postNotificationName:XCCCappLintDidStartNotification object:self];
     
     NSString *baseDirectory = [NSString stringWithFormat:@"--basedir='%@'", self.projectPath];
     NSArray *arguments = [NSArray arrayWithObjects:baseDirectory, aPath, nil];
@@ -1781,6 +1794,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     
     self.isProcessing = NO;
     [[NSNotificationCenter defaultCenter] postNotificationName:XCCBatchDidEndNotification object:self];
+    [[NSNotificationCenter defaultCenter] postNotificationName:XCCCappLintDidEndNotification object:self];
     
     return NO;
 }
