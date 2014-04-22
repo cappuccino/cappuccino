@@ -1713,53 +1713,8 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     return index != NSNotFound;
 }
 
-#pragma mark - User notifications
 
-- (NSString *)applicationNameForGrowl
-{
-    return @"XcodeCapp";
-}
-
-- (void)notifyUserWithTitle:(NSString *)aTitle message:(NSString *)aMessage
-{
-    if ([NSUserNotificationCenter class])
-    {
-        NSUserNotification *note = [NSUserNotification new];
-        note.title = aTitle;
-        note.informativeText = aMessage;
-
-        [[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification:note];
-    }
-    else
-    {
-        [GrowlApplicationBridge notifyWithTitle:aTitle
-                                    description:aMessage
-                               notificationName:GROWL_NOTIFICATIONS_DEFAULT
-                                       iconData:nil
-                                       priority:0
-                                       isSticky:NO
-                                   clickContext:nil];
-    }
-}
-
-- (void)wantUserNotificationWithInfo:(NSDictionary *)info
-{
-    [self performSelectorOnMainThread:@selector(notifyUserWithInfo:) withObject:info waitUntilDone:NO];
-}
-
-- (void)notifyUserWithInfo:(NSDictionary *)info
-{
-    if ([info[@"projectId"] intValue] != self.projectId)
-        return;
-
-    [self notifyUserWithTitle:info[@"title"] message:info[@"message"]];
-}
-
-- (BOOL)userNotificationCenter:(NSUserNotificationCenter *)center shouldPresentNotification:(NSUserNotification *)notification
-{
-    // Notification Center may decide not to show a notification. We always want them to show.
-    return YES;
-}
+#pragma mark - capp_lint
 
 - (IBAction)checkProjectWithCappLint:(id)aSender
 {
@@ -1828,6 +1783,63 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     [[NSNotificationCenter defaultCenter] postNotificationName:XCCBatchDidEndNotification object:self];
     
     return NO;
+}
+
+
+#pragma mark - User notifications
+
+- (NSString *)applicationNameForGrowl
+{
+    return @"XcodeCapp";
+}
+
+- (void)notifyUserWithTitle:(NSString *)aTitle message:(NSString *)aMessage
+{
+    if ([NSUserNotificationCenter class])
+    {
+        NSUserNotification *note = [NSUserNotification new];
+        note.title = aTitle;
+        note.informativeText = aMessage;
+
+        [[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification:note];
+    }
+    else
+    {
+        [GrowlApplicationBridge notifyWithTitle:aTitle
+                                    description:aMessage
+                               notificationName:GROWL_NOTIFICATIONS_DEFAULT
+                                       iconData:nil
+                                       priority:0
+                                       isSticky:NO
+                                   clickContext:nil];
+    }
+}
+
+- (void)wantUserNotificationWithInfo:(NSDictionary *)info
+{
+    [self performSelectorOnMainThread:@selector(notifyUserWithInfo:) withObject:info waitUntilDone:NO];
+}
+
+- (void)notifyUserWithInfo:(NSDictionary *)info
+{
+    if ([info[@"projectId"] intValue] != self.projectId)
+        return;
+
+    [self notifyUserWithTitle:info[@"title"] message:info[@"message"]];
+}
+
+- (BOOL)userNotificationCenter:(NSUserNotificationCenter *)center shouldPresentNotification:(NSUserNotification *)notification
+{
+    // Notification Center may decide not to show a notification. We always want them to show.
+    return YES;
+}
+
+- (void)userNotificationCenter:(NSUserNotificationCenter *)center didActivateNotification:(NSUserNotification *)notification
+{
+    if ([self.errorList count])
+        [self openErrorsPanel:self];
+    
+    [center removeDeliveredNotification:notification];
 }
 
 @end

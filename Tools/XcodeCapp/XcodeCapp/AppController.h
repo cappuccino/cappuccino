@@ -22,7 +22,7 @@
 
 @class XcodeCapp;
 
-@interface AppController : NSObject <NSApplicationDelegate, NSMenuDelegate, NSUserNotificationCenterDelegate>
+@interface AppController : NSObject <NSApplicationDelegate, NSMenuDelegate>
 
 @property (strong) IBOutlet NSMenu                *statusMenu;
 @property (unsafe_unretained) IBOutlet NSMenuItem *menuItemHistory;

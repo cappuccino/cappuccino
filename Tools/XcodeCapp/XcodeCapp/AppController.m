@@ -112,9 +112,6 @@ AppController *SharedAppControllerInstance = nil;
         return;
     }
     
-    NSUserNotificationCenter *center = [NSUserNotificationCenter defaultUserNotificationCenter];
-    center.delegate = self;
-    
     // If we were opened from the command line, self.pathToOpenAtLaunch will be set.
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     
@@ -528,14 +525,6 @@ AppController *SharedAppControllerInstance = nil;
     [self.recentMenu addItemWithTitle:@"Clear history" action:@selector(clearProjectHistory:) keyEquivalent:@""];
 
     self.menuItemHistory.enabled = [projectHistory count] > 0;
-}
-
-- (void)userNotificationCenter:(NSUserNotificationCenter *)center didActivateNotification:(NSUserNotification *)notification
-{
-    if ([[self.xcc errorList] count])
-        [self.xcc openErrorsPanel:self];
-    
-    [center removeDeliveredNotification:notification];
 }
 
 @end
