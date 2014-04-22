@@ -319,9 +319,10 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
 
     [self clearErrors:self];
     [self computeIgnoredPaths];
-
+    
     [self prepareXcodeSupport];
     [self populateXcodeProject];
+    [self populatexCodeCappTargetedFiles];
     [self waitForOperationQueueToFinishWithSelector:@selector(projectDidFinishLoading)];
 }
 
@@ -372,6 +373,25 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     DDLogVerbose(@"XcodeCapp/project compatibility version: %0.1f/%0.1f", projectCompatibilityVersion.doubleValue, appCompatibilityVersion);
 
     return projectCompatibilityVersion.doubleValue >= appCompatibilityVersion;
+}
+
+- (void)populatexCodeCappTargetedFiles
+{
+    NSFileManager *fm = [NSFileManager defaultManager];
+    NSDirectoryEnumerator *filesOfProject = [fm enumeratorAtPath:self.projectPath];
+    NSString *filename;
+    
+    self.xCodeCappTargetedFiles = [NSMutableArray array];
+    
+    while ((filename = [filesOfProject nextObject] )) {
+        
+        NSString *fullPath = [self.projectPath stringByAppendingPathComponent:filename];
+        
+        if (![self isSourceFile:fullPath])
+            continue;
+        
+        [self.xCodeCappTargetedFiles addObject:fullPath];
+    }
 }
 
 - (void)createXcodeProject
@@ -1361,6 +1381,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     return [path substringFromIndex:self.projectPath.length + 1];
 }
 
+
 #pragma mark - Shadow Files Management
 
 - (NSString *)shadowBasePathForProjectSourcePath:(NSString *)path
@@ -1725,7 +1746,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
     [center addObserver:self selector:@selector(cappLintDidEndNotification:) name:XCCCappLintDidEndNotification object:nil];
     
-    [self performSelectorInBackground:@selector(checkCappLintForPath:) withObject:self.projectPath];
+    [self performSelectorInBackground:@selector(checkCappLintForPath:) withObject:self.xCodeCappTargetedFiles];
 }
 
 - (void)cappLintDidEndNotification:(NSNotification*)aNotification
@@ -1734,16 +1755,22 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     [[NSNotificationCenter defaultCenter] removeObserver:self name:XCCCappLintDidEndNotification object:nil];
 }
 
-- (BOOL)checkCappLintForPath:(NSString*)aPath
+- (BOOL)checkCappLintForPath:(NSArray*)paths
 {
-    DDLogVerbose(@"Checking path %@ with capp_lint", aPath);
+    DDLogVerbose(@"Checking path %@ with capp_lint", paths);
+    
+    NSUInteger numberOfFiles = [paths count];
+    
+    if (!numberOfFiles)
+        return YES;
     
     self.isProcessing = YES;
     [[NSNotificationCenter defaultCenter] postNotificationName:XCCBatchDidStartNotification object:self];
     [[NSNotificationCenter defaultCenter] postNotificationName:XCCCappLintDidStartNotification object:self];
     
     NSString *baseDirectory = [NSString stringWithFormat:@"--basedir='%@'", self.projectPath];
-    NSArray *arguments = [NSArray arrayWithObjects:baseDirectory, aPath, nil];
+    NSMutableArray *arguments = [NSMutableArray arrayWithObjects:baseDirectory, nil];
+    [arguments addObjectsFromArray:paths];
     
     NSDictionary *taskResult = [self runTaskWithLaunchPath:self.executablePaths[@"capp_lint"]
                                                  arguments:arguments
@@ -1752,7 +1779,11 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     NSInteger status = [taskResult[@"status"] intValue];
     
     if (status == 0)
+    {
+        [[NSNotificationCenter defaultCenter] postNotificationName:XCCBatchDidEndNotification object:self];
+        [[NSNotificationCenter defaultCenter] postNotificationName:XCCCappLintDidEndNotification object:self];
         return YES;
+    }
     
     NSString *response = taskResult[@"response"];
     NSMutableArray *errors = [NSMutableArray arrayWithArray:[response componentsSeparatedByString:@"\n\n"]];
@@ -1761,21 +1792,26 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     [errors removeLastObject];
     [errors removeObjectAtIndex:0];
     
-    NSInteger i = 0;
     NSInteger numberOfErrors = [errors count];
+    NSInteger i = 0;
+    NSString *path;
+    
+    if (numberOfFiles == 1)
+        path = [paths objectAtIndex:0];
     
     for (i = 0; i < numberOfErrors; i++)
     {
         NSMutableString *error = (NSMutableString*)[errors objectAtIndex:i];
-        NSString *firstCaract = [NSString stringWithFormat:@"%c" ,[error characterAtIndex:0]];
-        NSString *path;
         NSString *line;
+        NSString *firstCaract = [NSString stringWithFormat:@"%c" ,[error characterAtIndex:0]];
         
         if ([[NSScanner scannerWithString:firstCaract] scanInt:nil])
-            error = (NSMutableString*)[NSString stringWithFormat:@"%@:%@",aPath,error];
+            error = (NSMutableString*)[NSString stringWithFormat:@"%@:%@", path, error];
         
         NSInteger positionOfFirstColon = [error rangeOfString:@":"].location;
-        path = [error substringToIndex:positionOfFirstColon];
+        
+        if (numberOfFiles > 1)
+            path = [error substringToIndex:positionOfFirstColon];
         
         NSString *errorWithoutPath = [error substringFromIndex:(positionOfFirstColon + 1)];
         NSInteger positionOfSecondColon = [errorWithoutPath rangeOfString:@":"].location;

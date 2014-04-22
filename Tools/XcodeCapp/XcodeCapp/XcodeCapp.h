@@ -110,6 +110,9 @@ extern NSString * const XCCCappLintDidEndNotification;
 // A list of errors generated from the current batch of source processing
 @property NSMutableArray *errorList;
 
+// A list of files name who can be processed, based on xcapp-ignore and path pf the project
+@property NSMutableArray *xCodeCappTargetedFiles;
+
 // Panel, table and controller used to display errors
 @property (strong) IBOutlet NSPanel *errorsPanel;
 @property (unsafe_unretained) IBOutlet NSTableView *errorTable;
@@ -147,7 +150,7 @@ extern NSString * const XCCCappLintDidEndNotification;
 - (NSDictionary*)createProject:(NSString*)aPath;
 
 - (BOOL)shouldProcessWithCappLint;
-- (BOOL)checkCappLintForPath:(NSString*)aPath;
+- (BOOL)checkCappLintForPath:(NSArray*)paths;
 - (void)showCappLintErrors;
 
 @end

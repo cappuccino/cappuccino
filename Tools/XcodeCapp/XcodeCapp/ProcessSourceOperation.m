@@ -162,7 +162,7 @@
             
             if ([self.xcc shouldProcessWithCappLint])
             {
-                showFinalNotification = [self.xcc checkCappLintForPath:self.sourcePath];
+                showFinalNotification = [self.xcc checkCappLintForPath:[NSArray arrayWithObject:self.sourcePath]];
 
                 if (!showFinalNotification)
                     [self.xcc showCappLintErrors];
