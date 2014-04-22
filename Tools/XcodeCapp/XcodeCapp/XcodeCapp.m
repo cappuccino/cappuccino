@@ -1795,6 +1795,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     NSInteger numberOfErrors = [errors count];
     NSInteger i = 0;
     NSString *path;
+    NSMutableArray *dicts = [NSMutableArray array];
     
     if (numberOfFiles == 1)
         path = [paths objectAtIndex:0];
@@ -1825,8 +1826,10 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
                                      path, @"path",
                                      nil];
         
-        [self.errorListController addObject:dict];
+        [dicts addObject:dict];
     }
+    
+    [self performSelectorOnMainThread:@selector(cappLintConversionDidGenerateError:) withObject:dicts waitUntilDone:NO];
     
     self.isProcessing = NO;
     [[NSNotificationCenter defaultCenter] postNotificationName:XCCBatchDidEndNotification object:self];
@@ -1835,6 +1838,10 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     return NO;
 }
 
+- (void)cappLintConversionDidGenerateError:(NSArray*)errors
+{
+    [self.errorListController addObjects:errors];
+}
 
 #pragma mark - User notifications
 
