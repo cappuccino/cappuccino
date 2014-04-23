@@ -35,9 +35,11 @@ CPClosableOnBlurWindowMask  = 1 << 4;
 CPPopoverAppearanceMinimal  = 0;
 CPPopoverAppearanceHUD      = 1;
 
-var _CPPopoverWindow_shouldClose_    = 1 << 0,
-    _CPPopoverWindow_didClose_       = 1 << 1,
-    _CPPopoverWindow_didShow_        = 1 << 2;
+// we don't start from 1 because CPWindow and so CPPanel already
+// has this delegate bitmask identifier for 1, 2 and 3.
+var _CPPopoverWindow_shouldClose_    = 1 << 4,
+    _CPPopoverWindow_didClose_       = 1 << 5,
+    _CPPopoverWindow_didShow_        = 1 << 6;
 
 
 /*!
