@@ -456,10 +456,20 @@ global.installCopy = function(sourcePath, useSudo)
     var packageName = FILE.basename(sourcePath),
         targetPath = FILE.join(SYSTEM.prefix, "packages", packageName);
 
-    if (FILE.isDirectory(targetPath))
-        FILE.rmtree(targetPath);
-    else if (FILE.linkExists(targetPath))
-        FILE.remove(targetPath);
+    if (useSudo)
+    {
+        if (FILE.isDirectory(targetPath))
+            OS.system(["sudo", "rm", "-rf", targetPath])
+        else if (FILE.linkExists(targetPath))
+            OS.system(["sudo", "rm", targetPath])
+    }
+    else
+    {
+        if (FILE.isDirectory(targetPath))
+            FILE.rmtree(targetPath);
+        else if (FILE.linkExists(targetPath))
+            FILE.remove(targetPath);
+    }
 
     stream.print("Copying \0cyan(" + sourcePath + "\0) ==> \0cyan(" + targetPath + "\0)");
 
@@ -476,7 +486,11 @@ global.installCopy = function(sourcePath, useSudo)
         binPath.list().forEach(function (name)
         {
             var binary = binPath.join(name);
-            binary.chmod(0755);
+
+            if (useSudo)
+                OS.system(["sudo", "chmod", "755", binary])
+            else
+                binary.chmod(0755);
         });
     }
 };
