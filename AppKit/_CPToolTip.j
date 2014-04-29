@@ -80,6 +80,7 @@ var _CPToolTipHeight = 24.0,
         [_CPToolTip invalidateCurrentToolTipIfNeeded];
         _CPToolTipCurrentToolTip = [_CPToolTip toolTipWithString:[aView toolTip]];
         [_CPToolTipCurrentToolTip setPlatformWindow:[[aView window] platformWindow]];
+        [[aView window] addChildWindow:_CPToolTipCurrentToolTip ordered:CPWindowAbove];
     };
 
     _CPToolTipCurrentToolTipTimer = [CPTimer scheduledTimerWithTimeInterval:_CPToolTipDelay
