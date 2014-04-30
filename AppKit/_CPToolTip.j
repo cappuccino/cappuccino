@@ -40,6 +40,7 @@ var _CPToolTipHeight = 24.0,
 */
 @implementation _CPToolTip : CPWindow
 {
+    CPWindow    _toolTipWindow;
     CPTextField _content;
 }
 
@@ -78,8 +79,7 @@ var _CPToolTipHeight = 24.0,
 
     var callbackFunction = function() {
         [_CPToolTip invalidateCurrentToolTipIfNeeded];
-        _CPToolTipCurrentToolTip = [_CPToolTip toolTipWithString:[aView toolTip]];
-        [_CPToolTipCurrentToolTip setPlatformWindow:[[aView window] platformWindow]];
+        _CPToolTipCurrentToolTip = [_CPToolTip toolTipWithString:[aView toolTip] toolTipWindow:[aView window]];
     };
 
     _CPToolTipCurrentToolTipTimer = [CPTimer scheduledTimerWithTimeInterval:_CPToolTipDelay
@@ -91,9 +91,9 @@ var _CPToolTipHeight = 24.0,
 /*! Returns an initialized _CPToolTip with the given text and attach it to given view.
     @param aString the content of the tooltip
 */
-+ (_CPToolTip)toolTipWithString:(CPString)aString
++ (_CPToolTip)toolTipWithString:(CPString)aString toolTipWindow:(CPWindow)aWindow
 {
-    var tooltip = [[_CPToolTip alloc] initWithString:aString styleMask:_CPToolTipWindowMask];
+    var tooltip = [[_CPToolTip alloc] initWithString:aString styleMask:_CPToolTipWindowMask toolTipWindow:aWindow];
 
     [tooltip showToolTip];
 
@@ -158,7 +158,7 @@ var _CPToolTipHeight = 24.0,
     @param aString the content of the tooltip
     @param aStyleMask the tooltip's style mask
 */
-- (id)initWithString:(CPString)aString styleMask:(unsigned)aStyleMask
+- (id)initWithString:(CPString)aString styleMask:(unsigned)aStyleMask toolTipWindow:(CPWindow)aWindow
 {
     var toolTipFrame = CGRectMake(0.0, 0.0, 250.0, _CPToolTipHeight),
         layout = [_CPToolTip computeCorrectSize:toolTipFrame.size text:aString],
@@ -168,6 +168,7 @@ var _CPToolTipHeight = 24.0,
 
     if (self = [super initWithContentRect:toolTipFrame styleMask:aStyleMask])
     {
+        _toolTipWindow = aWindow;
         _constrainsToUsableScreen = NO;
 
         textFrameSize.height += 4;
@@ -203,7 +204,7 @@ var _CPToolTipHeight = 24.0,
 - (void)showToolTip
 {
     var mousePosition = [[CPApp currentEvent] globalLocation],
-        nativeRect = [[self platformWindow] nativeContentRect];
+        nativeRect = [[_toolTipWindow platformWindow] nativeContentRect];
 
     mousePosition.y += 20;
 
@@ -217,7 +218,8 @@ var _CPToolTipHeight = 24.0,
         mousePosition.y = mousePosition.y - CGRectGetHeight([self frame]) - 40;
 
     [self setFrameOrigin:mousePosition];
-    [self orderFront:nil];
+
+    [_toolTipWindow addChildWindow:self ordered:CPWindowAbove];
 }
 
 @end
