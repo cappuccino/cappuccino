@@ -170,9 +170,7 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
         if (![_targetView window])
             return;
 
-        var point = [self computeOriginFromRect:[_targetView bounds] ofView:_targetView preferredEdge:[_windowView preferredEdge]];
-
-        [self setFrameOrigin:point];
+        [self updateFrame];
     }
 }
 
@@ -365,6 +363,20 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
 {
     return CPBrowserStyleProperty('transition') && CPBrowserStyleProperty('transitionend');
 }
+
+/*!
+    @ignore
+*/
+- (void)updateFrame
+{
+    var rect = CGRectMakeCopy([self frameRectForContentRect:[[self contentView] frame]]),
+        point = [self computeOriginFromRect:[_targetView bounds] ofView:_targetView preferredEdge:[_windowView preferredEdge]];
+
+    rect.origin = point;
+
+    [self setFrame:rect display:YES animate:_animates];
+}
+
 
 #pragma mark -
 #pragma mark Actions
