@@ -170,7 +170,9 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
         if (![_targetView window])
             return;
 
-        [self updateFrame];
+        var point = [self computeOriginFromRect:[_targetView bounds] ofView:_targetView preferredEdge:[_windowView preferredEdge]];
+
+        [self setFrameOrigin:point];
     }
 }
 
@@ -367,16 +369,17 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
 /*!
     @ignore
 */
-- (void)updateFrame
+- (void)updateFrameWithSize:(CGSize)aSize
 {
-    var rect = CGRectMakeCopy([self frameRectForContentRect:[[self contentView] frame]]),
-        point = [self computeOriginFromRect:[_targetView bounds] ofView:_targetView preferredEdge:[_windowView preferredEdge]];
+    var rect = CGRectMakeZero();
+    rect.size = aSize;
+    rect.origin = [[self contentView] frameOrigin];
 
-    rect.origin = point;
+    [self setFrame:[self frameRectForContentRect:rect]];
 
-    [self setFrame:rect display:YES animate:_animates];
+    var point = [self computeOriginFromRect:[_targetView bounds] ofView:_targetView preferredEdge:[_windowView preferredEdge]];
+    [self setFrameOrigin:point];
 }
-
 
 #pragma mark -
 #pragma mark Actions
