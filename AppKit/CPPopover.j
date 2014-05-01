@@ -150,7 +150,7 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 */
 - (void)setContentSize:(CGSize)aSize
 {
-    [[_contentViewController view] setFrameSize:aSize];
+    [_popoverWindow updateFrameWithSize:aSize];
 }
 
 /*!

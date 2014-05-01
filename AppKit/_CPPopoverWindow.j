@@ -366,6 +366,21 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
     return CPBrowserStyleProperty('transition') && CPBrowserStyleProperty('transitionend');
 }
 
+/*!
+    @ignore
+*/
+- (void)updateFrameWithSize:(CGSize)aSize
+{
+    var rect = CGRectMakeZero();
+    rect.size = aSize;
+    rect.origin = [[self contentView] frameOrigin];
+
+    [self setFrame:[self frameRectForContentRect:rect]];
+
+    var point = [self computeOriginFromRect:[_targetView bounds] ofView:_targetView preferredEdge:[_windowView preferredEdge]];
+    [self setFrameOrigin:point];
+}
+
 #pragma mark -
 #pragma mark Actions
 
