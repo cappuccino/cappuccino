@@ -527,4 +527,11 @@ AppController *SharedAppControllerInstance = nil;
     self.menuItemHistory.enabled = [projectHistory count] > 0;
 }
 
+#pragma mark - Cappuccino methods
+
+- (IBAction)updateCappuccino:(id)sender
+{
+    [self.xcc performSelectorInBackground:@selector(updateCappuccino) withObject:nil];
+}
+
 @end
