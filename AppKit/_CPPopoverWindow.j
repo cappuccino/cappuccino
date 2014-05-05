@@ -377,8 +377,11 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
 
     [self setFrame:[self frameRectForContentRect:rect]];
 
-    var point = [self computeOriginFromRect:[_targetView bounds] ofView:_targetView preferredEdge:[_windowView preferredEdge]];
-    [self setFrameOrigin:point];
+    if ([self isVisible])
+    {
+        var point = [self computeOriginFromRect:[_targetView bounds] ofView:_targetView preferredEdge:[_windowView preferredEdge]];
+        [self setFrameOrigin:point];
+    }
 }
 
 #pragma mark -
