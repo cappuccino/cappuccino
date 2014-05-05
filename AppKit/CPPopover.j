@@ -150,7 +150,7 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 */
 - (void)setContentSize:(CGSize)aSize
 {
-    if (!_popoverWindow)
+    if (!_popoverWindow || ![self isShown])
         [[_contentViewController view] setFrameSize:aSize];
     else
         [_popoverWindow updateFrameWithSize:aSize];
