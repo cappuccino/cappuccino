@@ -1952,18 +1952,18 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
 {
     NSString* path = [self _cappuccinoPathForFolder:aFolder];
     
-    [self _incrementeProgressBarAndUpdateInformationFieldWithMessage:@"Jake clean"];
+    [self _incrementeProgressBarAndUpdateInformationFieldWithMessage:@"Jake clobber"];
     
-    //Jake clean
-    NSMutableArray *jakeCleanArguments = [NSMutableArray arrayWithObjects:@"clean", nil];
-    NSDictionary *jakeCleanTaskResult = [self runJakeTaskWithArguments:jakeCleanArguments currentDirectoryPath:path];
+    //Jake clobber
+    NSMutableArray *jakeClobberArguments = [NSMutableArray arrayWithObjects:@"clobber", nil];
+    NSDictionary *jakeClobberTaskResult = [self runJakeTaskWithArguments:jakeClobberArguments currentDirectoryPath:path];
     
-    NSInteger jakeInstallStatus = [jakeCleanTaskResult[@"status"] intValue];
+    NSInteger jakeInstallStatus = [jakeClobberTaskResult[@"status"] intValue];
     
     if (jakeInstallStatus == 1)
     {
-        DDLogVerbose(@"Jake clean failed: %@", jakeCleanTaskResult[@"response"]);
-        [self _updatingCappuccinoFailedWithMessage:@"Jake clean failed"];
+        DDLogVerbose(@"Jake clobber failed: %@", jakeClobberTaskResult[@"response"]);
+        [self _updatingCappuccinoFailedWithMessage:@"Jake clobber failed"];
         return NO;
     }
     
