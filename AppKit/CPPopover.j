@@ -137,9 +137,6 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 */
 - (CGSize)contentSize
 {
-    if (![_popoverWindow isVisible])
-        return CGRectMakeZero();
-
     return [[_contentViewController view] frameSize];
 }
 
@@ -243,13 +240,8 @@ Set the behavior of the CPPopover. It can be:
     if ([_popoverWindow isClosing])
         return;
 
-    if (_implementedDelegateMethods & CPPopoverDelegate_popover_willShow_)
-        [_delegate popoverWillShow:self];
-
     if (!_popoverWindow)
-    {
         _popoverWindow = [[_CPPopoverWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:[self styleMaskForBehavior]];
-    }
 
     [_popoverWindow setPlatformWindow:[[positioningView window] platformWindow]];
     [_popoverWindow setAppearance:_appearance];
@@ -258,6 +250,10 @@ Set the behavior of the CPPopover. It can be:
     [_popoverWindow setMovableByWindowBackground:NO];
     [_popoverWindow setFrame:[_popoverWindow frameRectForContentRect:[[_contentViewController view] frame]]];
     [_popoverWindow setContentView:[_contentViewController view]];
+
+    if (_implementedDelegateMethods & CPPopoverDelegate_popover_willShow_)
+        [_delegate popoverWillShow:self];
+
     [_popoverWindow positionRelativeToRect:positioningRect ofView:positioningView preferredEdge:preferredEdge];
 
     if (!_animates && _implementedDelegateMethods & CPPopoverDelegate_popover_didShow_)
