@@ -93,6 +93,11 @@ var _CPToolTipHeight = 24.0,
 */
 + (_CPToolTip)toolTipWithString:(CPString)aString toolTipWindow:(CPWindow)aWindow
 {
+    // the window might be gone during the timer interval. If so, just ignore as
+    // we don't want to show the tooltip anyway
+    if (!aWindow)
+        return nil;
+
     var tooltip = [[_CPToolTip alloc] initWithString:aString styleMask:_CPToolTipWindowMask toolTipWindow:aWindow];
 
     [tooltip showToolTip];
