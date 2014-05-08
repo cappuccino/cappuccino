@@ -598,7 +598,7 @@ bnRvaW5lIE1lcmNhZGFsCiAgICBhbnRvaW5lLm1lcmNhZGFsQGdtYWlsLmNvbQ</string>
 			<object class="NSWindowTemplate" id="484209508">
 				<int key="NSWindowStyleMask">3</int>
 				<int key="NSWindowBacking">2</int>
-				<string key="NSWindowRect">{{1964, 505}, {388, 415}}</string>
+				<string key="NSWindowRect">{{1964, 505}, {369, 415}}</string>
 				<int key="NSWTFlags">1618478080</int>
 				<string key="NSWindowTitle">Preferences</string>
 				<string key="NSWindowClass">NSWindow</string>
@@ -798,13 +798,13 @@ bnRvaW5lIE1lcmNhZGFsCiAgICBhbnRvaW5lLm1lcmNhZGFsQGdtYWlsLmNvbQ</string>
 											<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
 										</object>
 									</array>
-									<string key="NSFrame">{{1, 1}, {352, 139}}</string>
+									<string key="NSFrame">{{1, 1}, {330, 139}}</string>
 									<reference key="NSSuperview" ref="359969914"/>
 									<reference key="NSWindow"/>
 									<reference key="NSNextKeyView" ref="497174199"/>
 								</object>
 							</array>
-							<string key="NSFrame">{{17, 245}, {354, 155}}</string>
+							<string key="NSFrame">{{17, 245}, {332, 155}}</string>
 							<reference key="NSSuperview" ref="853177344"/>
 							<reference key="NSWindow"/>
 							<reference key="NSNextKeyView" ref="881981747"/>
@@ -909,13 +909,13 @@ bnRvaW5lIE1lcmNhZGFsCiAgICBhbnRvaW5lLm1lcmNhZGFsQGdtYWlsLmNvbQ</string>
 											<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
 										</object>
 									</array>
-									<string key="NSFrame">{{1, 1}, {352, 66}}</string>
+									<string key="NSFrame">{{1, 1}, {330, 66}}</string>
 									<reference key="NSSuperview" ref="913026852"/>
 									<reference key="NSWindow"/>
 									<reference key="NSNextKeyView" ref="387661514"/>
 								</object>
 							</array>
-							<string key="NSFrame">{{17, 159}, {354, 82}}</string>
+							<string key="NSFrame">{{17, 159}, {332, 82}}</string>
 							<reference key="NSSuperview" ref="853177344"/>
 							<reference key="NSWindow"/>
 							<reference key="NSNextKeyView" ref="224066843"/>
@@ -1016,14 +1016,14 @@ bnRvaW5lIE1lcmNhZGFsCiAgICBhbnRvaW5lLm1lcmNhZGFsQGdtYWlsLmNvbQ</string>
 											<int key="NSTextFieldAlignmentRectInsetsVersion">1</int>
 										</object>
 									</array>
-									<string key="NSFrame">{{1, 1}, {352, 65}}</string>
+									<string key="NSFrame">{{1, 1}, {333, 65}}</string>
 									<reference key="NSSuperview" ref="185960776"/>
 									<reference key="NSWindow"/>
 									<reference key="NSNextKeyView" ref="36622245"/>
 									<string key="NSReuseIdentifierKey">_NS:11</string>
 								</object>
 							</array>
-							<string key="NSFrame">{{17, 74}, {354, 81}}</string>
+							<string key="NSFrame">{{17, 74}, {335, 81}}</string>
 							<reference key="NSSuperview" ref="853177344"/>
 							<reference key="NSWindow"/>
 							<reference key="NSNextKeyView" ref="122117781"/>
@@ -1057,7 +1057,7 @@ bnRvaW5lIE1lcmNhZGFsCiAgICBhbnRvaW5lLm1lcmNhZGFsQGdtYWlsLmNvbQ</string>
 										<object class="NSButton" id="660812811">
 											<reference key="NSNextResponder" ref="435554705"/>
 											<int key="NSvFlags">268</int>
-											<string key="NSFrame">{{16, 12}, {320, 18}}</string>
+											<string key="NSFrame">{{16, 12}, {226, 18}}</string>
 											<reference key="NSSuperview" ref="435554705"/>
 											<reference key="NSWindow"/>
 											<reference key="NSNextKeyView"/>
@@ -1065,7 +1065,7 @@ bnRvaW5lIE1lcmNhZGFsCiAgICBhbnRvaW5lLm1lcmNhZGFsQGdtYWlsLmNvbQ</string>
 											<object class="NSButtonCell" key="NSCell" id="640546388">
 												<int key="NSCellFlags">-2080374784</int>
 												<int key="NSCellFlags2">0</int>
-												<string key="NSContents">Update Cappuccino with the last github version</string>
+												<string key="NSContents">Use latest master branch version</string>
 												<reference key="NSSupport" ref="986470281"/>
 												<reference key="NSControlView" ref="660812811"/>
 												<int key="NSButtonFlags">1211912448</int>
@@ -1080,13 +1080,13 @@ bnRvaW5lIE1lcmNhZGFsCiAgICBhbnRvaW5lLm1lcmNhZGFsQGdtYWlsLmNvbQ</string>
 											<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
 										</object>
 									</array>
-									<string key="NSFrame">{{1, 1}, {352, 38}}</string>
+									<string key="NSFrame">{{1, 1}, {333, 38}}</string>
 									<reference key="NSSuperview" ref="929990427"/>
 									<reference key="NSWindow"/>
 									<reference key="NSNextKeyView" ref="660812811"/>
 								</object>
 							</array>
-							<string key="NSFrame">{{17, 16}, {354, 54}}</string>
+							<string key="NSFrame">{{17, 16}, {335, 54}}</string>
 							<reference key="NSSuperview" ref="853177344"/>
 							<reference key="NSWindow"/>
 							<reference key="NSNextKeyView" ref="435554705"/>
@@ -1094,7 +1094,7 @@ bnRvaW5lIE1lcmNhZGFsCiAgICBhbnRvaW5lLm1lcmNhZGFsQGdtYWlsLmNvbQ</string>
 							<object class="NSTextFieldCell" key="NSTitleCell">
 								<int key="NSCellFlags">67108864</int>
 								<int key="NSCellFlags2">134217728</int>
-								<string key="NSContents">Develop</string>
+								<string key="NSContents">Update</string>
 								<reference key="NSSupport" ref="355655841"/>
 								<reference key="NSBackgroundColor" ref="819245234"/>
 								<object class="NSColor" key="NSTextColor">
@@ -1109,7 +1109,7 @@ bnRvaW5lIE1lcmNhZGFsCiAgICBhbnRvaW5lLm1lcmNhZGFsQGdtYWlsLmNvbQ</string>
 							<bool key="NSTransparent">NO</bool>
 						</object>
 					</array>
-					<string key="NSFrameSize">{388, 415}</string>
+					<string key="NSFrameSize">{369, 415}</string>
 					<reference key="NSSuperview"/>
 					<reference key="NSWindow"/>
 					<reference key="NSNextKeyView" ref="359969914"/>
