@@ -116,7 +116,9 @@ CPTableViewLastColumnOnlyAutoresizingStyle = 4;
 CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 #define NUMBER_OF_COLUMNS() (_tableColumns.length)
-#define UPDATE_COLUMN_RANGES_IF_NECESSARY() if (_dirtyTableColumnRangeIndex !== CPNotFound) [self _recalculateTableColumnRanges];
+#define UPDATE_COLUMN_RANGES_IF_NECESSARY() \
+    if (_dirtyTableColumnRangeIndex !== CPNotFound) \
+        [self _recalculateTableColumnRanges];
 #define FULL_ROW_HEIGHT() (_rowHeight + _intercellSpacing.height)
 #define ROW_BOTTOM(__heightInfo) (__heightInfo.y + __heightInfo.height + _intercellSpacing.height)
 #define HAS_VARIABLE_ROW_HEIGHTS()  (_implementedDelegateMethods & CPTableViewDelegate_tableView_heightOfRow_)
