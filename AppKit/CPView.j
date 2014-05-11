@@ -2961,6 +2961,25 @@ setBoundsOrigin:
     while (count--)
         [_subviews[count] _notifyViewDidResignFirstResponder];
 }
+
+- (void)_notifyWindowDidBecomeKey
+{
+    [self setThemeState:CPThemeStateKeyWindow];
+
+    var count = [_subviews count];
+    while (count--)
+        [_subviews[count] _notifyWindowDidBecomeKey];
+}
+
+- (void)_notifyWindowDidResignKey
+{
+    [self unsetThemeState:CPThemeStateKeyWindow];
+
+    var count = [_subviews count];
+    while (count--)
+        [_subviews[count] _notifyWindowDidResignKey];
+}
+
 #pragma mark Theme Attributes
 
 + (CPString)defaultThemeClass

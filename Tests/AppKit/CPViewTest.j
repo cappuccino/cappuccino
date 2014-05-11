@@ -244,6 +244,7 @@
 
     [self assertTrue:CGPointEqualToPoint(CGPointMake(4, 6), [subView0 convertPoint:CGPointMake(7, 11) fromView:tView0])]
 }
+
 + (CPArray)createResponderView:(/*@ref */CPView)viewOut siblingView:(/*@ref */CPView)siblingViewOut inWindow:(/*@ref */CPWindow)windowOut
 {
     var aView = [CPResponderView new],
@@ -392,6 +393,31 @@
     [self assertFalse:[subview hasThemeState:CPThemeStateFirstResponder]];
 }
 
+- (void)testWhenAndOnlyWhenWindowIsKeyEveryViewShouldHaveThemeStateKeyWindow
+{
+    var aView, siblingView, aWindow;
+    [CPViewTest createResponderView:@ref(aView) siblingView:@ref(siblingView) inWindow:@ref(aWindow)];
+
+    var subview = [CPView new];
+    [aView addSubview:subview];
+
+    var aView2, siblingView2, aWindow2;
+    [CPViewTest createResponderView:@ref(aView2) siblingView:@ref(siblingView2) inWindow:@ref(aWindow2)];
+
+    [aWindow makeKeyWindow];
+    [self assertTrue:[aView hasThemeState:CPThemeStateKeyWindow]];
+    [self assertTrue:[siblingView hasThemeState:CPThemeStateKeyWindow]];
+    [self assertTrue:[subview hasThemeState:CPThemeStateKeyWindow]];
+    [self assertFalse:[aView2 hasThemeState:CPThemeStateKeyWindow]];
+    [self assertFalse:[siblingView2 hasThemeState:CPThemeStateKeyWindow]];
+
+    [aWindow2 makeKeyWindow];
+    [self assertFalse:[aView hasThemeState:CPThemeStateKeyWindow]];
+    [self assertFalse:[siblingView hasThemeState:CPThemeStateKeyWindow]];
+    [self assertFalse:[subview hasThemeState:CPThemeStateKeyWindow]];
+    [self assertTrue:[aView2 hasThemeState:CPThemeStateKeyWindow]];
+    [self assertTrue:[siblingView2 hasThemeState:CPThemeStateKeyWindow]];
+}
 
 @end
 
