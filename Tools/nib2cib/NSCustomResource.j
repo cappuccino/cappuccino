@@ -51,7 +51,7 @@ var FILE = require("file"),
             framework = @"",
             bundleIdentifier = @"";
 
-        if (_resourceName == "NSSwitch")
+        if (_resourceName == "NSSwitch" || _resourceName == "NSRadioButton")
             return nil;
         else if (/^NS[A-Z][A-Za-z]+$/.test(_resourceName))
         {
