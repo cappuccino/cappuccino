@@ -2928,6 +2928,39 @@ setBoundsOrigin:
     return YES;
 }
 
+- (BOOL)becomeFirstResponder
+{
+    var r = [super becomeFirstResponder];
+    if (r)
+        [self _notifyViewDidBecomeFirstResponder];
+    return r;
+}
+
+- (void)_notifyViewDidBecomeFirstResponder
+{
+    [self setThemeState:CPThemeStateFirstResponder];
+
+    var count = [_subviews count];
+    while (count--)
+        [_subviews[count] _notifyViewDidBecomeFirstResponder];
+}
+
+- (BOOL)resignFirstResponder
+{
+    var r = [super resignFirstResponder];
+    if (r)
+        [self _notifyViewDidResignFirstResponder];
+    return r;
+}
+
+- (void)_notifyViewDidResignFirstResponder
+{
+    [self unsetThemeState:CPThemeStateFirstResponder];
+
+    var count = [_subviews count];
+    while (count--)
+        [_subviews[count] _notifyViewDidResignFirstResponder];
+}
 #pragma mark Theme Attributes
 
 + (CPString)defaultThemeClass

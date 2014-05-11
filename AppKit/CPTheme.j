@@ -515,6 +515,7 @@ CPThemeStateVertical         = CPThemeState("vertical");
 CPThemeStateDefault          = CPThemeState("default");
 CPThemeStateCircular         = CPThemeState("circular");
 CPThemeStateAutocompleting   = CPThemeState("autocompleting");
+CPThemeStateFirstResponder   = CPThemeState("firstResponder");
 CPThemeStateMainWindow       = CPThemeState("mainWindow");
 CPThemeStateKeyWindow        = CPThemeState("keyWindow");
 
