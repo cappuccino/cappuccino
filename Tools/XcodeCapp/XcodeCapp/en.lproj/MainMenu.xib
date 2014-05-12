@@ -2,7 +2,7 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="8.00">
 	<data>
 		<int key="IBDocument.SystemTarget">1060</int>
-		<string key="IBDocument.SystemVersion">13C64</string>
+		<string key="IBDocument.SystemVersion">13C1021</string>
 		<string key="IBDocument.InterfaceBuilderVersion">5056</string>
 		<string key="IBDocument.AppKitVersion">1265.19</string>
 		<string key="IBDocument.HIToolboxVersion">697.40</string>
@@ -1186,7 +1186,7 @@ bnRvaW5lIE1lcmNhZGFsCiAgICBhbnRvaW5lLm1lcmNhZGFsQGdtYWlsLmNvbQ</string>
 				<nil key="NSViewClass"/>
 				<nil key="NSUserInterfaceItemIdentifier"/>
 				<object class="NSView" key="NSWindowView" id="77206153">
-					<reference key="NSNextResponder"/>
+					<nil key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
 					<array class="NSMutableArray" key="NSSubviews">
 						<object class="NSTextField" id="230478614">
@@ -1194,7 +1194,6 @@ bnRvaW5lIE1lcmNhZGFsCiAgICBhbnRvaW5lLm1lcmNhZGFsQGdtYWlsLmNvbQ</string>
 							<int key="NSvFlags">268</int>
 							<string key="NSFrame">{{18, 22}, {251, 17}}</string>
 							<reference key="NSSuperview" ref="77206153"/>
-							<reference key="NSWindow"/>
 							<reference key="NSNextKeyView" ref="511588074"/>
 							<string key="NSReuseIdentifierKey">_NS:397</string>
 							<string key="NSHuggingPriority">{251, 750}</string>
@@ -1217,8 +1216,6 @@ bnRvaW5lIE1lcmNhZGFsCiAgICBhbnRvaW5lLm1lcmNhZGFsQGdtYWlsLmNvbQ</string>
 							<int key="NSvFlags">268</int>
 							<string key="NSFrame">{{269, 13}, {74, 32}}</string>
 							<reference key="NSSuperview" ref="77206153"/>
-							<reference key="NSWindow"/>
-							<reference key="NSNextKeyView"/>
 							<string key="NSReuseIdentifierKey">_NS:9</string>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSButtonCell" key="NSCell" id="185132231">
@@ -1242,7 +1239,6 @@ bnRvaW5lIE1lcmNhZGFsCiAgICBhbnRvaW5lLm1lcmNhZGFsQGdtYWlsLmNvbQ</string>
 							<int key="NSvFlags">268</int>
 							<string key="NSFrame">{{20, 45}, {317, 20}}</string>
 							<reference key="NSSuperview" ref="77206153"/>
-							<reference key="NSWindow"/>
 							<reference key="NSNextKeyView" ref="230478614"/>
 							<string key="NSReuseIdentifierKey">_NS:9</string>
 							<string key="NSHuggingPriority">{250, 250}</string>
@@ -1251,8 +1247,6 @@ bnRvaW5lIE1lcmNhZGFsCiAgICBhbnRvaW5lLm1lcmNhZGFsQGdtYWlsLmNvbQ</string>
 						</object>
 					</array>
 					<string key="NSFrameSize">{357, 84}</string>
-					<reference key="NSSuperview"/>
-					<reference key="NSWindow"/>
 					<reference key="NSNextKeyView" ref="231116691"/>
 					<string key="NSReuseIdentifierKey">_NS:21</string>
 				</object>
@@ -1964,22 +1958,6 @@ bnRvaW5lIE1lcmNhZGFsCiAgICBhbnRvaW5lLm1lcmNhZGFsQGdtYWlsLmNvbQ</string>
 					<string key="id">du5-hg-MfC</string>
 				</object>
 				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: values.usesCappLintForEveryNotifications</string>
-						<reference key="source" ref="666946383"/>
-						<reference key="destination" ref="246574361"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="666946383"/>
-							<reference key="NSDestination" ref="246574361"/>
-							<string key="NSLabel">enabled: values.usesCappLintForEveryNotifications</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">values.usesCappLintForEveryNotifications</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<string key="id">J8w-G4-Pzy</string>
-				</object>
-				<object class="IBConnectionRecord">
 					<object class="IBActionConnection" key="connection">
 						<string key="label">orderOut:</string>
 						<reference key="source" ref="950592726"/>
@@ -2042,22 +2020,6 @@ bnRvaW5lIE1lcmNhZGFsCiAgICBhbnRvaW5lLm1lcmNhZGFsQGdtYWlsLmNvbQ</string>
 						</object>
 					</object>
 					<string key="id">uwx-aq-p86</string>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: values.usesCappLintForEveryNotifications</string>
-						<reference key="source" ref="188125885"/>
-						<reference key="destination" ref="246574361"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="188125885"/>
-							<reference key="NSDestination" ref="246574361"/>
-							<string key="NSLabel">enabled: values.usesCappLintForEveryNotifications</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">values.usesCappLintForEveryNotifications</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<string key="id">5nL-79-ZXW</string>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
