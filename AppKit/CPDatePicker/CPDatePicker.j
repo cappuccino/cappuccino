@@ -216,6 +216,9 @@ CPEraDatePickerElementFlag              = 0x0100;
     [_datePickerCalendar setHidden:YES];
     [self addSubview:_datePickerCalendar];
 
+    // We might have been unarchived in a disabled state.
+    [_datePickerTextfield setEnabled:[self isEnabled]];
+
     [self setNeedsDisplay:YES];
     [self setNeedsLayout];
 }
@@ -529,11 +532,15 @@ CPEraDatePickerElementFlag              = 0x0100;
 - (BOOL)becomeFirstResponder
 {
     if (_datePickerStyle == CPTextFieldAndStepperDatePickerStyle || _datePickerStyle == CPTextFieldDatePickerStyle)
-        [_datePickerTextfield _selecteTextFieldWithFlags:[[CPApp currentEvent] modifierFlags]];
-    else
-        return NO;
+    {
+        if ([super becomeFirstResponder])
+            return NO;
 
-    return YES;
+        [_datePickerTextfield _selecteTextFieldWithFlags:[[CPApp currentEvent] modifierFlags]];
+        return YES;
+    }
+
+    return NO;
 }
 
 /*! Return YES
@@ -651,7 +658,9 @@ var CPDatePickerModeKey         = @"CPDatePickerModeKey",
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
+    // FIXME Do we need to encode _datePickerTextfield and _datePickerCalendar? As subviews they'll be encoded, but when we decode we recreate them anyhow.
     [super encodeWithCoder:aCoder];
+
     [aCoder encodeDouble:_timeInterval forKey:CPIntervalKey];
     [aCoder encodeInt:_datePickerMode forKey:CPDatePickerModeKey];
     [aCoder encodeInt:_datePickerStyle forKey:CPDatePickerStyleKey];
@@ -664,6 +673,7 @@ var CPDatePickerModeKey         = @"CPDatePickerModeKey",
     [aCoder encodeObject:_backgroundColor forKey:CPBackgroundColorKey];
     [aCoder encodeObject:_drawsBackground forKey:CPDrawsBackgroundKey];
     [aCoder encodeObject:_isBordered forKey:CPBorderedKey];
+
 }
 
 @end

@@ -117,7 +117,9 @@ CPTableViewLastColumnOnlyAutoresizingStyle = 4;
 CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 #define NUMBER_OF_COLUMNS() (_tableColumns.length)
-#define UPDATE_COLUMN_RANGES_IF_NECESSARY() if (_dirtyTableColumnRangeIndex !== CPNotFound) [self _recalculateTableColumnRanges];
+#define UPDATE_COLUMN_RANGES_IF_NECESSARY() \
+    if (_dirtyTableColumnRangeIndex !== CPNotFound) \
+        [self _recalculateTableColumnRanges];
 #define FULL_ROW_HEIGHT() (_rowHeight + _intercellSpacing.height)
 #define ROW_BOTTOM(__heightInfo) (__heightInfo.y + __heightInfo.height + _intercellSpacing.height)
 #define HAS_VARIABLE_ROW_HEIGHTS()  (_implementedDelegateMethods & CPTableViewDelegate_tableView_heightOfRow_)
@@ -5006,24 +5008,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 /*!
     @ignore
 */
-- (BOOL)becomeFirstResponder
-{
-    [self setNeedsDisplay:YES];
-    return YES;
-}
-
-/*!
-    @ignore
-*/
-- (BOOL)resignFirstResponder
-{
-    [self setNeedsDisplay:YES];
-    return YES;
-}
-
-/*!
-    @ignore
-*/
 - (BOOL)acceptsFirstResponder
 {
     return YES;
@@ -6287,7 +6271,7 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
 - (BOOL)setThemeState:(ThemeState)aState
 {
-     if (aState.isa && [aState isKindOfClass:CPArray])
+    if (aState.isa && [aState isKindOfClass:CPArray])
         aState = CPThemeState.apply(null, aState);
 
     [super setThemeState:aState];
@@ -6296,7 +6280,7 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
 - (BOOL)unsetThemeState:(ThemeState)aState
 {
-   if (aState.isa && [aState isKindOfClass:CPArray])
+    if (aState.isa && [aState isKindOfClass:CPArray])
         aState = CPThemeState.apply(null, aState);
 
     [super unsetThemeState:aState];

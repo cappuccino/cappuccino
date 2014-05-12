@@ -1965,6 +1965,7 @@ CPTexturedBackgroundWindowMask
     _hasBecomeKeyWindow = YES;
 
     [_windowView noteKeyWindowStateChanged];
+    [_contentView _notifyWindowDidBecomeKey];
 
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPWindowDidBecomeKeyNotification
@@ -2033,6 +2034,7 @@ CPTexturedBackgroundWindowMask
         CPApp._keyWindow = nil;
 
     [_windowView noteKeyWindowStateChanged];
+    [_contentView _notifyWindowDidResignKey];
 
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPWindowDidResignKeyNotification

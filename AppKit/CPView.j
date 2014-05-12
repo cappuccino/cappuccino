@@ -343,6 +343,9 @@ var CPViewFlags                     = { },
         _scaleSize = CGSizeMake(1.0, 1.0);
         _isScaled = NO;
 
+        _theme = [CPTheme defaultTheme];
+        _themeState = CPThemeStateNormal;
+
 #if PLATFORM(DOM)
         _DOMElement = DOMElementPrototype.cloneNode(false);
         AppKitTagDOMElement(self, _DOMElement);
@@ -353,9 +356,6 @@ var CPViewFlags                     = { },
         _DOMImageParts = [];
         _DOMImageSizes = [];
 #endif
-
-        _theme = [CPTheme defaultTheme];
-        _themeState = CPThemeStateNormal;
 
         [self _setupToolTipHandlers];
         [self _setupViewFlags];
@@ -577,6 +577,21 @@ var CPViewFlags                     = { },
     if (![aSubview isHidden] && [self isHiddenOrHasHiddenAncestor])
         [aSubview _notifyViewDidHide];
 
+    // This method might be called before we are fully unarchived, in which case the theme state isn't set up yet
+    // and none of the below matters anyhow.
+    if (_themeState)
+    {
+        if ([self hasThemeState:CPThemeStateFirstResponder])
+            [aSubview _notifyViewDidBecomeFirstResponder];
+        else
+            [aSubview _notifyViewDidResignFirstResponder];
+
+        if ([self hasThemeState:CPThemeStateKeyWindow])
+            [aSubview _notifyWindowDidBecomeKey];
+        else
+            [aSubview _notifyWindowDidResignKey];
+    }
+
     [aSubview viewDidMoveToSuperview];
 
     [self didAddSubview:aSubview];
@@ -614,6 +629,9 @@ var CPViewFlags                     = { },
     // notify the view that it is now unhidden.
     if (!_isHidden && [_superview isHiddenOrHasHiddenAncestor])
         [self _notifyViewDidUnhide];
+
+    [self _notifyWindowDidResignKey];
+    [self _notifyViewDidResignFirstResponder];
 
     _superview = nil;
 
@@ -735,6 +753,11 @@ var CPViewFlags                     = { },
 
     while (count--)
         [_subviews[count] _setWindow:aWindow];
+
+    if ([_window isKeyWindow])
+        [self setThemeState:CPThemeStateKeyWindow];
+    else
+        [self unsetThemeState:CPThemeStateKeyWindow];
 
     [self viewDidMoveToWindow];
 
@@ -2926,6 +2949,58 @@ setBoundsOrigin:
     [self setNeedsDisplay:YES];
 
     return YES;
+}
+
+- (BOOL)becomeFirstResponder
+{
+    var r = [super becomeFirstResponder];
+    if (r)
+        [self _notifyViewDidBecomeFirstResponder];
+    return r;
+}
+
+- (void)_notifyViewDidBecomeFirstResponder
+{
+    [self setThemeState:CPThemeStateFirstResponder];
+
+    var count = [_subviews count];
+    while (count--)
+        [_subviews[count] _notifyViewDidBecomeFirstResponder];
+}
+
+- (BOOL)resignFirstResponder
+{
+    var r = [super resignFirstResponder];
+    if (r)
+        [self _notifyViewDidResignFirstResponder];
+    return r;
+}
+
+- (void)_notifyViewDidResignFirstResponder
+{
+    [self unsetThemeState:CPThemeStateFirstResponder];
+
+    var count = [_subviews count];
+    while (count--)
+        [_subviews[count] _notifyViewDidResignFirstResponder];
+}
+
+- (void)_notifyWindowDidBecomeKey
+{
+    [self setThemeState:CPThemeStateKeyWindow];
+
+    var count = [_subviews count];
+    while (count--)
+        [_subviews[count] _notifyWindowDidBecomeKey];
+}
+
+- (void)_notifyWindowDidResignKey
+{
+    [self unsetThemeState:CPThemeStateKeyWindow];
+
+    var count = [_subviews count];
+    while (count--)
+        [_subviews[count] _notifyWindowDidResignKey];
 }
 
 #pragma mark Theme Attributes

@@ -118,11 +118,6 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
 #pragma mark -
 #pragma mark Responder methods
 
-- (BOOL)becomeFirstResponder
-{
-    return YES;
-}
-
 - (BOOL)acceptsFirstResponder
 {
     return YES;

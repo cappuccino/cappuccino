@@ -245,4 +245,214 @@
     [self assertTrue:CGPointEqualToPoint(CGPointMake(4, 6), [subView0 convertPoint:CGPointMake(7, 11) fromView:tView0])]
 }
 
++ (CPArray)createResponderView:(/*@ref */CPView)viewOut siblingView:(/*@ref */CPView)siblingViewOut inWindow:(/*@ref */CPWindow)windowOut
+{
+    var aView = [CPResponderView new],
+        siblingView = [CPResponderView new],
+        aWindow = [CPWindow new];
+
+    [[aWindow contentView] addSubview:aView];
+    [[aWindow contentView] addSubview:siblingView];
+
+    if (viewOut)
+        @deref(viewOut) = aView;
+    if (siblingViewOut)
+        @deref(siblingViewOut) = siblingView;
+    if (windowOut)
+        @deref(windowOut) = aWindow;
+
+    return aView;
+}
+
+- (void)testWhenFirstResponderShouldHaveThemeStateFirstResponder
+{
+    var aView, siblingView, aWindow;
+    [CPViewTest createResponderView:@ref(aView) siblingView:@ref(siblingView) inWindow:@ref(aWindow)];
+
+    [self assertFalse:[aView hasThemeState:CPThemeStateFirstResponder]];
+    [self assertFalse:[siblingView hasThemeState:CPThemeStateFirstResponder]];
+
+    [aWindow makeFirstResponder:aView];
+    [self assertTrue:[aView hasThemeState:CPThemeStateFirstResponder]];
+
+    [aWindow makeFirstResponder:siblingView];
+    [self assertTrue:[siblingView hasThemeState:CPThemeStateFirstResponder]];
+}
+
+- (void)testWhenChildOfFirstResponderShouldHaveThemeStateFirstResponder
+{
+    var aView, siblingView, aWindow;
+    [CPViewTest createResponderView:@ref(aView) siblingView:@ref(siblingView) inWindow:@ref(aWindow)];
+    var subview = [CPView new];
+    [aView addSubview:subview];
+
+    [aWindow makeFirstResponder:aView];
+    [self assertTrue:[aView hasThemeState:CPThemeStateFirstResponder]];
+    [self assertTrue:[subview hasThemeState:CPThemeStateFirstResponder]];
+}
+
+- (void)testWhenNotFirstResponderShouldLoseThemeStateFirstResponder
+{
+    var aView, siblingView, aWindow;
+    [CPViewTest createResponderView:@ref(aView) siblingView:@ref(siblingView) inWindow:@ref(aWindow)];
+
+    [aWindow makeFirstResponder:aView];
+    [self assertFalse:[siblingView hasThemeState:CPThemeStateFirstResponder]];
+
+    [aWindow makeFirstResponder:siblingView];
+    [self assertFalse:[aView hasThemeState:CPThemeStateFirstResponder]];
+}
+
+- (void)testWhenNotChildOfFirstResponderShouldLoseThemeStateFirstResponder
+{
+    var aView, siblingView, aWindow;
+    [CPViewTest createResponderView:@ref(aView) siblingView:@ref(siblingView) inWindow:@ref(aWindow)];
+    var subview = [CPView new];
+    [aView addSubview:subview];
+
+    [aWindow makeFirstResponder:aView];
+    [self assertTrue:[aView hasThemeState:CPThemeStateFirstResponder]];
+    [self assertTrue:[subview hasThemeState:CPThemeStateFirstResponder]];
+
+    [aWindow makeFirstResponder:siblingView];
+    [self assertFalse:[aView hasThemeState:CPThemeStateFirstResponder]];
+    [self assertFalse:[subview hasThemeState:CPThemeStateFirstResponder]];
+}
+
+- (void)testWhenFirstResponderButNotKeyWindowShouldStillHaveThemeStateFirstResponder
+{
+    var aView, siblingView, aWindow;
+    [CPViewTest createResponderView:@ref(aView) siblingView:@ref(siblingView) inWindow:@ref(aWindow)];
+
+    var aView2, siblingView2, aWindow2;
+    [CPViewTest createResponderView:@ref(aView2) siblingView:@ref(siblingView2) inWindow:@ref(aWindow2)];
+
+    [aWindow makeKeyWindow];
+    [aWindow makeFirstResponder:aView];
+    [self assertTrue:[aView hasThemeState:CPThemeStateFirstResponder]];
+
+    [aWindow2 makeFirstResponder:siblingView];
+    [aWindow2 makeKeyWindow];
+
+    [self assertTrue:[aView hasThemeState:CPThemeStateFirstResponder]];
+    [self assertTrue:[siblingView hasThemeState:CPThemeStateFirstResponder]];
+}
+
+- (void)testWhenChildOfFirstResponderButNotKeyWindowShouldStillHaveThemeStateFirstResponder
+{
+    var aView, siblingView, aWindow;
+    [CPViewTest createResponderView:@ref(aView) siblingView:@ref(siblingView) inWindow:@ref(aWindow)];
+
+    var subview = [CPView new];
+    [aView addSubview:subview];
+
+    var aView2, siblingView2, aWindow2;
+    [CPViewTest createResponderView:@ref(aView2) siblingView:@ref(siblingView2) inWindow:@ref(aWindow2)];
+
+    [aWindow makeKeyWindow];
+    [aWindow makeFirstResponder:aView];
+    [aWindow2 makeFirstResponder:siblingView];
+    [aWindow2 makeKeyWindow];
+    [self assertTrue:[subview hasThemeState:CPThemeStateFirstResponder]];
+}
+
+- (void)testWhenNotFirstResponderButNotKeyWindowShouldStillLoseThemeStateFirstResponder
+{
+    var aView, siblingView, aWindow;
+    [CPViewTest createResponderView:@ref(aView) siblingView:@ref(siblingView) inWindow:@ref(aWindow)];
+
+    var aView2, siblingView2, aWindow2;
+    [CPViewTest createResponderView:@ref(aView2) siblingView:@ref(siblingView2) inWindow:@ref(aWindow2)];
+
+    [aWindow makeKeyWindow];
+    [aWindow makeFirstResponder:aView];
+    [aWindow2 makeFirstResponder:siblingView];
+    [aWindow2 makeKeyWindow];
+    [aWindow makeFirstResponder:siblingView];
+
+    [self assertFalse:[aView hasThemeState:CPThemeStateFirstResponder]];
+}
+
+- (void)testWhenNotChildOfFirstResponderButNotKeyWindowShouldShouldStillLoseThemeStateFirstResponder
+{
+    var aView, siblingView, aWindow;
+    [CPViewTest createResponderView:@ref(aView) siblingView:@ref(siblingView) inWindow:@ref(aWindow)];
+
+    var subview = [CPView new];
+    [aView addSubview:subview];
+
+    var aView2, siblingView2, aWindow2;
+    [CPViewTest createResponderView:@ref(aView2) siblingView:@ref(siblingView2) inWindow:@ref(aWindow2)];
+
+    [aWindow makeKeyWindow];
+    [aWindow makeFirstResponder:aView];
+    [aWindow2 makeFirstResponder:siblingView];
+    [aWindow2 makeKeyWindow];
+    [aWindow makeFirstResponder:siblingView];
+
+    [self assertFalse:[subview hasThemeState:CPThemeStateFirstResponder]];
+}
+
+- (void)testWhenAndOnlyWhenWindowIsKeyEveryViewShouldHaveThemeStateKeyWindow
+{
+    var aView, siblingView, aWindow;
+    [CPViewTest createResponderView:@ref(aView) siblingView:@ref(siblingView) inWindow:@ref(aWindow)];
+
+    var subview = [CPView new];
+    [aView addSubview:subview];
+
+    var aView2, siblingView2, aWindow2;
+    [CPViewTest createResponderView:@ref(aView2) siblingView:@ref(siblingView2) inWindow:@ref(aWindow2)];
+
+    [aWindow makeKeyWindow];
+    [self assertTrue:[aView hasThemeState:CPThemeStateKeyWindow]];
+    [self assertTrue:[siblingView hasThemeState:CPThemeStateKeyWindow]];
+    [self assertTrue:[subview hasThemeState:CPThemeStateKeyWindow]];
+    [self assertFalse:[aView2 hasThemeState:CPThemeStateKeyWindow]];
+    [self assertFalse:[siblingView2 hasThemeState:CPThemeStateKeyWindow]];
+
+    [aWindow2 makeKeyWindow];
+    [self assertFalse:[aView hasThemeState:CPThemeStateKeyWindow]];
+    [self assertFalse:[siblingView hasThemeState:CPThemeStateKeyWindow]];
+    [self assertFalse:[subview hasThemeState:CPThemeStateKeyWindow]];
+    [self assertTrue:[aView2 hasThemeState:CPThemeStateKeyWindow]];
+    [self assertTrue:[siblingView2 hasThemeState:CPThemeStateKeyWindow]];
+}
+
+- (void)testWhenFirstResponderBeforeBeingAddedSubviewShouldHaveThemeStateFirstResponder
+{
+    var aView, siblingView, aWindow;
+    [CPViewTest createResponderView:@ref(aView) siblingView:@ref(siblingView) inWindow:@ref(aWindow)];
+
+    [self assertFalse:[aView hasThemeState:CPThemeStateFirstResponder]];
+    [self assertFalse:[siblingView hasThemeState:CPThemeStateFirstResponder]];
+
+    [aWindow makeFirstResponder:aView];
+
+    var subview = [CPView new];
+    [aView addSubview:subview];
+    [self assertTrue:[subview hasThemeState:CPThemeStateFirstResponder]];
+}
+
+- (void)testWhenRemovedSubviewShouldLoseThemeStateFirstResponder
+{
+    var aView, siblingView, aWindow;
+    [CPViewTest createResponderView:@ref(aView) siblingView:@ref(siblingView) inWindow:@ref(aWindow)];
+
+    [aWindow makeFirstResponder:aView];
+    var subview = [CPView new];
+    [aView addSubview:subview];
+    [subview removeFromSuperview];
+    [self assertFalse:[subview hasThemeState:CPThemeStateFirstResponder]];
+}
+
+@end
+
+@implementation CPResponderView : CPView
+
+- (BOOL)acceptsFirstResponder
+{
+    return YES;
+}
+
 @end

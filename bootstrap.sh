@@ -168,7 +168,7 @@ tmp_zip="/tmp/cappuccino.zip"
 local_distrib=""
 
 github_user="cappuccino"
-github_ref="v0.9.7"
+github_ref="v0.9.7-1"
 
 noprompt=""
 install_capp=""
@@ -206,6 +206,7 @@ done
 
 github_project="$github_user-cappuccino-base"
 github_path="$github_user/cappuccino-base"
+local_project="cappuccino-base"
 
 # The purpose of bootstrap is to install Cappuccino.
 install_cappuccino="yes"
@@ -317,9 +318,9 @@ if [ "$install_cappuccino" ]; then
         unzip $quiet_arg "$local_distrib" -d "$install_directory"
         check_and_exit
 
-        mv "$install_directory/$github_project-"*/* "$install_directory/."
+        mv "$install_directory/$local_project-"*/* "$install_directory/."
         check_and_exit
-        rm -rf "$install_directory/$github_project-"*
+        rm -rf "$install_directory/$local_project-"*
         check_and_exit
     else
         zip_ball="https://github.com/$github_path/zipball/$github_ref"
