@@ -147,7 +147,7 @@ AppController *SharedAppControllerInstance = nil;
         kDefaultXCCAutoOpenErrorsPanelOnErrors:     @YES,
         kDefaultXCCAutoOpenErrorsPanelOnCappLint:   @YES,
         kDefaultXCCAutoShowNotificationOnErrors:    @YES,
-        kDefaultXCCAutoShowNotificationOnCappLint:  @NO,
+        kDefaultXCCAutoShowNotificationOnCappLint:  @YES,
         kDefaultXCCProjectHistory:                  [NSArray new],
         kDefaultMaxRecentProjects:                  @20,
         kDefaultLogLevel:                           [NSNumber numberWithInt:LOG_LEVEL_WARN],
