@@ -546,7 +546,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 /*! @ignore */
 - (BOOL)becomeFirstResponder
 {
-    if (![self isEnabled])
+    if (![self isEnabled] || ![super becomeFirstResponder])
         return NO;
 
     // As long as we are the first responder we need to monitor the key status of our window.

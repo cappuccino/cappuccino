@@ -5099,24 +5099,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 /*!
     @ignore
 */
-- (BOOL)becomeFirstResponder
-{
-    [self setNeedsDisplay:YES];
-    return YES;
-}
-
-/*!
-    @ignore
-*/
-- (BOOL)resignFirstResponder
-{
-    [self setNeedsDisplay:YES];
-    return YES;
-}
-
-/*!
-    @ignore
-*/
 - (BOOL)acceptsFirstResponder
 {
     return YES;
@@ -6244,7 +6226,7 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
 - (BOOL)setThemeState:(ThemeState)aState
 {
-     if (aState.isa && [aState isKindOfClass:CPArray])
+    if (aState.isa && [aState isKindOfClass:CPArray])
         aState = CPThemeState.apply(null, aState);
 
     [super setThemeState:aState];
@@ -6253,7 +6235,7 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
 - (BOOL)unsetThemeState:(ThemeState)aState
 {
-   if (aState.isa && [aState isKindOfClass:CPArray])
+    if (aState.isa && [aState isKindOfClass:CPArray])
         aState = CPThemeState.apply(null, aState);
 
     [super unsetThemeState:aState];
