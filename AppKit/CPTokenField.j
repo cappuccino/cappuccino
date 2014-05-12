@@ -381,6 +381,9 @@ CPTokenFieldDeleteButtonType     = 1;
 
 - (BOOL)becomeFirstResponder
 {
+    if (![super becomeFirstResponder])
+        return NO;
+
 #if PLATFORM(DOM)
     if (CPTokenFieldInputOwner && [CPTokenFieldInputOwner window] !== [self window])
         [[CPTokenFieldInputOwner window] makeFirstResponder:nil];

@@ -532,11 +532,15 @@ CPEraDatePickerElementFlag              = 0x0100;
 - (BOOL)becomeFirstResponder
 {
     if (_datePickerStyle == CPTextFieldAndStepperDatePickerStyle || _datePickerStyle == CPTextFieldDatePickerStyle)
-        [_datePickerTextfield _selecteTextFieldWithFlags:[[CPApp currentEvent] modifierFlags]];
-    else
-        return NO;
+    {
+        if ([super becomeFirstResponder])
+            return NO;
 
-    return YES;
+        [_datePickerTextfield _selecteTextFieldWithFlags:[[CPApp currentEvent] modifierFlags]];
+        return YES;
+    }
+
+    return NO;
 }
 
 /*! Return YES
