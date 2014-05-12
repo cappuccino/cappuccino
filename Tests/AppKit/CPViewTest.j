@@ -419,6 +419,33 @@
     [self assertTrue:[siblingView2 hasThemeState:CPThemeStateKeyWindow]];
 }
 
+- (void)testWhenFirstResponderBeforeBeingAddedSubviewShouldHaveThemeStateFirstResponder
+{
+    var aView, siblingView, aWindow;
+    [CPViewTest createResponderView:@ref(aView) siblingView:@ref(siblingView) inWindow:@ref(aWindow)];
+
+    [self assertFalse:[aView hasThemeState:CPThemeStateFirstResponder]];
+    [self assertFalse:[siblingView hasThemeState:CPThemeStateFirstResponder]];
+
+    [aWindow makeFirstResponder:aView];
+
+    var subview = [CPView new];
+    [aView addSubview:subview];
+    [self assertTrue:[subview hasThemeState:CPThemeStateFirstResponder]];
+}
+
+- (void)testWhenRemovedSubviewShouldLoseThemeStateFirstResponder
+{
+    var aView, siblingView, aWindow;
+    [CPViewTest createResponderView:@ref(aView) siblingView:@ref(siblingView) inWindow:@ref(aWindow)];
+
+    [aWindow makeFirstResponder:aView];
+    var subview = [CPView new];
+    [aView addSubview:subview];
+    [subview removeFromSuperview];
+    [self assertFalse:[subview hasThemeState:CPThemeStateFirstResponder]];
+}
+
 @end
 
 @implementation CPResponderView : CPView
