@@ -33,6 +33,17 @@ var sharedObject = [CPObject new];
              message:"testWriteOverRangeBoundaries: expected:" + @"1" + " actual:" + [attribs objectForKey:@"testkey"]];
 }
 
+- (void)testCoalesceOnInsert
+{
+    var string = [[CPMutableAttributedString alloc] initWithString:@"Fusce\n" attributes:@{"testkey": 1}];
+	var prevRangeEntriesLength= string._rangeEntries.length;
+    [string insertAttributedString:[[CPAttributedString alloc] initWithString:@"this is boldface"
+                attributes:@{"testkey": 1}] atIndex:2];
+
+    [self assertTrue:(string._rangeEntries.length === prevRangeEntriesLength)
+             message:"testCoalesceOnInsert: expected:" + prevRangeEntriesLength + " actual:" + string._rangeEntries.length];
+}
+
 - (CPAttributedString)stringForTesting
 {
     var string = [[CPAttributedString alloc] initWithString:"The quick brown fox jumped over the lazy dog."];
