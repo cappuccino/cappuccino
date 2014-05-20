@@ -55,8 +55,9 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
     int             _appearance         @accessors(getter=appearance);
     BOOL            _isClosing          @accessors(property=isClosing);
 
-    BOOL            _closeOnBlur;
     BOOL            _browserAnimates;
+    BOOL            _closeOnBlur;
+    BOOL            _isObservingFrame;
     BOOL            _shouldPerformAnimation;
     CPInteger       _implementedDelegateMethods;
     JSObject        _orderOutTransitionFunction;
@@ -159,6 +160,32 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
 
 #pragma mark -
 #pragma mark Observer
+
+/*!
+    @ignore
+    Adds self as frame observer if not already observing it
+*/
+- (void)_addFrameObserver
+{
+    if (_isObservingFrame)
+        return;
+
+    _isObservingFrame = YES;
+    [_targetView addObserver:self forKeyPath:@"frame" options:0 context:nil];
+}
+
+/*!
+    @ignore
+    Removes self as frame observer if already observing it
+*/
+- (void)_removeFrameObserver
+{
+    if (!_isObservingFrame)
+        return;
+
+    _isObservingFrame = NO;
+    [_targetView removeObserver:self forKeyPath:@"frame"];
+}
 
 /*!
     Update the _CPPopoverWindow frame if a resize event is observed.
@@ -331,7 +358,7 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
     if (positioningView !== _targetView)
     {
         [[_targetView window] removeChildWindow:self];
-        [_targetView removeObserver:self forKeyPath:@"frame"];
+        [self _removeFrameObserver];
         _targetView = positioningView;
     }
 
@@ -521,14 +548,14 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
 - (void)_orderFront
 {
     if (![self isVisible])
-        [_targetView addObserver:self forKeyPath:@"frame" options:0 context:nil];
+        [self _addFrameObserver];
 
     [super _orderFront];
 }
 
 - (void)_parentDidOrderInChild
 {
-    [_targetView addObserver:self forKeyPath:@"frame" options:0 context:nil];
+    [self _addFrameObserver];
 }
 
 /*!
@@ -564,7 +591,7 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
     _DOMElement.removeEventListener(CPBrowserStyleProperty("transitionend"), _orderOutTransitionFunction, YES);
 #endif
 
-    [_targetView removeObserver:self forKeyPath:@"frame"];
+    [self _removeFrameObserver];
     [_parentWindow removeChildWindow:self];
     [super _orderOutRecursively:recursive];
 
