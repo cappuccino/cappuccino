@@ -302,6 +302,7 @@ var _sharedSimpleTypesetter = nil;
             switch (currentChar)    // faster than sending actionForControlCharacterAtIndex: called for each char.
             {
                 case '\n':
+                case '\r':
                     isNewline = YES;
                 break;
                 case '\t':
