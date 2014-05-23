@@ -27,8 +27,6 @@
 @import "CPTextStorage.j"
 @import "CPTextContainer.j"
 @import "CPFontManager.j"
-//@import "_CPRTFProducer.j"
-//@import "_CPRTFParser.j"
 @import "CPLayoutManager.j"
 
 @class _CPRTFProducer;
@@ -126,16 +124,6 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 - (void)copyFont:(id)sender
 {
     CPLog.error(@"-[CPText " + _cmd + "] subclass responsibility");
-}
-
-- (void)cut:(id)sender
-{
-    [self copy:sender];
-
-    var loc = [self selectedRange].location;
-
-    [self replaceCharactersInRange:[self selectedRange] withString:""];
-    [self setSelectedRange:CPMakeRange(loc,0) ];
 }
 
 - (void)delete:(id)sender
@@ -291,6 +279,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     CPRange         _selectionRange;
     CPDictionary    _selectedTextAttributes;
     int             _selectionGranularity;
+    int             _previousSelectionGranularity;
 
     CPColor         _insertionPointColor;
 
@@ -831,6 +820,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)mouseUp:(CPEvent)event
 {
+    _previousSelectionGranularity = [self selectionGranularity];
     /* will post CPTextViewDidChangeSelectionNotification */
     [self setSelectionGranularity:CPSelectByCharacter];
     [self setSelectedRange:[self selectedRange] affinity:0 stillSelecting:NO];
@@ -1272,6 +1262,11 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
          changedRange = CPMakeRange(_selectionRange.location - 1, 1);
     else
         changedRange = _selectionRange;
+
+    if (_previousSelectionGranularity > 0 &&
+        changedRange.location > 0 && [self _isCharacterAtIndex:changedRange.location-1 granularity:_previousSelectionGranularity] &&
+        changedRange.location < [[self string] length] && [self _isCharacterAtIndex:CPMaxRange(changedRange) granularity:_previousSelectionGranularity])
+        changedRange.length++;
 
     [self _deleteForRange:changedRange];
 }
