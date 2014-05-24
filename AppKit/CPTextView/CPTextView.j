@@ -1181,7 +1181,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     [self moveToLeftEndOfLine:sender byExtending:YES];
 }
 - (void)moveToRightEndOfLine:(id)sender byExtending:(BOOL)flag
-{    if (_isSelectable)
+{
+    if (_isSelectable)
     {
         var fragment = [_layoutManager _lineFragmentForLocation:_selectionRange.location];
         if (fragment)
@@ -1768,6 +1769,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 {
     return ['\n','\r', ' ', '\t', ',', ';', '.', '!', '?', '\'', '"', '-', ':'];
 }
+
 + (CPArray)_paragraphBoundaryCharacterArray
 {
     return ['\n','\r'];
