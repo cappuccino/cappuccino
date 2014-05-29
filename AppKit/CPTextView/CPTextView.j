@@ -28,6 +28,8 @@
 @import "CPTextContainer.j"
 @import "CPFontManager.j"
 @import "CPLayoutManager.j"
+@import "CPPasteboard.j"
+@import "CPColorPanel.j"
 
 @class _CPRTFProducer;
 @class _CPRTFParser;
@@ -76,6 +78,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 @implementation CPText : CPControl
 {
+    int             _previousSelectionGranularity;
 }
 
 - (void)changeFont:(id)sender
@@ -284,7 +287,6 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     CPRange         _selectionRange;
     CPDictionary    _selectedTextAttributes;
     int             _selectionGranularity;
-    int             _previousSelectionGranularity;
 
     CPColor         _insertionPointColor;
 
@@ -324,7 +326,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     if (self)
     {
-        self._DOMElement.style.cursor = "text";
+        if (self._DOMElement)
+            self._DOMElement.style.cursor = "text";
         _textContainerInset = CGSizeMake(2,0);
         _textContainerOrigin = CGPointMake(_bounds.origin.x, _bounds.origin.y);
         [aContainer setTextView:self];
@@ -350,7 +353,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         _minSize = CGSizeCreateCopy(aFrame.size);
         _maxSize = CGSizeMake(aFrame.size.width, 1e7);
 
-        _isRichText = YES;
+        _isRichText = NO;
         _usesFontPanel = YES;
         _allowsUndo = YES;
         _isVerticallyResizable = YES;
