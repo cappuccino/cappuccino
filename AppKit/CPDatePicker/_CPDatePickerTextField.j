@@ -180,7 +180,7 @@ var CPZeroKeyCode = 48,
 #pragma mark -
 #pragma mark SelectTextField action
 
-- (void)_selecteTextFieldWithFlags:(unsigned)flags
+- (void)_selectTextFieldWithFlags:(unsigned)flags
 {
     [_datePickerElementView _updateResponderTextField];
 
