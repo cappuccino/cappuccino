@@ -1847,7 +1847,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     var style;
     if (!_caretDOM)
     {
+#if PLATFORM(DOM)
         _caretDOM = document.createElement("span");
+#endif
         style = _caretDOM.style;
         style.position = "absolute";
         style.visibility = "visible";
