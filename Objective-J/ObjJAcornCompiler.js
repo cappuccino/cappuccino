@@ -1400,9 +1400,18 @@ AssignmentExpression: function(node, st, c) {
         return;
     }
 
-    var saveAssignment = st.assignment;
+    var saveAssignment = st.assignment,
+        nodeLeft = node.left;
     st.assignment = true;
-    (generate && nodePrecedence(node, node.left) ? surroundExpression(c) : c)(node.left, st, "Expression");
+    if (nodeLeft.type === "Identifier" && nodeLeft.name === "self") {
+        var lVar = st.getLvar("self", true);
+        if (lVar) {
+            var lVarScope = lVar.scope;
+            if (lVarScope)
+                lVarScope.assignmentToSelf = true;
+        }
+    }
+    (generate && nodePrecedence(node, nodeLeft) ? surroundExpression(c) : c)(nodeLeft, st, "Expression");
     if (generate) {
         buffer.concat(" ");
         buffer.concat(node.operator);
@@ -1410,8 +1419,8 @@ AssignmentExpression: function(node, st, c) {
     }
     st.assignment = saveAssignment;
     (generate && nodePrecedence(node, node.right, true) ? surroundExpression(c) : c)(node.right, st, "Expression");
-    if (st.isRootScope() && node.left.type === "Identifier" && !st.getLvar(node.left.name))
-        st.vars[node.left.name] = {type: "global", node: node.left};
+    if (st.isRootScope() && nodeLeft.type === "Identifier" && !st.getLvar(nodeLeft.name))
+        st.vars[nodeLeft.name] = {type: "global", node: nodeLeft};
 },
 ConditionalExpression: function(node, st, c) {
     var compiler = st.compiler,
@@ -1440,8 +1449,22 @@ NewExpression: function(node, st, c) {
 },
 CallExpression: function(node, st, c) {
     var compiler = st.compiler,
-        generate = compiler.generate;
-    (generate && nodePrecedence(node, node.callee) ? surroundExpression(c) : c)(node.callee, st, "Expression");
+        generate = compiler.generate,
+        callee = node.callee;
+
+    // If call to function 'eval' we assume that 'self' can be altered and from this point
+    // we check if 'self' is null before 'objj_msgSend' is called with 'self' as receiver.
+    if (callee.type === "Identifier" && callee.name === "eval") {
+        var selfLvar = st.getLvar("self", true);
+        if (selfLvar) {
+            var selfScope = selfLvar.scope;
+            if (selfScope) {
+                selfScope.assignmentToSelf = true;
+            }
+        }
+    }
+
+    (generate && nodePrecedence(node, callee) ? surroundExpression(c) : c)(callee, st, "Expression");
     if (generate) compiler.jsBuffer.concat("(");
     if (node.arguments) {
       for (var i = 0; i < node.arguments.length; ++i) {
@@ -2026,6 +2049,9 @@ MethodDeclarationStatement: function(node, st, c) {
         compiler.jsBuffer.concat("(self, _cmd");
 
         methodScope.methodType = node.methodtype;
+        methodScope.vars["self"] = {type: "method base", scope: methodScope};
+        methodScope.vars["_cmd"] = {type: "method base", scope: methodScope};
+
         if (nodeArguments) for (var i = 0; i < nodeArguments.length; i++)
         {
             var argument = nodeArguments[i],
@@ -2125,10 +2151,11 @@ MethodDeclarationStatement: function(node, st, c) {
 MessageSendExpression: function(node, st, c) {
     var compiler = st.compiler,
         generate = compiler.generate,
-        buffer = compiler.jsBuffer;
+        buffer = compiler.jsBuffer,
+        nodeObject = node.object;
     if (!generate) {
         buffer.concat(compiler.source.substring(compiler.lastPos, node.start));
-        compiler.lastPos = node.object ? node.object.start : node.arguments.length ? node.arguments[0].start : node.end;
+        compiler.lastPos = nodeObject ? nodeObject.start : node.arguments.length ? node.arguments[0].start : node.end;
     }
     if (node.superObject)
     {
@@ -2138,20 +2165,49 @@ MessageSendExpression: function(node, st, c) {
     }
     else
     {
-        if (!st.receiverLevel) st.receiverLevel = 0;
-        if (!generate) buffer.concat(" "); // Add an extra space if it looks something like this: "return(<expression>)". No space between return and expression.
-        buffer.concat("((___r");
-        buffer.concat(++st.receiverLevel + "");
-        buffer.concat(" = ");
-        c(node.object, st, "Expression");
-        buffer.concat("), ___r");
-        buffer.concat(st.receiverLevel + "");
-        buffer.concat(" == null ? null : ___r");
-        buffer.concat(st.receiverLevel + "");
-        buffer.concat(".isa.objj_msgSend");
-        if (!generate) buffer.concat(compiler.source.substring(compiler.lastPos, node.object.end));
-        if (!(st.maxReceiverLevel >= st.receiverLevel))
-            st.maxReceiverLevel = st.receiverLevel;
+        if (generate) {
+            // If the recevier is not an identifier or an ivar that should have 'self.' infront we need to assign it to a temporary variable
+            // If it is 'self' we assume it will never be nil and remove that test
+            var receiverIsIdentifier = nodeObject.type === "Identifier" && !(st.currentMethodType() === "-" && compiler.getIvarForClass(nodeObject.name, st) && !st.getLvar(nodeObject.name, true)),
+                selfLvar,
+                receiverIsNotSelf;
+
+            if (receiverIsIdentifier) {
+                var name = nodeObject.name,
+                    selfLvar = st.getLvar(name);
+
+                if (name === "self") {
+                    receiverIsNotSelf = !selfLvar || !selfLvar.scope || selfLvar.scope.assignmentToSelf;
+                } else {
+                    receiverIsNotSelf = !!selfLvar || !compiler.getClassDef(name);
+                }
+
+                if (receiverIsNotSelf) {
+                    buffer.concat("(");
+                    c(nodeObject, st, "Expression");
+                    buffer.concat(" == null ? null : ");
+                }
+                c(nodeObject, st, "Expression");
+            } else {
+                receiverIsNotSelf = true;
+                if (!st.receiverLevel) st.receiverLevel = 0;
+                buffer.concat("((___r");
+                buffer.concat(++st.receiverLevel + "");
+                buffer.concat(" = ");
+                c(nodeObject, st, "Expression");
+                buffer.concat("), ___r");
+                buffer.concat(st.receiverLevel + "");
+                buffer.concat(" == null ? null : ___r");
+                buffer.concat(st.receiverLevel + "");
+                if (!(st.maxReceiverLevel >= st.receiverLevel))
+                    st.maxReceiverLevel = st.receiverLevel;
+            }
+            buffer.concat(".isa.objj_msgSend");
+        } else {
+            buffer.concat(" "); // Add an extra space if it looks something like this: "return(<expression>)". No space between return and expression.
+            buffer.concat("objj_msgSend(");
+            buffer.concat(compiler.source.substring(compiler.lastPos, nodeObject.end));
+        }
     }
 
     var selectors = node.selectors,
@@ -2160,7 +2216,7 @@ MessageSendExpression: function(node, st, c) {
         firstSelector = selectors[0],
         selector = firstSelector ? firstSelector.name : "";    // There is always at least one selector
 
-    if (!node.superObject) {
+    if (generate && !node.superObject) {
         var totalNoOfParameters = argumentsLength;
 
         if (node.parameters)
@@ -2169,8 +2225,13 @@ MessageSendExpression: function(node, st, c) {
             buffer.concat("" + totalNoOfParameters);
         }
 
-        buffer.concat("(___r");
-        buffer.concat(st.receiverLevel + "");
+        if (receiverIsIdentifier) {
+            buffer.concat("(");
+            c(nodeObject, st, "Expression");
+        } else {
+            buffer.concat("(___r");
+            buffer.concat(st.receiverLevel + "");
+        }
     }
 
     // Put together the selector. Maybe this should be done in the parser...
@@ -2213,9 +2274,11 @@ MessageSendExpression: function(node, st, c) {
         }
     }
 
-    if (!node.superObject) {
-        buffer.concat(")");
-        st.receiverLevel--;
+    if (generate && !node.superObject) {
+        if (receiverIsNotSelf)
+            buffer.concat(")");
+        if (!receiverIsIdentifier)
+            st.receiverLevel--;
     }
 
     buffer.concat(")");

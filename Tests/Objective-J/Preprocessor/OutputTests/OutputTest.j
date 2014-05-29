@@ -13,6 +13,7 @@ var FILENAMES = [
         "Messages/ternary-operator-argument",
         "Messages/keyword-in-selector",
         "Messages/colon-selector",
+        "Messages/self-as-receiver",
 
         "Misc/parenthesis-return",
         "Misc/preprocess-if-directives",
