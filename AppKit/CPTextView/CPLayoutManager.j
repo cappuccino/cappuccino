@@ -156,6 +156,7 @@ var _objectsInRange = function(aList, aRange)
 
 - (id)createDOMElementWithText:(CPString)aString andFont:(CPFont)aFont andColor:(CPColor)aColor
 {
+#if PLATFORM(DOM)
     var style,
         span = document.createElement("span");
 
@@ -180,6 +181,9 @@ var _objectsInRange = function(aList, aRange)
         span.textContent = aString;
 //<!> FIXME aString.replace(/&/g,'&amp;')
     return span;
+#else
+    return nil;
+#endif
 }
 
 - (id)initWithRange:(CPRange)aRange textContainer:(CPTextContainer)aContainer textStorage:(CPTextStorage)textStorage
