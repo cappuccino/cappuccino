@@ -1844,12 +1844,11 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)drawInsertionPointInRect:(CGRect)aRect color:(CPColor)aColor turnedOn:(BOOL)flag
 {
+#if PLATFORM(DOM)
     var style;
     if (!_caretDOM)
     {
-#if PLATFORM(DOM)
         _caretDOM = document.createElement("span");
-#endif
         style = _caretDOM.style;
         style.position = "absolute";
         style.visibility = "visible";
@@ -1865,12 +1864,15 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     _caretDOM.style.top = (aRect.origin.y) + "px";
     _caretDOM.style.height = (aRect.size.height) + "px";
     _caretDOM.style.visibility = flag ? "visible" : "hidden";
+#endif
 }
 
 - (void)_hideCaret
 {
+#if PLATFORM(DOM)
     if (_caretDOM)
         _caretDOM.style.visibility = "hidden";
+#endif
 }
 
 - (void)updateInsertionPointStateAndRestartTimer:(BOOL)flag
