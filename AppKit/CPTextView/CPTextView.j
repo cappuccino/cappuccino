@@ -35,6 +35,18 @@
 @class _CPRTFParser;
 
 
+@protocol CPTextViewDelegate <CPTextDelegate>
+
+- (BOOL)textView:(CPTextView)aTextView doCommandBySelector:(SEL)aSelector;
+- (BOOL)textView:(CPTextView)aTextView shouldChangeTextInRange:(CPRange)affectedCharRange replacementString:(CPString)replacementString;
+- (CPDictionary)textView:(CPTextView)textView shouldChangeTypingAttributes:(CPDictionary)oldTypingAttributes toAttributes:(CPDictionary)newTypingAttributes;
+- (CPRange)textView:(CPTextView)aTextView willChangeSelectionFromCharacterRange:(CPRange)oldSelectedCharRange toCharacterRange:(CPRange)newSelectedCharRange;
+- (void)textViewDidChangeSelection:(CPNotification)aNotification;
+- (void)textViewDidChangeTypingAttributes:(CPNotification)aNotification;
+
+@end
+
+
 _MakeRangeFromAbs = function(a1, a2)
 {
     return (a1 < a2) ? CPMakeRange(a1, a2 - a1) : CPMakeRange(a2, a1 - a2);
@@ -273,12 +285,12 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 */
 @implementation CPTextView : CPText
 {
-    CPTextStorage   _textStorage;
-    CPTextContainer _textContainer;
-    CPLayoutManager _layoutManager;
-    id              _delegate;
+    CPTextStorage               _textStorage;
+    CPTextContainer             _textContainer;
+    CPLayoutManager             _layoutManager;
 
-    unsigned        _delegateRespondsToSelectorMask;
+    id <CPTextViewDelegate>     _delegate;
+    unsigned                    _delegateRespondsToSelectorMask;
 
     CGSize          _textContainerInset;
     CGPoint         _textContainerOrigin;
@@ -409,12 +421,30 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     return [self initWithFrame:aFrame textContainer:container];
 }
 
-- (void)setDelegate:(id)aDelegate
+/*!
+    Returns the delegate object for the text view.
+*/
+- (id)delegate
 {
+    return _delegate;
+}
+
+/*!
+    TODO : documentation
+*/
+- (void)setDelegate:(id <CPTextViewDelegate>)aDelegate
+{
+    if (aDelegate === _delegate)
+        return;
+
     _delegateRespondsToSelectorMask = 0;
 
     if (_delegate)
-        [[CPNotificationCenter defaultCenter] removeObserver:_delegate name:nil object:self];
+    {
+        [[CPNotificationCenter defaultCenter] removeObserver:_delegate name:CPTextDidChangeNotification object:self];
+        [[CPNotificationCenter defaultCenter] removeObserver:_delegate name:CPTextViewDidChangeSelectionNotification object:self];
+        [[CPNotificationCenter defaultCenter] removeObserver:_delegate name:CPTextViewDidChangeTypingAttributesNotification object:self];
+    }
 
     _delegate = aDelegate;
 
