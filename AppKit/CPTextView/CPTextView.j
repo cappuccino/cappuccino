@@ -51,14 +51,15 @@ _MakeRangeFromAbs = function(a1, a2)
 {
     return (a1 < a2) ? CPMakeRange(a1, a2 - a1) : CPMakeRange(a2, a1 - a2);
 };
+
 _MidRange = function(a1)
 {
     return Math.floor((CPMaxRange(a1) + a1.location) / 2);
 };
 
 
-// FIXME: move to theme ?
-@implementation CPColor(CPTextViewExtensions)
+// FIXME: move to CPColor, and use attribut theme for the color
+@implementation CPColor (CPTextViewExtensions)
 
 + (CPColor)selectedTextBackgroundColor
 {
@@ -86,11 +87,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     kDelegateRespondsTo_textView_shouldChangeTextInRange_replacementString              = 0x0008,
     kDelegateRespondsTo_textView_shouldChangeTypingAttributes_toAttributes              = 0x0010;
 
-
-
 @implementation CPText : CPView
 {
-    int             _previousSelectionGranularity;
+    int _previousSelectionGranularity;
 }
 
 - (void)changeFont:(id)sender
@@ -651,12 +650,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)doCommandBySelector:(SEL)aSelector
 {
-    var done = NO;
-
-    if (_delegateRespondsToSelectorMask & kDelegateRespondsTo_textView_doCommandBySelector)
-        done = [_delegate textView:self doCommandBySelector:aSelector];
-
-    if (!done)
+    if (![self _sendDelegateDoCommandBySelector:aSelector])
         [super doCommandBySelector:aSelector];
 }
 
@@ -670,15 +664,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     if (!_isEditable)
         return NO;
 
-    var shouldChange = YES;
-
-    if (_delegateRespondsToSelectorMask & kDelegateRespondsTo_textShouldBeginEditing)
-        shouldChange = [_delegate textShouldBeginEditing:self];
-
-    if (shouldChange && (_delegateRespondsToSelectorMask & kDelegateRespondsTo_textView_shouldChangeTextInRange_replacementString))
-        shouldChange = [_delegate textView:self shouldChangeTextInRange:aRange replacementString:aString];
-
-    return shouldChange;
+    return [self _sendDelegateTextShouldBeginEditing] && [self _sendDelegateShouldChangeTextInRange:aRange replacementString:aString];
 }
 
 
@@ -858,9 +844,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     var maxRange = CPMakeRange(0, [_layoutManager numberOfCharacters]);
     range = CPIntersectionRange(maxRange, range);
 
-    if (!selecting && (_delegateRespondsToSelectorMask & kDelegateRespondsTo_textView_willChangeSelectionFromCharacterRange_toCharacterRange))
+    if (!selecting && [self _delegateRespondsToWillChangeSelectionFromCharacterRangeToCharacterRange])
     {
-        _selectionRange = [_delegate textView:self willChangeSelectionFromCharacterRange:_selectionRange toCharacterRange:range];
+        _selectionRange = [self _sendDelegateWillChangeSelectionFromCharacterRange:_selectionRange toCharacterRange:range];
     }
     else
     {
@@ -1514,9 +1500,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     if (!attributes)
         attributes = [CPDictionary dictionary];
 
-    if (_delegateRespondsToSelectorMask & kDelegateRespondsTo_textView_shouldChangeTypingAttributes_toAttributes)
+    if ([self _delegateRespondsToShouldChangeTypingAttributesToAttributes])
     {
-        _typingAttributes = [_delegate textView:self shouldChangeTypingAttributes:_typingAttributes toAttributes:attributes];
+        _typingAttributes = [self _sendDelegateShouldChangeTypingAttributes:_typingAttributes toAttributes:attributes];
     }
     else
     {
@@ -1982,6 +1968,61 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         return NO;
 
    [self setTextColor:[CPKeyedUnarchiver unarchiveObjectWithData:[pasteboard dataForType:CPColorDragType]] range:_selectionRange ];
+}
+
+@end
+
+
+@implementation CPTextView (CPTextViewDelegate)
+
+- (BOOL)_delegateRespondsToShouldChangeTypingAttributesToAttributes
+{
+    return _delegateRespondsToSelectorMask & kDelegateRespondsTo_textView_shouldChangeTypingAttributes_toAttributes;
+}
+
+- (BOOL)_delegateRespondsToWillChangeSelectionFromCharacterRangeToCharacterRange
+{
+    return _delegateRespondsToSelectorMask & kDelegateRespondsTo_textView_willChangeSelectionFromCharacterRange_toCharacterRange;
+}
+
+- (BOOL)_sendDelegateDoCommandBySelector:(SEL)aSelector
+{
+    if (!(_delegateRespondsToSelectorMask & kDelegateRespondsTo_textView_doCommandBySelector))
+        return NO;
+
+    return [_delegate textView:self doCommandBySelector:aSelector];
+}
+
+- (BOOL)_sendDelegateTextShouldBeginEditing
+{
+    if (!(_delegateRespondsToSelectorMask & kDelegateRespondsTo_textShouldBeginEditing))
+        return YES;
+
+    return [_delegate textShouldBeginEditing:self];
+}
+
+- (BOOL)_sendDelegateShouldChangeTextInRange:(CPRange)aRange replacementString:(CPString)aString
+{
+    if (!(_delegateRespondsToSelectorMask & kDelegateRespondsTo_textView_shouldChangeTextInRange_replacementString))
+        return YES;
+
+    return [_delegate textView:self shouldChangeTextInRange:aRange replacementString:aString];
+}
+
+- (CPDictionary)_sendDelegateShouldChangeTypingAttributes:(CPDictionary)typingAttributes toAttributes:(CPDictionary)attributes
+{
+    if (!(_delegateRespondsToSelectorMask & kDelegateRespondsTo_textView_doCommandBySelector))
+        return [CPDictionary dictionary];
+
+    return [_delegate textView:self shouldChangeTypingAttributes:typingAttributes toAttributes:attributes];
+}
+
+- (CPRange)_sendDelegateWillChangeSelectionFromCharacterRange:(CPRange)selectionRange toCharacterRange:(CPRange)range
+{
+    if (!(_delegateRespondsToSelectorMask & kDelegateRespondsTo_textView_willChangeSelectionFromCharacterRange_toCharacterRange))
+        return CPMakeRange(0, 0);
+
+    return [_delegate textView:self willChangeSelectionFromCharacterRange:selectionRange toCharacterRange:range];
 }
 
 @end
