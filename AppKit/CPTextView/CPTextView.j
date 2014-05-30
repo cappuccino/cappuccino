@@ -322,12 +322,12 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (id)initWithFrame:(CGRect)aFrame textContainer:(CPTextContainer)aContainer
 {
+#if PLATFORM(DOM)
     self = [super initWithFrame:aFrame];
 
     if (self)
     {
-        if (self._DOMElement)
-            self._DOMElement.style.cursor = "text";
+        self._DOMElement.style.cursor = "text";
         _textContainerInset = CGSizeMake(2,0);
         _textContainerOrigin = CGPointMake(_bounds.origin.x, _bounds.origin.y);
         [aContainer setTextView:self];
@@ -363,7 +363,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     }
 
     [self registerForDraggedTypes:[CPColorDragType]];
-
+#else
+    self=[self init];
+#endif
     return self;
 }
 
