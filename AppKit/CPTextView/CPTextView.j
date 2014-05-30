@@ -285,6 +285,11 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 */
 @implementation CPTextView : CPText
 {
+    BOOL                    _allowsUndo             @accessors(property=allowsUndo);
+    BOOL                    _usesFontPanel          @accessors(property=usesFontPanel);
+    CPColor                 _insertionPointColor    @accessors(property=insertionPointColor);
+    CPSelectionGranularity  _selectionGranularity   @accessors(property=selectionGranularity);
+
     CPTextStorage               _textStorage;
     CPTextContainer             _textContainer;
     CPLayoutManager             _layoutManager;
@@ -298,9 +303,6 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     int             _startTrackingLocation;
     CPRange         _selectionRange;
     CPDictionary    _selectedTextAttributes;
-    int             _selectionGranularity;
-
-    CPColor         _insertionPointColor;
 
     CPDictionary    _typingAttributes;
 
@@ -319,10 +321,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     BOOL            _scrollingDownward;
 
-    /* use bit mask ? */
     BOOL            _isRichText;
-    BOOL            _usesFontPanel;
-    BOOL            _allowsUndo;
     BOOL            _isHorizontallyResizable;
     BOOL            _isVerticallyResizable;
     BOOL            _isEditable;
@@ -331,6 +330,29 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     var             _caretDOM;
     int             _stickyXLocation;
 }
+
+
+#pragma mark -
+#pragma mark Class methods
+
+/* <!> FIXME
+    just a testing characterSet
+    all of this depend of the current language.
+    Need some CPLocale support and maybe even a FSM...
+ */
++ (CPArray)_wordBoundaryCharacterArray
+{
+    return ['\n','\r', ' ', '\t', ',', ';', '.', '!', '?', '\'', '"', '-', ':'];
+}
+
++ (CPArray)_paragraphBoundaryCharacterArray
+{
+    return ['\n','\r'];
+}
+
+
+#pragma mark -
+#pragma mark Init methodes
 
 - (id)initWithFrame:(CGRect)aFrame textContainer:(CPTextContainer)aContainer
 {
@@ -372,41 +394,12 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         _isVerticallyResizable = YES;
         _isHorizontallyResizable = NO;
 
-        _caretRect = CGRectMake(0,0,1,11);
+        _caretRect = CGRectMake(0, 0, 1, 11);
     }
 
     [self registerForDraggedTypes:[CPColorDragType]];
 
     return self;
-}
-
-- (BOOL)_isFocused
-{
-   return [[self window] isKeyWindow] && _isFirstResponder;
-}
-- (void)becomeKeyWindow
-{
-    [self setNeedsDisplay:YES];
-}
-
-/*!
-    @ignore
-*/
-- (void)resignKeyWindow
-{
-    [self setNeedsDisplay:YES];
-}
-
-- (void)undo:(id)sender
-{
-    if (_allowsUndo)
-        [[[self window] undoManager] undo];
-}
-
-- (void)redo:(id)sender
-{
-    if (_allowsUndo)
-        [[[self window] undoManager] redo];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -420,6 +413,42 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     return [self initWithFrame:aFrame textContainer:container];
 }
+
+
+#pragma mark -
+#pragma mark Responders method
+
+- (BOOL)acceptsFirstResponder
+{
+    if (_isSelectable)
+        return YES;
+
+    return NO;
+}
+
+- (BOOL)becomeFirstResponder
+{
+    _isFirstResponder = YES;
+    [self updateInsertionPointStateAndRestartTimer:YES];
+    [[CPFontManager sharedFontManager] setSelectedFont:[self font] isMultiple:NO];
+    [self setNeedsDisplay:YES];
+
+    return YES;
+}
+
+- (BOOL)resignFirstResponder
+{
+    [_caretTimer invalidate];
+    _caretTimer = nil;
+    _isFirstResponder = NO;
+    [self setNeedsDisplay:YES];
+
+    return YES;
+}
+
+
+#pragma mark -
+#pragma mark Delegate methods
 
 /*!
     Returns the delegate object for the text view.
@@ -476,10 +505,47 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     }
 }
 
-- (CPString)string
+
+#pragma mark -
+#pragma mark Key window methods
+
+- (void)becomeKeyWindow
 {
-    return [_textStorage string];
+    [self setNeedsDisplay:YES];
 }
+
+/*!
+    @ignore
+*/
+- (void)resignKeyWindow
+{
+    [self setNeedsDisplay:YES];
+}
+
+- (BOOL)_isFocused
+{
+   return [[self window] isKeyWindow] && _isFirstResponder;
+}
+
+
+#pragma mark -
+#pragma mark Undo redo methods
+
+- (void)undo:(id)sender
+{
+    if (_allowsUndo)
+        [[[self window] undoManager] undo];
+}
+
+- (void)redo:(id)sender
+{
+    if (_allowsUndo)
+        [[[self window] undoManager] redo];
+}
+
+
+#pragma mark -
+#pragma mark Accessors
 
 - (void)setString:(CPString)aString
 {
@@ -488,6 +554,11 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     [_layoutManager _validateLayoutAndGlyphs];
     [self sizeToFit];
     [self setNeedsDisplay:YES];
+}
+
+- (CPString)string
+{
+    return [_textStorage string];
 }
 
 // KVO support
@@ -512,14 +583,14 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     [self invalidateTextContainerOrigin];
 }
 
-- (CPTextStorage)textStorage
-{
-    return _textStorage;
-}
-
 - (CPTextContainer)textContainer
 {
     return _textContainer;
+}
+
+- (CPTextStorage)textStorage
+{
+    return _textStorage;
 }
 
 - (CPLayoutManager)layoutManager
@@ -560,6 +631,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 - (void)setEditable:(BOOL)flag
 {
     _isEditable = flag;
+
     if (flag)
         _isSelectable = flag;
 }
@@ -572,6 +644,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 - (void)setSelectable:(BOOL)flag
 {
     _isSelectable = flag;
+
     if (flag)
         _isEditable = flag;
 }
@@ -608,6 +681,10 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     return shouldChange;
 }
 
+
+#pragma mark -
+#pragma mark Insert characters methods
+
 - (void)_replaceCharactersInRange:aRange withAttributedString:(CPString)aString
 {
     [_textStorage replaceCharactersInRange:aRange withAttributedString:aString];
@@ -636,7 +713,6 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     if (![self shouldChangeTextInRange:CPMakeRangeCopy(_selectionRange) replacementString:string])
         return;
 
-
     if (isAttributed)
     {
         [[[[self window] undoManager] prepareWithInvocationTarget:self]
@@ -649,6 +725,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     else
     {
         [[[self window] undoManager] setActionName:@"Replace plain text"];
+
         if (_isRichText)
         {
             aString = [[CPAttributedString alloc] initWithString:aString attributes:_typingAttributes];
@@ -677,6 +754,36 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 {
     _drawCaret = !_drawCaret;
     [self setNeedsDisplayInRect:_caretRect];
+}
+
+
+#pragma mark -
+#pragma mark Drawing methods
+
+- (void)drawInsertionPointInRect:(CGRect)aRect color:(CPColor)aColor turnedOn:(BOOL)flag
+{
+#if PLATFORM(DOM)
+    var style;
+
+    if (!_caretDOM)
+    {
+        _caretDOM = document.createElement("span");
+        style = _caretDOM.style;
+        style.position = "absolute";
+        style.visibility = "visible";
+        style.padding = "0px";
+        style.margin = "0px";
+        style.whiteSpace = "pre";
+        style.backgroundColor = "black";
+        _caretDOM.style.width = "1px";
+        self._DOMElement.appendChild(_caretDOM);
+    }
+
+    _caretDOM.style.left = (aRect.origin.x) + "px";
+    _caretDOM.style.top = (aRect.origin.y) + "px";
+    _caretDOM.style.height = (aRect.size.height) + "px";
+    _caretDOM.style.visibility = flag ? "visible" : "hidden";
+#endif
 }
 
 - (void)drawRect:(CGRect)aRect
@@ -715,9 +822,29 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         [self updateInsertionPointStateAndRestartTimer:NO];
         [self drawInsertionPointInRect:_caretRect color:_insertionPointColor turnedOn:_drawCaret];
     }
-    else   // <!> FIXME: breaks DOM abstraction, but i did get it working otherwise
+    else // <!> FIXME: breaks DOM abstraction, but i did get it working otherwise
+    {
         if (_caretDOM)
             _caretDOM.style.visibility = "hidden";
+    }
+}
+
+
+#pragma mark -
+#pragma mark Select methods
+
+- (void)selectAll:(id)sender
+{
+    if (_isSelectable)
+    {
+        if (_caretTimer)
+        {
+            [_caretTimer invalidate];
+            _caretTimer = nil;
+        }
+
+        [self setSelectedRange:CPMakeRange(0, [_layoutManager numberOfCharacters])];
+    }
 }
 
 - (void)setSelectedRange:(CPRange)range
@@ -732,7 +859,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     range = CPIntersectionRange(maxRange, range);
 
     if (!selecting && (_delegateRespondsToSelectorMask & kDelegateRespondsTo_textView_willChangeSelectionFromCharacterRange_toCharacterRange))
+    {
         _selectionRange = [_delegate textView:self willChangeSelectionFromCharacterRange:_selectionRange toCharacterRange:range];
+    }
     else
     {
         _selectionRange = CPMakeRangeCopy(range);
@@ -760,10 +889,56 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     return [_selectionRange];
 }
 
+- (CPRange)selectionRangeForProposedRange:(CPRange)proposedRange granularity:(CPSelectionGranularity)granularity
+{
+    var textStorageLength = [_layoutManager numberOfCharacters];
+
+    if (textStorageLength == 0)
+        return CPMakeRange(0, 0);
+
+    if (proposedRange.location >= textStorageLength)
+        return CPMakeRange(textStorageLength, 0);
+
+    if (CPMaxRange(proposedRange) > textStorageLength)
+        proposedRange.length = textStorageLength - proposedRange.location;
+
+    var string = [_textStorage string];
+
+    switch (granularity)
+    {
+        case CPSelectByWord:
+            var wordRange = [self _characterRangeForUnitAtIndex:proposedRange.location asDefinedByCharArray:[[self class] _wordBoundaryCharacterArray] skip:YES];
+
+            if (proposedRange.length)
+                wordRange = CPUnionRange(wordRange, [self _characterRangeForUnitAtIndex:CPMaxRange(proposedRange) asDefinedByCharArray:[[self class] _wordBoundaryCharacterArray] skip:NO]);
+
+            return wordRange;
+
+        case CPSelectByParagraph:
+            var parRange = [self _characterRangeForUnitAtIndex:proposedRange.location asDefinedByCharArray:[[self class] _paragraphBoundaryCharacterArray] skip:NO];
+
+            if (proposedRange.length)
+                parRange = CPUnionRange(parRange, [self _characterRangeForUnitAtIndex:CPMaxRange(proposedRange) asDefinedByCharArray: [[self class] _paragraphBoundaryCharacterArray] skip:NO]);
+
+            return parRange;
+
+        default:
+            return proposedRange;
+    }
+}
+
+
+#pragma mark -
+#pragma mark Keyboard events
+
 - (void)keyDown:(CPEvent)event
 {
     [self interpretKeyEvents:[event]];
 }
+
+
+#pragma mark -
+#pragma mark Mouse Events
 
 - (void)mouseDown:(CPEvent)event
 {
@@ -794,8 +969,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         setRange = _MakeRangeFromAbs(_startTrackingLocation < _MidRange(_selectionRange)?
                                      CPMaxRange(_selectionRange) : _selectionRange.location,
                                      _startTrackingLocation);
-
     }
+
     [self setSelectedRange:setRange affinity:0 stillSelecting:YES];
 }
 
@@ -863,6 +1038,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     _previousSelectionGranularity = [self selectionGranularity];
     [self setSelectionGranularity:CPSelectByCharacter];
     [self setSelectedRange:[self selectedRange] affinity:0 stillSelecting:NO];
+
     var point = [_layoutManager locationForGlyphAtIndex:[self selectedRange].location];
     _stickyXLocation= point.x;
     _startTrackingLocation = _selectionRange.location;
@@ -896,6 +1072,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         [self scrollRangeToVisible:CPMakeRange(dindex, 0)]
     }
 }
+
 - (void)moveDownAndModifySelection:(id)sender
 {
     if (_isSelectable)
@@ -933,6 +1110,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         [self scrollRangeToVisible:CPMakeRange(dindex, 0)]
     }
 }
+
 - (void)moveUpAndModifySelection:(id)sender
 {
     if (_isSelectable)
@@ -944,11 +1122,14 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         [self _performSelectionFixupForRange:_MakeRangeFromAbs(_startTrackingLocation, (_selectionRange.location < _startTrackingLocation? _selectionRange.location : CPMaxRange(_selectionRange)))];
     }
 }
+
 - (void)_performSelectionFixupForRange:(CPRange)aSel
 {
     aSel.location = MAX(0, aSel.location);
+
     if (CPMaxRange(aSel) > [_layoutManager numberOfCharacters])
         aSel = CPMakeRange([_layoutManager numberOfCharacters], 0);
+
     [self setSelectedRange:aSel];
     var point = [_layoutManager locationForGlyphAtIndex:aSel.location];
     _stickyXLocation = point.x;
@@ -957,18 +1138,18 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 - (void)_establishSelection:(CPSelection)aSel byExtending:(BOOL)flag
 {
     if (flag)
-    {
         aSel = CPUnionRange(aSel, _selectionRange);
-    }
 
     [self _performSelectionFixupForRange:aSel];
     _startTrackingLocation = _selectionRange.location;
 }
+
 - (unsigned)_calculateMoveSelectionFromRange:(CPRange)aRange intoDirection:(integer)move granularity:(CPSelectionGranularity)granularity
 {
     var inWord = ![self _isCharacterAtIndex:(move > 0 ? CPMaxRange(aRange) : aRange.location) + move granularity:granularity],
         aSel = [self selectionRangeForProposedRange:CPMakeRange((move > 0 ? CPMaxRange(aRange) : aRange.location) + move, 0) granularity:granularity],
         bSel = [self selectionRangeForProposedRange:CPMakeRange((move > 0 ? CPMaxRange(aSel) : aSel.location) + move, 0) granularity:granularity];
+
     return move > 0 ? CPMaxRange(inWord? aSel:bSel) : (inWord? aSel:bSel).location;
 }
 
@@ -988,8 +1169,11 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
                                            intoDirection:move granularity:granularity];
         aSel = CPMakeRange(pos, 0);
     }
+
     else
+    {
         aSel = CPMakeRange((aSel.location < _startTrackingLocation? aSel.location : CPMaxRange(aSel)) + move, 0);
+    }
 
     aSel = _MakeRangeFromAbs(_startTrackingLocation, aSel.location);
     [self _performSelectionFixupForRange:aSel];
@@ -998,10 +1182,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 - (void)moveLeftAndModifySelection:(id)sender
 {
     if (_isSelectable)
-    {
        [self _extendSelectionIntoDirection:-1 granularity:CPSelectByCharacter];
-    }
 }
+
 - (void)moveBackward:(id)sender
 {
     [self moveLeft:sender];
@@ -1015,58 +1198,54 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 - (void)moveRightAndModifySelection:(id)sender
 {
     if (_isSelectable)
-    {
        [self _extendSelectionIntoDirection:+1 granularity:CPSelectByCharacter];
-    }
 }
+
 - (void)moveLeft:(id)sender
 {
     if (_isSelectable)
-    {
         [self _establishSelection:CPMakeRange(_selectionRange.location - 1, 0) byExtending:NO];
-    }
 }
 
 - (void)moveToEndOfParagraph:(id)sender
 {
     if (_isSelectable)
-    {
        [self _moveSelectionIntoDirection:+1 granularity:CPSelectByParagraph];
-    }
 }
+
 - (void)moveToEndOfParagraphAndModifySelection:(id)sender
 {
     if (_isSelectable)
-    {
        [self _extendSelectionIntoDirection:+1 granularity:CPSelectByParagraph];
-    }
 }
+
 - (void)moveParagraphForwardAndModifySelection:(id)sender
 {
     if (_isSelectable)
-    {
        [self _extendSelectionIntoDirection:+1 granularity:CPSelectByParagraph];
-    }
 }
+
 - (void)moveParagraphForward:(id)sender
 {
     if (_isSelectable)
-    {
        [self _moveSelectionIntoDirection:+1 granularity:CPSelectByParagraph]
-    }
 }
+
 - (void)moveWordBackwardAndModifySelection:(id)sender
 {
     [self moveWordLeftAndModifySelection:sender];
 }
+
 - (void)moveWordBackward:(id)sender
 {
     [self moveWordLeft:sender];
 }
+
 - (void)moveWordForwardAndModifySelection:(id)sender
 {
     [self moveWordRightAndModifySelection:sender];
 }
+
 - (void)moveWordForward:(id)sender
 {
     [self moveWordRight:sender];
@@ -1075,75 +1254,61 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 - (void)moveToBeginningOfDocument:(id)sender
 {
     if (_isSelectable)
-    {
          [self _establishSelection:CPMakeRange(0, 0) byExtending:NO];
-    }
 }
+
 - (void)moveToBeginningOfDocumentAndModifySelection:(id)sender
 {
     if (_isSelectable)
-    {
          [self _establishSelection:CPMakeRange(0, 0) byExtending:YES];
-    }
 }
+
 - (void)moveToEndOfDocument:(id)sender
 {
     if (_isSelectable)
-    {
          [self _establishSelection:CPMakeRange([_layoutManager numberOfCharacters], 0) byExtending:NO];
-    }
 }
+
 - (void)moveToEndOfDocumentAndModifySelection:(id)sender
 {
     if (_isSelectable)
-    {
          [self _establishSelection:CPMakeRange([_layoutManager numberOfCharacters], 0) byExtending:YES];
-    }
 }
 
 - (void)moveWordRight:(id)sender
 {
     if (_isSelectable)
-    {
         [self _moveSelectionIntoDirection:+1 granularity:CPSelectByWord]
-    }
 }
 
 - (void)moveToBeginningOfParagraph:(id)sender
 {
     if (_isSelectable)
-    {
         [self _moveSelectionIntoDirection:-1 granularity:CPSelectByParagraph]
-    }
 }
+
 - (void)moveToBeginningOfParagraphAndModifySelection:(id)sender
 {
     if (_isSelectable)
-    {
        [self _extendSelectionIntoDirection:-1 granularity:CPSelectByParagraph];
-    }
 }
+
 - (void)moveParagraphBackward:(id)sender
 {
     if (_isSelectable)
-    {
         [self _moveSelectionIntoDirection:-1 granularity:CPSelectByParagraph]
-    }
 }
+
 - (void)moveParagraphBackwardAndModifySelection:(id)sender
 {
     if (_isSelectable)
-    {
        [self _extendSelectionIntoDirection:-1 granularity:CPSelectByParagraph];
-    }
 }
+
 - (void)moveWordRightAndModifySelection:(id)sender
 {
     if (_isSelectable)
-    {
          [self _extendSelectionIntoDirection:+1 granularity:CPSelectByWord];
-
-    }
 }
 
 - (void)deleteToEndOfParagraph:(id)sender
@@ -1163,6 +1328,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         [self delete:self];
     }
 }
+
 - (void)deleteToBeginningOfLine:(id)sender
 {
     if (_isSelectable && _isEditable)
@@ -1171,6 +1337,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         [self delete:self];
     }
 }
+
 - (void)deleteToEndOfLine:(id)sender
 {
     if (_isSelectable && _isEditable)
@@ -1179,6 +1346,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         [self delete:self];
     }
 }
+
 - (void)deleteWordBackward:(id)sender
 {
     if (_isSelectable && _isEditable)
@@ -1187,6 +1355,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         [self delete:self];
     }
 }
+
 - (void)deleteWordForward:(id)sender
 {
     if (_isSelectable && _isEditable)
@@ -1195,45 +1364,53 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         [self delete:self];
     }
 }
+
 - (void)moveToLeftEndOfLine:(id)sender byExtending:(BOOL)flag
 {
     if (_isSelectable)
     {
         var fragment = [_layoutManager _lineFragmentForLocation:_selectionRange.location];
+
         if (!fragment && _selectionRange.location > 0)
             fragment = [_layoutManager _lineFragmentForLocation:_selectionRange.location - 1];
         if (fragment)
             [self _establishSelection:CPMakeRange(fragment._range.location, 0) byExtending:flag];
     }
 }
+
 - (void)moveToLeftEndOfLine:(id)sender
 {
     [self moveToLeftEndOfLine:sender byExtending:NO];
 }
+
 - (void)moveToLeftEndOfLineAndModifySelection:(id)sender
 {
     [self moveToLeftEndOfLine:sender byExtending:YES];
 }
+
 - (void)moveToRightEndOfLine:(id)sender byExtending:(BOOL)flag
 {
     if (_isSelectable)
     {
         var fragment = [_layoutManager _lineFragmentForLocation:_selectionRange.location];
+
         if (fragment)
         {
             var loc = CPMaxRange(fragment._range);
+
             if (loc > 0 && loc < [_layoutManager numberOfCharacters])
-            {
                 loc = MAX(0, loc - 1);
-            }
+
             [self _establishSelection:CPMakeRange(loc, 0) byExtending:flag];
         }
     }
 }
+
 - (void)moveToRightEndOfLine:(id)sender
 {
     [self moveToRightEndOfLine:sender byExtending:NO];
 }
+
 - (void)moveToRightEndOfLineAndModifySelection:(id)sender
 {
     [self moveToRightEndOfLine:sender byExtending:YES];
@@ -1242,38 +1419,19 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 - (void)moveWordLeftAndModifySelection:(id)sender
 {
     if (_isSelectable)
-    {
         [self _extendSelectionIntoDirection:-1 granularity:CPSelectByWord];
-    }
 }
+
 - (void)moveWordLeft:(id)sender
 {
     if (_isSelectable)
-    {
         [self _moveSelectionIntoDirection:-1 granularity:CPSelectByWord]
-    }
 }
 
 - (void)moveRight:(id)sender
 {
     if (_isSelectable)
-    {
         [self _establishSelection:CPMakeRange(CPMaxRange(_selectionRange) + 1, 0) byExtending:NO];
-    }
-}
-
-- (void)selectAll:(id)sender
-{
-    if (_isSelectable)
-    {
-        if (_caretTimer)
-        {
-            [_caretTimer invalidate];
-            _caretTimer = nil;
-        }
-
-        [self setSelectedRange:CPMakeRange(0, [_layoutManager numberOfCharacters])];
-    }
 }
 
 - (void)_deleteForRange:(CPRange)changedRange
@@ -1304,6 +1462,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         changedRange.location > 0 && [self _isCharacterAtIndex:(changedRange.location - 1) granularity:_previousSelectionGranularity] &&
         changedRange.location < [[self string] length] && [self _isCharacterAtIndex:CPMaxRange(changedRange) granularity:_previousSelectionGranularity])
         changedRange.length++;
+
     [self _deleteForRange:changedRange];
 }
 
@@ -1329,10 +1488,12 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 {
     [self insertText:@"\n"];
 }
+
 - (void)insertTab:(id)sender
 {
     [self insertText:@"\t"];
 }
+
 - (void)insertTabIgnoringFieldEditor:(id)sender
 {
     [self insertTab:sender];
@@ -1348,39 +1509,15 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     [self insertLineBreak:sender];
 }
 
-- (BOOL)acceptsFirstResponder
-{
-    if (_isSelectable)
-        return YES;
-
-    return NO;
-}
-
-- (BOOL)becomeFirstResponder
-{
-    _isFirstResponder = YES;
-    [self updateInsertionPointStateAndRestartTimer:YES];
-    [[CPFontManager sharedFontManager] setSelectedFont:[self font] isMultiple:NO];
-    [self setNeedsDisplay:YES];
-    return YES;
-}
-
-- (BOOL)resignFirstResponder
-{
-    [_caretTimer invalidate];
-    _caretTimer = nil;
-    _isFirstResponder = NO;
-    [self setNeedsDisplay:YES];
-    return YES;
-}
-
 - (void)setTypingAttributes:(CPDictionary)attributes
 {
     if (!attributes)
         attributes = [CPDictionary dictionary];
 
     if (_delegateRespondsToSelectorMask & kDelegateRespondsTo_textView_shouldChangeTypingAttributes_toAttributes)
+    {
         _typingAttributes = [_delegate textView:self shouldChangeTypingAttributes:_typingAttributes toAttributes:attributes];
+    }
     else
     {
         _typingAttributes = [attributes copy];
@@ -1430,9 +1567,12 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 - (void)setFont:(CPFont)font
 {
     _font = font;
+
     var length = [_layoutManager numberOfCharacters];
+
     if (length)
-    {   [_textStorage addAttribute:CPFontAttributeName value:_font range:CPMakeRange(0, length)];
+    {
+        [_textStorage addAttribute:CPFontAttributeName value:_font range:CPMakeRange(0, length)];
         [_textStorage setFont:_font];
         [self scrollRangeToVisible:CPMakeRange(length, 0)];
     }
@@ -1489,10 +1629,13 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     else
     {
         oldFont = [self font];
+
         var length = [_textStorage length];
+
         [self setFont:[sender convertFont:oldFont] range:CPMakeRange(0,length)];
         scrollRange = CPMakeRange(length, 0);
     }
+
     [_layoutManager _validateLayoutAndGlyphs];
     [self sizeToFit];
     [self setNeedsDisplay:YES];
@@ -1507,6 +1650,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     if (!CPEmptyRange(_selectionRange))
     {
         var attrib = [_textStorage attributesAtIndex:_selectionRange.location effectiveRange:nil];
+
         if ([attrib containsKey:CPUnderlineStyleAttributeName] && [[attrib objectForKey:CPUnderlineStyleAttributeName] intValue])
             [_textStorage removeAttribute:CPUnderlineStyleAttributeName range:_selectionRange];
         else
@@ -1524,16 +1668,6 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 - (CPSelectionAffinity)selectionAffinity
 {
     return 0;
-}
-
-- (void)setUsesFontPanel:(BOOL)flag
-{
-    _usesFontPanel = flag;
-}
-
-- (BOOL)usesFontPanel
-{
-    return _usesFontPanel;
 }
 
 - (void)setTextColor:(CPColor)aColor
@@ -1565,6 +1699,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     {
         [_typingAttributes setObject:aColor forKey:CPForegroundColorAttributeName];
     }
+
     [_layoutManager _validateLayoutAndGlyphs];
     [self setNeedsDisplay:YES];
     [self scrollRangeToVisible:CPMakeRange(CPMaxRange(range), 0)];
@@ -1585,11 +1720,6 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     return NO;
 }
 
-- (BOOL)allowsUndo
-{
-    return _allowsUndo;
-}
-
 - (CPRange)selectedRange
 {
     return _selectionRange;
@@ -1597,7 +1727,6 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)replaceCharactersInRange:(CPRange)aRange withString:(CPString)aString
 {
-
     [_textStorage replaceCharactersInRange:aRange withString:aString];
 }
 
@@ -1718,11 +1847,13 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     {
         case CPSelectByWord:
             characterSet = [[self class] _wordBoundaryCharacterArray];
-        break;
+            break;
+
         case CPSelectByParagraph:
             characterSet = [[self class] _paragraphBoundaryCharacterArray];
-        break;
+            break;
     }
+
     // FIXME if (!characterSet) croak!
     return characterSet.join("").indexOf([self string].charAt(index))  !== CPNotFound;
 }
@@ -1740,16 +1871,15 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     {
         // -> extend to the left
         wordRange = CPMakeRange(index, 1);
+
         while (setString.indexOf(string.charAt(--index)) !== CPNotFound && index > -1)
         {
              wordRange = CPMakeRange(index, 1);
-
         }
         // -> extend to the right
         for (index = wordRange.location; setString.indexOf(string.charAt(++index)) !== CPNotFound && index < string.length;)
         {
              wordRange = _MakeRangeFromAbs(wordRange.location, MIN(MAX(0, string.length - 1), index + 1));
-
         }
         return wordRange;
     }
@@ -1794,108 +1924,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     return wordRange;
 }
 
-/* <!> FIXME
-    just a testing characterSet
-    all of this depend of the current language.
-    Need some CPLocale support and maybe even a FSM...
- */
-+ (CPArray)_wordBoundaryCharacterArray
-{
-    return ['\n','\r', ' ', '\t', ',', ';', '.', '!', '?', '\'', '"', '-', ':'];
-}
-
-+ (CPArray)_paragraphBoundaryCharacterArray
-{
-    return ['\n','\r'];
-}
-
-
-- (CPRange)selectionRangeForProposedRange:(CPRange)proposedRange granularity:(CPSelectionGranularity)granularity
-{
-    var textStorageLength = [_layoutManager numberOfCharacters];
-
-    if (textStorageLength == 0)
-        return CPMakeRange(0, 0);
-
-    if (proposedRange.location >= textStorageLength)
-        return CPMakeRange(textStorageLength, 0);
-
-    if (CPMaxRange(proposedRange) > textStorageLength)
-        proposedRange.length = textStorageLength - proposedRange.location;
-
-    var string = [_textStorage string];
-
-    switch (granularity)
-    {
-        case CPSelectByWord:
-            var wordRange = [self _characterRangeForUnitAtIndex:proposedRange.location asDefinedByCharArray:[[self class] _wordBoundaryCharacterArray] skip:YES];
-
-            if (proposedRange.length)
-                wordRange = CPUnionRange(wordRange, [self _characterRangeForUnitAtIndex:CPMaxRange(proposedRange) asDefinedByCharArray:[[self class] _wordBoundaryCharacterArray] skip:NO]);
-
-            return wordRange;
-
-        case CPSelectByParagraph:
-            var parRange = [self _characterRangeForUnitAtIndex:proposedRange.location asDefinedByCharArray:[[self class] _paragraphBoundaryCharacterArray] skip:NO];
-
-            if (proposedRange.length)
-                parRange = CPUnionRange(parRange, [self _characterRangeForUnitAtIndex:CPMaxRange(proposedRange) asDefinedByCharArray: [[self class] _paragraphBoundaryCharacterArray] skip:NO]);
-
-            return parRange;
-
-        default:
-            return proposedRange;
-    }
-}
-
-- (void)setSelectionGranularity:(CPSelectionGranularity)granularity
-{
-    _selectionGranularity = granularity;
-}
-
-- (CPSelectionGranularity)selectionGranularity
-{
-    return _selectionGranularity;
-}
-
-- (CPColor)insertionPointColor
-{
-    return _insertionPointColor;
-}
-
-- (void)setInsertionPointColor:(CPColor)aColor
-{
-    _insertionPointColor = aColor;
-}
-
 - (BOOL)shouldDrawInsertionPoint
 {
     return (_selectionRange.length === 0 && [self _isFocused])
-}
-
-- (void)drawInsertionPointInRect:(CGRect)aRect color:(CPColor)aColor turnedOn:(BOOL)flag
-{
-#if PLATFORM(DOM)
-    var style;
-    if (!_caretDOM)
-    {
-        _caretDOM = document.createElement("span");
-        style = _caretDOM.style;
-        style.position = "absolute";
-        style.visibility = "visible";
-        style.padding = "0px";
-        style.margin = "0px";
-        style.whiteSpace = "pre";
-        style.backgroundColor = "black";
-        _caretDOM.style.width = "1px";
-        self._DOMElement.appendChild(_caretDOM);
-    }
-
-    _caretDOM.style.left = (aRect.origin.x) + "px";
-    _caretDOM.style.top = (aRect.origin.y) + "px";
-    _caretDOM.style.height = (aRect.size.height) + "px";
-    _caretDOM.style.visibility = flag ? "visible" : "hidden";
-#endif
 }
 
 - (void)_hideCaret
@@ -1923,7 +1954,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         }
     }
     else
+    {
         _caretRect = [_layoutManager boundingRectForGlyphRange:CPMakeRange(_selectionRange.location, 1) inTextContainer:_textContainer];
+    }
 
     _caretRect.origin.x += _textContainerOrigin.x;
     _caretRect.origin.y += _textContainerOrigin.y;
@@ -1935,6 +1968,10 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         _caretTimer = [CPTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(_blinkCaret:) userInfo:nil repeats:YES];
     }
 }
+
+
+#pragma mark -
+#pragma mark Dragging operation
 
 - (void)performDragOperation:(CPDraggingInfo)aSender
 {
