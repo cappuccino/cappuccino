@@ -88,7 +88,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 
 
-@implementation CPText : CPControl
+@implementation CPText : CPView
 {
     int             _previousSelectionGranularity;
 }
