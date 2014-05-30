@@ -113,7 +113,7 @@ var CPSystemTypesetterFactory = Nil;
         maxNumberOfLineFragments:(unsigned)maxNumLines
         nextGlyphIndex:(UIntegerReference)nextGlyph
 {
-   CPLog.error(@"-[CPTypesetter subclass responsibility");
+   _CPRaiseInvalidAbstractInvocation(self, _cmd);
 }
 
 @end
@@ -335,7 +335,7 @@ var _sharedSimpleTypesetter = nil;
 
                 isNewline = YES;
                 isWordWrapped = YES;
-                glyphIndex = CPMaxRange(lineRange) - 1;  // start the line starts directly at current character 
+                glyphIndex = CPMaxRange(lineRange) - 1;  // start the line starts directly at current character
             }
 
             _lineHeight = MAX(_lineHeight, ascent - descent + leading);
