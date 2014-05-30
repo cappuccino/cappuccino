@@ -27,6 +27,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@protocol CPTextDelegate <CPObject>
+
+- (BOOL)textShouldBeginEditing:(CPText)aTextObject;
+- (BOOL)textShouldEndEditing:(CPText)aTextObject;
+- (void)textDidBeginEditing:(CPNotification)aNotification;
+- (void)textDidChange:(CPNotification)aNotification;
+- (void)textDidEndEditing:(CPNotification)aNotification;
+
+@end
+
 CPParagraphSeparatorCharacter   = 0x2029;
 CPLineSeparatorCharacter        = 0x2028;
 CPEnterCharacter                = "\u0003";
