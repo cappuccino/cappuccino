@@ -39,8 +39,11 @@ CPTextStorageDidProcessEditingNotification = @"CPTextStorageDidProcessEditingNot
     @ingroup appkit
     @class CPTextStorage
 */
-@implementation CPTextStorage : CPAttributedString
+@implementation CPTextStorage : CPMutableAttributedString
 {
+    CPColor        _foregroundColor @accessors(property=foregroundColor);
+    CPFont         _font            @accessors(property=font);
+
     CPMutableArray _layoutManagers;
     id             _delegate;
 
@@ -48,9 +51,6 @@ CPTextStorageDidProcessEditingNotification = @"CPTextStorageDidProcessEditingNot
     unsigned       _editedMask;
     CPRange        _editedRange;
     int            _editCount; // {begin,end}Editing counter
-
-    CPFont         _font;
-    CPColor        _foregroundColor;
 }
 
 - (id)initWithString:(CPString)aString attributes:(CPDictionary)attributes
@@ -255,30 +255,11 @@ CPTextStorageDidProcessEditingNotification = @"CPTextStorageDidProcessEditingNot
     [self endEditing];
 }
 
-- (void)setFont:(CPFont)aFont
-{
-    _font = aFont;
-}
-
-- (CPFont)font
-{
-    return _font;
-}
-
-- (void)setForegroundColor:(CPColor)color
-{
-    _foregroundColor = color;
-}
-
-- (CPColor)foregroundColor
-{
-    return _foregroundColor;
-}
-
 - (CPAttributedString)attributedSubstringFromRange:(CPRange)aRange
 {
     if (!aRange.length)
         return [CPAttributedString new];
+
     return [super attributedSubstringFromRange:aRange];
 }
 @end

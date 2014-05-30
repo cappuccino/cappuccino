@@ -139,9 +139,10 @@ CPLineMovesUp = 4;
     }
 }
 
-- (void) textViewFrameChanged:(CPNotification)aNotification
+- (void)textViewFrameChanged:(CPNotification)aNotification
 {
-    var newSize=CPMakeSize([_textView frame].size.width, _size.height);
+    var newSize = CGMakeSize([_textView frame].size.width, _size.height);
+
     [self setContainerSize:newSize];
 }
 
