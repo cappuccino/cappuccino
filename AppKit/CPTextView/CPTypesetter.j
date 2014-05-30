@@ -351,25 +351,32 @@ var _sharedSimpleTypesetter = nil;
                    lineOrigin.x += rangeWidth;
                    isTabStop = NO;
                 }
+
                 if (isNewline)
                 {
                     if ([_currentParagraph minimumLineHeight])
                         _lineHeight = MAX(_lineHeight, [_currentParagraph minimumLineHeight]);
+
                     if ([_currentParagraph maximumLineHeight])
                         _lineHeight = MIN(_lineHeight, [_currentParagraph maximumLineHeight]);
+
                     lineOrigin.y += _lineHeight;
+
                     if ([_currentParagraph lineSpacing])
                         lineOrigin.y += [_currentParagraph lineSpacing];
+
                     if (lineOrigin.y > [_currentTextContainer containerSize].height)
                     {
                         _indexOfCurrentContainer++;
-                        _indexOfCurrentContainer=MAX(_indexOfCurrentContainer, [[_layoutManager textContainers] count] - 1);
+                        _indexOfCurrentContainer = MAX(_indexOfCurrentContainer, [[_layoutManager textContainers] count] - 1);
                         _currentTextContainer = [[_layoutManager textContainers] objectAtIndex: _indexOfCurrentContainer];
                     }
+
                     lineOrigin.x = 0;
                     numLines++;
                     isNewline = NO;
                 }
+
                _lineWidth      = 0;
                 advancements   = [];
                 currentAnchor  = 0;

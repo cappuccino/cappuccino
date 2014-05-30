@@ -297,7 +297,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     BOOL            _drawCaret;
     CPTimer         _caretTimer;
     CPTimer         _scollingTimer;
-    CPRect          _caretRect;
+    CGRect          _caretRect;
 
     CPFont          _font;
     CPColor         _textColor;
@@ -1271,7 +1271,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         changedRange = _selectionRange;
 
     if (_previousSelectionGranularity > 0 &&
-        changedRange.location > 0 && [self _isCharacterAtIndex:changedRange.location-1 granularity:_previousSelectionGranularity] &&
+        changedRange.location > 0 && [self _isCharacterAtIndex:(changedRange.location - 1) granularity:_previousSelectionGranularity] &&
         changedRange.location < [[self string] length] && [self _isCharacterAtIndex:CPMaxRange(changedRange) granularity:_previousSelectionGranularity])
         changedRange.length++;
     [self _deleteForRange:changedRange];
