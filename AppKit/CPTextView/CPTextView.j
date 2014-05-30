@@ -83,7 +83,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)changeFont:(id)sender
 {
-    CPLog.error(@"-[CPText " + _cmd + "] subclass responsibility");
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
 }
 
 - (void)copy:(id)sender
@@ -131,105 +131,105 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)copyFont:(id)sender
 {
-    CPLog.error(@"-[CPText " + _cmd + "] subclass responsibility");
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
 }
 
 - (void)delete:(id)sender
 {
-    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
 }
 
 - (CPFont)font:(CPFont)aFont
 {
-    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
     return nil;
 }
 
 - (BOOL)isHorizontallyResizable
 {
-    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
     return NO;
 }
 
 - (BOOL)isRichText
 {
-    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
     return NO;
 }
 
 - (BOOL)isRulerVisible
 {
-    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
     return NO;
 }
 
 - (BOOL)isVerticallyResizable
 {
-    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
     return NO;
 }
 
 - (CGSize)maxSize
 {
-    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
     return CPMakeSize(0,0);
 }
 
 - (CGSize)minSize
 {
-    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
     return CPMakeSize(0,0);
 }
 
 - (void)pasteFont:(id)sender
 {
-    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
 }
 
 - (void)replaceCharactersInRange:(CPRange)aRange withString:(CPString)aString
 {
-    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
 }
 
 - (void)scrollRangeToVisible:(CPRange)aRange
 {
-    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
 }
 
 - (void)selectedAll:(id)sender
 {
-    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
 }
 
 - (CPRange)selectedRange
 {
-    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
     return CPMakeRange(CPNotFound, 0);
 }
 
 - (void)setFont:(CPFont)aFont
 {
-    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
 }
 
 - (void)setFont:(CPFont)aFont rang:(CPRange)aRange
 {
-    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
 }
 
 - (void)setHorizontallyResizable:(BOOL)flag
 {
-    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
 }
 
 - (void)setMaxSize:(CGSize)aSize
 {
-    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
 }
 
 - (void)setMinSize:(CGSize)aSize
 {
-    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
 }
 
 - (void)setString:(CPString)aString
@@ -239,28 +239,28 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)setUsesFontPanel:(BOOL)flag
 {
-    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
 }
 
 - (void)setVerticallyResizable:(BOOL)flag
 {
-    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
 }
 
 - (CPString)string
 {
-    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
     return nil;
 }
 
 - (void)underline:(id)sender
 {
-    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
 }
 
 - (BOOL)usesFontPanel
 {
-    CPLog.error(@"-[CPText "+_cmd+"] subclass responsibility");
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
     return NO;
 }
 
@@ -1765,7 +1765,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 }
 
 /* <!> FIXME
-    just a testing characterSet 
+    just a testing characterSet
     all of this depend of the current language.
     Need some CPLocale support and maybe even a FSM...
  */
