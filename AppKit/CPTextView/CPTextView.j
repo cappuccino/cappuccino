@@ -297,7 +297,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     BOOL            _drawCaret;
     CPTimer         _caretTimer;
     CPTimer         _scollingTimer;
-    CPGect          _caretRect;
+    CPRect          _caretRect;
 
     CPFont          _font;
     CPColor         _textColor;
@@ -322,9 +322,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (id)initWithFrame:(CGRect)aFrame textContainer:(CPTextContainer)aContainer
 {
-#if PLATFORM(DOM)
     self = [super initWithFrame:aFrame];
 
+#if PLATFORM(DOM)
     if (self)
     {
         self._DOMElement.style.cursor = "text";
@@ -363,9 +363,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     }
 
     [self registerForDraggedTypes:[CPColorDragType]];
-#else
-    self=[self init];
 #endif
+
     return self;
 }
 
