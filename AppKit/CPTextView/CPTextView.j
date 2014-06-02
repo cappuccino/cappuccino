@@ -1466,6 +1466,11 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)cut:(id)sender
 {
+    var selectedRange = [self selectedRange];
+
+    if (selectedRange.length < 1)
+            return;
+
     [self copy:sender];
     [self deleteBackward:sender]
 }
