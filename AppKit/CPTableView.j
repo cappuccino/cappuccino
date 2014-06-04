@@ -5143,11 +5143,17 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     {
         _editingRow = CPNotFound;
         _editingColumn = CPNotFound;
+
+        // This is needed to unset the themeState firstResponder of the tableView
+        [self _notifyViewDidResignFirstResponder];
         return;
     }
 
     _editingRow = [self rowForView:responder];
     _editingColumn = [self columnForView:responder];
+
+    // This is needed to set the themeState firstResponder of the tableView
+    [self _notifyViewDidBecomeFirstResponder];
 
     if (_editingRow !== CPNotFound && [responder isKindOfClass:[CPTextField class]] && ![responder isBezeled])
     {
