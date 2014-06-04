@@ -467,6 +467,16 @@ var cachedBlackColor,
     return [[CPColor alloc] _initWithCSSString: aString];
 }
 
++ (CPColor)selectedTextBackgroundColor
+{
+    return [CPColor colorWithHexString:"99CCFF"];
+}
+
++ (CPColor)selectedTextBackgroundColorUnfocussed
+{
+    return [CPColor colorWithHexString:"CCCCCC"];
+}
+
 /* @ignore */
 - (id)_initWithCSSString:(CPString)aString
 {

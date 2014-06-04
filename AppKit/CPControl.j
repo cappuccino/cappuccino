@@ -30,6 +30,16 @@
 
 @global CPApp
 
+@global CPCancelTextMovement
+@global CPLeftTextMovement
+@global CPRightTextMovement
+@global CPUpTextMovement
+@global CPDownTextMovement
+@global CPReturnTextMovement
+@global CPBacktabTextMovement
+@global CPTabTextMovement
+@global CPOtherTextMovement
+
 CPLeftTextAlignment      = 0;
 CPRightTextAlignment     = 1;
 CPCenterTextAlignment    = 2;

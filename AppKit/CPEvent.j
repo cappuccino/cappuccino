@@ -28,11 +28,13 @@
 
 @import "CPCompatibility.j"
 @import "CGGeometry.j"
-@import "CPText.j"
 
 @class CPTextField
 
 @global CPApp
+@global CPNewlineCharacter
+@global CPCarriageReturnCharacter
+@global CPEnterCharacter
 
 var _CPEventPeriodicEventPeriod         = 0,
     _CPEventPeriodicEventTimer          = nil,

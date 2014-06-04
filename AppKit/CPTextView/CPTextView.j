@@ -24,12 +24,12 @@
  */
 
 @import "CPText.j"
-@import "CPTextStorage.j"
-@import "CPTextContainer.j"
-@import "CPFontManager.j"
-@import "CPLayoutManager.j"
 @import "CPPasteboard.j"
 @import "CPColorPanel.j"
+@import "CPFontManager.j"
+@import "CPTextStorage.j"
+@import "CPTextContainer.j"
+@import "CPLayoutManager.j"
 
 @class _CPRTFProducer;
 @class _CPRTFParser;
@@ -57,22 +57,6 @@ _MidRange = function(a1)
     return Math.floor((CPMaxRange(a1) + a1.location) / 2);
 };
 
-
-// FIXME: move to CPColor, and use attribut theme for the color
-@implementation CPColor (CPTextViewExtensions)
-
-+ (CPColor)selectedTextBackgroundColor
-{
-    return [CPColor colorWithHexString:"99CCFF"];
-}
-+ (CPColor)selectedTextBackgroundColorUnfocussed
-{
-    return [CPColor colorWithHexString:"CCCCCC"];
-}
-
-@end
-
-
 /*
     CPSelectionGranularity
 */
@@ -86,197 +70,6 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     kDelegateRespondsTo_textView_willChangeSelectionFromCharacterRange_toCharacterRange = 0x0004,
     kDelegateRespondsTo_textView_shouldChangeTextInRange_replacementString              = 0x0008,
     kDelegateRespondsTo_textView_shouldChangeTypingAttributes_toAttributes              = 0x0010;
-
-@implementation CPText : CPView
-{
-    int _previousSelectionGranularity;
-}
-
-- (void)changeFont:(id)sender
-{
-    _CPRaiseInvalidAbstractInvocation(self, _cmd);
-}
-
-- (void)copy:(id)sender
-{
-    var selectedRange = [self selectedRange];
-
-    if (selectedRange.length < 1)
-            return;
-
-    var pasteboard = [CPPasteboard generalPasteboard],
-        stringForPasting = [[self stringValue] substringWithRange:selectedRange];
-
-    [pasteboard declareTypes:[CPStringPboardType] owner:nil];
-
-    if ([self isRichText])
-    {
-       // crude hack to make rich pasting possible in chrome and firefox. this requires a RTF roundtrip, unfortunately
-        var richData =  [_CPRTFProducer produceRTF:[[self textStorage] attributedSubstringFromRange:selectedRange] documentAttributes:@{}];
-        [pasteboard setString:richData forType:CPStringPboardType];
-    }
-    else
-        [pasteboard setString:stringForPasting forType:CPStringPboardType];
-
-}
-- (void)paste:(id)sender
-{
-    var pasteboard = [CPPasteboard generalPasteboard],
-      //  dataForPasting = [pasteboard dataForType:CPRichStringPboardType],
-        stringForPasting = [pasteboard stringForType:CPStringPboardType];
-
-    if ([stringForPasting hasPrefix:"{\\rtf1\\ansi"])
-        stringForPasting = [[_CPRTFParser new] parseRTF:stringForPasting];
-
-    if (![self isRichText] && [stringForPasting isKindOfClass:[CPAttributedString class]])
-        stringForPasting = stringForPasting._string;
-
-    if (_previousSelectionGranularity > 0)
-    {
-        // FIXME: handle smart pasting
-    }
-
-    if (stringForPasting)
-        [self insertText:stringForPasting];
-}
-
-- (void)copyFont:(id)sender
-{
-    _CPRaiseInvalidAbstractInvocation(self, _cmd);
-}
-
-- (void)delete:(id)sender
-{
-    _CPRaiseInvalidAbstractInvocation(self, _cmd);
-}
-
-- (CPFont)font:(CPFont)aFont
-{
-    _CPRaiseInvalidAbstractInvocation(self, _cmd);
-    return nil;
-}
-
-- (BOOL)isHorizontallyResizable
-{
-    _CPRaiseInvalidAbstractInvocation(self, _cmd);
-    return NO;
-}
-
-- (BOOL)isRichText
-{
-    _CPRaiseInvalidAbstractInvocation(self, _cmd);
-    return NO;
-}
-
-- (BOOL)isRulerVisible
-{
-    _CPRaiseInvalidAbstractInvocation(self, _cmd);
-    return NO;
-}
-
-- (BOOL)isVerticallyResizable
-{
-    _CPRaiseInvalidAbstractInvocation(self, _cmd);
-    return NO;
-}
-
-- (CGSize)maxSize
-{
-    _CPRaiseInvalidAbstractInvocation(self, _cmd);
-    return CPMakeSize(0,0);
-}
-
-- (CGSize)minSize
-{
-    _CPRaiseInvalidAbstractInvocation(self, _cmd);
-    return CPMakeSize(0,0);
-}
-
-- (void)pasteFont:(id)sender
-{
-    _CPRaiseInvalidAbstractInvocation(self, _cmd);
-}
-
-- (void)replaceCharactersInRange:(CPRange)aRange withString:(CPString)aString
-{
-    _CPRaiseInvalidAbstractInvocation(self, _cmd);
-}
-
-- (void)scrollRangeToVisible:(CPRange)aRange
-{
-    _CPRaiseInvalidAbstractInvocation(self, _cmd);
-}
-
-- (void)selectedAll:(id)sender
-{
-    _CPRaiseInvalidAbstractInvocation(self, _cmd);
-}
-
-- (CPRange)selectedRange
-{
-    _CPRaiseInvalidAbstractInvocation(self, _cmd);
-    return CPMakeRange(CPNotFound, 0);
-}
-
-- (void)setFont:(CPFont)aFont
-{
-    _CPRaiseInvalidAbstractInvocation(self, _cmd);
-}
-
-- (void)setFont:(CPFont)aFont rang:(CPRange)aRange
-{
-    _CPRaiseInvalidAbstractInvocation(self, _cmd);
-}
-
-- (void)setHorizontallyResizable:(BOOL)flag
-{
-    _CPRaiseInvalidAbstractInvocation(self, _cmd);
-}
-
-- (void)setMaxSize:(CGSize)aSize
-{
-    _CPRaiseInvalidAbstractInvocation(self, _cmd);
-}
-
-- (void)setMinSize:(CGSize)aSize
-{
-    _CPRaiseInvalidAbstractInvocation(self, _cmd);
-}
-
-- (void)setString:(CPString)aString
-{
-    [self replaceCharactersInRange:CPMakeRange(0, [[self string] length]) withString:aString];
-}
-
-- (void)setUsesFontPanel:(BOOL)flag
-{
-    _CPRaiseInvalidAbstractInvocation(self, _cmd);
-}
-
-- (void)setVerticallyResizable:(BOOL)flag
-{
-    _CPRaiseInvalidAbstractInvocation(self, _cmd);
-}
-
-- (CPString)string
-{
-    _CPRaiseInvalidAbstractInvocation(self, _cmd);
-    return nil;
-}
-
-- (void)underline:(id)sender
-{
-    _CPRaiseInvalidAbstractInvocation(self, _cmd);
-}
-
-- (BOOL)usesFontPanel
-{
-    _CPRaiseInvalidAbstractInvocation(self, _cmd);
-    return NO;
-}
-
-@end
-
 
 /*!
     @ingroup appkit
@@ -694,7 +487,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 - (void)insertText:(CPString)aString
 {
     var isAttributed = [aString isKindOfClass:CPAttributedString],
-        string = (isAttributed)?[aString string]:aString;
+        string = isAttributed ? [aString string]:aString;
 
     if (![self shouldChangeTextInRange:CPMakeRangeCopy(_selectionRange) replacementString:string])
         return;

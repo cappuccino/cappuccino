@@ -50,6 +50,7 @@ function _widthOfStringForFont(aString, aFont)
 {
     if (!_measuringContext)
         _measuringContext = CGBitmapGraphicsContextCreate();
+
     if (!_didTestCanvasSizingValid && CPFeatureIsCompatible(CPHTMLCanvasFeature))
     {
         var teststring = "0123456879abcdefghiklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.-()";
@@ -57,20 +58,24 @@ function _widthOfStringForFont(aString, aFont)
         _measuringContext.font = [aFont cssString];
         _isCanvasSizingInvalid = [teststring sizeWithFont:aFont].width != _measuringContext.measureText(teststring).width;
     }
+
     if (!CPFeatureIsCompatible(CPHTMLCanvasFeature) || _isCanvasSizingInvalid)  // measuring with canvas is _much_ faster on chrome
         return [aString sizeWithFont:aFont];
+
     if (_measuringContextFont !== aFont)
     {
         _measuringContextFont = aFont;
         _measuringContext.font = [aFont cssString];
     }
+
     return _measuringContext.measureText(aString);
 }
 
-var CPSystemTypesetterFactory = Nil;
+var CPSystemTypesetterFactory = nil;
 
 @implementation CPTypesetter : CPObject
 {
+
 }
 
 + (id)sharedSystemTypesetter
@@ -118,9 +123,10 @@ var CPSystemTypesetterFactory = Nil;
 
 @end
 
+
 var _sharedSimpleTypesetter = nil;
 
-@implementation CPSimpleTypesetter:CPTypesetter
+@implementation CPSimpleTypesetter : CPTypesetter
 {
     CPLayoutManager     _layoutManager;
     CPTextContainer     _currentTextContainer;
