@@ -73,6 +73,7 @@
 @import "NSTabView.j"
 @import "NSTabViewItem.j"
 @import "NSTextField.j"
+@import "NSTextView.j"
 @import "NSTokenField.j"
 @import "NSToolbar.j"
 @import "NSToolbarFlexibleSpaceItem.j"
