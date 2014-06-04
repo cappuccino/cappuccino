@@ -25,7 +25,6 @@
  */
 
 @import <Foundation/CPObject.j>
-@import "CPControl.j"
 
 var _sharedDefaultParagraphStyle,
     _defaultTabStopArray;
@@ -42,8 +41,8 @@ CPParagraphStyleAttributeName = @"CPParagraphStyleAttributeName";
 
 @implementation CPTextTab : CPObject
 {
-    int    _type     @accessors(property=tabStopType);
-    double _location @accessors(property=location);
+    int    _type     @accessors(property = tabStopType);
+    double _location @accessors(property = location);
 }
 
 - (id)initWithType:(CPTabStopType) aType location:(double) aLocation
@@ -56,6 +55,10 @@ CPParagraphStyleAttributeName = @"CPParagraphStyleAttributeName";
 
     return self;
 }
+
+
+#pragma mark -
+#pragma mark Coding methods
 
 - (id)initWithCoder:(id)aCoder
 {
@@ -78,25 +81,30 @@ CPParagraphStyleAttributeName = @"CPParagraphStyleAttributeName";
 
 @end
 
+
 @implementation CPParagraphStyle : CPObject
 {
-    CPArray         _tabStops  @accessors(property = tabStops);
-    CPTextAlignment _alignment @accessors(property = alignment);
-    unsigned        _firstLineHeadIndent @accessors(property = firstLineHeadIndent);
-    unsigned        _headIndent @accessors(property = headIndent);
-    unsigned        _tailIndent @accessors(property = tailIndent);
-    unsigned        _paragraphSpacing @accessors(property = paragraphSpacing);
-    unsigned        _minimumLineHeight @accessors(property = minimumLineHeight);
-    unsigned        _maximumLineHeight @accessors(property = maximumLineHeight);
-    unsigned        _lineSpacing @accessors(property = lineSpacing);
+    CPArray         _tabStops               @accessors(property = tabStops);
+    CPTextAlignment _alignment              @accessors(property = alignment);
+    unsigned        _firstLineHeadIndent    @accessors(property = firstLineHeadIndent);
+    unsigned        _headIndent             @accessors(property = headIndent);
+    unsigned        _tailIndent             @accessors(property = tailIndent);
+    unsigned        _paragraphSpacing       @accessors(property = paragraphSpacing);
+    unsigned        _minimumLineHeight      @accessors(property = minimumLineHeight);
+    unsigned        _maximumLineHeight      @accessors(property = maximumLineHeight);
+    unsigned        _lineSpacing            @accessors(property = lineSpacing);
 }
+
+
+#pragma mark -
+#pragma mark Class methods
 
 + (CPParagraphStyle)defaultParagraphStyle
 {
-  if (!_sharedDefaultParagraphStyle)
+    if (!_sharedDefaultParagraphStyle)
        _sharedDefaultParagraphStyle = [self new];
 
-   return _sharedDefaultParagraphStyle;
+    return _sharedDefaultParagraphStyle;
 }
 
 + (CPArray)_defaultTabStops
@@ -112,18 +120,13 @@ CPParagraphStyleAttributeName = @"CPParagraphStyleAttributeName";
             _defaultTabStopArray.push([[CPTextTab alloc] initWithType:CPLeftTabStopType location:i * 28]);
          }
     }
-   return _defaultTabStopArray;
-}
-- (void)addTabStop:(CPTextTab)aStop
-{
-    _tabStops.push(aStop);
+
+    return _defaultTabStopArray;
 }
 
-- (void)_initWithDefaults
-{
-    _alignment = CPLeftTextAlignment;
-    _tabStops = [[[self class] _defaultTabStops] copy];
-}
+
+#pragma mark -
+#pragma mark Init methods
 
 - (id)init
 {
@@ -131,11 +134,7 @@ CPParagraphStyleAttributeName = @"CPParagraphStyleAttributeName";
 
     return self;
 }
-- (id)copy
-{
-    var other = [[self class] alloc];
-    return [other initWithParagraphStyle:self];
-}
+
 - (CPParagraphStyle)initWithParagraphStyle:(CPParagraphStyle)other
 {
     other._tabStops = [_tabStops copy];
@@ -150,6 +149,28 @@ CPParagraphStyleAttributeName = @"CPParagraphStyleAttributeName";
 
     return self;
 }
+
+- (void)_initWithDefaults
+{
+    _alignment = CPLeftTextAlignment;
+    _tabStops = [[[self class] _defaultTabStops] copy];
+}
+
+- (void)addTabStop:(CPTextTab)aStop
+{
+    _tabStops.push(aStop);
+}
+
+- (id)copy
+{
+    var other = [[self class] alloc];
+
+    return [other initWithParagraphStyle:self];
+}
+
+
+#pragma mark -
+#pragma mark Code methods
 
 - (id)initWithCoder:(id)aCoder
 {

@@ -27,27 +27,29 @@ e.g. using zaach/jison on github
 @import <Foundation/CPAttributedString.j>
 @import <Foundation/CPGeometry.j>
 @import "CPFontManager.j"
-@import "CPText.j"
 @import "CPParagraphStyle.j"
+
+@global CPFontAttributeName
+@global CPForegroundColorAttributeName
 
 var hexTable = [];
 
 // Hold the attributes of the current run
 @implementation _RTFAttribute : CPObject
 {
-    CPRange _range;
-    CPParagraphStyle paragraph;
-    CPColor fgColour;
-    CPColor bgColour;
-    CPColor ulColour;
-    CPString fontName;
-    unsigned fontSize;
-    BOOL bold;
-    BOOL italic;
-    BOOL underline;
-    BOOL strikethrough;
-    BOOL script;
-    BOOL _tabChanged;
+    CPRange             _range;
+    CPParagraphStyle    paragraph;
+    CPColor             fgColour;
+    CPColor             bgColour;
+    CPColor             ulColour;
+    CPString            fontName;
+    unsigned            fontSize;
+    BOOL                bold;
+    BOOL                italic;
+    BOOL                underline;
+    BOOL                strikethrough;
+    BOOL                script;
+    BOOL                _tabChanged;
 }
 
 - (id)init
@@ -94,7 +96,6 @@ var hexTable = [];
 
         if (font == nil)
         {
-
              /* Last resort, default font.  :-(  */
             font = [CPFont systemFontOfSize:fontSize];
         }
@@ -288,6 +289,7 @@ var kRgsymRtf = {
         _freename = "";
         _parsingFontTable = NO;
     }
+
     return self;
 }
 
@@ -301,12 +303,14 @@ var kRgsymRtf = {
 
         case 1:
             console.log("skipped : " + sym[4]);
-        return '';
+            return '';
+
         default:
             if (sym && sym[4])
                 return sym[4];
      }
 }
+
 - (BOOL)pushState
 {
     _states.push["group"];
@@ -319,112 +323,139 @@ var kRgsymRtf = {
 
     if (_curState > 0)
         _curState--;
+
     return YES;
 }
 
 - (CPString)_parseSpec:(CPArray)sym parameter:(CPString)v
 {
     var ch = '';
+
     switch (sym[4])
     {
         case "ipfnDestSkip":
-             _curState++;
-        return '';
+            _curState++;
+            return '';
+
         case "ipfnHex":
-             ch = _rtf.charAt(++_currentParseIndex);
-             var hex = '';
-             while (/[a-fA-F0-9\']/.test(ch))
-             {
-                 if (ch == "'")
-                 {
-                     _currentParseIndex++;
-                     continue;
-                 }
-                 hex += (ch + '');
-                 ch = _rtf.charAt(++_currentParseIndex);
-             }
-             //ch = parseInt(ch, 16);
-             console.log("hex : " + hex);
-             _hexreturn = YES;
-             _currentParseIndex--;
-             if (_curState !== 0)
-                return '';
-             else return hex;
-         break;
+            ch = _rtf.charAt(++_currentParseIndex);
+
+            var hex = '';
+
+            while (/[a-fA-F0-9\']/.test(ch))
+            {
+                if (ch == "'")
+                {
+                    _currentParseIndex++;
+                    continue;
+                }
+
+                hex += (ch + '');
+                ch = _rtf.charAt(++_currentParseIndex);
+            }
+            //ch = parseInt(ch, 16);
+            //console.log("hex : " + hex);
+            _hexreturn = YES;
+            _currentParseIndex--;
+
+            if (_curState !== 0)
+               return '';
+            else
+                return hex;
+            break;
+
          case "codePage":
              ch = _rtf.charAt(++_currentParseIndex);
+
              var code = '';
+
              while (/[0-9]/.test(ch))
              {
                  code += (ch + '');
                  ch = _rtf.charAt(++_currentParseIndex);
              }
+
              _codePage = code;
              _currentParseIndex--;
-         break;
+             break;
     }
+
     return '';
 }
 
 - (void)_flushCurrentRun
 {
     var newOffset = 0;
+
     if (_currentRun)
     {
         if ([_result length] == _currentRun._range.location)
             return;
+
         _currentRun._range.length = [_result length] - _currentRun._range.location;
         newOffset = CPMaxRange(_currentRun._range);
+
         var dict = [_currentRun dictionary];
+
         [_result setAttributes:dict range:_currentRun._range];  // flush previous run
     }
+
     _currentRun = [_RTFAttribute new];
     _currentRun._range = CPMakeRange(newOffset, 0);  // open a new one
 }
+
 - (CPString)_applyPropChange:sym parameter:param
 {
-    console.log("prop : " + sym[0] + " / param : " + param+ ' ');
+    //console.log("prop : " + sym[0] + " / param : " + param+ ' ');
 
     switch (sym[0])
     {
         case "pard":
             [self _flushCurrentRun];
-        break;
+            break;
+
         case "b": // bold
             if (param === 0)
             {
                 if (_currentRun && _currentRun.bold)
                    [self _flushCurrentRun];
                 _currentRun.bold = NO
-            } else
+            }
+            else
             {
                if (_currentRun && !_currentRun.bold)
                   [self _flushCurrentRun]
                _currentRun.bold = YES;
             }
-        break;
+
+            break;
+
         case "i": // italic
             if (param === 0)
             {
                 if (_currentRun && _currentRun.italic)
                    [self _flushCurrentRun];
                 _currentRun.italic = NO
-            } else
+            }
+            else
             {
                if (_currentRun && !_currentRun.italic)
                   [self _flushCurrentRun]
                _currentRun.italic = YES;
             }
-        break;
+
+            break;
         case "qc":  // paragraph center
             [_currentRun.paragraph setAlignment:CPCenterTextAlignment];
-        break;
+            break;
+
         case "paperw":
             _paper.width = param;
-        break;
+            break;
+
         case "paperh":
             _paper.height = param;
-        break;
+            break;
     }
 
     return '';
@@ -437,17 +468,19 @@ var kRgsymRtf = {
     {
         case "colortbl":
             _colorArray.push([CPColor blackColor]);
-        break;
+            break;
+
         case "fonttbl":
             _parsingFontTable = YES;
-        break;
+            break;
     }
+
     if (sym[4] == "destSkip")
     {
         console.log("Dest skip start : [" + sym[0] + "]");
         _curState++;
-
     }
+
     return '';
 }
 
@@ -456,6 +489,7 @@ var kRgsymRtf = {
     if (kRgsymRtf[keyword] !== undefined)
     {
         var sym = kRgsymRtf[keyword];
+
         switch (sym[3])
         {
             case kRTFParserType_prop:
@@ -464,17 +498,21 @@ var kRgsymRtf = {
                     param = sym[1];
                 }
                 return [self _applyPropChange:sym parameter:param];
+
             case kRTFParserType_char:
                 return [self _checkChar:sym parameter:param];
+
             case kRTFParserType_dest:
                 return [self _changeDest:sym];
+
             case kRTFParserType_spec:
                 return [self _parseSpec:sym parameter:param];
+
             default:
                 return '';
-            break;
         }
-    } else
+    }
+    else
     {
         switch (keyword)
         {
@@ -482,50 +520,66 @@ var kRgsymRtf = {
                 var oldColor = [_colorArray lastObject],
                     green = [oldColor greenComponent],
                     blue = [oldColor blueComponent];
+
                 _colorArray.pop();
                 _colorArray.push([CPColor colorWithRed: parseInt(param) / 255 green:green blue:blue alpha:1.0]);
-            break;
+                break;
+
             case "green":
                 var oldColor = [_colorArray lastObject],
                     red = [oldColor redComponent],
                     blue = [oldColor blueComponent];
+
                 _colorArray.pop();
                 _colorArray.push([CPColor colorWithRed: red green: parseInt(param) / 255 blue:blue alpha:1.0]);
-            break;
+                break;
+
             case "blue":
                 var oldColor = [_colorArray lastObject],
                     green = [oldColor greenComponent],
                     red = [oldColor redComponent];
+
                 _colorArray.pop();
                 _colorArray.push([CPColor colorWithRed: red green:green blue:parseInt(param) / 255 alpha:1.0]);
-            break;
+                break;
+
             case "cf":  // change foreground color
                  var fontIndex = parseInt(param) - 1;
+
                  if (_currentRun && fontIndex >= 0)
                      _currentRun.fgColour = _colorArray[fontIndex];
-            break;
+
+                break;
+
             case "f":  // change font
                  var fontIndex = parseInt(param);
+
                  if (_currentRun && fontIndex >= 0 && fontIndex < _fontArray.length)
                      _currentRun.fontName = _fontArray[fontIndex];
 
-            break;
+                break;
+
             case "fs":  // change font size
                  _currentRun.fontSize = parseInt(param) / 2;
-            break;
+                 break;
+
             case "tx":  // tabstop
                  var location = parseInt(param) / 20;
                  if (_currentRun)
                  {
                      [_currentRun addTab:location type:CPLeftTabStopType];
                  }
-            break;
+
+                 break;
+
             default:
                console.log("skip : " + keyword + " param: " + param);
 
         }
+
         if (_states.length > 0)
             _curState = 1;
+
         return '';
     }
 }
@@ -537,16 +591,16 @@ var kRgsymRtf = {
         fNeg = false,
         keyword = '',
         param = '';
+
     _rtf = rtf;
 
     if (++_currentParseIndex >= len)
         return len;
+
     ch = rtf.charAt(_currentParseIndex);
 
     if (!/[a-zA-Z]/.test(ch))
-    {
         return [self _translateKeyword:ch parameter:nil fParameter:fParam];
-    }
 
     while (/[a-zA-Z]/.test(ch))
     {
@@ -559,6 +613,7 @@ var kRgsymRtf = {
         fNeg = true;
         ch = rtf.charAt(++_currentParseIndex);
     }
+
     fParam = true;
 
     while (/[0-9]/.test(ch))
@@ -566,6 +621,7 @@ var kRgsymRtf = {
         param += (ch + '');
         ch = rtf.charAt(++_currentParseIndex);
     }
+
     _currentParseIndex--;
     param = parseInt(param);
 
@@ -574,6 +630,7 @@ var kRgsymRtf = {
 
     return [self _translateKeyword:keyword parameter:param fParameter:fParam];
 }
+
 - (void)_appendPlainString:(CPString) aString
 {
     [_result replaceCharactersInRange:CPMakeRange([_result length], 0) withString:aString];
@@ -587,6 +644,7 @@ var kRgsymRtf = {
         return '';
     }
     _currentParseIndex = -1;
+
     var len = rtf.length,
         tmp = '',
         ch = '',
@@ -602,6 +660,7 @@ var kRgsymRtf = {
             [self _appendPlainString: String.fromCharCode(parseInt((hex), 16))];
             hex = '';
         }
+
         switch (tmp)
         {
             case " ":
@@ -613,17 +672,18 @@ var kRgsymRtf = {
                     _freename += tmp;
                    [self _appendPlainString:tmp];
                 }
-            break;
+                break;
+
             case "{":
                 if ([self pushState])
                 {
                     console.log("push");
                 }
-            break;
+                break;
+
             case "}":
                 if ([self popState])
                 {
-
                     console.log("pop");
                 }
                 if (_freename)
@@ -637,17 +697,17 @@ var kRgsymRtf = {
                     _freename = "";
                 }
                 [self _flushCurrentRun]
-            break;
+                break;
+
             case "\\":
                 _freename = '';
                 ch = [self _parseKeyword:rtf length:len];
+
                 if (!_hexreturn && ch.length == 0)
-                {
                     lastchar = 1;
-                } else
-                {
+                else
                     lastchar = 0;
-                }
+
                 if (_hexreturn)
                 {
                     if (ch.length > 0)
@@ -655,7 +715,8 @@ var kRgsymRtf = {
                         if (parseInt(ch, 16) & 0x80)
                         {
                             hex += ch.toUpperCase();
-                        } else
+                        }
+                        else
                         {
                             [self _appendPlainString: String.fromCharCode(parseInt((hex + ch), 16))];
                             hex = '';
@@ -664,42 +725,49 @@ var kRgsymRtf = {
                         if (hex.length == 4)
                         {
                             var temp = parseInt(hex, 16);
+
                             if (hexTable && hexTable[hex.toUpperCase()] !== undefined)
                             {
                                 temp = parseInt(hexTable[hex.toUpperCase()], 16);
                             }
+
                             [self _appendPlainString: String.fromCharCode(temp)]
                             hex = '';
                         }
-                    } else
+                    }
+                    else
                     {
                         console.log("hex skipped");
                     }
-                    _hexreturn = NO;
-                } else
-                    if (ch !== undefined && _curState === 0)
-                    {
-                         [self _appendPlainString:ch];
 
-                    }
-            break;
+                    _hexreturn = NO;
+                }
+                else if (ch !== undefined && _curState === 0)
+                {
+                    [self _appendPlainString:ch];
+
+                }
+
+                break;
+
             case 0x0d:
             case 0x0a:
             case '\n':
             case '\r':
-            break;
+                break;
+
             default:
                 lastchar = 0;
+
                 if (_curState == 0)
-                {
                     [self _appendPlainString:tmp];
-                } else if (tmp !== ';')
-                {
+                else if (tmp !== ';')
                     _freename += tmp;
-                }
-            break;
+
+                break;
         }
     }
+
     return _result;
 }
 

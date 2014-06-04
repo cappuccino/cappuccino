@@ -27,7 +27,6 @@
 
 @class CPLayoutManager;
 
-
 CPTextStorageEditedAttributes = 1;
 CPTextStorageEditedCharacters = 2;
 

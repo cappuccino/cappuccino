@@ -1,12 +1,12 @@
 /*
    RTFProducer.j
 
-   Serialize CPAttributedString to a RTF String 
+   Serialize CPAttributedString to a RTF String
 
    Copyright (C) 2014 Daniel Boehringer
    This file is based on the RTFProducer from GNUStep
    (which i co-authored with Fred Kiefer in 1999)
-   
+
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -20,15 +20,23 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
- */ 
+ */
 
 @import <Foundation/CPAttributedString.j>
 @import "CPParagraphStyle.j"
 @import "CPColor.j"
 @import "CPGraphics.j"
-@import "CPText.j"
 @import "CPFontManager.j"
 
+@global CPFontAttributeName
+@global CPForegroundColorAttributeName
+@global CPBackgroundColorAttributeName
+@global CPUnderlineStyleAttributeName
+@global CPSuperscriptAttributeName
+@global CPBaselineOffsetAttributeName
+@global CPAttachmentAttributeName
+@global CPLigatureAttributeName
+@global CPKernAttributeName
 
 var PAPERSIZE = @"PaperSize",
     LEFTMARGIN = @"LeftMargin",
@@ -95,8 +103,8 @@ function _points2twips(a) { return (a) * 20.0; }
 
         keyArray = [fontDict allKeys];
         keyArray = [keyArray sortedArrayUsingSelector:@selector(compare:)];
-
         fontEnum = [keyArray objectEnumerator];
+
         while ((currFont = [fontEnum nextObject]) !== nil)
         {
             var fontFamily,
@@ -118,6 +126,7 @@ function _points2twips(a) { return (a) * 20.0; }
                 [fontDict objectForKey:currFont], fontFamily, currFont];
             fontlistString += detail;
         }
+
         return [CPString stringWithFormat:@"{\\fonttbl%@}\n", fontlistString];
     }
     else
@@ -139,14 +148,17 @@ function _points2twips(a) { return (a) * 20.0; }
         while ((next = [keyEnum nextObject]) != nil)
         {
             var cn = [colorDict objectForKey:next];
+
             [list insertObject:next atIndex:[cn intValue] - 1];
         }
 
         result = [CPString stringWithString:@"{\\colortbl;"];
+
         for (i = 0; i < count; i++)
         {
             var color = [[list objectAtIndex:i]
                                colorUsingColorSpaceName:CPCalibratedRGBColorSpace];
+
             result += [CPString stringWithFormat:
                                             @"\\red%d\\green%d\\blue%d;",
                                          ([color redComponent] * 255),
@@ -155,6 +167,7 @@ function _points2twips(a) { return (a) * 20.0; }
         }
 
         result += @"}\n";
+
         return result;
     }
     else
@@ -173,45 +186,55 @@ function _points2twips(a) { return (a) * 20.0; }
         result = [CPString string];
 
         val = [docDict objectForKey:PAPERSIZE];
+
         if (val != nil)
         {
             var size = [val sizeValue];
+
             detail = [CPString stringWithFormat:@"\\paperw%d \\paperh%d",
                              _points2twips(size.width),
                              _points2twips(size.height)];
+
             result += detail;
         }
 
         num = [docDict objectForKey:LEFTMARGIN];
+
         if (num != nil)
         {
             var f = [num floatValue];
-            detail = [CPString stringWithFormat:@"\\margl%d",
-                             _points2twips(f)];
+
+            detail = [CPString stringWithFormat:@"\\margl%d", _points2twips(f)];
             result+= detail;
         }
+
         num = [docDict objectForKey:RIGHTMARGIN];
+
         if (num != nil)
         {
             var f = [num floatValue];
-            detail = [CPString stringWithFormat:@"\\margr%d",
-                             _points2twips(f)];
+
+            detail = [CPString stringWithFormat:@"\\margr%d", _points2twips(f)];
             result += detail;
         }
+
         num = [docDict objectForKey:TOPMARGIN];
+
         if (num != nil)
         {
             var f = [num floatValue];
-            detail = [CPString stringWithFormat:@"\\margt%d",
-                             _points2twips(f)];
+
+            detail = [CPString stringWithFormat:@"\\margt%d", _points2twips(f)];
             result += detail;
         }
+
         num = [docDict objectForKey:BUTTOMMARGIN];
+
         if (num != nil)
         {
             var f = [num floatValue];
-            detail = [CPString stringWithFormat:@"\\margb%d",
-                             _points2twips(f)];
+
+            detail = [CPString stringWithFormat:@"\\margb%d", _points2twips(f)];
             result += detail;
         }
 
@@ -263,9 +286,9 @@ function _points2twips(a) { return (a) * 20.0; }
     {
         cn = [colorDict count] + 1;
 
-        [colorDict setObject:[CPNumber numberWithInt:cn]
-                 forKey:color];
+        [colorDict setObject:[CPNumber numberWithInt:cn] forKey:color];
     }
+
     var cn = [num intValue];
 
     return cn + 1;
@@ -283,52 +306,56 @@ function _points2twips(a) { return (a) * 20.0; }
     {
         case CPRightTextAlignment:
             headerString += @"\\qr";
-        break;
+            break;
+
         case CPCenterTextAlignment:
             headerString += @"\\qc";
-        break;
+            break;
+
         case CPLeftTextAlignment:
             headerString += @"\\ql";
-        break;
+            break;
+
         case CPJustifiedTextAlignment:
             headerString += @"\\qj";
-        break;
+            break;
+
         default:
             headerString += @"\\ql";
-        break;
+            break;
     }
 
     // write first line indent and left indent
     var twips = _points2twips([paraStyle firstLineHeadIndent]);
+
     if (twips != 0.0)
-    {
         headerString += [CPString stringWithFormat:@"\\fi%d", twips];
-    }
+
     twips = _points2twips([paraStyle headIndent]);
+
     if (twips != 0.0)
-    {
         headerString += [CPString stringWithFormat:@"\\li%d", twips];
-    }
+
     twips = _points2twips([paraStyle tailIndent]);
+
     if (twips != 0.0)
-    {
         headerString += [CPString stringWithFormat:@"\\ri%d", twips];
-    }
+
     twips = _points2twips([paraStyle paragraphSpacing]);
+
     if (twips != 0.0)
-    {
         headerString += [CPString stringWithFormat:@"\\sa%d", twips];
-    }
+
     twips = _points2twips([paraStyle minimumLineHeight]);
+
     if (twips != 0.0)
-    {
         headerString += [CPString stringWithFormat:@"\\sl%d", twips];
-    }
+
     twips = _points2twips([paraStyle maximumLineHeight]);
+
     if (twips != 0.0)
-    {
         headerString += [CPString stringWithFormat:@"\\sl-%d", twips];
-    }
+
 // tabs
     if (1)
     {
@@ -383,11 +410,12 @@ function _points2twips(a) { return (a) * 20.0; }
    * analyze attributes of current run
    *
    * FIXME: All the character attributes should be output relative to the font
-   * attributes of the paragraph. So if the paragraph has underline on it should 
-   * still be possible to switch it off for some characters, which currently is 
+   * attributes of the paragraph. So if the paragraph has underline on it should
+   * still be possible to switch it off for some characters, which currently is
    * not possible.
    */
     attribEnum = [attributes keyEnumerator];
+
     while ((currAttrib = [attribEnum nextObject]) != nil)
     {
         if ([currAttrib isEqualToString:CPFontAttributeName])
@@ -406,16 +434,14 @@ function _points2twips(a) { return (a) * 20.0; }
           /*
            * font name
            */
-            if (currentFont == nil ||
-                ![fontName isEqualToString:[currentFont familyName]])
+            if (currentFont == nil || ![fontName isEqualToString:[currentFont familyName]])
             {
                 headerString += [self fontToken:fontName];
             }
           /*
            * font size
            */
-            if (currentFont == nil ||
-                [font size] != [currentFont size])
+            if (currentFont == nil || [font size] != [currentFont size])
             {
                 var points = [font size] * 2,
                     pString;
@@ -443,6 +469,7 @@ function _points2twips(a) { return (a) * 20.0; }
         else if ([currAttrib isEqualToString:CPForegroundColorAttributeName])
         {
             var color = [attributes objectForKey:CPForegroundColorAttributeName];
+
             if (![color isEqual:fgColor])
             {
                 headerString += [CPString stringWithFormat:@"\\cf%d", [self numberForColor:color]];
@@ -452,6 +479,7 @@ function _points2twips(a) { return (a) * 20.0; }
         else if ([currAttrib isEqualToString:CPBackgroundColorAttributeName])
         {
           var color = [attributes objectForKey:CPBackgroundColorAttributeName];
+
           if (![color isEqual:bgColor])
             {
                 headerString += [CPString stringWithFormat:@"\\cb%d", [self numberForColor:color]];
@@ -545,9 +573,8 @@ function _points2twips(a) { return (a) * 20.0; }
     var string = [text string],
         result = "",
         loc = 0,
-        length = [string length];
-
-    var currRange = CPMakeRange(loc, 0),
+        length = [string length],
+        currRange = CPMakeRange(loc, 0),
         completeRange = CPMakeRange(0, length),
         first = YES;
 
@@ -566,9 +593,11 @@ function _points2twips(a) { return (a) * 20.0; }
         runString = [self runStringForString:substring
                             attributes:attributes
                             paragraphStart:YES];
+
         result += runString;
         first = NO;
     }
+
     return result;
 }
 
