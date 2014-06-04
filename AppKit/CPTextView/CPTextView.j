@@ -174,6 +174,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         _textColor = [CPColor blackColor];
         _font = [CPFont systemFontOfSize:12.0];
         [self setFont:_font];
+        [self setBackgroundColor:[CPColor whiteColor]];
+
 
         _typingAttributes = [[CPDictionary alloc] initWithObjects:[_font, _textColor] forKeys:[CPFontAttributeName, CPForegroundColorAttributeName]];
 
