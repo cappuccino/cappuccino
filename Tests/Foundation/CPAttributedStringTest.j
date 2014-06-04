@@ -36,7 +36,7 @@ var sharedObject = [CPObject new];
 - (void)testCoalesceOnInsert
 {
     var string = [[CPMutableAttributedString alloc] initWithString:@"Fusce\n" attributes:@{"testkey": 1}];
-    var prevRangeEntriesLength= string._rangeEntries.length;
+    var prevRangeEntriesLength = string._rangeEntries.length;
     [string insertAttributedString:[[CPAttributedString alloc] initWithString:@"this is boldface"
                 attributes:@{"testkey": 1}] atIndex:2];
 
