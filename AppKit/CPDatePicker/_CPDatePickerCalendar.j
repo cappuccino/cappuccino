@@ -894,14 +894,46 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
     // Check if we have to change or not the month of the component
     if ([dayTile date].getMonth() == _date.getMonth())
     {
-        var minDate = [[_datePicker minDate] copy],
-            maxDate = [[_datePicker maxDate] copy];
+        if ([_datePicker datePickerMode] == CPRangeDateMode && [anEvent modifierFlags] & CPShiftKeyMask)
+        {
+            var dateValueAtMidnight = [[_datePicker dateValue] copy];
 
-        [minDate _resetToMidnight];
-        [maxDate _resetToLastSeconds];
+            [dateValueAtMidnight _resetToMidnight];
 
-        if (dateTile >= minDate && dateTile <= maxDate)
-            [_datePicker _setDateValue:[self _hoursMinutesSecondsFromDatePickerForDate:dateTile] timeInterval:0];
+            if (dateTile < dateValueAtMidnight)
+            {
+                var interval;
+
+                if (dateTile == dateValueAtMidnight)
+                    interval = [_datePicker timeInterval];
+                else
+                    interval = ([dateValueAtMidnight timeIntervalSinceDate:dateTile] + [_datePicker timeInterval]);
+
+                [_datePicker _setDateValue:[self _hoursMinutesSecondsFromDatePickerForDate:dateTile] timeInterval:interval];
+            }
+            else if ([[dayTile date] isEqualToDate:dateValueAtMidnight])
+            {
+                [_datePicker _setDateValue:[self _hoursMinutesSecondsFromDatePickerForDate:dateTile] timeInterval:0];
+            }
+            else
+            {
+                [_datePicker _setDateValue:[self _hoursMinutesSecondsFromDatePickerForDate:[dateValueAtMidnight copy]] timeInterval:([dateTile timeIntervalSinceDate:dateValueAtMidnight])];
+            }
+
+            // Be sure to display the good month
+            [_delegate setDateValue:dateTile];
+        }
+        else
+        {
+            var minDate = [[_datePicker minDate] copy],
+                maxDate = [[_datePicker maxDate] copy];
+
+            [minDate _resetToMidnight];
+            [maxDate _resetToLastSeconds];
+
+            if (dateTile >= minDate && dateTile <= maxDate)
+                [_datePicker _setDateValue:[self _hoursMinutesSecondsFromDatePickerForDate:dateTile] timeInterval:0];
+        }
     }
     else
     {
