@@ -105,7 +105,7 @@ CPTokenFieldDeleteButtonType     = 1;
     int                         _buttonType @accessors(property=buttonType);
 
     id <CPTokenFieldDelegate>   _tokenFieldDelegate;
-    unsigned                    _implementedDelegateMethods;
+    unsigned                    _implementedTokenFieldDelegateMethods;
 }
 
 + (CPCharacterSet)defaultTokenizingCharacterSet
@@ -177,25 +177,25 @@ CPTokenFieldDeleteButtonType     = 1;
         return;
 
     _tokenFieldDelegate = aDelegate;
-    _implementedDelegateMethods = 0;
+    _implementedTokenFieldDelegateMethods = 0;
 
     if ([_tokenFieldDelegate respondsToSelector:@selector(tokenField:hasMenuForRepresentedObject:)])
-        _implementedDelegateMethods |= CPTokenFieldDelegate_tokenField_hasMenuForRepresentedObject_;
+        _implementedTokenFieldDelegateMethods |= CPTokenFieldDelegate_tokenField_hasMenuForRepresentedObject_;
 
     if ([_tokenFieldDelegate respondsToSelector:@selector(tokenField:completionsForSubstring:indexOfToken:indexOfSelectedItem:)])
-        _implementedDelegateMethods |= CPTokenFieldDelegate_tokenField_completionsForSubstring_indexOfToken_indexOfSelectedItem_;
+        _implementedTokenFieldDelegateMethods |= CPTokenFieldDelegate_tokenField_completionsForSubstring_indexOfToken_indexOfSelectedItem_;
 
     if ([_tokenFieldDelegate respondsToSelector:@selector(tokenField:shouldAddObjects:atIndex:)])
-        _implementedDelegateMethods |= CPTokenFieldDelegate_tokenField_shouldAddObjects_atIndex_;
+        _implementedTokenFieldDelegateMethods |= CPTokenFieldDelegate_tokenField_shouldAddObjects_atIndex_;
 
     if ([_tokenFieldDelegate respondsToSelector:@selector(tokenField:menuForRepresentedObject:)])
-        _implementedDelegateMethods |= CPTokenFieldDelegate_tokenField_menuForRepresentedObject_;
+        _implementedTokenFieldDelegateMethods |= CPTokenFieldDelegate_tokenField_menuForRepresentedObject_;
 
     if ([_tokenFieldDelegate respondsToSelector:@selector(tokenField:displayStringForRepresentedObject:)])
-        _implementedDelegateMethods |= CPTokenFieldDelegate_tokenField_displayStringForRepresentedObject_;
+        _implementedTokenFieldDelegateMethods |= CPTokenFieldDelegate_tokenField_displayStringForRepresentedObject_;
 
     if ([_tokenFieldDelegate respondsToSelector:@selector(tokenField:representedObjectForEditingString:)])
-        _implementedDelegateMethods |= CPTokenFieldDelegate_tokenField_representedObjectForEditingString_;
+        _implementedTokenFieldDelegateMethods |= CPTokenFieldDelegate_tokenField_representedObjectForEditingString_;
 
     [super setDelegate:_tokenFieldDelegate];
 }
@@ -1248,7 +1248,7 @@ CPTokenFieldDeleteButtonType     = 1;
 */
 - (CPArray)_completionsForSubstring:(CPString)substring indexOfToken:(int)tokenIndex indexOfSelectedItem:(int)selectedIndex
 {
-    if (!(_implementedDelegateMethods & CPTokenFieldDelegate_tokenField_completionsForSubstring_indexOfToken_indexOfSelectedItem_))
+    if (!(_implementedTokenFieldDelegateMethods & CPTokenFieldDelegate_tokenField_completionsForSubstring_indexOfToken_indexOfSelectedItem_))
         return [];
 
     return [_tokenFieldDelegate tokenField:self completionsForSubstring:substring indexOfToken:tokenIndex indexOfSelectedItem:selectedIndex];
@@ -1274,7 +1274,7 @@ CPTokenFieldDeleteButtonType     = 1;
 */
 - (CPString)_displayStringForRepresentedObject:(id)representedObject
 {
-    if (_implementedDelegateMethods & CPTokenFieldDelegate_tokenField_displayStringForRepresentedObject_)
+    if (_implementedTokenFieldDelegateMethods & CPTokenFieldDelegate_tokenField_displayStringForRepresentedObject_)
     {
         var stringForRepresentedObject = [_tokenFieldDelegate tokenField:self displayStringForRepresentedObject:representedObject];
 
@@ -1296,7 +1296,7 @@ CPTokenFieldDeleteButtonType     = 1;
 */
 - (CPArray)_shouldAddObjects:(CPArray)tokens atIndex:(int)index
 {
-    if (_implementedDelegateMethods & CPTokenFieldDelegate_tokenField_shouldAddObjects_atIndex_)
+    if (_implementedTokenFieldDelegateMethods & CPTokenFieldDelegate_tokenField_shouldAddObjects_atIndex_)
     {
         var approvedObjects = [_tokenFieldDelegate tokenField:self shouldAddObjects:tokens atIndex:index];
 
@@ -1318,7 +1318,7 @@ CPTokenFieldDeleteButtonType     = 1;
 */
 - (id)_representedObjectForEditingString:(CPString)aString
 {
-    if (_implementedDelegateMethods & CPTokenFieldDelegate_tokenField_representedObjectForEditingString_)
+    if (_implementedTokenFieldDelegateMethods & CPTokenFieldDelegate_tokenField_representedObjectForEditingString_)
     {
         var token = [_tokenFieldDelegate tokenField:self representedObjectForEditingString:aString];
 
@@ -1333,8 +1333,8 @@ CPTokenFieldDeleteButtonType     = 1;
 
 - (BOOL)_hasMenuForRepresentedObject:(id)aRepresentedObject
 {
-    if ((_implementedDelegateMethods & CPTokenFieldDelegate_tokenField_hasMenuForRepresentedObject_) &&
-        (_implementedDelegateMethods & CPTokenFieldDelegate_tokenField_menuForRepresentedObject_))
+    if ((_implementedTokenFieldDelegateMethods & CPTokenFieldDelegate_tokenField_hasMenuForRepresentedObject_) &&
+        (_implementedTokenFieldDelegateMethods & CPTokenFieldDelegate_tokenField_menuForRepresentedObject_))
         return [_tokenFieldDelegate tokenField:self hasMenuForRepresentedObject:aRepresentedObject];
 
     return NO;
@@ -1342,8 +1342,8 @@ CPTokenFieldDeleteButtonType     = 1;
 
 - (CPMenu)_menuForRepresentedObject:(id)aRepresentedObject
 {
-    if ((_implementedDelegateMethods & CPTokenFieldDelegate_tokenField_hasMenuForRepresentedObject_) &&
-        (_implementedDelegateMethods & CPTokenFieldDelegate_tokenField_menuForRepresentedObject_))
+    if ((_implementedTokenFieldDelegateMethods & CPTokenFieldDelegate_tokenField_hasMenuForRepresentedObject_) &&
+        (_implementedTokenFieldDelegateMethods & CPTokenFieldDelegate_tokenField_menuForRepresentedObject_))
     {
         var hasMenu = [_tokenFieldDelegate tokenField:self hasMenuForRepresentedObject:aRepresentedObject];
 
