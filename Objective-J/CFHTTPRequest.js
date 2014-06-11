@@ -172,7 +172,10 @@ CFHTTPRequest.prototype.responseXML = function()
 {
     var responseXML = this._nativeRequest.responseXML;
 
-    if (responseXML && (NativeRequest === window.XMLHttpRequest))
+    // Internet Explorer will return a non-null but empty request.responseXML if the response
+    // content type wasn't "text/html", so also check that responseXML.documentRoot is set.
+    // Otherwise fall back to regular parsing.
+    if (responseXML && (NativeRequest === window.XMLHttpRequest) && responseXML.documentRoot)
         return responseXML;
 
     return parseXML(this.responseText());

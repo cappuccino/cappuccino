@@ -26,6 +26,22 @@
 @import "CAMediaTimingFunction.j"
 
 
+@protocol CPAnimationDelegate <CPObject>
+
+@optional
+- (BOOL)animationShouldStart:(CPAnimation)animation;
+- (float)animation:(CPAnimation)animation valueForProgress:(float)progress;
+- (void)animationDidEnd:(CPAnimation)animation;
+- (void)animationDidStop:(CPAnimation)animation;
+
+@end
+
+
+var CPAnimationDelegate_animationShouldStart_       = 1 << 1,
+    CPAnimationDelegate_animation_valueForProgress_ = 1 << 2,
+    CPAnimationDelegate_animationDidEnd_            = 1 << 3,
+    CPAnimationDelegate_animationDidStop_           = 1 << 4;
+
 /*
     @global
     @group CPAnimationCurve
@@ -80,17 +96,18 @@ ACTUAL_FRAME_RATE = 0;
 */
 @implementation CPAnimation : CPObject
 {
-    CPTimeInterval          _lastTime;
-    CPTimeInterval          _duration;
+    CPTimeInterval              _lastTime;
+    CPTimeInterval              _duration;
 
-    CPAnimationCurve        _animationCurve;
-    CAMediaTimingFunction   _timingFunction;
+    CPAnimationCurve            _animationCurve;
+    CAMediaTimingFunction       _timingFunction;
 
-    float                   _frameRate;
-    float                   _progress;
+    float                       _frameRate;
+    float                       _progress;
 
-    id                      _delegate;
-    CPTimer                 _timer;
+    id <CPAnimationDelegate>    _delegate;
+    CPTimer                     _timer;
+    unsigned                    _implementedDelegateMethods;
 }
 
 /*!
@@ -214,9 +231,25 @@ ACTUAL_FRAME_RATE = 0;
     Sets the animation's delegate.
     @param aDelegate the new delegate
 */
-- (void)setDelegate:(id)aDelegate
+- (void)setDelegate:(id <CPAnimationDelegate>)aDelegate
 {
+    if (_delegate === aDelegate)
+        return;
+
     _delegate = aDelegate;
+    _implementedDelegateMethods = 0;
+
+    if ([_delegate respondsToSelector:@selector(animationShouldStart:)])
+        _implementedDelegateMethods |= CPAnimationDelegate_animationShouldStart_;
+
+    if ([_delegate respondsToSelector:@selector(animationDidEnd:)])
+        _implementedDelegateMethods |= CPAnimationDelegate_animationDidEnd_;
+
+    if ([_delegate respondsToSelector:@selector(animationDidStop:)])
+        _implementedDelegateMethods |= CPAnimationDelegate_animationDidStop_;
+
+    if ([_delegate respondsToSelector:@selector(animation:valueForProgress:)])
+        _implementedDelegateMethods |= CPAnimationDelegate_animation_valueForProgress_;
 }
 
 /*!
@@ -227,7 +260,7 @@ ACTUAL_FRAME_RATE = 0;
 - (void)startAnimation
 {
     // If we're already animating, or our delegate stops us, animate.
-    if (_timer || _delegate && [_delegate respondsToSelector:@selector(animationShouldStart:)] && ![_delegate animationShouldStart:self])
+    if (_timer || ![self _sendDelegateAnimationShouldStart])
         return;
 
     if (_progress === 1.0)
@@ -236,7 +269,7 @@ ACTUAL_FRAME_RATE = 0;
     ACTUAL_FRAME_RATE = 0;
     _lastTime = new Date();
 
-    var timerInterval = _frameRate <= 0.0 ? 0.0001 : 1.0/_frameRate;
+    var timerInterval = _frameRate <= 0.0 ? 0.0001 : 1.0 / _frameRate;
 
     _timer = [CPTimer scheduledTimerWithTimeInterval:timerInterval target:self selector:@selector(animationTimerDidFire:) userInfo:nil repeats:YES];
 }
@@ -260,8 +293,7 @@ ACTUAL_FRAME_RATE = 0;
         [_timer invalidate];
         _timer = nil;
 
-        if ([_delegate respondsToSelector:@selector(animationDidEnd:)])
-            [_delegate animationDidEnd:self];
+        [self _sendDelegateAnimationDidEnd];
     }
 }
 
@@ -276,8 +308,7 @@ ACTUAL_FRAME_RATE = 0;
     [_timer invalidate];
     _timer = nil;
 
-    if ([_delegate respondsToSelector:@selector(animationDidStop:)])
-        [_delegate animationDidStop:self];
+    [self _sendDelegateAnimationDidStop];
 }
 
 /*!
@@ -313,8 +344,8 @@ ACTUAL_FRAME_RATE = 0;
 {
     var t = [self currentProgress];
 
-    if ([_delegate respondsToSelector:@selector(animation:valueForProgress:)])
-        return [_delegate animation:self valueForProgress:t];
+    if ([self _delegateRespondsToAnimationValueForProgress])
+        return [self _sendDelegateAnimationValueForProgress:t];
 
     if (_animationCurve == CPAnimationLinear)
         return t;
@@ -326,6 +357,68 @@ ACTUAL_FRAME_RATE = 0;
     [_timingFunction getControlPointAtIndex:2 values:c2];
 
     return CubicBezierAtTime(t, c1[0], c1[1], c2[0], c2[1], _duration);
+}
+
+@end
+
+
+@implementation CPAnimation (CPAnimationDelegate)
+
+/*!
+    @ignore
+    Check if the delegate responds to animation:valueForProgress:
+*/
+- (BOOL)_delegateRespondsToAnimationValueForProgress
+{
+    return _implementedDelegateMethods & CPAnimationDelegate_animation_valueForProgress_;
+}
+
+/*!
+    @ignore
+    Call delegate animationShouldStart:
+*/
+- (BOOL)_sendDelegateAnimationShouldStart
+{
+    if (!(_implementedDelegateMethods & CPAnimationDelegate_animationShouldStart_))
+        return YES;
+
+    return [_delegate animationShouldStart:self];
+}
+
+/*!
+    @ignore
+    Call delegate animation:valueForProgress:
+*/
+- (float)_sendDelegateAnimationValueForProgress:(float)aProgress
+{
+    if (!(_implementedDelegateMethods & CPAnimationDelegate_animation_valueForProgress_))
+        return aProgress;
+
+    return [_delegate animation:self valueForProgress:aProgress];
+}
+
+/*!
+    @ignore
+    Call delegate animationDidEnd:
+*/
+- (void)_sendDelegateAnimationDidEnd
+{
+    if (!(_implementedDelegateMethods & CPAnimationDelegate_animationDidEnd_))
+        return;
+
+    [_delegate animationDidEnd:self];
+}
+
+/*!
+    @ignore
+    Call delegate animationDidStop:
+*/
+- (void)_sendDelegateAnimationDidStop
+{
+    if (!(_implementedDelegateMethods & CPAnimationDelegate_animationDidStop_))
+        return;
+
+    [_delegate animationDidStop:self];
 }
 
 @end

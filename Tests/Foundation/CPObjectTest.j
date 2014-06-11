@@ -4,6 +4,16 @@
 {
 }
 
+- (void)testCPObjectIsSubclassOfClassCPObjectShouldBeTrue
+{
+    [self assertTrue:[CPObject isSubclassOfClass:[CPObject class]]];
+}
+
+- (void)testIsSubclassOfClassWithNonSubclassShouldBeFalse
+{
+    [self assertFalse:[CPObject isSubclassOfClass:[SuperReceiver class]]];
+}
+
 - (void)testImplementsSelector
 {
     var receiver = [[Receiver alloc] init];

@@ -31,10 +31,11 @@
 
 var FILE = require("file"),
     imageSize = require("cappuccino/imagesize").imagesize,
-    supportedTemplateImages = [
-        "NSAddTemplate",
-        "NSRemoveTemplate"
-    ];
+    supportedTemplateImages = {
+        "NSAddTemplate": "CPAddTemplate",
+        "NSRemoveTemplate": "CPRemoveTemplate",
+        "NSToolbarShowColors": "CPImageNameColorPanel"
+    };
 
 @implementation _CPCibCustomResource (NSCoding)
 
@@ -51,14 +52,14 @@ var FILE = require("file"),
             framework = @"",
             bundleIdentifier = @"";
 
-        if (_resourceName == "NSSwitch")
+        if (_resourceName == "NSSwitch" || _resourceName == "NSRadioButton")
             return nil;
         else if (/^NS[A-Z][A-Za-z]+$/.test(_resourceName))
         {
-            if (supportedTemplateImages.indexOf(_resourceName) >= 0)
+            if (supportedTemplateImages[_resourceName])
             {
                 // Defer resolving this path until runtime.
-                _resourceName = _resourceName.replace("NS", "CP");
+                _resourceName = supportedTemplateImages[_resourceName];
             }
             else
                 [CPException raise:Nib2CibException format:@"The built in image “%@” is not supported.", _resourceName];

@@ -146,6 +146,15 @@ var CPDateReferenceDate = new Date(Date.UTC(2001, 0, 1, 0, 0, 0, 0));
     return [[CPDate date] timeIntervalSinceReferenceDate];
 }
 
+/**
+    Return a new date representing the receiver's time plus the given interval into the future,
+    or into the past for a negative interval.
+*/
+- (id)dateByAddingTimeInterval:(CPTimeInterval)seconds
+{
+    return [[CPDate alloc] initWithTimeInterval:seconds sinceDate:self];
+}
+
 - (BOOL)isEqual:(CPDate)aDate
 {
     if (self === aDate)

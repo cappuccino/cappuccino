@@ -59,6 +59,7 @@
     var scrollView = [self makeScrollview];
     [scrollView setFrameOrigin:CGPointMake(20,20)]
 
+    [[scrollView documentView] setBackgroundColor:[CPColor checkerBoardColor]];
     [[scrollView documentView] addSubview:innerScrollView];
     [[aWindow contentView] addSubview:scrollView];
 

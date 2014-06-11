@@ -30,6 +30,18 @@
 
 @global CPApp
 
+@protocol CPControlTextEditingDelegate <CPObject>
+
+@optional
+- (void)controlTextDidBeginEditing:(CPNotification)aNotification;
+- (void)controlTextDidChange:(CPNotification)aNotification;
+- (void)controlTextDidEndEditing:(CPNotification)aNotification;
+- (void)controlTextDidFocus:(CPNotification)aNotification;
+- (void)controlTextDidBlur:(CPNotification)aNotification;
+- (BOOL)control:(CPControl)control didFailToFormatString:(CPString)string errorDescription:(CPString)error;
+
+@end
+
 CPLeftTextAlignment      = 0;
 CPRightTextAlignment     = 1;
 CPCenterTextAlignment    = 2;

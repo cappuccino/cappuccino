@@ -281,7 +281,7 @@ class LintChecker(object):
         },
         {
             # Filter out possible = within @accessors
-            'filter': {'regex': re.compile(ur'^\s*(?:@outlet\s+)?[a-zA-Z_$]\w*\s+[a-zA-Z_$]\w*\s+@accessors\b'), 'pass': False},
+            'filter': {'regex': re.compile(ur'^\s*(?:@outlet\s+)?[a-zA-Z_$]\w*\s+(<\s*[a-zA-Z_$]*\s*>\s+)?[a-zA-Z_$]\w*\s+@accessors\b'), 'pass': False},
 
             'preprocess': STD_IGNORES,
             'regex': re.compile(ur'(?<=[\w)\]"\']|([ ]))(=|[-+*/%^&|]=|<<=|>>>?=)(?=[\w({\["\']|(?(1)\b\b|[ ]))'),
@@ -291,12 +291,19 @@ class LintChecker(object):
         },
         {
             # Filter out @import statements and @implementation/method declarations
-            'filter': {'regex': re.compile(ur'^(@import\b|@implementation\b|\s*' + METHOD_RE + ')'), 'pass': False},
+            'filter': {'regex': re.compile(ur'^(@import\b|@implementation\b|@protocol\b|\s*' + METHOD_RE + ')|([a-zA-Z_$]*\s+<\s*[a-zA-Z_$]*\s*>)'), 'pass': False},
 
             'preprocess': STD_IGNORES,
             'regex': re.compile(ur'(?<=[\w)\]"\']|([ ]))(===?|!==?|[<>]=?)(?=[\w({\["\']|(?(1)\b\b|[ ]))'),
             'error': 'comparison operator without surrounding spaces',
             'showPositionForGroup': 2,
+            'type': ERROR_TYPE_WARNING
+        },
+        {
+            'preprocess': STD_IGNORES,
+            'regex': re.compile(ur'^(.*<\s+[a-zA-Z_$]*>.*)|(.*<[a-zA-Z_$]*\s+>.*)|(.*<\s+[a-zA-Z_$]*\s+>.*)'),
+            'error': 'bracket operator with extra spaces',
+            'showPositionForGroup': 0,
             'type': ERROR_TYPE_WARNING
         },
         {

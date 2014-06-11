@@ -111,7 +111,7 @@ AppController *SharedAppControllerInstance = nil;
         [[NSApplication sharedApplication] terminate:self];
         return;
     }
-
+    
     // If we were opened from the command line, self.pathToOpenAtLaunch will be set.
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     
@@ -144,13 +144,14 @@ AppController *SharedAppControllerInstance = nil;
         kDefaultXCCAPIMode:                         [NSNumber numberWithInt:kXCCAPIModeAuto],
         kDefaultXCCReactToInodeMod:                 @YES,
         kDefaultXCCReopenLastProject:               @YES,
-        kDefaultXCCAutoOpenErrorsPanelOnWarnings:   @YES,
         kDefaultXCCAutoOpenErrorsPanelOnErrors:     @YES,
+        kDefaultXCCAutoOpenErrorsPanelOnCappLint:   @YES,
+        kDefaultXCCAutoShowNotificationOnErrors:    @YES,
+        kDefaultXCCAutoShowNotificationOnCappLint:  @NO,
         kDefaultXCCProjectHistory:                  [NSArray new],
         kDefaultMaxRecentProjects:                  @20,
         kDefaultLogLevel:                           [NSNumber numberWithInt:LOG_LEVEL_WARN],
         kDefaultAutoOpenXcodeProject:               @YES,
-        kDefaultShowProcessingNotices:              @YES,
         kDefaultUseSymlinkWhenCreatingProject:      @YES
     };
     

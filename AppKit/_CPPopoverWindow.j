@@ -35,9 +35,11 @@ CPClosableOnBlurWindowMask  = 1 << 4;
 CPPopoverAppearanceMinimal  = 0;
 CPPopoverAppearanceHUD      = 1;
 
-var _CPPopoverWindow_shouldClose_    = 1 << 0,
-    _CPPopoverWindow_didClose_       = 1 << 1,
-    _CPPopoverWindow_didShow_        = 1 << 2;
+// we don't start from 1 because CPWindow and so CPPanel already
+// has this delegate bitmask identifier for 1, 2 and 3.
+var _CPPopoverWindow_shouldClose_    = 1 << 4,
+    _CPPopoverWindow_didClose_       = 1 << 5,
+    _CPPopoverWindow_didShow_        = 1 << 6;
 
 
 /*!
@@ -53,8 +55,9 @@ var _CPPopoverWindow_shouldClose_    = 1 << 0,
     int             _appearance         @accessors(getter=appearance);
     BOOL            _isClosing          @accessors(property=isClosing);
 
-    BOOL            _closeOnBlur;
     BOOL            _browserAnimates;
+    BOOL            _closeOnBlur;
+    BOOL            _isObservingFrame;
     BOOL            _shouldPerformAnimation;
     CPInteger       _implementedDelegateMethods;
     JSObject        _orderOutTransitionFunction;
@@ -157,6 +160,32 @@ var _CPPopoverWindow_shouldClose_    = 1 << 0,
 
 #pragma mark -
 #pragma mark Observer
+
+/*!
+    @ignore
+    Adds self as frame observer if not already observing it
+*/
+- (void)_addFrameObserver
+{
+    if (_isObservingFrame)
+        return;
+
+    _isObservingFrame = YES;
+    [_targetView addObserver:self forKeyPath:@"frame" options:0 context:nil];
+}
+
+/*!
+    @ignore
+    Removes self as frame observer if already observing it
+*/
+- (void)_removeFrameObserver
+{
+    if (!_isObservingFrame)
+        return;
+
+    _isObservingFrame = NO;
+    [_targetView removeObserver:self forKeyPath:@"frame"];
+}
 
 /*!
     Update the _CPPopoverWindow frame if a resize event is observed.
@@ -329,7 +358,7 @@ var _CPPopoverWindow_shouldClose_    = 1 << 0,
     if (positioningView !== _targetView)
     {
         [[_targetView window] removeChildWindow:self];
-        [_targetView removeObserver:self forKeyPath:@"frame"];
+        [self _removeFrameObserver];
         _targetView = positioningView;
     }
 
@@ -362,6 +391,24 @@ var _CPPopoverWindow_shouldClose_    = 1 << 0,
 - (BOOL)browserSupportsAnimation
 {
     return CPBrowserStyleProperty('transition') && CPBrowserStyleProperty('transitionend');
+}
+
+/*!
+    @ignore
+*/
+- (void)updateFrameWithSize:(CGSize)aSize
+{
+    var rect = CGRectMakeZero();
+    rect.size = aSize;
+    rect.origin = [[self contentView] frameOrigin];
+
+    [self setFrame:[self frameRectForContentRect:rect]];
+
+    if ([self isVisible])
+    {
+        var point = [self computeOriginFromRect:[_targetView bounds] ofView:_targetView preferredEdge:[_windowView preferredEdge]];
+        [self setFrameOrigin:point];
+    }
 }
 
 #pragma mark -
@@ -481,7 +528,9 @@ var _CPPopoverWindow_shouldClose_    = 1 << 0,
 #if PLATFORM(DOM)
                 _DOMElement.addEventListener(CPBrowserStyleProperty('transitionend'), orderFrontTransitionFunction, YES);
 #endif
-            }, 0);
+            }, 10); // There are some weird race conditions happening in Chrome 34. If this is set to 0
+                    // the transitionend is randomly not called correctly. Setting the timeout to 10ms is not noticealble for the
+                    // user, and seems to fix the issue.
         }
         else
         {
@@ -499,14 +548,14 @@ var _CPPopoverWindow_shouldClose_    = 1 << 0,
 - (void)_orderFront
 {
     if (![self isVisible])
-        [_targetView addObserver:self forKeyPath:@"frame" options:0 context:nil];
+        [self _addFrameObserver];
 
     [super _orderFront];
 }
 
 - (void)_parentDidOrderInChild
 {
-    [_targetView addObserver:self forKeyPath:@"frame" options:0 context:nil];
+    [self _addFrameObserver];
 }
 
 /*!
@@ -542,7 +591,7 @@ var _CPPopoverWindow_shouldClose_    = 1 << 0,
     _DOMElement.removeEventListener(CPBrowserStyleProperty("transitionend"), _orderOutTransitionFunction, YES);
 #endif
 
-    [_targetView removeObserver:self forKeyPath:@"frame"];
+    [self _removeFrameObserver];
     [_parentWindow removeChildWindow:self];
     [super _orderOutRecursively:recursive];
 

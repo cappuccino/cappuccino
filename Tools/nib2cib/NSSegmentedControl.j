@@ -72,6 +72,7 @@
         frame.size.height += 1;
 
     frame.size.width = originalWidth;
+    [self setEnabled:[cell isEnabled]];
     [self setFrame:frame];
 }
 

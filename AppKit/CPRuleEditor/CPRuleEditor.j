@@ -41,6 +41,21 @@
 @global CPCaseInsensitivePredicateOption
 @global CPOrPredicateType
 
+@protocol CPRuleEditorDelegate <CPObject>
+
+@required
+- (id)ruleEditor:(CPRuleEditor)editor child:(CPInteger)index forCriterion:(id)criterion withRowType:(CPRuleEditorRowType)rowType;
+- (id)ruleEditor:(CPRuleEditor)editor displayValueForCriterion:(id)criterion inRow:(CPInteger)row;
+- (CPInteger)ruleEditor:(CPRuleEditor)editor numberOfChildrenForCriterion:(id)criterion withRowType:(CPRuleEditorRowType)rowType;
+
+@optional
+- (CPDictionary)ruleEditor:(CPRuleEditor)editor predicatePartsForCriterion:(id)criterion withDisplayValue:(id)value inRow:(CPInteger)row;
+- (void)ruleEditorRowsDidChange:(CPNotification)notification;
+
+@end
+
+var CPRuleEditorDelegate_ruleEditor_predicatePartsForCriterion_withDisplayValue_inRow_   = 1 << 1;
+
 var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
     itemsContext                = "items",
     valuesContext               = "values",
@@ -69,50 +84,51 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
 
 @implementation CPRuleEditor : CPControl
 {
-    BOOL             _suppressKeyDownHandling;
-    BOOL             _allowsEmptyCompoundRows;
-    BOOL             _disallowEmpty;
-    BOOL             _delegateWantsValidation;
-    BOOL             _editable;
-    BOOL             _sendAction;
+    BOOL                        _suppressKeyDownHandling;
+    BOOL                        _allowsEmptyCompoundRows;
+    BOOL                        _disallowEmpty;
+    BOOL                        _delegateWantsValidation;
+    BOOL                        _editable;
+    BOOL                        _sendAction;
 
-    Class           _rowClass;
+    Class                       _rowClass;
 
-    CPIndexSet      _draggingRows;
-    CPInteger       _subviewIndexOfDropLine;
-    CPView          _dropLineView;
+    CPIndexSet                  _draggingRows;
+    CPInteger                   _subviewIndexOfDropLine;
+    CPView                      _dropLineView;
 
-    CPMutableArray  _rowCache;
-    CPMutableArray  _slices;
+    CPMutableArray              _rowCache;
+    CPMutableArray              _slices;
 
-    CPPredicate     _predicate;
+    CPPredicate                 _predicate;
 
-    CPString        _itemsKeyPath;
-    CPString        _subrowsArrayKeyPath;
-    CPString        _typeKeyPath;
-    CPString        _valuesKeyPath;
-    CPString        _boundArrayKeyPath @accessors(property=boundArrayKeyPath);
+    CPString                    _itemsKeyPath;
+    CPString                    _subrowsArrayKeyPath;
+    CPString                    _typeKeyPath;
+    CPString                    _valuesKeyPath;
+    CPString                    _boundArrayKeyPath @accessors(property=boundArrayKeyPath);
 
-    CPView          _slicesHolder;
-    CPViewAnimation _currentAnimation;
+    CPView                      _slicesHolder;
+    CPViewAnimation             _currentAnimation;
 
-    CPInteger       _lastRow;
-    CPInteger       _nestingMode;
+    CPInteger                   _lastRow;
+    CPInteger                   _nestingMode;
 
-    float           _alignmentGridWidth;
-    float           _sliceHeight;
+    float                       _alignmentGridWidth;
+    float                       _sliceHeight;
 
-    id              _ruleDataSource;
-    id              _ruleDelegate;
-    id              _boundArrayOwner;
+    id                          _ruleDataSource;
+    id <CPRuleEditorDelegate>   _ruleDelegate;
+    id                          _boundArrayOwner;
+    unsigned                    _implementedDelegateMethods;
 
-    CPString        _stringsFilename;
+    CPString                    _stringsFilename;
 
-    BOOL            _isKeyDown;
-    BOOL            _nestingModeDidChange;
+    BOOL                        _isKeyDown;
+    BOOL                        _nestingModeDidChange;
 
-    _CPRuleEditorLocalizer _standardLocalizer @accessors(property=standardLocalizer);
-    CPDictionary           _itemsAndValuesToAddForRowType;
+    _CPRuleEditorLocalizer      _standardLocalizer @accessors(property=standardLocalizer);
+    CPDictionary                _itemsAndValuesToAddForRowType;
 }
 
 /*! @cond */
@@ -213,19 +229,24 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
     @discussion CPRuleEditor requires a delegate that implements the required delegate methods to function.
     @see delegate
 */
-- (void)setDelegate:(id)aDelegate
+- (void)setDelegate:(id <CPRuleEditorDelegate>)aDelegate
 {
     if (_ruleDelegate === aDelegate)
         return;
 
     var nc = [CPNotificationCenter defaultCenter];
+
     if (_ruleDelegate)
         [nc removeObserver:_ruleDelegate name:nil object:self];
 
     _ruleDelegate = aDelegate;
+    _implementedDelegateMethods = 0;
 
     if ([_ruleDelegate respondsToSelector:@selector(ruleEditorRowsDidChange:)])
         [nc addObserver:_ruleDelegate selector:@selector(ruleEditorRowsDidChange:) name:CPRuleEditorRowsDidChangeNotification object:nil];
+
+    if ([_ruleDelegate respondsToSelector:@selector(ruleEditor:predicatePartsForCriterion:withDisplayValue:inRow:)])
+        _implementedDelegateMethods |= CPRuleEditorDelegate_ruleEditor_predicatePartsForCriterion_withDisplayValue_inRow_;
 }
 /*!
     @brief Returns a Boolean value that indicates whether the receiver is editable.
@@ -810,7 +831,7 @@ TODO: implement
         var item = [items objectAtIndex:i],
         //var displayValue = [self _queryValueForItem:item inRow:aRow]; Ask the delegate or get cached value ?.
             displayValue = [[self displayValuesForRow:aRow] objectAtIndex:i],
-            predpart = [_ruleDelegate ruleEditor:self predicatePartsForCriterion:item withDisplayValue:displayValue inRow:aRow];
+            predpart = [self _sendDelegateRuleEditorPredicatePartsForCriterion:item withDisplayValue:displayValue inRow:aRow];
 
         if (predpart)
             [predicateParts addEntriesFromDictionary:predpart];
@@ -1716,8 +1737,7 @@ TODO: implement
 {
     if (_delegateWantsValidation)
     {
-        var selector = @selector(ruleEditor:predicatePartsForCriterion:withDisplayValue:inRow:);
-        if (![_ruleDelegate respondsToSelector:selector])
+        if (![self _delegateRespondsToRuleEditorPredicatePartsForCriterionWithDisplayValueInRow])
             return;
 
         _delegateWantsValidation = NO;
@@ -2376,6 +2396,33 @@ TODO: implement
 }
 
 @end
+
+
+@implementation CPRuleEditor (CPRuleEditorDelegate)
+
+/*!
+    @ignore
+    Check if the delegate responds to ruleEditor:predicatePartsForCriterion:withDisplayValue:inRow:
+*/
+- (BOOL)_delegateRespondsToRuleEditorPredicatePartsForCriterionWithDisplayValueInRow
+{
+    return _implementedDelegateMethods & CPRuleEditorDelegate_ruleEditor_predicatePartsForCriterion_withDisplayValue_inRow_;
+}
+
+/*!
+    @ignore
+    Call delegate ruleEditor:predicatePartsForCriterion:withDisplayValue:inRow:
+*/
+- (CPDictionary)_sendDelegateRuleEditorPredicatePartsForCriterion:(id)criterion withDisplayValue:(id)value inRow:(CPInteger)row
+{
+    if (!(_implementedDelegateMethods & CPRuleEditorDelegate_ruleEditor_predicatePartsForCriterion_withDisplayValue_inRow_))
+        return @{};
+
+    return [_ruleDelegate ruleEditor:self predicatePartsForCriterion:criterion withDisplayValue:value inRow:row];
+}
+
+@end
+
 
 var CPRuleEditorAlignmentGridWidthKey       = @"CPRuleEditorAlignmentGridWidth",
     CPRuleEditorSliceHeightKey              = @"CPRuleEditorSliceHeight",

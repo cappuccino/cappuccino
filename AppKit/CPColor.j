@@ -813,6 +813,12 @@ url("data:image/png;base64,BASE64ENCODEDDATA")  // if there is a pattern image
     return [CPColor colorWithRed:RAND() green:RAND() blue:RAND() alpha:1.0];
 }
 
++ (CPColor)checkerBoardColor
+{
+    // Thanks to cocco http://stackoverflow.com/a/18368212/76900.
+    return [CPColor colorWithPatternImage:[[CPImage alloc] initWithContentsOfFile:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAABlBMVEX////MzMw46qqDAAAAEElEQVQImWNg+M+AFeEQBgB+vw/xfUUZkgAAAABJRU5ErkJggg=="]];
+}
+
 @end
 
 /// @cond IGNORE

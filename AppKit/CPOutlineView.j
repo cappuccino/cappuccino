@@ -52,7 +52,6 @@ var CPOutlineViewDataSource_outlineView_objectValue_forTableColumn_byItem_      
     CPOutlineViewDataSource_outlineView_sortDescriptorsDidChange_                                   = 1 << 11;
 
 var CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_                                  = 1 << 1,
-    CPOutlineViewDelegate_outlineView_viewForTableColumn_item_                                      = 1 << 26,
     CPOutlineViewDelegate_outlineView_didClickTableColumn_                                          = 1 << 2,
     CPOutlineViewDelegate_outlineView_didDragTableColumn_                                           = 1 << 3,
     CPOutlineViewDelegate_outlineView_heightOfRowByItem_                                            = 1 << 4,
@@ -75,8 +74,10 @@ var CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_              
     CPOutlineViewDelegate_outlineView_typeSelectStringForTableColumn_item_                          = 1 << 21,
     CPOutlineViewDelegate_outlineView_willDisplayOutlineView_forTableColumn_item_                   = 1 << 22,
     CPOutlineViewDelegate_outlineView_willDisplayView_forTableColumn_item_                          = 1 << 23,
-    CPOutlineViewDelegate_selectionShouldChangeInOutlineView_                                       = 1 << 24,
-    CPOutlineViewDelegate_outlineView_menuForTableColumn_item_                                      = 1 << 25;
+    CPOutlineViewDelegate_outlineView_willRemoveView_forTableColumn_item_                           = 1 << 24,
+    CPOutlineViewDelegate_selectionShouldChangeInOutlineView_                                       = 1 << 25,
+    CPOutlineViewDelegate_outlineView_menuForTableColumn_item_                                      = 1 << 26,
+    CPOutlineViewDelegate_outlineView_viewForTableColumn_item_                                      = 1 << 27;
 
 CPOutlineViewDropOnItemIndex = -1;
 
@@ -118,6 +119,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 - (void)outlineView:(CPOutlineView)anOutlineView mouseDownInHeaderOfTableColumn:(CPTableColumn)aTableColumn;
 - (void)outlineView:(CPOutlineView)anOutlineView willDisplayOutlineView:(CPView)aView forTableColumn:(CPTableColumn)aTableColumn item:(id)anItem;
 - (void)outlineView:(CPOutlineView)anOutlineView willDisplayView:(CPView)aView forTableColumn:(CPTableColumn)aTableColumn item:(id)anItem;
+- (void)outlineView:(CPOutlineView)anOutlineView willRemoveView:(CPView)aView forTableColumn:(CPTableColumn)aTableColumn item:(id)anItem;
 
 @end
 
@@ -963,6 +965,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
             CPOutlineViewDelegate_outlineView_typeSelectStringForTableColumn_item_               , @selector(outlineView:typeSelectStringForTableColumn:item:),
             CPOutlineViewDelegate_outlineView_willDisplayOutlineView_forTableColumn_item_        , @selector(outlineView:willDisplayOutlineView:forTableColumn:item:),
             CPOutlineViewDelegate_outlineView_willDisplayView_forTableColumn_item_               , @selector(outlineView:willDisplayView:forTableColumn:item:),
+            CPOutlineViewDelegate_outlineView_willRemoveView_forTableColumn_item_                , @selector(outlineView:willRemoveView:forTableColumn:item:),
             CPOutlineViewDelegate_selectionShouldChangeInOutlineView_                            , @selector(selectionShouldChangeInOutlineView:),
             CPOutlineViewDelegate_outlineView_menuForTableColumn_item_                           , @selector(outlineView:menuForTableColumn:item:)
         ],
@@ -1986,6 +1989,15 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     {
         var item = [_outlineView itemAtRow:aRowIndex];
         [_outlineView._outlineViewDelegate outlineView:_outlineView willDisplayView:aView forTableColumn:aTableColumn item:item];
+    }
+}
+
+- (void)tableView:(CPTableView)aTableView willRemoveView:(id)aView forTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRowIndex
+{
+    if ((_outlineView._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_willRemoveView_forTableColumn_item_))
+    {
+        var item = [_outlineView itemAtRow:aRowIndex];
+        [_outlineView._outlineViewDelegate outlineView:_outlineView willRemoveView:aView forTableColumn:aTableColumn item:item];
     }
 }
 
