@@ -5077,10 +5077,16 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     [self getColumn:@ref(column) row:@ref(row) forView:responder];
 
+    if (row == CPNotFound && column  == CPNotFound)
+	[self _notifyViewDidResignFirstResponder];
     _editingRow = row;
     _editingColumn = column;
 
-    if (_editingRow !== CPNotFound && _editingColumn !== CPNotFound && [responder isKindOfClass:[CPTextField class]] && (!_isViewBased || ![responder isBezeled]))
+    // We want to keep the 'First Responder' theme state for the table view as a whole, even when a subview is being edited.
+    // This makes sure the theming effects of a focused table remain in effect even as cells are being edited in it.
+    [self _notifyViewDidBecomeFirstResponder];
+
+    if (_editingRow !== CPNotFound && [responder isKindOfClass:[CPTextField class]] && ![responder isBezeled])
     {
         [responder setBezeled:YES];
         [self _registerForEndEditingNote:responder];
