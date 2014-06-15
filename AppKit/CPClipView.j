@@ -230,6 +230,11 @@
     return [self scrollToPoint:CGPointMake(bounds.origin.x - deltaX, bounds.origin.y - deltaY)];
 }
 
+- (CGRect)documentVisibleRect
+{
+    return [self convertRect:[self bounds] fromView:_documentView];
+}
+
 @end
 
 
