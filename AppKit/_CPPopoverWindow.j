@@ -588,7 +588,8 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
 {
     // Make absolutely sure no dangling event listeners are left
 #if PLATFORM(DOM)
-    _DOMElement.removeEventListener(CPBrowserStyleProperty("transitionend"), _orderOutTransitionFunction, YES);
+    if (_animates && _browserAnimates)
+        _DOMElement.removeEventListener(CPBrowserStyleProperty("transitionend"), _orderOutTransitionFunction, YES);
 #endif
 
     [self _removeFrameObserver];
