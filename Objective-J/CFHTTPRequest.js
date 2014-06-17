@@ -274,6 +274,16 @@ CFHTTPRequest.prototype.removeEventListener = function(/*String*/ anEventName, /
     this._eventDispatcher.removeEventListener(anEventName, anEventListener);
 };
 
+CFHTTPRequest.prototype.setWithCredentials = function(/*Boolean*/ isSet) 
+{
+    this._nativeRequest.withCredentials = isSet;
+};
+
+CFHTTPRequest.prototype.getWithCredentials = function() 
+{
+    return this._nativeRequest.withCredentials;
+};
+
 function determineAndDispatchHTTPRequestEvents(/*CFHTTPRequest*/ aRequest)
 {
     var eventDispatcher = aRequest._eventDispatcher;
