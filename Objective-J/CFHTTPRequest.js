@@ -216,7 +216,7 @@ CFHTTPRequest.prototype.overrideMimeType = function(/*String*/ aMimeType)
     this._mimeType = aMimeType;
 };
 
-CFHTTPRequest.prototype.open = function(/*String*/ aMethod, /*String*/ aURL, /*Boolean*/ isAsynchronous, /*String*/ aUser, /*String*/ aPassword)
+CFHTTPRequest.prototype.open = function(/*String*/ aMethod, /*String*/ aURL, /*Boolean*/ isAsynchronous, /*String*/ aUser, /*String*/ aPassword, /*Boolean*/ setWithCredentials)
 {
     this._isOpen = true;
     this._URL = aURL;
@@ -224,6 +224,7 @@ CFHTTPRequest.prototype.open = function(/*String*/ aMethod, /*String*/ aURL, /*B
     this._method = aMethod;
     this._user = aUser;
     this._password = aPassword;
+    CFHTTPRequest.prototype.setWithCredentials(setWithCredentials);
     return this._nativeRequest.open(aMethod, aURL, isAsynchronous, aUser, aPassword);
 };
 
@@ -276,6 +277,7 @@ CFHTTPRequest.prototype.removeEventListener = function(/*String*/ anEventName, /
 
 CFHTTPRequest.prototype.setWithCredentials = function(/*Boolean*/ isSet) 
 {
+    console.log(isSet);
     this._nativeRequest.withCredentials = isSet;
 };
 
