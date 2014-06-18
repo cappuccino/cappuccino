@@ -50,9 +50,9 @@
 
 @class CPMenu
 @class CPProgressIndicator
+@class CPPanel
 
 @global CPApp
-
 
 @protocol CPWindowDelegate <CPObject>
 
@@ -1792,9 +1792,23 @@ CPTexturedBackgroundWindowMask
                     // even that we just moved it to a new first responder.
                     [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:NO]
 #endif
-                }
+
 
                 return didTabBack;
+            }
+            else if ([anEvent charactersIgnoringModifiers] === CPEscapeFunctionKey && [self isKindOfClass:[CPPanel class]])
+            {
+                if ([self respondsToSelector:@selector(closeOnBlur)])
+                {
+                    if ([self closeOnBlur])
+                        [self close];
+                }
+                else
+                {
+                    [self close];
+                }
+
+                return;
             }
 
             [[self firstResponder] keyDown:anEvent];
