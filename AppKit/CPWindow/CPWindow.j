@@ -1793,7 +1793,7 @@ CPTexturedBackgroundWindowMask
                     [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:NO]
 #endif
 
-
+                }
                 return didTabBack;
             }
             else if ([anEvent charactersIgnoringModifiers] === CPEscapeFunctionKey && [self isKindOfClass:[CPPanel class]])
