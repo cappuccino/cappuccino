@@ -277,9 +277,9 @@ CFHTTPRequest.prototype.removeEventListener = function(/*String*/ anEventName, /
 
 CFHTTPRequest.prototype.setWithCredentials = function(/*Boolean*/ isSet) 
 {
-    if (typeof this._nativeRequest !== "undefined")
+    if (typeof this._nativeRequest !== "undefined" && isSet)
     {
-        this._nativeRequest.withCredentials = isSet ? "true" : "false";
+        this._nativeRequest.withCredentials = "true";
     }
 };
 
