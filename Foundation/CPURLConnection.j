@@ -27,6 +27,7 @@
 @import "CPURLResponse.j"
 
 var CPURLConnectionDelegate = nil;
+var withCredentials = NO;
 
 /*!
     @class CPURLConnection
@@ -85,6 +86,21 @@ var CPURLConnectionDelegate = nil;
 + (void)setClassDelegate:(id)delegate
 {
     CPURLConnectionDelegate = delegate;
+}
+
+/*
+    Sets a flag to designate whether async XMLHTTPRequests should allow credentials to be sent or not.
+    This only works with async calls.
+    @param isWithCredentials flag to let XMLHTTPRequests to use withCredentials
+*/
++ (void)setWithCredentials:(BOOL)isWithCredentials
+{
+    withCredentials = isWithCredentials;
+}
+
++ (BOOL)withCredentials
+{
+    return withCredentials;
 }
 
 /*
@@ -188,11 +204,13 @@ var CPURLConnectionDelegate = nil;
 - (void)start
 {
     _isCanceled = NO;
+    
+    _HTTPRequest.setWithCredentials(withCredentials);
 
     try
     {
         _HTTPRequest.open([_request HTTPMethod], [[_request URL] absoluteString], YES);
-
+        
         _HTTPRequest.onreadystatechange = function() { [self _readyStateDidChange]; };
 
         var fields = [_request allHTTPHeaderFields],
@@ -294,5 +312,7 @@ var CPURLConnectionDelegate = nil;
 
     return [self _HTTPRequest];
 }
+
+
 
 @end
