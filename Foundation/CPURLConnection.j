@@ -112,30 +112,25 @@ var withCredentials = NO;
 */
 + (CPData)sendSynchronousRequest:(CPURLRequest)aRequest returningResponse:(/*{*/CPURLResponse/*}*/)aURLResponse
 {
-    var cfHTTPRequest = new CFHTTPRequest();
-
-    [CPURLConnection _sendSynchronousRequest:aRequest returningResponse:aURLResponse withCFHTTPRequest:cfHTTPRequest];
-}
-
-+ (CPData)_sendSynchronousRequest:(CPURLRequest)aRequest returningResponse:(/*{*/CPURLResponse/*}*/)aURLResponse withCFHTTPRequest:(CFHTTPRequest)aCFHTTPRequest
-{
     try
     {
-        aCFHTTPRequest.open([aRequest HTTPMethod], [[aRequest URL] absoluteString], NO);
+        var request = new CFHTTPRequest();
+
+        request.open([aRequest HTTPMethod], [[aRequest URL] absoluteString], NO);
 
         var fields = [aRequest allHTTPHeaderFields],
             key = nil,
             keys = [fields keyEnumerator];
 
         while ((key = [keys nextObject]) !== nil)
-            aCFHTTPRequest.setRequestHeader(key, [fields objectForKey:key]);
+            request.setRequestHeader(key, [fields objectForKey:key]);
 
-        aCFHTTPRequest.send([aRequest HTTPBody]);
+        request.send([aRequest HTTPBody]);
 
-        if (!aCFHTTPRequest.success())
+        if (!request.success())
             return nil;
 
-        return [CPData dataWithRawString:aCFHTTPRequest.responseText()];
+        return [CPData dataWithRawString:request.responseText()];
     }
     catch (anException)
     {
