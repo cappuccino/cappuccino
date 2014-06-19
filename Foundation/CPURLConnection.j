@@ -27,6 +27,7 @@
 @import "CPURLResponse.j"
 
 var CPURLConnectionDelegate = nil;
+var withCredentials = NO;
 
 /*!
     @class CPURLConnection
@@ -88,6 +89,21 @@ var CPURLConnectionDelegate = nil;
 }
 
 /*
+    Sets a flag to designate whether async XMLHTTPRequests should allow credentials to be sent or not.
+    This only works with async calls.
+    @param isWithCredentials flag to let XMLHTTPRequests to use withCredentials
+*/
++ (void)setWithCredentials:(BOOL)isWithCredentials
+{
+    withCredentials = isWithCredentials;
+}
+
++ (BOOL)getWithCredentials
+{
+    return withCredentials;
+}
+
+/*
     Sends a request for the data from a URL. This is the easiest way to obtain data from a URL.
     @param aRequest contains the URL to request the data from
     @param aURLResponse not used
@@ -96,25 +112,30 @@ var CPURLConnectionDelegate = nil;
 */
 + (CPData)sendSynchronousRequest:(CPURLRequest)aRequest returningResponse:(/*{*/CPURLResponse/*}*/)aURLResponse
 {
+    var cfHTTPRequest = new CFHTTPRequest();
+
+    [CPURLConnection _sendSynchronousRequest:aRequest returningResponse:aURLResponse withCFHTTPRequest:cfHTTPRequest];
+}
+
++ (CPData)_sendSynchronousRequest:(CPURLRequest)aRequest returningResponse:(/*{*/CPURLResponse/*}*/)aURLResponse withCFHTTPRequest:(CFHTTPRequest)aCFHTTPRequest
+{
     try
     {
-        var request = new CFHTTPRequest();
-
-        request.open([aRequest HTTPMethod], [[aRequest URL] absoluteString], NO);
+        aCFHTTPRequest.open([aRequest HTTPMethod], [[aRequest URL] absoluteString], NO);
 
         var fields = [aRequest allHTTPHeaderFields],
             key = nil,
             keys = [fields keyEnumerator];
 
         while ((key = [keys nextObject]) !== nil)
-            request.setRequestHeader(key, [fields objectForKey:key]);
+            aCFHTTPRequest.setRequestHeader(key, [fields objectForKey:key]);
 
-        request.send([aRequest HTTPBody]);
+        aCFHTTPRequest.send([aRequest HTTPBody]);
 
-        if (!request.success())
+        if (!aCFHTTPRequest.success())
             return nil;
 
-        return [CPData dataWithRawString:request.responseText()];
+        return [CPData dataWithRawString:aCFHTTPRequest.responseText()];
     }
     catch (anException)
     {
@@ -188,11 +209,13 @@ var CPURLConnectionDelegate = nil;
 - (void)start
 {
     _isCanceled = NO;
+    
+    _HTTPRequest.setWithCredentials(withCredentials);
 
     try
     {
         _HTTPRequest.open([_request HTTPMethod], [[_request URL] absoluteString], YES);
-
+        
         _HTTPRequest.onreadystatechange = function() { [self _readyStateDidChange]; };
 
         var fields = [_request allHTTPHeaderFields],
@@ -294,5 +317,7 @@ var CPURLConnectionDelegate = nil;
 
     return [self _HTTPRequest];
 }
+
+
 
 @end
