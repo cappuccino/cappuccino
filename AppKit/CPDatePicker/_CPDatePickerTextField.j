@@ -133,9 +133,9 @@ var CPZeroKeyCode = 48,
     return NO;
 }
 
+
 #pragma mark -
 #pragma mark Setter Getter methods
-
 
 /*! Set the value of the control
     @param aDateValue
@@ -145,6 +145,12 @@ var CPZeroKeyCode = 48,
     var dateValue = [aDateValue copy];
     [dateValue _dateWithTimeZone:[_datePicker timeZone]];
     [_datePickerElementView setDateValue:dateValue];
+
+    // This is used to update the value of the stepper
+    // It's usefull when the user change the dateValue in the delegate for example otherwise the stepper will keep the old value
+    // We don't call the method objectValue: because we don't want to use the binding system of cappuccino when updating this value
+    if (_currentTextField)
+        _stepper._value = parseInt([_currentTextField stringValue]);
 }
 
 /*! Set the widget enabled or not
@@ -247,9 +253,9 @@ var CPZeroKeyCode = 48,
 
         // This gonna update the dateValue with the binding
         if (isUp)
-            [_stepper setDoubleValue:parseInt([_currentTextField objectValue]) + 1];
+            [_stepper setDoubleValue:parseInt([_currentTextField stringValue]) + 1];
         else
-            [_stepper setDoubleValue:parseInt([_currentTextField objectValue]) - 1];
+            [_stepper setDoubleValue:parseInt([_currentTextField stringValue]) - 1];
 
         return;
     }
@@ -257,7 +263,7 @@ var CPZeroKeyCode = 48,
     if ([_currentTextField dateType] != CPAMPMDateType)
     {
         // Make sure to get the good value, especially when we reach the maxDate or minDate
-        [sender setDoubleValue:parseInt([_currentTextField objectValue])];
+       [sender setDoubleValue:parseInt([_currentTextField stringValue])];
     }
     else
     {
@@ -284,7 +290,7 @@ var CPZeroKeyCode = 48,
     if (key == CPUpArrowFunctionKey)
     {
         [_currentTextField _invalidTimer];
-        [_stepper setDoubleValue:parseInt([_currentTextField objectValue])];
+        [_stepper setDoubleValue:parseInt([_currentTextField stringValue])];
         [_stepper performClickUp:self];
         return YES;
     }
@@ -292,7 +298,7 @@ var CPZeroKeyCode = 48,
     if (key == CPDownArrowFunctionKey)
     {
         [_currentTextField _invalidTimer];
-        [_stepper setDoubleValue:parseInt([_currentTextField objectValue])];
+        [_stepper setDoubleValue:parseInt([_currentTextField stringValue])];
         [_stepper performClickDown:self];
         return YES;
     }
@@ -1563,6 +1569,7 @@ var CPMonthDateType = 0,
                 [self setStringValue:dateValue.getSeconds().toString()];
                 return;
             }
+
             [super setObjectValue:objectValue];
             break;
 
