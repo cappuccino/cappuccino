@@ -277,15 +277,15 @@ CFHTTPRequest.prototype.removeEventListener = function(/*String*/ anEventName, /
 
 CFHTTPRequest.prototype.setWithCredentials = function(/*Boolean*/ isSet) 
 {
-    if (typeof this._nativeRequest !== "undefined" && isSet)
+    if (typeof this._nativeRequest !== "undefined")
     {
-        this._nativeRequest.withCredentials = "true";
+        this._nativeRequest.withCredentials = isSet;
     }
 };
 
 CFHTTPRequest.prototype.getWithCredentials = function() 
 {
-    if (typeof this._nativeRequest !== "undefined" && this._nativeRequest.withCredentials === "true")
+    if (typeof this._nativeRequest !== "undefined" && this._nativeRequest.withCredentials)
     {
         return YES;
     }
