@@ -98,7 +98,7 @@ var withCredentials = NO;
     withCredentials = isWithCredentials;
 }
 
-+ (BOOL)getWithCredentials
++ (BOOL)withCredentials
 {
     return withCredentials;
 }
