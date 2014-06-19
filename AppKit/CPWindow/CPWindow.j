@@ -51,6 +51,7 @@
 @class CPMenu
 @class CPProgressIndicator
 @class CPPanel
+@class _CPPopoverWindow
 
 @global CPApp
 
@@ -1798,14 +1799,14 @@ CPTexturedBackgroundWindowMask
             }
             else if ([anEvent charactersIgnoringModifiers] === CPEscapeFunctionKey && [self isKindOfClass:[CPPanel class]])
             {
-                if ([self respondsToSelector:@selector(closeOnBlur)])
+                if ([self isKindOfClass:[_CPPopoverWindow class]])
                 {
                     if ([self closeOnBlur])
-                        [self close];
+                        [[self delegate] performClose:self];
                 }
                 else
                 {
-                    [self close];
+                    [self performClose:self];
                 }
 
                 return;
