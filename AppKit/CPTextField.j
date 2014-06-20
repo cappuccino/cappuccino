@@ -665,7 +665,10 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         contentRect = [self contentRectForBounds:[self bounds]],
         verticalAlign = [self currentValueForThemeAttribute:"vertical-alignment"];
 
-    element.style.color = [[self valueForThemeAttribute:@"text-color" inState:CPThemeStateEditing] cssString];
+    if ([self hasThemeState:CPTextFieldStatePlaceholder])
+        element.style.color = [[self valueForThemeAttribute:@"text-color" inState:CPTextFieldStatePlaceholder] cssString];
+    else
+        element.style.color = [[self valueForThemeAttribute:@"text-color" inState:CPThemeStateEditing] cssString];
 
     if (CPFeatureIsCompatible(CPInputSetFontOutsideOfDOM))
         element.style.font = [font cssString];
@@ -1781,6 +1784,20 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 }
 
 #pragma mark Overrides
+
+/*!
+    Sets the text color of the receiver.
+
+    @param aColor - A CPColor object.
+*/
+- (void)setTextColor:(CPColor)aColor
+{
+    // We don't want to change the text-color of the placeHolder of the textField
+    var placeholderColor = [self valueForThemeAttribute:@"text-color" inState:CPTextFieldStatePlaceholder];
+
+    [super setTextColor:aColor];
+    [self setValue:placeholderColor forThemeAttribute:@"text-color" inState:CPTextFieldStatePlaceholder];
+}
 
 - (void)viewDidHide
 {
