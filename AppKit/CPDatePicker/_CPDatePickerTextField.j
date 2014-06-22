@@ -263,7 +263,7 @@ var CPZeroKeyCode = 48,
     if ([_currentTextField dateType] != CPAMPMDateType)
     {
         // Make sure to get the good value, especially when we reach the maxDate or minDate
-       [sender setDoubleValue:parseInt([_currentTextField stringValue])];
+        [sender setDoubleValue:parseInt([_currentTextField stringValue])];
     }
     else
     {
