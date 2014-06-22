@@ -46,6 +46,19 @@ var objj_msgSend_original = objj_msgSend,
     objj_msgSendFast2_original = objj_msgSendFast2,
     objj_msgSendFast3_original = objj_msgSendFast3;
 
+function objj_msgSend_reset_all_classes() {
+    objj_enumerateClassesUsingBlock(function(aClass) {
+        if (aClass.hasOwnProperty("objj_msgSend"))
+        {
+            aClass.objj_msgSend = objj_msgSendFast;
+            aClass.objj_msgSend0 = objj_msgSendFast0;
+            aClass.objj_msgSend1 = objj_msgSendFast1;
+            aClass.objj_msgSend2 = objj_msgSendFast2;
+            aClass.objj_msgSend3 = objj_msgSendFast3;
+        }
+    });
+}
+
 // decorator management functions
 
 // reset to default objj_msgSend* implementations
@@ -59,16 +72,7 @@ GLOBAL(objj_msgSend_reset) = function()
     objj_msgSendFast2 = objj_msgSendFast2_original;
     objj_msgSendFast3 = objj_msgSendFast3_original;
 
-    objj_enumerateClassesUsingBlock(function(aClass) {
-        if (aClass.hasOwnProperty("objj_msgSend"))
-        {
-            aClass.objj_msgSend = objj_msgSendFast;
-            aClass.objj_msgSend0 = objj_msgSendFast0;
-            aClass.objj_msgSend1 = objj_msgSendFast1;
-            aClass.objj_msgSend2 = objj_msgSendFast2;
-            aClass.objj_msgSend3 = objj_msgSendFast3;
-        }
-    });
+    objj_msgSend_reset_all_classes();
 }
 
 // decorate both objj_msgSend and objj_msgSendSuper
@@ -88,19 +92,8 @@ GLOBAL(objj_msgSend_decorate) = function()
         objj_msgSendFast3 = arguments[index](objj_msgSendFast3);
     }
 
-    if (count) {
-        objj_enumerateClassesUsingBlock(function(aClass) {
-            // Has the class been initiated? This should be checked in another way
-            if (aClass.hasOwnProperty("objj_msgSend"))
-            {
-                aClass.objj_msgSend = objj_msgSendFast;
-                aClass.objj_msgSend0 = objj_msgSendFast0;
-                aClass.objj_msgSend1 = objj_msgSendFast1;
-                aClass.objj_msgSend2 = objj_msgSendFast2;
-                aClass.objj_msgSend3 = objj_msgSendFast3;
-            }
-        });
-    }
+    if (count)
+        objj_msgSend_reset_all_classes();
 }
 
 // reset then decorate both objj_msgSend and objj_msgSendSuper
