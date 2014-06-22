@@ -679,7 +679,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 
     var segment = _segments[aSegment],
         segmentWidth = [segment width],
-        themeState = _themeState.hasThemeState(CPThemeStateDisabled) ? _themeStates[aSegment].and(CPThemeStateDisabled) : _themeStates[aSegment];
+        themeState = _themeState.hasThemeState(CPThemeStateDisabled) ? _themeStates[aSegment].and(CPThemeStateDisabled) : _themeStates[aSegment],
         contentInset = [self valueForThemeAttribute:@"content-inset" inState:themeState],
         font = [self font];
 

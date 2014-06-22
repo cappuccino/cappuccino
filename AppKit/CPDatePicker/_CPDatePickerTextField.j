@@ -180,7 +180,7 @@ var CPZeroKeyCode = 48,
 #pragma mark -
 #pragma mark SelectTextField action
 
-- (void)_selecteTextFieldWithFlags:(unsigned)flags
+- (void)_selectTextFieldWithFlags:(unsigned)flags
 {
     [_datePickerElementView _updateResponderTextField];
 
@@ -1226,14 +1226,14 @@ var CPMonthDateType = 0,
     CPTimer _timerEdition;
 }
 
-
-#pragma mark -
-#pragma mark Getter Setter methods
-
-- (BOOL)acceptFirstResponder
+- (id)init
 {
-    _firstEvent = YES;
-    return NO;
+    if (self = [super init])
+    {
+        _firstEvent = YES;
+    }
+
+    return self;
 }
 
 /*! Set the dateType of the textField

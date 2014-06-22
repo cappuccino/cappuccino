@@ -74,6 +74,8 @@ static NSPredicate * XCCDirectoriesToIgnorePredicate = nil;
 // An array of the default predicates used to ignore paths.
 static NSArray *XCCDefaultIgnoredPathPredicates = nil;
 
+NSString * const XCCCappLintDidStartNotification = @"XCCCappLintDidStartNotification";
+NSString * const XCCCappLintDidEndNotification = @"XCCCappLintDidEndNotification";
 
 @interface XcodeCapp ()
 
@@ -241,7 +243,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     // Make sure we are using jsc as the narwhal engine!
     self.environment[@"NARWHAL_ENGINE"] = @"jsc";
 
-    self.executables = @[@"python", @"narwhal-jsc", @"objj", @"nib2cib", @"capp"];
+    self.executables = @[@"python", @"narwhal-jsc", @"objj", @"nib2cib", @"capp", @"capp_lint"];
 
     // This is used to get the env var of $CAPP_BUILD
     NSDictionary *processEnvironment = [[NSProcessInfo processInfo] environment];
@@ -317,9 +319,10 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
 
     [self clearErrors:self];
     [self computeIgnoredPaths];
-
+    
     [self prepareXcodeSupport];
     [self populateXcodeProject];
+    [self populatexCodeCappTargetedFiles];
     [self waitForOperationQueueToFinishWithSelector:@selector(projectDidFinishLoading)];
 }
 
@@ -370,6 +373,25 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     DDLogVerbose(@"XcodeCapp/project compatibility version: %0.1f/%0.1f", projectCompatibilityVersion.doubleValue, appCompatibilityVersion);
 
     return projectCompatibilityVersion.doubleValue >= appCompatibilityVersion;
+}
+
+- (void)populatexCodeCappTargetedFiles
+{
+    NSFileManager *fm = [NSFileManager defaultManager];
+    NSDirectoryEnumerator *filesOfProject = [fm enumeratorAtPath:self.projectPath];
+    NSString *filename;
+    
+    self.xCodeCappTargetedFiles = [NSMutableArray array];
+    
+    while ((filename = [filesOfProject nextObject] )) {
+        
+        NSString *fullPath = [self.projectPath stringByAppendingPathComponent:filename];
+        
+        if (![self isSourceFile:fullPath])
+            continue;
+        
+        [self.xCodeCappTargetedFiles addObject:fullPath];
+    }
 }
 
 - (void)createXcodeProject
@@ -729,7 +751,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
             self.pbxOperations[@"add"] = addPaths;
         }
     }
-
+    
     DDLogVerbose(@"%@ %@", NSStringFromSelector(_cmd), path);
 }
 
@@ -1359,6 +1381,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     return [path substringFromIndex:self.projectPath.length + 1];
 }
 
+
 #pragma mark - Shadow Files Management
 
 - (NSString *)shadowBasePathForProjectSourcePath:(NSString *)path
@@ -1636,14 +1659,53 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     [self runTaskWithLaunchPath:executablePath arguments:args returnType:kTaskReturnTypeNone];
 }
 
+- (BOOL)shouldShowErrorNotification
+{
+    return [[NSUserDefaults standardUserDefaults] boolForKey:kDefaultXCCAutoShowNotificationOnErrors];
+}
+
+- (BOOL)shouldProcessWithCappLint
+{
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    
+    return [defaults boolForKey:kDefaultXCCAutoOpenErrorsPanelOnCappLint]
+            || [defaults boolForKey:kDefaultXCCAutoShowNotificationOnCappLint];
+}
+
 - (void)showErrors
 {
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
 
-    if (([defaults boolForKey:kDefaultXCCAutoOpenErrorsPanelOnErrors] && self.hasErrors) ||
-        ([defaults boolForKey:kDefaultXCCAutoOpenErrorsPanelOnWarnings] && self.errorList.count))
+    if ([defaults boolForKey:kDefaultXCCAutoOpenErrorsPanelOnErrors] && self.errorList.count)
     {
         [self openErrorsPanel:self];
+    }
+}
+
+- (void)showCappLintErrors
+{
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    
+    if ([defaults boolForKey:kDefaultXCCAutoOpenErrorsPanelOnCappLint] && self.errorList.count)
+        [self openErrorsPanel:self];
+
+    if ([defaults boolForKey:kDefaultXCCAutoShowNotificationOnCappLint])
+    {
+        NSUInteger numberError = [self.errorList count];
+        
+        if (numberError)
+        {
+            NSDictionary *error = [self.errorList objectAtIndex:0];
+            NSString *filename = [error objectForKey:@"path"];
+            
+            NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+                                         [NSNumber numberWithInteger:self.projectId] , @"projectId",
+                                         @"Code Style Issues", @"title",
+                                         filename.lastPathComponent , @"message",
+                                         nil];
+            
+            [self wantUserNotificationWithInfo:dict];
+        }
     }
 }
 
@@ -1672,6 +1734,113 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     }];
 
     return index != NSNotFound;
+}
+
+
+#pragma mark - capp_lint
+
+- (IBAction)checkProjectWithCappLint:(id)aSender
+{
+    [self clearErrors:self];
+    
+    NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+    [center addObserver:self selector:@selector(cappLintDidEndNotification:) name:XCCCappLintDidEndNotification object:nil];
+    
+    [self performSelectorInBackground:@selector(checkCappLintForPath:) withObject:self.xCodeCappTargetedFiles];
+}
+
+- (void)cappLintDidEndNotification:(NSNotification*)aNotification
+{
+    [self showCappLintErrors];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:XCCCappLintDidEndNotification object:nil];
+}
+
+- (BOOL)checkCappLintForPath:(NSArray*)paths
+{
+    DDLogVerbose(@"Checking path %@ with capp_lint", paths);
+    
+    NSUInteger numberOfFiles = [paths count];
+    
+    if (!numberOfFiles)
+        return YES;
+    
+    self.isProcessing = YES;
+    [[NSNotificationCenter defaultCenter] postNotificationName:XCCBatchDidStartNotification object:self];
+    [[NSNotificationCenter defaultCenter] postNotificationName:XCCCappLintDidStartNotification object:self];
+    
+    NSString *baseDirectory = [NSString stringWithFormat:@"--basedir='%@'", self.projectPath];
+    NSMutableArray *arguments = [NSMutableArray arrayWithObjects:baseDirectory, nil];
+    [arguments addObjectsFromArray:paths];
+    
+    NSDictionary *taskResult = [self runTaskWithLaunchPath:self.executablePaths[@"capp_lint"]
+                                                 arguments:arguments
+                                                returnType:kTaskReturnTypeStdOut];
+    
+    NSInteger status = [taskResult[@"status"] intValue];
+    
+    if (status == 0)
+    {
+        [[NSNotificationCenter defaultCenter] postNotificationName:XCCBatchDidEndNotification object:self];
+        [[NSNotificationCenter defaultCenter] postNotificationName:XCCCappLintDidEndNotification object:self];
+        return YES;
+    }
+    
+    NSString *response = taskResult[@"response"];
+    NSMutableArray *errors = [NSMutableArray arrayWithArray:[response componentsSeparatedByString:@"\n\n"]];
+    
+    // We need to remove the first object who is the number of errors and the last object who is an empty line
+    [errors removeLastObject];
+    [errors removeObjectAtIndex:0];
+    
+    NSInteger numberOfErrors = [errors count];
+    NSInteger i = 0;
+    NSString *path;
+    NSMutableArray *dicts = [NSMutableArray array];
+    
+    if (numberOfFiles == 1)
+        path = [paths objectAtIndex:0];
+    
+    for (i = 0; i < numberOfErrors; i++)
+    {
+        NSMutableString *error = (NSMutableString*)[errors objectAtIndex:i];
+        NSString *line;
+        NSString *firstCaract = [NSString stringWithFormat:@"%c" ,[error characterAtIndex:0]];
+        
+        if ([[NSScanner scannerWithString:firstCaract] scanInt:nil])
+            error = (NSMutableString*)[NSString stringWithFormat:@"%@:%@", path, error];
+        
+        NSInteger positionOfFirstColon = [error rangeOfString:@":"].location;
+        
+        if (numberOfFiles > 1)
+            path = [error substringToIndex:positionOfFirstColon];
+        
+        NSString *errorWithoutPath = [error substringFromIndex:(positionOfFirstColon + 1)];
+        NSInteger positionOfSecondColon = [errorWithoutPath rangeOfString:@":"].location;
+        line = [errorWithoutPath substringToIndex:positionOfSecondColon];
+        
+        NSString *messageError = [NSString stringWithFormat:@"Code style issue: %@ \n%@", path.lastPathComponent, errorWithoutPath];
+        
+        NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+                                     [NSNumber numberWithInt:[line intValue]], @"line",
+                                     messageError , @"message",
+                                     path, @"path",
+                                     nil];
+        
+        [dicts addObject:dict];
+    }
+    
+    [self performSelectorOnMainThread:@selector(cappLintConversionDidGenerateError:) withObject:dicts waitUntilDone:NO];
+    
+    self.isProcessing = NO;
+    [[NSNotificationCenter defaultCenter] postNotificationName:XCCBatchDidEndNotification object:self];
+    [[NSNotificationCenter defaultCenter] postNotificationName:XCCCappLintDidEndNotification object:self];
+    
+    return NO;
+}
+
+- (void)cappLintConversionDidGenerateError:(NSArray*)errors
+{
+    [self.errorListController addObjects:errors];
 }
 
 #pragma mark - User notifications
@@ -1713,14 +1882,21 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     if ([info[@"projectId"] intValue] != self.projectId)
         return;
 
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:kDefaultShowProcessingNotices])
-        [self notifyUserWithTitle:info[@"title"] message:info[@"message"]];
+    [self notifyUserWithTitle:info[@"title"] message:info[@"message"]];
 }
 
 - (BOOL)userNotificationCenter:(NSUserNotificationCenter *)center shouldPresentNotification:(NSUserNotification *)notification
 {
     // Notification Center may decide not to show a notification. We always want them to show.
     return YES;
+}
+
+- (void)userNotificationCenter:(NSUserNotificationCenter *)center didActivateNotification:(NSUserNotification *)notification
+{
+    if ([self.errorList count])
+        [self openErrorsPanel:self];
+    
+    [center removeDeliveredNotification:notification];
 }
 
 @end

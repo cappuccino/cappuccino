@@ -116,7 +116,9 @@ CPTableViewLastColumnOnlyAutoresizingStyle = 4;
 CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 #define NUMBER_OF_COLUMNS() (_tableColumns.length)
-#define UPDATE_COLUMN_RANGES_IF_NECESSARY() if (_dirtyTableColumnRangeIndex !== CPNotFound) [self _recalculateTableColumnRanges];
+#define UPDATE_COLUMN_RANGES_IF_NECESSARY() \
+    if (_dirtyTableColumnRangeIndex !== CPNotFound) \
+        [self _recalculateTableColumnRanges];
 #define FULL_ROW_HEIGHT() (_rowHeight + _intercellSpacing.height)
 #define ROW_BOTTOM(__heightInfo) (__heightInfo.y + __heightInfo.height + _intercellSpacing.height)
 #define HAS_VARIABLE_ROW_HEIGHTS()  (_implementedDelegateMethods & CPTableViewDelegate_tableView_heightOfRow_)
@@ -5097,24 +5099,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 /*!
     @ignore
 */
-- (BOOL)becomeFirstResponder
-{
-    [self setNeedsDisplay:YES];
-    return YES;
-}
-
-/*!
-    @ignore
-*/
-- (BOOL)resignFirstResponder
-{
-    [self setNeedsDisplay:YES];
-    return YES;
-}
-
-/*!
-    @ignore
-*/
 - (BOOL)acceptsFirstResponder
 {
     return YES;
@@ -5159,11 +5143,18 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     {
         _editingRow = CPNotFound;
         _editingColumn = CPNotFound;
+
+        // This is needed to unset the themeState firstResponder of the tableView
+        [self _notifyViewDidResignFirstResponder];
         return;
     }
 
     _editingRow = [self rowForView:responder];
     _editingColumn = [self columnForView:responder];
+
+    // We want to keep the 'First Responder' theme state for the table view as a whole, even when a subview is being edited.
+    // This makes sure the theming effects of a focused table remain in effect even as cells are being edited in it.
+    [self _notifyViewDidBecomeFirstResponder];
 
     if (_editingRow !== CPNotFound && [responder isKindOfClass:[CPTextField class]] && ![responder isBezeled])
     {
@@ -6242,7 +6233,7 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
 - (BOOL)setThemeState:(ThemeState)aState
 {
-     if (aState.isa && [aState isKindOfClass:CPArray])
+    if (aState.isa && [aState isKindOfClass:CPArray])
         aState = CPThemeState.apply(null, aState);
 
     [super setThemeState:aState];
@@ -6251,7 +6242,7 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
 - (BOOL)unsetThemeState:(ThemeState)aState
 {
-   if (aState.isa && [aState isKindOfClass:CPArray])
+    if (aState.isa && [aState isKindOfClass:CPArray])
         aState = CPThemeState.apply(null, aState);
 
     [super unsetThemeState:aState];

@@ -843,7 +843,6 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
     var index = 0,
         count = _visibleItems.length,
         x = contentInset.left,
-        contentInset = [self valueForThemeAttribute:@"content-inset"],
         y = contentInset.top;
 
     for (; index < count; ++index)
