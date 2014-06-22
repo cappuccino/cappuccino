@@ -14,6 +14,7 @@ var FILENAMES = [
         "Messages/keyword-in-selector",
         "Messages/colon-selector",
         "Messages/self-as-receiver",
+        "Messages/complex-receiver",
 
         "Misc/parenthesis-return",
         "Misc/preprocess-if-directives",
