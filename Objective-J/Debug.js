@@ -58,6 +58,17 @@ GLOBAL(objj_msgSend_reset) = function()
     objj_msgSendFast1 = objj_msgSendFast1_original;
     objj_msgSendFast2 = objj_msgSendFast2_original;
     objj_msgSendFast3 = objj_msgSendFast3_original;
+
+    objj_enumerateClassesUsingBlock(function(aClass) {
+        if (aClass.hasOwnProperty("objj_msgSend"))
+        {
+            aClass.objj_msgSend = objj_msgSendFast;
+            aClass.objj_msgSend0 = objj_msgSendFast0;
+            aClass.objj_msgSend1 = objj_msgSendFast1;
+            aClass.objj_msgSend2 = objj_msgSendFast2;
+            aClass.objj_msgSend3 = objj_msgSendFast3;
+        }
+    });
 }
 
 // decorate both objj_msgSend and objj_msgSendSuper
