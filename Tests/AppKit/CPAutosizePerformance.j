@@ -1,10 +1,10 @@
-@import <AppKit/AppKit.j>
 @import <Foundation/Foundation.j>
+@import <AppKit/AppKit.j>
 
 [CPApplication sharedApplication];
 
 
-@implementation CPAutosizeTest : OJTestCase
+@implementation CPAutosizePerformance : OJTestCase
 {
     CPInteger NUMBER_OF_VIEWS;
     CPInteger RESIZES_COUNT;
@@ -12,14 +12,14 @@
 
 - (void)setUp
 {
-    NUMBER_OF_VIEWS = 100;
-    RESIZES_COUNT = 500;
+    NUMBER_OF_VIEWS = 50;
+    RESIZES_COUNT = 250;
 }
 
 - (void)testAutosizePerf
 {
     var dur = 0,
-        masks = [0,1,2,3,4,5,6,7,8];
+        masks = [0, 1, 2, 3, 4, 5, 6, 7, 8];
 
     for (var i = 0; i < 64; i++)
         dur += [self _testAutosizePerfWithMask:i];
@@ -29,8 +29,8 @@
 
 - (CPInteger)_testAutosizePerfWithMask:(CPInteger)aMask
 {
-    var windowRect = CGRectMake(0, 0, 500, 500);
-    var _autoSizeWindow = [[CPWindow alloc] initWithContentRect:windowRect styleMask:CPResizableWindowMask];
+    var windowRect = CGRectMake(0, 0, 500, 500),
+        _autoSizeWindow = [[CPWindow alloc] initWithContentRect:windowRect styleMask:CPResizableWindowMask];
 
     for (var i = 0; i < NUMBER_OF_VIEWS; i++)
     {
@@ -55,7 +55,7 @@
 
     var total = new Date() - start;
 
-    CPLog.warn("AutosizingMask " + aMask + " -setFrame: avg=" + (total/ RESIZES_COUNT) + " ms. Total = " + total + " ms.");
+    //CPLog.warn("AutosizingMask " + aMask + " -setFrame: avg=" + (total/ RESIZES_COUNT) + " ms. Total = " + total + " ms.");
 
     return total;
 }
