@@ -27,7 +27,6 @@
 @import "CPURLResponse.j"
 
 var CPURLConnectionDelegate = nil;
-var withCredentials = NO;
 
 /*!
     @class CPURLConnection
@@ -80,27 +79,14 @@ var withCredentials = NO;
     BOOL            _isCanceled;
     BOOL            _isLocalFileConnection;
 
+    BOOL            _withCredentials    @accessors(property=withCredentials);
+
     HTTPRequest     _HTTPRequest;
 }
 
 + (void)setClassDelegate:(id)delegate
 {
     CPURLConnectionDelegate = delegate;
-}
-
-/*
-    Sets a flag to designate whether async XMLHTTPRequests should allow credentials to be sent or not.
-    This only works with async calls.
-    @param willSendWithCredentials flag to let XMLHTTPRequests to use withCredentials
-*/
-+ (void)setWithCredentials:(BOOL)willSendWithCredentials
-{
-    withCredentials = willSendWithCredentials;
-}
-
-+ (BOOL)withCredentials
-{
-    return withCredentials;
 }
 
 /*
@@ -112,25 +98,39 @@ var withCredentials = NO;
 */
 + (CPData)sendSynchronousRequest:(CPURLRequest)aRequest returningResponse:(/*{*/CPURLResponse/*}*/)aURLResponse
 {
+    var cfHTTPRequest = new CFHTTPRequest();
+
+    return [CPURLConnection _sendSynchronousRequest:aRequest returningResponse:aURLResponse withCFHTTPRequest:cfHTTPRequest];
+}
+
++ (CPData)sendSynchronousRequest:(CPURLRequest)aRequest returningResponse:(/*{*/CPURLResponse/*}*/)aURLResponse withCredentials:(BOOL)withCredentials
+{
+    var cfHTTPRequest = new CFHTTPRequest();
+
+    cfHTTPRequest.setWithCredentials(withCredentials);
+
+    return [CPURLConnection _sendSynchronousRequest:aRequest returningResponse:aURLResponse withCFHTTPRequest:cfHTTPRequest];
+}
+
++ (CPData)_sendSynchronousRequest:(CPURLRequest)aRequest returningResponse:(/*{*/CPURLResponse/*}*/)aURLResponse withCFHTTPRequest:(CFHTTPRequest)aCFHTTPRequest
+{
     try
     {
-        var request = new CFHTTPRequest();
-
-        request.open([aRequest HTTPMethod], [[aRequest URL] absoluteString], NO);
+        aCFHTTPRequest.open([aRequest HTTPMethod], [[aRequest URL] absoluteString], NO);
 
         var fields = [aRequest allHTTPHeaderFields],
             key = nil,
             keys = [fields keyEnumerator];
 
         while ((key = [keys nextObject]) !== nil)
-            request.setRequestHeader(key, [fields objectForKey:key]);
+            aCFHTTPRequest.setRequestHeader(key, [fields objectForKey:key]);
 
-        request.send([aRequest HTTPBody]);
+        aCFHTTPRequest.send([aRequest HTTPBody]);
 
-        if (!request.success())
+        if (!aCFHTTPRequest.success())
             return nil;
 
-        return [CPData dataWithRawString:request.responseText()];
+        return [CPData dataWithRawString:aCFHTTPRequest.responseText()];
     }
     catch (anException)
     {
@@ -150,6 +150,16 @@ var withCredentials = NO;
     return [[self alloc] initWithRequest:aRequest delegate:aDelegate];
 }
 
+//overloaded method that allows user to set _withCredentials
++ (CPURLConnection)connectionWithRequest:(CPURLRequest)aRequest delegate:(id)aDelegate withCredentials:(BOOL)withCredentials
+{
+    var returnValue = [[self alloc] initWithRequest:aRequest delegate:aDelegate startImmediately:NO];
+
+    [returnValue setWithCredentials:withCredentials];
+    [returnValue start];
+    return returnValue;
+}
+
 /*
     Default class initializer. Use one of the class methods instead.
     @param aRequest contains the URL to contact
@@ -166,6 +176,7 @@ var withCredentials = NO;
         _request = aRequest;
         _delegate = aDelegate;
         _isCanceled = NO;
+        _withCredentials = NO;
 
         var URL = [_request URL],
             scheme = [URL scheme];
@@ -204,13 +215,13 @@ var withCredentials = NO;
 - (void)start
 {
     _isCanceled = NO;
-
-    _HTTPRequest.setWithCredentials(withCredentials);
+    
+    _HTTPRequest.setWithCredentials(_withCredentials);
 
     try
     {
         _HTTPRequest.open([_request HTTPMethod], [[_request URL] absoluteString], YES);
-
+        
         _HTTPRequest.onreadystatechange = function() { [self _readyStateDidChange]; };
 
         var fields = [_request allHTTPHeaderFields],
@@ -312,5 +323,7 @@ var withCredentials = NO;
 
     return [self _HTTPRequest];
 }
+
+
 
 @end
