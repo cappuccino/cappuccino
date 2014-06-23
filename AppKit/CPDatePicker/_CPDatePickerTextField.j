@@ -146,9 +146,7 @@ var CPZeroKeyCode = 48,
     [dateValue _dateWithTimeZone:[_datePicker timeZone]];
     [_datePickerElementView setDateValue:dateValue];
 
-    // This is used to update the value of the stepper
-    // It's usefull when the user change the dateValue in the delegate for example otherwise the stepper will keep the old value
-    // We don't call the method objectValue: because we don't want to use the binding system of cappuccino when updating this value
+    // Before sure to update the stepper value. We don't use -setObjectValue to avoid a binding update.
     if (_currentTextField)
         _stepper._value = parseInt([_currentTextField stringValue]);
 }
@@ -251,7 +249,7 @@ var CPZeroKeyCode = 48,
         [self _selectTextField:_firstTextField];
         [[self window] makeFirstResponder:_datePicker];
 
-        // This gonna update the dateValue with the binding
+        // Update the dateValue with the binding.
         if (isUp)
             [_stepper setDoubleValue:parseInt([_currentTextField stringValue]) + 1];
         else
