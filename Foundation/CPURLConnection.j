@@ -215,13 +215,13 @@ var CPURLConnectionDelegate = nil;
 - (void)start
 {
     _isCanceled = NO;
-    
+
     _HTTPRequest.setWithCredentials(_withCredentials);
 
     try
     {
         _HTTPRequest.open([_request HTTPMethod], [[_request URL] absoluteString], YES);
-        
+
         _HTTPRequest.onreadystatechange = function() { [self _readyStateDidChange]; };
 
         var fields = [_request allHTTPHeaderFields],
@@ -323,7 +323,5 @@ var CPURLConnectionDelegate = nil;
 
     return [self _HTTPRequest];
 }
-
-
 
 @end
