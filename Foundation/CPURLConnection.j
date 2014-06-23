@@ -153,11 +153,11 @@ var CPURLConnectionDelegate = nil;
 //overloaded method that allows user to set _withCredentials
 + (CPURLConnection)connectionWithRequest:(CPURLRequest)aRequest delegate:(id)aDelegate withCredentials:(BOOL)withCredentials
 {
-    var returnValue = [[self alloc] initWithRequest:aRequest delegate:aDelegate startImmediately:NO];
+    var connection = [[self alloc] initWithRequest:aRequest delegate:aDelegate startImmediately:NO];
 
-    [returnValue setWithCredentials:withCredentials];
-    [returnValue start];
-    return returnValue;
+    [connection setWithCredentials:withCredentials];
+    [connection start];
+    return connection;
 }
 
 /*
