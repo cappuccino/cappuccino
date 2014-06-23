@@ -157,6 +157,7 @@ var CPURLConnectionDelegate = nil;
 
     [connection setWithCredentials:withCredentials];
     [connection start];
+
     return connection;
 }
 
