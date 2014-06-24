@@ -54,6 +54,7 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
     id              _targetView         @accessors(property=targetView);
     int             _appearance         @accessors(getter=appearance);
     BOOL            _isClosing          @accessors(property=isClosing);
+    BOOL            _isOpening          @accessors(property=isOpening);
 
     BOOL            _browserAnimates;
     BOOL            _closeOnBlur;
@@ -106,6 +107,7 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
     {
         _animates                   = YES;
         _isClosing                  = NO;
+        _isOpening                  = NO;
         _browserAnimates            = [self browserSupportsAnimation];
         _shouldPerformAnimation     = YES;
         _orderOutTransitionFunction = function() { [self _orderOutRecursively:YES]; };
@@ -450,6 +452,7 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
 {
     if (![self isKeyWindow])
     {
+        _isOpening = YES;
         [super orderFront:aSender];
 
         if (_animates && _browserAnimates && _shouldPerformAnimation)
@@ -516,6 +519,8 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
                         [self setCSS3Property:@"TransformOrigin" value:nil];
                         [self setCSS3Property:@"Transition" value:nil];
 #endif
+                        _isOpening = NO;
+
                         if (_implementedDelegateMethods & _CPPopoverWindow_didShow_)
                              [_delegate popoverWindowDidShow:self];
                     }
@@ -538,6 +543,7 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
 #if PLATFORM(DOM)
             _DOMElement.style.opacity = 1;
 #endif
+            _isOpening = NO;
         }
     }
 
@@ -626,6 +632,14 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
         [self _trapNextMouseDown];
     else
     {
+        // If we are opening the popover, we need to trap the next mouse down.
+        // It's possible that the user is clicking several times when opening the CPPopover (doubleClick)
+        if (_isOpening)
+        {
+            [self _trapNextMouseDown];
+            return;
+        }
+
         // Send _close to the delegate so popoverWillClose is sent to the popover's delegate
         if (_closeOnBlur)
             [_delegate _close];

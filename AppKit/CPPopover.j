@@ -236,8 +236,8 @@ Set the behavior of the CPPopover. It can be:
     if (!_contentViewController)
         [CPException raise:CPInternalInconsistencyException reason:@"contentViewController must not be nil"];
 
-    // If the popover is currently closing, do nothing. That is what Cocoa does.
-    if ([_popoverWindow isClosing])
+    // If the popover is currently closing or opening, do nothing. That is what Cocoa does.
+    if ([_popoverWindow isClosing] || [_popoverWindow isOpening] || [self isShown])
         return;
 
     if (!_popoverWindow)
@@ -278,7 +278,7 @@ Set the behavior of the CPPopover. It can be:
 */
 - (void)_close
 {
-    if ([_popoverWindow isClosing] || ![self isShown])
+    if ([_popoverWindow isOpening] || [_popoverWindow isClosing] || ![self isShown])
         return;
 
     if (_implementedDelegateMethods & CPPopoverDelegate_popover_willClose_)
@@ -301,7 +301,7 @@ Set the behavior of the CPPopover. It can be:
 */
 - (IBAction)performClose:(id)sender
 {
-    if ([_popoverWindow isClosing])
+    if ([_popoverWindow isClosing] || [_popoverWindow isOpening])
         return;
 
     if (_implementedDelegateMethods & CPPopoverDelegate_popover_shouldClose_)
