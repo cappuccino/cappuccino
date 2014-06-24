@@ -146,7 +146,7 @@ var CPZeroKeyCode = 48,
     [dateValue _dateWithTimeZone:[_datePicker timeZone]];
     [_datePickerElementView setDateValue:dateValue];
 
-    // Before sure to update the stepper value. We don't use -setObjectValue to avoid a binding update.
+    // Be sure to update the stepper value. We don't use -setObjectValue to avoid a binding update.
     if (_currentTextField)
         _stepper._value = parseInt([_currentTextField stringValue]);
 }
