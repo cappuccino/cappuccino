@@ -774,7 +774,7 @@ function CPThemeAttributeDecode(aCoder, anAttributeName, aDefaultValue, aTheme, 
     {
         var attribute = [aCoder decodeObjectForKey:key];
 
-        if (!attribute.isa || ![attribute isKindOfClass:[_CPThemeAttribute class]])
+        if (!attribute || !attribute.isa || ![attribute isKindOfClass:[_CPThemeAttribute class]])
         {
             var themeAttribute = [[_CPThemeAttribute alloc] initWithName:anAttributeName defaultValue:aDefaultValue];
 
