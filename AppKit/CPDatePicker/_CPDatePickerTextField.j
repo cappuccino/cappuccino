@@ -148,7 +148,7 @@ var CPZeroKeyCode = 48,
 
     // Be sure to update the stepper value. We don't use -setObjectValue to avoid a binding update.
     if (_currentTextField)
-        _stepper._value = parseInt([_currentTextField stringValue]);
+        _stepper._value = [_currentTextField intValue];
 }
 
 /*! Set the widget enabled or not
@@ -221,7 +221,7 @@ var CPZeroKeyCode = 48,
     if ([_currentTextField dateType] != CPAMPMDateType)
     {
         // We update the value of the stepper dependind on the textField
-        [_stepper setObjectValue:parseInt([_currentTextField stringValue])];
+        [_stepper setObjectValue:[_currentTextField intValue]];
         [_stepper setMaxValue:[_currentTextField maxNumber]];
         [_stepper setMinValue:[_currentTextField minNumber]];
 
@@ -251,9 +251,9 @@ var CPZeroKeyCode = 48,
 
         // Update the dateValue with the binding.
         if (isUp)
-            [_stepper setDoubleValue:parseInt([_currentTextField stringValue]) + 1];
+            [_stepper setDoubleValue:[_currentTextField intValue] + 1];
         else
-            [_stepper setDoubleValue:parseInt([_currentTextField stringValue]) - 1];
+            [_stepper setDoubleValue:[_currentTextField intValue] - 1];
 
         return;
     }
@@ -261,7 +261,7 @@ var CPZeroKeyCode = 48,
     if ([_currentTextField dateType] != CPAMPMDateType)
     {
         // Make sure to get the good value, especially when we reach the maxDate or minDate
-        [sender setDoubleValue:parseInt([_currentTextField stringValue])];
+        [sender setDoubleValue:[_currentTextField intValue]];
     }
     else
     {
@@ -288,7 +288,7 @@ var CPZeroKeyCode = 48,
     if (key == CPUpArrowFunctionKey)
     {
         [_currentTextField _invalidTimer];
-        [_stepper setDoubleValue:parseInt([_currentTextField stringValue])];
+        [_stepper setDoubleValue:[_currentTextField intValue]];
         [_stepper performClickUp:self];
         return YES;
     }
@@ -296,7 +296,7 @@ var CPZeroKeyCode = 48,
     if (key == CPDownArrowFunctionKey)
     {
         [_currentTextField _invalidTimer];
-        [_stepper setDoubleValue:parseInt([_currentTextField stringValue])];
+        [_stepper setDoubleValue:[_currentTextField intValue]];
         [_stepper performClickDown:self];
         return YES;
     }
@@ -597,23 +597,23 @@ var CPZeroKeyCode = 48,
     [date _dateWithTimeZone:[_datePicker timeZone]];
 
     if (![_textFieldDay isHidden])
-        date.setDate([_textFieldDay stringValue]);
+        date.setDate([_textFieldDay intValue]);
 
     if (![_textFieldMonth isHidden])
-        date.setMonth(parseInt([_textFieldMonth stringValue]) - 1);
+        date.setMonth([_textFieldMonth intValue] - 1);
 
     if (![_textFieldYear isHidden])
-        date.setFullYear([_textFieldYear stringValue]);
+        date.setFullYear([_textFieldYear intValue]);
 
     if (![_textFieldSecond isHidden])
-        date.setSeconds([_textFieldSecond stringValue]);
+        date.setSeconds([_textFieldSecond intValue]);
 
     if (![_textFieldMinute isHidden])
-        date.setMinutes([_textFieldMinute stringValue]);
+        date.setMinutes([_textFieldMinute intValue]);
 
     if (![_textFieldHour isHidden])
     {
-        var hour = parseInt([_textFieldHour stringValue]),
+        var hour = [_textFieldHour intValue],
             currentHour = parseInt(date.getHours());
 
         if (hour != currentHour)
