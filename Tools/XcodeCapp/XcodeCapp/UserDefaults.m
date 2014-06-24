@@ -26,3 +26,4 @@ NSString * const kDefaultMaxRecentProjects = @"maxRecentProjects";
 NSString * const kDefaultLogLevel = @"logLevel";
 NSString * const kDefaultAutoOpenXcodeProject = @"autoOpenXcodeProject";
 NSString * const kDefaultUseSymlinkWhenCreatingProject = @"useSymlinkWhenCreatingProject";
+NSString * const kDefaultUpdateCappuccinoWithLastVersionOfMasterBranch = @"updateCappuccinoWithLastVersionOfMasterBranch";
