@@ -1797,18 +1797,8 @@ CPTexturedBackgroundWindowMask
                 }
                 return didTabBack;
             }
-            else if ([anEvent charactersIgnoringModifiers] === CPEscapeFunctionKey && [self isKindOfClass:[CPPanel class]])
+            else if ([anEvent charactersIgnoringModifiers] === CPEscapeFunctionKey && [self _shouldCloseOnEscape])
             {
-                if ([self isKindOfClass:[_CPPopoverWindow class]])
-                {
-                    if ([self closeOnBlur])
-                        [[self delegate] performClose:self];
-                }
-                else
-                {
-                    [self performClose:self];
-                }
-
                 return;
             }
 
@@ -3046,6 +3036,14 @@ CPTexturedBackgroundWindowMask
         [[self firstResponder] doCommandBySelector:@selector(complete:)];
     }
 
+    return NO;
+}
+
+/*!
+    @ignore
+*/
+- (BOOL)_shouldCloseOnEscape
+{
     return NO;
 }
 

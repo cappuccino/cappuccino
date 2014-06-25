@@ -431,6 +431,17 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
 
 /*!
     @ignore
+*/
+- (BOOL)_shouldCloseOnEscape
+{
+    if ([self closeOnBlur])
+        [[self delegate] performClose:self];
+
+    return YES;
+}
+
+/*!
+    @ignore
     Show animation if necessary.
 */
 - (void)close
