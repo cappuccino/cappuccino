@@ -50,12 +50,12 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
 */
 @implementation _CPPopoverWindow : CPPanel
 {
-    BOOL            _closeOnBlur        @accessors(getter=closeOnBlur);
     BOOL            _animates           @accessors(property=animates);
     id              _targetView         @accessors(property=targetView);
     int             _appearance         @accessors(getter=appearance);
     BOOL            _isClosing          @accessors(property=isClosing);
 
+    BOOL            _closeOnBlur;
     BOOL            _browserAnimates;
     BOOL            _isObservingFrame;
     BOOL            _shouldPerformAnimation;
@@ -434,7 +434,7 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
 */
 - (BOOL)_shouldCloseOnEscape
 {
-    if ([self closeOnBlur])
+    if (_closeOnBlur)
         [[self delegate] performClose:self];
 
     return YES;
