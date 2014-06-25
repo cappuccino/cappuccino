@@ -119,4 +119,17 @@ CPDocModalWindowMask    = 1 << 6;
     return YES;
 }
 
+
+#pragma mark -
+#pragma mark Overrides
+
+/*!
+    @ignore
+*/
+- (BOOL)_shouldCloseOnEscape
+{
+    [self performClose:self];
+    return YES;
+}
+
 @end

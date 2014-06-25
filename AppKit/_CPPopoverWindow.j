@@ -55,8 +55,8 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
     int             _appearance         @accessors(getter=appearance);
     BOOL            _isClosing          @accessors(property=isClosing);
 
-    BOOL            _browserAnimates;
     BOOL            _closeOnBlur;
+    BOOL            _browserAnimates;
     BOOL            _isObservingFrame;
     BOOL            _shouldPerformAnimation;
     CPInteger       _implementedDelegateMethods;
@@ -428,6 +428,17 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
 
 #pragma mark -
 #pragma mark Overrides
+
+/*!
+    @ignore
+*/
+- (BOOL)_shouldCloseOnEscape
+{
+    if (_closeOnBlur)
+        [[self delegate] performClose:self];
+
+    return YES;
+}
 
 /*!
     @ignore
