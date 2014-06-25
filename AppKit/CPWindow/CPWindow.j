@@ -50,8 +50,6 @@
 
 @class CPMenu
 @class CPProgressIndicator
-@class CPPanel
-@class _CPPopoverWindow
 
 @global CPApp
 
