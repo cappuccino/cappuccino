@@ -126,10 +126,17 @@ CPDocModalWindowMask    = 1 << 6;
 /*!
     @ignore
 */
-- (BOOL)_shouldCloseOnEscape
+- (void)cancelOperation:(id)sender
 {
-    [self performClose:self];
-    return YES;
+    if ([[CPApp currentEvent] _couldBeKeyEquivalent] && [self performKeyEquivalent:[CPApp currentEvent]])
+        return;
+
+    [[self firstResponder] tryToPerform:@selector(cancel:) with:self];
+}
+
+- (void)cancel:(id)sender
+{
+    [self performClose:sender];
 }
 
 @end
