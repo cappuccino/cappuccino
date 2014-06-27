@@ -62,6 +62,10 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
     BOOL            _shouldPerformAnimation;
     CPInteger       _implementedDelegateMethods;
     JSObject        _orderOutTransitionFunction;
+    JSObject        _transitionCompleteFunction;
+    JSObject        _orderFrontTransitionFunction;
+
+
 }
 
 
@@ -107,11 +111,10 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
     {
         _animates                   = YES;
         _isClosing                  = NO;
-        _isOpening                  = NO;
         _browserAnimates            = [self browserSupportsAnimation];
         _shouldPerformAnimation     = YES;
         _orderOutTransitionFunction = function() { [self _orderOutRecursively:YES]; };
-
+        _isOpening                  = YES;
 
         [self setStyleMask:aStyleMask];
         [self setBecomesKeyOnlyIfNeeded:YES];
@@ -496,10 +499,10 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
                 [self setCSS3Property:@"Transform" value:@"scale(1.1)"];
                 [self setCSS3Property:@"Transition" value:CPBrowserCSSProperty('transform') + @" 200ms ease-in"];
 
-                var orderFrontTransitionFunction = function()
+                _orderFrontTransitionFunction = function()
                 {
 #if PLATFORM(DOM)
-                    _DOMElement.removeEventListener(CPBrowserStyleProperty('transitionend'), orderFrontTransitionFunction, YES);
+                    _DOMElement.removeEventListener(CPBrowserStyleProperty('transitionend'), _orderFrontTransitionFunction, YES);
 #endif
 
                     // Now set up the pop-in to normal size transition.
@@ -507,10 +510,10 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
                     [self setCSS3Property:@"Transform" value:@"scale(1)"];
                     [self setCSS3Property:@"Transition" value:CPBrowserCSSProperty('transform') + @" 50ms linear"];
 
-                    var transitionCompleteFunction = function()
+                    _transitionCompleteFunction = function()
                     {
 #if PLATFORM(DOM)
-                        _DOMElement.removeEventListener(CPBrowserStyleProperty('transitionend'), transitionCompleteFunction, YES);
+                        _DOMElement.removeEventListener(CPBrowserStyleProperty('transitionend'), _transitionCompleteFunction, YES);
 
                         // Make sure to clear these properties when the animation is done. Without this,
                         // the window becomes blurry in Chrome, presumably because the browser composits
@@ -526,12 +529,12 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
                     }
 
 #if PLATFORM(DOM)
-                    _DOMElement.addEventListener(CPBrowserStyleProperty('transitionend'), transitionCompleteFunction, YES);
+                    _DOMElement.addEventListener(CPBrowserStyleProperty('transitionend'), _transitionCompleteFunction, YES);
 #endif
                 };
 
 #if PLATFORM(DOM)
-                _DOMElement.addEventListener(CPBrowserStyleProperty('transitionend'), orderFrontTransitionFunction, YES);
+                _DOMElement.addEventListener(CPBrowserStyleProperty('transitionend'), _orderFrontTransitionFunction, YES);
 #endif
             }, 10); // There are some weird race conditions happening in Chrome 34. If this is set to 0
                     // the transitionend is randomly not called correctly. Setting the timeout to 10ms is not noticealble for the
@@ -539,11 +542,11 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
         }
         else
         {
+            _isOpening = NO;
             [self setCSS3Property:@"Transition" value:@""];
 #if PLATFORM(DOM)
             _DOMElement.style.opacity = 1;
 #endif
-            _isOpening = NO;
         }
     }
 
@@ -577,6 +580,19 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
 
     if (_animates && _browserAnimates)
     {
+        if (_isOpening)
+        {
+#if PLATFORM(DOM)
+            _DOMElement.removeEventListener(CPBrowserStyleProperty('transitionend'), _orderFrontTransitionFunction, YES);
+            _DOMElement.removeEventListener(CPBrowserStyleProperty('transitionend'), _transitionCompleteFunction, YES);
+
+            var matrix = window.getComputedStyle(_DOMElement, null)[CPBrowserStyleProperty(@"transform")],
+                currentScale = (matrix.split('(')[1]).split(',')[0];
+
+            [self setCSS3Property:@"Transform" value:@"scale("+currentScale+")"];
+#endif
+        }
+
         // Tell the element to fade out when the opacity changes
         [self setCSS3Property:@"Transition" value:@"opacity 250ms linear"];
 #if PLATFORM(DOM)
@@ -632,14 +648,6 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
         [self _trapNextMouseDown];
     else
     {
-        // If we are opening the popover, we need to trap the next mouse down.
-        // It's possible that the user is clicking several times when opening the CPPopover (doubleClick)
-        if (_isOpening)
-        {
-            [self _trapNextMouseDown];
-            return;
-        }
-
         // Send _close to the delegate so popoverWillClose is sent to the popover's delegate
         if (_closeOnBlur)
             [_delegate _close];
