@@ -1730,7 +1730,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
                       relativeToEphemeralSubviewNamed:@"content-view"];
 
     if (bezelView)
-        [bezelView setBackgroundColor:[self currentValueForThemeAttribute:@"bezel-color"]];
+        [bezelView setBackgroundColor:_textFieldBackgroundColor || [self currentValueForThemeAttribute:@"bezel-color"]];
 
     var contentView = [self layoutEphemeralSubviewNamed:@"content-view"
                                              positioned:CPWindowAbove
