@@ -1730,7 +1730,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
                       relativeToEphemeralSubviewNamed:@"content-view"];
 
     if (bezelView)
-        [bezelView setBackgroundColor:_textFieldBackgroundColor || [self currentValueForThemeAttribute:@"bezel-color"]];
+        [bezelView setBackgroundColor:[self currentValueForThemeAttribute:@"bezel-color"]];
 
     var contentView = [self layoutEphemeralSubviewNamed:@"content-view"
                                              positioned:CPWindowAbove
@@ -1755,6 +1755,10 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [contentView setText:string];
 
         [contentView setTextColor:[self currentValueForThemeAttribute:@"text-color"]];
+
+        if (_textFieldBackgroundColor)
+            [contentView setBackgroundColor:_textFieldBackgroundColor];
+
         [contentView setFont:[self currentValueForThemeAttribute:@"font"]];
         [contentView setAlignment:[self currentValueForThemeAttribute:@"alignment"]];
         [contentView setVerticalAlignment:[self currentValueForThemeAttribute:@"vertical-alignment"]];
