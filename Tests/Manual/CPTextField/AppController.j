@@ -49,7 +49,7 @@
     [championOfLightLabel setTextShadowColor:[CPColor clearColor]];
 
     [redLabel setTextColor:[CPColor whiteColor]];
-    [redLabel setTextFieldBackgroundColor:[CPColor redColor]];
+    [redLabel setBackgroundColor:[CPColor redColor]];
 
     [shadowLabel setFrame:CGRectMake(15, CGRectGetMaxY([textField frame]) + 10, 300, 18)];
     [championOfLightLabel setFrame:CGRectMake(15, CGRectGetMaxY([shadowLabel frame]) + 2, 300, 18)];
