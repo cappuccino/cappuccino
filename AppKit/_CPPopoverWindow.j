@@ -157,13 +157,13 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
     _delegate = aDelegate;
     _implementedDelegateMethods = 0;
 
-    if ([_delegate respondsToSelector:@selector(popoverWindowShouldClose:)])
+    if ([_delegate respondsToSelector:@selector(_popoverWindowShouldClose:)])
         _implementedDelegateMethods |= _CPPopoverWindow_shouldClose_;
 
-    if ([_delegate respondsToSelector:@selector(popoverWindowDidClose:)])
+    if ([_delegate respondsToSelector:@selector(_popoverWindowDidClose:)])
         _implementedDelegateMethods |= _CPPopoverWindow_didClose_;
 
-    if ([_delegate respondsToSelector:@selector(popoverWindowDidShow:)])
+    if ([_delegate respondsToSelector:@selector(_popoverWindowDidShow:)])
         _implementedDelegateMethods |= _CPPopoverWindow_didShow_;
 }
 
@@ -530,8 +530,7 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
 #endif
                         _isOpening = NO;
 
-                        if (_implementedDelegateMethods & _CPPopoverWindow_didShow_)
-                             [_delegate popoverWindowDidShow:self];
+                        [_delegate _popoverWindowDidShow];
                     }
 
 #if PLATFORM(DOM)
@@ -629,8 +628,7 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
     _isOpening = NO;
     _targetWindow = nil;
 
-    if (_implementedDelegateMethods & _CPPopoverWindow_didClose_)
-        [_delegate popoverWindowDidClose:self];
+    [_delegate _popoverWindowDidClose];
 }
 
 

@@ -257,12 +257,12 @@ Set the behavior of the CPPopover. It can be:
     [_popoverWindow setContentView:[_contentViewController view]];
 
     if (![self isShown])
-        [self popoverWillShow:self];
+        [self _popoverWillShow];
 
     [_popoverWindow positionRelativeToRect:positioningRect ofView:positioningView preferredEdge:preferredEdge];
 
     if (![self isShown])
-        [self popoverDidShow:self];
+        [self _popoverDidShow];
 }
 
 - (unsigned)styleMaskForBehavior
@@ -297,8 +297,7 @@ Set the behavior of the CPPopover. It can be:
     if ([_popoverWindow isClosing] || ![self isShown])
         return;
 
-    if (_implementedDelegateMethods & CPPopoverDelegate_popover_willClose_)
-        [_delegate popoverWillClose:self];
+    [self _popoverWillClose];
 
     _positioningView = nil;
     [_popoverWindow close];
@@ -333,7 +332,7 @@ Set the behavior of the CPPopover. It can be:
 #pragma mark Delegates
 
 /*! @ignore */
-- (BOOL)popoverWindowShouldClose:(_CPPopoverWindow)aPopoverWindow
+- (BOOL)_popoverWindowShouldClose
 {
     [self performClose:self];
 
@@ -344,28 +343,28 @@ Set the behavior of the CPPopover. It can be:
 }
 
 /*! @ignore */
-- (void)popoverWindowDidClose:(_CPPopoverWindow)aPopoverWindow
+- (void)_popoverWindowDidClose
 {
     if (_implementedDelegateMethods & CPPopoverDelegate_popover_didClose_)
         [_delegate popoverDidClose:self];
 }
 
 /*! @ignore */
-- (void)popoverWindowDidShow:(_CPPopoverWindow)aPopoverWindow
+- (void)_popoverWindowDidShow
 {
     if (_implementedDelegateMethods & CPPopoverDelegate_popover_didShow_)
         [_delegate popoverDidShow:self];
 }
 
 /*! @ignore */
-- (void)popoverWillClose:(_CPPopoverWindow)aPopoverWindow
+- (void)_popoverWillClose
 {
     if (_implementedDelegateMethods & CPPopoverDelegate_popover_willClose_)
         [_delegate popoverWillClose:self];
 }
 
 /*! @ignore */
-- (void)popoverWillShow:(_CPPopoverWindow)aPopoverWindow
+- (void)_popoverWillShow
 {
     if (_implementedDelegateMethods & CPPopoverDelegate_popover_willShow_)
         [_delegate popoverWillShow:self];
