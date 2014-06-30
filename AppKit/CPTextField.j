@@ -528,11 +528,19 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
 }
+- (void)setBackgroundColor:(CPColor)aColor
+{
+    [self setTextFieldBackgroundColor:aColor];
+}
 
 /*!
     Returns the background color.
 */
 - (CPColor)textFieldBackgroundColor
+{
+    return _textFieldBackgroundColor;
+}
+- (CPColor)textBackgroundColor
 {
     return _textFieldBackgroundColor;
 }
