@@ -540,9 +540,9 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 {
     return _textFieldBackgroundColor;
 }
-- (CPColor)textBackgroundColor
+- (CPColor)backgroundColor
 {
-    return _textFieldBackgroundColor;
+    return [self textFieldBackgroundColor];
 }
 
 /*! @ignore */
