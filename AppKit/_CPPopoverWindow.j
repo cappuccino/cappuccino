@@ -30,6 +30,9 @@
 @class CPPopover
 
 @global CPApp
+@global CPPopoverBehaviorSemitransient
+@global CPPopoverBehaviorTransient
+@global CPPopoverBehaviorApplicationDefined
 
 CPClosableOnBlurWindowMask  = 1 << 4;
 CPPopoverAppearanceMinimal  = 0;
@@ -61,6 +64,7 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
     BOOL            _isObservingFrame;
     BOOL            _shouldPerformAnimation;
     CPInteger       _implementedDelegateMethods;
+    CPWindow        _targetWindow;
     JSObject        _orderOutTransitionFunction;
     JSObject        _transitionCompleteFunction;
     JSObject        _orderFrontTransitionFunction;
@@ -377,6 +381,8 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
     if (![targetWindow isFullPlatformWindow])
         [[_targetView window] addChildWindow:self ordered:CPWindowAbove];
 
+    _targetWindow = targetWindow;
+
     if (!wasVisible)
         [self _trapNextMouseDown];
 }
@@ -620,6 +626,8 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
 
     _shouldPerformAnimation = YES;
     _isClosing = NO;
+    _isOpening = NO;
+    _targetWindow = nil;
 
     if (_implementedDelegateMethods & _CPPopoverWindow_didClose_)
         [_delegate popoverWindowDidClose:self];
@@ -629,6 +637,27 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
 #pragma mark -
 #pragma mark Private
 
+- (BOOL)_hasOnlyTransientChild:(_CPPopoverWindow)aWindow
+{
+    var childWindows = [aWindow childWindows];
+
+    for (var i = [childWindows count] - 1; i >= 0; i--)
+    {
+        var childWindow = childWindows[i];
+
+        if (![childWindow isKindOfClass:[self class]])
+            continue;
+
+        if ([[childWindow delegate] behavior] != CPPopoverBehaviorTransient)
+            return NO;
+
+        if (![self _hasOnlyTransientChild:childWindow])
+            return NO;
+    }
+
+    return YES;
+}
+
 - (void)_mouseWasClicked:(CPEvent)anEvent
 {
     /*
@@ -637,26 +666,44 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
         message to any parent popovers so they have a chance to close
         if necessary.
     */
-    if (![self isVisible])
+    if (![self isVisible] || !_targetWindow)
         return;
 
     var mouseWindow = [anEvent window];
 
     // Consider clicks in child windows to be "inside". This keeps a transient popover from
     // closing if e.g. the window containing the menu of a token field is clicked.
-    if (mouseWindow === self || [mouseWindow _hasAncestorWindow:self])
+    if (mouseWindow === self || [mouseWindow _hasAncestorWindow:self] || ![self _hasOnlyTransientChild:self])
+    {
         [self _trapNextMouseDown];
+    }
     else
     {
-        // Send _close to the delegate so popoverWillClose is sent to the popover's delegate
-        if (_closeOnBlur)
-            [_delegate _close];
+        switch ([_delegate behavior])
+        {
+            case CPPopoverBehaviorSemitransient:
 
-        // Give a transient parent popover a chance to close
-        var parent = [self parentWindow];
+                // Click on the same button
+                // Or click on a different window (we just care about the parentWindow)
+                // We use targetWindow bacause parentWindow is set to nil when opening a semi-transient window in a bridgeless window
+                if (CGRectContainsPoint([_delegate._positioningView frame], [[_delegate._positioningView superview] convertPointFromBase:[anEvent locationInWindow]])
+                    || mouseWindow != _targetWindow)
+                {
+                    [self _trapNextMouseDown];
+                    return;
+                }
 
-        if ([parent isKindOfClass:[self class]])
-            [parent _mouseWasClicked:anEvent];
+                [_delegate close];
+                break;
+
+            case CPPopoverBehaviorTransient:
+                [_delegate close];
+                break;
+
+            case CPPopoverBehaviorApplicationDefined:
+                [self _trapNextMouseDown];
+                return;
+        }
     }
 }
 
