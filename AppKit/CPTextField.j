@@ -129,7 +129,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     BOOL                        _drawsBackground;
 
-    CPColor                     _textFieldBackgroundColor;
+    CPColor                     _backgroundColor  @accessors(property=backgroundColor);
 
     CPString                    _placeholderString;
     CPString                    _stringValue;
@@ -518,31 +518,31 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     Sets the background color, which is shown for non-bezeled text fields with drawsBackground set to YES
     @param aColor The background color
 */
-- (void)setTextFieldBackgroundColor:(CPColor)aColor
+- (void)setBackgroundColor:(CPColor)aColor
 {
-    if (_textFieldBackgroundColor == aColor)
+    if (_backgroundColor == aColor)
         return;
 
-    _textFieldBackgroundColor = aColor;
+    _backgroundColor = aColor;
 
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
 }
-- (void)setBackgroundColor:(CPColor)aColor
+
+/*
+    Deprecated. See: https://github.com/cappuccino/cappuccino/pull/2152
+*/
+- (void)setTextFieldBackgroundColor:(CPColor)aColor
 {
-    [self setTextFieldBackgroundColor:aColor];
+    [self setBackgroundColor:aColor];
 }
 
 /*!
-    Returns the background color.
+    Deprecated. See: https://github.com/cappuccino/cappuccino/pull/2152
 */
 - (CPColor)textFieldBackgroundColor
 {
-    return _textFieldBackgroundColor;
-}
-- (CPColor)backgroundColor
-{
-    return [self textFieldBackgroundColor];
+    return _backgroundColor;
 }
 
 /*! @ignore */
@@ -1764,8 +1764,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
         [contentView setTextColor:[self currentValueForThemeAttribute:@"text-color"]];
 
-        if (_textFieldBackgroundColor)
-            [contentView setBackgroundColor:_textFieldBackgroundColor];
+        if (_backgroundColor)
+            [contentView setBackgroundColor:_backgroundColor];
 
         [contentView setFont:[self currentValueForThemeAttribute:@"font"]];
         [contentView setAlignment:[self currentValueForThemeAttribute:@"alignment"]];
@@ -1909,7 +1909,7 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 
         [self setDrawsBackground:[aCoder decodeBoolForKey:CPTextFieldDrawsBackgroundKey]];
 
-        [self setTextFieldBackgroundColor:[aCoder decodeObjectForKey:CPTextFieldBackgroundColorKey]];
+        [self setBackgroundColor:[aCoder decodeObjectForKey:CPTextFieldBackgroundColorKey]];
 
         [self setLineBreakMode:[aCoder decodeIntForKey:CPTextFieldLineBreakModeKey]];
         [self setAlignment:[aCoder decodeIntForKey:CPTextFieldAlignmentKey]];
@@ -1933,7 +1933,7 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 
     [aCoder encodeBool:_drawsBackground forKey:CPTextFieldDrawsBackgroundKey];
 
-    [aCoder encodeObject:_textFieldBackgroundColor forKey:CPTextFieldBackgroundColorKey];
+    [aCoder encodeObject:_backgroundColor forKey:CPTextFieldBackgroundColorKey];
 
     [aCoder encodeInt:[self lineBreakMode] forKey:CPTextFieldLineBreakModeKey];
     [aCoder encodeInt:[self alignment] forKey:CPTextFieldAlignmentKey];
