@@ -129,8 +129,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     BOOL                        _drawsBackground;
 
-    CPColor                     _backgroundColor  @accessors(property=backgroundColor);
-
     CPString                    _placeholderString;
     CPString                    _stringValue;
 
@@ -520,6 +518,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 */
 - (void)setBackgroundColor:(CPColor)aColor
 {
+    // _backgroundColor is defined on CPView.
     if (_backgroundColor == aColor)
         return;
 
