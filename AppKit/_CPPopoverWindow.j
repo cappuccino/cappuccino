@@ -594,7 +594,7 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
             var matrix = window.getComputedStyle(_DOMElement, null)[CPBrowserStyleProperty(@"transform")],
                 currentScale = (matrix.split('(')[1]).split(',')[0];
 
-            [self setCSS3Property:@"Transform" value:@"scale("+currentScale+")"];
+            [self setCSS3Property:@"Transform" value:@"scale(" + currentScale + ")"];
 #endif
         }
 
