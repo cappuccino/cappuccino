@@ -192,7 +192,7 @@ Set the behavior of the CPPopover. It can be:
         return;
 
     _behavior = aBehavior;
-    [_popoverWindow setStyleMask:[self styleMaskForBehavior]];
+    [_popoverWindow setStyleMask:[self _styleMaskForBehavior]];
 }
 
 - (void)setDelegate:(id <CPPopoverDelegate>)aDelegate
@@ -244,7 +244,7 @@ Set the behavior of the CPPopover. It can be:
     _positioningView = positioningView;
 
     if (!_popoverWindow)
-        _popoverWindow = [[_CPPopoverWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:[self styleMaskForBehavior]];
+        _popoverWindow = [[_CPPopoverWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:[self _styleMaskForBehavior]];
 
     if (_positioningView != positioningView)
         [_popoverWindow setPlatformWindow:[[positioningView window] platformWindow]];
@@ -265,20 +265,12 @@ Set the behavior of the CPPopover. It can be:
         [self _popoverDidShow];
 }
 
-- (unsigned)styleMaskForBehavior
+- (unsigned)_styleMaskForBehavior
 {
-    switch (_behavior)
-    {
-        case CPPopoverBehaviorSemitransient:
-        case CPPopoverBehaviorTransient:
-            return CPClosableOnBlurWindowMask;
+    if (_behavior == CPPopoverBehaviorApplicationDefined)
+        return 0;
 
-        case CPPopoverBehaviorApplicationDefined:
-            return 0;
-
-        default:
-            return 0;
-    }
+    return CPClosableOnBlurWindowMask
 }
 
 /*!

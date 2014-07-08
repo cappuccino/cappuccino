@@ -680,15 +680,17 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
         switch ([_delegate behavior])
         {
             case CPPopoverBehaviorSemitransient:
+                var superview = [_delegate._positioningView superview],
+                    positioningViewFrame = [_delegate._positioningView frame];
 
                 // Click on the same button
                 // Or click on a different window (we just care about the parentWindow)
                 // We use targetWindow bacause parentWindow is set to nil when opening a semi-transient window in a bridgeless window
-                if (CGRectContainsPoint([_delegate._positioningView frame], [[_delegate._positioningView superview] convertPointFromBase:[anEvent locationInWindow]])
+                if (CGRectContainsPoint(positioningViewFrame, [superview convertPointFromBase:[anEvent locationInWindow]])
                     || mouseWindow != _targetWindow)
                 {
                     [self _trapNextMouseDown];
-                    return;
+                    break;
                 }
 
                 [_delegate close];
@@ -700,7 +702,7 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
 
             case CPPopoverBehaviorApplicationDefined:
                 [self _trapNextMouseDown];
-                return;
+                break;
         }
     }
 }
