@@ -30,6 +30,9 @@
 @class CPPopover
 
 @global CPApp
+@global CPPopoverBehaviorSemitransient
+@global CPPopoverBehaviorTransient
+@global CPPopoverBehaviorApplicationDefined
 
 CPClosableOnBlurWindowMask  = 1 << 4;
 CPPopoverAppearanceMinimal  = 0;
@@ -54,13 +57,19 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
     id              _targetView         @accessors(property=targetView);
     int             _appearance         @accessors(getter=appearance);
     BOOL            _isClosing          @accessors(property=isClosing);
+    BOOL            _isOpening          @accessors(property=isOpening);
 
     BOOL            _closeOnBlur;
     BOOL            _browserAnimates;
     BOOL            _isObservingFrame;
     BOOL            _shouldPerformAnimation;
     CPInteger       _implementedDelegateMethods;
+    CPWindow        _targetWindow;
     JSObject        _orderOutTransitionFunction;
+    JSObject        _transitionCompleteFunction;
+    JSObject        _orderFrontTransitionFunction;
+
+
 }
 
 
@@ -109,7 +118,7 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
         _browserAnimates            = [self browserSupportsAnimation];
         _shouldPerformAnimation     = YES;
         _orderOutTransitionFunction = function() { [self _orderOutRecursively:YES]; };
-
+        _isOpening                  = YES;
 
         [self setStyleMask:aStyleMask];
         [self setBecomesKeyOnlyIfNeeded:YES];
@@ -148,13 +157,13 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
     _delegate = aDelegate;
     _implementedDelegateMethods = 0;
 
-    if ([_delegate respondsToSelector:@selector(popoverWindowShouldClose:)])
+    if ([_delegate respondsToSelector:@selector(_popoverWindowShouldClose:)])
         _implementedDelegateMethods |= _CPPopoverWindow_shouldClose_;
 
-    if ([_delegate respondsToSelector:@selector(popoverWindowDidClose:)])
+    if ([_delegate respondsToSelector:@selector(_popoverWindowDidClose:)])
         _implementedDelegateMethods |= _CPPopoverWindow_didClose_;
 
-    if ([_delegate respondsToSelector:@selector(popoverWindowDidShow:)])
+    if ([_delegate respondsToSelector:@selector(_popoverWindowDidShow:)])
         _implementedDelegateMethods |= _CPPopoverWindow_didShow_;
 }
 
@@ -372,6 +381,8 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
     if (![targetWindow isFullPlatformWindow])
         [[_targetView window] addChildWindow:self ordered:CPWindowAbove];
 
+    _targetWindow = targetWindow;
+
     if (!wasVisible)
         [self _trapNextMouseDown];
 }
@@ -461,6 +472,7 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
 {
     if (![self isKeyWindow])
     {
+        _isOpening = YES;
         [super orderFront:aSender];
 
         if (_animates && _browserAnimates && _shouldPerformAnimation)
@@ -504,10 +516,10 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
                 [self setCSS3Property:@"Transform" value:@"scale(1.1)"];
                 [self setCSS3Property:@"Transition" value:CPBrowserCSSProperty('transform') + @" 200ms ease-in"];
 
-                var orderFrontTransitionFunction = function()
+                _orderFrontTransitionFunction = function()
                 {
 #if PLATFORM(DOM)
-                    _DOMElement.removeEventListener(CPBrowserStyleProperty('transitionend'), orderFrontTransitionFunction, YES);
+                    _DOMElement.removeEventListener(CPBrowserStyleProperty('transitionend'), _orderFrontTransitionFunction, YES);
 #endif
 
                     // Now set up the pop-in to normal size transition.
@@ -515,10 +527,10 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
                     [self setCSS3Property:@"Transform" value:@"scale(1)"];
                     [self setCSS3Property:@"Transition" value:CPBrowserCSSProperty('transform') + @" 50ms linear"];
 
-                    var transitionCompleteFunction = function()
+                    _transitionCompleteFunction = function()
                     {
 #if PLATFORM(DOM)
-                        _DOMElement.removeEventListener(CPBrowserStyleProperty('transitionend'), transitionCompleteFunction, YES);
+                        _DOMElement.removeEventListener(CPBrowserStyleProperty('transitionend'), _transitionCompleteFunction, YES);
 
                         // Make sure to clear these properties when the animation is done. Without this,
                         // the window becomes blurry in Chrome, presumably because the browser composits
@@ -527,17 +539,18 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
                         [self setCSS3Property:@"TransformOrigin" value:nil];
                         [self setCSS3Property:@"Transition" value:nil];
 #endif
-                        if (_implementedDelegateMethods & _CPPopoverWindow_didShow_)
-                             [_delegate popoverWindowDidShow:self];
+                        _isOpening = NO;
+
+                        [_delegate _popoverWindowDidShow];
                     }
 
 #if PLATFORM(DOM)
-                    _DOMElement.addEventListener(CPBrowserStyleProperty('transitionend'), transitionCompleteFunction, YES);
+                    _DOMElement.addEventListener(CPBrowserStyleProperty('transitionend'), _transitionCompleteFunction, YES);
 #endif
                 };
 
 #if PLATFORM(DOM)
-                _DOMElement.addEventListener(CPBrowserStyleProperty('transitionend'), orderFrontTransitionFunction, YES);
+                _DOMElement.addEventListener(CPBrowserStyleProperty('transitionend'), _orderFrontTransitionFunction, YES);
 #endif
             }, 10); // There are some weird race conditions happening in Chrome 34. If this is set to 0
                     // the transitionend is randomly not called correctly. Setting the timeout to 10ms is not noticealble for the
@@ -545,6 +558,7 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
         }
         else
         {
+            _isOpening = NO;
             [self setCSS3Property:@"Transition" value:@""];
 #if PLATFORM(DOM)
             _DOMElement.style.opacity = 1;
@@ -582,6 +596,19 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
 
     if (_animates && _browserAnimates)
     {
+        if (_isOpening)
+        {
+#if PLATFORM(DOM)
+            _DOMElement.removeEventListener(CPBrowserStyleProperty('transitionend'), _orderFrontTransitionFunction, YES);
+            _DOMElement.removeEventListener(CPBrowserStyleProperty('transitionend'), _transitionCompleteFunction, YES);
+
+            var matrix = window.getComputedStyle(_DOMElement, null)[CPBrowserStyleProperty(@"transform")],
+                currentScale = (matrix.split('(')[1]).split(',')[0];
+
+            [self setCSS3Property:@"Transform" value:@"scale(" + currentScale + ")"];
+#endif
+        }
+
         // Tell the element to fade out when the opacity changes
         [self setCSS3Property:@"Transition" value:@"opacity 250ms linear"];
 #if PLATFORM(DOM)
@@ -609,14 +636,36 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
 
     _shouldPerformAnimation = YES;
     _isClosing = NO;
+    _isOpening = NO;
+    _targetWindow = nil;
 
-    if (_implementedDelegateMethods & _CPPopoverWindow_didClose_)
-        [_delegate popoverWindowDidClose:self];
+    [_delegate _popoverWindowDidClose];
 }
 
 
 #pragma mark -
 #pragma mark Private
+
+- (BOOL)_hasOnlyTransientChild:(_CPPopoverWindow)aWindow
+{
+    var childWindows = [aWindow childWindows];
+
+    for (var i = [childWindows count] - 1; i >= 0; i--)
+    {
+        var childWindow = childWindows[i];
+
+        if (![childWindow isKindOfClass:[self class]])
+            continue;
+
+        if ([[childWindow delegate] behavior] != CPPopoverBehaviorTransient)
+            return NO;
+
+        if (![self _hasOnlyTransientChild:childWindow])
+            return NO;
+    }
+
+    return YES;
+}
 
 - (void)_mouseWasClicked:(CPEvent)anEvent
 {
@@ -626,26 +675,46 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
         message to any parent popovers so they have a chance to close
         if necessary.
     */
-    if (![self isVisible])
+    if (![self isVisible] || !_targetWindow)
         return;
 
     var mouseWindow = [anEvent window];
 
     // Consider clicks in child windows to be "inside". This keeps a transient popover from
     // closing if e.g. the window containing the menu of a token field is clicked.
-    if (mouseWindow === self || [mouseWindow _hasAncestorWindow:self])
+    if (mouseWindow === self || [mouseWindow _hasAncestorWindow:self] || ![self _hasOnlyTransientChild:self])
+    {
         [self _trapNextMouseDown];
+    }
     else
     {
-        // Send _close to the delegate so popoverWillClose is sent to the popover's delegate
-        if (_closeOnBlur)
-            [_delegate _close];
+        switch ([_delegate behavior])
+        {
+            case CPPopoverBehaviorSemitransient:
+                var superview = [_delegate._positioningView superview],
+                    positioningViewFrame = [_delegate._positioningView frame];
 
-        // Give a transient parent popover a chance to close
-        var parent = [self parentWindow];
+                // Click on the same button
+                // Or click on a different window (we just care about the parentWindow)
+                // We use targetWindow bacause parentWindow is set to nil when opening a semi-transient window in a bridgeless window
+                if (CGRectContainsPoint(positioningViewFrame, [superview convertPointFromBase:[anEvent locationInWindow]])
+                    || mouseWindow != _targetWindow)
+                {
+                    [self _trapNextMouseDown];
+                    break;
+                }
 
-        if ([parent isKindOfClass:[self class]])
-            [parent _mouseWasClicked:anEvent];
+                [_delegate close];
+                break;
+
+            case CPPopoverBehaviorTransient:
+                [_delegate close];
+                break;
+
+            case CPPopoverBehaviorApplicationDefined:
+                [self _trapNextMouseDown];
+                break;
+        }
     }
 }
 

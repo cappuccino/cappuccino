@@ -78,6 +78,7 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
     int                             _behavior               @accessors(getter=behavior);
 
     _CPPopoverWindow                _popoverWindow;
+    CPView                          _positioningView;
     int                             _implementedDelegateMethods;
 }
 
@@ -191,7 +192,7 @@ Set the behavior of the CPPopover. It can be:
         return;
 
     _behavior = aBehavior;
-    [_popoverWindow setStyleMask:[self styleMaskForBehavior]];
+    [_popoverWindow setStyleMask:[self _styleMaskForBehavior]];
 }
 
 - (void)setDelegate:(id <CPPopoverDelegate>)aDelegate
@@ -236,14 +237,18 @@ Set the behavior of the CPPopover. It can be:
     if (!_contentViewController)
         [CPException raise:CPInternalInconsistencyException reason:@"contentViewController must not be nil"];
 
-    // If the popover is currently closing, do nothing. That is what Cocoa does.
-    if ([_popoverWindow isClosing])
+    // If the popover is currently closing or opening, do nothing. That is what Cocoa does.
+    if ([_popoverWindow isClosing] || [_popoverWindow isOpening])
         return;
 
-    if (!_popoverWindow)
-        _popoverWindow = [[_CPPopoverWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:[self styleMaskForBehavior]];
+    _positioningView = positioningView;
 
-    [_popoverWindow setPlatformWindow:[[positioningView window] platformWindow]];
+    if (!_popoverWindow)
+        _popoverWindow = [[_CPPopoverWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:[self _styleMaskForBehavior]];
+
+    if (_positioningView != positioningView)
+        [_popoverWindow setPlatformWindow:[[positioningView window] platformWindow]];
+
     [_popoverWindow setAppearance:_appearance];
     [_popoverWindow setAnimates:_animates];
     [_popoverWindow setDelegate:self];
@@ -251,18 +256,21 @@ Set the behavior of the CPPopover. It can be:
     [_popoverWindow setFrame:[_popoverWindow frameRectForContentRect:[[_contentViewController view] frame]]];
     [_popoverWindow setContentView:[_contentViewController view]];
 
-    if (_implementedDelegateMethods & CPPopoverDelegate_popover_willShow_)
-        [_delegate popoverWillShow:self];
+    if (![self isShown])
+        [self _popoverWillShow];
 
     [_popoverWindow positionRelativeToRect:positioningRect ofView:positioningView preferredEdge:preferredEdge];
 
-    if (!_animates && _implementedDelegateMethods & CPPopoverDelegate_popover_didShow_)
-        [_delegate popoverDidShow:self];
+    if (![self isShown])
+        [self _popoverDidShow];
 }
 
-- (unsigned)styleMaskForBehavior
+- (unsigned)_styleMaskForBehavior
 {
-    return (_behavior == CPPopoverBehaviorTransient) ? CPClosableOnBlurWindowMask : 0;
+    if (_behavior == CPPopoverBehaviorApplicationDefined)
+        return 0;
+
+    return CPClosableOnBlurWindowMask
 }
 
 /*!
@@ -281,9 +289,9 @@ Set the behavior of the CPPopover. It can be:
     if ([_popoverWindow isClosing] || ![self isShown])
         return;
 
-    if (_implementedDelegateMethods & CPPopoverDelegate_popover_willClose_)
-        [_delegate popoverWillClose:self];
+    [self _popoverWillClose];
 
+    _positioningView = nil;
     [_popoverWindow close];
 
     // popoverDidClose will be sent from popoverWindowDidClose, since
@@ -316,7 +324,7 @@ Set the behavior of the CPPopover. It can be:
 #pragma mark Delegates
 
 /*! @ignore */
-- (BOOL)popoverWindowShouldClose:(_CPPopoverWindow)aPopoverWindow
+- (BOOL)_popoverWindowShouldClose
 {
     [self performClose:self];
 
@@ -327,17 +335,31 @@ Set the behavior of the CPPopover. It can be:
 }
 
 /*! @ignore */
-- (void)popoverWindowDidClose:(_CPPopoverWindow)aPopoverWindow
+- (void)_popoverWindowDidClose
 {
     if (_implementedDelegateMethods & CPPopoverDelegate_popover_didClose_)
         [_delegate popoverDidClose:self];
 }
 
 /*! @ignore */
-- (void)popoverWindowDidShow:(_CPPopoverWindow)aPopoverWindow
+- (void)_popoverWindowDidShow
 {
     if (_implementedDelegateMethods & CPPopoverDelegate_popover_didShow_)
         [_delegate popoverDidShow:self];
+}
+
+/*! @ignore */
+- (void)_popoverWillClose
+{
+    if (_implementedDelegateMethods & CPPopoverDelegate_popover_willClose_)
+        [_delegate popoverWillClose:self];
+}
+
+/*! @ignore */
+- (void)_popoverWillShow
+{
+    if (_implementedDelegateMethods & CPPopoverDelegate_popover_willShow_)
+        [_delegate popoverWillShow:self];
 }
 
 @end
