@@ -443,12 +443,18 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
 /*!
     @ignore
 */
-- (BOOL)_shouldCloseOnEscape
+- (void)cancelOperation:(id)sender
+{
+    if ([[CPApp currentEvent] _couldBeKeyEquivalent] && [self performKeyEquivalent:[CPApp currentEvent]])
+        return;
+
+    [self cancel:self];
+}
+
+- (void)cancel:(id)sender
 {
     if (_closeOnBlur)
-        [[self delegate] performClose:self];
-
-    return YES;
+        [[self delegate] performClose:sender];
 }
 
 /*!
