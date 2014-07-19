@@ -74,6 +74,8 @@ static NSPredicate * XCCDirectoriesToIgnorePredicate = nil;
 // An array of the default predicates used to ignore paths.
 static NSArray *XCCDefaultIgnoredPathPredicates = nil;
 
+NSString * const XCCCappLintDidStartNotification = @"XCCCappLintDidStartNotification";
+NSString * const XCCCappLintDidEndNotification = @"XCCCappLintDidEndNotification";
 
 @interface XcodeCapp ()
 
@@ -228,7 +230,8 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
             @"/usr/local/bin",
             @"/usr/local/narwhal/bin",
             @"~/narwhal/bin",
-            @"~/bin"
+            @"~/bin",
+            @"/usr/bin"
         ];
 
     NSMutableArray *paths = [self.environmentPaths mutableCopy];
@@ -240,8 +243,11 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
 
     // Make sure we are using jsc as the narwhal engine!
     self.environment[@"NARWHAL_ENGINE"] = @"jsc";
+    
+    // Make sure to not do something in sudo
+    self.environment[@"CAPP_NOSUDO"] = @"1";
 
-    self.executables = @[@"python", @"narwhal-jsc", @"objj", @"nib2cib", @"capp"];
+    self.executables = @[@"python", @"narwhal-jsc", @"objj", @"nib2cib", @"capp", @"capp_lint", @"jake", @"curl", @"unzip", @"rm"];
 
     // This is used to get the env var of $CAPP_BUILD
     NSDictionary *processEnvironment = [[NSProcessInfo processInfo] environment];
@@ -317,9 +323,10 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
 
     [self clearErrors:self];
     [self computeIgnoredPaths];
-
+    
     [self prepareXcodeSupport];
     [self populateXcodeProject];
+    [self populatexCodeCappTargetedFiles];
     [self waitForOperationQueueToFinishWithSelector:@selector(projectDidFinishLoading)];
 }
 
@@ -370,6 +377,25 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     DDLogVerbose(@"XcodeCapp/project compatibility version: %0.1f/%0.1f", projectCompatibilityVersion.doubleValue, appCompatibilityVersion);
 
     return projectCompatibilityVersion.doubleValue >= appCompatibilityVersion;
+}
+
+- (void)populatexCodeCappTargetedFiles
+{
+    NSFileManager *fm = [NSFileManager defaultManager];
+    NSDirectoryEnumerator *filesOfProject = [fm enumeratorAtPath:self.projectPath];
+    NSString *filename;
+    
+    self.xCodeCappTargetedFiles = [NSMutableArray array];
+    
+    while ((filename = [filesOfProject nextObject] )) {
+        
+        NSString *fullPath = [self.projectPath stringByAppendingPathComponent:filename];
+        
+        if (![self isSourceFile:fullPath])
+            continue;
+        
+        [self.xCodeCappTargetedFiles addObject:fullPath];
+    }
 }
 
 - (void)createXcodeProject
@@ -729,7 +755,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
             self.pbxOperations[@"add"] = addPaths;
         }
     }
-
+    
     DDLogVerbose(@"%@ %@", NSStringFromSelector(_cmd), path);
 }
 
@@ -1244,14 +1270,28 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
 #pragma mark - Shell Helpers
 
 /*!
+ Run an NSTask with the given arguments
+ 
+ @param launchPath The executable to launch
+ @param arguments NSArray containing the NSTask arguments
+ @param returnType Determines whether to return stdout, stderr, either, or nothing in the response
+ @return NSDictionary containing the return status (NSNumber) and the response (NSString)
+ */
+- (NSDictionary *)runTaskWithLaunchPath:(NSString *)launchPath arguments:(NSArray *)arguments returnType:(XCCTaskReturnType)returnType
+{
+    return [self runTaskWithLaunchPath:launchPath arguments:arguments returnType:returnType currentDirectoryPath:nil];
+}
+
+/*!
     Run an NSTask with the given arguments
  
      @param launchPath The executable to launch
      @param arguments NSArray containing the NSTask arguments
      @param returnType Determines whether to return stdout, stderr, either, or nothing in the response
+     @param the currentDirectoryPath for the task
      @return NSDictionary containing the return status (NSNumber) and the response (NSString)
  */
-- (NSDictionary *)runTaskWithLaunchPath:(NSString *)launchPath arguments:(NSArray *)arguments returnType:(XCCTaskReturnType)returnType
+- (NSDictionary *)runTaskWithLaunchPath:(NSString *)launchPath arguments:(NSArray *)arguments returnType:(XCCTaskReturnType)returnType currentDirectoryPath:(NSString*)aCurrentDirectoryPath
 {
     NSTask *task = [NSTask new];
     
@@ -1260,7 +1300,10 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     task.environment = self.environment;
     task.standardOutput = [NSPipe pipe];
     task.standardError = [NSPipe pipe];
-
+    
+    if (aCurrentDirectoryPath)
+        task.currentDirectoryPath = aCurrentDirectoryPath;
+    
     [task launch];
 
     DDLogVerbose(@"Task launched: %@\n%@", launchPath, arguments);
@@ -1314,6 +1357,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     return YES;
 }
 
+
 #pragma mark - Source Files Management
 
 - (BOOL)isObjjFile:(NSString *)path
@@ -1358,6 +1402,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
 {
     return [path substringFromIndex:self.projectPath.length + 1];
 }
+
 
 #pragma mark - Shadow Files Management
 
@@ -1636,14 +1681,53 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     [self runTaskWithLaunchPath:executablePath arguments:args returnType:kTaskReturnTypeNone];
 }
 
+- (BOOL)shouldShowErrorNotification
+{
+    return [[NSUserDefaults standardUserDefaults] boolForKey:kDefaultXCCAutoShowNotificationOnErrors];
+}
+
+- (BOOL)shouldProcessWithCappLint
+{
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    
+    return [defaults boolForKey:kDefaultXCCAutoOpenErrorsPanelOnCappLint]
+            || [defaults boolForKey:kDefaultXCCAutoShowNotificationOnCappLint];
+}
+
 - (void)showErrors
 {
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
 
-    if (([defaults boolForKey:kDefaultXCCAutoOpenErrorsPanelOnErrors] && self.hasErrors) ||
-        ([defaults boolForKey:kDefaultXCCAutoOpenErrorsPanelOnWarnings] && self.errorList.count))
+    if ([defaults boolForKey:kDefaultXCCAutoOpenErrorsPanelOnErrors] && self.errorList.count)
     {
         [self openErrorsPanel:self];
+    }
+}
+
+- (void)showCappLintErrors
+{
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    
+    if ([defaults boolForKey:kDefaultXCCAutoOpenErrorsPanelOnCappLint] && self.errorList.count)
+        [self openErrorsPanel:self];
+
+    if ([defaults boolForKey:kDefaultXCCAutoShowNotificationOnCappLint])
+    {
+        NSUInteger numberError = [self.errorList count];
+        
+        if (numberError)
+        {
+            NSDictionary *error = [self.errorList objectAtIndex:0];
+            NSString *filename = [error objectForKey:@"path"];
+            
+            NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+                                         [NSNumber numberWithInteger:self.projectId] , @"projectId",
+                                         @"Code Style Issues", @"title",
+                                         filename.lastPathComponent , @"message",
+                                         nil];
+            
+            [self wantUserNotificationWithInfo:dict];
+        }
     }
 }
 
@@ -1673,6 +1757,338 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
 
     return index != NSNotFound;
 }
+
+
+#pragma mark - capp_lint
+
+- (IBAction)checkProjectWithCappLint:(id)aSender
+{
+    [self clearErrors:self];
+    
+    NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+    [center addObserver:self selector:@selector(cappLintDidEndNotification:) name:XCCCappLintDidEndNotification object:nil];
+    
+    [self performSelectorInBackground:@selector(checkCappLintForPath:) withObject:self.xCodeCappTargetedFiles];
+}
+
+- (void)cappLintDidEndNotification:(NSNotification*)aNotification
+{
+    [self showCappLintErrors];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:XCCCappLintDidEndNotification object:nil];
+}
+
+- (BOOL)checkCappLintForPath:(NSArray*)paths
+{
+    DDLogVerbose(@"Checking path %@ with capp_lint", paths);
+    
+    NSUInteger numberOfFiles = [paths count];
+    
+    if (!numberOfFiles)
+        return YES;
+    
+    self.isProcessing = YES;
+    [[NSNotificationCenter defaultCenter] postNotificationName:XCCBatchDidStartNotification object:self];
+    [[NSNotificationCenter defaultCenter] postNotificationName:XCCCappLintDidStartNotification object:self];
+    
+    NSString *baseDirectory = [NSString stringWithFormat:@"--basedir='%@'", self.projectPath];
+    NSMutableArray *arguments = [NSMutableArray arrayWithObjects:baseDirectory, nil];
+    [arguments addObjectsFromArray:paths];
+    
+    NSDictionary *taskResult = [self runTaskWithLaunchPath:self.executablePaths[@"capp_lint"]
+                                                 arguments:arguments
+                                                returnType:kTaskReturnTypeStdOut];
+    
+    NSInteger status = [taskResult[@"status"] intValue];
+    
+    if (status == 0)
+    {
+        [[NSNotificationCenter defaultCenter] postNotificationName:XCCBatchDidEndNotification object:self];
+        [[NSNotificationCenter defaultCenter] postNotificationName:XCCCappLintDidEndNotification object:self];
+        return YES;
+    }
+    
+    NSString *response = taskResult[@"response"];
+    NSMutableArray *errors = [NSMutableArray arrayWithArray:[response componentsSeparatedByString:@"\n\n"]];
+    
+    // We need to remove the first object who is the number of errors and the last object who is an empty line
+    [errors removeLastObject];
+    [errors removeObjectAtIndex:0];
+    
+    NSInteger numberOfErrors = [errors count];
+    NSInteger i = 0;
+    NSString *path;
+    NSMutableArray *dicts = [NSMutableArray array];
+    
+    if (numberOfFiles == 1)
+        path = [paths objectAtIndex:0];
+    
+    for (i = 0; i < numberOfErrors; i++)
+    {
+        NSMutableString *error = (NSMutableString*)[errors objectAtIndex:i];
+        NSString *line;
+        NSString *firstCaract = [NSString stringWithFormat:@"%c" ,[error characterAtIndex:0]];
+        
+        if ([[NSScanner scannerWithString:firstCaract] scanInt:nil])
+            error = (NSMutableString*)[NSString stringWithFormat:@"%@:%@", path, error];
+        
+        NSInteger positionOfFirstColon = [error rangeOfString:@":"].location;
+        
+        if (numberOfFiles > 1)
+            path = [error substringToIndex:positionOfFirstColon];
+        
+        NSString *errorWithoutPath = [error substringFromIndex:(positionOfFirstColon + 1)];
+        NSInteger positionOfSecondColon = [errorWithoutPath rangeOfString:@":"].location;
+        line = [errorWithoutPath substringToIndex:positionOfSecondColon];
+        
+        NSString *messageError = [NSString stringWithFormat:@"Code style issue: %@ \n%@", path.lastPathComponent, errorWithoutPath];
+        
+        NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+                                     [NSNumber numberWithInt:[line intValue]], @"line",
+                                     messageError , @"message",
+                                     path, @"path",
+                                     nil];
+        
+        [dicts addObject:dict];
+    }
+    
+    [self performSelectorOnMainThread:@selector(cappLintConversionDidGenerateError:) withObject:dicts waitUntilDone:NO];
+    
+    self.isProcessing = NO;
+    [[NSNotificationCenter defaultCenter] postNotificationName:XCCBatchDidEndNotification object:self];
+    [[NSNotificationCenter defaultCenter] postNotificationName:XCCCappLintDidEndNotification object:self];
+    
+    return NO;
+}
+
+- (void)cappLintConversionDidGenerateError:(NSArray*)errors
+{
+    [self.errorListController addObjects:errors];
+}
+
+#pragma mark - Cappuccino update
+
+- (void)updateCappuccino
+{
+    [[NSNotificationCenter defaultCenter] postNotificationName:XCCBatchDidStartNotification object:self];
+    
+    [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
+    [self.updatingCappuccinoPanel makeKeyAndOrderFront:self];
+    
+    self.isCappuccinoUpdating = YES;
+    
+    [self.progressIndicator startAnimation:self];
+    [self.progressIndicator setMaxValue:4];
+    [self.progressIndicator setDoubleValue:0];
+    
+    NSString *temporaryFolder = NSTemporaryDirectory();
+    
+    if(![self _hasInitializedUpdateCappuccinoFromFolder:temporaryFolder] ||
+       ![self _hasCleanedInstallOfCappuccinoFromFolder:temporaryFolder] ||
+       ![self _hasInstalledCappuccinoFromFolder:temporaryFolder])
+        return;
+    
+    [self notifyUserWithTitle:@"Update Cappuccino" message:@"Updating of Cappuccino completed"];
+    [self _incrementeProgressBarAndUpdateInformationFieldWithMessage:@"Updating completed"];
+    [self.progressIndicator stopAnimation:self];
+    self.isCappuccinoUpdating = NO;
+    
+    [[NSNotificationCenter defaultCenter] postNotificationName:XCCBatchDidEndNotification object:self];
+}
+
+- (BOOL)_hasInitializedUpdateCappuccinoFromFolder:(NSString*)aFolder
+{
+    //Be sure to remove an old install
+    NSMutableArray *rmArguments = [NSMutableArray arrayWithObjects:@"-r", @"cappuccino", nil];
+    [self runTaskWithLaunchPath:self.executablePaths[@"rm"]
+                      arguments:rmArguments
+                     returnType:kTaskReturnTypeAny
+           currentDirectoryPath:aFolder];
+    
+    
+    [self _incrementeProgressBarAndUpdateInformationFieldWithMessage:@"Downloading Cappuccino"];
+    
+    // Download the file
+    NSString *cappuccinoURL;
+    
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:kDefaultUpdateCappuccinoWithLastVersionOfMasterBranch])
+        cappuccinoURL = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"XCCLastCappuccinoMasterBranchURL"];
+    else
+        cappuccinoURL = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"XCCLastCappuccinoReleaseURL"];
+    
+    NSString *destination = [NSString stringWithFormat:@"%@cappuccino.zip", aFolder];
+    NSMutableArray *arguments = [NSMutableArray arrayWithObjects:@"-Lk", cappuccinoURL, @"-o", destination, nil];
+    NSDictionary *taskResult = [self runTaskWithLaunchPath:self.executablePaths[@"curl"]
+                                                 arguments:arguments
+                                                returnType:kTaskReturnTypeStdOut];
+    
+    NSInteger status = [taskResult[@"status"] intValue];
+    
+    if (status > 1)
+    {
+        [self _updatingCappuccinoFailedWithMessage:@"Unable to download Cappuccino"];
+        return NO;
+    }
+    
+    //Unzip the file
+    NSMutableArray *unzipArguments = [NSMutableArray arrayWithObjects:@"-u", @"-o", @"-q", @"-d", @"cappuccino", @"cappuccino.zip", nil];
+    NSDictionary *unzipTaskResult = [self runTaskWithLaunchPath:self.executablePaths[@"unzip"]
+                                                      arguments:unzipArguments
+                                                     returnType:kTaskReturnTypeAny
+                                           currentDirectoryPath:aFolder];
+    
+    NSInteger unzipStatus = [unzipTaskResult[@"status"] intValue];
+    
+    if (unzipStatus >= 1)
+    {
+        DDLogVerbose(@"Unable to unzip Cappuccino");
+        [self _updatingCappuccinoFailedWithMessage:@"Unable to unzip Cappuccino"];
+        return NO;
+    }
+    
+    return YES;
+}
+
+- (BOOL)_hasCleanedInstallOfCappuccinoFromFolder:(NSString*)aFolder
+{
+    NSString* path = [self _cappuccinoPathForFolder:aFolder];
+    
+    [self _incrementeProgressBarAndUpdateInformationFieldWithMessage:@"Jake clobber"];
+    
+    //Jake clobber
+    NSMutableArray *jakeClobberArguments = [NSMutableArray arrayWithObjects:@"clobber", nil];
+    NSDictionary *jakeClobberTaskResult = [self runJakeTaskWithArguments:jakeClobberArguments currentDirectoryPath:path];
+    
+    NSInteger jakeInstallStatus = [jakeClobberTaskResult[@"status"] intValue];
+    
+    if (jakeInstallStatus == 1)
+    {
+        DDLogVerbose(@"Jake clobber failed: %@", jakeClobberTaskResult[@"response"]);
+        [self _updatingCappuccinoFailedWithMessage:@"Jake clobber failed"];
+        return NO;
+    }
+    
+    return YES;
+}
+
+- (BOOL)_hasInstalledCappuccinoFromFolder:(NSString*)aFolder
+{
+    NSString* path = [self _cappuccinoPathForFolder:aFolder];
+    
+    [self _incrementeProgressBarAndUpdateInformationFieldWithMessage:@"Jake install"];
+    
+    //Jake install
+    NSMutableArray *jakeInstallArguments = [NSMutableArray arrayWithObjects:@"install", nil];
+    NSDictionary *jakeInstallTaskResult = [self runJakeTaskWithArguments:jakeInstallArguments currentDirectoryPath:path];
+    
+    NSInteger jakeInstallStatus = [jakeInstallTaskResult[@"status"] intValue];
+    
+    if (jakeInstallStatus == 1)
+    {
+        DDLogVerbose(@"Jake install failed: %@", jakeInstallTaskResult[@"response"]);
+        [self _updatingCappuccinoFailedWithMessage:@"Jake install failed"];
+        return NO;
+    }
+    
+    return YES;
+}
+
+- (NSDictionary*)runJakeTaskWithArguments:(NSMutableArray*)arguments currentDirectoryPath:(NSString*)aCurrentDirectoryPath
+{
+    NSString *launchPath = self.executablePaths[@"jake"];
+    
+    NSTask *task = [NSTask new];
+    
+    task.launchPath = launchPath;
+    task.arguments = arguments;
+    task.environment = self.environment;
+    task.standardOutput = [NSPipe new];
+    task.standardError = [NSPipe new];
+    
+    if (aCurrentDirectoryPath)
+        task.currentDirectoryPath = aCurrentDirectoryPath;
+    
+    // This is needed to log the jake
+    NSFileHandle* fhOut = [task.standardOutput fileHandleForReading];
+    [fhOut readInBackgroundAndNotify];
+    NSFileHandle* fhErr = [task.standardError fileHandleForReading];
+    [fhErr readInBackgroundAndNotify];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(jakeReceivedData:) name:NSFileHandleReadCompletionNotification object:fhOut];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(jakeReceivedError:) name:NSFileHandleReadCompletionNotification object:fhErr];
+    
+    [task launch];
+    
+    DDLogVerbose(@"Task launched: %@\n%@", launchPath, arguments);
+    
+    [task waitUntilExit];
+    
+    DDLogVerbose(@"Task exited: %@:%d", launchPath, task.terminationStatus);
+    
+    NSNumber *status = [NSNumber numberWithInt:task.terminationStatus];
+    NSData *data = nil;
+    
+    if ([status intValue] == 0)
+        data = [[task.standardOutput fileHandleForReading] availableData];
+    else
+        data = [[task.standardError fileHandleForReading] availableData];
+    
+    NSString *response = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+    
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:NSFileHandleReadCompletionNotification object:fhOut];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:NSFileHandleReadCompletionNotification object:fhErr];
+    
+    return @{@"status" : status, @"response" : response};
+}
+
+-(void)jakeReceivedData:(NSNotification*)notification
+{
+    NSData *data     = [[notification userInfo] objectForKey:NSFileHandleNotificationDataItem];
+    NSString *string = [[NSString alloc] initWithData:data encoding:NSASCIIStringEncoding];
+    
+    DDLogVerbose(@"%@", string);
+    
+    [[notification object] readInBackgroundAndNotify];
+}
+
+-(void)jakeReceivedError:(NSNotification*)notification
+{
+    NSData *data     = [[notification userInfo] objectForKey:NSFileHandleNotificationDataItem];
+    NSString *string = [[NSString alloc] initWithData:data encoding:NSASCIIStringEncoding];
+    
+    DDLogVerbose(@"%@", string);
+}
+
+/*!
+ This return the current path where the tmp cappuccino was downloaded
+ */
+- (NSString*)_cappuccinoPathForFolder:(NSString*)aFolder
+{
+    NSFileManager *fileManger = [NSFileManager defaultManager];
+    NSString *contentOfCappuccinoFolder = [[fileManger contentsOfDirectoryAtPath:[NSString stringWithFormat:@"%@cappuccino", aFolder] error:nil] firstObject];
+    
+    return [NSString stringWithFormat:@"%@cappuccino/%@", aFolder, contentOfCappuccinoFolder];
+}
+
+- (void)_incrementeProgressBarAndUpdateInformationFieldWithMessage:(NSString*)aString
+{
+    double currentValue = [self.progressIndicator doubleValue];
+    [self.progressIndicator setDoubleValue:++currentValue];
+    
+    [self.fieldCurrentTask setStringValue:[NSString stringWithFormat:@"Step %.0f/%.0f : %@", [self.progressIndicator doubleValue], [self.progressIndicator maxValue], aString]];
+}
+
+- (void)_updatingCappuccinoFailedWithMessage:(NSString*)aMessage
+{
+    [self.progressIndicator stopAnimation:self];
+    [self.progressIndicator setDoubleValue:0];
+    [self.fieldCurrentTask setStringValue:[NSString stringWithFormat:@"Issue : %@", aMessage]];
+    
+    [self notifyUserWithTitle:@"Error updating Cappuccino" message:aMessage];
+    
+    self.isCappuccinoUpdating = NO;
+    [[NSNotificationCenter defaultCenter] postNotificationName:XCCBatchDidEndNotification object:self];
+}
+
 
 #pragma mark - User notifications
 
@@ -1713,14 +2129,21 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     if ([info[@"projectId"] intValue] != self.projectId)
         return;
 
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:kDefaultShowProcessingNotices])
-        [self notifyUserWithTitle:info[@"title"] message:info[@"message"]];
+    [self notifyUserWithTitle:info[@"title"] message:info[@"message"]];
 }
 
 - (BOOL)userNotificationCenter:(NSUserNotificationCenter *)center shouldPresentNotification:(NSUserNotification *)notification
 {
     // Notification Center may decide not to show a notification. We always want them to show.
     return YES;
+}
+
+- (void)userNotificationCenter:(NSUserNotificationCenter *)center didActivateNotification:(NSUserNotification *)notification
+{
+    if ([self.errorList count])
+        [self openErrorsPanel:self];
+    
+    [center removeDeliveredNotification:notification];
 }
 
 @end

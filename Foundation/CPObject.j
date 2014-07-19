@@ -364,7 +364,7 @@ CPLog(@"Got some class: %@", inst);
 */
 - (id)performSelector:(SEL)aSelector
 {
-    return objj_msgSend(self, aSelector);
+    return self.isa.objj_msgSend0(self, aSelector);
 }
 
 /*!
@@ -375,7 +375,7 @@ CPLog(@"Got some class: %@", inst);
 */
 - (id)performSelector:(SEL)aSelector withObject:(id)anObject
 {
-    return objj_msgSend(self, aSelector, anObject);
+    return self.isa.objj_msgSend1(self, aSelector, anObject);
 }
 
 /*!
@@ -387,7 +387,7 @@ CPLog(@"Got some class: %@", inst);
 */
 - (id)performSelector:(SEL)aSelector withObject:(id)anObject withObject:(id)anotherObject
 {
-    return objj_msgSend(self, aSelector, anObject, anotherObject);
+    return self.isa.objj_msgSend2(self, aSelector, anObject, anotherObject);
 }
 
 /*!

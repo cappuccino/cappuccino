@@ -1262,6 +1262,10 @@ Notifies the delegate when the scroll view has finished scrolling.
     [self reflectScrolledClipView:_contentView];
 }
 
+- (CGRect)documentVisibleRect
+{
+    return [_contentView documentVisibleRect];
+}
 
 #pragma mark -
 #pragma mark Overrides

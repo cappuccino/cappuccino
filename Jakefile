@@ -43,24 +43,14 @@ task ("CommonJS", [$BUILD_CJS_OBJECTIVE_J_DEBUG_FRAMEWORKS, $BUILD_CJS_CAPPUCCIN
 
 task ("install", ["CommonJS"], function()
 {
-    // FIXME: require("narwhal/tusk/install").install({}, $COMMONJS);
-    // Doesn't work due to some weird this.print business.
-    if (OS.system(["tusk", "install", "--force", $BUILD_CJS_OBJECTIVE_J, $BUILD_CJS_CAPPUCCINO])) {
-        colorPrint("Installation failed, possibly because you do not have permissions.", "red");
-        colorPrint("Try re-running using '" + colorize("jake sudo-install", "yellow") + "'.", "red");
-        OS.exit(1); //rake abort if ($? != 0)
-    }
+    installCopy($BUILD_CJS_OBJECTIVE_J, false);
+    installCopy($BUILD_CJS_CAPPUCCINO, false);
 });
 
 task ("sudo-install", ["CommonJS"], function()
 {
-    // FIXME: require("narwhal/tusk/install").install({}, $COMMONJS);
-    // Doesn't work due to some weird this.print business.
-    if (OS.system(["sudo", "tusk", "install", "--force", $BUILD_CJS_OBJECTIVE_J, $BUILD_CJS_CAPPUCCINO]))
-    {
-        // Attempt a hackish work-around for sudo compiled with the --with-secure-path option
-        sudo("tusk install --force " + $BUILD_CJS_OBJECTIVE_J + " " + $BUILD_CJS_CAPPUCCINO);
-    }
+    installCopy($BUILD_CJS_OBJECTIVE_J, true);
+    installCopy($BUILD_CJS_CAPPUCCINO, true);
 });
 
 task ("install-symlinks", function()

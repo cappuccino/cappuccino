@@ -863,6 +863,15 @@ var _CPPopUpListDataSourceKey   = @"_CPPopUpListDataSourceKey",
     return self;
 }
 
+/*!
+    Returns \c YES if the receiver is able to receive input events
+    even when a modal session is active.
+*/
+- (BOOL)worksWhenModal
+{
+    return YES;
+}
+
 - (void)sendEvent:(CPEvent)anEvent
 {
     var type = [anEvent type];

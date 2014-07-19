@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		68A43034191BF044008A68A7 /* help.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 68A43033191BF044008A68A7 /* help.pdf */; };
 		E10E4CD717298E5F004AB09E /* project.pbxproj in Resources */ = {isa = PBXBuildFile; fileRef = E164FE2A172188F300263CE3 /* project.pbxproj */; };
 		E14015421740248C006C2792 /* XcodeProjectCloser.m in Sources */ = {isa = PBXBuildFile; fileRef = E14015411740248C006C2792 /* XcodeProjectCloser.m */; };
 		E1401543174025B8006C2792 /* XcodeProjectCloser.m in Sources */ = {isa = PBXBuildFile; fileRef = E14015411740248C006C2792 /* XcodeProjectCloser.m */; };
@@ -36,7 +37,6 @@
 		E171D26C173C1C8300210893 /* xcc in CopyFiles */ = {isa = PBXBuildFile; fileRef = E171D25D173C168C00210893 /* xcc */; };
 		E17A822D172700B90095CD83 /* XcodeCapp.iconset in Resources */ = {isa = PBXBuildFile; fileRef = E17A822C172700B90095CD83 /* XcodeCapp.iconset */; };
 		E17B55411732F57700809FFB /* Quartz.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E17B55401732F57700809FFB /* Quartz.framework */; };
-		E17B55431732F72700809FFB /* help.pdf in Resources */ = {isa = PBXBuildFile; fileRef = E17B55421732F72700809FFB /* help.pdf */; };
 		E1A5594A172C5EE20088FB61 /* FindSourceFilesOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = E1A55949172C5EE20088FB61 /* FindSourceFilesOperation.m */; };
 		E1A5594D172CA8D40088FB61 /* ProcessSourceOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = E1A5594C172CA8D40088FB61 /* ProcessSourceOperation.m */; };
 		E1E90C411735D846005C6D5B /* DDLogLevel.m in Sources */ = {isa = PBXBuildFile; fileRef = E1E90C391735D846005C6D5B /* DDLogLevel.m */; };
@@ -106,6 +106,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		68A43033191BF044008A68A7 /* help.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; name = help.pdf; path = Resources/help.pdf; sourceTree = "<group>"; };
 		E14015401740248C006C2792 /* XcodeProjectCloser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XcodeProjectCloser.h; sourceTree = "<group>"; };
 		E14015411740248C006C2792 /* XcodeProjectCloser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XcodeProjectCloser.m; sourceTree = "<group>"; };
 		E164FDCF1720E77100263CE3 /* XcodeCapp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = XcodeCapp.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -140,7 +141,6 @@
 		E171D264173C168C00210893 /* xcc-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "xcc-Prefix.pch"; sourceTree = "<group>"; };
 		E17A822C172700B90095CD83 /* XcodeCapp.iconset */ = {isa = PBXFileReference; lastKnownFileType = folder.iconset; name = XcodeCapp.iconset; path = Resources/XcodeCapp.iconset; sourceTree = "<group>"; };
 		E17B55401732F57700809FFB /* Quartz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Quartz.framework; path = System/Library/Frameworks/Quartz.framework; sourceTree = SDKROOT; };
-		E17B55421732F72700809FFB /* help.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; name = help.pdf; path = Resources/help.pdf; sourceTree = "<group>"; };
 		E1A55949172C5EE20088FB61 /* FindSourceFilesOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = FindSourceFilesOperation.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		E1A5594C172CA8D40088FB61 /* ProcessSourceOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = ProcessSourceOperation.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		E1E90C371735D82B005C6D5B /* AppController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppController.h; sourceTree = "<group>"; };
@@ -273,6 +273,7 @@
 		E164FE071720F25400263CE3 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				68A43033191BF044008A68A7 /* help.pdf */,
 				E1ED6B6F173414E100641628 /* icon_128x128.png */,
 				E1ED6B70173414E100641628 /* icon_128x128@2x.png */,
 				E164FE2D1721A34900263CE3 /* icon-inactive.png */,
@@ -284,7 +285,6 @@
 				E170C3FF17298833003DC489 /* icon-error.png */,
 				E170C40017298833003DC489 /* icon-error@2x.png */,
 				E17A822C172700B90095CD83 /* XcodeCapp.iconset */,
-				E17B55421732F72700809FFB /* help.pdf */,
 				E164FE2A172188F300263CE3 /* project.pbxproj */,
 				E164FE191720F49A00263CE3 /* Growl Registration Ticket.growlRegDict */,
 			);
@@ -418,6 +418,7 @@
 				E10E4CD717298E5F004AB09E /* project.pbxproj in Resources */,
 				E164FE181720F44B00263CE3 /* parser.j in Resources */,
 				E164FE1A1720F49A00263CE3 /* Growl Registration Ticket.growlRegDict in Resources */,
+				68A43034191BF044008A68A7 /* help.pdf in Resources */,
 				E164FE2F1721A34900263CE3 /* icon-active.png in Resources */,
 				E164FE301721A34900263CE3 /* icon-inactive.png in Resources */,
 				E164FE311721A34900263CE3 /* icon-working.png in Resources */,
@@ -427,7 +428,6 @@
 				E170C40517298833003DC489 /* icon-error@2x.png in Resources */,
 				E170C40617298833003DC489 /* icon-inactive@2x.png in Resources */,
 				E170C40717298833003DC489 /* icon-working@2x.png in Resources */,
-				E17B55431732F72700809FFB /* help.pdf in Resources */,
 				E1ED6B71173414E100641628 /* icon_128x128.png in Resources */,
 				E1ED6B72173414E100641628 /* icon_128x128@2x.png in Resources */,
 				E1E90C62173B42D0005C6D5B /* MainMenu.xib in Resources */,

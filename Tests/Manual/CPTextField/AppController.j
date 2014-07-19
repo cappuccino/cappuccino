@@ -84,15 +84,15 @@
         y = CGRectGetMaxY([textField frame]) + 6;
     }
 
-    label = [[CPTextField alloc] initWithFrame:CGRectMake(15, 420, 600, 30)];
+    label = [[CPTextField alloc] initWithFrame:CGRectMake(15, 420, 600, 60)];
     [label setLineBreakMode:CPLineBreakByWordWrapping];
-    [label setStringValue:"This text field has been configured to show its text at a fixed location both with and without bezel."];
+    [label setStringValue:"This text field has been configured to show its text at a fixed location both with and without bezel.\nThis text should also display the word \"Placeholder\" when its value is empty."];
     [contentView addSubview:label];
 
     bezelToggleField = [CPTextField textFieldWithStringValue:"" placeholder:"Placeholder" width:200],
 
     [bezelToggleField setEditable:YES];
-    [bezelToggleField setFrameOrigin:CGPointMake(15, 445)];
+    [bezelToggleField setFrameOrigin:CGPointMake(15, 475)];
     console.log("" + bezelToggleField._themeAttributes['content-inset']._themeDefaultAttribute._values);
     console.log("" + bezelToggleField._themeAttributes['content-inset']._values);
     [bezelToggleField setValue:[bezelToggleField valueForThemeAttribute:@"content-inset" inState:CPThemeStateBezeled] forThemeAttribute:@"content-inset" inState:CPThemeStateNormal];
@@ -108,7 +108,7 @@
     [bezelToggleButton setTarget:self];
     [bezelToggleButton setState:CPOnState];
     [bezelToggleButton sizeToFit];
-    [bezelToggleButton setFrameOrigin:CGPointMake(CGRectGetMaxX([bezelToggleField frame]) + 15, 448)];
+    [bezelToggleButton setFrameOrigin:CGPointMake(CGRectGetMaxX([bezelToggleField frame]) + 15, 478)];
     [contentView addSubview:bezelToggleButton];
 
     [theWindow orderFront:self];

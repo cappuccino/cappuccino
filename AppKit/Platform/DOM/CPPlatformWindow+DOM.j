@@ -201,6 +201,7 @@ var ModifierKeyCodes = [
     supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
 var resizeTimer = nil;
+var PreventScroll = true;
 
 #if PLATFORM(DOM)
 
@@ -325,8 +326,8 @@ var resizeTimer = nil;
     _DOMScrollingElement.style.position = "absolute";
     _DOMScrollingElement.style.visibility = "hidden";
     _DOMScrollingElement.style.zIndex = @"999";
-    _DOMScrollingElement.style.height = "60px";
-    _DOMScrollingElement.style.width = "60px";
+    _DOMScrollingElement.style.height = "500px";
+    _DOMScrollingElement.style.width = "500px";
     _DOMScrollingElement.style.overflow = "scroll";
     //_DOMScrollingElement.style.backgroundColor = "rgba(0,0,0,1.0)"; // debug help.
     _DOMScrollingElement.style.opacity = "0";
@@ -335,8 +336,8 @@ var resizeTimer = nil;
     _DOMBodyElement.appendChild(_DOMScrollingElement);
 
     var _DOMInnerScrollingElement = theDocument.createElement("div");
-    _DOMInnerScrollingElement.style.width = "400px";
-    _DOMInnerScrollingElement.style.height = "400px";
+    _DOMInnerScrollingElement.style.width = "5000px";
+    _DOMInnerScrollingElement.style.height = "5000px";
     _DOMScrollingElement.appendChild(_DOMInnerScrollingElement);
 
     // Set an initial scroll offset
@@ -842,6 +843,12 @@ var resizeTimer = nil;
 
 - (void)scrollEvent:(DOMEvent)aDOMEvent
 {
+    if (PreventScroll)
+    {
+        PreventScroll = false;
+        aDOMEvent.preventDefault();
+    }
+
     if (_hideDOMScrollingElementTimeout)
     {
         clearTimeout(_hideDOMScrollingElementTimeout);
@@ -852,7 +859,6 @@ var resizeTimer = nil;
         aDOMEvent = window.event;
 
     var location = nil;
-
     if (CPFeatureIsCompatible(CPJavaScriptMouseWheelValues_8_15))
     {
         var x = aDOMEvent._offsetX || 0.0,
@@ -950,6 +956,7 @@ var resizeTimer = nil;
     // can receive events.
     _hideDOMScrollingElementTimeout = setTimeout(function()
     {
+        PreventScroll = true;
         _DOMScrollingElement.style.visibility = "hidden";
     }, 300);
 }
@@ -1654,16 +1661,15 @@ var CPDOMEventGetClickCount = function(aComparisonEvent, aTimestamp, aLocation)
 // Global.
 _CPDOMEventStop = function(aDOMEvent, aPlatformWindow)
 {
-    // IE Model
-    aDOMEvent.cancelBubble = true;
-    aDOMEvent.returnValue = false;
-
-    // W3C Model
-    if (aDOMEvent.preventDefault)
+    if (aDOMEvent.preventDefault) // W3C Model
         aDOMEvent.preventDefault();
+    else // IE Model
+        aDOMEvent.returnValue = false;
 
-    if (aDOMEvent.stopPropagation)
+    if (aDOMEvent.stopPropagation) // W3C Model
         aDOMEvent.stopPropagation();
+    else // IE Model
+        aDOMEvent.cancelBubble = true;
 };
 
 function CPWindowObjectList()

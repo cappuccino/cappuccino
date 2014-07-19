@@ -35,6 +35,30 @@
     [self assert:middle equals:[middle laterDate:past] message:"laterDate incorrect"];
 }
 
+- (void)testDateByAddingTimeIntervalZeroShouldReturnSameDate
+{
+    var a = [CPDate dateWithTimeIntervalSince1970:1231889490.0],
+        b = [a dateByAddingTimeInterval:0];
+
+    [self assert:[b timeIntervalSince1970] equals:1231889490];
+}
+
+- (void)testDateByAddingTimeIntervalPositiveShouldReturnNewerDate
+{
+    var a = [CPDate dateWithTimeIntervalSince1970:1231889490.0],
+        b = [a dateByAddingTimeInterval:789];
+
+    [self assert:[b timeIntervalSince1970] equals:1231889490 + 789];
+}
+
+- (void)testDateByAddingTimeIntervalNegativeShouldReturnOlderDate
+{
+    var a = [CPDate dateWithTimeIntervalSince1970:1231889490.0],
+        b = [a dateByAddingTimeInterval:-789];
+
+    [self assert:[b timeIntervalSince1970] equals:1231889490 - 789];
+}
+
 - (void)testEquals
 {
     var now = [CPDate date];

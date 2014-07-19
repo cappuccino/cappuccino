@@ -32,6 +32,14 @@
 @global CPApp
 @global CPStringPboardType
 
+
+@protocol CPTextFieldDelegate <CPControlTextEditingDelegate>
+
+@end
+
+
+var CPTextFieldDelegate_control_didFailToFormatString_errorDescription_ = 1 << 1;
+
 CPTextFieldSquareBezel          = 0;    /*! A textfield bezel with squared corners. */
 CPTextFieldRoundedBezel         = 1;    /*! A textfield bezel with rounded corners. */
 
@@ -112,26 +120,27 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 */
 @implementation CPTextField : CPControl
 {
-    BOOL                    _isEditing;
+    BOOL                        _isEditing;
 
-    BOOL                    _isEditable;
-    BOOL                    _isSelectable;
-    BOOL                    _isSecure;
-    BOOL                    _willBecomeFirstResponderByClick;
+    BOOL                        _isEditable;
+    BOOL                        _isSelectable;
+    BOOL                        _isSecure;
+    BOOL                        _willBecomeFirstResponderByClick;
 
-    BOOL                    _drawsBackground;
+    BOOL                        _drawsBackground;
 
-    CPColor                 _textFieldBackgroundColor;
+    CPColor                     _textFieldBackgroundColor;
 
-    CPString                _placeholderString;
-    CPString                _stringValue;
+    CPString                    _placeholderString;
+    CPString                    _stringValue;
 
-    id                      _delegate;
+    id <CPTextFieldDelegate>    _delegate;
+    unsigned                    _implementedDelegateMethods;
 
     // NS-style Display Properties
-    CPTextFieldBezelStyle   _bezelStyle;
-    BOOL                    _isBordered;
-    CPControlSize           _controlSize;
+    CPTextFieldBezelStyle       _bezelStyle;
+    BOOL                        _isBordered;
+    CPControlSize               _controlSize;
 }
 
 + (Class)_binderClassForBinding:(CPString)aBinding
@@ -537,7 +546,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 /*! @ignore */
 - (BOOL)becomeFirstResponder
 {
-    if (![self isEnabled])
+    if (![self isEnabled] || ![super becomeFirstResponder])
         return NO;
 
     // As long as we are the first responder we need to monitor the key status of our window.
@@ -581,57 +590,14 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 #if PLATFORM(DOM)
 
+    [self _setCSSStyleForInputElement];
+
     var element = [self _inputElement],
         font = [self currentValueForThemeAttribute:@"font"],
-        lineHeight = [font defaultLineHeightForFont];
+        contentRect = [self contentRectForBounds:[self bounds]],
+        left = CGRectGetMinX(contentRect);
 
     element.value = _stringValue;
-    element.style.color = [[self currentValueForThemeAttribute:@"text-color"] cssString];
-
-    if (CPFeatureIsCompatible(CPInputSetFontOutsideOfDOM))
-        element.style.font = [font cssString];
-
-    element.style.zIndex = 1000;
-
-    switch ([self alignment])
-    {
-        case CPCenterTextAlignment:
-            element.style.textAlign = "center";
-            break;
-
-        case CPRightTextAlignment:
-            element.style.textAlign = "right";
-            break;
-
-        default:
-            element.style.textAlign = "left";
-    }
-
-    var contentRect = [self contentRectForBounds:[self bounds]],
-        verticalAlign = [self currentValueForThemeAttribute:"vertical-alignment"];
-
-    switch (verticalAlign)
-    {
-        case CPTopVerticalTextAlignment:
-            var topPoint = CGRectGetMinY(contentRect) + "px";
-            break;
-
-        case CPCenterVerticalTextAlignment:
-            var topPoint = (CGRectGetMidY(contentRect) - (lineHeight / 2)) + "px";
-            break;
-
-        case CPBottomVerticalTextAlignment:
-            var topPoint = (CGRectGetMaxY(contentRect) - lineHeight) + "px";
-            break;
-
-        default:
-            var topPoint = CGRectGetMinY(contentRect) + "px";
-            break;
-    }
-
-    element.style.top = topPoint;
-
-    var left = CGRectGetMinX(contentRect);
 
     // If the browser has a built in left padding, compensate for it. We need the input text to be exactly on top of the original text.
     if (CPFeatureIsCompatible(CPInput1PxLeftPadding))
@@ -639,8 +605,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     element.style.left = left + "px";
     element.style.width = CGRectGetWidth(contentRect) + "px";
-    element.style.height = ROUND(lineHeight) + "px";
-    element.style.lineHeight = ROUND(lineHeight) + "px";
     element.style.verticalAlign = "top";
     element.style.cursor = "auto";
 
@@ -685,6 +649,71 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 #endif
 
     return YES;
+}
+
+/*!
+    Set the css style for the input element of the textField
+    @ignore
+*/
+- (void)_setCSSStyleForInputElement
+{
+
+#if PLATFORM(DOM)
+    var element = [self _inputElement],
+        font = [self currentValueForThemeAttribute:@"font"],
+        lineHeight = [font defaultLineHeightForFont],
+        contentRect = [self contentRectForBounds:[self bounds]],
+        verticalAlign = [self currentValueForThemeAttribute:"vertical-alignment"];
+
+    if ([self hasThemeState:CPTextFieldStatePlaceholder])
+        element.style.color = [[self valueForThemeAttribute:@"text-color" inState:CPTextFieldStatePlaceholder] cssString];
+    else
+        element.style.color = [[self valueForThemeAttribute:@"text-color" inState:CPThemeStateEditing] cssString];
+
+    if (CPFeatureIsCompatible(CPInputSetFontOutsideOfDOM))
+        element.style.font = [font cssString];
+
+    element.style.zIndex = 1000;
+
+    switch ([self alignment])
+    {
+        case CPCenterTextAlignment:
+            element.style.textAlign = "center";
+            break;
+
+        case CPRightTextAlignment:
+            element.style.textAlign = "right";
+            break;
+
+        default:
+            element.style.textAlign = "left";
+    }
+
+    switch (verticalAlign)
+    {
+        case CPTopVerticalTextAlignment:
+            var topPoint = CGRectGetMinY(contentRect) + "px";
+            break;
+
+        case CPCenterVerticalTextAlignment:
+            var topPoint = (CGRectGetMidY(contentRect) - (lineHeight / 2)) + "px";
+            break;
+
+        case CPBottomVerticalTextAlignment:
+            var topPoint = (CGRectGetMaxY(contentRect) - lineHeight) + "px";
+            break;
+
+        default:
+            var topPoint = CGRectGetMinY(contentRect) + "px";
+            break;
+    }
+
+    element.style.top = topPoint;
+    element.style.height = ROUND(lineHeight) + "px";
+    element.style.lineHeight = ROUND(lineHeight) + "px";
+
+#endif
+
 }
 
 /*! @ignore */
@@ -818,7 +847,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     {
         var acceptInvalidValue = NO;
 
-        if ([_delegate respondsToSelector:@selector(control:didFailToFormatString:errorDescription:)])
+        if (_implementedDelegateMethods & CPTextFieldDelegate_control_didFailToFormatString_errorDescription_)
             acceptInvalidValue = [_delegate control:self didFailToFormatString:aValue errorDescription:error];
 
         if (acceptInvalidValue === NO)
@@ -1148,7 +1177,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 #if PLATFORM(DOM)
 
-    if (CPTextFieldInputOwner === self || [[self window] firstResponder] === self)
+    if ((CPTextFieldInputOwner === self || [[self window] firstResponder] === self) && [[self window] isKeyWindow])
         [self _inputElement].value = _stringValue;
 
 #endif
@@ -1158,7 +1187,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)_updatePlaceholderState
 {
-    if ((!_stringValue || _stringValue.length === 0) && ![self hasThemeState:CPThemeStateEditing])
+    if (!_stringValue || _stringValue.length === 0)
         [self setThemeState:CPTextFieldStatePlaceholder];
     else
         [self unsetThemeState:CPTextFieldStatePlaceholder];
@@ -1585,7 +1614,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 #pragma mark Setting the Delegate
 
-- (void)setDelegate:(id)aDelegate
+- (void)setDelegate:(id <CPTextFieldDelegate>)aDelegate
 {
     var defaultCenter = [CPNotificationCenter defaultCenter];
 
@@ -1600,6 +1629,10 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     }
 
     _delegate = aDelegate;
+    _implementedDelegateMethods = 0;
+
+    if ([_delegate respondsToSelector:@selector(control:didFailToFormatString:errorDescription:)])
+        _implementedDelegateMethods |= CPTextFieldDelegate_control_didFailToFormatString_errorDescription_
 
     if ([_delegate respondsToSelector:@selector(controlTextDidBeginEditing:)])
         [defaultCenter
@@ -1705,7 +1738,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     if (contentView)
     {
-        [contentView setHidden:[self hasThemeState:CPThemeStateEditing]];
+        [contentView setHidden:(_stringValue && _stringValue.length > 0) && [self hasThemeState:CPThemeStateEditing]];
 
         var string = "";
 
@@ -1729,6 +1762,9 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [contentView setTextShadowColor:[self currentValueForThemeAttribute:@"text-shadow-color"]];
         [contentView setTextShadowOffset:[self currentValueForThemeAttribute:@"text-shadow-offset"]];
     }
+
+    if (_isEditing)
+        [self _setCSSStyleForInputElement];
 }
 
 - (void)takeValueFromKeyPath:(CPString)aKeyPath ofObjects:(CPArray)objects
@@ -1748,6 +1784,20 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 }
 
 #pragma mark Overrides
+
+/*!
+    Sets the text color of the receiver.
+
+    @param aColor - A CPColor object.
+*/
+- (void)setTextColor:(CPColor)aColor
+{
+    // We don't want to change the text-color of the placeHolder of the textField
+    var placeholderColor = [self valueForThemeAttribute:@"text-color" inState:CPTextFieldStatePlaceholder];
+
+    [super setTextColor:aColor];
+    [self setValue:placeholderColor forThemeAttribute:@"text-color" inState:CPTextFieldStatePlaceholder];
+}
 
 - (void)viewDidHide
 {

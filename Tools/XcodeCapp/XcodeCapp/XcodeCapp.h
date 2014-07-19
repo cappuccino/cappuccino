@@ -45,7 +45,8 @@ enum {
 extern NSString * const XCCConversionDidStartNotification;
 extern NSString * const XCCConversionDidEndNotification;
 extern NSString * const XCCProjectDidFinishLoadingNotification;
-
+extern NSString * const XCCCappLintDidStartNotification;
+extern NSString * const XCCCappLintDidEndNotification;
 
 @interface XcodeCapp : NSObject <NSTableViewDelegate, NSUserNotificationCenterDelegate, GrowlApplicationBridgeDelegate>
 
@@ -100,6 +101,9 @@ extern NSString * const XCCProjectDidFinishLoadingNotification;
 // Whether we are currently processing source files
 @property BOOL isProcessing;
 
+// Whether we are currently processing source files
+@property BOOL isCappuccinoUpdating;
+
 // Whether $CAPP_BUILD is defined or not
 @property BOOL isCappBuildDefined;
 
@@ -109,16 +113,24 @@ extern NSString * const XCCProjectDidFinishLoadingNotification;
 // A list of errors generated from the current batch of source processing
 @property NSMutableArray *errorList;
 
+// A list of files name who can be processed, based on xcapp-ignore and path pf the project
+@property NSMutableArray *xCodeCappTargetedFiles;
+
 // Panel, table and controller used to display errors
 @property (strong) IBOutlet NSPanel *errorsPanel;
 @property (unsafe_unretained) IBOutlet NSTableView *errorTable;
 @property (strong) IBOutlet NSArrayController *errorListController;
+
+@property (strong) IBOutlet NSProgressIndicator *progressIndicator;
+@property (strong) IBOutlet NSTextField *fieldCurrentTask;
+@property (strong) IBOutlet NSPanel *updatingCappuccinoPanel;
 
 - (IBAction)openErrorsPanel:(id)sender;
 - (IBAction)clearErrors:(id)sender;
 - (IBAction)openErrorInEditor:(id)sender;
 - (IBAction)openXcodeProject:(id)aSender;
 - (IBAction)synchronizeProject:(id)aSender;
+- (IBAction)checkProjectWithCappLint:(id)aSender;
 
 - (BOOL)executablesAreAccessible;
 - (void)stop;
@@ -131,6 +143,8 @@ extern NSString * const XCCProjectDidFinishLoadingNotification;
 - (BOOL)isXibFile:(NSString *)path;
 - (BOOL)isXCCIgnoreFile:(NSString *)path;
 
+- (BOOL)shouldShowErrorNotification;
+
 - (NSString *)shadowBasePathForProjectSourcePath:(NSString *)path;
 - (BOOL)hasErrors;
 
@@ -141,6 +155,12 @@ extern NSString * const XCCProjectDidFinishLoadingNotification;
 - (NSDictionary *)runTaskWithLaunchPath:(NSString *)launchPath arguments:(NSArray *)arguments returnType:(XCCTaskReturnType)returnType;
 
 - (NSDictionary*)createProject:(NSString*)aPath;
+
+- (BOOL)shouldProcessWithCappLint;
+- (BOOL)checkCappLintForPath:(NSArray*)paths;
+- (void)showCappLintErrors;
+
+- (void)updateCappuccino;
 
 @end
 

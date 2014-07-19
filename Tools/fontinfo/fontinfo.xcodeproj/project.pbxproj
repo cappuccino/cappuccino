@@ -172,7 +172,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = fontinfo;
-				SDKROOT = macosx10.5;
+				SDKROOT = macosx;
 				SYMROOT = "$(CAPP_BUILD)/Debug/CommonJS/cappuccino/bin";
 			};
 			name = Debug;
@@ -186,7 +186,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_NAME = fontinfo;
-				SDKROOT = macosx10.5;
+				SDKROOT = macosx;
 			};
 			name = Release;
 		};
@@ -199,7 +199,6 @@
 		E1D3CF6E12AFEE3900CBB79E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				MACOSX_DEPLOYMENT_TARGET = 10.5;
 			};
 			name = Release;
 		};

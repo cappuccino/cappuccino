@@ -25,6 +25,18 @@
 @import "_CPPopUpList.j"
 
 
+// TODO : should conform to protocol CPTextFieldDelegate
+@protocol CPComboBoxDelegate <CPObject>
+
+@optional
+- (void)comboBoxSelectionIsChanging:(CPNotification)aNotification;
+- (void)comboBoxSelectionDidChange:(CPNotification)aNotification;
+- (void)comboBoxWillPopUp:(CPNotification)aNotification;
+- (void)comboBoxWillDismiss:(CPNotification)aNotification;
+
+@end
+
+
 CPComboBoxSelectionDidChangeNotification  = @"CPComboBoxSelectionDidChangeNotification";
 CPComboBoxSelectionIsChangingNotification = @"CPComboBoxSelectionIsChangingNotification";
 CPComboBoxWillDismissNotification         = @"CPComboBoxWillDismissNotification";
@@ -182,7 +194,7 @@ var CPComboBoxTextSubview = @"text",
     protocol, in actual fact it doesn't. Also note that the same
     delegate may conform to the NSTextFieldDelegate protocol.
 */
-- (void)setDelegate:(id /*< CPComboBoxDelegate >*/)aDelegate
+- (void)setDelegate:(id <CPComboBoxDelegate>)aDelegate
 {
     var delegate = [self delegate];
 
