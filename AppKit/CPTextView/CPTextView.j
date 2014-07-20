@@ -1567,10 +1567,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
         if (peek !== CPNotFound)
         {
-            if (lastIndex === CPNotFound)
-                lastIndex = peek;
-            else
-                lastIndex = MAX(lastIndex, peek);
+            lastIndex = (lastIndex === CPNotFound ? peek : MAX(lastIndex, peek));
         }
     }
 
