@@ -65,8 +65,7 @@ function _points2twips(a) { return (a) * 20.0; }
 
 + (CPString)produceRTF:(CPAttributedString)aText documentAttributes:(CPDictionary)dict
 {
-    var mynew = [self new],
-        data;
+    var mynew = [self new];
 
     return [mynew RTFDStringFromAttributedString:aText documentAttributes:dict];
 }
@@ -172,7 +171,7 @@ function _points2twips(a) { return (a) * 20.0; }
 
 - (CPString)documentAttributes
 {
-    if (!docDitc)
+    if (!docDict)
         return @"";
 
     var result,

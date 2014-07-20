@@ -31,6 +31,8 @@ var _sharedDefaultParagraphStyle,
 
 CPLeftTabStopType = 0;
 
+@global CPLeftTextAlignment
+
 /*
 CPLeftTextAlignment = 0;
 CPCenterTextAlignment = 1;

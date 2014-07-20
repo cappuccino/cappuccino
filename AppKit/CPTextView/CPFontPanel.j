@@ -49,10 +49,10 @@
 var kTypefaceIndex_Normal = 0,
     kTypefaceIndex_Italic = 1,
     kTypefaceIndex_Bold = 2,
-    kTypefaceIndex_BoldItalic = 3;
+    kTypefaceIndex_BoldItalic = 3,
     kToolbarHeight = 32,
     kBorderSpacing = 6,
-    kInnerSpacing = 2;
+    kInnerSpacing = 2,
     kNothingChanged = 0,
     kFontNameChanged = 1,
     kTypefaceChanged = 2,
@@ -60,7 +60,7 @@ var kTypefaceIndex_Normal = 0,
     kTextColorChanged = 4,
     kBackgroundColorChanged = 5,
     kUnderlineChanged = 6,
-    kWeightChanged = 7;
+    kWeightChanged = 7,
     _sharedFontPanel;
 
 // FIXME<!> Locale support
@@ -76,9 +76,7 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
 
 - (id)initWithFrame:(CGRect)rect
 {
-    self = [super initWithFrame:rect];
-
-    if (self)
+    if (self = [super initWithFrame:rect])
     {
         _textStorage = [[CPTextStorage alloc] init];
         _layoutManager = [[CPLayoutManager alloc] init];

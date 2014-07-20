@@ -81,7 +81,9 @@ _oncontextmenuhandler = function () { return false; };
         }
     }
 
-    return ((-first - 1) >= 0) ? result : CPNotFound;
+    var result = -first - 1;
+
+    return result >= 0 ? result : CPNotFound;
 }
 
 @end
@@ -410,12 +412,10 @@ var _objectsInRange = function(aList, aRange)
 */
 @implementation CPLayoutManager : CPObject
 {
-    Class           _lineFragmentFactory @accessors(setter:setLineFragmentFactory:);
-    CPMutableArray  _textContainers @accessors(getter=textContainers);
-    CPTextStorage   _textStorage    @accessors(property=textStorage);
-    CPTypesetter    _typesetter     @accessors(property=typesetter);
-
-    id              _delegate;
+    Class           _lineFragmentFactory    @accessors(setter=setLineFragmentFactory:);
+    CPMutableArray  _textContainers         @accessors(getter=textContainers);
+    CPTextStorage   _textStorage            @accessors(property=textStorage);
+    CPTypesetter    _typesetter             @accessors(property=typesetter);
 
     CPMutableArray  _lineFragments;
     CPMutableArray  _lineFragmentsForRescue;
@@ -778,7 +778,7 @@ var _objectsInRange = function(aList, aRange)
 
 - (CPRange)glyphRangeForBoundingRect:(CGRect)aRect inTextContainer:(CPTextContainer)container
 {
-    var c = [_lineFragments count];
+    var c = [_lineFragments count],
         range;
 
     for (var i = 0; i < c; i++)

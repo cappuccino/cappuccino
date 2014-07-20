@@ -789,7 +789,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)moveDown:(id)sender
 {
-    if (!isSelectable)
+    if (!_isSelectable)
         return;
 
     var fraction = [],
