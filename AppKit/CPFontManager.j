@@ -295,10 +295,11 @@ CPRemoveTraitFontAction = 7;
 
     if (![attributes containsKey:CPFontTraitsAttribute])
         [attributes setObject:[CPDictionary dictionaryWithObject:[CPNumber numberWithUnsignedInt:symbolicTrait]
-                    forKey:CPFontSymbolicTrait] forKey:CPFontTraitsAttribute];
+                                                          forKey:CPFontSymbolicTrait]
+                       forKey:CPFontTraitsAttribute];
     else
         [[attributes objectForKey:CPFontTraitsAttribute] setObject:[CPNumber numberWithUnsignedInt:symbolicTrait]
-                     forKey:CPFontSymbolicTrait];
+                                                            forKey:CPFontSymbolicTrait];
 
     return [[aFont class] fontWithDescriptor:[CPFontDescriptor fontDescriptorWithFontAttributes:attributes] size:0.0];
 }
@@ -327,9 +328,12 @@ CPRemoveTraitFontAction = 7;
         symbolicTrait &= ~CPFontSmallCapsTrait;
 
     if (![attributes containsKey:CPFontTraitsAttribute])
-        [attributes setObject:[CPDictionary dictionaryWithObject:[CPNumber numberWithUnsignedInt:symbolicTrait] forKey:CPFontSymbolicTrait] forKey:CPFontTraitsAttribute];
+        [attributes setObject:[CPDictionary dictionaryWithObject:[CPNumber numberWithUnsignedInt:symbolicTrait]
+                                                          forKey:CPFontSymbolicTrait]
+                       forKey:CPFontTraitsAttribute];
     else
-        [[attributes objectForKey:CPFontTraitsAttribute] setObject:[CPNumber numberWithUnsignedInt:symbolicTrait] forKey:CPFontSymbolicTrait];
+        [[attributes objectForKey:CPFontTraitsAttribute] setObject:[CPNumber numberWithUnsignedInt:symbolicTrait]
+                                                            forKey:CPFontSymbolicTrait];
 
     return [[aFont class] fontWithDescriptor:[CPFontDescriptor fontDescriptorWithFontAttributes:attributes] size:0.0];
 }
