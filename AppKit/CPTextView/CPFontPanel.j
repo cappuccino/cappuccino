@@ -50,12 +50,10 @@ var kTypefaceIndex_Normal = 0,
     kTypefaceIndex_Italic = 1,
     kTypefaceIndex_Bold = 2,
     kTypefaceIndex_BoldItalic = 3;
-
-var kToolbarHeight = 32,
+    kToolbarHeight = 32,
     kBorderSpacing = 6,
     kInnerSpacing = 2;
-
-var kNothingChanged = 0,
+    kNothingChanged = 0,
     kFontNameChanged = 1,
     kTypefaceChanged = 2,
     kSizeChanged = 3,
@@ -63,9 +61,7 @@ var kNothingChanged = 0,
     kBackgroundColorChanged = 5,
     kUnderlineChanged = 6,
     kWeightChanged = 7;
-
-var _sharedFontPanel = nil;
-
+    _sharedFontPanel;
 
 // FIXME<!> Locale support
 var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
@@ -142,6 +138,10 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
     _CPFontPanelSampleView _sampleView;
 }
 
+
+#pragma mark -
+#pragma mark Class methods
+
 /*!
     Check if the shared Font panel exists.
 */
@@ -161,29 +161,26 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
     return _sharedFontPanel;
 }
 
+
+#pragma mark -
+#pragma mark Init methods
+
 /*! @ignore */
 - (id)init
 {
-    self = [super initWithContentRect:CGRectMake(100, 90, 450, 394) styleMask:(CPTitledWindowMask | CPClosableWindowMask /*| CPResizableWindowMask*/ )];
-
-    if (self)
+    if (self = [super initWithContentRect:CGRectMake(100, 90, 450, 394) styleMask:(CPTitledWindowMask | CPClosableWindowMask /*| CPResizableWindowMask*/ )])
     {
         [[self contentView] setBackgroundColor:[CPColor colorWithWhite:0.95 alpha:1.0]];
-
         [self setTitle:@"Font Panel"];
         [self setLevel:CPFloatingWindowLevel];
-
         [self setFloatingPanel:YES];
         [self setBecomesKeyOnlyIfNeeded:YES];
-
         [self setMinSize:CGSizeMake(378, 394)];
 
         _availableFonts = [[CPFontManager sharedFontManager] availableFonts];
-
-        _textColor = [CPColor blackColor];
-
-        _setupDone = NO;
-        _fontChanges = kNothingChanged;
+        _textColor      = [CPColor blackColor];
+        _setupDone      = NO;
+        _fontChanges    = kNothingChanged;
     }
 
     return self;
@@ -192,14 +189,15 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
 /*! @ignore */
 - (void)_setupToolbarView
 {
+    var colorPanel = [CPColorPanel sharedColorPanel];
+
     _toolbarView = [[CPView alloc] initWithFrame:CGRectMake(0, kBorderSpacing, CGRectGetWidth([self frame]), kToolbarHeight)];
     [_toolbarView setAutoresizingMask:CPViewWidthSizable];
 
-   /* text  color */
+    // Text color
     _textColorWell = [[CPColorWell alloc] initWithFrame:CGRectMake(10, 0, 25, 25)];
     [_textColorWell setColor:_textColor];    // <!> FIXME: use bindings
     [_toolbarView addSubview:_textColorWell];
-    var colorPanel = [CPColorPanel sharedColorPanel];
     [colorPanel setTarget:self];
     [colorPanel setAction:@selector(changeColor:)];
 }
@@ -237,9 +235,9 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
     [self _setupBrowser:_traitBrowser];
     [self _setupBrowser:_sizeBrowser];
     [[CPNotificationCenter defaultCenter] addObserver:self
-                                          selector:@selector(textViewDidChangeSelection:)
-                                          name:CPTextViewDidChangeSelectionNotification
-                                          object:nil];
+                                             selector:@selector(textViewDidChangeSelection:)
+                                                 name:CPTextViewDidChangeSelectionNotification
+                                               object:nil];
 }
 
 - (void)textViewDidChangeSelection:(CPNotification)notification
@@ -250,27 +248,27 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
 
 - (void)_refreshWithTextView:(CPTextView)textView
 {
-    if ([self isVisible])
-    {
-        var attribs = [textView typingAttributes],
-            font = [attribs objectForKey:CPFontAttributeName] || [[textView textStorage] font] || [CPFont systemFontOfSize:12.0];
+    if (![self isVisible])
+        return;
 
-        if (font)
-        {
-            var trait = kTypefaceIndex_Normal;
+    var attribs = [textView typingAttributes],
+        font = [attribs objectForKey:CPFontAttributeName] || [[textView textStorage] font] || [CPFont systemFontOfSize:12.0];
 
-            if ([font isItalic] && [font isBold])
-                trait = kTypefaceIndex_BoldItalic;
-            else if ([font isItalic])
-                trait = kTypefaceIndex_Italic;
-            else if ([font isBold])
-                trait = kTypefaceIndex_Bold;
+    if (!font)
+        return;
 
-            [self setCurrentFont:font];
-            [self setCurrentTrait:trait];
-            [self setCurrentSize:[font size] + ""];  //cast to string
-        }
-    }
+    var trait = kTypefaceIndex_Normal;
+
+    if ([font isItalic] && [font isBold])
+        trait = kTypefaceIndex_BoldItalic;
+    else if ([font isItalic])
+        trait = kTypefaceIndex_Italic;
+    else if ([font isBold])
+        trait = kTypefaceIndex_Bold;
+
+    [self setCurrentFont:font];
+    [self setCurrentTrait:trait];
+    [self setCurrentSize:[font size] + ""];  //cast to string
 }
 
 - (void)orderFront:(id)sender
@@ -292,7 +290,7 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
 
 /*!
     @param aFont the font to convert.
-    @return The converted font or \c aFont if failed to convert. 
+    @return The converted font or \c aFont if failed to convert.
 */
 - (CPFont)panelConvertFont:(CPFont)aFont
 {
@@ -395,7 +393,7 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
 /*!
     Set the selected font in Font panel.
     @param font the selected font
-    @param flag if \c the current selection have multiple fonts. 
+    @param flag if \c the current selection have multiple fonts.
 */
 - (void)setPanelFont:(CPFont)font isMultiple:(BOOL)flag
 {
@@ -420,10 +418,9 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
     if ([self currentTrait] != typefaceIndex)
         [self setCurrentTrait:typefaceIndex ];
 
-    [_sampleView setAttributedString:
-                [[CPAttributedString alloc] initWithString:[font familyName]
-                                            attributes:[CPDictionary dictionaryWithObjects:[font, [CPColor blackColor]] forKeys:[CPFontAttributeName, CPForegroundColorAttributeName]]]
-                                ];
+    [_sampleView setAttributedString: [[CPAttributedString alloc] initWithString:[font familyName]
+                                                                      attributes:[CPDictionary dictionaryWithObjects:[font, [CPColor blackColor]]
+                                                                         forKeys:[CPFontAttributeName, CPForegroundColorAttributeName]]]];
 
     _fontChanges = kNothingChanged;
 }
@@ -468,8 +465,8 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
 
     if (aBrowser === _traitBrowser)
         return [_availableTraits count]
-    else
-        return [_availableSizes count]
+
+    return [_availableSizes count]
 }
 
 - (id)browser:(id)aBrowser child:(int)index ofItem:(id)anItem
@@ -494,4 +491,5 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
 }
 
 @end
+
 [CPFontManager setFontPanelFactory:CPFontPanel];

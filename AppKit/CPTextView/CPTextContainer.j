@@ -76,11 +76,15 @@ CPLineMovesUp = 4;
 */
 @implementation CPTextContainer : CPObject
 {
-    CGSize _size;
-    CPTextView _textView;
-    CPLayoutManager _layoutManager;
-    float _lineFragmentPadding;
+    float           _lineFragmentPadding    @accessors(property=lineFragmentPadding);
+    CGSize          _size                   @accessors(property=containerSize)
+    CPLayoutManager _layoutManager          @accessors(property=layoutManager);
+    CPTextView      _textView               @accessors(property=textView);
 }
+
+
+#pragma mark -
+#pragma mark Init methods
 
 - (id)initWithContainerSize:(CGSize)aSize
 {
@@ -100,10 +104,8 @@ CPLineMovesUp = 4;
     return [self initWithContainerSize:CPMakeSize(1e7, 1e7)];
 }
 
-- (CGSize)containerSize
-{
-    return _size;
-}
+#pragma mark -
+#pragma mark Setter methods
 
 - (void)setContainerSize:(CGSize)someSize
 {
@@ -112,9 +114,11 @@ CPLineMovesUp = 4;
     _size = someSize;
 
     if (oldSize.width != _size.width)
-    {   [_layoutManager invalidateLayoutForCharacterRange:CPMakeRange(0,[[_layoutManager textStorage] length])
-                        isSoft:NO
-                        actualCharacterRange:NULL];
+    {
+        [_layoutManager invalidateLayoutForCharacterRange:CPMakeRange(0, [[_layoutManager textStorage] length])
+                                                   isSoft:NO
+                                     actualCharacterRange:NULL];
+
         [_layoutManager _validateLayoutAndGlyphs];
     }
 }
@@ -127,15 +131,15 @@ CPLineMovesUp = 4;
     if (flag)
     {
         [[CPNotificationCenter defaultCenter] addObserver:self
-                selector:@selector(textViewFrameChanged:)
-                    name:CPViewFrameDidChangeNotification
-                  object:_textView];
+                                                 selector:@selector(textViewFrameChanged:)
+                                                     name:CPViewFrameDidChangeNotification
+                                                   object:_textView];
     }
     else
     {
         [[CPNotificationCenter defaultCenter] removeObserver:self
-                    name:CPViewFrameDidChangeNotification
-                  object:_textView];
+                                                        name:CPViewFrameDidChangeNotification
+                                                      object:_textView];
     }
 }
 
@@ -156,38 +160,10 @@ CPLineMovesUp = 4;
 
     _textView = aTextView;
 
-    if (_textView != nil)
+    if (_textView)
         [_textView setTextContainer:self];
 
     [_layoutManager textContainerChangedTextView:self];
-}
-
-- (CPTextView)textView
-{
-    return _textView;
-}
-
-- (void)setLayoutManager:(CPLayoutManager)aManager
-{
-    if (_layoutManager === aManager)
-        return;
-
-    _layoutManager = aManager;
-}
-
-- (CPLayoutManager)layoutManager
-{
-    return _layoutManager;
-}
-
-- (void)setLineFragmentPadding:(float)aFloat
-{
-    _lineFragmentPadding = aFloat;
-}
-
-- (float)lineFragmentPadding
-{
-    return _lineFragmentPadding;
 }
 
 - (BOOL)containsPoint:(CGPoint)aPoint
@@ -209,7 +185,7 @@ CPLineMovesUp = 4;
 
     if (sweep != CPLineSweepRight || movement != CPLineMovesDown)
     {
-        CPLog.trace(@"FIXME: unsupported sweep ("+sweep+") or movement ("+movement+")");
+        CPLog.trace(@"FIXME: unsupported sweep (" + sweep + ") or movement (" + movement + ")");
         return CGRectMakeZero();
     }
 

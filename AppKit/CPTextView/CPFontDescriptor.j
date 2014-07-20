@@ -44,14 +44,14 @@ CPFontTraitsAttribute = @"CPFontTraitsAttribute";
 // Font traits dictionary keys
 /*
     CPFontSymbolicTrait a CPNumber that contains CPFontFamilyClass and
-    typeface information flags. 
+    typeface information flags.
 */
 CPFontSymbolicTrait = @"CPFontSymbolicTrait";
 
 /*
     CPFontWeightTrait
     We use CPString with CSS string values for font weight
-    (normal | bold | bolder | lighter | 100 | 200 | 300 | 400 
+    (normal | bold | bolder | lighter | 100 | 200 | 300 | 400
     | 500 | 600 | 700 | 800 | 900)
     NOTE: Cocoa compatibility issue: NSFontWeightTrait are NSNumber for
     font weight (from -1.0 to 1.0, 0.0 for normal weight).
@@ -61,14 +61,14 @@ CPFontWeightTrait = @"CPFontWeightTrait";
 /*
     CPFontFamilyClass
 */
-CPFontUnknownClass              = (0 << 28);
-CPFontOldStyleSerifsClass       = (1 << 28);
-CPFontTransitionalSerifsClass   = (2 << 28);
-CPFontModernSerifsClass         = (3 << 28);
-CPFontClarendonSerifsClass      = (4 << 28);
-CPFontSlabSerifsClass           = (5 << 28);
-CPFontFreeformSerifsClass       = (7 << 28);
-CPFontSansSerifClass            = (8 << 28);
+CPFontUnknownClass              = 0 << 28;
+CPFontOldStyleSerifsClass       = 1 << 28;
+CPFontTransitionalSerifsClass   = 2 << 28;
+CPFontModernSerifsClass         = 3 << 28;
+CPFontClarendonSerifsClass      = 4 << 28;
+CPFontSlabSerifsClass           = 5 << 28;
+CPFontFreeformSerifsClass       = 7 << 28;
+CPFontSansSerifClass            = 8 << 28;
 
 CPFontSerifClass = (CPFontOldStyleSerifsClass | CPFontTransitionalSerifsClass |
                     CPFontModernSerifsClass | CPFontClarendonSerifsClass |
@@ -79,12 +79,11 @@ CPFontFamilyClassMask = 0xF0000000;
 /*
     Typeface information
 */
-CPFontItalicTrait       = (1 << 0);
-CPFontBoldTrait         = (1 << 1);
-CPFontExpandedTrait     = (1 << 5); /* TODO: CCS 3 font-stretch */
-CPFontCondensedTrait    = (1 << 6);
-
-CPFontSmallCapsTrait    = (1 << 7);
+CPFontItalicTrait       = 1 << 0;
+CPFontBoldTrait         = 1 << 1;
+CPFontExpandedTrait     = 1 << 5; /* TODO: CCS 3 font-stretch */
+CPFontCondensedTrait    = 1 << 6;
+CPFontSmallCapsTrait    = 1 << 7;
 
 /*!
     @ingroup appkit
@@ -126,9 +125,7 @@ CPFontSmallCapsTrait    = (1 << 7);
 */
 - (id)initWithFontAttributes:(CPDictionary)attributes
 {
-    self = [super init];
-
-    if (self)
+    if (self = [super init])
     {
         _attributes = [[CPMutableDictionary alloc] init];
 
@@ -149,6 +146,7 @@ CPFontSmallCapsTrait    = (1 << 7);
 - (CPFontDescriptor)fontDescriptorByAddingAttributes:(CPDictionary)attributes
 {
     var attrib = [_attributes copy];
+
     [attrib addEntriesFromDictionary:attributes];
 
     return [[CPFontDescriptor alloc] initWithFontAttributes:attrib];
@@ -163,6 +161,7 @@ CPFontSmallCapsTrait    = (1 << 7);
 - (CPFontDescriptor)fontDescriptorWithSize:(float)aSize
 {
     var attrib = [_attributes copy];
+
     [attrib setObject:[CPString stringWithString:aSize + ''] forKey:CPFontSizeAttribute];
 
     return [[CPFontDescriptor alloc] initWithFontAttributes:attrib];
@@ -203,20 +202,14 @@ CPFontSmallCapsTrait    = (1 << 7);
 {
     var value = [_attributes objectForKey:CPFontSizeAttribute];
 
-    if (value)
-        return [value floatValue];
-
-    return 0.0;
+    return value ? [value floatValue] : 0.0;
 }
 
 - (CPFontSymbolicTraits)symbolicTraits
 {
     var traits = [_attributes objectForKey:CPFontTraitsAttribute];
 
-    if (traits && [traits objectForKey:CPFontSymbolicTrait])
-        return [[traits objectForKey:CPFontSymbolicTrait] unsignedIntValue];
-
-    return 0;
+    return (traits && [traits objectForKey:CPFontSymbolicTrait]) ? [[traits objectForKey:CPFontSymbolicTrait] unsignedIntValue] : 0;
 }
 
 @end
@@ -257,10 +250,7 @@ var _wrapNameRegEx = new RegExp(/(\w+\s+\w+)(,*)/g);
 
 - (CPString)fontStyleCSSString
 {
-    if ([self symbolicTraits] & CPFontItalicTrait)
-            return @"italic";
-
-    return @"normal";
+    return [self symbolicTraits] & CPFontItalicTrait ? @"italic" : @"normal";
 }
 
 - (CPString)fontWeightCSSString
@@ -282,10 +272,7 @@ var _wrapNameRegEx = new RegExp(/(\w+\s+\w+)(,*)/g);
 
 - (CPString)fontSizeCSSString
 {
-    if ([_attributes objectForKey:CPFontSizeAttribute])
-        return [[_attributes objectForKey:CPFontSizeAttribute] intValue] + "px";
-
-    return @"";
+    return [_attributes objectForKey:CPFontSizeAttribute] ? [[_attributes objectForKey:CPFontSizeAttribute] intValue] + "px" : @"";
 }
 
 - (CPString)fontFamilyCSSString

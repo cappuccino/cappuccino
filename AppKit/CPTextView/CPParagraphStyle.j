@@ -84,15 +84,15 @@ CPParagraphStyleAttributeName = @"CPParagraphStyleAttributeName";
 
 @implementation CPParagraphStyle : CPObject
 {
-    CPArray         _tabStops               @accessors(property = tabStops);
-    CPTextAlignment _alignment              @accessors(property = alignment);
-    unsigned        _firstLineHeadIndent    @accessors(property = firstLineHeadIndent);
-    unsigned        _headIndent             @accessors(property = headIndent);
-    unsigned        _tailIndent             @accessors(property = tailIndent);
-    unsigned        _paragraphSpacing       @accessors(property = paragraphSpacing);
-    unsigned        _minimumLineHeight      @accessors(property = minimumLineHeight);
-    unsigned        _maximumLineHeight      @accessors(property = maximumLineHeight);
-    unsigned        _lineSpacing            @accessors(property = lineSpacing);
+    CPArray         _tabStops               @accessors(property=tabStops);
+    CPTextAlignment _alignment              @accessors(property=alignment);
+    unsigned        _firstLineHeadIndent    @accessors(property=firstLineHeadIndent);
+    unsigned        _headIndent             @accessors(property=headIndent);
+    unsigned        _tailIndent             @accessors(property=tailIndent);
+    unsigned        _paragraphSpacing       @accessors(property=paragraphSpacing);
+    unsigned        _minimumLineHeight      @accessors(property=minimumLineHeight);
+    unsigned        _maximumLineHeight      @accessors(property=maximumLineHeight);
+    unsigned        _lineSpacing            @accessors(property=lineSpacing);
 }
 
 

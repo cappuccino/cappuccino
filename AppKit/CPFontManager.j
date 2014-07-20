@@ -44,8 +44,8 @@ CPUnitalicFontMask                  = 1 << 24;
 
 
 var CPSharedFontManager     = nil,
-    CPFontManagerFactory    = Nil,
-    CPFontPanelFactory      = Nil;
+    CPFontManagerFactory    = nil,
+    CPFontPanelFactory      = nil;
 
 /*
     modifyFont: sender's tag

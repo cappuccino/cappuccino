@@ -54,9 +54,12 @@ var hexTable = [];
 
 - (id)init
 {
-    [self resetFont];
-    [self resetParagraphStyle];
-    _range = CPMakeRange(0, 0);
+    if (self = [super init])
+    {
+        [self resetFont];
+        [self resetParagraphStyle];
+        _range = CPMakeRange(0, 0);
+    }
 
     return self;
 }
@@ -78,28 +81,27 @@ var hexTable = [];
 {
     var font = [CPFont _fontWithName:fontName size:fontSize bold:bold italic:italic];
 
-    if (font == nil)
+    if (font)
+        return font;
+
+    //Before giving up and using a default font, we try if this is
+    //not the case of a font with a composite name, such as
+    //'Helvetica-Light'.  In that case, even if we don't have
+    //exactly an 'Helvetica-Light' font family, we might have an
+    //'Helvetica' one.
+    var range = [fontName rangeOfString:@"-"];
+
+    if (range.location != CPNotFound)
     {
-      /* Before giving up and using a default font, we try if this is
-       * not the case of a font with a composite name, such as
-       * 'Helvetica-Light'.  In that case, even if we don't have
-       * exactly an 'Helvetica-Light' font family, we might have an
-       * 'Helvetica' one.  */
-        var range = [fontName rangeOfString:@"-"];
+        var fontFamily = [fontName substringToIndex: range.location];
 
-        if (range.location != CPNotFound)
-        {
-            var fontFamily = [fontName substringToIndex: range.location];
-
-            font = [CPFont fontWithName:fontFamily size:fontSize];
-        }
-
-        if (font == nil)
-        {
-             /* Last resort, default font.  :-(  */
-            font = [CPFont systemFontOfSize:fontSize];
-        }
+        font = [CPFont fontWithName:fontFamily size:fontSize];
     }
+
+    /* Last resort, default font.  :-(  */
+    if (font == nil)
+        font = [CPFont systemFontOfSize:fontSize];
+
     return font;
 }
 
@@ -137,7 +139,6 @@ var hexTable = [];
     fontSize = 12.0;
     italic = NO;
     bold = NO;
-
     underline = 0;
     strikethrough = 0;
     script = 0;
@@ -257,37 +258,36 @@ var kRgsymRtf = {
 
 @implementation _CPRTFParser : CPObject
 {
-    CPString _codePage;
-    CGSize _paper;
-    CPString _rtf;
-    unsigned _curState;
-    CPArray _states;
-    unsigned _currentParseIndex;
-    BOOL _hexreturn;
-    _RTFAttribute _currentRun;
-    CPAttributedString _result;
-    CPArray _colorArray;
-    CPArray _fontArray;
-    CPString _freename;
-    BOOL _parsingFontTable;
+    CPString            _codePage;
+    CGSize              _paper;
+    CPString            _rtf;
+    unsigned            _curState;
+    CPArray             _states;
+    unsigned            _currentParseIndex;
+    BOOL                _hexreturn;
+    _RTFAttribute       _currentRun;
+    CPAttributedString  _result;
+    CPArray             _colorArray;
+    CPArray             _fontArray;
+    CPString            _freename;
+    BOOL                _parsingFontTable;
 }
 
 - (id)init
 {
     if (self = [super init])
     {
-        _paper = CPMakeSize(0, 0);
-        _rtf = "";
-        _curState = 0;                // 0 = normal, 1 = skip
-        _states = [];
-        _currentParseIndex = 0;
-        _hexreturn = NO;
-        _currentRun = nil;
-        _result = [CPAttributedString new];
-        _colorArray = [];
-        _fontArray = ['Arial'];   // FIXME: should be name of system font
-        _freename = "";
-        _parsingFontTable = NO;
+        _paper              = CPMakeSize(0, 0);
+        _rtf                = "";
+        _curState           = 0;                // 0 = normal, 1 = skip
+        _states             = [];
+        _currentParseIndex  = 0;
+        _hexreturn          = NO;
+        _result             = [CPAttributedString new];
+        _colorArray         = [];
+        _fontArray          = ['Arial'];   // FIXME: should be name of system font
+        _freename           = "";
+        _parsingFontTable   = NO;
     }
 
     return self;
@@ -302,7 +302,7 @@ var kRgsymRtf = {
                 return sym[4];
 
         case 1:
-            console.log("skipped : " + sym[4]);
+            CPLogConsole("skipped : " + sym[4]);
             return '';
 
         default:
@@ -419,12 +419,14 @@ var kRgsymRtf = {
             {
                 if (_currentRun && _currentRun.bold)
                    [self _flushCurrentRun];
+
                 _currentRun.bold = NO
             }
             else
             {
-               if (_currentRun && !_currentRun.bold)
-                  [self _flushCurrentRun]
+                if (_currentRun && !_currentRun.bold)
+                    [self _flushCurrentRun];
+
                _currentRun.bold = YES;
             }
 
@@ -435,16 +437,19 @@ var kRgsymRtf = {
             {
                 if (_currentRun && _currentRun.italic)
                    [self _flushCurrentRun];
+
                 _currentRun.italic = NO
             }
             else
             {
                if (_currentRun && !_currentRun.italic)
-                  [self _flushCurrentRun]
+                  [self _flushCurrentRun];
+
                _currentRun.italic = YES;
             }
 
             break;
+
         case "qc":  // paragraph center
             [_currentRun.paragraph setAlignment:CPCenterTextAlignment];
             break;
@@ -477,7 +482,7 @@ var kRgsymRtf = {
 
     if (sym[4] == "destSkip")
     {
-        console.log("Dest skip start : [" + sym[0] + "]");
+        CPLogConsole("Dest skip start : [" + sym[0] + "]");
         _curState++;
     }
 
@@ -494,9 +499,8 @@ var kRgsymRtf = {
         {
             case kRTFParserType_prop:
                 if (sym[2]  || !fParam)
-                {
                     param = sym[1];
-                }
+
                 return [self _applyPropChange:sym parameter:param];
 
             case kRTFParserType_char:
@@ -565,15 +569,14 @@ var kRgsymRtf = {
 
             case "tx":  // tabstop
                  var location = parseInt(param) / 20;
+
                  if (_currentRun)
-                 {
                      [_currentRun addTab:location type:CPLeftTabStopType];
-                 }
 
                  break;
 
             default:
-               console.log("skip : " + keyword + " param: " + param);
+               CPLogConsole("skip : " + keyword + " param: " + param);
 
         }
 
@@ -639,10 +642,8 @@ var kRgsymRtf = {
 - (CPAttributedString)parseRTF:(CPString)rtf
 {
     if (rtf.length == 0)
-    {
-      //  alert("invalid rtf");
         return '';
-    }
+
     _currentParseIndex = -1;
 
     var len = rtf.length,
@@ -667,35 +668,38 @@ var kRgsymRtf = {
                 if (lastchar == 1)
                 {
                     lastchar = 0;
-                } else
+                }
+                else
                 {
                     _freename += tmp;
                    [self _appendPlainString:tmp];
                 }
+
                 break;
 
             case "{":
                 if ([self pushState])
-                {
-                    console.log("push");
-                }
+                    CPLogConsole("push");
+
                 break;
 
             case "}":
                 if ([self popState])
-                {
-                    console.log("pop");
-                }
+                    CPLogConsole("pop");
+
                 if (_freename)
                 {
-                    console.log(_freename);
+                    CPLogConsole(_freename);
+
                     if (_parsingFontTable)
                     {
                          _fontArray.push(_freename);
                          _parsingFontTable = NO;
                     }
+
                     _freename = "";
                 }
+
                 [self _flushCurrentRun]
                 break;
 
@@ -727,9 +731,7 @@ var kRgsymRtf = {
                             var temp = parseInt(hex, 16);
 
                             if (hexTable && hexTable[hex.toUpperCase()] !== undefined)
-                            {
                                 temp = parseInt(hexTable[hex.toUpperCase()], 16);
-                            }
 
                             [self _appendPlainString: String.fromCharCode(temp)]
                             hex = '';
@@ -737,7 +739,7 @@ var kRgsymRtf = {
                     }
                     else
                     {
-                        console.log("hex skipped");
+                        CPLogConsole("hex skipped");
                     }
 
                     _hexreturn = NO;
@@ -745,7 +747,6 @@ var kRgsymRtf = {
                 else if (ch !== undefined && _curState === 0)
                 {
                     [self _appendPlainString:ch];
-
                 }
 
                 break;

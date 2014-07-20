@@ -42,15 +42,18 @@ CPTextStorageDidProcessEditingNotification = @"CPTextStorageDidProcessEditingNot
 {
     CPColor        _foregroundColor @accessors(property=foregroundColor);
     CPFont         _font            @accessors(property=font);
+    CPMutableArray _layoutManagers  @accessors(getter=layoutManagers);
+    CPRange        _editedRange     @accessors(getter=editedRange);
+    id             _delegate        @accessors(property=delegate);
+    int            _changeInLength  @accessors(property=changeinLength);
+    unsigned       _editedMask      @accessors(property=editedMask);
 
-    CPMutableArray _layoutManagers;
-    id             _delegate;
-
-    int            _changeInLength;
-    unsigned       _editedMask;
-    CPRange        _editedRange;
     int            _editCount; // {begin,end}Editing counter
 }
+
+
+#pragma mark -
+#pragma mark Init methods
 
 - (id)initWithString:(CPString)aString attributes:(CPDictionary)attributes
 {
@@ -77,10 +80,9 @@ CPTextStorageDidProcessEditingNotification = @"CPTextStorageDidProcessEditingNot
     return [self initWithString:@"" attributes:nil];
 }
 
-- (id)delegate
-{
-    return _delegate;
-}
+
+#pragma mark -
+#pragma mark Delegate methods
 
 - (void)setDelegate:(id)aDelegate
 {
@@ -107,6 +109,10 @@ CPTextStorageDidProcessEditingNotification = @"CPTextStorageDidProcessEditingNot
     }
 }
 
+
+#pragma mark -
+#pragma mark Layout manager methods
+
 - (void)addLayoutManager:(CPLayoutManager)aManager
 {
     if (![_layoutManagers containsObject:aManager])
@@ -124,50 +130,36 @@ CPTextStorageDidProcessEditingNotification = @"CPTextStorageDidProcessEditingNot
     }
 }
 
-- (CPArray)layoutManagers
-{
-    return _layoutManagers;
-}
-
-- (CPRange)editedRange
-{
-    return _editedRange;
-}
-
-- (int)changeInLength
-{
-    return _changeInLength;
-}
-
-- (unsigned)editedMask
-{
-    return _editedMask;
-}
-
 - (void)invalidateAttributesInRange:(CPRange)aRange
 {
     /* FIXME: stub */
 }
 
+
+#pragma mark -
+#pragma mark Editing methods
+
 - (void)processEditing
 {
-    [[CPNotificationCenter defaultCenter] postNotificationName:CPTextStorageWillProcessEditingNotification
-                                          object:self];
+    var notificationCenter = [CPNotificationCenter defaultCenter];
+
+    [notificationCenter postNotificationName:CPTextStorageWillProcessEditingNotification
+                                      object:self];
 
     [self invalidateAttributesInRange:[self editedRange]];
 
-    [[CPNotificationCenter defaultCenter] postNotificationName:CPTextStorageDidProcessEditingNotification
-                                          object:self];
+    [notificationCenter postNotificationName:CPTextStorageDidProcessEditingNotification
+                                      object:self];
 
     var c = [_layoutManagers count];
 
     for (var i = 0; i < c; i++)
     {
         [[_layoutManagers objectAtIndex:i] textStorage:self
-                                           edited:_editedMask
-                                           range:_editedRange
-                                           changeInLength:_changeInLength
-                                           invalidatedRange:_editedRange];
+                                                edited:_editedMask
+                                                 range:_editedRange
+                                        changeInLength:_changeInLength
+                                      invalidatedRange:_editedRange];
     }
 
     _editedRange.location = CPNotFound;
@@ -207,10 +199,7 @@ CPTextStorageDidProcessEditingNotification = @"CPTextStorageDidProcessEditingNot
         _changeInLength += lengthChange;
         aRange.length += lengthChange;
 
-        if (_editedRange.location == CPNotFound)
-            _editedRange = aRange;
-        else
-            _editedRange = CPUnionRange(_editedRange,aRange);
+        _editedRange.location == CPNotFound ? aRange : CPUnionRange(_editedRange,aRange);
     }
 }
 
@@ -261,4 +250,5 @@ CPTextStorageDidProcessEditingNotification = @"CPTextStorageDidProcessEditingNot
 
     return [super attributedSubstringFromRange:aRange];
 }
+
 @end

@@ -465,9 +465,7 @@ following:
     if ([self isItalic])
         traits |= CPFontItalicTrait;
 
-    var descriptor = [[CPFontDescriptor fontDescriptorWithName:_name size:_size] fontDescriptorWithSymbolicTraits:traits];
-
-    return descriptor;
+    return [[CPFontDescriptor fontDescriptorWithName:_name size:_size] fontDescriptorWithSymbolicTraits:traits];
 }
 
 @end

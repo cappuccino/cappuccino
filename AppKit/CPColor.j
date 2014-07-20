@@ -472,7 +472,7 @@ var cachedBlackColor,
     return [CPColor colorWithHexString:"99CCFF"];
 }
 
-+ (CPColor)selectedTextBackgroundColorUnfocussed
++ (CPColor)_selectedTextBackgroundColorUnfocussed
 {
     return [CPColor colorWithHexString:"CCCCCC"];
 }
