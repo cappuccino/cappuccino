@@ -1231,126 +1231,126 @@
 - (void)testGetNonEnAMSymbol
 {
     var enValue = [_dateFormatter AMSymbol],
-        value = [_nonEnDateFormatter AMSymbol]
+        value = [_nonEnDateFormatter AMSymbol];
     [self assert:enValue equals:value];
 }
 
 - (void)testGetNonEnPMSymbol
 {
     var enValue = [_dateFormatter PMSymbol],
-        value = [_nonEnDateFormatter PMSymbol]
+        value = [_nonEnDateFormatter PMSymbol];
     [self assert:enValue equals:value];
 }
 
 - (void)testGetNonEnWeekdaySymbols
 {
     var enValue = [_dateFormatter weekdaySymbols],
-        value = [_nonEnDateFormatter weekdaySymbols]
+        value = [_nonEnDateFormatter weekdaySymbols];
     [self assert:enValue equals:value];
 }
 
 - (void)testGetNonEnShortWeekdaySymbols
 {
     var enValue = [_dateFormatter shortWeekdaySymbols],
-        value = [_nonEnDateFormatter shortWeekdaySymbols]
+        value = [_nonEnDateFormatter shortWeekdaySymbols];
     [self assert:enValue equals:value];
 }
 
 - (void)testGetNonEnVeryShortWeekdaySymbols
 {
     var enValue = [_dateFormatter veryShortWeekdaySymbols],
-        value = [_nonEnDateFormatter veryShortWeekdaySymbols]
+        value = [_nonEnDateFormatter veryShortWeekdaySymbols];
     [self assert:enValue equals:value];
 }
 
 - (void)testGetNonEnStandaloneWeekdaySymbols
 {
     var enValue = [_dateFormatter standaloneWeekdaySymbols],
-        value = [_nonEnDateFormatter standaloneWeekdaySymbols]
+        value = [_nonEnDateFormatter standaloneWeekdaySymbols];
     [self assert:enValue equals:value];
 }
 
 - (void)testGetNonEnShortStandaloneWeekdaySymbols
 {
     var enValue = [_dateFormatter shortStandaloneWeekdaySymbols],
-        value = [_nonEnDateFormatter shortStandaloneWeekdaySymbols]
+        value = [_nonEnDateFormatter shortStandaloneWeekdaySymbols];
     [self assert:enValue equals:value];
 }
 
 - (void)testGetNonEnVeryShortStandaloneWeekdaySymbols
 {
     var enValue = [_dateFormatter veryShortStandaloneWeekdaySymbols],
-        value = [_nonEnDateFormatter veryShortStandaloneWeekdaySymbols]
+        value = [_nonEnDateFormatter veryShortStandaloneWeekdaySymbols];
     [self assert:enValue equals:value];
 }
 
 - (void)testGetNonEnMonthSymbols
 {
     var enValue = [_dateFormatter monthSymbols],
-        value = [_nonEnDateFormatter monthSymbols]
+        value = [_nonEnDateFormatter monthSymbols];
     [self assert:enValue equals:value];
 }
 
 - (void)testGetNonEnShortMonthSymbols
 {
     var enValue = [_dateFormatter shortMonthSymbols],
-        value = [_nonEnDateFormatter shortMonthSymbols]
+        value = [_nonEnDateFormatter shortMonthSymbols];
     [self assert:enValue equals:value];
 }
 
 - (void)testGetNonEnVeryShortMonthSymbols
 {
     var enValue = [_dateFormatter veryShortMonthSymbols],
-        value = [_nonEnDateFormatter veryShortMonthSymbols]
+        value = [_nonEnDateFormatter veryShortMonthSymbols];
     [self assert:enValue equals:value];
 }
 
 - (void)testGetNonEnStandaloneMonthSymbols
 {
     var enValue = [_dateFormatter standaloneMonthSymbols],
-        value = [_nonEnDateFormatter standaloneMonthSymbols]
+        value = [_nonEnDateFormatter standaloneMonthSymbols];
     [self assert:enValue equals:value];
 }
 
 - (void)testGetNonEnShortStandaloneMonthSymbols
 {
     var enValue = [_dateFormatter shortStandaloneMonthSymbols],
-        value = [_nonEnDateFormatter shortStandaloneMonthSymbols]
+        value = [_nonEnDateFormatter shortStandaloneMonthSymbols];
     [self assert:enValue equals:value];
 }
 
 - (void)testGetNonEnVeryShortStandaloneMonthSymbols
 {
     var enValue = [_dateFormatter veryShortStandaloneMonthSymbols],
-        value = [_nonEnDateFormatter veryShortStandaloneMonthSymbols]
+        value = [_nonEnDateFormatter veryShortStandaloneMonthSymbols];
     [self assert:enValue equals:value];
 }
 
 - (void)testGetNonEnQuarterSymbols
 {
     var enValue = [_dateFormatter quarterSymbols],
-        value = [_nonEnDateFormatter quarterSymbols]
+        value = [_nonEnDateFormatter quarterSymbols];
     [self assert:enValue equals:value];
 }
 
 - (void)testGetNonEnShortQuarterSymbols
 {
     var enValue = [_dateFormatter shortQuarterSymbols],
-        value = [_nonEnDateFormatter shortQuarterSymbols]
+        value = [_nonEnDateFormatter shortQuarterSymbols];
     [self assert:enValue equals:value];
 }
 
 - (void)testGetNonEnStandaloneQuarterSymbols
 {
     var enValue = [_dateFormatter standaloneQuarterSymbols],
-        value = [_nonEnDateFormatter standaloneQuarterSymbols]
+        value = [_nonEnDateFormatter standaloneQuarterSymbols];
     [self assert:enValue equals:value];
 }
 
 - (void)testGetNonEnShortStandaloneQuarterSymbols
 {
     var enValue = [_dateFormatter shortStandaloneQuarterSymbols],
-        value = [_nonEnDateFormatter shortStandaloneQuarterSymbols]
+        value = [_nonEnDateFormatter shortStandaloneQuarterSymbols];
     [self assert:enValue equals:value];
 }
 

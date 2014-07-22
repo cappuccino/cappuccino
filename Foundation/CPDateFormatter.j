@@ -225,11 +225,9 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
 */
 - (CPDictionary)symbolsForLanguageCode:(CPString)languageCode
 {
-    var languageSymbols;
+    var languageSymbols = [_symbols valueForKey:languageCode];
 
-    languageSymbols = [_symbols valueForKey:languageCode];
-
-    if(!languageSymbols)
+    if (!languageSymbols)
     {
         languageSymbols = [self symbolsForLanguageCode:@"root"];
         [self setSymbols:languageSymbols forLanguageCode:languageCode];
@@ -249,14 +247,10 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
 */
 - (id)symbolForKey:(CPString)aKey languageCode:(CPString)languageCode
 {
-    var languageSymbols,
-        symbol;
+    var languageSymbols = [self symbolsForLanguageCode:languageCode],
+        symbol = [languageSymbols valueForKey:aKey];
 
-    languageSymbols = [self symbolsForLanguageCode:languageCode];
-
-    symbol = [languageSymbols valueForKey:aKey];
-
-    if(!symbol)
+    if (!symbol)
     {
         symbol = [self symbolForKey:aKey languageCode:@"root"];
         [self setSymbol:symbol forKey:aKey languageCode:languageCode];
@@ -269,9 +263,7 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
 */
 - (void)setSymbol:(CPString)aSymbol forKey:(CPString)aKey languageCode:(CPString)languageCode
 {
-    var languageSymbols;
-
-    languageSymbols = [self symbolsForLanguageCode:languageCode];
+    var languageSymbols = [self symbolsForLanguageCode:languageCode];
     [languageSymbols setValue:aSymbol forKey:aKey];
 }
 
