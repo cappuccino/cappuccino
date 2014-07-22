@@ -317,16 +317,16 @@
 
 - (void)testMultipleBindingsToArrayControllerSelection
 {
-    var control1 = [[TextField alloc] init];
-    var control2 = [[TextField alloc] init];
+    var control1 = [[TextField alloc] init],
+        control2 = [[TextField alloc] init],
 
-    var cheese1 = [BindingTester testerWithCheese:@"roblochon"],
-        cheese2 = [BindingTester testerWithCheese:@"brie"];
+        cheese1 = [BindingTester testerWithCheese:@"roblochon"],
+        cheese2 = [BindingTester testerWithCheese:@"brie"],
 
-    var ac = [[CPArrayController alloc] initWithContent:@[cheese1, cheese2]];
-    var oc = [[CPObjectController alloc] init];
+        ac = [[CPArrayController alloc] initWithContent:@[cheese1, cheese2]],
+        oc = [[CPObjectController alloc] init];
 
-// This tests fails only if multiple controls are binded BEFORE the object controller
+    // This tests fails only if multiple controls are bound BEFORE the object controller
     [control1 bind:CPValueBinding toObject:oc withKeyPath:@"selection.cheese" options:nil];
     [control2 bind:CPValueBinding toObject:oc withKeyPath:@"selection.cheese" options:nil];
     [oc bind:CPContentBinding toObject:ac withKeyPath:@"selection" options:nil];

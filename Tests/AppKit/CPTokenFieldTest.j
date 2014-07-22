@@ -13,7 +13,7 @@
 - (void)setUp
 {
     _theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(0.0, 0.0, 1024.0, 768.0)
-                                            styleMask:CPWindowNotSizable];
+                                             styleMask:CPWindowNotSizable];
 
     _tokenField = [CPTokenField new];
     _delegate = [TestDelegateTokenField new];
@@ -69,7 +69,7 @@
 - (void)testObjectValueWithArrayOfStrings
 {
     [_tokenField setObjectValue:[@"Alexandre", @"Antoine"]];
-    [self assert:[_tokenField objectValue] equals:[@"Alexandre",@"Antoine"]];
+    [self assert:[_tokenField objectValue] equals:[@"Alexandre", @"Antoine"]];
 }
 
 - (void)testStringValueWithArrayOfStrings
@@ -92,7 +92,7 @@
 
 @implementation TestDelegateTokenField : CPObject <CPTokenFieldDelegate>
 {
-    CPArray _representedObjects                                 @accessors(property=representedObjects);
+    CPArray _representedObjects @accessors(property=representedObjects);
 }
 
 - (id)init
