@@ -126,6 +126,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     BOOL                        _isSelectable;
     BOOL                        _isSecure;
     BOOL                        _willBecomeFirstResponderByClick;
+    BOOL                        _invokedByKeyEvent;
 
     BOOL                        _drawsBackground;
 
@@ -957,7 +958,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     if (newValue !== _stringValue)
     {
         [self _setStringValue:newValue];
-
         [self _didEdit];
     }
 
@@ -973,7 +973,11 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     // to override this (escape to clear the text in a search field for example).
     [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
 
+    // Set a flag so that key handling methods (such as deleteBackward:)
+    // know they were invoked from a user event.
+    _invokedByKeyEvent = YES;
     [self interpretKeyEvents:[anEvent]];
+    _invokedByKeyEvent = NO;
 
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 }
@@ -1148,11 +1152,16 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)setObjectValue:(id)aValue
 {
+    [self _setObjectValue:aValue useFormatter:YES];
+}
+
+- (void)_setObjectValue:(id)aValue useFormatter:(BOOL)useFormatter
+{
     [super setObjectValue:aValue];
 
     var formatter = [self formatter];
 
-    if (formatter)
+    if (useFormatter && formatter)
     {
         // If there is a formatter, make sure the object value can be formatted successfully
         var formattedString = [self hasThemeState:CPThemeStateEditing] ? [formatter editingStringForObjectValue:aValue] : [formatter stringForObjectValue:aValue];
@@ -1537,7 +1546,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     var selectedRange = [self selectedRange];
 
-    if (selectedRange.length < 1)
+    if (selectedRange.length === 0)
     {
         if (selectedRange.location < 1)
             return;
@@ -1547,19 +1556,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         selectedRange.length += 1;
     }
 
-    var newValue = [_stringValue stringByReplacingCharactersInRange:selectedRange withString:""];
-
-    [self setStringValue:newValue];
-    [self setSelectedRange:CPMakeRange(selectedRange.location, 0)];
-    [self _didEdit];
-
-#if PLATFORM(DOM)
-    // Since we just performed the deletion manually, we don't need the browser to do anything else.
-    // (Previously we would allow the event to propagate for the browser to delete 1 character only,
-    // and we'd delete the rest manually. But this meant that if deleteBackward: was called without
-    // it being a browser backspace event, 1 character would be left behind.)
-    [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
-#endif
+    [self _replaceCharactersInRange:selectedRange withCharacters:@""];
 }
 
 - (void)delete:(id)sender
@@ -1573,16 +1570,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     if (selectedRange.length < 1)
         return;
 
-    var newValue = [_stringValue stringByReplacingCharactersInRange:selectedRange withString:""];
-
-    [self setStringValue:newValue];
-    [self setSelectedRange:CPMakeRange(selectedRange.location, 0)];
-    [self _didEdit];
-
-#if PLATFORM(DOM)
-    // Since we just performed the deletion manually, we don't need the browser to do anything else.
-    [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
-#endif
+    [self _replaceCharactersInRange:selectedRange withCharacters:@""];
 }
 
 - (void)deleteForward:(id)sender
@@ -1592,24 +1580,38 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     var selectedRange = [self selectedRange];
 
-    if (selectedRange.length < 1)
+    if (selectedRange.length === 0)
     {
-        if (selectedRange.location + 1 >= _stringValue.length)
+        if (selectedRange.location >= _stringValue.length)
             return;
 
+        // Delete a single element forward from the insertion point if there's no selection.
         selectedRange.length += 1;
     }
 
-    var newValue = [_stringValue stringByReplacingCharactersInRange:selectedRange withString:""];
+    [self _replaceCharactersInRange:selectedRange withCharacters:@""];
+}
 
-    [self setStringValue:newValue];
-    [self setSelectedRange:CPMakeRange(selectedRange.location, 0)];
-    [self _didEdit];
+- (void)_replaceCharactersInRange:(CPRange)range withCharacters:(CPString)characters
+{
+    var newValue = [_stringValue stringByReplacingCharactersInRange:range withString:characters];
+
+    if (_invokedByKeyEvent)
+    {
+        [self _setStringValue:newValue];
+    }
+    else
+    {
+        [self _setObjectValue:newValue useFormatter:NO];
+        [self setSelectedRange:CPMakeRange(range.location, 0)];
 
 #if PLATFORM(DOM)
-    // Since we just performed the deletion manually, we don't need the browser to do anything else.
-    [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
+        // Since we just performed the deletion manually, we don't need the browser to do anything else.
+        [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
 #endif
+    }
+
+    [self _didEdit];
 }
 
 #pragma mark Setting the Delegate
