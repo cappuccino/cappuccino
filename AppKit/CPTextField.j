@@ -1957,6 +1957,23 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
     [_source setObjectValue:aValue];
 }
 
+- (void)reverseSetValueFor:(CPString)aBinding
+{
+    var destination = [_info objectForKey:CPObservedObjectKey],
+        keyPath = [_info objectForKey:CPObservedKeyPathKey],
+        options = [_info objectForKey:CPOptionsKey],
+        newValue = [self valueForBinding:aBinding],
+        value = [destination valueForKeyPath:keyPath];
+
+    if (CPIsControllerMarker(value) && newValue == nil) return;
+
+    newValue = [self reverseTransformValue:newValue withOptions:options];
+
+    [self suppressSpecificNotificationFromObject:destination keyPath:keyPath];
+    [destination setValue:newValue forKeyPath:keyPath];
+    [self unsuppressSpecificNotificationFromObject:destination keyPath:keyPath];
+}
+
 @end
 
 @implementation _CPTextFieldPatternValueBinder : CPValueWithPatternBinding
