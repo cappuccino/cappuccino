@@ -905,7 +905,7 @@ var _objectsInRange = function(aList, aRange)
 
                         // this allows clicking before and after the (invisible) return character
                         if (point.x > CGRectGetMaxX(lastFrame) && fragment.length > 0 &&
-                            [[_textStorage string] characterAtIndex: nlLoc] === '\n' || i === c - 1)
+                            [[_textStorage string] characterAtIndex: nlLoc] === '\n')
                             return nlLoc + 1;
                         else if (point.x <= CGRectGetMinX(firstFrame))
                             return fragment._range.location;
