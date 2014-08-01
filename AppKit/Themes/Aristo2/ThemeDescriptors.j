@@ -1684,7 +1684,7 @@ var themedButtonValues = nil,
 {
     var stepper = [CPStepper stepper],
 
-        bezelUp = PatternColor(
+        regularBezelUp = PatternColor(
             "stepper-bezel-big{state}-up{position}.png",
             {
                 states: ["", "highlighted", "disabled"],
@@ -1694,7 +1694,7 @@ var themedButtonValues = nil,
                 orientation: PatternIsHorizontal
             }),
 
-        bezelDown = PatternColor(
+        regularBezelDown = PatternColor(
             "stepper-bezel-big{state}-down{position}.png",
             {
                 states: ["", "highlighted", "disabled"],
@@ -1704,17 +1704,49 @@ var themedButtonValues = nil,
                 orientation: PatternIsHorizontal
             }),
 
+        miniBezelUp = PatternColor(
+            "stepper-bezel-mini{state}-up{position}.png",
+            {
+                states: ["", "highlighted", "disabled"],
+                width: 2.0,
+                height: 8.0,
+                centerWidth: 10.0,
+                orientation: PatternIsHorizontal
+            }),
+
+        miniBezelDown = PatternColor(
+            "stepper-bezel-mini{state}-down{position}.png",
+            {
+                states: ["", "highlighted", "disabled"],
+                width: 2.0,
+                height: 7.0,
+                centerWidth: 10.0,
+                orientation: PatternIsHorizontal
+            }),
+
         themeValues =
         [
-            [@"bezel-color-up-button",      bezelUp["@"],               CPThemeStateBordered],
-            [@"bezel-color-down-button",    bezelDown["@"],             CPThemeStateBordered],
-            [@"bezel-color-up-button",      bezelUp["disabled"],        [CPThemeStateBordered, CPThemeStateDisabled]],
-            [@"bezel-color-down-button",    bezelDown["disabled"],      [CPThemeStateBordered, CPThemeStateDisabled]],
-            [@"bezel-color-up-button",      bezelUp["highlighted"],     [CPThemeStateBordered, CPThemeStateHighlighted]],
-            [@"bezel-color-down-button",    bezelDown["highlighted"],   [CPThemeStateBordered, CPThemeStateHighlighted]],
+            // CPThemeStateControlSizeRegular
+            [@"bezel-color-up-button",      regularBezelUp["@"],               [CPThemeStateBordered]],
+            [@"bezel-color-down-button",    regularBezelDown["@"],             [CPThemeStateBordered]],
+            [@"bezel-color-up-button",      regularBezelUp["disabled"],        [CPThemeStateBordered, CPThemeStateDisabled]],
+            [@"bezel-color-down-button",    regularBezelDown["disabled"],      [CPThemeStateBordered, CPThemeStateDisabled]],
+            [@"bezel-color-up-button",      regularBezelUp["highlighted"],     [CPThemeStateBordered, CPThemeStateHighlighted]],
+            [@"bezel-color-down-button",    regularBezelDown["highlighted"],   [CPThemeStateBordered, CPThemeStateHighlighted]],
             [@"min-size",                   CGSizeMake(25.0, 25.0)],
             [@"up-button-size",             CGSizeMake(25.0, 13.0)],
-            [@"down-button-size",           CGSizeMake(25.0, 12.0)]
+            [@"down-button-size",           CGSizeMake(25.0, 12.0)],
+
+            // CPThemeStateControlSizeMini
+            [@"bezel-color-up-button",      miniBezelUp["@"],               [CPThemeStateControlSizeMini, CPThemeStateBordered]],
+            [@"bezel-color-down-button",    miniBezelDown["@"],             [CPThemeStateControlSizeMini, CPThemeStateBordered]],
+            [@"bezel-color-up-button",      miniBezelUp["disabled"],        [CPThemeStateControlSizeMini, CPThemeStateBordered, CPThemeStateDisabled]],
+            [@"bezel-color-down-button",    miniBezelDown["disabled"],      [CPThemeStateControlSizeMini, CPThemeStateBordered, CPThemeStateDisabled]],
+            [@"bezel-color-up-button",      miniBezelUp["highlighted"],     [CPThemeStateControlSizeMini, CPThemeStateBordered, CPThemeStateHighlighted]],
+            [@"bezel-color-down-button",    miniBezelDown["highlighted"],   [CPThemeStateControlSizeMini, CPThemeStateBordered, CPThemeStateHighlighted]],
+            [@"min-size",                   CGSizeMake(14.0, 16.0),         CPThemeStateControlSizeMini],
+            [@"up-button-size",             CGSizeMake(14.0, 8.0),          CPThemeStateControlSizeMini],
+            [@"down-button-size",           CGSizeMake(14.0, 7.0),          CPThemeStateControlSizeMini]
         ];
 
     [self registerThemeValues:themeValues forView:stepper];

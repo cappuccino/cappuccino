@@ -118,6 +118,8 @@ var CPControlBlackColor = [CPColor blackColor];
     BOOL                _trackingWasWithinFrame;
     unsigned            _trackingMouseDownFlags;
     CGPoint             _previousTrackingLocation;
+
+    CPControlSize       _controlSize;
 }
 
 + (CPDictionary)themeAttributes
@@ -189,11 +191,53 @@ var CPControlBlackColor = [CPColor blackColor];
 
     if (self)
     {
-        _sendActionOn = CPLeftMouseUpMask;
+        _sendActionOn           = CPLeftMouseUpMask;
         _trackingMouseDownFlags = 0;
+        _controlSize            = CPRegularControlSize;
     }
 
     return self;
+}
+
+/*!
+    Returns the scroller's control size
+*/
+- (CPControlSize)controlSize
+{
+    return _controlSize;
+}
+
+/*!
+    Sets the scroller's size.
+    @param aControlSize the scroller's size
+*/
+- (void)setControlSize:(CPControlSize)aControlSize
+{
+    if (_controlSize == aControlSize)
+        return;
+
+    [self unsetThemeState:[self controlSizeThemeState]];
+    _controlSize = aControlSize;
+    [self setThemeState:[self controlSizeThemeState]];
+
+    [self setNeedsLayout];
+    [self setNeedsDisplay:YES];
+}
+
+- (CPThemeState)controlSizeThemeState
+{
+    switch(_controlSize)
+    {
+        case CPSmallControlSize:
+            return CPThemeStateControlSizeSmall;
+
+        case CPMiniControlSize:
+            return CPThemeStateControlSizeMini;
+
+        case CPRegularControlSize:
+        default:
+            return CPThemeStateControlSizeRegular;
+    }
 }
 
 /*!
@@ -927,14 +971,15 @@ var CPControlBlackColor = [CPColor blackColor];
 
 @end
 
-var CPControlValueKey                   = @"CPControlValueKey",
+var CPControlActionKey                  = @"CPControlActionKey",
+    CPControlControlSizeKey             = @"CPControlControlSizeKey",
     CPControlControlStateKey            = @"CPControlControlStateKey",
-    CPControlIsEnabledKey               = @"CPControlIsEnabledKey",
-    CPControlTargetKey                  = @"CPControlTargetKey",
-    CPControlActionKey                  = @"CPControlActionKey",
-    CPControlSendActionOnKey            = @"CPControlSendActionOnKey",
     CPControlFormatterKey               = @"CPControlFormatterKey",
+    CPControlIsEnabledKey               = @"CPControlIsEnabledKey",
+    CPControlSendActionOnKey            = @"CPControlSendActionOnKey",
     CPControlSendsActionOnEndEditingKey = @"CPControlSendsActionOnEndEditingKey",
+    CPControlTargetKey                  = @"CPControlTargetKey",
+    CPControlValueKey                   = @"CPControlValueKey",
 
     __Deprecated__CPImageViewImageKey   = @"CPImageViewImageKey";
 
@@ -961,6 +1006,8 @@ var CPControlValueKey                   = @"CPControlValueKey",
         [self setSendsActionOnEndEditing:[aCoder decodeBoolForKey:CPControlSendsActionOnEndEditingKey]];
 
         [self setFormatter:[aCoder decodeObjectForKey:CPControlFormatterKey]];
+
+        [self setControlSize:[aCoder decodeIntForKey:CPControlControlSizeKey]];
     }
 
     return self;
@@ -993,6 +1040,8 @@ var CPControlValueKey                   = @"CPControlValueKey",
 
     if (_formatter !== nil)
         [aCoder encodeObject:_formatter forKey:CPControlFormatterKey];
+
+    [aCoder encodeInt:_controlSize forKey:CPControlControlSizeKey];
 }
 
 @end
