@@ -380,6 +380,8 @@ CPSegmentSwitchTrackingMomentary = 2;
     if ([segment selected] == isSelected)
         return;
 
+    [self willChangeValueForKey:"selectedSegment"];
+
     [segment setSelected:isSelected];
 
     _themeStates[aSegment] = isSelected ? CPThemeStateSelected : CPThemeStateNormal;
@@ -405,6 +407,8 @@ CPSegmentSwitchTrackingMomentary = 2;
 
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
+
+    [self didChangeValueForKey:"selectedSegment"];
 }
 
 /*!
