@@ -120,6 +120,7 @@ CPLineMovesUp = 4;
                                      actualCharacterRange:NULL];
 
         [_layoutManager _validateLayoutAndGlyphs];
+        [_textView sizeToFit]; // this is necessary to adopt the height of CPTextView in case of rewrapping
     }
 }
 
