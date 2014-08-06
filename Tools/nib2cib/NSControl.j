@@ -54,6 +54,7 @@
 
 - (void)NS_initWithCell:(NSCell)cell
 {
+
     [self setSendsActionOnEndEditing:[cell sendsActionOnEndEditing]];
     [self setObjectValue:[cell objectValue]];
     [self setFont:[cell font]];
@@ -61,6 +62,7 @@
     [self setContinuous:[cell isContinuous]];
     [self setLineBreakMode:[cell lineBreakMode]];
     [self setFormatter:[cell formatter]];
+    [self setControlSize:[cell controlSize]];
 }
 
 @end

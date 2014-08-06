@@ -248,12 +248,24 @@ CPEraDatePickerElementFlag              = 0x0100;
 */
 - (void)layoutSubviews
 {
+
     [super layoutSubviews];
 
     if (_datePickerStyle == CPTextFieldAndStepperDatePickerStyle || _datePickerStyle == CPTextFieldDatePickerStyle)
     {
+        var frameSize = [self frameSize],
+            minSize = [self currentValueForThemeAttribute:@"min-size"];
+
+        if (minSize.height > 0.0)
+        {
+            // Force height
+            frameSize.height = minSize.height;
+            [self setFrameSize:frameSize];
+        }
+
         [_datePickerTextfield setHidden:NO];
         [_datePickerCalendar setHidden:YES];
+        [_datePickerTextfield setControlSize:[self controlSize]];
         [_datePickerTextfield setNeedsLayout];
     }
     else

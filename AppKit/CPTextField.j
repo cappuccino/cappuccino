@@ -141,7 +141,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     // NS-style Display Properties
     CPTextFieldBezelStyle       _bezelStyle;
     BOOL                        _isBordered;
-    CPControlSize               _controlSize;
 }
 
 + (Class)_binderClassForBinding:(CPString)aBinding
@@ -227,6 +226,22 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
             @"bezel-color": [CPNull null],
         };
 }
+
+- (void)setControlSize:(CPControlSize)aControlSize
+{
+    [super setControlSize:aControlSize];
+
+    var frameSize = [self frameSize],
+        maxSize = [self currentValueForThemeAttribute:@"max-size"],
+        font = [self currentValueForThemeAttribute:@"font"];
+
+    if (maxSize.height > 0)
+        frameSize.height = maxSize.height;
+
+    [self setFrameSize:frameSize];
+    [self setFont:[CPFont systemFontForControlSize:[self controlSize]]];
+}
+
 
 #if PLATFORM(DOM)
 - (DOMElement)_inputElement

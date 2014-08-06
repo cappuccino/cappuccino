@@ -193,7 +193,6 @@ var CPControlBlackColor = [CPColor blackColor];
     {
         _sendActionOn           = CPLeftMouseUpMask;
         _trackingMouseDownFlags = 0;
-        _controlSize            = CPRegularControlSize;
     }
 
     return self;
@@ -213,7 +212,7 @@ var CPControlBlackColor = [CPColor blackColor];
 */
 - (void)setControlSize:(CPControlSize)aControlSize
 {
-    if (_controlSize == aControlSize)
+    if (_controlSize === aControlSize)
         return;
 
     [self unsetThemeState:[self controlSizeThemeState]];

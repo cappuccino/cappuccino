@@ -543,12 +543,21 @@ var themedButtonValues = nil,
         [@"bezel-color",        bezelColor["@"],                    CPThemeStateBezeled],
         [@"bezel-color",        bezelFocusedColor,                  [CPThemeStateBezeled, CPThemeStateEditing]],
         [@"bezel-color",        bezelColor["disabled"],             [CPThemeStateBezeled, CPThemeStateDisabled]],
-        [@"font",               [CPFont systemFontOfSize:CPFontCurrentSystemSize],     CPThemeStateBezeled],
+
+        [@"font",               [CPFont systemFontOfSize:12.0],     CPThemeStateBezeled],
+        [@"font",               [CPFont systemFontOfSize:11.0],                        CPThemeStateControlSizeSmall],// TODO-CS : to remove
+        [@"font",               [CPFont systemFontOfSize:8.0],                         CPThemeStateControlSizeMini],// TODO-CS : to remove
+
         [@"text-color",         regularDisabledTextColor,           [CPThemeStateBezeled, CPThemeStateDisabled]],
         [@"text-shadow-color",  regularDisabledTextShadowColor,     [CPThemeStateBezeled, CPThemeStateDisabled]],
 
         [@"content-inset",      CGInsetMake(8.0, 7.0, 5.0, 10.0),   CPThemeStateBezeled],
         [@"content-inset",      CGInsetMake(8.0, 7.0, 5.0, 10.0),   [CPThemeStateBezeled, CPThemeStateEditing]],
+        [@"content-inset",      CGInsetMake(7.0, 7.0, 5.0, 8.0),    [CPThemeStateControlSizeSmall, CPThemeStateBezeled]],
+        [@"content-inset",      CGInsetMake(7.0, 7.0, 5.0, 8.0),    [CPThemeStateControlSizeSmall, CPThemeStateBezeled, CPThemeStateEditing]],
+        [@"content-inset",      CGInsetMake(6.0, 7.0, 5.0, 7.0),    [CPThemeStateControlSizeMini, CPThemeStateBezeled]],
+        [@"content-inset",      CGInsetMake(6.0, 7.0, 5.0, 7.0),    [CPThemeStateControlSizeMini, CPThemeStateBezeled, CPThemeStateEditing]],
+
         [@"bezel-inset",        CGInsetMake(3.0, 4.0, 3.0, 4.0),    CPThemeStateBezeled],
         [@"bezel-inset",        CGInsetMake(0.0, 1.0, 0.0, 1.0),    [CPThemeStateBezeled, CPThemeStateEditing]],
 
@@ -572,7 +581,11 @@ var themedButtonValues = nil,
         [@"text-shadow-color",  [CPColor whiteColor],                                       [CPThemeStateTableDataView, CPThemeStateGroupRow]],
         [@"text-shadow-offset", CGSizeMake(0, 1),                                           [CPThemeStateTableDataView, CPThemeStateGroupRow]],
         [@"text-shadow-color",  [CPColor colorWithCalibratedWhite:0.0 alpha:0.6],           [CPThemeStateTableDataView, CPThemeStateGroupRow, CPThemeStateSelectedDataView, CPThemeStateFirstResponder, CPThemeStateKeyWindow]],
-        [@"font",               [CPFont boldSystemFontOfSize:CPFontCurrentSystemSize],      [CPThemeStateTableDataView, CPThemeStateGroupRow]]
+        [@"font",               [CPFont boldSystemFontOfSize:CPFontCurrentSystemSize],      [CPThemeStateTableDataView, CPThemeStateGroupRow]],
+
+
+        [@"max-size",       CGSizeMake(-1.0, 25.0),     CPThemeStateControlSizeSmall],
+        [@"max-size",       CGSizeMake(-1.0, 22.0),     CPThemeStateControlSizeMini]
     ];
 
     [self registerThemeValues:themedTextFieldValues forView:textfield];
@@ -615,7 +628,9 @@ var themedButtonValues = nil,
                 bezelFocusedColor,       [CPTextFieldStateRounded, CPThemeStateBezeled, CPThemeStateEditing]],
             [@"bezel-color",
                 bezelColor["disabled"],  [CPTextFieldStateRounded, CPThemeStateBezeled, CPThemeStateDisabled]],
-            [@"font",           [CPFont systemFontOfSize:12.0]],
+            [@"font",           [CPFont systemFontOfSize:CPFontCurrentSystemSize]],
+            [@"font",           [CPFont systemFontOfSize:11.0], CPThemeStateControlSizeSmall],// TODO-CS : to remove
+            [@"font",           [CPFont systemFontOfSize:8.0], CPThemeStateControlSizeMini],// TODO-CS : to remove
 
             [@"content-inset",  CGInsetMake(8.0, 14.0, 6.0, 14.0),  [CPTextFieldStateRounded, CPThemeStateBezeled]],
             [@"content-inset",  CGInsetMake(8.0, 14.0, 6.0, 14.0),  [CPTextFieldStateRounded, CPThemeStateBezeled, CPThemeStateEditing]],
@@ -628,7 +643,10 @@ var themedButtonValues = nil,
             [@"text-shadow-color",  regularDisabledTextShadowColor, [CPTextFieldStateRounded, CPThemeStateBezeled, CPThemeStateDisabled]],
 
             [@"min-size",       CGSizeMake(0.0, 29.0),  [CPTextFieldStateRounded, CPThemeStateBezeled]],
-            [@"max-size",       CGSizeMake(-1.0, 29.0), [CPTextFieldStateRounded, CPThemeStateBezeled]]
+            [@"max-size",       CGSizeMake(-1.0, 29.0), [CPTextFieldStateRounded, CPThemeStateBezeled]],
+
+            [@"min-size",       CGSizeMake(0.0, 20.0),  [CPThemeStateControlSizeMini, CPTextFieldStateRounded, CPThemeStateBezeled]],
+            [@"max-size",       CGSizeMake(-1.0, 20.0), [CPThemeStateControlSizeMini, CPTextFieldStateRounded, CPThemeStateBezeled]]
         ];
 
     [self registerThemeValues:themedRoundedTextFieldValues forView:textfield];
@@ -667,7 +685,7 @@ var themedButtonValues = nil,
 
 + (CPDatePicker)themedDatePicker
 {
-    var datePicker = [[CPDatePicker alloc] initWithFrame:CGRectMake(40.0 ,40.0 ,170.0 ,29.0)],
+    var datePicker = [[CPDatePicker alloc] initWithFrame:CGRectMake(40.0, 40.0, 170.0, 29.0)],
 
         bezelColor = PatternColor(
             "textfield-bezel-square{state}{position}.png",
@@ -687,23 +705,27 @@ var themedButtonValues = nil,
 
         themeValues =
         [
-            [@"bezel-color",        bezelColor["@"],                    CPThemeStateBezeled],
-            [@"bezel-color",        bezelColor["disabled"],             [CPThemeStateBezeled, CPThemeStateDisabled]],
+            [@"bezel-color",        bezelColor["@"],                                            CPThemeStateBezeled],
+            [@"bezel-color",        bezelColor["disabled"],                                     [CPThemeStateBezeled, CPThemeStateDisabled]],
 
-            [@"font",               [CPFont boldSystemFontOfSize:13.0]],
+            [@"font",               [CPFont systemFontOfSize:CPFontCurrentSystemSize]],
+
             [@"text-color",         [CPColor colorWithWhite:0.2 alpha:0.8]],
-            [@"text-color",         [CPColor colorWithWhite:0.2 alpha:0.5], CPThemeStateDisabled],
+            [@"text-color",         [CPColor colorWithWhite:0.2 alpha:0.5],                     CPThemeStateDisabled],
 
-            [@"content-inset",      CGInsetMake(6.0, 0.0, 0.0, 3.0),    CPThemeStateNormal],
-            [@"content-inset",      CGInsetMake(3.0, 0.0, 0.0, 3.0),    CPThemeStateBezeled],
-            [@"bezel-inset",        CGInsetMake(3.0, 0.0, 3.0, 0.0),    CPThemeStateBezeled],
+            [@"content-inset",      CGInsetMake(6.0, 0.0, 0.0, 3.0),                            CPThemeStateNormal],
+            [@"content-inset",      CGInsetMake(3.0, 0.0, 0.0, 3.0),                            CPThemeStateBezeled],
 
-            [@"datepicker-textfield-bezel-color", [CPColor clearColor],             CPThemeStateNormal],
-            [@"datepicker-textfield-bezel-color", bezelColorDatePickerTextField,    CPThemeStateSelected],
-            [@"datepicker-textfield-bezel-color", [CPColor clearColor],             [CPThemeStateNormal, CPThemeStateDisabled]],
-            [@"datepicker-textfield-bezel-color", [CPColor clearColor],             [CPThemeStateSelected, CPThemeStateDisabled]],
+            [@"bezel-inset",        CGInsetMake(3.0, 0.0, 3.0, 0.0),                            CPThemeStateBezeled],
+
+            [@"datepicker-textfield-bezel-color", [CPColor clearColor],                         CPThemeStateNormal],
+            [@"datepicker-textfield-bezel-color", bezelColorDatePickerTextField,                CPThemeStateSelected],
+            [@"datepicker-textfield-bezel-color", [CPColor clearColor],                         [CPThemeStateNormal, CPThemeStateDisabled]],
+            [@"datepicker-textfield-bezel-color", [CPColor clearColor],                         [CPThemeStateSelected, CPThemeStateDisabled]],
 
             [@"min-size-datepicker-textfield", CGSizeMake(6.0, 18.0)],
+            [@"min-size-datepicker-textfield", CGSizeMake(6.0, 16.0),                           CPThemeStateControlSizeSmall],
+            [@"min-size-datepicker-textfield", CGSizeMake(6.0, 12.0),                           CPThemeStateControlSizeMini],
 
             [@"separator-content-inset", CGInsetMake(0.0, -2.0, 0.0, -1.0)],
 
@@ -713,10 +735,19 @@ var themedButtonValues = nil,
             [@"content-inset-datepicker-textfield-separator",CGInsetMake(2.0, 0.0, 0.0, 0.0),   CPThemeStateSelected],
 
             [@"date-hour-margin", 7.0],
-            [@"stepper-margin", 5.0],
+            [@"date-hour-margin", 5.0,                                                          CPThemeStateControlSizeSmall],
+            [@"date-hour-margin", 2.0,                                                          CPThemeStateControlSizeMini],
 
-            [@"min-size",       CGSizeMake(0.0, 29.0)],
-            [@"max-size",       CGSizeMake(-1.0, 29.0)]
+            [@"stepper-margin", 5.0],
+            [@"stepper-margin", 3.0,                                                            CPThemeStateControlSizeSmall],
+            [@"stepper-margin", 2.0,                                                            CPThemeStateControlSizeMini],
+
+            [@"min-size",       CGSizeMake(0, 29.0)],
+            [@"max-size",       CGSizeMake(-1.0, 29.0)],
+            [@"min-size",       CGSizeMake(0, 25.0),                                            CPThemeStateControlSizeSmall],
+            [@"max-size",       CGSizeMake(-1.0, 25.0),                                         CPThemeStateControlSizeSmall],
+            [@"min-size",       CGSizeMake(0, 22.0),                                            CPThemeStateControlSizeMini],
+            [@"max-size",       CGSizeMake(-1.0, 22.0),                                         CPThemeStateControlSizeMini]
         ];
 
     [datePicker setDatePickerStyle:CPTextFieldDatePickerStyle];
@@ -1704,6 +1735,26 @@ var themedButtonValues = nil,
                 orientation: PatternIsHorizontal
             }),
 
+        smallBezelUp = PatternColor(
+            "stepper-bezel-small{state}-up{position}.png",
+            {
+                states: ["", "highlighted", "disabled"],
+                width: 3.0,
+                height: 11.0,
+                centerWidth: 14.0,
+                orientation: PatternIsHorizontal
+            }),
+
+        smallBezelDown = PatternColor(
+            "stepper-bezel-small{state}-down{position}.png",
+            {
+                states: ["", "highlighted", "disabled"],
+                width: 3.0,
+                height: 10.0,
+                centerWidth: 14.0,
+                orientation: PatternIsHorizontal
+            }),
+
         miniBezelUp = PatternColor(
             "stepper-bezel-mini{state}-up{position}.png",
             {
@@ -1733,20 +1784,33 @@ var themedButtonValues = nil,
             [@"bezel-color-down-button",    regularBezelDown["disabled"],      [CPThemeStateBordered, CPThemeStateDisabled]],
             [@"bezel-color-up-button",      regularBezelUp["highlighted"],     [CPThemeStateBordered, CPThemeStateHighlighted]],
             [@"bezel-color-down-button",    regularBezelDown["highlighted"],   [CPThemeStateBordered, CPThemeStateHighlighted]],
-            [@"min-size",                   CGSizeMake(25.0, 25.0)],
+
+            [@"min-size",                   CGSizeMake(25.0, 25.0)], // TODO-CS : to remove
             [@"up-button-size",             CGSizeMake(25.0, 13.0)],
             [@"down-button-size",           CGSizeMake(25.0, 12.0)],
 
+            // CPThemeStateControlSizeSmall
+            [@"bezel-color-up-button",      smallBezelUp["@"],                  [CPThemeStateControlSizeSmall, CPThemeStateBordered]],
+            [@"bezel-color-down-button",    smallBezelDown["@"],                [CPThemeStateControlSizeSmall, CPThemeStateBordered]],
+            [@"bezel-color-up-button",      smallBezelUp["disabled"],           [CPThemeStateControlSizeSmall, CPThemeStateBordered, CPThemeStateDisabled]],
+            [@"bezel-color-down-button",    smallBezelDown["disabled"],         [CPThemeStateControlSizeSmall, CPThemeStateBordered, CPThemeStateDisabled]],
+            [@"bezel-color-up-button",      smallBezelUp["highlighted"],        [CPThemeStateControlSizeSmall, CPThemeStateBordered, CPThemeStateHighlighted]],
+            [@"bezel-color-down-button",    smallBezelDown["highlighted"],      [CPThemeStateControlSizeSmall, CPThemeStateBordered, CPThemeStateHighlighted]],
+
+            [@"up-button-size",             CGSizeMake(20.0, 11.0),             CPThemeStateControlSizeSmall],
+            [@"down-button-size",           CGSizeMake(20.0, 10.0),             CPThemeStateControlSizeSmall],
+
             // CPThemeStateControlSizeMini
-            [@"bezel-color-up-button",      miniBezelUp["@"],               [CPThemeStateControlSizeMini, CPThemeStateBordered]],
-            [@"bezel-color-down-button",    miniBezelDown["@"],             [CPThemeStateControlSizeMini, CPThemeStateBordered]],
-            [@"bezel-color-up-button",      miniBezelUp["disabled"],        [CPThemeStateControlSizeMini, CPThemeStateBordered, CPThemeStateDisabled]],
-            [@"bezel-color-down-button",    miniBezelDown["disabled"],      [CPThemeStateControlSizeMini, CPThemeStateBordered, CPThemeStateDisabled]],
-            [@"bezel-color-up-button",      miniBezelUp["highlighted"],     [CPThemeStateControlSizeMini, CPThemeStateBordered, CPThemeStateHighlighted]],
-            [@"bezel-color-down-button",    miniBezelDown["highlighted"],   [CPThemeStateControlSizeMini, CPThemeStateBordered, CPThemeStateHighlighted]],
-            [@"min-size",                   CGSizeMake(14.0, 16.0),         CPThemeStateControlSizeMini],
-            [@"up-button-size",             CGSizeMake(14.0, 8.0),          CPThemeStateControlSizeMini],
-            [@"down-button-size",           CGSizeMake(14.0, 7.0),          CPThemeStateControlSizeMini]
+            [@"bezel-color-up-button",      miniBezelUp["@"],                   [CPThemeStateControlSizeMini, CPThemeStateBordered]],
+            [@"bezel-color-down-button",    miniBezelDown["@"],                 [CPThemeStateControlSizeMini, CPThemeStateBordered]],
+            [@"bezel-color-up-button",      miniBezelUp["disabled"],            [CPThemeStateControlSizeMini, CPThemeStateBordered, CPThemeStateDisabled]],
+            [@"bezel-color-down-button",    miniBezelDown["disabled"],          [CPThemeStateControlSizeMini, CPThemeStateBordered, CPThemeStateDisabled]],
+            [@"bezel-color-up-button",      miniBezelUp["highlighted"],         [CPThemeStateControlSizeMini, CPThemeStateBordered, CPThemeStateHighlighted]],
+            [@"bezel-color-down-button",    miniBezelDown["highlighted"],       [CPThemeStateControlSizeMini, CPThemeStateBordered, CPThemeStateHighlighted]],
+
+            [@"min-size",                   CGSizeMake(14.0, 16.0),             CPThemeStateControlSizeMini], // TODO-CS : to remove
+            [@"up-button-size",             CGSizeMake(14.0, 8.0),              CPThemeStateControlSizeMini],
+            [@"down-button-size",           CGSizeMake(14.0, 7.0),              CPThemeStateControlSizeMini]
         ];
 
     [self registerThemeValues:themeValues forView:stepper];

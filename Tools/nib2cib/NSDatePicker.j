@@ -59,6 +59,7 @@ var NSDatePickerDefaultSize = 22,
     [self setBezeled:[cell isBezeled]];
     [self setBordered:[cell isBordered]];
     [self setEnabled:[cell isEnabled]];
+    [self setControlSize:[cell controlSize]];
 
     var theme = [Nib2Cib defaultTheme];
 

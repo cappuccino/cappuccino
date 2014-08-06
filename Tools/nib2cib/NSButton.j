@@ -111,7 +111,6 @@ var NSButtonIsBorderedMask = 0x00800000,
 
     _title = [cell title];
     _alternateTitle = [cell alternateTitle];
-    _controlSize = CPRegularControlSize;
 
     [self setBordered:[cell isBordered]];
     _bezelStyle = [cell bezelStyle];
