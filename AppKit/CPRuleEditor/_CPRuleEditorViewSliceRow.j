@@ -19,11 +19,10 @@
 
 @import "CPRuleEditor_Constants.j"
 @import "_CPRuleEditorViewSlice.j"
-@import "_CPRuleEditorPopUpButton.j"
 
 @import "CPButton.j"
 @import "CPDatePicker.j"
-//@import "CPPopUpButton.j"
+@import "CPPopUpButton.j"
 
 @global CPApp
 @global CPMiniControlSize
@@ -124,13 +123,13 @@ var CONTROL_HEIGHT = 16.,
     return [[CPMenuItem alloc] initWithTitle:title action:nil keyEquivalent:@""];
 }
 
-- (_CPRuleEditorPopUpButton)_createPopUpButtonWithItems:(CPArray)itemsArray selectedItemIndex:(int)index
+- (CPPopUpButton)_createPopUpButtonWithItems:(CPArray)itemsArray selectedItemIndex:(int)index
 {
     var title   = [[itemsArray objectAtIndex:index] title],
         font    = [_ruleEditor font],
         width   = [title sizeWithFont:font].width + 20,
         rect    = CGRectMake(0, 0, (width - width % 40) + 80, CONTROL_HEIGHT),
-        popup   = [[_CPRuleEditorPopUpButton alloc] initWithFrame:rect];
+        popup   = [[CPPopUpButton alloc] initWithFrame:rect];
 
     [popup setValue:font forThemeAttribute:@"font"];
 
@@ -500,7 +499,7 @@ var CONTROL_HEIGHT = 16.,
 
 - (BOOL)_isRulePopup:(CPView)view
 {
-    if ([view isKindOfClass:[_CPRuleEditorPopUpButton class]])
+    if ([view isKindOfClass:[CPPopUpButton class]])
         return YES;
 
     return NO;
