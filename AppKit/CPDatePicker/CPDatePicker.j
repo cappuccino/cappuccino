@@ -287,11 +287,17 @@ CPEraDatePickerElementFlag              = 0x0100;
     return _dateValue
 }
 
-/*! Set the objectValue ofhe datePier. It has to be a CPDate
+/*! Set the objectValue of the datePicker. It has to be a CPDate
     @param aDateValue the dateValue
 */
-- (void)setObjectValue:(CPDate)aValue
+- (void)setObjectValue:(id)aValue
 {
+    if ([aValue isKindOfClass:CPString])
+    {
+        var dateFormatter = [[CPDateFormatter alloc] init];
+        aValue = [dateFormatter dateFromString:aValue];
+    }
+
     [self setDateValue:aValue];
 }
 
@@ -350,7 +356,8 @@ CPEraDatePickerElementFlag              = 0x0100;
     _timeInterval = (_datePickerMode == CPSingleDateMode)? 0 : aTimeInterval;
     [self didChangeValueForKey:@"timeInterval"];
 
-    [self sendAction:[self action] to:[self target]];
+    if ([self action] && [self target])
+        [self sendAction:[self action] to:[self target]];
 
     if (_datePickerStyle == CPTextFieldAndStepperDatePickerStyle || _datePickerStyle == CPTextFieldDatePickerStyle)
         [_datePickerTextfield setDateValue:_dateValue];
@@ -549,6 +556,7 @@ CPEraDatePickerElementFlag              = 0x0100;
             return NO;
 
         [_datePickerTextfield _selectTextFieldWithFlags:[[CPApp currentEvent] modifierFlags]];
+
         return YES;
     }
 
