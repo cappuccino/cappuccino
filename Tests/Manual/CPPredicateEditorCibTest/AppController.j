@@ -123,6 +123,9 @@
     }
     else if (type == 3)
         template = [[CPPredicateEditorRowTemplate alloc] initWithLeftExpressions:leftExpressions rightExpressionAttributeType:CPDateAttributeType modifier:0 operators:operators options:0];
+    else if (type == 4)
+        template = [[CPPredicateEditorRowTemplate alloc] initWithLeftExpressions:leftExpressions rightExpressionAttributeType:CPBooleanAttributeType modifier:0 operators:operators options:0];
+
 
     var templates = [[predicateEditor rowTemplates] arrayByAddingObject:template];
     [predicateEditor setRowTemplates:templates];
