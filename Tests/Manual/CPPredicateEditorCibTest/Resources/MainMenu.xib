@@ -744,6 +744,7 @@
                                                 <menuItem title="Constant Values" id="1279"/>
                                                 <menuItem title="Dates" id="9Za-l5-lSK"/>
                                                 <menuItem title="Booleans" id="Nuh-0m-Oqs"/>
+                                                <menuItem title="Choice" id="Ia8-PU-zQd"/>
                                             </items>
                                         </menu>
                                     </popUpButtonCell>
