@@ -227,20 +227,18 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         };
 }
 
+
+#pragma mark -
+#pragma mark Control Size
+
 - (void)setControlSize:(CPControlSize)aControlSize
 {
     [super setControlSize:aControlSize];
-
-    var frameSize = [self frameSize],
-        maxSize = [self currentValueForThemeAttribute:@"max-size"],
-        font = [self currentValueForThemeAttribute:@"font"];
-
-    if (maxSize.height > 0)
-        frameSize.height = maxSize.height;
-
-    [self setFrameSize:frameSize];
+    [self sizeToControlSize];
     [self setFont:[CPFont systemFontForControlSize:[self controlSize]]];
 }
+
+#pragma mark -
 
 
 #if PLATFORM(DOM)

@@ -198,8 +198,12 @@ var CPControlBlackColor = [CPColor blackColor];
     return self;
 }
 
+
+#pragma mark -
+#pragma mark Control Size
+
 /*!
-    Returns the scroller's control size
+    Returns the control's control size
 */
 - (CPControlSize)controlSize
 {
@@ -207,8 +211,8 @@ var CPControlBlackColor = [CPColor blackColor];
 }
 
 /*!
-    Sets the scroller's size.
-    @param aControlSize the scroller's size
+    Sets the control's size.
+    @param aControlSize the control's size
 */
 - (void)setControlSize:(CPControlSize)aControlSize
 {
@@ -223,6 +227,10 @@ var CPControlBlackColor = [CPColor blackColor];
     [self setNeedsDisplay:YES];
 }
 
+/*!
+    Gets the current theme state according to the current controlSize.
+    @return a CPThemeState
+*/
 - (CPThemeState)controlSizeThemeState
 {
     switch(_controlSize)
@@ -238,6 +246,29 @@ var CPControlBlackColor = [CPColor blackColor];
             return CPThemeStateControlSizeRegular;
     }
 }
+
+/*!
+    @ignore
+    Change frame size according to the theme control size theme constraints
+    Basically for height to min-size.
+*/
+- (void)sizeToControlSize
+{
+    var frameSize = [self frameSize],
+        minSize = [self currentValueForThemeAttribute:@"min-size"],
+        maxSize = [self currentValueForThemeAttribute:@"max-size"];
+
+    if (minSize.width > 0)
+        frameSize.width = MAX(minSize.width, frameSize.width);
+
+    if (minSize.height > 0)
+        frameSize.height = minSize.height;
+
+    [super setFrameSize:frameSize];
+}
+
+
+#pragma mark -
 
 /*!
     Sets the receiver's target action.

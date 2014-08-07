@@ -199,6 +199,19 @@ CPButtonImageOffset   = 3.0;
     [self setButtonType:CPMomentaryPushInButton];
 }
 
+#pragma mark -
+#pragma mark Control Size
+
+- (void)setControlSize:(CPControlSize)aControlSize
+{
+    [super setControlSize:aControlSize];
+    [self sizeToControlSize];
+    [self setFont:[CPFont systemFontForControlSize:[self controlSize]]];
+}
+
+
+#pragma mark -
+
 // Setting the state
 /*!
     Returns a Boolean value indicating whether the button allows a mixed state.

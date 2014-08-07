@@ -225,6 +225,16 @@ CPEraDatePickerElementFlag              = 0x0100;
 
 
 #pragma mark -
+#pragma mark Control Size
+
+- (void)setControlSize:(CPControlSize)aControlSize
+{
+    [super setControlSize:aControlSize];
+    [self sizeToControlSize];
+}
+
+
+#pragma mark -
 #pragma mark Delegate methods
 
 /*! Set the delegate of the datePicker
@@ -253,16 +263,6 @@ CPEraDatePickerElementFlag              = 0x0100;
 
     if (_datePickerStyle == CPTextFieldAndStepperDatePickerStyle || _datePickerStyle == CPTextFieldDatePickerStyle)
     {
-        var frameSize = [self frameSize],
-            minSize = [self currentValueForThemeAttribute:@"min-size"];
-
-        if (minSize.height > 0.0)
-        {
-            // Force height
-            frameSize.height = minSize.height;
-            [self setFrameSize:frameSize];
-        }
-
         [_datePickerTextfield setHidden:NO];
         [_datePickerCalendar setHidden:YES];
         [_datePickerTextfield setControlSize:[self controlSize]];
