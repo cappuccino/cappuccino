@@ -92,13 +92,19 @@ var NSDatePickerDefaultSize = 22,
             _bounds.size.width = MAX(_frame.size.width, minSize.width);
         }
 
-        if (_datePickerStyle == CPTextFieldAndStepperDatePickerStyle)
-        {
-            _frame.size.width -= 3;
-            _bounds.size.width -= 3;
-        }
-
         _frame.origin.y -= _frame.size.height - NSDatePickerDefaultSize - 4;
+
+        // Convert Cocoa sizes to Cappuccino sizes.
+        switch([cell controlSize])
+        {
+            case CPSmallControlSize:
+                self._frame.origin.y -= 3;
+                break;
+
+            case CPMiniControlSize:
+                self._frame.origin.y -= 6;
+                break;
+        }
     }
     else
     {

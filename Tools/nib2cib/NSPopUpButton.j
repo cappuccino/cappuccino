@@ -41,11 +41,29 @@
     [self setPullsDown:[cell pullsDown]];
     _preferredEdge  = [cell preferredEdge];
 
-    // adjust the frame
-    _frame.origin.x -= 4;
-    _frame.origin.y -= 4;
-    _frame.size.width += 7;
-    _bounds.size.width += 7;
+    // Convert Cocoa sizes to Cappuccino sizes.
+    switch([cell controlSize])
+    {
+        case CPSmallControlSize:
+            self._frame.origin.y -= 7;
+            self._frame.size.width += 10;
+            self._bounds.size.width += 10;
+            break;
+
+        case CPMiniControlSize:
+            self._frame.origin.y -= 4;
+            self._frame.size.width += 5;
+            self._bounds.size.width += 5;
+            break;
+
+        default:
+        case CPRegularControlSize:
+            self._frame.origin.x -= 4;
+            self._frame.origin.y -= 4;
+            self._frame.size.width += 10;
+            self._bounds.size.width += 10;
+            break;
+    }
 }
 
 @end

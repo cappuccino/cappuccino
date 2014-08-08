@@ -252,6 +252,18 @@ var NSButtonIsBorderedMask = 0x00800000,
             _frame.origin.y += positionOffsetOriginY;
             _frame.size.width += positionOffsetSizeWidth;
             _bounds.size.width += positionOffsetSizeWidth;
+
+            // Convert Cocoa sizes to Cappuccino sizes.
+            switch([cell controlSize])
+            {
+                case CPSmallControlSize:
+                    self._frame.origin.y -= 4;
+                    break;
+
+                case CPMiniControlSize:
+                    self._frame.origin.y -= 12;
+                    break;
+            }
         }
     }
 
