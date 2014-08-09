@@ -1933,6 +1933,36 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 
 @implementation _CPTextFieldValueBinder : CPBinder
 
++ (void)unbind:(CPString)aBinding forObject:(id)anObject
+{
+
+    var info = theBinding._info,
+        observedObject = [info objectForKey:CPObservedObjectKey];
+    [observedObject removeObserver:theBinding forKeyPath:@"CPControlTextDidBeginEditingNotification"];
+    [super unbind:aBinding forObject:anObject];
+}
+
+- (id)initWithBinding:(CPString)aBinding name:(CPString)aName to:(id)aDestination keyPath:(CPString)aKeyPath options:(CPDictionary)options from:(id)aSource
+{
+    self = [super initWithBinding:aBinding name:aName to:aDestination keyPath:aKeyPath options:options from:aSource];
+ 
+    if ([aDestination respondsToSelector:@selector(objectDidBeginEditing:)])
+        [defaultCenter
+            addObserver:aDestination
+               selector:@selector(objectDidBeginEditing:)
+                   name:CPControlTextDidBeginEditingNotification
+                 object:self];
+
+    if ([aDestination respondsToSelector:@selector(objectDidEndEditing:)])
+        [defaultCenter
+            addObserver:aDestination
+               selector:@selector(objectDidEndEditing:)
+                   name:CPControlTextDidEndEditingNotification
+                 object:self];
+
+    return self;
+}
+
 - (void)_updatePlaceholdersWithOptions:(CPDictionary)options forBinding:(CPString)aBinding
 {
     [super _updatePlaceholdersWithOptions:options];
