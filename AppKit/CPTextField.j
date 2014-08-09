@@ -1935,10 +1935,9 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 
 + (void)unbind:(CPString)aBinding forObject:(id)anObject
 {
-
-    var info = theBinding._info,
-        observedObject = [info objectForKey:CPObservedObjectKey];
-    [observedObject removeObserver:theBinding forKeyPath:@"CPControlTextDidBeginEditingNotification"];
+   var info = theBinding._info,
+        observedObject = [info objectForKey:CPObservedObjectKey];  // editor
+    [observedObject removeObserver:anObject forKeyPath:@"CPControlTextDidBeginEditingNotification"];
     [super unbind:aBinding forObject:anObject];
 }
 
@@ -1948,17 +1947,17 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
  
     if ([aDestination respondsToSelector:@selector(objectDidBeginEditing:)])
         [defaultCenter
-            addObserver:aDestination
+            addObserver:self
                selector:@selector(objectDidBeginEditing:)
                    name:CPControlTextDidBeginEditingNotification
-                 object:self];
+                 object:aDestination];
 
     if ([aDestination respondsToSelector:@selector(objectDidEndEditing:)])
         [defaultCenter
-            addObserver:aDestination
+            addObserver:self
                selector:@selector(objectDidEndEditing:)
                    name:CPControlTextDidEndEditingNotification
-                 object:self];
+                 object:aDestination];
 
     return self;
 }
