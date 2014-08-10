@@ -631,16 +631,18 @@
 }
 - (void)_selectionWillChange
 {
-/*
-    if (_isEditorDirty)
+    var editorsCount = [_editors count];
+
+    // Push back all data from the dirty editors before it is too late.
+    while (editorsCount--)
     {
-        var allBindings = [CPBinder allBindingsForObject:self],
-            count = [allBindings count],
-            i;
-        for (i = 0 ; i < count ; i++ )
-            [allBindings[i] reverseSetValueFor: allBindings[i]]
+        var allBindings = [CPBinder allBindingsForObject:_editors[editorsCount]],
+            allKeys = [allBindings allKeys],
+            keysCount = allKeys.length;
+
+            while (keysCount--)
+                [[allBindings objectForKey:allKeys[keysCount]] reverseSetValueFor:allKeys[keysCount]];
     }
-*/
 
     [super _selectionWillChange];
 }
