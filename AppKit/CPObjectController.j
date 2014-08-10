@@ -339,6 +339,24 @@
 }
 
 /*!
+    @ignore
+    These two private methods map CPTextField notifications to the CPEditorRegistration protocol
+*/
+- (void)_objectDidBeginEditing:(CPNotification)notification
+{
+    [self objectDidBeginEditing:[notification object]];
+}
+
+/*!
+    @ignore
+*/
+- (void) _objectDidEndEditing:(CPNotification)notification
+{
+    [self objectDidEndEditing:[notification object]];
+}
+
+
+/*!
     @return id - Returns the keys which are being observed.
 */
 - (id)observedKeys
@@ -404,20 +422,6 @@ var CPObjectControllerContentKey                        = @"CPObjectControllerCo
 {
     if (![self content] && [self automaticallyPreparesContent])
         [self prepareContent];
-}
-
-@end
-
-@implementation CPObjectController (CPEditorRegistration)
-
-- (void)_objectDidBeginEditing:(CPNotification)notification
-{
-    [self objectDidBeginEditing:[notification object]];
-}
-
-- (void) _objectDidEndEditing:(CPNotification)notification
-{
-    [self objectDidEndEditing:[notification object]];
 }
 
 @end

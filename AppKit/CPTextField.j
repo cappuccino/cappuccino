@@ -1957,6 +1957,7 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 {
     self = [super initWithBinding:aBinding name:aName to:aDestination keyPath:aKeyPath options:options from:aSource];
 
+    // This gives us support for the CPEditorRegistration informal protocol
     if ([aDestination respondsToSelector:@selector(_objectDidBeginEditing:)])
         [[CPNotificationCenter defaultCenter]
             addObserver:aDestination

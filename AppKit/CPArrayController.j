@@ -631,9 +631,10 @@
 }
 - (void)_selectionWillChange
 {
+    // Push back all data from the dirty editors before it is too late.
+
     var editorsCount = [_editors count];
 
-    // Push back all data from the dirty editors before it is too late.
     while (editorsCount--)
     {
         var allBindings = [CPBinder allBindingsForObject:_editors[editorsCount]],
