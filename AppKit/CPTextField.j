@@ -1935,12 +1935,7 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 
 + (void)unbind:(CPString)aBinding forObject:(id)anObject
 {
-    var bindings = [bindingsMap objectForKey:[anObject UID]];
-
-    if (!bindings)
-        return;
-
-    var theBinding = [bindings objectForKey:aBinding];
+    var theBinding = [self getBinding:aBinding forObject:anObject];
 
     if (!theBinding)
         return;
