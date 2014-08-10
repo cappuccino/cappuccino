@@ -1946,7 +1946,7 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 
         [[CPNotificationCenter defaultCenter]
             removeObserver:[theBinding._info objectForKey:CPObservedObjectKey]
-                      name:@"CPControlTextDidENDEditingNotification"
+                      name:@"CPControlTextDidEndEditingNotification"
                     object:anObject];
 
         [super unbind:aBinding forObject:anObject];
