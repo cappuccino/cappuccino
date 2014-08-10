@@ -47,7 +47,6 @@
 
     BOOL            _isEditable;
     BOOL            _automaticallyPreparesContent;
-    BOOL            _isEditorDirty;
 
     CPCountedSet    _observedKeys;
 }
@@ -411,14 +410,14 @@ var CPObjectControllerContentKey                        = @"CPObjectControllerCo
 
 @implementation CPObjectController (CPEditorRegistration)
 
-- (void)objectDidBeginEditing:(id)editor
+- (void)_objectDidBeginEditing:(CPNotification)notification
 {
-    _isEditorDirty = YES;
+    [self objectDidBeginEditing:[notification object]];
 }
 
-- (void) objectDidEndEditing:(id)editor
+- (void) _objectDidEndEditing:(CPNotification)notification
 {
-    _isEditorDirty = NO;
+    [self objectDidEndEditing:[notification object]];
 }
 
 @end

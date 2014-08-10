@@ -629,6 +629,22 @@
 
     return YES;
 }
+- (void)_selectionWillChange
+{
+/*
+    if (_isEditorDirty)
+    {
+        var allBindings = [CPBinder allBindingsForObject:self],
+            count = [allBindings count],
+            i;
+        for (i = 0 ; i < count ; i++ )
+            [allBindings[i] reverseSetValueFor: allBindings[i]]
+    }
+*/
+
+    [super _selectionWillChange];
+}
+
 
 /*!
     Returns an array of the selected objects.
