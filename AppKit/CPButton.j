@@ -108,7 +108,6 @@ CPButtonImageOffset   = 3.0;
 
     // NS-style Display Properties
     CPBezelStyle        _bezelStyle;
-//    CPControlSize       _controlSize;
 
     CPString            _keyEquivalent;
     unsigned            _keyEquivalentModifierMask;
