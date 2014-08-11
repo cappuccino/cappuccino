@@ -737,7 +737,7 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
 - (void)_trapNextMouseDown
 {
     // Don't dequeue the event so clicks in controls will work
-    [CPApp setTarget:self selector:@selector(_mouseWasClicked:) forNextEventMatchingMask:CPLeftMouseDownMask untilDate:nil inMode:CPDefaultRunLoopMode dequeue:NO];
+    [CPApp setTarget:self selector:@selector(_mouseWasClicked:) forNextEventMatchingMask:CPLeftMouseDownMask | CPRightMouseDownMask untilDate:nil inMode:CPDefaultRunLoopMode dequeue:NO];
 }
 
 @end
