@@ -126,7 +126,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     BOOL                        _isSelectable;
     BOOL                        _isSecure;
     BOOL                        _willBecomeFirstResponderByClick;
-    BOOL                        _invokedByKeyEvent;
+    BOOL                        _invokedByUserEvent;
 
     BOOL                        _drawsBackground;
 
@@ -975,9 +975,9 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     // Set a flag so that key handling methods (such as deleteBackward:)
     // know they were invoked from a user event.
-    _invokedByKeyEvent = YES;
+    _invokedByUserEvent = !!anEvent._DOMEvent;
     [self interpretKeyEvents:[anEvent]];
-    _invokedByKeyEvent = NO;
+    _invokedByUserEvent = NO;
 
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 }
@@ -1596,7 +1596,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 {
     var newValue = [_stringValue stringByReplacingCharactersInRange:range withString:characters];
 
-    if (_invokedByKeyEvent)
+    if (_invokedByUserEvent)
     {
         [self _setStringValue:newValue];
     }
