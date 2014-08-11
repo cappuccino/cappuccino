@@ -257,12 +257,34 @@ var NSButtonIsBorderedMask = 0x00800000,
             switch([cell controlSize])
             {
                 case CPSmallControlSize:
-                    self._frame.origin.y -= 4;
+                    self._frame.origin.y -= 5;
                     break;
 
                 case CPMiniControlSize:
                     self._frame.origin.y -= 12;
+                    self._frame.origin.x -= 5;
                     break;
+            }
+        }
+
+        if ([self isKindOfClass:[CPCheckBox class]])
+        {
+            // Convert Cocoa sizes to Cappuccino sizes.
+            switch([cell controlSize])
+            {
+                case CPSmallControlSize:
+                    self._frame.origin.x += 3;
+                    break;
+
+                case CPMiniControlSize:
+                    self._frame.origin.x += 4;
+                    break;
+
+                default:
+                case CPRegularControlSize:
+                    self._frame.origin.x += 4;
+                    break;
+
             }
         }
     }

@@ -120,7 +120,7 @@ var themedButtonValues = nil,
             }),
 
         smallBezelColor = PatternColor(
-            "{style}button-bezel-small{state}{position}.png",
+            "{style}button-bezel{state}{position}.png",
             {
                 styles: ["", "default"],
                 states: ["", "highlighted", "disabled"],
@@ -129,7 +129,7 @@ var themedButtonValues = nil,
                 orientation: PatternIsHorizontal
             }),
         miniBezelColor = PatternColor(
-            "{style}button-bezel-mini{state}{position}.png",
+            "{style}button-bezel{state}{position}.png",
             {
                 styles: ["", "default"],
                 states: ["", "highlighted", "disabled"],
@@ -231,7 +231,7 @@ var themedButtonValues = nil,
             [@"bezel-color",
                 miniBezelColor["default"]["disabled"],
                 [CPThemeStateControlSizeMini, CPThemeStateBordered, CPThemeStateDefault, CPThemeStateDisabled]],
-            [@"content-inset", CGInsetMake(0.0, 2.0, 0.0, 2.0), [CPThemeStateControlSizeMini, CPThemeStateBordered]],
+            [@"content-inset", CGInsetMake(0.0, 2.0, 2.0, 2.0), [CPThemeStateControlSizeMini, CPThemeStateBordered]],
 
 
             // Rounded
@@ -323,7 +323,7 @@ var themedButtonValues = nil,
                 orientation: PatternIsHorizontal
             }),
         smallColor = PatternColor(
-            "popup-bezel-small{state}{position}.png",
+            "popup-bezel{state}{position}.png",
             {
                 states: ["", "disabled"],
                 width: 3.0,
@@ -332,7 +332,7 @@ var themedButtonValues = nil,
                 orientation: PatternIsHorizontal
             }),
         miniColor = PatternColor(
-            "popup-bezel-mini{state}{position}.png",
+            "popup-bezel{state}{position}.png",
             {
                 states: ["", "disabled"],
                 width: 3.0,
@@ -347,7 +347,7 @@ var themedButtonValues = nil,
             [@"bezel-color",        regularColor["@"],                          CPThemeStateBordered],
             [@"bezel-color",        regularColor["disabled"],                   [CPThemeStateBordered, CPThemeStateDisabled]],
 
-            [@"content-inset",      CGInsetMake(0, 21.0 + 5.0, 0, 5.0),         CPThemeStateBordered],
+            [@"content-inset",      CGInsetMake(0, 22.0 + 5.0, 0, 5.0),         CPThemeStateBordered],
             [@"font",               [CPFont boldSystemFontOfSize:12.0]],
             [@"text-color",         regularTextColor],
             [@"text-shadow-color",  regularTextShadowColor],
@@ -372,7 +372,7 @@ var themedButtonValues = nil,
             [@"bezel-color",        miniColor["@"],                             [CPThemeStateControlSizeMini, CPThemeStateBordered]],
             [@"bezel-color",        miniColor["disabled"],                      [CPThemeStateControlSizeMini, CPThemeStateBordered, CPThemeStateDisabled]],
 
-            [@"content-inset",      CGInsetMake(0, 15.0 + 2.0, 0, 2.0),         [CPThemeStateControlSizeMini, CPThemeStateBordered]],
+            [@"content-inset",      CGInsetMake(0, 15.0 + 4.0, 2.0, 4.0),         [CPThemeStateControlSizeMini, CPThemeStateBordered]],
             [@"font",               [CPFont boldSystemFontOfSize:9.0]],
 
             [@"min-size", CGSizeMake(32.0, 16.0),                               CPThemeStateControlSizeMini],
@@ -1275,19 +1275,19 @@ var themedButtonValues = nil,
         regularImageDisabled = PatternImage("check-box-image.png", 21.0, 21.0),
         regularImageHighlighted = PatternImage("check-box-image-highlighted.png", 21.0, 21.0),
 
-        smallImageNormal = PatternImage("check-box-small-image.png", 19.0, 19.0),
-        smallImageSelected = PatternImage("check-box-small-image-selected.png", 19.0, 19.0),
-        smallImageSelectedHighlighted = PatternImage("check-box-small-image-selected-highlighted.png", 19.0, 19.0),
-        smallImageSelectedDisabled = PatternImage("check-box-small-image-selected.png", 19.0, 19.0),
-        smallImageDisabled = PatternImage("check-box-small-image.png", 19.0, 19.0),
-        smallImageHighlighted = PatternImage("check-box-small-image-highlighted.png", 19.0, 19.0),
+        smallImageNormal = PatternImage("check-box-image.png", 19.0, 19.0),
+        smallImageSelected = PatternImage("check-box-image-selected.png", 19.0, 19.0),
+        smallImageSelectedHighlighted = PatternImage("check-box-image-selected-highlighted.png", 19.0, 19.0),
+        smallImageSelectedDisabled = PatternImage("check-box-image-selected.png", 19.0, 19.0),
+        smallImageDisabled = PatternImage("check-box-image.png", 19.0, 19.0),
+        smallImageHighlighted = PatternImage("check-box-image-highlighted.png", 19.0, 19.0),
 
-        miniImageNormal = PatternImage("check-box-mini-image.png", 16.0, 16.0),
-        miniImageSelected = PatternImage("check-box-mini-image-selected.png", 16.0, 16.0),
-        miniImageSelectedHighlighted = PatternImage("check-box-mini-image-selected-highlighted.png", 16.0, 16.0),
-        miniImageSelectedDisabled = PatternImage("check-box-mini-image-selected.png", 16.0, 16.0),
-        miniImageDisabled = PatternImage("check-box-mini-image.png", 16.0, 16.0),
-        miniImageHighlighted = PatternImage("check-box-mini-image-highlighted.png", 16.0, 16.0);
+        miniImageNormal = PatternImage("check-box-image.png", 16.0, 16.0),
+        miniImageSelected = PatternImage("check-box-image-selected.png", 16.0, 16.0),
+        miniImageSelectedHighlighted = PatternImage("check-box-image-selected-highlighted.png", 16.0, 16.0),
+        miniImageSelectedDisabled = PatternImage("check-box-image-selected.png", 16.0, 16.0),
+        miniImageDisabled = PatternImage("check-box-image.png", 16.0, 16.0),
+        miniImageHighlighted = PatternImage("check-box-image-highlighted.png", 16.0, 16.0);
 
     // Global
     themedCheckBoxValues =
@@ -1320,8 +1320,8 @@ var themedButtonValues = nil,
         [@"image",          smallImageDisabled,                                     [CPThemeStateControlSizeSmall, CPThemeStateDisabled]],
         [@"image",          smallImageSelectedDisabled,                             [CPThemeStateControlSizeSmall, CPThemeStateSelected, CPThemeStateDisabled]],
 
-        [@"min-size",       CGSizeMake(19.0, 19.0)],
-        [@"max-size",       CGSizeMake(-1.0, -1.0)],
+        [@"min-size",       CGSizeMake(19.0, 19.0),                                 CPThemeStateControlSizeSmall],
+        [@"max-size",       CGSizeMake(-1.0, -1.0),                                 CPThemeStateControlSizeSmall],
 
         // CPThemeStateControlSizeMini
         [@"image",          miniImageNormal,                                        [CPThemeStateControlSizeMini, CPThemeStateNormal]],
@@ -1887,7 +1887,7 @@ var themedButtonValues = nil,
             }),
 
         smallBezelUp = PatternColor(
-            "stepper-bezel-small{state}-up{position}.png",
+            "stepper-bezel-big{state}-up{position}.png",
             {
                 states: ["", "highlighted", "disabled"],
                 width: 3.0,
@@ -1897,7 +1897,7 @@ var themedButtonValues = nil,
             }),
 
         smallBezelDown = PatternColor(
-            "stepper-bezel-small{state}-down{position}.png",
+            "stepper-bezel-big{state}-down{position}.png",
             {
                 states: ["", "highlighted", "disabled"],
                 width: 3.0,
@@ -1907,7 +1907,7 @@ var themedButtonValues = nil,
             }),
 
         miniBezelUp = PatternColor(
-            "stepper-bezel-mini{state}-up{position}.png",
+            "stepper-bezel-big{state}-up{position}.png",
             {
                 states: ["", "highlighted", "disabled"],
                 width: 2.0,
@@ -1917,7 +1917,7 @@ var themedButtonValues = nil,
             }),
 
         miniBezelDown = PatternColor(
-            "stepper-bezel-mini{state}-down{position}.png",
+            "stepper-bezel-big{state}-down{position}.png",
             {
                 states: ["", "highlighted", "disabled"],
                 width: 2.0,
