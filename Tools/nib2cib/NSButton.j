@@ -25,6 +25,7 @@
 
 @import <AppKit/CPButton.j>
 @import <AppKit/CPCheckBox.j>
+@import <AppKit/CPPopUpButton.j>
 @import <AppKit/CPRadio.j>
 
 @import "NSCell.j"
@@ -257,7 +258,7 @@ var NSButtonIsBorderedMask = 0x00800000,
             switch([cell controlSize])
             {
                 case CPSmallControlSize:
-                    self._frame.origin.y -= 5;
+                    self._frame.origin.y -= 4;
                     break;
 
                 case CPMiniControlSize:
@@ -285,6 +286,21 @@ var NSButtonIsBorderedMask = 0x00800000,
                     self._frame.origin.x += 4;
                     break;
 
+            }
+        }
+
+        if ([self isKindOfClass:[CPPopUpButton class]])
+        {
+            // Convert Cocoa sizes to Cappuccino sizes.
+            switch([cell controlSize])
+            {
+                case CPSmallControlSize:
+                    self._frame.origin.y += 4;
+                    break;
+
+                case CPMiniControlSize:
+                    self._frame.origin.y += 3;
+                    break;
             }
         }
     }
