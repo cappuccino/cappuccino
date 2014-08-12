@@ -166,14 +166,12 @@ var CPSystemTypesetterFactory;
     if (!tabStops)
         tabStops = [CPParagraphStyle _defaultTabStops];
 
-    var l = tabStops.length,
-        i;
-
+    var l = tabStops.length;
 
     if (aWidth > tabStops[l - 1]._location)
         return nil;
 
-    for (i = l - 1; i >= 0; i--)
+    for (var i = l - 1; i >= 0; i--)
     {
         if (aWidth > tabStops[i]._location)
         {
