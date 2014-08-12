@@ -205,7 +205,6 @@ CPButtonImageOffset   = 3.0;
 {
     [super setControlSize:aControlSize];
     [self sizeToControlSize];
-    [self setFont:[CPFont systemFontForControlSize:[self controlSize]]];
 }
 
 

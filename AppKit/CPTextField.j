@@ -235,7 +235,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 {
     [super setControlSize:aControlSize];
     [self sizeToControlSize];
-    [self setFont:[CPFont systemFontForControlSize:[self controlSize]]];
 }
 
 #pragma mark -
