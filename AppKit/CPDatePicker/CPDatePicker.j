@@ -28,7 +28,6 @@
 @import <Foundation/CPArray.j>
 @import <Foundation/CPObject.j>
 @import <Foundation/CPDate.j>
-@import <Foundation/CPDateFormatter.j>
 @import <Foundation/CPLocale.j>
 @import <Foundation/CPTimeZone.j>
 
@@ -292,13 +291,10 @@ CPEraDatePickerElementFlag              = 0x0100;
 /*! Set the objectValue of the datePicker. It has to be a CPDate
     @param aDateValue the dateValue
 */
-- (void)setObjectValue:(id)aValue
+- (void)setObjectValue:(CPDate)aValue
 {
-    if ([aValue isKindOfClass:CPString])
-    {
-        var dateFormatter = [CPDateFormatter new];
-        aValue = [dateFormatter dateFromString:aValue];
-    }
+    if (![aValue isKindOfClass:[CPDate class]])
+        return;
 
     [self setDateValue:aValue];
 }
