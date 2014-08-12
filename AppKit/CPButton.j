@@ -206,7 +206,7 @@ CPButtonImageOffset   = 3.0;
     [super setControlSize:aControlSize];
 
     if ([self isBordered])
-        [self sizeToControlSize];
+        [self _sizeToControlSize];
 }
 
 

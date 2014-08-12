@@ -219,9 +219,9 @@ var CPControlBlackColor = [CPColor blackColor];
     if (_controlSize === aControlSize)
         return;
 
-    [self unsetThemeState:[self controlSizeThemeState]];
+    [self unsetThemeState:[self _controlSizeThemeState]];
     _controlSize = aControlSize;
-    [self setThemeState:[self controlSizeThemeState]];
+    [self setThemeState:[self _controlSizeThemeState]];
 
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
@@ -231,7 +231,7 @@ var CPControlBlackColor = [CPColor blackColor];
     Gets the current theme state according to the current controlSize.
     @return a CPThemeState
 */
-- (CPThemeState)controlSizeThemeState
+- (ThemeState)_controlSizeThemeState
 {
     switch(_controlSize)
     {
@@ -252,7 +252,7 @@ var CPControlBlackColor = [CPColor blackColor];
     Change frame size according to the theme control size theme constraints
     Basically for height to min-size.
 */
-- (void)sizeToControlSize
+- (void)_sizeToControlSize
 {
     var frameSize = [self frameSize],
         minSize = [self currentValueForThemeAttribute:@"min-size"],

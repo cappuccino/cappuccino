@@ -179,7 +179,7 @@
 /*! @ignore */
 - (void)layoutSubviews
 {
-    var controlSizeThemeState = [self controlSizeThemeState],
+    var controlSizeThemeState = [self _controlSizeThemeState],
         aFrame = [self frame],
         upSize = [self valueForThemeAttribute:@"up-button-size" inState:controlSizeThemeState],
         downSize = [self valueForThemeAttribute:@"down-button-size" inState:controlSizeThemeState],

@@ -322,6 +322,7 @@ var themedButtonValues = nil,
                 rightWidth: 24.0,
                 orientation: PatternIsHorizontal
             }),
+
         smallColor = PatternColor(
             "popup-bezel{state}{position}.png",
             {
@@ -331,6 +332,7 @@ var themedButtonValues = nil,
                 rightWidth: 19.0,
                 orientation: PatternIsHorizontal
             }),
+
         miniColor = PatternColor(
             "popup-bezel{state}{position}.png",
             {

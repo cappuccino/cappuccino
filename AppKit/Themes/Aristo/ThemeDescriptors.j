@@ -634,7 +634,7 @@ var themedButtonValues = nil,
 + (CPPopUpButton)themedPopUpButton
 {
     var button = [[CPPopUpButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 24.0) pullsDown:NO],
-        RegularColor = PatternColor(
+        regularColor = PatternColor(
             [
                 ["popup-bezel-left.png", 3.0, 24.0],
                 ["popup-bezel-center.png", 1.0, 24.0],
@@ -659,6 +659,7 @@ var themedButtonValues = nil,
                 rightWidth: 19.0,
                 orientation: PatternIsHorizontal
             }),
+
         miniColor = PatternColor(
             "popup-bezel{state}{position}.png",
             {
@@ -671,7 +672,7 @@ var themedButtonValues = nil,
 
         themeValues =
         [
-            [@"bezel-color",        RegularColor,          CPThemeStateBordered],
+            [@"bezel-color",        regularColor,          CPThemeStateBordered],
             [@"bezel-color",        regularDisabledColor,  [CPThemeStateBordered, CPThemeStateDisabled]],
 
             [@"content-inset",      CGInsetMake(0, 22.0 + 5.0, 0, 5.0), CPThemeStateBordered],

@@ -230,7 +230,11 @@ CPEraDatePickerElementFlag              = 0x0100;
 - (void)setControlSize:(CPControlSize)aControlSize
 {
     [super setControlSize:aControlSize];
-    [self sizeToControlSize];
+
+    console.log(_datePickerStyle);
+
+    if ([self datePickerStyle] == CPTextFieldAndStepperDatePickerStyle || [self datePickerStyle] == CPTextFieldDatePickerStyle)
+        [self _sizeToControlSize];
 }
 
 
@@ -395,6 +399,8 @@ CPEraDatePickerElementFlag              = 0x0100;
 - (void)setDatePickerStyle:(CPInteger)aDatePickerStyle
 {
     _datePickerStyle = aDatePickerStyle;
+
+    [self setControlSize:[self controlSize]];
 
     [self setNeedsDisplay:YES];
     [self setNeedsLayout];
@@ -664,12 +670,13 @@ var CPDatePickerModeKey         = @"CPDatePickerModeKey",
         _timeInterval = [aCoder decodeDoubleForKey:CPIntervalKey];
         _datePickerMode = [aCoder decodeIntForKey:CPDatePickerModeKey];
         _datePickerElements = [aCoder decodeIntForKey:CPDatePickerElementsKey];
-        _datePickerStyle = [aCoder decodeIntForKey:CPDatePickerStyleKey];
+        [self setDatePickerStyle: [aCoder decodeIntForKey:CPDatePickerStyleKey]];
         _locale = [aCoder decodeObjectForKey:CPLocaleKey];
         _dateValue = [aCoder decodeObjectForKey:CPDateValueKey];
         _backgroundColor = [aCoder decodeObjectForKey:CPBackgroundColorKey];
         _drawsBackground = [aCoder decodeBoolForKey:CPDrawsBackgroundKey];
         _isBordered = [aCoder decodeBoolForKey:CPBorderedKey];
+
         [self _init];
     }
 
