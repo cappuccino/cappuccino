@@ -231,8 +231,6 @@ CPEraDatePickerElementFlag              = 0x0100;
 {
     [super setControlSize:aControlSize];
 
-    console.log(_datePickerStyle);
-
     if ([self datePickerStyle] == CPTextFieldAndStepperDatePickerStyle || [self datePickerStyle] == CPTextFieldDatePickerStyle)
         [self _sizeToControlSize];
 }
@@ -298,7 +296,7 @@ CPEraDatePickerElementFlag              = 0x0100;
 {
     if ([aValue isKindOfClass:CPString])
     {
-        var dateFormatter = [[CPDateFormatter alloc] init];
+        var dateFormatter = [CPDateFormatter new];
         aValue = [dateFormatter dateFromString:aValue];
     }
 

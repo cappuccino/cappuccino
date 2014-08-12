@@ -54,7 +54,6 @@
 
 - (void)NS_initWithCell:(NSCell)cell
 {
-
     [self setSendsActionOnEndEditing:[cell sendsActionOnEndEditing]];
     [self setObjectValue:[cell objectValue]];
     [self setFont:[cell font]];

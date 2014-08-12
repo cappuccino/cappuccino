@@ -28,8 +28,7 @@
 @global CPMiniControlSize
 @global CPSmallControlSize
 
-var CONTROL_HEIGHT = 16.,
-    BUTTON_HEIGHT = 20.;
+var CONTROL_HEIGHT = 16.;
 
 @implementation _CPRuleEditorViewSliceRow : _CPRuleEditorViewSlice
 {
@@ -94,8 +93,8 @@ var CONTROL_HEIGHT = 16.,
     var button = [self _createRowButton];
 
     [button setToolTip:[_ruleEditor _toolTipForAddSimpleRowButton]];
-    [button setValue:[_ruleEditor _addNormalImage] forThemeAttribute:@"image" inState:CPThemeStateNormal];
-    [button setValue:[_ruleEditor _addHighlightedImage] forThemeAttribute:@"image" inState:CPThemeStateHighlighted];
+    [button setValue:[_ruleEditor _imageAdd] forThemeAttribute:@"image" inState:CPThemeStateNormal];
+    [button setValue:[_ruleEditor _imageAddHighlighted] forThemeAttribute:@"image" inState:CPThemeStateHighlighted];
 
     [button setAction:@selector(_addOption:)];
     [button setTarget:self];
@@ -108,8 +107,8 @@ var CONTROL_HEIGHT = 16.,
     var button = [self _createRowButton];
 
     [button setToolTip:[_ruleEditor _toolTipForDeleteRowButton]];
-    [button setValue:[_ruleEditor _removeNormalImage] forThemeAttribute:@"image" inState:CPThemeStateNormal];
-    [button setValue:[_ruleEditor _removeHighlightedImage] forThemeAttribute:@"image" inState:CPThemeStateHighlighted];
+    [button setValue:[_ruleEditor _imageRemove] forThemeAttribute:@"image" inState:CPThemeStateNormal];
+    [button setValue:[_ruleEditor _imageRemoveHighlighted] forThemeAttribute:@"image" inState:CPThemeStateHighlighted];
 
     [button setAction:@selector(_deleteOption:)];
     [button setTarget:self];
@@ -364,11 +363,12 @@ var CONTROL_HEIGHT = 16.,
         rowHeight   = [_ruleEditor rowHeight],
         count       = [_ruleOptionViews count],
         sliceFrame  = [self frame],
+        image       = [_ruleEditor _imageAdd],
 
-        buttonFrame = CGRectMake(CGRectGetWidth(sliceFrame) - BUTTON_HEIGHT - [self _rowButtonsRightHorizontalPadding], ([_ruleEditor rowHeight] - BUTTON_HEIGHT) / 2 - 1, BUTTON_HEIGHT, BUTTON_HEIGHT);
+        buttonFrame = CGRectMake(CGRectGetWidth(sliceFrame) - [image size].width - [self _rowButtonsRightHorizontalPadding], ([_ruleEditor rowHeight] - [image size].height) / 2 - 1, [image size].width, [image size].height);
 
     [_addButton setFrame:buttonFrame];
-    buttonFrame.origin.x -= BUTTON_HEIGHT + [self _rowButtonsInterviewHorizontalPadding];
+    buttonFrame.origin.x -= [image size].width + [self _rowButtonsInterviewHorizontalPadding];
     [_subtractButton setFrame:buttonFrame];
 
     if (widthChanged)
@@ -383,6 +383,7 @@ var CONTROL_HEIGHT = 16.,
         var ruleOptionView = _ruleOptionViews[i],
             optionFrame = _ruleOptionFrames[i];
 
+        // Align to the top pixel (-1)
         optionFrame.origin.y = (rowHeight - CGRectGetHeight(optionFrame)) / 2 - 1;
 
         if (widthChanged)

@@ -1892,22 +1892,22 @@ TODO: implement
     return [self valueForThemeAttribute:@"font-color"];
 }
 
-- (CPImage)_addNormalImage
+- (CPImage)_imageAdd
 {
     return [self valueForThemeAttribute:@"add-image" inState:CPThemeStateNormal];
 }
 
-- (CPImage)_addHighlightedImage
+- (CPImage)_imageAddHighlighted
 {
     return [self valueForThemeAttribute:@"add-image" inState:CPThemeStateHighlighted];
 }
 
-- (CPImage)_removeNormalImage
+- (CPImage)_imageRemove
 {
     return [self valueForThemeAttribute:@"remove-image" inState:CPThemeStateNormal];
 }
 
-- (CPImage)_removeHighlightedImage
+- (CPImage)_imageRemoveHighlighted
 {
     return [self valueForThemeAttribute:@"remove-image" inState:CPThemeStateHighlighted];
 }
