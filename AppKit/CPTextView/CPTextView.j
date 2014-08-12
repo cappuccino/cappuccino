@@ -1580,7 +1580,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
         if (peek !== CPNotFound)
         {
-            lastIndex = (lastIndex === CPNotFound ? peek : MAX(lastIndex, peek));
+            lastIndex = lastIndex === CPNotFound ? peek : MAX(lastIndex, peek);
         }
     }
 
