@@ -148,7 +148,7 @@ var CPSystemTypesetterFactory;
 
 + (id)sharedInstance
 {
-    if (_sharedSimpleTypesetter === nil)
+    if (!_sharedSimpleTypesetter)
         _sharedSimpleTypesetter = [[CPSimpleTypesetter alloc] init];
 
     return _sharedSimpleTypesetter;
