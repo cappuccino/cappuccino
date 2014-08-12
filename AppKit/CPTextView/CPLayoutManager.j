@@ -141,7 +141,7 @@ var _objectsInRange = function(aList, aRange)
 
 @implementation _CPLineFragment : CPObject
 {
-    CPArray         _glyphsFrames @accessors(getter=glyphsFrames);
+    CPArray         _glyphsFrames @accessors(getter=glyphFrames);
 
     BOOL            _isInvalid;
     CGRect          _fragmentRect;

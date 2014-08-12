@@ -91,7 +91,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     CPDictionary                _typingAttributes           @accessors(property=typingAttributes);
     CPFont                      _font                       @accessors(property=font);
     CPLayoutManager             _layoutManager              @accessors(getter=layoutManager);
-    CPRange                     _selectionRange             @accessors(getter=selecionRange);
+    CPRange                     _selectionRange             @accessors(getter=selectedRange);
     CPSelectionGranularity      _selectionGranularity       @accessors(property=selectionGranularity);
     CPTextContainer             _textContainer              @accessors(property=textContainer);
     CPTextStorage               _textStorage                @accessors(getter=textStorage);
