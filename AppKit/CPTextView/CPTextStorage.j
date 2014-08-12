@@ -45,7 +45,7 @@ CPTextStorageDidProcessEditingNotification = @"CPTextStorageDidProcessEditingNot
     CPMutableArray _layoutManagers  @accessors(getter=layoutManagers);
     CPRange        _editedRange     @accessors(getter=editedRange);
     id             _delegate        @accessors(property=delegate);
-    int            _changeInLength  @accessors(property=changeinLength);
+    int            _changeInLength  @accessors(property=changeInLength);
     unsigned       _editedMask      @accessors(property=editedMask);
 
     int            _editCount; // {begin,end}Editing counter
