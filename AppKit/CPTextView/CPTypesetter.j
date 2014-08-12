@@ -191,10 +191,6 @@ var CPSystemTypesetterFactory;
         advancements:(CPArray)advancements
         lineCount:(unsigned)lineCount
 {
-
-    if (!lineCount)
-        return NO;
-
     var myX = 0,
         rect = CGRectMake(lineOrigin.x, lineOrigin.y, _lineWidth, _lineHeight);
 
@@ -218,6 +214,9 @@ var CPSystemTypesetterFactory;
 
     [_layoutManager setLocation:CPMakePoint(myX, _lineBase) forStartOfGlyphRange:lineRange];
     [_layoutManager _setAdvancements:advancements forGlyphRange:lineRange];
+
+    if (!lineCount)
+        return NO;
 
     return ([_layoutManager _rescuingInvalidFragmentsWasPossibleForGlyphRange:lineRange]);
 }
