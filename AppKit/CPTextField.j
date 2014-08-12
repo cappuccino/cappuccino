@@ -1935,19 +1935,18 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 
 + (void)unbind:(CPString)aBinding forObject:(id)anObject
 {
-    var theBinding = [self getBinding:aBinding forObject:anObject];
+    var theBinding = [self getBinding:aBinding forObject:anObject],
+        notificationCenter = [CPNotificationCenter defaultCenter];
 
     if (theBinding)
     {
-        [[CPNotificationCenter defaultCenter]
-            removeObserver:[theBinding._info objectForKey:CPObservedObjectKey]
-                      name:@"CPControlTextDidBeginEditingNotification"
-                    object:anObject];
+        [notificationCenter removeObserver:[theBinding._info objectForKey:CPObservedObjectKey]
+                                      name:@"CPControlTextDidBeginEditingNotification"
+                                    object:anObject];
 
-        [[CPNotificationCenter defaultCenter]
-            removeObserver:[theBinding._info objectForKey:CPObservedObjectKey]
-                      name:@"CPControlTextDidEndEditingNotification"
-                    object:anObject];
+        [notificationCenter removeObserver:[theBinding._info objectForKey:CPObservedObjectKey]
+                                      name:@"CPControlTextDidEndEditingNotification"
+                                    object:anObject];
 
         [super unbind:aBinding forObject:anObject];
     }
@@ -1955,22 +1954,31 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 
 - (id)initWithBinding:(CPString)aBinding name:(CPString)aName to:(id)aDestination keyPath:(CPString)aKeyPath options:(CPDictionary)options from:(id)aSource
 {
-    self = [super initWithBinding:aBinding name:aName to:aDestination keyPath:aKeyPath options:options from:aSource];
+    self = [super initWithBinding:aBinding
+                             name:aName
+                               to:aDestination
+                          keyPath:aKeyPath
+                          options:options
+                             from:aSource];
+
+    var notificationCenter = [CPNotificationCenter defaultCenter];
 
     // This gives us support for the CPEditorRegistration informal protocol
     if ([aDestination respondsToSelector:@selector(_objectDidBeginEditing:)])
-        [[CPNotificationCenter defaultCenter]
-            addObserver:aDestination
-               selector:@selector(_objectDidBeginEditing:)
-                   name:CPControlTextDidBeginEditingNotification
-                 object:aSource];
+    {
+        [notificationCenter addObserver:aDestination
+                               selector:@selector(_objectDidBeginEditing:)
+                                   name:CPControlTextDidBeginEditingNotification
+                                 object:aSource];
+    }
 
     if ([aDestination respondsToSelector:@selector(_objectDidEndEditing:)])
-        [[CPNotificationCenter defaultCenter]
-            addObserver:aDestination
-               selector:@selector(_objectDidEndEditing:)
-                   name:CPControlTextDidEndEditingNotification
-                 object:aSource];
+    {
+        [notificationCenter addObserver:aDestination
+                               selector:@selector(_objectDidEndEditing:)
+                                   name:CPControlTextDidEndEditingNotification
+                                 object:aSource];
+    }
 
     return self;
 }
