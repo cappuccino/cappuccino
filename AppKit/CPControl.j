@@ -264,7 +264,7 @@ var CPControlBlackColor = [CPColor blackColor];
     if (minSize.height > 0)
         frameSize.height = minSize.height;
 
-    [super setFrameSize:frameSize];
+    [self setFrameSize:frameSize];
 }
 
 

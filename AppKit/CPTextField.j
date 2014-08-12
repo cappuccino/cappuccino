@@ -234,7 +234,9 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 - (void)setControlSize:(CPControlSize)aControlSize
 {
     [super setControlSize:aControlSize];
-    [self sizeToControlSize];
+
+    if ([self isBezeled])
+        [self sizeToControlSize];
 }
 
 #pragma mark -
