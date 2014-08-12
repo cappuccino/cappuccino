@@ -1847,7 +1847,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     if (!wind)
         return NO;
 
-    var frame = [self convertRectToBase:[self bounds]],
+    var frame = [self convertRectToBase:[self contentRectForBounds:[self bounds]]],
         usableRect = [[wind platformWindow] usableContentFrame];
 
     frame.origin = [wind convertBaseToGlobal:frame.origin];
