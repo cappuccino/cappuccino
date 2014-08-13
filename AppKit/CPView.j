@@ -1805,6 +1805,9 @@ var CPViewFlags                     = { },
             _DOMElement.style.background = "";
             _DOMImageParts[0].style.background = [_backgroundColor cssString];
 
+            if (patternImage)
+                _DOMImageParts[0].style.backgroundSize = [patternImage size].width + "px " + [patternImage size].height + "px";
+
             if (CPFeatureIsCompatible(CPOpacityRequiresFilterFeature))
                 _DOMImageParts[0].style.filter = "alpha(opacity=" + [_backgroundColor alphaComponent] * 100 + ")";
             else
@@ -1815,6 +1818,9 @@ var CPViewFlags                     = { },
         }
         else
             _DOMElement.style.background = colorCSS;
+
+            if (patternImage)
+                _DOMElement.style.backgroundSize = [patternImage size].width + "px " + [patternImage size].height + "px";
     }
     else
     {
