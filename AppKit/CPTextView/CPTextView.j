@@ -540,12 +540,12 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
                                     inTextContainer:_textContainer
                                     rectCount:nil],
             effectiveSelectionColor = [self _isFocused] ? [_selectedTextAttributes objectForKey:CPBackgroundColorAttributeName] : [CPColor _selectedTextBackgroundColorUnfocussed],
-            lenghtRect = rects.length;
+            lengthRect = rects.length;
 
         CGContextSaveGState(ctx);
         CGContextSetFillColor(ctx, effectiveSelectionColor);
 
-        for (var i = 0; i < lenghtRect; i++)
+        for (var i = 0; i < lengthRect; i++)
         {
             rects[i].origin.x += _textContainerOrigin.x;
             rects[i].origin.y += _textContainerOrigin.y;
