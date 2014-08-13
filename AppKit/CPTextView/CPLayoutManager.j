@@ -643,12 +643,13 @@ var _objectsInRange = function(aList, aRange)
 {
     var l = _lineFragments.length,
         location = aRange.location,
-        found = NO;
+        found = NO,
+        targetLine = 0;
 
    // try to find the first linefragment of the desired range
-    for (var i = 0; i < l; i++)
+    for (; targetLine < l; targetLine++)
     {
-        if (CPLocationInRange(location, _lineFragments[i]._range))
+        if (CPLocationInRange(location, _lineFragments[targetLine]._range))
         {
             found = YES;
             break;
@@ -658,20 +659,20 @@ var _objectsInRange = function(aList, aRange)
     if (!found)
         return NO;
 
-    if (!_lineFragmentsForRescue[i])
+    if (!_lineFragmentsForRescue[targetLine])
         return NO;
 
-    var startLineForDOMRemoval = i,
+    var startLineForDOMRemoval = targetLine,
         isIdentical = YES,
-        newLineFragment= _lineFragments[i],
-        oldLineFragment = _lineFragmentsForRescue[i],
+        newLineFragment= _lineFragments[targetLine],
+        oldLineFragment = _lineFragmentsForRescue[targetLine],
         oldLength = CPMaxRange([_lineFragmentsForRescue lastObject]._range),
         newLength = [[_textStorage string].length];
 
     if (ABS(newLength - oldLength) > 1)
         return NO;
 
-    if (![oldLineFragment isVisuallyIdenticalToFragment: newLineFragment])
+    if (![oldLineFragment isVisuallyIdenticalToFragment:newLineFragment])
     {
         isIdentical = NO;
 
@@ -679,7 +680,7 @@ var _objectsInRange = function(aList, aRange)
         if (newLength < oldLength && oldLineFragment._range.length == 1 && newLineFragment._range.length > 1 && newLineFragment._range.location === oldLineFragment._range.location)
         {
             isIdentical = YES;
-            i--;
+            targetLine--;
             startLineForDOMRemoval--;
         }
 
@@ -694,19 +695,20 @@ var _objectsInRange = function(aList, aRange)
     // patch the linefragments instead of re-layoutung
     if (isIdentical)
     {
-        var rangeOffset = CPMaxRange(_lineFragments[i]._range) - CPMaxRange(_lineFragmentsForRescue[startLineForDOMRemoval]._range);
+        var rangeOffset = CPMaxRange(_lineFragments[targetLine]._range) - CPMaxRange(_lineFragmentsForRescue[startLineForDOMRemoval]._range);
 
         if (!rangeOffset)
             return NO;
 
-        var verticalOffset = _lineFragments[i]._usedRect.origin.y - _lineFragmentsForRescue[startLineForDOMRemoval]._usedRect.origin.y,
-            l = _lineFragmentsForRescue.length;
+        var verticalOffset = _lineFragments[targetLine]._usedRect.origin.y - _lineFragmentsForRescue[startLineForDOMRemoval]._usedRect.origin.y,
+            l = _lineFragmentsForRescue.length,
+            newTargetLine = startLineForDOMRemoval + 1;
 
-        for (var i = startLineForDOMRemoval + 1; i < l; i++)
+        for (; newTargetLine < l; newTargetLine++)
         {
             _lineFragmentsForRescue[i]._isInvalid = NO;    // protect them from final removal
             [_lineFragmentsForRescue[i] _relocateVerticallyByY:verticalOffset rangeOffset:rangeOffset];
-            _lineFragments.push(_lineFragmentsForRescue[i]);
+            _lineFragments.push(_lineFragmentsForRescue[newTargetLine]);
         }
     }
 
