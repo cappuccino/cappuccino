@@ -636,7 +636,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 {
     var textStorageLength = [_layoutManager numberOfCharacters];
 
-    if (textStorageLength == 0)
+    if (textStorageLength === 0)
         return CPMakeRange(0, 0);
 
     if (proposedRange.location >= textStorageLength)
@@ -746,7 +746,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
                                 inTextContainer:_textContainer
                                 fractionOfDistanceThroughGlyph:fraction];
 
-    if (index == CPNotFound)
+    if (index === CPNotFound)
         index = _scrollingDownward ? CPMaxRange(oldRange) : oldRange.location;
 
     if (index > oldRange.location)
