@@ -1211,10 +1211,15 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     else
         changedRange = _selectionRange;
 
-    if (_previousSelectionGranularity > 0 &&
-        changedRange.location > 0 && [self _isCharacterAtIndex:(changedRange.location - 1) granularity:_previousSelectionGranularity] &&
-        changedRange.location < [[self string] length] && [self _isCharacterAtIndex:CPMaxRange(changedRange) granularity:_previousSelectionGranularity])
+    var isCharacterAtLocationIndex = [self _isCharacterAtIndex:(changedRange.location - 1) granularity:_previousSelectionGranularity],
+        isCharacterAtMaxIndex = [self _isCharacterAtIndex:CPMaxRange(changedRange) granularity:_previousSelectionGranularity],
+        stringLength = [[self string] length];
+
+    if ((_previousSelectionGranularity > 0) && (changedRange.location > 0) && isCharacterAtLocationIndex &&
+            (changedRange.location < stringLength) && isCharacterAtMaxIndex)
+    {
         changedRange.length++;
+    }
 
     [self _deleteForRange:changedRange];
 }
