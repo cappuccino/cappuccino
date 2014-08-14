@@ -44,6 +44,8 @@
 
     _altIncrementValue  = [cell altIncrementValue];
     [self setSliderType:[cell sliderType]];
+
+    [self _adjustNib2CibSize];
 }
 
 @end

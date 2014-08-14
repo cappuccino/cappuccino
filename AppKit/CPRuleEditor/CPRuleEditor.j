@@ -150,7 +150,7 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
             @"font-color": [CPNull null],
             @"add-image": [CPNull null],
             @"remove-image": [CPNull null],
-            @"vertical-alignment": [CPNull null],
+            @"vertical-alignment": [CPNull null]
         };
 }
 

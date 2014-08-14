@@ -44,6 +44,8 @@
 
     // Uncomment if we add support for token styles.
     // _style = [cell tokenStyle];
+
+    [self _adjustNib2CibSize];
 }
 
 @end

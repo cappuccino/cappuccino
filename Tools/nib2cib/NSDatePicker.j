@@ -92,19 +92,19 @@ var NSDatePickerDefaultSize = 22,
             _bounds.size.width = MAX(_frame.size.width, minSize.width);
         }
 
-        _frame.origin.y -= _frame.size.height - NSDatePickerDefaultSize - 4;
+        // _frame.origin.y -= _frame.size.height - NSDatePickerDefaultSize - 4;
 
-        // Convert Cocoa sizes to Cappuccino sizes.
-        switch([cell controlSize])
-        {
-            case CPSmallControlSize:
-                self._frame.origin.y -= 3;
-                break;
-
-            case CPMiniControlSize:
-                self._frame.origin.y -= 6;
-                break;
-        }
+        // // Convert Cocoa sizes to Cappuccino sizes.
+        // switch([cell controlSize])
+        // {
+        //     case CPSmallControlSize:
+        //         self._frame.origin.y -= 3;
+        //         break;
+        //
+        //     case CPMiniControlSize:
+        //         self._frame.origin.y -= 6;
+        //         break;
+        // }
     }
     else
     {
@@ -142,7 +142,7 @@ var NSDatePickerDefaultSize = 22,
             _bounds.size.width = MAX(_frame.size.width, minSize.width);
         }
 
-        _frame.origin.y -= _frame.size.height - NSDatePickerCalendarDefaultSize - 1;
+        // _frame.origin.y -= _frame.size.height - NSDatePickerCalendarDefaultSize - 1;
     }
 
     if ([cell font]._name === IBDefaultFontFace && [[cell font] size] == IBDefaultFontSize)
@@ -169,7 +169,10 @@ var NSDatePickerDefaultSize = 22,
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
-    return [super NS_initWithCoder:aCoder];
+    self = [super NS_initWithCoder:aCoder];
+    [self _adjustNib2CibSize];
+
+    return self
 }
 
 - (Class)classForKeyedArchiver

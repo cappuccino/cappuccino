@@ -58,6 +58,8 @@
     [self setEditable:[cell isEditable]];
     [self setEnabled:[cell isEnabled]];
     [self setContinuous:[cell isContinuous]];
+
+    [self _adjustNib2CibSize];
 }
 
 @end

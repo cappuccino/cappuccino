@@ -2514,7 +2514,8 @@ var themedButtonValues = nil,
             [@"slice-last-bottom-border-color", sliceLastBottomBorderColor],
             [@"font",                           [CPFont systemFontOfSize:10.0]],
             [@"add-image",                      addImage],
-            [@"remove-image",                   removeImage]
+            [@"remove-image",                   removeImage],
+            [@"vertical-alignment",             CPCenterVerticalTextAlignment]
         ];
 
     [self registerThemeValues:ruleEditorThemedValues forView:ruleEditor];

@@ -43,26 +43,28 @@
     self._autorepeat = [cell autorepeat];
     self._objectValue = [cell objectValue];
 
-    // Convert Cocoa sizes to Cappuccino sizes.
-    switch([cell controlSize])
-    {
-        case CPSmallControlSize:
-            self._frame.origin.y += 8;
-            self._frame.origin.x += 4;
-            break;
+    // // Convert Cocoa sizes to Cappuccino sizes.
+    // switch([cell controlSize])
+    // {
+    //     case CPSmallControlSize:
+    //         self._frame.origin.y += 8;
+    //         self._frame.origin.x += 4;
+    //         break;
+    //
+    //     case CPMiniControlSize:
+    //         self._frame.origin.x += 4;
+    //         break;
+    //
+    //     default:
+    //     case CPRegularControlSize:
+    //         self._frame.origin.y += 12;
+    //         self._frame.origin.x += 4;
+    //         self._frame.size.height -= 2;
+    //         self._bounds.size.height -= 2;
+    //         break;
+    // }
 
-        case CPMiniControlSize:
-            self._frame.origin.x += 4;
-            break;
-
-        default:
-        case CPRegularControlSize:
-            self._frame.origin.y += 12;
-            self._frame.origin.x += 4;
-            self._frame.size.height -= 2;
-            self._bounds.size.height -= 2;
-            break;
-    }
+    [self _adjustNib2CibSize];
 }
 
 @end
