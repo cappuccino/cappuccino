@@ -706,8 +706,8 @@ var _objectsInRange = function(aList, aRange)
 
         for (; newTargetLine < l; newTargetLine++)
         {
-            _lineFragmentsForRescue[i]._isInvalid = NO;    // protect them from final removal
-            [_lineFragmentsForRescue[i] _relocateVerticallyByY:verticalOffset rangeOffset:rangeOffset];
+            _lineFragmentsForRescue[newTargetLine]._isInvalid = NO;    // protect them from final removal
+            [_lineFragmentsForRescue[newTargetLine] _relocateVerticallyByY:verticalOffset rangeOffset:rangeOffset];
             _lineFragments.push(_lineFragmentsForRescue[newTargetLine]);
         }
     }
