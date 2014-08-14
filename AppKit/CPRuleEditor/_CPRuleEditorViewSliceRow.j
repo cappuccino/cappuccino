@@ -28,8 +28,6 @@
 @global CPMiniControlSize
 @global CPSmallControlSize
 
-var CONTROL_HEIGHT = 16.;
-
 @implementation _CPRuleEditorViewSliceRow : _CPRuleEditorViewSlice
 {
     CPButton                _addButton;
@@ -127,7 +125,7 @@ var CONTROL_HEIGHT = 16.;
     var title   = [[itemsArray objectAtIndex:index] title],
         font    = [_ruleEditor font],
         width   = [title sizeWithFont:font].width + 20,
-        rect    = CGRectMake(0, 0, (width - width % 40) + 80, CONTROL_HEIGHT),
+        rect    = CGRectMake(0, 0, (width - width % 40) + 80, [_ruleEditor rowHeight]),
         popup   = [[CPPopUpButton alloc] initWithFrame:rect];
 
     [popup setValue:font forThemeAttribute:@"font"];
@@ -154,7 +152,7 @@ var CONTROL_HEIGHT = 16.;
         localizedText   = [[_ruleEditor standardLocalizer] localizedStringForString:text],
         size            = [localizedText sizeWithFont:font];
 
-    [textField setFrameSize:CGSizeMake(size.width + 4, CONTROL_HEIGHT)];
+    [textField setFrameSize:CGSizeMake(size.width + 4, [_ruleEditor rowHeight])];
     [textField setValue:font forThemeAttribute:@"font"];
     [textField setValue:[_ruleEditor _verticalAlignment] forThemeAttribute:@"vertical-alignment"];
     [textField setStringValue:localizedText];
@@ -383,8 +381,8 @@ var CONTROL_HEIGHT = 16.;
         var ruleOptionView = _ruleOptionViews[i],
             optionFrame = _ruleOptionFrames[i];
 
-        // Align to the top pixel (-1)
-        optionFrame.origin.y = (rowHeight - CGRectGetHeight(optionFrame)) / 2 - 1;
+        // Use a pixel correction to align controls
+        optionFrame.origin.y = (rowHeight - CGRectGetHeight(optionFrame)) / 2;
 
         if (widthChanged)
         {

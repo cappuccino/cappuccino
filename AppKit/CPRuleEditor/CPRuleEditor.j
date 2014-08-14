@@ -150,7 +150,7 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
             @"font-color": [CPNull null],
             @"add-image": [CPNull null],
             @"remove-image": [CPNull null],
-            @"vertical-alignment": [CPNull null]
+            @"vertical-alignment": [CPNull null],
         };
 }
 
@@ -161,7 +161,7 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
     {
         _slices = [[CPMutableArray alloc] init];
 
-        _sliceHeight = 26.;
+        _sliceHeight = 26.0;
         _nestingMode = CPRuleEditorNestingModeSimple; // 10.5 default is CPRuleEditorNestingModeCompound
         _editable = YES;
         _allowsEmptyCompoundRows = NO;
