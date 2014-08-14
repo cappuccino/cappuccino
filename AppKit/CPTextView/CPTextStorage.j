@@ -199,7 +199,7 @@ CPTextStorageDidProcessEditingNotification = @"CPTextStorageDidProcessEditingNot
         _changeInLength += lengthChange;
         aRange.length += lengthChange;
 
-        if (_editedRange.location == CPNotFound)
+        if (_editedRange.location === CPNotFound)
             _editedRange = aRange;
         else
             _editedRange = CPUnionRange(_editedRange,aRange);
