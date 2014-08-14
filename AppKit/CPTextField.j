@@ -1960,12 +1960,12 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 - (void)reverseSetValueFor:(CPString)aBinding
 {
     var destination = [_info objectForKey:CPObservedObjectKey],
-        keyPath = [_info objectForKey:CPObservedKeyPathKey],
-        options = [_info objectForKey:CPOptionsKey],
-        newValue = [self valueForBinding:aBinding],
-        value = [destination valueForKeyPath:keyPath];
+        keyPath     = [_info objectForKey:CPObservedKeyPathKey],
+        options     = [_info objectForKey:CPOptionsKey],
+        newValue    = [self valueForBinding:aBinding],
+        value       = [destination valueForKeyPath:keyPath];
 
-    if (CPIsControllerMarker(value) && newValue == nil) return;
+    if (CPIsControllerMarker(value) && newValue === nil) return;
 
     newValue = [self reverseTransformValue:newValue withOptions:options];
 
