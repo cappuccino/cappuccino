@@ -636,7 +636,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 {
     var textStorageLength = [_layoutManager numberOfCharacters];
 
-    if (textStorageLength === 0)
+    if (!textStorageLength)
         return CPMakeRange(0, 0);
 
     if (proposedRange.location >= textStorageLength)
