@@ -448,7 +448,7 @@ var CPMainCibFile               = @"CPMainCibFile",
     [CPPlatform activateIgnoringOtherApps:shouldIgnoreOtherApps];
     _isActive = YES;
 
-    [self _willResignActive];
+    [self _didBecomeActive];
 }
 
 - (void)deactivate
