@@ -260,7 +260,7 @@ Set the behavior of the CPPopover. It can be:
     [_popoverWindow positionRelativeToRect:positioningRect ofView:positioningView preferredEdge:preferredEdge];
 
     if (![self isShown])
-        [self _popoverDidShow];
+        [self _popoverWindowDidShow];
 }
 
 - (unsigned)_styleMaskForBehavior
