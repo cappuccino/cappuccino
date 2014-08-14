@@ -286,13 +286,16 @@ var NSButtonIsBorderedMask = 0x00800000,
     if (![self isBordered])
         return frameAdjustment;
 
+    if (!frameAdjustment)
+        frameAdjustment = CGRectMakeZero()
+
     // Map Cocoa bezel styles to Cappuccino bezel styles and adjust frame
     switch (_bezelStyle)
     {
         // implemented:
         case CPRoundedBezelStyle:  // Push IB style
             positionOffsetOriginY = 6;
-            positionOffsetOriginX = 6;
+            positionOffsetOriginX = 4;
             positionOffsetSizeWidth = -12;
             break;
 
