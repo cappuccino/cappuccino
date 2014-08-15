@@ -40,8 +40,6 @@
     _menu = [cell menu];
     [self setPullsDown:[cell pullsDown]];
     _preferredEdge  = [cell preferredEdge];
-
-    [self _adjustNib2CibSize];
 }
 
 @end
