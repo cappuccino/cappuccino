@@ -364,7 +364,7 @@ var themedButtonValues = nil,
 
             [@"min-size",                   CGSizeMake(32.0, 25.0)],
             [@"max-size",                   CGSizeMake(-1.0, 25.0)],
-            [@"nib2cib-adjustment-frame",   CGRectMake(1.5, 0.5, -3.0, 0.0)],
+            [@"nib2cib-adjustment-frame",   CGRectMake(2.0, 1.0, -5.0, 0.0)],
 
             // CPThemeStateControlSizeSmall
             [@"bezel-color",                smallColor["@"],                        [CPThemeStateControlSizeSmall, CPThemeStateBordered]],
@@ -375,7 +375,7 @@ var themedButtonValues = nil,
 
             [@"min-size",                   CGSizeMake(32.0, 20.0),                 CPThemeStateControlSizeSmall],
             [@"max-size",                   CGSizeMake(1.0, 20.0),                  CPThemeStateControlSizeSmall],
-            [@"nib2cib-adjustment-frame",   CGRectMake(1.5, 2.0, -3.0, 0.0),        CPThemeStateControlSizeSmall],
+            [@"nib2cib-adjustment-frame",   CGRectMake(3.0, 4.0, -6.0, 0.0),        CPThemeStateControlSizeSmall],
 
             // CPThemeStateControlSizeMini
             [@"bezel-color",                miniColor["@"],                         [CPThemeStateControlSizeMini, CPThemeStateBordered]],
@@ -386,7 +386,7 @@ var themedButtonValues = nil,
 
             [@"min-size",                   CGSizeMake(32.0, 16.0),                 CPThemeStateControlSizeMini],
             [@"max-size",                   CGSizeMake(-1.0, 16.0),                 CPThemeStateControlSizeMini],
-            [@"nib2cib-adjustment-frame",   CGRectMake(0.5, 5.0, -1.0, 0.0),        CPThemeStateControlSizeMini]
+            [@"nib2cib-adjustment-frame",   CGRectMake(1.0, 10.0, -3.0, 0.0),        CPThemeStateControlSizeMini]
         ];
 
     [self registerThemeValues:themeValues forView:button];
@@ -698,7 +698,7 @@ var themedButtonValues = nil,
         [@"font",               [CPFont boldSystemFontOfSize:CPFontCurrentSystemSize],      [CPThemeStateTableDataView, CPThemeStateGroupRow]],
 
         [@"min-size",                   CGSizeMake(-1.0, 29.0)],
-        [@"nib2cib-adjustment-frame",   CGRectMake(4.0, 0.0, 0.0, 0.0)],
+        [@"nib2cib-adjustment-frame",   CGRectMake(2.0, 0.0, -4.0, 0.0)],
         [@"nib2cib-adjustment-frame",   CGRectMake(-4.0, -3.0, 8.0, 0.0),                   CPThemeStateBezeled],
 
         // CPThemeStateControlSizeSmall
@@ -706,14 +706,14 @@ var themedButtonValues = nil,
         [@"content-inset",              CGInsetMake(7.0, 7.0, 5.0, 8.0),                    [CPThemeStateControlSizeSmall, CPThemeStateBezeled, CPThemeStateEditing]],
 
         [@"min-size",                   CGSizeMake(-1.0, 25.0),                             CPThemeStateControlSizeSmall],
-        [@"nib2cib-adjustment-frame",   CGRectMake(4.0, 0.0, 0.0, 0.0),                     CPThemeStateControlSizeSmall],
+        [@"nib2cib-adjustment-frame",   CGRectMake(2.0, 0.0, -4.0, 0.0),                     CPThemeStateControlSizeSmall],
         [@"nib2cib-adjustment-frame",   CGRectMake(-3.0, 11.0, 7.0, 7.0),                   [CPThemeStateControlSizeSmall, CPThemeStateBezeled]],
 
         // CPThemeStateControlSizeMini
         [@"content-inset",              CGInsetMake(6.0, 7.0, 5.0, 7.0),                    [CPThemeStateControlSizeMini, CPThemeStateBezeled]],
         [@"content-inset",              CGInsetMake(6.0, 7.0, 5.0, 7.0),                    [CPThemeStateControlSizeMini, CPThemeStateBezeled, CPThemeStateEditing]],
         [@"min-size",                   CGSizeMake(-1.0, 22.0),                             CPThemeStateControlSizeMini],
-        [@"nib2cib-adjustment-frame",   CGRectMake(4.0, 0.0, 0.0, 0.0),                     CPThemeStateControlSizeMini],
+        [@"nib2cib-adjustment-frame",   CGRectMake(2.0, 0.0, -4.0, 0.0),                     CPThemeStateControlSizeMini],
         [@"nib2cib-adjustment-frame",   CGRectMake(-4.0, 11.0, 8.0, 7.0),                   [CPThemeStateControlSizeMini, CPThemeStateBezeled]],
     ];
 
