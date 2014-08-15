@@ -665,9 +665,9 @@ CPButtonImageOffset   = 3.0;
 */
 - (void)sizeToFit
 {
-    [self layoutSubviews];
-
     [self setFrameSize:[self _minimumFrameSize]];
+
+    [self layoutSubviews];
 
     if ([self ephemeralSubviewNamed:@"content-view"])
         [self layoutSubviews];
