@@ -1173,7 +1173,7 @@ var CPMainCibFile               = @"CPMainCibFile",
         [[self keyWindow] orderFront:self];
     else if ([self mainWindow])
         [[self mainWindow] makeKeyAndOrderFront:self];
-    else
+    else if ([self mainMenu])
         [[self mainMenu]._menuWindow makeKeyWindow]; //FIXME this may not actually work
 
     _previousKeyWindow = nil;
