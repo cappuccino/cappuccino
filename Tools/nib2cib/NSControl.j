@@ -80,8 +80,8 @@
 
     if (frameAdjustment)
     {
-        [self setFrameOrigin:CGPointMake(frame.origin.x + frameAdjustment.origin.x, frame.origin.y - frameAdjustment.origin.y + frameAdjustment.size.height)];
-        [self setFrameSize:CGSizeMake(frame.size.width + frameAdjustment.size.width, frame.size.height + frameAdjustment.size.height)];
+        var finalFrame = CGRectMake(frame.origin.x + frameAdjustment.origin.x, frame.origin.y - frameAdjustment.origin.y, frame.size.width + frameAdjustment.size.width, frame.size.height + frameAdjustment.size.height);
+        [self setFrame:finalFrame];
     }
 }
 
