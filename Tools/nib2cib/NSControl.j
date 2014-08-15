@@ -52,9 +52,6 @@
             [self setTag:[aCoder decodeIntForKey:@"NSTag"]];
     }
 
-    // CPLog.error([self class])
-    // CPLog.error([self themeState])
-
     return self;
 }
 
@@ -83,7 +80,7 @@
 
     if (frameAdjustment)
     {
-        [self setFrameOrigin:CGPointMake(frame.origin.x + frameAdjustment.origin.x, frame.origin.y + frameAdjustment.origin.y)];
+        [self setFrameOrigin:CGPointMake(frame.origin.x + frameAdjustment.origin.x, frame.origin.y - frameAdjustment.origin.y + frameAdjustment.size.height)];
         [self setFrameSize:CGSizeMake(frame.size.width + frameAdjustment.size.width, frame.size.height + frameAdjustment.size.height)];
     }
 }

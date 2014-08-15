@@ -26,8 +26,6 @@
 @import "CPMenu.j"
 @import "CPMenuItem.j"
 
-var VISIBLE_MARGIN = 7.0;
-
 CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
 /*!

@@ -142,11 +142,11 @@
                         </buttonCell>
                     </button>
                     <button verticalHuggingPriority="750" id="PQW-rW-2K9">
-                        <rect key="frame" x="388" y="675" width="91" height="17"/>
+                        <rect key="frame" x="388" y="676" width="91" height="17"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <buttonCell key="cell" type="recessed" title="Mini" bezelStyle="recessed" alignment="center" controlSize="small" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="aXS-tb-r0l">
+                        <buttonCell key="cell" type="recessed" title="Mini" bezelStyle="recessed" alignment="center" controlSize="mini" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="aXS-tb-r0l">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES" changeBackground="YES" changeGray="YES"/>
-                            <font key="font" metaFont="systemBold" size="12"/>
+                            <font key="font" metaFont="miniSystem"/>
                         </buttonCell>
                     </button>
                     <button id="546">
