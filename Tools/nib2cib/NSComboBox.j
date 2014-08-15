@@ -53,14 +53,7 @@
         size = [self frameSize],
         widthOffset = -3;
 
-    // Adjust for differences between Cocoa and Cappuccino widget framing.
-    if ([theme name] == @"Aristo")
-    {
-        _frame.origin.x += 1;
-        widthOffset = -5;
-    }
-
-    [self setFrameSize:CGSizeMake(size.width + widthOffset, MIN(size.height, maxSize.height))];
+    [self _adjustNib2CibSize];
 }
 
 @end

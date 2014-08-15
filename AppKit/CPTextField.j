@@ -141,7 +141,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     // NS-style Display Properties
     CPTextFieldBezelStyle       _bezelStyle;
     BOOL                        _isBordered;
-    CPControlSize               _controlSize;
 }
 
 + (Class)_binderClassForBinding:(CPString)aBinding
@@ -227,6 +226,21 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
             @"bezel-color": [CPNull null],
         };
 }
+
+
+#pragma mark -
+#pragma mark Control Size
+
+- (void)setControlSize:(CPControlSize)aControlSize
+{
+    [super setControlSize:aControlSize];
+
+    if ([self isBezeled])
+        [self _sizeToControlSize];
+}
+
+#pragma mark -
+
 
 #if PLATFORM(DOM)
 - (DOMElement)_inputElement

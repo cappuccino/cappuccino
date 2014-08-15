@@ -26,6 +26,7 @@
 @import "NSCell.j"
 @import "NSControl.j"
 
+
 @implementation CPTextField (NSCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
@@ -60,25 +61,12 @@
     if (![textColor isEqual:defaultColor])
         [self setTextColor:[cell textColor]];
 
-    // Only adjust the origin and size if this is a bezeled textfield.
-    // This ensures that labels positioned in IB are properly positioned after nibcib.
-    var frame = [self frame];
-
-    if ([self isBezeled])
-    {
-        [self setFrameOrigin:CGPointMake(frame.origin.x - 4.0, frame.origin.y - 3.0)];
-        [self setFrameSize:CGSizeMake(frame.size.width + 8.0, frame.size.height + 7.0)];
-    }
-    else
-    {
-        [self setFrameOrigin:CGPointMake(frame.origin.x + 3.0, frame.origin.y)];
-        [self setFrameSize:CGSizeMake(frame.size.width - 6.0, frame.size.height)];
-    }
-
     CPLog.debug("NSTextField: title=\"" + [self stringValue] + "\", placeholder=" + ([cell placeholderString] == null ? "<none>" : '"' + [cell placeholderString] + '"') + ", isBordered=" + [self isBordered] + ", isBezeled="  + [self isBezeled] + ", bezelStyle=" + [self bezelStyle]);
 
     if ([self formatter])
         CPLog.debug(">> Formatter: " + [[self formatter] description]);
+
+    [self _adjustNib2CibSize];
 }
 
 @end

@@ -41,11 +41,7 @@
     [self setPullsDown:[cell pullsDown]];
     _preferredEdge  = [cell preferredEdge];
 
-    // adjust the frame
-    _frame.origin.x -= 4;
-    _frame.origin.y -= 4;
-    _frame.size.width += 7;
-    _bounds.size.width += 7;
+    [self _adjustNib2CibSize];
 }
 
 @end

@@ -19,24 +19,27 @@
 
 @import "CPRuleEditor_Constants.j"
 @import "_CPRuleEditorViewSlice.j"
-@import "_CPRuleEditorPopUpButton.j"
+
+@import "CPButton.j"
+@import "CPDatePicker.j"
+@import "CPPopUpButton.j"
 
 @global CPApp
-
-var CONTROL_HEIGHT = 16.,
-    BUTTON_HEIGHT = 16.;
+@global CPMiniControlSize
+@global CPSmallControlSize
 
 @implementation _CPRuleEditorViewSliceRow : _CPRuleEditorViewSlice
 {
-    CPMutableArray  _ruleOptionViews;
-    CPMutableArray  _ruleOptionFrames;
-    CPMutableArray  _correspondingRuleItems;
-    CPMutableArray  _ruleOptionInitialViewFrames;
-    CPButton        _addButton;
-    CPButton        _subtractButton;
+    CPButton                _addButton;
+    CPButton                _subtractButton;
+    CPMutableArray          _correspondingRuleItems;
+    CPMutableArray          _ruleOptionFrames;
+    CPMutableArray          _ruleOptionInitialViewFrames;
+    CPMutableArray          _ruleOptionViews;
 
-    CPRuleEditorRowType _rowType @accessors;
-    CPRuleEditorRowType _plusButtonRowType;
+
+    CPRuleEditorRowType     _rowType @accessors;
+    CPRuleEditorRowType     _plusButtonRowType;
 }
 
 - (id)initWithFrame:(CGRect)frame ruleEditorView:(id)editor
@@ -49,34 +52,35 @@ var CONTROL_HEIGHT = 16.,
 
 - (void)_initShared
 {
-    _correspondingRuleItems = [[CPMutableArray alloc] init];
-    _ruleOptionFrames = [[CPMutableArray alloc] init];
-    _ruleOptionInitialViewFrames = [[CPMutableArray alloc] init];
-    _ruleOptionViews = [[CPMutableArray alloc] init];
-     _editable = [_ruleEditor isEditable];
+    _correspondingRuleItems         = [[CPMutableArray alloc] init];
+    _ruleOptionFrames               = [[CPMutableArray alloc] init];
+    _ruleOptionInitialViewFrames    = [[CPMutableArray alloc] init];
+    _ruleOptionViews                = [[CPMutableArray alloc] init];
+    _editable                       = [_ruleEditor isEditable];
 
-    _addButton = [self _createAddRowButton];
-    _subtractButton = [self _createDeleteRowButton];
-    [_addButton setToolTip:[_ruleEditor _toolTipForAddSimpleRowButton]];
-    [_subtractButton setToolTip:[_ruleEditor _toolTipForDeleteRowButton]];
-    [_addButton setHidden:!_editable];
-    [_subtractButton setHidden:!_editable];
+    _addButton                      = [self _createAddRowButton];
+    _subtractButton                 = [self _createDeleteRowButton];
+
     [self addSubview:_addButton];
     [self addSubview:_subtractButton];
 
     [self setAutoresizingMask:CPViewWidthSizable];
 
-    var center = [CPNotificationCenter defaultCenter];
-    [center addObserver:self selector:@selector(_textDidChange:) name:CPControlTextDidChangeNotification object:nil];
+    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_textDidChange:) name:CPControlTextDidChangeNotification object:nil];
 }
 
 - (CPButton)_createRowButton
 {
-    var button = [[_CPRuleEditorButton alloc] initWithFrame:CGRectMakeZero()];
-    [button setFont:[CPFont boldFontWithName:@"Apple Symbol" size:12.0]];
-    [button setTextColor:[CPColor colorWithWhite:150 / 255 alpha:1]];
+    var button = [[CPButton alloc] initWithFrame:CGRectMakeZero()];
+
+    [button setFont:[_ruleEditor font]];
+    [button setTextColor:[_ruleEditor _fontColor]];
+
     [button setAlignment:CPCenterTextAlignment];
     [button setAutoresizingMask:CPViewMinXMargin];
+    [button setButtonType:CPMomentaryChangeButton];
+    [button setBordered:NO];
+    [button setHidden:!_editable];
     [button setImagePosition:CPImageOnly];
 
     return button;
@@ -86,7 +90,10 @@ var CONTROL_HEIGHT = 16.,
 {
     var button = [self _createRowButton];
 
-    [button setImage:[_ruleEditor _addImage]];
+    [button setToolTip:[_ruleEditor _toolTipForAddSimpleRowButton]];
+    [button setValue:[_ruleEditor _imageAdd] forThemeAttribute:@"image" inState:CPThemeStateNormal];
+    [button setValue:[_ruleEditor _imageAddHighlighted] forThemeAttribute:@"image" inState:CPThemeStateHighlighted];
+
     [button setAction:@selector(_addOption:)];
     [button setTarget:self];
 
@@ -97,7 +104,10 @@ var CONTROL_HEIGHT = 16.,
 {
     var button = [self _createRowButton];
 
-    [button setImage:[_ruleEditor _removeImage]];
+    [button setToolTip:[_ruleEditor _toolTipForDeleteRowButton]];
+    [button setValue:[_ruleEditor _imageRemove] forThemeAttribute:@"image" inState:CPThemeStateNormal];
+    [button setValue:[_ruleEditor _imageRemoveHighlighted] forThemeAttribute:@"image" inState:CPThemeStateHighlighted];
+
     [button setAction:@selector(_deleteOption:)];
     [button setTarget:self];
 
@@ -107,20 +117,17 @@ var CONTROL_HEIGHT = 16.,
 - (CPMenuItem)_createMenuItemWithTitle:(CPString )title
 {
     title = [[_ruleEditor standardLocalizer] localizedStringForString:title];
-    var mItem = [[CPMenuItem alloc] initWithTitle:title action:nil keyEquivalent:@""];
-    return mItem;
+    return [[CPMenuItem alloc] initWithTitle:title action:nil keyEquivalent:@""];
 }
 
 - (CPPopUpButton)_createPopUpButtonWithItems:(CPArray)itemsArray selectedItemIndex:(int)index
 {
-    var title = [[itemsArray objectAtIndex:index] title],
-        font = [_ruleEditor font],
-        width = [title sizeWithFont:font].width + 20,
-        rect = CGRectMake(0, 0, (width - width % 40) + 80, CONTROL_HEIGHT),
+    var title   = [[itemsArray objectAtIndex:index] title],
+        font    = [_ruleEditor font],
+        width   = [title sizeWithFont:font].width + 20,
+        rect    = CGRectMake(0, 0, (width - width % 40) + 80, [_ruleEditor rowHeight]),
+        popup   = [[CPPopUpButton alloc] initWithFrame:rect];
 
-        popup = [[_CPRuleEditorPopUpButton alloc] initWithFrame:rect];
-
-    [popup setTextColor:[CPColor colorWithWhite:101 / 255 alpha:1]];
     [popup setValue:font forThemeAttribute:@"font"];
 
     var count = [itemsArray count];
@@ -137,17 +144,17 @@ var CONTROL_HEIGHT = 16.,
     return [CPMenuItem separatorItem];
 }
 
-- (_CPRuleEditorTextField)_createStaticTextFieldWithStringValue:(CPString)text
+- (CPTextField)_createStaticTextFieldWithStringValue:(CPString)text
 {
-    var textField = [[_CPRuleEditorTextField alloc] initWithFrame:CGRectMakeZero()],
-        ruleEditorFont = [_ruleEditor font],
-        font = [CPFont fontWithName:[ruleEditorFont familyName] size:[ruleEditorFont size] + 2],
-        localizedText = [[_ruleEditor standardLocalizer] localizedStringForString:text],
-        size = [localizedText sizeWithFont:font];
+    var textField       = [[CPTextField alloc] initWithFrame:CGRectMakeZero()],
+        ruleEditorFont  = [_ruleEditor font],
+        font            = [CPFont fontWithName:[ruleEditorFont familyName] size:[ruleEditorFont size] + 2],
+        localizedText   = [[_ruleEditor standardLocalizer] localizedStringForString:text],
+        size            = [localizedText sizeWithFont:font];
 
-    [textField setFrameSize:CGSizeMake(size.width + 4, CONTROL_HEIGHT + 2)];
-
+    [textField setFrameSize:CGSizeMake(size.width + 4, [_ruleEditor rowHeight])];
     [textField setValue:font forThemeAttribute:@"font"];
+    [textField setValue:[_ruleEditor _verticalAlignment] forThemeAttribute:@"vertical-alignment"];
     [textField setStringValue:localizedText];
 
     return textField;
@@ -159,6 +166,7 @@ var CONTROL_HEIGHT = 16.,
         [self setNeedsDisplay:YES];
 
     var type = _plusButtonRowType;
+
     if ([_ruleEditor nestingMode] == CPRuleEditorNestingModeCompound && ([[CPApp currentEvent] modifierFlags] & CPAlternateKeyMask))
         type = CPRuleEditorRowTypeCompound;
 
@@ -170,12 +178,12 @@ var CONTROL_HEIGHT = 16.,
     [_ruleEditor _deleteSlice:self];
 }
 
-- (void)_ruleOptionPopupChangedAction:(CPMenuItem )sender
+- (void)_ruleOptionPopupChangedAction:(CPMenuItem)sender
 {
-    var layoutdict = [sender representedObject],
-        newItem = [layoutdict objectForKey:@"item"],
+    var layoutdict      = [sender representedObject],
+        newItem         = [layoutdict objectForKey:@"item"],
         indexInCriteria = [layoutdict objectForKey:@"indexInCriteria"],
-        oldItem = [_correspondingRuleItems objectAtIndex:indexInCriteria];
+        oldItem         = [_correspondingRuleItems objectAtIndex:indexInCriteria];
 
     if (![newItem isEqual:oldItem])
     {
@@ -307,6 +315,8 @@ var CONTROL_HEIGHT = 16.,
 
         if (ruleView != nil)
         {
+            [ruleView setControlSize:CPSmallControlSize];
+
             [_ruleOptionViews addObject:ruleView];
             var frame = [ruleView frame];
             [_ruleOptionInitialViewFrames addObject:frame];
@@ -331,8 +341,6 @@ var CONTROL_HEIGHT = 16.,
         var aView = [_ruleOptionViews objectAtIndex:firstResponderIndex];
         [[self window] makeFirstResponder:aView]; // This is not working. bug in CPPopUpButton firstResponder ?
     }
-
-    //[self setNeedsDisplay:YES];
 }
 
 - (void)_updateEnabledStateForSubviews
@@ -350,14 +358,15 @@ var CONTROL_HEIGHT = 16.,
     var optionViewOriginX,
         leftHorizontalPadding,
         leftButtonMinX,
-        rowHeight = [_ruleEditor rowHeight],
-        count = [_ruleOptionViews count],
-        sliceFrame = [self frame],
+        rowHeight   = [_ruleEditor rowHeight],
+        count       = [_ruleOptionViews count],
+        sliceFrame  = [self frame],
+        image       = [_ruleEditor _imageAdd],
 
-        buttonFrame = CGRectMake(CGRectGetWidth(sliceFrame) - BUTTON_HEIGHT - [self _rowButtonsRightHorizontalPadding], ([_ruleEditor rowHeight] - BUTTON_HEIGHT) / 2 - 2, BUTTON_HEIGHT, BUTTON_HEIGHT);
+        buttonFrame = CGRectMake(CGRectGetWidth(sliceFrame) - [image size].width - [self _rowButtonsRightHorizontalPadding], ([_ruleEditor rowHeight] - [image size].height) / 2 - 1, [image size].width, [image size].height);
 
     [_addButton setFrame:buttonFrame];
-    buttonFrame.origin.x -= BUTTON_HEIGHT + [self _rowButtonsInterviewHorizontalPadding];
+    buttonFrame.origin.x -= [image size].width + [self _rowButtonsInterviewHorizontalPadding];
     [_subtractButton setFrame:buttonFrame];
 
     if (widthChanged)
@@ -372,7 +381,8 @@ var CONTROL_HEIGHT = 16.,
         var ruleOptionView = _ruleOptionViews[i],
             optionFrame = _ruleOptionFrames[i];
 
-        optionFrame.origin.y = (rowHeight - CGRectGetHeight(optionFrame)) / 2 - 2;
+        // Use a pixel correction to align controls
+        optionFrame.origin.y = (rowHeight - CGRectGetHeight(optionFrame)) / 2;
 
         if (widthChanged)
         {
@@ -488,8 +498,9 @@ var CONTROL_HEIGHT = 16.,
 
 - (BOOL)_isRulePopup:(CPView)view
 {
-    if ([view isKindOfClass:[_CPRuleEditorPopUpButton class]])
+    if ([view isKindOfClass:[CPPopUpButton class]])
         return YES;
+
     return NO;
 }
 
@@ -503,31 +514,6 @@ var CONTROL_HEIGHT = 16.,
 {
     if ([[aNotif object] superview] == self && [_ruleEditor _sendsActionOnIncompleteTextChange])
         [self _sendRuleAction:nil];
-}
-
-@end
-
-@implementation _CPRuleEditorTextField : CPTextField
-{
-}
-
-- (id)initWithFrame:(CGRect)frame
-{
-    self = [super initWithFrame:frame];
-    if (self)
-    {
-        [self setDrawsBackground:NO];
-    }
-
-    return self;
-}
-
-- (CPView)hitTest:(CGPoint)point
-{
-    if (!CGRectContainsPoint([self frame], point))
-        return nil;
-
-    return [self superview];
 }
 
 @end

@@ -43,10 +43,7 @@
     self._autorepeat = [cell autorepeat];
     self._objectValue = [cell objectValue];
 
-    // Convert Cocoa normal size to Cappuccino normal size.
-    self._frame.origin.y += 2;
-    self._frame.size.height -= 2;
-    self._bounds.size.height -= 2;
+    [self _adjustNib2CibSize];
 }
 
 @end

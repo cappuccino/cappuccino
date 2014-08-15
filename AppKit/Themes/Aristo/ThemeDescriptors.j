@@ -419,6 +419,25 @@ var themedButtonValues = nil,
             ],
             PatternIsHorizontal),
 
+        smallBezelColor = PatternColor(
+            "{style}button-bezel{state}{position}.png",
+            {
+                styles: ["", "default"],
+                states: ["", "highlighted", "disabled"],
+                width: 3.0,
+                height: 20.0,
+                orientation: PatternIsHorizontal
+            }),
+        miniBezelColor = PatternColor(
+            "{style}button-bezel{state}{position}.png",
+            {
+                styles: ["", "default"],
+                states: ["", "highlighted", "disabled"],
+                width: 3.0,
+                height: 16.0,
+                orientation: PatternIsHorizontal
+            }),
+
         defaultBezelColor = PatternColor(
             [
                 ["default-button-bezel-left.png", 4.0, 24.0],
@@ -513,6 +532,48 @@ var themedButtonValues = nil,
             [@"bezel-color",        defaultDisabledBezelColor,      [CPThemeStateBordered, CPThemeStateDefault, CPThemeStateDisabled]],
             [@"content-inset",      CGInsetMake(0.0, 7.0, 0.0, 7.0), CPThemeStateBordered],
 
+            // RoundRect CPThemeStateControlSizeSmall
+            [@"bezel-color",
+                smallBezelColor["@"]["@"],
+                [CPThemeStateControlSizeSmall, CPThemeStateBordered]],
+            [@"bezel-color",
+                smallBezelColor["@"]["highlighted"],
+                [CPThemeStateControlSizeSmall, CPThemeStateBordered, CPThemeStateHighlighted]],
+            [@"bezel-color",
+                smallBezelColor["@"]["disabled"],
+                [CPThemeStateControlSizeSmall, CPThemeStateBordered, CPThemeStateDisabled]],
+            [@"bezel-color",
+                smallBezelColor["default"]["@"],
+                [CPThemeStateControlSizeSmall, CPThemeStateBordered, CPThemeStateDefault]],
+            [@"bezel-color",
+                smallBezelColor["default"]["highlighted"],
+                [CPThemeStateControlSizeSmall, CPThemeStateBordered, CPThemeStateHighlighted, CPThemeStateDefault]],
+            [@"bezel-color",
+                smallBezelColor["default"]["disabled"],
+                [CPThemeStateControlSizeSmall, CPThemeStateBordered, CPThemeStateDefault, CPThemeStateDisabled]],
+            [@"content-inset", CGInsetMake(0.0, 5.0, 0.0, 5.0), [CPThemeStateControlSizeSmall, CPThemeStateBordered]],
+
+            // RoundRect CPThemeStateControlSizeMini
+            [@"bezel-color",
+                miniBezelColor["@"]["@"],
+                [CPThemeStateControlSizeMini, CPThemeStateBordered]],
+            [@"bezel-color",
+                miniBezelColor["@"]["highlighted"],
+                [CPThemeStateControlSizeMini, CPThemeStateBordered, CPThemeStateHighlighted]],
+            [@"bezel-color",
+                miniBezelColor["@"]["disabled"],
+                [CPThemeStateControlSizeMini, CPThemeStateBordered, CPThemeStateDisabled]],
+            [@"bezel-color",
+                miniBezelColor["default"]["@"],
+                [CPThemeStateControlSizeMini, CPThemeStateBordered, CPThemeStateDefault]],
+            [@"bezel-color",
+                miniBezelColor["default"]["highlighted"],
+                [CPThemeStateControlSizeMini, CPThemeStateBordered, CPThemeStateHighlighted, CPThemeStateDefault]],
+            [@"bezel-color",
+                miniBezelColor["default"]["disabled"],
+                [CPThemeStateControlSizeMini, CPThemeStateBordered, CPThemeStateDefault, CPThemeStateDisabled]],
+            [@"content-inset", CGInsetMake(0.0, 2.0, 2.0, 2.0), [CPThemeStateControlSizeMini, CPThemeStateBordered]],
+
             [@"bezel-color",        roundedBezelColor,                      [CPThemeStateBordered, CPButtonStateBezelStyleRounded]],
             [@"bezel-color",        roundedHighlightedBezelColor,           [CPThemeStateBordered, CPThemeStateHighlighted, CPButtonStateBezelStyleRounded]],
             [@"bezel-color",        roundedDisabledBezelColor,              [CPThemeStateBordered, CPThemeStateDisabled, CPButtonStateBezelStyleRounded]],
@@ -528,6 +589,10 @@ var themedButtonValues = nil,
 
             [@"min-size",           CGSizeMake(0.0, 24.0)],
             [@"max-size",           CGSizeMake(-1.0, 24.0)],
+            [@"min-size",           CGSizeMake(0.0, 20.0),                        CPThemeStateControlSizeSmall],
+            [@"max-size",           CGSizeMake(-1.0, 20.0),                       CPThemeStateControlSizeSmall],
+            [@"min-size",           CGSizeMake(0.0, 16.0),                        CPThemeStateControlSizeMini],
+            [@"max-size",           CGSizeMake(-1.0, 16.0),                       CPThemeStateControlSizeMini],
 
             [@"image-offset",       CPButtonImageOffset]
         ];
@@ -569,7 +634,7 @@ var themedButtonValues = nil,
 + (CPPopUpButton)themedPopUpButton
 {
     var button = [[CPPopUpButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 24.0) pullsDown:NO],
-        color = PatternColor(
+        regularColor = PatternColor(
             [
                 ["popup-bezel-left.png", 3.0, 24.0],
                 ["popup-bezel-center.png", 1.0, 24.0],
@@ -577,7 +642,7 @@ var themedButtonValues = nil,
             ],
             PatternIsHorizontal),
 
-        disabledColor = PatternColor(
+        regularDisabledColor = PatternColor(
             [
                 ["popup-bezel-disabled-left.png", 3.0, 24.0],
                 ["popup-bezel-disabled-center.png", 1.0, 24.0],
@@ -585,12 +650,32 @@ var themedButtonValues = nil,
             ],
             PatternIsHorizontal),
 
+        smallColor = PatternColor(
+            "popup-bezel{state}{position}.png",
+            {
+                states: ["", "disabled"],
+                width: 3.0,
+                height: 20.0,
+                rightWidth: 19.0,
+                orientation: PatternIsHorizontal
+            }),
+
+        miniColor = PatternColor(
+            "popup-bezel{state}{position}.png",
+            {
+                states: ["", "disabled"],
+                width: 3.0,
+                height: 16.0,
+                rightWidth: 15.0,
+                orientation: PatternIsHorizontal
+            }),
+
         themeValues =
         [
-            [@"bezel-color",        color,          CPThemeStateBordered],
-            [@"bezel-color",        disabledColor,  [CPThemeStateBordered, CPThemeStateDisabled]],
+            [@"bezel-color",        regularColor,          CPThemeStateBordered],
+            [@"bezel-color",        regularDisabledColor,  [CPThemeStateBordered, CPThemeStateDisabled]],
 
-            [@"content-inset",      CGInsetMake(0, 21.0 + 5.0, 0, 5.0), CPThemeStateBordered],
+            [@"content-inset",      CGInsetMake(0, 22.0 + 5.0, 0, 5.0), CPThemeStateBordered],
             [@"font",               [CPFont boldSystemFontOfSize:CPFontCurrentSystemSize]],
             [@"text-color",         [CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0]],
             [@"text-shadow-color",  [CPColor colorWithCalibratedWhite:240.0 / 255.0 alpha:1.0]],
@@ -599,7 +684,27 @@ var themedButtonValues = nil,
             [@"text-shadow-color",  [CPColor colorWithCalibratedWhite:240.0 / 255.0 alpha:0.6], [CPThemeStateBordered, CPThemeStateDisabled]],
 
             [@"min-size",           CGSizeMake(32.0, 24.0)],
-            [@"max-size",           CGSizeMake(-1.0, 24.0)]
+            [@"max-size",           CGSizeMake(-1.0, 24.0)],
+
+            // CPThemeStateControlSizeSmall
+            [@"bezel-color",        smallColor["@"],                            [CPThemeStateControlSizeSmall, CPThemeStateBordered]],
+            [@"bezel-color",        smallColor["disabled"],                     [CPThemeStateControlSizeSmall, CPThemeStateBordered, CPThemeStateDisabled]],
+
+            [@"content-inset",      CGInsetMake(0, 17.0 + 4.0, 0, 4.0),         [CPThemeStateControlSizeSmall, CPThemeStateBordered]],
+            [@"font",               [CPFont boldSystemFontOfSize:11.0]],
+
+            [@"min-size", CGSizeMake(32.0, 20.0),                               CPThemeStateControlSizeSmall],
+            [@"max-size", CGSizeMake(-1.0, 20.0),                               CPThemeStateControlSizeSmall],
+
+            // CPThemeStateControlSizeMini
+            [@"bezel-color",        miniColor["@"],                             [CPThemeStateControlSizeMini, CPThemeStateBordered]],
+            [@"bezel-color",        miniColor["disabled"],                      [CPThemeStateControlSizeMini, CPThemeStateBordered, CPThemeStateDisabled]],
+
+            [@"content-inset",      CGInsetMake(0, 15.0 + 4.0, 2.0, 4.0),         [CPThemeStateControlSizeMini, CPThemeStateBordered]],
+            [@"font",               [CPFont boldSystemFontOfSize:9.0]],
+
+            [@"min-size", CGSizeMake(32.0, 16.0),                               CPThemeStateControlSizeMini],
+            [@"max-size", CGSizeMake(-1.0, 16.0),                               CPThemeStateControlSizeMini]
         ];
 
     [self registerThemeValues:themeValues forView:button];
@@ -1134,23 +1239,30 @@ var themedButtonValues = nil,
 
         themeValues =
         [
-            [@"bezel-color",        bezelColor,                         CPThemeStateBezeled],
-            [@"bezel-color",        bezelDisabledColor,                 [CPThemeStateBezeled, CPThemeStateDisabled]],
+            [@"bezel-color",        bezelColor,                                                 CPThemeStateBezeled],
+            [@"bezel-color",        bezelDisabledColor,                                         [CPThemeStateBezeled, CPThemeStateDisabled]],
 
             [@"font",               [CPFont boldSystemFontOfSize:13.0]],
             [@"text-color",         [CPColor colorWithWhite:0.2 alpha:0.8]],
-            [@"text-color",         textDisabledColor,                       CPThemeStateDisabled],
+            [@"text-color",         textDisabledColor,                                          CPThemeStateDisabled],
 
-            [@"content-inset",      CGInsetMake(6.0, 0.0, 0.0, 3.0),    CPThemeStateNormal],
-            [@"content-inset",      CGInsetMake(6.0, 0.0, 0.0, 5.0),    CPThemeStateBezeled],
-            [@"bezel-inset",        CGInsetMake(0.0, -3.0, 0.0, -3.0),  CPThemeStateBezeled],
+            [@"content-inset",      CGInsetMake(6.0, 0.0, 0.0, 3.0),                            CPThemeStateNormal],
+            [@"content-inset",      CGInsetMake(6.0, 0.0, 0.0, 5.0),                            CPThemeStateBezeled],
+            [@"content-inset",      CGInsetMake(5.0, 0.0, 0.0, 3.0),                            [CPThemeStateControlSizeSmall, CPThemeStateNormal]],
+            [@"content-inset",      CGInsetMake(5.0, 0.0, 0.0, 5.0),                            [CPThemeStateControlSizeSmall, CPThemeStateBezeled]],
+            [@"content-inset",      CGInsetMake(5.0, 0.0, 0.0, 4.0),                            [CPThemeStateControlSizeMini, CPThemeStateNormal]],
+            [@"content-inset",      CGInsetMake(5.0, 0.0, 0.0, 4.0),                            [CPThemeStateControlSizeMini, CPThemeStateBezeled]],
 
-            [@"datepicker-textfield-bezel-color", [CPColor clearColor],             CPThemeStateNormal],
-            [@"datepicker-textfield-bezel-color", bezelColorDatePickerTextField,    CPThemeStateSelected],
-            [@"datepicker-textfield-bezel-color", [CPColor clearColor],             [CPThemeStateNormal, CPThemeStateDisabled]],
-            [@"datepicker-textfield-bezel-color", bezelColorDatePickerTextField,    [CPThemeStateSelected, CPThemeStateDisabled]],
+            [@"bezel-inset",        CGInsetMake(0.0, -3.0, 0.0, -3.0),                          CPThemeStateBezeled],
+
+            [@"datepicker-textfield-bezel-color", [CPColor clearColor],                         CPThemeStateNormal],
+            [@"datepicker-textfield-bezel-color", bezelColorDatePickerTextField,                CPThemeStateSelected],
+            [@"datepicker-textfield-bezel-color", [CPColor clearColor],                         [CPThemeStateNormal, CPThemeStateDisabled]],
+            [@"datepicker-textfield-bezel-color", bezelColorDatePickerTextField,                [CPThemeStateSelected, CPThemeStateDisabled]],
 
             [@"min-size-datepicker-textfield",  CGSizeMake(6.0, 18.0)],
+            [@"min-size-datepicker-textfield", CGSizeMake(6.0, 16.0),                           CPThemeStateControlSizeSmall],
+            [@"min-size-datepicker-textfield", CGSizeMake(6.0, 12.0),                           CPThemeStateControlSizeMini],
 
             [@"separator-content-inset", CGInsetMake(0.0, -2.0, 0.0, -1.0)],
 
@@ -1159,11 +1271,18 @@ var themedButtonValues = nil,
             [@"content-inset-datepicker-textfield",             CGInsetMake(2.0, 2.0, 0.0, 1.0),    CPThemeStateSelected],
             [@"content-inset-datepicker-textfield-separator",   CGInsetMake(2.0, 0.0, 0.0, 0.0),    CPThemeStateSelected],
 
-            [@"date-hour-margin",   7.0],
-            [@"stepper-margin",     2.0],
+            [@"date-hour-margin", 7.0],
+            [@"date-hour-margin", 5.0,                                                          CPThemeStateControlSizeSmall],
+            [@"date-hour-margin", 2.0,                                                          CPThemeStateControlSizeMini],
+
+            [@"stepper-margin",   2.0],
 
             [@"min-size",       CGSizeMake(0.0, 29.0)],
-            [@"max-size",       CGSizeMake(-1.0, 29.0)]
+            [@"max-size",       CGSizeMake(-1.0, 29.0)],
+            [@"min-size",       CGSizeMake(0, 26.0),                                            CPThemeStateControlSizeSmall],
+            [@"max-size",       CGSizeMake(-1.0, 26.0),                                         CPThemeStateControlSizeSmall],
+            [@"min-size",       CGSizeMake(0, 24.0),                                            CPThemeStateControlSizeMini],
+            [@"max-size",       CGSizeMake(-1.0, 24.0),                                         CPThemeStateControlSizeMini]
         ];
 
     [datePicker setDatePickerStyle:CPTextFieldDatePickerStyle];
@@ -1643,31 +1762,67 @@ var themedButtonValues = nil,
 {
     var button = [CPCheckBox checkBoxWithTitle:@"Another Option"],
 
-        imageNormal = PatternImage("check-box-image.png", 15.0, 16.0),
-        imageSelected = PatternImage("check-box-image-selected.png", 15.0, 16.0),
-        imageSelectedHighlighted = PatternImage("check-box-image-selected-highlighted.png", 15.0, 16.0),
-        imageSelectedDisabled = PatternImage("check-box-image-selected-disabled.png", 15.0, 16.0),
-        imageDisabled = PatternImage("check-box-image-disabled.png", 15.0, 16.0),
-        imageHighlighted = PatternImage("check-box-image-highlighted.png", 15.0, 16.0),
+        regularImageNormal = PatternImage("check-box-image.png", 15.0, 16.0),
+        regularImageSelected = PatternImage("check-box-image-selected.png", 15.0, 16.0),
+        regularImageSelectedHighlighted = PatternImage("check-box-image-selected-highlighted.png", 15.0, 16.0),
+        regularImageSelectedDisabled = PatternImage("check-box-image-selected-disabled.png", 15.0, 16.0),
+        regularImageDisabled = PatternImage("check-box-image-disabled.png", 15.0, 16.0),
+        regularImageHighlighted = PatternImage("check-box-image-highlighted.png", 15.0, 16.0),
+
+        smallImageNormal = PatternImage("check-box-image.png", 15.0, 16.0),
+        smallImageSelected = PatternImage("check-box-image-selected.png", 15.0, 16.0),
+        smallImageSelectedHighlighted = PatternImage("check-box-image-selected-highlighted.png", 15.0, 16.0),
+        smallImageSelectedDisabled = PatternImage("check-box-image-selected.png", 15.0, 16.0),
+        smallImageDisabled = PatternImage("check-box-image.png", 15.0, 16.0),
+        smallImageHighlighted = PatternImage("check-box-image-highlighted.png", 15.0, 16.0),
+
+        miniImageNormal = PatternImage("check-box-image.png", 13.0, 14.0),
+        miniImageSelected = PatternImage("check-box-image-selected.png", 13.0, 14.0),
+        miniImageSelectedHighlighted = PatternImage("check-box-image-selected-highlighted.png", 13.0, 14.0),
+        miniImageSelectedDisabled = PatternImage("check-box-image-selected.png", 13.0, 14.0),
+        miniImageDisabled = PatternImage("check-box-image.png", 13.0, 14.0),
+        miniImageHighlighted = PatternImage("check-box-image-highlighted.png", 13.0, 14.0),
 
         themeValues =
         [
-            [@"alignment",      CPLeftTextAlignment,                CPThemeStateNormal],
-            [@"content-inset",  CGInsetMakeZero(),                  CPThemeStateNormal],
+            [@"alignment",      CPLeftTextAlignment,                                    CPThemeStateNormal],
+            [@"content-inset",  CGInsetMakeZero(),                                      CPThemeStateNormal],
 
-            [@"image",          imageNormal,                        CPThemeStateNormal],
-            [@"image",          imageSelected,                      CPThemeStateSelected],
-            [@"image",          imageSelectedHighlighted,           [CPThemeStateSelected, CPThemeStateHighlighted]],
-            [@"image",          imageHighlighted,                   CPThemeStateHighlighted],
-            [@"image",          imageDisabled,                      CPThemeStateDisabled],
-            [@"image",          imageSelectedDisabled,              [CPThemeStateSelected, CPThemeStateDisabled]],
+            [@"image",          regularImageNormal,                                     CPThemeStateNormal],
+            [@"image",          regularImageSelected,                                   CPThemeStateSelected],
+            [@"image",          regularImageSelectedHighlighted,                        [CPThemeStateSelected, CPThemeStateHighlighted]],
+            [@"image",          regularImageHighlighted,                                CPThemeStateHighlighted],
+            [@"image",          regularImageDisabled,                                   CPThemeStateDisabled],
+            [@"image",          regularImageSelectedDisabled,                           [CPThemeStateSelected, CPThemeStateDisabled]],
             [@"image-offset",   CPCheckBoxImageOffset],
 
-            [@"font",           [CPFont systemFontOfSize:CPFontCurrentSystemSize], CPThemeStateNormal],
-            [@"text-color",     [CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0], CPThemeStateDisabled],
+            [@"font",           [CPFont systemFontOfSize:CPFontCurrentSystemSize],          CPThemeStateNormal],
+            [@"text-color",     [CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0],  CPThemeStateDisabled],
 
             [@"min-size",       CGSizeMake(0.0, 17.0)],
-            [@"max-size",       CGSizeMake(-1.0, -1.0)]
+            [@"max-size",       CGSizeMake(-1.0, -1.0)],
+
+            // CPThemeStateControlSizeSmall
+            [@"image",          smallImageNormal,                                       [CPThemeStateControlSizeSmall, CPThemeStateNormal]],
+            [@"image",          smallImageSelected,                                     [CPThemeStateControlSizeSmall, CPThemeStateSelected]],
+            [@"image",          smallImageSelectedHighlighted,                          [CPThemeStateControlSizeSmall, CPThemeStateSelected, CPThemeStateHighlighted]],
+            [@"image",          smallImageHighlighted,                                  [CPThemeStateControlSizeSmall, CPThemeStateHighlighted]],
+            [@"image",          smallImageDisabled,                                     [CPThemeStateControlSizeSmall, CPThemeStateDisabled]],
+            [@"image",          smallImageSelectedDisabled,                             [CPThemeStateControlSizeSmall, CPThemeStateSelected, CPThemeStateDisabled]],
+
+            [@"min-size",       CGSizeMake(16.0, 16.0),                                 CPThemeStateControlSizeSmall],
+            [@"max-size",       CGSizeMake(-1.0, -1.0),                                 CPThemeStateControlSizeSmall],
+
+            // CPThemeStateControlSizeMini
+            [@"image",          miniImageNormal,                                        [CPThemeStateControlSizeMini, CPThemeStateNormal]],
+            [@"image",          miniImageSelected,                                      [CPThemeStateControlSizeMini, CPThemeStateSelected]],
+            [@"image",          miniImageSelectedHighlighted,                           [CPThemeStateControlSizeMini, CPThemeStateSelected, CPThemeStateHighlighted]],
+            [@"image",          miniImageHighlighted,                                   [CPThemeStateControlSizeMini, CPThemeStateHighlighted]],
+            [@"image",          miniImageDisabled,                                      [CPThemeStateControlSizeMini, CPThemeStateDisabled]],
+            [@"image",          miniImageSelectedDisabled,                              [CPThemeStateControlSizeMini, CPThemeStateSelected, CPThemeStateDisabled]],
+
+            [@"min-size",       CGSizeMake(13.0, 14.0),                                 CPThemeStateControlSizeMini],
+            [@"max-size",       CGSizeMake(-1.0, -1.0),                                 CPThemeStateControlSizeMini]
         ];
 
     [button setThemeState:CPThemeStateSelected];
@@ -2256,17 +2411,80 @@ var themedButtonValues = nil,
             ],
             PatternIsHorizontal),
 
+        smallBezelUp = PatternColor(
+            "stepper-bezel-big{state}-up{position}.png",
+            {
+                states: ["", "highlighted", "disabled"],
+                width: 3.0,
+                height: 11.0,
+                centerWidth: 11.0,
+                orientation: PatternIsHorizontal
+            }),
+
+        smallBezelDown = PatternColor(
+            "stepper-bezel-big{state}-down{position}.png",
+            {
+                states: ["", "highlighted", "disabled"],
+                width: 3.0,
+                height: 10.0,
+                centerWidth: 11.0,
+                orientation: PatternIsHorizontal
+            }),
+
+        miniBezelUp = PatternColor(
+            "stepper-bezel-big{state}-up{position}.png",
+            {
+                states: ["", "highlighted", "disabled"],
+                width: 2.0,
+                height: 8.0,
+                centerWidth: 8.0,
+                orientation: PatternIsHorizontal
+            }),
+
+        miniBezelDown = PatternColor(
+            "stepper-bezel-big{state}-down{position}.png",
+            {
+                states: ["", "highlighted", "disabled"],
+                width: 2.0,
+                height: 7.0,
+                centerWidth: 8.0,
+                orientation: PatternIsHorizontal
+            }),
+
+
         themeValues =
         [
-            [@"bezel-color-up-button",      bezelUp,                        CPThemeStateBordered],
-            [@"bezel-color-down-button",    bezelDown,                      CPThemeStateBordered],
-            [@"bezel-color-up-button",      bezelUpDisabled,                [CPThemeStateBordered, CPThemeStateDisabled]],
-            [@"bezel-color-down-button",    bezelDownDisabled,              [CPThemeStateBordered, CPThemeStateDisabled]],
-            [@"bezel-color-up-button",      bezelUpHighlighted,             [CPThemeStateBordered, CPThemeStateHighlighted]],
-            [@"bezel-color-down-button",    bezelDownHighlighted,           [CPThemeStateBordered, CPThemeStateHighlighted]],
-            [@"min-size",                   CGSizeMake(25.0, 25.0)],
+            [@"bezel-color-up-button",      bezelUp,                            CPThemeStateBordered],
+            [@"bezel-color-down-button",    bezelDown,                          CPThemeStateBordered],
+            [@"bezel-color-up-button",      bezelUpDisabled,                    [CPThemeStateBordered, CPThemeStateDisabled]],
+            [@"bezel-color-down-button",    bezelDownDisabled,                  [CPThemeStateBordered, CPThemeStateDisabled]],
+            [@"bezel-color-up-button",      bezelUpHighlighted,                 [CPThemeStateBordered, CPThemeStateHighlighted]],
+            [@"bezel-color-down-button",    bezelDownHighlighted,               [CPThemeStateBordered, CPThemeStateHighlighted]],
+            //[@"min-size",                   CGSizeMake(25.0, 25.0)],
             [@"up-button-size",             CGSizeMake(19.0, 13.0)],
-            [@"down-button-size",           CGSizeMake(19.0, 12.0)]
+            [@"down-button-size",           CGSizeMake(19.0, 12.0)],
+
+            // CPThemeStateControlSizeSmall
+            [@"bezel-color-up-button",      smallBezelUp["@"],                  [CPThemeStateControlSizeSmall, CPThemeStateBordered]],
+            [@"bezel-color-down-button",    smallBezelDown["@"],                [CPThemeStateControlSizeSmall, CPThemeStateBordered]],
+            [@"bezel-color-up-button",      smallBezelUp["disabled"],           [CPThemeStateControlSizeSmall, CPThemeStateBordered, CPThemeStateDisabled]],
+            [@"bezel-color-down-button",    smallBezelDown["disabled"],         [CPThemeStateControlSizeSmall, CPThemeStateBordered, CPThemeStateDisabled]],
+            [@"bezel-color-up-button",      smallBezelUp["highlighted"],        [CPThemeStateControlSizeSmall, CPThemeStateBordered, CPThemeStateHighlighted]],
+            [@"bezel-color-down-button",    smallBezelDown["highlighted"],      [CPThemeStateControlSizeSmall, CPThemeStateBordered, CPThemeStateHighlighted]],
+
+            [@"up-button-size",             CGSizeMake(17.0, 11.0),             CPThemeStateControlSizeSmall],
+            [@"down-button-size",           CGSizeMake(17.0, 10.0),             CPThemeStateControlSizeSmall],
+
+            // CPThemeStateControlSizeMini
+            [@"bezel-color-up-button",      miniBezelUp["@"],                   [CPThemeStateControlSizeMini, CPThemeStateBordered]],
+            [@"bezel-color-down-button",    miniBezelDown["@"],                 [CPThemeStateControlSizeMini, CPThemeStateBordered]],
+            [@"bezel-color-up-button",      miniBezelUp["disabled"],            [CPThemeStateControlSizeMini, CPThemeStateBordered, CPThemeStateDisabled]],
+            [@"bezel-color-down-button",    miniBezelDown["disabled"],          [CPThemeStateControlSizeMini, CPThemeStateBordered, CPThemeStateDisabled]],
+            [@"bezel-color-up-button",      miniBezelUp["highlighted"],         [CPThemeStateControlSizeMini, CPThemeStateBordered, CPThemeStateHighlighted]],
+            [@"bezel-color-down-button",    miniBezelDown["highlighted"],       [CPThemeStateControlSizeMini, CPThemeStateBordered, CPThemeStateHighlighted]],
+
+            [@"up-button-size",             CGSizeMake(12.0, 8.0),              CPThemeStateControlSizeMini],
+            [@"down-button-size",           CGSizeMake(12.0, 7.0),              CPThemeStateControlSizeMini]
         ];
 
     [self registerThemeValues:themeValues forView:stepper];
@@ -2296,7 +2514,8 @@ var themedButtonValues = nil,
             [@"slice-last-bottom-border-color", sliceLastBottomBorderColor],
             [@"font",                           [CPFont systemFontOfSize:10.0]],
             [@"add-image",                      addImage],
-            [@"remove-image",                   removeImage]
+            [@"remove-image",                   removeImage],
+            [@"vertical-alignment",             CPCenterVerticalTextAlignment]
         ];
 
     [self registerThemeValues:ruleEditorThemedValues forView:ruleEditor];
