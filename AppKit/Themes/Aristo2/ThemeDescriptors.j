@@ -706,15 +706,15 @@ var themedButtonValues = nil,
         [@"content-inset",              CGInsetMake(7.0, 7.0, 5.0, 8.0),                    [CPThemeStateControlSizeSmall, CPThemeStateBezeled, CPThemeStateEditing]],
 
         [@"min-size",                   CGSizeMake(-1.0, 25.0),                             CPThemeStateControlSizeSmall],
-        [@"nib2cib-adjustment-frame",   CGRectMake(2.0, 0.0, -4.0, 0.0),                     CPThemeStateControlSizeSmall],
-        [@"nib2cib-adjustment-frame",   CGRectMake(-3.0, 11.0, 7.0, 7.0),                   [CPThemeStateControlSizeSmall, CPThemeStateBezeled]],
+        [@"nib2cib-adjustment-frame",   CGRectMake(2.0, 0.0, -4.0, 0.0),                    CPThemeStateControlSizeSmall],
+        [@"nib2cib-adjustment-frame",   CGRectMake(-3.0, 4.0, 7.0, 7.0),                    [CPThemeStateControlSizeSmall, CPThemeStateBezeled]],
 
         // CPThemeStateControlSizeMini
         [@"content-inset",              CGInsetMake(6.0, 7.0, 5.0, 7.0),                    [CPThemeStateControlSizeMini, CPThemeStateBezeled]],
         [@"content-inset",              CGInsetMake(6.0, 7.0, 5.0, 7.0),                    [CPThemeStateControlSizeMini, CPThemeStateBezeled, CPThemeStateEditing]],
         [@"min-size",                   CGSizeMake(-1.0, 22.0),                             CPThemeStateControlSizeMini],
-        [@"nib2cib-adjustment-frame",   CGRectMake(2.0, 0.0, -4.0, 0.0),                     CPThemeStateControlSizeMini],
-        [@"nib2cib-adjustment-frame",   CGRectMake(-4.0, 11.0, 8.0, 7.0),                   [CPThemeStateControlSizeMini, CPThemeStateBezeled]],
+        [@"nib2cib-adjustment-frame",   CGRectMake(2.0, 0.0, -4.0, 0.0),                    CPThemeStateControlSizeMini],
+        [@"nib2cib-adjustment-frame",   CGRectMake(-4.0, 4.0, 8.0, 7.0),                    [CPThemeStateControlSizeMini, CPThemeStateBezeled]],
     ];
 
     [self registerThemeValues:themedTextFieldValues forView:textfield];
@@ -1324,7 +1324,7 @@ var themedButtonValues = nil,
             // Because combo box uses a three-part bezel, the height is fixed
             [@"min-size",           CGSizeMake(0, 31.0)],
             [@"max-size",           CGSizeMake(-1, 31.0)],
-            [@"nib2cib-adjustment-frame",   CGRectMake(-2.0, 0.0, 2.0, 0.0)],
+            [@"nib2cib-adjustment-frame",   CGRectMake(-4.0, 0.0, 5.0, 0.0)],
 
             [@"text-color",         regularDisabledTextColor,                   [CPThemeStateBordered, CPThemeStateDisabled]],
             [@"text-shadow-color",  regularDisabledTextShadowColor,             [CPThemeStateBordered, CPThemeStateDisabled]],
@@ -1340,7 +1340,7 @@ var themedButtonValues = nil,
 
             [@"min-size",           CGSizeMake(0, 26.0),                        CPThemeStateControlSizeSmall],
             [@"max-size",           CGSizeMake(-1, 26.0),                       CPThemeStateControlSizeSmall],
-            [@"nib2cib-adjustment-frame",   CGRectMake(-2.0, -0.5, 2.0, 0.0),   CPThemeStateControlSizeSmall],
+            [@"nib2cib-adjustment-frame",   CGRectMake(-4.0, -1.0, 5.0, 0.0),   CPThemeStateControlSizeSmall],
 
             // CPThemeStateControlSizeMini
             [@"bezel-color",        miniBezelColor["@"],                        [CPThemeStateControlSizeMini, CPThemeStateBezeled, CPComboBoxStateButtonBordered]],
@@ -1353,7 +1353,7 @@ var themedButtonValues = nil,
 
             [@"min-size",           CGSizeMake(0, 22.0),                        CPThemeStateControlSizeMini],
             [@"max-size",           CGSizeMake(-1, 22.0),                       CPThemeStateControlSizeMini],
-            [@"nib2cib-adjustment-frame",   CGRectMake(-2.0, -1.0, 3.0, 0.0),   CPThemeStateControlSizeMini],
+            [@"nib2cib-adjustment-frame",   CGRectMake(-4.0, -2.0, 6.0, 0.0),   CPThemeStateControlSizeMini],
         ];
 
     [self registerThemeValues:overrides forView:combo inherit:themedTextFieldValues];
