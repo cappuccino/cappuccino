@@ -69,8 +69,15 @@
 
 - (CGRect)_nib2CibAdjustment
 {
-    var theme = [Nib2Cib defaultTheme];
-    return [theme valueForAttributeWithName:@"nib2cib-adjustment-frame" inState:[self themeState] forClass:[self class]];
+    // Theme has not been loaded yet.
+    // Get attribute value directly from the theme or from the default value of the object otherwise.
+    var theme = [Nib2Cib defaultTheme],
+        frameAdjustment = [theme valueForAttributeWithName:@"nib2cib-adjustment-frame" inState:[self themeState] forClass:[self class]];
+
+    if (!frameAdjustment)
+        frameAdjustment = [self currentValueForThemeAttribute:@"nib2cib-adjustment-frame"];
+
+    return frameAdjustment;
 }
 
 - (void)_adjustNib2CibSize

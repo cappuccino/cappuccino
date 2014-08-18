@@ -170,8 +170,6 @@ var NSButtonIsBorderedMask = 0x00800000,
             maxSize = [theme valueForAttributeWithName:@"max-size" forClass:[self class]],
             adjustHeight = NO;
 
-        // CPLog.error([self class] + " Frame Adjustment = (" + frameAdjustment.origin.x + ", " + frameAdjustment.origin.y + ", " + frameAdjustment.size.width + ", " + frameAdjustment.size.width + ")")
-
         if (minSize.height > 0 && maxSize.height > 0 && minSize.height === maxSize.height)
         {
             adjustHeight = YES;
@@ -210,8 +208,6 @@ var NSButtonIsBorderedMask = 0x00800000,
 
     _highlightsBy = [cell highlightsBy];
     _showsStateBy = [cell showsStateBy];
-
-    [self _adjustNib2CibSize];
 }
 
 /*!
@@ -398,6 +394,7 @@ var NSButtonIsBorderedMask = 0x00800000,
     {
         var cell = [aCoder decodeObjectForKey:@"NSCell"];
         [self NS_initWithCell:cell];
+        [self _adjustNib2CibSize];
     }
 
     return self;

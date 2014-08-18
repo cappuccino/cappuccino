@@ -145,12 +145,6 @@ var NSDatePickerDefaultSize = 22,
     return self;
 }
 
-- (void)NS_initWithCell:(NSCell)cell
-{
-    [super NS_initWithCell:cell];
-    [self _adjustNib2CibSize];
-}
-
 
 @end
 
@@ -164,8 +158,7 @@ var NSDatePickerDefaultSize = 22,
 
     if (self)
     {
-        var cell = [aCoder decodeObjectForKey:@"NSCell"];
-        [self NS_initWithCell:cell];
+        [self _adjustNib2CibSize];
     }
 
     return self

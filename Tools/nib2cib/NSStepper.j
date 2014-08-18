@@ -42,8 +42,6 @@
     self._valueWraps = [cell valueWraps];
     self._autorepeat = [cell autorepeat];
     self._objectValue = [cell objectValue];
-
-    [self _adjustNib2CibSize];
 }
 
 @end
@@ -58,6 +56,7 @@
     {
         var cell = [aCoder decodeObjectForKey:@"NSCell"];
         [self NS_initWithCell:cell];
+        [self _adjustNib2CibSize];
     }
 
     return self;

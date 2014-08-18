@@ -65,8 +65,6 @@
 
     if ([self formatter])
         CPLog.debug(">> Formatter: " + [[self formatter] description]);
-
-    [self _adjustNib2CibSize];
 }
 
 @end
@@ -81,6 +79,7 @@
     {
         var cell = [aCoder decodeObjectForKey:@"NSCell"];
         [self NS_initWithCell:cell];
+        [self _adjustNib2CibSize];
     }
 
     return self;

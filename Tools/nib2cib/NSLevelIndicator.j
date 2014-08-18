@@ -58,8 +58,6 @@
     [self setEditable:[cell isEditable]];
     [self setEnabled:[cell isEnabled]];
     [self setContinuous:[cell isContinuous]];
-
-    [self _adjustNib2CibSize];
 }
 
 @end
@@ -76,6 +74,7 @@
     {
         var cell = [aCoder decodeObjectForKey:@"NSCell"];
         [self NS_initWithCell:cell];
+        [self _adjustNib2CibSize];
     }
 
     return self;

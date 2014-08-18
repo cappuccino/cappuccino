@@ -42,8 +42,6 @@
     [self setMaximumRecents:[cell maximumRecents]];
     [self setSendsWholeSearchString:[cell sendsWholeSearchString]];
     [self setSendsSearchStringImmediately:[cell sendsSearchStringImmediately]];
-
-    [self _adjustNib2CibSize];
 }
 
 @end
@@ -60,6 +58,7 @@
     {
         var cell = [aCoder decodeObjectForKey:@"NSCell"];
         [self NS_initWithCell:cell];
+        [self _adjustNib2CibSize];
     }
 
     return self;

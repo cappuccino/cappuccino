@@ -39,8 +39,6 @@
     [self setImageScaling:[cell imageScaling]];
     [self setImageAlignment:[cell imageAlignment]];
     _isEditable = [cell isEditable];
-
-    [self _adjustNib2CibSize];
 }
 
 @end
@@ -55,6 +53,7 @@
     {
         var cell = [aCoder decodeObjectForKey:@"NSCell"];
         [self NS_initWithCell:cell];
+        [self _adjustNib2CibSize];
     }
 
     return self;
