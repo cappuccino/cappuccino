@@ -508,6 +508,9 @@ var CPViewFlags                     = { },
         [CPException raise:CPInvalidArgumentException reason:"can't insert a subview in duplicate (probably partially decoded)"];
 #endif
 
+    // Notify the subview that it will be moving.
+    [aSubview viewWillMoveToSuperview:self];
+
     // We will have to adjust the z-index of all views starting at this index.
     var count = _subviews.length;
 
@@ -537,14 +540,13 @@ var CPViewFlags                     = { },
     }
     else
     {
+        var superview = aSubview._superview;
+
         // Remove the view from its previous superview.
-        [aSubview removeFromSuperview];
+        [aSubview _removeFromSuperview];
 
-        // Set the subview's window to our own.
-        [aSubview _setWindow:_window];
-
-        // Notify the subview that it will be moving.
-        [aSubview viewWillMoveToSuperview:self];
+        if (superview)
+            [aSubview _setWindow:nil];
 
         // Set ourselves as the superview.
         aSubview._superview = self;
@@ -577,6 +579,12 @@ var CPViewFlags                     = { },
     if (![aSubview isHidden] && [self isHiddenOrHasHiddenAncestor])
         [aSubview _notifyViewDidHide];
 
+    [aSubview viewDidMoveToSuperview];
+
+    // Set the subview's window to our own.
+    if (_window)
+        [aSubview _setWindow:_window];
+
     // This method might be called before we are fully unarchived, in which case the theme state isn't set up yet
     // and none of the below matters anyhow.
     if (_themeState)
@@ -591,8 +599,6 @@ var CPViewFlags                     = { },
         else
             [aSubview _notifyWindowDidResignKey];
     }
-
-    [aSubview viewDidMoveToSuperview];
 
     [self didAddSubview:aSubview];
 }
@@ -610,6 +616,18 @@ var CPViewFlags                     = { },
     Does nothing if there's no container view.
 */
 - (void)removeFromSuperview
+{
+    var superview = _superview;
+
+    [self viewWillMoveToSuperview:nil];
+    [self _removeFromSuperview];
+    [self viewDidMoveToSuperview];
+
+    if (superview)
+        [self _setWindow:nil];
+}
+
+- (void)_removeFromSuperview
 {
     if (!_superview)
         return;
@@ -634,8 +652,6 @@ var CPViewFlags                     = { },
     [self _notifyViewDidResignFirstResponder];
 
     _superview = nil;
-
-    [self _setWindow:nil];
 }
 
 /*!
@@ -645,14 +661,14 @@ var CPViewFlags                     = { },
 */
 - (void)replaceSubview:(CPView)aSubview with:(CPView)aView
 {
-    if (aSubview._superview !== self)
+    if (aSubview._superview !== self || aSubview === aView)
         return;
 
     var index = [_subviews indexOfObjectIdenticalTo:aSubview];
 
-    [aSubview removeFromSuperview];
-
     [self _insertSubview:aView atIndex:index];
+
+    [aSubview removeFromSuperview];
 }
 
 - (void)setSubviews:(CPArray)newSubviews
@@ -727,9 +743,6 @@ var CPViewFlags                     = { },
 /* @ignore */
 - (void)_setWindow:(CPWindow)aWindow
 {
-    if (_window === aWindow)
-        return;
-
     [[self window] _dirtyKeyViewLoop];
 
     // Clear out first responder if we're the first responder and leaving.
@@ -2936,10 +2949,10 @@ setBoundsOrigin:
 
 - (BOOL)unsetThemeState:(ThemeState)aState
 {
-     if (aState && aState.isa && [aState isKindOfClass:CPArray])
+    if (aState && aState.isa && [aState isKindOfClass:CPArray])
         aState = CPThemeState.apply(null, aState);
 
-    var oldThemeState = _themeState
+    var oldThemeState = _themeState;
     _themeState = _themeState.without(aState);
 
     if (oldThemeState === _themeState)
