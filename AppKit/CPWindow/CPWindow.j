@@ -901,6 +901,7 @@ CPTexturedBackgroundWindowMask
 
 - (void)_orderFront
 {
+    [[self contentView] _removeObservers];
     [[self contentView] _addObservers];
 
 #if PLATFORM(DOM)
