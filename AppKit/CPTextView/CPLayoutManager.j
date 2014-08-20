@@ -301,6 +301,9 @@ var _objectsInRange = function(aList, aRange)
         if (run.DOMactive && !run.DOMpatched || !run.elem)
             continue;
 
+        if(!_glyphsFrames)
+            continue;
+
         orig.x = _glyphsFrames[run._range.location - _runs[0]._range.location].origin.x + aPoint.x;
 
         run.elem.style.left = (orig.x) + "px";
@@ -527,7 +530,7 @@ var _objectsInRange = function(aList, aRange)
         if (fragment._textContainer === container)
         {
             var frames = [fragment glyphFrames],
-                l = frames.length;
+                l = frames? frames.length : 0;
 
             for (var j = 0; j < l; j++)
             {
@@ -573,7 +576,7 @@ var _objectsInRange = function(aList, aRange)
 
     if (_removeInvalidLineFragmentsRange && _removeInvalidLineFragmentsRange.length && _lineFragments.length)
     {
-        // [[_lineFragments subarrayWithRange:_removeInvalidLineFragmentsRange] makeObjectsPerformSelector:@selector(invalidate)];
+     //   [[_lineFragments subarrayWithRange:_removeInvalidLineFragmentsRange] makeObjectsPerformSelector:@selector(invalidate)];
         [_lineFragments removeObjectsInRange:_removeInvalidLineFragmentsRange];
         [[_lineFragmentsForRescue subarrayWithRange:_removeInvalidLineFragmentsRange] makeObjectsPerformSelector:@selector(invalidate)];
     }
@@ -913,14 +916,8 @@ var _objectsInRange = function(aList, aRange)
                            continue;
 
                         // Clicked right to the last character
-                        if (point.x > CGRectGetMaxX(lastFrame) + 10)
-                        {
-                            // This allows clicking before and after empty lines (return characters)
-                            if (_isNewlineCharacter([[_textStorage string] characterAtIndex: nlLoc]))
-                            {
-                                return nlLoc + 1;
-                            }
-                        }
+                        if (point.x > CGRectGetMaxX(lastFrame))
+                            return nlLoc;
                         // Clicked left to the last character
                         else if (point.x <= CGRectGetMinX(firstFrame))
                             return fragment._range.location;
