@@ -820,6 +820,20 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     }
 }
 
+- (void)_removeObservers
+{
+    [super _removeObservers];
+    [self _setObserveWindowKeyNotifications:NO];
+}
+
+- (void)_addObservers
+{
+    [super _addObservers];
+
+    if ([self window] === self)
+        [self _setObserveWindowKeyNotifications:YES];
+}
+
 - (void)_windowDidResignKey:(CPNotification)aNotification
 {
     if (![[self window] isKeyWindow])

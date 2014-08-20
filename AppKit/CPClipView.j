@@ -47,18 +47,7 @@
 
     if (_documentView)
     {
-        var defaultCenter = [CPNotificationCenter defaultCenter];
-
-        [defaultCenter
-            removeObserver:self
-                      name:CPViewFrameDidChangeNotification
-                    object:_documentView];
-
-        [defaultCenter
-            removeObserver:self
-                      name:CPViewBoundsDidChangeNotification
-                    object:_documentView];
-
+        [self _removeObserverDocumentView:_documentView];
         [_documentView removeFromSuperview];
     }
 
@@ -90,6 +79,38 @@
                name:CPViewBoundsDidChangeNotification
              object:_documentView];
 }
+
+- (void)_removeObserverDocumentView:(CPView)aDocumentView
+{
+    var defaultCenter = [CPNotificationCenter defaultCenter];
+
+    [defaultCenter
+        removeObserver:self
+                  name:CPViewFrameDidChangeNotification
+                object:_documentView];
+
+    [defaultCenter
+        removeObserver:self
+                  name:CPViewBoundsDidChangeNotification
+                object:_documentView];
+}
+
+- (void)_addObservers
+{
+    [super _addObservers];
+
+    if (_documentView)
+        [self _observeDocumentView];
+}
+
+- (void)_removeObservers
+{
+    [super _removeObservers];
+
+    if (_documentView)
+        [self _removeObserverDocumentView:_documentView];
+}
+
 
 /*!
     Returns the document view.

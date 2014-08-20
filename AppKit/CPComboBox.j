@@ -210,42 +210,11 @@ var CPComboBoxTextSubview = @"text",
     if (aDelegate === delegate)
         return;
 
-    var defaultCenter = [CPNotificationCenter defaultCenter];
-
     if (delegate)
-    {
-        [defaultCenter removeObserver:delegate name:CPComboBoxSelectionIsChangingNotification object:self];
-        [defaultCenter removeObserver:delegate name:CPComboBoxSelectionDidChangeNotification object:self];
-        [defaultCenter removeObserver:delegate name:CPComboBoxWillDismissNotification object:self];
-        [defaultCenter removeObserver:delegate name:CPComboBoxWillPopUpNotification object:self];
-    }
+        [self _removeObserversDelegate:delegate];
 
     if (aDelegate)
-    {
-        if ([aDelegate respondsToSelector:@selector(comboBoxSelectionIsChanging:)])
-            [defaultCenter addObserver:delegate
-                              selector:@selector(comboBoxSelectionIsChanging:)
-                                  name:CPComboBoxSelectionIsChangingNotification
-                                object:self];
-
-        if ([aDelegate respondsToSelector:@selector(comboBoxSelectionDidChange:)])
-            [defaultCenter addObserver:delegate
-                              selector:@selector(comboBoxSelectionDidChange:)
-                                  name:CPComboBoxSelectionDidChangeNotification
-                                object:self];
-
-        if ([aDelegate respondsToSelector:@selector(comboBoxWillPopUp:)])
-            [defaultCenter addObserver:delegate
-                              selector:@selector(comboBoxWillPopUp:)
-                                  name:CPComboBoxWillPopUpNotification
-                                object:self];
-
-        if ([aDelegate respondsToSelector:@selector(comboBoxWillDismiss:)])
-            [defaultCenter addObserver:delegate
-                              selector:@selector(comboBoxWillDissmis:)
-                                  name:CPComboBoxWillDismissNotification
-                                object:self];
-    }
+        [self _addObserversDelegate:aDelegate];
 
     [super setDelegate:aDelegate];
 }
@@ -397,56 +366,11 @@ var CPComboBoxTextSubview = @"text",
     var defaultCenter = [CPNotificationCenter defaultCenter];
 
     if (_listDelegate)
-    {
-        [defaultCenter removeObserver:self name:_CPPopUpListWillPopUpNotification object:_listDelegate];
-        [defaultCenter removeObserver:self name:_CPPopUpListWillDismissNotification object:_listDelegate];
-        [defaultCenter removeObserver:self name:_CPPopUpListDidDismissNotification object:_listDelegate];
-        [defaultCenter removeObserver:self name:_CPPopUpListItemWasClickedNotification object:_listDelegate];
-
-        var oldTableView = [_listDelegate tableView];
-
-        if (oldTableView)
-        {
-            [defaultCenter removeObserver:self name:CPTableViewSelectionIsChangingNotification object:oldTableView];
-            [defaultCenter removeObserver:self name:CPTableViewSelectionDidChangeNotification object:oldTableView];
-        }
-    }
+        [self _removeObserversListDelegate:_listDelegate]
 
     _listDelegate = aDelegate;
 
-    [defaultCenter addObserver:self
-                      selector:@selector(comboBoxWillPopUp:)
-                          name:_CPPopUpListWillPopUpNotification
-                        object:_listDelegate];
-
-    [defaultCenter addObserver:self
-                      selector:@selector(comboBoxWillDismiss:)
-                          name:_CPPopUpListWillDismissNotification
-                        object:_listDelegate];
-
-    [defaultCenter addObserver:self
-                      selector:@selector(listDidDismiss:)
-                          name:_CPPopUpListDidDismissNotification
-                        object:_listDelegate];
-
-    [defaultCenter addObserver:self
-                      selector:@selector(itemWasClicked:)
-                          name:_CPPopUpListItemWasClickedNotification
-                        object:_listDelegate];
-
-    [[_listDelegate scrollView] setHasVerticalScroller:_hasVerticalScroller];
-
-    var tableView = [_listDelegate tableView];
-
-    [defaultCenter addObserver:self
-                      selector:@selector(comboBoxSelectionIsChanging:)
-                          name:CPTableViewSelectionIsChangingNotification
-                        object:tableView];
-
-    [defaultCenter addObserver:self
-                      selector:@selector(comboBoxSelectionDidChange:)
-                          name:CPTableViewSelectionDidChangeNotification
-                        object:tableView];
+    [self _addObserversListDelegate:_listDelegate]
 
     // Apply our text style to the list
     [_listDelegate setFont:[self font]];
@@ -971,6 +895,124 @@ var CPComboBoxTextSubview = @"text",
 
         [self popUpList];
     }
+}
+
+- (void)_removeObservers
+{
+    [super _removeObservers];
+
+    if (_listDelegate)
+        [self _removeObserversListDelegate:_listDelegate];
+
+    if ([self delegate])
+        [self _removeObserversDelegate:[self delegate]];
+}
+
+- (void)_removeObserversDelegate:(id)aDelegate
+{
+    var defaultCenter = [CPNotificationCenter defaultCenter];
+
+    [defaultCenter removeObserver:aDelegate name:CPComboBoxSelectionIsChangingNotification object:self];
+    [defaultCenter removeObserver:aDelegate name:CPComboBoxSelectionDidChangeNotification object:self];
+    [defaultCenter removeObserver:aDelegate name:CPComboBoxWillDismissNotification object:self];
+    [defaultCenter removeObserver:aDelegate name:CPComboBoxWillPopUpNotification object:self];
+}
+
+- (void)_removeObserversListDelegate:(id)aDelegate
+{
+    var defaultCenter = [CPNotificationCenter defaultCenter];
+
+    [defaultCenter removeObserver:self name:_CPPopUpListWillPopUpNotification object:aDelegate];
+    [defaultCenter removeObserver:self name:_CPPopUpListWillDismissNotification object:aDelegate];
+    [defaultCenter removeObserver:self name:_CPPopUpListDidDismissNotification object:aDelegate];
+    [defaultCenter removeObserver:self name:_CPPopUpListItemWasClickedNotification object:aDelegate];
+
+    var oldTableView = [aDelegate tableView];
+
+    if (oldTableView)
+    {
+        [defaultCenter removeObserver:self name:CPTableViewSelectionIsChangingNotification object:oldTableView];
+        [defaultCenter removeObserver:self name:CPTableViewSelectionDidChangeNotification object:oldTableView];
+    }
+}
+
+- (void)_addObservers
+{
+    [super _addObservers];
+
+    if (_listDelegate)
+        [self _addObserversListDelegate:_listDelegate];
+
+    if ([self delegate])
+        [self _addObserversDelegate:[self delegate]];
+}
+
+- (void)_addObserversDelegate:(id)aDelegate
+{
+    var defaultCenter = [CPNotificationCenter defaultCenter];
+
+    if ([aDelegate respondsToSelector:@selector(comboBoxSelectionIsChanging:)])
+        [defaultCenter addObserver:aDelegate
+                          selector:@selector(comboBoxSelectionIsChanging:)
+                              name:CPComboBoxSelectionIsChangingNotification
+                            object:self];
+
+    if ([aDelegate respondsToSelector:@selector(comboBoxSelectionDidChange:)])
+        [defaultCenter addObserver:aDelegate
+                          selector:@selector(comboBoxSelectionDidChange:)
+                              name:CPComboBoxSelectionDidChangeNotification
+                            object:self];
+
+    if ([aDelegate respondsToSelector:@selector(comboBoxWillPopUp:)])
+        [defaultCenter addObserver:aDelegate
+                          selector:@selector(comboBoxWillPopUp:)
+                              name:CPComboBoxWillPopUpNotification
+                            object:self];
+
+    if ([aDelegate respondsToSelector:@selector(comboBoxWillDismiss:)])
+        [defaultCenter addObserver:aDelegate
+                          selector:@selector(comboBoxWillDissmis:)
+                              name:CPComboBoxWillDismissNotification
+                            object:self];
+}
+
+- (void)_addObserversListDelegate:(id)aDelegate
+{
+    var defaultCenter = [CPNotificationCenter defaultCenter];
+
+    [defaultCenter addObserver:self
+                      selector:@selector(comboBoxWillPopUp:)
+                          name:_CPPopUpListWillPopUpNotification
+                        object:aDelegate];
+
+    [defaultCenter addObserver:self
+                      selector:@selector(comboBoxWillDismiss:)
+                          name:_CPPopUpListWillDismissNotification
+                        object:aDelegate];
+
+    [defaultCenter addObserver:self
+                      selector:@selector(listDidDismiss:)
+                          name:_CPPopUpListDidDismissNotification
+                        object:aDelegate];
+
+    [defaultCenter addObserver:self
+                      selector:@selector(itemWasClicked:)
+                          name:_CPPopUpListItemWasClickedNotification
+                        object:aDelegate];
+
+    [[aDelegate scrollView] setHasVerticalScroller:_hasVerticalScroller];
+
+    var tableView = [aDelegate tableView];
+
+    [defaultCenter addObserver:self
+                      selector:@selector(comboBoxSelectionIsChanging:)
+                          name:CPTableViewSelectionIsChangingNotification
+                        object:tableView];
+
+    [defaultCenter addObserver:self
+                      selector:@selector(comboBoxSelectionDidChange:)
+                          name:CPTableViewSelectionDidChangeNotification
+                        object:tableView];
 }
 
 @end

@@ -816,6 +816,10 @@ var CPViewFlags                     = { },
 */
 - (void)viewWillMoveToSuperview:(CPView)aView
 {
+    [self _removeObservers];
+
+    if (aView)
+        [self _addObservers];
 }
 
 /*!
@@ -832,6 +836,22 @@ var CPViewFlags                     = { },
 */
 - (void)willRemoveSubview:(CPView)aView
 {
+}
+
+- (void)_removeObservers
+{
+    var count = [_subviews count];
+
+    while (count--)
+        [_subviews[count] _removeObservers];
+}
+
+- (void)_addObservers
+{
+    var count = [_subviews count];
+
+    while (count--)
+        [_subviews[count] _addObservers];
 }
 
 /*!
