@@ -10,6 +10,7 @@
  *  Copyright Emmanuel Maillard 2010.
  *
  *  FIXME: paragraphStyle indent information is currently not properly respected
+ *         collect all run heights per line for proper baseline alignment
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -29,6 +30,8 @@
 @import <Foundation/CPObject.j>
 @import "CPParagraphStyle.j"
 @import "CPTextStorage.j"
+
+@global _isNewlineCharacter
 
 /*
     CPTypesetterControlCharacterAction
@@ -140,6 +143,7 @@ var CPSystemTypesetterFactory;
     float               _lineWidth;
 
     unsigned            _indexOfCurrentContainer;
+    CPArray             _thisLineFragments;
 }
 
 
@@ -194,6 +198,7 @@ var CPSystemTypesetterFactory;
 
     [_layoutManager setTextContainer:_currentTextContainer forGlyphRange:lineRange];  // creates a new lineFragment
     [_layoutManager setLineFragmentRect:rect forGlyphRange:lineRange usedRect:rect];
+    _thisLineFragments.push([_layoutManager._lineFragments lastObject]);
 
     switch ([_currentParagraph alignment])
     {
@@ -213,10 +218,33 @@ var CPSystemTypesetterFactory;
     [_layoutManager setLocation:CPMakePoint(myX, _lineBase) forStartOfGlyphRange:lineRange];
     [_layoutManager _setAdvancements:advancements forGlyphRange:lineRange];
 
-    if (!lineCount)
+    if (!lineCount)  // do not rescue on first line
         return NO;
 
     return ([_layoutManager _rescuingInvalidFragmentsWasPossibleForGlyphRange:lineRange]);
+}
+
+- (void)_fixupLineFragmentsOfCurrentLine
+{
+    var rect,
+        l = _thisLineFragments.length;
+
+    for (var i = 0; i < l; i++)
+    {
+        if (rect)
+            rect = CGRectUnion(rect, _thisLineFragments[i]._usedRect);
+        else
+            rect = CGRectCreateCopy(_thisLineFragments[i]._usedRect);
+    }
+
+    for (var i = 0; i < l; i++)
+    {
+        var diff = rect.size.height - _thisLineFragments[i]._usedRect.size.height;
+       // _thisLineFragments[i]._fragmentRect.origin.y += diff;
+       // _thisLineFragments[i]._fragmentRect.size.height = rect.size.height;
+    }
+
+    _thisLineFragments = [];
 }
 
 - (void)layoutGlyphsInLayoutManager:(CPLayoutManager)layoutManager
@@ -267,6 +295,8 @@ var CPSystemTypesetterFactory;
     if (![_textStorage length])
         return;
 
+    _thisLineFragments = [];
+
     for (; numLines != maxNumLines && glyphIndex < numberOfGlyphs; glyphIndex++)
     {
         if (!CPLocationInRange(glyphIndex, _attributesRange))
@@ -298,11 +328,6 @@ var CPSystemTypesetterFactory;
 
         switch (currentChar)    // faster than sending actionForControlCharacterAtIndex: called for each char.
         {
-            case '\n':
-            case '\r':
-                isNewline = YES;
-                break;
-
             case '\t':
             {
                 var nextTab = [self textTabForWidth:rangeWidth + lineOrigin.x writingDirection:0];
@@ -318,6 +343,11 @@ var CPSystemTypesetterFactory;
                 wrapRange = CPMakeRangeCopy(lineRange);
                 wrapWidth = rangeWidth;
                 break;
+            default:
+                if (_isNewlineCharacter(currentChar))
+                {
+                    isNewline = YES;
+                }
         }
 
         advancements.push(rangeWidth - prevRangeWidth);
@@ -373,6 +403,7 @@ var CPSystemTypesetterFactory;
                 lineOrigin.x = 0;
                 numLines++;
                 isNewline = NO;
+                [self _fixupLineFragmentsOfCurrentLine];
             }
 
             _lineWidth      = 0;
@@ -391,9 +422,12 @@ var CPSystemTypesetterFactory;
 
     // this is to "flush" the remaining characters
     if (lineRange.length)
+    {
         [self _flushRange:lineRange lineOrigin:lineOrigin currentContainerSize:containerSize advancements:advancements lineCount:numLines];
+        [self _fixupLineFragmentsOfCurrentLine]
+    }
 
-    if ([theString.charAt(theString.length - 1) === "\n"])
+    if (_isNewlineCharacter(theString.charAt(theString.length - 1)))
     {
         // fixme: row-height is crudely hacked
         var rect = CGRectMake(0, lineOrigin.y, containerSize.width, [_layoutManager._lineFragments lastObject]._usedRect.size.height);
