@@ -228,6 +228,8 @@ var CPViewFlags                     = { },
     Function            _toolTipFunctionIn;
     Function            _toolTipFunctionOut;
     BOOL                _toolTipInstalled;
+
+    BOOL                _isObserving;
 }
 
 /*
@@ -844,14 +846,21 @@ var CPViewFlags                     = { },
 
     while (count--)
         [_subviews[count] _removeObservers];
+
+    _isObserving = NO;
 }
 
 - (void)_addObservers
 {
+    if (_isObserving)
+        return;
+
     var count = [_subviews count];
 
     while (count--)
         [_subviews[count] _addObservers];
+
+    _isObserving = YES;
 }
 
 /*!
