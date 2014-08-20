@@ -414,6 +414,9 @@ var CPZeroKeyCode = 48,
 
 - (void)_removeObservers
 {
+    if (!_isObserving)
+        return;
+
     [super _removeObservers];
 
     [[CPNotificationCenter defaultCenter] removeObserver:self name:CPDatePickerElementTextFieldBecomeFirstResponder object:self];
@@ -421,6 +424,9 @@ var CPZeroKeyCode = 48,
 
 - (void)_addObservers
 {
+    if (_isObserving)
+        return;
+
     [super _addObservers];
 
     [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_datePickerElementTextFieldBecomeFirstResponder:) name:CPDatePickerElementTextFieldBecomeFirstResponder object:self];
@@ -554,6 +560,9 @@ var CPZeroKeyCode = 48,
 
 - (void)_removeObservers
 {
+    if (!_isObserving)
+        return;
+
     [super _removeObservers];
 
     [[CPNotificationCenter defaultCenter] removeObserver:self name:CPDatePickerElementTextFieldAMPMChangedNotification object:_textFieldPMAM];
@@ -561,6 +570,9 @@ var CPZeroKeyCode = 48,
 
 - (void)_addObservers
 {
+    if (_isObserving)
+        return;
+
     [super _addObservers];
 
     [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_datePickerElementTextFieldAMPMChangedNotification:) name:CPDatePickerElementTextFieldAMPMChangedNotification object:_textFieldPMAM];

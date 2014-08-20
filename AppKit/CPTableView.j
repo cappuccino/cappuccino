@@ -5127,12 +5127,18 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
 - (void)_removeObservers
 {
+    if (!_isObserving)
+        return;
+
     [super _removeObservers];
     [self _stopObservingFirstResponder];
 }
 
 - (void)_addObservers
 {
+    if (_isObserving)
+        return;
+
     [super _addObservers];
     [self _startObservingFirstResponder];
 }

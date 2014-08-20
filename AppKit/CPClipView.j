@@ -97,6 +97,9 @@
 
 - (void)_addObservers
 {
+    if (_isObserving)
+        return;
+
     [super _addObservers];
 
     if (_documentView)
@@ -105,6 +108,9 @@
 
 - (void)_removeObservers
 {
+    if (!_isObserving)
+        return;
+
     [super _removeObservers];
 
     if (_documentView)

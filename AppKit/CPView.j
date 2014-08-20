@@ -842,6 +842,9 @@ var CPViewFlags                     = { },
 
 - (void)_removeObservers
 {
+    if (!_isObserving)
+        return;
+
     var count = [_subviews count];
 
     while (count--)

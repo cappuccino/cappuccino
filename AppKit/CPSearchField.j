@@ -125,6 +125,9 @@ var RECENT_SEARCH_PREFIX = @"   ";
 
 - (void)_removeObservers
 {
+    if (!_isObserving)
+        return;
+
     [super _removeObservers];
 
     [[CPNotificationCenter defaultCenter] removeObserver:self name:CPControlTextDidChangeNotification object:self];
@@ -132,6 +135,9 @@ var RECENT_SEARCH_PREFIX = @"   ";
 
 - (void)_addObservers
 {
+    if (_isObserving)
+        return;
+
     [super _addObservers];
 
     [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_searchFieldTextDidChange:) name:CPControlTextDidChangeNotification object:self];

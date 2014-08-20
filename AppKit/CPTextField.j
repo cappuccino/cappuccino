@@ -822,12 +822,18 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)_removeObservers
 {
+    if (!_isObserving)
+        return;
+
     [super _removeObservers];
     [self _setObserveWindowKeyNotifications:NO];
 }
 
 - (void)_addObservers
 {
+    if (_isObserving)
+        return;
+
     [super _addObservers];
 
     if ([self window] === self)
