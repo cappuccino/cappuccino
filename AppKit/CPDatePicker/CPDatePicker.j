@@ -663,7 +663,7 @@ var CPDatePickerModeKey         = @"CPDatePickerModeKey",
         _timeInterval = [aCoder decodeDoubleForKey:CPIntervalKey];
         _datePickerMode = [aCoder decodeIntForKey:CPDatePickerModeKey];
         _datePickerElements = [aCoder decodeIntForKey:CPDatePickerElementsKey];
-        [self setDatePickerStyle: [aCoder decodeIntForKey:CPDatePickerStyleKey]];
+        [self setDatePickerStyle:[aCoder decodeIntForKey:CPDatePickerStyleKey]];
         _locale = [aCoder decodeObjectForKey:CPLocaleKey];
         _dateValue = [aCoder decodeObjectForKey:CPDateValueKey];
         _backgroundColor = [aCoder decodeObjectForKey:CPBackgroundColorKey];
