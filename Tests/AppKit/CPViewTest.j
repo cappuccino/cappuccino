@@ -22,8 +22,8 @@ var methodCalled;
 
     view = [[CPView alloc] initWithFrame:CGRectMakeZero()];
     view1 = [[CPResponderView alloc] initWithFrame:CGRectMakeZero()];
-    view2 = [[CPResponderView alloc] initWithFrame:CGRectMakeZero()],
-    view3 = [[CPResponderView alloc] initWithFrame:CGRectMakeZero()],
+    view2 = [[CPResponderView alloc] initWithFrame:CGRectMakeZero()];
+    view3 = [[CPResponderView alloc] initWithFrame:CGRectMakeZero()];
 
     [view1 setIdentifier:@"view1"];
     [view2 setIdentifier:@"view2"];
@@ -545,6 +545,16 @@ var methodCalled;
 
     methodCalled = [];
     [view1 removeFromSuperview];
+
+    [self assert:expectedRestult equals:methodCalled];
+}
+
+- (void)testWhenAddedTwoSubviewsThenAddedTheViewToAnotherViewWithoutWindowMethodCalled
+{
+    var expectedRestult = [@"viewWillMoveToSuperview_view1", @"viewDidMoveToSuperview_view1", @"viewWillMoveToWindow_view1", @"viewDidMoveToWindow_view1", @"viewWillMoveToSuperview_view1", @"viewDidMoveToSuperview_view1", @"viewWillMoveToWindow_view1", @"viewDidMoveToWindow_view1"];
+
+    [[window contentView] addSubview:view1];
+    [view2 addSubview:view1];
 
     [self assert:expectedRestult equals:methodCalled];
 }
