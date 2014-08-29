@@ -28,7 +28,6 @@
 @import <Foundation/CPArray.j>
 @import <Foundation/CPObject.j>
 @import <Foundation/CPDate.j>
-@import <Foundation/CPDateFormatter.j>
 @import <Foundation/CPLocale.j>
 @import <Foundation/CPTimeZone.j>
 
@@ -225,6 +224,18 @@ CPEraDatePickerElementFlag              = 0x0100;
 
 
 #pragma mark -
+#pragma mark Control Size
+
+- (void)setControlSize:(CPControlSize)aControlSize
+{
+    [super setControlSize:aControlSize];
+
+    if ([self datePickerStyle] == CPTextFieldAndStepperDatePickerStyle || [self datePickerStyle] == CPTextFieldDatePickerStyle)
+        [self _sizeToControlSize];
+}
+
+
+#pragma mark -
 #pragma mark Delegate methods
 
 /*! Set the delegate of the datePicker
@@ -248,12 +259,14 @@ CPEraDatePickerElementFlag              = 0x0100;
 */
 - (void)layoutSubviews
 {
+
     [super layoutSubviews];
 
     if (_datePickerStyle == CPTextFieldAndStepperDatePickerStyle || _datePickerStyle == CPTextFieldDatePickerStyle)
     {
         [_datePickerTextfield setHidden:NO];
         [_datePickerCalendar setHidden:YES];
+        [_datePickerTextfield setControlSize:[self controlSize]];
         [_datePickerTextfield setNeedsLayout];
     }
     else
@@ -275,11 +288,14 @@ CPEraDatePickerElementFlag              = 0x0100;
     return _dateValue
 }
 
-/*! Set the objectValue ofhe datePier. It has to be a CPDate
+/*! Set the objectValue of the datePicker. It has to be a CPDate
     @param aDateValue the dateValue
 */
 - (void)setObjectValue:(CPDate)aValue
 {
+    if (![aValue isKindOfClass:[CPDate class]])
+        return;
+
     [self setDateValue:aValue];
 }
 
@@ -376,6 +392,8 @@ CPEraDatePickerElementFlag              = 0x0100;
 - (void)setDatePickerStyle:(CPInteger)aDatePickerStyle
 {
     _datePickerStyle = aDatePickerStyle;
+
+    [self setControlSize:[self controlSize]];
 
     [self setNeedsDisplay:YES];
     [self setNeedsLayout];
@@ -537,6 +555,7 @@ CPEraDatePickerElementFlag              = 0x0100;
             return NO;
 
         [_datePickerTextfield _selectTextFieldWithFlags:[[CPApp currentEvent] modifierFlags]];
+
         return YES;
     }
 
@@ -644,12 +663,13 @@ var CPDatePickerModeKey         = @"CPDatePickerModeKey",
         _timeInterval = [aCoder decodeDoubleForKey:CPIntervalKey];
         _datePickerMode = [aCoder decodeIntForKey:CPDatePickerModeKey];
         _datePickerElements = [aCoder decodeIntForKey:CPDatePickerElementsKey];
-        _datePickerStyle = [aCoder decodeIntForKey:CPDatePickerStyleKey];
+        [self setDatePickerStyle:[aCoder decodeIntForKey:CPDatePickerStyleKey]];
         _locale = [aCoder decodeObjectForKey:CPLocaleKey];
         _dateValue = [aCoder decodeObjectForKey:CPDateValueKey];
         _backgroundColor = [aCoder decodeObjectForKey:CPBackgroundColorKey];
         _drawsBackground = [aCoder decodeBoolForKey:CPDrawsBackgroundKey];
         _isBordered = [aCoder decodeBoolForKey:CPBorderedKey];
+
         [self _init];
     }
 
