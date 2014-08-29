@@ -514,7 +514,8 @@ var CPViewFlags                     = { },
     [aSubview viewWillMoveToSuperview:self];
 
     // We will have to adjust the z-index of all views starting at this index.
-    var count = _subviews.length;
+    var count = _subviews.length,
+        lastWindow;
 
     // Dirty the key view loop, in case the window wants to auto recalculate it
     [[self window] _dirtyKeyViewLoop];
@@ -544,11 +545,10 @@ var CPViewFlags                     = { },
     {
         var superview = aSubview._superview;
 
+        lastWindow = [superview window];
+
         // Remove the view from its previous superview.
         [aSubview _removeFromSuperview];
-
-        if (superview)
-            [aSubview _setWindow:nil];
 
         // Set ourselves as the superview.
         aSubview._superview = self;
@@ -586,6 +586,9 @@ var CPViewFlags                     = { },
     // Set the subview's window to our own.
     if (_window)
         [aSubview _setWindow:_window];
+
+    if (!_window && lastWindow)
+        [aSubview _setWindow:nil];
 
     // This method might be called before we are fully unarchived, in which case the theme state isn't set up yet
     // and none of the below matters anyhow.
