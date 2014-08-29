@@ -134,8 +134,9 @@ function check_install_environment () {
     java_version=$(java -version 2>&1)
     echo $java_version | grep OpenJDK > /dev/null
     if [ "$?" = "0" ]; then # OpenJDK: make sure >= 6b18
-        openjdk_version=$(echo $java_version | egrep -o '[0-9]\-?b[0-9]+')
-        if [ $(echo $openjdk_version | tr -d 'b' | tr -d '-') -lt 618 ]; then
+        openjdk_version=$(echo "$java_version" | grep "OpenJDK Runtime Environment")
+        openjdk_version_key=$(echo $openjdk_version | egrep -o '[0-9]\-?b[0-9]+')
+        if [ $(echo $openjdk_version_key | tr -d 'b' | tr -d '-') -lt 618 ]; then
             echo "Error: Narwhal is not compatible with your version of OpenJDK: $openjdk_version."
             echo "Please upgrade to OpenJDK >= 6b18 or switch to the Sun JVM. Then re-run bootstrap.sh."
             exit 1
