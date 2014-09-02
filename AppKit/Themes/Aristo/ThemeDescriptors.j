@@ -1271,7 +1271,6 @@ var themedButtonValues = nil,
             [@"bezel-color",        bezelDisabledColor,                                         [CPThemeStateBezeled, CPThemeStateDisabled]],
 
             [@"font",               [CPFont boldSystemFontOfSize:13.0]],
-            [@"text-color",         [CPColor colorWithWhite:0.2 alpha:0.8]],
             [@"text-color",         textDisabledColor,                                          CPThemeStateDisabled],
 
             [@"content-inset",      CGInsetMake(6.0, 0.0, 0.0, 3.0),                            CPThemeStateNormal],
