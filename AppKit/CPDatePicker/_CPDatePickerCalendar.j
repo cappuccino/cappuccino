@@ -85,6 +85,7 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
         _datePicker = aDatePicker
         [self _init];
     }
+
     return self;
 }
 
@@ -215,6 +216,8 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
         [_headerView setHidden:YES];
         [_monthView setHidden:YES];
     }
+
+    [self setFrameSize:[_datePicker frameSize]];
 }
 
 
@@ -381,9 +384,11 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
 
         [_previousButton setTarget:aDelegate];
         [_previousButton setAction:@selector(_clickArrowPrevious:)];
+        [_previousButton setContinuous:YES];
 
         [_nextButton setTarget:aDelegate];
         [_nextButton setAction:@selector(_clickArrowNext:)];
+        [_nextButton setContinuous:YES];
 
         [_currentButton setTarget:aDelegate];
         [_currentButton setAction:@selector(_currentMonth:)];
@@ -1258,14 +1263,6 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
     CPDatePicker _datePicker @accessors(property=datePicker);
 }
 
-- (id)init
-{
-    if (self = [super init])
-    {
-    }
-    return self;
-}
-
 - (void)drawRect:(CGRect)aRect
 {
     [super drawRect:aRect];
@@ -1279,10 +1276,10 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
         CGContextSetStrokeColor(context, [_datePicker valueForThemeAttribute:@"border-color" inState:[_datePicker themeState]]);
         CGContextSetLineWidth(context,  [_datePicker valueForThemeAttribute:@"border-width"]);
 
-        CGContextMoveToPoint(context, borderWidth,borderWidth);
-        CGContextAddLineToPoint(context, aRect.size.width - borderWidth,borderWidth);
-        CGContextAddLineToPoint(context, aRect.size.width - borderWidth,aRect.size.height - borderWidth);
-        CGContextAddLineToPoint(context, borderWidth,aRect.size.height - borderWidth);
+        CGContextMoveToPoint(context, borderWidth, borderWidth);
+        CGContextAddLineToPoint(context, aRect.size.width - borderWidth, borderWidth);
+        CGContextAddLineToPoint(context, aRect.size.width - borderWidth, aRect.size.height - borderWidth);
+        CGContextAddLineToPoint(context, borderWidth, aRect.size.height - borderWidth);
         CGContextAddLineToPoint(context, borderWidth,borderWidth);
 
         CGContextStrokePath(context);
@@ -1300,6 +1297,5 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
     else
         [self setBackgroundColor:[CPColor clearColor]];
 }
-
 
 @end
