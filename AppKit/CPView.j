@@ -2558,7 +2558,7 @@ setBoundsOrigin:
 /*!
     Scrolls the nearest ancestor CPClipView a minimum amount so \c aRect can become visible.
     @param aRect the area to become visible
-    @return <codeYES if any scrolling occurred, \c NO otherwise.
+    @return \c YES if any scrolling occurred, \c NO otherwise.
 */
 - (BOOL)scrollRectToVisible:(CGRect)aRect
 {
