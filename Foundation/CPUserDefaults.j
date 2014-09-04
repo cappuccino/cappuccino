@@ -535,7 +535,7 @@ var StandardUserDefaults;
 */
 - (void)setFloat:(float)aValue forKey:(CPString)aKey
 {
-    if ([aValue respondsToSelector:@selector(aValue)])
+    if ([aValue respondsToSelector:@selector(floatValue)])
         aValue = [aValue floatValue];
 
     [self setObject:parseFloat(aValue) forKey:aKey];
