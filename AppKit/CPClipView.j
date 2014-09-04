@@ -117,7 +117,6 @@
         [self _removeObserverDocumentView:_documentView];
 }
 
-
 /*!
     Returns the document view.
 */
