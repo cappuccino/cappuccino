@@ -37,8 +37,7 @@
     [contentView addSubview:textField];
 
     var shadowLabel = [CPTextField labelWithTitle:@"This text should have a shadow."],
-        championOfLightLabel = [CPTextField labelWithTitle:@"This text should have no shadow."],
-        redLabel = [CPTextField labelWithTitle:@"This text should be white on a red background."];
+        championOfLightLabel = [CPTextField labelWithTitle:@"This text should have no shadow."];
 
     [shadowLabel setTextColor:[CPColor blackColor]];
     [shadowLabel setTextShadowOffset:CGSizeMake(0, 1)];
@@ -48,16 +47,11 @@
     [championOfLightLabel setTextShadowOffset:CGSizeMake(0, 1)];
     [championOfLightLabel setTextShadowColor:[CPColor clearColor]];
 
-    [redLabel setTextColor:[CPColor whiteColor]];
-    [redLabel setBackgroundColor:[CPColor redColor]];
-
     [shadowLabel setFrame:CGRectMake(15, CGRectGetMaxY([textField frame]) + 10, 300, 18)];
     [championOfLightLabel setFrame:CGRectMake(15, CGRectGetMaxY([shadowLabel frame]) + 2, 300, 18)];
-    [redLabel setFrame:CGRectMake(15, CGRectGetMaxY([championOfLightLabel frame]) + 10, 300, 18)];
 
     [contentView addSubview:shadowLabel];
     [contentView addSubview:championOfLightLabel];
-    [contentView addSubview:redLabel];
 
     var jumpLabel = [CPTextField labelWithTitle:@"The text of these text fields should not move ('jump') when a field becomes the first responder. Labels on the right should replicate the input."];
 
