@@ -119,9 +119,25 @@ var NSMatrixRadioModeMask = 0x40000000,
         [self setObjectValue:[aCell objectValue]];
         [self setEnabled:[aCell isEnabled]];
         [self setTag:[aCell tag]];
+        [self setControlSize:[aCell controlSize]];
+        [self _adjustWidthSize];
     }
 
     return self;
+}
+
+// We adjust width according to the CPRadio adjustment frame.
+// Very specific as NSMatrix does not have a frame adjustment.
+- (void)_adjustWidthSize
+{
+    var frameSize = [self frameSize],
+        frameAdjustment = [self _nib2CibAdjustment];
+
+    if (frameAdjustment)
+    {
+        var finalFrameSize = CGSizeMake(frameSize.width + frameAdjustment.size.width, frameSize.height);
+        [self setFrameSize:finalFrameSize];
+    }
 }
 
 @end

@@ -1404,7 +1404,7 @@ var themedButtonValues = nil,
 
         [@"min-size",                   CGSizeMake(21.0, 21.0)],
         [@"max-size",                   CGSizeMake(-1.0, -1.0)],
-        [@"nib2cib-adjustment-frame",   CGRectMake(-10.0, 2.0, 0.0, 0.0)],
+        [@"nib2cib-adjustment-frame",   CGRectMake(0.0, -2.0, 0.0, 0.0)],
 
         // CPThemeStateControlSizeSmall
         [@"image",                      smallImageNormal,                       [CPThemeStateControlSizeSmall, CPThemeStateNormal]],
@@ -1416,7 +1416,7 @@ var themedButtonValues = nil,
 
         [@"min-size",                   CGSizeMake(0, 20.0),                    CPThemeStateControlSizeSmall],
         [@"max-size",                   CGSizeMake(-1, 20.0),                   CPThemeStateControlSizeSmall],
-        [@"nib2cib-adjustment-frame",   CGRectMake(-4.0, 2.0, 15.0, 0.0),       CPThemeStateControlSizeSmall],
+        [@"nib2cib-adjustment-frame",   CGRectMake(0.0, -3.0, 0.0, 0.0),        CPThemeStateControlSizeSmall],
 
         // CPThemeStateControlSizeMini
         [@"image",                      miniImageNormal,                        [CPThemeStateControlSizeMini, CPThemeStateNormal]],
@@ -1428,7 +1428,7 @@ var themedButtonValues = nil,
 
         [@"min-size",                   CGSizeMake(0, 16.0),                    CPThemeStateControlSizeMini],
         [@"max-size",                   CGSizeMake(-1, 16.0),                   CPThemeStateControlSizeMini],
-        [@"nib2cib-adjustment-frame",   CGRectMake(0.0, 2.0, 15.0, 0.0),        CPThemeStateControlSizeMini],
+        [@"nib2cib-adjustment-frame",   CGRectMake(2.0, -3.0, 0.0, 0.0),        CPThemeStateControlSizeMini],
     ];
 
     [self registerThemeValues:themedRadioButtonValues forView:button];

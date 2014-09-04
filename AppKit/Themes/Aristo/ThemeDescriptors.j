@@ -1868,31 +1868,70 @@ var themedButtonValues = nil,
 {
     var button = [CPRadio radioWithTitle:@"Hello Friend!"],
 
-        imageNormal = PatternImage("radio-image.png", 17.0, 17.0),
-        imageSelected = PatternImage("radio-image-selected.png", 17.0, 17.0),
-        imageSelectedHighlighted = PatternImage("radio-image-selected-highlighted.png", 17.0, 17.0),
-        imageSelectedDisabled = PatternImage("radio-image-selected-disabled.png", 17.0, 17.0),
-        imageDisabled = PatternImage("radio-image-disabled.png", 17.0, 17.0),
-        imageHighlighted = PatternImage("radio-image-highlighted.png", 17.0, 17.0),
+        regularImageNormal = PatternImage("radio-image.png", 17.0, 17.0),
+        regularImageSelected = PatternImage("radio-image-selected.png", 17.0, 17.0),
+        regularImageSelectedHighlighted = PatternImage("radio-image-selected-highlighted.png", 17.0, 17.0),
+        regularImageSelectedDisabled = PatternImage("radio-image-selected-disabled.png", 17.0, 17.0),
+        regularImageDisabled = PatternImage("radio-image-disabled.png", 17.0, 17.0),
+        regularImageHighlighted = PatternImage("radio-image-highlighted.png", 17.0, 17.0),
+
+        smallImageNormal = PatternImage("radio-image.png", 15.0, 15.0),
+        smallImageSelected = PatternImage("radio-image-selected.png", 15.0, 15.0),
+        smallImageSelectedHighlighted = PatternImage("radio-image-selected-highlighted.png", 15.0, 15.0),
+        smallImageSelectedDisabled = PatternImage("radio-image-selected.png", 15.0, 15.0),
+        smallImageDisabled = PatternImage("radio-image.png", 15.0, 15.0),
+        smallImageHighlighted = PatternImage("radio-image-highlighted.png", 15.0, 15.0),
+
+        miniImageNormal = PatternImage("radio-image.png", 14.0, 14.0),
+        miniImageSelected = PatternImage("radio-image-selected.png", 14.0, 14.0),
+        miniImageSelectedHighlighted = PatternImage("radio-image-selected-highlighted.png", 14.0, 14.0),
+        miniImageSelectedDisabled = PatternImage("radio-image-selected.png", 14.0, 14.0),
+        miniImageDisabled = PatternImage("radio-image.png", 14.0, 14.0),
+        miniImageHighlighted = PatternImage("radio-image-highlighted.png", 14.0, 14.0);
 
         themeValues =
         [
-            [@"alignment",      CPLeftTextAlignment,                CPThemeStateNormal],
-            [@"content-inset",  CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateNormal],
+            [@"alignment",                  CPLeftTextAlignment,                    CPThemeStateNormal],
+            [@"content-inset",              CGInsetMake(0.0, 0.0, 0.0, 0.0),        CPThemeStateNormal],
 
-            [@"image",          imageNormal,                        CPThemeStateNormal],
-            [@"image",          imageSelected,                      CPThemeStateSelected],
-            [@"image",          imageSelectedHighlighted,           [CPThemeStateSelected, CPThemeStateHighlighted]],
-            [@"image",          imageHighlighted,                   CPThemeStateHighlighted],
-            [@"image",          imageDisabled,                      CPThemeStateDisabled],
-            [@"image",          imageSelectedDisabled,              [CPThemeStateSelected, CPThemeStateDisabled]],
-            [@"image-offset",   CPRadioImageOffset],
+            [@"image",                      regularImageNormal,                     CPThemeStateNormal],
+            [@"image",                      regularImageSelected,                   CPThemeStateSelected],
+            [@"image",                      regularImageSelectedHighlighted,        [CPThemeStateSelected, CPThemeStateHighlighted]],
+            [@"image",                      regularImageHighlighted,                CPThemeStateHighlighted],
+            [@"image",                      regularImageDisabled,                   CPThemeStateDisabled],
+            [@"image",                      regularImageSelectedDisabled,           [CPThemeStateSelected, CPThemeStateDisabled]],
+            [@"image-offset",               CPRadioImageOffset],
 
-            [@"font",           [CPFont systemFontOfSize:CPFontCurrentSystemSize], CPThemeStateNormal],
-            [@"text-color",     [CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0],  CPThemeStateDisabled],
+            [@"font",                       [CPFont systemFontOfSize:CPFontCurrentSystemSize], CPThemeStateNormal],
+            [@"text-color",                 [CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0],  CPThemeStateDisabled],
 
-            [@"min-size",       CGSizeMake(0.0, 17.0)],
-            [@"max-size",       CGSizeMake(-1.0, -1.0)]
+            [@"min-size",                   CGSizeMake(0.0, 17.0)],
+            [@"max-size",                   CGSizeMake(-1.0, -1.0)],
+            [@"nib2cib-adjustment-frame",   CGRectMake(0.0, -2.0, 0.0, 0.0)],
+
+            // CPThemeStateControlSizeSmall
+            [@"image",                      smallImageNormal,                       [CPThemeStateControlSizeSmall, CPThemeStateNormal]],
+            [@"image",                      smallImageSelected,                     [CPThemeStateControlSizeSmall, CPThemeStateSelected]],
+            [@"image",                      smallImageSelectedHighlighted,          [CPThemeStateControlSizeSmall, CPThemeStateSelected, CPThemeStateHighlighted]],
+            [@"image",                      smallImageHighlighted,                  [CPThemeStateControlSizeSmall, CPThemeStateHighlighted]],
+            [@"image",                      smallImageDisabled,                     [CPThemeStateControlSizeSmall, CPThemeStateDisabled]],
+            [@"image",                      smallImageSelectedDisabled,             [CPThemeStateControlSizeSmall, CPThemeStateSelected, CPThemeStateDisabled]],
+
+            [@"min-size",                   CGSizeMake(0, 15.0),                    CPThemeStateControlSizeSmall],
+            [@"max-size",                   CGSizeMake(-1, 15.0),                   CPThemeStateControlSizeSmall],
+            [@"nib2cib-adjustment-frame",   CGRectMake(2.0, -3.0, 0.0, 0.0),        CPThemeStateControlSizeSmall],
+
+            // CPThemeStateControlSizeMini
+            [@"image",                      miniImageNormal,                        [CPThemeStateControlSizeMini, CPThemeStateNormal]],
+            [@"image",                      miniImageSelected,                      [CPThemeStateControlSizeMini, CPThemeStateSelected]],
+            [@"image",                      miniImageSelectedHighlighted,           [CPThemeStateControlSizeMini, CPThemeStateSelected, CPThemeStateHighlighted]],
+            [@"image",                      miniImageHighlighted,                   [CPThemeStateControlSizeMini, CPThemeStateHighlighted]],
+            [@"image",                      miniImageDisabled,                      [CPThemeStateControlSizeMini, CPThemeStateDisabled]],
+            [@"image",                      miniImageSelectedDisabled,              [CPThemeStateControlSizeMini, CPThemeStateSelected, CPThemeStateDisabled]],
+
+            [@"min-size",                   CGSizeMake(0, 14.0),                    CPThemeStateControlSizeMini],
+            [@"max-size",                   CGSizeMake(-1, 14.0),                   CPThemeStateControlSizeMini],
+            [@"nib2cib-adjustment-frame",   CGRectMake(4.0, -3.0, 0.0, 0.0),        CPThemeStateControlSizeMini],
         ];
 
     [self registerThemeValues:themeValues forView:button];
