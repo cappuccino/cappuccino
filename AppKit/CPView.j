@@ -1024,7 +1024,8 @@ var CPViewFlags                     = { },
         else
         {
             var images = [[_backgroundColor patternImage] imageSlices],
-                partIndex = 0;
+                partIndex = 0,
+                frameSize = aSize;
 
             if (_backgroundType === BackgroundVerticalThreePartImage)
             {
@@ -1034,16 +1035,21 @@ var CPViewFlags                     = { },
                 // Make sure to repeat the top and bottom pieces horizontally if they're not the exact width needed.
                 if (top)
                 {
+                    CPDomDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], frameSize.width + "px", top + "px");
                     CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], size.width, top);
                     partIndex++;
                 }
                 if (_DOMImageSizes[1])
                 {
+                    var height = frameSize.height - top - bottom;
+
+                    CPDomDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], frameSize.width + "px", height + "px");
                     CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], size.width, size.height - top - bottom);
                     partIndex++;
                 }
                 if (bottom)
                 {
+                    CPDomDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], frameSize.width + "px", bottom + "px");
                     CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], size.width, bottom);
                 }
             }
@@ -1055,16 +1061,21 @@ var CPViewFlags                     = { },
                 // Make sure to repeat the left and right pieces vertically if they're not the exact height needed.
                 if (left)
                 {
+                    CPDomDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], left + "px", frameSize.height + "px");
                     CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], left, size.height);
                     partIndex++;
                 }
                 if (_DOMImageSizes[1])
                 {
+                    var width = (frameSize.width - left - right);
+
+                    CPDomDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], width + "px", frameSize.height + "px");
                     CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], size.width - left - right, size.height);
                     partIndex++;
                 }
                 if (right)
                 {
+                    CPDomDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], right + "px", frameSize.height + "px");
                     CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], right, size.height);
                 }
             }
