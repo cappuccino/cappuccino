@@ -186,6 +186,9 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     id                              _dropItem;
 
     BOOL                            _coalesceSelectionNotificationState;
+
+    CPArray                         _pendingItemToClean;
+    CPArray                         _itemAddedDuringLastLoading;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -666,10 +669,15 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 */
 - (void)reloadItem:(id)anItem reloadChildren:(BOOL)shouldReloadChildren
 {
+    _pendingItemToClean = [];
+    _itemAddedDuringLastLoading = [];
+
     if (!!shouldReloadChildren || !anItem)
         [self _loadItemInfoForItem:anItem intermediate:NO];
     else
         [self _reloadItem:anItem];
+
+    [self _cleanPendingItem];
 
     [super reloadData];
 }
@@ -708,7 +716,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     itemInfo.shouldShowOutlineDisclosureControl = [self _sendDelegateShouldShowOutlineDisclosureControlForItem:newItem];
 }
 
-- (void)_cleanPreviousItems:(CPArray)previousItems forItemInfo:(Object)itemInfo
+- (void)_addPendingItemsFromPreviousItems:(CPArray)previousItems forItemInfo:(Object)itemInfo
 {
     if (!itemInfo)
         return;
@@ -720,11 +728,11 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
         var item = previousItems[i];
 
         if (![children containsObject:item])
-            [self _cleanItem:item];
+            [self _addPendingItem:item];
     }
 }
 
-- (void)_cleanItem:(id)anItem
+- (void)_addPendingItem:(id)anItem
 {
     var itemInfo = _itemInfosForItems[[anItem UID]];
 
@@ -736,11 +744,24 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     for (var i = [children count]; i >= 0; i--)
     {
         var child = children[i];
-
-        [self _cleanItem:child];
+        [self _addPendingItem:child];
     }
 
-    delete _itemInfosForItems[[anItem UID]];
+    [_pendingItemToClean addObject:anItem];
+}
+
+- (void)_cleanPendingItem
+{
+    for (var i = [_pendingItemToClean count]; i >= 0; i--)
+    {
+        var item = _pendingItemToClean[i];
+
+        if (![_itemAddedDuringLastLoading containsObject:item])
+            delete _itemInfosForItems[[item UID]];
+    }
+
+    _pendingItemToClean = [];
+    _itemAddedDuringLastLoading = [];
 }
 
 - (CPArray)_loadItemInfoForItem:(id)anItem intermediate:(BOOL)isIntermediate
@@ -775,6 +796,8 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     var weight = itemInfo.weight,
         descendants = anItem ? [anItem] : [];
 
+    [_itemAddedDuringLastLoading addObject:anItem];
+
     if (itemInfo.isExpanded && [self _sendDataSourceShouldDeferDisplayingChildrenOfItem:anItem])
     {
         var index = 0,
@@ -806,7 +829,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
         // Here we clean the itemInfos dictionary
         // Some items could have been removed at this point, we don't need to keep a ref of them anymore
-        [self _cleanPreviousItems:previousChildren forItemInfo:itemInfo];
+        [self _addPendingItemsFromPreviousItems:previousChildren forItemInfo:itemInfo];
     }
 
     itemInfo.weight = descendants.length;

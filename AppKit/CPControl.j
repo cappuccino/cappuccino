@@ -118,6 +118,8 @@ var CPControlBlackColor = [CPColor blackColor];
     BOOL                _trackingWasWithinFrame;
     unsigned            _trackingMouseDownFlags;
     CGPoint             _previousTrackingLocation;
+
+    CPControlSize       _controlSize;
 }
 
 + (CPDictionary)themeAttributes
@@ -134,6 +136,7 @@ var CPControlBlackColor = [CPColor blackColor];
             @"image-scaling": CPScaleToFit,
             @"min-size": CGSizeMakeZero(),
             @"max-size": CGSizeMake(-1.0, -1.0),
+            @"nib2cib-adjustment-frame": CGRectMakeZero()
         };
 }
 
@@ -189,12 +192,84 @@ var CPControlBlackColor = [CPColor blackColor];
 
     if (self)
     {
-        _sendActionOn = CPLeftMouseUpMask;
+        _sendActionOn           = CPLeftMouseUpMask;
         _trackingMouseDownFlags = 0;
     }
 
     return self;
 }
+
+
+#pragma mark -
+#pragma mark Control Size
+
+/*!
+    Returns the control's control size
+*/
+- (CPControlSize)controlSize
+{
+    return _controlSize;
+}
+
+/*!
+    Sets the control's size.
+    @param aControlSize the control's size
+*/
+- (void)setControlSize:(CPControlSize)aControlSize
+{
+    if (_controlSize === aControlSize)
+        return;
+
+    [self unsetThemeState:[self _controlSizeThemeState]];
+    _controlSize = aControlSize;
+    [self setThemeState:[self _controlSizeThemeState]];
+
+    [self setNeedsLayout];
+    [self setNeedsDisplay:YES];
+}
+
+/*!
+    Gets the current theme state according to the current controlSize.
+    @return a CPThemeState
+*/
+- (ThemeState)_controlSizeThemeState
+{
+    switch(_controlSize)
+    {
+        case CPSmallControlSize:
+            return CPThemeStateControlSizeSmall;
+
+        case CPMiniControlSize:
+            return CPThemeStateControlSizeMini;
+
+        case CPRegularControlSize:
+        default:
+            return CPThemeStateControlSizeRegular;
+    }
+}
+
+/*!
+    @ignore
+    Change frame size according to the theme control size theme constraints
+    Basically for height to min-size.
+*/
+- (void)_sizeToControlSize
+{
+    var frameSize = [self frameSize],
+        minSize = [self currentValueForThemeAttribute:@"min-size"],
+        maxSize = [self currentValueForThemeAttribute:@"max-size"];
+
+    if (minSize.width > 0)
+        frameSize.width = MAX(minSize.width, frameSize.width);
+
+    if (minSize.height > 0)
+        frameSize.height = minSize.height;
+
+    [self setFrameSize:frameSize];
+}
+
+
+#pragma mark -
 
 /*!
     Sets the receiver's target action.
@@ -927,14 +1002,15 @@ var CPControlBlackColor = [CPColor blackColor];
 
 @end
 
-var CPControlValueKey                   = @"CPControlValueKey",
+var CPControlActionKey                  = @"CPControlActionKey",
+    CPControlControlSizeKey             = @"CPControlControlSizeKey",
     CPControlControlStateKey            = @"CPControlControlStateKey",
-    CPControlIsEnabledKey               = @"CPControlIsEnabledKey",
-    CPControlTargetKey                  = @"CPControlTargetKey",
-    CPControlActionKey                  = @"CPControlActionKey",
-    CPControlSendActionOnKey            = @"CPControlSendActionOnKey",
     CPControlFormatterKey               = @"CPControlFormatterKey",
+    CPControlIsEnabledKey               = @"CPControlIsEnabledKey",
+    CPControlSendActionOnKey            = @"CPControlSendActionOnKey",
     CPControlSendsActionOnEndEditingKey = @"CPControlSendsActionOnEndEditingKey",
+    CPControlTargetKey                  = @"CPControlTargetKey",
+    CPControlValueKey                   = @"CPControlValueKey",
 
     __Deprecated__CPImageViewImageKey   = @"CPImageViewImageKey";
 
@@ -961,6 +1037,8 @@ var CPControlValueKey                   = @"CPControlValueKey",
         [self setSendsActionOnEndEditing:[aCoder decodeBoolForKey:CPControlSendsActionOnEndEditingKey]];
 
         [self setFormatter:[aCoder decodeObjectForKey:CPControlFormatterKey]];
+
+        [self setControlSize:[aCoder decodeIntForKey:CPControlControlSizeKey]];
     }
 
     return self;
@@ -993,6 +1071,8 @@ var CPControlValueKey                   = @"CPControlValueKey",
 
     if (_formatter !== nil)
         [aCoder encodeObject:_formatter forKey:CPControlFormatterKey];
+
+    [aCoder encodeInt:_controlSize forKey:CPControlControlSizeKey];
 }
 
 @end

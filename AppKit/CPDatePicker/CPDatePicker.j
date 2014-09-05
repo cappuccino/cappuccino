@@ -28,7 +28,6 @@
 @import <Foundation/CPArray.j>
 @import <Foundation/CPObject.j>
 @import <Foundation/CPDate.j>
-@import <Foundation/CPDateFormatter.j>
 @import <Foundation/CPLocale.j>
 @import <Foundation/CPTimeZone.j>
 
@@ -207,20 +206,28 @@ CPEraDatePickerElementFlag              = 0x0100;
         _locale = [CPLocale currentLocale];
 
     _datePickerTextfield = [[_CPDatePickerTextField alloc] initWithFrame:[self bounds] withDatePicker:self];
-
     [_datePickerTextfield setDateValue:_dateValue];
-    [self addSubview:_datePickerTextfield];
 
     _datePickerCalendar = [[_CPDatePickerCalendar alloc] initWithFrame:[self bounds] withDatePicker:self];
     [_datePickerCalendar setDateValue:_dateValue];
-    [_datePickerCalendar setHidden:YES];
-    [self addSubview:_datePickerCalendar];
 
     // We might have been unarchived in a disabled state.
     [_datePickerTextfield setEnabled:[self isEnabled]];
 
     [self setNeedsDisplay:YES];
     [self setNeedsLayout];
+}
+
+
+#pragma mark -
+#pragma mark Control Size
+
+- (void)setControlSize:(CPControlSize)aControlSize
+{
+    [super setControlSize:aControlSize];
+
+    if ([self datePickerStyle] == CPTextFieldAndStepperDatePickerStyle || [self datePickerStyle] == CPTextFieldDatePickerStyle)
+        [self _sizeToControlSize];
 }
 
 
@@ -252,15 +259,26 @@ CPEraDatePickerElementFlag              = 0x0100;
 
     if (_datePickerStyle == CPTextFieldAndStepperDatePickerStyle || _datePickerStyle == CPTextFieldDatePickerStyle)
     {
-        [_datePickerTextfield setHidden:NO];
-        [_datePickerCalendar setHidden:YES];
+        if (![_datePickerTextfield superview])
+            [self addSubview:_datePickerTextfield];
+
+        if ([_datePickerCalendar superview])
+            [_datePickerCalendar removeFromSuperview];
+
+        [_datePickerTextfield setControlSize:[self controlSize]];
         [_datePickerTextfield setNeedsLayout];
+        [_datePickerTextfield setNeedsDisplay:YES];
     }
     else
     {
-        [_datePickerCalendar setHidden:NO];
-        [_datePickerTextfield setHidden:YES];
+        if (![_datePickerCalendar superview])
+            [self addSubview:_datePickerCalendar];
+
+        if ([_datePickerTextfield superview])
+            [_datePickerTextfield removeFromSuperview];
+
         [_datePickerCalendar setNeedsLayout];
+        [_datePickerCalendar setNeedsDisplay:YES];
     }
 }
 
@@ -275,11 +293,14 @@ CPEraDatePickerElementFlag              = 0x0100;
     return _dateValue
 }
 
-/*! Set the objectValue ofhe datePier. It has to be a CPDate
+/*! Set the objectValue of the datePicker. It has to be a CPDate
     @param aDateValue the dateValue
 */
 - (void)setObjectValue:(CPDate)aValue
 {
+    if (![aValue isKindOfClass:[CPDate class]])
+        return;
+
     [self setDateValue:aValue];
 }
 
@@ -376,6 +397,8 @@ CPEraDatePickerElementFlag              = 0x0100;
 - (void)setDatePickerStyle:(CPInteger)aDatePickerStyle
 {
     _datePickerStyle = aDatePickerStyle;
+
+    [self setControlSize:[self controlSize]];
 
     [self setNeedsDisplay:YES];
     [self setNeedsLayout];
@@ -537,6 +560,7 @@ CPEraDatePickerElementFlag              = 0x0100;
             return NO;
 
         [_datePickerTextfield _selectTextFieldWithFlags:[[CPApp currentEvent] modifierFlags]];
+
         return YES;
     }
 
@@ -644,12 +668,13 @@ var CPDatePickerModeKey         = @"CPDatePickerModeKey",
         _timeInterval = [aCoder decodeDoubleForKey:CPIntervalKey];
         _datePickerMode = [aCoder decodeIntForKey:CPDatePickerModeKey];
         _datePickerElements = [aCoder decodeIntForKey:CPDatePickerElementsKey];
-        _datePickerStyle = [aCoder decodeIntForKey:CPDatePickerStyleKey];
+        [self setDatePickerStyle:[aCoder decodeIntForKey:CPDatePickerStyleKey]];
         _locale = [aCoder decodeObjectForKey:CPLocaleKey];
         _dateValue = [aCoder decodeObjectForKey:CPDateValueKey];
         _backgroundColor = [aCoder decodeObjectForKey:CPBackgroundColorKey];
         _drawsBackground = [aCoder decodeBoolForKey:CPDrawsBackgroundKey];
         _isBordered = [aCoder decodeBoolForKey:CPBorderedKey];
+
         [self _init];
     }
 
