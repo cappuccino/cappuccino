@@ -5,6 +5,50 @@ var sharedObject = [CPObject new];
 
 @implementation CPAttributedStringTest : OJTestCase
 
+- (void)testAppendToEmptyString
+{
+    var string = [CPMutableAttributedString new];
+    [string replaceCharactersInRange:CPMakeRange(0, 0) withString:@"hi there"];
+    [self assert:[string string] equals:@"hi there"];
+}
+
+- (void)testAppendToEndOfString
+{
+    var string = [[CPMutableAttributedString alloc] initWithString:@"hi there"];
+    [string replaceCharactersInRange:CPMakeRange(8, 0) withString:@" it is me"];
+    [self assert:[string string] equals:@"hi there it is me"];
+}
+
+- (void)testWriteOverRangeBoundaries
+{
+    var string = [[CPMutableAttributedString alloc] initWithString:@"Fusce\n" attributes:@{"testkey": 1}];
+
+    [string replaceCharactersInRange:CPMakeRange(6, 0)
+                withAttributedString:[[CPAttributedString alloc] initWithString:@"this is boldface"
+                          attributes:@{"testkey": 2}]];
+
+    [string replaceCharactersInRange:CPMakeRange(5, 3) withString:@" "];
+
+    var aRange = CPMakeRange(0, 0),
+        attribs = [string attributesAtIndex:4 effectiveRange:aRange];
+
+    [self assertTrue:([attribs objectForKey:@"testkey"] === 1)
+             message:"testWriteOverRangeBoundaries: expected:" + @"1" + " actual:" + [attribs objectForKey:@"testkey"]];
+}
+
+- (void)testCoalesceOnInsert
+{
+    var string = [[CPMutableAttributedString alloc] initWithString:@"Fusce\n" attributes:@{"testkey": 1}],
+        prevRangeEntriesLength = string._rangeEntries.length;
+
+    [string insertAttributedString:[[CPAttributedString alloc]
+                    initWithString:@"this is boldface"
+                        attributes:@{"testkey": 1}] atIndex:2];
+
+    [self assertTrue:(string._rangeEntries.length === prevRangeEntriesLength)
+             message:"testCoalesceOnInsert: expected:" + prevRangeEntriesLength + " actual:" + string._rangeEntries.length];
+}
+
 - (CPAttributedString)stringForTesting
 {
     var string = [[CPAttributedString alloc] initWithString:"The quick brown fox jumped over the lazy dog."];
@@ -53,7 +97,7 @@ var sharedObject = [CPObject new];
              message:"testInitWithAttributedString: expected:" + [self stringForTesting] + " actual:" + string];
 }
 
-- (void)testIinitWithString_attributes
+- (void)testInitWithString_attributes
 {
     var string = [[CPAttributedString alloc] initWithString:@"hi there" attributes:@{}];
 
@@ -116,7 +160,7 @@ var sharedObject = [CPObject new];
     testAttributesAtIndexWithValues(string, 33, expectedValues, self);
 }
 
-//- (CPDictionary)attributesAtIndex:(unsigned)anIndex longestEffectiveRange:(CPRangePointer)aRange inRange:(CPRange)rangeLimit
+//- (CPDictionary)attributesAtIndex:(CPUInteger)anIndex longestEffectiveRange:(CPRangePointer)aRange inRange:(CPRange)rangeLimit
 - (void)testAttributesAtIndexLongestEffectiveRangeInRange
 {
     var string = [self stringForTesting];
@@ -135,7 +179,7 @@ var sharedObject = [CPObject new];
     [self assertTrue:[attributes objectForKey:"f"] === 43 message:@"expecting 'f' to be 43, was: " + [attributes objectForKey:"f"]];
 }
 
-//- (id)attribute:(CPString)attribute atIndex:(unsigned)index effectiveRange:(CPRangePointer)aRange
+//- (id)attribute:(CPString)attribute atIndex:(CPUInteger)index effectiveRange:(CPRangePointer)aRange
 - (void)testAttributeAtIndexEffectiveRange
 {
     var string = [self stringForTesting];
@@ -144,7 +188,7 @@ var sharedObject = [CPObject new];
     testAttributeAtIndexWithValue(string, 20, "d", [CPNull null], self);
 }
 
-//- (id)attribute:(CPString)attribute atIndex:(unsigned)index longestEffectiveRange:(CPRangePointer)aRange inRange:(CPRange)rangeLimit
+//- (id)attribute:(CPString)attribute atIndex:(CPUInteger)index longestEffectiveRange:(CPRangePointer)aRange inRange:(CPRange)rangeLimit
 - (void)testAttributeAtIndexLongestEffectiveRangeInRange
 {
     var string = [self stringForTesting];
@@ -177,6 +221,38 @@ var sharedObject = [CPObject new];
     [self assertTrue:[a isEqual:a] message:"expected a to equal itself, but it didn't"];
 
     [self assertFalse:[a isEqual:@"HELLO!"] message:"Expected a to not equal 'HELLO!', but it did"];
+}
+
+- (void)testIsEqualEmpty
+{
+    var a = [[CPMutableAttributedString alloc] initWithString:@""],
+        b = [[CPMutableAttributedString alloc] initWithString:@""];
+
+    [self assertTrue:[a isEqual:b]];
+}
+
+- (void)testIsEqualWithSimpleAttribute
+{
+    var a = [[CPMutableAttributedString alloc] initWithString:@"GREETINGS!"],
+        b = [[CPMutableAttributedString alloc] initWithString:@"GREETINGS!"];
+
+    [a addAttribute:"color" value:[CPColor redColor] range:CPMakeRange(0, 5)];
+    [self assertFalse:[a isEqual:b] message:"red string should not equal string without color attribute"];
+    [b addAttribute:"color" value:[CPColor redColor] range:CPMakeRange(0, 5)];
+    [self assertTrue:[a isEqual:b]];
+}
+
+- (void)testIsEqualWithTwoAttributes
+{
+    var a = [[CPMutableAttributedString alloc] initWithString:@"GREETINGS!"],
+        b = [[CPMutableAttributedString alloc] initWithString:@"GREETINGS!"];
+
+    [a addAttribute:"color" value:[CPColor redColor] range:CPMakeRange(0, 9)];
+    [b addAttribute:"color" value:[CPColor redColor] range:CPMakeRange(0, 9)];
+    [a addAttribute:"font" value:"Helvetica" range:CPMakeRange(1, 4)];
+    [self assertFalse:[a isEqual:b] message:"font difference from index 1 should be found"];
+    [b addAttribute:"font" value:"Helvetica" range:CPMakeRange(1, 4)];
+    [self assertTrue:[a isEqual:b]];
 }
 
 //Extracting a Substring
@@ -458,7 +534,6 @@ var sharedObject = [CPObject new];
     testAttributeAtIndexWithValue(string, 10, "duck", "goose", self);
     testAttributeAtIndexWithValue(string, 30, "duck", "goose", self);
     testAttributeAtIndexWithValue(string, 40, "duck", undefined, self);
-
 }
 
 //- (void)removeAttribute:(CPString)anAttribute range:(CPRange)aRange
@@ -554,6 +629,23 @@ var sharedObject = [CPObject new];
     [self assertTrue:[[self stringForTesting] isEqual:string] message:"setAttributedString should have made strings equal, but they were not"];
 }
 
+- (void)testEncoding
+{
+    // We can't test using [self stringForTesting] because it contains attributes without coding support.
+    var original = [[CPMutableAttributedString alloc] initWithString:@"firstsecondthird"];
+    [original addAttribute:"color" value:[CPColor redColor] range:CPMakeRange(0, 5)];
+    [original addAttribute:"color" value:[CPColor greenColor] range:CPMakeRange(5, 6)];
+    [original addAttribute:"color" value:[CPColor blueColor] range:CPMakeRange(11, 5)];
+
+    var encoded = [CPKeyedArchiver archivedDataWithRootObject:original],
+        decoded = [CPKeyedUnarchiver unarchiveObjectWithData:encoded];
+    [self assert:original equals:decoded];
+
+    // Verify that the original and decoded are not incorrectly tied together.
+    [original addAttribute:"color" value:[CPColor blueColor] range:CPMakeRange(0, 5)];
+    [self assertFalse:[original isEqual:decoded]];
+}
+
 @end
 
 function isEqualAllowingUndefinedCast(a, b)
@@ -585,7 +677,7 @@ function testAttributeAtIndexWithValue(aString, anIndex, aKey, aValue, aSelf)
     var range = CPMakeRange(0, 0),
         attribute = [aString attribute:aKey atIndex:anIndex effectiveRange:range];
 
-    [aSelf assertTrue: isEqualAllowingUndefinedCast(attribute, aValue) message: "expecting '" + aKey + "' to be '" + aValue + "', was '" + attribute];
+    [aSelf assertTrue:isEqualAllowingUndefinedCast(attribute, aValue) message: "expecting '" + aKey + "' to be '" + aValue + "', was '" + attribute];
 
     var index = range.location;
 
@@ -593,7 +685,7 @@ function testAttributeAtIndexWithValue(aString, anIndex, aKey, aValue, aSelf)
     {
         attribute = [aString attribute:aKey atIndex:index++ effectiveRange:nil];
 
-        [aSelf assertTrue: isEqualAllowingUndefinedCast(attribute, aValue) message: "expecting '" + aKey + "' to be '" + aValue + "', was '" + attribute];
+        [aSelf assertTrue:isEqualAllowingUndefinedCast(attribute, aValue) message: "expecting '" + aKey + "' to be '" + aValue + "', was '" + attribute];
     }
 }
 

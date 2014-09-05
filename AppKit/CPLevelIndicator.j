@@ -62,7 +62,7 @@ CPRatingLevelIndicatorStyle                 = 3;
     return "level-indicator";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{
             @"bezel-color": [CPNull null],
@@ -105,10 +105,21 @@ CPRatingLevelIndicatorStyle                 = 3;
     var filledColor = [self valueForThemeAttribute:@"color-normal"],
         value = [self doubleValue];
 
-    if (value <= _criticalValue)
-        filledColor = [self valueForThemeAttribute:@"color-critical"];
-    else if (value <= _warningValue)
-        filledColor = [self valueForThemeAttribute:@"color-warning"];
+    if (_warningValue < _criticalValue)
+    {
+        if (value >= _criticalValue)
+            filledColor = [self valueForThemeAttribute:@"color-critical"];
+        else if (value >= _warningValue)
+            filledColor = [self valueForThemeAttribute:@"color-warning"];
+    }
+    else
+    {
+        if (value <= _criticalValue)
+            filledColor = [self valueForThemeAttribute:@"color-critical"];
+        else if (value <= _warningValue)
+            filledColor = [self valueForThemeAttribute:@"color-warning"];
+    }
+
 
     for (var i = 0; i < segmentCount; i++)
     {

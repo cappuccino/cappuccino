@@ -30,6 +30,17 @@
 
 @global CPApp
 
+@protocol CPMenuDelegate <CPObject>
+
+@optional
+- (void)menuWillOpen:(CPMenu)aMenu;
+- (void)menuDidClose:(CPMenu)aMenu;
+
+@end
+
+var CPMenuDelegate_menuWillOpen_ = 1 << 1,
+    CPMenuDelegate_menuDidClose_ = 1 << 2;
+
 CPMenuDidAddItemNotification        = @"CPMenuDidAddItemNotification";
 CPMenuDidChangeItemNotification     = @"CPMenuDidChangeItemNotification";
 CPMenuDidRemoveItemNotification     = @"CPMenuDidRemoveItemNotification";
@@ -50,26 +61,27 @@ var _CPMenuBarVisible               = NO,
 */
 @implementation CPMenu : CPObject
 {
-    CPMenu          _supermenu;
+    CPMenu              _supermenu;
 
-    CPString        _title;
-    CPString        _name;
+    CPString            _title;
+    CPString            _name;
 
-    CPFont          _font;
+    CPFont              _font;
 
-    float           _minimumWidth;
+    float               _minimumWidth;
 
-    CPMutableArray  _items;
+    CPMutableArray      _items;
 
-    BOOL            _autoenablesItems;
-    BOOL            _showsStateColumn;
+    BOOL                _autoenablesItems;
+    BOOL                _showsStateColumn;
 
-    id              _delegate;
+    id <CPMenuDelegate> _delegate;
+    unsigned            _implementedDelegateMethods;
 
-    int             _highlightedIndex;
-    _CPMenuWindow   _menuWindow;
+    int                 _highlightedIndex;
+    _CPMenuWindow       _menuWindow;
 
-    CPEvent         _lastCloseEvent;
+    CPEvent             _lastCloseEvent;
 }
 
 // Managing the Menu Bar
@@ -278,7 +290,7 @@ var _CPMenuBarVisible               = NO,
     @param aMenuItem the item to insert
     @param anIndex the index in the menu to insert the item.
 */
-- (void)insertItem:(CPMenuItem)aMenuItem atIndex:(unsigned)anIndex
+- (void)insertItem:(CPMenuItem)aMenuItem atIndex:(CPUInteger)anIndex
 {
     [self insertObject:aMenuItem inItemsAtIndex:anIndex];
 }
@@ -291,7 +303,7 @@ var _CPMenuBarVisible               = NO,
     @param anIndex the index location in the menu for the new item
     @return the new menu item
 */
-- (CPMenuItem)insertItemWithTitle:(CPString)aTitle action:(SEL)anAction keyEquivalent:(CPString)aKeyEquivalent atIndex:(unsigned)anIndex
+- (CPMenuItem)insertItemWithTitle:(CPString)aTitle action:(SEL)anAction keyEquivalent:(CPString)aKeyEquivalent atIndex:(CPUInteger)anIndex
 {
     var item = [[CPMenuItem alloc] initWithTitle:aTitle action:anAction keyEquivalent:aKeyEquivalent];
 
@@ -335,7 +347,7 @@ var _CPMenuBarVisible               = NO,
     Removes the item at the specified index from the menu
     @param anIndex the index of the item to remove
 */
-- (void)removeItemAtIndex:(unsigned)anIndex
+- (void)removeItemAtIndex:(CPUInteger)anIndex
 {
     [self removeObjectFromItemsAtIndex:anIndex];
 }
@@ -639,6 +651,7 @@ var _CPMenuBarVisible               = NO,
         if (binder)
         {
             [binder setValueFor:CPEnabledBinding];
+            [[_menuWindow _menuView] tile];
             return;
         }
 
@@ -855,6 +868,9 @@ var _CPMenuBarVisible               = NO,
 
 + (void)popUpContextMenu:(CPMenu)aMenu withEvent:(CPEvent)anEvent forView:(CPView)aView withFont:(CPFont)aFont
 {
+    // This is needed when we are making several rights click
+    [[_CPMenuManager sharedMenuManager] cancelActiveMenu];
+
     [aMenu _menuWillOpen];
 
     if (!aFont)
@@ -862,8 +878,6 @@ var _CPMenuBarVisible               = NO,
 
     var theWindow = [aView window],
         menuWindow = [_CPMenuWindow menuWindowWithMenu:aMenu font:aFont];
-
-    [_CPMenuWindow poolMenuWindow:menuWindow];
 
     [menuWindow setBackgroundStyle:_CPMenuWindowPopUpBackgroundStyle];
 
@@ -940,9 +954,19 @@ var _CPMenuBarVisible               = NO,
 
 // Managing the Delegate
 
-- (void)setDelegate:(id)aDelegate
+- (void)setDelegate:(id <CPMenuDelegate>)aDelegate
 {
+    if (_delegate === aDelegate)
+        return;
+
     _delegate = aDelegate;
+    _implementedDelegateMethods = 0;
+
+    if ([_delegate respondsToSelector:@selector(menuWillOpen:)])
+         _implementedDelegateMethods |= CPMenuDelegate_menuWillOpen_;
+
+    if ([_delegate respondsToSelector:@selector(menuDidClose:)])
+        _implementedDelegateMethods |= CPMenuDelegate_menuDidClose_;
 }
 
 - (id)delegate
@@ -952,10 +976,7 @@ var _CPMenuBarVisible               = NO,
 
 - (void)_menuWillOpen
 {
-    var delegate = [self delegate];
-
-    if ([delegate respondsToSelector:@selector(menuWillOpen:)])
-        [delegate menuWillOpen:self];
+    [self _sendDelegateMenuWillOpen];
 }
 
 - (void)_menuDidClose
@@ -964,10 +985,7 @@ var _CPMenuBarVisible               = NO,
     // when a click on the button itself caused the menu to close.
     _lastCloseEvent = [CPApp currentEvent];
 
-    var delegate = [self delegate];
-
-    if ([delegate respondsToSelector:@selector(menuDidClose:)])
-        [delegate menuDidClose:self];
+    [self _sendDelegateMenuDidClose];
 }
 
 // Handling Tracking
@@ -1060,7 +1078,7 @@ var _CPMenuBarVisible               = NO,
     Sends the action of the menu item at the specified index.
     @param anIndex the index of the item
 */
-- (void)performActionForItemAtIndex:(unsigned)anIndex
+- (void)performActionForItemAtIndex:(CPUInteger)anIndex
 {
     var item = _items[anIndex];
 
@@ -1130,6 +1148,36 @@ var _CPMenuBarVisible               = NO,
 }
 
 @end
+
+
+@implementation CPMenu (CPMenuDelegate)
+
+/*!
+    @ignore
+    Call delegate menuWillOpen
+*/
+- (void)_sendDelegateMenuWillOpen
+{
+    if (!(_implementedDelegateMethods & CPMenuDelegate_menuWillOpen_))
+        return;
+
+    [_delegate menuWillOpen:self];
+}
+
+/*!
+    @ignore
+    Call delegate menuDidClose
+*/
+- (void)_sendDelegateMenuDidClose
+{
+    if (!(_implementedDelegateMethods & CPMenuDelegate_menuDidClose_))
+        return;
+
+    [_delegate menuDidClose:self];
+}
+
+@end
+
 
 @implementation CPMenu (CPKeyValueCoding)
 

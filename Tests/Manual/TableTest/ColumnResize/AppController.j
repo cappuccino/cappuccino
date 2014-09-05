@@ -83,12 +83,12 @@
     return 2000;
 }
 
-- (id)tableView:(id)tableView objectValueForTableColumn:(CPTableColumn)aColumn row:(int)aRow
+- (id)tableView:(id)tableView objectValueForTableColumn:(CPTableColumn)aColumn row:(CPInteger)aRow
 {
     return "Column " + [aColumn identifier] + " Row " + aRow;
 }
 
-- (int)tableView:(CPTableView)aTableView heightOfRow:(int)aRow
+- (int)tableView:(CPTableView)aTableView heightOfRow:(CPInteger)aRow
 {
     return aRow % 2 ? 200 : 50;
     return aRow % 2 ? 1010 - (aRow * 10) : 10 + (aRow * 10);

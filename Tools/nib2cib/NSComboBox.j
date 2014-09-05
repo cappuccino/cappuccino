@@ -46,21 +46,6 @@
     _hasVerticalScroller = [cell hasVerticalScroller];
     [self setButtonBordered:[cell borderedButton]];
     [self setEnabled:[cell isEnabled]];
-
-    // Make sure the height is clipped to the max given by the theme
-    var theme = [Nib2Cib defaultTheme],
-        maxSize = [theme valueForAttributeWithName:@"max-size" forClass:[CPComboBox class]],
-        size = [self frameSize],
-        widthOffset = -3;
-
-    // Adjust for differences between Cocoa and Cappuccino widget framing.
-    if ([theme name] == @"Aristo")
-    {
-        _frame.origin.x += 1;
-        widthOffset = -5;
-    }
-
-    [self setFrameSize:CGSizeMake(size.width + widthOffset, MIN(size.height, maxSize.height))];
 }
 
 @end
@@ -75,6 +60,7 @@
     {
         var cell = [aCoder decodeObjectForKey:@"NSCell"];
         [self NS_initWithCell:cell];
+        [self _adjustNib2CibSize];
     }
 
     return self;

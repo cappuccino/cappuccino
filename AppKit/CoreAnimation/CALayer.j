@@ -498,6 +498,7 @@ var CALayerRegisteredRunLoopUpdates             = nil;
     {
         _context = CGBitmapGraphicsContextCreate();
 
+#if PLATFORM(DOM)
         _DOMContentsElement = _context.DOMElement;
 
         _DOMContentsElement.style.zIndex = -100;
@@ -515,6 +516,7 @@ var CALayerRegisteredRunLoopUpdates             = nil;
         _DOMContentsElement.style.height = ROUND(CGRectGetHeight(_backingStoreFrame)) + "px";
 
         _DOMElement.appendChild(_DOMContentsElement);
+#endif
     }
 
     if (USE_BUFFER)
@@ -687,7 +689,7 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
     @param aLayer the layer to insert
     @param anIndex the index to insert the layer at
 */
-- (void)insertSublayer:(CALayer)aLayer atIndex:(unsigned)anIndex
+- (void)insertSublayer:(CALayer)aLayer atIndex:(CPUInteger)anIndex
 {
     if (!aLayer)
         return;
@@ -1036,6 +1038,7 @@ function _CALayerUpdateSublayerTransformForSublayers(aLayer)
 
 function _CALayerUpdateDOM(aLayer, aMask)
 {
+#if PLATFORM(DOM)
     var DOMElementStyle = aLayer._DOMElement.style;
 
     if (aMask & CALayerZPositionUpdateMask)
@@ -1066,6 +1069,7 @@ function _CALayerUpdateDOM(aLayer, aMask)
             DOMContentsElement.style.height = height + "px";
         }
     }
+#endif
 }
 
 function _CALayerRecalculateGeometry(aLayer, aGeometryChange)

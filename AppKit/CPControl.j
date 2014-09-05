@@ -30,6 +30,18 @@
 
 @global CPApp
 
+@protocol CPControlTextEditingDelegate <CPObject>
+
+@optional
+- (void)controlTextDidBeginEditing:(CPNotification)aNotification;
+- (void)controlTextDidChange:(CPNotification)aNotification;
+- (void)controlTextDidEndEditing:(CPNotification)aNotification;
+- (void)controlTextDidFocus:(CPNotification)aNotification;
+- (void)controlTextDidBlur:(CPNotification)aNotification;
+- (BOOL)control:(CPControl)control didFailToFormatString:(CPString)string errorDescription:(CPString)error;
+
+@end
+
 CPLeftTextAlignment      = 0;
 CPRightTextAlignment     = 1;
 CPCenterTextAlignment    = 2;
@@ -106,6 +118,8 @@ var CPControlBlackColor = [CPColor blackColor];
     BOOL                _trackingWasWithinFrame;
     unsigned            _trackingMouseDownFlags;
     CGPoint             _previousTrackingLocation;
+
+    CPControlSize       _controlSize;
 }
 
 + (CPDictionary)themeAttributes
@@ -122,6 +136,7 @@ var CPControlBlackColor = [CPColor blackColor];
             @"image-scaling": CPScaleToFit,
             @"min-size": CGSizeMakeZero(),
             @"max-size": CGSizeMake(-1.0, -1.0),
+            @"nib2cib-adjustment-frame": CGRectMakeZero()
         };
 }
 
@@ -177,12 +192,84 @@ var CPControlBlackColor = [CPColor blackColor];
 
     if (self)
     {
-        _sendActionOn = CPLeftMouseUpMask;
+        _sendActionOn           = CPLeftMouseUpMask;
         _trackingMouseDownFlags = 0;
     }
 
     return self;
 }
+
+
+#pragma mark -
+#pragma mark Control Size
+
+/*!
+    Returns the control's control size
+*/
+- (CPControlSize)controlSize
+{
+    return _controlSize;
+}
+
+/*!
+    Sets the control's size.
+    @param aControlSize the control's size
+*/
+- (void)setControlSize:(CPControlSize)aControlSize
+{
+    if (_controlSize === aControlSize)
+        return;
+
+    [self unsetThemeState:[self _controlSizeThemeState]];
+    _controlSize = aControlSize;
+    [self setThemeState:[self _controlSizeThemeState]];
+
+    [self setNeedsLayout];
+    [self setNeedsDisplay:YES];
+}
+
+/*!
+    Gets the current theme state according to the current controlSize.
+    @return a CPThemeState
+*/
+- (ThemeState)_controlSizeThemeState
+{
+    switch(_controlSize)
+    {
+        case CPSmallControlSize:
+            return CPThemeStateControlSizeSmall;
+
+        case CPMiniControlSize:
+            return CPThemeStateControlSizeMini;
+
+        case CPRegularControlSize:
+        default:
+            return CPThemeStateControlSizeRegular;
+    }
+}
+
+/*!
+    @ignore
+    Change frame size according to the theme control size theme constraints
+    Basically for height to min-size.
+*/
+- (void)_sizeToControlSize
+{
+    var frameSize = [self frameSize],
+        minSize = [self currentValueForThemeAttribute:@"min-size"],
+        maxSize = [self currentValueForThemeAttribute:@"max-size"];
+
+    if (minSize.width > 0)
+        frameSize.width = MAX(minSize.width, frameSize.width);
+
+    if (minSize.height > 0)
+        frameSize.height = minSize.height;
+
+    [self setFrameSize:frameSize];
+}
+
+
+#pragma mark -
 
 /*!
     Sets the receiver's target action.
@@ -322,11 +409,11 @@ var CPControlBlackColor = [CPColor blackColor];
     _previousTrackingLocation = currentLocation;
 }
 
-- (void)setState:(int)state
+- (void)setState:(CPInteger)state
 {
 }
 
-- (int)nextState
+- (CPInteger)nextState
 {
     return 0;
 }
@@ -607,7 +694,7 @@ var CPControlBlackColor = [CPColor blackColor];
     if ([note object] != self)
         return;
 
-    [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidBeginEditingNotification object:self userInfo:@{ "CPFieldEditor": [note object] }];
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidBeginEditingNotification object:self userInfo:@{"CPFieldEditor": [note object]}];
 }
 
 - (void)textDidChange:(CPNotification)note
@@ -616,7 +703,7 @@ var CPControlBlackColor = [CPColor blackColor];
     if ([note object] != self)
         return;
 
-    [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidChangeNotification object:self userInfo:@{ "CPFieldEditor": [note object] }];
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidChangeNotification object:self userInfo:@{"CPFieldEditor": [note object]}];
 }
 
 - (void)textDidEndEditing:(CPNotification)note
@@ -627,7 +714,49 @@ var CPControlBlackColor = [CPColor blackColor];
 
     [self _reverseSetBinding];
 
-    [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidEndEditingNotification object:self userInfo:@{ "CPFieldEditor": [note object] }];
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidEndEditingNotification object:self userInfo:[note userInfo]];
+}
+
+/*!
+    @ignore
+    Return the currentTextMovement needed by the delegate textDidEndEditing
+    This is going to check the currentEvent of the CPApp
+*/
+- (unsigned)_currentTextMovement
+{
+    var currentEvent = [CPApp currentEvent],
+        keyCode = [currentEvent keyCode],
+        modifierFlags = [currentEvent modifierFlags];
+
+    switch (keyCode)
+    {
+        case CPEscapeKeyCode:
+            return CPCancelTextMovement;
+
+        case CPLeftArrowKeyCode:
+            return CPLeftTextMovement;
+
+        case CPRightArrowKeyCode:
+            return CPRightTextMovement;
+
+        case CPUpArrowKeyCode:
+            return CPUpTextMovement;
+
+        case CPDownArrowKeyCode:
+            return CPDownTextMovement;
+
+        case CPReturnKeyCode:
+            return CPReturnTextMovement;
+
+        case CPTabKeyCode:
+            if (modifierFlags & CPShiftKeyMask)
+                return CPBacktabTextMovement;
+
+            return CPTabTextMovement;
+
+        default:
+            return CPOtherTextMovement;
+    }
 }
 
 /*!
@@ -813,7 +942,7 @@ var CPControlBlackColor = [CPColor blackColor];
 /*!
     Returns the image scaling of the control.
 */
-- (CPImageScaling)imageScaling
+- (CPUInteger)imageScaling
 {
     return [self valueForThemeAttribute:@"image-scaling"];
 }
@@ -873,14 +1002,15 @@ var CPControlBlackColor = [CPColor blackColor];
 
 @end
 
-var CPControlValueKey                   = @"CPControlValueKey",
+var CPControlActionKey                  = @"CPControlActionKey",
+    CPControlControlSizeKey             = @"CPControlControlSizeKey",
     CPControlControlStateKey            = @"CPControlControlStateKey",
-    CPControlIsEnabledKey               = @"CPControlIsEnabledKey",
-    CPControlTargetKey                  = @"CPControlTargetKey",
-    CPControlActionKey                  = @"CPControlActionKey",
-    CPControlSendActionOnKey            = @"CPControlSendActionOnKey",
     CPControlFormatterKey               = @"CPControlFormatterKey",
+    CPControlIsEnabledKey               = @"CPControlIsEnabledKey",
+    CPControlSendActionOnKey            = @"CPControlSendActionOnKey",
     CPControlSendsActionOnEndEditingKey = @"CPControlSendsActionOnEndEditingKey",
+    CPControlTargetKey                  = @"CPControlTargetKey",
+    CPControlValueKey                   = @"CPControlValueKey",
 
     __Deprecated__CPImageViewImageKey   = @"CPImageViewImageKey";
 
@@ -907,6 +1037,8 @@ var CPControlValueKey                   = @"CPControlValueKey",
         [self setSendsActionOnEndEditing:[aCoder decodeBoolForKey:CPControlSendsActionOnEndEditingKey]];
 
         [self setFormatter:[aCoder decodeObjectForKey:CPControlFormatterKey]];
+
+        [self setControlSize:[aCoder decodeIntForKey:CPControlControlSizeKey]];
     }
 
     return self;
@@ -939,6 +1071,8 @@ var CPControlValueKey                   = @"CPControlValueKey",
 
     if (_formatter !== nil)
         [aCoder encodeObject:_formatter forKey:CPControlFormatterKey];
+
+    [aCoder encodeInt:_controlSize forKey:CPControlControlSizeKey];
 }
 
 @end

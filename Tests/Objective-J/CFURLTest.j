@@ -5,7 +5,7 @@
 
 - (void)testRelativeURLs
 {
-    var URLStrings = 
+    var URLStrings =
     {
         "g:h"           : "g:h",
         "g"             : "http://a/b/c/g",
@@ -87,6 +87,13 @@
     for (URLString in URLStrings)
         if (URLStrings.hasOwnProperty(URLString))
             [self assert:new CFURL(URLString).absoluteString() equals:URLStrings[URLString]];
+}
+
+- (void)testDoubleSlash
+{
+    [self assert:"//a" equals:new CFURL("//a").absoluteString()];
+    [self assert:"ftp://a" equals:new CFURL("//a", new CFURL("ftp://example.com/b")).absoluteString()];
+    [self assert:"ftp://example.com/a" equals:new CFURL("/a", new CFURL("ftp://example.com/b")).absoluteString()];
 }
 
 @end

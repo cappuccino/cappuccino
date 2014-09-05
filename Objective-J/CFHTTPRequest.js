@@ -99,6 +99,7 @@ GLOBAL(CFHTTPRequest) = function()
     this._isOpen = false;
     this._requestHeaders = {};
     this._mimeType = null;
+    this._withCredentials = false;
 
     this._eventDispatcher = new EventDispatcher(this);
     this._nativeRequest = new NativeRequest();
@@ -172,7 +173,10 @@ CFHTTPRequest.prototype.responseXML = function()
 {
     var responseXML = this._nativeRequest.responseXML;
 
-    if (responseXML && (NativeRequest === window.XMLHttpRequest))
+    // Internet Explorer will return a non-null but empty request.responseXML if the response
+    // content type wasn't "text/html", so also check that responseXML.documentRoot is set.
+    // Otherwise fall back to regular parsing.
+    if (responseXML && (NativeRequest === window.XMLHttpRequest) && responseXML.documentRoot)
         return responseXML;
 
     return parseXML(this.responseText());
@@ -221,7 +225,9 @@ CFHTTPRequest.prototype.open = function(/*String*/ aMethod, /*String*/ aURL, /*B
     this._method = aMethod;
     this._user = aUser;
     this._password = aPassword;
-    return this._nativeRequest.open(aMethod, aURL, isAsynchronous, aUser, aPassword);
+    var result = this._nativeRequest.open(aMethod, aURL, isAsynchronous, aUser, aPassword);
+    this._nativeRequest.withCredentials = this._withCredentials;
+    return result;
 };
 
 CFHTTPRequest.prototype.send = function(/*Object*/ aBody)
@@ -230,6 +236,7 @@ CFHTTPRequest.prototype.send = function(/*Object*/ aBody)
     {
         delete this._nativeRequest.onreadystatechange;
         this._nativeRequest.open(this._method, this._URL, this._async, this._user, this._password);
+        this._nativeRequest.withCredentials = this._withCredentials;
         this._nativeRequest.onreadystatechange = this._stateChangeHandler;
     }
 
@@ -269,6 +276,16 @@ CFHTTPRequest.prototype.addEventListener = function(/*String*/ anEventName, /*Fu
 CFHTTPRequest.prototype.removeEventListener = function(/*String*/ anEventName, /*Function*/ anEventListener)
 {
     this._eventDispatcher.removeEventListener(anEventName, anEventListener);
+};
+
+CFHTTPRequest.prototype.setWithCredentials = function(/*Boolean*/ willSendWithCredentials) 
+{
+    this.withCredentials = willSendWithCredentials;
+};
+
+CFHTTPRequest.prototype.getWithCredentials = function() 
+{
+    return this.withCredentials;
 };
 
 function determineAndDispatchHTTPRequestEvents(/*CFHTTPRequest*/ aRequest)

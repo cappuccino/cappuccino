@@ -51,7 +51,7 @@
     CPCountedSet    _observedKeys;
 }
 
-+ (id)initialize
++ (void)initialize
 {
     if (self !== [CPObjectController class])
         return;
@@ -459,13 +459,13 @@ var CPObjectControllerContentKey                        = @"CPObjectControllerCo
 
 - (BOOL)isEqual:(id)anObject
 {
-    if ([anObject class] === [self class])
-    {
-        if (anObject._observer === _observer && [anObject._keyPath isEqual:_keyPath] && [anObject._object isEqual:_object])
-            return YES;
-    }
+    if (self === anObject)
+        return YES;
 
-    return NO;
+    if (!anObject || [anObject class] !== [self class] || anObject._observer !== _observer || anObject._keyPath !== _keyPath || anObject._object !== _object)
+            return NO;
+
+    return YES;
 }
 
 - (void)observeValueForKeyPath:(CPString)aKeyPath ofObject:(id)anObject change:(CPDictionary)change context:(id)context
@@ -572,7 +572,7 @@ var CPObjectControllerContentKey                        = @"CPObjectControllerCo
     }
 }
 
-- (void)insertObject:(id)anObject atIndex:(unsigned)anIndex
+- (void)insertObject:(id)anObject atIndex:(CPUInteger)anIndex
 {
     for (var i = 0, count = [_observationProxies count]; i < count; i++)
     {
@@ -592,7 +592,7 @@ var CPObjectControllerContentKey                        = @"CPObjectControllerCo
     [super insertObject:anObject atIndex:anIndex];
 }
 
-- (void)removeObjectAtIndex:(unsigned)anIndex
+- (void)removeObjectAtIndex:(CPUInteger)anIndex
 {
     var currentObject = [self objectAtIndex:anIndex];
 
@@ -614,7 +614,7 @@ var CPObjectControllerContentKey                        = @"CPObjectControllerCo
     [super removeObjectAtIndex:anIndex];
 }
 
-- (_CPObservableArray)objectsAtIndexes:(CPIndexSet)theIndexes
+- (CPArray)objectsAtIndexes:(CPIndexSet)theIndexes
 {
     return [_CPObservableArray arrayWithArray:[super objectsAtIndexes:theIndexes]];
 }
@@ -629,7 +629,7 @@ var CPObjectControllerContentKey                        = @"CPObjectControllerCo
    [self removeObjectAtIndex:[self count]];
 }
 
-- (void)replaceObjectAtIndex:(unsigned)anIndex withObject:(id)anObject
+- (void)replaceObjectAtIndex:(CPUInteger)anIndex withObject:(id)anObject
 {
     var currentObject = [self objectAtIndex:anIndex];
 
@@ -808,15 +808,20 @@ var CPObjectControllerContentKey                        = @"CPObjectControllerCo
 
 - (void)removeObserver:(id)anObject forKeyPath:(CPString)aKeyPath
 {
-    var proxy = [[_CPObservationProxy alloc] initWithKeyPath:aKeyPath observer:anObject object:self],
-        index = [_observationProxies indexOfObject:proxy];
+    [_observationProxies enumerateObjectsUsingBlock:function(aProxy, idx, stop)
+    {
+        if (aProxy._object === self && aProxy._keyPath == aKeyPath && aProxy._observer === anObject)
+        {
+            var observedObjects = _observedObjectsByKeyPath[aKeyPath];
 
-    var observedObjects = _observedObjectsByKeyPath[aKeyPath];
-    [observedObjects removeObserver:[_observationProxies objectAtIndex:index] forKeyPath:aKeyPath];
+            [observedObjects removeObserver:aProxy forKeyPath:aKeyPath];
+            [_observationProxies removeObjectAtIndex:idx];
 
-    [_observationProxies removeObjectAtIndex:index];
+            _observedObjectsByKeyPath[aKeyPath] = nil;
 
-    _observedObjectsByKeyPath[aKeyPath] = nil;
+            stop(YES);
+        }
+    }];
 }
 
 @end

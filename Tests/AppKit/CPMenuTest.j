@@ -129,6 +129,18 @@
     [self assertFalse:[[[anInstantiatedMenuItem _menuItemView] view] isHighlighted] message:@"Underlying view was still highlighted after removeItemAtIndex"];
 }
 
+- (void)testSetEnabledHighlighting
+{
+    [menu _highlightItemAtIndex:[menu indexOfItem:anInstantiatedMenuItem]];
+
+    [self assertTrue:[anInstantiatedMenuItem isHighlighted]];
+
+    [anInstantiatedMenuItem setEnabled:NO];
+
+    [self assertFalse:[anInstantiatedMenuItem isHighlighted]];
+    [self assertFalse:[[[anInstantiatedMenuItem _menuItemView] view] isHighlighted] message:@"Underlying view was still highlighted after setEnabled:NO"];
+}
+
 - (void)testKeyEquivalent
 {
     [self _retarget:menu];

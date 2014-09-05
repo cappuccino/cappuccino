@@ -55,7 +55,6 @@
     CPTextField _hexLabel;
     CPTextField _hexValue;
 
-    CPTextField _hexValue;
     CPTextField _redValue;
     CPTextField _greenValue;
     CPTextField _blueValue;

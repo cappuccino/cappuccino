@@ -833,17 +833,17 @@
     return [managedObjects count];
 }
 
-- (id)objectInManagedObjectsAtIndex:(unsigned)anIndex
+- (id)objectInManagedObjectsAtIndex:(CPUInteger)anIndex
 {
     return [managedObjects objectAtIndex:anIndex];
 }
 
-- (void)removeObjectFromManagedObjectsAtIndex:(unsigned)anIndex
+- (void)removeObjectFromManagedObjectsAtIndex:(CPUInteger)anIndex
 {
     [managedObjects removeObjectAtIndex:anIndex];
 }
 
-- (void)insertObject:(id)anObject inManagedObjectsAtIndex:(unsigned)anIndex
+- (void)insertObject:(id)anObject inManagedObjectsAtIndex:(CPUInteger)anIndex
 {
     [managedObjects insertObject:anObject atIndex:anIndex];
 }

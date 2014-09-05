@@ -576,7 +576,7 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
         [aPasteboard setData:[CPKeyedArchiver archivedDataWithRootObject:_dragColor] forType:aType];
 }
 
-- (void)performDragOperation:(id <CPDraggingInfo>)aSender
+- (void)performDragOperation:(id /*<CPDraggingInfo>*/)aSender
 {
     var location = [self convertPoint:[aSender draggingLocation] fromView:nil],
         pasteboard = [aSender draggingPasteboard],
@@ -615,7 +615,7 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
     return _colorPanel;
 }
 
-- (void)performDragOperation:(id <CPDraggingInfo>)aSender
+- (void)performDragOperation:(id /*<CPDraggingInfo>*/)aSender
 {
     var pasteboard = [aSender draggingPasteboard];
 

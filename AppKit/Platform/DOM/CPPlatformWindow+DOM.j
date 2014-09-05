@@ -201,6 +201,11 @@ var ModifierKeyCodes = [
     supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
 var resizeTimer = nil;
+var PreventScroll = true;
+
+// When scrolling with an old-style scroll wheel with discete steps ('clicks'), the scroll amount can indicate how many "lines" to
+// scroll.
+#define SCROLLWHEEL_LINE_PIXELS 6.0
 
 #if PLATFORM(DOM)
 
@@ -325,8 +330,8 @@ var resizeTimer = nil;
     _DOMScrollingElement.style.position = "absolute";
     _DOMScrollingElement.style.visibility = "hidden";
     _DOMScrollingElement.style.zIndex = @"999";
-    _DOMScrollingElement.style.height = "60px";
-    _DOMScrollingElement.style.width = "60px";
+    _DOMScrollingElement.style.height = "500px";
+    _DOMScrollingElement.style.width = "500px";
     _DOMScrollingElement.style.overflow = "scroll";
     //_DOMScrollingElement.style.backgroundColor = "rgba(0,0,0,1.0)"; // debug help.
     _DOMScrollingElement.style.opacity = "0";
@@ -335,8 +340,8 @@ var resizeTimer = nil;
     _DOMBodyElement.appendChild(_DOMScrollingElement);
 
     var _DOMInnerScrollingElement = theDocument.createElement("div");
-    _DOMInnerScrollingElement.style.width = "400px";
-    _DOMInnerScrollingElement.style.height = "400px";
+    _DOMInnerScrollingElement.style.width = "5000px";
+    _DOMInnerScrollingElement.style.height = "5000px";
     _DOMScrollingElement.appendChild(_DOMInnerScrollingElement);
 
     // Set an initial scroll offset
@@ -842,6 +847,12 @@ var resizeTimer = nil;
 
 - (void)scrollEvent:(DOMEvent)aDOMEvent
 {
+    if (PreventScroll)
+    {
+        PreventScroll = false;
+        aDOMEvent.preventDefault();
+    }
+
     if (_hideDOMScrollingElementTimeout)
     {
         clearTimeout(_hideDOMScrollingElementTimeout);
@@ -852,7 +863,6 @@ var resizeTimer = nil;
         aDOMEvent = window.event;
 
     var location = nil;
-
     if (CPFeatureIsCompatible(CPJavaScriptMouseWheelValues_8_15))
     {
         var x = aDOMEvent._offsetX || 0.0,
@@ -911,9 +921,22 @@ var resizeTimer = nil;
     // We lag 1 event behind without this timeout.
     setTimeout(function()
     {
-        // Find the scroll delta
-        var deltaX = _DOMScrollingElement.scrollLeft - 150,
-            deltaY = (_DOMScrollingElement.scrollTop - 150) || (aDOMEvent.deltaY === undefined ? 0 : aDOMEvent.deltaY);
+        if (aDOMEvent.deltaMode !== undefined && aDOMEvent.deltaMode !== 0)
+        {
+            event._hasPreciseScrollingDeltas = NO;
+            event._scrollingDeltaX = aDOMEvent.deltaX;
+            event._scrollingDeltaY = aDOMEvent.deltaY;
+            event._deltaX = aDOMEvent.deltaX * SCROLLWHEEL_LINE_PIXELS;
+            event._deltaY = aDOMEvent.deltaY * SCROLLWHEEL_LINE_PIXELS;
+        }
+        else
+        {
+            event._hasPreciseScrollingDeltas = YES;
+            event._scrollingDeltaX = (_DOMScrollingElement.scrollLeft - 150) || aDOMEvent.deltaX || 0;
+            event._scrollingDeltaY = (_DOMScrollingElement.scrollTop - 150) || aDOMEvent.deltaY || 0;
+            event._deltaX = event._scrollingDeltaX;
+            event._deltaY = event._scrollingDeltaY;
+        }
 
         // If we scroll super with momentum,
         // there are so many events going off that
@@ -924,13 +947,8 @@ var resizeTimer = nil;
         //
         // We get free performance boost if we skip sending these events,
         // as sending a scroll event with no deltas doesn't do anything.
-        if (deltaX || deltaY)
-        {
-            event._deltaX = deltaX;
-            event._deltaY = deltaY;
-
+        if (event._deltaX || event._deltaY)
             [CPApp sendEvent:event];
-        }
 
         // We set StopDOMEventPropagation = NO on line 1008
         //if (StopDOMEventPropagation)
@@ -950,6 +968,7 @@ var resizeTimer = nil;
     // can receive events.
     _hideDOMScrollingElementTimeout = setTimeout(function()
     {
+        PreventScroll = true;
         _DOMScrollingElement.style.visibility = "hidden";
     }, 300);
 }
@@ -1654,16 +1673,15 @@ var CPDOMEventGetClickCount = function(aComparisonEvent, aTimestamp, aLocation)
 // Global.
 _CPDOMEventStop = function(aDOMEvent, aPlatformWindow)
 {
-    // IE Model
-    aDOMEvent.cancelBubble = true;
-    aDOMEvent.returnValue = false;
-
-    // W3C Model
-    if (aDOMEvent.preventDefault)
+    if (aDOMEvent.preventDefault) // W3C Model
         aDOMEvent.preventDefault();
+    else // IE Model
+        aDOMEvent.returnValue = false;
 
-    if (aDOMEvent.stopPropagation)
+    if (aDOMEvent.stopPropagation) // W3C Model
         aDOMEvent.stopPropagation();
+    else // IE Model
+        aDOMEvent.cancelBubble = true;
 };
 
 function CPWindowObjectList()

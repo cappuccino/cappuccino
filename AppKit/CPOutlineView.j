@@ -52,7 +52,6 @@ var CPOutlineViewDataSource_outlineView_objectValue_forTableColumn_byItem_      
     CPOutlineViewDataSource_outlineView_sortDescriptorsDidChange_                                   = 1 << 11;
 
 var CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_                                  = 1 << 1,
-    CPOutlineViewDelegate_outlineView_viewForTableColumn_item_                                      = 1 << 26,
     CPOutlineViewDelegate_outlineView_didClickTableColumn_                                          = 1 << 2,
     CPOutlineViewDelegate_outlineView_didDragTableColumn_                                           = 1 << 3,
     CPOutlineViewDelegate_outlineView_heightOfRowByItem_                                            = 1 << 4,
@@ -75,8 +74,10 @@ var CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_              
     CPOutlineViewDelegate_outlineView_typeSelectStringForTableColumn_item_                          = 1 << 21,
     CPOutlineViewDelegate_outlineView_willDisplayOutlineView_forTableColumn_item_                   = 1 << 22,
     CPOutlineViewDelegate_outlineView_willDisplayView_forTableColumn_item_                          = 1 << 23,
-    CPOutlineViewDelegate_selectionShouldChangeInOutlineView_                                       = 1 << 24,
-    CPOutlineViewDelegate_outlineView_menuForTableColumn_item_                                      = 1 << 25;
+    CPOutlineViewDelegate_outlineView_willRemoveView_forTableColumn_item_                           = 1 << 24,
+    CPOutlineViewDelegate_selectionShouldChangeInOutlineView_                                       = 1 << 25,
+    CPOutlineViewDelegate_outlineView_menuForTableColumn_item_                                      = 1 << 26,
+    CPOutlineViewDelegate_outlineView_viewForTableColumn_item_                                      = 1 << 27;
 
 CPOutlineViewDropOnItemIndex = -1;
 
@@ -87,6 +88,58 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 #define SELECTION_SHOULD_CHANGE(anOutlineView) (!((anOutlineView)._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_selectionShouldChangeInOutlineView_) || [(anOutlineView)._outlineViewDelegate selectionShouldChangeInOutlineView:(anOutlineView)])
 
 #define SHOULD_SELECT_ITEM(anOutlineView, anItem) (!((anOutlineView)._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_shouldSelectItem_) || [(anOutlineView)._outlineViewDelegate outlineView:(anOutlineView) shouldSelectItem:(anItem)])
+
+
+@protocol CPOutlineViewDelegate <CPObject>
+
+@optional
+- (BOOL)outlineView:(CPOutlineView)anOutlineView isGroupItem:(id)anItem;
+- (BOOL)outlineView:(CPOutlineView)anOutlineView shouldCollapseItem:(id)anItem;
+- (BOOL)outlineView:(CPOutlineView)anOutlineView shouldEditTableColumn:(CPTableColumn)aTableColumn item:(id)anItem;
+- (BOOL)outlineView:(CPOutlineView)anOutlineView shouldExpandItem:(id)anItem;
+- (BOOL)outlineView:(CPOutlineView)anOutlineView shouldReorderColumn:(CPInteger)columnIndex toColumn:(CPInteger)newColumnIndex;
+- (BOOL)outlineView:(CPOutlineView)anOutlineView shouldSelectItem:(id)anItem;
+- (BOOL)outlineView:(CPOutlineView)anOutlineView shouldSelectTableColumn:(CPTableColumn)aTableColumn;
+- (BOOL)outlineView:(CPOutlineView)anOutlineView shouldShowOutlineDisclosureControlForItem:(id)anItem;
+- (BOOL)outlineView:(CPOutlineView)anOutlineView shouldShowViewExpansionForTableColumn:(CPTableColumn)aTableColumn item:(id)anItem;
+- (BOOL)outlineView:(CPOutlineView)anOutlineView shouldTrackView:(CPView)aView forTableColumn:(CPTableColumn)aTableColumn item:(id)anItem;
+- (BOOL)outlineView:(CPOutlineView)anOutlineView shouldTypeSelectForEvent:(CPEvent)anEvent withCurrentSearchString:(CPString)searchString;
+- (BOOL)selectionShouldChangeInOutlineView:(CPOutlineView)anOutlineView;
+- (CPIndexSet)outlineView:(CPOutlineView)anOutlineView selectionIndexesForProposedSelection:(CPIndexSet)proposedSelectionIndexes;
+- (CPMenu)outlineView:(CPOutlineView)anOutlineView menuForTableColumn:(CPTableColumn)aTableColumn item:(id)anItem;
+- (CPString)outlineView:(CPOutlineView)anOutlineView toolTipForView:(CPView)aView rect:(CGRect)aRect tableColumn:(CPTableColumn)aTableColumn item:(id)anItem mouseLocation:(CGPoint)mouseLocation;
+- (CPString)outlineView:(CPOutlineView)anOutlineView typeSelectStringForTableColumn:(CPTableColumn)aTableColumn item:(id)anItem;
+- (CPView)outlineView:(CPOutlineView)anOutlineView dataViewForTableColumn:(CPTableColumn)aTableColumn item:(id)anItem;
+- (CPView)outlineView:(CPOutlineView)anOutlineView viewForTableColumn:(CPTableColumn)aTableColumn item:(id)anItem;
+- (float)outlineView:(CPOutlineView)anOutlineView heightOfRowByItem:(id)anItem;
+- (float)outlineView:(CPOutlineView)anOutlineView sizeToFitWidthOfColumn:(CPTableColumn)aTableColumn;
+- (id)outlineView:(CPOutlineView)anOutlineView nextTypeSelectMatchFromItem:(id)startItem toItem:(id)endItem forString:(CPString)searchString;
+- (void)outlineView:(CPOutlineView)anOutlineView didClickTableColumn:(CPTableColumn)aTableColumn;
+- (void)outlineView:(CPOutlineView)anOutlineView didDragTableColumn:(CPTableColumn)aTableColumn;
+- (void)outlineView:(CPOutlineView)anOutlineView mouseDownInHeaderOfTableColumn:(CPTableColumn)aTableColumn;
+- (void)outlineView:(CPOutlineView)anOutlineView willDisplayOutlineView:(CPView)aView forTableColumn:(CPTableColumn)aTableColumn item:(id)anItem;
+- (void)outlineView:(CPOutlineView)anOutlineView willDisplayView:(CPView)aView forTableColumn:(CPTableColumn)aTableColumn item:(id)anItem;
+- (void)outlineView:(CPOutlineView)anOutlineView willRemoveView:(CPView)aView forTableColumn:(CPTableColumn)aTableColumn item:(id)anItem;
+
+@end
+
+
+@protocol CPOutlineViewDataSource <CPObject>
+
+@optional
+- (BOOL)outlineView:(CPOutlineView)anOutlineView acceptDrop:(id /*<CPDraggingInfo>*/)info item:(id)anItem childIndex:(CPInteger)anIndex;
+- (BOOL)outlineView:(CPOutlineView)anOutlineView shouldDeferDisplayingChildrenOfItem:(id)anItem;
+- (BOOL)outlineView:(CPOutlineView)anOutlineView writeItems:(CPArray)items toPasteboard:(CPPasteboard)pboard;
+- (CPArray)outlineView:(CPOutlineView)anOutlineView namesOfPromisedFilesDroppedAtDestination:(CPURL)dropDestination forDraggedItems:(CPArray)items;
+- (CPDragOperation)outlineView:(CPOutlineView)anOutlineView validateDrop:(id /*<CPDraggingInfo>*/)info proposedItem:(id)anItem proposedChildIndex:(CPInteger)anIndex;
+- (CPDragOperation)outlineView:(CPOutlineView)anOutlineView validateDrop:(id /*<CPDraggingInfo>*/)info proposedRow:(int)theRow proposedDropOperation:(CPTableViewDropOperation)theOperation;
+- (id)outlineView:(CPOutlineView)anOutlineView itemForPersistentObject:(id)anObject;
+- (id)outlineView:(CPOutlineView)anOutlineView objectValueforTableColumn:(CPTableColumn)aTableColumn byItem:(id)anItem;
+- (id)outlineView:(CPOutlineView)anOutlineView persistentObjectForItem:(id)anItem;
+- (void)outlineView:(CPOutlineView)anOutlineView setObjectValue:(id)anObject forTableColumn:(CPTableColumn)aTableColumn byItem:(id)anItem;
+- (void)outlineView:(CPOutlineView)anOutlineView sortDescriptorsDidChange:(CPArray)oldDescriptors;
+
+@end
 
 /*!
     @ingroup appkit
@@ -105,34 +158,37 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 */
 @implementation CPOutlineView : CPTableView
 {
-    id              _outlineViewDataSource;
-    id              _outlineViewDelegate;
-    CPTableColumn   _outlineTableColumn;
+    id <CPOutlineViewDataSource>    _outlineViewDataSource;
+    id <CPOutlineViewDelegate>      _outlineViewDelegate;
+    CPTableColumn                   _outlineTableColumn;
 
-    float           _indentationPerLevel;
-    BOOL            _indentationMarkerFollowsDataView;
+    float                           _indentationPerLevel;
+    BOOL                            _indentationMarkerFollowsDataView;
 
-    CPInteger       _implementedOutlineViewDataSourceMethods;
-    CPInteger       _implementedOutlineViewDelegateMethods;
+    CPInteger                       _implementedOutlineViewDataSourceMethods;
+    CPInteger                       _implementedOutlineViewDelegateMethods;
 
-    Object          _rootItemInfo;
-    CPMutableArray  _itemsForRows;
-    Object          _itemInfosForItems;
+    Object                          _rootItemInfo;
+    CPMutableArray                  _itemsForRows;
+    Object                          _itemInfosForItems;
 
-    CPControl       _disclosureControlPrototype;
-    CPArray         _disclosureControlsForRows;
-    CPData          _disclosureControlData;
-    CPArray         _disclosureControlQueue;
+    CPControl                       _disclosureControlPrototype;
+    CPArray                         _disclosureControlsForRows;
+    CPData                          _disclosureControlData;
+    CPArray                         _disclosureControlQueue;
 
-    BOOL            _shouldRetargetItem;
-    id              _retargetedItem;
+    BOOL                            _shouldRetargetItem;
+    id                              _retargetedItem;
 
-    BOOL            _shouldRetargetChildIndex;
-    CPInteger       _retargedChildIndex;
-    CPTimer         _dragHoverTimer;
-    id              _dropItem;
+    BOOL                            _shouldRetargetChildIndex;
+    CPInteger                       _retargedChildIndex;
+    CPTimer                         _dragHoverTimer;
+    id                              _dropItem;
 
-    BOOL            _coalesceSelectionNotificationState;
+    BOOL                            _coalesceSelectionNotificationState;
+
+    CPArray                         _pendingItemToClean;
+    CPArray                         _itemAddedDuringLastLoading;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -218,7 +274,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     If you want the drag to begin you should return YES and place the drag data on the pboard.
     @code - (BOOL)outlineView:(CPOutlineView)outlineView writeItems:(CPArray)items toPasteboard:(CPPasteboard)pboard; @endcode
 */
-- (void)setDataSource:(id)aDataSource
+- (void)setDataSource:(id <CPOutlineViewDataSource>)aDataSource
 {
     if (_outlineViewDataSource === aDataSource)
         return;
@@ -293,7 +349,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     if (!anItem)
         return YES;
 
-    var itemInfo = _itemInfosForItems[[anItem UID]];
+    var itemInfo = [self _itemInfosForItem:anItem];
 
     if (!itemInfo)
         return NO;
@@ -326,12 +382,113 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     if (!anItem)
         return YES;
 
-    var itemInfo = _itemInfosForItems[[anItem UID]];
+    var itemInfo = [self _itemInfosForItem:anItem];
 
     if (!itemInfo)
         return NO;
 
     return itemInfo.isExpanded;
+}
+
+/*!
+    Returns the item at a given row index. If no item exists nil is returned.
+
+    @param aRow - The row index you want to find the item at.
+    @return id - The item at a given index.
+*/
+- (id)itemAtRow:(CPInteger)aRow
+{
+    return _itemsForRows[aRow] || nil;
+}
+
+/*!
+    Returns the row of a given item
+
+    @param anItem - The item you want to find the row of.
+    @return int - The row index of a given item.
+*/
+- (CPInteger)rowForItem:(id)anItem
+{
+    if (!anItem)
+        return _rootItemInfo.row;
+
+    var itemInfo = [self _itemInfosForItem:anItem];
+
+    if (!itemInfo)
+        return CPNotFound;
+
+    return itemInfo.row;
+}
+
+/*!
+    Returns the indentation level of a given item. If the item is nil (the top
+    level root item) CPNotFound is returned. Indentation levels are zero
+    based, thus items that are not indented return 0.
+
+    @param anItem - The item you want the indentation level for.
+    @return int - the indentation level of anItem.
+*/
+- (CPInteger)levelForItem:(id)anItem
+{
+    if (!anItem)
+        return _rootItemInfo.level;
+
+    var itemInfo = [self _itemInfosForItem:anItem];
+
+    if (!itemInfo)
+        return CPNotFound;
+
+    return itemInfo.level;
+}
+
+/*!
+    Returns the indentation level for a given row. If the row is invalid
+    CPNotFound is returned. Rows that are not indented return 0.
+
+    @param aRow - the row of the receiver
+    @return int - the indentation level of aRow.
+*/
+- (CPInteger)levelForRow:(CPInteger)aRow
+{
+    var item = [self itemAtRow:aRow];
+
+    if (!item && aRow >= 0)
+        item = [CPObject new];
+
+    return [self levelForItem:item];
+}
+
+/*!
+    @ignore
+    Return the itemInfos for the given item.
+    The method returns only itemInfo for displayed items
+*/
+- (Object)_itemInfosForItem:(id)anItem
+{
+    var itemInfo = _itemInfosForItems[[anItem UID]];
+
+    if (!itemInfo || [self _parentIsCollapsed:[self parentForItem:anItem]])
+        return nil;
+
+    return itemInfo;
+}
+
+/*!
+    @ignore
+    Return a boolean to know if one parent of the given item is collapsed or not
+*/
+- (BOOL)_parentIsCollapsed:(id)anItem
+{
+    var parentItem = [self parentForItem:anItem],
+        itemInfo = _itemInfosForItems[[anItem UID]];
+
+    if (!itemInfo)
+        return NO;
+
+    if (!itemInfo.isExpanded)
+        return YES;
+
+    return [self _parentIsCollapsed:parentItem];
 }
 
 /*!
@@ -352,6 +509,10 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 */
 - (void)expandItem:(id)anItem expandChildren:(BOOL)shouldExpandChildren
 {
+    if ([self _delegateRespondsToShouldExpandItem])
+        if ([_outlineViewDelegate outlineView:self shouldExpandItem:anItem] == NO)
+            return;
+
     var itemInfo = null;
 
     if (!anItem)
@@ -366,6 +527,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     // selection notifications so that exactly one IsChanging and one
     // DidChange is sent as needed, for the totality of the operation.
     var isTopLevel = NO;
+
     if (!_coalesceSelectionNotificationState)
     {
         isTopLevel = YES;
@@ -385,6 +547,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
         // Shift selection indexes below so that the same items remain selected.
         var rowCountDelta = [self numberOfRows] - previousRowCount;
+
         if (rowCountDelta)
         {
             var selection = [self selectedRowIndexes],
@@ -426,6 +589,10 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 {
     if (!anItem)
         return;
+
+    if ([self _delegateRespondsToShouldCollapseItem])
+        if ([_outlineViewDelegate outlineView:self shouldCollapseItem:anItem] == NO)
+            return;
 
     var itemInfo = _itemInfosForItems[[anItem UID]];
 
@@ -470,6 +637,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
             [self _setSelectedRowIndexes:selection]; // _noteSelectionDidChange will be suppressed.
         }
     }
+
     itemInfo.isExpanded = NO;
 
     [self reloadItem:anItem reloadChildren:YES];
@@ -501,42 +669,205 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 */
 - (void)reloadItem:(id)anItem reloadChildren:(BOOL)shouldReloadChildren
 {
+    _pendingItemToClean = [];
+    _itemAddedDuringLastLoading = [];
+
     if (!!shouldReloadChildren || !anItem)
-        _loadItemInfoForItem(self, anItem);
+        [self _loadItemInfoForItem:anItem intermediate:NO];
     else
-        _reloadItem(self, anItem);
+        [self _reloadItem:anItem];
+
+    [self _cleanPendingItem];
 
     [super reloadData];
 }
 
-/*!
-    Returns the item at a given row index. If no item exists nil is returned.
-
-    @param aRow - The row index you want to find the item at.
-    @return id - The item at a given index.
-*/
-- (id)itemAtRow:(CPInteger)aRow
-{
-    return _itemsForRows[aRow] || nil;
-}
-
-/*!
-    Returns the row of a given item
-
-    @param anItem - The item you want to find the row of.
-    @return int - The row index of a given item.
-*/
-- (CPInteger)rowForItem:(id)anItem
+- (void)_reloadItem:(id)anItem
 {
     if (!anItem)
-        return _rootItemInfo.row;
+        return;
 
+    // Get the existing info if it exists.
+    var itemUID = [anItem UID],
+        itemInfo = _itemInfosForItems[itemUID];
+
+    // If we're not in the tree, then just bail.
+    if (!itemInfo)
+        return [];
+
+    // See if the item itself can be swapped out.
+    var parent = itemInfo.parent,
+        parentItemInfo = parent ? _itemInfosForItems[[parent UID]] : _rootItemInfo,
+        parentChildren = parentItemInfo.children,
+        index = [parentChildren indexOfObjectIdenticalTo:anItem],
+        newItem = [_outlineViewDataSource outlineView:self child:index ofItem:parent];
+
+    if (anItem !== newItem)
+    {
+        _itemInfosForItems[[anItem UID]] = nil;
+        _itemInfosForItems[[newItem UID]] = itemInfo;
+
+        parentChildren[index] = newItem;
+        _itemsForRows[itemInfo.row] = newItem;
+    }
+
+    itemInfo.isExpandable = [_outlineViewDataSource outlineView:self isItemExpandable:newItem];
+    itemInfo.isExpanded = itemInfo.isExpandable && itemInfo.isExpanded;
+    itemInfo.shouldShowOutlineDisclosureControl = [self _sendDelegateShouldShowOutlineDisclosureControlForItem:newItem];
+}
+
+- (void)_addPendingItemsFromPreviousItems:(CPArray)previousItems forItemInfo:(Object)itemInfo
+{
+    if (!itemInfo)
+        return;
+
+    var children = itemInfo.children;
+
+    for (var i = [previousItems count] - 1; i >= 0; i--)
+    {
+        var item = previousItems[i];
+
+        if (![children containsObject:item])
+            [self _addPendingItem:item];
+    }
+}
+
+- (void)_addPendingItem:(id)anItem
+{
     var itemInfo = _itemInfosForItems[[anItem UID]];
 
     if (!itemInfo)
-        return CPNotFound;
+        return;
 
-    return itemInfo.row;
+    var children = itemInfo.children;
+
+    for (var i = [children count]; i >= 0; i--)
+    {
+        var child = children[i];
+        [self _addPendingItem:child];
+    }
+
+    [_pendingItemToClean addObject:anItem];
+}
+
+- (void)_cleanPendingItem
+{
+    for (var i = [_pendingItemToClean count]; i >= 0; i--)
+    {
+        var item = _pendingItemToClean[i];
+
+        if (![_itemAddedDuringLastLoading containsObject:item])
+            delete _itemInfosForItems[[item UID]];
+    }
+
+    _pendingItemToClean = [];
+    _itemAddedDuringLastLoading = [];
+}
+
+- (CPArray)_loadItemInfoForItem:(id)anItem intermediate:(BOOL)isIntermediate
+{
+    if (!anItem)
+    {
+        var itemInfo = _rootItemInfo;
+    }
+    else
+    {
+        // Get the existing info if it exists.
+        var itemUID = [anItem UID],
+            itemInfo = _itemInfosForItems[itemUID];
+
+        // If we're not in the tree, then just bail.
+        if (!itemInfo)
+            return [];
+
+        itemInfo.isExpandable = [_outlineViewDataSource outlineView:self isItemExpandable:anItem];
+        itemInfo.shouldShowOutlineDisclosureControl = [self _sendDelegateShouldShowOutlineDisclosureControlForItem:anItem];
+
+        // If we were previously expanded, but now no longer expandable, "de-expand".
+        // NOTE: we are *not* collapsing, thus no notification is posted.
+        if (!itemInfo.isExpandable && itemInfo.isExpanded)
+        {
+            itemInfo.isExpanded = NO;
+            itemInfo.children = [];
+        }
+    }
+
+    // The root item does not count as a descendant.
+    var weight = itemInfo.weight,
+        descendants = anItem ? [anItem] : [];
+
+    [_itemAddedDuringLastLoading addObject:anItem];
+
+    if (itemInfo.isExpanded && [self _sendDataSourceShouldDeferDisplayingChildrenOfItem:anItem])
+    {
+        var index = 0,
+            count = [_outlineViewDataSource outlineView:self numberOfChildrenOfItem:anItem],
+            level = itemInfo.level + 1,
+            previousChildren = itemInfo.children;
+
+        itemInfo.children = [];
+
+        for (; index < count; ++index)
+        {
+            var childItem = [_outlineViewDataSource outlineView:self child:index ofItem:anItem],
+                childItemInfo = _itemInfosForItems[[childItem UID]];
+
+            if (!childItemInfo)
+            {
+                childItemInfo = { isExpanded:NO, isExpandable:NO, shouldShowOutlineDisclosureControl:YES, children:[], weight:1 };
+                _itemInfosForItems[[childItem UID]] = childItemInfo;
+            }
+
+            itemInfo.children[index] = childItem;
+
+            var childDescendants = [self _loadItemInfoForItem:childItem intermediate:YES];
+
+            childItemInfo.parent = anItem;
+            childItemInfo.level = level;
+            descendants = descendants.concat(childDescendants);
+        }
+
+        // Here we clean the itemInfos dictionary
+        // Some items could have been removed at this point, we don't need to keep a ref of them anymore
+        [self _addPendingItemsFromPreviousItems:previousChildren forItemInfo:itemInfo];
+    }
+
+    itemInfo.weight = descendants.length;
+
+    if (!isIntermediate)
+    {
+        // row = -1 is the root item, so just go to row 0 since it is ignored.
+        var index = MAX(itemInfo.row, 0);
+
+        descendants.unshift(index, weight);
+
+        _itemsForRows.splice.apply(_itemsForRows, descendants);
+
+        var count = _itemsForRows.length;
+
+        for (; index < count; ++index)
+            _itemInfosForItems[[_itemsForRows[index] UID]].row = index;
+
+        var deltaWeight = itemInfo.weight - weight;
+
+        if (deltaWeight !== 0)
+        {
+            var parent = itemInfo.parent;
+
+            while (parent)
+            {
+                var parentItemInfo = _itemInfosForItems[[parent UID]];
+
+                parentItemInfo.weight += deltaWeight;
+                parent = parentItemInfo.parent;
+            }
+
+            if (anItem)
+                _rootItemInfo.weight += deltaWeight;
+        }
+    }
+
+    return descendants;
 }
 
 /*!
@@ -564,39 +895,6 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 - (CPTableColumn)outlineTableColumn
 {
     return _outlineTableColumn;
-}
-
-/*!
-    Returns the indentation level of a given item. If the item is nil (the top
-    level root item) CPNotFound is returned. Indentation levels are zero
-    based, thus items that are not indented return 0.
-
-    @param anItem - The item you want the indentation level for.
-    @return int - the indentation level of anItem.
-*/
-- (CPInteger)levelForItem:(id)anItem
-{
-    if (!anItem)
-        return _rootItemInfo.level;
-
-    var itemInfo = _itemInfosForItems[[anItem UID]];
-
-    if (!itemInfo)
-        return CPNotFound;
-
-    return itemInfo.level;
-}
-
-/*!
-    Returns the indentation level for a given row. If the row is invalid
-    CPNotFound is returned. Rows that are not indented return 0.
-
-    @param aRow - the row of the receiver
-    @return int - the indentation level of aRow.
-*/
-- (CPInteger)levelForRow:(CPInteger)aRow
-{
-    return [self levelForItem:[self itemAtRow:aRow]];
 }
 
 /*!
@@ -709,6 +1007,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 - (CGRect)frameOfOutlineDisclosureControlAtRow:(CPInteger)aRow
 {
     var theItem = [self itemAtRow:aRow];
+
     if (![self isExpandable:theItem] || ![self _shouldShowOutlineDisclosureControlForItem:theItem])
         return CGRectMakeZero();
 
@@ -818,7 +1117,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     @code - (int)outlineView:(CPOutlineView)outlineView heightOfRowByItem:(id)anItem; @endcode
 
 */
-- (void)setDelegate:(id)aDelegate
+- (void)setDelegate:(id <CPOutlineViewDelegate>)aDelegate
 {
     if (_outlineViewDelegate === aDelegate)
         return;
@@ -904,6 +1203,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
             CPOutlineViewDelegate_outlineView_typeSelectStringForTableColumn_item_               , @selector(outlineView:typeSelectStringForTableColumn:item:),
             CPOutlineViewDelegate_outlineView_willDisplayOutlineView_forTableColumn_item_        , @selector(outlineView:willDisplayOutlineView:forTableColumn:item:),
             CPOutlineViewDelegate_outlineView_willDisplayView_forTableColumn_item_               , @selector(outlineView:willDisplayView:forTableColumn:item:),
+            CPOutlineViewDelegate_outlineView_willRemoveView_forTableColumn_item_                , @selector(outlineView:willRemoveView:forTableColumn:item:),
             CPOutlineViewDelegate_selectionShouldChangeInOutlineView_                            , @selector(selectionShouldChangeInOutlineView:),
             CPOutlineViewDelegate_outlineView_menuForTableColumn_item_                           , @selector(outlineView:menuForTableColumn:item:)
         ],
@@ -978,17 +1278,6 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
     if ([self _delegateRespondsToDataViewForTableColumn])
         CPLog.warn("outlineView:dataViewForTableColumn:item: is deprecated. You should use -outlineView:viewForTableColumn:item: where you can request the view with -makeViewWithIdentifier:owner:");
-}
-
-- (BOOL)_sendDelegateDeleteKeyPressed
-{
-    if ([[self delegate] respondsToSelector: @selector(outlineViewDeleteKeyPressed:)])
-    {
-        [[self delegate] outlineViewDeleteKeyPressed:self];
-        return YES;
-    }
-
-    return NO;
 }
 
 /*!
@@ -1070,7 +1359,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     @ignore
     We need to offset the dataview and add the disclosure triangle.
 */
-- (CPView)_dragViewForColumn:(int)theColumnIndex event:(CPEvent)theDragEvent offset:(CGPoint)theDragViewOffset
+- (CPView)_dragViewForColumn:(CPInteger)theColumnIndex event:(CPEvent)theDragEvent offset:(CGPoint)theDragViewOffset
 {
     var dragView = [[_CPColumnDragView alloc] initWithLineColor:[self gridColor]],
         tableColumn = [[self tableColumns] objectAtIndex:theColumnIndex],
@@ -1203,7 +1492,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 /*!
     @ignore
 */
-- (id)_parentItemForUpperRow:(int)theUpperRowIndex andLowerRow:(int)theLowerRowIndex atMouseOffset:(CGPoint)theOffset
+- (id)_parentItemForUpperRow:(CPInteger)theUpperRowIndex andLowerRow:(CPInteger)theLowerRowIndex atMouseOffset:(CGPoint)theOffset
 {
     if (_shouldRetargetItem)
         return _retargetedItem;
@@ -1233,7 +1522,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 /*!
     @ignore
 */
-- (CGRect)_rectForDropHighlightViewBetweenUpperRow:(int)theUpperRowIndex andLowerRow:(int)theLowerRowIndex offset:(CGPoint)theOffset
+- (CGRect)_rectForDropHighlightViewBetweenUpperRow:(CPInteger)theUpperRowIndex andLowerRow:(CPInteger)theLowerRowIndex offset:(CGPoint)theOffset
 {
     // Call super and the update x to reflect the current indentation level
     var rect = [super _rectForDropHighlightViewBetweenUpperRow:theUpperRowIndex andLowerRow:theLowerRowIndex offset:theOffset],
@@ -1549,12 +1838,39 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     [super keyDown:anEvent];
 }
 
-- (CPView)_viewForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow
+- (BOOL)_sendDelegateDeleteKeyPressed
+{
+    if ([[self delegate] respondsToSelector: @selector(outlineViewDeleteKeyPressed:)])
+    {
+        [[self delegate] outlineViewDeleteKeyPressed:self];
+        return YES;
+    }
+
+    return NO;
+}
+
+- (BOOL)_sendDelegateShouldShowOutlineDisclosureControlForItem:(id)anItem
+{
+    if (!(_implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_shouldShowOutlineDisclosureControlForItem_))
+        return YES;
+
+    return [_outlineViewDelegate outlineView:self shouldShowOutlineDisclosureControlForItem:anItem];
+}
+
+- (BOOL)_sendDataSourceShouldDeferDisplayingChildrenOfItem:(id)anItem
+{
+    if (!(_implementedOutlineViewDataSourceMethods & CPOutlineViewDataSource_outlineView_shouldDeferDisplayingChildrenOfItem_))
+        return YES;
+
+    return [_outlineViewDataSource outlineView:self shouldDeferDisplayingChildrenOfItem:anItem];
+}
+
+- (CPView)_sendDelegateViewForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow
 {
     return [_outlineViewDelegate outlineView:self viewForTableColumn:aTableColumn item:[self itemAtRow:aRow]];
 }
 
-- (CPView)_dataViewForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow
+- (CPView)_sendDelegateDataViewForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow
 {
     return [_outlineViewDelegate outlineView:self dataViewForTableColumn:aTableColumn item:[self itemAtRow:aRow]];
 }
@@ -1574,153 +1890,35 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     return _implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_;
 }
 
+- (BOOL)_delegateRespondsToShouldExpandItem
+{
+    return _implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_shouldExpandItem_;
+}
+
+- (BOOL)_delegateRespondsToShouldCollapseItem
+{
+    return _implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_shouldCollapseItem_;
+}
+
+/*!
+    @ignore
+    Return YES if the delegate implements outlineView:selectionIndexesForProposedSelection
+*/
+- (BOOL)_delegateRespondsToSelectionIndexesForProposedSelection
+{
+    return _implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_selectionIndexesForProposedSelection_;
+}
+
+/*!
+    @ignore
+    Return YES if the delegate implements outlineView:shouldSelectItem:
+*/
+- (BOOL)_delegateRespondsToShouldSelectRow
+{
+    return _implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_shouldSelectItem_;
+}
+
 @end
-
-// FIX ME: We're using with() here because Safari fails if we use anOutlineView._itemInfosForItems or whatever...
-var _reloadItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anItem)
-{
-    if (!anItem)
-        return;
-
-    with (anOutlineView)
-    {
-        // Get the existing info if it exists.
-        var itemInfosForItems = _itemInfosForItems,
-            dataSource = _outlineViewDataSource,
-            itemUID = [anItem UID],
-            itemInfo = itemInfosForItems[itemUID];
-
-        // If we're not in the tree, then just bail.
-        if (!itemInfo)
-            return [];
-
-        // See if the item itself can be swapped out.
-        var parent = itemInfo.parent,
-            parentItemInfo = parent ? itemInfosForItems[[parent UID]] : _rootItemInfo,
-            parentChildren = parentItemInfo.children,
-            index = [parentChildren indexOfObjectIdenticalTo:anItem],
-            newItem = [dataSource outlineView:anOutlineView child:index ofItem:parent];
-
-        if (anItem !== newItem)
-        {
-            itemInfosForItems[[anItem UID]] = nil;
-            itemInfosForItems[[newItem UID]] = itemInfo;
-
-            parentChildren[index] = newItem;
-            _itemsForRows[itemInfo.row] = newItem;
-        }
-
-        itemInfo.isExpandable = [dataSource outlineView:anOutlineView isItemExpandable:newItem];
-        itemInfo.isExpanded = itemInfo.isExpandable && itemInfo.isExpanded;
-        itemInfo.shouldShowOutlineDisclosureControl = !(_implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_shouldShowOutlineDisclosureControlForItem_) || [_outlineViewDelegate outlineView:self shouldShowOutlineDisclosureControlForItem:newItem];
-    }
-};
-
-// FIX ME: We're using with() here because Safari fails if we use anOutlineView._itemInfosForItems or whatever...
-var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anItem,  /*BOOL*/ isIntermediate)
-{
-    with (anOutlineView)
-    {
-        var itemInfosForItems = _itemInfosForItems,
-            dataSource = _outlineViewDataSource;
-
-        if (!anItem)
-            var itemInfo = _rootItemInfo;
-
-        else
-        {
-            // Get the existing info if it exists.
-            var itemUID = [anItem UID],
-                itemInfo = itemInfosForItems[itemUID];
-
-            // If we're not in the tree, then just bail.
-            if (!itemInfo)
-                return [];
-
-            itemInfo.isExpandable = [dataSource outlineView:anOutlineView isItemExpandable:anItem];
-            itemInfo.shouldShowOutlineDisclosureControl = !(_implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_shouldShowOutlineDisclosureControlForItem_) || [_outlineViewDelegate outlineView:self shouldShowOutlineDisclosureControlForItem:anItem];
-
-            // If we were previously expanded, but now no longer expandable, "de-expand".
-            // NOTE: we are *not* collapsing, thus no notification is posted.
-            if (!itemInfo.isExpandable && itemInfo.isExpanded)
-            {
-                itemInfo.isExpanded = NO;
-                itemInfo.children = [];
-            }
-        }
-
-        // The root item does not count as a descendant.
-        var weight = itemInfo.weight,
-            descendants = anItem ? [anItem] : [];
-
-        if (itemInfo.isExpanded && (!(_implementedOutlineViewDataSourceMethods & CPOutlineViewDataSource_outlineView_shouldDeferDisplayingChildrenOfItem_) ||
-            ![dataSource outlineView:anOutlineView shouldDeferDisplayingChildrenOfItem:anItem]))
-        {
-            var index = 0,
-                count = [dataSource outlineView:anOutlineView numberOfChildrenOfItem:anItem],
-                level = itemInfo.level + 1;
-
-            itemInfo.children = [];
-
-            for (; index < count; ++index)
-            {
-                var childItem = [dataSource outlineView:anOutlineView child:index ofItem:anItem],
-                    childItemInfo = itemInfosForItems[[childItem UID]];
-
-                if (!childItemInfo)
-                {
-                    childItemInfo = { isExpanded:NO, isExpandable:NO, shouldShowOutlineDisclosureControl:YES, children:[], weight:1 };
-                    itemInfosForItems[[childItem UID]] = childItemInfo;
-                }
-
-                itemInfo.children[index] = childItem;
-
-                var childDescendants = _loadItemInfoForItem(anOutlineView, childItem, YES);
-
-                childItemInfo.parent = anItem;
-                childItemInfo.level = level;
-                descendants = descendants.concat(childDescendants);
-            }
-        }
-
-        itemInfo.weight = descendants.length;
-
-        if (!isIntermediate)
-        {
-            // row = -1 is the root item, so just go to row 0 since it is ignored.
-            var index = MAX(itemInfo.row, 0),
-                itemsForRows = _itemsForRows;
-
-            descendants.unshift(index, weight);
-
-            itemsForRows.splice.apply(itemsForRows, descendants);
-
-            var count = itemsForRows.length;
-
-            for (; index < count; ++index)
-                itemInfosForItems[[itemsForRows[index] UID]].row = index;
-
-            var deltaWeight = itemInfo.weight - weight;
-
-            if (deltaWeight !== 0)
-            {
-                var parent = itemInfo.parent;
-
-                while (parent)
-                {
-                    var parentItemInfo = itemInfosForItems[[parent UID]];
-
-                    parentItemInfo.weight += deltaWeight;
-                    parent = parentItemInfo.parent;
-                }
-
-                if (anItem)
-                    _rootItemInfo.weight += deltaWeight;
-            }
-        }
-    }//end of with
-    return descendants;
-};
 
 @implementation _CPOutlineViewTableViewDataSource : CPObject
 {
@@ -1771,7 +1969,7 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     return [_outlineView._outlineViewDataSource outlineView:_outlineView writeItems:items toPasteboard:thePasteboard];
 }
 
-- (int)_childIndexForDropOperation:(CPTableViewDropOperation)theDropOperation row:(int)theRow offset:(CGPoint)theOffset
+- (int)_childIndexForDropOperation:(CPTableViewDropOperation)theDropOperation row:(CPInteger)theRow offset:(CGPoint)theOffset
 {
     if (_outlineView._shouldRetargetChildIndex)
         return _outlineView._retargedChildIndex;
@@ -1795,7 +1993,7 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     return childIndex;
 }
 
-- (void)_parentItemForDropOperation:(CPTableViewDropOperation)theDropOperation row:(int)theRow offset:(CGPoint)theOffset
+- (void)_parentItemForDropOperation:(CPTableViewDropOperation)theDropOperation row:(CPInteger)theRow offset:(CGPoint)theOffset
 {
     if (theDropOperation === CPTableViewDropAbove)
         return [_outlineView _parentItemForUpperRow:theRow - 1 andLowerRow:theRow atMouseOffset:theOffset]
@@ -1803,8 +2001,8 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     return [_outlineView itemAtRow:theRow];
 }
 
-- (CPDragOperation)tableView:(CPTableView)aTableView validateDrop:(id < CPDraggingInfo >)theInfo
-    proposedRow:(int)theRow proposedDropOperation:(CPTableViewDropOperation)theOperation
+- (CPDragOperation)tableView:(CPTableView)aTableView validateDrop:(id /*< CPDraggingInfo >*/)theInfo
+    proposedRow:(CPInteger)theRow proposedDropOperation:(CPTableViewDropOperation)theOperation
 {
     if (!(_outlineView._implementedOutlineViewDataSourceMethods & CPOutlineViewDataSource_outlineView_validateDrop_proposedItem_proposedChildIndex_))
         return CPDragOperationNone;
@@ -1823,7 +2021,7 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     return [_outlineView._outlineViewDataSource outlineView:_outlineView validateDrop:theInfo proposedItem:parentItem proposedChildIndex:childIndex];
 }
 
-- (BOOL)tableView:(CPTableView)aTableView acceptDrop:(id <CPDraggingInfo>)theInfo row:(int)theRow dropOperation:(CPTableViewDropOperation)theOperation
+- (BOOL)tableView:(CPTableView)aTableView acceptDrop:(id /*<CPDraggingInfo>*/)theInfo row:(CPInteger)theRow dropOperation:(CPTableViewDropOperation)theOperation
 {
     if (!(_outlineView._implementedOutlineViewDataSourceMethods & CPOutlineViewDataSource_outlineView_acceptDrop_item_childIndex_))
         return NO;
@@ -1867,7 +2065,7 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     return self;
 }
 
-- (BOOL)tableView:(CPTableView)theTableView shouldSelectRow:(int)theRow
+- (BOOL)tableView:(CPTableView)theTableView shouldSelectRow:(CPInteger)theRow
 {
     return SHOULD_SELECT_ITEM(_outlineView, [_outlineView itemAtRow:theRow]);
 }
@@ -1877,7 +2075,7 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     return SELECTION_SHOULD_CHANGE(_outlineView);
 }
 
-- (BOOL)tableView:(CPTableView)aTableView shouldEditTableColumn:(CPTableColumn)aColumn row:(int)aRow
+- (BOOL)tableView:(CPTableView)aTableView shouldEditTableColumn:(CPTableColumn)aColumn row:(CPInteger)aRow
 {
     if ((_outlineView._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_shouldEditTableColumn_item_))
         return [_outlineView._outlineViewDelegate outlineView:_outlineView shouldEditTableColumn:aColumn item:[_outlineView itemAtRow:aRow]];
@@ -1885,7 +2083,7 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     return NO;
 }
 
-- (float)tableView:(CPTableView)theTableView heightOfRow:(int)theRow
+- (float)tableView:(CPTableView)theTableView heightOfRow:(CPInteger)theRow
 {
     if ((_outlineView._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_heightOfRowByItem_))
         return [_outlineView._outlineViewDelegate outlineView:_outlineView heightOfRowByItem:[_outlineView itemAtRow:theRow]];
@@ -1893,7 +2091,7 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     return [theTableView rowHeight];
 }
 
-- (void)tableView:(CPTableView)aTableView willDisplayView:(id)aView forTableColumn:(CPTableColumn)aTableColumn row:(int)aRowIndex
+- (void)tableView:(CPTableView)aTableView willDisplayView:(id)aView forTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRowIndex
 {
     if ((_outlineView._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_willDisplayView_forTableColumn_item_))
     {
@@ -1902,7 +2100,16 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     }
 }
 
-- (BOOL)tableView:(CPTableView)aTableView isGroupRow:(int)aRow
+- (void)tableView:(CPTableView)aTableView willRemoveView:(id)aView forTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRowIndex
+{
+    if ((_outlineView._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_willRemoveView_forTableColumn_item_))
+    {
+        var item = [_outlineView itemAtRow:aRowIndex];
+        [_outlineView._outlineViewDelegate outlineView:_outlineView willRemoveView:aView forTableColumn:aTableColumn item:item];
+    }
+}
+
+- (BOOL)tableView:(CPTableView)aTableView isGroupRow:(CPInteger)aRow
 {
     if ((_outlineView._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_isGroupItem_))
         return [_outlineView._outlineViewDelegate outlineView:_outlineView isGroupItem:[_outlineView itemAtRow:aRow]];
@@ -1910,7 +2117,7 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     return NO;
 }
 
-- (CPMenu)tableView:(CPTableView)aTableView menuForTableColumn:(CPTableColumn)aTableColumn row:(int)aRow
+- (CPMenu)tableView:(CPTableView)aTableView menuForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow
 {
     if ((_outlineView._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_menuForTableColumn_item_))
     {
@@ -1921,6 +2128,22 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     // We reimplement CPView menuForEvent: because we can't call it directly. CPTableView implements menuForEvent:
     // to call this delegate method.
     return [_outlineView menu] || [[_outlineView class] defaultMenu];
+}
+
+- (CPIndexSet)tableView:(CPTableView)aTableView selectionIndexesForProposedSelection:(CPIndexSet)anIndexSet
+{
+    if ((_outlineView._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_selectionIndexesForProposedSelection_))
+        return [_outlineView._outlineViewDelegate outlineView:_outlineView selectionIndexesForProposedSelection:anIndexSet];
+
+    return anIndexSet;
+}
+
+- (BOOL)tableView:(CPTableView)aTableView shouldSelectTableColumn:(CPTableColumn)aTableColumn
+{
+    if ((_outlineView._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_shouldSelectTableColumn_))
+        return [_outlineView._outlineViewDelegate outlineView:_outlineView shouldSelectTableColumn:aTableColumn];
+
+    return YES;
 }
 
 @end
@@ -1940,7 +2163,7 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     return self;
 }
 
-- (void)setState:(CPState)aState
+- (void)setState:(CPInteger)aState
 {
     [super setState:aState];
 

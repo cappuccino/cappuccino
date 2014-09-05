@@ -199,6 +199,11 @@ var CPViewFlags                     = { },
 
     _CPViewFullScreenModeState  _fullScreenModeState;
 
+    // Zoom Support
+    BOOL                _isScaled;
+    CGSize              _hierarchyScaleSize;
+    CGSize              _scaleSize;
+
     // Layout Support
     BOOL                _needsLayout;
     JSObject            _ephemeralSubviews;
@@ -334,6 +339,13 @@ var CPViewFlags                     = { },
         _isHidden = NO;
         _hitTests = YES;
 
+        _hierarchyScaleSize = CGSizeMake(1.0 , 1.0);
+        _scaleSize = CGSizeMake(1.0, 1.0);
+        _isScaled = NO;
+
+        _theme = [CPTheme defaultTheme];
+        _themeState = CPThemeStateNormal;
+
 #if PLATFORM(DOM)
         _DOMElement = DOMElementPrototype.cloneNode(false);
         AppKitTagDOMElement(self, _DOMElement);
@@ -344,9 +356,6 @@ var CPViewFlags                     = { },
         _DOMImageParts = [];
         _DOMImageSizes = [];
 #endif
-
-        _theme = [CPTheme defaultTheme];
-        _themeState = CPThemeStateNormal;
 
         [self _setupToolTipHandlers];
         [self _setupViewFlags];
@@ -561,11 +570,27 @@ var CPViewFlags                     = { },
     }
 
     [aSubview setNextResponder:self];
+    [aSubview _scaleSizeUnitSquareToSize:[self _hierarchyScaleSize]];
 
     // If the subview is not hidden and one of its ancestors is hidden,
     // notify the subview that it is now hidden.
     if (![aSubview isHidden] && [self isHiddenOrHasHiddenAncestor])
         [aSubview _notifyViewDidHide];
+
+    // This method might be called before we are fully unarchived, in which case the theme state isn't set up yet
+    // and none of the below matters anyhow.
+    if (_themeState)
+    {
+        if ([self hasThemeState:CPThemeStateFirstResponder])
+            [aSubview _notifyViewDidBecomeFirstResponder];
+        else
+            [aSubview _notifyViewDidResignFirstResponder];
+
+        if ([self hasThemeState:CPThemeStateKeyWindow])
+            [aSubview _notifyWindowDidBecomeKey];
+        else
+            [aSubview _notifyWindowDidResignKey];
+    }
 
     [aSubview viewDidMoveToSuperview];
 
@@ -604,6 +629,9 @@ var CPViewFlags                     = { },
     // notify the view that it is now unhidden.
     if (!_isHidden && [_superview isHiddenOrHasHiddenAncestor])
         [self _notifyViewDidUnhide];
+
+    [self _notifyWindowDidResignKey];
+    [self _notifyViewDidResignFirstResponder];
 
     _superview = nil;
 
@@ -725,6 +753,11 @@ var CPViewFlags                     = { },
 
     while (count--)
         [_subviews[count] _setWindow:aWindow];
+
+    if ([_window isKeyWindow])
+        [self setThemeState:CPThemeStateKeyWindow];
+    else
+        [self unsetThemeState:CPThemeStateKeyWindow];
 
     [self viewDidMoveToWindow];
 
@@ -960,8 +993,8 @@ var CPViewFlags                     = { },
 
     if (YES)
     {
-        _bounds.size.width = aSize.width;
-        _bounds.size.height = aSize.height;
+        _bounds.size.width = aSize.width * 1 / _scaleSize.width;
+        _bounds.size.height = aSize.height * 1 / _scaleSize.height;
     }
 
     if (_layer)
@@ -974,7 +1007,7 @@ var CPViewFlags                     = { },
     [self setNeedsDisplay:YES];
 
 #if PLATFORM(DOM)
-    CPDOMDisplayServerSetStyleSize(_DOMElement, size.width, size.height);
+    [self _setDisplayServerSetStyleSize:size];
 
     if (_DOMContentsElement)
     {
@@ -991,7 +1024,8 @@ var CPViewFlags                     = { },
         else
         {
             var images = [[_backgroundColor patternImage] imageSlices],
-                partIndex = 0;
+                partIndex = 0,
+                frameSize = aSize;
 
             if (_backgroundType === BackgroundVerticalThreePartImage)
             {
@@ -1001,16 +1035,21 @@ var CPViewFlags                     = { },
                 // Make sure to repeat the top and bottom pieces horizontally if they're not the exact width needed.
                 if (top)
                 {
+                    CPDomDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], frameSize.width + "px", top + "px");
                     CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], size.width, top);
                     partIndex++;
                 }
                 if (_DOMImageSizes[1])
                 {
+                    var height = frameSize.height - top - bottom;
+
+                    CPDomDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], frameSize.width + "px", height + "px");
                     CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], size.width, size.height - top - bottom);
                     partIndex++;
                 }
                 if (bottom)
                 {
+                    CPDomDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], frameSize.width + "px", bottom + "px");
                     CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], size.width, bottom);
                 }
             }
@@ -1022,16 +1061,21 @@ var CPViewFlags                     = { },
                 // Make sure to repeat the left and right pieces vertically if they're not the exact height needed.
                 if (left)
                 {
+                    CPDomDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], left + "px", frameSize.height + "px");
                     CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], left, size.height);
                     partIndex++;
                 }
                 if (_DOMImageSizes[1])
                 {
+                    var width = (frameSize.width - left - right);
+
+                    CPDomDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], width + "px", frameSize.height + "px");
                     CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], size.width - left - right, size.height);
                     partIndex++;
                 }
                 if (right)
                 {
+                    CPDomDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], right + "px", frameSize.height + "px");
                     CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], right, size.height);
                 }
             }
@@ -1081,6 +1125,19 @@ var CPViewFlags                     = { },
 
     if (_postsFrameChangedNotifications && !_inhibitFrameAndBoundsChangedNotifications)
         [CachedNotificationCenter postNotificationName:CPViewFrameDidChangeNotification object:self];
+}
+
+/*!
+    This method is used to set the width and height of the _DOMElement. It cares about the scale of the view.
+    When scaling, for instance with a size (0.5, 0.5), the bounds of the view will be multiply by 2. It's why we multiply by the inverse of the scaling.
+    The view will finally keep the same proportion for the user on the screen.
+*/
+- (void)_setDisplayServerSetStyleSize:(CGSize)aSize
+{
+#if PLATFORM(DOM)
+    var scale = [self scaleSize];
+    CPDOMDisplayServerSetStyleSize(_DOMElement, aSize.width * 1 / scale.width, aSize.height * 1 / scale.height);
+#endif
 }
 
 /*!
@@ -1580,15 +1637,42 @@ var CPViewFlags                     = { },
 */
 - (CPView)hitTest:(CGPoint)aPoint
 {
-    if (_isHidden || !_hitTests || !CGRectContainsPoint(_frame, aPoint))
+    if (_isHidden || !_hitTests)
+        return nil;
+
+    var frame = _frame,
+        sizeScale = [self _hierarchyScaleSize];
+
+    if (_isScaled)
+        frame = CGRectApplyAffineTransform(_frame, CGAffineTransformMakeScale([_superview _hierarchyScaleSize].width, [_superview _hierarchyScaleSize].height));
+    else
+        frame = CGRectApplyAffineTransform(_frame, CGAffineTransformMakeScale(sizeScale.width, sizeScale.height));
+
+    if (!CGRectContainsPoint(frame, aPoint))
         return nil;
 
     var view = nil,
         i = _subviews.length,
-        adjustedPoint = CGPointMake(aPoint.x - CGRectGetMinX(_frame), aPoint.y - CGRectGetMinY(_frame));
+        adjustedPoint = CGPointMake(aPoint.x - CGRectGetMinX(frame), aPoint.y - CGRectGetMinY(frame));
 
     if (_inverseBoundsTransform)
-        adjustedPoint = CGPointApplyAffineTransform(adjustedPoint, _inverseBoundsTransform);
+    {
+        var affineTransform = CGAffineTransformMakeCopy(_inverseBoundsTransform);
+
+        if (_isScaled)
+        {
+            affineTransform.tx *= [_superview _hierarchyScaleSize].width;
+            affineTransform.ty *= [_superview _hierarchyScaleSize].height;
+        }
+        else
+        {
+            affineTransform.tx *= sizeScale.width;
+            affineTransform.ty *= sizeScale.height;
+        }
+
+        adjustedPoint = CGPointApplyAffineTransform(adjustedPoint, affineTransform);
+    }
+
 
     while (i--)
         if (view = [_subviews[i] hitTest:adjustedPoint])
@@ -1732,6 +1816,9 @@ var CPViewFlags                     = { },
             _DOMElement.style.background = "";
             _DOMImageParts[0].style.background = [_backgroundColor cssString];
 
+            if (patternImage)
+                CPDomDisplayServerSetStyleBackgroundSize(_DOMImageParts[0], [patternImage size].width + "px", [patternImage size].height + "px");
+
             if (CPFeatureIsCompatible(CPOpacityRequiresFilterFeature))
                 _DOMImageParts[0].style.filter = "alpha(opacity=" + [_backgroundColor alphaComponent] * 100 + ")";
             else
@@ -1742,6 +1829,9 @@ var CPViewFlags                     = { },
         }
         else
             _DOMElement.style.background = colorCSS;
+
+            if (patternImage)
+                CPDomDisplayServerSetStyleBackgroundSize(_DOMElement, [patternImage size].width + "px", [patternImage size].height + "px");
     }
     else
     {
@@ -1846,18 +1936,24 @@ var CPViewFlags                     = { },
             // Make sure to repeat the top and bottom pieces horizontally if they're not the exact width needed.
             if (top)
             {
+                CPDomDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], frameSize.width + "px", top + "px");
                 CPDOMDisplayServerSetStyleLeftTop(_DOMImageParts[partIndex], NULL, 0.0, 0.0);
                 CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], frameSize.width, top);
                 partIndex++;
             }
             if (_DOMImageSizes[1])
             {
+                var height = frameSize.height - top - bottom;
+
+                //_DOMImageParts[partIndex].style.backgroundSize =  frameSize.width + "px " + height + "px";
+                CPDomDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], frameSize.width + "px", height + "px");
                 CPDOMDisplayServerSetStyleLeftTop(_DOMImageParts[partIndex], NULL, 0.0, top);
-                CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], frameSize.width, frameSize.height - top - bottom);
+                CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], frameSize.width, height);
                 partIndex++;
             }
             if (bottom)
             {
+                CPDomDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], frameSize.width + "px", bottom + "px");
                 CPDOMDisplayServerSetStyleLeftBottom(_DOMImageParts[partIndex], NULL, 0.0, 0.0);
                 CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], frameSize.width, bottom);
             }
@@ -1872,18 +1968,23 @@ var CPViewFlags                     = { },
             // Make sure to repeat the left and right pieces vertically if they're not the exact height needed.
             if (left)
             {
+                CPDomDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], left + "px", frameSize.height + "px");
                 CPDOMDisplayServerSetStyleLeftTop(_DOMImageParts[partIndex], NULL, 0.0, 0.0);
                 CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], left, frameSize.height);
                 partIndex++;
             }
             if (_DOMImageSizes[1])
             {
+                var width = (frameSize.width - left - right);
+
+                CPDomDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], width + "px", frameSize.height + "px");
                 CPDOMDisplayServerSetStyleLeftTop(_DOMImageParts[partIndex], NULL, left, 0.0);
-                CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], frameSize.width - left - right, frameSize.height);
+                CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], width, frameSize.height);
                 partIndex++;
             }
             if (right)
             {
+                CPDomDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], right + "px", frameSize.height + "px");
                 CPDOMDisplayServerSetStyleRightTop(_DOMImageParts[partIndex], NULL, 0.0, 0.0);
                 CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], right, frameSize.height);
             }
@@ -1909,6 +2010,9 @@ var CPViewFlags                     = { },
 */
 - (CGPoint)convertPoint:(CGPoint)aPoint fromView:(CPView)aView
 {
+    if (aView === self)
+        return aPoint;
+
     return CGPointApplyAffineTransform(aPoint, _CPViewGetTransform(aView, self));
 }
 
@@ -1919,7 +2023,7 @@ var CPViewFlags                     = { },
 */
 - (CGPoint)convertPointFromBase:(CGPoint)aPoint
 {
-    return CGPointApplyAffineTransform(aPoint, _CPViewGetTransform(nil, self));
+    return [self convertPoint:aPoint fromView:nil];
 }
 
 /*!
@@ -1930,8 +2034,12 @@ var CPViewFlags                     = { },
 */
 - (CGPoint)convertPoint:(CGPoint)aPoint toView:(CPView)aView
 {
+    if (aView === self)
+        return aPoint;
+
     return CGPointApplyAffineTransform(aPoint, _CPViewGetTransform(self, aView));
 }
+
 
 /*!
     Converts the point from the receiver’s coordinate system to the base coordinate system.
@@ -1940,7 +2048,7 @@ var CPViewFlags                     = { },
 */
 - (CGPoint)convertPointToBase:(CGPoint)aPoint
 {
-    return CGPointApplyAffineTransform(aPoint, _CPViewGetTransform(self, nil));
+    return [self convertPoint:aPoint toView:nil];
 }
 
 /*!
@@ -1951,6 +2059,9 @@ var CPViewFlags                     = { },
 */
 - (CGSize)convertSize:(CGSize)aSize fromView:(CPView)aView
 {
+    if (aView === self)
+        return aSize;
+
     return CGSizeApplyAffineTransform(aSize, _CPViewGetTransform(aView, self));
 }
 
@@ -1962,6 +2073,9 @@ var CPViewFlags                     = { },
 */
 - (CGSize)convertSize:(CGSize)aSize toView:(CPView)aView
 {
+    if (aView === self)
+        return aSize;
+
     return CGSizeApplyAffineTransform(aSize, _CPViewGetTransform(self, aView));
 }
 
@@ -1973,6 +2087,9 @@ var CPViewFlags                     = { },
 */
 - (CGRect)convertRect:(CGRect)aRect fromView:(CPView)aView
 {
+    if (self === aView)
+        return aRect;
+
     return CGRectApplyAffineTransform(aRect, _CPViewGetTransform(aView, self));
 }
 
@@ -1983,7 +2100,7 @@ var CPViewFlags                     = { },
 */
 - (CGRect)convertRectFromBase:(CGRect)aRect
 {
-    return CGRectApplyAffineTransform(aRect, _CPViewGetTransform(nil, self));
+    return [self convertRect:aRect fromView:nil];
 }
 
 /*!
@@ -1994,6 +2111,9 @@ var CPViewFlags                     = { },
 */
 - (CGRect)convertRect:(CGRect)aRect toView:(CPView)aView
 {
+    if (self === aView)
+        return aRect;
+
     return CGRectApplyAffineTransform(aRect, _CPViewGetTransform(self, aView));
 }
 
@@ -2004,7 +2124,7 @@ var CPViewFlags                     = { },
 */
 - (CGRect)convertRectToBase:(CGRect)aRect
 {
-    return CGRectApplyAffineTransform(aRect, _CPViewGetTransform(self, nil));
+    return [self convertRect:aRect toView:nil];
 }
 
 /*!
@@ -2149,6 +2269,88 @@ setBoundsOrigin:
 
 }
 
+// Scaling
+
+/*!
+    Scales the receiver’s coordinate system so that the unit square scales to the specified dimensions.
+    The bounds of the receiver will change, for instance if the given size is (0.5, 0.5) the width and height of the bounds will be multiply by 2.
+    You must call setNeedsDisplay: to redraw the view.
+    @param aSize, the size corresponding the new unit scales
+*/
+- (void)scaleUnitSquareToSize:(CGSize)aSize
+{
+    if (!aSize)
+        return;
+
+    // Reset the bounds
+    var bounds = CGRectMakeCopy([self bounds]);
+    bounds.size.width *= _scaleSize.width;
+    bounds.size.height *= _scaleSize.height;
+
+    [self willChangeValueForKey:@"scaleSize"];
+    _scaleSize = CGSizeMakeCopy([self scaleSize]);
+    _scaleSize.height *= aSize.height;
+    _scaleSize.width *= aSize.width;
+    [self didChangeValueForKey:@"scaleSize"];
+    _isScaled = YES;
+
+    _hierarchyScaleSize = CGSizeMakeCopy([self _hierarchyScaleSize]);
+    _hierarchyScaleSize.height *= aSize.height;
+    _hierarchyScaleSize.width *= aSize.width;
+
+    var scaleAffine = CGAffineTransformMakeScale(1.0 / _scaleSize.width, 1.0 / _scaleSize.height),
+        newBounds = CGRectApplyAffineTransform(CGRectMakeCopy(bounds), scaleAffine);
+
+    [self setBounds:newBounds];
+
+    [_subviews makeObjectsPerformSelector:@selector(_scaleSizeUnitSquareToSize:) withObject:aSize];
+}
+
+/*!
+    @ignore
+    Set the _hierarchyScaleSize and call all of the subviews to set their _hierarchyScaleSize
+*/
+- (void)_scaleSizeUnitSquareToSize:(CGSize)aSize
+{
+    _hierarchyScaleSize = CGSizeMakeCopy([_superview _hierarchyScaleSize]);
+
+    if (_isScaled)
+    {
+         _hierarchyScaleSize.width *= _scaleSize.width;
+         _hierarchyScaleSize.height *= _scaleSize.height;
+    }
+
+    [_subviews makeObjectsPerformSelector:@selector(_scaleSizeUnitSquareToSize:) withObject:aSize];
+}
+
+/*!
+    Return the _hierarchyScaleSize, this is a CGSize with the real zoom of the view (depending with his parents)
+*/
+- (CGSize)_hierarchyScaleSize
+{
+    return _hierarchyScaleSize || CGSizeMake(1.0, 1.0);
+}
+
+/*!
+    Make a zoom in css
+*/
+- (void)_applyCSSScalingTranformations
+{
+#if PLATFORM(DOM)
+    if (_isScaled)
+    {
+        var scale = [self scaleSize],
+            browserPropertyTransform = CPBrowserStyleProperty(@"transform"),
+            browserPropertyTransformOrigin = CPBrowserStyleProperty(@"transformOrigin");
+
+        self._DOMElement.style[browserPropertyTransform] = 'scale(' + scale.width + ', ' + scale.height + ')';
+        self._DOMElement.style[browserPropertyTransformOrigin] = '0 0';
+
+        [self _setDisplayServerSetStyleSize:[self frameSize]];
+    }
+#endif
+}
+
 // Displaying
 
 /*!
@@ -2157,7 +2359,10 @@ setBoundsOrigin:
 - (void)setNeedsDisplay:(BOOL)aFlag
 {
     if (aFlag)
+    {
+        [self _applyCSSScalingTranformations];
         [self setNeedsDisplayInRect:[self bounds]];
+    }
 }
 
 /*!
@@ -2364,7 +2569,7 @@ setBoundsOrigin:
 /*!
     Scrolls the nearest ancestor CPClipView a minimum amount so \c aRect can become visible.
     @param aRect the area to become visible
-    @return <codeYES if any scrolling occurred, \c NO otherwise.
+    @return \c YES if any scrolling occurred, \c NO otherwise.
 */
 - (BOOL)scrollRectToVisible:(CGRect)aRect
 {
@@ -2691,6 +2896,40 @@ setBoundsOrigin:
 
 @end
 
+
+@implementation CPView (Scaling)
+
+/*!
+    Set the zoom of the view. This will call scaleUnitSquareToSize: and setNeedsDisplay:
+    This method doesn't care about the last zoom you set in the view
+    @param aSize, the size corresponding the new unit scales
+*/
+- (void)setScaleSize:(CGSize)aSize
+{
+    if (CGSizeEqualToSize(_scaleSize, aSize))
+        return;
+
+    var size = CGSizeMakeZero(),
+        scale = CGSizeMakeCopy([self scaleSize]);
+
+    size.height = aSize.height / scale.height;
+    size.width = aSize.width / scale.width;
+
+    [self scaleUnitSquareToSize:size];
+    [self setNeedsDisplay:YES];
+}
+
+
+/*!
+    Return the scaleSize of the view, this scaleSize is used to scale in css
+*/
+- (CGSize)scaleSize
+{
+    return _scaleSize || CGSizeMake(1.0, 1.0);
+}
+
+@end
+
 @implementation CPView (Theming)
 #pragma mark Theme States
 
@@ -2699,23 +2938,23 @@ setBoundsOrigin:
     return _themeState;
 }
 
-- (BOOL)hasThemeState:(CPThemeState)aState
+- (BOOL)hasThemeState:(ThemeState)aState
 {
-    // Because CPThemeStateNormal is defined as 0 we need to check for it explicitly here
-    if (aState === CPThemeStateNormal && _themeState === CPThemeStateNormal)
-        return YES;
+    if (aState.isa && [aState isKindOfClass:CPArray])
+        return _themeState.hasThemeState.apply(_themeState, aState);
 
-    return !!(_themeState & ((typeof aState === "string") ? CPThemeState(aState) : aState));
+    return _themeState.hasThemeState(aState);
 }
 
-- (BOOL)setThemeState:(CPThemeState)aState
+- (BOOL)setThemeState:(ThemeState)aState
 {
-    var newState = (typeof aState === "string") ? CPThemeState(aState) : aState;
+    if (aState && aState.isa && [aState isKindOfClass:CPArray])
+        aState = CPThemeState.apply(null, aState);
 
-    if (_themeState & newState)
+    if (_themeState.hasThemeState(aState))
         return NO;
 
-    _themeState |= newState;
+    _themeState = CPThemeState(_themeState, aState);
 
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
@@ -2723,19 +2962,73 @@ setBoundsOrigin:
     return YES;
 }
 
-- (BOOL)unsetThemeState:(CPThemeState)aState
+- (BOOL)unsetThemeState:(ThemeState)aState
 {
-    var newState = ((typeof aState === "string") ? CPThemeState(aState) : aState);
+     if (aState && aState.isa && [aState isKindOfClass:CPArray])
+        aState = CPThemeState.apply(null, aState);
 
-    if (!(_themeState & newState))
+    var oldThemeState = _themeState
+    _themeState = _themeState.without(aState);
+
+    if (oldThemeState === _themeState)
         return NO;
-
-    _themeState &= ~newState;
 
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
 
     return YES;
+}
+
+- (BOOL)becomeFirstResponder
+{
+    var r = [super becomeFirstResponder];
+    if (r)
+        [self _notifyViewDidBecomeFirstResponder];
+    return r;
+}
+
+- (void)_notifyViewDidBecomeFirstResponder
+{
+    [self setThemeState:CPThemeStateFirstResponder];
+
+    var count = [_subviews count];
+    while (count--)
+        [_subviews[count] _notifyViewDidBecomeFirstResponder];
+}
+
+- (BOOL)resignFirstResponder
+{
+    var r = [super resignFirstResponder];
+    if (r)
+        [self _notifyViewDidResignFirstResponder];
+    return r;
+}
+
+- (void)_notifyViewDidResignFirstResponder
+{
+    [self unsetThemeState:CPThemeStateFirstResponder];
+
+    var count = [_subviews count];
+    while (count--)
+        [_subviews[count] _notifyViewDidResignFirstResponder];
+}
+
+- (void)_notifyWindowDidBecomeKey
+{
+    [self setThemeState:CPThemeStateKeyWindow];
+
+    var count = [_subviews count];
+    while (count--)
+        [_subviews[count] _notifyWindowDidBecomeKey];
+}
+
+- (void)_notifyWindowDidResignKey
+{
+    [self unsetThemeState:CPThemeStateKeyWindow];
+
+    var count = [_subviews count];
+    while (count--)
+        [_subviews[count] _notifyWindowDidResignKey];
 }
 
 #pragma mark Theme Attributes
@@ -2889,8 +3182,11 @@ setBoundsOrigin:
     return dictionary;
 }
 
-- (void)setValue:(id)aValue forThemeAttribute:(CPString)aName inState:(CPThemeState)aState
+- (void)setValue:(id)aValue forThemeAttribute:(CPString)aName inState:(ThemeState)aState
 {
+   if (aState.isa && [aState isKindOfClass:CPArray])
+        aState = CPThemeState.apply(null, aState);
+
     if (!_themeAttributes || !_themeAttributes[aName])
         [CPException raise:CPInvalidArgumentException reason:[self className] + " does not contain theme attribute '" + aName + "'"];
 
@@ -2921,8 +3217,11 @@ setBoundsOrigin:
     [self setNeedsLayout];
 }
 
-- (id)valueForThemeAttribute:(CPString)aName inState:(CPThemeState)aState
+- (id)valueForThemeAttribute:(CPString)aName inState:(ThemeState)aState
 {
+   if (aState.isa && [aState isKindOfClass:CPArray])
+        aState = CPThemeState.apply(null, aState);
+
     if (!_themeAttributes || !_themeAttributes[aName])
         [CPException raise:CPInvalidArgumentException reason:[self className] + " does not contain theme attribute '" + aName + "'"];
 
@@ -3069,7 +3368,10 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     CPViewWindowKey                 = @"CPViewWindowKey",
     CPViewNextKeyViewKey            = @"CPViewNextKeyViewKey",
     CPViewPreviousKeyViewKey        = @"CPViewPreviousKeyViewKey",
-    CPReuseIdentifierKey            = @"CPReuseIdentifierKey";
+    CPReuseIdentifierKey            = @"CPReuseIdentifierKey",
+    CPViewScaleKey                  = @"CPViewScaleKey",
+    CPViewSizeScaleKey              = @"CPViewSizeScaleKey",
+    CPViewIsScaledKey               = @"CPViewIsScaledKey";
 
 @implementation CPView (CPCoding)
 
@@ -3136,13 +3438,17 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         if (_toolTip)
             [self _installToolTipEventHandlers];
 
+        _scaleSize = [aCoder containsValueForKey:CPViewScaleKey] ? [aCoder decodeSizeForKey:CPViewScaleKey] : CGSizeMake(1.0, 1.0);
+        _hierarchyScaleSize = [aCoder containsValueForKey:CPViewSizeScaleKey] ? [aCoder decodeSizeForKey:CPViewSizeScaleKey] : CGSizeMake(1.0, 1.0);
+        _isScaled = [aCoder containsValueForKey:CPViewIsScaledKey] ? [aCoder decodeBoolForKey:CPViewIsScaledKey] : NO;
+
         // DOM SETUP
 #if PLATFORM(DOM)
         _DOMImageParts = [];
         _DOMImageSizes = [];
 
         CPDOMDisplayServerSetStyleLeftTop(_DOMElement, NULL, CGRectGetMinX(_frame), CGRectGetMinY(_frame));
-        CPDOMDisplayServerSetStyleSize(_DOMElement, CGRectGetWidth(_frame), CGRectGetHeight(_frame));
+        [self _setDisplayServerSetStyleSize:_frame.size];
 
         var index = 0,
             count = _subviews.length;
@@ -3166,7 +3472,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 
         _theme = [CPTheme defaultTheme];
         _themeClass = [aCoder decodeObjectForKey:CPViewThemeClassKey];
-        _themeState = CPThemeState([aCoder decodeIntForKey:CPViewThemeStateKey]);
+        _themeState = CPThemeState([aCoder decodeObjectForKey:CPViewThemeStateKey]);
         _themeAttributes = {};
 
         var theClass = [self class],
@@ -3257,7 +3563,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         [aCoder encodeConditionalObject:previousKeyView forKey:CPViewPreviousKeyViewKey];
 
     [aCoder encodeObject:[self themeClass] forKey:CPViewThemeClassKey];
-    [aCoder encodeInt:CPThemeStateName(_themeState) forKey:CPViewThemeStateKey];
+    [aCoder encodeObject:String(_themeState) forKey:CPViewThemeStateKey];
 
     for (var attributeName in _themeAttributes)
         if (_themeAttributes.hasOwnProperty(attributeName))
@@ -3265,6 +3571,10 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 
     if (_identifier)
         [aCoder encodeObject:_identifier forKey:CPReuseIdentifierKey];
+
+    [aCoder encodeSize:[self scaleSize] forKey:CPViewScaleKey];
+    [aCoder encodeSize:[self _hierarchyScaleSize] forKey:CPViewSizeScaleKey];
+    [aCoder encodeBool:_isScaled forKey:CPViewIsScaledKey];
 }
 
 @end
@@ -3294,12 +3604,26 @@ var _CPViewGetTransform = function(/*CPView*/ fromView, /*CPView */ toView)
         {
             var frame = view._frame;
 
+            if (view._isScaled)
+            {
+                var affineZoom = CGAffineTransformMakeScale(view._scaleSize.width, view._scaleSize.height);
+                CGAffineTransformConcatTo(transform, affineZoom, transform);
+            }
+
             transform.tx += CGRectGetMinX(frame);
             transform.ty += CGRectGetMinY(frame);
 
             if (view._boundsTransform)
             {
-                CGAffineTransformConcatTo(transform, view._boundsTransform, transform);
+                var inverseBoundsTransform = CGAffineTransformMakeCopy(view._boundsTransform);
+
+                if (view._isScaled)
+                {
+                    var affineZoom = CGAffineTransformMakeScale(view._scaleSize.width, view._scaleSize.height);
+                    CGAffineTransformConcatTo(inverseBoundsTransform, affineZoom, inverseBoundsTransform);
+                }
+
+                CGAffineTransformConcatTo(transform, inverseBoundsTransform, transform);
             }
 
             view = view._superview;
@@ -3307,50 +3631,64 @@ var _CPViewGetTransform = function(/*CPView*/ fromView, /*CPView */ toView)
 
         // If we hit toView, then we're done.
         if (view === toView)
+        {
             return transform;
-
+        }
         else if (fromView && toView)
         {
             fromWindow = [fromView window];
             toWindow = [toView window];
 
             if (fromWindow && toWindow && fromWindow !== toWindow)
-            {
                 sameWindow = NO;
-
-                var frame = [fromWindow frame];
-
-                transform.tx += CGRectGetMinX(frame);
-                transform.ty += CGRectGetMinY(frame);
-            }
         }
     }
 
     // FIXME: For now we can do things this way, but eventually we need to do them the "hard" way.
-    var view = toView;
+    var view = toView,
+        transform2 = CGAffineTransformMakeIdentity();
 
-    while (view)
+    while (view && view != fromView)
     {
-        var frame = view._frame;
+        var frame = CGRectMakeCopy(view._frame);
 
-        transform.tx -= CGRectGetMinX(frame);
-        transform.ty -= CGRectGetMinY(frame);
+        // FIXME : For now we don't care about rotate transform and so on
+        if (view._isScaled)
+        {
+            transform2.a *= 1 / view._scaleSize.width;
+            transform2.d *= 1 / view._scaleSize.height;
+        }
+
+        transform2.tx += CGRectGetMinX(frame) * transform2.a;
+        transform2.ty += CGRectGetMinY(frame) * transform2.d;
 
         if (view._boundsTransform)
         {
-            CGAffineTransformConcatTo(transform, view._inverseBoundsTransform, transform);
+            var inverseBoundsTransform = CGAffineTransformMakeIdentity();
+            inverseBoundsTransform.tx -= view._inverseBoundsTransform.tx * transform2.a;
+            inverseBoundsTransform.ty -= view._inverseBoundsTransform.ty * transform2.d;
+
+            CGAffineTransformConcatTo(transform2, inverseBoundsTransform, transform2);
         }
 
         view = view._superview;
     }
 
-    if (!sameWindow)
-    {
-        var frame = [toWindow frame];
+    transform2.tx = -transform2.tx;
+    transform2.ty = -transform2.ty;
 
-        transform.tx -= CGRectGetMinX(frame);
-        transform.ty -= CGRectGetMinY(frame);
+    if (view === fromView)
+    {
+        // toView is inside of fromView
+        return transform2;
     }
+
+    CGAffineTransformConcatTo(transform, transform2, transform);
+
+    return transform;
+
+
+
 /*    var views = [],
         view = toView;
 

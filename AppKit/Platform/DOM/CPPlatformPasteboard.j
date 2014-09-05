@@ -71,7 +71,6 @@ var hasEditableTarget = function(aDOMEvent)
     BOOL        hasBugWhichPreventsNonEditablePaste;
     BOOL        hasBugWhichPreventsNonEditablePasteRedirect;
 
-    CPEvent     _lastKeyDownEvent;
     BOOL        currentEventIsNativePasteEvent;
     BOOL        currentEventIsNativeCopyOrCutEvent;
     BOOL        currentEventShouldBeSuppressed;
@@ -208,8 +207,6 @@ var hasEditableTarget = function(aDOMEvent)
     if (!(modifierFlags & (CPControlKeyMask | CPCommandKeyMask)))
         return;
 
-    _lastKeyDownEvent = anEvent;
-
     var aDOMEvent = anEvent._DOMEvent,
         characters = [anEvent characters],
         mayRequireDOMPasteboardElement = [self _mayRequireDOMPasteboardElementHack:aDOMEvent flags:modifierFlags];
@@ -302,7 +299,7 @@ var hasEditableTarget = function(aDOMEvent)
         timestamp = [CPEvent currentTimestamp],  // fake event, might as well use current timestamp
         windowNumber = [[CPApp keyWindow] windowNumber],
         modifierFlags = CPPlatformActionKeyMask,
-        location = [_lastKeyDownEvent locationInWindow],
+        location = [[CPApp currentEvent] locationInWindow],
         anEvent = [CPEvent keyEventWithType:CPKeyDown location:location modifierFlags:modifierFlags
                                   timestamp:timestamp windowNumber:windowNumber context:nil
                                  characters:characters charactersIgnoringModifiers:characters isARepeat:NO keyCode:keyCode];

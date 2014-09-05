@@ -66,7 +66,6 @@ var CPZeroKeyCode = 48,
     _CPDatePickerElementView            _datePickerElementView;
     CPDatePicker                        _datePicker;
     CPStepper                           _stepper;
-    CPTimer                             _timerEdition;
 }
 
 
@@ -101,7 +100,7 @@ var CPZeroKeyCode = 48,
 
 
 #pragma mark -
-#pragma mark Responder methods
+#pragma mark Override responder methods
 
 - (BOOL)becomeFirstResponder
 {
@@ -116,7 +115,7 @@ var CPZeroKeyCode = 48,
 - (BOOL)resignFirstResponder
 {
     // End the timer of editing
-    [self _endTimer];
+    [_currentTextField _endEditing];
 
     // Don't forget to unbind, otherwise several steppers will increase or decrease
     [_currentTextField unbind:@"objectValue"];
@@ -129,10 +128,14 @@ var CPZeroKeyCode = 48,
     return YES;
 }
 
+- (BOOL)canBecomeKeyView
+{
+    return NO;
+}
+
 
 #pragma mark -
 #pragma mark Setter Getter methods
-
 
 /*! Set the value of the control
     @param aDateValue
@@ -141,8 +144,11 @@ var CPZeroKeyCode = 48,
 {
     var dateValue = [aDateValue copy];
     [dateValue _dateWithTimeZone:[_datePicker timeZone]];
-
     [_datePickerElementView setDateValue:dateValue];
+
+    // Be sure to update the stepper value. We don't use -setObjectValue to avoid a binding update.
+    if (_currentTextField)
+        _stepper._value = [_currentTextField intValue];
 }
 
 /*! Set the widget enabled or not
@@ -178,7 +184,7 @@ var CPZeroKeyCode = 48,
 #pragma mark -
 #pragma mark SelectTextField action
 
-- (void)_selecteTextFieldWithFlags:(unsigned)flags
+- (void)_selectTextFieldWithFlags:(unsigned)flags
 {
     [_datePickerElementView _updateResponderTextField];
 
@@ -202,7 +208,7 @@ var CPZeroKeyCode = 48,
         return;
 
     // End the timer of editing
-    [self _endTimer];
+    [_currentTextField _endEditing];
 
     // Don't forget to unbind, otherwise several steppers will increase or decrease
     [_currentTextField unbind:@"objectValue"];
@@ -215,7 +221,7 @@ var CPZeroKeyCode = 48,
     if ([_currentTextField dateType] != CPAMPMDateType)
     {
         // We update the value of the stepper dependind on the textField
-        [_stepper setObjectValue:parseInt([_currentTextField objectValue])];
+        [_stepper setObjectValue:[_currentTextField intValue]];
         [_stepper setMaxValue:[_currentTextField maxNumber]];
         [_stepper setMinValue:[_currentTextField minNumber]];
 
@@ -243,11 +249,11 @@ var CPZeroKeyCode = 48,
         [self _selectTextField:_firstTextField];
         [[self window] makeFirstResponder:_datePicker];
 
-        // This gonna update the dateValue with the binding
+        // Update the dateValue with the binding.
         if (isUp)
-            [_stepper setDoubleValue:parseInt([_currentTextField objectValue]) + 1];
+            [_stepper setDoubleValue:[_currentTextField intValue] + 1];
         else
-            [_stepper setDoubleValue:parseInt([_currentTextField objectValue]) - 1];
+            [_stepper setDoubleValue:[_currentTextField intValue] - 1];
 
         return;
     }
@@ -255,7 +261,7 @@ var CPZeroKeyCode = 48,
     if ([_currentTextField dateType] != CPAMPMDateType)
     {
         // Make sure to get the good value, especially when we reach the maxDate or minDate
-        [sender setDoubleValue:parseInt([_currentTextField objectValue])];
+        [sender setDoubleValue:[_currentTextField intValue]];
     }
     else
     {
@@ -281,16 +287,16 @@ var CPZeroKeyCode = 48,
 
     if (key == CPUpArrowFunctionKey)
     {
-        [self _endTimer];
-        [_stepper setDoubleValue:parseInt([_currentTextField objectValue])];
+        [_currentTextField _invalidTimer];
+        [_stepper setDoubleValue:[_currentTextField intValue]];
         [_stepper performClickUp:self];
         return YES;
     }
 
     if (key == CPDownArrowFunctionKey)
     {
-        [self _endTimer];
-        [_stepper setDoubleValue:parseInt([_currentTextField objectValue])];
+        [_currentTextField _invalidTimer];
+        [_stepper setDoubleValue:[_currentTextField intValue]];
         [_stepper performClickDown:self];
         return YES;
     }
@@ -299,8 +305,10 @@ var CPZeroKeyCode = 48,
     {
         if (_currentTextField == _firstTextField && [anEvent keyCode] == CPTabKeyCode)
         {
-            if ([_datePicker previousKeyView])
-                [[self window] makeFirstResponder:[_datePicker previousKeyView]];
+            var previousValidKeyView = [_datePicker previousValidKeyView];
+
+            if (previousValidKeyView)
+                [[self window] makeFirstResponder:previousValidKeyView];
 
             return YES;
         }
@@ -311,19 +319,23 @@ var CPZeroKeyCode = 48,
 
     if (key == CPRightArrowFunctionKey || [anEvent keyCode] == CPTabKeyCode)
     {
-
         if (_currentTextField == _lastTextField && [anEvent keyCode] == CPTabKeyCode)
         {
-            if ([_datePicker nextKeyView])
-                [[self window] makeFirstResponder:[_datePicker nextKeyView]];
+            var nextValidKeyView = [_datePicker nextValidKeyView];
+
+            if (nextValidKeyView)
+                [[self window] makeFirstResponder:nextValidKeyView];
 
             return YES;
+        }
 
-        } [self _selectTextField:[_currentTextField nextTextField]]; return YES; }
+        [self _selectTextField:[_currentTextField nextTextField]];
+        return YES;
+    }
 
-    if ([anEvent keyCode] == CPReturnKeyCode && _timerEdition)
+    if ([anEvent keyCode] == CPReturnKeyCode)
     {
-        [_timerEdition fire];
+        [_currentTextField _endEditing];
         return YES;
     }
 
@@ -350,84 +362,7 @@ var CPZeroKeyCode = 48,
         return;
     }
 
-    if ([anEvent keyCode] != CPDeleteKeyCode && [anEvent keyCode] != CPDeleteForwardKeyCode  && [anEvent keyCode] < CPZeroKeyCode || [anEvent keyCode] > CPNineKeyCode)
-        return;
-
-    // Here, at the first editing we launch a timer to auto-finish the editing. There is another behavior when the user has already edited something
-    if (!_timerEdition)
-    {
-         _timerEdition = [CPTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(_timerKeyEvent:) userInfo:nil repeats:NO];
-
-         // Take care about the delete key
-         if ([anEvent keyCode] == CPDeleteKeyCode || [anEvent keyCode] == CPDeleteForwardKeyCode)
-             [_currentTextField setStringKeyValue:@""];
-         else
-             [_currentTextField setStringKeyValue:[anEvent characters]];
-    }
-    else
-    {
-        var newFireDate = [CPDate date],
-            key;
-
-        newFireDate.setSeconds(newFireDate.getSeconds() + 2);
-
-        [_timerEdition setFireDate:newFireDate];
-
-        // Take care about the delete key
-        if ([anEvent keyCode] == CPDeleteKeyCode || [anEvent keyCode] == CPDeleteForwardKeyCode)
-            key = [[_currentTextField stringValue] substringToIndex:[[_currentTextField stringValue] length] - 1];
-        else
-            key = [CPString stringWithFormat:@"%i%i",parseInt([_currentTextField stringValue]), parseInt([anEvent characters])];
-
-        [_currentTextField setStringKeyValue:key];
-    }
-}
-
-
-#pragma mark -
-#pragma mark Timer event
-
-/*! End of the timer
-*/
-- (void)_timerKeyEvent:(id)sender
-{
-    _timerEdition = nil;
-
-    if (![[_currentTextField stringValue] isEqualToString:@"  "] && ![[_currentTextField stringValue] isEqualToString:@"    "])
-    {
-        var value = [_currentTextField stringValue];
-
-        if ([_datePicker _isEnglishFormat] && [_currentTextField dateType] == CPHourDateType)
-        {
-            if (![_datePickerElementView _isAMHour] && value != 12)
-                value = parseInt(value) + 12;
-
-            if (value == 12 && ![_datePickerElementView _isAMHour])
-                value = 12;
-            else if (value == 12)
-                value = 0;
-        }
-
-        [_currentTextField setObjectValue:value];
-    }
-    else
-    {
-        [_currentTextField setObjectValue:@"0"];
-    }
-
-
-}
-
-/*! We force to end the timer
-*/
-- (void)_endTimer
-{
-    if (_timerEdition)
-    {
-        [_timerEdition invalidate];
-        [self _timerKeyEvent:_timerEdition];
-        _timerEdition = nil;
-    }
+    [_currentTextField setValueForKeyEvent:anEvent];
 }
 
 
@@ -449,14 +384,16 @@ var CPZeroKeyCode = 48,
     // Check the mode to display or not the stepper
     if ([_datePicker datePickerStyle] == CPTextFieldAndStepperDatePickerStyle)
     {
-        frameSize = CGSizeMake(CGRectGetWidth([_datePicker frame]) - CGRectGetWidth([_stepper frame]) - [_datePicker valueForThemeAttribute:@"stepper-margin"], CGRectGetHeight([_datePicker frame]));
+        [_stepper setHidden:NO];
+        [_stepper setControlSize:[_datePicker controlSize]];
+
+        frameSize = CGSizeMake(CGRectGetWidth([_datePicker frame]) - CGRectGetWidth([_stepper frame]) - [_datePicker currentValueForThemeAttribute:@"stepper-margin"], CGRectGetHeight([_datePicker frame]));
 
         frameSize.width -= bezelInset.left;
         frameSize.height -= bezelInset.top + bezelInset.bottom;
 
         [_datePickerElementView setFrameSize:frameSize];
         [_datePickerElementView setFrameOrigin:CGPointMake(bezelInset.left, bezelInset.top)];
-        [_stepper setHidden:NO];
     }
     else if ([_datePicker datePickerStyle] == CPTextFieldDatePickerStyle)
     {
@@ -470,7 +407,9 @@ var CPZeroKeyCode = 48,
         [_stepper setHidden:YES];
     }
 
-    [_stepper setFrameOrigin:CGPointMake(CGRectGetMaxX([_datePickerElementView frame]) + [_datePicker valueForThemeAttribute:@"stepper-margin"], bezelInset.top + CGRectGetHeight([_datePickerElementView frame]) / 2 - CGRectGetHeight([_stepper frame]) / 2)];
+    [_stepper setFrameOrigin:CGPointMake(CGRectGetMaxX([_datePickerElementView frame]) + [_datePicker currentValueForThemeAttribute:@"stepper-margin"], bezelInset.top + CGRectGetHeight([_datePickerElementView frame]) / 2 - CGRectGetHeight([_stepper frame]) / 2)];
+
+    [_datePickerElementView setControlSize:[_datePicker controlSize]];
 
     [_datePickerElementView setNeedsLayout];
 }
@@ -518,6 +457,7 @@ var CPZeroKeyCode = 48,
     [_textFieldDay setDateType:CPDayDateType];
     [_textFieldDay setDatePicker:_datePicker];
     [_textFieldDay setAlignment:CPRightTextAlignment];
+    [_textFieldDay setDatePickerElementView:self];
     [self addSubview:_textFieldDay];
 
     _textFieldMonth = [_CPDatePickerElementTextField new];
@@ -526,6 +466,7 @@ var CPZeroKeyCode = 48,
     [_textFieldMonth setDateType:CPMonthDateType];
     [_textFieldMonth setDatePicker:_datePicker];
     [_textFieldMonth setAlignment:CPRightTextAlignment];
+    [_textFieldMonth setDatePickerElementView:self];
     [self addSubview:_textFieldMonth];
 
     _textFieldYear = [_CPDatePickerElementTextField new];
@@ -534,6 +475,7 @@ var CPZeroKeyCode = 48,
     [_textFieldYear setDateType:CPYearDateType];
     [_textFieldYear setDatePicker:_datePicker];
     [_textFieldYear setAlignment:CPRightTextAlignment];
+    [_textFieldYear setDatePickerElementView:self];
     [self addSubview:_textFieldYear];
 
     _textFieldHour = [_CPDatePickerElementTextField new];
@@ -542,6 +484,7 @@ var CPZeroKeyCode = 48,
     [_textFieldHour setDateType:CPHourDateType];
     [_textFieldHour setDatePicker:_datePicker];
     [_textFieldHour setAlignment:CPRightTextAlignment];
+    [_textFieldHour setDatePickerElementView:self];
     [self addSubview:_textFieldHour];
 
     _textFieldMinute = [_CPDatePickerElementTextField new];
@@ -550,6 +493,7 @@ var CPZeroKeyCode = 48,
     [_textFieldMinute setDateType:CPMinuteDateType];
     [_textFieldMinute setDatePicker:_datePicker];
     [_textFieldMinute setAlignment:CPRightTextAlignment];
+    [_textFieldMinute setDatePickerElementView:self];
     [self addSubview:_textFieldMinute];
 
     _textFieldSecond = [_CPDatePickerElementTextField new];
@@ -558,6 +502,7 @@ var CPZeroKeyCode = 48,
     [_textFieldSecond setDateType:CPSecondDateType];
     [_textFieldSecond setDatePicker:_datePicker];
     [_textFieldSecond setAlignment:CPRightTextAlignment];
+    [_textFieldSecond setDatePickerElementView:self];
     [self addSubview:_textFieldSecond];
 
     _textFieldPMAM = [_CPDatePickerElementTextField new];
@@ -566,6 +511,7 @@ var CPZeroKeyCode = 48,
     [_textFieldPMAM setDateType:CPAMPMDateType];
     [_textFieldPMAM setDatePicker:_datePicker];
     [_textFieldPMAM setAlignment:CPRightTextAlignment];
+    [_textFieldPMAM setDatePickerElementView:self];
     [self addSubview:_textFieldPMAM];
 
     _textFieldSeparatorOne = [CPTextField labelWithTitle:@"/"];
@@ -587,7 +533,7 @@ var CPZeroKeyCode = 48,
 #pragma mark -
 #pragma mark Responder methods
 
-- (BOOL)acceptFirstResponder
+- (BOOL)acceptsFirstResponder
 {
     return NO;
 }
@@ -614,6 +560,13 @@ var CPZeroKeyCode = 48,
         [_textFieldPMAM setStringValue:@"AM"];
 }
 
+/*! Set the day date value to the appropriate textField
+    @param aDayDateValue the day
+*/
+- (void)setDayDateValue:(CPString)aDayDateValue
+{
+    [_textFieldDay setStringValue:aDayDateValue];
+}
 
 /*! Set the widget enabled or not
     @param aBoolean
@@ -639,6 +592,65 @@ var CPZeroKeyCode = 48,
 - (BOOL)_isAMHour
 {
     return [[_textFieldPMAM stringValue] isEqualToString:@"AM"];
+}
+
+- (CPDate)dateValue
+{
+    var date = [[_datePicker dateValue] copy];
+
+    [date _dateWithTimeZone:[_datePicker timeZone]];
+
+    if (![_textFieldDay isHidden])
+        date.setDate([_textFieldDay intValue]);
+
+    if (![_textFieldMonth isHidden])
+        date.setMonth([_textFieldMonth intValue] - 1);
+
+    if (![_textFieldYear isHidden])
+        date.setFullYear([_textFieldYear intValue]);
+
+    if (![_textFieldSecond isHidden])
+        date.setSeconds([_textFieldSecond intValue]);
+
+    if (![_textFieldMinute isHidden])
+        date.setMinutes([_textFieldMinute intValue]);
+
+    if (![_textFieldHour isHidden])
+    {
+        var hour = [_textFieldHour intValue],
+            currentHour = parseInt(date.getHours());
+
+        if (hour != currentHour)
+        {
+            if (([_datePicker _isEnglishFormat] || [_datePicker _isAmericanFormat]))
+            {
+                if (![self _isAMHour])
+                {
+                    if (!(currentHour == 12 && hour == 11) && hour < 13)
+                        hour = hour + 12;
+                }
+                else if (hour == 12 && currentHour != 11)
+                {
+                    hour = 0;
+                }
+                else if (currentHour == 0 && hour == 11)
+                {
+                    hour = 23;
+                }
+                else if (hour == 13)
+                {
+                    hour = 1;
+                }
+            }
+
+            if (hour == 24)
+                hour = 0;
+
+            date.setHours(hour);
+        }
+    }
+
+    return date;
 }
 
 
@@ -694,6 +706,7 @@ var CPZeroKeyCode = 48,
 
     [self _updateResponderTextField];
     [self _updateHiddenTextFields];
+    [self _setControlSizes];
     [self _sizeToFit];
     [self _updatePositions];
 
@@ -730,183 +743,201 @@ var CPZeroKeyCode = 48,
 */
 - (void)_themeTextFields
 {
-    [_textFieldDay setValue:[_datePicker valueForThemeAttribute:@"min-size-datepicker-textfield"] forThemeAttribute:@"min-size"];
-    [_textFieldDay setValue:[_datePicker valueForThemeAttribute:@"content-inset-datepicker-textfield" inState:CPThemeStateNormal] forThemeAttribute:@"content-inset" inState:CPThemeStateNormal];
-    [_textFieldDay setValue:[_datePicker valueForThemeAttribute:@"content-inset-datepicker-textfield" inState:CPThemeStateSelected] forThemeAttribute:@"content-inset" inState:CPThemeStateSelected];
-    [_textFieldDay setValue:[_datePicker valueForThemeAttribute:@"datepicker-textfield-bezel-color" inState:CPThemeStateSelected] forThemeAttribute:@"bezel-color" inState:CPThemeStateSelected];
-    [_textFieldDay setValue:[_datePicker textFont] forThemeAttribute:@"font" inState:CPThemeStateSelected];
-    [_textFieldDay setValue:[_datePicker valueForThemeAttribute:@"text-color" inState:CPThemeStateSelected] forThemeAttribute:@"text-color" inState:CPThemeStateSelected];
-    [_textFieldDay setValue:[_datePicker valueForThemeAttribute:@"text-shadow-color" inState:CPThemeStateSelected] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateSelected];
-    [_textFieldDay setValue:[_datePicker valueForThemeAttribute:@"text-shadow-offset" inState:CPThemeStateSelected] forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateSelected];
-    [_textFieldDay setValue:[_datePicker valueForThemeAttribute:@"datepicker-textfield-bezel-color" inState:CPThemeStateNormal] forThemeAttribute:@"bezel-color" inState:CPThemeStateNormal];
-    [_textFieldDay setValue:[_datePicker textFont] forThemeAttribute:@"font" inState:CPThemeStateNormal];
-    [_textFieldDay setValue:[_datePicker textColor] forThemeAttribute:@"text-color" inState:CPThemeStateNormal];
-    [_textFieldDay setValue:[_datePicker valueForThemeAttribute:@"text-shadow-color" inState:CPThemeStateNormal] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateNormal];
-    [_textFieldDay setValue:[_datePicker valueForThemeAttribute:@"text-shadow-offset" inState:CPThemeStateNormal] forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateNormal];
-    [_textFieldDay setValue:[_datePicker valueForThemeAttribute:@"datepicker-textfield-bezel-color" inState:CPThemeStateDisabled] forThemeAttribute:@"bezel-color" inState:CPThemeStateDisabled];
-    [_textFieldDay setValue:[_datePicker textFont] forThemeAttribute:@"font" inState:CPThemeStateDisabled];
-    [_textFieldDay setValue:[_datePicker valueForThemeAttribute:@"text-color" inState:CPThemeStateDisabled] forThemeAttribute:@"text-color" inState:CPThemeStateDisabled];
-    [_textFieldDay setValue:[_datePicker valueForThemeAttribute:@"text-shadow-color" inState:CPThemeStateDisabled] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateDisabled];
-    [_textFieldDay setValue:[_datePicker valueForThemeAttribute:@"text-shadow-offset" inState:CPThemeStateDisabled] forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateDisabled];
+    var disabledTextColor = [_datePicker valueForThemeAttribute:@"text-color" inState:CPThemeStateDisabled],
+        disabledTextFieldBezelColor = [_datePicker valueForThemeAttribute:@"datepicker-textfield-bezel-color" inState:CPThemeStateDisabled],
+        disabledTextShadowColor = [_datePicker valueForThemeAttribute:@"text-shadow-color" inState:CPThemeStateDisabled],
+        disabledTextShadowOffset = [_datePicker valueForThemeAttribute:@"text-shadow-offset" inState:CPThemeStateDisabled],
+        normalSeparatorContentInset = [_datePicker valueForThemeAttribute:@"content-inset-datepicker-textfield-separator" inState:CPThemeStateNormal],
+        normalTextFieldBezelColor = [_datePicker valueForThemeAttribute:@"datepicker-textfield-bezel-color" inState:CPThemeStateNormal],
+        normalTextFieldContentInset = [_datePicker valueForThemeAttribute:@"content-inset-datepicker-textfield" inState:CPThemeStateNormal],
+        normalTextShadowColor = [_datePicker valueForThemeAttribute:@"text-shadow-color" inState:CPThemeStateNormal],
+        normalTextShadowOffset = [_datePicker valueForThemeAttribute:@"text-shadow-offset" inState:CPThemeStateNormal],
+        selectedSeparatorContentInset = [_datePicker valueForThemeAttribute:@"content-inset-datepicker-textfield-separator" inState:CPThemeStateSelected],
+        selectedTextColor = [_datePicker valueForThemeAttribute:@"text-color" inState:CPThemeStateSelected],
+        selectedTextFieldBezelColor = [_datePicker valueForThemeAttribute:@"datepicker-textfield-bezel-color" inState:CPThemeStateSelected],
+        selectedTextFieldContentInset = [_datePicker valueForThemeAttribute:@"content-inset-datepicker-textfield" inState:CPThemeStateSelected],
+        selectedTextShadowColor = [_datePicker valueForThemeAttribute:@"text-shadow-color" inState:CPThemeStateSelected],
+        selectedTextShadowOffset = [_datePicker valueForThemeAttribute:@"text-shadow-offset" inState:CPThemeStateSelected],
+        textColor = [_datePicker textColor],
+        textFieldMinSize = [_datePicker currentValueForThemeAttribute:@"min-size-datepicker-textfield"],
+        textFont = [_datePicker textFont];
 
-    [_textFieldMonth setValue:[_datePicker valueForThemeAttribute:@"min-size-datepicker-textfield"] forThemeAttribute:@"min-size"];
-    [_textFieldMonth setValue:[_datePicker valueForThemeAttribute:@"content-inset-datepicker-textfield" inState:CPThemeStateNormal] forThemeAttribute:@"content-inset" inState:CPThemeStateNormal];
-    [_textFieldMonth setValue:[_datePicker valueForThemeAttribute:@"content-inset-datepicker-textfield" inState:CPThemeStateSelected] forThemeAttribute:@"content-inset" inState:CPThemeStateSelected];
-    [_textFieldMonth setValue:[_datePicker valueForThemeAttribute:@"datepicker-textfield-bezel-color" inState:CPThemeStateSelected] forThemeAttribute:@"bezel-color" inState:CPThemeStateSelected];
-    [_textFieldMonth setValue:[_datePicker textFont] forThemeAttribute:@"font" inState:CPThemeStateSelected];
-    [_textFieldMonth setValue:[_datePicker valueForThemeAttribute:@"text-color" inState:CPThemeStateSelected] forThemeAttribute:@"text-color" inState:CPThemeStateSelected];
-    [_textFieldMonth setValue:[_datePicker valueForThemeAttribute:@"text-shadow-color" inState:CPThemeStateSelected] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateSelected];
-    [_textFieldMonth setValue:[_datePicker valueForThemeAttribute:@"text-shadow-offset" inState:CPThemeStateSelected] forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateSelected];
-    [_textFieldMonth setValue:[_datePicker valueForThemeAttribute:@"datepicker-textfield-bezel-color" inState:CPThemeStateNormal] forThemeAttribute:@"bezel-color" inState:CPThemeStateNormal];
-    [_textFieldMonth setValue:[_datePicker textFont] forThemeAttribute:@"font" inState:CPThemeStateNormal];
-    [_textFieldMonth setValue:[_datePicker textColor] forThemeAttribute:@"text-color" inState:CPThemeStateNormal];
-    [_textFieldMonth setValue:[_datePicker valueForThemeAttribute:@"text-shadow-color" inState:CPThemeStateNormal] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateNormal];
-    [_textFieldMonth setValue:[_datePicker valueForThemeAttribute:@"text-shadow-offset" inState:CPThemeStateNormal] forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateNormal];
-    [_textFieldMonth setValue:[_datePicker valueForThemeAttribute:@"datepicker-textfield-bezel-color" inState:CPThemeStateDisabled] forThemeAttribute:@"bezel-color" inState:CPThemeStateDisabled];
-    [_textFieldMonth setValue:[_datePicker textFont] forThemeAttribute:@"font" inState:CPThemeStateDisabled];
-    [_textFieldMonth setValue:[_datePicker valueForThemeAttribute:@"text-color" inState:CPThemeStateDisabled] forThemeAttribute:@"text-color" inState:CPThemeStateDisabled];
-    [_textFieldMonth setValue:[_datePicker valueForThemeAttribute:@"text-shadow-color" inState:CPThemeStateDisabled] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateDisabled];
-    [_textFieldMonth setValue:[_datePicker valueForThemeAttribute:@"text-shadow-offset" inState:CPThemeStateDisabled] forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateDisabled];
+    [_textFieldDay setValue:textFieldMinSize forThemeAttribute:@"min-size"];
+    [_textFieldDay setValue:normalTextFieldContentInset forThemeAttribute:@"content-inset" inState:CPThemeStateNormal];
+    [_textFieldDay setValue:selectedTextFieldContentInset forThemeAttribute:@"content-inset" inState:CPThemeStateSelected];
+    [_textFieldDay setValue:selectedTextFieldBezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateSelected];
+    [_textFieldDay setValue:textFont forThemeAttribute:@"font" inState:CPThemeStateSelected];
+    [_textFieldDay setValue:selectedTextColor forThemeAttribute:@"text-color" inState:CPThemeStateSelected];
+    [_textFieldDay setValue:selectedTextShadowColor forThemeAttribute:@"text-shadow-color" inState:CPThemeStateSelected];
+    [_textFieldDay setValue:selectedTextShadowOffset forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateSelected];
+    [_textFieldDay setValue:normalTextFieldBezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateNormal];
+    [_textFieldDay setValue:textFont forThemeAttribute:@"font" inState:CPThemeStateNormal];
+    [_textFieldDay setValue:textColor forThemeAttribute:@"text-color" inState:CPThemeStateNormal];
+    [_textFieldDay setValue:normalTextShadowColor forThemeAttribute:@"text-shadow-color" inState:CPThemeStateNormal];
+    [_textFieldDay setValue:normalTextShadowOffset forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateNormal];
+    [_textFieldDay setValue:disabledTextFieldBezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateDisabled];
+    [_textFieldDay setValue:textFont forThemeAttribute:@"font" inState:CPThemeStateDisabled];
+    [_textFieldDay setValue:disabledTextColor forThemeAttribute:@"text-color" inState:CPThemeStateDisabled];
+    [_textFieldDay setValue:disabledTextShadowColor forThemeAttribute:@"text-shadow-color" inState:CPThemeStateDisabled];
+    [_textFieldDay setValue:disabledTextShadowOffset forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateDisabled];
 
-    [_textFieldYear setValue:[_datePicker valueForThemeAttribute:@"min-size-datepicker-textfield"] forThemeAttribute:@"min-size"];
-    [_textFieldYear setValue:[_datePicker valueForThemeAttribute:@"content-inset-datepicker-textfield" inState:CPThemeStateNormal] forThemeAttribute:@"content-inset" inState:CPThemeStateNormal];
-    [_textFieldYear setValue:[_datePicker valueForThemeAttribute:@"content-inset-datepicker-textfield" inState:CPThemeStateSelected] forThemeAttribute:@"content-inset" inState:CPThemeStateSelected];
-    [_textFieldYear setValue:[_datePicker valueForThemeAttribute:@"datepicker-textfield-bezel-color" inState:CPThemeStateSelected] forThemeAttribute:@"bezel-color" inState:CPThemeStateSelected];
-    [_textFieldYear setValue:[_datePicker textFont] forThemeAttribute:@"font" inState:CPThemeStateSelected];
-    [_textFieldYear setValue:[_datePicker valueForThemeAttribute:@"text-color" inState:CPThemeStateSelected] forThemeAttribute:@"text-color" inState:CPThemeStateSelected];
-    [_textFieldYear setValue:[_datePicker valueForThemeAttribute:@"text-shadow-color" inState:CPThemeStateSelected] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateSelected];
-    [_textFieldYear setValue:[_datePicker valueForThemeAttribute:@"text-shadow-offset" inState:CPThemeStateSelected] forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateSelected];
-    [_textFieldYear setValue:[_datePicker valueForThemeAttribute:@"datepicker-textfield-bezel-color" inState:CPThemeStateNormal] forThemeAttribute:@"bezel-color" inState:CPThemeStateNormal];
-    [_textFieldYear setValue:[_datePicker textFont] forThemeAttribute:@"font" inState:CPThemeStateNormal];
-    [_textFieldYear setValue:[_datePicker textColor] forThemeAttribute:@"text-color" inState:CPThemeStateNormal];
-    [_textFieldYear setValue:[_datePicker valueForThemeAttribute:@"text-shadow-color" inState:CPThemeStateNormal] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateNormal];
-    [_textFieldYear setValue:[_datePicker valueForThemeAttribute:@"text-shadow-offset" inState:CPThemeStateNormal] forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateNormal];
-    [_textFieldYear setValue:[_datePicker valueForThemeAttribute:@"datepicker-textfield-bezel-color" inState:CPThemeStateDisabled] forThemeAttribute:@"bezel-color" inState:CPThemeStateDisabled];
-    [_textFieldYear setValue:[_datePicker textFont] forThemeAttribute:@"font" inState:CPThemeStateDisabled];
-    [_textFieldYear setValue:[_datePicker valueForThemeAttribute:@"text-color" inState:CPThemeStateDisabled] forThemeAttribute:@"text-color" inState:CPThemeStateDisabled];
-    [_textFieldYear setValue:[_datePicker valueForThemeAttribute:@"text-shadow-color" inState:CPThemeStateDisabled] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateDisabled];
-    [_textFieldYear setValue:[_datePicker valueForThemeAttribute:@"text-shadow-offset" inState:CPThemeStateDisabled] forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateDisabled];
+    [_textFieldMonth setValue:textFieldMinSize forThemeAttribute:@"min-size"];
+    [_textFieldMonth setValue:normalTextFieldContentInset forThemeAttribute:@"content-inset" inState:CPThemeStateNormal];
+    [_textFieldMonth setValue:selectedTextFieldContentInset forThemeAttribute:@"content-inset" inState:CPThemeStateSelected];
+    [_textFieldMonth setValue:selectedTextFieldBezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateSelected];
+    [_textFieldMonth setValue:textFont forThemeAttribute:@"font" inState:CPThemeStateSelected];
+    [_textFieldMonth setValue:selectedTextColor forThemeAttribute:@"text-color" inState:CPThemeStateSelected];
+    [_textFieldMonth setValue:selectedTextShadowColor forThemeAttribute:@"text-shadow-color" inState:CPThemeStateSelected];
+    [_textFieldMonth setValue:selectedTextShadowOffset forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateSelected];
+    [_textFieldMonth setValue:normalTextFieldBezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateNormal];
+    [_textFieldMonth setValue:textFont forThemeAttribute:@"font" inState:CPThemeStateNormal];
+    [_textFieldMonth setValue:textColor forThemeAttribute:@"text-color" inState:CPThemeStateNormal];
+    [_textFieldMonth setValue:normalTextShadowColor forThemeAttribute:@"text-shadow-color" inState:CPThemeStateNormal];
+    [_textFieldMonth setValue:normalTextShadowOffset forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateNormal];
+    [_textFieldMonth setValue:disabledTextFieldBezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateDisabled];
+    [_textFieldMonth setValue:textFont forThemeAttribute:@"font" inState:CPThemeStateDisabled];
+    [_textFieldMonth setValue:disabledTextColor forThemeAttribute:@"text-color" inState:CPThemeStateDisabled];
+    [_textFieldMonth setValue:disabledTextShadowColor forThemeAttribute:@"text-shadow-color" inState:CPThemeStateDisabled];
+    [_textFieldMonth setValue:disabledTextShadowOffset forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateDisabled];
 
-    [_textFieldHour setValue:[_datePicker valueForThemeAttribute:@"min-size-datepicker-textfield"] forThemeAttribute:@"min-size"];
-    [_textFieldHour setValue:[_datePicker valueForThemeAttribute:@"content-inset-datepicker-textfield" inState:CPThemeStateNormal] forThemeAttribute:@"content-inset" inState:CPThemeStateNormal];
-    [_textFieldHour setValue:[_datePicker valueForThemeAttribute:@"content-inset-datepicker-textfield" inState:CPThemeStateSelected] forThemeAttribute:@"content-inset" inState:CPThemeStateSelected];
-    [_textFieldHour setValue:[_datePicker valueForThemeAttribute:@"datepicker-textfield-bezel-color" inState:CPThemeStateSelected] forThemeAttribute:@"bezel-color" inState:CPThemeStateSelected];
-    [_textFieldHour setValue:[_datePicker textFont] forThemeAttribute:@"font" inState:CPThemeStateSelected];
-    [_textFieldHour setValue:[_datePicker valueForThemeAttribute:@"text-color" inState:CPThemeStateSelected] forThemeAttribute:@"text-color" inState:CPThemeStateSelected];
-    [_textFieldHour setValue:[_datePicker valueForThemeAttribute:@"text-shadow-color" inState:CPThemeStateSelected] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateSelected];
-    [_textFieldHour setValue:[_datePicker valueForThemeAttribute:@"text-shadow-offset" inState:CPThemeStateSelected] forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateSelected];
-    [_textFieldHour setValue:[_datePicker valueForThemeAttribute:@"datepicker-textfield-bezel-color" inState:CPThemeStateNormal] forThemeAttribute:@"bezel-color" inState:CPThemeStateNormal];
-    [_textFieldHour setValue:[_datePicker textFont] forThemeAttribute:@"font" inState:CPThemeStateNormal];
-    [_textFieldHour setValue:[_datePicker textColor] forThemeAttribute:@"text-color" inState:CPThemeStateNormal];
-    [_textFieldHour setValue:[_datePicker valueForThemeAttribute:@"text-shadow-color" inState:CPThemeStateNormal] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateNormal];
-    [_textFieldHour setValue:[_datePicker valueForThemeAttribute:@"text-shadow-offset" inState:CPThemeStateNormal] forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateNormal];
-    [_textFieldHour setValue:[_datePicker valueForThemeAttribute:@"datepicker-textfield-bezel-color" inState:CPThemeStateDisabled] forThemeAttribute:@"bezel-color" inState:CPThemeStateDisabled];
-    [_textFieldHour setValue:[_datePicker textFont] forThemeAttribute:@"font" inState:CPThemeStateDisabled];
-    [_textFieldHour setValue:[_datePicker valueForThemeAttribute:@"text-color" inState:CPThemeStateDisabled] forThemeAttribute:@"text-color" inState:CPThemeStateDisabled];
-    [_textFieldHour setValue:[_datePicker valueForThemeAttribute:@"text-shadow-color" inState:CPThemeStateDisabled] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateDisabled];
-    [_textFieldHour setValue:[_datePicker valueForThemeAttribute:@"text-shadow-offset" inState:CPThemeStateDisabled] forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateDisabled];
+    [_textFieldYear setValue:textFieldMinSize forThemeAttribute:@"min-size"];
+    [_textFieldYear setValue:normalTextFieldContentInset forThemeAttribute:@"content-inset" inState:CPThemeStateNormal];
+    [_textFieldYear setValue:selectedTextFieldContentInset forThemeAttribute:@"content-inset" inState:CPThemeStateSelected];
+    [_textFieldYear setValue:selectedTextFieldBezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateSelected];
+    [_textFieldYear setValue:textFont forThemeAttribute:@"font" inState:CPThemeStateSelected];
+    [_textFieldYear setValue:selectedTextColor forThemeAttribute:@"text-color" inState:CPThemeStateSelected];
+    [_textFieldYear setValue:selectedTextShadowColor forThemeAttribute:@"text-shadow-color" inState:CPThemeStateSelected];
+    [_textFieldYear setValue:selectedTextShadowOffset forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateSelected];
+    [_textFieldYear setValue:normalTextFieldBezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateNormal];
+    [_textFieldYear setValue:textFont forThemeAttribute:@"font" inState:CPThemeStateNormal];
+    [_textFieldYear setValue:textColor forThemeAttribute:@"text-color" inState:CPThemeStateNormal];
+    [_textFieldYear setValue:normalTextShadowColor forThemeAttribute:@"text-shadow-color" inState:CPThemeStateNormal];
+    [_textFieldYear setValue:normalTextShadowOffset forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateNormal];
+    [_textFieldYear setValue:disabledTextFieldBezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateDisabled];
+    [_textFieldYear setValue:textFont forThemeAttribute:@"font" inState:CPThemeStateDisabled];
+    [_textFieldYear setValue:disabledTextColor forThemeAttribute:@"text-color" inState:CPThemeStateDisabled];
+    [_textFieldYear setValue:disabledTextShadowColor forThemeAttribute:@"text-shadow-color" inState:CPThemeStateDisabled];
+    [_textFieldYear setValue:disabledTextShadowOffset forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateDisabled];
 
-    [_textFieldMinute setValue:[_datePicker valueForThemeAttribute:@"min-size-datepicker-textfield"] forThemeAttribute:@"min-size"];
-    [_textFieldMinute setValue:[_datePicker valueForThemeAttribute:@"content-inset-datepicker-textfield" inState:CPThemeStateNormal] forThemeAttribute:@"content-inset" inState:CPThemeStateNormal];
-    [_textFieldMinute setValue:[_datePicker valueForThemeAttribute:@"content-inset-datepicker-textfield" inState:CPThemeStateSelected] forThemeAttribute:@"content-inset" inState:CPThemeStateSelected];
-    [_textFieldMinute setValue:[_datePicker valueForThemeAttribute:@"datepicker-textfield-bezel-color" inState:CPThemeStateSelected] forThemeAttribute:@"bezel-color" inState:CPThemeStateSelected];
-    [_textFieldMinute setValue:[_datePicker textFont] forThemeAttribute:@"font" inState:CPThemeStateSelected];
-    [_textFieldMinute setValue:[_datePicker valueForThemeAttribute:@"text-color" inState:CPThemeStateSelected] forThemeAttribute:@"text-color" inState:CPThemeStateSelected];
-    [_textFieldMinute setValue:[_datePicker valueForThemeAttribute:@"text-shadow-color" inState:CPThemeStateSelected] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateSelected];
-    [_textFieldMinute setValue:[_datePicker valueForThemeAttribute:@"text-shadow-offset" inState:CPThemeStateSelected] forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateSelected];
-    [_textFieldMinute setValue:[_datePicker valueForThemeAttribute:@"datepicker-textfield-bezel-color" inState:CPThemeStateNormal] forThemeAttribute:@"bezel-color" inState:CPThemeStateNormal];
-    [_textFieldMinute setValue:[_datePicker textFont] forThemeAttribute:@"font" inState:CPThemeStateNormal];
-    [_textFieldMinute setValue:[_datePicker textColor] forThemeAttribute:@"text-color" inState:CPThemeStateNormal];
-    [_textFieldMinute setValue:[_datePicker valueForThemeAttribute:@"text-shadow-color" inState:CPThemeStateNormal] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateNormal];
-    [_textFieldMinute setValue:[_datePicker valueForThemeAttribute:@"text-shadow-offset" inState:CPThemeStateNormal] forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateNormal];
-    [_textFieldMinute setValue:[_datePicker valueForThemeAttribute:@"datepicker-textfield-bezel-color" inState:CPThemeStateDisabled] forThemeAttribute:@"bezel-color" inState:CPThemeStateDisabled];
-    [_textFieldMinute setValue:[_datePicker textFont] forThemeAttribute:@"font" inState:CPThemeStateDisabled];
-    [_textFieldMinute setValue:[_datePicker valueForThemeAttribute:@"text-color" inState:CPThemeStateDisabled] forThemeAttribute:@"text-color" inState:CPThemeStateDisabled];
-    [_textFieldMinute setValue:[_datePicker valueForThemeAttribute:@"text-shadow-color" inState:CPThemeStateDisabled] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateDisabled];
-    [_textFieldMinute setValue:[_datePicker valueForThemeAttribute:@"text-shadow-offset" inState:CPThemeStateDisabled] forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateDisabled];
+    [_textFieldHour setValue:textFieldMinSize forThemeAttribute:@"min-size"];
+    [_textFieldHour setValue:normalTextFieldContentInset forThemeAttribute:@"content-inset" inState:CPThemeStateNormal];
+    [_textFieldHour setValue:selectedTextFieldContentInset forThemeAttribute:@"content-inset" inState:CPThemeStateSelected];
+    [_textFieldHour setValue:selectedTextFieldBezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateSelected];
+    [_textFieldHour setValue:textFont forThemeAttribute:@"font" inState:CPThemeStateSelected];
+    [_textFieldHour setValue:selectedTextColor forThemeAttribute:@"text-color" inState:CPThemeStateSelected];
+    [_textFieldHour setValue:selectedTextShadowColor forThemeAttribute:@"text-shadow-color" inState:CPThemeStateSelected];
+    [_textFieldHour setValue:selectedTextShadowOffset forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateSelected];
+    [_textFieldHour setValue:normalTextFieldBezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateNormal];
+    [_textFieldHour setValue:textFont forThemeAttribute:@"font" inState:CPThemeStateNormal];
+    [_textFieldHour setValue:textColor forThemeAttribute:@"text-color" inState:CPThemeStateNormal];
+    [_textFieldHour setValue:normalTextShadowColor forThemeAttribute:@"text-shadow-color" inState:CPThemeStateNormal];
+    [_textFieldHour setValue:normalTextShadowOffset forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateNormal];
+    [_textFieldHour setValue:disabledTextFieldBezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateDisabled];
+    [_textFieldHour setValue:textFont forThemeAttribute:@"font" inState:CPThemeStateDisabled];
+    [_textFieldHour setValue:disabledTextColor forThemeAttribute:@"text-color" inState:CPThemeStateDisabled];
+    [_textFieldHour setValue:disabledTextShadowColor forThemeAttribute:@"text-shadow-color" inState:CPThemeStateDisabled];
+    [_textFieldHour setValue:disabledTextShadowOffset forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateDisabled];
 
-    [_textFieldSecond setValue:[_datePicker valueForThemeAttribute:@"min-size-datepicker-textfield"] forThemeAttribute:@"min-size"];
-    [_textFieldSecond setValue:[_datePicker valueForThemeAttribute:@"content-inset-datepicker-textfield" inState:CPThemeStateNormal] forThemeAttribute:@"content-inset" inState:CPThemeStateNormal];
-    [_textFieldSecond setValue:[_datePicker valueForThemeAttribute:@"content-inset-datepicker-textfield" inState:CPThemeStateSelected] forThemeAttribute:@"content-inset" inState:CPThemeStateSelected];
-    [_textFieldSecond setValue:[_datePicker valueForThemeAttribute:@"datepicker-textfield-bezel-color" inState:CPThemeStateSelected] forThemeAttribute:@"bezel-color" inState:CPThemeStateSelected];
-    [_textFieldSecond setValue:[_datePicker textFont] forThemeAttribute:@"font" inState:CPThemeStateSelected];
-    [_textFieldSecond setValue:[_datePicker valueForThemeAttribute:@"text-color" inState:CPThemeStateSelected] forThemeAttribute:@"text-color" inState:CPThemeStateSelected];
-    [_textFieldSecond setValue:[_datePicker valueForThemeAttribute:@"text-shadow-color" inState:CPThemeStateSelected] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateSelected];
-    [_textFieldSecond setValue:[_datePicker valueForThemeAttribute:@"text-shadow-offset" inState:CPThemeStateSelected] forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateSelected];
-    [_textFieldSecond setValue:[_datePicker valueForThemeAttribute:@"datepicker-textfield-bezel-color" inState:CPThemeStateNormal] forThemeAttribute:@"bezel-color" inState:CPThemeStateNormal];
-    [_textFieldSecond setValue:[_datePicker textFont] forThemeAttribute:@"font" inState:CPThemeStateNormal];
-    [_textFieldSecond setValue:[_datePicker textColor] forThemeAttribute:@"text-color" inState:CPThemeStateNormal];
-    [_textFieldSecond setValue:[_datePicker valueForThemeAttribute:@"text-shadow-color" inState:CPThemeStateNormal] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateNormal];
-    [_textFieldSecond setValue:[_datePicker valueForThemeAttribute:@"text-shadow-offset" inState:CPThemeStateNormal] forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateNormal];
-    [_textFieldSecond setValue:[_datePicker valueForThemeAttribute:@"datepicker-textfield-bezel-color" inState:CPThemeStateDisabled] forThemeAttribute:@"bezel-color" inState:CPThemeStateDisabled];
-    [_textFieldSecond setValue:[_datePicker textFont] forThemeAttribute:@"font" inState:CPThemeStateDisabled];
-    [_textFieldSecond setValue:[_datePicker valueForThemeAttribute:@"text-color" inState:CPThemeStateDisabled] forThemeAttribute:@"text-color" inState:CPThemeStateDisabled];
-    [_textFieldSecond setValue:[_datePicker valueForThemeAttribute:@"text-shadow-color" inState:CPThemeStateDisabled] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateDisabled];
-    [_textFieldSecond setValue:[_datePicker valueForThemeAttribute:@"text-shadow-offset" inState:CPThemeStateDisabled] forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateDisabled];
+    [_textFieldMinute setValue:textFieldMinSize forThemeAttribute:@"min-size"];
+    [_textFieldMinute setValue:normalTextFieldContentInset forThemeAttribute:@"content-inset" inState:CPThemeStateNormal];
+    [_textFieldMinute setValue:selectedTextFieldContentInset forThemeAttribute:@"content-inset" inState:CPThemeStateSelected];
+    [_textFieldMinute setValue:selectedTextFieldBezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateSelected];
+    [_textFieldMinute setValue:textFont forThemeAttribute:@"font" inState:CPThemeStateSelected];
+    [_textFieldMinute setValue:selectedTextColor forThemeAttribute:@"text-color" inState:CPThemeStateSelected];
+    [_textFieldMinute setValue:selectedTextShadowColor forThemeAttribute:@"text-shadow-color" inState:CPThemeStateSelected];
+    [_textFieldMinute setValue:selectedTextShadowOffset forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateSelected];
+    [_textFieldMinute setValue:normalTextFieldBezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateNormal];
+    [_textFieldMinute setValue:textFont forThemeAttribute:@"font" inState:CPThemeStateNormal];
+    [_textFieldMinute setValue:textColor forThemeAttribute:@"text-color" inState:CPThemeStateNormal];
+    [_textFieldMinute setValue:normalTextShadowColor forThemeAttribute:@"text-shadow-color" inState:CPThemeStateNormal];
+    [_textFieldMinute setValue:normalTextShadowOffset forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateNormal];
+    [_textFieldMinute setValue:disabledTextFieldBezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateDisabled];
+    [_textFieldMinute setValue:textFont forThemeAttribute:@"font" inState:CPThemeStateDisabled];
+    [_textFieldMinute setValue:disabledTextColor forThemeAttribute:@"text-color" inState:CPThemeStateDisabled];
+    [_textFieldMinute setValue:disabledTextShadowColor forThemeAttribute:@"text-shadow-color" inState:CPThemeStateDisabled];
+    [_textFieldMinute setValue:disabledTextShadowOffset forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateDisabled];
 
-    [_textFieldPMAM setValue:[_datePicker valueForThemeAttribute:@"min-size-datepicker-textfield"] forThemeAttribute:@"min-size"];
-    [_textFieldPMAM setValue:[_datePicker valueForThemeAttribute:@"content-inset-datepicker-textfield" inState:CPThemeStateNormal] forThemeAttribute:@"content-inset" inState:CPThemeStateNormal];
-    [_textFieldPMAM setValue:[_datePicker valueForThemeAttribute:@"content-inset-datepicker-textfield" inState:CPThemeStateSelected] forThemeAttribute:@"content-inset" inState:CPThemeStateSelected];
-    [_textFieldPMAM setValue:[_datePicker valueForThemeAttribute:@"datepicker-textfield-bezel-color" inState:CPThemeStateSelected] forThemeAttribute:@"bezel-color" inState:CPThemeStateSelected];
-    [_textFieldPMAM setValue:[_datePicker textFont] forThemeAttribute:@"font" inState:CPThemeStateSelected];
-    [_textFieldPMAM setValue:[_datePicker valueForThemeAttribute:@"text-color" inState:CPThemeStateSelected] forThemeAttribute:@"text-color" inState:CPThemeStateSelected];
-    [_textFieldPMAM setValue:[_datePicker valueForThemeAttribute:@"text-shadow-color" inState:CPThemeStateSelected] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateSelected];
-    [_textFieldPMAM setValue:[_datePicker valueForThemeAttribute:@"text-shadow-offset" inState:CPThemeStateSelected] forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateSelected];
-    [_textFieldPMAM setValue:[_datePicker valueForThemeAttribute:@"datepicker-textfield-bezel-color" inState:CPThemeStateNormal] forThemeAttribute:@"bezel-color" inState:CPThemeStateNormal];
-    [_textFieldPMAM setValue:[_datePicker textFont] forThemeAttribute:@"font" inState:CPThemeStateNormal];
-    [_textFieldPMAM setValue:[_datePicker textColor] forThemeAttribute:@"text-color" inState:CPThemeStateNormal];
-    [_textFieldPMAM setValue:[_datePicker valueForThemeAttribute:@"text-shadow-color" inState:CPThemeStateNormal] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateNormal];
-    [_textFieldPMAM setValue:[_datePicker valueForThemeAttribute:@"text-shadow-offset" inState:CPThemeStateNormal] forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateNormal];
-    [_textFieldPMAM setValue:[_datePicker valueForThemeAttribute:@"datepicker-textfield-bezel-color" inState:CPThemeStateDisabled] forThemeAttribute:@"bezel-color" inState:CPThemeStateDisabled];
-    [_textFieldPMAM setValue:[_datePicker textFont] forThemeAttribute:@"font" inState:CPThemeStateDisabled];
-    [_textFieldPMAM setValue:[_datePicker valueForThemeAttribute:@"text-color" inState:CPThemeStateDisabled] forThemeAttribute:@"text-color" inState:CPThemeStateDisabled];
-    [_textFieldPMAM setValue:[_datePicker valueForThemeAttribute:@"text-shadow-color" inState:CPThemeStateDisabled] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateDisabled];
-    [_textFieldPMAM setValue:[_datePicker valueForThemeAttribute:@"text-shadow-offset" inState:CPThemeStateDisabled] forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateDisabled];
+    [_textFieldSecond setValue:textFieldMinSize forThemeAttribute:@"min-size"];
+    [_textFieldSecond setValue:normalTextFieldContentInset forThemeAttribute:@"content-inset" inState:CPThemeStateNormal];
+    [_textFieldSecond setValue:selectedTextFieldContentInset forThemeAttribute:@"content-inset" inState:CPThemeStateSelected];
+    [_textFieldSecond setValue:selectedTextFieldBezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateSelected];
+    [_textFieldSecond setValue:textFont forThemeAttribute:@"font" inState:CPThemeStateSelected];
+    [_textFieldSecond setValue:selectedTextColor forThemeAttribute:@"text-color" inState:CPThemeStateSelected];
+    [_textFieldSecond setValue:selectedTextShadowColor forThemeAttribute:@"text-shadow-color" inState:CPThemeStateSelected];
+    [_textFieldSecond setValue:selectedTextShadowOffset forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateSelected];
+    [_textFieldSecond setValue:normalTextFieldBezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateNormal];
+    [_textFieldSecond setValue:textFont forThemeAttribute:@"font" inState:CPThemeStateNormal];
+    [_textFieldSecond setValue:textColor forThemeAttribute:@"text-color" inState:CPThemeStateNormal];
+    [_textFieldSecond setValue:normalTextShadowColor forThemeAttribute:@"text-shadow-color" inState:CPThemeStateNormal];
+    [_textFieldSecond setValue:normalTextShadowOffset forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateNormal];
+    [_textFieldSecond setValue:disabledTextFieldBezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateDisabled];
+    [_textFieldSecond setValue:textFont forThemeAttribute:@"font" inState:CPThemeStateDisabled];
+    [_textFieldSecond setValue:disabledTextColor forThemeAttribute:@"text-color" inState:CPThemeStateDisabled];
+    [_textFieldSecond setValue:disabledTextShadowColor forThemeAttribute:@"text-shadow-color" inState:CPThemeStateDisabled];
+    [_textFieldSecond setValue:disabledTextShadowOffset forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateDisabled];
 
-    [_textFieldSeparatorOne setValue:[_datePicker valueForThemeAttribute:@"content-inset-datepicker-textfield-separator" inState:CPThemeStateNormal] forThemeAttribute:@"content-inset" inState:CPThemeStateNormal];
-    [_textFieldSeparatorOne setValue:[_datePicker valueForThemeAttribute:@"content-inset-datepicker-textfield-separator" inState:CPThemeStateSelected] forThemeAttribute:@"content-inset" inState:CPThemeStateSelected];
-    [_textFieldSeparatorOne setValue:[_datePicker textFont] forThemeAttribute:@"font" inState:CPThemeStateNormal];
-    [_textFieldSeparatorOne setValue:[_datePicker textColor] forThemeAttribute:@"text-color" inState:CPThemeStateNormal];
-    [_textFieldSeparatorOne setValue:[_datePicker valueForThemeAttribute:@"text-shadow-color" inState:CPThemeStateNormal] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateNormal];
-    [_textFieldSeparatorOne setValue:[_datePicker valueForThemeAttribute:@"text-shadow-offset" inState:CPThemeStateNormal] forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateNormal];
-    [_textFieldSeparatorOne setValue:[_datePicker textFont] forThemeAttribute:@"font" inState:CPThemeStateDisabled];
-    [_textFieldSeparatorOne setValue:[_datePicker valueForThemeAttribute:@"text-color" inState:CPThemeStateDisabled] forThemeAttribute:@"text-color" inState:CPThemeStateDisabled];
-    [_textFieldSeparatorOne setValue:[_datePicker valueForThemeAttribute:@"text-shadow-color" inState:CPThemeStateDisabled] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateDisabled];
-    [_textFieldSeparatorOne setValue:[_datePicker valueForThemeAttribute:@"text-shadow-offset" inState:CPThemeStateDisabled] forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateDisabled];
+    [_textFieldPMAM setValue:textFieldMinSize forThemeAttribute:@"min-size"];
+    [_textFieldPMAM setValue:normalTextFieldContentInset forThemeAttribute:@"content-inset" inState:CPThemeStateNormal];
+    [_textFieldPMAM setValue:selectedTextFieldContentInset forThemeAttribute:@"content-inset" inState:CPThemeStateSelected];
+    [_textFieldPMAM setValue:selectedTextFieldBezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateSelected];
+    [_textFieldPMAM setValue:textFont forThemeAttribute:@"font" inState:CPThemeStateSelected];
+    [_textFieldPMAM setValue:selectedTextColor forThemeAttribute:@"text-color" inState:CPThemeStateSelected];
+    [_textFieldPMAM setValue:selectedTextShadowColor forThemeAttribute:@"text-shadow-color" inState:CPThemeStateSelected];
+    [_textFieldPMAM setValue:selectedTextShadowOffset forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateSelected];
+    [_textFieldPMAM setValue:normalTextFieldBezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateNormal];
+    [_textFieldPMAM setValue:textFont forThemeAttribute:@"font" inState:CPThemeStateNormal];
+    [_textFieldPMAM setValue:textColor forThemeAttribute:@"text-color" inState:CPThemeStateNormal];
+    [_textFieldPMAM setValue:normalTextShadowColor forThemeAttribute:@"text-shadow-color" inState:CPThemeStateNormal];
+    [_textFieldPMAM setValue:normalTextShadowOffset forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateNormal];
+    [_textFieldPMAM setValue:disabledTextFieldBezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateDisabled];
+    [_textFieldPMAM setValue:textFont forThemeAttribute:@"font" inState:CPThemeStateDisabled];
+    [_textFieldPMAM setValue:disabledTextColor forThemeAttribute:@"text-color" inState:CPThemeStateDisabled];
+    [_textFieldPMAM setValue:disabledTextShadowColor forThemeAttribute:@"text-shadow-color" inState:CPThemeStateDisabled];
+    [_textFieldPMAM setValue:disabledTextShadowOffset forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateDisabled];
 
-    [_textFieldSeparatorTwo setValue:[_datePicker valueForThemeAttribute:@"content-inset-datepicker-textfield-separator" inState:CPThemeStateNormal] forThemeAttribute:@"content-inset" inState:CPThemeStateNormal];
-    [_textFieldSeparatorTwo setValue:[_datePicker valueForThemeAttribute:@"content-inset-datepicker-textfield-separator" inState:CPThemeStateSelected] forThemeAttribute:@"content-inset" inState:CPThemeStateSelected];
-    [_textFieldSeparatorTwo setValue:[_datePicker textFont] forThemeAttribute:@"font" inState:CPThemeStateNormal];
-    [_textFieldSeparatorTwo setValue:[_datePicker textColor] forThemeAttribute:@"text-color" inState:CPThemeStateNormal];
-    [_textFieldSeparatorTwo setValue:[_datePicker valueForThemeAttribute:@"text-shadow-color" inState:CPThemeStateNormal] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateNormal];
-    [_textFieldSeparatorTwo setValue:[_datePicker valueForThemeAttribute:@"text-shadow-offset" inState:CPThemeStateNormal] forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateNormal];
-    [_textFieldSeparatorTwo setValue:[_datePicker textFont] forThemeAttribute:@"font" inState:CPThemeStateDisabled];
-    [_textFieldSeparatorTwo setValue:[_datePicker valueForThemeAttribute:@"text-color" inState:CPThemeStateDisabled] forThemeAttribute:@"text-color" inState:CPThemeStateDisabled];
-    [_textFieldSeparatorTwo setValue:[_datePicker valueForThemeAttribute:@"text-shadow-color" inState:CPThemeStateDisabled] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateDisabled];
-    [_textFieldSeparatorTwo setValue:[_datePicker valueForThemeAttribute:@"text-shadow-offset" inState:CPThemeStateDisabled] forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateDisabled];
+    [_textFieldSeparatorOne setValue:normalSeparatorContentInset forThemeAttribute:@"content-inset" inState:CPThemeStateNormal];
+    [_textFieldSeparatorOne setValue:selectedSeparatorContentInset forThemeAttribute:@"content-inset" inState:CPThemeStateSelected];
+    [_textFieldSeparatorOne setValue:textFont forThemeAttribute:@"font" inState:CPThemeStateNormal];
+    [_textFieldSeparatorOne setValue:textColor forThemeAttribute:@"text-color" inState:CPThemeStateNormal];
+    [_textFieldSeparatorOne setValue:normalTextShadowColor forThemeAttribute:@"text-shadow-color" inState:CPThemeStateNormal];
+    [_textFieldSeparatorOne setValue:normalTextShadowOffset forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateNormal];
+    [_textFieldSeparatorOne setValue:textFont forThemeAttribute:@"font" inState:CPThemeStateDisabled];
+    [_textFieldSeparatorOne setValue:disabledTextColor forThemeAttribute:@"text-color" inState:CPThemeStateDisabled];
+    [_textFieldSeparatorOne setValue:disabledTextShadowColor forThemeAttribute:@"text-shadow-color" inState:CPThemeStateDisabled];
+    [_textFieldSeparatorOne setValue:disabledTextShadowOffset forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateDisabled];
 
-    [_textFieldSeparatorThree setValue:[_datePicker valueForThemeAttribute:@"content-inset-datepicker-textfield-separator" inState:CPThemeStateNormal] forThemeAttribute:@"content-inset" inState:CPThemeStateNormal];
-    [_textFieldSeparatorThree setValue:[_datePicker valueForThemeAttribute:@"content-inset-datepicker-textfield-separator" inState:CPThemeStateSelected] forThemeAttribute:@"content-inset" inState:CPThemeStateSelected];
-    [_textFieldSeparatorThree setValue:[_datePicker textFont] forThemeAttribute:@"font" inState:CPThemeStateNormal];
-    [_textFieldSeparatorThree setValue:[_datePicker textColor] forThemeAttribute:@"text-color" inState:CPThemeStateNormal];
-    [_textFieldSeparatorThree setValue:[_datePicker valueForThemeAttribute:@"text-shadow-color" inState:CPThemeStateNormal] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateNormal];
-    [_textFieldSeparatorThree setValue:[_datePicker valueForThemeAttribute:@"text-shadow-offset" inState:CPThemeStateNormal] forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateNormal];
-    [_textFieldSeparatorThree setValue:[_datePicker textFont] forThemeAttribute:@"font" inState:CPThemeStateDisabled];
-    [_textFieldSeparatorThree setValue:[_datePicker valueForThemeAttribute:@"text-color" inState:CPThemeStateDisabled] forThemeAttribute:@"text-color" inState:CPThemeStateDisabled];
-    [_textFieldSeparatorThree setValue:[_datePicker valueForThemeAttribute:@"text-shadow-color" inState:CPThemeStateDisabled] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateDisabled];
-    [_textFieldSeparatorThree setValue:[_datePicker valueForThemeAttribute:@"text-shadow-offset" inState:CPThemeStateDisabled] forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateDisabled];
+    [_textFieldSeparatorTwo setValue:normalSeparatorContentInset forThemeAttribute:@"content-inset" inState:CPThemeStateNormal];
+    [_textFieldSeparatorTwo setValue:selectedSeparatorContentInset forThemeAttribute:@"content-inset" inState:CPThemeStateSelected];
+    [_textFieldSeparatorTwo setValue:textFont forThemeAttribute:@"font" inState:CPThemeStateNormal];
+    [_textFieldSeparatorTwo setValue:textColor forThemeAttribute:@"text-color" inState:CPThemeStateNormal];
+    [_textFieldSeparatorTwo setValue:normalTextShadowColor forThemeAttribute:@"text-shadow-color" inState:CPThemeStateNormal];
+    [_textFieldSeparatorTwo setValue:normalTextShadowOffset forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateNormal];
+    [_textFieldSeparatorTwo setValue:textFont forThemeAttribute:@"font" inState:CPThemeStateDisabled];
+    [_textFieldSeparatorTwo setValue:disabledTextColor forThemeAttribute:@"text-color" inState:CPThemeStateDisabled];
+    [_textFieldSeparatorTwo setValue:disabledTextShadowColor forThemeAttribute:@"text-shadow-color" inState:CPThemeStateDisabled];
+    [_textFieldSeparatorTwo setValue:disabledTextShadowOffset forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateDisabled];
 
-    [_textFieldSeparatorFour setValue:[_datePicker valueForThemeAttribute:@"content-inset-datepicker-textfield-separator" inState:CPThemeStateNormal] forThemeAttribute:@"content-inset" inState:CPThemeStateNormal];
-    [_textFieldSeparatorFour setValue:[_datePicker valueForThemeAttribute:@"content-inset-datepicker-textfield-separator" inState:CPThemeStateSelected] forThemeAttribute:@"content-inset" inState:CPThemeStateSelected];
-    [_textFieldSeparatorFour setValue:[_datePicker textFont] forThemeAttribute:@"font" inState:CPThemeStateNormal];
-    [_textFieldSeparatorFour setValue:[_datePicker textColor] forThemeAttribute:@"text-color" inState:CPThemeStateNormal];
-    [_textFieldSeparatorFour setValue:[_datePicker valueForThemeAttribute:@"text-shadow-color" inState:CPThemeStateNormal] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateNormal];
-    [_textFieldSeparatorFour setValue:[_datePicker valueForThemeAttribute:@"text-shadow-offset" inState:CPThemeStateNormal] forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateNormal];
-    [_textFieldSeparatorFour setValue:[_datePicker textFont] forThemeAttribute:@"font" inState:CPThemeStateDisabled];
-    [_textFieldSeparatorFour setValue:[_datePicker valueForThemeAttribute:@"text-color" inState:CPThemeStateDisabled] forThemeAttribute:@"text-color" inState:CPThemeStateDisabled];
-    [_textFieldSeparatorFour setValue:[_datePicker valueForThemeAttribute:@"text-shadow-color" inState:CPThemeStateDisabled] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateDisabled];
-    [_textFieldSeparatorFour setValue:[_datePicker valueForThemeAttribute:@"text-shadow-offset" inState:CPThemeStateDisabled] forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateDisabled];
+    [_textFieldSeparatorThree setValue:normalSeparatorContentInset forThemeAttribute:@"content-inset" inState:CPThemeStateNormal];
+    [_textFieldSeparatorThree setValue:selectedSeparatorContentInset forThemeAttribute:@"content-inset" inState:CPThemeStateSelected];
+    [_textFieldSeparatorThree setValue:textFont forThemeAttribute:@"font" inState:CPThemeStateNormal];
+    [_textFieldSeparatorThree setValue:textColor forThemeAttribute:@"text-color" inState:CPThemeStateNormal];
+    [_textFieldSeparatorThree setValue:normalTextShadowColor forThemeAttribute:@"text-shadow-color" inState:CPThemeStateNormal];
+    [_textFieldSeparatorThree setValue:normalTextShadowOffset forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateNormal];
+    [_textFieldSeparatorThree setValue:textFont forThemeAttribute:@"font" inState:CPThemeStateDisabled];
+    [_textFieldSeparatorThree setValue:disabledTextColor forThemeAttribute:@"text-color" inState:CPThemeStateDisabled];
+    [_textFieldSeparatorThree setValue:disabledTextShadowColor forThemeAttribute:@"text-shadow-color" inState:CPThemeStateDisabled];
+    [_textFieldSeparatorThree setValue:disabledTextShadowOffset forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateDisabled];
 
+    [_textFieldSeparatorFour setValue:normalSeparatorContentInset forThemeAttribute:@"content-inset" inState:CPThemeStateNormal];
+    [_textFieldSeparatorFour setValue:selectedSeparatorContentInset forThemeAttribute:@"content-inset" inState:CPThemeStateSelected];
+    [_textFieldSeparatorFour setValue:textFont forThemeAttribute:@"font" inState:CPThemeStateNormal];
+    [_textFieldSeparatorFour setValue:textColor forThemeAttribute:@"text-color" inState:CPThemeStateNormal];
+    [_textFieldSeparatorFour setValue:normalTextShadowColor forThemeAttribute:@"text-shadow-color" inState:CPThemeStateNormal];
+    [_textFieldSeparatorFour setValue:normalTextShadowOffset forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateNormal];
+    [_textFieldSeparatorFour setValue:textFont forThemeAttribute:@"font" inState:CPThemeStateDisabled];
+    [_textFieldSeparatorFour setValue:disabledTextColor forThemeAttribute:@"text-color" inState:CPThemeStateDisabled];
+    [_textFieldSeparatorFour setValue:disabledTextShadowColor forThemeAttribute:@"text-shadow-color" inState:CPThemeStateDisabled];
+    [_textFieldSeparatorFour setValue:disabledTextShadowOffset forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateDisabled];
 }
 
 /*! Hide or not the textField depending on the datePickerElements flag
@@ -1005,7 +1036,7 @@ var CPZeroKeyCode = 48,
     if ([_textFieldMonth isHidden])
         [_textFieldHour setFrameOrigin:CGPointMake(horizontalInset, verticalInset)];
     else
-        [_textFieldHour setFrameOrigin:CGPointMake(CGRectGetMaxX([_textFieldYear frame]) + [_datePicker valueForThemeAttribute:@"date-hour-margin"],verticalInset)];
+        [_textFieldHour setFrameOrigin:CGPointMake(CGRectGetMaxX([_textFieldYear frame]) + [_datePicker currentValueForThemeAttribute:@"date-hour-margin"], verticalInset)];
 
     [_textFieldSeparatorThree setFrameOrigin:CGPointMake(CGRectGetMaxX([_textFieldHour frame]) + separatorContentInset.left, verticalInset)];
     [_textFieldMinute setFrameOrigin:CGPointMake(CGRectGetMaxX([_textFieldSeparatorThree frame]) + separatorContentInset.right, verticalInset)];
@@ -1033,6 +1064,25 @@ var CPZeroKeyCode = 48,
     [_textFieldSeparatorThree sizeToFit];
     [_textFieldSeparatorFour sizeToFit];
     [_textFieldPMAM sizeToFit];
+}
+
+/*! Size to fit all of the textFields
+*/
+- (void)_setControlSizes
+{
+    var controlSize = [_datePicker controlSize];
+
+    [_textFieldDay setControlSize:controlSize];
+    [_textFieldMonth setControlSize:controlSize];
+    [_textFieldYear setControlSize:controlSize];
+    [_textFieldHour setControlSize:controlSize];
+    [_textFieldMinute setControlSize:controlSize];
+    [_textFieldSecond setControlSize:controlSize];
+    [_textFieldSeparatorOne setControlSize:controlSize];
+    [_textFieldSeparatorTwo setControlSize:controlSize];
+    [_textFieldSeparatorThree setControlSize:controlSize];
+    [_textFieldSeparatorFour setControlSize:controlSize];
+    [_textFieldPMAM setControlSize:controlSize];
 }
 
 
@@ -1208,23 +1258,28 @@ var CPMonthDateType = 0,
 */
 @implementation _CPDatePickerElementTextField : CPTextField
 {
-    _CPDatePickerElementTextField _nextTextField        @accessors(property=nextTextField);
-    _CPDatePickerElementTextField _previousTextField    @accessors(property=previousTextField);
+    _CPDatePickerElementTextField _nextTextField            @accessors(property=nextTextField);
+    _CPDatePickerElementTextField _previousTextField        @accessors(property=previousTextField);
+    _CPDatePickerElementView      _datePickerElementView    @accessors(property=datePickerElementView);
 
     CPDatePicker    _datePicker @accessors(setter=setDatePicker:);
 
     int _dateType  @accessors(getter=dateType);
     int _maxNumber @accessors(getter=maxNumber);
     int _minNumber @accessors(getter=minNumber);
+
+    BOOL    _firstEvent;
+    CPTimer _timerEdition;
 }
 
-
-#pragma mark -
-#pragma mark Getter Setter methods
-
-- (BOOL)acceptFirstResponder
+- (id)init
 {
-    return NO;
+    if (self = [super init])
+    {
+        _firstEvent = YES;
+    }
+
+    return self;
 }
 
 /*! Set the dateType of the textField
@@ -1325,38 +1380,128 @@ var CPMonthDateType = 0,
     It's called when the user is editing with the keyboard
     @param aStringValue a CPString
 */
-- (void)setStringKeyValue:(id)anObjectValue
+- (void)setValueForKeyEvent:(CPEvent)anEvent
 {
-    if (_dateType == CPYearDateType)
-    {
-        if ([anObjectValue length] > 4)
-            return
+    var keyCode = [anEvent keyCode];
 
-        while ([anObjectValue length] < 4)
-            anObjectValue = " " + anObjectValue;
+    if (keyCode != CPDeleteKeyCode && keyCode != CPDeleteForwardKeyCode  && keyCode < CPZeroKeyCode || keyCode > CPNineKeyCode)
+        return;
+
+    var newValue = [self stringValue].replace(/\s/g, ''),
+        length = [newValue length],
+        eventKeyValue = parseInt([anEvent characters]).toString();
+
+    if (keyCode == CPDeleteKeyCode || keyCode == CPDeleteForwardKeyCode)
+    {
+        [_timerEdition invalidate];
+        _timerEdition = nil;
+        newValue = [newValue substringToIndex:(length - 1)];
     }
     else
     {
-        if ([anObjectValue length] > 2)
-            return
+        if (!_timerEdition)
+        {
+            _timerEdition = [CPTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(_timerKeyEvent:) userInfo:nil repeats:NO];
 
-        while ([anObjectValue length] < 2)
-            anObjectValue = " " + anObjectValue;
+            if (_firstEvent || !length)
+                newValue = eventKeyValue;
+            else
+                newValue = parseInt(newValue).toString() + eventKeyValue;
+        }
+        else
+        {
+            var newFireDate = [CPDate date];
+
+            newFireDate.setSeconds(newFireDate.getSeconds() + 2);
+            [_timerEdition setFireDate:newFireDate];
+
+            newValue = parseInt(newValue).toString() + eventKeyValue;
+        }
     }
 
-    if (parseInt(anObjectValue) > [self _maxNumberWithMaxDate])
+    if (parseInt(newValue) > [self _maxNumberWithMaxDate] || ([_datePicker _isEnglishFormat] && _dateType == CPHourDateType && parseInt(newValue) > 12))
         return;
 
-    if ([_datePicker _isEnglishFormat] && _dateType == CPHourDateType && parseInt(anObjectValue) > 12)
-        return;
+    _firstEvent = NO;
 
-    [super setObjectValue:anObjectValue];
+    [super setObjectValue:newValue];
+}
+
+/*!
+    End of the timer
+*/
+- (void)_timerKeyEvent:(id)sender
+{
+    var stringValue = [self stringValue];
+
+    _timerEdition = nil;
+
+    if ([stringValue length])
+    {
+        if ([_datePicker _isEnglishFormat] && [self dateType] == CPHourDateType)
+        {
+            var isAMHour = [[self superview] _isAMHour];
+
+            if (!isAMHour && stringValue != 12)
+                stringValue = parseInt(stringValue) + 12;
+
+            if (stringValue == 12 && !isAMHour)
+                stringValue = 12;
+            else if (stringValue == 12)
+                stringValue = 0;
+        }
+
+        [self setObjectValue:stringValue];
+    }
+}
+
+/*!
+    We force to end the timer
+*/
+- (void)_invalidTimer
+{
+    if (_timerEdition)
+    {
+        [_timerEdition invalidate];
+        _timerEdition = nil;
+    }
+}
+
+/*!
+    We force to end the timer and to update the objectValue of the datePicker
+*/
+- (void)_endEditing
+{
+    if (_timerEdition)
+        [_timerEdition invalidate];
+
+    _timerEdition = nil;
+
+    var objectValue = [self stringValue];
+
+    if (![objectValue length])
+        objectValue = [self objectValue];
+
+    if ([_datePicker _isEnglishFormat] && [self dateType] == CPHourDateType)
+    {
+        var isAMHour = [[self superview] _isAMHour];
+
+        if (!isAMHour && objectValue != 12)
+            objectValue = parseInt(objectValue) + 12;
+
+        if (objectValue == 12 && !isAMHour)
+            objectValue = 12;
+        else if (objectValue == 12)
+            objectValue = 0;
+    }
+
+    [self setObjectValue:objectValue];
 }
 
 /*! Set the stringValue of the TextField. Add some zeros of there isn't 2/4 letters in the value. It's called at the end of the editing process
     @param aStringValue a CPString
 */
-- (void)setStringValue:(id)aStringValue
+- (void)setStringValue:(CPString)aStringValue
 {
     if (_dateType == CPYearDateType)
     {
@@ -1378,7 +1523,13 @@ var CPMonthDateType = 0,
         }
 
         while ([aStringValue length] < 2)
-            aStringValue = "0" + aStringValue;
+        {
+            if (_dateType == CPSecondDateType || _dateType == CPMinuteDateType)
+                aStringValue = @"0" + aStringValue;
+            else
+                aStringValue = @" " + aStringValue;
+        }
+
     }
 
     [super setObjectValue:aStringValue];
@@ -1391,11 +1542,19 @@ var CPMonthDateType = 0,
 */
 - (void)setObjectValue:(id)anObjectValue
 {
-    var dateValue = [[_datePicker dateValue] copy];
+    var dateValue = [[_datePicker dateValue] copy],
+        lengthString = [[self stringValue] length],
+        objectValue = parseInt(anObjectValue);
 
     switch (_dateType)
     {
         case CPMonthDateType:
+
+            if (objectValue == 0 || !lengthString)
+            {
+                [self setStringValue:(dateValue.getMonth() + 1).toString()];
+                return;
+            }
 
             var dateNextMonth = [dateValue copy];
 
@@ -1405,75 +1564,81 @@ var CPMonthDateType = 0,
             var numberDayNextMonth = [dateNextMonth _daysInMonth];
 
             if (numberDayNextMonth < [dateValue _daysInMonth] && dateValue.getDate() > numberDayNextMonth)
-                dateValue.setDate(numberDayNextMonth);
+                [_datePickerElementView setDayDateValue:numberDayNextMonth.toString()];
 
-            dateValue.setMonth(parseInt(anObjectValue) - 1);
+            [super setObjectValue:objectValue];
             break;
 
         case CPDayDateType:
-            dateValue.setDate(parseInt(anObjectValue));
+
+            if (objectValue == 0 || !lengthString)
+            {
+                [self setStringValue:dateValue.getDate().toString()];
+                return;
+            }
+
+            [super setObjectValue:objectValue];
             break;
 
         case CPYearDateType:
-            dateValue.setFullYear(parseInt(anObjectValue));
+
+            if (objectValue == 0 || !lengthString)
+            {
+                [self setStringValue:dateValue.getFullYear().toString()];
+                return;
+            }
+
+            [super setObjectValue:objectValue];
             break;
 
         case CPHourDateType:
-            dateValue.setHours(parseInt(anObjectValue));
+
+            if (!lengthString)
+            {
+                [self setStringValue:dateValue.getHours().toString()];
+                return;
+            }
+
+            [super setObjectValue:objectValue];
             break;
 
         case CPSecondDateType:
-            dateValue.setSeconds(parseInt(anObjectValue));
+
+            if (!lengthString)
+            {
+                [self setStringValue:dateValue.getSeconds().toString()];
+                return;
+            }
+
+            [super setObjectValue:objectValue];
             break;
 
         case CPMinuteDateType:
-            dateValue.setMinutes(parseInt(anObjectValue));
+
+            if (!lengthString)
+            {
+                [self setStringValue:dateValue.getMinutes().toString()];
+                return;
+            }
+
+            [super setObjectValue:objectValue];
             break;
     }
 
-    [_datePicker setDateValue:dateValue];
-}
+    var newDateValue = [_datePickerElementView dateValue],
+        timeZone = [_datePicker timeZone];
 
-/*! Return the objectValue of the textField. Needed for the binding.
-    This returns the objectValue relative to the dateValue
-*/
-- (void)objectValue
-{
-    var dateValue = [[_datePicker dateValue] copy];
-
-    switch (_dateType)
+    if (timeZone)
     {
-        case CPMonthDateType:
-            return dateValue.getMonth() + 1;
-            break;
+        var secondsFromGMT = [timeZone secondsFromGMTForDate:newDateValue],
+            secondsFromGMTTimeZone = [timeZone secondsFromGMT];
 
-        case CPDayDateType:
-            return dateValue.getDate();
-            break;
-
-        case CPYearDateType:
-            return dateValue.getFullYear();
-            break;
-
-        case CPHourDateType:
-            return dateValue.getHours();
-            break;
-
-        case CPSecondDateType:
-            return dateValue.getSeconds();
-            break;
-
-        case CPMinuteDateType:
-            return dateValue.getMinutes();
-            break;
-
-        default:
-            return [super objectValue];
-            break;
+        newDateValue.setSeconds(newDateValue.getSeconds() + secondsFromGMT - secondsFromGMTTimeZone);
     }
 
-    return [super objectValue];
+    [_datePicker setDateValue:newDateValue];
 }
+
 
 #pragma mark -
 #pragma mark Mouse event
@@ -1504,7 +1669,69 @@ var CPMonthDateType = 0,
 */
 - (void)makeDeselectable
 {
+    _firstEvent = YES;
     [self unsetThemeState:CPThemeStateSelected];
+}
+
+
+#pragma mark -
+#pragma mark Override
+
+/*!
+    We override this method to get all the time the good width
+*/
+- (CGSize)_minimumFrameSize
+{
+    var frameSize = [self frameSize],
+        contentInset = [self currentValueForThemeAttribute:@"content-inset"],
+        minSize = [self currentValueForThemeAttribute:@"min-size"],
+        maxSize = [self currentValueForThemeAttribute:@"max-size"],
+        lineBreakMode = [self lineBreakMode],
+        text = (_dateType == CPYearDateType) ? @"0000" : @"00",
+        textSize = CGSizeMakeCopy(frameSize),
+        font = [self currentValueForThemeAttribute:@"font"];
+
+    textSize.width -= contentInset.left + contentInset.right;
+    textSize.height -= contentInset.top + contentInset.bottom;
+
+    if (_dateType == CPAMPMDateType)
+        text = [self stringValue];
+
+    if (frameSize.width !== 0 &&
+        ![self isBezeled]     &&
+        (lineBreakMode === CPLineBreakByWordWrapping || lineBreakMode === CPLineBreakByCharWrapping))
+    {
+        textSize = [text sizeWithFont:font inWidth:textSize.width];
+    }
+    else
+    {
+        textSize = [text sizeWithFont:font];
+
+        // Account for possible fractional pixels at right edge
+        textSize.width += 1;
+    }
+
+    // Account for possible fractional pixels at bottom edge
+    textSize.height += 1;
+
+    frameSize.height = textSize.height + contentInset.top + contentInset.bottom;
+
+    if ([self isBezeled])
+    {
+        frameSize.height = MAX(frameSize.height, minSize.height);
+
+        if (maxSize.width > 0.0)
+            frameSize.width = MIN(frameSize.width, maxSize.width);
+
+        if (maxSize.height > 0.0)
+            frameSize.height = MIN(frameSize.height, maxSize.height);
+    }
+    else
+        frameSize.width = textSize.width + contentInset.left + contentInset.right;
+
+    frameSize.width = MAX(frameSize.width, minSize.width);
+
+    return frameSize;
 }
 
 @end

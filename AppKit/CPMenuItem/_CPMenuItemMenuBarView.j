@@ -49,7 +49,7 @@
     return "menu-item-bar-view";
 }
 
-+ (id)themeAttributes
++ (CPDictionary)themeAttributes
 {
     return @{
             @"horizontal-margin": 9.0,
@@ -84,25 +84,25 @@
     return self;
 }
 
-- (CPColor)setTextColor:(CPColor)aColor
+- (void)setTextColor:(CPColor)aColor
 {
     _textColor = aColor;
     [self setNeedsLayout];
 }
 
-- (CPColor)setTextShadowColor:(CPColor)aColor
+- (void)setTextShadowColor:(CPColor)aColor
 {
     _textShadowColor = aColor;
     [self setNeedsLayout];
 }
 
-- (CPColor)setHighlightTextColor:(CPColor)aColor
+- (void)setHighlightTextColor:(CPColor)aColor
 {
     _highlightTextColor = aColor;
     [self setNeedsLayout];
 }
 
-- (CPColor)setHighlightTextShadowColor:(CPColor)aColor
+- (void)setHighlightTextShadowColor:(CPColor)aColor
 {
     _highlightTextShadowColor = aColor;
     [self setNeedsLayout];

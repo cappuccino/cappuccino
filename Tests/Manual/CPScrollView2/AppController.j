@@ -31,6 +31,7 @@
 
     [scrollView setDocumentView:contentView];
     [contentView2 setAutoresizingMask:CPViewWidthSizable];
+    [contentView2 setBackgroundColor:[CPColor checkerBoardColor]];
     [scrollView2 setDocumentView:contentView2];
 }
 

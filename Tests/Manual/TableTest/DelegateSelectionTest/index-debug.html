@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+ index-debug.html
+ DelegateSelectionTest
+
+ Created by You on October 16, 2013.
+ Copyright 2013, Your Company All rights reserved.
+-->
+    <head>
+        <meta charset="utf-8">
+
+        <!--[if lte IE 8]>
+        <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7, chrome=1">
+        <![endif]-->
+        <!--[if gte IE 9]>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
+        <![endif]-->
+
+        <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+        <link rel="apple-touch-icon" href="Resources/icon.png">
+        <link rel="apple-touch-startup-image" href="Resources/default.png">
+
+        <title>DelegateSelectionTest</title>
+
+        <!-- Custom javascript goes here -->
+        <!-- End custom javascript -->
+
+        <script type="text/javascript">
+            OBJJ_MAIN_FILE = "main.j";
+            OBJJ_INCLUDE_PATHS = ["Frameworks/Debug", "Frameworks"];
+
+            var progressBar = null;
+
+            OBJJ_PROGRESS_CALLBACK = function(percent, appSize, path)
+            {
+                percent = percent * 100;
+
+                if (!progressBar)
+                    progressBar = document.getElementById("progress-bar");
+
+                if (progressBar)
+                    progressBar.style.width = Math.min(percent, 100) + "%";
+            }
+
+            var loadingHTML =
+                    '<div id="loading">' +
+                    '    <div id="loading-text">Loading...</div>' +
+                    '    <div id="progress-indicator">' +
+                    '        <span id="progress-bar" style="width:0%"></span>' +
+                    '    </div>' +
+                    '</div>';
+        </script>
+
+        <script type="text/javascript" src="Frameworks/Debug/Objective-J/Objective-J.js" charset="UTF-8"></script>
+
+        <script type="text/javascript">
+            objj_msgSend_reset();
+
+            // DEBUG OPTIONS:
+
+            // Uncomment to enable printing of backtraces on exceptions:
+            //objj_msgSend_decorate(objj_backtrace_decorator);
+
+            // Uncomment to supress exceptions that take place inside a message
+            //objj_msgSend_decorate(objj_supress_exceptions_decorator)
+
+            // Uncomment to enable runtime type checking:
+            //objj_msgSend_decorate(objj_typecheck_decorator);
+
+            // Uncomment (along with both above) to print backtraces on type check errors:
+            //objj_typecheck_prints_backtrace = true;
+
+            // Uncomment to disable the default logger (CPLogConsole if window.console exists, CPLogPopup otherwise):
+            //CPLogUnregister(CPLogDefault);
+
+            // Uncomment to enable a specific logger:
+            //CPLogRegister(CPLogConsole);
+            //CPLogRegister(CPLogPopup);
+
+            // Tag view DOM elements with a "data-cappuccino-view" attribute that contains
+            // the class name of the view that created them. Comment this or set to false to disable.
+            appkit_tag_dom_elements = true;
+        </script>
+
+        <style type="text/css">
+            html, body, h1, p {
+                margin: 0;
+                padding: 0;
+            }
+
+            /* We need a body wrapper because Cappuccino is unhappy if we change the body element */
+            #cappuccino-body {
+                /* Position it absolutely so it will fill the height without content */
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                width: 100%;
+
+                /* Put it at the bottom of the stack so it doesn't interfere with UI */
+                z-index: -1000;
+            }
+
+            #cappuccino-body .container {
+                display: table;
+                margin: 0 auto;
+                height: 100%;
+            }
+
+            #cappuccino-body .content {
+                display: table-cell;
+                height: 100%;
+                vertical-align: top;
+            }
+
+            #loading {
+                position: relative;
+                top: 35%;
+            }
+
+            #loading-text {
+                height: 1.5em;
+                color: #555;
+                font: normal bold 36px/36px Arial, sans-serif;
+            }
+
+            #progress-indicator {
+                padding: 0px;
+                height: 16px;
+                border: 5px solid #555;
+                border-radius: 18px;
+                background-color: white;
+            }
+
+            #progress-bar {
+                position: relative;
+                top: -1px;
+                left: -1px;
+                display: block;
+                height: 18px;
+
+                /* Compensate for moving the bar left 1px to overlap the indicator border */
+                border-right: 1px solid #555;
+                background-color: #555;
+            }
+
+            #noscript {
+                position: relative;
+                top: 35%;
+                padding: 1em 1.5em;
+                border: 5px solid #555;
+                border-radius: 16px;
+                background-color: white;
+                color: #555;
+                text-align: center;
+                font: bold 24px Arial, sans-serif;
+            }
+
+            #noscript a {
+                color: #98c0ff;
+                text-decoration: none;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div id="cappuccino-body">
+            <div class="container">
+                <div class="content">
+                    <script type="text/javascript">
+                        document.write(loadingHTML);
+                    </script>
+                </div>
+            </div>
+            <noscript style="position:absolute; top:0; left:0; width:100%; height:100%">
+                <div class="container">
+                    <div class="content">
+                        <div id="noscript">
+                            <p style="font-size:120%; margin-bottom:.75em">JavaScript is required for this site.</p>
+                            <p><a href="http://www.enable-javascript.com" target="_blank">Enable JavaScript</a></p>
+                        </div>
+                    </div>
+                </div>
+            </noscript>
+        </div>
+    </body>
+</html>

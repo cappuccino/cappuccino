@@ -19,7 +19,7 @@ var concat = Array.prototype.concat,
     return [];
 }
 
-+ (CPArray)array
++ (id)array
 {
     return [];
 }
@@ -107,7 +107,7 @@ var concat = Array.prototype.concat,
     return self;
 }
 
-- (BOOL)count
+- (CPUInteger)count
 {
     return self.length;
 }
@@ -196,8 +196,10 @@ var concat = Array.prototype.concat,
     }
 
     else
-        for (; index < count; ++index)
-            objj_msgSend(self[index], aSelector);
+        for (; index < count; ++index) {
+            var receiver = self[index];
+            receiver == nil ? nil : receiver.isa.objj_msgSend0(receiver, aSelector);
+        }
 }
 
 - (CPArray)arrayByAddingObject:(id)anObject
@@ -230,7 +232,7 @@ var concat = Array.prototype.concat,
     return join.call(self, aString);
 }
 
-- (void)insertObject:(id)anObject atIndex:(int)anIndex
+- (void)insertObject:(id)anObject atIndex:(CPUInteger)anIndex
 {
     if (anIndex > self.length || anIndex < 0)
         _CPRaiseRangeException(self, _cmd, anIndex, self.length);
@@ -238,7 +240,7 @@ var concat = Array.prototype.concat,
     splice.call(self, anIndex, 0, anObject);
 }
 
-- (void)removeObjectAtIndex:(int)anIndex
+- (void)removeObjectAtIndex:(CPUInteger)anIndex
 {
     if (anIndex >= self.length || anIndex < 0)
         _CPRaiseRangeException(self, _cmd, anIndex, self.length);
@@ -289,7 +291,7 @@ var concat = Array.prototype.concat,
     splice.call(self, aRange.location, aRange.length);
 }
 
-- (void)replaceObjectAtIndex:(int)anIndex withObject:(id)anObject
+- (void)replaceObjectAtIndex:(CPUInteger)anIndex withObject:(id)anObject
 {
     if (anIndex >= self.length || anIndex < 0)
         _CPRaiseRangeException(self, _cmd, anIndex, self.length);
@@ -333,7 +335,7 @@ var concat = Array.prototype.concat,
 }
 
 
-- (void)copy
+- (id)copy
 {
     return slice.call(self, 0);
 }

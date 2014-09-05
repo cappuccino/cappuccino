@@ -37,7 +37,7 @@ CPLogRegister(CPLogConsole);
     return 100000;
 }
 
-- (id)tableView:(CPTableView)tableView objectValueForTableColumn:(CPTableColumn)tableColumn row:(int)row
+- (id)tableView:(CPTableView)tableView objectValueForTableColumn:(CPTableColumn)tableColumn row:(CPInteger)row
 {
     if ([tableColumn identifier] === "icons")
         return iconImage;
@@ -45,7 +45,7 @@ CPLogRegister(CPLogConsole);
         return String((row + 1) * [[tableColumn identifier] intValue]);
 }
 
-- (BOOL)tableView:(CPTableView)tableView shouldReorderColumn:(int)columnIndex toColumn:(int)newColumnIndex
+- (BOOL)tableView:(CPTableView)tableView shouldReorderColumn:(CPInteger)columnIndex toColumn:(CPInteger)newColumnIndex
 {
     if (columnIndex === 0 || newColumnIndex === 4)
         return NO;

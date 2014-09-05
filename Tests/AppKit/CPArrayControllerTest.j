@@ -1079,22 +1079,22 @@
     return [_contentArray count];
 }
 
-- (id)objectInItemsArrayAtIndex:(unsigned int)index
+- (id)objectInItemsArrayAtIndex:(CPUInteger)index
 {
     return [_contentArray objectAtIndex:index];
 }
 
-- (void)insertObject:(id)anObject inItemsArrayAtIndex:(unsigned int)index
+- (void)insertObject:(id)anObject inItemsArrayAtIndex:(CPUInteger)index
 {
     [_contentArray insertObject:anObject atIndex:index];
 }
 
-- (void)removeObjectFromItemsArrayAtIndex:(unsigned int)index
+- (void)removeObjectFromItemsArrayAtIndex:(CPUInteger)index
 {
     [_contentArray removeObjectAtIndex:index];
 }
 
-- (void)replaceObjectInItemsArrayAtIndex:(unsigned int)index withObject:(id)anObject
+- (void)replaceObjectInItemsArrayAtIndex:(CPUInteger)index withObject:(id)anObject
 {
     [_contentArray replaceObjectAtIndex:index withObject:anObject];
 }

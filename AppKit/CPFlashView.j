@@ -189,7 +189,7 @@ var IEFlashCLSID = "clsid:D27CDB6E-AE6D-11cf-96B8-444553540000";
     return @"CPFV_" + [self UID];
 }
 
-- (void)mouseMoved:(id)sommit
+- (void)mouseMoved:(CPEvent)sommit
 {
     [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
 }
