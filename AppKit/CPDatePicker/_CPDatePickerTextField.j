@@ -533,9 +533,13 @@ var CPZeroKeyCode = 48,
 #pragma mark -
 #pragma mark Responder methods
 
+/*! @ignore */
 - (BOOL)acceptsFirstResponder
 {
-    return NO;
+    // This is needed to accept to be firstResponder when nothing is selected.
+    // This element needs to be first responder when the CPDatePicker is in the CPTableView
+    // When clicking on a row of a CPTableView where there isn't a date element, the CPTableView will ask this element to know if it can becomes or not a firstResponder.
+    return [_datePicker isEnabled] && ![self superview]._currentTextField;
 }
 
 
@@ -1282,6 +1286,12 @@ var CPMonthDateType = 0,
     return self;
 }
 
+/*! @ignore */
+- (BOOL)acceptsFirstResponder
+{
+    return [_datePicker isEnabled];
+}
+
 /*! Set the dateType of the textField
 */
 - (void)setDateType:(int)aDateType
@@ -1732,6 +1742,11 @@ var CPMonthDateType = 0,
     frameSize.width = MAX(frameSize.width, minSize.width);
 
     return frameSize;
+}
+
+- (CGRect)bezelRectForBounds:(CGRect)bounds
+{
+    return CGRectMakeCopy(bounds);
 }
 
 @end
