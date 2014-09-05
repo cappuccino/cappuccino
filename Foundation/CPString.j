@@ -345,6 +345,7 @@ var CPStringUIDs = new CFMutableDictionary(),
     specified mask which can be a combination of:
     <pre>
     CPCaseInsensitiveSearch
+    CPDiacriticInsensitiveSearch
     CPLiteralSearch
     CPBackwardsSearch
     CPAnchoredSearch
@@ -366,6 +367,7 @@ var CPStringUIDs = new CFMutableDictionary(),
     options specified in the specified mask which can be a combination of:
     <pre>
     CPCaseInsensitiveSearch
+    CPDiacriticInsensitiveSearch
     CPLiteralSearch
     CPBackwardsSearch
     CPAnchoredSearch
@@ -392,6 +394,11 @@ var CPStringUIDs = new CFMutableDictionary(),
     {
         string = string.toLowerCase();
         aString = aString.toLowerCase();
+    }
+    if (aMask & CPDiacriticInsensitiveSearch)
+    {
+        string = string.stripDiacritics();
+        aString = aString.stripDiacritics();
     }
 
     if (aMask & CPBackwardsSearch)
@@ -683,6 +690,14 @@ var CPStringNull = [CPNull null];
 }
 
 /*!
+    Returns a copy of the string stripped of diacritical marks.
+*/
+- (CPString)stripDiacritics
+{
+    return self.stripDiacritics();
+}
+
+/*!
     Returns the text as a floating point value.
 */
 - (double)doubleValue
@@ -948,9 +963,9 @@ var CPStringNull = [CPNull null];
 
 @end
 
-
-var diacritics = [[192,198],[224,230],[231,231],[232,235],[236,239],[242,246],[249,252]], // Basic Latin ; Latin-1 Supplement.
-    normalized = [65,97,99,101,105,111,117];
+var diacritics = [[192,198],[200,203],[204,207],[210,214],[217,220],[224,230],
+                 [231,231],[232,235],[236,239],[242,246],[249,252]], // Basic Latin ; Latin-1 Supplement.
+    normalized = [65,69,73,79,85,97,99,101,105,111,117];
 
 String.prototype.stripDiacritics = function()
 {
