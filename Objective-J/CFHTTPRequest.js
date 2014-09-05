@@ -99,7 +99,6 @@ GLOBAL(CFHTTPRequest) = function()
     this._isOpen = false;
     this._requestHeaders = {};
     this._mimeType = null;
-    this._withCredentials = false;
 
     this._eventDispatcher = new EventDispatcher(this);
     this._nativeRequest = new NativeRequest();
@@ -225,9 +224,7 @@ CFHTTPRequest.prototype.open = function(/*String*/ aMethod, /*String*/ aURL, /*B
     this._method = aMethod;
     this._user = aUser;
     this._password = aPassword;
-    var result = this._nativeRequest.open(aMethod, aURL, isAsynchronous, aUser, aPassword);
-    this._nativeRequest.withCredentials = this._withCredentials;
-    return result;
+    return this._nativeRequest.open(aMethod, aURL, isAsynchronous, aUser, aPassword);
 };
 
 CFHTTPRequest.prototype.send = function(/*Object*/ aBody)
@@ -236,7 +233,6 @@ CFHTTPRequest.prototype.send = function(/*Object*/ aBody)
     {
         delete this._nativeRequest.onreadystatechange;
         this._nativeRequest.open(this._method, this._URL, this._async, this._user, this._password);
-        this._nativeRequest.withCredentials = this._withCredentials;
         this._nativeRequest.onreadystatechange = this._stateChangeHandler;
     }
 
@@ -280,12 +276,12 @@ CFHTTPRequest.prototype.removeEventListener = function(/*String*/ anEventName, /
 
 CFHTTPRequest.prototype.setWithCredentials = function(/*Boolean*/ willSendWithCredentials) 
 {
-    this.withCredentials = willSendWithCredentials;
+    this._nativeRequest.withCredentials = willSendWithCredentials;
 };
 
 CFHTTPRequest.prototype.getWithCredentials = function() 
 {
-    return this.withCredentials;
+    return this._nativeRequest.withCredentials;
 };
 
 function determineAndDispatchHTTPRequestEvents(/*CFHTTPRequest*/ aRequest)
