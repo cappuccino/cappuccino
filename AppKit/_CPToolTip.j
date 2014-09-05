@@ -118,12 +118,6 @@ var _CPToolTipHeight = 24.0,
         textFrameSizeSingleLine = [aText sizeWithFont:font],
         textFrameSize = [aText sizeWithFont:font inWidth:(aToolTipSize.width)];
 
-    // this small adjustement seems to fix all
-    // tooltips sizing issues. Now I'm not sure why
-    // we need this.
-    textFrameSizeSingleLine.width += 1;
-    textFrameSize.width += 1;
-
     // If the text fully fits within the maximum width, shrink to fit.
     if (textFrameSizeSingleLine.width < aToolTipSize.width)
     {
