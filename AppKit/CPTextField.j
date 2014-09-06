@@ -255,8 +255,9 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         CPTextFieldDOMInputElement.style.whiteSpace = "pre";
         CPTextFieldDOMInputElement.style.background = "transparent";
         CPTextFieldDOMInputElement.style.outline = "none";
-	CPTextFieldDOMInputElement.setAttribute("autocomplete", "off");
-	CPTextFieldDOMInputElement.setAttribute("spellcheck", false);
+
+        CPTextFieldDOMInputElement.setAttribute("autocomplete", "off");
+        CPTextFieldDOMInputElement.setAttribute("spellcheck", false);
 
         CPTextFieldBlurHandler = function(anEvent)
         {
