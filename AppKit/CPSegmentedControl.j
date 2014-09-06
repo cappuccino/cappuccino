@@ -49,6 +49,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 
     unsigned                _trackingSegment;
     BOOL                    _trackingHighlighted;
+    BOOL                    _hasBinding;
 }
 
 + (CPString)defaultThemeClass
@@ -107,14 +108,22 @@ CPSegmentSwitchTrackingMomentary = 2;
 - (void)bind:(CPString)aBinding toObject:(id)anObject withKeyPath:(CPString)aKeyPath options:(CPDictionary)options
 {
     if ([[self class] _isSelectionBinding:aBinding] && _trackingMode !== CPSegmentSwitchTrackingSelectOne)
+    {
         CPLog.warn("Binding " + aBinding + " needs CPSegmentSwitchTrackingSelectOne tracking mode");
-    else
-        [super bind:aBinding toObject:anObject withKeyPath:aKeyPath options:options];
+        return;
+    }
+
+    if (_hasBinding)
+        [_CPSegmentedControlBinder unbindAllForObject:self];
+
+    [super bind:aBinding toObject:anObject withKeyPath:aKeyPath options:options];
+
+    _hasBinding = YES;
 }
 
 - (void)_reverseSetBinding
 {
-    [_CPSegmentedControlBinder reverseSetValueForObject:self];
+    [_CPSegmentedControlBinder _reverseSetValueFromExclusiveBinderForObject:self];
 }
 
 /*!
@@ -948,31 +957,10 @@ var CPSegmentedControlSegmentsKey       = "CPSegmentedControlSegmentsKey",
 
 @end
 
-var CPSegmentedControlBindersMap = {},
-    CPSegmentedControlNoSelectionPlaceholder = "CPSegmentedControlNoSelectionPlaceholder";
+var CPSegmentedControlNoSelectionPlaceholder = "CPSegmentedControlNoSelectionPlaceholder";
 
 @implementation _CPSegmentedControlBinder : CPBinder
 {
-    CPString _selectionBinding @accessors(readonly, getter=selectionBinding);
-}
-
-+ (void)reverseSetValueForObject:(id)aSource
-{
-    var binder = CPSegmentedControlBindersMap[[aSource UID]];
-    [binder reverseSetValueFor:[binder selectionBinding]];
-}
-
-- (id)initWithBinding:(CPString)aBinding name:(CPString)aName to:(id)aDestination keyPath:(CPString)aKeyPath options:(CPDictionary)options from:(id)aSource
-{
-    self = [super initWithBinding:aBinding name:aName to:aDestination keyPath:aKeyPath options:options from:aSource];
-
-    if (self)
-    {
-        CPSegmentedControlBindersMap[[aSource UID]] = self;
-        _selectionBinding = aName;
-    }
-
-    return self;
 }
 
 - (void)_updatePlaceholdersWithOptions:(CPDictionary)options
