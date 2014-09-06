@@ -70,6 +70,20 @@ var CPBindingOperationAnd = 0,
     return [[bindingsMap objectForKey:[anObject UID]] objectForKey:aBinding];
 }
 
++ (void)_reverseSetValueFromExclusiveBinderForObject:(id)anObject
+{
+    var bindersByBindingName = [bindingsMap objectForKey:[anObject UID]];
+
+    [bindersByBindingName enumerateKeysAndObjectsUsingBlock:function(binding, binder, stop)
+    {
+        if ([binder isKindOfClass:[self class]])
+        {
+            [binder reverseSetValueFor:binding];
+            stop(YES);
+        }
+    }];
+}
+
 + (CPDictionary)infoForBinding:(CPString)aBinding forObject:(id)anObject
 {
     var theBinding = [self getBinding:aBinding forObject:anObject];
