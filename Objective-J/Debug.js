@@ -39,7 +39,25 @@ function objj_debug_message_format(aReceiver, aSelector)
 
 // save the original msgSend implementations so we can restore them later
 var objj_msgSend_original = objj_msgSend,
-    objj_msgSendSuper_original = objj_msgSendSuper;
+    objj_msgSendSuper_original = objj_msgSendSuper,
+    objj_msgSendFast_original = objj_msgSendFast,
+    objj_msgSendFast0_original = objj_msgSendFast0,
+    objj_msgSendFast1_original = objj_msgSendFast1,
+    objj_msgSendFast2_original = objj_msgSendFast2,
+    objj_msgSendFast3_original = objj_msgSendFast3;
+
+function objj_msgSend_reset_all_classes() {
+    objj_enumerateClassesUsingBlock(function(aClass) {
+        if (aClass.hasOwnProperty("objj_msgSend"))
+        {
+            aClass.objj_msgSend = objj_msgSendFast;
+            aClass.objj_msgSend0 = objj_msgSendFast0;
+            aClass.objj_msgSend1 = objj_msgSendFast1;
+            aClass.objj_msgSend2 = objj_msgSendFast2;
+            aClass.objj_msgSend3 = objj_msgSendFast3;
+        }
+    });
+}
 
 // decorator management functions
 
@@ -48,6 +66,13 @@ GLOBAL(objj_msgSend_reset) = function()
 {
     objj_msgSend = objj_msgSend_original;
     objj_msgSendSuper = objj_msgSendSuper_original;
+    objj_msgSendFast = objj_msgSendFast_original;
+    objj_msgSendFast0 = objj_msgSendFast0_original;
+    objj_msgSendFast1 = objj_msgSendFast1_original;
+    objj_msgSendFast2 = objj_msgSendFast2_original;
+    objj_msgSendFast3 = objj_msgSendFast3_original;
+
+    objj_msgSend_reset_all_classes();
 }
 
 // decorate both objj_msgSend and objj_msgSendSuper
@@ -60,7 +85,15 @@ GLOBAL(objj_msgSend_decorate) = function()
     {
         objj_msgSend = arguments[index](objj_msgSend);
         objj_msgSendSuper = arguments[index](objj_msgSendSuper);
+        objj_msgSendFast = arguments[index](objj_msgSendFast);
+        objj_msgSendFast0 = arguments[index](objj_msgSendFast0);
+        objj_msgSendFast1 = arguments[index](objj_msgSendFast1);
+        objj_msgSendFast2 = arguments[index](objj_msgSendFast2);
+        objj_msgSendFast3 = arguments[index](objj_msgSendFast3);
     }
+
+    if (count)
+        objj_msgSend_reset_all_classes();
 }
 
 // reset then decorate both objj_msgSend and objj_msgSendSuper
@@ -98,7 +131,7 @@ GLOBAL(objj_backtrace_decorator) = function(msgSend)
         objj_backtrace.push({ receiver: aReceiver, selector : aSelector });
         try
         {
-            return msgSend.apply(NULL, arguments);
+            return msgSend.apply(this, arguments);
         }
         catch (anException)
         {
@@ -128,7 +161,7 @@ GLOBAL(objj_supress_exceptions_decorator) = function(msgSend)
 
         try
         {
-            return msgSend.apply(NULL, arguments);
+            return msgSend.apply(this, arguments);
         }
         catch (anException)
         {
@@ -150,7 +183,7 @@ GLOBAL(objj_typecheck_decorator) = function(msgSend)
         var aReceiver = aReceiverOrSuper && (aReceiverOrSuper.receiver || aReceiverOrSuper);
 
         if (!aReceiver)
-            return msgSend.apply(NULL, arguments);
+            return msgSend.apply(this, arguments);
 
         var types = aReceiver.isa.method_dtable[aSelector].types;
         for (var i = 2; i < arguments.length; i++)

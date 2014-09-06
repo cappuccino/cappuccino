@@ -68,6 +68,9 @@ var _CPEventPeriodicEventPeriod         = 0,
     float               _deltaX;
     float               _deltaY;
     float               _deltaZ;
+    float               _scrollingDeltaX;
+    float               _scrollingDeltaY;
+    BOOL                _hasPreciseScrollingDeltas;
 
 #if PLATFORM(DOM)
     BOOL                _suppressCappuccinoCut;
@@ -163,7 +166,9 @@ var _CPEventPeriodicEventPeriod         = 0,
 
         // Make sure these are 0 rather than nil.
         _deltaX = 0;
+        _scrollingDeltaX = 0;
         _deltaY = 0;
+        _scrollingDeltaY = 0;
         _deltaZ = 0;
     }
 
@@ -415,6 +420,31 @@ var _CPEventPeriodicEventPeriod         = 0,
 - (float)deltaZ
 {
     return _deltaZ;
+}
+
+- (BOOL)hasPreciseScrollingDeltas
+{
+    return !!_hasPreciseScrollingDeltas;
+}
+
+/*!
+    Returns the change in points on the x-axis for a mouse movement, unless hasPreciseScrollingDeltas is NO,
+    in which case the change is measured in number of "lines" or "rows" and needs to be multiplied as appropriate
+    to get change in pixels.
+*/
+- (float)scrollingDeltaX
+{
+    return _scrollingDeltaX;
+}
+
+/*!
+    Returns the change in points on the y-axis for a mouse movement, unless hasPreciseScrollingDeltas is NO,
+    in which case the change is measured in number of "lines" or "columns" and needs to be multiplied as appropriate
+    to get change in pixels.
+*/
+- (float)scrollingDeltaY
+{
+    return _scrollingDeltaY;
 }
 
 - (BOOL)_triggersKeyEquivalent:(CPString)aKeyEquivalent withModifierMask:aKeyEquivalentModifierMask

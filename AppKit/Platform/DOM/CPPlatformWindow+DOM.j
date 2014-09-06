@@ -203,6 +203,10 @@ var ModifierKeyCodes = [
 var resizeTimer = nil;
 var PreventScroll = true;
 
+// When scrolling with an old-style scroll wheel with discete steps ('clicks'), the scroll amount can indicate how many "lines" to
+// scroll.
+#define SCROLLWHEEL_LINE_PIXELS 6.0
+
 #if PLATFORM(DOM)
 
 @implementation CPPlatformWindow (DOM)
@@ -917,9 +921,22 @@ var PreventScroll = true;
     // We lag 1 event behind without this timeout.
     setTimeout(function()
     {
-        // Find the scroll delta
-        var deltaX = _DOMScrollingElement.scrollLeft - 150,
-            deltaY = (_DOMScrollingElement.scrollTop - 150) || (aDOMEvent.deltaY === undefined ? 0 : aDOMEvent.deltaY);
+        if (aDOMEvent.deltaMode !== undefined && aDOMEvent.deltaMode !== 0)
+        {
+            event._hasPreciseScrollingDeltas = NO;
+            event._scrollingDeltaX = aDOMEvent.deltaX;
+            event._scrollingDeltaY = aDOMEvent.deltaY;
+            event._deltaX = aDOMEvent.deltaX * SCROLLWHEEL_LINE_PIXELS;
+            event._deltaY = aDOMEvent.deltaY * SCROLLWHEEL_LINE_PIXELS;
+        }
+        else
+        {
+            event._hasPreciseScrollingDeltas = YES;
+            event._scrollingDeltaX = (_DOMScrollingElement.scrollLeft - 150) || aDOMEvent.deltaX || 0;
+            event._scrollingDeltaY = (_DOMScrollingElement.scrollTop - 150) || aDOMEvent.deltaY || 0;
+            event._deltaX = event._scrollingDeltaX;
+            event._deltaY = event._scrollingDeltaY;
+        }
 
         // If we scroll super with momentum,
         // there are so many events going off that
@@ -930,13 +947,8 @@ var PreventScroll = true;
         //
         // We get free performance boost if we skip sending these events,
         // as sending a scroll event with no deltas doesn't do anything.
-        if (deltaX || deltaY)
-        {
-            event._deltaX = deltaX;
-            event._deltaY = deltaY;
-
+        if (event._deltaX || event._deltaY)
             [CPApp sendEvent:event];
-        }
 
         // We set StopDOMEventPropagation = NO on line 1008
         //if (StopDOMEventPropagation)

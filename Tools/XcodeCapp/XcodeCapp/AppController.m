@@ -147,7 +147,7 @@ AppController *SharedAppControllerInstance = nil;
         kDefaultXCCAutoOpenErrorsPanelOnErrors:     @YES,
         kDefaultXCCAutoOpenErrorsPanelOnCappLint:   @YES,
         kDefaultXCCAutoShowNotificationOnErrors:    @YES,
-        kDefaultXCCAutoShowNotificationOnCappLint:  @NO,
+        kDefaultXCCAutoShowNotificationOnCappLint:  @YES,
         kDefaultXCCProjectHistory:                  [NSArray new],
         kDefaultMaxRecentProjects:                  @20,
         kDefaultLogLevel:                           [NSNumber numberWithInt:LOG_LEVEL_WARN],
@@ -525,6 +525,13 @@ AppController *SharedAppControllerInstance = nil;
     [self.recentMenu addItemWithTitle:@"Clear history" action:@selector(clearProjectHistory:) keyEquivalent:@""];
 
     self.menuItemHistory.enabled = [projectHistory count] > 0;
+}
+
+#pragma mark - Cappuccino methods
+
+- (IBAction)updateCappuccino:(id)sender
+{
+    [self.xcc performSelectorInBackground:@selector(updateCappuccino) withObject:nil];
 }
 
 @end

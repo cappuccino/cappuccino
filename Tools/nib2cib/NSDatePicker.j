@@ -59,6 +59,7 @@ var NSDatePickerDefaultSize = 22,
     [self setBezeled:[cell isBezeled]];
     [self setBordered:[cell isBordered]];
     [self setEnabled:[cell isEnabled]];
+    [self setControlSize:[cell controlSize]];
 
     var theme = [Nib2Cib defaultTheme];
 
@@ -90,14 +91,6 @@ var NSDatePickerDefaultSize = 22,
             _frame.size.width = MIN(_frame.size.width, maxSize.width);
             _bounds.size.width = MAX(_frame.size.width, minSize.width);
         }
-
-        if (_datePickerStyle == CPTextFieldAndStepperDatePickerStyle)
-        {
-            _frame.size.width -= 3;
-            _bounds.size.width -= 3;
-        }
-
-        _frame.origin.y -= _frame.size.height - NSDatePickerDefaultSize - 4;
     }
     else
     {
@@ -134,8 +127,6 @@ var NSDatePickerDefaultSize = 22,
             _frame.size.width = MIN(_frame.size.width, maxSize.width);
             _bounds.size.width = MAX(_frame.size.width, minSize.width);
         }
-
-        _frame.origin.y -= _frame.size.height - NSDatePickerCalendarDefaultSize - 1;
     }
 
     if ([cell font]._name === IBDefaultFontFace && [[cell font] size] == IBDefaultFontSize)
@@ -154,6 +145,7 @@ var NSDatePickerDefaultSize = 22,
     return self;
 }
 
+
 @end
 
 @implementation NSDatePicker : CPDatePicker
@@ -162,7 +154,14 @@ var NSDatePickerDefaultSize = 22,
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
-    return [super NS_initWithCoder:aCoder];
+    self = [super NS_initWithCoder:aCoder];
+
+    if (self)
+    {
+        [self _adjustNib2CibSize];
+    }
+
+    return self
 }
 
 - (Class)classForKeyedArchiver

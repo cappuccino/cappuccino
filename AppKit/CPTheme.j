@@ -499,25 +499,28 @@ function CPThemeState()
 
 @end
 
-CPThemeStateNormal           = CPThemeState("normal");
-CPThemeStateDisabled         = CPThemeState("disabled");
-CPThemeStateHovered          = CPThemeState("hovered");
-CPThemeStateHighlighted      = CPThemeState("highlighted");
-CPThemeStateSelected         = CPThemeState("selected");
-CPThemeStateTableDataView    = CPThemeState("tableDataView");
-CPThemeStateSelectedDataView = CPThemeState("selectedTableDataView");
-CPThemeStateGroupRow         = CPThemeState("CPThemeStateGroupRow");
-CPThemeStateBezeled          = CPThemeState("bezeled");
-CPThemeStateBordered         = CPThemeState("bordered");
-CPThemeStateEditable         = CPThemeState("editable");
-CPThemeStateEditing          = CPThemeState("editing");
-CPThemeStateVertical         = CPThemeState("vertical");
-CPThemeStateDefault          = CPThemeState("default");
-CPThemeStateCircular         = CPThemeState("circular");
-CPThemeStateAutocompleting   = CPThemeState("autocompleting");
-CPThemeStateFirstResponder   = CPThemeState("firstResponder");
-CPThemeStateMainWindow       = CPThemeState("mainWindow");
-CPThemeStateKeyWindow        = CPThemeState("keyWindow");
+CPThemeStateNormal              = CPThemeState("normal");
+CPThemeStateDisabled            = CPThemeState("disabled");
+CPThemeStateHovered             = CPThemeState("hovered");
+CPThemeStateHighlighted         = CPThemeState("highlighted");
+CPThemeStateSelected            = CPThemeState("selected");
+CPThemeStateTableDataView       = CPThemeState("tableDataView");
+CPThemeStateSelectedDataView    = CPThemeState("selectedTableDataView");
+CPThemeStateGroupRow            = CPThemeState("CPThemeStateGroupRow");
+CPThemeStateBezeled             = CPThemeState("bezeled");
+CPThemeStateBordered            = CPThemeState("bordered");
+CPThemeStateEditable            = CPThemeState("editable");
+CPThemeStateEditing             = CPThemeState("editing");
+CPThemeStateVertical            = CPThemeState("vertical");
+CPThemeStateDefault             = CPThemeState("default");
+CPThemeStateCircular            = CPThemeState("circular");
+CPThemeStateAutocompleting      = CPThemeState("autocompleting");
+CPThemeStateFirstResponder      = CPThemeState("firstResponder");
+CPThemeStateMainWindow          = CPThemeState("mainWindow");
+CPThemeStateKeyWindow           = CPThemeState("keyWindow");
+CPThemeStateControlSizeRegular  = CPThemeState("controlSizeRegular");
+CPThemeStateControlSizeSmall    = CPThemeState("controlSizeSmall");
+CPThemeStateControlSizeMini     = CPThemeState("controlSizeMini");
 
 @implementation _CPThemeAttribute : CPObject
 {
@@ -774,7 +777,7 @@ function CPThemeAttributeDecode(aCoder, anAttributeName, aDefaultValue, aTheme, 
     {
         var attribute = [aCoder decodeObjectForKey:key];
 
-        if (!attribute.isa || ![attribute isKindOfClass:[_CPThemeAttribute class]])
+        if (!attribute || !attribute.isa || ![attribute isKindOfClass:[_CPThemeAttribute class]])
         {
             var themeAttribute = [[_CPThemeAttribute alloc] initWithName:anAttributeName defaultValue:aDefaultValue];
 

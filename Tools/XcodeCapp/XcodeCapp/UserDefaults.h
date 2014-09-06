@@ -28,5 +28,6 @@ extern NSString * const kDefaultMaxRecentProjects;
 extern NSString * const kDefaultLogLevel;
 extern NSString * const kDefaultAutoOpenXcodeProject;
 extern NSString * const kDefaultUseSymlinkWhenCreatingProject;
+extern NSString * const kDefaultUpdateCappuccinoWithLastVersionOfMasterBranch;
 
 #endif
