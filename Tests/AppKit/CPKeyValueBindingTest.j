@@ -342,6 +342,21 @@
     [self assert:@"brie" equals:[control2 objectValue] message:@"control2 objectValue is wrong"];
 }
 
+- (void)testExclusiveBindingsThrowsException
+{
+    var segmented = [[CPSegmentedControl alloc] initWithFrame:CGRectMakeZero()];
+    [segmented setSegmentCount:3];
+
+    var model = [BindingTester testerWithCheese:2];
+
+    [segmented bind:CPSelectedIndexBinding toObject:model withKeyPath:@"cheese" options:nil];
+
+    [self assertThrows:function()
+    {
+        [segmented bind:CPSelectedTagBinding toObject:model withKeyPath:@"cheese" options:nil];
+    }];
+}
+
 @end
 
 @implementation TextField : CPTextField

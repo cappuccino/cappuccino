@@ -407,6 +407,13 @@ var CPRadioGroupRadiosKey           = @"CPRadioGroupRadiosKey",
     return [super _binderClassForBinding:aBinding];
 }
 
++ (BOOL)isBindingExclusive:(CPString)aBinding
+{
+    return (aBinding == CPSelectedIndexBinding ||
+           aBinding == CPSelectedTagBinding ||
+           aBinding == CPSelectedValueBinding);
+}
+
 @end
 
 @implementation _CPRadioGroupSelectionBinder : CPBinder

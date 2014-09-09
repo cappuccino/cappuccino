@@ -173,6 +173,24 @@ var CPBindingOperationAnd = 0,
     return self;
 }
 
++ (BOOL)isBindingAllowed:(CPString)aBinding forObject:(id)anObject
+{
+    if ([[anObject class] isBindingExclusive:aBinding])
+    {
+        var bindingsForObject = [bindingsMap objectForKey:[anObject UID]],
+            allBindings = [bindingsForObject allKeys],
+            count = [allBindings count];
+
+        while(count--)
+        {
+            if ([[anObject class] isBindingExclusive:allBindings[count]])
+                return NO;
+        }
+    }
+
+    return YES;
+}
+
 - (void)raiseIfNotApplicable:(id)aValue forKeyPath:(CPString)keyPath options:(CPDictionary)options
 {
     if (aValue === CPNotApplicableMarker && [options objectForKey:CPRaisesForNotApplicableKeysBindingOption])
@@ -401,6 +419,11 @@ var CPBindingOperationAnd = 0,
     return [CPBinder class];
 }
 
++ (BOOL)isBindingExclusive:(CPString)aBinding
+{
+    return NO;
+}
+
 - (CPArray)exposedBindings
 {
     var exposedBindings = [],
@@ -429,6 +452,12 @@ var CPBindingOperationAnd = 0,
     if (!anObject || !aKeyPath)
         return CPLog.error("Invalid object or path on " + self + " for " + aBinding);
 
+    if (![CPBinder isBindingAllowed:aBinding forObject:self])
+    {
+        [CPException raise:CPGenericException
+                   reason:@"Cannot bind " + aBinding + " because a binding with the same functionality is already in use."];
+        return;
+    }
     //if (![[self exposedBindings] containsObject:aBinding])
     //    CPLog.warn("No binding exposed on " + self + " for " + aBinding);
 

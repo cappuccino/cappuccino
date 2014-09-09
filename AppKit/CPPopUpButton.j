@@ -771,13 +771,6 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
             [[self selectedItem] setState:CPOffState];
 }
 
-- (void)_reverseSetBinding
-{
-    [_CPPopUpButtonSelectionBinder _reverseSetValueFromExclusiveBinderForObject:self];
-
-    [super _reverseSetBinding];
-}
-
 @end
 
 @implementation CPPopUpButton (BindingSupport)
@@ -798,6 +791,20 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     }
 
     return [super _binderClassForBinding:aBinding];
+}
+
++ (BOOL)isBindingExclusive:(CPString)aBinding
+{
+    return (aBinding == CPSelectedIndexBinding ||
+           aBinding == CPSelectedTagBinding ||
+           aBinding == CPSelectedValueBinding);
+}
+
+- (void)_reverseSetBinding
+{
+    [_CPPopUpButtonSelectionBinder _reverseSetValueFromExclusiveBinderForObject:self];
+
+    [super _reverseSetBinding];
 }
 
 @end

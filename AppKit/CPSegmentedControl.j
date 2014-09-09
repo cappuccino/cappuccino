@@ -49,7 +49,6 @@ CPSegmentSwitchTrackingMomentary = 2;
 
     unsigned                _trackingSegment;
     BOOL                    _trackingHighlighted;
-    BOOL                    _hasBinding;
 }
 
 + (CPString)defaultThemeClass
@@ -75,19 +74,6 @@ CPSegmentSwitchTrackingMomentary = 2;
         };
 }
 
-+ (Class)_binderClassForBinding:(CPString)aBinding
-{
-    if ([self _isSelectionBinding:aBinding])
-        return [_CPSegmentedControlBinder class];
-
-    return [super _binderClassForBinding:aBinding];
-}
-
-+ (BOOL)_isSelectionBinding:(CPString)aBinding
-{
-    return (aBinding === CPSelectedIndexBinding || aBinding === CPSelectedLabelBinding || aBinding === CPSelectedTagBinding);
-}
-
 - (id)initWithFrame:(CGRect)aRect
 {
     _segments = [];
@@ -103,27 +89,6 @@ CPSegmentSwitchTrackingMomentary = 2;
     }
 
     return self;
-}
-
-- (void)bind:(CPString)aBinding toObject:(id)anObject withKeyPath:(CPString)aKeyPath options:(CPDictionary)options
-{
-    if ([[self class] _isSelectionBinding:aBinding] && _trackingMode !== CPSegmentSwitchTrackingSelectOne)
-    {
-        CPLog.warn("Binding " + aBinding + " needs CPSegmentSwitchTrackingSelectOne tracking mode");
-        return;
-    }
-
-    if (_hasBinding)
-        [_CPSegmentedControlBinder unbindAllForObject:self];
-
-    [super bind:aBinding toObject:anObject withKeyPath:aKeyPath options:options];
-
-    _hasBinding = YES;
-}
-
-- (void)_reverseSetBinding
-{
-    [_CPSegmentedControlBinder _reverseSetValueFromExclusiveBinderForObject:self];
 }
 
 /*!
@@ -953,6 +918,44 @@ var CPSegmentedControlSegmentsKey       = "CPSegmentedControlSegmentsKey",
     [aCoder encodeInt:_selectedSegment forKey:CPSegmentedControlSelectedKey];
     [aCoder encodeInt:_segmentStyle forKey:CPSegmentedControlSegmentStyleKey];
     [aCoder encodeInt:_trackingMode forKey:CPSegmentedControlTrackingModeKey];
+}
+
+@end
+
+@implementation CPSegmentedControl (BindingSupport)
+
++ (Class)_binderClassForBinding:(CPString)aBinding
+{
+    if ([self _isSelectionBinding:aBinding])
+        return [_CPSegmentedControlBinder class];
+
+    return [super _binderClassForBinding:aBinding];
+}
+
++ (BOOL)_isSelectionBinding:(CPString)aBinding
+{
+    return (aBinding === CPSelectedIndexBinding || aBinding === CPSelectedLabelBinding || aBinding === CPSelectedTagBinding);
+}
+
++ (BOOL)isBindingExclusive:(CPString)aBinding
+{
+    return [self _isSelectionBinding:aBinding];
+}
+
+- (void)bind:(CPString)aBinding toObject:(id)anObject withKeyPath:(CPString)aKeyPath options:(CPDictionary)options
+{
+    if ([[self class] _isSelectionBinding:aBinding] && _trackingMode !== CPSegmentSwitchTrackingSelectOne)
+    {
+        CPLog.warn("Binding " + aBinding + " needs CPSegmentSwitchTrackingSelectOne tracking mode");
+        return;
+    }
+
+    [super bind:aBinding toObject:anObject withKeyPath:aKeyPath options:options];
+}
+
+- (void)_reverseSetBinding
+{
+    [_CPSegmentedControlBinder _reverseSetValueFromExclusiveBinderForObject:self];
 }
 
 @end
