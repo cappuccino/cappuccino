@@ -9,6 +9,7 @@
 @import <Foundation/Foundation.j>
 @import <AppKit/AppKit.j>
 
+@import "../../CPTrace.j"
 
 @implementation AppController : CPObject
 {
@@ -19,6 +20,7 @@
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
     // This is called when the application is done loading.
+    CPTrace("CPTableView", "_unloadDataViewsInRows:columns:");
 }
 
 - (void)awakeFromCib
@@ -51,15 +53,11 @@
 
 - (@action)click:(id)sender
 {
-    var i = 0;
-    console.log("Before NUmberColumn : " + [[tableView tableColumns] count]);
+    console.log("Before NumberOfColumns : " + [[tableView tableColumns] count]);
 
     [tableView removeTableColumn:[[tableView tableColumns] firstObject]];
 
-    while (i < 10000000)
-        i++;
-
-    console.log("After NUmberColumn : " + [[tableView tableColumns] count]);
+    console.log("After NumberOfColumns : " + [[tableView tableColumns] count]);
 }
 
 - (int)numberOfRowsInTableView:(CPTableView)aTableView
@@ -69,7 +67,6 @@
 
 - (id)tableView:(CPTableView)aTableView objectValueForTableColumn:(CPTableColumn)aColumn row:(int)aRowIndex
 {
-    console.log([[aTableView tableColumns] count]);
     return 10;
 }
 

@@ -618,7 +618,7 @@ NOT YET IMPLEMENTED
 {
     // Empty the data cache.
     _objectValues = { };
-    [self reloadDataForRowIndexes:_exposedRows columnIndexes:_exposedColumns];
+    [self _reloadDataViewsImmediately];
 }
 
 /*!
@@ -628,10 +628,7 @@ NOT YET IMPLEMENTED
 */
 - (void)reloadDataForRowIndexes:(CPIndexSet)rowIndexes columnIndexes:(CPIndexSet)columnIndexes
 {
-    if ([self _dataViewsNeedReloadAfterContentChange])
-        [self _reloadDataViewsImmediately];
-    else
-        [self _reloadDataForRowIndexes:rowIndexes columnIndexes:columnIndexes];
+    [self reloadData];
 }
 
 // Reloads the data, not the views
@@ -1155,7 +1152,6 @@ NOT YET IMPLEMENTED
     else
         _dirtyTableColumnRangeIndex = MIN(index, _dirtyTableColumnRangeIndex);
 
-    [_tableColumns removeObject:aTableColumn];
     [self _reloadDataViewsImmediately];
 }
 
@@ -3510,8 +3506,12 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
             if (columnIdx !== CPNotFound)
                 [removeIndexes addIndex:columnIdx];
         }
+
         // FIXME: do we also need to remove non exposed rows that may stay in the cache ?
         [self _unloadDataViewsInRows:_exposedRows columns:removeIndexes];
+
+        [_tableColumns removeObjectsAtIndexes:removeIndexes];
+
         [_differedColumnDataToRemove removeAllObjects];
     }
 
@@ -3532,7 +3532,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (void)_unloadDataViewsInRows:(CPIndexSet)rowIndexes columns:(CPIndexSet)columnIndexes
 {
-    if (![rowIndexes count] || ![columnIndexes count])
+    if (![rowIndexes count] || ![columnIndexes count] || [columnIndexes lastIndex] >=  [_tableColumns count])
         return;
 
     // If and edited view is about to be unloaded, cleanup its state before enqueuing.
@@ -5078,7 +5078,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     [self getColumn:@ref(column) row:@ref(row) forView:responder];
 
     if (row == CPNotFound && column  == CPNotFound)
-	[self _notifyViewDidResignFirstResponder];
+	    [self _notifyViewDidResignFirstResponder];
+
     _editingRow = row;
     _editingColumn = column;
 
@@ -5086,7 +5087,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     // This makes sure the theming effects of a focused table remain in effect even as cells are being edited in it.
     [self _notifyViewDidBecomeFirstResponder];
 
-    if (_editingRow !== CPNotFound && [responder isKindOfClass:[CPTextField class]] && ![responder isBezeled])
+    if (_editingRow !== CPNotFound && [responder isKindOfClass:[CPTextField class]] && !_isViewBased)
     {
         [responder setBezeled:YES];
         [self _registerForEndEditingNote:responder];
@@ -5175,7 +5176,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     // is implemented.
     [editingTableColumn _reverseSetDataView:aDataView forRow:_editingRow];
 
-    [self reloadDataForRowIndexes:[CPIndexSet indexSetWithIndex:_editingRow] columnIndexes:[CPIndexSet indexSetWithIndex:_editingColumn]];
+    if (_editingRow !== CPNotFound && _editingColumn !== CPNotFound)
+        [self reloadDataForRowIndexes:[CPIndexSet indexSetWithIndex:_editingRow] columnIndexes:[CPIndexSet indexSetWithIndex:_editingColumn]];
 }
 
 - (void)_setEditingState:(BOOL)editingState forView:(CPView)aView
