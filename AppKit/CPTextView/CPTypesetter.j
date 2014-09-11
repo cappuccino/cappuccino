@@ -59,7 +59,7 @@ function _widthOfStringForFont(aString, aFont)
         var teststring = "0123456879abcdefghiklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.-()";
         _didTestCanvasSizingValid = YES;
         _measuringContext.font = [aFont cssString];
-        _isCanvasSizingInvalid = ABS([teststring sizeWithFont:aFont].width -_measuringContext.measureText(teststring)) > 2;
+        _isCanvasSizingInvalid = ABS([teststring sizeWithFont:aFont].width -_measuringContext.measureText(teststring).width) > 2;
     }
 
     if (!CPFeatureIsCompatible(CPHTMLCanvasFeature) || _isCanvasSizingInvalid)  // measuring with canvas is _much_ faster on chrome
@@ -70,8 +70,7 @@ function _widthOfStringForFont(aString, aFont)
         _measuringContextFont = aFont;
         _measuringContext.font = [aFont cssString];
     }
-
-    return ROUND(_measuringContext.measureText(aString));
+    return _measuringContext.measureText(aString);
 }
 
 var CPSystemTypesetterFactory;
