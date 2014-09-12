@@ -454,8 +454,7 @@ var CPBindingOperationAnd = 0,
 
     if (![CPBinder isBindingAllowed:aBinding forObject:self])
     {
-        [CPException raise:CPGenericException
-                   reason:@"Cannot bind " + aBinding + " because a binding with the same functionality is already in use."];
+        CPLog.warn([self description] + " : cannot bind " + aBinding + " because another binding with the same functionality is already in use.");
         return;
     }
     //if (![[self exposedBindings] containsObject:aBinding])
