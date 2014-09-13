@@ -660,6 +660,11 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         case CPSelectByParagraph:
             var parRange = [self _characterRangeForUnitAtIndex:proposedRange.location asDefinedByCharArray:[[self class] _paragraphBoundaryCharacterArray] skip:NO];
 
+            if (parRange.length < 2)
+                parRange = [self _characterRangeForUnitAtIndex:proposedRange.location > 0 ? proposedRange.location - 1 : 0 asDefinedByCharArray:[[self class] _paragraphBoundaryCharacterArray] skip:NO];
+
+            if (parRange.length > 0) parRange.length++;
+
             if (proposedRange.length)
                 parRange = CPUnionRange(parRange, [self _characterRangeForUnitAtIndex:CPMaxRange(proposedRange) asDefinedByCharArray: [[self class] _paragraphBoundaryCharacterArray] skip:NO]);
 
