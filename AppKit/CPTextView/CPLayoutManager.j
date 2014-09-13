@@ -907,13 +907,17 @@ var _objectsInRange = function(aList, aRange)
                     if (fragment._range.length > 0 && point.y > fragment._fragmentRect.origin.y &&
                         point.y <= fragment._fragmentRect.origin.y + fragment._fragmentRect.size.height)
                     {
-                        var nlLoc = CPMaxRange(fragment._range) - 1,
-                            lastFrame = [fragment glyphFrames][fragment._range.length - 1],
-                            firstFrame = [fragment glyphFrames][0];
-
                         // Skip tabs and move on the last fragment in this line
                         if (i < c - 1 && _lineFragments[i + 1]._fragmentRect.origin.y === fragment._fragmentRect.origin.y)
                            continue;
+
+                        var nlLoc = CPMaxRange(fragment._range),
+                            lastFrame = [fragment glyphFrames][fragment._range.length - 1],
+                            firstFrame = [fragment glyphFrames][0];
+
+                        // stay on the line the newline character belongs to
+                        if (_isNewlineCharacter([[_textStorage string] characterAtIndex:nlLoc > 0? nlLoc - 1 : 0]))
+                            nlLoc--;
 
                         // Clicked right to the last character
                         if (point.x > CGRectGetMaxX(lastFrame))
