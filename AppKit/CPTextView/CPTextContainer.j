@@ -80,6 +80,7 @@ CPLineMovesUp = 4;
     CGSize          _size                   @accessors(property=containerSize)
     CPLayoutManager _layoutManager          @accessors(property=layoutManager);
     CPTextView      _textView               @accessors(property=textView);
+    BOOL            _inResizing;
 }
 
 
@@ -115,12 +116,14 @@ CPLineMovesUp = 4;
 
     if (oldSize.width != _size.width)
     {
+        _inResizing = YES;
         [_layoutManager invalidateLayoutForCharacterRange:CPMakeRange(0, [[_layoutManager textStorage] length])
                                                    isSoft:NO
                                      actualCharacterRange:NULL];
 
         [_layoutManager _validateLayoutAndGlyphs];
         [_textView sizeToFit]; // this is necessary to adopt the height of CPTextView in case of rewrapping
+        _inResizing = NO;
     }
 }
 

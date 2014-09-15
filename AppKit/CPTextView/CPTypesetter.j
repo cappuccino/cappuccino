@@ -70,6 +70,7 @@ function _widthOfStringForFont(aString, aFont)
         _measuringContextFont = aFont;
         _measuringContext.font = [aFont cssString];
     }
+
     return _measuringContext.measureText(aString);
 }
 
@@ -188,12 +189,13 @@ var CPSystemTypesetterFactory;
 
 - (BOOL)_flushRange:(CPRange)lineRange
         lineOrigin:(CGPoint)lineOrigin
-        currentContainerSize:(CGSize)containerSize
+        currentContainer:(CPTextContainer)aContainer
         advancements:(CPArray)advancements
         lineCount:(unsigned)lineCount
 {
     var myX = 0,
-        rect = CGRectMake(lineOrigin.x, lineOrigin.y, _lineWidth, _lineHeight);
+        rect = CGRectMake(lineOrigin.x, lineOrigin.y, _lineWidth, _lineHeight),
+        containerSize=aContainer._size;
 
     [_layoutManager setTextContainer:_currentTextContainer forGlyphRange:lineRange];  // creates a new lineFragment
     [_layoutManager setLineFragmentRect:rect forGlyphRange:lineRange usedRect:rect];
@@ -218,6 +220,9 @@ var CPSystemTypesetterFactory;
     [_layoutManager _setAdvancements:advancements forGlyphRange:lineRange];
 
     if (!lineCount)  // do not rescue on first line
+        return NO;
+
+    if (aContainer._inResizing)
         return NO;
 
     return ([_layoutManager _rescuingInvalidFragmentsWasPossibleForGlyphRange:lineRange]);
@@ -370,7 +375,7 @@ var CPSystemTypesetterFactory;
 
         if (isNewline || isTabStop)
         {
-            if ([self _flushRange:lineRange lineOrigin:lineOrigin currentContainerSize:containerSize advancements:advancements lineCount:numLines])
+            if ([self _flushRange:lineRange lineOrigin:lineOrigin currentContainer:_currentTextContainer advancements:advancements lineCount:numLines])
                 return;
 
             if (isTabStop)
@@ -396,7 +401,7 @@ var CPSystemTypesetterFactory;
                 {
                     _indexOfCurrentContainer++;
                     _indexOfCurrentContainer = MAX(_indexOfCurrentContainer, [[_layoutManager textContainers] count] - 1);
-                    _currentTextContainer = [[_layoutManager textContainers] objectAtIndex: _indexOfCurrentContainer];
+                    _currentTextContainer = [[_layoutManager textContainers] objectAtIndex:_indexOfCurrentContainer];
                 }
 
                 lineOrigin.x = 0;
@@ -422,7 +427,7 @@ var CPSystemTypesetterFactory;
     // this is to "flush" the remaining characters
     if (lineRange.length)
     {
-        [self _flushRange:lineRange lineOrigin:lineOrigin currentContainerSize:containerSize advancements:advancements lineCount:numLines];
+        [self _flushRange:lineRange lineOrigin:lineOrigin currentContainer:_currentTextContainer advancements:advancements lineCount:numLines];
         [self _fixupLineFragmentsOfCurrentLine]
     }
 
