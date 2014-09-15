@@ -260,7 +260,7 @@ var CPSystemTypesetterFactory;
     _textStorage = [_layoutManager textStorage];
     _indexOfCurrentContainer = MAX(0, [[_layoutManager textContainers]
                                    indexOfObject:[_layoutManager textContainerForGlyphAtIndex:glyphIndex effectiveRange:nil withoutAdditionalLayout:YES]
-                                   inRange:CPMakeRange(0, [[_layoutManager textContainers] count])]);
+                                         inRange:CPMakeRange(0, [[_layoutManager textContainers] count])]);
     _currentTextContainer = [[_layoutManager textContainers] objectAtIndex:_indexOfCurrentContainer];
     _attributesRange = CPMakeRange(0, 0);
     _lineHeight = 0;
