@@ -126,6 +126,8 @@ var CPViewFlags                     = { },
     CPViewHasCustomDrawRect         = 1 << 0,
     CPViewHasCustomLayoutSubviews   = 1 << 1;
 
+var CPViewAllowsHighDPIDrawing = YES;
+
 
 /*!
     @ingroup appkit
@@ -259,6 +261,24 @@ var CPViewFlags                     = { },
         return [CPMultipleValueOrBinding class];
 
     return [super _binderClassForBinding:aBinding];
+}
+
+/*!
+    Controls wheter the high DPI drawing is actived or not. By default YES.
+    @param isActive YES to allow the high DPI drawing, otherwise NO.
+*/
++ (void)setAllowsHighDPIDrawing:(BOOL)isActive
+{
+    CPViewAllowsHighDPIDrawing = isActive;
+}
+
+/*!
+    Return YES if the high DPI drawing is actived or not, otherwise NO.
+    @return BOOL - YES if the high DPI drawing is actived or not, otherwise NO.
+*/
++ (BOOL)allowsHighDPIDrawing
+{
+    return CPViewAllowsHighDPIDrawing;
 }
 
 - (void)_setupViewFlags
@@ -2456,7 +2476,10 @@ setBoundsOrigin:
 
 #if PLATFORM(DOM)
         var width = CGRectGetWidth(_frame),
-            height = CGRectGetHeight(_frame);
+            height = CGRectGetHeight(_frame),
+            devicePixelRatio = window.devicePixelRatio || 1,
+            backingStoreRatio = CPBrowserBackingStorePixelRatio(graphicsPort),
+            ratio = CPViewAllowsHighDPIDrawing ? (devicePixelRatio / backingStoreRatio) : 1;
 
         _DOMContentsElement = graphicsPort.DOMElement;
 
@@ -2466,7 +2489,7 @@ setBoundsOrigin:
         _DOMContentsElement.style.position = "absolute";
         _DOMContentsElement.style.visibility = "visible";
 
-        CPDOMDisplayServerSetSize(_DOMContentsElement, width, height);
+        CPDOMDisplayServerSetSize(_DOMContentsElement, width * ratio, height * ratio);
 
         CPDOMDisplayServerSetStyleLeftTop(_DOMContentsElement, NULL, 0.0, 0.0);
         CPDOMDisplayServerSetStyleSize(_DOMContentsElement, width, height);
@@ -2476,6 +2499,7 @@ setBoundsOrigin:
         if (CPPlatformHasBug(CPCanvasParentDrawErrorsOnMovementBug))
             _DOMElement.style.webkitTransform = 'translateX(0)';
 
+        CGContextScaleCTM(graphicsPort, ratio, ratio);
         CPDOMDisplayServerAppendChild(_DOMElement, _DOMContentsElement);
 #endif
         _graphicsContext = [CPGraphicsContext graphicsContextWithGraphicsPort:graphicsPort flipped:YES];
