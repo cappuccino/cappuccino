@@ -126,7 +126,7 @@ var CPViewFlags                     = { },
     CPViewHasCustomDrawRect         = 1 << 0,
     CPViewHasCustomLayoutSubviews   = 1 << 1;
 
-var CPViewAllowsHighDPIDrawing = YES;
+var CPViewHighDPIDrawingEnabled = YES;
 
 
 /*!
@@ -265,20 +265,20 @@ var CPViewAllowsHighDPIDrawing = YES;
 
 /*!
     Controls wheter the high DPI drawing is actived or not. By default YES.
-    @param isActive YES to allow the high DPI drawing, otherwise NO.
+    @param isEnabled YES to allow the high DPI drawing, otherwise NO.
 */
-+ (void)setAllowsHighDPIDrawing:(BOOL)isActive
++ (void)setHighDPIDrawingEnabled:(BOOL)isEnabled
 {
-    CPViewAllowsHighDPIDrawing = isActive;
+    CPViewHighDPIDrawingEnabled = isEnabled;
 }
 
 /*!
     Return YES if the high DPI drawing is actived or not, otherwise NO.
     @return BOOL - YES if the high DPI drawing is actived or not, otherwise NO.
 */
-+ (BOOL)allowsHighDPIDrawing
++ (BOOL)isHighDPIDrawingEnabled
 {
-    return CPViewAllowsHighDPIDrawing;
+    return CPViewHighDPIDrawingEnabled;
 }
 
 - (void)_setupViewFlags
@@ -2479,7 +2479,7 @@ setBoundsOrigin:
             height = CGRectGetHeight(_frame),
             devicePixelRatio = window.devicePixelRatio || 1,
             backingStoreRatio = CPBrowserBackingStorePixelRatio(graphicsPort),
-            ratio = CPViewAllowsHighDPIDrawing ? (devicePixelRatio / backingStoreRatio) : 1;
+            ratio = CPViewHighDPIDrawingEnabled ? (devicePixelRatio / backingStoreRatio) : 1;
 
         _DOMContentsElement = graphicsPort.DOMElement;
 
