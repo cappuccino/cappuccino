@@ -206,6 +206,9 @@ var CPViewHighDPIDrawingEnabled = YES;
     CGSize              _hierarchyScaleSize;
     CGSize              _scaleSize;
 
+    // Drawing high DPI
+    float               _highDPIRatio;
+
     // Layout Support
     BOOL                _needsLayout;
     JSObject            _ephemeralSubviews;
@@ -1031,7 +1034,7 @@ var CPViewHighDPIDrawingEnabled = YES;
 
     if (_DOMContentsElement)
     {
-        CPDOMDisplayServerSetSize(_DOMContentsElement, size.width, size.height);
+        CPDOMDisplayServerSetSize(_DOMContentsElement, size.width * _highDPIRatio, size.height * _highDPIRatio);
         CPDOMDisplayServerSetStyleSize(_DOMContentsElement, size.width, size.height);
     }
 
@@ -2478,8 +2481,9 @@ setBoundsOrigin:
         var width = CGRectGetWidth(_frame),
             height = CGRectGetHeight(_frame),
             devicePixelRatio = window.devicePixelRatio || 1,
-            backingStoreRatio = CPBrowserBackingStorePixelRatio(graphicsPort),
-            ratio = CPViewHighDPIDrawingEnabled ? (devicePixelRatio / backingStoreRatio) : 1;
+            backingStoreRatio = CPBrowserBackingStorePixelRatio(graphicsPort);
+
+        _highDPIRatio = CPViewHighDPIDrawingEnabled ? (devicePixelRatio / backingStoreRatio) : 1;
 
         _DOMContentsElement = graphicsPort.DOMElement;
 
@@ -2489,7 +2493,7 @@ setBoundsOrigin:
         _DOMContentsElement.style.position = "absolute";
         _DOMContentsElement.style.visibility = "visible";
 
-        CPDOMDisplayServerSetSize(_DOMContentsElement, width * ratio, height * ratio);
+        CPDOMDisplayServerSetSize(_DOMContentsElement, width * _highDPIRatio, height * _highDPIRatio);
 
         CPDOMDisplayServerSetStyleLeftTop(_DOMContentsElement, NULL, 0.0, 0.0);
         CPDOMDisplayServerSetStyleSize(_DOMContentsElement, width, height);
@@ -2499,11 +2503,15 @@ setBoundsOrigin:
         if (CPPlatformHasBug(CPCanvasParentDrawErrorsOnMovementBug))
             _DOMElement.style.webkitTransform = 'translateX(0)';
 
-        CGContextScaleCTM(graphicsPort, ratio, ratio);
+        // FIXME: should be here
+        //graphicsPort.setTransform(_highDPIRatio, 0, 0 , _highDPIRatio, 0, 0);
         CPDOMDisplayServerAppendChild(_DOMElement, _DOMContentsElement);
 #endif
         _graphicsContext = [CPGraphicsContext graphicsContextWithGraphicsPort:graphicsPort flipped:YES];
     }
+
+    // FIXME : should not be here...something wrong somewhere, the context should keep the informations of the above setTransform
+    [_graphicsContext graphicsPort].setTransform(_highDPIRatio, 0, 0 , _highDPIRatio, 0, 0);
 
     [CPGraphicsContext setCurrentContext:_graphicsContext];
 
