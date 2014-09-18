@@ -2087,13 +2087,13 @@ NOT YET IMPLEMENTED
 - (void)getColumn:(Function)columnRef row:(Function)rowRef forView:(CPView)aView
 {
     var columnResult = -1,
-        rowResult = -1,
-        found = YES;
+        rowResult = -1;
 
-    if (aView && [aView isKindOfClass:[CPView class]])
+    if (aView && [aView isKindOfClass:[CPView class]] && ![aView isKindOfClass:[CPTableView class]])
     {
         var cellView = aView,
             contentView = [[self window] contentView],
+            found = NO,
             max_rec = 100;
 
         while (max_rec--)
@@ -2109,6 +2109,7 @@ NOT YET IMPLEMENTED
 
                 if ([superview isKindOfClass:[CPTableView class]])
                 {
+                    found = YES;
                     break;
                 }
 

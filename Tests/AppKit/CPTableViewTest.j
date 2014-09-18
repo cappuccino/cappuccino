@@ -311,6 +311,101 @@
     [self assertTrue:[table bounds].size.width >= 200];
 }
 
+// Test internal method - (void)getColumn:(Function)columnRef row:(Function)rowRef forView:(CPView)aView
+- (void)testGetColumnAndRow
+{
+    var table = [[CPTableView alloc] initWithFrame:CGRectMake(0, 0, 400, 400)],
+        tableColumn1 = [[CPTableColumn alloc] initWithIdentifier:@"A"],
+        tableColumn2 = [[CPTableColumn alloc] initWithIdentifier:@"B"],
+        delegate = [ContentBindingTableDelegate new];
+
+    [delegate setTester:self];
+    [table setDelegate:delegate];
+
+    [delegate setTableEntries:[[@"A1", @"B1"], [@"A2", @"B2"], [@"A3", @"B3"]]];
+    [table bind:@"content" toObject:delegate withKeyPath:@"tableEntries" options:nil];
+
+    [[theWindow contentView] addSubview:table];
+
+    [tableColumn1 setWidth:50.0];
+    [tableColumn2 setWidth:100.0];
+
+    [table addTableColumn:tableColumn1];
+    [table addTableColumn:tableColumn2];
+
+    var table2 = [[CPTableView alloc] initWithFrame:CGRectMake(400, 0, 400, 400)],
+        table2Column1 = [[CPTableColumn alloc] initWithIdentifier:@"A"],
+        table2Column2 = [[CPTableColumn alloc] initWithIdentifier:@"B"],
+        delegate = [ContentBindingTableDelegate new];
+
+    [delegate setTester:self];
+    [table2 setDelegate:delegate];
+
+    [delegate setTableEntries:[[@"A1", @"B1"], [@"A2", @"B2"], [@"A3", @"B3"]]];
+    [table2 bind:@"content" toObject:delegate withKeyPath:@"tableEntries" options:nil];
+
+    [[theWindow contentView] addSubview:table2];
+
+    [table2Column1 setWidth:50.0];
+    [table2Column2 setWidth:100.0];
+
+    [table2 addTableColumn:tableColumn1];
+    [table2 addTableColumn:tableColumn2];
+
+    var row,
+        column;
+
+// get row and column for a nil view
+    [table getColumn:@ref(column) row:@ref(row) forView:nil];
+
+    [self assert:CPNotFound equals:column];
+    [self assert:CPNotFound equals:row];
+
+// get row and column for a random view
+    var v = [[CPView alloc] initWithFrame:CGRectMake(0,0,100,100)];
+
+    [table getColumn:@ref(column) row:@ref(row) forView:v];
+
+    [self assert:CPNotFound equals:column];
+    [self assert:CPNotFound equals:row];
+
+// get row and column for the table view
+    [table getColumn:@ref(column) row:@ref(row) forView:table];
+
+    [self assert:CPNotFound equals:column];
+    [self assert:CPNotFound equals:row];
+
+// get row and column for a view outside a table column
+    [table getColumn:@ref(column) row:@ref(row) forView:[theWindow contentView]];
+
+    [self assert:CPNotFound equals:column];
+    [self assert:CPNotFound equals:row];
+
+// Enumerate views inside the table view and check that rows and columns are correct
+    [table enumerateAvailableViewsUsingBlock:function(dataView, aRow, aColumn, stop)
+    {
+        var getRow,
+            getColumn;
+
+        [table getColumn:@ref(getColumn) row:@ref(getRow) forView:dataView];
+
+        [self assert:aColumn equals:getColumn];
+        [self assert:aRow equals:getRow];
+    }];
+
+// Enumerate views inside a different table view and check that rows and columns are not found
+    [table2 enumerateAvailableViewsUsingBlock:function(dataView, aRow, aColumn, stop)
+    {
+        var getRow,
+            getColumn;
+
+        [table getColumn:@ref(getColumn) row:@ref(getRow) forView:dataView];
+
+        [self assert:CPNotFound equals:getRow];
+        [self assert:CPNotFound equals:getColumn];
+    }];
+}
+
 @end
 
 @implementation FirstResponderConfigurableTableView : CPTableView
