@@ -268,8 +268,8 @@ var CPViewHighDPIDrawingEnabled = YES;
 }
 
 /*!
-    Controls wheter the high DPI drawing is actived or not. By default YES.
-    @param isEnabled YES to allow the high DPI drawing, otherwise NO.
+    Controls whether high DPI drawing is activated or not. Defaults to YES.
+    @param isEnabled YES to enable high DPI drawing
 */
 + (void)setHighDPIDrawingEnabled:(BOOL)isEnabled
 {
@@ -277,8 +277,8 @@ var CPViewHighDPIDrawingEnabled = YES;
 }
 
 /*!
-    Return YES if the high DPI drawing is actived or not, otherwise NO.
-    @return BOOL - YES if the high DPI drawing is actived or not, otherwise NO.
+    Returns whether high DPI drawing is enabled.
+    @return BOOL - YES if high DPI drawing is activated, otherwise NO.
 */
 + (BOOL)isHighDPIDrawingEnabled
 {
