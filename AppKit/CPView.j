@@ -2508,7 +2508,6 @@ setBoundsOrigin:
 
         graphicsPort.setTransform(_highDPIRatio, 0, 0 , _highDPIRatio, 0, 0);
         CPDOMDisplayServerAppendChild(_DOMElement, _DOMContentsElement);
-        graphicsPort._test = @"oirjeio"
 #endif
         _graphicsContext = [CPGraphicsContext graphicsContextWithGraphicsPort:graphicsPort flipped:YES];
     }
