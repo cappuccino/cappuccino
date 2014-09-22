@@ -207,6 +207,7 @@ var CPViewHighDPIDrawingEnabled = YES;
     CGSize              _scaleSize;
 
     // Drawing high DPI
+    BOOL                _needToSetTransformMatrix;
     float               _highDPIRatio;
 
     // Layout Support
@@ -1037,8 +1038,7 @@ var CPViewHighDPIDrawingEnabled = YES;
         CPDOMDisplayServerSetSize(_DOMContentsElement, size.width * _highDPIRatio, size.height * _highDPIRatio);
         CPDOMDisplayServerSetStyleSize(_DOMContentsElement, size.width, size.height);
 
-        if (_graphicsContext)
-            [_graphicsContext graphicsPort].setTransform(_highDPIRatio, 0, 0 , _highDPIRatio, 0, 0);
+        _needToSetTransformMatrix = YES;
     }
 
     if (_backgroundType !== BackgroundTrivialColor)
@@ -2506,12 +2506,16 @@ setBoundsOrigin:
         if (CPPlatformHasBug(CPCanvasParentDrawErrorsOnMovementBug))
             _DOMElement.style.webkitTransform = 'translateX(0)';
 
-        graphicsPort.setTransform(_highDPIRatio, 0, 0 , _highDPIRatio, 0, 0);
         CPDOMDisplayServerAppendChild(_DOMElement, _DOMContentsElement);
 #endif
         _graphicsContext = [CPGraphicsContext graphicsContextWithGraphicsPort:graphicsPort flipped:YES];
+        _needToSetTransformMatrix = YES;
     }
 
+    if (_needToSetTransformMatrix)
+        [_graphicsContext graphicsPort].setTransform(_highDPIRatio, 0, 0 , _highDPIRatio, 0, 0);
+
+    _needToSetTransformMatrix = NO;
     [CPGraphicsContext setCurrentContext:_graphicsContext];
 
     CGContextSaveGState([_graphicsContext graphicsPort]);
