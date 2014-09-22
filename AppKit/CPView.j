@@ -1036,6 +1036,9 @@ var CPViewHighDPIDrawingEnabled = YES;
     {
         CPDOMDisplayServerSetSize(_DOMContentsElement, size.width * _highDPIRatio, size.height * _highDPIRatio);
         CPDOMDisplayServerSetStyleSize(_DOMContentsElement, size.width, size.height);
+
+        if (_graphicsContext)
+            [_graphicsContext graphicsPort].setTransform(_highDPIRatio, 0, 0 , _highDPIRatio, 0, 0);
     }
 
     if (_backgroundType !== BackgroundTrivialColor)
@@ -2503,15 +2506,12 @@ setBoundsOrigin:
         if (CPPlatformHasBug(CPCanvasParentDrawErrorsOnMovementBug))
             _DOMElement.style.webkitTransform = 'translateX(0)';
 
-        // FIXME: should be here
-        //graphicsPort.setTransform(_highDPIRatio, 0, 0 , _highDPIRatio, 0, 0);
+        graphicsPort.setTransform(_highDPIRatio, 0, 0 , _highDPIRatio, 0, 0);
         CPDOMDisplayServerAppendChild(_DOMElement, _DOMContentsElement);
+        graphicsPort._test = @"oirjeio"
 #endif
         _graphicsContext = [CPGraphicsContext graphicsContextWithGraphicsPort:graphicsPort flipped:YES];
     }
-
-    // FIXME : should not be here...something wrong somewhere, the context should keep the informations of the above setTransform
-    [_graphicsContext graphicsPort].setTransform(_highDPIRatio, 0, 0 , _highDPIRatio, 0, 0);
 
     [CPGraphicsContext setCurrentContext:_graphicsContext];
 
