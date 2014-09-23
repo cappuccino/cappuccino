@@ -232,18 +232,18 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     CPInteger                   _dirtyTableColumnRangeIndex;
     CPInteger                   _numberOfHiddenColumns;
 
-    BOOL                _reloadAllRows;
-    BOOL                _invalidateObjectValuesCache;
-    Object              _objectValues;
+    BOOL                        _reloadAllRows;
+    BOOL                        _invalidateObjectValuesCache;
+    Object                      _objectValues;
 
-    CGRect              _exposedRect;
-    CPIndexSet          _exposedRows;
-    CPIndexSet          _exposedColumns;
+    CGRect                      _exposedRect;
+    CPIndexSet                  _exposedRows;
+    CPIndexSet                  _exposedColumns;
 
-    Object              _dataViewsForRows;
-    Object              _cachedDataViews;
-    CPDictionary        _archivedDataViews;
-    Object              _unavailable_custom_cibs;
+    Object                      _dataViewsForRows;
+    Object                      _cachedDataViews;
+    CPDictionary                _archivedDataViews;
+    Object                      _unavailable_custom_cibs;
 
     //Configuring Behavior
     BOOL                        _allowsColumnReordering;
@@ -3674,18 +3674,26 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     if (!view)
     {
-        var columnIdentifier = [aTableColumn identifier];
+        // For cell-based tables, use the dataView prototype identifier as view identifier
+        // instead of column identifier because 1/ the column identifier may be nil
+        // and 2/ the tableColumn dataView may change after the column identifier was set.
+        var identifier;
 
-        // For cell-based tables, use the dataView prototype identifier.
-        if (!columnIdentifier)
-            columnIdentifier = [[aTableColumn dataView] UID];
+        if (_isViewBased)
+        {
+            identifier = [aTableColumn identifier];
+            view = [self makeViewWithIdentifier:identifier owner:_delegate];
+        }
+        else
+        {
+            identifier = [[aTableColumn dataView] UID];
+            view = [self makeViewWithIdentifier:identifier owner:_delegate];
 
-        view = [self makeViewWithIdentifier:columnIdentifier owner:_delegate];
+            if (!view)
+                view = [aTableColumn _newDataView];
+        }
 
-        if (!view)
-            view = [aTableColumn _newDataView];
-
-        [view setIdentifier:columnIdentifier];
+        [view setIdentifier:identifier];
     }
 
     return view;
@@ -5954,7 +5962,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         keyPath = [_info objectForKey:CPObservedKeyPathKey];
 
     _content = [destination valueForKey:keyPath];
-
+    // FIXME: reload data for all rows or just exposed rows ?
     [_source _reloadDataViews];
 }
 

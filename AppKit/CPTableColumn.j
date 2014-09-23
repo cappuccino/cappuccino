@@ -565,6 +565,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
         columnIndexes = [CPIndexSet indexSetWithIndex:column];
 
     // Reloads objectValues only, not the views.
+    // FIXME: reload data for all rows or just exposed rows ?
     [tableView _reloadDataForRowIndexes:rowIndexes columnIndexes:columnIndexes];
 }
 
