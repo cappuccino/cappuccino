@@ -616,9 +616,8 @@ NOT YET IMPLEMENTED
 */
 - (void)reloadData
 {
-    // Empty the data cache.
-    _objectValues = { };
-    [self _reloadDataViewsImmediately];
+    [self _reloadDataViews];
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 }
 
 /*!
@@ -641,11 +640,6 @@ NOT YET IMPLEMENTED
     }];
 }
 
-- (BOOL)_dataViewsNeedReloadAfterContentChange
-{
-    return (_numberOfRows !== [self _numberOfRows]);
-}
-
 // Reloads the views AND the data
 - (void)_reloadDataViews
 {
@@ -666,13 +660,6 @@ NOT YET IMPLEMENTED
 
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
-}
-
-// reload data views and process events to force a -load
-- (void)_reloadDataViewsImmediately
-{
-    [self _reloadDataViews];
-    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 }
 
 //Target-action Behavior
@@ -1152,7 +1139,7 @@ NOT YET IMPLEMENTED
     else
         _dirtyTableColumnRangeIndex = MIN(index, _dirtyTableColumnRangeIndex);
 
-    [self _reloadDataViewsImmediately];
+    [self reloadData];
 }
 
 /*!
@@ -3804,7 +3791,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
 - (void)enumerateAvailableViewsUsingBlock:(Function/*CPView *dataView, CPInteger row, CPInteger column*, @ref stop*/)handler
 {
-    [self _reloadDataViewsImmediately];
+    [self reloadData];
     [self _enumerateViewsInRows:_exposedRows columns:_exposedColumns usingBlock:handler];
 }
 
@@ -5206,7 +5193,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     if (![self isRowSelected:rowIndex])
         [[CPException exceptionWithName:@"Error" reason:@"Attempt to edit row " + rowIndex + " when not selected." userInfo:nil] raise];
 
-    [self _reloadDataViewsImmediately];
+    [self reloadData];
 
     [self scrollRowToVisible:rowIndex];
     [self scrollColumnToVisible:columnIndex];

@@ -1321,12 +1321,6 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     [self reloadData];
 }
 
-- (BOOL)_dataViewsNeedReloadAfterContentChange
-{
-    // Alternatively, check if the current tree of views mactches the current tree in the data source.
-    return YES;
-}
-
 /*!
     Reloads all the data of the outlineview.
 */

@@ -564,7 +564,8 @@ CPTableColumnUserResizingMask   = 1 << 1;
         rowIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [tableView numberOfRows])],
         columnIndexes = [CPIndexSet indexSetWithIndex:column];
 
-    [tableView reloadDataForRowIndexes:rowIndexes columnIndexes:columnIndexes];
+    // Reloads objectValues only, not the views.
+    [tableView _reloadDataForRowIndexes:rowIndexes columnIndexes:columnIndexes];
 }
 
 - (CPSortDescriptor)_defaultSortDescriptorPrototype
