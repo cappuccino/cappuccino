@@ -679,7 +679,9 @@ var CPZeroKeyCode = 48,
             dateValue.setHours(dateValue.getHours() - 12);
     }
 
-    [_datePicker setDateValue:dateValue];
+    _datePicker._invokedByUserEvent = YES;
+    [_datePicker _setDateValue:dateValue timeInterval:[_datePicker timeInterval]];
+    _datePicker._invokedByUserEvent = NO;
 }
 
 
@@ -1636,7 +1638,9 @@ var CPMonthDateType = 0,
         newDateValue.setSeconds(newDateValue.getSeconds() + secondsFromGMT - secondsFromGMTTimeZone);
     }
 
-    [_datePicker setDateValue:newDateValue];
+    _datePicker._invokedByUserEvent = YES;
+    [_datePicker _setDateValue:newDateValue timeInterval:[_datePicker timeInterval]];
+    _datePicker._invokedByUserEvent = NO;
 }
 
 
