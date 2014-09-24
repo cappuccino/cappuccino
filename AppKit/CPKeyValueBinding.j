@@ -130,7 +130,7 @@ var CPBindingOperationAnd = 0,
         count = allKeys.length;
 
     while (count--)
-        [anObject unbind:[bindings objectForKey:allKeys[count]]];
+        [anObject unbind:allKeys[count]];
 
     [bindingsMap removeObjectForKey:[anObject UID]];
 }
