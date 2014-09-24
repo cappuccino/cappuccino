@@ -92,8 +92,6 @@ var CPZeroKeyCode = 48,
     [_stepper setAction:@selector(_clickStepper:)];
     [self addSubview:_stepper];
 
-    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_datePickerElementTextFieldBecomeFirstResponder:) name:CPDatePickerElementTextFieldBecomeFirstResponder object:self];
-
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
 }
@@ -414,6 +412,30 @@ var CPZeroKeyCode = 48,
     [_datePickerElementView setNeedsLayout];
 }
 
+
+#pragma mark -
+#pragma mark Override observers
+
+- (void)_removeObservers
+{
+    if (!_isObserving)
+        return;
+
+    [super _removeObservers];
+
+    [[CPNotificationCenter defaultCenter] removeObserver:self name:CPDatePickerElementTextFieldBecomeFirstResponder object:self];
+}
+
+- (void)_addObservers
+{
+    if (_isObserving)
+        return;
+
+    [super _addObservers];
+
+    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_datePickerElementTextFieldBecomeFirstResponder:) name:CPDatePickerElementTextFieldBecomeFirstResponder object:self];
+}
+
 @end
 
 
@@ -524,8 +546,6 @@ var CPZeroKeyCode = 48,
     [self addSubview: _textFieldSeparatorThree];
     [self addSubview: _textFieldSeparatorFour];
 
-    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_datePickerElementTextFieldAMPMChangedNotification:) name:CPDatePickerElementTextFieldAMPMChangedNotification object:_textFieldPMAM];
-
     [self setNeedsLayout];
 }
 
@@ -536,6 +556,30 @@ var CPZeroKeyCode = 48,
 - (BOOL)acceptsFirstResponder
 {
     return NO;
+}
+
+
+#pragma mark -
+#pragma mark Override observers
+
+- (void)_removeObservers
+{
+    if (!_isObserving)
+        return;
+
+    [super _removeObservers];
+
+    [[CPNotificationCenter defaultCenter] removeObserver:self name:CPDatePickerElementTextFieldAMPMChangedNotification object:_textFieldPMAM];
+}
+
+- (void)_addObservers
+{
+    if (_isObserving)
+        return;
+
+    [super _addObservers];
+
+    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_datePickerElementTextFieldAMPMChangedNotification:) name:CPDatePickerElementTextFieldAMPMChangedNotification object:_textFieldPMAM];
 }
 
 

@@ -901,6 +901,8 @@ CPTexturedBackgroundWindowMask
 
 - (void)_orderFront
 {
+    [[self contentView] _addObservers];
+
 #if PLATFORM(DOM)
     // -dw- if a sheet is clicked, the parent window should come up too
     if (_isSheet)
@@ -959,6 +961,8 @@ CPTexturedBackgroundWindowMask
 {
     if (!_isVisible)
         return;
+
+    [[self contentView] _removeObservers];
 
     if ([self isSheet])
     {

@@ -86,14 +86,12 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
         _active = NO;
         _color = [CPColor whiteColor];
         [self setBordered:YES];
-
-        [self _registerForNotifications];
     }
 
     return self;
 }
 
-- (void)_registerForNotifications
+- (void)_registerNotifications
 {
     var defaultCenter = [CPNotificationCenter defaultCenter];
 
@@ -108,6 +106,22 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
            selector:@selector(colorPanelWillClose:)
                name:CPWindowWillCloseNotification
              object:[CPColorPanel sharedColorPanel]];
+}
+
+- (void)_removeNotifications
+{
+    var defaultCenter = [CPNotificationCenter defaultCenter];
+
+    [defaultCenter
+        removeObserver:self
+                  name:_CPColorWellDidBecomeExclusiveNotification
+                object:nil];
+
+    [defaultCenter
+        removeObserver:self
+                  name:CPWindowWillCloseNotification
+                object:[CPColorPanel sharedColorPanel]];
+
 }
 
 /*!
@@ -312,6 +326,28 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
     [contentBorderView setBackgroundColor:[self currentValueForThemeAttribute:@"content-border-color"]];
 }
 
+
+#pragma mark -
+#pragma mark Observers method
+
+- (void)_addObservers
+{
+    if (_isObserving)
+        return;
+
+    [super _addObservers];
+    [self _registerNotifications];
+}
+
+- (void)_removeObservers
+{
+    if (!_isObserving)
+        return;
+
+    [super _removeObservers];
+    [self _removeNotifications];
+}
+
 @end
 
 @implementation CPColorWellValueBinder : CPBinder
@@ -363,8 +399,6 @@ var CPColorWellColorKey     = "CPColorWellColorKey",
         _active = NO;
         _color = [aCoder decodeObjectForKey:CPColorWellColorKey];
         [self setBordered:[aCoder decodeBoolForKey:CPColorWellBorderedKey]];
-
-        [self _registerForNotifications];
     }
 
     return self;

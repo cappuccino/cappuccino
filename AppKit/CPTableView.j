@@ -473,8 +473,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     if (!_sortDescriptors)
         _sortDescriptors = [];
-
-    [self _startObservingFirstResponder];
 }
 
 /*!
@@ -4456,6 +4454,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (void)viewWillMoveToSuperview:(CPView)aView
 {
+    [super viewWillMoveToSuperview:aView];
+
     var superview = [self superview],
         defaultCenter = [CPNotificationCenter defaultCenter];
 
@@ -5126,6 +5126,24 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         return self;
 
     return hit;
+}
+
+- (void)_removeObservers
+{
+    if (!_isObserving)
+        return;
+
+    [super _removeObservers];
+    [self _stopObservingFirstResponder];
+}
+
+- (void)_addObservers
+{
+    if (_isObserving)
+        return;
+
+    [super _addObservers];
+    [self _startObservingFirstResponder];
 }
 
 - (void)_startObservingFirstResponder
