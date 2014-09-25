@@ -320,6 +320,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     CPInteger           _draggedColumnIndex;
     BOOL                _draggedColumnIsSelected;
+    BOOL                _needsDifferedTableColumnRemove;
     CPArray             _differedColumnDataToRemove;
 
     Function            _BlockDeselectView;
@@ -474,6 +475,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     _sourceListInactiveTopLineColor = [CPColor colorWithCalibratedRed:(173.0/255.0) green:(187.0/255.0) blue:(209.0/255.0) alpha:1.0];
     _sourceListInactiveBottomLineColor = [CPColor colorWithCalibratedRed:(150.0/255.0) green:(161.0/255.0) blue:(183.0/255.0) alpha:1.0];*/
     _differedColumnDataToRemove = [];
+    _needsDifferedTableColumnRemove = NO;
     _implementsCustomDrawRow = [self implementsSelector:@selector(drawRow:clipRect:)];
 
     if (!_sortDescriptors)
@@ -1125,6 +1127,7 @@ NOT YET IMPLEMENTED
 
     // we defer the actual removal until the end of the runloop in order to keep a reference to the column.
     [_differedColumnDataToRemove addObject:{"column":aTableColumn, "shouldBeHidden": [aTableColumn isHidden]}];
+    _needsDifferedTableColumnRemove = YES;
 
     [aTableColumn setHidden:YES];
     [aTableColumn setTableView:nil];
@@ -3479,11 +3482,11 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     [self setNeedsDisplay:YES];
 
     // if we have any columns to remove do that here
-    var removeCount = [_differedColumnDataToRemove count];
 
-    if (removeCount)
+    if (_needsDifferedTableColumnRemove)
     {
-        var removeIndexes = [CPIndexSet indexSet];
+        var removeCount = [_differedColumnDataToRemove count],
+            removeIndexes = [CPIndexSet indexSet];
 
         for (var i = 0; i < removeCount; i++)
         {
@@ -3495,12 +3498,16 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
                 [removeIndexes addIndex:columnIdx];
         }
 
-        // FIXME: do we also need to remove non exposed rows that may stay in the cache ?
-        [self _unloadDataViewsInRows:_exposedRows columns:removeIndexes];
+        var rowIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self numberOfRows])];
+        [self _unloadDataViewsInRows:rowIndexes columns:removeIndexes];
 
         [_tableColumns removeObjectsAtIndexes:removeIndexes];
 
+        _dirtyTableColumnRangeIndex = 0;
+        [self _recalculateTableColumnRanges];
+
         [_differedColumnDataToRemove removeAllObjects];
+        _needsDifferedTableColumnRemove = NO;
     }
 
     // Now clear all the leftovers
