@@ -9,7 +9,8 @@
 @import <Foundation/Foundation.j>
 @import <AppKit/AppKit.j>
 
-@import "../../CPTrace.j"
+//@import "../../CPTrace.j"
+CPLogRegister(CPLogConsole);
 
 @implementation AppController : CPObject
 {
@@ -20,7 +21,7 @@
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
     // This is called when the application is done loading.
-    CPTrace("CPTableView", "_unloadDataViewsInRows:columns:");
+    //CPTrace("CPTableView", "_unloadDataViewsInRows:columns:");
 }
 
 - (void)awakeFromCib
@@ -43,7 +44,7 @@
     for (itemIndex ; itemIndex < [items count]; itemIndex++)
     {
         var item = [items objectAtIndex:itemIndex],
-            column = [[CPTableColumn alloc] initWithIdentifier:itemIndex];
+            column = [[CPTableColumn alloc] initWithIdentifier:item];
         [column setEditable:YES];
         [column setMinWidth:50];
         [[column headerView] setStringValue:item];
@@ -55,9 +56,25 @@
 {
     console.log("Before NumberOfColumns : " + [[tableView tableColumns] count]);
 
-    [tableView removeTableColumn:[[tableView tableColumns] firstObject]];
+    var selectedColumn = [tableView selectedColumn];
+    if (selectedColumn !== CPNotFound)
+        [tableView removeTableColumn:[[tableView tableColumns] objectAtIndex:selectedColumn]];
 
     console.log("After NumberOfColumns : " + [[tableView tableColumns] count]);
+
+    var tableColunms = [tableView tableColumns],
+        fails = NO;
+
+    [tableView enumerateAvailableViewsUsingBlock:function(view,row,column,stop)
+    {
+       if (([tableColunms[column] identifier] + " " + row ) != [view objectValue])
+       {
+           fails = YES;
+           stop(YES);
+       }
+    }];
+
+    CPLog.debug("Test that data views are in the right place : " + (fails ? "FAILS":"SUCCESS"));
 }
 
 - (int)numberOfRowsInTableView:(CPTableView)aTableView
@@ -67,7 +84,7 @@
 
 - (id)tableView:(CPTableView)aTableView objectValueForTableColumn:(CPTableColumn)aColumn row:(int)aRowIndex
 {
-    return 10;
+    return [aColumn identifier] + " " + aRowIndex;
 }
 
 @end

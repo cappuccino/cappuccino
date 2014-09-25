@@ -40,12 +40,19 @@
     [self assertTrue:([[tableView tableColumns] count] == 4)];
 
     [tableView removeTableColumn:[[tableView tableColumns] firstObject]];
-
+[[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
     [self assertTrue:([[tableView tableColumns] count] == 3)];
 
     [tableView removeTableColumn:[[tableView tableColumns] firstObject]];
-
+[[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
     [self assertTrue:([[tableView tableColumns] count] == 2)];
+
+    [tableView enumerateAvailableViewsUsingBlock:function(view, row, column, stop)
+    {
+        var tableColumn = [[tableView tableColumns] objectAtIndex:column];
+        [self assert:("COLUMN_" + [tableColumn identifier] + "ROW_" + row) equals:[view objectValue]];
+
+    }];
 }
 
 - (int)numberOfRowsInTableView:(CPTableView)aTableView
