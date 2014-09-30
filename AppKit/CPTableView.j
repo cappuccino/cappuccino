@@ -6025,6 +6025,11 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 {
     [super encodeWithCoder:aCoder];
 
+    // We do this in order to avoid encoding the _tableDrawView, which
+    // should just automatically be created programmatically as needed.
+    if (_tableDrawView)
+        [_tableDrawView removeFromSuperview];
+
     [aCoder encodeObject:_dataSource forKey:CPTableViewDataSourceKey];
     [aCoder encodeObject:_delegate forKey:CPTableViewDelegateKey];
 
