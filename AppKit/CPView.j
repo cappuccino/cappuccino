@@ -751,7 +751,7 @@ var CPViewFlags                     = { },
     [[self window] _dirtyKeyViewLoop];
 
     // Clear out first responder if we're the first responder and leaving.
-    if ([_window firstResponder] === self)
+    if ([_window firstResponder] === self && _window != aWindow)
         [_window makeFirstResponder:nil];
 
     // Notify the view and its subviews
