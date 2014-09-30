@@ -383,7 +383,7 @@ var ObjJAcornCompiler = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*
         this.tokens = exports.acorn.parse(aString);
     }
     catch (e) {
-        if (e.lineStart)
+        if (e.lineStart != null)
         {
             var message = this.prettifyMessage(e, "ERROR");
 #ifdef BROWSER
