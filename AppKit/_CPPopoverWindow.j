@@ -726,11 +726,10 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
             case CPPopoverBehaviorTransient:
                 [_delegate performClose:self];
                 break;
-
-            case CPPopoverBehaviorApplicationDefined:
-                [self _trapNextMouseDown];
-                break;
         }
+
+        if ([self isVisible])
+            [self _trapNextMouseDown];
     }
 }
 
