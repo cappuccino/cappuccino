@@ -1280,7 +1280,7 @@ var PreventScroll = true;
             insertionIndex = _windowLevels[middle] > aLevel ? middle : middle + 1
 
         [_windowLevels insertObject:aLevel atIndex:insertionIndex];
-        layer._DOMElement.style.zIndex = aLevel;
+        layer._DOMElement.style.zIndex = aLevel + 1;  // adding one avoids negative zIndices. These have been causing issues in Chrome
 
         _DOMBodyElement.appendChild(layer._DOMElement);
     }

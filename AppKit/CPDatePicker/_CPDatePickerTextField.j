@@ -92,8 +92,6 @@ var CPZeroKeyCode = 48,
     [_stepper setAction:@selector(_clickStepper:)];
     [self addSubview:_stepper];
 
-    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_datePickerElementTextFieldBecomeFirstResponder:) name:CPDatePickerElementTextFieldBecomeFirstResponder object:self];
-
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
 }
@@ -414,6 +412,30 @@ var CPZeroKeyCode = 48,
     [_datePickerElementView setNeedsLayout];
 }
 
+
+#pragma mark -
+#pragma mark Override observers
+
+- (void)_removeObservers
+{
+    if (!_isObserving)
+        return;
+
+    [super _removeObservers];
+
+    [[CPNotificationCenter defaultCenter] removeObserver:self name:CPDatePickerElementTextFieldBecomeFirstResponder object:self];
+}
+
+- (void)_addObservers
+{
+    if (_isObserving)
+        return;
+
+    [super _addObservers];
+
+    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_datePickerElementTextFieldBecomeFirstResponder:) name:CPDatePickerElementTextFieldBecomeFirstResponder object:self];
+}
+
 @end
 
 
@@ -524,8 +546,6 @@ var CPZeroKeyCode = 48,
     [self addSubview: _textFieldSeparatorThree];
     [self addSubview: _textFieldSeparatorFour];
 
-    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_datePickerElementTextFieldAMPMChangedNotification:) name:CPDatePickerElementTextFieldAMPMChangedNotification object:_textFieldPMAM];
-
     [self setNeedsLayout];
 }
 
@@ -533,9 +553,37 @@ var CPZeroKeyCode = 48,
 #pragma mark -
 #pragma mark Responder methods
 
+/*! @ignore */
 - (BOOL)acceptsFirstResponder
 {
-    return NO;
+    // This is needed to accept to be firstResponder when nothing is selected.
+    // This element needs to be first responder when the CPDatePicker is in the CPTableView
+    // When clicking on a row of a CPTableView where there isn't a date element, the CPTableView will ask this element to know if it can becomes or not a firstResponder.
+    return [_datePicker isEnabled] && ![self superview]._currentTextField;
+}
+
+
+#pragma mark -
+#pragma mark Override observers
+
+- (void)_removeObservers
+{
+    if (!_isObserving)
+        return;
+
+    [super _removeObservers];
+
+    [[CPNotificationCenter defaultCenter] removeObserver:self name:CPDatePickerElementTextFieldAMPMChangedNotification object:_textFieldPMAM];
+}
+
+- (void)_addObservers
+{
+    if (_isObserving)
+        return;
+
+    [super _addObservers];
+
+    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_datePickerElementTextFieldAMPMChangedNotification:) name:CPDatePickerElementTextFieldAMPMChangedNotification object:_textFieldPMAM];
 }
 
 
@@ -679,7 +727,9 @@ var CPZeroKeyCode = 48,
             dateValue.setHours(dateValue.getHours() - 12);
     }
 
-    [_datePicker setDateValue:dateValue];
+    _datePicker._invokedByUserEvent = YES;
+    [_datePicker _setDateValue:dateValue timeInterval:[_datePicker timeInterval]];
+    _datePicker._invokedByUserEvent = NO;
 }
 
 
@@ -1282,6 +1332,12 @@ var CPMonthDateType = 0,
     return self;
 }
 
+/*! @ignore */
+- (BOOL)acceptsFirstResponder
+{
+    return [_datePicker isEnabled];
+}
+
 /*! Set the dateType of the textField
 */
 - (void)setDateType:(int)aDateType
@@ -1636,7 +1692,9 @@ var CPMonthDateType = 0,
         newDateValue.setSeconds(newDateValue.getSeconds() + secondsFromGMT - secondsFromGMTTimeZone);
     }
 
-    [_datePicker setDateValue:newDateValue];
+    _datePicker._invokedByUserEvent = YES;
+    [_datePicker _setDateValue:newDateValue timeInterval:[_datePicker timeInterval]];
+    _datePicker._invokedByUserEvent = NO;
 }
 
 
@@ -1732,6 +1790,11 @@ var CPMonthDateType = 0,
     frameSize.width = MAX(frameSize.width, minSize.width);
 
     return frameSize;
+}
+
+- (CGRect)bezelRectForBounds:(CGRect)bounds
+{
+    return CGRectMakeCopy(bounds);
 }
 
 @end

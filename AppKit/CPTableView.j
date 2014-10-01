@@ -279,49 +279,49 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     CPTableHeaderView           _headerView;
     _CPCornerView               _cornerView;
 
-    CPIndexSet          _selectedColumnIndexes;
-    CPIndexSet          _selectedRowIndexes;
-    CPInteger           _selectionAnchorRow;
-    CPInteger           _lastSelectedRow;
-    CPIndexSet          _previouslySelectedRowIndexes;
-    CGPoint             _startTrackingPoint;
-    CPDate              _startTrackingTimestamp;
-    BOOL                _trackingPointMovedOutOfClickSlop;
-    CPInteger           _editingRow;
-    CPInteger           _editingColumn;
+    CPIndexSet                  _selectedColumnIndexes;
+    CPIndexSet                  _selectedRowIndexes;
+    CPInteger                   _selectionAnchorRow;
+    CPInteger                   _lastSelectedRow;
+    CPIndexSet                  _previouslySelectedRowIndexes;
+    CGPoint                     _startTrackingPoint;
+    CPDate                      _startTrackingTimestamp;
+    BOOL                        _trackingPointMovedOutOfClickSlop;
+    CPInteger                   _editingRow;
+    CPInteger                   _editingColumn;
 
-    _CPTableDrawView    _tableDrawView;
+    _CPTableDrawView            _tableDrawView;
 
-    SEL                 _doubleAction;
-    CPInteger           _clickedRow;
-    CPInteger           _clickedColumn;
-    unsigned            _columnAutoResizingStyle;
+    SEL                         _doubleAction;
+    CPInteger                   _clickedRow;
+    CPInteger                   _clickedColumn;
+    unsigned                    _columnAutoResizingStyle;
 
-    int                 _lastTrackedRowIndex;
-    CGPoint             _originalMouseDownPoint;
-    BOOL                _verticalMotionCanDrag;
-    unsigned            _destinationDragStyle;
-    BOOL                _isSelectingSession;
-    CPIndexSet          _draggedRowIndexes;
-    BOOL                _wasSelectionBroken;
+    int                         _lastTrackedRowIndex;
+    CGPoint                     _originalMouseDownPoint;
+    BOOL                        _verticalMotionCanDrag;
+    unsigned                    _destinationDragStyle;
+    BOOL                        _isSelectingSession;
+    CPIndexSet                  _draggedRowIndexes;
+    BOOL                        _wasSelectionBroken;
 
     _CPDropOperationDrawingView _dropOperationFeedbackView;
-    CPDragOperation     _dragOperationDefaultMask;
-    int                 _retargetedDropRow;
-    CPDragOperation     _retargetedDropOperation;
+    CPDragOperation             _dragOperationDefaultMask;
+    int                         _retargetedDropRow;
+    CPDragOperation             _retargetedDropOperation;
 
-    BOOL                _disableAutomaticResizing @accessors(property=disableAutomaticResizing);
-    BOOL                _lastColumnShouldSnap;
-    BOOL                _implementsCustomDrawRow;
-    BOOL                _isViewBased;
-    BOOL                _contentBindingExplicitlySet;
+    BOOL                        _disableAutomaticResizing @accessors(property=disableAutomaticResizing);
+    BOOL                        _lastColumnShouldSnap;
+    BOOL                        _implementsCustomDrawRow;
+    BOOL                        _isViewBased;
+    BOOL                        _contentBindingExplicitlySet;
 
-    SEL                 _viewForTableColumnRowSelector;
+    SEL                         _viewForTableColumnRowSelector;
 
     CPInteger           _draggedColumnIndex;
     BOOL                _draggedColumnIsSelected;
     BOOL                _needsDifferedTableColumnRemove;
-    CPArray             _differedColumnDataToRemove;
+    CPArray                     _differedColumnDataToRemove;
 
     Function            _BlockDeselectView;
     Function            _BlockSelectView;
@@ -1431,7 +1431,7 @@ NOT YET IMPLEMENTED
 
     if (_selectionHighlightStyle !== CPTableViewSelectionHighlightStyleNone)
         [self _enumerateViewsInRows:newRows columns:_exposedColumns usingBlock:_BlockSelectView];
-}
+            }
 
 /*!
     @ignore
@@ -1439,7 +1439,7 @@ NOT YET IMPLEMENTED
 - (void)_updateHighlightWithOldColumns:(CPIndexSet)oldColumns newColumns:(CPIndexSet)newColumns
 {
     var blockDeselectHeader = function(column, stop)
-    {
+            {
          var headerView = [_tableColumns[column] headerView];
          [headerView unsetThemeState:CPThemeStateSelected];
     };
@@ -1450,15 +1450,15 @@ NOT YET IMPLEMENTED
     [oldColumns enumerateIndexesUsingBlock:blockDeselectHeader];
 
     if (_selectionHighlightStyle !== CPTableViewSelectionHighlightStyleNone)
-    {
+            {
         [self _enumerateViewsInRows:_exposedRows columns:newColumns usingBlock:_BlockSelectView];
         [newColumns enumerateIndexesUsingBlock:function(column, stop)
-        {
+            {
              var headerView = [_tableColumns[column] headerView];
              [headerView setThemeState:CPThemeStateSelected];
         }];
-    }
-}
+            }
+        }
 
 /*!
     Returns the index of the last selected column.
@@ -1608,7 +1608,7 @@ NOT YET IMPLEMENTED
 */
 - (int)numberOfRows
 {
-    return _numberOfRows;
+        return _numberOfRows;
 }
 
 - (int)_numberOfRows
@@ -1628,9 +1628,9 @@ NOT YET IMPLEMENTED
     else
     {
         if (_dataSource)
-            CPLog(@"no content binding established and data source " + [_dataSource description] + " does not implement numberOfRowsInTableView:");
+                CPLog(@"no content binding established and data source " + [_dataSource description] + " does not implement numberOfRowsInTableView:");
         numberOfRows = 0;
-    }
+        }
 
     return numberOfRows;
 }
@@ -2081,45 +2081,45 @@ NOT YET IMPLEMENTED
 
     if (aView && [aView isKindOfClass:[CPView class]] && ![aView isKindOfClass:[CPTableView class]])
     {
-        var cellView = aView,
-            contentView = [[self window] contentView],
+    var cellView = aView,
+        contentView = [[self window] contentView],
             found = NO,
-            max_rec = 100;
+        max_rec = 100;
 
-        while (max_rec--)
+    while (max_rec--)
+    {
+        if (!cellView || cellView === contentView)
         {
-            if (!cellView || cellView === contentView)
-            {
                 found = NO;
                 break;
-            }
-            else
-            {
-                var superview = [cellView superview];
-
-                if ([superview isKindOfClass:[CPTableView class]])
-                {
-                    found = YES;
-                    break;
-                }
-
-                cellView = superview;
-            }
         }
+        else
+        {
+            var superview = [cellView superview];
+
+            if ([superview isKindOfClass:[CPTableView class]])
+            {
+                    found = YES;
+                break;
+            }
+
+            cellView = superview;
+        }
+    }
 
         if (found)
-        {
+    {
             [self _enumerateViewsInRows:_exposedRows columns:_exposedColumns usingBlock:function(view, row, column, stop)
             {
 
                 if (view === cellView)
-                {
+        {
                     columnResult = column;
                     rowResult = row;
                     stop(YES);
-                }
-            }];
         }
+            }];
+    }
     }
 
     if (columnRef)
@@ -3496,7 +3496,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
             if (columnIdx !== CPNotFound)
                 [removeIndexes addIndex:columnIdx];
-        }
+            }
 
         var rowIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self numberOfRows])];
         [self _unloadDataViewsInRows:rowIndexes columns:removeIndexes];
@@ -3542,9 +3542,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
         delete (dataViewsForRows[tableColumnUID]);
 
-        [self _enqueueReusableDataView:dataView];
+            [self _enqueueReusableDataView:dataView];
     }];
-}
+        }
 
 /*!
     @ignore
@@ -3586,7 +3586,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 }
 
 - (CPView)preparedViewAtColumn:(CPInteger)column row:(CPInteger)row
-{
+        {
     return [self _preparedViewAtColumn:column row:row isRowSelected:[self isRowSelected:row]];
 }
 
@@ -3596,43 +3596,43 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         tableColumnUID = [tableColumn UID],
         dataView = [self _newDataViewForRow:row tableColumn:tableColumn];
 
-    [dataView setFrame:[self frameOfDataViewAtColumn:column row:row]];
+            [dataView setFrame:[self frameOfDataViewAtColumn:column row:row]];
 
-    [self _setObjectValueForTableColumn:tableColumn row:row forView:dataView];
+            [self _setObjectValueForTableColumn:tableColumn row:row forView:dataView];
 
     if (_selectionHighlightStyle !== CPTableViewSelectionHighlightStyleNone &&
        (isRowSelected || [self isColumnSelected:column]))
         _BlockSelectView(dataView, row, column);
-    else
+            else
         _BlockDeselectView(dataView, row, column);
 
-    // FIX ME: for performance reasons we might consider diverging from cocoa and moving this to the reloadData method
+            // FIX ME: for performance reasons we might consider diverging from cocoa and moving this to the reloadData method
     if (_implementedDelegateMethods & CPTableViewDelegate_tableView_isGroupRow_)
-    {
+            {
         if ([_delegate tableView:self isGroupRow:row])
         {
-            [_groupRows addIndex:row];
-            [dataView setThemeState:CPThemeStateGroupRow];
-        }
-        else
-        {
-            [_groupRows removeIndexesInRange:CPMakeRange(row, 1)];
-            [dataView unsetThemeState:CPThemeStateGroupRow];
-        }
+                [_groupRows addIndex:row];
+                [dataView setThemeState:CPThemeStateGroupRow];
+            }
+            else
+            {
+                [_groupRows removeIndexesInRange:CPMakeRange(row, 1)];
+                [dataView unsetThemeState:CPThemeStateGroupRow];
+            }
 
-        [self setNeedsDisplay:YES];
+            [self setNeedsDisplay:YES];
     }
 
     if (_implementedDelegateMethods & CPTableViewDelegate_tableView_willDisplayView_forTableColumn_row_)
         [_delegate tableView:self willDisplayView:dataView forTableColumn:tableColumn row:row];
 
     return dataView;
-}
+                }
 
 - (void)_setObjectValueForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow forView:(CPView)aDataView
-{
+            {
     [self _setObjectValueForTableColumn:aTableColumn row:aRow forView:aDataView useCache:!_invalidateObjectValuesCache];
-}
+            }
 
 - (void)_setObjectValueForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow forView:(CPView)aDataView useCache:(BOOL)useCache
 {
@@ -3667,7 +3667,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     {
         [view setFrame:[self frameOfDataViewAtColumn:column row:row]];
     }];
-}
+            }
 
 /*!
     @ignore
@@ -3696,8 +3696,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
             identifier = [[aTableColumn dataView] UID];
             view = [self makeViewWithIdentifier:identifier owner:_delegate];
 
-            if (!view)
-                view = [aTableColumn _newDataView];
+        if (!view)
+            view = [aTableColumn _newDataView];
         }
 
         [view setIdentifier:identifier];
@@ -3874,6 +3874,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     // FIXME: yuck!
     var identifier = [aDataView identifier];
+
+    if ([aDataView hasThemeState:CPThemeStateSelectedDataView])
+        [aDataView unsetThemeState:CPThemeStateSelectedDataView];
 
     if (!_cachedDataViews[identifier])
         _cachedDataViews[identifier] = [aDataView];
@@ -4376,6 +4379,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (void)viewWillMoveToSuperview:(CPView)aView
 {
+    [super viewWillMoveToSuperview:aView];
+
     var superview = [self superview],
         defaultCenter = [CPNotificationCenter defaultCenter];
 
@@ -5047,7 +5052,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         [self getColumn:@ref(column) row:@ref(row) forView:aView];
 
         if (![self isRowSelected:row])
-            return self;
+        return self;
     }
     else if (!_isViewBased && [aView isKindOfClass:[CPControl class]] && ![aView isKindOfClass:[CPTextField class]])
     {
@@ -5060,6 +5065,24 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     }
 
     return aView;
+}
+
+- (void)_removeObservers
+{
+    if (!_isObserving)
+        return;
+
+    [super _removeObservers];
+    [self _stopObservingFirstResponder];
+}
+
+- (void)_addObservers
+{
+    if (_isObserving)
+        return;
+
+    [super _addObservers];
+    [self _startObservingFirstResponder];
 }
 
 - (void)_startObservingFirstResponder
@@ -5081,7 +5104,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     [self getColumn:@ref(column) row:@ref(row) forView:responder];
 
     if (row == CPNotFound && column  == CPNotFound)
-	    [self _notifyViewDidResignFirstResponder];
+        [self _notifyViewDidResignFirstResponder];
 
     _editingRow = row;
     _editingColumn = column;
@@ -5121,7 +5144,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         [self _commitDataViewObjectValue:textField];
     }
     else
-        [textField setBezeled:NO];
+    [textField setBezeled:NO];
 
     [self _resignFirstResponderWithoutSendingAction:textField];
 }
@@ -6058,6 +6081,11 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 {
     [super encodeWithCoder:aCoder];
 
+    // We do this in order to avoid encoding the _tableDrawView, which
+    // should just automatically be created programmatically as needed.
+    if (_tableDrawView)
+        [_tableDrawView removeFromSuperview];
+
     [aCoder encodeObject:_dataSource forKey:CPTableViewDataSourceKey];
     [aCoder encodeObject:_delegate forKey:CPTableViewDelegateKey];
 
@@ -6238,7 +6266,7 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
     //[tableView drawBackgroundInClipRect:bounds];
 
     if (tableView._draggedColumnIsSelected)
-    {
+{
         CGContextSetFillColor(context, [tableView selectionHighlightColor]);
         CGContextFillRect(context, bounds);
     }

@@ -65,8 +65,6 @@
     [self addSubview:_subtractButton];
 
     [self setAutoresizingMask:CPViewWidthSizable];
-
-    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_textDidChange:) name:CPControlTextDidChangeNotification object:nil];
 }
 
 - (CPButton)_createRowButton
@@ -489,6 +487,26 @@
 - (void)viewDidMoveToWindow
 {
     [self layoutSubviews];
+}
+
+- (void)_addObservers
+{
+    if (_isObserving)
+        return;
+
+    [super _addObservers];
+
+    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_textDidChange:) name:CPControlTextDidChangeNotification object:nil];
+}
+
+- (void)_removeObservers
+{
+    if (!_isObserving)
+        return;
+
+    [super _removeObservers];
+
+    [[CPNotificationCenter defaultCenter] removeObserver:self name:CPControlTextDidChangeNotification object:nil];
 }
 
 - (void)drawRect:(CGRect)rect

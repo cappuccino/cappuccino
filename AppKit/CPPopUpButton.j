@@ -771,13 +771,6 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
             [[self selectedItem] setState:CPOffState];
 }
 
-- (void)_reverseSetBinding
-{
-    [_CPPopUpButtonSelectionBinder reverseSetValueForObject:self];
-
-    [super _reverseSetBinding];
-}
-
 @end
 
 @implementation CPPopUpButton (BindingSupport)
@@ -798,6 +791,20 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     }
 
     return [super _binderClassForBinding:aBinding];
+}
+
++ (BOOL)isBindingExclusive:(CPString)aBinding
+{
+    return (aBinding == CPSelectedIndexBinding ||
+           aBinding == CPSelectedTagBinding ||
+           aBinding == CPSelectedValueBinding);
+}
+
+- (void)_reverseSetBinding
+{
+    [_CPPopUpButtonSelectionBinder _reverseSetValueFromExclusiveBinderForObject:self];
+
+    [super _reverseSetBinding];
 }
 
 @end
@@ -929,30 +936,8 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
 @end
 
-var binderForObject = {};
-
 @implementation _CPPopUpButtonSelectionBinder : CPBinder
 {
-    CPString _selectionBinding @accessors;
-}
-
-- (id)initWithBinding:(CPString)aBinding name:(CPString)aName to:(id)aDestination keyPath:(CPString)aKeyPath options:(CPDictionary)options from:(id)aSource
-{
-    self = [super initWithBinding:aBinding name:aName to:aDestination keyPath:aKeyPath options:options from:aSource];
-
-    if (self)
-    {
-        binderForObject[[aSource UID]] = self;
-        _selectionBinding = aName;
-    }
-
-    return self;
-}
-
-+ (void)reverseSetValueForObject:(id)aSource
-{
-    var binder = binderForObject[[aSource UID]];
-    [binder reverseSetValueFor:[binder _selectionBinding]];
 }
 
 - (void)setPlaceholderValue:(id)aValue withMarker:(CPString)aMarker forBinding:(CPString)aBinding

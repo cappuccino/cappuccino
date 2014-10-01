@@ -342,6 +342,24 @@
     [self assert:@"brie" equals:[control2 objectValue] message:@"control2 objectValue is wrong"];
 }
 
+- (void)testExclusiveBindings
+{
+    var segmented = [[CPSegmentedControl alloc] initWithFrame:CGRectMakeZero()];
+    [segmented setSegmentCount:3];
+
+    var model = [BindingTester testerWithCheese:2];
+
+    [segmented bind:CPSelectedIndexBinding toObject:model withKeyPath:@"cheese" options:nil];
+
+    // Try to bind another binding (mutually exclusive) to the same value.
+    [segmented bind:CPSelectedTagBinding toObject:model withKeyPath:@"cheese" options:nil];
+
+    [self assertNotNull:[segmented infoForBinding:CPSelectedIndexBinding]];
+
+    // Check that the source is not binded with the CPSelectedTagBinding
+    [self assertNull:[segmented infoForBinding:CPSelectedTagBinding]];
+}
+
 @end
 
 @implementation TextField : CPTextField

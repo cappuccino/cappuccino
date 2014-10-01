@@ -119,16 +119,28 @@ var RECENT_SEARCH_PREFIX = @"   ";
     _canResignFirstResponder = YES;
 }
 
-- (void)viewWillMoveToSuperview:(CPView)aView
+
+#pragma mark -
+#pragma mark Override observers
+
+- (void)_removeObservers
 {
-    [super viewWillMoveToSuperview:aView];
+    if (!_isObserving)
+        return;
 
-    // First we remove any observer that may have been in place to avoid memory leakage.
+    [super _removeObservers];
+
     [[CPNotificationCenter defaultCenter] removeObserver:self name:CPControlTextDidChangeNotification object:self];
+}
 
-    // Register the observe here if we need to.
-    if (aView)
-        [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_searchFieldTextDidChange:) name:CPControlTextDidChangeNotification object:self];
+- (void)_addObservers
+{
+    if (_isObserving)
+        return;
+
+    [super _addObservers];
+
+    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_searchFieldTextDidChange:) name:CPControlTextDidChangeNotification object:self];
 }
 
 // Managing Buttons
