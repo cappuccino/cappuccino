@@ -1228,6 +1228,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     if (![self shouldChangeTextInRange:changedRange replacementString:@""])
         return;
 
+    changedRange = CPIntersectionRange(CPMakeRange(0, [_layoutManager numberOfCharacters]), changedRange);
+
     [[[[self window] undoManager] prepareWithInvocationTarget:self] _replaceCharactersInRange:CPMakeRange(_selectionRange.location, 0) withAttributedString:[_textStorage attributedSubstringFromRange:CPMakeRangeCopy(changedRange)]];
     [_textStorage deleteCharactersInRange:CPMakeRangeCopy(changedRange)];
 
