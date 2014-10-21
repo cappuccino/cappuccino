@@ -28,6 +28,8 @@
 @global CPPopUpButtonStatePullsDown
 @global CPKeyValueChangeOldKey
 @global CPKeyValueChangeNewKey
+@global CPKeyValueObservingOptionNew
+@global CPKeyValueObservingOptionOld
 
 @implementation CPButtonBar : CPView
 {
@@ -137,7 +139,7 @@
 
     for (var i = [_buttons count] - 1; i >= 0; i--)
     {
-        [_buttons[i] addObserver:self forKeyPath:@"hidden" options:nil context:nil];
+        [_buttons[i] addObserver:self forKeyPath:@"hidden" options:CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld context:nil];
         [_buttons[i] setBordered:YES];
     }
 
