@@ -70,7 +70,6 @@ CPSegmentSwitchTrackingMomentary = 2;
             @"center-segment-bezel-color": [CPNull null],
             @"divider-bezel-color": [CPNull null],
             @"divider-thickness": 1.0,
-            @"default-height": 24.0,
         };
 }
 
@@ -89,6 +88,16 @@ CPSegmentSwitchTrackingMomentary = 2;
     }
 
     return self;
+}
+
+/*!
+    Sets the control's size.
+    @param aControlSize the control's size
+*/
+- (void)setControlSize:(CPControlSize)aControlSize
+{
+    [super setControlSize:aControlSize];
+    [self _sizeToControlSize];
 }
 
 /*!
@@ -486,7 +495,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 
 - (CGRect)rectForEphemeralSubviewNamed:(CPString)aName
 {
-    var height = [self currentValueForThemeAttribute:@"default-height"],
+    var height = [self currentValueForThemeAttribute:@"min-size"].height,
         contentInset = [self currentValueForThemeAttribute:@"content-inset"],
         bezelInset = [self currentValueForThemeAttribute:@"bezel-inset"],
         bounds = [self bounds];
@@ -551,12 +560,16 @@ CPSegmentSwitchTrackingMomentary = 2;
         return;
 
     var themeState = _themeStates[0],
-        isDisabled = [self hasThemeState:CPThemeStateDisabled];
+        isDisabled = [self hasThemeState:CPThemeStateDisabled],
+        isControlSizeSmall = [self hasThemeState:CPThemeStateControlSizeSmall],
+        isControlSizeMini = [self hasThemeState:CPThemeStateControlSizeMini];
 
     themeState = isDisabled ? themeState.and(CPThemeStateDisabled) : themeState;
+    themeState = isControlSizeSmall ? themeState.and(CPThemeStateControlSizeSmall) : themeState;
+    themeState = isControlSizeMini ? themeState.and(CPThemeStateControlSizeMini) : themeState;
 
     var leftCapColor = [self valueForThemeAttribute:@"left-segment-bezel-color"
-                                            inState:themeState],
+                                inState:themeState],
 
         leftBezelView = [self layoutEphemeralSubviewNamed:@"left-segment-bezel"
                                                positioned:CPWindowBelow
@@ -567,6 +580,8 @@ CPSegmentSwitchTrackingMomentary = 2;
     var themeState = _themeStates[_themeStates.length - 1];
 
     themeState = isDisabled ? themeState.and(CPThemeStateDisabled) : themeState;
+    themeState = isControlSizeSmall ? themeState.and(CPThemeStateControlSizeSmall) : themeState;
+    themeState = isControlSizeMini ? themeState.and(CPThemeStateControlSizeMini) : themeState;
 
     var rightCapColor = [self valueForThemeAttribute:@"right-segment-bezel-color"
                                              inState:themeState],
@@ -582,6 +597,8 @@ CPSegmentSwitchTrackingMomentary = 2;
         var themeState = _themeStates[i];
 
         themeState = isDisabled ? themeState.and(CPThemeStateDisabled) : themeState;
+        themeState = isControlSizeSmall ? themeState.and(CPThemeStateControlSizeSmall) : themeState;
+        themeState = isControlSizeMini ? themeState.and(CPThemeStateControlSizeMini) : themeState;
 
         var bezelColor = [self valueForThemeAttribute:@"center-segment-bezel-color"
                                               inState:themeState],
@@ -591,7 +608,6 @@ CPSegmentSwitchTrackingMomentary = 2;
                           relativeToEphemeralSubviewNamed:nil];
 
         [bezelView setBackgroundColor:bezelColor];
-
 
         // layout image/title views
         var segment = _segments[i],
@@ -624,6 +640,8 @@ CPSegmentSwitchTrackingMomentary = 2;
         borderState = (borderState.hasThemeState(CPThemeStateSelected) && !borderState.hasThemeState(CPThemeStateHighlighted)) ? CPThemeStateSelected : CPThemeStateNormal;
 
         borderState = isDisabled ? borderState.and(CPThemeStateDisabled) : borderState;
+        borderState = isControlSizeSmall ? borderState.and(CPThemeStateControlSizeSmall) : borderState;
+        borderState = isControlSizeMini ? borderState.and(CPThemeStateControlSizeMini) : borderState;
 
         var borderColor = [self valueForThemeAttribute:@"divider-bezel-color"
                                                inState:borderState],
@@ -681,7 +699,6 @@ CPSegmentSwitchTrackingMomentary = 2;
 
     // Update control size
     var frame = [self frame];
-
     [self setFrameSize:CGSizeMake(CGRectGetWidth(frame) + delta, CGRectGetHeight(frame))];
 
     // Update segment width
@@ -717,7 +734,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 
 - (CGRect)bezelFrameForSegment:(unsigned)aSegment
 {
-    var height = [self currentValueForThemeAttribute:@"default-height"],
+    var height = [self currentValueForThemeAttribute:@"min-size"].height,
         bezelInset = [self currentValueForThemeAttribute:@"bezel-inset"],
         width = [self widthForSegment:aSegment],
         left = [self _leftOffsetForSegment:aSegment];
@@ -727,7 +744,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 
 - (CGRect)contentFrameForSegment:(unsigned)aSegment
 {
-    var height = [self currentValueForThemeAttribute:@"default-height"],
+    var height = [self currentValueForThemeAttribute:@"min-size"].height,
         contentInset = [self currentValueForThemeAttribute:@"content-inset"],
         width = [self widthForSegment:aSegment],
         left = [self _leftOffsetForSegment:aSegment];
@@ -890,7 +907,6 @@ var CPSegmentedControlSegmentsKey       = "CPSegmentedControlSegmentsKey",
             _trackingMode = CPSegmentSwitchTrackingSelectOne;
 
         // HACK
-
         for (var i = 0; i < _segments.length; i++)
             _themeStates[i] = [_segments[i] selected] ? CPThemeStateSelected : CPThemeStateNormal;
 
@@ -898,12 +914,32 @@ var CPSegmentedControlSegmentsKey       = "CPSegmentedControlSegmentsKey",
         for (var i = 0; i < _segments.length; i++)
             [self tileWithChangedSegment:i];
 
-        var difference = MAX(originalWidth - [self frame].size.width, 0.0),
-            remainingWidth = FLOOR(difference / _segments.length);
+        var thickness = [self currentValueForThemeAttribute:@"divider-thickness"],
+            dividerExtraSpace = ([_segments count] - 1) * thickness,
+            difference = MAX(originalWidth - [self frame].size.width - dividerExtraSpace, 0.0),
+            remainingWidth = FLOOR(difference / _segments.length),
+            widthOfAllSegments = 0;
 
         for (var i = 0; i < _segments.length; i++)
+        {
             [self setWidth:[_segments[i] width] + remainingWidth forSegment:i];
+            widthOfAllSegments += [_segments[i] width];
+        }
 
+        // Here we handle the leftovers pixel, and we will add one pixel to each segment cell till we have the same size as the originalSize.
+        // This is needed to have a perfect/same alignment between our application and xCode.
+        var leftOversPixel = originalWidth - (widthOfAllSegments + dividerExtraSpace);
+
+        // Make sure we don't make an out of range
+        if (leftOversPixel < _segments.length - 1)
+        {
+            for (var i = 0; i < leftOversPixel; i++)
+            {
+                [self setWidth:[_segments[i] width] + 1 forSegment:i];
+            }
+        }
+
+        [self setFrameSize:CGSizeMake(originalWidth, [self frame].size.height)];
         [self tileWithChangedSegment:0];
     }
 
