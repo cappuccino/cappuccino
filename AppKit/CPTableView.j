@@ -962,7 +962,7 @@ NOT YET IMPLEMENTED
 </pre>
 */
 
-- (void)unfocusedSelectionGradientColors
+- (CPColor)unfocusedSelectionGradientColors
 {
     if (!_unfocusedSourceListSelectionColor)
     {
