@@ -981,6 +981,7 @@ CPTexturedBackgroundWindowMask
     [_platformWindow order:CPWindowOut window:self relativeTo:nil];
 #endif
 
+    [self makeFirstResponder:nil];
     [self _updateMainAndKeyWindows];
 }
 
