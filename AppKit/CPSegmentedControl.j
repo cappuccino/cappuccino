@@ -565,11 +565,14 @@ CPSegmentSwitchTrackingMomentary = 2;
         isControlSizeMini = [self hasThemeState:CPThemeStateControlSizeMini];
 
     themeState = isDisabled ? themeState.and(CPThemeStateDisabled) : themeState;
-    themeState = isControlSizeSmall ? themeState.and(CPThemeStateControlSizeSmall) : themeState;
-    themeState = isControlSizeMini ? themeState.and(CPThemeStateControlSizeMini) : themeState;
+
+    if (isControlSizeSmall)
+        themeState = themeState.and(CPThemeStateControlSizeSmall);
+    else if (isControlSizeMini)
+        themeState = themeState.and(CPThemeStateControlSizeMini);
 
     var leftCapColor = [self valueForThemeAttribute:@"left-segment-bezel-color"
-                                inState:themeState],
+                                            inState:themeState],
 
         leftBezelView = [self layoutEphemeralSubviewNamed:@"left-segment-bezel"
                                                positioned:CPWindowBelow
@@ -580,8 +583,11 @@ CPSegmentSwitchTrackingMomentary = 2;
     var themeState = _themeStates[_themeStates.length - 1];
 
     themeState = isDisabled ? themeState.and(CPThemeStateDisabled) : themeState;
-    themeState = isControlSizeSmall ? themeState.and(CPThemeStateControlSizeSmall) : themeState;
-    themeState = isControlSizeMini ? themeState.and(CPThemeStateControlSizeMini) : themeState;
+
+    if (isControlSizeSmall)
+        themeState = themeState.and(CPThemeStateControlSizeSmall);
+    else if (isControlSizeMini)
+        themeState = themeState.and(CPThemeStateControlSizeMini);
 
     var rightCapColor = [self valueForThemeAttribute:@"right-segment-bezel-color"
                                              inState:themeState],
@@ -597,8 +603,11 @@ CPSegmentSwitchTrackingMomentary = 2;
         var themeState = _themeStates[i];
 
         themeState = isDisabled ? themeState.and(CPThemeStateDisabled) : themeState;
-        themeState = isControlSizeSmall ? themeState.and(CPThemeStateControlSizeSmall) : themeState;
-        themeState = isControlSizeMini ? themeState.and(CPThemeStateControlSizeMini) : themeState;
+
+        if (isControlSizeSmall)
+            themeState = themeState.and(CPThemeStateControlSizeSmall);
+        else if (isControlSizeMini)
+            themeState = themeState.and(CPThemeStateControlSizeMini);
 
         var bezelColor = [self valueForThemeAttribute:@"center-segment-bezel-color"
                                               inState:themeState],
@@ -640,8 +649,11 @@ CPSegmentSwitchTrackingMomentary = 2;
         borderState = (borderState.hasThemeState(CPThemeStateSelected) && !borderState.hasThemeState(CPThemeStateHighlighted)) ? CPThemeStateSelected : CPThemeStateNormal;
 
         borderState = isDisabled ? borderState.and(CPThemeStateDisabled) : borderState;
-        borderState = isControlSizeSmall ? borderState.and(CPThemeStateControlSizeSmall) : borderState;
-        borderState = isControlSizeMini ? borderState.and(CPThemeStateControlSizeMini) : borderState;
+
+        if (isControlSizeSmall)
+            borderState = borderState.and(CPThemeStateControlSizeSmall);
+        else if (isControlSizeMini)
+            borderState = borderState.and(CPThemeStateControlSizeMini);
 
         var borderColor = [self valueForThemeAttribute:@"divider-bezel-color"
                                                inState:borderState],
@@ -906,7 +918,7 @@ var CPSegmentedControlSegmentsKey       = "CPSegmentedControlSegmentsKey",
         else
             _trackingMode = CPSegmentSwitchTrackingSelectOne;
 
-        // HACK
+        // Here we update the themeStates array for each segments to know if there are selected or not
         for (var i = 0; i < _segments.length; i++)
             _themeStates[i] = [_segments[i] selected] ? CPThemeStateSelected : CPThemeStateNormal;
 
