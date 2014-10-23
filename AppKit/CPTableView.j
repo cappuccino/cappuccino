@@ -5177,7 +5177,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     // This makes sure the theming effects of a focused table remain in effect even as cells are being edited in it.
     [self _notifyViewDidBecomeFirstResponder];
 
-    if (_editingRow !== CPNotFound && [responder isKindOfClass:[CPTextField class]] && ![responder isBezeled])
+    if (_editingRow !== CPNotFound && [responder isKindOfClass:[CPTextField class]] && ![responder isBezeled] && [responder isEditable])
     {
         [responder setBezeled:YES];
         [self _registerForEndEditingNote:responder];
