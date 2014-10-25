@@ -31,6 +31,7 @@
 
 @global CPApp
 @global CPStringPboardType
+@global CPCursor
 
 
 @protocol CPTextFieldDelegate <CPControlTextEditingDelegate>
@@ -979,6 +980,22 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [[self nextResponder] mouseDragged:anEvent];
     else if ([self isSelectable])
         return [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:YES];
+}
+
+- (void)mouseEntered:(CPEvent)anEvent
+{
+    [super mouseEntered:anEvent];
+
+    if ([self isEnabled] && ([self isSelectable] || [self isEditable]))
+        [[CPCursor IBeamCursor] set];
+}
+
+- (void)mouseExited:(CPEvent)anEvent
+{
+    [super mouseExited:anEvent];
+
+    // Make sure to have the arrow cursor when leaving a textField
+    [[CPCursor arrowCursor] set];
 }
 
 - (void)keyUp:(CPEvent)anEvent
