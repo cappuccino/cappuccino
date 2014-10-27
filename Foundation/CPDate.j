@@ -75,7 +75,7 @@ var CPDateReferenceDate = new Date(Date.UTC(2001, 0, 1, 0, 0, 0, 0));
 - (id)initWithTimeIntervalSinceNow:(CPTimeInterval)seconds
 {
     if (!_isNumberType(seconds))
-        [CPException raise:CPInvalidArgumentException reason:@"The parameter of the method initWithTimeIntervalSinceNow: has to be an integer"];
+        [CPException raise:CPInvalidArgumentException reason:@"The parameter of the method initWithTimeIntervalSinceNow: has to be an integer or a float"];
 
     self = new Date((new Date()).getTime() + seconds * 1000);
     return self;
@@ -84,7 +84,7 @@ var CPDateReferenceDate = new Date(Date.UTC(2001, 0, 1, 0, 0, 0, 0));
 - (id)initWithTimeIntervalSince1970:(CPTimeInterval)seconds
 {
     if (!_isNumberType(seconds))
-        [CPException raise:CPInvalidArgumentException reason:@"The parameter of the method initWithTimeIntervalSince1970: has to be an integer"];
+        [CPException raise:CPInvalidArgumentException reason:@"The parameter of the method initWithTimeIntervalSince1970: has to be an integer or a float"];
 
     self = new Date(seconds * 1000);
     return self;
@@ -93,7 +93,7 @@ var CPDateReferenceDate = new Date(Date.UTC(2001, 0, 1, 0, 0, 0, 0));
 - (id)initWithTimeIntervalSinceReferenceDate:(CPTimeInterval)seconds
 {
     if (!_isNumberType(seconds))
-        [CPException raise:CPInvalidArgumentException reason:@"The parameter of the method initWithTimeIntervalSinceReferenceDate: has to be an integer"];
+        [CPException raise:CPInvalidArgumentException reason:@"The parameter of the method initWithTimeIntervalSinceReferenceDate: has to be an integer or a float"];
 
     self = [self initWithTimeInterval:seconds sinceDate:CPDateReferenceDate];
     return self;
@@ -102,7 +102,7 @@ var CPDateReferenceDate = new Date(Date.UTC(2001, 0, 1, 0, 0, 0, 0));
 - (id)initWithTimeInterval:(CPTimeInterval)seconds sinceDate:(CPDate)refDate
 {
     if (!_isNumberType(seconds))
-        [CPException raise:CPInvalidArgumentException reason:@"The parameter of the method initWithTimeInterval:sinceDate: has to be an integer"];
+        [CPException raise:CPInvalidArgumentException reason:@"The parameter of the method initWithTimeInterval:sinceDate: has to be an integer or a float"];
 
     self = new Date(refDate.getTime() + seconds * 1000);
     return self;
