@@ -350,6 +350,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         _sendActionOn = CPKeyUpMask | CPKeyDownMask;
 
         [self setValue:CPLeftTextAlignment forThemeAttribute:@"alignment"];
+
+        [self _updateCursor];
     }
 
     return self;
@@ -370,6 +372,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     if (shouldBeEditable)
         _isSelectable = YES;
+
+    [self _updateCursor];
 
     if (_isEditable)
         [self setThemeState:CPThemeStateEditable];
@@ -401,6 +405,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 - (void)setEnabled:(BOOL)shouldBeEnabled
 {
     [super setEnabled:shouldBeEnabled];
+    [self _updateCursor];
 
     // We only allow first responder status if the field is enabled.
     if (!shouldBeEnabled && [[self window] firstResponder] === self)
@@ -414,6 +419,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 - (void)setSelectable:(BOOL)aFlag
 {
     _isSelectable = aFlag;
+
+    [self _updateCursor];
 }
 
 /*!
@@ -982,22 +989,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         return [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:YES];
 }
 
-- (void)mouseEntered:(CPEvent)anEvent
-{
-    [super mouseEntered:anEvent];
-
-    if ([self isEnabled] && ([self isSelectable] || [self isEditable]))
-        [[CPCursor IBeamCursor] set];
-}
-
-- (void)mouseExited:(CPEvent)anEvent
-{
-    [super mouseExited:anEvent];
-
-    // Make sure to have the arrow cursor when leaving a textField
-    [[CPCursor arrowCursor] set];
-}
-
 - (void)keyUp:(CPEvent)anEvent
 {
     if (!([self isEnabled] && [self isEditable]))
@@ -1147,6 +1138,16 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     [self _continuouslyReverseSetBinding];
 
     [super textDidChange:note];
+}
+
+- (void)_updateCursor
+{
+    if ([self isEnabled] && ([self isSelectable] || [self isEditable]))
+    {
+#if PLATFORM(DOM)
+        self._DOMElement.style.cursor = "text";
+#endif
+    }
 }
 
 /*!
@@ -1959,6 +1960,8 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
         [self setAlignment:[aCoder decodeIntForKey:CPTextFieldAlignmentKey]];
 
         [self setPlaceholderString:[aCoder decodeObjectForKey:CPTextFieldPlaceholderStringKey]];
+
+        [self _updateCursor];
     }
 
     return self;
