@@ -1148,6 +1148,12 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         self._DOMElement.style.cursor = "text";
 #endif
     }
+    else
+    {
+#if PLATFORM(DOM)
+        self._DOMElement.style.cursor = "default";
+#endif
+    }
 }
 
 /*!
