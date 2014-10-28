@@ -363,7 +363,6 @@ var CPZeroKeyCode = 48,
     [_currentTextField setValueForKeyEvent:anEvent];
 }
 
-
 #pragma mark -
 #pragma mark Layout methods
 
@@ -586,6 +585,57 @@ var CPZeroKeyCode = 48,
     [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_datePickerElementTextFieldAMPMChangedNotification:) name:CPDatePickerElementTextFieldAMPMChangedNotification object:_textFieldPMAM];
 }
 
+#pragma mark -
+#pragma mark Mouse event
+
+- (BOOL)continueTracking:(CGPoint)lastPoint at:(CGPoint)aPoint
+{
+    [self _selectTextFieldForPoint:aPoint];
+    return YES;
+}
+
+- (BOOL)startTrackingAt:(CGPoint)aPoint
+{
+    [self _selectTextFieldForPoint:aPoint];
+    return YES;
+}
+
+- (void)_selectTextFieldForPoint:(CGPoint)aPoint
+{
+    var textField = [self _textFieldForPoint:aPoint],
+        superview = [self superview];
+
+    if (!textField || [superview._currentTextField] == textField)
+        return;
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPDatePickerElementTextFieldBecomeFirstResponder object:superview userInfo:[CPDictionary dictionaryWithObject:textField forKey:@"textField"]];
+}
+
+- (_CPDatePickerElementTextField)_textFieldForPoint:(CGPoint)aPoint
+{
+    if (![_textFieldDay isHidden] && CGRectContainsPoint([_textFieldDay frame], aPoint))
+        return _textFieldDay;
+
+    if (![_textFieldMonth isHidden] && CGRectContainsPoint([_textFieldMonth frame], aPoint))
+        return _textFieldMonth;
+
+    if (![_textFieldYear isHidden] && CGRectContainsPoint([_textFieldYear frame], aPoint))
+        return _textFieldYear;
+
+    if (![_textFieldHour isHidden] && CGRectContainsPoint([_textFieldHour frame], aPoint))
+        return _textFieldHour;
+
+    if (![_textFieldMinute isHidden] && CGRectContainsPoint([_textFieldMinute frame], aPoint))
+        return _textFieldMinute;
+
+    if (![_textFieldSecond isHidden] && CGRectContainsPoint([_textFieldSecond frame], aPoint))
+        return _textFieldSecond;
+
+    if (![_textFieldPMAM isHidden] && CGRectContainsPoint([_textFieldPMAM frame], aPoint))
+        return _textFieldPMAM;
+
+    return nil;
+}
 
 #pragma mark -
 #pragma mark Setter Getter methods
