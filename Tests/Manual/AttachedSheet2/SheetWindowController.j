@@ -399,9 +399,6 @@
 
     _returnCode = 77;
     [CPApp endSheet:[self window] returnCode:_returnCode];
-
-    if (orderOutAfter)
-        [[self window] orderOut:nil];
 }
 
 //
@@ -519,7 +516,15 @@
     // test sheet chaining. it should be possible to start another sheet from didEndSheet,
     // but only if we orderOut: the sheet before we called endSheet: This is how cocoa works too.
     if (returnCode == 77)
+    {
+        var orderOutAfter = [_orderOutAfterCheckbox state];
+
+        if (orderOutAfter)
+            [[self window] orderOut:self];
+
         [self runSheetForWindow:parentWindow];
+    }
+
         //[self runAlertSheet:parentWindow];
 }
 
