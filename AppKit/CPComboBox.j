@@ -36,6 +36,15 @@
 
 @end
 
+@protocol CPComboBoxDataSource <CPObject>
+
+@optional
+- (CPString)comboBox:(CPComboBox)aComboBox completedString:(CPString)uncompletedString;
+- (id)comboBox:(CPComboBox)aComboBox objectValueForItemAtIndex:(int)index;
+- (int)comboBox:(CPComboBox)aComboBox indexOfItemWithStringValue:(CPString)stringValue;
+- (int)numberOfItemsInComboBox:(CPComboBox)aComboBox;
+
+@end
 
 CPComboBoxSelectionDidChangeNotification  = @"CPComboBoxSelectionDidChangeNotification";
 CPComboBoxSelectionIsChangingNotification = @"CPComboBoxSelectionIsChangingNotification";
@@ -183,7 +192,7 @@ var CPComboBoxTextSubview = @"text",
 
 #pragma mark Setting a Delegate
 
-- (id /*< CPComboBoxDelegate >*/)delegate
+- (id <CPComboBoxDelegate>)delegate
 {
     return [super delegate];
 }
@@ -243,7 +252,7 @@ var CPComboBoxTextSubview = @"text",
 
 #pragma mark Setting a Data Source
 
-- (id /*< CPComboBoxDataSource >*/)dataSource
+- (id <CPComboBoxDataSource>)dataSource
 {
     if (!_usesDataSource)
         [self _dataSourceWarningForMethod:_cmd condition:NO];
@@ -251,10 +260,12 @@ var CPComboBoxTextSubview = @"text",
     return _dataSource;
 }
 
-- (void)setDataSource:(id /*< CPComboBoxDataSource >*/)aSource
+- (void)setDataSource:(id <CPComboBoxDataSource>)aSource
 {
     if (!_usesDataSource)
+    {
         [self _dataSourceWarningForMethod:_cmd condition:NO];
+    }
     else if (_dataSource !== aSource)
     {
         if (![aSource respondsToSelector:@selector(numberOfItemsInComboBox:)] ||
@@ -263,7 +274,9 @@ var CPComboBoxTextSubview = @"text",
             CPLog.warn("Illegal %s data source (%s). Must implement numberOfItemsInComboBox: and comboBox:objectValueForItemAtIndex:", [self className], [aSource description]);
         }
         else
+        {
             _dataSource = aSource;
+        }
     }
 }
 
@@ -906,7 +919,9 @@ var CPComboBoxTextSubview = @"text",
             index = [_dataSource comboBox:self indexOfItemWithStringValue:stringValue]
     }
     else
+    {
         index = [self indexOfItemWithObjectValue:stringValue];
+    }
 
     [_listDelegate selectRow:index];
 

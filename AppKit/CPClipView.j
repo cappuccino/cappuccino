@@ -47,18 +47,7 @@
 
     if (_documentView)
     {
-        var defaultCenter = [CPNotificationCenter defaultCenter];
-
-        [defaultCenter
-            removeObserver:self
-                      name:CPViewFrameDidChangeNotification
-                    object:_documentView];
-
-        [defaultCenter
-            removeObserver:self
-                      name:CPViewBoundsDidChangeNotification
-                    object:_documentView];
-
+        [self _removeObserverDocumentView:_documentView];
         [_documentView removeFromSuperview];
     }
 
@@ -89,6 +78,43 @@
            selector:@selector(viewBoundsChanged:)
                name:CPViewBoundsDidChangeNotification
              object:_documentView];
+}
+
+- (void)_removeObserverDocumentView:(CPView)aDocumentView
+{
+    var defaultCenter = [CPNotificationCenter defaultCenter];
+
+    [defaultCenter
+        removeObserver:self
+                  name:CPViewFrameDidChangeNotification
+                object:_documentView];
+
+    [defaultCenter
+        removeObserver:self
+                  name:CPViewBoundsDidChangeNotification
+                object:_documentView];
+}
+
+- (void)_addObservers
+{
+    if (_isObserving)
+        return;
+
+    [super _addObservers];
+
+    if (_documentView)
+        [self _observeDocumentView];
+}
+
+- (void)_removeObservers
+{
+    if (!_isObserving)
+        return;
+
+    [super _removeObservers];
+
+    if (_documentView)
+        [self _removeObserverDocumentView:_documentView];
 }
 
 /*!

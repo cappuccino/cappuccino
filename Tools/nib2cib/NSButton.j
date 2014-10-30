@@ -25,6 +25,7 @@
 
 @import <AppKit/CPButton.j>
 @import <AppKit/CPCheckBox.j>
+@import <AppKit/CPPopUpButton.j>
 @import <AppKit/CPRadio.j>
 
 @import "NSCell.j"
@@ -77,10 +78,7 @@ var NSButtonIsBorderedMask = 0x00800000,
 {
     [super NS_initWithCell:cell];
 
-    var alternateImage = [cell alternateImage],
-        positionOffsetSizeWidth = 0,
-        positionOffsetOriginX = 0,
-        positionOffsetOriginY = 0;
+    var alternateImage = [cell alternateImage];
 
     if ([alternateImage isKindOfClass:[NSButtonImageSource class]])
     {
@@ -111,83 +109,33 @@ var NSButtonIsBorderedMask = 0x00800000,
 
     _title = [cell title];
     _alternateTitle = [cell alternateTitle];
-    _controlSize = CPRegularControlSize;
 
     [self setBordered:[cell isBordered]];
     _bezelStyle = [cell bezelStyle];
 
     var fixedHeight;
 
-    // Map Cocoa bezel styles to Cappuccino bezel styles and adjust frame
+    // Fix height
     switch (_bezelStyle)
     {
         // implemented:
         case CPRoundedBezelStyle:  // Push IB style
-            positionOffsetOriginY = 6;
-            positionOffsetOriginX = 6;
-            positionOffsetSizeWidth = -12
-            fixedHeight = YES;
-            break;
-
         case CPTexturedRoundedBezelStyle:  // Round Textured IB style
-            positionOffsetOriginY = 2;
-            positionOffsetOriginX = -2;
-            positionOffsetSizeWidth = 0;
-            fixedHeight = YES;
-            break;
-
         case CPHUDBezelStyle:
-            fixedHeight = YES;
-            break;
 
         // approximations:
         case CPRoundRectBezelStyle:  // Round Rect IB style
-            positionOffsetOriginY = -3;
-            positionOffsetOriginX = -2;
-            positionOffsetSizeWidth = 0;
-            _bezelStyle = CPRoundedBezelStyle;
+        case CPRecessedBezelStyle:  // Recessed IB style
             fixedHeight = YES;
             break;
 
         case CPSmallSquareBezelStyle:  // Gradient IB style
-            positionOffsetOriginX = -2;
-            positionOffsetSizeWidth = 0;
-            _bezelStyle = CPTexturedRoundedBezelStyle;
-            fixedHeight = NO;
-            break;
-
         case CPThickSquareBezelStyle:  // Bevel IB style
         case CPThickerSquareBezelStyle:
         case CPRegularSquareBezelStyle:
-            positionOffsetOriginY = 3;
-            positionOffsetOriginX = 0;
-            positionOffsetSizeWidth = -4;
-            _bezelStyle = CPTexturedRoundedBezelStyle;
-            fixedHeight = NO;
-            break;
-
         case CPTexturedSquareBezelStyle:  // Textured IB style
-            positionOffsetOriginY = 4;
-            positionOffsetOriginX = -1;
-            positionOffsetSizeWidth = -2;
-            _bezelStyle = CPTexturedRoundedBezelStyle;
-            fixedHeight = NO;
-            break;
-
         case CPShadowlessSquareBezelStyle:  // Square IB style
-            positionOffsetOriginY = 5;
-            positionOffsetOriginX = -2;
-            positionOffsetSizeWidth = 0;
-            _bezelStyle = CPTexturedRoundedBezelStyle;
             fixedHeight = NO;
-            break;
-
-        case CPRecessedBezelStyle:  // Recessed IB style
-            positionOffsetOriginY = -3;
-            positionOffsetOriginX = -2;
-            positionOffsetSizeWidth = 0;
-            _bezelStyle = CPHUDBezelStyle;
-            fixedHeight = YES;
             break;
 
         // unsupported
@@ -245,15 +193,6 @@ var NSButtonIsBorderedMask = 0x00800000,
             if (_frame.size.height !== oldHeight)
                 CPLog.debug("NSButton [%s]: adjusted height from %d to %d", _title == null ? "<no title>" : '"' + _title + '"', oldHeight, _frame.size.height);
         }
-
-        if ([cell isBordered])
-        {
-            // Reposition the buttons according to its particular offsets
-            _frame.origin.x += positionOffsetOriginX;
-            _frame.origin.y += positionOffsetOriginY;
-            _frame.size.width += positionOffsetSizeWidth;
-            _bounds.size.width += positionOffsetSizeWidth;
-        }
     }
 
     _keyEquivalent = [cell keyEquivalent];
@@ -271,6 +210,178 @@ var NSButtonIsBorderedMask = 0x00800000,
     _showsStateBy = [cell showsStateBy];
 }
 
+/*!
+    @ignore
+    Get frame adjustment for button and all its versions...
+*/
+- (CGRect)_nib2CibAdjustment
+{
+    var frameAdjustment = [super _nib2CibAdjustment],
+        positionOffsetSizeWidth = 0,
+        positionOffsetOriginX = 0,
+        positionOffsetOriginY = 0;
+
+    // We want certain control like CPPopupButton to have their own nib2cib-adjustment-frame theme attribute
+    if (![self isBordered] || [self isKindOfClass:[CPPopUpButton class]])
+        return frameAdjustment;
+
+    // Map Cocoa bezel styles to Cappuccino bezel styles and adjust frame
+    switch (_bezelStyle)
+    {
+        // implemented:
+        case CPRoundedBezelStyle:  // Push IB style
+            switch([self controlSize])
+            {
+                case CPMiniControlSize:
+                    positionOffsetOriginX   = 1;
+                    positionOffsetOriginY   = -5;
+                    positionOffsetSizeWidth = -2;
+                    break;
+
+                case CPSmallControlSize:
+                    positionOffsetOriginX   = 8;
+                    positionOffsetOriginY   = -5;
+                    positionOffsetSizeWidth = -10;
+                    break;
+
+                default:
+                case CPRegularControlSize:
+                    positionOffsetOriginX = 4;
+                    positionOffsetOriginY = -6;
+                    positionOffsetSizeWidth = -12;
+                    break;
+            }
+
+            break;
+
+        case CPTexturedRoundedBezelStyle:  // Round Textured IB style
+            switch([self controlSize])
+            {
+                case CPMiniControlSize:
+                    positionOffsetOriginX   = 0;
+                    positionOffsetOriginY   = -5;
+                    positionOffsetSizeWidth = 0;
+                    break;
+
+                case CPSmallControlSize:
+                    positionOffsetOriginX   = 3;
+                    positionOffsetOriginY   = 0;
+                    positionOffsetSizeWidth = 0;
+                    break;
+
+                default:
+                case CPRegularControlSize:
+                    positionOffsetOriginX   = -2;
+                    positionOffsetOriginY   = -2;
+                    positionOffsetSizeWidth = 0;
+                    break;
+            }
+            break;
+
+        // approximations:
+        case CPRoundRectBezelStyle:  // Round Rect IB style
+            switch([self controlSize])
+            {
+                case CPMiniControlSize:
+                    positionOffsetOriginX   = 0;
+                    positionOffsetOriginY   = -5;
+                    positionOffsetSizeWidth = 0;
+                    break;
+
+                case CPSmallControlSize:
+                    positionOffsetOriginX   = 3;
+                    positionOffsetOriginY   = 2;
+                    positionOffsetSizeWidth = 0;
+                    break;
+
+                default:
+                case CPRegularControlSize:
+                    positionOffsetOriginX   = -2;
+                    positionOffsetOriginY   = 3;
+                    positionOffsetSizeWidth = 0;
+                    break;
+            }
+            _bezelStyle = CPRoundedBezelStyle;
+            break;
+
+        case CPSmallSquareBezelStyle:  // Gradient IB style
+            positionOffsetOriginX = -2;
+            positionOffsetSizeWidth = 0;
+            _bezelStyle = CPTexturedRoundedBezelStyle;
+            break;
+
+        case CPThickSquareBezelStyle:  // Bevel IB style
+        case CPThickerSquareBezelStyle:
+        case CPRegularSquareBezelStyle:
+            positionOffsetOriginY = -3;
+            positionOffsetOriginX = 0;
+            positionOffsetSizeWidth = -4;
+            _bezelStyle = CPTexturedRoundedBezelStyle;
+            break;
+
+        case CPTexturedSquareBezelStyle:  // Textured IB style
+            switch([self controlSize])
+            {
+                case CPMiniControlSize:
+                    positionOffsetOriginX = 0;
+                    positionOffsetOriginY = -5;
+                    positionOffsetSizeWidth = 0;
+                    break;
+
+                case CPSmallControlSize:
+                    positionOffsetOriginX = 3;
+                    positionOffsetOriginY = 0;
+                    positionOffsetSizeWidth = 0;
+                    break;
+
+                default:
+                case CPRegularControlSize:
+                    positionOffsetOriginX = -1;
+                    positionOffsetOriginY = -4;
+                    positionOffsetSizeWidth = -2;
+                    break;
+            }
+
+            _bezelStyle = CPTexturedRoundedBezelStyle;
+            break;
+
+        case CPShadowlessSquareBezelStyle:  // Square IB style
+            positionOffsetOriginY = -5;
+            positionOffsetOriginX = -2;
+            positionOffsetSizeWidth = 0;
+            _bezelStyle = CPTexturedRoundedBezelStyle;
+            break;
+
+        case CPRecessedBezelStyle:  // Recessed IB style
+            switch([self controlSize])
+            {
+                case CPMiniControlSize:
+                    positionOffsetOriginX = 0;
+                    positionOffsetOriginY = -5;
+                    positionOffsetSizeWidth = 0;
+                    break;
+
+                case CPSmallControlSize:
+                    positionOffsetOriginX = 3;
+                    positionOffsetOriginY = 2;
+                    positionOffsetSizeWidth = 0;
+                    break;
+
+                default:
+                case CPRegularControlSize:
+                    positionOffsetOriginX = -2;
+                    positionOffsetOriginY = 3;
+                    positionOffsetSizeWidth = 0;
+                    break;
+            }
+            _bezelStyle = CPHUDBezelStyle;
+            break;
+    }
+
+    return CGRectMake(frameAdjustment.origin.x + positionOffsetOriginX, frameAdjustment.origin.y + positionOffsetOriginY, frameAdjustment.size.width + positionOffsetSizeWidth, frameAdjustment.size.height);
+}
+
+
 @end
 
 @implementation NSButton : CPButton
@@ -283,6 +394,7 @@ var NSButtonIsBorderedMask = 0x00800000,
     {
         var cell = [aCoder decodeObjectForKey:@"NSCell"];
         [self NS_initWithCell:cell];
+        [self _adjustNib2CibSize];
     }
 
     return self;

@@ -31,6 +31,7 @@
 
 @global CPApp
 @global CPStringPboardType
+@global CPCursor
 
 
 @protocol CPTextFieldDelegate <CPControlTextEditingDelegate>
@@ -126,6 +127,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     BOOL                        _isSelectable;
     BOOL                        _isSecure;
     BOOL                        _willBecomeFirstResponderByClick;
+    BOOL                        _invokedByUserEvent;
 
     BOOL                        _drawsBackground;
 
@@ -140,7 +142,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     // NS-style Display Properties
     CPTextFieldBezelStyle       _bezelStyle;
     BOOL                        _isBordered;
-    CPControlSize               _controlSize;
 }
 
 + (Class)_binderClassForBinding:(CPString)aBinding
@@ -226,6 +227,21 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
             @"bezel-color": [CPNull null],
         };
 }
+
+
+#pragma mark -
+#pragma mark Control Size
+
+- (void)setControlSize:(CPControlSize)aControlSize
+{
+    [super setControlSize:aControlSize];
+
+    if ([self isBezeled])
+        [self _sizeToControlSize];
+}
+
+#pragma mark -
+
 
 #if PLATFORM(DOM)
 - (DOMElement)_inputElement
@@ -334,6 +350,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         _sendActionOn = CPKeyUpMask | CPKeyDownMask;
 
         [self setValue:CPLeftTextAlignment forThemeAttribute:@"alignment"];
+
+        [self _updateCursor];
     }
 
     return self;
@@ -354,6 +372,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     if (shouldBeEditable)
         _isSelectable = YES;
+
+    [self _updateCursor];
 
     if (_isEditable)
         [self setThemeState:CPThemeStateEditable];
@@ -385,6 +405,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 - (void)setEnabled:(BOOL)shouldBeEnabled
 {
     [super setEnabled:shouldBeEnabled];
+    [self _updateCursor];
 
     // We only allow first responder status if the field is enabled.
     if (!shouldBeEnabled && [[self window] firstResponder] === self)
@@ -398,6 +419,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 - (void)setSelectable:(BOOL)aFlag
 {
     _isSelectable = aFlag;
+
+    [self _updateCursor];
 }
 
 /*!
@@ -819,6 +842,26 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     }
 }
 
+- (void)_removeObservers
+{
+    if (!_isObserving)
+        return;
+
+    [super _removeObservers];
+    [self _setObserveWindowKeyNotifications:NO];
+}
+
+- (void)_addObservers
+{
+    if (_isObserving)
+        return;
+
+    [super _addObservers];
+
+    if ([self window] === self)
+        [self _setObserveWindowKeyNotifications:YES];
+}
+
 - (void)_windowDidResignKey:(CPNotification)aNotification
 {
     if (![[self window] isKeyWindow])
@@ -957,7 +1000,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     if (newValue !== _stringValue)
     {
         [self _setStringValue:newValue];
-
         [self _didEdit];
     }
 
@@ -967,13 +1009,20 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)keyDown:(CPEvent)anEvent
 {
+    if (!([self isEnabled] && [self isEditable]))
+        return;
+
     // CPTextField uses an HTML input element to take the input so we need to
     // propagate the dom event so the element is updated. This has to be done
     // before interpretKeyEvents: though so individual commands have a chance
     // to override this (escape to clear the text in a search field for example).
     [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
 
+    // Set a flag so that key handling methods (such as deleteBackward:)
+    // know they were invoked from a user event.
+    _invokedByUserEvent = !!anEvent._DOMEvent;
     [self interpretKeyEvents:[anEvent]];
+    _invokedByUserEvent = NO;
 
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 }
@@ -1091,6 +1140,22 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     [super textDidChange:note];
 }
 
+- (void)_updateCursor
+{
+    if ([self isEnabled] && ([self isSelectable] || [self isEditable]))
+    {
+#if PLATFORM(DOM)
+        self._DOMElement.style.cursor = "text";
+#endif
+    }
+    else
+    {
+#if PLATFORM(DOM)
+        self._DOMElement.style.cursor = "default";
+#endif
+    }
+}
+
 /*!
     Returns the string in the text field.
 */
@@ -1148,11 +1213,16 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)setObjectValue:(id)aValue
 {
+    [self _setObjectValue:aValue useFormatter:YES];
+}
+
+- (void)_setObjectValue:(id)aValue useFormatter:(BOOL)useFormatter
+{
     [super setObjectValue:aValue];
 
     var formatter = [self formatter];
 
-    if (formatter)
+    if (useFormatter && formatter)
     {
         // If there is a formatter, make sure the object value can be formatted successfully
         var formattedString = [self hasThemeState:CPThemeStateEditing] ? [formatter editingStringForObjectValue:aValue] : [formatter stringForObjectValue:aValue];
@@ -1537,7 +1607,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     var selectedRange = [self selectedRange];
 
-    if (selectedRange.length < 1)
+    if (selectedRange.length === 0)
     {
         if (selectedRange.location < 1)
             return;
@@ -1547,19 +1617,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         selectedRange.length += 1;
     }
 
-    var newValue = [_stringValue stringByReplacingCharactersInRange:selectedRange withString:""];
-
-    [self setStringValue:newValue];
-    [self setSelectedRange:CPMakeRange(selectedRange.location, 0)];
-    [self _didEdit];
-
-#if PLATFORM(DOM)
-    // Since we just performed the deletion manually, we don't need the browser to do anything else.
-    // (Previously we would allow the event to propagate for the browser to delete 1 character only,
-    // and we'd delete the rest manually. But this meant that if deleteBackward: was called without
-    // it being a browser backspace event, 1 character would be left behind.)
-    [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
-#endif
+    [self _replaceCharactersInRange:selectedRange withCharacters:@""];
 }
 
 - (void)delete:(id)sender
@@ -1573,16 +1631,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     if (selectedRange.length < 1)
         return;
 
-    var newValue = [_stringValue stringByReplacingCharactersInRange:selectedRange withString:""];
-
-    [self setStringValue:newValue];
-    [self setSelectedRange:CPMakeRange(selectedRange.location, 0)];
-    [self _didEdit];
-
-#if PLATFORM(DOM)
-    // Since we just performed the deletion manually, we don't need the browser to do anything else.
-    [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
-#endif
+    [self _replaceCharactersInRange:selectedRange withCharacters:@""];
 }
 
 - (void)deleteForward:(id)sender
@@ -1592,24 +1641,38 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     var selectedRange = [self selectedRange];
 
-    if (selectedRange.length < 1)
+    if (selectedRange.length === 0)
     {
-        if (selectedRange.location + 1 >= _stringValue.length)
+        if (selectedRange.location >= _stringValue.length)
             return;
 
+        // Delete a single element forward from the insertion point if there's no selection.
         selectedRange.length += 1;
     }
 
-    var newValue = [_stringValue stringByReplacingCharactersInRange:selectedRange withString:""];
+    [self _replaceCharactersInRange:selectedRange withCharacters:@""];
+}
 
-    [self setStringValue:newValue];
-    [self setSelectedRange:CPMakeRange(selectedRange.location, 0)];
-    [self _didEdit];
+- (void)_replaceCharactersInRange:(CPRange)range withCharacters:(CPString)characters
+{
+    var newValue = [_stringValue stringByReplacingCharactersInRange:range withString:characters];
+
+    if (_invokedByUserEvent)
+    {
+        [self _setStringValue:newValue];
+    }
+    else
+    {
+        [self _setObjectValue:newValue useFormatter:NO];
+        [self setSelectedRange:CPMakeRange(range.location, 0)];
 
 #if PLATFORM(DOM)
-    // Since we just performed the deletion manually, we don't need the browser to do anything else.
-    [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
+        // Since we just performed the deletion manually, we don't need the browser to do anything else.
+        [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
 #endif
+    }
+
+    [self _didEdit];
 }
 
 #pragma mark Setting the Delegate
@@ -1845,7 +1908,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     if (!wind)
         return NO;
 
-    var frame = [self convertRectToBase:[self bounds]],
+    var frame = [self convertRectToBase:[self contentRectForBounds:[self bounds]]],
         usableRect = [[wind platformWindow] usableContentFrame];
 
     frame.origin = [wind convertBaseToGlobal:frame.origin];
@@ -1903,6 +1966,8 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
         [self setAlignment:[aCoder decodeIntForKey:CPTextFieldAlignmentKey]];
 
         [self setPlaceholderString:[aCoder decodeObjectForKey:CPTextFieldPlaceholderStringKey]];
+
+        [self _updateCursor];
     }
 
     return self;

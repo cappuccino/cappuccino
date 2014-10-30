@@ -26,7 +26,10 @@
 @class CPSplitView
 
 @global CPPopUpButtonStatePullsDown
-
+@global CPKeyValueChangeOldKey
+@global CPKeyValueChangeNewKey
+@global CPKeyValueObservingOptionNew
+@global CPKeyValueObservingOptionOld
 
 @implementation CPButtonBar : CPView
 {
@@ -129,10 +132,16 @@
 
 - (void)setButtons:(CPArray)buttons
 {
+    for (var i = [_buttons count] - 1; i >= 0; i--)
+        [_buttons[i] removeObserver:self forKeyPath:@"hidden"];
+
     _buttons = [CPArray arrayWithArray:buttons];
 
-    for (var i = 0, count = [_buttons count]; i < count; i++)
+    for (var i = [_buttons count] - 1; i >= 0; i--)
+    {
+        [_buttons[i] addObserver:self forKeyPath:@"hidden" options:CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld context:nil];
         [_buttons[i] setBordered:YES];
+    }
 
     [self setNeedsLayout];
 }
@@ -218,8 +227,14 @@
         count = [buttonsNotHidden count];
 
     while (count--)
-        if ([buttonsNotHidden[count] isHidden])
-            [buttonsNotHidden removeObject:buttonsNotHidden[count]];
+    {
+        var button = buttonsNotHidden[count];
+
+        [button removeFromSuperview];
+
+        if ([button isHidden])
+            [buttonsNotHidden removeObject:button];
+    }
 
     var currentButtonOffset = _resizeControlIsLeftAligned ? CGRectGetMaxX([self bounds]) + 1 : -1,
         bounds = [self bounds],
@@ -272,6 +287,14 @@
         [resizeControlView setAutoresizingMask: _resizeControlIsLeftAligned ? CPViewMaxXMargin : CPViewMinXMargin];
         [resizeControlView setBackgroundColor:[self currentValueForThemeAttribute:@"resize-control-color"]];
     }
+}
+
+- (void)observeValueForKeyPath:(CPString)keyPath ofObject:(id)object change:(CPDictionary)change context:(id)context
+{
+    if ([change objectForKey:CPKeyValueChangeOldKey] == [change objectForKey:CPKeyValueChangeNewKey])
+        return;
+
+    [self setNeedsLayout];
 }
 
 - (void)setFrameSize:(CGSize)aSize

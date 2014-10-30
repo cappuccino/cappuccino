@@ -1403,7 +1403,16 @@ Notifies the delegate when the scroll view has finished scrolling.
     if (![_horizontalScroller isHidden] || ![_verticalScroller isHidden])
         _timerScrollersHide = [CPTimer scheduledTimerWithTimeInterval:CPScrollViewFadeOutTime target:self selector:@selector(_hideScrollers:) userInfo:nil repeats:NO];
 
-    [self _respondToScrollWheelEventWithDeltaX:[anEvent deltaX] deltaY:[anEvent deltaY]];
+    var deltaX = [anEvent scrollingDeltaX],
+        deltaY = [anEvent scrollingDeltaY];
+
+    if (![anEvent hasPreciseScrollingDeltas])
+    {
+        deltaX *= (_horizontalLineScroll || 1.0);
+        deltaY *= (_verticalLineScroll || 1.0);
+    }
+
+    [self _respondToScrollWheelEventWithDeltaX:deltaX deltaY:deltaY];
 }
 
 - (void)scrollPageUp:(id)sender

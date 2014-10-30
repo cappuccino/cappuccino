@@ -356,7 +356,7 @@ var CPRadioRadioGroupKey    = @"CPRadioRadioGroupKey";
     [_selectedRadio setState:CPOffState];
 
     _selectedRadio = aRadio;
-    [_CPRadioGroupSelectionBinder reverseSetValueForObject:self];
+    [_CPRadioGroupSelectionBinder _reverseSetValueFromExclusiveBinderForObject:self];
 }
 
 @end
@@ -407,32 +407,17 @@ var CPRadioGroupRadiosKey           = @"CPRadioGroupRadiosKey",
     return [super _binderClassForBinding:aBinding];
 }
 
-@end
++ (BOOL)isBindingExclusive:(CPString)aBinding
+{
+    return (aBinding == CPSelectedIndexBinding ||
+           aBinding == CPSelectedTagBinding ||
+           aBinding == CPSelectedValueBinding);
+}
 
-var binderForObject = {};
+@end
 
 @implementation _CPRadioGroupSelectionBinder : CPBinder
 {
-    CPString _selectionBinding @accessors;
-}
-
-- (id)initWithBinding:(CPString)aBinding name:(CPString)aName to:(id)aDestination keyPath:(CPString)aKeyPath options:(CPDictionary)options from:(id)aSource
-{
-    self = [super initWithBinding:aBinding name:aName to:aDestination keyPath:aKeyPath options:options from:aSource];
-
-    if (self)
-    {
-        binderForObject[[aSource UID]] = self;
-        _selectionBinding = aName;
-    }
-
-    return self;
-}
-
-+ (void)reverseSetValueForObject:(id)aSource
-{
-    var binder = binderForObject[[aSource UID]];
-    [binder reverseSetValueFor:[binder _selectionBinding]];
 }
 
 - (void)setPlaceholderValue:(id)aValue withMarker:(CPString)aMarker forBinding:(CPString)aBinding

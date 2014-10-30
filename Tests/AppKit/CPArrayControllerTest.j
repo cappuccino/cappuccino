@@ -10,6 +10,9 @@
 
     CPArray             observations;
     int                 aCount @accessors;
+
+    CPArray             nameValues @accessors;
+    CPArray             depValues @accessors;
 }
 
 - (CPArray)makeTestArray
@@ -17,6 +20,22 @@
     return [[Employee employeeWithName:@"Francisco" department:[Department departmentWithName:@"Cappuccino"]],
         [Employee employeeWithName:@"Ross" department:[Department departmentWithName:@"Cappuccino"]],
         [Employee employeeWithName:@"Tom" department:[Department departmentWithName:@"CommonJS"]]];
+}
+
+- (CPArray)makeTestArrayMany
+{
+    var a = [[Employee employeeWithName:@"Francisco" department:[Department departmentWithName:@"Cappuccino"]],
+        [Employee employeeWithName:@"Ross" department:[Department departmentWithName:@"Cappuccino"]],
+        [Employee employeeWithName:@"Tom" department:[Department departmentWithName:@"CommonJS"]]];
+
+    var i = 10000;
+
+    while (i--)
+    {
+        [a addObject:[Employee employeeWithName:@"Martin" + i department:[Department departmentWithName:@"Magic Lightning"]]];
+    }
+
+    return a;
 }
 
 - (void)initControllerWithSimpleArray
@@ -1054,6 +1073,54 @@
     [self assert:[1, 2, 3] equals:[arrayController1 arrangedObjects] message:"normal selection"];
 }
 
+/*!
+    Test that bindings are not generation any change dictionary with Old or New values as a observer
+*/
+- (void)testCreationOfOldAndNeChangeDictionaryinObserverProtocol
+{
+    [self initControllerWithContentBinding];
+
+    var arrayController = [self arrayController];
+
+    [self bind:@"nameValues" toObject:arrayController withKeyPath:@"arrangedObjects.name" options:nil];
+
+    countGetName = 0;
+
+    [self setItemsArray:[]];
+    [self assert:0 equals:countGetName];
+
+    countGetName = 0;
+
+    [self setItemsArray:[self makeTestArray]];
+    [self assert:3 equals:countGetName message:@"3 items in array and one '.name' bindings should make 3 accesses to the name property not " + countGetName + " times"];
+}
+
+/*!
+    Test the speed of set an big array when the old was an empty.
+    Also test the speed when an empty array is set and the old is an big
+*/
+- (void)testPerformance
+{
+    [self initControllerWithContentBinding];
+
+    var arrayController = [self arrayController];
+    [self bind:@"nameValues" toObject:arrayController withKeyPath:@"arrangedObjects.name" options:nil];
+    [self bind:@"depValues" toObject:arrayController withKeyPath:@"arrangedObjects.department" options:nil];
+
+    [self setItemsArray:[]];
+    var bigArray = [self makeTestArrayMany];
+
+    var d = new Date();
+    [self setItemsArray:bigArray];
+    var dd = new Date();
+    [self setItemsArray:[]];
+    var ddd = new Date();
+
+    CPLog.warn("\n" + [self className] + " Performance tests");
+    CPLog.warn("EmptyArray -> BigArray (" + [bigArray count] + "): " + (dd - d) + "ms.");
+    CPLog.warn("BigArray (" + [bigArray count] + ") -> EmptyArray: " + (ddd - dd) + "ms.");
+}
+
 - (void)observeValueForKeyPath:keyPath
     ofObject:anActivity
     change:change
@@ -1099,7 +1166,19 @@
     [_contentArray replaceObjectAtIndex:index withObject:anObject];
 }
 
+- (void)setItemsArray:(CPArray)newValue
+{
+    [self setValue:newValue forKey:@"contentArray"];
+}
+
+- (CPArray)itemsArray
+{
+    return [self valueForKey:@"contentArray"];
+}
+
 @end
+
+var countGetName;
 
 @implementation Employee : CPObject
 {
@@ -1126,6 +1205,12 @@
 - (CPString)description
 {
     return [CPString stringWithFormat:@"<Employee %@>", [self name]];
+}
+
+- (CPString)name
+{
+    countGetName++;
+    return _name;
 }
 
 @end

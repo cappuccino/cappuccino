@@ -6,5 +6,7 @@
 	<string>MainMenu.cib</string>
 	<key>CPBundleName</key>
 	<string>nib2cibAlignment</string>
+	<key>CPDefaultTheme</key>
+	<string>Aristo2</string>
 </dict>
 </plist>
