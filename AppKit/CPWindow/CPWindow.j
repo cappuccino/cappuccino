@@ -978,6 +978,9 @@ CPTexturedBackgroundWindowMask
     if ([self _sharesChromeWithPlatformWindow])
         [_platformWindow orderOut:self];
 
+    if (_isFullPlatformWindow && _platformWindow != [CPPlatformWindow primaryPlatformWindow])
+        [_platformWindow orderOut:self];
+
     [_platformWindow order:CPWindowOut window:self relativeTo:nil];
 #endif
 
