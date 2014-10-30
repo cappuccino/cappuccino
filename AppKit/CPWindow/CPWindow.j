@@ -2688,7 +2688,7 @@ CPTexturedBackgroundWindowMask
         endSelector = _sheetContext[@"nextEndSelector"],
         contextInfo = _sheetContext[@"nextContextInfo"];
 
-    // Needed, becauwe when the notification CPWindowDidEndSheetNotification is sent, the sheetContext is not up to date...
+    // Needed, because when the notification CPWindowDidEndSheetNotification is sent, the sheetContext is not up to date...
     setTimeout(function()
     {
         [sheet._windowView _enableSheet:YES inWindow:self];
