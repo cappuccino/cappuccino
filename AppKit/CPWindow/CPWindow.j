@@ -569,7 +569,7 @@ CPTexturedBackgroundWindowMask
         var fullPlatformWindowViewClass = [[self class] _windowViewClassForFullPlatformWindowStyleMask:_styleMask],
             windowView = [[fullPlatformWindowViewClass alloc] initWithFrame:CGRectMakeZero() styleMask:_styleMask];
 
-        if (_platformWindow != [CPPlatformWindow primaryPlatformWindow] && _platformWindow._hasInitializeInstanceWithWindow)
+        if (_platformWindow != [CPPlatformWindow primaryPlatformWindow] && [_platformWindow _hasInitializeInstanceWithWindow])
             [_platformWindow setContentRect:[self frame]];
 
         [self _setWindowView:windowView];
@@ -757,7 +757,7 @@ CPTexturedBackgroundWindowMask
             [self _moveChildWindows:delta];
     }
 
-    if ([_platformWindow _shouldUpdateContentRect] && _isFullPlatformWindow && _platformWindow != [CPPlatformWindow primaryPlatformWindow])
+    if ([_platformWindow _canUpdateContentRect] && _isFullPlatformWindow && _platformWindow != [CPPlatformWindow primaryPlatformWindow])
         [_platformWindow setContentRect:aFrame];
 }
 
