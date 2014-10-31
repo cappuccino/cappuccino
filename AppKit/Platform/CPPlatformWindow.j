@@ -122,9 +122,9 @@ var PrimaryPlatformWindow   = NULL;
 {
     self = [self initWithContentRect:CGRectMakeCopy([aWindow frame])];
 
+    _hasInitializeInstanceWithWindow = YES;
     [aWindow setPlatformWindow:self];
     [aWindow setFullPlatformWindow:YES];
-    _hasInitializeInstanceWithWindow = YES;
 
     return self;
 }
