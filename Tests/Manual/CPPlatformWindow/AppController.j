@@ -22,12 +22,7 @@
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
     // This is called when the application is done loading.
-
-    platformWindow = [[CPPlatformWindow alloc] init];
-    [platformWindow setContentRect:[windowPlatformWindow contentRectForFrameRect:[windowPlatformWindow frame]]];
-
-    [windowPlatformWindow setPlatformWindow:platformWindow];
-    [windowPlatformWindow setFullPlatformWindow:YES]
+    [[CPPlatformWindow alloc] initWithWindow:windowPlatformWindow];
 }
 
 - (void)awakeFromCib
@@ -52,7 +47,7 @@
 
 - (IBAction)changeFrame:(id)sender
 {
-    [platformWindow setContentRect:CGRectMake(50, 50, 200, 200)];
+    [windowPlatformWindow setFrame:CGRectMake(250, 250, 200, 200)];
 }
 
 - (IBAction)showAlert:(id)sender

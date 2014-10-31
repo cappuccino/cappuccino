@@ -569,6 +569,9 @@ CPTexturedBackgroundWindowMask
         var fullPlatformWindowViewClass = [[self class] _windowViewClassForFullPlatformWindowStyleMask:_styleMask],
             windowView = [[fullPlatformWindowViewClass alloc] initWithFrame:CGRectMakeZero() styleMask:_styleMask];
 
+        if (_platformWindow != [CPPlatformWindow primaryPlatformWindow])
+            [_platformWindow setContentRect:[self frame]];
+
         [self _setWindowView:windowView];
 
         [self setLevel:CPBackgroundWindowLevel];
@@ -753,6 +756,9 @@ CPTexturedBackgroundWindowMask
         if (originMoved)
             [self _moveChildWindows:delta];
     }
+
+    if ([_platformWindow _shouldUpdateContentRect] && _isFullPlatformWindow && _platformWindow != [CPPlatformWindow primaryPlatformWindow])
+        [_platformWindow setContentRect:aFrame];
 }
 
 /*
@@ -904,6 +910,10 @@ CPTexturedBackgroundWindowMask
     [[self contentView] _addObservers];
 
 #if PLATFORM(DOM)
+
+    if (!_isVisible)
+        [_platformWindow _setShouldUpdateContentRect:NO];
+
     // -dw- if a sheet is clicked, the parent window should come up too
     if (_isSheet)
         [_parentView orderFront:self];
@@ -923,6 +933,8 @@ CPTexturedBackgroundWindowMask
 
     if (!CPApp._mainWindow)
         [self makeMainWindow];
+
+    [_platformWindow _setShouldUpdateContentRect:YES];
 }
 
 /*
