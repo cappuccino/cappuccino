@@ -26,20 +26,20 @@ GLOBAL(kCFErrorLocalizedRecoverySuggestionKey) = "CPLocalizedRecoverySuggestion"
 GLOBAL(kCFErrorDescriptionKey) = "CPDescription";
 GLOBAL(kCFErrorUnderlyingErrorKey) = "CPUnderlyingError";
 
-GLOBAL(kCFErrorURLKey) = "_kCFErrorURLKey";
-GLOBAL(kCFErrorFilePathKey) = "_kCFErrorFilePathKey";
+GLOBAL(kCFErrorURLKey) = "CPURL";
+GLOBAL(kCFErrorFilePathKey) = "CPFilePath";
 
 // GLOBAL(kCFErrorDomainPOSIX) = "";
 // GLOBAL(kCFErrorDomainOSStatus) = "";
 // GLOBAL(kCFErrorDomainMach) = "";
-GLOBAL(kCFErrorDomainCappuccino) = "CPErrorDomainCappuccino";
+GLOBAL(kCFErrorDomainCappuccino) = "CPCappuccinoErrorDomain";
 GLOBAL(kCFErrorDomainCocoa) = kCFErrorDomainCappuccino;
 
 
 GLOBAL(CFError) = function(/* CFString */ domain, /* int */ code, /* CFDictionary */ userInfo)
 {
     this._domain = domain || NULL;
-    this._code = code || NULL;
+    this._code = code || 0;
     this._userInfo = userInfo || new CFDictionary();
     this._UID = objj_generateObjectUID();
 }
@@ -78,7 +78,7 @@ CFError.prototype.description = function ()
     if (desc)
     {
         // we have a description key.
-        var result = "The operation couldn\u2019t be completed. (error " + this._code + "- " + desc + ")";
+        var result = "The operation couldn\u2019t be completed. (error " + this._code + " - " + desc + ")";
     }
     else
     {
@@ -120,7 +120,7 @@ GLOBAL(CFErrorCreate) = function(/* String */ domain, /*int */ code, /* CFDictio
 
 GLOBAL(CFErrorCreateWithUserInfoKeysAndValues) = function(/* String */ domain, /* int */ code, /* array */ userInfoKeys, /* array */ userInfoValues, /* int */ numUserInfoValues)
 {
-    var userInfo = new CFDictionary();
+    var userInfo = new CFMutableDictionary();
     while(numUserInfoValues--)
         userInfo.setValueForKey(userInfoKeys[numUserInfoValues], userInfoValues[numUserInfoValues]);
 
@@ -129,30 +129,30 @@ GLOBAL(CFErrorCreateWithUserInfoKeysAndValues) = function(/* String */ domain, /
 
 GLOBAL(CFErrorGetCode) = function(/* CFError */ err)
 {
-    return err.code;
+    return err.code();
 }
 
 GLOBAL(CFErrorGetDomain) = function(/* CFError */ err)
 {
-    return err.domain;
+    return err.domain();
 }
 
 GLOBAL(CFErrorCopyDescription) = function(/* CFError */ err)
 {
-    return err.description;
+    return err.description();
 }
 
 GLOBAL(CFErrorCopyUserInfo) = function(/* CFError */ err)
 {
-    return err.userInfo;
+    return err.userInfo();
 }
 
 GLOBAL(CFErrorCopyFailureReason) = function(/* CFError */ err)
 {
-    return err.failureReason;
+    return err.failureReason();
 }
 
 GLOBAL(CFErrorCopyRecoverySuggestion) = function(/* CFError */err)
 {
-    return err.recoverySuggestion;
+    return err.recoverySuggestion();
 }
