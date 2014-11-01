@@ -87,9 +87,9 @@ var userInfo = @{CPLocalizedDescriptionKey: @"A localized error description",
     return self.code();
 }
 
-- (CPString)description
+- (CPString)userInfo
 {
-    return self.description();
+    return self.userInfo();
 }
 
 - (CPString)domain
@@ -97,6 +97,11 @@ var userInfo = @{CPLocalizedDescriptionKey: @"A localized error description",
     return self.domain();
 }
 
+/*!
+    By default this method returns the object in the user info dictionary for the key
+    NSLocalizedDescriptionKey. If the user info dictionary doesn’t contain a value for
+    NSLocalizedDescriptionKey, a default string is constructed from the domain and code.
+ */
 - (CPString)localizedDescription
 {
     return self.description();
