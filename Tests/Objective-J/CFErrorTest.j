@@ -23,7 +23,7 @@
 
     [self assert:kCFErrorDomainCappuccino equals:err.domain()];
     [self assert:-1000 equals:err.code()];
-    [self assert:@"CPErrorDomainCappuccino" equals:CFErrorGetDomain(err)];
+    [self assert:@"CPCappuccinoErrorDomain" equals:CFErrorGetDomain(err)];
 }
 
 - (void)testCreateWithUserInfoKeysAndValues
