@@ -79,27 +79,47 @@ exports.run = function(args)
         // copy the args since we're going to modify them
         var argv = args.slice(1);
 
-        if (argv[0] === "--version")
+        if (argv[0] === "--version" || argv[0] === "-v")
         {
             print(exports.fullVersionString());
             return;
         }
 
-        while (argv.length && argv[0].indexOf('-I') === 0)
-            OBJJ_INCLUDE_PATHS.unshift.apply(OBJJ_INCLUDE_PATHS, argv.shift().substr(2).split(':'));
+        if (argv[0] === "--help" || argv[0] === "-h")
+        {
+            print("Usage (objj): " + args[0] + " [options] [--] files...");
+            print("  -v, --version                  print the current version of objj");
+            print("  -I, --objj-include-paths       specify the framework to be used")
+            print("  -h, --help                     print this help");
+            return;
+        }
+
+        while (argv.length && argv[0] == "-I" || argv[0] == "--objj-include-paths")
+        {
+            argv.shift();
+            OBJJ_INCLUDE_PATHS.unshift.apply(OBJJ_INCLUDE_PATHS, argv.shift().split(":"));
+        }
     }
 
     if (argv && argv.length > 0)
     {
-        var arg0 = argv.shift();
-        var mainFilePath = FILE.canonical(arg0);
+        while (argv.length > 0)
+        {
+            var arg0 = argv.shift();
+            var mainFilePath = FILE.canonical(arg0);
 
-        exports.make_narwhal_factory(mainFilePath)(require, { }, module, system, print);
+            exports.make_narwhal_factory(mainFilePath)(require, { }, module, system, print);
 
-        if (typeof main === "function")
-            main([arg0].concat(argv));
+            if (typeof main === "function")
+                main([arg0].concat(argv));
 
-        require("browser/timeout").serviceTimeouts();
+            require("browser/timeout").serviceTimeouts();
+
+            ObjectiveJ.Executable.resetCachedFileExecutableSearchers();
+            ObjectiveJ.StaticResource.resetRootResources();
+            ObjectiveJ.FileExecutable.resetFileExecutables();
+            objj_resetRegisterClasses();
+        }
     }
     else
     {
