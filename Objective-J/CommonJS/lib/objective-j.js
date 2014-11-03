@@ -90,8 +90,14 @@ exports.run = function(args)
             print("Usage (objj): " + args[0] + " [options] [--] files...");
             print("  -v, --version                  print the current version of objj");
             print("  -I, --objj-include-paths       specify the framework to be used")
-            print("  -h, --help                     print this help");
+            print("  -p, --parser                   specify to use a specific parser")
             return;
+        }
+
+        if (argv[0] === "-p" || argv[0] === "--parser")
+        {
+            argv.shift();
+            optionalParserUsed = true;
         }
 
         while (argv.length && argv[0] == "-I" || argv[0] == "--objj-include-paths")
