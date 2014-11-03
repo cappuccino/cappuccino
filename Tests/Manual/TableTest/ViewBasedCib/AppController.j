@@ -98,6 +98,20 @@ CPLogRegister(CPLogConsole)
     return self;
 }
 
+- (void)awakeFromCib
+{
+    // self is the owner parameter specified in -makeViewWithIdentifier:owner:
+    // This method is called each time a cib containing a CPTableCellView is instantiated.
+    // Outlets are now connected and available.
+    // If the view has its own xib, only the view will be instantiated and connected to the owner.
+    if (externalView)
+    {
+        CPLog.debug(_cmd + " loaded externalView : " + externalView);
+        [[externalView textField] setTextColor:[CPColor greenColor]];
+        [imageView bind:CPValueURLBinding toObject:externalView withKeyPath:"objectValue.image.path" options:nil];
+    }
+}
+
 - (CPView)makeOrangeView
 {
     var orangeView = [[CustomView alloc] initWithFrame:CGRectMakeZero()];
@@ -187,19 +201,6 @@ CPLogRegister(CPLogConsole)
         return [aTableView rowHeight];
 
     return [height intValue];
-}
-
-- (void)awakeFromCib
-{
-    // self is the owner parameter specified in -makeViewWithIdentifier:owner:
-    // This method is called each time a cib containing a CPTableCellView is instantiated.
-    // Outlets are now connected and available.
-    // If the view has its own xib, only the view will be instantiated and connected to the owner.
-    if (externalView)
-    {
-        CPLog.debug(_cmd + " loaded externalView : " + externalView);
-        [[externalView textField] setTextColor:[CPColor greenColor]];
-    }
 }
 
 // CELL VIEWS ACTIONS
