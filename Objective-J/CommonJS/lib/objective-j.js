@@ -121,6 +121,12 @@ exports.run = function(args)
 
             require("browser/timeout").serviceTimeouts();
 
+            if (optionalParserUsed)
+            {
+                // Here we have no idea what the parser does...this is used for xCodeCapp
+                break;
+            }
+
             ObjectiveJ.Executable.resetCachedFileExecutableSearchers();
             ObjectiveJ.StaticResource.resetRootResources();
             ObjectiveJ.FileExecutable.resetFileExecutables();
