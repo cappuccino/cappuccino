@@ -119,7 +119,10 @@ exports.run = function(args)
             }
 
             if (typeof main === "function")
+            {
                 main([arg0].concat(argv));
+                endCommand = true;
+            }
 
             require("browser/timeout").serviceTimeouts();
 
