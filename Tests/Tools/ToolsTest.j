@@ -33,7 +33,7 @@ function cleanup() {
     status = OS.system(["objj", "ToolsTestApp/AppController.j"]);
     [self assert:0 equals:status message:"objj failed"];
 
-    status = OS.system(["objj", "ToolsTestApp/AppController.j", "ToolsTestApp/AppController.j"]);
+    status = OS.system(["objj", "-m", "ToolsTestApp/AppController.j", "ToolsTestApp/AppController.j"]);
     [self assert:0 equals:status message:"objj failed with several files"];
 
     status = OS.system(["objj", "-I", "ToolsTestApp/Frameworks", "ToolsTestApp/AppController.j"]);

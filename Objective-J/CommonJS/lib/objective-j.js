@@ -68,6 +68,8 @@ with (window)
 // runs the objj repl or file provided in args
 exports.run = function(args)
 {
+    var multipleFiles = false;
+
     if (args)
     {
         // we expect args to be in the format:
@@ -91,13 +93,24 @@ exports.run = function(args)
             print("  -v, --version                  print the current version of objj");
             print("  -I, --objj-include-paths       include a specific framework paths")
             print("  -h, --help                     print this help");
+            print("  -m, --multifiles               launch objj on several files")
             return;
         }
 
-        while (argv.length && argv[0] == "-I" || argv[0] == "--objj-include-paths")
+        while (argv.length && argv[0].indexOf('-') === 0)
         {
-            argv.shift();
-            OBJJ_INCLUDE_PATHS.unshift.apply(OBJJ_INCLUDE_PATHS, argv.shift().split(":"));
+            switch (argv[0])
+            {
+                case "-I":
+                    argv.shift();
+                    OBJJ_INCLUDE_PATHS.unshift.apply(OBJJ_INCLUDE_PATHS, argv.shift().split(":"));
+                    break;
+
+                case "-m":
+                    argv.shift();
+                    multipleFiles = true;
+                    break
+            }
         }
     }
 
@@ -112,12 +125,6 @@ exports.run = function(args)
 
             exports.make_narwhal_factory(mainFilePath)(require, { }, module, system, print);
 
-            if (argv[0] == "--")
-            {
-                endCommand = true;
-                argv.shift();
-            }
-
             if (typeof main === "function")
             {
                 main([arg0].concat(argv));
@@ -126,7 +133,7 @@ exports.run = function(args)
 
             require("browser/timeout").serviceTimeouts();
 
-            if (endCommand)
+            if (!multipleFiles || endCommand)
                 break;
 
             ObjectiveJ.Executable.resetCachedFileExecutableSearchers();
