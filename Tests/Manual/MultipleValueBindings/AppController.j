@@ -6,8 +6,8 @@
  * Copyright 2013, Cappuccino Foundation. All rights reserved.
  */
 
-@import <Foundation/Foundation.j>
-@import <AppKit/AppKit.j>
+@import <Foundation/CPObject.j>
+@import <AppKit/CPAlert.j>
 
 @import "Transformers.j"
 
@@ -28,13 +28,12 @@
 
 - (id)init
 {
-    if (self = super init])
+    if (self = [super init])
     {
         foo = nil;
         [self setNow];
         [self setAllowColorChange:NO];
         [self setCanEditPeople:YES];
-
         people = [
             [CPDictionary dictionaryWithObjectsAndKeys:@"tom", @"firstname", @"jones", @"lastname", 27, @"age", 0, @"numberOfChildren"],
             [CPDictionary dictionaryWithObjectsAndKeys:@"dick", @"firstname", @"clark", @"lastname", 31, @"age", 4, @"numberOfChildren"],
