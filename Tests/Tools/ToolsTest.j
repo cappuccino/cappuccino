@@ -38,9 +38,6 @@ function cleanup() {
 
     status = OS.system(["objj", "-I", "ToolsTestApp/Frameworks", "ToolsTestApp/AppController.j"]);
     [self assert:0 equals:status message:"objj failed with options -I"];
-
-    status = OS.system(["capp_lint", "ToolsTestApp/AppController.j"]);
-    [self assert:0 equals:status message:"capp lint failed"];
 }
 
 - (void)tearDown
