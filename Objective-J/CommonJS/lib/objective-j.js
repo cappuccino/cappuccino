@@ -89,15 +89,9 @@ exports.run = function(args)
         {
             print("Usage (objj): " + args[0] + " [options] [--] files...");
             print("  -v, --version                  print the current version of objj");
-            print("  -I, --objj-include-paths       specify the framework to be used")
-            print("  -p, --parser                   specify to use a specific parser")
+            print("  -I, --objj-include-paths       include a specific framework paths")
+            print("  -h, --help                     print this help");
             return;
-        }
-
-        if (argv[0] === "-p" || argv[0] === "--parser")
-        {
-            argv.shift();
-            optionalParserUsed = true;
         }
 
         while (argv.length && argv[0] == "-I" || argv[0] == "--objj-include-paths")
@@ -109,6 +103,8 @@ exports.run = function(args)
 
     if (argv && argv.length > 0)
     {
+        var endCommand = false;
+
         while (argv.length > 0)
         {
             var arg0 = argv.shift();
@@ -116,16 +112,19 @@ exports.run = function(args)
 
             exports.make_narwhal_factory(mainFilePath)(require, { }, module, system, print);
 
+            if (argv[0] == "--")
+            {
+                endCommand = true;
+                argv.shift();
+            }
+
             if (typeof main === "function")
                 main([arg0].concat(argv));
 
             require("browser/timeout").serviceTimeouts();
 
-            if (optionalParserUsed)
-            {
-                // Here we have no idea what the parser does...this is used for xCodeCapp
+            if (endCommand)
                 break;
-            }
 
             ObjectiveJ.Executable.resetCachedFileExecutableSearchers();
             ObjectiveJ.StaticResource.resetRootResources();

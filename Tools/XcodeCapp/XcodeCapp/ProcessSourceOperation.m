@@ -71,8 +71,8 @@
     {
         launchPath = self.xcc.executablePaths[@"objj"];
         arguments = @[
-                        @"--parser",
                         self.xcc.parserPath,
+                        @"--",
                         self.projectPath,
                         self.sourcePath
                     ];
