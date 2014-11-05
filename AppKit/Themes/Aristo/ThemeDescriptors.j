@@ -1820,8 +1820,8 @@ var themedButtonValues = nil,
 
             // The right border inset has to make room for the focus ring and popup button
             [@"content-inset",              CGInsetMake(8.0, 27.0, 7.0, 8.0),           [CPThemeStateBezeled, CPComboBoxStateButtonBordered]],
-            [@"content-inset",              CGInsetMake(8.0, 24.0, 7.0, 8.0),           CPThemeStateBezeled],
-            [@"content-inset",              CGInsetMake(8.0, 24.0, 7.0, 8.0),           [CPThemeStateBezeled, CPThemeStateEditing]],
+            [@"content-inset",              CGInsetMake(8.0, 27.0, 7.0, 8.0),           CPThemeStateBezeled],
+            [@"content-inset",              CGInsetMake(8.0, 27.0, 7.0, 8.0),           [CPThemeStateBezeled, CPThemeStateEditing]],
 
             [@"popup-button-size",          CGSizeMake(21.0, 23.0),                     [CPThemeStateBezeled, CPComboBoxStateButtonBordered]],
             [@"popup-button-size",          CGSizeMake(17.0, 23.0),                     CPThemeStateBezeled],
