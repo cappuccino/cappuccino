@@ -19,7 +19,6 @@ extern NSString * const kDefaultXCCReactToInodeMod;
 extern NSString * const kDefaultXCCReopenLastProject;
 extern NSString * const kDefaultXCCAutoOpenErrorsPanelOnErrors;
 extern NSString * const kDefaultXCCAutoOpenErrorsPanelOnCappLint;
-extern NSString * const kDefaultXCCAutoOpenErrorsPanelOnObjjWarnings;
 extern NSString * const kDefaultXCCAutoShowNotificationOnErrors;
 extern NSString * const kDefaultXCCAutoShowNotificationOnCappLint;
 extern NSString * const kDefaultXCCUseDebugFrameworkWithObjj;
