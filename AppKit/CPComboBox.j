@@ -469,6 +469,9 @@ var CPComboBoxTextSubview = @"text",
     // Apply our text style to the list
     [_listDelegate setFont:[self font]];
     [_listDelegate setAlignment:[self alignment]];
+    [[_listDelegate scrollView] setHasVerticalScroller:_hasVerticalScroller];
+    [[_listDelegate tableView] setIntercellSpacing:_intercellSpacing];
+    [[_listDelegate tableView] setRowHeight:_itemHeight];
 }
 
 - (int)indexOfItemWithObjectValue:(id)anObject
@@ -511,15 +514,7 @@ var CPComboBoxTextSubview = @"text",
 - (void)popUpList
 {
     if (!_listDelegate)
-    {
         [self setListDelegate:[[_CPPopUpList alloc] initWithDataSource:self]];
-
-        [_listDelegate setFont:[self font]];
-        [_listDelegate setAlignment:[self alignment]];
-        [[_listDelegate scrollView] setHasVerticalScroller:_hasVerticalScroller];
-        [[_listDelegate tableView] setIntercellSpacing:_intercellSpacing];
-        [[_listDelegate tableView] setRowHeight:_itemHeight];
-    }
 
     [self _selectMatchingItem];
 
