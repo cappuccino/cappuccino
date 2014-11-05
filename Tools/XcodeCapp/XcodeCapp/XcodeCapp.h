@@ -156,9 +156,14 @@ extern NSString * const XCCCappLintDidEndNotification;
 
 - (NSDictionary*)createProject:(NSString*)aPath;
 
+- (void)showCappLintWarnings;
+- (void)showObjjWarnings;
+
 - (BOOL)shouldProcessWithCappLint;
 - (BOOL)checkCappLintForPath:(NSArray*)paths;
-- (void)showCappLintErrors;
+
+- (BOOL)shouldProcessWithObjjWarnings;
+- (BOOL)checkObjjWarningsForPath:(NSArray*)paths;
 
 - (void)updateCappuccino;
 
