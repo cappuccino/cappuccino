@@ -123,7 +123,23 @@ exports.run = function(args)
             var arg0 = argv.shift();
             var mainFilePath = FILE.canonical(arg0);
 
-            exports.make_narwhal_factory(mainFilePath)(require, { }, module, system, print);
+            if (multipleFiles)
+            {
+                // This is needed to process every files passed in args
+                // Otherwise it would stop when an error is raised or we would like to objj the other given files
+                try
+                {
+                    exports.make_narwhal_factory(mainFilePath)(require, { }, module, system, print);
+                }
+                catch(e)
+                {
+                    print("\n" + e);
+                }
+            }
+            else
+            {
+                exports.make_narwhal_factory(mainFilePath)(require, { }, module, system, print);
+            }
 
             if (typeof main === "function")
             {
