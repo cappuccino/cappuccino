@@ -93,7 +93,7 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
     CPScrollView        _scrollView;
     CPView              _frameView;
 
-    IFrame              _iframe;
+    DOMElement          _iframe;
     CPString            _mainFrameURL;
     CPArray             _backwardStack;
     CPArray             _forwardStack;

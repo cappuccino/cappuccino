@@ -29,8 +29,7 @@
 @import "CPWindow_Constants.j"
 
 /* @group CPBezelStyle */
-
-                                       // IB style
+@typedef CPBezelStyle
 CPRoundedBezelStyle             = 1;   // Push
 CPRegularSquareBezelStyle       = 2;   // Bevel
 CPThickSquareBezelStyle         = 3;
@@ -49,6 +48,7 @@ CPHUDBezelStyle                 = -1;
 
 
 /* @group CPButtonType */
+@typedef CPButtonType
 CPMomentaryLightButton  = 0;
 CPPushOnPushOffButton   = 1;
 CPToggleButton          = 2;

@@ -26,6 +26,7 @@
 @import "CPWindow_Constants.j"
 
 
+@typedef CPProgressIndicatorStyle
 /*
     @global
     @group CPProgressIndicatorStyle

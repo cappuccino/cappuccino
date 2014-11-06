@@ -29,6 +29,8 @@
 @import <Foundation/Foundation.j>
 
 @class CPDatePicker
+@class _CPDatePickerMonthView
+@class _CPDatePickerHeaderView
 
 @global CPApp
 @global CPSingleDateMode

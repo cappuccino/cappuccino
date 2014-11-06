@@ -32,12 +32,14 @@
 @global CPLocaleLanguageCode
 @global CPLocaleCountryCode
 
+@typedef CPDateFormatterStyle
 CPDateFormatterNoStyle     = 0;
 CPDateFormatterShortStyle  = 1;
 CPDateFormatterMediumStyle = 2;
 CPDateFormatterLongStyle   = 3;
 CPDateFormatterFullStyle   = 4;
 
+@typedef CPDateFormatterBehavior
 CPDateFormatterBehaviorDefault = 0;
 CPDateFormatterBehavior10_0    = 1000;
 CPDateFormatterBehavior10_4    = 1040;

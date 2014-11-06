@@ -31,6 +31,10 @@
 @import <Foundation/CPLocale.j>
 
 @class CPDatePicker
+@class _CPDatePickerElementTextField
+@class _CPDatePickerElementView
+@class _CPDatePickerMonthView
+@class _CPDatePickerHeaderView
 
 @global CPSingleDateMode
 @global CPRangeDateMode

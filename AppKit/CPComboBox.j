@@ -63,7 +63,7 @@ var CPComboBoxTextSubview = @"text",
 {
     CPArray                 _items;
     _CPPopUpList            _listDelegate;
-    CPComboBoxDataSource    _dataSource;
+    id                      _dataSource;
     BOOL                    _usesDataSource;
     BOOL                    _completes;
     BOOL                    _canComplete;

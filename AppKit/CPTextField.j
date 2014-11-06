@@ -41,6 +41,7 @@
 
 var CPTextFieldDelegate_control_didFailToFormatString_errorDescription_ = 1 << 1;
 
+@typedef CPTextFieldBezelStyle
 CPTextFieldSquareBezel          = 0;    /*! A textfield bezel with squared corners. */
 CPTextFieldRoundedBezel         = 1;    /*! A textfield bezel with rounded corners. */
 

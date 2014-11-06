@@ -1,9 +1,9 @@
 /*
- * CPDragServer_Constants.j
- * AppKit
+ * _CPTypeDefintions.j
+ * Foundation
  *
- * Created by Francisco Tolmasky.
- * Copyright 2008, 280 North, Inc.
+ * Created by Antoine Mercadal.
+ * Copyright 2014, Antoine Mercadal.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,12 +20,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@typedef CPDragOperation
-CPDragOperationNone     = 0;
-CPDragOperationCopy     = 1 << 1;
-CPDragOperationLink     = 1 << 1;
-CPDragOperationGeneric  = 1 << 2;
-CPDragOperationPrivate  = 1 << 3;
-CPDragOperationMove     = 1 << 4;
-CPDragOperationDelete   = 1 << 5;
-CPDragOperationEvery    = -1;
+@typedef Class
+@typedef CPInteger
+@typedef CPUInteger
+@typedef DOMElement
+@typedef JSObject
+@typedef CPMethodSignature
+@typedef CPPropertyListFormat
+@typedef CPTimeInterval

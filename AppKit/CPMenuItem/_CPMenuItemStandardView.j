@@ -24,6 +24,9 @@
 @import "CPImageView.j"
 @import "_CPImageAndTextView.j"
 
+@class CPMenuItem
+
+
 @implementation _CPMenuItemStandardView : CPView
 {
     CPMenuItem              _menuItem @accessors(property=menuItem);

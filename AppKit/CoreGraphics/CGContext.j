@@ -25,6 +25,7 @@
 @import "CGGeometry.j"
 @import "CGPath.j"
 
+@typedef CGContext
 
 kCGLineCapButt              = 0;
 kCGLineCapRound             = 1;

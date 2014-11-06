@@ -24,6 +24,8 @@
 @import "CPDatePicker.j"
 @import "CPPopUpButton.j"
 
+@class CPRuleEditorRowType
+
 @global CPApp
 @global CPMiniControlSize
 @global CPSmallControlSize
