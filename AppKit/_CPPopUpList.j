@@ -229,7 +229,7 @@ var ListColumnIdentifier = @"1";
 
     [self listWillPopUp];
 
-    [_panel orderFront:nil];
+    [[aView window] addChildWindow:_panel ordered:CPWindowAbove];
 }
 
 #pragma mark Setting Display Attributes
