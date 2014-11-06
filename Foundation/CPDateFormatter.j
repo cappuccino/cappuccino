@@ -28,6 +28,7 @@
 @import "CPLocale.j"
 
 @class CPNull
+@class CPDictionary
 
 @global CPLocaleLanguageCode
 @global CPLocaleCountryCode
