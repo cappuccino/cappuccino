@@ -44,8 +44,8 @@
         return;
 
     NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
-
-    NSDictionary *info = @{ @"projectId":self.projectId, @"path":self.sourcePath };
+    
+    NSDictionary *info = @{ @"projectId":self.projectId, @"path":self.sourcePath};
     [center postNotificationName:XCCConversionDidStartNotification object:self userInfo:info];
 
     DDLogVerbose(@"Conversion started: %@", self.sourcePath);
@@ -74,7 +74,7 @@
                         self.xcc.parserPath,
                         self.projectPath,
                         self.sourcePath
-                    ];
+                     ];
 
         notificationTitle = @"Objective-J source processed";
     }
@@ -158,14 +158,23 @@
         }
         else if (!self.xcc.isLoadingProject)
         {
-            BOOL showFinalNotification = YES;
-
+            BOOL showFinalNotification = NO;
+            
+            // At this point, we should only detect warnings
+            if ([self.xcc shouldProcessWithObjjWarnings])
+            {
+                showFinalNotification = [self.xcc checkObjjWarningsForPath:[NSArray arrayWithObject:self.sourcePath]];
+                [self.xcc showObjjWarnings];
+            }
+            else
+            {
+                showFinalNotification = YES;
+            }
+            
             if ([self.xcc shouldProcessWithCappLint])
             {
-                showFinalNotification = [self.xcc checkCappLintForPath:[NSArray arrayWithObject:self.sourcePath]];
-
-                if (!showFinalNotification)
-                    [self.xcc showCappLintErrors];
+                showFinalNotification = [self.xcc checkCappLintForPath:[NSArray arrayWithObject:self.sourcePath]] && showFinalNotification;
+                [self.xcc showCappLintWarnings];
             }
 
             if (showFinalNotification)
