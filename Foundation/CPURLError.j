@@ -1,5 +1,18 @@
 
+/*
+ *  The CPURL Error Domain
+ */
 CPURLErrorDomain =                      @"CPURLErrorDomain";
+
+/*
+ *  CPURL UserInfo Error Keys
+ */
+CPURLErrorFailingURLErrorKey =          @"CPErrorFailingURLKey";
+CPURLErrorFailingURLStringErrorKey =    @"CPURLErrorFailingURLStringKey";
+
+/*
+ *  CPURL Error Codes
+ */
 CPURLErrorUnknown =                     -1;
 CPURLErrorCancelled =                   kCFURLErrorCancelled;
 CPURLErrorBadURL =                      kCFURLErrorBadURL;
