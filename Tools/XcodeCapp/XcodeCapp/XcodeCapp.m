@@ -1842,9 +1842,9 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     NSArray *matches = [regulareExpressionFramework matchesInString:response options:0 range:NSMakeRange(0, [response length])];
     
     for (NSTextCheckingResult *match in matches)
-        return [response substringWithRange:[match rangeAtIndex:1]];
+        return [NSString stringWithFormat:@"%@/%@", self.projectPath, [response substringWithRange:[match rangeAtIndex:1]]];
     
-    return @"Frameworks/";
+    return [NSString stringWithFormat:@"%@/%@", self.projectPath ,@"Frameworks/"];
 }
 
 - (BOOL)checkObjjWarningsForPath:(NSArray*)paths
