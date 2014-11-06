@@ -1566,6 +1566,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
 - (IBAction)openErrorsPanel:(id)aSender
 {
     [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
+    [self.errorsPanel setFloatingPanel:[[NSUserDefaults standardUserDefaults] boolForKey:kDefaultXCCPanelStyleUtility]];
     [self.errorsPanel makeKeyAndOrderFront:nil];
 }
 
@@ -1577,7 +1578,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     
     if (path == NSNoSelectionMarker)
         return;
-
+    
     if ([self isObjjFile:path])
     {
         [self openObjjFile:path line:[[info valueForKey:@"line"] intValue]];
