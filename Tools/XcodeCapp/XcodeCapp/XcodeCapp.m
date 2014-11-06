@@ -1852,15 +1852,26 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     DDLogVerbose(@"Checking path %@ with objj", paths);
     
     NSUInteger numberOfFiles = [paths count];
+    NSUInteger i = 0;
+    NSMutableArray *objjPaths = [NSMutableArray array];
     
-    if (!numberOfFiles)
+    // We only want the objj files
+    for (i = 0; i < numberOfFiles; i++)
+    {
+        NSString *path = [paths objectAtIndex:i];
+        
+        if ([self isObjjFile:path])
+            [objjPaths addObject:path];
+    }
+    
+    if (![objjPaths count])
         return YES;
     
     [[NSNotificationCenter defaultCenter] postNotificationName:XCCBatchDidStartNotification object:self];
     [[NSNotificationCenter defaultCenter] postNotificationName:XCCObjjDidStartNotification object:self];
     
     NSMutableArray *arguments = [NSMutableArray arrayWithObjects:@"-I", [self _getObjjIncludePaths], @"-m", nil];
-    [arguments addObjectsFromArray:paths];
+    [arguments addObjectsFromArray:objjPaths];
     
     NSDictionary *taskResult = [self runTaskWithLaunchPath:self.executablePaths[@"objj"]
                                                  arguments:arguments
@@ -1879,7 +1890,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     NSMutableArray *errors = [NSMutableArray arrayWithArray:[response componentsSeparatedByString:@"\n\n"]];
     
     NSInteger numberOfErrors = [errors count];
-    NSInteger i = 0;
+    i = 0;
     NSMutableArray *dicts = [NSMutableArray array];
     
     // When checking of the entire project, we have to be ready to find errors
@@ -1906,8 +1917,12 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
         
         if (![matches count])
         {
-            DDLogVerbose(@"Error %@ has been ignored by xCodeCapp, the error doesn't respect any pattern", error);
-            continue;
+            // This shouldn't happen
+            DDLogVerbose(@"Error %@ doesn't respect any pattern", error);
+            
+            path = @"";
+            line = 0;
+            messageError = [NSString stringWithFormat:@"Compiling issue at line %@ of file %@:\n%@", line, path.lastPathComponent, error];
         }
         
         for (NSTextCheckingResult *match in matches)
