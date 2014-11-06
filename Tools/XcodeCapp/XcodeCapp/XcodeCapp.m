@@ -1566,18 +1566,21 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
 - (IBAction)openErrorsPanel:(id)aSender
 {
     [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
+    [self.errorsPanel setFloatingPanel:[[NSUserDefaults standardUserDefaults] boolForKey:kDefaultXCCPanelStyleUtility]];
     [self.errorsPanel makeKeyAndOrderFront:nil];
 }
 
 - (IBAction)openErrorInEditor:(id)sender
 {
     id info = self.errorListController.selection;
-
-    NSString *path = [info valueForKey:@"path"];
-
+    
+    NSString *path = [info valueForKey:@"realPath"] ? [info valueForKey:@"realPath"] : [info valueForKey:@"path"];
+    
+    NSLog(@"09090900 %@", info);
+    
     if (path == NSNoSelectionMarker)
         return;
-
+    
     if ([self isObjjFile:path])
     {
         [self openObjjFile:path line:[[info valueForKey:@"line"] intValue]];
