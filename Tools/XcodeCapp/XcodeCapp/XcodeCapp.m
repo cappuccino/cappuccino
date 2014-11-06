@@ -1573,8 +1573,8 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
 {
     id info = self.errorListController.selection;
 
-    NSString *path = [info valueForKey:@"path"];
-
+    NSString *path = [info valueForKey:@"realPath"] ? [info valueForKey:@"realPath"] : [info valueForKey:@"path"];
+    
     if (path == NSNoSelectionMarker)
         return;
 
@@ -1890,7 +1890,6 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     NSMutableArray *errors = [NSMutableArray arrayWithArray:[response componentsSeparatedByString:@"\n\n"]];
     
     NSInteger numberOfErrors = [errors count];
-    i = 0;
     NSMutableArray *dicts = [NSMutableArray array];
     
     // When checking of the entire project, we have to be ready to find errors
@@ -1900,6 +1899,8 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     
     if ([paths count] == 1)
         filePath = [paths firstObject];
+    
+    i = 0;
     
     for (i = 0; i < numberOfErrors; i++)
     {
@@ -1965,10 +1966,36 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
                                      path , @"realPath",
                                      nil];
         
-        // Compiler can show several times the same errors
-        if (![dicts containsObject:dict] && ![self.errorList containsObject:dict])
-            [dicts addObject:dict];
+        // Block to compare dicts
+        BOOL (^dictComparaison)(id obj, NSUInteger idx, BOOL *stop) = ^(id obj, NSUInteger idx, BOOL *stop){
+            if ([obj valueForKey:@"line"] == [dict valueForKey:@"line"])
+            {
+                // For an unknown reason, trim doesn't work
+                NSString *messsageObj = [obj valueForKey:@"message"];
+                NSString *messsageDict = [dict valueForKey:@"message"];
+                
+                messsageDict = [messsageDict stringByReplacingOccurrencesOfString:@" " withString:@""];
+                messsageDict = [messsageDict stringByReplacingOccurrencesOfString:@"\n" withString:@""];
+                
+                messsageObj = [messsageObj stringByReplacingOccurrencesOfString:@" " withString:@""];
+                messsageObj = [messsageObj stringByReplacingOccurrencesOfString:@"\n" withString:@""];
+                
+                if ([messsageDict isEqualToString:messsageObj])
+                {
+                    *stop = YES;
+                    return YES;
+                }
+            }
+            
+            return NO;
+        };
         
+        NSUInteger isInDict = [dicts indexOfObjectPassingTest:dictComparaison];
+        NSUInteger isInList = [self.errorList indexOfObjectPassingTest:dictComparaison];
+        
+        // Compiler can show several times the same errors
+        if (isInDict == NSNotFound && isInList == NSNotFound)
+            [dicts addObject:dict];
     }
     
     [self performSelectorOnMainThread:@selector(objjCompilerDidGenerateError:) withObject:dicts waitUntilDone:YES];
