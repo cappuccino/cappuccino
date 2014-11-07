@@ -350,8 +350,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         _sendActionOn = CPKeyUpMask | CPKeyDownMask;
 
         [self setValue:CPLeftTextAlignment forThemeAttribute:@"alignment"];
-
-        [self _updateCursor];
     }
 
     return self;
@@ -372,8 +370,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     if (shouldBeEditable)
         _isSelectable = YES;
-
-    [self _updateCursor];
 
     if (_isEditable)
         [self setThemeState:CPThemeStateEditable];
@@ -405,7 +401,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 - (void)setEnabled:(BOOL)shouldBeEnabled
 {
     [super setEnabled:shouldBeEnabled];
-    [self _updateCursor];
 
     // We only allow first responder status if the field is enabled.
     if (!shouldBeEnabled && [[self window] firstResponder] === self)
@@ -419,8 +414,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 - (void)setSelectable:(BOOL)aFlag
 {
     _isSelectable = aFlag;
-
-    [self _updateCursor];
 }
 
 /*!
@@ -930,6 +923,12 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     [self textDidChange:[CPNotification notificationWithName:CPControlTextDidChangeNotification object:self userInfo:nil]];
 }
 
+- (void)mouseMoved:(CPEvent)anEvent
+{
+    [super mouseMoved:anEvent];
+    [self _updateCursorForEvent:anEvent];
+}
+
 - (void)mouseDown:(CPEvent)anEvent
 {
     // Don't track! (ever?)
@@ -1140,9 +1139,14 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     [super textDidChange:note];
 }
 
-- (void)_updateCursor
+- (void)_updateCursorForEvent:(CPEvent)anEvent
 {
-    if ([self isEnabled] && ([self isSelectable] || [self isEditable]))
+    var frame = CGRectMakeCopy([self frame]),
+        contentInset = [self currentValueForThemeAttribute:@"content-inset"];
+
+    frame = [[self superview] convertRectToBase:CGRectInsetByInset(frame, contentInset)];
+
+    if ([self isEnabled] && ([self isSelectable] || [self isEditable]) && CGRectContainsPoint(frame, [anEvent locationInWindow]))
     {
 #if PLATFORM(DOM)
         self._DOMElement.style.cursor = "text";
@@ -1966,8 +1970,6 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
         [self setAlignment:[aCoder decodeIntForKey:CPTextFieldAlignmentKey]];
 
         [self setPlaceholderString:[aCoder decodeObjectForKey:CPTextFieldPlaceholderStringKey]];
-
-        [self _updateCursor];
     }
 
     return self;
