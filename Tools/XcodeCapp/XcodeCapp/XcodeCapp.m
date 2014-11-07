@@ -1566,6 +1566,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
 - (IBAction)openErrorsPanel:(id)aSender
 {
     [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
+    [self.errorsPanel setFloatingPanel:[[NSUserDefaults standardUserDefaults] boolForKey:kDefaultXCCPanelStyleUtility]];
     [self.errorsPanel makeKeyAndOrderFront:nil];
 }
 
@@ -1573,11 +1574,11 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
 {
     id info = self.errorListController.selection;
 
-    NSString *path = [info valueForKey:@"path"];
-
+    NSString *path = [info valueForKey:@"realPath"] ? [info valueForKey:@"realPath"] : [info valueForKey:@"path"];
+    
     if (path == NSNoSelectionMarker)
         return;
-
+    
     if ([self isObjjFile:path])
     {
         [self openObjjFile:path line:[[info valueForKey:@"line"] intValue]];
@@ -1842,9 +1843,9 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     NSArray *matches = [regulareExpressionFramework matchesInString:response options:0 range:NSMakeRange(0, [response length])];
     
     for (NSTextCheckingResult *match in matches)
-        return [response substringWithRange:[match rangeAtIndex:1]];
+        return [NSString stringWithFormat:@"%@/%@", self.projectPath, [response substringWithRange:[match rangeAtIndex:1]]];
     
-    return @"Frameworks/";
+    return [NSString stringWithFormat:@"%@/%@", self.projectPath ,@"Frameworks/"];
 }
 
 - (BOOL)checkObjjWarningsForPath:(NSArray*)paths
@@ -1852,15 +1853,26 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     DDLogVerbose(@"Checking path %@ with objj", paths);
     
     NSUInteger numberOfFiles = [paths count];
+    NSUInteger i = 0;
+    NSMutableArray *objjPaths = [NSMutableArray array];
     
-    if (!numberOfFiles)
+    // We only want the objj files
+    for (i = 0; i < numberOfFiles; i++)
+    {
+        NSString *path = [paths objectAtIndex:i];
+        
+        if ([self isObjjFile:path])
+            [objjPaths addObject:path];
+    }
+    
+    if (![objjPaths count])
         return YES;
     
     [[NSNotificationCenter defaultCenter] postNotificationName:XCCBatchDidStartNotification object:self];
     [[NSNotificationCenter defaultCenter] postNotificationName:XCCObjjDidStartNotification object:self];
     
     NSMutableArray *arguments = [NSMutableArray arrayWithObjects:@"-I", [self _getObjjIncludePaths], @"-m", nil];
-    [arguments addObjectsFromArray:paths];
+    [arguments addObjectsFromArray:objjPaths];
     
     NSDictionary *taskResult = [self runTaskWithLaunchPath:self.executablePaths[@"objj"]
                                                  arguments:arguments
@@ -1879,7 +1891,6 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     NSMutableArray *errors = [NSMutableArray arrayWithArray:[response componentsSeparatedByString:@"\n\n"]];
     
     NSInteger numberOfErrors = [errors count];
-    NSInteger i = 0;
     NSMutableArray *dicts = [NSMutableArray array];
     
     // When checking of the entire project, we have to be ready to find errors
@@ -1889,6 +1900,8 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     
     if ([paths count] == 1)
         filePath = [paths firstObject];
+    
+    i = 0;
     
     for (i = 0; i < numberOfErrors; i++)
     {
@@ -1906,8 +1919,12 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
         
         if (![matches count])
         {
-            DDLogVerbose(@"Error %@ has been ignored by xCodeCapp, the error doesn't respect any pattern", error);
-            continue;
+            // This shouldn't happen
+            DDLogVerbose(@"Error %@ doesn't respect any pattern", error);
+            
+            path = @"";
+            line = 0;
+            messageError = [NSString stringWithFormat:@"Compiling issue at line %@ of file %@:\n%@", line, path.lastPathComponent, error];
         }
         
         for (NSTextCheckingResult *match in matches)
@@ -1950,10 +1967,36 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
                                      path , @"realPath",
                                      nil];
         
-        // Compiler can show several times the same errors
-        if (![dicts containsObject:dict] && ![self.errorList containsObject:dict])
-            [dicts addObject:dict];
+        // Block to compare dicts
+        BOOL (^dictComparaison)(id obj, NSUInteger idx, BOOL *stop) = ^(id obj, NSUInteger idx, BOOL *stop){
+            if ([obj valueForKey:@"line"] == [dict valueForKey:@"line"])
+            {
+                // For an unknown reason, trim doesn't work
+                NSString *messsageObj = [obj valueForKey:@"message"];
+                NSString *messsageDict = [dict valueForKey:@"message"];
+                
+                messsageDict = [messsageDict stringByReplacingOccurrencesOfString:@" " withString:@""];
+                messsageDict = [messsageDict stringByReplacingOccurrencesOfString:@"\n" withString:@""];
+                
+                messsageObj = [messsageObj stringByReplacingOccurrencesOfString:@" " withString:@""];
+                messsageObj = [messsageObj stringByReplacingOccurrencesOfString:@"\n" withString:@""];
+                
+                if ([messsageDict isEqualToString:messsageObj])
+                {
+                    *stop = YES;
+                    return YES;
+                }
+            }
+            
+            return NO;
+        };
         
+        NSUInteger isInDict = [dicts indexOfObjectPassingTest:dictComparaison];
+        NSUInteger isInList = [self.errorList indexOfObjectPassingTest:dictComparaison];
+        
+        // Compiler can show several times the same errors
+        if (isInDict == NSNotFound && isInList == NSNotFound)
+            [dicts addObject:dict];
     }
     
     [self performSelectorOnMainThread:@selector(objjCompilerDidGenerateError:) withObject:dicts waitUntilDone:YES];

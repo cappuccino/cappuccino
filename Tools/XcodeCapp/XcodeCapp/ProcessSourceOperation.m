@@ -158,20 +158,16 @@
         }
         else if (!self.xcc.isLoadingProject)
         {
-            BOOL showFinalNotification = NO;
+            BOOL showFinalNotification = YES;
             
             // At this point, we should only detect warnings
-            if ([self.xcc shouldProcessWithObjjWarnings])
+            if ([self.xcc shouldProcessWithObjjWarnings] && ![self.xcc isXibFile:self.sourcePath])
             {
                 showFinalNotification = [self.xcc checkObjjWarningsForPath:[NSArray arrayWithObject:self.sourcePath]];
                 [self.xcc showObjjWarnings];
             }
-            else
-            {
-                showFinalNotification = YES;
-            }
             
-            if ([self.xcc shouldProcessWithCappLint])
+            if ([self.xcc shouldProcessWithCappLint] && ![self.xcc isXibFile:self.sourcePath])
             {
                 showFinalNotification = [self.xcc checkCappLintForPath:[NSArray arrayWithObject:self.sourcePath]] && showFinalNotification;
                 [self.xcc showCappLintWarnings];
