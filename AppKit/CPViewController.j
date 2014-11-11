@@ -210,6 +210,7 @@ var CPViewControllerCachedCibs;
             [cibOwner viewControllerDidLoadCib:self];
 
         _isLoading = NO;
+        _isLazy = NO;
         [self _viewDidLoad];
     }
     else if (_isLazy)
