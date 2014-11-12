@@ -154,7 +154,8 @@ AppController *SharedAppControllerInstance = nil;
         kDefaultAutoOpenXcodeProject:                   @YES,
         kDefaultUseSymlinkWhenCreatingProject:          @YES,
         kDefaultXCCUseDebugFrameworkWithObjj:           @YES,
-        kDefaultXCCShouldProcessObjj:                   @YES
+        kDefaultXCCShouldProcessObjj:                   @YES,
+        kDefaultXCCPanelStyleUtility:                   @NO
     };
     
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];

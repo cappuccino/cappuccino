@@ -1846,6 +1846,12 @@ CPTexturedBackgroundWindowMask
             if (_leftMouseDownView !== _firstResponder && [_leftMouseDownView acceptsFirstResponder])
                 [self makeFirstResponder:_leftMouseDownView];
 
+            var keyWindow = [CPApp keyWindow];
+
+            // This is only when we move from a platform to another one
+            if ([keyWindow platformWindow] != [self platformWindow])
+                [self makeKeyAndOrderFront:self];
+
             [CPApp activateIgnoringOtherApps:YES];
 
             var theWindow = [anEvent window],
@@ -2477,7 +2483,7 @@ CPTexturedBackgroundWindowMask
                 if (currentWindow === self || currentWindow === menuWindow)
                     continue;
 
-                if ([currentWindow isVisible] && [currentWindow canBecomeKeyWindow])
+                if ([currentWindow isVisible] && [currentWindow canBecomeKeyWindow] && [currentWindow platformWindow] == [keyWindow platformWindow])
                 {
                     [currentWindow makeKeyWindow];
                     break;
