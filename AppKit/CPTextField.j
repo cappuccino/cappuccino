@@ -1079,9 +1079,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [self _didEdit];
     }
 
-    console.error("newValue : >"  + newValue + "<")
-    console.error("_stringValue : >"  + _stringValue + "<")
-
     if ([self _valueIsValid:_stringValue])
     {
         // If _isEditing == YES then the target action can also be called via
@@ -1129,7 +1126,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     // we don't need to do this in case of textarea
     // or we will end up with 2 carriage returns
-    if (aCharacter != CPNewlineCharacter || element.nodeName.toUpperCase() != "TEXTAREA")
+    if (aCharacter != CPNewlineCharacter || element.nodeName.toUpperCase() != "TEXTAREA" || !CPFeatureIsCompatible(CPAltEnterTextAreaFeature))
         element.value = [element.value stringByReplacingCharactersInRange:[self selectedRange] withString:aCharacter];
 
     [self _setStringValue:element.value];
