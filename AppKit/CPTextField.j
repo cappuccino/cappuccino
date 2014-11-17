@@ -244,8 +244,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [self _sizeToControlSize];
 }
 
-#pragma mark -
 
+#pragma mark -
 
 #if PLATFORM(DOM)
 - (DOMElement)_inputElement
