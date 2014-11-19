@@ -1674,6 +1674,9 @@ ClassDeclarationStatement: function(node, st, c) {
     compiler.cmBuffer = new StringBuffer();
     compiler.classBodyBuffer = new StringBuffer();      // TODO: Check if this is needed
 
+    if (compiler.getTypeDef(className))
+        throw compiler.error_message(className + " is already declared as type", node.classname);
+
     if (!generate) saveJSBuffer.concat(compiler.source.substring(compiler.lastPos, node.start));
 
     // First we declare the class
@@ -2443,6 +2446,9 @@ TypeDefStatement: function(node, st, c) {
 
     if (typeDef)
         throw compiler.error_message("Duplicate type definition " + typeDefName, node.typedefname);
+
+    if (compiler.getClassDef(typeDefName))
+        throw compiler.error_message(typeDefName + " is already declared as class", node.typedefname);
 
     compiler.imBuffer = new StringBuffer();
     compiler.cmBuffer = new StringBuffer();
