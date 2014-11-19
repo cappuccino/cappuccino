@@ -26,7 +26,7 @@
 @import <Foundation/CPDictionary.j>
 @import <Foundation/CPPropertyListSerialization.j>
 
-@typedef CPWebScriptObject
+@class CPWebScriptObject
 
 CPGeneralPboard         = @"CPGeneralPboard";
 CPFontPboard            = @"CPFontPboard";
