@@ -23,6 +23,7 @@
 @import "CPView.j"
 @import "CPScrollView.j"
 
+@class CPWebScriptObject
 
 // FIXME: implement these where possible:
 /*
