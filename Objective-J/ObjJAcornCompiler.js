@@ -2412,6 +2412,10 @@ ClassStatement: function(node, st, c) {
         compiler.jsBuffer.concat("//");
     }
     var className = node.id.name;
+
+    if (compiler.getTypeDef(className))
+        throw compiler.error_message(className + " is already declared as type", node.id);
+
     if (!compiler.getClassDef(className)) {
         classDef = new ClassDef(false, className);
         compiler.classDefs[className] = classDef;
