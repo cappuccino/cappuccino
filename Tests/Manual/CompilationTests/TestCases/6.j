@@ -3,7 +3,7 @@
 /*
 
 START_EXPECTED
-Error on line 10771 of file [unknown]
+Error on line 10775 of file [unknown]
 SyntaxError:
 @typedef MyType
          ^
