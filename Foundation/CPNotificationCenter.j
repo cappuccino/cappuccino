@@ -68,7 +68,8 @@ var CPNotificationDefaultCenter = nil;
         _namedRegistries = @{};
         _unnamedRegistry = [[_CPNotificationRegistry alloc] init];
     }
-   return self;
+
+    return self;
 }
 
 /*!
@@ -81,8 +82,34 @@ var CPNotificationDefaultCenter = nil;
 */
 - (void)addObserver:(id)anObserver selector:(SEL)aSelector name:(CPString)aNotificationName object:(id)anObject
 {
-    var registry,
+    var registry = [self _registryForNotificationName:aNotificationName],
         observer = [[_CPNotificationObserver alloc] initWithObserver:anObserver selector:aSelector];
+
+    [registry addObserver:observer object:anObject];
+}
+
+/*!
+    Adds an entry to the receiver’s dispatch table with a block, and optional criteria: notification name and sender.
+    @param aNotificationName the name of the notification the observer wants to watch
+    @param anObject the object in the notification the observer wants to watch
+    @param block the block to be executed when the notification is received.
+*/
+- (id <CPObject>)addObserverForName:(CPString)aNotificationName object:(id)anObject usingBlock:(Function)block
+{
+    var registry = [self _registryForNotificationName:aNotificationName],
+        observer = [[_CPNotificationObserver alloc] initWithBlock:block];
+
+    [registry addObserver:observer object:anObject];
+
+    return observer;
+}
+
+/*!
+    @ignore
+*/
+- (_CPNotificationRegistry)_registryForNotificationName:(CPString)aNotificationName
+{
+    var registry;
 
     if (aNotificationName == nil)
         registry = _unnamedRegistry;
@@ -92,7 +119,7 @@ var CPNotificationDefaultCenter = nil;
         [_namedRegistries setObject:registry forKey:aNotificationName];
     }
 
-    [registry addObserver:observer object:anObject];
+    return registry;
 }
 
 /*!
@@ -129,7 +156,10 @@ var CPNotificationDefaultCenter = nil;
         [_unnamedRegistry removeObserver:anObserver object:anObject];
     }
     else
+    {
         [[_namedRegistries objectForKey:aNotificationName] removeObserver:anObserver object:anObject];
+    }
+
 }
 
 /*!
@@ -233,7 +263,8 @@ var _CPNotificationCenterPostNotification = function(/* CPNotificationCenter */ 
                 observersEnumerator = [observers objectEnumerator];
 
             while ((observer = [observersEnumerator nextObject]) !== nil)
-                if ([observer observer] == anObserver)
+                if ([observer observer] == anObserver ||
+                    ([observer block] && [anObserver respondsToSelector:@selector(block)] && [observer block] == [anObserver block]))
                     [observers removeObject:observer];
 
             if (![observers count])
@@ -248,7 +279,8 @@ var _CPNotificationCenterPostNotification = function(/* CPNotificationCenter */ 
             observersEnumerator = [observers objectEnumerator];
 
         while ((observer = [observersEnumerator nextObject]) !== nil)
-            if ([observer observer] == anObserver)
+            if ([observer observer] == anObserver ||
+                ([observer block] && [anObserver respondsToSelector:@selector(block)] && [observer block] == [anObserver block]))
                 [observers removeObject:observer];
 
         if (![observers count])
@@ -312,8 +344,9 @@ var _CPNotificationCenterPostNotification = function(/* CPNotificationCenter */ 
 /* @ignore */
 @implementation _CPNotificationObserver : CPObject
 {
-    id  _observer;
-    SEL _selector;
+    id          _observer;
+    Function    _block;
+    SEL         _selector;
 }
 
 - (id)initWithObserver:(id)anObserver selector:(SEL)aSelector
@@ -327,13 +360,34 @@ var _CPNotificationCenterPostNotification = function(/* CPNotificationCenter */ 
    return self;
 }
 
+- (id)initWithBlock:(Function)aBlock
+{
+    if (self)
+    {
+        _block = aBlock;
+    }
+
+    return self;
+}
+
 - (id)observer
 {
     return _observer;
 }
 
+- (id)block
+{
+    return _block;
+}
+
 - (void)postNotification:(CPNotification)aNotification
 {
+    if (_block)
+    {
+        _block(aNotification);
+        return;
+    }
+
     [_observer performSelector:_selector withObject:aNotification];
 }
 
