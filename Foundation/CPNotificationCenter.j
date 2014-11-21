@@ -92,9 +92,10 @@ var CPNotificationDefaultCenter = nil;
     Adds an entry to the receiver’s dispatch table with a block, and optional criteria: notification name and sender.
     @param aNotificationName the name of the notification the observer wants to watch
     @param anObject the object in the notification the observer wants to watch
+    @param queue is ignored for the moment
     @param block the block to be executed when the notification is received.
 */
-- (id <CPObject>)addObserverForName:(CPString)aNotificationName object:(id)anObject usingBlock:(Function)block
+- (id <CPObject>)addObserverForName:(CPString)aNotificationName object:(id)anObject queue:(id)queue usingBlock:(Function)block
 {
     var registry = [self _registryForNotificationName:aNotificationName],
         observer = [[_CPNotificationObserver alloc] initWithBlock:block];
@@ -156,10 +157,7 @@ var CPNotificationDefaultCenter = nil;
         [_unnamedRegistry removeObserver:anObserver object:anObject];
     }
     else
-    {
         [[_namedRegistries objectForKey:aNotificationName] removeObserver:anObserver object:anObject];
-    }
-
 }
 
 /*!
