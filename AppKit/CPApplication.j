@@ -986,7 +986,9 @@ var CPMainCibFile               = @"CPMainCibFile",
         return;
     }
 
-    [aSheet._windowView _enableSheet:YES inWindow:aWindow];
+    if (![aWindow attachedSheet])
+        [aSheet._windowView _enableSheet:YES inWindow:aWindow];
+
     [aWindow _attachSheet:aSheet modalDelegate:aModalDelegate didEndSelector:didEndSelector contextInfo:contextInfo];
 }
 

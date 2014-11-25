@@ -1846,6 +1846,12 @@ CPTexturedBackgroundWindowMask
             if (_leftMouseDownView !== _firstResponder && [_leftMouseDownView acceptsFirstResponder])
                 [self makeFirstResponder:_leftMouseDownView];
 
+            var keyWindow = [CPApp keyWindow];
+
+            // This is only when we move from a platform to another one
+            if ([keyWindow platformWindow] != [self platformWindow])
+                [self makeKeyAndOrderFront:self];
+
             [CPApp activateIgnoringOtherApps:YES];
 
             var theWindow = [anEvent window],
@@ -2477,7 +2483,7 @@ CPTexturedBackgroundWindowMask
                 if (currentWindow === self || currentWindow === menuWindow)
                     continue;
 
-                if ([currentWindow isVisible] && [currentWindow canBecomeKeyWindow])
+                if ([currentWindow isVisible] && [currentWindow canBecomeKeyWindow] && [currentWindow platformWindow] == [keyWindow platformWindow])
                 {
                     [currentWindow makeKeyWindow];
                     break;
@@ -2679,6 +2685,23 @@ CPTexturedBackgroundWindowMask
     [attachedSheet setFrame:sheetFrame display:YES animate:NO];
 }
 
+- (void)_previousSheetIsClosedNotification:(CPNotification)aNotification
+{
+    [[CPNotificationCenter defaultCenter] removeObserver:self name:CPWindowDidEndSheetNotification object:self];
+
+    var sheet = _sheetContext[@"nextSheet"],
+        modalDelegate =_sheetContext[@"nextModalDelegate"],
+        endSelector = _sheetContext[@"nextEndSelector"],
+        contextInfo = _sheetContext[@"nextContextInfo"];
+
+    // Needed, because when the notification CPWindowDidEndSheetNotification is sent, the sheetContext is not up to date...
+    setTimeout(function()
+    {
+        [sheet._windowView _enableSheet:YES inWindow:self];
+        [self _attachSheet:sheet modalDelegate:modalDelegate didEndSelector:endSelector contextInfo:contextInfo];
+    }, 0)
+}
+
 /*
     Starting point for sheet session, called from CPApplication beginSheet:
 */
@@ -2687,9 +2710,24 @@ CPTexturedBackgroundWindowMask
 {
     if (_sheetContext)
     {
-        [CPException raise:CPInternalInconsistencyException
-            reason:@"The target window of beginSheet: already has a sheet, did you forget orderOut: ?"];
-        return;
+        // Here we wait till the current sheet is closed
+        if (_sheetContext[@"isClosing"])
+        {
+            // Here we save the next sheet to open
+            _sheetContext[@"nextSheet"] = aSheet;
+            _sheetContext[@"nextModalDelegate"] = aModalDelegate;
+            _sheetContext[@"nextEndSelector"] = didEndSelector;
+            _sheetContext[@"nextContextInfo"] = contextInfo;
+
+            [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_previousSheetIsClosedNotification:) name:CPWindowDidEndSheetNotification object:self];
+            return;
+        }
+        else
+        {
+            [CPException raise:CPInternalInconsistencyException
+                reason:@"The target window of beginSheet: already has a sheet, did you forget orderOut: ?"];
+            return;
+        }
     }
 
     _sheetContext = {
@@ -2741,7 +2779,12 @@ CPTexturedBackgroundWindowMask
 */
 - (void)_detachSheetWindow
 {
+    if (_sheetContext["isClosing"])
+        return;
+
     _sheetContext["isAttached"] = NO;
+    _sheetContext["isClosing"] = YES;
+    _sheetContext["opened"] = NO;
 
     // A timer seems to be necessary for the animation to work correctly.
     // It would be ideal to block here and spin the event loop, until attach is complete.
@@ -2873,12 +2916,6 @@ CPTexturedBackgroundWindowMask
         _sheetContext["shouldClose"] = YES;
         return;
     }
-
-    if (_sheetContext["isClosing"])
-        return;
-
-    _sheetContext["opened"] = NO;
-    _sheetContext["isClosing"] = YES;
 
     // The parent window can be orderedOut to disable the sheet animate out, as in Cocoa
     if ([self isVisible])

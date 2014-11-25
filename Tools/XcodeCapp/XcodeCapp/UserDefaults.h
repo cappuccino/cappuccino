@@ -21,6 +21,8 @@ extern NSString * const kDefaultXCCAutoOpenErrorsPanelOnErrors;
 extern NSString * const kDefaultXCCAutoOpenErrorsPanelOnCappLint;
 extern NSString * const kDefaultXCCAutoShowNotificationOnErrors;
 extern NSString * const kDefaultXCCAutoShowNotificationOnCappLint;
+extern NSString * const kDefaultXCCUseDebugFrameworkWithObjj;
+extern NSString * const kDefaultXCCShouldProcessObjj;
 extern NSString * const kDefaultXCCProjectHistory;
 extern NSString * const kDefaultLastOpenedPath;
 extern NSString * const kDefaultPathModificationDates;
@@ -29,5 +31,6 @@ extern NSString * const kDefaultLogLevel;
 extern NSString * const kDefaultAutoOpenXcodeProject;
 extern NSString * const kDefaultUseSymlinkWhenCreatingProject;
 extern NSString * const kDefaultUpdateCappuccinoWithLastVersionOfMasterBranch;
+extern NSString * const kDefaultXCCPanelStyleUtility;
 
 #endif
