@@ -1,9 +1,9 @@
 /*
  * Jakefile
- * __project.name__
+ * CPTextFielMultine
  *
- * Created by __user.name__ on __project.date__.
- * Copyright __project.year__, __organization.name__ All rights reserved.
+ * Created by You on November 12, 2014.
+ * Copyright 2014, Your Company All rights reserved.
  */
 
 var ENV = require("system").env,
@@ -14,7 +14,7 @@ var ENV = require("system").env,
     app = require("cappuccino/jake").app,
     configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Debug",
     OS = require("os"),
-    projectName = "__project.nameasidentifier__";
+    projectName = "CPTextFielMultine";
 
 app (projectName, function(task)
 {
@@ -23,15 +23,15 @@ app (projectName, function(task)
     if (configuration === "Debug")
         ENV["OBJJ_INCLUDE_PATHS"] = FILE.join(ENV["OBJJ_INCLUDE_PATHS"], configuration);
 
-    task.setBuildIntermediatesPath(FILE.join("Build", "__project.nameasidentifier__.build", configuration));
+    task.setBuildIntermediatesPath(FILE.join("Build", "CPTextFielMultine.build", configuration));
     task.setBuildPath(FILE.join("Build", configuration));
 
-    task.setProductName("__project.name__");
-    task.setIdentifier("__project.identifier__");
+    task.setProductName("CPTextFielMultine");
+    task.setIdentifier("com.yourcompany.CPTextFielMultine");
     task.setVersion("1.0");
-    task.setAuthor("__organization.name__");
-    task.setEmail("__organization.email__");
-    task.setSummary("__project.name__");
+    task.setAuthor("Your Company");
+    task.setEmail("feedback @nospam@ yourcompany.com");
+    task.setSummary("CPTextFielMultine");
     task.setSources(new FileList("**/*.j").exclude(FILE.join("Build", "**")).exclude(FILE.join("Frameworks", "Source", "**")));
     task.setResources(new FileList("Resources/**"));
     task.setIndexFilePath("index.html");
@@ -55,13 +55,13 @@ task ("build", ["default"], function()
 
 task ("debug", function()
 {
-    configuration = ENV["CONFIGURATION"] = "Debug";
+    ENV["CONFIGURATION"] = "Debug";
     JAKE.subjake(["."], "build", ENV);
 });
 
 task ("release", function()
 {
-    configuration = ENV["CONFIGURATION"] = "Release";
+    ENV["CONFIGURATION"] = "Release";
     JAKE.subjake(["."], "build", ENV);
 });
 
@@ -85,13 +85,13 @@ task ("deploy", ["release"], function()
 task ("desktop", ["release"], function()
 {
     FILE.mkdirs(FILE.join("Build", "Desktop", projectName));
-    require("cappuccino/nativehost").buildNativeHost(FILE.join("Build", "Release", projectName), FILE.join("Build", "Desktop", projectName, "__project.nameasidentifier__.app"));
+    require("cappuccino/nativehost").buildNativeHost(FILE.join("Build", "Release", projectName), FILE.join("Build", "Desktop", projectName, "CPTextFielMultine.app"));
     printResults("Desktop")
 });
 
 task ("run-desktop", ["desktop"], function()
 {
-    OS.system([FILE.join("Build", "Desktop", projectName, "__project.nameasidentifier__.app", "Contents", "MacOS", "NativeHost"), "-i"]);
+    OS.system([FILE.join("Build", "Desktop", projectName, "CPTextFielMultine.app", "Contents", "MacOS", "NativeHost"), "-i"]);
 });
 
 function printResults(configuration)
@@ -105,7 +105,7 @@ function updateApplicationSize()
 {
     print("Calculating application file sizes...");
 
-    var contents = FILE.read(FILE.join("Build", configuration, projectName, "Info.plist"), { charset:"UTF-8" }),
+    var contents = FILE.read(FILE.join("Build", ENV["CONFIGURATION"], projectName, "Info.plist"), { charset:"UTF-8" }),
         format = CFPropertyList.sniffedFormatOfString(contents),
         plist = CFPropertyList.propertyListFromString(contents),
         totalBytes = {executable:0, data:0, mhtml:0};
@@ -113,7 +113,7 @@ function updateApplicationSize()
     // Get the size of all framework executables and sprite data
     var frameworksDir = "Frameworks";
 
-    if (configuration === "Debug")
+    if (ENV["CONFIGURATION"] === "Debug")
         frameworksDir = FILE.join(frameworksDir, "Debug");
 
     var frameworks = FILE.list(frameworksDir);
@@ -137,7 +137,7 @@ function updateApplicationSize()
         addBundleFileSizes(themePath, totalBytes);
 
     // Add sizes for the app
-    addBundleFileSizes(FILE.join("Build", configuration, projectName), totalBytes);
+    addBundleFileSizes(FILE.join("Build", ENV["CONFIGURATION"], projectName), totalBytes);
 
     print("Executables: " + totalBytes.executable + ", sprite data: " + totalBytes.data + ", total: " + (totalBytes.executable + totalBytes.data));
 
@@ -149,7 +149,7 @@ function updateApplicationSize()
 
     plist.setValueForKey("CPApplicationSize", dict);
 
-    FILE.write(FILE.join("Build", configuration, projectName, "Info.plist"), CFPropertyList.stringFromPropertyList(plist, format), { charset:"UTF-8" });
+    FILE.write(FILE.join("Build", ENV["CONFIGURATION"], projectName, "Info.plist"), CFPropertyList.stringFromPropertyList(plist, format), { charset:"UTF-8" });
 }
 
 function addBundleFileSizes(bundlePath, totalBytes)

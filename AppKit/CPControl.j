@@ -260,10 +260,20 @@ var CPControlBlackColor = [CPColor blackColor];
         maxSize = [self currentValueForThemeAttribute:@"max-size"];
 
     if (minSize.width > 0)
+    {
         frameSize.width = MAX(minSize.width, frameSize.width);
 
+        if (maxSize.width > 0)
+            frameSize.width = MIN(maxSize.width, frameSize.width);
+    }
+
     if (minSize.height > 0)
-        frameSize.height = minSize.height;
+    {
+        frameSize.height = MAX(minSize.height, frameSize.height);
+
+        if (maxSize.height > 0)
+            frameSize.height = MIN(maxSize.height, frameSize.height);
+    }
 
     [self setFrameSize:frameSize];
 }

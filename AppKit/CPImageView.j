@@ -178,6 +178,7 @@ var CPImageViewEmptyPlaceholderImage = nil;
 
 - (void)imageDidLoad:(CPNotification)aNotification
 {
+    [[CPNotificationCenter defaultCenter] removeObserver:self name:CPImageDidLoadNotification object:[self objectValue]];
     [self hideOrDisplayContents];
 
     [self setNeedsLayout];

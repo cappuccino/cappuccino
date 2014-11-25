@@ -70,21 +70,7 @@ CPSegmentSwitchTrackingMomentary = 2;
             @"center-segment-bezel-color": [CPNull null],
             @"divider-bezel-color": [CPNull null],
             @"divider-thickness": 1.0,
-            @"default-height": 24.0,
         };
-}
-
-+ (Class)_binderClassForBinding:(CPString)aBinding
-{
-    if ([self _isSelectionBinding:aBinding])
-        return [_CPSegmentedControlBinder class];
-
-    return [super _binderClassForBinding:aBinding];
-}
-
-+ (BOOL)_isSelectionBinding:(CPString)aBinding
-{
-    return (aBinding === CPSelectedIndexBinding || aBinding === CPSelectedLabelBinding || aBinding === CPSelectedTagBinding);
 }
 
 - (id)initWithFrame:(CGRect)aRect
@@ -104,17 +90,14 @@ CPSegmentSwitchTrackingMomentary = 2;
     return self;
 }
 
-- (void)bind:(CPString)aBinding toObject:(id)anObject withKeyPath:(CPString)aKeyPath options:(CPDictionary)options
+/*!
+    Sets the control's size.
+    @param aControlSize the control's size
+*/
+- (void)setControlSize:(CPControlSize)aControlSize
 {
-    if ([[self class] _isSelectionBinding:aBinding] && _trackingMode !== CPSegmentSwitchTrackingSelectOne)
-        CPLog.warn("Binding " + aBinding + " needs CPSegmentSwitchTrackingSelectOne tracking mode");
-    else
-        [super bind:aBinding toObject:anObject withKeyPath:aKeyPath options:options];
-}
-
-- (void)_reverseSetBinding
-{
-    [_CPSegmentedControlBinder reverseSetValueForObject:self];
+    [super setControlSize:aControlSize];
+    [self _sizeToControlSize];
 }
 
 /*!
@@ -512,7 +495,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 
 - (CGRect)rectForEphemeralSubviewNamed:(CPString)aName
 {
-    var height = [self currentValueForThemeAttribute:@"default-height"],
+    var height = [self currentValueForThemeAttribute:@"min-size"].height,
         contentInset = [self currentValueForThemeAttribute:@"content-inset"],
         bezelInset = [self currentValueForThemeAttribute:@"bezel-inset"],
         bounds = [self bounds];
@@ -577,9 +560,16 @@ CPSegmentSwitchTrackingMomentary = 2;
         return;
 
     var themeState = _themeStates[0],
-        isDisabled = [self hasThemeState:CPThemeStateDisabled];
+        isDisabled = [self hasThemeState:CPThemeStateDisabled],
+        isControlSizeSmall = [self hasThemeState:CPThemeStateControlSizeSmall],
+        isControlSizeMini = [self hasThemeState:CPThemeStateControlSizeMini];
 
     themeState = isDisabled ? themeState.and(CPThemeStateDisabled) : themeState;
+
+    if (isControlSizeSmall)
+        themeState = themeState.and(CPThemeStateControlSizeSmall);
+    else if (isControlSizeMini)
+        themeState = themeState.and(CPThemeStateControlSizeMini);
 
     var leftCapColor = [self valueForThemeAttribute:@"left-segment-bezel-color"
                                             inState:themeState],
@@ -593,6 +583,11 @@ CPSegmentSwitchTrackingMomentary = 2;
     var themeState = _themeStates[_themeStates.length - 1];
 
     themeState = isDisabled ? themeState.and(CPThemeStateDisabled) : themeState;
+
+    if (isControlSizeSmall)
+        themeState = themeState.and(CPThemeStateControlSizeSmall);
+    else if (isControlSizeMini)
+        themeState = themeState.and(CPThemeStateControlSizeMini);
 
     var rightCapColor = [self valueForThemeAttribute:@"right-segment-bezel-color"
                                              inState:themeState],
@@ -609,6 +604,11 @@ CPSegmentSwitchTrackingMomentary = 2;
 
         themeState = isDisabled ? themeState.and(CPThemeStateDisabled) : themeState;
 
+        if (isControlSizeSmall)
+            themeState = themeState.and(CPThemeStateControlSizeSmall);
+        else if (isControlSizeMini)
+            themeState = themeState.and(CPThemeStateControlSizeMini);
+
         var bezelColor = [self valueForThemeAttribute:@"center-segment-bezel-color"
                                               inState:themeState],
 
@@ -617,7 +617,6 @@ CPSegmentSwitchTrackingMomentary = 2;
                           relativeToEphemeralSubviewNamed:nil];
 
         [bezelView setBackgroundColor:bezelColor];
-
 
         // layout image/title views
         var segment = _segments[i],
@@ -650,6 +649,11 @@ CPSegmentSwitchTrackingMomentary = 2;
         borderState = (borderState.hasThemeState(CPThemeStateSelected) && !borderState.hasThemeState(CPThemeStateHighlighted)) ? CPThemeStateSelected : CPThemeStateNormal;
 
         borderState = isDisabled ? borderState.and(CPThemeStateDisabled) : borderState;
+
+        if (isControlSizeSmall)
+            borderState = borderState.and(CPThemeStateControlSizeSmall);
+        else if (isControlSizeMini)
+            borderState = borderState.and(CPThemeStateControlSizeMini);
 
         var borderColor = [self valueForThemeAttribute:@"divider-bezel-color"
                                                inState:borderState],
@@ -707,7 +711,6 @@ CPSegmentSwitchTrackingMomentary = 2;
 
     // Update control size
     var frame = [self frame];
-
     [self setFrameSize:CGSizeMake(CGRectGetWidth(frame) + delta, CGRectGetHeight(frame))];
 
     // Update segment width
@@ -743,7 +746,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 
 - (CGRect)bezelFrameForSegment:(unsigned)aSegment
 {
-    var height = [self currentValueForThemeAttribute:@"default-height"],
+    var height = [self currentValueForThemeAttribute:@"min-size"].height,
         bezelInset = [self currentValueForThemeAttribute:@"bezel-inset"],
         width = [self widthForSegment:aSegment],
         left = [self _leftOffsetForSegment:aSegment];
@@ -753,7 +756,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 
 - (CGRect)contentFrameForSegment:(unsigned)aSegment
 {
-    var height = [self currentValueForThemeAttribute:@"default-height"],
+    var height = [self currentValueForThemeAttribute:@"min-size"].height,
         contentInset = [self currentValueForThemeAttribute:@"content-inset"],
         width = [self widthForSegment:aSegment],
         left = [self _leftOffsetForSegment:aSegment];
@@ -915,8 +918,7 @@ var CPSegmentedControlSegmentsKey       = "CPSegmentedControlSegmentsKey",
         else
             _trackingMode = CPSegmentSwitchTrackingSelectOne;
 
-        // HACK
-
+        // Here we update the themeStates array for each segments to know if there are selected or not
         for (var i = 0; i < _segments.length; i++)
             _themeStates[i] = [_segments[i] selected] ? CPThemeStateSelected : CPThemeStateNormal;
 
@@ -924,12 +926,32 @@ var CPSegmentedControlSegmentsKey       = "CPSegmentedControlSegmentsKey",
         for (var i = 0; i < _segments.length; i++)
             [self tileWithChangedSegment:i];
 
-        var difference = MAX(originalWidth - [self frame].size.width, 0.0),
-            remainingWidth = FLOOR(difference / _segments.length);
+        var thickness = [self currentValueForThemeAttribute:@"divider-thickness"],
+            dividerExtraSpace = ([_segments count] - 1) * thickness,
+            difference = MAX(originalWidth - [self frame].size.width - dividerExtraSpace, 0.0),
+            remainingWidth = FLOOR(difference / _segments.length),
+            widthOfAllSegments = 0;
 
         for (var i = 0; i < _segments.length; i++)
+        {
             [self setWidth:[_segments[i] width] + remainingWidth forSegment:i];
+            widthOfAllSegments += [_segments[i] width];
+        }
 
+        // Here we handle the leftovers pixel, and we will add one pixel to each segment cell till we have the same size as the originalSize.
+        // This is needed to have a perfect/same alignment between our application and xCode.
+        var leftOversPixel = originalWidth - (widthOfAllSegments + dividerExtraSpace);
+
+        // Make sure we don't make an out of range
+        if (leftOversPixel < _segments.length - 1)
+        {
+            for (var i = 0; i < leftOversPixel; i++)
+            {
+                [self setWidth:[_segments[i] width] + 1 forSegment:i];
+            }
+        }
+
+        [self setFrameSize:CGSizeMake(originalWidth, [self frame].size.height)];
         [self tileWithChangedSegment:0];
     }
 
@@ -948,31 +970,48 @@ var CPSegmentedControlSegmentsKey       = "CPSegmentedControlSegmentsKey",
 
 @end
 
-var CPSegmentedControlBindersMap = {},
-    CPSegmentedControlNoSelectionPlaceholder = "CPSegmentedControlNoSelectionPlaceholder";
+@implementation CPSegmentedControl (BindingSupport)
+
++ (Class)_binderClassForBinding:(CPString)aBinding
+{
+    if ([self _isSelectionBinding:aBinding])
+        return [_CPSegmentedControlBinder class];
+
+    return [super _binderClassForBinding:aBinding];
+}
+
++ (BOOL)_isSelectionBinding:(CPString)aBinding
+{
+    return (aBinding === CPSelectedIndexBinding || aBinding === CPSelectedLabelBinding || aBinding === CPSelectedTagBinding);
+}
+
++ (BOOL)isBindingExclusive:(CPString)aBinding
+{
+    return [self _isSelectionBinding:aBinding];
+}
+
+- (void)bind:(CPString)aBinding toObject:(id)anObject withKeyPath:(CPString)aKeyPath options:(CPDictionary)options
+{
+    if ([[self class] _isSelectionBinding:aBinding] && _trackingMode !== CPSegmentSwitchTrackingSelectOne)
+    {
+        CPLog.warn("Binding " + aBinding + " needs CPSegmentSwitchTrackingSelectOne tracking mode");
+        return;
+    }
+
+    [super bind:aBinding toObject:anObject withKeyPath:aKeyPath options:options];
+}
+
+- (void)_reverseSetBinding
+{
+    [_CPSegmentedControlBinder _reverseSetValueFromExclusiveBinderForObject:self];
+}
+
+@end
+
+var CPSegmentedControlNoSelectionPlaceholder = "CPSegmentedControlNoSelectionPlaceholder";
 
 @implementation _CPSegmentedControlBinder : CPBinder
 {
-    CPString _selectionBinding @accessors(readonly, getter=selectionBinding);
-}
-
-+ (void)reverseSetValueForObject:(id)aSource
-{
-    var binder = CPSegmentedControlBindersMap[[aSource UID]];
-    [binder reverseSetValueFor:[binder selectionBinding]];
-}
-
-- (id)initWithBinding:(CPString)aBinding name:(CPString)aName to:(id)aDestination keyPath:(CPString)aKeyPath options:(CPDictionary)options from:(id)aSource
-{
-    self = [super initWithBinding:aBinding name:aName to:aDestination keyPath:aKeyPath options:options from:aSource];
-
-    if (self)
-    {
-        CPSegmentedControlBindersMap[[aSource UID]] = self;
-        _selectionBinding = aName;
-    }
-
-    return self;
 }
 
 - (void)_updatePlaceholdersWithOptions:(CPDictionary)options

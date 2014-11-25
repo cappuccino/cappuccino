@@ -94,7 +94,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
     _tabs = [[CPSegmentedControl alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
     [_tabs setHitTests:NO];
 
-    var height = [_tabs valueForThemeAttribute:@"default-height"];
+    var height = [_tabs valueForThemeAttribute:@"min-size"].height;
     [_tabs setFrameSize:CGSizeMake(0, height)];
 
     _box = [[CPBox alloc] initWithFrame:[self  bounds]];

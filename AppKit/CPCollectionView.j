@@ -608,7 +608,7 @@ var HORIZONTAL_MARGIN = 2;
 
     height = MAX(height, numberOfRows * (_minItemSize.height + _verticalMargin));
 
-    var itemSizeHeight = FLOOR(height / numberOfRows);
+    var itemSizeHeight = FLOOR(height / numberOfRows) - _verticalMargin;
 
     if (maxItemSizeHeight > 0)
         itemSizeHeight = MIN(itemSizeHeight, maxItemSizeHeight);

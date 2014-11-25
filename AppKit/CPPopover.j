@@ -310,9 +310,8 @@ Set the behavior of the CPPopover. It can be:
     if ([_popoverWindow isClosing])
         return;
 
-    if (_implementedDelegateMethods & CPPopoverDelegate_popover_shouldClose_)
-        if (![_delegate popoverShouldClose:self])
-            return;
+    if (![self _popoverShouldClose])
+        return;
 
     [self _close];
 }
@@ -344,6 +343,15 @@ Set the behavior of the CPPopover. It can be:
 {
     if (_implementedDelegateMethods & CPPopoverDelegate_popover_didShow_)
         [_delegate popoverDidShow:self];
+}
+
+/*! @ignore */
+- (BOOL)_popoverShouldClose
+{
+    if (_implementedDelegateMethods & CPPopoverDelegate_popover_shouldClose_)
+        return [_delegate popoverShouldClose:self];
+
+    return YES;
 }
 
 /*! @ignore */

@@ -572,4 +572,11 @@
     [self assertThrows:function () { [@"Objective-J" compare:[CPNull null]] }];
 }
 
+- (void)testStripDiacritics
+{
+    [self assert:[@"áa ée íi óo úu" stripDiacritics]  equals:@"aa ee ii oo uu"];
+    [self assert:[@"ÁA ÉE ÍI ÓO ÚU" stripDiacritics]  equals:@"AA EE II OO UU"];
+    [self assert:[@"Å Ã Ê í ö û" stripDiacritics]  equals:@"A A E i o u"];
+}
+
 @end
