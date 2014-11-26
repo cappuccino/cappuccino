@@ -23,7 +23,7 @@
  */
 
 @import <Foundation/CPIndexSet.j>
-
+@import <Foundation/CPPredicate.j>
 @import "CPObjectController.j"
 @import "CPKeyValueBinding.j"
 

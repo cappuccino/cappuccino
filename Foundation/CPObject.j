@@ -62,6 +62,8 @@ CPLog(@"Got some class: %@", inst);
     @todo document KVC usage.
 */
 
+@import "_CPTypeDefinitions.j"
+
 @class CPString
 @class CPException
 
@@ -104,7 +106,7 @@ CPLog(@"Got some class: %@", inst);
 
 @implementation CPObject <CPObject>
 {
-    Class   isa;
+    id   isa;
 }
 
 + (void)load

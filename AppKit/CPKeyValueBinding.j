@@ -35,6 +35,7 @@
 var exposedBindingsMap = @{},
     bindingsMap = @{};
 
+@typedef CPBindingOperationKind
 var CPBindingOperationAnd = 0,
     CPBindingOperationOr  = 1;
 

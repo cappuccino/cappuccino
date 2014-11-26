@@ -20,6 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@typedef CPDragOperation
 CPDragOperationNone     = 0;
 CPDragOperationCopy     = 1 << 1;
 CPDragOperationLink     = 1 << 1;

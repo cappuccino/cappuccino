@@ -32,6 +32,7 @@
 @import "CPPasteboard.j"
 @import "CPView.j"
 
+@class _CPCollectionViewDropIndicator
 
 var CPCollectionViewDelegate_collectionView_acceptDrop_index_dropOperation_                 = 1 << 0,
     CPCollectionViewDelegate_collectionView_canDragItemsAtIndexes_withEvent_                = 1 << 1,

@@ -40,8 +40,11 @@
 @class CPMenu
 @class CPClipView
 @class CPScrollView
+@class CALayer
 
 @global appkit_tag_dom_elements
+
+@typedef _CPViewFullScreenModeState
 
 #if PLATFORM(DOM)
 

@@ -67,7 +67,7 @@
 @end
 
 // NSImageCell
-
+@typedef NSImageAlignment
 NSImageAlignCenter      = 0;
 NSImageAlignTop         = 1;
 NSImageAlignTopLeft     = 2;
@@ -78,12 +78,13 @@ NSImageAlignBottomLeft  = 6;
 NSImageAlignBottomRight = 7;
 NSImageAlignRight       = 8;
 
-
+@typedef NSImageScaling
 NSImageScaleProportionallyDown      = 0;
 NSImageScaleAxesIndependently       = 1;
 NSImageScaleNone                    = 2;
 NSImageScaleProportionallyUpOrDown  = 3;
 
+@typedef NSImageFrameStyle
 NSImageFrameNone        = 0;
 NSImageFramePhoto       = 1;
 NSImageFrameGrayBezel   = 2;

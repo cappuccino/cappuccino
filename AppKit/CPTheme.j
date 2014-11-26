@@ -26,6 +26,7 @@
 @import <Foundation/CPKeyedUnarchiver.j>
 
 @class CPView
+@class _CPThemeAttribute
 
 var CPThemesByName          = { },
     CPThemeDefaultTheme     = nil,
