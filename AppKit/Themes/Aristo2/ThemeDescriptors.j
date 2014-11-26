@@ -374,7 +374,7 @@ var themedButtonValues = nil,
             [@"font",                       [CPFont boldSystemFontOfSize:11.0]],
 
             [@"min-size",                   CGSizeMake(32.0, 20.0),                 CPThemeStateControlSizeSmall],
-            [@"max-size",                   CGSizeMake(1.0, 20.0),                  CPThemeStateControlSizeSmall],
+            [@"max-size",                   CGSizeMake(-1.0, 20.0),                 CPThemeStateControlSizeSmall],
             [@"nib2cib-adjustment-frame",   CGRectMake(3.0, 4.0, -6.0, 0.0),        CPThemeStateControlSizeSmall],
 
             // CPThemeStateControlSizeMini
@@ -386,7 +386,7 @@ var themedButtonValues = nil,
 
             [@"min-size",                   CGSizeMake(32.0, 16.0),                 CPThemeStateControlSizeMini],
             [@"max-size",                   CGSizeMake(-1.0, 16.0),                 CPThemeStateControlSizeMini],
-            [@"nib2cib-adjustment-frame",   CGRectMake(1.0, 10.0, -3.0, 0.0),        CPThemeStateControlSizeMini]
+            [@"nib2cib-adjustment-frame",   CGRectMake(1.0, 10.0, -3.0, 0.0),       CPThemeStateControlSizeMini]
         ];
 
     [self registerThemeValues:themeValues forView:button];
@@ -1312,9 +1312,9 @@ var themedButtonValues = nil,
             [@"bezel-inset",        CGInsetMake(3.0, 5.0, 3.0, 4.0),            [CPThemeStateBezeled, CPThemeStateDisabled]],
 
             // The right border inset has to make room for the focus ring and popup button
-            [@"content-inset",      CGInsetMake(9.0, 26.0, 7.0, 10.0),          [CPThemeStateBezeled, CPComboBoxStateButtonBordered]],
-            [@"content-inset",      CGInsetMake(9.0, 26.0, 7.0, 10.0),          CPThemeStateBezeled],
-            [@"content-inset",      CGInsetMake(9.0, 24.0, 7.0, 10.0),          [CPThemeStateBezeled, CPThemeStateEditing]],
+            [@"content-inset",      CGInsetMake(9.0, 30.0, 7.0, 10.0),          [CPThemeStateBezeled, CPComboBoxStateButtonBordered]],
+            [@"content-inset",      CGInsetMake(9.0, 30.0, 7.0, 10.0),          CPThemeStateBezeled],
+            [@"content-inset",      CGInsetMake(9.0, 28.0, 7.0, 10.0),          [CPThemeStateBezeled, CPThemeStateEditing]],
 
             [@"popup-button-size",  CGSizeMake(21.0, 23.0),                     [CPThemeStateBezeled, CPComboBoxStateButtonBordered]],
             [@"popup-button-size",  CGSizeMake(17.0, 23.0),                     CPThemeStateBezeled],

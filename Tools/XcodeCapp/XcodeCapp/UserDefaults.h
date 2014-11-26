@@ -31,5 +31,6 @@ extern NSString * const kDefaultLogLevel;
 extern NSString * const kDefaultAutoOpenXcodeProject;
 extern NSString * const kDefaultUseSymlinkWhenCreatingProject;
 extern NSString * const kDefaultUpdateCappuccinoWithLastVersionOfMasterBranch;
+extern NSString * const kDefaultXCCPanelStyleUtility;
 
 #endif

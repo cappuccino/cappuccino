@@ -412,7 +412,7 @@ _CPMenuWindowAttachedMenuBackgroundStyle    = 2;
 {
     // Don't return indexes of items that aren't visible.
     if (!CGRectContainsPoint([_menuClipView bounds], [_menuClipView convertPoint:aPoint fromView:nil]))
-        return NO;
+        return CPNotFound;
 
     return [_menuView itemIndexAtPoint:[_menuView convertPoint:aPoint fromView:nil]];
 }

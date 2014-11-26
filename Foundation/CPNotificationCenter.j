@@ -27,173 +27,9 @@
 @import "CPNull.j"
 @import "CPSet.j"
 
+@class _CPNotificationRegistry
+
 var CPNotificationDefaultCenter = nil;
-
-/*
-    Mapping of Notification Name to listening object/selector.
-    @ignore
- */
-@implementation _CPNotificationRegistry : CPObject
-{
-    CPDictionary    _objectObservers;
-}
-
-- (id)init
-{
-    self = [super init];
-
-    if (self)
-    {
-        _objectObservers = @{};
-    }
-
-    return self;
-}
-
-- (void)addObserver:(_CPNotificationObserver)anObserver object:(id)anObject
-{
-    // If there's no object, then we're listening to this
-    // notification regardless of whom sends it.
-    if (!anObject)
-        anObject = [CPNull null];
-
-    // Grab all the listeners for this notification/object pair
-    var observers = [_objectObservers objectForKey:[anObject UID]];
-
-    if (!observers)
-    {
-        observers = [CPMutableSet set];
-        [_objectObservers setObject:observers forKey:[anObject UID]];
-    }
-
-    // Add this observer.
-    [observers addObject:anObserver];
-}
-
-- (void)removeObserver:(id)anObserver object:(id)anObject
-{
-    var removedKeys = [];
-
-    // This means we're getting rid of EVERY instance of this observer.
-    if (anObject == nil)
-    {
-        var key = nil,
-            keys = [_objectObservers keyEnumerator];
-
-        // Iterate through every set of observers
-        while ((key = [keys nextObject]) !== nil)
-        {
-            var observers = [_objectObservers objectForKey:key],
-                observer = nil,
-                observersEnumerator = [observers objectEnumerator];
-
-            while ((observer = [observersEnumerator nextObject]) !== nil)
-                if ([observer observer] == anObserver)
-                    [observers removeObject:observer];
-
-            if (![observers count])
-                removedKeys.push(key);
-        }
-    }
-    else
-    {
-        var key = [anObject UID],
-            observers = [_objectObservers objectForKey:key],
-            observer = nil,
-            observersEnumerator = [observers objectEnumerator];
-
-        while ((observer = [observersEnumerator nextObject]) !== nil)
-            if ([observer observer] == anObserver)
-                [observers removeObject:observer];
-
-        if (![observers count])
-            removedKeys.push(key);
-    }
-
-    var count = removedKeys.length;
-
-    while (count--)
-        [_objectObservers removeObjectForKey:removedKeys[count]];
-}
-
-- (void)postNotification:(CPNotification)aNotification
-{
-    // We don't want to erroneously send notifications to observers that get removed
-    // during the posting of this notification, nor observers that get added.  The
-    // best way to do this is to make a copy of the current observers (this avoids
-    // new observers from being notified) and double checking every observer against
-    // the current set (this avoids removed observers from receiving notifications).
-    var object = [aNotification object],
-        currentObservers = nil;
-
-    if (object != nil && (currentObservers = [_objectObservers objectForKey:[object UID]]))
-    {
-        var observers = [currentObservers copy],
-            observer = nil,
-            observersEnumerator = [observers objectEnumerator];
-
-        while ((observer = [observersEnumerator nextObject]) !== nil)
-        {
-            // CPSet containsObject is N(1) so this is a fast check.
-            if ([currentObservers containsObject:observer])
-                [observer postNotification:aNotification];
-        }
-    }
-
-    // Now do the same for the nil object observers...
-    currentObservers = [_objectObservers objectForKey:[[CPNull null] UID]];
-
-    if (!currentObservers)
-        return;
-
-    var observers = [currentObservers copy],
-        observersEnumerator = [observers objectEnumerator];
-
-    while ((observer = [observersEnumerator nextObject]) !== nil)
-    {
-        // CPSet containsObject is N(1) so this is a fast check.
-        if ([currentObservers containsObject:observer])
-            [observer postNotification:aNotification];
-    }
-}
-
-- (unsigned)count
-{
-    return [_objectObservers count];
-}
-
-@end
-
-/* @ignore */
-@implementation _CPNotificationObserver : CPObject
-{
-    id  _observer;
-    SEL _selector;
-}
-
-- (id)initWithObserver:(id)anObserver selector:(SEL)aSelector
-{
-    if (self)
-    {
-        _observer = anObserver;
-        _selector = aSelector;
-    }
-
-   return self;
-}
-
-- (id)observer
-{
-    return _observer;
-}
-
-- (void)postNotification:(CPNotification)aNotification
-{
-    [_observer performSelector:_selector withObject:aNotification];
-}
-
-@end
-
 
 /*!
     @class CPNotificationCenter
@@ -234,7 +70,8 @@ var CPNotificationDefaultCenter = nil;
         _namedRegistries = @{};
         _unnamedRegistry = [[_CPNotificationRegistry alloc] init];
     }
-   return self;
+
+    return self;
 }
 
 /*!
@@ -247,8 +84,35 @@ var CPNotificationDefaultCenter = nil;
 */
 - (void)addObserver:(id)anObserver selector:(SEL)aSelector name:(CPString)aNotificationName object:(id)anObject
 {
-    var registry,
+    var registry = [self _registryForNotificationName:aNotificationName],
         observer = [[_CPNotificationObserver alloc] initWithObserver:anObserver selector:aSelector];
+
+    [registry addObserver:observer object:anObject];
+}
+
+/*!
+    Adds an entry to the receiver’s dispatch table with a block, and optional criteria: notification name and sender.
+    @param aNotificationName the name of the notification the observer wants to watch
+    @param anObject the object in the notification the observer wants to watch
+    @param queue is ignored for the moment
+    @param block the block to be executed when the notification is received.
+*/
+- (id <CPObject>)addObserverForName:(CPString)aNotificationName object:(id)anObject queue:(id)queue usingBlock:(Function)block
+{
+    var registry = [self _registryForNotificationName:aNotificationName],
+        observer = [[_CPNotificationObserver alloc] initWithBlock:block];
+
+    [registry addObserver:observer object:anObject];
+
+    return observer;
+}
+
+/*!
+    @ignore
+*/
+- (_CPNotificationRegistry)_registryForNotificationName:(CPString)aNotificationName
+{
+    var registry;
 
     if (aNotificationName == nil)
         registry = _unnamedRegistry;
@@ -258,7 +122,7 @@ var CPNotificationDefaultCenter = nil;
         [_namedRegistries setObject:registry forKey:aNotificationName];
     }
 
-    [registry addObserver:observer object:anObject];
+    return registry;
 }
 
 /*!
@@ -339,3 +203,192 @@ var _CPNotificationCenterPostNotification = function(/* CPNotificationCenter */ 
     [self._unnamedRegistry postNotification:aNotification];
     [[self._namedRegistries objectForKey:[aNotification name]] postNotification:aNotification];
 };
+
+/*
+    Mapping of Notification Name to listening object/selector.
+    @ignore
+ */
+@implementation _CPNotificationRegistry : CPObject
+{
+    CPDictionary    _objectObservers;
+}
+
+- (id)init
+{
+    self = [super init];
+
+    if (self)
+    {
+        _objectObservers = @{};
+    }
+
+    return self;
+}
+
+- (void)addObserver:(_CPNotificationObserver)anObserver object:(id)anObject
+{
+    // If there's no object, then we're listening to this
+    // notification regardless of whom sends it.
+    if (!anObject)
+        anObject = [CPNull null];
+
+    // Grab all the listeners for this notification/object pair
+    var observers = [_objectObservers objectForKey:[anObject UID]];
+
+    if (!observers)
+    {
+        observers = [CPMutableSet set];
+        [_objectObservers setObject:observers forKey:[anObject UID]];
+    }
+
+    // Add this observer.
+    [observers addObject:anObserver];
+}
+
+- (void)removeObserver:(id)anObserver object:(id)anObject
+{
+    var removedKeys = [];
+
+    // This means we're getting rid of EVERY instance of this observer.
+    if (anObject == nil)
+    {
+        var key = nil,
+            keys = [_objectObservers keyEnumerator];
+
+        // Iterate through every set of observers
+        while ((key = [keys nextObject]) !== nil)
+        {
+            var observers = [_objectObservers objectForKey:key],
+                observer = nil,
+                observersEnumerator = [observers objectEnumerator];
+
+            while ((observer = [observersEnumerator nextObject]) !== nil)
+                if ([observer observer] == anObserver ||
+                    ([observer block] && [anObserver respondsToSelector:@selector(block)] && [observer block] == [anObserver block]))
+                    [observers removeObject:observer];
+
+            if (![observers count])
+                removedKeys.push(key);
+        }
+    }
+    else
+    {
+        var key = [anObject UID],
+            observers = [_objectObservers objectForKey:key],
+            observer = nil,
+            observersEnumerator = [observers objectEnumerator];
+
+        while ((observer = [observersEnumerator nextObject]) !== nil)
+            if ([observer observer] == anObserver ||
+                ([observer block] && [anObserver respondsToSelector:@selector(block)] && [observer block] == [anObserver block]))
+                [observers removeObject:observer];
+
+        if (![observers count])
+            removedKeys.push(key);
+    }
+
+    var count = removedKeys.length;
+
+    while (count--)
+        [_objectObservers removeObjectForKey:removedKeys[count]];
+}
+
+- (void)postNotification:(CPNotification)aNotification
+{
+    // We don't want to erroneously send notifications to observers that get removed
+    // during the posting of this notification, nor observers that get added.  The
+    // best way to do this is to make a copy of the current observers (this avoids
+    // new observers from being notified) and double checking every observer against
+    // the current set (this avoids removed observers from receiving notifications).
+    var object = [aNotification object],
+        currentObservers = nil;
+
+    if (object != nil && (currentObservers = [_objectObservers objectForKey:[object UID]]))
+    {
+        var observers = [currentObservers copy],
+            observer = nil,
+            observersEnumerator = [observers objectEnumerator];
+
+        while ((observer = [observersEnumerator nextObject]) !== nil)
+        {
+            // CPSet containsObject is N(1) so this is a fast check.
+            if ([currentObservers containsObject:observer])
+                [observer postNotification:aNotification];
+        }
+    }
+
+    // Now do the same for the nil object observers...
+    currentObservers = [_objectObservers objectForKey:[[CPNull null] UID]];
+
+    if (!currentObservers)
+        return;
+
+    var observers = [currentObservers copy],
+        observersEnumerator = [observers objectEnumerator];
+
+    while ((observer = [observersEnumerator nextObject]) !== nil)
+    {
+        // CPSet containsObject is N(1) so this is a fast check.
+        if ([currentObservers containsObject:observer])
+            [observer postNotification:aNotification];
+    }
+}
+
+- (unsigned)count
+{
+    return [_objectObservers count];
+}
+
+@end
+
+/* @ignore */
+@implementation _CPNotificationObserver : CPObject
+{
+    id          _observer;
+    Function    _block;
+    SEL         _selector;
+}
+
+- (id)initWithObserver:(id)anObserver selector:(SEL)aSelector
+{
+    if (self)
+    {
+        _observer = anObserver;
+        _selector = aSelector;
+    }
+
+   return self;
+}
+
+- (id)initWithBlock:(Function)aBlock
+{
+    if (self)
+    {
+        _block = aBlock;
+    }
+
+    return self;
+}
+
+- (id)observer
+{
+    return _observer;
+}
+
+- (id)block
+{
+    return _block;
+}
+
+- (void)postNotification:(CPNotification)aNotification
+{
+    if (_block)
+    {
+        _block(aNotification);
+        return;
+    }
+
+    [_observer performSelector:_selector withObject:aNotification];
+}
+
+@end

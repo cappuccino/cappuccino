@@ -133,7 +133,11 @@
 - (void)setButtons:(CPArray)buttons
 {
     for (var i = [_buttons count] - 1; i >= 0; i--)
+    {
+        [_buttons[i] removeFromSuperview];
         [_buttons[i] removeObserver:self forKeyPath:@"hidden"];
+    }
+
 
     _buttons = [CPArray arrayWithArray:buttons];
 

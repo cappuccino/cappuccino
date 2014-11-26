@@ -31,6 +31,7 @@
 @class CPDatePicker
 @class _CPDatePickerMonthView
 @class _CPDatePickerHeaderView
+@class _CPDatePickerBox
 
 @global CPApp
 @global CPSingleDateMode
@@ -65,7 +66,7 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
     _CPDatePickerMonthView          _monthView;
     _CPDatePickerHeaderView         _headerView;
     _CPDatePickerClock              _datePickerClock;
-    CPBox                           _box;
+    _CPDatePickerBox                _box;
     CPDatePicker                    _datePicker;
     CPInteger                       _startSelectionIndex;
     CPInteger                       _currentSelectionIndex;
@@ -99,7 +100,7 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
         sizeCalendar = [_datePicker valueForThemeAttribute:@"size-calendar"],
         sizeClock = [_datePicker valueForThemeAttribute:@"size-clock"];
 
-    _box = [[_DatePickerBox alloc] initWithFrame:CGRectMake(0, 0, sizeCalendar.width, sizeHeader.height + sizeCalendar.height)];
+    _box = [[_CPDatePickerBox alloc] initWithFrame:CGRectMake(0, 0, sizeCalendar.width, sizeHeader.height + sizeCalendar.height)];
     [_box setDatePicker:_datePicker];
 
     _headerView = [[_CPDatePickerHeaderView alloc] initWithFrame:CGRectMake(0, 0, sizeHeader.width, sizeHeader.height) datePicker:_datePicker delegate:self];
@@ -1268,7 +1269,7 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
 @end
 
 
-@implementation _DatePickerBox : CPView
+@implementation _CPDatePickerBox : CPView
 {
     CPDatePicker _datePicker @accessors(property=datePicker);
 }
