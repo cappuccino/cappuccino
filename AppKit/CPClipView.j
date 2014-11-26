@@ -46,75 +46,12 @@
         return;
 
     if (_documentView)
-    {
-        [self _removeObserverDocumentView:_documentView];
         [_documentView removeFromSuperview];
-    }
 
     _documentView = aView;
 
     if (_documentView)
-    {
         [self addSubview:_documentView];
-        [self _observeDocumentView];
-    }
-}
-
-- (void)_observeDocumentView
-{
-    var defaultCenter = [CPNotificationCenter defaultCenter];
-
-    [_documentView setPostsFrameChangedNotifications:YES];
-    [_documentView setPostsBoundsChangedNotifications:YES];
-
-    [defaultCenter
-        addObserver:self
-           selector:@selector(viewFrameChanged:)
-               name:CPViewFrameDidChangeNotification
-             object:_documentView];
-
-    [defaultCenter
-        addObserver:self
-           selector:@selector(viewBoundsChanged:)
-               name:CPViewBoundsDidChangeNotification
-             object:_documentView];
-}
-
-- (void)_removeObserverDocumentView:(CPView)aDocumentView
-{
-    var defaultCenter = [CPNotificationCenter defaultCenter];
-
-    [defaultCenter
-        removeObserver:self
-                  name:CPViewFrameDidChangeNotification
-                object:_documentView];
-
-    [defaultCenter
-        removeObserver:self
-                  name:CPViewBoundsDidChangeNotification
-                object:_documentView];
-}
-
-- (void)_addObservers
-{
-    if (_isObserving)
-        return;
-
-    [super _addObservers];
-
-    if (_documentView)
-        [self _observeDocumentView];
-}
-
-- (void)_removeObservers
-{
-    if (!_isObserving)
-        return;
-
-    [super _removeObservers];
-
-    if (_documentView)
-        [self _removeObserverDocumentView:_documentView];
 }
 
 /*!
@@ -275,7 +212,6 @@ var CPClipViewDocumentViewKey = @"CPScrollViewDocumentView";
         // Don't call setDocumentView: here. It calls addSubview:, but it's A) not necessary since the
         // view hierarchy is fully encoded and B) dangerous if the subview is not fully decoded.
         _documentView = [aCoder decodeObjectForKey:CPClipViewDocumentViewKey];
-        [self _observeDocumentView];
     }
 
     return self;
