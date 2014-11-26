@@ -98,28 +98,6 @@
                 object:aDocumentView];
 }
 
-/*- (void)_addObservers
-{
-    if (_isObserving)
-        return;
-
-    [super _addObservers];
-
-    if (_documentView)
-        [self _observeDocumentView];
-}
-
-- (void)_removeObservers
-{
-    if (!_isObserving)
-        return;
-
-    [super _removeObservers];
-
-    if (_documentView)
-        [self _removeObserverDocumentView:_documentView];
-}*/
-
 /*!
     Returns the document view.
 */
