@@ -123,6 +123,8 @@ var CPZeroKeyCode = 48,
     // This is usefull when clicking on the stepper when the datePicker is not selected
     [_stepper setObjectValue:0];
 
+    //[_datePicker unsetThemeState:CPThemeStateEditing];
+
     return YES;
 }
 
@@ -1771,6 +1773,7 @@ var CPMonthDateType = 0,
 - (void)makeSelectable
 {
     [self setThemeState:CPThemeStateSelected];
+    [_datePicker setThemeState:CPThemeStateEditing];
 }
 
 /*! Unsert the theme CPThemeStateSelected
@@ -1779,6 +1782,7 @@ var CPMonthDateType = 0,
 {
     _firstEvent = YES;
     [self unsetThemeState:CPThemeStateSelected];
+    [_datePicker unsetThemeState:CPThemeStateEditing];
 }
 
 

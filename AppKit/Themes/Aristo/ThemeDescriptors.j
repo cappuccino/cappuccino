@@ -1258,6 +1258,19 @@ var themedButtonValues = nil,
             ["textfield-bezel-square-disabled-8.png", 6.0, 6.0]
         ]),
 
+        bezelFocusedColor = PatternColor(
+        [
+            ["textfield-bezel-square-focused-0.png", 6.0, 6.0],
+            ["textfield-bezel-square-focused-1.png", 1.0, 6.0],
+            ["textfield-bezel-square-focused-2.png", 6.0, 6.0],
+            ["textfield-bezel-square-focused-3.png", 6.0, 1.0],
+            ["textfield-bezel-square-focused-4.png", 1.0, 1.0],
+            ["textfield-bezel-square-focused-5.png", 6.0, 1.0],
+            ["textfield-bezel-square-focused-6.png", 6.0, 6.0],
+            ["textfield-bezel-square-focused-7.png", 1.0, 6.0],
+            ["textfield-bezel-square-focused-8.png", 6.0, 6.0]
+        ]),
+
         bezelColorDatePickerTextField = PatternColor(
             [
                 [@"datepicker-date-segment-0.png", 4.0, 18.0],
@@ -1268,6 +1281,7 @@ var themedButtonValues = nil,
         themeValues =
         [
             [@"bezel-color",        bezelColor,                                                 CPThemeStateBezeled],
+            [@"bezel-color",        bezelFocusedColor,                                          [CPThemeStateBezeled, CPThemeStateEditing]],
             [@"bezel-color",        bezelDisabledColor,                                         [CPThemeStateBezeled, CPThemeStateDisabled]],
 
             [@"font",               [CPFont boldSystemFontOfSize:13.0]],
@@ -1275,8 +1289,10 @@ var themedButtonValues = nil,
 
             [@"content-inset",      CGInsetMake(6.0, 0.0, 0.0, 3.0),                            CPThemeStateNormal],
             [@"content-inset",      CGInsetMake(6.0, 0.0, 0.0, 5.0),                            CPThemeStateBezeled],
+            [@"content-inset",      CGInsetMake(6.0, 0.0, 0.0, 5.0),                            [CPThemeStateBezeled, CPThemeStateEditing]],
 
             [@"bezel-inset",        CGInsetMake(0.0, -3.0, 0.0, -3.0),                          CPThemeStateBezeled],
+            [@"bezel-inset",        CGInsetMake(0.0, -3.0, 0.0, -3.0),                          [CPThemeStateBezeled, CPThemeStateEditing]],
 
             [@"datepicker-textfield-bezel-color", [CPColor clearColor],                         CPThemeStateNormal],
             [@"datepicker-textfield-bezel-color", bezelColorDatePickerTextField,                CPThemeStateSelected],
@@ -1301,10 +1317,12 @@ var themedButtonValues = nil,
             // CPThemeStateControlSizeSmall
             [@"content-inset",              CGInsetMake(5.0, 0.0, 0.0, 5.0),                    [CPThemeStateControlSizeSmall, CPThemeStateNormal]],
             [@"content-inset",              CGInsetMake(5.0, 0.0, 0.0, 5.0),                    [CPThemeStateControlSizeSmall, CPThemeStateBezeled]],
+            [@"content-inset",              CGInsetMake(5.0, 0.0, 0.0, 5.0),                    [CPThemeStateControlSizeSmall, CPThemeStateEditing, CPThemeStateBezeled]],
 
             [@"min-size-datepicker-textfield", CGSizeMake(6.0, 16.0),                           CPThemeStateControlSizeSmall],
             [@"date-hour-margin",           5.0,                                                CPThemeStateControlSizeSmall],
             [@"stepper-margin",             3.0,                                                CPThemeStateControlSizeSmall],
+            [@"stepper-margin",             3.0,                                                [CPThemeStateControlSizeSmall, CPThemeStateEditing]],
 
             [@"min-size",                   CGSizeMake(0, 26.0),                                CPThemeStateControlSizeSmall],
             [@"max-size",                   CGSizeMake(-1.0, 26.0),                             CPThemeStateControlSizeSmall],
@@ -1313,10 +1331,12 @@ var themedButtonValues = nil,
             // CPThemeStateControlSizeMini
             [@"content-inset",              CGInsetMake(4.0, 0.0, 0.0, 4.0),                    [CPThemeStateControlSizeMini, CPThemeStateNormal]],
             [@"content-inset",              CGInsetMake(4.0, 0.0, 0.0, 4.0),                    [CPThemeStateControlSizeMini, CPThemeStateBezeled]],
+            [@"content-inset",              CGInsetMake(4.0, 0.0, 0.0, 4.0),                    [CPThemeStateControlSizeMini, CPThemeStateEditing, CPThemeStateBezeled]],
 
             [@"min-size-datepicker-textfield", CGSizeMake(6.0, 12.0),                           CPThemeStateControlSizeMini],
             [@"date-hour-margin",           2.0,                                                CPThemeStateControlSizeMini],
             [@"stepper-margin",             2.0,                                                CPThemeStateControlSizeMini],
+            [@"stepper-margin",             2.0,                                                [CPThemeStateControlSizeMini, CPThemeStateEditing]],
 
             [@"min-size",                   CGSizeMake(0, 22.0),                                CPThemeStateControlSizeMini],
             [@"max-size",                   CGSizeMake(-1.0, 22.0),                             CPThemeStateControlSizeMini],
