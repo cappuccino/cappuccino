@@ -33,6 +33,9 @@
 @import "CPTextField.j"
 @import "CPWindow_Constants.j"
 
+@class _CPTokenFieldTokenCloseButton
+@class _CPTokenFieldTokenDisclosureButton
+
 @global CPApp
 @global CPTextFieldDidFocusNotification
 @global CPTextFieldDidBlurNotification

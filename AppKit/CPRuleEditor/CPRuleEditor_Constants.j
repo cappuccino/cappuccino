@@ -20,6 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+
 CPRuleEditorPredicateLeftExpression     = "CPRuleEditorPredicateLeftExpression";
 CPRuleEditorPredicateRightExpression    = "CPRuleEditorPredicateRightExpression";
 CPRuleEditorPredicateComparisonModifier = "CPRuleEditorPredicateComparisonModifier";
@@ -36,5 +37,6 @@ CPRuleEditorNestingModeList     = 1;        // Allows a single list, with no nes
 CPRuleEditorNestingModeCompound = 2;        // Unlimited nesting and compound rows; this is the default
 CPRuleEditorNestingModeSimple   = 3;        // One compound row at the top with subrows beneath it, and no further nesting allowed
 
+@typedef CPRuleEditorRowType
 CPRuleEditorRowTypeSimple       = 0;
 CPRuleEditorRowTypeCompound     = 1;

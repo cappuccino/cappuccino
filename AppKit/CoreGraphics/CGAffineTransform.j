@@ -22,6 +22,8 @@
 
 @import "CGGeometry.j"
 
+@typedef CGAffineTransform
+
 
 function CGAffineTransformMake(a, b, c, d, tx, ty)
 {

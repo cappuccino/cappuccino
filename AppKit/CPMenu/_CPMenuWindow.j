@@ -25,6 +25,8 @@
 @import "CPWindow.j"
 @import "_CPMenuManager.j"
 
+@class _CPMenuView
+
 var _CPMenuWindowPool                       = [],
     _CPMenuWindowPoolCapacity               = 5,
 

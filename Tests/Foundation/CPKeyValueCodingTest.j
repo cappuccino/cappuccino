@@ -22,6 +22,9 @@
 
 @import <Foundation/CPObject.j>
 
+@class Department2
+@class Employee2
+
 var accessIVARS = YES;
 
 @implementation KVCTestClass : CPObject

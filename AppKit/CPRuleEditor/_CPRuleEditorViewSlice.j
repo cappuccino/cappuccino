@@ -19,6 +19,8 @@
 
 @import "CPView.j"
 
+@class CPRuleEditor
+
 @implementation _CPRuleEditorViewSlice : CPView
 {
     CPRuleEditor _ruleEditor;

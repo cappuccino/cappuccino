@@ -20,6 +20,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@typedef CGColorSpace
+
 kCGColorSpaceModelUnknown       = -1;
 kCGColorSpaceModelMonochrome    = 0;
 kCGColorSpaceModelRGB           = 1;

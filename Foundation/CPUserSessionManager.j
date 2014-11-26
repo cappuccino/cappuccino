@@ -24,6 +24,7 @@
 @import "CPObject.j"
 @import "CPString.j"
 
+@typedef CPUserSessionStatus
 CPUserSessionUndeterminedStatus = 0;
 CPUserSessionLoggedInStatus     = 1;
 CPUserSessionLoggedOutStatus    = 2;

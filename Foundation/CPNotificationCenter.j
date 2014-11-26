@@ -27,6 +27,8 @@
 @import "CPNull.j"
 @import "CPSet.j"
 
+@class _CPNotificationRegistry
+
 var CPNotificationDefaultCenter = nil;
 
 /*!
