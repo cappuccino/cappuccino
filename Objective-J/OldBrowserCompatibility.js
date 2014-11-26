@@ -37,7 +37,7 @@ if (!Object.create)
 // This is for IE8 support. It doesn't have the Object.keys function.
 if (!Object.keys)
 {
-    Object.keys = (function ()
+    Object.keys = (function()
     {
         var hasOwnProperty = Object.prototype.hasOwnProperty,
             hasDontEnumBug = !({toString: null}).propertyIsEnumerable('toString'),
