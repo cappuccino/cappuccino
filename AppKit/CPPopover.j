@@ -246,9 +246,7 @@ Set the behavior of the CPPopover. It can be:
     if (!_popoverWindow)
         _popoverWindow = [[_CPPopoverWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:[self _styleMaskForBehavior]];
 
-    if (_positioningView != positioningView)
-        [_popoverWindow setPlatformWindow:[[positioningView window] platformWindow]];
-
+    [_popoverWindow setPlatformWindow:[[positioningView window] platformWindow]];
     [_popoverWindow setAppearance:_appearance];
     [_popoverWindow setAnimates:_animates];
     [_popoverWindow setDelegate:self];
@@ -262,7 +260,7 @@ Set the behavior of the CPPopover. It can be:
     [_popoverWindow positionRelativeToRect:positioningRect ofView:positioningView preferredEdge:preferredEdge];
 
     if (![self isShown])
-        [self _popoverDidShow];
+        [self _popoverWindowDidShow];
 }
 
 - (unsigned)_styleMaskForBehavior
@@ -312,9 +310,8 @@ Set the behavior of the CPPopover. It can be:
     if ([_popoverWindow isClosing])
         return;
 
-    if (_implementedDelegateMethods & CPPopoverDelegate_popover_shouldClose_)
-        if (![_delegate popoverShouldClose:self])
-            return;
+    if (![self _popoverShouldClose])
+        return;
 
     [self _close];
 }
@@ -346,6 +343,15 @@ Set the behavior of the CPPopover. It can be:
 {
     if (_implementedDelegateMethods & CPPopoverDelegate_popover_didShow_)
         [_delegate popoverDidShow:self];
+}
+
+/*! @ignore */
+- (BOOL)_popoverShouldClose
+{
+    if (_implementedDelegateMethods & CPPopoverDelegate_popover_shouldClose_)
+        return [_delegate popoverShouldClose:self];
+
+    return YES;
 }
 
 /*! @ignore */

@@ -68,6 +68,8 @@ with (window)
 // runs the objj repl or file provided in args
 exports.run = function(args)
 {
+    var multipleFiles = false;
+
     if (args)
     {
         // we expect args to be in the format:
@@ -79,27 +81,82 @@ exports.run = function(args)
         // copy the args since we're going to modify them
         var argv = args.slice(1);
 
-        if (argv[0] === "--version")
+        if (argv[0] === "--version" || argv[0] === "-v")
         {
             print(exports.fullVersionString());
             return;
         }
 
-        while (argv.length && argv[0].indexOf('-I') === 0)
-            OBJJ_INCLUDE_PATHS.unshift.apply(OBJJ_INCLUDE_PATHS, argv.shift().substr(2).split(':'));
+        if (argv[0] === "--help" || argv[0] === "-h")
+        {
+            print("Usage (objj): " + args[0] + " [options] [--] files...");
+            print("  -v, --version                  print the current version of objj");
+            print("  -I, --objj-include-paths       include a specific framework paths")
+            print("  -h, --help                     print this help");
+            print("  -m, --multifiles               launch objj on several files")
+            return;
+        }
+
+        while (argv.length && argv[0].indexOf('-') === 0)
+        {
+            switch (argv[0])
+            {
+                case "-I":
+                    argv.shift();
+                    OBJJ_INCLUDE_PATHS.unshift.apply(OBJJ_INCLUDE_PATHS, argv.shift().split(":"));
+                    break;
+
+                case "-m":
+                    argv.shift();
+                    multipleFiles = true;
+                    break
+            }
+        }
     }
 
     if (argv && argv.length > 0)
     {
-        var arg0 = argv.shift();
-        var mainFilePath = FILE.canonical(arg0);
+        var endCommand = false;
 
-        exports.make_narwhal_factory(mainFilePath)(require, { }, module, system, print);
+        while (argv.length > 0)
+        {
+            var arg0 = argv.shift();
+            var mainFilePath = FILE.canonical(arg0);
 
-        if (typeof main === "function")
-            main([arg0].concat(argv));
+            if (multipleFiles)
+            {
+                // This is needed to process every files passed in args
+                // Otherwise it would stop when an error is raised or we would like to objj the other given files
+                try
+                {
+                    exports.make_narwhal_factory(mainFilePath)(require, { }, module, system, print);
+                }
+                catch(e)
+                {
+                    print("\n" + e);
+                }
+            }
+            else
+            {
+                exports.make_narwhal_factory(mainFilePath)(require, { }, module, system, print);
+            }
 
-        require("browser/timeout").serviceTimeouts();
+            if (typeof main === "function")
+            {
+                main([arg0].concat(argv));
+                endCommand = true;
+            }
+
+            require("browser/timeout").serviceTimeouts();
+
+            if (!multipleFiles || endCommand)
+                break;
+
+            ObjectiveJ.Executable.resetCachedFileExecutableSearchers();
+            ObjectiveJ.StaticResource.resetRootResources();
+            ObjectiveJ.FileExecutable.resetFileExecutables();
+            objj_resetRegisterClasses();
+        }
     }
     else
     {

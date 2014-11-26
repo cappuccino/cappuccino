@@ -50,8 +50,13 @@
     [shadowLabel setFrame:CGRectMake(15, CGRectGetMaxY([textField frame]) + 10, 300, 18)];
     [championOfLightLabel setFrame:CGRectMake(15, CGRectGetMaxY([shadowLabel frame]) + 2, 300, 18)];
 
+    var selectableLabel = [CPTextField labelWithTitle:@"This text should be selectable and you should see the selectable cursor."];
+    [selectableLabel setSelectable:YES];
+    [selectableLabel setFrame:CGRectMake(15, CGRectGetMaxY([championOfLightLabel frame]) + 8, 600, 18)];
+
     [contentView addSubview:shadowLabel];
     [contentView addSubview:championOfLightLabel];
+    [contentView addSubview:selectableLabel];
 
     var jumpLabel = [CPTextField labelWithTitle:@"The text of these text fields should not move ('jump') when a field becomes the first responder. Labels on the right should replicate the input."];
 

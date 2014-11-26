@@ -209,6 +209,68 @@
     [self assertTrue:[outlineView isItemExpanded:".1"] message:".1 is still expanded, cannot collapse"];
 }
 
+- (void)testRowForItem
+{
+    [self assert:2 equals:[outlineView rowForItem:@".1.2"] message:".1.2 row number is wrong"];
+    [self assert:6 equals:[outlineView rowForItem:@".3"] message:".3 row number is wrong"];
+    [outlineView collapseItem:".1"];
+    [self assert:CPNotFound equals:[outlineView rowForItem:@".1.2"] message:".1.2 row number is wrong"];
+    [self assert:2 equals:[outlineView rowForItem:@".3"] message:".3 row number is wrong"];
+    [outlineView expandItem:".1"];
+    [self assert:2 equals:[outlineView rowForItem:@".1.2"] message:".1.2 row number is wrong"];
+    [self assert:6 equals:[outlineView rowForItem:@".3"] message:".3 row is number wrong"];
+}
+
+- (void)testItemAtRow
+{
+    [self assert:@".1.2" equals:[outlineView itemAtRow:2] message:"itemAtRow 2 is wrong"];
+    [self assert:@".3" equals:[outlineView itemAtRow:6] message:"itemAtRow 6 is wrong"];
+    [self assert:nil equals:[outlineView itemAtRow:8] message:"itemAtRow 8 is wrong"];
+    [outlineView collapseItem:".1"];
+    [self assert:@".3" equals:[outlineView itemAtRow:2] message:"itemAtRow 2 is wrong"];
+    [self assert:nil equals:[outlineView itemAtRow:5] message:"itemAtRow 5 is wrong"];
+    [outlineView expandItem:".1"];
+    [self assert:@".1.2" equals:[outlineView itemAtRow:2] message:"itemAtRow 2 is wrong"];
+    [self assert:@".3" equals:[outlineView itemAtRow:6] message:"itemAtRow 6 is wrong"];
+    [self assert:nil equals:[outlineView itemAtRow:8] message:".itemAtRow 8 is wrong"];
+}
+
+- (void)testItemIsExpanded
+{
+    [self assert:YES equals:[outlineView isItemExpanded:@".1.2"] message:".1.2 expanded value is wrong"];
+    [self assert:YES equals:[outlineView isItemExpanded:@".3"] message:".3 expanded value is wrong"];
+    [outlineView collapseItem:".1"];
+    [self assert:NO equals:[outlineView isItemExpanded:@".1.2"] message:".1.2 expanded value is wrong"];
+    [self assert:YES equals:[outlineView isItemExpanded:@".3"] message:".3 expanded value is wrong"];
+    [outlineView expandItem:".1"];
+    [self assert:YES equals:[outlineView isItemExpanded:@".1.2"] message:".1.2 expanded value is wrong"];
+    [self assert:YES equals:[outlineView isItemExpanded:@".3"] message:".3 expanded value is wrong"];
+}
+
+- (void)testLevelForItem
+{
+    [self assert:1 equals:[outlineView levelForItem:@".1.2"] message:".1.2 level value is wrong"];
+    [self assert:0 equals:[outlineView levelForItem:@".3"] message:".3 level value is wrong"];
+    [outlineView collapseItem:".1"];
+    [self assert:CPNotFound equals:[outlineView levelForItem:@".1.2"] message:".1.2 level value is wrong"];
+    [self assert:0 equals:[outlineView levelForItem:@".3"] message:".3 level value is wrong"];
+    [outlineView expandItem:".1"];
+    [self assert:1 equals:[outlineView levelForItem:@".1.2"] message:".1.2 level value is wrong"];
+    [self assert:0 equals:[outlineView levelForItem:@".3"] message:".3 level value is wrong"];
+}
+
+- (void)testLevelForRow
+{
+    [self assert:2 equals:[outlineView levelForRow:3] message:"levelForRow 2 is wrong"];
+    [self assert:0 equals:[outlineView levelForRow:6] message:"levelForRow 6 is wrong"];
+    [outlineView collapseItem:".1"];
+    [self assert:0 equals:[outlineView levelForRow:2] message:"levelForRow 2 is wrong"];
+    [self assert:CPNotFound equals:[outlineView levelForRow:4] message:"levelForRow 4 is wrong"];
+    [outlineView expandItem:".1"];
+    [self assert:2 equals:[outlineView levelForRow:3] message:"levelForRow 2 is wrong"];
+    [self assert:0 equals:[outlineView levelForRow:6] message:"levelForRow 0 is wrong"];
+}
+
 /*!
     Test that the outline view archives properly.
 */

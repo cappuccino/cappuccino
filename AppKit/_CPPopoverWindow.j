@@ -513,6 +513,9 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
             {
                 // We are watching opacity, so this triggers the next transition
 #if PLATFORM(DOM)
+                // We force the style to recalculate the values, this is needed to avoid a transition issue
+                // More information here : https://code.google.com/p/chromium/issues/detail?id=388082
+                [self _currentTransformMatrix];
                 _DOMElement.style.opacity = 1;
                 _DOMElement.style.height = frame.size.height + @"px";
                 _DOMElement.style.width = frame.size.width + @"px";
@@ -608,7 +611,7 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
             _DOMElement.removeEventListener(CPBrowserStyleProperty('transitionend'), _orderFrontTransitionFunction, YES);
             _DOMElement.removeEventListener(CPBrowserStyleProperty('transitionend'), _transitionCompleteFunction, YES);
 
-            var matrix = window.getComputedStyle(_DOMElement, null)[CPBrowserStyleProperty(@"transform")],
+            var matrix = [self _currentTransformMatrix],
                 currentScale = (matrix.split('(')[1]).split(',')[0];
 
             [self setCSS3Property:@"Transform" value:@"scale(" + currentScale + ")"];
@@ -651,6 +654,13 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
 
 #pragma mark -
 #pragma mark Private
+
+- (CPString)_currentTransformMatrix
+{
+#if PLATFORM(DOM)
+    return window.getComputedStyle(_DOMElement, null)[CPBrowserStyleProperty(@"transform")];
+#endif
+}
 
 - (BOOL)_hasOnlyTransientChild:(_CPPopoverWindow)aWindow
 {
@@ -710,24 +720,23 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
                     break;
                 }
 
-                [_delegate close];
+                [_delegate performClose:self];
                 break;
 
             case CPPopoverBehaviorTransient:
-                [_delegate close];
-                break;
-
-            case CPPopoverBehaviorApplicationDefined:
-                [self _trapNextMouseDown];
+                [_delegate performClose:self];
                 break;
         }
+
+        if ([self isVisible])
+            [self _trapNextMouseDown];
     }
 }
 
 - (void)_trapNextMouseDown
 {
     // Don't dequeue the event so clicks in controls will work
-    [CPApp setTarget:self selector:@selector(_mouseWasClicked:) forNextEventMatchingMask:CPLeftMouseDownMask untilDate:nil inMode:CPDefaultRunLoopMode dequeue:NO];
+    [CPApp setTarget:self selector:@selector(_mouseWasClicked:) forNextEventMatchingMask:CPLeftMouseDownMask | CPRightMouseDownMask untilDate:nil inMode:CPDefaultRunLoopMode dequeue:NO];
 }
 
 @end

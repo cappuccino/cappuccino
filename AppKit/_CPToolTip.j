@@ -181,7 +181,6 @@ var _CPToolTipHeight = 24.0,
         _content = [CPTextField labelWithTitle:aString];
         [_content setFont:[CPFont systemFontOfSize:_CPToolTipFontSize]]
         [_content setLineBreakMode:CPLineBreakByCharWrapping];
-        [_content setAlignment:CPJustifiedTextAlignment];
         [_content setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
         [_content setFrameOrigin:CGPointMake(0.0, 0.0)];
         [_content setFrameSize:textFrameSize];

@@ -2,6 +2,7 @@
 @import <Foundation/CPKeyValueCoding.j>
 @import <Foundation/CPKeyValueObserving.j>
 
+var _getCheeseCounter;
 
 @implementation CPKeyValueObservingTest : OJTestCase
 {
@@ -9,6 +10,12 @@
     id              _lastObject;
     CPDictionary    _lastChange;
     id              _lastContext;
+
+    CPString        _secondLastKeyPath;
+    id              _secondLastObject;
+    CPDictionary    _secondLastChange;
+    id              _secondLastContext;
+
 }
 
 - (Class)objectWithMethods:(CPString)aMethodName, ...
@@ -26,9 +33,10 @@
     return [theClass new];
 }
 
-- (void)setup
+- (void)setUp
 {
-    _lastKeyPath = _lastObject = _lastChange = _lastContext = nil;
+    _lastKeyPath = _lastObject = _lastChange = _lastContext = _secondLastKeyPath = _secondLastObject = _secondLastChange = _secondLastContext = nil;
+    _getCheeseCounter = 0;
 }
 
 - (void)testInitialObserving
@@ -38,8 +46,195 @@
 
     [self assert:@"cheese" equals:_lastKeyPath];
     [self assert:tester equals:_lastObject];
-    [self assert:[CPDictionary dictionaryWithObject:@"CHEESE!" forKey:CPKeyValueChangeNewKey] equals:_lastChange];
+    [self assert:@{CPKeyValueChangeNewKey: @"CHEESE!", CPKeyValueChangeKindKey: CPKeyValueChangeSetting} equals:_lastChange];
     [self assert:nil equals:_lastContext];
+}
+
+- (void)testInitialObservingNoNew
+{
+    var tester = [ObservingTester testerWithCheese:@"CHEESE!"];
+    [tester addObserver:self forKeyPath:@"cheese" options:CPKeyValueObservingOptionInitial context:nil];
+
+    [self assert:@"cheese" equals:_lastKeyPath];
+    [self assert:tester equals:_lastObject];
+    [self assert:@{CPKeyValueChangeKindKey: CPKeyValueChangeSetting} equals:_lastChange];
+    [self assert:nil equals:_lastContext];
+}
+
+- (void)testSettingObservingPrior
+{
+    var tester = [ObservingTester testerWithCheese:@"CHEESE!"];
+    [tester addObserver:self forKeyPath:@"cheese" options:CPKeyValueObservingOptionPrior context:nil];
+
+    [tester setValue:@"NEW CHEESE!" forKey:@"cheese"];
+
+    [self assert:@"cheese" equals:_secondLastKeyPath];
+    [self assert:tester equals:_secondLastObject];
+    [self assert:@{CPKeyValueChangeKindKey: CPKeyValueChangeSetting, CPKeyValueChangeNotificationIsPriorKey: 1} equals:_secondLastChange];
+    [self assert:nil equals:_secondLastContext];
+
+    [self assert:@"cheese" equals:_lastKeyPath];
+    [self assert:tester equals:_lastObject];
+    [self assert:@{CPKeyValueChangeKindKey: CPKeyValueChangeSetting} equals:_lastChange];
+    [self assert:nil equals:_lastContext];
+    [self assert:0 equals:_getCheeseCounter message:@"Get method should never be called"];
+}
+
+- (void)testSettingObservingPriorPlusMoreObservers
+{
+    var tester = [ObservingTester testerWithCheese:@"CHEESE!"];
+    [tester addObserver:self forKeyPath:@"cheese" options:CPKeyValueObservingOptionPrior context:nil];
+
+    var observerWithOld = [[AnotherObserver alloc] init];
+    [tester addObserver:observerWithOld forKeyPath:@"cheese" options:CPKeyValueObservingOptionPrior | CPKeyValueObservingOptionOld context:nil];
+
+    var observerWithNew = [[AnotherObserver alloc] init];
+    [tester addObserver:observerWithNew forKeyPath:@"cheese" options:CPKeyValueObservingOptionPrior | CPKeyValueObservingOptionNew context:nil];
+
+    var observerWithNewAndOld = [[AnotherObserver alloc] init];
+    [tester addObserver:observerWithNewAndOld forKeyPath:@"cheese" options:CPKeyValueObservingOptionPrior | CPKeyValueObservingOptionOld | CPKeyValueObservingOptionNew context:nil];
+
+    [tester setValue:@"NEW CHEESE!" forKey:@"cheese"];
+
+    [self assert:@"cheese" equals:_secondLastKeyPath];
+    [self assert:tester equals:_secondLastObject];
+    [self assert:@{CPKeyValueChangeKindKey: CPKeyValueChangeSetting, CPKeyValueChangeNotificationIsPriorKey: 1} equals:_secondLastChange];
+    [self assert:nil equals:_secondLastContext];
+
+    [self assert:@"cheese" equals:_lastKeyPath];
+    [self assert:tester equals:_lastObject];
+    [self assert:@{CPKeyValueChangeKindKey: CPKeyValueChangeSetting} equals:_lastChange];
+    [self assert:nil equals:_lastContext];
+
+    [self assert:@"cheese" equals:observerWithOld._secondLastKeyPath];
+    [self assert:tester equals:observerWithOld._secondLastObject];
+    [self assert:@{CPKeyValueChangeOldKey: @"CHEESE!", CPKeyValueChangeKindKey: CPKeyValueChangeSetting, CPKeyValueChangeNotificationIsPriorKey: 1} equals:observerWithOld._secondLastChange];
+    [self assert:nil equals:observerWithOld._secondLastContext];
+
+    [self assert:@"cheese" equals:observerWithOld._lastKeyPath];
+    [self assert:tester equals:observerWithOld._lastObject];
+    [self assert:@{CPKeyValueChangeOldKey: @"CHEESE!", CPKeyValueChangeKindKey: CPKeyValueChangeSetting} equals:observerWithOld._lastChange];
+    [self assert:nil equals:observerWithOld._lastContext];
+
+    [self assert:@"cheese" equals:observerWithNew._secondLastKeyPath];
+    [self assert:tester equals:observerWithNew._secondLastObject];
+    [self assert:@{CPKeyValueChangeKindKey: CPKeyValueChangeSetting, CPKeyValueChangeNotificationIsPriorKey: 1} equals:observerWithNew._secondLastChange];
+    [self assert:nil equals:observerWithNew._secondLastContext];
+
+    [self assert:@"cheese" equals:observerWithNew._lastKeyPath];
+    [self assert:tester equals:observerWithNew._lastObject];
+    [self assert:@{CPKeyValueChangeNewKey: @"NEW CHEESE!", CPKeyValueChangeKindKey: CPKeyValueChangeSetting} equals:observerWithNew._lastChange];
+    [self assert:nil equals:observerWithNew._lastContext];
+
+    [self assert:@"cheese" equals:observerWithNewAndOld._secondLastKeyPath];
+    [self assert:tester equals:observerWithNewAndOld._secondLastObject];
+    [self assert:@{CPKeyValueChangeOldKey: @"CHEESE!", CPKeyValueChangeKindKey: CPKeyValueChangeSetting, CPKeyValueChangeNotificationIsPriorKey: 1} equals:observerWithNewAndOld._secondLastChange];
+    [self assert:nil equals:observerWithNewAndOld._secondLastContext];
+
+    [self assert:@"cheese" equals:observerWithNewAndOld._lastKeyPath];
+    [self assert:tester equals:observerWithNewAndOld._lastObject];
+    [self assert:@{CPKeyValueChangeNewKey: @"NEW CHEESE!", CPKeyValueChangeOldKey: @"CHEESE!", CPKeyValueChangeKindKey: CPKeyValueChangeSetting} equals:observerWithNewAndOld._lastChange];
+    [self assert:nil equals:observerWithNewAndOld._lastContext];
+
+    [self assert:2 equals:_getCheeseCounter message:@"Get method should only be called twice, not " + _getCheeseCounter + " times"];
+}
+
+- (void)testSettingObserving
+{
+    var tester = [ObservingTester testerWithCheese:@"CHEESE!"];
+    [tester addObserver:self forKeyPath:@"cheese" options:0 context:nil];
+
+    [tester setValue:@"NEW CHEESE!" forKey:@"cheese"];
+    [self assert:@"cheese" equals:_lastKeyPath];
+    [self assert:tester equals:_lastObject];
+    [self assert:@{CPKeyValueChangeKindKey: CPKeyValueChangeSetting} equals:_lastChange];
+    [self assert:nil equals:_lastContext];
+    [self assert:0 equals:_getCheeseCounter message:@"Get method should never be called"];
+}
+
+- (void)testSettingObservingNewPlusAnotherObserverWithNoNew
+{
+    var tester = [ObservingTester testerWithCheese:@"CHEESE!"];
+    [tester addObserver:self forKeyPath:@"cheese" options:CPKeyValueObservingOptionNew context:nil];
+
+    var anotherObserver = [[AnotherObserver alloc] init];
+    [tester addObserver:anotherObserver forKeyPath:@"cheese" options:0 context:nil];
+
+    [tester setValue:@"NEW CHEESE!" forKey:@"cheese"];
+
+    [self assert:@"cheese" equals:_lastKeyPath];
+    [self assert:tester equals:_lastObject];
+    [self assert:@{CPKeyValueChangeNewKey: @"NEW CHEESE!", CPKeyValueChangeKindKey: CPKeyValueChangeSetting} equals:_lastChange];
+    [self assert:nil equals:_lastContext];
+
+    [self assert:@"cheese" equals:anotherObserver._lastKeyPath];
+    [self assert:tester equals:anotherObserver._lastObject];
+    [self assert:@{CPKeyValueChangeKindKey: CPKeyValueChangeSetting} equals:anotherObserver._lastChange];
+    [self assert:nil equals:anotherObserver._lastContext];
+
+    [self assert:1 equals:_getCheeseCounter message:@"Get method should only be called once, not " + _getCheeseCounter + " times"];
+}
+
+- (void)testSettingObservingOldPlusAnotherObserverWithNoOld
+{
+    var tester = [ObservingTester testerWithCheese:@"CHEESE!"];
+    [tester addObserver:self forKeyPath:@"cheese" options:CPKeyValueObservingOptionOld context:nil];
+
+    var anotherObserver = [[AnotherObserver alloc] init];
+    [tester addObserver:anotherObserver forKeyPath:@"cheese" options:0 context:nil];
+
+    [tester setValue:@"NEW CHEESE!" forKey:@"cheese"];
+
+    [self assert:@"cheese" equals:_lastKeyPath];
+    [self assert:tester equals:_lastObject];
+    [self assert:@{CPKeyValueChangeOldKey: @"CHEESE!", CPKeyValueChangeKindKey: CPKeyValueChangeSetting} equals:_lastChange];
+    [self assert:nil equals:_lastContext];
+
+    [self assert:@"cheese" equals:anotherObserver._lastKeyPath];
+    [self assert:tester equals:anotherObserver._lastObject];
+    [self assert:@{CPKeyValueChangeKindKey: CPKeyValueChangeSetting} equals:anotherObserver._lastChange];
+    [self assert:nil equals:anotherObserver._lastContext];
+
+    [self assert:1 equals:_getCheeseCounter message:@"Get method should only be called once, not " + _getCheeseCounter + " times"];
+}
+
+- (void)testSettingObservingNewAndOldPlusMoreObserversWithOnlyNewOrOld
+{
+    var tester = [ObservingTester testerWithCheese:@"CHEESE!"];
+    [tester addObserver:self forKeyPath:@"cheese" options:CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld context:nil];
+
+    var anotherObserver = [[AnotherObserver alloc] init];
+    [tester addObserver:anotherObserver forKeyPath:@"cheese" options:CPKeyValueObservingOptionOld context:nil];
+
+    var yetAnotherObserver = [[AnotherObserver alloc] init];
+    [tester addObserver:yetAnotherObserver forKeyPath:@"cheese" options:CPKeyValueObservingOptionNew context:nil];
+
+    var noNewOrOldObserver = [[AnotherObserver alloc] init];
+    [tester addObserver:noNewOrOldObserver forKeyPath:@"cheese" options:0 context:nil];
+
+    [tester setValue:@"NEW CHEESE!" forKey:@"cheese"];
+
+    [self assert:@"cheese" equals:_lastKeyPath];
+    [self assert:tester equals:_lastObject];
+    [self assert:@{CPKeyValueChangeNewKey: @"NEW CHEESE!", CPKeyValueChangeOldKey: @"CHEESE!", CPKeyValueChangeKindKey: CPKeyValueChangeSetting} equals:_lastChange];
+    [self assert:nil equals:_lastContext];
+
+    [self assert:@"cheese" equals:anotherObserver._lastKeyPath];
+    [self assert:tester equals:anotherObserver._lastObject];
+    [self assert:@{CPKeyValueChangeOldKey: @"CHEESE!", CPKeyValueChangeKindKey: CPKeyValueChangeSetting} equals:anotherObserver._lastChange];
+    [self assert:nil equals:anotherObserver._lastContext];
+
+    [self assert:@"cheese" equals:yetAnotherObserver._lastKeyPath];
+    [self assert:tester equals:yetAnotherObserver._lastObject];
+    [self assert:@{CPKeyValueChangeNewKey: @"NEW CHEESE!", CPKeyValueChangeKindKey: CPKeyValueChangeSetting} equals:yetAnotherObserver._lastChange];
+    [self assert:nil equals:yetAnotherObserver._lastContext];
+
+    [self assert:@"cheese" equals:noNewOrOldObserver._lastKeyPath];
+    [self assert:tester equals:noNewOrOldObserver._lastObject];
+    [self assert:@{CPKeyValueChangeKindKey: CPKeyValueChangeSetting} equals:noNewOrOldObserver._lastChange];
+    [self assert:nil equals:noNewOrOldObserver._lastContext];
+
+    [self assert:2 equals:_getCheeseCounter message:@"Get method should only be called twice even with many observers, not " + _getCheeseCounter + " times"];
 }
 
 - (void)observeValueForKeyPath:(CPString)aKeyPath
@@ -47,9 +242,14 @@
                         change:(CPDictionary)aChange
                        context:(id)aContext
 {
+    _secondLastKeyPath = _lastKeyPath;
+    _secondLastObject  = _lastObject;
+    _secondLastChange  = _lastChange;
+    _secondLastContext = _lastContext;
+
     _lastKeyPath = aKeyPath;
     _lastObject  = anObject;
-    _lastChange  = aChange;
+    _lastChange  = [aChange copy];
     _lastContext = aContext;
 }
 
@@ -244,6 +444,7 @@
 
 - (id)cheese
 {
+    _getCheeseCounter++;
     return cheese;
 }
 
@@ -277,6 +478,37 @@
 - (CPString)observedCheese
 {
     return [[self observingTester] cheese];
+}
+
+@end
+
+@implementation AnotherObserver : CPObject
+{
+    CPString        _lastKeyPath;
+    id              _lastObject;
+    CPDictionary    _lastChange;
+    id              _lastContext;
+
+    CPString        _secondLastKeyPath;
+    id              _secondLastObject;
+    CPDictionary    _secondLastChange;
+    id              _secondLastContext;
+}
+
+- (void)observeValueForKeyPath:(CPString)aKeyPath
+                      ofObject:(id)anObject
+                        change:(CPDictionary)aChange
+                       context:(id)aContext
+{
+    _secondLastKeyPath = _lastKeyPath;
+    _secondLastObject  = _lastObject;
+    _secondLastChange  = _lastChange;
+    _secondLastContext = _lastContext;
+
+    _lastKeyPath = aKeyPath;
+    _lastObject  = anObject;
+    _lastChange  = [aChange copy];
+    _lastContext = aContext;
 }
 
 @end

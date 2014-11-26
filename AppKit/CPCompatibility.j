@@ -78,6 +78,8 @@ CPInputOnInputEventFeature              = 30;
 
 CPFileAPIFeature                        = 31;
 
+CPAltEnterTextAreaFeature               = 32;
+
 
 
 /*
@@ -100,6 +102,7 @@ var USER_AGENT                          = "",
 // default these features to true
 PLATFORM_FEATURES[CPInputTypeCanBeChangedFeature] = YES;
 PLATFORM_FEATURES[CPInputSetFontOutsideOfDOM] = YES;
+PLATFORM_FEATURES[CPAltEnterTextAreaFeature] = YES;
 
 if (typeof window !== "undefined" && typeof window.navigator !== "undefined")
     USER_AGENT = window.navigator.userAgent;
@@ -208,6 +211,7 @@ else if (USER_AGENT.indexOf("Gecko") !== -1) // Must follow KHTML check.
     // Some day this might be fixed and should be version prefixed. No known fixed version yet.
     PLATFORM_FEATURES[CPInput1PxLeftPadding] = YES;
 
+    PLATFORM_FEATURES[CPAltEnterTextAreaFeature] = NO;
     // This was supposed to be added in Firefox 22, but when testing with the latest beta as of 2013-06-14
     // it does not seem to work. It seems to exhibit the CPJavaScriptPasteRequiresEditableTarget problem,
     // and in addition doesn't seem to work with our native copy code either.

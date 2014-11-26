@@ -6,6 +6,7 @@ var FILENAMES = [
         "Class/root-class",
         "Class/root-class-one-ivar",
         "Class/root-class-multiple-ivars",
+        "Class/accessors",
 
         "Messages/no-parameters",
         "Messages/one-parameter",

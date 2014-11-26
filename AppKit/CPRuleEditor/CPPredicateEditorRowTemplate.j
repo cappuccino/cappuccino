@@ -708,7 +708,10 @@ CPTransformableAttributeType = 1800;
         view = [[CPCheckBox alloc] initWithFrame:CGRectMake(0, 0, 50, 26)];
     }
     else if (attributeType == CPDateAttributeType)
+    {
         view = [[CPDatePicker alloc] initWithFrame:CGRectMake(0, 0, 180, 26)];
+        [view setDatePickerElements:CPYearMonthDayDatePickerElementFlag];
+    }
     else
         return nil;
 

@@ -4,14 +4,33 @@
 
 [CPApplication sharedApplication]
 
+var methodCalled;
+
 @implementation CPViewTest : OJTestCase
 {
     CPView view;
+    CPView view1;
+    CPView view2;
+    CPView view3;
+
+    CPWindow window;
 }
 
 - (void)setUp
 {
+    window = [[CPWindow alloc] initWithContentRect:CGRectMake(0.0, 0.0, 1000.0, 1000.0) styleMask:CPWindowNotSizable];
+
     view = [[CPView alloc] initWithFrame:CGRectMakeZero()];
+    view1 = [[CPResponderView alloc] initWithFrame:CGRectMakeZero()];
+    view2 = [[CPResponderView alloc] initWithFrame:CGRectMakeZero()];
+    view3 = [[CPResponderView alloc] initWithFrame:CGRectMakeZero()];
+
+    [view1 setIdentifier:@"view1"];
+    [view2 setIdentifier:@"view2"];
+    [view3 setIdentifier:@"view3"];
+
+    methodCalled = [];
+
     [super setUp];
 }
 
@@ -446,9 +465,212 @@
     [self assertFalse:[subview hasThemeState:CPThemeStateFirstResponder]];
 }
 
+- (void)testWhenAddedSubviewMethodCalled
+{
+    var expectedRestult = [@"viewWillMoveToSuperview_view1", @"viewDidMoveToSuperview_view1", "viewWillMoveToWindow_view1", "viewDidMoveToWindow_view1"];
+
+    [[window contentView] addSubview:view1];
+
+    [self assert:expectedRestult equals:methodCalled];
+}
+
+- (void)testWhenAddedSubviewWithoutWindowMethodCalled
+{
+    var expectedRestult = [@"viewWillMoveToSuperview_view2", @"viewDidMoveToSuperview_view2"];
+
+    [view1 addSubview:view2];
+
+    [self assert:expectedRestult equals:methodCalled];
+}
+
+- (void)testWhenAddedSubviewTwiceMethodCalled
+{
+    var expectedRestult = [@"viewWillMoveToSuperview_view1", @"viewDidMoveToSuperview_view1", "viewWillMoveToWindow_view1", "viewDidMoveToWindow_view1", @"viewWillMoveToSuperview_view1", @"viewDidMoveToSuperview_view1", "viewWillMoveToWindow_view1", "viewDidMoveToWindow_view1"];
+
+    [[window contentView] addSubview:view1];
+    [[window contentView] addSubview:view1];
+
+    [self assert:expectedRestult equals:methodCalled];
+}
+
+- (void)testWhenRemovedSubviewMethodCalled
+{
+    var expectedRestult = [@"viewWillMoveToSuperview_view1", @"viewDidMoveToSuperview_view1"];
+
+    [view1 removeFromSuperview];
+
+    [self assert:expectedRestult equals:methodCalled];
+}
+
+- (void)testWhenAddedSubviewThenRemovedSubviewMethodCalled
+{
+    var expectedRestult = [@"viewWillMoveToSuperview_view1", @"viewDidMoveToSuperview_view1", "viewWillMoveToWindow_view1", "viewDidMoveToWindow_view1"];
+
+    [[window contentView] addSubview:view1];
+
+    methodCalled = [];
+    [view1 removeFromSuperview];
+
+    [self assert:expectedRestult equals:methodCalled];
+}
+
+- (void)testWhenAddedSubviewThenRemovedSubviewWithoutWindowMethodCalled
+{
+    var expectedRestult = [@"viewWillMoveToSuperview_view1", @"viewDidMoveToSuperview_view1"];
+
+    [view1 addSubview:view2];
+
+    methodCalled = [];
+    [view1 removeFromSuperview];
+
+    [self assert:expectedRestult equals:methodCalled];
+}
+
+- (void)testWhenAddedTwoSubviewsMethodCalled
+{
+    var expectedRestult = [@"viewWillMoveToSuperview_view2", @"viewDidMoveToSuperview_view2",@"viewWillMoveToSuperview_view1", @"viewDidMoveToSuperview_view1", "viewWillMoveToWindow_view1", "viewWillMoveToWindow_view2", "viewDidMoveToWindow_view2",  "viewDidMoveToWindow_view1"];
+
+    [view1 addSubview:view2];
+    [[window contentView] addSubview:view1];
+
+    [self assert:expectedRestult equals:methodCalled];
+}
+
+- (void)testWhenAddedTwoSubviewsThenRemovedMethodCalled
+{
+    var expectedRestult = [@"viewWillMoveToSuperview_view1", @"viewDidMoveToSuperview_view1", "viewWillMoveToWindow_view1", "viewWillMoveToWindow_view2", "viewDidMoveToWindow_view2",  "viewDidMoveToWindow_view1"];
+
+    [view1 addSubview:view2];
+    [[window contentView] addSubview:view1];
+
+    methodCalled = [];
+    [view1 removeFromSuperview];
+
+    [self assert:expectedRestult equals:methodCalled];
+}
+
+- (void)testWhenAddedTwoSubviewsThenAddedTheViewToAnotherViewWithoutWindowMethodCalled
+{
+    var expectedRestult = [@"viewWillMoveToSuperview_view1", @"viewDidMoveToSuperview_view1", @"viewWillMoveToWindow_view1", @"viewDidMoveToWindow_view1", @"viewWillMoveToSuperview_view1", @"viewDidMoveToSuperview_view1", @"viewWillMoveToWindow_view1", @"viewDidMoveToWindow_view1"];
+
+    [[window contentView] addSubview:view1];
+    [view2 addSubview:view1];
+
+    [self assert:expectedRestult equals:methodCalled];
+}
+
+- (void)testWhenAddedOneSubviewsWithSetSubviewsMethodCalled
+{
+    var expectedRestult = [@"viewWillMoveToSuperview_view1", @"viewDidMoveToSuperview_view1", "viewWillMoveToWindow_view1", "viewDidMoveToWindow_view1"];
+
+    [[window contentView] setSubviews:[view1]];
+
+    [self assert:expectedRestult equals:methodCalled];
+}
+
+- (void)testWhenAddedTwoSubviewsWithSetSubviewsMethodCalled
+{
+    var expectedRestult = [@"viewWillMoveToSuperview_view1", @"viewDidMoveToSuperview_view1", "viewWillMoveToWindow_view1", "viewDidMoveToWindow_view1", @"viewWillMoveToSuperview_view2", @"viewDidMoveToSuperview_view2", "viewWillMoveToWindow_view2", "viewDidMoveToWindow_view2"];
+
+    [[window contentView] setSubviews:[view1, view2]];
+
+    [self assert:expectedRestult equals:methodCalled];
+}
+
+- (void)testWhenAddedTwoSubviewsThenSetSubviewsWithOneViewMethodCalled
+{
+    var expectedRestult = [@"viewWillMoveToSuperview_view2", @"viewDidMoveToSuperview_view2", "viewWillMoveToWindow_view2", "viewDidMoveToWindow_view2"];
+
+    [[window contentView] setSubviews:[view1, view2]];
+
+    methodCalled = [];
+
+    [[window contentView] setSubviews:[view1]];
+
+    [self assert:expectedRestult equals:methodCalled];
+}
+
+- (void)testWhenAddedTwoSubviewsThenSetSubviewsWithTwoViewsMethodCalled
+{
+    var expectedRestult = [@"viewWillMoveToSuperview_view2", @"viewDidMoveToSuperview_view2", "viewWillMoveToWindow_view2", "viewDidMoveToWindow_view2", @"viewWillMoveToSuperview_view3", @"viewDidMoveToSuperview_view3", "viewWillMoveToWindow_view3", "viewDidMoveToWindow_view3"];
+
+    [[window contentView] setSubviews:[view1, view2]];
+
+    methodCalled = [];
+
+    [[window contentView] setSubviews:[view1, view3]];
+
+    [self assert:expectedRestult equals:methodCalled];
+}
+
+- (void)testWhenReplacedViewWithSameViewMethodCalled
+{
+    var expectedRestult = [];
+
+    [[window contentView] addSubview:view1];
+
+    methodCalled = [];
+
+    [[window contentView] replaceSubview:view1 with:view1];
+
+    [self assert:expectedRestult equals:methodCalled];
+}
+
+- (void)testWhenReplacedViewWithOtherViewMethodCalled
+{
+    var expectedRestult = [@"viewWillMoveToSuperview_view2", @"viewDidMoveToSuperview_view2", "viewWillMoveToWindow_view2", "viewDidMoveToWindow_view2", @"viewWillMoveToSuperview_view1", @"viewDidMoveToSuperview_view1", "viewWillMoveToWindow_view1", "viewDidMoveToWindow_view1"];
+
+    [[window contentView] addSubview:view1];
+
+    methodCalled = [];
+
+    [[window contentView] replaceSubview:view1 with:view2];
+
+    [self assert:expectedRestult equals:methodCalled];
+}
+
+- (void)testWhenReplacedViewWithOtherAddedViewMethodCalled
+{
+    var expectedRestult = [@"viewWillMoveToSuperview_view2", @"viewDidMoveToSuperview_view2", "viewWillMoveToWindow_view2", "viewDidMoveToWindow_view2", @"viewWillMoveToSuperview_view1", @"viewDidMoveToSuperview_view1", "viewWillMoveToWindow_view1", "viewDidMoveToWindow_view1"];
+
+    [[window contentView] addSubview:view1];
+    [[window contentView] addSubview:view2];
+
+    methodCalled = [];
+
+    [[window contentView] replaceSubview:view1 with:view2];
+
+    [self assert:expectedRestult equals:methodCalled];
+}
+
 @end
 
+
 @implementation CPResponderView : CPView
+
+- (void)viewDidMoveToSuperview
+{
+    var string = @"viewDidMoveToSuperview_" + [self identifier];
+    [methodCalled addObject:string];
+}
+
+- (void)viewDidMoveToWindow
+{
+    var string = @"viewDidMoveToWindow_" + [self identifier];
+    [methodCalled addObject:string];
+}
+
+- (void)viewWillMoveToSuperview:(CPView)newSuperview
+{
+    var string = @"viewWillMoveToSuperview_" + [self identifier];
+    [methodCalled addObject:string];
+}
+
+- (void)viewWillMoveToWindow:(CPWindow)newWindow
+{
+    var string = @"viewWillMoveToWindow_" + [self identifier];
+    [methodCalled addObject:string];
+}
 
 - (BOOL)acceptsFirstResponder
 {

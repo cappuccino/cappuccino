@@ -473,8 +473,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     if (!_sortDescriptors)
         _sortDescriptors = [];
-
-    [self _startObservingFirstResponder];
 }
 
 /*!
@@ -964,7 +962,7 @@ NOT YET IMPLEMENTED
 </pre>
 */
 
-- (void)unfocusedSelectionGradientColors
+- (CPColor)unfocusedSelectionGradientColors
 {
     if (!_unfocusedSourceListSelectionColor)
     {
@@ -3950,6 +3948,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     // FIXME: yuck!
     var identifier = [aDataView identifier];
 
+    if ([aDataView hasThemeState:CPThemeStateSelectedDataView])
+        [aDataView unsetThemeState:CPThemeStateSelectedDataView];
+
     if (!_cachedDataViews[identifier])
         _cachedDataViews[identifier] = [aDataView];
     else
@@ -4453,6 +4454,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (void)viewWillMoveToSuperview:(CPView)aView
 {
+    [super viewWillMoveToSuperview:aView];
+
     var superview = [self superview],
         defaultCenter = [CPNotificationCenter defaultCenter];
 
@@ -5120,9 +5123,32 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     var hit = [super hitTest:aPoint];
 
     if ([[CPApp currentEvent] type] == CPLeftMouseDown && [hit acceptsFirstResponder] && ![self isRowSelected:[self rowForView:hit]])
+    {
+        if (_selectionHighlightStyle == CPTableViewSelectionHighlightStyleNone)
+            return hit;
+
         return self;
+    }
 
     return hit;
+}
+
+- (void)_removeObservers
+{
+    if (!_isObserving)
+        return;
+
+    [super _removeObservers];
+    [self _stopObservingFirstResponder];
+}
+
+- (void)_addObservers
+{
+    if (_isObserving)
+        return;
+
+    [super _addObservers];
+    [self _startObservingFirstResponder];
 }
 
 - (void)_startObservingFirstResponder
@@ -5156,7 +5182,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     // This makes sure the theming effects of a focused table remain in effect even as cells are being edited in it.
     [self _notifyViewDidBecomeFirstResponder];
 
-    if (_editingRow !== CPNotFound && [responder isKindOfClass:[CPTextField class]] && ![responder isBezeled])
+    if (_editingRow !== CPNotFound && [responder isKindOfClass:[CPTextField class]] && ![responder isBezeled] && [responder isEditable])
     {
         [responder setBezeled:YES];
         [self _registerForEndEditingNote:responder];
@@ -6003,6 +6029,11 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [super encodeWithCoder:aCoder];
+
+    // We do this in order to avoid encoding the _tableDrawView, which
+    // should just automatically be created programmatically as needed.
+    if (_tableDrawView)
+        [_tableDrawView removeFromSuperview];
 
     [aCoder encodeObject:_dataSource forKey:CPTableViewDataSourceKey];
     [aCoder encodeObject:_delegate forKey:CPTableViewDelegateKey];

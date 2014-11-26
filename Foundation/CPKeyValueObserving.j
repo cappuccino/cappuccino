@@ -327,6 +327,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
     Class           _nativeClass;
     CPDictionary    _changesForKey;
     CPDictionary    _nestingForKey;
+    CPDictionary    _minOptionsForKey;
     Object          _observersForKey;
     int             _observersForKeyLength;
     CPSet           _replacedKeys;
@@ -354,6 +355,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
         _observersForKey    = {};
         _changesForKey      = {};
         _nestingForKey      = {};
+        _minOptionsForKey   = {};
         _observersForKeyLength = 0;
 
         [self _replaceClass];
@@ -767,12 +769,20 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
 
     if (options & CPKeyValueObservingOptionInitial)
     {
-        var newValue = [_targetObject valueForKeyPath:aPath];
+        var changes;
 
-        if (newValue === nil || newValue === undefined)
-            newValue = [CPNull null];
+        if (options & CPKeyValueObservingOptionNew)
+        {
+            var newValue = [_targetObject valueForKeyPath:aPath];
 
-        var changes = @{ CPKeyValueChangeNewKey: newValue };
+            if (newValue == nil)
+                newValue = [CPNull null];
+
+            changes = @{ CPKeyValueChangeKindKey: CPKeyValueChangeSetting, CPKeyValueChangeNewKey: newValue };
+        } else {
+            changes = @{ CPKeyValueChangeKindKey: CPKeyValueChangeSetting };
+        }
+
         [anObserver observeValueForKeyPath:aPath ofObject:_targetObject change:changes context:aContext];
     }
 }
@@ -819,7 +829,9 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
 
 - (void)_sendNotificationsForKey:(CPString)aKey changeOptions:(CPDictionary)changeOptions isBefore:(BOOL)isBefore
 {
-    var changes = _changesForKey[aKey];
+    var changes = _changesForKey[aKey],
+        observers = [_observersForKey[aKey] allValues],
+        observersMinimumOptions = 0;
 
     if (isBefore)
     {
@@ -838,61 +850,78 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
 
         _nestingForKey[aKey] = 1;
 
+        // Get the combined minimum of the ...Old and ...New options for all observers
+        var count = observers ? observers.length : 0;
+
+        while (count--)
+        {
+            var observerInfo = observers[count];
+
+            observersMinimumOptions |= observerInfo.options & kvoNewAndOld;
+        }
+
+        _minOptionsForKey[aKey] = observersMinimumOptions;
         changes = changeOptions;
 
-        var indexes = [changes objectForKey:CPKeyValueChangeIndexesKey],
-            setMutationKind = changes[_CPKeyValueChangeSetMutationKindKey];
-
-        if (setMutationKind)
+        if (observersMinimumOptions & CPKeyValueObservingOptionOld)
         {
-            var setMutationObjects = [changes[_CPKeyValueChangeSetMutationObjectsKey] copy],
-                setExistingObjects = [[_targetObject valueForKey: aKey] copy];
+            var indexes = [changes objectForKey:CPKeyValueChangeIndexesKey],
+                setMutationKind = changes[_CPKeyValueChangeSetMutationKindKey];
 
-            if (setMutationKind == CPKeyValueMinusSetMutation)
+            if (setMutationKind)
             {
-                [setExistingObjects intersectSet: setMutationObjects];
-                [changes setValue:setExistingObjects forKey:CPKeyValueChangeOldKey];
+                var setMutationObjects = [changes[_CPKeyValueChangeSetMutationObjectsKey] copy],
+                    setExistingObjects = [[_targetObject valueForKey: aKey] copy];
+
+                if (setMutationKind == CPKeyValueMinusSetMutation)
+                {
+                    [setExistingObjects intersectSet: setMutationObjects];
+                    [changes setValue:setExistingObjects forKey:CPKeyValueChangeOldKey];
+                }
+                else if (setMutationKind === CPKeyValueIntersectSetMutation || setMutationKind === CPKeyValueSetSetMutation)
+                {
+                    [setExistingObjects minusSet: setMutationObjects];
+                    [changes setValue:setExistingObjects forKey:CPKeyValueChangeOldKey];
+                }
+
+                //for unordered to-many relationships (CPSet) even new values can only be calculated before!!!
+                if (setMutationKind === CPKeyValueUnionSetMutation || setMutationKind === CPKeyValueSetSetMutation)
+                {
+                    [setMutationObjects minusSet: setExistingObjects];
+                    //hide new value (for CPKeyValueObservingOptionPrior messages)
+                    //as long as "didChangeValue..." is not yet called!
+                    changes[_CPKeyValueChangeSetMutationNewValueKey] = setMutationObjects;
+                }
             }
-            else if (setMutationKind === CPKeyValueIntersectSetMutation || setMutationKind === CPKeyValueSetSetMutation)
+            else if (indexes)
             {
-                [setExistingObjects minusSet: setMutationObjects];
-                [changes setValue:setExistingObjects forKey:CPKeyValueChangeOldKey];
-            }
+                var type = [changes objectForKey:CPKeyValueChangeKindKey];
 
-            //for unordered to-many relationships (CPSet) even new values can only be calculated before!!!
-            if (setMutationKind === CPKeyValueUnionSetMutation || setMutationKind === CPKeyValueSetSetMutation)
+                // for ordered to-many relationships, oldvalue is only sensible for replace and remove
+                if (type === CPKeyValueChangeReplacement || type === CPKeyValueChangeRemoval)
+                {
+                    //FIXME: do we need to go through and replace "" with CPNull?
+                    var newValues = [[_targetObject mutableArrayValueForKeyPath:aKey] objectsAtIndexes:indexes];
+                    [changes setValue:newValues forKey:CPKeyValueChangeOldKey];
+                }
+            }
+            else
             {
-                [setMutationObjects minusSet: setExistingObjects];
-                //hide new value (for CPKeyValueObservingOptionPrior messages)
-                //as long as "didChangeValue..." is not yet called!
-                changes[_CPKeyValueChangeSetMutationNewValueKey] = setMutationObjects;
+                var oldValue = [_targetObject valueForKey:aKey];
+
+                if (oldValue === nil || oldValue === undefined)
+                    oldValue = [CPNull null];
+
+                [changes setObject:oldValue forKey:CPKeyValueChangeOldKey];
             }
-        }
-        else if (indexes)
-        {
-            var type = [changes objectForKey:CPKeyValueChangeKindKey];
 
-            // for ordered to-many relationships, oldvalue is only sensible for replace and remove
-            if (type === CPKeyValueChangeReplacement || type === CPKeyValueChangeRemoval)
-            {
-                //FIXME: do we need to go through and replace "" with CPNull?
-                var newValues = [[_targetObject mutableArrayValueForKeyPath:aKey] objectsAtIndexes:indexes];
-                [changes setValue:newValues forKey:CPKeyValueChangeOldKey];
-            }
-        }
-        else
-        {
-            var oldValue = [_targetObject valueForKey:aKey];
-
-            if (oldValue === nil || oldValue === undefined)
-                oldValue = [CPNull null];
-
-            [changes setObject:oldValue forKey:CPKeyValueChangeOldKey];
         }
 
         [changes setObject:1 forKey:CPKeyValueChangeNotificationIsPriorKey];
-
         _changesForKey[aKey] = changes;
+
+        // Clear ...New option as it should never be sent for a ...Prior option
+        observersMinimumOptions &= ~CPKeyValueObservingOptionNew;
     }
     else
     {
@@ -927,55 +956,97 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
 
         [changes removeObjectForKey:CPKeyValueChangeNotificationIsPriorKey];
 
-        var indexes = [changes objectForKey:CPKeyValueChangeIndexesKey],
-            setMutationKind = changes[_CPKeyValueChangeSetMutationKindKey];
+        observersMinimumOptions = _minOptionsForKey[aKey];
 
-        if (setMutationKind)
+        if (observersMinimumOptions & CPKeyValueObservingOptionNew)
         {
-            //old and new values for unordered to-many relationships can only be calculated before
-            //set recalculated hidden new value as soon as "didChangeValue..." is called!
-            var newValue = changes[_CPKeyValueChangeSetMutationNewValueKey];
-            [changes setValue:newValue forKey:CPKeyValueChangeNewKey];
+            var indexes = [changes objectForKey:CPKeyValueChangeIndexesKey],
+                setMutationKind = changes[_CPKeyValueChangeSetMutationKindKey];
 
-            //delete hidden values
-            delete changes[_CPKeyValueChangeSetMutationNewValueKey];
-            delete changes[_CPKeyValueChangeSetMutationObjectsKey];
-            delete changes[_CPKeyValueChangeSetMutationKindKey];
-        }
-        else if (indexes)
-        {
-            var type = [changes objectForKey:CPKeyValueChangeKindKey];
-
-            // for ordered to-many relationships, newvalue is only sensible for replace and insert
-            if (type == CPKeyValueChangeReplacement || type == CPKeyValueChangeInsertion)
+            if (setMutationKind)
             {
-                //FIXME: do we need to go through and replace "" with CPNull?
-                var newValues = [[_targetObject mutableArrayValueForKeyPath:aKey] objectsAtIndexes:indexes];
-                [changes setValue:newValues forKey:CPKeyValueChangeNewKey];
+                //old and new values for unordered to-many relationships can only be calculated before
+                //set recalculated hidden new value as soon as "didChangeValue..." is called!
+                var newValue = changes[_CPKeyValueChangeSetMutationNewValueKey];
+                [changes setValue:newValue forKey:CPKeyValueChangeNewKey];
+
+                //delete hidden values
+                delete changes[_CPKeyValueChangeSetMutationNewValueKey];
+                delete changes[_CPKeyValueChangeSetMutationObjectsKey];
+                delete changes[_CPKeyValueChangeSetMutationKindKey];
+            }
+            else if (indexes)
+            {
+                var type = [changes objectForKey:CPKeyValueChangeKindKey];
+
+                // for ordered to-many relationships, newvalue is only sensible for replace and insert
+                if (type == CPKeyValueChangeReplacement || type == CPKeyValueChangeInsertion)
+                {
+                    //FIXME: do we need to go through and replace "" with CPNull?
+                    var newValues = [[_targetObject mutableArrayValueForKeyPath:aKey] objectsAtIndexes:indexes];
+                    [changes setValue:newValues forKey:CPKeyValueChangeNewKey];
+                }
+            }
+            else
+            {
+                var newValue = [_targetObject valueForKey:aKey];
+
+                if (newValue === nil || newValue === undefined)
+                    newValue = [CPNull null];
+
+                [changes setObject:newValue forKey:CPKeyValueChangeNewKey];
+            }
+        }
+
+        delete _minOptionsForKey[aKey];
+        delete _changesForKey[aKey];
+    }
+
+    var count = observers ? observers.length : 0,
+        changesCache = {};
+
+    while (count--)
+    {
+        var observerInfo = observers[count],
+            options = observerInfo.options,
+            onlyNewAndOldOptions = options & kvoNewAndOld,
+            observerChanges = nil;
+
+        if (isBefore)
+        {
+            // Only send 'observeValueForKeyPath:' for '...Prior' option when handling 'willChangeValue...'
+            if (options & CPKeyValueObservingOptionPrior)
+            {
+                observerChanges = changes;
+                // The new values are not yet created in the change dictionary so remove ...New option to get a working cache below
+                onlyNewAndOldOptions &= ~CPKeyValueObservingOptionNew;
             }
         }
         else
         {
-            var newValue = [_targetObject valueForKey:aKey];
-
-            if (newValue === nil || newValue === undefined)
-                newValue = [CPNull null];
-
-            [changes setObject:newValue forKey:CPKeyValueChangeNewKey];
+            observerChanges = changes;
         }
 
-        delete _changesForKey[aKey];
-    }
-
-    var observers = [_observersForKey[aKey] allValues],
-        count = observers ? observers.length : 0;
-
-    while (count--)
-    {
-        var observerInfo = observers[count];
-
-        if (!isBefore || (observerInfo.options & CPKeyValueObservingOptionPrior))
-            [observerInfo.observer observeValueForKeyPath:aKey ofObject:_targetObject change:changes context:observerInfo.context];
+        if (observerChanges)
+        {
+            // Don't change the 'change' dictionary when the observer wants the minimum options.
+            // The ...New option is remved above for the ...Prior case
+            if (onlyNewAndOldOptions !== observersMinimumOptions)
+            {
+                // Use a subset of the 'change' dictionary. First try to find it in the cache
+                observerChanges = changesCache[onlyNewAndOldOptions];
+                if (!observerChanges)
+                {
+                    // Not in the cache. Build a new dictionary and store it in the cache
+                    changesCache[onlyNewAndOldOptions] = observerChanges = [changes mutableCopy];
+                    if (!(onlyNewAndOldOptions & CPKeyValueObservingOptionOld))
+                        [observerChanges removeObjectForKey:CPKeyValueChangeOldKey];
+                    if (!(onlyNewAndOldOptions & CPKeyValueObservingOptionNew))
+                        [observerChanges removeObjectForKey:CPKeyValueChangeNewKey];
+                }
+            }
+            [observerInfo.observer observeValueForKeyPath:aKey ofObject:_targetObject change:observerChanges context:observerInfo.context];
+        }
     }
 
     var dependentKeysMap = _nativeClass[DependentKeysKey];
@@ -1226,13 +1297,21 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
 {
     if (aKeyPath === _firstPart)
     {
-        var oldValue = [_value valueForKeyPath:_secondPart],
-            newValue = [_object valueForKeyPath:_firstPart + "." + _secondPart],
-            pathChanges = @{
-                    CPKeyValueChangeNewKey: newValue ? newValue : [CPNull null],
-                    CPKeyValueChangeOldKey: oldValue ? oldValue : [CPNull null],
-                    CPKeyValueChangeKindKey: CPKeyValueChangeSetting,
-                };
+        var pathChanges = [CPMutableDictionary dictionaryWithObject:CPKeyValueChangeSetting forKey:CPKeyValueChangeKindKey];
+
+        if (_options & CPKeyValueObservingOptionOld)
+        {
+            var oldValue = [_value valueForKeyPath:_secondPart];
+
+            [pathChanges setObject:oldValue != null ? oldValue : [CPNull null] forKey:CPKeyValueChangeOldKey];
+        }
+
+        if (_options & CPKeyValueObservingOptionNew)
+        {
+            var newValue = [_object valueForKeyPath:_firstPart + "." + _secondPart];
+
+            [pathChanges setObject:newValue != null ? newValue : [CPNull null] forKey:CPKeyValueChangeNewKey];
+        }
 
         [_observer observeValueForKeyPath:_firstPart + "." + _secondPart ofObject:_object change:pathChanges context:_context];
 
