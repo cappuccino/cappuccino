@@ -62,6 +62,9 @@
 
 - (void)_observeDocumentView
 {
+    if (!_documentView)
+        return;
+
     var defaultCenter = [CPNotificationCenter defaultCenter];
 
     [_documentView setPostsFrameChangedNotifications:YES];
@@ -87,15 +90,15 @@
     [defaultCenter
         removeObserver:self
                   name:CPViewFrameDidChangeNotification
-                object:_documentView];
+                object:aDocumentView];
 
     [defaultCenter
         removeObserver:self
                   name:CPViewBoundsDidChangeNotification
-                object:_documentView];
+                object:aDocumentView];
 }
 
-- (void)_addObservers
+/*- (void)_addObservers
 {
     if (_isObserving)
         return;
@@ -115,7 +118,7 @@
 
     if (_documentView)
         [self _removeObserverDocumentView:_documentView];
-}
+}*/
 
 /*!
     Returns the document view.

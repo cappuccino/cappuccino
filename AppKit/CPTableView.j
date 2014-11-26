@@ -320,6 +320,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     CPTableColumn               _draggedColumn;
     CPArray                     _differedColumnDataToRemove;
+
+    CPView                      _observedClipView;
 }
 
 /*!
@@ -4454,41 +4456,15 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (void)viewWillMoveToSuperview:(CPView)aView
 {
-    [super viewWillMoveToSuperview:aView];
-
-    var superview = [self superview],
-        defaultCenter = [CPNotificationCenter defaultCenter];
-
-    if (superview)
-    {
-        [defaultCenter
-            removeObserver:self
-                      name:CPViewFrameDidChangeNotification
-                    object:superview];
-
-        [defaultCenter
-            removeObserver:self
-                      name:CPViewBoundsDidChangeNotification
-                    object:superview];
-    }
-
     if ([aView isKindOfClass:[CPClipView class]])
+        _observedClipView = aView;
+    else
     {
-        [aView setPostsFrameChangedNotifications:YES];
-        [aView setPostsBoundsChangedNotifications:YES];
-
-        [defaultCenter
-            addObserver:self
-               selector:@selector(superviewFrameChanged:)
-                   name:CPViewFrameDidChangeNotification
-                 object:aView];
-
-        [defaultCenter
-            addObserver:self
-               selector:@selector(superviewBoundsChanged:)
-                   name:CPViewBoundsDidChangeNotification
-                 object:aView];
+        [self _stopObservingClipView];
+        _observedClipView = nil;
     }
+
+    [super viewWillMoveToSuperview:aView];
 }
 
 /*!
@@ -5138,8 +5114,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     if (!_isObserving)
         return;
 
+    [self _stopObservingClipView];
     [super _removeObservers];
-    [self _stopObservingFirstResponder];
 }
 
 - (void)_addObservers
@@ -5147,13 +5123,64 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     if (_isObserving)
         return;
 
+    [self _startObservingClipView];
     [super _addObservers];
-    [self _startObservingFirstResponder];
 }
 
-- (void)_startObservingFirstResponder
+/*!
+    Called when the receiver is about to be moved to a new window.
+    @param aWindow the window to which the receiver will be moved.
+*/
+- (void)viewWillMoveToWindow:(CPWindow)aWindow
 {
-    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_firstResponderDidChange:) name:_CPWindowDidChangeFirstResponderNotification object:[self window]];
+    [super viewWillMoveToWindow:aWindow];
+
+    [self _stopObservingFirstResponder];
+
+    if (aWindow)
+        [self _startObservingFirstResponderForWindow:aWindow];
+}
+
+- (void)_startObservingClipView
+{
+    if (!_observedClipView)
+        return;
+
+    var defaultCenter = [CPNotificationCenter defaultCenter];
+
+    [_observedClipView setPostsFrameChangedNotifications:YES];
+    [_observedClipView setPostsBoundsChangedNotifications:YES];
+
+    [defaultCenter addObserver:self
+                          selector:@selector(superviewFrameChanged:)
+                              name:CPViewFrameDidChangeNotification
+                            object:_observedClipView];
+
+    [defaultCenter addObserver:self
+                      selector:@selector(superviewBoundsChanged:)
+                          name:CPViewBoundsDidChangeNotification
+                        object:_observedClipView];
+}
+
+- (void)_stopObservingClipView
+{
+    if (!_observedClipView)
+        return;
+
+    var defaultCenter = [CPNotificationCenter defaultCenter];
+
+    [defaultCenter removeObserver:self
+                             name:CPViewFrameDidChangeNotification
+                           object:_observedClipView];
+
+    [defaultCenter removeObserver:self
+                          name:CPViewBoundsDidChangeNotification
+                        object:_observedClipView];
+}
+
+- (void)_startObservingFirstResponderForWindow:(CPWindow)aWindow
+{
+    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_firstResponderDidChange:) name:_CPWindowDidChangeFirstResponderNotification object:aWindow];
 }
 
 - (void)_stopObservingFirstResponder
