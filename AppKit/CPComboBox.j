@@ -53,6 +53,11 @@ CPComboBoxWillPopUpNotification           = @"CPComboBoxWillPopUpNotification";
 
 CPComboBoxStateButtonBordered = CPThemeState("button-bordered");
 
+var CPComboBoxDelegate_comboBoxSelectionIsChanging_ = 1 << 0,
+    CPComboBoxDelegate_comboBoxSelectionDidChange_  = 1 << 1,
+    CPComboBoxDelegate_comboBoxWillPopUp_           = 1 << 2,
+    CPComboBoxDelegate_comboBoxWillDismiss_         = 1 << 3;
+
 var CPComboBoxTextSubview = @"text",
     CPComboBoxButtonSubview = @"button",
     CPComboBoxDefaultNumberOfVisibleItems = 5,
@@ -61,19 +66,20 @@ var CPComboBoxTextSubview = @"text",
 
 @implementation CPComboBox : CPTextField
 {
-    CPArray                 _items;
-    _CPPopUpList            _listDelegate;
-    CPComboBoxDataSource    _dataSource;
-    BOOL                    _usesDataSource;
-    BOOL                    _completes;
     BOOL                    _canComplete;
-    int                     _numberOfVisibleItems;
+    BOOL                    _completes;
     BOOL                    _forceSelection;
     BOOL                    _hasVerticalScroller;
-    CPString                _selectedStringValue;
-    CGSize                  _intercellSpacing;
-    float                   _itemHeight;
     BOOL                    _popUpButtonCausedResign;
+    BOOL                    _usesDataSource;
+    CGSize                  _intercellSpacing;
+    CPArray                 _items;
+    CPComboBoxDataSource    _dataSource;
+    CPInteger               _implementedDelegateMethods;
+    CPString                _selectedStringValue;
+    float                   _itemHeight;
+    int                     _numberOfVisibleItems;
+    _CPPopUpList            _listDelegate;
 }
 
 + (CPString)defaultThemeClass
@@ -228,41 +234,19 @@ var CPComboBoxTextSubview = @"text",
     if (aDelegate === delegate)
         return;
 
-    var defaultCenter = [CPNotificationCenter defaultCenter];
-
-    if (delegate)
-    {
-        [defaultCenter removeObserver:delegate name:CPComboBoxSelectionIsChangingNotification object:self];
-        [defaultCenter removeObserver:delegate name:CPComboBoxSelectionDidChangeNotification object:self];
-        [defaultCenter removeObserver:delegate name:CPComboBoxWillDismissNotification object:self];
-        [defaultCenter removeObserver:delegate name:CPComboBoxWillPopUpNotification object:self];
-    }
-
     if (aDelegate)
     {
         if ([aDelegate respondsToSelector:@selector(comboBoxSelectionIsChanging:)])
-            [defaultCenter addObserver:delegate
-                              selector:@selector(comboBoxSelectionIsChanging:)
-                                  name:CPComboBoxSelectionIsChangingNotification
-                                object:self];
+            _implementedDelegateMethods |= CPComboBoxDelegate_comboBoxSelectionIsChanging_
 
         if ([aDelegate respondsToSelector:@selector(comboBoxSelectionDidChange:)])
-            [defaultCenter addObserver:delegate
-                              selector:@selector(comboBoxSelectionDidChange:)
-                                  name:CPComboBoxSelectionDidChangeNotification
-                                object:self];
+            _implementedDelegateMethods |= CPComboBoxDelegate_comboBoxSelectionDidChange_
 
         if ([aDelegate respondsToSelector:@selector(comboBoxWillPopUp:)])
-            [defaultCenter addObserver:delegate
-                              selector:@selector(comboBoxWillPopUp:)
-                                  name:CPComboBoxWillPopUpNotification
-                                object:self];
+            _implementedDelegateMethods |= CPComboBoxDelegate_comboBoxWillPopUp_
 
         if ([aDelegate respondsToSelector:@selector(comboBoxWillDismiss:)])
-            [defaultCenter addObserver:delegate
-                              selector:@selector(comboBoxWillDissmis:)
-                                  name:CPComboBoxWillDismissNotification
-                                object:self];
+            _implementedDelegateMethods |= CPComboBoxDelegate_comboBoxWillDismiss_
     }
 
     [super setDelegate:aDelegate];
@@ -1005,24 +989,36 @@ var CPComboBoxTextSubview = @"text",
 /*! @ignore */
 - (void)comboBoxSelectionIsChanging:(CPNotification)aNotification
 {
+    if (_implementedDelegateMethods & CPComboBoxDelegate_comboBoxSelectionIsChanging_)
+        [_delegate comboBoxSelectionIsChanging:[[CPNotification alloc] initWithName:CPComboBoxSelectionIsChangingNotification object:self userInfo:nil]];
+
     [[CPNotificationCenter defaultCenter] postNotificationName:CPComboBoxSelectionIsChangingNotification object:self];
 }
 
 /*! @ignore */
 - (void)comboBoxSelectionDidChange:(CPNotification)aNotification
 {
+    if (_implementedDelegateMethods & CPComboBoxDelegate_comboBoxSelectionDidChange_)
+        [_delegate comboBoxSelectionDidChange:[[CPNotification alloc] initWithName:CPComboBoxSelectionDidChangeNotification object:self userInfo:nil]];
+
     [[CPNotificationCenter defaultCenter] postNotificationName:CPComboBoxSelectionDidChangeNotification object:self];
 }
 
 /*! @ignore */
 - (void)comboBoxWillPopUp:(CPNotification)aNotification
 {
+    if (_implementedDelegateMethods & CPComboBoxDelegate_comboBoxWillPopUp_)
+        [_delegate comboBoxWillPopUp:[[CPNotification alloc] initWithName:CPComboBoxWillPopUpNotification object:self userInfo:nil]];
+
     [[CPNotificationCenter defaultCenter] postNotificationName:CPComboBoxWillPopUpNotification object:self];
 }
 
 /*! @ignore */
 - (void)comboBoxWillDismiss:(CPNotification)aNotification
 {
+    if (_implementedDelegateMethods & CPComboBoxDelegate_comboBoxWillDismiss_)
+        [_delegate comboBoxWillDismiss:[[CPNotification alloc] initWithName:CPComboBoxWillDismissNotification object:self userInfo:nil]];
+
     [[CPNotificationCenter defaultCenter] postNotificationName:CPComboBoxWillDismissNotification object:self];
 }
 
