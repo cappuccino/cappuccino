@@ -1,5 +1,4 @@
-
-var the_class = objj_allocateClassPair(Nil, "Class"),
+var the_class = objj_allocateClassPair(Nil, "TestClass"),
     meta_class = the_class.isa;
 
 class_addIvars(the_class,[new objj_ivar("ivar"), new objj_ivar("array"), new objj_ivar("string"), new objj_ivar("integer")]);

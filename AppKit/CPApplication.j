@@ -37,6 +37,8 @@
 @import "CPWindowController.j"
 @import "_CPPopoverWindow.j"
 
+@typedef CPModalSession
+
 var CPMainCibFile               = @"CPMainCibFile",
     CPMainCibFileHumanFriendly  = @"Main cib file base name",
     CPEventModifierFlags = 0;

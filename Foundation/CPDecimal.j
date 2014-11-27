@@ -52,6 +52,8 @@
 @import "CPArray.j"
 @import "CPNumber.j"
 
+@typedef CPDecimal
+
 // Decimal size limits
 CPDecimalMaxDigits                   =   38;
 CPDecimalMaxExponent                 =  127;
@@ -68,6 +70,7 @@ CPCalculationUnderflow               = 3;
 CPCalculationDivideByZero            = 4;
 
 //CPRoundingMode Enum
+@typedef CPRoundingMode
 CPRoundPlain                         = 1;
 CPRoundDown                          = 2;
 CPRoundUp                            = 3;

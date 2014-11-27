@@ -100,6 +100,11 @@ GLOBAL(objj_object) = function()
     this._UID   = -1;
 }
 
+GLOBAL(objj_typeDef) = function(/*String*/ aName)
+{
+    this.name = aName;
+}
+
 // Working with Classes
 
 GLOBAL(class_getName) = function(/*Class*/ aClass)
@@ -440,6 +445,26 @@ GLOBAL(protocol_addProtocol) = function(/*Protocol*/ proto, /*Protocol*/ additio
     (proto.protocol_list || (proto.protocol_list = [])).push(addition);
 }
 
+
+var REGISTERED_TYPEDEFS = Object.create(null);
+
+GLOBAL(objj_allocateTypeDef) = function(/*String*/ aName)
+{
+    var typeDef = new objj_typeDef(aName);
+
+    return typeDef;
+}
+
+GLOBAL(objj_registerTypeDef) = function(/*TypeDef*/ typeDef)
+{
+    REGISTERED_TYPEDEFS[typeDef.name] = typeDef;
+}
+
+GLOBAL(typeDef_getName) = function(/*TypeDef*/ typeDef)
+{
+    return typeDef.name;
+}
+
 var _class_initialize = function(/*Class*/ aClass)
 {
     var meta = GETMETA(aClass);
@@ -619,6 +644,7 @@ GLOBAL(objj_resetRegisterClasses) = function()
 
     REGISTERED_CLASSES = Object.create(null);
     REGISTERED_PROTOCOLS = Object.create(null);
+    REGISTERED_TYPEDEFS = Object.create(null);
 
     resetBundle();
 }
@@ -749,6 +775,13 @@ GLOBAL(objj_getMetaClass) = function(/*String*/ aName)
 GLOBAL(objj_getProtocol) = function(/*String*/ aName)
 {
     return REGISTERED_PROTOCOLS[aName];
+}
+
+// Working with typeDef
+
+GLOBAL(objj_getTypeDef) = function(/*String*/ aName)
+{
+    return REGISTERED_TYPEDEFS[aName];
 }
 
 // Working with Instance Variables

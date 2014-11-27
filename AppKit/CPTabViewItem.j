@@ -23,7 +23,7 @@
 @import <Foundation/CPObject.j>
 
 @import "CPView.j"
-
+@class CPTabView
 
 /*
     The tab is currently selected.

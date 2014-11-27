@@ -26,7 +26,7 @@
 @import "CPImage.j"
 @import "CPView.j"
 
-
+@typedef CPShadowWeight
 CPLightShadow   = 0;
 CPHeavyShadow   = 1;
 

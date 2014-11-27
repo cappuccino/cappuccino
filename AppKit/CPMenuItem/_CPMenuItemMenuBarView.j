@@ -25,6 +25,7 @@
 
 @class _CPMenuBarWindow
 @class _CPMenuView
+@class CPMenuItem
 
 @implementation _CPMenuItemMenuBarView : CPView
 {

@@ -31,38 +31,6 @@ var CPDictionaryShowNilDeprecationMessage = YES,
 
     CPDictionaryMaxDescriptionRecursion = 10;
 
-/* @ignore */
-@implementation _CPDictionaryValueEnumerator : CPEnumerator
-{
-    CPEnumerator    _keyEnumerator;
-    CPDictionary    _dictionary;
-}
-
-- (id)initWithDictionary:(CPDictionary)aDictionary
-{
-    self = [super init];
-
-    if (self)
-    {
-        _keyEnumerator = [aDictionary keyEnumerator];
-        _dictionary = aDictionary;
-    }
-
-    return self;
-}
-
-- (id)nextObject
-{
-    var key = [_keyEnumerator nextObject];
-
-    if (key === nil)
-        return nil;
-
-    return [_dictionary objectForKey:key];
-}
-
-@end
-
 /*!
     @class CPDictionary
     @ingroup foundation
@@ -800,6 +768,40 @@ var CPDictionaryShowNilDeprecationMessage = YES,
 }
 
 @end
+
+
+/* @ignore */
+@implementation _CPDictionaryValueEnumerator : CPEnumerator
+{
+    CPEnumerator    _keyEnumerator;
+    CPDictionary    _dictionary;
+}
+
+- (id)initWithDictionary:(CPDictionary)aDictionary
+{
+    self = [super init];
+
+    if (self)
+    {
+        _keyEnumerator = [aDictionary keyEnumerator];
+        _dictionary = aDictionary;
+    }
+
+    return self;
+}
+
+- (id)nextObject
+{
+    var key = [_keyEnumerator nextObject];
+
+    if (key === nil)
+        return nil;
+
+    return [_dictionary objectForKey:key];
+}
+
+@end
+
 
 /*!
     @class CPMutableDictionary

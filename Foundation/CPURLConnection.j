@@ -26,6 +26,8 @@
 @import "CPURLRequest.j"
 @import "CPURLResponse.j"
 
+@typedef HTTPRequest
+
 var CPURLConnectionDelegate = nil;
 
 /*!

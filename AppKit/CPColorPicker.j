@@ -25,6 +25,8 @@
 @import "CPView.j"
 
 @class CPSlider
+@class CPColorPanel
+@class __CPColorWheel
 
 @global CPColorPickerViewWidth
 @global CPColorPickerViewHeight
