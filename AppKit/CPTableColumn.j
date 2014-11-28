@@ -31,6 +31,7 @@
 @global CPTableViewColumnDidResizeNotification
 
 @class _CPTableColumnHeaderView
+@class CPTableView
 
 CPTableColumnNoResizing         = 0;
 CPTableColumnAutoresizingMask   = 1 << 0;

@@ -42,16 +42,19 @@
 
 @end
 
+@typedef CPTextAlignment
 CPLeftTextAlignment      = 0;
 CPRightTextAlignment     = 1;
 CPCenterTextAlignment    = 2;
 CPJustifiedTextAlignment = 3;
 CPNaturalTextAlignment   = 4;
 
+@typedef CPControlSize
 CPRegularControlSize = 0;
 CPSmallControlSize   = 1;
 CPMiniControlSize    = 2;
 
+@typedef CPLineBreakMode
 CPLineBreakByWordWrapping     = 0;
 CPLineBreakByCharWrapping     = 1;
 CPLineBreakByClipping         = 2;
@@ -59,11 +62,13 @@ CPLineBreakByTruncatingHead   = 3;
 CPLineBreakByTruncatingTail   = 4;
 CPLineBreakByTruncatingMiddle = 5;
 
+@typedef CPVerticalTextAlignment
 CPTopVerticalTextAlignment    = 1;
 CPCenterVerticalTextAlignment = 2;
 CPBottomVerticalTextAlignment = 3;
 
 // Deprecated for use with images, use the CPImageScale constants
+@typedef CPImageScaling
 CPScaleProportionally = 0;
 CPScaleToFit          = 1;
 CPScaleNone           = 2;
@@ -73,6 +78,7 @@ CPImageScaleAxesIndependently      = 1;
 CPImageScaleNone                   = 2;
 CPImageScaleProportionallyUpOrDown = 3;
 
+@typedef CPCellImagePosition
 CPNoImage       = 0;
 CPImageOnly     = 1;
 CPImageLeft     = 2;

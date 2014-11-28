@@ -24,6 +24,8 @@
 @import "CPDate.j"
 @import "CPLocale.j"
 
+@class CPData
+
 CPTimeZoneNameStyleStandard = 0;
 CPTimeZoneNameStyleShortStandard = 1;
 CPTimeZoneNameStyleDaylightSaving = 2;

@@ -221,6 +221,8 @@ if (!exports.acorn) {
     }
   }
 
+  exports.TypeDefStatement = ignore;
+
   exports.MethodDeclarationStatement = function(node, st, c) {
     var body = node.body;
     if (body)

@@ -25,6 +25,7 @@
 @import "CPTabViewItem.j"
 @import "CPView.j"
 
+@typedef CPTabViewType
 CPTopTabsBezelBorder     = 0;
 //CPLeftTabsBezelBorder  = 1;
 CPBottomTabsBezelBorder  = 2;

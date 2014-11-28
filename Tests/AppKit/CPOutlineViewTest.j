@@ -1,5 +1,8 @@
 @import <AppKit/AppKit.j>
 
+@class TestOutlineDataSource
+
+
 @implementation CPOutlineViewTest : OJTestCase
 {
     CPOutlineView   outlineView;
