@@ -123,8 +123,6 @@ var CPZeroKeyCode = 48,
     // This is usefull when clicking on the stepper when the datePicker is not selected
     [_stepper setObjectValue:0];
 
-    //[_datePicker unsetThemeState:CPThemeStateEditing];
-
     return YES;
 }
 
