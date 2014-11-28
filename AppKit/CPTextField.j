@@ -1751,7 +1751,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)setDelegate:(id <CPTextFieldDelegate>)aDelegate
 {
-    if (_delegate == aDelegate)
+    if (_delegate === aDelegate)
         return;
 
     _delegate = aDelegate;
