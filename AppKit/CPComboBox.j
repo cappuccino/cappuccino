@@ -160,7 +160,7 @@ var CPComboBoxTextSubview = @"text",
 
 - (void)setIntercellSpacing:(CGSize)aSize
 {
-    if (_intercellSpacing && CGSizeEqualToSize(aSize, _intercellSpacing))
+    if (!aSize || (_intercellSpacing && CGSizeEqualToSize(aSize, _intercellSpacing)))
         return;
 
     _intercellSpacing = aSize;
@@ -396,49 +396,53 @@ var CPComboBoxTextSubview = @"text",
     if (_listDelegate === aDelegate)
         return;
 
-    var defaultCenter = [CPNotificationCenter defaultCenter];
-
-    if (_listDelegate)
-    {
-        [defaultCenter removeObserver:self name:_CPPopUpListWillPopUpNotification object:_listDelegate];
-        [defaultCenter removeObserver:self name:_CPPopUpListWillDismissNotification object:_listDelegate];
-        [defaultCenter removeObserver:self name:_CPPopUpListDidDismissNotification object:_listDelegate];
-        [defaultCenter removeObserver:self name:_CPPopUpListItemWasClickedNotification object:_listDelegate];
-
-        var oldTableView = [_listDelegate tableView];
-
-        if (oldTableView)
-        {
-            [defaultCenter removeObserver:self name:CPTableViewSelectionIsChangingNotification object:oldTableView];
-            [defaultCenter removeObserver:self name:CPTableViewSelectionDidChangeNotification object:oldTableView];
-        }
-    }
+    [self _removeObserversForListDelegate:_listDelegate];
 
     _listDelegate = aDelegate;
+
+    // We only add the observers if the CPComboBox is displayed
+    if ([self window])
+        [self _addObserversForListDelegate:_listDelegate]
+
+    // Apply our text style to the list
+    [_listDelegate setFont:[self font]];
+    [_listDelegate setAlignment:[self alignment]];
+
+    [self setHasVerticalScroller:_hasVerticalScroller];
+    [self setIntercellSpacing:_intercellSpacing];
+    [self setItemHeight:_itemHeight];
+}
+
+- (void)_addObserversForListDelegate:(_CPPopUpList)aDelegate
+{
+    if (!aDelegate)
+        return;
+
+    var defaultCenter = [CPNotificationCenter defaultCenter];
 
     [defaultCenter addObserver:self
                       selector:@selector(comboBoxWillPopUp:)
                           name:_CPPopUpListWillPopUpNotification
-                        object:_listDelegate];
+                        object:aDelegate];
 
     [defaultCenter addObserver:self
                       selector:@selector(comboBoxWillDismiss:)
                           name:_CPPopUpListWillDismissNotification
-                        object:_listDelegate];
+                        object:aDelegate];
 
     [defaultCenter addObserver:self
                       selector:@selector(listDidDismiss:)
                           name:_CPPopUpListDidDismissNotification
-                        object:_listDelegate];
+                        object:aDelegate];
 
     [defaultCenter addObserver:self
                       selector:@selector(itemWasClicked:)
                           name:_CPPopUpListItemWasClickedNotification
-                        object:_listDelegate];
+                        object:aDelegate];
 
-    [[_listDelegate scrollView] setHasVerticalScroller:_hasVerticalScroller];
+    [[aDelegate scrollView] setHasVerticalScroller:_hasVerticalScroller];
 
-    var tableView = [_listDelegate tableView];
+    var tableView = [aDelegate tableView];
 
     [defaultCenter addObserver:self
                       selector:@selector(comboBoxSelectionIsChanging:)
@@ -449,13 +453,27 @@ var CPComboBoxTextSubview = @"text",
                       selector:@selector(comboBoxSelectionDidChange:)
                           name:CPTableViewSelectionDidChangeNotification
                         object:tableView];
+}
 
-    // Apply our text style to the list
-    [_listDelegate setFont:[self font]];
-    [_listDelegate setAlignment:[self alignment]];
-    [[_listDelegate scrollView] setHasVerticalScroller:_hasVerticalScroller];
-    [[_listDelegate tableView] setIntercellSpacing:_intercellSpacing];
-    [[_listDelegate tableView] setRowHeight:_itemHeight];
+- (void)_removeObserversForListDelegate:(_CPPopUpList)aDelegate
+{
+    if (!aDelegate)
+        return;
+
+    var defaultCenter = [CPNotificationCenter defaultCenter];
+
+    [defaultCenter removeObserver:self name:_CPPopUpListWillPopUpNotification object:aDelegate];
+    [defaultCenter removeObserver:self name:_CPPopUpListWillDismissNotification object:aDelegate];
+    [defaultCenter removeObserver:self name:_CPPopUpListDidDismissNotification object:aDelegate];
+    [defaultCenter removeObserver:self name:_CPPopUpListItemWasClickedNotification object:aDelegate];
+
+    var oldTableView = [aDelegate tableView];
+
+    if (oldTableView)
+    {
+        [defaultCenter removeObserver:self name:CPTableViewSelectionIsChangingNotification object:oldTableView];
+        [defaultCenter removeObserver:self name:CPTableViewSelectionDidChangeNotification object:oldTableView];
+    }
 }
 
 - (int)indexOfItemWithObjectValue:(id)anObject
@@ -980,6 +998,28 @@ var CPComboBoxTextSubview = @"text",
 
         [self popUpList];
     }
+}
+
+
+#pragma mark -
+#pragma mark Observers method
+
+- (void)_addObservers
+{
+    if (_isObserving)
+        return;
+
+    [super _addObservers];
+    [self _addObserversForListDelegate:_listDelegate];
+}
+
+- (void)_removeObservers
+{
+    if (!_isObserving)
+        return;
+
+    [super _removeObservers];
+    [self _removeObserversForListDelegate:_listDelegate];
 }
 
 @end

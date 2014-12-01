@@ -96,28 +96,41 @@ var ListColumnIdentifier = @"1";
     return [super sendEvent:anEvent];
 }
 
-- (void)orderFront:(id)sender
-{
-    [self _trapNextMouseDown];
-    [super orderFront:sender];
-}
-
 - (void)_mouseWasClicked:(CPEvent)anEvent
 {
+    // This is needed, when the user close the list with the key enter
+    if (![self isVisible])
+    {
+        [CPApp sendEvent:anEvent];
+        return;
+    }
+
     var mouseWindow = [anEvent window],
-        rect = [[[self delegate] dataSource] bounds],
+        rect = CGRectInsetByInset([[[self delegate] dataSource] bounds], [[[self delegate] dataSource] currentValueForThemeAttribute:@"content-inset"]),
         point = [[[self delegate] dataSource] convertPoint:[anEvent locationInWindow] fromView:nil];
 
+    // If we click somewhere else than the comboBox or the panel we close the panel
     if (mouseWindow != self && !CGRectContainsPoint(rect, point))
+    {
         [[self delegate] close];
+    }
     else
-        [self _trapNextMouseDown];
+    {
+        // If we click on the panel, the app will know what to do
+        if (mouseWindow == self)
+            [CPApp sendEvent:anEvent];
+
+        // If we click on the comboBox field, we will trap the next mouse down
+        if (CGRectContainsPoint(rect, point))
+            [self _trapNextMouseDown];
+    }
+
 }
 
 - (void)_trapNextMouseDown
 {
-    // Don't dequeue the event so clicks in controls will work
-    [CPApp setTarget:self selector:@selector(_mouseWasClicked:) forNextEventMatchingMask:CPLeftMouseDownMask untilDate:nil inMode:CPDefaultRunLoopMode dequeue:NO];
+    // Dequeue the event and mouseWasClicked will do what it needs to do
+    [CPApp setTarget:self selector:@selector(_mouseWasClicked:) forNextEventMatchingMask:CPLeftMouseDownMask untilDate:nil inMode:CPDefaultRunLoopMode dequeue:YES];
 }
 
 @end
@@ -336,6 +349,7 @@ var ListColumnIdentifier = @"1";
 
     [self listWillPopUp];
 
+    [_panel _trapNextMouseDown];
     [[aView window] addChildWindow:_panel ordered:CPWindowAbove];
 }
 
