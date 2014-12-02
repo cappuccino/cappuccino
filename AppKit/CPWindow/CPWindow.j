@@ -914,13 +914,13 @@ CPTexturedBackgroundWindowMask
         [_parentView orderFront:self];
 
     // Save the boolean since it will be updated in the method order:window:relativeTo:
-    var isVisible = _isVisible;
+    var wasVisible = _isVisible;
 
     [_platformWindow orderFront:self];
     [_platformWindow order:CPWindowAbove window:self relativeTo:nil];
 
     // setFrame is set after ordering the window as this method can send some notifications
-    if (isVisible)
+    if (wasVisible)
         [self _setFrame:_frame display:YES animate:NO constrainWidth:YES constrainHeight:YES];
 #endif
 
@@ -945,7 +945,7 @@ CPTexturedBackgroundWindowMask
 /*
     Called when the window is displayed in the DOM
 */
-- (void)_windowWillBeAddedInTheDOM
+- (void)_windowWillBeAddedToTheDOM
 {
     [[self contentView] _addObservers];
 }

@@ -1348,7 +1348,7 @@ var PreventScroll = true;
     if (otherWindow)
         insertionIndex = orderingMode === CPWindowAbove ? otherWindow._index + 1 : otherWindow._index;
 
-    [aWindow _windowWillBeAddedInTheDOM];
+    [aWindow _windowWillBeAddedToTheDOM];
 
     // Place the window at the appropriate index.
     [layer insertWindow:aWindow atIndex:insertionIndex];
@@ -1401,7 +1401,7 @@ var PreventScroll = true;
         var index = ordering === CPWindowAbove ? parent._index + 1 : parent._index;
 
         if (!childWasVisible)
-            [child _windowWillBeAddInTheDOM];
+            [child _windowWillBeAddedToTheDOM];
 
         [aLayer insertWindow:child atIndex:index];
 
