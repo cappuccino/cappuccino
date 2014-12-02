@@ -41,15 +41,17 @@
 
 var CPTextFieldDelegate_control_didFailToFormatString_errorDescription_ = 1 << 1;
 
+@typedef CPTextFieldBezelStyle
 CPTextFieldSquareBezel          = 0;    /*! A textfield bezel with squared corners. */
 CPTextFieldRoundedBezel         = 1;    /*! A textfield bezel with rounded corners. */
 
 CPTextFieldDidFocusNotification = @"CPTextFieldDidFocusNotification";
 CPTextFieldDidBlurNotification  = @"CPTextFieldDidBlurNotification";
 
-var CPTextFieldDOMInputElement = nil,
-    CPTextFieldDOMPasswordInputElement = nil,
+var CPTextFieldDOMCurrentElement = nil,
+    CPTextFieldDOMTextAreaElement = nil,
     CPTextFieldDOMStandardInputElement = nil,
+    CPTextFieldDOMPasswordInputElement = nil,
     CPTextFieldInputOwner = nil,
     CPTextFieldTextDidChangeValue = nil,
     CPTextFieldInputResigning = NO,
@@ -142,6 +144,9 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     // NS-style Display Properties
     CPTextFieldBezelStyle       _bezelStyle;
     BOOL                        _isBordered;
+    BOOL                        _usesSingleLineMode;
+    BOOL                        _wraps;
+    BOOL                        _scrolls;
 }
 
 + (Class)_binderClassForBinding:(CPString)aBinding
@@ -240,101 +245,112 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [self _sizeToControlSize];
 }
 
-#pragma mark -
 
+#pragma mark -
 
 #if PLATFORM(DOM)
 - (DOMElement)_inputElement
 {
-    if (!CPTextFieldDOMInputElement)
+    if (!CPTextFieldDOMTextAreaElement)
     {
-        CPTextFieldDOMInputElement = document.createElement("input");
-        CPTextFieldDOMInputElement.style.position = "absolute";
-        CPTextFieldDOMInputElement.style.border = "0px";
-        CPTextFieldDOMInputElement.style.padding = "0px";
-        CPTextFieldDOMInputElement.style.margin = "0px";
-        CPTextFieldDOMInputElement.style.whiteSpace = "pre";
-        CPTextFieldDOMInputElement.style.background = "transparent";
-        CPTextFieldDOMInputElement.style.outline = "none";
+        CPTextFieldDOMTextAreaElement                  = document.createElement("textarea");
+        CPTextFieldDOMTextAreaElement.style.position   = "absolute";
+        CPTextFieldDOMTextAreaElement.style.border     = "0px";
+        CPTextFieldDOMTextAreaElement.style.padding    = "0px";
+        CPTextFieldDOMTextAreaElement.style.margin     = "0px";
+        CPTextFieldDOMTextAreaElement.style.background = "transparent";
+        CPTextFieldDOMTextAreaElement.style.outline    = "none";
+        CPTextFieldDOMTextAreaElement.style.resize     = "none";
+        CPTextFieldDOMTextAreaElement.style.overflow   = "hidden";
+        CPTextFieldDOMTextAreaElement.spellcheck       = NO;
+    }
 
+    if (!CPTextFieldDOMStandardInputElement)
+    {
+        CPTextFieldDOMStandardInputElement                  = document.createElement("input");
+        CPTextFieldDOMStandardInputElement.style.position   = "absolute";
+        CPTextFieldDOMStandardInputElement.style.border     = "0px";
+        CPTextFieldDOMStandardInputElement.style.padding    = "0px";
+        CPTextFieldDOMStandardInputElement.style.margin     = "0px";
+        CPTextFieldDOMStandardInputElement.style.whiteSpace = "pre";
+        CPTextFieldDOMStandardInputElement.style.background = "transparent";
+        CPTextFieldDOMStandardInputElement.style.outline    = "none";
+        CPTextFieldDOMStandardInputElement.spellcheck       = NO;
+    }
+
+    if (!CPTextFieldDOMPasswordInputElement)
+    {
+        CPTextFieldDOMPasswordInputElement                  = document.createElement("input");
+        CPTextFieldDOMPasswordInputElement.style.position   = "absolute";
+        CPTextFieldDOMPasswordInputElement.style.border     = "0px";
+        CPTextFieldDOMPasswordInputElement.style.padding    = "0px";
+        CPTextFieldDOMPasswordInputElement.style.margin     = "0px";
+        CPTextFieldDOMPasswordInputElement.style.whiteSpace = "pre";
+        CPTextFieldDOMPasswordInputElement.style.background = "transparent";
+        CPTextFieldDOMPasswordInputElement.style.outline    = "none";
+        CPTextFieldDOMPasswordInputElement.type             = "password";
+        CPTextFieldDOMPasswordInputElement.spellcheck       = NO;
+    }
+
+    if (!CPTextFieldBlurHandler)
+    {
         CPTextFieldBlurHandler = function(anEvent)
         {
             return CPTextFieldBlurFunction(
                         anEvent,
                         CPTextFieldInputOwner,
                         CPTextFieldInputOwner ? CPTextFieldInputOwner._DOMElement : nil,
-                        CPTextFieldDOMInputElement,
+                        CPTextFieldDOMCurrentElement,
                         CPTextFieldInputResigning,
                         @ref(CPTextFieldInputDidBlur));
         };
+    }
 
-        if (CPFeatureIsCompatible(CPInputOnInputEventFeature))
+    if (!CPTextFieldInputFunction)
+    {
+        if (!CPFeatureIsCompatible(CPInputOnInputEventFeature))
+            return;
+
+        CPTextFieldInputFunction = function(anEvent)
         {
-            CPTextFieldInputFunction = function(anEvent)
-            {
-                if (!CPTextFieldInputOwner)
-                    return;
+            if (!CPTextFieldInputOwner)
+                return;
 
-                var cappEvent = [CPEvent keyEventWithType:CPKeyUp
-                                                 location:CGPointMakeZero()
-                                            modifierFlags:0
-                                                timestamp:[CPEvent currentTimestamp]
-                                             windowNumber:[[CPApp keyWindow] windowNumber]
-                                                  context:nil
-                                               characters:nil
-                              charactersIgnoringModifiers:nil
-                                                isARepeat:NO
-                                                  keyCode:nil];
+            var cappEvent = [CPEvent keyEventWithType:CPKeyUp
+                                             location:CGPointMakeZero()
+                                        modifierFlags:0
+                                            timestamp:[CPEvent currentTimestamp]
+                                         windowNumber:[[CPApp keyWindow] windowNumber]
+                                              context:nil
+                                           characters:nil
+                          charactersIgnoringModifiers:nil
+                                            isARepeat:NO
+                                              keyCode:nil];
 
-                [CPTextFieldInputOwner keyUp:cappEvent];
+            [CPTextFieldInputOwner keyUp:cappEvent];
 
-                [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-            }
-
-            CPTextFieldDOMInputElement.oninput = CPTextFieldInputFunction;
+            [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
         }
 
-        // FIXME make this not onblur
-        CPTextFieldDOMInputElement.onblur = CPTextFieldBlurHandler;
+        CPTextFieldDOMPasswordInputElement.oninput = CPTextFieldInputFunction;
+        CPTextFieldDOMPasswordInputElement.onblur = CPTextFieldBlurHandler;
 
-        CPTextFieldDOMStandardInputElement = CPTextFieldDOMInputElement;
+        CPTextFieldDOMStandardInputElement.oninput = CPTextFieldInputFunction;
+        CPTextFieldDOMPasswordInputElement.onblur = CPTextFieldBlurHandler;
+
+        CPTextFieldDOMTextAreaElement.oninput = CPTextFieldInputFunction;
+        CPTextFieldDOMTextAreaElement.onblur = CPTextFieldBlurHandler;
     }
 
-    if (CPFeatureIsCompatible(CPInputTypeCanBeChangedFeature))
-    {
-        if ([self isSecure])
-            CPTextFieldDOMInputElement.type = "password";
-        else
-            CPTextFieldDOMInputElement.type = "text";
-
-        return CPTextFieldDOMInputElement;
-    }
 
     if ([self isSecure])
-    {
-        if (!CPTextFieldDOMPasswordInputElement)
-        {
-            CPTextFieldDOMPasswordInputElement = document.createElement("input");
-            CPTextFieldDOMPasswordInputElement.style.position = "absolute";
-            CPTextFieldDOMPasswordInputElement.style.border = "0px";
-            CPTextFieldDOMPasswordInputElement.style.padding = "0px";
-            CPTextFieldDOMPasswordInputElement.style.margin = "0px";
-            CPTextFieldDOMPasswordInputElement.style.whiteSpace = "pre";
-            CPTextFieldDOMPasswordInputElement.style.background = "transparent";
-            CPTextFieldDOMPasswordInputElement.style.outline = "none";
-            CPTextFieldDOMPasswordInputElement.type = "password";
-
-            CPTextFieldDOMPasswordInputElement.onblur = CPTextFieldBlurHandler;
-        }
-
-        CPTextFieldDOMInputElement = CPTextFieldDOMPasswordInputElement;
-    }
+        CPTextFieldDOMCurrentElement = CPTextFieldDOMPasswordInputElement;
+    else if (_usesSingleLineMode)
+        CPTextFieldDOMCurrentElement = CPTextFieldDOMStandardInputElement;
     else
-    {
-        CPTextFieldDOMInputElement = CPTextFieldDOMStandardInputElement;
-    }
+        CPTextFieldDOMCurrentElement = CPTextFieldDOMTextAreaElement;
 
-    return CPTextFieldDOMInputElement;
+    return CPTextFieldDOMCurrentElement;
 }
 #endif
 
@@ -554,6 +570,24 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 }
 
 /*! @ignore */
+- (void)_setUsesSingleLineMode:(BOOL)aFlag
+{
+    _usesSingleLineMode = aFlag;
+}
+
+/*! @ignore */
+- (void)_setWraps:(BOOL)aFlag
+{
+    _wraps = aFlag;
+}
+
+/*! @ignore */
+- (void)_setScrolls:(BOOL)aFlag
+{
+    _scrolls = aFlag;
+}
+
+/*! @ignore */
 - (BOOL)acceptsFirstResponder
 {
     return [self isEnabled] && ([self isEditable] || [self isSelectable]) && [self _isWithinUsablePlatformRect];
@@ -608,27 +642,9 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     [self _setCSSStyleForInputElement];
 
-    var element = [self _inputElement],
-        font = [self currentValueForThemeAttribute:@"font"],
-        contentRect = [self contentRectForBounds:[self bounds]],
-        left = CGRectGetMinX(contentRect);
-
+    var element = [self _inputElement];
     element.value = _stringValue;
-
-    // If the browser has a built in left padding, compensate for it. We need the input text to be exactly on top of the original text.
-    if (CPFeatureIsCompatible(CPInput1PxLeftPadding))
-        left -= 1;
-
-    element.style.left = left + "px";
-    element.style.width = CGRectGetWidth(contentRect) + "px";
-    element.style.verticalAlign = "top";
-    element.style.cursor = "auto";
-
     _DOMElement.appendChild(element);
-
-    // The font change above doesn't work for some browsers if the element isn't already appendChild'ed.
-    if (!CPFeatureIsCompatible(CPInputSetFontOutsideOfDOM))
-        element.style.font = [font cssString];
 
     CPTextFieldInputIsActive = YES;
 
@@ -673,37 +689,18 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 */
 - (void)_setCSSStyleForInputElement
 {
-
 #if PLATFORM(DOM)
-    var element = [self _inputElement],
-        font = [self currentValueForThemeAttribute:@"font"],
-        lineHeight = [font defaultLineHeightForFont],
-        contentRect = [self contentRectForBounds:[self bounds]],
-        verticalAlign = [self currentValueForThemeAttribute:"vertical-alignment"];
 
-    if ([self hasThemeState:CPTextFieldStatePlaceholder])
-        element.style.color = [[self valueForThemeAttribute:@"text-color" inState:CPTextFieldStatePlaceholder] cssString];
-    else
-        element.style.color = [[self valueForThemeAttribute:@"text-color" inState:CPThemeStateEditing] cssString];
+    var element       = [self _inputElement],
+        font          = [self currentValueForThemeAttribute:@"font"],
+        lineHeight    = [font defaultLineHeightForFont],
+        contentRect   = [self contentRectForBounds:[self bounds]],
+        verticalAlign = [self currentValueForThemeAttribute:"vertical-alignment"],
+        left          = CGRectGetMinX(contentRect);
 
-    if (CPFeatureIsCompatible(CPInputSetFontOutsideOfDOM))
-        element.style.font = [font cssString];
-
-    element.style.zIndex = 1000;
-
-    switch ([self alignment])
-    {
-        case CPCenterTextAlignment:
-            element.style.textAlign = "center";
-            break;
-
-        case CPRightTextAlignment:
-            element.style.textAlign = "right";
-            break;
-
-        default:
-            element.style.textAlign = "left";
-    }
+    // If the browser has a built in left padding, compensate for it. We need the input text to be exactly on top of the original text.
+    if (CPFeatureIsCompatible(CPInput1PxLeftPadding))
+        left -= 1;
 
     switch (verticalAlign)
     {
@@ -724,12 +721,41 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
             break;
     }
 
-    element.style.top = topPoint;
-    element.style.height = ROUND(lineHeight) + "px";
-    element.style.lineHeight = ROUND(lineHeight) + "px";
+    if ([self hasThemeState:CPTextFieldStatePlaceholder])
+        element.style.color = [[self valueForThemeAttribute:@"text-color" inState:CPTextFieldStatePlaceholder] cssString];
+    else
+        element.style.color = [[self valueForThemeAttribute:@"text-color" inState:CPThemeStateEditing] cssString];
+
+    switch ([self alignment])
+    {
+        case CPCenterTextAlignment:
+            element.style.textAlign = "center";
+            break;
+
+        case CPRightTextAlignment:
+            element.style.textAlign = "right";
+            break;
+
+        default:
+            element.style.textAlign = "left";
+    }
+
+    var isTextArea  = element.nodeName.toUpperCase() == "TEXTAREA";
+
+    element.style.zIndex        = 1000;
+    element.style.top           = topPoint;
+    element.style.lineHeight    = ROUND(lineHeight) + "px";
+    element.style.height        = isTextArea ? CGRectGetHeight(contentRect) + "px" : ROUND(lineHeight) + "px";;
+    element.style.width         = CGRectGetWidth(contentRect) + "px";
+    element.style.left          = left + "px";
+    element.style.verticalAlign = "top";
+    element.style.cursor        = "auto";
+    element.style.font          = [font cssString];
+
+    if (isTextArea)
+        element.style.whiteSpace = _wraps ? "pre" : "nowrap";
 
 #endif
-
 }
 
 /*! @ignore */
@@ -1099,7 +1125,11 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         range = [self selectedRange],
         element = [self _inputElement];
 
-    element.value = [element.value stringByReplacingCharactersInRange:[self selectedRange] withString:aCharacter];
+    // we don't need to do this in case of textarea
+    // or we will end up with 2 carriage returns
+    if (aCharacter != CPNewlineCharacter || element.nodeName.toUpperCase() != "TEXTAREA" || !CPFeatureIsCompatible(CPAltEnterTextAreaFeature))
+        element.value = [element.value stringByReplacingCharactersInRange:[self selectedRange] withString:aCharacter];
+
     [self _setStringValue:element.value];
 
     // NOTE: _stringValue is now the current input element value
@@ -1944,7 +1974,11 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
     CPTextFieldLineBreakModeKey         = "CPTextFieldLineBreakModeKey",
     CPTextFieldAlignmentKey             = "CPTextFieldAlignmentKey",
     CPTextFieldBackgroundColorKey       = "CPTextFieldBackgroundColorKey",
-    CPTextFieldPlaceholderStringKey     = "CPTextFieldPlaceholderStringKey";
+    CPTextFieldPlaceholderStringKey     = "CPTextFieldPlaceholderStringKey",
+    CPTextFieldUsesSingleLineMode       = "CPTextFieldUsesSingleLineMode",
+    CPTextFieldWraps                    = "CPTextFieldWraps",
+    CPTextFieldScrolls                  = "CPTextFieldScrolls";
+
 
 @implementation CPTextField (CPCoding)
 
@@ -1970,6 +2004,10 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
         [self setAlignment:[aCoder decodeIntForKey:CPTextFieldAlignmentKey]];
 
         [self setPlaceholderString:[aCoder decodeObjectForKey:CPTextFieldPlaceholderStringKey]];
+
+        [self _setUsesSingleLineMode:[aCoder decodeBoolForKey:CPTextFieldUsesSingleLineMode]];
+        [self _setWraps:[aCoder decodeBoolForKey:CPTextFieldWraps]];
+        [self _setScrolls:[aCoder decodeBoolForKey:CPTextFieldScrolls]];
     }
 
     return self;
@@ -1994,6 +2032,10 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
     [aCoder encodeInt:[self alignment] forKey:CPTextFieldAlignmentKey];
 
     [aCoder encodeObject:_placeholderString forKey:CPTextFieldPlaceholderStringKey];
+
+    [aCoder encodeBool:_usesSingleLineMode forKey:CPTextFieldUsesSingleLineMode];
+    [aCoder encodeBool:_wraps forKey:CPTextFieldWraps];
+    [aCoder encodeBool:_scrolls forKey:CPTextFieldScrolls];
 }
 
 @end
@@ -2022,6 +2064,23 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
         [_source setPlaceholderString:[self _placeholderForMarker:CPNullMarker]];
 
     [_source setObjectValue:aValue];
+}
+
+- (void)reverseSetValueFor:(CPString)aBinding
+{
+    var destination = [_info objectForKey:CPObservedObjectKey],
+        keyPath     = [_info objectForKey:CPObservedKeyPathKey],
+        options     = [_info objectForKey:CPOptionsKey],
+        newValue    = [self valueForBinding:aBinding],
+        value       = [destination valueForKeyPath:keyPath];
+
+    if (CPIsControllerMarker(value) && newValue === nil) return;
+
+    newValue = [self reverseTransformValue:newValue withOptions:options];
+
+    [self suppressSpecificNotificationFromObject:destination keyPath:keyPath];
+    [destination setValue:newValue forKeyPath:keyPath];
+    [self unsuppressSpecificNotificationFromObject:destination keyPath:keyPath];
 }
 
 @end

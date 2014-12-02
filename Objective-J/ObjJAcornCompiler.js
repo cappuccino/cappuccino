@@ -353,6 +353,11 @@ ProtocolDef.prototype.getClassMethod = function(name) {
     return null;
 }
 
+var TypeDef = function(name)
+{
+    this.name = name;
+}
+
 // methodDef = {"types": types, "name": selector}
 var MethodDef = function(name, types)
 {
@@ -369,7 +374,7 @@ var wordPrefixOperators = exports.acorn.makePredicate("delete in instanceof new 
 var isLogicalBinary = exports.acorn.makePredicate("LogicalExpression BinaryExpression");
 var isInInstanceof = exports.acorn.makePredicate("in instanceof");
 
-var ObjJAcornCompiler = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ flags, /*unsigned*/ pass, /* Dictionary */ classDefs, /* Dictionary */ protocolDefs)
+var ObjJAcornCompiler = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ flags, /*unsigned*/ pass, /* Dictionary */ classDefs, /* Dictionary */ protocolDefs, /* Dictionary */ typeDefs)
 {
     this.source = aString;
     this.URL = new CFURL(aURL);
@@ -399,6 +404,7 @@ var ObjJAcornCompiler = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*
     this.flags = flags | ObjJAcornCompiler.Flags.IncludeDebugSymbols;
     this.classDefs = classDefs ? classDefs : Object.create(null);
     this.protocolDefs = protocolDefs ? protocolDefs : Object.create(null);
+    this.typeDefs = typeDefs ? typeDefs : Object.create(null);
     this.lastPos = 0;
     if (currentCompilerFlags & ObjJAcornCompiler.Flags.Generate)
         this.generate = true;
@@ -415,9 +421,9 @@ exports.ObjJAcornCompiler.compileToExecutable = function(/*String*/ aString, /*C
     return new ObjJAcornCompiler(aString, aURL, flags, 2).executable();
 }
 
-exports.ObjJAcornCompiler.compileToIMBuffer = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ flags, classDefs, protocolDefs)
+exports.ObjJAcornCompiler.compileToIMBuffer = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ flags, classDefs, protocolDefs, typeDefs)
 {
-    return new ObjJAcornCompiler(aString, aURL, flags, 2, classDefs, protocolDefs).IMBuffer();
+    return new ObjJAcornCompiler(aString, aURL, flags, 2, classDefs, protocolDefs, typeDefs).IMBuffer();
 }
 
 exports.ObjJAcornCompiler.compileFileDependencies = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ flags)
@@ -579,6 +585,31 @@ ObjJAcornCompiler.prototype.getProtocolDef = function(/* String */ aProtocolName
 
     return null;
 //  protocolDef = {"name": protocolName, "protocols": Object.create(null), "required": Object.create(null), "optional": Object.create(null)};
+}
+
+ObjJAcornCompiler.prototype.getTypeDef = function(/* String */ aTypeDefName)
+{
+    if (!aTypeDefName)
+        return null;
+
+    var t = this.typeDefs[aTypeDefName];
+
+    if (t)
+        return t;
+
+    if (typeof objj_getTypeDef === 'function')
+    {
+        var aTypeDef = objj_getTypeDef(aTypeDefName);
+        if (aTypeDef)
+        {
+            var typeDefName = typeDef_getName(aTypeDef)
+            t = new TypeDef(typeDefName);
+            this.typeDefs[typeDefName] = t;
+            return t;
+        }
+    }
+
+    return null;
 }
 
 ObjJAcornCompiler.methodDefsFromMethodList = function(/* Array */ methodList)
@@ -1643,6 +1674,9 @@ ClassDeclarationStatement: function(node, st, c) {
     compiler.cmBuffer = new StringBuffer();
     compiler.classBodyBuffer = new StringBuffer();      // TODO: Check if this is needed
 
+    if (compiler.getTypeDef(className))
+        throw compiler.error_message(className + " is already declared as a type", node.classname);
+
     if (!generate) saveJSBuffer.concat(compiler.source.substring(compiler.lastPos, node.start));
 
     // First we declare the class
@@ -1715,12 +1749,19 @@ ClassDeclarationStatement: function(node, st, c) {
         {
             var ivarDecl = node.ivardeclarations[i],
                 ivarType = ivarDecl.ivartype ? ivarDecl.ivartype.name : null,
+                ivarTypeIsClass = ivarDecl.ivartype ? ivarDecl.ivartype.typeisclass : false,
                 ivarName = ivarDecl.id.name,
                 ivar = {"type": ivarType, "name": ivarName},
                 accessors = ivarDecl.accessors;
 
             if (ivars[ivarName])
-                throw compiler.error_message("Instance variable '" + ivarName + "'is already declared for class " + className, ivarDecl.id);
+                throw compiler.error_message("Instance variable '" + ivarName + "' is already declared for class " + className, ivarDecl.id);
+
+            var isTypeDefined = !ivarTypeIsClass || typeof global[ivarType] !== "undefined" || typeof window[ivarType] !== "undefined"
+                                || compiler.getClassDef(ivarType) || compiler.getTypeDef(ivarType) || ivarType == classDef.name;
+
+            if (!isTypeDefined)
+                compiler.addWarning(createMessage("Unknown type '" + ivarType + "' for ivar '" + ivarName + "'", ivarDecl.id, compiler.source));
 
             if (firstIvarDeclaration)
             {
@@ -1824,7 +1865,7 @@ ClassDeclarationStatement: function(node, st, c) {
 
         // Remove all @accessors or we will get a recursive loop in infinity
         var b = getterSetterBuffer.toString().replace(/@accessors(\(.*\))?/g, "");
-        var imBuffer = ObjJAcornCompiler.compileToIMBuffer(b, "Accessors", compiler.flags, compiler.classDefs, compiler.protocolDefs);
+        var imBuffer = ObjJAcornCompiler.compileToIMBuffer(b, "Accessors", compiler.flags, compiler.classDefs, compiler.protocolDefs, compiler.typeDefs);
 
         // Add the accessors methods first to instance method buffer.
         // This will allow manually added set and get methods to override the compiler generated
@@ -2371,6 +2412,10 @@ ClassStatement: function(node, st, c) {
         compiler.jsBuffer.concat("//");
     }
     var className = node.id.name;
+
+    if (compiler.getTypeDef(className))
+        throw compiler.error_message(className + " is already declared as a type", node.id);
+
     if (!compiler.getClassDef(className)) {
         classDef = new ClassDef(false, className);
         compiler.classDefs[className] = classDef;
@@ -2393,5 +2438,42 @@ PreprocessStatement: function(node, st, c) {
       compiler.lastPos = node.start;
       compiler.jsBuffer.concat("//");
     }
+},
+TypeDefStatement: function(node, st, c) {
+
+    var compiler = st.compiler,
+        generate = compiler.generate,
+        buffer = compiler.jsBuffer,
+        typeDefName = node.typedefname.name,
+        typeDef = compiler.getTypeDef(typeDefName),
+        typeDefScope = new Scope(st);
+
+    if (typeDef)
+        throw compiler.error_message("Duplicate type definition " + typeDefName, node.typedefname);
+
+    if (compiler.getClassDef(typeDefName))
+        throw compiler.error_message(typeDefName + " is already declared as class", node.typedefname);
+
+    compiler.imBuffer = new StringBuffer();
+    compiler.cmBuffer = new StringBuffer();
+
+    if (!generate)
+        buffer.concat(compiler.source.substring(compiler.lastPos, node.start));
+
+    buffer.concat("{var the_typedef = objj_allocateTypeDef(\"" + typeDefName + "\");");
+
+    typeDef = new TypeDef(typeDefName);
+    compiler.typeDefs[typeDefName] = typeDef;
+    typeDefScope.typeDef = typeDef;
+
+    buffer.concat("\nobjj_registerTypeDef(the_typedef);\n");
+
+    buffer.concat("}");
+
+    compiler.jsBuffer = buffer;
+
+    // Skip the "@end"
+    if (!generate)
+        compiler.lastPos = node.end;
 }
 });

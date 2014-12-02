@@ -374,7 +374,7 @@ var themedButtonValues = nil,
             [@"font",                       [CPFont boldSystemFontOfSize:11.0]],
 
             [@"min-size",                   CGSizeMake(32.0, 20.0),                 CPThemeStateControlSizeSmall],
-            [@"max-size",                   CGSizeMake(1.0, 20.0),                  CPThemeStateControlSizeSmall],
+            [@"max-size",                   CGSizeMake(-1.0, 20.0),                 CPThemeStateControlSizeSmall],
             [@"nib2cib-adjustment-frame",   CGRectMake(3.0, 4.0, -6.0, 0.0),        CPThemeStateControlSizeSmall],
 
             // CPThemeStateControlSizeMini
@@ -386,7 +386,7 @@ var themedButtonValues = nil,
 
             [@"min-size",                   CGSizeMake(32.0, 16.0),                 CPThemeStateControlSizeMini],
             [@"max-size",                   CGSizeMake(-1.0, 16.0),                 CPThemeStateControlSizeMini],
-            [@"nib2cib-adjustment-frame",   CGRectMake(1.0, 10.0, -3.0, 0.0),        CPThemeStateControlSizeMini]
+            [@"nib2cib-adjustment-frame",   CGRectMake(1.0, 10.0, -3.0, 0.0),       CPThemeStateControlSizeMini]
         ];
 
     [self registerThemeValues:themeValues forView:button];

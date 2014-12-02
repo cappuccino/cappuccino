@@ -61,19 +61,19 @@ var CPComboBoxTextSubview = @"text",
 
 @implementation CPComboBox : CPTextField
 {
-    CPArray                 _items;
-    _CPPopUpList            _listDelegate;
-    CPComboBoxDataSource    _dataSource;
-    BOOL                    _usesDataSource;
-    BOOL                    _completes;
-    BOOL                    _canComplete;
-    int                     _numberOfVisibleItems;
-    BOOL                    _forceSelection;
-    BOOL                    _hasVerticalScroller;
-    CPString                _selectedStringValue;
-    CGSize                  _intercellSpacing;
-    float                   _itemHeight;
-    BOOL                    _popUpButtonCausedResign;
+    CPArray                     _items;
+    _CPPopUpList                _listDelegate;
+    id<CPComboBoxDataSource>    _dataSource;
+    BOOL                        _usesDataSource;
+    BOOL                        _completes;
+    BOOL                        _canComplete;
+    int                         _numberOfVisibleItems;
+    BOOL                        _forceSelection;
+    BOOL                        _hasVerticalScroller;
+    CPString                    _selectedStringValue;
+    CGSize                      _intercellSpacing;
+    float                       _itemHeight;
+    BOOL                        _popUpButtonCausedResign;
 }
 
 + (CPString)defaultThemeClass

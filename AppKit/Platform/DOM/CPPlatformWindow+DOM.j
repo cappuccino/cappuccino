@@ -1143,7 +1143,7 @@ var PreventScroll = true;
 
         _mouseDownIsRightClick = button == 2 || (CPBrowserIsOperatingSystem(CPMacOperatingSystem) && button == 0 && modifierFlags & CPControlKeyMask);
 
-        if (sourceElement.tagName === "INPUT" && sourceElement != _DOMFocusElement)
+        if ((sourceElement.tagName === "INPUT" || sourceElement.tagName === "TEXTAREA") && sourceElement != _DOMFocusElement)
         {
             if ([CPPlatform supportsDragAndDrop])
             {

@@ -50,7 +50,7 @@ var _CPUndoGroupingPool         = [],
 /* @ignore */
 @implementation _CPUndoGrouping : CPObject
 {
-    _CPUndoGrouping _parent;
+    id              _parent;
     CPMutableArray  _invocations;
     CPString        _actionName;
 }

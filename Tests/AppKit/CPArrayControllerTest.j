@@ -3,6 +3,9 @@
 @import <AppKit/CPArrayController.j>
 @import <AppKit/CPTextField.j>
 
+@class Department
+@class Employee
+
 @implementation CPArrayControllerTest : OJTestCase
 {
     CPArrayController   _arrayController @accessors(property=arrayController);

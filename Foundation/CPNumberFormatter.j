@@ -24,7 +24,7 @@
 @import "CPFormatter.j"
 @import "CPDecimalNumber.j"
 
-
+@typedef CPNumberFormatterStyle
 CPNumberFormatterNoStyle            = 0;
 CPNumberFormatterDecimalStyle       = 1;
 CPNumberFormatterCurrencyStyle      = 2;
@@ -32,6 +32,7 @@ CPNumberFormatterPercentStyle       = 3;
 CPNumberFormatterScientificStyle    = 4;
 CPNumberFormatterSpellOutStyle      = 5;
 
+@typedef CPNumberFormatterRoundingMode
 CPNumberFormatterRoundCeiling       = CPRoundUp;
 CPNumberFormatterRoundFloor         = CPRoundDown;
 CPNumberFormatterRoundDown          = CPRoundDown;

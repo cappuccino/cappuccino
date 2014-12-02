@@ -28,6 +28,7 @@
 
 @global CPApp
 
+@typedef CPSegmentSwitchTracking
 CPSegmentSwitchTrackingSelectOne = 0;
 CPSegmentSwitchTrackingSelectAny = 1;
 CPSegmentSwitchTrackingMomentary = 2;

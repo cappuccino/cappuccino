@@ -25,6 +25,8 @@
 
 @import "CPButton.j"
 
+@class CPRadioGroup
+
 @global CPApp
 
 
