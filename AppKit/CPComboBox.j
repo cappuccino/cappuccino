@@ -518,8 +518,6 @@ var CPComboBoxTextSubview = @"text",
     if (!_listDelegate)
         [self setListDelegate:[[_CPPopUpList alloc] initWithDataSource:self]];
 
-    [self _selectMatchingItem];
-
     // Note the offset here is 1 less than the focus ring width because the outer edge
     // of the focus ring is very transparent and it looks better if the list is closer.
     if (CPComboBoxFocusRingWidth < 0)
@@ -530,6 +528,7 @@ var CPComboBoxTextSubview = @"text",
     }
 
     [_listDelegate popUpRelativeToRect:[self _borderFrame] view:self offset:CPComboBoxFocusRingWidth - 1];
+    [self _selectMatchingItem];
 }
 
 /*! @ignore */

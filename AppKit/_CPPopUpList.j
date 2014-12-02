@@ -336,6 +336,11 @@ var ListColumnIdentifier = @"1";
     if ([_panel isVisible])
         return;
 
+    [self listWillPopUp];
+
+    [_panel _trapNextMouseDown];
+    [[aView window] addChildWindow:_panel ordered:CPWindowAbove];
+
     var rowRect = [_tableView rectOfRow:[self numberOfRowsInTableView:_tableView] - 1],
         frame = CGRectMake(0, 0, MAX(_listWidth, CGRectGetWidth(aRect)), CGRectGetMaxY(rowRect));
 
@@ -346,11 +351,6 @@ var ListColumnIdentifier = @"1";
     [_scrollView setFrameSize:CGSizeMakeCopy(frame.size)];
     [_tableView setEnabled:[_dataSource numberOfItemsInList:self] > 0];
     [self scrollItemAtIndexToTop:[_tableView selectedRow]];
-
-    [self listWillPopUp];
-
-    [_panel _trapNextMouseDown];
-    [[aView window] addChildWindow:_panel ordered:CPWindowAbove];
 }
 
 #pragma mark Setting Display Attributes
