@@ -42,24 +42,26 @@ GLOBAL(CFError) = function(/* CFString */ domain, /* int */ code, /* CFDictionar
     this._code = code || 0;
     this._userInfo = userInfo || new CFDictionary();
     this._UID = objj_generateObjectUID();
-}
+};
 
-CFError.prototype.domain = function ()
+CFError.prototype.domain = function()
 {
     return this._domain;
-}
-DISPLAY_NAME(CFError.prototype.domain)
+};
 
-CFError.prototype.code = function ()
+DISPLAY_NAME(CFError.prototype.domain);
+
+CFError.prototype.code = function()
 {
     return this._code;
-}
-DISPLAY_NAME(CFError.prototype.code)
+};
+
+DISPLAY_NAME(CFError.prototype.code);
 
 /*
     This follows the same logic to generate a description as the "real" CFError.
 */
-CFError.prototype.description = function ()
+CFError.prototype.description = function()
 {
     var localizedDesc = this._userInfo.valueForKey(kCFErrorLocalizedDescriptionKey);
     if (localizedDesc)
@@ -87,26 +89,30 @@ CFError.prototype.description = function ()
     }
 
     return result;
-}
-DISPLAY_NAME(CFError.prototype.description)
+};
 
-CFError.prototype.failureReason = function ()
+DISPLAY_NAME(CFError.prototype.description);
+
+CFError.prototype.failureReason = function()
 {
     return this._userInfo.valueForKey(kCFErrorLocalizedFailureReasonKey);
-}
-DISPLAY_NAME(CFError.prototype.failureReason)
+};
 
-CFError.prototype.recoverySuggestion = function ()
+DISPLAY_NAME(CFError.prototype.failureReason);
+
+CFError.prototype.recoverySuggestion = function()
 {
     return this._userInfo.valueForKey(kCFErrorLocalizedRecoverySuggestionKey);
-}
-DISPLAY_NAME(CFError.prototype.recoverySuggestion)
+};
+
+DISPLAY_NAME(CFError.prototype.recoverySuggestion);
 
 CFError.prototype.userInfo = function ()
 {
     return this._userInfo;
-}
-DISPLAY_NAME(CFError.prototype.userInfo)
+};
+
+DISPLAY_NAME(CFError.prototype.userInfo);
 
 /*
     CFError Bridge Functions
@@ -116,43 +122,43 @@ DISPLAY_NAME(CFError.prototype.userInfo)
 GLOBAL(CFErrorCreate) = function(/* String */ domain, /*int */ code, /* CFDictionary */ userInfo)
 {
     return new CFError(domain, code, userInfo);
-}
+};
 
 GLOBAL(CFErrorCreateWithUserInfoKeysAndValues) = function(/* String */ domain, /* int */ code, /* array */ userInfoKeys, /* array */ userInfoValues, /* int */ numUserInfoValues)
 {
     var userInfo = new CFMutableDictionary();
-    while(numUserInfoValues--)
+    while (numUserInfoValues--)
         userInfo.setValueForKey(userInfoKeys[numUserInfoValues], userInfoValues[numUserInfoValues]);
 
     return new CFError(domain, code, userInfo);
-}
+};
 
 GLOBAL(CFErrorGetCode) = function(/* CFError */ err)
 {
     return err.code();
-}
+};
 
 GLOBAL(CFErrorGetDomain) = function(/* CFError */ err)
 {
     return err.domain();
-}
+};
 
 GLOBAL(CFErrorCopyDescription) = function(/* CFError */ err)
 {
     return err.description();
-}
+};
 
 GLOBAL(CFErrorCopyUserInfo) = function(/* CFError */ err)
 {
     return err.userInfo();
-}
+};
 
 GLOBAL(CFErrorCopyFailureReason) = function(/* CFError */ err)
 {
     return err.failureReason();
-}
+};
 
 GLOBAL(CFErrorCopyRecoverySuggestion) = function(/* CFError */err)
 {
     return err.recoverySuggestion();
-}
+};
