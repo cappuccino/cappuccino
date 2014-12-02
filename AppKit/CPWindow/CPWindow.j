@@ -940,7 +940,6 @@ CPTexturedBackgroundWindowMask
 */
 - (void)_parentDidOrderInChild
 {
-
 }
 
 /*
