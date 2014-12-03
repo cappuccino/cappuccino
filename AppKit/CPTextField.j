@@ -882,7 +882,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     [super _addObservers];
 
-    if ([self window] === self)
+    if ([[self window] firstResponder] === self)
         [self _setObserveWindowKeyNotifications:YES];
 }
 
