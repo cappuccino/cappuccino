@@ -36,10 +36,4 @@
     [self assertNull:data];
 }
 
-- (void)testRequestWithCredentials
-{
-    var connection = [CPURLConnection connectionWithRequest:[CPURLRequest requestWithURL:@"Tests/Foundation/CPURLConnectionTest.j"] delegate:self withCredentials:YES];
-    [self assertTrue:[connection withCredentials]];
-}
-
 @end
