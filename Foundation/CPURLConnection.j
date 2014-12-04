@@ -76,7 +76,8 @@ var CPURLConnectionDelegate = nil;
 */
 @implementation CPURLConnection : CPObject
 {
-    CPURLRequest    _request;
+    CPURLRequest    _originalRequest        @accessors(readonly, getter=originalRequest);
+    CPURLRequest    _request                @accessors(readonly, getter=currentRequest);
     id              _delegate;
     BOOL            _isCanceled;
     BOOL            _isLocalFileConnection;
@@ -151,6 +152,7 @@ var CPURLConnectionDelegate = nil;
     if (self)
     {
         _request = aRequest;
+        _originalRequest = [aRequest copy];
         _delegate = aDelegate;
         _isCanceled = NO;
 
