@@ -35,12 +35,13 @@
 */
 @implementation CPURLRequest : CPObject
 {
-    CPURL       _URL;
+    CPURL           _URL                @accessors(property=URL);
 
     // FIXME: this should be CPData
-    CPString        _HTTPBody;
-    CPString        _HTTPMethod;
-    CPDictionary    _HTTPHeaderFields;
+    CPString        _HTTPBody           @accessors(property=HTTPBody);
+    CPString        _HTTPMethod         @accessors(property=HTTPMethod);
+
+    CPDictionary    _HTTPHeaderFields   @accessors(readonly, getter=allHTTPHeaderFields);
 }
 
 /*!
@@ -88,14 +89,6 @@
 }
 
 /*!
-    Returns the request URL
-*/
-- (CPURL)URL
-{
-    return _URL;
-}
-
-/*!
     Sets the URL for this request.
     @param aURL the new URL
 */
@@ -103,48 +96,6 @@
 {
     // Lenient and accept strings.
     _URL = new CFURL(aURL);
-}
-
-/*!
-    Sets the HTTP body for this request
-    @param anHTTPBody the new HTTP body
-*/
-- (void)setHTTPBody:(CPString)anHTTPBody
-{
-    _HTTPBody = anHTTPBody;
-}
-
-/*!
-    Returns the request's http body.
-*/
-- (CPString)HTTPBody
-{
-    return _HTTPBody;
-}
-
-/*!
-    Sets the request's http method.
-    @param anHTPPMethod the new http method
-*/
-- (void)setHTTPMethod:(CPString)anHTTPMethod
-{
-    _HTTPMethod = anHTTPMethod;
-}
-
-/*!
-    Returns the request's http method
-*/
-- (CPString)HTTPMethod
-{
-    return _HTTPMethod;
-}
-
-/*!
-    Returns a dictionary of the http header fields
-*/
-- (CPDictionary)allHTTPHeaderFields
-{
-    return _HTTPHeaderFields;
 }
 
 /*!
