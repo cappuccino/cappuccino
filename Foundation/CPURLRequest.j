@@ -119,3 +119,23 @@
 }
 
 @end
+
+/*
+    Implements the CPCopying Protocol for a CPURLRequest to provide deep copying for CPURLRequests
+*/
+@implementation CPURLRequest (CPCopying)
+{
+}
+
+- (id)copy
+{
+    var request = [[CPURLRequest alloc] initWithURL:[self URL]];
+    [request setHTTPBody:[self HTTPBody]];
+    [request setHTTPMethod:[self HTTPMethod]];
+    [request setWithCredentials:[self withCredentials]];
+    request._HTTPHeaderFields = [self allHTTPHeaderFields];
+
+    return request;
+}
+
+@end
