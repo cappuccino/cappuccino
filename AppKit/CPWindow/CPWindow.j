@@ -920,7 +920,7 @@ CPTexturedBackgroundWindowMask
     [_platformWindow order:CPWindowAbove window:self relativeTo:nil];
 
     // setFrame is set after ordering the window as this method can send some notifications
-    if (wasVisible)
+    if (!wasVisible)
         [self _setFrame:_frame display:YES animate:NO constrainWidth:YES constrainHeight:YES];
 #endif
 
