@@ -1,3 +1,4 @@
+@import <OJUnit/OJTestCase.j>
 
 @implementation CPURLConnectionTest : OJTestCase
 {
@@ -34,6 +35,42 @@
         data = [CPURLConnection sendSynchronousRequest:req returningResponse:nil];
 
     [self assertNull:data];
+}
+
+- (void)testClassMethodConnectionWithCredentials
+{
+    var req = [CPURLRequest requestWithURL:[CPURL URLWithString:@"Tests/Foundation/CPURLConnectionTest.j"]];
+    [req setWithCredentials:YES];
+    var data = [CPURLConnection sendSynchronousRequest:req returningResponse:nil];
+
+    [self assertNotNull:data];
+}
+
+- (void)testInstanceMethodConnectionWithCredentials
+{
+    var req = [CPURLRequest requestWithURL:[CPURL URLWithString:@"Tests/Foundation/CPURLConnectionTest.j"]];
+    [req setWithCredentials:YES];
+
+    var conn = [[CPURLConnection alloc] initWithRequest:req delegate:nil startImmediately:NO];
+
+    [self assertTrue:conn._HTTPRequest.withCredentials];
+
+    [req setWithCredentials:NO];
+    [self assertTrue:conn._HTTPRequest.withCredentials];
+}
+
+- (void)testRequestGetters
+{
+    var req = [CPURLRequest requestWithURL:[CPURL URLWithString:@"Tests/Foundation/CPURLConnectionTest.j"]],
+        conn = [[CPURLConnection alloc] initWithRequest:req delegate:nil startImmediately:NO];
+    
+    var originalRequest = [conn originalRequest],
+        currentRequest = [conn currentRequest];
+
+    [self assert:originalRequest._UID notEqual:currentRequest._UID];
+
+    [[conn currentRequest] setWithCredentials:YES];
+    [self assert:[originalRequest withCredentials] notEqual:[currentRequest withCredentials]];
 }
 
 @end
