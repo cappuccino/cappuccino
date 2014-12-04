@@ -40,6 +40,7 @@
     // FIXME: this should be CPData
     CPString        _HTTPBody           @accessors(property=HTTPBody);
     CPString        _HTTPMethod         @accessors(property=HTTPMethod);
+    BOOL            _withCredentials    @accessors(property=withCredentials);
 
     CPDictionary    _HTTPHeaderFields   @accessors(readonly, getter=allHTTPHeaderFields);
 }
