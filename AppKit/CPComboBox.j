@@ -160,7 +160,7 @@ var CPComboBoxTextSubview = @"text",
 
 - (void)setIntercellSpacing:(CGSize)aSize
 {
-    if (!aSize || (_intercellSpacing && CGSizeEqualToSize(aSize, _intercellSpacing)))
+    if (_intercellSpacing && CGSizeEqualToSize(aSize, _intercellSpacing))
         return;
 
     _intercellSpacing = aSize;
@@ -408,9 +408,12 @@ var CPComboBoxTextSubview = @"text",
     [_listDelegate setFont:[self font]];
     [_listDelegate setAlignment:[self alignment]];
 
-    [self setHasVerticalScroller:_hasVerticalScroller];
-    [self setIntercellSpacing:_intercellSpacing];
-    [self setItemHeight:_itemHeight];
+    [[_listDelegate scrollView] setHasVerticalScroller:_hasVerticalScroller];
+
+    if (_intercellSpacing)
+        [[_listDelegate tableView] setIntercellSpacing:_intercellSpacing];
+
+    [[_listDelegate tableView] setRowHeight:_itemHeight];
 }
 
 - (void)_addObserversForListDelegate:(_CPPopUpList)aDelegate
