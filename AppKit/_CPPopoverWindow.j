@@ -180,7 +180,7 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
         return;
 
     _isObservingFrame = YES;
-    [_targetView addObserver:self forKeyPath:@"frame" options:CPKeyValueObservingOptionNew context:nil];
+    [_targetView addObserver:self forKeyPath:@"frame" options:0 context:nil];
 }
 
 /*!
