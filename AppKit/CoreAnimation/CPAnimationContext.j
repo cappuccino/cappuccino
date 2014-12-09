@@ -8,6 +8,8 @@
 @import "jshashtable.j"
 @import "CSSAnimation.j"
 
+@typedef HashTable;
+
 var FRAME_UPDATE_INTERVAL      = 0.02;
 
 var _CPAnimationContextStack   = nil,
