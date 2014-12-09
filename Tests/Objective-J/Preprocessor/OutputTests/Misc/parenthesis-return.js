@@ -1,3 +1,3 @@
 x=function(){
-return objj_msgSend(someIval,"someMethod");
-}
+return (someIval==null?null:someIval.isa.objj_msgSend0(someIval,"someMethod"));
+};

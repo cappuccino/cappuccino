@@ -45,7 +45,7 @@
 
     NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
     
-    NSDictionary *info = @{ @"projectId":self.projectId, @"path":self.sourcePath };
+    NSDictionary *info = @{ @"projectId":self.projectId, @"path":self.sourcePath};
     [center postNotificationName:XCCConversionDidStartNotification object:self userInfo:info];
 
     DDLogVerbose(@"Conversion started: %@", self.sourcePath);
@@ -74,7 +74,7 @@
                         self.xcc.parserPath,
                         self.projectPath,
                         self.sourcePath
-                    ];
+                     ];
 
         notificationTitle = @"Objective-J source processed";
     }
@@ -84,21 +84,21 @@
             return;
 
         [self.xcc performSelectorOnMainThread:@selector(computeIgnoredPaths) withObject:nil waitUntilDone:NO];
-        
+
         notificationTitle = @"Parsed .xcodecapp-ignore";
         notificationMessage = @"Ignored paths updated";
     }
 
     // Run the task and get the response if needed
     NSInteger status = 0;
-    
+
     if (arguments)
     {
         if (self.isCancelled)
             return;
 
         DDLogVerbose(@"Running processing task: %@", launchPath);
-        
+
         NSDictionary *taskResult = [self.xcc runTaskWithLaunchPath:launchPath
                                                          arguments:arguments
                                                         returnType:kTaskReturnTypeAny];
@@ -120,7 +120,7 @@
 
                 notificationTitle = @"Error converting xib";
                 NSString *message = [NSString stringWithFormat:@"%@\n%@", self.sourcePath.lastPathComponent, response];
-                
+
                 NSDictionary *info =
                     @{
                         @"projectId":self.projectId,
@@ -131,7 +131,7 @@
 
                 if (self.isCancelled)
                     return;
-                
+
                 [center postNotificationName:XCCConversionDidGenerateErrorNotification object:self userInfo:info];
             }
             else
@@ -152,7 +152,7 @@
                     [self postErrorNotificationForPath:self.sourcePath line:0 message:response status:status];
                 }
             }
-            
+
             if ([self.xcc shouldShowErrorNotification])
                 [self notifyUserWithTitle:notificationTitle message:notificationMessage];
         }
@@ -160,14 +160,19 @@
         {
             BOOL showFinalNotification = YES;
             
-            if ([self.xcc shouldProcessWithCappLint])
+            // At this point, we should only detect warnings
+            if ([self.xcc shouldProcessWithObjjWarnings] && ![self.xcc isXibFile:self.sourcePath])
             {
-                showFinalNotification = [self.xcc checkCappLintForPath:[NSArray arrayWithObject:self.sourcePath]];
-
-                if (!showFinalNotification)
-                    [self.xcc showCappLintErrors];
+                showFinalNotification = [self.xcc checkObjjWarningsForPath:[NSArray arrayWithObject:self.sourcePath]];
+                [self.xcc showObjjWarnings];
             }
-                
+            
+            if ([self.xcc shouldProcessWithCappLint] && ![self.xcc isXibFile:self.sourcePath])
+            {
+                showFinalNotification = [self.xcc checkCappLintForPath:[NSArray arrayWithObject:self.sourcePath]] && showFinalNotification;
+                [self.xcc showCappLintWarnings];
+            }
+
             if (showFinalNotification)
                 [self notifyUserWithTitle:notificationTitle message:notificationMessage];
         }

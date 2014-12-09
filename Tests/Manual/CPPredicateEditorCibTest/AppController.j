@@ -41,7 +41,7 @@
     [self updateAddTemplateButton];
 
     [window setBackgroundColor:[CPColor colorWithHexString:@"f3f4f5"]];
-    [window setFullBridge:YES];
+    [window setFullPlatformWindow:YES];
 }
 
 - (IBAction)predicateEditorAction:(id)sender
@@ -123,6 +123,14 @@
     }
     else if (type == 3)
         template = [[CPPredicateEditorRowTemplate alloc] initWithLeftExpressions:leftExpressions rightExpressionAttributeType:CPDateAttributeType modifier:0 operators:operators options:0];
+    else if (type == 4)
+        template = [[CPPredicateEditorRowTemplate alloc] initWithLeftExpressions:leftExpressions rightExpressionAttributeType:CPBooleanAttributeType modifier:0 operators:operators options:0];
+    else if (type == 5)
+    {
+        var expressions = [CPArray arrayWithObjects:[CPExpression expressionForConstantValue:@"Apple"], [CPExpression expressionForConstantValue:@"Microsoft"], [CPExpression expressionForConstantValue:@"Linux"]]
+        template = [[CPPredicateEditorRowTemplate alloc] initWithLeftExpressions:leftExpressions rightExpressions:expressions modifier:0 operators:operators options:0];
+
+    }
 
     var templates = [[predicateEditor rowTemplates] arrayByAddingObject:template];
     [predicateEditor setRowTemplates:templates];

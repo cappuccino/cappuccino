@@ -108,7 +108,7 @@ var CPObjectAccessorsForClassKey = @"$CPObjectAccessorsForClassKey",
     switch (accessor[0])
     {
         case 0:
-            return objj_msgSend(self, accessor[1]);
+            return self.isa.objj_msgSend0(self, accessor[1]);
 
         case 1:
             // FIXME: We shouldn't be creating a new one every time.
@@ -226,7 +226,7 @@ var CPObjectAccessorsForClassKey = @"$CPObjectAccessorsForClassKey",
 
     switch (modifier[0])
     {
-        case 0:     return objj_msgSend(self, modifier[1], aValue);
+        case 0:     return self.isa.objj_msgSend1(self, modifier[1], aValue);
 
         case 1:     if ([theClass accessInstanceVariablesDirectly])
                     {
@@ -341,21 +341,21 @@ var CPObjectAccessorsForClassKey = @"$CPObjectAccessorsForClassKey",
 
 - (CPUInteger)count
 {
-    return objj_msgSend(_target, _countOfSelector);
+    return _target == nil ? nil : _target.isa.objj_msgSend0(_target, _countOfSelector);
 }
 
 - (id)objectAtIndex:(CPUInteger)anIndex
 {
     if (_objectInAtIndexSelector)
-        return objj_msgSend(_target, _objectInAtIndexSelector, anIndex);
+        return _target == nil ? nil : _target.isa.objj_msgSend1(_target, _objectInAtIndexSelector, anIndex);
 
-    return objj_msgSend(_target, _atIndexesSelector, [CPIndexSet indexSetWithIndex:anIndex])[0];
+    return _target == nil ? nil : _target.isa.objj_msgSend1(_target, _atIndexesSelector, [CPIndexSet indexSetWithIndex:anIndex])[0];
 }
 
 - (CPArray)objectsAtIndexes:(CPIndexSet)indexes
 {
     if (_atIndexesSelector)
-        return objj_msgSend(_target, _atIndexesSelector, indexes);
+        return _target == nil ? nil : _target.isa.objj_msgSend1(_target, _atIndexesSelector, indexes);
 
     return [super objectsAtIndexes:indexes];
 }
@@ -408,17 +408,17 @@ var CPObjectAccessorsForClassKey = @"$CPObjectAccessorsForClassKey",
 
 - (CPUInteger)count
 {
-    return objj_msgSend(_target, _countOfSelector);
+    return _target == nil ? nil : _target.isa.objj_msgSend0(_target, _countOfSelector);
 }
 
 - (CPEnumerator)objectEnumerator
 {
-    return objj_msgSend(_target, _enumeratorOfSelector);
+    return _target == nil ? nil : _target.isa.objj_msgSend0(_target, _enumeratorOfSelector);
 }
 
 - (id)member:(id)anObject
 {
-    return objj_msgSend(_target, _memberOfSelector, anObject);
+    return _target == nil ? nil : _target.isa.objj_msgSend1(_target, _memberOfSelector, anObject);
 }
 
 - (Class)classForCoder

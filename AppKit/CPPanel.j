@@ -119,4 +119,24 @@ CPDocModalWindowMask    = 1 << 6;
     return YES;
 }
 
+
+#pragma mark -
+#pragma mark Overrides
+
+/*!
+    @ignore
+*/
+- (void)cancelOperation:(id)sender
+{
+    if ([[CPApp currentEvent] _couldBeKeyEquivalent] && [self performKeyEquivalent:[CPApp currentEvent]])
+        return;
+
+    [[self firstResponder] tryToPerform:@selector(cancel:) with:self];
+}
+
+- (void)cancel:(id)sender
+{
+    [self performClose:sender];
+}
+
 @end

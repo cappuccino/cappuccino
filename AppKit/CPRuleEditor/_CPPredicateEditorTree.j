@@ -20,6 +20,8 @@
 @import <Foundation/CPObject.j>
 @import <Foundation/CPString.j>
 
+@class CPPredicateEditorRowTemplate
+
 @implementation _CPPredicateEditorTree : CPObject
 {
     CPPredicateEditorRowTemplate         template @accessors;

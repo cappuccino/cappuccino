@@ -315,6 +315,51 @@
     [self assert:0 equals:[control objectValueSetterCount] message:@"-setObjectValue should not be called"];
 }
 
+- (void)testMultipleBindingsToArrayControllerSelection
+{
+    var control1 = [[TextField alloc] init],
+        control2 = [[TextField alloc] init],
+
+        cheese1 = [BindingTester testerWithCheese:@"roblochon"],
+        cheese2 = [BindingTester testerWithCheese:@"brie"],
+
+        ac = [[CPArrayController alloc] initWithContent:@[cheese1, cheese2]],
+        oc = [[CPObjectController alloc] init];
+
+    // This tests fails only if multiple controls are bound BEFORE the object controller
+    [control1 bind:CPValueBinding toObject:oc withKeyPath:@"selection.cheese" options:nil];
+    [control2 bind:CPValueBinding toObject:oc withKeyPath:@"selection.cheese" options:nil];
+    [oc bind:CPContentBinding toObject:ac withKeyPath:@"selection" options:nil];
+
+    [ac setSelectionIndex:0];
+
+    [self assert:@"roblochon" equals:[control1 objectValue] message:@"control1 objectValue is wrong"];
+    [self assert:@"roblochon" equals:[control2 objectValue] message:@"control2 objectValue is wrong"];
+
+    [ac setSelectionIndex:1];
+
+    [self assert:@"brie" equals:[control1 objectValue] message:@"control1 objectValue is wrong"];
+    [self assert:@"brie" equals:[control2 objectValue] message:@"control2 objectValue is wrong"];
+}
+
+- (void)testExclusiveBindings
+{
+    var segmented = [[CPSegmentedControl alloc] initWithFrame:CGRectMakeZero()];
+    [segmented setSegmentCount:3];
+
+    var model = [BindingTester testerWithCheese:2];
+
+    [segmented bind:CPSelectedIndexBinding toObject:model withKeyPath:@"cheese" options:nil];
+
+    // Try to bind another binding (mutually exclusive) to the same value.
+    [segmented bind:CPSelectedTagBinding toObject:model withKeyPath:@"cheese" options:nil];
+
+    [self assertNotNull:[segmented infoForBinding:CPSelectedIndexBinding]];
+
+    // Check that the source is not binded with the CPSelectedTagBinding
+    [self assertNull:[segmented infoForBinding:CPSelectedTagBinding]];
+}
+
 @end
 
 @implementation TextField : CPTextField

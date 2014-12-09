@@ -36,6 +36,15 @@
 
 @end
 
+@protocol CPComboBoxDataSource <CPObject>
+
+@optional
+- (CPString)comboBox:(CPComboBox)aComboBox completedString:(CPString)uncompletedString;
+- (id)comboBox:(CPComboBox)aComboBox objectValueForItemAtIndex:(int)index;
+- (int)comboBox:(CPComboBox)aComboBox indexOfItemWithStringValue:(CPString)stringValue;
+- (int)numberOfItemsInComboBox:(CPComboBox)aComboBox;
+
+@end
 
 CPComboBoxSelectionDidChangeNotification  = @"CPComboBoxSelectionDidChangeNotification";
 CPComboBoxSelectionIsChangingNotification = @"CPComboBoxSelectionIsChangingNotification";
@@ -52,17 +61,19 @@ var CPComboBoxTextSubview = @"text",
 
 @implementation CPComboBox : CPTextField
 {
-    CPArray                 _items;
-    _CPPopUpList            _listDelegate;
-    CPComboBoxDataSource    _dataSource;
-    BOOL                    _usesDataSource;
-    BOOL                    _completes;
-    BOOL                    _canComplete;
-    int                     _numberOfVisibleItems;
-    BOOL                    _forceSelection;
-    BOOL                    _hasVerticalScroller;
-    CPString                _selectedStringValue;
-    BOOL                    _popUpButtonCausedResign;
+    CPArray                     _items;
+    _CPPopUpList                _listDelegate;
+    id<CPComboBoxDataSource>    _dataSource;
+    BOOL                        _usesDataSource;
+    BOOL                        _completes;
+    BOOL                        _canComplete;
+    int                         _numberOfVisibleItems;
+    BOOL                        _forceSelection;
+    BOOL                        _hasVerticalScroller;
+    CPString                    _selectedStringValue;
+    CGSize                      _intercellSpacing;
+    float                       _itemHeight;
+    BOOL                        _popUpButtonCausedResign;
 }
 
 + (CPString)defaultThemeClass
@@ -131,7 +142,9 @@ var CPComboBoxTextSubview = @"text",
         return;
 
     _hasVerticalScroller = flag;
-    [[_listDelegate scrollView] setHasVerticalScroller:flag];
+
+    if (_listDelegate)
+        [[_listDelegate scrollView] setHasVerticalScroller:_hasVerticalScroller];
 }
 
 - (CGSize)intercellSpacing
@@ -141,7 +154,13 @@ var CPComboBoxTextSubview = @"text",
 
 - (void)setIntercellSpacing:(CGSize)aSize
 {
-    [[_listDelegate tableView] setIntercellSpacing:aSize];
+    if (_intercellSpacing && CGSizeEqualToSize(aSize, _intercellSpacing))
+        return;
+
+    _intercellSpacing = aSize;
+
+    if (_listDelegate)
+        [[_listDelegate tableView] setIntercellSpacing:_intercellSpacing];
 }
 
 - (BOOL)isButtonBordered
@@ -164,10 +183,18 @@ var CPComboBoxTextSubview = @"text",
 
 - (void)setItemHeight:(float)itemHeight
 {
-    [[_listDelegate tableView] setRowHeight:itemHeight];
+    if (itemHeight === _itemHeight)
+        return;
 
-    // FIXME: This shouldn't be necessary, but CPTableView does not tile after setRowHeight
-    [[_listDelegate tableView] reloadData];
+    _itemHeight = itemHeight;
+
+    if (_listDelegate)
+    {
+        [[_listDelegate tableView] setRowHeight:_itemHeight];
+
+        // FIXME: This shouldn't be necessary, but CPTableView does not tile after setRowHeight
+        [[_listDelegate tableView] reloadData];
+    }
 }
 
 - (int)numberOfVisibleItems
@@ -183,7 +210,7 @@ var CPComboBoxTextSubview = @"text",
 
 #pragma mark Setting a Delegate
 
-- (id /*< CPComboBoxDelegate >*/)delegate
+- (id <CPComboBoxDelegate>)delegate
 {
     return [super delegate];
 }
@@ -243,7 +270,7 @@ var CPComboBoxTextSubview = @"text",
 
 #pragma mark Setting a Data Source
 
-- (id /*< CPComboBoxDataSource >*/)dataSource
+- (id <CPComboBoxDataSource>)dataSource
 {
     if (!_usesDataSource)
         [self _dataSourceWarningForMethod:_cmd condition:NO];
@@ -251,10 +278,12 @@ var CPComboBoxTextSubview = @"text",
     return _dataSource;
 }
 
-- (void)setDataSource:(id /*< CPComboBoxDataSource >*/)aSource
+- (void)setDataSource:(id <CPComboBoxDataSource>)aSource
 {
     if (!_usesDataSource)
+    {
         [self _dataSourceWarningForMethod:_cmd condition:NO];
+    }
     else if (_dataSource !== aSource)
     {
         if (![aSource respondsToSelector:@selector(numberOfItemsInComboBox:)] ||
@@ -263,7 +292,9 @@ var CPComboBoxTextSubview = @"text",
             CPLog.warn("Illegal %s data source (%s). Must implement numberOfItemsInComboBox: and comboBox:objectValueForItemAtIndex:", [self className], [aSource description]);
         }
         else
+        {
             _dataSource = aSource;
+        }
     }
 }
 
@@ -438,6 +469,9 @@ var CPComboBoxTextSubview = @"text",
     // Apply our text style to the list
     [_listDelegate setFont:[self font]];
     [_listDelegate setAlignment:[self alignment]];
+    [[_listDelegate scrollView] setHasVerticalScroller:_hasVerticalScroller];
+    [[_listDelegate tableView] setIntercellSpacing:_intercellSpacing];
+    [[_listDelegate tableView] setRowHeight:_itemHeight];
 }
 
 - (int)indexOfItemWithObjectValue:(id)anObject
@@ -829,13 +863,17 @@ var CPComboBoxTextSubview = @"text",
 - (void)setFont:(CPFont)aFont
 {
     [super setFont:aFont];
-    [_listDelegate setFont:aFont];
+
+    if (_listDelegate)
+        [_listDelegate setFont:aFont];
 }
 
 - (void)setAlignment:(CPTextAlignment)alignment
 {
     [super setAlignment:alignment];
-    [_listDelegate setAlignment:alignment];
+
+    if (_listDelegate)
+        [_listDelegate setAlignment:alignment];
 }
 
 #pragma mark Pop Up Button Layout
@@ -906,7 +944,9 @@ var CPComboBoxTextSubview = @"text",
             index = [_dataSource comboBox:self indexOfItemWithStringValue:stringValue]
     }
     else
+    {
         index = [self indexOfItemWithObjectValue:stringValue];
+    }
 
     [_listDelegate selectRow:index];
 

@@ -138,21 +138,24 @@ AppController *SharedAppControllerInstance = nil;
 - (void)registerDefaultPreferences
 {
     NSDictionary *appDefaults = @{
-        kDefaultLastEventId:                        [NSNumber numberWithUnsignedLongLong:kFSEventStreamEventIdSinceNow],
-        kDefaultFirstLaunch:                        @YES,
-        kDefaultFirstLaunchVersion:                 @2.0,
-        kDefaultXCCAPIMode:                         [NSNumber numberWithInt:kXCCAPIModeAuto],
-        kDefaultXCCReactToInodeMod:                 @YES,
-        kDefaultXCCReopenLastProject:               @YES,
-        kDefaultXCCAutoOpenErrorsPanelOnErrors:     @YES,
-        kDefaultXCCAutoOpenErrorsPanelOnCappLint:   @YES,
-        kDefaultXCCAutoShowNotificationOnErrors:    @YES,
-        kDefaultXCCAutoShowNotificationOnCappLint:  @NO,
-        kDefaultXCCProjectHistory:                  [NSArray new],
-        kDefaultMaxRecentProjects:                  @20,
-        kDefaultLogLevel:                           [NSNumber numberWithInt:LOG_LEVEL_WARN],
-        kDefaultAutoOpenXcodeProject:               @YES,
-        kDefaultUseSymlinkWhenCreatingProject:      @YES
+        kDefaultLastEventId:                            [NSNumber numberWithUnsignedLongLong:kFSEventStreamEventIdSinceNow],
+        kDefaultFirstLaunch:                            @YES,
+        kDefaultFirstLaunchVersion:                     @2.0,
+        kDefaultXCCAPIMode:                             [NSNumber numberWithInt:kXCCAPIModeAuto],
+        kDefaultXCCReactToInodeMod:                     @YES,
+        kDefaultXCCReopenLastProject:                   @YES,
+        kDefaultXCCAutoOpenErrorsPanelOnErrors:         @YES,
+        kDefaultXCCAutoOpenErrorsPanelOnCappLint:       @YES,
+        kDefaultXCCAutoShowNotificationOnErrors:        @YES,
+        kDefaultXCCAutoShowNotificationOnCappLint:      @YES,
+        kDefaultXCCProjectHistory:                      [NSArray new],
+        kDefaultMaxRecentProjects:                      @20,
+        kDefaultLogLevel:                               [NSNumber numberWithInt:LOG_LEVEL_WARN],
+        kDefaultAutoOpenXcodeProject:                   @YES,
+        kDefaultUseSymlinkWhenCreatingProject:          @YES,
+        kDefaultXCCUseDebugFrameworkWithObjj:           @YES,
+        kDefaultXCCShouldProcessObjj:                   @YES,
+        kDefaultXCCPanelStyleUtility:                   @NO
     };
     
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
@@ -525,6 +528,13 @@ AppController *SharedAppControllerInstance = nil;
     [self.recentMenu addItemWithTitle:@"Clear history" action:@selector(clearProjectHistory:) keyEquivalent:@""];
 
     self.menuItemHistory.enabled = [projectHistory count] > 0;
+}
+
+#pragma mark - Cappuccino methods
+
+- (IBAction)updateCappuccino:(id)sender
+{
+    [self.xcc performSelectorInBackground:@selector(updateCappuccino) withObject:nil];
 }
 
 @end

@@ -138,7 +138,14 @@
     [self setContinuous:_autorepeat];
     [self addSubview:_buttonDown];
 
+    [self _sizeToFit];
     [self setNeedsLayout];
+}
+
+- (void)setControlSize:(CPControlSize)aControlSize
+{
+    [super setControlSize:aControlSize];
+    [self _sizeToFit];
 }
 
 #pragma mark -
@@ -159,8 +166,8 @@
 
 - (void)setFrame:(CGRect)aFrame
 {
-    var upSize = [self valueForThemeAttribute:@"up-button-size"],
-        downSize = [self valueForThemeAttribute:@"down-button-size"],
+    var upSize = [self currentValueForThemeAttribute:@"up-button-size"],
+        downSize = [self currentValueForThemeAttribute:@"down-button-size"],
         minSize = CGSizeMake(upSize.width, upSize.height + downSize.height),
         frame = CGRectMakeCopy(aFrame);
 
@@ -172,21 +179,22 @@
 /*! @ignore */
 - (void)layoutSubviews
 {
-    var aFrame = [self frame],
-        upSize = [self valueForThemeAttribute:@"up-button-size"],
-        downSize = [self valueForThemeAttribute:@"down-button-size"],
-        upFrame = CGRectMake(aFrame.size.width - upSize.width, 0, upSize.width, upSize.height),
-        downFrame = CGRectMake(aFrame.size.width - downSize.width, upSize.height, downSize.width, downSize.height);
+    var controlSizeThemeState = [self _controlSizeThemeState],
+        aFrame = [self frame],
+        upSize = [self valueForThemeAttribute:@"up-button-size" inState:controlSizeThemeState],
+        downSize = [self valueForThemeAttribute:@"down-button-size" inState:controlSizeThemeState],
+        upFrame = CGRectMake(0, 0, upSize.width, upSize.height),
+        downFrame = CGRectMake(0, upSize.height, downSize.width, downSize.height);
 
     [_buttonUp setFrame:upFrame];
     [_buttonDown setFrame:downFrame];
 
-    [_buttonUp setValue:[self valueForThemeAttribute:@"bezel-color-up-button" inState:CPThemeStateBordered] forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered];
-    [_buttonUp setValue:[self valueForThemeAttribute:@"bezel-color-up-button" inState:[CPThemeStateBordered, CPThemeStateDisabled]] forThemeAttribute:@"bezel-color" inState:[CPThemeStateBordered, CPThemeStateDisabled]];
-    [_buttonUp setValue:[self valueForThemeAttribute:@"bezel-color-up-button" inState:[CPThemeStateBordered, CPThemeStateHighlighted]] forThemeAttribute:@"bezel-color" inState:[CPThemeStateBordered, CPThemeStateHighlighted]];
-    [_buttonDown setValue:[self valueForThemeAttribute:@"bezel-color-down-button" inState:CPThemeStateBordered] forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered];
-    [_buttonDown setValue:[self valueForThemeAttribute:@"bezel-color-down-button" inState:[CPThemeStateBordered, CPThemeStateDisabled]] forThemeAttribute:@"bezel-color" inState:[CPThemeStateBordered, CPThemeStateDisabled]];
-    [_buttonDown setValue:[self valueForThemeAttribute:@"bezel-color-down-button" inState:[CPThemeStateBordered, CPThemeStateHighlighted]] forThemeAttribute:@"bezel-color" inState:[CPThemeStateBordered, CPThemeStateHighlighted]];
+    [_buttonUp setValue:[self valueForThemeAttribute:@"bezel-color-up-button" inState:[controlSizeThemeState, CPThemeStateBordered]] forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered];
+    [_buttonUp setValue:[self valueForThemeAttribute:@"bezel-color-up-button" inState:[controlSizeThemeState, CPThemeStateBordered, CPThemeStateDisabled]] forThemeAttribute:@"bezel-color" inState:[CPThemeStateBordered, CPThemeStateDisabled]];
+    [_buttonUp setValue:[self valueForThemeAttribute:@"bezel-color-up-button" inState:[controlSizeThemeState, CPThemeStateBordered, CPThemeStateHighlighted]] forThemeAttribute:@"bezel-color" inState:[CPThemeStateBordered, CPThemeStateHighlighted]];
+    [_buttonDown setValue:[self valueForThemeAttribute:@"bezel-color-down-button" inState:[controlSizeThemeState, CPThemeStateBordered]] forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered];
+    [_buttonDown setValue:[self valueForThemeAttribute:@"bezel-color-down-button" inState:[controlSizeThemeState, CPThemeStateBordered, CPThemeStateDisabled]] forThemeAttribute:@"bezel-color" inState:[CPThemeStateBordered, CPThemeStateDisabled]];
+    [_buttonDown setValue:[self valueForThemeAttribute:@"bezel-color-down-button" inState:[controlSizeThemeState, CPThemeStateBordered, CPThemeStateHighlighted]] forThemeAttribute:@"bezel-color" inState:[CPThemeStateBordered, CPThemeStateHighlighted]];
 }
 
 - (void)_sizeToFit

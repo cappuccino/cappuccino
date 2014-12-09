@@ -22,8 +22,11 @@ var sharedObject = [CPObject new];
 - (void)testWriteOverRangeBoundaries
 {
     var string = [[CPMutableAttributedString alloc] initWithString:@"Fusce\n" attributes:@{"testkey": 1}];
-    [string replaceCharactersInRange:CPMakeRange(6, 0) withAttributedString:[[CPAttributedString alloc] initWithString:@"this is boldface"
-                attributes:@{"testkey": 2}]];
+
+    [string replaceCharactersInRange:CPMakeRange(6, 0)
+                withAttributedString:[[CPAttributedString alloc] initWithString:@"this is boldface"
+                          attributes:@{"testkey": 2}]];
+
     [string replaceCharactersInRange:CPMakeRange(5, 3) withString:@" "];
 
     var aRange = CPMakeRange(0, 0),
@@ -31,6 +34,19 @@ var sharedObject = [CPObject new];
 
     [self assertTrue:([attribs objectForKey:@"testkey"] === 1)
              message:"testWriteOverRangeBoundaries: expected:" + @"1" + " actual:" + [attribs objectForKey:@"testkey"]];
+}
+
+- (void)testCoalesceOnInsert
+{
+    var string = [[CPMutableAttributedString alloc] initWithString:@"Fusce\n" attributes:@{"testkey": 1}],
+        prevRangeEntriesLength = string._rangeEntries.length;
+
+    [string insertAttributedString:[[CPAttributedString alloc]
+                    initWithString:@"this is boldface"
+                        attributes:@{"testkey": 1}] atIndex:2];
+
+    [self assertTrue:(string._rangeEntries.length === prevRangeEntriesLength)
+             message:"testCoalesceOnInsert: expected:" + prevRangeEntriesLength + " actual:" + string._rangeEntries.length];
 }
 
 - (CPAttributedString)stringForTesting

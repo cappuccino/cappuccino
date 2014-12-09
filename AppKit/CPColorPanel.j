@@ -27,6 +27,9 @@
 @import "CPView.j"
 
 @class CPSlider
+@class _CPColorPanelToolbar
+@class _CPColorPanelSwatches
+@class _CPColorPanelPreview
 
 @global CPApp
 

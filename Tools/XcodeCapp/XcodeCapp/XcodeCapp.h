@@ -101,6 +101,9 @@ extern NSString * const XCCCappLintDidEndNotification;
 // Whether we are currently processing source files
 @property BOOL isProcessing;
 
+// Whether we are currently processing source files
+@property BOOL isCappuccinoUpdating;
+
 // Whether $CAPP_BUILD is defined or not
 @property BOOL isCappBuildDefined;
 
@@ -117,6 +120,10 @@ extern NSString * const XCCCappLintDidEndNotification;
 @property (strong) IBOutlet NSPanel *errorsPanel;
 @property (unsafe_unretained) IBOutlet NSTableView *errorTable;
 @property (strong) IBOutlet NSArrayController *errorListController;
+
+@property (strong) IBOutlet NSProgressIndicator *progressIndicator;
+@property (strong) IBOutlet NSTextField *fieldCurrentTask;
+@property (strong) IBOutlet NSPanel *updatingCappuccinoPanel;
 
 - (IBAction)openErrorsPanel:(id)sender;
 - (IBAction)clearErrors:(id)sender;
@@ -149,9 +156,16 @@ extern NSString * const XCCCappLintDidEndNotification;
 
 - (NSDictionary*)createProject:(NSString*)aPath;
 
+- (void)showCappLintWarnings;
+- (void)showObjjWarnings;
+
 - (BOOL)shouldProcessWithCappLint;
 - (BOOL)checkCappLintForPath:(NSArray*)paths;
-- (void)showCappLintErrors;
+
+- (BOOL)shouldProcessWithObjjWarnings;
+- (BOOL)checkObjjWarningsForPath:(NSArray*)paths;
+
+- (void)updateCappuccino;
 
 @end
 

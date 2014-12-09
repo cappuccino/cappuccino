@@ -32,6 +32,7 @@
 @import "CPPasteboard.j"
 @import "CPView.j"
 
+@class _CPCollectionViewDropIndicator
 
 var CPCollectionViewDelegate_collectionView_acceptDrop_index_dropOperation_                 = 1 << 0,
     CPCollectionViewDelegate_collectionView_canDragItemsAtIndexes_withEvent_                = 1 << 1,
@@ -40,9 +41,8 @@ var CPCollectionViewDelegate_collectionView_acceptDrop_index_dropOperation_     
     CPCollectionViewDelegate_collectionView_dataForItemsAtIndexes_forType_                  = 1 << 4,
     CPCollectionViewDelegate_collectionView_validateDrop_proposedIndex_dropOperation_       = 1 << 5,
     CPCollectionViewDelegate_collectionView_didDoubleClickOnItemAtIndex_                    = 1 << 6,
-    CPCollectionViewDelegate_collectionViewDidChangeSelection_                              = 1 << 7,
-    CPCollectionViewDelegate_collectionView_menuForItemAtIndex_                             = 1 << 8,
-    CPCollectionViewDelegate_collectionView_draggingViewForItemsAtIndexes_withEvent_offset  = 1 << 9;
+    CPCollectionViewDelegate_collectionView_menuForItemAtIndex_                             = 1 << 7,
+    CPCollectionViewDelegate_collectionView_draggingViewForItemsAtIndexes_withEvent_offset  = 1 << 8;
 
 
 @protocol CPCollectionViewDelegate <CPObject>
@@ -57,7 +57,6 @@ var CPCollectionViewDelegate_collectionView_acceptDrop_index_dropOperation_     
 - (CPMenu)collectionView:(CPCollectionView)collectionView menuForItemAtIndex:(CPInteger)anIndex;
 - (CPView)collectionView:(CPCollectionView)collectionView dragginViewForItemsAtIndexes:(CPIndexSet)indexes withEvent:(CPEvent)event offset:(CGPoint)dragImageOffset;
 - (void)collectionView:(CPCollectionView)collectionView didDoubleClickOnItemAtIndex:(int)index;
-- (void)collectionViewDidChangeSelection:(CPCollectionView)collectionView;
 
 @end
 
@@ -70,10 +69,6 @@ var CPCollectionViewDelegate_collectionView_acceptDrop_index_dropOperation_     
     setting that item as the collection view prototype.
 
     @par Delegate Methods
-
-    @delegate - (void)collectionViewDidChangeSelection:(CPCollectionView)collectionView;
-    DEPRECATED: Please do not use.
-    @param collectionView the collection view who's selection changed
 
     @delegate - (void)collectionView:(CPCollectionView)collectionView didDoubleClickOnItemAtIndex:(int)index;
     Called when the user double-clicks on an item in the collection view.
@@ -235,9 +230,6 @@ var HORIZONTAL_MARGIN = 2;
 
     if ([_delegate respondsToSelector:@selector(collectionView:didDoubleClickOnItemAtIndex:)])
         _implementedDelegateMethods |= CPCollectionViewDelegate_collectionView_didDoubleClickOnItemAtIndex_;
-
-    if ([_delegate respondsToSelector:@selector(collectionViewDidChangeSelection:)])
-        _implementedDelegateMethods |= CPCollectionViewDelegate_collectionViewDidChangeSelection_;
 
     if ([_delegate respondsToSelector:@selector(collectionView:menuForItemAtIndex:)])
         _implementedDelegateMethods |= CPCollectionViewDelegate_collectionView_menuForItemAtIndex_;
@@ -473,12 +465,6 @@ var HORIZONTAL_MARGIN = 2;
 
     var binderClass = [[self class] _binderClassForBinding:@"selectionIndexes"];
     [[binderClass getBinding:@"selectionIndexes" forObject:self] reverseSetValueFor:@"selectionIndexes"];
-
-    if ([_delegate respondsToSelector:@selector(collectionViewDidChangeSelection:)])
-    {
-        CPLog.warn("The delegate method collectionViewDidChangeSelection: is deprecated and will be removed in a future version, please bind to selectionIndexes instead.");
-        [_delegate collectionViewDidChangeSelection:self];
-    }
 }
 
 /*!
@@ -623,7 +609,7 @@ var HORIZONTAL_MARGIN = 2;
 
     height = MAX(height, numberOfRows * (_minItemSize.height + _verticalMargin));
 
-    var itemSizeHeight = FLOOR(height / numberOfRows);
+    var itemSizeHeight = FLOOR(height / numberOfRows) - _verticalMargin;
 
     if (maxItemSizeHeight > 0)
         itemSizeHeight = MIN(itemSizeHeight, maxItemSizeHeight);
@@ -1514,17 +1500,6 @@ Not supported. Use -collectionView:dataForItemsAtIndexes:fortype:
     return [_delegate collectionView:self didDoubleClickOnItemAtIndex:index];
 }
 
-/*!
-    @ignore
-    Call delegate collectionViewDidChangeSelection
-*/
-- (void)_sendDelegateCollectionViewDidChangeSelection:(CPCollectionView)collectionView
-{
-    if (!(_implementedDelegateMethods & CPCollectionViewDelegate_collectionViewDidChangeSelection_))
-        return;
-
-    return [_delegate collectionViewDidChangeSelection:self];
-}
 
 /*!
     @ignore

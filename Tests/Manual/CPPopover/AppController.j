@@ -122,6 +122,7 @@
 
     buttonBehaviour = [[CPPopUpButton alloc] initWithFrame:CGRectMake(570, 10, 130, buttonHeight)];
     [buttonBehaviour addItemWithTitle:"Transient"];
+    [buttonBehaviour addItemWithTitle:"Semi-transient"];
     [buttonBehaviour addItemWithTitle:"Not managed"];
     [contentView addSubview:buttonBehaviour];
 
@@ -193,8 +194,8 @@
 
 - (@action)setTransient:(id)sender
 {
-    [windowPopover setBehavior:[sender state] === CPOnState ? CPPopoverBehaviorTransient : CPPopoverBehaviorApplicationDefined];
-    [nestedPopover setBehavior:[sender state] === CPOnState ? CPPopoverBehaviorTransient : CPPopoverBehaviorApplicationDefined];
+    [windowPopover setBehavior:[sender state] === CPOnState ? CPPopoverBehaviorTransient : CPPopoverBehaviorSemitransient];
+    [nestedPopover setBehavior:[sender state] === CPOnState ? CPPopoverBehaviorTransient : CPPopoverBehaviorSemitransient];
 }
 
 - (@action)movePopover:(id)sender
@@ -214,7 +215,14 @@
 {
     [aPopover setDelegate:self];
     [aPopover setAnimates:([buttonAnimation title] === @"With animation")];
-    [aPopover setBehavior:([buttonBehaviour title] === @"Transient") ? CPPopoverBehaviorTransient : CPPopoverBehaviorApplicationDefined];
+
+    if ([buttonBehaviour title] === @"Transient")
+        [aPopover setBehavior:CPPopoverBehaviorTransient];
+    else if ([buttonBehaviour title] === @"Semi-transient")
+        [aPopover setBehavior:CPPopoverBehaviorSemitransient];
+    else
+        [aPopover setBehavior:CPPopoverBehaviorApplicationDefined];
+
     [aPopover setAppearance:appearance];
 }
 

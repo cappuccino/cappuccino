@@ -353,6 +353,11 @@ ProtocolDef.prototype.getClassMethod = function(name) {
     return null;
 }
 
+var TypeDef = function(name)
+{
+    this.name = name;
+}
+
 // methodDef = {"types": types, "name": selector}
 var MethodDef = function(name, types)
 {
@@ -369,7 +374,7 @@ var wordPrefixOperators = exports.acorn.makePredicate("delete in instanceof new 
 var isLogicalBinary = exports.acorn.makePredicate("LogicalExpression BinaryExpression");
 var isInInstanceof = exports.acorn.makePredicate("in instanceof");
 
-var ObjJAcornCompiler = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ flags, /*unsigned*/ pass, /* Dictionary */ classDefs, /* Dictionary */ protocolDefs)
+var ObjJAcornCompiler = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ flags, /*unsigned*/ pass, /* Dictionary */ classDefs, /* Dictionary */ protocolDefs, /* Dictionary */ typeDefs)
 {
     this.source = aString;
     this.URL = new CFURL(aURL);
@@ -383,7 +388,7 @@ var ObjJAcornCompiler = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*
         this.tokens = exports.acorn.parse(aString);
     }
     catch (e) {
-        if (e.lineStart)
+        if (e.lineStart != null)
         {
             var message = this.prettifyMessage(e, "ERROR");
 #ifdef BROWSER
@@ -399,6 +404,7 @@ var ObjJAcornCompiler = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*
     this.flags = flags | ObjJAcornCompiler.Flags.IncludeDebugSymbols;
     this.classDefs = classDefs ? classDefs : Object.create(null);
     this.protocolDefs = protocolDefs ? protocolDefs : Object.create(null);
+    this.typeDefs = typeDefs ? typeDefs : Object.create(null);
     this.lastPos = 0;
     if (currentCompilerFlags & ObjJAcornCompiler.Flags.Generate)
         this.generate = true;
@@ -415,9 +421,9 @@ exports.ObjJAcornCompiler.compileToExecutable = function(/*String*/ aString, /*C
     return new ObjJAcornCompiler(aString, aURL, flags, 2).executable();
 }
 
-exports.ObjJAcornCompiler.compileToIMBuffer = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ flags, classDefs, protocolDefs)
+exports.ObjJAcornCompiler.compileToIMBuffer = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ flags, classDefs, protocolDefs, typeDefs)
 {
-    return new ObjJAcornCompiler(aString, aURL, flags, 2, classDefs, protocolDefs).IMBuffer();
+    return new ObjJAcornCompiler(aString, aURL, flags, 2, classDefs, protocolDefs, typeDefs).IMBuffer();
 }
 
 exports.ObjJAcornCompiler.compileFileDependencies = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ flags)
@@ -579,6 +585,31 @@ ObjJAcornCompiler.prototype.getProtocolDef = function(/* String */ aProtocolName
 
     return null;
 //  protocolDef = {"name": protocolName, "protocols": Object.create(null), "required": Object.create(null), "optional": Object.create(null)};
+}
+
+ObjJAcornCompiler.prototype.getTypeDef = function(/* String */ aTypeDefName)
+{
+    if (!aTypeDefName)
+        return null;
+
+    var t = this.typeDefs[aTypeDefName];
+
+    if (t)
+        return t;
+
+    if (typeof objj_getTypeDef === 'function')
+    {
+        var aTypeDef = objj_getTypeDef(aTypeDefName);
+        if (aTypeDef)
+        {
+            var typeDefName = typeDef_getName(aTypeDef)
+            t = new TypeDef(typeDefName);
+            this.typeDefs[typeDefName] = t;
+            return t;
+        }
+    }
+
+    return null;
 }
 
 ObjJAcornCompiler.methodDefsFromMethodList = function(/* Array */ methodList)
@@ -829,7 +860,12 @@ Program: function(node, st, c) {
 BlockStatement: function(node, st, c) {
     var compiler = st.compiler,
         generate = compiler.generate,
+        endOfScopeBody = st.endOfScopeBody,
         buffer;
+
+    if (endOfScopeBody)
+        delete st.endOfScopeBody;
+
     if (generate) {
       st.indentBlockLevel = typeof st.indentBlockLevel === "undefined" ? 0 : st.indentBlockLevel + 1;
       buffer = compiler.jsBuffer;
@@ -840,6 +876,18 @@ BlockStatement: function(node, st, c) {
       c(node.body[i], st, "Statement");
     }
     if (generate) {
+      var maxReceiverLevel = st.maxReceiverLevel;
+      if (endOfScopeBody && maxReceiverLevel) {
+        buffer.concat(indentation);
+        buffer.concat("var ");
+        for (var i = 0; i < maxReceiverLevel; i++) {
+          if (i) buffer.concat(", ");
+          buffer.concat("___r");
+          buffer.concat((i + 1) + "");
+        }
+        buffer.concat(";\n");
+      }
+
       buffer.concat(indentation.substring(indentationSpaces));
       buffer.concat("}");
       if (st.isDecl || st.indentBlockLevel > 0)
@@ -1023,6 +1071,7 @@ TryStatement: function(node, st, c) {
         buffer.concat(") ");
       }
       indentation += indentStep;
+      inner.endOfScopeBody = true;
       c(handler.body, inner, "ScopeBody");
       indentation = indentation.substring(indentationSpaces);
       inner.copyAddedSelfToIvarsToParent();
@@ -1161,6 +1210,7 @@ Function: function(node, st, c) {
     buffer.concat(")\n");
   }
   indentation += indentStep;
+  inner.endOfScopeBody = true;
   c(node.body, inner, "ScopeBody");
   indentation = indentation.substring(indentationSpaces);
   inner.copyAddedSelfToIvarsToParent();
@@ -1381,9 +1431,18 @@ AssignmentExpression: function(node, st, c) {
         return;
     }
 
-    var saveAssignment = st.assignment;
+    var saveAssignment = st.assignment,
+        nodeLeft = node.left;
     st.assignment = true;
-    (generate && nodePrecedence(node, node.left) ? surroundExpression(c) : c)(node.left, st, "Expression");
+    if (nodeLeft.type === "Identifier" && nodeLeft.name === "self") {
+        var lVar = st.getLvar("self", true);
+        if (lVar) {
+            var lVarScope = lVar.scope;
+            if (lVarScope)
+                lVarScope.assignmentToSelf = true;
+        }
+    }
+    (generate && nodePrecedence(node, nodeLeft) ? surroundExpression(c) : c)(nodeLeft, st, "Expression");
     if (generate) {
         buffer.concat(" ");
         buffer.concat(node.operator);
@@ -1391,8 +1450,8 @@ AssignmentExpression: function(node, st, c) {
     }
     st.assignment = saveAssignment;
     (generate && nodePrecedence(node, node.right, true) ? surroundExpression(c) : c)(node.right, st, "Expression");
-    if (st.isRootScope() && node.left.type === "Identifier" && !st.getLvar(node.left.name))
-        st.vars[node.left.name] = {type: "global", node: node.left};
+    if (st.isRootScope() && nodeLeft.type === "Identifier" && !st.getLvar(nodeLeft.name))
+        st.vars[nodeLeft.name] = {type: "global", node: nodeLeft};
 },
 ConditionalExpression: function(node, st, c) {
     var compiler = st.compiler,
@@ -1421,8 +1480,22 @@ NewExpression: function(node, st, c) {
 },
 CallExpression: function(node, st, c) {
     var compiler = st.compiler,
-        generate = compiler.generate;
-    (generate && nodePrecedence(node, node.callee) ? surroundExpression(c) : c)(node.callee, st, "Expression");
+        generate = compiler.generate,
+        callee = node.callee;
+
+    // If call to function 'eval' we assume that 'self' can be altered and from this point
+    // we check if 'self' is null before 'objj_msgSend' is called with 'self' as receiver.
+    if (callee.type === "Identifier" && callee.name === "eval") {
+        var selfLvar = st.getLvar("self", true);
+        if (selfLvar) {
+            var selfScope = selfLvar.scope;
+            if (selfScope) {
+                selfScope.assignmentToSelf = true;
+            }
+        }
+    }
+
+    (generate && nodePrecedence(node, callee) ? surroundExpression(c) : c)(callee, st, "Expression");
     if (generate) compiler.jsBuffer.concat("(");
     if (node.arguments) {
       for (var i = 0; i < node.arguments.length; ++i) {
@@ -1601,6 +1674,9 @@ ClassDeclarationStatement: function(node, st, c) {
     compiler.cmBuffer = new StringBuffer();
     compiler.classBodyBuffer = new StringBuffer();      // TODO: Check if this is needed
 
+    if (compiler.getTypeDef(className))
+        throw compiler.error_message(className + " is already declared as a type", node.classname);
+
     if (!generate) saveJSBuffer.concat(compiler.source.substring(compiler.lastPos, node.start));
 
     // First we declare the class
@@ -1663,6 +1739,8 @@ ClassDeclarationStatement: function(node, st, c) {
     compiler.currentSuperMetaClass = "objj_getMetaClass(\"" + className + "\").super_class";
 
     var firstIvarDeclaration = true,
+        ivars = classDef.ivars,
+        classDefIvars = [],
         hasAccessors = false;
 
     // Then we add all ivars
@@ -1671,13 +1749,19 @@ ClassDeclarationStatement: function(node, st, c) {
         {
             var ivarDecl = node.ivardeclarations[i],
                 ivarType = ivarDecl.ivartype ? ivarDecl.ivartype.name : null,
+                ivarTypeIsClass = ivarDecl.ivartype ? ivarDecl.ivartype.typeisclass : false,
                 ivarName = ivarDecl.id.name,
-                ivars = classDef.ivars,
                 ivar = {"type": ivarType, "name": ivarName},
                 accessors = ivarDecl.accessors;
 
             if (ivars[ivarName])
-                throw compiler.error_message("Instance variable '" + ivarName + "'is already declared for class " + className, ivarDecl.id);
+                throw compiler.error_message("Instance variable '" + ivarName + "' is already declared for class " + className, ivarDecl.id);
+
+            var isTypeDefined = !ivarTypeIsClass || typeof global[ivarType] !== "undefined" || typeof window[ivarType] !== "undefined"
+                                || compiler.getClassDef(ivarType) || compiler.getTypeDef(ivarType) || ivarType == classDef.name;
+
+            if (!isTypeDefined)
+                compiler.addWarning(createMessage("Unknown type '" + ivarType + "' for ivar '" + ivarName + "'", ivarDecl.id, compiler.source));
 
             if (firstIvarDeclaration)
             {
@@ -1694,7 +1778,10 @@ ClassDeclarationStatement: function(node, st, c) {
 
             if (ivarDecl.outlet)
                 ivar.outlet = true;
-            ivars[ivarName] = ivar;
+
+            // Store the classDef ivars into array and add them later when accessors are created to prevent ivar duplicate error when generating accessors
+            classDefIvars.push(ivar);
+
             if (!classScope.ivars)
                 classScope.ivars = Object.create(null);
             classScope.ivars[ivarName] = {type: "ivar", name: ivarName, node: ivarDecl.id, ivar: ivar};
@@ -1732,7 +1819,8 @@ ClassDeclarationStatement: function(node, st, c) {
         var getterSetterBuffer = new StringBuffer();
 
         // Add the class declaration to compile accessors correctly
-        getterSetterBuffer.concat(compiler.source.substring(node.start, node.endOfIvars));
+        // Remove all protocols from class declaration
+        getterSetterBuffer.concat(compiler.source.substring(node.start, node.endOfIvars).replace(/<.*>/g, ""));
         getterSetterBuffer.concat("\n");
 
         for (var i = 0; i < node.ivardeclarations.length; ++i)
@@ -1777,14 +1865,23 @@ ClassDeclarationStatement: function(node, st, c) {
 
         // Remove all @accessors or we will get a recursive loop in infinity
         var b = getterSetterBuffer.toString().replace(/@accessors(\(.*\))?/g, "");
-        var imBuffer = ObjJAcornCompiler.compileToIMBuffer(b, "Accessors", compiler.flags, compiler.classDefs, compiler.protocolDefs);
+        var imBuffer = ObjJAcornCompiler.compileToIMBuffer(b, "Accessors", compiler.flags, compiler.classDefs, compiler.protocolDefs, compiler.typeDefs);
 
         // Add the accessors methods first to instance method buffer.
         // This will allow manually added set and get methods to override the compiler generated
         compiler.imBuffer.concat(imBuffer);
     }
 
-    // We will store the classDef first after accessors are done so we don't get a duplicate class error
+    // We will store the ivars into the classDef first after accessors are done so we don't get a duplicate ivars error when generating accessors
+    for (var ivarSize = classDefIvars.length, i = 0; i < ivarSize; i++) {
+        var ivar = classDefIvars[i],
+            ivarName = ivar.name;
+
+        // Store the ivar into the classDef
+        ivars[ivarName] = ivar;
+    }
+
+    // We will store the classDef first after accessors are done so we don't get a duplicate class error when generating accessors
     compiler.classDefs[className] = classDef;
 
     var bodies = node.body,
@@ -1838,8 +1935,15 @@ ClassDeclarationStatement: function(node, st, c) {
         // Lookup the protocolDefs for the protocols
         var protocolDefs = [];
 
-        for (var i = 0, size = protocols.length; i < size; i++)
-            protocolDefs.push(compiler.getProtocolDef(protocols[i].name));
+        for (var i = 0, size = protocols.length; i < size; i++) {
+            var protocol = protocols[i],
+                protocolDef = compiler.getProtocolDef(protocol.name);
+
+            if (!protocolDef)
+                throw compiler.error_message("Cannot find protocol declaration for '" + protocol.name + "'", protocol);
+
+            protocolDefs.push(protocolDef);
+        }
 
         var unimplementedMethods = classDef.listOfNotImplementedMethodsForProtocols(protocolDefs);
 
@@ -2007,6 +2111,9 @@ MethodDeclarationStatement: function(node, st, c) {
         compiler.jsBuffer.concat("(self, _cmd");
 
         methodScope.methodType = node.methodtype;
+        methodScope.vars["self"] = {type: "method base", scope: methodScope};
+        methodScope.vars["_cmd"] = {type: "method base", scope: methodScope};
+
         if (nodeArguments) for (var i = 0; i < nodeArguments.length; i++)
         {
             var argument = nodeArguments[i],
@@ -2022,6 +2129,7 @@ MethodDeclarationStatement: function(node, st, c) {
         if (!generate)
             compiler.lastPos = node.startOfBody;
         indentation += indentStep;
+        methodScope.endOfScopeBody = true;
         c(node.body, methodScope, "Statement");
         indentation = indentation.substring(indentationSpaces);
         if (!generate)
@@ -2105,10 +2213,11 @@ MethodDeclarationStatement: function(node, st, c) {
 MessageSendExpression: function(node, st, c) {
     var compiler = st.compiler,
         generate = compiler.generate,
-        buffer = compiler.jsBuffer;
+        buffer = compiler.jsBuffer,
+        nodeObject = node.object;
     if (!generate) {
         buffer.concat(compiler.source.substring(compiler.lastPos, node.start));
-        compiler.lastPos = node.object ? node.object.start : node.arguments.length ? node.arguments[0].start : node.end;
+        compiler.lastPos = nodeObject ? nodeObject.start : node.arguments.length ? node.arguments[0].start : node.end;
     }
     if (node.superObject)
     {
@@ -2118,19 +2227,77 @@ MessageSendExpression: function(node, st, c) {
     }
     else
     {
-        if (!generate) buffer.concat(" "); // Add an extra space if it looks something like this: "return(<expression>)". No space between return and expression.
-        buffer.concat("objj_msgSend(");
-        c(node.object, st, "Expression");
-        if (!generate) buffer.concat(compiler.source.substring(compiler.lastPos, node.object.end));
+        if (generate) {
+            // If the recevier is not an identifier or an ivar that should have 'self.' infront we need to assign it to a temporary variable
+            // If it is 'self' we assume it will never be nil and remove that test
+            var receiverIsIdentifier = nodeObject.type === "Identifier" && !(st.currentMethodType() === "-" && compiler.getIvarForClass(nodeObject.name, st) && !st.getLvar(nodeObject.name, true)),
+                selfLvar,
+                receiverIsNotSelf;
+
+            if (receiverIsIdentifier) {
+                var name = nodeObject.name,
+                    selfLvar = st.getLvar(name);
+
+                if (name === "self") {
+                    receiverIsNotSelf = !selfLvar || !selfLvar.scope || selfLvar.scope.assignmentToSelf;
+                } else {
+                    receiverIsNotSelf = !!selfLvar || !compiler.getClassDef(name);
+                }
+
+                if (receiverIsNotSelf) {
+                    buffer.concat("(");
+                    c(nodeObject, st, "Expression");
+                    buffer.concat(" == null ? null : ");
+                }
+                c(nodeObject, st, "Expression");
+            } else {
+                receiverIsNotSelf = true;
+                if (!st.receiverLevel) st.receiverLevel = 0;
+                buffer.concat("((___r");
+                buffer.concat(++st.receiverLevel + "");
+                buffer.concat(" = ");
+                c(nodeObject, st, "Expression");
+                buffer.concat("), ___r");
+                buffer.concat(st.receiverLevel + "");
+                buffer.concat(" == null ? null : ___r");
+                buffer.concat(st.receiverLevel + "");
+                if (!(st.maxReceiverLevel >= st.receiverLevel))
+                    st.maxReceiverLevel = st.receiverLevel;
+            }
+            buffer.concat(".isa.objj_msgSend");
+        } else {
+            buffer.concat(" "); // Add an extra space if it looks something like this: "return(<expression>)". No space between return and expression.
+            buffer.concat("objj_msgSend(");
+            buffer.concat(compiler.source.substring(compiler.lastPos, nodeObject.end));
+        }
     }
 
     var selectors = node.selectors,
         arguments = node.arguments,
+        argumentsLength = arguments.length,
         firstSelector = selectors[0],
         selector = firstSelector ? firstSelector.name : "";    // There is always at least one selector
 
+    if (generate && !node.superObject) {
+        var totalNoOfParameters = argumentsLength;
+
+        if (node.parameters)
+            totalNoOfParameters += node.parameters.length;
+        if (totalNoOfParameters < 4) {
+            buffer.concat("" + totalNoOfParameters);
+        }
+
+        if (receiverIsIdentifier) {
+            buffer.concat("(");
+            c(nodeObject, st, "Expression");
+        } else {
+            buffer.concat("(___r");
+            buffer.concat(st.receiverLevel + "");
+        }
+    }
+
     // Put together the selector. Maybe this should be done in the parser...
-    for (var i = 0; i < arguments.length; i++)
+    for (var i = 0; i < argumentsLength; i++)
         if (i === 0)
             selector += ":";
         else
@@ -2167,6 +2334,13 @@ MessageSendExpression: function(node, st, c) {
             buffer.concat(compiler.source.substring(compiler.lastPos, parameter.end));
             compiler.lastPos = parameter.end;
         }
+    }
+
+    if (generate && !node.superObject) {
+        if (receiverIsNotSelf)
+            buffer.concat(")");
+        if (!receiverIsIdentifier)
+            st.receiverLevel--;
     }
 
     buffer.concat(")");
@@ -2238,6 +2412,10 @@ ClassStatement: function(node, st, c) {
         compiler.jsBuffer.concat("//");
     }
     var className = node.id.name;
+
+    if (compiler.getTypeDef(className))
+        throw compiler.error_message(className + " is already declared as a type", node.id);
+
     if (!compiler.getClassDef(className)) {
         classDef = new ClassDef(false, className);
         compiler.classDefs[className] = classDef;
@@ -2260,5 +2438,42 @@ PreprocessStatement: function(node, st, c) {
       compiler.lastPos = node.start;
       compiler.jsBuffer.concat("//");
     }
+},
+TypeDefStatement: function(node, st, c) {
+
+    var compiler = st.compiler,
+        generate = compiler.generate,
+        buffer = compiler.jsBuffer,
+        typeDefName = node.typedefname.name,
+        typeDef = compiler.getTypeDef(typeDefName),
+        typeDefScope = new Scope(st);
+
+    if (typeDef)
+        throw compiler.error_message("Duplicate type definition " + typeDefName, node.typedefname);
+
+    if (compiler.getClassDef(typeDefName))
+        throw compiler.error_message(typeDefName + " is already declared as class", node.typedefname);
+
+    compiler.imBuffer = new StringBuffer();
+    compiler.cmBuffer = new StringBuffer();
+
+    if (!generate)
+        buffer.concat(compiler.source.substring(compiler.lastPos, node.start));
+
+    buffer.concat("{var the_typedef = objj_allocateTypeDef(\"" + typeDefName + "\");");
+
+    typeDef = new TypeDef(typeDefName);
+    compiler.typeDefs[typeDefName] = typeDef;
+    typeDefScope.typeDef = typeDef;
+
+    buffer.concat("\nobjj_registerTypeDef(the_typedef);\n");
+
+    buffer.concat("}");
+
+    compiler.jsBuffer = buffer;
+
+    // Skip the "@end"
+    if (!generate)
+        compiler.lastPos = node.end;
 }
 });

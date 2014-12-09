@@ -608,9 +608,11 @@ var concat = Array.prototype.concat,
         }
     }
 
-    else
+    else {
+        var anIsa = self.isa;
         for (; index < count; ++index)
-            objj_msgSend([self objectAtIndex:index], aSelector);
+            anIsa.objj_msgSend0([self objectAtIndex:index], aSelector);
+    }
 }
 
 - (void)enumerateObjectsUsingBlock:(Function /*(id anObject, int idx, @ref BOOL stop)*/)aFunction
@@ -748,7 +750,7 @@ var concat = Array.prototype.concat,
     // passed in is an array, we end up with its contents added instead of itself.
     push.call(argumentArray, anObject);
 
-    return objj_msgSend([self class], @selector(arrayWithArray:), argumentArray);
+    return [[self class] arrayWithArray:argumentArray];
 }
 
 /*!
@@ -763,7 +765,7 @@ var concat = Array.prototype.concat,
     var anArray = anArray.isa === _CPJavaScriptArray ? anArray : [anArray _javaScriptArrayCopy],
         argumentArray = concat.call([self _javaScriptArrayCopy], anArray);
 
-    return objj_msgSend([self class], @selector(arrayWithArray:), argumentArray);
+    return [[self class] arrayWithArray:argumentArray];
 }
 
 /*
@@ -801,7 +803,7 @@ var concat = Array.prototype.concat,
     for (; index < count; ++index)
         push.call(argumentArray, [self objectAtIndex:index]);
 
-    return objj_msgSend([self class], @selector(arrayWithArray:), argumentArray);
+    return [[self class] arrayWithArray:argumentArray];
 }
 
 // Sorting arrays

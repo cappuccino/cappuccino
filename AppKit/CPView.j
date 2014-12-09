@@ -40,8 +40,11 @@
 @class CPMenu
 @class CPClipView
 @class CPScrollView
+@class CALayer
 
 @global appkit_tag_dom_elements
+
+@typedef _CPViewFullScreenModeState
 
 #if PLATFORM(DOM)
 
@@ -228,6 +231,8 @@ var CPViewFlags                     = { },
     Function            _toolTipFunctionIn;
     Function            _toolTipFunctionOut;
     BOOL                _toolTipInstalled;
+
+    BOOL                _isObserving;
 
     id                  _animator;
     CPDictionary        _animationsDictionary;
@@ -514,8 +519,12 @@ var CPViewFlags                     = { },
         [CPException raise:CPInvalidArgumentException reason:"can't insert a subview in duplicate (probably partially decoded)"];
 #endif
 
+    // Notify the subview that it will be moving.
+    [aSubview viewWillMoveToSuperview:self];
+
     // We will have to adjust the z-index of all views starting at this index.
-    var count = _subviews.length;
+    var count = _subviews.length,
+        lastWindow;
 
     // Dirty the key view loop, in case the window wants to auto recalculate it
     [[self window] _dirtyKeyViewLoop];
@@ -543,14 +552,12 @@ var CPViewFlags                     = { },
     }
     else
     {
+        var superview = aSubview._superview;
+
+        lastWindow = [superview window];
+
         // Remove the view from its previous superview.
-        [aSubview removeFromSuperview];
-
-        // Set the subview's window to our own.
-        [aSubview _setWindow:_window];
-
-        // Notify the subview that it will be moving.
-        [aSubview viewWillMoveToSuperview:self];
+        [aSubview _removeFromSuperview];
 
         // Set ourselves as the superview.
         aSubview._superview = self;
@@ -583,6 +590,15 @@ var CPViewFlags                     = { },
     if (![aSubview isHidden] && [self isHiddenOrHasHiddenAncestor])
         [aSubview _notifyViewDidHide];
 
+    [aSubview viewDidMoveToSuperview];
+
+    // Set the subview's window to our own.
+    if (_window)
+        [aSubview _setWindow:_window];
+
+    if (!_window && lastWindow)
+        [aSubview _setWindow:nil];
+
     // This method might be called before we are fully unarchived, in which case the theme state isn't set up yet
     // and none of the below matters anyhow.
     if (_themeState)
@@ -597,8 +613,6 @@ var CPViewFlags                     = { },
         else
             [aSubview _notifyWindowDidResignKey];
     }
-
-    [aSubview viewDidMoveToSuperview];
 
     [self didAddSubview:aSubview];
 }
@@ -616,6 +630,18 @@ var CPViewFlags                     = { },
     Does nothing if there's no container view.
 */
 - (void)removeFromSuperview
+{
+    var superview = _superview;
+
+    [self viewWillMoveToSuperview:nil];
+    [self _removeFromSuperview];
+    [self viewDidMoveToSuperview];
+
+    if (superview)
+        [self _setWindow:nil];
+}
+
+- (void)_removeFromSuperview
 {
     if (!_superview)
         return;
@@ -640,8 +666,6 @@ var CPViewFlags                     = { },
     [self _notifyViewDidResignFirstResponder];
 
     _superview = nil;
-
-    [self _setWindow:nil];
 }
 
 /*!
@@ -651,14 +675,14 @@ var CPViewFlags                     = { },
 */
 - (void)replaceSubview:(CPView)aSubview with:(CPView)aView
 {
-    if (aSubview._superview !== self)
+    if (aSubview._superview !== self || aSubview === aView)
         return;
 
     var index = [_subviews indexOfObjectIdenticalTo:aSubview];
 
-    [aSubview removeFromSuperview];
-
     [self _insertSubview:aView atIndex:index];
+
+    [aSubview removeFromSuperview];
 }
 
 - (void)setSubviews:(CPArray)newSubviews
@@ -733,13 +757,10 @@ var CPViewFlags                     = { },
 /* @ignore */
 - (void)_setWindow:(CPWindow)aWindow
 {
-    if (_window === aWindow)
-        return;
-
     [[self window] _dirtyKeyViewLoop];
 
     // Clear out first responder if we're the first responder and leaving.
-    if ([_window firstResponder] === self)
+    if ([_window firstResponder] === self && _window != aWindow)
         [_window makeFirstResponder:nil];
 
     // Notify the view and its subviews
@@ -809,6 +830,10 @@ var CPViewFlags                     = { },
 */
 - (void)viewWillMoveToSuperview:(CPView)aView
 {
+    [self _removeObservers];
+
+    if (aView)
+        [self _addObservers];
 }
 
 /*!
@@ -825,6 +850,32 @@ var CPViewFlags                     = { },
 */
 - (void)willRemoveSubview:(CPView)aView
 {
+}
+
+- (void)_removeObservers
+{
+    if (!_isObserving)
+        return;
+
+    var count = [_subviews count];
+
+    while (count--)
+        [_subviews[count] _removeObservers];
+
+    _isObserving = NO;
+}
+
+- (void)_addObservers
+{
+    if (_isObserving)
+        return;
+
+    var count = [_subviews count];
+
+    while (count--)
+        [_subviews[count] _addObservers];
+
+    _isObserving = YES;
 }
 
 /*!
@@ -1030,7 +1081,8 @@ var CPViewFlags                     = { },
         else
         {
             var images = [[_backgroundColor patternImage] imageSlices],
-                partIndex = 0;
+                partIndex = 0,
+                frameSize = aSize;
 
             if (_backgroundType === BackgroundVerticalThreePartImage)
             {
@@ -1040,16 +1092,21 @@ var CPViewFlags                     = { },
                 // Make sure to repeat the top and bottom pieces horizontally if they're not the exact width needed.
                 if (top)
                 {
+                    CPDomDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], frameSize.width + "px", top + "px");
                     CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], size.width, top);
                     partIndex++;
                 }
                 if (_DOMImageSizes[1])
                 {
+                    var height = frameSize.height - top - bottom;
+
+                    CPDomDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], frameSize.width + "px", height + "px");
                     CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], size.width, size.height - top - bottom);
                     partIndex++;
                 }
                 if (bottom)
                 {
+                    CPDomDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], frameSize.width + "px", bottom + "px");
                     CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], size.width, bottom);
                 }
             }
@@ -1061,16 +1118,21 @@ var CPViewFlags                     = { },
                 // Make sure to repeat the left and right pieces vertically if they're not the exact height needed.
                 if (left)
                 {
+                    CPDomDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], left + "px", frameSize.height + "px");
                     CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], left, size.height);
                     partIndex++;
                 }
                 if (_DOMImageSizes[1])
                 {
+                    var width = (frameSize.width - left - right);
+
+                    CPDomDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], width + "px", frameSize.height + "px");
                     CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], size.width - left - right, size.height);
                     partIndex++;
                 }
                 if (right)
                 {
+                    CPDomDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], right + "px", frameSize.height + "px");
                     CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], right, size.height);
                 }
             }
@@ -1811,6 +1873,9 @@ var CPViewFlags                     = { },
             _DOMElement.style.background = "";
             _DOMImageParts[0].style.background = [_backgroundColor cssString];
 
+            if (patternImage)
+                CPDomDisplayServerSetStyleBackgroundSize(_DOMImageParts[0], [patternImage size].width + "px", [patternImage size].height + "px");
+
             if (CPFeatureIsCompatible(CPOpacityRequiresFilterFeature))
                 _DOMImageParts[0].style.filter = "alpha(opacity=" + [_backgroundColor alphaComponent] * 100 + ")";
             else
@@ -1821,6 +1886,9 @@ var CPViewFlags                     = { },
         }
         else
             _DOMElement.style.background = colorCSS;
+
+            if (patternImage)
+                CPDomDisplayServerSetStyleBackgroundSize(_DOMElement, [patternImage size].width + "px", [patternImage size].height + "px");
     }
     else
     {
@@ -1925,18 +1993,24 @@ var CPViewFlags                     = { },
             // Make sure to repeat the top and bottom pieces horizontally if they're not the exact width needed.
             if (top)
             {
+                CPDomDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], frameSize.width + "px", top + "px");
                 CPDOMDisplayServerSetStyleLeftTop(_DOMImageParts[partIndex], NULL, 0.0, 0.0);
                 CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], frameSize.width, top);
                 partIndex++;
             }
             if (_DOMImageSizes[1])
             {
+                var height = frameSize.height - top - bottom;
+
+                //_DOMImageParts[partIndex].style.backgroundSize =  frameSize.width + "px " + height + "px";
+                CPDomDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], frameSize.width + "px", height + "px");
                 CPDOMDisplayServerSetStyleLeftTop(_DOMImageParts[partIndex], NULL, 0.0, top);
-                CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], frameSize.width, frameSize.height - top - bottom);
+                CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], frameSize.width, height);
                 partIndex++;
             }
             if (bottom)
             {
+                CPDomDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], frameSize.width + "px", bottom + "px");
                 CPDOMDisplayServerSetStyleLeftBottom(_DOMImageParts[partIndex], NULL, 0.0, 0.0);
                 CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], frameSize.width, bottom);
             }
@@ -1951,18 +2025,23 @@ var CPViewFlags                     = { },
             // Make sure to repeat the left and right pieces vertically if they're not the exact height needed.
             if (left)
             {
+                CPDomDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], left + "px", frameSize.height + "px");
                 CPDOMDisplayServerSetStyleLeftTop(_DOMImageParts[partIndex], NULL, 0.0, 0.0);
                 CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], left, frameSize.height);
                 partIndex++;
             }
             if (_DOMImageSizes[1])
             {
+                var width = (frameSize.width - left - right);
+
+                CPDomDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], width + "px", frameSize.height + "px");
                 CPDOMDisplayServerSetStyleLeftTop(_DOMImageParts[partIndex], NULL, left, 0.0);
-                CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], frameSize.width - left - right, frameSize.height);
+                CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], width, frameSize.height);
                 partIndex++;
             }
             if (right)
             {
+                CPDomDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], right + "px", frameSize.height + "px");
                 CPDOMDisplayServerSetStyleRightTop(_DOMImageParts[partIndex], NULL, 0.0, 0.0);
                 CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], right, frameSize.height);
             }
@@ -2547,7 +2626,7 @@ setBoundsOrigin:
 /*!
     Scrolls the nearest ancestor CPClipView a minimum amount so \c aRect can become visible.
     @param aRect the area to become visible
-    @return <codeYES if any scrolling occurred, \c NO otherwise.
+    @return \c YES if any scrolling occurred, \c NO otherwise.
 */
 - (BOOL)scrollRectToVisible:(CGRect)aRect
 {
@@ -2942,10 +3021,10 @@ setBoundsOrigin:
 
 - (BOOL)unsetThemeState:(ThemeState)aState
 {
-     if (aState && aState.isa && [aState isKindOfClass:CPArray])
+    if (aState && aState.isa && [aState isKindOfClass:CPArray])
         aState = CPThemeState.apply(null, aState);
 
-    var oldThemeState = _themeState
+    var oldThemeState = _themeState;
     _themeState = _themeState.without(aState);
 
     if (oldThemeState === _themeState)

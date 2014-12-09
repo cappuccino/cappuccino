@@ -42,25 +42,10 @@ var CPAnimationDelegate_animationShouldStart_       = 1 << 1,
     CPAnimationDelegate_animationDidEnd_            = 1 << 3,
     CPAnimationDelegate_animationDidStop_           = 1 << 4;
 
-/*
-    @global
-    @group CPAnimationCurve
-*/
+@typedef CPAnimationCurve
 CPAnimationEaseInOut    = 0;
-/*
-    @global
-    @group CPAnimationCurve
-*/
 CPAnimationEaseIn       = 1;
-/*
-    @global
-    @group CPAnimationCurve
-*/
 CPAnimationEaseOut      = 2;
-/*
-    @global
-    @group CPAnimationCurve
-*/
 CPAnimationLinear       = 3;
 
 ACTUAL_FRAME_RATE = 0;

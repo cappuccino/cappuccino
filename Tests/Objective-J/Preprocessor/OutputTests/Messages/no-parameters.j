@@ -1,2 +1,2 @@
-
+[CPArray new];
 [object message];

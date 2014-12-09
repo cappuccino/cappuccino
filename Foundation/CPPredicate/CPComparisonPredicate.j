@@ -32,8 +32,8 @@
 @import "_CPPredicate.j"
 
 
-var CPComparisonPredicateModifier,
-    CPPredicateOperatorType;
+@typedef CPComparisonPredicateModifier
+@typedef CPPredicateOperatorType
 
 /*!
     @ingroup foundation

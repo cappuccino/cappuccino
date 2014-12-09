@@ -29,6 +29,9 @@
 @import <Foundation/Foundation.j>
 
 @class CPDatePicker
+@class _CPDatePickerMonthView
+@class _CPDatePickerHeaderView
+@class _CPDatePickerBox
 
 @global CPApp
 @global CPSingleDateMode
@@ -63,7 +66,7 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
     _CPDatePickerMonthView          _monthView;
     _CPDatePickerHeaderView         _headerView;
     _CPDatePickerClock              _datePickerClock;
-    CPBox                           _box;
+    _CPDatePickerBox                _box;
     CPDatePicker                    _datePicker;
     CPInteger                       _startSelectionIndex;
     CPInteger                       _currentSelectionIndex;
@@ -85,6 +88,7 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
         _datePicker = aDatePicker
         [self _init];
     }
+
     return self;
 }
 
@@ -96,7 +100,7 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
         sizeCalendar = [_datePicker valueForThemeAttribute:@"size-calendar"],
         sizeClock = [_datePicker valueForThemeAttribute:@"size-clock"];
 
-    _box = [[_DatePickerBox alloc] initWithFrame:CGRectMake(0, 0, sizeCalendar.width, sizeHeader.height + sizeCalendar.height)];
+    _box = [[_CPDatePickerBox alloc] initWithFrame:CGRectMake(0, 0, sizeCalendar.width, sizeHeader.height + sizeCalendar.height)];
     [_box setDatePicker:_datePicker];
 
     _headerView = [[_CPDatePickerHeaderView alloc] initWithFrame:CGRectMake(0, 0, sizeHeader.width, sizeHeader.height) datePicker:_datePicker delegate:self];
@@ -215,6 +219,8 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
         [_headerView setHidden:YES];
         [_monthView setHidden:YES];
     }
+
+    [self setFrameSize:[_datePicker frameSize]];
 }
 
 
@@ -381,9 +387,11 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
 
         [_previousButton setTarget:aDelegate];
         [_previousButton setAction:@selector(_clickArrowPrevious:)];
+        [_previousButton setContinuous:YES];
 
         [_nextButton setTarget:aDelegate];
         [_nextButton setAction:@selector(_clickArrowNext:)];
+        [_nextButton setContinuous:YES];
 
         [_currentButton setTarget:aDelegate];
         [_currentButton setAction:@selector(_currentMonth:)];
@@ -891,6 +899,8 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
     _indexDayTile = -1;
     _eventDragged = nil
 
+    _datePicker._invokedByUserEvent = YES;
+
     // Check if we have to change or not the month of the component
     if ([dayTile date].getMonth() == _date.getMonth())
     {
@@ -943,6 +953,8 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
         else
             [_delegate _displayNextMonth];
     }
+
+    _datePicker._invokedByUserEvent = NO;
 }
 
 /*! Mouse dragged event
@@ -959,6 +971,8 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
     _dragDate = [dateTile copy];
     _indexDayTile = [self indexOfTileForEvent:anEvent];
     _eventDragged = anEvent;
+
+    _datePicker._invokedByUserEvent = YES;
 
     if ([_datePicker datePickerMode] == CPSingleDateMode)
     {
@@ -1001,6 +1015,8 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
                 [_datePicker _setDateValue:[self _hoursMinutesSecondsFromDatePickerForDate:_clickDate] timeInterval:[dateTile timeIntervalSinceDate:dateValueAtMidnight]];
         }
     }
+
+    _datePicker._invokedByUserEvent = NO;
 }
 
 - (void)mouseUp:(CPEvent)anEvent
@@ -1253,17 +1269,9 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
 @end
 
 
-@implementation _DatePickerBox : CPView
+@implementation _CPDatePickerBox : CPView
 {
     CPDatePicker _datePicker @accessors(property=datePicker);
-}
-
-- (id)init
-{
-    if (self = [super init])
-    {
-    }
-    return self;
 }
 
 - (void)drawRect:(CGRect)aRect
@@ -1279,10 +1287,10 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
         CGContextSetStrokeColor(context, [_datePicker valueForThemeAttribute:@"border-color" inState:[_datePicker themeState]]);
         CGContextSetLineWidth(context,  [_datePicker valueForThemeAttribute:@"border-width"]);
 
-        CGContextMoveToPoint(context, borderWidth,borderWidth);
-        CGContextAddLineToPoint(context, aRect.size.width - borderWidth,borderWidth);
-        CGContextAddLineToPoint(context, aRect.size.width - borderWidth,aRect.size.height - borderWidth);
-        CGContextAddLineToPoint(context, borderWidth,aRect.size.height - borderWidth);
+        CGContextMoveToPoint(context, borderWidth, borderWidth);
+        CGContextAddLineToPoint(context, aRect.size.width - borderWidth, borderWidth);
+        CGContextAddLineToPoint(context, aRect.size.width - borderWidth, aRect.size.height - borderWidth);
+        CGContextAddLineToPoint(context, borderWidth, aRect.size.height - borderWidth);
         CGContextAddLineToPoint(context, borderWidth,borderWidth);
 
         CGContextStrokePath(context);
@@ -1300,6 +1308,5 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
     else
         [self setBackgroundColor:[CPColor clearColor]];
 }
-
 
 @end

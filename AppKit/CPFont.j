@@ -174,20 +174,20 @@ following:
     return _CPFontSystemFontSize;
 }
 
-+ (float)systemFontSizeForControlSize:(CPControlSize)aSize
++ (CPFont)systemFontForControlSize:(CPControlSize)aSize
 {
     // TODO These sizes should be themable or made less arbitrary in some other way.
     switch (aSize)
     {
         case CPSmallControlSize:
-            return _CPFontSystemFontSize - 1;
+            return [self systemFontOfSize:_CPFontSystemFontSize - 1];
 
         case CPMiniControlSize:
-            return _CPFontSystemFontSize - 2;
+            return [self systemFontOfSize:_CPFontSystemFontSize - 2];
 
         case CPRegularControlSize:
         default:
-            return _CPFontSystemFontSize;
+            return [self systemFontOfSize:_CPFontSystemFontSize];
     }
 }
 

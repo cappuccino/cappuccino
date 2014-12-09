@@ -51,7 +51,7 @@
 
     // Not being able to set the action is a fatal error.
     if ([_source respondsToSelector:@selector(setAction:)])
-        objj_msgSend(_source, @selector(setAction:), selector);
+        [_source setAction:selector];
 
     else
         [CPException
@@ -60,7 +60,7 @@
 
     // Not being able to set the target is a fatal error.
     if ([_source respondsToSelector:@selector(setTarget:)])
-        objj_msgSend(_source, @selector(setTarget:), _destination);
+        [_source setTarget:_destination];
 
     else
         [CPException

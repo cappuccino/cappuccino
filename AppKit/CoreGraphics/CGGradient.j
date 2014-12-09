@@ -23,6 +23,7 @@
 @import "CGColor.j"
 @import "CGColorSpace.j"
 
+@typedef CGGradient
 
 kCGGradientDrawsBeforeStartLocation = 1 << 0;
 kCGGradientDrawsAfterEndLocation    = 1 << 1;

@@ -65,6 +65,113 @@ var ListMinimumItems = 3;
 var ListColumnIdentifier = @"1";
 
 
+@implementation _CPPopUpPanel : CPPanel
+
+- (id)initWithContentRect:(CGRect)aContentRect styleMask:(unsigned)aStyleMask
+{
+    if (self = [super initWithContentRect:aContentRect styleMask:aStyleMask])
+        _constrainsToUsableScreen = NO;
+
+    [self _trapNextMouseDown];
+
+    return self;
+}
+
+/*!
+    Returns \c YES if the receiver is able to receive input events
+    even when a modal session is active.
+*/
+- (BOOL)worksWhenModal
+{
+    return YES;
+}
+
+- (void)sendEvent:(CPEvent)anEvent
+{
+    var type = [anEvent type];
+
+    if (type === CPLeftMouseDown || type === CPRightMouseDown)
+        [[self delegate] setListWasClicked:YES];
+
+    return [super sendEvent:anEvent];
+}
+
+- (void)orderFront:(id)sender
+{
+    [self _trapNextMouseDown];
+    [super orderFront:sender];
+}
+
+- (void)_mouseWasClicked:(CPEvent)anEvent
+{
+    var mouseWindow = [anEvent window],
+        rect = [[[self delegate] dataSource] bounds],
+        point = [[[self delegate] dataSource] convertPoint:[anEvent locationInWindow] fromView:nil];
+
+    if (mouseWindow != self && !CGRectContainsPoint(rect, point))
+        [[self delegate] close];
+    else
+        [self _trapNextMouseDown];
+}
+
+- (void)_trapNextMouseDown
+{
+    // Don't dequeue the event so clicks in controls will work
+    [CPApp setTarget:self selector:@selector(_mouseWasClicked:) forNextEventMatchingMask:CPLeftMouseDownMask untilDate:nil inMode:CPDefaultRunLoopMode dequeue:NO];
+}
+
+@end
+
+@implementation _CPPopUpTableView : CPTableView
+{
+    BOOL _acceptFirstResponder;
+}
+
+- (id)initWithFrame:(CGRect)aFrame
+{
+    if (self = [super initWithFrame:aFrame])
+    {
+        // We want the autocomplete to remain first responder until we are clicked.
+        _acceptFirstResponder = NO;
+    }
+
+    return self;
+}
+
+- (void)trackMouse:(CPEvent)anEvent
+{
+    if (![self isEnabled])
+        return;
+
+    [[self delegate] setItemWasClicked:YES];
+
+    // CPTableView will not track the click if it is not first responder
+    _acceptFirstResponder = YES;
+    [[self window] makeFirstResponder:self];
+    [super trackMouse:anEvent];
+}
+
+- (void)stopTracking:(CGPoint)lastPoint at:(CGPoint)aPoint mouseIsUp:(BOOL)mouseIsUp
+{
+    _acceptFirstResponder = NO;
+    [super stopTracking:lastPoint at:aPoint mouseIsUp:mouseIsUp];
+}
+
+- (BOOL)acceptsFirstResponder
+{
+    return _acceptFirstResponder;
+}
+
+/*!
+    Return the column used for the list.
+*/
+- (CPTableColumn)listColumn
+{
+    return _tableColumns[0];
+}
+
+@end
+
 /*!
     This class is a controller for a panel that can pop up and display a scrollable list of items in a CPTableView.
     It is used by CPComboBox to display the list of choices.
@@ -229,7 +336,7 @@ var ListColumnIdentifier = @"1";
 
     [self listWillPopUp];
 
-    [_panel orderFront:nil];
+    [[aView window] addChildWindow:_panel ordered:CPWindowAbove];
 }
 
 #pragma mark Setting Display Attributes
@@ -797,113 +904,6 @@ var _CPPopUpListDataSourceKey   = @"_CPPopUpListDataSourceKey",
 - (id)tableView:(id)aTableView objectValueForTableColumn:(CPTableColumn)aColumn row:(CPInteger)aRow
 {
     return [_dataSource list:self displayValueForObjectValue:[_dataSource list:self objectValueForItemAtIndex:aRow]];
-}
-
-@end
-
-@implementation _CPPopUpTableView : CPTableView
-{
-    BOOL _acceptFirstResponder;
-}
-
-- (id)initWithFrame:(CGRect)aFrame
-{
-    if (self = [super initWithFrame:aFrame])
-    {
-        // We want the autocomplete to remain first responder until we are clicked.
-        _acceptFirstResponder = NO;
-    }
-
-    return self;
-}
-
-- (void)trackMouse:(CPEvent)anEvent
-{
-    if (![self isEnabled])
-        return;
-
-    [[self delegate] setItemWasClicked:YES];
-
-    // CPTableView will not track the click if it is not first responder
-    _acceptFirstResponder = YES;
-    [[self window] makeFirstResponder:self];
-    [super trackMouse:anEvent];
-}
-
-- (void)stopTracking:(CGPoint)lastPoint at:(CGPoint)aPoint mouseIsUp:(BOOL)mouseIsUp
-{
-    _acceptFirstResponder = NO;
-    [super stopTracking:lastPoint at:aPoint mouseIsUp:mouseIsUp];
-}
-
-- (BOOL)acceptsFirstResponder
-{
-    return _acceptFirstResponder;
-}
-
-/*!
-    Return the column used for the list.
-*/
-- (CPTableColumn)listColumn
-{
-    return _tableColumns[0];
-}
-
-@end
-
-@implementation _CPPopUpPanel : CPPanel
-
-- (id)initWithContentRect:(CGRect)aContentRect styleMask:(unsigned)aStyleMask
-{
-    if (self = [super initWithContentRect:aContentRect styleMask:aStyleMask])
-        _constrainsToUsableScreen = NO;
-
-    [self _trapNextMouseDown];
-
-    return self;
-}
-
-/*!
-    Returns \c YES if the receiver is able to receive input events
-    even when a modal session is active.
-*/
-- (BOOL)worksWhenModal
-{
-    return YES;
-}
-
-- (void)sendEvent:(CPEvent)anEvent
-{
-    var type = [anEvent type];
-
-    if (type === CPLeftMouseDown || type === CPRightMouseDown)
-        [[self delegate] setListWasClicked:YES];
-
-    return [super sendEvent:anEvent];
-}
-
-- (void)orderFront:(id)sender
-{
-    [self _trapNextMouseDown];
-    [super orderFront:sender];
-}
-
-- (void)_mouseWasClicked:(CPEvent)anEvent
-{
-    var mouseWindow = [anEvent window],
-        rect = [[[self delegate] dataSource] bounds],
-        point = [[[self delegate] dataSource] convertPoint:[anEvent locationInWindow] fromView:nil];
-
-    if (mouseWindow != self && !CGRectContainsPoint(rect, point))
-        [[self delegate] close];
-    else
-        [self _trapNextMouseDown];
-}
-
-- (void)_trapNextMouseDown
-{
-    // Don't dequeue the event so clicks in controls will work
-    [CPApp setTarget:self selector:@selector(_mouseWasClicked:) forNextEventMatchingMask:CPLeftMouseDownMask untilDate:nil inMode:CPDefaultRunLoopMode dequeue:NO];
 }
 
 @end

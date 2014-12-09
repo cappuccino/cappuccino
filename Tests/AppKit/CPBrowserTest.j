@@ -1,5 +1,8 @@
 @import <AppKit/AppKit.j>
 
+@class CPBrowserDelegate
+
+
 @implementation CPBrowserTest : OJTestCase
 {
     CPBrowser   browser;

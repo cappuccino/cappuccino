@@ -29,6 +29,7 @@
 @global CPImagesPboardType
 @global appkit_tag_dom_elements
 
+@typedef CPImageAlignment
 CPImageAlignCenter      = 0;
 CPImageAlignTop         = 1;
 CPImageAlignTopLeft     = 2;
@@ -178,6 +179,7 @@ var CPImageViewEmptyPlaceholderImage = nil;
 
 - (void)imageDidLoad:(CPNotification)aNotification
 {
+    [[CPNotificationCenter defaultCenter] removeObserver:self name:CPImageDidLoadNotification object:[self objectValue]];
     [self hideOrDisplayContents];
 
     [self setNeedsLayout];

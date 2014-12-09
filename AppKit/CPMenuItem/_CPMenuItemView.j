@@ -26,6 +26,7 @@
 @import "_CPMenuItemStandardView.j"
 @import "_CPMenuItemMenuBarView.j"
 
+@class CPMenuItem
 @global CPApp
 
 /*

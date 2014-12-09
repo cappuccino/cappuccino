@@ -21,6 +21,8 @@
     [self assert:0 equals:[anEvent deltaX] message:"default event delta X should be 0"];
     [self assert:0 equals:[anEvent deltaY] message:"default event delta Y should be 0"];
     [self assert:0 equals:[anEvent deltaZ] message:"default event delta Z should be 0"];
+    [self assert:0 equals:[anEvent scrollingDeltaX] message:"default event scrolling delta X should be 0"];
+    [self assert:0 equals:[anEvent scrollingDeltaY] message:"default event scrolling delta Y should be 0"];
 }
 
 - (void)testDescription

@@ -26,6 +26,7 @@
 @import "CPEvent.j"
 
 @class CPKeyBinding
+@class CPMenu
 
 CPDeleteKeyCode         = 8;
 CPTabKeyCode            = 9;

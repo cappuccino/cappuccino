@@ -20,7 +20,7 @@
 
 - (void)testSynchronousRequestSuccess
 {
-    var req = [CPURLRequest requestWithURL:@"Tests/Foundation/CPURLConnectionTest.j"],    
+    var req = [CPURLRequest requestWithURL:@"Tests/Foundation/CPURLConnectionTest.j"],
         data = [CPURLConnection sendSynchronousRequest:req returningResponse:nil];
 
     [self assert:CPData equals:[data class]];
@@ -30,10 +30,16 @@
 
 - (void)testSynchronousRequestNotFound
 {
-    var req = [CPURLRequest requestWithURL:@"NotFound"],    
+    var req = [CPURLRequest requestWithURL:@"NotFound"],
         data = [CPURLConnection sendSynchronousRequest:req returningResponse:nil];
 
     [self assertNull:data];
+}
+
+- (void)testRequestWithCredentials
+{
+    var connection = [CPURLConnection connectionWithRequest:[CPURLRequest requestWithURL:@"Tests/Foundation/CPURLConnectionTest.j"] delegate:self withCredentials:YES];
+    [self assertTrue:[connection withCredentials]];
 }
 
 @end

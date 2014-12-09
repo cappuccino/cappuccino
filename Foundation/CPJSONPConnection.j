@@ -23,6 +23,7 @@
 @import "CPException.j"
 @import "CPObject.j"
 @import "CPRunLoop.j"
+@import "CPURLRequest.j"
 
 CPJSONPConnectionCallbacks = {};
 

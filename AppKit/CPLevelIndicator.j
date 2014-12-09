@@ -25,11 +25,13 @@
 
 @global CPApp
 
+@typedef CPTickMarkPosition
 CPTickMarkBelow                             = 0;
 CPTickMarkAbove                             = 1;
 CPTickMarkLeft                              = CPTickMarkAbove;
 CPTickMarkRight                             = CPTickMarkBelow;
 
+@typedef CPLevelIndicatorStyle
 CPRelevancyLevelIndicatorStyle              = 0;
 CPContinuousCapacityLevelIndicatorStyle     = 1;
 CPDiscreteCapacityLevelIndicatorStyle       = 2;

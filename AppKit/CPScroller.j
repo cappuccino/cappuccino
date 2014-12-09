@@ -33,6 +33,7 @@
 @global CPApp
 
 // CPScroller Constants
+@typedef CPScrollerPart
 CPScrollerNoPart            = 0;
 CPScrollerDecrementPage     = 1;
 CPScrollerKnob              = 2;
@@ -44,6 +45,7 @@ CPScrollerKnobSlot          = 6;
 CPScrollerIncrementArrow    = 0;
 CPScrollerDecrementArrow    = 1;
 
+@typedef CPUsableScrollerParts
 CPNoScrollerParts           = 0;
 CPOnlyScrollerArrows        = 1;
 CPAllScrollerParts          = 2;
@@ -78,7 +80,6 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
 
 @implementation CPScroller : CPControl
 {
-    CPControlSize           _controlSize;
     CPUsableScrollerParts   _usableParts;
     CPArray                 _partRects;
 
@@ -172,7 +173,6 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
 {
     if (self = [super initWithFrame:aFrame])
     {
-        _controlSize = CPRegularControlSize;
         _partRects = [];
 
         [self setFloatValue:0.0];
@@ -241,29 +241,6 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
 - (void)setObjectValue:(id)aValue
 {
     [super setObjectValue:MIN(1.0, MAX(0.0, +aValue))];
-}
-
-/*!
-    Returns the scroller's control size
-*/
-- (CPControlSize)controlSize
-{
-    return _controlSize;
-}
-
-/*!
-    Sets the scroller's size.
-    @param aControlSize the scroller's size
-*/
-- (void)setControlSize:(CPControlSize)aControlSize
-{
-    if (_controlSize == aControlSize)
-        return;
-
-    _controlSize = aControlSize;
-
-    [self setNeedsLayout];
-    [self setNeedsDisplay:YES];
 }
 
 /*!
@@ -802,8 +779,7 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
 
 @end
 
-var CPScrollerControlSizeKey    = @"CPScrollerControlSize",
-    CPScrollerIsVerticalKey     = @"CPScrollerIsVerticalKey",
+var CPScrollerIsVerticalKey     = @"CPScrollerIsVerticalKey",
     CPScrollerKnobProportionKey = @"CPScrollerKnobProportion",
     CPScrollerStyleKey          = @"CPScrollerStyleKey";
 
@@ -813,10 +789,6 @@ var CPScrollerControlSizeKey    = @"CPScrollerControlSize",
 {
     if (self = [super initWithCoder:aCoder])
     {
-        _controlSize = CPRegularControlSize;
-        if ([aCoder containsValueForKey:CPScrollerControlSizeKey])
-            _controlSize = [aCoder decodeIntForKey:CPScrollerControlSizeKey];
-
         _knobProportion = 1.0;
 
         if ([aCoder containsValueForKey:CPScrollerKnobProportionKey])
@@ -851,7 +823,6 @@ var CPScrollerControlSizeKey    = @"CPScrollerControlSize",
 {
     [super encodeWithCoder:aCoder];
 
-    [aCoder encodeInt:_controlSize forKey:CPScrollerControlSizeKey];
     [aCoder encodeInt:_isVertical forKey:CPScrollerIsVerticalKey];
     [aCoder encodeFloat:_knobProportion forKey:CPScrollerKnobProportionKey];
     [aCoder encodeInt:_style forKey:CPScrollerStyleKey];
