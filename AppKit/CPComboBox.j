@@ -1061,8 +1061,6 @@ var CPComboBoxTextSubview = @"text",
 /*! @ignore */
 - (void)comboBoxWillDismiss:(CPNotification)aNotification
 {
-    console.error(@"coucou");
-
     if (_implementedDelegateComboBoxMethods & CPComboBoxDelegate_comboBoxWillDismiss_)
         [_delegate comboBoxWillDismiss:[[CPNotification alloc] initWithName:CPComboBoxWillDismissNotification object:self userInfo:nil]];
 
