@@ -1775,6 +1775,7 @@ var CPMonthDateType = 0,
 - (void)makeSelectable
 {
     [self setThemeState:CPThemeStateSelected];
+    [_datePicker setThemeState:CPThemeStateEditing];
 }
 
 /*! Unsert the theme CPThemeStateSelected
@@ -1783,6 +1784,7 @@ var CPMonthDateType = 0,
 {
     _firstEvent = YES;
     [self unsetThemeState:CPThemeStateSelected];
+    [_datePicker unsetThemeState:CPThemeStateEditing];
 }
 
 
