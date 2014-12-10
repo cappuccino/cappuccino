@@ -338,10 +338,11 @@ var CPZeroKeyCode = 48,
     if ([anEvent keyCode] == CPReturnKeyCode)
     {
         [_currentTextField _endEditing];
-        return YES;
+
+        return [super performKeyEquivalent:anEvent];
     }
 
-    return NO;
+    return [super performKeyEquivalent:anEvent];
 }
 
 /*! KeyDown event
