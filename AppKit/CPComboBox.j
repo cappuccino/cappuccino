@@ -239,16 +239,16 @@ var CPComboBoxTextSubview = @"text",
     if (aDelegate)
     {
         if ([aDelegate respondsToSelector:@selector(comboBoxSelectionIsChanging:)])
-            _implementedDelegateComboBoxMethods |= CPComboBoxDelegate_comboBoxSelectionIsChanging_
+            _implementedDelegateComboBoxMethods |= CPComboBoxDelegate_comboBoxSelectionIsChanging_;
 
         if ([aDelegate respondsToSelector:@selector(comboBoxSelectionDidChange:)])
-            _implementedDelegateComboBoxMethods |= CPComboBoxDelegate_comboBoxSelectionDidChange_
+            _implementedDelegateComboBoxMethods |= CPComboBoxDelegate_comboBoxSelectionDidChange_;
 
         if ([aDelegate respondsToSelector:@selector(comboBoxWillPopUp:)])
-            _implementedDelegateComboBoxMethods |= CPComboBoxDelegate_comboBoxWillPopUp_
+            _implementedDelegateComboBoxMethods |= CPComboBoxDelegate_comboBoxWillPopUp_;
 
         if ([aDelegate respondsToSelector:@selector(comboBoxWillDismiss:)])
-            _implementedDelegateComboBoxMethods |= CPComboBoxDelegate_comboBoxWillDismiss_
+            _implementedDelegateComboBoxMethods |= CPComboBoxDelegate_comboBoxWillDismiss_;
     }
 
     [super setDelegate:aDelegate];
