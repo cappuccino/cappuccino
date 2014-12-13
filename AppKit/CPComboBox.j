@@ -241,26 +241,26 @@ var CPComboBoxTextSubview = @"text",
     if (aDelegate)
     {
         if ([aDelegate respondsToSelector:@selector(comboBoxSelectionIsChanging:)])
-            [defaultCenter addObserver:delegate
+            [defaultCenter addObserver:aDelegate
                               selector:@selector(comboBoxSelectionIsChanging:)
                                   name:CPComboBoxSelectionIsChangingNotification
                                 object:self];
 
         if ([aDelegate respondsToSelector:@selector(comboBoxSelectionDidChange:)])
-            [defaultCenter addObserver:delegate
+            [defaultCenter addObserver:aDelegate
                               selector:@selector(comboBoxSelectionDidChange:)
                                   name:CPComboBoxSelectionDidChangeNotification
                                 object:self];
 
         if ([aDelegate respondsToSelector:@selector(comboBoxWillPopUp:)])
-            [defaultCenter addObserver:delegate
+            [defaultCenter addObserver:aDelegate
                               selector:@selector(comboBoxWillPopUp:)
                                   name:CPComboBoxWillPopUpNotification
                                 object:self];
 
         if ([aDelegate respondsToSelector:@selector(comboBoxWillDismiss:)])
-            [defaultCenter addObserver:delegate
-                              selector:@selector(comboBoxWillDissmis:)
+            [defaultCenter addObserver:aDelegate
+                              selector:@selector(comboBoxWillDismiss:)
                                   name:CPComboBoxWillDismissNotification
                                 object:self];
     }
