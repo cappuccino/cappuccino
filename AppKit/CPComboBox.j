@@ -260,7 +260,7 @@ var CPComboBoxTextSubview = @"text",
 
         if ([aDelegate respondsToSelector:@selector(comboBoxWillDismiss:)])
             [defaultCenter addObserver:delegate
-                              selector:@selector(comboBoxWillDissmis:)
+                              selector:@selector(comboBoxWillDismiss:)
                                   name:CPComboBoxWillDismissNotification
                                 object:self];
     }
