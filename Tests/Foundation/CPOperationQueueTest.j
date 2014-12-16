@@ -16,7 +16,7 @@ globalResults = [];
 
 @end
 
-@implementation TestOperation2 : CPOperation
+@implementation TestCancelOperation : CPOperation
 {
     BOOL _started @accessors(getter=didStart);
     BOOL _mained @accessors(getter=didMain);
@@ -196,7 +196,7 @@ globalResults = [];
 
 - (void)testCancelledOperationDoesStart
 {
-    var op = [[TestOperation2 alloc] init],
+    var op = [[TestCancelOperation alloc] init],
         queue = [[CPOperationQueue alloc] init];
 
     [self assertFalse:[op isCancelled]];
