@@ -70,7 +70,7 @@ var cpOperationMainQueue = nil;
         for (; i < count; i++)
         {
             var op = [_operations objectAtIndex:i];
-            if ([op isReady] && ![op isCancelled] && ![op isFinished] && ![op isExecuting])
+            if ([op isReady] && ![op isFinished] && ![op isExecuting])
             {
                 [op start];
             }
@@ -260,7 +260,7 @@ var cpOperationMainQueue = nil;
             for (; i < count; i++)
             {
                 var op = [ops objectAtIndex:i];
-                if ([op isReady] && ![op isCancelled] && ![op isFinished] && ![op isExecuting])
+                if ([op isReady] && ![op isFinished] && ![op isExecuting])
                 {
                     [op start];
                 }
