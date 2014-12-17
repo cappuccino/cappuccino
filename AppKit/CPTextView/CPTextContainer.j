@@ -23,6 +23,8 @@
 @import <Foundation/CPGeometry.j>
 @import "CPLayoutManager.j"
 
+@class CPTextView
+
 /*
     @global
     @group CPLineSweepDirection

@@ -58,6 +58,7 @@ _MidRange = function(a1)
 /*
     CPSelectionGranularity
 */
+@typedef CPSelectionGranularity
 CPSelectByCharacter = 0;
 CPSelectByWord      = 1;
 CPSelectByParagraph = 2;

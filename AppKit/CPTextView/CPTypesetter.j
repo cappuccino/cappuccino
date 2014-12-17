@@ -33,6 +33,11 @@
 
 @global _isNewlineCharacter
 
+// forward declare these classes for type matching
+@class CPLayoutManager
+@class CPTextContainer
+@class CPTextView
+
 /*
     CPTypesetterControlCharacterAction
 */

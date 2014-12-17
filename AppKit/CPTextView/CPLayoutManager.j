@@ -33,6 +33,9 @@
 
 @global _MakeRangeFromAbs
 
+@class CPTextContainer
+@class CPTextView
+
 function _isNewlineCharacter(chr)
 {
     return (chr === '\n' || chr === '\r');
