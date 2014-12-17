@@ -71,7 +71,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
 
 #if PLATFORM(DOM)
     DOMElement              _DOMImageElement;
-    DOMELement              _DOMTextElement;
+    DOMElement              _DOMTextElement;
     DOMElement              _DOMTextShadowElement;
 #endif
 }

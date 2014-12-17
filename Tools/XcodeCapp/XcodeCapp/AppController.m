@@ -138,21 +138,24 @@ AppController *SharedAppControllerInstance = nil;
 - (void)registerDefaultPreferences
 {
     NSDictionary *appDefaults = @{
-        kDefaultLastEventId:                        [NSNumber numberWithUnsignedLongLong:kFSEventStreamEventIdSinceNow],
-        kDefaultFirstLaunch:                        @YES,
-        kDefaultFirstLaunchVersion:                 @2.0,
-        kDefaultXCCAPIMode:                         [NSNumber numberWithInt:kXCCAPIModeAuto],
-        kDefaultXCCReactToInodeMod:                 @YES,
-        kDefaultXCCReopenLastProject:               @YES,
-        kDefaultXCCAutoOpenErrorsPanelOnErrors:     @YES,
-        kDefaultXCCAutoOpenErrorsPanelOnCappLint:   @YES,
-        kDefaultXCCAutoShowNotificationOnErrors:    @YES,
-        kDefaultXCCAutoShowNotificationOnCappLint:  @YES,
-        kDefaultXCCProjectHistory:                  [NSArray new],
-        kDefaultMaxRecentProjects:                  @20,
-        kDefaultLogLevel:                           [NSNumber numberWithInt:LOG_LEVEL_WARN],
-        kDefaultAutoOpenXcodeProject:               @YES,
-        kDefaultUseSymlinkWhenCreatingProject:      @YES
+        kDefaultLastEventId:                            [NSNumber numberWithUnsignedLongLong:kFSEventStreamEventIdSinceNow],
+        kDefaultFirstLaunch:                            @YES,
+        kDefaultFirstLaunchVersion:                     @2.0,
+        kDefaultXCCAPIMode:                             [NSNumber numberWithInt:kXCCAPIModeAuto],
+        kDefaultXCCReactToInodeMod:                     @YES,
+        kDefaultXCCReopenLastProject:                   @YES,
+        kDefaultXCCAutoOpenErrorsPanelOnErrors:         @YES,
+        kDefaultXCCAutoOpenErrorsPanelOnCappLint:       @YES,
+        kDefaultXCCAutoShowNotificationOnErrors:        @YES,
+        kDefaultXCCAutoShowNotificationOnCappLint:      @YES,
+        kDefaultXCCProjectHistory:                      [NSArray new],
+        kDefaultMaxRecentProjects:                      @20,
+        kDefaultLogLevel:                               [NSNumber numberWithInt:LOG_LEVEL_WARN],
+        kDefaultAutoOpenXcodeProject:                   @YES,
+        kDefaultUseSymlinkWhenCreatingProject:          @YES,
+        kDefaultXCCUseDebugFrameworkWithObjj:           @YES,
+        kDefaultXCCShouldProcessObjj:                   @YES,
+        kDefaultXCCPanelStyleUtility:                   @NO
     };
     
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];

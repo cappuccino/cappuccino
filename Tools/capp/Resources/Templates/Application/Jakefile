@@ -55,13 +55,13 @@ task ("build", ["default"], function()
 
 task ("debug", function()
 {
-    ENV["CONFIGURATION"] = "Debug";
+    configuration = ENV["CONFIGURATION"] = "Debug";
     JAKE.subjake(["."], "build", ENV);
 });
 
 task ("release", function()
 {
-    ENV["CONFIGURATION"] = "Release";
+    configuration = ENV["CONFIGURATION"] = "Release";
     JAKE.subjake(["."], "build", ENV);
 });
 
@@ -105,7 +105,7 @@ function updateApplicationSize()
 {
     print("Calculating application file sizes...");
 
-    var contents = FILE.read(FILE.join("Build", ENV["CONFIGURATION"], projectName, "Info.plist"), { charset:"UTF-8" }),
+    var contents = FILE.read(FILE.join("Build", configuration, projectName, "Info.plist"), { charset:"UTF-8" }),
         format = CFPropertyList.sniffedFormatOfString(contents),
         plist = CFPropertyList.propertyListFromString(contents),
         totalBytes = {executable:0, data:0, mhtml:0};
@@ -113,7 +113,7 @@ function updateApplicationSize()
     // Get the size of all framework executables and sprite data
     var frameworksDir = "Frameworks";
 
-    if (ENV["CONFIGURATION"] === "Debug")
+    if (configuration === "Debug")
         frameworksDir = FILE.join(frameworksDir, "Debug");
 
     var frameworks = FILE.list(frameworksDir);
@@ -137,7 +137,7 @@ function updateApplicationSize()
         addBundleFileSizes(themePath, totalBytes);
 
     // Add sizes for the app
-    addBundleFileSizes(FILE.join("Build", ENV["CONFIGURATION"], projectName), totalBytes);
+    addBundleFileSizes(FILE.join("Build", configuration, projectName), totalBytes);
 
     print("Executables: " + totalBytes.executable + ", sprite data: " + totalBytes.data + ", total: " + (totalBytes.executable + totalBytes.data));
 
@@ -149,7 +149,7 @@ function updateApplicationSize()
 
     plist.setValueForKey("CPApplicationSize", dict);
 
-    FILE.write(FILE.join("Build", ENV["CONFIGURATION"], projectName, "Info.plist"), CFPropertyList.stringFromPropertyList(plist, format), { charset:"UTF-8" });
+    FILE.write(FILE.join("Build", configuration, projectName, "Info.plist"), CFPropertyList.stringFromPropertyList(plist, format), { charset:"UTF-8" });
 }
 
 function addBundleFileSizes(bundlePath, totalBytes)

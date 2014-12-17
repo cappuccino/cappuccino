@@ -31,6 +31,10 @@
 @import <Foundation/CPLocale.j>
 
 @class CPDatePicker
+@class _CPDatePickerElementTextField
+@class _CPDatePickerElementView
+@class _CPDatePickerMonthView
+@class _CPDatePickerHeaderView
 
 @global CPSingleDateMode
 @global CPRangeDateMode
@@ -334,10 +338,11 @@ var CPZeroKeyCode = 48,
     if ([anEvent keyCode] == CPReturnKeyCode)
     {
         [_currentTextField _endEditing];
-        return YES;
+
+        return [super performKeyEquivalent:anEvent];
     }
 
-    return NO;
+    return [super performKeyEquivalent:anEvent];
 }
 
 /*! KeyDown event
@@ -1771,6 +1776,7 @@ var CPMonthDateType = 0,
 - (void)makeSelectable
 {
     [self setThemeState:CPThemeStateSelected];
+    [_datePicker setThemeState:CPThemeStateEditing];
 }
 
 /*! Unsert the theme CPThemeStateSelected
@@ -1779,6 +1785,7 @@ var CPMonthDateType = 0,
 {
     _firstEvent = YES;
     [self unsetThemeState:CPThemeStateSelected];
+    [_datePicker unsetThemeState:CPThemeStateEditing];
 }
 
 

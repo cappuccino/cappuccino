@@ -42,6 +42,7 @@
 @class CPTableHeaderView
 @class CPClipView
 @class CPButton
+@class _CPDropOperationDrawingView
 
 @global CPApp
 
@@ -170,7 +171,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 @implementation _CPTableDrawView : CPView
 {
-    CPTableView _tableView;
+    id _tableView;
 }
 
 - (id)initWithTableView:(CPTableView)aTableView

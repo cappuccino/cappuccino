@@ -33,6 +33,7 @@
 @global CPApp
 
 // CPScroller Constants
+@typedef CPScrollerPart
 CPScrollerNoPart            = 0;
 CPScrollerDecrementPage     = 1;
 CPScrollerKnob              = 2;
@@ -44,6 +45,7 @@ CPScrollerKnobSlot          = 6;
 CPScrollerIncrementArrow    = 0;
 CPScrollerDecrementArrow    = 1;
 
+@typedef CPUsableScrollerParts
 CPNoScrollerParts           = 0;
 CPOnlyScrollerArrows        = 1;
 CPAllScrollerParts          = 2;

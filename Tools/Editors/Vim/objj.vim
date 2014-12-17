@@ -68,6 +68,7 @@ syn match  objjImported display contained "<[-_0-9a-zA-Z.\/]*>"
 syn match  objjImport display "^\s*\(%:\|#\|@\)\s*import\>\s*["<]" contains=objjImported
 
 " Match the important ObjJ directives
+syn match  objjDirective    "@typedef"
 syn match  objjDirective    "@interface\|@implementation\|@protocol\|@end"
 syn match  objjScopeDecl    "@public\|@protected\|@private\|@package"
 syn match  objjScopeDecl    "@required\|@optional"

@@ -24,6 +24,7 @@
 @import "CPView.j"
 
 // CPBoxType
+@typedef CPBoxType
 CPBoxPrimary    = 0;
 CPBoxSecondary  = 1;
 CPBoxSeparator  = 2;
@@ -31,12 +32,14 @@ CPBoxOldStyle   = 3;
 CPBoxCustom     = 4;
 
 // CPBorderType
+@typedef CPBorderType
 CPNoBorder      = 0;
 CPLineBorder    = 1;
 CPBezelBorder   = 2;
 CPGrooveBorder  = 3;
 
 // CPTitlePosition
+@typedef CPTitlePosition
 CPNoTitle     = 0;
 CPAboveTop    = 1;
 CPAtTop       = 2;

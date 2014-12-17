@@ -30,11 +30,16 @@
 @import "CGGeometry.j"
 
 @class CPTextField
+@class CPWindow
 
 @global CPApp
 @global CPNewlineCharacter
 @global CPCarriageReturnCharacter
 @global CPEnterCharacter
+
+@typedef DOMEvent
+@typedef CPEventType
+
 
 var _CPEventPeriodicEventPeriod         = 0,
     _CPEventPeriodicEventTimer          = nil,

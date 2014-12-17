@@ -61,17 +61,19 @@ var CPComboBoxTextSubview = @"text",
 
 @implementation CPComboBox : CPTextField
 {
-    CPArray                 _items;
-    _CPPopUpList            _listDelegate;
-    CPComboBoxDataSource    _dataSource;
-    BOOL                    _usesDataSource;
-    BOOL                    _completes;
-    BOOL                    _canComplete;
-    int                     _numberOfVisibleItems;
-    BOOL                    _forceSelection;
-    BOOL                    _hasVerticalScroller;
-    CPString                _selectedStringValue;
-    BOOL                    _popUpButtonCausedResign;
+    CPArray                     _items;
+    _CPPopUpList                _listDelegate;
+    id<CPComboBoxDataSource>    _dataSource;
+    BOOL                        _usesDataSource;
+    BOOL                        _completes;
+    BOOL                        _canComplete;
+    int                         _numberOfVisibleItems;
+    BOOL                        _forceSelection;
+    BOOL                        _hasVerticalScroller;
+    CPString                    _selectedStringValue;
+    CGSize                      _intercellSpacing;
+    float                       _itemHeight;
+    BOOL                        _popUpButtonCausedResign;
 }
 
 + (CPString)defaultThemeClass
@@ -140,7 +142,9 @@ var CPComboBoxTextSubview = @"text",
         return;
 
     _hasVerticalScroller = flag;
-    [[_listDelegate scrollView] setHasVerticalScroller:flag];
+
+    if (_listDelegate)
+        [[_listDelegate scrollView] setHasVerticalScroller:_hasVerticalScroller];
 }
 
 - (CGSize)intercellSpacing
@@ -150,7 +154,13 @@ var CPComboBoxTextSubview = @"text",
 
 - (void)setIntercellSpacing:(CGSize)aSize
 {
-    [[_listDelegate tableView] setIntercellSpacing:aSize];
+    if (_intercellSpacing && CGSizeEqualToSize(aSize, _intercellSpacing))
+        return;
+
+    _intercellSpacing = aSize;
+
+    if (_listDelegate)
+        [[_listDelegate tableView] setIntercellSpacing:_intercellSpacing];
 }
 
 - (BOOL)isButtonBordered
@@ -173,10 +183,18 @@ var CPComboBoxTextSubview = @"text",
 
 - (void)setItemHeight:(float)itemHeight
 {
-    [[_listDelegate tableView] setRowHeight:itemHeight];
+    if (itemHeight === _itemHeight)
+        return;
 
-    // FIXME: This shouldn't be necessary, but CPTableView does not tile after setRowHeight
-    [[_listDelegate tableView] reloadData];
+    _itemHeight = itemHeight;
+
+    if (_listDelegate)
+    {
+        [[_listDelegate tableView] setRowHeight:_itemHeight];
+
+        // FIXME: This shouldn't be necessary, but CPTableView does not tile after setRowHeight
+        [[_listDelegate tableView] reloadData];
+    }
 }
 
 - (int)numberOfVisibleItems
@@ -451,6 +469,9 @@ var CPComboBoxTextSubview = @"text",
     // Apply our text style to the list
     [_listDelegate setFont:[self font]];
     [_listDelegate setAlignment:[self alignment]];
+    [[_listDelegate scrollView] setHasVerticalScroller:_hasVerticalScroller];
+    [[_listDelegate tableView] setIntercellSpacing:_intercellSpacing];
+    [[_listDelegate tableView] setRowHeight:_itemHeight];
 }
 
 - (int)indexOfItemWithObjectValue:(id)anObject
@@ -842,13 +863,17 @@ var CPComboBoxTextSubview = @"text",
 - (void)setFont:(CPFont)aFont
 {
     [super setFont:aFont];
-    [_listDelegate setFont:aFont];
+
+    if (_listDelegate)
+        [_listDelegate setFont:aFont];
 }
 
 - (void)setAlignment:(CPTextAlignment)alignment
 {
     [super setAlignment:alignment];
-    [_listDelegate setAlignment:alignment];
+
+    if (_listDelegate)
+        [_listDelegate setAlignment:alignment];
 }
 
 #pragma mark Pop Up Button Layout

@@ -76,6 +76,8 @@ static NSArray *XCCDefaultIgnoredPathPredicates = nil;
 
 NSString * const XCCCappLintDidStartNotification = @"XCCCappLintDidStartNotification";
 NSString * const XCCCappLintDidEndNotification = @"XCCCappLintDidEndNotification";
+NSString * const XCCObjjDidStartNotification = @"XCCObjjDidStartNotification";
+NSString * const XCCObjjDidEndNotification = @"XCCObjjDidEndNotification";
 
 @interface XcodeCapp ()
 
@@ -1564,6 +1566,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
 - (IBAction)openErrorsPanel:(id)aSender
 {
     [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
+    [self.errorsPanel setFloatingPanel:[[NSUserDefaults standardUserDefaults] boolForKey:kDefaultXCCPanelStyleUtility]];
     [self.errorsPanel makeKeyAndOrderFront:nil];
 }
 
@@ -1571,11 +1574,11 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
 {
     id info = self.errorListController.selection;
 
-    NSString *path = [info valueForKey:@"path"];
-
+    NSString *path = [info valueForKey:@"realPath"] ? [info valueForKey:@"realPath"] : [info valueForKey:@"path"];
+    
     if (path == NSNoSelectionMarker)
         return;
-
+    
     if ([self isObjjFile:path])
     {
         [self openObjjFile:path line:[[info valueForKey:@"line"] intValue]];
@@ -1694,6 +1697,13 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
             || [defaults boolForKey:kDefaultXCCAutoShowNotificationOnCappLint];
 }
 
+- (BOOL)shouldProcessWithObjjWarnings
+{
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    
+    return ([defaults boolForKey:kDefaultXCCAutoOpenErrorsPanelOnErrors] || [defaults boolForKey:kDefaultXCCAutoShowNotificationOnErrors]) && [defaults boolForKey:kDefaultXCCShouldProcessObjj];
+}
+
 - (void)showErrors
 {
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
@@ -1704,41 +1714,96 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     }
 }
 
-- (void)showCappLintErrors
+- (void)showCappLintWarnings
 {
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     
-    if ([defaults boolForKey:kDefaultXCCAutoOpenErrorsPanelOnCappLint] && self.errorList.count)
+    NSUInteger numberError = [self.errorList count];
+    NSDictionary *firstError;
+    NSUInteger i = 0;
+    
+    for (i = 0; i < numberError; i++)
+    {
+        NSDictionary *dict = [self.errorList objectAtIndex:i];
+        
+        if ([[dict valueForKey:@"type"] isEqualToString: @"capp_lint"])
+        {
+            firstError = dict;
+            break;
+        }
+    }
+    
+    if ([defaults boolForKey:kDefaultXCCAutoOpenErrorsPanelOnCappLint] && firstError)
         [self openErrorsPanel:self];
 
-    if ([defaults boolForKey:kDefaultXCCAutoShowNotificationOnCappLint])
+    if ([defaults boolForKey:kDefaultXCCAutoShowNotificationOnCappLint] && firstError)
     {
-        NSUInteger numberError = [self.errorList count];
+        NSDictionary *error = [self.errorList objectAtIndex:0];
+        NSString *filename = [error objectForKey:@"path"];
+            
+        NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+                                    [NSNumber numberWithInteger:self.projectId] , @"projectId",
+                                    @"Code Style Issues", @"title",
+                                    filename.lastPathComponent , @"message",
+                                    nil];
+            
+        [self wantUserNotificationWithInfo:dict];
+    }
+}
+
+- (void)showObjjWarnings
+{
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    
+    NSUInteger numberError = [self.errorList count];
+    NSDictionary *firstError;
+    NSUInteger i = 0;
+    
+    for (i = 0; i < numberError; i++)
+    {
+        NSDictionary *dict = [self.errorList objectAtIndex:i];
         
-        if (numberError)
+        if ([[dict valueForKey:@"type"] isEqualToString: @"objj"])
         {
-            NSDictionary *error = [self.errorList objectAtIndex:0];
-            NSString *filename = [error objectForKey:@"path"];
-            
-            NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-                                         [NSNumber numberWithInteger:self.projectId] , @"projectId",
-                                         @"Code Style Issues", @"title",
-                                         filename.lastPathComponent , @"message",
-                                         nil];
-            
-            [self wantUserNotificationWithInfo:dict];
+            firstError = dict;
+            break;
         }
+    }
+    
+    if ([defaults boolForKey:kDefaultXCCAutoOpenErrorsPanelOnErrors] && firstError)
+        [self openErrorsPanel:self];
+    
+    if ([defaults boolForKey:kDefaultXCCAutoShowNotificationOnErrors] && firstError)
+    {
+        NSDictionary *error = [self.errorList objectAtIndex:0];
+        NSString *filename = [error objectForKey:@"path"];
+        
+        NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+                                     [NSNumber numberWithInteger:self.projectId] , @"projectId",
+                                     @"Compiling Issues", @"title",
+                                     filename.lastPathComponent , @"message",
+                                     nil];
+        
+        [self wantUserNotificationWithInfo:dict];
     }
 }
 
 - (void)pruneProcessingErrorsForProjectPath:(NSString *)path
 {
+    [self pruneProcessingErrorsForProjectPath:path type:nil];
+}
+
+- (void)pruneProcessingErrorsForProjectPath:(NSString *)path type:(NSString*)type
+{
     // Remove all errors for the path being processed
     NSIndexSet *matchingErrors = [self.errorList indexesOfObjectsPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop)
                                   {
-                                      return [[obj valueForKey:@"path"] isEqualToString:path];
+                                      if (type)
+                                          return ([[obj valueForKey:@"path"] isEqualToString:path] || [[obj valueForKey:@"realPath"] isEqualToString:path]) && [[obj valueForKey:@"type"] isEqualToString:type];
+                                      else
+                                          return [[obj valueForKey:@"path"] isEqualToString:path] || [[obj valueForKey:@"realPath"] isEqualToString:path];
                                   }];
-
+    
     [self.errorListController removeObjectsAtArrangedObjectIndexes:matchingErrors];
 }
 
@@ -1758,6 +1823,212 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     return index != NSNotFound;
 }
 
+#pragma mark - objjj check
+
+- (NSString*)_getObjjIncludePaths
+{
+    NSRegularExpression *regulareExpressionFramework = [NSRegularExpression regularExpressionWithPattern:@"OBJJ_INCLUDE_PATHS ?= ?\\[\"(.*)\"\\," options:0 error:nil];
+
+    NSString *indexPath;    
+    
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:kDefaultXCCUseDebugFrameworkWithObjj])
+        indexPath = [NSString stringWithFormat:@"%@/index-debug.html", self.projectPath];
+    else
+        indexPath = [NSString stringWithFormat:@"%@/index.html", self.projectPath];
+    
+    NSDictionary *taskResult = [self runTaskWithLaunchPath:@"/bin/cat" arguments:[NSMutableArray arrayWithObject:indexPath] returnType:kTaskReturnTypeAny];
+    
+    NSString *response = taskResult[@"response"];
+    
+    NSArray *matches = [regulareExpressionFramework matchesInString:response options:0 range:NSMakeRange(0, [response length])];
+    
+    for (NSTextCheckingResult *match in matches)
+        return [NSString stringWithFormat:@"%@/%@", self.projectPath, [response substringWithRange:[match rangeAtIndex:1]]];
+    
+    return [NSString stringWithFormat:@"%@/%@", self.projectPath ,@"Frameworks/"];
+}
+
+- (BOOL)checkObjjWarningsForPath:(NSArray*)paths
+{
+    DDLogVerbose(@"Checking path %@ with objj", paths);
+    
+    NSUInteger numberOfFiles = [paths count];
+    NSUInteger i = 0;
+    NSMutableArray *objjPaths = [NSMutableArray array];
+    
+    // We only want the objj files
+    for (i = 0; i < numberOfFiles; i++)
+    {
+        NSString *path = [paths objectAtIndex:i];
+        
+        if ([self isObjjFile:path])
+            [objjPaths addObject:path];
+    }
+    
+    if (![objjPaths count])
+        return YES;
+    
+    [[NSNotificationCenter defaultCenter] postNotificationName:XCCBatchDidStartNotification object:self];
+    [[NSNotificationCenter defaultCenter] postNotificationName:XCCObjjDidStartNotification object:self];
+    
+    NSMutableArray *arguments = [NSMutableArray arrayWithObjects:@"-I", [self _getObjjIncludePaths], @"-m", nil];
+    [arguments addObjectsFromArray:objjPaths];
+    
+    NSDictionary *taskResult = [self runTaskWithLaunchPath:self.executablePaths[@"objj"]
+                                                 arguments:arguments
+                                                returnType:kTaskReturnTypeStdOut];
+    
+    NSInteger status = [taskResult[@"status"] intValue];
+    NSString *response = taskResult[@"response"];
+    
+    if (status == 0 && [response length] == 0)
+    {
+        [[NSNotificationCenter defaultCenter] postNotificationName:XCCObjjDidEndNotification object:self];
+        [[NSNotificationCenter defaultCenter] postNotificationName:XCCBatchDidEndNotification object:self];
+        return YES;
+    }
+    
+    NSMutableArray *errors = [NSMutableArray arrayWithArray:[response componentsSeparatedByString:@"\n\n"]];
+    
+    NSInteger numberOfErrors = [errors count];
+    NSMutableArray *dicts = [NSMutableArray array];
+    
+    // When checking of the entire project, we have to be ready to find errors
+    NSRegularExpression *regulareExpressionFramework = [NSRegularExpression regularExpressionWithPattern:@"([\\S\\s]*)(WARNING|ERROR) line ([0-9]*) in file\\:(.*)\\: ([\\S\\s]*)" options:0 error:nil];
+    
+    NSString *filePath;
+    
+    if ([paths count] == 1)
+        filePath = [paths firstObject];
+    
+    i = 0;
+    
+    for (i = 0; i < numberOfErrors; i++)
+    {
+        NSMutableString *error = (NSMutableString*)[errors objectAtIndex:i];
+        NSString *line;
+        NSString *path;
+        NSString *messageError;
+        
+        // We have an extra new line for the first error
+        if (i == 0)
+            error = (NSMutableString*)[error substringFromIndex:1];
+        
+        NSArray *matches = [regulareExpressionFramework matchesInString:error options:0 range:NSMakeRange(0, [error length])];
+        NSInteger j = 0;
+        
+        if (![matches count])
+        {
+            // This shouldn't happen
+            DDLogVerbose(@"Error %@ doesn't respect any pattern", error);
+            
+            path = @"";
+            line = 0;
+            messageError = [NSString stringWithFormat:@"Compiling issue at line %@ of file %@:\n%@", line, path.lastPathComponent, error];
+        }
+        
+        for (NSTextCheckingResult *match in matches)
+        {
+            for (j = 0; j < [match numberOfRanges]; j++)
+            {
+                switch (j) {
+                    case 1:
+                        messageError = [error substringWithRange:[match rangeAtIndex:j]];
+                        break;
+                        
+                    case 3:
+                        line = [error substringWithRange:[match rangeAtIndex:j]];
+                        break;
+                        
+                    case 4:
+                        path = [error substringWithRange:[match rangeAtIndex:j]];
+                        break;
+                        
+                    case 5:
+                        messageError = [NSString stringWithFormat:@"Compiling issue at line %@ of file %@:\n%@ \n%@", line, path.lastPathComponent, [error substringWithRange:[match rangeAtIndex:j]], messageError];
+                        break;
+                        
+                    default:
+                        break;
+                }
+            }
+        }
+        
+        // Make sure to delete all the compilations issue form the tableView
+        [self pruneProcessingErrorsForProjectPath:path type:@"objj"];
+        
+        // Path and realPath are needed, we can get error on ViewController2.j while checking ViewController.j.
+        // When recompiling ViewController.j, realPath is used to know which errors have to be erased form the table
+        NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+                                     [NSNumber numberWithInt:[line intValue]], @"line",
+                                     messageError , @"message",
+                                     (filePath ? filePath:path), @"path",
+                                     @"objj", @"type",
+                                     path , @"realPath",
+                                     nil];
+        
+        // Block to compare dicts
+        BOOL (^dictComparaison)(id obj, NSUInteger idx, BOOL *stop) = ^(id obj, NSUInteger idx, BOOL *stop){
+            if ([obj valueForKey:@"line"] == [dict valueForKey:@"line"])
+            {
+                // For an unknown reason, trim doesn't work
+                NSString *messsageObj = [obj valueForKey:@"message"];
+                NSString *messsageDict = [dict valueForKey:@"message"];
+                
+                messsageDict = [messsageDict stringByReplacingOccurrencesOfString:@" " withString:@""];
+                messsageDict = [messsageDict stringByReplacingOccurrencesOfString:@"\n" withString:@""];
+                
+                messsageObj = [messsageObj stringByReplacingOccurrencesOfString:@" " withString:@""];
+                messsageObj = [messsageObj stringByReplacingOccurrencesOfString:@"\n" withString:@""];
+                
+                if ([messsageDict isEqualToString:messsageObj])
+                {
+                    *stop = YES;
+                    return YES;
+                }
+            }
+            
+            return NO;
+        };
+        
+        NSUInteger isInDict = [dicts indexOfObjectPassingTest:dictComparaison];
+        NSUInteger isInList = [self.errorList indexOfObjectPassingTest:dictComparaison];
+        
+        // Compiler can show several times the same errors
+        if (isInDict == NSNotFound && isInList == NSNotFound)
+            [dicts addObject:dict];
+    }
+    
+    [self performSelectorOnMainThread:@selector(objjCompilerDidGenerateError:) withObject:dicts waitUntilDone:YES];
+    
+    self.isProcessing = NO;
+    [[NSNotificationCenter defaultCenter] postNotificationName:XCCObjjDidEndNotification object:self];
+    [[NSNotificationCenter defaultCenter] postNotificationName:XCCBatchDidEndNotification object:self];
+    
+    return NO;
+}
+
+- (IBAction)checkProjectWithObjj:(id)sender
+{
+    [self clearErrors:self];
+    
+    NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+    [center addObserver:self selector:@selector(objjDidEndNotification:) name:XCCObjjDidEndNotification object:nil];
+    
+    [self performSelectorInBackground:@selector(checkObjjWarningsForPath:) withObject:self.xCodeCappTargetedFiles];
+}
+
+- (void)objjDidEndNotification:(NSNotification*)aNotification
+{
+    [self showObjjWarnings];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:XCCObjjDidEndNotification object:nil];
+}
+
+- (void)objjCompilerDidGenerateError:(NSArray*)errors
+{
+    [self.errorListController addObjects:errors];
+}
+
 
 #pragma mark - capp_lint
 
@@ -1773,7 +2044,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
 
 - (void)cappLintDidEndNotification:(NSNotification*)aNotification
 {
-    [self showCappLintErrors];
+    [self showCappLintWarnings];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:XCCCappLintDidEndNotification object:nil];
 }
 
@@ -1840,18 +2111,19 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
         NSInteger positionOfSecondColon = [errorWithoutPath rangeOfString:@":"].location;
         line = [errorWithoutPath substringToIndex:positionOfSecondColon];
         
-        NSString *messageError = [NSString stringWithFormat:@"Code style issue: %@ \n%@", path.lastPathComponent, errorWithoutPath];
+        NSString *messageError = [NSString stringWithFormat:@"Code style issue at line %@ of file %@:\n%@", line, path.lastPathComponent, errorWithoutPath];
         
         NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
                                      [NSNumber numberWithInt:[line intValue]], @"line",
                                      messageError , @"message",
                                      path, @"path",
+                                     @"capp_lint", @"type",
                                      nil];
         
         [dicts addObject:dict];
     }
     
-    [self performSelectorOnMainThread:@selector(cappLintConversionDidGenerateError:) withObject:dicts waitUntilDone:NO];
+    [self performSelectorOnMainThread:@selector(cappLintConversionDidGenerateError:) withObject:dicts waitUntilDone:YES];
     
     self.isProcessing = NO;
     [[NSNotificationCenter defaultCenter] postNotificationName:XCCBatchDidEndNotification object:self];

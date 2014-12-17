@@ -207,7 +207,6 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
             return;
 
         var point = [self computeOriginFromRect:[_targetView bounds] ofView:_targetView preferredEdge:[_windowView preferredEdge]];
-
         [self setFrameOrigin:point];
     }
 }
@@ -362,7 +361,6 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
     [self setFrameOrigin:point];
     [_windowView showCursor];
     [_windowView setNeedsDisplay:YES];
-    [self makeKeyAndOrderFront:nil];
 
     if (positioningView !== _targetView)
     {
@@ -370,6 +368,8 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
         [self _removeFrameObserver];
         _targetView = positioningView;
     }
+
+    [self makeKeyAndOrderFront:nil];
 
     /*
         If _targetView's window is not a full platform window,

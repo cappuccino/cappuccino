@@ -26,6 +26,7 @@
 @import <Foundation/CPDictionary.j>
 @import <Foundation/CPPropertyListSerialization.j>
 
+@class CPWebScriptObject
 
 CPGeneralPboard         = @"CPGeneralPboard";
 CPFontPboard            = @"CPFontPboard";
@@ -66,7 +67,7 @@ var CPPasteboards = nil,
     unsigned        _changeCount;
     CPString        _stateUID;
 
-    WebScriptObject _nativePasteboard;
+    CPWebScriptObject _nativePasteboard;
 }
 
 /*

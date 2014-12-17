@@ -1,6 +1,9 @@
 @import <Foundation/CPKeyValueCoding.j>
 @import <Foundation/CPKeyValueObserving.j>
 
+@class CarTester
+@class ToManyTester
+
 @implementation CPKVOTest : OJTestCase
 {
     BOOL        _sawInitialObservation;
