@@ -111,7 +111,6 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     BOOL                        _scrollingDownward;
 
-    DOMElement                  _DOMElement;
     DOMElement                  _caretDOM;
     int                         _stickyXLocation;
 
