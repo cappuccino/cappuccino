@@ -145,7 +145,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     if (self = [super initWithFrame:aFrame])
     {
 #if PLATFORM(DOM)
-        self._DOMElement.style.cursor = "text";
+        _DOMElement.style.cursor = "text";
 #endif
         _textContainerInset = CGSizeMake(2,0);
         _textContainerOrigin = CGPointMake(_bounds.origin.x, _bounds.origin.y);
@@ -769,7 +769,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
                                  rectCount:nil],
         l = rects.length;
 
-    for (var i = 0; i < l ; i++)
+    for (var i = 0; i < l; i++)
     {
         rects[i].origin.x += _textContainerOrigin.x;
         rects[i].origin.y += _textContainerOrigin.y;
@@ -895,7 +895,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     point.y -= 2;    // FIXME <!> these should not be constants
     point.x += 2;
 
-    var dindex= [_layoutManager glyphIndexForPoint:point inTextContainer:_textContainer fractionOfDistanceThroughGlyph:fraction],
+    var dindex = [_layoutManager glyphIndexForPoint:point inTextContainer:_textContainer fractionOfDistanceThroughGlyph:fraction],
         oldStickyLoc = _stickyXLocation;
 
     [self _establishSelection:CPMakeRange(dindex,0) byExtending:NO];
@@ -963,7 +963,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     if (granularity !== CPSelectByCharacter)
     {
         var pos = [self _calculateMoveSelectionFromRange:CPMakeRange(aSel.location < _startTrackingLocation ? aSel.location : CPMaxRange(aSel), 0)
-                                           intoDirection:move granularity:granularity];
+                                           intoDirection:move
+                                             granularity:granularity];
         aSel = CPMakeRange(pos, 0);
     }
 
@@ -1337,7 +1338,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
             [_typingAttributes setObject:[self textColor] forKey:CPForegroundColorAttributeName];
     }
 
-    [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeTypingAttributesNotification object:self];
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeTypingAttributesNotification
+                                                        object:self];
 }
 
 - (void)delete:(id)sender
@@ -1544,13 +1546,13 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
             desiredSize.height = maxSize.height;
     }
 
-	if (myClipviewSize)
-	{
-		if (desiredSize.width < myClipviewSize.width)
-			desiredSize.width = myClipviewSize.width;
-		if (desiredSize.height < myClipviewSize.height)
-			desiredSize.height = myClipviewSize.height;
-	}
+    if (myClipviewSize)
+    {
+        if (desiredSize.width < myClipviewSize.width)
+            desiredSize.width = myClipviewSize.width;
+        if (desiredSize.height < myClipviewSize.height)
+            desiredSize.height = myClipviewSize.height;
+    }
 
     [super setFrameSize:desiredSize];
 }
