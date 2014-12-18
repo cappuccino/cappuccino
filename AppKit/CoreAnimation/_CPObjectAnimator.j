@@ -36,7 +36,7 @@ var _supportsCSSAnimations = null;
    return [_target isEqual:anObject];
 }
 
-- (id)methodSignatureForSelector:(SEL)aSelector
+- (CPMethodSignature)methodSignatureForSelector:(SEL)aSelector
 {
     return [_target methodSignatureForSelector:aSelector];
 }
@@ -46,7 +46,7 @@ var _supportsCSSAnimations = null;
     return _target;
 }
 
-- (void)forwardInvocation:(id)anInvocation
+- (void)forwardInvocation:(CPInvocation)anInvocation
 {
     [anInvocation setTarget:_target];
     [anInvocation invoke];
