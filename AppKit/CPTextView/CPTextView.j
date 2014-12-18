@@ -138,7 +138,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 
 #pragma mark -
-#pragma mark Init methodes
+#pragma mark Init methods
 
 - (id)initWithFrame:(CGRect)aFrame textContainer:(CPTextContainer)aContainer
 {
@@ -564,6 +564,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)drawRect:(CGRect)aRect
 {
+#if PLATFORM(DOM)
     var range = [_layoutManager glyphRangeForBoundingRect:aRect inTextContainer:_textContainer];
 
     if (_selectionSpans)
@@ -609,6 +610,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         if (_caretDOM)
             _caretDOM.style.visibility = "hidden";
     }
+#endif
 }
 
 
