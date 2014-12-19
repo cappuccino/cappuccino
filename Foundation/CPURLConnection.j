@@ -116,9 +116,11 @@ var CPURLConnectionDelegate = nil;
 
 + (CPData)_sendSynchronousRequest:(CPURLRequest)aRequest returningResponse:(/*{*/CPURLResponse/*}*/)aURLResponse withCFHTTPRequest:(CFHTTPRequest)aCFHTTPRequest
 {
+    var isIE = CPBrowserIsEngine(CPInternetExplorerBrowserEngine);
+
     try
     {
-        aCFHTTPRequest.open([aRequest HTTPMethod], [[aRequest URL] absoluteString], NO);
+        aCFHTTPRequest.open([aRequest HTTPMethod], [[aRequest URL] absoluteString], NO, isIE);
 
         var fields = [aRequest allHTTPHeaderFields],
             key = nil,
@@ -221,9 +223,11 @@ var CPURLConnectionDelegate = nil;
 
     _HTTPRequest.setWithCredentials(_withCredentials);
 
+    var isIE = CPBrowserIsEngine(CPInternetExplorerBrowserEngine);
+
     try
     {
-        _HTTPRequest.open([_request HTTPMethod], [[_request URL] absoluteString], YES);
+        _HTTPRequest.open([_request HTTPMethod], [[_request URL] absoluteString], YES, nil, nil, isIE);
 
         _HTTPRequest.onreadystatechange = function() { [self _readyStateDidChange]; };
 
