@@ -113,7 +113,7 @@ task ("documentation-no-frame", function()
 
 task ("docset", function()
 {
-    // generateDocs(true);
+    generateDocs(true);
     var documentationDir = FILE.canonical(FILE.join("Tools", "Documentation")),
         docsetShell = FILE.join(documentationDir, "support", "docset.sh");
 
