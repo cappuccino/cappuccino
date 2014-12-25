@@ -581,10 +581,12 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
 
 - (void)_orderFront
 {
-    if (![self isVisible])
-        [self _addFrameObserver];
+    var wasVisible = [self isVisible];
 
     [super _orderFront];
+
+    if (!wasVisible)
+        [self _addFrameObserver];
 }
 
 - (void)_parentDidOrderInChild
