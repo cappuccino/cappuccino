@@ -370,13 +370,6 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
         _targetView = positioningView;
     }
 
-    if (positioningView !== _targetView)
-    {
-        [[_targetView window] removeChildWindow:self];
-        [self _removeFrameObserver];
-        _targetView = positioningView;
-    }
-
     [self makeKeyAndOrderFront:nil];
 
     /*
