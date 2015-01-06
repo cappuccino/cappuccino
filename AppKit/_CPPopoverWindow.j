@@ -370,6 +370,7 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
         _targetView = positioningView;
     }
 
+    _targetRect = aRect;
     [self makeKeyAndOrderFront:nil];
 
     /*
@@ -383,7 +384,6 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
         [[_targetView window] addChildWindow:self ordered:CPWindowAbove];
 
     _targetWindow = targetWindow;
-    _targetRect = aRect;
 
     if (!wasVisible)
         [self _trapNextMouseDown];
