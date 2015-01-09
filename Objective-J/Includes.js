@@ -38,6 +38,8 @@
 #include "CFHTTPRequest.js"
 #include "CFPropertyList.js"
 #include "CFDictionary.js"
+#include "CFError.js"
+#include "CFNetworkErrors.js"
 #include "CFData.js"
 #include "CFURL.js"
 #include "MarkedStream.js"

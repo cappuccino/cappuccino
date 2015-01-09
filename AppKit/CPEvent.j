@@ -31,8 +31,14 @@
 @import "CPText.j"
 
 @class CPTextField
+@class CPWindow
+@class CPGraphicsContext
 
 @global CPApp
+
+@typedef DOMEvent
+@typedef CPEventType
+
 
 var _CPEventPeriodicEventPeriod         = 0,
     _CPEventPeriodicEventTimer          = nil,

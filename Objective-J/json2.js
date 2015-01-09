@@ -161,7 +161,7 @@
 if (!this.JSON) {
     JSON = {};
 }
-(function () {
+(function() {
 
     function f(n) {
         // Format integers to have at least two digits.

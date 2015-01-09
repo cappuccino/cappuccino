@@ -133,7 +133,11 @@
 - (void)setButtons:(CPArray)buttons
 {
     for (var i = [_buttons count] - 1; i >= 0; i--)
+    {
+        [_buttons[i] removeFromSuperview];
         [_buttons[i] removeObserver:self forKeyPath:@"hidden"];
+    }
+
 
     _buttons = [CPArray arrayWithArray:buttons];
 
@@ -230,10 +234,11 @@
     {
         var button = buttonsNotHidden[count];
 
-        [button removeFromSuperview];
-
         if ([button isHidden])
+        {
+            [button removeFromSuperview];
             [buttonsNotHidden removeObject:button];
+        }
     }
 
     var currentButtonOffset = _resizeControlIsLeftAligned ? CGRectGetMaxX([self bounds]) + 1 : -1,

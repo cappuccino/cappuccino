@@ -1,6 +1,8 @@
 
 @import <AppKit/AppKit.j>
 
+@class Track
+
 /*!
     Bindings tests exercising the functionality seen in the Cocoa example "SimpleBindingsAdoption".
 */

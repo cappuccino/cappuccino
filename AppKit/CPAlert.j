@@ -44,6 +44,7 @@
 var CPAlertDelegate_alertShowHelp_              = 1 << 0,
     CPAlertDelegate_alertDidEnd_returnCode_     = 1 << 1;
 
+@typedef CPAlertStyle
 /*
     @global
     @group CPAlertStyle
@@ -67,6 +68,54 @@ var bottomHeight = 71;
 @optional
 - (BOOL)alertShowHelp:(CPAlert)alert;
 - (void)alertDidEnd:(CPAlert)theAlert returnCode:(int)returnCode;
+
+@end
+
+
+@implementation _CPAlertThemeView : CPView
+
++ (CPString)defaultThemeClass
+{
+    return @"alert";
+}
+
++ (CPDictionary)themeAttributes
+{
+    return @{
+            @"size": CGSizeMake(400.0, 110.0),
+            @"content-inset": CGInsetMake(15, 15, 15, 50),
+            @"informative-offset": 6,
+            @"button-offset": 10,
+            @"message-text-alignment": CPJustifiedTextAlignment,
+            @"message-text-color": [CPColor blackColor],
+            @"message-text-font": [CPFont boldSystemFontOfSize:13.0],
+            @"message-text-shadow-color": [CPNull null],
+            @"message-text-shadow-offset": CGSizeMakeZero(),
+            @"informative-text-alignment": CPJustifiedTextAlignment,
+            @"informative-text-color": [CPColor blackColor],
+            @"informative-text-font": [CPFont systemFontOfSize:12.0],
+            @"informative-text-shadow-color": [CPNull null],
+            @"informative-text-shadow-offset": CGSizeMakeZero(),
+            @"image-offset": CGPointMake(15, 12),
+            @"information-image": [CPNull null],
+            @"warning-image": [CPNull null],
+            @"error-image": [CPNull null],
+            @"help-image": [CPNull null],
+            @"help-image-left-offset": 15,
+            @"help-image-pressed": [CPNull null],
+            @"suppression-button-y-offset": 0.0,
+            @"suppression-button-x-offset": 0.0,
+            @"default-elements-margin": 3.0,
+            @"suppression-button-text-color": [CPColor blackColor],
+            @"suppression-button-text-font": [CPFont systemFontOfSize:12.0],
+            @"suppression-button-text-shadow-color": [CPNull null],
+            @"suppression-button-text-shadow-offset": 0.0,
+            @"modal-window-button-margin-y": 0.0,
+            @"modal-window-button-margin-x": 0.0,
+            @"standard-window-button-margin-y": 0.0,
+            @"standard-window-button-margin-x": 0.0,
+        };
+}
 
 @end
 
@@ -810,54 +859,6 @@ var bottomHeight = 71;
         return YES;
 
     return [_delegate alertShowHelp:self];
-}
-
-@end
-
-
-@implementation _CPAlertThemeView : CPView
-
-+ (CPString)defaultThemeClass
-{
-    return @"alert";
-}
-
-+ (CPDictionary)themeAttributes
-{
-    return @{
-            @"size": CGSizeMake(400.0, 110.0),
-            @"content-inset": CGInsetMake(15, 15, 15, 50),
-            @"informative-offset": 6,
-            @"button-offset": 10,
-            @"message-text-alignment": CPJustifiedTextAlignment,
-            @"message-text-color": [CPColor blackColor],
-            @"message-text-font": [CPFont boldSystemFontOfSize:13.0],
-            @"message-text-shadow-color": [CPNull null],
-            @"message-text-shadow-offset": CGSizeMakeZero(),
-            @"informative-text-alignment": CPJustifiedTextAlignment,
-            @"informative-text-color": [CPColor blackColor],
-            @"informative-text-font": [CPFont systemFontOfSize:12.0],
-            @"informative-text-shadow-color": [CPNull null],
-            @"informative-text-shadow-offset": CGSizeMakeZero(),
-            @"image-offset": CGPointMake(15, 12),
-            @"information-image": [CPNull null],
-            @"warning-image": [CPNull null],
-            @"error-image": [CPNull null],
-            @"help-image": [CPNull null],
-            @"help-image-left-offset": 15,
-            @"help-image-pressed": [CPNull null],
-            @"suppression-button-y-offset": 0.0,
-            @"suppression-button-x-offset": 0.0,
-            @"default-elements-margin": 3.0,
-            @"suppression-button-text-color": [CPColor blackColor],
-            @"suppression-button-text-font": [CPFont systemFontOfSize:12.0],
-            @"suppression-button-text-shadow-color": [CPNull null],
-            @"suppression-button-text-shadow-offset": 0.0,
-            @"modal-window-button-margin-y": 0.0,
-            @"modal-window-button-margin-x": 0.0,
-            @"standard-window-button-margin-y": 0.0,
-            @"standard-window-button-margin-x": 0.0,
-        };
 }
 
 @end

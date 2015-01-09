@@ -54,6 +54,10 @@
 
     [self setPlaceholderString:[cell placeholderString]];
 
+    [self _setUsesSingleLineMode:[cell usesSingleLineMode]];
+    [self _setWraps:[cell wraps]];
+    [self _setScrolls:[cell scrolls]];
+
     var textColor = [cell textColor],
         defaultColor = [self currentValueForThemeAttribute:@"text-color"];
 

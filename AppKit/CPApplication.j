@@ -37,6 +37,8 @@
 @import "CPWindowController.j"
 @import "_CPPopoverWindow.j"
 
+@typedef CPModalSession
+
 var CPMainCibFile               = @"CPMainCibFile",
     CPMainCibFileHumanFriendly  = @"Main cib file base name",
     CPEventModifierFlags = 0;
@@ -986,7 +988,9 @@ var CPMainCibFile               = @"CPMainCibFile",
         return;
     }
 
-    [aSheet._windowView _enableSheet:YES inWindow:aWindow];
+    if (![aWindow attachedSheet])
+        [aSheet._windowView _enableSheet:YES inWindow:aWindow];
+
     [aWindow _attachSheet:aSheet modalDelegate:aModalDelegate didEndSelector:didEndSelector contextInfo:contextInfo];
 }
 

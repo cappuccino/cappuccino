@@ -128,4 +128,12 @@
     [self assertTrue:[[[self window] representedURL] class] === [CPURL class]];
 }
 
+- (void)testOrderingMethod
+{
+    [_window orderFront:self];
+    [_window orderBack:self];
+    [_window orderFront:self];
+    [_window orderOut:self];
+}
+
 @end

@@ -22,6 +22,7 @@ var FILENAMES = [
         "Misc/regex-simple-char-classes",
         "Misc/empty-loops",
         "Misc/empty-statements",
+        "Misc/ref-self",
 ];
 
 @implementation OutputTest : OJTestCase

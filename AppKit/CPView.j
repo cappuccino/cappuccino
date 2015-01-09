@@ -40,8 +40,11 @@
 @class CPMenu
 @class CPClipView
 @class CPScrollView
+@class CALayer
 
 @global appkit_tag_dom_elements
+
+@typedef _CPViewFullScreenModeState
 
 #if PLATFORM(DOM)
 
@@ -172,6 +175,7 @@ var CPViewFlags                     = { },
     BOOL                _postsBoundsChangedNotifications;
     BOOL                _inhibitFrameAndBoundsChangedNotifications;
     BOOL                _inLiveResize;
+    BOOL                _isSuperviewAClipView;
 
 #if PLATFORM(DOM)
     DOMElement          _DOMElement;
@@ -821,6 +825,8 @@ var CPViewFlags                     = { },
 */
 - (void)viewWillMoveToSuperview:(CPView)aView
 {
+    _isSuperviewAClipView = [aView isKindOfClass:[CPClipView class]];
+
     [self _removeObservers];
 
     if (aView)
@@ -952,6 +958,9 @@ var CPViewFlags                     = { },
 
     if (_postsFrameChangedNotifications)
         [CachedNotificationCenter postNotificationName:CPViewFrameDidChangeNotification object:self];
+
+    if (_isSuperviewAClipView)
+        [[self superview] viewFrameChanged:[[CPNotification alloc] initWithName:CPViewFrameDidChangeNotification object:self userInfo:nil]];
 }
 
 /*!
@@ -1013,6 +1022,9 @@ var CPViewFlags                     = { },
 
     if (_postsFrameChangedNotifications && !_inhibitFrameAndBoundsChangedNotifications)
         [CachedNotificationCenter postNotificationName:CPViewFrameDidChangeNotification object:self];
+
+    if (_isSuperviewAClipView && !_inhibitFrameAndBoundsChangedNotifications)
+        [[self superview] viewFrameChanged:[[CPNotification alloc] initWithName:CPViewFrameDidChangeNotification object:self userInfo:nil]];
 
 #if PLATFORM(DOM)
     var transform = _superview ? _superview._boundsTransform : NULL;
@@ -1173,6 +1185,9 @@ var CPViewFlags                     = { },
 
     if (_postsFrameChangedNotifications && !_inhibitFrameAndBoundsChangedNotifications)
         [CachedNotificationCenter postNotificationName:CPViewFrameDidChangeNotification object:self];
+
+    if (_isSuperviewAClipView && !_inhibitFrameAndBoundsChangedNotifications)
+        [[self superview] viewFrameChanged:[[CPNotification alloc] initWithName:CPViewFrameDidChangeNotification object:self userInfo:nil]];
 }
 
 /*!
@@ -1207,6 +1222,9 @@ var CPViewFlags                     = { },
 
     if (_postsBoundsChangedNotifications)
         [CachedNotificationCenter postNotificationName:CPViewBoundsDidChangeNotification object:self];
+
+    if (_isSuperviewAClipView)
+        [[self superview] viewBoundsChanged:[[CPNotification alloc] initWithName:CPViewBoundsDidChangeNotification object:self userInfo:nil]];
 }
 
 /*!
@@ -1269,6 +1287,9 @@ var CPViewFlags                     = { },
 
     if (_postsBoundsChangedNotifications && !_inhibitFrameAndBoundsChangedNotifications)
         [CachedNotificationCenter postNotificationName:CPViewBoundsDidChangeNotification object:self];
+
+    if (_isSuperviewAClipView && !_inhibitFrameAndBoundsChangedNotifications)
+        [[self superview] viewBoundsChanged:[[CPNotification alloc] initWithName:CPViewBoundsDidChangeNotification object:self userInfo:nil]];
 }
 
 /*!
@@ -1307,6 +1328,9 @@ var CPViewFlags                     = { },
 
     if (_postsBoundsChangedNotifications && !_inhibitFrameAndBoundsChangedNotifications)
         [CachedNotificationCenter postNotificationName:CPViewBoundsDidChangeNotification object:self];
+
+    if (_isSuperviewAClipView && !_inhibitFrameAndBoundsChangedNotifications)
+        [[self superview] viewBoundsChanged:[[CPNotification alloc] initWithName:CPViewBoundsDidChangeNotification object:self userInfo:nil]];
 }
 
 
