@@ -53,7 +53,7 @@
     @param aType the structure or object type
     @param anObject the object to be encoded
 */
-- (void)encodeValueOfObjCType:(CPString)aType at:(id)anObject
+- (void)encodeValueOfObjJType:(CPString)aType at:(id)anObject
 {
    _CPRaiseInvalidAbstractInvocation(self, _cmd);
 }
