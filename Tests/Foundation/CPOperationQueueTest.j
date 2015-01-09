@@ -16,6 +16,33 @@ globalResults = [];
 
 @end
 
+@implementation TestCancelOperation : CPOperation
+{
+    BOOL _started @accessors(getter=didStart);
+    BOOL _mained @accessors(getter=didMain);
+}
+
+- (id)init
+{
+    self = [super init];
+    _started = NO;
+    _mained = NO;
+    return self;
+}
+
+- (void)main
+{
+    _mained = YES;
+}
+
+- (void)start
+{
+    [super start];
+    _started = YES;
+}
+
+@end
+
 @implementation TestObserver : CPObject
 {
     CPArray changedKeyPaths @accessors;
@@ -165,6 +192,29 @@ globalResults = [];
 
     [oq setName:@"Soylent"];
     [self assert:@"name" equals:[[obs changedKeyPaths] objectAtIndex:4]];
+}
+
+- (void)testCancelledOperationDoesStart
+{
+    var op = [[TestCancelOperation alloc] init],
+        queue = [[CPOperationQueue alloc] init];
+
+    [self assertFalse:[op isCancelled]];
+    [self assertFalse:[op isFinished]];
+    [self assertFalse:[op didMain]];
+    [self assertFalse:[op didStart]];
+
+    [op cancel];
+
+    [self assertTrue:[op isCancelled]];
+    [self assertFalse:[op isFinished]];
+
+    [queue addOperations:[op] waitUntilFinished:YES];
+
+    [self assertFalse:[op didMain]];
+    [self assertTrue:[op didStart]];
+    [self assertTrue:[op isCancelled]];
+    [self assertTrue:[op isFinished]];
 }
 
 @end
