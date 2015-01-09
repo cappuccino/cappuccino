@@ -1,5 +1,7 @@
 @import <AppKit/AppKit.j>
 
+@import "CPNotificationCenterHelper.j"
+
 [CPApplication sharedApplication];
 
 @implementation CPTableViewTest : OJTestCase
@@ -301,6 +303,36 @@
     [tableColumn1 setWidth:100.0];
 
     [self assertTrue:[table bounds].size.width >= 200];
+}
+
+-(void)testNotificationsRegistered
+{
+    [self assert:[CPNotificationCenterHelper registeredNotificationsForObserver:tableView] equals:[@"_CPWindowDidChangeFirstResponderNotification"] message:@"Notications registered for the tableView in the notification center are wrong"];
+
+    [tableView removeFromSuperview];
+    [self assert:[CPNotificationCenterHelper registeredNotificationsForObserver:tableView] equals:[] message:@"Notications registered for the tableView in the notification center are wrong"];
+
+    [[theWindow contentView] addSubview:tableView];
+    [self assert:[CPNotificationCenterHelper registeredNotificationsForObserver:tableView] equals:[@"_CPWindowDidChangeFirstResponderNotification"] message:@"Notications registered for the tableView in the notification center are wrong"];
+
+    [[theWindow contentView] addSubview:tableView];
+    [self assert:[CPNotificationCenterHelper registeredNotificationsForObserver:tableView] equals:[@"_CPWindowDidChangeFirstResponderNotification"] message:@"Notications registered for the tableView in the notification center are wrong"];
+
+
+    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0, 0, 100.0, 100.0)],
+        expectedNotifications = [@"_CPWindowDidChangeFirstResponderNotification", @"CPViewFrameDidChangeNotification", @"CPViewBoundsDidChangeNotification"].sort();
+
+    [scrollView setDocumentView:tableView];
+
+    [[theWindow contentView] addSubview:scrollView];
+    [self assert:[CPNotificationCenterHelper registeredNotificationsForObserver:tableView] equals:expectedNotifications message:@"Notications registered for the tableView in the notification center are wrong"];
+
+    [[theWindow contentView] addSubview:scrollView];
+    [self assert:[CPNotificationCenterHelper registeredNotificationsForObserver:tableView] equals:expectedNotifications message:@"Notications registered for the tableView in the notification center are wrong"];
+
+    [scrollView removeFromSuperview];
+    [self assert:[CPNotificationCenterHelper registeredNotificationsForObserver:tableView] equals:[] message:@"Notications registered for the tableView in the notification center are wrong"];
+
 }
 
 @end

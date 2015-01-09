@@ -22,6 +22,7 @@ Cursor support by browser:
 */
 
 @import <Foundation/CPObject.j>
+@import "CPImage.j"
 
 @global CPApp
 
