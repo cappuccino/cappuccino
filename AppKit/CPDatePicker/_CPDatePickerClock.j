@@ -24,7 +24,6 @@
 @import "CPTextField.j"
 @import "CPImageView.j"
 @import "CALayer.j"
-@import "CPGraphicsContext.j"
 
 @class _CPCibCustomResource
 @class CPDatePicker
