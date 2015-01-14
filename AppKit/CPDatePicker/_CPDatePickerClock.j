@@ -25,7 +25,6 @@
 @import "CPImageView.j"
 @import "CALayer.j"
 
-
 @class _CPCibCustomResource
 @class CPDatePicker
 

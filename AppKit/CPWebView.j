@@ -25,6 +25,8 @@
 
 @class CPWebScriptObject
 
+@typedef Window
+
 // FIXME: implement these where possible:
 /*
 CPWebViewDidBeginEditingNotification            = "CPWebViewDidBeginEditingNotification";
