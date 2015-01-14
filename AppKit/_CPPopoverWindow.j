@@ -64,6 +64,7 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
     BOOL            _isObservingFrame;
     BOOL            _shouldPerformAnimation;
     CPInteger       _implementedDelegateMethods;
+    CGRect          _targetRect;
     CPWindow        _targetWindow;
     JSObject        _orderOutTransitionFunction;
     JSObject        _transitionCompleteFunction;
@@ -206,7 +207,7 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
         if (![_targetView window])
             return;
 
-        var point = [self computeOriginFromRect:[_targetView bounds] ofView:_targetView preferredEdge:[_windowView preferredEdge]];
+        var point = [self computeOriginFromRect:_targetRect ofView:_targetView preferredEdge:[_windowView preferredEdge]];
         [self setFrameOrigin:point];
     }
 }
@@ -369,6 +370,7 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
         _targetView = positioningView;
     }
 
+    _targetRect = aRect;
     [self makeKeyAndOrderFront:nil];
 
     /*
@@ -417,7 +419,7 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
 
     if ([self isVisible])
     {
-        var point = [self computeOriginFromRect:[_targetView bounds] ofView:_targetView preferredEdge:[_windowView preferredEdge]];
+        var point = [self computeOriginFromRect:_targetRect ofView:_targetView preferredEdge:[_windowView preferredEdge]];
         [self setFrameOrigin:point];
     }
 }
@@ -581,10 +583,12 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
 
 - (void)_orderFront
 {
-    if (![self isVisible])
-        [self _addFrameObserver];
+    var wasVisible = [self isVisible];
 
     [super _orderFront];
+
+    if (!wasVisible)
+        [self _addFrameObserver];
 }
 
 - (void)_parentDidOrderInChild

@@ -2381,9 +2381,9 @@ Reference: function(node, st, c) {
         buffer.concat(" "); // Add an extra space if it looks something like this: "return(<expression>)". No space between return and expression.
     }
     buffer.concat("function(__input) { if (arguments.length) return ");
-    buffer.concat(node.element.name);
+    c(node.element, st, "Expression");
     buffer.concat(" = __input; return ");
-    buffer.concat(node.element.name);
+    c(node.element, st, "Expression");
     buffer.concat("; }");
     if (!generate) compiler.lastPos = node.end;
 },
