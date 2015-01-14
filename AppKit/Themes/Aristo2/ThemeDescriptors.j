@@ -2279,6 +2279,8 @@ var themedButtonValues = nil,
         sliceLastBottomBorderColor = [CPColor colorWithWhite:0.6 alpha:1.0],
         buttonAddImage = PatternImage(@"rule-editor-button-add-image.png", 20.0, 20.0),
         buttonRemoveImage = PatternImage(@"rule-editor-button-remove-image.png", 20.0, 20.0),
+        buttonAddHighlightedImage = PatternImage(@"rule-editor-button-add-highlighted-image.png", 20.0, 20.0),
+        buttonRemoveHighlightedImage = PatternImage(@"rule-editor-button-remove-highlighted-image.png", 20.0, 20.0),
         fontColor = [CPColor colorWithWhite:150 / 255 alpha:1],
 
         ruleEditorThemedValues =
@@ -2292,9 +2294,9 @@ var themedButtonValues = nil,
             [@"font",                           [CPFont systemFontOfSize:10.0]],
             [@"font-color",                     fontColor],
             [@"add-image",                      buttonAddImage,                         CPThemeStateNormal],
-            [@"add-image",                      buttonAddImage,                         CPThemeStateHighlighted],
+            [@"add-image",                      buttonAddHighlightedImage,              CPThemeStateHighlighted],
             [@"remove-image",                   buttonRemoveImage,                      CPThemeStateNormal],
-            [@"remove-image",                   buttonRemoveImage,                      CPThemeStateHighlighted],
+            [@"remove-image",                   buttonRemoveHighlightedImage,           CPThemeStateHighlighted],
             [@"vertical-alignment",             CPCenterVerticalTextAlignment],
         ];
 
