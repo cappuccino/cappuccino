@@ -111,6 +111,15 @@ task ("documentation-no-frame", function()
     generateDocs(true);
 });
 
+task ("docset", function()
+{
+    generateDocs(true);
+    var documentationDir = FILE.canonical(FILE.join("Tools", "Documentation")),
+        docsetShell = FILE.join(documentationDir, "support", "docset.sh");
+
+    OS.system([docsetShell, documentationDir]);
+});
+
 function generateDocs(/* boolean */ noFrame)
 {
     // try to find a doxygen executable in the PATH;

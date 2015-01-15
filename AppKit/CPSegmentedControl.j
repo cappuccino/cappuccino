@@ -25,6 +25,7 @@
 @import "CPControl.j"
 @import "CPWindow_Constants.j"
 @import "_CPImageAndTextView.j"
+@import "CPMenu.j"
 
 @global CPApp
 
