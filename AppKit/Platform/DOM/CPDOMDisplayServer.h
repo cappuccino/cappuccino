@@ -55,11 +55,14 @@ aDOMElement.style.bottom = ROUND(____p.y) + "px";
 #define CPDOMDisplayServerSetStyleBackgroundSize(aDOMElement, aWidth, aHeight)\
     aDOMElement.style.backgroundSize = aWidth + ' ' + aHeight;
 
-#define CPDOMDisplayServerAppendChild(aParentElement, aChildElement) aParentElement.appendChild(aChildElement)
+#define CPDOMDisplayServerAppendChild(aParentElement, aChildElement) \
+    aParentElement.appendChild(aChildElement);
 
-#define CPDOMDisplayServerInsertBefore(aParentElement, aChildElement, aBeforeElement) aParentElement.insertBefore(aChildElement, aBeforeElement)
+#define CPDOMDisplayServerInsertBefore(aParentElement, aChildElement, aBeforeElement) \
+    aParentElement.insertBefore(aChildElement, aBeforeElement);
 
-#define CPDOMDisplayServerRemoveChild(aParentElement, aChildElement) aParentElement.removeChild(aChildElement)
+#define CPDOMDisplayServerRemoveChild(aParentElement, aChildElement) \
+    aParentElement.removeChild(aChildElement);
 
 #define PREPARE_DOM_OPTIMIZATION()
 #define EXECUTE_DOM_INSTRUCTIONS()
