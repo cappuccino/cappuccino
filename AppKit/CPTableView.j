@@ -488,7 +488,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     [self _initSubclass];
 
-    [self _startObservingFirstResponder];
+    [self _startObservingFirstResponderForWindow:[self window]];
 }
 
 - (void)_initSubclass
@@ -5044,7 +5044,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 {
     [super viewWillMoveToWindow:aWindow];
 
-    [self _stopObservingFirstResponder];
+    [self _stopObservingFirstResponderForWindow:aWindow];
 
     if (aWindow)
         [self _startObservingFirstResponderForWindow:aWindow];
@@ -5092,9 +5092,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_firstResponderDidChange:) name:_CPWindowDidChangeFirstResponderNotification object:aWindow];
 }
 
-- (void)_stopObservingFirstResponder
+- (void)_stopObservingFirstResponderForWindow:(CPWindow)aWindow
 {
-    [[CPNotificationCenter defaultCenter] removeObserver:self name:_CPWindowDidChangeFirstResponderNotification object:[self window]];
+    [[CPNotificationCenter defaultCenter] removeObserver:self name:_CPWindowDidChangeFirstResponderNotification object:aWindow];
 }
 
 - (void)_firstResponderDidChange:(CPNotification)aNotification
