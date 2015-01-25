@@ -43,6 +43,7 @@
 @class _CPTableColumnHeaderView
 @class CPClipView
 @class CPButton
+@class _CPDropOperationDrawingView
 
 @global CPApp
 
@@ -81,10 +82,12 @@ var CPTableViewDelegate_selectionShouldChangeInTableView_                       
     CPTableViewDelegate_tableView_typeSelectStringForTableColumn_row_                                   = 1 << 17,
     CPTableViewDelegate_tableView_willDisplayView_forTableColumn_row_                                   = 1 << 18,
     CPTableViewDelegate_tableView_willRemoveView_forTableColumn_row_                                    = 1 << 19,
-    CPTableViewDelegate_tableViewSelectionDidChange_                                                    = 1 << 20,
-    CPTableViewDelegate_tableViewSelectionIsChanging_                                                   = 1 << 21,
-    CPTableViewDelegate_tableViewMenuForTableColumn_row_                                                = 1 << 22,
-    CPTableViewDelegate_tableView_shouldReorderColumn_toColumn_                                         = 1 << 23;
+    CPTableViewDelegate_tableViewColumnDidMove_                                                         = 1 << 20,
+    CPTableViewDelegate_tableViewColumnDidResize_                                                       = 1 << 21,
+    CPTableViewDelegate_tableViewSelectionDidChange_                                                    = 1 << 22,
+    CPTableViewDelegate_tableViewSelectionIsChanging_                                                   = 1 << 23,
+    CPTableViewDelegate_tableViewMenuForTableColumn_row_                                                = 1 << 24,
+    CPTableViewDelegate_tableView_shouldReorderColumn_toColumn_                                         = 1 << 25;
 
 //CPTableViewDraggingDestinationFeedbackStyles
 CPTableViewDraggingDestinationFeedbackStyleNone = -1;
@@ -171,7 +174,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 @implementation _CPTableDrawView : CPView
 {
-    CPTableView _tableView;
+    id _tableView;
 }
 
 - (id)initWithTableView:(CPTableView)aTableView
@@ -325,6 +328,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     Function            _BlockDeselectView;
     Function            _BlockSelectView;
+
+    CPView              _observedClipView;
 }
 
 /*!
@@ -999,7 +1004,7 @@ NOT YET IMPLEMENTED
 </pre>
 */
 
-- (void)unfocusedSelectionGradientColors
+- (CPColor)unfocusedSelectionGradientColors
 {
     if (!_unfocusedSourceListSelectionColor)
     {
@@ -1213,6 +1218,9 @@ NOT YET IMPLEMENTED
     [[CPNotificationCenter defaultCenter] postNotificationName:CPTableViewColumnDidMoveNotification
                                                         object:self
                                                       userInfo:@{  @"CPOldColumn": fromIndex, @"CPNewColumn": toIndex }];
+
+    if (_implementedDelegateMethods & CPTableViewDelegate_tableViewColumnDidMove_)
+        [_delegate tableViewColumnDidMove:[[CPNotification alloc] initWithName:CPTableViewColumnDidMoveNotification object:self userInfo:@{  @"CPOldColumn": fromIndex, @"CPNewColumn": toIndex }]];
 }
 
 /*!
@@ -1291,9 +1299,17 @@ NOT YET IMPLEMENTED
 /*!
     @ignore
 */
-- (void)_didResizeTableColumn:(CPTableColumn)theColumn
+- (void)_didResizeTableColumn:(CPTableColumn)theColumn oldWidth:(int)oldWidth
 {
     [self _autosave];
+
+    [[CPNotificationCenter defaultCenter]
+        postNotificationName:CPTableViewColumnDidResizeNotification
+                      object:self
+                    userInfo:@{ @"CPTableColumn": theColumn, @"CPOldWidth": oldWidth }];
+
+    if (_implementedDelegateMethods & CPTableViewDelegate_tableViewColumnDidResize_)
+        [_delegate tableViewColumnDidResize:[[CPNotification alloc] initWithName:CPTableViewColumnDidResizeNotification object:self userInfo:@{ @"CPTableColumn": theColumn, @"CPOldWidth": oldWidth }]];
 }
 
 //Selecting Columns and Rows
@@ -2795,35 +2811,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     if (_delegate === aDelegate)
         return;
 
-    var defaultCenter = [CPNotificationCenter defaultCenter];
-
-    if (_delegate)
-    {
-        if ([_delegate respondsToSelector:@selector(tableViewColumnDidMove:)])
-            [defaultCenter
-                removeObserver:_delegate
-                          name:CPTableViewColumnDidMoveNotification
-                        object:self];
-
-        if ([_delegate respondsToSelector:@selector(tableViewColumnDidResize:)])
-            [defaultCenter
-                removeObserver:_delegate
-                          name:CPTableViewColumnDidResizeNotification
-                        object:self];
-
-        if ([_delegate respondsToSelector:@selector(tableViewSelectionDidChange:)])
-            [defaultCenter
-                removeObserver:_delegate
-                          name:CPTableViewSelectionDidChangeNotification
-                        object:self];
-
-        if ([_delegate respondsToSelector:@selector(tableViewSelectionIsChanging:)])
-            [defaultCenter
-                removeObserver:_delegate
-                          name:CPTableViewSelectionIsChangingNotification
-                        object:self];
-    }
-
     _delegate = aDelegate;
     _implementedDelegateMethods = 0;
 
@@ -2898,32 +2885,16 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         _implementedDelegateMethods |= CPTableViewDelegate_tableView_shouldReorderColumn_toColumn_;
 
     if ([_delegate respondsToSelector:@selector(tableViewColumnDidMove:)])
-        [defaultCenter
-            addObserver:_delegate
-            selector:@selector(tableViewColumnDidMove:)
-            name:CPTableViewColumnDidMoveNotification
-            object:self];
+        _implementedDelegateMethods |= CPTableViewDelegate_tableViewColumnDidMove_;
 
     if ([_delegate respondsToSelector:@selector(tableViewColumnDidResize:)])
-        [defaultCenter
-            addObserver:_delegate
-            selector:@selector(tableViewColumnDidResize:)
-            name:CPTableViewColumnDidResizeNotification
-            object:self];
+        _implementedDelegateMethods |= CPTableViewDelegate_tableViewColumnDidResize_;
 
     if ([_delegate respondsToSelector:@selector(tableViewSelectionDidChange:)])
-        [defaultCenter
-            addObserver:_delegate
-            selector:@selector(tableViewSelectionDidChange:)
-            name:CPTableViewSelectionDidChangeNotification
-            object:self];
+        _implementedDelegateMethods |= CPTableViewDelegate_tableViewSelectionDidChange_;
 
     if ([_delegate respondsToSelector:@selector(tableViewSelectionIsChanging:)])
-        [defaultCenter
-            addObserver:_delegate
-            selector:@selector(tableViewSelectionIsChanging:)
-            name:CPTableViewSelectionIsChangingNotification
-            object:self];
+        _implementedDelegateMethods |= CPTableViewDelegate_tableViewSelectionIsChanging_;
 }
 
 /*!
@@ -3875,6 +3846,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     // FIXME: yuck!
     var identifier = [aDataView identifier];
 
+    if ([aDataView hasThemeState:CPThemeStateSelectedDataView])
+        [aDataView unsetThemeState:CPThemeStateSelectedDataView];
+
     if (!_cachedDataViews[identifier])
         _cachedDataViews[identifier] = [aDataView];
     else
@@ -4376,39 +4350,15 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (void)viewWillMoveToSuperview:(CPView)aView
 {
-    var superview = [self superview],
-        defaultCenter = [CPNotificationCenter defaultCenter];
-
-    if (superview)
-    {
-        [defaultCenter
-            removeObserver:self
-                      name:CPViewFrameDidChangeNotification
-                    object:superview];
-
-        [defaultCenter
-            removeObserver:self
-                      name:CPViewBoundsDidChangeNotification
-                    object:superview];
-    }
-
     if ([aView isKindOfClass:[CPClipView class]])
+        _observedClipView = aView;
+    else
     {
-        [aView setPostsFrameChangedNotifications:YES];
-        [aView setPostsBoundsChangedNotifications:YES];
-
-        [defaultCenter
-            addObserver:self
-               selector:@selector(superviewFrameChanged:)
-                   name:CPViewFrameDidChangeNotification
-                 object:aView];
-
-        [defaultCenter
-            addObserver:self
-               selector:@selector(superviewBoundsChanged:)
-                   name:CPViewBoundsDidChangeNotification
-                 object:aView];
+        [self _stopObservingClipView];
+        _observedClipView = nil;
     }
+
+    [super viewWillMoveToSuperview:aView];
 }
 
 /*!
@@ -4979,6 +4929,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         postNotificationName:CPTableViewSelectionIsChangingNotification
                       object:self
                     userInfo:nil];
+
+    if (_implementedDelegateMethods & CPTableViewDelegate_tableViewSelectionIsChanging_)
+        [_delegate tableViewSelectionIsChanging:[[CPNotification alloc] initWithName:CPTableViewSelectionIsChangingNotification object:self userInfo:nil]];
 }
 
 /*!
@@ -4990,6 +4943,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         postNotificationName:CPTableViewSelectionDidChangeNotification
                       object:self
                     userInfo:nil];
+
+    if (_implementedDelegateMethods & CPTableViewDelegate_tableViewSelectionDidChange_)
+        [_delegate tableViewSelectionDidChange:[[CPNotification alloc] initWithName:CPTableViewSelectionDidChangeNotification object:self userInfo:nil]];
 }
 
 /*!
@@ -5062,9 +5018,78 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     return aView;
 }
 
-- (void)_startObservingFirstResponder
+- (void)_removeObservers
 {
-    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_firstResponderDidChange:) name:_CPWindowDidChangeFirstResponderNotification object:[self window]];
+    if (!_isObserving)
+        return;
+
+    [self _stopObservingClipView];
+    [super _removeObservers];
+}
+
+- (void)_addObservers
+{
+    if (_isObserving)
+        return;
+
+    [self _startObservingClipView];
+    [super _addObservers];
+}
+
+/*!
+    Called when the receiver is about to be moved to a new window.
+    @param aWindow the window to which the receiver will be moved.
+*/
+- (void)viewWillMoveToWindow:(CPWindow)aWindow
+{
+    [super viewWillMoveToWindow:aWindow];
+
+    [self _stopObservingFirstResponder];
+
+    if (aWindow)
+        [self _startObservingFirstResponderForWindow:aWindow];
+}
+
+- (void)_startObservingClipView
+{
+    if (!_observedClipView)
+        return;
+
+    var defaultCenter = [CPNotificationCenter defaultCenter];
+
+    [_observedClipView setPostsFrameChangedNotifications:YES];
+    [_observedClipView setPostsBoundsChangedNotifications:YES];
+
+    [defaultCenter addObserver:self
+                          selector:@selector(superviewFrameChanged:)
+                              name:CPViewFrameDidChangeNotification
+                            object:_observedClipView];
+
+    [defaultCenter addObserver:self
+                      selector:@selector(superviewBoundsChanged:)
+                          name:CPViewBoundsDidChangeNotification
+                        object:_observedClipView];
+}
+
+- (void)_stopObservingClipView
+{
+    if (!_observedClipView)
+        return;
+
+    var defaultCenter = [CPNotificationCenter defaultCenter];
+
+    [defaultCenter removeObserver:self
+                             name:CPViewFrameDidChangeNotification
+                           object:_observedClipView];
+
+    [defaultCenter removeObserver:self
+                          name:CPViewBoundsDidChangeNotification
+                        object:_observedClipView];
+}
+
+- (void)_startObservingFirstResponderForWindow:(CPWindow)aWindow
+{
+    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_firstResponderDidChange:) name:_CPWindowDidChangeFirstResponderNotification object:aWindow];
 }
 
 - (void)_stopObservingFirstResponder
@@ -6057,6 +6082,11 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [super encodeWithCoder:aCoder];
+
+    // We do this in order to avoid encoding the _tableDrawView, which
+    // should just automatically be created programmatically as needed.
+    if (_tableDrawView)
+        [_tableDrawView removeFromSuperview];
 
     [aCoder encodeObject:_dataSource forKey:CPTableViewDataSourceKey];
     [aCoder encodeObject:_delegate forKey:CPTableViewDelegateKey];

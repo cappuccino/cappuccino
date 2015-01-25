@@ -32,6 +32,7 @@
 @import "CPPasteboard.j"
 @import "CPView.j"
 
+@class _CPCollectionViewDropIndicator
 
 var CPCollectionViewDelegate_collectionView_acceptDrop_index_dropOperation_                 = 1 << 0,
     CPCollectionViewDelegate_collectionView_canDragItemsAtIndexes_withEvent_                = 1 << 1,
@@ -608,7 +609,7 @@ var HORIZONTAL_MARGIN = 2;
 
     height = MAX(height, numberOfRows * (_minItemSize.height + _verticalMargin));
 
-    var itemSizeHeight = FLOOR(height / numberOfRows);
+    var itemSizeHeight = FLOOR(height / numberOfRows) - _verticalMargin;
 
     if (maxItemSizeHeight > 0)
         itemSizeHeight = MIN(itemSizeHeight, maxItemSizeHeight);

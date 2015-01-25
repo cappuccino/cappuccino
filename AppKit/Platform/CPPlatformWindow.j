@@ -27,8 +27,11 @@
 
 @class CPMenu
 @class CPPlatformPasteboard
+@class CPWindow
 
 @global CPApp
+
+@typedef DOMWindow
 
 var PrimaryPlatformWindow   = NULL;
 

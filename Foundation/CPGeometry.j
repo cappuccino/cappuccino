@@ -22,6 +22,7 @@
 
 @import "_CGGeometry.j"
 
+@typedef CPRectEdge
 CPMinXEdge = 0;
 CPMinYEdge = 1;
 CPMaxXEdge = 2;

@@ -41,14 +41,6 @@
 {
     [super NS_initWithCell:cell];
 
-    var frame = [self frame],
-        originalWidth = frame.size.width;
-
-    frame.size.width = 0;
-    frame.origin.x = MAX(frame.origin.x - 4.0, 0.0);
-
-    [self setFrame:frame];
-
     _segments           = [cell segments];
     _selectedSegment    = [cell selectedSegment];
     _segmentStyle       = [cell segmentStyle];
@@ -57,23 +49,13 @@
     [self setValue:CPCenterTextAlignment forThemeAttribute:@"alignment"];
 
     // HACK
-
     for (var i = 0; i < _segments.length; i++)
     {
         _themeStates[i] = _segments[i].selected ? CPThemeStateSelected : CPThemeStateNormal;
-
         [self tileWithChangedSegment:i];
     }
 
-    // Adjust for differences between Cocoa and Cappuccino widget framing.
-    frame.origin.x += 6;
-
-    if ([[Nib2Cib defaultTheme] name] == @"Aristo2")
-        frame.size.height += 1;
-
-    frame.size.width = originalWidth;
     [self setEnabled:[cell isEnabled]];
-    [self setFrame:frame];
 }
 
 @end
@@ -90,6 +72,7 @@
     {
         var cell = [aCoder decodeObjectForKey:@"NSCell"];
         [self NS_initWithCell:cell];
+        [self _adjustNib2CibSize];
     }
 
     return self;

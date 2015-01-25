@@ -23,6 +23,9 @@
 @import "CPView.j"
 @import "CPScrollView.j"
 
+@class CPWebScriptObject
+
+@typedef Window
 
 // FIXME: implement these where possible:
 /*
@@ -93,7 +96,7 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
     CPScrollView        _scrollView;
     CPView              _frameView;
 
-    IFrame              _iframe;
+    DOMElement          _iframe;
     CPString            _mainFrameURL;
     CPArray             _backwardStack;
     CPArray             _forwardStack;

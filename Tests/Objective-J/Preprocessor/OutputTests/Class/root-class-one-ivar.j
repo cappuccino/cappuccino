@@ -1,5 +1,4 @@
-
-@implementation Class
+@implementation TestClass
 {
     Type ivar;
 }

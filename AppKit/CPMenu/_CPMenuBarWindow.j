@@ -24,6 +24,7 @@
 @import "_CPMenuManager.j"
 
 @class _CPMenuView
+@class CPMenu
 
 @global CPMenuDidAddItemNotification
 @global CPMenuDidChangeItemNotification

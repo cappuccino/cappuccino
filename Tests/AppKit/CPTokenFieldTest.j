@@ -1,5 +1,7 @@
 @import <AppKit/AppKit.j>
 
+@class TestDelegateTokenField
+
 [CPApplication sharedApplication];
 
 @implementation CPTokenFieldTest : OJTestCase

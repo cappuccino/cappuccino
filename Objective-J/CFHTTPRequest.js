@@ -103,6 +103,9 @@ GLOBAL(CFHTTPRequest) = function()
     this._eventDispatcher = new EventDispatcher(this);
     this._nativeRequest = new NativeRequest();
 
+    // by default, all requests will assume that credentials should not be sent.
+    this._nativeRequest.withCredentials = false;
+
     var self = this;
     this._stateChangeHandler = function()
     {
@@ -279,7 +282,7 @@ CFHTTPRequest.prototype.setWithCredentials = function(/*Boolean*/ willSendWithCr
     this._nativeRequest.withCredentials = willSendWithCredentials;
 };
 
-CFHTTPRequest.prototype.getWithCredentials = function() 
+CFHTTPRequest.prototype.withCredentials = function() 
 {
     return this._nativeRequest.withCredentials;
 };

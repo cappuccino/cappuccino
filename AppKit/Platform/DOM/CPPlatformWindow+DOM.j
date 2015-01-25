@@ -1143,7 +1143,7 @@ var PreventScroll = true;
 
         _mouseDownIsRightClick = button == 2 || (CPBrowserIsOperatingSystem(CPMacOperatingSystem) && button == 0 && modifierFlags & CPControlKeyMask);
 
-        if (sourceElement.tagName === "INPUT" && sourceElement != _DOMFocusElement)
+        if ((sourceElement.tagName === "INPUT" || sourceElement.tagName === "TEXTAREA") && sourceElement != _DOMFocusElement)
         {
             if ([CPPlatform supportsDragAndDrop])
             {
@@ -1280,7 +1280,7 @@ var PreventScroll = true;
             insertionIndex = _windowLevels[middle] > aLevel ? middle : middle + 1
 
         [_windowLevels insertObject:aLevel atIndex:insertionIndex];
-        layer._DOMElement.style.zIndex = aLevel;
+        layer._DOMElement.style.zIndex = aLevel + 1;  // adding one avoids negative zIndices. These have been causing issues in Chrome
 
         _DOMBodyElement.appendChild(layer._DOMElement);
     }
@@ -1299,7 +1299,10 @@ var PreventScroll = true;
     // When ordering out, ignore otherWindow, simply remove aWindow from its level.
     // If layer is nil, this will be a no-op.
     if (orderingMode === CPWindowOut)
+    {
+        [aWindow _windowWillBeRemovedFromTheDOM];
         return [layer removeWindow:aWindow];
+    }
 
     /*
         If aWindow is a child of otherWindow and is not yet visible,
@@ -1344,6 +1347,8 @@ var PreventScroll = true;
 
     if (otherWindow)
         insertionIndex = orderingMode === CPWindowAbove ? otherWindow._index + 1 : otherWindow._index;
+
+    [aWindow _windowWillBeAddedToTheDOM];
 
     // Place the window at the appropriate index.
     [layer insertWindow:aWindow atIndex:insertionIndex];
@@ -1394,6 +1399,9 @@ var PreventScroll = true;
             parent = furthestParent;
 
         var index = ordering === CPWindowAbove ? parent._index + 1 : parent._index;
+
+        if (!childWasVisible)
+            [child _windowWillBeAddedToTheDOM];
 
         [aLayer insertWindow:child atIndex:index];
 

@@ -1,5 +1,9 @@
 @import <AppKit/AppKit.j>
 
+@import "CPNotificationCenterHelper.j"
+
+[CPApplication sharedApplication];
+
 @implementation CPScrollViewTest : OJTestCase
 {
 }
@@ -254,6 +258,24 @@
 
     // We should now be back at top left corner
     [self assertPoint:CGPointMake(0, 0) equals:visibleRect.origin message:@"VisibleRect origin not at top left corner again"];
+}
+
+-(void)testNotificationsRegistered
+{
+    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)],
+        theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(0.0, 0.0, 1024.0, 768.0)
+                                                styleMask:CPWindowNotSizable];
+
+    [self assert:[CPNotificationCenterHelper registeredNotificationsForObserver:scrollView] equals:[] message:@"Notications registered for the scrollView in the notification center are wrong"];
+
+    [[theWindow contentView] addSubview:scrollView];
+    [self assert:[CPNotificationCenterHelper registeredNotificationsForObserver:scrollView] equals:[@"CPScrollerStyleGlobalChangeNotification"] message:@"Notications registered for the scrollView in the notification center are wrong"];
+
+    [[theWindow contentView] addSubview:scrollView];
+    [self assert:[CPNotificationCenterHelper registeredNotificationsForObserver:scrollView] equals:[@"CPScrollerStyleGlobalChangeNotification"] message:@"Notications registered for the scrollView in the notification center are wrong"];
+
+    [scrollView removeFromSuperview];
+    [self assert:[CPNotificationCenterHelper registeredNotificationsForObserver:scrollView] equals:[] message:@"Notications registered for the scrollView in the notification center are wrong"];
 }
 
 - (void)assertPoint:(CGPoint)expected equals:(CGPoint)actual message:(CPString)message

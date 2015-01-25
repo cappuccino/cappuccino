@@ -29,6 +29,15 @@ function cleanup() {
 
     status = OS.system(["flatten", "-f", "ToolsTestApp", "FlattenTestApp"].map(OS.enquote).join(" ") + " > /dev/null");
     [self assert:0 equals:status message:"flatten failed"];
+
+    status = OS.system(["objj", "ToolsTestApp/AppController.j"]);
+    [self assert:0 equals:status message:"objj failed"];
+
+    status = OS.system(["objj", "-m", "ToolsTestApp/AppController.j", "ToolsTestApp/AppController.j"]);
+    [self assert:0 equals:status message:"objj failed with several files"];
+
+    status = OS.system(["objj", "-I", "ToolsTestApp/Frameworks", "ToolsTestApp/AppController.j"]);
+    [self assert:0 equals:status message:"objj failed with options -I"];
 }
 
 - (void)tearDown

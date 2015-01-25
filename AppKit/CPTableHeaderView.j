@@ -762,7 +762,7 @@ var CPTableHeaderViewResizeZone = 3.0,
     var tableColumn = [[_tableView tableColumns] objectAtIndex:aColumnIndex];
 
     if ([tableColumn width] != _columnOldWidth)
-        [tableColumn _postDidResizeNotificationWithOldWidth:_columnOldWidth];
+        [_tableView _didResizeTableColumn:tableColumn oldWidth:_columnOldWidth];
 
     [tableColumn setDisableResizingPosting:NO];
     [_tableView setDisableAutomaticResizing:NO];

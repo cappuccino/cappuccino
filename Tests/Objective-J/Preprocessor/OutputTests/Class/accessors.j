@@ -1,10 +1,10 @@
 
-@implementation Class
+@implementation TestClass
 {
 }
 @end
 
-@implementation Class (Accessors)
+@implementation TestClass (Accessors)
 {
     Type ivar @accessors;
 }
