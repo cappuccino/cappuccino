@@ -487,8 +487,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         _sortDescriptors = [];
 
     [self _initSubclass];
-
-    [self _startObservingFirstResponderForWindow:[self window]];
 }
 
 - (void)_initSubclass
