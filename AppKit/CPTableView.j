@@ -5003,7 +5003,12 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         [self getColumn:@ref(column) row:@ref(row) forView:aView];
 
         if (![self isRowSelected:row])
-        return self;
+        {
+            if (_selectionHighlightStyle == CPTableViewSelectionHighlightStyleNone)
+                return aView;
+
+            return self;
+        }
     }
     else if (!_isViewBased && [aView isKindOfClass:[CPControl class]] && ![aView isKindOfClass:[CPTextField class]])
     {
@@ -5115,7 +5120,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     // This makes sure the theming effects of a focused table remain in effect even as cells are being edited in it.
     [self _notifyViewDidBecomeFirstResponder];
 
-    if (_editingRow !== CPNotFound && [responder isKindOfClass:[CPTextField class]] && !_isViewBased)
+    // This is for cell-based tables only. In view-based mode, we do not change the textfield apprearence during an edit.
+    if (!_isViewBased && _editingRow !== CPNotFound && [responder isKindOfClass:[CPTextField class]] && [responder isEditable])
     {
         [responder setBezeled:YES];
         [self _registerForEndEditingNote:responder];
