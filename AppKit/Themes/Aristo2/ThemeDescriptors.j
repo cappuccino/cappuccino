@@ -1482,6 +1482,8 @@ var themedButtonValues = nil,
 
         [@"font",                       [CPFont systemFontOfSize:CPFontCurrentSystemSize],  CPThemeStateNormal],
         [@"text-color",                 regularDisabledTextColor,                           CPThemeStateDisabled],
+        [@"text-color",         [CPColor colorWithCalibratedWhite:51.0 / 255.0 alpha:1.0],  CPThemeStateTableDataView],
+        [@"text-color",         [CPColor whiteColor],                                       [CPThemeStateTableDataView, CPThemeStateSelectedDataView, CPThemeStateFirstResponder, CPThemeStateKeyWindow]],
         [@"image-offset",               CPCheckBoxImageOffset],
 
         // CPThemeStateControlSizeRegular
