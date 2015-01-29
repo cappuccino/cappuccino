@@ -28,6 +28,7 @@
 @import "CPImageView.j"
 @import "CPResponder.j"
 @import "CPView.j"
+@import "CPViewController.j"
 @import "_CPPopoverWindow.j"
 
 @protocol CPPopoverDelegate <CPObject>

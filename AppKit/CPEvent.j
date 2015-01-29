@@ -32,6 +32,7 @@
 
 @class CPTextField
 @class CPWindow
+@class CPGraphicsContext
 
 @global CPApp
 

@@ -80,7 +80,7 @@ aDOMElement.style.bottom = ROUND(____p.y) + "px";
     aDOMElement.width = MAX(0.0, ROUND(aWidth));\
     aDOMElement.height = MAX(0.0, ROUND(aHeight));
 
-#define CPDomDisplayServerSetStyleBackgroundSize(aDOMElement, aWidth, aHeight)\
+#define CPDOMDisplayServerSetStyleBackgroundSize(aDOMElement, aWidth, aHeight)\
     aDOMElement.style.backgroundSize = aWidth + ' ' + aHeight;
 
 #define CPDOMDisplayServerAppendChild(aParentElement, aChildElement) aParentElement.appendChild(aChildElement)
@@ -129,7 +129,7 @@ aDOMElement.style.bottom = ROUND(____p.y) + "px";
     CPDOMDisplayServerInstructions[__index + 2] = aWidth;\
     CPDOMDisplayServerInstructions[__index + 3] = aHeight;
 
-#define CPDomDisplayServerSetStyleBackgroundSize(aDOMElement, aWidth, aHeight)\
+#define CPDOMDisplayServerSetStyleBackgroundSize(aDOMElement, aWidth, aHeight)\
     aDOMElement.style.backgroundSize = aWidth + ' ' + aHeight;
 
 #define CPDOMDisplayServerAppendChild(aParentElement, aChildElement)\

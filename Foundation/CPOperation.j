@@ -117,10 +117,11 @@ CPOperationQueuePriorityVeryHigh    = 8;
         [self willChangeValueForKey:@"isExecuting"];
         _executing = NO;
         [self didChangeValueForKey:@"isExecuting"];
-        [self willChangeValueForKey:@"isFinished"];
-        _finished = YES;
-        [self didChangeValueForKey:@"isFinished"];
     }
+
+    [self willChangeValueForKey:@"isFinished"];
+    _finished = YES;
+    [self didChangeValueForKey:@"isFinished"];
 }
 
 /*!

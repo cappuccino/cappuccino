@@ -824,6 +824,14 @@ var themedButtonValues = nil,
                 height: 4.0
             }),
 
+        bezelFocusedColor = PatternColor(
+            "textfield-bezel-square-focused{position}.png",
+            {
+                positions: "#",
+                width: 9.0,
+                height: 9.0
+            }),
+
         bezelColorDatePickerTextField = PatternColor(
             [
                 [@"datepicker-date-segment-0.png", 4.0, 18.0],
@@ -835,14 +843,17 @@ var themedButtonValues = nil,
         [
             [@"bezel-color",        bezelColor["@"],                                            CPThemeStateBezeled],
             [@"bezel-color",        bezelColor["disabled"],                                     [CPThemeStateBezeled, CPThemeStateDisabled]],
+            [@"bezel-color",        bezelFocusedColor,                                          [CPThemeStateBezeled, CPThemeStateEditing]],
 
             [@"font",               [CPFont systemFontOfSize:CPFontCurrentSystemSize]],
             [@"text-color",         [CPColor colorWithWhite:0.2 alpha:0.5],                     CPThemeStateDisabled],
 
             [@"content-inset",      CGInsetMake(6.0, 0.0, 0.0, 3.0),                            CPThemeStateNormal],
             [@"content-inset",      CGInsetMake(3.0, 0.0, 0.0, 3.0),                            CPThemeStateBezeled],
+            [@"content-inset",      CGInsetMake(6.0, 0.0, 0.0, 6.0),                            [CPThemeStateNormal, CPThemeStateBezeled, CPThemeStateEditing]],
 
             [@"bezel-inset",        CGInsetMake(3.0, 0.0, 3.0, 0.0),                            CPThemeStateBezeled],
+            [@"bezel-inset",        CGInsetMake(0.0, 0, 0.0, -3.0),                             [CPThemeStateNormal, CPThemeStateBezeled, CPThemeStateEditing]],
 
             [@"datepicker-textfield-bezel-color", [CPColor clearColor],                         CPThemeStateNormal],
             [@"datepicker-textfield-bezel-color", bezelColorDatePickerTextField,                CPThemeStateSelected],
@@ -859,6 +870,7 @@ var themedButtonValues = nil,
             [@"min-size-datepicker-textfield", CGSizeMake(6.0, 18.0)],
             [@"date-hour-margin",   7.0],
             [@"stepper-margin",     5.0],
+            [@"stepper-margin",     2.0,    CPThemeStateEditing],
 
             [@"min-size",                   CGSizeMake(0, 29.0)],
             [@"max-size",                   CGSizeMake(-1.0, 29.0)],
@@ -867,10 +879,12 @@ var themedButtonValues = nil,
             // CPThemeStateControlSizeSmall
             [@"content-inset",              CGInsetMake(5.0, 0.0, 0.0, 3.0),                    [CPThemeStateControlSizeSmall, CPThemeStateNormal]],
             [@"content-inset",              CGInsetMake(2.0, 0.0, 0.0, 3.0),                    [CPThemeStateControlSizeSmall, CPThemeStateBezeled]],
+            [@"content-inset",              CGInsetMake(5.0, 0.0, 0.0, 6.0),                    [CPThemeStateControlSizeSmall, CPThemeStateBezeled, CPThemeStateEditing]],
 
             [@"min-size-datepicker-textfield", CGSizeMake(6.0, 16.0),                           CPThemeStateControlSizeSmall],
             [@"date-hour-margin",           5.0,                                                CPThemeStateControlSizeSmall],
             [@"stepper-margin",             3.0,                                                CPThemeStateControlSizeSmall],
+            [@"stepper-margin",             0.0,                                                [CPThemeStateControlSizeSmall, CPThemeStateEditing]],
 
             [@"min-size",                   CGSizeMake(0, 26.0),                                CPThemeStateControlSizeSmall],
             [@"max-size",                   CGSizeMake(-1.0, 26.0),                             CPThemeStateControlSizeSmall],
@@ -879,10 +893,12 @@ var themedButtonValues = nil,
             // CPThemeStateControlSizeMini
             [@"content-inset",              CGInsetMake(3.0, 0.0, 0.0, 3.0),                    [CPThemeStateControlSizeMini, CPThemeStateNormal]],
             [@"content-inset",              CGInsetMake(1.0, 0.0, 0.0, 3.0),                    [CPThemeStateControlSizeMini, CPThemeStateBezeled]],
+            [@"content-inset",              CGInsetMake(4.0, 0.0, 0.0, 6.0),                    [CPThemeStateControlSizeMini, CPThemeStateBezeled, CPThemeStateEditing]],
 
             [@"min-size-datepicker-textfield", CGSizeMake(6.0, 12.0),                           CPThemeStateControlSizeMini],
             [@"date-hour-margin",           2.0,                                                CPThemeStateControlSizeMini],
             [@"stepper-margin",             2.0,                                                CPThemeStateControlSizeMini],
+            [@"stepper-margin",             -1.0,                                               [CPThemeStateControlSizeMini, CPThemeStateEditing]],
 
             [@"min-size",                   CGSizeMake(0, 22.0),                                CPThemeStateControlSizeMini],
             [@"max-size",                   CGSizeMake(-1.0, 22.0),                             CPThemeStateControlSizeMini],
@@ -2263,6 +2279,8 @@ var themedButtonValues = nil,
         sliceLastBottomBorderColor = [CPColor colorWithWhite:0.6 alpha:1.0],
         buttonAddImage = PatternImage(@"rule-editor-button-add-image.png", 20.0, 20.0),
         buttonRemoveImage = PatternImage(@"rule-editor-button-remove-image.png", 20.0, 20.0),
+        buttonAddHighlightedImage = PatternImage(@"rule-editor-button-add-highlighted-image.png", 20.0, 20.0),
+        buttonRemoveHighlightedImage = PatternImage(@"rule-editor-button-remove-highlighted-image.png", 20.0, 20.0),
         fontColor = [CPColor colorWithWhite:150 / 255 alpha:1],
 
         ruleEditorThemedValues =
@@ -2276,9 +2294,9 @@ var themedButtonValues = nil,
             [@"font",                           [CPFont systemFontOfSize:10.0]],
             [@"font-color",                     fontColor],
             [@"add-image",                      buttonAddImage,                         CPThemeStateNormal],
-            [@"add-image",                      buttonAddImage,                         CPThemeStateHighlighted],
+            [@"add-image",                      buttonAddHighlightedImage,              CPThemeStateHighlighted],
             [@"remove-image",                   buttonRemoveImage,                      CPThemeStateNormal],
-            [@"remove-image",                   buttonRemoveImage,                      CPThemeStateHighlighted],
+            [@"remove-image",                   buttonRemoveHighlightedImage,           CPThemeStateHighlighted],
             [@"vertical-alignment",             CPCenterVerticalTextAlignment],
         ];
 

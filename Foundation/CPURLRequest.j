@@ -35,12 +35,14 @@
 */
 @implementation CPURLRequest : CPObject
 {
-    CPURL       _URL;
+    CPURL           _URL                @accessors(property=URL);
 
     // FIXME: this should be CPData
-    CPString        _HTTPBody;
-    CPString        _HTTPMethod;
-    CPDictionary    _HTTPHeaderFields;
+    CPString        _HTTPBody           @accessors(property=HTTPBody);
+    CPString        _HTTPMethod         @accessors(property=HTTPMethod);
+    BOOL            _withCredentials    @accessors(property=withCredentials);
+
+    CPDictionary    _HTTPHeaderFields   @accessors(readonly, getter=allHTTPHeaderFields);
 }
 
 /*!
@@ -78,6 +80,7 @@
         _HTTPBody = @"";
         _HTTPMethod = @"GET";
         _HTTPHeaderFields = @{};
+        _withCredentials = NO;
 
         [self setValue:"Thu, 01 Jan 1970 00:00:00 GMT" forHTTPHeaderField:"If-Modified-Since"];
         [self setValue:"no-cache" forHTTPHeaderField:"Cache-Control"];
@@ -88,14 +91,6 @@
 }
 
 /*!
-    Returns the request URL
-*/
-- (CPURL)URL
-{
-    return _URL;
-}
-
-/*!
     Sets the URL for this request.
     @param aURL the new URL
 */
@@ -103,48 +98,6 @@
 {
     // Lenient and accept strings.
     _URL = new CFURL(aURL);
-}
-
-/*!
-    Sets the HTTP body for this request
-    @param anHTTPBody the new HTTP body
-*/
-- (void)setHTTPBody:(CPString)anHTTPBody
-{
-    _HTTPBody = anHTTPBody;
-}
-
-/*!
-    Returns the request's http body.
-*/
-- (CPString)HTTPBody
-{
-    return _HTTPBody;
-}
-
-/*!
-    Sets the request's http method.
-    @param anHTPPMethod the new http method
-*/
-- (void)setHTTPMethod:(CPString)anHTTPMethod
-{
-    _HTTPMethod = anHTTPMethod;
-}
-
-/*!
-    Returns the request's http method
-*/
-- (CPString)HTTPMethod
-{
-    return _HTTPMethod;
-}
-
-/*!
-    Returns a dictionary of the http header fields
-*/
-- (CPDictionary)allHTTPHeaderFields
-{
-    return _HTTPHeaderFields;
 }
 
 /*!
@@ -164,6 +117,26 @@
 - (void)setValue:(CPString)aValue forHTTPHeaderField:(CPString)aField
 {
     [_HTTPHeaderFields setObject:aValue forKey:aField];
+}
+
+@end
+
+/*
+    Implements the CPCopying Protocol for a CPURLRequest to provide deep copying for CPURLRequests
+*/
+@implementation CPURLRequest (CPCopying)
+{
+}
+
+- (id)copy
+{
+    var request = [[CPURLRequest alloc] initWithURL:[self URL]];
+    [request setHTTPBody:[self HTTPBody]];
+    [request setHTTPMethod:[self HTTPMethod]];
+    [request setWithCredentials:[self withCredentials]];
+    request._HTTPHeaderFields = [self allHTTPHeaderFields];
+
+    return request;
 }
 
 @end

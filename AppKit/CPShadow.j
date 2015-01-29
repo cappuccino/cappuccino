@@ -22,6 +22,9 @@
 
 @import <Foundation/CPObject.j>
 
+@import "CGGeometry.j"
+@import "CPColor.j"
+@import "CPGraphicsContext.j"
 
 /*!
     @deprecated
@@ -31,9 +34,9 @@
 */
 @implementation CPShadow : CPObject
 {
-    CGSize      _offset @accessors(property=shadowOffset);
+    CGSize      _offset     @accessors(property=shadowOffset);
     float       _blurRadius @accessors(property=shadowBlurRadius);
-    CPColor     _color @accessors(property=shadowColor);
+    CPColor     _color      @accessors(property=shadowColor);
 }
 
 /*!
