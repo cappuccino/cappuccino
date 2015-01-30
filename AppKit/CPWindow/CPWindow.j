@@ -907,18 +907,21 @@ CPTexturedBackgroundWindowMask
 
 - (void)_orderFront
 {
-    [[self contentView] _addObservers];
 
 #if PLATFORM(DOM)
     // -dw- if a sheet is clicked, the parent window should come up too
     if (_isSheet)
         [_parentView orderFront:self];
 
-    if (!_isVisible)
-        [self _setFrame:_frame display:YES animate:NO constrainWidth:YES constrainHeight:YES];
+    // Save the boolean since it will be updated in the method order:window:relativeTo:
+    var wasVisible = _isVisible;
 
     [_platformWindow orderFront:self];
     [_platformWindow order:CPWindowAbove window:self relativeTo:nil];
+
+    // setFrame is set after ordering the window as this method can send some notifications
+    if (!wasVisible)
+        [self _setFrame:_frame display:YES animate:NO constrainWidth:YES constrainHeight:YES];
 #endif
 
     if (!CPApp._keyWindow)
@@ -938,6 +941,23 @@ CPTexturedBackgroundWindowMask
 - (void)_parentDidOrderInChild
 {
 }
+
+/*
+    Called when the window is displayed in the DOM
+*/
+- (void)_windowWillBeAddedToTheDOM
+{
+    [[self contentView] _addObservers];
+}
+
+/*
+    Called when the window is removed in the DOM
+*/
+- (void)_windowWillBeRemovedFromTheDOM
+{
+    [[self contentView] _removeObservers];
+}
+
 
 /*
     Makes the receiver the last window in the screen ordering.
@@ -967,8 +987,6 @@ CPTexturedBackgroundWindowMask
 {
     if (!_isVisible)
         return;
-
-    [[self contentView] _removeObservers];
 
     if ([self isSheet])
     {

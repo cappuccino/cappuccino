@@ -625,7 +625,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 - (void)stopResizingTableColumn:(CPInteger)aColumnIndex at:(CGPoint)aPoint
 {
     var tableColumn = [[_tableView tableColumns] objectAtIndex:aColumnIndex];
-    [tableColumn _postDidResizeNotificationWithOldWidth:_columnOldWidth];
+    [_tableView _didResizeTableColumn:tableColumn oldWidth:_columnOldWidth];
     [tableColumn setDisableResizingPosting:NO];
     [_tableView setDisableAutomaticResizing:NO];
 

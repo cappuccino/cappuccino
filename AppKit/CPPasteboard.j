@@ -28,6 +28,8 @@
 
 @class CPWebScriptObject
 
+@typedef DataTransfer
+
 CPGeneralPboard         = @"CPGeneralPboard";
 CPFontPboard            = @"CPFontPboard";
 CPRulerPboard           = @"CPRulerPboard";

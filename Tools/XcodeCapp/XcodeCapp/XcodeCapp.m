@@ -1565,9 +1565,17 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
 
 - (IBAction)openErrorsPanel:(id)aSender
 {
-    [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
     [self.errorsPanel setFloatingPanel:[[NSUserDefaults standardUserDefaults] boolForKey:kDefaultXCCPanelStyleUtility]];
-    [self.errorsPanel makeKeyAndOrderFront:nil];
+    
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:kDefaultXCCPanelActiveAppWhenOpening])
+    {
+        [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
+        [self.errorsPanel makeKeyAndOrderFront:nil];
+    }
+    else
+    {
+        [self.errorsPanel orderFrontRegardless];
+    }
 }
 
 - (IBAction)openErrorInEditor:(id)sender

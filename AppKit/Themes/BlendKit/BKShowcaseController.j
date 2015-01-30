@@ -137,22 +137,27 @@ var BKLearnMoreToolbarItemIdentifier                = @"BKLearnMoreToolbarItemId
 
     [theWindow setFullPlatformWindow:YES];
     [theWindow makeKeyAndOrderFront:self];
+
+    [_themesCollectionView addObserver:self forKeyPath:@"selectionIndexes" options:CPKeyValueObservingOptionNew | CPKeyValueObservingOptionInitial context:nil];
 }
 
-- (void)collectionViewDidChangeSelection:(CPCollectionView)aCollectionView
+- (void)observeValueForKeyPath:(CPString)keyPath ofObject:(id)object change:(CPDictionary)change context:(void)context
 {
-    var themeDescriptorClass = _themeDescriptorClasses[[[aCollectionView selectionIndexes] firstIndex]],
-        itemSize = [themeDescriptorClass itemSize];
+    if (object == _themesCollectionView && keyPath == @"selectionIndexes")
+    {
+        var themeDescriptorClass = _themeDescriptorClasses[[[object selectionIndexes] firstIndex]],
+            itemSize = [themeDescriptorClass itemSize];
 
-    // Make room for label and apply a minimum size.
-    itemSize.width = MAX(100.0, itemSize.width + 20.0);
-    itemSize.height = MAX(100.0, itemSize.height + 30.0);
+        // Make room for label and apply a minimum size.
+        itemSize.width = MAX(100.0, itemSize.width + 20.0);
+        itemSize.height = MAX(100.0, itemSize.height + 30.0);
 
-    [_themedObjectsCollectionView setMinItemSize:itemSize];
-    [_themedObjectsCollectionView setMaxItemSize:itemSize];
+        [_themedObjectsCollectionView setMinItemSize:itemSize];
+        [_themedObjectsCollectionView setMaxItemSize:itemSize];
 
-    [_themedObjectsCollectionView setContent:[themeDescriptorClass themedShowcaseObjectTemplates]];
-    [BKShowcaseCell setBackgroundColor:[themeDescriptorClass showcaseBackgroundColor]];
+        [_themedObjectsCollectionView setContent:[themeDescriptorClass themedShowcaseObjectTemplates]];
+        [BKShowcaseCell setBackgroundColor:[themeDescriptorClass showcaseBackgroundColor]];
+    }
 }
 
 - (BOOL)hasLearnMoreURL

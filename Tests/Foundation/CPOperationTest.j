@@ -180,4 +180,21 @@
     [self assert:@"isCancelled" equals:[[obs changedKeyPaths] objectAtIndex:9]];
 }
 
+- (void)testCancelledOperationIsFinished
+{
+    var results = @[],
+        funcOp = [CPFunctionOperation functionOperationWithFunction:function() {[results addObject:"funcOp"];}];
+
+    [funcOp cancel];
+    [self assertTrue:[funcOp isCancelled]];
+    [self assertFalse:[funcOp isFinished]];
+
+    [funcOp start];
+
+    [self assertTrue:[funcOp isCancelled]];
+    [self assertTrue:[funcOp isFinished]];
+
+    [self assertTrue:([results count] == 0)];
+}
+
 @end

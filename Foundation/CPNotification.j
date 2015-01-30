@@ -22,6 +22,7 @@
 
 @import "CPException.j"
 @import "CPObject.j"
+@import "CPDictionary.j"
 
 /*!
     @class CPNotification

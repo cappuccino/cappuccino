@@ -234,10 +234,11 @@
     {
         var button = buttonsNotHidden[count];
 
-        [button removeFromSuperview];
-
         if ([button isHidden])
+        {
+            [button removeFromSuperview];
             [buttonsNotHidden removeObject:button];
+        }
     }
 
     var currentButtonOffset = _resizeControlIsLeftAligned ? CGRectGetMaxX([self bounds]) + 1 : -1,
