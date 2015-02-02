@@ -51,6 +51,8 @@
 
 - (void)_setTargetValue:(id)aTargetValue withKeyPath:(CPString)aKeyPath setter:(SEL)aSelector
 {
+    CPLog.debug("Set value for animated keypath " + aKeyPath);
+
     var animation = [_target animationForKey:aKeyPath],
         context = [CPAnimationContext currentContext];
 
@@ -76,6 +78,7 @@ var PROPERTY_DESCRIPTORS = {},
 + (void)getCSSProperties:(CPArray)properties valueFunctions:(CPArray)valueFunctions forKeyPath:(CPString)aKeyPath
 {
     var descriptors = PROPERTY_DESCRIPTORS[aKeyPath];
+    
     if (descriptors)
     {
         [properties addObjectsFromArray:descriptors[0]];

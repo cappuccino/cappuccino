@@ -87,7 +87,7 @@ var _CPAnimationContextStack   = nil,
     if (!_animationFlushingObserver)
     {
         CPLog.debug("create new observer");
-        _animationFlushingObserver = CFRunLoopObserverCreate(2, true, 0,_animationFlushingObserverCallback,0);
+        _animationFlushingObserver = CFRunLoopObserverCreate(2, true, 0, _animationFlushingObserverCallback,0);
         CFRunLoopAddObserver([CPRunLoop mainRunLoop], _animationFlushingObserver);
     }
 }
@@ -130,9 +130,10 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
         return;
 
     var animByKeyPath = _animationsByObject.get(anObject);
+    
     if (!animByKeyPath)
     {
-        var newAnimByKeyPath = [CPDictionary dictionaryWithObject:resolvedAction forKey:aKeyPath];
+        var newAnimByKeyPath = @{aKeyPath:resolvedAction};
         _animationsByObject.put(anObject, newAnimByKeyPath);
     }
     else
@@ -273,18 +274,22 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
             timingFunctions = anAction.timingfunctions,
             properties = [],
             valueFunctions = [],
-            createNewAnimation,
-            cssAnimation;
+            cssAnimation = nil,
+            reuseAnimation = NO;
 
-        var animIdx = [cssAnimations indexOfObjectPassingTest:function(anim, idx, stop)
+        [cssAnimations enumerateObjectsUsingBlock:function(anim, idx, stop)
         {
-            return (anim.identifier == identifier);
+            if (anim.identifier == identifier)
+            {
+                cssAnimation = anim;
+                reuseAnimation = YES;
+                stop(YES);
+            }
         }];
 
-        createNewAnimation = (animIdx === CPNotFound);
-
-        cssAnimation = createNewAnimation ? new CSSAnimation(aTargetView._DOMElement, identifier) : cssAnimations[animIdx];
-
+        if (reuseAnimation == NO)
+            cssAnimation = new CSSAnimation(aTargetView._DOMElement, identifier);
+        
         [[aTargetView class] getCSSProperties:properties valueFunctions:valueFunctions forKeyPath:keyPath];
 
         [properties enumerateObjectsUsingBlock:function(aProperty, anIndex, stop)
@@ -297,13 +302,14 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
         if (needsFrameTimer)
             cssAnimation.setRemoveAnimationPropertyOnCompletion(false);
 
-        if (createNewAnimation)
+        if (!reuseAnimation)
             cssAnimations.push(cssAnimation);
     }
 
     if (needsFrameTimer)
     {
         var timer = [self addFrameTimerWithIdentifier:[rootView UID] forView:aTargetView keyPath:keyPath];
+
         if (timer)
             timers.push(timer);
     }
@@ -336,7 +342,7 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
                 };
             }
 
-            [self getAnimations:cssAnimations getTimers:timers forView:aSubview usingAction:action rootView:rootView  cssAnimate:!customLayout];
+            [self getAnimations:cssAnimations getTimers:timers forView:aSubview usingAction:action rootView:rootView cssAnimate:!customLayout];
         }];
     }
 }
@@ -411,7 +417,7 @@ CPLog.debug(_cmd + anIdentifier);
 
 @implementation FrameUpdater : CPObject
 {
-    CPString   _identifier @accessors(getter=identifier);
+    CPString  _identifier @accessors(getter=identifier);
     CPArray   _layoutCallbacks;
     CPArray   _targets;
     CPTimer   _timer;
