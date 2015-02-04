@@ -176,28 +176,6 @@
     [self assert:array equals:[arrayClass array]];
 }
 
-- (void)test_removeAllObjects
-{
-    var arrayClass = [[self class] arrayClass],
-        array = [arrayClass array];
-
-    [array removeAllObjects];
-    [self assert:0 same:[array count]];
-    [self assert:[arrayClass array] equals:array];
-
-    array = [arrayClass arrayWithObjects:0, 1, 2, 3, 4, 5, 6];
-
-    [array removeAllObjects];
-    [self assert:0 same:[array count]];
-    [self assert:[arrayClass array] equals:array];
-
-    array = [arrayClass arrayWithObjects:0, 1, 2, 3, 4, 5, 6, [arrayClass arrayWithObjects:0, 1, 2]];
-
-    [array removeAllObjects];
-    [self assert:0 same:[array count]];
-    [self assert:[arrayClass array] equals:array];
-}
-
 - (void)test_setArray_
 {
     var arrayClass = [[self class] arrayClass],
