@@ -112,6 +112,9 @@ CPViewMaxYMargin    = 32;
 CPViewBoundsDidChangeNotification   = @"CPViewBoundsDidChangeNotification";
 CPViewFrameDidChangeNotification    = @"CPViewFrameDidChangeNotification";
 
+_CPParentViewFrameDidChangeNotification = @"_CPParentViewFrameDidChangeNotification";
+_CPParentViewBoundsDidChangeNotification = @"_CPParentViewBoundsDidChangeNotification";
+
 var CachedNotificationCenter    = nil,
     CachedThemeAttributes       = nil;
 
@@ -961,6 +964,8 @@ var CPViewFlags                     = { },
 
     if (_isSuperviewAClipView)
         [[self superview] viewFrameChanged:[[CPNotification alloc] initWithName:CPViewFrameDidChangeNotification object:self userInfo:nil]];
+
+    [self _notifyViewParentFrameChanged];
 }
 
 /*!
@@ -1021,7 +1026,10 @@ var CPViewFlags                     = { },
     origin.y = aPoint.y;
 
     if (_postsFrameChangedNotifications && !_inhibitFrameAndBoundsChangedNotifications)
+    {
         [CachedNotificationCenter postNotificationName:CPViewFrameDidChangeNotification object:self];
+        [self _notifyViewParentFrameChanged];
+    }
 
     if (_isSuperviewAClipView && !_inhibitFrameAndBoundsChangedNotifications)
         [[self superview] viewFrameChanged:[[CPNotification alloc] initWithName:CPViewFrameDidChangeNotification object:self userInfo:nil]];
@@ -1184,10 +1192,30 @@ var CPViewFlags                     = { },
 #endif
 
     if (_postsFrameChangedNotifications && !_inhibitFrameAndBoundsChangedNotifications)
+    {
         [CachedNotificationCenter postNotificationName:CPViewFrameDidChangeNotification object:self];
+        [self _notifyViewParentFrameChanged];
+    }
 
     if (_isSuperviewAClipView && !_inhibitFrameAndBoundsChangedNotifications)
         [[self superview] viewFrameChanged:[[CPNotification alloc] initWithName:CPViewFrameDidChangeNotification object:self userInfo:nil]];
+}
+
+/*!
+    @ignore
+    This method notify every subviews of the receiver that the frame has changed
+*/
+- (void)_notifyViewParentFrameChanged
+{
+    var count = [_subviews count];
+
+    while (count--)
+    {
+        var subview = _subviews[count];
+
+        [CachedNotificationCenter postNotificationName:_CPParentViewFrameDidChangeNotification object:subview];
+        [subview _notifyViewParentFrameChanged];
+    }
 }
 
 /*!
@@ -1225,6 +1253,8 @@ var CPViewFlags                     = { },
 
     if (_isSuperviewAClipView)
         [[self superview] viewBoundsChanged:[[CPNotification alloc] initWithName:CPViewBoundsDidChangeNotification object:self userInfo:nil]];
+
+    [self _notifyViewParentBoundsChanged];
 }
 
 /*!
@@ -1286,7 +1316,10 @@ var CPViewFlags                     = { },
 #endif
 
     if (_postsBoundsChangedNotifications && !_inhibitFrameAndBoundsChangedNotifications)
+    {
         [CachedNotificationCenter postNotificationName:CPViewBoundsDidChangeNotification object:self];
+        [self _notifyViewParentBoundsChanged];
+    }
 
     if (_isSuperviewAClipView && !_inhibitFrameAndBoundsChangedNotifications)
         [[self superview] viewBoundsChanged:[[CPNotification alloc] initWithName:CPViewBoundsDidChangeNotification object:self userInfo:nil]];
@@ -1327,10 +1360,30 @@ var CPViewFlags                     = { },
     }
 
     if (_postsBoundsChangedNotifications && !_inhibitFrameAndBoundsChangedNotifications)
+    {
         [CachedNotificationCenter postNotificationName:CPViewBoundsDidChangeNotification object:self];
+        [self _notifyViewParentBoundsChanged];
+    }
 
     if (_isSuperviewAClipView && !_inhibitFrameAndBoundsChangedNotifications)
         [[self superview] viewBoundsChanged:[[CPNotification alloc] initWithName:CPViewBoundsDidChangeNotification object:self userInfo:nil]];
+}
+
+/*!
+    @ignore
+    This method notify every subviews of the receiver that the bounds has changed
+*/
+- (void)_notifyViewParentBoundsChanged
+{
+    var count = [_subviews count];
+
+    while (count--)
+    {
+        var subview = _subviews[count];
+
+        [CachedNotificationCenter postNotificationName:_CPParentViewBoundsDidChangeNotification object:subview];
+        [subview _notifyViewParentBoundsChanged];
+    }
 }
 
 
