@@ -48,6 +48,11 @@ parser.option("-F", "--framework", "framework", "frameworks")
     .push()
     .help("Additional framework to copy/symlink (default: Objective-J, Foundation, AppKit)");
 
+parser.option("-T", "--theme", "theme", "themes")
+    .def([])
+    .push()
+    .help("Additional Theme to copy/symlink into Resource (default: nothing)");
+
 parser.option("--no-frameworks", "noFrameworks")
     .set(true)
     .help("Don't copy any default frameworks (can be overridden with -F)");
@@ -145,13 +150,17 @@ function gen(/*va_args*/)
 
     var destinationProject = destination,
         configuration = options.noconfig ? [Configuration defaultConfiguration] : [Configuration userConfiguration],
-        frameworks = options.frameworks;
+        frameworks = options.frameworks,
+        themes = options.themes;
 
     if (!options.noFrameworks)
         frameworks.push("Objective-J", "Foundation", "AppKit");
 
     if (options.justFrameworks)
+    {
         createFrameworksInFile(frameworks, destinationProject, options.symlink, options.useCappBuild, options.force);
+        createThemesInFile(themes, destinationProject, options.symlink, options.force);
+    }
 
     else if (!FILE.exists(destinationProject))
     {
@@ -204,6 +213,11 @@ function gen(/*va_args*/)
             frameworkDestination = FILE.join(frameworkDestination, config.FrameworksPath);
 
         createFrameworksInFile(frameworks, frameworkDestination, options.symlink, options.useCappBuild);
+
+        var themeDestination = destinationProject;
+
+        if (themes.length)
+            createThemesInFile(themes, themeDestination, options.symlink);
     }
 
     else
@@ -299,6 +313,67 @@ function createFrameworksInFile(/*Array*/ frameworks, /*String*/ aFile, /*Boolea
 }
 
 function installFramework(source, dest, force, symlink)
+{
+    if (dest.exists())
+    {
+        if (force)
+            dest.rmtree();
+
+        else
+        {
+            warn(logPath(dest) + " already exists. Use --force to overwrite.");
+            return;
+        }
+    }
+
+    if (source.exists())
+    {
+        stream.print((symlink ? "Symlinking " : "Copying ") + logPath(source) + " ==> " + logPath(dest));
+
+        if (symlink)
+            FILE.symlink(source, dest);
+        else
+            FILE.copyTree(source, dest);
+    }
+    else
+        warn("Cannot find: " + logPath(source));
+}
+
+function createThemesInFile(/*Array*/ themes, /*String*/ aFile, /*Boolean*/ symlink, /*Boolean*/ force)
+{
+    var destination = FILE.path(FILE.absolute(aFile));
+
+    if (!destination.isDirectory())
+        fail("Cannot create Themes. The directory does not exist: " + destination);
+
+    var destinationThemes = destination.join("Resources");
+
+    stream.print("Creating Themes in " + logPath(destinationThemes) + "...");
+
+    if (!(SYSTEM.env["CAPP_BUILD"]))
+        fail("$CAPP_BUILD must be defined to use the --theme or -T option.");
+
+    var themesBuild = FILE.join(SYSTEM.env["CAPP_BUILD"], "Release"),
+        sources = [];
+
+    themes.forEach(function(theme)
+    {
+        var themeFolder = theme + ".blend",
+            path = FILE.join(themesBuild, themeFolder);
+
+        if (!FILE.isDirectory(path))
+            fail("Cannot find theme " + themeFolder + " in " + themesBuild);
+
+        sources.push([FILE.path(path), themeFolder])
+    });
+
+    sources.forEach(function(source)
+    {
+        installTheme(source[0], FILE.path(destinationThemes).join(source[1]), force, symlink);
+    });
+}
+
+function installTheme(source, dest, force, symlink)
 {
     if (dest.exists())
     {
