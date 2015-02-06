@@ -251,7 +251,13 @@ function descriptionWithoutEntity(aString)
 {
     var set1 = [CPIndexSet indexSetWithIndex:7],
         set2 = [CPIndexSet indexSetWithIndex:7],
-        set3 = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(7, 2)];
+        set3 = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(7, 2)],
+        differentSet = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(10, 11)],
+        equalSet = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(10, 10)];
+
+    [self assertFalse:[_set isEqualToIndexSet:differentSet]];
+    [self assertTrue:[_set isEqualToIndexSet:equalSet]];
+    [self assertTrue:[_set isEqualToIndexSet:_set]];
 
     [self assertFalse:[set1 isEqualToIndexSet:nil]];
     [self assertTrue:[set1 isEqualToIndexSet:set2]];
@@ -263,7 +269,14 @@ function descriptionWithoutEntity(aString)
 {
     var set1 = [CPIndexSet indexSetWithIndex:7],
         set2 = [CPIndexSet indexSetWithIndex:7],
-        set3 = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(7, 2)];
+        set3 = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(7, 2)],
+        differentSet = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(10, 11)],
+        equalSet = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(10, 10)];
+
+    [self assertFalse:[_set isEqual:nil]];
+    [self assertFalse:[_set isEqual:differentSet]];
+    [self assertTrue:[_set isEqual:equalSet]];
+    [self assertTrue:[_set isEqual:_set]];
 
     [self assertFalse:[set1 isEqual:nil]];
     [self assertFalse:[set1 isEqual:7]];
@@ -396,27 +409,6 @@ function descriptionWithoutEntity(aString)
     [_set shiftIndexesStartingAtIndex:0 by:-1];
     [self assert:[_set lastIndex] equals:CPNotFound];
     [self assert:[_set count] equals:0];
-}
-
-- (void)testIsEqual
-{
-    var differentSet = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(10, 11)],
-        equalSet = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(10, 10)];
-
-    [self assertFalse:[_set isEqual:nil]];
-    [self assertFalse:[_set isEqual:differentSet]];
-    [self assertTrue:[_set isEqual:equalSet]];
-    [self assertTrue:[_set isEqual:_set]];
-}
-
-- (void)testIsEqualToIndexSet
-{
-    var differentSet = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(10, 11)],
-        equalSet = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(10, 10)];
-
-    [self assertFalse:[_set isEqualToIndexSet:differentSet]];
-    [self assertTrue:[_set isEqualToIndexSet:equalSet]];
-    [self assertTrue:[_set isEqualToIndexSet:_set]];
 }
 
 - (void)testEnumerateIndexesUsingBlock_

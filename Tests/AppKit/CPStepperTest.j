@@ -32,14 +32,14 @@
     [self assert:1 equals:[stepper doubleValue]];
 }
 
-- (void)testPerformIncreaseWithIncrement
+- (void)testPerformClickUpIncreaseWithIncrement
 {
     [stepper setIncrement:10];
     [stepper performClickUp:nil];
     [self assert:10 equals:[stepper doubleValue]];
 }
 
-- (void)testPerformIncreaseWithIncrement
+- (void)testPerformClickDownIncreaseWithIncrement
 {
     [stepper setIncrement:10];
     [stepper performClickDown:nil];
