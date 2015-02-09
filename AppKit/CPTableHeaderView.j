@@ -21,10 +21,11 @@
  */
 
 @import "CPTableColumn.j"
-@import "CPTableView.j"
 @import "CPView.j"
 @import "CPCursor.j"
 @import "_CPImageAndTextView.j"
+
+@class CPTableView
 
 @global CPApp
 
