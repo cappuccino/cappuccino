@@ -1,5 +1,7 @@
 var CPMenuValidatedUserInterfaceItemTestValidatedItems = [];
 
+@class MenuTarget
+
 @implementation CPMenuValidatedUserInterfaceItemTest : OJTestCase
 {
     CPMenu                          _menu @accessors(property=menu);

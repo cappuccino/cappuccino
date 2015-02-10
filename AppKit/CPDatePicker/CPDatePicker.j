@@ -75,6 +75,7 @@ CPEraDatePickerElementFlag              = 0x0100;
     CPInteger       _datePickerStyle    @accessors(property=datePickerStyle);
     CPInteger       _timeInterval       @accessors(property=timeInterval);
 
+    BOOL                    _invokedByUserEvent;
     _CPDatePickerTextField  _datePickerTextfield;
     _CPDatePickerCalendar   _datePickerCalendar;
     unsigned                _implementedCDatePickerDelegateMethods;
@@ -312,6 +313,7 @@ CPEraDatePickerElementFlag              = 0x0100;
     if (aDateValue == nil)
         return;
 
+    _invokedByUserEvent = NO;
     [self _setDateValue:aDateValue timeInterval:_timeInterval];
 }
 
@@ -359,7 +361,8 @@ CPEraDatePickerElementFlag              = 0x0100;
     _timeInterval = (_datePickerMode == CPSingleDateMode)? 0 : aTimeInterval;
     [self didChangeValueForKey:@"timeInterval"];
 
-    [self sendAction:[self action] to:[self target]];
+    if (_invokedByUserEvent)
+        [self sendAction:[self action] to:[self target]];
 
     if (_datePickerStyle == CPTextFieldAndStepperDatePickerStyle || _datePickerStyle == CPTextFieldDatePickerStyle)
         [_datePickerTextfield setDateValue:_dateValue];

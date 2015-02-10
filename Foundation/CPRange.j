@@ -25,6 +25,8 @@
     @{
 */
 
+@typedef CPRange
+
 /*!
     Makes a CPRange.
     @param location the location for new range

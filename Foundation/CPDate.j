@@ -74,24 +74,36 @@ var CPDateReferenceDate = new Date(Date.UTC(2001, 0, 1, 0, 0, 0, 0));
 
 - (id)initWithTimeIntervalSinceNow:(CPTimeInterval)seconds
 {
+    if (!_isNumberType(seconds))
+        CPLog.warn(@"The parameter of the method initWithTimeIntervalSinceNow: should be an integer or a float");
+
     self = new Date((new Date()).getTime() + seconds * 1000);
     return self;
 }
 
 - (id)initWithTimeIntervalSince1970:(CPTimeInterval)seconds
 {
+    if (!_isNumberType(seconds))
+        CPLog.warn(@"The parameter of the method initWithTimeIntervalSince1970: should be an integer or a float");
+
     self = new Date(seconds * 1000);
     return self;
 }
 
 - (id)initWithTimeIntervalSinceReferenceDate:(CPTimeInterval)seconds
 {
+    if (!_isNumberType(seconds))
+        CPLog.warn(@"The parameter of the method initWithTimeIntervalSinceReferenceDate: should be an integer or a float");
+
     self = [self initWithTimeInterval:seconds sinceDate:CPDateReferenceDate];
     return self;
 }
 
 - (id)initWithTimeInterval:(CPTimeInterval)seconds sinceDate:(CPDate)refDate
 {
+    if (!_isNumberType(seconds))
+        CPLog.warn(@"The parameter of the method initWithTimeInterval:sinceDate: should be an integer or a float");
+
     self = new Date(refDate.getTime() + seconds * 1000);
     return self;
 }
@@ -275,3 +287,11 @@ Date.parseISO8601 = function (date)
 };
 
 Date.prototype.isa = CPDate;
+
+function _isNumberType(value)
+{
+    if (typeof value === 'number')
+        return YES;
+    else
+        return NO;
+}

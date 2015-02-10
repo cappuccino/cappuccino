@@ -26,6 +26,12 @@ CGGeometry is not a part of Foundation. The reason _CGGeometry.j exists, and is 
 
 */
 
+@typedef CGPoint
+@typedef CGSize
+@typedef CGRect
+@typedef CGInset
+
+
 function CGPointMake(x, y)
 {
     return { x:x, y:y };

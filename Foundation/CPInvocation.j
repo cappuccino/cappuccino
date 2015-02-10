@@ -21,6 +21,7 @@
  */
 
 @import "CPObject.j"
+@import "CPArray.j"
 
 /*!
     @class CPInvocation

@@ -1,5 +1,8 @@
 var COUNTER;
 
+@class TestObject
+@class ImplementedTestObject
+
 @implementation CPKVCArrayTest : OJTestCase
 {
     TestObject              _object @accessors(property=object);

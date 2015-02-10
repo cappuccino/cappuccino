@@ -7,6 +7,7 @@
  */
 
 @import <Foundation/CPObject.j>
+@import "../../CPTrace.j"
 
 CPLogRegister(CPLogConsole);
 
@@ -20,6 +21,16 @@ CPLogRegister(CPLogConsole);
 {
     // This is called when the application is done loading.
     iconImage = [[CPImage alloc] initWithContentsOfFile:"http://cappuccino-project.org/img/favicon.ico" size:CGSizeMake(16,16)];
+
+    var averager = moving_averager(50);
+
+    CPTrace("CPTableView", "load", function(receiver, selector, args, duration)
+    {
+        if (duration)
+            console.log(receiver + " " + selector + " in " + averager(duration));
+    });
+
+    CPTrace("CPTableHeaderView", "_startDraggingTableColumn:at:");
 }
 
 - (void)awakeFromCib

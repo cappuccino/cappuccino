@@ -1,6 +1,9 @@
 @import <Foundation/CPKeyValueCoding.j>
 @import <Foundation/CPKeyValueObserving.j>
 
+@class CarTester
+@class ToManyTester
+
 @implementation CPKVOTest : OJTestCase
 {
     BOOL        _sawInitialObservation;
@@ -29,7 +32,7 @@
 {
     bob = [[PersonTester alloc] init];
 
-    [bob addObserver:self forKeyPath:@"name" options:nil context:@"testAddObserver"];
+    [bob addObserver:self forKeyPath:@"name" options:CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld context:@"testAddObserver"];
 
     [bob setValue:@"bob" forKey:@"name"];
 
@@ -42,7 +45,7 @@
 {
     bob = [[PersonTester alloc] init];
 
-    [bob addObserver:self forKeyPath:@"name" options:nil context:@"testUnobservedKey"];
+    [bob addObserver:self forKeyPath:@"name" options:0 context:@"testUnobservedKey"];
 
     [bob setValue:@"555" forKey:@"phoneNumber"];
 
@@ -54,8 +57,8 @@
 {
     bob = [[PersonTester alloc] init];
 
-    [bob addObserver:self forKeyPath:@"name" options:nil context:@"testAddTwoObservers"];
-    [bob addObserver:[CPObject new] forKeyPath:@"name" options:nil context:@"testAddTwoObservers"];
+    [bob addObserver:self forKeyPath:@"name" options:CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld context:@"testAddTwoObservers"];
+    [bob addObserver:[CPObject new] forKeyPath:@"name" options:CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld context:@"testAddTwoObservers"];
 
     [bob setValue:@"bob" forKey:@"name"];
 
@@ -68,7 +71,7 @@
 {
     bob = [[PersonTester alloc] init];
 
-    [bob addObserver:self forKeyPath:@"phoneNumber" options:nil context:@"testDirectIVarObservation"];
+    [bob addObserver:self forKeyPath:@"phoneNumber" options:CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld context:@"testDirectIVarObservation"];
 
     [bob setValue:@"555" forKey:@"phoneNumber"];
 
@@ -81,8 +84,8 @@
 {
     bob = [[PersonTester alloc] init];
 
-    [bob addObserver:self forKeyPath:@"name" options:nil context:@"testRemoveObserver"];
-    [bob addObserver:[CPString new] forKeyPath:@"name" options:nil context:@"testRemoveObserver"];
+    [bob addObserver:self forKeyPath:@"name" options:0 context:@"testRemoveObserver"];
+    [bob addObserver:[CPString new] forKeyPath:@"name" options:0 context:@"testRemoveObserver"];
 
     [bob removeObserver:self forKeyPath:@"name"];
 
@@ -96,8 +99,8 @@
     bob = [[PersonTester alloc] init];
     obj = [CPString new];
 
-    [bob addObserver:self forKeyPath:@"name" options:nil context:@"testRemoveOtherObserver"];
-    [bob addObserver:obj forKeyPath:@"name" options:nil context:@"testRemoveOtherObserver"];
+    [bob addObserver:self forKeyPath:@"name" options:CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld context:@"testRemoveOtherObserver"];
+    [bob addObserver:obj forKeyPath:@"name" options:CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld context:@"testRemoveOtherObserver"];
 
     [bob removeObserver:obj forKeyPath:@"name"];
 
@@ -113,8 +116,8 @@
     obj = [CPArray new];
     obj2 = [CPString new];
 
-    [bob addObserver:obj forKeyPath:@"name" options:nil context:@"testRemoveAllObservers"];
-    [bob addObserver:obj2 forKeyPath:@"name" options:nil context:@"testRemoveAllObservers"];
+    [bob addObserver:obj forKeyPath:@"name" options:0 context:@"testRemoveAllObservers"];
+    [bob addObserver:obj2 forKeyPath:@"name" options:0 context:@"testRemoveAllObservers"];
 
     [bob removeObserver:obj forKeyPath:@"name"];
     [bob removeObserver:obj2 forKeyPath:@"name"];
@@ -133,7 +136,7 @@
 
     [dict addObserver:self
            forKeyPath:@"dictionaryKey"
-             options:nil
+             options:CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld
              context:@"testDictionary"];
 
     [dict setObject:@"Jo Bob Ray" forKey:@"dictionaryKey"];
@@ -147,7 +150,20 @@
 
     bob = [[PersonTester alloc] init];
 
-    [bob addObserver:self forKeyPath:@"name" options:CPKeyValueObservingOptionPrior context:@"testPriorObservationOption"];
+    [bob addObserver:self forKeyPath:@"name" options:CPKeyValueObservingOptionPrior | CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld context:@"testPriorObservationOption"];
+
+    [bob setValue:@"bob" forKey:@"name"];
+
+    [self assertTrue:_sawPriorObservation message:@"asked for CPKeyValueObservingOptionPrior but did not recieve corresponding notification"];
+}
+
+- (void)testPriorObservationOptionNoOld
+{
+    _sawPriorObservation = NO;
+
+    bob = [[PersonTester alloc] init];
+
+    [bob addObserver:self forKeyPath:@"name" options:CPKeyValueObservingOptionPrior | CPKeyValueObservingOptionNew context:@"testPriorObservationOptionNoOld"];
 
     [bob setValue:@"bob" forKey:@"name"];
 
@@ -162,7 +178,23 @@
 
     bob.name = "paul";
 
-    [bob addObserver:self forKeyPath:@"name" options:CPKeyValueObservingOptionInitial context:@"testInitialObservationOption"];
+    [bob addObserver:self forKeyPath:@"name" options:CPKeyValueObservingOptionInitial | CPKeyValueObservingOptionNew context:@"testInitialObservationOption"];
+    [bob removeObserver:self forKeyPath:@"name"];
+
+    [bob setValue:@"bob" forKey:@"name"];
+
+    [self assertTrue:_sawInitialObservation message:@"asked for CPKeyValueObservingOptionInitial but did not recieve corresponding notification"];
+}
+
+- (void)testInitialObservationOptionNoNew
+{
+    _sawInitialObservation = NO;
+
+    bob = [[PersonTester alloc] init];
+
+    bob.name = "paul";
+
+    [bob addObserver:self forKeyPath:@"name" options:CPKeyValueObservingOptionInitial context:@"testInitialObservationOptionNoNew"];
     [bob removeObserver:self forKeyPath:@"name"];
 
     [bob setValue:@"bob" forKey:@"name"];
@@ -178,8 +210,8 @@
 
     bob.name = "paul";
 
-    [bob addObserver:self forKeyPath:@"bobName" options:0 context:@"testDependentKeyObservation"];
-    [bob addObserver:self forKeyPath:@"twiceRemoved" options:0 context:@"testDependentKeyObservation2"];
+    [bob addObserver:self forKeyPath:@"bobName" options:CPKeyValueObservingOptionOld context:@"testDependentKeyObservation"];
+    [bob addObserver:self forKeyPath:@"twiceRemoved" options:CPKeyValueObservingOptionOld context:@"testDependentKeyObservation2"];
 
     [bob setValue:@"bob" forKey:@"name"];
 
@@ -194,7 +226,7 @@
 
     [cs101 setTeacher:bob];
 
-    [cs101 addObserver:self forKeyPath:@"teacher.name" options:0 context:@"testMultipartKey"];
+    [cs101 addObserver:self forKeyPath:@"teacher.name" options:CPKeyValueObservingOptionNew context:@"testMultipartKey"];
 
     [bob setName:@"bob"];
 
@@ -209,7 +241,7 @@
 
     [bob setValue:focus forKey:@"car"];
 
-    [bob addObserver:self forKeyPath:@"self.car.thisCar.model" options:0 context:@"testMultiPartKeysWhereValuesEvaluateToSelf"];
+    [bob addObserver:self forKeyPath:@"self.car.thisCar.model" options:CPKeyValueObservingOptionNew context:@"testMultiPartKeysWhereValuesEvaluateToSelf"];
 
     [focus setValue:@"ford focus" forKey:@"model"];
 
@@ -225,7 +257,7 @@
     [cs101 setTeacher:bob];
     [bob setValue:focus forKey:@"car"];
 
-    [cs101 addObserver:self forKeyPath:@"teacher.car.model" options:0 context:@"testThreePartKey"];
+    [cs101 addObserver:self forKeyPath:@"teacher.car.model" options:CPKeyValueObservingOptionNew context:@"testThreePartKey"];
 
     [focus setValue:@"ford focus" forKey:@"model"];
     [self assertTrue: _sawObservation message:@"Never recieved an observation"];
@@ -240,7 +272,7 @@
     [cs101 setTeacher:bob];
     [focus setValue:@"2000" forKey:@"year"];
 
-    [cs101 addObserver:self forKeyPath:@"teacher.car.year" options:0 context:@"testThreePartKeyPart2"];
+    [cs101 addObserver:self forKeyPath:@"teacher.car.year" options:CPKeyValueObservingOptionNew context:@"testThreePartKeyPart2"];
 
     [bob setValue:focus forKey:@"car"];
 
@@ -290,7 +322,7 @@
     [a setValue:[E new] forKeyPath:@"b.c.d.e"];
     [a setValue:[F new] forKeyPath:@"b.c.d.e.f"];
 
-    [a addObserver:self forKeyPath:@"b.c.d.e.f" options:0 context:@"testCrazyKeyPathChanges"];
+    [a addObserver:self forKeyPath:@"b.c.d.e.f" options:CPKeyValueObservingOptionNew context:@"testCrazyKeyPathChanges"];
 
     var newD = [D new];
 
@@ -311,7 +343,7 @@
     [a setValue:[E new] forKeyPath:@"b.c.d.e"];
     [a setValue:[F new] forKeyPath:@"b.c.d.e.f"];
 
-    [a addObserver:self forKeyPath:@"b.c.d.e.f" options:0 context:@"testCrazyKeyPathChanges2"];
+    [a addObserver:self forKeyPath:@"b.c.d.e.f" options:CPKeyValueObservingOptionNew context:@"testCrazyKeyPathChanges2"];
 
     [a setValue:nil forKeyPath:@"b.c"];
 
@@ -328,7 +360,7 @@
     [a setValue:[E new] forKeyPath:@"b.c.d.e"];
     [a setValue:[F new] forKeyPath:@"b.c.d.e.f"];
 
-    [a addObserver:self forKeyPath:@"b.c.d.e.f" options:0 context:@"testCrazyKeyPathChanges3"];
+    [a addObserver:self forKeyPath:@"b.c.d.e.f" options:CPKeyValueObservingOptionNew context:@"testCrazyKeyPathChanges3"];
 
     [a setValue:7 forKeyPath:@"b.c.d.e.f"];
 
@@ -341,7 +373,7 @@
 
     [tester setValue:[1, 2, 3, 4] forKey:@"managedObjects"];
 
-    [tester addObserver:self forKeyPath:@"managedObjects" options:0 context:@"testInsertIntoToManyProperty"];
+    [tester addObserver:self forKeyPath:@"managedObjects" options:CPKeyValueObservingOptionNew context:@"testInsertIntoToManyProperty"];
 
     [tester insertObject:5 inManagedObjectsAtIndex:4];
 
@@ -354,7 +386,7 @@
 
     [tester setValue:[1, 2, 3, 4] forKey:@"managedObjects"];
 
-    [tester addObserver:self forKeyPath:@"managedObjects" options:0 context:@"testRemoveFromToManyProperty"];
+    [tester addObserver:self forKeyPath:@"managedObjects" options:CPKeyValueObservingOptionOld context:@"testRemoveFromToManyProperty"];
 
     [tester removeObjectFromManagedObjectsAtIndex:0];
 
@@ -367,7 +399,7 @@
 
     tester.tester = [ToManyTester new];
     [tester.tester setValue:[1, 2, 3, 4] forKey:@"managedObjects"];
-    [tester addObserver:self forKeyPath:@"tester.managedObjects" options:0 context:@"testInsertIntoToManyPropertyIndirectly"];
+    [tester addObserver:self forKeyPath:@"tester.managedObjects" options:CPKeyValueObservingOptionNew context:@"testInsertIntoToManyPropertyIndirectly"];
 
     [tester.tester insertObject:5 inManagedObjectsAtIndex:4];
 
@@ -381,7 +413,7 @@
     tester.tester = [ToManyTester new];
 
     [tester.tester setValue:[1, 2, 3, 4] forKey:@"subviews"];
-    [tester addObserver:self forKeyPath:@"tester.subviews" options:0 context:@"testInsertIntoArrayPropertyIndirectly"];
+    [tester addObserver:self forKeyPath:@"tester.subviews" options:CPKeyValueObservingOptionNew context:@"testInsertIntoArrayPropertyIndirectly"];
 
     [tester.tester insertSubview:5 atIndex:4];
 
@@ -395,7 +427,7 @@
     tester.tester = [ToManyTester new];
 
     [tester.tester setValue:[1, 2, 3, 4] forKey:@"subviews"];
-    [tester addObserver:self forKeyPath:@"tester.subviews" options:0 context:@"testChangeTopLevelObject"];
+    [tester addObserver:self forKeyPath:@"tester.subviews" options:CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld context:@"testChangeTopLevelObject"];
 
     var newTesterTester = [ToManyTester new];
     [newTesterTester setValue:[5, 6, 7, 8] forKey:@"subviews"];
@@ -554,7 +586,24 @@
             if (!_sawPriorObservation)
             {
                 [self assertTrue:prior message:@"Have not been sent the prior notification, but it should have been sent"];
-                [self assertTrue:oldValue == [CPNull null] message:@"Shoudl be no initial value"];
+                [self assertTrue:oldValue == [CPNull null] message:@"Should be no initial value"];
+                [self assertFalse:newValue message:@"Should be no object for the new value key on the prior notification"];
+                _sawPriorObservation = YES;
+            }
+            else
+            {
+                [self assertFalse:prior message:@"there should be no value for the notification is prior key, that notification was already sent"];
+                [self assertTrue:newValue == "set_bob" message:@"newValue should be: set_bob was: " + newValue];
+            }
+            break;
+
+        case "testPriorObservationOptionNoOld":
+            var prior = [changes objectForKey:CPKeyValueChangeNotificationIsPriorKey];
+
+            if (!_sawPriorObservation)
+            {
+                [self assertTrue:prior message:@"Have not been sent the prior notification, but it should have been sent"];
+                [self assertTrue:oldValue == nil message:@"Should be no old value"];
                 [self assertFalse:newValue message:@"Should be no object for the new value key on the prior notification"];
                 _sawPriorObservation = YES;
             }
@@ -568,8 +617,20 @@
         case "testInitialObservationOption":
             if (!_sawInitialObservation)
             {
-                [self assertTrue:newValue == "paul" message:@"Expected old value to be: paul was: " + oldValue];
-                [self assertFalse:oldValue message:@"Should be no value for new change key on initial observation"];
+                [self assertTrue:newValue == "paul" message:@"Expected new value to be: paul was: " + newValue];
+                [self assertTrue:oldValue == nil message:@"Should be no value for old change key on initial observation"];
+                _sawInitialObservation = YES;
+            }
+            else
+                [self assertFalse:YES message:@"Should never have received this notification"];
+
+            break;
+
+        case "testInitialObservationOptionNoNew":
+            if (!_sawInitialObservation)
+            {
+                [self assertTrue:newValue == nil message:@"New value should not be included"];
+                [self assertTrue:oldValue == nil message:@"Should be no value for old change key on initial observation"];
                 _sawInitialObservation = YES;
             }
             else

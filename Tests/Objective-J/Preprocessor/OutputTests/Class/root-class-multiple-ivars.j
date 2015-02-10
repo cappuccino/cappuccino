@@ -1,5 +1,5 @@
 
-@implementation Class
+@implementation TestClass
 {
     Type        ivar;
     CPArray     array;

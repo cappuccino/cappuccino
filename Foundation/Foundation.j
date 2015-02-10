@@ -73,6 +73,7 @@
 @import "CPUndoManager.j"
 @import "CPURL.j"
 @import "CPURLConnection.j"
+@import "CPURLError.j"
 @import "CPURLRequest.j"
 @import "CPURLResponse.j"
 @import "CPUserDefaults.j"

@@ -65,8 +65,6 @@
     [self addSubview:_subtractButton];
 
     [self setAutoresizingMask:CPViewWidthSizable];
-
-    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_textDidChange:) name:CPControlTextDidChangeNotification object:nil];
 }
 
 - (CPButton)_createRowButton
@@ -124,8 +122,8 @@
 {
     var title   = [[itemsArray objectAtIndex:index] title],
         font    = [_ruleEditor font],
-        width   = [title sizeWithFont:font].width + 20,
-        rect    = CGRectMake(0, 0, (width - width % 40) + 80, [_ruleEditor rowHeight]),
+        width   = [title sizeWithFont:font].width + 35, // 35 for right arrows + margins
+        rect    = CGRectMake(0, 0, width, [_ruleEditor rowHeight]),
         popup   = [[CPPopUpButton alloc] initWithFrame:rect];
 
     [popup setValue:font forThemeAttribute:@"font"];
@@ -317,8 +315,14 @@
         {
             [ruleView setControlSize:CPSmallControlSize];
 
+            var minSize = [ruleView currentValueForThemeAttribute:@"min-size"],
+                frame = [ruleView frame];
+
+            // Force controls to their minimum size
+            frame.size.height = minSize.height;
+            [ruleView setFrame:frame];
+
             [_ruleOptionViews addObject:ruleView];
-            var frame = [ruleView frame];
             [_ruleOptionInitialViewFrames addObject:frame];
             [_ruleOptionFrames addObject:frame];
 
@@ -489,6 +493,26 @@
 - (void)viewDidMoveToWindow
 {
     [self layoutSubviews];
+}
+
+- (void)_addObservers
+{
+    if (_isObserving)
+        return;
+
+    [super _addObservers];
+
+    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_textDidChange:) name:CPControlTextDidChangeNotification object:nil];
+}
+
+- (void)_removeObservers
+{
+    if (!_isObserving)
+        return;
+
+    [super _removeObservers];
+
+    [[CPNotificationCenter defaultCenter] removeObserver:self name:CPControlTextDidChangeNotification object:nil];
 }
 
 - (void)drawRect:(CGRect)rect

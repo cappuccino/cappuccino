@@ -23,6 +23,7 @@
 @import "CGAffineTransform.j"
 @import "CGGeometry.j"
 
+@typedef CGPath
 
 kCGPathElementMoveToPoint           = 0;
 kCGPathElementAddLineToPoint        = 1;

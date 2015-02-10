@@ -2207,7 +2207,7 @@ TODO: implement
         indexOfDropLine =  FLOOR(y / _sliceHeight),
         numberOfRows = [self numberOfRows];
 
-    if (indexOfDropLine < 0 || indexOfDropLine > numberOfRows || (indexOfDropLine >= [_draggingRows firstIndex] && indexOfDropLine <= [_draggingRows lastIndex] + 1))
+    if (indexOfDropLine <= 0 || indexOfDropLine > numberOfRows || (indexOfDropLine >= [_draggingRows firstIndex] && indexOfDropLine <= [_draggingRows lastIndex] + 1))
     {
         if (_subviewIndexOfDropLine !== CPNotFound && indexOfDropLine !== _subviewIndexOfDropLine)
             [self _clearDropLine];

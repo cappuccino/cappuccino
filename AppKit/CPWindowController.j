@@ -25,6 +25,7 @@
 
 @import "CPCib.j"
 @import "CPResponder.j"
+@import "CPViewController.j"
 @import "CPWindow.j"
 
 @class CPDocument
