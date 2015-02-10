@@ -331,7 +331,6 @@ CPEraDatePickerElementFlag              = 0x0100;
         return;
     }
 
-
     if (_minDate)
         aDateValue = new Date (MAX(aDateValue, _minDate));
 
