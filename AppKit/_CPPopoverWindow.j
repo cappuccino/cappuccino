@@ -181,7 +181,14 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
         return;
 
     _isObservingFrame = YES;
-    [_targetView addObserver:self forKeyPath:@"frame" options:0 context:nil];
+
+    var view = _targetView;
+
+    while (view)
+    {
+        [view addObserver:self forKeyPath:@"frame" options:0 context:nil];
+        view = [view superview];
+    }
 }
 
 /*!
@@ -194,7 +201,14 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
         return;
 
     _isObservingFrame = NO;
-    [_targetView removeObserver:self forKeyPath:@"frame"];
+
+    var view = _targetView;
+
+    while (view)
+    {
+        [view removeObserver:self forKeyPath:@"frame"];
+        view = [view superview];
+    }
 }
 
 /*!
