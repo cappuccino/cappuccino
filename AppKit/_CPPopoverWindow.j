@@ -34,6 +34,8 @@
 @global CPPopoverBehaviorTransient
 @global CPPopoverBehaviorApplicationDefined
 
+@global _CPParentViewFrameDidChangeNotification
+
 CPClosableOnBlurWindowMask  = 1 << 4;
 CPPopoverAppearanceMinimal  = 0;
 CPPopoverAppearanceHUD      = 1;
@@ -182,6 +184,9 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
 
     _isObservingFrame = YES;
     [_targetView addObserver:self forKeyPath:@"frame" options:0 context:nil];
+
+    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_parentViewFrameBoundsDidChangeNotification:) name:_CPParentViewFrameDidChangeNotification object:_targetView];
+    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_parentViewFrameBoundsDidChangeNotification:) name:_CPParentViewBoundsDidChangeNotification object:_targetView];
 }
 
 /*!
@@ -195,10 +200,14 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
 
     _isObservingFrame = NO;
     [_targetView removeObserver:self forKeyPath:@"frame"];
+
+    [[CPNotificationCenter defaultCenter] removeObserver:self name:_CPParentViewFrameDidChangeNotification object:_targetView];
+    [[CPNotificationCenter defaultCenter] removeObserver:self name:_CPParentViewBoundsDidChangeNotification object:_targetView];
 }
 
 /*!
-    Update the _CPPopoverWindow frame if a resize event is observed.
+    @ignore
+    Notify when the frame of the targetView has changed
 */
 - (void)observeValueForKeyPath:(CPString)aPath ofObject:(id)anObject change:(CPDictionary)theChange context:(void)aContext
 {
@@ -207,9 +216,27 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
         if (![_targetView window])
             return;
 
-        var point = [self computeOriginFromRect:_targetRect ofView:_targetView preferredEdge:[_windowView preferredEdge]];
-        [self setFrameOrigin:point];
+        [self _updateFrameOrigin];
     }
+}
+
+/*!
+    @ignore
+    Notify when the frame of the targetView has changed
+*/
+- (void)_parentViewFrameBoundsDidChangeNotification:(CPNotification)aNotification
+{
+    [self _updateFrameOrigin];
+}
+
+/*!
+    @ignore
+    Update the position of the popover to replace the window to the good location
+*/
+- (void)_updateFrameOrigin
+{
+    var point = [self computeOriginFromRect:_targetRect ofView:_targetView preferredEdge:[_windowView preferredEdge]];
+    [self setFrameOrigin:point];
 }
 
 
