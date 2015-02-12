@@ -123,7 +123,7 @@
 
 - (CPFont)font
 {
-    return [self currentValueForThemeAttribute:@"font"]
+    return [self currentValueForThemeAttribute:@"font"];
 }
 
 - (void)setAlignment:(CPTextAlignment)alignment
@@ -133,7 +133,7 @@
 
 - (CPTextAlignment)alignment
 {
-    return [self currentValueForThemeAttribute:@"text-alignment"]
+    return [self currentValueForThemeAttribute:@"text-alignment"];
 }
 
 - (void)setLineBreakMode:(CPLineBreakMode)mode
@@ -143,7 +143,7 @@
 
 - (CPLineBreakMode)lineBreakMode
 {
-    return [self currentValueForThemeAttribute:@"line-break-mode"]
+    return [self currentValueForThemeAttribute:@"line-break-mode"];
 }
 
 - (void)setTextColor:(CPColor)aColor
@@ -153,7 +153,7 @@
 
 - (CPColor)textColor
 {
-    return [self currentValueForThemeAttribute:@"text-color"]
+    return [self currentValueForThemeAttribute:@"text-color"];
 }
 
 - (void)setTextShadowColor:(CPColor)aColor
@@ -163,20 +163,20 @@
 
 - (CPColor)textShadowColor
 {
-    return [self currentValueForThemeAttribute:@"text-shadow-color"]
+    return [self currentValueForThemeAttribute:@"text-shadow-color"];
 }
 
 - (void)_setIndicatorImage:(CPImage)anImage
 {
-	if (anImage)
-	{
-		[_textField setImage:anImage];
-		[_textField setImagePosition:CPImageRight];
-	}
-	else
-	{
-		[_textField setImagePosition:CPNoImage];
-	}
+    if (anImage)
+    {
+        [_textField setImage:anImage];
+        [_textField setImagePosition:CPImageRight];
+    }
+    else
+    {
+        [_textField setImagePosition:CPNoImage];
+    }
 }
 
 - (CPImage)_indicatorImage
@@ -209,7 +209,7 @@
 
 var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringValueKey",
     _CPTableColumnHeaderViewFontKey = @"_CPTableColumnHeaderViewFontKey",
-    _CPTableColumnHeaderViewImageKey = @"_CPTableColumnHeaderViewImageKey";
+    _CPTableColumnHeaderViewImageKey = @"_CPTableColumnHeaderViewImageKey",
     _CPTableColumnHeaderViewIsDraggingKey = @"_CPTableColumnHeaderViewIsDraggingKey";
 
 @implementation _CPTableColumnHeaderView (CPCoding)
@@ -221,7 +221,6 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
         [self _init];
         [self _setIndicatorImage:[aCoder decodeObjectForKey:_CPTableColumnHeaderViewImageKey]];
         [self setStringValue:[aCoder decodeObjectForKey:_CPTableColumnHeaderViewStringValueKey]];
-        [self setFont:[aCoder decodeObjectForKey:_CPTableColumnHeaderViewFontKey]];
         [self setFont:[aCoder decodeObjectForKey:_CPTableColumnHeaderViewFontKey]];
     }
 
