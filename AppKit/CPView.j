@@ -1093,14 +1093,6 @@ var CPViewHighDPIDrawingEnabled = YES;
 #if PLATFORM(DOM)
     [self _setDisplayServerSetStyleSize:size];
 
-    if (_DOMContentsElement)
-    {
-        CPDOMDisplayServerSetSize(_DOMContentsElement, size.width * _highDPIRatio, size.height * _highDPIRatio);
-        CPDOMDisplayServerSetStyleSize(_DOMContentsElement, size.width, size.height);
-
-        _needToSetTransformMatrix = YES;
-    }
-
     if (_backgroundType !== BackgroundTrivialColor)
     {
         if (_backgroundType === BackgroundTransparentColor)
@@ -1225,7 +1217,16 @@ var CPViewHighDPIDrawingEnabled = YES;
 {
 #if PLATFORM(DOM)
     var scale = [self scaleSize];
+
     CPDOMDisplayServerSetStyleSize(_DOMElement, aSize.width * 1 / scale.width, aSize.height * 1 / scale.height);
+
+    if (_DOMContentsElement)
+    {
+        CPDOMDisplayServerSetSize(_DOMContentsElement, aSize.width * _highDPIRatio * 1 / scale.width, aSize.height * _highDPIRatio * 1 / scale.height);
+        CPDOMDisplayServerSetStyleSize(_DOMContentsElement, aSize.width * 1 / scale.width, aSize.height * 1 / scale.height);
+
+        _needToSetTransformMatrix = YES;
+    }
 #endif
 }
 
@@ -2584,8 +2585,10 @@ setBoundsOrigin:
         _needToSetTransformMatrix = YES;
     }
 
+#if PLATFORM(DOM)
     if (_needToSetTransformMatrix)
         [_graphicsContext graphicsPort].setTransform(_highDPIRatio, 0, 0 , _highDPIRatio, 0, 0);
+#endif
 
     _needToSetTransformMatrix = NO;
     [CPGraphicsContext setCurrentContext:_graphicsContext];
