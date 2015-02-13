@@ -3504,6 +3504,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         [self _resignEditedView];
 
     var tableColumns = [_tableColumns objectsAtIndexes:columnIndexes];
+
     [self _enumerateViewsInRows:rowIndexes tableColumns:tableColumns usingBlock:function(dataView, row, tableColumn, stop)
     {
         var dataViewsForRows = _dataViewsForRows[row],
@@ -3511,7 +3512,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
         delete (dataViewsForRows[tableColumnUID]);
 
-            [self _enqueueReusableDataView:dataView];
+        [self _sendDelegateWillRemoveView:dataView forTableColumn:tableColumn row:row];
+        [self _enqueueReusableDataView:dataView];
     }];
 }
 
@@ -3591,8 +3593,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         [self setNeedsDisplay:YES];
     }
 
-    if (_implementedDelegateMethods & CPTableViewDelegate_tableView_willDisplayView_forTableColumn_row_)
-        [_delegate tableView:self willDisplayView:dataView forTableColumn:tableColumn row:row];
+    [self _sendDelegateWillDisplayView:dataView forTableColumn:tableColumn row:row];
 
     return dataView;
 }
