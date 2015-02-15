@@ -3665,8 +3665,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
             identifier = [[aTableColumn dataView] UID];
             view = [self makeViewWithIdentifier:identifier owner:_delegate];
 
-        if (!view)
-            view = [aTableColumn _newDataView];
+            if (!view)
+                view = [aTableColumn _newDataView];
         }
 
         [view setIdentifier:identifier];
