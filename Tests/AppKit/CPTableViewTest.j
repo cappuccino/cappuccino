@@ -18,8 +18,7 @@
 - (void)setUp
 {
     // setup a reasonable table
-    theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(0.0, 0.0, 1024.0, 768.0)
-                                            styleMask:CPWindowNotSizable];
+    theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(0.0, 0.0, 1024.0, 768.0) styleMask:CPWindowNotSizable];
 
     tableView = [[FirstResponderConfigurableTableView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];
     tableColumn = [[CPTableColumn alloc] initWithIdentifier:@"Foo"];
@@ -435,7 +434,70 @@
 
     [scrollView removeFromSuperview];
     [self assert:[CPNotificationCenterHelper registeredNotificationsForObserver:tableView] equals:[] message:@"Notications registered for the tableView in the notification center are wrong"];
+}
 
+- (void)testTableDataViewState
+{
+    var textField = [[CPTextField alloc] initWithFrame:CGRectMake(110, 0, 100, 32)];
+    [textField setEditable:YES];
+    [[theWindow contentView] addSubview:textField];
+
+    var dataSource = [TestDataSource new];
+
+    [dataSource setTableEntries:["A", "B", "C"]];
+    [tableView setDataSource:dataSource];
+    [tableView setDelegate:[EditableTableDelegate new]];
+
+    [theWindow makeFirstResponder:tableView];
+    [tableView selectRowIndexes:[CPIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
+
+    [tableView enumerateAvailableViewsUsingBlock:function(dataView, row, column, stop)
+    {
+        if (row == 0)
+        {
+            [self assertTrue:[dataView hasThemeState:CPThemeStateTableDataView] message:"CPThemeStateTableDataView should be enabled"];
+            [self assertTrue:[dataView hasThemeState:CPThemeStateSelectedDataView] message:"CPThemeStateSelectedDataView should be enabled"];
+            [self assertTrue:[dataView hasThemeState:CPThemeStateFirstResponder] message:"CPThemeStateFirstResponder should be enabled"];
+        }
+
+        if (row == 1)
+        {
+            [self assertTrue:[dataView hasThemeState:CPThemeStateTableDataView] message:"CPThemeStateTableDataView should be enabled"];
+            [self assertFalse:[dataView hasThemeState:CPThemeStateSelectedDataView] message:"CPThemeStateSelectedDataView should be disabled"];
+            [self assertTrue:[dataView hasThemeState:CPThemeStateFirstResponder] message:"CPThemeStateFirstResponder should be enabled"];
+        }
+    }];
+
+    [tableView selectRowIndexes:[CPIndexSet indexSetWithIndex:1] byExtendingSelection:NO];
+
+    [tableView enumerateAvailableViewsUsingBlock:function(dataView, row, column, stop)
+    {
+        if (row == 0)
+        {
+            [self assertTrue:[dataView hasThemeState:CPThemeStateTableDataView] message:"CPThemeStateTableDataView should be enabled"];
+            [self assertFalse:[dataView hasThemeState:CPThemeStateSelectedDataView] message:"CPThemeStateSelectedDataView should be disabled"];
+            [self assertTrue:[dataView hasThemeState:CPThemeStateFirstResponder] message:"CPThemeStateFirstResponder should be enabled"];
+        }
+    }];
+
+    [theWindow makeFirstResponder:textField];
+
+    [tableView enumerateAvailableViewsUsingBlock:function(dataView, row, column, stop)
+    {
+        if (row == 0)
+        {
+            [self assertTrue:[dataView hasThemeState:CPThemeStateTableDataView] message:"CPThemeStateTableDataView should be enabled"];
+            [self assertFalse:[dataView hasThemeState:CPThemeStateSelectedDataView] message:"CPThemeStateSelectedDataView should be disabled"];
+            [self assertFalse:[dataView hasThemeState:CPThemeStateFirstResponder] message:"CPThemeStateFirstResponder should be disabled"];
+        }
+
+        if (row == 1)
+        {
+            [self assertTrue:[dataView hasThemeState:CPThemeStateTableDataView] message:"CPThemeStateTableDataView should be enabled"];
+            [self assertTrue:[dataView hasThemeState:CPThemeStateSelectedDataView] message:"CPThemeStateSelectedDataView should be enabled"];
+            [self assertFalse:[dataView hasThemeState:CPThemeStateFirstResponder] message:"CPThemeStateFirstResponder should be disabled"];
+        }
+    }];
 }
 
 @end
