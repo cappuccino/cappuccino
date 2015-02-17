@@ -331,20 +331,27 @@ var COUNTER;
          message:@"removeObjectFromValuesAtIndex: should have been called 10 times and insertObject:inValuesAtIndex: 2 times"];
 }
 
-- (void)testKVCArrayOperators
+- (void)testKVCCountArrayOperators
 {
     var one = [1, 1, 1, 1, 1, 1, 1, 1],
         two = [1, 2, 3, 4, 8, 0];
 
     [self assert:[one valueForKey:"@count"] equals:8];
-    [self assert:[one valueForKeyPath:"@sum.intValue"] equals:8];
-    [self assert:[two valueForKeyPath:"@avg.intValue"] equals:3];
-    [self assert:[two valueForKeyPath:"@max.intValue"] equals:8];
-    [self assert:[two valueForKeyPath:"@min.intValue"] equals:0];
 
     var a = [AA new];
     [a setValue:one forKey:"b"];
     [self assert:[a valueForKeyPath:"b.@count"] equals:8];
+}
+
+- (void)testKVCSumArrayOperators
+{
+    var one = [1, 1, 1, 1, 1, 1, 1, 1],
+        two = [1, 2, 3, 4, 8, 0];
+
+    [self assert:[one valueForKeyPath:"@sum.intValue"] equals:8];
+
+    var a = [AA new];
+    [a setValue:one forKey:"b"];
     [self assert:[a valueForKeyPath:"b.@sum.intValue"] equals:8];
 
     var b = [];
@@ -352,11 +359,120 @@ var COUNTER;
     [b addObject:[CPDictionary dictionaryWithObjects:[@"Dick", 31] forKeys:[@"name", @"age"]]];
     [b addObject:[CPDictionary dictionaryWithObjects:[@"Harry", 47] forKeys:[@"name", @"age"]]];
     [self assert:[b valueForKeyPath:@"@sum.age"] equals:105];
+}
+
+- (void)testKVCAvgArrayOperators
+{
+    var one = [1, 1, 1, 1, 1, 1, 1, 1],
+        two = [1, 2, 3, 4, 8, 0];
+
+    [self assert:[two valueForKeyPath:"@avg.intValue"] equals:3];
+
+    var b = [];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Tom", 27] forKeys:[@"name", @"age"]]];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Dick", 31] forKeys:[@"name", @"age"]]];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Harry", 47] forKeys:[@"name", @"age"]]];
     [self assert:[b valueForKeyPath:@"@avg.age"] equals:35];
+}
+
+- (void)testKVCMinArrayOperators
+{
+    var one = [1, 1, 1, 1, 1, 1, 1, 1],
+        two = [1, 2, 3, 4, 8, 0];
+
+    [self assert:[two valueForKeyPath:"@min.intValue"] equals:0];
+
+    var b = [];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Tom", 27] forKeys:[@"name", @"age"]]];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Dick", 31] forKeys:[@"name", @"age"]]];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Harry", 47] forKeys:[@"name", @"age"]]];
     [self assert:[b valueForKeyPath:@"@min.age"] equals:27];
-    [self assert:[b valueForKeyPath:@"@max.age"] equals:47];
     [self assert:[b valueForKeyPath:@"@min.name"] equals:@"Dick"];
+}
+
+- (void)testKVCMaxArrayOperators
+{
+    var one = [1, 1, 1, 1, 1, 1, 1, 1],
+        two = [1, 2, 3, 4, 8, 0];
+
+    [self assert:[two valueForKeyPath:"@max.intValue"] equals:8];
+
+    var b = [];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Tom", 27] forKeys:[@"name", @"age"]]];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Dick", 31] forKeys:[@"name", @"age"]]];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Harry", 47] forKeys:[@"name", @"age"]]];
+    [self assert:[b valueForKeyPath:@"@max.age"] equals:47];
     [self assert:[b valueForKeyPath:@"@max.name"] equals:@"Tom"];
+}
+
+- (void)testKVCDistinctUnionOfObjectsArrayOperators
+{
+    var b = [];
+
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Tom", 27] forKeys:[@"name", @"age"]]];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Dick", 31] forKeys:[@"name", @"age"]]];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Harry", 47] forKeys:[@"name", @"age"]]];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Dick", 67] forKeys:[@"name", @"age"]]];
+
+    [self assert:[b valueForKeyPath:@"@distinctUnionOfObjects.name"] equals:[@"Tom", @"Dick", @"Harry"]];
+    [self assert:[b valueForKeyPath:@"@distinctUnionOfObjects.age"] equals:[27, 31, 47, 67]];
+}
+
+- (void)testKVCUnionOfObjectsArrayOperators
+{
+    var b = [];
+
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Tom", 27] forKeys:[@"name", @"age"]]];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Dick", 31] forKeys:[@"name", @"age"]]];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Harry", 47] forKeys:[@"name", @"age"]]];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Dick", 67] forKeys:[@"name", @"age"]]];
+
+    [self assert:[b valueForKeyPath:@"@unionOfObjects.name"] equals:[@"Tom", @"Dick", @"Harry", @"Dick"]];
+    [self assert:[b valueForKeyPath:@"@unionOfObjects.age"] equals:[27, 31, 47, 67]];
+}
+
+- (void)testKVCDistinctUnionOfArraysArrayOperators
+{
+    var b = [];
+
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Tom", 27] forKeys:[@"name", @"age"]]];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Dick", 31] forKeys:[@"name", @"age"]]];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Harry", 47] forKeys:[@"name", @"age"]]];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Dick", 67] forKeys:[@"name", @"age"]]];
+
+    var c = [];
+
+    [c addObject:[CPDictionary dictionaryWithObjects:[@"Jeff", 47] forKeys:[@"name", @"age"]]];
+    [c addObject:[CPDictionary dictionaryWithObjects:[@"Alex", 27] forKeys:[@"name", @"age"]]];
+    [c addObject:[CPDictionary dictionaryWithObjects:[@"Harry", 57] forKeys:[@"name", @"age"]]];
+    [c addObject:[CPDictionary dictionaryWithObjects:[@"Dick", 67] forKeys:[@"name", @"age"]]];
+
+    var all = [b, c];
+
+    [self assert:[all valueForKeyPath:@"@distinctUnionOfArrays.name"] equals:[@"Tom", @"Dick", @"Harry", @"Jeff", @"Alex"]];
+    [self assert:[all valueForKeyPath:@"@distinctUnionOfArrays.age"] equals:[27, 31, 47, 67, 57]];
+}
+
+- (void)testKVCUnionOfArraysArrayOperators
+{
+    var b = [];
+
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Tom", 27] forKeys:[@"name", @"age"]]];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Dick", 31] forKeys:[@"name", @"age"]]];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Harry", 47] forKeys:[@"name", @"age"]]];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Dick", 67] forKeys:[@"name", @"age"]]];
+
+    var c = [];
+
+    [c addObject:[CPDictionary dictionaryWithObjects:[@"Jeff", 47] forKeys:[@"name", @"age"]]];
+    [c addObject:[CPDictionary dictionaryWithObjects:[@"Alex", 27] forKeys:[@"name", @"age"]]];
+    [c addObject:[CPDictionary dictionaryWithObjects:[@"Harry", 57] forKeys:[@"name", @"age"]]];
+    [c addObject:[CPDictionary dictionaryWithObjects:[@"Dick", 67] forKeys:[@"name", @"age"]]];
+
+    var all = [b, c];
+
+    [self assert:[all valueForKeyPath:@"@unionOfArrays.name"] equals:[@"Tom", @"Dick", @"Harry", @"Dick", @"Jeff", @"Alex", @"Harry", @"Dick"]];
+    [self assert:[all valueForKeyPath:@"@unionOfArrays.age"] equals:[27, 31, 47, 67, 47, 27, 57, 67]];
 }
 
 @end
