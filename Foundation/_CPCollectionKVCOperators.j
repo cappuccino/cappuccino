@@ -198,7 +198,7 @@ var _CPCollectionKVCOperatorSimpleRE = /^@(avg|count|m(ax|in)|sum|unionOfObjects
 + (CPArray)distinctUnionOfSetsForCollection:(id)aCollection propertyPath:(CPString)propertyPath
 {
     if (!propertyPath)
-        return [aCollection valueForUndefinedKey:@"@distinctUnionOfArrays"];
+        return [aCollection valueForUndefinedKey:@"@distinctUnionOfSets"];
 
     var objects = [CPMutableSet new],
         number = [aCollection count],
