@@ -129,6 +129,8 @@ var CPViewFlags                     = { },
     CPViewHasCustomDrawRect         = 1 << 0,
     CPViewHasCustomLayoutSubviews   = 1 << 1;
 
+var CPViewHighDPIDrawingEnabled = YES;
+
 
 /*!
     @ingroup appkit
@@ -208,6 +210,10 @@ var CPViewFlags                     = { },
     CGSize              _hierarchyScaleSize;
     CGSize              _scaleSize;
 
+    // Drawing high DPI
+    BOOL                _needToSetTransformMatrix;
+    float               _highDPIRatio;
+
     // Layout Support
     BOOL                _needsLayout;
     JSObject            _ephemeralSubviews;
@@ -265,6 +271,24 @@ var CPViewFlags                     = { },
         return [CPMultipleValueOrBinding class];
 
     return [super _binderClassForBinding:aBinding];
+}
+
+/*!
+    Controls whether high DPI drawing is activated or not. Defaults to YES.
+    @param isEnabled YES to enable high DPI drawing
+*/
++ (void)setHighDPIDrawingEnabled:(BOOL)isEnabled
+{
+    CPViewHighDPIDrawingEnabled = isEnabled;
+}
+
+/*!
+    Returns whether high DPI drawing is enabled.
+    @return BOOL - YES if high DPI drawing is activated, otherwise NO.
+*/
++ (BOOL)isHighDPIDrawingEnabled
+{
+    return CPViewHighDPIDrawingEnabled;
 }
 
 - (void)_setupViewFlags
@@ -1069,12 +1093,6 @@ var CPViewFlags                     = { },
 #if PLATFORM(DOM)
     [self _setDisplayServerSetStyleSize:size];
 
-    if (_DOMContentsElement)
-    {
-        CPDOMDisplayServerSetSize(_DOMContentsElement, size.width, size.height);
-        CPDOMDisplayServerSetStyleSize(_DOMContentsElement, size.width, size.height);
-    }
-
     if (_backgroundType !== BackgroundTrivialColor)
     {
         if (_backgroundType === BackgroundTransparentColor)
@@ -1199,7 +1217,16 @@ var CPViewFlags                     = { },
 {
 #if PLATFORM(DOM)
     var scale = [self scaleSize];
+
     CPDOMDisplayServerSetStyleSize(_DOMElement, aSize.width * 1 / scale.width, aSize.height * 1 / scale.height);
+
+    if (_DOMContentsElement)
+    {
+        CPDOMDisplayServerSetSize(_DOMContentsElement, aSize.width * _highDPIRatio * 1 / scale.width, aSize.height * _highDPIRatio * 1 / scale.height);
+        CPDOMDisplayServerSetStyleSize(_DOMContentsElement, aSize.width * 1 / scale.width, aSize.height * 1 / scale.height);
+
+        _needToSetTransformMatrix = YES;
+    }
 #endif
 }
 
@@ -2528,7 +2555,11 @@ setBoundsOrigin:
 
 #if PLATFORM(DOM)
         var width = CGRectGetWidth(_frame),
-            height = CGRectGetHeight(_frame);
+            height = CGRectGetHeight(_frame),
+            devicePixelRatio = window.devicePixelRatio || 1,
+            backingStoreRatio = CPBrowserBackingStorePixelRatio(graphicsPort);
+
+        _highDPIRatio = CPViewHighDPIDrawingEnabled ? (devicePixelRatio / backingStoreRatio) : 1;
 
         _DOMContentsElement = graphicsPort.DOMElement;
 
@@ -2538,7 +2569,7 @@ setBoundsOrigin:
         _DOMContentsElement.style.position = "absolute";
         _DOMContentsElement.style.visibility = "visible";
 
-        CPDOMDisplayServerSetSize(_DOMContentsElement, width, height);
+        CPDOMDisplayServerSetSize(_DOMContentsElement, width * _highDPIRatio, height * _highDPIRatio);
 
         CPDOMDisplayServerSetStyleLeftTop(_DOMContentsElement, NULL, 0.0, 0.0);
         CPDOMDisplayServerSetStyleSize(_DOMContentsElement, width, height);
@@ -2551,8 +2582,15 @@ setBoundsOrigin:
         CPDOMDisplayServerAppendChild(_DOMElement, _DOMContentsElement);
 #endif
         _graphicsContext = [CPGraphicsContext graphicsContextWithGraphicsPort:graphicsPort flipped:YES];
+        _needToSetTransformMatrix = YES;
     }
 
+#if PLATFORM(DOM)
+    if (_needToSetTransformMatrix)
+        [_graphicsContext graphicsPort].setTransform(_highDPIRatio, 0, 0 , _highDPIRatio, 0, 0);
+#endif
+
+    _needToSetTransformMatrix = NO;
     [CPGraphicsContext setCurrentContext:_graphicsContext];
 
     CGContextSaveGState([_graphicsContext graphicsPort]);
