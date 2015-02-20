@@ -3403,7 +3403,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (void)load
 {
-    console.error(@"load");
     if (_reloadAllRows)
     {
         [self _unloadDataViewsInRows:_exposedRows columns:_exposedColumns];
