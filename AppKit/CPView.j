@@ -2624,6 +2624,11 @@ setBoundsOrigin:
     _CPDisplayServerAddLayoutObject(self);
 }
 
+- (BOOL)needsLayout
+{
+    return _needsLayout;
+}
+
 - (void)layoutIfNeeded
 {
     if (_needsLayout)
