@@ -246,17 +246,64 @@
     [self assertSet:set onlyHasObjects:["horizon", "surfer", "7"]];
 }
 
-- (void)testKVCSetOperators
+- (void)testKVCCountSetOperators
 {
     var one = [CPSet setWithArray:[@"one", @"two", @"three"]],
         two = [CPSet setWithArray:[1, 2, 3, 4, 8, 0]];
 
     [self assert:[one valueForKey:"@count"] equals:3];
     [self assert:[two valueForKey:"@count"] equals:6];
+}
+
+- (void)testKVCSumSetOperators
+{
+    var one = [CPSet setWithArray:[@"one", @"two", @"three"]],
+        two = [CPSet setWithArray:[1, 2, 3, 4, 8, 0]];
+
     [self assert:[two valueForKeyPath:"@sum.intValue"] equals:18];
+
+    var b = [CPSet set];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Tom", 27] forKeys:[@"name", @"age"]]];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Dick", 31] forKeys:[@"name", @"age"]]];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Harry", 47] forKeys:[@"name", @"age"]]];
+    [self assert:[b valueForKeyPath:@"@sum.age"] equals:105];
+}
+
+- (void)testKVCAvgSetOperators
+{
+    var one = [CPSet setWithArray:[@"one", @"two", @"three"]],
+        two = [CPSet setWithArray:[1, 2, 3, 4, 8, 0]];
+
     [self assert:[two valueForKeyPath:"@avg.doubleValue"] equals:3.0];
+
+    var b = [CPSet set];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Tom", 27] forKeys:[@"name", @"age"]]];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Dick", 31] forKeys:[@"name", @"age"]]];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Harry", 47] forKeys:[@"name", @"age"]]];
+    [self assert:[b valueForKeyPath:@"@avg.age"] equals:35];
+}
+
+- (void)testKVCMaxSetOperators
+{
+    var one = [CPSet setWithArray:[@"one", @"two", @"three"]],
+        two = [CPSet setWithArray:[1, 2, 3, 4, 8, 0]];
+
     [self assert:[one valueForKeyPath:"@max.description"] equals:@"two"];
     [self assert:[two valueForKeyPath:"@max.intValue"] equals:8];
+
+    var b = [CPSet set];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Tom", 27] forKeys:[@"name", @"age"]]];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Dick", 31] forKeys:[@"name", @"age"]]];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Harry", 47] forKeys:[@"name", @"age"]]];
+    [self assert:[b valueForKeyPath:@"@max.age"] equals:47];
+    [self assert:[b valueForKeyPath:@"@max.name"] equals:@"Tom"];
+}
+
+- (void)testKVCMinSetOperators
+{
+    var one = [CPSet setWithArray:[@"one", @"two", @"three"]],
+        two = [CPSet setWithArray:[1, 2, 3, 4, 8, 0]];
+
     [self assert:[one valueForKeyPath:"@min.description"] equals:@"one"];
     [self assert:[two valueForKeyPath:"@min.intValue"] equals:0];
 
@@ -264,12 +311,51 @@
     [b addObject:[CPDictionary dictionaryWithObjects:[@"Tom", 27] forKeys:[@"name", @"age"]]];
     [b addObject:[CPDictionary dictionaryWithObjects:[@"Dick", 31] forKeys:[@"name", @"age"]]];
     [b addObject:[CPDictionary dictionaryWithObjects:[@"Harry", 47] forKeys:[@"name", @"age"]]];
-    [self assert:[b valueForKeyPath:@"@sum.age"] equals:105];
-    [self assert:[b valueForKeyPath:@"@avg.age"] equals:35];
-    [self assert:[b valueForKeyPath:@"@min.age"] equals:27];
-    [self assert:[b valueForKeyPath:@"@max.age"] equals:47];
     [self assert:[b valueForKeyPath:@"@min.name"] equals:@"Dick"];
-    [self assert:[b valueForKeyPath:@"@max.name"] equals:@"Tom"];
+}
+
+- (void)testKVCDistinctUnionOfObjectsSetOperators
+{
+    var b = [CPSet set];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Tom", 27] forKeys:[@"name", @"age"]]];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Dick", 31] forKeys:[@"name", @"age"]]];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Harry", 47] forKeys:[@"name", @"age"]]];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Dick", 67] forKeys:[@"name", @"age"]]];
+
+    [self assert:[b valueForKeyPath:@"@distinctUnionOfObjects.name"] equals:[@"Tom", @"Dick", @"Harry"]];
+    [self assert:[b valueForKeyPath:@"@distinctUnionOfObjects.age"] equals:[27, 31, 47, 67]];
+}
+
+- (void)testKVCUnionOfObjectsSetOperators
+{
+    var b = [CPSet set];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Tom", 27] forKeys:[@"name", @"age"]]];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Dick", 31] forKeys:[@"name", @"age"]]];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Harry", 47] forKeys:[@"name", @"age"]]];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Dick", 67] forKeys:[@"name", @"age"]]];
+
+    [self assert:[b valueForKeyPath:@"@unionOfObjects.name"] equals:[@"Tom", @"Dick", @"Harry"]];
+    [self assert:[b valueForKeyPath:@"@unionOfObjects.age"] equals:[27, 31, 47, 67]];
+}
+
+- (void)testKVCDistinctUnionOfSetsSetOperators
+{
+    var b = [CPSet set];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Tom", 27] forKeys:[@"name", @"age"]]];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Dick", 31] forKeys:[@"name", @"age"]]];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Harry", 47] forKeys:[@"name", @"age"]]];
+
+    var c = [CPSet set];
+    [c addObject:[CPDictionary dictionaryWithObjects:[@"Tom", 27] forKeys:[@"name", @"age"]]];
+    [c addObject:[CPDictionary dictionaryWithObjects:[@"Dick", 31] forKeys:[@"name", @"age"]]];
+    [c addObject:[CPDictionary dictionaryWithObjects:[@"Alex", 52] forKeys:[@"name", @"age"]]];
+
+    var all = [CPSet set];
+    [all addObject:b];
+    [all addObject:c];
+
+    [self assert:[all valueForKeyPath:@"@distinctUnionOfSets.name"] equals:[[CPSet alloc] initWithObjects:@"Tom", @"Dick", @"Harry", @"Alex"]];
+    [self assert:[all valueForKeyPath:@"@distinctUnionOfSets.age"] equals:[[CPSet alloc] initWithObjects:27, 31, 47, 52]];
 }
 
 - (void)testMember
