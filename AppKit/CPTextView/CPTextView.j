@@ -1658,7 +1658,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         return _MakeRangeFromAbs(wordRange.location, MIN(MAX(0, numberOfCharacters - 1), searchIndex));
     }
     // -> extend to the left
-    for (var searchIndex = index - 1; searchIndex > 0 && regex.exec(_characterTripletFromStringAtIndex(string, searchIndex)) === null; searchIndex--)
+    for (var searchIndex = index - 1; searchIndex >= 0 && regex.exec(_characterTripletFromStringAtIndex(string, searchIndex)) === null; searchIndex--)
     {
         wordRange.location = searchIndex;
     }
@@ -1668,7 +1668,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     {
         index++;
     }
-    return _MakeRangeFromAbs(wordRange.location, MIN(MAX(0, numberOfCharacters - 1), index));
+    return _MakeRangeFromAbs(wordRange.location, MIN(MAX(0, numberOfCharacters), index));
 }
 
 - (CPRange)selectionRangeForProposedRange:(CPRange)proposedRange granularity:(CPSelectionGranularity)granularity
