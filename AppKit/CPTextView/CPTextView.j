@@ -55,6 +55,15 @@ _MidRange = function(a1)
     return Math.floor((CPMaxRange(a1) + a1.location) / 2);
 };
 
+_characterTripletFromStringAtIndex=function(string, index)
+{
+    if([string isKindOfClass:CPAttributedString])
+        string = string._string;
+
+    var tripletRange = _MakeRangeFromAbs(MAX(0, index - 1), MIN(string.length, index + 2));
+    return [string substringWithRange:tripletRange];
+}
+
 /*
     CPSelectionGranularity
 */
@@ -75,28 +84,31 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 */
 @implementation CPTextView : CPText
 {
-    BOOL                        _allowsUndo                 @accessors(property=allowsUndo);
-    BOOL                        _isEditable                 @accessors(getter=isEditable, setter=setEditable:);
-    BOOL                        _isHorizontallyResizable    @accessors(getter=isHorizontallyResizable, setter=setHorinzontallyResizable);
-    BOOL                        _isRichText                 @accessors(getter=isRichText, setter=setRichText);
-    BOOL                        _isSelectable               @accessors(getter=isSelectable, setter=setSelectable:);
-    BOOL                        _isVerticallyResizable      @accessors(getter=isVerticallyResizable, setter=setVerticallyResizable);
-    BOOL                        _usesFontPanel              @accessors(property=usesFontPanel);
-    CGPoint                     _textContainerOrigin        @accessors(getter=textContainerOrigin);
-    CGSize                      _minSize                    @accessors(property=minSize);
-    CGSize                      _maxSize                    @accessors(property=maxSize);
-    CGSize                      _textContainerInset         @accessors(property=textContainerInset);
-    CPColor                     _insertionPointColor        @accessors(property=insertionPointColor);
-    CPColor                     _textColor                  @accessors(property=textColor);
-    CPDictionary                _selectedTextAttributes     @accessors(property=selectedTextAttributes);
-    CPDictionary                _typingAttributes           @accessors(property=typingAttributes);
-    CPFont                      _font                       @accessors(property=font);
-    CPLayoutManager             _layoutManager              @accessors(getter=layoutManager);
-    CPRange                     _selectionRange             @accessors(getter=selectedRange);
-    CPSelectionGranularity      _selectionGranularity       @accessors(property=selectionGranularity);
-    CPTextContainer             _textContainer              @accessors(property=textContainer);
-    CPTextStorage               _textStorage                @accessors(getter=textStorage);
-    id <CPTextViewDelegate>     _delegate                   @accessors(property=delegate);
+    BOOL                        _allowsUndo                   @accessors(property=allowsUndo);
+    BOOL                        _isEditable                   @accessors(getter=isEditable, setter=setEditable:);
+    BOOL                        _isHorizontallyResizable      @accessors(getter=isHorizontallyResizable, setter=setHorinzontallyResizable);
+    BOOL                        _isRichText                   @accessors(getter=isRichText, setter=setRichText);
+    BOOL                        _isSelectable                 @accessors(getter=isSelectable, setter=setSelectable:);
+    BOOL                        _isVerticallyResizable        @accessors(getter=isVerticallyResizable, setter=setVerticallyResizable);
+    BOOL                        _usesFontPanel                @accessors(property=usesFontPanel);
+    CGPoint                     _textContainerOrigin          @accessors(getter=textContainerOrigin);
+    CGSize                      _minSize                      @accessors(property=minSize);
+    CGSize                      _maxSize                      @accessors(property=maxSize);
+    CGSize                      _textContainerInset           @accessors(property=textContainerInset);
+    CPColor                     _insertionPointColor          @accessors(property=insertionPointColor);
+    CPColor                     _textColor                    @accessors(property=textColor);
+    CPDictionary                _selectedTextAttributes       @accessors(property=selectedTextAttributes);
+    CPDictionary                _typingAttributes             @accessors(property=typingAttributes);
+    CPFont                      _font                         @accessors(property=font);
+    CPLayoutManager             _layoutManager                @accessors(getter=layoutManager);
+    CPRange                     _selectionRange               @accessors(getter=selectedRange);
+    CPSelectionGranularity      _selectionGranularity         @accessors(property=selectionGranularity);
+    CPSelectionGranularity      _previousSelectionGranularity;  // private
+    CPSelectionGranularity      _copySelectionGranularit;       // private
+
+    CPTextContainer             _textContainer                @accessors(property=textContainer);
+    CPTextStorage               _textStorage                  @accessors(getter=textStorage);
+    id <CPTextViewDelegate>     _delegate                     @accessors(property=delegate);
 
     unsigned                    _delegateRespondsToSelectorMask;
 
@@ -126,16 +138,6 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     all of this depend of the current language.
     Need some CPLocale support and maybe even a FSM...
  */
-+ (CPArray)_wordBoundaryCharacterArray
-{
-    return ['\n','\r', ' ', '\t', ',', ';', '.', '!', '?', '\'', '"', '-', ':'];
-}
-
-+ (CPArray)_paragraphBoundaryCharacterArray
-{
-    return ['\n','\r'];
-}
-
 
 #pragma mark -
 #pragma mark Init methods
@@ -200,6 +202,30 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     return [self initWithFrame:aFrame textContainer:container];
 }
 
+- (void)copy:(id)sender
+{
+   _copySelectionGranularity = _previousSelectionGranularity;
+   [super copy:sender];
+}
+
+- (void)paste:(id)sender
+{
+    if (_copySelectionGranularity > 0)
+    {
+        if (![self _isCharacterAtIndex:MAX(0, _selectionRange.location - 1) granularity:_copySelectionGranularity])
+        {
+            [self insertText:" "];
+        }
+    }
+    [super paste:sender];
+    if (_copySelectionGranularity > 0)
+    {
+        if (![self _isCharacterAtIndex:CPMaxRange(_selectionRange) granularity:_copySelectionGranularity])
+        {
+            [self insertText:" "];
+        }
+    }
+}
 
 #pragma mark -
 #pragma mark Responders method
@@ -428,32 +454,31 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 #pragma mark -
 #pragma mark Insert characters methods
 
-- (void)_replaceCharactersInRange:aRange withAttributedString:(CPString)aString
+- (void)_fixupReplaceForRange:(CPRange)aRange
 {
-    [[[[self window] undoManager] prepareWithInvocationTarget:self]
-                _replaceCharactersInRange:CPMakeRange(aRange.location, [aString length])
-                     withAttributedString:[_textStorage attributedSubstringFromRange:CPMakeRangeCopy(aRange)]];
-
-    [_textStorage replaceCharactersInRange:aRange withAttributedString:aString];
-    [self setSelectedRange:CPMakeRange(aRange.location, [aString length])];
+    [self setSelectedRange:aRange];
     [_layoutManager _validateLayoutAndGlyphs];
     [self sizeToFit];
     [self scrollRangeToVisible:_selectionRange];
     [self setNeedsDisplay:YES];
+}
+- (void)_replaceCharactersInRange:aRange withAttributedString:(CPString)aString
+{
+    [[[[self window] undoManager] prepareWithInvocationTarget:self]
+                _replaceCharactersInRange:CPMakeRange(aRange.location, [aString length])
+                withAttributedString:[_textStorage attributedSubstringFromRange:CPMakeRangeCopy(aRange)]];
 
+    [_textStorage replaceCharactersInRange:aRange withAttributedString:aString];
+    [self _fixupReplaceForRange:CPMakeRange(aRange.location, [aString length])];
 }
 - (void)_replaceCharactersInRange:(CPRange)aRange withString:(CPString)aString
 {
     [[[[self window] undoManager] prepareWithInvocationTarget:self]
                 _replaceCharactersInRange:CPMakeRange(aRange.location, [aString length])
-                               withString:[[self string] substringWithRange:CPMakeRangeCopy(aRange)]];
+                withString:[[self string] substringWithRange:CPMakeRangeCopy(aRange)]];
 
     [_textStorage replaceCharactersInRange:CPMakeRangeCopy(aRange) withString:aString];
-    [self setSelectedRange:CPMakeRange(aRange.location, aString.length)];
-    [_layoutManager _validateLayoutAndGlyphs];
-    [self sizeToFit];
-    [self scrollRangeToVisible:_selectionRange];
-    [self setNeedsDisplay:YES];
+    [self _fixupReplaceForRange:CPMakeRange(aRange.location, [aString length])];
 }
 
 - (void)insertText:(CPString)aString
@@ -678,7 +703,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 {
     var textStorageLength = [_layoutManager numberOfCharacters];
 
-    if (!textStorageLength)
+    if (textStorageLength == 0)
         return CPMakeRange(0, 0);
 
     if (proposedRange.location >= textStorageLength)
@@ -692,23 +717,24 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     switch (granularity)
     {
         case CPSelectByWord:
-            var wordRange = [self _characterRangeForUnitAtIndex:proposedRange.location asDefinedByCharArray:[[self class] _wordBoundaryCharacterArray] skip:YES];
+            var wordRange = [self _characterRangeForIndex:proposedRange.location inRange:proposedRange asDefinedByRegex:[[self class] _wordBoundaryRegex] skip:YES];
 
             if (proposedRange.length)
-                wordRange = CPUnionRange(wordRange, [self _characterRangeForUnitAtIndex:CPMaxRange(proposedRange) asDefinedByCharArray:[[self class] _wordBoundaryCharacterArray] skip:NO]);
+                wordRange = CPUnionRange(wordRange, [self _characterRangeForIndex:CPMaxRange(proposedRange) inRange:proposedRange asDefinedByRegex:[[self class] _wordBoundaryRegex] skip:NO]);
 
             return wordRange;
 
         case CPSelectByParagraph:
-            var parRange = [self _characterRangeForUnitAtIndex:proposedRange.location asDefinedByCharArray:[[self class] _paragraphBoundaryCharacterArray] skip:NO];
-
-            if (parRange.length < 2)
-                parRange = [self _characterRangeForUnitAtIndex:proposedRange.location > 0 ? proposedRange.location - 1 : 0 asDefinedByCharArray:[[self class] _paragraphBoundaryCharacterArray] skip:NO];
-
-            if (parRange.length > 0) parRange.length++;
+            var parRange = [self _characterRangeForIndex:proposedRange.location inRange:proposedRange asDefinedByRegex:[[self class] _paragraphBoundaryRegex] skip:YES];
 
             if (proposedRange.length)
-                parRange = CPUnionRange(parRange, [self _characterRangeForUnitAtIndex:CPMaxRange(proposedRange) asDefinedByCharArray: [[self class] _paragraphBoundaryCharacterArray] skip:NO]);
+                parRange = CPUnionRange(parRange, [self _characterRangeForIndex:CPMaxRange(proposedRange)
+                                                                        inRange:proposedRange
+                                                               asDefinedByRegex:[[self class] _paragraphBoundaryRegex]
+                                                                           skip:NO]);
+
+            if (parRange.length > 0 && [self _isCharacterAtIndex:CPMaxRange(parRange) granularity:CPSelectByParagraph])
+                parRange.length++;
 
             return parRange;
 
@@ -716,7 +742,6 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
             return proposedRange;
     }
 }
-
 
 #pragma mark -
 #pragma mark Keyboard events
@@ -1588,80 +1613,106 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     switch (granularity)
     {
         case CPSelectByWord:
-            characterSet = [[self class] _wordBoundaryCharacterArray];
+            characterSet = [[self class] _wordBoundaryRegex];
             break;
 
         case CPSelectByParagraph:
-            characterSet = [[self class] _paragraphBoundaryCharacterArray];
+            characterSet = [[self class] _paragraphBoundaryRegex];
             break;
+        default:
+            // FIXME if (!characterSet) croak!
     }
 
-    // FIXME if (!characterSet) croak!
-    return characterSet.join("").indexOf([self string].charAt(index)) !== CPNotFound;
+    return characterSet.exec(_characterTripletFromStringAtIndex([_textStorage string], index)) !== null;
 }
 
-- (CPRange)_characterRangeForUnitAtIndex:(unsigned)index asDefinedByCharArray:(CPArray)characterSet skip:(BOOL)flag
++ (CPArray)_wordBoundaryRegex
 {
-    var wordRange = CPMakeRange(0, 0),
-        lastIndex = CPNotFound,
-        setString = characterSet.join(""),
-        string = [_textStorage string],
-        searchIndex;
+    return /^(.|[\r\n])\W/m;
+}
++ (CPArray)_paragraphBoundaryRegex
+{
+    return /^(.|[\r\n])[\n\r]/m;
+}
+
+- (CPRange)_characterRangeForIndex:(unsigned)index inRange:(CPRange) aRange asDefinedByRegex:(JSObject)regex skip:(BOOL)flag
+{
+    var wordRange = CPMakeRange(index, 0),
+        numberOfCharacters = [_layoutManager numberOfCharacters],
+        string = [_textStorage string];
 
     // do we start on a boundary character?
-    if (flag && string.charAt(index) && setString.indexOf(string.charAt(index)) !== CPNotFound)
+    if (flag && regex.exec(_characterTripletFromStringAtIndex([_textStorage string], index))  !== null)
     {
         // -> extend to the left
-        wordRange = CPMakeRange(index, 1);
-
-        while (setString.indexOf(string.charAt(--index)) !== CPNotFound && index > -1)
+        for (var searchIndex = index - 1; searchIndex > 0 && regex.exec(_characterTripletFromStringAtIndex(string, searchIndex)) !== null; searchIndex--)
         {
-             wordRange = CPMakeRange(index, 1);
+            wordRange.location = searchIndex;
         }
         // -> extend to the right
-        for (index = wordRange.location; setString.indexOf(string.charAt(++index)) !== CPNotFound && index < string.length;)
+        searchIndex = index + 1;
+        while (searchIndex < numberOfCharacters && regex.exec(_characterTripletFromStringAtIndex(string, searchIndex)) !== null)
         {
-             wordRange = _MakeRangeFromAbs(wordRange.location, MIN(MAX(0, string.length - 1), index + 1));
+            searchIndex++;
         }
-
-        return wordRange;
+        return _MakeRangeFromAbs(wordRange.location, MIN(MAX(0, numberOfCharacters - 1), searchIndex));
     }
-
-    for (searchIndex = 0; searchIndex < characterSet.length; searchIndex++)
+    // -> extend to the left
+    for (var searchIndex = index - 1; searchIndex > 0 && regex.exec(_characterTripletFromStringAtIndex(string, searchIndex)) === null; searchIndex--)
     {
-        var peek = string.lastIndexOf(characterSet[searchIndex], index);
-
-        if (peek !== CPNotFound)
-        {
-            lastIndex = lastIndex === CPNotFound ? peek : MAX(lastIndex, peek);
-        }
+        wordRange.location = searchIndex;
     }
-
-    if (lastIndex !== CPNotFound)
-        wordRange.location = lastIndex + 1;
-
-    lastIndex = CPNotFound;
-
-    for (searchIndex = 0 ; searchIndex < characterSet.length; searchIndex++)
+    // -> extend to the right
+    index++;
+    while (index < numberOfCharacters && regex.exec(_characterTripletFromStringAtIndex(string, index))  === null)
     {
-        var peek = string.indexOf(characterSet[searchIndex], index);
-
-        if (peek !== CPNotFound)
-        {
-            if (lastIndex === CPNotFound)
-                lastIndex = peek;
-            else
-                lastIndex = MIN(lastIndex, peek);
-        }
-
+        index++;
     }
+    return _MakeRangeFromAbs(wordRange.location, MIN(MAX(0, numberOfCharacters - 1), index));
+}
 
-    if (lastIndex != CPNotFound)
-        wordRange.length = lastIndex - wordRange.location;
-    else
-        wordRange.length = string.length - wordRange.location;
+- (CPRange)selectionRangeForProposedRange:(CPRange)proposedRange granularity:(CPSelectionGranularity)granularity
+{
+    var textStorageLength = [_layoutManager numberOfCharacters];
 
-    return wordRange;
+    if (textStorageLength == 0)
+        return CPMakeRange(0, 0);
+
+    if (proposedRange.location >= textStorageLength)
+        return CPMakeRange(textStorageLength, 0);
+
+    if (CPMaxRange(proposedRange) > textStorageLength)
+        proposedRange.length = textStorageLength - proposedRange.location;
+
+    var string = [_textStorage string];
+
+    switch (granularity)
+    {
+        case CPSelectByWord:
+            var wordRange = [self _characterRangeForIndex:proposedRange.location inRange:proposedRange asDefinedByRegex:[[self class] _wordBoundaryRegex] skip:YES];
+
+            if (proposedRange.length)
+                wordRange = CPUnionRange(wordRange, [self _characterRangeForIndex:CPMaxRange(proposedRange) inRange:proposedRange asDefinedByRegex:[[self class] _wordBoundaryRegex] skip:NO]);
+
+            return wordRange;
+
+        case CPSelectByParagraph:
+            var parRange = [self _characterRangeForIndex:proposedRange.location inRange:proposedRange asDefinedByRegex:[[self class] _paragraphBoundaryRegex] skip:YES];
+
+            if (proposedRange.length)
+                parRange = CPUnionRange(parRange, [self _characterRangeForIndex:CPMaxRange(proposedRange)
+                                                                        inRange:proposedRange
+                                                               asDefinedByRegex:[[self class] _paragraphBoundaryRegex]
+                                                                           skip:NO]);
+
+            if (parRange.length > 0 && [self _isCharacterAtIndex:CPMaxRange(parRange) granularity:CPSelectByParagraph])
+                parRange.length++;
+
+            return parRange;
+
+        default:
+            return proposedRange;
+    }
 }
 
 - (BOOL)shouldDrawInsertionPoint

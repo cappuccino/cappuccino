@@ -99,7 +99,6 @@ CPKernAttributeName = @"CPKernAttributeName";
 
 @implementation CPText : CPView
 {
-    int _previousSelectionGranularity;
 }
 
 - (void)changeFont:(id)sender
@@ -141,11 +140,6 @@ CPKernAttributeName = @"CPKernAttributeName";
 
     if (![self isRichText] && [stringForPasting isKindOfClass:[CPAttributedString class]])
         stringForPasting = stringForPasting._string;
-
-    if (_previousSelectionGranularity > 0)
-    {
-        // FIXME: handle smart pasting
-    }
 
     if (stringForPasting)
         [self insertText:stringForPasting];
