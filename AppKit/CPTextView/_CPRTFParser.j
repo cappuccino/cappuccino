@@ -253,6 +253,8 @@ var kRgsymRtf = {
         "["                                  : [ "[",        0,        false,     kRTFParserType_char,    '['],
         " "                                  : [ " ",        0,        false,     kRTFParserType_char,    ' '],
         "]"                                  : [ "]",        0,        false,     kRTFParserType_char,    ']'],
+        "{"                                  : [ "{",        0,        false,     kRTFParserType_char,    '{'],
+        "}"                                  : [ "}",        0,        false,     kRTFParserType_char,    '}'],
         "\\"                                 : [ "\\",       0,        false,     kRTFParserType_char,    '\\']
     };
 
