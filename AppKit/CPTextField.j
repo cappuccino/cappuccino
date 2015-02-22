@@ -1941,11 +1941,11 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
     if (theBinding)
     {
         [notificationCenter removeObserver:[theBinding._info objectForKey:CPObservedObjectKey]
-                                      name:@"CPControlTextDidBeginEditingNotification"
+                                      name:CPControlTextDidBeginEditingNotification
                                     object:anObject];
 
         [notificationCenter removeObserver:[theBinding._info objectForKey:CPObservedObjectKey]
-                                      name:@"CPControlTextDidEndEditingNotification"
+                                      name:CPControlTextDidEndEditingNotification
                                     object:anObject];
 
         [super unbind:aBinding forObject:anObject];
