@@ -479,14 +479,12 @@ CPSegmentSwitchTrackingMomentary = 2;
 
 - (float)_leftOffsetForSegment:(unsigned)segment
 {
-    var bezelInset = [self currentValueForThemeAttribute:@"bezel-inset"];
-
     if (segment == 0)
-        return bezelInset.left;
+        return [self currentValueForThemeAttribute:@"bezel-inset"].left;
 
     var thickness = [self currentValueForThemeAttribute:@"divider-thickness"];
 
-    return [self _leftOffsetForSegment:segment - 1] + [self widthForSegment:segment - 1] + thickness;
+    return [self _leftOffsetForSegment:segment - 1] + CGRectGetWidth([self frameForSegment:segment - 1]) + thickness;
 }
 
 - (unsigned)_indexOfLastSegment
@@ -520,7 +518,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     else if (aName.indexOf("segment-bezel") === 0)
     {
         var segment = parseInt(aName.substring("segment-bezel-".length), 10),
-            frame = CGRectCreateCopy([_segments[segment] frame]);
+            frame = CGRectCreateCopy([self frameForSegment:segment]);
 
         if (segment === 0)
         {
@@ -536,7 +534,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     else if (aName.indexOf("divider-bezel") === 0)
     {
         var segment = parseInt(aName.substring("divider-bezel-".length), 10),
-            width = [self widthForSegment:segment],
+            width = CGRectGetWidth([self frameForSegment:segment]),
             left = [self _leftOffsetForSegment:segment],
             thickness = [self currentValueForThemeAttribute:@"divider-thickness"];
 
@@ -746,24 +744,46 @@ CPSegmentSwitchTrackingMomentary = 2;
 */
 - (CGRect)frameForSegment:(unsigned)aSegment
 {
-    return [self bezelFrameForSegment:aSegment];
+    var segment = [_segments objectAtIndex:aSegment],
+        frame = [segment frame];
+
+    if (CGRectEqualToRect(frame, CGRectMakeZero()))
+    {
+        frame = [self bezelFrameForSegment:aSegment];
+        [segment setFrame:frame];
+    }
+
+    return frame;
 }
 
 - (CGRect)bezelFrameForSegment:(unsigned)aSegment
 {
-    var height = [self currentValueForThemeAttribute:@"min-size"].height,
-        bezelInset = [self currentValueForThemeAttribute:@"bezel-inset"],
+    var left = [self _leftOffsetForSegment:aSegment],
+        top = [self currentValueForThemeAttribute:@"bezel-inset"].top,
         width = [self widthForSegment:aSegment],
-        left = [self _leftOffsetForSegment:aSegment];
+        height = [self currentValueForThemeAttribute:@"min-size"].height;
 
-    return CGRectMake(left, bezelInset.top, width, height);
+    if (width == 0)
+    {
+        var themeState = _themeState.hasThemeState(CPThemeStateDisabled) ? _themeStates[aSegment].and(CPThemeStateDisabled) : _themeStates[aSegment],
+            contentInset = [self valueForThemeAttribute:@"content-inset" inState:themeState],
+            contentInsetWidth = contentInset.left + contentInset.right,
+
+            segment = _segments[aSegment],
+            label = [segment label],
+            image = [segment image];
+
+        width = (label ? [label sizeWithFont:[self font]].width : 4.0) + (image ? [image size].width : 0) + contentInsetWidth;
+    }
+
+    return CGRectMake(left, top, width, height);
 }
 
 - (CGRect)contentFrameForSegment:(unsigned)aSegment
 {
     var height = [self currentValueForThemeAttribute:@"min-size"].height,
         contentInset = [self currentValueForThemeAttribute:@"content-inset"],
-        width = [self widthForSegment:aSegment],
+        width = CGRectGetWidth([self frameForSegment:aSegment]),
         left = [self _leftOffsetForSegment:aSegment];
 
     return CGRectMake(left + contentInset.left, contentInset.top, width - contentInset.left - contentInset.right, height - contentInset.top - contentInset.bottom);
@@ -780,12 +800,12 @@ CPSegmentSwitchTrackingMomentary = 2;
         count = [self segmentCount];
 
     while (count--)
-        if (CGRectContainsPoint([_segments[count] frame], aPoint))
+        if (CGRectContainsPoint([self frameForSegment:count], aPoint))
             return count;
 
     if ([self segmentCount])
     {
-        var adjustedLastFrame = CGRectCreateCopy([_segments[_segments.length - 1] frame]);
+        var adjustedLastFrame = CGRectCreateCopy([self frameForSegment:(_segments.length - 1)]);
         adjustedLastFrame.size.width = CGRectGetWidth([self bounds]) - adjustedLastFrame.origin.x;
 
         if (CGRectContainsPoint(adjustedLastFrame, aPoint))
@@ -940,8 +960,10 @@ var CPSegmentedControlSegmentsKey       = "CPSegmentedControlSegmentsKey",
         // We do this in a second loop because it relies on all the themeStates being set first
         for (var i = 0; i < [self segmentCount]; i++)
         {
-            [self setWidth:[_segments[i] width] + remainingWidth forSegment:i];
-            widthOfAllSegments += [_segments[i] width];
+            var frame = [_segments[i] frame];
+            frame.size.width += remainingWidth;
+
+            widthOfAllSegments += CGRectGetWidth(frame);
         }
 
         // Here we handle the leftovers pixel, and we will add one pixel to each segment cell till we have the same size as the originalSize.
@@ -953,11 +975,11 @@ var CPSegmentedControlSegmentsKey       = "CPSegmentedControlSegmentsKey",
         {
             for (var i = 0; i < leftOversPixel; i++)
             {
-                [self setWidth:[_segments[i] width] + 1 forSegment:i];
+                [_segments[i] frame].size.width += 1;
             }
         }
 
-        [self setFrameSize:CGSizeMake(originalWidth, [self frame].size.height)];
+        [self setFrameSize:CGSizeMake(originalWidth, CGRectGetHeight([self frame]))];
         [self tileWithChangedSegment:0];
     }
 
