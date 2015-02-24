@@ -87,6 +87,8 @@ CPSegmentSwitchTrackingMomentary = 2;
         _selectedSegment = -1;
 
         _trackingMode = CPSegmentSwitchTrackingSelectOne;
+        _trackingHighlighted = NO;
+        _trackingSegment = -1;
     }
 
     return self;
