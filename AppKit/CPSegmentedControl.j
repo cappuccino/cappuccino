@@ -191,8 +191,8 @@ CPSegmentSwitchTrackingMomentary = 2;
 {
     var index = 0;
 
-    for (; index < _segments.length; ++index)
-        if (_segments[index].tag == aTag)
+    for (; index < [_segments count]; ++index)
+        if ([[_segments objectAtIndex:index] tag] == aTag)
         {
             [self setSelectedSegment:index];
 
@@ -206,8 +206,8 @@ CPSegmentSwitchTrackingMomentary = 2;
 {
     var index = 0;
 
-    for (; index < _segments.length; ++index)
-        if (_segments[index].label == aLabel)
+    for (; index < [_segments count]; ++index)
+        if ([[_segments objectAtIndex:index] label] == aLabel)
         {
             [self setSelectedSegment:index];
 
@@ -271,7 +271,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 */
 - (void)setWidth:(float)aWidth forSegment:(unsigned)aSegment
 {
-    [_segments[aSegment] setWidth:aWidth];
+    [[_segments objectAtIndex:aSegment] setWidth:aWidth];
     [self tileWithChangedSegment:aSegment];
 }
 
@@ -282,7 +282,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 */
 - (float)widthForSegment:(unsigned)aSegment
 {
-    return [_segments[aSegment] width];
+    return [[_segments objectAtIndex:aSegment] width];
 }
 
 /*!
@@ -293,7 +293,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 */
 - (void)setImage:(CPImage)anImage forSegment:(unsigned)aSegment
 {
-    [_segments[aSegment] setImage:anImage];
+    [[_segments objectAtIndex:aSegment] setImage:anImage];
 
     [self tileWithChangedSegment:aSegment];
 }
@@ -305,7 +305,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 */
 - (CPImage)imageForSegment:(unsigned)aSegment
 {
-    return [_segments[aSegment] image];
+    return [[_segments objectAtIndex:aSegment] image];
 }
 
 /*!
@@ -316,7 +316,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 */
 - (void)setLabel:(CPString)aLabel forSegment:(unsigned)aSegment
 {
-    [_segments[aSegment] setLabel:aLabel];
+    [[_segments objectAtIndex:aSegment] setLabel:aLabel];
 
     [self tileWithChangedSegment:aSegment];
 }
@@ -328,7 +328,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 */
 - (CPString)labelForSegment:(unsigned)aSegment
 {
-    return [_segments[aSegment] label];
+    return [[_segments objectAtIndex:aSegment] label];
 }
 
 /*!
@@ -339,7 +339,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 */
 - (void)setMenu:(CPMenu)aMenu forSegment:(unsigned)aSegment
 {
-    [_segments[aSegment] setMenu:aMenu];
+    [[_segments objectAtIndex:aSegment] setMenu:aMenu];
 }
 
 /*!
@@ -349,7 +349,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 */
 - (CPMenu)menuForSegment:(unsigned)aSegment
 {
-    return [_segments[aSegment] menu];
+    return [[_segments objectAtIndex:aSegment] menu];
 }
 
 /*!
@@ -361,7 +361,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 */
 - (void)setSelected:(BOOL)isSelected forSegment:(unsigned)aSegment
 {
-    var segment = _segments[aSegment];
+    var segment = [_segments objectAtIndex:aSegment];
 
     // If we're already in this state, bail.
     if ([segment selected] == isSelected)
@@ -401,7 +401,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 */
 - (BOOL)isSelectedForSegment:(unsigned)aSegment
 {
-    return [_segments[aSegment] selected];
+    return [[_segments objectAtIndex:aSegment] selected];
 }
 
 /*!
@@ -412,10 +412,12 @@ CPSegmentSwitchTrackingMomentary = 2;
 */
 - (void)setEnabled:(BOOL)shouldBeEnabled forSegment:(unsigned)aSegment
 {
-    if ([_segments[aSegment] enabled] === shouldBeEnabled)
+    var segment = [_segments objectAtIndex:aSegment];
+
+    if ([segment enabled] === shouldBeEnabled)
         return;
 
-    [_segments[aSegment] setEnabled:shouldBeEnabled];
+    [segment setEnabled:shouldBeEnabled];
 
     if (shouldBeEnabled)
         _themeStates[aSegment] = _themeStates[aSegment].without(CPThemeStateDisabled);
@@ -433,7 +435,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 */
 - (BOOL)isEnabledForSegment:(unsigned)aSegment
 {
-    return [_segments[aSegment] enabled];
+    return [[_segments objectAtIndex:aSegment] enabled];
 }
 
 /*!
@@ -443,7 +445,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 */
 - (void)setTag:(int)aTag forSegment:(unsigned)aSegment
 {
-    [_segments[aSegment] setTag:aTag];
+    [[_segments objectAtIndex:aSegment] setTag:aTag];
 }
 
 /*!
@@ -452,7 +454,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 */
 - (int)tagForSegment:(unsigned)aSegment
 {
-    return [_segments[aSegment] tag];
+    return [[_segments objectAtIndex:aSegment] tag];
 }
 
 // Drawings
