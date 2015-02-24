@@ -194,7 +194,7 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
 
     // Text color
     _textColorWell = [[CPColorWell alloc] initWithFrame:CGRectMake(10, 0, 25, 25)];
-    [_textColorWell setColor:_textColor];    // <!> FIXME: use bindings
+    [_textColorWell setColor:_textColor];
     [_toolbarView addSubview:_textColorWell];
     [colorPanel setTarget:self];
     [colorPanel setAction:@selector(changeColor:)];
@@ -250,7 +250,8 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
         return;
 
     var attribs = [textView typingAttributes],
-        font = [attribs objectForKey:CPFontAttributeName] || [[textView textStorage] font] || [CPFont systemFontOfSize:12.0];
+        font = [attribs objectForKey:CPFontAttributeName] || [[textView textStorage] font] || [CPFont systemFontOfSize:12.0],
+        color = [attribs objectForKey:CPForegroundColorAttributeName];
 
     if (!font)
         return;
@@ -267,6 +268,11 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
     [self setCurrentFont:font];
     [self setCurrentTrait:trait];
     [self setCurrentSize:[font size] + ""];  //cast to string
+
+    if (!color)
+        return;
+
+    [_textColorWell setColor:color];
 }
 
 - (void)orderFront:(id)sender
