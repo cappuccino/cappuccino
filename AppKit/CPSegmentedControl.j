@@ -679,63 +679,35 @@ CPSegmentSwitchTrackingMomentary = 2;
 {
 }
 
-- (void)tileWithChangedSegment:(unsigned)aSegment
+- (void)tileWithChangedSegment:(CPInteger)aSegment
 {
-    if (aSegment >= _segments.length)
-        return;
+    var segmentCount = [self segmentCount];
 
-    var segment = _segments[aSegment],
-        segmentWidth = [segment width],
-        themeState = _themeState.hasThemeState(CPThemeStateDisabled) ? _themeStates[aSegment].and(CPThemeStateDisabled) : _themeStates[aSegment],
-        contentInset = [self valueForThemeAttribute:@"content-inset" inState:themeState],
-        font = [self font];
-
-    if (!segmentWidth)
+    if (segmentCount == 0)
     {
-        if ([segment image] && [segment label])
-            segmentWidth = [[segment label] sizeWithFont:font].width + [[segment image] size].width + contentInset.left + contentInset.right;
-        else if (segment.image)
-            segmentWidth = [[segment image] size].width + contentInset.left + contentInset.right;
-        else if (segment.label)
-            segmentWidth = [[segment label] sizeWithFont:font].width + contentInset.left + contentInset.right;
-        else
-            segmentWidth = 0.0;
-    }
-
-    var delta = segmentWidth - CGRectGetWidth([segment frame]);
-
-    if (!delta)
-    {
-        [self setNeedsLayout];
-        [self setNeedsDisplay:YES];
-
+        [self setFrameSize:CGSizeMake(0, [self valueForThemeAttribute:@"min-size"].height)];
         return;
     }
 
-    // Update control size
-    var frame = [self frame];
-    [self setFrameSize:CGSizeMake(CGRectGetWidth(frame) + delta, CGRectGetHeight(frame))];
+    if (aSegment < 0 || aSegment >= segmentCount)
+        return;
 
-    // Update segment width
-    [segment setWidth:segmentWidth];
-    [segment setFrame:[self frameForSegment:aSegment]];
+    // Invalidate frames for segments on the right. They will be lazily computed by -frameForSegment:.
+    for (var i = aSegment; i < segmentCount; i++)
+        [_segments[i] setFrame:CGRectMakeZero()];
 
-    // Update following segments widths
-    var index = aSegment + 1;
-
-    for (; index < _segments.length; ++index)
-    {
-        [_segments[index] frame].origin.x += delta;
-
-        [self drawSegmentBezel:index highlight:NO];
-        [self drawSegment:index highlight:NO];
-    }
-
-    [self drawSegmentBezel:aSegment highlight:NO];
-    [self drawSegment:aSegment highlight:NO];
+    [self setFrameSize:[self intrinsicContentSize]];
 
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
+}
+
+- (CGSize)intrinsicContentSize
+{
+    // frameForSegment is recursively called backwards. All previously invalidated frames will be recomputed.
+    var maxX = CGRectGetMaxX([self frameForSegment:([self segmentCount] - 1)]);
+
+    return CGSizeMake(maxX, CGRectGetHeight([self frame]));
 }
 
 /*!
@@ -947,9 +919,7 @@ var CPSegmentedControlSegmentsKey       = "CPSegmentedControlSegmentsKey",
         for (var i = 0; i < [self segmentCount]; i++)
             _themeStates[i] = [_segments[i] selected] ? CPThemeStateSelected : CPThemeStateNormal;
 
-        // We do this in a second loop because it relies on all the themeStates being set first
-        for (var i = 0; i < _segments.length; i++)
-            [self tileWithChangedSegment:i];
+        [self tileWithChangedSegment:0];
 
         var thickness = [self currentValueForThemeAttribute:@"divider-thickness"],
             dividerExtraSpace = ([_segments count] - 1) * thickness,
