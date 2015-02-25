@@ -546,13 +546,22 @@ CPTableColumnUserResizingMask   = 1 << 1;
 - (void)setValueFor:(CPString)aBinding
 {
     var tableView = [_source tableView],
-        column = [[tableView tableColumns] indexOfObjectIdenticalTo:_source],
-        rowIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [tableView numberOfRows])],
-        columnIndexes = [CPIndexSet indexSetWithIndex:column];
+        newNumberOfRows = [tableView _numberOfRows];
 
-    // Reloads objectValues only, not the views.
-    // FIXME: reload data for all rows or just exposed rows ?
-    [tableView _reloadDataForRowIndexes:rowIndexes columnIndexes:columnIndexes];
+    if ([tableView numberOfRows] == newNumberOfRows)
+    {
+        var rowIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, newNumberOfRows)],
+            column = [[tableView tableColumns] indexOfObjectIdenticalTo:_source],
+            columnIndexes = [CPIndexSet indexSetWithIndex:column];
+
+        // Reloads objectValues only, not the views.
+        // FIXME: reload data for all rows or just rows intersecting exposed rows ?
+        [tableView _reloadDataForRowIndexes:rowIndexes columnIndexes:columnIndexes];
+    }
+    else
+    {
+        [tableView reloadData];
+    }
 }
 
 - (CPSortDescriptor)_defaultSortDescriptorPrototype

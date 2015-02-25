@@ -277,6 +277,53 @@
     [contentBindingTable reloadData];
 }
 
+- (void)testColumnValueBinding
+{
+    var table = [[CPTableView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)],
+        container = [TestDataSource new];
+
+    var tc = [[CPTableColumn alloc] initWithIdentifier:@"A"];
+    [table addTableColumn:tc];
+
+    [container setTableEntries:@[@{@"name":@"B1"}, @{@"name":@"B2"}, @{@"name":@"B3"}]];
+
+    var ac = [[CPArrayController alloc] init];
+    [ac bind:@"contentArray" toObject:container withKeyPath:@"tableEntries" options:nil];
+    [tc bind:@"value" toObject:ac withKeyPath:@"arrangedObjects.name" options:nil];
+
+    [[theWindow contentView] addSubview:table];
+    [theWindow makeFirstResponder:table];
+
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+    // Should remove all table rows.
+    [self assertNoThrow:function()
+    {
+        [container setTableEntries:@[]];
+    }];
+
+    [container setTableEntries:@[@{@"name":@"B1"}, @{@"name":@"B2"}, @{@"name":@"B3"}]];
+
+    [self assertNoThrow:function()
+    {
+        [container setTableEntries:nil];
+    }];
+
+    [container setTableEntries:@[@{@"name":@"B1"}, @{@"name":@"B2"}, @{@"name":@"B3"}]];
+
+    // Change a value in row 0. The number of rows stays the same.
+    [container setTableEntries:@[@{@"name":@"B4"}, @{@"name":@"B2"}, @{@"name":@"B3"}]];
+
+    // Checks that the displayed data matches the model data.
+    [table enumerateAvailableViewsUsingBlock:function(dataView, aRow, aColumn, stop)
+    {
+        var data_value = [[[container tableEntries] objectAtIndex:aRow] objectForKey:@"name"];
+        [self assert:[dataView objectValue] equals:data_value];
+    }];
+
+    // We could also check that the dataviews in rows 1 and 2 are identical to the ones before mutation.
+}
+
 - (void)testInitiallyHiddenColumns
 {
     var table = [[CPTableView alloc] initWithFrame:CGRectMake(0, 0, 400, 400)],
