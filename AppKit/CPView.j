@@ -2608,12 +2608,25 @@ setBoundsOrigin:
 
 - (void)setNeedsLayout
 {
-    if (!(_viewClassFlags & CPViewHasCustomLayoutSubviews))
+    [self setNeedsLayout:YES];
+}
+
+- (void)setNeedsLayout:(BOOL)needLayout
+{
+    if (!(_viewClassFlags & CPViewHasCustomLayoutSubviews) || !needLayout)
+    {
+        _needsLayout = NO;
         return;
+    }
 
     _needsLayout = YES;
 
     _CPDisplayServerAddLayoutObject(self);
+}
+
+- (BOOL)needsLayout
+{
+    return _needsLayout;
 }
 
 - (void)layoutIfNeeded
