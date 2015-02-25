@@ -659,7 +659,6 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 - (void)setSelectedRange:(CPRange)range
 {
     [self setSelectedRange:range affinity:0 stillSelecting:NO];
-    [self setTypingAttributes:[_textStorage attributesAtIndex:MAX(0, range.location -1) effectiveRange:nil]];
 }
 
 - (void)setSelectedRange:(CPRange)range affinity:(CPSelectionAffinity /* unused */ )affinity stillSelecting:(BOOL)selecting
@@ -688,7 +687,12 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         if (_isFirstResponder)
             [self updateInsertionPointStateAndRestartTimer:((_selectionRange.length === 0) && ![_caretTimer isValid])];
 
-        [self setTypingAttributes:[_textStorage attributesAtIndex:MAX(0, range.location -1) effectiveRange:nil]];
+        var peekLoc = MAX(0, range.location - 1);
+
+        if ((_isNewlineCharacter([[_textStorage string] characterAtIndex:peekLoc])))
+            peekLoc++;
+
+        [self setTypingAttributes:[_textStorage attributesAtIndex:peekLoc effectiveRange:nil]];
 
         [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeSelectionNotification object:self];
     }
