@@ -1622,7 +1622,7 @@ NOT YET IMPLEMENTED
 */
 - (int)numberOfRows
 {
-        return _numberOfRows;
+    return _numberOfRows;
 }
 
 - (int)_numberOfRows
@@ -3706,6 +3706,64 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 }
 
 /*!
+    Returns an instance of CPView
+
+    @param column The index of the column in the tableColumn array
+    @param row The index of the row
+    @param makeIfNecessary YES if a view is required, NO if you want to update properties on a view, if one is available.
+
+    @discussion
+    This method first attempts to return an available view, which is generally in the visible area. If there is no available view, and makeIfNecessary is YES, a prepared temporary view is returned. If makeIfNecessary is NO, and the view is not available, nil will be returned.
+
+    An exception will be thrown if row is an invalid row index and if column is an invalid column index
+*/
+- (id)viewAtColumn:(CPInteger)column row:(CPInteger)row makeIfNecessary:(BOOL)makeIfNecessary
+{
+    if (row > (_numberOfRows - 1))
+        [CPException raise:CPInvalidArgumentException
+                    reason:@"Row " + row + " out of row range [0-" + (_numberOfRows - 1) + "] for rowViewAtRow:createIfNeeded:"];
+
+    if (column > (NUMBER_OF_COLUMNS() - 1))
+        [CPException raise:CPInvalidArgumentException
+                    reason:@"Column " + column + " out of row range [0-" + (NUMBER_OF_COLUMNS ()- 1) + "] for rowViewAtRow:createIfNeeded:"];
+
+    var dataViewsForRow = _dataViewsForRows[row],
+        tableColumn = _tableColumns[column],
+        tableColumnUID = [tableColumn UID],
+        view = dataViewsForRow ? dataViewsForRow[tableColumnUID] : nil;
+
+    if (!makeIfNecessary)
+        return view || nil;
+
+    if (!view)
+    {
+        if (!dataViewsForRow)
+        {
+            dataViewsForRow = {}
+            _dataViewsForRows[row] = dataViewsForRow;
+        }
+
+        // Here we will add this view to the tableView and add it to the exposedRows adn columns.
+        // The view will be deleted if necessary during the next run loop cycle of the table view
+        // This is how cocoa works
+        view = [self preparedViewAtColumn:column row:row];
+
+        if ([view superview] !== self)
+            [self addSubview:view];
+
+        dataViewsForRow[tableColumnUID] = view;
+
+        [_exposedRows addIndex:row];
+        [_exposedColumns addIndex:column];
+
+        // Make sure to layout the tableView again
+        [self setNeedsLayout];
+    }
+
+    return view;
+}
+
+/*!
     @ignore
 */
 - (CPView)_unarchiveViewWithIdentifier:(CPString)anIdentifier owner:(id)anOwner
@@ -4349,7 +4407,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 - (void)viewWillMoveToSuperview:(CPView)aView
 {
     if ([aView isKindOfClass:[CPClipView class]])
+    {
         _observedClipView = aView;
+    }
     else
     {
         [self _stopObservingClipView];

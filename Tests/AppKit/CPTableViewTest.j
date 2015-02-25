@@ -547,6 +547,95 @@
     }];
 }
 
+- (void)testMethodViewAtColumnWithMakeIfNecessarySetToNo
+{
+    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0, 0, 100.0, 100.0)];
+    [scrollView setDocumentView:tableView];
+
+    var dataSource = [TestDataSource new];
+
+    [tableView setDelegate:[CustomeSizeTableDelegate new]];
+    [dataSource setTableEntries:["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]];
+    [tableView setDataSource:dataSource];
+
+    // Process all events immediately to make sure table data views are reloaded.
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+    var view = [tableView viewAtColumn:0 row:0 makeIfNecessary:NO];
+    [self assert:[view objectValue] equals:@"A" message:@"View should be equal to A"];
+    [self assert:[view superview] equals:tableView message:@"Superview of view should be the tableview"];
+
+    view = [tableView viewAtColumn:0 row:25 makeIfNecessary:NO];
+    [self assert:view equals:nil message:@"View should be equal to nil"];
+}
+
+- (void)testMethodViewAtColumnWithMakeIfNecessarySetToYes
+{
+    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0, 0, 100.0, 100.0)];
+    [scrollView setDocumentView:tableView];
+
+    var dataSource = [TestDataSource new];
+
+    [tableView setDelegate:[CustomeSizeTableDelegate new]];
+    [dataSource setTableEntries:["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]];
+    [tableView setDataSource:dataSource];
+
+    // Process all events immediately to make sure table data views are reloaded.
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+    var view = [tableView viewAtColumn:0 row:0 makeIfNecessary:YES];
+    [self assert:[view objectValue] equals:@"A" message:@"View should be equal to A"];
+    [self assert:[view superview] equals:tableView message:@"Superview of view should be the tableview"];
+
+    view = [tableView viewAtColumn:0 row:25 makeIfNecessary:YES];
+    [self assert:[view objectValue] equals:@"Z" message:@"View should be equal to Z"];
+    [self assert:[view superview] equals:tableView message:@"Superview of view should be the tableview"];
+}
+
+- (void)testMethodViewAtColumnException
+{
+    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0, 0, 100.0, 100.0)];
+    [scrollView setDocumentView:tableView];
+
+    var dataSource = [TestDataSource new];
+
+    [tableView setDelegate:[CustomeSizeTableDelegate new]];
+    [dataSource setTableEntries:["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]];
+    [tableView setDataSource:dataSource];
+
+    // Process all events immediately to make sure table data views are reloaded.
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+    var expectedMessage = @"Row 26 out of row range [0-25] for rowViewAtRow:createIfNeeded:",
+        exceptionMessage = @"";
+
+    try
+    {
+        [tableView viewAtColumn:0 row:26 makeIfNecessary:YES];
+    }
+    catch (e)
+    {
+        exceptionMessage = e.message;
+    }
+
+    [self assert:expectedMessage equals:exceptionMessage];
+
+
+    expectedMessage = @"Column 2 out of row range [0-0] for rowViewAtRow:createIfNeeded:";
+
+    try
+    {
+        [tableView viewAtColumn:2 row:2 makeIfNecessary:YES];
+    }
+    catch (e)
+    {
+        exceptionMessage = e.message;
+    }
+
+    [self assert:expectedMessage equals:exceptionMessage];
+
+}
+
 @end
 
 @implementation FirstResponderConfigurableTableView : CPTableView
@@ -579,6 +668,23 @@
 - (void)tableView:(CPTableView)aTableView setObjectValue:(id)anObject forTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow
 {
     tableEntries[aRow] = anObject;
+}
+
+@end
+
+@implementation CustomeSizeTableDelegate : CPObject
+{
+
+}
+
+- (float)tableView:(CPTableView)aTableView heightOfRow:(CPInteger)aRowIndex
+{
+    return 200;
+}
+
+- (CPView)tableView:(CPTableView)aTableView viewForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRowIndex
+{
+    return [[CPTextField alloc] initWithFrame:CGRectMake(0,0, 100, 100)];
 }
 
 @end
