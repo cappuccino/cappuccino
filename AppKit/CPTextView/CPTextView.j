@@ -686,7 +686,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
         var peekLoc = MAX(0, range.location - 1);
 
-        if ((_isNewlineCharacter([[_textStorage string] characterAtIndex:peekLoc])))
+        if (_isNewlineCharacter([[_textStorage string] characterAtIndex:peekLoc]))
             peekLoc++;
 
         [self setTypingAttributes:[_textStorage attributesAtIndex:peekLoc effectiveRange:nil]];
