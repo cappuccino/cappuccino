@@ -161,7 +161,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 */
 - (unsigned)segmentCount
 {
-    return _segments.length;
+    return [_segments count];
 }
 
 // Specifying Selected Segment
@@ -236,7 +236,7 @@ CPSegmentSwitchTrackingMomentary = 2;
         var index = 0,
             selected = NO;
 
-        for (; index < _segments.length; ++index)
+        for (; index < [self segmentCount]; ++index)
             if ([_segments[index] selected])
                 if (selected)
                     [self setSelected:NO forSegment:index];
@@ -248,7 +248,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     {
         var index = 0;
 
-        for (; index < _segments.length; ++index)
+        for (; index < [self segmentCount]; ++index)
             if ([_segments[index] selected])
                 [self setSelected:NO forSegment:index];
     }
@@ -528,7 +528,7 @@ CPSegmentSwitchTrackingMomentary = 2;
             frame.size.width -= contentInset.left;
         }
 
-        if (segment === _segments.length - 1)
+        if (segment === [self segmentCount] - 1)
             frame.size.width = CGRectGetWidth([self bounds]) - contentInset.right - frame.origin.x;
 
         return frame;
@@ -562,7 +562,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 
 - (void)layoutSubviews
 {
-    if (_segments.length <= 0)
+    if ([self segmentCount] <= 0)
         return;
 
     var themeState = _themeStates[0],
@@ -777,19 +777,19 @@ CPSegmentSwitchTrackingMomentary = 2;
 - (unsigned)testSegment:(CGPoint)aPoint
 {
     var location = [self convertPoint:aPoint fromView:nil],
-        count = _segments.length;
+        count = [self segmentCount];
 
     while (count--)
         if (CGRectContainsPoint([_segments[count] frame], aPoint))
             return count;
 
-    if (_segments.length)
+    if ([self segmentCount])
     {
         var adjustedLastFrame = CGRectCreateCopy([_segments[_segments.length - 1] frame]);
         adjustedLastFrame.size.width = CGRectGetWidth([self bounds]) - adjustedLastFrame.origin.x;
 
         if (CGRectContainsPoint(adjustedLastFrame, aPoint))
-            return _segments.length - 1;
+            return [self segmentCount] - 1;
     }
 
     return -1;
@@ -840,7 +840,7 @@ CPSegmentSwitchTrackingMomentary = 2;
             {
                 [self setSelected:NO forSegment:_trackingSegment];
 
-                _selectedSegment = -1;
+                _selectedSegment = CPNotFound;
             }
         }
 
@@ -916,7 +916,7 @@ var CPSegmentedControlSegmentsKey       = "CPSegmentedControlSegmentsKey",
         if ([aCoder containsValueForKey:CPSegmentedControlSelectedKey])
             _selectedSegment = [aCoder decodeIntForKey:CPSegmentedControlSelectedKey];
         else
-            _selectedSegment = -1;
+            _selectedSegment = CPNotFound;
 
         if ([aCoder containsValueForKey:CPSegmentedControlTrackingModeKey])
             _trackingMode = [aCoder decodeIntForKey:CPSegmentedControlTrackingModeKey];
@@ -924,7 +924,7 @@ var CPSegmentedControlSegmentsKey       = "CPSegmentedControlSegmentsKey",
             _trackingMode = CPSegmentSwitchTrackingSelectOne;
 
         // Here we update the themeStates array for each segments to know if there are selected or not
-        for (var i = 0; i < _segments.length; i++)
+        for (var i = 0; i < [self segmentCount]; i++)
             _themeStates[i] = [_segments[i] selected] ? CPThemeStateSelected : CPThemeStateNormal;
 
         // We do this in a second loop because it relies on all the themeStates being set first
@@ -934,10 +934,11 @@ var CPSegmentedControlSegmentsKey       = "CPSegmentedControlSegmentsKey",
         var thickness = [self currentValueForThemeAttribute:@"divider-thickness"],
             dividerExtraSpace = ([_segments count] - 1) * thickness,
             difference = MAX(originalWidth - [self frame].size.width - dividerExtraSpace, 0.0),
-            remainingWidth = FLOOR(difference / _segments.length),
+            remainingWidth = FLOOR(difference / [self segmentCount]),
             widthOfAllSegments = 0;
 
-        for (var i = 0; i < _segments.length; i++)
+        // We do this in a second loop because it relies on all the themeStates being set first
+        for (var i = 0; i < [self segmentCount]; i++)
         {
             [self setWidth:[_segments[i] width] + remainingWidth forSegment:i];
             widthOfAllSegments += [_segments[i] width];
@@ -948,7 +949,7 @@ var CPSegmentedControlSegmentsKey       = "CPSegmentedControlSegmentsKey",
         var leftOversPixel = originalWidth - (widthOfAllSegments + dividerExtraSpace);
 
         // Make sure we don't make an out of range
-        if (leftOversPixel < _segments.length - 1)
+        if (leftOversPixel < [self segmentCount] - 1)
         {
             for (var i = 0; i < leftOversPixel; i++)
             {
