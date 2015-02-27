@@ -42,7 +42,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 */
 @implementation CPSegmentedControl : CPControl
 {
-    CPArray                 _segments;
+    CPArray                 _segments @accessors(getter=segments);
     CPArray                 _themeStates;
 
     int                     _selectedSegment;
@@ -109,7 +109,44 @@ CPSegmentSwitchTrackingMomentary = 2;
 */
 - (int)selectedTag
 {
-    return [_segments[_selectedSegment] tag];
+    return [[_segments objectAtIndex:_selectedSegment] tag];
+}
+
+- (void)setSegments:(CPArray)segments
+{
+    [_segments removeAllObjects];
+    [_themeStates removeAllObjects];
+
+    [self insertSegments:segments atIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [segments count])]];
+
+    [self tileWithChangedSegment:0];
+    [self _updateSelectionIfNeeded];
+}
+
+- (void)insertSegments:(CPArray)segments atIndexes:(CPIndexSet)indices
+{
+    if ([segments count] == 0)
+        return;
+
+    var newStates = @[],
+        count = [indices count];
+
+    while (count--)
+        [newStates addObject:CPThemeStateNormal];
+
+    [_segments insertObjects:segments atIndexes:indices];
+    [_themeStates insertObjects:newStates atIndexes:indices];
+    //TODO: update selection if old selection > first inserted
+}
+
+- (void)removeSegmentsAtIndexes:(CPIndexSet)indices
+{
+    if ([indices count] == 0)
+        return;
+
+    [_segments removeObjectsAtIndexes:indices];
+    [_themeStates removeObjectsAtIndexes:indices];
+    [self _updateSelectionIfNeeded];
 }
 
 // Specifying the number of segments
@@ -117,45 +154,36 @@ CPSegmentSwitchTrackingMomentary = 2;
     Sets the number of segments in the button.
     @param aCount the number of segments on the button
 */
-- (void)setSegmentCount:(unsigned)aCount
+- (void)setSegmentCount:(unsigned)newCount
 {
-    if (_segments.length == aCount)
+    var prevCount = [_segments count];
+
+    if (newCount == prevCount)
         return;
 
-    var height = CGRectGetHeight([self bounds]),
-        dividersBefore = MAX(0, _segments.length - 1),
-        dividersAfter = MAX(0, aCount - 1);
-
-    if (_segments.length < aCount)
+    if (newCount > prevCount)
     {
-        for (var index = _segments.length; index < aCount; ++index)
-        {
-            _segments[index] = [[_CPSegmentItem alloc] init];
-            _themeStates[index] = CPThemeStateNormal;
-        }
+        var count = newCount - prevCount,
+            segments = @[];
+
+        while (count--)
+            [segments addObject:[[_CPSegmentItem alloc] init]];
+
+        [self insertSegments:segments atIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(prevCount, newCount - prevCount)]];
     }
-    else if (aCount < _segments.length)
-    {
-        _segments.length = aCount;
-        _themeStates.length = aCount;
-    }
+    else
+        [self removeSegmentsAtIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(newCount, prevCount - newCount)]];
 
-    if (_selectedSegment >= _segments.length)
-        _selectedSegment = -1;
-
-    var thickness = [self currentValueForThemeAttribute:@"divider-thickness"],
-        frame = [self frame],
-        widthOfAllSegments = 0,
-        dividerExtraSpace = ([_segments count] - 1) * thickness;
-
-    for (var i = 0; i < [_segments count]; i++)
-        widthOfAllSegments += [_segments[i] width];
-
-    [self setFrameSize:CGSizeMake(widthOfAllSegments + dividerExtraSpace, frame.size.height)];
-
-    [self tileWithChangedSegment:0];
+    [self tileWithChangedSegment:MAX(MIN(prevCount, newCount) - 1, 0)];
 }
 
+- (void)_updateSelectionIfNeeded
+{
+    var count = [self segmentCount];
+
+    if (_selectedSegment >= count)
+        [self setSelectedSegment:count - 1];
+}
 /*!
     Returns the number of segments in the button.
 */
@@ -705,9 +733,13 @@ CPSegmentSwitchTrackingMomentary = 2;
 - (CGSize)intrinsicContentSize
 {
     // frameForSegment is recursively called backwards. All previously invalidated frames will be recomputed.
-    var maxX = CGRectGetMaxX([self frameForSegment:([self segmentCount] - 1)]);
+    var segmentCount = [self segmentCount],
+        width = 0;
 
-    return CGSizeMake(maxX, CGRectGetHeight([self frame]));
+    if (segmentCount > 0)
+        width = CGRectGetMaxX([self frameForSegment:(segmentCount - 1)]);
+
+    return CGSizeMake(width, [self valueForThemeAttribute:@"min-size"].height);
 }
 
 /*!
