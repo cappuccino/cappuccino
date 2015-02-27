@@ -406,7 +406,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 
         _selectedSegment = aSegment;
 
-        if (_trackingMode == CPSegmentSwitchTrackingSelectOne && oldSelectedSegment != aSegment && oldSelectedSegment != -1)
+        if (_trackingMode == CPSegmentSwitchTrackingSelectOne && oldSelectedSegment != aSegment && oldSelectedSegment != -1 && oldSelectedSegment < _segments.length)
         {
             [_segments[oldSelectedSegment] setSelected:NO];
             _themeStates[oldSelectedSegment] = CPThemeStateNormal;
