@@ -39,7 +39,15 @@
 {
     var cache = [[CPCache alloc] init];
 
+    // Private attributes
     [self assert:CPCache equals:[cache class]];
+    [self assert:CPDictionary equals:[cache._items class]];
+    [self assert:0 equals:cache._currentPosition];
+    [self assert:-1 equals:cache._totalCostCache];
+    [self assert:0 equals:cache._implementedDelegateMethods];
+
+    // Public attributes
+    [self assert:@"" equals:[cache name]];
     [self assert:0 equals:[cache countLimit]];
     [self assert:0 equals:[cache totalCostLimit]];
     [self assert:nil equals:[cache delegate]];
@@ -65,14 +73,16 @@
 {
     // Setup cache
     var cache = [[CPCache alloc] init];
+    [cache setDelegate:self];
 
     // Check result when add key in empty cache
     [cache setObject:@"Object1" forKey:@"key1"]
     [self assert:@"Object1" equals:[cache objectForKey:@"key1"]];
 
-    // Check result when add a key with existing key
-    [cache setObject:@"Object2" forKey:@"key1"]
-    [self assert:@"Object2" equals:[cache objectForKey:@"key1"]];
+    // Check delegate
+    [self assert:0 equals:_countDelegateExecuted];
+    [self assert:0 equals:[_caches count]];
+    [self assert:0 equals:[_objects count]];
 }
 
 - (void)testSetObjectForKeyWithExistingKey
@@ -83,7 +93,7 @@
     [cache setObject:@"Object1" forKey:@"key1"];
     [cache setObject:@"Object2" forKey:@"key2"];
 
-    // Check result when add key in cache with total cost limit
+    // Check result when add object with existing key in cache
     [cache setObject:@"Object3" forKey:@"key1"];
     [self assert:@"Object3" equals:[cache objectForKey:@"key1"]];
     [self assert:@"Object2" equals:[cache objectForKey:@"key2"]];
@@ -179,12 +189,6 @@
  * Accessors and mutators
  */
 
-- (void)testCountLimit
-{
-    var cache = [[CPCache alloc] init];
-    [self assert:0 equals:[cache countLimit]];
-}
-
 - (void)testSetCountLimit
 {
     // Setup cache
@@ -207,12 +211,6 @@
 
     // Check new count limit
     [self assert:2 equals:[cache countLimit]];
-}
-
-- (void)testTotalCostLimit
-{
-    var cache = [[CPCache alloc] init];
-    [self assert:0 equals:[cache totalCostLimit]];
 }
 
 - (void)testSetTotalCostLimit
@@ -239,15 +237,6 @@
     [self assert:100 equals:[cache totalCostLimit]];
 }
 
-- (void)testDelegate
-{
-    // Setup cache
-    var cache = [[CPCache alloc] init];
-    [cache setDelegate:self];
-
-    [self assert:self equals:[cache delegate]];
-}
-
 - (void)testSetDelegate
 {
     // Setup cache
@@ -255,6 +244,7 @@
     [cache setDelegate:self];
 
     [self assert:self equals:[cache delegate]];
+    [self assert:(1 << 1) equals:cache._implementedDelegateMethods]
 }
 
 /*
@@ -281,6 +271,13 @@
     [cache setObject:@"Object3" forKey:@"key3" cost:70];
 
     [self assert:130 equals:[cache _totalCost]];
+
+    // Hack totalCost then invalidate it to be sure that it is recomputed
+    cache._totalCostCache = 650;
+    [self assert:650 equals:[cache _totalCost]];
+
+    cache._totalCostCache = -1;
+    [self assert:130 equals:[cache _totalCost]];
 }
 
 - (void)testResequencePosition
@@ -294,16 +291,16 @@
     [cache setObject:@"Object4" forKey:@"key4" cost:70];  // 4 - 3
 
     // Before resequence
-    [self assert:1 equals:[[[cache _items] objectForKey:@"key1"] position]];
-    [self assert:3 equals:[[[cache _items] objectForKey:@"key3"] position]];
-    [self assert:4 equals:[[[cache _items] objectForKey:@"key4"] position]];
+    [self assert:1 equals:[[cache._items objectForKey:@"key1"] position]];
+    [self assert:3 equals:[[cache._items objectForKey:@"key3"] position]];
+    [self assert:4 equals:[[cache._items objectForKey:@"key4"] position]];
 
     [cache _resequencePosition];
 
     // After resequence
-    [self assert:1 equals:[[[cache _items] objectForKey:@"key1"] position]];
-    [self assert:2 equals:[[[cache _items] objectForKey:@"key3"] position]];
-    [self assert:3 equals:[[[cache _items] objectForKey:@"key4"] position]];
+    [self assert:1 equals:[[cache._items objectForKey:@"key1"] position]];
+    [self assert:2 equals:[[cache._items objectForKey:@"key3"] position]];
+    [self assert:3 equals:[[cache._items objectForKey:@"key4"] position]];
 }
 
 - (void)testCleanCacheWithoutDiscarding

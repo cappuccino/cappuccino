@@ -22,39 +22,10 @@
 
 
 @import "CPObject.j"
+@import "CPDictionary.j"
+@import "CPString.j"
 
-/*
- * Class _CPCacheItem
- * Represent an item of CPCache
- * This class allow to associate a cost and a position to an object
- *
- * Attributes:
- * - object: the stored object
- * - cost: represent the cost (of memory) of the object
- * - position: represent the insertion order to determine the oldest object
- */
-@implementation _CPCacheItem : CPObject
-{
-    CPObject    _object      @accessors(property=object);
-    int         _cost        @accessors(property=cost);
-    int         _position    @accessors(property=position);
-}
-
-+ (id)cacheItemWithObject:(CPObject)anObject cost:(int)aCost position:(int)aPosition
-{
-    var cacheItem = [[super alloc] init];
-
-    if (cacheItem)
-    {
-        cacheItem._object = anObject;
-        cacheItem._cost = aCost;
-        cacheItem._position = aPosition;
-    }
-
-    return cacheItem;
-}
-
-@end
+@class _CPCacheItem;
 
 
 /*
@@ -71,8 +42,8 @@
 
 @end
 
+var CPCacheDelegate_cache_willEvictObject_ = 1 << 1;
 
-var CPCacheDelegate_cache_WillEvictObject = 1 << 1;
 
 /*!
     @class CPCache
@@ -91,17 +62,19 @@ var CPCacheDelegate_cache_WillEvictObject = 1 << 1;
  */
 @implementation CPCache : CPObject
 {
-    CPDictionary            _items              @accessors(readonly);  // TOFIX: delete accessors which is only needed for test
+    CPDictionary            _items;
     int                     _currentPosition;
-    int                     _countLimit;
-    int                     _totalCostLimit;
-    id <CPCacheDelegate>    _delegate;
-
-    // Set of bit to determine which delegate has to respond
+    BOOL                    _totalCostCache;
     unsigned                _implementedDelegateMethods;
+
+    CPString                _name               @accessors(property=name);
+    int                     _countLimit         @accessors(property=countLimit);
+    int                     _totalCostLimit     @accessors(property=totalCostLimit);
+    id <CPCacheDelegate>    _delegate           @accessors(property=delegate);
 }
 
 
+#pragma mark -
 #pragma mark Initialization
 
 /*!
@@ -110,12 +83,14 @@ var CPCacheDelegate_cache_WillEvictObject = 1 << 1;
 */
 - (id)init
 {
-    self = [super init];
-
-    if (self)
+    if (self = [super init])
     {
         _items = [[CPDictionary alloc] init];
         _currentPosition = 0;
+        _totalCostCache = -1;
+        _implementedDelegateMethods = 0;
+
+        _name = @"";
         _countLimit = 0;
         _totalCostLimit = 0;
         _delegate = nil;
@@ -125,6 +100,7 @@ var CPCacheDelegate_cache_WillEvictObject = 1 << 1;
 }
 
 
+#pragma mark -
 #pragma mark Managing cache
 
 /*!
@@ -162,6 +138,9 @@ var CPCacheDelegate_cache_WillEvictObject = 1 << 1;
     // Add object
     [_items setObject:[_CPCacheItem cacheItemWithObject:anObject cost:aCost position:++_currentPosition] forKey:aKey];
 
+    // Invalid cost cache
+    _totalCostCache = -1;
+
     // Clean cache to satisfy condition (< totalCostLimit & < countLimit) if necessary
     [self _cleanCache];
 }
@@ -173,10 +152,13 @@ var CPCacheDelegate_cache_WillEvictObject = 1 << 1;
 - (void)removeObjectForKey:(id)aKey
 {
     // Call delegate method to warn that the object is going to be removed
-    if (_implementedDelegateMethods & CPCacheDelegate_cache_WillEvictObject)
-        [_delegate cache:self willEvictObject:[[_items objectForKey:aKey] object]];
+    [self _sendDelegateWillEvictObjectForKey:aKey];
 
+    // Remove object
     [_items removeObjectForKey:aKey];
+
+    // Invalid cost cache
+    _totalCostCache = -1;
 }
 
 /*!
@@ -184,31 +166,24 @@ var CPCacheDelegate_cache_WillEvictObject = 1 << 1;
 */
 - (void)removeAllObjects
 {
-    _currentPosition = 0;
-
     // Call delegate method to warn that the objects are going to be removed
-    if (_implementedDelegateMethods & CPCacheDelegate_cache_WillEvictObject)
-    {
-        var enumerator = [_items keyEnumerator],
-            value;
+    var enumerator = [_items keyEnumerator],
+        key;
 
-        while (value = [enumerator nextObject])
-            [_delegate cache:self willEvictObject:[[_items objectForKey:value] object]];
-    }
+    while (key = [enumerator nextObject])
+        [self _sendDelegateWillEvictObjectForKey:key]
 
+    // Remove all objects
     [_items removeAllObjects];
+
+    // Invalid cost cache and reset position counter
+    _totalCostCache = -1;
+    _currentPosition = 0;
 }
 
 
-#pragma mark Accessors
-
-/*!
-    Returns the count limit of the cache
-*/
-- (int)countLimit
-{
-    return _countLimit;
-}
+#pragma mark -
+#pragma mark Setters
 
 /*!
     Sets the count limit of the cache.
@@ -222,14 +197,6 @@ var CPCacheDelegate_cache_WillEvictObject = 1 << 1;
 }
 
 /*!
-    Returns the total cost limit of the cache
-*/
-- (int)totalCostLimit
-{
-    return _totalCostLimit;
-}
-
-/*!
     Sets the total cost limit of the cache.
     Remove objects if not enough place to keep all of them
     @param aTotalCostLimit the new total cost limit
@@ -238,14 +205,6 @@ var CPCacheDelegate_cache_WillEvictObject = 1 << 1;
 {
     _totalCostLimit = aTotalCostLimit;
     [self _cleanCache];
-}
-
-/*!
-    Returns the cache's delegate
-*/
-- (id)delegate
-{
-    return _delegate;
 }
 
 /*!
@@ -261,10 +220,11 @@ var CPCacheDelegate_cache_WillEvictObject = 1 << 1;
     _implementedDelegateMethods = 0;
 
     if ([_delegate respondsToSelector:@selector(cache:willEvictObject:)])
-        _implementedDelegateMethods |= CPCacheDelegate_cache_WillEvictObject
+        _implementedDelegateMethods |= CPCacheDelegate_cache_willEvictObject_
 }
 
 
+#pragma mark -
 #pragma mark Privates
 
 /*
@@ -280,14 +240,18 @@ var CPCacheDelegate_cache_WillEvictObject = 1 << 1;
  */
 - (int)_totalCost
 {
+    if (_totalCostCache >= 0)
+        return _totalCostCache;
+
     var enumerator = [_items objectEnumerator],
-        cost = 0,
         value;
 
-    while (value = [enumerator nextObject])
-        cost += [value cost];
+    _totalCostCache = 0;
 
-    return cost;
+    while (value = [enumerator nextObject])
+        _totalCostCache += [value cost];
+
+    return _totalCostCache;
 }
 
 /*
@@ -299,12 +263,9 @@ var CPCacheDelegate_cache_WillEvictObject = 1 << 1;
     _currentPosition = 1;
 
     // Sort keys by position
-    var sortedKeys = [[_items allKeys] sortedArrayUsingFunction:function(k1, k2, context)
-    {
-        var o1 = [_items objectForKey:k1],
-            o2 = [_items objectForKey:k2];
-        return ([o1 position] < [o2 position] ? CPOrderedAscending : ([o1 position] > [o2 position] ? CPOrderedDescending : CPOrderedSame));
-    } context:nil];
+    var sortedKeys = [[_items allKeys] sortedArrayUsingFunction:
+        function(k1, k2) {
+            return [[[_items objectForKey:k1] position] compare:[[_items objectForKey:k2] position]]; }];
 
     // Affect new positions
     for (var i = 0; i < sortedKeys.length; ++i)
@@ -313,38 +274,82 @@ var CPCacheDelegate_cache_WillEvictObject = 1 << 1;
 
 /*
  * This method clean the cache if the totalCost or the count exceeds the totalCostLimit or the countLimit
- * until to satisfy conditions (totalCost < totalCostLimit and count < countLimit)
+ * until to satisfy condition (totalCost < totalCostLimit and count < countLimit)
  */
 - (void)_cleanCache
 {
-    // Check if the condition is satisfied (totalCost < totalCostLimit and count < countLimit)
-    if (([self _totalCost] > _totalCostLimit && _totalCostLimit > 0) || ([self _count] > _countLimit && _countLimit > 0))
+    // Check if the condition is satisfied
+    if (!(([self _totalCost] > _totalCostLimit && _totalCostLimit > 0) || ([self _count] > _countLimit && _countLimit > 0)))
+        return;
+
+    // Sort keys by position
+    var sortedKeys = [[_items allKeys] sortedArrayUsingFunction:
+        function(k1, k2) {
+            return [[[_items objectForKey:k1] position] compare:[[_items objectForKey:k2] position]]; }];
+
+    // Remove oldest objects until to satisfy the break condition
+    for (var i = 0; i < sortedKeys.length; ++i)
     {
-        // Sort keys by position
-        var sortedKeys = [[_items allKeys] sortedArrayUsingFunction:function(k1, k2, context)
-        {
-            var o1 = [_items objectForKey:k1],
-                o2 = [_items objectForKey:k2];
-            return ([o1 position] < [o2 position] ? CPOrderedAscending : ([o1 position] > [o2 position] ? CPOrderedDescending : CPOrderedSame));
-        } context:nil];
+        if (!(([self _totalCost] > _totalCostLimit && _totalCostLimit > 0) || ([self _count] > _countLimit && _countLimit > 0)))
+            break;
 
-        // Remove oldest objects until to satisfy condition (totalCost < totalCostLimit and count < countLimit)
-        for (var i = 0; i < sortedKeys.length; ++i)
-        {
-            if (!(([self _totalCost] > _totalCostLimit && _totalCostLimit > 0) || ([self _count] > _countLimit && _countLimit > 0)))
-                break;
+        // Call delegate method to warn that the object is going to be removed
+        [self _sendDelegateWillEvictObjectForKey:sortedKeys[i]];
 
-            // Call delegate method to warn that the object is going to be removed
-            if (_implementedDelegateMethods & CPCacheDelegate_cache_WillEvictObject)
-                [_delegate cache:self willEvictObject:[[_items objectForKey:sortedKeys[i]] object]];
+        // Remove object
+        [_items removeObjectForKey: sortedKeys[i]];
 
-            // Remove object
-            [_items removeObjectForKey: sortedKeys[i]];
-        }
-
-        // Resequence position of all objects
-        [self _resequencePosition];
+        // Invalid cost cache
+        _totalCostCache = -1;
     }
+
+    // Resequence position of all objects
+    [self _resequencePosition];
+}
+
+@end
+
+
+@implementation CPCache (CPCacheDelegate)
+
+- (void)_sendDelegateWillEvictObjectForKey:(id)aKey
+{
+    if (_implementedDelegateMethods & CPCacheDelegate_cache_willEvictObject_)
+        [_delegate cache:self willEvictObject:[[_items objectForKey:aKey] object]];
+}
+
+@end
+
+
+/*
+ * Class _CPCacheItem
+ * Represent an item of CPCache
+ * This class allow to associate a cost and a position to an object
+ *
+ * Attributes:
+ * - object: the stored object
+ * - cost: represent the cost (of memory) of the object
+ * - position: represent the insertion order to determine the oldest object
+ */
+@implementation _CPCacheItem : CPObject
+{
+    CPObject    _object      @accessors(property=object);
+    int         _cost        @accessors(property=cost);
+    int         _position    @accessors(property=position);
+}
+
++ (id)cacheItemWithObject:(CPObject)anObject cost:(int)aCost position:(int)aPosition
+{
+    var cacheItem = [[self alloc] init];
+
+    if (cacheItem)
+    {
+        [cacheItem setObject:anObject];
+        [cacheItem setCost:aCost];
+        [cacheItem setPosition:aPosition];
+    }
+
+    return cacheItem;
 }
 
 @end
