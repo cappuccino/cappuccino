@@ -273,13 +273,29 @@ var CPCacheDelegate_cache_willEvictObject_ = 1 << 1;
 }
 
 /*
+ * Check if the totalCostLimit is exceeded
+ */
+- (BOOL)_isTotalCostLimitExceeded
+{
+    return ([self _totalCost] > _totalCostLimit && _totalCostLimit > 0);
+}
+
+/*
+ * Check if the countLimit is exceeded
+ */
+- (BOOL)_isCountLimitExceeded
+{
+    return ([self _count] > _countLimit && _countLimit > 0);
+}
+
+/*
  * This method clean the cache if the totalCost or the count exceeds the totalCostLimit or the countLimit
  * until to satisfy condition (totalCost < totalCostLimit and count < countLimit)
  */
 - (void)_cleanCache
 {
     // Check if the condition is satisfied
-    if (!(([self _totalCost] > _totalCostLimit && _totalCostLimit > 0) || ([self _count] > _countLimit && _countLimit > 0)))
+    if (![self _isTotalCostLimitExceeded] && ![self _isCountLimitExceeded])
         return;
 
     // Sort keys by position
@@ -290,7 +306,7 @@ var CPCacheDelegate_cache_willEvictObject_ = 1 << 1;
     // Remove oldest objects until to satisfy the break condition
     for (var i = 0; i < sortedKeys.length; ++i)
     {
-        if (!(([self _totalCost] > _totalCostLimit && _totalCostLimit > 0) || ([self _count] > _countLimit && _countLimit > 0)))
+        if (![self _isTotalCostLimitExceeded] && ![self _isCountLimitExceeded])
             break;
 
         // Call delegate method to warn that the object is going to be removed

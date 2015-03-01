@@ -303,11 +303,49 @@
     [self assert:3 equals:[[cache._items objectForKey:@"key4"] position]];
 }
 
+- (void)testIsTotalCostLimitExceeded
+{
+    // Setup cache
+    var cache = [[CPCache alloc] init];
+    [cache setObject:@"Object1" forKey:@"key1" cost:50];
+
+    // Not exceed (because of not limit)
+    [self assert:NO equals:[cache _isTotalCostLimitExceeded]];
+
+    // Not exceed (with limit)
+    [cache setTotalCostLimit:100];
+    [self assert:NO equals:[cache _isTotalCostLimitExceeded]];
+
+    // Exceed (by hacking the cost of object)
+    [[cache._items objectForKey:@"key1"] setCost: 150];
+    cache._totalCostCache = -1;
+    [self assert:YES equals:[cache _isTotalCostLimitExceeded]];
+}
+
+- (void)testIsCountLimitExceeded
+{
+    // Setup cache
+    var cache = [[CPCache alloc] init];
+    [cache setObject:@"Object1" forKey:@"key1"];
+
+    // Not exceed (because of not limit)
+    [self assert:NO equals:[cache _isCountLimitExceeded]];
+
+    // Not exceed (with limit)
+    [cache setCountLimit:1];
+    [self assert:NO equals:[cache _isCountLimitExceeded]];
+
+    // Exceed (by hacking the items)
+    [cache._items setObject:[_CPCacheItem cacheItemWithObject:@"Object2" cost:0 position:3] forKey:@"key2"];
+    [self assert:YES equals:[cache _isCountLimitExceeded]];
+}
+
 - (void)testCleanCacheWithoutDiscarding
 {
     // Setup cache
     var cache = [[CPCache alloc] init];
-    [cache setTotalCostLimit: 100]
+    [cache setTotalCostLimit: 100];
+    [cache setCountLimit: 2];
     [cache setDelegate:self];
     [cache setObject:@"Object1" forKey:@"key1" cost:50];
     [cache setObject:@"Object2" forKey:@"key2" cost:40];
@@ -323,12 +361,50 @@
 
 - (void)testCleanCacheWithCostDiscarding
 {
-    // Not testable, but tested in testSetObjectForKeyDiscardByCost
+    // Setup cache
+    var cache = [[CPCache alloc] init];
+    [cache setTotalCostLimit: 100];
+    [cache setDelegate:self];
+    [cache setObject:@"Object1" forKey:@"key1" cost:50];
+    [cache setObject:@"Object2" forKey:@"key2" cost:40];
+
+    // Hack cost of object
+    [[cache._items objectForKey:@"key2"] setCost:80];
+    cache._totalCostCache = -1;
+
+    // Set total cost limit
+    [cache _cleanCache];
+    [self assert:nil equals:[cache objectForKey:@"key1"]];
+    [self assert:@"Object2" equals:[cache objectForKey:@"key2"]];
+
+    // Check delegate
+    [self assert:1 equals:_countDelegateExecuted];
+    [self assert:cache equals:[_caches objectAtIndex:0]];
+    [self assert:@"Object1" equals:[_objects objectAtIndex:0]];
 }
 
 - (void)testCleanCacheWithCountDiscarding
 {
-    // Not testable, but tested in testSetObjectForKeyDiscardByCount
+    // Setup cache
+    var cache = [[CPCache alloc] init];
+    [cache setCountLimit:2];
+    [cache setDelegate:self];
+    [cache setObject:@"Object1" forKey:@"key1"];
+    [cache setObject:@"Object2" forKey:@"key2"];
+
+    // Hack items
+    [cache._items setObject:[_CPCacheItem cacheItemWithObject:@"Object3" cost:0 position:3] forKey:@"key3"];
+
+    // Set total cost limit
+    [cache _cleanCache];
+    [self assert:nil equals:[cache objectForKey:@"key1"]];
+    [self assert:@"Object2" equals:[cache objectForKey:@"key2"]];
+    [self assert:@"Object3" equals:[cache objectForKey:@"key3"]];
+
+    // Check delegate
+    [self assert:1 equals:_countDelegateExecuted];
+    [self assert:cache equals:[_caches objectAtIndex:0]];
+    [self assert:@"Object1" equals:[_objects objectAtIndex:0]];
 }
 
 
