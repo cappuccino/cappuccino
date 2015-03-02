@@ -1,3 +1,4 @@
+
 /*
  * AppController.j
  * CPSegmentedControlTest
@@ -14,6 +15,7 @@ CPLogRegister(CPLogConsole);
 {
     @outlet CPSegmentedControl segmentedControl1;
     @outlet CPSegmentedControl segmentedControl2;
+    @outlet CPTextField passedLabel;
 
     @outlet CPWindow    theWindow; //this "outlet" is connected automatically by the Cib
 }
@@ -21,6 +23,7 @@ CPLogRegister(CPLogConsole);
 - (void)awakeFromCib
 {
     [theWindow setFullPlatformWindow:YES];
+    [segmentedControl1 setValue:[CPColor redColor] forThemeAttribute:@"divider-bezel-color"];
 }
 
 - (IBAction)addSegment:(id)aSender
@@ -83,6 +86,44 @@ CPLogRegister(CPLogConsole);
 
     [segmentedControl1 setImage:image forSegment:segment];
     [segmentedControl2 setImage:image forSegment:segment];
+}
+
+- (IBAction)testWidthAndFrame:(id)sender
+{
+    // We test the segment width and frame here and not with ojtest because CPString-sizeWithFont: does
+    // cannot be tested in the command line.
+    [segmentedControl1 setSegmentCount:4];
+    [segmentedControl1 setWidth:0 forSegment:2]; // This is the default
+
+    if (![self assertTrue:[segmentedControl1 widthForSegment:2] == 0])
+        return;
+
+    [segmentedControl1 setLabel:"XXXX" forSegment:2];
+
+    // The width explicitely set does not change
+    if (![self assertTrue:[segmentedControl1 widthForSegment:2] == 0])
+        return;
+
+    // The frame sizeToFit horizontaly
+    if (![self assertTrue:CGRectGetWidth([segmentedControl1 frameForSegment:2]) > 0])
+        return;
+
+    [segmentedControl1 setWidth:200 forSegment:2];
+
+    // The width explicitely set does not change
+    if (![self assertTrue:[segmentedControl1 widthForSegment:2] == 200])
+        return;
+
+    if (![self assertTrue:CGRectGetWidth([segmentedControl1 frameForSegment:2]) == 200])
+        return;
+}
+
+- (BOOL)assertTrue:(BOOL)value
+{
+    [passedLabel setStringValue:value?@"Passed":@"Failed"];
+    [passedLabel setTextColor:value?[CPColor greenColor]:[CPColor redColor]];
+
+    return value;
 }
 
 - (IBAction)setTrackingMode:(id)sender
