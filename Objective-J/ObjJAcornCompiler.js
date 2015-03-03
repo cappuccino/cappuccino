@@ -1754,8 +1754,15 @@ ClassDeclarationStatement: function(node, st, c) {
                 ivar = {"type": ivarType, "name": ivarName},
                 accessors = ivarDecl.accessors;
 
-            if (ivars[ivarName])
-                throw compiler.error_message("Instance variable '" + ivarName + "' is already declared for class " + className, ivarDecl.id);
+            var checkIfIvarIsAlreadyDeclaredAndInSuperClass = function(aClassDef, recursiveFunction) {
+                if (aClassDef.ivars[ivarName])
+                    throw compiler.error_message("Instance variable '" + ivarName + "' is already declared for class " + className + (aClassDef.name !== className ? " in superclass " + aClassDef.name : ""), ivarDecl.id);
+                if (aClassDef.superClass)
+                    recursiveFunction(aClassDef.superClass, recursiveFunction);
+            }
+
+            // Check if ivar is already declared in this class or its super classes.
+            checkIfIvarIsAlreadyDeclaredAndInSuperClass(classDef, checkIfIvarIsAlreadyDeclaredAndInSuperClass);
 
             var isTypeDefined = !ivarTypeIsClass || typeof global[ivarType] !== "undefined" || typeof window[ivarType] !== "undefined"
                                 || compiler.getClassDef(ivarType) || compiler.getTypeDef(ivarType) || ivarType == classDef.name;
