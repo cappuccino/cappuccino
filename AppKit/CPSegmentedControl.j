@@ -646,9 +646,8 @@ CPSegmentSwitchTrackingMomentary = 2;
         if (i == count - 1)
             continue;
 
-        var borderState = _themeStates[i].and(_themeStates[i + 1]);
 
-        borderState = (borderState.hasThemeState(CPThemeStateSelected) && !borderState.hasThemeState(CPThemeStateHighlighted)) ? CPThemeStateSelected : CPThemeStateNormal;
+        var borderState = _themeStates[i].and(_themeStates[i + 1]);
 
         borderState = isDisabled ? borderState.and(CPThemeStateDisabled) : borderState;
 

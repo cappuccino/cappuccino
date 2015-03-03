@@ -450,3 +450,12 @@ function CPBrowserCSSProperty(aProperty)
 
     return browserProperty.toLowerCase();
 }
+
+function CPBrowserBackingStorePixelRatio(context)
+{
+    return  context.webkitBackingStorePixelRatio ||
+            context.mozBackingStorePixelRatio ||
+            context.msBackingStorePixelRatio ||
+            context.oBackingStorePixelRatio ||
+            context.backingStorePixelRatio || 1;
+}

@@ -83,7 +83,7 @@
     [self assert:timeZone equals:nil];
 }
 
-- (void)testexceptionTimeZoneWithNilNameWithData
+- (void)testexceptionTimeZoneWithNilName
 {
     try
     {

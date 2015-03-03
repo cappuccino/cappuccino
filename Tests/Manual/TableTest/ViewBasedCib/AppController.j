@@ -8,6 +8,7 @@
 
 @import <Foundation/CPObject.j>
 @import <AppKit/CPGraphicsContext.j>
+@import "../../CPTrace.j"
 
 var TABLE_DRAG_TYPE = @"TABLE_DRAG_TYPE";
 
@@ -35,6 +36,16 @@ CPLogRegister(CPLogConsole)
         connection = [CPURLConnection connectionWithRequest:request delegate:self];
 
     [tableView registerForDraggedTypes:[CPArray arrayWithObject:TABLE_DRAG_TYPE]];
+
+    var averager = moving_averager(50);
+
+    CPTrace("CPTableView", "load", function(receiver, selector, args, duration)
+    {
+        if (duration)
+            console.log(receiver + " " + selector + " in " + averager(duration));
+    });
+
+    CPTrace("CPTableHeaderView", "_startDraggingTableColumn:at:");
 }
 
 - (void)awakeFromCib
@@ -85,6 +96,20 @@ CPLogRegister(CPLogConsole)
     variableRowHeight = NO;
 
     return self;
+}
+
+- (void)awakeFromCib
+{
+    // self is the owner parameter specified in -makeViewWithIdentifier:owner:
+    // This method is called each time a cib containing a CPTableCellView is instantiated.
+    // Outlets are now connected and available.
+    // If the view has its own xib, only the view will be instantiated and connected to the owner.
+    if (externalView)
+    {
+        CPLog.debug(_cmd + " loaded externalView : " + externalView);
+        [[externalView textField] setTextColor:[CPColor greenColor]];
+        [imageView bind:CPValueURLBinding toObject:externalView withKeyPath:"objectValue.image.path" options:nil];
+    }
 }
 
 - (CPView)makeOrangeView
@@ -178,19 +203,6 @@ CPLogRegister(CPLogConsole)
     return [height intValue];
 }
 
-- (void)awakeFromCib
-{
-    // self is the owner parameter specified in -makeViewWithIdentifier:owner:
-    // This method is called each time a cib containing a CPTableCellView is instantiated.
-    // Outlets are now connected and available.
-    // If the view has its own xib, only the view will be instantiated and connected to the owner.
-    if (externalView)
-    {
-        CPLog.debug(_cmd + " loaded externalView : " + externalView);
-        [[externalView textField] setTextColor:[CPColor greenColor]];
-    }
-}
-
 // CELL VIEWS ACTIONS
 - (IBAction)_sliderAction:(id)sender
 {
@@ -200,11 +212,16 @@ CPLogRegister(CPLogConsole)
             row = [table rowForView:sender];
 
         [table noteHeightOfRowsWithIndexesChanged:[CPIndexSet indexSetWithIndex:row]];
-        [table reloadData];
     }
 
     // Action sent from a cellView subview to its target.
     CPLog.debug(_cmd + " value=" + [sender intValue]);
+}
+
+- (void)setVariableRowHeight:(BOOL)flag
+{
+    variableRowHeight = flag;
+    [[self tableView] reloadData];
 }
 
 - (IBAction)_textFieldNotBezeledAction:(id)sender

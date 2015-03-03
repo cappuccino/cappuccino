@@ -323,6 +323,14 @@ CPEraDatePickerElementFlag              = 0x0100;
 */
 - (void)_setDateValue:(CPDate)aDateValue timeInterval:(CPTimeInterval)aTimeInterval
 {
+    // Make sure to have a valid date and avoid NaN values
+    if (!isFinite(aDateValue))
+    {
+        [CPException raise:CPInvalidArgumentException
+                    reason:@"aDateValue is not valid"];
+        return;
+    }
+
     if (_minDate)
         aDateValue = new Date (MAX(aDateValue, _minDate));
 

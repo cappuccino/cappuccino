@@ -22,7 +22,7 @@
 
 @import "CPObject.j"
 
-var _CPCollectionKVCOperatorSimpleRE = /^@(avg|count|m(ax|in)|sum)(\.|$)/;
+var _CPCollectionKVCOperatorSimpleRE = /^@(avg|count|m(ax|in)|sum|unionOfObjects|distinctUnionOfObjects|unionOfArrays|distinctUnionOfArrays|distinctUnionOfSets)(\.|$)/;
 
 
 @implementation _CPCollectionKVCOperator : CPObject
@@ -123,6 +123,91 @@ var _CPCollectionKVCOperatorSimpleRE = /^@(avg|count|m(ax|in)|sum)(\.|$)/;
 + (int)countForCollection:(id)aCollection propertyPath:(CPString)propertyPath
 {
     return [aCollection count];
+}
+
++ (CPArray)unionOfObjectsForCollection:(id)aCollection propertyPath:(CPString)propertyPath
+{
+    if (!propertyPath)
+        return [aCollection valueForUndefinedKey:@"@unionOfObjects"];
+
+    var objects = [aCollection valueForKeyPath:propertyPath];
+
+    if ([objects isKindOfClass:[CPSet class]])
+        return [objects allObjects];
+
+    return objects;
+}
+
++ (CPArray)distinctUnionOfObjectsForCollection:(id)aCollection propertyPath:(CPString)propertyPath
+{
+    if (!propertyPath)
+        return [aCollection valueForUndefinedKey:@"@distinctUnionOfObjects"];
+
+    var objects = [aCollection valueForKeyPath:propertyPath],
+        distinctObjects = [CPMutableArray new],
+        enumerator = [objects objectEnumerator],
+        object;
+
+    while ((object = [enumerator nextObject]) !== nil)
+    {
+        if ([distinctObjects indexOfObject:object] == CPNotFound)
+            [distinctObjects addObject:object];
+    }
+
+    return distinctObjects;
+}
+
++ (CPArray)unionOfArraysForCollection:(id)aCollection propertyPath:(CPString)propertyPath
+{
+    if (!propertyPath)
+        return [aCollection valueForUndefinedKey:@"@unionOfArrays"];
+
+    var objects = [],
+        number = [aCollection count];
+
+    for (var i = 0; i < number; i++)
+        [objects addObjectsFromArray:[aCollection[i] valueForKeyPath:propertyPath]];
+
+    return objects;
+}
+
++ (CPArray)distinctUnionOfArraysForCollection:(id)aCollection propertyPath:(CPString)propertyPath
+{
+    if (!propertyPath)
+        return [aCollection valueForUndefinedKey:@"@distinctUnionOfArrays"];
+
+    var objects = [],
+        number = [aCollection count];
+
+    for (var i = 0; i < number; i++)
+        [objects addObjectsFromArray:[aCollection[i] valueForKeyPath:propertyPath]];
+
+    var distinctObjects = [CPMutableArray new],
+        enumerator = [objects objectEnumerator],
+        object;
+
+    while ((object = [enumerator nextObject]) !== nil)
+    {
+        if ([distinctObjects indexOfObject:object] == CPNotFound)
+            [distinctObjects addObject:object];
+    }
+
+    return distinctObjects;
+}
+
++ (CPArray)distinctUnionOfSetsForCollection:(id)aCollection propertyPath:(CPString)propertyPath
+{
+    if (!propertyPath)
+        return [aCollection valueForUndefinedKey:@"@distinctUnionOfSets"];
+
+    var objects = [CPMutableSet new],
+        number = [aCollection count],
+        sets = [aCollection allObjects];
+
+    for (var i = 0; i < number; i++)
+        [objects addObjectsFromArray:[[sets[i] valueForKeyPath:propertyPath] allObjects]];
+
+    return objects;
 }
 
 @end

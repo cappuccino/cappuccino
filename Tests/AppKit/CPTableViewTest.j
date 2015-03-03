@@ -18,8 +18,7 @@
 - (void)setUp
 {
     // setup a reasonable table
-    theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(0.0, 0.0, 1024.0, 768.0)
-                                            styleMask:CPWindowNotSizable];
+    theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(0.0, 0.0, 1024.0, 768.0) styleMask:CPWindowNotSizable];
 
     tableView = [[FirstResponderConfigurableTableView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];
     tableColumn = [[CPTableColumn alloc] initWithIdentifier:@"Foo"];
@@ -98,19 +97,15 @@
     [self assert:0 equals:selectionIsChangingNotificationsReceived message:"no isChanging notifications when programmatically selecting rows"];
     [self assert:1 equals:selectionDidChangeNotificationsReceived message:"didChange notifications when selecting rows"];
 
-    // If we remove the last row, the selection should change and we should be notified.
-    [[dataSource tableEntries] removeObjectAtIndex:2];
-    [tableView reloadData];
-
-    [self assert:0 equals:selectionIsChangingNotificationsReceived message:"no isChanging notifications when selected rows disappear"];
-    [self assert:2 equals:selectionDidChangeNotificationsReceived message:"didChange notifications when selected rows disappear"];
+    selectionIsChangingNotificationsReceived = 0;
+    selectionDidChangeNotificationsReceived = 0;
 
     [tableView selectRowIndexes:[CPIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
-    [self assert:selectionDidChangeNotificationsReceived equals:3 message:"CPTableViewSelectionDidChangeNotification expected when selecting rows"];
+    [self assert:selectionDidChangeNotificationsReceived equals:1 message:"CPTableViewSelectionDidChangeNotification expected when selecting rows"];
     [[dataSource tableEntries] removeObjectAtIndex:1];
     [tableView reloadData];
 
-    [self assert:selectionDidChangeNotificationsReceived equals:3 message:"no CPTableViewSelectionDidChangeNotification expected when removing a row which does not change the selection"];
+    [self assert:selectionDidChangeNotificationsReceived equals:1 message:"no CPTableViewSelectionDidChangeNotification expected when removing a row which does not change the selection"];
 
     // Reset everything.
     [dataSource setTableEntries:["A", "B", "C"]];
@@ -125,7 +120,18 @@
     selectionIsChangingNotificationsReceived = 0;
     selectionDidChangeNotificationsReceived = 0;
     [tableView deselectAll];
-    [self assert:selectionDidChangeNotificationsReceived equals:2 message:"notification for deselect all"];
+    [self assert:1 equals:selectionDidChangeNotificationsReceived message:"notification for deselect all"];
+
+
+    [tableView selectRowIndexes:[CPIndexSet indexSetWithIndex:2] byExtendingSelection:NO];
+    selectionIsChangingNotificationsReceived = 0;
+    selectionDidChangeNotificationsReceived = 0;
+    // If we remove the last row, the selection should change and we should be notified.
+    [[dataSource tableEntries] removeObjectAtIndex:2];
+    [tableView reloadData];
+
+    [self assert:0 equals:selectionIsChangingNotificationsReceived message:"no isChanging notifications when selected rows disappear"];
+    [self assert:1 equals:selectionDidChangeNotificationsReceived message:"didChange notifications when selected rows disappear"];
 }
 
 - (void)selectionIsChanging:(CPNotification)aNotification
@@ -158,10 +164,10 @@
 
     // Now some text field should be the first responder.
     var fieldEditor = [theWindow firstResponder];
-    [self assert:[fieldEditor class] equals:CPTextField message:"table cell editor should be a text field"];
+    [self assert:CPTextField equals:[fieldEditor class] message:"table cell editor should be a text field"];
 
     [fieldEditor setStringValue:"edited text"];
-    [fieldEditor performClick:nil];
+    [theWindow makeFirstResponder:tableView];
 
     [self assert:"edited text" equals:[dataSource tableEntries][1] message:"table cell edit should propagate to model"]
 
@@ -200,6 +206,7 @@
     [tableColumn setDataView:[CustomTextView0 new]];
     [tableColumn1 setDataView:[CustomTextView1 new]];
 
+    // Process all events immediately to make sure table data views are reloaded.
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 
     [self assert:50 equals:[tableView numberOfRows] message:"tableView numberOfRows should reflect content array length"];
@@ -270,6 +277,53 @@
     [contentBindingTable reloadData];
 }
 
+- (void)testColumnValueBinding
+{
+    var table = [[CPTableView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)],
+        container = [TestDataSource new];
+
+    var tc = [[CPTableColumn alloc] initWithIdentifier:@"A"];
+    [table addTableColumn:tc];
+
+    [container setTableEntries:@[@{@"name":@"B1"}, @{@"name":@"B2"}, @{@"name":@"B3"}]];
+
+    var ac = [[CPArrayController alloc] init];
+    [ac bind:@"contentArray" toObject:container withKeyPath:@"tableEntries" options:nil];
+    [tc bind:@"value" toObject:ac withKeyPath:@"arrangedObjects.name" options:nil];
+
+    [[theWindow contentView] addSubview:table];
+    [theWindow makeFirstResponder:table];
+
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+    // Should remove all table rows.
+    [self assertNoThrow:function()
+    {
+        [container setTableEntries:@[]];
+    }];
+
+    [container setTableEntries:@[@{@"name":@"B1"}, @{@"name":@"B2"}, @{@"name":@"B3"}]];
+
+    [self assertNoThrow:function()
+    {
+        [container setTableEntries:nil];
+    }];
+
+    [container setTableEntries:@[@{@"name":@"B1"}, @{@"name":@"B2"}, @{@"name":@"B3"}]];
+
+    // Change a value in row 0. The number of rows stays the same.
+    [container setTableEntries:@[@{@"name":@"B4"}, @{@"name":@"B2"}, @{@"name":@"B3"}]];
+
+    // Checks that the displayed data matches the model data.
+    [table enumerateAvailableViewsUsingBlock:function(dataView, aRow, aColumn, stop)
+    {
+        var data_value = [[[container tableEntries] objectAtIndex:aRow] objectForKey:@"name"];
+        [self assert:[dataView objectValue] equals:data_value];
+    }];
+
+    // We could also check that the dataviews in rows 1 and 2 are identical to the ones before mutation.
+}
+
 - (void)testInitiallyHiddenColumns
 {
     var table = [[CPTableView alloc] initWithFrame:CGRectMake(0, 0, 400, 400)],
@@ -305,6 +359,101 @@
     [self assertTrue:[table bounds].size.width >= 200];
 }
 
+// Test internal method - (void)getColumn:(Function)columnRef row:(Function)rowRef forView:(CPView)aView
+- (void)testGetColumnAndRow
+{
+    var table = [[CPTableView alloc] initWithFrame:CGRectMake(0, 0, 400, 400)],
+        tableColumn1 = [[CPTableColumn alloc] initWithIdentifier:@"A"],
+        tableColumn2 = [[CPTableColumn alloc] initWithIdentifier:@"B"],
+        delegate = [ContentBindingTableDelegate new];
+
+    [delegate setTester:self];
+    [table setDelegate:delegate];
+
+    [delegate setTableEntries:[[@"A1", @"B1"], [@"A2", @"B2"], [@"A3", @"B3"]]];
+    [table bind:@"content" toObject:delegate withKeyPath:@"tableEntries" options:nil];
+
+    [[theWindow contentView] addSubview:table];
+
+    [tableColumn1 setWidth:50.0];
+    [tableColumn2 setWidth:100.0];
+
+    [table addTableColumn:tableColumn1];
+    [table addTableColumn:tableColumn2];
+
+    var table2 = [[CPTableView alloc] initWithFrame:CGRectMake(400, 0, 400, 400)],
+        table2Column1 = [[CPTableColumn alloc] initWithIdentifier:@"A"],
+        table2Column2 = [[CPTableColumn alloc] initWithIdentifier:@"B"],
+        delegate = [ContentBindingTableDelegate new];
+
+    [delegate setTester:self];
+    [table2 setDelegate:delegate];
+
+    [delegate setTableEntries:[[@"A1", @"B1"], [@"A2", @"B2"], [@"A3", @"B3"]]];
+    [table2 bind:@"content" toObject:delegate withKeyPath:@"tableEntries" options:nil];
+
+    [[theWindow contentView] addSubview:table2];
+
+    [table2Column1 setWidth:50.0];
+    [table2Column2 setWidth:100.0];
+
+    [table2 addTableColumn:tableColumn1];
+    [table2 addTableColumn:tableColumn2];
+
+    var row,
+        column;
+
+// get row and column for a nil view
+    [table getColumn:@ref(column) row:@ref(row) forView:nil];
+
+    [self assert:CPNotFound equals:column];
+    [self assert:CPNotFound equals:row];
+
+// get row and column for a random view
+    var v = [[CPView alloc] initWithFrame:CGRectMake(0,0,100,100)];
+
+    [table getColumn:@ref(column) row:@ref(row) forView:v];
+
+    [self assert:CPNotFound equals:column];
+    [self assert:CPNotFound equals:row];
+
+// get row and column for the table view
+    [table getColumn:@ref(column) row:@ref(row) forView:table];
+
+    [self assert:CPNotFound equals:column];
+    [self assert:CPNotFound equals:row];
+
+// get row and column for a view outside a table column
+    [table getColumn:@ref(column) row:@ref(row) forView:[theWindow contentView]];
+
+    [self assert:CPNotFound equals:column];
+    [self assert:CPNotFound equals:row];
+
+// Enumerate views inside the table view and check that rows and columns are correct
+    [table enumerateAvailableViewsUsingBlock:function(dataView, aRow, aColumn, stop)
+    {
+        var getRow,
+            getColumn;
+
+        [table getColumn:@ref(getColumn) row:@ref(getRow) forView:dataView];
+
+        [self assert:aColumn equals:getColumn];
+        [self assert:aRow equals:getRow];
+    }];
+
+// Enumerate views inside a different table view and check that rows and columns are not found
+    [table2 enumerateAvailableViewsUsingBlock:function(dataView, aRow, aColumn, stop)
+    {
+        var getRow,
+            getColumn;
+
+        [table getColumn:@ref(getColumn) row:@ref(getRow) forView:dataView];
+
+        [self assert:CPNotFound equals:getRow];
+        [self assert:CPNotFound equals:getColumn];
+    }];
+}
+
 -(void)testNotificationsRegistered
 {
     [self assert:[CPNotificationCenterHelper registeredNotificationsForObserver:tableView] equals:[@"_CPWindowDidChangeFirstResponderNotification"] message:@"Notications registered for the tableView in the notification center are wrong"];
@@ -332,6 +481,158 @@
 
     [scrollView removeFromSuperview];
     [self assert:[CPNotificationCenterHelper registeredNotificationsForObserver:tableView] equals:[] message:@"Notications registered for the tableView in the notification center are wrong"];
+}
+
+- (void)testTableDataViewState
+{
+    var textField = [[CPTextField alloc] initWithFrame:CGRectMake(110, 0, 100, 32)];
+    [textField setEditable:YES];
+    [[theWindow contentView] addSubview:textField];
+
+    var dataSource = [TestDataSource new];
+
+    [dataSource setTableEntries:["A", "B", "C"]];
+    [tableView setDataSource:dataSource];
+    [tableView setDelegate:[EditableTableDelegate new]];
+
+    [theWindow makeFirstResponder:tableView];
+    [tableView selectRowIndexes:[CPIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
+
+    [tableView enumerateAvailableViewsUsingBlock:function(dataView, row, column, stop)
+    {
+        if (row == 0)
+        {
+            [self assertTrue:[dataView hasThemeState:CPThemeStateTableDataView] message:"CPThemeStateTableDataView should be enabled"];
+            [self assertTrue:[dataView hasThemeState:CPThemeStateSelectedDataView] message:"CPThemeStateSelectedDataView should be enabled"];
+            [self assertTrue:[dataView hasThemeState:CPThemeStateFirstResponder] message:"CPThemeStateFirstResponder should be enabled"];
+        }
+
+        if (row == 1)
+        {
+            [self assertTrue:[dataView hasThemeState:CPThemeStateTableDataView] message:"CPThemeStateTableDataView should be enabled"];
+            [self assertFalse:[dataView hasThemeState:CPThemeStateSelectedDataView] message:"CPThemeStateSelectedDataView should be disabled"];
+            [self assertTrue:[dataView hasThemeState:CPThemeStateFirstResponder] message:"CPThemeStateFirstResponder should be enabled"];
+        }
+    }];
+
+    [tableView selectRowIndexes:[CPIndexSet indexSetWithIndex:1] byExtendingSelection:NO];
+
+    [tableView enumerateAvailableViewsUsingBlock:function(dataView, row, column, stop)
+    {
+        if (row == 0)
+        {
+            [self assertTrue:[dataView hasThemeState:CPThemeStateTableDataView] message:"CPThemeStateTableDataView should be enabled"];
+            [self assertFalse:[dataView hasThemeState:CPThemeStateSelectedDataView] message:"CPThemeStateSelectedDataView should be disabled"];
+            [self assertTrue:[dataView hasThemeState:CPThemeStateFirstResponder] message:"CPThemeStateFirstResponder should be enabled"];
+        }
+    }];
+
+    [theWindow makeFirstResponder:textField];
+
+    [tableView enumerateAvailableViewsUsingBlock:function(dataView, row, column, stop)
+    {
+        if (row == 0)
+        {
+            [self assertTrue:[dataView hasThemeState:CPThemeStateTableDataView] message:"CPThemeStateTableDataView should be enabled"];
+            [self assertFalse:[dataView hasThemeState:CPThemeStateSelectedDataView] message:"CPThemeStateSelectedDataView should be disabled"];
+            [self assertFalse:[dataView hasThemeState:CPThemeStateFirstResponder] message:"CPThemeStateFirstResponder should be disabled"];
+        }
+
+        if (row == 1)
+        {
+            [self assertTrue:[dataView hasThemeState:CPThemeStateTableDataView] message:"CPThemeStateTableDataView should be enabled"];
+            [self assertTrue:[dataView hasThemeState:CPThemeStateSelectedDataView] message:"CPThemeStateSelectedDataView should be enabled"];
+            [self assertFalse:[dataView hasThemeState:CPThemeStateFirstResponder] message:"CPThemeStateFirstResponder should be disabled"];
+        }
+    }];
+}
+
+- (void)testMethodViewAtColumnWithMakeIfNecessarySetToNo
+{
+    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0, 0, 100.0, 100.0)];
+    [scrollView setDocumentView:tableView];
+
+    var dataSource = [TestDataSource new];
+
+    [tableView setDelegate:[CustomeSizeTableDelegate new]];
+    [dataSource setTableEntries:["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]];
+    [tableView setDataSource:dataSource];
+
+    // Process all events immediately to make sure table data views are reloaded.
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+    var view = [tableView viewAtColumn:0 row:0 makeIfNecessary:NO];
+    [self assert:[view objectValue] equals:@"A" message:@"View should be equal to A"];
+    [self assert:[view superview] equals:tableView message:@"Superview of view should be the tableview"];
+
+    view = [tableView viewAtColumn:0 row:25 makeIfNecessary:NO];
+    [self assert:view equals:nil message:@"View should be equal to nil"];
+}
+
+- (void)testMethodViewAtColumnWithMakeIfNecessarySetToYes
+{
+    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0, 0, 100.0, 100.0)];
+    [scrollView setDocumentView:tableView];
+
+    var dataSource = [TestDataSource new];
+
+    [tableView setDelegate:[CustomeSizeTableDelegate new]];
+    [dataSource setTableEntries:["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]];
+    [tableView setDataSource:dataSource];
+
+    // Process all events immediately to make sure table data views are reloaded.
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+    var view = [tableView viewAtColumn:0 row:0 makeIfNecessary:YES];
+    [self assert:[view objectValue] equals:@"A" message:@"View should be equal to A"];
+    [self assert:[view superview] equals:tableView message:@"Superview of view should be the tableview"];
+
+    view = [tableView viewAtColumn:0 row:25 makeIfNecessary:YES];
+    [self assert:[view objectValue] equals:@"Z" message:@"View should be equal to Z"];
+    [self assert:[view superview] equals:tableView message:@"Superview of view should be the tableview"];
+}
+
+- (void)testMethodViewAtColumnException
+{
+    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0, 0, 100.0, 100.0)];
+    [scrollView setDocumentView:tableView];
+
+    var dataSource = [TestDataSource new];
+
+    [tableView setDelegate:[CustomeSizeTableDelegate new]];
+    [dataSource setTableEntries:["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]];
+    [tableView setDataSource:dataSource];
+
+    // Process all events immediately to make sure table data views are reloaded.
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+    var expectedMessage = @"Row 26 out of row range [0-25] for rowViewAtRow:createIfNeeded:",
+        exceptionMessage = @"";
+
+    try
+    {
+        [tableView viewAtColumn:0 row:26 makeIfNecessary:YES];
+    }
+    catch (e)
+    {
+        exceptionMessage = e.message;
+    }
+
+    [self assert:expectedMessage equals:exceptionMessage];
+
+
+    expectedMessage = @"Column 2 out of row range [0-0] for rowViewAtRow:createIfNeeded:";
+
+    try
+    {
+        [tableView viewAtColumn:2 row:2 makeIfNecessary:YES];
+    }
+    catch (e)
+    {
+        exceptionMessage = e.message;
+    }
+
+    [self assert:expectedMessage equals:exceptionMessage];
 
 }
 
@@ -367,6 +668,23 @@
 - (void)tableView:(CPTableView)aTableView setObjectValue:(id)anObject forTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow
 {
     tableEntries[aRow] = anObject;
+}
+
+@end
+
+@implementation CustomeSizeTableDelegate : CPObject
+{
+
+}
+
+- (float)tableView:(CPTableView)aTableView heightOfRow:(CPInteger)aRowIndex
+{
+    return 200;
+}
+
+- (CPView)tableView:(CPTableView)aTableView viewForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRowIndex
+{
+    return [[CPTextField alloc] initWithFrame:CGRectMake(0,0, 100, 100)];
 }
 
 @end
