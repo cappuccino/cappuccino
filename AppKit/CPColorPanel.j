@@ -71,7 +71,6 @@ var SharedColorPanel = nil,
 */
 @implementation CPColorPanel : CPPanel
 {
-    _CPColorPanelToolbar    _toolbar;
     _CPColorPanelSwatches   _swatchView;
     _CPColorPanelPreview    _previewView;
 

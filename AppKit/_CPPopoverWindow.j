@@ -63,7 +63,6 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
     BOOL            _browserAnimates;
     BOOL            _isObservingFrame;
     BOOL            _shouldPerformAnimation;
-    CPInteger       _implementedDelegateMethods;
     CGRect          _targetRect;
     CPWindow        _targetWindow;
     JSObject        _orderOutTransitionFunction;
