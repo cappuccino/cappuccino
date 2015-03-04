@@ -1014,8 +1014,7 @@ Notifies the delegate when the scroll view has finished scrolling.
 /* @ignore */
 - (void)_respondToScrollWheelEventWithDeltaX:(float)deltaX deltaY:(float)deltaY
 {
-    var documentFrame = [[self documentView] frame],
-        contentBounds = [_contentView bounds],
+    var contentBounds = [_contentView bounds],
         contentFrame = [_contentView frame],
         enclosingScrollView = [self enclosingScrollView];
 
