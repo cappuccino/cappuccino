@@ -112,17 +112,16 @@ CPSegmentSwitchTrackingMomentary = 2;
     return [[_segments objectAtIndex:_selectedSegment] tag];
 }
 
+/*! @ignore */
 - (void)setSegments:(CPArray)segments
 {
     [_segments removeAllObjects];
     [_themeStates removeAllObjects];
 
     [self insertSegments:segments atIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [segments count])]];
-
-    [self tileWithChangedSegment:0];
-    [self _updateSelectionIfNeeded];
 }
 
+/*! @ignore */
 - (void)insertSegments:(CPArray)segments atIndexes:(CPIndexSet)indices
 {
     if ([segments count] == 0)
@@ -136,9 +135,9 @@ CPSegmentSwitchTrackingMomentary = 2;
 
     [_segments insertObjects:segments atIndexes:indices];
     [_themeStates insertObjects:newStates atIndexes:indices];
-    //TODO: update selection if old selection > first inserted
 }
 
+/*! @ignore */
 - (void)removeSegmentsAtIndexes:(CPIndexSet)indices
 {
     if ([indices count] == 0)
@@ -146,7 +145,6 @@ CPSegmentSwitchTrackingMomentary = 2;
 
     [_segments removeObjectsAtIndexes:indices];
     [_themeStates removeObjectsAtIndexes:indices];
-    [self _updateSelectionIfNeeded];
 }
 
 // Specifying the number of segments
@@ -154,27 +152,28 @@ CPSegmentSwitchTrackingMomentary = 2;
     Sets the number of segments in the button.
     @param aCount the number of segments on the button
 */
-- (void)setSegmentCount:(unsigned)newCount
+- (void)setSegmentCount:(unsigned)aCount
 {
     var prevCount = [_segments count];
 
-    if (newCount == prevCount)
+    if (aCount == prevCount)
         return;
 
-    if (newCount > prevCount)
+    if (aCount > prevCount)
     {
-        var count = newCount - prevCount,
+        var count = aCount - prevCount,
             segments = @[];
 
         while (count--)
             [segments addObject:[[_CPSegmentItem alloc] init]];
 
-        [self insertSegments:segments atIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(prevCount, newCount - prevCount)]];
+        [self insertSegments:segments atIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(prevCount, aCount - prevCount)]];
     }
     else
-        [self removeSegmentsAtIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(newCount, prevCount - newCount)]];
+        [self removeSegmentsAtIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(aCount, prevCount - aCount)]];
 
-    [self tileWithChangedSegment:MAX(MIN(prevCount, newCount) - 1, 0)];
+    [self _updateSelectionIfNeeded];
+    [self tileWithChangedSegment:MAX(MIN(prevCount, aCount) - 1, 0)];
 }
 
 - (void)_updateSelectionIfNeeded
@@ -184,6 +183,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     if (_selectedSegment >= count)
         [self setSelectedSegment:count - 1];
 }
+
 /*!
     Returns the number of segments in the button.
 */
@@ -246,7 +246,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 }
 
 // Specifying Tracking Mode
-
+/*! @ignore */
 - (BOOL)isTracking
 {
 
@@ -707,6 +707,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 {
 }
 
+/*! @ignore */
 - (void)tileWithChangedSegment:(CPInteger)aSegment
 {
     var segmentCount = [self segmentCount];
@@ -730,6 +731,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     [self setNeedsDisplay:YES];
 }
 
+/*! @ignore */
 - (CGSize)intrinsicContentSize
 {
     // frameForSegment is recursively called backwards. All previously invalidated frames will be recomputed.
