@@ -273,17 +273,23 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
             timingFunctions = anAction.timingfunctions,
             properties = [],
             valueFunctions = [],
-            createNewAnimation,
-            cssAnimation;
+            cssAnimation = nil;
 
-        var animIdx = [cssAnimations indexOfObjectPassingTest:function(anim, idx, stop)
+        [cssAnimations enumerateObjectsUsingBlock:function(anim, idx, stop)
         {
-            return (anim.identifier == identifier);
+            if (anim.identifier == identifier)
+            {
+                cssAnimation = anim;
+                stop(YES);
+            }
         }];
 
-        createNewAnimation = (animIdx === CPNotFound);
-
-        cssAnimation = createNewAnimation ? new CSSAnimation(aTargetView._DOMElement, identifier) : cssAnimations[animIdx];
+        if (cssAnimation == nil)
+        {
+            var domElement = [aTargetView DOMElementForKeyPath:keyPath];
+            cssAnimation = new CSSAnimation(domElement, identifier);
+            cssAnimations.push(cssAnimation);
+        }
 
         [[aTargetView class] getCSSProperties:properties valueFunctions:valueFunctions forKeyPath:keyPath];
 
@@ -296,9 +302,6 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
 
         if (needsFrameTimer)
             cssAnimation.setRemoveAnimationPropertyOnCompletion(false);
-
-        if (createNewAnimation)
-            cssAnimations.push(cssAnimation);
     }
 
     if (needsFrameTimer)
