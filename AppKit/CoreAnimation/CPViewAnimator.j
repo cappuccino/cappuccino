@@ -68,24 +68,29 @@
 
 @end
 
-var PROPERTY_DESCRIPTORS = {},
-    ANIMATED_KEYS = [@"alphaValue", @"frame", @"frameSize", @"frameOrigin", @"backgroundColor"];
+var CPVIEW_PROPERTIES_DESCRIPTOR = @{
+    "backgroundColor"  : [@{"property":"background", "value":function(val){return [val cssString];}}],
+    "alphaValue"       : [@{"property":"opacity"}],
+    "frame"            : [@{"property":"left", "value":function(val){return val.origin.x + "px";}},
+                          @{"property":"top", "value":function(val){return val.origin.y + "px";}},
+                          @{"property":"width", "value":function(val){return val.size.width + "px";}},
+                          @{"property":"height", "value":function(val){return val.size.height + "px";}}],
+    "frameOrigin"      : [@{"property":"left", "value":function(val){return val.x + "px";}},
+                          @{"property":"top", "value":function(val){return val.y + "px";}}],
+    "frameSize"        : [@{"property":"width", "value":function(val){return val.width + "px";}},
+                          @{"property":"height", "value":function(val){return val.height + "px";}}]
+};
 
 @implementation CPView (CPAnimatablePropertyContainer)
 
-+ (void)getCSSProperties:(CPArray)properties valueFunctions:(CPArray)valueFunctions forKeyPath:(CPString)aKeyPath
++ (CPArray)cssPropertiesForKeyPath:(CPString)aKeyPath
 {
-    var descriptors = PROPERTY_DESCRIPTORS[aKeyPath];
-    if (descriptors)
-    {
-        [properties addObjectsFromArray:descriptors[0]];
-        [valueFunctions addObjectsFromArray:descriptors[1]];
-    }
-    else
-    {
-        CSSPropertyDescriptors(aKeyPath, properties, valueFunctions);
-        PROPERTY_DESCRIPTORS[aKeyPath] = [properties, valueFunctions];
-    }
+    return [CPVIEW_PROPERTIES_DESCRIPTOR objectForKey:aKeyPath];
+}
+
+- (id)DOMElementForKeyPath:(CPString)aKeyPath
+{
+    return _DOMElement;
 }
 
 - (id)animator
@@ -96,10 +101,9 @@ var PROPERTY_DESCRIPTORS = {},
     return _animator;
 }
 
-
 + (CAAnimation)defaultAnimationForKey:(CPString)aKey
 {
-    if ([ANIMATED_KEYS containsObject:aKey])
+    if ([[self class] cssPropertiesForKeyPath:aKey] !== nil)
         return [CAAnimation animation];
 
     return nil;
@@ -129,63 +133,3 @@ var PROPERTY_DESCRIPTORS = {},
 }
 
 @end
-
-var CSSPropertyDescriptors = function(aKeyPath, properties, valueFunctions)
-{
-    var cssprop = null,
-        valueFunction = null;
-
-    switch (aKeyPath)
-    {
-        case "backgroundColor"  : cssprop = "background"; valueFunction = function(val){return [val cssString];};
-        break;
-
-        case "alphaValue"       : cssprop = "opacity";
-        break;
-
-        case "frame"            : CSSPropertyDescriptors("frameX", properties, valueFunctions);
-                                  CSSPropertyDescriptors("frameY", properties, valueFunctions);
-                                  CSSPropertyDescriptors("frameWidth", properties, valueFunctions);
-                                  CSSPropertyDescriptors("frameHeight", properties, valueFunctions);
-        break;
-
-        case "frameOrigin"      : CSSPropertyDescriptors("frameOriginX", properties, valueFunctions);
-                                  CSSPropertyDescriptors("frameOriginY", properties, valueFunctions);
-        break;
-
-        case "frameSize"        : CSSPropertyDescriptors("frameSizeWidth", properties, valueFunctions);
-                                  CSSPropertyDescriptors("frameSizeHeight", properties, valueFunctions);
-        break;
-
-        case "frameOriginX"     : cssprop = "left"; valueFunction = function(val){return val.x + "px";};
-        break;
-
-        case "frameOriginY"     : cssprop = "top"; valueFunction = function(val){return val.y + "px";};
-        break;
-
-        case "frameSizeWidth"   : cssprop = "width"; valueFunction = function(val){return val.width + "px";};
-        break;
-
-        case "frameSizeHeight"  : cssprop = "height"; valueFunction = function(val){return val.height + "px";};
-        break;
-
-        case "frameX"           : cssprop = "left"; valueFunction = function(val){return val.origin.x + "px";};
-        break;
-
-        case "frameY"           : cssprop = "top"; valueFunction = function(val){return val.origin.y + "px";};
-        break;
-
-        case "frameWidth"       : cssprop = "width"; valueFunction = function(val){return val.size.width + "px";};
-        break;
-
-        case "frameHeight"      : cssprop = "height"; valueFunction = function(val){return val.size.height + "px";};
-        break;
-    }
-
-    if (cssprop)
-    {
-        properties.push(cssprop);
-        // can be null
-        valueFunctions.push(valueFunction);
-    }
-};

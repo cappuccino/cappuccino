@@ -291,13 +291,15 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
             cssAnimations.push(cssAnimation);
         }
 
-        [[aTargetView class] getCSSProperties:properties valueFunctions:valueFunctions forKeyPath:keyPath];
+        var css_mapping = [[aTargetView class] cssPropertiesForKeyPath:keyPath];
 
-        [properties enumerateObjectsUsingBlock:function(aProperty, anIndex, stop)
+        [css_mapping enumerateObjectsUsingBlock:function(aDict, anIndex, stop)
         {
             var completionFunction = (anIndex == 0) ? anAction.completion : null;
+            var property = [aDict objectForKey:@"property"],
+                getter = [aDict objectForKey:@"value"];
 
-            cssAnimation.addPropertyAnimation(aProperty, valueFunctions[anIndex], duration, anAction.keytimes, anAction.values, timingFunctions, completionFunction);
+            cssAnimation.addPropertyAnimation(property, getter, duration, anAction.keytimes, anAction.values, timingFunctions, completionFunction);
         }];
 
         if (needsFrameTimer)
