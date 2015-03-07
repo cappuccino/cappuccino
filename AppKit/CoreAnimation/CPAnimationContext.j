@@ -164,7 +164,7 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
     var completionFunction = function()
     {
         if (needsFrameTimer)
-            [self stopFrameTimerWithIdentifier:objectId];
+            [self stopFrameUpdaterWithIdentifier:objectId];
         else
             animationCompletion();
 
@@ -245,8 +245,8 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
     var k = timers.length;
     while(k--)
     {
-        CPLog.debug("START TIMER " + [timers[k] identifier]);
-        [timers[k] startTimer];
+        CPLog.debug("START TIMER " + timers[k].identifier());
+        timers[k].start();
     }
 
 // start css animations
@@ -306,7 +306,8 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
 
     if (needsFrameTimer)
     {
-        var timer = [self addFrameTimerWithIdentifier:[rootView UID] forView:aTargetView keyPath:keyPath];
+        var timer = [self addFrameUpdaterWithIdentifier:[rootView UID] forView:aTargetView keyPath:keyPath duration:anAction.duration];
+
         if (timer)
             timers.push(timer);
     }
@@ -332,10 +333,10 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
                 action.completion = function()
                 {
                     [aSubview setFrame:targetFrame];
-                    CPLog.debug(aSubview + " setFrame: " + CPDescriptionOfObject());
+                    CPLog.debug(aSubview + " setFrame: ");
 
                     if (idx == lastIndex)
-                        [self stopFrameTimerWithIdentifier:frameTimerId];
+                        [self stopFrameUpdaterWithIdentifier:frameTimerId];
                 };
             }
 
@@ -366,32 +367,34 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
             };
 }
 
-- (FrameUpdater)addFrameTimerWithIdentifier:(CPString)anIdentifier forView:(CPView)aView keyPath:(CPString)aKeyPath
+- (Function)addFrameUpdaterWithIdentifier:(CPString)anIdentifier forView:(CPView)aView keyPath:(CPString)aKeyPath duration:(float)aDuration
 {
     var frameUpdater = _animationTimers[anIdentifier],
         result = nil;
 
-    if (!frameUpdater)
+    if (frameUpdater == null)
     {
-        frameUpdater = [[FrameUpdater alloc] initWithIdentifier:anIdentifier];
+        frameUpdater = new FrameUpdater(anIdentifier);
         _animationTimers[anIdentifier] = frameUpdater;
         result = frameUpdater;
     }
 
-    [frameUpdater addTarget:aView withKeyPath:aKeyPath];
+    frameUpdater.addTarget(aView, aKeyPath, aDuration);
 
     return result;
 }
 
-- (void)stopFrameTimerWithIdentifier:(CPString)anIdentifier
+- (void)stopFrameUpdaterWithIdentifier:(CPString)anIdentifier
 {
-CPLog.debug(_cmd + anIdentifier);
     var frameUpdater = _animationTimers[anIdentifier];
+
     if (frameUpdater)
     {
-        [frameUpdater stopTimer];
+        frameUpdater.stop();
         delete _animationTimers[anIdentifier];
     }
+    else
+        CPLog.warn("Could not find FrameUpdater with identifier " + anIdentifier);
 }
 
 - (void)setCompletionHandler:(Function)aCompletionHandler
@@ -411,116 +414,6 @@ CPLog.debug(_cmd + anIdentifier);
 }
 
 @end
-
-@implementation FrameUpdater : CPObject
-{
-    CPString   _identifier @accessors(getter=identifier);
-    CPArray   _layoutCallbacks;
-    CPArray   _targets;
-    CPTimer   _timer;
-    BOOL      _stop;
-    CPInteger _count;
-}
-
-- (id)initWithIdentifier:(CPString)anIdentifier
-{
-    self = [super init];
-
-    _layoutCallbacks = [];
-    _targets = [];
-    _identifier  = anIdentifier;
-    _timer = nil;
-    _stop  = NO;
-    _count = 0;
-
-    return self;
-}
-
-- (void)addTarget:(CPView)aTarget withKeyPath:(CPString)aKeyPath
-{
-    var callback = (aKeyPath == @"frame") ? updateFrame(aTarget) : updateFrameSize(aTarget);
-
-    _layoutCallbacks.push(callback);
-    _targets.push(aTarget);
-    _count++;
-}
-
-- (void)startTimer
-{
-    _timer = [CPTimer scheduledTimerWithTimeInterval:FRAME_UPDATE_INTERVAL target:self selector:@selector(animationTimer:) userInfo:nil repeats:YES];
-}
-
-- (void)stopTimer
-{
-    CPLog.debug(_cmd);
-    _stop = YES;
-}
-
-- (void)animationTimer:(CPTimer)aTimer
-{
-    for (var i = 0; i < _count; i++)
-        _layoutCallbacks[i]();
-
-    if (_stop)
-    {
-        [_timer invalidate];
-        _timer = nil;
-
-        for (var i = 0; i < _count; i++)
-        {
-            CPLog.debug(_targets[i] + " Remove animation-name property");
-            _targets[i]._DOMElement.style.removeProperty(CPBrowserCSSProperty("animation-name"));
-        }
-    }
-}
-
-@end
-
-var updateFrame = function(aView)
-{
-    var style = getComputedStyle(aView._DOMElement),
-        storedWidth = null;
-        storedHeight = null;
-
-    return function()
-    {
-        var width  = ROUND(style.getPropertyCSSValue('width').getFloatValue(CSSPrimitiveValue.CSS_PX)),
-            height = ROUND(style.getPropertyCSSValue('height').getFloatValue(CSSPrimitiveValue.CSS_PX));
-
-        if (storedWidth !== width || storedHeight !== height)
-        {
-            var left   = ROUND(style.getPropertyCSSValue('left').getFloatValue(CSSPrimitiveValue.CSS_PX)),
-                top    = ROUND(style.getPropertyCSSValue('top').getFloatValue(CSSPrimitiveValue.CSS_PX)),
-                frame  = CGRectMake(left, top, width, height);
-
-            [aView setFrame:frame];
-
-            storedWidth  = width;
-            storedHeight = height;
-        }
-    };
-};
-
-var updateFrameSize = function(aView)
-{
-    var style = getComputedStyle(aView._DOMElement),
-        storedWidth = null;
-        storedHeight = null;
-
-    return function()
-    {
-        var width  = ROUND(style.getPropertyCSSValue('width').getFloatValue(CSSPrimitiveValue.CSS_PX)),
-            height = ROUND(style.getPropertyCSSValue('height').getFloatValue(CSSPrimitiveValue.CSS_PX));
-
-        if (storedWidth !== width || storedHeight !== height)
-        {
-            [aView setFrameSize:CGSizeMake(width, height)];
-
-            storedWidth  = width;
-            storedHeight = height;
-        }
-    };
-};
 
 @implementation CPView (CPAnimationContext)
 
@@ -713,4 +606,102 @@ CFRunLoopRemoveObserver = function(runloop, observer, mode)
                 runloop._observers = nil;
         }
     }
+};
+
+var FrameUpdater = function(anIdentifier)
+{
+    this._identifier = anIdentifier;
+    this._duration = 0;
+    this._stop = false;
+    this._targets = [];
+    this._callbacks = [];
+    var frameUpdater = this;
+
+    this._updateFunction = function(timestamp)
+    {
+        if (frameUpdater._stop)
+            return;
+
+        if (this._startDate == null)
+            this._startDate = timestamp;
+
+        for (var i = 0; i < frameUpdater._callbacks.length; i++)
+            frameUpdater._callbacks[i]();
+
+        if (timestamp - this._startDate < frameUpdater._duration * 1000)
+            window.requestAnimationFrame(frameUpdater._updateFunction);
+    };
+};
+
+FrameUpdater.prototype.start = function()
+{
+    window.requestAnimationFrame(this._updateFunction);
+};
+
+FrameUpdater.prototype.stop = function()
+{
+CPLog.debug("stop FrameUpdater with id " + this.identifier());
+
+    this._stop = true;
+
+    var targets = this._targets;
+
+    for (var i = 0; i < targets.length; i++)
+    {
+        CPLog.debug(targets[i] + " Remove animation-name property");
+        targets[i]._DOMElement.style.removeProperty(CPBrowserCSSProperty("animation-name"));
+    }
+};
+
+FrameUpdater.prototype.updateFunction = function()
+{
+    return this._updateFunction;
+};
+
+FrameUpdater.prototype.identifier = function()
+{
+    return this._identifier;
+};
+
+FrameUpdater.prototype.addTarget = function(target, keyPath, duration)
+{
+    var callback = createUpdateFrame(target, keyPath);
+
+    if (callback)
+    {
+        this._duration = MAX(this._duration, duration);
+        this._targets.push(target);
+        this._callbacks.push(callback);
+    }
+};
+
+var createUpdateFrame = function(aView, aKeyPath)
+{
+    if (aKeyPath !== "frame" && aKeyPath !== "frameSize")
+        return nil;
+
+    var style = getComputedStyle(aView._DOMElement);
+
+    var updateFrame = function(timestamp)
+    {
+        var width  = ROUND(style.getPropertyCSSValue('width').getFloatValue(CSSPrimitiveValue.CSS_PX)),
+            height = ROUND(style.getPropertyCSSValue('height').getFloatValue(CSSPrimitiveValue.CSS_PX));
+
+        if (aKeyPath == "frame")
+        {
+            var left   = ROUND(style.getPropertyCSSValue('left').getFloatValue(CSSPrimitiveValue.CSS_PX)),
+                top    = ROUND(style.getPropertyCSSValue('top').getFloatValue(CSSPrimitiveValue.CSS_PX)),
+                frame  = CGRectMake(left, top, width, height);
+
+            [aView setFrame:frame];
+        }
+        else if (aKeyPath == "frameSize")
+        {
+            [aView setFrameSize:CGSizeMake(width, height)];
+        }
+
+        [[CPRunLoop currentRunLoop] performSelectors];
+    };
+
+    return updateFrame;
 };
