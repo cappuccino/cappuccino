@@ -209,7 +209,7 @@ var concat = Array.prototype.concat,
 }
 
 /*!
-    Returns a hash for the object. Other than in Cocoa, the hash value does not take the content into account. To distinct instances of CPArray with identical content (that are \c isEqual:) may return different \c -hash values.
+Returns a hash for the object. Unlike Cocoa, the hash value does not take content into account, so two arrays with the same content (\c isEqual: === YES) will not generate the same hash.
 */
 - (unsigned)hash
 {
