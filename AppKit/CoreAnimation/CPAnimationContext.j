@@ -10,11 +10,9 @@
 
 @typedef HashTable;
 
-var FRAME_UPDATE_INTERVAL      = 0.02;
-
 var _CPAnimationContextStack   = nil,
     _animationFlushingObserver = nil,
-    _animationTimers           = {};
+    _animationFrameUpdaters    = {};
 
 @implementation CPAnimationContext : CPObject
 {
@@ -371,13 +369,13 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
 
 - (Function)addFrameUpdaterWithIdentifier:(CPString)anIdentifier forView:(CPView)aView keyPath:(CPString)aKeyPath duration:(float)aDuration
 {
-    var frameUpdater = _animationTimers[anIdentifier],
+    var frameUpdater = _animationFrameUpdaters[anIdentifier],
         result = nil;
 
     if (frameUpdater == null)
     {
         frameUpdater = new FrameUpdater(anIdentifier);
-        _animationTimers[anIdentifier] = frameUpdater;
+        _animationFrameUpdaters[anIdentifier] = frameUpdater;
         result = frameUpdater;
     }
 
@@ -388,12 +386,12 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
 
 - (void)stopFrameUpdaterWithIdentifier:(CPString)anIdentifier
 {
-    var frameUpdater = _animationTimers[anIdentifier];
+    var frameUpdater = _animationFrameUpdaters[anIdentifier];
 
     if (frameUpdater)
     {
         frameUpdater.stop();
-        delete _animationTimers[anIdentifier];
+        delete _animationFrameUpdaters[anIdentifier];
     }
     else
         CPLog.warn("Could not find FrameUpdater with identifier " + anIdentifier);
