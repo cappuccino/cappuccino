@@ -209,6 +209,14 @@ var concat = Array.prototype.concat,
 }
 
 /*!
+    Returns a hash for the object. Other than in Cocoa, the hash value does not take the content into account. To distinct instances of CPArray with identical content (that are \c isEqual:) may return different \c -hash values.
+*/
+- (unsigned)hash
+{
+    return [self UID];
+}
+
+/*!
     Returns the first object in the array. If the array is empty, returns \c nil
 */
 - (id)firstObject
