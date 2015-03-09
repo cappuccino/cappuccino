@@ -601,7 +601,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
 }
 
 /*!
-    Binds the receiver to an object.
+    Binds the receiver to an object. Note that unlike Cocoa, this works only *after* the receiver has been added to a \c CPTableView.
 
     @param CPString aBinding - The binding you wish to make. Typically CPValueBinding.
     @param id anObject - The object to bind the receiver to.
