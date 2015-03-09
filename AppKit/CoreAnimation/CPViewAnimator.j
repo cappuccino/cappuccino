@@ -49,36 +49,73 @@
     [self _setTargetValue:aFrameSize withKeyPath:@"frameSize" setter:_cmd];
 }
 
+// Convenience method for the common case where the setter has zero or one argument
 - (void)_setTargetValue:(id)aTargetValue withKeyPath:(CPString)aKeyPath setter:(SEL)aSelector
+{
+    var handler = function()
+    {
+        [_target performSelector:aSelector withObject:aTargetValue];
+    };
+
+    [self _setTargetValue:aTargetValue withKeyPath:aKeyPath fallback:handler completion:handler];
+}
+
+- (void)_setTargetValue:(id)aTargetValue withKeyPath:(CPString)aKeyPath fallback:(Function)fallback  completion:(Function)completion
 {
     var animation = [_target animationForKey:aKeyPath],
         context = [CPAnimationContext currentContext];
 
-    if (!animation || ![animation isKindOfClass:[CAAnimation class]] || (![context duration] && ![animation duration]) || ![_CPObjectAnimator supportsCSSAnimations])
-        [_target performSelector:aSelector withObject:aTargetValue];
+    if ((!animation || ![animation isKindOfClass:[CAAnimation class]] || (![context duration] && ![animation duration]) || ![_CPObjectAnimator supportsCSSAnimations]) && fallback !== nil)
+    {
+        fallback();
+    }
     else
     {
-        [context _enqueueActionForObject:_target keyPath:aKeyPath targetValue:aTargetValue animationCompletion:function()
-        {
-           [_target performSelector:aSelector withObject:aTargetValue];
-           CPLog.debug(_target + " " + aSelector + " " + CPDescriptionOfObject(aTargetValue));
-        }];
+        [context _enqueueActionForObject:_target keyPath:aKeyPath targetValue:aTargetValue animationCompletion:completion];
     }
 }
 
 @end
 
+var transformOrigin = function(start, current)
+{
+    return "translate(" + (current.x - start.x) + "px," + (current.y - start.y) + "px)";
+};
+
+var transformFrameToTranslate = function(start, current)
+{
+    return transformOrigin(start.origin, current.origin);
+};
+
+var transformFrameToWidth = function(start, current)
+{
+    return current.size.width + "px";
+};
+
+var transformFrameToHeight = function(start, current)
+{
+    return current.size.height + "px";
+};
+
+var transformSizeToWidth = function(start, current)
+{
+    return current.width + "px";
+};
+
+var transformSizeToHeight = function(start, current)
+{
+    return current.height + "px";
+};
+
 var CPVIEW_PROPERTIES_DESCRIPTOR = @{
-    "backgroundColor"  : [@{"property":"background", "value":function(val){return [val cssString];}}],
+    "backgroundColor"  : [@{"property":"background", "value":function(sv, val){return [val cssString];}}],
     "alphaValue"       : [@{"property":"opacity"}],
-    "frame"            : [@{"property":"left", "value":function(val){return val.origin.x + "px";}},
-                          @{"property":"top", "value":function(val){return val.origin.y + "px";}},
-                          @{"property":"width", "value":function(val){return val.size.width + "px";}},
-                          @{"property":"height", "value":function(val){return val.size.height + "px";}}],
-    "frameOrigin"      : [@{"property":"left", "value":function(val){return val.x + "px";}},
-                          @{"property":"top", "value":function(val){return val.y + "px";}}],
-    "frameSize"        : [@{"property":"width", "value":function(val){return val.width + "px";}},
-                          @{"property":"height", "value":function(val){return val.height + "px";}}]
+    "frame"            : [@{"property":CPBrowserCSSProperty("transform"), "value":transformFrameToTranslate},
+                          @{"property":"width", "value":transformFrameToWidth},
+                          @{"property":"height", "value":transformFrameToHeight}],
+    "frameOrigin"      : [@{"property":CPBrowserCSSProperty("transform"), "value":transformOrigin}],
+    "frameSize"        : [@{"property":"width", "value":transformSizeToWidth},
+                          @{"property":"height", "value":transformSizeToHeight}]
 };
 
 @implementation CPView (CPAnimatablePropertyContainer)

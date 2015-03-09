@@ -110,17 +110,20 @@ CSSAnimation.prototype.keyFrames = function()
             timingFunctions = animation.keyframestimingFunctions;
 
         var keyframes = [],
-            keytimescount = keytimes.length;
+            keytimescount = keytimes.length,
+            start_value = values[0];
 
         for (var j = 0; j < keytimescount; j++)
         {
             var keytime = keytimes[j],
-                value = values[j];
+                value = values[j],
+                timingFunction;
 
-            var cssvalue = valuefunction ? valuefunction(value) : value;
-            var keyframeContent = property + ": " + cssvalue + ";";
+            if (valuefunction !== nil)
+                value = valuefunction(start_value, value);
 
-            var timingFunction;
+            var keyframeContent = property + ": " + value + ";";
+
             if (timingFunctions && timingFunctions.length && (timingFunction = timingFunctions[j]))
             {
                 keyframeContent += ANIMATION_TIMING_FUNCTION_PROPERTY + ":cubic-bezier(" + timingFunction + ");";
