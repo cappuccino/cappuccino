@@ -988,6 +988,7 @@ var PreventScroll = true;
 
 - (void)_actualResizeEvent
 {
+    _shouldUpdateContentRect = NO;
     resizeTimer = nil;
 
     // FIXME: This is not the right way to do this.
@@ -1021,6 +1022,8 @@ var PreventScroll = true;
     //window.liveResize = NO;
 
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+    _shouldUpdateContentRect = YES;
 }
 
 - (void)touchEvent:(DOMEvent)aDOMEvent
