@@ -959,6 +959,11 @@ CPTexturedBackgroundWindowMask
 */
 - (void)_windowWillBeAddedToTheDOM
 {
+    [[CPNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(_didReceivePlatformWindowWillCloseNotification:)
+                                                 name:_CPPlatformWindowWillCloseNotification
+                                               object:_platformWindow];
+
     [[self contentView] _addObservers];
 }
 
@@ -967,6 +972,8 @@ CPTexturedBackgroundWindowMask
 */
 - (void)_windowWillBeRemovedFromTheDOM
 {
+    [[CPNotificationCenter defaultCenter] removeObserver:self name:_CPPlatformWindowWillCloseNotification object:nil];
+
     [[self contentView] _removeObservers];
 }
 
@@ -3366,6 +3373,14 @@ CPTexturedBackgroundWindowMask
         [self setTitle:aValue || @""];
     else
         [super setValue:aValue forKey:aKey];
+}
+
+- (void)_didReceivePlatformWindowWillCloseNotification:(CPNotification)aNotification
+{
+    if ([aNotification object] != _platformWindow)
+        return;
+
+    [self close];
 }
 
 @end

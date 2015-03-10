@@ -13,7 +13,7 @@
 @implementation AppController : CPObject
 {
     @outlet CPWindow    theWindow;
-    @outlet CPWindow    windowPlatformWindow;
+    @outlet CPWindow    externalWindow;
 
     CPPlatformWindow    platformWindow;
 
@@ -22,7 +22,8 @@
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
     // This is called when the application is done loading.
-    [[CPPlatformWindow alloc] initWithWindow:windowPlatformWindow];
+    [[CPPlatformWindow alloc] initWithWindow:externalWindow];
+    [externalWindow setDelegate:self];
 }
 
 - (void)awakeFromCib
@@ -37,23 +38,67 @@
 
 - (IBAction)showWindow:(id)sender
 {
-    [windowPlatformWindow orderFront:sender];
+    [externalWindow orderFront:sender];
 }
 
 - (IBAction)closeWindow:(id)sender
 {
-    [windowPlatformWindow orderOut:sender];
+    [externalWindow orderOut:sender];
 }
 
 - (IBAction)changeFrame:(id)sender
 {
-    [windowPlatformWindow setFrame:CGRectMake(250, 250, 200, 200)];
+    [externalWindow setFrame:CGRectMake(250, 250, 200, 200)];
 }
 
 - (IBAction)showAlert:(id)sender
 {
     var alert = [CPAlert alertWithMessageText:@"rer" defaultButton:"OK" alternateButton:nil otherButton:nil informativeTextWithFormat:"Multiple login failures may result in blocked access to the system."];
-    [alert beginSheetModalForWindow:windowPlatformWindow];
+    [alert beginSheetModalForWindow:externalWindow];
+}
+
+
+#pragma mark -
+#pragma mark Delegate
+
+- (void)windowDidBecomeKey:(CPNotification)aNotification
+{
+    CPLog.debug("windowDidBecomeKey:");
+}
+
+- (void)windowDidBecomeMain:(CPNotification)aNotification
+{
+    CPLog.debug("windowDidBecomeMain:");
+}
+
+- (void)windowDidEndSheet:(CPNotification)aNotification
+{
+    CPLog.debug("windowDidEndSheet:");
+}
+
+- (void)windowDidMove:(CPNotification)aNotification
+{
+    CPLog.debug("windowDidMove:");
+}
+
+- (void)windowDidResignKey:(CPNotification)aNotification
+{
+    CPLog.debug("windowDidResignKey:");
+}
+
+- (void)windowDidResignMain:(CPNotification)aNotification
+{
+    CPLog.debug("windowDidResignMain:");
+}
+
+- (void)windowDidResize:(CPNotification)aNotification
+{
+    CPLog.debug("windowDidResize:");
+}
+
+- (void)windowWillClose:(CPWindow)aWindow
+{
+    CPLog.debug("windowWillClose:");
 }
 
 @end
