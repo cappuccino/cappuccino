@@ -409,7 +409,6 @@ var NSButtonIsBorderedMask = 0x00800000,
 
 @implementation NSButtonCell : NSActionCell
 {
-    BOOL        _isBordered         @accessors(readonly, getter=isBordered);
     int         _bezelStyle         @accessors(readonly, getter=bezelStyle);
 
     CPString    _title              @accessors(readonly, getter=title);

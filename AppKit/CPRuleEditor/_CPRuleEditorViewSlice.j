@@ -29,7 +29,6 @@
     CGRect       _animationTargetRect   @accessors(property=_animationTargetRect);
     BOOL         _selected              @accessors(getter=_isSelected, setter=_setSelected:);
     BOOL         _lastSelected          @accessors(getter=_isLastSelected, setter=_setLastSelected:);
-    CPColor      _backgroundColor       @accessors(property=backgroundColor);
     BOOL         _editable              @accessors(getter=isEditable, setter=setEditable:);
 }
 
