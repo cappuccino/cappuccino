@@ -65,9 +65,10 @@
     var animation = [_target animationForKey:aKeyPath],
         context = [CPAnimationContext currentContext];
 
-    if ((!animation || ![animation isKindOfClass:[CAAnimation class]] || (![context duration] && ![animation duration]) || ![_CPObjectAnimator supportsCSSAnimations]) && fallback !== nil)
+    if (!animation || ![animation isKindOfClass:[CAAnimation class]] || (![context duration] && ![animation duration]) || ![_CPObjectAnimator supportsCSSAnimations])
     {
-        fallback();
+        if (fallback)
+            fallback();
     }
     else
     {

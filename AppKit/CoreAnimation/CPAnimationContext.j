@@ -130,7 +130,7 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
     var animByKeyPath = _animationsByObject.get(anObject);
     if (!animByKeyPath)
     {
-        var newAnimByKeyPath = [CPDictionary dictionaryWithObject:resolvedAction forKey:aKeyPath];
+        var newAnimByKeyPath = @{aKeyPath:resolvedAction};
         _animationsByObject.put(anObject, newAnimByKeyPath);
     }
     else
@@ -163,7 +163,7 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
     {
         if (needsFrameTimer)
             [self stopFrameUpdaterWithIdentifier:objectId];
-        else
+        else if (animationCompletion)
             animationCompletion();
 
         if (_completionHandlerAgent)
