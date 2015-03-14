@@ -85,7 +85,7 @@ var _CPAnimationContextStack   = nil,
     if (!_animationFlushingObserver)
     {
         CPLog.debug("create new observer");
-        _animationFlushingObserver = CFRunLoopObserverCreate(2, true, 0,_animationFlushingObserverCallback,0);
+        _animationFlushingObserver = CFRunLoopObserverCreate(2, true, 0, _animationFlushingObserverCallback,0);
         CFRunLoopAddObserver([CPRunLoop mainRunLoop], _animationFlushingObserver);
     }
 }
@@ -128,6 +128,7 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
         return;
 
     var animByKeyPath = _animationsByObject.get(anObject);
+    
     if (!animByKeyPath)
     {
         var newAnimByKeyPath = @{aKeyPath:resolvedAction};
@@ -340,7 +341,7 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
                 };
             }
 
-            [self getAnimations:cssAnimations getTimers:timers forView:aSubview usingAction:action rootView:rootView  cssAnimate:!customLayout];
+            [self getAnimations:cssAnimations getTimers:timers forView:aSubview usingAction:action rootView:rootView cssAnimate:!customLayout];
         }];
     }
 }
