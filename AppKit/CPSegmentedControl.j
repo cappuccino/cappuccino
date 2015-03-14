@@ -180,7 +180,11 @@ CPSegmentSwitchTrackingMomentary = 2;
 {
     var count = [self segmentCount];
 
-    if (_selectedSegment >= count)
+    if (count == 0)
+        _selectedSegment = -1;
+    else if (_selectedSegment < 0)
+        [self setSelectedSegment:0];
+    else if (_selectedSegment >= count)
         [self setSelectedSegment:count - 1];
 }
 
