@@ -622,7 +622,6 @@ NOT YET IMPLEMENTED
 - (void)reloadData
 {
     [self _reloadDataViews];
-    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 }
 
 /*!
