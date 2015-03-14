@@ -52,7 +52,7 @@
     for (var i = 0; i < _segments.length; i++)
         _themeStates[i] = _segments[i].selected ? CPThemeStateSelected : CPThemeStateNormal;
 
-    [self tileWithChangedSegment:0];
+    [self tile];
 
     [self setEnabled:[cell isEnabled]];
 }

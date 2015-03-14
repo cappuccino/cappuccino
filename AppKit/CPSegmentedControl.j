@@ -712,17 +712,18 @@ CPSegmentSwitchTrackingMomentary = 2;
 }
 
 /*! @ignore */
+- (void)tile
+{
+    [self tileWithChangedSegment:0];
+}
+
+/*! @ignore */
 - (void)tileWithChangedSegment:(CPInteger)aSegment
 {
     var segmentCount = [self segmentCount];
 
-    if (segmentCount == 0)
-    {
-        [self setFrameSize:CGSizeMake(0, [self valueForThemeAttribute:@"min-size"].height)];
-        return;
-    }
-
-    if (aSegment < 0 || aSegment >= segmentCount)
+    // Corner case: when segmentCount == 0 and aSegment == 0, we do not return here because we still need to set the new frameSize bellow.
+    if (aSegment < 0 || (segmentCount > 0 && aSegment >= segmentCount))
         return;
 
     // Invalidate frames for segments on the right. They will be lazily computed by -frameForSegment:.
@@ -914,7 +915,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 {
     [super setFont:aFont];
 
-    [self tileWithChangedSegment:0];
+    [self tile];
 }
 
 @end
@@ -957,7 +958,7 @@ var CPSegmentedControlSegmentsKey       = "CPSegmentedControlSegmentsKey",
         for (var i = 0; i < [self segmentCount]; i++)
             _themeStates[i] = [_segments[i] selected] ? CPThemeStateSelected : CPThemeStateNormal;
 
-        [self tileWithChangedSegment:0];
+        [self tile];
 
         var thickness = [self currentValueForThemeAttribute:@"divider-thickness"],
             dividerExtraSpace = ([_segments count] - 1) * thickness,
@@ -988,7 +989,7 @@ var CPSegmentedControlSegmentsKey       = "CPSegmentedControlSegmentsKey",
         }
 
         [self setFrameSize:CGSizeMake(originalWidth, CGRectGetHeight([self frame]))];
-        [self tileWithChangedSegment:0];
+        [self tile];
     }
 
     return self;
