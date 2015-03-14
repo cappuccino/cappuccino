@@ -688,17 +688,14 @@ CPSegmentSwitchTrackingMomentary = 2;
         contentInset = [self valueForThemeAttribute:@"content-inset" inState:themeState],
         font = [self font];
 
-    if (!segmentWidth)
-    {
-        if ([segment image] && [segment label])
-            segmentWidth = [[segment label] sizeWithFont:font].width + [[segment image] size].width + contentInset.left + contentInset.right;
-        else if (segment.image)
-            segmentWidth = [[segment image] size].width + contentInset.left + contentInset.right;
-        else if (segment.label)
-            segmentWidth = [[segment label] sizeWithFont:font].width + contentInset.left + contentInset.right;
-        else
-            segmentWidth = 0.0;
-    }
+    if ([segment image] && [segment label])
+        segmentWidth = [[segment label] sizeWithFont:font].width + [[segment image] size].width + contentInset.left + contentInset.right;
+    else if (segment.image)
+        segmentWidth = [[segment image] size].width + contentInset.left + contentInset.right;
+    else if (segment.label)
+        segmentWidth = [[segment label] sizeWithFont:font].width + contentInset.left + contentInset.right;
+    else
+        segmentWidth = 0.0;
 
     var delta = segmentWidth - CGRectGetWidth([segment frame]);
 
