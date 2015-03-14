@@ -5308,6 +5308,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     [self reloadData];
 
+    // Process all events immediately to make sure table data views are reloaded.
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
     [self scrollRowToVisible:rowIndex];
     [self scrollColumnToVisible:columnIndex];
 
