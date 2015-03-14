@@ -7,7 +7,7 @@ Error on line 10001 of file [unknown]
 SyntaxError:
 @implementation MyType : CPObject
                 ^
-ERROR line 5 in file:[__PATH__]: MyType is already declared as type
+ERROR line 5 in file:[__PATH__]: MyType is already declared as a type
 END_EXPECTED
 
 */

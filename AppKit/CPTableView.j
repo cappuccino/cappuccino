@@ -4458,6 +4458,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     var row = [self rowAtPoint:aPoint];
 
+    _clickedRow = row;
+    _clickedColumn = [self columnAtPoint:aPoint];
+
     // If the user clicks outside a row then deselect everything.
     if (row < 0 && _allowsEmptySelection)
     {
@@ -4520,6 +4523,12 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     }
     else
         [CPApp sendEvent:anEvent];
+
+    if ([anEvent type] == CPLeftMouseUp)
+    {
+        _clickedRow = CPNotFound;
+        _clickedColumn = CPNotFound;
+    }
 }
 
 /*
@@ -4528,6 +4537,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 - (BOOL)continueTracking:(CGPoint)lastPoint at:(CGPoint)aPoint
 {
     var row = [self rowAtPoint:aPoint];
+
+    _clickedRow = row;
+    _clickedColumn = [self columnAtPoint:aPoint];
 
     // begin the drag is the datasource lets us, we've move at least +-3px vertical or horizontal,
     // or we're dragging from selected rows and we haven't begun a drag session
@@ -4617,9 +4629,12 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         rowIndex,
         shouldEdit = YES;
 
+    _clickedRow = [self rowAtPoint:aPoint];
+    _clickedColumn = [self columnAtPoint:aPoint];
+
     if ([self _dataSourceRespondsToWriteRowsWithIndexesToPasteboard])
     {
-        rowIndex = [self rowAtPoint:aPoint];
+        rowIndex = _clickedRow;
 
         if (rowIndex !== -1)
         {
@@ -4641,7 +4656,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         && ([self _dataSourceRespondsToSetObjectValueForTableColumnRow]
             || [self infoForBinding:@"content"]))
     {
-        columnIndex = [self columnAtPoint:lastPoint];
+        columnIndex = _clickedColumn;
 
         if (columnIndex !== -1)
         {
@@ -4666,11 +4681,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     //double click actions
     if ([[CPApp currentEvent] clickCount] === 2 && _doubleAction)
-    {
-        _clickedRow = [self rowAtPoint:aPoint];
-        _clickedColumn = [self columnAtPoint:lastPoint];
         [self sendAction:_doubleAction to:_target];
-    }
 }
 
 /*

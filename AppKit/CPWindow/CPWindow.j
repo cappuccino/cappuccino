@@ -575,6 +575,9 @@ CPTexturedBackgroundWindowMask
         var fullPlatformWindowViewClass = [[self class] _windowViewClassForFullPlatformWindowStyleMask:_styleMask],
             windowView = [[fullPlatformWindowViewClass alloc] initWithFrame:CGRectMakeZero() styleMask:_styleMask];
 
+        if (_platformWindow != [CPPlatformWindow primaryPlatformWindow] && [_platformWindow _hasInitializeInstanceWithWindow])
+            [_platformWindow setContentRect:[self frame]];
+
         [self _setWindowView:windowView];
 
         [self setLevel:CPBackgroundWindowLevel];
@@ -759,6 +762,9 @@ CPTexturedBackgroundWindowMask
         if (originMoved)
             [self _moveChildWindows:delta];
     }
+
+    if ([_platformWindow _canUpdateContentRect] && _isFullPlatformWindow && _platformWindow != [CPPlatformWindow primaryPlatformWindow])
+        [_platformWindow setContentRect:aFrame];
 }
 
 /*
@@ -909,6 +915,10 @@ CPTexturedBackgroundWindowMask
 {
 
 #if PLATFORM(DOM)
+
+    if (!_isVisible)
+        [_platformWindow _setShouldUpdateContentRect:NO];
+
     // -dw- if a sheet is clicked, the parent window should come up too
     if (_isSheet)
         [_parentView orderFront:self];
@@ -932,6 +942,8 @@ CPTexturedBackgroundWindowMask
 
     if (!CPApp._mainWindow)
         [self makeMainWindow];
+
+    [_platformWindow _setShouldUpdateContentRect:YES];
 }
 
 /*
@@ -947,6 +959,11 @@ CPTexturedBackgroundWindowMask
 */
 - (void)_windowWillBeAddedToTheDOM
 {
+    [[CPNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(_didReceivePlatformWindowWillCloseNotification:)
+                                                 name:_CPPlatformWindowWillCloseNotification
+                                               object:_platformWindow];
+
     [[self contentView] _addObservers];
 }
 
@@ -955,6 +972,8 @@ CPTexturedBackgroundWindowMask
 */
 - (void)_windowWillBeRemovedFromTheDOM
 {
+    [[CPNotificationCenter defaultCenter] removeObserver:self name:_CPPlatformWindowWillCloseNotification object:nil];
+
     [[self contentView] _removeObservers];
 }
 
@@ -1000,6 +1019,9 @@ CPTexturedBackgroundWindowMask
 
 #if PLATFORM(DOM)
     if ([self _sharesChromeWithPlatformWindow])
+        [_platformWindow orderOut:self];
+
+    if (_isFullPlatformWindow && _platformWindow != [CPPlatformWindow primaryPlatformWindow])
         [_platformWindow orderOut:self];
 
     [_platformWindow order:CPWindowOut window:self relativeTo:nil];
@@ -3351,6 +3373,14 @@ CPTexturedBackgroundWindowMask
         [self setTitle:aValue || @""];
     else
         [super setValue:aValue forKey:aKey];
+}
+
+- (void)_didReceivePlatformWindowWillCloseNotification:(CPNotification)aNotification
+{
+    if ([aNotification object] != _platformWindow)
+        return;
+
+    [self close];
 }
 
 @end

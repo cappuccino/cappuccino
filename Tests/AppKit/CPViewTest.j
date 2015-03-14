@@ -699,6 +699,78 @@ var methodCalled;
     [self assert:expectedRestult equals:methodCalled];
 }
 
+- (void)testToolTipInitialEmpty
+{
+    [self assert:nil equals:view._toolTip];
+    [self assert:nil equals:view._toolTipInstalled];
+    [self assert:nil equals:view._toolTipFunctionIn];
+    [self assert:nil equals:view._toolTipFunctionOut];
+}
+
+- (void)testToolTipWithToolTipAndNoWindow
+{
+    [view setToolTip:@"tooltip"];
+
+    [self assert:@"tooltip" equals:view._toolTip];
+    [self assert:nil equals:view._toolTipInstalled];
+    [self assert:nil equals:view._toolTipFunctionIn];
+    [self assert:nil equals:view._toolTipFunctionOut];
+}
+
+- (void)testToolTipWithToolTipAndWindow
+{
+    [view setToolTip:@"tooltip"];
+
+    [[window contentView] addSubview:view]
+
+    [self assert:@"tooltip" equals:view._toolTip];
+    [self assertTrue:view._toolTipInstalled];
+    [self assertTrue:!!view._toolTipFunctionIn];
+    [self assertTrue:!!view._toolTipFunctionOut];
+}
+
+- (void)testToolTipWithToolTipAndWindowThenNoWindow
+{
+    [view setToolTip:@"tooltip"];
+
+    [[window contentView] addSubview:view]
+    [view removeFromSuperview];
+
+    [self assert:@"tooltip" equals:view._toolTip];
+    [self assert:NO equals:view._toolTipInstalled];
+    [self assert:nil equals:view._toolTipFunctionIn];
+    [self assert:nil equals:view._toolTipFunctionOut];
+}
+
+- (void)testToolTipWithNoToolTipAndWindowThenNoWindowThenToolTip
+{
+    [self assert:nil equals:view._toolTip];
+    [self assert:nil equals:view._toolTipInstalled];
+    [self assert:nil equals:view._toolTipFunctionIn];
+    [self assert:nil equals:view._toolTipFunctionOut];
+
+    [[window contentView] addSubview:view];
+
+    [self assert:nil equals:view._toolTip];
+    [self assert:nil equals:view._toolTipInstalled];
+    [self assert:nil equals:view._toolTipFunctionIn];
+    [self assert:nil equals:view._toolTipFunctionOut];
+
+    [view setToolTip:@"tooltip"];
+
+    [self assert:@"tooltip" equals:view._toolTip];
+    [self assertTrue:view._toolTipInstalled];
+    [self assertTrue:!!view._toolTipFunctionIn];
+    [self assertTrue:!!view._toolTipFunctionOut];
+
+    [view removeFromSuperview];
+
+    [self assert:@"tooltip" equals:view._toolTip];
+    [self assert:NO equals:view._toolTipInstalled];
+    [self assert:nil equals:view._toolTipFunctionIn];
+    [self assert:nil equals:view._toolTipFunctionOut];
+}
+
 @end
 
 @implementation CPLayoutView : CPView

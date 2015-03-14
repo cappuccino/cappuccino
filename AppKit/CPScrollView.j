@@ -33,6 +33,15 @@
 #define SHOULD_SHOW_CORNER_VIEW() (_scrollerStyle === CPScrollerStyleLegacy && _verticalScroller && ![_verticalScroller isHidden])
 
 
+@protocol CPScrollViewDelegate <CPObject>
+
+@optional
+- (void)scrollViewWillScroll:(CPScrollView)aScrollView;
+- (void)scrollViewDidScroll:(CPScrollView)aScrollView;
+
+@end
+
+
 /*! @ignore */
 var _isBrowserUsingOverlayScrollers = function()
 {
@@ -98,35 +107,35 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
 
 @implementation CPScrollView : CPView
 {
-    CPClipView      _contentView;
-    CPClipView      _headerClipView;
-    CPView          _cornerView;
-    CPView          _bottomCornerView;
+    CPClipView                  _contentView;
+    CPClipView                  _headerClipView;
+    CPView                      _cornerView;
+    CPView                      _bottomCornerView;
 
-    id              _delegate;
-    CPTimer         _scrollTimer;
+    id <CPScrollViewDelegate>   _delegate;
+    CPTimer                     _scrollTimer;
 
-    BOOL            _hasVerticalScroller;
-    BOOL            _hasHorizontalScroller;
-    BOOL            _autohidesScrollers;
+    BOOL                        _hasVerticalScroller;
+    BOOL                        _hasHorizontalScroller;
+    BOOL                        _autohidesScrollers;
 
-    CPScroller      _verticalScroller;
-    CPScroller      _horizontalScroller;
+    CPScroller                  _verticalScroller;
+    CPScroller                  _horizontalScroller;
 
-    CPInteger       _recursionCount;
-    CPInteger       _implementedDelegateMethods;
+    CPInteger                   _recursionCount;
+    CPInteger                   _implementedDelegateMethods;
 
-    float           _verticalLineScroll;
-    float           _verticalPageScroll;
-    float           _horizontalLineScroll;
-    float           _horizontalPageScroll;
+    float                       _verticalLineScroll;
+    float                       _verticalPageScroll;
+    float                       _horizontalLineScroll;
+    float                       _horizontalPageScroll;
 
-    CPBorderType    _borderType;
+    CPBorderType                _borderType;
 
-    CPTimer         _timerScrollersHide;
+    CPTimer                     _timerScrollersHide;
 
-    int             _scrollerStyle;
-    int             _scrollerKnobStyle;
+    int                         _scrollerStyle;
+    int                         _scrollerKnobStyle;
 }
 
 
@@ -296,7 +305,7 @@ Notifies the delegate when the scroll view has finished scrolling.
 @endcode
 
 */
-- (void)setDelegate:(id)aDelegate
+- (void)setDelegate:(id <CPScrollViewDelegate>)aDelegate
 {
     if (aDelegate === _delegate)
         return;

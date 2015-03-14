@@ -32,7 +32,6 @@
 
 @implementation _CPMenuBarWindow : CPPanel
 {
-    CPMenu      _menu;
     CPView      _highlightView;
     CPArray     _menuItemViews;
 
