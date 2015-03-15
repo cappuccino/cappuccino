@@ -48,7 +48,7 @@
     [_segmentedControl setSelectedSegment:2];
     [_segmentedControl setSegmentCount:2];
 
-    [self assert:1 equals:[_segmentedControl selectedSegment]]; // The last segment is now selected.
+    [self assert:[_segmentedControl selectedSegment] equals:-1]; // Removed a selected segment. No selection.
 }
 
 - (void)testEmpty
