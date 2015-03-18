@@ -772,9 +772,15 @@ var themedButtonValues = nil,
 
             [@"min-size",                   CGSizeMake(0.0, 29.0),                                  [CPTextFieldStateRounded, CPThemeStateBezeled]],
             [@"max-size",                   CGSizeMake(-1.0, 29.0),                                 [CPTextFieldStateRounded, CPThemeStateBezeled]],
+            [@"nib2cib-adjustment-frame",   CGRectMake(-3.0, 8.0, 7.0, 10.0),                       [CPTextFieldStateRounded, CPThemeStateBezeled]],
+
+            [@"min-size",                   CGSizeMake(0.0, 25.0),                                  [CPTextFieldStateRounded, CPThemeStateBezeled]],
+            [@"max-size",                   CGSizeMake(-1.0, 25.0),                                 [CPTextFieldStateRounded, CPThemeStateBezeled]],
+            [@"nib2cib-adjustment-frame",   CGRectMake(-4.0, 7.0, 8.0, 10.0),                        [CPThemeStateControlSizeSmall, CPTextFieldStateRounded, CPThemeStateBezeled]],
 
             [@"min-size",                   CGSizeMake(0.0, 20.0),                                  [CPThemeStateControlSizeMini, CPTextFieldStateRounded, CPThemeStateBezeled]],
-            [@"max-size",                   CGSizeMake(-1.0, 20.0),                                 [CPThemeStateControlSizeMini, CPTextFieldStateRounded, CPThemeStateBezeled]]
+            [@"max-size",                   CGSizeMake(-1.0, 20.0),                                 [CPThemeStateControlSizeMini, CPTextFieldStateRounded, CPThemeStateBezeled]],
+            [@"nib2cib-adjustment-frame",   CGRectMake(-4.0, 7.0, 8.0, 10.0),                        [CPThemeStateControlSizeMini, CPTextFieldStateRounded, CPThemeStateBezeled]]
         ];
 
     [self registerThemeValues:themedRoundedTextFieldValues forView:textfield];
