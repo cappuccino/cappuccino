@@ -760,8 +760,8 @@ var themedButtonValues = nil,
 
             [@"font",                       [CPFont systemFontOfSize:CPFontCurrentSystemSize]],
 
-            [@"content-inset",              CGInsetMake(8.0, 14.0, 6.0, 14.0),                      [CPTextFieldStateRounded, CPThemeStateBezeled]],
-            [@"content-inset",              CGInsetMake(8.0, 14.0, 6.0, 14.0),                      [CPTextFieldStateRounded, CPThemeStateBezeled, CPThemeStateEditing]],
+            [@"content-inset",              CGInsetMake(6.0, 10.0, 4.0, 10.0),                      [CPTextFieldStateRounded, CPThemeStateBezeled]],
+            [@"content-inset",              CGInsetMake(6.0, 10.0, 4.0, 10.0),                      [CPTextFieldStateRounded, CPThemeStateBezeled, CPThemeStateEditing]],
 
             [@"bezel-inset",                CGInsetMake(3.0, 4.0, 3.0, 4.0),                        [CPTextFieldStateRounded, CPThemeStateBezeled]],
             [@"bezel-inset",                CGInsetMake(0.0, 1.0, 0.0, 1.0),                        [CPTextFieldStateRounded, CPThemeStateBezeled, CPThemeStateEditing]],
@@ -772,15 +772,23 @@ var themedButtonValues = nil,
 
             [@"min-size",                   CGSizeMake(0.0, 29.0),                                  [CPTextFieldStateRounded, CPThemeStateBezeled]],
             [@"max-size",                   CGSizeMake(-1.0, 29.0),                                 [CPTextFieldStateRounded, CPThemeStateBezeled]],
-            [@"nib2cib-adjustment-frame",   CGRectMake(-3.0, 8.0, 7.0, 10.0),                       [CPTextFieldStateRounded, CPThemeStateBezeled]],
+            [@"nib2cib-adjustment-frame",   CGRectMake(-4.0, 7.0, 8.0, 10.0),                       [CPTextFieldStateRounded, CPThemeStateBezeled]],
 
-            [@"min-size",                   CGSizeMake(0.0, 25.0),                                  [CPTextFieldStateRounded, CPThemeStateBezeled]],
-            [@"max-size",                   CGSizeMake(-1.0, 25.0),                                 [CPTextFieldStateRounded, CPThemeStateBezeled]],
-            [@"nib2cib-adjustment-frame",   CGRectMake(-4.0, 7.0, 8.0, 10.0),                        [CPThemeStateControlSizeSmall, CPTextFieldStateRounded, CPThemeStateBezeled]],
+            // CPThemeStateControlSizeSmall
+            [@"content-inset",              CGInsetMake(6.0, 6.0, 4.0, 6.0),                        [CPThemeStateControlSizeSmall, CPTextFieldStateRounded, CPThemeStateBezeled, CPThemeStateEditing]],
+            [@"bezel-inset",                CGInsetMake(2.0, 4.0, 2.0, 4.0),                        [CPThemeStateControlSizeSmall, CPTextFieldStateRounded, CPThemeStateBezeled]],
+            [@"bezel-inset",                CGInsetMake(0.0, 1.0, 0.0, 1.0),                        [CPThemeStateControlSizeSmall, CPTextFieldStateRounded, CPThemeStateBezeled, CPThemeStateEditing]],
+            [@"min-size",                   CGSizeMake(0.0, 25.0),                                  [CPThemeStateControlSizeSmall, CPTextFieldStateRounded, CPThemeStateBezeled]],
+            [@"max-size",                   CGSizeMake(-1.0, 25.0),                                 [CPThemeStateControlSizeSmall, CPTextFieldStateRounded, CPThemeStateBezeled]],
+            [@"nib2cib-adjustment-frame",   CGRectMake(-4.0, 7.0, 8.0, 9.0),                        [CPThemeStateControlSizeSmall, CPTextFieldStateRounded, CPThemeStateBezeled]],
 
-            [@"min-size",                   CGSizeMake(0.0, 20.0),                                  [CPThemeStateControlSizeMini, CPTextFieldStateRounded, CPThemeStateBezeled]],
-            [@"max-size",                   CGSizeMake(-1.0, 20.0),                                 [CPThemeStateControlSizeMini, CPTextFieldStateRounded, CPThemeStateBezeled]],
-            [@"nib2cib-adjustment-frame",   CGRectMake(-4.0, 7.0, 8.0, 10.0),                        [CPThemeStateControlSizeMini, CPTextFieldStateRounded, CPThemeStateBezeled]]
+            // CPThemeStateControlSizeMini
+            [@"content-inset",              CGInsetMake(6.0, 6.0, 4.0, 6.0),                        [CPThemeStateControlSizeMini, CPTextFieldStateRounded, CPThemeStateBezeled, CPThemeStateEditing]],
+            [@"bezel-inset",                CGInsetMake(2.0, 4.0, 2.0, 4.0),                        [CPThemeStateControlSizeMini, CPTextFieldStateRounded, CPThemeStateBezeled]],
+            [@"bezel-inset",                CGInsetMake(0.0, 1.0, 0.0, 1.0),                        [CPThemeStateControlSizeMini, CPTextFieldStateRounded, CPThemeStateBezeled, CPThemeStateEditing]],
+            [@"min-size",                   CGSizeMake(0.0, 22.0),                                  [CPThemeStateControlSizeMini, CPTextFieldStateRounded, CPThemeStateBezeled]],
+            [@"max-size",                   CGSizeMake(-1.0, 22.0),                                 [CPThemeStateControlSizeMini, CPTextFieldStateRounded, CPThemeStateBezeled]],
+            [@"nib2cib-adjustment-frame",   CGRectMake(-4.0, 2.0, 8.0, 4.0),                        [CPThemeStateControlSizeMini, CPTextFieldStateRounded, CPThemeStateBezeled]],
         ];
 
     [self registerThemeValues:themedRoundedTextFieldValues forView:textfield];
