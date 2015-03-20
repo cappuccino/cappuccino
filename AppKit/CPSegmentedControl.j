@@ -199,7 +199,20 @@ CPSegmentSwitchTrackingMomentary = 2;
 - (void)setSelectedSegment:(unsigned)aSegment
 {
     // setSelected:forSegment throws the exception for us (if necessary)
-    [self setSelected:YES forSegment:aSegment];
+    if (_selectedSegment == aSegment)
+        return;
+
+    if (aSegment == -1)
+    {
+        var count = [self segmentCount];
+
+        while (count--)
+            [self setSelected:NO forSegment:count];
+
+        _selectedSegment = -1;
+    }
+    else
+        [self setSelected:YES forSegment:aSegment];
 }
 
 /*!
