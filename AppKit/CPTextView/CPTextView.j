@@ -103,8 +103,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     CPLayoutManager             _layoutManager                @accessors(getter=layoutManager);
     CPRange                     _selectionRange               @accessors(getter=selectedRange);
     CPSelectionGranularity      _selectionGranularity         @accessors(property=selectionGranularity);
+
     CPSelectionGranularity      _previousSelectionGranularity;  // private
-    CPSelectionGranularity      _copySelectionGranularit;       // private
+    CPSelectionGranularity      _copySelectionGranularity;       // private
 
     CPTextContainer             _textContainer                @accessors(property=textContainer);
     CPTextStorage               _textStorage                  @accessors(getter=textStorage);

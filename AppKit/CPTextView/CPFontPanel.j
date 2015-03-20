@@ -122,7 +122,6 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
 */
 @implementation CPFontPanel : CPPanel
 {
-    CPView  _toolbarView;
     id      _fontBrowser;
     id      _traitBrowser;
     id      _sizeBrowser;
