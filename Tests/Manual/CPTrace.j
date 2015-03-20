@@ -66,7 +66,7 @@ var objj_message = function(receiver, selector, args)
         rdesc = receiver ? [receiver description] : "<null>";
 
     while (c--)
-        sel.splice(c + 1, 0, ":" + [args[c] description] + " ");
+        sel.splice(c + 1, 0, ":" + Description(args[c], c) + " ");
 
     var joined = sel.join("");
 
@@ -75,6 +75,26 @@ var objj_message = function(receiver, selector, args)
 
     return ("[" + rdesc + " " + joined + "]");
 };
+
+function Description(object, argn)
+{
+    if (object.isa)
+        return [object description];
+
+    var type = typeof(object);
+
+    if (type === "function")
+        return "Function";
+    else if (type !== "object")
+        return "Arg" + argn;
+
+    var desc = [];
+
+    for(var p in object)
+        desc.push(p + ":" + object[p]);
+
+    return ("{" + desc.join(",") + "}");
+}
 
 function CPTrace(aClassName, aSelector, displayFunction)
 {
@@ -220,7 +240,7 @@ var getMethodNoSuper = function(cls, sel)
 /*
     Utility for moving average
 */
-var moving_averager = function(period)
+function moving_averager(period)
 {
     var nums = [];
 

@@ -76,12 +76,11 @@ var CPURLConnectionDelegate = nil;
 */
 @implementation CPURLConnection : CPObject
 {
-    CPURLRequest    _request;
+    CPURLRequest    _originalRequest        @accessors(readonly, getter=originalRequest);
+    CPURLRequest    _request                @accessors(readonly, getter=currentRequest);
     id              _delegate;
     BOOL            _isCanceled;
     BOOL            _isLocalFileConnection;
-
-    BOOL            _withCredentials    @accessors(property=withCredentials);
 
     HTTPRequest     _HTTPRequest;
 }
@@ -100,24 +99,11 @@ var CPURLConnectionDelegate = nil;
 */
 + (CPData)sendSynchronousRequest:(CPURLRequest)aRequest returningResponse:(/*{*/CPURLResponse/*}*/)aURLResponse
 {
-    var cfHTTPRequest = new CFHTTPRequest();
-
-    return [CPURLConnection _sendSynchronousRequest:aRequest returningResponse:aURLResponse withCFHTTPRequest:cfHTTPRequest];
-}
-
-+ (CPData)sendSynchronousRequest:(CPURLRequest)aRequest returningResponse:(/*{*/CPURLResponse/*}*/)aURLResponse withCredentials:(BOOL)withCredentials
-{
-    var cfHTTPRequest = new CFHTTPRequest();
-
-    cfHTTPRequest.setWithCredentials(withCredentials);
-
-    return [CPURLConnection _sendSynchronousRequest:aRequest returningResponse:aURLResponse withCFHTTPRequest:cfHTTPRequest];
-}
-
-+ (CPData)_sendSynchronousRequest:(CPURLRequest)aRequest returningResponse:(/*{*/CPURLResponse/*}*/)aURLResponse withCFHTTPRequest:(CFHTTPRequest)aCFHTTPRequest
-{
     try
     {
+        var aCFHTTPRequest = new CFHTTPRequest();
+        aCFHTTPRequest.setWithCredentials([aRequest withCredentials]);
+
         aCFHTTPRequest.open([aRequest HTTPMethod], [[aRequest URL] absoluteString], NO);
 
         var fields = [aRequest allHTTPHeaderFields],
@@ -152,17 +138,6 @@ var CPURLConnectionDelegate = nil;
     return [[self alloc] initWithRequest:aRequest delegate:aDelegate];
 }
 
-//overloaded method that allows user to set _withCredentials
-+ (CPURLConnection)connectionWithRequest:(CPURLRequest)aRequest delegate:(id)aDelegate withCredentials:(BOOL)withCredentials
-{
-    var connection = [[self alloc] initWithRequest:aRequest delegate:aDelegate startImmediately:NO];
-
-    [connection setWithCredentials:withCredentials];
-    [connection start];
-
-    return connection;
-}
-
 /*
     Default class initializer. Use one of the class methods instead.
     @param aRequest contains the URL to contact
@@ -177,9 +152,9 @@ var CPURLConnectionDelegate = nil;
     if (self)
     {
         _request = aRequest;
+        _originalRequest = [aRequest copy];
         _delegate = aDelegate;
         _isCanceled = NO;
-        _withCredentials = NO;
 
         var URL = [_request URL],
             scheme = [URL scheme];
@@ -191,6 +166,7 @@ var CPURLConnectionDelegate = nil;
                                      (window.location.protocol === "file:" || window.location.protocol === "app:"));
 
         _HTTPRequest = new CFHTTPRequest();
+        _HTTPRequest.setWithCredentials([aRequest withCredentials]);
 
         if (shouldStartImmediately)
             [self start];
@@ -218,8 +194,6 @@ var CPURLConnectionDelegate = nil;
 - (void)start
 {
     _isCanceled = NO;
-
-    _HTTPRequest.setWithCredentials(_withCredentials);
 
     try
     {

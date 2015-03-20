@@ -737,7 +737,7 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
 
         [dayTile setDate:[currentDate copy]];
         [dayTile setStringValue:currentDate.getDate()];
-        [dayTile setDisabled:![self isEnabled] || currentDate.getMonth() !== currentMonth.getMonth()];
+        [dayTile setDisabled:![self isEnabled] || currentDate.getMonth() !== currentMonth.getMonth() || currentDate < [_datePicker minDate] || currentDate > [_datePicker maxDate]];
         [dayTile setHighlighted:isPresentMonth && currentDate.getDate() == now.getDate()];
     }
 

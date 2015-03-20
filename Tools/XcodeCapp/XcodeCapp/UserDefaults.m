@@ -30,3 +30,4 @@ NSString * const kDefaultAutoOpenXcodeProject = @"autoOpenXcodeProject";
 NSString * const kDefaultUseSymlinkWhenCreatingProject = @"useSymlinkWhenCreatingProject";
 NSString * const kDefaultUpdateCappuccinoWithLastVersionOfMasterBranch = @"updateCappuccinoWithLastVersionOfMasterBranch";
 NSString * const kDefaultXCCPanelStyleUtility = @"XCCPanelStyleUtility";
+NSString * const kDefaultXCCPanelActiveAppWhenOpening = @"XCCPanelActiveAppWhenOpening";

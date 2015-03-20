@@ -24,6 +24,7 @@
 @import "CPArray.j"
 @import "CPBundle.j"
 @import "CPByteCountFormatter.j"
+@import "CPCache.j"
 @import "CPCharacterSet.j"
 @import "CPCoder.j"
 @import "CPComparisonPredicate.j"

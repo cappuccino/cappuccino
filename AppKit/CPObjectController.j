@@ -749,7 +749,7 @@ var CPObjectControllerContentKey                        = @"CPObjectControllerCo
 
 - (void)setValue:(id)theValue forKey:(CPString)theKeyPath
 {
-    [self setValue:theKeyPath forKeyPath:theKeyPath];
+    [self setValue:theValue forKeyPath:theKeyPath];
 }
 
 - (unsigned)count

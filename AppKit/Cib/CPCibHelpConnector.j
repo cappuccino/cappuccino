@@ -24,7 +24,6 @@
 
 @implementation CPCibHelpConnector : CPCibConnector
 {
-    id _destination;
     id _file;
     id _marker;
 }

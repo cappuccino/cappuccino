@@ -55,6 +55,7 @@ def cleanup_output(output):
     output = output.replace(" ", "")
     output = output.replace("\n", "")
     output = output.replace("[0m", "")
+    output = re.sub('\d*offile\[unknown\]', '', output)
     return re.sub('[^\s!-~]', '', output)
 
 

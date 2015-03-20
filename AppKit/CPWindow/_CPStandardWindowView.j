@@ -94,7 +94,6 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
     _CPTexturedWindowHeadView   _headView;
     CPView                      _dividerView;
     CPView                      _bodyView;
-    CPView                      _toolbarView;
 
     CPButton                    _closeButton;
     CPButton                    _minimizeButton;

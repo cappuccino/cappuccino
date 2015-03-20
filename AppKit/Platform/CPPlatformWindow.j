@@ -43,6 +43,8 @@ var PrimaryPlatformWindow   = NULL;
     BOOL                    _hasShadow;
     unsigned                _shadowStyle;
     CPString                _title;
+    BOOL                    _shouldUpdateContentRect;
+    BOOL                    _hasInitializeInstanceWithWindow;
 
 #if PLATFORM(DOM)
     DOMWindow               _DOMWindow;
@@ -115,6 +117,17 @@ var PrimaryPlatformWindow   = NULL;
         _charCodes = {};
 #endif
     }
+
+    return self;
+}
+
+- (id)initWithWindow:(CPWindow)aWindow
+{
+    self = [self initWithContentRect:CGRectMakeCopy([aWindow frame])];
+
+    _hasInitializeInstanceWithWindow = YES;
+    [aWindow setPlatformWindow:self];
+    [aWindow setFullPlatformWindow:YES];
 
     return self;
 }
@@ -282,6 +295,22 @@ var PrimaryPlatformWindow   = NULL;
 - (CPString)title
 {
     return _title;
+}
+
+- (BOOL)_canUpdateContentRect
+{
+    // We onyl update the contentRect with the frame of the bridgeless window if we have initialized the platform with the method initWithWindow:
+    return _shouldUpdateContentRect && _hasInitializeInstanceWithWindow;
+}
+
+- (BOOL)_hasInitializeInstanceWithWindow
+{
+    return _hasInitializeInstanceWithWindow;
+}
+
+- (void)_setShouldUpdateContentRect:(BOOL)aBoolean
+{
+    _shouldUpdateContentRect = aBoolean;
 }
 
 @end

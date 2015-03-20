@@ -1033,6 +1033,21 @@ CPTokenFieldDeleteButtonType     = 1;
     [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
 }
 
+- (BOOL)performKeyEquivalent:(CPEvent)anEvent
+{
+    var characters = [anEvent characters];
+
+    // Here we handle the event when getting a CPNewlineCharacter or CPCarriageReturnCharacter when the menu is open
+    // We don't want that the application dispatches the event to the other controls
+    if ([self hasThemeState:CPThemeStateAutocompleting] && (characters === CPNewlineCharacter || characters === CPCarriageReturnCharacter))
+    {
+        [self keyDown:anEvent];
+        return YES;
+    }
+
+    return [super performKeyEquivalent:anEvent];
+}
+
 - (void)textDidChange:(CPNotification)aNotification
 {
     if ([aNotification object] !== self)

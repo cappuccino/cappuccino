@@ -1763,7 +1763,7 @@ var themedButtonValues = nil,
             {
                 width: 8.0,
                 height: 26.0,
-                rightWidth: 23.0,
+                rightWidth: 19.0,
                 orientation: PatternIsHorizontal
             }),
 
@@ -1801,7 +1801,7 @@ var themedButtonValues = nil,
             {
                 width: 6.0,
                 height: 22.0,
-                rightWidth: 19.0,
+                rightWidth: 17.0,
                 orientation: PatternIsHorizontal
             }),
 
@@ -1836,7 +1836,9 @@ var themedButtonValues = nil,
 
             [@"border-inset",               CGInsetMake(3.0, 3.0, 3.0, 3.0),            CPThemeStateBezeled],
 
+            [@"bezel-inset",                CGInsetMake(0.0, 1.0, 1.0, 1.0),            [CPThemeStateBezeled, CPComboBoxStateButtonBordered]],
             [@"bezel-inset",                CGInsetMake(0.0, 1.0, 1.0, 1.0),            [CPThemeStateBezeled, CPThemeStateEditing]],
+            [@"bezel-inset",                CGInsetMake(0.0, 1.0, 1.0, 1.0),            [CPThemeStateBezeled, CPThemeStateDisabled]],
 
             // The right border inset has to make room for the focus ring and popup button
             [@"content-inset",              CGInsetMake(8.0, 27.0, 7.0, 8.0),           [CPThemeStateBezeled, CPComboBoxStateButtonBordered]],
@@ -1860,6 +1862,12 @@ var themedButtonValues = nil,
             [@"bezel-color",                smallBezelNoBorderFocusedColor,             [CPThemeStateControlSizeSmall, CPThemeStateBezeled, CPThemeStateEditing]],
             [@"bezel-color",                smallBezelNoBorderColor["disabled"],        [CPThemeStateControlSizeSmall, CPThemeStateBezeled, CPThemeStateDisabled]],
 
+            [@"bezel-inset",                CGInsetMake(1.0, 2.0, 1.0, 2.0),            [CPThemeStateBezeled, CPComboBoxStateButtonBordered, CPThemeStateControlSizeSmall]],
+            [@"bezel-inset",                CGInsetMake(1.0, 2.0, 1.0, 0.0),            [CPThemeStateBezeled, CPThemeStateEditing, CPComboBoxStateButtonBordered, CPThemeStateControlSizeSmall]],
+            [@"bezel-inset",                CGInsetMake(1.0, 2.0, 1.0, 2.0),            [CPThemeStateBezeled, CPThemeStateDisabled, CPThemeStateControlSizeSmall]],
+
+            [@"content-inset",              CGInsetMake(6.0, 27.0, 7.0, 8.0),           [CPThemeStateBezeled, CPComboBoxStateButtonBordered, CPThemeStateControlSizeSmall]],
+
             [@"min-size",                   CGSizeMake(0, 26.0),                        CPThemeStateControlSizeSmall],
             [@"max-size",                   CGSizeMake(-1, 26.0),                       CPThemeStateControlSizeSmall],
             [@"nib2cib-adjustment-frame",   CGRectMake(-2.0, -1.0, 1.0, 0.0),           CPThemeStateControlSizeSmall],
@@ -1872,6 +1880,12 @@ var themedButtonValues = nil,
             [@"bezel-color",                miniBezelNoBorderColor["@"],                [CPThemeStateControlSizeMini, CPThemeStateBezeled]],
             [@"bezel-color",                miniBezelNoBorderFocusedColor,              [CPThemeStateControlSizeMini, CPThemeStateBezeled, CPThemeStateEditing]],
             [@"bezel-color",                miniBezelNoBorderColor["disabled"],         [CPThemeStateControlSizeMini, CPThemeStateBezeled, CPThemeStateDisabled]],
+
+            [@"bezel-inset",                CGInsetMake(1.0, 2.0, 1.0, 2.0),            [CPThemeStateBezeled, CPComboBoxStateButtonBordered, CPThemeStateControlSizeMini]],
+            [@"bezel-inset",                CGInsetMake(1.0, 2.0, 1.0, 1.0),            [CPThemeStateBezeled, CPThemeStateEditing, CPComboBoxStateButtonBordered, CPThemeStateControlSizeMini]],
+            [@"bezel-inset",                CGInsetMake(1.0, 2.0, 1.0, 2.0),            [CPThemeStateBezeled, CPThemeStateDisabled, CPThemeStateControlSizeMini]],
+
+            [@"content-inset",              CGInsetMake(6.0, 27.0, 7.0, 8.0),           [CPThemeStateBezeled, CPComboBoxStateButtonBordered, CPThemeStateControlSizeMini]],
 
             [@"min-size",                   CGSizeMake(0, 22.0),                        CPThemeStateControlSizeMini],
             [@"max-size",                   CGSizeMake(-1, 22.0),                       CPThemeStateControlSizeMini],

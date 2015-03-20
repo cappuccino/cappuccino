@@ -203,6 +203,9 @@ var ModifierKeyCodes = [
 var resizeTimer = nil;
 var PreventScroll = true;
 
+_CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotification";
+
+
 // When scrolling with an old-style scroll wheel with discete steps ('clicks'), the scroll amount can indicate how many "lines" to
 // scroll.
 #define SCROLLWHEEL_LINE_PIXELS 6.0
@@ -429,6 +432,9 @@ var PreventScroll = true;
 
         _DOMWindow.addEventListener("unload", function()
         {
+            _DOMWindow.removeEventListener("unload", arguments.callee, NO);
+
+            [self _notifyPlatformWindowWillClose];
             [self updateFromNativeContentRect];
             [self _removeLayers];
 
@@ -451,8 +457,6 @@ var PreventScroll = true;
             _DOMWindow.removeEventListener("DOMMouseScroll", scrollEventCallback, NO);
             _DOMWindow.removeEventListener("wheel", scrollEventCallback, NO);
             _DOMWindow.removeEventListener("mousewheel", scrollEventCallback, NO);
-
-            //_DOMWindow.removeEventListener("beforeunload", this, NO);
 
             [PlatformWindows removeObject:self];
 
@@ -483,6 +487,9 @@ var PreventScroll = true;
 
         _DOMWindow.attachEvent("onunload", function()
         {
+            _DOMWindow.detachEvent("unload", arguments.callee);
+
+            [self _notifyPlatformWindowWillClose];
             [self updateFromNativeContentRect];
             [self _removeLayers];
 
@@ -503,8 +510,6 @@ var PreventScroll = true;
 
             _DOMBodyElement.ondrag = NULL;
             _DOMBodyElement.onselectstart = NULL;
-
-            //_DOMWindow.removeEvent("beforeunload", this);
 
             [PlatformWindows removeObject:self];
 
@@ -988,6 +993,7 @@ var PreventScroll = true;
 
 - (void)_actualResizeEvent
 {
+    _shouldUpdateContentRect = NO;
     resizeTimer = nil;
 
     // FIXME: This is not the right way to do this.
@@ -1021,6 +1027,8 @@ var PreventScroll = true;
     //window.liveResize = NO;
 
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+    _shouldUpdateContentRect = YES;
 }
 
 - (void)touchEvent:(DOMEvent)aDOMEvent
@@ -1627,6 +1635,13 @@ var PreventScroll = true;
 + (void)clearKeyCodesToPreventFromPropagating
 {
     KeyCodesToPrevent = {};
+}
+
+- (void)_notifyPlatformWindowWillClose
+{
+    [[CPNotificationCenter defaultCenter] postNotificationName:_CPPlatformWindowWillCloseNotification
+                                                        object:self
+                                                      userInfo:nil];
 }
 
 @end

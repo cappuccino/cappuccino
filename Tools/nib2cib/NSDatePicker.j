@@ -177,7 +177,6 @@ var NSDatePickerDefaultSize = 22,
     BOOL            _drawsBackground    @accessors(getter=drawsBackground);
     CPDate          _minDate            @accessors(getter=minDate);
     CPDate          _maxDate            @accessors(getter=maxDate);
-    CPDateFormatter _formatter          @accessors(getter=formatter);
     CPInteger       _datePickerMode     @accessors(getter=datePickerMode);
     CPInteger       _datePickerElements @accessors(getter=datePickerElements);
     CPInteger       _datePickerType     @accessors(getter=datePickerType);

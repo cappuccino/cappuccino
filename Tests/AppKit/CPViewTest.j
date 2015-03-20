@@ -643,8 +643,150 @@ var methodCalled;
     [self assert:expectedRestult equals:methodCalled];
 }
 
+- (void)testLayoutSubviews
+{
+    var layoutView = [[CPLayoutView alloc] initWithFrame:CGRectMakeZero()];
+
+    [layoutView setIdentifier:@"layoutView"];
+
+    [[window contentView] addSubview:layoutView];
+    [layoutView setNeedsLayout]
+
+    methodCalled = [];
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+    var expectedRestult = ["layoutSubivews_layoutView"];
+    [self assert:expectedRestult equals:methodCalled];
+
+
+    [layoutView setNeedsLayout]
+    [layoutView setNeedsLayout]
+
+    methodCalled = [];
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+    expectedRestult = ["layoutSubivews_layoutView"];
+    [self assert:expectedRestult equals:methodCalled];
+
+
+    [layoutView setNeedsLayout:YES]
+
+    methodCalled = [];
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+    expectedRestult = ["layoutSubivews_layoutView"];
+    [self assert:expectedRestult equals:methodCalled];
+
+
+    [layoutView setNeedsLayout:YES];
+    [layoutView setNeedsLayout:NO];
+
+    methodCalled = [];
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+    expectedRestult = [];
+    [self assert:expectedRestult equals:methodCalled];
+
+
+    [layoutView setNeedsLayout:YES];
+    [layoutView setNeedsLayout:NO];
+    [layoutView setNeedsLayout:YES];
+
+    methodCalled = [];
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+    expectedRestult = ["layoutSubivews_layoutView"];
+    [self assert:expectedRestult equals:methodCalled];
+}
+
+- (void)testToolTipInitialEmpty
+{
+    [self assert:nil equals:view._toolTip];
+    [self assert:nil equals:view._toolTipInstalled];
+    [self assert:nil equals:view._toolTipFunctionIn];
+    [self assert:nil equals:view._toolTipFunctionOut];
+}
+
+- (void)testToolTipWithToolTipAndNoWindow
+{
+    [view setToolTip:@"tooltip"];
+
+    [self assert:@"tooltip" equals:view._toolTip];
+    [self assert:nil equals:view._toolTipInstalled];
+    [self assert:nil equals:view._toolTipFunctionIn];
+    [self assert:nil equals:view._toolTipFunctionOut];
+}
+
+- (void)testToolTipWithToolTipAndWindow
+{
+    [view setToolTip:@"tooltip"];
+
+    [[window contentView] addSubview:view]
+
+    [self assert:@"tooltip" equals:view._toolTip];
+    [self assertTrue:view._toolTipInstalled];
+    [self assertTrue:!!view._toolTipFunctionIn];
+    [self assertTrue:!!view._toolTipFunctionOut];
+}
+
+- (void)testToolTipWithToolTipAndWindowThenNoWindow
+{
+    [view setToolTip:@"tooltip"];
+
+    [[window contentView] addSubview:view]
+    [view removeFromSuperview];
+
+    [self assert:@"tooltip" equals:view._toolTip];
+    [self assert:NO equals:view._toolTipInstalled];
+    [self assert:nil equals:view._toolTipFunctionIn];
+    [self assert:nil equals:view._toolTipFunctionOut];
+}
+
+- (void)testToolTipWithNoToolTipAndWindowThenNoWindowThenToolTip
+{
+    [self assert:nil equals:view._toolTip];
+    [self assert:nil equals:view._toolTipInstalled];
+    [self assert:nil equals:view._toolTipFunctionIn];
+    [self assert:nil equals:view._toolTipFunctionOut];
+
+    [[window contentView] addSubview:view];
+
+    [self assert:nil equals:view._toolTip];
+    [self assert:nil equals:view._toolTipInstalled];
+    [self assert:nil equals:view._toolTipFunctionIn];
+    [self assert:nil equals:view._toolTipFunctionOut];
+
+    [view setToolTip:@"tooltip"];
+
+    [self assert:@"tooltip" equals:view._toolTip];
+    [self assertTrue:view._toolTipInstalled];
+    [self assertTrue:!!view._toolTipFunctionIn];
+    [self assertTrue:!!view._toolTipFunctionOut];
+
+    [view removeFromSuperview];
+
+    [self assert:@"tooltip" equals:view._toolTip];
+    [self assert:NO equals:view._toolTipInstalled];
+    [self assert:nil equals:view._toolTipFunctionIn];
+    [self assert:nil equals:view._toolTipFunctionOut];
+}
+
 @end
 
+@implementation CPLayoutView : CPView
+{
+
+}
+
+- (void)layoutSubviews
+{
+    [super layoutSubviews];
+
+    var string = @"layoutSubivews_" + [self identifier];
+    [methodCalled addObject:string];
+}
+
+@end
 
 @implementation CPResponderView : CPView
 

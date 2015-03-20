@@ -180,7 +180,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
             columns = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(index, [tableView._exposedColumns lastIndex] - index + 1)];
 
         // FIXME: Would be faster with some sort of -setNeedsDisplayInColumns: that updates a dirtyTableColumnForDisplay cache; then marked columns would relayout their data views at display time.
-        [tableView _layoutDataViewsInRows:rows columns:columns];
+        [tableView _layoutViewsForRowIndexes:rows columnIndexes:columns];
         [tableView tile];
 
         if (!_disableResizingPosting)
@@ -393,8 +393,8 @@ CPTableColumnUserResizingMask   = 1 << 1;
 */
 - (void)setDataView:(CPView)aView
 {
-    if (_dataView)
-        _dataViewData = nil;
+    if (_dataView === aView)
+        return;
 
     [aView setThemeState:CPThemeStateTableDataView];
 
@@ -546,11 +546,22 @@ CPTableColumnUserResizingMask   = 1 << 1;
 - (void)setValueFor:(CPString)aBinding
 {
     var tableView = [_source tableView],
-        column = [[tableView tableColumns] indexOfObjectIdenticalTo:_source],
-        rowIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [tableView numberOfRows])],
-        columnIndexes = [CPIndexSet indexSetWithIndex:column];
+        newNumberOfRows = [tableView _numberOfRows];
 
-    [tableView reloadDataForRowIndexes:rowIndexes columnIndexes:columnIndexes];
+    if ([tableView numberOfRows] == newNumberOfRows)
+    {
+        var rowIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, newNumberOfRows)],
+            column = [[tableView tableColumns] indexOfObjectIdenticalTo:_source],
+            columnIndexes = [CPIndexSet indexSetWithIndex:column];
+
+        // Reloads objectValues only, not the views.
+        // FIXME: reload data for all rows or just rows intersecting exposed rows ?
+        [tableView _reloadDataForRowIndexes:rowIndexes columnIndexes:columnIndexes];
+    }
+    else
+    {
+        [tableView reloadData];
+    }
 }
 
 - (CPSortDescriptor)_defaultSortDescriptorPrototype
@@ -590,7 +601,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
 }
 
 /*!
-    Binds the receiver to an object.
+    Binds the receiver to an object. Note that unlike Cocoa, this works only *after* the receiver has been added to a \c CPTableView.
 
     @param CPString aBinding - The binding you wish to make. Typically CPValueBinding.
     @param id anObject - The object to bind the receiver to.

@@ -27,7 +27,6 @@
 
 @implementation _CPHUDWindowView : _CPTitleableWindowView
 {
-    CPView              _toolbarView;
     CPButton            _closeButton;
 }
 

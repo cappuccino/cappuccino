@@ -43,8 +43,6 @@
             _bounds.size.height = height;
             _frame.size.height = height;
         }
-
-        _drawsColumnLines = YES;
     }
 
     return self;

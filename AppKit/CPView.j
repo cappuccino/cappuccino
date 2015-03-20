@@ -129,6 +129,8 @@ var CPViewFlags                     = { },
     CPViewHasCustomDrawRect         = 1 << 0,
     CPViewHasCustomLayoutSubviews   = 1 << 1;
 
+var CPViewHighDPIDrawingEnabled = YES;
+
 
 /*!
     @ingroup appkit
@@ -208,6 +210,10 @@ var CPViewFlags                     = { },
     CGSize              _hierarchyScaleSize;
     CGSize              _scaleSize;
 
+    // Drawing high DPI
+    BOOL                _needToSetTransformMatrix;
+    float               _highDPIRatio;
+
     // Layout Support
     BOOL                _needsLayout;
     JSObject            _ephemeralSubviews;
@@ -267,6 +273,24 @@ var CPViewFlags                     = { },
     return [super _binderClassForBinding:aBinding];
 }
 
+/*!
+    Controls whether high DPI drawing is activated or not. Defaults to YES.
+    @param isEnabled YES to enable high DPI drawing
+*/
++ (void)setHighDPIDrawingEnabled:(BOOL)isEnabled
+{
+    CPViewHighDPIDrawingEnabled = isEnabled;
+}
+
+/*!
+    Returns whether high DPI drawing is enabled.
+    @return BOOL - YES if high DPI drawing is activated, otherwise NO.
+*/
++ (BOOL)isHighDPIDrawingEnabled
+{
+    return CPViewHighDPIDrawingEnabled;
+}
+
 - (void)_setupViewFlags
 {
     var theClass = [self class],
@@ -286,13 +310,6 @@ var CPViewFlags                     = { },
     }
 
     _viewClassFlags = CPViewFlags[classUID];
-}
-
-- (void)_setupToolTipHandlers
-{
-    _toolTipInstalled = NO;
-    _toolTipFunctionIn = function(e) { [_CPToolTip scheduleToolTipForView:self]; }
-    _toolTipFunctionOut = function(e) { [_CPToolTip invalidateCurrentToolTipIfNeeded]; };
 }
 
 + (CPSet)keyPathsForValuesAffectingFrame
@@ -363,7 +380,6 @@ var CPViewFlags                     = { },
         _DOMImageSizes = [];
 #endif
 
-        [self _setupToolTipHandlers];
         [self _setupViewFlags];
 
         [self _loadThemeAttributes];
@@ -388,12 +404,16 @@ var CPViewFlags                     = { },
 
     _toolTip = aToolTip;
 
-    if (_toolTip)
+    [self _manageToolTipInstallation];
+}
+
+- (void)_manageToolTipInstallation
+{
+    if ([self window] && _toolTip)
         [self _installToolTipEventHandlers];
     else
         [self _uninstallToolTipEventHandlers];
 }
-
 /*! @ignore
 
     Install the handlers for the tooltip
@@ -402,6 +422,12 @@ var CPViewFlags                     = { },
 {
     if (_toolTipInstalled)
         return;
+
+    if (!_toolTipFunctionIn)
+        _toolTipFunctionIn = function(e) { [_CPToolTip scheduleToolTipForView:self]; }
+
+    if (!_toolTipFunctionOut)
+        _toolTipFunctionOut = function(e) { [_CPToolTip invalidateCurrentToolTipIfNeeded]; };
 
 #if PLATFORM(DOM)
     if (_DOMElement.addEventListener)
@@ -444,6 +470,9 @@ var CPViewFlags                     = { },
         _DOMElement.detachEvent("onmouseout", _toolTipFunctionOut);
     }
 #endif
+
+    _toolTipFunctionIn = nil;
+    _toolTipFunctionOut = nil;
 
     _toolTipInstalled = NO;
 }
@@ -783,6 +812,8 @@ var CPViewFlags                     = { },
 
     [self viewDidMoveToWindow];
 
+    [self _manageToolTipInstallation];
+
     [[self window] _dirtyKeyViewLoop];
 }
 
@@ -810,6 +841,7 @@ var CPViewFlags                     = { },
 {
 //    if (_graphicsContext)
         [self setNeedsDisplay:YES];
+
 }
 
 /*!
@@ -1069,12 +1101,6 @@ var CPViewFlags                     = { },
 #if PLATFORM(DOM)
     [self _setDisplayServerSetStyleSize:size];
 
-    if (_DOMContentsElement)
-    {
-        CPDOMDisplayServerSetSize(_DOMContentsElement, size.width, size.height);
-        CPDOMDisplayServerSetStyleSize(_DOMContentsElement, size.width, size.height);
-    }
-
     if (_backgroundType !== BackgroundTrivialColor)
     {
         if (_backgroundType === BackgroundTransparentColor)
@@ -1095,7 +1121,7 @@ var CPViewFlags                     = { },
                 // Make sure to repeat the top and bottom pieces horizontally if they're not the exact width needed.
                 if (top)
                 {
-                    CPDomDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], frameSize.width + "px", top + "px");
+                    CPDOMDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], frameSize.width + "px", top + "px");
                     CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], size.width, top);
                     partIndex++;
                 }
@@ -1103,13 +1129,13 @@ var CPViewFlags                     = { },
                 {
                     var height = frameSize.height - top - bottom;
 
-                    CPDomDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], frameSize.width + "px", height + "px");
+                    CPDOMDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], frameSize.width + "px", height + "px");
                     CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], size.width, size.height - top - bottom);
                     partIndex++;
                 }
                 if (bottom)
                 {
-                    CPDomDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], frameSize.width + "px", bottom + "px");
+                    CPDOMDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], frameSize.width + "px", bottom + "px");
                     CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], size.width, bottom);
                 }
             }
@@ -1121,7 +1147,7 @@ var CPViewFlags                     = { },
                 // Make sure to repeat the left and right pieces vertically if they're not the exact height needed.
                 if (left)
                 {
-                    CPDomDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], left + "px", frameSize.height + "px");
+                    CPDOMDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], left + "px", frameSize.height + "px");
                     CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], left, size.height);
                     partIndex++;
                 }
@@ -1129,13 +1155,13 @@ var CPViewFlags                     = { },
                 {
                     var width = (frameSize.width - left - right);
 
-                    CPDomDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], width + "px", frameSize.height + "px");
+                    CPDOMDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], width + "px", frameSize.height + "px");
                     CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], size.width - left - right, size.height);
                     partIndex++;
                 }
                 if (right)
                 {
-                    CPDomDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], right + "px", frameSize.height + "px");
+                    CPDOMDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], right + "px", frameSize.height + "px");
                     CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], right, size.height);
                 }
             }
@@ -1199,7 +1225,16 @@ var CPViewFlags                     = { },
 {
 #if PLATFORM(DOM)
     var scale = [self scaleSize];
+
     CPDOMDisplayServerSetStyleSize(_DOMElement, aSize.width * 1 / scale.width, aSize.height * 1 / scale.height);
+
+    if (_DOMContentsElement)
+    {
+        CPDOMDisplayServerSetSize(_DOMContentsElement, aSize.width * _highDPIRatio * 1 / scale.width, aSize.height * _highDPIRatio * 1 / scale.height);
+        CPDOMDisplayServerSetStyleSize(_DOMContentsElement, aSize.width * 1 / scale.width, aSize.height * 1 / scale.height);
+
+        _needToSetTransformMatrix = YES;
+    }
 #endif
 }
 
@@ -1889,7 +1924,7 @@ var CPViewFlags                     = { },
             _DOMImageParts[0].style.background = [_backgroundColor cssString];
 
             if (patternImage)
-                CPDomDisplayServerSetStyleBackgroundSize(_DOMImageParts[0], [patternImage size].width + "px", [patternImage size].height + "px");
+                CPDOMDisplayServerSetStyleBackgroundSize(_DOMImageParts[0], [patternImage size].width + "px", [patternImage size].height + "px");
 
             if (CPFeatureIsCompatible(CPOpacityRequiresFilterFeature))
                 _DOMImageParts[0].style.filter = "alpha(opacity=" + [_backgroundColor alphaComponent] * 100 + ")";
@@ -1903,7 +1938,7 @@ var CPViewFlags                     = { },
             _DOMElement.style.background = colorCSS;
 
             if (patternImage)
-                CPDomDisplayServerSetStyleBackgroundSize(_DOMElement, [patternImage size].width + "px", [patternImage size].height + "px");
+                CPDOMDisplayServerSetStyleBackgroundSize(_DOMElement, [patternImage size].width + "px", [patternImage size].height + "px");
     }
     else
     {
@@ -2008,7 +2043,7 @@ var CPViewFlags                     = { },
             // Make sure to repeat the top and bottom pieces horizontally if they're not the exact width needed.
             if (top)
             {
-                CPDomDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], frameSize.width + "px", top + "px");
+                CPDOMDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], frameSize.width + "px", top + "px");
                 CPDOMDisplayServerSetStyleLeftTop(_DOMImageParts[partIndex], NULL, 0.0, 0.0);
                 CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], frameSize.width, top);
                 partIndex++;
@@ -2018,14 +2053,14 @@ var CPViewFlags                     = { },
                 var height = frameSize.height - top - bottom;
 
                 //_DOMImageParts[partIndex].style.backgroundSize =  frameSize.width + "px " + height + "px";
-                CPDomDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], frameSize.width + "px", height + "px");
+                CPDOMDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], frameSize.width + "px", height + "px");
                 CPDOMDisplayServerSetStyleLeftTop(_DOMImageParts[partIndex], NULL, 0.0, top);
                 CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], frameSize.width, height);
                 partIndex++;
             }
             if (bottom)
             {
-                CPDomDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], frameSize.width + "px", bottom + "px");
+                CPDOMDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], frameSize.width + "px", bottom + "px");
                 CPDOMDisplayServerSetStyleLeftBottom(_DOMImageParts[partIndex], NULL, 0.0, 0.0);
                 CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], frameSize.width, bottom);
             }
@@ -2040,7 +2075,7 @@ var CPViewFlags                     = { },
             // Make sure to repeat the left and right pieces vertically if they're not the exact height needed.
             if (left)
             {
-                CPDomDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], left + "px", frameSize.height + "px");
+                CPDOMDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], left + "px", frameSize.height + "px");
                 CPDOMDisplayServerSetStyleLeftTop(_DOMImageParts[partIndex], NULL, 0.0, 0.0);
                 CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], left, frameSize.height);
                 partIndex++;
@@ -2049,14 +2084,14 @@ var CPViewFlags                     = { },
             {
                 var width = (frameSize.width - left - right);
 
-                CPDomDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], width + "px", frameSize.height + "px");
+                CPDOMDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], width + "px", frameSize.height + "px");
                 CPDOMDisplayServerSetStyleLeftTop(_DOMImageParts[partIndex], NULL, left, 0.0);
                 CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], width, frameSize.height);
                 partIndex++;
             }
             if (right)
             {
-                CPDomDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], right + "px", frameSize.height + "px");
+                CPDOMDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], right + "px", frameSize.height + "px");
                 CPDOMDisplayServerSetStyleRightTop(_DOMImageParts[partIndex], NULL, 0.0, 0.0);
                 CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], right, frameSize.height);
             }
@@ -2528,7 +2563,11 @@ setBoundsOrigin:
 
 #if PLATFORM(DOM)
         var width = CGRectGetWidth(_frame),
-            height = CGRectGetHeight(_frame);
+            height = CGRectGetHeight(_frame),
+            devicePixelRatio = window.devicePixelRatio || 1,
+            backingStoreRatio = CPBrowserBackingStorePixelRatio(graphicsPort);
+
+        _highDPIRatio = CPViewHighDPIDrawingEnabled ? (devicePixelRatio / backingStoreRatio) : 1;
 
         _DOMContentsElement = graphicsPort.DOMElement;
 
@@ -2538,7 +2577,7 @@ setBoundsOrigin:
         _DOMContentsElement.style.position = "absolute";
         _DOMContentsElement.style.visibility = "visible";
 
-        CPDOMDisplayServerSetSize(_DOMContentsElement, width, height);
+        CPDOMDisplayServerSetSize(_DOMContentsElement, width * _highDPIRatio, height * _highDPIRatio);
 
         CPDOMDisplayServerSetStyleLeftTop(_DOMContentsElement, NULL, 0.0, 0.0);
         CPDOMDisplayServerSetStyleSize(_DOMContentsElement, width, height);
@@ -2551,8 +2590,15 @@ setBoundsOrigin:
         CPDOMDisplayServerAppendChild(_DOMElement, _DOMContentsElement);
 #endif
         _graphicsContext = [CPGraphicsContext graphicsContextWithGraphicsPort:graphicsPort flipped:YES];
+        _needToSetTransformMatrix = YES;
     }
 
+#if PLATFORM(DOM)
+    if (_needToSetTransformMatrix)
+        [_graphicsContext graphicsPort].setTransform(_highDPIRatio, 0, 0 , _highDPIRatio, 0, 0);
+#endif
+
+    _needToSetTransformMatrix = NO;
     [CPGraphicsContext setCurrentContext:_graphicsContext];
 
     CGContextSaveGState([_graphicsContext graphicsPort]);
@@ -2570,12 +2616,25 @@ setBoundsOrigin:
 
 - (void)setNeedsLayout
 {
-    if (!(_viewClassFlags & CPViewHasCustomLayoutSubviews))
+    [self setNeedsLayout:YES];
+}
+
+- (void)setNeedsLayout:(BOOL)needLayout
+{
+    if (!(_viewClassFlags & CPViewHasCustomLayoutSubviews) || !needLayout)
+    {
+        _needsLayout = NO;
         return;
+    }
 
     _needsLayout = YES;
 
     _CPDisplayServerAddLayoutObject(self);
+}
+
+- (BOOL)needsLayout
+{
+    return _needsLayout;
 }
 
 - (void)layoutIfNeeded
@@ -3504,7 +3563,6 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 
         _hitTests = ![aCoder containsValueForKey:CPViewHitTestsKey] || [aCoder decodeBoolForKey:CPViewHitTestsKey];
 
-        [self _setupToolTipHandlers];
         _toolTip = [aCoder decodeObjectForKey:CPViewToolTipKey];
 
         if (_toolTip)

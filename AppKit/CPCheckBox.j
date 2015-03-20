@@ -111,6 +111,30 @@ CPCheckBoxImageOffset = 4.0;
     return startedTracking;
 }
 
+
+#pragma mark -
+#pragma mark Override methods from CPButton
+
+- (CGSize)_minimumFrameSize
+{
+    var size = [super _minimumFrameSize],
+        contentView = [self ephemeralSubviewNamed:@"content-view"];
+
+    if (!contentView && [[self title] length])
+    {
+        var minSize = [self currentValueForThemeAttribute:@"min-size"],
+            maxSize = [self currentValueForThemeAttribute:@"max-size"];
+
+        // Here we always add the min size to the control which is the size of the view of the checkBox
+        size.width += minSize.width + CPCheckBoxImageOffset;
+
+        if (maxSize.width >= 0.0)
+            size.width = MIN(size.width, maxSize.width);
+    }
+
+    return size;
+}
+
 @end
 
 @implementation _CPCheckBoxValueBinder : CPBinder
