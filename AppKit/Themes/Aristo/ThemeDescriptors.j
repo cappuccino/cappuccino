@@ -1196,14 +1196,14 @@ var themedButtonValues = nil,
             [@"nib2cib-adjustment-frame",   CGRectMake(-2.0, 7.0, 5.0, 10.0),                       [CPTextFieldStateRounded, CPThemeStateBezeled]],
 
             // CPThemeStateControlSizeSmall
-            [@"content-inset",              CGInsetMake(8.0, 6.0, 4.0, 6.0),                        [CPThemeStateControlSizeSmall, CPTextFieldStateRounded, CPThemeStateBezeled, CPThemeStateEditing]],
+            [@"content-inset",              CGInsetMake(8.0, 6.0, 4.0, 6.0),                        [CPThemeStateControlSizeSmall, CPTextFieldStateRounded, CPThemeStateBezeled]],
             [@"bezel-inset",                CGInsetMake(2.0, 4.0, 2.0, 4.0),                        [CPThemeStateControlSizeSmall, CPTextFieldStateRounded, CPThemeStateBezeled]],
             [@"min-size",                   CGSizeMake(0.0, 28.0),                                  [CPThemeStateControlSizeSmall, CPTextFieldStateRounded, CPThemeStateBezeled]],
             [@"max-size",                   CGSizeMake(-1.0, 28.0),                                 [CPThemeStateControlSizeSmall, CPTextFieldStateRounded, CPThemeStateBezeled]],
             [@"nib2cib-adjustment-frame",   CGRectMake(-6.0, 5.0, 13.0, 9.0),                       [CPThemeStateControlSizeSmall, CPTextFieldStateRounded, CPThemeStateBezeled]],
 
             // CPThemeStateControlSizeMini
-            [@"content-inset",              CGInsetMake(8.0, 6.0, 4.0, 6.0),                        [CPThemeStateControlSizeMini, CPTextFieldStateRounded, CPThemeStateBezeled, CPThemeStateEditing]],
+            [@"content-inset",              CGInsetMake(8.0, 6.0, 4.0, 6.0),                        [CPThemeStateControlSizeMini, CPTextFieldStateRounded, CPThemeStateBezeled]],
             [@"bezel-inset",                CGInsetMake(2.0, 4.0, 2.0, 4.0),                        [CPThemeStateControlSizeMini, CPTextFieldStateRounded, CPThemeStateBezeled]],
             [@"min-size",                   CGSizeMake(0.0, 26.0),                                  [CPThemeStateControlSizeMini, CPTextFieldStateRounded, CPThemeStateBezeled]],
             [@"max-size",                   CGSizeMake(-1.0, 26.0),                                 [CPThemeStateControlSizeMini, CPTextFieldStateRounded, CPThemeStateBezeled]],
@@ -1226,17 +1226,37 @@ var themedButtonValues = nil,
 {
     var searchField = [[CPSearchField alloc] initWithFrame:CGRectMake(0.0, 0.0, 160.0, 30.0)],
 
-        imageSearch = PatternImage("search-field-search.png", 25.0, 22.0),
-        imageFind = PatternImage("search-field-find.png", 25.0, 22.0),
-        imageCancel = PatternImage("search-field-cancel.png", 22.0, 22.0),
-        imageCancelPressed = PatternImage("search-field-cancel-pressed.png", 22.0, 22.0),
+        imageSearch             = PatternImage("search-field-search.png", 25.0, 22.0),
+        imageFind               = PatternImage("search-field-find.png", 25.0, 22.0),
+        imageCancel             = PatternImage("search-field-cancel.png", 22.0, 22.0),
+        imageCancelPressed      = PatternImage("search-field-cancel-pressed.png", 22.0, 22.0),
+
+        smallImageSearch        = PatternImage("search-field-search.png", 25.0, 20.0),
+        smallImageFind          = PatternImage("search-field-find.png", 25.0, 20.0),
+        smallImageCancel        = PatternImage("search-field-cancel.png", 22.0, 20.0),
+        smallImageCancelPressed = PatternImage("search-field-cancel-pressed.png", 22.0, 21.0),
+
+        miniImageSearch         = PatternImage("search-field-search.png", 25.0, 20.0),
+        miniImageFind           = PatternImage("search-field-find.png", 25.0, 20.0),
+        miniImageCancel         = PatternImage("search-field-cancel.png", 22.0, 21.0),
+        miniImageCancelPressed  = PatternImage("search-field-cancel-pressed.png", 22.0, 21.0),
 
         overrides =
         [
-            [@"image-search", imageSearch],
-            [@"image-find", imageFind],
-            [@"image-cancel", imageCancel],
-            [@"image-cancel-pressed", imageCancelPressed]
+            [@"image-search",           imageSearch],
+            [@"image-find",             imageFind],
+            [@"image-cancel",           imageCancel],
+            [@"image-cancel-pressed",   imageCancelPressed],
+
+            [@"image-search",           smallImageSearch,               CPThemeStateControlSizeSmall],
+            [@"image-find",             smallImageFind,                 CPThemeStateControlSizeSmall],
+            [@"image-cancel",           smallImageCancel,               CPThemeStateControlSizeSmall],
+            [@"image-cancel-pressed",   smallImageCancelPressed,        CPThemeStateControlSizeSmall],
+
+            [@"image-search",           miniImageSearch,                CPThemeStateControlSizeMini],
+            [@"image-find",             miniImageFind,                  CPThemeStateControlSizeMini],
+            [@"image-cancel",           miniImageCancel,                CPThemeStateControlSizeMini],
+            [@"image-cancel-pressed",   miniImageCancelPressed,         CPThemeStateControlSizeMini],
         ];
 
     [self registerThemeValues:overrides forView:searchField inherit:themedRoundedTextFieldValues];
