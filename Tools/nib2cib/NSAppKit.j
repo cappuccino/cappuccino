@@ -72,6 +72,7 @@
 @import "NSTableView.j"
 @import "NSTabView.j"
 @import "NSTabViewItem.j"
+@import "NSTextContainer.j"
 @import "NSTextField.j"
 @import "NSTextView.j"
 @import "NSTokenField.j"

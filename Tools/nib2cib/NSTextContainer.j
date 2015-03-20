@@ -1,5 +1,5 @@
 /*
- * NSTextView.j
+ * NSTextContainer.j
  * nib2cib
  *
  * Created by Alexendre Wilhelm.
@@ -20,27 +20,23 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import <AppKit/CPTextView.j>
+@import <AppKit/CPTextContainer.j>
 
 @class Nib2Cib
 
-@implementation CPTextView (NSCoding)
+@implementation CPTextContainer (NSCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
-    if (self = [super NS_initWithCoder:aCoder])
-    {
-        _textContainer = [aCoder decodeObjectForKey:@"NSTextContainer"];
-    }
+    self = [super init];
 
     return self;
 }
 
 @end
 
-@implementation NSTextView : CPTextView
+@implementation NSTextContainer : CPTextContainer
 {
-
 }
 
 - (id)initWithCoder:(CPCoder)aCoder
@@ -49,7 +45,7 @@
 
     if (self)
     {
-        var flags = [aCoder decodeIntForKey:@"NSTVFlags"];
+        _size = CGSizeMake([aCoder decodeIntForKey:@"NSWidth"], 1e7);
     }
 
     return self;
@@ -57,7 +53,7 @@
 
 - (Class)classForKeyedArchiver
 {
-    return [CPTextView class];
+    return [CPTextContainer class];
 }
 
 @end

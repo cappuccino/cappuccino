@@ -96,7 +96,7 @@ CPLineMovesUp = 4;
     if (self)
     {
         _size = aSize;
-        _lineFragmentPadding = 0.0;
+        [self _init];
     }
 
     return self;
@@ -105,6 +105,11 @@ CPLineMovesUp = 4;
 - (id)init
 {
     return [self initWithContainerSize:CPMakeSize(1e7, 1e7)];
+}
+
+- (void)_init
+{
+    _lineFragmentPadding = 0.0;
 }
 
 #pragma mark -
@@ -210,6 +215,31 @@ CPLineMovesUp = 4;
     }
 
     return resultRect;
+}
+
+@end
+
+
+var CPTextContainerSizeKey  = @"CPTextContainerSizeKey";
+
+@implementation CPTextContainer (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super init];
+
+    if (self)
+    {
+        [self _init];
+        _size = [aCoder decodeSizeForKey:CPTextContainerSizeKey];
+    }
+
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [aCoder encodeSize:_size forKey:CPTextContainerSizeKey];
 }
 
 @end

@@ -33,6 +33,7 @@
 
 @class _CPRTFProducer;
 @class _CPRTFParser;
+@class CPClipView;
 
 @protocol CPTextViewDelegate <CPTextDelegate>
 
@@ -147,43 +148,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 {
     if (self = [super initWithFrame:aFrame])
     {
-#if PLATFORM(DOM)
-        _DOMElement.style.cursor = "text";
-#endif
-        _textContainerInset = CGSizeMake(2,0);
-        _textContainerOrigin = CGPointMake(_bounds.origin.x, _bounds.origin.y);
+        [self _init];
         [aContainer setTextView:self];
-        _isEditable = YES;
-        _isSelectable = YES;
-
-        _isFirstResponder = NO;
-        _delegate = nil;
-        _delegateRespondsToSelectorMask = 0;
-        _selectionRange = CPMakeRange(0, 0);
-
-        _selectionGranularity = CPSelectByCharacter;
-        _selectedTextAttributes = [CPDictionary dictionaryWithObject:[CPColor selectedTextBackgroundColor]
-                                                forKey:CPBackgroundColorAttributeName];
-
-        _insertionPointColor = [CPColor blackColor];
-        _textColor = [CPColor blackColor];
-        _font = [CPFont systemFontOfSize:12.0];
-        [self setFont:_font];
-        [self setBackgroundColor:[CPColor whiteColor]];
-
-
-        _typingAttributes = [[CPDictionary alloc] initWithObjects:[_font, _textColor] forKeys:[CPFontAttributeName, CPForegroundColorAttributeName]];
-
-        _minSize = CGSizeCreateCopy(aFrame.size);
-        _maxSize = CGSizeMake(aFrame.size.width, 1e7);
-
-        _isRichText = NO;
-        _usesFontPanel = YES;
-        _allowsUndo = YES;
-        _isVerticallyResizable = YES;
-        _isHorizontallyResizable = NO;
-
-        _caretRect = CGRectMake(0, 0, 1, 11);
     }
 
     [self registerForDraggedTypes:[CPColorDragType]];
@@ -202,6 +168,51 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     return [self initWithFrame:aFrame textContainer:container];
 }
+
+- (void)_init
+{
+#if PLATFORM(DOM)
+        _DOMElement.style.cursor = "text";
+#endif
+
+    _selectionRange = CPMakeRange(0, 0);
+    _textContainerInset = CGSizeMake(2, 0);
+    _textContainerOrigin = CGPointMake(_bounds.origin.x, _bounds.origin.y);
+
+    _isEditable = YES;
+    _isSelectable = YES;
+
+    _isFirstResponder = NO;
+    _delegate = nil;
+    _delegateRespondsToSelectorMask = 0;
+
+    _selectionGranularity = CPSelectByCharacter;
+    _selectedTextAttributes = [CPDictionary dictionaryWithObject:[CPColor selectedTextBackgroundColor]
+                                            forKey:CPBackgroundColorAttributeName];
+
+    _insertionPointColor = [CPColor blackColor];
+    _textColor = [CPColor blackColor];
+    _font = [CPFont systemFontOfSize:12.0];
+    [self setFont:_font];
+    [self setBackgroundColor:[CPColor whiteColor]];
+
+    _typingAttributes = [[CPDictionary alloc] initWithObjects:[_font, _textColor] forKeys:[CPFontAttributeName, CPForegroundColorAttributeName]];
+
+    _minSize = CGSizeCreateCopy(_frame.size);
+    _maxSize = CGSizeMake(_frame.size.width, 1e7);
+
+    _isRichText = NO;
+    _usesFontPanel = YES;
+    _allowsUndo = YES;
+    _isVerticallyResizable = YES;
+    _isHorizontallyResizable = NO;
+
+    _caretRect = CGRectMake(0, 0, 1, 11);
+}
+
+
+#pragma mark -
+#pragma mark Copy and past methods
 
 - (void)copy:(id)sender
 {
@@ -602,9 +613,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     if (_selectionRange.length)
     {
         var rects = [_layoutManager rectArrayForCharacterRange:_selectionRange
-                                    withinSelectedCharacterRange:_selectionRange
-                                    inTextContainer:_textContainer
-                                    rectCount:nil],
+                                  withinSelectedCharacterRange:_selectionRange
+                                               inTextContainer:_textContainer
+                                                     rectCount:nil],
             effectiveSelectionColor = [self _isFocused] ? [_selectedTextAttributes objectForKey:CPBackgroundColorAttributeName] : [CPColor _selectedTextBackgroundColorUnfocussed],
             lengthRect = rects.length;
 
@@ -1854,6 +1865,42 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         return CPMakeRange(0, 0);
 
     return [_delegate textView:self willChangeSelectionFromCharacterRange:selectionRange toCharacterRange:range];
+}
+
+@end
+
+
+var CPTextViewContainerKey = @"CPTextViewContainerKey",
+    CPTextViewLayoutManagerKey = @"CPTextViewLayoutManagerKey";
+    CPTextViewTextStorageKey = @"CPTextViewTextStorageKey";
+
+@implementation CPTextView (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super initWithCoder:aCoder];
+
+    if (self)
+    {
+        [self _init];
+
+        var layoutManager = [[CPLayoutManager alloc] init],
+            textStorage = [[CPTextStorage alloc] init],
+            container = [aCoder decodeObjectForKey:CPTextViewContainerKey];
+
+        [textStorage addLayoutManager:layoutManager];
+        [layoutManager addTextContainer:container];
+
+        [container setTextView:self];
+    }
+
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [super encodeWithCoder:aCoder];
+    [aCoder encodeObject:_textContainer forKey:CPTextViewContainerKey];
 }
 
 @end

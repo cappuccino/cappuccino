@@ -5,9 +5,8 @@
  *  Copyright (C) 2014 Daniel Boehringer
  */
 
+@import <Foundation/Foundation.j>
 @import <AppKit/CPTextView.j>
-@import <AppKit/_CPRTFProducer.j>
-@import <AppKit/_CPRTFParser.j>
 
 @implementation AppController : CPObject
 {
