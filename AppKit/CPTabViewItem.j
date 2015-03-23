@@ -61,11 +61,32 @@ CPPressedTab    = 2;
 
     CPTabView   _tabView;
     unsigned    _tabState;      // Looks like it is not yet implemented
+
+    CPImage     _image @accessors(property=image);
+    CPViewController _viewController @accessors(getter=viewController);
+
+    BOOL        _enabled @accessors(property=enabled);
+    BOOL        _selected @accessors(property=selected);
+    CGRect      _tabRect @accessors(property=frame);
+    float       _width @accessors(property=width);
 }
 
 - (id)init
 {
     return [self initWithIdentifier:@""];
+}
+
+- (void)_init
+{
+    _tag = 0;
+    _viewController = nil;
+    _image = nil;
+    _tabState = 0;
+    _tabView = nil;
+    _enabled = YES;
+    _selected = NO;
+    _tabRect = CGRectMakeZero();
+    _width = 0;
 }
 
 /*!
@@ -76,8 +97,12 @@ CPPressedTab    = 2;
 {
     self = [super init];
 
-    if (self)
-        _identifier = anIdentifier;
+    [self _init];
+
+    _identifier = anIdentifier;
+    _label = nil;
+    _view = nil;
+    //_auxiliaryView = nil;
 
     return self;
 }
@@ -99,6 +124,28 @@ CPPressedTab    = 2;
 - (CPString)label
 {
     return _label;
+}
+
+// Working With Images
+/*!
+    Sets the CPTabViewItem's image.
+    @param anImage the image for the item
+*/
+- (void)setImage:(CPImage)anImage
+{
+    if ([anImage isEqual:_image])
+        return;
+
+    _image = anImage;
+    [_tabView tileWithChangedItem:self];
+}
+
+/*!
+    Returns the CPTabViewItem's image
+*/
+- (CPImage)image
+{
+    return _image;
 }
 
 // Checking the Tab Display State
@@ -190,6 +237,7 @@ CPPressedTab    = 2;
 
 var CPTabViewItemIdentifierKey  = "CPTabViewItemIdentifierKey",
     CPTabViewItemLabelKey       = "CPTabViewItemLabelKey",
+    CPTabViewItemImageKey       = "CPTabViewItemImageKey",
     CPTabViewItemViewKey        = "CPTabViewItemViewKey",
     CPTabViewItemAuxViewKey     = "CPTabViewItemAuxViewKey";
 
@@ -202,8 +250,11 @@ var CPTabViewItemIdentifierKey  = "CPTabViewItemIdentifierKey",
 
     if (self)
     {
+       [self _init];
+
         _identifier     = [aCoder decodeObjectForKey:CPTabViewItemIdentifierKey];
         _label          = [aCoder decodeObjectForKey:CPTabViewItemLabelKey];
+        _image          = [aCoder decodeObjectForKey:CPTabViewItemImageKey];
 
         _view           = [aCoder decodeObjectForKey:CPTabViewItemViewKey];
         _auxiliaryView  = [aCoder decodeObjectForKey:CPTabViewItemAuxViewKey];
@@ -216,6 +267,7 @@ var CPTabViewItemIdentifierKey  = "CPTabViewItemIdentifierKey",
 {
     [aCoder encodeObject:_identifier    forKey:CPTabViewItemIdentifierKey];
     [aCoder encodeObject:_label         forKey:CPTabViewItemLabelKey];
+    [aCoder encodeObject:_image         forKey:CPTabViewItemImageKey];
 
     [aCoder encodeObject:_view          forKey:CPTabViewItemViewKey];
     [aCoder encodeObject:_auxiliaryView forKey:CPTabViewItemAuxViewKey];
