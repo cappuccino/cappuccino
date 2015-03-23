@@ -28,7 +28,8 @@
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
-    self = [super init];
+    //self = [super initWithString:[aCoder decodeObjectForKey:@"NSString"] attributes:[aCoder decodeObjectForKey:@"NSAttributes"]];
+    self = [super initWithString:[aCoder decodeObjectForKey:@"NSString"] attributes:nil];
 
     return self;
 }

@@ -24,6 +24,7 @@
 @import "CPLayoutManager.j"
 
 @class CPTextView
+@class CPLayoutManager
 
 /*
     @global
@@ -110,6 +111,9 @@ CPLineMovesUp = 4;
 - (void)_init
 {
     _lineFragmentPadding = 0.0;
+
+    _layoutManager = [[CPLayoutManager alloc] init];
+    [_layoutManager addTextContainer:self];
 }
 
 #pragma mark -
@@ -220,7 +224,8 @@ CPLineMovesUp = 4;
 @end
 
 
-var CPTextContainerSizeKey  = @"CPTextContainerSizeKey";
+var CPTextContainerSizeKey  = @"CPTextContainerSizeKey",
+    CPTextContainerLayoutManagerKey  = @"CPTextContainerLayoutManagerKey";
 
 @implementation CPTextContainer (CPCoding)
 
@@ -231,7 +236,11 @@ var CPTextContainerSizeKey  = @"CPTextContainerSizeKey";
     if (self)
     {
         [self _init];
+
         _size = [aCoder decodeSizeForKey:CPTextContainerSizeKey];
+
+        _layoutManager = [aCoder decodeObjectForKey:CPTextContainerLayoutManagerKey];
+        [_layoutManager addTextContainer:self];
     }
 
     return self;
@@ -240,6 +249,7 @@ var CPTextContainerSizeKey  = @"CPTextContainerSizeKey";
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [aCoder encodeSize:_size forKey:CPTextContainerSizeKey];
+    [aCoder encodeObject:_layoutManager forKey:CPTextContainerLayoutManagerKey];
 }
 
 @end

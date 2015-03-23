@@ -50,372 +50,6 @@ function _RectEqualToRectHorizontally(lhsRect, rhsRect)
 
 _oncontextmenuhandler = function () { return false; };
 
-@implementation CPArray (SortedSearching)
-
-- (unsigned)_indexOfObject:(id)anObject sortedByFunction:(Function)aFunction context:(id)aContext
-{
-    var length= [self count];
-
-    if (!aFunction)
-        return CPNotFound;
-
-    if (length === 0)
-        return -1;
-
-    var mid,
-        c,
-        first = 0,
-        last = length - 1;
-
-    while (first <= last)
-    {
-        mid = FLOOR((first + last) / 2);
-        c = aFunction(anObject, self[mid], aContext);
-
-        if (c > 0)
-        {
-            first = mid + 1;
-        }
-        else if (c < 0)
-        {
-            last = mid - 1;
-        }
-        else
-        {
-            while (mid < length - 1 && aFunction(anObject, self[mid + 1], aContext) == CPOrderedSame)
-                mid++;
-
-            return mid;
-        }
-    }
-
-    var result = -first - 1;
-
-    return result >= 0 ? result : CPNotFound;
-}
-
-@end
-
-var _sortRange = function(location, anObject)
-{
-    if (CPLocationInRange(location, anObject._range))
-        return CPOrderedSame;
-    else if (CPMaxRange(anObject._range) <= location)
-        return CPOrderedDescending;
-    else
-        return CPOrderedAscending;
-}
-
-var _objectWithLocationInRange = function(aList, aLocation)
-{
-    var index = [aList _indexOfObject: aLocation sortedByFunction:_sortRange context:nil];
-
-    if (index != CPNotFound)
-        return aList[index];
-
-    return nil;
-}
-
-var _objectsInRange = function(aList, aRange)
-{
-    var list = [],
-        c = aList.length,
-        location = aRange.location;
-
-    for (var i = 0; i < c; i++)
-    {
-        if (CPLocationInRange(location, aList[i]._range))
-        {
-            list.push(aList[i]);
-
-            if (CPMaxRange(aList[i]._range) <= CPMaxRange(aRange))
-                location = CPMaxRange(aList[i]._range);
-            else
-                break;
-        }
-        else if (CPLocationInRange(CPMaxRange(aRange), aList[i]._range))
-        {
-            list.push(aList[i]);
-            break;
-        }
-        else if (CPRangeInRange(aRange, aList[i]._range))
-        {
-            list.push(aList[i]);
-        }
-    }
-
-    return list;
-}
-
-@implementation _CPLineFragment : CPObject
-{
-    CPArray         _glyphsFrames @accessors(getter=glyphFrames);
-
-    BOOL            _isInvalid;
-    CGRect          _fragmentRect;
-    CGRect          _usedRect;
-    CGPoint         _location;
-    CPRange         _range;
-    CPTextContainer _textContainer;
-    CPMutableArray  _runs;
-}
-
-#pragma mark -
-#pragma mark Init methods
-
-- (id)createDOMElementWithText:(CPString)aString andFont:(CPFont)aFont andColor:(CPColor)aColor
-{
-#if PLATFORM(DOM)
-    var style,
-        span = document.createElement("span");
-
-    span.oncontextmenu = span.onmousedown = span.onselectstart = _oncontextmenuhandler;
-    // span.contentEditable = true;   // this unfortunately does not work to make native pasting work on safari
-
-    style = span.style;
-    style.position = "absolute";
-    style.visibility = "visible";
-    style.padding = "0px";
-    style.margin = "0px";
-    style.whiteSpace = "pre";
-    style.backgroundColor = "transparent";
-    style.font = [aFont cssString];
-
-    if (aColor)
-        style.color = [aColor cssString];
-
-    if (CPFeatureIsCompatible(CPJavaScriptInnerTextFeature))
-        span.innerText = aString;
-    else if (CPFeatureIsCompatible(CPJavaScriptTextContentFeature))
-        span.textContent = aString;
-
-    //<!> FIXME aString.replace(/&/g,'&amp;')
-    return span;
-#else
-    return nil;
-#endif
-}
-
-- (id)initWithRange:(CPRange)aRange textContainer:(CPTextContainer)aContainer textStorage:(CPTextStorage)textStorage
-{
-    if (self = [super init])
-    {
-        var effectiveRange = CPMakeRange(0,0),
-            location;
-
-        _fragmentRect = CGRectMakeZero();
-        _usedRect = CGRectMakeZero();
-        _location = CGPointMakeZero();
-        _range = CPMakeRangeCopy(aRange);
-        _textContainer = aContainer;
-        _isInvalid = NO;
-        _runs = [[CPMutableArray alloc] init];
-
-        for (location = aRange.location; location < CPMaxRange(aRange); location = CPMaxRange(effectiveRange))
-        {
-            var attributes = [textStorage attributesAtIndex:location effectiveRange:effectiveRange];
-
-            effectiveRange = attributes ? CPIntersectionRange(aRange, effectiveRange) : aRange;
-
-            var string = [textStorage._string substringWithRange:effectiveRange],
-                font = [textStorage font] || [CPFont systemFontOfSize:12.0];
-
-            if ([attributes containsKey:CPFontAttributeName])
-                 font = [attributes objectForKey:CPFontAttributeName];
-
-            var color = [attributes objectForKey:CPForegroundColorAttributeName],
-                elem = [self createDOMElementWithText:string andFont:font andColor:color],
-                run = {_range:CPMakeRangeCopy(effectiveRange), elem:elem, string:string};
-
-            _runs.push(run);
-        }
-    }
-
-    return self;
-}
-
-- (void)setAdvancements:(CPArray)someAdvancements
-{
-    var count = someAdvancements.length,
-        origin = CGPointMake(_fragmentRect.origin.x + _location.x, _fragmentRect.origin.y);
-
-    _glyphsFrames = new Array(count);
-
-    for (var i = 0; i < count; i++)
-    {
-        _glyphsFrames[i] = CGRectMake(origin.x, origin.y, someAdvancements[i], _usedRect.size.height);
-        origin.x += someAdvancements[i];
-    }
-}
-
-- (CPString)description
-{
-    return [super description] +
-        "\n\t_fragmentRect="+CPStringFromRect(_fragmentRect) +
-        "\n\t_usedRect="+CPStringFromRect(_usedRect) +
-        "\n\t_location="+CPStringFromPoint(_location) +
-        "\n\t_range="+CPStringFromRange(_range);
-}
-
-- (void)drawUnderlineForGlyphRange:(CPRange)glyphRange
-                     underlineType:(int)underlineVal
-                    baselineOffset:(float)baselineOffset
-                   containerOrigin:(CGPoint)containerOrigin
-{
-// <!> FIXME
-}
-
-- (void)invalidate
-{
-    _isInvalid = YES;
-}
-
-- (void)_deinvalidate
-{
-    _isInvalid = NO;
-}
-
-- (void)_removeFromDOM
-{
-    var l = _runs.length;
-
-    for (var i = 0; i < l; i++)
-    {
-        if (_runs[i].elem && _runs[i].DOMactive)
-            _textContainer._textView._DOMElement.removeChild(_runs[i].elem);
-
-        _runs[i].elem = nil;
-        _runs[i].DOMactive = NO;
-    }
-}
-
-- (void)drawInContext:(CGContext)context atPoint:(CGPoint)aPoint forRange:(CPRange)aRange
-{
-    var runs = _objectsInRange(_runs, aRange),
-        c = runs.length,
-        orig = CGPointMake(_fragmentRect.origin.x, _fragmentRect.origin.y);
-
-    orig.y += aPoint.y;
-
-    for (var i = 0; i < c; i++)
-    {
-        var run = runs[i];
-
-        if (run.DOMactive && !run.DOMpatched || !run.elem)
-            continue;
-
-        if(!_glyphsFrames)
-            continue;
-
-        orig.x = _glyphsFrames[run._range.location - _runs[0]._range.location].origin.x + aPoint.x;
-
-        run.elem.style.left = (orig.x) + "px";
-        run.elem.style.top = (orig.y) + "px";
-
-        if (!run.DOMactive)
-            _textContainer._textView._DOMElement.appendChild(run.elem);
-
-        run.DOMactive = YES;
-        run.DOMpatched = NO;
-
-        if (run.underline)
-        {
-            // <!> FIXME
-        }
-    }
-}
-
-- (void)backgroundColorForGlyphAtIndex:(unsigned)index
-{
-    var run = _objectWithLocationInRange(_runs, index);
-
-    if (run)
-        return run.backgroundColor;
-
-    return [CPColor clearColor];
-}
-
-- (BOOL)isVisuallyIdenticalToFragment:(_CPLineFragment)newLineFragment
-{
-    var newFragmentRuns= newLineFragment._runs,
-        oldFragmentRuns= _runs;
-
-    if (!oldFragmentRuns || !newFragmentRuns || oldFragmentRuns.length !== newFragmentRuns.length)
-        return NO;
-
-    var l = oldFragmentRuns.length;
-
-    for (var i = 0; i < l; i++)
-    {
-        // FIXME <!>  newFragmentRuns[i].elem.style.left !== oldFragmentRuns[i].elem.style.left && compare CSS-strings
-        if (newFragmentRuns[i].string !== oldFragmentRuns[i].string ||
-            !_RectEqualToRectHorizontally(newLineFragment._fragmentRect, _fragmentRect))
-        {
-            return NO;
-        }
-    }
-
-    return YES;
-}
-
-- (void)_relocateVerticallyByY:(double)verticalOffset rangeOffset:(unsigned)rangeOffset
-{
-    var l = _runs.length;
-
-    _range.location += rangeOffset;
-
-    for (var i = 0; i < l; i++)
-    {
-        _runs[i]._range.location += rangeOffset;
-
-        if (verticalOffset)
-        {
-            _runs[i].elem.top = (_runs[i].elem.top + verticalOffset) + 'px';
-            _runs[i].DOMpatched = YES;
-        }
-    }
-
-    if (!verticalOffset)
-        return NO;
-
-    _fragmentRect.origin.y += verticalOffset;
-    _usedRect.origin.y += verticalOffset;
-
-    var l = _glyphsFrames.length;
-
-    for (var i = 0; i < l ; i++)
-    {
-        _glyphsFrames[i].origin.y += verticalOffset;
-    }
-}
-
-@end
-
-@implementation _CPTemporaryAttributes : CPObject
-{
-    CPDictionary _attributes;
-    CPRange      _range;
-}
-
-- (id)initWithRange:(CPRange)aRange attributes:(CPDictionary)attributes
-{
-    if (self = [super init])
-    {
-        _attributes = attributes;
-        _range = CPMakeRangeCopy(aRange);
-    }
-
-    return self;
-}
-
-- (CPString)description
-{
-    return [super description] +
-        "\n\t_range="+CPStringFromRange(_range) +
-        "\n\t_attributes="+[_attributes description];
-}
-
-@end
 
 /*!
     @ingroup appkit
@@ -446,14 +80,22 @@ var _objectsInRange = function(aList, aRange)
 {
     if (self = [super init])
     {
-        _textContainers                 = [[CPMutableArray alloc] init];
-        _lineFragments                  = [[CPMutableArray alloc] init];
-        _typesetter                     = [CPTypesetter sharedSystemTypesetter];
-        _isValidatingLayoutAndGlyphs    = NO;
-        _lineFragmentFactory            = [_CPLineFragment class];
+        [self _init];
     }
 
     return self;
+}
+
+- (void)_init
+{
+    _isValidatingLayoutAndGlyphs    = NO;
+    _lineFragmentFactory            = [_CPLineFragment class];
+    _lineFragments                  = [[CPMutableArray alloc] init];
+    _textContainers                 = [[CPMutableArray alloc] init];
+    _textStorage                    = [[CPTextStorage alloc] init];
+    _typesetter                     = [CPTypesetter sharedSystemTypesetter];
+
+    [_textStorage addLayoutManager:self];
 }
 
 
@@ -1244,4 +886,400 @@ var _objectsInRange = function(aList, aRange)
 
     return rectArray;
 }
+
+@end
+
+
+var CPLayoutManagerTextStorageKey  = @"CPLayoutManagerTextStorageKey";
+
+@implementation CPLayoutManager (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super init];
+
+    if (self)
+    {
+        [self _init];
+
+        _textStorage = [aCoder decodeObjectForKey:CPLayoutManagerTextStorageKey];
+        [_textStorage addLayoutManager:self];
+    }
+
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [aCoder encodeObject:_textStorage forKey:CPLayoutManagerTextStorageKey];
+}
+
+@end
+
+
+@implementation CPArray (SortedSearching)
+
+- (unsigned)_indexOfObject:(id)anObject sortedByFunction:(Function)aFunction context:(id)aContext
+{
+    var length= [self count];
+
+    if (!aFunction)
+        return CPNotFound;
+
+    if (length === 0)
+        return -1;
+
+    var mid,
+        c,
+        first = 0,
+        last = length - 1;
+
+    while (first <= last)
+    {
+        mid = FLOOR((first + last) / 2);
+        c = aFunction(anObject, self[mid], aContext);
+
+        if (c > 0)
+        {
+            first = mid + 1;
+        }
+        else if (c < 0)
+        {
+            last = mid - 1;
+        }
+        else
+        {
+            while (mid < length - 1 && aFunction(anObject, self[mid + 1], aContext) == CPOrderedSame)
+                mid++;
+
+            return mid;
+        }
+    }
+
+    var result = -first - 1;
+
+    return result >= 0 ? result : CPNotFound;
+}
+
+@end
+
+var _sortRange = function(location, anObject)
+{
+    if (CPLocationInRange(location, anObject._range))
+        return CPOrderedSame;
+    else if (CPMaxRange(anObject._range) <= location)
+        return CPOrderedDescending;
+    else
+        return CPOrderedAscending;
+}
+
+var _objectWithLocationInRange = function(aList, aLocation)
+{
+    var index = [aList _indexOfObject: aLocation sortedByFunction:_sortRange context:nil];
+
+    if (index != CPNotFound)
+        return aList[index];
+
+    return nil;
+}
+
+var _objectsInRange = function(aList, aRange)
+{
+    var list = [],
+        c = aList.length,
+        location = aRange.location;
+
+    for (var i = 0; i < c; i++)
+    {
+        if (CPLocationInRange(location, aList[i]._range))
+        {
+            list.push(aList[i]);
+
+            if (CPMaxRange(aList[i]._range) <= CPMaxRange(aRange))
+                location = CPMaxRange(aList[i]._range);
+            else
+                break;
+        }
+        else if (CPLocationInRange(CPMaxRange(aRange), aList[i]._range))
+        {
+            list.push(aList[i]);
+            break;
+        }
+        else if (CPRangeInRange(aRange, aList[i]._range))
+        {
+            list.push(aList[i]);
+        }
+    }
+
+    return list;
+}
+
+@implementation _CPLineFragment : CPObject
+{
+    CPArray         _glyphsFrames @accessors(getter=glyphFrames);
+
+    BOOL            _isInvalid;
+    CGRect          _fragmentRect;
+    CGRect          _usedRect;
+    CGPoint         _location;
+    CPRange         _range;
+    CPTextContainer _textContainer;
+    CPMutableArray  _runs;
+}
+
+#pragma mark -
+#pragma mark Init methods
+
+- (id)createDOMElementWithText:(CPString)aString andFont:(CPFont)aFont andColor:(CPColor)aColor
+{
+#if PLATFORM(DOM)
+    var style,
+        span = document.createElement("span");
+
+    span.oncontextmenu = span.onmousedown = span.onselectstart = _oncontextmenuhandler;
+    // span.contentEditable = true;   // this unfortunately does not work to make native pasting work on safari
+
+    style = span.style;
+    style.position = "absolute";
+    style.visibility = "visible";
+    style.padding = "0px";
+    style.margin = "0px";
+    style.whiteSpace = "pre";
+    style.backgroundColor = "transparent";
+    style.font = [aFont cssString];
+
+    if (aColor)
+        style.color = [aColor cssString];
+
+    if (CPFeatureIsCompatible(CPJavaScriptInnerTextFeature))
+        span.innerText = aString;
+    else if (CPFeatureIsCompatible(CPJavaScriptTextContentFeature))
+        span.textContent = aString;
+
+    //<!> FIXME aString.replace(/&/g,'&amp;')
+    return span;
+#else
+    return nil;
+#endif
+}
+
+- (id)initWithRange:(CPRange)aRange textContainer:(CPTextContainer)aContainer textStorage:(CPTextStorage)textStorage
+{
+    if (self = [super init])
+    {
+        var effectiveRange = CPMakeRange(0,0),
+            location;
+
+        _fragmentRect = CGRectMakeZero();
+        _usedRect = CGRectMakeZero();
+        _location = CGPointMakeZero();
+        _range = CPMakeRangeCopy(aRange);
+        _textContainer = aContainer;
+        _isInvalid = NO;
+        _runs = [[CPMutableArray alloc] init];
+
+        for (location = aRange.location; location < CPMaxRange(aRange); location = CPMaxRange(effectiveRange))
+        {
+            var attributes = [textStorage attributesAtIndex:location effectiveRange:effectiveRange];
+
+            effectiveRange = attributes ? CPIntersectionRange(aRange, effectiveRange) : aRange;
+
+            var string = [textStorage._string substringWithRange:effectiveRange],
+                font = [textStorage font] || [CPFont systemFontOfSize:12.0];
+
+            if ([attributes containsKey:CPFontAttributeName])
+                 font = [attributes objectForKey:CPFontAttributeName];
+
+            var color = [attributes objectForKey:CPForegroundColorAttributeName],
+                elem = [self createDOMElementWithText:string andFont:font andColor:color],
+                run = {_range:CPMakeRangeCopy(effectiveRange), elem:elem, string:string};
+
+            _runs.push(run);
+        }
+    }
+
+    return self;
+}
+
+- (void)setAdvancements:(CPArray)someAdvancements
+{
+    var count = someAdvancements.length,
+        origin = CGPointMake(_fragmentRect.origin.x + _location.x, _fragmentRect.origin.y);
+
+    _glyphsFrames = new Array(count);
+
+    for (var i = 0; i < count; i++)
+    {
+        _glyphsFrames[i] = CGRectMake(origin.x, origin.y, someAdvancements[i], _usedRect.size.height);
+        origin.x += someAdvancements[i];
+    }
+}
+
+- (CPString)description
+{
+    return [super description] +
+        "\n\t_fragmentRect="+CPStringFromRect(_fragmentRect) +
+        "\n\t_usedRect="+CPStringFromRect(_usedRect) +
+        "\n\t_location="+CPStringFromPoint(_location) +
+        "\n\t_range="+CPStringFromRange(_range);
+}
+
+- (void)drawUnderlineForGlyphRange:(CPRange)glyphRange
+                     underlineType:(int)underlineVal
+                    baselineOffset:(float)baselineOffset
+                   containerOrigin:(CGPoint)containerOrigin
+{
+// <!> FIXME
+}
+
+- (void)invalidate
+{
+    _isInvalid = YES;
+}
+
+- (void)_deinvalidate
+{
+    _isInvalid = NO;
+}
+
+- (void)_removeFromDOM
+{
+    var l = _runs.length;
+
+    for (var i = 0; i < l; i++)
+    {
+        if (_runs[i].elem && _runs[i].DOMactive)
+            _textContainer._textView._DOMElement.removeChild(_runs[i].elem);
+
+        _runs[i].elem = nil;
+        _runs[i].DOMactive = NO;
+    }
+}
+
+- (void)drawInContext:(CGContext)context atPoint:(CGPoint)aPoint forRange:(CPRange)aRange
+{
+    var runs = _objectsInRange(_runs, aRange),
+        c = runs.length,
+        orig = CGPointMake(_fragmentRect.origin.x, _fragmentRect.origin.y);
+
+    orig.y += aPoint.y;
+
+    for (var i = 0; i < c; i++)
+    {
+        var run = runs[i];
+
+        if (run.DOMactive && !run.DOMpatched || !run.elem)
+            continue;
+
+        if(!_glyphsFrames)
+            continue;
+
+        orig.x = _glyphsFrames[run._range.location - _runs[0]._range.location].origin.x + aPoint.x;
+
+        run.elem.style.left = (orig.x) + "px";
+        run.elem.style.top = (orig.y) + "px";
+
+        if (!run.DOMactive)
+            _textContainer._textView._DOMElement.appendChild(run.elem);
+
+        run.DOMactive = YES;
+        run.DOMpatched = NO;
+
+        if (run.underline)
+        {
+            // <!> FIXME
+        }
+    }
+}
+
+- (void)backgroundColorForGlyphAtIndex:(unsigned)index
+{
+    var run = _objectWithLocationInRange(_runs, index);
+
+    if (run)
+        return run.backgroundColor;
+
+    return [CPColor clearColor];
+}
+
+- (BOOL)isVisuallyIdenticalToFragment:(_CPLineFragment)newLineFragment
+{
+    var newFragmentRuns= newLineFragment._runs,
+        oldFragmentRuns= _runs;
+
+    if (!oldFragmentRuns || !newFragmentRuns || oldFragmentRuns.length !== newFragmentRuns.length)
+        return NO;
+
+    var l = oldFragmentRuns.length;
+
+    for (var i = 0; i < l; i++)
+    {
+        // FIXME <!>  newFragmentRuns[i].elem.style.left !== oldFragmentRuns[i].elem.style.left && compare CSS-strings
+        if (newFragmentRuns[i].string !== oldFragmentRuns[i].string ||
+            !_RectEqualToRectHorizontally(newLineFragment._fragmentRect, _fragmentRect))
+        {
+            return NO;
+        }
+    }
+
+    return YES;
+}
+
+- (void)_relocateVerticallyByY:(double)verticalOffset rangeOffset:(unsigned)rangeOffset
+{
+    var l = _runs.length;
+
+    _range.location += rangeOffset;
+
+    for (var i = 0; i < l; i++)
+    {
+        _runs[i]._range.location += rangeOffset;
+
+        if (verticalOffset)
+        {
+            _runs[i].elem.top = (_runs[i].elem.top + verticalOffset) + 'px';
+            _runs[i].DOMpatched = YES;
+        }
+    }
+
+    if (!verticalOffset)
+        return NO;
+
+    _fragmentRect.origin.y += verticalOffset;
+    _usedRect.origin.y += verticalOffset;
+
+    var l = _glyphsFrames.length;
+
+    for (var i = 0; i < l ; i++)
+    {
+        _glyphsFrames[i].origin.y += verticalOffset;
+    }
+}
+
+@end
+
+@implementation _CPTemporaryAttributes : CPObject
+{
+    CPDictionary _attributes;
+    CPRange      _range;
+}
+
+- (id)initWithRange:(CPRange)aRange attributes:(CPDictionary)attributes
+{
+    if (self = [super init])
+    {
+        _attributes = attributes;
+        _range = CPMakeRangeCopy(aRange);
+    }
+
+    return self;
+}
+
+- (CPString)description
+{
+    return [super description] +
+        "\n\t_range="+CPStringFromRange(_range) +
+        "\n\t_attributes="+[_attributes description];
+}
+
 @end

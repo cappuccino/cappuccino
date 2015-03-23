@@ -30,6 +30,11 @@
 {
     self = [super init];
 
+    _size = CGSizeMake([aCoder decodeIntForKey:@"NSWidth"], 1e7);
+
+    _layoutManager = [aCoder decodeObjectForKey:@"NSLayoutManager"];
+    [_layoutManager addTextContainer:self];
+
     return self;
 }
 
@@ -45,9 +50,7 @@
 
     if (self)
     {
-        _size = CGSizeMake([aCoder decodeIntForKey:@"NSWidth"], 1e7);
 
-        var layoutManager = [aCoder decodeObjectForKey:@"NSLayoutManager"];
     }
 
     return self;

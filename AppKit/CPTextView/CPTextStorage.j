@@ -255,3 +255,25 @@ CPTextStorageDidProcessEditingNotification = @"CPTextStorageDidProcessEditingNot
 }
 
 @end
+
+
+@implementation CPTextStorage (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super initWithCoder:aCoder];
+
+    if (self)
+    {
+
+    }
+
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [super encodeWithCoder:aCoder];
+}
+
+@end

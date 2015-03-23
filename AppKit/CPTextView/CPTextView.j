@@ -87,10 +87,10 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 {
     BOOL                        _allowsUndo                   @accessors(property=allowsUndo);
     BOOL                        _isEditable                   @accessors(getter=isEditable, setter=setEditable:);
-    BOOL                        _isHorizontallyResizable      @accessors(getter=isHorizontallyResizable, setter=setHorinzontallyResizable);
-    BOOL                        _isRichText                   @accessors(getter=isRichText, setter=setRichText);
+    BOOL                        _isHorizontallyResizable      @accessors(getter=isHorizontallyResizable, setter=setHorinzontallyResizable:);
+    BOOL                        _isRichText                   @accessors(getter=isRichText, setter=setRichText:);
     BOOL                        _isSelectable                 @accessors(getter=isSelectable, setter=setSelectable:);
-    BOOL                        _isVerticallyResizable        @accessors(getter=isVerticallyResizable, setter=setVerticallyResizable);
+    BOOL                        _isVerticallyResizable        @accessors(getter=isVerticallyResizable, setter=setVerticallyResizable:);
     BOOL                        _usesFontPanel                @accessors(property=usesFontPanel);
     CGPoint                     _textContainerOrigin          @accessors(getter=textContainerOrigin);
     CGSize                      _minSize                      @accessors(property=minSize);
@@ -159,12 +159,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (id)initWithFrame:(CGRect)aFrame
 {
-    var layoutManager = [[CPLayoutManager alloc] init],
-        textStorage = [[CPTextStorage alloc] init],
-        container = [[CPTextContainer alloc] initWithContainerSize:CGSizeMake(aFrame.size.width, 1e7)];
-
-    [textStorage addLayoutManager:layoutManager];
-    [layoutManager addTextContainer:container];
+    var container = [[CPTextContainer alloc] initWithContainerSize:CGSizeMake(aFrame.size.width, 1e7)];
 
     return [self initWithFrame:aFrame textContainer:container];
 }
@@ -421,14 +416,6 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     if (flag)
         _isSelectable = flag;
-}
-
-- (void)setSelectable:(BOOL)flag
-{
-    _isSelectable = flag;
-
-    if (flag)
-        _isEditable = flag;
 }
 
 - (void)invalidateTextContainerOrigin
@@ -1872,7 +1859,13 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 var CPTextViewContainerKey = @"CPTextViewContainerKey",
     CPTextViewLayoutManagerKey = @"CPTextViewLayoutManagerKey";
-    CPTextViewTextStorageKey = @"CPTextViewTextStorageKey";
+    CPTextViewTextStorageKey = @"CPTextViewTextStorageKey",
+    CPTextViewIsEditableKey = @"CPTextViewIsEditableKey",
+    CPTextViewIsSelectableKey = @"CPTextViewIsSelectableKey",
+    CPTextViewIsRichTextKey = @"CPTextViewIsRichTextKey",
+    CPTextViewBackgroundColorKey = @"CPTextViewBackgroundColorKey",
+    CPTextViewInsertionPointColorKey = @"CPTextViewInsertionPointColorKey",
+    CPTextViewSelectedTextAttributesKey = @"CPTextViewSelectedTextAttributesKey";
 
 @implementation CPTextView (CPCoding)
 
@@ -1884,14 +1877,22 @@ var CPTextViewContainerKey = @"CPTextViewContainerKey",
     {
         [self _init];
 
-        var layoutManager = [[CPLayoutManager alloc] init],
-            textStorage = [[CPTextStorage alloc] init],
-            container = [aCoder decodeObjectForKey:CPTextViewContainerKey];
-
-        [textStorage addLayoutManager:layoutManager];
-        [layoutManager addTextContainer:container];
-
+        var container = [aCoder decodeObjectForKey:CPTextViewContainerKey];
         [container setTextView:self];
+
+        [self setSelectable:[aCoder decodeBoolForKey:CPTextViewIsSelectableKey]];
+        [self setEditable:[aCoder decodeBoolForKey:CPTextViewIsEditableKey]];
+        [self setRichText:[aCoder decodeBoolForKey:CPTextViewIsRichTextKey]];
+        [self setBackgroundColor:[aCoder decodeObjectForKey:CPTextViewBackgroundColorKey]];
+        [self setInsertionPointColor:[aCoder decodeObjectForKey:CPTextViewInsertionPointColorKey]];
+        [self setString:[_textStorage string]];
+
+        var selectedTextAttributes = [aCoder decodeObjectForKey:CPTextViewSelectedTextAttributesKey],
+            enumerator = [selectedTextAttributes keyEnumerator],
+            key;
+
+        while (key = [enumerator nextObject])
+            [_selectedTextAttributes setObject:[selectedTextAttributes valueForKey:key] forKey:key];
     }
 
     return self;
@@ -1901,6 +1902,12 @@ var CPTextViewContainerKey = @"CPTextViewContainerKey",
 {
     [super encodeWithCoder:aCoder];
     [aCoder encodeObject:_textContainer forKey:CPTextViewContainerKey];
+    [aCoder encodeBool:_isEditable forKey:CPTextViewIsEditableKey];
+    [aCoder encodeBool:_isSelectable forKey:CPTextViewIsSelectableKey];
+    [aCoder encodeBool:_isRichText forKey:CPTextViewIsRichTextKey];
+    [aCoder encodeObject:_insertionPointColor forKey:CPTextViewInsertionPointColorKey];
+    [aCoder encodeObject:_backgroundColor forKey:CPTextViewBackgroundColorKey];
+    [aCoder encodeObject:_selectedTextAttributes forKey:CPTextViewSelectedTextAttributesKey];
 }
 
 @end

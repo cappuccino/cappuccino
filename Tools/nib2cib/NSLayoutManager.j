@@ -30,6 +30,9 @@
 {
     self = [super init];
 
+    _textStorage = [aCoder decodeObjectForKey:@"NSTextStorage"];
+    [_textStorage addLayoutManager:self];
+
     return self;
 }
 
@@ -46,7 +49,7 @@
 
     if (self)
     {
-        var textStorage = [aCoder decodeObjectForKey:@"NSTextStorage"];
+
     }
 
     return self;

@@ -28,11 +28,19 @@
 
 @implementation CPTextView (NSCoding)
 
-- (id)NS_initWithCoder:(CPCoder)aCoder
+- (id)NS_initWithCoder:(CPCoder)aCoder textViewSharedData:(CPTextViewSharedData)aTextViewSharedData
 {
     if (self = [super NS_initWithCoder:aCoder])
     {
         _textContainer = [aCoder decodeObjectForKey:@"NSTextContainer"];
+
+        [self setEditable:[aTextViewSharedData isEditable]];
+        [self setSelectable:[aTextViewSharedData isSelectable]];
+        [self setRichText:[aTextViewSharedData isRichText]];
+
+        [self setBackgroundColor:[aTextViewSharedData backgroundColor]];
+        [self setInsertionPointColor:[aTextViewSharedData insertionColor]];
+        [self setSelectedTextAttributes:[aTextViewSharedData selectedTextAttributes]];
     }
 
     return self;
@@ -42,16 +50,14 @@
 
 @implementation NSTextView : CPTextView
 {
-    CPTextViewSharedData _textViewSharedData;
+
 }
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
-    self = [self NS_initWithCoder:aCoder];
-
-    if (self)
+    if (self = [self NS_initWithCoder:aCoder textViewSharedData:[aCoder decodeObjectForKey:@"NSSharedData"]])
     {
-        _textViewSharedData = [aCoder decodeObjectForKey:@"NSSharedData"];
+
     }
 
     return self;

@@ -21,19 +21,27 @@
  */
 
 @import <Foundation/Foundation.j>
+@import <AppKit/CPColor.j>
 
 @class Nib2Cib
 
 @implementation CPTextViewSharedData : CPObject
 {
+    BOOL            _editable               @accessors(getter=isEditable);
+    BOOL            _richText               @accessors(getter=isRichText);
+    BOOL            _selectable             @accessors(getter=isSelectable);
+    CPColor         _backgroundColor        @accessors(getter=backgroundColor);
+    CPColor         _insertionColor         @accessors(getter=insertionColor);
+    CPDictionary    _selectedTextAttributes @accessors(getter=selectedTextAttributes);
 }
 
 - (id)init
 {
-    if(self = [super init])
+    if (self = [super init])
     {
 
     }
+
     return self;
 }
 
@@ -47,6 +55,14 @@
     if (self = [super init])
     {
         var flags = [aCoder decodeIntForKey:@"NSFlags"];
+
+        _selectable = flags & 0x00000001 ? YES : NO;
+        _editable = flags & 0x00000002 ? YES : NO;
+        _richText = flags & 0x00000004 ? YES : NO;
+
+        _backgroundColor = [aCoder decodeObjectForKey:@"NSBackgroundColor"];
+        _insertionColor = [aCoder decodeObjectForKey:@"NSInsertionColor"];
+        _selectedTextAttributes = [aCoder decodeObjectForKey:@"NSSelectedAttributes"];
     }
 
     return self;
