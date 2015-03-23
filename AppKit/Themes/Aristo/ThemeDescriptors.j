@@ -1243,20 +1243,27 @@ var themedButtonValues = nil,
 
         overrides =
         [
+            [@"image-search-left-margin",   5],
+            [@"image-cancel-right-margin",  5],
+
             [@"image-search",           imageSearch],
             [@"image-find",             imageFind],
             [@"image-cancel",           imageCancel],
             [@"image-cancel-pressed",   imageCancelPressed],
 
-            [@"image-search",           smallImageSearch,               CPThemeStateControlSizeSmall],
-            [@"image-find",             smallImageFind,                 CPThemeStateControlSizeSmall],
-            [@"image-cancel",           smallImageCancel,               CPThemeStateControlSizeSmall],
-            [@"image-cancel-pressed",   smallImageCancelPressed,        CPThemeStateControlSizeSmall],
+            [@"image-search",               smallImageSearch,               CPThemeStateControlSizeSmall],
+            [@"image-find",                 smallImageFind,                 CPThemeStateControlSizeSmall],
+            [@"image-cancel",               smallImageCancel,               CPThemeStateControlSizeSmall],
+            [@"image-cancel-pressed",       smallImageCancelPressed,        CPThemeStateControlSizeSmall],
+            [@"image-search-left-margin",   8,                              CPThemeStateControlSizeSmall],
+            [@"image-cancel-right-margin",  8,                              CPThemeStateControlSizeSmall],
 
-            [@"image-search",           miniImageSearch,                CPThemeStateControlSizeMini],
-            [@"image-find",             miniImageFind,                  CPThemeStateControlSizeMini],
-            [@"image-cancel",           miniImageCancel,                CPThemeStateControlSizeMini],
-            [@"image-cancel-pressed",   miniImageCancelPressed,         CPThemeStateControlSizeMini],
+            [@"image-search",               miniImageSearch,                CPThemeStateControlSizeMini],
+            [@"image-find",                 miniImageFind,                  CPThemeStateControlSizeMini],
+            [@"image-cancel",               miniImageCancel,                CPThemeStateControlSizeMini],
+            [@"image-cancel-pressed",       miniImageCancelPressed,         CPThemeStateControlSizeMini],
+            [@"image-search-left-margin",   8,                              CPThemeStateControlSizeMini],
+            [@"image-cancel-right-margin",  8,                              CPThemeStateControlSizeMini],
         ];
 
     [self registerThemeValues:overrides forView:searchField inherit:themedRoundedTextFieldValues];
