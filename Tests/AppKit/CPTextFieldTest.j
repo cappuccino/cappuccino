@@ -29,7 +29,7 @@
 
     [numberFormatter setNumberStyle:CPNumberFormatterDecimalStyle];
     [numberFormatter setMaximumFractionDigits:3];
-	[numberFormatter setGeneratesDecimalNumbers:NO];
+    [numberFormatter setGeneratesDecimalNumbers:NO];
 
     [control setFormatter:numberFormatter];
     [control setStringValue:@"12.3456"];

@@ -28,7 +28,7 @@
 // The default global behavior class, created lazily
 var CPDefaultDcmHandler = nil;
 
-var CPDecimalNumberUIDs	= new CFMutableDictionary();
+var CPDecimalNumberUIDs = new CFMutableDictionary();
 
 /*!
     @class CPDecimalNumberHandler
