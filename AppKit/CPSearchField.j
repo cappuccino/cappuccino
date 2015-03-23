@@ -73,7 +73,9 @@ var RECENT_SEARCH_PREFIX = @"   ";
             @"image-search": [CPNull null],
             @"image-find": [CPNull null],
             @"image-cancel": [CPNull null],
-            @"image-cancel-pressed": [CPNull null]
+            @"image-cancel-pressed": [CPNull null],
+            @"image-search-left-margin" : 0,
+            @"image-cancel-right-margin" : 0
         };
 }
 
@@ -266,9 +268,9 @@ var RECENT_SEARCH_PREFIX = @"   ";
 */
 - (CGRect)searchButtonRectForBounds:(CGRect)rect
 {
-    var size = [[self valueForThemeAttribute:@"image-search"] size] || CGSizeMakeZero();
+    var size = [[self currentValueForThemeAttribute:@"image-search"] size] || CGSizeMakeZero();
 
-    return CGRectMake(5, (CGRectGetHeight(rect) - size.height) / 2, size.width, size.height);
+    return CGRectMake([self currentValueForThemeAttribute:@"image-search-left-margin"], (CGRectGetHeight(rect) - size.height) / 2, size.width, size.height);
 }
 
 /*!
@@ -278,9 +280,9 @@ var RECENT_SEARCH_PREFIX = @"   ";
 */
 - (CGRect)cancelButtonRectForBounds:(CGRect)rect
 {
-    var size = [[self valueForThemeAttribute:@"image-cancel"] size] || CGSizeMakeZero();
+    var size = [[self currentValueForThemeAttribute:@"image-cancel"] size] || CGSizeMakeZero();
 
-    return CGRectMake(CGRectGetWidth(rect) - size.width - 5, (CGRectGetHeight(rect) - size.width) / 2, size.height, size.height);
+    return CGRectMake(CGRectGetWidth(rect) - size.width - [self currentValueForThemeAttribute:@"image-cancel-right-margin"], (CGRectGetHeight(rect) - size.width) / 2, size.height, size.height);
 }
 
 // Managing Menu Templates
