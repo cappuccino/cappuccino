@@ -1,5 +1,5 @@
 /*
- * NSTextView.j
+ * NSText.j
  * nib2cib
  *
  * Created by Alexendre Wilhelm.
@@ -20,19 +20,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import <AppKit/CPTextView.j>
-
-@import "NSTextViewSharedData.j"
+@import <AppKit/CPText.j>
 
 @class Nib2Cib
 
-@implementation CPTextView (NSCoding)
+@implementation CPText (NSCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
     if (self = [super NS_initWithCoder:aCoder])
     {
-        _textContainer = [aCoder decodeObjectForKey:@"NSTextContainer"];
     }
 
     return self;
@@ -40,9 +37,9 @@
 
 @end
 
-@implementation NSTextView : CPTextView
+@implementation NSText : CPText
 {
-    CPTextViewSharedData _textViewSharedData;
+
 }
 
 - (id)initWithCoder:(CPCoder)aCoder
@@ -51,7 +48,6 @@
 
     if (self)
     {
-        _textViewSharedData = [aCoder decodeObjectForKey:@"NSSharedData"];
     }
 
     return self;
@@ -59,7 +55,7 @@
 
 - (Class)classForKeyedArchiver
 {
-    return [CPTextView class];
+    return [CPText class];
 }
 
 @end

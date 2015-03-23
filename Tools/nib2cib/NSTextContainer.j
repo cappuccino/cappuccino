@@ -46,6 +46,8 @@
     if (self)
     {
         _size = CGSizeMake([aCoder decodeIntForKey:@"NSWidth"], 1e7);
+
+        var layoutManager = [aCoder decodeObjectForKey:@"NSLayoutManager"];
     }
 
     return self;

@@ -45,6 +45,7 @@
 @import "NSImage.j"
 @import "NSImageView.j"
 @import "NSLayoutConstraint.j"
+@import "NSLayoutManager.j"
 @import "NSLevelIndicator.j"
 @import "NSMatrix.j"
 @import "NSMenu.j"
@@ -72,9 +73,12 @@
 @import "NSTableView.j"
 @import "NSTabView.j"
 @import "NSTabViewItem.j"
+@import "NSText.j"
 @import "NSTextContainer.j"
 @import "NSTextField.j"
+@import "NSTextStorage.j"
 @import "NSTextView.j"
+@import "NSTextViewSharedData.j"
 @import "NSTokenField.j"
 @import "NSToolbar.j"
 @import "NSToolbarFlexibleSpaceItem.j"
@@ -90,7 +94,6 @@
 @import "NSSortDescriptor.j"
 @import "NSPopover.j"
 @import "NSProgressIndicator.j"
-
 
 function CP_NSMapClassName(aClassName)
 {
