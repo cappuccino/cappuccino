@@ -61,5 +61,36 @@
     [self assert:[_segmentedControl selectedSegment] equals:-1];
 }
 
+- (void)testDeselectAll
+{
+    [_segmentedControl setTrackingMode:CPSegmentSwitchTrackingSelectAny];
+    [_segmentedControl setSegmentCount:2];
+    [_segmentedControl setSelected:YES forSegment:0];
+    [_segmentedControl setSelected:YES forSegment:1];
+    [self assert:[_segmentedControl selectedSegment] equals:1];
+
+    [self assertNoThrow:function()
+    {
+        [_segmentedControl setSelectedSegment:-1];
+    }];
+
+    [self assert:[_segmentedControl selectedSegment] equals:-1];
+    [self assertFalse:[_segmentedControl isSelectedForSegment:0]];
+    [self assertFalse:[_segmentedControl isSelectedForSegment:1]];
+}
+
+- (void)testSetSelectedSegmentDoesNotDeselect
+{
+    [_segmentedControl setTrackingMode:CPSegmentSwitchTrackingSelectAny];
+    [_segmentedControl setSelected:YES forSegment:0];
+    [_segmentedControl setSelected:YES forSegment:1];
+    [self assert:[_segmentedControl selectedSegment] equals:1];
+
+    [_segmentedControl setSelectedSegment:1];
+
+    [self assertTrue:[_segmentedControl isSelectedForSegment:0]];
+    [self assertTrue:[_segmentedControl isSelectedForSegment:1]];
+}
+
 @end
 
