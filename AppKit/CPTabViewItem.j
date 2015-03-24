@@ -55,6 +55,7 @@ CPPressedTab    = 2;
 {
     id          _identifier;
     CPString    _label;
+    CPInteger   _tag @accessors(property=tag);
 
     CPView      _view;
     CPView      _auxiliaryView;
@@ -114,8 +115,11 @@ CPPressedTab    = 2;
 */
 - (void)setLabel:(CPString)aLabel
 {
+    if ([aLabel isEqualToString:_label])
+        return;
+
     _label = aLabel;
-    [_tabView setNeedsLayout];
+    [_tabView tileWithChangedItem:self];
 }
 
 /*!
@@ -187,7 +191,6 @@ CPPressedTab    = 2;
     _view = aView;
 
     if ([_tabView selectedTabViewItem] == self)
-        [_tabView _setContentViewFromItem:self];
 }
 
 /*!

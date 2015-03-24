@@ -66,7 +66,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
     CPSegmentedControl      _tabs;
     CPBox                   _box;
 
-    CPNumber                _selectedIndex;
+    CPTabViewItem           _selectedTabViewItem;
 
     CPTabViewType           _type;
     CPFont                  _font;
@@ -79,9 +79,8 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 {
     if (self = [super initWithFrame:aFrame])
     {
-        _items = [CPArray array];
-
         [self _init];
+        _selectedTabViewItem = nil;
         [self setTabViewType:CPTopTabsBezelBorder];
     }
 
@@ -90,10 +89,9 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 
 - (void)_init
 {
-    _selectedIndex = CPNotFound;
-
-    _tabs = [[CPSegmentedControl alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
+    _tabs = [[CPSegmentedControl alloc] initWithFrame:CGRectMakeZero()];
     [_tabs setHitTests:NO];
+    [_tabs setSegments:[CPArray array]];
 
     var height = [_tabs valueForThemeAttribute:@"min-size"].height;
     [_tabs setFrameSize:CGSizeMake(0, height)];
@@ -105,6 +103,11 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
     [self addSubview:_tabs];
 }
 
+- (CPArray)items
+{
+    return [_tabs segments];
+}
+
 // Adding and Removing Tabs
 /*!
     Adds a CPTabViewItem to the tab view.
@@ -112,7 +115,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 */
 - (void)addTabViewItem:(CPTabViewItem)aTabViewItem
 {
-    [self insertTabViewItem:aTabViewItem atIndex:[_items count]];
+    [self insertTabViewItem:aTabViewItem atIndex:[self numberOfTabViewItems]];
 }
 
 /*!
@@ -122,15 +125,18 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 */
 - (void)insertTabViewItem:(CPTabViewItem)aTabViewItem atIndex:(CPUInteger)anIndex
 {
-    [_items insertObject:aTabViewItem atIndex:anIndex];
+    [self _insertTabViewItems:[aTabViewItem] atIndexes:[CPIndexSet indexSetWithIndex:anIndex]];
+}
 
-    [self _updateItems];
-    [self _repositionTabs];
+- (void)_insertTabViewItems:(CPArray)tabViewItems atIndexes:(CPIndexSet)indexes
+{
+    [_tabs insertSegments:tabViewItems atIndexes:indexes];
+    [tabViewItems makeObjectsPerformSelector:@selector(_setTabView:) withObject:self];
 
-    [aTabViewItem _setTabView:self];
+    [self tileWithChangedItem:[tabViewItems firstObject]];
+    [self _reverseSetContent];
 
-    if (_delegateSelectors & CPTabViewDidChangeNumberOfTabViewItemsSelector)
-        [_delegate tabViewDidChangeNumberOfTabViewItems:self];
+    [self _sendDelegateTabViewDidChangeNumberOfTabViewItems];
 }
 
 /*!
@@ -139,23 +145,38 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 */
 - (void)removeTabViewItem:(CPTabViewItem)aTabViewItem
 {
-    var count = [_items count];
-    for (var i = 0; i < count; i++)
-    {
-        if ([_items objectAtIndex:i] === aTabViewItem)
-        {
-            [_items removeObjectAtIndex:i];
-            break;
-        }
-    }
+    var idx = [[self items] indexOfObjectIdenticalTo:aTabViewItem];
 
-    [self _updateItems];
-    [self _repositionTabs];
+    if (idx == CPNotFound)
+        return;
 
+    [_tabs removeSegmentsAtIndexes:[CPIndexSet indexSetWithIndex:idx]];
     [aTabViewItem _setTabView:nil];
 
-    if (_delegateSelectors & CPTabViewDidChangeNumberOfTabViewItemsSelector)
-        [_delegate tabViewDidChangeNumberOfTabViewItems:self];
+    [self tileWithChangedItem:nil];
+    [self _didRemoveTabViewItem:aTabViewItem atIndex:idx];
+    [self _reverseSetContent];
+
+    [self _sendDelegateTabViewDidChangeNumberOfTabViewItems];
+}
+
+- (void)_didRemoveTabViewItem:(CPTabViewItem)aTabViewItem atIndex:(CPInteger)idx
+{
+    if ([self selectedIndexBinder])
+        return;
+
+    if (_selectedTabViewItem == aTabViewItem)
+    {
+        var didSelect = NO;
+
+        if (idx > 0)
+            didSelect = [self selectTabViewItemAtIndex:idx - 1];
+        else if ([self numberOfTabViewItems] > 0)
+            didSelect = [self selectTabViewItemAtIndex:0];
+
+        if (didSelect == NO)
+            _selectedTabViewItem == nil;
+    }
 }
 
 // Accessing Tabs
@@ -166,7 +187,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 */
 - (int)indexOfTabViewItem:(CPTabViewItem)aTabViewItem
 {
-    return [_items indexOfObjectIdenticalTo:aTabViewItem];
+    return [[self items] indexOfObjectIdenticalTo:aTabViewItem];
 }
 
 /*!
@@ -176,11 +197,10 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 */
 - (int)indexOfTabViewItemWithIdentifier:(CPString)anIdentifier
 {
-    for (var index = [_items count]; index >= 0; index--)
-        if ([[_items[index] identifier] isEqual:anIdentifier])
-            return index;
-
-    return CPNotFound;
+    return [[self items] indexOfObjectPassingTest:function(item, idx, stop)
+    {
+        [[item identifier] isEqual:anIdentifier];
+    }];
 }
 
 /*!
@@ -189,7 +209,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 */
 - (unsigned)numberOfTabViewItems
 {
-    return [_items count];
+    return [[self items] count];
 }
 
 /*!
@@ -198,7 +218,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 */
 - (CPTabViewItem)tabViewItemAtIndex:(CPUInteger)anIndex
 {
-    return [_items objectAtIndex:anIndex];
+    return [[self items] objectAtIndex:anIndex];
 }
 
 /*!
@@ -207,7 +227,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 */
 - (CPArray)tabViewItems
 {
-    return [_items copy]; // Copy?
+    return [[self items] copy]; // Copy?
 }
 
 // Selecting a Tab
@@ -217,7 +237,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 */
 - (void)selectFirstTabViewItem:(id)aSender
 {
-    if ([_items count] === 0)
+    if ([self numberOfTabViewItems] === 0)
         return; // throw?
 
     [self selectTabViewItemAtIndex:0];
@@ -229,10 +249,10 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 */
 - (void)selectLastTabViewItem:(id)aSender
 {
-    if ([_items count] === 0)
+    if ([self numberOfTabViewItems] === 0)
         return; // throw?
 
-    [self selectTabViewItemAtIndex:[_items count] - 1];
+    [self selectTabViewItemAtIndex:[self numberOfTabViewItems] - 1];
 }
 
 /*!
@@ -241,12 +261,12 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 */
 - (void)selectNextTabViewItem:(id)aSender
 {
-    if (_selectedIndex === CPNotFound)
+    if (_selectedTabViewItem === nil)
         return;
 
-    var nextIndex = _selectedIndex + 1;
+    var nextIndex = [self indexOfTabViewItem:_selectedTabViewItem] + 1;
 
-    if (nextIndex === [_items count])
+    if (nextIndex === [self numberOfTabViewItems])
         // does nothing. According to spec at (http://developer.apple.com/mac/library/DOCUMENTATION/Cocoa/Reference/ApplicationKit/Classes/NSTabView_Class/Reference/Reference.html#//apple_ref/occ/instm/NSTabView/selectNextTabViewItem:)
         return;
 
@@ -259,10 +279,10 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 */
 - (void)selectPreviousTabViewItem:(id)aSender
 {
-    if (_selectedIndex === CPNotFound)
+    if (_selectedTabViewItem === nil)
         return;
 
-    var previousIndex = _selectedIndex - 1;
+    var previousIndex = [self indexOfTabViewItem:_selectedTabViewItem] - 1;
 
     if (previousIndex < 0)
         return; // does nothing. See above.
@@ -285,10 +305,20 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 */
 - (BOOL)selectTabViewItemAtIndex:(CPUInteger)anIndex
 {
-    if (anIndex === _selectedIndex)
-        return;
+    if (![self _selectTabViewItemAtIndex:anIndex])
+        return NO;
 
+    //[self _reverseSetSelectedIndex];
+
+    return YES;
+}
+
+- (BOOL)_selectTabViewItemAtIndex:(CPUInteger)anIndex
+{
     var aTabViewItem = [self tabViewItemAtIndex:anIndex];
+
+    if (aTabViewItem == _selectedTabViewItem)
+        return NO;
 
     if ((_delegateSelectors & CPTabViewShouldSelectTabViewItemSelector) && ![_delegate tabView:self shouldSelectTabViewItem:aTabViewItem])
         return NO;
@@ -296,11 +326,11 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
     if (_delegateSelectors & CPTabViewWillSelectTabViewItemSelector)
         [_delegate tabView:self willSelectTabViewItem:aTabViewItem];
 
-    [_tabs selectSegmentWithTag:anIndex];
-    [self _setSelectedIndex:anIndex];
+    [_tabs setSelectedSegment:anIndex];
+    _selectedTabViewItem = aTabViewItem;
 
-    if (_delegateSelectors & CPTabViewDidSelectTabViewItemSelector)
-        [_delegate tabView:self didSelectTabViewItem:aTabViewItem];
+    [self _displayItemView:[aTabViewItem view]];
+    [self _sendDelegateDidSelectTabViewItem:aTabViewItem];
 
     return YES;
 }
@@ -311,10 +341,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 */
 - (CPTabViewItem)selectedTabViewItem
 {
-    if (_selectedIndex != CPNotFound)
-        return [_items objectAtIndex:_selectedIndex];
-
-    return nil;
+    return _selectedTabViewItem;
 }
 
 // Modifying the font
@@ -375,6 +402,14 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
     [self setNeedsLayout];
 }
 
+- (void)tileWithChangedItem:(CPTabViewItem)aTabViewItem
+{
+    var segment = aTabViewItem ? [self indexOfTabViewItem:aTabViewItem] : 0;
+    [_tabs tileWithChangedSegment:segment];
+
+    [self setNeedsLayout];
+}
+
 - (void)layoutSubviews
 {
     // Even if CPTabView's autoresizesSubviews is NO, _tabs and _box has to be laid out.
@@ -392,7 +427,6 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
         [_box setFrame:CGRectMake(0, origin, CGRectGetWidth(aFrame),
                                    CGRectGetHeight(aFrame) - segmentedHeight / 2)];
 
-        [self _updateItems];
         [self _repositionTabs];
     }
 }
@@ -470,30 +504,23 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
         [_tabs setCenter:CGPointMake(horizontalCenterOfSelf, verticalCenterOfTabs)];
 }
 
-- (void)_setSelectedIndex:(CPNumber)index
+- (void)_displayItemView:(CPView)aView
 {
-    _selectedIndex = index;
-    [self _setContentViewFromItem:[_items objectAtIndex:_selectedIndex]];
+    [_box setContentView:aView];
 }
 
-- (void)_setContentViewFromItem:(CPTabViewItem)anItem
+// DELEGATE METHODS
+
+- (void)_sendDelegateDidSelectTabViewItem:(CPTabViewItem)aTabViewItem
 {
-    [_box setContentView:[anItem view]];
+    if (_delegateSelectors & CPTabViewDidSelectTabViewItemSelector)
+        [_delegate tabView:self didSelectTabViewItem:aTabViewItem];
 }
 
-- (void)_updateItems
+- (void)_sendDelegateTabViewDidChangeNumberOfTabViewItems
 {
-    var count = [_items count];
-    [_tabs setSegmentCount:count];
-
-    for (var i = 0; i < count; i++)
-    {
-        [_tabs setLabel:[[_items objectAtIndex:i] label] forSegment:i];
-        [_tabs setTag:i forSegment:i];
-    }
-
-    if (_selectedIndex === CPNotFound)
-        [self selectFirstTabViewItem:self];
+    if (_delegateSelectors & CPTabViewDidChangeNumberOfTabViewItemsSelector)
+        [_delegate tabViewDidChangeNumberOfTabViewItems:self];
 }
 
 @end
@@ -515,12 +542,12 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
         _font = [aCoder decodeObjectForKey:CPTabViewFontKey];
         [_tabs setFont:_font];
 
-        _items = [aCoder decodeObjectForKey:CPTabViewItemsKey];
-        [_items makeObjectsPerformSelector:@selector(_setTabView:) withObject:self];
+        var items = [aCoder decodeObjectForKey:CPTabViewItemsKey] || [CPArray array];
+        [self _insertTabViewItems:items atIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [items count])]];
 
         [self setDelegate:[aCoder decodeObjectForKey:CPTabViewDelegateKey]];
 
-        self.selectOnAwake = [aCoder decodeObjectForKey:CPTabViewSelectedItemKey];
+        _selectedTabViewItem = [aCoder decodeObjectForKey:CPTabViewSelectedItemKey];
         _type = [aCoder decodeIntForKey:CPTabViewTypeKey];
     }
 
@@ -531,12 +558,13 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
 {
     // This cannot be run in initWithCoder because it might call selectTabViewItem:, which is
     // not safe to call before the views of the tab views items are fully decoded.
-    [self _updateItems];
 
-    if (self.selectOnAwake)
+    if (_selectedTabViewItem)
     {
-        [self selectTabViewItem:self.selectOnAwake];
-        delete self.selectOnAwake;
+        var idx = [self indexOfTabViewItem:_selectedTabViewItem];
+
+        if (idx !== CPNotFound)
+            [self selectTabViewItemAtIndex:idx];
     }
 
     var type = _type;
@@ -558,9 +586,7 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
 
     [aCoder encodeObject:_items forKey:CPTabViewItemsKey];
 
-    var selected = [self selectedTabViewItem];
-    if (selected)
-        [aCoder encodeObject:selected forKey:CPTabViewSelectedItemKey];
+    [aCoder encodeConditionalObject:_selectedTabViewItem forKey:CPTabViewSelectedItemKey];
 
     [aCoder encodeInt:_type forKey:CPTabViewTypeKey];
     [aCoder encodeObject:_font forKey:CPTabViewFontKey];
