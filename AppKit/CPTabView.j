@@ -65,6 +65,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 
     CPSegmentedControl      _tabs;
     CPBox                   _box;
+    CPView                  _placeHolderView;
 
     CPTabViewItem           _selectedTabViewItem;
 
@@ -101,6 +102,8 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 
     [self addSubview:_box];
     [self addSubview:_tabs];
+
+    _placeHolderView = nil;
 }
 
 - (CPArray)items
@@ -162,7 +165,8 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 
 - (void)_didRemoveTabViewItem:(CPTabViewItem)aTabViewItem atIndex:(CPInteger)idx
 {
-    if ([self selectedIndexBinder])
+    // If the selection is managed by bindings, let the binder do that.
+    if ([self binderForBinding:CPSelectionIndexesBinding] || [self binderForBinding:CPSelectedIndexBinding])
         return;
 
     if (_selectedTabViewItem == aTabViewItem)
@@ -308,11 +312,12 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
     if (![self _selectTabViewItemAtIndex:anIndex])
         return NO;
 
-    //[self _reverseSetSelectedIndex];
+    [self _reverseSetSelectedIndex];
 
     return YES;
 }
 
+// Like selectTabViewItemAtIndex: but without bindings interaction
 - (BOOL)_selectTabViewItemAtIndex:(CPUInteger)anIndex
 {
     var aTabViewItem = [self tabViewItemAtIndex:anIndex];
@@ -525,6 +530,196 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 
 @end
 
+@implementation CPTabView (BindingSupport)
+
++ (Class)_binderClassForBinding:(CPString)aBinding
+{
+    if (aBinding == CPContentBinding)
+        return [_CPTabViewContentBinder class];
+    else if (aBinding == CPSelectionIndexesBinding || aBinding == CPSelectedIndexBinding)
+        return [_CPTabViewSelectionBinder class];
+
+    return [super _binderClassForBinding:aBinding];
+}
+
++ (BOOL)isBindingExclusive:(CPString)aBinding
+{
+    return (aBinding == CPSelectionIndexesBinding || aBinding == CPSelectedIndexBinding);
+}
+
+- (void)_reverseSetContent
+{
+    var theBinder = [self binderForBinding:CPContentBinding];
+    [theBinder reverseSetValueFor:@"items"];
+}
+
+- (void)_reverseSetSelectedIndex
+{
+    var theBinder = [self binderForBinding:CPSelectionIndexesBinding];
+
+    if (theBinder !== nil)
+        [theBinder reverseSetValueFor:@"selectionIndexes"];
+    else
+    {
+        theBinder = [self binderForBinding:CPSelectedIndexBinding];
+        [theBinder reverseSetValueFor:@"selectedIndex"];
+    }
+}
+
+- (CPBinder)binderForBinding:(CPString)aBinding
+{
+    var cls = [[self class] _binderClassForBinding:aBinding]
+    return [cls getBinding:aBinding forObject:self];
+}
+
+- (void)setItems:(CPArray)tabViewItems
+{
+    if ([tabViewItems isEqualToArray:[_tabs segments]])
+        return;
+
+    [[self items] makeObjectsPerformSelector:@selector(_setTabView:) withObject:nil];
+    [_tabs setSegments:tabViewItems];
+    [tabViewItems makeObjectsPerformSelector:@selector(_setTabView:) withObject:self];
+
+    [self tileWithChangedItem:nil];
+
+    // Update the selection because setSegments: did remove all previous segments AND the selection.
+    [_tabs setSelectedSegment:[self indexOfTabViewItem:_selectedTabViewItem]];
+
+    // should we send delegate methods in bindings mode ?
+    //[self _delegateTabViewDidChangeNumberOfTabViewItems:self];
+}
+
+- (void)_deselectAll
+{
+    [_tabs setSelectedSegment:-1];
+    _selectedTabViewItem = nil;
+}
+
+- (void)_displayPlaceholder:(CPString)aPlaceholder
+{
+    if (_placeHolderView == nil)
+    {
+        _placeHolderView = [[CPView alloc] initWithFrame:CGRectMakeZero()];
+        var textField = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
+        [textField setTag:1000];
+        [textField setTextColor:[CPColor whiteColor]];
+        [textField setFont:[CPFont boldFontWithName:@"Geneva" size:18 italic:YES]];
+        [_placeHolderView addSubview:textField];
+    }
+
+    var textField = [_placeHolderView viewWithTag:1000];
+    [textField setStringValue:aPlaceholder];
+    [textField sizeToFit];
+
+    var boxBounds = [_box bounds],
+        textFieldBounds = [textField bounds],
+        origin = CGPointMake(CGRectGetWidth(boxBounds)/2 - CGRectGetWidth(textFieldBounds)/2, CGRectGetHeight(boxBounds)/2 - CGRectGetHeight(textFieldBounds));
+
+    [textField setFrameOrigin:origin];
+
+    [self _displayItemView:_placeHolderView];
+}
+
+@end
+
+var _CPTabViewContentBinderNull = @"NO CONTENT";
+
+@implementation _CPTabViewContentBinder : CPBinder
+{
+}
+
+- (void)_updatePlaceholdersWithOptions:(CPDictionary)options
+{
+    [super _updatePlaceholdersWithOptions:options];
+    [self _setPlaceholder:_CPTabViewContentBinderNull forMarker:CPNullMarker isDefault:YES];
+}
+
+- (void)setPlaceholderValue:(id)aValue withMarker:(CPString)aMarker forBinding:(CPString)aBinding
+{
+    [_source setItems:@[]];
+    [_source _setPlaceholderView:aValue];
+}
+
+- (void)setValue:(id)aValue forBinding:(CPString)aBinding
+{
+    [_source setItems:aValue];
+}
+
+- (id)valueForBinding:(CPString)aBinding
+{
+    return [_source items];
+}
+
+@end
+
+var _CPTabViewSelectionBinderMultipleValues = @"Multiple Selection",
+    _CPTabViewSelectionBinderNoSelection = @"No Selection";
+
+@implementation _CPTabViewSelectionBinder : CPBinder
+{
+}
+
+- (void)_updatePlaceholdersWithOptions:(CPDictionary)options
+{
+    [super _updatePlaceholdersWithOptions:options];
+
+    [self _setPlaceholder:_CPTabViewSelectionBinderMultipleValues forMarker:CPMultipleValuesMarker isDefault:YES];
+    [self _setPlaceholder:_CPTabViewSelectionBinderNoSelection forMarker:CPNoSelectionMarker isDefault:YES];
+}
+
+- (void)setPlaceholderValue:(id)aValue withMarker:(CPString)aMarker forBinding:(CPString)aBinding
+{
+    if (aMarker == CPNoSelectionMarker || aMarker == CPNullMarker)
+        [_source _deselectAll];
+
+    [_source _displayPlaceholder:aValue];
+}
+
+- (void)setValue:(id)aValue forBinding:(CPString)aBinding
+{
+    if (aBinding == CPSelectionIndexesBinding)
+    {
+        if (aValue == nil || [aValue count] == 0)
+        {
+            [_source _deselectAll];
+            [_source _displayPlaceholder:_CPTabViewSelectionBinderNoSelection];
+        }
+        else if ([aValue count] > 1)
+            [_source _displayPlaceholder:_CPTabViewSelectionBinderMultipleValues];
+        else if ([aValue firstIndex] < [_source numberOfTabViewItems])
+            [_source _selectTabViewItemAtIndex:[aValue firstIndex]];
+    }
+    else if (aBinding == CPSelectedIndexBinding)
+    {
+        if (aValue == CPNotFound)
+        {
+            [_source _deselectAll];
+            [_source _displayPlaceholder:_CPTabViewSelectionBinderNoSelection];
+        }
+        else if (aValue < [_source numberOfTabViewItems])
+            [_source _selectTabViewItemAtIndex:aValue];
+    }
+}
+
+- (id)valueForBinding:(CPString)aBinding
+{
+    if (aBinding == CPSelectionIndexesBinding)
+    {
+        var result = [CPIndexSet indexSet],
+            idx = [_source indexOfTabViewItem:[_source selectedTabViewItem]];
+
+        if (idx !== CPNotFound)
+            [result addIndex:idx];
+
+        return result;
+    }
+    else if (aBinding == CPSelectedIndexBinding)
+        return [_source indexOfTabViewItem:[_source selectedTabViewItem]];
+}
+
+@end
+
 var CPTabViewItemsKey               = "CPTabViewItemsKey",
     CPTabViewSelectedItemKey        = "CPTabViewSelectedItemKey",
     CPTabViewTypeKey                = "CPTabViewTypeKey",
@@ -548,6 +743,7 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
         [self setDelegate:[aCoder decodeObjectForKey:CPTabViewDelegateKey]];
 
         _selectedTabViewItem = [aCoder decodeObjectForKey:CPTabViewSelectedItemKey];
+
         _type = [aCoder decodeIntForKey:CPTabViewTypeKey];
     }
 
