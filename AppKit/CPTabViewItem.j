@@ -24,6 +24,7 @@
 
 @import "CPView.j"
 @class CPTabView
+@class CPViewControler
 
 /*
     The tab is currently selected.
@@ -70,6 +71,17 @@ CPPressedTab    = 2;
     BOOL        _selected @accessors(property=selected);
     CGRect      _tabRect @accessors(property=frame);
     float       _width @accessors(property=width);
+}
+
+/*
+
+*/
++ (CPTabViewItem)tabViewItemWithViewController:(CPViewController)aViewController
+{
+    var item = [[CPTabViewItem alloc] init];
+    [item setViewController:aViewController];
+
+    return item;
 }
 
 - (id)init
@@ -191,6 +203,7 @@ CPPressedTab    = 2;
     _view = aView;
 
     if ([_tabView selectedTabViewItem] == self)
+        [_tabView _displayItemView:_view];
 }
 
 /*!
@@ -198,6 +211,9 @@ CPPressedTab    = 2;
 */
 - (CPView)view
 {
+    if (!_view && _viewController)
+        return [_viewController view]; // The view controller loads here.
+
     return _view;
 }
 
@@ -234,6 +250,27 @@ CPPressedTab    = 2;
 - (void)_setTabView:(CPTabView)aView
 {
     _tabView = aView;
+}
+
+/*!
+    Sets the specified view controller for the tab view item.
+    @param aViewController an instance of CPViewController.
+*/
+- (void)setViewController:(CPViewController)aViewController
+{
+    _viewController = aViewController;
+
+    var identifier = [aViewController cibName],
+        title = [_viewController title];
+
+    if (identifier)
+        _identifier = identifier;
+
+    if (title)
+        [self setLabel:title];
+
+    if ([_tabView selectedTabViewItem] == self)
+        [_tabView _displayItemView:[_viewController view]];
 }
 
 @end
