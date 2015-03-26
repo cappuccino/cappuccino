@@ -1243,8 +1243,8 @@ var themedButtonValues = nil,
 
         overrides =
         [
-            [@"image-search-left-margin",   5],
-            [@"image-cancel-right-margin",  5],
+            [@"image-search-inset",  CGInsetMake(0, 0, 0, 5)],
+            [@"image-cancel-inset",  CGInsetMake(0, 5, 0, 0)],
 
             [@"image-search",           imageSearch],
             [@"image-find",             imageFind],
@@ -1255,15 +1255,15 @@ var themedButtonValues = nil,
             [@"image-find",                 smallImageFind,                 CPThemeStateControlSizeSmall],
             [@"image-cancel",               smallImageCancel,               CPThemeStateControlSizeSmall],
             [@"image-cancel-pressed",       smallImageCancelPressed,        CPThemeStateControlSizeSmall],
-            [@"image-search-left-margin",   8,                              CPThemeStateControlSizeSmall],
-            [@"image-cancel-right-margin",  8,                              CPThemeStateControlSizeSmall],
+            [@"image-search-inset",         CGInsetMake(0, 0, 0, 8),        CPThemeStateControlSizeSmall],
+            [@"image-cancel-inset",         CGInsetMake(0, 8, 0, 0),        CPThemeStateControlSizeSmall],
 
             [@"image-search",               miniImageSearch,                CPThemeStateControlSizeMini],
             [@"image-find",                 miniImageFind,                  CPThemeStateControlSizeMini],
             [@"image-cancel",               miniImageCancel,                CPThemeStateControlSizeMini],
             [@"image-cancel-pressed",       miniImageCancelPressed,         CPThemeStateControlSizeMini],
-            [@"image-search-left-margin",   8,                              CPThemeStateControlSizeMini],
-            [@"image-cancel-right-margin",  8,                              CPThemeStateControlSizeMini],
+            [@"image-search-inset",         CGInsetMake(0, 0, 0, 8),        CPThemeStateControlSizeMini],
+            [@"image-cancel-inset",         CGInsetMake(0, 8, 0, 0),        CPThemeStateControlSizeMini],
         ];
 
     [self registerThemeValues:overrides forView:searchField inherit:themedRoundedTextFieldValues];

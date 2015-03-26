@@ -824,8 +824,8 @@ var themedButtonValues = nil,
 
         overrides =
         [
-            [@"image-search-left-margin",   5],
-            [@"image-cancel-right-margin",  5],
+            [@"image-search-inset",  CGInsetMake(0, 0, 0, 5)],
+            [@"image-cancel-inset",  CGInsetMake(0, 5, 0, 0)],
 
             [@"image-search",           imageSearch],
             [@"image-find",             imageFind],
