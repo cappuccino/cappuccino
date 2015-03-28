@@ -175,7 +175,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     _textContainerOrigin = CGPointMake(_bounds.origin.x, _bounds.origin.y);
 
     _isEditable = YES;
-    _isSelectable = YES;
+    [self setSelectable:YES];
 
     _isFirstResponder = NO;
     _delegate = nil;
@@ -236,7 +236,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (BOOL)acceptsFirstResponder
 {
-    if (_isSelectable)
+    if ([self isSelectable])
         return YES;
 
     return NO;
@@ -415,7 +415,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     _isEditable = flag;
 
     if (flag)
-        _isSelectable = flag;
+        [self setSelectable:flag];
 }
 
 - (void)invalidateTextContainerOrigin
@@ -640,7 +640,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)selectAll:(id)sender
 {
-    if (_isSelectable)
+    if ([self isSelectable])
     {
         if (_caretTimer)
         {
@@ -879,7 +879,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)moveDown:(id)sender
 {
-    if (!_isSelectable)
+    if (![self isSelectable])
         return;
 
     var fraction = [],
@@ -913,7 +913,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)moveDownAndModifySelection:(id)sender
 {
-    if (!_isSelectable)
+    if (![self isSelectable])
         return;
 
     var oldStartTrackingLocation = _startTrackingLocation;
@@ -926,7 +926,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)moveUp:(id)sender
 {
-    if (!_isSelectable)
+    if (![self isSelectable])
         return;
 
     var fraction = [],
@@ -956,7 +956,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)moveUpAndModifySelection:(id)sender
 {
-    if (!_isSelectable)
+    if (![self isSelectable])
         return;
 
     var oldStartTrackingLocation = _startTrackingLocation;
@@ -1030,7 +1030,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)moveLeftAndModifySelection:(id)sender
 {
-    if (_isSelectable)
+    if ([self isSelectable])
        [self _extendSelectionIntoDirection:-1 granularity:CPSelectByCharacter];
 }
 
@@ -1046,37 +1046,37 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)moveRightAndModifySelection:(id)sender
 {
-    if (_isSelectable)
+    if ([self isSelectable])
        [self _extendSelectionIntoDirection:1 granularity:CPSelectByCharacter];
 }
 
 - (void)moveLeft:(id)sender
 {
-    if (_isSelectable)
+    if ([self isSelectable])
         [self _establishSelection:CPMakeRange(_selectionRange.location - 1, 0) byExtending:NO];
 }
 
 - (void)moveToEndOfParagraph:(id)sender
 {
-    if (_isSelectable)
+    if ([self isSelectable])
        [self _moveSelectionIntoDirection:1 granularity:CPSelectByParagraph];
 }
 
 - (void)moveToEndOfParagraphAndModifySelection:(id)sender
 {
-    if (_isSelectable)
+    if ([self isSelectable])
        [self _extendSelectionIntoDirection:1 granularity:CPSelectByParagraph];
 }
 
 - (void)moveParagraphForwardAndModifySelection:(id)sender
 {
-    if (_isSelectable)
+    if ([self isSelectable])
        [self _extendSelectionIntoDirection:1 granularity:CPSelectByParagraph];
 }
 
 - (void)moveParagraphForward:(id)sender
 {
-    if (_isSelectable)
+    if ([self isSelectable])
        [self _moveSelectionIntoDirection:1 granularity:CPSelectByParagraph];
 }
 
@@ -1102,67 +1102,67 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)moveToBeginningOfDocument:(id)sender
 {
-    if (_isSelectable)
+    if ([self isSelectable])
          [self _establishSelection:CPMakeRange(0, 0) byExtending:NO];
 }
 
 - (void)moveToBeginningOfDocumentAndModifySelection:(id)sender
 {
-    if (_isSelectable)
+    if ([self isSelectable])
          [self _establishSelection:CPMakeRange(0, 0) byExtending:YES];
 }
 
 - (void)moveToEndOfDocument:(id)sender
 {
-    if (_isSelectable)
+    if ([self isSelectable])
          [self _establishSelection:CPMakeRange([_layoutManager numberOfCharacters], 0) byExtending:NO];
 }
 
 - (void)moveToEndOfDocumentAndModifySelection:(id)sender
 {
-    if (_isSelectable)
+    if ([self isSelectable])
          [self _establishSelection:CPMakeRange([_layoutManager numberOfCharacters], 0) byExtending:YES];
 }
 
 - (void)moveWordRight:(id)sender
 {
-    if (_isSelectable)
+    if ([self isSelectable])
         [self _moveSelectionIntoDirection:1 granularity:CPSelectByWord];
 }
 
 - (void)moveToBeginningOfParagraph:(id)sender
 {
-    if (_isSelectable)
+    if ([self isSelectable])
         [self _moveSelectionIntoDirection:-1 granularity:CPSelectByParagraph];
 }
 
 - (void)moveToBeginningOfParagraphAndModifySelection:(id)sender
 {
-    if (_isSelectable)
+    if ([self isSelectable])
        [self _extendSelectionIntoDirection:-1 granularity:CPSelectByParagraph];
 }
 
 - (void)moveParagraphBackward:(id)sender
 {
-    if (_isSelectable)
+    if ([self isSelectable])
         [self _moveSelectionIntoDirection:-1 granularity:CPSelectByParagraph];
 }
 
 - (void)moveParagraphBackwardAndModifySelection:(id)sender
 {
-    if (_isSelectable)
+    if ([self isSelectable])
        [self _extendSelectionIntoDirection:-1 granularity:CPSelectByParagraph];
 }
 
 - (void)moveWordRightAndModifySelection:(id)sender
 {
-    if (_isSelectable)
+    if ([self isSelectable])
          [self _extendSelectionIntoDirection:+1 granularity:CPSelectByWord];
 }
 
 - (void)deleteToEndOfParagraph:(id)sender
 {
-    if (!_isSelectable || !_isEditable)
+    if (![self isSelectable] || !_isEditable)
         return;
 
     [self moveToEndOfParagraphAndModifySelection:self];
@@ -1171,7 +1171,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)deleteToBeginningOfParagraph:(id)sender
 {
-    if (!_isSelectable || !_isEditable)
+    if (![self isSelectable] || !_isEditable)
         return;
 
     [self moveToBeginningOfParagraphAndModifySelection:self];
@@ -1180,7 +1180,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)deleteToBeginningOfLine:(id)sender
 {
-    if (!_isSelectable || !_isEditable)
+    if (![self isSelectable] || !_isEditable)
         return;
 
     [self moveToLeftEndOfLineAndModifySelection:self];
@@ -1189,7 +1189,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)deleteToEndOfLine:(id)sender
 {
-    if (!_isSelectable || !_isEditable)
+    if (![self isSelectable] || !_isEditable)
         return;
 
     [self moveToRightEndOfLineAndModifySelection:self];
@@ -1198,7 +1198,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)deleteWordBackward:(id)sender
 {
-    if (!_isSelectable || !_isEditable)
+    if (![self isSelectable] || !_isEditable)
         return;
 
     [self moveWordLeftAndModifySelection:self];
@@ -1207,7 +1207,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)deleteWordForward:(id)sender
 {
-    if (!_isSelectable || !_isEditable)
+    if (![self isSelectable] || !_isEditable)
         return;
 
     [self moveWordRightAndModifySelection:self];
@@ -1216,7 +1216,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)moveToLeftEndOfLine:(id)sender byExtending:(BOOL)flag
 {
-    if (!_isSelectable)
+    if (![self isSelectable])
         return;
 
     var fragment = [_layoutManager _lineFragmentForLocation:_selectionRange.location];
@@ -1240,7 +1240,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)moveToRightEndOfLine:(id)sender byExtending:(BOOL)flag
 {
-    if (!_isSelectable)
+    if (![self isSelectable])
         return;
 
     var fragment = [_layoutManager _lineFragmentForLocation:_selectionRange.location];
@@ -1268,19 +1268,19 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)moveWordLeftAndModifySelection:(id)sender
 {
-    if (_isSelectable)
+    if ([self isSelectable])
         [self _extendSelectionIntoDirection:-1 granularity:CPSelectByWord];
 }
 
 - (void)moveWordLeft:(id)sender
 {
-    if (_isSelectable)
+    if ([self isSelectable])
         [self _moveSelectionIntoDirection:-1 granularity:CPSelectByWord]
 }
 
 - (void)moveRight:(id)sender
 {
-    if (_isSelectable)
+    if ([self isSelectable])
         [self _establishSelection:CPMakeRange(CPMaxRange(_selectionRange) + 1, 0) byExtending:NO];
 }
 
