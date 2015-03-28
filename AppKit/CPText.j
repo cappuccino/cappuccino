@@ -102,8 +102,6 @@ CPKernAttributeName = @"CPKernAttributeName";
     BOOL       _isEditable       @accessors(getter=isEditable, setter=setEditable:);
     BOOL       _isSelectable     @accessors(getter=isSelectable, setter=setSelectable:);
     BOOL       _isRichText       @accessors(getter=isRichText, setter=setRichText:);
-    CPColor    _backgroundColor  @accessors(getter=backgroundColor, setter=setBackgroundColor:);
-
 }
 
 - (void)setSelectable:(BOOL)flag
@@ -314,8 +312,7 @@ CPKernAttributeName = @"CPKernAttributeName";
 
 var CPTextViewIsEditableKey = @"CPTextViewIsEditableKey",
     CPTextViewIsSelectableKey = @"CPTextViewIsSelectableKey",
-    CPTextViewIsRichTextKey = @"CPTextViewIsRichTextKey",
-    CPTextViewBackgroundColorKey = @"CPTextViewBackgroundColorKey";
+    CPTextViewIsRichTextKey = @"CPTextViewIsRichTextKey";
 
 @implementation CPText (CPCoding)
 
@@ -328,7 +325,6 @@ var CPTextViewIsEditableKey = @"CPTextViewIsEditableKey",
         [self setSelectable:[aCoder decodeBoolForKey:CPTextViewIsSelectableKey]];
         [self setEditable:[aCoder decodeBoolForKey:CPTextViewIsEditableKey]];
         [self setRichText:[aCoder decodeBoolForKey:CPTextViewIsRichTextKey]];
-        [self setBackgroundColor:[aCoder decodeObjectForKey:CPTextViewBackgroundColorKey]];
     }
 
     return self;
@@ -340,7 +336,6 @@ var CPTextViewIsEditableKey = @"CPTextViewIsEditableKey",
     [aCoder encodeBool:_isEditable forKey:CPTextViewIsEditableKey];
     [aCoder encodeBool:_isSelectable forKey:CPTextViewIsSelectableKey];
     [aCoder encodeBool:_isRichText forKey:CPTextViewIsRichTextKey];
-    [aCoder encodeObject:_backgroundColor forKey:CPTextViewBackgroundColorKey];
 }
 
 @end
