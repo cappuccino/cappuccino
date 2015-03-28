@@ -174,7 +174,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     _textContainerInset = CGSizeMake(2, 0);
     _textContainerOrigin = CGPointMake(_bounds.origin.x, _bounds.origin.y);
 
-    _isEditable = YES;
+    [self setEditable:YES];
     [self setSelectable:YES];
 
     _isFirstResponder = NO;
@@ -440,7 +440,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (BOOL)shouldChangeTextInRange:(CPRange)aRange replacementString:(CPString)aString
 {
-    if (!_isEditable)
+    if (![self isEditable])
         return NO;
 
     return [self _sendDelegateTextShouldBeginEditing] && [self _sendDelegateShouldChangeTextInRange:aRange replacementString:aString];
@@ -1162,7 +1162,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)deleteToEndOfParagraph:(id)sender
 {
-    if (![self isSelectable] || !_isEditable)
+    if (![self isSelectable] || ![self isEditable])
         return;
 
     [self moveToEndOfParagraphAndModifySelection:self];
@@ -1171,7 +1171,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)deleteToBeginningOfParagraph:(id)sender
 {
-    if (![self isSelectable] || !_isEditable)
+    if (![self isSelectable] || ![self isEditable])
         return;
 
     [self moveToBeginningOfParagraphAndModifySelection:self];
@@ -1180,7 +1180,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)deleteToBeginningOfLine:(id)sender
 {
-    if (![self isSelectable] || !_isEditable)
+    if (![self isSelectable] || ![self isEditable])
         return;
 
     [self moveToLeftEndOfLineAndModifySelection:self];
@@ -1189,7 +1189,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)deleteToEndOfLine:(id)sender
 {
-    if (![self isSelectable] || !_isEditable)
+    if (![self isSelectable] || ![self isEditable])
         return;
 
     [self moveToRightEndOfLineAndModifySelection:self];
@@ -1198,7 +1198,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)deleteWordBackward:(id)sender
 {
-    if (![self isSelectable] || !_isEditable)
+    if (![self isSelectable] || ![self isEditable])
         return;
 
     [self moveWordLeftAndModifySelection:self];
@@ -1207,7 +1207,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)deleteWordForward:(id)sender
 {
-    if (![self isSelectable] || !_isEditable)
+    if (![self isSelectable] || ![self isEditable])
         return;
 
     [self moveWordRightAndModifySelection:self];
