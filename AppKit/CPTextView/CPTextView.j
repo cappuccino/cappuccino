@@ -82,6 +82,88 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     kDelegateRespondsTo_textView_didChangeSelection                                     = 1 << 6,
     kDelegateRespondsTo_textView_didChangeTypingAttributes                              = 1 << 7;
 
+@implementation _CPCaret : CPObject
+{
+    DOMElement  _caretDOM;
+    CGRect      _rect;
+    CPTextView  _textView;
+    BOOL        _drawCaret;
+    CPTimer     _caretTimer;
+}
+
+- (void)setRect:(CGRect)aRect
+{
+    _rect = CGRectCreateCopy(aRect);
+#if PLATFORM(DOM)
+    _caretDOM.style.left = (aRect.origin.x) + "px";
+    _caretDOM.style.top = (aRect.origin.y) + "px";
+    _caretDOM.style.height = (aRect.size.height) + "px";
+#endif
+}
+
+- (id)initForTextView:(CPTextView)aView
+{
+    if (self = [super init])
+    {
+#if PLATFORM(DOM)
+        var style;
+
+        if (!_caretDOM)
+        {
+            _caretDOM = document.createElement("span");
+            style = _caretDOM.style;
+            style.position = "absolute";
+            style.visibility = "visible";
+            style.padding = "0px";
+            style.margin = "0px";
+            style.whiteSpace = "pre";
+            style.backgroundColor = "black";
+            _caretDOM.style.width = "1px";
+            _textView = aView;
+            _textView._DOMElement.appendChild(_caretDOM);
+        }
+#endif
+    }
+    return self;
+}
+
+- (void)setVisibility:(BOOL)flag
+{
+#if PLATFORM(DOM)
+    _textView._caretDOM.style.visibility = flag ? "visible" : "hidden";
+#endif
+    if (!flag)
+        [self stopBlinking];
+}
+
+- (void)_blinkCaret:(CPTimer)aTimer
+{
+    _drawCaret = !_drawCaret;
+    [_textView setNeedsDisplayInRect:_rect];
+}
+
+- (void)startBlinking
+{
+    _drawCaret = YES;
+    _caretTimer = [CPTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(_blinkCaret:) userInfo:nil repeats:YES];
+}
+
+- (void)isBlinking
+{
+    return [_caretTimer isValid];
+}
+
+- (void)stopBlinking
+{
+    _drawCaret=NO;
+    if (_caretTimer)
+    {
+        [_caretTimer invalidate];
+        _caretTimer = nil;
+    }
+}
+
+@end
 
 /*!
     @ingroup appkit
@@ -117,16 +199,11 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     int                         _startTrackingLocation;
 
-    BOOL                        _isFirstResponder;
-
-    BOOL                        _drawCaret;
-    CPTimer                     _caretTimer;
+    _CPCaret                    _caret;
     CPTimer                     _scrollingTimer;
-    CGRect                      _caretRect;
 
     BOOL                        _scrollingDownward;
 
-    DOMElement                  _caretDOM;
     int                         _stickyXLocation;
 
     CPArray                     _selectionSpans;
@@ -178,7 +255,6 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     [self setEditable:YES];
     [self setSelectable:YES];
 
-    _isFirstResponder = NO;
     _delegate = nil;
     _delegateRespondsToSelectorMask = 0;
 
@@ -203,9 +279,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     _isVerticallyResizable = YES;
     _isHorizontallyResizable = NO;
 
-    _caretRect = CGRectMake(0, 0, 1, 11);
+    _caret = [[_CPCaret alloc] initForTextView:self];
+    [_caret setRect:CGRectMake(0, 0, 1, 11)]
 }
-
 
 #pragma mark -
 #pragma mark Copy and past methods
@@ -242,7 +318,6 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (BOOL)becomeFirstResponder
 {
-    _isFirstResponder = YES;
     [self updateInsertionPointStateAndRestartTimer:YES];
     [[CPFontManager sharedFontManager] setSelectedFont:[self font] isMultiple:NO];
     [self setNeedsDisplay:YES];
@@ -252,9 +327,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (BOOL)resignFirstResponder
 {
-    [_caretTimer invalidate];
-    _caretTimer = nil;
-    _isFirstResponder = NO;
+    [_caret stopBlinking];
     [self setNeedsDisplay:YES];
 
     return YES;
@@ -323,9 +396,14 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     [self setNeedsDisplay:YES];
 }
 
+- (BOOL) _isFirstResponder
+{
+   return [[self window] firstResponder] === self;
+}
+
 - (BOOL)_isFocused
 {
-   return [[self window] isKeyWindow] && _isFirstResponder;
+   return [[self window] isKeyWindow] && [self _isFirstResponder];
 }
 
 
@@ -420,7 +498,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 {
     [[CPNotificationCenter defaultCenter] postNotificationName:CPTextDidChangeNotification object:self];
     if (_delegateRespondsToSelectorMask & kDelegateRespondsTo_textView_textDidChange)
-        [_delegate textDidChange:self];
+        [_delegate textDidChange:[[CPNotification alloc] initWithName:CPTextDidChangeNotification object:self userInfo:nil]];
 }
 
 - (BOOL)shouldChangeTextInRange:(CPRange)aRange replacementString:(CPString)aString
@@ -506,43 +584,16 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     [_layoutManager _validateLayoutAndGlyphs];
     [self sizeToFit];
     [self scrollRangeToVisible:_selectionRange];
-    _stickyXLocation = _caretRect.origin.x;
+    _stickyXLocation = _caret._rect.origin.x;
 }
-
-- (void)_blinkCaret:(CPTimer)aTimer
-{
-    _drawCaret = !_drawCaret;
-    [self setNeedsDisplayInRect:_caretRect];
-}
-
 
 #pragma mark -
 #pragma mark Drawing methods
 
 - (void)drawInsertionPointInRect:(CGRect)aRect color:(CPColor)aColor turnedOn:(BOOL)flag
 {
-#if PLATFORM(DOM)
-    var style;
-
-    if (!_caretDOM)
-    {
-        _caretDOM = document.createElement("span");
-        style = _caretDOM.style;
-        style.position = "absolute";
-        style.visibility = "visible";
-        style.padding = "0px";
-        style.margin = "0px";
-        style.whiteSpace = "pre";
-        style.backgroundColor = "black";
-        _caretDOM.style.width = "1px";
-        _DOMElement.appendChild(_caretDOM);
-    }
-
-    _caretDOM.style.left = (aRect.origin.x) + "px";
-    _caretDOM.style.top = (aRect.origin.y) + "px";
-    _caretDOM.style.height = (aRect.size.height) + "px";
-    _caretDOM.style.visibility = flag ? "visible" : "hidden";
-#endif
+    [_caret setRect:aRect];
+    [_caret setVisibility:flag];
 }
 
 - (id) _createSelectionSpanForRect:(CPRect)aRect andColor:(CPColor)aColor
@@ -609,13 +660,10 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     if ([self shouldDrawInsertionPoint])
     {
         [self updateInsertionPointStateAndRestartTimer:NO];
-        [self drawInsertionPointInRect:_caretRect color:_insertionPointColor turnedOn:_drawCaret];
+        [self drawInsertionPointInRect:_caret._rect color:_insertionPointColor turnedOn:_caret._drawCaret];
     }
-    else // <!> FIXME: breaks DOM abstraction, but i did get it working otherwise
-    {
-        if (_caretDOM)
-            _caretDOM.style.visibility = "hidden";
-    }
+    else
+        [_caret setVisibility:NO];
 #endif
 }
 
@@ -627,12 +675,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 {
     if ([self isSelectable])
     {
-        if (_caretTimer)
-        {
-            [_caretTimer invalidate];
-            _caretTimer = nil;
-        }
-
+        [_caret stopBlinking];
         [self setSelectedRange:CPMakeRange(0, [_layoutManager numberOfCharacters])];
     }
 }
@@ -665,8 +708,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     if (!selecting)
     {
-        if (_isFirstResponder)
-            [self updateInsertionPointStateAndRestartTimer:((_selectionRange.length === 0) && ![_caretTimer isValid])];
+        if ([self _isFirstResponder])
+            [self updateInsertionPointStateAndRestartTimer:((_selectionRange.length === 0) && ![_caret isBlinking])];
 
         var peekLoc = MAX(0, range.location - 1);
 
@@ -677,7 +720,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
         [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeSelectionNotification object:self];
         if (_delegateRespondsToSelectorMask & kDelegateRespondsTo_textView_didChangeSelection)
-            [_delegate textViewDidChangeSelection:self];
+            [_delegate textViewDidChangeSelection:[[CPNotification alloc] initWithName:CPTextViewDidChangeSelectionNotification object:self userInfo:nil]];
 
     }
 }
@@ -749,10 +792,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         point = [self convertPoint:[event locationInWindow] fromView:nil],
         granularities = [-1, CPSelectByCharacter, CPSelectByWord, CPSelectByParagraph];
 
-    /* stop _caretTimer */
-    [_caretTimer invalidate];
-    _caretTimer = nil;
-    [self _hideCaret];
+    [_caret setVisibility:NO];
 
     // convert to container coordinate
     point.x -= _textContainerOrigin.x;
@@ -1286,7 +1326,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     [self didChangeText];
     [_layoutManager _validateLayoutAndGlyphs];
     [self sizeToFit];
-    _stickyXLocation = _caretRect.origin.x;
+    _stickyXLocation = _caret._rect.origin.x;
 }
 
 - (void)deleteBackward:(id)sender
@@ -1381,7 +1421,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
                                                         object:self];
 
      if (_delegateRespondsToSelectorMask & kDelegateRespondsTo_textView_didChangeTypingAttributes)
-        [_delegate textViewDidChangeTypingAttributes:self];
+        [_delegate textViewDidChangeTypingAttributes:[[CPNotification alloc] initWithName:CPTextViewDidChangeTypingAttributesNotification object:self userInfo:nil]];
 }
 
 - (void)delete:(id)sender
@@ -1735,44 +1775,36 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     return (_selectionRange.length === 0 && [self _isFocused]);
 }
 
-- (void)_hideCaret
-{
-#if PLATFORM(DOM)
-    if (_caretDOM)
-        _caretDOM.style.visibility = "hidden";
-#endif
-}
-
 - (void)updateInsertionPointStateAndRestartTimer:(BOOL)flag
 {
+    var caretRect;
+ 
     if (_selectionRange.length)
-        [self _hideCaret];
+        [_caret setVisibility:NO];
 
     if (_selectionRange.location >= [_layoutManager numberOfCharacters])    // cursor is "behind" the last chacacter
     {
-        _caretRect = [_layoutManager boundingRectForGlyphRange:CPMakeRange(MAX(0,_selectionRange.location - 1), 1) inTextContainer:_textContainer];
-        _caretRect.origin.x += _caretRect.size.width;
+        caretRect = [_layoutManager boundingRectForGlyphRange:CPMakeRange(MAX(0,_selectionRange.location - 1), 1) inTextContainer:_textContainer];
+        caretRect.origin.x += caretRect.size.width;
 
         if (_selectionRange.location > 0 && [[_textStorage string] characterAtIndex:_selectionRange.location - 1] === '\n')
         {
-            _caretRect.origin.y += _caretRect.size.height;
-            _caretRect.origin.x = 0;
+            caretRect.origin.y += caretRect.size.height;
+            caretRect.origin.x = 0;
         }
     }
     else
     {
-        _caretRect = [_layoutManager boundingRectForGlyphRange:CPMakeRange(_selectionRange.location, 1) inTextContainer:_textContainer];
+        caretRect = [_layoutManager boundingRectForGlyphRange:CPMakeRange(_selectionRange.location, 1) inTextContainer:_textContainer];
     }
 
-    _caretRect.origin.x += _textContainerOrigin.x;
-    _caretRect.origin.y += _textContainerOrigin.y;
-    _caretRect.size.width = 1;
+    caretRect.origin.x += _textContainerOrigin.x;
+    caretRect.origin.y += _textContainerOrigin.y;
+    caretRect.size.width = 1;
+    [_caret setRect:caretRect];
 
     if (flag)
-    {
-        _drawCaret = flag;
-        _caretTimer = [CPTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(_blinkCaret:) userInfo:nil repeats:YES];
-    }
+        [_caret startBlinking];
 }
 
 
