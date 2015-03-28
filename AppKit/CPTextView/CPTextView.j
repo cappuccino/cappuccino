@@ -196,7 +196,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     _minSize = CGSizeCreateCopy(_frame.size);
     _maxSize = CGSizeMake(_frame.size.width, 1e7);
 
-    _isRichText = NO;
+    [self setRichText:NO];
     _usesFontPanel = YES;
     _allowsUndo = YES;
     _isVerticallyResizable = YES;
@@ -500,7 +500,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     {
         [undoManager setActionName:@"Replace plain text"];
 
-        if (_isRichText)
+        if ([self isRichText])
         {
             aString = [[CPAttributedString alloc] initWithString:aString attributes:_typingAttributes];
             [[undoManager prepareWithInvocationTarget:self]
@@ -1418,7 +1418,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)setFont:(CPFont)font range:(CPRange)range
 {
-    if (!_isRichText)
+    if (![self isRichText])
     {
         _font = font;
         [_textStorage setFont:_font];
@@ -1436,7 +1436,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         attributes,
         scrollRange = CPMakeRange(CPMaxRange(_selectionRange), 0);
 
-    if (_isRichText)
+    if ([self isRichText])
     {
         if (!CPEmptyRange(_selectionRange))
         {
@@ -1494,7 +1494,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)setTextColor:(CPColor)aColor range:(CPRange)range
 {
-    if (!_isRichText)  // FIXME
+    if (![self isRichText])
         return;
 
     if (!CPEmptyRange(_selectionRange))
