@@ -73,11 +73,15 @@ CPSelectByCharacter = 0;
 CPSelectByWord      = 1;
 CPSelectByParagraph = 2;
 
-var kDelegateRespondsTo_textShouldBeginEditing                                          = 0x0001,
-    kDelegateRespondsTo_textView_doCommandBySelector                                    = 0x0002,
-    kDelegateRespondsTo_textView_willChangeSelectionFromCharacterRange_toCharacterRange = 0x0004,
-    kDelegateRespondsTo_textView_shouldChangeTextInRange_replacementString              = 0x0008,
-    kDelegateRespondsTo_textView_shouldChangeTypingAttributes_toAttributes              = 0x0010;
+var kDelegateRespondsTo_textShouldBeginEditing                                          = 1 << 0,
+    kDelegateRespondsTo_textView_doCommandBySelector                                    = 1 << 1,
+    kDelegateRespondsTo_textView_willChangeSelectionFromCharacterRange_toCharacterRange = 1 << 2,
+    kDelegateRespondsTo_textView_shouldChangeTextInRange_replacementString              = 1 << 3,
+    kDelegateRespondsTo_textView_shouldChangeTypingAttributes_toAttributes              = 1 << 4,
+    kDelegateRespondsTo_textView_textDidChange                                          = 1 << 5,
+    kDelegateRespondsTo_textView_didChangeSelection                                     = 1 << 6,
+    kDelegateRespondsTo_textView_didChangeTypingAttributes                              = 1 << 7;
+
 
 /*!
     @ingroup appkit
@@ -272,25 +276,18 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     _delegateRespondsToSelectorMask = 0;
 
-    if (_delegate)
-    {
-        [notificationCenter removeObserver:_delegate name:CPTextDidChangeNotification object:self];
-        [notificationCenter removeObserver:_delegate name:CPTextViewDidChangeSelectionNotification object:self];
-        [notificationCenter removeObserver:_delegate name:CPTextViewDidChangeTypingAttributesNotification object:self];
-    }
-
     _delegate = aDelegate;
 
     if (_delegate)
     {
         if ([_delegate respondsToSelector:@selector(textDidChange:)])
-            [notificationCenter addObserver:_delegate selector:@selector(textDidChange:) name:CPTextDidChangeNotification object:self];
+            _delegateRespondsToSelectorMask |= kDelegateRespondsTo_textView_textDidChange;
 
         if ([_delegate respondsToSelector:@selector(textViewDidChangeSelection:)])
-            [notificationCenter addObserver:_delegate selector:@selector(textViewDidChangeSelection:) name:CPTextViewDidChangeSelectionNotification object:self];
+            _delegateRespondsToSelectorMask |= kDelegateRespondsTo_textView_didChangeSelection;
 
         if ([_delegate respondsToSelector:@selector(textViewDidChangeTypingAttributes:)])
-            [notificationCenter addObserver:_delegate selector:@selector(textViewDidChangeTypingAttributes:) name:CPTextViewDidChangeTypingAttributesNotification object:self];
+            _delegateRespondsToSelectorMask |= kDelegateRespondsTo_textView_didChangeTypingAttributes;
 
         if ([_delegate respondsToSelector:@selector(textView:doCommandBySelector:)])
             _delegateRespondsToSelectorMask |= kDelegateRespondsTo_textView_doCommandBySelector;
@@ -422,6 +419,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 - (void)didChangeText
 {
     [[CPNotificationCenter defaultCenter] postNotificationName:CPTextDidChangeNotification object:self];
+    if (_delegateRespondsToSelectorMask & kDelegateRespondsTo_textView_textDidChange)
+        [_delegate textDidChange:self];
 }
 
 - (BOOL)shouldChangeTextInRange:(CPRange)aRange replacementString:(CPString)aString
@@ -677,6 +676,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         [self setTypingAttributes:[_textStorage attributesAtIndex:peekLoc effectiveRange:nil]];
 
         [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeSelectionNotification object:self];
+        if (_delegateRespondsToSelectorMask & kDelegateRespondsTo_textView_didChangeSelection)
+            [_delegate textViewDidChangeSelection:self];
+
     }
 }
 
@@ -1377,6 +1379,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeTypingAttributesNotification
                                                         object:self];
+
+     if (_delegateRespondsToSelectorMask & kDelegateRespondsTo_textView_didChangeTypingAttributes)
+        [_delegate textViewDidChangeTypingAttributes:self];
 }
 
 - (void)delete:(id)sender
