@@ -82,88 +82,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     kDelegateRespondsTo_textView_didChangeSelection                                     = 1 << 6,
     kDelegateRespondsTo_textView_didChangeTypingAttributes                              = 1 << 7;
 
-@implementation _CPCaret : CPObject
-{
-    DOMElement  _caretDOM;
-    CGRect      _rect;
-    CPTextView  _textView;
-    BOOL        _drawCaret;
-    CPTimer     _caretTimer;
-}
-
-- (void)setRect:(CGRect)aRect
-{
-    _rect = CGRectCreateCopy(aRect);
-#if PLATFORM(DOM)
-    _caretDOM.style.left = (aRect.origin.x) + "px";
-    _caretDOM.style.top = (aRect.origin.y) + "px";
-    _caretDOM.style.height = (aRect.size.height) + "px";
-#endif
-}
-
-- (id)initForTextView:(CPTextView)aView
-{
-    if (self = [super init])
-    {
-#if PLATFORM(DOM)
-        var style;
-
-        if (!_caretDOM)
-        {
-            _caretDOM = document.createElement("span");
-            style = _caretDOM.style;
-            style.position = "absolute";
-            style.visibility = "visible";
-            style.padding = "0px";
-            style.margin = "0px";
-            style.whiteSpace = "pre";
-            style.backgroundColor = "black";
-            _caretDOM.style.width = "1px";
-            _textView = aView;
-            _textView._DOMElement.appendChild(_caretDOM);
-        }
-#endif
-    }
-    return self;
-}
-
-- (void)setVisibility:(BOOL)flag
-{
-#if PLATFORM(DOM)
-    _textView._caretDOM.style.visibility = flag ? "visible" : "hidden";
-#endif
-    if (!flag)
-        [self stopBlinking];
-}
-
-- (void)_blinkCaret:(CPTimer)aTimer
-{
-    _drawCaret = !_drawCaret;
-    [_textView setNeedsDisplayInRect:_rect];
-}
-
-- (void)startBlinking
-{
-    _drawCaret = YES;
-    _caretTimer = [CPTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(_blinkCaret:) userInfo:nil repeats:YES];
-}
-
-- (void)isBlinking
-{
-    return [_caretTimer isValid];
-}
-
-- (void)stopBlinking
-{
-    _drawCaret=NO;
-    if (_caretTimer)
-    {
-        [_caretTimer invalidate];
-        _caretTimer = nil;
-    }
-}
-
-@end
+@class _CPCaret;
 
 /*!
     @ingroup appkit
@@ -279,7 +198,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     _isVerticallyResizable = YES;
     _isHorizontallyResizable = NO;
 
-    _caret = [[_CPCaret alloc] initForTextView:self];
+    _caret = [[_CPCaret alloc] initWithTextView:self];
     [_caret setRect:CGRectMake(0, 0, 1, 11)]
 }
 
@@ -1922,3 +1841,87 @@ var CPTextViewContainerKey = @"CPTextViewContainerKey",
 }
 
 @end
+
+@implementation _CPCaret : CPObject
+{
+    DOMElement  _caretDOM;
+    CGRect      _rect;
+    CPTextView  _textView;
+    BOOL        _drawCaret;
+    CPTimer     _caretTimer;
+}
+
+- (void)setRect:(CGRect)aRect
+{
+    _rect = CGRectCreateCopy(aRect);
+#if PLATFORM(DOM)
+    _caretDOM.style.left = (aRect.origin.x) + "px";
+    _caretDOM.style.top = (aRect.origin.y) + "px";
+    _caretDOM.style.height = (aRect.size.height) + "px";
+#endif
+}
+
+- (id)initWithTextView:(CPTextView)aView
+{
+    if (self = [super init])
+    {
+#if PLATFORM(DOM)
+        var style;
+
+        if (!_caretDOM)
+        {
+            _caretDOM = document.createElement("span");
+            style = _caretDOM.style;
+            style.position = "absolute";
+            style.visibility = "visible";
+            style.padding = "0px";
+            style.margin = "0px";
+            style.whiteSpace = "pre";
+            style.backgroundColor = "black";
+            _caretDOM.style.width = "1px";
+            _textView = aView;
+            _textView._DOMElement.appendChild(_caretDOM);
+        }
+#endif
+    }
+    return self;
+}
+
+- (void)setVisibility:(BOOL)flag
+{
+#if PLATFORM(DOM)
+    _textView._caretDOM.style.visibility = flag ? "visible" : "hidden";
+#endif
+    if (!flag)
+        [self stopBlinking];
+}
+
+- (void)_blinkCaret:(CPTimer)aTimer
+{
+    _drawCaret = !_drawCaret;
+    [_textView setNeedsDisplayInRect:_rect];
+}
+
+- (void)startBlinking
+{
+    _drawCaret = YES;
+    _caretTimer = [CPTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(_blinkCaret:) userInfo:nil repeats:YES];
+}
+
+- (void)isBlinking
+{
+    return [_caretTimer isValid];
+}
+
+- (void)stopBlinking
+{
+    _drawCaret=NO;
+    if (_caretTimer)
+    {
+        [_caretTimer invalidate];
+        _caretTimer = nil;
+    }
+}
+
+@end
+
