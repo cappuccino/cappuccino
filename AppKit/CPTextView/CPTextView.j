@@ -233,10 +233,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (BOOL)acceptsFirstResponder
 {
-    if ([self isSelectable])
-        return YES;
-
-    return NO;
+    return [self isSelectable]; // editable textviews are automatically selectable
 }
 
 - (BOOL)becomeFirstResponder
