@@ -8,6 +8,36 @@
 {
 }
 
+- (void)viewWillMoveToSuperview:(CPView)aSuperview
+{
+    var orderInAnim = [self animationForKey:@"CPAnimationTriggerOrderIn"];
+
+    if (orderInAnim && [orderInAnim isKindOfClass:[CAPropertyAnimation class]])
+    {
+        [_target setValue:[orderInAnim fromValue] forKeyPath:[orderInAnim keyPath]];
+    }
+
+    [_target viewWillMoveToSuperview:aSuperview];
+}
+
+- (void)viewDidMoveToSuperview
+{
+    var orderInAnim = [self animationForKey:@"CPAnimationTriggerOrderIn"];
+
+    if (orderInAnim && [orderInAnim isKindOfClass:[CAPropertyAnimation class]])
+    {
+        [self _setTargetValue:YES withKeyPath:@"CPAnimationTriggerOrderIn" fallback:nil completion:function()
+        {
+            [_target setValue:[orderInAnim toValue] forKeyPath:[orderInAnim keyPath]];
+        }];
+    }
+    else
+    {
+        [_target viewDidMoveToSuperview];
+    }
+
+}
+
 - (void)removeFromSuperview
 {
     [self _setTargetValue:nil withKeyPath:@"CPAnimationTriggerOrderOut" setter:_cmd];
@@ -61,6 +91,7 @@
 }
 
 - (void)_setTargetValue:(id)aTargetValue withKeyPath:(CPString)aKeyPath fallback:(Function)fallback  completion:(Function)completion
+- (void)_setTargetValue:(id)aTargetValue withKeyPath:(CPString)aKeyPath fallback:(Function)fallback completion:(Function)completion
 {
     var animation = [_target animationForKey:aKeyPath],
         context = [CPAnimationContext currentContext];
@@ -126,22 +157,32 @@ var CPVIEW_PROPERTIES_DESCRIPTOR = @{
     return [CPVIEW_PROPERTIES_DESCRIPTOR objectForKey:aKeyPath];
 }
 
-- (id)DOMElementForKeyPath:(CPString)aKeyPath
++ (Class)animatorClass
 {
-    return _DOMElement;
+    var anim_class = CPClassFromString(CPStringFromClass(self) + "Animator");
+
+    if (anim_class)
+        return anim_class;
+
+    return [super animatorClass];
 }
 
 - (id)animator
 {
     if (!_animator)
-        _animator = [[CPViewAnimator alloc] initWithTarget:self];
+        _animator = [[[[self class] animatorClass] alloc] initWithTarget:self];
 
     return _animator;
 }
 
+- (id)DOMElementForKeyPath:(CPString)aKeyPath
+{
+    return _DOMElement;
+}
+
 + (CAAnimation)defaultAnimationForKey:(CPString)aKey
 {
-    if ([[self class] cssPropertiesForKeyPath:aKey] !== nil)
+    if ([self cssPropertiesForKeyPath:aKey] !== nil)
         return [CAAnimation animation];
 
     return nil;

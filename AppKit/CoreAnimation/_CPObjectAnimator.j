@@ -47,25 +47,26 @@ var _supportsCSSAnimations = null;
    return [_target isEqual:anObject];
 }
 
-- (CPMethodSignature)methodSignatureForSelector:(SEL)aSelector
-{
-    return [_target methodSignatureForSelector:aSelector];
-}
-
 - (id)forwardingTargetForSelector:(SEL)aSelector
 {
     return _target;
 }
 
+- (CPMethodSignature)methodSignatureForSelector:(SEL)aSelector
+{
+    return [_target methodSignatureForSelector:aSelector];
+}
+
 - (void)forwardInvocation:(CPInvocation)anInvocation
 {
-    [anInvocation setTarget:_target];
-    [anInvocation invoke];
+    var target = [self forwardingTargetForSelector:[anInvocation selector]];
+    [anInvocation invokeWithTarget:target];
+    return;
 }
 
 - (void)doesNotRecognizeSelector:(SEL)aSelector
 {
-    [_target doesNotRecognizeSelector:aSelector];
+    [CPException raise:CPInvalidArgumentException reason:@"Animator does not recognize selector " + CPStringFromSelector(aSelector)];
 }
 
 - (CPString)description
