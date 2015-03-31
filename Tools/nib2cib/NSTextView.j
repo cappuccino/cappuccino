@@ -37,6 +37,8 @@
         [self setEditable:[aTextViewSharedData isEditable]];
         [self setSelectable:[aTextViewSharedData isSelectable]];
         [self setRichText:[aTextViewSharedData isRichText]];
+        [self setAllowsUndo:[aTextViewSharedData allowsUndo]];
+        [self setUsesFontPanel:[aTextViewSharedData usesFontPanel]];
 
         [self setBackgroundColor:[aTextViewSharedData backgroundColor]];
         [self setInsertionPointColor:[aTextViewSharedData insertionColor]];

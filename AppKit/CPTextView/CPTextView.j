@@ -1773,7 +1773,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 @end
 
 
-var CPTextViewContainerKey = @"CPTextViewContainerKey",
+var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
+    CPTextViewUsesFontPanelKey = @"CPTextViewUsesFontPanelKey",
+    CPTextViewContainerKey = @"CPTextViewContainerKey",
     CPTextViewLayoutManagerKey = @"CPTextViewLayoutManagerKey",
     CPTextViewTextStorageKey = @"CPTextViewTextStorageKey",
     CPTextViewInsertionPointColorKey = @"CPTextViewInsertionPointColorKey",
@@ -1801,6 +1803,9 @@ var CPTextViewContainerKey = @"CPTextViewContainerKey",
 
         while (key = [enumerator nextObject])
             [_selectedTextAttributes setObject:[selectedTextAttributes valueForKey:key] forKey:key];
+
+        [self setAllowsUndo:[aCoder decodeBoolForKey:CPTextViewAllowsUndoKey]];
+        [self setUsesFontPanel:[aCoder decodeBoolForKey:CPTextViewUsesFontPanelKey]];
     }
 
     return self;
@@ -1812,6 +1817,8 @@ var CPTextViewContainerKey = @"CPTextViewContainerKey",
     [aCoder encodeObject:_textContainer forKey:CPTextViewContainerKey];
     [aCoder encodeObject:_insertionPointColor forKey:CPTextViewInsertionPointColorKey];
     [aCoder encodeObject:_selectedTextAttributes forKey:CPTextViewSelectedTextAttributesKey];
+    [aCoder encodeBool:_allowsUndo forKey:CPTextViewAllowsUndoKey];
+    [aCoder encodeBool:_usesFontPanel forKey:CPTextViewUsesFontPanelKey];
 }
 
 @end
