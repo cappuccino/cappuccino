@@ -182,7 +182,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     _selectionGranularity = CPSelectByCharacter;
     _selectedTextAttributes = [CPDictionary dictionaryWithObject:[CPColor selectedTextBackgroundColor]
-                                            forKey:CPBackgroundColorAttributeName];
+                                                          forKey:CPBackgroundColorAttributeName];
 
     _insertionPointColor = [CPColor blackColor];
     _textColor = [CPColor blackColor];
@@ -447,7 +447,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 {
     [[[[self window] undoManager] prepareWithInvocationTarget:self]
                 _replaceCharactersInRange:CPMakeRange(aRange.location, [aString length])
-                withAttributedString:[_textStorage attributedSubstringFromRange:CPMakeRangeCopy(aRange)]];
+                     withAttributedString:[_textStorage attributedSubstringFromRange:CPMakeRangeCopy(aRange)]];
 
     [_textStorage replaceCharactersInRange:aRange withAttributedString:aString];
     [self _fixupReplaceForRange:CPMakeRange(aRange.location, [aString length])];
@@ -457,7 +457,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 {
     [[[[self window] undoManager] prepareWithInvocationTarget:self]
                 _replaceCharactersInRange:CPMakeRange(aRange.location, [aString length])
-                withString:[[self string] substringWithRange:CPMakeRangeCopy(aRange)]];
+                               withString:[[self string] substringWithRange:CPMakeRangeCopy(aRange)]];
 
     [_textStorage replaceCharactersInRange:CPMakeRangeCopy(aRange) withString:aString];
     [self _fixupReplaceForRange:CPMakeRange(aRange.location, [aString length])];
@@ -477,7 +477,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     {
         [[undoManager prepareWithInvocationTarget:self]
                 _replaceCharactersInRange:CPMakeRange(_selectionRange.location, [aString length])
-                withAttributedString:[_textStorage attributedSubstringFromRange:CPMakeRangeCopy(_selectionRange)]];
+                     withAttributedString:[_textStorage attributedSubstringFromRange:CPMakeRangeCopy(_selectionRange)]];
 
         [undoManager setActionName:@"Replace rich text"];
         [_textStorage replaceCharactersInRange:CPMakeRangeCopy(_selectionRange) withAttributedString:aString];
@@ -491,7 +491,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
             aString = [[CPAttributedString alloc] initWithString:aString attributes:_typingAttributes];
             [[undoManager prepareWithInvocationTarget:self]
                 _replaceCharactersInRange:CPMakeRange(_selectionRange.location, [aString length])
-                withAttributedString:[_textStorage attributedSubstringFromRange:CPMakeRangeCopy(_selectionRange)]];
+                     withAttributedString:[_textStorage attributedSubstringFromRange:CPMakeRangeCopy(_selectionRange)]];
 
             [_textStorage replaceCharactersInRange:CPMakeRangeCopy(_selectionRange) withAttributedString:aString];
         }
@@ -614,6 +614,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         [self setTypingAttributes:[_textStorage attributesAtIndex:peekLoc effectiveRange:nil]];
 
         [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeSelectionNotification object:self];
+
         if (_delegateRespondsToSelectorMask & kDelegateRespondsTo_textView_didChangeSelection)
             [_delegate textViewDidChangeSelection:[[CPNotification alloc] initWithName:CPTextViewDidChangeSelectionNotification object:self userInfo:nil]];
 
@@ -706,11 +707,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     var setRange = CPMakeRange(_startTrackingLocation, 0);
 
     if ([event modifierFlags] & CPShiftKeyMask)
-    {
-        setRange = _MakeRangeFromAbs(_startTrackingLocation < _MidRange(_selectionRange)?
-                                     CPMaxRange(_selectionRange) : _selectionRange.location,
-                                     _startTrackingLocation);
-    }
+        setRange = _MakeRangeFromAbs(_startTrackingLocation < _MidRange(_selectionRange) ? CPMaxRange(_selectionRange) : _selectionRange.location, _startTrackingLocation);
 
     [self setSelectedRange:setRange affinity:0 stillSelecting:YES];
 
@@ -724,9 +721,10 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)_clearRange:(CPRange)range
 {
-    var rects = [_layoutManager rectArrayForCharacterRange:nil withinSelectedCharacterRange:range
-                                 inTextContainer:_textContainer
-                                 rectCount:nil],
+    var rects = [_layoutManager rectArrayForCharacterRange:nil
+                              withinSelectedCharacterRange:range
+                                           inTextContainer:_textContainer
+                                                 rectCount:nil],
         l = rects.length;
 
     for (var i = 0; i < l; i++)
@@ -748,8 +746,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     var oldRange = [self selectedRange],
         index = [_layoutManager glyphIndexForPoint:point
-                                inTextContainer:_textContainer
-                                fractionOfDistanceThroughGlyph:fraction];
+                                   inTextContainer:_textContainer
+                    fractionOfDistanceThroughGlyph:fraction];
 
     if (index === CPNotFound)
         index = _scrollingDownward ? CPMaxRange(oldRange) : oldRange.location;
@@ -771,12 +769,12 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     if (index < _startTrackingLocation)
         [self setSelectedRange:CPMakeRange(index, _startTrackingLocation - index)
-              affinity:0
-              stillSelecting:YES];
+                      affinity:0
+                stillSelecting:YES];
     else
         [self setSelectedRange:CPMakeRange(_startTrackingLocation, index - _startTrackingLocation)
-              affinity:0
-              stillSelecting:YES];
+                      affinity:0
+                stillSelecting:YES];
 
     [self scrollRangeToVisible:CPMakeRange(index, 0)];
 }
@@ -795,7 +793,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     _startTrackingLocation = _selectionRange.location;
 
     if (_scrollingTimer)
-    {   [_scrollingTimer invalidate];
+    {
+        [_scrollingTimer invalidate];
         _scrollingTimer = nil;
     }
 }
@@ -1315,7 +1314,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeTypingAttributesNotification
                                                         object:self];
 
-     if (_delegateRespondsToSelectorMask & kDelegateRespondsTo_textView_didChangeTypingAttributes)
+    if (_delegateRespondsToSelectorMask & kDelegateRespondsTo_textView_didChangeTypingAttributes)
         [_delegate textViewDidChangeTypingAttributes:[[CPNotification alloc] initWithName:CPTextViewDidChangeTypingAttributesNotification object:self userInfo:nil]];
 }
 
@@ -1596,28 +1595,27 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     {
         // -> extend to the left
         for (var searchIndex = index - 1; searchIndex > 0 && regex.exec(_characterTripletFromStringAtIndex(string, searchIndex)) !== null; searchIndex--)
-        {
             wordRange.location = searchIndex;
-        }
+
         // -> extend to the right
         searchIndex = index + 1;
+
         while (searchIndex < numberOfCharacters && regex.exec(_characterTripletFromStringAtIndex(string, searchIndex)) !== null)
-        {
             searchIndex++;
-        }
+
         return _MakeRangeFromAbs(wordRange.location, MIN(MAX(0, numberOfCharacters - 1), searchIndex));
     }
+
     // -> extend to the left
     for (var searchIndex = index - 1; searchIndex >= 0 && regex.exec(_characterTripletFromStringAtIndex(string, searchIndex)) === null; searchIndex--)
-    {
         wordRange.location = searchIndex;
-    }
+
     // -> extend to the right
     index++;
+
     while (index < numberOfCharacters && regex.exec(_characterTripletFromStringAtIndex(string, index))  === null)
-    {
         index++;
-    }
+
     return _MakeRangeFromAbs(wordRange.location, MIN(MAX(0, numberOfCharacters), index));
 }
 

@@ -465,6 +465,7 @@ _oncontextmenuhandler = function () { return false; };
                             glyphRange.length++;
                     }
                 }
+
                 if (glyphRange.location != CPNotFound)
                 {
                     if (!range)
@@ -485,11 +486,11 @@ _oncontextmenuhandler = function () { return false; };
 }
 
 - (void)drawUnderlineForGlyphRange:(CPRange)glyphRange
-                    underlineType:(int)underlineVal
+                     underlineType:(int)underlineVal
                     baselineOffset:(float)baselineOffset
-                    lineFragmentRect:(CGRect)lineFragmentRect
-                    lineFragmentGlyphRange:(CPRange)lineGlyphRange
-                    containerOrigin:(CGPoint)containerOrigin
+                  lineFragmentRect:(CGRect)lineFragmentRect
+            lineFragmentGlyphRange:(CPRange)lineGlyphRange
+                   containerOrigin:(CGPoint)containerOrigin
 {
 // FIXME
 }
@@ -631,9 +632,7 @@ _oncontextmenuhandler = function () { return false; };
         l = fragments.length;
 
     for (var i = 0; i < l; i++)
-    {
         [fragments[i] invalidate];
-    }
 
     var lineFragment = [[_lineFragmentFactory alloc] initWithRange:glyphRange textContainer:aTextContainer textStorage:_textStorage];
 
