@@ -28,6 +28,8 @@
 // The default global behavior class, created lazily
 var CPDefaultDcmHandler = nil;
 
+var CPDecimalNumberUIDs = new CFMutableDictionary();
+
 /*!
     @class CPDecimalNumberHandler
     @ingroup foundation
@@ -531,6 +533,20 @@ var CPDecimalNumberHandlerRoundingModeKey       = @"CPDecimalNumberHandlerRoundi
 }
 
 // instance methods
+
+- (CPString)UID
+{
+    var UID = CPDecimalNumberUIDs.valueForKey(self);
+
+    if (!UID)
+    {
+        UID = objj_generateObjectUID();
+        CPDecimalNumberUIDs.setValueForKey(self, UID);
+    }
+
+    return UID + "";
+}
+
 /*!
     Returns a new CPDecimalNumber object with the result of the summation of
     the receiver object and \c decimalNumber. If overflow occurs then the
