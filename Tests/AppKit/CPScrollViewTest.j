@@ -229,7 +229,7 @@
 
     [scrollView setDocumentView:documentView];
 
-    [textField1 setFrameOrigin:CGPointMake(0, 0)];
+    [textField1 setFrameOrigin:CGPointMake(10, 10)];
     [textField2 setFrameOrigin:CGPointMake(500, 500)];
 
     [documentView addSubview:textField1];
@@ -260,7 +260,7 @@
     visibleRect = [documentView visibleRect];
 
     // We should now be back at top left corner
-    [self assertPoint:CGPointMake(0, 0) equals:visibleRect.origin message:@"VisibleRect origin not at top left corner again"];
+    [self assertPoint:CGPointMake(10, 10) equals:visibleRect.origin message:@"VisibleRect origin not at top left corner again"];
 
     // Try to scroll again and it should not scroll
     hasScrolled = [textField1 scrollRectToVisible:[textField1 bounds]];

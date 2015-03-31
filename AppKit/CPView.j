@@ -2730,7 +2730,7 @@ setBoundsOrigin:
         doesItFitForWidth = documentViewVisibleRect.size.width >= rectInDocumentView.size.width;
 
     // One of the following has to be true since our current visible rect didn't contain aRect.
-    if (rectInDocumentViewMinX < rectInDocumentViewMinX && doesItFitForWidth)
+    if (rectInDocumentViewMinX < documentViewVisibleRectMinX && doesItFitForWidth)
         // Scroll to left edge of aRect as it is to the left of the visible rect and it fit inside
         scrollPoint.x = rectInDocumentViewMinX;
     else if (CGRectGetMaxX(rectInDocumentView) > CGRectGetMaxX(documentViewVisibleRect) && doesItFitForWidth)
