@@ -622,7 +622,6 @@ NOT YET IMPLEMENTED
 - (void)reloadData
 {
     [self _reloadDataViews];
-    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 }
 
 /*!
@@ -1146,6 +1145,7 @@ NOT YET IMPLEMENTED
         _dirtyTableColumnRangeIndex = MIN(index, _dirtyTableColumnRangeIndex);
 
     [self reloadData];
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 }
 
 /*!
@@ -3834,6 +3834,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 - (void)enumerateAvailableViewsUsingBlock:(Function/*CPView *dataView, CPInteger row, CPInteger column*, @ref stop*/)handler
 {
     [self reloadData];
+
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
     [self _enumerateViewsInRows:_exposedRows columns:_exposedColumns usingBlock:handler];
 }
 
@@ -3843,6 +3846,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
 - (void)_enumerateViewsInRows:(CPIndexSet)rowIndexes columns:(CPIndexSet)columnIndexes usingBlock:(Function/*CPView dataView, CPInteger row, CPInteger column, @ref stop*/)handler
 {
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
     [rowIndexes enumerateIndexesUsingBlock:function(rowIndex, stopRow)
     {
         var dataViewsForRow = _dataViewsForRows[rowIndex];
@@ -3868,6 +3873,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
 - (void)_enumerateViewsInRows:(CPIndexSet)rowIndexes tableColumns:(CPArray)tableColumns usingBlock:(Function/*CPView dataView, CPInteger row, CPtableColumn tableColumn, CPInteger column, @ref stop*/)handler
 {
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
     [rowIndexes enumerateIndexesUsingBlock:function(rowIndex, stopRow)
     {
         var dataViewsForRow = _dataViewsForRows[rowIndex];
@@ -5308,6 +5315,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         [[CPException exceptionWithName:@"Error" reason:@"Attempt to edit row " + rowIndex + " when not selected." userInfo:nil] raise];
 
     [self reloadData];
+
+    // Process all events immediately to make sure table data views are reloaded.
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 
     [self scrollRowToVisible:rowIndex];
     [self scrollColumnToVisible:columnIndex];

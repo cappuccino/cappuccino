@@ -159,9 +159,6 @@
     [tableView selectRowIndexes:[CPIndexSet indexSetWithIndex:1] byExtendingSelection:NO];
     [tableView editColumn:0 row:1 withEvent:nil select:YES];
 
-    // Process all events immediately to make sure table data views are reloaded.
-    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-
     // Now some text field should be the first responder.
     var fieldEditor = [theWindow firstResponder];
     [self assert:CPTextField equals:[fieldEditor class] message:"table cell editor should be a text field"];
@@ -184,6 +181,7 @@
 {
     var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0, 0, 100.0, 100.0)],
         tableColumn1 = [[CPTableColumn alloc] initWithIdentifier:@"Bar"];
+
     [tableView addTableColumn:tableColumn1];
     [scrollView setDocumentView:tableView];
 
@@ -206,6 +204,8 @@
     [tableColumn setDataView:[CustomTextView0 new]];
     [tableColumn1 setDataView:[CustomTextView1 new]];
 
+
+    [tableView reloadData];
     // Process all events immediately to make sure table data views are reloaded.
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 
@@ -238,13 +238,15 @@
         visibleHeight = [tableView visibleRect].size.height,
         fullRowHeight = [tableView rowHeight] + [tableView intercellSpacing].height,
         visibleRows = CEIL(visibleHeight / fullRowHeight);
+
     [self assert:2 * visibleRows equals:[allViews count] message:"only as many data views as necessary should be present"];
 
     // Now if we scroll down, new views should come in and others should go out.
     var rowTwentyFiveAndAHalfY = FLOOR(25.5 * fullRowHeight);
     [tableView scrollPoint:CGPointMake(0, rowTwentyFiveAndAHalfY)];
-    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 
+
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
     AssertCorrectCellsVisible(25);
     [self assert:2 * visibleRows  equals:[allViews count] message:"only as many data views as necessary should be present (2)"];
 }
@@ -270,11 +272,11 @@
     [[theWindow contentView] addSubview:contentBindingTable];
     [theWindow makeFirstResponder:contentBindingTable];
 
-    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-
     // Set the model again with different values
     [delegate setTableEntries:[[@"C1", @"D1"], [@"C2", @"D2"], [@"C3", @"D3"]]];
     [contentBindingTable reloadData];
+
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 }
 
 - (void)testColumnValueBinding
@@ -294,8 +296,6 @@
     [[theWindow contentView] addSubview:table];
     [theWindow makeFirstResponder:table];
 
-    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-
     // Should remove all table rows.
     [self assertNoThrow:function()
     {
@@ -314,12 +314,17 @@
     // Change a value in row 0. The number of rows stays the same.
     [container setTableEntries:@[@{@"name":@"B4"}, @{@"name":@"B2"}, @{@"name":@"B3"}]];
 
+    var enumerateViewsInRowsCall = 0;
+
     // Checks that the displayed data matches the model data.
     [table enumerateAvailableViewsUsingBlock:function(dataView, aRow, aColumn, stop)
     {
+        enumerateViewsInRowsCall++;
         var data_value = [[[container tableEntries] objectAtIndex:aRow] objectForKey:@"name"];
         [self assert:[dataView objectValue] equals:data_value];
     }];
+
+    [self assert:enumerateViewsInRowsCall equals:3];
 
     // We could also check that the dataviews in rows 1 and 2 are identical to the ones before mutation.
 }
@@ -348,8 +353,6 @@
     [table addTableColumn:tableColumn2];
 
     [table reloadData];
-
-    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 
     [self assertTrue:[table bounds].size.width > 100 && [table bounds].size.width < 200];
 
@@ -429,9 +432,13 @@
     [self assert:CPNotFound equals:column];
     [self assert:CPNotFound equals:row];
 
+    var enumerateViewsInRowsCall = 0;
+
 // Enumerate views inside the table view and check that rows and columns are correct
     [table enumerateAvailableViewsUsingBlock:function(dataView, aRow, aColumn, stop)
     {
+        enumerateViewsInRowsCall++;
+
         var getRow,
             getColumn;
 
@@ -441,9 +448,15 @@
         [self assert:aRow equals:getRow];
     }];
 
+    [self assert:enumerateViewsInRowsCall equals:6];
+
+    enumerateViewsInRowsCall = 0;
+
 // Enumerate views inside a different table view and check that rows and columns are not found
     [table2 enumerateAvailableViewsUsingBlock:function(dataView, aRow, aColumn, stop)
     {
+        enumerateViewsInRowsCall++;
+
         var getRow,
             getColumn;
 
@@ -452,6 +465,8 @@
         [self assert:CPNotFound equals:getRow];
         [self assert:CPNotFound equals:getColumn];
     }];
+
+    [self assert:enumerateViewsInRowsCall equals:6];
 }
 
 -(void)testNotificationsRegistered
@@ -498,6 +513,8 @@
     [theWindow makeFirstResponder:tableView];
     [tableView selectRowIndexes:[CPIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
 
+    var enumerateViewsInRowsCall = 0;
+
     [tableView enumerateAvailableViewsUsingBlock:function(dataView, row, column, stop)
     {
         if (row == 0)
@@ -513,12 +530,20 @@
             [self assertFalse:[dataView hasThemeState:CPThemeStateSelectedDataView] message:"CPThemeStateSelectedDataView should be disabled"];
             [self assertTrue:[dataView hasThemeState:CPThemeStateFirstResponder] message:"CPThemeStateFirstResponder should be enabled"];
         }
+
+        enumerateViewsInRowsCall++;
     }];
+
+    [self assert:enumerateViewsInRowsCall equals:3];
 
     [tableView selectRowIndexes:[CPIndexSet indexSetWithIndex:1] byExtendingSelection:NO];
 
+    enumerateViewsInRowsCall = 0;
+
     [tableView enumerateAvailableViewsUsingBlock:function(dataView, row, column, stop)
     {
+        enumerateViewsInRowsCall++;
+
         if (row == 0)
         {
             [self assertTrue:[dataView hasThemeState:CPThemeStateTableDataView] message:"CPThemeStateTableDataView should be enabled"];
@@ -527,10 +552,16 @@
         }
     }];
 
+    [self assert:enumerateViewsInRowsCall equals:3];
+
     [theWindow makeFirstResponder:textField];
+
+    enumerateViewsInRowsCall = 0;
 
     [tableView enumerateAvailableViewsUsingBlock:function(dataView, row, column, stop)
     {
+        enumerateViewsInRowsCall++;
+
         if (row == 0)
         {
             [self assertTrue:[dataView hasThemeState:CPThemeStateTableDataView] message:"CPThemeStateTableDataView should be enabled"];
@@ -545,6 +576,8 @@
             [self assertFalse:[dataView hasThemeState:CPThemeStateFirstResponder] message:"CPThemeStateFirstResponder should be disabled"];
         }
     }];
+
+    [self assert:enumerateViewsInRowsCall equals:3];
 }
 
 - (void)testMethodViewAtColumnWithMakeIfNecessarySetToNo
@@ -557,6 +590,9 @@
     [tableView setDelegate:[CustomeSizeTableDelegate new]];
     [dataSource setTableEntries:["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]];
     [tableView setDataSource:dataSource];
+
+    var view = [tableView viewAtColumn:0 row:0 makeIfNecessary:NO];
+    [self assert:view equals:nil message:@"View should be equal to nil"];
 
     // Process all events immediately to make sure table data views are reloaded.
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
@@ -580,9 +616,6 @@
     [dataSource setTableEntries:["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]];
     [tableView setDataSource:dataSource];
 
-    // Process all events immediately to make sure table data views are reloaded.
-    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-
     var view = [tableView viewAtColumn:0 row:0 makeIfNecessary:YES];
     [self assert:[view objectValue] equals:@"A" message:@"View should be equal to A"];
     [self assert:[view superview] equals:tableView message:@"Superview of view should be the tableview"];
@@ -602,9 +635,6 @@
     [tableView setDelegate:[CustomeSizeTableDelegate new]];
     [dataSource setTableEntries:["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]];
     [tableView setDataSource:dataSource];
-
-    // Process all events immediately to make sure table data views are reloaded.
-    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 
     var expectedMessage = @"Row 26 out of row range [0-25] for rowViewAtRow:createIfNeeded:",
         exceptionMessage = @"";
