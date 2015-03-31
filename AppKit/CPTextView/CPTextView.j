@@ -34,6 +34,8 @@
 @class _CPRTFProducer;
 @class _CPRTFParser;
 @class CPClipView;
+@class _CPSelectionBox;
+@class _CPCaret;
 
 @protocol CPTextViewDelegate <CPTextDelegate>
 
@@ -219,6 +221,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         if (![self _isCharacterAtIndex:MAX(0, _selectionRange.location - 1) granularity:_copySelectionGranularity])
             [self insertText:" "];
     }
+
     [super paste:sender];
 
     if (_copySelectionGranularity > 0)
@@ -265,10 +268,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     if (aDelegate === _delegate)
         return;
 
-    var notificationCenter = [CPNotificationCenter defaultCenter];
-
     _delegateRespondsToSelectorMask = 0;
-
     _delegate = aDelegate;
 
     if (_delegate)
@@ -417,6 +417,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 - (void)didChangeText
 {
     [[CPNotificationCenter defaultCenter] postNotificationName:CPTextDidChangeNotification object:self];
+
     if (_delegateRespondsToSelectorMask & kDelegateRespondsTo_textView_textDidChange)
         [_delegate textDidChange:[[CPNotification alloc] initWithName:CPTextDidChangeNotification object:self userInfo:nil]];
 }
@@ -441,6 +442,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     [self scrollRangeToVisible:_selectionRange];
     [self setNeedsDisplay:YES];
 }
+
 - (void)_replaceCharactersInRange:aRange withAttributedString:(CPString)aString
 {
     [[[[self window] undoManager] prepareWithInvocationTarget:self]
@@ -450,6 +452,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     [_textStorage replaceCharactersInRange:aRange withAttributedString:aString];
     [self _fixupReplaceForRange:CPMakeRange(aRange.location, [aString length])];
 }
+
 - (void)_replaceCharactersInRange:(CPRange)aRange withString:(CPString)aString
 {
     [[[[self window] undoManager] prepareWithInvocationTarget:self]
@@ -516,44 +519,15 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     [_caret setVisibility:flag];
 }
 
-- (id)_createSelectionSpanForRect:(CGRect)aRect andColor:(CPColor)aColor
-{
-
-#if PLATFORM(DOM)
-    var ret = document.createElement("span");
-    ret.style.position = "absolute";
-    ret.style.visibility = "visible";
-    ret.style.padding = "0px";
-    ret.style.margin = "0px";
-    ret.style.whiteSpace = "pre";
-    ret.style.backgroundColor = [aColor cssString];
-
-    ret.style.width = (aRect.size.width) + "px";
-    ret.style.left = (aRect.origin.x) + "px";
-    ret.style.top = (aRect.origin.y) + "px";
-    ret.style.height = (aRect.size.height) + "px";
-    ret.style.zIndex = -1000;
-    ret.oncontextmenu = ret.onmousedown = ret.onselectstart = function () { return false; };
-
-    return ret;
-#else
-    return nil;
-#endif
-
-}
 
 - (void)drawRect:(CGRect)aRect
 {
 #if PLATFORM(DOM)
     var range = [_layoutManager glyphRangeForBoundingRect:aRect inTextContainer:_textContainer];
 
-    if (_selectionSpans)
-    {
-        for (var i = 0; i < _selectionSpans.length; i++)
-        {
-            _DOMElement.removeChild(_selectionSpans[i]);
-        }
-    }
+    for (var i = 0; i < [_selectionSpans count]; i++)
+        [_selectionSpans[i] removeFromTextView];
+
     _selectionSpans = [];
 
     if (_selectionRange.length)
@@ -565,15 +539,13 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
             effectiveSelectionColor = [self _isFocused] ? [_selectedTextAttributes objectForKey:CPBackgroundColorAttributeName] : [CPColor _selectedTextBackgroundColorUnfocussed],
             lengthRect = rects.length;
 
-
         for (var i = 0; i < lengthRect; i++)
         {
             rects[i].origin.x += _textContainerOrigin.x;
             rects[i].origin.y += _textContainerOrigin.y;
 
-            var newSpan = [self _createSelectionSpanForRect:rects[i] andColor:effectiveSelectionColor];
-            _selectionSpans.push(newSpan);
-            _DOMElement.appendChild(newSpan);
+            var newSpan = [[_CPSelectionBox alloc] initWithTextView:self rect:rects[i] color:effectiveSelectionColor];
+            [_selectionSpans addObject:newSpan];
         }
     }
 
@@ -1845,6 +1817,60 @@ var CPTextViewContainerKey = @"CPTextViewContainerKey",
 }
 
 @end
+
+
+@implementation _CPSelectionBox : CPObject
+{
+    DOMElement  _selectionBoxDOM;
+    CGRect      _rect;
+    CPColor     _color
+    CPTextView  _textView;
+}
+
+- (id)initWithTextView:(CPTextView)aTextView rect:(CGRect)aRect color:(CPColor)aColor
+{
+    if (self = [super init])
+    {
+        _textView = aTextView;
+        _rect = aRect;
+        _color = aColor;
+
+        [self _createSpan];
+        _textView._DOMElement.appendChild(_selectionBoxDOM);
+    }
+
+    return self;
+}
+
+- (void)removeFromTextView
+{
+    _textView._DOMElement.removeChild(_selectionBoxDOM);
+}
+
+- (void)_createSpan
+{
+
+#if PLATFORM(DOM)
+    _selectionBoxDOM = document.createElement("span");
+    _selectionBoxDOM.style.position = "absolute";
+    _selectionBoxDOM.style.visibility = "visible";
+    _selectionBoxDOM.style.padding = "0px";
+    _selectionBoxDOM.style.margin = "0px";
+    _selectionBoxDOM.style.whiteSpace = "pre";
+    _selectionBoxDOM.style.backgroundColor = [_color cssString];
+
+    _selectionBoxDOM.style.width = (_rect.size.width) + "px";
+    _selectionBoxDOM.style.left = (_rect.origin.x) + "px";
+    _selectionBoxDOM.style.top = (_rect.origin.y) + "px";
+    _selectionBoxDOM.style.height = (_rect.size.height) + "px";
+    _selectionBoxDOM.style.zIndex = -1000;
+    _selectionBoxDOM.oncontextmenu = _selectionBoxDOM.onmousedown = _selectionBoxDOM.onselectstart = function () { return false; };
+#endif
+
+}
+
+@end
+
 
 @implementation _CPCaret : CPObject
 {
