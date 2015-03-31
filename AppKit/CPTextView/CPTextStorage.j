@@ -33,6 +33,16 @@ CPTextStorageEditedCharacters = 2;
 CPTextStorageWillProcessEditingNotification = @"CPTextStorageWillProcessEditingNotification";
 CPTextStorageDidProcessEditingNotification = @"CPTextStorageDidProcessEditingNotification";
 
+@protocol CPTextStorageDelegate <CPObject>
+
+- (void)textStorageWillProcessEditing:(CPNotification)aNotification;
+- (void)textStorageDidProcessEditing:(CPNotification)aNotification;
+
+@end
+
+
+var CPTextStorageDelegate_textStorageWillProcessEditing_ = 1 << 1,
+    CPTextStorageDelegate_textStorageDidProcessEditing_ = 1 << 2;
 
 /*!
     @ingroup appkit
@@ -40,15 +50,16 @@ CPTextStorageDidProcessEditingNotification = @"CPTextStorageDidProcessEditingNot
 */
 @implementation CPTextStorage : CPMutableAttributedString
 {
-    CPColor        _foregroundColor @accessors(property=foregroundColor);
-    CPFont         _font            @accessors(property=font);
-    CPMutableArray _layoutManagers  @accessors(getter=layoutManagers);
-    CPRange        _editedRange     @accessors(getter=editedRange);
-    id             _delegate        @accessors(property=delegate);
-    int            _changeInLength  @accessors(property=changeInLength);
-    unsigned       _editedMask      @accessors(property=editedMask);
+    CPColor                         _foregroundColor @accessors(property=foregroundColor);
+    CPFont                          _font            @accessors(property=font);
+    CPMutableArray                  _layoutManagers  @accessors(getter=layoutManagers);
+    CPRange                         _editedRange     @accessors(getter=editedRange);
+    id <CPTextStorageDelegate>      _delegate        @accessors(property=delegate);
+    int                             _changeInLength  @accessors(property=changeInLength);
+    unsigned                        _editedMask      @accessors(property=editedMask);
 
-    int            _editCount; // {begin,end}Editing counter
+    int                             _editCount; // {begin,end}Editing counter
+    unsigned                        _implementedDelegateMethods;
 }
 
 
@@ -84,28 +95,21 @@ CPTextStorageDidProcessEditingNotification = @"CPTextStorageDidProcessEditingNot
 #pragma mark -
 #pragma mark Delegate methods
 
-- (void)setDelegate:(id)aDelegate
+- (void)setDelegate:(id <CPTextStorageDelegate>)aDelegate
 {
     if (_delegate === aDelegate)
         return;
 
-    var notificationCenter = [CPNotificationCenter defaultCenter];
-
-    if (_delegate && aDelegate === nil)
-    {
-        [notificationCenter removeObserver:_delegate name:CPTextStorageWillProcessEditingNotification object:self];
-        [notificationCenter removeObserver:_delegate name:CPTextStorageDidProcessEditingNotification object:self];
-    }
-
+    _implementedDelegateMethods = 0;
     _delegate = aDelegate;
 
     if (_delegate)
     {
         if ([_delegate respondsToSelector:@selector(textStorageWillProcessEditing:)])
-            [notificationCenter addObserver:_delegate selector:@selector(textStorageWillProcessEditing:) name:CPTextStorageWillProcessEditingNotification object:self];
+            _implementedDelegateMethods |= CPTextStorageDelegate_textStorageWillProcessEditing_;
 
         if ([_delegate respondsToSelector:@selector(textStorageDidProcessEditing:)])
-            [notificationCenter addObserver:_delegate selector:@selector(textStorageDidProcessEditing:) name:CPTextStorageDidProcessEditingNotification object:self];
+            _implementedDelegateMethods |= CPTextStorageDelegate_textStorageDidProcessEditing_;
     }
 }
 
@@ -121,6 +125,7 @@ CPTextStorageDidProcessEditingNotification = @"CPTextStorageDidProcessEditingNot
         [_layoutManagers addObject:aManager];
     }
 }
+
 - (void)removeLayoutManager:(CPLayoutManager)aManager
 {
     if ([_layoutManagers containsObject:aManager])
@@ -141,15 +146,9 @@ CPTextStorageDidProcessEditingNotification = @"CPTextStorageDidProcessEditingNot
 
 - (void)processEditing
 {
-    var notificationCenter = [CPNotificationCenter defaultCenter];
-
-    [notificationCenter postNotificationName:CPTextStorageWillProcessEditingNotification
-                                      object:self];
-
+    [self _sendDelegateWillProcessEditingNotification];
     [self invalidateAttributesInRange:[self editedRange]];
-
-    [notificationCenter postNotificationName:CPTextStorageDidProcessEditingNotification
-                                      object:self];
+    [self _sendDelegateDidProcessEditingNotification];
 
     var c = [_layoutManagers count];
 
@@ -252,6 +251,27 @@ CPTextStorageDidProcessEditingNotification = @"CPTextStorageDidProcessEditingNot
         return [CPAttributedString new];
 
     return [super attributedSubstringFromRange:aRange];
+}
+
+@end
+
+
+@implementation CPTextStorage (CPTextStorageDelegate)
+
+- (void)_sendDelegateWillProcessEditingNotification
+{
+    if (_implementedDelegateMethods & CPTextStorageDelegate_textStorageWillProcessEditing_)
+        [_delegate textStorageWillProcessEditing:[[CPNotification alloc] initWithName:CPTextStorageWillProcessEditingNotification object:self userInfo:nil]];
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPTextStorageWillProcessEditingNotification object:self];
+}
+
+- (void)_sendDelegateDidProcessEditingNotification
+{
+    if (_implementedDelegateMethods & CPTextStorageDelegate_textStorageDidProcessEditing_)
+        [_delegate textStorageWillProcessEditing:[[CPNotification alloc] initWithName:CPTextStorageDidProcessEditingNotification object:self userInfo:nil]];
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPTextStorageDidProcessEditingNotification object:self];
 }
 
 @end
