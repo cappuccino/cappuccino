@@ -1171,7 +1171,7 @@ var _objectsInRange = function(aList, aRange)
         if (run.DOMactive && !run.DOMpatched || !run.elem)
             continue;
 
-        if(!_glyphsFrames)
+        if (!_glyphsFrames)
             continue;
 
         orig.x = _glyphsFrames[run._range.location - _runs[0]._range.location].origin.x + aPoint.x;

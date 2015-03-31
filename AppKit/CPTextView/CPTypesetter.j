@@ -213,7 +213,7 @@ var CPSystemTypesetterFactory;
 {
     var myX = 0,
         rect = CGRectMake(lineOrigin.x, lineOrigin.y, _lineWidth, _lineHeight),
-        containerSize=aContainer._size;
+        containerSize = aContainer._size;
 
     [_layoutManager setTextContainer:_currentTextContainer forGlyphRange:lineRange];  // creates a new lineFragment
     [_layoutManager setLineFragmentRect:rect forGlyphRange:lineRange usedRect:rect];

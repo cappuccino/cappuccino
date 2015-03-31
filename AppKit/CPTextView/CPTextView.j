@@ -56,12 +56,13 @@ _MidRange = function(a1)
     return Math.floor((CPMaxRange(a1) + a1.location) / 2);
 };
 
-_characterTripletFromStringAtIndex=function(string, index)
+_characterTripletFromStringAtIndex = function(string, index)
 {
-    if([string isKindOfClass:CPAttributedString])
+    if ([string isKindOfClass:CPAttributedString])
         string = string._string;
 
     var tripletRange = _MakeRangeFromAbs(MAX(0, index - 1), MIN(string.length, index + 2));
+
     return [string substringWithRange:tripletRange];
 }
 
@@ -315,7 +316,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     [self setNeedsDisplay:YES];
 }
 
-- (BOOL) _isFirstResponder
+- (BOOL)_isFirstResponder
 {
    return [[self window] firstResponder] === self;
 }
@@ -515,8 +516,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     [_caret setVisibility:flag];
 }
 
-- (id) _createSelectionSpanForRect:(CPRect)aRect andColor:(CPColor)aColor
+- (id)_createSelectionSpanForRect:(CGRect)aRect andColor:(CPColor)aColor
 {
+
 #if PLATFORM(DOM)
     var ret = document.createElement("span");
     ret.style.position = "absolute";
@@ -526,16 +528,18 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     ret.style.whiteSpace = "pre";
     ret.style.backgroundColor = [aColor cssString];
 
-    ret.style.width = (aRect.size.width)+"px";
+    ret.style.width = (aRect.size.width) + "px";
     ret.style.left = (aRect.origin.x) + "px";
     ret.style.top = (aRect.origin.y) + "px";
     ret.style.height = (aRect.size.height) + "px";
     ret.style.zIndex = -1000;
     ret.oncontextmenu = ret.onmousedown = ret.onselectstart = function () { return false; };
+
     return ret;
 #else
     return nil;
 #endif
+
 }
 
 - (void)drawRect:(CGRect)aRect
@@ -1800,7 +1804,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 
 var CPTextViewContainerKey = @"CPTextViewContainerKey",
-    CPTextViewLayoutManagerKey = @"CPTextViewLayoutManagerKey";
+    CPTextViewLayoutManagerKey = @"CPTextViewLayoutManagerKey",
     CPTextViewTextStorageKey = @"CPTextViewTextStorageKey",
     CPTextViewInsertionPointColorKey = @"CPTextViewInsertionPointColorKey",
     CPTextViewSelectedTextAttributesKey = @"CPTextViewSelectedTextAttributesKey";
