@@ -1697,7 +1697,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 - (void)updateInsertionPointStateAndRestartTimer:(BOOL)flag
 {
     var caretRect;
- 
+
     if (_selectionRange.length)
         [_caret setVisibility:NO];
 
@@ -1844,16 +1844,17 @@ var CPTextViewContainerKey = @"CPTextViewContainerKey",
 
 @implementation _CPCaret : CPObject
 {
-    DOMElement  _caretDOM;
+    BOOL        _drawCaret;
     CGRect      _rect;
     CPTextView  _textView;
-    BOOL        _drawCaret;
     CPTimer     _caretTimer;
+    DOMElement  _caretDOM;
 }
 
 - (void)setRect:(CGRect)aRect
 {
     _rect = CGRectCreateCopy(aRect);
+
 #if PLATFORM(DOM)
     _caretDOM.style.left = (aRect.origin.x) + "px";
     _caretDOM.style.top = (aRect.origin.y) + "px";
@@ -1884,14 +1885,16 @@ var CPTextViewContainerKey = @"CPTextViewContainerKey",
         }
 #endif
     }
+
     return self;
 }
 
 - (void)setVisibility:(BOOL)flag
 {
 #if PLATFORM(DOM)
-    _textView._caretDOM.style.visibility = flag ? "visible" : "hidden";
+    _caretDOM.style.visibility = flag ? "visible" : "hidden";
 #endif
+
     if (!flag)
         [self stopBlinking];
 }
@@ -1915,7 +1918,8 @@ var CPTextViewContainerKey = @"CPTextViewContainerKey",
 
 - (void)stopBlinking
 {
-    _drawCaret=NO;
+    _drawCaret = NO;
+
     if (_caretTimer)
     {
         [_caretTimer invalidate];

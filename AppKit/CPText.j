@@ -148,6 +148,7 @@ CPKernAttributeName = @"CPKernAttributeName";
         [pasteboard setString:stringForPasting forType:CPStringPboardType];
     }
 }
+
 - (void)paste:(id)sender
 {
     var pasteboard = [CPPasteboard generalPasteboard],
@@ -182,13 +183,6 @@ CPKernAttributeName = @"CPKernAttributeName";
 }
 
 - (BOOL)isHorizontallyResizable
-{
-    _CPRaiseInvalidAbstractInvocation(self, _cmd);
-
-    return NO;
-}
-
-- (BOOL)isRichText
 {
     _CPRaiseInvalidAbstractInvocation(self, _cmd);
 
