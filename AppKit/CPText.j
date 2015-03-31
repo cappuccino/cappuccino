@@ -99,6 +99,25 @@ CPKernAttributeName = @"CPKernAttributeName";
 
 @implementation CPText : CPView
 {
+    BOOL       _isEditable       @accessors(getter=isEditable, setter=setEditable:);
+    BOOL       _isSelectable     @accessors(getter=isSelectable, setter=setSelectable:);
+    BOOL       _isRichText       @accessors(getter=isRichText, setter=setRichText:);
+}
+
+- (void)setSelectable:(BOOL)flag
+{
+    _isSelectable = flag;
+
+    if (!flag)
+        [self setEditable:flag];
+}
+
+- (void)setEditable:(BOOL)flag
+{
+    _isEditable = flag;
+
+    if (flag)
+        [self setSelectable:flag];
 }
 
 - (void)changeFont:(id)sender
@@ -287,6 +306,36 @@ CPKernAttributeName = @"CPKernAttributeName";
     _CPRaiseInvalidAbstractInvocation(self, _cmd);
 
     return NO;
+}
+
+@end
+
+var CPTextViewIsEditableKey = @"CPTextViewIsEditableKey",
+    CPTextViewIsSelectableKey = @"CPTextViewIsSelectableKey",
+    CPTextViewIsRichTextKey = @"CPTextViewIsRichTextKey";
+
+@implementation CPText (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super initWithCoder:aCoder];
+
+    if (self)
+    {
+        [self setSelectable:[aCoder decodeBoolForKey:CPTextViewIsSelectableKey]];
+        [self setEditable:[aCoder decodeBoolForKey:CPTextViewIsEditableKey]];
+        [self setRichText:[aCoder decodeBoolForKey:CPTextViewIsRichTextKey]];
+    }
+
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [super encodeWithCoder:aCoder];
+    [aCoder encodeBool:_isEditable forKey:CPTextViewIsEditableKey];
+    [aCoder encodeBool:_isSelectable forKey:CPTextViewIsSelectableKey];
+    [aCoder encodeBool:_isRichText forKey:CPTextViewIsRichTextKey];
 }
 
 @end

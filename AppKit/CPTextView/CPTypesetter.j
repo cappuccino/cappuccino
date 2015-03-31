@@ -52,10 +52,14 @@ var _measuringContext,
     _measuringContextFont,
     _isCanvasSizingInvalid,
     _didTestCanvasSizingValid,
-    _sharedSimpleTypesetter;
+    _sharedSimpleTypesetter,
+    _sizingCache;
 
 function _widthOfStringForFont(aString, aFont)
 {
+    var peek,
+        cssString = [aFont cssString];
+
     if (!_measuringContext)
         _measuringContext = CGBitmapGraphicsContextCreate();
 
@@ -63,20 +67,29 @@ function _widthOfStringForFont(aString, aFont)
     {
         var teststring = "0123456879abcdefghiklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.-()";
         _didTestCanvasSizingValid = YES;
-        _measuringContext.font = [aFont cssString];
+        _measuringContext.font = cssString;
         _isCanvasSizingInvalid = ABS([teststring sizeWithFont:aFont].width -_measuringContext.measureText(teststring).width) > 2;
     }
 
+    if (!_sizingCache)
+        _sizingCache = [];
+
+    if (_sizingCache[cssString] !== undefined && (peek = _sizingCache[cssString][aString]) !== undefined)
+        return peek;
+
+    if (_sizingCache[cssString] === undefined)
+        _sizingCache[cssString] = [];
+
     if (!CPFeatureIsCompatible(CPHTMLCanvasFeature) || _isCanvasSizingInvalid)  // measuring with canvas is _much_ faster on chrome
-        return [aString sizeWithFont:aFont];
+        return _sizingCache[cssString][aString] = [aString sizeWithFont:aFont];
 
     if (_measuringContextFont !== aFont)
     {
         _measuringContextFont = aFont;
-        _measuringContext.font = [aFont cssString];
+        _measuringContext.font = cssString;
     }
 
-    return _measuringContext.measureText(aString);
+    return _sizingCache[cssString][aString] = _measuringContext.measureText(aString);
 }
 
 var CPSystemTypesetterFactory;
