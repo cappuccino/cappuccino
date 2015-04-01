@@ -22,19 +22,20 @@
 
 @import <Foundation/Foundation.j>
 @import <AppKit/CPColor.j>
+@import <AppKit/CPParagraphStyle.j>
 
 @class Nib2Cib
 
 @implementation CPTextViewSharedData : CPObject
 {
-    BOOL            _allowsUndo             @accessors(getter=allowsUndo);
-    BOOL            _editable               @accessors(getter=isEditable);
-    BOOL            _richText               @accessors(getter=isRichText);
-    BOOL            _selectable             @accessors(getter=isSelectable);
-    BOOL            _usesFontPanel          @accessors(getter=usesFontPanel);
-    CPColor         _backgroundColor        @accessors(getter=backgroundColor);
-    CPColor         _insertionColor         @accessors(getter=insertionColor);
-    CPDictionary    _selectedTextAttributes @accessors(getter=selectedTextAttributes);
+    BOOL                _allowsUndo             @accessors(getter=allowsUndo);
+    BOOL                _editable               @accessors(getter=isEditable);
+    BOOL                _richText               @accessors(getter=isRichText);
+    BOOL                _selectable             @accessors(getter=isSelectable);
+    BOOL                _usesFontPanel          @accessors(getter=usesFontPanel);
+    CPColor             _backgroundColor        @accessors(getter=backgroundColor);
+    CPColor             _insertionColor         @accessors(getter=insertionColor);
+    CPDictionary        _selectedTextAttributes @accessors(getter=selectedTextAttributes);
 }
 
 - (id)init

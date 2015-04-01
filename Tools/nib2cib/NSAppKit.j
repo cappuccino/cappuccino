@@ -54,6 +54,7 @@
 @import "NSNibConnector.j"
 @import "NSObjectController.j"
 @import "NSOutlineView.j"
+@import "NSParagraphStyle.j"
 @import "NSPopUpButton.j"
 @import "NSPredicateEditor.j"
 @import "NSResponder.j"

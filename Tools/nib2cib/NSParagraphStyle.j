@@ -1,5 +1,5 @@
 /*
- * NSTextStorage.j
+ * NSParagraphStyle.j
  * nib2cib
  *
  * Created by Alexendre Wilhelm.
@@ -20,38 +20,23 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import <AppKit/CPTextStorage.j>
+@import <AppKit/CPParagraphStyle.j>
 
 @class Nib2Cib
 
-@global CPForegroundColorAttributeName
-
-@implementation CPTextStorage (NSCoding)
+@implementation CPParagraphStyle (NSCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
-    var xibAttributes = [aCoder decodeObjectForKey:@"NSAttributes"],
-        cibAttributes = @{};
-
-    if ([xibAttributes containsKey:@"NSColor"])
-        [cibAttributes setObject:[xibAttributes valueForKey:@"NSColor"] forKey:CPForegroundColorAttributeName];
-
-    if ([xibAttributes containsKey:@"NSFont"])
-        [cibAttributes setObject:[xibAttributes valueForKey:@"NSFont"] forKey:CPFontAttributeName];
-
-    if ([xibAttributes containsKey:@"NSParagraphStyle"])
-        [cibAttributes setObject:[xibAttributes valueForKey:@"NSParagraphStyle"] forKey:CPParagraphStyleAttributeName];
-
-    self = [super initWithString:[aCoder decodeObjectForKey:@"NSString"] attributes:cibAttributes];
+    self = [super init];
 
     return self;
 }
 
 @end
 
-@implementation NSTextStorage : CPTextStorage
+@implementation NSParagraphStyle : CPParagraphStyle
 {
-
 }
 
 - (id)initWithCoder:(CPCoder)aCoder
@@ -60,7 +45,14 @@
 
     if (self)
     {
-
+        _alignment = [aCoder decodeIntForKey:@"NSAlignment"];
+        _firstLineHeadIndent = [aCoder decodeIntForKey:@"NSFirstLineHeadIndent"];
+        _headIndent = [aCoder decodeIntForKey:@"NSHeadIndent"];
+        _lineSpacing = [aCoder decodeIntForKey:@"NSLineSpacing"];
+        _maximumLineHeight = [aCoder decodeIntForKey:@"NSMaxLineHeight"];
+        _minimumLineHeight = [aCoder decodeIntForKey:@"NSMinLineHeight"];
+        _paragraphSpacing = [aCoder decodeIntForKey:@"NSParagraphSpacing"];
+        _tailIndent = [aCoder decodeIntForKey:@"NSTailIndent"];
     }
 
     return self;
@@ -68,7 +60,7 @@
 
 - (Class)classForKeyedArchiver
 {
-    return [CPTextStorage class];
+    return [CPParagraphStyle class];
 }
 
 @end
