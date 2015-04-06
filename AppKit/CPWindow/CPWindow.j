@@ -63,6 +63,7 @@
 
 @optional
 - (BOOL)windowShouldClose:(CPWindow)aWindow;
+- (CPSize)windowWillResize:(CPWindow)sender toSize:(CPSize)aSize;
 - (CPUndoManager)windowWillReturnUndoManager:(CPWindow)window;
 - (void)windowDidBecomeKey:(CPNotification)aNotification;
 - (void)windowDidBecomeMain:(CPNotification)aNotification;
@@ -78,7 +79,8 @@
 
 var CPWindowDelegate_windowShouldClose_             = 1 << 1
     CPWindowDelegate_windowWillReturnUndoManager_   = 1 << 2,
-    CPWindowDelegate_windowWillClose_               = 1 << 3;
+    CPWindowDelegate_windowWillClose_               = 1 << 3,
+    CPWindowDelegate_windowWillResize_toSize_       = 1 << 4;
 
 var CPWindowSaveImage       = nil,
 
@@ -746,6 +748,9 @@ CPTexturedBackgroundWindowMask
         {
             size.width = newSize.width;
             size.height = newSize.height;
+
+            if (!_isAnimating)
+                size = [self _sendDelegateWindowWillResizeToSize:size];
 
             [_windowView setFrameSize:size];
 
@@ -1441,6 +1446,9 @@ CPTexturedBackgroundWindowMask
 
     if ([_delegate respondsToSelector:@selector(windowWillClose:)])
         _implementedDelegateMethods |= CPWindowDelegate_windowWillClose_;
+
+    if ([_delegate respondsToSelector:@selector(windowWillResize:toSize:)])
+        _implementedDelegateMethods |= CPWindowDelegate_windowWillResize_toSize_;
 
     if ([_delegate respondsToSelector:@selector(windowDidResignKey:)])
         [defaultCenter
@@ -3471,6 +3479,18 @@ var keyViewComparator = function(lhs, rhs, context)
         return;
 
     [_delegate windowWillClose:self];
+}
+
+/*!
+    @ignore
+    Call the delegate windowWillResize:toSize:
+*/
+- (CPSize)_sendDelegateWindowWillResizeToSize:(CPSize)aSize
+{
+    if (!(_implementedDelegateMethods & CPWindowDelegate_windowWillResize_toSize_))
+        return aSize;
+
+    return [_delegate windowWillResize:self toSize:aSize];
 }
 
 @end
