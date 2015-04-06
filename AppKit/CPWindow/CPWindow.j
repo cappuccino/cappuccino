@@ -67,11 +67,14 @@
 - (CPUndoManager)windowWillReturnUndoManager:(CPWindow)window;
 - (void)windowDidBecomeKey:(CPNotification)aNotification;
 - (void)windowDidBecomeMain:(CPNotification)aNotification;
+- (void)windowDidDeminiaturize:(CPNotification)notification;
 - (void)windowDidEndSheet:(CPNotification)aNotification;
+- (void)windowDidMiniaturize:(CPNotification)notification;
 - (void)windowDidMove:(CPNotification)aNotification;
 - (void)windowDidResignKey:(CPNotification)aNotification;
 - (void)windowDidResignMain:(CPNotification)aNotification;
 - (void)windowDidResize:(CPNotification)aNotification;
+- (void)windowWillMiniaturize:(CPNotification)notification;
 - (void)windowWillBeginSheet:(CPNotification)aNotification;
 - (void)windowWillClose:(CPWindow)aWindow;
 
@@ -81,6 +84,7 @@ var CPWindowDelegate_windowShouldClose_             = 1 << 1
     CPWindowDelegate_windowWillReturnUndoManager_   = 1 << 2,
     CPWindowDelegate_windowWillClose_               = 1 << 3,
     CPWindowDelegate_windowWillResize_toSize_       = 1 << 4;
+
 
 var CPWindowSaveImage       = nil,
 
@@ -1434,6 +1438,9 @@ CPTexturedBackgroundWindowMask
     [defaultCenter removeObserver:_delegate name:CPWindowDidResizeNotification object:self];
     [defaultCenter removeObserver:_delegate name:CPWindowWillBeginSheetNotification object:self];
     [defaultCenter removeObserver:_delegate name:CPWindowDidEndSheetNotification object:self];
+    [defaultCenter removeObserver:_delegate name:CPWindowDidMiniaturizeNotification object:self];
+    [defaultCenter removeObserver:_delegate name:CPWindowDidDeminiaturizeNotification object:self];
+    [defaultCenter removeObserver:_delegate name:CPWindowWillMiniaturizeNotification object:self];
 
     _delegate = aDelegate;
     _implementedDelegateMethods = 0;
@@ -1504,6 +1511,27 @@ CPTexturedBackgroundWindowMask
             addObserver:_delegate
                selector:@selector(windowDidEndSheet:)
                    name:CPWindowDidEndSheetNotification
+                 object:self];
+
+    if ([_delegate respondsToSelector:@selector(windowDidMiniaturize:)])
+        [defaultCenter
+            addObserver:_delegate
+               selector:@selector(windowDidMiniaturize:)
+                   name:CPWindowDidMiniaturizeNotification
+                 object:self];
+
+    if ([_delegate respondsToSelector:@selector(windowWillMiniaturize:)])
+        [defaultCenter
+            addObserver:_delegate
+               selector:@selector(windowWillMiniaturize:)
+                   name:CPWindowWillMiniaturizeNotification
+                 object:self];
+
+    if ([_delegate respondsToSelector:@selector(windowDidDeminiaturize:)])
+        [defaultCenter
+            addObserver:_delegate
+               selector:@selector(windowDidDeminiaturize:)
+                   name:CPWindowDidDeminiaturizeNotification
                  object:self];
 }
 
