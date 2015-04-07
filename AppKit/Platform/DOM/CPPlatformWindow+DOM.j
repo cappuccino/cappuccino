@@ -396,7 +396,15 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 
         touchEventSelector = @selector(touchEvent:),
         touchEventImplementation = class_getMethodImplementation(theClass, touchEventSelector),
-        touchEventCallback = function (anEvent) { touchEventImplementation(self, nil, anEvent); };
+        touchEventCallback = function (anEvent) { touchEventImplementation(self, nil, anEvent); },
+
+        onFocusEventSelector = @selector(focusEvent:),
+        onFocusEventImplementation = class_getMethodImplementation(theClass, onFocusEventSelector),
+        onFocusEventCallback = function (anEvent) { onFocusEventImplementation(self, nil, anEvent); },
+
+        onBlurEventSelector = @selector(blurEvent:),
+        onBlurEventImplementation = class_getMethodImplementation(theClass, onBlurEventSelector),
+        onBlurEventCallback = function (anEvent) { onBlurEventImplementation(self, nil, anEvent); };
 
     if (theDocument.addEventListener)
     {
@@ -430,6 +438,9 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 
         _DOMWindow.addEventListener("resize", resizeEventCallback, NO);
 
+        _DOMWindow.addEventListener("blur", onBlurEventCallback, NO);
+        _DOMWindow.addEventListener("focus", onFocusEventCallback, NO);
+
         _DOMWindow.addEventListener("unload", function()
         {
             _DOMWindow.removeEventListener("unload", arguments.callee, NO);
@@ -452,6 +463,9 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
             theDocument.removeEventListener("touchmove", touchEventCallback, NO);
 
             _DOMWindow.removeEventListener("resize", resizeEventCallback, NO);
+
+            _DOMWindow.removeEventListener("blur", onBlurEventCallback, NO);
+            _DOMWindow.removeEventListener("focus", onFocusEventCallback, NO);
 
             //FIXME: does firefox really need a different value?
             _DOMWindow.removeEventListener("DOMMouseScroll", scrollEventCallback, NO);
@@ -479,6 +493,9 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 
         _DOMWindow.attachEvent("onresize", resizeEventCallback);
 
+        _DOMWindow.attachEvent("onblur", onBlurEventCallback);
+        _DOMWindow.attachEvent("onfocus", onFocusEventCallback);
+
         _DOMWindow.onmousewheel = scrollEventCallback;
         theDocument.onmousewheel = scrollEventCallback;
 
@@ -505,7 +522,11 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 
             _DOMWindow.detachEvent("onresize", resizeEventCallback);
 
+            _DOMWindow.detachEvent("onblur", onBlurEventCallback);
+            _DOMWindow.detachEvent("onfocus", onFocusEventCallback);
+
             _DOMWindow.onmousewheel = NULL;
+
             theDocument.onmousewheel = NULL;
 
             _DOMBodyElement.ondrag = NULL;
@@ -1031,6 +1052,28 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
     _shouldUpdateContentRect = YES;
 }
 
+/*!
+    @ignore
+*/
+- (void)blurEvent:(DOMEvent)aDOMEvent
+{
+    var location = _lastMouseEventLocation || CGPointMakeZero(),
+        theWindow = [self _hitTest:location withTest:@selector(_isValidMousePoint:) returnsDefaultWindowIfNull:YES];
+
+    [theWindow resignKeyWindow];
+}
+
+/*!
+    @ignore
+*/
+- (void)focusEvent:(DOMEvent)aDOMEvent
+{
+    var location = _lastMouseEventLocation || CGPointMakeZero(),
+        theWindow = [self _hitTest:location withTest:@selector(_isValidMousePoint:) returnsDefaultWindowIfNull:YES];
+
+    [theWindow makeKeyAndOrderFront:self];
+}
+
 - (void)touchEvent:(DOMEvent)aDOMEvent
 {
     if (aDOMEvent.touches && (aDOMEvent.touches.length == 1 || (aDOMEvent.touches.length == 0 && aDOMEvent.changedTouches.length == 1)))
@@ -1518,6 +1561,11 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 
 - (CPWindow)_hitTest:(CGPoint)location withTest:(SEL)aTest
 {
+    return [self _hitTest:location withTest:aTest returnsDefaultWindowIfNull:NO];
+}
+
+- (CPWindow)_hitTest:(CGPoint)location withTest:(SEL)aTest returnsDefaultWindowIfNull:(BOOL)returnsDefaultWindowIfNull
+{
     if (self._only)
         return self._only;
 
@@ -1539,6 +1587,9 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
                 theWindow = candidateWindow;
         }
     }
+
+    if (!theWindow && returnsDefaultWindowIfNull)
+        theWindow = [[[layers objectForKey:[levels firstObject]] orderedWindows] firstObject];
 
     return theWindow;
 }

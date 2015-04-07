@@ -984,6 +984,7 @@ CPTexturedBackgroundWindowMask
     [[CPNotificationCenter defaultCenter] removeObserver:self name:_CPPlatformWindowWillCloseNotification object:nil];
 
     [[self contentView] _removeObservers];
+    _hasBecomeKeyWindow = NO;
 }
 
 
