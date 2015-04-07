@@ -43,7 +43,7 @@
 
 - (IBAction)closeWindow:(id)sender
 {
-    [externalWindow orderOut:sender];
+    [externalWindow close];
 }
 
 - (IBAction)changeFrame:(id)sender
@@ -94,6 +94,12 @@
 - (void)windowDidResize:(CPNotification)aNotification
 {
     CPLog.debug("windowDidResize:");
+}
+
+- (CPSize)windowWillResize:(CPWindow)sender toSize:(CPSize)aSize
+{
+    CPLog.debug("windowWillResize:toSize");
+    return aSize;
 }
 
 - (void)windowWillClose:(CPWindow)aWindow
