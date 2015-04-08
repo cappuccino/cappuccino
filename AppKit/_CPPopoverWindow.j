@@ -715,7 +715,7 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
 
     // Consider clicks in child windows to be "inside". This keeps a transient popover from
     // closing if e.g. the window containing the menu of a token field is clicked.
-    if (mouseWindow === self || [mouseWindow _hasAncestorWindow:self] || ![self _hasOnlyTransientChild:self])
+    if (mouseWindow === self || [mouseWindow _hasAncestorWindow:self] || ![self _hasOnlyTransientChild:self] || [mouseWindow platformWindow] != [self platformWindow])
     {
         [self _trapNextMouseDown];
     }
