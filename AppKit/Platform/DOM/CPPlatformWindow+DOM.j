@@ -1057,10 +1057,10 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 */
 - (void)blurEvent:(DOMEvent)aDOMEvent
 {
-    var location = _lastMouseEventLocation || CGPointMakeZero(),
-        theWindow = [self _hitTest:location withTest:@selector(_isValidMousePoint:) returnsDefaultWindowIfNull:YES];
+    _previousKeyWindow = _currentKeyWindow;
+    [_previousKeyWindow resignKeyWindow];
 
-    [theWindow resignKeyWindow];
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 }
 
 /*!
@@ -1068,10 +1068,14 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 */
 - (void)focusEvent:(DOMEvent)aDOMEvent
 {
-    var location = _lastMouseEventLocation || CGPointMakeZero(),
-        theWindow = [self _hitTest:location withTest:@selector(_isValidMousePoint:) returnsDefaultWindowIfNull:YES];
+    var theWindow = _previousKeyWindow;
+
+    if (!theWindow)
+        theWindow = [[[_windowLayers objectForKey:[_windowLevels firstObject]] orderedWindows] firstObject];
 
     [theWindow makeKeyAndOrderFront:self];
+
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 }
 
 - (void)touchEvent:(DOMEvent)aDOMEvent
@@ -1561,11 +1565,6 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 
 - (CPWindow)_hitTest:(CGPoint)location withTest:(SEL)aTest
 {
-    return [self _hitTest:location withTest:aTest returnsDefaultWindowIfNull:NO];
-}
-
-- (CPWindow)_hitTest:(CGPoint)location withTest:(SEL)aTest returnsDefaultWindowIfNull:(BOOL)returnsDefaultWindowIfNull
-{
     if (self._only)
         return self._only;
 
@@ -1587,9 +1586,6 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
                 theWindow = candidateWindow;
         }
     }
-
-    if (!theWindow && returnsDefaultWindowIfNull)
-        theWindow = [[[layers objectForKey:[levels firstObject]] orderedWindows] firstObject];
 
     return theWindow;
 }

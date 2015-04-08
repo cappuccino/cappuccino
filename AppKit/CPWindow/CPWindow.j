@@ -2060,6 +2060,7 @@ CPTexturedBackgroundWindowMask
 
     [self _setupFirstResponder];
     _hasBecomeKeyWindow = YES;
+    _platformWindow._currentKeyWindow = self;
 
     [_windowView noteKeyWindowStateChanged];
     [_contentView _notifyWindowDidBecomeKey];
