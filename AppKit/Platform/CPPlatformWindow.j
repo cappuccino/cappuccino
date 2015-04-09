@@ -78,6 +78,9 @@ var PrimaryPlatformWindow   = NULL;
 
     CPWindow                _currentKeyWindow;
     CPWindow                _previousKeyWindow;
+
+    CPWindow                _currentMainWindow;
+    CPWindow                _previousMainWindow;
 #endif
 }
 

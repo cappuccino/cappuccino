@@ -1058,7 +1058,10 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 - (void)blurEvent:(DOMEvent)aDOMEvent
 {
     _previousKeyWindow = _currentKeyWindow;
+    _previousMainWindow = _currentMainWindow;
+
     [_previousKeyWindow resignKeyWindow];
+    [_previousMainWindow resignMainWindow];
 
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 }
@@ -1068,15 +1071,52 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 */
 - (void)focusEvent:(DOMEvent)aDOMEvent
 {
-    var theWindow = _previousKeyWindow;
+    var keyWindow = _previousKeyWindow;
 
-    if (!theWindow)
-        theWindow = [[[_windowLayers objectForKey:[_windowLevels firstObject]] orderedWindows] firstObject];
+    if (!keyWindow)
+        keyWindow = [[[_windowLayers objectForKey:[_windowLevels firstObject]] orderedWindows] firstObject];
 
-    [theWindow makeKeyAndOrderFront:self];
+    [self _makeKeyWindow:keyWindow];
+
+    if ([keyWindow isKeyWindow] && ([keyWindow firstResponder] === keyWindow || ![keyWindow firstResponder]))
+        [keyWindow makeFirstResponder:[keyWindow initialFirstResponder]];
+
+    [self _makeMainWindow:keyWindow];
 
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 }
+
+/*!
+    @ignore
+*/
+- (void)_makeKeyWindow:(CPWindow)aWindow
+{
+    if ([CPApp keyWindow] === aWindow || ![aWindow canBecomeKeyWindow])
+        return;
+
+    [[CPApp keyWindow] resignKeyWindow];
+    [aWindow becomeKeyWindow];
+}
+
+/*!
+    @ignore
+*/
+- (void)_makeMainWindow:(CPWindow)aWindow
+{
+    // Sheets cannot be main. Their parent window becomes main.
+    if (aWindow._isSheet)
+    {
+        [self _makeMainWindow:aWindow._parentView];
+        return;
+    }
+
+    if ([CPApp mainWindow] === aWindow || ![aWindow canBecomeMainWindow])
+        return;
+
+    [[CPApp mainWindow] resignMainWindow];
+    [aWindow becomeMainWindow];
+}
+
 
 - (void)touchEvent:(DOMEvent)aDOMEvent
 {

@@ -2131,6 +2131,7 @@ CPTexturedBackgroundWindowMask
     if (CPApp._keyWindow === self)
         CPApp._keyWindow = nil;
 
+    _platformWindow._currentKeyWindow = nil;
     [_windowView noteKeyWindowStateChanged];
     [_contentView _notifyWindowDidResignKey];
 
@@ -2514,6 +2515,7 @@ CPTexturedBackgroundWindowMask
 - (void)becomeMainWindow
 {
     CPApp._mainWindow = self;
+    _platformWindow._currentMainWindow = self;
 
     [self _synchronizeSaveMenuWithDocumentSaving];
 
@@ -2536,6 +2538,7 @@ CPTexturedBackgroundWindowMask
     if (CPApp._mainWindow === self)
         CPApp._mainWindow = nil;
 
+    _platformWindow._currentMainWindow = nil;
     [_windowView noteMainWindowStateChanged];
 }
 
