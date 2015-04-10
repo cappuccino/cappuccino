@@ -24,6 +24,7 @@
     // This is called when the application is done loading.
     [[CPPlatformWindow alloc] initWithWindow:externalWindow];
     [externalWindow setDelegate:self];
+    [theWindow setDelegate:self];
 }
 
 - (void)awakeFromCib
@@ -106,5 +107,26 @@
 {
     CPLog.debug("windowWillClose:");
 }
+
+- (void)applicationDidResignActive:(CPNotification)aNotification
+{
+    CPLog.debug(@"applicationDidResignActive");
+}
+
+- (void)applicationDidBecomeActive:(CPNotification)aNotification
+{
+    CPLog.debug(@"applicationDidBecomeActive");
+}
+
+- (void)applicationWillResignActive:(CPNotification)aNotification
+{
+    CPLog.debug(@"applicationWillResignActive");
+}
+
+- (void)applicationWillBecomeActive:(CPNotification)aNotification
+{
+    CPLog.debug(@"applicationWillBecomeActive");
+}
+
 
 @end
