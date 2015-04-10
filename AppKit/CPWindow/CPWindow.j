@@ -1846,6 +1846,9 @@ CPTexturedBackgroundWindowMask
 
     switch (type)
     {
+        case CPAppKitDefined:
+            return [CPApp activateIgnoringOtherApps:YES];
+
         case CPFlagsChanged:
             return [[self firstResponder] flagsChanged:anEvent];
 

@@ -127,6 +127,7 @@
 @import "CPText.j"
 @import "CPWindow_Constants.j"
 
+@class CPApplication
 @class CPDragServer
 @class _CPToolTip
 
@@ -202,6 +203,7 @@ var ModifierKeyCodes = [
 
 var resizeTimer = nil;
 var PreventScroll = true;
+var blurTimer = nil;
 
 _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotification";
 
@@ -445,6 +447,7 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
         {
             _DOMWindow.removeEventListener("unload", arguments.callee, NO);
 
+            [self blurEvent:nil];
             [self _notifyPlatformWindowWillClose];
             [self updateFromNativeContentRect];
             [self _removeLayers];
@@ -493,8 +496,8 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 
         _DOMWindow.attachEvent("onresize", resizeEventCallback);
 
-        _DOMWindow.attachEvent("onblur", onBlurEventCallback);
         _DOMWindow.attachEvent("onfocus", onFocusEventCallback);
+        _DOMWindow.attachEvent("onblur", onBlurEventCallback);
 
         _DOMWindow.onmousewheel = scrollEventCallback;
         theDocument.onmousewheel = scrollEventCallback;
@@ -506,6 +509,7 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
         {
             _DOMWindow.detachEvent("unload", arguments.callee);
 
+            [self blurEvent:nil];
             [self _notifyPlatformWindowWillClose];
             [self updateFromNativeContentRect];
             [self _removeLayers];
@@ -522,8 +526,8 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 
             _DOMWindow.detachEvent("onresize", resizeEventCallback);
 
-            _DOMWindow.detachEvent("onblur", onBlurEventCallback);
-            _DOMWindow.detachEvent("onfocus", onFocusEventCallback);
+            _DOMWindow.detachEvent("onfocus", onBlurEventCallback);
+            _DOMWindow.detachEvent("onblur", onFocusEventCallback);
 
             _DOMWindow.onmousewheel = NULL;
 
@@ -1057,11 +1061,26 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 */
 - (void)blurEvent:(DOMEvent)aDOMEvent
 {
-    _previousKeyWindow = _currentKeyWindow;
-    _previousMainWindow = _currentMainWindow;
+    if ([CPApp keyWindow] == _currentKeyWindow)
+        [_currentKeyWindow resignKeyWindow];
 
-    [_previousKeyWindow resignKeyWindow];
-    [_previousMainWindow resignMainWindow];
+    if ([CPApp mainWindow] == _currentMainWindow)
+        [_currentMainWindow resignMainWindow];
+
+    _previousKeyWindow = aDOMEvent ? _currentKeyWindow : nil;
+    _previousMainWindow = aDOMEvent ? _currentMainWindow : nil;
+
+    [blurTimer invalidate];
+    blurTimer = [CPTimer scheduledTimerWithTimeInterval:0.2 target:self selector:@selector(_blurEventTimer:) userInfo:nil repeats:NO];
+}
+
+/*!
+    @ignore
+*/
+- (void)_blurEventTimer:(CPTimer)aTimer
+{
+    if (![CPApp mainWindow])
+        [[CPApplication sharedApplication] deactivate];
 
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 }
@@ -1071,19 +1090,28 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 */
 - (void)focusEvent:(DOMEvent)aDOMEvent
 {
+    [blurTimer invalidate];
+    [CPApp activateIgnoringOtherApps:YES];
+
     var keyWindow = _previousKeyWindow;
 
     if (!keyWindow)
-        keyWindow = [[[_windowLayers objectForKey:[_windowLevels firstObject]] orderedWindows] firstObject];
+       keyWindow = [[[_windowLayers objectForKey:[_windowLevels firstObject]] orderedWindows] firstObject];
+
+    if (!keyWindow)
+        return;
 
     [self _makeKeyWindow:keyWindow];
 
     if ([keyWindow isKeyWindow] && ([keyWindow firstResponder] === keyWindow || ![keyWindow firstResponder]))
-        [keyWindow makeFirstResponder:[keyWindow initialFirstResponder]];
+       [keyWindow makeFirstResponder:[keyWindow initialFirstResponder]];
 
     [self _makeMainWindow:keyWindow];
 
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+    _previousKeyWindow = nil;
+    _previousMainWindow = nil;
 }
 
 /*!
