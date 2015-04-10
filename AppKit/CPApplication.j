@@ -445,6 +445,9 @@ var CPMainCibFile               = @"CPMainCibFile",
 
 - (void)activateIgnoringOtherApps:(BOOL)shouldIgnoreOtherApps
 {
+    if (_isActive)
+        return;
+
     [self _willBecomeActive];
 
     [CPPlatform activateIgnoringOtherApps:shouldIgnoreOtherApps];
@@ -455,6 +458,9 @@ var CPMainCibFile               = @"CPMainCibFile",
 
 - (void)deactivate
 {
+    if (!_isActive)
+        return;
+
     [self _willResignActive];
 
     [CPPlatform deactivate];
@@ -480,6 +486,15 @@ var CPMainCibFile               = @"CPMainCibFile",
 - (void)run
 {
     [self finishLaunching];
+    [self sendEvent:[CPEvent otherEventWithType:CPAppKitDefined
+                                       location:CGPointMakeZero()
+                                  modifierFlags:0
+                                      timestamp:[CPEvent currentTimestamp]
+                                   windowNumber:[_keyWindow windowNumber]
+                                        context:nil
+                                        subtype:nil
+                                          data1:nil
+                                          data2:nil]];
 }
 
 // Managing the Event Loop
