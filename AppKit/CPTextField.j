@@ -792,7 +792,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     // When we are no longer the first responder we don't worry about the key status of our window anymore.
     [self _setObserveWindowKeyNotifications:NO];
 
-    [self _resignFirstKeyResponder];
+    if ([[self window] isKeyWindow])
+        [self _resignFirstKeyResponder];
 
     _isEditing = NO;
     if ([self isEditable])
