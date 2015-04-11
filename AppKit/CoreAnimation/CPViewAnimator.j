@@ -90,7 +90,6 @@
     [self _setTargetValue:aTargetValue withKeyPath:aKeyPath fallback:handler completion:handler];
 }
 
-- (void)_setTargetValue:(id)aTargetValue withKeyPath:(CPString)aKeyPath fallback:(Function)fallback  completion:(Function)completion
 - (void)_setTargetValue:(id)aTargetValue withKeyPath:(CPString)aKeyPath fallback:(Function)fallback completion:(Function)completion
 {
     var animation = [_target animationForKey:aKeyPath],
