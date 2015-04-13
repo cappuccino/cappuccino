@@ -1,4 +1,3 @@
-<<<<<<< Local Changes
 /*
  * CPTextField.j
  * AppKit
@@ -2168,5 +2167,3 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 }
 
 @end
-=======
->>>>>>> External Changes
