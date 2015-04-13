@@ -843,7 +843,16 @@ var CPComboBoxTextSubview = @"text",
         // In FireFox this needs to be done in setTimeout, otherwise there is no caret
         // We have to save the input element now, when we lose focus it will change.
         var element = [self _inputElement];
-        window.setTimeout(function() { element.focus(); }, 0);
+        window.setTimeout(function() {
+
+            // This will prevent to jump to the focused element
+            var previousScrollingOrigin = [self _scrollToVisibleRectAndReturnPreviousOrigin];
+
+            element.focus();
+
+            [self _restorePreviousScrollingOrigin:previousScrollingOrigin];
+
+        }, 0);
 #endif
 
         return NO;

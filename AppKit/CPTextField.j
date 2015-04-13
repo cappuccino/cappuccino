@@ -1,3 +1,4 @@
+<<<<<<< Local Changes
 /*
  * CPTextField.j
  * AppKit
@@ -28,6 +29,7 @@
 @import "_CPImageAndTextView.j"
 
 @class CPPasteboard
+@class CPScrollView
 
 @global CPApp
 @global CPStringPboardType
@@ -88,7 +90,12 @@ function CPTextFieldBlurFunction(anEvent, owner, domElement, inputElement, resig
         {
             window.setTimeout(function()
             {
+                // This will prevent to jump to the focused element
+                var previousScrollingOrigin = [owner _scrollToVisibleRectAndReturnPreviousOrigin];
+
                 inputElement.focus();
+
+                [owner _restorePreviousScrollingOrigin:previousScrollingOrigin];
             }, 0.0);
         }
     }
@@ -643,6 +650,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     _stringValue = [self stringValue];
 
+
 #if PLATFORM(DOM)
 
     [self _setCSSStyleForInputElement];
@@ -672,7 +680,12 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         if (CPTextFieldInputOwner !== self)
             return;
 
+        // This will prevent to jump to the focused element
+        var previousScrollingOrigin = [self _scrollToVisibleRectAndReturnPreviousOrigin];
+
         element.focus();
+
+        [self _restorePreviousScrollingOrigin:previousScrollingOrigin];
 
         // Select the text if the textfield became first responder through keyboard interaction
         if (!_willBecomeFirstResponderByClick)
@@ -783,7 +796,13 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         // even if the value has not changed.
         if ([self _valueIsValid:newValue] === NO)
         {
+            // This will prevent to jump to the focused element
+            var previousScrollingOrigin = [self _scrollToVisibleRectAndReturnPreviousOrigin];
+
             element.focus();
+
+            [self _restorePreviousScrollingOrigin:previousScrollingOrigin];
+
             return NO;
         }
     }
@@ -1951,15 +1970,53 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     if (!wind)
         return NO;
 
+    var scrollView = [self enclosingScrollView],
+        previousContentViewBoundsOrigin;
+
+    // Here we scroll to the textField, otherwise the textField could not be in the usable platformRect
+    var previousScrollingOrigin = [self _scrollToVisibleRectAndReturnPreviousOrigin];
+
     var frame = [self convertRectToBase:[self contentRectForBounds:[self bounds]]],
         usableRect = [[wind platformWindow] usableContentFrame];
 
     frame.origin = [wind convertBaseToGlobal:frame.origin];
 
+    // Here we restore the the previous scrolling posiition
+    [self _restorePreviousScrollingOrigin:previousScrollingOrigin];
+
     return (CGRectGetMinX(frame) >= CGRectGetMinX(usableRect) &&
             CGRectGetMaxX(frame) <= CGRectGetMaxX(usableRect) &&
             CGRectGetMinY(frame) >= CGRectGetMinY(usableRect) &&
             CGRectGetMaxY(frame) <= CGRectGetMaxY(usableRect));
+}
+
+/*!
+    @ignore
+*/
+- (CGPoint)_scrollToVisibleRectAndReturnPreviousOrigin
+{
+    var scrollView = [self enclosingScrollView],
+        previousContentViewBoundsOrigin;
+
+    // Here we scroll to the textField, otherwise the textField could not be in the usable platformRect
+    if ([scrollView isKindOfClass:[CPScrollView class]])
+    {
+        previousContentViewBoundsOrigin = CGPointMakeCopy([[scrollView contentView] boundsOrigin]);
+
+        if(![[self superview] scrollRectToVisible:[self frame]])
+            previousContentViewBoundsOrigin = nil;
+    }
+
+    return previousContentViewBoundsOrigin;
+}
+
+/*!
+    @ignore
+*/
+- (void)_restorePreviousScrollingOrigin:(CGPoint)scrollingOrigin
+{
+    if (scrollingOrigin)
+        [[[self enclosingScrollView] contentView] setBoundsOrigin:scrollingOrigin];
 }
 
 @end
@@ -2111,3 +2168,5 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 }
 
 @end
+=======
+>>>>>>> External Changes
