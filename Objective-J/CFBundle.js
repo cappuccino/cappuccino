@@ -494,7 +494,7 @@ function loadSpritedImagesForBundle(/*Bundle*/ aBundle, success, failure, progre
     }, failure, progress);
 }
 
-function loadLocalizableStringsForBundle(/*Bundle*/, aBundle, success, failure, progress)
+function loadLocalizableStringsForBundle(/*Bundle*/ aBundle, success, failure, progress)
 {
     aBundle._loadStatus |= CFBundleLoadingLocalizableStrings;
     //TODO: Here we need to load the .xstrings
