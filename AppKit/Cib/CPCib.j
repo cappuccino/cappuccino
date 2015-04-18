@@ -32,6 +32,7 @@
 @import "_CPCibObjectData.j"
 @import "_CPCibProxyObject.j"
 @import "_CPCibWindowTemplate.j"
+@import "_CPLocalizableString.j"
 
 CPCibOwner              = @"CPCibOwner";
 CPCibTopLevelObjects    = @"CPCibTopLevelObjects";

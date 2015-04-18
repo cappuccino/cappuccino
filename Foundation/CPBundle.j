@@ -212,4 +212,58 @@ var CPBundlesForURLStrings = { };
     return [super description] + "(" + [self bundlePath] + ")";
 }
 
+
+#pragma mark -
+#pragma mark Localization
+
++ (CPArray)preferredLocalizationsFromArray:(CPArray)localizationsArray
+{
+    return CFBundleCopyPreferredLocalizationsFromArray(localizationsArray);
+}
+
++ (CPArray)preferredLocalizationsFromArray:(CPArray)localizationsArray forPreferences:(CPArray)preferencesArray
+{
+    return CFBundleCopyLocalizationsForPreferences(localizationsArray, preferencesArray);
+}
+
+- (CPArray)preferredLocalizations
+{
+
+}
+
+- (CPString)developmentLocalization
+{
+    return [self objectForInfoDictionaryKey:@"CFBundleDevelopmentRegion"];
+}
+
+- (CPArray)localizations
+{
+    return CFBundleCopyBundleLocalizations(_bundle);
+}
+
+- (CPDictionary)localizedInfoDictionary
+{
+
+}
+
+- (CPString)localizedStringForKey:(CPString)aKey value:(CPString)aValue table:(CPString)aTable
+{
+    return CFBundleCopyLocalizedString(_bundle, aKey, aValue, aTable);
+}
+
 @end
+
+function CPLocalizedString(key, comment)
+{
+    return CFCopyLocalizedString(key, comment);
+}
+
+function CPLocalizedStringFromTable(key, table, comment)
+{
+    return CFCopyLocalizedStringFromTableInBundle(key, table, comment);
+}
+
+function CFCopyLocalizedStringFromTableInBundle(key, table, bundle, comment)
+{
+    return CFCopyLocalizedStringFromTableInBundle(key, table, bundle._bundle, comment);
+}
