@@ -496,11 +496,98 @@ function loadSpritedImagesForBundle(/*Bundle*/ aBundle, success, failure, progre
 
 function loadLocalizableStringsForBundle(/*Bundle*/ aBundle, success, failure, progress)
 {
-    aBundle._loadStatus |= CFBundleLoadingLocalizableStrings;
-    //TODO: Here we need to load the .xstrings
-    aBundle._loadStatus &= ~CFBundleLoadingLocalizableStrings;
+    var language = getCurrentLanguage();
+
+    if (!language)
+        return;
+
+    var localizableStrings = aBundle.valueForInfoDictionaryKey("CPLocalizableStrings");
+
+    if (!localizableStrings)
+        return;
+
+    var self = aBundle,
+        length = localizableStrings.length,
+        languagePathURL = new CFURL(language + ".lproj/", self.resourcesDirectoryURL()),
+        fileSuccessed = 0;
+
+    for (var i = 0; i < length; i++)
+    {
+        var localizableString = localizableStrings[i];
+
+        function onsuccess(/*Event*/ anEvent)
+        {
+            var contentFile = anEvent.request.responseText(),
+                tableName = new CFURL(anEvent.request._URL).lastPathComponent();
+
+            try
+            {
+                loadLocalizableContentForFileInBundle(self, contentFile, tableName);
+
+                if (++fileSuccessed == length)
+                {
+                    aBundle._loadStatus &= ~CFBundleLoadingLocalizableStrings;
+                    success();
+                }
+            }
+            catch(e)
+            {
+                failure(new Error("Error when parsing the localizable file " + tableName));
+            }
+        }
+
+        aBundle._loadStatus |= CFBundleLoadingLocalizableStrings;
+        new FileRequest(new CFURL(localizableString, languagePathURL), onsuccess, failure, progress);
+    }
 }
 
+function loadLocalizableContentForFileInBundle(bundle, contentFile, tableName)
+{
+    var values = {},
+        lines = contentFile.split("\n"),
+        currentContext;
+
+    bundle._localizableStrings[tableName] = values;
+
+    for (var i = 0; i < lines.length; i++)
+    {
+        var line = lines[i];
+
+        // Context
+        if (line[0] == "/")
+        {
+            currentContext = line.substring(2, line.length - 2);
+            continue;
+        }
+
+        // Key
+        if (line[0] == "\"")
+        {
+            var split = line.split("\"")
+
+            // Here we add twice the translated value, once with the context and once without
+            // This wiill help in rapidity when asking the value of the key
+            values[split[1]] = split[3];
+            values[split[1] + currentContext] = split[3];
+
+            continue;
+        }
+    }
+}
+
+function getCurrentLanguage()
+{
+    if (typeof navigator == "undefined")
+        return null;
+
+    // userLanguage is an IE only property.
+    var language = (typeof navigator.language !== "undefined") ? navigator.language : navigator.userLanguage;
+
+    if (!language)
+        return null;
+
+    return language.substring(0, 2);
+}
 
 var CFBundleSpriteSupportListeners  = [],
     CFBundleSupportedSpriteType     = -1,
@@ -751,63 +838,63 @@ CFBundle.prototype.pathForResource = function(aResource)
     return this.resourceURL(aResource).absoluteString();
 };
 
-
-function CFBundleCopyLocalizedString(/*Bundle*/ bundle, key, value, tableName)
+GLOBAL(CFBundleCopyLocalizedString) = function (/*Bundle*/ bundle, key, value, tableName)
 {
     return CFCopyLocalizedStringWithDefaultValue(key, tableName, bundle, value, null);
 }
 
-function CFBundleCopyLocalizationsForPreferences(locArray, prefArray)
+GLOBAL(CFBundleCopyLocalizationsForPreferences) = function (locArray, prefArray)
 {
 
 }
 
-function CFBundleCopyPreferredLocalizationsFromArray(locArray)
+GLOBAL(CFBundleCopyPreferredLocalizationsFromArray) = function (locArray)
 {
 
 }
 
-function CFBundleCopyLocalizationsForURL(url)
+GLOBAL(CFBundleCopyLocalizationsForURL) = function (url)
 {
 
 }
 
-function CFBundleCopyBundleLocalizations(/*Bundle*/ aBundle)
+GLOBAL(CFBundleCopyBundleLocalizations) = function (/*Bundle*/ aBundle)
 {
 
 }
 
-function CFCopyLocalizedString(key, comment)
+GLOBAL(CFCopyLocalizedString) = function (key, comment)
 {
     return CFCopyLocalizedStringFromTable(key, "Localizable", comment);
 }
 
-function CFCopyLocalizedStringFromTable(key, tableName, comment)
+GLOBAL(CFCopyLocalizedStringFromTable) = function (key, tableName, comment)
 {
     return CFCopyLocalizedStringFromTableInBundle(key, tableName, CFBundleGetMainBundle(), comment);
 }
 
-function CFCopyLocalizedStringFromTableInBundle(key, tableName, bundle, comment)
+GLOBAL(CFCopyLocalizedStringFromTableInBundle) = function (key, tableName, bundle, comment)
 {
     return CFCopyLocalizedStringWithDefaultValue(key, tableName, bundle, null, comment);
 }
 
-function CFCopyLocalizedStringWithDefaultValue(key, tableName, bundle, value, comment)
+GLOBAL(CFCopyLocalizedStringWithDefaultValue) = function (key, tableName, bundle, value, comment)
 {
     var string;
 
     if (!tableName)
         tableName = "Localizable";
 
+    tableName += ".strings";
+
     var localizableString = bundle._localizableStrings[tableName];
 
-    //TODO : What about the comment and context ?
-    string = localizableString[key];
+    string = localizableString ? localizableString[key + comment] : key;
 
     return string || value;
 }
 
-function CFBundleGetMainBundle()
+GLOBAL(CFBundleGetMainBundle) = function ()
 {
     return CFBundle.mainBundle();
 }

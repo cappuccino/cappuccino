@@ -25,6 +25,9 @@
 @import "CPNotificationCenter.j"
 @import "CPObject.j"
 
+@global CFBundleCopyBundleLocalizations
+@global CFBundleCopyLocalizedString
+
 CPBundleDidLoadNotification = @"CPBundleDidLoadNotification";
 
 /*!
@@ -94,6 +97,7 @@ var CPBundlesForURLStrings = { };
     if (self)
     {
         _bundle = new CFBundle(aURL);
+
         CPBundlesForURLStrings[URLString] = self;
     }
 
@@ -263,7 +267,7 @@ function CPLocalizedStringFromTable(key, table, comment)
     return CFCopyLocalizedStringFromTableInBundle(key, table, comment);
 }
 
-function CFCopyLocalizedStringFromTableInBundle(key, table, bundle, comment)
+function CPCopyLocalizedStringFromTableInBundle(key, table, bundle, comment)
 {
     return CFCopyLocalizedStringFromTableInBundle(key, table, bundle._bundle, comment);
 }
