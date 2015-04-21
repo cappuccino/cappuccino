@@ -22,10 +22,25 @@
 
 - (void)awakeFromCib
 {
-    var label = [CPTextField labelWithTitle:CPLocalizedString(@"Label from file", @"")];
-
+    var label = [CPTextField labelWithTitle:CPLocalizedString(@"Label from file", @"") + " -> Label title from en.lproj from first context"];
     [label setFrameOrigin:CGPointMake(20, 10)];
     [[theWindow contentView] addSubview:label];
+
+    var label2 = [CPTextField labelWithTitle:CPLocalizedString(@"Label from file", @"My second context.") + " -> Label title from en.lproj from second context"];
+    [label2 setFrameOrigin:CGPointMake(20, 30)];
+    [[theWindow contentView] addSubview:label2];
+
+    var label3 = [CPTextField labelWithTitle:CPLocalizedString(@"Label from file", @"My first context.") + " -> Label title from en.lproj from first context"];
+    [label3 setFrameOrigin:CGPointMake(20, 50)];
+    [[theWindow contentView] addSubview:label3];
+
+    var label4 = [CPTextField labelWithTitle:CPLocalizedStringFromTable(@"Label from file", @"SecondLocalizable", @"My first context.") + " -> Label title from first context from en.lproj from SecondLocalizable"];
+    [label4 setFrameOrigin:CGPointMake(20, 70)];
+    [[theWindow contentView] addSubview:label4];
+
+    var label5 = [CPTextField labelWithTitle:CPLocalizedString(@"Wrong key", @"") + " -> Wrong key"];
+    [label5 setFrameOrigin:CGPointMake(20, 90)];
+    [[theWindow contentView] addSubview:label5];
 
     // This is called when the cib is done loading.
     // You can implement this method on any object instantiated from a Cib.

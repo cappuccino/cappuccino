@@ -647,10 +647,9 @@
 						<object class="NSTextField" id="123304262">
 							<reference key="NSNextResponder" ref="439893737"/>
 							<int key="NSvFlags">268</int>
-							<string key="NSFrame">{{18, 292}, {92, 17}}</string>
+							<string key="NSFrame">{{18, 178}, {92, 17}}</string>
 							<reference key="NSSuperview" ref="439893737"/>
 							<reference key="NSWindow"/>
-							<reference key="NSNextKeyView"/>
 							<string key="NSReuseIdentifierKey">_NS:526</string>
 							<string key="NSHuggingPriority">{251, 750}</string>
 							<bool key="NSEnabled">YES</bool>
