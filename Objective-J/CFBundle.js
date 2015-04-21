@@ -556,7 +556,7 @@ function loadLocalizableContentForFileInBundle(bundle, contentFile, tableName)
         // Context
         if (line[0] == "/")
         {
-            currentContext = line.substring(2, line.length - 2);
+            currentContext = line.substring(2, line.length - 2).trim();
             continue;
         }
 
@@ -566,9 +566,17 @@ function loadLocalizableContentForFileInBundle(bundle, contentFile, tableName)
             var split = line.split("\"")
 
             // Here we add twice the translated value, once with the context and once without
-            // This wiill help in rapidity when asking the value of the key
-            values[split[1]] = split[3];
-            values[split[1] + currentContext] = split[3];
+            // This will help in term of rapidity when asking the value of the key
+
+            var key = split[1];
+
+            if (!(key in values))
+                values[key] = split[3];
+
+            key += currentContext;
+
+            if (!(key in values))
+                values[key] = split[3];
 
             continue;
         }
@@ -889,9 +897,9 @@ GLOBAL(CFCopyLocalizedStringWithDefaultValue) = function (key, tableName, bundle
 
     var localizableString = bundle._localizableStrings[tableName];
 
-    string = localizableString ? localizableString[key + comment] : key;
+    string = localizableString ? localizableString[key + comment] : null;
 
-    return string || value;
+    return string || (value || key);
 }
 
 GLOBAL(CFBundleGetMainBundle) = function ()

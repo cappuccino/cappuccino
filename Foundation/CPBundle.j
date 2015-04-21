@@ -264,7 +264,7 @@ function CPLocalizedString(key, comment)
 
 function CPLocalizedStringFromTable(key, table, comment)
 {
-    return CFCopyLocalizedStringFromTableInBundle(key, table, comment);
+    return CFCopyLocalizedStringFromTable(key, table, comment);
 }
 
 function CPCopyLocalizedStringFromTableInBundle(key, table, bundle, comment)
