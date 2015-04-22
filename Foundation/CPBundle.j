@@ -30,6 +30,13 @@
 
 CPBundleDidLoadNotification = @"CPBundleDidLoadNotification";
 
+@protocol CPBundleDelegate <CPObject>
+
+@required
+- (void)bundleDidFinishLoading:(CPBundle)aBundle;
+
+@end
+
 /*!
     @class CPBundle
     @ingroup foundation
@@ -40,8 +47,8 @@ var CPBundlesForURLStrings = { };
 
 @implementation CPBundle : CPObject
 {
-    CFBundle    _bundle;
-    id          _delegate;
+    CFBundle                _bundle;
+    id <CPBundleDelegate>   _delegate;
 }
 
 + (CPBundle)bundleWithURL:(CPURL)aURL
@@ -183,7 +190,7 @@ var CPBundlesForURLStrings = { };
     return _bundle.valueForInfoDictionaryKey(aKey);
 }
 
-- (void)loadWithDelegate:(id)aDelegate
+- (void)loadWithDelegate:(id <CPBundleDelegate>)aDelegate
 {
     _delegate = aDelegate;
 
