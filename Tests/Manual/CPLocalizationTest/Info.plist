@@ -10,10 +10,15 @@
     <string>1.0</string>
     <key>CPHumanReadableCopyright</key>
     <string>Copyright © 2015, Your Company All rights reserved.</string>
-    <key>CPLocalizableStrings</key>
+    <key>CPBundleLocalizableStrings</key>
     <array>
         <string>Localizable.strings</string>
         <string>SecondLocalizable.strings</string>
+        <string>MainMenu.strings</string>
     </array>
+    <key>CPBundleTypeOfLocalization</key>
+    <string>CPBundleBaseLocalizationType</string>
+    <key>CPBundleDefaultLanguage</key>
+    <string>en</string>
 </dict>
 </plist>
