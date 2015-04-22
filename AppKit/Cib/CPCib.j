@@ -94,7 +94,18 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
 
 - (id)initWithCibNamed:(CPString)aName bundle:(CPBundle)aBundle
 {
-    return [self initWithCibNamed:aName bundle:aBundle loadDelegate:nil];
+    if (![aName hasSuffix:@".cib"])
+        aName = [aName stringByAppendingString:@".cib"];
+
+    // If aBundle is nil, use mainBundle, but ONLY for searching for the nib, not for resources later.
+    var bundle = aBundle || [CPBundle mainBundle];
+
+    self = [self initWithContentsOfURL:[bundle _cibPathForResource:aName]];
+
+    if (self)
+        _bundle = aBundle;
+
+    return self;
 }
 
 - (id)initWithCibNamed:(CPString)aName bundle:(CPBundle)aBundle loadDelegate:(id)aLoadDelegate
@@ -102,9 +113,9 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
     if (![aName hasSuffix:@".cib"])
         aName = [aName stringByAppendingString:@".cib"];
 
+    // If aBundle is nil, use mainBundle, but ONLY for searching for the nib, not for resources later.
     var bundle = aBundle || [CPBundle mainBundle];
 
-    // If aBundle is nil, use mainBundle, but ONLY for searching for the nib, not for resources later.
     self = [self initWithContentsOfURL:[bundle _cibPathForResource:aName] loadDelegate:aLoadDelegate];
 
     if (self)
