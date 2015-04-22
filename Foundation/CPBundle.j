@@ -158,6 +158,21 @@ var CPBundlesForURLStrings = { };
     return _bundle.pathForResource(aFilename);
 }
 
+- (CPString)pathForResource:(CPString)aFilename ofType:(CPString)extension
+{
+    return _bundle.pathForResource(aFilename, extension);
+}
+
+- (CPString)pathForResource:(CPString)aFilename ofType:(CPString)extension inDirectory:(CPString)subpath
+{
+    return _bundle.pathForResource(aFilename, extension, subpath);
+}
+
+- (CPString)pathForResource:(CPString)aFilename ofType:(CPString)extension inDirectory:(CPString)subpath forLocalization:(CPString)localizationName
+{
+    return _bundle.pathForResource(aFilename, extension, subpath, localizationName);
+}
+
 - (CPDictionary)infoDictionary
 {
     return _bundle.infoDictionary();
@@ -220,34 +235,9 @@ var CPBundlesForURLStrings = { };
 #pragma mark -
 #pragma mark Localization
 
-+ (CPArray)preferredLocalizationsFromArray:(CPArray)localizationsArray
-{
-    return CFBundleCopyPreferredLocalizationsFromArray(localizationsArray);
-}
-
-+ (CPArray)preferredLocalizationsFromArray:(CPArray)localizationsArray forPreferences:(CPArray)preferencesArray
-{
-    return CFBundleCopyLocalizationsForPreferences(localizationsArray, preferencesArray);
-}
-
-- (CPArray)preferredLocalizations
-{
-
-}
-
-- (CPString)developmentLocalization
-{
-    return [self objectForInfoDictionaryKey:@"CFBundleDevelopmentRegion"];
-}
-
 - (CPArray)localizations
 {
     return CFBundleCopyBundleLocalizations(_bundle);
-}
-
-- (CPDictionary)localizedInfoDictionary
-{
-
 }
 
 - (CPString)localizedStringForKey:(CPString)aKey value:(CPString)aValue table:(CPString)aTable
