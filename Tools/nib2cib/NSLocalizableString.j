@@ -32,6 +32,7 @@
     {
         _dev = [aCoder decodeObjectForKey:@"NSDev"];
         _key = [aCoder decodeObjectForKey:@"NSKey"];
+        _value = [aCoder decodeObjectForKey:@"NS.string"];
     }
 
     return self;

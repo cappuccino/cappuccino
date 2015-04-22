@@ -21,28 +21,21 @@
  */
 
 @import <Foundation/CPString.j>
+@import <Foundation/CPCharacterSet.j>
 
-@implementation _CPLocalizableString : CPString
+@implementation _CPLocalizableString : CPObject
 {
-    CPString _dev @accessors(property=dev);
-    CPString _key @accessors(property=key);
-}
-
-- (id)init
-{
-    if (self = [super init])
-    {
-
-    }
-
-    return self;
+    CPString _dev   @accessors(property=dev);
+    CPString _key   @accessors(property=key);
+    CPString _value @accessors(property=value);
 }
 
 @end
 
 
 var CPLocalizableStringDev = @"CPLocalizableStringDev",
-    CPLocalizableStringKey = @"CPLocalizableStringKey";
+    CPLocalizableStringKey = @"CPLocalizableStringKey",
+    CPLocalizableStringValue = @"CPLocalizableStringValue";
 
 @implementation _CPLocalizableString (CPCoding)
 
@@ -52,15 +45,18 @@ var CPLocalizableStringDev = @"CPLocalizableStringDev",
 
     _dev = [aCoder decodeObjectForKey:CPLocalizableStringDev];
     _key = [aCoder decodeObjectForKey:CPLocalizableStringKey];
+    _value = [aCoder decodeObjectForKey:CPLocalizableStringValue];
 
-    //TODO: here we should not return self but the string from CPLocalizedStringFromTable
-    return self;
+    var tableName = [[aCoder cibName] stringByTrimmingCharactersInSet:[CPCharacterSet characterSetWithCharactersInString:@".cib"]];
+
+    return [[aCoder bundle] localizedStringForKey:_key value:_value table:tableName];
 }
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [aCoder encodeObject:_dev forKey:CPLocalizableStringDev];
     [aCoder encodeObject:_key forKey:CPLocalizableStringKey];
+    [aCoder encodeObject:_value forKey:CPLocalizableStringValue];
 }
 
 @end

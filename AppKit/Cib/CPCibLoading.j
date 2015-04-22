@@ -26,7 +26,11 @@
 
 @import "CPCib.j"
 
-var CPCibOwner = @"CPCibOwner";
+var CPCibOwner = @"CPCibOwner",
+    CPBundleDefaultLanguage = @"CPBundleDefaultLanguage",
+    CPBundleTypeOfLocalization = @"CPBundleTypeOfLocalization",
+    CPBundleBaseLocalizationType = @"CPBundleBaseLocalizationType",
+    CPBundleInterfaceBuilderLocalizationType = @"CPBundleInterfaceBuilderLocalizationType";
 
 @implementation CPObject (CPCibLoading)
 
@@ -45,14 +49,7 @@ var CPCibOwner = @"CPCibOwner";
 
 + (CPCib)loadCibNamed:(CPString)aName owner:(id)anOwner
 {
-    if (![aName hasSuffix:@".cib"])
-        aName = [aName stringByAppendingString:@".cib"];
-
-    // Path is based solely on anOwner:
-    var bundle = anOwner ? [CPBundle bundleForClass:[anOwner class]] : [CPBundle mainBundle],
-        path = [bundle pathForResource:aName];
-
-    return [self loadCibFile:path externalNameTable:@{ CPCibOwner: anOwner }];
+    return [self loadCibNamed:aName owner:anOwner loadDelegate:nil];
 }
 
 - (CPCib)loadCibFile:(CPString)aFileName externalNameTable:(CPDictionary)aNameTable
@@ -76,7 +73,7 @@ var CPCibOwner = @"CPCibOwner";
 
     // Path is based solely on anOwner:
     var bundle = anOwner ? [CPBundle bundleForClass:[anOwner class]] : [CPBundle mainBundle],
-        path = [bundle pathForResource:aName];
+        path = [bundle _cibPathForResource:aName];
 
     return [self loadCibFile:path externalNameTable:@{ CPCibOwner: anOwner } loadDelegate:aDelegate];
 }
@@ -89,6 +86,19 @@ var CPCibOwner = @"CPCibOwner";
                         loadDelegate:[[_CPCibLoadDelegate alloc]
                 initWithLoadDelegate:aDelegate
                    externalNameTable:aNameTable]]);
+}
+
+- (CPString)_cibPathForResource:(CPString)aName
+{
+    var defaultBundleLanguage = [self objectForInfoDictionaryKey:CPBundleDefaultLanguage],
+        typeOfLocalization = [self objectForInfoDictionaryKey:CPBundleTypeOfLocalization];
+
+    if (defaultBundleLanguage && (!typeOfLocalization || typeOfLocalization == CPBundleBaseLocalizationType))
+        aName = @"Base.lproj/" + aName;
+    else if (defaultBundleLanguage && typeOfLocalization == CPBundleInterfaceBuilderLocalizationType)
+        aName = _bundle.loadedLanguage() + ".lproj/" + aName;
+
+    return [self pathForResource:aName];
 }
 
 @end

@@ -35,6 +35,9 @@ var CFBundlesForURLStrings   = { },
     CFTotalBytesLoaded       = 0,
     CPApplicationSizeInBytes = 0;
 
+var CPBundleDefaultBrowserLanguage = "CPBundleDefaultBrowserLanguage",
+    CPBundleDefaultLanguage = "CPBundleDefaultLanguage";
+
 GLOBAL(CFBundle) = function(/*CFURL|String*/ aURL)
 {
     aURL = makeAbsoluteURL(aURL).asDirectoryPathURL();
@@ -61,6 +64,7 @@ GLOBAL(CFBundle) = function(/*CFURL|String*/ aURL)
     this._eventDispatcher = new EventDispatcher(this);
 
     this._localizableStrings = [];
+    this._loadedLanguage = NULL;
 }
 
 DISPLAY_NAME(CFBundle);
@@ -148,10 +152,13 @@ CFBundle.prototype.resourcesDirectoryURL = function()
 
 DISPLAY_NAME(CFBundle.prototype.resourcesDirectoryURL);
 
-CFBundle.prototype.resourceURL = function(/*String*/ aResourceName, /*String*/ aType, /*String*/ aSubDirectory)
+CFBundle.prototype.resourceURL = function(/*String*/ aResourceName, /*String*/ aType, /*String*/ aSubDirectory, /*String*/ localizationName)
  {
     if (aType)
         aResourceName = aResourceName + "." + aType;
+
+    if (localizationName)
+        aResourceName = localizationName + aResourceName;
 
     if (aSubDirectory)
         aResourceName = aSubDirectory + "/" + aResourceName;
@@ -196,6 +203,11 @@ CFBundle.prototype.infoDictionary = function()
 };
 
 DISPLAY_NAME(CFBundle.prototype.infoDictionary);
+
+CFBundle.prototype.loadedLanguage = function()
+{
+    return this._loadedLanguage;
+};
 
 CFBundle.prototype.valueForInfoDictionaryKey = function(/*String*/ aKey)
 {
@@ -321,6 +333,7 @@ CFBundle.prototype.load = function(/*BOOL*/ shouldExecute)
             if (self === CFBundle.mainBundle() && self.valueForInfoDictionaryKey("CPApplicationSize"))
                 CPApplicationSizeInBytes = self.valueForInfoDictionaryKey("CPApplicationSize").valueForKey("executable") || 0;
 
+            loadLanguageForBundle(self);
             loadExecutableAndResources(self, shouldExecute);
         }
 
@@ -496,12 +509,12 @@ function loadSpritedImagesForBundle(/*Bundle*/ aBundle, success, failure, progre
 
 function loadLocalizableStringsForBundle(/*Bundle*/ aBundle, success, failure, progress)
 {
-    var language = getCurrentLanguage();
+    var language = aBundle._loadedLanguage;
 
     if (!language)
         return;
 
-    var localizableStrings = aBundle.valueForInfoDictionaryKey("CPLocalizableStrings");
+    var localizableStrings = aBundle.valueForInfoDictionaryKey("CPBundleLocalizableStrings");
 
     if (!localizableStrings)
         return;
@@ -583,18 +596,29 @@ function loadLocalizableContentForFileInBundle(bundle, contentFile, tableName)
     }
 }
 
-function getCurrentLanguage()
+function loadLanguageForBundle(aBundle)
 {
+    if (aBundle._loadedLanguage)
+        return;
+
+    var defaultLanguage = aBundle.valueForInfoDictionaryKey(CPBundleDefaultLanguage);
+
+    if (defaultLanguage != CPBundleDefaultBrowserLanguage && defaultLanguage)
+    {
+        aBundle._loadedLanguage = defaultLanguage;
+        return;
+    }
+
     if (typeof navigator == "undefined")
-        return null;
+        return;
 
     // userLanguage is an IE only property.
     var language = (typeof navigator.language !== "undefined") ? navigator.language : navigator.userLanguage;
 
     if (!language)
-        return null;
+        return;
 
-    return language.substring(0, 2);
+    aBundle._loadedLanguage = language.substring(0, 2);
 }
 
 var CFBundleSpriteSupportListeners  = [],
@@ -841,34 +865,19 @@ CFBundle.prototype.path = function()
     return this.bundlePath.apply(this, arguments);
 };
 
-CFBundle.prototype.pathForResource = function(aResource)
+CFBundle.prototype.pathForResource = function(aResource, aType, aSubDirectory, localizationName)
 {
-    return this.resourceURL(aResource).absoluteString();
+    return this.resourceURL(aResource, aType, aSubDirectory, localizationName).absoluteString();
 };
 
 GLOBAL(CFBundleCopyLocalizedString) = function (/*Bundle*/ bundle, key, value, tableName)
 {
-    return CFCopyLocalizedStringWithDefaultValue(key, tableName, bundle, value, null);
-}
-
-GLOBAL(CFBundleCopyLocalizationsForPreferences) = function (locArray, prefArray)
-{
-
-}
-
-GLOBAL(CFBundleCopyPreferredLocalizationsFromArray) = function (locArray)
-{
-
-}
-
-GLOBAL(CFBundleCopyLocalizationsForURL) = function (url)
-{
-
+    return CFCopyLocalizedStringWithDefaultValue(key, tableName, bundle, value, "");
 }
 
 GLOBAL(CFBundleCopyBundleLocalizations) = function (/*Bundle*/ aBundle)
 {
-
+    return [this._loadedLanguage];
 }
 
 GLOBAL(CFCopyLocalizedString) = function (key, comment)
