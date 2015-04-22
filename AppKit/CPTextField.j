@@ -2002,7 +2002,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     {
         previousContentViewBoundsOrigin = CGPointMakeCopy([[scrollView contentView] boundsOrigin]);
 
-        if(![[self superview] scrollRectToVisible:[self frame]])
+        if (![[self superview] scrollRectToVisible:[self frame]])
             previousContentViewBoundsOrigin = nil;
     }
 
@@ -2139,7 +2139,8 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
         newValue    = [self valueForBinding:aBinding],
         value       = [destination valueForKeyPath:keyPath];
 
-    if (CPIsControllerMarker(value) && newValue === nil) return;
+    if (CPIsControllerMarker(value) && newValue === nil)
+        return;
 
     newValue = [self reverseTransformValue:newValue withOptions:options];
 

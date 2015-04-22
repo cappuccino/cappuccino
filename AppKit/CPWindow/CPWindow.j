@@ -63,7 +63,7 @@
 
 @optional
 - (BOOL)windowShouldClose:(CPWindow)aWindow;
-- (CPSize)windowWillResize:(CPWindow)sender toSize:(CPSize)aSize;
+- (CGSize)windowWillResize:(CPWindow)sender toSize:(CGSize)aSize;
 - (CPUndoManager)windowWillReturnUndoManager:(CPWindow)window;
 - (void)windowDidBecomeKey:(CPNotification)aNotification;
 - (void)windowDidBecomeMain:(CPNotification)aNotification;
@@ -80,7 +80,7 @@
 
 @end
 
-var CPWindowDelegate_windowShouldClose_             = 1 << 1
+var CPWindowDelegate_windowShouldClose_             = 1 << 1,
     CPWindowDelegate_windowWillReturnUndoManager_   = 1 << 2,
     CPWindowDelegate_windowWillClose_               = 1 << 3,
     CPWindowDelegate_windowWillResize_toSize_       = 1 << 4;
@@ -2780,7 +2780,7 @@ CPTexturedBackgroundWindowMask
     [[CPNotificationCenter defaultCenter] removeObserver:self name:CPWindowDidEndSheetNotification object:self];
 
     var sheet = _sheetContext[@"nextSheet"],
-        modalDelegate =_sheetContext[@"nextModalDelegate"],
+        modalDelegate = _sheetContext[@"nextModalDelegate"],
         endSelector = _sheetContext[@"nextEndSelector"],
         contextInfo = _sheetContext[@"nextContextInfo"];
 
@@ -3521,7 +3521,7 @@ var keyViewComparator = function(lhs, rhs, context)
     @ignore
     Call the delegate windowWillResize:toSize:
 */
-- (CPSize)_sendDelegateWindowWillResizeToSize:(CPSize)aSize
+- (CGSize)_sendDelegateWindowWillResizeToSize:(CGSize)aSize
 {
     if (!(_implementedDelegateMethods & CPWindowDelegate_windowWillResize_toSize_))
         return aSize;

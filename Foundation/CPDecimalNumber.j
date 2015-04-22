@@ -26,9 +26,8 @@
 @import "CPString.j"
 
 // The default global behavior class, created lazily
-var CPDefaultDcmHandler = nil;
-
-var CPDecimalNumberUIDs = new CFMutableDictionary();
+var CPDefaultDcmHandler = nil,
+    CPDecimalNumberUIDs = new CFMutableDictionary();
 
 /*!
     @class CPDecimalNumberHandler
