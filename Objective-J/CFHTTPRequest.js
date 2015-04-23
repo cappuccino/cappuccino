@@ -333,7 +333,10 @@ function FileRequest(/*CFURL*/ aURL, onsuccess, onfailure, onprogress)
             fileErrors += error;
 
         if (fileErrors.length > 0)
-            print("\nErrors/Warnings after gcc compilation :\n" + fileErrors);
+        {
+            var TERM = require("narwhal/term");
+            TERM.stream.print("\0red(\nErrors/Warnings after gcc compilation :\n" + fileErrors + "\0)");
+        }
 
         while (chunk = gcc.stdout.read())
             fileContents += chunk;
