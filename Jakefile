@@ -135,6 +135,10 @@ function generateDocs(/* boolean */ noFrame)
             if (doxygenApps[0])
                 doxygen = FILE.join(doxygenApps[0], "Contents/Resources/doxygen");
         }
+
+        p.stdin.close();
+        p.stdout.close();
+        p.stderr.close();
     }
 
     if (!doxygen || !FILE.exists(doxygen))

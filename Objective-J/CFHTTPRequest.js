@@ -277,12 +277,12 @@ CFHTTPRequest.prototype.removeEventListener = function(/*String*/ anEventName, /
     this._eventDispatcher.removeEventListener(anEventName, anEventListener);
 };
 
-CFHTTPRequest.prototype.setWithCredentials = function(/*Boolean*/ willSendWithCredentials) 
+CFHTTPRequest.prototype.setWithCredentials = function(/*Boolean*/ willSendWithCredentials)
 {
     this._nativeRequest.withCredentials = willSendWithCredentials;
 };
 
-CFHTTPRequest.prototype.withCredentials = function() 
+CFHTTPRequest.prototype.withCredentials = function()
 {
     return this._nativeRequest.withCredentials;
 };
@@ -329,6 +329,10 @@ function FileRequest(/*CFURL*/ aURL, onsuccess, onfailure, onprogress)
 
         while (chunk = gcc.stdout.read())
             fileContents += chunk;
+
+        gcc.stdin.close();
+        gcc.stdout.close();
+        gcc.stderr.close();
 
         if (fileContents.length > 0)
         {
