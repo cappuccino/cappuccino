@@ -34,9 +34,8 @@ CPSearchFieldRecentsMenuItemTag         = 1001;
 CPSearchFieldClearRecentsMenuItemTag    = 1002;
 CPSearchFieldNoRecentsMenuItemTag       = 1003;
 
-var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotification";
-
-var RECENT_SEARCH_PREFIX = @"   ";
+var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotification",
+    RECENT_SEARCH_PREFIX = @"   ";
 
 /*!
     @ingroup appkit

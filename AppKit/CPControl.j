@@ -240,7 +240,7 @@ var CPControlBlackColor = [CPColor blackColor];
 */
 - (ThemeState)_controlSizeThemeState
 {
-    switch(_controlSize)
+    switch (_controlSize)
     {
         case CPSmallControlSize:
             return CPThemeStateControlSizeSmall;

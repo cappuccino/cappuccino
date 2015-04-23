@@ -68,7 +68,7 @@
     _textField = [[_CPImageAndTextView alloc] initWithFrame:
         CGRectMake(5.0, 0.0, CGRectGetWidth([self bounds]) - 10.0, CGRectGetHeight([self bounds]))];
 
-    [_textField setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
+    [_textField setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
 
     [_textField setLineBreakMode:CPLineBreakByTruncatingTail];
     [_textField setTextColor:[CPColor colorWithRed:51.0 / 255.0 green:51.0 / 255.0 blue:51.0 / 255.0 alpha:1.0]];
@@ -196,7 +196,7 @@
         maxX = CGRectGetMaxX(bounds) - 0.5;
 
     CGContextSetLineWidth(context, 1);
-    CGContextSetStrokeColor(context, [CPColor colorWithWhite:192.0/255.0 alpha:1.0]);
+    CGContextSetStrokeColor(context, [CPColor colorWithWhite:192.0 / 255.0 alpha:1.0]);
 
     CGContextBeginPath(context);
 

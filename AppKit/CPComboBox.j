@@ -74,7 +74,7 @@ var CPComboBoxTextSubview = @"text",
     BOOL                        _usesDataSource;
     CGSize                      _intercellSpacing;
     CPArray                     _items;
-    id<CPComboBoxDataSource>    _dataSource;
+    id <CPComboBoxDataSource>   _dataSource;
     CPInteger                   _implementedDelegateComboBoxMethods;
     CPString                    _selectedStringValue;
     float                       _itemHeight;

@@ -2100,26 +2100,26 @@ NOT YET IMPLEMENTED
             found = NO,
             max_rec = 100;
 
-            while (max_rec--)
+        while (max_rec--)
+        {
+            if (!cellView || cellView === contentView)
             {
-                if (!cellView || cellView === contentView)
+                found = NO;
+                break;
+            }
+            else
+            {
+                var superview = [cellView superview];
+
+                if ([superview isKindOfClass:[CPTableView class]])
                 {
-                    found = NO;
+                    found = YES;
                     break;
                 }
-                else
-                {
-                    var superview = [cellView superview];
 
-                    if ([superview isKindOfClass:[CPTableView class]])
-                    {
-                        found = YES;
-                        break;
-                    }
-
-                    cellView = superview;
-                }
+                cellView = superview;
             }
+        }
 
         if (found)
         {
@@ -5091,7 +5091,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         _editingColumn = column;
         _editingRow = row;
 
-        [aView addObserver:self forKeyPath:@"objectValue" options:CPKeyValueObservingOptionOld|CPKeyValueObservingOptionNew context:"editing"];
+        [aView addObserver:self forKeyPath:@"objectValue" options:CPKeyValueObservingOptionOld | CPKeyValueObservingOptionNew context:"editing"];
     }
 
     return aView;
