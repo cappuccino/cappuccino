@@ -138,22 +138,34 @@ var transformSizeToHeight = function(start, current)
     return current.height + "px";
 };
 
-var CPVIEW_PROPERTIES_DESCRIPTOR = @{
-    "backgroundColor"  : [@{"property":"background", "value":function(sv, val){return [val cssString];}}],
-    "alphaValue"       : [@{"property":"opacity"}],
-    "frame"            : [@{"property":CPBrowserCSSProperty("transform"), "value":transformFrameToTranslate},
-                          @{"property":"width", "value":transformFrameToWidth},
-                          @{"property":"height", "value":transformFrameToHeight}],
-    "frameOrigin"      : [@{"property":CPBrowserCSSProperty("transform"), "value":transformOrigin}],
-    "frameSize"        : [@{"property":"width", "value":transformSizeToWidth},
-                          @{"property":"height", "value":transformSizeToHeight}]
-};
+var DEFAULT_CSS_PROPERTIES = nil;
 
 @implementation CPView (CPAnimatablePropertyContainer)
 
++ (CPDictionary)defaultCSSProperties
+{
+    if (DEFAULT_CSS_PROPERTIES == nil)
+    {
+        var transformProperty = CPBrowserCSSProperty("transform");
+
+        DEFAULT_CSS_PROPERTIES =  @{
+            "backgroundColor"  : [@{"property":"background", "value":function(sv, val){return [val cssString];}}],
+            "alphaValue"       : [@{"property":"opacity"}],
+            "frame"            : [@{"property":transformProperty, "value":transformFrameToTranslate},
+                                  @{"property":"width", "value":transformFrameToWidth},
+                                  @{"property":"height", "value":transformFrameToHeight}],
+            "frameOrigin"      : [@{"property":transformProperty, "value":transformOrigin}],
+            "frameSize"        : [@{"property":"width", "value":transformSizeToWidth},
+                                  @{"property":"height", "value":transformSizeToHeight}]
+        };
+    }
+
+    return DEFAULT_CSS_PROPERTIES;
+}
+
 + (CPArray)cssPropertiesForKeyPath:(CPString)aKeyPath
 {
-    return [CPVIEW_PROPERTIES_DESCRIPTOR objectForKey:aKeyPath];
+    return [[self defaultCSSProperties] objectForKey:aKeyPath];
 }
 
 + (Class)animatorClass
