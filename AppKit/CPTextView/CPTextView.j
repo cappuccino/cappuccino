@@ -1779,7 +1779,8 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
     CPTextViewLayoutManagerKey = @"CPTextViewLayoutManagerKey",
     CPTextViewTextStorageKey = @"CPTextViewTextStorageKey",
     CPTextViewInsertionPointColorKey = @"CPTextViewInsertionPointColorKey",
-    CPTextViewSelectedTextAttributesKey = @"CPTextViewSelectedTextAttributesKey";
+    CPTextViewSelectedTextAttributesKey = @"CPTextViewSelectedTextAttributesKey",
+    CPTextViewDelegateKey = @"CPTextViewDelegateKey";
 
 @implementation CPTextView (CPCoding)
 
@@ -1806,6 +1807,8 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
 
         [self setAllowsUndo:[aCoder decodeBoolForKey:CPTextViewAllowsUndoKey]];
         [self setUsesFontPanel:[aCoder decodeBoolForKey:CPTextViewUsesFontPanelKey]];
+
+        [self setDelegate:[aCoder decodeObjectForKey:CPTextViewDelegateKey]];
     }
 
     return self;
@@ -1814,6 +1817,8 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [super encodeWithCoder:aCoder];
+
+    [aCoder encodeObject:_delegate forKey:CPTextViewDelegateKey];
     [aCoder encodeObject:_textContainer forKey:CPTextViewContainerKey];
     [aCoder encodeObject:_insertionPointColor forKey:CPTextViewInsertionPointColorKey];
     [aCoder encodeObject:_selectedTextAttributes forKey:CPTextViewSelectedTextAttributesKey];
