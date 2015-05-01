@@ -39,3 +39,15 @@ CPRightTextMovement             = 20;
 CPUpTextMovement                = 21;
 CPDownTextMovement              = 22;
 CPCancelTextMovement            = 23;
+
+@typedef CPWritingDirection
+CPWritingDirectionNatural       = -1;
+CPWritingDirectionLeftToRight   = 0;
+CPWritingDirectionRightToLeft   = 1;
+
+@typedef CPTextAlignment
+CPLeftTextAlignment      = 0;
+CPRightTextAlignment     = 1;
+CPCenterTextAlignment    = 2;
+CPJustifiedTextAlignment = 3;
+CPNaturalTextAlignment   = 4;
