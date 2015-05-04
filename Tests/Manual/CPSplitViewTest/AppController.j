@@ -7,6 +7,7 @@
  */
 
 @import <Foundation/CPObject.j>
+@import <AppKit/AppKit.j>
 
 
 @implementation AppController : CPObject
@@ -25,6 +26,8 @@
 
 - (void)awakeFromCib
 {
+    [splitViewA setDelegate:self];
+
     // This is called when the cib is done loading.
     // You can implement this method on any object instantiated from a Cib.
     // It's a useful hook for setting up current UI values, and other things.
@@ -66,5 +69,20 @@
     // Prevent a new autosave from being made.
     [self setAutosaveName:nil];
 }
+
+@end
+
+@implementation AppController (Delegate)
+
+- (void)splitViewDidResizeSubviews:(CPNotification)aNotification
+{
+    console.error(@"splitViewDidResizeSubviews")
+}
+
+- (void)splitViewWillResizeSubviews:(CPNotification)aNotification
+{
+    console.error(@"splitViewWillResizeSubviews")
+}
+
 
 @end
