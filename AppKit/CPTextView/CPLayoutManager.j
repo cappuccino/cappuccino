@@ -285,10 +285,12 @@ _oncontextmenuhandler = function () { return false; };
     // We erased all lines
     if (!startIndex)
         [self setExtraLineFragmentRect:CGRectMake(0, 0) usedRect:CGRectMake(0, 0) textContainer:nil];
-
     // document.title=startIndex;
+
     [_typesetter layoutGlyphsInLayoutManager:self startingAtGlyphIndex:startIndex maxNumberOfLineFragments:-1 nextGlyphIndex:nil];
+#if PLATFORM(DOM)
     [self _cleanUpDOM];
+#endif
     _isValidatingLayoutAndGlyphs = NO;
 }
 

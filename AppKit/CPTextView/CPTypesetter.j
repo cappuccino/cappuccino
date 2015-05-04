@@ -345,8 +345,15 @@ var CPSystemTypesetterFactory;
         lineRange.length++;
         measuringRange.length++;
 
-        var currentChar = theString[glyphIndex],  // use pure javascript methods for performance reasons
-            rangeWidth = _widthOfStringForFont(theString.substr(measuringRange.location, measuringRange.length), _currentFont).width  + currentAnchor;
+
+        var currentChar = theString[glyphIndex];
+
+#if PLATFORM(DOM)
+        // use pure javascript methods for performance reasons -> why don't we use sizeWithFont ?
+        var rangeWidth = _widthOfStringForFont(theString.substr(measuringRange.location, measuringRange.length), _currentFont).width  + currentAnchor;
+#else
+        var rangeWidth = [theString.substr(measuringRange.location, measuringRange.length) sizeWithFont:_currentFont].width  + currentAnchor;
+#endif
 
         switch (currentChar)    // faster than sending actionForControlCharacterAtIndex: called for each char.
         {
@@ -365,11 +372,10 @@ var CPSystemTypesetterFactory;
                 wrapRange = CPMakeRangeCopy(lineRange);
                 wrapWidth = rangeWidth;
                 break;
+
             default:
                 if (_isNewlineCharacter(currentChar))
-                {
                     isNewline = YES;
-                }
         }
 
         advancements.push(rangeWidth - prevRangeWidth);
