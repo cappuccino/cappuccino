@@ -17,6 +17,7 @@
 {
     // setup a reasonable table
     theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(0.0, 0.0, 1024.0, 768.0) styleMask:CPWindowNotSizable];
+
     textView = [[CPTextView alloc] initWithFrame:CGRectMake(0,0,300,300)];
 
     stringValue = @"My string  is here";
@@ -47,7 +48,7 @@
 - (void)testTextViewSelectionRange
 {
     //TODO : uncomment once ojtest will be up to date on travis
-    // var range;
+    var range;
     //
     //[delegateSpy selector:@selector(textView:willChangeSelectionFromCharacterRange:toCharacterRange:) times:1 arguments:[textView, CPMakeRange(0,0), CPMakeRange(0, 18)]];
     //[delegateSpy selector:@selector(textViewDidChangeSelection:) times:1];
