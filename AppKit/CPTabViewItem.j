@@ -24,7 +24,7 @@
 
 @import "CPView.j"
 @class CPTabView
-@class CPViewControler
+@class CPViewController
 
 /*
     The tab is currently selected.
@@ -54,23 +54,23 @@ CPPressedTab    = 2;
 */
 @implementation CPTabViewItem : CPObject
 {
-    id          _identifier;
-    CPString    _label;
-    CPInteger   _tag @accessors(property=tag);
+    id               _identifier;
+    CPString         _label;
+    CPInteger        _tag            @accessors(property=tag);
 
-    CPView      _view;
-    CPView      _auxiliaryView;
+    CPView           _view;
+    CPView           _auxiliaryView;
 
-    CPTabView   _tabView;
-    unsigned    _tabState;      // Looks like it is not yet implemented
+    CPTabView        _tabView;
+    unsigned         _tabState;      // Looks like it is not yet implemented
 
-    CPImage     _image @accessors(property=image);
+    CPImage          _image          @accessors(property=image);
     CPViewController _viewController @accessors(getter=viewController);
 
-    BOOL        _enabled @accessors(property=enabled);
-    BOOL        _selected @accessors(property=selected);
-    CGRect      _tabRect @accessors(property=frame);
-    float       _width @accessors(property=width);
+    BOOL             _enabled        @accessors(property=enabled);
+    BOOL             _selected       @accessors(property=selected);
+    CGRect           _tabRect        @accessors(property=frame);
+    float            _width          @accessors(property=width);
 }
 
 /*

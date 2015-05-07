@@ -203,7 +203,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 {
     return [[self items] indexOfObjectPassingTest:function(item, idx, stop)
     {
-        [[item identifier] isEqual:anIdentifier];
+        return [[item identifier] isEqual:anIdentifier];
     }];
 }
 
@@ -325,16 +325,15 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
     if (aTabViewItem == _selectedTabViewItem)
         return NO;
 
-    if ((_delegateSelectors & CPTabViewShouldSelectTabViewItemSelector) && ![_delegate tabView:self shouldSelectTabViewItem:aTabViewItem])
+    if (![self _sendDelegateShouldSelectTabViewItem:aTabViewItem])
         return NO;
 
-    if (_delegateSelectors & CPTabViewWillSelectTabViewItemSelector)
-        [_delegate tabView:self willSelectTabViewItem:aTabViewItem];
+    [self _sendDelegateWillSelectTabViewItem:aTabViewItem];
 
     [_tabs setSelectedSegment:anIndex];
     _selectedTabViewItem = aTabViewItem;
-
     [self _displayItemView:[aTabViewItem view]];
+
     [self _sendDelegateDidSelectTabViewItem:aTabViewItem];
 
     return YES;
@@ -515,6 +514,20 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 }
 
 // DELEGATE METHODS
+
+- (BOOL)_sendDelegateShouldSelectTabViewItem:(CPTabViewItem)aTabViewItem
+{
+    if (_delegateSelectors & CPTabViewShouldSelectTabViewItemSelector)
+        return [_delegate tabView:self shouldSelectTabViewItem:aTabViewItem];
+
+    return YES;
+}
+
+- (void)_sendDelegateWillSelectTabViewItem:(CPTabViewItem)aTabViewItem
+{
+    if (_delegateSelectors & CPTabViewWillSelectTabViewItemSelector)
+        [_delegate tabView:self willSelectTabViewItem:aTabViewItem];
+}
 
 - (void)_sendDelegateDidSelectTabViewItem:(CPTabViewItem)aTabViewItem
 {
