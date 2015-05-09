@@ -277,12 +277,12 @@ CFHTTPRequest.prototype.removeEventListener = function(/*String*/ anEventName, /
     this._eventDispatcher.removeEventListener(anEventName, anEventListener);
 };
 
-CFHTTPRequest.prototype.setWithCredentials = function(/*Boolean*/ willSendWithCredentials) 
+CFHTTPRequest.prototype.setWithCredentials = function(/*Boolean*/ willSendWithCredentials)
 {
     this._nativeRequest.withCredentials = willSendWithCredentials;
 };
 
-CFHTTPRequest.prototype.withCredentials = function() 
+CFHTTPRequest.prototype.withCredentials = function()
 {
     return this._nativeRequest.withCredentials;
 };
@@ -323,12 +323,21 @@ function FileRequest(/*CFURL*/ aURL, onsuccess, onfailure, onprogress)
         var aFilePath = aURL.toString().substring(5),
             OS = require("os"),
             gccFlags = require("objective-j").currentCompilerFlags(),
-            gcc = OS.popen("gcc -E -x c -P " + (gccFlags ? gccFlags : "") + " " + OS.enquote(aFilePath), { charset:"UTF-8" }),
             chunk,
             fileContents = "";
 
-        while (chunk = gcc.stdout.read())
-            fileContents += chunk;
+        try
+        {
+            var gcc = OS.popen("gcc -E -x c -P " + (gccFlags ? gccFlags : "") + " " + OS.enquote(aFilePath), { charset:"UTF-8" });
+            while (chunk = gcc.stdout.read())
+                fileContents += chunk;
+        }
+        finally
+        {
+            gcc.stdin.close();
+            gcc.stdout.close();
+            gcc.stderr.close();
+        }
 
         if (fileContents.length > 0)
         {
