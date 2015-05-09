@@ -378,16 +378,21 @@ global.setPackageMetadata = function(packagePath)
 {
     var pkg = JSON.parse(FILE.read(packagePath, { charset : "UTF-8" }));
 
-    var p = OS.popen(["git", "rev-parse", "--verify", "HEAD"]);
-    if (p.wait() === 0) {
-        var sha = p.stdout.read().split("\n")[0];
-        if (sha.length === 40)
-            pkg["cappuccino-revision"] = sha;
+    try
+    {
+        var p = OS.popen(["git", "rev-parse", "--verify", "HEAD"]);
+        if (p.wait() === 0) {
+            var sha = p.stdout.read().split("\n")[0];
+            if (sha.length === 40)
+                pkg["cappuccino-revision"] = sha;
+        }
     }
-
-    p.stdin.close();
-    p.stdout.close();
-    p.stderr.close();
+    finally
+    {
+        p.stdin.close();
+        p.stdout.close();
+        p.stderr.close();
+    }
 
     pkg["cappuccino-timestamp"] = new Date().getTime();
     pkg["version"] = getCappuccinoVersion();

@@ -374,24 +374,30 @@ function pngcrushDirectory(directory)
     system.stderr.print("Running pngcrush on " + pngs.length + " pngs:");
     pngs.forEach(function(dstPath)
     {
-        var tmpPath = FILE.path(dstPath+".tmp"),
-            p = OS.popen(["pngcrush", "-rem", "alla", "-reduce", /*"-brute",*/ dstPath, tmpPath]);
+        var tmpPath = FILE.path(dstPath+".tmp");
 
-        if (p.wait())
+        try
         {
-            CPLog.warn("pngcrush failed. Ensure it's installed and on your PATH.");
+            var p = OS.popen(["pngcrush", "-rem", "alla", "-reduce", /*"-brute",*/ dstPath, tmpPath]);
+
+            if (p.wait())
+            {
+                CPLog.warn("pngcrush failed. Ensure it's installed and on your PATH.");
+            }
+            else
+            {
+                FILE.move(tmpPath, dstPath);
+                system.stderr.write(".").flush();
+            }
         }
-        else
+        finally
         {
-            FILE.move(tmpPath, dstPath);
-            system.stderr.write(".").flush();
+            p.stdin.close();
+            p.stdout.close();
+            p.stderr.close();
         }
-
-        p.stdin.close();
-        p.stdout.close();
-        p.stderr.close();
-
     });
+
     system.stderr.print("");
 }
 

@@ -323,16 +323,21 @@ function FileRequest(/*CFURL*/ aURL, onsuccess, onfailure, onprogress)
         var aFilePath = aURL.toString().substring(5),
             OS = require("os"),
             gccFlags = require("objective-j").currentCompilerFlags(),
-            gcc = OS.popen("gcc -E -x c -P " + (gccFlags ? gccFlags : "") + " " + OS.enquote(aFilePath), { charset:"UTF-8" }),
             chunk,
             fileContents = "";
 
-        while (chunk = gcc.stdout.read())
-            fileContents += chunk;
-
-        gcc.stdin.close();
-        gcc.stdout.close();
-        gcc.stderr.close();
+        try
+        {
+            var gcc = OS.popen("gcc -E -x c -P " + (gccFlags ? gccFlags : "") + " " + OS.enquote(aFilePath), { charset:"UTF-8" });
+            while (chunk = gcc.stdout.read())
+                fileContents += chunk;
+        }
+        finally
+        {
+            gcc.stdin.close();
+            gcc.stdout.close();
+            gcc.stderr.close();
+        }
 
         if (fileContents.length > 0)
         {

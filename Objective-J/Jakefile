@@ -120,14 +120,19 @@ function gcc(inputFilePath, outputFilePath, flags, compress)
 
     // GCC preprocess the file.
     var cmd = ["gcc", "-E", "-x", "c", "-P"].concat(flags, inputFilePath).join(" "),
-        gcc = OS.popen(cmd, { charset:"UTF-8" }),
         contents = FILE.read("header.txt", { charset : "UTF-8" });
 
-    contents += gcc.stdout.read();
-
-    gcc.stdin.close();
-    gcc.stdout.close();
-    gcc.stderr.close();
+    try
+    {
+        var gcc = OS.popen(cmd, { charset:"UTF-8" });
+        contents += gcc.stdout.read();
+    }
+    finally
+    {
+        gcc.stdin.close();
+        gcc.stdout.close();
+        gcc.stderr.close();
+    }
 
     if (FILE.extension(inputFilePath) === ".js" && compress)
         contents = compressor(contents);
