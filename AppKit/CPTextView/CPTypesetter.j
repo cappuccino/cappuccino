@@ -288,7 +288,7 @@ var CPSystemTypesetterFactory;
             if (!_currentFont)
                 _currentFont = [_textStorage font] || [CPFont systemFontOfSize:12.0];
 
-            ascent = ["x" sizeWithFont:_currentFont].height; //FIXME
+            ascent = ["x" sizeWithFont:_currentFont inWidth:NULL].height; //FIXME
             descent = 0;    //FIXME
             leading = (ascent - descent) * 0.2; // FAKE leading
         }
@@ -306,7 +306,7 @@ var CPSystemTypesetterFactory;
 
         var currentChar = theString[glyphIndex];
 
-        var rangeWidth = [theString.substr(measuringRange.location, measuringRange.length) sizeWithFont:_currentFont].width  + currentAnchor;
+        var rangeWidth = [theString.substr(measuringRange.location, measuringRange.length) sizeWithFont:_currentFont inWidth:NULL].width  + currentAnchor;
 
         switch (currentChar)    // faster than sending actionForControlCharacterAtIndex: called for each char.
         {
