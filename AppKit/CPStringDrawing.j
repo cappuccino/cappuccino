@@ -65,14 +65,10 @@ CPStringSizeCachingEnabled = YES;
 
     var cssString = [aFont cssString],
         cacheKey = self + cssString + aWidth,
-        size = CPStringSizeWithFontInWidthCache[cacheKey],
-        fontHeight = CPStringSizeWithFontHeightCache[cssString];
+        size = CPStringSizeWithFontInWidthCache[cacheKey];
 
     if (size !== undefined)
         return CGSizeMakeCopy(size);
-
-    if (fontHeight === undefined)
-        fontHeight = CPStringSizeWithFontHeightCache[cssString] = [aFont defaultLineHeightForFont];
 
     if (!CPStringSizeMeasuringContext)
         CPStringSizeMeasuringContext = CGBitmapGraphicsContextCreate();
@@ -91,6 +87,11 @@ CPStringSizeCachingEnabled = YES;
     {
         if (CPStringSizeMeasuringContext.font !== aFont)
             CPStringSizeMeasuringContext.font = cssString;    
+
+        var fontHeight = CPStringSizeWithFontHeightCache[cssString];
+
+        if (fontHeight === undefined)
+            fontHeight = CPStringSizeWithFontHeightCache[cssString] = [aFont defaultLineHeightForFont];
 
         size = CGSizeMake(CPStringSizeMeasuringContext.measureText(self).width, fontHeight);
     }
