@@ -70,6 +70,7 @@ CPStringSizeCachingEnabled = YES;
     if (size !== undefined)
         return CGSizeMakeCopy(size);
 
+#if PLATFORM(DOM)
     if (!CPStringSizeMeasuringContext)
         CPStringSizeMeasuringContext = CGBitmapGraphicsContextCreate();
 
@@ -95,6 +96,9 @@ CPStringSizeCachingEnabled = YES;
 
         size = CGSizeMake(CPStringSizeMeasuringContext.measureText(self).width, fontHeight);
     }
+#else
+        size = CGSizeMake(0, 0);
+#endif
 
     CPStringSizeWithFontInWidthCache[cacheKey] = size;
     return CGSizeMakeCopy(size);
