@@ -288,8 +288,8 @@ var CPSystemTypesetterFactory;
             if (!_currentFont)
                 _currentFont = [_textStorage font] || [CPFont systemFontOfSize:12.0];
 
-            ascent = ["x" sizeWithFont:_currentFont inWidth:NULL].height; //FIXME
-            descent = 0;    //FIXME
+            ascent = ["x" sizeWithFont:_currentFont inWidth:NULL].height; //FIXME [_currentFont ascender]
+            descent = 0;    //FIXME [_currentFont descender]
             leading = (ascent - descent) * 0.2; // FAKE leading
         }
 
