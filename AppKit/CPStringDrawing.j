@@ -26,7 +26,11 @@
 @import "CPPlatformString.j"
 
 
-var CPStringSizeWithFontInWidthCache = {};
+var CPStringSizeWithFontInWidthCache = {},
+    CPStringSizeWithFontHeightCache = {},
+    CPStringSizeMeasuringContext,
+    CPStringSizeIsCanvasSizingInvalid,
+    CPStringSizeDidTestCanvasSizingValid;
 
 CPStringSizeCachingEnabled = YES;
 
@@ -53,20 +57,45 @@ CPStringSizeCachingEnabled = YES;
     return [self sizeWithFont:aFont inWidth:NULL];
 }
 
+
 - (CGSize)sizeWithFont:(CPFont)aFont inWidth:(float)aWidth
 {
     if (!CPStringSizeCachingEnabled)
         return [CPPlatformString sizeOfString:self withFont:aFont forWidth:aWidth];
 
-    var cacheKey = self + [aFont cssString] + aWidth,
-        size = CPStringSizeWithFontInWidthCache[cacheKey];
+    var cssString = [aFont cssString],
+        cacheKey = self + cssString + aWidth,
+        size = CPStringSizeWithFontInWidthCache[cacheKey],
+        fontHeight = CPStringSizeWithFontHeightCache[cssString];
 
-    if (size === undefined)
+    if (size !== undefined)
+        return CGSizeMakeCopy(size);
+
+    if (fontHeight === undefined)
+        fontHeight = CPStringSizeWithFontHeightCache[cssString] = [aFont defaultLineHeightForFont];
+
+    if (!CPStringSizeMeasuringContext)
+        CPStringSizeMeasuringContext = CGBitmapGraphicsContextCreate();
+
+    if (!CPStringSizeDidTestCanvasSizingValid && CPFeatureIsCompatible(CPHTMLCanvasFeature))
     {
-        size = [CPPlatformString sizeOfString:self withFont:aFont forWidth:aWidth];
-        CPStringSizeWithFontInWidthCache[cacheKey] = size;
+        var teststring = "0123456879abcdefghiklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.-()";
+        CPStringSizeDidTestCanvasSizingValid = YES;
+        CPStringSizeMeasuringContext.font = cssString;
+        CPStringSizeIsCanvasSizingInvalid = ABS([teststring sizeWithFont:aFont].width - CPStringSizeMeasuringContext.measureText(teststring).width) > 2;
     }
 
+    if (!CPFeatureIsCompatible(CPHTMLCanvasFeature) || CPStringSizeIsCanvasSizingInvalid)
+        size = [CPPlatformString sizeOfString:self withFont:aFont forWidth:aWidth];
+    else
+    {
+        if (CPStringSizeMeasuringContext.font !== aFont)
+            CPStringSizeMeasuringContext.font = cssString;    
+
+        size = CGSizeMake(CPStringSizeMeasuringContext.measureText(self), fontHeight);
+    }
+
+    CPStringSizeWithFontInWidthCache[cacheKey] = size;
     return CGSizeMakeCopy(size);
 }
 

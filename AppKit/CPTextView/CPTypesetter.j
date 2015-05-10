@@ -48,49 +48,7 @@ CPTypesetterLineBreakAction       = 1 << 3;
 CPTypesetterParagraphBreakAction  = 1 << 4;
 CPTypesetterContainerBreakAction  = 1 << 5;
 
-var _measuringContext,
-    _measuringContextFont,
-    _isCanvasSizingInvalid,
-    _didTestCanvasSizingValid,
-    _sharedSimpleTypesetter,
-    _sizingCache;
-
-function _widthOfStringForFont(aString, aFont)
-{
-    var peek,
-        cssString = [aFont cssString];
-
-    if (!_measuringContext)
-        _measuringContext = CGBitmapGraphicsContextCreate();
-
-    if (!_didTestCanvasSizingValid && CPFeatureIsCompatible(CPHTMLCanvasFeature))
-    {
-        var teststring = "0123456879abcdefghiklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.-()";
-        _didTestCanvasSizingValid = YES;
-        _measuringContext.font = cssString;
-        _isCanvasSizingInvalid = ABS([teststring sizeWithFont:aFont].width -_measuringContext.measureText(teststring).width) > 2;
-    }
-
-    if (!_sizingCache)
-        _sizingCache = [];
-
-    if (_sizingCache[cssString] !== undefined && (peek = _sizingCache[cssString][aString]) !== undefined)
-        return peek;
-
-    if (_sizingCache[cssString] === undefined)
-        _sizingCache[cssString] = [];
-
-    if (!CPFeatureIsCompatible(CPHTMLCanvasFeature) || _isCanvasSizingInvalid)  // measuring with canvas is _much_ faster on chrome
-        return _sizingCache[cssString][aString] = [aString sizeWithFont:aFont];
-
-    if (_measuringContextFont !== aFont)
-    {
-        _measuringContextFont = aFont;
-        _measuringContext.font = cssString;
-    }
-
-    return _sizingCache[cssString][aString] = _measuringContext.measureText(aString);
-}
+var _sharedSimpleTypesetter;
 
 var CPSystemTypesetterFactory;
 
@@ -348,12 +306,7 @@ var CPSystemTypesetterFactory;
 
         var currentChar = theString[glyphIndex];
 
-#if PLATFORM(DOM)
-        // use pure javascript methods for performance reasons -> why don't we use sizeWithFont ?
-        var rangeWidth = _widthOfStringForFont(theString.substr(measuringRange.location, measuringRange.length), _currentFont).width  + currentAnchor;
-#else
         var rangeWidth = [theString.substr(measuringRange.location, measuringRange.length) sizeWithFont:_currentFont].width  + currentAnchor;
-#endif
 
         switch (currentChar)    // faster than sending actionForControlCharacterAtIndex: called for each char.
         {
