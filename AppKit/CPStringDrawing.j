@@ -92,7 +92,7 @@ CPStringSizeCachingEnabled = YES;
         if (CPStringSizeMeasuringContext.font !== aFont)
             CPStringSizeMeasuringContext.font = cssString;    
 
-        size = CGSizeMake(CPStringSizeMeasuringContext.measureText(self), fontHeight);
+        size = CGSizeMake(CPStringSizeMeasuringContext.measureText(self).width, fontHeight);
     }
 
     CPStringSizeWithFontInWidthCache[cacheKey] = size;
