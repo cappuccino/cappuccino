@@ -229,7 +229,7 @@
 
     [scrollView setDocumentView:documentView];
 
-    [textField1 setFrameOrigin:CGPointMake(0, 0)];
+    [textField1 setFrameOrigin:CGPointMake(10, 10)];
     [textField2 setFrameOrigin:CGPointMake(500, 500)];
 
     [documentView addSubview:textField1];
@@ -242,9 +242,11 @@
     [self assertPoint:CGPointMake(0, 0) equals:visibleRect.origin message:@"VisibleRect origin not at top left corner"];
 
     // Make the second text field visible
-    [textField2 scrollRectToVisible:[textField2 bounds]];
+    var hasScrolled = [textField2 scrollRectToVisible:[textField2 bounds]];
 
-    var visibleRectOriginShouldBeAt = CGPointMake(500 - originalVisibleSize.width + textField2Size.width, 500 -originalVisibleSize.height + textField2Size.height);
+    [self assertTrue:hasScrolled];
+
+    var visibleRectOriginShouldBeAt = CGPointMake(500 - originalVisibleSize.width + textField2Size.width, 500 - originalVisibleSize.height + textField2Size.height);
 
     visibleRect = [documentView visibleRect];
 
@@ -252,12 +254,66 @@
     [self assertPoint:visibleRectOriginShouldBeAt equals:visibleRect.origin message:@"Second text field not at lower right corner in visible rect"];
 
     // Make the first text field visible again
-    [textField1 scrollRectToVisible:[textField2 bounds]];
+    hasScrolled = [textField1 scrollRectToVisible:[textField1 bounds]];
+    [self assertTrue:hasScrolled];
 
     visibleRect = [documentView visibleRect];
 
     // We should now be back at top left corner
-    [self assertPoint:CGPointMake(0, 0) equals:visibleRect.origin message:@"VisibleRect origin not at top left corner again"];
+    [self assertPoint:CGPointMake(10, 10) equals:visibleRect.origin message:@"VisibleRect origin not at top left corner again"];
+
+    // Try to scroll again and it should not scroll
+    hasScrolled = [textField1 scrollRectToVisible:[textField1 bounds]];
+    [self assertFalse:hasScrolled];
+}
+
+- (void)testScrollRectToVisibleWithLargeRect
+{
+    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)],
+        documentView = [[CPView alloc] initWithFrame:CGRectMake(0, 0, 1000, 1000)],
+        view1 = [[CPView alloc] initWithFrame:CGRectMake(0, 0, 200, 200)],
+        view2 = [[CPView alloc] initWithFrame:CGRectMake(500, 500, 200, 200)],
+        view1Size = CGSizeMakeCopy([view1 bounds].size),
+        view2Size = CGSizeMakeCopy([view2 bounds].size);
+
+    [scrollView setDocumentView:documentView];
+
+    [view1 setFrameOrigin:CGPointMake(0, 0)];
+    [view2 setFrameOrigin:CGPointMake(500, 500)];
+
+    [documentView addSubview:view1];
+    [documentView addSubview:view2];
+
+    var visibleRect = [documentView visibleRect],
+        originalVisibleSize = CGSizeMakeCopy(visibleRect.size);
+
+    // Make sure we are at the top left corner
+    [self assertPoint:CGPointMake(0, 0) equals:visibleRect.origin message:@"VisibleRect origin not at top left corner"];
+
+    // Make the second view visible
+    var hasScrolled = [view2 scrollRectToVisible:[view2 bounds]];
+
+    [self assertTrue:hasScrolled];
+
+    visibleRect = [documentView visibleRect];
+
+    // We should now have the origin of view2 in the upper left corner
+    [self assertPoint:CGPointMake(500, 500) equals:visibleRect.origin message:@"Origin of second view not at upper left corner in visible rect"];
+
+    // Make the first view  visible again
+    hasScrolled = [view1 scrollRectToVisible:[view1 bounds]];
+    [self assertTrue:hasScrolled];
+
+    visibleRect = [documentView visibleRect];
+
+    var visibleRectOriginShouldBeAt = CGPointMake(200 - visibleRect.size.width, 200 - visibleRect.size.height);
+
+    // We should now be back almost at top left corner except that the lower right corner of the rect should be at the lower right corner of the visible rect.
+    [self assertPoint:visibleRectOriginShouldBeAt equals:visibleRect.origin message:@"VisibleRect origin not at top left corner again"];
+
+    // Try to scroll again and it should not scroll even as some parts are outside the visible rect
+    hasScrolled = [view1 scrollRectToVisible:[view1 bounds]];
+    [self assertFalse:hasScrolled];
 }
 
 -(void)testNotificationsRegistered

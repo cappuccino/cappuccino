@@ -127,6 +127,7 @@
 @import "CPText.j"
 @import "CPWindow_Constants.j"
 
+@class CPApplication
 @class CPDragServer
 @class _CPToolTip
 
@@ -202,6 +203,7 @@ var ModifierKeyCodes = [
 
 var resizeTimer = nil;
 var PreventScroll = true;
+var blurTimer = nil;
 
 _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotification";
 
@@ -396,7 +398,15 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 
         touchEventSelector = @selector(touchEvent:),
         touchEventImplementation = class_getMethodImplementation(theClass, touchEventSelector),
-        touchEventCallback = function (anEvent) { touchEventImplementation(self, nil, anEvent); };
+        touchEventCallback = function (anEvent) { touchEventImplementation(self, nil, anEvent); },
+
+        onFocusEventSelector = @selector(focusEvent:),
+        onFocusEventImplementation = class_getMethodImplementation(theClass, onFocusEventSelector),
+        onFocusEventCallback = function (anEvent) { onFocusEventImplementation(self, nil, anEvent); },
+
+        onBlurEventSelector = @selector(blurEvent:),
+        onBlurEventImplementation = class_getMethodImplementation(theClass, onBlurEventSelector),
+        onBlurEventCallback = function (anEvent) { onBlurEventImplementation(self, nil, anEvent); };
 
     if (theDocument.addEventListener)
     {
@@ -430,10 +440,14 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 
         _DOMWindow.addEventListener("resize", resizeEventCallback, NO);
 
+        _DOMWindow.addEventListener("blur", onBlurEventCallback, NO);
+        _DOMWindow.addEventListener("focus", onFocusEventCallback, NO);
+
         _DOMWindow.addEventListener("unload", function()
         {
             _DOMWindow.removeEventListener("unload", arguments.callee, NO);
 
+            [self blurEvent:nil];
             [self _notifyPlatformWindowWillClose];
             [self updateFromNativeContentRect];
             [self _removeLayers];
@@ -452,6 +466,9 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
             theDocument.removeEventListener("touchmove", touchEventCallback, NO);
 
             _DOMWindow.removeEventListener("resize", resizeEventCallback, NO);
+
+            _DOMWindow.removeEventListener("blur", onBlurEventCallback, NO);
+            _DOMWindow.removeEventListener("focus", onFocusEventCallback, NO);
 
             //FIXME: does firefox really need a different value?
             _DOMWindow.removeEventListener("DOMMouseScroll", scrollEventCallback, NO);
@@ -479,6 +496,9 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 
         _DOMWindow.attachEvent("onresize", resizeEventCallback);
 
+        _DOMWindow.attachEvent("onfocus", onFocusEventCallback);
+        _DOMWindow.attachEvent("onblur", onBlurEventCallback);
+
         _DOMWindow.onmousewheel = scrollEventCallback;
         theDocument.onmousewheel = scrollEventCallback;
 
@@ -489,6 +509,7 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
         {
             _DOMWindow.detachEvent("unload", arguments.callee);
 
+            [self blurEvent:nil];
             [self _notifyPlatformWindowWillClose];
             [self updateFromNativeContentRect];
             [self _removeLayers];
@@ -505,7 +526,11 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 
             _DOMWindow.detachEvent("onresize", resizeEventCallback);
 
+            _DOMWindow.detachEvent("onfocus", onBlurEventCallback);
+            _DOMWindow.detachEvent("onblur", onFocusEventCallback);
+
             _DOMWindow.onmousewheel = NULL;
+
             theDocument.onmousewheel = NULL;
 
             _DOMBodyElement.ondrag = NULL;
@@ -545,7 +570,7 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
     [PlatformWindows addObject:self];
 
     // FIXME: cpSetFrame?
-    _DOMWindow.document.write('<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"></head><body style="background-color:transparent;"></body></html>');
+    _DOMWindow.document.write('<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"></head><body style="background-color:transparent; overflow:hidden"></body></html>');
     _DOMWindow.document.close();
 
     if (self != [CPPlatformWindow primaryPlatformWindow])
@@ -1030,6 +1055,96 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 
     _shouldUpdateContentRect = YES;
 }
+
+/*!
+    @ignore
+*/
+- (void)blurEvent:(DOMEvent)aDOMEvent
+{
+    if ([CPApp keyWindow] == _currentKeyWindow)
+        [_currentKeyWindow resignKeyWindow];
+
+    if ([CPApp mainWindow] == _currentMainWindow)
+        [_currentMainWindow resignMainWindow];
+
+    _previousKeyWindow = aDOMEvent ? _currentKeyWindow : nil;
+    _previousMainWindow = aDOMEvent ? _currentMainWindow : nil;
+
+    [blurTimer invalidate];
+    blurTimer = [CPTimer scheduledTimerWithTimeInterval:0.2 target:self selector:@selector(_blurEventTimer:) userInfo:nil repeats:NO];
+}
+
+/*!
+    @ignore
+*/
+- (void)_blurEventTimer:(CPTimer)aTimer
+{
+    if (![CPApp mainWindow])
+        [[CPApplication sharedApplication] deactivate];
+
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+}
+
+/*!
+    @ignore
+*/
+- (void)focusEvent:(DOMEvent)aDOMEvent
+{
+    [blurTimer invalidate];
+    [CPApp activateIgnoringOtherApps:YES];
+
+    var keyWindow = _previousKeyWindow;
+
+    if (!keyWindow)
+       keyWindow = [[[_windowLayers objectForKey:[_windowLevels firstObject]] orderedWindows] firstObject];
+
+    if (!keyWindow)
+        return;
+
+    [self _makeKeyWindow:keyWindow];
+
+    if ([keyWindow isKeyWindow] && ([keyWindow firstResponder] === keyWindow || ![keyWindow firstResponder]))
+       [keyWindow makeFirstResponder:[keyWindow initialFirstResponder]];
+
+    [self _makeMainWindow:keyWindow];
+
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+    _previousKeyWindow = nil;
+    _previousMainWindow = nil;
+}
+
+/*!
+    @ignore
+*/
+- (void)_makeKeyWindow:(CPWindow)aWindow
+{
+    if ([CPApp keyWindow] === aWindow || ![aWindow canBecomeKeyWindow])
+        return;
+
+    [[CPApp keyWindow] resignKeyWindow];
+    [aWindow becomeKeyWindow];
+}
+
+/*!
+    @ignore
+*/
+- (void)_makeMainWindow:(CPWindow)aWindow
+{
+    // Sheets cannot be main. Their parent window becomes main.
+    if (aWindow._isSheet)
+    {
+        [self _makeMainWindow:aWindow._parentView];
+        return;
+    }
+
+    if ([CPApp mainWindow] === aWindow || ![aWindow canBecomeMainWindow])
+        return;
+
+    [[CPApp mainWindow] resignMainWindow];
+    [aWindow becomeMainWindow];
+}
+
 
 - (void)touchEvent:(DOMEvent)aDOMEvent
 {

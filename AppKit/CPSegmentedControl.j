@@ -504,7 +504,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 */
 - (void)drawSegmentBezel:(int)aSegment highlight:(BOOL)shouldHighlight
 {
-    if(aSegment < _themeStates.length)
+    if (aSegment < _themeStates.length)
     {
         if (shouldHighlight)
             _themeStates[aSegment] = _themeStates[aSegment].and(CPThemeStateHighlighted);
@@ -733,27 +733,21 @@ CPSegmentSwitchTrackingMomentary = 2;
     if (aSegment < 0 || (segmentCount > 0 && aSegment >= segmentCount))
         return;
 
-    // Invalidate frames for segments on the right. They will be lazily computed by -frameForSegment:.
-    for (var i = aSegment; i < segmentCount; i++)
-        [_segments[i] setFrame:CGRectMakeZero()];
+    var width = 0;
 
-    [self setFrameSize:[self intrinsicContentSize]];
+    if (segmentCount > 0)
+    {
+        // Invalidate frames for segments on the right. They will be lazily computed by -frameForSegment:.
+        for (var i = aSegment; i < segmentCount; i++)
+            [_segments[i] setFrame:CGRectMakeZero()];
+
+        width = CGRectGetMaxX([self frameForSegment:(segmentCount - 1)]);
+    }
+
+    [self setFrameSize:CGSizeMake(width, CGRectGetHeight([self frame]))];
 
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
-}
-
-/*! @ignore */
-- (CGSize)intrinsicContentSize
-{
-    // frameForSegment is recursively called backwards. All previously invalidated frames will be recomputed.
-    var segmentCount = [self segmentCount],
-        width = 0;
-
-    if (segmentCount > 0)
-        width = CGRectGetMaxX([self frameForSegment:(segmentCount - 1)]);
-
-    return CGSizeMake(width, [self valueForThemeAttribute:@"min-size"].height);
 }
 
 /*!
@@ -805,6 +799,12 @@ CPSegmentSwitchTrackingMomentary = 2;
         left = [self _leftOffsetForSegment:aSegment];
 
     return CGRectMake(left + contentInset.left, contentInset.top, width - contentInset.left - contentInset.right, height - contentInset.top - contentInset.bottom);
+}
+
+- (CGSize)_minimumFrameSize
+{
+    // The current width is always the minimum width.
+    return CGSizeMake(CGRectGetWidth([self frame]), [self currentValueForThemeAttribute:@"min-size"].height);
 }
 
 /*!

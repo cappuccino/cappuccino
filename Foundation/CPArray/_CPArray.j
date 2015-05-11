@@ -209,6 +209,14 @@ var concat = Array.prototype.concat,
 }
 
 /*!
+Returns a hash for the object. Unlike Cocoa, the hash value does not take content into account, so two arrays with the same content (\c isEqual: === YES) will not generate the same hash.
+*/
+- (unsigned)hash
+{
+    return [self UID];
+}
+
+/*!
     Returns the first object in the array. If the array is empty, returns \c nil
 */
 - (id)firstObject

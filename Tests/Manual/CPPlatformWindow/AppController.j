@@ -24,6 +24,7 @@
     // This is called when the application is done loading.
     [[CPPlatformWindow alloc] initWithWindow:externalWindow];
     [externalWindow setDelegate:self];
+    [theWindow setDelegate:self];
 }
 
 - (void)awakeFromCib
@@ -43,7 +44,7 @@
 
 - (IBAction)closeWindow:(id)sender
 {
-    [externalWindow orderOut:sender];
+    [externalWindow close];
 }
 
 - (IBAction)changeFrame:(id)sender
@@ -96,9 +97,36 @@
     CPLog.debug("windowDidResize:");
 }
 
+- (CPSize)windowWillResize:(CPWindow)sender toSize:(CPSize)aSize
+{
+    CPLog.debug("windowWillResize:toSize");
+    return aSize;
+}
+
 - (void)windowWillClose:(CPWindow)aWindow
 {
     CPLog.debug("windowWillClose:");
 }
+
+- (void)applicationDidResignActive:(CPNotification)aNotification
+{
+    CPLog.debug(@"applicationDidResignActive");
+}
+
+- (void)applicationDidBecomeActive:(CPNotification)aNotification
+{
+    CPLog.debug(@"applicationDidBecomeActive");
+}
+
+- (void)applicationWillResignActive:(CPNotification)aNotification
+{
+    CPLog.debug(@"applicationWillResignActive");
+}
+
+- (void)applicationWillBecomeActive:(CPNotification)aNotification
+{
+    CPLog.debug(@"applicationWillBecomeActive");
+}
+
 
 @end

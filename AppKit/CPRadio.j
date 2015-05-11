@@ -269,9 +269,9 @@ var CPRadioRadioGroupKey    = @"CPRadioRadioGroupKey";
 - (BOOL)selectRadioWithTag:(int)tag
 {
     var index = [_radios indexOfObjectPassingTest:function(radio)
-                    {
-                        return [radio tag] === tag;
-                    }];
+                {
+                    return [radio tag] === tag;
+                }];
 
     if (index !== CPNotFound)
     {

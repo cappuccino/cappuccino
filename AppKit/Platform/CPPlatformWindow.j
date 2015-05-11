@@ -75,6 +75,12 @@ var PrimaryPlatformWindow   = NULL;
     CPPlatformPasteboard    _platformPasteboard;
 
     CPString                _overriddenEventType;
+
+    CPWindow                _currentKeyWindow;
+    CPWindow                _previousKeyWindow;
+
+    CPWindow                _currentMainWindow;
+    CPWindow                _previousMainWindow;
 #endif
 }
 
