@@ -127,15 +127,6 @@ function compile(node, state, visitor)
     c(node, state);
 };
 
-function shadowBaseNameForPath(projectBasePath, path)
-{
-    // Make the path project-relative
-    path = path.substring(projectBasePath.length + 1, path.length);
-
-    // strip the extension and replace slashes
-    return path.substring(0, path.length - 2).replace(/[/]/g, SLASH_REPLACEMENT);
-}
-
 function removeLastSlashIfNecessary(path)
 {
     if (path[path.length - 1] == "/")
@@ -155,9 +146,10 @@ function parser(args)
         var projectBasePath = removeLastSlashIfNecessary(args[1]),
             sourcePath = args[0],
             outputDirectory = projectBasePath,
-            baseFilename = shadowBaseNameForPath(projectBasePath, sourcePath),
-            outputHeaderURL = new CFURL([outputDirectory stringByAppendingPathComponent:baseFilename + ".h"]),
-            outputImplementationURL = new CFURL([outputDirectory stringByAppendingPathComponent:baseFilename + ".m"]),
+            baseFilename = [sourcePath lastPathComponent],
+            baseFilenameWithNoExtension = baseFilename.substring(0, baseFilename.length - 2),
+            outputHeaderURL = new CFURL([outputDirectory stringByAppendingPathComponent:baseFilenameWithNoExtension + ".h"]),
+            outputImplementationURL = new CFURL([outputDirectory stringByAppendingPathComponent:baseFilenameWithNoExtension + ".m"]),
             source = FILE.read(sourcePath, { charset: "UTF-8" }),
             flags = ObjectiveJ.Preprocessor.Flags.IncludeDebugSymbols | ObjectiveJ.Preprocessor.Flags.IncludeTypeSignatures,
             tokens = ObjectiveJ.acorn.parse(source, { locations:true, sourceFile:sourcePath }),
