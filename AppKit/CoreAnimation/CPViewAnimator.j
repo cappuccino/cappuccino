@@ -2,8 +2,6 @@
 @import "_CPObjectAnimator.j"
 @import "CPView.j"
 
-@class CPAnimationContext
-
 @implementation CPViewAnimator : _CPObjectAnimator
 {
 }
@@ -35,7 +33,6 @@
     {
         [_target viewDidMoveToSuperview];
     }
-
 }
 
 - (void)removeFromSuperview

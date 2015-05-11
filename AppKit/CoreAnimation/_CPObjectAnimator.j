@@ -1,8 +1,6 @@
 
 @import <Foundation/CPProxy.j>
-@import "CAAnimation.j"
-
-@class CPAnimationContext
+@import "CPAnimationContext.j"
 
 var _supportsCSSAnimations = null;
 

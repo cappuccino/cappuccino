@@ -1,4 +1,3 @@
-@import "CAAnimation.j"
 @import "CABasicAnimation.j"
 @import "CAKeyframeAnimation.j"
 @import "CPView.j"
@@ -128,7 +127,7 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
         return;
 
     var animByKeyPath = _animationsByObject.get(anObject);
-    
+
     if (!animByKeyPath)
     {
         var newAnimByKeyPath = @{aKeyPath:resolvedAction};
