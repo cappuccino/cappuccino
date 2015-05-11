@@ -1,32 +1,28 @@
-/*
- * parser.j
- *
- * Created by Francisco Tolmasky.
- * Modified by Antoine Mercadal, with great help from Martin Carlberg
- * Copyright 2008-2013, 280 North, Inc.
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
- */
+#!/usr/bin/env objj
 
 @import <Foundation/Foundation.j>
 
 var FILE = require("file"),
     OS = require("os"),
-	stream = require("narwhal/term").stream,
+    stream = require("narwhal/term").stream,
 
     SLASH_REPLACEMENT = "∕";  // DIVISION SLASH, Unicode: U+2215
+
+function main(args)
+{
+    args.shift();
+
+    if (args.length < 1)
+        return printUsage();
+
+    parser(args);
+}
+
+function printUsage()
+{
+    print("objj2objskeleton [FILE] [DESTINATION]");
+    print("Convert a objective-j file to an objective-c files skeleton (.h and .m)")
+}
 
 // Debug function to print some JS objects
 function dump(obj)
@@ -152,12 +148,12 @@ function removeLastSlashIfNecessary(path)
     $1 Full project source path
     $2 Destination
 */
-function main(args)
+function parser(args)
 {
     try
     {
-        var projectBasePath = removeLastSlashIfNecessary(args[2]),
-            sourcePath = args[1],
+        var projectBasePath = removeLastSlashIfNecessary(args[1]),
+            sourcePath = args[0],
             outputDirectory = projectBasePath,
             baseFilename = shadowBaseNameForPath(projectBasePath, sourcePath),
             outputHeaderURL = new CFURL([outputDirectory stringByAppendingPathComponent:baseFilename + ".h"]),

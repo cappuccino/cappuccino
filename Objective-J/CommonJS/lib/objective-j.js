@@ -94,7 +94,6 @@ exports.run = function(args)
             print("  -I, --objj-include-paths       include a specific framework paths")
             print("  -h, --help                     print this help");
             print("  -m, --multifiles               launch objj on several files")
-            print("  -c, --objc                     generate the objective-c class of the given file to the given folder. [file] [destination]")
             return;
         }
 
@@ -111,14 +110,6 @@ exports.run = function(args)
                     argv.shift();
                     multipleFiles = true;
                     break
-
-                case "-c":
-                case "--objc":
-                    argv.shift();
-                    argv.unshift(require("file").path(module.path).dirname().join("objective-j/objective-c-parser.j"));
-                    argv.unshift("objj");
-
-                    return OS.system(argv);
             }
         }
     }
