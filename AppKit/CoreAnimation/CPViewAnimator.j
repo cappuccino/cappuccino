@@ -172,7 +172,7 @@ var DEFAULT_CSS_PROPERTIES = nil;
     if (anim_class)
         return anim_class;
 
-    return [super animatorClass];
+    return [[self superclass] animatorClass];
 }
 
 - (id)animator
