@@ -82,7 +82,7 @@ CPStringSizeCachingEnabled = YES;
         CPStringSizeIsCanvasSizingInvalid = ABS([teststring sizeWithFont:aFont].width - CPStringSizeMeasuringContext.measureText(teststring).width) > 2;
     }
 
-    if (!CPFeatureIsCompatible(CPHTMLCanvasFeature) || CPStringSizeIsCanvasSizingInvalid)
+    if (!CPFeatureIsCompatible(CPHTMLCanvasFeature) || CPStringSizeIsCanvasSizingInvalid || aWidth > 0)
         size = [CPPlatformString sizeOfString:self withFont:aFont forWidth:aWidth];
     else
     {
