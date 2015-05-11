@@ -7,7 +7,6 @@
  */
 
 @import <Foundation/CPObject.j>
-@import <AppKit/CPAnimationContext.j>
 
 CPLogRegister(CPLogConsole);
 
@@ -247,7 +246,7 @@ var ANIMATIONS_NAMES = ["Fade In", "Fade Out", "Background Color", "Frame Origin
     }
     else if ([enabledIndexes containsIndex:3])
     {
-        [[aView animations] setObject:nil forKey:@"frameOrigin"];
+        [[aView animations] removeObjectForKey:@"frameOrigin"];
 
         var origin = CGPointMakeCopy([aView frameOrigin]);
         origin.x +=550;
