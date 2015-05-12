@@ -160,7 +160,7 @@ CGContext.prototype.scaleCTM = function(sx, sy)
     this.setCTM(CGAffineTransformScale(CTM, sx, sy));
 }
 
-CGContext.prototype.translateCTM = function(aContext, tx, ty)
+CGContext.prototype.translateCTM = function(tx, ty)
 {
     var CTM = this.getCTM();
 
@@ -1073,12 +1073,10 @@ function CGContextDrawRadialGradient(aContext, aGradient, aStartPoint, anEndPoin
 */
 if (CPFeatureIsCompatible(CPHTMLCanvasFeature))
 {
-    CPLog.warn("CPHTMLCanvasFeature is supported!");
 #include "CGContextCanvas.j"
 }
 else if (CPFeatureIsCompatible(CPVMLFeature))
 {
-    CPLog.warn("CPVMLFeature is supported!");
 #include "CGContextVML.j"
 }
 /*!
