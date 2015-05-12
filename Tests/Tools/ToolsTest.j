@@ -7,11 +7,10 @@ function cleanup() {
             FILE.rmtree(dir);
     });
 
-    if (FILE.isFile("objj2objcskeletonTestFile.h"))
-        FILE.remove("objj2objcskeletonTestFile.h");
-
-    if (FILE.isFile("objj2objcskeletonTestFile.m"))
-        FILE.remove("objj2objcskeletonTestFile.m");
+    ["objj2objcskeletonTestFile.h", "objj2objcskeletonTestFile.m", "objj2objcskeletonTestFile.j"].forEach(function(file) {
+        if (FILE.isFile(file))
+            FILE.remove(file);
+    });
 }
 
 @implementation ToolsTest : OJTestCase
@@ -44,6 +43,8 @@ function cleanup() {
 
     status = OS.system(["objj", "-I", "ToolsTestApp/Frameworks", "ToolsTestApp/AppController.j"]);
     [self assert:0 equals:status message:"objj failed with options -I"];
+
+    FILE.write("objj2objcskeletonTestFile.j", "@import <Foundation/CPObject.j>\n@import <AppKit/AppKit.j>\n\n\n@implementation AppController : CPObject\n{\n    @outlet CPSplitView splitViewA;\n    @outlet CPSplitView splitViewB;\n    @outlet CPSplitView splitViewC;\n}\n\n@end");
 
     status = OS.system(["objj2objcskeleton", "objj2objcskeletonTestFile.j", "."]);
     [self assert:0 equals:status message:"objj2objcskeleton failed"];
