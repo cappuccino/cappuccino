@@ -27,35 +27,42 @@ var VML_TRUTH_TABLE     = [ "f", "t"],
 
 var _CGBitmapGraphicsContextCreate = CGBitmapGraphicsContextCreate;
 
-function CGBitmapGraphicsContextCreate()
+function CGVMLGraphicsContext()
 {
+    CGContext.call();
+    
     // The first time around, we have to set up our environment to support vml.
     document.namespaces.add("cg_vml_", "urn:schemas-microsoft-com:vml");
     document.createStyleSheet().cssText = "cg_vml_\\:*{behavior:url(#default#VML)}";
-
-    CGBitmapGraphicsContextCreate = _CGBitmapGraphicsContextCreate;
-
-    return _CGBitmapGraphicsContextCreate();
 }
 
-function CGContextSetFillColor(aContext, aColor)
+CGVMLGraphicsContext.prototype = Object.create(CGContext.prototype);
+
+CGVMLGraphicsContext.prototype.constructor = CGVMLGraphicsContext;
+
+function CGVMLGraphicsContextCreate()
+{
+    return new CGVMLGraphicsContext();
+}
+
+CGVMLGraphicsContext.prototype.setFillColor = function(aColor)
 {
     if ([aColor patternImage])
         // Prefix a marker character to the string so we know it's a pattern image filename
-        aContext.gState.fillStyle = "!" + [[aColor patternImage] filename];
+        this.gState.fillStyle = "!" + [[aColor patternImage] filename];
     else
-        aContext.gState.fillStyle = [aColor cssString];
+        this.gState.fillStyle = [aColor cssString];
 }
 
 // FIXME: aRect is ignored.
-function CGContextClearRect(aContext, aRect)
+CGVMLGraphicsContext.prototype.clearRect = function(aRect)
 {
-    if (aContext.buffer != nil)
-        aContext.buffer = "";
+    if (this.buffer != nil)
+        this.buffer = "";
     else
-        aContext.DOMElement.innerHTML = "";
+        this.DOMElement.innerHTML = "";
 
-    aContext.path = NULL;
+    this.path = NULL;
 }
 
 var W = 10.0,
@@ -65,7 +72,7 @@ var W = 10.0,
 
 #define COORD(aCoordinate) (aCoordinate === 0.0 ? 0 : ROUND(Z * (aCoordinate) - Z_2))
 
-function CGContextDrawImage(aContext, aRect, anImage)
+CGVMLGraphicsContext.prototype.drawImage = function(aRect, anImage)
 {
     var string = "";
 
@@ -73,7 +80,7 @@ function CGContextDrawImage(aContext, aRect, anImage)
         string = anImage.buffer;
     else
     {
-        var ctm = aContext.gState.CTM,
+        var ctm = this.gState.CTM,
             origin = CGPointApplyAffineTransform(aRect.origin, ctm),
             similarity = ctm.a == ctm.d && ctm.b == -ctm.c,
             vml = ["<cg_vml_:group coordsize=\"1,1\" coordorigin=\"0,0\" style=\"width:1;height:1;position:absolute"];
@@ -110,23 +117,23 @@ function CGContextDrawImage(aContext, aRect, anImage)
         string = vml.join("");
     }
 
-    if (aContext.buffer != nil)
-        aContext.buffer += string;
+    if (this.buffer != nil)
+        this.buffer += string;
     else
-        aContext.DOMElement.insertAdjacentHTML("BeforeEnd", string);
+        this.DOMElement.insertAdjacentHTML("BeforeEnd", string);
 }
 
-function CGContextDrawPath(aContext, aMode)
+CGVMLGraphicsContext.prototype.drawPath = function(aMode)
 {
-    if (!aContext || CGPathIsEmpty(aContext.path))
+    if (CGPathIsEmpty(this.path))
         return;
 
-    var elements = aContext.path.elements,
+    var elements = this.path.elements,
 
         i = 0,
-        count = aContext.path.count,
+        count = this.path.count,
 
-        gState = aContext.gState,
+        gState = this.gState,
         fill = (aMode == kCGPathFill || aMode == kCGPathFillStroke) ? 1 : 0,
         stroke = (aMode == kCGPathStroke || aMode == kCGPathFillStroke) ? 1 : 0,
         opacity = gState.alpha,
@@ -272,10 +279,10 @@ function CGContextDrawPath(aContext, aMode)
 
     vml.push("</cg_vml_:shape>");
 
-    if (aContext.buffer != nil)
-        aContext.buffer += vml.join("");
+    if (this.buffer != nil)
+        this.buffer += vml.join("");
     else
-        aContext.DOMElement.insertAdjacentHTML("BeforeEnd", vml.join(""));
+        this.DOMElement.insertAdjacentHTML("BeforeEnd", vml.join(""));
 }
 
 function to_string(aColor)
@@ -283,9 +290,9 @@ function to_string(aColor)
     return "rgb(" + ROUND(aColor.components[0] * 255) + ", " + ROUND(aColor.components[1] * 255) + ", " + ROUND(255 * aColor.components[2]) + ")";
 }
 
-function CGContextDrawLinearGradient(aContext, aGradient, aStartPoint, anEndPoint, options)
+CGVMLGraphicsContext.prototype.drawLinearGradient = function(aGradient, aStartPoint, anEndPoint, options)
 {
-    if (!aContext || !aGradient)
+    if (!aGradient)
         return;
 
     var vml = nil;
@@ -326,10 +333,19 @@ function CGContextDrawLinearGradient(aContext, aGradient, aStartPoint, anEndPoin
         vml.push("\" />");
     }
 
-    aContext.gState.gradient = vml.join("");
+    this.gState.gradient = vml.join("");
 
-    // if (aContext.buffer != nil)
-    //     aContext.buffer += vml.join("");
+    // if (this.buffer != nil)
+    //     this.buffer += vml.join("");
     // else
-    //     aContext.DOMElement.innerHTML = vml.join("");
+    //     this.DOMElement.innerHTML = vml.join("");
+}
+
+/*
+ * If the VML system is available it becomes the default implementation
+ * for CGBitmapGraphicsContextCreate()
+ */
+function CGBitmapGraphicsContextCreate()
+{
+    return new CGVMLGraphicsContext();
 }

@@ -2595,7 +2595,8 @@ setBoundsOrigin:
 
 #if PLATFORM(DOM)
     if (_needToSetTransformMatrix)
-        [_graphicsContext graphicsPort].setTransform(_highDPIRatio, 0, 0 , _highDPIRatio, 0, 0);
+        if ([_graphicsContext graphicsPort].canvasAPI) // Set the scaling transform for the canvas
+            [_graphicsContext graphicsPort].canvasAPI.setTransform(_highDPIRatio, 0, 0 , _highDPIRatio, 0, 0);
 #endif
 
     _needToSetTransformMatrix = NO;
