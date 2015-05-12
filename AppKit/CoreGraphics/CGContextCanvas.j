@@ -299,7 +299,6 @@ CGCanvasGraphicsContext.prototype.fillRect = function(aRect)
 
 CGCanvasGraphicsContext.prototype.fillRects = function(rects, count)
 {
-    CPLog.warn("CGCanvasGraphicsContext fillRects");
     if (count === null || count === undefined)
         count = rects.length;
 

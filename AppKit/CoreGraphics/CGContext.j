@@ -659,7 +659,6 @@ function CGContextFillRect(aContext, aRect)
 */
 function CGContextFillRects(aContext, rects, count)
 {
-    CPLog.warn("CGContextFillRects, handing off to context...");
     aContext.fillRects(rects, count);
 }
 
