@@ -461,7 +461,7 @@ var CPProgressIndicatorSpinningStyleColors = [];
         {
             var midX = CGRectGetMidX(rect),
                 midY = CGRectGetMidY(rect),
-                endAngle = Math.PI * 2 * ([self doubleValue] / ([self maxValue] - [self minValue])) - Math.PI / 2,
+                endAngle = Math.PI * 2 * (([self doubleValue] - [self minValue]) / ([self maxValue] - [self minValue])) - Math.PI / 2,
                 radius = MIN(rect.size.width / 2, rect.size.height / 2)
 
             CGContextBeginPath(context);

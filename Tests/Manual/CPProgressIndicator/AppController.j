@@ -36,7 +36,10 @@
     [fiftyPercentBar setDoubleValue:50];
     [hundredPercentBar setDoubleValue:100];
 
-    [twentyPercentCircular setDoubleValue:20];
+    [twentyPercentCircular setMaxValue:200];
+    [twentyPercentCircular setMinValue:50];
+    [twentyPercentCircular setDoubleValue:80];
+
     [fiftyPercentCircular setDoubleValue:50];
     [hundredPercentCircular setDoubleValue:100];
 
