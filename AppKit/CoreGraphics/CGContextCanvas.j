@@ -32,7 +32,7 @@ var CANVAS_LINECAP_TABLE    = [ "butt", "round", "square" ],
 
 function CGCanvasGraphicsContext(aSize)
 {
-    CGContext.call();
+    CGContext.call(this);
     
     this.DOMElement = document.createElement("canvas");
 

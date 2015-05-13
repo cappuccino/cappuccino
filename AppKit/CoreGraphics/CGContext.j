@@ -1070,6 +1070,7 @@ function CGContextDrawRadialGradient(aContext, aGradient, aStartPoint, anEndPoin
 /*!
 @cond
 */
+
 if (CPFeatureIsCompatible(CPHTMLCanvasFeature))
 {
 #include "CGContextCanvas.j"
