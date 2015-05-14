@@ -23,7 +23,8 @@
 @import <Foundation/CPObject.j>
 
 @import "CGContext.j"
-
+@import "CGContextDIV.j"
+@import "CGContextSVG.j"
 
 var CPGraphicsContextCurrent = nil,
     CPGraphicsContextThreadStack = nil;
