@@ -371,6 +371,7 @@ var CPProgressIndicatorSpinningStyleColors = [];
 - (void)drawBar
 {
     [self setNeedsLayout];
+    [self setNeedsDisplay:YES];
 }
 
 - (CPView)createEphemeralSubviewNamed:(CPString)aName
