@@ -1223,7 +1223,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     _stickyXLocation = _caret._rect.origin.x;
 }
 
-- (void)deleteBackward:(id)sender
+- (void)deleteBackward:(id)sender ignoreSmart:(BOOL)ignoreFlag
 {
     var changedRange;
 
@@ -1232,7 +1232,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     else
         changedRange = _selectionRange;
 
-    if (_previousSelectionGranularity > 0 &&
+    if (!ignoreFlag && _previousSelectionGranularity > 0 &&
         changedRange.location > 0 && [self _isCharacterAtIndex:(changedRange.location - 1) granularity:_previousSelectionGranularity] &&
         changedRange.location < [[self string] length] && [self _isCharacterAtIndex:CPMaxRange(changedRange) granularity:_previousSelectionGranularity])
     {
@@ -1240,6 +1240,11 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     }
 
     [self _deleteForRange:changedRange];
+}
+
+- (void)deleteBackward:(id)sender
+{
+    [self deleteBackward:self ignoreSmart:YES];
 }
 
 - (void)deleteForward:(id)sender
@@ -1262,7 +1267,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         return;
 
     [self copy:sender];
-    [self deleteBackward:sender];
+    [self deleteBackward:sender ignoreSmart:NO];
 }
 
 - (void)insertLineBreak:(id)sender
