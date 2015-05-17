@@ -676,6 +676,13 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 - (void)keyDown:(CPEvent)event
 {
     [self interpretKeyEvents:[event]];
+    [_caret setPermanentlyVisible:YES];
+}
+
+- (void)keyUp:(CPEvent)event
+{
+    [super keyUp:event];
+    [_caret setPermanentlyVisible:NO];
 }
 
 
@@ -1890,6 +1897,7 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
 @implementation _CPCaret : CPObject
 {
     BOOL        _drawCaret;
+    BOOL        _permanentlyVisible @accessors(property=permanentlyVisible);
     CGRect      _rect;
     CPTextView  _textView;
     CPTimer     _caretTimer;
@@ -1946,7 +1954,7 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
 
 - (void)_blinkCaret:(CPTimer)aTimer
 {
-    _drawCaret = !_drawCaret;
+    _drawCaret = (!_drawCaret) || _permanentlyVisible;
     [_textView setNeedsDisplayInRect:_rect];
 }
 
