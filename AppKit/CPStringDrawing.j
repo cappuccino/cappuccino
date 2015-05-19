@@ -26,8 +26,8 @@
 @import "CPPlatformString.j"
 
 
-var CPStringSizeWithFontInWidthCache = {},
-    CPStringSizeWithFontHeightCache = {},
+var CPStringSizeWithFontInWidthCache = [],
+    CPStringSizeWithFontHeightCache = [],
     CPStringSizeMeasuringContext,
     CPStringSizeIsCanvasSizingInvalid,
     CPStringSizeDidTestCanvasSizingValid;
@@ -63,9 +63,12 @@ CPStringSizeCachingEnabled = YES;
     if (!CPStringSizeCachingEnabled)
         return [CPPlatformString sizeOfString:self withFont:aFont forWidth:aWidth];
 
+    if (CPStringSizeWithFontInWidthCache[self] === undefined)
+        CPStringSizeWithFontInWidthCache[self] = [];
+
     var cssString = [aFont cssString],
-        cacheKey = self + cssString + aWidth,
-        size = CPStringSizeWithFontInWidthCache[cacheKey];
+        cacheKey = cssString + aWidth,
+        size = CPStringSizeWithFontInWidthCache[self][cacheKey];
 
     if (size !== undefined)
         return CGSizeMakeCopy(size);
@@ -100,7 +103,7 @@ CPStringSizeCachingEnabled = YES;
         size = CGSizeMake(0, 0);
 #endif
 
-    CPStringSizeWithFontInWidthCache[cacheKey] = size;
+    CPStringSizeWithFontInWidthCache[self][cacheKey] = size;
     return CGSizeMakeCopy(size);
 }
 
