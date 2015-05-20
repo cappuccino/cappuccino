@@ -57,6 +57,20 @@ CPStringSizeCachingEnabled = YES;
     return [self sizeWithFont:aFont inWidth:NULL];
 }
 
+- (void) _initializeStringSizing
+{
+#if PLATFORM(DOM)
+    if (!CPStringSizeMeasuringContext)
+        CPStringSizeMeasuringContext = CGBitmapGraphicsContextCreate();
+
+    if (CPFeatureIsCompatible(CPHTMLCanvasFeature))
+    {
+        var teststring = "0123456879abcdefghiklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.-()";
+        CPStringSizeMeasuringContext.font = cssString;
+        CPStringSizeIsCanvasSizingInvalid = ABS([teststring sizeWithFont:aFont].width - CPStringSizeMeasuringContext.measureText(teststring).width) > 2;
+    }
+#endif
+}
 
 - (CGSize)sizeWithFont:(CPFont)aFont inWidth:(float)aWidth
 {
@@ -67,22 +81,17 @@ CPStringSizeCachingEnabled = YES;
         CPStringSizeWithFontInWidthCache[self] = [];
 
     var cssString = [aFont cssString],
-        cacheKey = cssString + aWidth,
+        cacheKey = cssString + '_' + aWidth,
         size = CPStringSizeWithFontInWidthCache[self][cacheKey];
 
     if (size !== undefined)
         return CGSizeMakeCopy(size);
 
 #if PLATFORM(DOM)
-    if (!CPStringSizeMeasuringContext)
-        CPStringSizeMeasuringContext = CGBitmapGraphicsContextCreate();
-
-    if (!CPStringSizeDidTestCanvasSizingValid && CPFeatureIsCompatible(CPHTMLCanvasFeature))
+    if (!CPStringSizeDidTestCanvasSizingValid)
     {
-        var teststring = "0123456879abcdefghiklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.-()";
+        [self _initializeStringSizing];
         CPStringSizeDidTestCanvasSizingValid = YES;
-        CPStringSizeMeasuringContext.font = cssString;
-        CPStringSizeIsCanvasSizingInvalid = ABS([teststring sizeWithFont:aFont].width - CPStringSizeMeasuringContext.measureText(teststring).width) > 2;
     }
 
     if (!CPFeatureIsCompatible(CPHTMLCanvasFeature) || CPStringSizeIsCanvasSizingInvalid || aWidth > 0)
