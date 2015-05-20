@@ -60,11 +60,13 @@ CPStringSizeCachingEnabled = YES;
 - (void) _initializeStringSizing
 {
 #if PLATFORM(DOM)
-    if (!CPStringSizeMeasuringContext)
-        CPStringSizeMeasuringContext = CGBitmapGraphicsContextCreate();
+    CPStringSizeIsCanvasSizingInvalid = TRUE;
 
     if (CPFeatureIsCompatible(CPHTMLCanvasFeature))
     {
+        if (!CPStringSizeMeasuringContext)
+            CPStringSizeMeasuringContext = CGBitmapGraphicsContextCreate();
+
         var teststring = "0123456879abcdefghiklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.-()";
         CPStringSizeMeasuringContext.font = cssString;
         CPStringSizeIsCanvasSizingInvalid = ABS([teststring sizeWithFont:aFont].width - CPStringSizeMeasuringContext.measureText(teststring).width) > 2;
@@ -94,7 +96,7 @@ CPStringSizeCachingEnabled = YES;
         CPStringSizeDidTestCanvasSizingValid = YES;
     }
 
-    if (!CPFeatureIsCompatible(CPHTMLCanvasFeature) || CPStringSizeIsCanvasSizingInvalid || aWidth > 0)
+    if (CPStringSizeIsCanvasSizingInvalid || aWidth > 0)
         size = [CPPlatformString sizeOfString:self withFont:aFont forWidth:aWidth];
     else
     {
