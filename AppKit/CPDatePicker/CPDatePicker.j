@@ -630,14 +630,6 @@ CPEraDatePickerElementFlag              = 0x0100;
     return [[_locale objectForKey:CPLocaleCountryCode] isEqualToString:@"US"];
 }
 
-/*! Check if we are in the english format or not. Depending on the locale
-*/
-- (BOOL)_isEnglishFormat
-{
-    return [[_locale objectForKey:CPLocaleLanguageCode] isEqualToString:@"en"];
-}
-
-
 #pragma mark -
 #pragma mark Key event
 
