@@ -58,6 +58,11 @@ _MidRange = function(a1)
     return Math.floor((CPMaxRange(a1) + a1.location) / 2);
 };
 
+function _isWhitespaceCharacter(chr)
+{
+    return (chr === '\n' || chr === '\r' || chr === ' ' || chr === '\t');
+}
+
 _characterTripletFromStringAtIndex = function(string, index)
 {
     if ([string isKindOfClass:CPAttributedString])
@@ -216,9 +221,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)paste:(id)sender
 {
-    if (_copySelectionGranularity > 0)
+    if (_copySelectionGranularity > 0 && _selectionRange.location > 0)
     {
-        if (![self _isCharacterAtIndex:MAX(0, _selectionRange.location - 1) granularity:_copySelectionGranularity])
+        if (!_isWhitespaceCharacter([[_textStorage string] characterAtIndex:_selectionRange.location - 1]))
             [self insertText:" "];
     }
 
@@ -226,7 +231,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     if (_copySelectionGranularity > 0)
     {
-        if (![self _isCharacterAtIndex:CPMaxRange(_selectionRange) granularity:_copySelectionGranularity])
+        if (!_isWhitespaceCharacter([[_textStorage string] characterAtIndex:CPMaxRange(_selectionRange)]) && !_isNewlineCharacter([[_textStorage string] characterAtIndex:MAX(0, _selectionRange.location - 1)]))
             [self insertText:" "];
     }
 }
