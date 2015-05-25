@@ -1244,12 +1244,11 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     else
         changedRange = _selectionRange;
 
-    if (!ignoreFlag && _previousSelectionGranularity > 0 &&
-        changedRange.location > 0 && [self _isCharacterAtIndex:(changedRange.location - 1) granularity:_previousSelectionGranularity] &&
-        changedRange.location < [[self string] length] && [self _isCharacterAtIndex:CPMaxRange(changedRange) granularity:_previousSelectionGranularity])
-    {
+    // smart delete
+    if (!ignoreFlag && _copySelectionGranularity > 0 &&
+        changedRange.location > 0 && _isWhitespaceCharacter([[_textStorage string] characterAtIndex:_selectionRange.location - 1]) &&
+        changedRange.location < [[self string] length] && _isWhitespaceCharacter([[_textStorage string] characterAtIndex:CPMaxRange(changedRange)]))
         changedRange.length++;
-    }
 
     [self _deleteForRange:changedRange];
 }
