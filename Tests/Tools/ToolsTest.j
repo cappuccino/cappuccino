@@ -32,7 +32,8 @@ function cleanup() {
 
 - (void)testTools
 {
-    var status;
+    var status,
+        rootDirectory = FILE.cwd();
 
     status = OS.system(["capp", "gen", "ToolsTestApp"].map(OS.enquote).join(" ") + " > /dev/null");
     [self assert:0 equals:status message:"capp gen failed"];
@@ -51,13 +52,13 @@ function cleanup() {
 
     var p = OS.popen(["objj", "--xml-output-format", "objjErrorTestFile.j"]);
     [self assert:1 equals:p.wait() message:"objj failed"];
-    [self assert:"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\"><plist version = \"1.0\"><array><dict><key>line</key><integer>1</integer><key>path</key><string>/Users/Dogild/Project/cappuccino/objjErrorTestFile.j</string><key>message</key><string>Can&apos;t find superclass CPObject</string></dict></array></plist>\n" equals:p.stdout.read() message:"objj failed"];
+    [self assert:"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\"><plist version = \"1.0\"><array><dict><key>line</key><integer>1</integer><key>path</key><string>" + rootDirectory + "/objjErrorTestFile.j</string><key>message</key><string>Can&apos;t find superclass CPObject</string></dict></array></plist>\n" equals:p.stdout.read() message:"objj failed"];
 
     var p = OS.popen(["objj", "--xml-output-format", "objjWarningTestFile.j"]);
     [self assert:0 equals:p.wait() message:"objj failed"];
-    [self assert:"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\"><plist version = \"1.0\"><array><dict><key>line</key><integer>1</integer><key>path</key><string>/Users/Dogild/Project/cappuccino/objjWarningTestFile.j</string><key>message</key><string>\n@import &lt;Foundation/Foundation.j&gt;@implementation AppController : CPObject{CPWindow theWindow;}@end\
+    [self assert:"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\"><plist version = \"1.0\"><array><dict><key>line</key><integer>1</integer><key>path</key><string>" + rootDirectory + "/objjWarningTestFile.j</string><key>message</key><string>\n@import &lt;Foundation/Foundation.j&gt;@implementation AppController : CPObject{CPWindow theWindow;}@end\
 \n                                                                                   ^\
-\nWARNING line 1 in file:/Users/Dogild/Project/cappuccino/objjWarningTestFile.j: Unknown type &apos;CPWindow&apos; for ivar &apos;theWindow&apos;</string></dict></array></plist>\n" equals:p.stdout.read() message:"objj failed"];
+\nWARNING line 1 in file:" + rootDirectory + "/objjWarningTestFile.j: Unknown type &apos;CPWindow&apos; for ivar &apos;theWindow&apos;</string></dict></array></plist>\n" equals:p.stdout.read() message:"objj failed"];
 
     status = OS.system(["objj", "-m", "ToolsTestApp/AppController.j", "ToolsTestApp/AppController.j"]);
     [self assert:0 equals:status message:"objj failed with several files"];
