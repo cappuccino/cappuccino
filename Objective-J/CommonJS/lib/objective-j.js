@@ -102,11 +102,13 @@ exports.run = function(args)
         {
             switch (argv[0])
             {
+                case "--objj-include-paths":
                 case "-I":
                     argv.shift();
                     OBJJ_INCLUDE_PATHS.unshift.apply(OBJJ_INCLUDE_PATHS, argv.shift().split(":"));
                     break;
 
+                case "--multifiles":
                 case "-m":
                     argv.shift();
                     multipleFiles = true;
