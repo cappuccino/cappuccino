@@ -1255,7 +1255,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)deleteBackward:(id)sender
 {
-    [self deleteBackward:self ignoreSmart:YES];
+    _copySelectionGranularity = _previousSelectionGranularity; // smart delete
+    [self deleteBackward:self ignoreSmart:_selectionRange.length > 0? NO:YES];
 }
 
 - (void)deleteForward:(id)sender
