@@ -94,6 +94,7 @@ exports.run = function(args)
             print("  -I, --objj-include-paths       include a specific framework paths")
             print("  -h, --help                     print this help");
             print("  -m, --multifiles               launch objj on several files")
+            print("  -x, --xml                      specify the output format in xml.")
             return;
         }
 
@@ -101,15 +102,23 @@ exports.run = function(args)
         {
             switch (argv[0])
             {
+                case "--objj-include-paths":
                 case "-I":
                     argv.shift();
                     OBJJ_INCLUDE_PATHS.unshift.apply(OBJJ_INCLUDE_PATHS, argv.shift().split(":"));
                     break;
 
+                case "--multifiles":
                 case "-m":
                     argv.shift();
                     multipleFiles = true;
                     break
+
+                case "-x":
+                case "--xml":
+                    argv.shift();
+                    exports.outputFormatInXML = true;
+                    break;
             }
         }
     }
@@ -229,6 +238,7 @@ function getPackage() {
 exports.version = function() { return getPackage()["version"]; }
 exports.revision = function() { return getPackage()["cappuccino-revision"]; }
 exports.timestamp = function() { return new Date(getPackage()["cappuccino-timestamp"]); }
+exports.outputFormatInXML = false;
 
 exports.fullVersionString = function() {
     return sprintf("objective-j %s (%04d-%02d-%02d %s)",
