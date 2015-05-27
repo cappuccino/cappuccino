@@ -47,10 +47,10 @@ function cleanup() {
     status = OS.system(["objj", "ToolsTestApp/AppController.j"]);
     [self assert:0 equals:status message:"objj failed"];
 
-    status = OS.system(["objj", "--xml-output-format", "ToolsTestApp/AppController.j"]);
+    status = OS.system(["objj", "-x", "ToolsTestApp/AppController.j"]);
     [self assert:0 equals:status message:"objj failed"];
 
-    var p = OS.popen(["objj", "--xml-output-format", "objjErrorTestFile.j"]);
+    var p = OS.popen(["objj", "--xml", "objjErrorTestFile.j"]);
     [self assert:1 equals:p.wait() message:"objj failed"];
     [self assert:"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\"><plist version = \"1.0\"><array><dict><key>line</key><integer>1</integer><key>path</key><string>" + rootDirectory + "/objjErrorTestFile.j</string><key>message</key><string>Can&apos;t find superclass CPObject</string></dict></array></plist>\n" equals:p.stdout.read() message:"objj failed"];
 

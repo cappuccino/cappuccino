@@ -94,7 +94,7 @@ exports.run = function(args)
             print("  -I, --objj-include-paths       include a specific framework paths")
             print("  -h, --help                     print this help");
             print("  -m, --multifiles               launch objj on several files")
-            print("  --xml-output-format            specify the output format in xml.")
+            print("  -x, --xml                      specify the output format in xml.")
             return;
         }
 
@@ -114,6 +114,7 @@ exports.run = function(args)
                     multipleFiles = true;
                     break
 
+                case "-x":
                 case "--xml-output-format":
                     argv.shift();
                     exports.outputFormatInXML = true;
