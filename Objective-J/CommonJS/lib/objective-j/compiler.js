@@ -46,18 +46,39 @@ function compileWithResolvedFlags(aFilePath, objjcFlags, gccFlags, asPlainJavasc
 
     if (!shouldObjjPreprocess)
     {
-        if (OS.popen("which gcc").stdout.read().length === 0)
-            fileContents = FILE.read(aFilePath, { charset:"UTF-8" });
-        else
+        try
         {
-            // GCC preprocess the file.
-            var gcc = OS.popen("gcc -E -x c -P " + (gccFlags ? gccFlags.join(" ") : "") + " " + OS.enquote(aFilePath), { charset:"UTF-8" }),
-                chunk = "";
+            var p = OS.popen("which gcc");
 
-            while (chunk = gcc.stdout.read())
-                fileContents += chunk;
+            if (p.stdout.read().length === 0)
+            {
+                fileContents = FILE.read(aFilePath, { charset:"UTF-8" });
+            }
+            else
+            {
+                try
+                {
+                    var gcc = OS.popen("gcc -E -x c -P " + (gccFlags ? gccFlags.join(" ") : "") + " " + OS.enquote(aFilePath), { charset:"UTF-8" }),
+                        chunk = "";
 
+                    while (chunk = gcc.stdout.read())
+                        fileContents += chunk;
+                }
+                finally
+                {
+                    gcc.stdin.close();
+                    gcc.stdout.close();
+                    gcc.stderr.close();
+                }
+            }
         }
+        finally
+        {
+            p.stdin.close();
+            p.stdout.close();
+            p.stderr.close();
+        }
+
         return fileContents;
     }
 
