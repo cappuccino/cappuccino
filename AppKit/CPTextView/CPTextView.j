@@ -1643,8 +1643,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     if (textStorageLength == 0)
         return CPMakeRange(0, 0);
 
-    if (proposedRange.location >= textStorageLength)
-        return CPMakeRange(textStorageLength, 0);
+    if (proposedRange.location > textStorageLength)
+        proposedRange = CPMakeRange(textStorageLength, 0);
 
     if (CPMaxRange(proposedRange) > textStorageLength)
         proposedRange.length = textStorageLength - proposedRange.location;
@@ -1668,11 +1668,17 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
                 parRange = CPUnionRange(parRange, [self _characterRangeForIndex:CPMaxRange(proposedRange)
                                                                         inRange:proposedRange
                                                                asDefinedByRegex:[[self class] _paragraphBoundaryRegex]
-                                                                           skip:NO]);
-
-            if (parRange.length > 0 && [self _isCharacterAtIndex:CPMaxRange(parRange) granularity:CPSelectByParagraph])
+                                                                           skip:YES]);
+            // mac-like paragraph selection with triple clicks
+            if ([self _isCharacterAtIndex:CPMaxRange(parRange) granularity:CPSelectByParagraph])
                 parRange.length++;
 
+            if (parRange.location > 0 && _isNewlineCharacter([[_textStorage string] characterAtIndex:parRange.location]))
+                parRange = CPUnionRange(parRange,
+                                                [self _characterRangeForIndex:parRange.location - 1
+                                                                      inRange:proposedRange
+                                                             asDefinedByRegex:[[self class] _paragraphBoundaryRegex]
+                                                                         skip:YES])
             return parRange;
 
         default:

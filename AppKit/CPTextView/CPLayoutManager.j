@@ -580,7 +580,7 @@ _oncontextmenuhandler = function () { return false; };
         }
     }
 
-    return CPNotFound;
+    return point.y > 0? [[_textStorage string] length] : 0;
 }
 
 - (unsigned)glyphIndexForPoint:(CGPoint)point inTextContainer:(CPTextContainer)container
