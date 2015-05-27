@@ -376,7 +376,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
         _sendActionOn = CPKeyUpMask | CPKeyDownMask;
 
-        [self setValue:CPLeftTextAlignment forThemeAttribute:@"alignment"];
+        [self setValue:CPNaturalTextAlignment forThemeAttribute:@"alignment"];
     }
 
     return self;
@@ -751,6 +751,10 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
         case CPRightTextAlignment:
             element.style.textAlign = "right";
+            break;
+
+        case CPNaturalTextAlignment:
+            element.style.textAlign = "";
             break;
 
         default:

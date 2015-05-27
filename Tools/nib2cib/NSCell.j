@@ -31,27 +31,28 @@
 
 @implementation NSCell : CPObject
 {
-    int             _state                      @accessors(readonly, getter=state);
-    BOOL            _isHighlighted              @accessors(readonly, getter=isHighlighted);
-    BOOL            _isEnabled                  @accessors(readonly, getter=isEnabled);
-    BOOL            _isEditable                 @accessors(readonly, getter=isEditable);
-    BOOL            _isBordered                 @accessors(readonly, getter=isBordered);
-    BOOL            _isBezeled                  @accessors(readonly, getter=isBezeled);
-    BOOL            _isSelectable               @accessors(readonly, getter=isSelectable);
-    BOOL            _isScrollable               @accessors(readonly, getter=isScrollable);
-    BOOL            _isContinuous               @accessors(readonly, getter=isContinuous);
-    BOOL            _scrolls                    @accessors(readonly, getter=scrolls);
-    BOOL            _wraps                      @accessors(readonly, getter=wraps);
-    BOOL            _truncates                  @accessors(readonly, getter=truncates);
-    BOOL            _sendsActionOnEndEditing    @accessors(readonly, getter=sendsActionOnEndEditing);
-    CPTextAlignment _alignment                  @accessors(readonly, getter=alignment);
-    CPControlSize   _controlSize                @accessors(readonly, getter=controlSize);
-    id              _objectValue                @accessors(readonly, getter=objectValue);
-    CPFont          _font                       @accessors(readonly, getter=font);
-    int             _lineBreakMode              @accessors(readonly, getter=lineBreakMode);
-    CPFormatter     _formatter                  @accessors(readonly, getter=formatter);
-    int             _tag                        @accessors(readonly, getter=tag);
-    BOOL            _usesSingleLineMode         @accessors(readonly, getter=usesSingleLineMode);
+    int                 _state                      @accessors(readonly, getter=state);
+    BOOL                _isHighlighted              @accessors(readonly, getter=isHighlighted);
+    BOOL                _isEnabled                  @accessors(readonly, getter=isEnabled);
+    BOOL                _isEditable                 @accessors(readonly, getter=isEditable);
+    BOOL                _isBordered                 @accessors(readonly, getter=isBordered);
+    BOOL                _isBezeled                  @accessors(readonly, getter=isBezeled);
+    BOOL                _isSelectable               @accessors(readonly, getter=isSelectable);
+    BOOL                _isScrollable               @accessors(readonly, getter=isScrollable);
+    BOOL                _isContinuous               @accessors(readonly, getter=isContinuous);
+    BOOL                _scrolls                    @accessors(readonly, getter=scrolls);
+    BOOL                _wraps                      @accessors(readonly, getter=wraps);
+    BOOL                _truncates                  @accessors(readonly, getter=truncates);
+    BOOL                _sendsActionOnEndEditing    @accessors(readonly, getter=sendsActionOnEndEditing);
+    CPTextAlignment     _alignment                  @accessors(readonly, getter=alignment);
+    CPWritingDirection  _baseWritingDirection       @accessors(readonly, getter=baseWritingDirection);
+    CPControlSize       _controlSize                @accessors(readonly, getter=controlSize);
+    id                  _objectValue                @accessors(readonly, getter=objectValue);
+    CPFont              _font                       @accessors(readonly, getter=font);
+    int                 _lineBreakMode              @accessors(readonly, getter=lineBreakMode);
+    CPFormatter         _formatter                  @accessors(readonly, getter=formatter);
+    int                 _tag                        @accessors(readonly, getter=tag);
+    BOOL                _usesSingleLineMode         @accessors(readonly, getter=usesSingleLineMode);
 }
 
 - (id)initWithCoder:(CPCoder)aCoder
@@ -76,6 +77,7 @@
         _wraps                      = !(flags & 0x00100000) && !(flags & 0x00000040) ? YES : NO;
         _truncates                  = (flags & 0x00100000) && !(flags & 0x00000040) ? YES : NO;
         _alignment                  = (flags2 & 0x1c000000) >> 26;
+        _baseWritingDirection       = ((flags2 & 0x6000) >> 13) - 1;
         _lineBreakMode              = (flags2 & 0x0E00) >> 9;
         _controlSize                = (flags2 & 0xE0000) >> 17;
         _sendsActionOnEndEditing    = (flags2 & 0x00400000) ? YES : NO;
