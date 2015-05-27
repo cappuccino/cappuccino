@@ -115,7 +115,7 @@ exports.run = function(args)
                     break
 
                 case "-x":
-                case "--xml-output-format":
+                case "--xml":
                     argv.shift();
                     exports.outputFormatInXML = true;
                     break;
