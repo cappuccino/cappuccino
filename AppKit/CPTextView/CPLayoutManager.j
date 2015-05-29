@@ -564,7 +564,7 @@ _oncontextmenuhandler = function () { return false; };
                             firstFrame = [fragment glyphFrames][0];
 
                         // stay on the line the newline character belongs to
-                        if (_isNewlineCharacter([[_textStorage string] characterAtIndex:nlLoc > 0? nlLoc - 1 : 0]))
+                        if (_isNewlineCharacter([[_textStorage string] characterAtIndex:nlLoc > 0 ? nlLoc - 1 : 0]))
                             nlLoc--;
 
                         // Clicked right to the last character
@@ -580,7 +580,7 @@ _oncontextmenuhandler = function () { return false; };
         }
     }
 
-    return point.y > 0? [[_textStorage string] length] : 0;
+    return point.y > 0 ? [[_textStorage string] length] : 0;
 }
 
 - (unsigned)glyphIndexForPoint:(CGPoint)point inTextContainer:(CPTextContainer)container
