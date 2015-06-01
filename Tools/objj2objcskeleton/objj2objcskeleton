@@ -4,9 +4,7 @@
 
 var FILE = require("file"),
     OS = require("os"),
-    stream = require("narwhal/term").stream,
-
-    SLASH_REPLACEMENT = "∕";  // DIVISION SLASH, Unicode: U+2215
+    stream = require("narwhal/term").stream;
 
 function main(args)
 {
@@ -138,16 +136,17 @@ function removeLastSlashIfNecessary(path)
 /*
     $1 Full project source path
     $2 Destination
+    $-n name of the cocoa files
 */
 function parser(args)
 {
     try
     {
-        var projectBasePath = removeLastSlashIfNecessary(args[1]),
-            sourcePath = args[0],
+        var sourcePath = args.shift(),
+            projectBasePath = removeLastSlashIfNecessary(args.shift()),
             outputDirectory = projectBasePath,
             baseFilename = [sourcePath lastPathComponent],
-            baseFilenameWithNoExtension = baseFilename.substring(0, baseFilename.length - 2),
+            baseFilenameWithNoExtension = args.shift() == "-n" ?  args.shift() : baseFilename.substring(0, baseFilename.length - 2),
             outputHeaderURL = new CFURL([outputDirectory stringByAppendingPathComponent:baseFilenameWithNoExtension + ".h"]),
             outputImplementationURL = new CFURL([outputDirectory stringByAppendingPathComponent:baseFilenameWithNoExtension + ".m"]),
             source = FILE.read(sourcePath, { charset: "UTF-8" }),
