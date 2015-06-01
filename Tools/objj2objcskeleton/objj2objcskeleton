@@ -175,7 +175,7 @@ function parser(args)
             if (aClass.superClass)
                 ObjectiveCHeader += [CPString stringWithFormat:@"\n@interface %@ : %@", aClass.name, NSCompatibleClassName(aClass.superClass)];
             else
-                ObjectiveCHeader += [CPString stringWithFormat:@"\n@interface %@ (%@)", aClass.name, aClass.category];
+                ObjectiveCHeader += [CPString stringWithFormat:@"\n@interface %@ (%@)", NSCompatibleClassName(aClass.name, NO), aClass.category];
 
             // add each outlet in header
             if (aClass.outlets.length > 0)
@@ -201,7 +201,7 @@ function parser(args)
             ObjectiveCHeader += "\n@end\n";
 
             // fill up the implementation file
-            ObjectiveCSource += "\n@implementation " + aClass.name + "\n@end\n";
+            ObjectiveCSource += "\n@implementation " + NSCompatibleClassName(aClass.name, NO) + "\n@end\n";
         });
 
         if (ObjectiveCSource.length)
