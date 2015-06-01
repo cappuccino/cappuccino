@@ -692,23 +692,14 @@ ObjJAcornCompiler.prototype.prettifyMessage = function(/* Message */ aMessage, /
 
 ObjJAcornCompiler.prototype.error_message = function(errorMessage, node)
 {
-    var pos = exports.acorn.getLineInfo(this.source, node.start);
+    var pos = exports.acorn.getLineInfo(this.source, node.start),
+        syntaxErrorData = {message: errorMessage, line: pos.line, column: pos.column, lineStart: pos.lineStart, lineEnd: pos.lineEnd},
+        syntaxError = new SyntaxError(this.prettifyMessage(syntaxErrorData, "ERROR"));
 
-    if (exports.outputFormatInXML)
-    {
-        var dict = new CFMutableDictionary();
-        dict.addValueForKey('line', pos.line);
-        dict.addValueForKey('path', this.URL.path());
-        dict.addValueForKey('message', errorMessage);
+    syntaxError.line = pos.line;
+    syntaxError.path = this.URL.path();
 
-        return CFPropertyListCreateXMLData([dict], kCFPropertyListXMLFormat_v1_0).rawString();
-    }
-    else
-    {
-        var syntaxError = {message: errorMessage, line: pos.line, column: pos.column, lineStart: pos.lineStart, lineEnd: pos.lineEnd};
-
-        return new SyntaxError(this.prettifyMessage(syntaxError, "ERROR"));
-    }
+    return syntaxError;
 }
 
 ObjJAcornCompiler.prototype.pushImport = function(url)
