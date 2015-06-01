@@ -1,0 +1,12 @@
+
+require ("../../common.jake");
+
+var OS = require("os"),
+    task = require("jake").task;
+
+task ("build", function()
+{
+    sudo(["./install.sh"]);
+});
+
+task ("default", ["build"]);
