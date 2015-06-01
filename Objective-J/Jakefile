@@ -40,8 +40,8 @@ $BROWSER_FILES      = new FileList($BROWSER_FILE).include($OBJECTIVEJ_FILES);
 
 filedir($BUILD_BROWSER_FILE, $BROWSER_FILES, function(aTask)
 {
-    gcc($BROWSER_FILE, 
-        $BUILD_BROWSER_FILE, 
+    gcc($BROWSER_FILE,
+        $BUILD_BROWSER_FILE,
         environmentFlags("Browser", "ObjJ").concat($INCLUDE_FLAGS, $DEBUG_FLAGS), $CONFIGURATION !== "Debug");
 });
 
@@ -119,11 +119,20 @@ function gcc(inputFilePath, outputFilePath, flags, compress)
     stream.print("Building... \0green(" + outputFilePath +"\0)");
 
     // GCC preprocess the file.
-    var cmd = ["gcc", "-E", "-x", "c", "-P"].concat(flags, inputFilePath).join(" ");
-    var gcc = OS.popen(cmd, { charset:"UTF-8" });
+    var cmd = ["gcc", "-E", "-x", "c", "-P"].concat(flags, inputFilePath).join(" "),
+        contents = FILE.read("header.txt", { charset : "UTF-8" });
 
-    var contents = FILE.read("header.txt", { charset : "UTF-8" });
-    contents += gcc.stdout.read();
+    try
+    {
+        var gcc = OS.popen(cmd, { charset:"UTF-8" });
+        contents += gcc.stdout.read();
+    }
+    finally
+    {
+        gcc.stdin.close();
+        gcc.stdout.close();
+        gcc.stderr.close();
+    }
 
     if (FILE.extension(inputFilePath) === ".js" && compress)
         contents = compressor(contents);

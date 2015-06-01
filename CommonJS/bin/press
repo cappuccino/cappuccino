@@ -366,23 +366,38 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
     return {executable:includedBytes, data:dataBytes, mhtml:mhtmlBytes};
 }
 
-function pngcrushDirectory(directory) {
-    var directoryPath = FILE.path(directory);
-    var pngs = directoryPath.glob("**/*.png");
+function pngcrushDirectory(directory)
+{
+    var directoryPath = FILE.path(directory),
+        pngs = directoryPath.glob("**/*.png");
 
     system.stderr.print("Running pngcrush on " + pngs.length + " pngs:");
-    pngs.forEach(function(dstPath) {
+    pngs.forEach(function(dstPath)
+    {
         var tmpPath = FILE.path(dstPath+".tmp");
 
-        var p = OS.popen(["pngcrush", "-rem", "alla", "-reduce", /*"-brute",*/ dstPath, tmpPath]);
-        if (p.wait()) {
-            CPLog.warn("pngcrush failed. Ensure it's installed and on your PATH.");
+        try
+        {
+            var p = OS.popen(["pngcrush", "-rem", "alla", "-reduce", /*"-brute",*/ dstPath, tmpPath]);
+
+            if (p.wait())
+            {
+                CPLog.warn("pngcrush failed. Ensure it's installed and on your PATH.");
+            }
+            else
+            {
+                FILE.move(tmpPath, dstPath);
+                system.stderr.write(".").flush();
+            }
         }
-        else {
-            FILE.move(tmpPath, dstPath);
-            system.stderr.write(".").flush();
+        finally
+        {
+            p.stdin.close();
+            p.stdout.close();
+            p.stderr.close();
         }
     });
+
     system.stderr.print("");
 }
 
