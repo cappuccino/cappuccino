@@ -521,7 +521,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 - (void)drawInsertionPointInRect:(CGRect)aRect color:(CPColor)aColor turnedOn:(BOOL)flag
 {
     [_caret setRect:aRect];
-    [_caret setVisibility:flag];
+    [_caret setVisibility:flag stop:NO];
 }
 
 
@@ -1953,14 +1953,18 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
     return self;
 }
 
-- (void)setVisibility:(BOOL)flag
+- (void)setVisibility:(BOOL)visibilityFlag stop:(BOOL)stopFlag
 {
 #if PLATFORM(DOM)
-    _caretDOM.style.visibility = flag ? "visible" : "hidden";
+    _caretDOM.style.visibility = visibilityFlag ? "visible" : "hidden";
 #endif
 
-    if (!flag)
+    if (! visibilityFlag && stopFlag)
         [self stopBlinking];
+}
+- (void)setVisibility:(BOOL)visibilityFlag
+{
+    [self setVisibility:visibilityFlag stop:YES];
 }
 
 - (void)_blinkCaret:(CPTimer)aTimer
@@ -1972,6 +1976,10 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
 - (void)startBlinking
 {
     _drawCaret = YES;
+
+    if ([self isBlinking])
+        return;
+
     _caretTimer = [CPTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(_blinkCaret:) userInfo:nil repeats:YES];
 }
 
