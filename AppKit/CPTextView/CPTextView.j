@@ -1712,6 +1712,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     else
     {
         caretRect = [_layoutManager boundingRectForGlyphRange:CPMakeRange(_selectionRange.location, 1) inTextContainer:_textContainer];
+        caretRect.size.height -= 3; // mimic the native caret metrics on macosx
     }
 
     caretRect.origin.x += _textContainerOrigin.x;
