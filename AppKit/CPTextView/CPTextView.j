@@ -507,7 +507,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         }
     }
 
-    [self setSelectedRange:CPMakeRange(_selectionRange.location + [string length], 0)];
+    [self _setSelectedRange:CPMakeRange(_selectionRange.location + [string length], 0) affinity:0 stillSelecting:NO overwriteTypingAttributes:NO];
+
     [self didChangeText];
     [_layoutManager _validateLayoutAndGlyphs];
     [self sizeToFit];
@@ -585,7 +586,12 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     [self setSelectedRange:range affinity:0 stillSelecting:NO];
 }
 
-- (void)setSelectedRange:(CPRange)range affinity:(CPSelectionAffinity /* unused */ )affinity stillSelecting:(BOOL)selecting
+- (void)setSelectedRange:(CPRange)range affinity:(CPSelectionAffinity)affinity stillSelecting:(BOOL)selecting
+{
+    [self _setSelectedRange:range affinity:affinity stillSelecting:selecting overwriteTypingAttributes:YES];
+}
+
+- (void)_setSelectedRange:(CPRange)range affinity:(CPSelectionAffinity)affinity stillSelecting:(BOOL)selecting overwriteTypingAttributes:(BOOL) doOverwrite
 {
     var maxRange = CPMakeRange(0, [_layoutManager numberOfCharacters]);
 
@@ -616,13 +622,13 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         if (_isNewlineCharacter([[_textStorage string] characterAtIndex:peekLoc]))
             peekLoc++;
 
-        [self setTypingAttributes:[_textStorage attributesAtIndex:peekLoc effectiveRange:nil]];
+        if (doOverwrite)
+            [self setTypingAttributes:[_textStorage attributesAtIndex:peekLoc effectiveRange:nil]];
 
         [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeSelectionNotification object:self];
 
         if (_delegateRespondsToSelectorMask & kDelegateRespondsTo_textView_didChangeSelection)
             [_delegate textViewDidChangeSelection:[[CPNotification alloc] initWithName:CPTextViewDidChangeSelectionNotification object:self userInfo:nil]];
-
     }
 }
 
