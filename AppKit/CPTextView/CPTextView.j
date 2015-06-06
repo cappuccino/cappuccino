@@ -1341,6 +1341,16 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         [_delegate textViewDidChangeTypingAttributes:[[CPNotification alloc] initWithName:CPTextViewDidChangeTypingAttributesNotification object:self userInfo:nil]];
 }
 
+- (CPDictionary)_attributesForFontPanel
+{
+    var attributes = [[_textStorage attributesAtIndex:CPMaxRange(_selectionRange) effectiveRange:nil] copy];
+
+    if (![attributes containsKey:CPForegroundColorAttributeName])
+        [attributes setObject:[self textColor] forKey:CPForegroundColorAttributeName];
+
+    return attributes;
+}
+
 - (void)delete:(id)sender
 {
     [self deleteBackward:sender];
