@@ -36,6 +36,7 @@
 @class CPClipView;
 @class _CPSelectionBox;
 @class _CPCaret;
+@class _CPNativeInputManager;
 
 @protocol CPTextViewDelegate <CPTextDelegate>
 
@@ -221,6 +222,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)paste:(id)sender
 {
+    [[_window platformWindow] _propagateCurrentDOMEvent:NO]; // prevent double pasting from the additional 'synthetic' paste event
+
     if (_copySelectionGranularity > 0 && _selectionRange.location > 0)
     {
         if (!_isWhitespaceCharacter([[_textStorage string] characterAtIndex:_selectionRange.location - 1]))
@@ -246,9 +249,11 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (BOOL)becomeFirstResponder
 {
+    [super becomeFirstResponder]
     [self updateInsertionPointStateAndRestartTimer:YES];
     [[CPFontManager sharedFontManager] setSelectedFont:[self font] isMultiple:NO];
     [self setNeedsDisplay:YES];
+    [[CPRunLoop currentRunLoop] performSelector:@selector(focus) target:[_CPNativeInputManager class] argument:nil order:0 modes:[CPDefaultRunLoopMode]];
 
     return YES;
 }
@@ -257,6 +262,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 {
     [_caret stopBlinking];
     [self setNeedsDisplay:YES];
+    [_CPNativeInputManager cancelCurrentInputSessionIfNeeded];
 
     return YES;
 }
@@ -583,6 +589,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)setSelectedRange:(CPRange)range
 {
+    [_CPNativeInputManager cancelCurrentInputSessionIfNeeded];
     [self setSelectedRange:range affinity:0 stillSelecting:NO];
 }
 
@@ -591,7 +598,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     [self _setSelectedRange:range affinity:affinity stillSelecting:selecting overwriteTypingAttributes:YES];
 }
 
-- (void)_setSelectedRange:(CPRange)range affinity:(CPSelectionAffinity)affinity stillSelecting:(BOOL)selecting overwriteTypingAttributes:(BOOL) doOverwrite
+- (void)_setSelectedRange:(CPRange)range affinity:(CPSelectionAffinity)affinity stillSelecting:(BOOL)selecting overwriteTypingAttributes:(BOOL)doOverwrite
 {
     var maxRange = CPMakeRange(0, [_layoutManager numberOfCharacters]);
 
@@ -630,6 +637,27 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         if (_delegateRespondsToSelectorMask & kDelegateRespondsTo_textView_didChangeSelection)
             [_delegate textViewDidChangeSelection:[[CPNotification alloc] initWithName:CPTextViewDidChangeSelectionNotification object:self userInfo:nil]];
     }
+
+    if (_selectionRange.length > 0)
+       [_CPNativeInputManager focusForClipboard]; // workaround Safari native pasting limitation
+}
+
+// interface to the _CPNativeInputManager
+- (void)_activateNativeInputElement:(DOMElemet)aNativeField
+{
+     [self insertText:'  '];  // FIXME: this hack to provide the visual space for the inputmanager should at least bypass the undomanager
+                              // it would be more elegant to insert a token that provides the space in the typesetter similar to the tab character
+     var caretRect = [_layoutManager boundingRectForGlyphRange:CPMakeRange(_selectionRange.location - 2, 1) inTextContainer:_textContainer];
+     caretRect.origin.x += 2; // two pixel offset to the LHS character
+
+#if PLATFORM(DOM)
+     aNativeField.style.left = caretRect.origin.x+"px";
+     aNativeField.style.top = caretRect.origin.y+"px";
+     aNativeField.style.font = [[_typingAttributes objectForKey:CPFontAttributeName] cssString];
+     aNativeField.style.color = [[_typingAttributes objectForKey:CPForegroundColorAttributeName] cssString];
+#endif
+
+     [_caret setVisibility:NO];  // hide our caret because now the system caret takes over
 }
 
 - (CPArray)selectedRanges
@@ -686,6 +714,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)keyDown:(CPEvent)event
 {
+    [[_window platformWindow] _propagateCurrentDOMEvent:YES];  // necessary for the _CPNativeInputManager to work
     [self interpretKeyEvents:[event]];
     [_caret setPermanentlyVisible:YES];
 }
@@ -1231,7 +1260,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     changedRange = CPIntersectionRange(CPMakeRange(0, [_layoutManager numberOfCharacters]), changedRange);
 
-    [[[[self window] undoManager] prepareWithInvocationTarget:self] _replaceCharactersInRange:CPMakeRange(changedRange.location, 0) withAttributedString:[_textStorage attributedSubstringFromRange:CPMakeRangeCopy(changedRange)]];
+    [[[_window undoManager] prepareWithInvocationTarget:self] _replaceCharactersInRange:CPMakeRange(changedRange.location, 0) withAttributedString:[_textStorage attributedSubstringFromRange:CPMakeRangeCopy(changedRange)]];
     [_textStorage deleteCharactersInRange:CPMakeRangeCopy(changedRange)];
 
     [self setSelectedRange:CPMakeRange(changedRange.location, 0)];
@@ -1241,8 +1270,20 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     _stickyXLocation = _caret._rect.origin.x;
 }
 
+- (void)cancelOperation:(id)sender
+{
+    [super cancelOperation:sender];
+    [_CPNativeInputManager cancelCurrentInputSessionIfNeeded];  // handle ESC during native input
+}
+
 - (void)deleteBackward:(id)sender ignoreSmart:(BOOL)ignoreFlag
 {
+    if ([_CPNativeInputManager isNativeInputFieldActive])
+    {
+        [_CPNativeInputManager cancelCurrentNativeInputSession];
+        return;
+    }
+
     var changedRange;
 
     if (CPEmptyRange(_selectionRange) && _selectionRange.location > 0)
@@ -2019,5 +2060,163 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
     }
 }
 
+@end
+
+var _CPNativeInputField,
+    _CPNativeInputFieldKeyUpCalled,
+    _CPNativeInputFieldKeyPressedCalled,
+    _CPNativeInputFieldActive;
+
+var _CPCopyPlaceholder = '-';
+
+@implementation _CPNativeInputManager : CPObject
+
++ (BOOL) isNativeInputFieldActive
+{
+    return _CPNativeInputFieldActive;
+}
++ (void) cancelCurrentNativeInputSession
+{
+    [self _endInputSessionWithString:''];
+}
++ (void) cancelCurrentInputSessionIfNeeded
+{
+    if (!_CPNativeInputFieldActive)
+        return;
+
+    [self cancelCurrentNativeInputSession];
+}
++ (void)_endInputSessionWithString:(CPString)aStr
+{
+    _CPNativeInputFieldActive = NO;
+    var currentFirstResponder = [[CPApp mainWindow] firstResponder]
+    var aRange = [currentFirstResponder selectedRange]
+    [currentFirstResponder setSelectedRange:CPMakeRange(aRange.location - 2, 2)]; // fixme: see comment in _activateNativeInputElement:
+    [currentFirstResponder insertText:aStr];
+    [self hideInputElement];
+    [currentFirstResponder updateInsertionPointStateAndRestartTimer:YES];
+}
+
++ (void)initialize
+{
+    _CPNativeInputField = document.createElement("div");
+    _CPNativeInputField.contentEditable=YES;
+
+    _CPNativeInputField.onkeyup = function(e)
+    {
+        // filter out the shift-up and friends used to access the deadkeys
+        // fixme: e.which is depreciated(?) -> find a better way to identify the modifier-keyups
+        if (e.which < 27)
+            return;
+
+        _CPNativeInputFieldKeyUpCalled = YES;
+        var currentFirstResponder = [[CPApp mainWindow] firstResponder]
+
+        if (![currentFirstResponder respondsToSelector:@selector(_activateNativeInputElement:)])
+            return;
+
+        var charCode = _CPNativeInputField.innerHTML.charCodeAt(0);
+
+        if (charCode == 229 || charCode == 197) // å and Å need to be filtered out in keyDown: due to chrome inserting 229 on a deadkey
+        {
+            [currentFirstResponder insertText:_CPNativeInputField.innerHTML];
+            _CPNativeInputField.innerHTML = '';
+            return;
+        }
+
+        if (!_CPNativeInputFieldActive && _CPNativeInputFieldKeyPressedCalled == NO && _CPNativeInputField.innerHTML.length && _CPNativeInputField.innerHTML != _CPCopyPlaceholder) // chrome-trigger: keypressed is omitted for deadkeys
+        {
+            _CPNativeInputFieldActive = YES;
+            [currentFirstResponder _activateNativeInputElement:_CPNativeInputField];
+        } else
+        {
+            if (_CPNativeInputFieldActive)
+                [self _endInputSessionWithString:_CPNativeInputField.innerHTML];
+
+            _CPNativeInputField.innerHTML = '';
+        }
+    }
+    _CPNativeInputField.onkeydown=function(e)
+    {
+        _CPNativeInputFieldKeyUpCalled = NO;
+        _CPNativeInputFieldKeyPressedCalled = NO;
+        var currentFirstResponder = [[CPApp mainWindow] firstResponder]
+
+        if (![currentFirstResponder respondsToSelector:@selector(_activateNativeInputElement:)])
+            return;
+
+        // FF-trigger: here the best way to detect a dead key is the missing keyup event
+        if (CPBrowserIsEngine(CPGeckoBrowserEngine))
+            setTimeout(function(){
+                if (!_CPNativeInputFieldActive && _CPNativeInputFieldKeyUpCalled == NO && _CPNativeInputField.innerHTML.length && _CPNativeInputField.innerHTML != _CPCopyPlaceholder && !e.repeat)
+                {
+                    _CPNativeInputFieldActive = YES;
+                    [currentFirstResponder _activateNativeInputElement:_CPNativeInputField];
+                }
+                else if (!_CPNativeInputFieldActive)
+                    [self hideInputElement];
+            }, 200);
+    }
+    _CPNativeInputField.onkeypress=function(e)
+    {
+        _CPNativeInputFieldKeyUpCalled = YES;
+        _CPNativeInputFieldKeyPressedCalled = YES;
+    }
+
+    _CPNativeInputField.style.width="64px";
+    _CPNativeInputField.style.zIndex = 10000;
+    _CPNativeInputField.style.position = "absolute";
+    _CPNativeInputField.style.visibility = "visible";
+    _CPNativeInputField.style.padding = "0px";
+    _CPNativeInputField.style.margin = "0px";
+    _CPNativeInputField.style.whiteSpace = "pre";
+    _CPNativeInputField.style.outline = "0px solid transparent";
+}
+
++ (void)focus
+{
+    var currentFirstResponder = [[CPApp mainWindow] firstResponder]
+
+    if (![currentFirstResponder respondsToSelector:@selector(_activateNativeInputElement:)])
+        return;
+
+    [self hideInputElement];
+    currentFirstResponder._DOMElement.appendChild(_CPNativeInputField);
+    _CPNativeInputField.focus();
+}
+
++ (void)focusForClipboard
+{
+    var currentFirstResponder = [[CPApp mainWindow] firstResponder];
+
+    [self hideInputElement];
+    currentFirstResponder._DOMElement.appendChild(_CPNativeInputField);
+
+    if (_CPNativeInputField.innerHTML.length == 0)
+        _CPNativeInputField.innerHTML = _CPCopyPlaceholder;  // make sure we have a selection to allow the native pasteboard work in safari
+
+    _CPNativeInputField.focus();
+
+    // select all in the contenteditable div (http://stackoverflow.com/questions/12243898/how-to-select-all-text-in-contenteditable-div)
+    if (document.body.createTextRange)
+    {
+        var range = document.body.createTextRange();
+        range.moveToElementText(_CPNativeInputField);
+        range.select();
+    } else if (window.getSelection)
+    {
+        var selection = window.getSelection();        
+        var range = document.createRange();
+        range.selectNodeContents(_CPNativeInputField);
+        selection.removeAllRanges();
+        selection.addRange(range);
+    }
+}
+
++ (void)hideInputElement
+{
+    _CPNativeInputField.style.top="-10000px";
+    _CPNativeInputField.style.left="-10000px";
+}
 @end
 
