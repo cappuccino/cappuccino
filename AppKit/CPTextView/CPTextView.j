@@ -645,12 +645,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 // interface to the _CPNativeInputManager
 - (void)_activateNativeInputElement:(DOMElemet)aNativeField
 {
-    var attributes=[[self typingAttributes] copy];
-    [attributes setObject:[CPColor colorWithRed:1 green:1 blue:1 alpha:0] forKey:CPForegroundColorAttributeName]; // make it invisible
-    var placeholderString = [[CPAttributedString alloc] initWithString:aNativeField.innerHTML attributes:attributes];
-
-    [self insertText:placeholderString];  // FIXME: this hack to provide the visual space for the inputmanager should at least bypass the undomanager
-                              // it would be more elegant to insert a token that provides the space in the typesetter similar to the tab character
+    [self insertText:aNativeField.innerHTML];  // FIXME: this hack to provide the visual space for the inputmanager should at least bypass the undomanager
     var caretRect = [_layoutManager boundingRectForGlyphRange:CPMakeRange(_selectionRange.location - 1, 1) inTextContainer:_textContainer];
     caretRect.origin.x += 2; // two pixel offset to the LHS character
 
@@ -2095,9 +2090,11 @@ var _CPCopyPlaceholder = '-';
 + (void)_endInputSessionWithString:(CPString)aStr
 {
     _CPNativeInputFieldActive = NO;
-    var currentFirstResponder = [[CPApp mainWindow] firstResponder]
-    var aRange = [currentFirstResponder selectedRange]
-    [currentFirstResponder setSelectedRange:CPMakeRange(aRange.location - 1, 1)]; // fixme: see comment in _activateNativeInputElement:
+
+    var currentFirstResponder = [[CPApp mainWindow] firstResponder],
+        placeholderRange = CPMakeRange([currentFirstResponder selectedRange].location - 1, 1);
+
+    [currentFirstResponder setSelectedRange:placeholderRange]; // fixme: see comment in _activateNativeInputElement:
     [currentFirstResponder insertText:aStr];
     [self hideInputElement];
     [currentFirstResponder updateInsertionPointStateAndRestartTimer:YES];
