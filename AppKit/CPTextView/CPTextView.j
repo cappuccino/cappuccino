@@ -645,19 +645,23 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 // interface to the _CPNativeInputManager
 - (void)_activateNativeInputElement:(DOMElemet)aNativeField
 {
-     [self insertText:'  '];  // FIXME: this hack to provide the visual space for the inputmanager should at least bypass the undomanager
+    var attributes=[[self typingAttributes] copy];
+    [attributes setObject:[CPColor colorWithRed:1 green:1 blue:1 alpha:0] forKey:CPForegroundColorAttributeName]; // make it invisible
+    var placeholderString = [[CPAttributedString alloc] initWithString:aNativeField.innerHTML attributes:attributes];
+
+    [self insertText:placeholderString];  // FIXME: this hack to provide the visual space for the inputmanager should at least bypass the undomanager
                               // it would be more elegant to insert a token that provides the space in the typesetter similar to the tab character
-     var caretRect = [_layoutManager boundingRectForGlyphRange:CPMakeRange(_selectionRange.location - 2, 1) inTextContainer:_textContainer];
-     caretRect.origin.x += 2; // two pixel offset to the LHS character
+    var caretRect = [_layoutManager boundingRectForGlyphRange:CPMakeRange(_selectionRange.location - 1, 1) inTextContainer:_textContainer];
+    caretRect.origin.x += 2; // two pixel offset to the LHS character
 
 #if PLATFORM(DOM)
-     aNativeField.style.left = caretRect.origin.x+"px";
-     aNativeField.style.top = caretRect.origin.y+"px";
-     aNativeField.style.font = [[_typingAttributes objectForKey:CPFontAttributeName] cssString];
-     aNativeField.style.color = [[_typingAttributes objectForKey:CPForegroundColorAttributeName] cssString];
+    aNativeField.style.left = caretRect.origin.x+"px";
+    aNativeField.style.top = caretRect.origin.y+"px";
+    aNativeField.style.font = [[_typingAttributes objectForKey:CPFontAttributeName] cssString];
+    aNativeField.style.color = [[_typingAttributes objectForKey:CPForegroundColorAttributeName] cssString];
 #endif
 
-     [_caret setVisibility:NO];  // hide our caret because now the system caret takes over
+    [_caret setVisibility:NO];  // hide our caret because now the system caret takes over
 }
 
 - (CPArray)selectedRanges
@@ -2091,7 +2095,7 @@ var _CPCopyPlaceholder = '-';
     _CPNativeInputFieldActive = NO;
     var currentFirstResponder = [[CPApp mainWindow] firstResponder]
     var aRange = [currentFirstResponder selectedRange]
-    [currentFirstResponder setSelectedRange:CPMakeRange(aRange.location - 2, 2)]; // fixme: see comment in _activateNativeInputElement:
+    [currentFirstResponder setSelectedRange:CPMakeRange(aRange.location - 1, 1)]; // fixme: see comment in _activateNativeInputElement:
     [currentFirstResponder insertText:aStr];
     [self hideInputElement];
     [currentFirstResponder updateInsertionPointStateAndRestartTimer:YES];
