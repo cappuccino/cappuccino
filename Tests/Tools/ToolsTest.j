@@ -52,14 +52,14 @@ function cleanup() {
 
     var p = OS.popen(["objj", "--xml", "objjErrorTestFile.j"]);
     [self assert:1 equals:p.wait() message:"objj failed"];
-    [self assert:"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\"><plist version = \"1.0\"><array><dict><key>line</key><integer>1</integer><key>path</key><string>" + rootDirectory + "/objjErrorTestFile.j</string><key>message</key><string>\
+    [self assert:"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\"><plist version = \"1.0\"><array><dict><key>line</key><integer>1</integer><key>sourcePath</key><string>" + rootDirectory + "/objjErrorTestFile.j</string><key>message</key><string>\
 \n@implementation AppController : CPObject{}@end\
 \n                                ^\
 \nERROR line 1 in file:/Users/Dogild/Project/cappuccino/objjErrorTestFile.j: Can&apos;t find superclass CPObject</string></dict></array></plist>\n" equals:p.stdout.read() message:"objj failed"];
 
     var p = OS.popen(["objj", "-x", "objjWarningTestFile.j"]);
     [self assert:0 equals:p.wait() message:"objj failed"];
-    [self assert:"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\"><plist version = \"1.0\"><array><dict><key>line</key><integer>1</integer><key>path</key><string>" + rootDirectory + "/objjWarningTestFile.j</string><key>message</key><string>\n@import &lt;Foundation/Foundation.j&gt;@implementation AppController : CPObject{CPWindow theWindow;}@end\
+    [self assert:"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\"><plist version = \"1.0\"><array><dict><key>line</key><integer>1</integer><key>sourcePath</key><string>" + rootDirectory + "/objjWarningTestFile.j</string><key>message</key><string>\n@import &lt;Foundation/Foundation.j&gt;@implementation AppController : CPObject{CPWindow theWindow;}@end\
 \n                                                                                   ^\
 \nWARNING line 1 in file:" + rootDirectory + "/objjWarningTestFile.j: Unknown type &apos;CPWindow&apos; for ivar &apos;theWindow&apos;</string></dict></array></plist>\n" equals:p.stdout.read() message:"objj failed"];
 
