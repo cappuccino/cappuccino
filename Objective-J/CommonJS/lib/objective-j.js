@@ -143,7 +143,7 @@ exports.run = function(args)
                 {
                     var dict = new CFMutableDictionary();
                     dict.addValueForKey('line', e.line ? e.line : 0);
-                    dict.addValueForKey('path', e.path ? e.path : mainFilePath);
+                    dict.addValueForKey('sourcePath', e.path ? e.path : mainFilePath);
                     dict.addValueForKey('message', e.message);
 
                     errors.push(dict);

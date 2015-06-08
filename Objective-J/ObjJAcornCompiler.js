@@ -398,7 +398,7 @@ var ObjJAcornCompiler = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*
             {
                 var dict = new CFMutableDictionary();
                 dict.addValueForKey('line', e.line);
-                dict.addValueForKey('path', this.URL.path());
+                dict.addValueForKey('sourcePath', this.URL.path());
                 dict.addValueForKey('message', message);
 
                 print(CFPropertyListCreateXMLData([dict], kCFPropertyListXMLFormat_v1_0).rawString());
@@ -468,7 +468,7 @@ ObjJAcornCompiler.prototype.compilePass2 = function()
         {
             var dict = new CFMutableDictionary();
             dict.addValueForKey('line', warning.line)
-            dict.addValueForKey('path', this.URL.path())
+            dict.addValueForKey('sourcePath', this.URL.path())
             dict.addValueForKey('message', message)
 
             warnings.push(dict);

@@ -213,7 +213,7 @@ function parser(args)
     {
         [errors addObject:@{
             @"message": e.message,
-            @"path": sourcePath,
+            @"sourcePath": sourcePath,
             @"line": e.line
         }];
 
