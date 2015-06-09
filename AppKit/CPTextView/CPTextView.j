@@ -624,10 +624,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         if ([self _isFirstResponder])
             [self updateInsertionPointStateAndRestartTimer:((_selectionRange.length === 0) && ![_caret isBlinking])];
 
-        var peekLoc = MAX(0, range.location - 1);
-
-        if (_isNewlineCharacter([[_textStorage string] characterAtIndex:peekLoc]))
-            peekLoc++;
+        var peekLoc = CPMaxRange(range);
 
         if (doOverwrite)
             [self setTypingAttributes:[_textStorage attributesAtIndex:peekLoc effectiveRange:nil]];
@@ -2101,7 +2098,7 @@ var _CPCopyPlaceholder = '-';
     var currentFirstResponder = [[CPApp mainWindow] firstResponder],
         placeholderRange = CPMakeRange([currentFirstResponder selectedRange].location - 1, 1);
 
-    [currentFirstResponder setSelectedRange:placeholderRange]; // fixme: see comment in _activateNativeInputElement:
+    [currentFirstResponder setSelectedRange:placeholderRange];
     [currentFirstResponder insertText:aStr];
     [self hideInputElement];
     [currentFirstResponder updateInsertionPointStateAndRestartTimer:YES];
