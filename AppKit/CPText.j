@@ -155,7 +155,7 @@ CPKernAttributeName = @"CPKernAttributeName";
       //  dataForPasting = [pasteboard dataForType:CPRichStringPboardType],
         stringForPasting = [pasteboard stringForType:CPStringPboardType];
 
-   if ([stringForPasting hasPrefix:"{\\rtf1\\ansi"])
+    if ([stringForPasting hasPrefix:"{\\rtf1\\ansi"])
         stringForPasting = [[_CPRTFParser new] parseRTF:stringForPasting];
 
     if (![self isRichText] && [stringForPasting isKindOfClass:[CPAttributedString class]])
