@@ -149,17 +149,24 @@ CPKernAttributeName = @"CPKernAttributeName";
     }
 }
 
-- (void)paste:(id)sender
+- (id)_stringForPasting
 {
     var pasteboard = [CPPasteboard generalPasteboard],
       //  dataForPasting = [pasteboard dataForType:CPRichStringPboardType],
         stringForPasting = [pasteboard stringForType:CPStringPboardType];
 
-    if ([stringForPasting hasPrefix:"{\\rtf1\\ansi"])
+   if ([stringForPasting hasPrefix:"{\\rtf1\\ansi"])
         stringForPasting = [[_CPRTFParser new] parseRTF:stringForPasting];
 
     if (![self isRichText] && [stringForPasting isKindOfClass:[CPAttributedString class]])
         stringForPasting = stringForPasting._string;
+
+    return stringForPasting;
+}
+
+- (void)paste:(id)sender
+{
+    var stringForPasting = [self _stringForPasting];
 
     if (stringForPasting)
         [self insertText:stringForPasting];

@@ -224,18 +224,48 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 {
     [[_window platformWindow] _propagateCurrentDOMEvent:NO]; // prevent double pasting from the additional 'synthetic' paste event
 
+    var stringForPasting = [self _stringForPasting];
+
+    if (!stringForPasting)
+       return;
+
     if (_copySelectionGranularity > 0 && _selectionRange.location > 0)
     {
         if (!_isWhitespaceCharacter([[_textStorage string] characterAtIndex:_selectionRange.location - 1]))
+        {
             [self insertText:" "];
+        }
     }
 
-    [super paste:sender];
+    if (_copySelectionGranularity == CPSelectByParagraph)
+    {
+        var peekStr = stringForPasting,
+            i = 0;
+
+        if (![stringForPasting isKindOfClass:[CPString class]])
+            peekStr = stringForPasting._string;
+
+        while (_isWhitespaceCharacter([peekStr characterAtIndex:i]))
+            i++;
+
+        if (i)
+        {
+            if ([stringForPasting isKindOfClass:[CPString class]])
+                stringForPasting = [stringForPasting stringByReplacingCharactersInRange:CPMakeRange(0, i) withString:''];
+            else
+                [stringForPasting replaceCharactersInRange:CPMakeRange(0, i) withString:''];
+        }
+    }
+
+    [self insertText:stringForPasting];
 
     if (_copySelectionGranularity > 0)
     {
-        if (!_isWhitespaceCharacter([[_textStorage string] characterAtIndex:CPMaxRange(_selectionRange)]) && !_isNewlineCharacter([[_textStorage string] characterAtIndex:MAX(0, _selectionRange.location - 1)]))
+        if (!_isWhitespaceCharacter([[_textStorage string] characterAtIndex:CPMaxRange(_selectionRange)]) &&
+            !_isNewlineCharacter([[_textStorage string] characterAtIndex:MAX(0, _selectionRange.location - 1)]))
+        {
             [self insertText:" "];
+        }
     }
 }
 
