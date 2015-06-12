@@ -1280,12 +1280,6 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)deleteBackward:(id)sender ignoreSmart:(BOOL)ignoreFlag
 {
-    if ([_CPNativeInputManager isNativeInputFieldActive])
-    {
-        [_CPNativeInputManager cancelCurrentNativeInputSession];
-        return;
-    }
-
     var changedRange;
 
     if (CPEmptyRange(_selectionRange) && _selectionRange.location > 0)
@@ -2108,9 +2102,9 @@ var _CPCopyPlaceholder = '-';
 
     _CPNativeInputField.onkeyup = function(e)
     {
-        // filter out the shift-up and friends used to access the deadkeys
+        // filter out the shift-up, cursor keys and friends used to access the deadkeys
         // fixme: e.which is depreciated(?) -> find a better way to identify the modifier-keyups
-        if (e.which < 27 || e.which == 91 || e.which == 93) // include apple command keys
+        if (e.which != 8 && e.which < 27 || e.which == 91 || e.which == 93) // include apple command keys
             return;
 
         _CPNativeInputFieldKeyUpCalled = YES;
