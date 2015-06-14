@@ -132,20 +132,24 @@ CPKernAttributeName = @"CPKernAttributeName";
     if (selectedRange.length < 1)
             return;
 
-    var pasteboard = [CPPasteboard generalPasteboard],
-        stringForPasting = [[self stringValue] substringWithRange:selectedRange];
+    var pasteboard = [CPPasteboard generalPasteboard];
 
+    // put plain representation on the pasteboad unconditionally
     [pasteboard declareTypes:[CPStringPboardType] owner:nil];
+    [pasteboard setString:[[self stringValue] substringWithRange:selectedRange] forType:CPStringPboardType];
 
-    if ([self isRichText])
+    if ([self isRichText] && [self respondsToSelector:@selector(textStorage)])
     {
-       // crude hack to make rich pasting possible in chrome and firefox. this requires a RTF roundtrip, unfortunately
-        var richData =  [_CPRTFProducer produceRTF:[[self textStorage] attributedSubstringFromRange:selectedRange] documentAttributes:@{}];
-        [pasteboard setString:richData forType:CPStringPboardType];
-    }
-    else
-    {
-        [pasteboard setString:stringForPasting forType:CPStringPboardType];
+        var stringForPasting = [[self textStorage] attributedSubstringFromRange:CPMakeRangeCopy(selectedRange)];
+
+        // put rich representation on the pasteboad only if we have mutliple attributes selected
+        // crude hack to make rich pasting possible in chrome and firefox. simply put rtf on the plain pasteboard
+        if (stringForPasting._rangeEntries.length > 1)
+        {
+       //   [pasteboard declareTypes:[CPStringPboardType, CPRichStringPboardType] owner:nil];  // this does currently do not work due to limitations in cappuccino
+            var richData =  [_CPRTFProducer produceRTF:stringForPasting documentAttributes:@{}];
+            [pasteboard setString:richData forType:CPStringPboardType];
+        }
     }
 }
 
