@@ -55,7 +55,7 @@ function cleanup() {
     [self assert:"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\"><plist version = \"1.0\"><array><dict><key>line</key><integer>1</integer><key>sourcePath</key><string>" + rootDirectory + "/objjErrorTestFile.j</string><key>message</key><string>\
 \n@implementation AppController : CPObject{}@end\
 \n                                ^\
-\nERROR line 1 in file:/Users/Dogild/Project/cappuccino/objjErrorTestFile.j: Can&apos;t find superclass CPObject</string></dict></array></plist>\n" equals:p.stdout.read() message:"objj failed"];
+\nERROR line 1 in file:" + rootDirectory + "/objjErrorTestFile.j: Can&apos;t find superclass CPObject</string></dict></array></plist>\n" equals:p.stdout.read() message:"objj failed"];
 
     var p = OS.popen(["objj", "-x", "objjWarningTestFile.j"]);
     [self assert:0 equals:p.wait() message:"objj failed"];
