@@ -142,13 +142,12 @@ CPKernAttributeName = @"CPKernAttributeName";
     {
         var stringForPasting = [[self textStorage] attributedSubstringFromRange:CPMakeRangeCopy(selectedRange)];
 
-        // put rich representation on the pasteboad only if we have mutliple attributes selected
-        // crude hack to make rich pasting possible in chrome and firefox. simply put rtf on the plain pasteboard
+        // put rich representation on the pasteboad only if we have multliple attributes selected
         if (stringForPasting._rangeEntries.length > 1)
         {
-       //   [pasteboard declareTypes:[CPStringPboardType, CPRichStringPboardType] owner:nil];  // this does currently do not work due to limitations in cappuccino
             var richData =  [_CPRTFProducer produceRTF:stringForPasting documentAttributes:@{}];
-            [pasteboard setString:richData forType:CPStringPboardType];
+         // [pasteboard declareTypes:[CPStringPboardType, CPRichStringPboardType] owner:nil];  // this does currently do not work due to limitations in cappuccino
+            [pasteboard setString:richData forType:CPStringPboardType];  // crude hack to make rich pasting possible in chrome and firefox. simply put rtf on the plain pasteboard
         }
     }
 }
