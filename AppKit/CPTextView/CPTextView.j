@@ -2191,6 +2191,14 @@ var _CPCopyPlaceholder = '-';
         _CPNativeInputFieldKeyPressedCalled = YES;
     }
 
+    if (CPBrowserIsEngine(CPGeckoBrowserEngine))
+        _CPNativeInputField.addEventListener("input", function() {
+            if(_CPNativeInputFieldActive)
+                setTimeout(function(){
+                    [self cancelCurrentInputSessionIfNeeded];
+                }, 200);
+        }, false);
+
     _CPNativeInputField.style.width="64px";
     _CPNativeInputField.style.zIndex = 10000;
     _CPNativeInputField.style.position = "absolute";
