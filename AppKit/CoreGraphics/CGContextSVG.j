@@ -22,6 +22,8 @@
 
 @import "CGContext.j"
 
+var SVGNameSpace = "http://www.w3.org/2000/svg";
+
 var SVG_TRUTH_TABLE     = [ "f", "t"],
     SVG_LINECAP_TABLE   = [ "flat", "round", "square" ],
     SVG_LINEJOIN_TABLE  = [ "miter", "round", "bevel" ],
@@ -31,11 +33,12 @@ function CGSVGGraphicsContext(width, height)
 {
     CGContext.call(this);
     
-    this.DOMElement = document.createElement("svg");
+    this.DOMElement = document.createElementNS(SVGNameSpace, "svg");
     // SVG is not included in the default Javascript elements so width and height will be ignored
     // if the property syntax is used.
-    this.DOMElement.setAttribute("width", width);
-    this.DOMElement.setAttribute("height", height);
+    this.DOMElement.setAttribute("width", width + "px");
+    this.DOMElement.setAttribute("height", height + "px");
+    CPDOMDisplayServerSetStyleSize(this.DOMElement, width, height);
 }
 
 CGSVGGraphicsContext.prototype = Object.create(CGContext.prototype);
@@ -95,6 +98,25 @@ CGSVGGraphicsContext.prototype.applyStyleToElement = function(anElement, aMode)
     anElement.setAttribute("style", style.join(";"));
 }
 
+CGSVGGraphicsContext.prototype.fillRects = function(rects, count)
+{
+    var group = document.createElementNS(SVGNameSpace, "g");
+    group.setAttribute("style", "fill: " + this.gState.fillStyle);
+    
+    for (var i = 0; i < count; i++)
+    {
+        var aRect = rects[i];
+        var rectElement = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        rectElement.setAttribute("x", CGRectGetMinX(aRect));
+        rectElement.setAttribute("y", CGRectGetMinY(aRect));
+        rectElement.setAttribute("width", CGRectGetWidth(aRect));
+        rectElement.setAttribute("height", CGRectGetHeight(aRect));
+        group.appendChild(rectElement);
+    }
+    
+    this.DOMElement.appendChild(group);
+}
+
 CGSVGGraphicsContext.prototype.drawPath = function(aMode)
 {
     if (CGPathIsEmpty(this.path))
@@ -105,7 +127,7 @@ CGSVGGraphicsContext.prototype.drawPath = function(aMode)
         i = 0,
         count = this.path.count,
 
-        svgPath = document.createElement("path"),
+        svgPath = document.createElementNS(SVGNameSpace, "path"),
         pathDescription = new Array();
 
     this.applyStyleToElement(svgPath, aMode);
