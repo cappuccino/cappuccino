@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/cappuccino/cappuccino.svg?branch=master)](https://travis-ci.org/cappuccino/cappuccino)
+
 Welcome to Cappuccino!
 ======================
 

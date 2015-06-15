@@ -22,7 +22,6 @@
 
 var FILE = require("file");
 
-
 var BUNDLE_TASK = require("objective-j/jake/bundletask");
 
 exports.BundleTask = BUNDLE_TASK.BundleTask;

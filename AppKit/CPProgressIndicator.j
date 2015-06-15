@@ -86,6 +86,9 @@ var CPProgressIndicatorSpinningStyleColors = [];
             @"spinning-mini-gif": [CPNull null],
             @"spinning-small-gif": [CPNull null],
             @"spinning-regular-gif": [CPNull null],
+            @"circular-border-color": [CPNull null],
+            @"circular-border-size": 1,
+            @"circular-color": [CPNull null]
         };
 }
 
@@ -368,6 +371,7 @@ var CPProgressIndicatorSpinningStyleColors = [];
 - (void)drawBar
 {
     [self setNeedsLayout];
+    [self setNeedsDisplay:YES];
 }
 
 - (CPView)createEphemeralSubviewNamed:(CPString)aName
@@ -413,6 +417,9 @@ var CPProgressIndicatorSpinningStyleColors = [];
     {
         if (_style == CPProgressIndicatorSpinningStyle)
         {
+            if (!_indeterminate)
+                return;
+
             // This will cause the bar view to go away due to having a nil rect when _style == CPProgressIndicatorSpinningStyle.
             [self layoutEphemeralSubviewNamed:"bar-view"
                                    positioned:CPWindowBelow
@@ -436,6 +443,54 @@ var CPProgressIndicatorSpinningStyleColors = [];
     }
     else
         [self setBackgroundColor:nil];
+}
+
+- (void)drawRect:(CGRect)aRect
+{
+    if (_style == CPProgressIndicatorSpinningStyle && !_indeterminate)
+    {
+        var context = [[CPGraphicsContext currentContext] graphicsPort],
+            rect = CGRectMakeCopy(aRect),
+            borderSize = [self currentValueForThemeAttribute:@"circular-border-size"];
+
+        rect.origin.x += borderSize;
+        rect.origin.y += borderSize;
+        rect.size.width = rect.size.width - borderSize * 2;
+        rect.size.height = rect.size.height - borderSize * 2;
+
+        if ([self doubleValue] > [self minValue] && [self doubleValue] < [self maxValue])
+        {
+            var midX = CGRectGetMidX(rect),
+                midY = CGRectGetMidY(rect),
+                endAngle = Math.PI * 2 * (([self doubleValue] - [self minValue]) / ([self maxValue] - [self minValue])) - Math.PI / 2,
+                radius = MIN(rect.size.width / 2, rect.size.height / 2)
+
+            CGContextBeginPath(context);
+            CGContextSetLineWidth(context, borderSize);
+            CGContextSetFillColor(context, [self currentValueForThemeAttribute:@"circular-color"])
+            CGContextMoveToPoint(context, midX, midY);
+            CGContextAddArc(context, midX, midY, radius, 3 * Math.PI / 2, endAngle, YES)
+            CGContextAddLineToPoint(context, midX, midY);
+            CGContextClosePath(context);
+            CGContextFillPath(context);
+            CGContextStrokePath(context);
+        }
+        else if ([self doubleValue] == [self maxValue])
+        {
+            CGContextBeginPath(context);
+            CGContextSetFillColor(context, [self currentValueForThemeAttribute:@"circular-color"])
+            CGContextAddEllipseInRect(context, rect);
+            CGContextClosePath(context);
+            CGContextFillPath(context);
+        }
+
+        CGContextBeginPath(context);
+        CGContextSetStrokeColor(context , [self currentValueForThemeAttribute:@"circular-border-color"]);
+        CGContextSetLineWidth(context, borderSize);
+        CGContextAddEllipseInRect(context, rect);
+        CGContextClosePath(context);
+        CGContextStrokePath(context);
+    }
 }
 
 @end

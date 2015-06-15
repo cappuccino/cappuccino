@@ -353,7 +353,7 @@ var CPZeroKeyCode = 48,
     if (![self isEnabled])
         return;
 
-    if ([_datePicker _isEnglishFormat] && [_currentTextField dateType] == CPAMPMDateType && ([anEvent keyCode] == CPAKeyCode || [anEvent keyCode] == CPPKeyCode || [anEvent keyCode] == CPMajAKeyCode || [anEvent keyCode] == CPMajPKeyCode))
+    if ([_datePicker _isAmericanFormat] && [_currentTextField dateType] == CPAMPMDateType && ([anEvent keyCode] == CPAKeyCode || [anEvent keyCode] == CPPKeyCode || [anEvent keyCode] == CPMajAKeyCode || [anEvent keyCode] == CPMajPKeyCode))
     {
         if ([anEvent keyCode] == CPAKeyCode || [anEvent keyCode] == CPMajAKeyCode)
             [_currentTextField setStringValue:@"AM"];
@@ -725,7 +725,7 @@ var CPZeroKeyCode = 48,
 
         if (hour != currentHour)
         {
-            if (([_datePicker _isEnglishFormat] || [_datePicker _isAmericanFormat]))
+            if ([_datePicker _isAmericanFormat])
             {
                 if (![self _isAMHour])
                 {
@@ -1050,7 +1050,7 @@ var CPZeroKeyCode = 48,
 - (void)_updateHiddenTextFields
 {
     var datePickerElements = [_datePicker datePickerElements],
-        isEnglishFormat = [_datePicker _isEnglishFormat];
+        isAmericanFormat = [_datePicker _isAmericanFormat];
 
     if (datePickerElements & CPYearMonthDatePickerElementFlag)
     {
@@ -1083,7 +1083,7 @@ var CPZeroKeyCode = 48,
         [_textFieldSeparatorThree setHidden:NO];
         [_textFieldSeparatorFour setHidden:YES];
 
-        if (isEnglishFormat)
+        if (isAmericanFormat)
             [_textFieldPMAM setHidden:NO];
         else
             [_textFieldPMAM setHidden:YES];
@@ -1115,9 +1115,9 @@ var CPZeroKeyCode = 48,
         verticalInset = contentInset.top - contentInset.bottom,
         firstTexField = _textFieldMonth,
         secondTextField = _textFieldDay,
-        isEnglishFormat = [_datePicker _isEnglishFormat];
+        isAmericanFormat = [_datePicker _isAmericanFormat];
 
-    if (!isEnglishFormat)
+    if (!isAmericanFormat)
     {
         firstTexField = _textFieldDay;
         secondTextField = _textFieldMonth;
@@ -1131,7 +1131,7 @@ var CPZeroKeyCode = 48,
     else
         [secondTextField setFrameOrigin:CGPointMake(CGRectGetMaxX([_textFieldSeparatorOne frame]) + separatorContentInset.right, verticalInset)];
 
-    if (isEnglishFormat && [secondTextField isHidden])
+    if (isAmericanFormat && [secondTextField isHidden])
         [_textFieldSeparatorTwo setFrameOrigin:CGPointMake(CGRectGetMaxX([firstTexField frame]) + separatorContentInset.left, verticalInset)];
     else
         [_textFieldSeparatorTwo setFrameOrigin:CGPointMake(CGRectGetMaxX([secondTextField frame]) + separatorContentInset.left, verticalInset)];
@@ -1206,7 +1206,7 @@ var CPZeroKeyCode = 48,
 {
     var datePickerElements = [_datePicker datePickerElements];
 
-    if ([_datePicker _isEnglishFormat])
+    if ([_datePicker _isAmericanFormat])
     {
         if (datePickerElements & CPYearMonthDayDatePickerElementFlag || datePickerElements & CPYearMonthDatePickerElementFlag)
             [[self superview] setFirstTextField:_textFieldMonth];
@@ -1249,9 +1249,9 @@ var CPZeroKeyCode = 48,
     var datePickerElements = [_datePicker datePickerElements],
         firstTexField = _textFieldMonth,
         secondTextField = _textFieldDay,
-        isEnglishFormat = [_datePicker _isEnglishFormat];
+        isAmericanFormat = [_datePicker _isAmericanFormat];
 
-    if (!isEnglishFormat)
+    if (!isAmericanFormat)
     {
         firstTexField = _textFieldDay;
         secondTextField = _textFieldMonth;
@@ -1266,7 +1266,7 @@ var CPZeroKeyCode = 48,
 
     if (datePickerElements & CPHourMinuteSecondDatePickerElementFlag || datePickerElements & CPHourMinuteDatePickerElementFlag)
         [_textFieldYear setNextTextField:_textFieldHour];
-    else if (isEnglishFormat || (datePickerElements & CPYearMonthDayDatePickerElementFlag) == CPYearMonthDayDatePickerElementFlag)
+    else if (isAmericanFormat || (datePickerElements & CPYearMonthDayDatePickerElementFlag) == CPYearMonthDayDatePickerElementFlag)
         [_textFieldYear setNextTextField:firstTexField];
     else
         [_textFieldYear setNextTextField:secondTextField];
@@ -1275,7 +1275,7 @@ var CPZeroKeyCode = 48,
 
     if ((datePickerElements & CPHourMinuteSecondDatePickerElementFlag) == CPHourMinuteSecondDatePickerElementFlag)
         [_textFieldMinute setNextTextField:_textFieldSecond];
-    else if (isEnglishFormat)
+    else if (isAmericanFormat)
         [_textFieldMinute setNextTextField:_textFieldPMAM];
     else if ((datePickerElements & CPYearMonthDayDatePickerElementFlag) == CPYearMonthDayDatePickerElementFlag)
         [_textFieldMinute setNextTextField:firstTexField];
@@ -1284,7 +1284,7 @@ var CPZeroKeyCode = 48,
     else
         [_textFieldMinute setNextTextField:_textFieldHour];
 
-    if (isEnglishFormat)
+    if (isAmericanFormat)
         [_textFieldSecond setNextTextField:_textFieldPMAM];
     else if ((datePickerElements & CPYearMonthDayDatePickerElementFlag) == CPYearMonthDayDatePickerElementFlag)
         [_textFieldSecond setNextTextField:firstTexField];
@@ -1304,9 +1304,9 @@ var CPZeroKeyCode = 48,
     var datePickerElements = [_datePicker datePickerElements],
         firstTexField = _textFieldMonth,
         secondTextField = _textFieldDay,
-        isEnglishFormat = [_datePicker _isEnglishFormat];
+        isAmericanFormat = [_datePicker _isAmericanFormat];
 
-    if (!isEnglishFormat)
+    if (!isAmericanFormat)
     {
         firstTexField = _textFieldDay;
         secondTextField = _textFieldMonth;
@@ -1322,14 +1322,14 @@ var CPZeroKeyCode = 48,
 
     if (datePickerElements & CPYearMonthDatePickerElementFlag)
         [_textFieldHour setPreviousTextField:_textFieldYear];
-    else if (isEnglishFormat)
+    else if (isAmericanFormat)
         [_textFieldHour setPreviousTextField:_textFieldPMAM];
     else if ((datePickerElements & CPHourMinuteSecondDatePickerElementFlag) == CPHourMinuteSecondDatePickerElementFlag)
         [_textFieldHour setPreviousTextField:_textFieldSecond];
     else
         [_textFieldHour setPreviousTextField:_textFieldMinute];
 
-    if (!isEnglishFormat)
+    if (!isAmericanFormat)
         [_textFieldYear setPreviousTextField:_textFieldMonth];
     else if ((datePickerElements & CPYearMonthDayDatePickerElementFlag) == CPYearMonthDayDatePickerElementFlag)
         [_textFieldYear setPreviousTextField:_textFieldDay];
@@ -1338,7 +1338,7 @@ var CPZeroKeyCode = 48,
 
     [secondTextField setPreviousTextField:firstTexField];
 
-    if (isEnglishFormat && datePickerElements & CPHourMinuteDatePickerElementFlag)
+    if (isAmericanFormat && datePickerElements & CPHourMinuteDatePickerElementFlag)
         [firstTexField setPreviousTextField:_textFieldPMAM];
     else if ((datePickerElements & CPHourMinuteSecondDatePickerElementFlag) == CPHourMinuteSecondDatePickerElementFlag)
         [firstTexField setPreviousTextField:_textFieldSecond];
@@ -1530,7 +1530,7 @@ var CPMonthDateType = 0,
         }
     }
 
-    if (parseInt(newValue) > [self _maxNumberWithMaxDate] || ([_datePicker _isEnglishFormat] && _dateType == CPHourDateType && parseInt(newValue) > 12))
+    if (parseInt(newValue) > [self _maxNumberWithMaxDate] || ([_datePicker _isAmericanFormat] && _dateType == CPHourDateType && parseInt(newValue) > 12))
         return;
 
     _firstEvent = NO;
@@ -1549,7 +1549,7 @@ var CPMonthDateType = 0,
 
     if ([stringValue length])
     {
-        if ([_datePicker _isEnglishFormat] && [self dateType] == CPHourDateType)
+        if ([_datePicker _isAmericanFormat] && [self dateType] == CPHourDateType)
         {
             var isAMHour = [[self superview] _isAMHour];
 
@@ -1593,7 +1593,7 @@ var CPMonthDateType = 0,
     if (![objectValue length])
         objectValue = [self objectValue];
 
-    if ([_datePicker _isEnglishFormat] && [self dateType] == CPHourDateType)
+    if ([_datePicker _isAmericanFormat] && [self dateType] == CPHourDateType)
     {
         var isAMHour = [[self superview] _isAMHour];
 
@@ -1621,7 +1621,7 @@ var CPMonthDateType = 0,
     }
     else if (_dateType != CPAMPMDateType)
     {
-        if (_dateType == CPHourDateType && [_datePicker _isEnglishFormat])
+        if (_dateType == CPHourDateType && [_datePicker _isAmericanFormat])
         {
             var value = parseInt(aStringValue);
 

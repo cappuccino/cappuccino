@@ -29,6 +29,7 @@
 
 @global CPApp
 
+CPRadioImageOffset = 4.0;
 
 /*!
     @ingroup appkit
@@ -67,9 +68,6 @@
     option.
 
 */
-
-CPRadioImageOffset = 4.0;
-
 @implementation CPRadio : CPButton
 {
     CPRadioGroup    _radioGroup;

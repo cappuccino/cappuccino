@@ -394,9 +394,22 @@ var ObjJAcornCompiler = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*
 #ifdef BROWSER
             console.log(message);
 #else
-            print(message);
+            if (exports.outputFormatInXML)
+            {
+                var dict = new CFMutableDictionary();
+                dict.addValueForKey('line', e.line);
+                dict.addValueForKey('sourcePath', this.URL.path());
+                dict.addValueForKey('message', message);
+
+                print(CFPropertyListCreateXMLData([dict], kCFPropertyListXMLFormat_v1_0).rawString());
+            }
+            else
+            {
+                print(message);
+            }
 #endif
         }
+
         throw e;
     }
 
@@ -434,6 +447,8 @@ exports.ObjJAcornCompiler.compileFileDependencies = function(/*String*/ aString,
 
 ObjJAcornCompiler.prototype.compilePass2 = function()
 {
+    var warnings = [];
+
     ObjJAcornCompiler.currentCompileFile = this.URL;
     this.pass = 2;
     this.jsBuffer = new StringBuffer();
@@ -442,13 +457,31 @@ ObjJAcornCompiler.prototype.compilePass2 = function()
     compile(this.tokens, new Scope(null ,{ compiler: this }), pass2);
     for (var i = 0; i < this.warnings.length; i++)
     {
-       var message = this.prettifyMessage(this.warnings[i], "WARNING");
+        var warning = this.warnings[i],
+            type = "WARNING";
+
+        var message = this.prettifyMessage(warning, type);
 #ifdef BROWSER
         console.log(message);
 #else
-        print(message);
+        if (exports.outputFormatInXML)
+        {
+            var dict = new CFMutableDictionary();
+            dict.addValueForKey('line', warning.line)
+            dict.addValueForKey('sourcePath', this.URL.path())
+            dict.addValueForKey('message', message)
+
+            warnings.push(dict);
+        }
+        else
+        {
+            print(message);
+        }
 #endif
     }
+
+    if (warnings.length && exports.outputFormatInXML)
+        print(CFPropertyListCreateXMLData(warnings, kCFPropertyListXMLFormat_v1_0).rawString());
 
     //print(this.URL + ": " + this.jsBuffer.toString());
     return this.jsBuffer.toString();
@@ -660,9 +693,13 @@ ObjJAcornCompiler.prototype.prettifyMessage = function(/* Message */ aMessage, /
 ObjJAcornCompiler.prototype.error_message = function(errorMessage, node)
 {
     var pos = exports.acorn.getLineInfo(this.source, node.start),
-        syntaxError = {message: errorMessage, line: pos.line, column: pos.column, lineStart: pos.lineStart, lineEnd: pos.lineEnd};
+        syntaxErrorData = {message: errorMessage, line: pos.line, column: pos.column, lineStart: pos.lineStart, lineEnd: pos.lineEnd},
+        syntaxError = new SyntaxError(this.prettifyMessage(syntaxErrorData, "ERROR"));
 
-    return new SyntaxError(this.prettifyMessage(syntaxError, "ERROR"));
+    syntaxError.line = pos.line;
+    syntaxError.path = this.URL.path();
+
+    return syntaxError;
 }
 
 ObjJAcornCompiler.prototype.pushImport = function(url)

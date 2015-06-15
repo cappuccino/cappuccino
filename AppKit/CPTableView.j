@@ -3593,6 +3593,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         [self setNeedsDisplay:YES];
     }
 
+    if (!_isViewBased)
+        [self _setEditingState:NO forView:dataView];
+
     [self _sendDelegateWillDisplayView:dataView forTableColumn:tableColumn row:row];
 
     return dataView;

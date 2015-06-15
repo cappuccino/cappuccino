@@ -50,11 +50,6 @@ CPNoScrollerParts           = 0;
 CPOnlyScrollerArrows        = 1;
 CPAllScrollerParts          = 2;
 
-/*!
-    @ingroup appkit
-    @class CPScroller
-*/
-
 var PARTS_ARRANGEMENT   = [CPScrollerKnobSlot, CPScrollerDecrementLine, CPScrollerIncrementLine, CPScrollerKnob],
     NAMES_FOR_PARTS     = {},
     PARTS_FOR_NAMES     = {};
@@ -77,6 +72,11 @@ CPScrollerKnobStyleLight        = 2;
 CPThemeStateScrollViewLegacy    = CPThemeState("scroller-style-legacy");
 CPThemeStateScrollerKnobLight   = CPThemeState("scroller-knob-light");
 CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
+
+/*!
+    @ingroup appkit
+    @class CPScroller
+*/
 
 @implementation CPScroller : CPControl
 {
