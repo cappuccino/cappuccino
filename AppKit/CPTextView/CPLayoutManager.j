@@ -1111,8 +1111,8 @@ var _objectsInRange = function(aList, aRange)
 
     for (var i = 0; i < count; i++)
     {
-        _glyphsFrames[i] = CGRectMake(origin.x, origin.y, someAdvancements[i], _usedRect.size.height);
-        origin.x += someAdvancements[i];
+        _glyphsFrames[i] = CGRectMake(origin.x, origin.y, someAdvancements[i].width, _usedRect.size.height);  // FIXME: origin.y+(height-someAdvancements[i].height) for baseline alignment
+        origin.x += someAdvancements[i].width;
     }
 }
 
@@ -1163,8 +1163,6 @@ var _objectsInRange = function(aList, aRange)
         c = runs.length,
         orig = CGPointMake(_fragmentRect.origin.x, _fragmentRect.origin.y);
 
-    orig.y += aPoint.y;
-
     for (var i = 0; i < c; i++)
     {
         var run = runs[i];
@@ -1175,7 +1173,9 @@ var _objectsInRange = function(aList, aRange)
         if (!_glyphsFrames)
             continue;
 
-        orig.x = _glyphsFrames[run._range.location - _runs[0]._range.location].origin.x + aPoint.x;
+        var loc = run._range.location - _runs[0]._range.location;
+        orig.x = _glyphsFrames[loc].origin.x + aPoint.x;
+        orig.y = _glyphsFrames[loc].origin.y + aPoint.y;
 
         run.elem.style.left = (orig.x) + "px";
         run.elem.style.top = (orig.y) + "px";

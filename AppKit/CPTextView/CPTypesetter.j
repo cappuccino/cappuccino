@@ -163,10 +163,11 @@ var CPSystemTypesetterFactory;
 }
 
 - (BOOL)_flushRange:(CPRange)lineRange
-        lineOrigin:(CGPoint)lineOrigin
-        currentContainer:(CPTextContainer)aContainer
-        advancements:(CPArray)advancements
-        lineCount:(unsigned)lineCount
+         lineOrigin:(CGPoint)lineOrigin
+   currentContainer:(CPTextContainer)aContainer
+       advancements:(CPArray)advancements
+          lineCount:(unsigned)lineCount
+           sameLine:(BOOL)sameLine
 {
     var myX = 0,
         rect = CGRectMake(lineOrigin.x, lineOrigin.y, _lineWidth, _lineHeight),
@@ -192,6 +193,8 @@ var CPSystemTypesetterFactory;
 
     [_layoutManager setLocation:CPMakePoint(myX, _lineBase) forStartOfGlyphRange:lineRange];
     [_layoutManager _setAdvancements:advancements forGlyphRange:lineRange];
+
+//FIXME: sameLine should result in fixing the previous linefragments of this line, e.g. when fontsizes differ
 
     if (!lineCount)  // do not rescue on first line
         return NO;
@@ -261,8 +264,8 @@ var CPSystemTypesetterFactory;
             if (!_currentFont)
                 _currentFont = [_textStorage font] || [CPFont systemFontOfSize:12.0];
 
-            ascent = ["x" sizeWithFont:_currentFont inWidth:NULL].height; //FIXME [_currentFont ascender]
-            descent = 0;    //FIXME [_currentFont descender]
+            ascent = [_currentFont ascender]
+            descent = [_currentFont descender]
             leading = (ascent - descent) * 0.2; // FAKE leading
         }
 
@@ -304,7 +307,7 @@ var CPSystemTypesetterFactory;
                     isNewline = YES;
         }
 
-        advancements.push(rangeWidth - prevRangeWidth);
+        advancements.push(CPMakeSize(rangeWidth - prevRangeWidth, ascent));
         prevRangeWidth = _lineWidth = rangeWidth;
 
         if (lineOrigin.x + rangeWidth > containerSize.width)
