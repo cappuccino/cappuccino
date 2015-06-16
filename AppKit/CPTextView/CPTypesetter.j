@@ -328,7 +328,7 @@ var CPSystemTypesetterFactory;
 
         if (isNewline || isTabStop)
         {
-            if ([self _flushRange:lineRange lineOrigin:lineOrigin currentContainer:_currentTextContainer advancements:advancements lineCount:numLines])
+            if ([self _flushRange:lineRange lineOrigin:lineOrigin currentContainer:_currentTextContainer advancements:advancements lineCount:numLines sameLine:!isNewline])
                 return;
 
             if (isTabStop)
@@ -379,7 +379,7 @@ var CPSystemTypesetterFactory;
     // this is to "flush" the remaining characters
     if (lineRange.length)
     {
-        [self _flushRange:lineRange lineOrigin:lineOrigin currentContainer:_currentTextContainer advancements:advancements lineCount:numLines];
+        [self _flushRange:lineRange lineOrigin:lineOrigin currentContainer:_currentTextContainer advancements:advancements lineCount:numLines sameLine:NO];
     }
 
     if (_isNewlineCharacter(theString.charAt(theString.length - 1)))
