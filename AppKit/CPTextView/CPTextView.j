@@ -2128,7 +2128,7 @@ var _CPCopyPlaceholder = '-';
 + (void)initialize
 {
     _CPNativeInputField = document.createElement("div");
-    _CPNativeInputField.contentEditable=YES;
+    _CPNativeInputField.contentEditable = YES;
 
     _CPNativeInputField.onkeyup = function(e)
     {

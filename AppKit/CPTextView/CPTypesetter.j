@@ -119,6 +119,8 @@ var CPSystemTypesetterFactory;
     float               _lineWidth;
 
     unsigned            _indexOfCurrentContainer;
+
+    CPArray             _lineFragments;
 }
 
 
@@ -174,6 +176,7 @@ var CPSystemTypesetterFactory;
         containerSize = aContainer._size;
 
     [_layoutManager setTextContainer:_currentTextContainer forGlyphRange:lineRange];  // creates a new lineFragment
+    _lineFragments.push([_layoutManager._lineFragments lastObject]);
     [_layoutManager setLineFragmentRect:rect forGlyphRange:lineRange usedRect:rect];
 
     switch ([_currentParagraph alignment])
@@ -194,7 +197,10 @@ var CPSystemTypesetterFactory;
     [_layoutManager setLocation:CPMakePoint(myX, _lineBase) forStartOfGlyphRange:lineRange];
     [_layoutManager _setAdvancements:advancements forGlyphRange:lineRange];
 
-//FIXME: sameLine should result in fixing the previous linefragments of this line, e.g. when fontsizes differ
+    if (!sameLine)
+    {
+//FIXME: sameLine should result in fixing the _lineFragments, e.g. when fontsizes differ
+    }
 
     if (!lineCount)  // do not rescue on first line
         return NO;
@@ -239,7 +245,7 @@ var CPSystemTypesetterFactory;
         prevRangeWidth = 0,
         measuringRange = CPMakeRange(glyphIndex, 0),
         currentAnchor = 0,
-        _previousFont;
+        previousFont;
 
     if (glyphIndex > 0)
         lineOrigin = CGPointCreateCopy([_layoutManager lineFragmentRectForGlyphAtIndex:glyphIndex effectiveRange:nil].origin);
@@ -252,6 +258,8 @@ var CPSystemTypesetterFactory;
 
     if (![_textStorage length])
         return;
+
+    _lineFragments = [];
 
     for (; numLines != maxNumLines && glyphIndex < numberOfGlyphs; glyphIndex++)
     {
@@ -269,11 +277,11 @@ var CPSystemTypesetterFactory;
             leading = (ascent - descent) * 0.2; // FAKE leading
         }
 
-        if (_previousFont !== _currentFont)
+        if (previousFont !== _currentFont)
         {
             measuringRange = CPMakeRange(glyphIndex, 0);
             currentAnchor = prevRangeWidth;
-            _previousFont = _currentFont;
+            previousFont = _currentFont;
         }
 
         lineRange.length++;
@@ -360,6 +368,7 @@ var CPSystemTypesetterFactory;
                 lineOrigin.x = 0;
                 numLines++;
                 isNewline = NO;
+                _lineFragments = [];
             }
 
             _lineWidth      = 0;
