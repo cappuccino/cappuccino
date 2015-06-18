@@ -9,9 +9,6 @@
  *  Emmanuel Maillard on 27/02/2010.
  *  Copyright Emmanuel Maillard 2010.
  *
- *  FIXME: paragraphStyle indent information is currently not properly respected
- *         collect all run heights per line for proper baseline alignment
- *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
