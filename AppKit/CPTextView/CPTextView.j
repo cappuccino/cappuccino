@@ -279,7 +279,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (BOOL)becomeFirstResponder
 {
-    [super becomeFirstResponder]
+    [super becomeFirstResponder];
     [self updateInsertionPointStateAndRestartTimer:YES];
     [[CPFontManager sharedFontManager] setSelectedFont:[self font] isMultiple:NO];
     [self setNeedsDisplay:YES];
@@ -2145,7 +2145,7 @@ var _CPCopyPlaceholder = '-';
         }
 
         _CPNativeInputFieldKeyUpCalled = YES;
-        var currentFirstResponder = [[CPApp mainWindow] firstResponder]
+        var currentFirstResponder = [[CPApp mainWindow] firstResponder];
 
         if (![currentFirstResponder respondsToSelector:@selector(_activateNativeInputElement:)])
             return;
@@ -2171,11 +2171,17 @@ var _CPCopyPlaceholder = '-';
             _CPNativeInputField.innerHTML = '';
         }
     }
-    _CPNativeInputField.onkeydown=function(e)
+    _CPNativeInputField.onkeydown = function(e)
     {
+        if(e.metaKey)  // do not interfere with native copy-paste
+        {
+            e.stopPropagation()
+            return true;
+        }
+
         _CPNativeInputFieldKeyUpCalled = NO;
         _CPNativeInputFieldKeyPressedCalled = NO;
-        var currentFirstResponder = [[CPApp mainWindow] firstResponder]
+        var currentFirstResponder = [[CPApp mainWindow] firstResponder];
 
         if (![currentFirstResponder respondsToSelector:@selector(_activateNativeInputElement:)])
             return;
@@ -2214,11 +2220,55 @@ var _CPCopyPlaceholder = '-';
     _CPNativeInputField.style.margin = "0px";
     _CPNativeInputField.style.whiteSpace = "pre";
     _CPNativeInputField.style.outline = "0px solid transparent";
+
+    _CPNativeInputField.onpaste = function(e)
+    {
+        var pasteboard = [CPPasteboard generalPasteboard];
+        [pasteboard declareTypes:[CPStringPboardType] owner:nil];
+
+        var data = e.clipboardData.getData('text/plain');
+        [pasteboard setString:data forType:CPStringPboardType];
+        var currentFirstResponder = [[CPApp mainWindow] firstResponder];
+        [currentFirstResponder paste:currentFirstResponder];
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        return false;
+    }
+    _CPNativeInputField.oncopy = function(e)
+    {
+        var pasteboard = [CPPasteboard generalPasteboard],
+            string,
+            currentFirstResponder = [[CPApp mainWindow] firstResponder];
+        string = [[currentFirstResponder stringValue] substringWithRange:[currentFirstResponder selectedRange]];
+        e.clipboardData.setData('text/plain', string);
+        [pasteboard declareTypes:[CPStringPboardType] owner:nil];
+        [pasteboard setString:string forType:CPStringPboardType];
+
+        if ([currentFirstResponder isRichText] && [currentFirstResponder respondsToSelector:@selector(textStorage)])
+        {
+            var stringForPasting = [[currentFirstResponder textStorage] attributedSubstringFromRange:CPMakeRangeCopy([currentFirstResponder selectedRange])];
+
+            if (stringForPasting._rangeEntries.length > 1)
+            {
+                var richData =  [_CPRTFProducer produceRTF:stringForPasting documentAttributes:@{}];
+                [pasteboard setString:richData forType:CPStringPboardType];
+                e.clipboardData.setData('text/plain', richData);
+          //    e.clipboardData.setData('application/rtf', richData); // does not seem to work (e.g. in Pages.app)
+            }
+        }
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        return false;
+    }
 }
 
 + (void)focus
 {
-    var currentFirstResponder = [[CPApp mainWindow] firstResponder]
+    var currentFirstResponder = [[CPApp mainWindow] firstResponder];
 
     if (![currentFirstResponder respondsToSelector:@selector(_activateNativeInputElement:)])
         return;
