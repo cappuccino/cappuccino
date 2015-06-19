@@ -2239,10 +2239,10 @@ var _CPCopyPlaceholder = '-';
     _CPNativeInputField.oncopy = function(e)
     {
         var pasteboard = [CPPasteboard generalPasteboard],
-            string;
-        var currentFirstResponder = [[CPApp mainWindow] firstResponder];
+            string,
+            currentFirstResponder = [[CPApp mainWindow] firstResponder];
 
-       [currentFirstResponder copy:currentFirstResponder];
+        [currentFirstResponder copy:currentFirstResponder];
       //  dataForPasting = [pasteboard dataForType:CPRichStringPboardType],
         stringForPasting = [pasteboard stringForType:CPStringPboardType];
 
