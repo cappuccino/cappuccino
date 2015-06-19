@@ -2239,25 +2239,15 @@ var _CPCopyPlaceholder = '-';
     _CPNativeInputField.oncopy = function(e)
     {
         var pasteboard = [CPPasteboard generalPasteboard],
-            string,
-            currentFirstResponder = [[CPApp mainWindow] firstResponder];
-        string = [[currentFirstResponder stringValue] substringWithRange:[currentFirstResponder selectedRange]];
-        e.clipboardData.setData('text/plain', string);
-        [pasteboard declareTypes:[CPStringPboardType] owner:nil];
-        [pasteboard setString:string forType:CPStringPboardType];
+            string;
+        var currentFirstResponder = [[CPApp mainWindow] firstResponder];
 
-        if ([currentFirstResponder isRichText] && [currentFirstResponder respondsToSelector:@selector(textStorage)])
-        {
-            var stringForPasting = [[currentFirstResponder textStorage] attributedSubstringFromRange:CPMakeRangeCopy([currentFirstResponder selectedRange])];
+       [currentFirstResponder copy:currentFirstResponder];
+      //  dataForPasting = [pasteboard dataForType:CPRichStringPboardType],
+        stringForPasting = [pasteboard stringForType:CPStringPboardType];
 
-            if (stringForPasting._rangeEntries.length > 1)
-            {
-                var richData =  [_CPRTFProducer produceRTF:stringForPasting documentAttributes:@{}];
-                [pasteboard setString:richData forType:CPStringPboardType];
-                e.clipboardData.setData('text/plain', richData);
-          //    e.clipboardData.setData('application/rtf', richData); // does not seem to work (e.g. in Pages.app)
-            }
-        }
+        e.clipboardData.setData('text/plain', stringForPasting);
+     // e.clipboardData.setData('application/rtf', stringForPasting); // does not seem to work
 
         e.preventDefault();
         e.stopPropagation();
