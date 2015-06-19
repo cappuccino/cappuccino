@@ -36,7 +36,7 @@ If you install the Cappuccino source while in an virtual env, all the tools will
 
 Just close the current terminal, or run
 
-    deactivate
+    capp_env_deactivate
 
 
 ## TODOs
