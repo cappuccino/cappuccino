@@ -2091,7 +2091,8 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
 var _CPNativeInputField,
     _CPNativeInputFieldKeyUpCalled,
     _CPNativeInputFieldKeyPressedCalled,
-    _CPNativeInputFieldActive;
+    _CPNativeInputFieldActive,
+    _CPNativeInputFieldWasCopyPaste;
 
 var _CPCopyPlaceholder = '-';
 
@@ -2175,7 +2176,13 @@ var _CPCopyPlaceholder = '-';
     {
         if(e.metaKey)  // do not interfere with native copy-paste
         {
-            e.stopPropagation()
+            _CPNativeInputFieldWasCopyPaste = NO;
+            e.stopPropagation();
+            setTimeout(function(){
+                if (!_CPNativeInputFieldWasCopyPaste)
+                    [[[CPApp mainWindow] platformWindow] keyEvent:e];
+            }, 200);
+
             return true;
         }
 
@@ -2223,6 +2230,8 @@ var _CPCopyPlaceholder = '-';
 
     _CPNativeInputField.onpaste = function(e)
     {
+        _CPNativeInputFieldWasCopyPaste = YES;
+
         var pasteboard = [CPPasteboard generalPasteboard];
         [pasteboard declareTypes:[CPStringPboardType] owner:nil];
 
@@ -2238,6 +2247,8 @@ var _CPCopyPlaceholder = '-';
     }
     _CPNativeInputField.oncopy = function(e)
     {
+        _CPNativeInputFieldWasCopyPaste = YES;
+
         var pasteboard = [CPPasteboard generalPasteboard],
             string,
             currentFirstResponder = [[CPApp mainWindow] firstResponder];
