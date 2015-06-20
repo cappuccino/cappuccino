@@ -216,6 +216,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)copy:(id)sender
 {
+   [_CPNativeInputManager setLastCopyWasNative:[sender isKindOfClass:[_CPNativeInputManager class]]];
    _copySelectionGranularity = _previousSelectionGranularity;
    [super copy:sender];
 }
@@ -2092,21 +2093,32 @@ var _CPNativeInputField,
     _CPNativeInputFieldKeyUpCalled,
     _CPNativeInputFieldKeyPressedCalled,
     _CPNativeInputFieldActive,
-    _CPNativeInputFieldWasCopyPaste;
+    _CPNativeInputFieldWasCopyPaste,
+    _CPNativeInputFieldLastCopyWasNative;
+
 
 var _CPCopyPlaceholder = '-';
 
 @implementation _CPNativeInputManager : CPObject
 
-+ (BOOL) isNativeInputFieldActive
++ (BOOL)lastCopyWasNative
+{
+    return _CPNativeInputFieldLastCopyWasNative;
+}
++ (void)setLastCopyWasNative:(BOOL)flag
+{
+    _CPNativeInputFieldLastCopyWasNative = flag;
+}
+
++ (BOOL)isNativeInputFieldActive
 {
     return _CPNativeInputFieldActive;
 }
-+ (void) cancelCurrentNativeInputSession
++ (void)cancelCurrentNativeInputSession
 {
     [self _endInputSessionWithString:_CPNativeInputField.innerHTML];
 }
-+ (void) cancelCurrentInputSessionIfNeeded
++ (void)cancelCurrentInputSessionIfNeeded
 {
     if (!_CPNativeInputFieldActive)
         return;
@@ -2235,10 +2247,14 @@ var _CPCopyPlaceholder = '-';
         var pasteboard = [CPPasteboard generalPasteboard];
         [pasteboard declareTypes:[CPStringPboardType] owner:nil];
 
-        var data = e.clipboardData.getData('text/plain');
-        [pasteboard setString:data forType:CPStringPboardType];
+        if (_CPNativeInputFieldLastCopyWasNative)
+        {
+            var data = e.clipboardData.getData('text/plain');
+           [pasteboard setString:data forType:CPStringPboardType];
+        }
+
         var currentFirstResponder = [[CPApp mainWindow] firstResponder];
-        [currentFirstResponder paste:currentFirstResponder];
+        [currentFirstResponder paste:self];
 
         e.preventDefault();
         e.stopPropagation();
@@ -2253,7 +2269,7 @@ var _CPCopyPlaceholder = '-';
             string,
             currentFirstResponder = [[CPApp mainWindow] firstResponder];
 
-        [currentFirstResponder copy:currentFirstResponder];
+        [currentFirstResponder copy:self];
       //  dataForPasting = [pasteboard dataForType:CPRichStringPboardType],
         stringForPasting = [pasteboard stringForType:CPStringPboardType];
 
