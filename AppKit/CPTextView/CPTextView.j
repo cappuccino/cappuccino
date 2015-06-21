@@ -2094,7 +2094,7 @@ var _CPNativeInputField,
     _CPNativeInputFieldKeyPressedCalled,
     _CPNativeInputFieldActive,
     _CPNativeInputFieldWasCopyPaste,
-    _CPNativeInputFieldLastCopyWasNative;
+    _CPNativeInputFieldLastCopyWasNative = 1;
 
 
 var _CPCopyPlaceholder = '-';
