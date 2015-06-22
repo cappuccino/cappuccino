@@ -2284,6 +2284,30 @@ var _CPCopyPlaceholder = '-';
 
         return false;
     }
+    _CPNativeInputField.oncut = function(e)
+    {
+        _CPNativeInputFieldWasCopyPaste = YES;
+
+        var pasteboard = [CPPasteboard generalPasteboard],
+            string,
+            currentFirstResponder = [[CPApp mainWindow] firstResponder];
+
+        setTimeout(function(){   // prevent dom-flickering
+            [currentFirstResponder cut:self];
+        }, 20);
+
+        [currentFirstResponder copy:self];  // this is necessary because cut will only execute in the future
+      //  dataForPasting = [pasteboard dataForType:CPRichStringPboardType],
+        stringForPasting = [pasteboard stringForType:CPStringPboardType];
+
+        e.clipboardData.setData('text/plain', stringForPasting);
+     // e.clipboardData.setData('application/rtf', stringForPasting); // does not seem to work
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        return false;
+    }
 }
 
 + (void)focus
