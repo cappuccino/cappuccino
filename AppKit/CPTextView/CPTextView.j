@@ -893,17 +893,14 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         rectEnd = nglyphs ? [_layoutManager boundingRectForGlyphRange:CPMakeRange(nglyphs - 1, 1) inTextContainer:_textContainer] : rectSource,
         point = rectSource.origin;
 
-    if (point.y >= rectEnd.origin.y)
-        return;
-
     if (_stickyXLocation)
         point.x = _stickyXLocation;
 
-    // <!> FIXME: Define constants for this magic number
+        // <!> FIXME: find a better way for getting the coordinates of the next line
     point.y += 2 + rectSource.size.height;
     point.x += 2;
 
-    var dindex= [_layoutManager glyphIndexForPoint:point inTextContainer:_textContainer fractionOfDistanceThroughGlyph:fraction],
+        var dindex= point.y >= CPRectGetMaxY(rectEnd) ? nglyphs : [_layoutManager glyphIndexForPoint:point inTextContainer:_textContainer fractionOfDistanceThroughGlyph:fraction],
         oldStickyLoc = _stickyXLocation;
 
     if (fraction[0] > 0.5)
