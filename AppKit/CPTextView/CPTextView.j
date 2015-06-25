@@ -545,6 +545,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     }
 
     [self _setSelectedRange:CPMakeRange(_selectionRange.location + [string length], 0) affinity:0 stillSelecting:NO overwriteTypingAttributes:NO];
+    _startTrackingLocation = _selectionRange.location;
 
     [self didChangeText];
     [_layoutManager _validateLayoutAndGlyphs];
