@@ -78,6 +78,8 @@
 @import "CPURLRequest.j"
 @import "CPURLResponse.j"
 @import "CPUserDefaults.j"
+@import "CPUserNotification.j"
+@import "CPUserNotificationCenter.j"
 @import "CPUserSessionManager.j"
 @import "CPValue.j"
 @import "CPValueTransformer.j"
