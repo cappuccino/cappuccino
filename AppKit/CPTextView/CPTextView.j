@@ -2147,6 +2147,14 @@ var _CPCopyPlaceholder = '-';
 {
     _CPNativeInputField = document.createElement("div");
     _CPNativeInputField.contentEditable = YES;
+    _CPNativeInputField.style.width="64px";
+    _CPNativeInputField.style.zIndex = 10000;
+    _CPNativeInputField.style.position = "absolute";
+    _CPNativeInputField.style.visibility = "visible";
+    _CPNativeInputField.style.padding = "0px";
+    _CPNativeInputField.style.margin = "0px";
+    _CPNativeInputField.style.whiteSpace = "pre";
+    _CPNativeInputField.style.outline = "0px solid transparent";
 
     _CPNativeInputField.addEventListener("keyup", function(e)
     {
@@ -2232,25 +2240,6 @@ var _CPCopyPlaceholder = '-';
         _CPNativeInputFieldKeyPressedCalled = YES;
         return false;
     }, true); // capture mode
-
-    if (CPBrowserIsEngine(CPGeckoBrowserEngine))
-        _CPNativeInputField.addEventListener("input", function() {
-            if(_CPNativeInputFieldActive)
-                setTimeout(function(){
-                    if (_CPNativeInputField.innerHTML.length > 1)
-                        [self cancelCurrentInputSessionIfNeeded];
-                }, 500);
-           return false;
-        }, true)
-
-    _CPNativeInputField.style.width="64px";
-    _CPNativeInputField.style.zIndex = 10000;
-    _CPNativeInputField.style.position = "absolute";
-    _CPNativeInputField.style.visibility = "visible";
-    _CPNativeInputField.style.padding = "0px";
-    _CPNativeInputField.style.margin = "0px";
-    _CPNativeInputField.style.whiteSpace = "pre";
-    _CPNativeInputField.style.outline = "0px solid transparent";
 
     _CPNativeInputField.onpaste = function(e)
     {
