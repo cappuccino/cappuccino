@@ -675,7 +675,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 - (void)_activateNativeInputElement:(DOMElemet)aNativeField
 {
     var attributes=[[self typingAttributes] copy];
-    [attributes setObject:[CPColor colorWithRed:1 green:1 blue:1 alpha:0] forKey:CPForegroundColorAttributeName]; // make it invisible
+    // [attributes setObject:[CPColor colorWithRed:1 green:1 blue:1 alpha:0] forKey:CPForegroundColorAttributeName]; // make it invisible
     var placeholderString = [[CPAttributedString alloc] initWithString:aNativeField.innerHTML attributes:attributes];
     [self insertText:placeholderString];  // FIXME: this hack to provide the visual space for the inputmanager should at least bypass the undomanager
 
