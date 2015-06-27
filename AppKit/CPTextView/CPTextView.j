@@ -515,36 +515,18 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     if (![self shouldChangeTextInRange:CPMakeRangeCopy(_selectionRange) replacementString:string])
         return;
 
+    if (!isAttributed)
+        aString = [[CPAttributedString alloc] initWithString:aString attributes:_typingAttributes];
+
+
     var undoManager = [[self window] undoManager];
+    [undoManager setActionName:@"Replace/insert text"];
 
-    if (isAttributed)
-    {
-        [[undoManager prepareWithInvocationTarget:self]
-                _replaceCharactersInRange:CPMakeRange(_selectionRange.location, [aString length])
-                     withAttributedString:[_textStorage attributedSubstringFromRange:CPMakeRangeCopy(_selectionRange)]];
+    [[undoManager prepareWithInvocationTarget:self]
+                    _replaceCharactersInRange:CPMakeRange(_selectionRange.location, [aString length])
+                         withAttributedString:[_textStorage attributedSubstringFromRange:CPMakeRangeCopy(_selectionRange)]];
 
-        [undoManager setActionName:@"Replace rich text"];
-        [_textStorage replaceCharactersInRange:CPMakeRangeCopy(_selectionRange) withAttributedString:aString];
-    }
-    else
-    {
-        [undoManager setActionName:@"Replace plain text"];
-
-        if ([self isRichText])
-        {
-            aString = [[CPAttributedString alloc] initWithString:aString attributes:_typingAttributes];
-            [[undoManager prepareWithInvocationTarget:self]
-                _replaceCharactersInRange:CPMakeRange(_selectionRange.location, [aString length])
-                     withAttributedString:[_textStorage attributedSubstringFromRange:CPMakeRangeCopy(_selectionRange)]];
-
-            [_textStorage replaceCharactersInRange:CPMakeRangeCopy(_selectionRange) withAttributedString:aString];
-        }
-        else
-        {
-            [[undoManager prepareWithInvocationTarget:self] _replaceCharactersInRange:CPMakeRange(_selectionRange.location, [aString length]) withString:[[self string] substringWithRange:CPMakeRangeCopy(_selectionRange)]];
-            [_textStorage replaceCharactersInRange:CPMakeRangeCopy(_selectionRange) withString:aString];
-        }
-    }
+    [_textStorage replaceCharactersInRange:CPMakeRangeCopy(_selectionRange) withAttributedString:aString];
 
     [self _setSelectedRange:CPMakeRange(_selectionRange.location + [string length], 0) affinity:0 stillSelecting:NO overwriteTypingAttributes:NO];
     _startTrackingLocation = _selectionRange.location;
