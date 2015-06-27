@@ -881,9 +881,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     if (_stickyXLocation)
         point.x = _stickyXLocation;
 
-        // <!> FIXME: find a better way for getting the coordinates of the next line
+    // <!> FIXME: find a better way for getting the coordinates of the next line
     point.y += 2 + rectSource.size.height;
-    point.x += 2;
 
         var dindex= point.y >= CPRectGetMaxY(rectEnd) ? nglyphs : [_layoutManager glyphIndexForPoint:point inTextContainer:_textContainer fractionOfDistanceThroughGlyph:fraction],
         oldStickyLoc = _stickyXLocation;
@@ -927,7 +926,6 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         point.x = _stickyXLocation;
 
     point.y -= 2;    // FIXME <!> these should not be constants
-    point.x += 2;
 
     var dindex = [_layoutManager glyphIndexForPoint:point inTextContainer:_textContainer fractionOfDistanceThroughGlyph:fraction],
         oldStickyLoc = _stickyXLocation;
