@@ -518,7 +518,6 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     if (!isAttributed)
         aString = [[CPAttributedString alloc] initWithString:aString attributes:_typingAttributes];
 
-
     var undoManager = [[self window] undoManager];
     [undoManager setActionName:@"Replace/insert text"];
 
@@ -2150,7 +2149,6 @@ var _CPCopyPlaceholder = '-';
 
             return false; // prevent the default behaviour
         }
-
 
         var currentFirstResponder = [[CPApp mainWindow] firstResponder];
 

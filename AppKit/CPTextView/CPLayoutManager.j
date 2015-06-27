@@ -1020,6 +1020,7 @@ var _objectsInRange = function(aList, aRange)
     CPArray         _glyphsFrames @accessors(getter=glyphFrames);
 
     BOOL            _isInvalid;
+    BOOL            _isLast;
     CGRect          _fragmentRect;
     CGRect          _usedRect;
     CGPoint         _location;

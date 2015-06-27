@@ -173,7 +173,11 @@ var CPSystemTypesetterFactory;
         containerSize = aContainer._size;
 
     [_layoutManager setTextContainer:_currentTextContainer forGlyphRange:lineRange];  // creates a new lineFragment
-    _lineFragments.push([_layoutManager._lineFragments lastObject]);
+
+    var fragment = [_layoutManager._lineFragments lastObject];
+    fragment._isLast = !sameLine;
+    _lineFragments.push(fragment);
+
     [_layoutManager setLineFragmentRect:rect forGlyphRange:lineRange usedRect:rect];
 
     switch ([_currentParagraph alignment])
