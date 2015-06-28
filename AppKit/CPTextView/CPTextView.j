@@ -1229,10 +1229,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     if (!fragment)
         return;
 
-    var loc = CPMaxRange(fragment._range);
-
-    if (loc > 0 && loc < [_layoutManager numberOfCharacters])
-        loc = MAX(0, loc - 1);
+    var loc = MAX(0, CPMaxRange(fragment._range) - 1);
 
     [self _establishSelection:CPMakeRange(loc, 0) byExtending:flag];
 }
