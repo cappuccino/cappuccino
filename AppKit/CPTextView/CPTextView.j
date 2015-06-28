@@ -656,16 +656,16 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 - (void)_activateNativeInputElement:(DOMElemet)aNativeField
 {
     var attributes=[[self typingAttributes] copy];
-    // [attributes setObject:[CPColor colorWithRed:1 green:1 blue:1 alpha:0] forKey:CPForegroundColorAttributeName]; // make it invisible
+    [attributes setObject:[CPColor colorWithRed:1 green:1 blue:1 alpha:0] forKey:CPForegroundColorAttributeName]; // make it invisible
     var placeholderString = [[CPAttributedString alloc] initWithString:aNativeField.innerHTML attributes:attributes];
     [self insertText:placeholderString];  // FIXME: this hack to provide the visual space for the inputmanager should at least bypass the undomanager
 
-    var caretRect = [_layoutManager boundingRectForGlyphRange:CPMakeRange(_selectionRange.location - 1, 1) inTextContainer:_textContainer];
-    caretRect.origin.x += 2; // two pixel offset to the LHS character
+    var caretOrigin = [_layoutManager _realCharacterLocationAtLocation:MAX(0, _selectionRange.location - 1)];
+    caretOrigin.x += 2; // two pixel offset to the LHS character
 
 #if PLATFORM(DOM)
-    aNativeField.style.left = caretRect.origin.x+"px";
-    aNativeField.style.top = caretRect.origin.y+"px";
+    aNativeField.style.left = caretOrigin.x+"px";
+    aNativeField.style.top = caretOrigin.y+"px";
     aNativeField.style.font = [[_typingAttributes objectForKey:CPFontAttributeName] cssString];
     aNativeField.style.color = [[_typingAttributes objectForKey:CPForegroundColorAttributeName] cssString];
 #endif
