@@ -1158,6 +1158,16 @@ var _objectsInRange = function(aList, aRange)
     }
 }
 
+- (void)_adjustForHeight:(double)height
+{
+    var count = _glyphsFrames.length;
+
+    for (var i = 0; i < count; i++)
+        _glyphsFrames[i].origin.y += (height - _fragmentRect.size.height);
+
+    _fragmentRect.size.height=height;
+}
+
 - (CPString)description
 {
     return [super description] +
