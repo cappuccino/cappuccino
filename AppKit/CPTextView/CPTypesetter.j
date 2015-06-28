@@ -200,14 +200,10 @@ var CPSystemTypesetterFactory;
 
     if (!sameLine) //fix the _lineFragments when fontsizes differ
     {
-        var l = _lineFragments.length,
-            maxHeight = 0;
+        var l = _lineFragments.length;
 
         for (var i = 0 ; i < l ; i++)
-            maxHeight = MAX(maxHeight, _lineFragments[i]._fragmentRect.size.height);
-
-        for (var i = 0 ; i < l ; i++)
-            [_lineFragments[i] _adjustForHeight:maxHeight];
+            [_lineFragments[i] _adjustForHeight:_lineHeight];
     }
 
     if (!lineCount)  // do not rescue on first line
