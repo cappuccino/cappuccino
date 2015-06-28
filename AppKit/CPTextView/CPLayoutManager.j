@@ -652,6 +652,47 @@ _oncontextmenuhandler = function () { return false; };
     return nil;
 }
 
+- (id)_firstLineFragmentForLineFromLocation:(unsigned)location
+{
+    var l = _lineFragments.length;
+
+    for (var i = 0; i < l; i++)
+    {
+        if (CPLocationInRange(location, _lineFragments[i]._range))
+        {
+            var j = i;
+
+            while (--j > 0 && !_lineFragments[j]._isLast)
+            {
+                // body intentionally left empty
+            }
+
+            return _lineFragments[j + 1];
+        }
+    }
+
+    return nil;
+}
+- (id)_lastLineFragmentForLineFromLocation:(unsigned)location
+{
+    var l = _lineFragments.length;
+
+    for (var i = 0; i < l; i++)
+    {
+        if (CPLocationInRange(location, _lineFragments[i]._range))
+        {
+            var j = i;
+
+            while (!_lineFragments[j]._isLast)
+                j++;
+
+            return _lineFragments[j];
+        }
+    }
+
+    return nil;
+}
+
 - (void)setLineFragmentRect:(CGRect)fragmentRect forGlyphRange:(CPRange)glyphRange usedRect:(CGRect)usedRect
 {
     var lineFragment = _objectWithLocationInRange(_lineFragments, glyphRange.location);

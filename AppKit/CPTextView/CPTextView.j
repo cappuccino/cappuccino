@@ -1203,10 +1203,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     if (![self isSelectable])
         return;
 
-    var fragment = [_layoutManager _lineFragmentForLocation:_selectionRange.location];
-
-    if (!fragment && _selectionRange.location > 0)
-        fragment = [_layoutManager _lineFragmentForLocation:_selectionRange.location - 1];
+    var fragment = [_layoutManager _firstLineFragmentForLineFromLocation:_selectionRange.location];
 
     if (fragment)
         [self _establishSelection:CPMakeRange(fragment._range.location, 0) byExtending:flag];
@@ -1227,7 +1224,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     if (![self isSelectable])
         return;
 
-    var fragment = [_layoutManager _lineFragmentForLocation:_selectionRange.location];
+    var fragment = [_layoutManager _lastLineFragmentForLineFromLocation:_selectionRange.location];
 
     if (!fragment)
         return;
