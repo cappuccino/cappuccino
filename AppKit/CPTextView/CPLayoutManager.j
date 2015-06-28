@@ -929,7 +929,7 @@ _oncontextmenuhandler = function () { return false; };
 
     for (var i = 0; i < len - 1; i++) // extend the width of all but the last one
     {
-        if (rectArray[i].origin.y == rectArray[i + 1].origin.y)
+        if (FLOOR(CGRectGetMaxY(rectArray[i])) == FLOOR(CGRectGetMaxY(rectArray[i + 1])))
             continue;
 
         rectArray[i].size.width = containerSize.width - rectArray[i].origin.x;
