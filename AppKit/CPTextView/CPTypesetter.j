@@ -319,7 +319,10 @@ var CPSystemTypesetterFactory;
                     isNewline = YES;
         }
 
-        advancements.push(CPMakeSize(rangeWidth - prevRangeWidth, ascent));
+        var advancement = CPMakeSize(rangeWidth - prevRangeWidth, ascent);
+        advancement.descent=descent;
+        advancements.push(advancement);
+
         prevRangeWidth = _lineWidth = rangeWidth;
 
         if (lineOrigin.x + rangeWidth > containerSize.width)
