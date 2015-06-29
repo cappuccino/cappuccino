@@ -2213,7 +2213,7 @@ var _CPCopyPlaceholder = '-';
         return false;
     }, true); // capture mode
 
-    _CPNativeInputField.onpaste = function(e)
+    _CPNativeInputField.addEventListener("paste" , function(e)
     {
         _CPNativeInputFieldWasCopyPaste = YES;
 
@@ -2233,8 +2233,8 @@ var _CPCopyPlaceholder = '-';
         }, 20);
 
         return false;
-    }
-    _CPNativeInputField.oncopy = function(e)
+    }, true); // capture mode
+    _CPNativeInputField.addEventListener("copy", function(e)
     {
         _CPNativeInputFieldWasCopyPaste = YES;
 
@@ -2250,8 +2250,8 @@ var _CPCopyPlaceholder = '-';
      // e.clipboardData.setData('application/rtf', stringForPasting); // does not seem to work
 
         return false;
-    }
-    _CPNativeInputField.oncut = function(e)
+    }, true); // capture mode
+    _CPNativeInputField.addEventListener("cut", function(e)
     {
         _CPNativeInputFieldWasCopyPaste = YES;
 
@@ -2271,7 +2271,7 @@ var _CPCopyPlaceholder = '-';
      // e.clipboardData.setData('application/rtf', stringForPasting); // does not seem to work
 
         return false;
-    }
+    }, true); // capture mode
 }
 
 + (void)focus
