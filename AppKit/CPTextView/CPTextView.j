@@ -1779,8 +1779,11 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     var caretOrigin = [_layoutManager _realCharacterLocationAtLocation:_selectionRange.location],
         oldYPosition = CGRectGetMaxY(caretRect);
 
-    caretRect.origin = caretOrigin;
-    caretRect.size.height = oldYPosition - caretRect.origin.y;
+    if (caretOrigin.x > 0 || caretOrigin.y > 0)
+    {
+        caretRect.origin = caretOrigin;
+        caretRect.size.height = oldYPosition - caretRect.origin.y;
+    }
 
     caretRect.origin.x += _textContainerOrigin.x;
     caretRect.origin.y += _textContainerOrigin.y;
