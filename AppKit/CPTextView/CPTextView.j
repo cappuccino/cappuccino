@@ -1776,6 +1776,12 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         caretRect = [_layoutManager boundingRectForGlyphRange:CPMakeRange(_selectionRange.location, 1) inTextContainer:_textContainer];
     }
 
+    var caretOrigin = [_layoutManager _realCharacterLocationAtLocation:_selectionRange.location],
+        oldYPosition = CGRectGetMaxY(caretRect);
+
+    caretRect.origin = caretOrigin;
+    caretRect.size.height = oldYPosition - caretRect.origin.y;
+
     caretRect.origin.x += _textContainerOrigin.x;
     caretRect.origin.y += _textContainerOrigin.y;
     caretRect.size.width = 1;
