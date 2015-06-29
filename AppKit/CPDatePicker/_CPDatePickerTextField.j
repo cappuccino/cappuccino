@@ -198,7 +198,6 @@ var CPZeroKeyCode = 48,
         else
             [self _selectTextField:_firstTextField];
     }
-
 }
 
 /*! Select a textField
@@ -277,72 +276,97 @@ var CPZeroKeyCode = 48,
     }
 }
 
-/*! performKeyEquivalent event
-    Used for moving in the textField
+/*!
+    PerformKeyEquivalent event
+    We need to override that to handle the tab key
 */
 - (BOOL)performKeyEquivalent:(CPEvent)anEvent
 {
     if (![self isEnabled] || !_currentTextField || [[self window] firstResponder] != _datePicker)
         return NO;
 
-    var key = [anEvent charactersIgnoringModifiers];
-
-    if (key == CPUpArrowFunctionKey)
+    if ([anEvent charactersIgnoringModifiers] === CPTabCharacter)
     {
-        [_currentTextField _invalidTimer];
-        [_stepper setDoubleValue:[_currentTextField intValue]];
-        [_stepper performClickUp:self];
+        if ([anEvent modifierFlags] & CPShiftKeyMask)
+            [self insertBacktab:self];
+        else
+            [self insertTab:self];
+
         return YES;
     }
-
-    if (key == CPDownArrowFunctionKey)
+    else if ([anEvent charactersIgnoringModifiers] === CPBackTabCharacter)
     {
-        [_currentTextField _invalidTimer];
-        [_stepper setDoubleValue:[_currentTextField intValue]];
-        [_stepper performClickDown:self];
+        [self insertBacktab:self];
         return YES;
-    }
-
-    if (key == CPLeftArrowFunctionKey || [anEvent keyCode] == CPTabKeyCode && [anEvent modifierFlags] & CPShiftKeyMask)
-    {
-        if (_currentTextField == _firstTextField && [anEvent keyCode] == CPTabKeyCode)
-        {
-            var previousValidKeyView = [_datePicker previousValidKeyView];
-
-            if (previousValidKeyView)
-                [[self window] makeFirstResponder:previousValidKeyView];
-
-            return YES;
-        }
-
-        [self _selectTextField:[_currentTextField previousTextField]];
-        return YES;
-    }
-
-    if (key == CPRightArrowFunctionKey || [anEvent keyCode] == CPTabKeyCode)
-    {
-        if (_currentTextField == _lastTextField && [anEvent keyCode] == CPTabKeyCode)
-        {
-            var nextValidKeyView = [_datePicker nextValidKeyView];
-
-            if (nextValidKeyView)
-                [[self window] makeFirstResponder:nextValidKeyView];
-
-            return YES;
-        }
-
-        [self _selectTextField:[_currentTextField nextTextField]];
-        return YES;
-    }
-
-    if ([anEvent keyCode] == CPReturnKeyCode)
-    {
-        [_currentTextField _endEditing];
-
-        return [super performKeyEquivalent:anEvent];
     }
 
     return [super performKeyEquivalent:anEvent];
+}
+
+- (void)insertTab:(id)sender
+{
+    if (!_currentTextField)
+        return;
+
+    if (_currentTextField == _lastTextField)
+        [[self window] selectNextKeyView:self];
+    else
+        [self moveRight:sender];
+}
+
+- (void)moveRight:(id)sender
+{
+    if (!_currentTextField)
+        return;
+
+    [self _selectTextField:[_currentTextField nextTextField]];
+}
+
+- (void)insertBacktab:(id)sender
+{
+    if (!_currentTextField)
+        return;
+
+    if (_currentTextField == _firstTextField)
+        [[self window] selectPreviousKeyView:self];
+    else
+        [self moveLeft:sender];
+}
+
+- (void)moveLeft:(id)sender
+{
+    if (!_currentTextField)
+        return;
+
+    [self _selectTextField:[_currentTextField previousTextField]];
+}
+
+- (void)moveDown:(id)sender
+{
+    if (!_currentTextField)
+        return;
+
+    [_currentTextField _invalidTimer];
+    [_stepper setDoubleValue:[_currentTextField intValue]];
+    [_stepper performClickDown:self];
+}
+
+- (void)moveUp:(id)sender
+{
+    if (!_currentTextField)
+        return;
+
+    [_currentTextField _invalidTimer];
+    [_stepper setDoubleValue:[_currentTextField intValue]];
+    [_stepper performClickUp:self];
+}
+
+- (void)insertNewline:(id)sender
+{
+    if (!_currentTextField)
+        return;
+
+    [_currentTextField _endEditing];
 }
 
 /*! KeyDown event
@@ -352,6 +376,8 @@ var CPZeroKeyCode = 48,
 {
     if (![self isEnabled])
         return;
+
+    [self interpretKeyEvents:[anEvent]];
 
     if ([_datePicker _isAmericanFormat] && [_currentTextField dateType] == CPAMPMDateType && ([anEvent keyCode] == CPAKeyCode || [anEvent keyCode] == CPPKeyCode || [anEvent keyCode] == CPMajAKeyCode || [anEvent keyCode] == CPMajPKeyCode))
     {
@@ -367,6 +393,7 @@ var CPZeroKeyCode = 48,
 
     [_currentTextField setValueForKeyEvent:anEvent];
 }
+
 
 #pragma mark -
 #pragma mark Layout methods
