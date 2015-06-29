@@ -1788,7 +1788,6 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     caretRect.origin.x += _textContainerOrigin.x;
     caretRect.origin.y += _textContainerOrigin.y;
     caretRect.size.width = 1;
-    caretRect.size.height -= 3; // mimic the native caret metrics on macosx
     [_caret setRect:caretRect];
 
     if (flag)
