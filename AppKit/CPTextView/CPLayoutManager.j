@@ -1027,9 +1027,10 @@ var _sortRange = function(location, anObject)
         return CPOrderedAscending;
 }
 
+//<!> fixme: filter for a textContainer
 var _objectWithLocationInRange = function(aList, aLocation)
 {
-    var index = [aList _indexOfObject: aLocation sortedByFunction:_sortRange context:nil];
+    var index = [aList _indexOfObject:aLocation sortedByFunction:_sortRange context:nil];
 
     if (index != CPNotFound)
         return aList[index];
