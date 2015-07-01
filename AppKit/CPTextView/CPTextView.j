@@ -223,7 +223,10 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)paste:(id)sender
 {
-    [[_window platformWindow] _propagateCurrentDOMEvent:NO]; // prevent double pasting from the additional 'synthetic' paste event
+    var e = [CPApp currentEvent]._DOMEvent;
+
+    if (e.currentTarget == document) // this is somehow necessary to prevent double pasting
+        return;
 
     var stringForPasting = [self _stringForPasting];
 
@@ -2076,7 +2079,6 @@ var _CPNativeInputField,
     _CPNativeInputFieldKeyUpCalled,
     _CPNativeInputFieldKeyPressedCalled,
     _CPNativeInputFieldActive,
-    _CPNativeInputFieldWasCopyPaste,
     _CPNativeInputFieldLastCopyWasNative = 1;
 
 
@@ -2181,18 +2183,6 @@ var _CPCopyPlaceholder = '-';
 
     _CPNativeInputField.addEventListener("keydown", function(e)
     {
-        if(e.metaKey)  // do not interfere with native copy-paste
-        {
-            _CPNativeInputFieldWasCopyPaste = NO;
-            e.stopPropagation();
-            setTimeout(function(){
-                if (!_CPNativeInputFieldWasCopyPaste)
-                    [[[CPApp mainWindow] platformWindow] keyEvent:e];
-            }, 200);
-
-            return true;
-        }
-
         _CPNativeInputFieldKeyUpCalled = NO;
         _CPNativeInputFieldKeyPressedCalled = NO;
         var currentFirstResponder = [[CPApp mainWindow] firstResponder];
@@ -2221,65 +2211,6 @@ var _CPCopyPlaceholder = '-';
         return false;
     }, true); // capture mode
 
-    _CPNativeInputField.addEventListener("paste" , function(e)
-    {
-        _CPNativeInputFieldWasCopyPaste = YES;
-
-        var pasteboard = [CPPasteboard generalPasteboard];
-        [pasteboard declareTypes:[CPStringPboardType] owner:nil];
-
-        if (_CPNativeInputFieldLastCopyWasNative)
-        {
-            var data = e.clipboardData.getData('text/plain');
-            [pasteboard setString:data forType:CPStringPboardType];
-        }
-
-        var currentFirstResponder = [[CPApp mainWindow] firstResponder];
-
-        setTimeout(function(){   // prevent dom-flickering
-            [currentFirstResponder paste:self];
-        }, 20);
-
-        return false;
-    }, true); // capture mode
-    _CPNativeInputField.addEventListener("copy", function(e)
-    {
-        _CPNativeInputFieldWasCopyPaste = YES;
-
-        var pasteboard = [CPPasteboard generalPasteboard],
-            string,
-            currentFirstResponder = [[CPApp mainWindow] firstResponder];
-
-        [currentFirstResponder copy:self];
-      //  dataForPasting = [pasteboard dataForType:CPRichStringPboardType],
-        stringForPasting = [pasteboard stringForType:CPStringPboardType];
-
-        e.clipboardData.setData('text/plain', stringForPasting);
-     // e.clipboardData.setData('application/rtf', stringForPasting); // does not seem to work
-
-        return false;
-    }, true); // capture mode
-    _CPNativeInputField.addEventListener("cut", function(e)
-    {
-        _CPNativeInputFieldWasCopyPaste = YES;
-
-        var pasteboard = [CPPasteboard generalPasteboard],
-            string,
-            currentFirstResponder = [[CPApp mainWindow] firstResponder];
-
-        setTimeout(function(){   // prevent dom-flickering
-            [currentFirstResponder cut:self];
-        }, 20);
-
-        [currentFirstResponder copy:self];  // this is necessary because cut will only execute in the future
-      //  dataForPasting = [pasteboard dataForType:CPRichStringPboardType],
-        stringForPasting = [pasteboard stringForType:CPStringPboardType];
-
-        e.clipboardData.setData('text/plain', stringForPasting);
-     // e.clipboardData.setData('application/rtf', stringForPasting); // does not seem to work
-
-        return false;
-    }, true); // capture mode
 }
 
 + (void)focus
