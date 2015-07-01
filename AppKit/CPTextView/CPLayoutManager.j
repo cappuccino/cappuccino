@@ -693,17 +693,16 @@ _oncontextmenuhandler = function () { return false; };
     return nil;
 }
 
-- (CGPoint)_realCharacterLocationAtLocation:(unsigned)location
+- (double)_characterOffsetAtLocation:(unsigned)location inTextContainer:(CPTextContainer)aContainer
 {
     var lineFragment = _objectWithLocationInRange(_lineFragments, location);
 
     if (!lineFragment)
-        return CGPointMake(0, 0);
+        return 0.0;
 
     var index = location - lineFragment._range.location;
 
-    return CGPointMake(lineFragment._glyphsFrames[index].origin.x,
-                       lineFragment._glyphsFrames[index].origin.y + lineFragment._glyphsOffsets[index]);
+    return lineFragment._glyphsOffsets[index];
 }
 
 - (void)setLineFragmentRect:(CGRect)fragmentRect forGlyphRange:(CPRange)glyphRange usedRect:(CGRect)usedRect

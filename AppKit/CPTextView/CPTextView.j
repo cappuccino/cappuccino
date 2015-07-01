@@ -663,7 +663,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     var placeholderString = [[CPAttributedString alloc] initWithString:aNativeField.innerHTML attributes:attributes];
     [self insertText:placeholderString];  // FIXME: this hack to provide the visual space for the inputmanager should at least bypass the undomanager
 
-    var caretOrigin = [_layoutManager _realCharacterLocationAtLocation:MAX(0, _selectionRange.location - 1)];
+    var caretOrigin = [_layoutManager boundingRectForGlyphRange:CPMakeRange(MAX(0, _selectionRange.location - 1), 1) inTextContainer:_textContainer].origin;
+    caretOrigin.y += [_layoutManager _characterOffsetAtLocation:MAX(0, _selectionRange.location - 1) inTextContainer:_textContainer];
     caretOrigin.x += 2; // two pixel offset to the LHS character
 
 #if PLATFORM(DOM)
@@ -1775,16 +1776,14 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         }
     }
     else
-    {
         caretRect = [_layoutManager boundingRectForGlyphRange:CPMakeRange(_selectionRange.location, 1) inTextContainer:_textContainer];
-    }
 
-    var caretOrigin = [_layoutManager _realCharacterLocationAtLocation:_selectionRange.location],
+    var caretOffset = [_layoutManager _characterOffsetAtLocation:_selectionRange.location inTextContainer:_textContainer],
         oldYPosition = CGRectGetMaxY(caretRect);
 
-    if (caretOrigin.x > 0 || caretOrigin.y > 0)
+    if (caretOffset > 0)
     {
-        caretRect.origin = caretOrigin;
+        caretRect.origin.y += caretOffset;
         caretRect.size.height = oldYPosition - caretRect.origin.y;
     }
 
