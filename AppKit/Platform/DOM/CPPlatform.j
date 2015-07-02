@@ -48,10 +48,13 @@ var screenNeedsInitialization   = NO,
         document.documentElement.style.overflow = "hidden";
 
     if ([CPPlatform isBrowser])
+    {
         window.onunload = function()
         {
+            [self closeAllPlatformWindows];
             [CPApp terminate:nil];
         };
+    }
 }
 
 + (BOOL)isBrowser
@@ -136,6 +139,20 @@ var screenNeedsInitialization   = NO,
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPPlatformDidClearBodyElementNotification
                       object:self];
+}
+
++ (void)closeAllPlatformWindows
+{
+    var platformWindows = [CPPlatformWindow visiblePlatformWindows],
+        primaryPlatformWindow = [CPPlatformWindow primaryPlatformWindow],
+        platformWindowEnumerator = [platformWindows objectEnumerator],
+        platformWindow = nil;
+
+    while ((platformWindow = [platformWindowEnumerator nextObject]) !== nil)
+    {
+        if (platformWindow != primaryPlatformWindow)
+            [platformWindow orderOut:self];
+    }
 }
 
 @end
