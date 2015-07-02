@@ -49,6 +49,14 @@ var screenNeedsInitialization   = NO,
 
     if ([CPPlatform isBrowser])
     {
+        // This differ from cocoa, where shouldTerminate is called in the method terminate of CPApp
+        // Cappuccino acts like this because we can not close a window openend by the user with a script (so not possible in terminate), and we can only prevent the action in the method onbeforeunload in js.
+        window.onbeforeunload = function()
+        {
+            if ([CPApp _sendDelegateApplicationShouldTerminate] != CPTerminateNow)
+                return [CPApp _sendDelegateApplicationShouldTerminateMessage];
+        };
+
         window.onunload = function()
         {
             [self closeAllPlatformWindows];
