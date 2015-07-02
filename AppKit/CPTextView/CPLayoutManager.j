@@ -652,7 +652,7 @@ _oncontextmenuhandler = function () { return false; };
     return nil;
 }
 
-- (id)_firstLineFragmentForLineFromLocation:(unsigned)location
+- (id)_firstLineFragmentForLineFromLocation:(unsigned)location inTextContainer:(CPTextContainer)aContainer
 {
     var l = _lineFragments.length;
 
@@ -673,7 +673,7 @@ _oncontextmenuhandler = function () { return false; };
 
     return nil;
 }
-- (id)_lastLineFragmentForLineFromLocation:(unsigned)location
+- (id)_lastLineFragmentForLineFromLocation:(unsigned)location inTextContainer:(CPTextContainer)aContainer
 {
     var l = _lineFragments.length;
 

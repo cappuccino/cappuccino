@@ -1208,7 +1208,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     var nglyphs = [_layoutManager numberOfCharacters],
         loc = nglyphs == _selectionRange.location ? MAX(0, _selectionRange.location - 1) : _selectionRange.location;
-        fragment = [_layoutManager _firstLineFragmentForLineFromLocation:loc];
+        fragment = [_layoutManager _firstLineFragmentForLineFromLocation:loc inTextContainer:_textContainer];
 
     if (fragment)
         [self _establishSelection:CPMakeRange(fragment._range.location, 0) byExtending:flag];
@@ -1229,7 +1229,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     if (![self isSelectable])
         return;
 
-    var fragment = [_layoutManager _lastLineFragmentForLineFromLocation:_selectionRange.location];
+    var fragment = [_layoutManager _lastLineFragmentForLineFromLocation:_selectionRange.location inTextContainer:_textContainer];
 
     if (!fragment)
         return;
