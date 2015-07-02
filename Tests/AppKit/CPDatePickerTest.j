@@ -20,10 +20,4 @@
     [self assertTrue:!!datePicker];
 }
 
-- (void)testLayout
-{
-    [datePicker setNeedsLayout:YES];
-    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-}
-
 @end
