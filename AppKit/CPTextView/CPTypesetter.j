@@ -313,6 +313,7 @@ var CPSystemTypesetterFactory;
                 wrapRange = CPMakeRangeCopy(lineRange);
                 wrapWidth = rangeWidth;
                 wrapRange._height = _lineHeight;
+                wrapRange._base = _lineBase;
                 break;
 
             default:
@@ -333,6 +334,7 @@ var CPSystemTypesetterFactory;
                 lineRange = wrapRange;
                _lineWidth = wrapWidth;
                _lineHeight = wrapRange._height;
+               _lineBase = wrapRange._base;
             }
 
             isNewline = YES;
