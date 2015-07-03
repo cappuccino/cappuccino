@@ -60,7 +60,7 @@ CPStringSizeCachingEnabled = YES;
 - (void) _initializeStringSizing
 {
 #if PLATFORM(DOM)
-    CPStringSizeIsCanvasSizingInvalid = TRUE;
+    CPStringSizeIsCanvasSizingInvalid = YES;
 
     if (CPFeatureIsCompatible(CPHTMLCanvasFeature))
     {
