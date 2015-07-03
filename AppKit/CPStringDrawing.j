@@ -64,11 +64,14 @@ CPStringSizeCachingEnabled = YES;
 
     if (CPFeatureIsCompatible(CPHTMLCanvasFeature))
     {
+        var aFont = [CPFont systemFontOfSize:12.0];
+
         if (!CPStringSizeMeasuringContext)
             CPStringSizeMeasuringContext = CGBitmapGraphicsContextCreate();
 
+        CPStringSizeMeasuringContext.font = [aFont cssString];
         var teststring = "0123456879abcdefghiklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.-()";
-        CPStringSizeIsCanvasSizingInvalid = ABS([teststring sizeWithFont:aFont].width - CPStringSizeMeasuringContext.measureText(teststring).width) > 2;
+        CPStringSizeIsCanvasSizingInvalid = ABS([CPPlatformString sizeOfString:teststring withFont:aFont forWidth:1000].width - CPStringSizeMeasuringContext.measureText(teststring).width) > 2;
     }
 #endif
 }
