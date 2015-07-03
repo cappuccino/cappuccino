@@ -68,7 +68,6 @@ CPStringSizeCachingEnabled = YES;
             CPStringSizeMeasuringContext = CGBitmapGraphicsContextCreate();
 
         var teststring = "0123456879abcdefghiklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.-()";
-        CPStringSizeMeasuringContext.font = cssString;
         CPStringSizeIsCanvasSizingInvalid = ABS([teststring sizeWithFont:aFont].width - CPStringSizeMeasuringContext.measureText(teststring).width) > 2;
     }
 #endif
