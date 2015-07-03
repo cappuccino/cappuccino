@@ -736,6 +736,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
        return;
 
     if ([event charactersIgnoringModifiers].charCodeAt(0) != 229) // filter out 229 because this would be inserted in chrome on each deadkey
+        [self interpretKeyEvents:[event]];
 
     [_caret setPermanentlyVisible:YES];
 }
@@ -1207,7 +1208,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         return;
 
     var nglyphs = [_layoutManager numberOfCharacters],
-        loc = nglyphs == _selectionRange.location ? MAX(0, _selectionRange.location - 1) : _selectionRange.location;
+        loc = nglyphs == _selectionRange.location ? MAX(0, _selectionRange.location - 1) : _selectionRange.location,
         fragment = [_layoutManager _firstLineFragmentForLineFromLocation:loc];
 
     if (fragment)
