@@ -28,7 +28,6 @@
 @import "CPGraphics.j"
 @import "CPFontManager.j"
 
-@global CPFontAttributeName
 @global CPForegroundColorAttributeName
 @global CPBackgroundColorAttributeName
 @global CPUnderlineStyleAttributeName
@@ -37,6 +36,12 @@
 @global CPAttachmentAttributeName
 @global CPLigatureAttributeName
 @global CPKernAttributeName
+
+@global CPLeftTextAlignment
+@global CPRightTextAlignment
+@global CPCenterTextAlignment
+@global CPJustifiedTextAlignment
+@global CPNaturalTextAlignment
 
 var PAPERSIZE = @"PaperSize",
     LEFTMARGIN = @"LeftMargin",

@@ -31,11 +31,11 @@
 
 @import "CPPasteboard.j"
 @import "CPView.j"
-@import "_CPRTFParser.j"
-@import "_CPRTFProducer.j"
 
 @global CPStringPboardType
 @class CPAttributedString
+@class _CPRTFParser
+@class _CPRTFProducer
 
 @protocol CPTextDelegate <CPObject>
 
@@ -58,6 +58,7 @@ CPCarriageReturnCharacter       = "\u000d";
 CPBackTabCharacter              = "\u0019";
 CPDeleteCharacter               = "\u007f";
 
+@typedef CPTextMovement
 CPIllegalTextMovement           = 0;
 CPOtherTextMovement             = 0;
 CPReturnTextMovement            = 16;
@@ -68,6 +69,18 @@ CPRightTextMovement             = 20;
 CPUpTextMovement                = 21;
 CPDownTextMovement              = 22;
 CPCancelTextMovement            = 23;
+
+@typedef CPWritingDirection
+CPWritingDirectionNatural       = -1;
+CPWritingDirectionLeftToRight   = 0;
+CPWritingDirectionRightToLeft   = 1;
+
+@typedef CPTextAlignment
+CPLeftTextAlignment             = 0;
+CPRightTextAlignment            = 1;
+CPCenterTextAlignment           = 2;
+CPJustifiedTextAlignment        = 3;
+CPNaturalTextAlignment          = 4;
 
 /*
     CPText notifications

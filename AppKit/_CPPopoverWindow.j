@@ -668,6 +668,17 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
     [_delegate _popoverWindowDidClose];
 }
 
+/*!
+    @ignore
+    Needed to be ignored to close a popover when a platform is closed.
+    Because the animation, the popover is not properly closed.
+*/
+- (void)_didReceivePlatformWindowWillCloseNotification:(CPNotification)aNotification
+{
+    [super _didReceivePlatformWindowWillCloseNotification:aNotification];
+    [self _orderOutRecursively:YES];
+}
+
 
 #pragma mark -
 #pragma mark Private
@@ -715,7 +726,7 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
 
     // Consider clicks in child windows to be "inside". This keeps a transient popover from
     // closing if e.g. the window containing the menu of a token field is clicked.
-    if (mouseWindow === self || [mouseWindow _hasAncestorWindow:self] || ![self _hasOnlyTransientChild:self])
+    if (mouseWindow === self || [mouseWindow _hasAncestorWindow:self] || ![self _hasOnlyTransientChild:self] || [mouseWindow platformWindow] != [self platformWindow])
     {
         [self _trapNextMouseDown];
     }

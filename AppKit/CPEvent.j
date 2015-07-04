@@ -238,6 +238,7 @@ var _CPEventPeriodicEventPeriod         = 0,
         _subtype = aSubtype;
         _data1 = aData1;
         _data2 = aData2;
+        _windowNumber = aWindowNumber;
     }
 
     return self;

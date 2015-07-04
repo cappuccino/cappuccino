@@ -29,6 +29,12 @@ e.g. using zaach/jison on github
 @import "CPFontManager.j"
 @import "CPParagraphStyle.j"
 
+@global CPLeftTextAlignment
+@global CPRightTextAlignment
+@global CPCenterTextAlignment
+@global CPJustifiedTextAlignment
+@global CPNaturalTextAlignment
+
 @global CPFontAttributeName
 @global CPForegroundColorAttributeName
 

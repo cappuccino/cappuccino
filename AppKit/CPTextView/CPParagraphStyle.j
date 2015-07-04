@@ -27,13 +27,7 @@
 @import <Foundation/CPObject.j>
 @import <Foundation/CPArray.j>
 
-@import "CPControl.j"
-
-@global CPLeftTextAlignment
-
-CPLeftTextAlignment = 0;
-CPCenterTextAlignment = 2;
-CPRightTextAlignment = 1;
+@import "CPText.j"
 
 CPLeftTabStopType = 0;
 

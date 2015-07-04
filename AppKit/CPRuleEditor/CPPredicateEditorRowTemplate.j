@@ -487,9 +487,9 @@ CPTransformableAttributeType = 1800;
 
 - (id)copy
 {
-    var views = [CPArray array];
+    var views = [CPArray array],
+        copy = [[[self class] alloc] init];
 
-    var copy = [[[self class] alloc] init];
     [copy _setTemplateType:_templateType];
     [copy _setOptions:_predicateOptions];
     [copy _setModifier:_predicateModifier];

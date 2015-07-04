@@ -31,8 +31,10 @@
 @import "CPTextContainer.j"
 @import "CPLayoutManager.j"
 
-@class _CPRTFProducer;
-@class _CPRTFParser;
+@import "_CPRTFParser.j"
+@import "_CPRTFProducer.j"
+
+
 @class CPClipView;
 @class _CPSelectionBox;
 @class _CPCaret;

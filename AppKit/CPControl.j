@@ -25,7 +25,7 @@
 
 @import "CPFont.j"
 @import "CPShadow.j"
-@import "CPView.j"
+@import "CPText.j"
 @import "CPKeyValueBinding.j"
 
 @global CPApp
@@ -41,24 +41,6 @@
 - (BOOL)control:(CPControl)control didFailToFormatString:(CPString)string errorDescription:(CPString)error;
 
 @end
-
-@global CPCancelTextMovement
-@global CPLeftTextMovement
-@global CPRightTextMovement
-@global CPUpTextMovement
-@global CPDownTextMovement
-@global CPReturnTextMovement
-@global CPBacktabTextMovement
-@global CPTabTextMovement
-@global CPOtherTextMovement
-
-@typedef CPTextAlignment
-
-CPLeftTextAlignment      = 0;
-CPRightTextAlignment     = 1;
-CPCenterTextAlignment    = 2;
-CPJustifiedTextAlignment = 3;
-CPNaturalTextAlignment   = 4;
 
 @typedef CPControlSize
 CPRegularControlSize = 0;
@@ -137,6 +119,8 @@ var CPControlBlackColor = [CPColor blackColor];
     CGPoint             _previousTrackingLocation;
 
     CPControlSize       _controlSize;
+
+    CPWritingDirection  _baseWritingDirection   @accessors(property=baseWritingDirection);
 }
 
 + (CPDictionary)themeAttributes
@@ -251,7 +235,7 @@ var CPControlBlackColor = [CPColor blackColor];
 */
 - (ThemeState)_controlSizeThemeState
 {
-    switch(_controlSize)
+    switch (_controlSize)
     {
         case CPSmallControlSize:
             return CPThemeStateControlSizeSmall;
@@ -1027,6 +1011,49 @@ var CPControlBlackColor = [CPColor blackColor];
     return [self hasThemeState:CPThemeStateHighlighted];
 }
 
+
+#pragma mark -
+#pragma mark Base writing direction
+
+/*!
+    Sets the initial writing direction of the receiver
+    @param writingDirection - It could be CPWritingDirectionNatural, CPWritingDirectionLeftToRight, CPWritingDirectionRightToLeft
+*/
+- (void)setBaseWritingDirection:(CPWritingDirection)writingDirection
+{
+    if (writingDirection == _baseWritingDirection)
+        return;
+
+    [self willChangeValueForKey:@"baseWritingDirection"];
+    _baseWritingDirection = writingDirection;
+    [self didChangeValueForKey:@"baseWritingDirection"];
+
+#if PLATFORM(DOM)
+
+    var style;
+
+    switch (_baseWritingDirection)
+    {
+        case CPWritingDirectionNatural:
+            style = "initial";
+            break;
+
+        case CPWritingDirectionLeftToRight:
+            style = "ltr";
+            break;
+
+        case CPWritingDirectionRightToLeft:
+            style = "rtl";
+            break;
+
+        default:
+            style = "initial";
+    }
+
+    _DOMElement.style.direction = style;
+#endif
+}
+
 @end
 
 var CPControlActionKey                  = @"CPControlActionKey",
@@ -1038,6 +1065,7 @@ var CPControlActionKey                  = @"CPControlActionKey",
     CPControlSendsActionOnEndEditingKey = @"CPControlSendsActionOnEndEditingKey",
     CPControlTargetKey                  = @"CPControlTargetKey",
     CPControlValueKey                   = @"CPControlValueKey",
+    CPControlBaseWrittingDirectionKey   = @"CPControlBaseWrittingDirectionKey";
 
     __Deprecated__CPImageViewImageKey   = @"CPImageViewImageKey";
 
@@ -1066,6 +1094,8 @@ var CPControlActionKey                  = @"CPControlActionKey",
         [self setFormatter:[aCoder decodeObjectForKey:CPControlFormatterKey]];
 
         [self setControlSize:[aCoder decodeIntForKey:CPControlControlSizeKey]];
+
+        [self setBaseWritingDirection:[aCoder decodeIntForKey:CPControlBaseWrittingDirectionKey]];
     }
 
     return self;
@@ -1100,6 +1130,9 @@ var CPControlActionKey                  = @"CPControlActionKey",
         [aCoder encodeObject:_formatter forKey:CPControlFormatterKey];
 
     [aCoder encodeInt:_controlSize forKey:CPControlControlSizeKey];
+
+    [aCoder encodeInt:_baseWritingDirection forKey:CPControlBaseWrittingDirectionKey];
+
 }
 
 @end
