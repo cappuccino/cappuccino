@@ -80,6 +80,7 @@ CPStringSizeCachingEnabled = YES;
 
 - (CGSize)sizeWithFont:(CPFont)aFont inWidth:(float)aWidth
 {
+#if PLATFORM(DOM)
     if (!CPStringSizeCachingEnabled)
         return [CPPlatformString sizeOfString:self withFont:aFont forWidth:aWidth];
 
@@ -93,7 +94,6 @@ CPStringSizeCachingEnabled = YES;
     if (size !== undefined)
         return CGSizeMakeCopy(size);
 
-#if PLATFORM(DOM)
     if (!CPStringSizeDidTestCanvasSizingValid)
     {
         [self _initializeStringSizing];
