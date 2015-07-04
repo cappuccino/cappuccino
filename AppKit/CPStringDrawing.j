@@ -114,11 +114,11 @@ CPStringSizeCachingEnabled = YES;
 
         size = CGSizeMake(CPStringSizeMeasuringContext.measureText(self).width, fontHeight);
     }
+
+    CPStringSizeWithFontInWidthCache[self][cacheKey] = size;
 #else
         size = CGSizeMake(0, 0);
 #endif
-
-    CPStringSizeWithFontInWidthCache[self][cacheKey] = size;
     return CGSizeMakeCopy(size);
 }
 
