@@ -211,26 +211,50 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     _caret = [[_CPCaret alloc] initWithTextView:self];
     [_caret setRect:CGRectMake(0, 0, 1, 11)]
-
-    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(windowDidResignKey:) name:CPWindowDidResignKeyNotification object:_window];
-    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(windowDidBecomeKey:) name:CPWindowDidBecomeKeyNotification object:_window];
 }
 
-- (void)windowDidResignKey:(CPNotification)aNotification
+- (void)_setObserveWindowKeyNotifications:(BOOL)shouldObserve
 {
-    [self resignFirstResponder];
+    if (shouldObserve)
+    {
+        [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_windowDidResignKey:) name:CPWindowDidResignKeyNotification object:[self window]];
+        [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_windowDidBecomeKey:) name:CPWindowDidBecomeKeyNotification object:[self window]];
+    }
+    else
+    {
+        [[CPNotificationCenter defaultCenter] removeObserver:self name:CPWindowDidResignKeyNotification object:[self window]];
+        [[CPNotificationCenter defaultCenter] removeObserver:self name:CPWindowDidBecomeKeyNotification object:[self window]];
+    }
 }
-- (void)windowDidBecomeKey:(CPNotification)aNotification
+
+- (void)_removeObservers
 {
-    if ([self _isFirstResponder])
+    if (!_isObserving)
+        return;
+
+    [super _removeObservers];
+    [self _setObserveWindowKeyNotifications:NO];
+}
+
+- (void)_addObservers
+{
+    if (_isObserving)
+        return;
+
+    [super _addObservers];
+    [self _setObserveWindowKeyNotifications:YES];
+}
+
+- (void)_windowDidResignKey:(CPNotification)aNotification
+{
+    if (![[self window] isKeyWindow])
+        [self resignFirstResponder];
+}
+
+- (void)_windowDidBecomeKey:(CPNotification)aNotification
+{
+    if ([[self window] isKeyWindow] && [[self window] firstResponder] === self)
         [self updateInsertionPointStateAndRestartTimer:YES];
-}
-
-- (void)removeFromSuperview
-{
-    [[CPNotificationCenter defaultCenter] removeObserver:self name:CPWindowDidResignKeyNotification object:_window];
-    [[CPNotificationCenter defaultCenter] removeObserver:self name:CPWindowDidBecomeKeyNotification object:_window];
-    [super removeFromSuperview];
 }
 
 #pragma mark -
