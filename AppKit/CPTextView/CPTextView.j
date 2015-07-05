@@ -825,10 +825,10 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     if ([event modifierFlags] & CPShiftKeyMask)
         setRange = _MakeRangeFromAbs(_startTrackingLocation < _MidRange(_selectionRange) ? CPMaxRange(_selectionRange) : _selectionRange.location, _startTrackingLocation);
+    else
+        _scrollingTimer = [CPTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(_supportScrolling:) userInfo:nil repeats:YES];  // fixme: only start if we are in the scrolling areas
 
     [self setSelectedRange:setRange affinity:0 stillSelecting:YES];
-
-    _scrollingTimer = [CPTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(_supportScrolling:) userInfo:nil repeats:YES];  // fixme: only start if we are in the scrolling areas
 }
 
 - (void)_supportScrolling:(CPTimer)aTimer
