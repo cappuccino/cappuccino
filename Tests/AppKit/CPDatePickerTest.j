@@ -1,7 +1,8 @@
+@import <OJUnit/OJTestCase.j>
 
 @import <AppKit/CPDatePicker.j>
 @import <AppKit/CPApplication.j>
-@import <AppKit/CPText.j>
+@import <Foundation/Foundation.j>
 
 [CPApplication sharedApplication];
 
@@ -18,6 +19,11 @@
 - (void)testCanCreate
 {
     [self assertTrue:!!datePicker];
+}
+
+- (void)testLayoutSubviews
+{
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 }
 
 @end
