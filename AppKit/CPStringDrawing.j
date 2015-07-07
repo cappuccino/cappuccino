@@ -80,6 +80,8 @@ CPStringSizeCachingEnabled = YES;
 
 - (CGSize)sizeWithFont:(CPFont)aFont inWidth:(float)aWidth
 {
+    var size;
+
 #if PLATFORM(DOM)
     if (!CPStringSizeCachingEnabled)
         return [CPPlatformString sizeOfString:self withFont:aFont forWidth:aWidth];
@@ -88,8 +90,9 @@ CPStringSizeCachingEnabled = YES;
         CPStringSizeWithFontInWidthCache[self] = [];
 
     var cssString = [aFont cssString],
-        cacheKey = cssString + '_' + aWidth,
-        size = CPStringSizeWithFontInWidthCache[self][cacheKey];
+        cacheKey = cssString + '_' + aWidth;
+
+    size = CPStringSizeWithFontInWidthCache[self][cacheKey];
 
     if (size !== undefined)
         return CGSizeMakeCopy(size);
@@ -105,7 +108,7 @@ CPStringSizeCachingEnabled = YES;
     else
     {
         if (CPStringSizeMeasuringContext.font !== cssString)
-            CPStringSizeMeasuringContext.font = cssString;    
+            CPStringSizeMeasuringContext.font = cssString;
 
         var fontHeight = CPStringSizeWithFontHeightCache[cssString];
 

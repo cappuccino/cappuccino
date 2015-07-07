@@ -281,7 +281,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     if (_copySelectionGranularity > 0 && _selectionRange.location > 0)
     {
-        if (!_isWhitespaceCharacter([[_textStorage string] characterAtIndex:_selectionRange.location - 1]) && 
+        if (!_isWhitespaceCharacter([[_textStorage string] characterAtIndex:_selectionRange.location - 1]) &&
             _selectionRange.location != [_layoutManager numberOfCharacters])
         {
             [self insertText:" "];
@@ -2129,12 +2129,12 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
 
 @end
 
+
 var _CPNativeInputField,
     _CPNativeInputFieldKeyUpCalled,
     _CPNativeInputFieldKeyPressedCalled,
     _CPNativeInputFieldActive,
     _CPNativeInputFieldLastCopyWasNative = 1;
-
 
 var _CPCopyPlaceholder = '-';
 
@@ -2144,6 +2144,7 @@ var _CPCopyPlaceholder = '-';
 {
     return _CPNativeInputFieldLastCopyWasNative;
 }
+
 + (void)setLastCopyWasNative:(BOOL)flag
 {
     _CPNativeInputFieldLastCopyWasNative = flag;
@@ -2153,13 +2154,17 @@ var _CPCopyPlaceholder = '-';
 {
     return _CPNativeInputFieldActive;
 }
+
 + (void)cancelCurrentNativeInputSession
 {
+#if PLATFORM(DOM)
     if (_CPNativeInputField.innerHTML.length > 2)
         _CPNativeInputField.innerHTML = '';
+#endif
 
     [self _endInputSessionWithString:_CPNativeInputField.innerHTML];
 }
+
 + (void)cancelCurrentInputSessionIfNeeded
 {
     if (!_CPNativeInputFieldActive)
@@ -2167,6 +2172,7 @@ var _CPCopyPlaceholder = '-';
 
     [self cancelCurrentNativeInputSession];
 }
+
 + (void)_endInputSessionWithString:(CPString)aStr
 {
     _CPNativeInputFieldActive = NO;
@@ -2182,6 +2188,7 @@ var _CPCopyPlaceholder = '-';
 
 + (void)initialize
 {
+#if PLATFORM(DOM)
     _CPNativeInputField = document.createElement("div");
     _CPNativeInputField.contentEditable = YES;
     _CPNativeInputField.style.width="64px";
@@ -2274,7 +2281,7 @@ var _CPCopyPlaceholder = '-';
 
              var data = e.clipboardData.getData('text/plain');
             [pasteboard setString:data forType:CPStringPboardType];
- 
+
             var currentFirstResponder = [[CPApp mainWindow] firstResponder];
 
             setTimeout(function(){   // prevent dom-flickering
@@ -2316,6 +2323,7 @@ var _CPCopyPlaceholder = '-';
             return false;
         }
     }
+#endif
 }
 
 + (void)focus
@@ -2327,7 +2335,7 @@ var _CPCopyPlaceholder = '-';
 
     [self hideInputElement];
 
-
+#if PLATFORM(DOM)
     // only append the _CPNativeInputField if it is not already there
     var children = currentFirstResponder._DOMElement.childNodes,
         l = children.length;
@@ -2345,10 +2353,12 @@ var _CPCopyPlaceholder = '-';
 
     currentFirstResponder._DOMElement.appendChild(_CPNativeInputField);
     _CPNativeInputField.focus();
+#endif
 }
 
 + (void)focusForClipboard
 {
+#if PLATFORM(DOM)
     if (!_CPNativeInputFieldActive && _CPNativeInputField.innerHTML.length == 0)
         _CPNativeInputField.innerHTML = _CPCopyPlaceholder;  // make sure we have a selection to allow the native pasteboard work in safari
 
@@ -2358,22 +2368,28 @@ var _CPCopyPlaceholder = '-';
     if (document.body.createTextRange)
     {
         var range = document.body.createTextRange();
+
         range.moveToElementText(_CPNativeInputField);
         range.select();
-    } else if (window.getSelection)
+    }
+    else if (window.getSelection)
     {
-        var selection = window.getSelection();        
-        var range = document.createRange();
+        var selection = window.getSelection(),
+            range = document.createRange();
+
         range.selectNodeContents(_CPNativeInputField);
         selection.removeAllRanges();
         selection.addRange(range);
     }
+#endif
 }
 
 + (void)hideInputElement
 {
+#if PLATFORM(DOM)
     _CPNativeInputField.style.top="-10000px";
     _CPNativeInputField.style.left="-10000px";
+#endif
 }
-@end
 
+@end
