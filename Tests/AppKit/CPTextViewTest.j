@@ -1,8 +1,6 @@
 @import <AppKit/CPTextView.j>
 @import <OJMoq/OJMoq.j>
 
-[CPApplication sharedApplication]
-
 @implementation CPTextViewTest : OJTestCase
 {
     CPWindow    theWindow;
@@ -11,6 +9,12 @@
     CPString    stringValue;
 
     OJMoqSpy    delegateSpy
+}
+
++ (void)setUp
+{
+    // This will init the global var CPApp which are used internally in the AppKit
+    [[CPApplication alloc] init];
 }
 
 - (void)setUp
