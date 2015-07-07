@@ -1,14 +1,17 @@
-
 @import <AppKit/CPApplication.j>
 @import <AppKit/CPSplitView.j>
-
-[CPApplication sharedApplication];
 
 @implementation CPSplitViewTest : OJTestCase
 {
     CPSplitView splitView;
     CPView viewA;
     CPView viewB;
+}
+
++ (void)setUp
+{
+    // This will init the global var CPApp which are used internally in the AppKit
+    [[CPApplication alloc] init];
 }
 
 - (void)setUp

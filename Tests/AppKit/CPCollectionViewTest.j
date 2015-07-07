@@ -7,6 +7,12 @@
     id _globalResults;
 }
 
++ (void)setUp
+{
+    // This will init the global var CPApp which are used internally in the AppKit
+    [[CPApplication alloc] init];
+}
+
 - (void)setUp
 {
     _collectionView = [[CPCollectionView alloc] initWithFrame:CGRectMakeZero()];

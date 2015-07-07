@@ -18,11 +18,14 @@
     CPObjectController  objectController @accessors;
 }
 
++ (void)setUp
+{
+    // This will init the global var CPApp which are used internally in the AppKit
+    [[CPApplication alloc] init];
+}
+
 - (void)setUp
 {
-    // CPApp must be initialised or action sending will not work.
-    [CPApplication sharedApplication];
-
     track = [Track new];
     [track setVolume:5.0];
 }

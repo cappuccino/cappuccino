@@ -1,13 +1,16 @@
-
 @import <AppKit/CPWindow.j>
 @import <AppKit/_CPBorderlessWindowView.j>
 @import <Foundation/CPURL.j>
 
-[CPApplication sharedApplication];
-
 @implementation CPWindowTest : OJTestCase
 {
     CPWindow                _window @accessors(property=window);
+}
+
++ (void)setUp
+{
+    // This will init the global var CPApp which are used internally in the AppKit
+    [[CPApplication alloc] init];
 }
 
 - (void)setUp

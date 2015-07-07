@@ -2,14 +2,18 @@
 
 @class TestDelegateTokenField
 
-[CPApplication sharedApplication];
-
 @implementation CPTokenFieldTest : OJTestCase
 {
     CPWindow                _theWindow;
     CPTokenField            _tokenField;
     TestDelegateTokenField  _delegate;
 
+}
+
++ (void)setUp
+{
+    // This will init the global var CPApp which are used internally in the AppKit
+    [[CPApplication alloc] init];
 }
 
 - (void)setUp

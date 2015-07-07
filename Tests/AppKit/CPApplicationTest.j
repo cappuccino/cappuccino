@@ -61,6 +61,12 @@ var globalResults = [];
     CPWindow aWindow;
 }
 
++ (void)setUp
+{
+    // This will init the global var CPApp which are used internally in the AppKit
+    [[CPApplication alloc] init];
+}
+
 - (void)setUp
 {
     // This sets up the CPApp convenience variable, the unit tests fails

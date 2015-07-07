@@ -1,10 +1,8 @@
-
 @import <AppKit/CPMenu.j>
 @import <AppKit/CPMenuItem.j>
 @import <AppKit/CPApplication.j>
 @import <AppKit/CPText.j>
 
-[CPApplication sharedApplication]
 
 @implementation CPMenuTest : OJTestCase
 {
@@ -17,6 +15,12 @@
     BOOL    undoWasCalled;
 
     CPMenuItem anInstantiatedMenuItem;
+}
+
++ (void)setUp
+{
+    // This will init the global var CPApp which are used internally in the AppKit
+    [[CPApplication alloc] init];
 }
 
 - (void)setUp
