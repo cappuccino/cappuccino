@@ -10,14 +10,11 @@
     BOOL       wasClicked
 }
 
-+ (void)setUp
+- (void)setUp
 {
     // This will init the global var CPApp which are used internally in the AppKit
     [[CPApplication alloc] init];
-}
 
-- (void)setUp
-{
     comboBox = [[CPComboBox alloc] initWithFrame:CGRectMake(0, 0, 200, 30)];
 }
 

@@ -9,14 +9,11 @@
     CPFont _boldCustomFont;
 }
 
-+ (void)setUp
+- (void)setUp
 {
     // This will init the global var CPApp which are used internally in the AppKit
     [[CPApplication alloc] init];
-}
 
-- (void)setUp
-{
     _systemFont = [CPFont systemFontOfSize:15];
     _boldSystemFont = [CPFont boldSystemFontOfSize:15];
 

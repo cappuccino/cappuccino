@@ -6,14 +6,11 @@
     CPStepper stepper;
 }
 
-+ (void)setUp
+- (void)setUp
 {
     // This will init the global var CPApp which are used internally in the AppKit
     [[CPApplication alloc] init];
-}
 
-- (void)setUp
-{
     stepper = [CPStepper stepper];
     [stepper setValueWraps:NO];
 }

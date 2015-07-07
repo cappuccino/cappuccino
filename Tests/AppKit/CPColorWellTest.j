@@ -6,14 +6,11 @@
     CPColorWell colorWell;
 }
 
-+ (void)setUp
+- (void)setUp
 {
     // This will init the global var CPApp which are used internally in the AppKit
     [[CPApplication alloc] init];
-}
 
-- (void)setUp
-{
     colorWell = [[CPColorWell alloc] initWithFrame:CGRectMakeZero()];
 }
 

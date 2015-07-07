@@ -9,14 +9,11 @@
     TestOutlineDataSource  dataSource;
 }
 
-+ (void)setUp
+- (void)setUp
 {
     // This will init the global var CPApp which are used internally in the AppKit
     [[CPApplication alloc] init];
-}
 
-- (void)setUp
-{
     outlineView = [[CPOutlineView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];
 
     tableColumn = [[CPTableColumn alloc] initWithIdentifier:@"Foo"];

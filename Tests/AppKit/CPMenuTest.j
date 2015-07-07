@@ -17,14 +17,11 @@
     CPMenuItem anInstantiatedMenuItem;
 }
 
-+ (void)setUp
+- (void)setUp
 {
     // This will init the global var CPApp which are used internally in the AppKit
     [[CPApplication alloc] init];
-}
 
-- (void)setUp
-{
     // Set up a fairly complete menu to have something to work with.
     menu = [[CPMenu alloc] initWithTitle:@"MainMenu"];
 

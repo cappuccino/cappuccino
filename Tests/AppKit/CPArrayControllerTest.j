@@ -18,12 +18,6 @@
     CPArray             depValues @accessors;
 }
 
-+ (void)setUp
-{
-    // This will init the global var CPApp which are used internally in the AppKit
-    [[CPApplication alloc] init];
-}
-
 - (CPArray)makeTestArray
 {
     return [[Employee employeeWithName:@"Francisco" department:[Department departmentWithName:@"Cappuccino"]],
@@ -62,6 +56,9 @@
 
 - (void)setUp
 {
+    // This will init the global var CPApp which are used internally in the AppKit
+    [[CPApplication alloc] init];
+
     _contentArray = [self makeTestArray];
     [self initControllerWithSimpleArray]
 }
