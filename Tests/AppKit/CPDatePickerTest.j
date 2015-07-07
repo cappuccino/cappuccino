@@ -4,11 +4,16 @@
 @import <AppKit/CPApplication.j>
 @import <Foundation/Foundation.j>
 
-[CPApplication sharedApplication];
 
 @implementation CPDatePickerTest : OJTestCase
 {
     CPDatePicker datePicker;
+}
+
++ (void)setUp
+{
+    // This will init the global var CPApp which are used internally in the AppKit
+    [[CPApplication alloc] init];
 }
 
 - (void)setUp

@@ -2,8 +2,6 @@
 
 @import "CPNotificationCenterHelper.j"
 
-[CPApplication sharedApplication];
-
 @implementation CPTableViewTest : OJTestCase
 {
     CPWindow        theWindow;
@@ -13,6 +11,12 @@
     BOOL            doubleActionReceived;
     int             selectionIsChangingNotificationsReceived;
     int             selectionDidChangeNotificationsReceived;
+}
+
++ (void)setUp
+{
+    // This will init the global var CPApp which are used internally in the AppKit
+    [[CPApplication alloc] init];
 }
 
 - (void)setUp

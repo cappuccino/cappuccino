@@ -1,11 +1,15 @@
 @import <AppKit/CPStepper.j>
 @import <AppKit/CPApplication.j>
 
-[CPApplication sharedApplication]
-
 @implementation CPStepperTest : OJTestCase
 {
     CPStepper stepper;
+}
+
++ (void)setUp
+{
+    // This will init the global var CPApp which are used internally in the AppKit
+    [[CPApplication alloc] init];
 }
 
 - (void)setUp

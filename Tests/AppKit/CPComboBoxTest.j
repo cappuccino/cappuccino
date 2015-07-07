@@ -4,12 +4,16 @@
 
 @import "CPNotificationCenterHelper.j"
 
-[CPApplication sharedApplication];
-
 @implementation CPComboBoxTest : OJTestCase
 {
     CPComboBox comboBox;
     BOOL       wasClicked
+}
+
++ (void)setUp
+{
+    // This will init the global var CPApp which are used internally in the AppKit
+    [[CPApplication alloc] init];
 }
 
 - (void)setUp

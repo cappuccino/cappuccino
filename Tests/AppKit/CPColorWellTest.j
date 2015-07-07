@@ -1,11 +1,15 @@
 @import <AppKit/CPColorWell.j>
 @import <AppKit/CPApplication.j>
 
-[CPApplication sharedApplication];
-
 @implementation CPColorWellTest : OJTestCase
 {
     CPColorWell colorWell;
+}
+
++ (void)setUp
+{
+    // This will init the global var CPApp which are used internally in the AppKit
+    [[CPApplication alloc] init];
 }
 
 - (void)setUp

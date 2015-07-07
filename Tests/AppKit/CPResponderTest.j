@@ -4,12 +4,16 @@
 
 @import <AppKit/CPPlatformWindow+DOMKeys.j>
 
-[CPApplication sharedApplication]
-
 @implementation CPResponderTest : OJTestCase
 {
     CPWindow    theWindow;
     CPResponder responder;
+}
+
++ (void)setUp
+{
+    // This will init the global var CPApp which are used internally in the AppKit
+    [[CPApplication alloc] init];
 }
 
 - (void)setUp

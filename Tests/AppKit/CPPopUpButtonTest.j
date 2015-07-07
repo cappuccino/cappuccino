@@ -9,6 +9,12 @@
     id objects @accessors;
 }
 
++ (void)setUp
+{
+    // This will init the global var CPApp which are used internally in the AppKit
+    [[CPApplication alloc] init];
+}
+
 - (void)setUp
 {
     button = [CPPopUpButton new];

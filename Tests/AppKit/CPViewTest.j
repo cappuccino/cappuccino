@@ -1,8 +1,5 @@
-
 @import <AppKit/CPView.j>
 @import <AppKit/CPApplication.j>
-
-[CPApplication sharedApplication]
 
 var methodCalled;
 
@@ -14,6 +11,12 @@ var methodCalled;
     CPView view3;
 
     CPWindow window;
+}
+
++ (void)setUp
+{
+    // This will init the global var CPApp which are used internally in the AppKit
+    [[CPApplication alloc] init];
 }
 
 - (void)setUp
