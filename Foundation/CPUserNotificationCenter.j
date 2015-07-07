@@ -34,6 +34,9 @@
 
 @end
 
+// Remove compiling warnings
+@class Notification
+
 @global CPApp
 
 var CPUserNotificationCenterDelegate_userNotificationCenter_shouldPresentNotification_  = 1 << 0,
