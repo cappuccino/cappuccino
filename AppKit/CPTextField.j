@@ -34,7 +34,6 @@
 @global CPStringPboardType
 @global CPCursor
 
-
 @protocol CPTextFieldDelegate <CPControlTextEditingDelegate>
 
 @end
@@ -66,7 +65,8 @@ var CPTextFieldDOMCurrentElement = nil,
     CPTextFieldCachedSelectStartFunction = nil,
     CPTextFieldCachedDragFunction = nil,
     CPTextFieldBlurHandler = nil,
-    CPTextFieldInputFunction = nil;
+    CPTextFieldInputFunction = nil,
+    CPTexFieldCurrentCSSSelectableField = nil;
 
 var CPSecureTextFieldCharacter = "\u2022";
 
@@ -432,8 +432,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     // We only allow first responder status if the field is enabled.
     if (!shouldBeEnabled && [[self window] firstResponder] === self)
         [[self window] makeFirstResponder:nil];
-
-    [self _setCSSSelectionStyleForDOMElement];
 }
 
 /*!
@@ -443,7 +441,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 - (void)setSelectable:(BOOL)aFlag
 {
     _isSelectable = aFlag;
-    [self _setCSSSelectionStyleForDOMElement];
 }
 
 /*!
@@ -707,13 +704,14 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     Set the selection css style for the DOM element of the textField
     @ignore
 */
-- (void)_setCSSSelectionStyleForDOMElement
+- (void)_setEnableCSSSelection:(BOOL)shouldEnable
 {
 #if PLATFORM (DOM)
-    if (_isSelectable && [self isEnabled])
-        _DOMElement.style[CPBrowserStyleProperty(@"user-select")] = @"text";
-    else
-        _DOMElement.style[CPBrowserStyleProperty(@"user-select")] = @"none";
+    if (CPTexFieldCurrentCSSSelectableField)
+        CPTexFieldCurrentCSSSelectableField._DOMElement.style[CPBrowserStyleProperty(@"user-select")] = @"none";
+
+    CPTexFieldCurrentCSSSelectableField = self;
+    _DOMElement.style[CPBrowserStyleProperty(@"user-select")] = shouldEnable ? @"text" : @"none";
 #endif
 }
 
@@ -1010,6 +1008,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     }
     else if ([self isSelectable])
     {
+        [self _setEnableCSSSelection:YES];
         if (document.attachEvent)
         {
             CPTextFieldCachedSelectStartFunction = [[self window] platformWindow]._DOMBodyElement.onselectstart;
