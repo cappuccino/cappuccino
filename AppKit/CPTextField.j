@@ -432,6 +432,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     // We only allow first responder status if the field is enabled.
     if (!shouldBeEnabled && [[self window] firstResponder] === self)
         [[self window] makeFirstResponder:nil];
+
+    [self _setCSSSelectionStyleForDOMElement];
 }
 
 /*!
@@ -441,6 +443,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 - (void)setSelectable:(BOOL)aFlag
 {
     _isSelectable = aFlag;
+    [self _setCSSSelectionStyleForDOMElement];
 }
 
 /*!
@@ -698,6 +701,20 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 #endif
 
     return YES;
+}
+
+/*!
+    Set the selection css style for the DOM element of the textField
+    @ignore
+*/
+- (void)_setCSSSelectionStyleForDOMElement
+{
+#if PLATFORM (DOM)
+    if (_isSelectable && [self isEnabled])
+        _DOMElement.style[CPBrowserStyleProperty(@"user-select")] = @"text";
+    else
+        _DOMElement.style[CPBrowserStyleProperty(@"user-select")] = @"none";
+#endif
 }
 
 /*!
