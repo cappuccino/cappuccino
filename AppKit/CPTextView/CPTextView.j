@@ -583,7 +583,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     [_layoutManager _validateLayoutAndGlyphs];
     [self sizeToFit];
     [self scrollRangeToVisible:_selectionRange];
-    _stickyXLocation = _caret._rect.origin.x;
+    _stickyXLocation = MAX(0, _caret._rect.origin.x - 1);
 }
 
 #pragma mark -
