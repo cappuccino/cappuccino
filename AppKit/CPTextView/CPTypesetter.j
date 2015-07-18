@@ -402,13 +402,8 @@ var CPSystemTypesetterFactory;
         [self _flushRange:lineRange lineOrigin:lineOrigin currentContainer:_currentTextContainer advancements:advancements lineCount:numLines sameLine:NO];
     }
 
-    if (_isNewlineCharacter(theString.charAt(theString.length - 1)))
-    {
-        // fixme: row-height is crudely hacked
-        var rect = CGRectMake(0, lineOrigin.y, containerSize.width, [_layoutManager._lineFragments lastObject]._usedRect.size.height);
-
-        [_layoutManager setExtraLineFragmentRect:rect usedRect:rect textContainer:_currentTextContainer];
-    }
+    var rect = CGRectMake(0, lineOrigin.y, containerSize.width, [_layoutManager._lineFragments lastObject]._usedRect.size.height - descent);
+    [_layoutManager setExtraLineFragmentRect:rect usedRect:rect textContainer:_currentTextContainer];
 }
 
 @end
