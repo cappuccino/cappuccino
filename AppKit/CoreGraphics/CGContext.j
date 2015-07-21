@@ -24,16 +24,23 @@
 @import "CPCompatibility.j"
 @import "CGGeometry.j"
 @import "CGPath.j"
+@import "CGFont.j"
 
 @typedef CGContext
+
+@typedef CGLineCap
 
 kCGLineCapButt              = 0;
 kCGLineCapRound             = 1;
 kCGLineCapSquare            = 2;
 
+@typedef CGLineJoin
+
 kCGLineJoinMiter            = 0;
 kCGLineJoinRound            = 1;
 kCGLineJoinBevel            = 2;
+
+@typedef CGPathDrawingMode
 
 kCGPathFill                 = 0;
 kCGPathEOFill               = 1;
@@ -44,6 +51,8 @@ kCGPathEOFillStroke         = 4;
 /*!
     @group CGBlendMode
 */
+
+@typedef CGBlendMode
 
 kCGBlendModeNormal          = 0;
 kCGBlendModeMultiply        = 1;
@@ -74,6 +83,15 @@ kCGBlendModeXOR             = 25;
 kCGBlendModePlusDarker      = 26;
 kCGBlendModePlusLighter     = 27;
 
+kCGTextFill                 = 0;
+kCGTextStroke               = 1;
+kCGTextFillStroke           = 2;
+kCGTextInvisible            = 3;
+kCGTextFillClip             = 4;
+kCGTextStrokeClip           = 5;
+kCGTextFillStrokeClip       = 6;
+kCGTextClip                 = 7;
+
 /*!
     @defgroup coregraphics CoreGraphics
     @{
@@ -87,6 +105,7 @@ function CGContext()
     this.DOMElement = document.createElement("div");
     this.gState = CGGStateCreate();
     this.gStateStack = [];
+    this.textMatrix = CGAffineTransformMakeIdentity();
 }
 
 CGContext.prototype.saveGState = function()
@@ -260,7 +279,7 @@ CGContext.prototype.beginPath = function()
     this.path = CGPathCreateMutable();
 }
 
-CGContext.prototype.closePath = function()
+CGContext.prototype.closeSubpath = function()
 {
     CGPathCloseSubpath(this.path);
 }
@@ -380,9 +399,60 @@ CGContext.prototype.drawRadialGradient = function(aGradient, aStartCenter, aStar
     CPLog.warn("CGContext.prototype.drawRadialGradient() unimplemented");
 }
 
+CGContext.prototype.beginTransparencyLayerWithRect = function(aRect, auxiliaryInfo)
+{
+    CPLog.warn("CGContext.prototype.beginTransparencyLayerWithRect() unimplemented");
+}
+
+CGContext.prototype.endTransparencyLayerWithRect = function()
+{
+    CPLog.warn("CGContext.prototype.endTransparencyLayerWithRect() unimplemented");
+}
+
+CGContext.prototype.setFont = function(aFont)
+{
+    this.gState.font = aFont;
+}
+
+CGContext.prototype.setFontSize = function(aSize)
+{
+    this.gState.fontSize = aSize;
+}
+
+CGContext.prototype.textMatrix = function()
+{
+    return this.textMatrix;
+}
+
+CGContext.prototype.setTextMatrix = function(transform)
+{
+    this.textMatrix = transform;
+}
+
+CGContext.prototype.textPosition = function()
+{
+    return CGPointMake(this.textMatrix.tx, this.textMatrix.ty);
+}
+
+CGContext.prototype.setTextPosition = function(x, y)
+{
+    this.textMatrix.tx = x;
+    this.textMatrix.ty = y;
+}
+
+CGContext.prototype.beginText = function()
+{
+    CPLog.warn("CGContext.prototype.beginText() unimplemented");
+}
+
 CGContext.prototype.showTextAtPositions = function(text, positions, count)
 {
     CPLog.warn("CGContext.prototype.showTextAtPositions() unimplemented");
+}
+
+CGContext.prototype.endText = function()
+{
+    CPLog.warn("CGContext.prototype.endText() unimplemented");
 }
 
 /*!
@@ -414,7 +484,10 @@ function CGGStateCreate()
 {
     return { alpha:1.0, strokeStyle:"#000", fillStyle:"#ccc", lineWidth:1.0, lineJoin:kCGLineJoinMiter, lineCap:kCGLineCapButt, miterLimit:10.0, globalAlpha:1.0,
         blendMode:kCGBlendModeNormal,
-        shadowOffset:CGSizeMakeZero(), shadowBlur:0.0, shadowColor:NULL, CTM:CGAffineTransformMakeIdentity() };
+        shadowOffset:CGSizeMakeZero(), shadowBlur:0.0, shadowColor:NULL, CTM:CGAffineTransformMakeIdentity(),
+        fontSize: 0,
+        textDrawingMode: kCGTextFill
+        };
 }
 
 /*!
@@ -427,7 +500,11 @@ function CGGStateCreateCopy(aGState)
     return { alpha:aGState.alpha, strokeStyle:aGState.strokeStyle, fillStyle:aGState.fillStyle, lineWidth:aGState.lineWidth,
         lineJoin:aGState.lineJoin, lineCap:aGState.lineCap, miterLimit:aGState.miterLimit, globalAlpha:aGState.globalAlpha,
         blendMode:aGState.blendMode,
-        shadowOffset:CGSizeMakeCopy(aGState.shadowOffset), shadowBlur:aGState.shadowBlur, shadowColor:aGState.shadowColor, CTM:CGAffineTransformMakeCopy(aGState.CTM) };
+        shadowOffset:CGSizeMakeCopy(aGState.shadowOffset), shadowBlur:aGState.shadowBlur, shadowColor:aGState.shadowColor, CTM:CGAffineTransformMakeCopy(aGState.CTM),
+        fontSize: aGState.fontSize,
+        font: aGState.font,
+        textDrawingMode: aGState.textDrawingMode
+        };
 }
 
 /*!
@@ -803,7 +880,7 @@ function CGContextEOFillPath(aContext)
 function CGContextFillPath(aContext)
 {
     aContext.drawPath(kCGPathFill);
-    aContext.closePath();
+    aContext.closeSubpath();
 }
 
 /*!
@@ -868,7 +945,7 @@ function CGContextStrokeEllipseInRect(aContext, aRect)
 function CGContextStrokePath(aContext)
 {
     aContext.drawPath(kCGPathStroke);
-    aContext.closePath();
+    aContext.closeSubpath();
 }
 
 /*!
@@ -1061,6 +1138,95 @@ function CGContextDrawLinearGradient(aContext, aGradient, aStartPoint, anEndPoin
 function CGContextDrawRadialGradient(aContext, aGradient, aStartPoint, anEndPoint, options)
 {
     aContext.drawRadialGradient(aGradient, aStartPoint, anEndPoint, options);
+}
+
+/*!
+    Begins a transparency layer
+    @param aContext the CGContext within with to create the transparency layer
+    @param aRect the area to be covered by the transparency layer
+    @param auxiliaryInfo a dictionary that specifies additional info or NULL
+*/
+function CGContextBeginTransparencyLayerWithRect(aContext, aRect, auxiliaryInfo)
+{
+    aContext.beginTransparencyLayerWithRect(aRect, auxiliaryInfo);
+}
+
+/*!
+    Ends a transparency layer
+    @param aContext the CGContext containing the transparency layer
+*/
+function CGContextEndTransparencyLayer(aContext)
+{
+    aContext.endTransparencyLayer();
+}
+
+
+
+/*!
+    Sets the current font
+    @param aContext the CGContext within which to set the font
+    @param aFont the font to set
+*/
+
+function CGContextSetFont(aContext, aFont)
+{
+    aContext.setFont(aFont);
+}
+
+function CGContextSetFontSize(aContext, aSize)
+{
+    aContext.setFontSize(aSize);
+}
+
+function CGContextGetTextMatrix(aContext)
+{
+    return aContext.textMatrix();
+}
+
+function CGContextSetTextMatrix(aContext, transform)
+{
+    aContext.setTextMatrix(transform);
+}
+
+function CGContextGetTextPosition(aContext)
+{
+    return aContext.textPosition();
+}
+
+function CGContextSetTextPosition(aContext, x, y)
+{
+    aContext.setTextPosition(x, y);
+}
+
+/*!
+    Call before beginning a series of CGContextShowTextAtPositions() calls
+    Establishes the text drawing style
+*/
+function CGContextBeginText(aContext)
+{
+    aContext.beginText();
+}
+
+/*!
+    Call at the end of a series of CGContextShowTextAtPositions() calls if you
+    started with CGContextBeginTextBeginText()
+*/
+function CGContextEndText(aContext)
+{
+    aContext.endText();
+}
+
+/*!
+    Shows the specified text
+    @param aContext the CGContext within which to show the text
+    @param text the string to show
+    @param positions the positions of the characters relative to the text position
+    @param count the number of characters
+*/
+
+function CGContextShowTextAtPositions(aContext, characters, positions, count)
+{
+    aContext.showTextAtPositions(characters, positions, count);
 }
 
 /*!

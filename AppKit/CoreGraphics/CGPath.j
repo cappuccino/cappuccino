@@ -31,6 +31,8 @@ kCGPathElementAddQuadCurveToPoint   = 2;
 kCGPathElementAddCurveToPoint       = 3;
 kCGPathElementCloseSubpath          = 4;
 
+// plasq Note: These element types don't exist in Cocoa and make porting harder
+// than it should be - they should be eliminated.
 kCGPathElementAddArc                = 5;
 kCGPathElementAddArcToPoint         = 6;
 
@@ -55,7 +57,7 @@ function CGPathCreateMutableCopy(aPath)
 {
     var path = CGPathCreateMutable();
 
-    CGPathAddPath(path, aPath);
+    CGPathAddPath(path, nil, aPath);
 
     return path;
 }
@@ -66,7 +68,10 @@ function CGPathCreateMutableCopy(aPath)
 
 function CGPathCreateCopy(aPath)
 {
-    return CGPathCreateMutableCopy(aPath);
+    if (typeof(aPath) !== 'undefined')
+        return CGPathCreateMutableCopy(aPath);
+    else
+        return nil;
 }
 
 function CGPathRelease(aPath)
@@ -216,6 +221,8 @@ function CGPathAddLineToPoint(aPath, aTransform, x, y)
 
 function CGPathAddPath(aPath, aTransform, anotherPath)
 {
+//    CPLog.trace("CGPathAddPath()");
+    
     for (var i = 0, count = anotherPath.count; i < count; ++i)
     {
         var element = anotherPath.elements[i];
@@ -416,6 +423,8 @@ function CGPathCloseSubpath(aPath)
 
 function CGPathEqualToPath(aPath, anotherPath)
 {
+//    CPLog.trace("CGPathEqualToPath()");
+    
     if (aPath === anotherPath)
         return YES;
 
@@ -517,10 +526,10 @@ function CGPathGetBoundingBox(aPath)
     if (!aPath || !aPath.count)
         return CGRectMakeZero();
 
-    var ox = 0,
-        oy = 0,
-        rx = 0,
-        ry = 0,
+    var ox = Number.MAX_VALUE,
+        oy = Number.MAX_VALUE,
+        rx = Number.MIN_VALUE,
+        ry = Number.MIN_VALUE,
         movePoint = nil;
 
     function addPoint(x, y)
@@ -608,7 +617,10 @@ function CGPathGetBoundingBox(aPath)
         }
     }
 
-    return CGRectMake(ox, oy, rx - ox, ry - oy);
+    // if the path is a straight line we'll end up with an empty rect. Adding 0.5
+    // to width and height means that we'll be able to happily intersect this rect.
+    // Need to check what Cocoa does in this case...
+    return CGRectMake(ox, oy, rx + 0.5 - ox, ry + 0.5 - oy);
 }
 
 function CGPathContainsPoint(aPath, aTransform, point, eoFill)
@@ -626,6 +638,375 @@ function CGPathContainsPoint(aPath, aTransform, point, eoFill)
     CGContextClosePath(context);
 
     return context.isPointInPath(point.x, point.y);
+}
+
+function CGPathApply(aPath, info, pathApplierFunction)
+{
+    for (var i = 0, count = aPath.count; i < count; ++i)
+    {
+        var element = aPath.elements[i];
+        pathApplierFunction(info, element);
+    }
+}
+
+function _CGPathDumpPathElement(label, aPathElement)
+{
+    CPLog.debug(label);
+    CPLog.debug("pathElement x: " + aPathElement.x + " y: " + aPathElement.y);
+    var type = "unknown";
+    
+    switch (aPathElement.type)
+    {
+        case kCGPathElementMoveToPoint: type = "moveTo"; break;
+        case kCGPathElementAddLineToPoint: type = "lineTo"; break;
+        case kCGPathElementAddQuadCurveToPoint: type = "quadCurveTo"; break;
+        case kCGPathElementAddCurveToPoint: type = "curveTo"; break;
+        case kCGPathElementCloseSubpath: type = "close"; break;
+        case kCGPathElementAddArc: type = "addArc"; break;
+        case kCGPathElementAddArcToPoint: type = "addArcToPoint"; break;
+    }
+    
+    CPLog.debug("    type: " + type);
+}
+
+function _CGPathDumpPointArray(label, pointArray)
+{
+    CPLog.warn(label);
+    for (var i = 0; i < pointArray.length; i++)
+    {
+        var c = pointArray[i];
+        CPLog.warn("       " + CGStringFromPoint(c));
+    }
+}
+
+/*
+ * Intersection code adapted from: https://www.particleincell.com/2013/cubic-line-intersection/
+ *
+ * Interactive SVG+Javascript demo that computes intersections 
+ * between a cubic bezier curve and a linear segment.
+ */
+
+function _CGPathParameterizeCurve(p1x, p1y, p2x, p2y, cp1x, cp1y, cp2x, cp2y)
+{
+/*
+    CPLog.debug("_CGPathParameterizeCurve(p1x: " + p1x + ", p1y: " + p1y + 
+                                        ", p2x: " + p2x + ", p2y: " + p2y +
+                                        ", cp1x: " + cp1x + ", cp1y: " + cp1y +
+                                        ", cp2x: " + cp2x + ", cp2y: " + cp2y);
+*/
+                                        
+    var coefficients = new Array(4);
+
+//	Z[0] = -P0 + 3*P1 + -3*P2 + P3; 
+    coefficients[0] = CGPointMake(-p1x + 3.0 * cp1x + -3.0 * cp2x + p2x,
+                                  -p1y + 3.0 * cp1y + -3.0 * cp2y + p2y);
+                                    
+//  Z[1] = 3*P0 - 6*P1 + 3*P2;
+    coefficients[1] = CGPointMake(3.0 * p1x - 6 * cp1x + 3 * cp2x,
+                                  3.0 * p1y - 6 * cp1y + 3 * cp2y);
+
+//  Z[2] = -3*P0 + 3*P1;
+    coefficients[2] = CGPointMake(-3.0 * p1x + 3.0 * cp1x,
+                                  -3.0 * p1y + 3.0 * cp1y);
+
+//  Z[3] = P0;
+    coefficients[3] = CGPointMake(p1x, p1y);
+    return coefficients;
+}
+
+function _CGPathParameterizeSubpathElement(aPathElement, aPathPrevPoint)
+{
+//    _CGPathDumpPathElement("_CGPathParameterizeSubpathElement", aPathElement);
+    
+    var coefficients = nil;
+    switch (aPathElement.type)
+    {
+    case kCGPathElementMoveToPoint:
+        break;
+    case kCGPathElementCloseSubpath:
+    case kCGPathElementAddLineToPoint:
+        // make it a fake curve so we only have to intersect between curves and lines
+        coefficients = _CGPathParameterizeCurve(aPathPrevPoint.x, aPathPrevPoint.y,
+                                                aPathElement.x, aPathElement.y,
+                                                ((aPathElement.x-aPathPrevPoint.x)/2 + aPathPrevPoint.x),
+                                                ((aPathElement.y-aPathPrevPoint.y)/2 + aPathPrevPoint.y),
+                                                ((aPathElement.x-aPathPrevPoint.x)/2 + aPathPrevPoint.x),
+                                                ((aPathElement.y-aPathPrevPoint.y)/2 + aPathPrevPoint.y));
+        break;
+    case kCGPathElementAddCurveToPoint:
+        coefficients = _CGPathParameterizeCurve(aPathPrevPoint.x, aPathPrevPoint.y,
+                                                aPathElement.x, aPathElement.y,
+                                                aPathElement.cp1x, aPathElement.cp1y,
+                                                aPathElement.cp2x, aPathElement.cp2y);
+        break;
+    default:
+        [CPException raise:CPInvalidArgumentException
+                    reason:"_CGPathParameterizeSubpathElement: Unexpected Bezier path element: " + aPathElement.type];
+        break;
+    }
+//    _CGPathDumpPointArray("   coefficients: ", coefficients);
+    return coefficients;
+}
+
+/*
+  Based on http://mysite.verizon.net/res148h4j/javascript/script_exact_cubic.html#the%20source%20code (now defunct)
+  but apparently written by Stephen Schmitt. As discussed in https://www.particleincell.com/2013/cubic-line-intersection/
+ */
+function _CGPathGetCubicRoots(P)
+{
+    // sign of number
+    function sgn( x )
+    {
+        if (x < 0.0) return -1;
+        return 1;
+    }
+
+    function sortSpecial(a)
+    {
+        var flip;
+        var temp;
+        
+        do {
+            flip=false;
+            for (var i=0;i<a.length-1;i++)
+            {
+                if ((a[i+1]>=0 && a[i]>a[i+1]) ||
+                    (a[i]<0 && a[i+1]>=0))
+                {
+                    flip=true;
+                    temp=a[i];
+                    a[i]=a[i+1];
+                    a[i+1]=temp;
+                    
+                }
+            }
+        } while (flip);
+    	return a;
+    }
+
+	var a=P[0];
+	var b=P[1];
+	var c=P[2];
+	var d=P[3];
+	
+	var A=b/a;
+	var B=c/a;
+	var C=d/a;
+
+    var Q, R, D, S, T, Im;
+
+    var Q = (3*B - Math.pow(A, 2))/9;
+    var R = (9*A*B - 27*C - 2*Math.pow(A, 3))/54;
+    var D = Math.pow(Q, 3) + Math.pow(R, 2);    // polynomial discriminant
+
+    var t=Array();
+	
+    if (D >= 0)                                 // complex or duplicate roots
+    {
+        var S = sgn(R + Math.sqrt(D))*Math.pow(Math.abs(R + Math.sqrt(D)),(1/3));
+        var T = sgn(R - Math.sqrt(D))*Math.pow(Math.abs(R - Math.sqrt(D)),(1/3));
+
+        t[0] = -A/3 + (S + T);                    // real root
+        t[1] = -A/3 - (S + T)/2;                  // real part of complex root
+        t[2] = -A/3 - (S + T)/2;                  // real part of complex root
+        Im = Math.abs(Math.sqrt(3)*(S - T)/2);    // complex part of root pair   
+        
+        /*discard complex roots*/
+        if (Im!=0)
+        {
+            t[1]=-1;
+            t[2]=-1;
+        }
+    
+    }
+    else                                          // distinct real roots
+    {
+        var th = Math.acos(R/Math.sqrt(-Math.pow(Q, 3)));
+        
+        t[0] = 2*Math.sqrt(-Q)*Math.cos(th/3) - A/3;
+        t[1] = 2*Math.sqrt(-Q)*Math.cos((th + 2*Math.PI)/3) - A/3;
+        t[2] = 2*Math.sqrt(-Q)*Math.cos((th + 4*Math.PI)/3) - A/3;
+        Im = 0.0;
+    }
+    
+    /*discard out of spec roots*/
+	for (var i=0;i<3;i++) 
+        if (t[i]<0 || t[i]>1.0) t[i]=-1;
+                
+	/*sort but place -1 at the end*/
+    t=sortSpecial(t);
+    
+    return t;
+}
+
+function _CGPathIntersectionsBetweenCurveAndLine(aCurveCoefficients, l1x, l1y, l2x, l2y)
+{
+    var intersections = Array();
+    var X = Array();
+    
+    var A = l2y - l1y;	         //A=y2-y1
+	var B = l1x - l2x;	         //B=x1-x2
+	var C = l1x * (l1y - l2y) + 
+            l1y * (l2x - l1x);	 //C=x1*(y1-y2)+y1*(x2-x1)
+	
+    var P = Array();
+	P[0] = A*aCurveCoefficients[0].y + B*aCurveCoefficients[0].y;		/*t^3*/
+	P[1] = A*aCurveCoefficients[1].x + B*aCurveCoefficients[1].y;		/*t^2*/
+	P[2] = A*aCurveCoefficients[2].x + B*aCurveCoefficients[2].y;		/*t*/
+	P[3] = A*aCurveCoefficients[3].x + B*aCurveCoefficients[3].y + C;	/*1*/
+	
+	var r=_CGPathGetCubicRoots(P);
+	
+    /*verify the roots are in bounds of the linear segment*/
+    for (var i=0;i<3;i++)
+    {
+        t=r[i];
+        
+        X[0]=aCurveCoefficients[0].x*t*t*t+aCurveCoefficients[1].x*t*t+aCurveCoefficients[2].x*t+aCurveCoefficients[3].x;
+        X[1]=aCurveCoefficients[0].y*t*t*t+aCurveCoefficients[1].y*t*t+aCurveCoefficients[2].y*t+aCurveCoefficients[3].y;            
+            
+        /*above is intersection point assuming infinitely long line segment,
+          make sure we are also in bounds of the line*/
+        var s;
+        if ((l2x-l1x)!=0)           /*if not vertical line*/
+            s=(X[0]-l1x)/(l2x-l1x);
+        else
+            s=(X[1]-l1y)/(l2y-l1y);
+        
+        if (isNaN(X[0]) || isNaN(X[1]))
+        {
+              // Garbage
+            continue;
+        }
+        
+        /*in bounds?*/    
+        if ((t<0 || t>1.0 || s<0 || s>1.0) == NO)
+        {
+            intersections.push(CGPointMake(X[0], X[1]));
+        }
+    }
+
+    return intersections;
+}
+
+function CGPathGetAllIntersectionsWithPath(aPath, anotherPath)
+{
+    if (aPath === anotherPath)
+    {
+        CPLog.warn("intersections with same path is not supported");
+        return nil;
+    }
+    
+    var intersections = [[CPMutableArray alloc] init];
+
+    // Quick check for intersection first
+    if (CGRectIntersectsRect(CGPathGetBoundingBox(aPath),
+                             CGPathGetBoundingBox(anotherPath)) == NO)
+    {
+        return intersections;
+    }
+
+    var aPathStartPoint = CGPointMakeZero();
+    var aPathPrevPoint = CGPointMakeZero();
+    
+    for (var i = 0, aPathCount = aPath.count; i < aPathCount; ++i)
+    {
+        var aPathElement = aPath.elements[i];
+
+        if (aPathElement.type == kCGPathElementMoveToPoint)
+        {
+            aPathPrevPoint.x = aPathElement.x;
+            aPathPrevPoint.y = aPathElement.y;
+            aPathStartPoint.x = aPathElement.x;
+            aPathStartPoint.y = aPathElement.y;
+            continue;
+        }
+        
+        if (aPathElement.type == kCGPathElementCloseSubpath)
+        {
+            // We're heading back to the start
+            aPathElement = {type: aPathElement.type, x: aPathStartPoint.x, y: aPathStartPoint.y};
+        }
+        
+        var aPathElementCoefficients = _CGPathParameterizeSubpathElement(aPathElement, aPathPrevPoint);
+        
+        var anotherPathPrevPoint = CGPointMakeZero();
+        var anotherPathStartPoint = CGPointMakeZero();
+        
+        for (var j = 0, anotherPathCount = anotherPath.count; j < anotherPathCount; ++j)
+        {
+            var anotherPathElement = anotherPath.elements[j];
+
+            if (anotherPathElement.type == kCGPathElementMoveToPoint)
+            {
+                anotherPathPrevPoint.x = anotherPathElement.x;
+                anotherPathPrevPoint.y = anotherPathElement.y;
+                anotherPathStartPoint.x = anotherPathElement.x;
+                anotherPathStartPoint.y = anotherPathElement.y;
+                continue;
+            }
+            
+            switch (aPathElement.type)
+            {
+            case kCGPathElementCloseSubpath:
+            case kCGPathElementAddLineToPoint:
+                switch(anotherPathElement.type)
+                {
+                
+                    case kCGPathElementCloseSubpath:
+                        // We're heading back to the start
+                        anotherPathElement = {type: anotherPathElement.type, x: anotherPathStartPoint.x, y: anotherPathStartPoint.y};
+                    case kCGPathElementAddLineToPoint:
+                        segmentIntersections = _CGPathIntersectionsBetweenCurveAndLine(aPathElementCoefficients, 
+                                                                                        anotherPathPrevPoint.x, anotherPathPrevPoint.y,
+                                                                                        anotherPathElement.x, anotherPathElement.y);
+                        break;
+
+                    case kCGPathElementAddCurveToPoint:
+                        var anotherPathElementCoefficients = _CGPathParameterizeCurve(anotherPathPrevPoint.x, anotherPathPrevPoint.y, anotherPathElement.x, anotherPathElement.y, anotherPathElement.cp1x, anotherPathElement.cp1y, anotherPathElement.cp2x, anotherPathElement.cp2y);
+                        segmentIntersections = _CGPathIntersectionsBetweenCurveAndLine(anotherPathElementCoefficients,
+                                                                                        anotherPathPrevPoint.x, anotherPathPrevPoint.y,
+                                                                                        aPathElement.x, aPathElement.y);
+                        break;
+
+                    default:
+                        [CPException raise:CPInvalidArgumentException
+                                    reason:"Unexpected Bezier path element (anotherPathElement.type): " + anotherPathElement.type];
+                        break;
+                }
+                break;
+            case kCGPathElementAddCurveToPoint:
+                switch(anotherPathElement.type)
+                {
+                    case kCGPathElementCloseSubpath:
+                    // We're heading back to the start
+                        anotherPathElement = {type: anotherPathElement.type, x: anotherPathStartPoint.x, y: anotherPathStartPoint.y};
+                    case kCGPathElementAddLineToPoint:
+                        segmentIntersections = _CGPathIntersectionsBetweenCurveAndLine(aPathElementCoefficients, 
+                                                                                        anotherPathPrevPoint.x, anotherPathPrevPoint.y,
+                                                                                        anotherPathElement.x, anotherPathElement.y);
+                        break;
+                    case kCGPathElementAddCurveToPoint:
+                        [CPException raise:CPInvalidArgumentException
+                                    reason:"Curve to curve intersections are not supported"];
+
+                        break;
+                    default:
+                        [CPException raise:CPInvalidArgumentException
+                                    reason:"Unexpected Bezier path element (aPathElement.type): " + aPathElement.type];
+                        break;
+                }
+                break;
+            }
+        anotherPathPrevPoint.x = anotherPathElement.x;
+        anotherPathPrevPoint.y = anotherPathElement.y;
+        [intersections addObjectsFromArray: segmentIntersections];
+        }
+        aPathPrevPoint.x = aPathElement.x;
+        aPathPrevPoint.y = aPathElement.y;
+    }
+    
+    return intersections;
 }
 
 /*!

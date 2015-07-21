@@ -20,6 +20,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@typedef CTTextAlignment
+
 kCTLeftTextAlignment        = 0;
 kCTRightTextAlignment       = 1;
 kCTCenterTextAlignment      = 2;
@@ -56,6 +58,8 @@ kCTParagraphStyleSpecifierMinimumLineSpacing     = "minimumLineSpacing";
 kCTParagraphStyleSpecifierLineSpacingAdjustment  = "lineSpacingAdjustment";
 
 CTDefaultParagraphStyleDictionary = nil;
+
+@typedef CTParagraphStyle
 
 function CTDefaultParagraphStyle()
 {

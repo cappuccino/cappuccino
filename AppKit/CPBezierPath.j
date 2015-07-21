@@ -23,6 +23,7 @@
  */
 
 @import <Foundation/CPObject.j>
+@import <Foundation/CPArray.j>
 
 @import "CPGraphicsContext.j"
 
@@ -58,6 +59,14 @@ var DefaultLineWidth = 1.0;
 + (CPBezierPath)bezierPath
 {
     return [[self alloc] init];
+}
+
+/*!
+    Create a new CPBezierPath object from a CGPath.
+*/
++ (CPBezierPath)bezierPathWithCGPath:(CGPath)path
+{
+    return [[self alloc] initWithCGPath: CGPathCreateCopy(path)];
 }
 
 /*!
@@ -143,14 +152,19 @@ var DefaultLineWidth = 1.0;
 */
 - (id)init
 {
+    return [self initWithCGPath: CGPathCreateMutable()];
+}
+
+- (id)initWithCGPath:(CGPath)path
+{
     if (self = [super init])
     {
-        _path = CGPathCreateMutable();
+        _path = path;
         _lineWidth = [[self class] defaultLineWidth];
         _lineDashesPhase = 0;
         _lineDashes = [];
     }
-
+    
     return self;
 }
 

@@ -213,3 +213,11 @@ var CPBundlesForURLStrings = { };
 }
 
 @end
+
+
+function CPLocalizedString(/* CPString */ key, /* CPString */ comment)
+{
+    // Currently just returns key - but here to allow hooking localization support
+    // when available. 
+    return key;
+}

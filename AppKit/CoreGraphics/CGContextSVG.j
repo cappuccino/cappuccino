@@ -38,12 +38,21 @@ function CGSVGGraphicsContext(width, height)
     // if the property syntax is used.
     this.DOMElement.setAttribute("width", width + "px");
     this.DOMElement.setAttribute("height", height + "px");
+    this.defsElement = document.createElementNS(SVGNameSpace, "defs");
+    this.DOMElement.appendChild(this.defsElement);
+    this.gradients = new Object();
+    
     CPDOMDisplayServerSetStyleSize(this.DOMElement, width, height);
 }
 
 CGSVGGraphicsContext.prototype = Object.create(CGContext.prototype);
 
 CGSVGGraphicsContext.prototype.constructor = CGSVGGraphicsContext;
+
+CGSVGGraphicsContext.prototype.toString = function()
+{
+    return "CGSVGGraphicsContext";
+}
 
 function CGSVGGraphicsContextCreate(width, height)
 {
@@ -52,6 +61,9 @@ function CGSVGGraphicsContextCreate(width, height)
 
 function CGSVGGraphicsContextCreateImage(anSVGContext)
 {
+    
+    anSVGContext.addDefinitions();
+    
     return anSVGContext.DOMElement;
 }
 
@@ -64,6 +76,36 @@ function CGContextDrawSVGImageAtPoint(aDIVContext, anSVGImage, aLocation)
     
     CPDOMDisplayServerSetStyleLeftTop(anSVGImage, NULL, aLocation.x, aLocation.y);
     aDIVContext.DOMElement.appendChild(anSVGImage);
+}
+
+CGSVGGraphicsContext.prototype.defineGradients = function()
+{
+//    CPLog.trace("CGSVGGraphicsContext.prototype.defineGradients()");
+    
+    for (var key in this.gradients)
+    {
+        var gradient = this.gradients[key];
+        var gradientDef = document.createElementNS(SVGNameSpace, "linearGradient");
+        gradientDef.id = gradient.name;
+        var count = gradient.locations.length;
+        for (var i = 0; i < count; i++)
+        {
+            var gradientOffset = document.createElementNS(SVGNameSpace, "stop");
+            gradientOffset.setAttribute("offset", gradient.locations[i]);
+            var color = gradient.colors[i];
+            // CGColor support is lacking!
+            var cpcolor = [[CPColor alloc] _initWithRGBA: CGColorGetComponents(color)];
+            gradientOffset.setAttribute("style", "stop-color: " + [cpcolor cssString]);
+            gradientDef.appendChild(gradientOffset);
+        }
+        this.defsElement.appendChild(gradientDef);
+    }
+}
+
+CGSVGGraphicsContext.prototype.addDefinitions = function()
+{
+//    CPLog.trace("CGSVGGraphicsContext.prototype.addDefinitions()");
+    this.defineGradients();
 }
 
 CGSVGGraphicsContext.prototype.clearRect = function(aRect)
@@ -84,10 +126,18 @@ CGSVGGraphicsContext.prototype.applyStyleToElement = function(anElement, aMode)
         stroke = (aMode == kCGPathStroke || aMode == kCGPathFillStroke) ? 1 : 0,
         opacity = gState.alpha;
         
-    if (fill) {
-        style.push("fill: " + gState.fillStyle);
-    } else {
-        style.push("fill: none");
+    if (this.activeGradient)
+    {
+        // An active gradient automatically enables a fill
+        style.push("fill: url(#" + this.activeGradient.name + ")");
+    }
+    else
+    {
+        if (fill) {
+            style.push("fill: " + gState.fillStyle);
+        } else {
+            style.push("fill: none");
+        }
     }
 
     if (stroke) {
@@ -106,7 +156,7 @@ CGSVGGraphicsContext.prototype.fillRects = function(rects, count)
     for (var i = 0; i < count; i++)
     {
         var aRect = rects[i];
-        var rectElement = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        var rectElement = document.createElementNS(SVGNameSpace, "rect");
         rectElement.setAttribute("x", CGRectGetMinX(aRect));
         rectElement.setAttribute("y", CGRectGetMinY(aRect));
         rectElement.setAttribute("width", CGRectGetWidth(aRect));
@@ -215,3 +265,125 @@ CGSVGGraphicsContext.prototype.drawPath = function(aMode)
     this.DOMElement.appendChild(svgPath);
 }
 
+CGSVGGraphicsContext.prototype.drawLinearGradient = function(aGradient, aStartPoint, anEndPoint, options)
+{
+//    CPLog.trace("CGSVGGraphicsContext.prototype.drawLinearGradient()");
+    this.gradients[aGradient.name] = aGradient;
+    this.activeGradient = aGradient;
+    this.drawPath();
+    this.activeGradient = nil;
+}
+
+CGSVGGraphicsContext.prototype.drawRadialGradient = function(aGradient, aStartCenter, aStartRadius, anEndCenter, anEndRadius, options)
+{
+    CPLog.warn("CGSVGGraphicsContext.prototype.drawRadialGradient() unimplemented");
+}
+
+/*!
+    Apply the current configured text style to the style array
+    @param force apply the style param even if it is the same as currently currently configured.
+*/
+function CGSVGGraphicsContextApplyTextStyle(aContext, style, force)
+{
+    if (force == YES || aContext.textGState.font != aContext.gState.font)
+    {
+        style.push("font-family: " + CGFontCopyFullName(aContext.gState.font));
+    }
+
+    if (force == YES || aContext.textGState.fontSize != aContext.gState.fontSize)
+    {
+        style.push("font-size: " + aContext.gState.fontSize);
+    }
+
+    switch(aContext.gState.textDrawingMode)
+    {
+        case kCGTextFill:
+            if (force == YES || aContext.textGState.fillStyle != aContext.gState.fillStyle)
+            {
+                style.push("fill: " + aContext.gState.fillStyle);
+                style.push("stroke: none");
+            }
+            break;
+        case kCGTextStroke:
+            if (force == YES || aContext.textGState.strokeStyle != aContext.gState.strokeStyle)
+            {
+                style.push("fill: none");
+                style.push("stroke: " + aContext.gState.strokeStyle);
+            }
+        case kCGTextFillStroke:
+            if (force == YES || aContext.textGState.strokeStyle != aContext.gState.strokeStyle ||
+                aContext.textGState.fillStyle != aContext.gState.fillStyle)
+            {
+                style.push("fill: " + aContext.gState.fillStyle);
+                style.push("stroke: " + aContext.gState.strokeStyle);
+            }
+        
+        default:
+            break;
+    }
+}
+
+/*!
+    Creates an SVG 'text' element within which 'tspan' elements can be placed
+ */
+CGSVGGraphicsContext.prototype.beginText = function()
+{
+    this.svgText = document.createElementNS(SVGNameSpace, "text");
+    var location = this.textPosition();
+    this.svgText.setAttribute("x", location.x);
+    this.svgText.setAttribute("y", location.y);
+    // Preserve the gState so that we know if state deviates
+    this.textGState = CGGStateCreateCopy(this.gState);
+
+    style = new Array();
+        
+    CGSVGGraphicsContextApplyTextStyle(this, style, YES);
+
+    this.svgText.setAttribute("style", style.join(";"));
+}
+
+/*!
+    Appends the SVG 'text' element and resets itself
+ */
+CGSVGGraphicsContext.prototype.endText = function()
+{
+    this.DOMElement.appendChild(this.svgText);
+    this.svgText = nil;
+}
+
+/*!
+    Apply the current configured text style to the style array
+    @param text the text to show
+    @param positions currently ignored - the configured textPosition is used instead
+    @param count currently ignored.
+*/
+CGSVGGraphicsContext.prototype.showTextAtPositions = function(text, positions, count)
+{
+    var textElement = nil;
+    
+    style = new Array();
+    if (this.svgText)
+    {
+        textElement = document.createElementNS(SVGNameSpace, "tspan");
+        CGSVGGraphicsContextApplyTextStyle(this, style, NO);
+    }
+    else
+    {
+        textElement = document.createElementNS(SVGNameSpace, "text");
+        CGSVGGraphicsContextApplyTextStyle(this, style, YES);
+    }
+    
+    textElement.setAttribute("style", style.join(";"));
+    if (this.svgText == nil)
+    {
+        var location = this.textPosition();
+        textElement.x = location.x;
+        textElement.y = location.y;
+    }
+    textElement.textContent = text;
+    this.textMatrix.tx += textElement.getComputedTextLength();
+    if (this.svgText)
+        this.svgText.appendChild(textElement);
+    else
+        this.DOMElement.appendChild(textElement);
+}

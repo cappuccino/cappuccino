@@ -75,6 +75,8 @@ var CPGraphicsContextCurrent = nil,
         [lastContext restoreGraphicsState];
         [CPGraphicsContextThreadStack removeLastObject];
     }
+    
+    CPGraphicsContextCurrent = lastContext;
 }
 
 /*!

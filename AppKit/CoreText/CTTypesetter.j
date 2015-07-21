@@ -32,9 +32,10 @@ kCTTypesetterOptionForcedEmbeddingLevel = "CTTypesetterOptionForcedEmbeddingLeve
 
 @import "CPGraphicsContext.j"
 
+var CPTypesetterSVGTextElement = nil;
+
 @implementation CPTypesetter : CPObject
 {
-    DOMElement  _svgTextElement;
     CPAttributedString _string;
     int _lineBreakMode;
 }
@@ -44,14 +45,18 @@ kCTTypesetterOptionForcedEmbeddingLevel = "CTTypesetterOptionForcedEmbeddingLeve
     self = [super init];
     if (self)
     {
-        var context = [[CPGraphicsContext currentContext] graphicsPort];
+        if (CPTypesetterSVGTextElement === nil) {
+            var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            // Place it offscreen
+            CPDOMDisplayServerSetStyleLeftTop(svg, NULL, -1000, -1000);
         
-        var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-        // Place it offscreen
-        CPDOMDisplayServerSetStyleLeftTop(svg, NULL, 0, -100);
-        
-        _svgTextElement = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        
+            CPTypesetterSVGTextElement = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            svg.style.display = "hidden";
+            svg.appendChild(CPTypesetterSVGTextElement);
+            var elements = document.getElementsByTagName("body");
+            elements[0].appendChild(svg)
+        }
+            
         var attributes = CTGetDefaultAttributes();
         var paragraphStyle = [attributes objectForKey: kCTParagraphStyleAttributeName];
         _lineBreakMode = [CTParagraphStyleGetValueForSpecifier(paragraphStyle, kCTParagraphStyleSpecifierLineBreakMode) intValue];
@@ -60,13 +65,10 @@ kCTTypesetterOptionForcedEmbeddingLevel = "CTTypesetterOptionForcedEmbeddingLeve
         var style = new Array();
         style.push("font-family: " +  CTFontCopyFullName(font));
         style.push("font-size: " + CTFontGetSize(font));
-        _svgTextElement.setAttribute("style", style.join(";"));
+        CPTypesetterSVGTextElement.setAttribute("style", style.join(";"));
 
-        svg.style.display = "hidden";
-        svg.appendChild(_svgTextElement);
-        context.DOMElement.appendChild(svg);
-        
         _string = [string copy];
+        
         // options are ignored
     }
     return self;
@@ -87,9 +89,9 @@ kCTTypesetterOptionForcedEmbeddingLevel = "CTTypesetterOptionForcedEmbeddingLeve
 
 - (void)clearTextElement
 {
-    while (_svgTextElement.hasChildNodes())
+    while (CPTypesetterSVGTextElement.hasChildNodes())
     {
-        _svgTextElement.removeChild(_svgTextElement.lastChild);
+        CPTypesetterSVGTextElement.removeChild(CPTypesetterSVGTextElement.lastChild);
     }
 }
 
@@ -110,16 +112,19 @@ kCTTypesetterOptionForcedEmbeddingLevel = "CTTypesetterOptionForcedEmbeddingLeve
          tspan.textContent = [[string string] substringWithRange: attributeRange];
          
          var font = [attributes objectForKey: kCTFontAttributeName];
-         if (font != nil)
+         if (font !== nil)
          {
             var style = new Array();
             style.push("font-family: " +  CTFontCopyFullName(font));
             style.push("font-size: " + CTFontGetSize(font));
             tspan.setAttribute("style", style.join(";"));
          }
-         _svgTextElement.appendChild(tspan);
+         CPTypesetterSVGTextElement.appendChild(tspan);
     }
-    var length = _svgTextElement.getComputedTextLength();
+    var length = CPTypesetterSVGTextElement.getComputedTextLength();
+
+    [self clearTextElement];
+    
     return length;
 }
 
@@ -163,6 +168,12 @@ function isWhiteSpace(ch)
         }
     }
     
+    if (tooWide == NO)
+    {
+        // The range fits so just set the word break to the char break.
+        lastWordBreakIndex = charBreakIndex;
+    }
+    
     switch(_lineBreakMode)
     {
         case kCTLineBreakByWordWrapping:
@@ -179,6 +190,7 @@ function isWhiteSpace(ch)
 
 - (int)suggestClusterBreakAfterIndex:(int)startIndex width:(double)width offset: (double)offset
 {
+    CPLog.warn("- [CTTypesetter suggestClusterBreakAfterIndex:width:offset:] not implemented");
     return -1;
 }
 

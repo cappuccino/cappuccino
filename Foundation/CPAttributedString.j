@@ -834,6 +834,14 @@
     //do nothing (says cocotron and gnustep)
 }
 
+/*!
+    Cocoa API compatibility
+ */
+- (void)fixAttributesInRange:(CPRange)range
+{
+    // for subclassers
+}
+
 @end
 
 var CPAttributedStringStringKey     = "CPAttributedStringString",
@@ -925,3 +933,22 @@ var splitRangeEntryAtIndex = function(/*RangeEntry*/aRangeEntry, /*unsigned*/anI
 
     return [aRangeEntry, newRangeEntry];
 };
+
+/*!
+    CoreFoundation functions mapped to CPAttributedString
+*/
+
+function CFAttributedStringCreateMutable()
+{
+    return [[CPAttributedString alloc] init];
+}
+
+function CFAttributedStringReplaceString(attrString, aRange, aString)
+{
+    [attrString replaceCharactersInRange: aRange withString: aString];
+}
+
+function CFAttributedStringSetAttribute(attrString, aRange, attributeName, attributeValue)
+{
+    [attrString addAttribute: attributeName value: attributeValue range: aRange];
+}

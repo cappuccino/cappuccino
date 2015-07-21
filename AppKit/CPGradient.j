@@ -41,6 +41,11 @@ CPGradientDrawsAfterEndingLocation      = kCGGradientDrawsAfterEndLocation;
     CGGradient _gradient;
 }
 
++ (id)gradientWithStartingColor:(CPColor)startingColor endingColor:(CPColor)endingColor
+{
+    return [[[self class] alloc] initWithStartingColor: startingColor endingColor: endingColor];
+}
+
 - (id)initWithStartingColor:(CPColor)startingColor endingColor:(CPColor)endingColor
 {
     return [self initWithColors:[startingColor, endingColor]];
@@ -163,6 +168,11 @@ CPGradientDrawsAfterEndingLocation      = kCGGradientDrawsAfterEndLocation;
     // TODO kCGGradientDrawsBeforeStartLocation and kCGGradientDrawsAfterEndLocation are not actually supported
     // by CGContextDrawLinearGradient yet.
     CGContextDrawLinearGradient(ctx, _gradient, startingPoint, endingPoint, options);
+}
+
+- (CPString)description
+{
+    return [CPString stringWithFormat: @"CPGradient stops: %d", _gradient.locations.length];
 }
 
 @end

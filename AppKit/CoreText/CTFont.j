@@ -20,33 +20,85 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import <Foundation/Foundation.j>
+
 @import "CGAffineTransform.j"
 
-@typedef CTFont
+@typedef CTFontRef
 
 /*!
     @addtogroup coretext
     @{
 */
 
+@implementation CTFont : CPObject
+{
+    CPString          _name;
+    float             _size;
+    CGAffineTransform _matrix;
+}
+
+- (id)initWithFontName:(CPString)name size:(float)size
+{
+    return [self initWithFontName: name size: size matrix: CGAffineTransformMakeIdentity()];
+}
+
+- (id)initWithFontName:(CPString)name size:(float)size matrix:(CGAffineTransform)matrix
+{
+    if (self = [super init]) {
+        _name = [name copy];
+        _size = size;
+        _matrix = matrix ? CGAffineTransformMakeCopy(matrix) : CGAffineTransformMakeIdentity();
+    }
+    return self;
+}
+
+- (CPString)fontName
+{
+    return _name;
+}
+
+- (float)size
+{
+    return _size;
+}
+
+- (CGAffineTransform)matrix
+{
+    return CGAffineTransformMakeCopy(_matrix);
+}
+
+- (CPString)description
+{
+    return [CPString stringWithFormat: "CTFont name: %@, size: %f, matrix: %@", _name, _size, _matrix];
+}
+
+@end
+
+
 function CTFontCreateWithFontName(name, size, matrix)
 {
-    return { name: name, size: size, matrix: (matrix != nil) ? matrix : CGAffineTransformMakeIdentity() };
+    return [[CTFont alloc] initWithFontName: name size: size matrix: matrix];
 }
 
 function CTFontCopyFullName(aFont)
 {
-    return aFont.name;
+    return [[aFont fontName] copy];
 }
 
 function CTFontGetMatrix(aFont)
 {
-    return aFont.matrix;
+    return [aFont matrix];
 }
 
 function CTFontGetSize(aFont)
 {
-    return aFont.size;
+    return [aFont size];
+}
+
+function CTFontDumpInfo(aFont)
+{
+    CPLog.debug([aFont description]);
 }
 
 /*!

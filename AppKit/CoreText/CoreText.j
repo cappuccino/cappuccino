@@ -22,6 +22,7 @@
 
 @import "CTDefaultAttributes.j"
 @import "CTFont.j"
+@import "CTFontDescriptor.j"
 @import "CTFrame.j"
 @import "CTFramesetter.j"
 @import "CTLine.j"

@@ -50,6 +50,11 @@ CGCanvasGraphicsContext.prototype = Object.create(CGContext.prototype);
 
 CGCanvasGraphicsContext.prototype.constructor = CGCanvasGraphicsContext;
 
+CGCanvasGraphicsContext.prototype.toString = function()
+{
+    return "CGCanvasGraphicsContext";
+}
+
 function CGCanvasGraphicsContextCreate(aSize)
 {
     return new CGCanvasGraphicsContext(aSize);

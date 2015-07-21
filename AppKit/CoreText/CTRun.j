@@ -64,6 +64,8 @@ function CTRunGetImageBounds(aRun)
 
 function CTApplyAttributes(aContext, attributes)
 {
+//    CPLog.trace("CTApplyAttributes(<>, %@)", attributes);
+    
     if (attributes)
     {
         // Set the attributes first!

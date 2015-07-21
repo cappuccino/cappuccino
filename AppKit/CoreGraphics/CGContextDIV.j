@@ -35,6 +35,11 @@ CGDIVGraphicsContext.prototype = Object.create(CGContext.prototype);
 
 CGDIVGraphicsContext.prototype.constructor = CGDIVGraphicsContext;
 
+CGDIVGraphicsContext.prototype.toString = function()
+{
+    return "CGDIVGraphicsContext";
+}
+
 function CGDIVGraphicsContextCreate()
 {
     return new CGDIVGraphicsContext();

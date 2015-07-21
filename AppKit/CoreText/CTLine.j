@@ -28,6 +28,7 @@
 
 @implementation CPLine : CPObject
 {
+    CPAttributedString _string;
     CPArray _runs;
     CGPoint _origin;
     double  _height;
@@ -39,6 +40,7 @@
     self = [super init];
     if (self)
     {
+        _string = string;
         _runs = [[CPArray alloc] init];
         _origin = CGPointMakeZero;
         _height = 0;
@@ -59,6 +61,11 @@
         }
     }
     return self;
+}
+
+- (CPAttributedString)attributedString
+{
+    return _string;
 }
 
 - (CGPoint)origin

@@ -52,12 +52,48 @@
 
 - (CPRange)textRange
 {
+    // Todo: FIXME
+    CPLog.warn("- [CTFrame textRange] not implemented yet");
     return CPMakeRange(0, 0);
 }
 
 - (CPRange)visibleTextRange
 {
+    // Todo: FIXME
+    CPLog.warn("- [CTFrame visibleTextRange] not implemented yet");
     return CPMakeRange(0, 0);
+}
+
+- (CGRect)visibleTextBounds
+{
+    var minX = Number.MAX_VALUE,
+        minY = Number.MAX_VALUE,
+        maxX = Number.MIN_VALUE,
+        maxY = Number.MIN_VALUE;
+        
+    var enumerator = [_lines objectEnumerator];
+    var line = nil;
+    while ((line = [enumerator nextObject]) != nil )
+    {
+        var origin = [line origin];
+        if (origin.x < minX)
+        {
+            minX = origin.x;
+        }
+        if (origin.y - [line height] < minY)
+        {
+            minY = origin.y - [line height];
+        }
+        if (origin.x + [line width] > maxX)
+        {
+            maxX = origin.x + [line width];
+        }
+        if (origin.y > maxY)
+        {
+            maxY = origin.y;
+        }
+    }
+    return CGRectMake(minX, minY, maxX-minX, maxY-minY);
 }
 
 - (CGPath)path
@@ -103,6 +139,8 @@
 
 @end
 
+@typedef CTFrameRef
+
 function CTFrameGetTextRange(aFrame)
 {
     return [aFrame textRange];
@@ -138,6 +176,7 @@ function CTFrameGetLines(aFrame)
 
 function CTFrameGetLineOrigins(aFrame, aRange, origins)
 {
+    CPLog.warn("CTFrameGetLineOrigins() not implemented yet");
 }
 
 function CTFrameDraw(aFrame, aContext)
