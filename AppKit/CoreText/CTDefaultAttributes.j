@@ -39,6 +39,21 @@ kCTVerticalFormsAttributeName               = "CTVerticalFormsAttributeName";
 kCTGlyphInfoAttributeName                   = "CTGlyphInfoAttributeName";
 kCTRunDelegateAttributeName                 = "CTRunDelegateAttributeName"; 
 
+@typedef CTUnderlineStyle
+
+kCTUnderlineStyleNone                       = 0x00;
+kCTUnderlineStyleSingle                     = 0x01;
+kCTUnderlineStyleThick                      = 0x02;
+kCTUnderlineStyleDouble                     = 0x09; 
+
+@typedef CTUnderlineStyleModifiers
+
+kCTUnderlinePatternSolid                    = 0x0000;
+kCTUnderlinePatternDot                      = 0x0100;
+kCTUnderlinePatternDash                     = 0x0200;
+kCTUnderlinePatternDashDot                  = 0x0300;
+kCTUnderlinePatternDashDotDot               = 0x0400;
+
 var CTDefaultTextAttributes = nil;
 
 function CTGetDefaultAttributes()
