@@ -26,6 +26,16 @@
 @import "CPURLRequest.j"
 @import "CPURLResponse.j"
 
+@protocol CPURLConnectionDelegate <CPObject>
+
+- (void)connection:(CPURLConnection)anURLConnection didFailWithError:(CPException)anError;
+- (void)connection:(CPURLConnection)anURLConnection didReceiveData:(CPString)aData;
+- (void)connection:(CPURLConnection)anURLConnection didReceiveResponse:(CPString)aResponse;
+- (void)connectionDidFinishLoading:(CPURLConnection)anURLConnection;
+- (void)connectionDidReceiveAuthenticationChallenge:(CPURLConnection)anURLConnection;
+
+@end
+
 @typedef HTTPRequest
 
 var CPURLConnectionDelegate = nil;
@@ -76,16 +86,16 @@ var CPURLConnectionDelegate = nil;
 */
 @implementation CPURLConnection : CPObject
 {
-    CPURLRequest    _originalRequest        @accessors(readonly, getter=originalRequest);
-    CPURLRequest    _request                @accessors(readonly, getter=currentRequest);
-    id              _delegate;
-    BOOL            _isCanceled;
-    BOOL            _isLocalFileConnection;
+    CPURLRequest                    _originalRequest        @accessors(readonly, getter=originalRequest);
+    CPURLRequest                    _request                @accessors(readonly, getter=currentRequest);
+    id  <CPURLConnectionDelegate>   _delegate;
+    BOOL                            _isCanceled;
+    BOOL                            _isLocalFileConnection;
 
-    HTTPRequest     _HTTPRequest;
+    HTTPRequest                     _HTTPRequest;
 }
 
-+ (void)setClassDelegate:(id)delegate
++ (void)setClassDelegate:(id <CPURLConnectionDelegate>)delegate
 {
     CPURLConnectionDelegate = delegate;
 }
@@ -145,7 +155,7 @@ var CPURLConnectionDelegate = nil;
     @param shouldStartImmediately whether the \c -start method should be called from here
     @return the initialized url connection
 */
-- (id)initWithRequest:(CPURLRequest)aRequest delegate:(id)aDelegate startImmediately:(BOOL)shouldStartImmediately
+- (id)initWithRequest:(CPURLRequest)aRequest delegate:(id <CPURLConnectionDelegate>)aDelegate startImmediately:(BOOL)shouldStartImmediately
 {
     self = [super init];
 
@@ -175,7 +185,7 @@ var CPURLConnectionDelegate = nil;
     return self;
 }
 
-- (id)initWithRequest:(CPURLRequest)aRequest delegate:(id)aDelegate
+- (id)initWithRequest:(CPURLRequest)aRequest delegate:(id <CPURLConnectionDelegate>)aDelegate
 {
     return [self initWithRequest:aRequest delegate:aDelegate startImmediately:YES];
 }
