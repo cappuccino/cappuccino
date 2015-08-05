@@ -255,12 +255,14 @@ CGCanvasGraphicsContext.prototype.addRects = function(rects, count)
 
 CGCanvasGraphicsContext.prototype.beginPath = function()
 {
+//    CPLog.trace("CGCanvasGraphicsContext.prototype.beginPath()");
     this.canvasAPI.beginPath();
     this.hasPath = NO;
 }
 
-CGCanvasGraphicsContext.prototype.closePath = function()
+CGCanvasGraphicsContext.prototype.closeSubpath = function()
 {
+//    CPLog.trace("CGCanvasGraphicsContext.prototype.closeSubpath()");
     this.canvasAPI.closePath();
 }
 

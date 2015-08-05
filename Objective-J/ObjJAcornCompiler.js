@@ -428,6 +428,11 @@ exports.ObjJAcornCompiler.compileToIMBuffer = function(/*String*/ aString, /*CFU
 
 exports.ObjJAcornCompiler.compileFileDependencies = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ flags)
 {
+#ifdef BROWSER
+        console.log("Compiling: " + aURL);
+#else
+        print("Compiling: " + aURL);
+#endif
     ObjJAcornCompiler.currentCompileFile = aURL;
     return new ObjJAcornCompiler(aString, aURL, flags, 1).executable();
 }

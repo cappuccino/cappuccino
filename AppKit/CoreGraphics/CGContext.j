@@ -275,12 +275,14 @@ CGContext.prototype.addRects = function(rects, count)
 
 CGContext.prototype.beginPath = function()
 {
+//    CPLog.trace("CGContext.prototype.beginPath()");
     // This clears any previous path.
     this.path = CGPathCreateMutable();
 }
 
 CGContext.prototype.closeSubpath = function()
 {
+//    CPLog.trace("CGContext.prototype.closeSubpath()");
     CGPathCloseSubpath(this.path);
 }
 
@@ -304,7 +306,7 @@ CGContext.prototype.fillRects = function(rects, count)
 
     this.beginPath();
     this.addRects(rects, count);
-    this.closePath();
+    this.closeSubpath();
 
     this.drawPath(kCGPathFill);
 }
@@ -313,7 +315,7 @@ CGContext.prototype.strokeRect = function(aRect)
 {
     this.beginPath();
     this.addRect(aRect);
-    this.closePath();
+    this.closeSubpath();
 
     this.strokePath();
 }
@@ -322,13 +324,13 @@ CGContext.prototype.addEllipseInRect = function(aRect)
 {
     this.beginPath();
     this.addPath(CGPathWithEllipseInRect(aRect));
-    this.closePath();
+    this.closeSubpath();
 }
 
 CGContext.prototype.strokePath = function()
 {
     this.drawPath(kCGPathStroke);
-    this.closePath();
+    this.closeSubpath();
 }
 
 CGContext.prototype.strokeLineSegments = function(points, count)

@@ -341,9 +341,11 @@ function CGPathWithEllipseInRect(aRect)
 {
     var path = CGPathCreateMutable();
 
-    if (CGRectGetWidth(aRect) === CGRectGetHeight(aRect))
-        CGPathAddArc(path, nil, CGRectGetMidX(aRect), CGRectGetMidY(aRect), CGRectGetWidth(aRect) / 2.0, 0.0, 2 * PI, YES);
-    else
+//  The kCGPathElementAddArc and kCGPathElementAddArcToPoint are toxic to SVG
+//  and aren't part of Apple's CoreGraphics so they should be removed.
+//    if (CGRectGetWidth(aRect) === CGRectGetHeight(aRect))
+//        CGPathAddArc(path, nil, CGRectGetMidX(aRect), CGRectGetMidY(aRect), CGRectGetWidth(aRect) / 2.0, 0.0, 2 * PI, YES);
+//    else
     {
         var axis = CGSizeMake(CGRectGetWidth(aRect) / 2.0, CGRectGetHeight(aRect) / 2.0),
             center = CGPointMake(CGRectGetMinX(aRect) + axis.width, CGRectGetMinY(aRect) + axis.height);
@@ -637,7 +639,7 @@ function CGPathContainsPoint(aPath, aTransform, point, eoFill)
     CGContextAddPath(context, aPath);
     CGContextClosePath(context);
 
-    return context.isPointInPath(point.x, point.y);
+    return context.canvasAPI.isPointInPath(point.x, point.y);
 }
 
 function CGPathApply(aPath, info, pathApplierFunction)

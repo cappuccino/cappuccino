@@ -265,6 +265,18 @@ CGSVGGraphicsContext.prototype.drawPath = function(aMode)
     this.DOMElement.appendChild(svgPath);
 }
 
+CGSVGGraphicsContext.prototype.drawImage = function(aRect, anImage)
+{
+    var imageElement = document.createElementNS(SVGNameSpace, "image");
+    imageElement.setAttributeNS("http://www.w3.org/1999/xlink","href", anImage._filename);
+    imageElement.setAttribute("x", CGRectGetMinX(aRect));
+    imageElement.setAttribute("y", CGRectGetMinY(aRect));
+    imageElement.setAttribute("width", CGRectGetWidth(aRect));
+    imageElement.setAttribute("height", CGRectGetHeight(aRect));
+    this.DOMElement.appendChild(imageElement);
+}
+
+
 CGSVGGraphicsContext.prototype.drawLinearGradient = function(aGradient, aStartPoint, anEndPoint, options)
 {
 //    CPLog.trace("CGSVGGraphicsContext.prototype.drawLinearGradient()");

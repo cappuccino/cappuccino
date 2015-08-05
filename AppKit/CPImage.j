@@ -30,6 +30,8 @@
 @import "CGGeometry.j"
 @import "CPCompatibility.j"
 
+@import "CGContext.j"
+@import "CPGraphicsContext.j"
 
 @protocol CPImageDelegate <CPObject>
 
@@ -298,7 +300,7 @@ function CPAppKitImage(aFilename, aSize)
 
         AppKitImageForNames[aName] = imageOrSize;
     }
-
+    
     return imageOrSize;
 }
 
@@ -444,6 +446,35 @@ function CPAppKitImage(aFilename, aSize)
 - (BOOL)isNinePartImage
 {
     return NO;
+}
+
+- (void)drawAtPoint:(CGPoint)point
+{
+    [self drawAtPoint: point blendMode: kCGBlendModeNormal alpha: 1.0];
+}
+
+- (void)drawAtPoint:(CGPoint)point blendMode:(CGBlendMode)blendMode alpha:(CGFloat)alpha
+{
+    var rect = CGRectMake(point.x, point.y, _size.width, _size.height);
+    [self drawInRect: rect blendMode: blendMode alpha: alpha];
+}
+
+- (void)drawInRect:(CGRect)rect
+{
+    [self drawInRect: rect blendMode: kCGBlendModeNormal alpha: 1.0];
+}
+
+- (void)drawInRect:(CGRect)rect blendMode:(CGBlendMode)blendMode alpha:(CGFloat)alpha
+{
+    [CPGraphicsContext saveGraphicsState];
+    var ctx = [[CPGraphicsContext currentContext] graphicsPort];
+    CGContextSetAlpha(ctx, alpha);
+    CGContextSetBlendMode(ctx, blendMode);
+
+    // This should really be passing self._cgImage - but that requires a big rewrite of Cappuccino
+    // So we're bodging it for now.
+    CGContextDrawImage(ctx, rect, self);
+    [CPGraphicsContext restoreGraphicsState];
 }
 
 - (CPString)description
