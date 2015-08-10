@@ -41,6 +41,9 @@ function CGSVGGraphicsContext(width, height)
     this.defsElement = document.createElementNS(SVGNameSpace, "defs");
     this.DOMElement.appendChild(this.defsElement);
     this.gradients = new Object();
+    this.shadowFilters = new Object();
+    this.groups = new Array();
+    this.shadowID = 0;
     
     CPDOMDisplayServerSetStyleSize(this.DOMElement, width, height);
 }
@@ -61,7 +64,6 @@ function CGSVGGraphicsContextCreate(width, height)
 
 function CGSVGGraphicsContextCreateImage(anSVGContext)
 {
-    
     anSVGContext.addDefinitions();
     
     return anSVGContext.DOMElement;
@@ -76,6 +78,18 @@ function CGContextDrawSVGImageAtPoint(aDIVContext, anSVGImage, aLocation)
     
     CPDOMDisplayServerSetStyleLeftTop(anSVGImage, NULL, aLocation.x, aLocation.y);
     aDIVContext.DOMElement.appendChild(anSVGImage);
+}
+
+
+CGSVGGraphicsContext.prototype.currentDOMElementContainer = function()
+{
+    if (this.groups.length == 0)
+    {
+        return this.DOMElement;   
+    } else
+    {
+        return this.groups[this.groups.length - 1];
+    }
 }
 
 CGSVGGraphicsContext.prototype.defineGradients = function()
@@ -102,10 +116,63 @@ CGSVGGraphicsContext.prototype.defineGradients = function()
     }
 }
 
+CGSVGGraphicsContext.prototype.defineShadowFilters = function()
+{
+//    CPLog.trace("CGSVGGraphicsContext.prototype.defineShadowFilters()");
+    for (var key in this.shadowFilters)
+    {
+        var shadowFilter = this.shadowFilters[key];
+        
+        var shadowFilterDef = document.createElementNS(SVGNameSpace, "filter");
+        shadowFilterDef.id = shadowFilter.name;
+        {
+            var blurDef = document.createElementNS(SVGNameSpace, "feGaussianBlur");
+            blurDef.setAttribute("in", "SourceAlpha");
+            blurDef.setAttribute("stdDeviation", shadowFilter.blur);
+            blurDef.setAttribute("result", "blur");
+            shadowFilterDef.appendChild(blurDef);
+        }
+        
+        {
+            var offsetDef = document.createElementNS(SVGNameSpace, "feOffset");
+            offsetDef.setAttribute("in", "blur");
+            offsetDef.setAttribute("dx", shadowFilter.size.width);
+            offsetDef.setAttribute("dy", shadowFilter.size.height);
+            offsetDef.setAttribute("result", "offset");
+            shadowFilterDef.appendChild(offsetDef);
+        }
+
+        {
+            var mergeDef = document.createElementNS(SVGNameSpace, "feMerge");
+            {
+                var node = document.createElementNS(SVGNameSpace, "feMergeNode");
+                node.setAttribute("in", "offset");
+                mergeDef.appendChild(node);
+            }
+            {
+                var node = document.createElementNS(SVGNameSpace, "feMergeNode");
+                node.setAttribute("in", "SourceGraphic");
+                mergeDef.appendChild(node);
+            }
+            shadowFilterDef.appendChild(mergeDef);
+        }
+        
+        this.defsElement.appendChild(shadowFilterDef);
+    }
+}
+
+
 CGSVGGraphicsContext.prototype.addDefinitions = function()
 {
 //    CPLog.trace("CGSVGGraphicsContext.prototype.addDefinitions()");
     this.defineGradients();
+    this.defineShadowFilters();
+}
+
+CGSVGGraphicsContext.prototype.addFilters = function()
+{
+//    CPLog.trace("CGSVGGraphicsContext.prototype.addFilters()");
+    this.defineShadowFilters();
 }
 
 CGSVGGraphicsContext.prototype.clearRect = function(aRect)
@@ -115,6 +182,24 @@ CGSVGGraphicsContext.prototype.clearRect = function(aRect)
     while (this.DOMElement.firstChild)
     {
         this.DOMElement.removeChild(this.DOMElement.firstChild);
+    }
+}
+
+CGSVGGraphicsContext.prototype.setShadowWithColor = function(aSize, aBlur, aColor)
+{
+    this.gState.shadowOffset = CGSizeMakeCopy(aSize);
+    this.gState.shadowBlur = aBlur;
+    this.gState.shadowColor = aColor;
+    
+    if (aColor !== nil)
+    {
+        var shadowName = "Shadow" + this.shadowID++;
+        var shadowFilter = { name: shadowName, size: aSize, blur: aBlur, color: this.gState.shadowColor };
+        this.shadowFilters[shadowFilter.name] = shadowFilter;
+        this.activeShadow = shadowFilter;
+    } else
+    {
+        this.activeShadow = nil;
     }
 }
 
@@ -145,12 +230,37 @@ CGSVGGraphicsContext.prototype.applyStyleToElement = function(anElement, aMode)
     } else {
         style.push("stroke: none");
     }
+    
+    if (this.activeShadow)
+    {
+        anElement.setAttribute("filter", "url(#" + this.activeShadow.name + ")");
+    }
+    
     anElement.setAttribute("style", style.join(";"));
 }
 
+CGSVGGraphicsContext.prototype.applyTransformToElement = function(anElement)
+{
+    var transform = this.gState.CTM;
+    if (CGAffineTransformIsIdentity(transform) == NO)
+    {
+        anElement.setAttribute("transform", "matrix(" + transform.a + " " + transform.b + " "
+                                                      + transform.c + " " + transform.d + " "
+                                                      + transform.tx + " " + transform.ty + ")");
+    }
+}
+
+CGSVGGraphicsContext.prototype.createSVGElement = function(elementType)
+{
+    var svgElement = document.createElementNS(SVGNameSpace, elementType);
+    this.applyTransformToElement(svgElement);
+    return svgElement;
+}
+
+
 CGSVGGraphicsContext.prototype.fillRects = function(rects, count)
 {
-    var group = document.createElementNS(SVGNameSpace, "g");
+    var group = this.createSVGElement("g");
     group.setAttribute("style", "fill: " + this.gState.fillStyle);
     
     for (var i = 0; i < count; i++)
@@ -164,7 +274,8 @@ CGSVGGraphicsContext.prototype.fillRects = function(rects, count)
         group.appendChild(rectElement);
     }
     
-    this.DOMElement.appendChild(group);
+    var container = this.currentDOMElementContainer();
+    container.appendChild(group);
 }
 
 CGSVGGraphicsContext.prototype.drawPath = function(aMode)
@@ -174,11 +285,11 @@ CGSVGGraphicsContext.prototype.drawPath = function(aMode)
 
     var elements = this.path.elements,
 
-        i = 0,
-        count = this.path.count,
+    i = 0,
+    count = this.path.count;
 
-        svgPath = document.createElementNS(SVGNameSpace, "path"),
-        pathDescription = new Array();
+    var svgPath = this.createSVGElement("path");
+    pathDescription = new Array();
 
     this.applyStyleToElement(svgPath, aMode);
     
@@ -262,18 +373,20 @@ CGSVGGraphicsContext.prototype.drawPath = function(aMode)
 
     svgPath.setAttribute("d", pathDescription.join(""));
 
-    this.DOMElement.appendChild(svgPath);
+    var container = this.currentDOMElementContainer();
+    container.appendChild(svgPath);
 }
 
 CGSVGGraphicsContext.prototype.drawImage = function(aRect, anImage)
 {
-    var imageElement = document.createElementNS(SVGNameSpace, "image");
+    var imageElement = this.createSVGElement("image");
     imageElement.setAttributeNS("http://www.w3.org/1999/xlink","href", anImage._filename);
     imageElement.setAttribute("x", CGRectGetMinX(aRect));
     imageElement.setAttribute("y", CGRectGetMinY(aRect));
     imageElement.setAttribute("width", CGRectGetWidth(aRect));
     imageElement.setAttribute("height", CGRectGetHeight(aRect));
-    this.DOMElement.appendChild(imageElement);
+    var container = this.currentDOMElementContainer();
+    container.appendChild(imageElement);
 }
 
 
@@ -289,6 +402,42 @@ CGSVGGraphicsContext.prototype.drawLinearGradient = function(aGradient, aStartPo
 CGSVGGraphicsContext.prototype.drawRadialGradient = function(aGradient, aStartCenter, aStartRadius, anEndCenter, anEndRadius, options)
 {
     CPLog.warn("CGSVGGraphicsContext.prototype.drawRadialGradient() unimplemented");
+}
+
+CGSVGGraphicsContext.prototype.beginTransparencyLayerWithRect = function(aRect, auxiliaryInfo)
+{
+    this.saveGState();
+    // We don't want any transform on the transparency layer.
+    var group = document.createElementNS(SVGNameSpace, "g");
+
+    // Set (and reset) the shadow if any
+    if (this.activeShadow)
+    {
+        group.setAttribute("filter", "url(#" + this.activeShadow.name + ")");
+    }
+
+    CGContextSetShadowWithColor(this, CGSizeMake(0, 0), 0, nil);    
+    
+    // Set (and reset) the alpha
+    group.setAttribute("opacity", this.gState.alpha);
+    CGContextSetAlpha(this, 1);
+
+    if (this.gState.blendMode != kCGBlendModeNormal)
+    {
+        CGContextSetAlpha(this, kCGBlendModeNormal);
+    }
+    
+    
+    this.groups.push(group);
+}
+
+CGSVGGraphicsContext.prototype.endTransparencyLayer = function()
+{
+    var group = this.groups.pop();
+    var container = this.currentDOMElementContainer();
+    container.appendChild(group);
+    
+    this.restoreGState();
 }
 
 /*!
@@ -340,7 +489,7 @@ function CGSVGGraphicsContextApplyTextStyle(aContext, style, force)
  */
 CGSVGGraphicsContext.prototype.beginText = function()
 {
-    this.svgText = document.createElementNS(SVGNameSpace, "text");
+    this.svgText = this.createSVGElement("text");
     var location = this.textPosition();
     this.svgText.setAttribute("x", location.x);
     this.svgText.setAttribute("y", location.y);
@@ -397,5 +546,8 @@ CGSVGGraphicsContext.prototype.showTextAtPositions = function(text, positions, c
     if (this.svgText)
         this.svgText.appendChild(textElement);
     else
-        this.DOMElement.appendChild(textElement);
+    {
+        var container = this.currentDOMElementContainer();
+        container.appendChild(textElement);
+    }
 }

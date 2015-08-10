@@ -188,9 +188,7 @@ CGContext.prototype.translateCTM = function(tx, ty)
 
 CGContext.prototype.setShadow = function(aSize, aBlur)
 {
-    this.gState.shadowOffset = CGSizeMakeCopy(aSize);
-    this.gState.shadowBlur = aBlur;
-    this.gState.shadowColor = [CPShadow color];
+    this.setShadowWithColor(aSize, aBlur, this.gState.shadowColor);
 }
 
 CGContext.prototype.setShadowWithColor = function(aSize, aBlur, aColor)
@@ -255,22 +253,22 @@ CGContext.prototype.addPath = function(aPath)
     if (!this.path)
         this.path = CGPathCreateMutable();
 
-    CGPathAddPath(this.path, this.getCTM(), aPath);
+    CGPathAddPath(this.path, nil, aPath);
 }
 
 CGContext.prototype.addQuadCurveToPoint = function(cpx, cpy, x, y)
 {
-    CGPathAddQuadCurveToPoint(this.path, this.getCTM(), cpx, cpy, x, y);
+    CGPathAddQuadCurveToPoint(this.path, nil, cpx, cpy, x, y);
 }
 
 CGContext.prototype.addRect = function(aRect)
 {
-    CGPathAddRect(this.path, this.getCTM(), aRect);
+    CGPathAddRect(this.path, nil, aRect);
 }
 
 CGContext.prototype.addRects = function(rects, count)
 {
-    CGPathAddRects(this.path, this.getCTM(), rects, count);
+    CGPathAddRects(this.path, nil, rects, count);
 }
 
 CGContext.prototype.beginPath = function()
@@ -296,7 +294,7 @@ CGContext.prototype.moveToPoint = function(x, y)
     if (!this.path)
         this.path = CGPathCreateMutable();
 
-    CGPathMoveToPoint(this.path, this.getCTM(), x, y);
+    CGPathMoveToPoint(this.path, nil, x, y);
 }
 
 CGContext.prototype.fillRects = function(rects, count)
@@ -406,9 +404,9 @@ CGContext.prototype.beginTransparencyLayerWithRect = function(aRect, auxiliaryIn
     CPLog.warn("CGContext.prototype.beginTransparencyLayerWithRect() unimplemented");
 }
 
-CGContext.prototype.endTransparencyLayerWithRect = function()
+CGContext.prototype.endTransparencyLayer = function()
 {
-    CPLog.warn("CGContext.prototype.endTransparencyLayerWithRect() unimplemented");
+    CPLog.warn("CGContext.prototype.endTransparencyLayer unimplemented");
 }
 
 CGContext.prototype.setFont = function(aFont)
@@ -486,7 +484,7 @@ function CGGStateCreate()
 {
     return { alpha:1.0, strokeStyle:"#000", fillStyle:"#ccc", lineWidth:1.0, lineJoin:kCGLineJoinMiter, lineCap:kCGLineCapButt, miterLimit:10.0, globalAlpha:1.0,
         blendMode:kCGBlendModeNormal,
-        shadowOffset:CGSizeMakeZero(), shadowBlur:0.0, shadowColor:NULL, CTM:CGAffineTransformMakeIdentity(),
+        shadowOffset:CGSizeMakeZero(), shadowBlur:0.0, shadowColor:[CPColor blackColor], CTM:CGAffineTransformMakeIdentity(),
         fontSize: 0,
         textDrawingMode: kCGTextFill
         };
@@ -1140,6 +1138,16 @@ function CGContextDrawLinearGradient(aContext, aGradient, aStartPoint, anEndPoin
 function CGContextDrawRadialGradient(aContext, aGradient, aStartPoint, anEndPoint, options)
 {
     aContext.drawRadialGradient(aGradient, aStartPoint, anEndPoint, options);
+}
+
+/*!
+    Begins a transparency layer
+    @param aContext the CGContext within with to create the transparency layer
+    @param auxiliaryInfo a dictionary that specifies additional info or NULL
+*/
+function CGContextBeginTransparencyLayer(aContext, auxiliaryInfo)
+{
+    CGContextBeginTransparencyLayerWithRect(aContext, CGRectNull, auxiliaryInfo);
 }
 
 /*!
