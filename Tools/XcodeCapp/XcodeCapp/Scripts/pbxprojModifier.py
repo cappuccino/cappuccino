@@ -8,7 +8,7 @@ from mod_pbxproj import XcodeProject
 class PBXModifier (object):
 
     XCODE_SUPPORT_FOLDER = u".XcodeSupport"
-    SLASH_REPLACEMENT  = u"∕"  # DIVISION SLASH  Unicode U+2215
+    SLASH_REPLACEMENT  = u"::"
     FRAMEWORKS_RE = re.compile(ur"^(.+/Frameworks/(?:Debug|Source)/([^/]+))/.+$")
     XCC_GENERAL_INCLUDE = u"xcc_general_include.h"
 

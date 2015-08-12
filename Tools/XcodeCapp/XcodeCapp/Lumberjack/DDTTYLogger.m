@@ -115,7 +115,7 @@
 	size_t resetCodeLen;
 }
 
-- (id)initWithForegroundColor:(OSColor *)fgColor backgroundColor:(OSColor *)bgColor flag:(int)mask context:(int)ctxt;
+- (instancetype)initWithForegroundColor:(OSColor *)fgColor backgroundColor:(OSColor *)bgColor flag:(int)mask context:(int)ctxt NS_DESIGNATED_INITIALIZER;
 
 @end
 
@@ -813,7 +813,7 @@ static DDTTYLogger *sharedInstance;
 	return sharedInstance;
 }
 
-- (id)init
+- (instancetype)init
 {
 	if (sharedInstance != nil)
 	{
@@ -827,12 +827,12 @@ static DDTTYLogger *sharedInstance;
 			calendar = [NSCalendar autoupdatingCurrentCalendar];
 			
 			calendarUnitFlags = 0;
-			calendarUnitFlags |= NSYearCalendarUnit;
-			calendarUnitFlags |= NSMonthCalendarUnit;
-			calendarUnitFlags |= NSDayCalendarUnit;
-			calendarUnitFlags |= NSHourCalendarUnit;
-			calendarUnitFlags |= NSMinuteCalendarUnit;
-			calendarUnitFlags |= NSSecondCalendarUnit;
+			calendarUnitFlags |= NSCalendarUnitYear;
+			calendarUnitFlags |= NSCalendarUnitMonth;
+			calendarUnitFlags |= NSCalendarUnitDay;
+			calendarUnitFlags |= NSCalendarUnitHour;
+			calendarUnitFlags |= NSCalendarUnitMinute;
+			calendarUnitFlags |= NSCalendarUnitSecond;
 			
 			// Initialze 'app' variable (char *)
 			
@@ -954,7 +954,7 @@ static DDTTYLogger *sharedInstance;
 		}
 		
 		if (i < [colorProfilesArray count])
-			[colorProfilesArray replaceObjectAtIndex:i withObject:newColorProfile];
+			colorProfilesArray[i] = newColorProfile;
 		else
 			[colorProfilesArray addObject:newColorProfile];
 	}};
@@ -992,7 +992,7 @@ static DDTTYLogger *sharedInstance;
 		
 		NSLogInfo(@"DDTTYLogger: newColorProfile: %@", newColorProfile);
 		
-		[colorProfilesDict setObject:newColorProfile forKey:tag];
+		colorProfilesDict[tag] = newColorProfile;
 	}};
 	
 	// The design of the setter logic below is taken from the DDAbstractLogger implementation.
@@ -1189,7 +1189,7 @@ static DDTTYLogger *sharedInstance;
 		{
 			if (logMessage->tag)
 			{
-				colorProfile = [colorProfilesDict objectForKey:logMessage->tag];
+				colorProfile = colorProfilesDict[logMessage->tag];
 			}
 			if (colorProfile == nil)
 			{
@@ -1359,7 +1359,7 @@ static DDTTYLogger *sharedInstance;
 
 @implementation DDTTYLoggerColorProfile
 
-- (id)initWithForegroundColor:(OSColor *)fgColor backgroundColor:(OSColor *)bgColor flag:(int)aMask context:(int)ctxt
+- (instancetype)initWithForegroundColor:(OSColor *)fgColor backgroundColor:(OSColor *)bgColor flag:(int)aMask context:(int)ctxt
 {
 	if ((self = [super init]))
 	{
@@ -1390,7 +1390,7 @@ static DDTTYLogger *sharedInstance;
 			// Map foreground color to closest available shell color
 			
 			fgCodeIndex = [DDTTYLogger codeIndexForColor:fgColor];
-			fgCodeRaw   = [codes_fg objectAtIndex:fgCodeIndex];
+			fgCodeRaw   = codes_fg[fgCodeIndex];
 			
 			NSString *escapeSeq = @"\033[";
 			
@@ -1424,7 +1424,7 @@ static DDTTYLogger *sharedInstance;
 			// Map background color to closest available shell color
 			
 			bgCodeIndex = [DDTTYLogger codeIndexForColor:bgColor];
-			bgCodeRaw   = [codes_bg objectAtIndex:bgCodeIndex];
+			bgCodeRaw   = codes_bg[bgCodeIndex];
 			
 			NSString *escapeSeq = @"\033[";
 			
