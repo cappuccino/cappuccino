@@ -52,7 +52,7 @@ task ("build", function()
             FILE.remove(installPath);
 
         if (OS.system("xcodebuild " + args))
-            OS.exit(1);
+            colorPrint("Unable to build XcodeCapp. Skipping", "orange");
     }
     else
     {
@@ -63,13 +63,13 @@ task ("build", function()
 task ("clean", function()
 {
     if (OS.system("xcodebuild clean"))
-        OS.exit(1);
+        colorPrint("Unable to clean XcodeCapp. Skipping", "orange");
 });
 
 task ("clobber", function()
 {
     if (OS.system("xcodebuild clean"))
-        OS.exit(1);
+        colorPrint("Unable to clean XcodeCapp. Skipping", "orange");
 });
 
 task ("default", ["build"]);
