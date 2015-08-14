@@ -118,15 +118,20 @@ CPVisualEffectStateInactive                 = 2;
 
 - (void)_setEffectEnabled:(BOOL)shouldEnable
 {
-    var prop       = CPBrowserStyleProperty("backdrop-filter"),
-        dark       = [[self appearance] isEqual:[CPAppearance appearanceNamed:CPAppearanceNameVibrantDark]],
+    var dark       = [[self appearance] isEqual:[CPAppearance appearanceNamed:CPAppearanceNameVibrantDark]],
         darkColor  = [CPColor colorWithHexString:@"1e1e1e"],
-        lightColor = [CPColor whiteColor];
+        lightColor = [CPColor whiteColor],
+        prop;
+
+#if PLATFORM(DOM)
+    prop = CPBrowserStyleProperty("backdrop-filter");
+#endif
 
     if (shouldEnable)
     {
         if (prop)
             self._DOMElement.style[prop] = "blur(30px)";
+
         [self setBackgroundColor:[(dark ? darkColor : lightColor) colorWithAlphaComponent:0.6]];
     }
     else

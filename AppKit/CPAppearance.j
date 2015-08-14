@@ -99,7 +99,7 @@ var _CPAppearanceCurrent = nil,
 /*! Creates a CPAppearance object initialized to the specified appearance file in the specified bundle
     This method does actually nothing special. It just creates a default appearance object
 */
-- initWithAppearanceNamed:(CPString)aName bundle:(CPBundle)bundle
+- (id)initWithAppearanceNamed:(CPString)aName bundle:(CPBundle)bundle
 {
     if (self = [super init])
     {
