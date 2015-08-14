@@ -242,7 +242,9 @@ var CPViewHighDPIDrawingEnabled = YES;
     BOOL                _isObserving;
 
     BOOL                _allowsVibrancy         @accessors(property=allowsVibrancy);
-    CPAppearance        _appearance             @accessors(property=appearance);
+    CPAppearance        _appearance             @accessors(getter=appearance);
+    CPAppearance        _effectiveAppearance;
+    BOOL                _effectiveAppearanceCached;
 }
 
 /*
@@ -371,6 +373,8 @@ var CPViewHighDPIDrawingEnabled = YES;
 
         _theme = [CPTheme defaultTheme];
         _themeState = CPThemeStateNormal;
+
+        _effectiveAppearanceCached = NO;
 
 #if PLATFORM(DOM)
         _DOMElement = DOMElementPrototype.cloneNode(false);
@@ -842,9 +846,10 @@ var CPViewHighDPIDrawingEnabled = YES;
 */
 - (void)viewDidMoveToSuperview
 {
-//    if (_graphicsContext)
-        [self setNeedsDisplay:YES];
+    [self setNeedsDisplay:YES];
 
+    [self _resetCachedEffectiveAppearance];
+    [self _updateAppearanceThemeState];
 }
 
 /*!
@@ -3515,20 +3520,86 @@ setBoundsOrigin:
 @end
 
 
-@implementation CPView (Appeatance)
+@implementation CPView (Appearance)
 
-/*! Returns the received appearance if any, or ask the superview and returns it.
+/*! Returns the receiver's appearance if any, or ask the superview and returns it.
 */
 - (CPAppearance)effectiveAppearance
 {
     if (_appearance)
         return _appearance;
 
-    if (_superview)
-        return [_superview appearance];
+    if (_effectiveAppearanceCached)
+        return _effectiveAppearance;
 
-    return nil;
+    _effectiveAppearance = [_superview effectiveAppearance];
+    _effectiveAppearanceCached = YES;
+
+    return _effectiveAppearance;
 }
+
+- (void)setAppearance:(CPAppearance)anAppearance
+{
+    if ([_appearance isEqual:anAppearance])
+        return;
+
+    [self willChangeValueForKey:@"appearance"];
+    _appearance = anAppearance;
+    [self didChangeValueForKey:@"appearance"];
+
+    [self _resetCachedEffectiveAppearance];
+    [self _updateAppearanceThemeState];
+}
+
+/*! @ignore
+*/
+- (void)_resetCachedEffectiveAppearance
+{
+    _effectiveAppearanceCached = NO;
+    [_subviews makeObjectsPerformSelector:@selector(_resetCachedEffectiveAppearance)];
+}
+
+- (void)_updateAppearanceThemeState
+{
+    var effectiveAppearance = [self effectiveAppearance];
+
+    if ([effectiveAppearance isEqual:[CPAppearance appearanceNamed:CPAppearanceNameAqua]])
+    {
+        [self setThemeState:CPThemeStateAppearanceAqua];
+        [self unsetThemeState:CPThemeStateAppearanceLightContent];
+        [self unsetThemeState:CPThemeStateAppearanceVibrantLight];
+        [self unsetThemeState:CPThemeStateAppearanceVibrantDark];
+    }
+    else if ([effectiveAppearance isEqual:[CPAppearance appearanceNamed:CPAppearanceNameLightContent]])
+    {
+        [self unsetThemeState:CPThemeStateAppearanceAqua];
+        [self setThemeState:CPThemeStateAppearanceLightContent];
+        [self unsetThemeState:CPThemeStateAppearanceVibrantLight];
+        [self unsetThemeState:CPThemeStateAppearanceVibrantDark];
+    }
+    else if ([effectiveAppearance isEqual:[CPAppearance appearanceNamed:CPAppearanceNameVibrantLight]])
+    {
+        [self unsetThemeState:CPThemeStateAppearanceAqua];
+        [self unsetThemeState:CPThemeStateAppearanceLightContent];
+        [self setThemeState:CPThemeStateAppearanceVibrantLight];
+        [self unsetThemeState:CPThemeStateAppearanceVibrantDark];
+    }
+    else if ([effectiveAppearance isEqual:[CPAppearance appearanceNamed:CPAppearanceNameVibrantDark]])
+    {
+        [self unsetThemeState:CPThemeStateAppearanceAqua];
+        [self unsetThemeState:CPThemeStateAppearanceLightContent];
+        [self unsetThemeState:CPThemeStateAppearanceVibrantLight];
+        [self setThemeState:CPThemeStateAppearanceVibrantDark];
+    }
+    else
+    {
+        [self unsetThemeState:CPThemeStateAppearanceAqua];
+        [self unsetThemeState:CPThemeStateAppearanceLightContent];
+        [self unsetThemeState:CPThemeStateAppearanceVibrantLight];
+        [self unsetThemeState:CPThemeStateAppearanceVibrantDark];
+    }
+}
+
 
 @end
 
@@ -3669,6 +3740,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         }
 
         _appearance = [aCoder decodeObjectForKey:CPViewAppearanceKey];
+        _effectiveAppearanceCached = NO;
 
         [self setNeedsDisplay:YES];
         [self setNeedsLayout];

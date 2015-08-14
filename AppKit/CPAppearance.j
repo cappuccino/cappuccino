@@ -21,6 +21,7 @@
  */
 
 @import <Foundation/Foundation.j>
+@import "CPTheme.j"
 
 CPAppearanceNameAqua         = @"CPAppearanceNameAqua";
 CPAppearanceNameLightContent = @"CPAppearanceNameLightContent";
@@ -41,6 +42,11 @@ var _CPAppearanceCurrent = nil,
 
 @end
 
+CPThemeStateAppearanceAqua             = CPThemeState("appearance-aqua");
+CPThemeStateAppearanceLightContent     = CPThemeState("appearance-light-content");
+CPThemeStateAppearanceVibrantLight     = CPThemeState("appearance-vibrant-light");
+CPThemeStateAppearanceVibrantDark      = CPThemeState("appearance-vibrant-dark");
+
 
 /*!
     @ingroup appkit
@@ -51,9 +57,9 @@ var _CPAppearanceCurrent = nil,
 */
 @implementation CPAppearance : CPObject
 {
-    BOOL        _allowsVibrancy     @accessors(property=allowsVibrancy);
+    BOOL            _allowsVibrancy     @accessors(property=allowsVibrancy);
 
-    CPString    _name;
+    CPString        _name;
 }
 
 
