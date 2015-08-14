@@ -112,6 +112,7 @@ var CPURLConnectionDelegate = nil;
     try
     {
         var aCFHTTPRequest = new CFHTTPRequest();
+        aCFHTTPRequest.setTimeout([aRequest timeoutInterval] * 1000);
         aCFHTTPRequest.setWithCredentials([aRequest withCredentials]);
 
         aCFHTTPRequest.open([aRequest HTTPMethod], [[aRequest URL] absoluteString], NO);
@@ -125,7 +126,7 @@ var CPURLConnectionDelegate = nil;
 
         aCFHTTPRequest.send([aRequest HTTPBody]);
 
-        if (!aCFHTTPRequest.success())
+        if (!aCFHTTPRequest.success() || aCFHTTPRequest.isTimeoutRequest())
             return nil;
 
         return [CPData dataWithRawString:aCFHTTPRequest.responseText()];
@@ -176,6 +177,7 @@ var CPURLConnectionDelegate = nil;
                                      (window.location.protocol === "file:" || window.location.protocol === "app:"));
 
         _HTTPRequest = new CFHTTPRequest();
+        _HTTPRequest.setTimeout([aRequest timeoutInterval] * 1000);
         _HTTPRequest.setWithCredentials([aRequest withCredentials]);
 
         if (shouldStartImmediately)
@@ -210,6 +212,7 @@ var CPURLConnectionDelegate = nil;
         _HTTPRequest.open([_request HTTPMethod], [[_request URL] absoluteString], YES);
 
         _HTTPRequest.onreadystatechange = function() { [self _readyStateDidChange]; };
+        _HTTPRequest.ontimeout = function() { [self _timeout]; };
 
         var fields = [_request allHTTPHeaderFields],
             key = nil,
@@ -222,9 +225,14 @@ var CPURLConnectionDelegate = nil;
     }
     catch (anException)
     {
-        if ([_delegate respondsToSelector:@selector(connection:didFailWithError:)])
-            [_delegate connection:self didFailWithError:anException];
+        [self _sendDelegateDidFailWithError:anException];
     }
+}
+
+- (void)_sendDelegateDidFailWithError:(CPException)anException
+{
+    if ([_delegate respondsToSelector:@selector(connection:didFailWithError:)])
+        [_delegate connection:self didFailWithError:anException];
 }
 
 /*
@@ -249,10 +257,24 @@ var CPURLConnectionDelegate = nil;
     return _isLocalFileConnection;
 }
 
+/*!
+    @ignore
+*/
+- (void)_timeout
+{
+    var exception = [CPException exceptionWithName:@"Timeout exception"
+                            reason:"The request timed out."
+                          userInfo:@{}];
+
+    [self _sendDelegateDidFailWithError:exception];
+}
+
 /* @ignore */
 - (void)_readyStateDidChange
 {
-    if (_HTTPRequest.readyState() === CFHTTPRequest.CompleteState)
+    var isTimeoutRequest = !_HTTPRequest.status() && !_HTTPRequest.responseText();
+
+    if (_HTTPRequest.readyState() === CFHTTPRequest.CompleteState && !_HTTPRequest.isTimeoutRequest())
     {
         var statusCode = _HTTPRequest.status(),
             URL = [_request URL];
