@@ -112,7 +112,6 @@ var CPURLConnectionDelegate = nil;
     try
     {
         var aCFHTTPRequest = new CFHTTPRequest();
-        aCFHTTPRequest.setTimeout([aRequest timeoutInterval] * 1000);
         aCFHTTPRequest.setWithCredentials([aRequest withCredentials]);
 
         aCFHTTPRequest.open([aRequest HTTPMethod], [[aRequest URL] absoluteString], NO);
@@ -126,7 +125,7 @@ var CPURLConnectionDelegate = nil;
 
         aCFHTTPRequest.send([aRequest HTTPBody]);
 
-        if (!aCFHTTPRequest.success() || aCFHTTPRequest.isTimeoutRequest())
+        if (!aCFHTTPRequest.success())
             return nil;
 
         return [CPData dataWithRawString:aCFHTTPRequest.responseText()];

@@ -105,7 +105,6 @@ GLOBAL(CFHTTPRequest) = function()
 
     // by default, all requests will assume that credentials should not be sent.
     this._nativeRequest.withCredentials = false;
-    this._nativeRequest.timeout = 60000;
 
     var self = this;
     this._stateChangeHandler = function()
