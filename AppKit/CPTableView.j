@@ -6394,6 +6394,7 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
 - (void)awakeFromCib
 {
+    [super awakeFromCib];
     [self setThemeState:CPThemeStateTableDataView];
 }
 
