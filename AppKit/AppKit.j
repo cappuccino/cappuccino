@@ -26,6 +26,7 @@
 @import "CPAccordionView.j"
 @import "CPAlert.j"
 @import "CPAnimation.j"
+@import "CPAppearance.j"
 @import "CPApplication.j"
 @import "CPArrayController.j"
 @import "CPBezierPath.j"

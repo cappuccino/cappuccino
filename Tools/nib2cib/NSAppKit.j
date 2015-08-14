@@ -88,6 +88,7 @@
 @import "NSSortDescriptor.j"
 @import "NSPopover.j"
 @import "NSProgressIndicator.j"
+@import "NSAppearance.j"
 
 
 function CP_NSMapClassName(aClassName)

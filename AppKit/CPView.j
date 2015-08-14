@@ -26,6 +26,7 @@
 
 @import "CGAffineTransform.j"
 @import "CGGeometry.j"
+@import "CPAppearance.j"
 @import "CPColor.j"
 @import "CPGraphicsContext.j"
 @import "CPResponder.j"
@@ -130,7 +131,6 @@ var CPViewFlags                     = { },
     CPViewHasCustomLayoutSubviews   = 1 << 1;
 
 var CPViewHighDPIDrawingEnabled = YES;
-
 
 /*!
     @ingroup appkit
@@ -240,6 +240,9 @@ var CPViewHighDPIDrawingEnabled = YES;
     BOOL                _toolTipInstalled;
 
     BOOL                _isObserving;
+
+    BOOL                _allowsVibrancy         @accessors(property=allowsVibrancy);
+    CPAppearance        _appearance             @accessors(property=appearance);
 }
 
 /*
@@ -3511,6 +3514,24 @@ setBoundsOrigin:
 
 @end
 
+
+@implementation CPView (Appeatance)
+
+/*! Returns the received appearance if any, or ask the superview and returns it.
+*/
+- (CPAppearance)effectiveAppearance
+{
+    if (_appearance)
+        return _appearance;
+
+    if (_superview)
+        return [_superview appearance];
+
+    return nil;
+}
+
+@end
+
 var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     CPViewAutoresizesSubviewsKey    = @"CPViewAutoresizesSubviews",
     CPViewBackgroundColorKey        = @"CPViewBackgroundColor",
@@ -3531,7 +3552,8 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     CPReuseIdentifierKey            = @"CPReuseIdentifierKey",
     CPViewScaleKey                  = @"CPViewScaleKey",
     CPViewSizeScaleKey              = @"CPViewSizeScaleKey",
-    CPViewIsScaledKey               = @"CPViewIsScaledKey";
+    CPViewIsScaledKey               = @"CPViewIsScaledKey",
+    CPViewAppearanceKey             = @"CPViewAppearanceKey";
 
 @implementation CPView (CPCoding)
 
@@ -3646,6 +3668,8 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
             _themeAttributes[attributeName] = CPThemeAttributeDecode(aCoder, attributeName, attributes[count], _theme, themeClass);
         }
 
+        _appearance = [aCoder decodeObjectForKey:CPViewAppearanceKey];
+
         [self setNeedsDisplay:YES];
         [self setNeedsLayout];
     }
@@ -3734,6 +3758,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     [aCoder encodeSize:[self scaleSize] forKey:CPViewScaleKey];
     [aCoder encodeSize:[self _hierarchyScaleSize] forKey:CPViewSizeScaleKey];
     [aCoder encodeBool:_isScaled forKey:CPViewIsScaledKey];
+    [aCoder encodeObject:_appearance forKey:CPViewAppearanceKey];
 }
 
 @end
