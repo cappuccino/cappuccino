@@ -212,7 +212,7 @@ var CPURLConnectionDelegate = nil;
         _HTTPRequest.open([_request HTTPMethod], [[_request URL] absoluteString], YES);
 
         _HTTPRequest.onreadystatechange = function() { [self _readyStateDidChange]; };
-        _HTTPRequest.ontimeout = function() { [self _timeout]; };
+        _HTTPRequest.ontimeout = function() { [self _didTimeout]; };
 
         var fields = [_request allHTTPHeaderFields],
             key = nil,
@@ -260,11 +260,11 @@ var CPURLConnectionDelegate = nil;
 /*!
     @ignore
 */
-- (void)_timeout
+- (void)_didTimeout
 {
     var exception = [CPException exceptionWithName:@"Timeout exception"
-                            reason:"The request timed out."
-                          userInfo:@{}];
+                                            reason:"The request timed out."
+                                          userInfo:@{}];
 
     [self _sendDelegateDidFailWithError:exception];
 }
@@ -272,8 +272,6 @@ var CPURLConnectionDelegate = nil;
 /* @ignore */
 - (void)_readyStateDidChange
 {
-    var isTimeoutRequest = !_HTTPRequest.status() && !_HTTPRequest.responseText();
-
     if (_HTTPRequest.readyState() === CFHTTPRequest.CompleteState && !_HTTPRequest.isTimeoutRequest())
     {
         var statusCode = _HTTPRequest.status(),

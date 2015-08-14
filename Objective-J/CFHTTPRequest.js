@@ -223,7 +223,7 @@ CFHTTPRequest.prototype.setTimeout = function(/*int*/ aTimeout)
 
 CFHTTPRequest.prototype.getTimeout = function(/*int*/ aTimeout)
 {
-    return this._nativeRequest.timeout
+    return this._nativeRequest.timeout;
 };
 
 CFHTTPRequest.prototype.getAllResponseHeaders = function()

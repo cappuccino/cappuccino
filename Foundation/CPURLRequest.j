@@ -93,9 +93,7 @@ CPURLRequestReturnCacheDataDontLoad = 3;
 */
 - (id)initWithURL:(CPURL)anURL cachePolicy:(CPURLRequestCachePolicy)aCachePolicy timeoutInterval:(CPTimeInterval)aTimeoutInterval
 {
-    self = [self initWithURL:anURL];
-
-    if (self)
+    if (self = [self initWithURL:anURL])
     {
         _cachePolicy = aCachePolicy;
         _timeoutInterval = aTimeoutInterval;
@@ -112,9 +110,7 @@ CPURLRequestReturnCacheDataDontLoad = 3;
 */
 - (id)initWithURL:(CPURL)aURL
 {
-    self = [super init];
-
-    if (self)
+    if (self = [super init])
     {
         [self setURL:aURL];
 
