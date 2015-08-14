@@ -119,28 +119,16 @@ CPVisualEffectStateInactive                 = 2;
 - (void)_setEffectEnabled:(BOOL)shouldEnable
 {
     var dark       = [[self appearance] isEqual:[CPAppearance appearanceNamed:CPAppearanceNameVibrantDark]],
-        darkColor  = [CPColor colorWithHexString:@"1e1e1e"],
-        lightColor = [CPColor whiteColor],
-        prop;
+        prop       = CPBrowserStyleProperty("backdrop-filter"),
+        color      = (dark ? [CPColor colorWithHexString:@"1e1e1e"] : [CPColor whiteColor]),
+        finalColor = shouldEnable ? [color colorWithAlphaComponent:0.6] : color;
+
+    [self setBackgroundColor:finalColor];
 
 #if PLATFORM(DOM)
-    prop = CPBrowserStyleProperty("backdrop-filter");
+    self._DOMElement.style[prop] = shouldEnable ? "blur(30px)" : nil;
 #endif
 
-    if (shouldEnable)
-    {
-        if (prop)
-            self._DOMElement.style[prop] = "blur(30px)";
-
-        [self setBackgroundColor:[(dark ? darkColor : lightColor) colorWithAlphaComponent:0.6]];
-    }
-    else
-    {
-        if (prop)
-            self._DOMElement.style[prop] = nil;
-
-        [self setBackgroundColor:(dark ? darkColor : lightColor)];
-    }
 }
 
 - (void)_applyVibrancyState
