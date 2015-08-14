@@ -119,6 +119,14 @@ var _CPAppearanceCurrent = nil,
 #pragma mark -
 #pragma mark Implementation
 
+- (BOOL)isEqual:(id)anObject
+{
+    if (![anObject isKindOfClass:CPAppearance])
+        return NO;
+
+    return self._name == anObject._name;
+}
+
 - (CPString)description
 {
     return @"<CPAppearance @" + [self UID] + @" name: " + _name + ">";
