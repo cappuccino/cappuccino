@@ -244,7 +244,6 @@ var CPViewHighDPIDrawingEnabled = YES;
     BOOL                _allowsVibrancy         @accessors(property=allowsVibrancy);
     CPAppearance        _appearance             @accessors(getter=appearance);
     CPAppearance        _effectiveAppearance;
-    BOOL                _effectiveAppearanceCached;
 }
 
 /*
@@ -332,6 +331,13 @@ var CPViewHighDPIDrawingEnabled = YES;
     return nil;
 }
 
+- (void)awakeFromCib
+{
+    [super awakeFromCib];
+
+    [self _recomputeAppearance];
+}
+
 - (id)init
 {
     return [self initWithFrame:CGRectMakeZero()];
@@ -373,8 +379,6 @@ var CPViewHighDPIDrawingEnabled = YES;
 
         _theme = [CPTheme defaultTheme];
         _themeState = CPThemeStateNormal;
-
-        _effectiveAppearanceCached = NO;
 
 #if PLATFORM(DOM)
         _DOMElement = DOMElementPrototype.cloneNode(false);
@@ -846,10 +850,9 @@ var CPViewHighDPIDrawingEnabled = YES;
 */
 - (void)viewDidMoveToSuperview
 {
-    [self setNeedsDisplay:YES];
+    [self _recomputeAppearance];
 
-    [self _resetCachedEffectiveAppearance];
-    [self _updateAppearanceThemeState];
+    [self setNeedsDisplay:YES];
 }
 
 /*!
@@ -3529,13 +3532,7 @@ setBoundsOrigin:
     if (_appearance)
         return _appearance;
 
-    if (_effectiveAppearanceCached)
-        return _effectiveAppearance;
-
-    _effectiveAppearance = [_superview effectiveAppearance];
-    _effectiveAppearanceCached = YES;
-
-    return _effectiveAppearance;
+    return [_superview effectiveAppearance];
 }
 
 - (void)setAppearance:(CPAppearance)anAppearance
@@ -3547,20 +3544,19 @@ setBoundsOrigin:
     _appearance = anAppearance;
     [self didChangeValueForKey:@"appearance"];
 
-    [self _resetCachedEffectiveAppearance];
-    [self _updateAppearanceThemeState];
+    [self _recomputeAppearance];
 }
 
 /*! @ignore
 */
-- (void)_resetCachedEffectiveAppearance
+- (void)_recomputeAppearance
 {
-    _effectiveAppearanceCached = NO;
-    [_subviews makeObjectsPerformSelector:@selector(_resetCachedEffectiveAppearance)];
-}
+    // if we don't have a themeState, it means
+    // the view is not decoding from a cib, so we just return.
+    // this method will be called again in awakeFromCib
+    if (!_themeState)
+        return;
 
-- (void)_updateAppearanceThemeState
-{
     var effectiveAppearance = [self effectiveAppearance];
 
     if ([effectiveAppearance isEqual:[CPAppearance appearanceNamed:CPAppearanceNameAqua]])
@@ -3598,6 +3594,8 @@ setBoundsOrigin:
         [self unsetThemeState:CPThemeStateAppearanceVibrantLight];
         [self unsetThemeState:CPThemeStateAppearanceVibrantDark];
     }
+
+    [_subviews makeObjectsPerformSelector:@selector(_recomputeAppearance)];
 }
 
 
@@ -3739,8 +3737,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
             _themeAttributes[attributeName] = CPThemeAttributeDecode(aCoder, attributeName, attributes[count], _theme, themeClass);
         }
 
-        _appearance = [aCoder decodeObjectForKey:CPViewAppearanceKey];
-        _effectiveAppearanceCached = NO;
+        [self setAppearance:[aCoder decodeObjectForKey:CPViewAppearanceKey]];
 
         [self setNeedsDisplay:YES];
         [self setNeedsLayout];

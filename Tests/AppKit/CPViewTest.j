@@ -774,11 +774,9 @@ var methodCalled;
 - (void)testAppearanceDefaultvalue
 {
     [self assert:nil equals:[view appearance]];
-    [self assertFalse:view._effectiveAppearanceCached];
     [self assertFalse:[view hasThemeState:CPThemeStateAppearanceVibrantDark]];
     [self assertFalse:[view hasThemeState:CPThemeStateAppearanceVibrantLight]];
     [self assert:nil equals:[view effectiveAppearance]];
-    [self assertTrue:view._effectiveAppearanceCached];
 }
 
 - (void)testAppearanceWithVibrantDark
@@ -816,18 +814,13 @@ var methodCalled;
 {
     var secondView = [[CPView alloc] initWithFrame:CGRectMakeZero()];
 
-    [self assertFalse:secondView._effectiveAppearanceCached];
-
     [view addSubview:secondView];
 
-    [self assertTrue:secondView._effectiveAppearanceCached];
     [self assert:nil equals:[secondView appearance]];
 
     [view setAppearance:[CPAppearance appearanceNamed:CPAppearanceNameVibrantLight]];
 
-    [self assertFalse:secondView._effectiveAppearanceCached];
     [self assert:[CPAppearance appearanceNamed:CPAppearanceNameVibrantLight] equals:[secondView effectiveAppearance]];
-    [self assertTrue:secondView._effectiveAppearanceCached];
 }
 
 - (void)testEffectiveAppearanceWithMovingViews
@@ -849,6 +842,24 @@ var methodCalled;
     [self assert:[CPAppearance appearanceNamed:CPAppearanceNameVibrantDark] equals:[view effectiveAppearance]];
     [self assertFalse:[view hasThemeState:CPThemeStateAppearanceVibrantLight]];
     [self assertTrue:[view hasThemeState:CPThemeStateAppearanceVibrantDark]];
+}
+
+- (void)testEffectiveAppearanceWithMovingViewHierarchy
+{
+    var viewC = [[CPView alloc] initWithFrame:CGRectMakeZero()],
+        viewA = [[CPView alloc] initWithFrame:CGRectMakeZero()],
+        viewB = [[CPView alloc] initWithFrame:CGRectMakeZero()];
+
+    [view setAppearance:[CPAppearance appearanceNamed:CPAppearanceNameVibrantLight]];
+    [viewC setAppearance:[CPAppearance appearanceNamed:CPAppearanceNameVibrantDark]];
+
+    [viewA addSubview:viewB];
+    [view addSubview:viewA];
+
+    [self assert:[CPAppearance appearanceNamed:CPAppearanceNameVibrantLight] equals:[viewB effectiveAppearance]];
+
+    [viewC addSubview:viewA];
+    [self assert:[CPAppearance appearanceNamed:CPAppearanceNameVibrantDark] equals:[viewB effectiveAppearance]];
 }
 
 - (void)testEffectiveAppearanceReset

@@ -161,25 +161,27 @@ CPVisualEffectStateInactive                 = 2;
 - (BOOL)setThemeState:(ThemeState)aState
 {
     if (aState.isa && [aState isKindOfClass:CPArray])
-        aState = CPThemeState.apply(null, aState);
+         aState = CPThemeState.apply(null, aState);
 
-    var ret = [super setThemeState:aState];
+    var r = [super setThemeState:aState];
 
-    [self _applyVibrancyState];
+    if (r)
+        [self _applyVibrancyState];
 
-    return ret;
+    return r;
 }
 
 - (BOOL)unsetThemeState:(ThemeState)aState
 {
     if (aState.isa && [aState isKindOfClass:CPArray])
-        aState = CPThemeState.apply(null, aState);
+         aState = CPThemeState.apply(null, aState);
 
-    var ret = [super unsetThemeState:aState];
+    var r = [super unsetThemeState:aState];
 
-    [self _applyVibrancyState];
+    if (r)
+        [self _applyVibrancyState];
 
-    return ret;
+    return r;
 }
 
 - (void)viewDidMoveToSuperview
