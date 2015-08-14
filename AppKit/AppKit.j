@@ -107,6 +107,7 @@
 @import "CPView.j"
 @import "CPViewAnimation.j"
 @import "CPViewController.j"
+@import "CPVisualEffectView.j"
 @import "CPWebView.j"
 @import "CPWindow.j"
 @import "CPWindowController.j"
