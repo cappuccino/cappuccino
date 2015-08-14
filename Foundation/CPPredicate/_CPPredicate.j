@@ -605,11 +605,11 @@
     }
     if ([self scanPredicateKeyword:@"TRUE"] || [self scanPredicateKeyword:@"YES"])
     {
-        return [CPExpression expressionForConstantValue:[CPNumber numberWithBool:YES]];
+        return [CPExpression expressionForConstantValue:YES];
     }
     if ([self scanPredicateKeyword:@"FALSE"] || [self scanPredicateKeyword:@"NO"])
     {
-        return [CPExpression expressionForConstantValue:[CPNumber numberWithBool:NO]];
+        return [CPExpression expressionForConstantValue:NO];
     }
     if ([self scanPredicateKeyword:@"SELF"])
     {

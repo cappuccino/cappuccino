@@ -526,6 +526,57 @@
     [self assertTrue:[result isEqual:data] message:"[1, 2, 3] filtered with '" + [ctpred description] + "' should return [1, 2, 3]"];
 }
 
+- (void)testConstantValueExpressionWithBooleanValueIsBoolean
+{
+    var right = [[CPPredicate predicateWithFormat:@"k = YES"] rightExpression];
+
+    [self assert:CPConstantValueExpressionType equals:[right expressionType]];
+    [self assert:YES equals:[right constantValue]];
+    [self assert:'boolean' equals:typeof [right constantValue]];
+
+    right = [[CPPredicate predicateWithFormat:@"k = NO"] rightExpression];
+
+    [self assert:CPConstantValueExpressionType equals:[right expressionType]];
+    [self assert:NO equals:[right constantValue]];
+    [self assert:'boolean' equals:typeof [right constantValue]];
+}
+
+- (void)testEvaluateBooleanConstantValueExpressionWithDifferentObjects
+{
+    var yesPredicate = [CPPredicate predicateWithFormat:@"self = YES"],
+        noPredicate = [CPPredicate predicateWithFormat:@"self = NO"];
+
+    var evalYesPredicate = function(object) { return [yesPredicate evaluateWithObject:object]; },
+        evalNoPredicate = function(object) { return [noPredicate evaluateWithObject:object]; };
+
+    var fixtures = [
+        {
+            message:@"booleans",
+            values:       [YES,  NO],
+            expected_yes: [YES,  NO],
+            expected_no:  [ NO, YES]
+        },
+        {
+            message:@"numbers",
+            values:       [  0,   1,  2],
+            expected_yes: [ NO, YES, NO],
+            expected_no:  [YES,  NO, NO]
+        },
+        {
+            message:@"strings",
+            values:       [@"1", @"2", @"true", @"false", @"", @"YES", @"NO"],
+            expected_yes: [ NO ,  NO ,     NO ,      NO ,  NO,    NO ,   NO ],
+            expected_no:  [ NO ,  NO ,     NO ,      NO ,  NO,    NO ,   NO ]
+        }];
+
+    for (var i = 0; i < [fixtures count]; i++)
+    {
+        var fixture = fixtures[i];
+        [self assert:fixture.expected_yes equals:fixture.values.map(evalYesPredicate) message:fixture.message + " with YES-predicate"];
+        [self assert:fixture.expected_no equals:fixture.values.map(evalNoPredicate) message:fixture.message + " with NO-predicate"];
+    }
+}
+
 @end
 
 @implementation CPObject (PredicateTesting)
