@@ -176,6 +176,7 @@ var CPURLConnectionDelegate = nil;
                                      (window.location.protocol === "file:" || window.location.protocol === "app:"));
 
         _HTTPRequest = new CFHTTPRequest();
+        _HTTPRequest.setTimeout([aRequest timeoutInterval] * 1000);
         _HTTPRequest.setWithCredentials([aRequest withCredentials]);
 
         if (shouldStartImmediately)
@@ -210,6 +211,7 @@ var CPURLConnectionDelegate = nil;
         _HTTPRequest.open([_request HTTPMethod], [[_request URL] absoluteString], YES);
 
         _HTTPRequest.onreadystatechange = function() { [self _readyStateDidChange]; };
+        _HTTPRequest.ontimeout = function() { [self _didTimeout]; };
 
         var fields = [_request allHTTPHeaderFields],
             key = nil,
@@ -222,9 +224,14 @@ var CPURLConnectionDelegate = nil;
     }
     catch (anException)
     {
-        if ([_delegate respondsToSelector:@selector(connection:didFailWithError:)])
-            [_delegate connection:self didFailWithError:anException];
+        [self _sendDelegateDidFailWithError:anException];
     }
+}
+
+- (void)_sendDelegateDidFailWithError:(CPException)anException
+{
+    if ([_delegate respondsToSelector:@selector(connection:didFailWithError:)])
+        [_delegate connection:self didFailWithError:anException];
 }
 
 /*
@@ -249,10 +256,22 @@ var CPURLConnectionDelegate = nil;
     return _isLocalFileConnection;
 }
 
+/*!
+    @ignore
+*/
+- (void)_didTimeout
+{
+    var exception = [CPException exceptionWithName:@"Timeout exception"
+                                            reason:"The request timed out."
+                                          userInfo:@{}];
+
+    [self _sendDelegateDidFailWithError:exception];
+}
+
 /* @ignore */
 - (void)_readyStateDidChange
 {
-    if (_HTTPRequest.readyState() === CFHTTPRequest.CompleteState)
+    if (_HTTPRequest.readyState() === CFHTTPRequest.CompleteState && !_HTTPRequest.isTimeoutRequest())
     {
         var statusCode = _HTTPRequest.status(),
             URL = [_request URL];
