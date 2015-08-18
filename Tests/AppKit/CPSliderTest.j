@@ -4,6 +4,12 @@
 {
 }
 
+- (void)setUp
+{
+    // This will init the global var CPApp which are used internally in the AppKit
+    [[CPApplication alloc] init];
+}
+
 - (void)testIsContinuous
 {
     // While normally testing simple instance variables is a waste of time,

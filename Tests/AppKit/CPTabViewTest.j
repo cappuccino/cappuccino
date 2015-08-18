@@ -1,8 +1,6 @@
 @import <Foundation/Foundation.j>
 @import <AppKit/AppKit.j>
 
-
-
 @implementation CPTabView (TEST)
 
 - (CPSegmentedControl)tabs
@@ -27,6 +25,9 @@
 
 - (void)setUp
 {
+    // This will init the global var CPApp which are used internally in the AppKit
+    [[CPApplication alloc] init];
+
     _tabView = [[CPTabView alloc] initWithFrame:CGRectMake(0, 0, 800, 600)];
 
     _tabItem1 = [[CPTabViewItem alloc] initWithIdentifier:@"id1"];

@@ -1,8 +1,5 @@
-
 @import <AppKit/CPView.j>
 @import <AppKit/CPApplication.j>
-
-[CPApplication sharedApplication]
 
 var methodCalled;
 
@@ -18,6 +15,9 @@ var methodCalled;
 
 - (void)setUp
 {
+    // This will init the global var CPApp which are used internally in the AppKit
+    [[CPApplication alloc] init];
+
     window = [[CPWindow alloc] initWithContentRect:CGRectMake(0.0, 0.0, 1000.0, 1000.0) styleMask:CPWindowNotSizable];
 
     view = [[CPView alloc] initWithFrame:CGRectMakeZero()];

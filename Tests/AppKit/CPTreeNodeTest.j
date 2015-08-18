@@ -1,6 +1,4 @@
-
 @import <AppKit/CPTreeNode.j>
-
 
 @implementation CPTreeNodeTest : OJTestCase
 {
@@ -10,6 +8,9 @@
 
 - (void)setUp
 {
+    // This will init the global var CPApp which are used internally in the AppKit
+    [[CPApplication alloc] init];
+
     treeNode = [CPTreeNode treeNodeWithRepresentedObject:nil];
 
     childNode = [CPTreeNode treeNodeWithRepresentedObject:nil];

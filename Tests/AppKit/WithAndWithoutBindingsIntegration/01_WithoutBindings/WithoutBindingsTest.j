@@ -30,10 +30,10 @@
 {
 }
 
-- (void)setUp
++ (void)setUp
 {
-    // CPApp must be initialised or action sending will not work.
-    [CPApplication sharedApplication];
+    // This will init the global var CPApp which are used internally in the AppKit
+    [[CPApplication alloc] init];
 }
 
 - (void)test

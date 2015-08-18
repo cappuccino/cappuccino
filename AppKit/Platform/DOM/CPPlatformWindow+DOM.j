@@ -365,6 +365,7 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
         _DOMBodyElement.style["-khtml-user-select"] = "none";
 
     _DOMBodyElement.webkitTouchCallout = "none";
+    _DOMBodyElement.style[CPBrowserStyleProperty(@"user-select")] = @"none";
 
     [self createDOMElements];
     [self _addLayers];
