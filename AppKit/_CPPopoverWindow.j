@@ -141,7 +141,12 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
     if (_appearance === anAppearance)
         return;
 
-    [_windowView setAppearance:anAppearance];
+    _appearance = anAppearance;
+
+    var appearanceName = _appearance == CPPopoverAppearanceMinimal ? CPAppearanceNameVibrantLight : CPAppearanceNameVibrantDark,
+        viewAppearance = [CPAppearance appearanceNamed:appearanceName];
+
+    [_windowView setAppearance:viewAppearance];
 }
 
 - (void)setStyleMask:(unsigned)aStyleMask

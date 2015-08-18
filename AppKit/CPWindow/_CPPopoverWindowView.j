@@ -26,7 +26,6 @@
 @import "CGGradient.j"
 @import "_CPWindowView.j"
 
-@global CPPopoverAppearanceMinimal
 
 var _CPPopoverWindowViewDefaultCursorSize = CGSizeMake(16, 10);
 
@@ -39,7 +38,6 @@ var _CPPopoverWindowViewDefaultCursorSize = CGSizeMake(16, 10);
 {
     float       _arrowOffsetX   @accessors(property=arrowOffsetX);
     float       _arrowOffsetY   @accessors(property=arrowOffsetY);
-    int         _appearance     @accessors(property=appearance);
     unsigned    _preferredEdge  @accessors(property=preferredEdge);
 
     CGSize      _cursorSize;
@@ -123,7 +121,7 @@ var _CPPopoverWindowViewDefaultCursorSize = CGSizeMake(16, 10);
     {
         _arrowOffsetX = 0.0;
         _arrowOffsetY = 0.0;
-        _appearance = CPPopoverAppearanceMinimal;
+        _appearance = [CPAppearance appearanceNamed:CPAppearanceNameVibrantLight];
         _cursorSize = CGSizeMakeCopy(_CPPopoverWindowViewDefaultCursorSize);
     }
 
@@ -168,7 +166,7 @@ var _CPPopoverWindowViewDefaultCursorSize = CGSizeMake(16, 10);
         gradient,
         frame = [self bounds];
 
-    if (_appearance == CPPopoverAppearanceMinimal)
+    if ([_appearance isEqual:[CPAppearance appearanceNamed:CPAppearanceNameVibrantLight]])
     {
         gradient = [self valueForThemeAttribute:@"background-gradient"];
         strokeColor = [self valueForThemeAttribute:@"stroke-color"];

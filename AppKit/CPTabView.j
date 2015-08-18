@@ -529,6 +529,8 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
 
 - (void)awakeFromCib
 {
+    [super awakeFromCib];
+
     // This cannot be run in initWithCoder because it might call selectTabViewItem:, which is
     // not safe to call before the views of the tab views items are fully decoded.
     [self _updateItems];
