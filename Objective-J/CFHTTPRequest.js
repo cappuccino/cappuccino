@@ -246,7 +246,8 @@ CFHTTPRequest.prototype.open = function(/*String*/ aMethod, /*String*/ aURL, /*B
     this._user = aUser;
     this._password = aPassword;
     retval = this._nativeRequest.open(aMethod, aURL, isAsynchronous, aUser, aPassword);
-    this._nativeRequest.withCredentials = this._withCredentials;
+	if (this._async)
+		this._nativeRequest.withCredentials = this._withCredentials;
     
     return retval;
 };
@@ -304,7 +305,7 @@ CFHTTPRequest.prototype.removeEventListener = function(/*String*/ anEventName, /
 CFHTTPRequest.prototype.setWithCredentials = function(/*Boolean*/ willSendWithCredentials)
 {
     this._withCredentials = willSendWithCredentials
-    if (this._isOpen)
+    if (this._isOpen && this._async)
         this._nativeRequest.withCredentials = willSendWithCredentials;
 };
 
