@@ -1050,6 +1050,14 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     }
 }
 
+- (void)rightMouseDown:(CPEvent)anEvent
+{
+    if ([self menuForEvent:anEvent] || [[self nextResponder] isKindOfClass:CPView])
+        [super rightMouseDown:anEvent];
+    else
+        [[[anEvent window] platformWindow] _propagateContextMenuDOMEvent:YES];
+}
+
 - (void)mouseDragged:(CPEvent)anEvent
 {
     if (![self isEnabled] || !([self isSelectable] || [self isEditable]))
