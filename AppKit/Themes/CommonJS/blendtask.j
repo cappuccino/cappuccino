@@ -172,17 +172,6 @@ function themeFromCibData(data)
     {
         var object = topLevelObjects[count];
 
-        if ([object._themedObject isKindOfClass:CPColor])
-        {
-            TERM.stream.print(object._themedObject);
-
-            for (var attributeName in object._themedObject._themeAttributes)
-            {
-                TERM.stream.print(attributeName);
-                TERM.stream.print([object._themedObject._themeAttributes[attributeName] value]);
-            }
-        }
-
         templates = templates.concat([object blendThemeObjectTemplates]);
 
         if ([object isKindOfClass:[BKThemeTemplate class]])
