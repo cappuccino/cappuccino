@@ -384,6 +384,19 @@ var themedButtonValues = nil,
             "themedTokenFieldTokenCloseButton"];
 }
 
++ (CPColor)themedColor
+{
+    var color = [CPColor blackColor],
+        themedColorValues =
+    [
+        [@"alternate-selected-control-color", [[CPColor alloc] _initWithRGBA:[0.22, 0.46, 0.84, 1.0]]],
+        [@"secondary-selected-control-color", [[CPColor alloc] _initWithRGBA:[0.83, 0.83, 0.83, 1.0]]]
+    ];
+
+    [self registerThemeValues:themedColorValues forObject:color];
+
+    return color;
+}
 
 + (CPButton)makeButton
 {

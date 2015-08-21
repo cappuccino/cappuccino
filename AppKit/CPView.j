@@ -24,6 +24,7 @@
 @import <Foundation/CPObjJRuntime.j>
 @import <Foundation/CPSet.j>
 
+@import "_CPObject+Theme.j"
 @import "CGAffineTransform.j"
 @import "CGGeometry.j"
 @import "CPAppearance.j"
@@ -113,8 +114,7 @@ CPViewMaxYMargin    = 32;
 CPViewBoundsDidChangeNotification   = @"CPViewBoundsDidChangeNotification";
 CPViewFrameDidChangeNotification    = @"CPViewFrameDidChangeNotification";
 
-var CachedNotificationCenter    = nil,
-    CachedThemeAttributes       = nil;
+var CachedNotificationCenter    = nil;
 
 #if PLATFORM(DOM)
 var DOMElementPrototype         = nil,
@@ -217,12 +217,6 @@ var CPViewHighDPIDrawingEnabled = YES;
     // Layout Support
     BOOL                _needsLayout;
     JSObject            _ephemeralSubviews;
-
-    // Theming Support
-    CPTheme             _theme;
-    CPString            _themeClass;
-    JSObject            _themeAttributes;
-    unsigned            _themeState;
 
     JSObject            _ephemeralSubviewsForNames;
     CPSet               _ephereralSubviews;
@@ -3101,33 +3095,19 @@ setBoundsOrigin:
 
 @end
 
+
 @implementation CPView (Theming)
-#pragma mark Theme States
 
-- (unsigned)themeState
-{
-    return _themeState;
-}
-
-- (BOOL)hasThemeState:(ThemeState)aState
-{
-    if (aState.isa && [aState isKindOfClass:CPArray])
-        return _themeState.hasThemeState.apply(_themeState, aState);
-
-    return _themeState.hasThemeState(aState);
-}
+#pragma mark Override
 
 - (BOOL)setThemeState:(ThemeState)aState
 {
-    if (aState && aState.isa && [aState isKindOfClass:CPArray])
-        aState = CPThemeState.apply(null, aState);
+    var shouldLayout = [super setThemeState:aState];
 
-    if (_themeState.hasThemeState(aState))
+    if (!shouldLayout)
         return NO;
 
-    _themeState = CPThemeState(_themeState, aState);
-
-    [self setNeedsLayout];
+    [self setNeedsLayout:YES];
     [self setNeedsDisplay:YES];
 
     return YES;
@@ -3135,26 +3115,35 @@ setBoundsOrigin:
 
 - (BOOL)unsetThemeState:(ThemeState)aState
 {
-    if (aState && aState.isa && [aState isKindOfClass:CPArray])
-        aState = CPThemeState.apply(null, aState);
+    var shouldLayout = [super unsetThemeState:aState];
 
-    var oldThemeState = _themeState;
-    _themeState = _themeState.without(aState);
-
-    if (oldThemeState === _themeState)
+    if (!shouldLayout)
         return NO;
 
-    [self setNeedsLayout];
+    [self setNeedsLayout:YES];
     [self setNeedsDisplay:YES];
 
     return YES;
 }
 
+- (void)setThemeClass:(CPString)theClass
+{
+    [super setThemeClass:theClass];
+
+    [self setNeedsLayout];
+    [self setNeedsDisplay:YES];
+}
+
+
+#pragma mark First responder
+
 - (BOOL)becomeFirstResponder
 {
     var r = [super becomeFirstResponder];
+
     if (r)
         [self _notifyViewDidBecomeFirstResponder];
+
     return r;
 }
 
@@ -3163,6 +3152,7 @@ setBoundsOrigin:
     [self setThemeState:CPThemeStateFirstResponder];
 
     var count = [_subviews count];
+
     while (count--)
         [_subviews[count] _notifyViewDidBecomeFirstResponder];
 }
@@ -3170,8 +3160,10 @@ setBoundsOrigin:
 - (BOOL)resignFirstResponder
 {
     var r = [super resignFirstResponder];
+
     if (r)
         [self _notifyViewDidResignFirstResponder];
+
     return r;
 }
 
@@ -3180,6 +3172,7 @@ setBoundsOrigin:
     [self unsetThemeState:CPThemeStateFirstResponder];
 
     var count = [_subviews count];
+
     while (count--)
         [_subviews[count] _notifyViewDidResignFirstResponder];
 }
@@ -3189,6 +3182,7 @@ setBoundsOrigin:
     [self setThemeState:CPThemeStateKeyWindow];
 
     var count = [_subviews count];
+
     while (count--)
         [_subviews[count] _notifyWindowDidBecomeKey];
 }
@@ -3198,117 +3192,12 @@ setBoundsOrigin:
     [self unsetThemeState:CPThemeStateKeyWindow];
 
     var count = [_subviews count];
+
     while (count--)
         [_subviews[count] _notifyWindowDidResignKey];
 }
 
 #pragma mark Theme Attributes
-
-+ (CPString)defaultThemeClass
-{
-    return nil;
-}
-
-- (CPString)themeClass
-{
-    if (_themeClass)
-        return _themeClass;
-
-    return [[self class] defaultThemeClass];
-}
-
-- (void)setThemeClass:(CPString)theClass
-{
-    _themeClass = theClass;
-
-    [self _loadThemeAttributes];
-
-    [self setNeedsLayout];
-    [self setNeedsDisplay:YES];
-}
-
-+ (CPDictionary)themeAttributes
-{
-    return nil;
-}
-
-+ (CPArray)_themeAttributes
-{
-    if (!CachedThemeAttributes)
-        CachedThemeAttributes = {};
-
-    var theClass = [self class],
-        CPViewClass = [CPView class],
-        attributes = [],
-        nullValue = [CPNull null];
-
-    for (; theClass && theClass !== CPViewClass; theClass = [theClass superclass])
-    {
-        var cachedAttributes = CachedThemeAttributes[class_getName(theClass)];
-
-        if (cachedAttributes)
-        {
-            attributes = attributes.length ? attributes.concat(cachedAttributes) : attributes;
-            CachedThemeAttributes[[self className]] = attributes;
-
-            break;
-        }
-
-        var attributeDictionary = [theClass themeAttributes];
-
-        if (!attributeDictionary)
-            continue;
-
-        var attributeKeys = [attributeDictionary allKeys],
-            attributeCount = attributeKeys.length;
-
-        while (attributeCount--)
-        {
-            var attributeName = attributeKeys[attributeCount],
-                attributeValue = [attributeDictionary objectForKey:attributeName];
-
-            attributes.push(attributeValue === nullValue ? nil : attributeValue);
-            attributes.push(attributeName);
-        }
-    }
-
-    return attributes;
-}
-
-- (void)_loadThemeAttributes
-{
-    var theClass = [self class],
-        attributes = [theClass _themeAttributes],
-        count = attributes.length;
-
-    if (!count)
-        return;
-
-    var theme = [self theme],
-        themeClass = [self themeClass];
-
-    _themeAttributes = {};
-
-    while (count--)
-    {
-        var attributeName = attributes[count--],
-            attribute = [[_CPThemeAttribute alloc] initWithName:attributeName defaultValue:attributes[count]];
-
-        [attribute setParentAttribute:[theme attributeWithName:attributeName forClass:themeClass]];
-
-        _themeAttributes[attributeName] = attribute;
-    }
-}
-
-- (void)setTheme:(CPTheme)aTheme
-{
-    if (_theme === aTheme)
-        return;
-
-    _theme = aTheme;
-
-    [self viewDidChangeTheme];
-}
 
 - (void)_setThemeIncludingDescendants:(CPTheme)aTheme
 {
@@ -3316,54 +3205,22 @@ setBoundsOrigin:
     [[self subviews] makeObjectsPerformSelector:@selector(_setThemeIncludingDescendants:) withObject:aTheme];
 }
 
-- (CPTheme)theme
-{
-    return _theme;
-}
-
-- (void)viewDidChangeTheme
+- (void)objectDidChangeTheme
 {
     if (!_themeAttributes)
         return;
 
-    var theme = [self theme],
-        themeClass = [self themeClass];
-
-    for (var attributeName in _themeAttributes)
-        if (_themeAttributes.hasOwnProperty(attributeName))
-            [_themeAttributes[attributeName] setParentAttribute:[theme attributeWithName:attributeName forClass:themeClass]];
+    [super objectDidChangeTheme];
 
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
 }
 
-- (CPDictionary)_themeAttributeDictionary
-{
-    var dictionary = @{};
-
-    if (_themeAttributes)
-    {
-        var theme = [self theme];
-
-        for (var attributeName in _themeAttributes)
-            if (_themeAttributes.hasOwnProperty(attributeName))
-                [dictionary setObject:_themeAttributes[attributeName] forKey:attributeName];
-    }
-
-    return dictionary;
-}
-
 - (void)setValue:(id)aValue forThemeAttribute:(CPString)aName inState:(ThemeState)aState
 {
-   if (aState.isa && [aState isKindOfClass:CPArray])
-        aState = CPThemeState.apply(null, aState);
-
-    if (!_themeAttributes || !_themeAttributes[aName])
-        [CPException raise:CPInvalidArgumentException reason:[self className] + " does not contain theme attribute '" + aName + "'"];
-
     var currentValue = [self currentValueForThemeAttribute:aName];
 
-    [_themeAttributes[aName] setValue:aValue forState:aState];
+    [super setValue:aValue forThemeAttribute:aName inState:aState];
 
     if ([self currentValueForThemeAttribute:aName] === currentValue)
         return;
@@ -3374,94 +3231,15 @@ setBoundsOrigin:
 
 - (void)setValue:(id)aValue forThemeAttribute:(CPString)aName
 {
-    if (!_themeAttributes || !_themeAttributes[aName])
-        [CPException raise:CPInvalidArgumentException reason:[self className] + " does not contain theme attribute '" + aName + "'"];
-
     var currentValue = [self currentValueForThemeAttribute:aName];
 
-    [_themeAttributes[aName] setValue:aValue];
+    [super setValue:aValue forThemeAttribute:aName ];
 
     if ([self currentValueForThemeAttribute:aName] === currentValue)
         return;
 
     [self setNeedsDisplay:YES];
     [self setNeedsLayout];
-}
-
-- (id)valueForThemeAttribute:(CPString)aName inState:(ThemeState)aState
-{
-   if (aState.isa && [aState isKindOfClass:CPArray])
-        aState = CPThemeState.apply(null, aState);
-
-    if (!_themeAttributes || !_themeAttributes[aName])
-        [CPException raise:CPInvalidArgumentException reason:[self className] + " does not contain theme attribute '" + aName + "'"];
-
-    return [_themeAttributes[aName] valueForState:aState];
-}
-
-- (id)valueForThemeAttribute:(CPString)aName
-{
-    if (!_themeAttributes || !_themeAttributes[aName])
-        [CPException raise:CPInvalidArgumentException reason:[self className] + " does not contain theme attribute '" + aName + "'"];
-
-    return [_themeAttributes[aName] value];
-}
-
-- (id)currentValueForThemeAttribute:(CPString)aName
-{
-    if (!_themeAttributes || !_themeAttributes[aName])
-        [CPException raise:CPInvalidArgumentException reason:[self className] + " does not contain theme attribute '" + aName + "'"];
-
-    return [_themeAttributes[aName] valueForState:_themeState];
-}
-
-- (BOOL)hasThemeAttribute:(CPString)aName
-{
-    return (_themeAttributes && _themeAttributes[aName] !== undefined);
-}
-
-/*!
-    Registers theme values encoded in an array at runtime. The format of the data in the array
-    is the same as that used by ThemeDescriptors.j, with the exception that you need to use
-    CPColorWithImages() in place of PatternColor(). For more information see the comments
-    at the top of ThemeDescriptors.j.
-
-    @param themeValues array of theme values
-*/
-- (void)registerThemeValues:(CPArray)themeValues
-{
-    for (var i = 0; i < themeValues.length; ++i)
-    {
-        var attributeValueState = themeValues[i],
-            attribute = attributeValueState[0],
-            value = attributeValueState[1],
-            state = attributeValueState[2];
-
-        if (state)
-            [self setValue:value forThemeAttribute:attribute inState:state];
-        else
-            [self setValue:value forThemeAttribute:attribute];
-    }
-}
-
-/*!
-    Registers theme values encoded in an array at runtime. The format of the data in the array
-    is the same as that used by ThemeDescriptors.j, with the exception that you need to use
-    CPColorWithImages() in place of PatternColor(). The values in \c inheritedValues are
-    registered first, then those in \c themeValues override/augment the inherited values.
-    For more information see the comments at the top of ThemeDescriptors.j.
-
-    @param themeValues array of base theme values
-    @param inheritedValues array of overridden/additional theme values
-*/
-- (void)registerThemeValues:(CPArray)themeValues inherit:(CPArray)inheritedValues
-{
-    // Register inherited values first, then override those with the subtheme values.
-    if (inheritedValues)
-        [self registerThemeValues:inheritedValues];
-
-    if (themeValues)
-        [self registerThemeValues:themeValues];
 }
 
 - (CPView)createEphemeralSubviewNamed:(CPString)aViewName
@@ -3613,8 +3391,6 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     CPViewSubviewsKey               = @"CPViewSubviewsKey",
     CPViewSuperviewKey              = @"CPViewSuperviewKey",
     CPViewTagKey                    = @"CPViewTagKey",
-    CPViewThemeClassKey             = @"CPViewThemeClassKey",
-    CPViewThemeStateKey             = @"CPViewThemeStateKey",
     CPViewWindowKey                 = @"CPViewWindowKey",
     CPViewNextKeyViewKey            = @"CPViewNextKeyViewKey",
     CPViewPreviousKeyViewKey        = @"CPViewPreviousKeyViewKey",
@@ -3719,23 +3495,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 
         [self setBackgroundColor:[aCoder decodeObjectForKey:CPViewBackgroundColorKey]];
         [self _setupViewFlags];
-
-        _theme = [CPTheme defaultTheme];
-        _themeClass = [aCoder decodeObjectForKey:CPViewThemeClassKey];
-        _themeState = CPThemeState([aCoder decodeObjectForKey:CPViewThemeStateKey]);
-        _themeAttributes = {};
-
-        var theClass = [self class],
-            themeClass = [self themeClass],
-            attributes = [theClass _themeAttributes],
-            count = attributes.length;
-
-        while (count--)
-        {
-            var attributeName = attributes[count--];
-
-            _themeAttributes[attributeName] = CPThemeAttributeDecode(aCoder, attributeName, attributes[count], _theme, themeClass);
-        }
+        [self _decodeThemeObjectsWithCoder:aCoder];
 
         [self setAppearance:[aCoder decodeObjectForKey:CPViewAppearanceKey]];
 
@@ -3814,12 +3574,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     if (previousKeyView !== nil && ![previousKeyView isEqual:self])
         [aCoder encodeConditionalObject:previousKeyView forKey:CPViewPreviousKeyViewKey];
 
-    [aCoder encodeObject:[self themeClass] forKey:CPViewThemeClassKey];
-    [aCoder encodeObject:String(_themeState) forKey:CPViewThemeStateKey];
-
-    for (var attributeName in _themeAttributes)
-        if (_themeAttributes.hasOwnProperty(attributeName))
-            CPThemeAttributeEncode(aCoder, _themeAttributes[attributeName]);
+    [self _encodeThemeObjectsWithCoder:aCoder];
 
     if (_identifier)
         [aCoder encodeObject:_identifier forKey:CPReuseIdentifierKey];

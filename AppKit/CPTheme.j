@@ -142,20 +142,19 @@ var CPThemesByName          = { },
 
     if (!className)
     {
-        if ([aClass isKindOfClass:[CPView class]])
+        if ([aClass respondsToSelector:@selector(defaultThemeClass)])
         {
-            if ([aClass respondsToSelector:@selector(defaultThemeClass)])
-                className = [aClass defaultThemeClass];
-            else if ([aClass respondsToSelector:@selector(themeClass)])
-            {
-                CPLog.warn(@"%@ themeClass is deprecated in favor of defaultThemeClass", CPStringFromClass(aClass));
-                className = [aClass themeClass];
-            }
-            else
-                return nil;
+            className = [aClass defaultThemeClass];
+        }
+        else if ([aClass respondsToSelector:@selector(themeClass)])
+        {
+            CPLog.warn(@"%@ themeClass is deprecated in favor of defaultThemeClass", CPStringFromClass(aClass));
+            className = [aClass themeClass];
         }
         else
-            [CPException raise:CPInvalidArgumentException reason:@"aClass must be a class object or a string."];
+        {
+            return nil;
+        }
     }
 
     return [_attributes objectForKey:className];
