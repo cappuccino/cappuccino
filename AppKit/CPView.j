@@ -3737,7 +3737,15 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
             _themeAttributes[attributeName] = CPThemeAttributeDecode(aCoder, attributeName, attributes[count], _theme, themeClass);
         }
 
-        [self setAppearance:[aCoder decodeObjectForKey:CPViewAppearanceKey]];
+        var appearance = [aCoder decodeObjectForKey:CPViewAppearanceKey];
+
+        // TODO : find a way to fix this horrible things
+        // We only set the appearance here when everything and every subviews were unarchived.
+        // Otherwise this causes a crash with some subviews not unarchived but already created (how ? init is not called, neither initWithFrame or initWithCoder) in the coder (I have no idea why these views are present in _objects of the coder)
+        // To reproduce, uncomment the timeout and open the test Tests/Manual/TableTests/ViewBasedCib
+        window.setTimeout(function() {
+            [self setAppearance:appearance];
+        },0);
 
         [self setNeedsDisplay:YES];
         [self setNeedsLayout];
