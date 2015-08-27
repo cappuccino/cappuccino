@@ -47,6 +47,8 @@ var CPMainCibFile               = @"CPMainCibFile",
 @protocol CPApplicationDelegate <CPObject>
 
 @optional
+- (CPApplicationTerminateReply)applicationShouldTerminate:(CPApplication)sender;
+- (CPString)applicationShouldTerminateMessage:(CPApplication)sender;
 - (void)applicationDidBecomeActive:(CPNotification)aNotification;
 - (void)applicationDidChangeScreenParameters:(CPNotification)aNotification;
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification;
@@ -57,6 +59,9 @@ var CPMainCibFile               = @"CPMainCibFile",
 - (void)applicationWillTerminate:(CPNotification)aNotification;
 
 @end
+
+var CPApplicationDelegate_applicationShouldTerminate_           = 1 << 0,
+    CPApplicationDelegate_applicationShouldTerminateMessage_    = 1 << 1;
 
 /*!
     @ingroup appkit
@@ -103,6 +108,8 @@ var CPMainCibFile               = @"CPMainCibFile",
 
     //
     id <CPApplicationDelegate>  _delegate;
+    CPInteger                   _implementedDelegateMethods;
+
     BOOL                        _finishedLaunching;
     BOOL                        _isActive;
 
@@ -165,6 +172,8 @@ var CPMainCibFile               = @"CPMainCibFile",
     if (_delegate == aDelegate)
         return;
 
+    _implementedDelegateMethods = 0;
+
     var defaultCenter = [CPNotificationCenter defaultCenter],
         delegateNotifications =
         [
@@ -205,6 +214,12 @@ var CPMainCibFile               = @"CPMainCibFile",
         if ([_delegate respondsToSelector:selector])
             [defaultCenter addObserver:_delegate selector:selector name:notificationName object:self];
     }
+
+    if ([_delegate respondsToSelector:@selector(applicationShouldTerminate:)])
+        _implementedDelegateMethods |= CPApplicationDelegate_applicationShouldTerminate_
+
+    if ([_delegate respondsToSelector:@selector(applicationShouldTerminateMessage:)])
+        _implementedDelegateMethods |= CPApplicationDelegate_applicationShouldTerminateMessage_
 }
 
 /*!
@@ -426,12 +441,7 @@ var CPMainCibFile               = @"CPMainCibFile",
 {
     // callback method for terminate:
     if (didCloseAll)
-    {
-        if ([_delegate respondsToSelector:@selector(applicationShouldTerminate:)])
-            [self replyToApplicationShouldTerminate:[_delegate applicationShouldTerminate:self]];
-        else
-            [self replyToApplicationShouldTerminate:YES];
-    }
+        [self replyToApplicationShouldTerminate:[self _sendDelegateApplicationShouldTerminate]];
 }
 
 - (void)replyToApplicationShouldTerminate:(BOOL)terminate
@@ -1208,6 +1218,22 @@ var CPMainCibFile               = @"CPMainCibFile",
     [[CPNotificationCenter defaultCenter] postNotificationName:CPApplicationWillResignActiveNotification
                                                         object:self
                                                       userInfo:nil];
+}
+
+- (BOOL)_sendDelegateApplicationShouldTerminate
+{
+    if (!(_implementedDelegateMethods & CPApplicationDelegate_applicationShouldTerminate_))
+        return YES;
+
+    return [_delegate applicationShouldTerminate:self];
+}
+
+- (CPString)_sendDelegateApplicationShouldTerminateMessage
+{
+    if (!(_implementedDelegateMethods & CPApplicationDelegate_applicationShouldTerminateMessage_))
+        return @"You have attempted to leave this page. Are you sure you want to exit this page?";
+
+    return [_delegate applicationShouldTerminateMessage:self];
 }
 
 - (void)_didResignActive

@@ -266,7 +266,7 @@ var abbreviationDictionary,
         @"MST" :    [@"Mountain Standard Time", @"MST", @"Mountain Daylight Time", @"MDT", @"Mountain Time", @"MT"],
         @"PHT" :    [@"Philippine Standard Time", @"GMT+08:00", @"Philippine Summer Time", @"GMT+08:00", @"Philippine Standard Time", @"Philippines Time"],
         @"WET" :    [@"Western European Standard Time", @"GMT", @"Western European Summer Time", @"GMT+01:00", @"Western European Time", @"Portugal Time (Lisbon)"]
-    };
+        };
 
     var date = [CPDate date],
         abbreviation = String(String(date).split("(")[1]).split(")")[0];

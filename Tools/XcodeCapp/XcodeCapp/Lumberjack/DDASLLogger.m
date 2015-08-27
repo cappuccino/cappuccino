@@ -45,7 +45,7 @@ static DDASLLogger *sharedInstance;
 	return sharedInstance;
 }
 
-- (id)init
+- (instancetype)init
 {
 	if (sharedInstance != nil)
 	{

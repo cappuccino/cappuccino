@@ -94,6 +94,7 @@ exports.run = function(args)
             print("  -I, --objj-include-paths       include a specific framework paths")
             print("  -h, --help                     print this help");
             print("  -m, --multifiles               launch objj on several files")
+            print("  -x, --xml                      specify the output format in xml.")
             return;
         }
 
@@ -101,44 +102,56 @@ exports.run = function(args)
         {
             switch (argv[0])
             {
+                case "--objj-include-paths":
                 case "-I":
                     argv.shift();
                     OBJJ_INCLUDE_PATHS.unshift.apply(OBJJ_INCLUDE_PATHS, argv.shift().split(":"));
                     break;
 
+                case "--multifiles":
                 case "-m":
                     argv.shift();
                     multipleFiles = true;
                     break
+
+                case "-x":
+                case "--xml":
+                    argv.shift();
+                    exports.outputFormatInXML = true;
+                    break;
             }
         }
     }
 
     if (argv && argv.length > 0)
     {
-        var endCommand = false;
+        var endCommand = false,
+            errors = [];
 
         while (argv.length > 0)
         {
-            var arg0 = argv.shift();
-            var mainFilePath = FILE.canonical(arg0);
+            var arg0 = argv.shift(),
+                mainFilePath = FILE.canonical(arg0);
 
-            if (multipleFiles)
-            {
-                // This is needed to process every files passed in args
-                // Otherwise it would stop when an error is raised or we would like to objj the other given files
-                try
-                {
-                    exports.make_narwhal_factory(mainFilePath)(require, { }, module, system, print);
-                }
-                catch(e)
-                {
-                    print("\n" + e);
-                }
-            }
-            else
+            try
             {
                 exports.make_narwhal_factory(mainFilePath)(require, { }, module, system, print);
+            }
+            catch(e)
+            {
+                if (exports.outputFormatInXML)
+                {
+                    var dict = new CFMutableDictionary();
+                    dict.addValueForKey('line', e.line ? e.line : 0);
+                    dict.addValueForKey('sourcePath', e.path ? e.path : mainFilePath);
+                    dict.addValueForKey('message', e.message);
+
+                    errors.push(dict);
+                }
+                else
+                {
+                    errors.push("\n" + e);
+                }
             }
 
             if (typeof main === "function")
@@ -156,6 +169,14 @@ exports.run = function(args)
             ObjectiveJ.StaticResource.resetRootResources();
             ObjectiveJ.FileExecutable.resetFileExecutables();
             objj_resetRegisterClasses();
+        }
+
+        if (errors.length)
+        {
+            if (exports.outputFormatInXML)
+                throw CFPropertyListCreateXMLData(errors, kCFPropertyListXMLFormat_v1_0).rawString();
+            else
+                throw errors;
         }
     }
     else
@@ -229,6 +250,7 @@ function getPackage() {
 exports.version = function() { return getPackage()["version"]; }
 exports.revision = function() { return getPackage()["cappuccino-revision"]; }
 exports.timestamp = function() { return new Date(getPackage()["cappuccino-timestamp"]); }
+exports.outputFormatInXML = false;
 
 exports.fullVersionString = function() {
     return sprintf("objective-j %s (%04d-%02d-%02d %s)",

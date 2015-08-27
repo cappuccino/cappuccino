@@ -60,6 +60,8 @@ var CPCollectionViewDelegate_collectionView_acceptDrop_index_dropOperation_     
 
 @end
 
+var HORIZONTAL_MARGIN = 2;
+
 /*!
     @ingroup appkit
     @class CPCollectionView
@@ -88,9 +90,6 @@ var CPCollectionViewDelegate_collectionView_acceptDrop_index_dropOperation_     
     @param indices the indices to obtain drag types
     @return an array of drag types (CPString)
 */
-
-var HORIZONTAL_MARGIN = 2;
-
 @implementation CPCollectionView : CPView
 {
     CPArray                         _content;

@@ -52,6 +52,7 @@ var NSViewAutoresizingMask = 0x3F,
         _window = [aCoder decodeObjectForKey:@"NSWindow"];
         _superview = [aCoder decodeObjectForKey:@"NSSuperview"];
         _subviews = [aCoder decodeObjectForKey:@"NSSubviews"];
+        _appearance = [aCoder decodeObjectForKey:@"NSAppearance"];
 
         _hierarchyScaleSize = CGSizeMake(1.0 , 1.0);
         _scaleSize = CGSizeMake(1.0, 1.0);

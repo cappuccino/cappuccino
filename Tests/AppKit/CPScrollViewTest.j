@@ -2,10 +2,15 @@
 
 @import "CPNotificationCenterHelper.j"
 
-[CPApplication sharedApplication];
 
 @implementation CPScrollViewTest : OJTestCase
 {
+}
+
+- (void)setUp
+{
+    // This will init the global var CPApp which are used internally in the AppKit
+    [[CPApplication alloc] init];
 }
 
 /*!
@@ -334,10 +339,48 @@
     [self assert:[CPNotificationCenterHelper registeredNotificationsForObserver:scrollView] equals:[] message:@"Notications registered for the scrollView in the notification center are wrong"];
 }
 
+- (void)testDocumentVisibleRect
+{
+    var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(0.0, 0.0, 1024.0, 768.0)
+                                        styleMask:CPWindowNotSizable],
+        windowView    = [theWindow contentView],
+        aScrollView   = [[CPScrollView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)],
+        aDocumentView = [[CPView alloc]       initWithFrame:CGRectMake(0, 0, 200, 200)];
+
+    [CPScrollView setGlobalScrollerStyle:CPScrollerStyleOverlay];
+
+    [aScrollView setDocumentView:aDocumentView];
+    [windowView addSubview:aScrollView];
+
+    [self assertRect:CGRectMake(0, 0, 100, 100) equals:[aScrollView documentVisibleRect] message:@"documentVisibleRect is wrong in CPScrollView"];
+
+    [aDocumentView setScaleSize:CGSizeMake(0.5, 0.5)];
+    [self assertRect:CGRectMake(0, 0, 200, 200) equals:[aScrollView documentVisibleRect] message:@"documentVisibleRect is wrong in CPScrollView after scaling"];
+
+    [aDocumentView setScaleSize:CGSizeMake(1, 1)];
+    [aDocumentView scrollRectToVisible:CGRectMake(120, 120, 20, 20)];
+    [self assertRect:CGRectMake(40, 40, 100, 100) equals:[aScrollView documentVisibleRect] message:@"documentVisibleRect is wrong in CPScrollView"];
+
+    [aDocumentView setScaleSize:CGSizeMake(0.5, 0.5)];
+    [self assertRect:CGRectMake(80, 80, 200, 200) equals:[aScrollView documentVisibleRect] message:@"documentVisibleRect is wrong in CPScrollView"];
+}
+
 - (void)assertPoint:(CGPoint)expected equals:(CGPoint)actual message:(CPString)message
 {
     [self assert:expected.x equals:actual.x message:@"X: " + message];
     [self assert:expected.y equals:actual.y message:@"Y: " + message];
+}
+
+- (void)assertSize:(CGSize)expected equals:(CGSize)actual message:(CPString)message
+{
+    [self assert:expected.width equals:actual.width message:@"Width: " + message];
+    [self assert:expected.height equals:actual.height message:@"Height: " + message];
+}
+
+- (void)assertRect:(CGRect)expected equals:(CGRect)actual message:(CPString)message
+{
+    [self assertPoint:expected.origin equals:actual.origin message:message]
+    [self assertSize:expected.size equals:actual.size message:message]
 }
 
 @end

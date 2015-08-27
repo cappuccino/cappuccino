@@ -1,9 +1,13 @@
 @import <AppKit/CPCheckBox.j>
 
-[CPApplication sharedApplication]
-
 @implementation CPCheckBoxTest : OJTestCase
 {
+}
+
+- (void)setUp
+{
+    // This will init the global var CPApp which are used internally in the AppKit
+    [[CPApplication alloc] init];
 }
 
 /*!

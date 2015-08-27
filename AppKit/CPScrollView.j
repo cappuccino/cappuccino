@@ -86,15 +86,6 @@ var _isBrowserUsingOverlayScrollers = function()
 #endif
 };
 
-/*!
-    @ingroup appkit
-    @class CPScrollView
-
-    Used to display views that are too large for the viewing area. the CPScrollView
-    places scroll bars on the side of the view to allow the user to scroll and see the entire
-    contents of the view.
-*/
-
 var TIMER_INTERVAL                              = 0.2,
     CPScrollViewDelegate_scrollViewWillScroll_  = 1 << 0,
     CPScrollViewDelegate_scrollViewDidScroll_   = 1 << 1,
@@ -104,7 +95,14 @@ var TIMER_INTERVAL                              = 0.2,
 var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
     CPScrollerStyleGlobalChangeNotification     = @"CPScrollerStyleGlobalChangeNotification";
 
+/*!
+    @ingroup appkit
+    @class CPScrollView
 
+    Used to display views that are too large for the viewing area. the CPScrollView
+    places scroll bars on the side of the view to allow the user to scroll and see the entire
+    contents of the view.
+*/
 @implementation CPScrollView : CPView
 {
     CPClipView                  _contentView;
@@ -1584,6 +1582,8 @@ var CPScrollViewContentViewKey          = @"CPScrollViewContentView",
 */
 - (void)awakeFromCib
 {
+    [super awakeFromCib];
+
     [self _updateScrollerStyle];
     [self _updateCornerAndHeaderView];
 }

@@ -1,7 +1,5 @@
 @import <AppKit/AppKit.j>
 
-[CPApplication sharedApplication];
-
 @implementation CPFontManagerTest : OJTestCase
 {
     CPFont fontA;
@@ -14,6 +12,9 @@
 
 - (void)setUp
 {
+    // This will init the global var CPApp which are used internally in the AppKit
+    [[CPApplication alloc] init];
+
     fontA = [CPFont systemFontOfSize:8.0];
 }
 

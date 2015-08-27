@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/cappuccino/cappuccino.svg?branch=master)](https://travis-ci.org/cappuccino/cappuccino)
+
 Welcome to Cappuccino!
 ======================
 
@@ -71,7 +73,7 @@ If you need help with Cappuccino, you can get help from the following sources:
   - Mailing Lists:
     - [Objective-J](http://groups.google.com/group/objectivej)
     - [Objective-J Developers](http://groups.google.com/group/objectivej-dev)
-  - IRC: irc://irc.freenode.net#cappuccino
+  - [Gitter] (https://gitter.im/cappuccino/cappuccino)
 
 If you discover any bugs, please file a ticket at:
 

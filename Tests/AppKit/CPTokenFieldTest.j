@@ -2,8 +2,6 @@
 
 @class TestDelegateTokenField
 
-[CPApplication sharedApplication];
-
 @implementation CPTokenFieldTest : OJTestCase
 {
     CPWindow                _theWindow;
@@ -14,6 +12,9 @@
 
 - (void)setUp
 {
+    // This will init the global var CPApp which are used internally in the AppKit
+    [[CPApplication alloc] init];
+
     _theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(0.0, 0.0, 1024.0, 768.0)
                                              styleMask:CPWindowNotSizable];
 

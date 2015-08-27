@@ -112,7 +112,13 @@ GLOBAL(CFHTTPRequest) = function()
         determineAndDispatchHTTPRequestEvents(self);
     };
 
+    this._timeoutHandler = function()
+    {
+        dispatchTimeoutHTTPRequestEvents(self);
+    };
+
     this._nativeRequest.onreadystatechange = this._stateChangeHandler;
+    this._nativeRequest.ontimeout = this._timeoutHandler;
 
     if (CFHTTPRequest.AuthenticationDelegate !== nil)
         this._eventDispatcher.addEventListener("HTTP403", function()
@@ -209,6 +215,16 @@ CFHTTPRequest.prototype.getResponseHeader = function(/*String*/ aHeader)
     return this._nativeRequest.getResponseHeader(aHeader);
 };
 
+CFHTTPRequest.prototype.setTimeout = function(/*int*/ aTimeout)
+{
+    this._nativeRequest.timeout = aTimeout;
+};
+
+CFHTTPRequest.prototype.getTimeout = function(/*int*/ aTimeout)
+{
+    return this._nativeRequest.timeout;
+};
+
 CFHTTPRequest.prototype.getAllResponseHeaders = function()
 {
     return this._nativeRequest.getAllResponseHeaders();
@@ -235,7 +251,10 @@ CFHTTPRequest.prototype.send = function(/*Object*/ aBody)
     if (!this._isOpen)
     {
         delete this._nativeRequest.onreadystatechange;
+        delete this._nativeRequest.ontimeout;
+
         this._nativeRequest.open(this._method, this._URL, this._async, this._user, this._password);
+        this._nativeRequest.ontimeout = this._timeoutHandler;
         this._nativeRequest.onreadystatechange = this._stateChangeHandler;
     }
 
@@ -277,24 +296,34 @@ CFHTTPRequest.prototype.removeEventListener = function(/*String*/ anEventName, /
     this._eventDispatcher.removeEventListener(anEventName, anEventListener);
 };
 
-CFHTTPRequest.prototype.setWithCredentials = function(/*Boolean*/ willSendWithCredentials) 
+CFHTTPRequest.prototype.setWithCredentials = function(/*Boolean*/ willSendWithCredentials)
 {
     this._nativeRequest.withCredentials = willSendWithCredentials;
 };
 
-CFHTTPRequest.prototype.withCredentials = function() 
+CFHTTPRequest.prototype.withCredentials = function()
 {
     return this._nativeRequest.withCredentials;
 };
 
+CFHTTPRequest.prototype.isTimeoutRequest = function()
+{
+    // Can we consider that as a timeout ?
+    return !this.success() && !this._nativeRequest.response && !this._nativeRequest.responseText && !this._nativeRequest.responseType && !this._nativeRequest.responseURL && !this._nativeRequest.responseXML;
+};
+
+function dispatchTimeoutHTTPRequestEvents(/*CFHTTPRequest*/ aRequest)
+{
+    aRequest._eventDispatcher.dispatchEvent({ type:"timeout", request:aRequest});
+}
+
 function determineAndDispatchHTTPRequestEvents(/*CFHTTPRequest*/ aRequest)
 {
-    var eventDispatcher = aRequest._eventDispatcher;
+    var eventDispatcher = aRequest._eventDispatcher,
+        nativeRequest = aRequest._nativeRequest,
+        readyStates = ["uninitialized", "loading", "loaded", "interactive", "complete"];
 
     eventDispatcher.dispatchEvent({ type:"readystatechange", request:aRequest});
-
-    var nativeRequest = aRequest._nativeRequest,
-        readyStates = ["uninitialized", "loading", "loaded", "interactive", "complete"];
 
     if (readyStates[aRequest.readyState()] === "complete")
     {
@@ -323,12 +352,21 @@ function FileRequest(/*CFURL*/ aURL, onsuccess, onfailure, onprogress)
         var aFilePath = aURL.toString().substring(5),
             OS = require("os"),
             gccFlags = require("objective-j").currentCompilerFlags(),
-            gcc = OS.popen("gcc -E -x c -P " + (gccFlags ? gccFlags : "") + " " + OS.enquote(aFilePath), { charset:"UTF-8" }),
             chunk,
             fileContents = "";
 
-        while (chunk = gcc.stdout.read())
-            fileContents += chunk;
+        try
+        {
+            var gcc = OS.popen("gcc -E -x c -P " + (gccFlags ? gccFlags : "") + " " + OS.enquote(aFilePath), { charset:"UTF-8" });
+            while (chunk = gcc.stdout.read())
+                fileContents += chunk;
+        }
+        finally
+        {
+            gcc.stdin.close();
+            gcc.stdout.close();
+            gcc.stderr.close();
+        }
 
         if (fileContents.length > 0)
         {

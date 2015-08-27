@@ -182,7 +182,7 @@ var CPBindingOperationAnd = 0,
             allBindings = [bindingsForObject allKeys],
             count = [allBindings count];
 
-        while(count--)
+        while (count--)
         {
             if ([[anObject class] isBindingExclusive:allBindings[count]])
                 return NO;

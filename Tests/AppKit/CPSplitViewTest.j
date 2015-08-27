@@ -1,8 +1,5 @@
-
 @import <AppKit/CPApplication.j>
 @import <AppKit/CPSplitView.j>
-
-[CPApplication sharedApplication];
 
 @implementation CPSplitViewTest : OJTestCase
 {
@@ -13,6 +10,9 @@
 
 - (void)setUp
 {
+    // This will init the global var CPApp which are used internally in the AppKit
+    [[CPApplication alloc] init];
+
     splitView = [[CPSplitView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];
     viewA = [[CPView alloc] initWithFrame:CGRectMake(0, 0, 100, 50)];
     viewB = [[CPView alloc] initWithFrame:CGRectMake(0, 0, 100, 50)];

@@ -13,21 +13,33 @@ task ("build", function()
         OS.exit(0);
 
     // No building on 10.6
-    var p = OS.popen(["sw_vers", "-productVersion"]);
-
-    if (p.wait() === 0)
+    try
     {
-        var versions = p.stdout.read().split("."),
-            majorVersion = parseInt(versions[0], 10),
-            minorVersion = parseInt(versions[1], 10),
-            buildVersion = parseInt(versions[2], 10);
+        var p = OS.popen(["sw_vers", "-productVersion"]);
 
-        if (majorVersion < 10 || minorVersion < 7)
+        if (p.wait() === 0)
         {
-            colorPrint("XcodeCapp can only be built on Mac OS X 10.7+. You can download the binary here: https://www.dropbox.com/sh/gxdgm356gyb9tqc/rFNyl8hcVG", "red");
+            var versions = p.stdout.read().split("."),
+                majorVersion = parseInt(versions[0], 10),
+                minorVersion = parseInt(versions[1], 10),
+                buildVersion = parseInt(versions[2], 10);
 
-            OS.exit(0);
+            if (majorVersion < 10 || minorVersion < 7)
+            {
+                colorPrint("XcodeCapp can only be built on Mac OS X 10.7+. You can download the binary here: https://www.dropbox.com/sh/gxdgm356gyb9tqc/rFNyl8hcVG", "red");
+
+                p.stdin.close();
+                p.stdout.close();
+                p.stderr.close();
+                OS.exit(0);
+            }
         }
+    }
+    finally
+    {
+        p.stdin.close();
+        p.stdout.close();
+        p.stderr.close();
     }
 
     if (executableExists("xcodebuild"))
@@ -40,18 +52,7 @@ task ("build", function()
             FILE.remove(installPath);
 
         if (OS.system("xcodebuild " + args))
-            OS.exit(1);
-
-        if (!executableExists("xcc"))
-        {
-            print("\nWould you like to install the xcc command line tool in /usr/local/bin? yes or no:");
-
-            if (system.stdin.readLine() == "yes\n")
-            {
-                sudo(["mkdir", "-p", "/usr/local/bin"]);
-                sudo(["ln", "-s", "/Applications/XcodeCapp.app/Contents/MacOS/xcc", "/usr/local/bin/"]);
-            }
-        }
+            colorPrint("Unable to build XcodeCapp. Skipping", "orange");
     }
     else
     {
@@ -62,13 +63,13 @@ task ("build", function()
 task ("clean", function()
 {
     if (OS.system("xcodebuild clean"))
-        OS.exit(1);
+        colorPrint("Unable to clean XcodeCapp. Skipping", "orange");
 });
 
 task ("clobber", function()
 {
     if (OS.system("xcodebuild clean"))
-        OS.exit(1);
+        colorPrint("Unable to clean XcodeCapp. Skipping", "orange");
 });
 
 task ("default", ["build"]);
