@@ -231,8 +231,6 @@ var CPViewHighDPIDrawingEnabled = YES;
     CPView              _nextKeyView;
     CPView              _previousKeyView;
 
-    unsigned            _viewClassFlags;
-
     // ToolTips
     CPString            _toolTip    @accessors(getter=toolTip);
     Function            _toolTipFunctionIn;
@@ -295,27 +293,6 @@ var CPViewHighDPIDrawingEnabled = YES;
     return CPViewHighDPIDrawingEnabled;
 }
 
-- (void)_setupViewFlags
-{
-    var theClass = [self class],
-        classUID = [theClass UID];
-
-    if (CPViewFlags[classUID] === undefined)
-    {
-        var flags = 0;
-
-        if ([theClass instanceMethodForSelector:@selector(drawRect:)] !== [CPView instanceMethodForSelector:@selector(drawRect:)])
-            flags |= CPViewHasCustomDrawRect;
-
-        if ([theClass instanceMethodForSelector:@selector(layoutSubviews)] !== [CPView instanceMethodForSelector:@selector(layoutSubviews)])
-            flags |= CPViewHasCustomLayoutSubviews;
-
-        CPViewFlags[classUID] = flags;
-    }
-
-    _viewClassFlags = CPViewFlags[classUID];
-}
-
 + (CPSet)keyPathsForValuesAffectingFrame
 {
     return [CPSet setWithObjects:@"frameOrigin", @"frameSize"];
@@ -331,12 +308,6 @@ var CPViewHighDPIDrawingEnabled = YES;
     return nil;
 }
 
-- (void)awakeFromCib
-{
-    [super awakeFromCib];
-
-    [self _recomputeAppearance];
-}
 
 - (id)init
 {
@@ -390,8 +361,6 @@ var CPViewHighDPIDrawingEnabled = YES;
         _DOMImageParts = [];
         _DOMImageSizes = [];
 #endif
-
-        [self _setupViewFlags];
 
         [self _loadThemeAttributes];
     }
@@ -850,8 +819,7 @@ var CPViewHighDPIDrawingEnabled = YES;
 */
 - (void)viewDidMoveToSuperview
 {
-    [self _recomputeAppearance];
-
+    [self setNeedsLayout:YES];
     [self setNeedsDisplay:YES];
 }
 
@@ -2489,9 +2457,6 @@ setBoundsOrigin:
 */
 - (void)setNeedsDisplayInRect:(CGRect)aRect
 {
-    if (!(_viewClassFlags & CPViewHasCustomDrawRect))
-        return;
-
     if (CGRectIsEmpty(aRect))
         return;
 
@@ -2632,7 +2597,7 @@ setBoundsOrigin:
 
 - (void)setNeedsLayout:(BOOL)needLayout
 {
-    if (!(_viewClassFlags & CPViewHasCustomLayoutSubviews) || !needLayout)
+    if (!needLayout)
     {
         _needsLayout = NO;
         return;
@@ -2654,12 +2619,31 @@ setBoundsOrigin:
     {
         _needsLayout = NO;
 
+        [self viewWillLayout];
         [self layoutSubviews];
+        [self viewDidLayout];
     }
+}
+
+/*!
+    @ignore
+*/
+- (void)viewWillLayout
+{
+
+}
+
+/*!
+    @ignore
+*/
+- (void)viewDidLayout
+{
+    [self _recomputeAppearance];
 }
 
 - (void)layoutSubviews
 {
+
 }
 
 /*!
@@ -3544,19 +3528,13 @@ setBoundsOrigin:
     _appearance = anAppearance;
     [self didChangeValueForKey:@"appearance"];
 
-    [self _recomputeAppearance];
+    [self setNeedsLayout:YES];
 }
 
 /*! @ignore
 */
 - (void)_recomputeAppearance
 {
-    // if we don't have a themeState, it means
-    // the view is not decoding from a cib, so we just return.
-    // this method will be called again in awakeFromCib
-    if (!_themeState)
-        return;
-
     var effectiveAppearance = [self effectiveAppearance];
 
     if ([effectiveAppearance isEqual:[CPAppearance appearanceNamed:CPAppearanceNameAqua]])
@@ -3718,7 +3696,6 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
             _opacity = 1.0;
 
         [self setBackgroundColor:[aCoder decodeObjectForKey:CPViewBackgroundColorKey]];
-        [self _setupViewFlags];
 
         _theme = [CPTheme defaultTheme];
         _themeClass = [aCoder decodeObjectForKey:CPViewThemeClassKey];
@@ -3737,15 +3714,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
             _themeAttributes[attributeName] = CPThemeAttributeDecode(aCoder, attributeName, attributes[count], _theme, themeClass);
         }
 
-        var appearance = [aCoder decodeObjectForKey:CPViewAppearanceKey];
-
-        // TODO : find a way to fix this horrible things
-        // We only set the appearance here when everything and every subviews were unarchived.
-        // Otherwise this causes a crash with some subviews not unarchived but already created (how ? init is not called, neither initWithFrame or initWithCoder) in the coder (I have no idea why these views are present in _objects of the coder)
-        // To reproduce, uncomment the timeout and open the test Tests/Manual/TableTests/ViewBasedCib
-        window.setTimeout(function() {
-            [self setAppearance:appearance];
-        },0);
+        [self setAppearance:[aCoder decodeObjectForKey:CPViewAppearanceKey]];
 
         [self setNeedsDisplay:YES];
         [self setNeedsLayout];
