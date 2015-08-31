@@ -255,7 +255,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 - (void)_windowDidBecomeKey:(CPNotification)aNotification
 {
     if ([self _isFocused])
-        [self updateInsertionPointStateAndRestartTimer:YES];
+        [self _becomeFirstResponder];
 }
 
 #pragma mark -
@@ -329,13 +329,19 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     return [self isSelectable]; // editable textviews are automatically selectable
 }
 
-- (BOOL)becomeFirstResponder
+- (void)_becomeFirstResponder
 {
-    [super becomeFirstResponder];
     [self updateInsertionPointStateAndRestartTimer:YES];
     [[CPFontManager sharedFontManager] setSelectedFont:[self font] isMultiple:NO];
     [self setNeedsDisplay:YES];
     [[CPRunLoop currentRunLoop] performSelector:@selector(focus) target:[_CPNativeInputManager class] argument:nil order:0 modes:[CPDefaultRunLoopMode]];
+}
+
+
+- (BOOL)becomeFirstResponder
+{
+    [super becomeFirstResponder];
+    [self _becomeFirstResponder];
 
     return YES;
 }
