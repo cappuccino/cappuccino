@@ -785,7 +785,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 {
     var propagateFlag = CPBrowserIsEngine(CPGeckoBrowserEngine)? NO : YES;
 
- //   [[_window platformWindow] _propagateCurrentDOMEvent:propagateFlag];  // necessary for the _CPNativeInputManager to work
+    [[_window platformWindow] _propagateCurrentDOMEvent:propagateFlag];  // necessary for the _CPNativeInputManager to work
 
     if ([_CPNativeInputManager isNativeInputFieldActive])
        return;
