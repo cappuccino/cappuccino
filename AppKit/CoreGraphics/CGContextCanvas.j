@@ -589,7 +589,7 @@ function CGContextDrawImage(aContext, aRect, anImage)
 
 function to_string(aColor)
 {
-    return "rgba(" + ROUND(aColor.components[0] * 255) + ", " + ROUND(aColor.components[1] * 255) + ", " + ROUND(255 * aColor.components[2]) + ", " + aColor.components[3] + ")";
+    return "rgba(" + ROUND(aColor._components[0] * 255) + ", " + ROUND(aColor._components[1] * 255) + ", " + ROUND(255 * aColor._components[2]) + ", " + aColor._components[3] + ")";
 }
 
 function CGContextDrawLinearGradient(aContext, aGradient, aStartPoint, anEndPoint, options)
