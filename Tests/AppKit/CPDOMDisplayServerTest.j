@@ -10,6 +10,9 @@
 
 - (void)setUp
 {
+    // This will init the global var CPApp which are used internally in the AppKit
+    [[CPApplication alloc] init];
+
     // set up a dummy DOM element.
     DOMElement = {
         style: {

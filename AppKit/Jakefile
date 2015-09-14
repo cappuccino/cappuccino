@@ -1,8 +1,6 @@
 
 require("../common.jake");
 
-checkUlimit();
-
 var framework = require("objective-j/jake").framework,
     BundleTask = require("objective-j/jake").BundleTask;
 

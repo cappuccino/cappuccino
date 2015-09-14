@@ -29,12 +29,11 @@ static const char *kCloseXcodeProjectScript =
 
 + (void)closeXcodeProjectForProject:(NSString *)projectPath
 {
-    NSString *format = [NSString stringWithUTF8String:kCloseXcodeProjectScript];
-    NSString *source = [NSString stringWithFormat:format, projectPath];
-    NSAppleScript *script = [[NSAppleScript alloc] initWithSource:source];
+    NSString        *format = @(kCloseXcodeProjectScript);
+    NSString        *source = [NSString stringWithFormat:format, projectPath];
+    NSAppleScript   *script = [[NSAppleScript alloc] initWithSource:source];
 
-    NSAppleEventDescriptor *descriptor;
-    descriptor = [script executeAndReturnError:nil];
+    [script executeAndReturnError:nil];
 }
 
 @end

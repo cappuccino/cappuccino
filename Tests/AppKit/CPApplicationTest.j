@@ -65,7 +65,7 @@ var globalResults = [];
 {
     // This sets up the CPApp convenience variable, the unit tests fails
     // if this is not done, because the framework internally uses CPApp.
-    app = [CPApplication sharedApplication];
+    app = [[CPApplication alloc] init];
 
     // fake the window.location.hash
     window.location = {hash: "#var1=1/var2=2"};

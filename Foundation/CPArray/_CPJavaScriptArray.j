@@ -196,7 +196,8 @@ var concat = Array.prototype.concat,
     }
 
     else
-        for (; index < count; ++index) {
+        for (; index < count; ++index)
+        {
             var receiver = self[index];
             receiver == nil ? nil : receiver.isa.objj_msgSend0(receiver, aSelector);
         }

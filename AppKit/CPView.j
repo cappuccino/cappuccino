@@ -26,6 +26,7 @@
 
 @import "CGAffineTransform.j"
 @import "CGGeometry.j"
+@import "CPAppearance.j"
 @import "CPColor.j"
 @import "CPGraphicsContext.j"
 @import "CPResponder.j"
@@ -130,7 +131,6 @@ var CPViewFlags                     = { },
     CPViewHasCustomLayoutSubviews   = 1 << 1;
 
 var CPViewHighDPIDrawingEnabled = YES;
-
 
 /*!
     @ingroup appkit
@@ -240,6 +240,10 @@ var CPViewHighDPIDrawingEnabled = YES;
     BOOL                _toolTipInstalled;
 
     BOOL                _isObserving;
+
+    BOOL                _allowsVibrancy         @accessors(property=allowsVibrancy);
+    CPAppearance        _appearance             @accessors(getter=appearance);
+    CPAppearance        _effectiveAppearance;
 }
 
 /*
@@ -325,6 +329,13 @@ var CPViewHighDPIDrawingEnabled = YES;
 + (CPMenu)defaultMenu
 {
     return nil;
+}
+
+- (void)awakeFromCib
+{
+    [super awakeFromCib];
+
+    [self _recomputeAppearance];
 }
 
 - (id)init
@@ -839,9 +850,9 @@ var CPViewHighDPIDrawingEnabled = YES;
 */
 - (void)viewDidMoveToSuperview
 {
-//    if (_graphicsContext)
-        [self setNeedsDisplay:YES];
+    [self _recomputeAppearance];
 
+    [self setNeedsDisplay:YES];
 }
 
 /*!
@@ -1820,7 +1831,7 @@ var CPViewHighDPIDrawingEnabled = YES;
     else if ([[self nextResponder] isKindOfClass:CPView])
         [super rightMouseDown:anEvent];
     else
-        [[[anEvent window] platformWindow] _propagateContextMenuDOMEvent:YES];
+        [[[anEvent window] platformWindow] _propagateContextMenuDOMEvent:NO];
 }
 
 - (CPMenu)menuForEvent:(CPEvent)anEvent
@@ -2731,18 +2742,47 @@ setBoundsOrigin:
     if (CGRectContainsRect(documentViewVisibleRect, rectInDocumentView))
         return NO;
 
-    var scrollPoint = CGPointMakeCopy(documentViewVisibleRect.origin);
+    var currentScrollPoint = documentViewVisibleRect.origin,
+        scrollPoint = CGPointMakeCopy(currentScrollPoint),
+        rectInDocumentViewMinX = CGRectGetMinX(rectInDocumentView),
+        documentViewVisibleRectMinX = CGRectGetMinX(documentViewVisibleRect),
+        doesItFitForWidth = documentViewVisibleRect.size.width >= rectInDocumentView.size.width;
 
     // One of the following has to be true since our current visible rect didn't contain aRect.
-    if (CGRectGetMinX(rectInDocumentView) < CGRectGetMinX(documentViewVisibleRect))
-        scrollPoint.x = CGRectGetMinX(rectInDocumentView);
-    else if (CGRectGetMaxX(rectInDocumentView) > CGRectGetMaxX(documentViewVisibleRect))
-        scrollPoint.x += CGRectGetMaxX(rectInDocumentView) - CGRectGetMaxX(documentViewVisibleRect);
+    if (rectInDocumentViewMinX < documentViewVisibleRectMinX && doesItFitForWidth)
+        // Scroll to left edge of aRect as it is to the left of the visible rect and it fit inside
+        scrollPoint.x = rectInDocumentViewMinX;
+    else if (CGRectGetMaxX(rectInDocumentView) > CGRectGetMaxX(documentViewVisibleRect) && doesItFitForWidth)
+        // Scroll to right edge of aRect as it is to the right of the visible rect and it fit inside
+        scrollPoint.x = CGRectGetMaxX(rectInDocumentView) - documentViewVisibleRect.size.width;
+    else if (rectInDocumentViewMinX > documentViewVisibleRectMinX)
+        // Scroll to left edge of aRect as it is to the right of the visible rect and it doesn't fit inside
+        scrollPoint.x = rectInDocumentViewMinX;
+    else if (CGRectGetMaxX(rectInDocumentView) < CGRectGetMaxX(documentViewVisibleRect))
+        // Scroll to right edge of aRect as it is to the left of the visible rect and it doesn't fit inside
+        scrollPoint.x = CGRectGetMaxX(rectInDocumentView) - documentViewVisibleRect.size.width;
 
-    if (CGRectGetMinY(rectInDocumentView) < CGRectGetMinY(documentViewVisibleRect))
-        scrollPoint.y = CGRectGetMinY(rectInDocumentView);
-    else if (CGRectGetMaxY(rectInDocumentView) > CGRectGetMaxY(documentViewVisibleRect))
-        scrollPoint.y += CGRectGetMaxY(rectInDocumentView) - CGRectGetMaxY(documentViewVisibleRect);
+    var rectInDocumentViewMinY = CGRectGetMinY(rectInDocumentView),
+        documentViewVisibleRectMinY = CGRectGetMinY(documentViewVisibleRect),
+        doesItFitForHeight = documentViewVisibleRect.size.height >= rectInDocumentView.size.height;
+
+    if (rectInDocumentViewMinY < documentViewVisibleRectMinY && doesItFitForHeight)
+        // Scroll to top edge of aRect as it is above the visible rect and it fit inside
+        scrollPoint.y = rectInDocumentViewMinY;
+    else if (CGRectGetMaxY(rectInDocumentView) > CGRectGetMaxY(documentViewVisibleRect) && doesItFitForHeight)
+        // Scroll to bottom edge of aRect as it is below the visible rect and it fit inside
+        scrollPoint.y = CGRectGetMaxY(rectInDocumentView) - documentViewVisibleRect.size.height;
+    else if (rectInDocumentViewMinY > documentViewVisibleRectMinY)
+        // Scroll to top edge of aRect as it is below the visible rect and it doesn't fit inside
+        scrollPoint.y = rectInDocumentViewMinY;
+    else if (CGRectGetMaxY(rectInDocumentView) < CGRectGetMaxY(documentViewVisibleRect))
+        // Scroll to bottom edge of aRect as it is above the visible rect and it doesn't fit inside
+        scrollPoint.y = CGRectGetMaxY(rectInDocumentView) - documentViewVisibleRect.size.height;
+
+    // Don't scroll if aRect contains the whole visible rect as it is already as visible as possible.
+    // We check this by comparing to new scrollPoint to the current.
+    if (CGPointEqualToPoint(scrollPoint, currentScrollPoint))
+        return NO;
 
     [enclosingClipView scrollToPoint:scrollPoint];
 
@@ -3482,6 +3522,85 @@ setBoundsOrigin:
 
 @end
 
+
+@implementation CPView (Appearance)
+
+/*! Returns the receiver's appearance if any, or ask the superview and returns it.
+*/
+- (CPAppearance)effectiveAppearance
+{
+    if (_appearance)
+        return _appearance;
+
+    return [_superview effectiveAppearance];
+}
+
+- (void)setAppearance:(CPAppearance)anAppearance
+{
+    if ([_appearance isEqual:anAppearance])
+        return;
+
+    [self willChangeValueForKey:@"appearance"];
+    _appearance = anAppearance;
+    [self didChangeValueForKey:@"appearance"];
+
+    [self _recomputeAppearance];
+}
+
+/*! @ignore
+*/
+- (void)_recomputeAppearance
+{
+    // if we don't have a themeState, it means
+    // the view is not decoding from a cib, so we just return.
+    // this method will be called again in awakeFromCib
+    if (!_themeState)
+        return;
+
+    var effectiveAppearance = [self effectiveAppearance];
+
+    if ([effectiveAppearance isEqual:[CPAppearance appearanceNamed:CPAppearanceNameAqua]])
+    {
+        [self setThemeState:CPThemeStateAppearanceAqua];
+        [self unsetThemeState:CPThemeStateAppearanceLightContent];
+        [self unsetThemeState:CPThemeStateAppearanceVibrantLight];
+        [self unsetThemeState:CPThemeStateAppearanceVibrantDark];
+    }
+    else if ([effectiveAppearance isEqual:[CPAppearance appearanceNamed:CPAppearanceNameLightContent]])
+    {
+        [self unsetThemeState:CPThemeStateAppearanceAqua];
+        [self setThemeState:CPThemeStateAppearanceLightContent];
+        [self unsetThemeState:CPThemeStateAppearanceVibrantLight];
+        [self unsetThemeState:CPThemeStateAppearanceVibrantDark];
+    }
+    else if ([effectiveAppearance isEqual:[CPAppearance appearanceNamed:CPAppearanceNameVibrantLight]])
+    {
+        [self unsetThemeState:CPThemeStateAppearanceAqua];
+        [self unsetThemeState:CPThemeStateAppearanceLightContent];
+        [self setThemeState:CPThemeStateAppearanceVibrantLight];
+        [self unsetThemeState:CPThemeStateAppearanceVibrantDark];
+    }
+    else if ([effectiveAppearance isEqual:[CPAppearance appearanceNamed:CPAppearanceNameVibrantDark]])
+    {
+        [self unsetThemeState:CPThemeStateAppearanceAqua];
+        [self unsetThemeState:CPThemeStateAppearanceLightContent];
+        [self unsetThemeState:CPThemeStateAppearanceVibrantLight];
+        [self setThemeState:CPThemeStateAppearanceVibrantDark];
+    }
+    else
+    {
+        [self unsetThemeState:CPThemeStateAppearanceAqua];
+        [self unsetThemeState:CPThemeStateAppearanceLightContent];
+        [self unsetThemeState:CPThemeStateAppearanceVibrantLight];
+        [self unsetThemeState:CPThemeStateAppearanceVibrantDark];
+    }
+
+    [_subviews makeObjectsPerformSelector:@selector(_recomputeAppearance)];
+}
+
+
+@end
+
 var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     CPViewAutoresizesSubviewsKey    = @"CPViewAutoresizesSubviews",
     CPViewBackgroundColorKey        = @"CPViewBackgroundColor",
@@ -3502,7 +3621,8 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     CPReuseIdentifierKey            = @"CPReuseIdentifierKey",
     CPViewScaleKey                  = @"CPViewScaleKey",
     CPViewSizeScaleKey              = @"CPViewSizeScaleKey",
-    CPViewIsScaledKey               = @"CPViewIsScaledKey";
+    CPViewIsScaledKey               = @"CPViewIsScaledKey",
+    CPViewAppearanceKey             = @"CPViewAppearanceKey";
 
 @implementation CPView (CPCoding)
 
@@ -3617,6 +3737,8 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
             _themeAttributes[attributeName] = CPThemeAttributeDecode(aCoder, attributeName, attributes[count], _theme, themeClass);
         }
 
+        [self setAppearance:[aCoder decodeObjectForKey:CPViewAppearanceKey]];
+
         [self setNeedsDisplay:YES];
         [self setNeedsLayout];
     }
@@ -3705,6 +3827,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     [aCoder encodeSize:[self scaleSize] forKey:CPViewScaleKey];
     [aCoder encodeSize:[self _hierarchyScaleSize] forKey:CPViewSizeScaleKey];
     [aCoder encodeBool:_isScaled forKey:CPViewIsScaledKey];
+    [aCoder encodeObject:_appearance forKey:CPViewAppearanceKey];
 }
 
 @end

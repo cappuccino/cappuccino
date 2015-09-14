@@ -2,6 +2,6 @@
 require("../common.jake");
 
 // nib2cib uses fontinfo and imagesize and capp uses nib2cib
-subtasks(["fontinfo", "imagesize", "nib2cib", "capp", "capp_lint", "dump_theme", "XcodeCapp"], ["build", /*"clean", "clobber"*/]);
+subtasks(["fontinfo", "imagesize", "nib2cib", "objj2objcskeleton", "capp", "capp_lint", "capp_env", "dump_theme", "XcodeCapp"], ["build", /*"clean", "clobber"*/]);
 
 subtasks(["fontinfo", "imagesize"], ["clean", "clobber"]);

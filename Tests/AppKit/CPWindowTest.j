@@ -1,9 +1,6 @@
-
 @import <AppKit/CPWindow.j>
 @import <AppKit/_CPBorderlessWindowView.j>
 @import <Foundation/CPURL.j>
-
-[CPApplication sharedApplication];
 
 @implementation CPWindowTest : OJTestCase
 {
@@ -12,6 +9,9 @@
 
 - (void)setUp
 {
+    // This will init the global var CPApp which are used internally in the AppKit
+    [[CPApplication alloc] init];
+
     _window = [[CPWindow alloc] initWithContentRect:CGRectMake(0.0, 0.0, 1024.0, 768.0)
                                           styleMask:CPWindowNotSizable];
 }

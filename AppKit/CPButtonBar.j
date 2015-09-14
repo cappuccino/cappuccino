@@ -112,6 +112,8 @@
 
 - (void)awakeFromCib
 {
+    [super awakeFromCib];
+
     var view = [self superview],
         subview = self;
 

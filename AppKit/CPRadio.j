@@ -29,6 +29,7 @@
 
 @global CPApp
 
+CPRadioImageOffset = 4.0;
 
 /*!
     @ingroup appkit
@@ -67,9 +68,6 @@
     option.
 
 */
-
-CPRadioImageOffset = 4.0;
-
 @implementation CPRadio : CPButton
 {
     CPRadioGroup    _radioGroup;
@@ -269,9 +267,9 @@ var CPRadioRadioGroupKey    = @"CPRadioRadioGroupKey";
 - (BOOL)selectRadioWithTag:(int)tag
 {
     var index = [_radios indexOfObjectPassingTest:function(radio)
-                    {
-                        return [radio tag] === tag;
-                    }];
+                {
+                    return [radio tag] === tag;
+                }];
 
     if (index !== CPNotFound)
     {

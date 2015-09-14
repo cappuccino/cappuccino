@@ -1,0 +1,9 @@
+
+require ("../../common.jake");
+
+var FILE = require("file"),
+    SYSTEM = require("system"),
+    path = FILE.Path(FILE.join(SYSTEM.prefix, "bin", "capp_env"));
+
+sudo(["cp", "-f", "capp_env", path]);
+sudo(["chmod", "755", path]);

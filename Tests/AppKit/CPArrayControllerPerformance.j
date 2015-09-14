@@ -6,6 +6,15 @@ var ELEMENTS = 200,
     REPEATS = 25;
 
 @implementation CPArrayControllerPerformance : OJTestCase
+{
+
+}
+
+- (void)setUp
+{
+    // This will init the global var CPApp which are used internally in the AppKit
+    [[CPApplication alloc] init];
+}
 
 - (CPArrayController)setupWithElements:(int)aCount
 {

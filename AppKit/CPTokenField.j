@@ -457,7 +457,13 @@ CPTokenFieldDeleteButtonType     = 1;
 
         window.setTimeout(function()
         {
+            // This will prevent to jump to the focused element
+            var previousScrollingOrigin = [self _scrollToVisibleRectAndReturnPreviousOrigin];
+
             element.focus();
+
+            [self _restorePreviousScrollingOrigin:previousScrollingOrigin];
+
             CPTokenFieldInputOwner = self;
         }, 0.0);
 
