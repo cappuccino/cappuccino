@@ -105,6 +105,7 @@ GLOBAL(CFHTTPRequest) = function()
 
     // by default, all requests will assume that credentials should not be sent.
     this._withCredentials = false;
+    this._timeout = 60000;
 
     var self = this;
     this._stateChangeHandler = function()
@@ -217,12 +218,14 @@ CFHTTPRequest.prototype.getResponseHeader = function(/*String*/ aHeader)
 
 CFHTTPRequest.prototype.setTimeout = function(/*int*/ aTimeout)
 {
-    this._nativeRequest.timeout = aTimeout;
+    this._timeout = aTimeout;
+    if (this._isOpen)
+        this._nativeRequest.timeout = aTimeout;
 };
 
 CFHTTPRequest.prototype.getTimeout = function(/*int*/ aTimeout)
 {
-    return this._nativeRequest.timeout;
+    return this._timeout;
 };
 
 CFHTTPRequest.prototype.getAllResponseHeaders = function()
@@ -248,6 +251,7 @@ CFHTTPRequest.prototype.open = function(/*String*/ aMethod, /*String*/ aURL, /*B
     retval = this._nativeRequest.open(aMethod, aURL, isAsynchronous, aUser, aPassword);
     if (this._async)
         this._nativeRequest.withCredentials = this._withCredentials;
+    this._nativeRequest.timeout = this._timeout;
     
     return retval;
 };
