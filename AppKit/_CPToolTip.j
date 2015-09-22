@@ -176,6 +176,8 @@ var _CPToolTipHeight = 24.0,
         _toolTipWindow = aWindow;
         _constrainsToUsableScreen = NO;
 
+        [self setPlatformWindow:[_toolTipWindow platformWindow]];
+
         textFrameSize.height += 4;
 
         _content = [CPTextField labelWithTitle:aString];
@@ -193,6 +195,7 @@ var _CPToolTipHeight = 24.0,
         [self setAlphaValue:0.9];
 
         [_windowView setNeedsDisplay:YES];
+
     }
 
     return self;
