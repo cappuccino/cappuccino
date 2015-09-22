@@ -34,6 +34,8 @@ CPNoTabsBezelBorder      = 4; //Displays no tabs and has a bezeled border.
 CPNoTabsLineBorder       = 5; //Has no tabs and displays a line border.
 CPNoTabsNoBorder         = 6; //Displays no tabs and no border.
 
+@class _CPTabViewBox
+
 var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
     CPTabViewShouldSelectTabViewItemSelector        = 1 << 2,
     CPTabViewWillSelectTabViewItemSelector          = 1 << 3,
@@ -64,7 +66,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
     CPArray                 _items;
 
     CPSegmentedControl      _tabs;
-    CPBox                   _box;
+    _CPTabViewBox           _box;
 
     CPNumber                _selectedIndex;
 
@@ -98,7 +100,8 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
     var height = [_tabs valueForThemeAttribute:@"min-size"].height;
     [_tabs setFrameSize:CGSizeMake(0, height)];
 
-    _box = [[CPBox alloc] initWithFrame:[self  bounds]];
+    _box = [[_CPTabViewBox alloc] initWithFrame:[self  bounds]];
+    [_box setTabView:self];
     [self setBackgroundColor:[CPColor colorWithCalibratedWhite:0.95 alpha:1.0]];
 
     [self addSubview:_box];
@@ -496,6 +499,18 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
         [self selectFirstTabViewItem:self];
 }
 
+
+#pragma mark -
+#pragma mark Override
+
+/*!
+    Enabled controls accept first mouse by default.
+*/
+- (BOOL)acceptsFirstMouse:(CPEvent)anEvent
+{
+    return YES;
+}
+
 @end
 
 var CPTabViewItemsKey               = "CPTabViewItemsKey",
@@ -568,6 +583,29 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
     [aCoder encodeObject:_font forKey:CPTabViewFontKey];
 
     [aCoder encodeConditionalObject:_delegate forKey:CPTabViewDelegateKey];
+}
+
+@end
+
+@implementation _CPTabViewBox : CPBox
+{
+    CPTabView _tabView @accessors(property=tabView);
+}
+
+
+#pragma mark -
+#pragma mark Override
+
+- (CPView)hitTest:(CGPoint)aPoint
+{
+    // Here we check if we have clicked on the segmentedControl of the tabView or not
+    // If YES, the CPBox should not handle the click
+    var segmentIndex = [_tabView._tabs testSegment:[_tabView._tabs convertPoint:aPoint fromView:[self superview]]];
+
+    if (segmentIndex != CPNotFound)
+        return nil;
+
+    return [super hitTest:aPoint];
 }
 
 @end
