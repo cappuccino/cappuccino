@@ -2570,7 +2570,7 @@ setBoundsOrigin:
     }
 
 #if PLATFORM(DOM)
-    if (_needToSetTransformMatrix)
+    if (_needToSetTransformMatrix && _highDPIRatio !== 1)
         [_graphicsContext graphicsPort].setTransform(_highDPIRatio, 0, 0 , _highDPIRatio, 0, 0);
 #endif
 
