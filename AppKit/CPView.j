@@ -231,6 +231,8 @@ var CPViewHighDPIDrawingEnabled = YES;
     CPView              _nextKeyView;
     CPView              _previousKeyView;
 
+    unsigned            _viewClassFlags;
+
     // ToolTips
     CPString            _toolTip    @accessors(getter=toolTip);
     Function            _toolTipFunctionIn;
@@ -308,6 +310,24 @@ var CPViewHighDPIDrawingEnabled = YES;
     return nil;
 }
 
+- (void)_setupViewFlags
+{
+    var theClass = [self class],
+        classUID = [theClass UID];
+
+    if (CPViewFlags[classUID] === undefined)
+    {
+        var flags = 0;
+
+        if ([theClass instanceMethodForSelector:@selector(drawRect:)] !== [CPView instanceMethodForSelector:@selector(drawRect:)]
+            || [theClass instanceMethodForSelector:@selector(viewWillDraw)] !== [CPView instanceMethodForSelector:@selector(viewWillDraw)])
+            flags |= CPViewHasCustomDrawRect;
+
+        CPViewFlags[classUID] = flags;
+    }
+
+    _viewClassFlags = CPViewFlags[classUID];
+}
 
 - (id)init
 {
@@ -362,6 +382,7 @@ var CPViewHighDPIDrawingEnabled = YES;
         _DOMImageSizes = [];
 #endif
 
+        [self _setupViewFlags];
         [self _loadThemeAttributes];
     }
 
@@ -2457,6 +2478,9 @@ setBoundsOrigin:
 */
 - (void)setNeedsDisplayInRect:(CGRect)aRect
 {
+    if (!(_viewClassFlags & CPViewHasCustomDrawRect))
+        return;
+
     if (CGRectIsEmpty(aRect))
         return;
 
