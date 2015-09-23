@@ -295,27 +295,6 @@ var CPViewHighDPIDrawingEnabled = YES;
     return CPViewHighDPIDrawingEnabled;
 }
 
-- (void)_setupViewFlags
-{
-    var theClass = [self class],
-        classUID = [theClass UID];
-
-    if (CPViewFlags[classUID] === undefined)
-    {
-        var flags = 0;
-
-        if ([theClass instanceMethodForSelector:@selector(drawRect:)] !== [CPView instanceMethodForSelector:@selector(drawRect:)])
-            flags |= CPViewHasCustomDrawRect;
-
-        if ([theClass instanceMethodForSelector:@selector(layoutSubviews)] !== [CPView instanceMethodForSelector:@selector(layoutSubviews)])
-            flags |= CPViewHasCustomLayoutSubviews;
-
-        CPViewFlags[classUID] = flags;
-    }
-
-    _viewClassFlags = CPViewFlags[classUID];
-}
-
 + (CPSet)keyPathsForValuesAffectingFrame
 {
     return [CPSet setWithObjects:@"frameOrigin", @"frameSize"];
@@ -331,11 +310,23 @@ var CPViewHighDPIDrawingEnabled = YES;
     return nil;
 }
 
-- (void)awakeFromCib
+- (void)_setupViewFlags
 {
-    [super awakeFromCib];
+    var theClass = [self class],
+        classUID = [theClass UID];
 
-    [self _recomputeAppearance];
+    if (CPViewFlags[classUID] === undefined)
+    {
+        var flags = 0;
+
+        if ([theClass instanceMethodForSelector:@selector(drawRect:)] !== [CPView instanceMethodForSelector:@selector(drawRect:)]
+            || [theClass instanceMethodForSelector:@selector(viewWillDraw)] !== [CPView instanceMethodForSelector:@selector(viewWillDraw)])
+            flags |= CPViewHasCustomDrawRect;
+
+        CPViewFlags[classUID] = flags;
+    }
+
+    _viewClassFlags = CPViewFlags[classUID];
 }
 
 - (id)init
@@ -392,7 +383,6 @@ var CPViewHighDPIDrawingEnabled = YES;
 #endif
 
         [self _setupViewFlags];
-
         [self _loadThemeAttributes];
     }
 
@@ -850,8 +840,7 @@ var CPViewHighDPIDrawingEnabled = YES;
 */
 - (void)viewDidMoveToSuperview
 {
-    [self _recomputeAppearance];
-
+    [self setNeedsLayout:YES];
     [self setNeedsDisplay:YES];
 }
 
@@ -2632,7 +2621,7 @@ setBoundsOrigin:
 
 - (void)setNeedsLayout:(BOOL)needLayout
 {
-    if (!(_viewClassFlags & CPViewHasCustomLayoutSubviews) || !needLayout)
+    if (!needLayout)
     {
         _needsLayout = NO;
         return;
@@ -2654,12 +2643,31 @@ setBoundsOrigin:
     {
         _needsLayout = NO;
 
+        [self viewWillLayout];
         [self layoutSubviews];
+        [self viewDidLayout];
     }
+}
+
+/*!
+    @ignore
+*/
+- (void)viewWillLayout
+{
+
+}
+
+/*!
+    @ignore
+*/
+- (void)viewDidLayout
+{
+    [self _recomputeAppearance];
 }
 
 - (void)layoutSubviews
 {
+
 }
 
 /*!
@@ -3544,19 +3552,13 @@ setBoundsOrigin:
     _appearance = anAppearance;
     [self didChangeValueForKey:@"appearance"];
 
-    [self _recomputeAppearance];
+    [self setNeedsLayout:YES];
 }
 
 /*! @ignore
 */
 - (void)_recomputeAppearance
 {
-    // if we don't have a themeState, it means
-    // the view is not decoding from a cib, so we just return.
-    // this method will be called again in awakeFromCib
-    if (!_themeState)
-        return;
-
     var effectiveAppearance = [self effectiveAppearance];
 
     if ([effectiveAppearance isEqual:[CPAppearance appearanceNamed:CPAppearanceNameAqua]])
@@ -3718,7 +3720,6 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
             _opacity = 1.0;
 
         [self setBackgroundColor:[aCoder decodeObjectForKey:CPViewBackgroundColorKey]];
-        [self _setupViewFlags];
 
         _theme = [CPTheme defaultTheme];
         _themeClass = [aCoder decodeObjectForKey:CPViewThemeClassKey];

@@ -89,7 +89,8 @@ CPVisualEffectStateInactive                 = 2;
         [CPException raise:CPInvalidArgumentException reason:"Appearance can only be CPAppearanceNameVibrantDark or CPAppearanceNameVibrantLight in CPVisualEffectView, but is " + anAppearance];
 
     [super setAppearance:anAppearance];
-    [self _applyVibrancyState];
+
+    [self setNeedsLayout:YES];
 }
 
 /*! Sets the received effect state.
@@ -109,7 +110,7 @@ CPVisualEffectStateInactive                 = 2;
     _state = aState;
     [self didChangeValueForKey:"state"];
 
-    [self _applyVibrancyState];
+    [self setNeedsLayout:YES];
 }
 
 
@@ -131,7 +132,7 @@ CPVisualEffectStateInactive                 = 2;
 
 }
 
-- (void)_applyVibrancyState
+- (void)layoutSubviews
 {
     switch (_state)
     {
@@ -152,52 +153,6 @@ CPVisualEffectStateInactive                 = 2;
 - (BOOL)_validAppearance:(CPAppearance)anAppearance
 {
     return [anAppearance isEqual:[CPAppearance appearanceNamed:CPAppearanceNameVibrantDark]] || [anAppearance isEqual:[CPAppearance appearanceNamed:CPAppearanceNameVibrantLight]];
-}
-
-
-#pragma mark -
-#pragma mark Overrides
-
-- (BOOL)setThemeState:(ThemeState)aState
-{
-    if (aState.isa && [aState isKindOfClass:CPArray])
-         aState = CPThemeState.apply(null, aState);
-
-    var r = [super setThemeState:aState];
-
-    if (r)
-        [self _applyVibrancyState];
-
-    return r;
-}
-
-- (BOOL)unsetThemeState:(ThemeState)aState
-{
-    if (aState.isa && [aState isKindOfClass:CPArray])
-         aState = CPThemeState.apply(null, aState);
-
-    var r = [super unsetThemeState:aState];
-
-    if (r)
-        [self _applyVibrancyState];
-
-    return r;
-}
-
-- (void)viewDidMoveToSuperview
-{
-    [super viewDidMoveToSuperview];
-
-    if (_superview)
-        [self _applyVibrancyState];
-}
-
-- (void)viewDidMoveToWindow
-{
-    [super viewDidMoveToWindow];
-
-    if (_window)
-        [self _applyVibrancyState];
 }
 
 

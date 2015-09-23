@@ -773,6 +773,8 @@ var methodCalled;
 
 - (void)testAppearanceDefaultvalue
 {
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
     [self assert:nil equals:[view appearance]];
     [self assertFalse:[view hasThemeState:CPThemeStateAppearanceVibrantDark]];
     [self assertFalse:[view hasThemeState:CPThemeStateAppearanceVibrantLight]];
@@ -782,9 +784,10 @@ var methodCalled;
 - (void)testAppearanceWithVibrantDark
 {
     [view setAppearance:[CPAppearance appearanceNamed:CPAppearanceNameVibrantDark]];
-
     [self assert:[CPAppearance appearanceNamed:CPAppearanceNameVibrantDark] equals:[view appearance]];
     [self assert:[CPAppearance appearanceNamed:CPAppearanceNameVibrantDark] equals:[view effectiveAppearance]];
+
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
     [self assertTrue:[view hasThemeState:CPThemeStateAppearanceVibrantDark]];
     [self assertFalse:[view hasThemeState:CPThemeStateAppearanceVibrantLight]];
 }
@@ -795,6 +798,8 @@ var methodCalled;
 
     [self assert:[CPAppearance appearanceNamed:CPAppearanceNameVibrantLight] equals:[view appearance]];
     [self assert:[CPAppearance appearanceNamed:CPAppearanceNameVibrantLight] equals:[view effectiveAppearance]];
+
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
     [self assertTrue:[view hasThemeState:CPThemeStateAppearanceVibrantLight]];
     [self assertFalse:[view hasThemeState:CPThemeStateAppearanceVibrantDark]];
 }
@@ -806,6 +811,8 @@ var methodCalled;
 
     [self assert:nil equals:[view appearance]];
     [self assert:nil equals:[view effectiveAppearance]];
+
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
     [self assertFalse:[view hasThemeState:CPThemeStateAppearanceVibrantLight]];
     [self assertFalse:[view hasThemeState:CPThemeStateAppearanceVibrantDark]];
 }
@@ -833,12 +840,14 @@ var methodCalled;
 
     [viewA addSubview:view];
 
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
     [self assert:[CPAppearance appearanceNamed:CPAppearanceNameVibrantLight] equals:[view effectiveAppearance]];
     [self assertTrue:[view hasThemeState:CPThemeStateAppearanceVibrantLight]];
     [self assertFalse:[view hasThemeState:CPThemeStateAppearanceVibrantDark]];
 
     [viewB addSubview:view];
 
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
     [self assert:[CPAppearance appearanceNamed:CPAppearanceNameVibrantDark] equals:[view effectiveAppearance]];
     [self assertFalse:[view hasThemeState:CPThemeStateAppearanceVibrantLight]];
     [self assertTrue:[view hasThemeState:CPThemeStateAppearanceVibrantDark]];
