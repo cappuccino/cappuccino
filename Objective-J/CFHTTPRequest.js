@@ -248,10 +248,13 @@ CFHTTPRequest.prototype.open = function(/*String*/ aMethod, /*String*/ aURL, /*B
     this._method = aMethod;
     this._user = aUser;
     this._password = aPassword;
+    
     retval = this._nativeRequest.open(aMethod, aURL, isAsynchronous, aUser, aPassword);
     if (this._async)
+    {
         this._nativeRequest.withCredentials = this._withCredentials;
-    this._nativeRequest.timeout = this._timeout;
+        this._nativeRequest.timeout = this._timeout;
+    }
     
     return retval;
 };
