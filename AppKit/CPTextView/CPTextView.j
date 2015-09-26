@@ -1096,7 +1096,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 - (void)moveLeft:(id)sender
 {
     if ([self isSelectable])
-        [self _establishSelection:CPMakeRange(_selectionRange.location - 1, 0) byExtending:NO];
+        [self _establishSelection:CPMakeRange(_selectionRange.location - (_selectionRange.length ? 0 : 1), 0) byExtending:NO];
 }
 
 - (void)moveToEndOfParagraph:(id)sender
