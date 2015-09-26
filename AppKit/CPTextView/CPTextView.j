@@ -1362,6 +1362,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         changedRange.length++;
 
     [self _deleteForRange:changedRange];
+    _startTrackingLocation = _selectionRange.location;
 }
 
 - (void)deleteBackward:(id)sender
