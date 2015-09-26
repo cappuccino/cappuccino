@@ -549,7 +549,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
                      withAttributedString:[_textStorage attributedSubstringFromRange:CPMakeRangeCopy(aRange)]];
 
     [_textStorage replaceCharactersInRange:aRange withAttributedString:aString];
-    [self _fixupReplaceForRange:CPMakeRange(aRange.location, [aString length])];
+    [self _fixupReplaceForRange:CPMakeRange(CPMaxRange(aRange), 0)];
 }
 
 - (void)_replaceCharactersInRange:(CPRange)aRange withString:(CPString)aString
@@ -559,7 +559,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
                                withString:[[self string] substringWithRange:CPMakeRangeCopy(aRange)]];
 
     [_textStorage replaceCharactersInRange:CPMakeRangeCopy(aRange) withString:aString];
-    [self _fixupReplaceForRange:CPMakeRange(aRange.location, [aString length])];
+    [self _fixupReplaceForRange:CPMakeRange(CPMaxRange(aRange), 0)];
 }
 
 - (void)insertText:(CPString)aString
