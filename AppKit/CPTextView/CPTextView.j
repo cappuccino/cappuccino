@@ -1818,14 +1818,23 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)updateInsertionPointStateAndRestartTimer:(BOOL)flag
 {
-    var caretRect;
+    var caretRect,
+        nglyphs= [_layoutManager numberOfCharacters];
 
     if (_selectionRange.length)
         [_caret setVisibility:NO];
 
-    if (_selectionRange.location >= [_layoutManager numberOfCharacters])    // cursor is "behind" the last chacacter
+    if (_selectionRange.location >= nglyphs)    // cursor is "behind" the last chacacter
     {
         caretRect = [_layoutManager boundingRectForGlyphRange:CPMakeRange(MAX(0,_selectionRange.location - 1), 1) inTextContainer:_textContainer];
+
+        if (!nglyphs)
+        {
+            var f = [_typingAttributes objectForKey:CPFontAttributeName];
+            caretRect.size.height = [f size];
+            caretRect.origin.y = ([f ascender] - [f descender]) * 0.5;
+        }
+
         caretRect.origin.x += caretRect.size.width;
 
         if (_selectionRange.location > 0 && [[_textStorage string] characterAtIndex:_selectionRange.location - 1] === '\n')
@@ -1837,8 +1846,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     else
         caretRect = [_layoutManager boundingRectForGlyphRange:CPMakeRange(_selectionRange.location, 1) inTextContainer:_textContainer];
 
-    var nglyphs= [_layoutManager numberOfCharacters],
-        loc = (_selectionRange.location === nglyphs && nglyphs > 0) ? _selectionRange.location - 1 : _selectionRange.location,
+    var loc = (_selectionRange.location === nglyphs && nglyphs > 0) ? _selectionRange.location - 1 : _selectionRange.location,
         caretOffset = [_layoutManager _characterOffsetAtLocation:loc],
         oldYPosition = CGRectGetMaxY(caretRect),
         caretDescend = [_layoutManager _descentAtLocation:loc];
