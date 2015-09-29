@@ -28,7 +28,33 @@ var CachedThemeAttributes       = nil;
 var CPViewThemeClassKey             = @"CPViewThemeClassKey",
     CPViewThemeStateKey             = @"CPViewThemeStateKey";
 
-@implementation CPObject (ObjectTheming)
+@protocol CPTheme
+
+- (CPString)themeClass;
+- (void)setThemeClass:(CPString)theClass;
+
+- (CPTheme)theme;
+- (void)setTheme:(CPTheme)aTheme;
+
+- (unsigned)themeState;
+- (BOOL)hasThemeState:(ThemeState)aState;
+- (BOOL)setThemeState:(ThemeState)aState;
+- (BOOL)unsetThemeState:(ThemeState)aState;
+- (BOOL)hasThemeAttribute:(CPString)aName;
+
+- (void)objectDidChangeTheme;
+
+- (void)setValue:(id)aValue forThemeAttribute:(CPString)aName inState:(ThemeState)aState;
+- (void)setValue:(id)aValue forThemeAttribute:(CPString)aName;
+- (id)valueForThemeAttribute:(CPString)aName inState:(ThemeState)aState;
+- (id)valueForThemeAttribute:(CPString)aName;
+- (id)currentValueForThemeAttribute:(CPString)aName;
+- (void)registerThemeValues:(CPArray)themeValues;
+- (void)registerThemeValues:(CPArray)themeValues inherit:(CPArray)inheritedValues;
+
+@end
+
+@implementation CPObject (ObjectTheming) <CPTheme>
 {
     // Theming Support
     CPTheme             _theme;
