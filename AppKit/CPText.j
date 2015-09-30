@@ -120,22 +120,20 @@ CPKernAttributeName = @"CPKernAttributeName";
 {
     [self willChangeValueForKey:@"selectable"];
     _isSelectable = flag;
+    [self didChangeValueForKey:@"selectable"];
 
     if (!flag)
         [self setEditable:flag];
-
-    [self didChangeValueForKey:@"selectable"];
 }
 
 - (void)setEditable:(BOOL)flag
 {
     [self willChangeValueForKey:@"editable"];
     _isEditable = flag;
+    [self didChangeValueForKey:@"editable"];
 
     if (flag)
         [self setSelectable:flag];
-
-    [self didChangeValueForKey:@"editable"];
 }
 
 - (void)changeFont:(id)sender
