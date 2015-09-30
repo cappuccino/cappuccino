@@ -159,7 +159,26 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     {
         [self _init];
         [aContainer setTextView:self];
-    }
+
+        [self setEditable:YES];
+        [self setSelectable:YES];
+        [self setRichText:NO];
+        [self setBackgroundColor:[CPColor whiteColor]];
+
+        _usesFontPanel = YES;
+        _allowsUndo = YES;
+
+        _selectedTextAttributes = [CPDictionary dictionaryWithObject:[CPColor selectedTextBackgroundColor]
+                                                              forKey:CPBackgroundColorAttributeName];
+
+        _insertionPointColor = [CPColor blackColor];
+
+        _textColor = [CPColor blackColor];
+        _font = [CPFont systemFontOfSize:12.0];
+        [self setFont:_font];
+
+        _typingAttributes = [[CPDictionary alloc] initWithObjects:[_font, _textColor] forKeys:[CPFontAttributeName, CPForegroundColorAttributeName]];
+   }
 
     [self registerForDraggedTypes:[CPColorDragType]];
 
@@ -183,32 +202,16 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     _textContainerInset = CGSizeMake(2, 0);
     _textContainerOrigin = CGPointMake(_bounds.origin.x, _bounds.origin.y);
 
-    [self setEditable:YES];
-    [self setSelectable:YES];
-
-    _delegate = nil;
-    _delegateRespondsToSelectorMask = 0;
-
     _selectionGranularity = CPSelectByCharacter;
-    _selectedTextAttributes = [CPDictionary dictionaryWithObject:[CPColor selectedTextBackgroundColor]
-                                                          forKey:CPBackgroundColorAttributeName];
-
-    _insertionPointColor = [CPColor blackColor];
-    _textColor = [CPColor blackColor];
-    _font = [CPFont systemFontOfSize:12.0];
-    [self setFont:_font];
-    [self setBackgroundColor:[CPColor whiteColor]];
-
-    _typingAttributes = [[CPDictionary alloc] initWithObjects:[_font, _textColor] forKeys:[CPFontAttributeName, CPForegroundColorAttributeName]];
 
     _minSize = CGSizeCreateCopy(_frame.size);
     _maxSize = CGSizeMake(_frame.size.width, 1e7);
 
-    [self setRichText:NO];
-    _usesFontPanel = YES;
-    _allowsUndo = YES;
     _isVerticallyResizable = YES;
     _isHorizontallyResizable = NO;
+
+    _typingAttributes = [CPMutableDictionary new];
+    _selectedTextAttributes = [CPMutableDictionary new];
 
     _caret = [[_CPCaret alloc] initWithTextView:self];
     [_caret setRect:CGRectMake(0, 0, 1, 11)]
@@ -269,7 +272,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     if ([self isRichText])
     {
-        var stringForPasting = [_textStorage attributedSubstringFromRange:CPMakeRangeCopy(selectedRange)];
+        var selectedRange = [self selectedRange],
+            pasteboard = [CPPasteboard generalPasteboard],
+            stringForPasting = [_textStorage attributedSubstringFromRange:CPMakeRangeCopy(selectedRange)];
 
         // put rich representation on the pasteboad only if we have multliple attributes selected
         if (stringForPasting._rangeEntries.length > 1)
@@ -1973,11 +1978,7 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
     {
         [self _init];
 
-        var container = [aCoder decodeObjectForKey:CPTextViewContainerKey];
-        [container setTextView:self];
-
         [self setInsertionPointColor:[aCoder decodeObjectForKey:CPTextViewInsertionPointColorKey]];
-        [self setString:[_textStorage string]];
 
         var selectedTextAttributes = [aCoder decodeObjectForKey:CPTextViewSelectedTextAttributesKey],
             enumerator = [selectedTextAttributes keyEnumerator],
@@ -1986,10 +1987,26 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
         while (key = [enumerator nextObject])
             [_selectedTextAttributes setObject:[selectedTextAttributes valueForKey:key] forKey:key];
 
+        if (![_selectedTextAttributes valueForKey:CPBackgroundColorAttributeName])
+            [_selectedTextAttributes setObject:[CPColor selectedTextBackgroundColor] forKey:CPBackgroundColorAttributeName];
+
         [self setAllowsUndo:[aCoder decodeBoolForKey:CPTextViewAllowsUndoKey]];
         [self setUsesFontPanel:[aCoder decodeBoolForKey:CPTextViewUsesFontPanelKey]];
 
         [self setDelegate:[aCoder decodeObjectForKey:CPTextViewDelegateKey]];
+
+        var container = [aCoder decodeObjectForKey:CPTextViewContainerKey];
+        [container setTextView:self];
+
+        _typingAttributes = [[_textStorage attributesAtIndex:0 effectiveRange:nil] copy];
+
+        if (![_typingAttributes valueForKey:CPForegroundColorAttributeName])
+            [_typingAttributes setObject:[CPColor blackColor] forKey:CPForegroundColorAttributeName];
+
+        _textColor = [_typingAttributes valueForKey:CPForegroundColorAttributeName];
+        [self setFont:[_typingAttributes valueForKey:CPFontAttributeName]];
+
+        [self setString:[_textStorage string]];
     }
 
     return self;
