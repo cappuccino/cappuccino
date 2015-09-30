@@ -259,13 +259,26 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 }
 
 #pragma mark -
-#pragma mark Copy and past methods
+#pragma mark Copy and paste methods
 
 - (void)copy:(id)sender
 {
    [_CPNativeInputManager setLastCopyWasNative:[sender isKindOfClass:[_CPNativeInputManager class]]];
    _copySelectionGranularity = _previousSelectionGranularity;
    [super copy:sender];
+
+    if ([self isRichText])
+    {
+        var stringForPasting = [_textStorage attributedSubstringFromRange:CPMakeRangeCopy(selectedRange)];
+
+        // put rich representation on the pasteboad only if we have multliple attributes selected
+        if (stringForPasting._rangeEntries.length > 1)
+        {
+            var richData =  [_CPRTFProducer produceRTF:stringForPasting documentAttributes:@{}];
+         // [pasteboard declareTypes:[CPStringPboardType, CPRichStringPboardType] owner:nil];  // this does currently do not work due to limitations in cappuccino
+            [pasteboard setString:richData forType:CPStringPboardType];  // crude hack to make rich pasting possible in chrome and firefox: put rtf on the plain pasteboard
+        }
+    }
 }
 
 - (void)paste:(id)sender
