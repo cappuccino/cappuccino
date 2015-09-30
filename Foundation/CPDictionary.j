@@ -222,13 +222,13 @@ var CPDictionaryMaxDescriptionRecursion = 10;
 {
     self = [super init];
 
-    if ([objects count] != [keyArray count])
+    var i = [keyArray count];
+
+    if ([objects count] != i)
         [CPException raise:CPInvalidArgumentException reason:[CPString stringWithFormat:@"Counts are different.(%d != %d)", [objects count], [keyArray count]]];
 
     if (self)
     {
-        var i = [keyArray count];
-
         while (i--)
         {
             var value = objects[i],
