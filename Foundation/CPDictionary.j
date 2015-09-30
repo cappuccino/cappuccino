@@ -273,18 +273,16 @@ var CPDictionaryMaxDescriptionRecursion = 10;
     if (self)
     {
         // The arguments array contains self and _cmd, so the first object is at position 2.
-        var index = 2;
-
-        for (; index < argCount; index += 2)
+        while (argCount-- > 2)
         {
-            var value = arguments[index],
-                key = arguments[index + 1];
+            var key = arguments[argCount--],
+                value = arguments[argCount]
 
             if (value === nil)
-                [CPException raise:CPInvalidArgumentException reason:@"Attempt to insert nil object from objects[" + ((index / 2) - 1) + @"]"];
+                [CPException raise:CPInvalidArgumentException reason:@"Attempt to insert nil object from objects[" + ((argCount / 2) - 1) + @"]"];
 
             if (key === nil)
-                [CPException raise:CPInvalidArgumentException reason:@"Attempt to insert nil key from keys[" + ((index / 2) - 1) + @"]"];
+                [CPException raise:CPInvalidArgumentException reason:@"Attempt to insert nil key from keys[" + ((argCount / 2) - 1) + @"]"];
 
             [self setObject:value forKey:key];
         }
