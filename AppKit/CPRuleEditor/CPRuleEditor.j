@@ -2121,7 +2121,7 @@ TODO: implement
         return;
 
     var point = [self convertPoint:[event locationInWindow] fromView:nil],
-        view = [_slices objectAtIndex:FLOOR(point.y / _sliceHeight)];
+        view = [_slices objectAtIndex:FLOOR(MAX(0, point.y) / _sliceHeight)];
 
     if ([self _dragShouldBeginFromMouseDown:view])
         [self _performDragForSlice:view withEvent:event];

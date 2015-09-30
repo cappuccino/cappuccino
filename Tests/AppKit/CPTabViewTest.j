@@ -23,14 +23,11 @@
     CPTabViewItem   _tabItem2;
 }
 
-+ (void)setUp
+- (void)setUp
 {
     // This will init the global var CPApp which are used internally in the AppKit
     [[CPApplication alloc] init];
-}
 
-- (void)setUp
-{
     _tabView = [[CPTabView alloc] initWithFrame:CGRectMake(0, 0, 800, 600)];
 
     _tabItem1 = [[CPTabViewItem alloc] initWithIdentifier:@"id1"];

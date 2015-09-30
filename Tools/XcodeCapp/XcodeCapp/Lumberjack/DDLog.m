@@ -786,7 +786,7 @@ NSString *DDExtractFileNameWithoutExtension(const char *filePath, BOOL copy)
 
 @implementation DDLoggerNode
 
-- (id)initWithLogger:(id <DDLogger>)aLogger loggerQueue:(dispatch_queue_t)aLoggerQueue
+- (instancetype)initWithLogger:(id <DDLogger>)aLogger loggerQueue:(dispatch_queue_t)aLoggerQueue
 {
 	if ((self = [super init]))
 	{
@@ -834,7 +834,7 @@ static char *dd_str_copy(const char *str)
 	return result;
 }
 
-- (id)initWithLogMsg:(NSString *)msg
+- (instancetype)initWithLogMsg:(NSString *)msg
                level:(int)level
                 flag:(int)flag
              context:(int)context
@@ -890,7 +890,7 @@ static char *dd_str_copy(const char *str)
 	if (function == NULL)
 		return nil;
 	else
-		return [[NSString alloc] initWithUTF8String:function];
+		return @(function);
 }
 
 - (void)dealloc
@@ -913,7 +913,7 @@ static char *dd_str_copy(const char *str)
 
 @implementation DDAbstractLogger
 
-- (id)init
+- (instancetype)init
 {
 	if ((self = [super init]))
 	{

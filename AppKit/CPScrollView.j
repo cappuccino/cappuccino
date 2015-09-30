@@ -1582,6 +1582,8 @@ var CPScrollViewContentViewKey          = @"CPScrollViewContentView",
 */
 - (void)awakeFromCib
 {
+    [super awakeFromCib];
+
     [self _updateScrollerStyle];
     [self _updateCornerAndHeaderView];
 }

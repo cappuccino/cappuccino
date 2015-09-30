@@ -6,14 +6,11 @@
     CPTableView     tableView;
 }
 
-+ (void)setUp
+- (void)setUp
 {
     // This will init the global var CPApp which are used internally in the AppKit
     [[CPApplication alloc] init];
-}
 
-- (void)setUp
-{
     // setup a reasonable table
     theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(0.0, 0.0, 1024.0, 768.0)
                                             styleMask:CPWindowNotSizable];

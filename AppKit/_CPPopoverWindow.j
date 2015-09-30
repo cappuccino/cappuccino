@@ -141,7 +141,12 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
     if (_appearance === anAppearance)
         return;
 
-    [_windowView setAppearance:anAppearance];
+    _appearance = anAppearance;
+
+    var appearanceName = _appearance == CPPopoverAppearanceMinimal ? CPAppearanceNameVibrantLight : CPAppearanceNameVibrantDark,
+        viewAppearance = [CPAppearance appearanceNamed:appearanceName];
+
+    [_windowView setAppearance:viewAppearance];
 }
 
 - (void)setStyleMask:(unsigned)aStyleMask
@@ -548,29 +553,36 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
 
                     // Now set up the pop-in to normal size transition.
                     // Because we are watching the -webkit-transform, it will occur now.
-                    [self setCSS3Property:@"Transform" value:@"scale(1)"];
-                    [self setCSS3Property:@"Transition" value:CPBrowserCSSProperty('transform') + @" 50ms linear"];
 
-                    _transitionCompleteFunction = function()
+                    window.setTimeout(function()
                     {
+                        [self setCSS3Property:@"Transform" value:@"scale(1)"];
+                        [self setCSS3Property:@"Transition" value:CPBrowserCSSProperty('transform') + @" 50ms linear"];
+
+                        _transitionCompleteFunction = function()
+                        {
 #if PLATFORM(DOM)
-                        _DOMElement.removeEventListener(CPBrowserStyleProperty('transitionend'), _transitionCompleteFunction, YES);
+                            _DOMElement.removeEventListener(CPBrowserStyleProperty('transitionend'), _transitionCompleteFunction, YES);
 
-                        // Make sure to clear these properties when the animation is done. Without this,
-                        // the window becomes blurry in Chrome, presumably because the browser composits
-                        // a layer with a transform differently even when it's an identity transform.
-                        [self setCSS3Property:@"Transform" value:nil];
-                        [self setCSS3Property:@"TransformOrigin" value:nil];
-                        [self setCSS3Property:@"Transition" value:nil];
+                            // Make sure to clear these properties when the animation is done. Without this,
+                            // the window becomes blurry in Chrome, presumably because the browser composits
+                            // a layer with a transform differently even when it's an identity transform.
+                            [self setCSS3Property:@"Transform" value:nil];
+                            [self setCSS3Property:@"TransformOrigin" value:nil];
+                            [self setCSS3Property:@"Transition" value:nil];
 #endif
-                        _isOpening = NO;
+                            _isOpening = NO;
 
-                        [_delegate _popoverWindowDidShow];
-                    }
+                            [_delegate _popoverWindowDidShow];
+                        }
 
 #if PLATFORM(DOM)
-                    _DOMElement.addEventListener(CPBrowserStyleProperty('transitionend'), _transitionCompleteFunction, YES);
+                        _DOMElement.addEventListener(CPBrowserStyleProperty('transitionend'), _transitionCompleteFunction, YES);
 #endif
+                    }, 0);  // There are some weird random conditions happening in Chrome 44. If we don't put a timeout to 0 for the end of
+                            // the transition, the popover is blinking. It happens on Opera as well...
+                            // When the condition is met, the popover will lag a bit when opening...nothing crazy ;)
+                            // An issue has been opened here : https://code.google.com/p/chromium/issues/detail?id=523044&thanks=523044&ts=1440095724
                 };
 
 #if PLATFORM(DOM)

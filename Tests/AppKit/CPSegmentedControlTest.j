@@ -6,14 +6,11 @@
     CPSegmentedControl _segmentedControl;
 }
 
-+ (void)setUp
+- (void)setUp
 {
     // This will init the global var CPApp which are used internally in the AppKit
     [[CPApplication alloc] init];
-}
 
-- (void)setUp
-{
     _segmentedControl = [[CPSegmentedControl alloc] initWithFrame:CGRectMakeZero()];
     [_segmentedControl setSegmentCount:3];
 }

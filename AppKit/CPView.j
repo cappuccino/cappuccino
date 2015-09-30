@@ -26,6 +26,7 @@
 
 @import "CGAffineTransform.j"
 @import "CGGeometry.j"
+@import "CPAppearance.j"
 @import "CPColor.j"
 @import "CPGraphicsContext.j"
 @import "CPResponder.j"
@@ -130,7 +131,6 @@ var CPViewFlags                     = { },
     CPViewHasCustomLayoutSubviews   = 1 << 1;
 
 var CPViewHighDPIDrawingEnabled = YES;
-
 
 /*!
     @ingroup appkit
@@ -240,6 +240,10 @@ var CPViewHighDPIDrawingEnabled = YES;
     BOOL                _toolTipInstalled;
 
     BOOL                _isObserving;
+
+    BOOL                _allowsVibrancy         @accessors(property=allowsVibrancy);
+    CPAppearance        _appearance             @accessors(getter=appearance);
+    CPAppearance        _effectiveAppearance;
 }
 
 /*
@@ -291,27 +295,6 @@ var CPViewHighDPIDrawingEnabled = YES;
     return CPViewHighDPIDrawingEnabled;
 }
 
-- (void)_setupViewFlags
-{
-    var theClass = [self class],
-        classUID = [theClass UID];
-
-    if (CPViewFlags[classUID] === undefined)
-    {
-        var flags = 0;
-
-        if ([theClass instanceMethodForSelector:@selector(drawRect:)] !== [CPView instanceMethodForSelector:@selector(drawRect:)])
-            flags |= CPViewHasCustomDrawRect;
-
-        if ([theClass instanceMethodForSelector:@selector(layoutSubviews)] !== [CPView instanceMethodForSelector:@selector(layoutSubviews)])
-            flags |= CPViewHasCustomLayoutSubviews;
-
-        CPViewFlags[classUID] = flags;
-    }
-
-    _viewClassFlags = CPViewFlags[classUID];
-}
-
 + (CPSet)keyPathsForValuesAffectingFrame
 {
     return [CPSet setWithObjects:@"frameOrigin", @"frameSize"];
@@ -325,6 +308,25 @@ var CPViewHighDPIDrawingEnabled = YES;
 + (CPMenu)defaultMenu
 {
     return nil;
+}
+
+- (void)_setupViewFlags
+{
+    var theClass = [self class],
+        classUID = [theClass UID];
+
+    if (CPViewFlags[classUID] === undefined)
+    {
+        var flags = 0;
+
+        if ([theClass instanceMethodForSelector:@selector(drawRect:)] !== [CPView instanceMethodForSelector:@selector(drawRect:)]
+            || [theClass instanceMethodForSelector:@selector(viewWillDraw)] !== [CPView instanceMethodForSelector:@selector(viewWillDraw)])
+            flags |= CPViewHasCustomDrawRect;
+
+        CPViewFlags[classUID] = flags;
+    }
+
+    _viewClassFlags = CPViewFlags[classUID];
 }
 
 - (id)init
@@ -381,7 +383,6 @@ var CPViewHighDPIDrawingEnabled = YES;
 #endif
 
         [self _setupViewFlags];
-
         [self _loadThemeAttributes];
     }
 
@@ -839,9 +840,8 @@ var CPViewHighDPIDrawingEnabled = YES;
 */
 - (void)viewDidMoveToSuperview
 {
-//    if (_graphicsContext)
-        [self setNeedsDisplay:YES];
-
+    [self setNeedsLayout:YES];
+    [self setNeedsDisplay:YES];
 }
 
 /*!
@@ -1820,7 +1820,7 @@ var CPViewHighDPIDrawingEnabled = YES;
     else if ([[self nextResponder] isKindOfClass:CPView])
         [super rightMouseDown:anEvent];
     else
-        [[[anEvent window] platformWindow] _propagateContextMenuDOMEvent:YES];
+        [[[anEvent window] platformWindow] _propagateContextMenuDOMEvent:NO];
 }
 
 - (CPMenu)menuForEvent:(CPEvent)anEvent
@@ -2594,7 +2594,7 @@ setBoundsOrigin:
     }
 
 #if PLATFORM(DOM)
-    if (_needToSetTransformMatrix)
+    if (_needToSetTransformMatrix && _highDPIRatio !== 1)
         [_graphicsContext graphicsPort].setTransform(_highDPIRatio, 0, 0 , _highDPIRatio, 0, 0);
 #endif
 
@@ -2621,7 +2621,7 @@ setBoundsOrigin:
 
 - (void)setNeedsLayout:(BOOL)needLayout
 {
-    if (!(_viewClassFlags & CPViewHasCustomLayoutSubviews) || !needLayout)
+    if (!needLayout)
     {
         _needsLayout = NO;
         return;
@@ -2643,12 +2643,31 @@ setBoundsOrigin:
     {
         _needsLayout = NO;
 
+        [self viewWillLayout];
         [self layoutSubviews];
+        [self viewDidLayout];
     }
+}
+
+/*!
+    @ignore
+*/
+- (void)viewWillLayout
+{
+
+}
+
+/*!
+    @ignore
+*/
+- (void)viewDidLayout
+{
+    [self _recomputeAppearance];
 }
 
 - (void)layoutSubviews
 {
+
 }
 
 /*!
@@ -3511,6 +3530,79 @@ setBoundsOrigin:
 
 @end
 
+
+@implementation CPView (Appearance)
+
+/*! Returns the receiver's appearance if any, or ask the superview and returns it.
+*/
+- (CPAppearance)effectiveAppearance
+{
+    if (_appearance)
+        return _appearance;
+
+    return [_superview effectiveAppearance];
+}
+
+- (void)setAppearance:(CPAppearance)anAppearance
+{
+    if ([_appearance isEqual:anAppearance])
+        return;
+
+    [self willChangeValueForKey:@"appearance"];
+    _appearance = anAppearance;
+    [self didChangeValueForKey:@"appearance"];
+
+    [self setNeedsLayout:YES];
+}
+
+/*! @ignore
+*/
+- (void)_recomputeAppearance
+{
+    var effectiveAppearance = [self effectiveAppearance];
+
+    if ([effectiveAppearance isEqual:[CPAppearance appearanceNamed:CPAppearanceNameAqua]])
+    {
+        [self setThemeState:CPThemeStateAppearanceAqua];
+        [self unsetThemeState:CPThemeStateAppearanceLightContent];
+        [self unsetThemeState:CPThemeStateAppearanceVibrantLight];
+        [self unsetThemeState:CPThemeStateAppearanceVibrantDark];
+    }
+    else if ([effectiveAppearance isEqual:[CPAppearance appearanceNamed:CPAppearanceNameLightContent]])
+    {
+        [self unsetThemeState:CPThemeStateAppearanceAqua];
+        [self setThemeState:CPThemeStateAppearanceLightContent];
+        [self unsetThemeState:CPThemeStateAppearanceVibrantLight];
+        [self unsetThemeState:CPThemeStateAppearanceVibrantDark];
+    }
+    else if ([effectiveAppearance isEqual:[CPAppearance appearanceNamed:CPAppearanceNameVibrantLight]])
+    {
+        [self unsetThemeState:CPThemeStateAppearanceAqua];
+        [self unsetThemeState:CPThemeStateAppearanceLightContent];
+        [self setThemeState:CPThemeStateAppearanceVibrantLight];
+        [self unsetThemeState:CPThemeStateAppearanceVibrantDark];
+    }
+    else if ([effectiveAppearance isEqual:[CPAppearance appearanceNamed:CPAppearanceNameVibrantDark]])
+    {
+        [self unsetThemeState:CPThemeStateAppearanceAqua];
+        [self unsetThemeState:CPThemeStateAppearanceLightContent];
+        [self unsetThemeState:CPThemeStateAppearanceVibrantLight];
+        [self setThemeState:CPThemeStateAppearanceVibrantDark];
+    }
+    else
+    {
+        [self unsetThemeState:CPThemeStateAppearanceAqua];
+        [self unsetThemeState:CPThemeStateAppearanceLightContent];
+        [self unsetThemeState:CPThemeStateAppearanceVibrantLight];
+        [self unsetThemeState:CPThemeStateAppearanceVibrantDark];
+    }
+
+    [_subviews makeObjectsPerformSelector:@selector(_recomputeAppearance)];
+}
+
+
+@end
+
 var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     CPViewAutoresizesSubviewsKey    = @"CPViewAutoresizesSubviews",
     CPViewBackgroundColorKey        = @"CPViewBackgroundColor",
@@ -3531,7 +3623,8 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     CPReuseIdentifierKey            = @"CPReuseIdentifierKey",
     CPViewScaleKey                  = @"CPViewScaleKey",
     CPViewSizeScaleKey              = @"CPViewSizeScaleKey",
-    CPViewIsScaledKey               = @"CPViewIsScaledKey";
+    CPViewIsScaledKey               = @"CPViewIsScaledKey",
+    CPViewAppearanceKey             = @"CPViewAppearanceKey";
 
 @implementation CPView (CPCoding)
 
@@ -3646,6 +3739,8 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
             _themeAttributes[attributeName] = CPThemeAttributeDecode(aCoder, attributeName, attributes[count], _theme, themeClass);
         }
 
+        [self setAppearance:[aCoder decodeObjectForKey:CPViewAppearanceKey]];
+
         [self setNeedsDisplay:YES];
         [self setNeedsLayout];
     }
@@ -3734,6 +3829,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     [aCoder encodeSize:[self scaleSize] forKey:CPViewScaleKey];
     [aCoder encodeSize:[self _hierarchyScaleSize] forKey:CPViewSizeScaleKey];
     [aCoder encodeBool:_isScaled forKey:CPViewIsScaledKey];
+    [aCoder encodeObject:_appearance forKey:CPViewAppearanceKey];
 }
 
 @end

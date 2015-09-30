@@ -91,7 +91,7 @@ var concat = Array.prototype.concat,
 - (id)initWithObjects:(CPArray)objects count:(CPUInteger)aCount
 {
     if ([objects isKindOfClass:_CPJavaScriptArray])
-        return slice.call(objects, 0);
+        return slice.call(objects, 0, aCount);
 
     var array = [],
         index = 0;

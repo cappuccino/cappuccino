@@ -25,6 +25,12 @@
 @import "CPString.j"
 @import "CPURL.j"
 
+@typedef CPURLRequestCachePolicy
+CPURLRequestUseProtocolCachePolicy = 0;
+CPURLRequestReloadIgnoringLocalCacheData = 1;
+CPURLRequestReturnCacheDataElseLoad = 2;
+CPURLRequestReturnCacheDataDontLoad = 3;
+
 /*!
     @class CPURLRequest
     @ingroup foundation
@@ -35,14 +41,16 @@
 */
 @implementation CPURLRequest : CPObject
 {
-    CPURL           _URL                @accessors(property=URL);
+    CPURL                       _URL                @accessors(property=URL);
 
     // FIXME: this should be CPData
-    CPString        _HTTPBody           @accessors(property=HTTPBody);
-    CPString        _HTTPMethod         @accessors(property=HTTPMethod);
-    BOOL            _withCredentials    @accessors(property=withCredentials);
+    CPString                    _HTTPBody           @accessors(property=HTTPBody);
+    CPString                    _HTTPMethod         @accessors(property=HTTPMethod);
+    BOOL                        _withCredentials    @accessors(property=withCredentials);
 
-    CPDictionary    _HTTPHeaderFields   @accessors(readonly, getter=allHTTPHeaderFields);
+    CPDictionary                _HTTPHeaderFields   @accessors(readonly, getter=allHTTPHeaderFields);
+    CPTimeInterval              _timeoutInterval    @accessors(readonly, getter=timeoutInterval);
+    CPURLRequestCachePolicy     _cachePolicy        @accessors(readonly, getter=cachePolicy);
 }
 
 /*!
@@ -53,6 +61,18 @@
 + (id)requestWithURL:(CPURL)aURL
 {
     return [[CPURLRequest alloc] initWithURL:aURL];
+}
+
+/*!
+    Creates a request with a specified URL, cachePolicy and timeoutInterval
+    @param aURL the URL of the request
+    @param aCachePolicy the cache policy of the request
+    @param aTimeoutInterval the timeoutInterval of the request
+    @return a CPURLRequest
+*/
++ (id)requestWithURL:(CPURL)anURL cachePolicy:(CPURLRequestCachePolicy)aCachePolicy timeoutInterval:(CPTimeInterval)aTimeoutInterval
+{
+    return [[CPURLRequest alloc] initWithURL:anURL cachePolicy:aCachePolicy timeoutInterval:aTimeoutInterval];
 }
 
 /*!
@@ -67,13 +87,30 @@
     Initializes the request with a URL. This is the designated initializer.
 
     @param aURL the url to set
+    @param aCachePolicy the cache policy of the request
+    @param aTimeoutInterval the timeoutInterval of the request
+    @return the initialized CPURLRequest
+*/
+- (id)initWithURL:(CPURL)anURL cachePolicy:(CPURLRequestCachePolicy)aCachePolicy timeoutInterval:(CPTimeInterval)aTimeoutInterval
+{
+    if (self = [self initWithURL:anURL])
+    {
+        _cachePolicy = aCachePolicy;
+        _timeoutInterval = aTimeoutInterval;
+    }
+
+    return self;
+}
+
+/*!
+    Initializes the request with a URL. This is the designated initializer.
+
+    @param aURL the url to set
     @return the initialized CPURLRequest
 */
 - (id)initWithURL:(CPURL)aURL
 {
-    self = [super init];
-
-    if (self)
+    if (self = [super init])
     {
         [self setURL:aURL];
 
@@ -81,9 +118,34 @@
         _HTTPMethod = @"GET";
         _HTTPHeaderFields = @{};
         _withCredentials = NO;
+        _timeoutInterval = 60.0;
+        _cachePolicy = CPURLRequestUseProtocolCachePolicy;
 
         [self setValue:"Thu, 01 Jan 1970 00:00:00 GMT" forHTTPHeaderField:"If-Modified-Since"];
-        [self setValue:"no-cache" forHTTPHeaderField:"Cache-Control"];
+
+        switch (_cachePolicy)
+        {
+            case CPURLRequestUseProtocolCachePolicy:
+                // TODO: implement everything about cache...
+                [self setValue:"no-cache" forHTTPHeaderField:"Cache-Control"];
+                break;
+
+            case CPURLRequestReturnCacheDataElseLoad:
+                [self setValue:"max-stale=31536000" forHTTPHeaderField:"Cache-Control"];
+                break;
+
+            case CPURLRequestReturnCacheDataDontLoad:
+                [self setValue:"only-if-cached" forHTTPHeaderField:"Cache-Control"];
+                break;
+
+            case CPURLRequestReloadIgnoringLocalCacheData:
+                [self setValue:"no-cache" forHTTPHeaderField:"Cache-Control"];
+                break;
+
+            default:
+                [self setValue:"no-cache" forHTTPHeaderField:"Cache-Control"];
+        }
+
         [self setValue:"XMLHttpRequest" forHTTPHeaderField:"X-Requested-With"];
     }
 

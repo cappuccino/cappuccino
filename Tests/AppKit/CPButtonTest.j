@@ -8,14 +8,11 @@
     BOOL wasClicked;
 }
 
-+ (void)setUp
+- (void)setUp
 {
     // This will init the global var CPApp which are used internally in the AppKit
     [[CPApplication alloc] init];
-}
 
-- (void)setUp
-{
     button = [CPButton buttonWithTitle:"hello world"];
     wasClicked = NO;
 }

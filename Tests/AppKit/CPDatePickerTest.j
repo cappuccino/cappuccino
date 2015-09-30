@@ -10,14 +10,11 @@
     CPDatePicker datePicker;
 }
 
-+ (void)setUp
+- (void)setUp
 {
     // This will init the global var CPApp which are used internally in the AppKit
     [[CPApplication alloc] init];
-}
 
-- (void)setUp
-{
     datePicker = [[CPDatePicker alloc] initWithFrame:CGRectMake(200, 28, 0, 0)];
 }
 

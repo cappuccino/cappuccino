@@ -24,6 +24,8 @@
 @import "CPObject.j"
 @import "CPString.j"
 
+@class CPString
+
 CPInvalidArgumentException          = @"CPInvalidArgumentException";
 CPUnsupportedMethodException        = @"CPUnsupportedMethodException";
 CPRangeException                    = @"CPRangeException";

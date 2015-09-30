@@ -6,14 +6,11 @@
     CPTreeNode childNode;
 }
 
-+ (void)setUp
+- (void)setUp
 {
     // This will init the global var CPApp which are used internally in the AppKit
     [[CPApplication alloc] init];
-}
 
-- (void)setUp
-{
     treeNode = [CPTreeNode treeNodeWithRepresentedObject:nil];
 
     childNode = [CPTreeNode treeNodeWithRepresentedObject:nil];

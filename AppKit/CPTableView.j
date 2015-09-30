@@ -5199,7 +5199,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         [self _notifyViewDidBecomeFirstResponder];
 
     // This is for cell-based tables only. In view-based mode, we do not change the textfield apprearence during an edit.
-    if (!_isViewBased && _editingRow !== CPNotFound && [responder isKindOfClass:[CPTextField class]] && [responder isEditable])
+    if (!_isViewBased && _editingRow !== CPNotFound && [responder isKindOfClass:[CPTextField class]] && [responder isEditable] && [responder superview] == self)
     {
         [responder setBezeled:YES];
         [self _registerForEndEditingNote:responder];
@@ -6394,6 +6394,7 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
 - (void)awakeFromCib
 {
+    [super awakeFromCib];
     [self setThemeState:CPThemeStateTableDataView];
 }
 

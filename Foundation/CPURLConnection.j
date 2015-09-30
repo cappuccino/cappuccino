@@ -26,6 +26,16 @@
 @import "CPURLRequest.j"
 @import "CPURLResponse.j"
 
+@protocol CPURLConnectionDelegate <CPObject>
+
+- (void)connection:(CPURLConnection)anURLConnection didFailWithError:(CPException)anError;
+- (void)connection:(CPURLConnection)anURLConnection didReceiveData:(CPString)aData;
+- (void)connection:(CPURLConnection)anURLConnection didReceiveResponse:(CPString)aResponse;
+- (void)connectionDidFinishLoading:(CPURLConnection)anURLConnection;
+- (void)connectionDidReceiveAuthenticationChallenge:(CPURLConnection)anURLConnection;
+
+@end
+
 @typedef HTTPRequest
 
 var CPURLConnectionDelegate = nil;
@@ -76,16 +86,16 @@ var CPURLConnectionDelegate = nil;
 */
 @implementation CPURLConnection : CPObject
 {
-    CPURLRequest    _originalRequest        @accessors(readonly, getter=originalRequest);
-    CPURLRequest    _request                @accessors(readonly, getter=currentRequest);
-    id              _delegate;
-    BOOL            _isCanceled;
-    BOOL            _isLocalFileConnection;
+    CPURLRequest                    _originalRequest        @accessors(readonly, getter=originalRequest);
+    CPURLRequest                    _request                @accessors(readonly, getter=currentRequest);
+    id  <CPURLConnectionDelegate>   _delegate;
+    BOOL                            _isCanceled;
+    BOOL                            _isLocalFileConnection;
 
-    HTTPRequest     _HTTPRequest;
+    HTTPRequest                     _HTTPRequest;
 }
 
-+ (void)setClassDelegate:(id)delegate
++ (void)setClassDelegate:(id <CPURLConnectionDelegate>)delegate
 {
     CPURLConnectionDelegate = delegate;
 }
@@ -145,7 +155,7 @@ var CPURLConnectionDelegate = nil;
     @param shouldStartImmediately whether the \c -start method should be called from here
     @return the initialized url connection
 */
-- (id)initWithRequest:(CPURLRequest)aRequest delegate:(id)aDelegate startImmediately:(BOOL)shouldStartImmediately
+- (id)initWithRequest:(CPURLRequest)aRequest delegate:(id <CPURLConnectionDelegate>)aDelegate startImmediately:(BOOL)shouldStartImmediately
 {
     self = [super init];
 
@@ -166,6 +176,7 @@ var CPURLConnectionDelegate = nil;
                                      (window.location.protocol === "file:" || window.location.protocol === "app:"));
 
         _HTTPRequest = new CFHTTPRequest();
+        _HTTPRequest.setTimeout([aRequest timeoutInterval] * 1000);
         _HTTPRequest.setWithCredentials([aRequest withCredentials]);
 
         if (shouldStartImmediately)
@@ -175,7 +186,7 @@ var CPURLConnectionDelegate = nil;
     return self;
 }
 
-- (id)initWithRequest:(CPURLRequest)aRequest delegate:(id)aDelegate
+- (id)initWithRequest:(CPURLRequest)aRequest delegate:(id <CPURLConnectionDelegate>)aDelegate
 {
     return [self initWithRequest:aRequest delegate:aDelegate startImmediately:YES];
 }
@@ -200,6 +211,7 @@ var CPURLConnectionDelegate = nil;
         _HTTPRequest.open([_request HTTPMethod], [[_request URL] absoluteString], YES);
 
         _HTTPRequest.onreadystatechange = function() { [self _readyStateDidChange]; };
+        _HTTPRequest.ontimeout = function() { [self _didTimeout]; };
 
         var fields = [_request allHTTPHeaderFields],
             key = nil,
@@ -212,9 +224,14 @@ var CPURLConnectionDelegate = nil;
     }
     catch (anException)
     {
-        if ([_delegate respondsToSelector:@selector(connection:didFailWithError:)])
-            [_delegate connection:self didFailWithError:anException];
+        [self _sendDelegateDidFailWithError:anException];
     }
+}
+
+- (void)_sendDelegateDidFailWithError:(CPException)anException
+{
+    if ([_delegate respondsToSelector:@selector(connection:didFailWithError:)])
+        [_delegate connection:self didFailWithError:anException];
 }
 
 /*
@@ -239,10 +256,22 @@ var CPURLConnectionDelegate = nil;
     return _isLocalFileConnection;
 }
 
+/*!
+    @ignore
+*/
+- (void)_didTimeout
+{
+    var exception = [CPException exceptionWithName:@"Timeout exception"
+                                            reason:"The request timed out."
+                                          userInfo:@{}];
+
+    [self _sendDelegateDidFailWithError:exception];
+}
+
 /* @ignore */
 - (void)_readyStateDidChange
 {
-    if (_HTTPRequest.readyState() === CFHTTPRequest.CompleteState)
+    if (_HTTPRequest.readyState() === CFHTTPRequest.CompleteState && !_HTTPRequest.isTimeoutRequest())
     {
         var statusCode = _HTTPRequest.status(),
             URL = [_request URL];

@@ -34,7 +34,6 @@
 @global CPStringPboardType
 @global CPCursor
 
-
 @protocol CPTextFieldDelegate <CPControlTextEditingDelegate>
 
 @end
@@ -66,7 +65,8 @@ var CPTextFieldDOMCurrentElement = nil,
     CPTextFieldCachedSelectStartFunction = nil,
     CPTextFieldCachedDragFunction = nil,
     CPTextFieldBlurHandler = nil,
-    CPTextFieldInputFunction = nil;
+    CPTextFieldInputFunction = nil,
+    CPTexFieldCurrentCSSSelectableField = nil;
 
 var CPSecureTextFieldCharacter = "\u2022";
 
@@ -701,6 +701,21 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 }
 
 /*!
+    Set the selection css style for the DOM element of the textField
+    @ignore
+*/
+- (void)_setEnableCSSSelection:(BOOL)shouldEnable
+{
+#if PLATFORM (DOM)
+    if (CPTexFieldCurrentCSSSelectableField)
+        CPTexFieldCurrentCSSSelectableField._DOMElement.style[CPBrowserStyleProperty(@"user-select")] = @"none";
+
+    CPTexFieldCurrentCSSSelectableField = self;
+    _DOMElement.style[CPBrowserStyleProperty(@"user-select")] = shouldEnable ? @"text" : @"none";
+#endif
+}
+
+/*!
     Set the css style for the input element of the textField
     @ignore
 */
@@ -993,6 +1008,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     }
     else if ([self isSelectable])
     {
+        [self _setEnableCSSSelection:YES];
         if (document.attachEvent)
         {
             CPTextFieldCachedSelectStartFunction = [[self window] platformWindow]._DOMBodyElement.onselectstart;
@@ -1032,6 +1048,14 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
         return [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:YES];
     }
+}
+
+- (void)rightMouseDown:(CPEvent)anEvent
+{
+    if ([self menuForEvent:anEvent] || [[self nextResponder] isKindOfClass:CPView])
+        [super rightMouseDown:anEvent];
+    else
+        [[[anEvent window] platformWindow] _propagateContextMenuDOMEvent:YES];
 }
 
 - (void)mouseDragged:(CPEvent)anEvent

@@ -11,6 +11,16 @@
     return ConcreteArray;
 }
 
+- (void)test_initWithObjects_count_
+{
+    var arrayClass = [[self class] arrayClass],
+        array = [[arrayClass alloc] initWithObjects:[@"hello", @"bye", @"goodnight", @"seeya"] count:2];
+
+    [self assert:[array count] equals:2];
+    [self assert:[array objectAtIndex:0] equals:@"hello"];
+    [self assert:[array objectAtIndex:1] equals:@"bye"];
+}
+
 - (void)test_containsObject_
 {
     var arrayClass = [[self class] arrayClass],
@@ -759,6 +769,21 @@
 
     if (self)
         array = [anArray copy];
+
+    return self;
+}
+
+- (id)initWithObjects:(CPArray)objects count:(CPUInteger)aCount
+{
+    self = [super init];
+
+    if (self)
+    {
+      array = [];
+
+      for (var index = 0; index < aCount; ++index)
+          array.push([objects objectAtIndex:index]);
+    }
 
     return self;
 }
