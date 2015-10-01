@@ -274,6 +274,8 @@ var CPURLConnectionDelegate = nil;
 {
     if ([_delegate respondsToSelector:@selector(connection:didFailWithError:)])
         [_delegate connection:self didFailWithError:anException];
+    else if (_connectionOperation !== nil)
+        [self _connectionOperationDidReceiveResponse:nil data:nil error:anException];
 }
 
 /*
@@ -340,10 +342,10 @@ var CPURLConnectionDelegate = nil;
 
             if (!_isCanceled)
             {
-                if (_connectionOperation !== nil)
-                    [self _connectionOperationDidReceiveResponse:response data:_HTTPRequest.responseText() error:nil];
-                else if ([_delegate respondsToSelector:@selector(connection:didReceiveData:)])
+                if ([_delegate respondsToSelector:@selector(connection:didReceiveData:)])
                     [_delegate connection:self didReceiveData:_HTTPRequest.responseText()];
+                else if (_connectionOperation !== nil)
+                    [self _connectionOperationDidReceiveResponse:response data:_HTTPRequest.responseText() error:nil];
 
                 if ([_delegate respondsToSelector:@selector(connectionDidFinishLoading:)])
                     [_delegate connectionDidFinishLoading:self];
