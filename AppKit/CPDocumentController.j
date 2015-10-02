@@ -402,8 +402,10 @@ var CPSharedDocumentController = nil;
         }
     }
 
-    if ([context.delegate respondsToSelector:context.selector])
-        objj_msgSend(context.delegate, context.selector, self, [[self documents] count] === 0, context.context);
+    var theDelegate = context.delegate;
+
+    if ([theDelegate respondsToSelector:context.selector])
+        theDelegate.isa.objj_msgSend3(theDelegate, context.selector, self, [[self documents] count] === 0, context.context);
 }
 
 @end

@@ -984,7 +984,7 @@ var CPApplicationDelegate_applicationShouldTerminate_           = 1 << 0,
 */
 - (void)setTarget:(id)aTarget selector:(SEL)aSelector forNextEventMatchingMask:(unsigned int)aMask untilDate:(CPDate)anExpiration inMode:(CPString)aMode dequeue:(BOOL)shouldDequeue
 {
-    _eventListeners.splice(_eventListenerInsertionIndex++, 0, _CPEventListenerMake(aMask, function (anEvent) { objj_msgSend(aTarget, aSelector, anEvent); }, shouldDequeue));
+    _eventListeners.splice(_eventListenerInsertionIndex++, 0, _CPEventListenerMake(aMask, function (anEvent) { if (aTarget != null) aTarget.isa.objj_msgSend1(aTarget, aSelector, anEvent); }, shouldDequeue));
 }
 
 /*!
@@ -1358,7 +1358,7 @@ var _CPAppBootstrapperActions = nil;
     {
         var action = _CPAppBootstrapperActions.shift();
 
-        if (objj_msgSend(self, action))
+        if (self.isa.objj_msgSend0(self, action))
             return;
     }
 

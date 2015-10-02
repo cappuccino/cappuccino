@@ -164,10 +164,11 @@
 + (BOOL)automaticallyNotifiesObserversForKey:(CPString)aKey
 {
     var capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substring(1),
-        selector = "automaticallyNotifiesObserversOf" + capitalizedKey;
+        selector = "automaticallyNotifiesObserversOf" + capitalizedKey,
+        aClass = [self class];
 
-    if ([[self class] respondsToSelector:selector])
-        return objj_msgSend([self class], selector);
+    if ([aClass respondsToSelector:selector])
+        return aClass.isa.objj_msgSend0(aClass, selector);
 
     return YES;
 }
@@ -175,10 +176,11 @@
 + (CPSet)keyPathsForValuesAffectingValueForKey:(CPString)aKey
 {
     var capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substring(1),
-        selector = "keyPathsForValuesAffecting" + capitalizedKey;
+        selector = "keyPathsForValuesAffecting" + capitalizedKey,
+        aClass = [self class];
 
-    if ([[self class] respondsToSelector:selector])
-        return objj_msgSend([self class], selector);
+    if ([aClass respondsToSelector:selector])
+        return aClass.isa.objj_msgSend0(aClass, selector);
 
     return [CPSet set];
 }
