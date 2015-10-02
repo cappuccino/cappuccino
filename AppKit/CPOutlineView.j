@@ -1417,7 +1417,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
             if (_dropItem)
             {
                 [_dropOperationFeedbackView blink];
-                [CPTimer scheduledTimerWithTimeInterval:.3 callback:objj_msgSend(self, "expandItem:", _dropItem) repeats:NO];
+                [CPTimer scheduledTimerWithTimeInterval:.3 callback:[self expandItem:_dropItem] repeats:NO];
             }
         };
 
