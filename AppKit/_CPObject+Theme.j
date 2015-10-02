@@ -54,7 +54,7 @@ var CPViewThemeClassKey             = @"CPViewThemeClassKey",
 
 @end
 
-@implementation CPObject (ObjectTheming) <CPTheme>
+@implementation CPObject (ObjectTheming)
 {
     // Theming Support
     CPTheme             _theme;

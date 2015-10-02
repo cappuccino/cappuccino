@@ -80,7 +80,7 @@ var cachedBlackColor,
     <p>It also provides some class helper methods that
     returns instances of commonly used colors.</p>
 */
-@implementation CPColor : CPObject
+@implementation CPColor : CPObject <CPTheme>
 {
     CPArray     _components;
 

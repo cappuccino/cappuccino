@@ -149,7 +149,7 @@ var CPViewHighDPIDrawingEnabled = YES;
     appearance. Other methods of CPView and CPResponder can
     also be overridden to handle user generated events.
 */
-@implementation CPView : CPResponder
+@implementation CPView : CPResponder <CPTheme>
 {
     CPWindow            _window;
 
