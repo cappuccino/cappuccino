@@ -46,6 +46,7 @@
 @import "NSImageView.j"
 @import "NSLayoutConstraint.j"
 @import "NSLevelIndicator.j"
+@import "NSLocalizableString.j"
 @import "NSMatrix.j"
 @import "NSMenu.j"
 @import "NSMenuItem.j"

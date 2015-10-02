@@ -25,7 +25,17 @@
 @import "CPNotificationCenter.j"
 @import "CPObject.j"
 
+@global CFBundleCopyBundleLocalizations
+@global CFBundleCopyLocalizedString
+
 CPBundleDidLoadNotification = @"CPBundleDidLoadNotification";
+
+@protocol CPBundleDelegate <CPObject>
+
+@required
+- (void)bundleDidFinishLoading:(CPBundle)aBundle;
+
+@end
 
 /*!
     @class CPBundle
@@ -37,8 +47,8 @@ var CPBundlesForURLStrings = { };
 
 @implementation CPBundle : CPObject
 {
-    CFBundle    _bundle;
-    id          _delegate;
+    CFBundle                _bundle;
+    id <CPBundleDelegate>   _delegate;
 }
 
 + (CPBundle)bundleWithURL:(CPURL)aURL
@@ -94,6 +104,7 @@ var CPBundlesForURLStrings = { };
     if (self)
     {
         _bundle = new CFBundle(aURL);
+
         CPBundlesForURLStrings[URLString] = self;
     }
 
@@ -154,6 +165,21 @@ var CPBundlesForURLStrings = { };
     return _bundle.pathForResource(aFilename);
 }
 
+- (CPString)pathForResource:(CPString)aFilename ofType:(CPString)extension
+{
+    return _bundle.pathForResource(aFilename, extension);
+}
+
+- (CPString)pathForResource:(CPString)aFilename ofType:(CPString)extension inDirectory:(CPString)subpath
+{
+    return _bundle.pathForResource(aFilename, extension, subpath);
+}
+
+- (CPString)pathForResource:(CPString)aFilename ofType:(CPString)extension inDirectory:(CPString)subpath forLocalization:(CPString)localizationName
+{
+    return _bundle.pathForResource(aFilename, extension, subpath, localizationName);
+}
+
 - (CPDictionary)infoDictionary
 {
     return _bundle.infoDictionary();
@@ -164,7 +190,7 @@ var CPBundlesForURLStrings = { };
     return _bundle.valueForInfoDictionaryKey(aKey);
 }
 
-- (void)loadWithDelegate:(id)aDelegate
+- (void)loadWithDelegate:(id <CPBundleDelegate>)aDelegate
 {
     _delegate = aDelegate;
 
@@ -212,4 +238,33 @@ var CPBundlesForURLStrings = { };
     return [super description] + "(" + [self bundlePath] + ")";
 }
 
+
+#pragma mark -
+#pragma mark Localization
+
+- (CPArray)localizations
+{
+    return CFBundleCopyBundleLocalizations(_bundle);
+}
+
+- (CPString)localizedStringForKey:(CPString)aKey value:(CPString)aValue table:(CPString)aTable
+{
+    return CFBundleCopyLocalizedString(_bundle, aKey, aValue, aTable);
+}
+
 @end
+
+function CPLocalizedString(key, comment)
+{
+    return CFCopyLocalizedString(key, comment);
+}
+
+function CPLocalizedStringFromTable(key, table, comment)
+{
+    return CFCopyLocalizedStringFromTable(key, table, comment);
+}
+
+function CPCopyLocalizedStringFromTableInBundle(key, table, bundle, comment)
+{
+    return CFCopyLocalizedStringFromTableInBundle(key, table, bundle._bundle, comment);
+}

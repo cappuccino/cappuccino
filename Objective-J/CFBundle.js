@@ -20,19 +20,23 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-var CFBundleUnloaded                = 0,
-    CFBundleLoading                 = 1 << 0,
-    CFBundleLoadingInfoPlist        = 1 << 1,
-    CFBundleLoadingExecutable       = 1 << 2,
-    CFBundleLoadingSpritedImages    = 1 << 3,
-    CFBundleLoaded                  = 1 << 4;
+var CFBundleUnloaded                    = 0,
+    CFBundleLoading                     = 1 << 0,
+    CFBundleLoadingInfoPlist            = 1 << 1,
+    CFBundleLoadingExecutable           = 1 << 2,
+    CFBundleLoadingSpritedImages        = 1 << 3,
+    CFBundleLoadingLocalizableStrings   = 1 << 4,
+    CFBundleLoaded                      = 1 << 5;
 
 var CFBundlesForURLStrings   = { },
     CFBundlesForClasses      = { },
     CFBundlesWithIdentifiers = { },
-    CFCacheBuster       = new Date().getTime(),
-    CFTotalBytesLoaded  = 0,
+    CFCacheBuster            = new Date().getTime(),
+    CFTotalBytesLoaded       = 0,
     CPApplicationSizeInBytes = 0;
+
+var CPBundleDefaultBrowserLanguage = "CPBundleDefaultBrowserLanguage",
+    CPBundleDefaultLanguage = "CPBundleDefaultLanguage";
 
 GLOBAL(CFBundle) = function(/*CFURL|String*/ aURL)
 {
@@ -58,6 +62,9 @@ GLOBAL(CFBundle) = function(/*CFURL|String*/ aURL)
     this._infoDictionary = new CFDictionary();
 
     this._eventDispatcher = new EventDispatcher(this);
+
+    this._localizableStrings = [];
+    this._loadedLanguage = NULL;
 }
 
 DISPLAY_NAME(CFBundle);
@@ -145,10 +152,13 @@ CFBundle.prototype.resourcesDirectoryURL = function()
 
 DISPLAY_NAME(CFBundle.prototype.resourcesDirectoryURL);
 
-CFBundle.prototype.resourceURL = function(/*String*/ aResourceName, /*String*/ aType, /*String*/ aSubDirectory)
+CFBundle.prototype.resourceURL = function(/*String*/ aResourceName, /*String*/ aType, /*String*/ aSubDirectory, /*String*/ localizationName)
  {
     if (aType)
         aResourceName = aResourceName + "." + aType;
+
+    if (localizationName)
+        aResourceName = localizationName + aResourceName;
 
     if (aSubDirectory)
         aResourceName = aSubDirectory + "/" + aResourceName;
@@ -193,6 +203,11 @@ CFBundle.prototype.infoDictionary = function()
 };
 
 DISPLAY_NAME(CFBundle.prototype.infoDictionary);
+
+CFBundle.prototype.loadedLanguage = function()
+{
+    return this._loadedLanguage;
+};
 
 CFBundle.prototype.valueForInfoDictionaryKey = function(/*String*/ aKey)
 {
@@ -318,6 +333,7 @@ CFBundle.prototype.load = function(/*BOOL*/ shouldExecute)
             if (self === CFBundle.mainBundle() && self.valueForInfoDictionaryKey("CPApplicationSize"))
                 CPApplicationSizeInBytes = self.valueForInfoDictionaryKey("CPApplicationSize").valueForKey("executable") || 0;
 
+            loadLanguageForBundle(self);
             loadExecutableAndResources(self, shouldExecute);
         }
 
@@ -354,6 +370,7 @@ function loadExecutableAndResources(/*Bundle*/ aBundle, /*BOOL*/ shouldExecute)
 
     loadExecutableForBundle(aBundle, success, failure, progress);
     loadSpritedImagesForBundle(aBundle, success, failure, progress);
+    loadLocalizableStringsForBundle(aBundle, success, failure, progress);
 
     if (aBundle._loadStatus === CFBundleLoading)
         return success();
@@ -488,6 +505,120 @@ function loadSpritedImagesForBundle(/*Bundle*/ aBundle, success, failure, progre
             failure(anException);
         }
     }, failure, progress);
+}
+
+function loadLocalizableStringsForBundle(/*Bundle*/ aBundle, success, failure, progress)
+{
+    var language = aBundle._loadedLanguage;
+
+    if (!language)
+        return;
+
+    var localizableStrings = aBundle.valueForInfoDictionaryKey("CPBundleLocalizableStrings");
+
+    if (!localizableStrings)
+        return;
+
+    var self = aBundle,
+        length = localizableStrings.length,
+        languagePathURL = new CFURL(language + ".lproj/", self.resourcesDirectoryURL()),
+        fileSuccessed = 0;
+
+    for (var i = 0; i < length; i++)
+    {
+        var localizableString = localizableStrings[i];
+
+        function onsuccess(/*Event*/ anEvent)
+        {
+            var contentFile = anEvent.request.responseText(),
+                tableName = new CFURL(anEvent.request._URL).lastPathComponent();
+
+            try
+            {
+                loadLocalizableContentForFileInBundle(self, contentFile, tableName);
+
+                if (++fileSuccessed == length)
+                {
+                    aBundle._loadStatus &= ~CFBundleLoadingLocalizableStrings;
+                    success();
+                }
+            }
+            catch(e)
+            {
+                failure(new Error("Error when parsing the localizable file " + tableName));
+            }
+        }
+
+        aBundle._loadStatus |= CFBundleLoadingLocalizableStrings;
+        new FileRequest(new CFURL(localizableString, languagePathURL), onsuccess, failure, progress);
+    }
+}
+
+function loadLocalizableContentForFileInBundle(bundle, contentFile, tableName)
+{
+    var values = {},
+        lines = contentFile.split("\n"),
+        currentContext;
+
+    bundle._localizableStrings[tableName] = values;
+
+    for (var i = 0; i < lines.length; i++)
+    {
+        var line = lines[i];
+
+        // Context
+        if (line[0] == "/")
+        {
+            currentContext = line.substring(2, line.length - 2).trim();
+            continue;
+        }
+
+        // Key
+        if (line[0] == "\"")
+        {
+            var split = line.split("\"")
+
+            // Here we add twice the translated value, once with the context and once without
+            // This will help in term of rapidity when asking the value of the key
+
+            var key = split[1];
+
+            if (!(key in values))
+                values[key] = split[3];
+
+            key += currentContext;
+
+            if (!(key in values))
+                values[key] = split[3];
+
+            continue;
+        }
+    }
+}
+
+function loadLanguageForBundle(aBundle)
+{
+    if (aBundle._loadedLanguage)
+        return;
+
+    var defaultLanguage = aBundle.valueForInfoDictionaryKey(CPBundleDefaultLanguage);
+
+    if (defaultLanguage != CPBundleDefaultBrowserLanguage && defaultLanguage)
+    {
+        aBundle._loadedLanguage = defaultLanguage;
+        return;
+    }
+
+    if (typeof navigator == "undefined")
+        return;
+
+    // userLanguage is an IE only property.
+    var language = (typeof navigator.language !== "undefined") ? navigator.language : navigator.userLanguage;
+
+    if (!language)
+        return;
+
+    aBundle._loadedLanguage = language.substring(0, 2);
 }
 
 var CFBundleSpriteSupportListeners  = [],
@@ -734,7 +865,53 @@ CFBundle.prototype.path = function()
     return this.bundlePath.apply(this, arguments);
 };
 
-CFBundle.prototype.pathForResource = function(aResource)
+CFBundle.prototype.pathForResource = function(aResource, aType, aSubDirectory, localizationName)
 {
-    return this.resourceURL(aResource).absoluteString();
+    return this.resourceURL(aResource, aType, aSubDirectory, localizationName).absoluteString();
 };
+
+GLOBAL(CFBundleCopyLocalizedString) = function (/*Bundle*/ bundle, key, value, tableName)
+{
+    return CFCopyLocalizedStringWithDefaultValue(key, tableName, bundle, value, "");
+}
+
+GLOBAL(CFBundleCopyBundleLocalizations) = function (/*Bundle*/ aBundle)
+{
+    return [this._loadedLanguage];
+}
+
+GLOBAL(CFCopyLocalizedString) = function (key, comment)
+{
+    return CFCopyLocalizedStringFromTable(key, "Localizable", comment);
+}
+
+GLOBAL(CFCopyLocalizedStringFromTable) = function (key, tableName, comment)
+{
+    return CFCopyLocalizedStringFromTableInBundle(key, tableName, CFBundleGetMainBundle(), comment);
+}
+
+GLOBAL(CFCopyLocalizedStringFromTableInBundle) = function (key, tableName, bundle, comment)
+{
+    return CFCopyLocalizedStringWithDefaultValue(key, tableName, bundle, null, comment);
+}
+
+GLOBAL(CFCopyLocalizedStringWithDefaultValue) = function (key, tableName, bundle, value, comment)
+{
+    var string;
+
+    if (!tableName)
+        tableName = "Localizable";
+
+    tableName += ".strings";
+
+    var localizableString = bundle._localizableStrings[tableName];
+
+    string = localizableString ? localizableString[key + comment] : null;
+
+    return string || (value || key);
+}
+
+GLOBAL(CFBundleGetMainBundle) = function ()
+{
+    return CFBundle.mainBundle();
+}
