@@ -115,8 +115,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 /*! @ignore */
 - (void)setSegments:(CPArray)segments
 {
-    [_segments removeAllObjects];
-    [_themeStates removeAllObjects];
+    [self removeSegmentsAtIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self  segmentCount])]];
 
     [self insertSegments:segments atIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [segments count])]];
 }
@@ -135,6 +134,9 @@ CPSegmentSwitchTrackingMomentary = 2;
 
     [_segments insertObjects:segments atIndexes:indices];
     [_themeStates insertObjects:newStates atIndexes:indices];
+
+    if (_selectedSegment >= [indices firstIndex])
+        _selectedSegment += [indices count];
 }
 
 /*! @ignore */
@@ -142,6 +144,16 @@ CPSegmentSwitchTrackingMomentary = 2;
 {
     if ([indices count] == 0)
         return;
+
+    [indices enumerateIndexesUsingBlock:function(idx, stop)
+    {
+        [[_segments objectAtIndex:idx] setSelected:NO];
+    }];
+
+    if ([indices containsIndex:_selectedSegment])
+        _selectedSegment = -1;
+    else if ([indices lastIndex] < _selectedSegment)
+        _selectedSegment -= [indices count];
 
     [_segments removeObjectsAtIndexes:indices];
     [_themeStates removeObjectsAtIndexes:indices];
