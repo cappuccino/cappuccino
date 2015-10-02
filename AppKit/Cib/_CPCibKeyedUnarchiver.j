@@ -21,7 +21,7 @@
  */
 
 @import <Foundation/CPKeyedUnarchiver.j>
-
+@import <Foundation/CPBundle.j>
 
 @implementation _CPCibKeyedUnarchiver : CPKeyedUnarchiver
 {

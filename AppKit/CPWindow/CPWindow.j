@@ -55,6 +55,7 @@
 @class _CPWindowFrameAnimation
 
 @global CPApp
+@global _CPPlatformWindowWillCloseNotification
 
 @typedef _CPWindowFullPlatformWindowSession
 

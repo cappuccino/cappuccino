@@ -22,6 +22,7 @@
 
 @import "CPWindow.j"
 
+@global CPApp
 
 CPOKButton      = 1;
 CPCancelButton  = 0;
