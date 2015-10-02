@@ -568,6 +568,9 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 
     _DOMWindow = window.open("about:blank", "_blank", "menubar=no,location=no,resizable=yes,scrollbars=no,status=no,left=" + CGRectGetMinX(_contentRect) + ",top=" + CGRectGetMinY(_contentRect) + ",width=" + CGRectGetWidth(_contentRect) + ",height=" + CGRectGetHeight(_contentRect));
 
+    if (!_DOMWindow)
+        return;
+
     [PlatformWindows addObject:self];
 
     // FIXME: cpSetFrame?
@@ -1414,6 +1417,9 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 
 - (void)order:(CPWindowOrderingMode)orderingMode window:(CPWindow)aWindow relativeTo:(CPWindow)otherWindow
 {
+    if (!_DOMWindow)
+        return;
+
     [CPPlatform initializeScreenIfNecessary];
 
     // Grab the appropriate level for the layer, and create it if
