@@ -128,7 +128,8 @@ var DOMElementPrototype         = nil,
 
 var CPViewFlags                     = { },
     CPViewHasCustomDrawRect         = 1 << 0,
-    CPViewHasCustomLayoutSubviews   = 1 << 1;
+    CPViewHasCustomLayoutSubviews   = 1 << 1,
+    CPViewHasCustomViewWillLayout   = 1 << 2;
 
 var CPViewHighDPIDrawingEnabled = YES;
 
@@ -316,6 +317,12 @@ var CPViewHighDPIDrawingEnabled = YES;
         if ([theClass instanceMethodForSelector:@selector(drawRect:)] !== [CPView instanceMethodForSelector:@selector(drawRect:)]
             || [theClass instanceMethodForSelector:@selector(viewWillDraw)] !== [CPView instanceMethodForSelector:@selector(viewWillDraw)])
             flags |= CPViewHasCustomDrawRect;
+
+        if ([theClass instanceMethodForSelector:@selector(viewWillLayout)] !== [CPView instanceMethodForSelector:@selector(viewWillLayout)])
+            flags |= CPViewHasCustomViewWillLayout;
+
+        if ([theClass instanceMethodForSelector:@selector(layoutSubviews)] !== [CPView instanceMethodForSelector:@selector(layoutSubviews)])
+            flags |= CPViewHasCustomLayoutSubviews;
 
         CPViewFlags[classUID] = flags;
     }
@@ -2637,8 +2644,12 @@ setBoundsOrigin:
     {
         _needsLayout = NO;
 
-        [self viewWillLayout];
-        [self layoutSubviews];
+        if (_viewClassFlags & CPViewHasCustomViewWillLayout)
+            [self viewWillLayout];
+
+        if (_viewClassFlags & CPViewHasCustomLayoutSubviews)
+            [self layoutSubviews];
+
         [self viewDidLayout];
     }
 }
