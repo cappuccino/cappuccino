@@ -49,7 +49,7 @@ var FILENAMES = [
                     correct = FILE.read(FILE.join(FILE.dirname(module.path), filename + ".js"));
 
                 [self assertNoThrow:function() {
-                    preprocessed = ObjectiveJ.ObjJAcornCompiler.compileToExecutable(unpreprocessed).code();
+                    preprocessed = ObjectiveJ.ObjJAcornCompiler.compileToExecutable(unpreprocessed, nil, ObjectiveJ.ObjJAcornCompiler.Flags.IncludeDebugSymbols/* | ObjectiveJ.ObjJAcornCompiler.Flags.IncludeTypeSignatures*/).code();
                     preprocessed = compressor.compress(preprocessed, { charset : "UTF-8", useServer : true });
                     correct = compressor.compress(correct, { charset : "UTF-8", useServer : true });
                 }];

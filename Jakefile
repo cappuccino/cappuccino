@@ -21,7 +21,7 @@ var subprojects = ["Objective-J", "CommonJS", "Foundation", "AppKit", "Tools"];
 $BUILD_CJS_OBJECTIVE_J_DEBUG_FRAMEWORKS = FILE.join($BUILD_CJS_OBJECTIVE_J, "Frameworks", "Debug");
 
 
-filedir ($BUILD_CJS_OBJECTIVE_J_DEBUG_FRAMEWORKS, ["debug", "release"], function()
+filedir ($BUILD_CJS_OBJECTIVE_J_DEBUG_FRAMEWORKS, [], function()
 {
     FILE.mkdirs($BUILD_CJS_OBJECTIVE_J_DEBUG_FRAMEWORKS);
 
@@ -30,7 +30,7 @@ filedir ($BUILD_CJS_OBJECTIVE_J_DEBUG_FRAMEWORKS, ["debug", "release"], function
 
 $BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS = FILE.join($BUILD_CJS_CAPPUCCINO, "Frameworks", "Debug");
 
-filedir ($BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS, ["debug", "release"], function()
+filedir ($BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS, [], function()
 {
     FILE.mkdirs($BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS);
 
@@ -39,9 +39,17 @@ filedir ($BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS, ["debug", "release"], function(
     cp_r(FILE.join($BUILD_DIR, "Debug", "BlendKit"), FILE.join($BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS, "BlendKit"));
 });
 
-task ("CommonJS", [$BUILD_CJS_OBJECTIVE_J_DEBUG_FRAMEWORKS, $BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS, "debug", "release"]);
+task ("CommonJS", ["debug", "release", $BUILD_CJS_OBJECTIVE_J_DEBUG_FRAMEWORKS, $BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS, "debug", "release"]);
+
+task ("CommonJS-inline", ["debug", "release-inline", $BUILD_CJS_OBJECTIVE_J_DEBUG_FRAMEWORKS, $BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS, "debug", "release-inline"]);
 
 task ("install", ["CommonJS"], function()
+{
+    installCopy($BUILD_CJS_OBJECTIVE_J, false);
+    installCopy($BUILD_CJS_CAPPUCCINO, false);
+});
+
+task ("install-inline", ["CommonJS-inline"], function()
 {
     installCopy($BUILD_CJS_OBJECTIVE_J, false);
     installCopy($BUILD_CJS_CAPPUCCINO, false);

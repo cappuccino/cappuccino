@@ -192,8 +192,12 @@ function resolveFlags(args)
         else if (argument.indexOf("-g") === 0)
             objjcFlags |= ObjectiveJ.ObjJAcornCompiler.Flags.IncludeDebugSymbols;
 
-        else if (argument.indexOf("-O") === 0)
+        else if (argument.indexOf("-O") === 0) {
             objjcFlags |= ObjectiveJ.ObjJAcornCompiler.Flags.Compress;
+            // FIXME: currently we are sending in '-O2' when we want InlineMsgSend. Here we only check if we it is '-O...'
+            if (argument.length > 2)
+                objjcFlags |= ObjectiveJ.ObjJAcornCompiler.Flags.InlineMsgSend;
+        }
 
         else if (argument.indexOf("-G") === 0)
             objjcFlags |= ObjectiveJ.ObjJAcornCompiler.Flags.Generate;
