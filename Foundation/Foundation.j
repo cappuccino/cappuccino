@@ -54,6 +54,7 @@
 @import "CPMutableSet.j"
 @import "CPNotification.j"
 @import "CPNotificationCenter.j"
+@import "CPNotificationQueue.j"
 @import "CPNull.j"
 @import "CPNumber.j"
 @import "CPNumberFormatter.j"
