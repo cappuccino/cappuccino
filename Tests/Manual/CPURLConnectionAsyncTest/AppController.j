@@ -30,9 +30,8 @@ CPLogRegister(CPLogConsole);
 - (CPURLConnection)startAsyncConnection:(CPInteger)idx responseStatus:(CPInteger)aStatus delay:(CPInteger)aDelay isLast:(BOOL)isLast
 {
     var resourcePath = [[CPBundle mainBundle] resourcePath],
-        url = [CPURL URLWithString:[CPString stringWithFormat:@"%@delayed.php?sleep=%@&status=%@", resourcePath, aDelay, aStatus]];
-
-    var request = [CPURLRequest requestWithURL:url];
+        url = [CPURL URLWithString:[CPString stringWithFormat:@"%@delayed.php?sleep=%@&status=%@", resourcePath, aDelay, aStatus]],
+        request = [CPURLRequest requestWithURL:url];
 
     return [self startAsyncConnection:idx request:request isLast:isLast];
 }
@@ -99,9 +98,9 @@ CPLogRegister(CPLogConsole);
     queue = [[CPOperationQueue alloc] init];
     [testField setStringValue:@"Waiting for response ..."];
 
-    var connection1 = [self startAsyncConnection:1 responseStatus:200 delay:1 isLast:YES];
-    var connection2 = [self startAsyncConnection:2 responseStatus:200 delay:2 isLast:NO];
-    var connection3 = [self startAsyncConnection:3 responseStatus:200 delay:3 isLast:NO];
+    var connection1 = [self startAsyncConnection:1 responseStatus:200 delay:1 isLast:YES],
+        connection2 = [self startAsyncConnection:2 responseStatus:200 delay:2 isLast:NO],
+        connection3 = [self startAsyncConnection:3 responseStatus:200 delay:3 isLast:NO];
 
     [[connection1 operation] addDependency:[connection2 operation]];
     [[connection2 operation] addDependency:[connection3 operation]];
@@ -113,9 +112,9 @@ CPLogRegister(CPLogConsole);
     queue = [[CPOperationQueue alloc] init];
     [testField setStringValue:@"Waiting for response ..."];
 
-    var connection1 = [self startAsyncConnection:1 responseStatus:200 delay:1 isLast:YES];
-    var connection2 = [self startAsyncConnection:2 responseStatus:404 delay:2 isLast:NO];
-    var connection3 = [self startAsyncConnection:3 responseStatus:200 delay:3 isLast:NO];
+    var connection1 = [self startAsyncConnection:1 responseStatus:200 delay:1 isLast:YES],
+        connection2 = [self startAsyncConnection:2 responseStatus:404 delay:2 isLast:NO],
+        connection3 = [self startAsyncConnection:3 responseStatus:200 delay:3 isLast:NO];
 
     [[connection1 operation] addDependency:[connection2 operation]];
     [[connection2 operation] addDependency:[connection3 operation]];
@@ -127,9 +126,9 @@ CPLogRegister(CPLogConsole);
     queue = [[CPOperationQueue alloc] init];
     [testField setStringValue:@"Waiting for response ..."];
 
-    var connection1 = [self startAsyncConnection:1 responseStatus:200 delay:1 isLast:YES];
-    var connection2 = [self startAsyncConnection:2 responseStatus:200 delay:2 isLast:NO];
-    var connection3 = [self startAsyncConnection:3 responseStatus:404 delay:3 isLast:NO];
+    var connection1 = [self startAsyncConnection:1 responseStatus:200 delay:1 isLast:YES],
+        connection2 = [self startAsyncConnection:2 responseStatus:200 delay:2 isLast:NO],
+        connection3 = [self startAsyncConnection:3 responseStatus:404 delay:3 isLast:NO];
 
     [[connection1 operation] addDependency:[connection2 operation]];
     [[connection2 operation] addDependency:[connection3 operation]];
@@ -141,9 +140,9 @@ CPLogRegister(CPLogConsole);
     queue = [[CPOperationQueue alloc] init];
     [testField setStringValue:@"Waiting for response ..."];
 
-    var connection1 = [self startAsyncConnection:1 responseStatus:200 delay:1 isLast:YES];
-    var connection2 = [self startAsyncConnection:2 responseStatus:403 delay:2 isLast:NO];
-    var connection3 = [self startAsyncConnection:3 responseStatus:404 delay:3 isLast:NO];
+    var connection1 = [self startAsyncConnection:1 responseStatus:200 delay:1 isLast:YES],
+        connection2 = [self startAsyncConnection:2 responseStatus:403 delay:2 isLast:NO],
+        connection3 = [self startAsyncConnection:3 responseStatus:404 delay:3 isLast:NO];
 
     [[connection1 operation] addDependency:[connection2 operation]];
     [[connection2 operation] addDependency:[connection3 operation]];
@@ -155,9 +154,9 @@ CPLogRegister(CPLogConsole);
     queue = [[CPOperationQueue alloc] init];
     [testField setStringValue:@"Waiting for response ..."];
 
-    var connection1 = [self startAsyncConnection:1 responseStatus:404 delay:1 isLast:YES];
-    var connection2 = [self startAsyncConnection:2 responseStatus:1000 delay:2 isLast:NO];
-    var connection3 = [self startAsyncConnection:3 responseStatus:404 delay:3 isLast:NO];
+    var connection1 = [self startAsyncConnection:1 responseStatus:404 delay:1 isLast:YES],
+        connection2 = [self startAsyncConnection:2 responseStatus:1000 delay:2 isLast:NO],
+        connection3 = [self startAsyncConnection:3 responseStatus:404 delay:3 isLast:NO];
 
     [[connection1 operation] addDependency:[connection2 operation]];
     [[connection2 operation] addDependency:[connection3 operation]];
@@ -167,12 +166,12 @@ CPLogRegister(CPLogConsole);
 {
     results = @[];
     queue = [[CPOperationQueue alloc] init];
-    var request = [CPURLRequest requestWithURL:"dummy"];
     [testField setStringValue:@"Waiting for response ..."];
 
-    var connection1 = [self startAsyncConnection:1 responseStatus:200 delay:1 isLast:YES];
-    var connection2 = [self startAsyncConnection:2 request:request isLast:NO];
-    var connection3 = [self startAsyncConnection:3 request:request isLast:NO];
+    var request = [CPURLRequest requestWithURL:"dummy"],
+        connection1 = [self startAsyncConnection:1 responseStatus:200 delay:1 isLast:YES],
+        connection2 = [self startAsyncConnection:2 request:request isLast:NO],
+        connection3 = [self startAsyncConnection:3 request:request isLast:NO];
 
     [[connection1 operation] addDependency:[connection2 operation]];
     [[connection2 operation] addDependency:[connection3 operation]];
@@ -184,16 +183,15 @@ CPLogRegister(CPLogConsole);
     queue = [[CPOperationQueue alloc] init];
 
     var resourcePath = [[CPBundle mainBundle] resourcePath],
-        url = [CPURL URLWithString:[CPString stringWithFormat:@"%@delayed.php?sleep=%@&status=%@", resourcePath, 10, 200]];
-    var timeoutrequest = [CPURLRequest requestWithURL:url cachePolicy:CPURLRequestUseProtocolCachePolicy timeoutInterval:3];
-
-    var nourl = [CPURLRequest requestWithURL:@"nourl"];
+        url = [CPURL URLWithString:[CPString stringWithFormat:@"%@delayed.php?sleep=%@&status=%@", resourcePath, 10, 200]],
+        timeoutrequest = [CPURLRequest requestWithURL:url cachePolicy:CPURLRequestUseProtocolCachePolicy timeoutInterval:3],
+        nourl = [CPURLRequest requestWithURL:@"nourl"];
 
     [testField setStringValue:@"Waiting for response ..."];
 
-    var connection1 = [self startAsyncConnection:1 responseStatus:200 delay:1 isLast:YES];
-    var connection2 = [self startAsyncConnection:2 request:nourl isLast:NO];
-    var connection3 = [self startAsyncConnection:3 request:timeoutrequest isLast:NO];
+    var connection1 = [self startAsyncConnection:1 responseStatus:200 delay:1 isLast:YES],
+        connection2 = [self startAsyncConnection:2 request:nourl isLast:NO],
+        connection3 = [self startAsyncConnection:3 request:timeoutrequest isLast:NO];
 
     [[connection1 operation] addDependency:[connection2 operation]];
     [[connection2 operation] addDependency:[connection3 operation]];
