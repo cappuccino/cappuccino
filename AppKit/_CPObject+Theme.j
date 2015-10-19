@@ -186,8 +186,13 @@ var CPViewThemeClassKey             = @"CPViewThemeClassKey",
 
     var theClass = [self class],
         CPObjectClass = [CPObject class],
-        attributes = [],
+        attributes = CachedThemeAttributes[class_getName(theClass)],
         nullValue = [CPNull null];
+
+    if (attributes)
+        return attributes;
+    else
+        attributes = [];
 
     for (; theClass && theClass !== CPObjectClass; theClass = [theClass superclass])
     {
@@ -196,8 +201,6 @@ var CPViewThemeClassKey             = @"CPViewThemeClassKey",
         if (cachedAttributes)
         {
             attributes = attributes.length ? attributes.concat(cachedAttributes) : attributes;
-            CachedThemeAttributes[[self className]] = attributes;
-
             break;
         }
 
@@ -218,6 +221,8 @@ var CPViewThemeClassKey             = @"CPViewThemeClassKey",
             attributes.push(attributeName);
         }
     }
+
+    CachedThemeAttributes[[self className]] = attributes;
 
     return attributes;
 }
