@@ -326,7 +326,7 @@ var themedButtonValues = nil,
     var button = [self button];
 
     [button setTitle:@"OK"];
-    [button setThemeState:[CPButtonStateBezelStyleRounded, CPThemeStateDefault]];
+    [button setThemeStates:[CPButtonStateBezelStyleRounded, CPThemeStateDefault]];
 
     return button;
 }

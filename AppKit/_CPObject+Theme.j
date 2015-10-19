@@ -38,8 +38,11 @@ var CPViewThemeClassKey             = @"CPViewThemeClassKey",
 
 - (unsigned)themeState;
 - (BOOL)hasThemeState:(ThemeState)aState;
+- (BOOL)hasThemeStates:(CPArray)states;
 - (BOOL)setThemeState:(ThemeState)aState;
+- (BOOL)setThemeStates:(CPArray)aState;
 - (BOOL)unsetThemeState:(ThemeState)aState;
+- (BOOL)unsetThemeStates:(CPArray)aState;
 - (BOOL)hasThemeAttribute:(CPString)aName;
 
 - (void)objectDidChangeTheme;
@@ -74,29 +77,47 @@ var CPViewThemeClassKey             = @"CPViewThemeClassKey",
 
 - (BOOL)hasThemeState:(ThemeState)aState
 {
-    if (aState.isa && [aState isKindOfClass:CPArray])
-        return _themeState.hasThemeState.apply(_themeState, aState);
+#if DEBUG
+    if (aState && aState.isa && [aState isKindOfClass:CPArray])
+        [CPException raise:CPInvalidArgumentException reason:@"aState can't be an array. Please use 'hasThemeStates: instead: " + aState];
+#endif
 
+    return _themeState.hasThemeState(aState);
+}
+
+- (BOOL)hasThemeStates:(CPArray)states
+{
+    var i = [states count],
+        aState = [states objectAtIndex:--i];
+
+    while (i > 0)
+    {
+        aState = aState.and([states objectAtIndex:--i]);
+    }
     return _themeState.hasThemeState(aState);
 }
 
 - (BOOL)setThemeState:(ThemeState)aState
 {
+#if DEBUG
     if (aState && aState.isa && [aState isKindOfClass:CPArray])
-        aState = CPThemeState.apply(null, aState);
+        [CPException raise:CPInvalidArgumentException reason:@"aState can't be an array. Please use 'setThemeStates: instead: " + aState];
+#endif
 
     if (_themeState.hasThemeState(aState))
         return NO;
 
-    _themeState = CPThemeState(_themeState, aState);
+    _themeState = _themeState.and(aState);
 
     return YES;
 }
 
 - (BOOL)unsetThemeState:(ThemeState)aState
 {
+#if DEBUG
     if (aState && aState.isa && [aState isKindOfClass:CPArray])
-        aState = CPThemeState.apply(null, aState);
+        [CPException raise:CPInvalidArgumentException reason:@"aState can't be an array. Please use 'unsetThemeStates: instead: " + aState];
+#endif
 
     var oldThemeState = _themeState;
     _themeState = _themeState.without(aState);
@@ -105,6 +126,30 @@ var CPViewThemeClassKey             = @"CPViewThemeClassKey",
         return NO;
 
     return YES;
+}
+
+- (BOOL)setThemeStates:(CPArray)states
+{
+    var i = [states count],
+        aState = [states objectAtIndex:--i];
+
+    while (i > 0)
+    {
+        aState = aState.and([states objectAtIndex:--i]);
+    }
+    return [self setThemeState:aState];
+}
+
+- (BOOL)unsetThemeStates:(CPArray)states
+{
+    var i = [states count],
+        aState = [states objectAtIndex:--i];
+
+    while (i > 0)
+    {
+        aState = aState.and([states objectAtIndex:--i]);
+    }
+    return [self unsetThemeState:aState];
 }
 
 #pragma mark Theme Attributes

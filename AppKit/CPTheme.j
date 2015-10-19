@@ -389,28 +389,64 @@ ThemeState.prototype.isSubsetOf = function(aState)
 
 ThemeState.prototype.without = function(aState)
 {
-    if (!aState || aState === [CPNull null])
-        return this;
+    var firstTransform = CPThemeWithoutTransform[this._stateNameString],
+        result;
 
-    var newStates = {};
-    for (var stateName in this._stateNames)
-    {
-        if (!this._stateNames.hasOwnProperty(stateName))
-            continue;
-
-        if (!aState._stateNames[stateName])
-            newStates[stateName] = true;
+    if (firstTransform) {
+        result = firstTransform[aState._stateNameString];
+        if (result)
+            return result;
     }
 
-    return ThemeState._cacheThemeState(new ThemeState(newStates));
+    if (!aState || aState === [CPNull null])
+        result = this;
+    else
+    {
+        var newStates = {};
+        for (var stateName in this._stateNames)
+        {
+            if (!this._stateNames.hasOwnProperty(stateName))
+                continue;
+
+            if (!aState._stateNames[stateName])
+                newStates[stateName] = true;
+        }
+
+        result = ThemeState._cacheThemeState(new ThemeState(newStates));
+    }
+
+    if (!firstTransform)
+        firstTransform = CPThemeWithoutTransform[this._stateNameString] = {};
+
+    firstTransform[aState._stateNameString] = result;
+
+    return result;
 }
 
 ThemeState.prototype.and  = function(aState)
 {
-    return CPThemeState(this, aState);
+    var firstTransform = CPThemeAndTransform[this._stateNameString],
+        result;
+
+    if (firstTransform) {
+        result = firstTransform[aState._stateNameString];
+        if (result)
+            return result;
+    }
+
+    result = CPThemeState(this, aState);
+
+    if (!firstTransform)
+        firstTransform = CPThemeAndTransform[this._stateNameString] = {};
+
+    firstTransform[aState._stateNameString] = result;
+
+    return result;
 }
 
 var CPThemeStates = {};
+var CPThemeWithoutTransform = {};
+var CPThemeAndTransform = {};
 
 ThemeState._cacheThemeState = function(aState)
 {
