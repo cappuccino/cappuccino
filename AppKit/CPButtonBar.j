@@ -272,15 +272,15 @@
             currentButtonOffset += width - 1;
         }
 
-        [button setValue:normalColor forThemeAttribute:@"bezel-color" inState:[CPThemeStateNormal, CPThemeStateBordered]];
-        [button setValue:highlightedColor forThemeAttribute:@"bezel-color" inState:[CPThemeStateHighlighted,  CPThemeStateBordered, ]];
-        [button setValue:disabledColor forThemeAttribute:@"bezel-color" inState:[CPThemeStateDisabled, CPThemeStateBordered]];
+        [button setValue:normalColor forThemeAttribute:@"bezel-color" inStates:[CPThemeStateNormal, CPThemeStateBordered]];
+        [button setValue:highlightedColor forThemeAttribute:@"bezel-color" inStates:[CPThemeStateHighlighted,  CPThemeStateBordered, ]];
+        [button setValue:disabledColor forThemeAttribute:@"bezel-color" inStates:[CPThemeStateDisabled, CPThemeStateBordered]];
         [button setValue:textColor forThemeAttribute:@"text-color" inState:CPThemeStateBordered];
 
         // FIXME shouldn't need this
-        [button setValue:normalColor forThemeAttribute:@"bezel-color" inState:[CPThemeStateNormal, CPThemeStateBordered, CPPopUpButtonStatePullsDown]];
-        [button setValue:highlightedColor forThemeAttribute:@"bezel-color" inState:[CPThemeStateHighlighted, CPThemeStateBordered, CPPopUpButtonStatePullsDown]];
-        [button setValue:disabledColor forThemeAttribute:@"bezel-color" inState:[CPThemeStateDisabled, CPThemeStateBordered, CPPopUpButtonStatePullsDown]];
+        [button setValue:normalColor forThemeAttribute:@"bezel-color" inStates:[CPThemeStateNormal, CPThemeStateBordered, CPPopUpButtonStatePullsDown]];
+        [button setValue:highlightedColor forThemeAttribute:@"bezel-color" inStates:[CPThemeStateHighlighted, CPThemeStateBordered, CPPopUpButtonStatePullsDown]];
+        [button setValue:disabledColor forThemeAttribute:@"bezel-color" inStates:[CPThemeStateDisabled, CPThemeStateBordered, CPPopUpButtonStatePullsDown]];
 
         [self addSubview:button];
     }

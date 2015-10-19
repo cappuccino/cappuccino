@@ -244,9 +244,7 @@ var CPViewThemeClassKey             = @"CPViewThemeClassKey",
     while (count--)
     {
         var attributeName = attributes[count--],
-            attribute = [[_CPThemeAttribute alloc] initWithName:attributeName defaultValue:attributes[count]];
-
-        [attribute setParentAttribute:[theme attributeWithName:attributeName forClass:themeClass]];
+            attribute = [_CPThemeAttribute attributeWithName:attributeName defaultValue:attributes[count] defaultAttribute:[theme attributeWithName:attributeName forClass:themeClass]];
 
         _themeAttributes[attributeName] = attribute;
     }
@@ -303,48 +301,104 @@ var CPViewThemeClassKey             = @"CPViewThemeClassKey",
 
 - (void)setValue:(id)aValue forThemeAttribute:(CPString)aName inState:(ThemeState)aState
 {
-   if (aState.isa && [aState isKindOfClass:CPArray])
-        aState = CPThemeState.apply(null, aState);
+#if DEBUG
+    if (aState.isa && [aState isKindOfClass:CPArray])
+        [CPException raise:CPInvalidArgumentException reason:self + @": aState can't be an array. Please use 'setValue:forThemeAttribute:inStates:' instead: " + aState];
+#endif
 
-    if (!_themeAttributes || !_themeAttributes[aName])
+    var themeAttr = _themeAttributes && _themeAttributes[aName];
+
+    if (!themeAttr)
         [CPException raise:CPInvalidArgumentException reason:[self className] + " does not contain theme attribute '" + aName + "'"];
 
-    [_themeAttributes[aName] setValue:aValue forState:aState];
+    var a = [themeAttr attributeBySettingValue:aValue forState:aState];
+    //print("setValue:forThemeAttribute:inState:" + aState + ": " + aName + ": " + aValue + "oldAttribute: " + [themeAttr._values description]);
+    _themeAttributes[aName] = a;
+}
+
+- (void)setValue:(id)aValue forThemeAttribute:(CPString)aName inStates:(CPArray)states
+{
+    var i = [states count],
+        aState = [states objectAtIndex:--i];
+
+    while (i > 0)
+    {
+        aState = aState.and([states objectAtIndex:--i]);
+    }
+
+    var themeAttr = _themeAttributes && _themeAttributes[aName];
+
+    if (!themeAttr)
+        [CPException raise:CPInvalidArgumentException reason:[self className] + " does not contain theme attribute '" + aName + "'"];
+
+    var a = [themeAttr attributeBySettingValue:aValue forState:aState];
+    //print("setValue:forThemeAttribute:inStates:" + aState + ": " + aName + ": " + aValue + "oldAttribute: " + [themeAttr._values description]);
+    _themeAttributes[aName] = a;
 }
 
 - (void)setValue:(id)aValue forThemeAttribute:(CPString)aName
 {
-    if (!_themeAttributes || !_themeAttributes[aName])
+    var themeAttr = _themeAttributes && _themeAttributes[aName];
+
+    if (!themeAttr)
         [CPException raise:CPInvalidArgumentException reason:[self className] + " does not contain theme attribute '" + aName + "'"];
 
-    [_themeAttributes[aName] setValue:aValue];
+    var a = [themeAttr attributeBySettingValue:aValue];
+    //print("setValue:forThemeAttribute:" + ": " + aName + ": " + aValue + "oldAttribute: " + [themeAttr._values description]);
+    _themeAttributes[aName] = a;
 }
 
 - (id)valueForThemeAttribute:(CPString)aName inState:(ThemeState)aState
 {
+#if DEBUG
    if (aState.isa && [aState isKindOfClass:CPArray])
-        aState = CPThemeState.apply(null, aState);
+        [CPException raise:CPInvalidArgumentException reason:@"aState can't be an array. Please use 'valueForThemeAttribute:inStates:' instead: " + aState];
+#endif
 
-    if (!_themeAttributes || !_themeAttributes[aName])
+    var themeAttr = _themeAttributes && _themeAttributes[aName];
+
+    if (!themeAttr)
         [CPException raise:CPInvalidArgumentException reason:[self className] + " does not contain theme attribute '" + aName + "'"];
 
-    return [_themeAttributes[aName] valueForState:aState];
+    return [themeAttr valueForState:aState];
+}
+
+- (id)valueForThemeAttribute:(CPString)aName inStates:(CPArray)states
+{
+    var i = [states count],
+        aState = [states objectAtIndex:--i];
+
+    while (i > 0)
+    {
+        aState = aState.and([states objectAtIndex:--i]);
+    }
+
+    var themeAttr = _themeAttributes && _themeAttributes[aName];
+
+    if (!themeAttr)
+        [CPException raise:CPInvalidArgumentException reason:[self className] + " does not contain theme attribute '" + aName + "'"];
+
+    return [themeAttr valueForState:aState];
 }
 
 - (id)valueForThemeAttribute:(CPString)aName
 {
-    if (!_themeAttributes || !_themeAttributes[aName])
+    var themeAttr = _themeAttributes && _themeAttributes[aName];
+
+    if (!themeAttr)
         [CPException raise:CPInvalidArgumentException reason:[self className] + " does not contain theme attribute '" + aName + "'"];
 
-    return [_themeAttributes[aName] value];
+    return [themeAttr value];
 }
 
 - (id)currentValueForThemeAttribute:(CPString)aName
 {
-    if (!_themeAttributes || !_themeAttributes[aName])
+    var themeAttr = _themeAttributes && _themeAttributes[aName];
+
+    if (!themeAttr)
         [CPException raise:CPInvalidArgumentException reason:[self className] + " does not contain theme attribute '" + aName + "'"];
 
-    return [_themeAttributes[aName] valueForState:_themeState];
+    return [themeAttr valueForState:_themeState];
 }
 
 - (BOOL)hasThemeAttribute:(CPString)aName
@@ -369,10 +423,14 @@ var CPViewThemeClassKey             = @"CPViewThemeClassKey",
             value = attributeValueState[1],
             state = attributeValueState[2];
 
-        if (state)
-            [self setValue:value forThemeAttribute:attribute inState:state];
-        else
+        if (state) {
+            if (state.isa && [state isKindOfClass:CPArray])
+                [self setValue:value forThemeAttribute:attribute inStates:state];
+            else
+                [self setValue:value forThemeAttribute:attribute inState:state];
+        } else {
             [self setValue:value forThemeAttribute:attribute];
+        }
     }
 }
 

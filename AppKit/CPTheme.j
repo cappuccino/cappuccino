@@ -557,6 +557,26 @@ CPThemeStateControlSizeRegular  = CPThemeState("controlSizeRegular");
 CPThemeStateControlSizeSmall    = CPThemeState("controlSizeSmall");
 CPThemeStateControlSizeMini     = CPThemeState("controlSizeMini");
 
+CPThemeStateNormalString        = String(CPThemeStateNormal);
+
+
+CPThemeAttributeCache = {}; // CPThemeAttributeCache[_name][themeDefaultAttribute._UID][_defaultValue] -> CPThemeAttribute
+
+var stringify = JSON.stringify;
+
+function CPStringthemeAttributeCacheString(array)
+{
+    var returnString = "[";
+
+    for (var i = 0, size = array.length; i < size; i++)
+    {
+        var aValue = array[i];
+        returnString += aValue == null ? aValue : aValue._UID || (aValue.isa === _CPJavaScriptArray ? CPStringthemeAttributeCacheString(aValue) : stringify(aValue))
+    }
+
+    return returnString + "]";
+}
+
 @implementation _CPThemeAttribute : CPObject
 {
     CPString            _name;
@@ -564,10 +584,26 @@ CPThemeStateControlSizeMini     = CPThemeState("controlSizeMini");
     CPDictionary        _values @accessors(readonly, getter=values);
 
     JSObject            _cache;
+    JSObject            _setValueTransformCache;
+    JSObject            _removeValueTransformCache;
     _CPThemeAttribute   _themeDefaultAttribute;
 }
 
-- (id)initWithName:(CPString)aName defaultValue:(id)aDefaultValue
++ (id)attributeWithName:(CPString)aName defaultValue:(id)aDefaultValue defaultAttribute:(_CPThemeAttribute)aDefaultAttribute
+{
+    var defaultAttributeCache = CPThemeAttributeCache[aName] || (CPThemeAttributeCache[aName] = {}),
+        defaultAttributeUID = aDefaultAttribute ? aDefaultAttribute._UID : nil,
+        defaultValueCache = defaultAttributeCache[defaultAttributeUID] || (defaultAttributeCache[defaultAttributeUID] = {}),
+        aDefaultValueString = aDefaultValue == null ? aDefaultValue : aDefaultValue._UID || (aDefaultValue.isa === _CPJavaScriptArray ? CPStringthemeAttributeCacheString(aDefaultValue) : JSON.stringify(aDefaultValue)),
+        attribute = defaultValueCache[aDefaultValueString];
+
+    if (!attribute)
+        attribute = defaultValueCache[aDefaultValueString] = [[_CPThemeAttribute alloc] initWithName:aName defaultValue:aDefaultValue defaultAttribute:aDefaultAttribute];
+
+    return attribute;
+}
+
+- (id)initWithName:(CPString)aName defaultValue:(id)aDefaultValue defaultAttribute:(_CPThemeAttribute)aDefaultAttribute
 {
     self = [super init];
 
@@ -577,6 +613,8 @@ CPThemeStateControlSizeMini     = CPThemeState("controlSizeMini");
         _name = aName;
         _defaultValue = aDefaultValue;
         _values = @{};
+        if (aDefaultAttribute)
+            _themeDefaultAttribute = aDefaultAttribute;
     }
 
     return self;
@@ -597,7 +635,64 @@ CPThemeStateControlSizeMini     = CPThemeState("controlSizeMini");
     return [_values count] > 0;
 }
 
-- (void)setValue:(id)aValue
+- (_CPThemeAttribute)attributeBySettingValue:(id)aValue
+{
+    var transformStateDict = self._setValueTransformCacheN || (self._setValueTransformCacheN = {}),
+        transformValueDict = transformStateDict[CPThemeStateNormalString] || (transformStateDict[CPThemeStateNormalString] = {}),
+        aValueString = aValue == null ? aValue : aValue._UID || (aValue.isa === _CPJavaScriptArray ? CPStringthemeAttributeCacheString(aValue) : stringify(aValue)),
+        attribute = transformValueDict[aValueString];
+
+    if (!attribute)
+    {
+        attribute = transformValueDict[aValueString] = [[_CPThemeAttribute alloc] initWithName:_name defaultValue:_defaultValue defaultAttribute:_themeDefaultAttribute];
+        if (aValue !== undefined && aValue !== nil)
+            attribute._values = @{ CPThemeStateNormalString: aValue };
+    }
+
+    return attribute;
+}
+
+- (_CPThemeAttribute)attributeBySettingValue:(id)aValue forState:(ThemeState)aState
+{
+    var shouldRemoveValue = aValue === undefined || aValue === nil,
+        transformStateDict = shouldRemoveValue ? self._removeValueTransformCache || (self._removeValueTransformCache = {}) : self._setValueTransformCache || (self._setValueTransformCache = {}),
+        stateString = String(aState),
+        transformValueDict = transformStateDict[stateString] || (transformStateDict[stateString] = {}),
+        aValueString = aValue == null ? aValue : aValue._UID || (aValue.isa === _CPJavaScriptArray ? CPStringthemeAttributeCacheString(aValue) : stringify(aValue)),
+        attribute = transformValueDict[aValueString];
+
+    if (!attribute)
+    {
+        attribute = transformValueDict[aValueString] = [[_CPThemeAttribute alloc] initWithName:_name defaultValue:_defaultValue defaultAttribute:_themeDefaultAttribute];
+
+        var values = [_values copy];
+//        var values = _values;
+
+/*        if (values != null)
+        {
+            values = [values copy];
+*/            if (shouldRemoveValue)
+                [values removeObjectForKey:stateString];
+            else
+                [values setObject:aValue forKey:stateString];
+            attribute._values = values;
+/*        }
+        else
+        {
+            if (!shouldRemoveValue)
+            {
+                values = [[CPDictionary alloc] init];
+                [values setObject:aValue forKey:stateString];
+//                values = @{stateString: aValue};
+                attribute._values = values;
+            }
+        }
+ */   }
+
+    return attribute;
+}
+
+/*- (void)setValue:(id)aValue
 {
     _cache = {};
 
@@ -615,7 +710,7 @@ CPThemeStateControlSizeMini     = CPThemeState("controlSizeMini");
         [_values removeObjectForKey:String(aState)];
     else
         [_values setObject:aValue forKey:String(aState)];
-}
+}*/
 
 - (id)value
 {
@@ -639,7 +734,7 @@ CPThemeStateControlSizeMini     = CPThemeState("controlSizeMini");
         if (aState._stateNameCount > 1)
         {
             var states = [_values allKeys],
-                count = states.length,
+                count = states ? states.length : 0,
                 largestThemeState = 0;
 
             while (count--)
@@ -674,52 +769,76 @@ CPThemeStateControlSizeMini     = CPThemeState("controlSizeMini");
 
     _cache[stateName] = value;
 
-    return value;
+/*    var now = [CPDate new];
+    var elapsedSeconds = [now timeIntervalSinceReferenceDate] - [start timeIntervalSinceReferenceDate];
+
+    CPLog.trace(@"valueForState:" + aState + " in " + elapsedSeconds + @" seconds");
+
+*/    return value;
 }
 
-- (void)setParentAttribute:(_CPThemeAttribute)anAttribute
+/*- (void)setParentAttribute:(_CPThemeAttribute)anAttribute
 {
     if (_themeDefaultAttribute === anAttribute)
         return;
 
     _cache = { };
     _themeDefaultAttribute = anAttribute;
-}
+}*/
 
 - (_CPThemeAttribute)attributeMergedWithAttribute:(_CPThemeAttribute)anAttribute
 {
-    var mergedAttribute = [[_CPThemeAttribute alloc] initWithName:_name defaultValue:_defaultValue];
+    var mergedAttribute = [[_CPThemeAttribute alloc] initWithName:_name defaultValue:_defaultValue defaultAttribute:_themeDefaultAttribute];
 
     mergedAttribute._values = [_values copy];
-    [mergedAttribute._values addEntriesFromDictionary:anAttribute._values];
+    if (anAttribute._values)
+        mergedAttribute._values ? [mergedAttribute._values addEntriesFromDictionary:anAttribute._values] : [anAttribute._values copy];
 
     return mergedAttribute;
 }
 
 @end
 
+
+// This is used to pass 'parrentAttribute' to the coder
+var ParentAttributeForCoder = nil;
+
 @implementation _CPThemeAttribute (CPCoding)
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
-    self = [super init];
+    var aName = [aCoder decodeObjectForKey:@"name"],
+        aDefaultValue = [aCoder decodeObjectForKey:@"defaultValue"],
+        defaultAttributeCache = CPThemeAttributeCache[aName] || (CPThemeAttributeCache[aName] = {}),
+        defaultAttributeUID = ParentAttributeForCoder ? ParentAttributeForCoder._UID : nil, // Uses global variable as 
+        defaultValueCache = defaultAttributeCache[defaultAttributeUID] || (defaultAttributeCache[defaultAttributeUID] = {}),
+        aDefaultValueString = aDefaultValue == null ? aDefaultValue : aDefaultValue._UID || (aDefaultValue.isa === _CPJavaScriptArray ? CPStringthemeAttributeCacheString(aDefaultValue) : stringify(aDefaultValue)),
+        attribute = defaultValueCache[aDefaultValueString];
+
+    if (attribute)
+        self = attribute;
+    else
+        self = [super init];
 
     if (self)
     {
-        _cache = {};
+        defaultValueCache[aDefaultValueString] = self;
 
-        _name = [aCoder decodeObjectForKey:@"name"];
-        _defaultValue = [aCoder decodeObjectForKey:@"defaultValue"];
+        _cache = {};
+        _name = aName;
         _values = @{};
+        _defaultValue = aDefaultValue;
 
         if ([aCoder containsValueForKey:@"value"])
         {
-            var state = String(CPThemeStateNormal);
+            var state;
 
             if ([aCoder containsValueForKey:@"state"])
                 state = [aCoder decodeObjectForKey:@"state"];
+            else
+                state = CPThemeStateNormalString;
 
-            [_values setObject:[aCoder decodeObjectForKey:"value"] forKey:state];
+            self = [self attributeBySettingValue:[aCoder decodeObjectForKey:"value"] forState:state];
         }
         else
         {
@@ -731,7 +850,7 @@ CPThemeStateControlSizeMini     = CPThemeState("controlSizeMini");
             {
                 var key = keys[count];
 
-                [_values setObject:[encodedValues objectForKey:key] forKey:key];
+                self = [self attributeBySettingValue:[encodedValues objectForKey:key] forState:key];
             }
         }
     }
@@ -745,7 +864,7 @@ CPThemeStateControlSizeMini     = CPThemeState("controlSizeMini");
     [aCoder encodeObject:_defaultValue forKey:@"defaultValue"];
 
     var keys = [_values allKeys],
-        count = keys.length;
+        count = keys ? keys.length : 0;
 
     if (count === 1)
     {
@@ -783,7 +902,7 @@ function CPThemeAttributeEncode(aCoder, aThemeAttribute)
     {
         var state = [values allKeys][0];
 
-        if (state === String(CPThemeStateNormal))
+        if (state === CPThemeStateNormalString)
         {
             [aCoder encodeObject:[values objectForKey:state] forKey:key];
 
@@ -803,27 +922,26 @@ function CPThemeAttributeEncode(aCoder, aThemeAttribute)
 
 function CPThemeAttributeDecode(aCoder, anAttributeName, aDefaultValue, aTheme, aClass)
 {
-    var key = "$a" + anAttributeName;
+    var key = "$a" + anAttributeName,
+        parentAttribute = (aTheme && aClass) ? [aTheme attributeWithName:anAttributeName forClass:aClass] : nil;
 
     if (![aCoder containsValueForKey:key])
-        var attribute = [[_CPThemeAttribute alloc] initWithName:anAttributeName defaultValue:aDefaultValue];
-
+        var attribute = [_CPThemeAttribute attributeWithName:anAttributeName defaultValue:aDefaultValue defaultAttribute:parentAttribute];
     else
     {
+        ParentAttributeForCoder = parentAttribute;
+
         var attribute = [aCoder decodeObjectForKey:key];
+
+        ParentAttributeForCoder = nil;
 
         if (!attribute || !attribute.isa || ![attribute isKindOfClass:[_CPThemeAttribute class]])
         {
-            var themeAttribute = [[_CPThemeAttribute alloc] initWithName:anAttributeName defaultValue:aDefaultValue];
+            var themeAttribute = [_CPThemeAttribute attributeWithName:anAttributeName defaultValue:aDefaultValue defaultAttribute:parentAttribute];
 
-            [themeAttribute setValue:attribute];
-
-            attribute = themeAttribute;
+            attribute = [themeAttribute attributeBySettingValue:attribute];
         }
     }
-
-    if (aTheme && aClass)
-        [attribute setParentAttribute:[aTheme attributeWithName:anAttributeName forClass:aClass]];
 
     return attribute;
 }
