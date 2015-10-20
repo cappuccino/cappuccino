@@ -389,6 +389,9 @@ ThemeState.prototype.isSubsetOf = function(aState)
 
 ThemeState.prototype.without = function(aState)
 {
+    if (!aState || aState === [CPNull null])
+        return this;
+
     var firstTransform = CPThemeWithoutTransform[this._stateNameString],
         result;
 
@@ -398,22 +401,18 @@ ThemeState.prototype.without = function(aState)
             return result;
     }
 
-    if (!aState || aState === [CPNull null])
-        result = this;
-    else
+    var newStates = {};
+
+    for (var stateName in this._stateNames)
     {
-        var newStates = {};
-        for (var stateName in this._stateNames)
-        {
-            if (!this._stateNames.hasOwnProperty(stateName))
-                continue;
+        if (!this._stateNames.hasOwnProperty(stateName))
+            continue;
 
-            if (!aState._stateNames[stateName])
-                newStates[stateName] = true;
-        }
-
-        result = ThemeState._cacheThemeState(new ThemeState(newStates));
+        if (!aState._stateNames[stateName])
+            newStates[stateName] = true;
     }
+
+    result = ThemeState._cacheThemeState(new ThemeState(newStates));
 
     if (!firstTransform)
         firstTransform = CPThemeWithoutTransform[this._stateNameString] = {};
