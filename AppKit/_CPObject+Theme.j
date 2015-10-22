@@ -23,8 +23,6 @@
 
 @import "CPTheme.j"
 
-var CachedThemeAttributes       = nil;
-
 var CPViewThemeClassKey             = @"CPViewThemeClassKey",
     CPViewThemeStateKey             = @"CPViewThemeStateKey";
 
@@ -179,24 +177,26 @@ var CPViewThemeClassKey             = @"CPViewThemeClassKey",
     [self _loadThemeAttributes];
 }
 
-+ (CPArray)_themeAttributes
-{
-    if (!CachedThemeAttributes)
-        CachedThemeAttributes = {};
+var NULL_THEME = {};
 
++ (CPArray)_themeAttributesForTheme:(CPTheme)theme andThemeClass:(CPString)themeClassName
+{
     var theClass = [self class],
-        CPObjectClass = [CPObject class],
-        attributes = CachedThemeAttributes[class_getName(theClass)],
-        nullValue = [CPNull null];
+        theClassName = class_getName(theClass),
+        themeClassNameCache = theme != nil ? theme._cachedThemeAttributes || (theme._cachedThemeAttributes = {}) : NULL_THEME,
+        themedCacheAttributes = themeClassNameCache[themeClassName] || (themeClassNameCache[themeClassName] = {}),
+        attributes = themedCacheAttributes[theClassName];
 
     if (attributes)
         return attributes;
     else
         attributes = [];
 
+    var CPObjectClass = [CPObject class];
+
     for (; theClass && theClass !== CPObjectClass; theClass = [theClass superclass])
     {
-        var cachedAttributes = CachedThemeAttributes[class_getName(theClass)];
+        var cachedAttributes = themedCacheAttributes[class_getName(theClass)];
 
         if (cachedAttributes)
         {
@@ -215,14 +215,14 @@ var CPViewThemeClassKey             = @"CPViewThemeClassKey",
         while (attributeCount--)
         {
             var attributeName = attributeKeys[attributeCount],
-                attributeValue = [attributeDictionary objectForKey:attributeName];
+                attributeValue = [attributeDictionary objectForKey:attributeName],
+                themeAttribute = [[_CPThemeAttribute alloc] initWithName:attributeName defaultValue:attributeValue defaultAttribute:[theme attributeWithName:attributeName forClass:themeClassName]];
 
-            attributes.push(attributeValue === nullValue ? nil : attributeValue);
-            attributes.push(attributeName);
+            attributes.push(themeAttribute);
         }
     }
 
-    CachedThemeAttributes[[self className]] = attributes;
+    themedCacheAttributes[theClassName] = attributes;
 
     return attributes;
 }
@@ -230,23 +230,21 @@ var CPViewThemeClassKey             = @"CPViewThemeClassKey",
 - (void)_loadThemeAttributes
 {
     var theClass = [self class],
-        attributes = [theClass _themeAttributes],
+        attributes = [theClass _themeAttributesForTheme:[self theme] andThemeClass:[self themeClass]],
         count = attributes.length;
 
     if (!count)
         return;
 
-    var theme = [self theme],
-        themeClass = [self themeClass];
-
     _themeAttributes = {};
 
     while (count--)
     {
-        var attributeName = attributes[count--],
-            attribute = [_CPThemeAttribute attributeWithName:attributeName defaultValue:attributes[count] defaultAttribute:[theme attributeWithName:attributeName forClass:themeClass]];
+        var attribute = attributes[count];
 
-        _themeAttributes[attributeName] = attribute;
+        CPThemeAttributeAlloc[@"CPThemeAttributeAlloc0l"]++;
+
+        _themeAttributes[attribute._name] = attribute;
     }
 }
 
@@ -276,7 +274,7 @@ var CPViewThemeClassKey             = @"CPViewThemeClassKey",
     for (var attributeName in _themeAttributes)
     {
         if (_themeAttributes.hasOwnProperty(attributeName))
-            [_themeAttributes[attributeName] setParentAttribute:[theme attributeWithName:attributeName forClass:themeClass]];
+            _themeAttributes[attributeName] = [_themeAttributes[attributeName] attributeBySettingParentAttribute:[theme attributeWithName:attributeName forClass:themeClass]];
     }
 
 }
@@ -475,14 +473,14 @@ var CPViewThemeClassKey             = @"CPViewThemeClassKey",
 
     var theClass = [self class],
         themeClass = [self themeClass],
-        attributes = [theClass _themeAttributes],
+        attributes = [theClass _themeAttributesForTheme:_theme andThemeClass:themeClass],
         count = attributes.length;
 
     while (count--)
     {
-        var attributeName = attributes[count--];
+        var attribute = attributes[count];
 
-        _themeAttributes[attributeName] = CPThemeAttributeDecode(aCoder, attributeName, attributes[count], _theme, themeClass);
+        _themeAttributes[attribute._name] = CPThemeAttributeDecode(aCoder, attribute);
     }
 }
 
