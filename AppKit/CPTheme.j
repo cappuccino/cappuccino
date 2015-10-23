@@ -394,7 +394,8 @@ ThemeState.prototype.without = function(aState)
     var firstTransform = CPThemeWithoutTransform[this._stateNameString],
         result;
 
-    if (firstTransform) {
+    if (firstTransform)
+    {
         result = firstTransform[aState._stateNameString];
         if (result)
             return result;
@@ -426,7 +427,8 @@ ThemeState.prototype.and  = function(aState)
     var firstTransform = CPThemeAndTransform[this._stateNameString],
         result;
 
-    if (firstTransform) {
+    if (firstTransform)
+    {
         result = firstTransform[aState._stateNameString];
         if (result)
             return result;
@@ -442,9 +444,9 @@ ThemeState.prototype.and  = function(aState)
     return result;
 }
 
-var CPThemeStates = {};
-var CPThemeWithoutTransform = {};
-var CPThemeAndTransform = {};
+var CPThemeStates = {},
+    CPThemeWithoutTransform = {},
+    CPThemeAndTransform = {};
 
 ThemeState._cacheThemeState = function(aState)
 {
@@ -606,41 +608,33 @@ CPThemeAttributeCache = {}; // CPThemeAttributeCache[_name][themeDefaultAttribut
 {
     var attribute = [[_CPThemeAttribute alloc] initWithName:_name defaultValue:_defaultValue defaultAttribute:_themeDefaultAttribute];
 
-    if (aValue !== undefined && aValue !== nil) {
+    if (aValue !== undefined && aValue !== nil)
         attribute._values = @{ CPThemeStateNormalString: aValue };
-    }
 
     return attribute;
 }
 
 - (_CPThemeAttribute)attributeBySettingValue:(id)aValue forState:(ThemeState)aState
 {
-    var shouldRemoveValue = aValue === undefined || aValue === nil;
+    var shouldRemoveValue = aValue === undefined || aValue === nil,
+        attribute = [[_CPThemeAttribute alloc] initWithName:_name defaultValue:_defaultValue defaultAttribute:_themeDefaultAttribute],
+        values = _values;
 
-        var attribute = [[_CPThemeAttribute alloc] initWithName:_name defaultValue:_defaultValue defaultAttribute:_themeDefaultAttribute];
-
-//        var values = [_values copy];
-        var values = _values;
-
-        if (values != null)
-        {
-            values = [values copy];
-            if (shouldRemoveValue)
-                [values removeObjectForKey:String(aState)];
-            else
-                [values setObject:aValue forKey:String(aState)];
-            attribute._values = values;
-        }
+    if (values != null)
+    {
+        values = [values copy];
+        if (shouldRemoveValue)
+            [values removeObjectForKey:String(aState)];
         else
-        {
-            if (!shouldRemoveValue)
-            {
-                values = [[CPDictionary alloc] init];
-                [values setObject:aValue forKey:String(aState)];
-//                values = @{stateString: aValue};
-                attribute._values = values;
-            }
-        }
+            [values setObject:aValue forKey:String(aState)];
+        attribute._values = values;
+    }
+    else if (!shouldRemoveValue)
+    {
+        values = [[CPDictionary alloc] init];
+        [values setObject:aValue forKey:String(aState)];
+        attribute._values = values;
+    }
 
     return attribute;
 }

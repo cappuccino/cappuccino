@@ -413,14 +413,13 @@ var NULL_THEME = {};
             value = attributeValueState[1],
             state = attributeValueState[2];
 
-        if (state) {
+        if (state)
             if (state.isa && [state isKindOfClass:CPArray])
                 [self setValue:value forThemeAttribute:attribute inStates:state];
             else
                 [self setValue:value forThemeAttribute:attribute inState:state];
-        } else {
+        else
             [self setValue:value forThemeAttribute:attribute];
-        }
     }
 }
 
