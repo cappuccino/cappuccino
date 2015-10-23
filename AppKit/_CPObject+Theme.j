@@ -242,8 +242,6 @@ var NULL_THEME = {};
     {
         var attribute = attributes[count];
 
-        CPThemeAttributeAlloc[@"CPThemeAttributeAlloc0l"]++;
-
         _themeAttributes[attribute._name] = attribute;
     }
 }
@@ -309,9 +307,7 @@ var NULL_THEME = {};
     if (!themeAttr)
         [CPException raise:CPInvalidArgumentException reason:[self className] + " does not contain theme attribute '" + aName + "'"];
 
-    var a = [themeAttr attributeBySettingValue:aValue forState:aState];
-    //print("setValue:forThemeAttribute:inState:" + aState + ": " + aName + ": " + aValue + "oldAttribute: " + [themeAttr._values description]);
-    _themeAttributes[aName] = a;
+    _themeAttributes[aName] = [themeAttr attributeBySettingValue:aValue forState:aState];
 }
 
 - (void)setValue:(id)aValue forThemeAttribute:(CPString)aName inStates:(CPArray)states
@@ -329,9 +325,7 @@ var NULL_THEME = {};
     if (!themeAttr)
         [CPException raise:CPInvalidArgumentException reason:[self className] + " does not contain theme attribute '" + aName + "'"];
 
-    var a = [themeAttr attributeBySettingValue:aValue forState:aState];
-    //print("setValue:forThemeAttribute:inStates:" + aState + ": " + aName + ": " + aValue + "oldAttribute: " + [themeAttr._values description]);
-    _themeAttributes[aName] = a;
+    _themeAttributes[aName] = [themeAttr attributeBySettingValue:aValue forState:aState];
 }
 
 - (void)setValue:(id)aValue forThemeAttribute:(CPString)aName
@@ -341,9 +335,7 @@ var NULL_THEME = {};
     if (!themeAttr)
         [CPException raise:CPInvalidArgumentException reason:[self className] + " does not contain theme attribute '" + aName + "'"];
 
-    var a = [themeAttr attributeBySettingValue:aValue];
-    //print("setValue:forThemeAttribute:" + ": " + aName + ": " + aValue + "oldAttribute: " + [themeAttr._values description]);
-    _themeAttributes[aName] = a;
+    _themeAttributes[aName] = [themeAttr attributeBySettingValue:aValue];
 }
 
 - (id)valueForThemeAttribute:(CPString)aName inState:(ThemeState)aState

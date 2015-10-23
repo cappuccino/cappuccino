@@ -36,47 +36,6 @@ var CPThemesByName          = { },
 /*!
     @ingroup appkit
 */
-
-CPThemeAttributeAlloc = {
-    CPThemeAttributeAlloc0: 0,
-    CPThemeAttributeAlloc0l: 0,
-    CPThemeAttributeAlloc0c: 0,
-    CPThemeAttributeAlloc1c: 0,
-    CPThemeAttributeAlloc0d: 0,
-    CPThemeAttributeAlloc0dd: 0,
-    CPThemeAttributeAlloc1: 0,
-    CPThemeAttributeAlloc2: 0,
-    CPThemeAttributeAlloc3: 0,
-    CPThemeAttributeAlloc4: 0,
-    CPThemeAttributeAlloc5: 0,
-    CPThemeAttributeAlloc6: 0,
-    CPThemeAttributeAlloc7: 0,
-    CPThemeAttributeAlloc8: 0,
-    CPThemeAttributeAlloc9: 0,
-    CPThemeAttributeAllocM: 0,
-    CPThemeAttributeAllocc0: 0,
-    CPThemeAttributeAllocc1: 0,
-    CPThemeAttributeAllocc2: 0,
-    CPThemeAttributeAllocc3: 0,
-    CPThemeAttributeAllocc4: 0,
-    CPThemeAttributeAllocc5: 0,
-    CPThemeAttributeAllocc6: 0,
-    CPThemeAttributeAllocc7: 0,
-    CPThemeAttributeAllocc8: 0,
-    CPThemeAttributeAllocc9: 0,
-    CPThemeAttributeAllocc10: 0,
-    CPThemeAttributeAllocc11: 0,
-    CPThemeAttributeAllocc12: 0,
-    CPThemeAttributeAllocc13: 0,
-    CPThemeAttributeAllocc14: 0,
-    CPThemeAttributeAllocc15: 0,
-    CPThemeAttributeAllocc16: 0,
-    CPThemeAttributeAllocc17: 0,
-    CPThemeAttributeAllocc18: 0,
-    CPThemeAttributeAllocc19: 0,
-    CPThemeAttributeAllocc20: 0,
-}
-
 @implementation CPTheme : CPObject
 {
     CPString        _name;
@@ -766,9 +725,6 @@ CPThemeAttributeCache = {}; // CPThemeAttributeCache[_name][themeDefaultAttribut
     if (anAttribute._values)
         mergedAttribute._values ? [mergedAttribute._values addEntriesFromDictionary:anAttribute._values] : [anAttribute._values copy];
 
-    var size = [mergedAttribute._values count];
-    CPThemeAttributeAlloc[@"CPThemeAttributeAlloc" + (size < 10 ? size : @"M")]++;
-
     return mergedAttribute;
 }
 
@@ -808,16 +764,12 @@ var ParentAttributeForCoder = nil;
                 state = CPThemeStateNormalString
 
             [_values setObject:[aCoder decodeObjectForKey:"value"] forKey:state];
-
-            CPThemeAttributeAlloc[@"CPThemeAttributeAlloc1c"]++;
         }
         else
         {
             var encodedValues = [aCoder decodeObjectForKey:@"values"],
                 keys = [encodedValues allKeys],
                 count = keys.length;
-
-            CPThemeAttributeAlloc[@"CPThemeAttributeAllocc" + (count < 20 ? count : @"M")]++;
 
             while (count--)
             {
@@ -906,11 +858,8 @@ function CPThemeAttributeDecode(aCoder, attribute)
         ParentAttributeForCoder = nil;
 
         if (!decodedAttribute || !decodedAttribute.isa || ![decodedAttribute isKindOfClass:[_CPThemeAttribute class]])
-        {
             attribute = [attribute attributeBySettingValue:decodedAttribute];
-
-            CPThemeAttributeAlloc[@"CPThemeAttributeAlloc0dd"]++;
-        } else
+        else
             attribute = decodedAttribute;
     }
 
