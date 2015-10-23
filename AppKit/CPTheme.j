@@ -561,8 +561,6 @@ CPThemeStateControlSizeMini     = CPThemeState("controlSizeMini");
 CPThemeStateNormalString        = String(CPThemeStateNormal);
 
 
-CPThemeAttributeCache = {}; // CPThemeAttributeCache[_name][themeDefaultAttribute._UID][_defaultValue] -> CPThemeAttribute
-
 @implementation _CPThemeAttribute : CPObject
 {
     CPString            _name;
