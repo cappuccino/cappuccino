@@ -789,7 +789,13 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
         var idx = [self indexOfTabViewItem:_selectedTabViewItem];
 
         if (idx !== CPNotFound)
+        {
+            // Temporarily set the selected item to not selected.
+            // It allows the initial selection to be made correctly.
+            _selectedTabViewItem = nil;
+
             [self selectTabViewItemAtIndex:idx];
+        }
     }
 
     var type = _type;
