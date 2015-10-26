@@ -448,14 +448,14 @@ CPTokenFieldDeleteButtonType     = 1;
     element.style.width = CGRectGetWidth(contentRect) + "px";
     element.style.height = [font defaultLineHeightForFont] + "px";
 
-    window.setTimeout(function()
+    [[CPRunLoop mainRunLoop] performBlock:function()
     {
         [_tokenScrollView documentView]._DOMElement.appendChild(element);
 
         //post CPControlTextDidBeginEditingNotification
         [self textDidBeginEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
 
-        window.setTimeout(function()
+        [[CPRunLoop mainRunLoop] performBlock:function()
         {
             // This will prevent to jump to the focused element
             var previousScrollingOrigin = [self _scrollToVisibleRectAndReturnPreviousOrigin];
@@ -465,10 +465,10 @@ CPTokenFieldDeleteButtonType     = 1;
             [self _restorePreviousScrollingOrigin:previousScrollingOrigin];
 
             CPTokenFieldInputOwner = self;
-        }, 0.0);
+        } argument:nil order:0 modes:[CPDefaultRunLoopMode]];
 
         [self textDidFocus:[CPNotification notificationWithName:CPTextFieldDidFocusNotification object:self userInfo:nil]];
-    }, 0.0);
+    } argument:nil order:0 modes:[CPDefaultRunLoopMode]];
 
     [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
 
