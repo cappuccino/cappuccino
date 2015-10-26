@@ -598,13 +598,6 @@ task ("release", function()
     spawnJake("build");
 });
 
-task ("release-inline", function()
-{
-    SYSTEM.env["CONFIG"] = "Release";
-    SYSTEM.env['INLINE_MSG_SEND'] = true;
-    spawnJake("build");
-});
-
 task ("debug", function()
 {
     SYSTEM.env["CONFIG"] = "Debug";
