@@ -758,8 +758,8 @@ var ParentAttributeForCoder = nil;
         _cache = {};
 
         _name = [aCoder decodeObjectForKey:@"name"];
-        _defaultValue = [aCoder decodeObjectForKey:@"defaultValue"],
-        _values = @{},
+        _defaultValue = [aCoder decodeObjectForKey:@"defaultValue"];
+        _values = @{};
         _themeDefaultAttribute = ParentAttributeForCoder;
 
         if ([aCoder containsValueForKey:@"value"])
