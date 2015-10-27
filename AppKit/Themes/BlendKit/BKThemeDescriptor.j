@@ -231,14 +231,15 @@ var ItemSizes               = { },
             value = attributeValueState[1],
             state = attributeValueState[2];
 
-        if (state) {
+        if (state)
+        {
             if (state.isa && [state isKindOfClass:CPArray])
                 [aView setValue:value forThemeAttribute:attribute inStates:state];
             else
                 [aView setValue:value forThemeAttribute:attribute inState:state];
-        } else {
-            [aView setValue:value forThemeAttribute:attribute];
         }
+        else
+            [aView setValue:value forThemeAttribute:attribute];
     }
 }
 
@@ -307,14 +308,15 @@ var ItemSizes               = { },
                     }
                 }
 
-                if (state) {
+                if (state)
+                {
                     if (state.isa && [state isKindOfClass:CPArray])
                         [aView setValue:value forThemeAttribute:attribute inStates:state];
                     else
                         [aView setValue:value forThemeAttribute:attribute inState:state];
-                } else {
-                    [aView setValue:value forThemeAttribute:attribute];
                 }
+                else
+                    [aView setValue:value forThemeAttribute:attribute];
             }
         }
     }

@@ -326,6 +326,7 @@ function ThemeState(stateNames)
     {
         if (!stateNames.hasOwnProperty(key))
             continue;
+
         if (key !== 'normal')
         {
             this._stateNames[key] = true;
@@ -343,8 +344,10 @@ function ThemeState(stateNames)
     this._stateNameString = stateNameKeys[0];
 
     var stateNameLength = stateNameKeys.length;
+
     for (var stateIndex = 1; stateIndex < stateNameLength; stateIndex++)
         this._stateNameString = this._stateNameString + "+" + stateNameKeys[stateIndex];
+
     this._stateNameCount = stateNameLength;
 }
 
@@ -397,6 +400,7 @@ ThemeState.prototype.without = function(aState)
     if (firstTransform)
     {
         result = firstTransform[aState._stateNameString];
+
         if (result)
             return result;
     }
@@ -430,6 +434,7 @@ ThemeState.prototype.and  = function(aState)
     if (firstTransform)
     {
         result = firstTransform[aState._stateNameString];
+
         if (result)
             return result;
     }
@@ -452,11 +457,13 @@ ThemeState._cacheThemeState = function(aState)
 {
     // We do this caching so themeState equality works.  Basically, doing CPThemeState('foo+bar') === CPThemeState('bar', 'foo') will return true.
     var themeState = CPThemeStates[String(aState)];
+
     if (themeState === undefined)
     {
         themeState = aState;
         CPThemeStates[String(themeState)] = themeState;
     }
+
     return themeState;
 }
 
@@ -474,14 +481,17 @@ function CPThemeState()
         throw "CPThemeState() must be called with at least one string argument";
 
     var themeState;
+
     if (arguments.length === 1 && typeof arguments[0] === 'string')
     {
         themeState = CPThemeStates[arguments[0]];
+
         if (themeState !== undefined)
             return themeState;
     }
 
     var stateNames = {};
+
     for (var argIndex = 0; argIndex < arguments.length; argIndex++)
     {
         if (arguments[argIndex] === [CPNull null] || !arguments[argIndex])
@@ -493,12 +503,14 @@ function CPThemeState()
             {
                 if (!arguments[argIndex]._stateNames.hasOwnProperty(stateName))
                     continue;
+
                 stateNames[stateName] = true;
             }
         }
         else
         {
             var allNames = arguments[argIndex].split('+');
+
             for (var nameIndex = 0; nameIndex < allNames.length; nameIndex++)
                 stateNames[allNames[nameIndex]] = true;
         }
@@ -580,6 +592,7 @@ CPThemeStateNormalString        = String(CPThemeStateNormal);
         _cache = { };
         _name = aName;
         _defaultValue = aDefaultValue;
+
         if (aDefaultAttribute)
             _themeDefaultAttribute = aDefaultAttribute;
     }
@@ -621,10 +634,12 @@ CPThemeStateNormalString        = String(CPThemeStateNormal);
     if (values != null)
     {
         values = [values copy];
+
         if (shouldRemoveValue)
             [values removeObjectForKey:String(aState)];
         else
             [values setObject:aValue forKey:String(aState)];
+
         attribute._values = values;
     }
     else if (!shouldRemoveValue)
@@ -714,6 +729,7 @@ CPThemeStateNormalString        = String(CPThemeStateNormal);
     var mergedAttribute = [[_CPThemeAttribute alloc] initWithName:_name defaultValue:_defaultValue defaultAttribute:_themeDefaultAttribute];
 
     mergedAttribute._values = [_values copy];
+
     if (anAttribute._values)
         mergedAttribute._values ? [mergedAttribute._values addEntriesFromDictionary:anAttribute._values] : [anAttribute._values copy];
 

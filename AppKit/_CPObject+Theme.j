@@ -89,9 +89,8 @@ var CPViewThemeClassKey             = @"CPViewThemeClassKey",
         aState = [states objectAtIndex:--i];
 
     while (i > 0)
-    {
         aState = aState.and([states objectAtIndex:--i]);
-    }
+
     return _themeState.hasThemeState(aState);
 }
 
@@ -118,6 +117,7 @@ var CPViewThemeClassKey             = @"CPViewThemeClassKey",
 #endif
 
     var oldThemeState = _themeState;
+
     _themeState = _themeState.without(aState);
 
     if (oldThemeState === _themeState)
@@ -132,9 +132,8 @@ var CPViewThemeClassKey             = @"CPViewThemeClassKey",
         aState = [states objectAtIndex:--i];
 
     while (i > 0)
-    {
         aState = aState.and([states objectAtIndex:--i]);
-    }
+
     return [self setThemeState:aState];
 }
 
@@ -144,9 +143,8 @@ var CPViewThemeClassKey             = @"CPViewThemeClassKey",
         aState = [states objectAtIndex:--i];
 
     while (i > 0)
-    {
         aState = aState.and([states objectAtIndex:--i]);
-    }
+
     return [self unsetThemeState:aState];
 }
 
@@ -316,9 +314,7 @@ var NULL_THEME = {};
         aState = [states objectAtIndex:--i];
 
     while (i > 0)
-    {
         aState = aState.and([states objectAtIndex:--i]);
-    }
 
     var themeAttr = _themeAttributes && _themeAttributes[aName];
 
@@ -359,9 +355,7 @@ var NULL_THEME = {};
         aState = [states objectAtIndex:--i];
 
     while (i > 0)
-    {
         aState = aState.and([states objectAtIndex:--i]);
-    }
 
     var themeAttr = _themeAttributes && _themeAttributes[aName];
 
