@@ -121,6 +121,8 @@ var PrimaryPlatformWindow   = NULL;
         _windowLayers = @{};
 
         _charCodes = {};
+
+        _platformPasteboard = [CPPlatformPasteboard new];
 #endif
     }
 
