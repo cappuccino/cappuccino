@@ -42,6 +42,7 @@ var _CPRunLoopPerformPool           = [],
 /* @ignore */
 @implementation _CPRunLoopPerform : CPObject
 {
+    Function    _block;
     id          _target;
     SEL         _selector;
     id          _argument;
@@ -64,6 +65,7 @@ var _CPRunLoopPerformPool           = [],
     {
         var perform = _CPRunLoopPerformPool.pop();
 
+        perform._block = nil;
         perform._target = aTarget;
         perform._selector = aSelector;
         perform._argument = anArgument;
@@ -77,6 +79,26 @@ var _CPRunLoopPerformPool           = [],
     return [[self alloc] initWithSelector:aSelector target:aTarget argument:anArgument order:anOrder modes:modes];
 }
 
++ (_CPRunLoopPerform)performWithBlock:(Function)aBlock argument:(id)anArgument order:(unsigned)anOrder modes:(CPArray)modes
+{
+    if (_CPRunLoopPerformPool.length)
+    {
+        var perform = _CPRunLoopPerformPool.pop();
+
+        perform._target = nil;
+        perform._selector = nil;
+        perform._block = aBlock;
+        perform._argument = anArgument;
+        perform._order = anOrder;
+        perform._runLoopModes = modes;
+        perform._isValid = YES;
+
+        return perform;
+    }
+
+    return [[self alloc] initWithBlock:aBlock argument:anArgument order:anOrder modes:modes];
+}
+
 - (id)initWithSelector:(SEL)aSelector target:(SEL)aTarget argument:(id)anArgument order:(unsigned)anOrder modes:(CPArray)modes
 {
     self = [super init];
@@ -85,6 +107,22 @@ var _CPRunLoopPerformPool           = [],
     {
         _selector = aSelector;
         _target = aTarget;
+        _argument = anArgument;
+        _order = anOrder;
+        _runLoopModes = modes;
+        _isValid = YES;
+    }
+
+    return self;
+}
+
+- (id)initWithBlock:(Function)aBlock argument:(id)anArgument order:(unsigned)anOrder modes:(CPArray)modes
+{
+    self = [super init];
+
+    if (self)
+    {
+        _block = aBlock;
         _argument = anArgument;
         _order = anOrder;
         _runLoopModes = modes;
@@ -121,7 +159,10 @@ var _CPRunLoopPerformPool           = [],
 
     if ([_runLoopModes containsObject:aRunLoopMode])
     {
-        [_target performSelector:_selector withObject:_argument];
+        if (_block)
+            _block(_argument);
+        else
+            [_target performSelector:_selector withObject:_argument];
 
         return YES;
     }
@@ -215,6 +256,23 @@ var CPRunLoopLastNativeRunLoop = 0;
 - (void)performSelector:(SEL)aSelector target:(id)aTarget argument:(id)anArgument order:(int)anOrder modes:(CPArray)modes
 {
     var perform = [_CPRunLoopPerform performWithSelector:aSelector target:aTarget argument:anArgument order:anOrder modes:modes],
+        count = _orderedPerforms.length;
+
+    // We sort ourselves in reverse because we iterate this list backwards.
+    while (count--)
+        if (anOrder < [_orderedPerforms[count] order])
+            break;
+
+    _orderedPerforms.splice(count + 1, 0, perform);
+}
+
+
+/*!
+    @ignore
+*/
+- (void)performBlock:(Function)aBlock argument:(id)anArgument order:(int)anOrder modes:(CPArray)modes
+{
+    var perform = [_CPRunLoopPerform performWithBlock:aBlock argument:anArgument order:anOrder modes:modes],
         count = _orderedPerforms.length;
 
     // We sort ourselves in reverse because we iterate this list backwards.

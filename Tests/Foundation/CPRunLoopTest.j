@@ -34,6 +34,18 @@
     [self assert:[10] equals:performer2.callArgs];
 }
 
+- (void)testPerformBlock
+{
+    var i = 0;
+
+    [[CPRunLoop mainRunLoop] performBlock:function()
+    {i++} argument:nil order:0 modes:[CPDefaultRunLoopMode]];
+
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+    [self assert:i equals:1];
+}
+
 @end
 
 @implementation Performer : CPObject
