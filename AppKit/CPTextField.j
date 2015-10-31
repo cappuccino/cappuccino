@@ -684,7 +684,16 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
         // Select the text if the textfield became first responder through keyboard interaction
         if (!_willBecomeFirstResponderByClick)
+        {
             [self _selectText:self immediately:YES];
+        }
+        else
+        {
+            var point = CGPointMake([self convertPointFromBase:[[CPApp currentEvent] locationInWindow]].x - [self currentValueForThemeAttribute:@"content-inset"].left, 0),
+                position = [CPPlatformString charPositionOfString:[self stringValue] withFont:[self font] forPoint:point];
+
+            [self setSelectedRange:CPMakeRange(position, 0)];
+        }
 
         _willBecomeFirstResponderByClick = NO;
 
