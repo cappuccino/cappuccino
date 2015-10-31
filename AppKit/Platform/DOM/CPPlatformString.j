@@ -144,21 +144,13 @@ var DOMFixedWidthSpanElement    = nil,
 
         currentString += char;
 
-        var sizeOfString = [self sizeOfString:currentString withFont:aFont forWidth:nil].width;
+        var sizeOfString = [self sizeOfString:currentString withFont:aFont forWidth:nil].width,
+            sizeLastChar = [self sizeOfString:char withFont:aFont forWidth:nil].width;
 
-        if (sizeOfString < aPoint.x)
-        {
+        if (sizeOfString - sizeLastChar / 2 < aPoint.x)
             position++;
-        }
         else
-        {
-            var sizeLastChar = [self sizeOfString:char withFont:aFont forWidth:nil].width;
-
-            if (sizeOfString - sizeLastChar / 2 < aPoint.x)
-                position++;
-
             break;
-        }
     }
 
     return position;
