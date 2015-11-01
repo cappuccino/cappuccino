@@ -3386,8 +3386,19 @@ setBoundsOrigin:
         [self unsetThemeState:CPThemeStateAppearanceVibrantDark];
     }
 
-    [_subviews makeObjectsPerformSelector:@selector(_recomputeAppearance)];
-}
+//    var start = [CPDate new];
+
+    for (var i = 0, size = [_subviews count]; i < size; i++)
+    {
+        [[_subviews objectAtIndex:i] _recomputeAppearance];
+    }
+//    [_subviews makeObjectsPerformSelector:@selector(_recomputeAppearance)];
+
+/*    var now = [CPDate new];
+    var elapsedSeconds = [now timeIntervalSinceReferenceDate] - [start timeIntervalSinceReferenceDate];
+
+    CPLog.trace(@"_recomputeAppearance " + [_subviews count] + " subviews in " + elapsedSeconds + @" seconds");
+*/}
 
 
 @end

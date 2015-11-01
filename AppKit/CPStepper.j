@@ -188,12 +188,12 @@
     [_buttonUp setFrame:upFrame];
     [_buttonDown setFrame:downFrame];
 
-    [_buttonUp setValue:[self valueForThemeAttribute:@"bezel-color-up-button" inState:[controlSizeThemeState, CPThemeStateBordered]] forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered];
-    [_buttonUp setValue:[self valueForThemeAttribute:@"bezel-color-up-button" inState:[controlSizeThemeState, CPThemeStateBordered, CPThemeStateDisabled]] forThemeAttribute:@"bezel-color" inState:[CPThemeStateBordered, CPThemeStateDisabled]];
-    [_buttonUp setValue:[self valueForThemeAttribute:@"bezel-color-up-button" inState:[controlSizeThemeState, CPThemeStateBordered, CPThemeStateHighlighted]] forThemeAttribute:@"bezel-color" inState:[CPThemeStateBordered, CPThemeStateHighlighted]];
-    [_buttonDown setValue:[self valueForThemeAttribute:@"bezel-color-down-button" inState:[controlSizeThemeState, CPThemeStateBordered]] forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered];
-    [_buttonDown setValue:[self valueForThemeAttribute:@"bezel-color-down-button" inState:[controlSizeThemeState, CPThemeStateBordered, CPThemeStateDisabled]] forThemeAttribute:@"bezel-color" inState:[CPThemeStateBordered, CPThemeStateDisabled]];
-    [_buttonDown setValue:[self valueForThemeAttribute:@"bezel-color-down-button" inState:[controlSizeThemeState, CPThemeStateBordered, CPThemeStateHighlighted]] forThemeAttribute:@"bezel-color" inState:[CPThemeStateBordered, CPThemeStateHighlighted]];
+    [_buttonUp setValue:[self valueForThemeAttribute:@"bezel-color-up-button" inStates:[controlSizeThemeState, CPThemeStateBordered]] forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered];
+    [_buttonUp setValue:[self valueForThemeAttribute:@"bezel-color-up-button" inStates:[controlSizeThemeState, CPThemeStateBordered, CPThemeStateDisabled]] forThemeAttribute:@"bezel-color" inStates:[CPThemeStateBordered, CPThemeStateDisabled]];
+    [_buttonUp setValue:[self valueForThemeAttribute:@"bezel-color-up-button" inStates:[controlSizeThemeState, CPThemeStateBordered, CPThemeStateHighlighted]] forThemeAttribute:@"bezel-color" inStates:[CPThemeStateBordered, CPThemeStateHighlighted]];
+    [_buttonDown setValue:[self valueForThemeAttribute:@"bezel-color-down-button" inStates:[controlSizeThemeState, CPThemeStateBordered]] forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered];
+    [_buttonDown setValue:[self valueForThemeAttribute:@"bezel-color-down-button" inStates:[controlSizeThemeState, CPThemeStateBordered, CPThemeStateDisabled]] forThemeAttribute:@"bezel-color" inStates:[CPThemeStateBordered, CPThemeStateDisabled]];
+    [_buttonDown setValue:[self valueForThemeAttribute:@"bezel-color-down-button" inStates:[controlSizeThemeState, CPThemeStateBordered, CPThemeStateHighlighted]] forThemeAttribute:@"bezel-color" inStates:[CPThemeStateBordered, CPThemeStateHighlighted]];
 }
 
 - (void)_sizeToFit
