@@ -36,21 +36,21 @@ var CPSourceListDataSource_sourceList_itemHasBadge_                   = 1 << 1,
 - (void)setSourceListDataSource:(id)aDataSource
 {
     _sourceListDataSource = aDataSource;
-    implementedSourceListDataSourceMethods = 0;
+    _implementedSourceListDataSourceMethods = 0;
 
     if ([_sourceListDataSource respondsToSelector:@selector(sourceList:itemHasBadge:)])
-        implementedSourceListDataSourceMethods |= CPSourceListDataSource_sourceList_itemHasBadge_;
+        _implementedSourceListDataSourceMethods |= CPSourceListDataSource_sourceList_itemHasBadge_;
     if ([_sourceListDataSource respondsToSelector:@selector(sourceList:badgeValueForItem:)])
-        implementedSourceListDataSourceMethods |= CPSourceListDataSource_sourceList_badgeValueForItem_;
+        _implementedSourceListDataSourceMethods |= CPSourceListDataSource_sourceList_badgeValueForItem_;
     if ([_sourceListDataSource respondsToSelector:@selector(sourceList:badgeBackgroundColorForItem:)])
-        implementedSourceListDataSourceMethods |= CPSourceListDataSource_sourceList_badgeBackgroundColorForItem_;
+        _implementedSourceListDataSourceMethods |= CPSourceListDataSource_sourceList_badgeBackgroundColorForItem_;
     if ([_sourceListDataSource respondsToSelector:@selector(sourceList:badgeTextColorForItem:)])
-        implementedSourceListDataSourceMethods |= CPSourceListDataSource_sourceList_badgeTextColorForItem_;
+        _implementedSourceListDataSourceMethods |= CPSourceListDataSource_sourceList_badgeTextColorForItem_;
 }
 
 - (BOOL)itemHasBadge:(id)item
 {
-    if (implementedSourceListDataSourceMethods & CPSourceListDataSource_sourceList_itemHasBadge_)
+    if (_implementedSourceListDataSourceMethods & CPSourceListDataSource_sourceList_itemHasBadge_)
         return [_sourceListDataSource sourceList:self itemHasBadge:item];
 
     return NO;
@@ -58,7 +58,7 @@ var CPSourceListDataSource_sourceList_itemHasBadge_                   = 1 << 1,
 
 - (CPInteger)badgeValueForItem:(id)item
 {
-    if ([self itemHasBadge:item] && implementedSourceListDataSourceMethods & CPSourceListDataSource_sourceList_badgeValueForItem_)
+    if ([self itemHasBadge:item] && _implementedSourceListDataSourceMethods & CPSourceListDataSource_sourceList_badgeValueForItem_)
         return [_sourceListDataSource sourceList:self badgeValueForItem:item];
 
     return CPNotFound;
@@ -137,7 +137,7 @@ var CPSourceListDataSource_sourceList_itemHasBadge_                   = 1 << 1,
         textColor = [CPColor whiteColor];
 
         //If the data source returns a custom colour..
-        if (implementedSourceListDataSourceMethods & CPSourceListDataSource_sourceList_badgeBackgroundColorForItem_)
+        if (_implementedSourceListDataSourceMethods & CPSourceListDataSource_sourceList_badgeBackgroundColorForItem_)
         {
             backgroundColor = [_sourceListDataSource sourceList:self badgeBackgroundColorForItem:rowItem];
 
@@ -148,7 +148,7 @@ var CPSourceListDataSource_sourceList_itemHasBadge_                   = 1 << 1,
             backgroundColor = BADGE_BACKGROUND_COLOR;
 
         //If the delegate wants a custom badge text colour..
-        if (implementedSourceListDataSourceMethods & CPSourceListDataSource_sourceList_badgeTextColorForItem_)
+        if (_implementedSourceListDataSourceMethods & CPSourceListDataSource_sourceList_badgeTextColorForItem_)
         {
             textColor = [_sourceListDataSource sourceList:self badgeTextColorForItem:rowItem];
 
