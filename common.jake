@@ -148,6 +148,7 @@ global.filedir = JAKE.filedir;
 global.FileList = JAKE.FileList;
 
 global.$CONFIGURATION                   = SYSTEM.env['CONFIG'];
+global.$INLINE_MSG_SEND                 = SYSTEM.env['INLINE_MSG_SEND'];
 global.$BUILD_DIR                       = SYSTEM.env['BUILD_PATH'];
 global.$BUILD_CONFIGURATION_DIR         = FILE.join($BUILD_DIR, $CONFIGURATION);
 

@@ -351,7 +351,7 @@ function FileRequest(/*CFURL*/ aURL, onsuccess, onfailure, onprogress)
     {
         var aFilePath = aURL.toString().substring(5),
             OS = require("os"),
-            gccFlags = require("objective-j").currentCompilerFlags(),
+            gccFlags = require("objective-j").currentGccCompilerFlags(),
             chunk,
             fileContents = "";
 

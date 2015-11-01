@@ -45,6 +45,23 @@ if (DOMBaseElementsCount > 0)
         pageURL = new CFURL(DOMBaseElementHref, pageURL);
 }
 
+// Set compiler flags
+
+if (typeof OBJJ_COMPILER_FLAGS !== 'undefined')
+{
+    var flags = 0;
+    for (var i = 0; i < OBJJ_COMPILER_FLAGS.length; i++)
+    {
+        var flag = ObjJAcornCompiler.Flags[OBJJ_COMPILER_FLAGS[i]];
+
+        if (flag != null)
+        {
+            flags |= flag;
+        }
+    }
+    exports.setCurrentCompilerFlags(flags);
+}
+
 // Turn the main file into a URL.
 var mainFileURL = new CFURL(window.OBJJ_MAIN_FILE || "main.j"),
 
