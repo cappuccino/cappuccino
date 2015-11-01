@@ -140,12 +140,12 @@ var DOMFixedWidthSpanElement    = nil,
 
     for (var i = 0; i < stringLength; i++)
     {
-        var char = aString[i];
+        var lastChar = aString[i];
 
-        currentString += char;
+        currentString += lastChar;
 
         var sizeOfString = [self sizeOfString:currentString withFont:aFont forWidth:nil].width,
-            sizeLastChar = [self sizeOfString:char withFont:aFont forWidth:nil].width;
+            sizeLastChar = [self sizeOfString:lastChar withFont:aFont forWidth:nil].width;
 
         if (sizeOfString - sizeLastChar / 2 < aPoint.x)
             position++;
