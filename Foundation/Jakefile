@@ -51,7 +51,7 @@ foundationTask = framework ("Foundation", function(foundationTask)
     INCLUDES = "--include \"../AppKit/Platform/Platform.h\" " + INCLUDES;
 
     if ($CONFIGURATION === "Release")
-        foundationTask.setCompilerFlags("-O " + INCLUDES);
+        foundationTask.setCompilerFlags("-O2 " + INCLUDES);
     else
         foundationTask.setCompilerFlags("-DDEBUG -g " + INCLUDES);
 });

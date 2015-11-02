@@ -112,7 +112,7 @@ var frameworkTask = framework (productName, function(frameworkTask)
     if (configuration === "Debug")
         frameworkTask.setCompilerFlags("-DDEBUG -g");
     else
-        frameworkTask.setCompilerFlags("-O");
+        frameworkTask.setCompilerFlags("-O2");
 });
 
 task ("debug", function()

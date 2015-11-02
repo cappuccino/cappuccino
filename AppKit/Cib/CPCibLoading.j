@@ -49,7 +49,7 @@ var CPCibOwner = @"CPCibOwner",
 
 + (CPCib)loadCibNamed:(CPString)aName owner:(id)anOwner
 {
-    return [self loadCibNamed:aName owner:anOwner loadDelegate:nil];
+    return [self loadCibFile:[self _cibPathForName:aName withOwner:anOwner] externalNameTable:@{ CPCibOwner: anOwner }];
 }
 
 - (CPCib)loadCibFile:(CPString)aFileName externalNameTable:(CPDictionary)aNameTable
@@ -68,14 +68,7 @@ var CPCibOwner = @"CPCibOwner",
 
 + (CPCib)loadCibNamed:(CPString)aName owner:(id)anOwner loadDelegate:(id)aDelegate
 {
-    if (![aName hasSuffix:@".cib"])
-        aName = [aName stringByAppendingString:@".cib"];
-
-    // Path is based solely on anOwner:
-    var bundle = anOwner ? [CPBundle bundleForClass:[anOwner class]] : [CPBundle mainBundle],
-        path = [bundle _cibPathForResource:aName];
-
-    return [self loadCibFile:path externalNameTable:@{ CPCibOwner: anOwner } loadDelegate:aDelegate];
+    return [self loadCibFile:[self _cibPathForName:aName withOwner:anOwner] externalNameTable:@{ CPCibOwner: anOwner } loadDelegate:aDelegate];
 }
 
 - (CPCib)loadCibFile:(CPString)aFileName externalNameTable:(CPDictionary)aNameTable loadDelegate:(id)aDelegate
@@ -99,6 +92,17 @@ var CPCibOwner = @"CPCibOwner",
         aName = _bundle.loadedLanguage() + ".lproj/" + aName;
 
     return [self pathForResource:aName];
+}
+
++ (CPString)_cibPathForName:(CPString)aName withOwner:(id)anOwner
+{
+    if (![aName hasSuffix:@".cib"])
+        aName = [aName stringByAppendingString:@".cib"];
+
+    // Path is based solely on anOwner:
+    var bundle = anOwner ? [CPBundle bundleForClass:[anOwner class]] : [CPBundle mainBundle];
+
+    return [bundle _cibPathForResource:aName];
 }
 
 @end

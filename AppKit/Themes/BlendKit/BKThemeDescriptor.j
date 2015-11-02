@@ -232,7 +232,12 @@ var ItemSizes               = { },
             state = attributeValueState[2];
 
         if (state)
-            [aView setValue:value forThemeAttribute:attribute inState:state];
+        {
+            if (state.isa && [state isKindOfClass:CPArray])
+                [aView setValue:value forThemeAttribute:attribute inStates:state];
+            else
+                [aView setValue:value forThemeAttribute:attribute inState:state];
+        }
         else
             [aView setValue:value forThemeAttribute:attribute];
     }
@@ -304,7 +309,12 @@ var ItemSizes               = { },
                 }
 
                 if (state)
-                    [aView setValue:value forThemeAttribute:attribute inState:state];
+                {
+                    if (state.isa && [state isKindOfClass:CPArray])
+                        [aView setValue:value forThemeAttribute:attribute inStates:state];
+                    else
+                        [aView setValue:value forThemeAttribute:attribute inState:state];
+                }
                 else
                     [aView setValue:value forThemeAttribute:attribute];
             }

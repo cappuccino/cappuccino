@@ -69,7 +69,7 @@ var methodCalled;
     [self assertTrue:[view hasThemeState:CPThemeStateDisabled] message:@"CPView should be in state CPThemeStateDisabled"];
     [self assertTrue:[view hasThemeState:CPThemeStateBordered] message:@"CPView should be in state CPThemeStateBordered"];
     [self assertTrue:[view hasThemeState:CPThemeState(CPThemeStateBordered, CPThemeStateDisabled)] message:@"CPView should be in the combined state of CPThemeStateDisabled and CPThemeStateBordered"];
-    [self assertTrue:[view hasThemeState:[CPThemeStateBordered, CPThemeStateDisabled]] message:@"hasThemeState works with an array argument"];
+    [self assertTrue:[view hasThemeStates:[CPThemeStateBordered, CPThemeStateDisabled]] message:@"hasThemeState works with an array argument"];
     [self assertFalse:[view hasThemeState:CPThemeState(CPThemeStateNormal)] message:@"CPView should not be in CPThemeStateNormal"];
 }
 
@@ -94,7 +94,7 @@ var methodCalled;
     [self assert:String(CPThemeState(CPThemeStateDisabled, CPThemeStateHighlighted)) equals:String([view themeState]) message:@"The view should be in the combined state of CPThemeStateDisabled and CPThemeStateHighlighted"];
 
     [view unsetThemeState:[view themeState]];
-    [view setThemeState:[CPThemeStateSelected, CPThemeStateDisabled]];
+    [view setThemeStates:[CPThemeStateSelected, CPThemeStateDisabled]];
     [self assert:String(CPThemeState(CPThemeStateDisabled, CPThemeStateSelected)) equals:String([view themeState]) message:@"setThemeState works with array argument"];
 }
 
@@ -117,20 +117,20 @@ var methodCalled;
     [self assert:String(CPThemeStateNormal) equals:String([view themeState]) message:@"CPView should be able to unset a combined theme state"];
 
     [view setThemeState:CPThemeState(CPThemeStateDisabled, CPThemeStateHighlighted, CPThemeStateBordered)];
-    [view unsetThemeState:[CPThemeStateBordered, CPThemeStateHighlighted]];
+    [view unsetThemeStates:[CPThemeStateBordered, CPThemeStateHighlighted]];
     [self assert:String(CPThemeStateDisabled) equals:String([view themeState]) message:@"unsetThemeState works with array argument"];
 
     [view setThemeState:CPThemeStateDisabled];
-    [view unsetThemeState:[CPThemeStateDisabled, CPThemeStateHighlighted]];
+    [view unsetThemeStates:[CPThemeStateDisabled, CPThemeStateHighlighted]];
     [self assert:String(CPThemeStateNormal) equals:String([view themeState]) message:@"CPView should be able to unset a combined theme state that has more theme states than the view currently has"];
 
     [view setThemeState:CPThemeState(CPThemeStateDisabled, CPThemeStateBordered)];
-    var returnValue = [view unsetThemeState:[CPThemeStateDisabled, CPThemeStateHighlighted]];
+    var returnValue = [view unsetThemeStates:[CPThemeStateDisabled, CPThemeStateHighlighted]];
     [self assert:String(CPThemeStateBordered) equals:String([view themeState]) message:@"CPView should be able to unset a combined theme state that has not entirely overlapping themestates"];
     [self assertTrue:returnValue message:@"When unsetThemeState successfully unsets anything, it return YES"];
 
     [view setThemeState:CPThemeState(CPThemeStateDisabled, CPThemeStateBordered)];
-    var returnValue = [view unsetThemeState:[CPThemeStateSelected, CPThemeStateHighlighted]];
+    var returnValue = [view unsetThemeStates:[CPThemeStateSelected, CPThemeStateHighlighted]];
     [self assert:String(CPThemeState(CPThemeStateDisabled, CPThemeStateBordered)) equals:String([view themeState]) message:@"CPView not unset any theme states it does not have"];
     [self assertFalse:returnValue message:@"When unsetThemeState doesn't unset anything, it returns NO"];
 

@@ -622,7 +622,7 @@ var CPTableHeaderViewResizeZone = 3.0,
     [[headerView subviews] makeObjectsPerformSelector:@selector(setHidden:) withObject:YES];
 
     // The underlying column header shows normal state
-    [headerView unsetThemeState:CPThemeStateHighlighted | CPThemeStateSelected];
+    [headerView unsetThemeStates:[CPThemeStateHighlighted, CPThemeStateSelected]];
 
     // Keep track of the location within the column header where the original mousedown occurred
     _columnDragHeaderView = [_columnDragView viewWithTag:CPTableHeaderViewDragColumnHeaderTag];

@@ -33,8 +33,9 @@ appKitTask = framework ("AppKit", function(appKitTask)
         return "--include \"" + aFilename + "\"";
     }).join(" ");
 
-    if ($CONFIGURATION === "Release")
-        appKitTask.setCompilerFlags("-O " + INCLUDES);
+    if ($CONFIGURATION === "Release") {
+        appKitTask.setCompilerFlags("-O2 " + INCLUDES);
+    }
     else
         appKitTask.setCompilerFlags("-DDEBUG -g " + INCLUDES);
 });
