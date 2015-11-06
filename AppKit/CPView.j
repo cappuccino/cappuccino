@@ -32,6 +32,7 @@
 @import "CPGraphicsContext.j"
 @import "CPResponder.j"
 @import "CPTheme.j"
+@import "CPTrackingArea.j"
 @import "CPWindow_Constants.j"
 @import "_CPDisplayServer.j"
 
@@ -239,6 +240,8 @@ var CPViewHighDPIDrawingEnabled = YES;
     BOOL                _allowsVibrancy         @accessors(property=allowsVibrancy);
     CPAppearance        _appearance             @accessors(getter=appearance);
     CPAppearance        _effectiveAppearance;
+
+    CPMutableArray      _trackingAreas          @accessors(property=trackingAreas, readonly);
 }
 
 /*
@@ -351,6 +354,8 @@ var CPViewHighDPIDrawingEnabled = YES;
         _subviews = [];
         _registeredDraggedTypes = [CPSet set];
         _registeredDraggedTypesArray = [];
+
+        _trackingAreas = [];
 
         _tag = -1;
 
@@ -799,8 +804,16 @@ var CPViewHighDPIDrawingEnabled = YES;
         [_window _noteUnregisteredDraggedTypes:_registeredDraggedTypes];
         [aWindow _noteRegisteredDraggedTypes:_registeredDraggedTypes];
     }
+    
+    // View must be removed from the current window viewsWithTrackingAreas
+    if (_window && ([_trackingAreas count] > 0))
+        [_window _removeFromViewsWithTrackingAreas:self];
 
     _window = aWindow;
+    
+    // View must be added to the new window viewsWithTrackingAreas
+    if (_window && ([_trackingAreas count] > 0))
+        [_window _addToViewsWithTrackingAreas:self];
 
     var count = [_subviews count];
 
@@ -3392,6 +3405,60 @@ setBoundsOrigin:
 
 @end
 
+@implementation CPView (TrackingArea)
+
+- (void)addTrackingArea:(CPTrackingArea)trackingArea
+{
+    CPLog.trace("addTrackingArea for view:"+self);
+    // Consistency check
+    if (!trackingArea || [_trackingAreas containsObject:trackingArea])
+        return;
+    
+    if ([trackingArea _isReferenced])
+        [CPException raise:CPInternalInconsistencyException reason:"TrackingArea is already associated with another view"];
+
+    CPLog.trace("addTrackingArea here we go. FYI, _window="+_window);
+    [_trackingAreas addObject:trackingArea];
+    [trackingArea _setReferencingView:self];
+    
+    CPLog.trace("addTrackingArea count="+[_trackingAreas count]);
+    
+    if (_window)
+        if ([_trackingAreas count] == 1)
+            [_window _addToViewsWithTrackingAreas:self];
+        else
+            [_window _addTrackingArea:trackingArea];
+}
+
+- (void)removeTrackingArea:(CPTrackingArea)trackingArea
+{
+    // Consistency check
+    if (!trackingArea)
+        return;
+    
+    if (![_trackingAreas containsObject:trackingArea])
+        [CPException raise:CPInternalInconsistencyException reason:"Trying to remove unreferenced trackingArea"];
+    
+    if (_window)
+        if ([_trackingAreas count] == 1)
+            [_window _removeFromViewsWithTrackingAreas:self];
+        else
+            [_window _removeTrackingArea:trackingArea];
+
+    [trackingArea _setReferencingView:nil];
+    [_trackingAreas removeObject:trackingArea];
+}
+
+// Invoked automatically when the view’s geometry changes such that its tracking areas need to be recalculated.
+
+- (void)updateTrackingAreas
+{
+    // You should override this method to remove out of date tracking areas and add recomputed tracking areas;
+    // your implementation should call super.
+}
+
+@end
+
 var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     CPViewAutoresizesSubviewsKey    = @"CPViewAutoresizesSubviews",
     CPViewBackgroundColorKey        = @"CPViewBackgroundColor",
@@ -3412,6 +3479,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     CPViewSizeScaleKey              = @"CPViewSizeScaleKey",
     CPViewIsScaledKey               = @"CPViewIsScaledKey",
     CPViewAppearanceKey             = @"CPViewAppearanceKey";
+    CPViewTrackingAreasKey          = @"CPViewTrackingAreasKey";
 
 @implementation CPView (CPCoding)
 
@@ -3511,6 +3579,10 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         [self _decodeThemeObjectsWithCoder:aCoder];
 
         [self setAppearance:[aCoder decodeObjectForKey:CPViewAppearanceKey]];
+        
+        _trackingAreas = [aCoder decodeObjectForKey:CPViewTrackingAreasKey];
+        if (!_trackingAreas)
+            _trackingAreas = [];
 
         [self setNeedsDisplay:YES];
         [self setNeedsLayout];
@@ -3596,6 +3668,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     [aCoder encodeSize:[self _hierarchyScaleSize] forKey:CPViewSizeScaleKey];
     [aCoder encodeBool:_isScaled forKey:CPViewIsScaledKey];
     [aCoder encodeObject:_appearance forKey:CPViewAppearanceKey];
+    [aCoder encodeObject:_trackingAreas forKey:CPViewTrackingAreasKey];
 }
 
 @end

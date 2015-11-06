@@ -24,6 +24,7 @@
 @import "CPView.j"
 @import "CPCursor.j"
 @import "_CPImageAndTextView.j"
+@import "CPTrackingArea.j"
 
 @class CPTableView
 
@@ -281,6 +282,14 @@ var CPTableHeaderViewResizeZone = 3.0,
         };
 }
 
+- (void)awakeFromCib
+{
+    [self addTrackingArea:[[CPTrackingArea alloc] initWithRect:CGRectMakeZero()
+                                                       options:CPTrackingMouseEnteredAndExited | CPTrackingMouseMoved | CPTrackingMouseMoved | CPTrackingActiveInKeyWindow | CPTrackingInVisibleRect
+                                                         owner:self
+                                                      userInfo:nil]];
+}
+
 - (void)_init
 {
     _mouseDownLocation = CGPointMakeZero();
@@ -305,7 +314,13 @@ var CPTableHeaderViewResizeZone = 3.0,
     self = [super initWithFrame:aFrame];
 
     if (self)
+    {
         [self _init];
+        [self addTrackingArea:[[CPTrackingArea alloc] initWithRect:CGRectMakeZero()
+                                                           options:CPTrackingMouseEnteredAndExited | CPTrackingMouseMoved | CPTrackingMouseMoved | CPTrackingActiveInKeyWindow | CPTrackingInVisibleRect
+                                                             owner:self
+                                                          userInfo:nil]];
+    }
 
     return self;
 }

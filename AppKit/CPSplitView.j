@@ -26,6 +26,7 @@
 @import "CPImage.j"
 @import "CPView.j"
 @import "CPCursor.j"
+@import "CPTrackingArea.j"
 
 @class CPUserDefaults
 @global CPApp
@@ -145,6 +146,14 @@ var ShouldSuppressResizeNotifications   = 1,
         };
 }
 
+- (void)awakeFromCib
+{
+    [self addTrackingArea:[[CPTrackingArea alloc] initWithRect:CGRectMakeZero()
+                                                       options:CPTrackingMouseEnteredAndExited | CPTrackingMouseMoved | CPTrackingActiveInKeyWindow | CPTrackingInVisibleRect
+                                                         owner:self
+                                                      userInfo:nil]];
+}
+
 - (id)initWithFrame:(CGRect)aFrame
 {
     if (self = [super initWithFrame:aFrame])
@@ -159,6 +168,11 @@ var ShouldSuppressResizeNotifications   = 1,
         _shouldAutosave = YES;
 
         [self _setVertical:YES];
+        
+        [self addTrackingArea:[[CPTrackingArea alloc] initWithRect:CGRectMakeZero()
+                                                           options:CPTrackingMouseEnteredAndExited | CPTrackingMouseMoved | CPTrackingActiveInKeyWindow | CPTrackingInVisibleRect
+                                                             owner:self
+                                                          userInfo:nil]];
     }
 
     return self;

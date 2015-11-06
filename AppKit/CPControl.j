@@ -27,6 +27,7 @@
 @import "CPShadow.j"
 @import "CPView.j"
 @import "CPKeyValueBinding.j"
+@import "CPTrackingArea.j"
 
 @global CPApp
 
@@ -195,11 +196,23 @@ var CPControlBlackColor = [CPColor blackColor];
     {
         _sendActionOn           = CPLeftMouseUpMask;
         _trackingMouseDownFlags = 0;
+
+        [self addTrackingArea:[[CPTrackingArea alloc] initWithRect:CGRectMakeZero()
+                                                           options:CPTrackingMouseEnteredAndExited | CPTrackingActiveInKeyWindow | CPTrackingInVisibleRect
+                                                             owner:self
+                                                          userInfo:nil]];
     }
 
     return self;
 }
 
+- (void)awakeFromCib
+{
+    [self addTrackingArea:[[CPTrackingArea alloc] initWithRect:CGRectMakeZero()
+                                                       options:CPTrackingMouseEnteredAndExited | CPTrackingActiveInKeyWindow | CPTrackingInVisibleRect
+                                                         owner:self
+                                                      userInfo:nil]];
+}
 
 #pragma mark -
 #pragma mark Control Size
