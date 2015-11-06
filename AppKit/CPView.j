@@ -3409,7 +3409,6 @@ setBoundsOrigin:
 
 - (void)addTrackingArea:(CPTrackingArea)trackingArea
 {
-    CPLog.trace("addTrackingArea for view:"+self);
     // Consistency check
     if (!trackingArea || [_trackingAreas containsObject:trackingArea])
         return;
@@ -3417,11 +3416,8 @@ setBoundsOrigin:
     if ([trackingArea _isReferenced])
         [CPException raise:CPInternalInconsistencyException reason:"TrackingArea is already associated with another view"];
 
-    CPLog.trace("addTrackingArea here we go. FYI, _window="+_window);
     [_trackingAreas addObject:trackingArea];
     [trackingArea _setReferencingView:self];
-    
-    CPLog.trace("addTrackingArea count="+[_trackingAreas count]);
     
     if (_window)
         if ([_trackingAreas count] == 1)
