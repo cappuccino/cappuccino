@@ -43,10 +43,10 @@ CPTrackingEnabledDuringMouseDrag    = 1 << 9;
  */
 @implementation CPTrackingArea : CPObject
 {
-    CGRect                  _rect           @accessors(property=rect,     readonly);
-    CPTrackingAreaOptions   _options        @accessors(property=options,  readonly);
-    id                      _owner          @accessors(property=owner,    readonly);
-    CPDictionary            _userInfo       @accessors(property=userInfo, readonly);
+    CGRect                  _rect           @accessors(getter=rect);
+    CPTrackingAreaOptions   _options        @accessors(getter=options);
+    id                      _owner          @accessors(getter=owner);
+    CPDictionary            _userInfo       @accessors(getter=userInfo);
     
     CPView                  _referencingView;
 }

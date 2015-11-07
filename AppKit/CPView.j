@@ -241,7 +241,7 @@ var CPViewHighDPIDrawingEnabled = YES;
     CPAppearance        _appearance             @accessors(getter=appearance);
     CPAppearance        _effectiveAppearance;
 
-    CPMutableArray      _trackingAreas          @accessors(property=trackingAreas, readonly);
+    CPMutableArray      _trackingAreas          @accessors(getter=trackingAreas);
 }
 
 /*
