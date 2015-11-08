@@ -353,7 +353,10 @@ _CPWindowViewResizeSlop = 3;
     if ([theWindow isFullPlatformWindow] ||
         !(_styleMask & CPResizableWindowMask) ||
         (CPWindowResizeStyle !== CPWindowResizeStyleModern))
+    {
+        [[CPCursor arrowCursor] set];
         return;
+    }
 
     var globalPoint = [theWindow convertBaseToGlobal:aPoint],
         resizeRegion = isResizing ? _resizeRegion : [self resizeRegionForPoint:globalPoint],

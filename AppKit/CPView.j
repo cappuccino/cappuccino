@@ -3420,10 +3420,12 @@ setBoundsOrigin:
     [trackingArea _setReferencingView:self];
     
     if (_window)
+    {
         if ([_trackingAreas count] == 1)
             [_window _addToViewsWithTrackingAreas:self];
         else
             [_window _addTrackingArea:trackingArea];
+    }
 }
 
 - (void)removeTrackingArea:(CPTrackingArea)trackingArea
@@ -3436,10 +3438,12 @@ setBoundsOrigin:
         [CPException raise:CPInternalInconsistencyException reason:"Trying to remove unreferenced trackingArea"];
     
     if (_window)
+    {
         if ([_trackingAreas count] == 1)
             [_window _removeFromViewsWithTrackingAreas:self];
         else
             [_window _removeTrackingArea:trackingArea];
+    }
 
     [trackingArea _setReferencingView:nil];
     [_trackingAreas removeObject:trackingArea];

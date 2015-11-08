@@ -35,6 +35,13 @@ CPTrackingAssumeInside              = 1 << 7,
 CPTrackingInVisibleRect             = 1 << 8,
 CPTrackingEnabledDuringMouseDrag    = 1 << 9;
 
+var CPTrackingAreaRectKey            = @"CPTrackinkAreaRectKey",
+    CPTrackingAreaOptionsKey         = @"CPTrackingAreaOptionsKey",
+    CPTrackingAreaOwnerKey           = @"CPTrackingAreaOwnerKey",
+    CPTrackingAreaUserInfoKey        = @"CPTrackingAreaUserInfoKey",
+    CPTrackingAreaReferencingViewKey = @"CPTrackingAreaReferencingViewKey";
+
+
 /*!
  @ingroup appkit
  
@@ -64,10 +71,6 @@ CPTrackingEnabledDuringMouseDrag    = 1 << 9;
         if (!(options > 0))
             [CPException raise:CPInternalInconsistencyException reason:"Invalid CPTrackingArea options"];
 
-        // Temporary, waiting for cursor rect management
-        if (options & CPTrackingCursorUpdate)
-            [CPException raise:CPInternalInconsistencyException reason:"CPTrackingCursorUpdate not yet implemented"];
-        
         // Check options:
         // - at least one in CPTrackingMouseEnteredAndExited, CPTrackingMouseMoved, CPTrackingCursorUpdate
         // - exactly  one in CPTrackingActiveWhenFirstResponder, CPTrackingActiveInKeyWindow, CPTrackingActiveAlways
@@ -116,11 +119,11 @@ CPTrackingEnabledDuringMouseDrag    = 1 << 9;
 {
     if (self = [super init])
     {
-        _rect            = [aCoder decodeObjectForKey:@"_rect"];
-        _options         = [aCoder decodeObjectForKey:@"_options"];
-        _owner           = [aCoder decodeObjectForKey:@"_owner"];
-        _userInfo        = [aCoder decodeObjectForKey:@"_userInfo"];
-        _referencingView = [aCoder decodeObjectForKey:@"_referencingView"];
+        _rect            = [aCoder decodeObjectForKey:CPTrackingAreaRectKey];
+        _options         = [aCoder decodeObjectForKey:CPTrackingAreaOptionsKey];
+        _owner           = [aCoder decodeObjectForKey:CPTrackingAreaOwnerKey];
+        _userInfo        = [aCoder decodeObjectForKey:CPTrackingAreaUserInfoKey];
+        _referencingView = [aCoder decodeObjectForKey:CPTrackingAreaReferencingViewKey];
     }
     
     return self;
@@ -128,11 +131,11 @@ CPTrackingEnabledDuringMouseDrag    = 1 << 9;
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
-    [aCoder encodeObject:_rect            forKey:@"_rect"];
-    [aCoder encodeObject:_options         forKey:@"_options"];
-    [aCoder encodeObject:_owner           forKey:@"_owner"];
-    [aCoder encodeObject:_userInfo        forKey:@"_userInfo"];
-    [aCoder encodeObject:_referencingView forKey:@"_referencingView"];
+    [aCoder encodeObject:_rect            forKey:CPTrackingAreaRectKey];
+    [aCoder encodeObject:_options         forKey:CPTrackingAreaOptionsKey];
+    [aCoder encodeObject:_owner           forKey:CPTrackingAreaOwnerKey];
+    [aCoder encodeObject:_userInfo        forKey:CPTrackingAreaUserInfoKey];
+    [aCoder encodeObject:_referencingView forKey:CPTrackingAreaReferencingViewKey];
 }
 
 @end
