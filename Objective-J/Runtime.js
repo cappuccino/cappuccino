@@ -1025,6 +1025,18 @@ GLOBAL(method_getTypes) = function(/*Method*/ aMethod)
     return aMethod.method_types;
 }
 
+GLOBAL(method_copyReturnType) = function(/*Method*/ aMethod)
+{
+    var types = aMethod.method_types;
+    return types ? types[0] : NULL;
+}
+
+GLOBAL(method_copyArgumentType) = function(/*Method*/ aMethod, /*unsigned int*/ index)
+{
+    var types = aMethod.method_types;
+    return types ? types[index + 1] : NULL;
+}
+
 GLOBAL(method_getImplementation) = function(/*Method*/ aMethod)
 {
     return aMethod.method_imp;
