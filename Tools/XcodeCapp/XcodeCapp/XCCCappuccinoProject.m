@@ -16,7 +16,7 @@ static NSDictionary* XCCCappuccinoProjectDefaultSettings;
 static NSString * const XCCSlashReplacement                 = @"::";
 
 static NSPredicate * XCCDirectoriesToIgnorePredicate = nil;
-static NSString * const XCCDirectoriesToIgnorePattern = @"^(?:Build|F(?:rameworks|oundation)|AppKit|Objective-J|(?:Browser|CommonJS)\\.environment|Resources|XcodeSupport|.+\\.xcodeproj)$";
+static NSString * const XCCDirectoriesToIgnorePattern = @"^(?:Build|F(?:rameworks|oundation)|AppKit|Objective-J|(?:Browser|CommonJS)\\.environment|XcodeSupport|.+\\.xcodeproj)$";
 
 static NSArray *XCCCappuccinoProjectDefaultIgnoredPaths = nil;
 
