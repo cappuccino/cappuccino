@@ -242,7 +242,7 @@ NSString * const XCCCappuccinoProjectLastEventIDKey         = @"XCCCappuccinoPro
 
         if (![self shouldIgnoreDirectoryNamed:filename] && ![self pathMatchesIgnoredPaths:path cappuccinoProjectIgnoredPathPredicates:aCappuccinoProject.ignoredPathPredicates])
         {
-            DDLogVerbose(@"Watching symlinked directory: %@", path);
+            NSLog(@"Watching symlinked directory: %@", path);
 
             [pathsToWatch addObject:path];
         }
@@ -393,11 +393,11 @@ NSString * const XCCCappuccinoProjectLastEventIDKey         = @"XCCCappuccinoPro
         NSArray *parsedPaths = [XCCCappuccinoProject parseIgnorePaths:ignoredPatterns basePath:self.projectPath];
         [self.ignoredPathPredicates addObjectsFromArray:parsedPaths];
         
-        DDLogVerbose(@"Content of xcodecapp-ignorepath correctly updated %@", self.ignoredPathPredicates);
+        NSLog(@"Content of xcodecapp-ignorepath correctly updated %@", self.ignoredPathPredicates);
     }
     @catch(NSException *exception)
     {
-        DDLogVerbose(@"Content of xcodecapp-ignorepath does not math the expected input");
+        NSLog(@"Content of xcodecapp-ignorepath does not math the expected input");
         self.ignoredPathPredicates = [@[] mutableCopy];
     }
 }

@@ -13,7 +13,6 @@
 
 extern NSString * const XCCUserDefaultsAutoOpenXcodeProject;
 extern NSString * const XCCUserDefaultsManagedProjects;
-extern NSString * const XCCUserDefaultsLogLevel;
 extern NSString * const XCCUserDefaultsSelectedProjectPath;
 extern NSString * const XCCUserDefaultsMaxNumberOfConcurrentOperations;
 

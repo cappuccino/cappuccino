@@ -125,13 +125,13 @@
 
 - (void)_restoreLastSelectedProject
 {
-    DDLogVerbose(@"Start : selecting last selected project");
+    NSLog(@"Start : selecting last selected project");
     
     NSString        *lastSelectedProjectPath = [[NSUserDefaults standardUserDefaults] valueForKey:XCCUserDefaultsSelectedProjectPath];
     
     [self _selectCappuccinoProjectControllerWithPath:lastSelectedProjectPath];
     
-    DDLogVerbose(@"Stop : selecting last selected project");
+    NSLog(@"Stop : selecting last selected project");
 }
 
 - (void)_selectCappuccinoProjectControllerWithPath:(NSString*)aCappuccinoProjectPath
@@ -155,7 +155,7 @@
 
 - (void)_restoreManagedProjects
 {
-    DDLogVerbose(@"restore managed projects");
+    NSLog(@"restore managed projects");
     self.cappuccinoProjectControllers = [@[] mutableCopy];
     
     NSArray         *projectHistory  = [[NSUserDefaults standardUserDefaults] arrayForKey:XCCUserDefaultsManagedProjects];
@@ -164,11 +164,11 @@
     
     for (NSString *path in projectHistory)
     {
-        DDLogVerbose(@"Checking previously managed project at path: %@", path);
+        NSLog(@"Checking previously managed project at path: %@", path);
         if (![fm fileExistsAtPath:path isDirectory:nil])
         {
             [missingProjects addObject:path];
-            DDLogVerbose(@"Not found: project at path: %@", path);
+            NSLog(@"Not found: project at path: %@", path);
             continue;
         }
         
@@ -197,7 +197,7 @@
             [controller switchProjectListeningStatus:self];
     }
 
-    DDLogVerbose(@"managed projects restored");
+    NSLog(@"managed projects restored");
 }
 
 - (void)_saveSelectedProject

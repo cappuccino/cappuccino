@@ -19,7 +19,6 @@
 {
     NSDictionary *appDefaults = @{
                                 XCCUserDefaultsAutoOpenXcodeProject: @YES,
-                                XCCUserDefaultsLogLevel: @LOG_LEVEL_WARN,
                                 XCCUserDefaultsMaxNumberOfConcurrentOperations: @20
                                 };
 
@@ -38,26 +37,6 @@
     self->statusItem.image           = self->imageStatusInactive;
     self->statusItem.highlightMode   = YES;
     self->statusItem.length          = self->imageStatusInactive.size.width + 12;
-}
-
-- (void)_initLogging
-{
-#if DEBUG
-    [DDLog addLogger:[DDTTYLogger sharedInstance]];
-    [[DDTTYLogger sharedInstance] setColorsEnabled:YES];
-    [DDLogLevel setLogLevel:LOG_LEVEL_VERBOSE];
-#else
-    [DDLog addLogger:[DDASLLogger sharedInstance]];
-    
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    int logLevel = (int)[defaults integerForKey:XCCUserDefaultsLogLevel];
-    NSUInteger modifiers = [NSEvent modifierFlags];
-    
-    if (modifiers & NSAlternateKeyMask)
-        logLevel = LOG_LEVEL_VERBOSE;
-    
-    [DDLogLevel setLogLevel:logLevel];
-#endif
 }
 
 - (void)_initOperationQueue
@@ -116,12 +95,11 @@
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
-    DDLogVerbose(@"\n******************************\n**    XcodeCapp started     **\n******************************\n");
+    NSLog(@"\n******************************\n**    XcodeCapp started     **\n******************************\n");
 
     self.version = [NSBundle mainBundle].infoDictionary[@"CFBundleShortVersionString"];
 
     [self _initUserDefaults];
-    [self _initLogging];
     [self _initOperationQueue];
     [self _initStatusItem];
 
@@ -132,7 +110,7 @@
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)app
 {
-    DDLogVerbose(@"Stop listening to all projects");
+    NSLog(@"Stop listening to all projects");
     [self.mainWindowController notifyCappuccinoControllersApplicationIsClosing];
     [[NSUserDefaults standardUserDefaults] synchronize];
     
@@ -141,7 +119,7 @@
 
 - (void)applicationWillTerminate:(NSNotification *)aNotification
 {
-    DDLogVerbose(@"\n******************************\n**    XcodeCapp stopped     **\n******************************\n");
+    NSLog(@"\n******************************\n**    XcodeCapp stopped     **\n******************************\n");
 }
 
 - (BOOL)applicationShouldHandleReopen:(NSApplication *)theApplication hasVisibleWindows:(BOOL)flag

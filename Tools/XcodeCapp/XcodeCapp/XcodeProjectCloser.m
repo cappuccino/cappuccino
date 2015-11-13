@@ -37,9 +37,8 @@ static const char *kCloseXcodeProjectScript =
     [task setLaunchPath:@"/usr/bin/osascript"];
     [task setArguments:[NSArray arrayWithObjects:arguments, nil]];
     [task launch];
-    [task waitUntilExit];
     
-    DDLogVerbose(@"Osascript launched for the project %@", projectPath);
+    NSLog(@"Osascript launched for the project %@", projectPath);
 }
 
 @end
