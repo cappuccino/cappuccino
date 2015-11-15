@@ -29,12 +29,8 @@
 		6824CDF01B0E9F1400F73447 /* XCCOperationError.m in Sources */ = {isa = PBXBuildFile; fileRef = 6824CDEF1B0E9F1400F73447 /* XCCOperationError.m */; };
 		6841F2441AF98CE600CFE60E /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 6841F2431AF98CE600CFE60E /* main.m */; };
 		6841F2461AF98CE600CFE60E /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6841F2451AF98CE600CFE60E /* Images.xcassets */; };
-		6841F2651AF98DCB00CFE60E /* DDASLLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 6841F2601AF98DCB00CFE60E /* DDASLLogger.m */; };
-		6841F2661AF98DCB00CFE60E /* DDLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 6841F2621AF98DCB00CFE60E /* DDLog.m */; };
-		6841F2671AF98DCB00CFE60E /* DDTTYLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 6841F2641AF98DCB00CFE60E /* DDTTYLogger.m */; };
 		6841F26C1AF98DDD00CFE60E /* mod_pbxproj.py in Resources */ = {isa = PBXBuildFile; fileRef = 6841F2691AF98DDD00CFE60E /* mod_pbxproj.py */; };
 		6841F26E1AF98DDD00CFE60E /* pbxprojModifier.py in Resources */ = {isa = PBXBuildFile; fileRef = 6841F26B1AF98DDD00CFE60E /* pbxprojModifier.py */; };
-		6841F2781AF98FA300CFE60E /* DDLogLevel.m in Sources */ = {isa = PBXBuildFile; fileRef = 6841F2771AF98FA300CFE60E /* DDLogLevel.m */; };
 		6841F27C1AF990C300CFE60E /* Debug.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 6841F27A1AF990C300CFE60E /* Debug.xcconfig */; };
 		6841F27D1AF990C300CFE60E /* Release.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 6841F27B1AF990C300CFE60E /* Release.xcconfig */; };
 		6841F2A51AF9932300CFE60E /* project.pbxproj in Resources */ = {isa = PBXBuildFile; fileRef = 6841F28A1AF9932300CFE60E /* project.pbxproj */; };
@@ -89,17 +85,9 @@
 		6841F2401AF98CE600CFE60E /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		6841F2431AF98CE600CFE60E /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		6841F2451AF98CE600CFE60E /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = ../Images.xcassets; sourceTree = "<group>"; };
-		6841F25F1AF98DCB00CFE60E /* DDASLLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DDASLLogger.h; sourceTree = "<group>"; };
-		6841F2601AF98DCB00CFE60E /* DDASLLogger.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DDASLLogger.m; sourceTree = "<group>"; };
-		6841F2611AF98DCB00CFE60E /* DDLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DDLog.h; sourceTree = "<group>"; };
-		6841F2621AF98DCB00CFE60E /* DDLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DDLog.m; sourceTree = "<group>"; };
-		6841F2631AF98DCB00CFE60E /* DDTTYLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DDTTYLogger.h; sourceTree = "<group>"; };
-		6841F2641AF98DCB00CFE60E /* DDTTYLogger.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DDTTYLogger.m; sourceTree = "<group>"; };
 		6841F2691AF98DDD00CFE60E /* mod_pbxproj.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = mod_pbxproj.py; sourceTree = "<group>"; };
 		6841F26B1AF98DDD00CFE60E /* pbxprojModifier.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = pbxprojModifier.py; sourceTree = "<group>"; };
 		6841F2741AF98F6F00CFE60E /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
-		6841F2761AF98FA300CFE60E /* DDLogLevel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DDLogLevel.h; sourceTree = "<group>"; };
-		6841F2771AF98FA300CFE60E /* DDLogLevel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DDLogLevel.m; sourceTree = "<group>"; };
 		6841F2791AF9902B00CFE60E /* XcodeCapp-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "XcodeCapp-Prefix.pch"; sourceTree = "<group>"; };
 		6841F27A1AF990C300CFE60E /* Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
 		6841F27B1AF990C300CFE60E /* Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
@@ -150,7 +138,6 @@
 			isa = PBXGroup;
 			children = (
 				0275390E1B227D6700F6D824 /* YRKSpinningProgressIndicator */,
-				6841F25E1AF98DCB00CFE60E /* Lumberjack */,
 			);
 			name = Externals;
 			sourceTree = "<group>";
@@ -246,19 +233,6 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
-		6841F25E1AF98DCB00CFE60E /* Lumberjack */ = {
-			isa = PBXGroup;
-			children = (
-				6841F25F1AF98DCB00CFE60E /* DDASLLogger.h */,
-				6841F2601AF98DCB00CFE60E /* DDASLLogger.m */,
-				6841F2611AF98DCB00CFE60E /* DDLog.h */,
-				6841F2621AF98DCB00CFE60E /* DDLog.m */,
-				6841F2631AF98DCB00CFE60E /* DDTTYLogger.h */,
-				6841F2641AF98DCB00CFE60E /* DDTTYLogger.m */,
-			);
-			path = Lumberjack;
-			sourceTree = "<group>";
-		};
 		6841F2681AF98DDD00CFE60E /* Scripts */ = {
 			isa = PBXGroup;
 			children = (
@@ -287,8 +261,6 @@
 				6841F2B81AFA83E900CFE60E /* XCCUserDefaults.h */,
 				6841F2BD1AFA965300CFE60E /* XCCTaskLauncher.h */,
 				6841F2BE1AFA965300CFE60E /* XCCTaskLauncher.m */,
-				6841F2761AF98FA300CFE60E /* DDLogLevel.h */,
-				6841F2771AF98FA300CFE60E /* DDLogLevel.m */,
 				6815BBE91AFC24430030D8BB /* XcodeProjectCloser.h */,
 				6815BBEA1AFC24430030D8BB /* XcodeProjectCloser.m */,
 				6863FBA11AFD55A900040C8E /* XCCFSEventLogUtils.h */,
@@ -409,7 +381,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6841F2781AF98FA300CFE60E /* DDLogLevel.m in Sources */,
 				68B6BF321B1E2546003B265B /* XCCPPXOperation.m in Sources */,
 				021B94701B20E31F00F12DDA /* XCCSettingsViewController.m in Sources */,
 				0255B8401B1F71FB000CA4BC /* AppDelegate.m in Sources */,
@@ -417,7 +388,6 @@
 				6841F2BF1AFA965300CFE60E /* XCCTaskLauncher.m in Sources */,
 				027539111B227D7500F6D824 /* YRKSpinningProgressIndicator.m in Sources */,
 				6841F2C41AFABD7200CFE60E /* XCCCappuccinoProject.m in Sources */,
-				6841F2661AF98DCB00CFE60E /* DDLog.m in Sources */,
 				686ACD311B16397F0089EB03 /* XCCCappuccinoProjectController.m in Sources */,
 				021B946C1B20D71200F12DDA /* XCCErrorsViewController.m in Sources */,
 				021B94651B20CECA00F12DDA /* XCCOperationsViewController.m in Sources */,
@@ -430,12 +400,10 @@
 				686C69711B0FAE620095BB3C /* XCCOperationErrorHeaderDataView.m in Sources */,
 				6824CDF01B0E9F1400F73447 /* XCCOperationError.m in Sources */,
 				021B94751B21112500F12DDA /* XCCWelcomeView.m in Sources */,
-				6841F2671AF98DCB00CFE60E /* DDTTYLogger.m in Sources */,
 				6841F2441AF98CE600CFE60E /* main.m in Sources */,
 				6824CDDA1B0D5AA700F73447 /* XCCOperationDataView.m in Sources */,
 				6841F2CA1AFADEBC00CFE60E /* XCCSourcesFinderOperation.m in Sources */,
 				681ADE8F1B0D032C00FC8E08 /* XCCPath.m in Sources */,
-				6841F2651AF98DCB00CFE60E /* DDASLLogger.m in Sources */,
 				6841F2B71AFA83D500CFE60E /* XCCUserDefaults.m in Sources */,
 				6824CDEA1B0E9CDB00F73447 /* XCCOperationErrorDataView.m in Sources */,
 			);
