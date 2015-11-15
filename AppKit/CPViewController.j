@@ -176,6 +176,58 @@ var CPViewControllerCachedCibs;
         _view = [CPView new];
 }
 
+- (void)loadViewAsynchronously:(Function/*(view, error)*/)aHandler
+{
+    if (_view)
+        return;
+
+    if (_cibName)
+    {
+        // check if a cib is already cached for the current _cibName
+        var cib = [CPViewControllerCachedCibs objectForKey:_cibName];
+
+        if (!cib)
+        {
+            var cibName = _cibName;
+
+            if (![cibName hasSuffix:@".cib"])
+                cibName = [cibName stringByAppendingString:@".cib"];
+
+            // If aBundle is nil, use mainBundle, but ONLY for searching for the nib, not for resources later.
+            var bundle = _cibBundle || [CPBundle mainBundle],
+                url = [bundle _cibPathForResource:cibName];
+
+            // if the cib isn't cached yet : fetch it and cache it
+            [CPURLConnection sendAsynchronousRequest:[CPURLRequest requestWithURL:url] queue:[CPOperationQueue mainQueue] completionHandler:function(aResponse, aData, anError)
+            {
+                if (anError == nil)
+                {
+                    var data = [CPData dataWithRawString:aData],
+                        aCib = [[CPCib alloc] _initWithData:data bundle:_cibBundle cibName:_cibName];
+
+                    [CPViewControllerCachedCibs setObject:aCib forKey:_cibName];
+                    [aCib instantiateCibWithExternalNameTable:_cibExternalNameTable];
+                    aHandler(_view, nil);
+                }
+                else
+                {
+                    aHandler(nil, anError);
+                }
+            }];
+        }
+        else
+        {
+            [cib instantiateCibWithExternalNameTable:_cibExternalNameTable];
+            aHandler(_view, nil);
+        }
+    }
+    else
+    {
+        _view = [CPView new];
+        aHandler(_view, nil);
+    }
+}
+
 /*!
     Returns the view that the controller manages.
 
