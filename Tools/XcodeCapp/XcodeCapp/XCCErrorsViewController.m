@@ -54,6 +54,9 @@
 
 - (void)reload
 {
+    if (!_selected)
+        return;
+    
     [self->errorOutlineView reloadData];
     [self->errorOutlineView expandItem:nil expandChildren:YES];
 
