@@ -36,7 +36,7 @@ NSString * const XCCNeedSourceToProjectPathMappingNotification = @"XCCNeedSource
 #pragma mark - Utilities
 
 - (NSArray *)_findSourceFilesAtProjectPath:(NSString *)aProjectPath
-{
+{    
     NSError         *error          = NULL;
     NSString        *projectPath    = [self.cappuccinoProject.projectPath stringByAppendingPathComponent:aProjectPath];
     NSFileManager   *fm             = [NSFileManager defaultManager];
@@ -105,9 +105,8 @@ NSString * const XCCNeedSourceToProjectPathMappingNotification = @"XCCNeedSource
             }
 
             NSLog(@"%@: found directory. checking for source files: %@", self.cappuccinoProject.name, filename);
-
-            if (![XCCCappuccinoProject pathMatchesIgnoredPaths:realPath cappuccinoProjectIgnoredPathPredicates:self.cappuccinoProject.ignoredPathPredicates])
-                [sourcePaths addObjectsFromArray:[self _findSourceFilesAtProjectPath:projectRelativePath]];
+   
+            [sourcePaths addObjectsFromArray:[self _findSourceFilesAtProjectPath:projectRelativePath]];
             
             continue;
         }
