@@ -352,7 +352,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     [self updateInsertionPointStateAndRestartTimer:YES];
     [[CPFontManager sharedFontManager] setSelectedFont:[self font] isMultiple:NO];
     [self setNeedsDisplay:YES];
-    [[CPRunLoop currentRunLoop] performSelector:@selector(focus) target:[_CPNativeInputManager class] argument:nil order:0 modes:[CPDefaultRunLoopMode]];
+    [[CPRunLoop currentRunLoop] performSelector:@selector(focusForTextView:) target:[_CPNativeInputManager class] argument:self order:0 modes:[CPDefaultRunLoopMode]];
 }
 
 
@@ -722,7 +722,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     }
 
     if (!selecting && _selectionRange.length > 0)
-       [_CPNativeInputManager focusForClipboard];
+       [_CPNativeInputManager focusForClipboardOfTextView:self];
 }
 
 // interface to the _CPNativeInputManager
@@ -2373,10 +2373,8 @@ var _CPCopyPlaceholder = '-';
 #endif
 }
 
-+ (void)focus
++ (void)focusForTextView:(CPTextView)currentFirstResponder
 {
-    var currentFirstResponder = [[CPApp mainWindow] firstResponder];
-
     if (![currentFirstResponder respondsToSelector:@selector(_activateNativeInputElement:)])
         return;
 
@@ -2403,13 +2401,13 @@ var _CPCopyPlaceholder = '-';
 #endif
 }
 
-+ (void)focusForClipboard
++ (void)focusForClipboardOfTextView:(CPTextView)textview
 {
 #if PLATFORM(DOM)
     if (!_CPNativeInputFieldActive && _CPNativeInputField.innerHTML.length == 0)
         _CPNativeInputField.innerHTML = _CPCopyPlaceholder;  // make sure we have a selection to allow the native pasteboard work in safari
 
-    [self focus];
+    [self focusForTextView:textview];
 
     // select all in the contenteditable div (http://stackoverflow.com/questions/12243898/how-to-select-all-text-in-contenteditable-div)
     if (document.body.createTextRange)
