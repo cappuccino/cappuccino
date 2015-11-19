@@ -241,7 +241,7 @@ var CPViewHighDPIDrawingEnabled = YES;
     CPAppearance        _appearance             @accessors(getter=appearance);
     CPAppearance        _effectiveAppearance;
 
-    CPMutableArray      _trackingAreas          @accessors(getter=trackingAreas);
+    CPMutableArray      _trackingAreas          @accessors(getter=trackingAreas, copy);
 }
 
 /*
@@ -807,13 +807,13 @@ var CPViewHighDPIDrawingEnabled = YES;
     
     // View must be removed from the current window viewsWithTrackingAreas
     if (_window && ([_trackingAreas count] > 0))
-        [_window _removeFromViewsWithTrackingAreas:self];
+        [_window _removeTrackingAreaView:self];
 
     _window = aWindow;
     
     // View must be added to the new window viewsWithTrackingAreas
     if (_window && ([_trackingAreas count] > 0))
-        [_window _addToViewsWithTrackingAreas:self];
+        [_window _addTrackingAreaView:self];
 
     var count = [_subviews count];
 
@@ -3414,18 +3414,13 @@ setBoundsOrigin:
         return;
     
     if ([trackingArea _isReferenced])
-        [CPException raise:CPInternalInconsistencyException reason:"TrackingArea is already associated with another view"];
+        [CPException raise:CPInternalInconsistencyException reason:"Tracking area has already been added to another view."];
 
     [_trackingAreas addObject:trackingArea];
     [trackingArea _setReferencingView:self];
     
     if (_window)
-    {
-        if ([_trackingAreas count] == 1)
-            [_window _addToViewsWithTrackingAreas:self];
-        else
-            [_window _addTrackingArea:trackingArea];
-    }
+        [_window _addTrackingArea:trackingArea];
 }
 
 - (void)removeTrackingArea:(CPTrackingArea)trackingArea
@@ -3438,13 +3433,8 @@ setBoundsOrigin:
         [CPException raise:CPInternalInconsistencyException reason:"Trying to remove unreferenced trackingArea"];
     
     if (_window)
-    {
-        if ([_trackingAreas count] == 1)
-            [_window _removeFromViewsWithTrackingAreas:self];
-        else
-            [_window _removeTrackingArea:trackingArea];
-    }
-
+        [_window _removeTrackingArea:trackingArea];
+    
     [trackingArea _setReferencingView:nil];
     [_trackingAreas removeObject:trackingArea];
 }
@@ -3581,6 +3571,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         [self setAppearance:[aCoder decodeObjectForKey:CPViewAppearanceKey]];
         
         _trackingAreas = [aCoder decodeObjectForKey:CPViewTrackingAreasKey];
+        
         if (!_trackingAreas)
             _trackingAreas = [];
 

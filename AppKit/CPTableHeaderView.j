@@ -285,7 +285,7 @@ var CPTableHeaderViewResizeZone = 3.0,
 - (void)awakeFromCib
 {
     [self addTrackingArea:[[CPTrackingArea alloc] initWithRect:CGRectMakeZero()
-                                                       options:CPTrackingMouseEnteredAndExited | CPTrackingMouseMoved | CPTrackingMouseMoved | CPTrackingActiveInKeyWindow | CPTrackingInVisibleRect
+                                                       options:CPTrackingMouseEnteredAndExited | CPTrackingMouseMoved | CPTrackingActiveInKeyWindow | CPTrackingInVisibleRect
                                                          owner:self
                                                       userInfo:nil]];
 }
@@ -317,7 +317,7 @@ var CPTableHeaderViewResizeZone = 3.0,
     {
         [self _init];
         [self addTrackingArea:[[CPTrackingArea alloc] initWithRect:CGRectMakeZero()
-                                                           options:CPTrackingMouseEnteredAndExited | CPTrackingMouseMoved | CPTrackingMouseMoved | CPTrackingActiveInKeyWindow | CPTrackingInVisibleRect
+                                                           options:CPTrackingMouseEnteredAndExited | CPTrackingMouseMoved | CPTrackingActiveInKeyWindow | CPTrackingInVisibleRect
                                                              owner:self
                                                           userInfo:nil]];
     }

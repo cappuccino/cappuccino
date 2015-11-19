@@ -631,8 +631,8 @@ var _CPEventPeriodicEventPeriod         = 0,
 
 - (CPTrackingArea)trackingArea
 {
-    if ((_type != CPMouseEntered) && (_type != CPMouseExited) && (_type != CPCursorUpdate))
-        [CPException raise:CPInternalInconsistencyException reason:"You can't call trackingArea for this event type"];
+    if ((_type !== CPMouseEntered) && (_type !== CPMouseExited) && (_type !== CPCursorUpdate))
+        [CPException raise:CPInternalInconsistencyException format:@"You can't call trackingArea for events of type %#x", _type]
     
     return _trackingArea;
 }

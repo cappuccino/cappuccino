@@ -123,7 +123,7 @@ var currentCursor = nil,
 
 - (void)set
 {
-    if (currentCursor == self)
+    if (currentCursor === self)
         return;
     
     currentCursor = self;

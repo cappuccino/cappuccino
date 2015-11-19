@@ -29,11 +29,11 @@ CPTrackingMouseMoved                = 1 << 2,
 CPTrackingCursorUpdate              = 1 << 3,
 CPTrackingActiveWhenFirstResponder  = 1 << 4,
 CPTrackingActiveInKeyWindow         = 1 << 5,
-CPTrackingActiveInActiveApp         = 1 << 6, // both mean the same in cappuccino context
-CPTrackingActiveAlways              = 1 << 6,
-CPTrackingAssumeInside              = 1 << 7,
-CPTrackingInVisibleRect             = 1 << 8,
-CPTrackingEnabledDuringMouseDrag    = 1 << 9;
+CPTrackingActiveInActiveApp         = 1 << 6,
+CPTrackingActiveAlways              = 1 << 7,
+CPTrackingAssumeInside              = 1 << 8,
+CPTrackingInVisibleRect             = 1 << 9,
+CPTrackingEnabledDuringMouseDrag    = 1 << 10;
 
 var CPTrackingAreaRectKey            = @"CPTrackinkAreaRectKey",
     CPTrackingAreaOptionsKey         = @"CPTrackingAreaOptionsKey",
@@ -50,12 +50,12 @@ var CPTrackingAreaRectKey            = @"CPTrackinkAreaRectKey",
  */
 @implementation CPTrackingArea : CPObject
 {
-    CGRect                  _rect           @accessors(getter=rect);
-    CPTrackingAreaOptions   _options        @accessors(getter=options);
-    id                      _owner          @accessors(getter=owner);
-    CPDictionary            _userInfo       @accessors(getter=userInfo);
+    CGRect                  _rect               @accessors(getter=rect);
+    CPTrackingAreaOptions   _options            @accessors(getter=options);
+    id                      _owner              @accessors(getter=owner);
+    CPDictionary            _userInfo           @accessors(getter=userInfo);
     
-    CPView                  _referencingView;
+    CPView                  _referencingView    @accessors;
 }
 
 
@@ -68,26 +68,24 @@ var CPTrackingAreaRectKey            = @"CPTrackinkAreaRectKey",
 {
     if (self = [super init])
     {
-        if (!(options > 0))
+        if (options === 0)
             [CPException raise:CPInternalInconsistencyException reason:"Invalid CPTrackingArea options"];
 
         // Check options:
-        // - at least one in CPTrackingMouseEnteredAndExited, CPTrackingMouseMoved, CPTrackingCursorUpdate
-        // - exactly  one in CPTrackingActiveWhenFirstResponder, CPTrackingActiveInKeyWindow, CPTrackingActiveAlways
+        // - at least one of CPTrackingMouseEnteredAndExited, CPTrackingMouseMoved, CPTrackingCursorUpdate
+        // - exactly  one of CPTrackingActiveWhenFirstResponder, CPTrackingActiveInKeyWindow, CPTrackingActiveInActiveApp, CPTrackingActiveAlways
         // - no check on CPTrackingAssumeInside, CPTrackingInVisibleRect, CPTrackingEnableDuringMouseDrag
         
         if (!((options & CPTrackingMouseEnteredAndExited) || (options & CPTrackingMouseMoved) || (options & CPTrackingCursorUpdate)))
-            [CPException raise:CPInternalInconsistencyException reason:"You must at least select a type of event message"];
+            [CPException raise:CPInternalInconsistencyException reason:"Invalid CPTrackingAreaOptions: must use at least one of [CPTrackingMouseEnteredAndExited | CPTrackingMouseMoved | CPTrackingCursorUpdate]"];
         
-        if ((((options & CPTrackingActiveWhenFirstResponder) > 0) + ((options & CPTrackingActiveInKeyWindow) > 0) + ((options & CPTrackingActiveAlways) > 0)) != 1)
-            [CPException raise:CPInternalInconsistencyException reason:"You must select one and only one scope of tracking"];
+        if ((((options & CPTrackingActiveWhenFirstResponder) > 0) + ((options & CPTrackingActiveInKeyWindow) > 0) + ((options & CPTrackingActiveInActiveApp) > 0) + ((options & CPTrackingActiveAlways) > 0)) !== 1)
+            [CPException raise:CPInternalInconsistencyException reason:"Tracking area options may only specify one of [CPTrackingActiveWhenFirstResponder | CPTrackingActiveInKeyWindow | CPTrackingActiveInActiveApp | CPTrackingActiveAlways]."];
 
         _rect     = aRect;
         _options  = options;
         _owner    = owner;
         _userInfo = userInfo;
-        
-        _referencingView = nil;
     }
     
     return self;
@@ -97,23 +95,17 @@ var CPTrackingAreaRectKey            = @"CPTrackinkAreaRectKey",
 #pragma mark -
 #pragma mark Implementation
 
-- (void)_setReferencingView:(CPView)aView
-{
-    _referencingView = aView;
-}
-
-- (CPView)_referencingView
-{
-    return _referencingView;
-}
-
 - (BOOL)_isReferenced
 {
-    return (!!_referencingView);
+    return !!_referencingView;
 }
+
+@end
 
 #pragma mark -
 #pragma mark CPCoding
+
+@implementation CPTrackingArea (CPCoding)
 
 - (id)initWithCoder:(CPCoder)aCoder
 {

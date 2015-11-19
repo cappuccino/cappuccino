@@ -200,7 +200,7 @@ var CPWindowActionMessageKeys = [
 
     CPArray                             _mouseEnteredStack;
     CPArray                             _cursorUpdateStack;
-    CPArray                             _viewsWithTrackingAreas;
+    CPArray                             _trackingAreaViews;
     id                                  _activeCursorTrackingArea;
     CPView                              _leftMouseDownView;
     CPView                              _rightMouseDownView;
@@ -391,7 +391,7 @@ CPTexturedBackgroundWindowMask
                                      name:CPWindowResizeStyleGlobalChangeNotification
                                    object:nil];
 
-        _viewsWithTrackingAreas = [];
+        _trackingAreaViews = [];
         _mouseEnteredStack = [];
         _cursorUpdateStack = [];
         _activeCursorTrackingArea = nil;
@@ -1971,24 +1971,25 @@ CPTexturedBackgroundWindowMask
             // At the same time, we update the entered stack.
             var mouseEnteredStack = [];
 
-            for (var i = 0, nb = [_viewsWithTrackingAreas count]; i < nb; i++)
+            for (var i = 0; i < _trackingAreaViews.length; i++)
             {
-                var aView          = [_viewsWithTrackingAreas objectAtIndex:i],
+                var aView          = [_trackingAreaViews objectAtIndex:i],
                     trackingAreas  = [aView trackingAreas],
                     convertedPoint = [aView convertPoint:point fromView:_windowView];
                 
                 if (![aView isHidden])
                     
-                    for (var j = 0, nbTA = [trackingAreas count]; j < nbTA; j++)
+                    for (var j = 0; j < trackingAreas.length; j++)
                     {
                         var aTrackingArea   = [trackingAreas objectAtIndex:j],
-                        trackingOptions = [aTrackingArea options];
+                            trackingOptions = [aTrackingArea options];
                         
                         if (trackingOptions & CPTrackingEnabledDuringMouseDrag)
                             
                             if ((trackingOptions & CPTrackingActiveAlways) ||
+                                (trackingOptions & CPTrackingActiveInActiveApp) ||
                                 ((trackingOptions & CPTrackingActiveInKeyWindow) && ([self isKeyWindow])) ||
-                                ((trackingOptions & CPTrackingActiveWhenFirstResponder) && ([self isKeyWindow]) && (_firstResponder == aView)))
+                                ((trackingOptions & CPTrackingActiveWhenFirstResponder) && ([self isKeyWindow]) && (_firstResponder === aView)))
                                 
                                 if (CGRectContainsPoint(((trackingOptions & CPTrackingInVisibleRect) ? [aView visibleRect] : [aTrackingArea rect]), convertedPoint))
                                 {
@@ -2014,7 +2015,7 @@ CPTexturedBackgroundWindowMask
             
             // Search now for exited views (were in _mouseEnteredStack but no more in mouseEnteredStack)
             
-            for (var i = 0, nb = [_mouseEnteredStack count]; i < nb; i++)
+            for (var i = 0; i < _mouseEnteredStack.length; i++)
             {
                 var aTrackingArea   = [_mouseEnteredStack objectAtIndex:i],
                     trackingOptions = [aTrackingArea options];
@@ -2066,22 +2067,23 @@ CPTexturedBackgroundWindowMask
             var mouseEnteredStack = [],
                 cursorUpdateStack = [];
             
-            for (var i = 0, nb = [_viewsWithTrackingAreas count]; i < nb; i++)
+            for (var i = 0; i < _trackingAreaViews.length; i++)
             {
-                var aView          = [_viewsWithTrackingAreas objectAtIndex:i],
+                var aView          = [_trackingAreaViews objectAtIndex:i],
                     trackingAreas  = [aView trackingAreas],
                     convertedPoint = [aView convertPoint:point fromView:_windowView];
                 
                 if (![aView isHidden])
                     
-                    for (var j = 0, nbTA = [trackingAreas count]; j < nbTA; j++)
+                    for (var j = 0; j < trackingAreas.length; j++)
                     {
                         var aTrackingArea   = [trackingAreas objectAtIndex:j],
-                        trackingOptions = [aTrackingArea options];
+                            trackingOptions = [aTrackingArea options];
                         
                         if ((trackingOptions & CPTrackingActiveAlways) ||
+                            (trackingOptions & CPTrackingActiveInActiveApp) ||
                             ((trackingOptions & CPTrackingActiveInKeyWindow) && ([self isKeyWindow])) ||
-                            ((trackingOptions & CPTrackingActiveWhenFirstResponder) && ([self isKeyWindow]) && (_firstResponder == aView)))
+                            ((trackingOptions & CPTrackingActiveWhenFirstResponder) && ([self isKeyWindow]) && (_firstResponder === aView)))
                             
                             if (CGRectContainsPoint(((trackingOptions & CPTrackingInVisibleRect) ? [aView visibleRect] : [aTrackingArea rect]), convertedPoint))
                             {
@@ -2116,7 +2118,7 @@ CPTexturedBackgroundWindowMask
             
             // Search now for exited views (were in _mouseEnteredStack but no more in mouseEnteredStack)
             
-            for (var i = 0, nb = [_mouseEnteredStack count]; i < nb; i++)
+            for (var i = 0; i < _mouseEnteredStack.length; i++)
             {
                 var aTrackingArea = [_mouseEnteredStack objectAtIndex:i];
                 
@@ -2136,7 +2138,7 @@ CPTexturedBackgroundWindowMask
                     
                     // If this is the active cursor area, we reset _cursorUpdateStack so a new active area will be computed
                     
-                    if (aTrackingArea == _activeCursorTrackingArea)
+                    if (aTrackingArea === _activeCursorTrackingArea)
                     {
                         _cursorUpdateStack = [];
                         _activeCursorTrackingArea = nil;
@@ -2150,7 +2152,7 @@ CPTexturedBackgroundWindowMask
             // If no frontmost view is found, we set standard cursor
             
             var nbCursorUpdates = [cursorUpdateStack count],
-                overlappingTA = [];
+                overlappingTrackingAreas = [];
             
             if (nbCursorUpdates > 0)
             {
@@ -2158,21 +2160,21 @@ CPTexturedBackgroundWindowMask
                 {
                     var aTA = [cursorUpdateStack objectAtIndex:i];
                     
-                    if ((![_cursorUpdateStack containsObject:aTA]) || (aTA == _activeCursorTrackingArea))
+                    if ((![_cursorUpdateStack containsObject:aTA]) || (aTA === _activeCursorTrackingArea))
                         
-                        [overlappingTA addObject:aTA];
+                        [overlappingTrackingAreas addObject:aTA];
                 }
                 
-                var nbOverlappingTA = [overlappingTA count];
+                var nbOverlappingTrackingAreas = [overlappingTrackingAreas count];
                 
-                if (nbOverlappingTA > 0)
+                if (nbOverlappingTrackingAreas > 0)
                 {
-                    var frontmostTrackingArea = [overlappingTA firstObject],
+                    var frontmostTrackingArea = [overlappingTrackingAreas firstObject],
                         frontmostView         = [frontmostTrackingArea _referencingView];
                     
-                    for (var i = 1; i < nbOverlappingTA; i++)
+                    for (var i = 1; i < nbOverlappingTrackingAreas; i++)
                     {
-                        var aTrackingArea  = [overlappingTA objectAtIndex:i],
+                        var aTrackingArea  = [overlappingTrackingAreas objectAtIndex:i],
                             aView          = [aTrackingArea _referencingView];
                         
                         // First verify if aView is a subview of frontmostView
@@ -2209,7 +2211,7 @@ CPTexturedBackgroundWindowMask
                                 secondSuperview = [secondView superview];
                             }
                             
-                            if (firstSuperview == secondSuperview)
+                            if (firstSuperview === secondSuperview)
                                 break;
                             
                             firstView      = firstSuperview;
@@ -4071,28 +4073,29 @@ var interpolate = function(fromValue, toValue, progress)
 
 @implementation CPWindow (TrackingArea)
 
-- (void)_addToViewsWithTrackingAreas:(CPView)aView
+- (void)_addTrackingAreaView:(CPView)aView
 {
-    [_viewsWithTrackingAreas addObject:aView];
+    var trackingAreas = [aView trackingAreas];
     
-    var tas = [aView trackingAreas];
-    
-    for (var i = 0, nb = [tas count]; i < nb; i++)
-        [self _addTrackingArea:[tas objectAtIndex:i]];
+    for (var i = 0; i < trackingAreas.length; i++)
+        [self _addTrackingArea:[trackingAreas objectAtIndex:i]];
 }
 
-- (void)_removeFromViewsWithTrackingAreas:(CPView)aView
+- (void)_removeTrackingAreaView:(CPView)aView
 {
-    var tas = [aView trackingAreas];
+    var trackingAreas = [aView trackingAreas];
     
-    for (var i = 0, nb = [tas count]; i < nb; i++)
-        [self _removeTrackingArea:[tas objectAtIndex:i]];
-    
-    [_viewsWithTrackingAreas removeObject:aView];
+    for (var i = 0; i < trackingAreas.length; i++)
+        [self _removeTrackingArea:[trackingAreas objectAtIndex:i]];
 }
 
 - (void)_addTrackingArea:(CPTrackingArea)trackingArea
 {
+    var trackingAreaView = [trackingArea _referencingView];
+    
+    if (![_trackingAreaViews containsObject:trackingAreaView])
+        [_trackingAreaViews addObject:trackingAreaView];
+    
     // If CPTrackingAssumeInside option is set, put the tracking area in the _mouseEnteredStack
     
     if ([trackingArea options] & CPTrackingAssumeInside)
@@ -4105,6 +4108,11 @@ var interpolate = function(fromValue, toValue, progress)
     
     if ([_mouseEnteredStack containsObject:trackingArea])
         [_mouseEnteredStack removeObject:trackingArea];
+    
+    var trackingAreaView = [trackingArea _referencingView];
+    
+    if ([_trackingAreaViews containsObject:trackingAreaView])
+        [_trackingAreaViews removeObject:trackingAreaView];
 }
 
 @end
