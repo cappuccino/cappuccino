@@ -1020,14 +1020,6 @@ GLOBAL(method_getName) = function(/*Method*/ aMethod)
     return aMethod.method_name;
 }
 
-// FIXME: This function is deprecated and should be removed in a future release
-// Please use 'method_copyReturnType' or 'method_copyArgumentType'
-GLOBAL(method_getTypes) = function(/*Method*/ aMethod)
-{
-    console.warn("Runtime function 'method_getTypes' is deprecated. Please use function 'method_copyReturnType' or 'method_copyArgumentType'");
-    return aMethod.method_types;
-}
-
 GLOBAL(method_copyReturnType) = function(/*Method*/ aMethod)
 {
     var types = aMethod.method_types;
