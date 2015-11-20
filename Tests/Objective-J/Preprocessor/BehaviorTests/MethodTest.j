@@ -80,4 +80,53 @@
     [self assert:-6 equals:[testClass void:10 in:4]];
 }
 
+- (void)testMethodName
+{
+    var method = class_getInstanceMethod(MathClass, @selector(sqrt:));
+
+    [self assert:method_getName(method) equals:@"sqrt:"];
+}
+
+- (void)testMethodNoArguments
+{
+    var method = class_getInstanceMethod(MathClass, @selector(five));
+
+    [self assert:method_getNumberOfArguments(method) equals:0];
+
+    method = class_getInstanceMethod(MathClass, @selector(multiply:));
+    [self assert:method_getNumberOfArguments(method) equals:1];
+
+    method = class_getInstanceMethod(MathClass, @selector(multiply:with:));
+    [self assert:method_getNumberOfArguments(method) equals:2];
+}
+
+- (void)testMethodTypes
+{
+    var theClass = objj_allocateClassPair(CPObject, RAND() + "");
+
+    objj_registerClassPair(theClass);
+    class_addMethod(theClass, @"myMethod:", function() { }, ["void", "CPNumber"]);
+    class_addMethod(theClass, @"myMethod2:", function() { }, ["int", "float"]);
+    class_addMethod(theClass, @"myMethod3:", function() { });
+    [theClass new];
+
+    var method = class_getInstanceMethod(theClass, @selector(myMethod:));
+
+    [self assert:method_copyReturnType(method) equals:@"void" message:@"Return type of method 'myMethod:'"];
+    [self assert:method_copyArgumentType(method, 0) equals:@"CPNumber"];
+    [self assertTrue:method_copyArgumentType(method, 1) === nil];
+    [self assert:method_getNumberOfArguments(method) equals:1];
+
+    method = class_getInstanceMethod(theClass, @selector(myMethod2:));
+    [self assert:method_copyReturnType(method) equals:@"int" message:@"Return type of method 'myMethod2:'"];
+    [self assert:method_copyArgumentType(method, 0) equals:@"float"];
+    [self assertTrue:method_copyArgumentType(method, 1) === nil];
+    [self assert:method_getNumberOfArguments(method) equals:1];
+
+    method = class_getInstanceMethod(theClass, @selector(myMethod3:));
+    [self assertTrue:method_copyReturnType(method) == nil];
+    [self assertTrue:method_copyArgumentType(method, 0) === nil];
+    [self assert:method_getNumberOfArguments(method) equals:1];
+}
+
 @end
