@@ -2224,7 +2224,7 @@ var _CPCopyPlaceholder = '-';
 {
     _CPNativeInputFieldActive = NO;
 
-    var currentFirstResponder = [[CPApp mainWindow] firstResponder],
+    var currentFirstResponder = [[CPApp keyWindow] firstResponder],
         placeholderRange = CPMakeRange([currentFirstResponder selectedRange].location - 1, 1);
 
     [currentFirstResponder setSelectedRange:placeholderRange];
@@ -2260,7 +2260,7 @@ var _CPCopyPlaceholder = '-';
             return false; // prevent the default behaviour
         }
 
-        var currentFirstResponder = [[CPApp mainWindow] firstResponder];
+        var currentFirstResponder = [[CPApp keyWindow] firstResponder];
 
         if (![currentFirstResponder respondsToSelector:@selector(_activateNativeInputElement:)])
             return false; // prevent the default behaviour
@@ -2293,7 +2293,7 @@ var _CPCopyPlaceholder = '-';
     {
         _CPNativeInputFieldKeyUpCalled = NO;
         _CPNativeInputFieldKeyPressedCalled = NO;
-        var currentFirstResponder = [[CPApp mainWindow] firstResponder];
+        var currentFirstResponder = [[CPApp keyWindow] firstResponder];
 
         if (![currentFirstResponder respondsToSelector:@selector(_activateNativeInputElement:)])
             return;
@@ -2329,7 +2329,7 @@ var _CPCopyPlaceholder = '-';
              var data = e.clipboardData.getData('text/plain');
             [pasteboard setString:data forType:CPStringPboardType];
 
-            var currentFirstResponder = [[CPApp mainWindow] firstResponder];
+            var currentFirstResponder = [[CPApp keyWindow] firstResponder];
 
             setTimeout(function(){   // prevent dom-flickering
                 [currentFirstResponder paste:self];
@@ -2340,7 +2340,7 @@ var _CPCopyPlaceholder = '-';
         {
             var pasteboard = [CPPasteboard generalPasteboard],
                 string,
-                currentFirstResponder = [[CPApp mainWindow] firstResponder];
+                currentFirstResponder = [[CPApp keyWindow] firstResponder];
 
             [currentFirstResponder copy:self];
         //  dataForPasting = [pasteboard dataForType:CPRichStringPboardType],
@@ -2355,7 +2355,7 @@ var _CPCopyPlaceholder = '-';
 
             var pasteboard = [CPPasteboard generalPasteboard],
                 string,
-                currentFirstResponder = [[CPApp mainWindow] firstResponder];
+                currentFirstResponder = [[CPApp keyWindow] firstResponder];
 
             setTimeout(function(){   // prevent dom-flickering
                 [currentFirstResponder cut:self];
