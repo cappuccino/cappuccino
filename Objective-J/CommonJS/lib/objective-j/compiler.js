@@ -187,7 +187,7 @@ function resolveFlags(args)
             objjcFlags &= ~ObjectiveJ.ObjJAcornCompiler.Flags.CheckSyntax;
 
         else if (argument.indexOf("-T") === 0)
-            objjcFlags |= ObjectiveJ.ObjJAcornCompiler.Flags.IncludeTypeSignatures;
+            objjcFlags &= ~ObjectiveJ.ObjJAcornCompiler.Flags.IncludeTypeSignatures;
 
         else if (argument.indexOf("-g") === 0)
             objjcFlags |= ObjectiveJ.ObjJAcornCompiler.Flags.IncludeDebugSymbols;
@@ -259,12 +259,16 @@ exports.main = function(args)
         if (argv[0] === "--help" || argv[0].substr(0, 1) == '-')
         {
             print("Usage (objjc 2.0): " + args[0] + " [options] [--] file...");
-            print("  -p, --print                    print the output directly to stdout");
-            print("  --unmarked                     don't tag the output with @STATIC header");
+            print("  -p, --print                         print the output directly to stdout");
+            print("  --unmarked                          don't tag the output with @STATIC header");
             print("");
-            print("  -T, --includeTypeSignatures    include type signatures in the compiled output");
+            print("  -T, --dont-include-type-signatures  include type signatures in the compiled output");
+            print("  -g, --include-debug-symbols         include debug symbols in the compiled output");
+            print("  -T, --include-type-signatures       include type signatures in the compiled output");
+            print("  -O, --compress                      compress the compiled output");
+            print("  -O2, --inline-msg-send              inline objj_msgSend function in the compiled output");
             print("");
-            print("  --help                         print this help");
+            print("  --help                              print this help");
             return;
         }
 

@@ -365,9 +365,6 @@ var MethodDef = function(name, types)
     this.types = types;
 }
 
-var currentCompilerFlags = 0;
-var currentGccCompilerFlags = "";
-
 var reservedIdentifiers = exports.acorn.makePredicate("self _cmd undefined localStorage arguments");
 
 var wordPrefixOperators = exports.acorn.makePredicate("delete in instanceof new typeof void");
@@ -424,6 +421,16 @@ var ObjJAcornCompiler = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*
 
     compile(this.tokens, new Scope(null ,{ compiler: this }), pass === 2 ? pass2 : pass1);
 }
+
+ObjJAcornCompiler.Flags = { };
+
+ObjJAcornCompiler.Flags.IncludeDebugSymbols   = 1 << 0;
+ObjJAcornCompiler.Flags.IncludeTypeSignatures = 1 << 1;
+ObjJAcornCompiler.Flags.Generate              = 1 << 2;
+ObjJAcornCompiler.Flags.InlineMsgSend         = 1 << 3;
+
+var currentCompilerFlags = ObjJAcornCompiler.Flags.IncludeTypeSignatures;
+var currentGccCompilerFlags = "";
 
 exports.ObjJAcornCompiler = ObjJAcornCompiler;
 
@@ -494,25 +501,25 @@ exports.setCurrentGccCompilerFlags = function(/*String*/ compilerFlags)
 
     var args = compilerFlags.split(" "),
         count = args.length,
-        objjcFlags = 0;
+        objjcFlags = ObjJAcornCompiler.Flags.IncludeTypeSignatures;
 
     for (var index = 0; index < count; ++index)
     {
         var argument = args[index];
 
         if (argument.indexOf("-g") === 0)
-            objjcFlags |= ObjectiveJ.ObjJAcornCompiler.Flags.IncludeDebugSymbols;
-
+            objjcFlags |= ObjJAcornCompiler.Flags.IncludeDebugSymbols;
         else if (argument.indexOf("-O") === 0) {
-            objjcFlags |= ObjectiveJ.ObjJAcornCompiler.Flags.Compress;
-            // FIXME: currently we are sending in '-O2' when we want InlineMsgSend. Here we only check if we it is '-O...'.
+            objjcFlags |= ObjJAcornCompiler.Flags.Compress;
+            // FIXME: currently we are sending in '-O2' when we want InlineMsgSend. Here we only check if it is '-O...'.
             // Maybe we should have some other option for this
             if (argument.length > 2)
-                objjcFlags |= ObjectiveJ.ObjJAcornCompiler.Flags.InlineMsgSend;
+                objjcFlags |= ObjJAcornCompiler.Flags.InlineMsgSend;
         }
-
         else if (argument.indexOf("-G") === 0)
-            objjcFlags |= ObjectiveJ.ObjJAcornCompiler.Flags.Generate;
+            objjcFlags |= ObjJAcornCompiler.Flags.Generate;
+        else if (argument.indexOf("-T") === 0)
+            objjcFlags &= ~ObjJAcornCompiler.Flags.IncludeTypeSignatures;
     }
 
     currentCompilerFlags = objjcFlags;
@@ -532,13 +539,6 @@ exports.currentCompilerFlags = function(/*String*/ compilerFlags)
 {
     return currentCompilerFlags;
 }
-
-ObjJAcornCompiler.Flags = { };
-
-ObjJAcornCompiler.Flags.IncludeDebugSymbols   = 1 << 0;
-ObjJAcornCompiler.Flags.IncludeTypeSignatures = 1 << 1;
-ObjJAcornCompiler.Flags.Generate              = 1 << 2;
-ObjJAcornCompiler.Flags.InlineMsgSend         = 1 << 3;
 
 ObjJAcornCompiler.prototype.addWarning = function(/* Warning */ aWarning)
 {
@@ -2325,7 +2325,7 @@ MethodDeclarationStatement: function(node, st, c) {
         compiler.jsBuffer.concat("Nil\n");
     }
 
-    if (compiler.flags & ObjJAcornCompiler.Flags.IncludeDebugSymbols)
+    if (compiler.flags & ObjJAcornCompiler.Flags.IncludeTypeSignatures)
         compiler.jsBuffer.concat(","+JSON.stringify(types));
 
     compiler.jsBuffer.concat(")");

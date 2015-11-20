@@ -90,11 +90,14 @@ exports.run = function(args)
         if (argv[0] === "--help" || argv[0] === "-h")
         {
             print("Usage (objj): " + args[0] + " [options] [--] files...");
-            print("  -v, --version                  print the current version of objj");
-            print("  -I, --objj-include-paths       include a specific framework paths")
-            print("  -h, --help                     print this help");
-            print("  -m, --multifiles               launch objj on several files")
-            print("  -x, --xml                      specify the output format in xml.")
+            print("  -v, --version                       print the current version of objj");
+            print("  -I, --objj-include-paths            include a specific framework paths")
+            print("  -h, --help                          print this help");
+            print("  -m, --multifiles                    launch objj on several files")
+            print("  -x, --xml                           specify the output format in xml.")
+            print("  -g, --include-debug-symbols         Include debug symbols when compiling.")
+            print("  -T, --dont-include-type-signatures  Do not include type signatures when compiling.")
+            print("  -O2, --inline-msg-send              Inline objj_msgSend function when compiling.")
             return;
         }
 
@@ -118,6 +121,24 @@ exports.run = function(args)
                 case "--xml":
                     argv.shift();
                     exports.outputFormatInXML = true;
+                    break;
+
+                case "-g":
+                case "--include-debug-symbols":
+                    argv.shift();
+                    (OBJJ_COMPILER_FLAGS || (OBJJ_COMPILER_FLAGS = [])).push("IncludeDebugSymbols");
+                    break;
+
+                case "-T":
+                case "--dont-include-type-signatures":
+                    argv.shift();
+                    (OBJJ_COMPILER_FLAGS || (OBJJ_COMPILER_FLAGS = [])).push("IncludeTypeSignatures");
+                    break;
+
+                case "-O2":
+                case "--inline-msg-send":
+                    argv.shift();
+                    (OBJJ_COMPILER_FLAGS || (OBJJ_COMPILER_FLAGS = [])).push("InlineMsgSend");
                     break;
             }
         }
