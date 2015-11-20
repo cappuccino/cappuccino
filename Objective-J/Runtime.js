@@ -1056,6 +1056,13 @@ GLOBAL(method_copyArgumentType) = function(/*Method*/ aMethod, /*unsigned int*/ 
         return NULL;
 }
 
+GLOBAL(method_getNumberOfArguments) = function(/*Method*/ aMethod)
+{
+    var types = aMethod.method_types;
+
+    return types ? types.length - 1 : ((aMethod.method_name.match(/:/g) || []).length);
+}
+
 GLOBAL(method_getImplementation) = function(/*Method*/ aMethod)
 {
     return aMethod.method_imp;
