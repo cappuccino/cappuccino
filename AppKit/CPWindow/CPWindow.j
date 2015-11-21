@@ -1969,76 +1969,7 @@ CPTexturedBackgroundWindowMask
         case CPRightMouseDragged:
             // First, we search for any tracking area requesting CPTrackingEnabledDuringMouseDrag.
             // At the same time, we update the entered stack.
-            var mouseEnteredStack = [];
-
-            for (var i = 0; i < _trackingAreaViews.length; i++)
-            {
-                var aView          = [_trackingAreaViews objectAtIndex:i],
-                    trackingAreas  = [aView trackingAreas],
-                    convertedPoint = [aView convertPoint:point fromView:_windowView];
-                
-                if (![aView isHidden])
-                    
-                    for (var j = 0; j < trackingAreas.length; j++)
-                    {
-                        var aTrackingArea   = [trackingAreas objectAtIndex:j],
-                            trackingOptions = [aTrackingArea options];
-                        
-                        if (trackingOptions & CPTrackingEnabledDuringMouseDrag)
-                            
-                            if ((trackingOptions & CPTrackingActiveAlways) ||
-                                (trackingOptions & CPTrackingActiveInActiveApp) ||
-                                ((trackingOptions & CPTrackingActiveInKeyWindow) && ([self isKeyWindow])) ||
-                                ((trackingOptions & CPTrackingActiveWhenFirstResponder) && ([self isKeyWindow]) && (_firstResponder === aView)))
-                                
-                                if (CGRectContainsPoint(((trackingOptions & CPTrackingInVisibleRect) ? [aView visibleRect] : [aTrackingArea rect]), convertedPoint))
-                                {
-                                    [mouseEnteredStack addObject:aTrackingArea];
-                                    
-                                    if (![_mouseEnteredStack containsObject:aTrackingArea])
-                                        
-                                        // Mouse was not in this rect so it's a mouseEntered
-                                        
-                                        if (trackingOptions & CPTrackingMouseEnteredAndExited)
-                                            
-                                            [[aTrackingArea owner] mouseEntered:[CPEvent enterExitEventWithType:CPMouseEntered
-                                                                                                       location:point
-                                                                                                  modifierFlags:[anEvent modifierFlags]
-                                                                                                      timestamp:[anEvent timestamp]
-                                                                                                   windowNumber:_windowNumber
-                                                                                                        context:nil
-                                                                                                    eventNumber:-1
-                                                                                                   trackingArea:aTrackingArea]];
-                                }
-                }
-            }
-            
-            // Search now for exited views (were in _mouseEnteredStack but no more in mouseEnteredStack)
-            
-            for (var i = 0; i < _mouseEnteredStack.length; i++)
-            {
-                var aTrackingArea   = [_mouseEnteredStack objectAtIndex:i],
-                    trackingOptions = [aTrackingArea options];
-
-                if (trackingOptions & CPTrackingEnabledDuringMouseDrag)
-
-                    if (![mouseEnteredStack containsObject:aTrackingArea])
-
-                        // Mouse is no more in this area so it's a mouseExited
-                        
-                        if (trackingOptions & CPTrackingMouseEnteredAndExited)
-
-                            [[aTrackingArea owner] mouseExited:[CPEvent enterExitEventWithType:CPMouseExited
-                                                                                      location:point
-                                                                                 modifierFlags:[anEvent modifierFlags]
-                                                                                     timestamp:[anEvent timestamp]
-                                                                                  windowNumber:_windowNumber
-                                                                                       context:nil
-                                                                                   eventNumber:-1
-                                                                                  trackingArea:aTrackingArea]];
-            }
-            
-            _mouseEnteredStack = mouseEnteredStack;
+            [self _trackEvent:anEvent];
             
             // Normal mouseDragged workflow
             if (!_leftMouseDownView)
@@ -2064,200 +1995,7 @@ CPTexturedBackgroundWindowMask
             if (!_acceptsMouseMovedEvents || sheet)
                 return;
             
-            var mouseEnteredStack = [],
-                cursorUpdateStack = [];
-            
-            for (var i = 0; i < _trackingAreaViews.length; i++)
-            {
-                var aView          = [_trackingAreaViews objectAtIndex:i],
-                    trackingAreas  = [aView trackingAreas],
-                    convertedPoint = [aView convertPoint:point fromView:_windowView];
-                
-                if (![aView isHidden])
-                    
-                    for (var j = 0; j < trackingAreas.length; j++)
-                    {
-                        var aTrackingArea   = [trackingAreas objectAtIndex:j],
-                            trackingOptions = [aTrackingArea options];
-                        
-                        if ((trackingOptions & CPTrackingActiveAlways) ||
-                            (trackingOptions & CPTrackingActiveInActiveApp) ||
-                            ((trackingOptions & CPTrackingActiveInKeyWindow) && ([self isKeyWindow])) ||
-                            ((trackingOptions & CPTrackingActiveWhenFirstResponder) && ([self isKeyWindow]) && (_firstResponder === aView)))
-                            
-                            if (CGRectContainsPoint(((trackingOptions & CPTrackingInVisibleRect) ? [aView visibleRect] : [aTrackingArea rect]), convertedPoint))
-                            {
-                                [mouseEnteredStack addObject:aTrackingArea];
-                                
-                                if ([_mouseEnteredStack containsObject:aTrackingArea])
-                                {
-                                    // Mouse was already in this rect so it's a mouseMoved
-                                    
-                                    if (trackingOptions & CPTrackingMouseMoved)
-                                        [[aTrackingArea owner] mouseMoved:anEvent];
-                                }
-                                else
-                                    
-                                    // Mouse was not in this rect so it's a mouseEntered
-                                    
-                                    if (trackingOptions & CPTrackingMouseEnteredAndExited)
-                                        [[aTrackingArea owner] mouseEntered:[CPEvent enterExitEventWithType:CPMouseEntered
-                                                                                                   location:point
-                                                                                              modifierFlags:[anEvent modifierFlags]
-                                                                                                  timestamp:[anEvent timestamp]
-                                                                                               windowNumber:_windowNumber
-                                                                                                    context:nil
-                                                                                                eventNumber:-1
-                                                                                               trackingArea:aTrackingArea]];
-                                
-                                if (trackingOptions & CPTrackingCursorUpdate)
-                                    [cursorUpdateStack addObject:aTrackingArea];
-                            }
-                    }
-            }
-            
-            // Search now for exited views (were in _mouseEnteredStack but no more in mouseEnteredStack)
-            
-            for (var i = 0; i < _mouseEnteredStack.length; i++)
-            {
-                var aTrackingArea = [_mouseEnteredStack objectAtIndex:i];
-                
-                if (![mouseEnteredStack containsObject:aTrackingArea])
-                {
-                    // Mouse is no more in this area so it's a mouseExited
-                    
-                    if ([aTrackingArea options] & CPTrackingMouseEnteredAndExited)
-                        [[aTrackingArea owner] mouseExited:[CPEvent enterExitEventWithType:CPMouseExited
-                                                                                  location:point
-                                                                             modifierFlags:[anEvent modifierFlags]
-                                                                                 timestamp:[anEvent timestamp]
-                                                                              windowNumber:_windowNumber
-                                                                                   context:nil
-                                                                               eventNumber:-1
-                                                                              trackingArea:aTrackingArea]];
-                    
-                    // If this is the active cursor area, we reset _cursorUpdateStack so a new active area will be computed
-                    
-                    if (aTrackingArea === _activeCursorTrackingArea)
-                    {
-                        _cursorUpdateStack = [];
-                        _activeCursorTrackingArea = nil;
-                    }
-                }
-            }
-            
-            // Cursor update
-            
-            // We must send the cursorUpdate event to the frontmost view (the nearest from the mouse pointer)
-            // If no frontmost view is found, we set standard cursor
-            
-            var nbCursorUpdates = [cursorUpdateStack count],
-                overlappingTrackingAreas = [];
-            
-            if (nbCursorUpdates > 0)
-            {
-                for (var i = 0; i < nbCursorUpdates; i++)
-                {
-                    var aTA = [cursorUpdateStack objectAtIndex:i];
-                    
-                    if ((![_cursorUpdateStack containsObject:aTA]) || (aTA === _activeCursorTrackingArea))
-                        
-                        [overlappingTrackingAreas addObject:aTA];
-                }
-                
-                var nbOverlappingTrackingAreas = [overlappingTrackingAreas count];
-                
-                if (nbOverlappingTrackingAreas > 0)
-                {
-                    var frontmostTrackingArea = [overlappingTrackingAreas firstObject],
-                        frontmostView         = [frontmostTrackingArea _referencingView];
-                    
-                    for (var i = 1; i < nbOverlappingTrackingAreas; i++)
-                    {
-                        var aTrackingArea  = [overlappingTrackingAreas objectAtIndex:i],
-                            aView          = [aTrackingArea _referencingView];
-                        
-                        // First verify if aView is a subview of frontmostView
-                        // If so, it's our new frontmost view
-                        
-                        var searchingView = aView;
-                        
-                        while ((searchingView !== _contentView) && ([searchingView superview] !== frontmostView))
-                            searchingView = [searchingView superview];
-                        
-                        if (searchingView !== _contentView)
-                        {
-                            frontmostTrackingArea = aTrackingArea;
-                            frontmostView         = aView;
-                            
-                            continue;
-                        }
-                        
-                        // aView is not a subview of frontmostView
-                        // Search in view hierarchy which one will be over the other
-                        // (this is done by comparing their draw order)
-                        
-                        var firstView      = frontmostView,
-                            firstSuperview = [firstView superview];
-                        
-                        while (firstView !== _contentView)
-                        {
-                            var secondView      = aView,
-                                secondSuperview = [secondView superview];
-                            
-                            while ((secondSuperview !== _contentView) && (firstSuperview !== secondSuperview))
-                            {
-                                secondView      = secondSuperview;
-                                secondSuperview = [secondView superview];
-                            }
-                            
-                            if (firstSuperview === secondSuperview)
-                                break;
-                            
-                            firstView      = firstSuperview;
-                            firstSuperview = [firstView superview];
-                        }
-                        
-                        if (firstSuperview !== secondSuperview)
-                            [CPException raise:CPInternalInconsistencyException reason:"Problem with view hierarchy"];
-                        
-                        var firstViewIndex  = [[firstSuperview subviews] indexOfObject:firstView],
-                            secondViewIndex = [[firstSuperview subviews] indexOfObject:secondView];
-                        
-                        if (secondViewIndex > firstViewIndex)
-                        {
-                            frontmostTrackingArea = aTrackingArea;
-                            frontmostView         = aView;
-                        }
-                    }
-                    
-                    if (frontmostTrackingArea !== _activeCursorTrackingArea)
-                    {
-                        [[frontmostTrackingArea owner] cursorUpdate:[CPEvent enterExitEventWithType:CPCursorUpdate
-                                                                                           location:point
-                                                                                      modifierFlags:[anEvent modifierFlags]
-                                                                                          timestamp:[anEvent timestamp]
-                                                                                       windowNumber:_windowNumber
-                                                                                            context:nil
-                                                                                        eventNumber:-1
-                                                                                       trackingArea:frontmostTrackingArea]];
-                        
-                        _activeCursorTrackingArea = frontmostTrackingArea;
-                    }
-                }
-            }
-            else
-            {
-                // Cursor reset
-                
-                [_windowView setCursorForLocation:point resizing:NO];
-                _activeCursorTrackingArea = nil;
-            }
-            
-            // End of treatment
-            
-            _mouseEnteredStack = mouseEnteredStack;
-            _cursorUpdateStack = cursorUpdateStack;
+            [self _trackEvent:anEvent];
     }
 }
 
@@ -4071,14 +3809,14 @@ var interpolate = function(fromValue, toValue, progress)
 
 @end
 
-@implementation CPWindow (TrackingArea)
+@implementation CPWindow (TrackingAreaAdditions)
 
 - (void)_addTrackingAreaView:(CPView)aView
 {
     var trackingAreas = [aView trackingAreas];
     
     for (var i = 0; i < trackingAreas.length; i++)
-        [self _addTrackingArea:[trackingAreas objectAtIndex:i]];
+        [self _addTrackingArea:trackingAreas[i]];
 }
 
 - (void)_removeTrackingAreaView:(CPView)aView
@@ -4086,7 +3824,7 @@ var interpolate = function(fromValue, toValue, progress)
     var trackingAreas = [aView trackingAreas];
     
     for (var i = 0; i < trackingAreas.length; i++)
-        [self _removeTrackingArea:[trackingAreas objectAtIndex:i]];
+        [self _removeTrackingArea:trackingAreas[i]];
 }
 
 - (void)_addTrackingArea:(CPTrackingArea)trackingArea
@@ -4113,6 +3851,221 @@ var interpolate = function(fromValue, toValue, progress)
     
     if ([_trackingAreaViews containsObject:trackingAreaView])
         [_trackingAreaViews removeObject:trackingAreaView];
+}
+
+- (void)_trackEvent:(CPEvent)anEvent
+{
+    var mouseEnteredStack = [],
+        cursorUpdateStack = [],
+        isKeyWindow       = [self isKeyWindow],
+        point             = [anEvent locationInWindow],
+        dragging          = ([anEvent type] !== CPMouseMoved);
+    
+    for (var i = 0; i < _trackingAreaViews.length; i++)
+    {
+        var aView            = _trackingAreaViews[i],
+            trackingAreas    = [aView trackingAreas],
+            convertedPoint   = [aView convertPoint:point fromView:_windowView],
+            aViewVisibleRect = [aView visibleRect];
+        
+        if ([aView isHidden])
+            continue;
+        
+        for (var j = 0; j < trackingAreas.length; j++)
+        {
+            var aTrackingArea   = trackingAreas[j],
+                trackingOptions = [aTrackingArea options];
+            
+            if (dragging && !(trackingOptions & CPTrackingEnabledDuringMouseDrag))
+                continue;
+            
+            if ((trackingOptions & CPTrackingActiveAlways) ||
+                (trackingOptions & CPTrackingActiveInActiveApp) ||
+                ((trackingOptions & CPTrackingActiveInKeyWindow) && isKeyWindow) ||
+                ((trackingOptions & CPTrackingActiveWhenFirstResponder) && isKeyWindow && (_firstResponder === aView)))
+            {
+                if (!(CGRectContainsPoint(((trackingOptions & CPTrackingInVisibleRect) ? aViewVisibleRect : [aTrackingArea rect]), convertedPoint)))
+                    continue;
+                
+                [mouseEnteredStack addObject:aTrackingArea];
+                
+                if ([_mouseEnteredStack containsObject:aTrackingArea])
+                {
+                    // Mouse was already in this rect so it's a mouseMoved
+                    
+                    if (!dragging && (trackingOptions & CPTrackingMouseMoved))
+                        [[aTrackingArea owner] mouseMoved:anEvent];
+                }
+                else
+                {
+                    // Mouse was not in this rect so it's a mouseEntered
+                    
+                    if (trackingOptions & CPTrackingMouseEnteredAndExited)
+                        [[aTrackingArea owner] mouseEntered:[CPEvent enterExitEventWithType:CPMouseEntered
+                                                                                   location:point
+                                                                              modifierFlags:[anEvent modifierFlags]
+                                                                                  timestamp:[anEvent timestamp]
+                                                                               windowNumber:_windowNumber
+                                                                                    context:nil
+                                                                                eventNumber:-1
+                                                                               trackingArea:aTrackingArea]];
+                }
+                
+                if (trackingOptions & CPTrackingCursorUpdate)
+                    [cursorUpdateStack addObject:aTrackingArea];
+            }
+        }
+    }
+    
+    // Search now for exited views (were in _mouseEnteredStack but no more in mouseEnteredStack)
+    
+    for (var i = 0; i < _mouseEnteredStack.length; i++)
+    {
+        var aTrackingArea   = _mouseEnteredStack[i],
+            trackingOptions = [aTrackingArea options];
+        
+        if (![mouseEnteredStack containsObject:aTrackingArea])
+        {
+            // Mouse is no more in this area so it's a mouseExited
+            
+            if ((trackingOptions & CPTrackingMouseEnteredAndExited) && (!dragging || (dragging && (trackingOptions & CPTrackingEnabledDuringMouseDrag))))
+                [[aTrackingArea owner] mouseExited:[CPEvent enterExitEventWithType:CPMouseExited
+                                                                          location:point
+                                                                     modifierFlags:[anEvent modifierFlags]
+                                                                         timestamp:[anEvent timestamp]
+                                                                      windowNumber:_windowNumber
+                                                                           context:nil
+                                                                       eventNumber:-1
+                                                                      trackingArea:aTrackingArea]];
+            
+            // If this is the active cursor area, we reset _cursorUpdateStack so a new active area will be computed
+            
+            if (aTrackingArea === _activeCursorTrackingArea)
+            {
+                _cursorUpdateStack = [];
+                _activeCursorTrackingArea = nil;
+            }
+        }
+    }
+
+    _mouseEnteredStack = mouseEnteredStack;
+
+    if (dragging)
+        
+        // While dragging, don't update the cursor
+        return;
+    
+    // Cursor update
+    
+    // We must send the cursorUpdate event to the frontmost view (the nearest from the mouse pointer)
+    // If no frontmost view is found, we set standard cursor
+    
+    var nbCursorUpdates          = [cursorUpdateStack count],
+        overlappingTrackingAreas = [];
+    
+    if (nbCursorUpdates > 0)
+    {
+        for (var i = 0; i < nbCursorUpdates; i++)
+        {
+            var aTrackingArea = cursorUpdateStack[i];
+            
+            if ((![_cursorUpdateStack containsObject:aTrackingArea]) || (aTrackingArea === _activeCursorTrackingArea))
+                
+                [overlappingTrackingAreas addObject:aTrackingArea];
+        }
+        
+        var nbOverlappingTrackingAreas = overlappingTrackingAreas.length;
+        
+        if (nbOverlappingTrackingAreas > 0)
+        {
+            var frontmostTrackingArea = overlappingTrackingAreas[0],
+                frontmostView         = [frontmostTrackingArea _referencingView];
+            
+            for (var i = 1; i < nbOverlappingTrackingAreas; i++)
+            {
+                var aTrackingArea  = overlappingTrackingAreas[i],
+                    aView          = [aTrackingArea _referencingView];
+                
+                // First verify if aView is a subview of frontmostView
+                // If so, it's our new frontmost view
+                
+                var searchingView = aView;
+                
+                while ((searchingView !== _contentView) && ([searchingView superview] !== frontmostView))
+                    searchingView = [searchingView superview];
+                
+                if (searchingView !== _contentView)
+                {
+                    frontmostTrackingArea = aTrackingArea;
+                    frontmostView         = aView;
+                    
+                    continue;
+                }
+                
+                // aView is not a subview of frontmostView
+                // Search in view hierarchy which one will be over the other
+                // (this is done by comparing their draw order)
+                
+                var firstView      = frontmostView,
+                    firstSuperview = [firstView superview];
+                
+                while (firstView !== _contentView)
+                {
+                    var secondView      = aView,
+                        secondSuperview = [secondView superview];
+                    
+                    while ((secondSuperview !== _contentView) && (firstSuperview !== secondSuperview))
+                    {
+                        secondView      = secondSuperview;
+                        secondSuperview = [secondView superview];
+                    }
+                    
+                    if (firstSuperview === secondSuperview)
+                        break;
+                    
+                    firstView      = firstSuperview;
+                    firstSuperview = [firstView superview];
+                }
+                
+                if (firstSuperview !== secondSuperview)
+                    [CPException raise:CPInternalInconsistencyException reason:"Problem with view hierarchy"];
+                
+                var firstViewIndex  = [[firstSuperview subviews] indexOfObject:firstView],
+                    secondViewIndex = [[firstSuperview subviews] indexOfObject:secondView];
+                
+                if (secondViewIndex > firstViewIndex)
+                {
+                    frontmostTrackingArea = aTrackingArea;
+                    frontmostView         = aView;
+                }
+            }
+            
+            if (frontmostTrackingArea !== _activeCursorTrackingArea)
+            {
+                [[frontmostTrackingArea owner] cursorUpdate:[CPEvent enterExitEventWithType:CPCursorUpdate
+                                                                                   location:point
+                                                                              modifierFlags:[anEvent modifierFlags]
+                                                                                  timestamp:[anEvent timestamp]
+                                                                               windowNumber:_windowNumber
+                                                                                    context:nil
+                                                                                eventNumber:-1
+                                                                               trackingArea:frontmostTrackingArea]];
+                
+                _activeCursorTrackingArea = frontmostTrackingArea;
+            }
+        }
+    }
+    else
+    {
+        // Cursor reset
+        
+        [_windowView setCursorForLocation:point resizing:NO];
+        _activeCursorTrackingArea = nil;
+    }
+    
+    // End of treatment
+    
+    _cursorUpdateStack = cursorUpdateStack;
 }
 
 @end
