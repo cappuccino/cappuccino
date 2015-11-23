@@ -87,17 +87,17 @@
     [self assert:method_getName(method) equals:@"sqrt:"];
 }
 
-- (void)testMethodNoArguments
+- (void)testMethodNoOfArguments
 {
     var method = class_getInstanceMethod(MathClass, @selector(five));
 
-    [self assert:method_getNumberOfArguments(method) equals:0];
+    [self assert:method_getNumberOfArguments(method) equals:2];
 
     method = class_getInstanceMethod(MathClass, @selector(multiply:));
-    [self assert:method_getNumberOfArguments(method) equals:1];
+    [self assert:method_getNumberOfArguments(method) equals:3];
 
     method = class_getInstanceMethod(MathClass, @selector(multiply:with:));
-    [self assert:method_getNumberOfArguments(method) equals:2];
+    [self assert:method_getNumberOfArguments(method) equals:4];
 }
 
 - (void)testMethodTypes
@@ -113,20 +113,26 @@
     var method = class_getInstanceMethod(theClass, @selector(myMethod:));
 
     [self assert:method_copyReturnType(method) equals:@"void" message:@"Return type of method 'myMethod:'"];
-    [self assert:method_copyArgumentType(method, 0) equals:@"CPNumber"];
-    [self assertTrue:method_copyArgumentType(method, 1) === nil];
-    [self assert:method_getNumberOfArguments(method) equals:1];
+    [self assert:method_copyArgumentType(method, 0) equals:@"id"];
+    [self assert:method_copyArgumentType(method, 1) equals:@"SEL"];
+    [self assert:method_copyArgumentType(method, 2) equals:@"CPNumber"];
+    [self assertTrue:method_copyArgumentType(method, 3) === nil];
+    [self assert:method_getNumberOfArguments(method) equals:3];
 
     method = class_getInstanceMethod(theClass, @selector(myMethod2:));
     [self assert:method_copyReturnType(method) equals:@"int" message:@"Return type of method 'myMethod2:'"];
-    [self assert:method_copyArgumentType(method, 0) equals:@"float"];
-    [self assertTrue:method_copyArgumentType(method, 1) === nil];
-    [self assert:method_getNumberOfArguments(method) equals:1];
+    [self assert:method_copyArgumentType(method, 0) equals:@"id"];
+    [self assert:method_copyArgumentType(method, 1) equals:@"SEL"];
+    [self assert:method_copyArgumentType(method, 2) equals:@"float"];
+    [self assertTrue:method_copyArgumentType(method, 3) === nil];
+    [self assert:method_getNumberOfArguments(method) equals:3];
 
     method = class_getInstanceMethod(theClass, @selector(myMethod3:));
     [self assertTrue:method_copyReturnType(method) == nil];
-    [self assertTrue:method_copyArgumentType(method, 0) === nil];
-    [self assert:method_getNumberOfArguments(method) equals:1];
+    [self assert:method_copyArgumentType(method, 0) equals:@"id"];
+    [self assert:method_copyArgumentType(method, 1) equals:@"SEL"];
+    [self assertTrue:method_copyArgumentType(method, 2) === nil];
+    [self assert:method_getNumberOfArguments(method) equals:3];
 }
 
 @end

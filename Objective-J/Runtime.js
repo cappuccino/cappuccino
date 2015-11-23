@@ -1020,6 +1020,7 @@ GLOBAL(method_getName) = function(/*Method*/ aMethod)
     return aMethod.method_name;
 }
 
+// This will not return correct values if the compiler does not have the option 'IncludeTypeSignatures'
 GLOBAL(method_copyReturnType) = function(/*Method*/ aMethod)
 {
     var types = aMethod.method_types;
@@ -1034,25 +1035,37 @@ GLOBAL(method_copyReturnType) = function(/*Method*/ aMethod)
         return NULL;
 }
 
+// This will not return correct values for index > 1 if the compiler does not have the option 'IncludeTypeSignatures'
 GLOBAL(method_copyArgumentType) = function(/*Method*/ aMethod, /*unsigned int*/ index)
 {
-    var types = aMethod.method_types;
+    switch (index) {
+        case 0:
+            return "id";
 
-    if (types)
-    {
-        var argType = types[index + 1];
+        case 1:
+            return "SEL";
 
-        return argType != NULL ? argType : NULL;
+        default:
+            var types = aMethod.method_types;
+
+            if (types)
+            {
+                var argType = types[index - 1];
+
+                return argType != NULL ? argType : NULL;
+            }
+            else
+                return NULL;
     }
-    else
-        return NULL;
 }
 
+// Returns number of arguments for a method. The first argument is 'self' and the second is the selector.
+// Those are followed by the method arguments. So for example it will return 2 for a method with no arguments.
 GLOBAL(method_getNumberOfArguments) = function(/*Method*/ aMethod)
 {
     var types = aMethod.method_types;
 
-    return types ? types.length - 1 : ((aMethod.method_name.match(/:/g) || []).length);
+    return types ? types.length + 1 : ((aMethod.method_name.match(/:/g) || []).length + 2);
 }
 
 GLOBAL(method_getImplementation) = function(/*Method*/ aMethod)
