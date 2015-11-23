@@ -423,7 +423,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
             setKey_method_imp(self, _cmd, anObject);
 
             [self didChangeValueForKey:aKey];
-        }, "");
+        }, setKey_method.method_types);
     }
 
     // FIXME: Deprecated.
@@ -441,7 +441,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
             _setKey_method_imp(self, _cmd, anObject);
 
             [self didChangeValueForKey:aKey];
-        }, "");
+        }, _setKey_method.method_types);
     }
 
     // Ordered To-Many Relationships
@@ -478,7 +478,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
                 [self didChange:CPKeyValueChangeInsertion
                 valuesAtIndexes:[CPIndexSet indexSetWithIndex:anIndex]
                          forKey:aKey];
-            }, "");
+            }, insertObject_inKeyAtIndex_method.method_types);
         }
 
         if (insertKey_atIndexes_method)
@@ -496,7 +496,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
                 [self didChange:CPKeyValueChangeInsertion
                 valuesAtIndexes:[indexes copy]
                          forKey:aKey];
-            }, "");
+            }, insertKey_atIndexes_method.method_types);
         }
 
         if (removeObjectFromKeyAtIndex_method)
@@ -514,7 +514,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
                 [self didChange:CPKeyValueChangeRemoval
                 valuesAtIndexes:[CPIndexSet indexSetWithIndex:anIndex]
                          forKey:aKey];
-            }, "");
+            }, removeObjectFromKeyAtIndex_method.method_types);
         }
 
         if (removeKeyAtIndexes_method)
@@ -532,7 +532,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
                 [self didChange:CPKeyValueChangeRemoval
                 valuesAtIndexes:[indexes copy]
                          forKey:aKey];
-            }, "");
+            }, removeKeyAtIndexes_method.method_types);
         }
 
         // These are optional.
@@ -558,7 +558,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
                 [self didChange:CPKeyValueChangeReplacement
                 valuesAtIndexes:[CPIndexSet indexSetWithIndex:anIndex]
                          forKey:aKey];
-            }, "");
+            }, replaceObjectInKeyAtIndex_withObject_method.method_types);
         }
 
         var replaceKeyAtIndexes_withKey_selector =
@@ -581,7 +581,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
                 [self didChange:CPKeyValueChangeReplacement
                 valuesAtIndexes:[indexes copy]
                          forKey:aKey];
-            }, "");
+            }, replaceKeyAtIndexes_withKey_method.method_types);
         }
     }
 
@@ -615,7 +615,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
                 [self didChangeValueForKey:aKey
                            withSetMutation:CPKeyValueUnionSetMutation
                               usingObjects:[CPSet setWithObject:anObject]];
-            }, "");
+            }, addKeyObject_method.method_types);
         }
 
         if (addKey_method)
@@ -633,7 +633,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
                 [self didChangeValueForKey:aKey
                            withSetMutation:CPKeyValueUnionSetMutation
                               usingObjects:[objects copy]];
-            }, "");
+            }, addKey_method.method_types);
         }
 
         if (removeKeyObject_method)
@@ -651,7 +651,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
                 [self didChangeValueForKey:aKey
                            withSetMutation:CPKeyValueMinusSetMutation
                               usingObjects:[CPSet setWithObject:anObject]];
-            }, "");
+            }, removeKeyObject_method.method_types);
         }
 
         if (removeKey_method)
@@ -669,7 +669,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
                 [self didChangeValueForKey:aKey
                            withSetMutation:CPKeyValueMinusSetMutation
                               usingObjects:[objects copy]];
-            }, "");
+            }, removeKey_method.method_types);
         }
 
         // intersect<Key>: is optional.
@@ -691,7 +691,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
                 [self didChangeValueForKey:aKey
                            withSetMutation:CPKeyValueIntersectSetMutation
                               usingObjects:[aSet copy]];
-            }, "");
+            }, intersectKey_method.method_types);
         }
     }
 
