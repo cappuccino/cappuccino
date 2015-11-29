@@ -566,6 +566,11 @@ CPTexturedBackgroundWindowMask
     }
 }
 
+- (CPView)_windowView
+{
+    return _windowView;
+}
+
 /*!
     Sets the receiver as a full platform window. If you pass YES the CPWindow instance will fill the entire browser content area,
     otherwise the CPWindow will be a window inside of your browser window which the user can drag around, and resize (if you allow).
@@ -3863,10 +3868,8 @@ var interpolate = function(fromValue, toValue, progress)
     
     for (var i = 0; i < _trackingAreaViews.length; i++)
     {
-        var aView            = _trackingAreaViews[i],
-            trackingAreas    = [aView trackingAreas],
-            convertedPoint   = [aView convertPoint:point fromView:_windowView],
-            aViewVisibleRect = [aView visibleRect];
+        var aView         = _trackingAreaViews[i],
+            trackingAreas = [aView trackingAreas];
         
         if ([aView isHidden])
             continue;
@@ -3884,7 +3887,7 @@ var interpolate = function(fromValue, toValue, progress)
                 ((trackingOptions & CPTrackingActiveInKeyWindow) && isKeyWindow) ||
                 ((trackingOptions & CPTrackingActiveWhenFirstResponder) && isKeyWindow && (_firstResponder === aView)))
             {
-                if (!(CGRectContainsPoint(((trackingOptions & CPTrackingInVisibleRect) ? aViewVisibleRect : [aTrackingArea rect]), convertedPoint)))
+                if (!(CGRectContainsPoint([aTrackingArea actualRect], point)))
                     continue;
                 
                 [mouseEnteredStack addObject:aTrackingArea];

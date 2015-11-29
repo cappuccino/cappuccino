@@ -39,7 +39,8 @@ var CPTrackingAreaRectKey            = @"CPTrackinkAreaRectKey",
     CPTrackingAreaOptionsKey         = @"CPTrackingAreaOptionsKey",
     CPTrackingAreaOwnerKey           = @"CPTrackingAreaOwnerKey",
     CPTrackingAreaUserInfoKey        = @"CPTrackingAreaUserInfoKey",
-    CPTrackingAreaReferencingViewKey = @"CPTrackingAreaReferencingViewKey";
+    CPTrackingAreaReferencingViewKey = @"CPTrackingAreaReferencingViewKey",
+    CPTrackingAreaActualRect         = @"CPTrackingAreaActualRect";
 
 
 /*!
@@ -56,6 +57,7 @@ var CPTrackingAreaRectKey            = @"CPTrackinkAreaRectKey",
     CPDictionary            _userInfo           @accessors(getter=userInfo);
     
     CPView                  _referencingView    @accessors;
+    CGRect                  _actualRect         @accessors(getter=actualRect);
 }
 
 
@@ -100,6 +102,11 @@ var CPTrackingAreaRectKey            = @"CPTrackinkAreaRectKey",
     return !!_referencingView;
 }
 
+- (void)_updateActualRect
+{
+    _actualRect = [_referencingView convertRect:((_options & CPTrackingInVisibleRect) ? [_referencingView visibleRect] : _rect) toView:[[_referencingView window] _windowView]];
+}
+
 @end
 
 #pragma mark -
@@ -116,6 +123,7 @@ var CPTrackingAreaRectKey            = @"CPTrackinkAreaRectKey",
         _owner           = [aCoder decodeObjectForKey:CPTrackingAreaOwnerKey];
         _userInfo        = [aCoder decodeObjectForKey:CPTrackingAreaUserInfoKey];
         _referencingView = [aCoder decodeObjectForKey:CPTrackingAreaReferencingViewKey];
+        _actualRect      = [aCoder decodeObjectForKey:CPTrackingAreaActualRect];
     }
     
     return self;
@@ -128,6 +136,7 @@ var CPTrackingAreaRectKey            = @"CPTrackinkAreaRectKey",
     [aCoder encodeObject:_owner           forKey:CPTrackingAreaOwnerKey];
     [aCoder encodeObject:_userInfo        forKey:CPTrackingAreaUserInfoKey];
     [aCoder encodeObject:_referencingView forKey:CPTrackingAreaReferencingViewKey];
+    [aCoder encodeObject:_actualRect      forKey:CPTrackingAreaActualRect];
 }
 
 @end
