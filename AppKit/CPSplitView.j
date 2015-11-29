@@ -146,14 +146,6 @@ var ShouldSuppressResizeNotifications   = 1,
         };
 }
 
-- (void)awakeFromCib
-{
-    [self addTrackingArea:[[CPTrackingArea alloc] initWithRect:CGRectMakeZero()
-                                                       options:CPTrackingMouseEnteredAndExited | CPTrackingMouseMoved | CPTrackingActiveInKeyWindow | CPTrackingInVisibleRect
-                                                         owner:self
-                                                      userInfo:nil]];
-}
-
 - (id)initWithFrame:(CGRect)aFrame
 {
     if (self = [super initWithFrame:aFrame])
@@ -168,11 +160,6 @@ var ShouldSuppressResizeNotifications   = 1,
         _shouldAutosave = YES;
 
         [self _setVertical:YES];
-        
-        [self addTrackingArea:[[CPTrackingArea alloc] initWithRect:CGRectMakeZero()
-                                                           options:CPTrackingMouseEnteredAndExited | CPTrackingMouseMoved | CPTrackingActiveInKeyWindow | CPTrackingInVisibleRect
-                                                             owner:self
-                                                          userInfo:nil]];
     }
 
     return self;
@@ -574,26 +561,6 @@ var ShouldSuppressResizeNotifications   = 1,
 {
     // Enable split view resize cursors. Commented out pending CPTrackingArea implementation.
     //[[self window] setAcceptsMouseMovedEvents:YES];
-}
-
-- (void)mouseEntered:(CPEvent)anEvent
-{
-    // Tracking code handles cursor by itself.
-    if (_currentDivider == CPNotFound)
-        [self _updateResizeCursor:anEvent];
-}
-
-- (void)mouseMoved:(CPEvent)anEvent
-{
-    if (_currentDivider == CPNotFound)
-        [self _updateResizeCursor:anEvent];
-}
-
-- (void)mouseExited:(CPEvent)anEvent
-{
-    if (_currentDivider == CPNotFound)
-        // FIXME: we should use CPCursor push/pop (if previous currentCursor != arrow).
-        [[CPCursor arrowCursor] set];
 }
 
 - (void)_updateResizeCursor:(CPEvent)anEvent
@@ -1219,6 +1186,32 @@ The sum of the views and the sum of the dividers should be equal to the size of 
 
 @end
 
+@implementation CPSplitView (CPTrackingArea)
+
+- (void)updateTrackingAreas
+{
+    var myTrackingAreas = [self trackingAreas];
+    
+    for (var i = 0; i < myTrackingAreas.length; i++)
+        [self removeTrackingArea:myTrackingAreas[i]];
+    
+    var options = CPTrackingCursorUpdate | CPTrackingActiveInKeyWindow;
+    
+    for (var i = 0; i < _subviews.length - 1; i++)
+        [self addTrackingArea:[[CPTrackingArea alloc] initWithRect:[self effectiveRectOfDividerAtIndex:i]
+                                                           options:options
+                                                             owner:self
+                                                          userInfo:nil]];
+}
+
+- (void)cursorUpdate:(CPEvent)anEvent
+{
+    if (_currentDivider === CPNotFound)
+        [self _updateResizeCursor:anEvent];
+}
+
+@end
+
 
 @implementation CPSplitView (CPSplitViewDelegate)
 
@@ -1390,6 +1383,8 @@ The sum of the views and the sum of the dividers should be equal to the size of 
         [_delegate splitViewDidResizeSubviews:[[CPNotification alloc] initWithName:CPSplitViewDidResizeSubviewsNotification object:self userInfo:userInfo]];
 
     [[CPNotificationCenter defaultCenter] postNotificationName:CPSplitViewDidResizeSubviewsNotification object:self userInfo:userInfo];
+
+    [self updateTrackingAreas];
 }
 
 @end
