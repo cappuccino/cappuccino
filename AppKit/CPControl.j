@@ -196,22 +196,9 @@ var CPControlBlackColor = [CPColor blackColor];
     {
         _sendActionOn           = CPLeftMouseUpMask;
         _trackingMouseDownFlags = 0;
-
-        [self addTrackingArea:[[CPTrackingArea alloc] initWithRect:CGRectMakeZero()
-                                                           options:CPTrackingMouseEnteredAndExited | CPTrackingActiveInKeyWindow | CPTrackingInVisibleRect
-                                                             owner:self
-                                                          userInfo:nil]];
     }
 
     return self;
-}
-
-- (void)awakeFromCib
-{
-    [self addTrackingArea:[[CPTrackingArea alloc] initWithRect:CGRectMakeZero()
-                                                       options:CPTrackingMouseEnteredAndExited | CPTrackingActiveInKeyWindow | CPTrackingInVisibleRect
-                                                         owner:self
-                                                      userInfo:nil]];
 }
 
 #pragma mark -
@@ -1065,6 +1052,23 @@ var CPControlBlackColor = [CPColor blackColor];
 
     _DOMElement.style.direction = style;
 #endif
+}
+
+@end
+
+@implementation CPControl (CPTrackingArea)
+
+- (void)updateTrackingAreas
+{
+    var myTrackingAreas = [self trackingAreas];
+    
+    for (var i = 0; i < myTrackingAreas.length; i++)
+        [self removeTrackingArea:myTrackingAreas[i]];
+    
+    [self addTrackingArea:[[CPTrackingArea alloc] initWithRect:CGRectMakeZero()
+                                                       options:CPTrackingMouseEnteredAndExited | CPTrackingActiveInKeyWindow | CPTrackingInVisibleRect
+                                                         owner:self
+                                                      userInfo:nil]];
 }
 
 @end
