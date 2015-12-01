@@ -23,16 +23,17 @@
 @import <Foundation/Foundation.j>
 @import "CPView.j"
 
+/* @group CPTrackingAreaOptions */
 @typedef CPTrackingAreaOptions
-CPTrackingMouseEnteredAndExited     = 1 << 1,
-CPTrackingMouseMoved                = 1 << 2,
-CPTrackingCursorUpdate              = 1 << 3,
-CPTrackingActiveWhenFirstResponder  = 1 << 4,
-CPTrackingActiveInKeyWindow         = 1 << 5,
-CPTrackingActiveInActiveApp         = 1 << 6,
-CPTrackingActiveAlways              = 1 << 7,
-CPTrackingAssumeInside              = 1 << 8,
-CPTrackingInVisibleRect             = 1 << 9,
+CPTrackingMouseEnteredAndExited     = 1 << 1;
+CPTrackingMouseMoved                = 1 << 2;
+CPTrackingCursorUpdate              = 1 << 3;
+CPTrackingActiveWhenFirstResponder  = 1 << 4;
+CPTrackingActiveInKeyWindow         = 1 << 5;
+CPTrackingActiveInActiveApp         = 1 << 6;
+CPTrackingActiveAlways              = 1 << 7;
+CPTrackingAssumeInside              = 1 << 8;
+CPTrackingInVisibleRect             = 1 << 9;
 CPTrackingEnabledDuringMouseDrag    = 1 << 10;
 
 var CPTrackingAreaRectKey            = @"CPTrackinkAreaRectKey",

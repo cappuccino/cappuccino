@@ -3535,7 +3535,7 @@ setBoundsOrigin:
     // We also do special treatment and notify the view itself if it has no tracking area to
     // enable the use of updateTrackingAreas as a mean to install tracking areas.
 
-    if (_trackingAreas.length > 0)
+    if ([_trackingAreas count] > 0)
         var ownersToNotify = [self _prepareOwnersToNotify];
     else
         var ownersToNotify = @[ self ];
@@ -3551,7 +3551,7 @@ setBoundsOrigin:
     
     var ownersToNotify = [];
     
-    for (var i = 0; i < _trackingAreas.length; i++)
+    for (var i = 0, count = [_trackingAreas count]; i < count; i++)
     {
         var trackingArea = _trackingAreas[i];
         
@@ -3626,6 +3626,11 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 
     if (self)
     {
+        _trackingAreas = [aCoder decodeObjectForKey:CPViewTrackingAreasKey];
+        
+        if (!_trackingAreas)
+            _trackingAreas = [];
+        
         // We have to manually check because it may be 0, so we can't use ||
         _tag = [aCoder containsValueForKey:CPViewTagKey] ? [aCoder decodeIntForKey:CPViewTagKey] : -1;
         _identifier = [aCoder decodeObjectForKey:CPReuseIdentifierKey];
@@ -3699,11 +3704,6 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 
         [self setAppearance:[aCoder decodeObjectForKey:CPViewAppearanceKey]];
         
-        _trackingAreas = [aCoder decodeObjectForKey:CPViewTrackingAreasKey];
-        
-        if (!_trackingAreas)
-            _trackingAreas = [];
-
         [self setNeedsDisplay:YES];
         [self setNeedsLayout];
     }
