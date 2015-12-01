@@ -465,10 +465,7 @@ var CPTableHeaderViewResizeZone = 3.0,
 
 - (void)updateTrackingAreas
 {
-    var myTrackingAreas = [self trackingAreas];
-    
-    for (var i = 0; i < myTrackingAreas.length; i++)
-        [self removeTrackingArea:myTrackingAreas[i]];
+    [self removeAllTrackingAreas];
     
     var options = CPTrackingCursorUpdate | CPTrackingActiveInKeyWindow;
     

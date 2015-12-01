@@ -3459,12 +3459,8 @@ setBoundsOrigin:
     
     if (![_trackingAreas containsObject:trackingArea])
         [CPException raise:CPInternalInconsistencyException reason:"Trying to remove unreferenced trackingArea"];
-    
-    if (_window)
-        [_window _removeTrackingArea:trackingArea];
-    
-    [trackingArea _setReferencingView:nil];
-    [_trackingAreas removeObject:trackingArea];
+
+    [self _removeTrackingArea:trackingArea];
 }
 
 // Invoked automatically when the view’s geometry changes such that its tracking areas need to be recalculated.
@@ -3483,6 +3479,35 @@ setBoundsOrigin:
     // Please note that it is the owner of a tracking area who is called for updateTrackingAreas.
     // But, if a view without any tracking area is inserted in the view hierarchy (that is, in a window), the view is called for updateTrackingAreas.
     // This enables you to use updateTrackingArea to initially attach your tracking areas to the view.
+}
+
+- (void)removeAllTrackingAreas
+{
+    // This utility method is intended for CPView subclasses overwriting updateTrackingAreas
+    //
+    // Typical use would be :
+    //
+    // - (void)updateTrackingAreas
+    // {
+    //      [self removeAllTrackingAreas];
+    //
+    //      ... add your specific updated tracking areas ...
+    //  }
+    
+    while (_trackingAreas.length > 0)
+        [self _removeTrackingArea:_trackingAreas[0]];
+}
+
+// Internal methods
+
+- (void)_removeTrackingArea:(CPTrackingArea)trackingArea
+{
+    if (_window)
+        [_window _removeTrackingArea:trackingArea];
+    
+    [trackingArea _setReferencingView:nil];
+    
+    [_trackingAreas removeObject:trackingArea];
 }
 
 - (void)_notifyUpdateTrackingAreas

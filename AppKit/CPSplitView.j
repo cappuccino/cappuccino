@@ -1190,11 +1190,8 @@ The sum of the views and the sum of the dividers should be equal to the size of 
 
 - (void)updateTrackingAreas
 {
-    var myTrackingAreas = [self trackingAreas];
-    
-    for (var i = 0; i < myTrackingAreas.length; i++)
-        [self removeTrackingArea:myTrackingAreas[i]];
-    
+    [self removeAllTrackingAreas];
+
     var options = CPTrackingCursorUpdate | CPTrackingActiveInKeyWindow;
     
     for (var i = 0; i < _subviews.length - 1; i++)

@@ -1060,10 +1060,7 @@ var CPControlBlackColor = [CPColor blackColor];
 
 - (void)updateTrackingAreas
 {
-    var myTrackingAreas = [self trackingAreas];
-    
-    for (var i = 0; i < myTrackingAreas.length; i++)
-        [self removeTrackingArea:myTrackingAreas[i]];
+    [self removeAllTrackingAreas];
     
     [self addTrackingArea:[[CPTrackingArea alloc] initWithRect:CGRectMakeZero()
                                                        options:CPTrackingMouseEnteredAndExited | CPTrackingActiveInKeyWindow | CPTrackingInVisibleRect
