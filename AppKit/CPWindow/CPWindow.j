@@ -3849,13 +3849,11 @@ var interpolate = function(fromValue, toValue, progress)
 {
     // If mouse is in the tracking area, we remove it from the stack to avoid to fire a future mouseExited event
     
-    if ([_mouseEnteredStack containsObject:trackingArea])
-        [_mouseEnteredStack removeObject:trackingArea];
+    [_mouseEnteredStack removeObjectIdenticalTo:trackingArea];
     
     var trackingAreaView = [trackingArea _referencingView];
     
-    if ([_trackingAreaViews containsObject:trackingAreaView])
-        [_trackingAreaViews removeObject:trackingAreaView];
+    [_trackingAreaViews removeObjectIdenticalTo:trackingAreaView];
 }
 
 - (void)_trackEvent:(CPEvent)anEvent
