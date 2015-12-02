@@ -219,6 +219,7 @@ CFHTTPRequest.prototype.getResponseHeader = function(/*String*/ aHeader)
 CFHTTPRequest.prototype.setTimeout = function(/*int*/ aTimeout)
 {
     this._timeout = aTimeout;
+
     if (this._isOpen)
         this._nativeRequest.timeout = aTimeout;
 };
@@ -248,15 +249,16 @@ CFHTTPRequest.prototype.open = function(/*String*/ aMethod, /*String*/ aURL, /*B
     this._method = aMethod;
     this._user = aUser;
     this._password = aPassword;
-    
-    retval = this._nativeRequest.open(aMethod, aURL, isAsynchronous, aUser, aPassword);
+
+    requestReturnValue = this._nativeRequest.open(aMethod, aURL, isAsynchronous, aUser, aPassword);
+
     if (this._async)
     {
         this._nativeRequest.withCredentials = this._withCredentials;
         this._nativeRequest.timeout = this._timeout;
     }
-    
-    return retval;
+
+    return requestReturnValue;
 };
 
 CFHTTPRequest.prototype.send = function(/*Object*/ aBody)
@@ -296,6 +298,7 @@ CFHTTPRequest.prototype.send = function(/*Object*/ aBody)
 CFHTTPRequest.prototype.abort = function()
 {
     this._isOpen = false;
+
     return this._nativeRequest.abort();
 };
 
@@ -311,7 +314,8 @@ CFHTTPRequest.prototype.removeEventListener = function(/*String*/ anEventName, /
 
 CFHTTPRequest.prototype.setWithCredentials = function(/*Boolean*/ willSendWithCredentials)
 {
-    this._withCredentials = willSendWithCredentials
+    this._withCredentials = willSendWithCredentials;
+
     if (this._isOpen && this._async)
         this._nativeRequest.withCredentials = willSendWithCredentials;
 };
@@ -350,7 +354,9 @@ function determineAndDispatchHTTPRequestEvents(/*CFHTTPRequest*/ aRequest)
         eventDispatcher.dispatchEvent({ type:readyStates[aRequest.readyState()], request:aRequest});
     }
     else
+    {
         eventDispatcher.dispatchEvent({ type:readyStates[aRequest.readyState()], request:aRequest});
+    }
 }
 
 function FileRequest(/*CFURL*/ aURL, onsuccess, onfailure, onprogress)
@@ -391,6 +397,7 @@ function FileRequest(/*CFURL*/ aURL, onsuccess, onfailure, onprogress)
         {
             onfailure({request: request});
         }
+
         return;
     }
 #endif
