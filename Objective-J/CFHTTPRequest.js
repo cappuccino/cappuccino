@@ -320,7 +320,6 @@ function dispatchTimeoutHTTPRequestEvents(/*CFHTTPRequest*/ aRequest)
 function determineAndDispatchHTTPRequestEvents(/*CFHTTPRequest*/ aRequest)
 {
     var eventDispatcher = aRequest._eventDispatcher,
-        nativeRequest = aRequest._nativeRequest,
         readyStates = ["uninitialized", "loading", "loaded", "interactive", "complete"];
 
     eventDispatcher.dispatchEvent({ type:"readystatechange", request:aRequest});
