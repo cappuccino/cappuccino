@@ -3439,11 +3439,11 @@ setBoundsOrigin:
     if (!trackingArea || [_trackingAreas containsObject:trackingArea])
         return;
     
-    if ([trackingArea _isReferenced])
+    if ([trackingArea view])
         [CPException raise:CPInternalInconsistencyException reason:"Tracking area has already been added to another view."];
 
     [_trackingAreas addObject:trackingArea];
-    [trackingArea _setReferencingView:self];
+    [trackingArea setView:self];
     
     if (_window)
         [_window _addTrackingArea:trackingArea];
@@ -3505,9 +3505,9 @@ setBoundsOrigin:
     if (_window)
         [_window _removeTrackingArea:trackingArea];
     
-    [trackingArea _setReferencingView:nil];
+    [trackingArea setView:nil];
     
-    [_trackingAreas removeObject:trackingArea];
+    [_trackingAreas removeObjectIdenticalTo:trackingArea];
 }
 
 - (void)_notifyUpdateTrackingAreas

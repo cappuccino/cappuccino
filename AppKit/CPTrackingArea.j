@@ -36,12 +36,12 @@ CPTrackingAssumeInside              = 1 << 8;
 CPTrackingInVisibleRect             = 1 << 9;
 CPTrackingEnabledDuringMouseDrag    = 1 << 10;
 
-var CPTrackingAreaRectKey            = @"CPTrackinkAreaRectKey",
+var CPTrackingAreaViewRectKey        = @"CPTrackinkAreaViewRectKey",
     CPTrackingAreaOptionsKey         = @"CPTrackingAreaOptionsKey",
     CPTrackingAreaOwnerKey           = @"CPTrackingAreaOwnerKey",
     CPTrackingAreaUserInfoKey        = @"CPTrackingAreaUserInfoKey",
     CPTrackingAreaReferencingViewKey = @"CPTrackingAreaReferencingViewKey",
-    CPTrackingAreaActualRect         = @"CPTrackingAreaActualRect";
+    CPTrackingAreaWindowRect         = @"CPTrackingAreaWindowRect";
 
 
 /*!
@@ -52,13 +52,13 @@ var CPTrackingAreaRectKey            = @"CPTrackinkAreaRectKey",
  */
 @implementation CPTrackingArea : CPObject
 {
-    CGRect                  _rect               @accessors(getter=rect);
+    CGRect                  _viewRect           @accessors(getter=rect);
     CPTrackingAreaOptions   _options            @accessors(getter=options);
     id                      _owner              @accessors(getter=owner);
     CPDictionary            _userInfo           @accessors(getter=userInfo);
     
-    CPView                  _referencingView    @accessors;
-    CGRect                  _actualRect         @accessors(getter=actualRect);
+    CPView                  _referencingView    @accessors(property=view);
+    CGRect                  _windowRect         @accessors(getter=actualRect);
 }
 
 
@@ -85,7 +85,7 @@ var CPTrackingAreaRectKey            = @"CPTrackinkAreaRectKey",
         if ((((options & CPTrackingActiveWhenFirstResponder) > 0) + ((options & CPTrackingActiveInKeyWindow) > 0) + ((options & CPTrackingActiveInActiveApp) > 0) + ((options & CPTrackingActiveAlways) > 0)) !== 1)
             [CPException raise:CPInternalInconsistencyException reason:"Tracking area options may only specify one of [CPTrackingActiveWhenFirstResponder | CPTrackingActiveInKeyWindow | CPTrackingActiveInActiveApp | CPTrackingActiveAlways]."];
 
-        _rect     = aRect;
+        _viewRect = aRect;
         _options  = options;
         _owner    = owner;
         _userInfo = userInfo;
@@ -98,14 +98,9 @@ var CPTrackingAreaRectKey            = @"CPTrackinkAreaRectKey",
 #pragma mark -
 #pragma mark Implementation
 
-- (BOOL)_isReferenced
-{
-    return !!_referencingView;
-}
-
 - (void)_updateActualRect
 {
-    _actualRect = [_referencingView convertRect:((_options & CPTrackingInVisibleRect) ? [_referencingView visibleRect] : _rect) toView:[[_referencingView window] _windowView]];
+    _windowRect = [_referencingView convertRect:((_options & CPTrackingInVisibleRect) ? [_referencingView visibleRect] : _viewRect) toView:[[_referencingView window] _windowView]];
 }
 
 @end
@@ -119,12 +114,12 @@ var CPTrackingAreaRectKey            = @"CPTrackinkAreaRectKey",
 {
     if (self = [super init])
     {
-        _rect            = [aCoder decodeObjectForKey:CPTrackingAreaRectKey];
+        _viewRect        = [aCoder decodeObjectForKey:CPTrackingAreaViewRectKey];
         _options         = [aCoder decodeObjectForKey:CPTrackingAreaOptionsKey];
         _owner           = [aCoder decodeObjectForKey:CPTrackingAreaOwnerKey];
         _userInfo        = [aCoder decodeObjectForKey:CPTrackingAreaUserInfoKey];
         _referencingView = [aCoder decodeObjectForKey:CPTrackingAreaReferencingViewKey];
-        _actualRect      = [aCoder decodeObjectForKey:CPTrackingAreaActualRect];
+        _windowRect      = [aCoder decodeObjectForKey:CPTrackingAreaWindowRect];
     }
     
     return self;
@@ -132,12 +127,12 @@ var CPTrackingAreaRectKey            = @"CPTrackinkAreaRectKey",
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
-    [aCoder encodeObject:_rect            forKey:CPTrackingAreaRectKey];
+    [aCoder encodeObject:_viewRect        forKey:CPTrackingAreaViewRectKey];
     [aCoder encodeObject:_options         forKey:CPTrackingAreaOptionsKey];
     [aCoder encodeObject:_owner           forKey:CPTrackingAreaOwnerKey];
     [aCoder encodeObject:_userInfo        forKey:CPTrackingAreaUserInfoKey];
     [aCoder encodeObject:_referencingView forKey:CPTrackingAreaReferencingViewKey];
-    [aCoder encodeObject:_actualRect      forKey:CPTrackingAreaActualRect];
+    [aCoder encodeObject:_windowRect      forKey:CPTrackingAreaWindowRect];
 }
 
 @end

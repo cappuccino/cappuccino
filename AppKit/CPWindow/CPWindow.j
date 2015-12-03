@@ -3834,7 +3834,7 @@ var interpolate = function(fromValue, toValue, progress)
 
 - (void)_addTrackingArea:(CPTrackingArea)trackingArea
 {
-    var trackingAreaView = [trackingArea _referencingView];
+    var trackingAreaView = [trackingArea view];
     
     if (![_trackingAreaViews containsObject:trackingAreaView])
         [_trackingAreaViews addObject:trackingAreaView];
@@ -3851,7 +3851,7 @@ var interpolate = function(fromValue, toValue, progress)
     
     [_mouseEnteredStack removeObjectIdenticalTo:trackingArea];
     
-    var trackingAreaView = [trackingArea _referencingView];
+    var trackingAreaView = [trackingArea view];
     
     [_trackingAreaViews removeObjectIdenticalTo:trackingAreaView];
 }
@@ -3980,12 +3980,12 @@ var interpolate = function(fromValue, toValue, progress)
         if (nbOverlappingTrackingAreas > 0)
         {
             var frontmostTrackingArea = overlappingTrackingAreas[0],
-                frontmostView         = [frontmostTrackingArea _referencingView];
+                frontmostView         = [frontmostTrackingArea view];
             
             for (var i = 1; i < nbOverlappingTrackingAreas; i++)
             {
                 var aTrackingArea  = overlappingTrackingAreas[i],
-                    aView          = [aTrackingArea _referencingView];
+                    aView          = [aTrackingArea view];
                 
                 // First verify if aView is a subview of frontmostView
                 // If so, it's our new frontmost view
