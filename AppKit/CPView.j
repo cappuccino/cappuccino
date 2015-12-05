@@ -3436,7 +3436,7 @@ setBoundsOrigin:
 - (void)addTrackingArea:(CPTrackingArea)trackingArea
 {
     // Consistency check
-    if (!trackingArea || [_trackingAreas containsObject:trackingArea])
+    if (!trackingArea || [_trackingAreas containsObjectIdenticalTo:trackingArea])
         return;
     
     if ([trackingArea view])

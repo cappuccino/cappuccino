@@ -2,6 +2,7 @@
 @import <AppKit/CPApplication.j>
 
 var methodCalled;
+var updateTrackingAreasCalls;
 
 @implementation CPViewTest : OJTestCase
 {
@@ -30,7 +31,8 @@ var methodCalled;
     [view3 setIdentifier:@"view3"];
 
     methodCalled = [];
-
+    updateTrackingAreasCalls = 0;
+    
     [super setUp];
 }
 
@@ -884,6 +886,109 @@ var methodCalled;
 
     [view removeFromSuperview];
     [self assert:nil equals:[view effectiveAppearance]];
+}
+
+// TrackingAreaAdditions
+
+- (void)testTrackingAreas
+{
+    var trackingArea = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero() options:CPTrackingMouseEnteredAndExited | CPTrackingActiveInKeyWindow | CPTrackingInVisibleRect owner:self userInfo:nil];
+    
+    [self assert:0 equals:[[view trackingAreas] count] message:@"Initially, a view has no tracking area"];
+
+    //
+    
+    [view addTrackingArea:trackingArea];
+    [self assert:1 equals:[[view trackingAreas] count] message:@"After adding a tracking area"];
+    [self assert:view equals:[trackingArea view] message:@"Tracking area should be linked to view"];
+
+    //
+    
+    [view removeTrackingArea:trackingArea];
+    [self assert:0 equals:[[view trackingAreas] count] message:@"After removing the only tracking area"];
+    [self assert:nil equals:[trackingArea view] message:@"Tracking area should be unlinked"];
+    
+    //
+    
+    [view addTrackingArea:trackingArea];
+    [view addTrackingArea:trackingArea];
+    [view addTrackingArea:trackingArea];
+    [self assert:1 equals:[[view trackingAreas] count] message:@"Adding the same tracking area multiple times should add it once"];
+    [self assert:view equals:[trackingArea view] message:@"Tracking area should be linked to view"];
+    
+    var trackingArea2 = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero() options:CPTrackingMouseEnteredAndExited | CPTrackingActiveInKeyWindow owner:self userInfo:nil];
+
+    //
+    
+    [view addTrackingArea:trackingArea2];
+    [self assert:2 equals:[[view trackingAreas] count] message:@"After adding a second tracking area"];
+    [self assert:view equals:[trackingArea2 view] message:@"Tracking area should be linked to view"];
+
+    //
+    
+    [view removeAllTrackingAreas];
+    [self assert:0 equals:[[view trackingAreas] count] message:@"After removing all tracking areas"];
+    [self assert:nil equals:[trackingArea view] message:@"Tracking area should be unlinked"];
+    [self assert:nil equals:[trackingArea2 view] message:@"Tracking area should be unlinked"];
+
+    //
+    
+    [view addTrackingArea:trackingArea];
+    
+    var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask],
+    contentView = [theWindow contentView];
+    [contentView addSubview:view];
+    [self assert:0 equals:updateTrackingAreasCalls message:@"Putting a view with a CPTrackingAreaInVisibleRect in a window should not call updateTrackingAreas"];
+    
+    [view removeFromSuperview];
+
+    //
+    
+    [view addTrackingArea:trackingArea2];
+    [contentView addSubview:view];
+    [self assert:1 equals:updateTrackingAreasCalls message:@"Putting a view with a non CPTrackingAreaInVisibleRect in a window should call updateTrackingAreas"];
+    
+    [view removeAllTrackingAreas];
+    
+    //
+    
+    var viewTA = [[CPTrackingAreaView alloc] initWithFrame:CGRectMakeZero()];
+    updateTrackingAreasCalls = 0;
+    [contentView addSubview:viewTA];
+    [self assert:1 equals:updateTrackingAreasCalls message:@"Putting a view with no tracking areas in a window should call updateTrackingAreas"];
+
+    //
+    
+    updateTrackingAreasCalls = 0;
+    
+    [viewTA addTrackingArea:trackingArea];
+    [viewTA setFrame:CGRectMake(10, 10, 10, 10)];
+    [self assert:0 equals:updateTrackingAreasCalls message:@"Changing geometry of a view with a CPTrackingAreaInVisibleRect should not call updateTrackingAreas"];
+    
+    //
+    
+    updateTrackingAreasCalls = 0;
+    
+    [viewTA addTrackingArea:trackingArea2];
+    [viewTA setFrame:CGRectMake(20, 20, 20, 20)];
+    [self assert:1 equals:updateTrackingAreasCalls message:@"Changing geometry of a view with a non CPTrackingAreaInVisibleRect should call updateTrackingAreas"];
+}
+
+- (void)updateTrackingAreas
+{
+    updateTrackingAreasCalls++;
+}
+
+@end
+
+@implementation CPTrackingAreaView : CPView
+{
+    
+}
+
+- (void)updateTrackingAreas
+{
+    updateTrackingAreasCalls++;
 }
 
 @end
