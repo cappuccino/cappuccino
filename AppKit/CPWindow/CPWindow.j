@@ -1974,7 +1974,7 @@ CPTexturedBackgroundWindowMask
         case CPRightMouseDragged:
             // First, we search for any tracking area requesting CPTrackingEnabledDuringMouseDrag.
             // At the same time, we update the entered stack.
-            [self _trackEvent:anEvent];
+            [self _handleTrackingAreaEvent:anEvent];
             
             // Normal mouseDragged workflow
             if (!_leftMouseDownView)
@@ -2000,7 +2000,7 @@ CPTexturedBackgroundWindowMask
             if (!_acceptsMouseMovedEvents || sheet)
                 return;
             
-            [self _trackEvent:anEvent];
+            [self _handleTrackingAreaEvent:anEvent];
     }
 }
 
@@ -3856,7 +3856,7 @@ var interpolate = function(fromValue, toValue, progress)
     [_trackingAreaViews removeObjectIdenticalTo:trackingAreaView];
 }
 
-- (void)_trackEvent:(CPEvent)anEvent
+- (void)_handleTrackingAreaEvent:(CPEvent)anEvent
 {
     var mouseEnteredStack = [],
         cursorUpdateStack = [],
@@ -3874,8 +3874,9 @@ var interpolate = function(fromValue, toValue, progress)
         
         for (var j = 0; j < trackingAreas.length; j++)
         {
-            var aTrackingArea   = trackingAreas[j],
-                trackingOptions = [aTrackingArea options];
+            var aTrackingArea              = trackingAreas[j],
+                trackingOptions            = [aTrackingArea options],
+                trackingImplementedMethods = [aTrackingArea implementedOwnerMethods];
             
             if (dragging && !(trackingOptions & CPTrackingEnabledDuringMouseDrag))
                 continue;
@@ -3894,14 +3895,14 @@ var interpolate = function(fromValue, toValue, progress)
                 {
                     // Mouse was already in this rect so it's a mouseMoved
                     
-                    if (!dragging && (trackingOptions & CPTrackingMouseMoved))
+                    if (!dragging && (trackingOptions & CPTrackingMouseMoved) && (trackingImplementedMethods & CPTrackingOwnerImplementsMouseMoved))
                         [[aTrackingArea owner] mouseMoved:anEvent];
                 }
                 else
                 {
                     // Mouse was not in this rect so it's a mouseEntered
                     
-                    if (trackingOptions & CPTrackingMouseEnteredAndExited)
+                    if ((trackingOptions & CPTrackingMouseEnteredAndExited) && (trackingImplementedMethods & CPTrackingOwnerImplementsMouseEntered))
                         [[aTrackingArea owner] mouseEntered:[CPEvent enterExitEventWithType:CPMouseEntered
                                                                                    location:point
                                                                               modifierFlags:[anEvent modifierFlags]
@@ -3912,7 +3913,7 @@ var interpolate = function(fromValue, toValue, progress)
                                                                                trackingArea:aTrackingArea]];
                 }
                 
-                if (trackingOptions & CPTrackingCursorUpdate)
+                if ((trackingOptions & CPTrackingCursorUpdate) && (trackingImplementedMethods & CPTrackingOwnerImplementsCursorUpdate))
                     [cursorUpdateStack addObject:aTrackingArea];
             }
         }
@@ -3929,7 +3930,7 @@ var interpolate = function(fromValue, toValue, progress)
         {
             // Mouse is no more in this area so it's a mouseExited
             
-            if ((trackingOptions & CPTrackingMouseEnteredAndExited) && (!dragging || (dragging && (trackingOptions & CPTrackingEnabledDuringMouseDrag))))
+            if ((trackingOptions & CPTrackingMouseEnteredAndExited) && (!dragging || (dragging && (trackingOptions & CPTrackingEnabledDuringMouseDrag))) && (trackingImplementedMethods & CPTrackingOwnerImplementsMouseExited))
                 [[aTrackingArea owner] mouseExited:[CPEvent enterExitEventWithType:CPMouseExited
                                                                           location:point
                                                                      modifierFlags:[anEvent modifierFlags]
@@ -3958,8 +3959,8 @@ var interpolate = function(fromValue, toValue, progress)
     
     // Cursor update
     
-    // We must send the cursorUpdate event to the frontmost view (the nearest from the mouse pointer)
-    // If no frontmost view is found, we set standard cursor
+    // We must send the cursorUpdate event to the frontmost tracking area (the nearest from the mouse pointer)
+    // If no frontmost tracking area is found, we set standard cursor
     
     var nbCursorUpdates          = [cursorUpdateStack count],
         overlappingTrackingAreas = [];
@@ -3971,7 +3972,6 @@ var interpolate = function(fromValue, toValue, progress)
             var aTrackingArea = cursorUpdateStack[i];
             
             if ((![_cursorUpdateStack containsObject:aTrackingArea]) || (aTrackingArea === _activeCursorTrackingArea))
-                
                 [overlappingTrackingAreas addObject:aTrackingArea];
         }
         
@@ -4031,8 +4031,9 @@ var interpolate = function(fromValue, toValue, progress)
                 if (firstSuperview !== secondSuperview)
                     [CPException raise:CPInternalInconsistencyException reason:"Problem with view hierarchy"];
                 
-                var firstViewIndex  = [[firstSuperview subviews] indexOfObject:firstView],
-                    secondViewIndex = [[firstSuperview subviews] indexOfObject:secondView];
+                var firstSuperviewSubviews = [firstSuperview subviews],
+                    firstViewIndex         = [firstSuperviewSubviews indexOfObject:firstView],
+                    secondViewIndex        = [firstSuperviewSubviews indexOfObject:secondView];
                 
                 if (secondViewIndex > firstViewIndex)
                 {

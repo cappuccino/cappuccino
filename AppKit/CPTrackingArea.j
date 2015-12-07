@@ -21,7 +21,8 @@
  */
 
 @import <Foundation/Foundation.j>
-@import "CPView.j"
+
+@class CPView
 
 /* @group CPTrackingAreaOptions */
 @typedef CPTrackingAreaOptions
@@ -43,6 +44,10 @@ var CPTrackingAreaViewRectKey        = @"CPTrackinkAreaViewRectKey",
     CPTrackingAreaReferencingViewKey = @"CPTrackingAreaReferencingViewKey",
     CPTrackingAreaWindowRect         = @"CPTrackingAreaWindowRect";
 
+CPTrackingOwnerImplementsMouseEntered = 1 << 1;
+CPTrackingOwnerImplementsMouseExited  = 1 << 2;
+CPTrackingOwnerImplementsMouseMoved   = 1 << 3;
+CPTrackingOwnerImplementsCursorUpdate = 1 << 4;
 
 /*!
  @ingroup appkit
@@ -52,25 +57,32 @@ var CPTrackingAreaViewRectKey        = @"CPTrackinkAreaViewRectKey",
  */
 @implementation CPTrackingArea : CPObject
 {
-    CGRect                  _viewRect           @accessors(getter=rect);
-    CPTrackingAreaOptions   _options            @accessors(getter=options);
-    id                      _owner              @accessors(getter=owner);
-    CPDictionary            _userInfo           @accessors(getter=userInfo);
+    CGRect                  _viewRect                   @accessors(getter=rect);
+    CPTrackingAreaOptions   _options                    @accessors(getter=options);
+    id                      _owner                      @accessors(getter=owner);
+    CPDictionary            _userInfo                   @accessors(getter=userInfo);
     
-    CPView                  _referencingView    @accessors(property=view);
-    CGRect                  _windowRect         @accessors(getter=actualRect);
+    CPView                  _referencingView            @accessors(property=view);
+    CGRect                  _windowRect                 @accessors(getter=actualRect);
+
+    unsigned                _implementedOwnerMethods    @accessors(getter=implementedOwnerMethods);
 }
 
 
 #pragma mark -
 #pragma mark Initialization
 
-/*! Initializes and returns an object defining a region of a view to receive mouse-tracking events, mouse-moved events, cursor-update events, or possibly all these events.
+/*! 
+ Initializes and returns an object defining a region of a view to receive mouse-tracking events, mouse-moved events, cursor-update events, or possibly 
+ all these events.
  */
 - (CPTrackingArea)initWithRect:(CGRect)aRect options:(CPTrackingAreaOptions)options owner:(id)owner userInfo:(CPDictionary)userInfo
 {
     if (self = [super init])
     {
+        if (owner === nil)
+            [CPException raise:CPInternalInconsistencyException reason:"No owner specified"];
+
         if (options === 0)
             [CPException raise:CPInternalInconsistencyException reason:"Invalid CPTrackingArea options"];
 
@@ -89,6 +101,20 @@ var CPTrackingAreaViewRectKey        = @"CPTrackinkAreaViewRectKey",
         _options  = options;
         _owner    = owner;
         _userInfo = userInfo;
+
+        // Cache owner implemented methods
+
+        if ([_owner respondsToSelector:@selector(mouseEntered:)])
+            _implementedOwnerMethods |= CPTrackingOwnerImplementsMouseEntered;
+
+        if ([_owner respondsToSelector:@selector(mouseExited:)])
+            _implementedOwnerMethods |= CPTrackingOwnerImplementsMouseExited;
+
+        if ([_owner respondsToSelector:@selector(mouseMoved:)])
+            _implementedOwnerMethods |= CPTrackingOwnerImplementsMouseMoved;
+
+        if ([_owner respondsToSelector:@selector(cursorUpdate:)])
+            _implementedOwnerMethods |= CPTrackingOwnerImplementsCursorUpdate;
     }
     
     return self;
@@ -98,7 +124,7 @@ var CPTrackingAreaViewRectKey        = @"CPTrackinkAreaViewRectKey",
 #pragma mark -
 #pragma mark Implementation
 
-- (void)_updateActualRect
+- (void)_updateWindowRect
 {
     _windowRect = [_referencingView convertRect:((_options & CPTrackingInVisibleRect) ? [_referencingView visibleRect] : _viewRect) toView:[[_referencingView window] _windowView]];
 }

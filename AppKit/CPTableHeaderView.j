@@ -692,7 +692,6 @@ var CPTableHeaderViewResizeZone = 3.0,
     [[_tableView headerView] setNeedsLayout];
 
     [[CPCursor arrowCursor] set];
-    
     [self updateTrackingAreas];
 }
 
@@ -761,7 +760,6 @@ var CPTableHeaderViewResizeZone = 3.0,
     if ([tableColumn width] != _columnOldWidth)
     {
         [_tableView _didResizeTableColumn:tableColumn oldWidth:_columnOldWidth];
-        
         [self updateTrackingAreas];
     }
 
@@ -773,13 +771,6 @@ var CPTableHeaderViewResizeZone = 3.0,
 
 - (void)_updateResizeCursor:(CPEvent)theEvent
 {
-    // never get stuck in resize cursor mode (FIXME take out when we turn on tracking rects)
-    if (![_tableView allowsColumnResizing] || ([theEvent type] === CPLeftMouseUp && ![[self window] acceptsMouseMovedEvents]))
-    {
-        [[CPCursor arrowCursor] set];
-        return;
-    }
-
     var mouseLocation = [self convertPoint:[theEvent locationInWindow] fromView:nil],
         mouseOverLocation = CGPointMake(MAX(mouseLocation.x - CPTableHeaderViewResizeZone, 0.0), mouseLocation.y),
         overColumn = [self columnAtPoint:mouseOverLocation];
