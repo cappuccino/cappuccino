@@ -3886,7 +3886,7 @@ var interpolate = function(fromValue, toValue, progress)
                 ((trackingOptions & CPTrackingActiveInKeyWindow) && isKeyWindow) ||
                 ((trackingOptions & CPTrackingActiveWhenFirstResponder) && isKeyWindow && (_firstResponder === aView)))
             {
-                if (!(CGRectContainsPoint([aTrackingArea actualRect], point)))
+                if (!(CGRectContainsPoint([aTrackingArea windowRect], point)))
                     continue;
                 
                 [mouseEnteredStack addObject:aTrackingArea];

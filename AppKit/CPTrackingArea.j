@@ -63,7 +63,7 @@ CPTrackingOwnerImplementsCursorUpdate = 1 << 4;
     CPDictionary            _userInfo                   @accessors(getter=userInfo);
     
     CPView                  _referencingView            @accessors(property=view);
-    CGRect                  _windowRect                 @accessors(getter=actualRect);
+    CGRect                  _windowRect                 @accessors(getter=windowRect);
 
     unsigned                _implementedOwnerMethods    @accessors(getter=implementedOwnerMethods);
 }
