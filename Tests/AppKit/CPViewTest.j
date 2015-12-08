@@ -2,7 +2,11 @@
 @import <AppKit/CPApplication.j>
 
 var methodCalled;
-var updateTrackingAreasCalls;
+var updateTrackingAreasCalls,
+    mouseEnteredCalls,
+    mouseExitedCalls,
+    mouseMovedCalls,
+    cursorUpdateCalls;
 
 @implementation CPViewTest : OJTestCase
 {
@@ -935,8 +939,8 @@ var updateTrackingAreasCalls;
     
     [view addTrackingArea:trackingArea];
     
-    var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask],
-    contentView = [theWindow contentView];
+    var contentView = [window contentView];
+
     [contentView addSubview:view];
     [self assert:0 equals:updateTrackingAreasCalls message:@"Putting a view with a CPTrackingAreaInVisibleRect in a window should not call updateTrackingAreas"];
     
@@ -954,13 +958,14 @@ var updateTrackingAreasCalls;
     
     var viewTA = [[CPTrackingAreaView alloc] initWithFrame:CGRectMakeZero()];
     updateTrackingAreasCalls = 0;
+
     [contentView addSubview:viewTA];
     [self assert:1 equals:updateTrackingAreasCalls message:@"Putting a view with no tracking areas in a window should call updateTrackingAreas"];
 
     //
     
     updateTrackingAreasCalls = 0;
-    
+
     [viewTA addTrackingArea:trackingArea];
     [viewTA setFrame:CGRectMake(10, 10, 10, 10)];
     [self assert:0 equals:updateTrackingAreasCalls message:@"Changing geometry of a view with a CPTrackingAreaInVisibleRect should not call updateTrackingAreas"];
@@ -972,6 +977,209 @@ var updateTrackingAreasCalls;
     [viewTA addTrackingArea:trackingArea2];
     [viewTA setFrame:CGRectMake(20, 20, 20, 20)];
     [self assert:1 equals:updateTrackingAreasCalls message:@"Changing geometry of a view with a non CPTrackingAreaInVisibleRect should call updateTrackingAreas"];
+
+    //
+
+    var trackingAreaAll = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero() options:CPTrackingMouseEnteredAndExited | CPTrackingMouseMoved | CPTrackingCursorUpdate | CPTrackingActiveInActiveApp | CPTrackingInVisibleRect owner:viewTA userInfo:nil];
+
+    [viewTA removeAllTrackingAreas];
+    [viewTA addTrackingArea:trackingAreaAll];
+
+    // Mouse enters the tracking area
+
+    var anEvent = [CPEvent mouseEventWithType:CPMouseMoved
+                                     location:CGPointMake(21, 21)
+                                modifierFlags:0
+                                    timestamp:0
+                                 windowNumber:[window windowNumber]
+                                      context:nil
+                                  eventNumber:-1
+                                   clickCount:0
+                                     pressure:0];
+
+    [self resetCounters];
+
+    [[CPApplication sharedApplication] sendEvent:anEvent];
+
+    [self assert:1 equals:mouseEnteredCalls message:@"Mouse entering a tracking area should call mouseEntered"];
+    [self assert:0 equals:mouseExitedCalls  message:@"Mouse entering a tracking area should not call mouseExited"];
+    [self assert:0 equals:mouseMovedCalls   message:@"Mouse entering a tracking area should not call mouseMoved"];
+    [self assert:1 equals:cursorUpdateCalls message:@"Mouse entering a tracking area should call cursorUpdate"];
+
+    // Mouse moves in the tracking area
+
+    var anEvent = [CPEvent mouseEventWithType:CPMouseMoved
+                                     location:CGPointMake(22, 22)
+                                modifierFlags:0
+                                    timestamp:0
+                                 windowNumber:[window windowNumber]
+                                      context:nil
+                                  eventNumber:-1
+                                   clickCount:0
+                                     pressure:0];
+
+    [self resetCounters];
+
+    [[CPApplication sharedApplication] sendEvent:anEvent];
+
+    [self assert:0 equals:mouseEnteredCalls message:@"Mouse moving in a tracking area should not call mouseEntered"];
+    [self assert:0 equals:mouseExitedCalls  message:@"Mouse moving in a tracking area should not call mouseExited"];
+    [self assert:1 equals:mouseMovedCalls   message:@"Mouse moving in a tracking area should call mouseMoved"];
+    [self assert:0 equals:cursorUpdateCalls message:@"Mouse moving in a tracking area should not call cursorUpdate"];
+
+    // Mouse exits from the tracking area
+
+    var anEvent = [CPEvent mouseEventWithType:CPMouseMoved
+                                     location:CGPointMake(0, 0)
+                                modifierFlags:0
+                                    timestamp:0
+                                 windowNumber:[window windowNumber]
+                                      context:nil
+                                  eventNumber:-1
+                                   clickCount:0
+                                     pressure:0];
+
+    [self resetCounters];
+
+    [[CPApplication sharedApplication] sendEvent:anEvent];
+
+    [self assert:0 equals:mouseEnteredCalls message:@"Mouse exiting from a tracking area should not call mouseEntered"];
+    [self assert:1 equals:mouseExitedCalls  message:@"Mouse exiting from a tracking area should call mouseExited"];
+    [self assert:0 equals:mouseMovedCalls   message:@"Mouse exiting from a tracking area should not call mouseMoved"];
+    [self assert:0 equals:cursorUpdateCalls message:@"Mouse exiting from a tracking area should not call cursorUpdate"];
+
+    // Mouse enters the tracking area while dragging
+
+    var anEvent = [CPEvent mouseEventWithType:CPLeftMouseDragged
+                                     location:CGPointMake(21, 21)
+                                modifierFlags:0
+                                    timestamp:0
+                                 windowNumber:[window windowNumber]
+                                      context:nil
+                                  eventNumber:-1
+                                   clickCount:0
+                                     pressure:0];
+
+    [self resetCounters];
+
+    [[CPApplication sharedApplication] sendEvent:anEvent];
+
+    [self assert:0 equals:mouseEnteredCalls message:@"While dragging, mouse entering a tracking area without CPTrackingEnabledDuringMouseDrag should not call mouseEntered"];
+    [self assert:0 equals:mouseExitedCalls  message:@"While dragging, mouse entering a tracking area without CPTrackingEnabledDuringMouseDrag should not call mouseExited"];
+    [self assert:0 equals:mouseMovedCalls   message:@"While dragging, mouse entering a tracking area without CPTrackingEnabledDuringMouseDrag should not call mouseMoved"];
+    [self assert:0 equals:cursorUpdateCalls message:@"While dragging, mouse entering a tracking area without CPTrackingEnabledDuringMouseDrag should not call cursorUpdate"];
+
+    // Mouse moves in the tracking area while dragging
+
+    var anEvent = [CPEvent mouseEventWithType:CPLeftMouseDragged
+                                     location:CGPointMake(22, 22)
+                                modifierFlags:0
+                                    timestamp:0
+                                 windowNumber:[window windowNumber]
+                                      context:nil
+                                  eventNumber:-1
+                                   clickCount:0
+                                     pressure:0];
+
+    [self resetCounters];
+
+    [[CPApplication sharedApplication] sendEvent:anEvent];
+
+    [self assert:0 equals:mouseEnteredCalls message:@"While dragging, mouse moving in a tracking area without CPTrackingEnabledDuringMouseDrag should not call mouseEntered"];
+    [self assert:0 equals:mouseExitedCalls  message:@"While dragging, mouse moving in a tracking area without CPTrackingEnabledDuringMouseDrag should not call mouseExited"];
+    [self assert:0 equals:mouseMovedCalls   message:@"While dragging, mouse moving in a tracking area without CPTrackingEnabledDuringMouseDrag should not call mouseMoved"];
+    [self assert:0 equals:cursorUpdateCalls message:@"While dragging, mouse moving in a tracking area without CPTrackingEnabledDuringMouseDrag should not call cursorUpdate"];
+
+    // Mouse exits from the tracking area while dragging
+
+    var anEvent = [CPEvent mouseEventWithType:CPLeftMouseDragged
+                                     location:CGPointMake(0, 0)
+                                modifierFlags:0
+                                    timestamp:0
+                                 windowNumber:[window windowNumber]
+                                      context:nil
+                                  eventNumber:-1
+                                   clickCount:0
+                                     pressure:0];
+
+    [self resetCounters];
+
+    [[CPApplication sharedApplication] sendEvent:anEvent];
+
+    [self assert:0 equals:mouseEnteredCalls message:@"While dragging, mouse exiting from a tracking area without CPTrackingEnabledDuringMouseDrag should not call mouseEntered"];
+    [self assert:0 equals:mouseExitedCalls  message:@"While dragging, mouse exiting from a tracking area without CPTrackingEnabledDuringMouseDrag should not call mouseExited"];
+    [self assert:0 equals:mouseMovedCalls   message:@"While dragging, mouse exiting from a tracking area without CPTrackingEnabledDuringMouseDrag should not call mouseMoved"];
+    [self assert:0 equals:cursorUpdateCalls message:@"While dragging, mouse exiting from a tracking area without CPTrackingEnabledDuringMouseDrag should not call cursorUpdate"];
+
+    //
+
+    var trackingAreaAllWithDrag = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero() options:CPTrackingMouseEnteredAndExited | CPTrackingMouseMoved | CPTrackingCursorUpdate | CPTrackingActiveInActiveApp | CPTrackingInVisibleRect | CPTrackingEnabledDuringMouseDrag owner:viewTA userInfo:nil];
+
+    [viewTA removeAllTrackingAreas];
+    [viewTA addTrackingArea:trackingAreaAllWithDrag];
+    
+    // Mouse enters the tracking area while dragging (option set)
+
+    var anEvent = [CPEvent mouseEventWithType:CPLeftMouseDragged
+                                     location:CGPointMake(21, 21)
+                                modifierFlags:0
+                                    timestamp:0
+                                 windowNumber:[window windowNumber]
+                                      context:nil
+                                  eventNumber:-1
+                                   clickCount:0
+                                     pressure:0];
+
+    [self resetCounters];
+
+    [[CPApplication sharedApplication] sendEvent:anEvent];
+
+    [self assert:1 equals:mouseEnteredCalls message:@"While dragging, mouse entering a tracking area with CPTrackingEnabledDuringMouseDrag should call mouseEntered"];
+    [self assert:0 equals:mouseExitedCalls  message:@"While dragging, mouse entering a tracking area with CPTrackingEnabledDuringMouseDrag should not call mouseExited"];
+    [self assert:0 equals:mouseMovedCalls   message:@"While dragging, mouse entering a tracking area with CPTrackingEnabledDuringMouseDrag should not call mouseMoved"];
+    [self assert:0 equals:cursorUpdateCalls message:@"While dragging, mouse entering a tracking area with CPTrackingEnabledDuringMouseDrag should not call cursorUpdate"];
+
+    // Mouse moves in the tracking area while dragging (option set)
+
+    var anEvent = [CPEvent mouseEventWithType:CPLeftMouseDragged
+                                     location:CGPointMake(22, 22)
+                                modifierFlags:0
+                                    timestamp:0
+                                 windowNumber:[window windowNumber]
+                                      context:nil
+                                  eventNumber:-1
+                                   clickCount:0
+                                     pressure:0];
+
+    [self resetCounters];
+
+    [[CPApplication sharedApplication] sendEvent:anEvent];
+
+    [self assert:0 equals:mouseEnteredCalls message:@"While dragging, mouse moving in a tracking area with CPTrackingEnabledDuringMouseDrag should not call mouseEntered"];
+    [self assert:0 equals:mouseExitedCalls  message:@"While dragging, mouse moving in a tracking area with CPTrackingEnabledDuringMouseDrag should not call mouseExited"];
+    [self assert:0 equals:mouseMovedCalls   message:@"While dragging, mouse moving in a tracking area with CPTrackingEnabledDuringMouseDrag should not call mouseMoved"];
+    [self assert:0 equals:cursorUpdateCalls message:@"While dragging, mouse moving in a tracking area with CPTrackingEnabledDuringMouseDrag should not call cursorUpdate"];
+
+    // Mouse exits from the tracking area while dragging (option set)
+
+    var anEvent = [CPEvent mouseEventWithType:CPLeftMouseDragged
+                                     location:CGPointMake(0, 0)
+                                modifierFlags:0
+                                    timestamp:0
+                                 windowNumber:[window windowNumber]
+                                      context:nil
+                                  eventNumber:-1
+                                   clickCount:0
+                                     pressure:0];
+
+    [self resetCounters];
+
+    [[CPApplication sharedApplication] sendEvent:anEvent];
+
+    [self assert:0 equals:mouseEnteredCalls message:@"While dragging, mouse exiting from a tracking area with CPTrackingEnabledDuringMouseDrag should not call mouseEntered"];
+    [self assert:1 equals:mouseExitedCalls  message:@"While dragging, mouse exiting from a tracking area with CPTrackingEnabledDuringMouseDrag should call mouseExited"];
+    [self assert:0 equals:mouseMovedCalls   message:@"While dragging, mouse exiting from a tracking area with CPTrackingEnabledDuringMouseDrag should not call mouseMoved"];
+    [self assert:0 equals:cursorUpdateCalls message:@"While dragging, mouse exiting from a tracking area with CPTrackingEnabledDuringMouseDrag should not call cursorUpdate"];
 }
 
 - (void)updateTrackingAreas
@@ -979,11 +1187,39 @@ var updateTrackingAreasCalls;
     updateTrackingAreasCalls++;
 }
 
+- (void)resetCounters
+{
+    mouseEnteredCalls = 0;
+    mouseExitedCalls  = 0;
+    mouseMovedCalls   = 0;
+    cursorUpdateCalls = 0;
+}
+
 @end
 
 @implementation CPTrackingAreaView : CPView
 {
-    
+
+}
+
+- (void)mouseEntered:(CPEvent)anEvent
+{
+    mouseEnteredCalls++;
+}
+
+- (void)mouseExited:(CPEvent)anEvent
+{
+    mouseExitedCalls++;
+}
+
+- (void)mouseMoved:(CPEvent)anEvent
+{
+    mouseMovedCalls++;
+}
+
+- (void)cursorUpdate:(CPEvent)anEvent
+{
+    cursorUpdateCalls++;
 }
 
 - (void)updateTrackingAreas
