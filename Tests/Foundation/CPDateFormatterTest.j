@@ -635,17 +635,49 @@
     var result = [_dateFormatter dateFromString:@"10"];
     [self assert:result equals:[[CPDate alloc] initWithString:@"2000-10-01 08:00:00 +0000"]];
 
+    [_dateFormatter setDateFormat:@"M"];
+    var result = [_dateFormatter dateFromString:@"1"];
+    [self assert:result equals:[[CPDate alloc] initWithString:@"2000-01-01 08:00:00 +0000"]];
+
+    [_dateFormatter setDateFormat:@"M"];
+    var result = [_dateFormatter dateFromString:@"12"];
+    [self assert:result equals:[[CPDate alloc] initWithString:@"2000-12-01 08:00:00 +0000"]];
+
     [_dateFormatter setDateFormat:@"MM"];
     var result = [_dateFormatter dateFromString:@"7"];
     [self assert:result equals:[[CPDate alloc] initWithString:@"2000-07-01 08:00:00 +0000"]];
+
+    [_dateFormatter setDateFormat:@"MM"];
+    var result = [_dateFormatter dateFromString:@"1"];
+    [self assert:result equals:[[CPDate alloc] initWithString:@"2000-01-01 08:00:00 +0000"]];
+
+    [_dateFormatter setDateFormat:@"MM"];
+    var result = [_dateFormatter dateFromString:@"12"];
+    [self assert:result equals:[[CPDate alloc] initWithString:@"2000-12-01 08:00:00 +0000"]];
 
     [_dateFormatter setDateFormat:@"MMM"];
     var result = [_dateFormatter dateFromString:@"Sep"];
     [self assert:result equals:[[CPDate alloc] initWithString:@"2000-09-01 08:00:00 +0000"]];
 
+    [_dateFormatter setDateFormat:@"MMM"];
+    var result = [_dateFormatter dateFromString:@"Jan"];
+    [self assert:result equals:[[CPDate alloc] initWithString:@"2000-01-01 08:00:00 +0000"]];
+
+    [_dateFormatter setDateFormat:@"MMM"];
+    var result = [_dateFormatter dateFromString:@"Dec"];
+    [self assert:result equals:[[CPDate alloc] initWithString:@"2000-12-01 08:00:00 +0000"]];
+
     [_dateFormatter setDateFormat:@"MMMM"];
     var result = [_dateFormatter dateFromString:@"September"];
     [self assert:result equals:[[CPDate alloc] initWithString:@"2000-09-01 08:00:00 +0000"]];
+
+    [_dateFormatter setDateFormat:@"MMMM"];
+    var result = [_dateFormatter dateFromString:@"December"];
+    [self assert:result equals:[[CPDate alloc] initWithString:@"2000-12-01 08:00:00 +0000"]];
+
+    [_dateFormatter setDateFormat:@"MMMM"];
+    var result = [_dateFormatter dateFromString:@"January"];
+    [self assert:result equals:[[CPDate alloc] initWithString:@"2000-01-01 08:00:00 +0000"]];
 
     [_dateFormatter setDateFormat:@"MMMMM"];
     var result = [_dateFormatter dateFromString:@"S"];
@@ -682,17 +714,49 @@
     var result = [_dateFormatter dateFromString:@"10"];
     [self assert:result equals:[[CPDate alloc] initWithString:@"2000-10-01 08:00:00 +0000"]];
 
+    [_dateFormatter setDateFormat:@"L"];
+    var result = [_dateFormatter dateFromString:@"1"];
+    [self assert:result equals:[[CPDate alloc] initWithString:@"2000-01-01 08:00:00 +0000"]];
+
+    [_dateFormatter setDateFormat:@"L"];
+    var result = [_dateFormatter dateFromString:@"12"];
+    [self assert:result equals:[[CPDate alloc] initWithString:@"2000-12-01 08:00:00 +0000"]];
+
     [_dateFormatter setDateFormat:@"LL"];
     var result = [_dateFormatter dateFromString:@"7"];
     [self assert:result equals:[[CPDate alloc] initWithString:@"2000-07-01 08:00:00 +0000"]];
+
+    [_dateFormatter setDateFormat:@"LL"];
+    var result = [_dateFormatter dateFromString:@"1"];
+    [self assert:result equals:[[CPDate alloc] initWithString:@"2000-01-01 08:00:00 +0000"]];
+
+    [_dateFormatter setDateFormat:@"LL"];
+    var result = [_dateFormatter dateFromString:@"12"];
+    [self assert:result equals:[[CPDate alloc] initWithString:@"2000-12-01 08:00:00 +0000"]];
 
     [_dateFormatter setDateFormat:@"LLL"];
     var result = [_dateFormatter dateFromString:@"Sep"];
     [self assert:result equals:[[CPDate alloc] initWithString:@"2000-09-01 08:00:00 +0000"]];
 
+    [_dateFormatter setDateFormat:@"LLL"];
+    var result = [_dateFormatter dateFromString:@"Dec"];
+    [self assert:result equals:[[CPDate alloc] initWithString:@"2000-12-01 08:00:00 +0000"]];
+
+    [_dateFormatter setDateFormat:@"LLL"];
+    var result = [_dateFormatter dateFromString:@"Jan"];
+    [self assert:result equals:[[CPDate alloc] initWithString:@"2000-01-01 08:00:00 +0000"]];
+
     [_dateFormatter setDateFormat:@"LLLL"];
     var result = [_dateFormatter dateFromString:@"September"];
     [self assert:result equals:[[CPDate alloc] initWithString:@"2000-09-01 08:00:00 +0000"]];
+
+    [_dateFormatter setDateFormat:@"LLLL"];
+    var result = [_dateFormatter dateFromString:@"December"];
+    [self assert:result equals:[[CPDate alloc] initWithString:@"2000-12-01 08:00:00 +0000"]];
+
+    [_dateFormatter setDateFormat:@"LLLL"];
+    var result = [_dateFormatter dateFromString:@"January"];
+    [self assert:result equals:[[CPDate alloc] initWithString:@"2000-01-01 08:00:00 +0000"]];
 
     [_dateFormatter setDateFormat:@"LLLLL"];
     var result = [_dateFormatter dateFromString:@"S"];
