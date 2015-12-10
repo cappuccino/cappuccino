@@ -354,6 +354,7 @@ _CPWindowViewResizeSlop = 3;
         !(_styleMask & CPResizableWindowMask) ||
         (CPWindowResizeStyle !== CPWindowResizeStyleModern))
     {
+        [self cursorUpdate:nil];
         return;
     }
 

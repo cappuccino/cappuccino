@@ -78,25 +78,25 @@ CPTrackingOwnerImplementsCursorUpdate = 1 << 4;
  */
 - (CPTrackingArea)initWithRect:(CGRect)aRect options:(CPTrackingAreaOptions)options owner:(id)owner userInfo:(CPDictionary)userInfo
 {
+    if (owner === nil)
+        [CPException raise:CPInternalInconsistencyException reason:"No owner specified"];
+
+    if (options === 0)
+        [CPException raise:CPInternalInconsistencyException reason:"Invalid CPTrackingArea options"];
+
+    // Check options:
+    // - at least one of CPTrackingMouseEnteredAndExited, CPTrackingMouseMoved, CPTrackingCursorUpdate
+    // - exactly  one of CPTrackingActiveWhenFirstResponder, CPTrackingActiveInKeyWindow, CPTrackingActiveInActiveApp, CPTrackingActiveAlways
+    // - no check on CPTrackingAssumeInside, CPTrackingInVisibleRect, CPTrackingEnableDuringMouseDrag
+
+    if (!((options & CPTrackingMouseEnteredAndExited) || (options & CPTrackingMouseMoved) || (options & CPTrackingCursorUpdate)))
+        [CPException raise:CPInternalInconsistencyException reason:"Invalid CPTrackingAreaOptions: must use at least one of [CPTrackingMouseEnteredAndExited | CPTrackingMouseMoved | CPTrackingCursorUpdate]"];
+
+    if ((((options & CPTrackingActiveWhenFirstResponder) > 0) + ((options & CPTrackingActiveInKeyWindow) > 0) + ((options & CPTrackingActiveInActiveApp) > 0) + ((options & CPTrackingActiveAlways) > 0)) !== 1)
+        [CPException raise:CPInternalInconsistencyException reason:"Tracking area options may only specify one of [CPTrackingActiveWhenFirstResponder | CPTrackingActiveInKeyWindow | CPTrackingActiveInActiveApp | CPTrackingActiveAlways]."];
+
     if (self = [super init])
     {
-        if (owner === nil)
-            [CPException raise:CPInternalInconsistencyException reason:"No owner specified"];
-
-        if (options === 0)
-            [CPException raise:CPInternalInconsistencyException reason:"Invalid CPTrackingArea options"];
-
-        // Check options:
-        // - at least one of CPTrackingMouseEnteredAndExited, CPTrackingMouseMoved, CPTrackingCursorUpdate
-        // - exactly  one of CPTrackingActiveWhenFirstResponder, CPTrackingActiveInKeyWindow, CPTrackingActiveInActiveApp, CPTrackingActiveAlways
-        // - no check on CPTrackingAssumeInside, CPTrackingInVisibleRect, CPTrackingEnableDuringMouseDrag
-        
-        if (!((options & CPTrackingMouseEnteredAndExited) || (options & CPTrackingMouseMoved) || (options & CPTrackingCursorUpdate)))
-            [CPException raise:CPInternalInconsistencyException reason:"Invalid CPTrackingAreaOptions: must use at least one of [CPTrackingMouseEnteredAndExited | CPTrackingMouseMoved | CPTrackingCursorUpdate]"];
-        
-        if ((((options & CPTrackingActiveWhenFirstResponder) > 0) + ((options & CPTrackingActiveInKeyWindow) > 0) + ((options & CPTrackingActiveInActiveApp) > 0) + ((options & CPTrackingActiveAlways) > 0)) !== 1)
-            [CPException raise:CPInternalInconsistencyException reason:"Tracking area options may only specify one of [CPTrackingActiveWhenFirstResponder | CPTrackingActiveInKeyWindow | CPTrackingActiveInActiveApp | CPTrackingActiveAlways]."];
-
         _viewRect = aRect;
         _options  = options;
         _owner    = owner;
