@@ -511,6 +511,8 @@ var CPControlBlackColor = [CPColor blackColor];
 
 - (void)mouseEntered:(CPEvent)anEvent
 {
+    [super mouseEntered:anEvent];
+
     if (![self isEnabled])
         return;
 
@@ -519,6 +521,8 @@ var CPControlBlackColor = [CPColor blackColor];
 
 - (void)mouseExited:(CPEvent)anEvent
 {
+    [super mouseExited:anEvent];
+
     var currentLocation = [self convertPoint:[anEvent locationInWindow] fromView:nil],
         isWithinFrame = [self tracksMouseOutsideOfFrame] || CGRectContainsPoint([self bounds], currentLocation);
 

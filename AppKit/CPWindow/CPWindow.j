@@ -198,6 +198,7 @@ var CPWindowActionMessageKeys = [
     CPView                              _toolbarView;
 
     CPArray                             _mouseEnteredStack;
+    CPArray                             mouseEnteredStack;
     CPView                              _leftMouseDownView;
     CPView                              _rightMouseDownView;
 
@@ -1985,13 +1986,16 @@ CPTexturedBackgroundWindowMask
             if (!_mouseEnteredStack)
                 _mouseEnteredStack = [];
 
+            if (!mouseEnteredStack)
+                mouseEnteredStack = [];
+            
             var hitTestView = [_windowView hitTest:point];
 
             if ([_mouseEnteredStack count] && [_mouseEnteredStack lastObject] === hitTestView)
                 return [hitTestView mouseMoved:anEvent];
 
-            var view = hitTestView,
-                mouseEnteredStack = [];
+            var view = hitTestView;
+            mouseEnteredStack = [];
 
             while (view)
             {
@@ -2013,8 +2017,7 @@ CPTexturedBackgroundWindowMask
             {
                 var event = [CPEvent mouseEventWithType:CPMouseExited location:point modifierFlags:[anEvent modifierFlags] timestamp:[anEvent timestamp] windowNumber:_windowNumber context:nil eventNumber:-1 clickCount:1 pressure:0];
 
-                for (; index < count; ++index)
-                    [_mouseEnteredStack[index] mouseExited:event];
+                [_mouseEnteredStack[count-1] mouseExited:event];
             }
 
             index = deviation + 1;
@@ -2024,14 +2027,25 @@ CPTexturedBackgroundWindowMask
             {
                 var event = [CPEvent mouseEventWithType:CPMouseEntered location:point modifierFlags:[anEvent modifierFlags] timestamp:[anEvent timestamp] windowNumber:_windowNumber context:nil eventNumber:-1 clickCount:1 pressure:0];
 
-                for (; index < count; ++index)
-                    [mouseEnteredStack[index] mouseEntered:event];
+                [mouseEnteredStack[count-1] mouseEntered:event];
             }
 
             _mouseEnteredStack = mouseEnteredStack;
 
             [hitTestView mouseMoved:anEvent];
     }
+}
+
+// The two following methods tell the sender (CPResponder) if it can or not propagate the current event deeper in the view hierarchy
+
+- (BOOL)shouldPropagateMouseEnteredEventToView:(CPView)aView
+{
+    return (![_mouseEnteredStack containsObject:aView]);
+}
+
+- (BOOL)shouldPropagateMouseExitedEventToView:(CPView)aView
+{
+    return (![mouseEnteredStack containsObject:aView]);
 }
 
 /*!

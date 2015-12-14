@@ -188,7 +188,8 @@ CPDeleteForwardKeyCode  = 46;
 
 - (void)mouseEntered:(CPEvent)anEvent
 {
-    [_nextResponder performSelector:_cmd withObject:anEvent];
+    if ([[anEvent window] shouldPropagateMouseEnteredEventToView:_nextResponder])
+        [_nextResponder performSelector:_cmd withObject:anEvent];
 }
 
 /*!
@@ -197,7 +198,8 @@ CPDeleteForwardKeyCode  = 46;
 */
 - (void)mouseExited:(CPEvent)anEvent
 {
-    [_nextResponder performSelector:_cmd withObject:anEvent];
+    if ([[anEvent window] shouldPropagateMouseExitedEventToView:_nextResponder])
+        [_nextResponder performSelector:_cmd withObject:anEvent];
 }
 
 /*!
