@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="9059" systemVersion="15B42" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="9060" systemVersion="15C50" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
     <dependencies>
         <deployment version="1050" identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="9059"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="9060"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="NSApplication">
@@ -363,15 +363,15 @@
                         <rect key="frame" x="940" y="513" width="277" height="163"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <clipView key="contentView" id="Tsy-28-w1p">
-                            <rect key="frame" x="1" y="1" width="260" height="146"/>
+                            <rect key="frame" x="1" y="1" width="275" height="161"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <subviews>
                                 <view id="35c-jE-A9i">
-                                    <rect key="frame" x="0.0" y="0.0" width="260" height="316"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="290" height="346"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <customView id="qhh-BF-uJV" customClass="SensibleView">
-                                            <rect key="frame" x="56" y="16" width="163" height="96"/>
+                                            <rect key="frame" x="56" y="46" width="163" height="96"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                             <animations/>
                                         </customView>
@@ -383,12 +383,12 @@
                         </clipView>
                         <animations/>
                         <scroller key="horizontalScroller" verticalHuggingPriority="750" horizontal="YES" id="haI-QJ-idG">
-                            <rect key="frame" x="1" y="147" width="260" height="15"/>
+                            <rect key="frame" x="1" y="146" width="275" height="16"/>
                             <autoresizingMask key="autoresizingMask"/>
                             <animations/>
                         </scroller>
                         <scroller key="verticalScroller" verticalHuggingPriority="750" doubleValue="1" horizontal="NO" id="en7-ag-3l6">
-                            <rect key="frame" x="261" y="1" width="15" height="146"/>
+                            <rect key="frame" x="260" y="1" width="16" height="161"/>
                             <autoresizingMask key="autoresizingMask"/>
                             <animations/>
                         </scroller>
@@ -470,6 +470,46 @@
                             <animations/>
                         </tableHeaderView>
                     </scrollView>
+                    <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" id="NBW-q0-pOz">
+                        <rect key="frame" x="1160" y="730" width="78" height="39"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <animations/>
+                        <textFieldCell key="cell" controlSize="mini" sendsActionOnEndEditing="YES" title="CPSplitView with thick horizontal dividers" id="LoF-bh-fEg">
+                            <font key="font" metaFont="system" size="8"/>
+                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" id="USC-6c-rhh">
+                        <rect key="frame" x="1223" y="452" width="88" height="44"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <animations/>
+                        <textFieldCell key="cell" controlSize="mini" sendsActionOnEndEditing="YES" title="CPTableHeaderView now using tracking areas for cursor updates" id="yKB-Vw-OTW">
+                            <font key="font" metaFont="system" size="8"/>
+                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" id="tjU-JO-PMX">
+                        <rect key="frame" x="1223" y="621" width="78" height="55"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <animations/>
+                        <textFieldCell key="cell" controlSize="mini" sendsActionOnEndEditing="YES" title="CPScrollView (scroll down to view and test a view with tracking area)" id="t8v-6H-YXg">
+                            <font key="font" metaFont="system" size="8"/>
+                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" id="5Zj-ir-6wr">
+                        <rect key="frame" x="1160" y="820" width="78" height="55"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <animations/>
+                        <textFieldCell key="cell" controlSize="mini" sendsActionOnEndEditing="YES" title="CPSplitView with thin vertical dividers, using tracking area for cursor updates" id="sLE-AN-vtO">
+                            <font key="font" metaFont="system" size="8"/>
+                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
                 </subviews>
                 <animations/>
             </view>

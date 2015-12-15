@@ -8,6 +8,7 @@
 
 @import <Foundation/Foundation.j>
 @import <AppKit/AppKit.j>
+@import <AppKit/CPTrackingArea.j>
 
 @class SensibleView;
 @class SensibleViewTA;
@@ -49,7 +50,7 @@
 
     // In this case, we want the window from Cib to become our full browser window
     [theWindow setFullPlatformWindow:YES];
-    
+
     var p = [theWindow contentView];
     
     // No tracking area
@@ -84,7 +85,7 @@
                                         userInfo:nil];
 
     [v2 addTrackingArea:t];
-    
+
     [p addSubview:v2];
     
     var l = [CPTextField labelWithTitle:@"CPTrackingMouseEnteredAndExited\nCPTrackingInVisibleRect"];
@@ -247,7 +248,7 @@
     
     // Not CPTrackingInVisibleRect
     
-    w2 = [[SensibleView alloc] initWithFrame:CGRectMake(160, 110, 50, 50)];
+    w2 = [[SensibleViewTA alloc] initWithFrame:CGRectMake(160, 110, 50, 50)];
     
     [w2 setViewName:@"Not CPTrackingInVisibleRect"];
     [w2 setViewColor:[CPColor greenColor]];
@@ -395,8 +396,8 @@
     
     for (var i = 0; i < 10; i++)
     {
-        var v = [[SensibleView alloc] initWithFrame:CGRectMake((i == 0 ? 50 : 20), (i == 0 ? 240 : 20), 400-(i*40), 400-(i*40))];
-        
+        var v = [[(i == 7 ? SensibleViewWithoutCursorUpdate : SensibleView) alloc] initWithFrame:CGRectMake((i == 0 ? 50 : 20), (i == 0 ? 240 : 20), 400-(i*40), 400-(i*40))];
+
         [p addSubview:v];
         p = v;
         
@@ -411,7 +412,7 @@
             case 0: [v setViewCursor:[CPCursor crosshairCursor]]; break;
             case 1: [v setViewCursor:[CPCursor pointingHandCursor]]; break;
             case 2: [v setViewCursor:[CPCursor resizeNorthwestCursor]]; break;
-            case 3: [v setViewCursor:[CPCursor IBeamCursor]]; break;
+            case 3: [v setViewCursor:nil]; break;
             case 4: [v setViewCursor:[CPCursor dragCopyCursor]]; break;
             case 5: [v setViewCursor:[CPCursor dragLinkCursor]]; break;
             case 6: [v setViewCursor:[CPCursor contextualMenuCursor]]; break;
@@ -432,8 +433,8 @@
     
     for (var i = 0; i < 10; i++)
     {
-        var v = [[SensibleView alloc] initWithFrame:CGRectMake((i == 0 ? 460 : 0), (i == 0 ? 240 : 0), 400-(i*40), 400-(i*40))];
-        
+        var v = [[(i == 7 ? SensibleViewWithoutCursorUpdate : SensibleView) alloc] initWithFrame:CGRectMake((i == 0 ? 460 : 0), (i == 0 ? 240 : 0), 400-(i*40), 400-(i*40))];
+
         [p addSubview:v];
         p = v;
         
@@ -448,7 +449,7 @@
             case 0: [v setViewCursor:[CPCursor crosshairCursor]]; break;
             case 1: [v setViewCursor:[CPCursor pointingHandCursor]]; break;
             case 2: [v setViewCursor:[CPCursor resizeNorthwestCursor]]; break;
-            case 3: [v setViewCursor:[CPCursor IBeamCursor]]; break;
+            case 3: [v setViewCursor:nil]; break;
             case 4: [v setViewCursor:[CPCursor dragCopyCursor]]; break;
             case 5: [v setViewCursor:[CPCursor dragLinkCursor]]; break;
             case 6: [v setViewCursor:[CPCursor contextualMenuCursor]]; break;
@@ -464,7 +465,7 @@
         [v addTrackingArea:t];
     }
     
-    var item = [CPButton buttonWithTitle:@"Clic to add view"];
+    var item = [CPButton buttonWithTitle:@"Click to add view that catches cursor updates but not mouse entered/exited events"];
     
     [item setTarget:self];
     [item setAction:@selector(addAView:)];
@@ -492,6 +493,8 @@
 
     
     [[theWindow contentView] addSubview:v];
+
+    [aSender setEnabled:NO];
 }
 
 @end
@@ -524,6 +527,8 @@
 
 - (void)mouseEntered:(CPEvent)anEvent
 {
+    CPLog.trace("mouseEntered @"+viewName);
+
     [self setBackgroundColor:[CPColor redColor]];
     
     var trigger = [[[anEvent trackingArea] userInfo] valueForKey:@"trigger"];
@@ -534,6 +539,8 @@
 
 - (void)mouseExited:(CPEvent)anEvent
 {
+    CPLog.trace("mouseExited @"+viewName);
+
     [self setBackgroundColor:viewColor];
     
     [coords setStringValue:@""];
@@ -548,7 +555,72 @@
 
 - (void)cursorUpdate:(CPEvent)anEvent
 {
-    [viewCursor set];
+    CPLog.trace("cursorUpdate @"+viewName);
+
+    if (viewCursor)
+        [viewCursor set];
+}
+
+- (void)setViewColor:(CPColor)aColor
+{
+    viewColor = aColor;
+    [self setBackgroundColor:aColor];
+}
+
+@end
+
+@implementation SensibleViewWithoutCursorUpdate : CPView
+{
+    CPString    viewName    @accessors;
+    CPCursor    viewCursor  @accessors;
+    CPColor     viewColor;
+    CPTextField coords;
+}
+
+- (id)initWithFrame:(CGRect)aFrame
+{
+    self = [super initWithFrame:aFrame];
+
+    if (self)
+    {
+        coords = [CPTextField labelWithTitle:@"WWWW,WWWW"];
+        [coords setFont:[CPFont systemFontOfSize:9]];
+        [coords setAlignment:CPCenterTextAlignment];
+        [coords setCenter:CGPointMake(25,25)];
+        [coords setStringValue:@""];
+
+        [self addSubview:coords];
+    }
+
+    return self;
+}
+
+- (void)mouseEntered:(CPEvent)anEvent
+{
+    CPLog.trace("mouseEntered @"+viewName);
+
+    [self setBackgroundColor:[CPColor redColor]];
+
+    var trigger = [[[anEvent trackingArea] userInfo] valueForKey:@"trigger"];
+
+    if (trigger)
+        [coords setStringValue:trigger];
+}
+
+- (void)mouseExited:(CPEvent)anEvent
+{
+    CPLog.trace("mouseExited @"+viewName);
+
+    [self setBackgroundColor:viewColor];
+
+    [coords setStringValue:@""];
+}
+
+- (void)mouseMoved:(CPEvent)anEvent
+{
+    var l = [anEvent locationInWindow];
+
+    [coords setStringValue:[CPString stringWithFormat:@"%d,%d",l.x,l.y]];
 }
 
 - (void)setViewColor:(CPColor)aColor
@@ -563,12 +635,9 @@
 
 - (void)updateTrackingAreas
 {
-    CPLog.trace("updateTrackingAreas for "+viewName);
+    CPLog.trace("updateTrackingAreas @"+viewName);
     
-    var trackingAreas = [self trackingAreas];
-    
-    for (var i = 0; i < trackingAreas.length; i++)
-        [self removeTrackingArea:[trackingAreas objectAtIndex:i]];
+    [self removeAllTrackingAreas];
     
     var t = [[CPTrackingArea alloc] initWithRect:CGRectMake(0, 0, 25, 25)
                                          options:CPTrackingMouseEnteredAndExited | CPTrackingActiveInKeyWindow
@@ -584,12 +653,9 @@
 
 - (void)updateTrackingAreas
 {
-    CPLog.trace("updateTrackingAreas for "+viewName);
+    CPLog.trace("updateTrackingAreas @"+viewName);
     
-    var trackingAreas = [self trackingAreas];
-    
-    for (var i = 0; i < trackingAreas.length; i++)
-        [self removeTrackingArea:[trackingAreas objectAtIndex:i]];
+    [self removeAllTrackingAreas];
     
     var t = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero()
                                          options:CPTrackingMouseEnteredAndExited | CPTrackingActiveInKeyWindow | CPTrackingInVisibleRect

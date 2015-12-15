@@ -354,7 +354,6 @@ _CPWindowViewResizeSlop = 3;
         !(_styleMask & CPResizableWindowMask) ||
         (CPWindowResizeStyle !== CPWindowResizeStyleModern))
     {
-        [self cursorUpdate:nil];
         return;
     }
 
@@ -972,3 +971,18 @@ _CPWindowViewResizeSlop = 3;
 }
 
 @end
+
+@implementation _CPWindowView (TrackingAreaAdditions)
+
+- (void)updateTrackingAreas
+{
+    [self removeAllTrackingAreas];
+
+    [self addTrackingArea:[[CPTrackingArea alloc] initWithRect:[self contentRectForFrameRect:[self frame]]
+                                                       options:CPTrackingCursorUpdate | CPTrackingActiveInActiveApp
+                                                         owner:self
+                                                      userInfo:nil]];
+}
+
+@end
+
