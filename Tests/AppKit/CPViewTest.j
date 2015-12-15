@@ -1219,6 +1219,145 @@ var updateTrackingAreasCalls,
 
     [self assert:0   equals:cursorUpdateCalls           message:@"Step 8 : no cursorUpdate should be called"];
     [self assert:nil equals:involvedViewForCursorUpdate message:@"Step 8 : no view should be called for cursorUpdate"];
+
+    // Cursor tests
+
+    var viewA = [[CPTrackingAreaViewWithCursorUpdate alloc] initWithFrame:CGRectMake(20, 20, 40, 40)];
+    var viewB = [[CPTrackingAreaView alloc] initWithFrame:CGRectMake(10, 10, 80, 80)];
+    var viewC = [[CPTrackingAreaViewWithoutCursorUpdate alloc] initWithFrame:CGRectMake(10, 10, 80, 80)];
+
+    [contentView setSubviews:[CPArray array]];
+    [contentView addSubview:viewA];
+
+    var options  = CPTrackingCursorUpdate | CPTrackingActiveInActiveApp | CPTrackingInVisibleRect;
+
+    var viewATrackingArea = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero() options:options owner:viewA userInfo:nil];
+    var viewBTrackingArea = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero() options:options owner:viewB userInfo:nil];
+    var viewCTrackingArea = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero() options:options owner:viewC userInfo:nil];
+
+    [viewA addTrackingArea:viewATrackingArea];
+    [viewB addTrackingArea:viewBTrackingArea];
+    [viewC addTrackingArea:viewCTrackingArea];
+
+    // Step 1.1 : outside the view
+
+    [self moveMouseAtPoint:CGPointMake(10, 10) dragging:NO];
+
+    [self assert:[CPCursor arrowCursor] equals:[CPCursor currentCursor] message:@"Step 1.1 : cursor should be an arrow"];
+
+    // Step 1.2 : inside the view
+
+    [self moveMouseAtPoint:CGPointMake(30, 30) dragging:NO];
+
+    [self assert:[CPCursor crosshairCursor] equals:[CPCursor currentCursor] message:@"Step 1.2 : cursor should be a crosshair"];
+
+    // Step 1.3 : outside the view
+
+    [self moveMouseAtPoint:CGPointMake(70, 70) dragging:NO];
+
+    [self assert:[CPCursor arrowCursor] equals:[CPCursor currentCursor] message:@"Step 1.3 : cursor should be an arrow"];
+
+    // Step 1.4 : inside the view with dragging
+
+    [self moveMouseAtPoint:CGPointMake(30, 30) dragging:YES];
+
+    [self assert:[CPCursor arrowCursor] equals:[CPCursor currentCursor] message:@"Step 1.4 : cursor should be an arrow"];
+
+    // Step 1.5 : mouse up (ends dragging)
+
+    [self mouseUpAtPoint:CGPointMake(30, 30)];
+
+    [self assert:[CPCursor crosshairCursor] equals:[CPCursor currentCursor] message:@"Step 1.5 : cursor should be a crosshair"];
+
+    // Step 1.6 : outside the view with dragging
+
+    [self moveMouseAtPoint:CGPointMake(10, 10) dragging:YES];
+
+    [self assert:[CPCursor crosshairCursor] equals:[CPCursor currentCursor] message:@"Step 1.6 : cursor should be a crosshair"];
+
+    // Step 1.7 : mouse up (ends dragging)
+
+    [self mouseUpAtPoint:CGPointMake(10, 10)];
+
+    [self assert:[CPCursor arrowCursor] equals:[CPCursor currentCursor] message:@"Step 1.7 : cursor should be an arrow"];
+    
+    //
+
+    [self moveMouseAtPoint:CGPointMake(1, 1) dragging:NO];
+
+    [viewA removeFromSuperview];
+    [contentView addSubview:viewB];
+    [viewB addSubview:viewA];
+
+    // Step 2.1 : outside the superview
+
+    [self moveMouseAtPoint:CGPointMake(5, 5) dragging:NO];
+
+    [self assert:[CPCursor arrowCursor] equals:[CPCursor currentCursor] message:@"Step 2.1 : cursor should be an arrow"];
+    
+    // Step 2.2 : inside the superview / outside the subview
+
+    [self moveMouseAtPoint:CGPointMake(15, 15) dragging:NO];
+
+    [self assert:[CPCursor arrowCursor] equals:[CPCursor currentCursor] message:@"Step 2.2 : cursor should be an arrow"];
+
+    // Step 2.3 : inside the subview
+
+    [self moveMouseAtPoint:CGPointMake(35, 35) dragging:NO];
+
+    [self assert:[CPCursor crosshairCursor] equals:[CPCursor currentCursor] message:@"Step 2.3 : cursor should be a crosshair"];
+
+    // Step 2.4 : outside the subview / inside the superview
+
+    [self moveMouseAtPoint:CGPointMake(15, 15) dragging:NO];
+
+    [self assert:[CPCursor crosshairCursor] equals:[CPCursor currentCursor] message:@"Step 2.4 : cursor should be a crosshair"];
+    
+    // Step 2.5 : outside the superview
+
+    [self moveMouseAtPoint:CGPointMake(5, 5) dragging:NO];
+
+    [self assert:[CPCursor arrowCursor] equals:[CPCursor currentCursor] message:@"Step 2.5 : cursor should be an arrow"];
+
+    //
+
+    [self moveMouseAtPoint:CGPointMake(1, 1) dragging:NO];
+
+    [viewA removeFromSuperview];
+    [viewB removeFromSuperview];
+    [contentView addSubview:viewC];
+    [viewC addSubview:viewA];
+
+    // Step 3.1 : outside the superview
+
+    [self moveMouseAtPoint:CGPointMake(5, 5) dragging:NO];
+
+    [self assert:[CPCursor arrowCursor] equals:[CPCursor currentCursor] message:@"Step 3.1 : cursor should be an arrow"];
+
+    // Step 3.2 : inside the superview / outside the subview
+
+    [self moveMouseAtPoint:CGPointMake(15, 15) dragging:NO];
+
+    [self assert:[CPCursor arrowCursor] equals:[CPCursor currentCursor] message:@"Step 3.2 : cursor should be an arrow"];
+
+    // Step 3.3 : inside the subview
+
+    [self moveMouseAtPoint:CGPointMake(35, 35) dragging:NO];
+
+    [self assert:[CPCursor crosshairCursor] equals:[CPCursor currentCursor] message:@"Step 3.3 : cursor should be a crosshair"];
+
+    // Step 3.4 : outside the subview / inside the superview
+
+    [self moveMouseAtPoint:CGPointMake(15, 15) dragging:NO];
+
+    [self assert:[CPCursor arrowCursor] equals:[CPCursor currentCursor] message:@"Step 3.4 : cursor should be an arrow"];
+
+    // Step 3.5 : outside the superview
+
+    [self moveMouseAtPoint:CGPointMake(5, 5) dragging:NO];
+
+    [self assert:[CPCursor arrowCursor] equals:[CPCursor currentCursor] message:@"Step 3.5 : cursor should be an arrow"];
+    
 }
 
 - (void)updateTrackingAreas
@@ -1241,6 +1380,23 @@ var updateTrackingAreasCalls,
 - (void)moveMouseAtPoint:(CGPoint)aPoint dragging:(BOOL)dragging
 {
     var anEvent = [CPEvent mouseEventWithType:(dragging ? CPLeftMouseDragged : CPMouseMoved)
+                                     location:aPoint
+                                modifierFlags:0
+                                    timestamp:0
+                                 windowNumber:[window windowNumber]
+                                      context:nil
+                                  eventNumber:-1
+                                   clickCount:0
+                                     pressure:0];
+
+    [self resetCounters];
+
+    [[CPApplication sharedApplication] sendEvent:anEvent];
+}
+
+- (void)mouseUpAtPoint:(CGPoint)aPoint
+{
+    var anEvent = [CPEvent mouseEventWithType:CPLeftMouseUp
                                      location:aPoint
                                 modifierFlags:0
                                     timestamp:0
@@ -1291,6 +1447,27 @@ var updateTrackingAreasCalls,
 - (void)updateTrackingAreas
 {
     updateTrackingAreasCalls++;
+}
+
+@end
+
+@implementation CPTrackingAreaViewWithCursorUpdate : CPTrackingAreaView
+{
+
+}
+
+- (void)cursorUpdate:(CPEvent)anEvent
+{
+    [[CPCursor crosshairCursor] set];
+
+    [super cursorUpdate:anEvent];
+}
+
+@end
+
+@implementation CPTrackingAreaViewWithoutCursorUpdate : CPView
+{
+
 }
 
 @end
