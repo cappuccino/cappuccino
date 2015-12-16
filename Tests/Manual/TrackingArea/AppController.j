@@ -13,6 +13,7 @@
 @class SensibleView;
 @class SensibleViewTA;
 @class SensibleViewAutoTA;
+@class SensibleViewWithoutCursorUpdate;
 
 @implementation AppController : CPObject
 {
@@ -26,6 +27,10 @@
     SensibleView    v6;
     SensibleView    v7;
     SensibleView    v8;
+    SensibleView    v9;
+    SensibleView    v10;
+    SensibleViewWithoutCursorUpdate v11;
+    SensibleView    v12;
 
     SensibleViewTA      w2;
     SensibleView        w3;
@@ -40,6 +45,17 @@
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
     // This is called when the application is done loading.
+
+    var message = [[CPAlert alloc] init];
+
+    [message setMessageText:@"CPTrackingArea test application"];
+    [message setInformativeText:@"Play with various cases, try to drag mouse, observe events in the console, ..."];
+    [message setDelegate:self];
+    [message setAlertStyle:CPInformationalAlertStyle];
+
+    [message addButtonWithTitle:@"OK"];
+
+    [message beginSheetModalForWindow:theWindow modalDelegate:nil didEndSelector:nil contextInfo:nil];
 }
 
 - (void)awakeFromCib
@@ -62,15 +78,9 @@
     [v1 setViewCursor:[CPCursor crosshairCursor]];
     
     [p addSubview:v1];
-    
-    var l = [CPTextField labelWithTitle:@"No tracking area"];
-    
-    [l setCenter:CGPointMake([v1 center].x, 90)];
-    [l setFont:[CPFont systemFontOfSize:8]];
-    [l setAlignment:CPCenterTextAlignment];
 
-    [p addSubview:l];
-    
+    [self addLabel:@"No tracking area" forView:v1];
+
     // CPTrackingMouseEnteredAndExited
     
     v2 = [[SensibleView alloc] initWithFrame:CGRectMake(160, 10, 50, 50)];
@@ -88,14 +98,8 @@
 
     [p addSubview:v2];
     
-    var l = [CPTextField labelWithTitle:@"CPTrackingMouseEnteredAndExited\nCPTrackingInVisibleRect"];
-    
-    [l setCenter:CGPointMake([v2 center].x, 90)];
-    [l setFont:[CPFont systemFontOfSize:8]];
-    [l setAlignment:CPCenterTextAlignment];
-    
-    [p addSubview:l];
-    
+    [self addLabel:@"MouseEnteredAndExited\nInVisibleRect" forView:v2];
+
     // CPTrackingCursorUpdate
     
     v3 = [[SensibleView alloc] initWithFrame:CGRectMake(290, 10, 50, 50)];
@@ -113,13 +117,7 @@
     
     [p addSubview:v3];
     
-    var l = [CPTextField labelWithTitle:@"CPTrackingCursorUpdate\nCPTrackingInVisibleRect"];
-    
-    [l setCenter:CGPointMake([v3 center].x, 90)];
-    [l setFont:[CPFont systemFontOfSize:8]];
-    [l setAlignment:CPCenterTextAlignment];
-    
-    [p addSubview:l];
+    [self addLabel:@"CursorUpdate\nInVisibleRect" forView:v3];
     
     // CPTrackingMouseMoved
     
@@ -138,13 +136,7 @@
     
     [p addSubview:v4];
     
-    var l = [CPTextField labelWithTitle:@"CPTrackingMouseMoved\nCPTrackingInVisibleRect"];
-    
-    [l setCenter:CGPointMake([v4 center].x, 90)];
-    [l setFont:[CPFont systemFontOfSize:8]];
-    [l setAlignment:CPCenterTextAlignment];
-    
-    [p addSubview:l];
+    [self addLabel:@"MouseMoved\nInVisibleRect" forView:v4];
     
     // CPTrackingMouseEnteredAndExited & CPTrackingCursorUpdate
     
@@ -163,13 +155,7 @@
     
     [p addSubview:v5];
     
-    var l = [CPTextField labelWithTitle:@"CPTrackingMouseEnteredAndExited\nCPTrackingCursorUpdate\nCPTrackingInVisibleRect"];
-    
-    [l setCenter:CGPointMake([v5 center].x, 90)];
-    [l setFont:[CPFont systemFontOfSize:8]];
-    [l setAlignment:CPCenterTextAlignment];
-    
-    [p addSubview:l];
+    [self addLabel:@"MouseEnteredAndExited\nCursorUpdate\nInVisibleRect" forView:v5];
     
     // CPTrackingMouseMoved & CPTrackingCursorUpdate
     
@@ -188,13 +174,7 @@
     
     [p addSubview:v6];
     
-    var l = [CPTextField labelWithTitle:@"CPTrackingMouseMoved\nCPTrackingCursorUpdate\nCPTrackingInVisibleRect"];
-    
-    [l setCenter:CGPointMake([v6 center].x, 90)];
-    [l setFont:[CPFont systemFontOfSize:8]];
-    [l setAlignment:CPCenterTextAlignment];
-    
-    [p addSubview:l];
+    [self addLabel:@"MouseMoved\nCursorUpdate\nInVisibleRect" forView:v6];
     
     // CPTrackingMouseEnteredAndExited & CPTrackingMouseMoved
     
@@ -213,13 +193,7 @@
     
     [p addSubview:v7];
     
-    var l = [CPTextField labelWithTitle:@"CPTrackingMouseEnteredAndExited\nCPTrackingMouseMoved\nCPTrackingInVisibleRect"];
-    
-    [l setCenter:CGPointMake([v7 center].x, 90)];
-    [l setFont:[CPFont systemFontOfSize:8]];
-    [l setAlignment:CPCenterTextAlignment];
-    
-    [p addSubview:l];
+    [self addLabel:@"MouseEnteredAndExited\nMouseMoved\nInVisibleRect" forView:v7];
     
     // CPTrackingMouseEnteredAndExited & CPTrackingMouseMoved & CPTrackingCursorUpdate
     
@@ -238,13 +212,75 @@
     
     [p addSubview:v8];
     
-    var l = [CPTextField labelWithTitle:@"CPTrackingMouseEnteredAndExited\nCPTrackingMouseMoved\nCPTrackingCursorUpdate\nCPTrackingInVisibleRect"];
+    [self addLabel:@"MouseEnteredAndExited\nMouseMoved\nCursorUpdate\nInVisibleRect" forView:v8];
+
+    // nested views, superview implements cursorUpdate but does nothing
+
+    v9 = [[SensibleView alloc] initWithFrame:CGRectMake(1070, 10, 50, 50)];
+
+    [v9 setViewName:@"Superview with cursorUpdate but doing nothing"];
+    [v9 setViewColor:[CPColor greenColor]];
+    [v9 setViewCursor:nil];
+
+    var t = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero()
+                                         options:CPTrackingCursorUpdate | CPTrackingActiveInKeyWindow | CPTrackingInVisibleRect
+                                           owner:v9
+                                        userInfo:nil];
+
+    [v9 addTrackingArea:t];
+
+    [p addSubview:v9];
+
+    [self addLabel:@"Outer view implements\ncursorUpdate but does nothing.\nInner view implements\ncursorUpdate" forView:v9];
+
+    v10 = [[SensibleView alloc] initWithFrame:CGRectMake(10, 10, 30, 30)];
+
+    [v10 setViewName:@"Subview with cursorUpdate"];
+    [v10 setViewColor:[CPColor redColor]];
+    [v10 setViewCursor:[CPCursor crosshairCursor]];
+
+    var t = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero()
+                                         options:CPTrackingCursorUpdate | CPTrackingActiveInKeyWindow | CPTrackingInVisibleRect
+                                           owner:v10
+                                        userInfo:nil];
+
+    [v10 addTrackingArea:t];
+
+    [v9 addSubview:v10];
+
+    // nested views, superview doesn't implement cursorUpdate but requests it
     
-    [l setCenter:CGPointMake([v8 center].x, 90)];
-    [l setFont:[CPFont systemFontOfSize:8]];
-    [l setAlignment:CPCenterTextAlignment];
+    v11 = [[SensibleViewWithoutCursorUpdate alloc] initWithFrame:CGRectMake(1200, 10, 50, 50)];
+
+    [v11 setViewName:@"Superview without cursorUpdate"];
+    [v11 setViewColor:[CPColor greenColor]];
+    [v11 setViewCursor:[CPCursor pointingHandCursor]];
+
+    var t = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero()
+                                         options:CPTrackingCursorUpdate | CPTrackingActiveInKeyWindow | CPTrackingInVisibleRect
+                                           owner:v11
+                                        userInfo:nil];
+
+    [v11 addTrackingArea:t];
+
+    [p addSubview:v11];
+
+    [self addLabel:@"Outer view doesn't implement\ncursorUpdate but requests it.\nInner view implements\ncursorUpdate" forView:v11];
+
+    v12 = [[SensibleView alloc] initWithFrame:CGRectMake(10, 10, 30, 30)];
+
+    [v12 setViewName:@"Subview with cursorUpdate"];
+    [v12 setViewColor:[CPColor redColor]];
+    [v12 setViewCursor:[CPCursor crosshairCursor]];
+
+    var t = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero()
+                                         options:CPTrackingCursorUpdate | CPTrackingActiveInKeyWindow | CPTrackingInVisibleRect
+                                           owner:v12
+                                        userInfo:nil];
+
+    [v12 addTrackingArea:t];
     
-    [p addSubview:l];
+    [v11 addSubview:v12];
     
     // Not CPTrackingInVisibleRect
     
@@ -263,13 +299,7 @@
     
     [p addSubview:w2];
     
-    var l = [CPTextField labelWithTitle:@"CPTrackingMouseEnteredAndExited\n(top-left quarter is the active area)"];
-    
-    [l setCenter:CGPointMake([w2 center].x, 190)];
-    [l setFont:[CPFont systemFontOfSize:8]];
-    [l setAlignment:CPCenterTextAlignment];
-    
-    [p addSubview:l];
+    [self addLabel:@"MouseEnteredAndExited\n(top-left quarter is the active area)" forView:w2];
     
     // CPTrackingEnabledDuringMouseDrag
     
@@ -288,13 +318,7 @@
     
     [p addSubview:w3];
     
-    var l = [CPTextField labelWithTitle:@"CPTrackingMouseEnteredAndExited\nCPTrackingInVisibleRect\nCPTrackingEnabledDuringMouseDrag"];
-    
-    [l setCenter:CGPointMake([w3 center].x, 190)];
-    [l setFont:[CPFont systemFontOfSize:8]];
-    [l setAlignment:CPCenterTextAlignment];
-    
-    [p addSubview:l];
+    [self addLabel:@"MouseEnteredAndExited\nInVisibleRect\nEnabledDuringMouseDrag" forView:w3];
     
     // View in CPScrollView
     
@@ -319,13 +343,7 @@
     
     [p addSubview:w4];
     
-    var l = [CPTextField labelWithTitle:@"This one has no initial\ntracking area but\nuses updateTrackingAreas to\nattach one"];
-    
-    [l setCenter:CGPointMake([w4 center].x, 190)];
-    [l setFont:[CPFont systemFontOfSize:8]];
-    [l setAlignment:CPCenterTextAlignment];
-    
-    [p addSubview:l];
+    [self addLabel:@"This one has no initial\ntracking area but\nuses updateTrackingAreas to\nattach one" forView:w4];
     
     // Two views with tracking areas where the owner is not the view itself
     
@@ -337,13 +355,7 @@
     
     [p addSubview:w5];
     
-    var l = [CPTextField labelWithTitle:@"(firstView)\nThis view has a tracking area\nowned by the blue view"];
-    
-    [l setCenter:CGPointMake([w5 center].x, 190)];
-    [l setFont:[CPFont systemFontOfSize:8]];
-    [l setAlignment:CPCenterTextAlignment];
-    
-    [p addSubview:l];
+    [self addLabel:@"(firstView)\nThis view has a tracking area\nowned by the blue view" forView:w5];
     
     w6 = [[SensibleView alloc] initWithFrame:CGRectMake(680, 110, 50, 50)];
     
@@ -353,13 +365,7 @@
     
     [p addSubview:w6];
     
-    var l = [CPTextField labelWithTitle:@"(secondView)\nThis view has a tracking area\nowned by the blue view"];
-    
-    [l setCenter:CGPointMake([w6 center].x, 190)];
-    [l setFont:[CPFont systemFontOfSize:8]];
-    [l setAlignment:CPCenterTextAlignment];
-    
-    [p addSubview:l];
+    [self addLabel:@"(secondView)\nThis view has a tracking area\nowned by the blue view" forView:w6];
     
     w7 = [[SensibleView alloc] initWithFrame:CGRectMake(810, 110, 50, 50)];
     
@@ -369,13 +375,7 @@
     
     [p addSubview:w7];
     
-    var l = [CPTextField labelWithTitle:@"I'm the owner of the\ntracking areas of\nthe 2 views on my left"];
-    
-    [l setCenter:CGPointMake([w7 center].x, 190)];
-    [l setFont:[CPFont systemFontOfSize:8]];
-    [l setAlignment:CPCenterTextAlignment];
-    
-    [p addSubview:l];
+    [self addLabel:@"I'm the owner of the\ntracking areas of\nthe 2 views on my left" forView:w7];
     
     var t = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero()
                                          options:CPTrackingMouseEnteredAndExited | CPTrackingActiveInKeyWindow | CPTrackingInVisibleRect
@@ -472,6 +472,8 @@
     [item setCenter:CGPointMake(455, 660)];
     
     [[theWindow contentView] addSubview:item];
+
+
 }
 
 - (void)addAView:(id)aSender
@@ -495,6 +497,20 @@
     [[theWindow contentView] addSubview:v];
 
     [aSender setEnabled:NO];
+}
+
+- (void)addLabel:(CPString)title forView:(CPView)view
+{
+    var label     = [CPTextField labelWithTitle:title],
+        labelSize = [label frameSize],
+        viewFrame = [view frame];
+
+    [label setFrameOrigin:CGPointMake(viewFrame.origin.x + viewFrame.size.width / 2 - labelSize.width / 2, viewFrame.origin.y + viewFrame.size.height + 4)];
+    [label setFont:[CPFont systemFontOfSize:9]];
+    [label setAlignment:CPCenterTextAlignment];
+    [label setVerticalAlignment:CPTopVerticalTextAlignment];
+
+    [[view superview] addSubview:label];
 }
 
 @end

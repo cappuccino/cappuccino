@@ -388,7 +388,7 @@
                             <animations/>
                         </scroller>
                         <scroller key="verticalScroller" verticalHuggingPriority="750" doubleValue="1" horizontal="NO" id="en7-ag-3l6">
-                            <rect key="frame" x="260" y="1" width="16" height="161"/>
+                            <rect key="frame" x="261" y="1" width="15" height="161"/>
                             <autoresizingMask key="autoresizingMask"/>
                             <animations/>
                         </scroller>
@@ -470,22 +470,12 @@
                             <animations/>
                         </tableHeaderView>
                     </scrollView>
-                    <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" id="NBW-q0-pOz">
-                        <rect key="frame" x="1160" y="730" width="78" height="39"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <animations/>
-                        <textFieldCell key="cell" controlSize="mini" sendsActionOnEndEditing="YES" title="CPSplitView with thick horizontal dividers" id="LoF-bh-fEg">
-                            <font key="font" metaFont="system" size="8"/>
-                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                        </textFieldCell>
-                    </textField>
                     <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" id="USC-6c-rhh">
                         <rect key="frame" x="1223" y="452" width="88" height="44"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <animations/>
                         <textFieldCell key="cell" controlSize="mini" sendsActionOnEndEditing="YES" title="CPTableHeaderView now using tracking areas for cursor updates" id="yKB-Vw-OTW">
-                            <font key="font" metaFont="system" size="8"/>
+                            <font key="font" metaFont="system" size="9"/>
                             <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
@@ -495,7 +485,7 @@
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <animations/>
                         <textFieldCell key="cell" controlSize="mini" sendsActionOnEndEditing="YES" title="CPScrollView (scroll down to view and test a view with tracking area)" id="t8v-6H-YXg">
-                            <font key="font" metaFont="system" size="8"/>
+                            <font key="font" metaFont="system" size="9"/>
                             <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
@@ -505,7 +495,17 @@
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <animations/>
                         <textFieldCell key="cell" controlSize="mini" sendsActionOnEndEditing="YES" title="CPSplitView with thin vertical dividers, using tracking area for cursor updates" id="sLE-AN-vtO">
-                            <font key="font" metaFont="system" size="8"/>
+                            <font key="font" metaFont="system" size="9"/>
+                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" id="NBW-q0-pOz">
+                        <rect key="frame" x="1160" y="730" width="78" height="39"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <animations/>
+                        <textFieldCell key="cell" controlSize="mini" sendsActionOnEndEditing="YES" title="CPSplitView with thick horizontal dividers" id="LoF-bh-fEg">
+                            <font key="font" metaFont="system" size="9"/>
                             <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
