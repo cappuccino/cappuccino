@@ -40,6 +40,8 @@
     SensibleView        w7;
 
     @outlet SensibleView    s1;
+
+    SensibleView    cursorCapturingView;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
@@ -223,7 +225,7 @@
     [v9 setViewCursor:nil];
 
     var t = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero()
-                                         options:CPTrackingCursorUpdate | CPTrackingActiveInKeyWindow | CPTrackingInVisibleRect
+                                         options:CPTrackingMouseEnteredAndExited | CPTrackingCursorUpdate | CPTrackingActiveInKeyWindow | CPTrackingInVisibleRect
                                            owner:v9
                                         userInfo:nil];
 
@@ -236,11 +238,11 @@
     v10 = [[SensibleView alloc] initWithFrame:CGRectMake(10, 10, 30, 30)];
 
     [v10 setViewName:@"Subview with cursorUpdate"];
-    [v10 setViewColor:[CPColor redColor]];
+    [v10 setViewColor:[CPColor blueColor]];
     [v10 setViewCursor:[CPCursor crosshairCursor]];
 
     var t = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero()
-                                         options:CPTrackingCursorUpdate | CPTrackingActiveInKeyWindow | CPTrackingInVisibleRect
+                                         options:CPTrackingMouseEnteredAndExited | CPTrackingCursorUpdate | CPTrackingActiveInKeyWindow | CPTrackingInVisibleRect
                                            owner:v10
                                         userInfo:nil];
 
@@ -257,7 +259,7 @@
     [v11 setViewCursor:[CPCursor pointingHandCursor]];
 
     var t = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero()
-                                         options:CPTrackingCursorUpdate | CPTrackingActiveInKeyWindow | CPTrackingInVisibleRect
+                                         options:CPTrackingMouseEnteredAndExited | CPTrackingCursorUpdate | CPTrackingActiveInKeyWindow | CPTrackingInVisibleRect
                                            owner:v11
                                         userInfo:nil];
 
@@ -270,11 +272,11 @@
     v12 = [[SensibleView alloc] initWithFrame:CGRectMake(10, 10, 30, 30)];
 
     [v12 setViewName:@"Subview with cursorUpdate"];
-    [v12 setViewColor:[CPColor redColor]];
+    [v12 setViewColor:[CPColor blueColor]];
     [v12 setViewCursor:[CPCursor crosshairCursor]];
 
     var t = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero()
-                                         options:CPTrackingCursorUpdate | CPTrackingActiveInKeyWindow | CPTrackingInVisibleRect
+                                         options:CPTrackingMouseEnteredAndExited | CPTrackingCursorUpdate | CPTrackingActiveInKeyWindow | CPTrackingInVisibleRect
                                            owner:v12
                                         userInfo:nil];
 
@@ -396,7 +398,7 @@
     
     for (var i = 0; i < 10; i++)
     {
-        var v = [[(i == 7 ? SensibleViewWithoutCursorUpdate : SensibleView) alloc] initWithFrame:CGRectMake((i == 0 ? 50 : 20), (i == 0 ? 240 : 20), 400-(i*40), 400-(i*40))];
+        var v = [[SensibleView alloc] initWithFrame:CGRectMake((i == 0 ? 50 : 20), (i == 0 ? 240 : 20), 400-(i*40), 400-(i*40))];
 
         [p addSubview:v];
         p = v;
@@ -412,7 +414,7 @@
             case 0: [v setViewCursor:[CPCursor crosshairCursor]]; break;
             case 1: [v setViewCursor:[CPCursor pointingHandCursor]]; break;
             case 2: [v setViewCursor:[CPCursor resizeNorthwestCursor]]; break;
-            case 3: [v setViewCursor:nil]; break;
+            case 3: [v setViewCursor:[CPCursor IBeamCursor]]; break;
             case 4: [v setViewCursor:[CPCursor dragCopyCursor]]; break;
             case 5: [v setViewCursor:[CPCursor dragLinkCursor]]; break;
             case 6: [v setViewCursor:[CPCursor contextualMenuCursor]]; break;
@@ -433,7 +435,7 @@
     
     for (var i = 0; i < 10; i++)
     {
-        var v = [[(i == 7 ? SensibleViewWithoutCursorUpdate : SensibleView) alloc] initWithFrame:CGRectMake((i == 0 ? 460 : 0), (i == 0 ? 240 : 0), 400-(i*40), 400-(i*40))];
+        var v = [[SensibleView alloc] initWithFrame:CGRectMake((i == 0 ? 460 : 0), (i == 0 ? 240 : 0), 400-(i*40), 400-(i*40))];
 
         [p addSubview:v];
         p = v;
@@ -449,7 +451,7 @@
             case 0: [v setViewCursor:[CPCursor crosshairCursor]]; break;
             case 1: [v setViewCursor:[CPCursor pointingHandCursor]]; break;
             case 2: [v setViewCursor:[CPCursor resizeNorthwestCursor]]; break;
-            case 3: [v setViewCursor:nil]; break;
+            case 3: [v setViewCursor:[CPCursor IBeamCursor]]; break;
             case 4: [v setViewCursor:[CPCursor dragCopyCursor]]; break;
             case 5: [v setViewCursor:[CPCursor dragLinkCursor]]; break;
             case 6: [v setViewCursor:[CPCursor contextualMenuCursor]]; break;
@@ -465,38 +467,50 @@
         [v addTrackingArea:t];
     }
     
-    var item = [CPButton buttonWithTitle:@"Click to add view that catches cursor updates but not mouse entered/exited events"];
+    var item = [CPButton buttonWithTitle:@"Add a view that catches cursor updates but not mouse entered/exited events"];
     
     [item setTarget:self];
-    [item setAction:@selector(addAView:)];
+    [item setAction:@selector(showHideView:)];
     [item setCenter:CGPointMake(455, 660)];
     
     [[theWindow contentView] addSubview:item];
-
-
 }
 
-- (void)addAView:(id)aSender
+- (void)showHideView:(id)aSender
 {
-    var v = [[SensibleView alloc] initWithFrame:CGRectMake(250, 440, 410, 200)];
-    
-    var c = [CPColor colorWithHexString:@"c8d3b2"];
-    [v setViewColor:c];
-    [v setViewName:@"overview"];
-    [v setViewCursor:[CPCursor disappearingItemCursor]];
-    
-    [v setAlphaValue:0.7];
-    
-    var t = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero()
-                                         options:CPTrackingCursorUpdate | CPTrackingActiveInKeyWindow | CPTrackingInVisibleRect
-                                           owner:v
-                                        userInfo:nil];
-    [v addTrackingArea:t];
+    if (!cursorCapturingView)
+    {
+        cursorCapturingView = [[SensibleView alloc] initWithFrame:CGRectMake(250, 440, 410, 200)];
 
-    
-    [[theWindow contentView] addSubview:v];
+        [cursorCapturingView setViewColor:[CPColor colorWithHexString:@"c8d3b2"]];
+        [cursorCapturingView setViewName:@"cursorCapturingView"];
+        [cursorCapturingView setViewCursor:[CPCursor disappearingItemCursor]];
 
-    [aSender setEnabled:NO];
+        [cursorCapturingView setAlphaValue:0.7];
+
+        var t = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero()
+                                             options:CPTrackingCursorUpdate | CPTrackingActiveInKeyWindow | CPTrackingInVisibleRect
+                                               owner:cursorCapturingView
+                                            userInfo:nil];
+        [cursorCapturingView addTrackingArea:t];
+
+
+        [[theWindow contentView] addSubview:cursorCapturingView];
+        
+        [aSender setTitle:@"Hide the view catching cursor updates but not mouse entered/exited events"];
+    }
+    else if ([cursorCapturingView isHidden])
+    {
+        [cursorCapturingView setHidden:NO];
+
+        [aSender setTitle:@"Hide the view catching cursor updates but not mouse entered/exited events"];
+    }
+    else
+    {
+        [cursorCapturingView setHidden:YES];
+
+        [aSender setTitle:@"Add a view that catches cursor updates but not mouse entered/exited events"];
+    }
 }
 
 - (void)addLabel:(CPString)title forView:(CPView)view
