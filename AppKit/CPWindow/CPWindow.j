@@ -4164,7 +4164,6 @@ var interpolate = function(fromValue, toValue, progress)
 
         case CPCursorUpdate:
 
-            [self _removeCursorUpdateEventsFromDelayedTrackingEvents];
             [_delayedTrackingEvents addObject:anEvent];
 
             break;
@@ -4175,47 +4174,34 @@ var interpolate = function(fromValue, toValue, progress)
 {
     for (var i = 0, count = _delayedTrackingEvents.length; i < count; i++)
     {
-        var delayedEvent = _delayedTrackingEvents[i],
-            trackingArea = [delayedEvent trackingArea];
+        var delayedEvent  = _delayedTrackingEvents[i],
+            trackingArea  = [delayedEvent trackingArea],
+            trackingOwner = [trackingArea owner];
 
         switch ([delayedEvent type])
         {
             case CPMouseEntered:
 
-                [[trackingArea owner] mouseEntered:delayedEvent];
+                [trackingOwner mouseEntered:delayedEvent];
                 break;
 
             case CPMouseExited:
 
-                [[trackingArea owner] mouseExited:delayedEvent];
+                [trackingOwner mouseExited:delayedEvent];
                 break;
                 
             case CPCursorUpdate:
 
-                [[trackingArea owner] cursorUpdate:delayedEvent];
+                [trackingOwner updateTrackingAreas];
+
+                if (CGRectContainsPoint([trackingArea windowRect], point))
+                    [trackingOwner cursorUpdate:delayedEvent];
+
                 break;
         }
     }
 
     _delayedTrackingEvents = [];
-}
-
-- (void)_removeCursorUpdateEventsFromDelayedTrackingEvents
-{
-    var i = 0;
-
-    while (i < _delayedTrackingEvents.length)
-    {
-        var delayedEvent = _delayedTrackingEvents[i];
-
-        if ([delayedEvent type] === CPCursorUpdate)
-
-            [_delayedTrackingEvents removeObjectAtIndex:i];
-
-        else
-
-            i++;
-    }
 }
 
 @end
