@@ -3464,7 +3464,7 @@ setBoundsOrigin:
     if (!trackingArea)
         return;
     
-    if (![_trackingAreas containsObject:trackingArea])
+    if (![_trackingAreas containsObjectIdenticalTo:trackingArea])
         [CPException raise:CPInternalInconsistencyException reason:"Trying to remove unreferenced trackingArea"];
 
     [self _removeTrackingArea:trackingArea];
@@ -3518,7 +3518,6 @@ setBoundsOrigin:
         [_window _removeTrackingArea:trackingArea];
     
     [trackingArea setView:nil];
-    
     [_trackingAreas removeObjectIdenticalTo:trackingArea];
 }
 
@@ -3547,7 +3546,7 @@ setBoundsOrigin:
     
     var owners = [];
     
-    for (var i = 0, count = [_trackingAreas count]; i < count; i++)
+    for (var i = 0; i < _trackingAreas.length; i++)
     {
         var trackingArea = _trackingAreas[i];
         
@@ -3558,7 +3557,7 @@ setBoundsOrigin:
         {
             var owner = [trackingArea owner];
             
-            if (![owners containsObject:owner])
+            if (![owners containsObjectIdenticalTo:owner])
                 [owners addObject:owner];
         }
     }
