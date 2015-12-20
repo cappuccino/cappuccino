@@ -3879,9 +3879,9 @@ var interpolate = function(fromValue, toValue, progress)
     // Cursor update
 
     if (cursorUpdateStack.length > 0)
-
+    {
         [self _handleCursorUpdateEventsForEvent:anEvent atPoint:point dragging:dragging cursorUpdateStack:cursorUpdateStack];
-
+    }
     else if (!dragging)
     {
         // Here, we are outsite the window content view tracking area, so let _windowView set the cursor (resize cursor, ...)
@@ -3919,8 +3919,9 @@ var interpolate = function(fromValue, toValue, progress)
                    ((trackingOptions & CPTrackingActiveInKeyWindow) && isKeyWindow) ||
                    ((trackingOptions & CPTrackingActiveWhenFirstResponder) && isKeyWindow && (_firstResponder === aView))) &&
                   (CGRectContainsPoint([aTrackingArea windowRect], point))))
-
+            {
                 continue;
+            }
 
             [mouseEnteredStack addObject:aTrackingArea];
 
