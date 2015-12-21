@@ -27,6 +27,7 @@
 @import "CPShadow.j"
 @import "CPView.j"
 @import "CPKeyValueBinding.j"
+@import "CPTrackingArea.j"
 
 @global CPApp
 
@@ -199,7 +200,6 @@ var CPControlBlackColor = [CPColor blackColor];
 
     return self;
 }
-
 
 #pragma mark -
 #pragma mark Control Size
@@ -1052,6 +1052,19 @@ var CPControlBlackColor = [CPColor blackColor];
 
     _DOMElement.style.direction = style;
 #endif
+}
+
+@end
+
+@implementation CPControl (CPTrackingArea)
+
+- (void)updateTrackingAreas
+{
+    [self removeAllTrackingAreas];
+    [self addTrackingArea:[[CPTrackingArea alloc] initWithRect:CGRectMakeZero()
+                                                       options:CPTrackingMouseEnteredAndExited | CPTrackingActiveInKeyWindow | CPTrackingInVisibleRect
+                                                         owner:self
+                                                      userInfo:nil]];
 }
 
 @end

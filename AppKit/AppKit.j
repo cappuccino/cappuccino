@@ -103,6 +103,7 @@
 @import "CPTokenField.j"
 @import "CPToolbar.j"
 @import "CPToolbarItem.j"
+@import "CPTrackingArea.j"
 @import "CPTreeNode.j"
 @import "CPUserDefaultsController.j"
 @import "CPView.j"

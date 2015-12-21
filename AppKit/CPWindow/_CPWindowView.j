@@ -353,7 +353,9 @@ _CPWindowViewResizeSlop = 3;
     if ([theWindow isFullPlatformWindow] ||
         !(_styleMask & CPResizableWindowMask) ||
         (CPWindowResizeStyle !== CPWindowResizeStyleModern))
+    {
         return;
+    }
 
     var globalPoint = [theWindow convertBaseToGlobal:aPoint],
         resizeRegion = isResizing ? _resizeRegion : [self resizeRegionForPoint:globalPoint],
@@ -969,3 +971,18 @@ _CPWindowViewResizeSlop = 3;
 }
 
 @end
+
+@implementation _CPWindowView (TrackingAreaAdditions)
+
+- (void)updateTrackingAreas
+{
+    [self removeAllTrackingAreas];
+
+    [self addTrackingArea:[[CPTrackingArea alloc] initWithRect:[self contentRectForFrameRect:[self frame]]
+                                                       options:CPTrackingCursorUpdate | CPTrackingActiveInActiveApp
+                                                         owner:self
+                                                      userInfo:nil]];
+}
+
+@end
+
