@@ -619,6 +619,16 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     [_caret setVisibility:flag stop:NO];
 }
 
+// remove unnecessary call to CGContextClearRect from CPView implementation
+- (void)displayRectIgnoringOpacity:(CGRect)aRect inContext:(CPGraphicsContext)aGraphicsContext
+{    if ([self isHidden])
+       return;
+
+   [self lockFocus];
+
+   [self drawRect:aRect];
+   [self unlockFocus];
+}
 
 - (void)drawRect:(CGRect)aRect
 {
