@@ -20,6 +20,7 @@
 }
 
 @property XCCCappuccinoProjectController *cappuccinoProjectController;
+@property BOOL                           selected;
 
 - (void)reload;
 - (IBAction)cancelAllOperations:(id)sender;

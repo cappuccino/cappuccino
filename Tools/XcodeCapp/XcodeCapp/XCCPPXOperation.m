@@ -69,7 +69,7 @@ NSString * const XCCPBXOperationDidEndNotification = @"XCCPbxCreationDidEndNotif
 {
     [self dispatchNotificationName:XCCPBXOperationDidStartNotification];
 
-    DDLogVerbose(@"Pbx creation started: %@", self.cappuccinoProject.projectPath);
+    NSLog(@"Pbx creation started: %@", self.cappuccinoProject.projectPath);
     
     @try
     {
@@ -88,7 +88,7 @@ NSString * const XCCPBXOperationDidEndNotification = @"XCCPbxCreationDidEndNotif
                 shouldLaunchTask = YES;
             }
 
-            DDLogVerbose(@"PBX: path to %@ : %@", action, paths);
+            NSLog(@"PBX: path to %@ : %@", action, paths);
         }
         
         if (shouldLaunchTask)
@@ -109,7 +109,7 @@ NSString * const XCCPBXOperationDidEndNotification = @"XCCPbxCreationDidEndNotif
     @catch (NSException *exception)
     {
         [self dispatchNotificationName:XCCPbxCreationGenerateErrorNotification];
-        DDLogVerbose(@"Pbx creation failed: %@", exception);
+        NSLog(@"Pbx creation failed: %@", exception);
     }
     @finally
     {
@@ -117,10 +117,11 @@ NSString * const XCCPBXOperationDidEndNotification = @"XCCPbxCreationDidEndNotif
         
         self.completionBlock = ^{
             [weakOperation dispatchNotificationName:XCCPBXOperationDidEndNotification];
+            [weakOperation setCompletionBlock:nil];
         };
     }
 
-    DDLogVerbose(@"Pbx creation ended: %@", self.cappuccinoProject.projectPath);
+    NSLog(@"Pbx creation ended: %@", self.cappuccinoProject.projectPath);
 }
 
 @end

@@ -91,7 +91,7 @@ NSString * const XCCNib2CibDidEndNotification                       = @"XCCNib2C
 
 - (NSDictionary*)_launchTaskWithCommand:(NSString*)aCommand arguments:(NSArray*)arguments
 {
-    DDLogVerbose(@"Running processing task: %@ on file: %@", aCommand, self.sourcePath);
+    NSLog(@"Running processing task: %@ on file: %@", aCommand, self.sourcePath);
 
     self->task = [self->taskLauncher taskWithCommand:aCommand arguments:arguments];
 
@@ -184,7 +184,7 @@ NSString * const XCCNib2CibDidEndNotification                       = @"XCCNib2C
 
 - (void)main
 {
-    DDLogVerbose(@"Conversion started: %@", self.sourcePath);
+    NSLog(@"Conversion started: %@", self.sourcePath);
 
     [self dispatchNotificationName:XCCConversionDidStartNotification];
 
@@ -211,7 +211,7 @@ NSString * const XCCNib2CibDidEndNotification                       = @"XCCNib2C
     }
     @catch (NSException *exception)
     {
-        DDLogVerbose(@"Conversion failed: %@", exception);
+        NSLog(@"Conversion failed: %@", exception);
     }
     @finally
     {
@@ -219,10 +219,11 @@ NSString * const XCCNib2CibDidEndNotification                       = @"XCCNib2C
         
         self.completionBlock = ^{
             [weakOperation dispatchNotificationName:XCCConversionDidEndNotification];
+            [weakOperation setCompletionBlock:nil];
         };
     }
 	
-	DDLogVerbose(@"Conversion ended: %@", self.sourcePath);
+	NSLog(@"Conversion ended: %@", self.sourcePath);
 }
 
 @end

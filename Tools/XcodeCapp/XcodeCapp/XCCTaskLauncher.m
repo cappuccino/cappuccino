@@ -29,7 +29,7 @@
         [self.binaryPaths addObject:@"/usr/local/narwhal/bin"];
         [self.binaryPaths addObject:@"~/narwhal/bin"];
         
-        DDLogError(@"Init task manager with  environements %@", self.binaryPaths);
+        NSLog(@"Init task manager with  environements %@", self.binaryPaths);
         
         NSMutableArray *paths = [self.binaryPaths mutableCopy];
         
@@ -59,13 +59,13 @@
     
     if ([taskResult[@"status"] integerValue] != 0)
     {
-        DDLogError(@"Could not find executable in PATH: %@", self.environment[@"PATH"]);
+        NSLog(@"Could not find executable in PATH: %@", self.environment[@"PATH"]);
         return NO;
     }
     
     self.executablePaths = (NSMutableDictionary*)[NSJSONSerialization JSONObjectWithData:[taskResult[@"response"] dataUsingEncoding:NSUTF8StringEncoding] options:NSJSONReadingMutableContainers error:nil];
     
-    DDLogVerbose(@"Executable paths: %@", self.executablePaths);
+    NSLog(@"Executable paths: %@", self.executablePaths);
     
     return YES;
 }
@@ -145,13 +145,13 @@
 {
     [aTask launch];
     
-    DDLogVerbose(@"Task launched: %@\n%@", aTask.launchPath, aTask.arguments);
+    NSLog(@"Task launched: %@\n%@", aTask.launchPath, aTask.arguments);
     
     if (returnType != kTaskReturnTypeNone)
     {
         [aTask waitUntilExit];
 
-        DDLogVerbose(@"Task exited: %@\n%@\nExit code:%d", aTask.launchPath,  aTask.arguments, aTask.terminationStatus);
+        NSLog(@"Task exited: %@\n%@\nExit code:%d", aTask.launchPath,  aTask.arguments, aTask.terminationStatus);
         
         NSData *data = nil;
         
@@ -203,11 +203,11 @@
     
     [task launch];
     
-    DDLogVerbose(@"Task launched: %@\n%@", launchPath, arguments);
+    NSLog(@"Task launched: %@\n%@", launchPath, arguments);
     
     [task waitUntilExit];
     
-    DDLogVerbose(@"Task exited: %@:%d", launchPath, task.terminationStatus);
+    NSLog(@"Task exited: %@:%d", launchPath, task.terminationStatus);
     
     NSNumber *status = @(task.terminationStatus);
     NSData *data = nil;
@@ -230,7 +230,7 @@
     NSData *data     = [notification userInfo][NSFileHandleNotificationDataItem];
     NSString *string = [[NSString alloc] initWithData:data encoding:NSASCIIStringEncoding];
     
-    DDLogVerbose(@"Jake receive data\n %@", string);
+    NSLog(@"Jake receive data\n %@", string);
     
     [[notification object] readInBackgroundAndNotify];
 }
@@ -240,7 +240,7 @@
     NSData *data     = [notification userInfo][NSFileHandleNotificationDataItem];
     NSString *string = [[NSString alloc] initWithData:data encoding:NSASCIIStringEncoding];
     
-    DDLogVerbose(@"Jake receive error\%@", string);
+    NSLog(@"Jake receive error\%@", string);
 }
 
 @end

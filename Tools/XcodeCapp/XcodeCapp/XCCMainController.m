@@ -125,13 +125,13 @@
 
 - (void)_restoreLastSelectedProject
 {
-    DDLogVerbose(@"Start : selecting last selected project");
+    NSLog(@"Start : selecting last selected project");
     
     NSString        *lastSelectedProjectPath = [[NSUserDefaults standardUserDefaults] valueForKey:XCCUserDefaultsSelectedProjectPath];
     
     [self _selectCappuccinoProjectControllerWithPath:lastSelectedProjectPath];
     
-    DDLogVerbose(@"Stop : selecting last selected project");
+    NSLog(@"Stop : selecting last selected project");
 }
 
 - (void)_selectCappuccinoProjectControllerWithPath:(NSString*)aCappuccinoProjectPath
@@ -155,7 +155,7 @@
 
 - (void)_restoreManagedProjects
 {
-    DDLogVerbose(@"restore managed projects");
+    NSLog(@"restore managed projects");
     self.cappuccinoProjectControllers = [@[] mutableCopy];
     
     NSArray         *projectHistory  = [[NSUserDefaults standardUserDefaults] arrayForKey:XCCUserDefaultsManagedProjects];
@@ -164,11 +164,11 @@
     
     for (NSString *path in projectHistory)
     {
-        DDLogVerbose(@"Checking previously managed project at path: %@", path);
+        NSLog(@"Checking previously managed project at path: %@", path);
         if (![fm fileExistsAtPath:path isDirectory:nil])
         {
             [missingProjects addObject:path];
-            DDLogVerbose(@"Not found: project at path: %@", path);
+            NSLog(@"Not found: project at path: %@", path);
             continue;
         }
         
@@ -197,7 +197,7 @@
             [controller switchProjectListeningStatus:self];
     }
 
-    DDLogVerbose(@"managed projects restored");
+    NSLog(@"managed projects restored");
 }
 
 - (void)_saveSelectedProject
@@ -344,11 +344,26 @@
     [self _setTextColor:[NSColor colorWithCalibratedRed:107.0/255.0 green:148.0/255.0 blue:236.0/255.0 alpha:1.0] forButton:sender];
 
     if (sender == self->buttonSelectConfigurationTab)
+    {
+        [_operationsViewController setSelected:NO];
+        [_errorsViewController setSelected:NO];
         [self->tabViewProject selectTabViewItemAtIndex:0];
-    if (sender == self->buttonSelectErrorsTab)
+    }
+    else if (sender == self->buttonSelectErrorsTab)
+    {
+        [_operationsViewController setSelected:NO];
+        [_errorsViewController setSelected:YES];
         [self->tabViewProject selectTabViewItemAtIndex:1];
-    if (sender == self->buttonSelectOperationsTab)
+        [_errorsViewController reload];
+    }
+    else if (sender == self->buttonSelectOperationsTab)
+    {
+        [_operationsViewController setSelected:YES];
+        [_errorsViewController setSelected:NO];
         [self->tabViewProject selectTabViewItemAtIndex:2];
+        [_operationsViewController reload];
+    }
+    
 }
 
 

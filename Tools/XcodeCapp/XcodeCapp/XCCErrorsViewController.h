@@ -18,6 +18,7 @@
 }
 
 @property XCCCappuccinoProjectController *cappuccinoProjectController;
+@property BOOL                           selected;
 
 - (void)selectItem:(id)anItem;
 - (void)reload;

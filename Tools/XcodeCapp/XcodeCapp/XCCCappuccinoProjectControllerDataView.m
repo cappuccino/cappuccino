@@ -93,6 +93,7 @@ static NSColor * XCCCappuccinoProjectDataViewColorError;
             self->boxStatus.fillColor                   = XCCCappuccinoProjectDataViewColorStopped;
             self->buttonSwitchStatus.image              = self.backgroundStyle == NSBackgroundStyleDark ? [NSImage imageNamed:@"run-white"] : [NSImage imageNamed:@"run"];
             self->operationsProgressIndicator.hidden    = YES;
+            [self->operationsProgressIndicator stopAnimation:self];
             break;
 
         case XCCCappuccinoProjectStatusListening:
@@ -103,6 +104,7 @@ static NSColor * XCCCappuccinoProjectDataViewColorError;
             {
                 self->operationsProgressIndicator.hidden = YES;
                 [self->operationsProgressIndicator setNeedsDisplay:YES];
+                [self->operationsProgressIndicator stopAnimation:self];
             }
             else if (self.controller.operationsTotal <= 4)
             {
@@ -115,6 +117,7 @@ static NSColor * XCCCappuccinoProjectDataViewColorError;
                 self->operationsProgressIndicator.hidden = NO;
                 self->operationsProgressIndicator.indeterminate = NO;
                 self->operationsProgressIndicator.currentValue = self.controller.operationsProgress;
+                [self->operationsProgressIndicator startAnimation:self];
                 [self->operationsProgressIndicator setNeedsDisplay:YES];
             }
             

@@ -36,7 +36,7 @@ NSString * const XCCNeedSourceToProjectPathMappingNotification = @"XCCNeedSource
 #pragma mark - Utilities
 
 - (NSArray *)_findSourceFilesAtProjectPath:(NSString *)aProjectPath
-{
+{    
     NSError         *error          = NULL;
     NSString        *projectPath    = [self.cappuccinoProject.projectPath stringByAppendingPathComponent:aProjectPath];
     NSFileManager   *fm             = [NSFileManager defaultManager];
@@ -80,7 +80,7 @@ NSString * const XCCNeedSourceToProjectPathMappingNotification = @"XCCNeedSource
         {
             if ([XCCCappuccinoProject shouldIgnoreDirectoryNamed:filename])
             {
-                DDLogVerbose(@"%@: ignored symlinked directory: %@", self.cappuccinoProject.name, projectRelativePath);
+                NSLog(@"%@: ignored symlinked directory: %@", self.cappuccinoProject.name, projectRelativePath);
                 continue;
             }
 
@@ -92,7 +92,7 @@ NSString * const XCCNeedSourceToProjectPathMappingNotification = @"XCCNeedSource
 
                 if (![realPath hasPrefix:fullProjectPath] && ![XCCCappuccinoProject pathMatchesIgnoredPaths:fullProjectPath cappuccinoProjectIgnoredPathPredicates:self.cappuccinoProject.ignoredPathPredicates])
                 {
-                    DDLogVerbose(@"%@: symlinked directory: %@ -> %@", self.cappuccinoProject.name, projectRelativePath, realPath);
+                    NSLog(@"%@: symlinked directory: %@ -> %@", self.cappuccinoProject.name, projectRelativePath, realPath);
 
                     NSMutableDictionary *info   = [self operationInformations];
                     info[@"sourcePath"]         = realPath;
@@ -101,12 +101,13 @@ NSString * const XCCNeedSourceToProjectPathMappingNotification = @"XCCNeedSource
                     [self dispatchNotificationName:XCCNeedSourceToProjectPathMappingNotification userInfo:info];
                 }
                 else
-                    DDLogVerbose(@"%@: ignored symlinked directory: %@", self.cappuccinoProject.name, projectRelativePath);
+                    NSLog(@"%@: ignored symlinked directory: %@", self.cappuccinoProject.name, projectRelativePath);
             }
 
-            DDLogVerbose(@"%@: found directory. checking for source files: %@", self.cappuccinoProject.name, filename);
-
+            NSLog(@"%@: found directory. checking for source files: %@", self.cappuccinoProject.name, filename);
+   
             [sourcePaths addObjectsFromArray:[self _findSourceFilesAtProjectPath:projectRelativePath]];
+            
             continue;
         }
 
@@ -117,7 +118,7 @@ NSString * const XCCNeedSourceToProjectPathMappingNotification = @"XCCNeedSource
 
         if ([XCCCappuccinoProject isObjjFile:filename] || [XCCCappuccinoProject isXibFile:filename])
         {
-            DDLogVerbose(@"%@: found source file: %@", self.cappuccinoProject.name, filename);
+            NSLog(@"%@: found source file: %@", self.cappuccinoProject.name, filename);
 
             NSString *processedPath;
 
@@ -130,7 +131,7 @@ NSString * const XCCNeedSourceToProjectPathMappingNotification = @"XCCNeedSource
                 [sourcePaths addObject:projectSourcePath];
         }
     }
-
+    
     return sourcePaths;
 }
 
@@ -139,7 +140,7 @@ NSString * const XCCNeedSourceToProjectPathMappingNotification = @"XCCNeedSource
 
 - (void)main
 {
-    DDLogVerbose(@"Finding source files started");
+    NSLog(@"Finding source files started");
     
     NSArray *sourcesPaths;
 
@@ -151,7 +152,7 @@ NSString * const XCCNeedSourceToProjectPathMappingNotification = @"XCCNeedSource
     }
     @catch (NSException *exception)
     {
-        DDLogVerbose(@"Finding source files failed: %@", exception);
+        NSLog(@"Finding source files failed: %@", exception);
     }
     @finally
     {
@@ -160,10 +161,11 @@ NSString * const XCCNeedSourceToProjectPathMappingNotification = @"XCCNeedSource
         
         self.completionBlock = ^{
             [weakOperation dispatchNotificationName:XCCSourcesFinderOperationDidEndNotification userInfo:@{@"cappuccinoProject": weakOperation.cappuccinoProject, @"sourcePaths" : weakSourcesPaths}];
+            [weakOperation setCompletionBlock:nil];
         };
     }
     
-    DDLogVerbose(@"Finding source files ended");
+    NSLog(@"Finding source files ended");
 }
 
 @end

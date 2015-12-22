@@ -16,7 +16,9 @@ static NSDictionary* XCCCappuccinoProjectDefaultSettings;
 static NSString * const XCCSlashReplacement                 = @"::";
 
 static NSPredicate * XCCDirectoriesToIgnorePredicate = nil;
-static NSString * const XCCDirectoriesToIgnorePattern = @"^(?:Build|F(?:rameworks|oundation)|AppKit|Objective-J|(?:Browser|CommonJS)\\.environment|Resources|XcodeSupport|.+\\.xcodeproj)$";
+static NSPredicate * XCCXcodeCappNibToIgnorePredicate = nil;
+static NSString * const XCCDirectoriesToIgnorePattern = @"^(?:Build|F(?:rameworks|oundation)|AppKit|Objective-J|(?:Browser|CommonJS)\\.environment|XcodeSupport|.+\\.xcodeproj)$";
+static NSString * const XCCXcodeCappNibToIgnorePattern = @"^/Applications/XcodeCapp.app/.*$";
 
 static NSArray *XCCCappuccinoProjectDefaultIgnoredPaths = nil;
 
@@ -51,6 +53,7 @@ NSString * const XCCCappuccinoProjectLastEventIDKey         = @"XCCCappuccinoPro
     NSNumber *appCompatibilityVersion = [[NSBundle mainBundle] objectForInfoDictionaryKey:XCCCompatibilityVersionKey];
 
     XCCDirectoriesToIgnorePredicate = [NSPredicate predicateWithFormat:@"SELF matches %@", XCCDirectoriesToIgnorePattern];
+    XCCXcodeCappNibToIgnorePredicate = [NSPredicate predicateWithFormat:@"SELF matches %@", XCCXcodeCappNibToIgnorePattern];
 
     XCCCappuccinoProjectDefaultSettings = @{XCCCompatibilityVersionKey: appCompatibilityVersion,
                                           XCCCappuccinoProcessCappLintKey: @NO,
@@ -129,7 +132,11 @@ NSString * const XCCCappuccinoProjectLastEventIDKey         = @"XCCCappuccinoPro
 + (BOOL)pathMatchesIgnoredPaths:(NSString*)aPath cappuccinoProjectIgnoredPathPredicates:(NSMutableArray*)cappuccinoProjectIgnoredPathPredicates
 {
     BOOL ignore = NO;
-
+    
+    // This is a bit tricky, is to avoid to fetch nib of a compiled XcodeCapp
+    if ([XCCXcodeCappNibToIgnorePredicate evaluateWithObject:aPath])
+        return YES;
+    
     for (NSDictionary *ignoreInfo in cappuccinoProjectIgnoredPathPredicates)
     {
         BOOL matches = [ignoreInfo[@"predicate"] evaluateWithObject:aPath];
@@ -242,7 +249,7 @@ NSString * const XCCCappuccinoProjectLastEventIDKey         = @"XCCCappuccinoPro
 
         if (![self shouldIgnoreDirectoryNamed:filename] && ![self pathMatchesIgnoredPaths:path cappuccinoProjectIgnoredPathPredicates:aCappuccinoProject.ignoredPathPredicates])
         {
-            DDLogVerbose(@"Watching symlinked directory: %@", path);
+            NSLog(@"Watching symlinked directory: %@", path);
 
             [pathsToWatch addObject:path];
         }
@@ -393,11 +400,11 @@ NSString * const XCCCappuccinoProjectLastEventIDKey         = @"XCCCappuccinoPro
         NSArray *parsedPaths = [XCCCappuccinoProject parseIgnorePaths:ignoredPatterns basePath:self.projectPath];
         [self.ignoredPathPredicates addObjectsFromArray:parsedPaths];
         
-        DDLogVerbose(@"Content of xcodecapp-ignorepath correctly updated %@", self.ignoredPathPredicates);
+        NSLog(@"Content of xcodecapp-ignorepath correctly updated %@", self.ignoredPathPredicates);
     }
     @catch(NSException *exception)
     {
-        DDLogVerbose(@"Content of xcodecapp-ignorepath does not math the expected input");
+        NSLog(@"Content of xcodecapp-ignorepath does not math the expected input");
         self.ignoredPathPredicates = [@[] mutableCopy];
     }
 }

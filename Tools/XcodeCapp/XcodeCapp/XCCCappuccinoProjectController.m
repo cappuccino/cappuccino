@@ -115,7 +115,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
     if (![self _projectPathExists] || self.cappuccinoProject.status == XCCCappuccinoProjectStatusListening)
         return;
 
-    DDLogInfo(@"Start to listen project: %@", self.cappuccinoProject.projectPath);
+    NSLog(@"Start to listen project: %@", self.cappuccinoProject.projectPath);
 
     [self _synchronizeXcodeSupport];
 
@@ -166,7 +166,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
 
 - (void)_synchronizeXcodeSupport
 {
-    DDLogInfo(@"Synchronize project: %@", self.cappuccinoProject.projectPath);
+    NSLog(@"Synchronize project: %@", self.cappuccinoProject.projectPath);
 
     [self _reinitializeProjectController];
     [self _reinitializeTaskLauncher];
@@ -202,11 +202,11 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
     
     if (projectCompatibilityVersion == nil)
     {
-        DDLogVerbose(@"No compatibility version in project");
+        NSLog(@"No compatibility version in project");
         return NO;
     }
     
-    DDLogVerbose(@"XcodeCapp/project compatibility version: %0.1f/%0.1f", projectCompatibilityVersion.doubleValue, appCompatibilityVersion);
+    NSLog(@"XcodeCapp/project compatibility version: %0.1f/%0.1f", projectCompatibilityVersion.doubleValue, appCompatibilityVersion);
     
     return projectCompatibilityVersion.doubleValue >= appCompatibilityVersion;
 }
@@ -227,7 +227,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
     
     [content writeToFile:pbxPath atomically:YES encoding:NSUTF8StringEncoding error:nil];
     
-    DDLogInfo(@"Xcode support project created at: %@", self.cappuccinoProject.XcodeProjectPath);
+    NSLog(@"Xcode support project created at: %@", self.cappuccinoProject.XcodeProjectPath);
 }
 
 - (void)_removeXcodeProject
@@ -246,7 +246,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
     
     [self.cappuccinoProject saveSettings];
     
-    DDLogInfo(@".XcodeSupport directory created at: %@", self.cappuccinoProject.supportPath);
+    NSLog(@".XcodeSupport directory created at: %@", self.cappuccinoProject.supportPath);
 }
 
 - (void)_removeXcodeSupportDirectory
@@ -311,7 +311,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
 
 - (void)_updateXcodeSupportFilesWithModifiedPaths:(NSArray *)modifiedPaths
 {
-    DDLogVerbose(@"Modified files: %@", modifiedPaths);
+    NSLog(@"Modified files: %@", modifiedPaths);
 
     for (NSString *path in modifiedPaths)
     {
@@ -328,7 +328,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
 
 - (void)_updateXcodeSupportFilesWithRenamedDirectories:(NSArray *)directories
 {
-    DDLogVerbose(@"Renamed directories: %@", directories);
+    NSLog(@"Renamed directories: %@", directories);
     
     NSFileManager *fm = [NSFileManager defaultManager];
     
@@ -851,7 +851,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
     FSEventStreamScheduleWithRunLoop(self->stream, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
     FSEventStreamStart(self->stream);
 
-    DDLogVerbose(@"FSEventStream started for paths: %@", pathsToWatch);
+    NSLog(@"FSEventStream started for paths: %@", pathsToWatch);
 }
 
 - (void)_stopFSEventStream
@@ -874,7 +874,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
 
     self->stream = NULL;
 
-    DDLogVerbose(@"FSEventStream stopped");
+    NSLog(@"FSEventStream stopped");
 }
 
 - (void)_handleFSEventsWithPaths:(NSArray *)paths flags:(const FSEventStreamEventFlags[])eventFlags ids:(const FSEventStreamEventId[])eventIds
@@ -895,7 +895,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
 
         if (rootChanged || needRescan)
         {
-            DDLogVerbose(@"Watched path changed: %@", path);
+            NSLog(@"Watched path changed: %@", path);
             
             [self _handleProjectPathChange:path];
             return;
@@ -905,7 +905,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
         
         if (isHistoryDoneSentinalEvent)
         {
-            DDLogVerbose(@"History done sentinal event");
+            NSLog(@"History done sentinal event");
             continue;
         }
         
@@ -913,7 +913,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
         
         if (isMountEvent)
         {
-            DDLogVerbose(@"Volume %@: %@", (flags & kFSEventStreamEventFlagMount) ? @"mounted" : @"unmounted", path);
+            NSLog(@"Volume %@: %@", (flags & kFSEventStreamEventFlagMount) ? @"mounted" : @"unmounted", path);
             continue;
         }
         
@@ -936,7 +936,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
                 ![XCCCappuccinoProject shouldIgnoreDirectoryNamed:path.lastPathComponent] &&
                 ![XCCCappuccinoProject pathMatchesIgnoredPaths:path cappuccinoProjectIgnoredPathPredicates:self.cappuccinoProject.ignoredPathPredicates])
             {
-                DDLogVerbose(@"Renamed directory: %@", path);
+                NSLog(@"Renamed directory: %@", path);
                 
                 [renamedDirectories addObject:path];
             }
@@ -947,7 +947,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
                  (created || modified || renamed || removed || inodeMetaModified) &&
                  [XCCCappuccinoProject isSourceFile:path cappuccinoProject:self.cappuccinoProject])
         {
-            DDLogVerbose(@"FSEvent accepted: %@ (%@)", path, [XCCFSEventLogUtils dumpFSEventFlags:flags]);
+            NSLog(@"FSEvent accepted: %@ (%@)", path, [XCCFSEventLogUtils dumpFSEventFlags:flags]);
 
             if ([fm fileExistsAtPath:path])
             {
@@ -973,7 +973,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
         }
         else if ((isFile || isSymlink) && (renamed || removed) && !(modified || created) && [XCCCappuccinoProject isCibFile:path])
         {
-            DDLogVerbose(@"FSEvent accepted: %@ (%@)", path, [XCCFSEventLogUtils dumpFSEventFlags:flags]);
+            NSLog(@"FSEvent accepted: %@ (%@)", path, [XCCFSEventLogUtils dumpFSEventFlags:flags]);
             
             // If a cib is deleted, mark its xib as needing update so the cib is regenerated
             NSString *xibPath = [path.stringByDeletingPathExtension stringByAppendingPathExtension:@"xib"];
@@ -988,7 +988,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
                  (created || modified || renamed || removed || inodeMetaModified) &&
                  [XCCCappuccinoProject isXCCIgnoreFile:path cappuccinoProject:self.cappuccinoProject])
         {
-            DDLogVerbose(@"FSEvent accepted: %@ (%@)", path, [XCCFSEventLogUtils dumpFSEventFlags:flags]);
+            NSLog(@"FSEvent accepted: %@ (%@)", path, [XCCFSEventLogUtils dumpFSEventFlags:flags]);
 
             [self.cappuccinoProject reloadXcodeCappIgnoreFile];
         }
@@ -1137,7 +1137,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
 
 - (void)reinitializeProjectFromSettings
 {
-    DDLogVerbose(@"Saving Cappuccino configuration project %@", self.cappuccinoProject.projectPath);
+    NSLog(@"Saving Cappuccino configuration project %@", self.cappuccinoProject.projectPath);
     
     [self _cancelAllProjectRelatedOperations];
     [self.cappuccinoProject saveSettings];
@@ -1152,7 +1152,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
     if (previousStatus == XCCCappuccinoProjectStatusListening)
         [self _startListeningToProject];
 
-    DDLogVerbose(@"Cappuccino configuration project %@ has been saved", self.cappuccinoProject.projectPath);
+    NSLog(@"Cappuccino configuration project %@ has been saved", self.cappuccinoProject.projectPath);
 }
 
 - (void)applicationIsClosing
@@ -1199,7 +1199,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
     
     if (exists && isDirectory)
     {
-        DDLogVerbose(@"Opening Xcode project at: %@", self.cappuccinoProject.XcodeProjectPath);
+        NSLog(@"Opening Xcode project at: %@", self.cappuccinoProject.XcodeProjectPath);
         
         isOpened = [[NSWorkspace sharedWorkspace] openFile:self.cappuccinoProject.XcodeProjectPath];
     }
