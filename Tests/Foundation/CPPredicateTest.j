@@ -139,10 +139,10 @@
 {
     var collection = [CPExpression expressionForKeyPath:@"Record1.Children"],
         iteratorVariable = @"x",
-        predicate = [CPPredicate predicateWithFormat:@"$x BEGINSWITH 'Kid'"];
+        predicate = [CPPredicate predicateWithFormat:@"$x BEGINSWITH $KidVariable"];
 
     var expression = [CPExpression expressionForSubquery:collection usingIteratorVariable:iteratorVariable predicate:predicate],
-        eval = [expression expressionValueWithObject:dict context:nil],
+        eval = [expression expressionValueWithObject:dict context:@{"KidVariable":[CPExpression expressionForConstantValue:"Kid"]}],
         expected = [CPArray arrayWithObjects:"Kid1", "Kid2"];
     [self assertTrue:([eval isEqual:expected]) message:"'" + [expression predicateFormat]  + "' result is "+ eval + "but should be " + expected];
 }
@@ -369,8 +369,8 @@
     [self assertTrue:[predicate evaluateWithObject:nil] message:"Predicate " + predicate + " should be TRUE"];
 
     // TEST Subquery -- This means: search people who have 2 boys.
-    predicate = [CPPredicate predicateWithFormat: @"SUBQUERY(Record1.Children, $x, $x BEGINSWITH 'Kid')[SIZE] = 2"];
-    [self assertTrue:[predicate evaluateWithObject:dict] message:"Predicate " + predicate + " should evaluate to TRUE"];
+    predicate = [CPPredicate predicateWithFormat: @"SUBQUERY(Record1.Children, $x, $x BEGINSWITH $Begining)[SIZE] = 2"];
+    [self assertTrue:[predicate evaluateWithObject:dict substitutionVariables:@{"Begining":"Kid"}] message:"Predicate " + predicate + " should evaluate to TRUE"];
 
     // Test Set expressions
     // Parsing is ok but the evaluation of this predicate will return NO because:

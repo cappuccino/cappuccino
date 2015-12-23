@@ -47,23 +47,25 @@
         _collection = collection;
         _variableExpression = variableExpression;
     }
+
     return self;
 }
 
-- (id)expressionValueWithObject:(id)object context:(id)context
+- (id)expressionValueWithObject:(id)object context:(id)aContext
 {
-    var collection = [_collection expressionValueWithObject:object context:context],
-        count = [collection count],
+    var collection = [_collection expressionValueWithObject:object context:aContext],
         result = [CPArray array],
-        bindings = @{ [self variable]: [CPExpression expressionForEvaluatedObject] },
-        i = 0;
+        variable = [self variable],
+        context = aContext || @{};
 
-    for (; i < count; i++)
+    if ([context objectForKey:variable] == nil)
+        [context setObject:[CPExpression expressionForEvaluatedObject] forKey:variable];
+
+    [collection enumerateObjectsUsingBlock:function(exp, idx, stop)
     {
-        var item = [collection objectAtIndex:i];
-        if ([_subpredicate evaluateWithObject:item substitutionVariables:bindings])
-            [result addObject:item];
-    }
+        if ([_subpredicate evaluateWithObject:exp substitutionVariables:context])
+            [result addObject:exp];
+    }];
 
     return result;
 }
