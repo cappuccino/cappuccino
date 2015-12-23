@@ -880,6 +880,21 @@ Returns a hash for the object. Unlike Cocoa, the hash value does not take conten
     return join.call([self _javaScriptArrayCopy], aString);
 }
 
+/* @ignore */
+- (CPArray)arrayByApplyingBlock:(Function/*element, index*/)aFunction
+{
+	var result = [],
+	    count = [self count];
+
+	for (var idx = 0; idx < count; idx++)
+	{
+	    var obj = aFunction([self objectAtIndex:idx], idx);
+		[result addObject:obj];
+	}
+
+	return result;
+}
+
 // Creating a description of the array
 
 /*!
