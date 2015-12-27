@@ -70,19 +70,19 @@
 
 - (id)expressionValueWithObject:(id)object context:(CPDictionary)context
 {
-    var eval = [_predicate evaluateWithObject:object substitutionVariables:context];
-    var exp = eval ? _trueExpression : _falseExpression;
+    var eval = [_predicate evaluateWithObject:object substitutionVariables:context],
+        exp = eval ? _trueExpression : _falseExpression;
 
     return [exp expressionValueWithObject:object context:context];
 }
 
 - (CPExpression)_expressionWithSubstitutionVariables:(CPDictionary)bindings
 {
-    var s_predicate = [_predicate predicateWithSubstitutionVariables:bindings],
-        s_trueExp = [_trueExpression _expressionWithSubstitutionVariables:bindings],
-        s_falseExp = [_falseExpression _expressionWithSubstitutionVariables:bindings];
+    var predicate = [_predicate predicateWithSubstitutionVariables:bindings],
+        trueExp = [_trueExpression _expressionWithSubstitutionVariables:bindings],
+        falseExp = [_falseExpression _expressionWithSubstitutionVariables:bindings];
 
-    return [[_CPConditionalExpression alloc] initWithPredicate:s_predicate trueExpression:s_trueExp falseExpression:s_falseExp];
+    return [[_CPConditionalExpression alloc] initWithPredicate:predicate trueExpression:trueExp falseExpression:falseExp];
 }
 
 - (CPString)description

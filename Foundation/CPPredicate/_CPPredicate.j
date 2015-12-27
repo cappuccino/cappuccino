@@ -744,10 +744,12 @@
 
         if (![self scanString:@"," intoString:NULL])
             CPRaiseParseError(self, @"expression");
+
         variableExpression = [self parseExpression];
 
         if (![self scanString:@"," intoString:NULL])
             CPRaiseParseError(self, @"expression");
+
         subpredicate = [self parsePredicate];
 
         if (![self scanString:@")" intoString:NULL])
@@ -761,19 +763,20 @@
         if (![self scanString:@"(" intoString:NULL])
             CPRaiseParseError(self, @"expression");
 
-        var predicate,
+        var predicate = [self parsePredicate],
             trueExpression,
             falseExpression;
 
-		predicate = [self parsePredicate];
         if (![self scanString:@"," intoString:NULL])
             CPRaiseParseError(self, @"predicate");
 
         trueExpression = [self parseExpression];
+
         if (![self scanString:@"," intoString:NULL])
             CPRaiseParseError(self, @"expression");
 
         falseExpression = [self parseExpression];
+
         if (![self scanString:@")" intoString:NULL])
             CPRaiseParseError(self, @"expression");
 
