@@ -23,8 +23,8 @@
 
 @implementation _CPBlockExpression :  CPExpression
 {
-    Function _block;
-    CPArray  _arguments;
+    Function _block @accessors(getter=expressionBlock);
+    CPArray  _arguments @accessors(getter=arguments);
 }
 
 - (id)initWithBlock:(Function)aBlock arguments:(CPArray)arguments
@@ -49,16 +49,6 @@
         return NO;
 
     return YES;
-}
-
-- (Function)expressionBlock
-{
-    return _block;
-}
-
-- (CPArray)arguments
-{
-    return _arguments;
 }
 
 - (id)expressionValueWithObject:(id)object context:(CPDictionary)context

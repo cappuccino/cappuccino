@@ -350,7 +350,7 @@ A dictionary that the expression can use to store temporary state for one predic
 
 /*!
     Returns the arguments for the receiver.
-    @return The arguments for the receiver—that is, the array of expressions that will be passed as parameters during invocation of the selector on the operand of a function expression.
+    @return The arguments for the receiver—that is, the array of expressions that will be passed as parameters during invocation of the selector on the operand of a function expression or as a parameter of the block of a block expression.
     This method raises an exception if it is not applicable to the receiver.
 */
 - (CPArray)arguments
@@ -371,8 +371,8 @@ A dictionary that the expression can use to store temporary state for one predic
 }
 
 /*!
-    Returns the predicate in a subquery expression.
-    @return The predicate in a subquery expression..
+    Returns the predicate in a subquery expression or a conditional expression.
+    @return The predicate in a subquery expression or a conditional expression.
     This method raises an exception if it is not applicable to the receiver.
 */
 - (CPPredicate)predicate
@@ -409,6 +409,39 @@ A dictionary that the expression can use to store temporary state for one predic
     This method raises an exception if it is not applicable to the receiver.
 */
 - (CPExpression)rightExpression
+{
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
+    return nil;
+}
+
+/*!
+    Returns the block of a block expression.
+    @return The block of a block expression.
+    This method raises an exception if it is not applicable to the receiver.
+*/
+- (Function)expressionBlock
+{
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
+    return nil;
+}
+
+/*!
+    Returns the true expression of a conditional expression.
+    @return The true expression of a conditional expression.
+    This method raises an exception if it is not applicable to the receiver.
+*/
+- (CPExpression)trueExpression
+{
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
+    return nil;
+}
+
+/*!
+    Returns the false expression of a conditional expression.
+    @return The false expression of a conditional expression.
+    This method raises an exception if it is not applicable to the receiver.
+*/
+- (CPExpression)falseExpression
 {
     _CPRaiseInvalidAbstractInvocation(self, _cmd);
     return nil;

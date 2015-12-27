@@ -23,9 +23,9 @@
 
 @implementation _CPConditionalExpression :  CPExpression
 {
-    CPPredicate   _predicate;
-    CPExpression  _trueExpression;
-    CPExpression  _falseExpression;
+    CPPredicate   _predicate @accessors(getter=predicate);
+    CPExpression  _trueExpression @accessors(getter=trueExpression);
+    CPExpression  _falseExpression @accessors(getter=falseExpression);
 }
 
 - (id)initWithPredicate:(CPPredicate)aPredicate trueExpression:(CPExpression)trueExpression falseExpression:(CPExpression)falseExpression
@@ -51,21 +51,6 @@
         return NO;
 
     return YES;
-}
-
-- (CPPredicate)predicate
-{
-    return _predicate;
-}
-
-- (CPExpression)trueExpression
-{
-    return _trueExpression;
-}
-
-- (CPExpression)falseExpression
-{
-    return _falseExpression;
 }
 
 - (id)expressionValueWithObject:(id)object context:(CPDictionary)context

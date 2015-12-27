@@ -27,7 +27,7 @@
 
 @implementation _CPConstantValueExpression : CPExpression
 {
-    id _value;
+    id _value @accessors(getter=constantValue);
 }
 
 - (id)initWithValue:(id)value
@@ -49,11 +49,6 @@
         return NO;
 
     return YES;
-}
-
-- (id)constantValue
-{
-    return _value;
 }
 
 - (id)expressionValueWithObject:(id)object context:(CPDictionary)context

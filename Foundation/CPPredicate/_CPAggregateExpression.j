@@ -25,7 +25,7 @@
 
 @implementation _CPAggregateExpression : CPExpression
 {
-    CPArray _aggregate;
+    CPArray _aggregate @accessors(getter=collection);
 }
 
 - (id)initWithAggregate:(CPArray)collection
@@ -46,11 +46,6 @@
         return NO;
 
     return YES;
-}
-
-- (id)collection
-{
-    return _aggregate;
 }
 
 - (id)expressionValueWithObject:(id)object context:(CPDictionary)context

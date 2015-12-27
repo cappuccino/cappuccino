@@ -29,7 +29,7 @@
 
 @implementation _CPVariableExpression :  CPExpression
 {
-    CPString _variable;
+    CPString _variable @accessors(getter=variable);
 }
 
 - (id)initWithVariable:(CPString)variable
@@ -52,11 +52,6 @@
         return NO;
 
     return YES;
-}
-
-- (CPString)variable
-{
-    return _variable;
 }
 
 - (id)expressionValueWithObject:object context:(CPDictionary)context
