@@ -65,12 +65,10 @@
 {
     var args = [];
 
-    if (_arguments !== nil)
+    [_arguments enumerateObjectsUsingBlock:function(exp, idx)
     {
-        args = _arguments.map(function(expression){
-            return [expression expressionValueWithObject:object context:context];
-        });
-    }
+        [args addObject:[exp expressionValueWithObject:object context:context]];
+    }];
 
     return _block(object, args, context);
 }
@@ -89,7 +87,7 @@
 
 - (CPString)description
 {
-    return [CPString stringWithFormat:@"Block(0x%@)", [CPString stringWithHash:[self UID]]];
+    return [CPString stringWithFormat:@"Block(function, %@)", [_arguments description]];
 }
 
 @end
