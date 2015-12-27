@@ -76,6 +76,15 @@
     return [exp expressionValueWithObject:object context:context];
 }
 
+- (CPExpression)_expressionWithSubstitutionVariables:(CPDictionary)bindings
+{
+    var s_predicate = [_predicate predicateWithSubstitutionVariables:bindings],
+        s_trueExp = [_trueExpression _expressionWithSubstitutionVariables:bindings],
+        s_falseExp = [_falseExpression _expressionWithSubstitutionVariables:bindings];
+
+    return [[_CPConditionalExpression alloc] initWithPredicate:s_predicate trueExpression:s_trueExp falseExpression:s_falseExp];
+}
+
 - (CPString)description
 {
     return [CPString stringWithFormat:@"TERNARY(%@,%@,%@)", [_predicate predicateFormat], [_trueExpression description], [_falseExpression description]];

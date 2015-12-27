@@ -75,6 +75,18 @@
     return _block(object, args, context);
 }
 
+- (CPExpression)_expressionWithSubstitutionVariables:(CPDictionary)bindings
+{
+    var args = [];
+
+    [_arguments enumerateObjectsUsingBlock:function(exp, idx)
+    {
+        [args addObject:[exp _expressionWithSubstitutionVariables:bindings]];
+    }];
+
+    return [[_CPBlockExpression alloc] initWithBlock:_block arguments:args];
+}
+
 - (CPString)description
 {
     return [CPString stringWithFormat:@"Block(0x%@)", [CPString stringWithHash:[self UID]]];
