@@ -29,3 +29,4 @@
 @import "_CPSetExpression.j"
 @import "_CPSubqueryExpression.j"
 @import "_CPBlockExpression.j"
+@import "_CPConditionalExpression.j"

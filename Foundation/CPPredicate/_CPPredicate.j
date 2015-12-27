@@ -751,9 +751,33 @@
         subpredicate = [self parsePredicate];
 
         if (![self scanString:@")" intoString:NULL])
-            CPRaiseParseError(self, @"expression");
+            CPRaiseParseError(self, @"predicate");
 
         return [[_CPSubqueryExpression alloc] initWithExpression:collection usingIteratorExpression:variableExpression predicate:subpredicate];
+    }
+
+    if ([self scanString:@"TERNARY" intoString:NULL])
+    {
+        if (![self scanString:@"(" intoString:NULL])
+            CPRaiseParseError(self, @"expression");
+
+        var predicate,
+            trueExpression,
+            falseExpression;
+
+		predicate = [self parsePredicate];
+        if (![self scanString:@"," intoString:NULL])
+            CPRaiseParseError(self, @"predicate");
+
+        trueExpression = [self parseExpression];
+        if (![self scanString:@"," intoString:NULL])
+            CPRaiseParseError(self, @"expression");
+
+        falseExpression = [self parseExpression];
+        if (![self scanString:@")" intoString:NULL])
+            CPRaiseParseError(self, @"expression");
+
+        return [CPExpression expressionForConditional:predicate trueExpression:trueExpression falseExpression:falseExpression];
     }
 
     if ([self scanString:@"FUNCTION" intoString:NULL])

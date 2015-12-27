@@ -69,6 +69,10 @@ CPMinusSetExpressionType        = 9;
     An expression that returns the result of evaluating a block.
 */
 CPBlockExpressionType           = 10;
+/*!
+    An expression that returns an expression that depends on the evaluation of a predicate.
+*/
+CPConditionalExpressionType     = 11;
 
 /*!
     @ingroup foundation
@@ -282,6 +286,11 @@ A dictionary that the expression can use to store temporary state for one predic
 + (CPExpression)expressionForBlock:(Function)aBlock arguments:(CPArray)args
 {
     return [[_CPBlockExpression alloc] initWithBlock:aBlock arguments:args];
+}
+
++ (CPExpression)expressionForConditional:(CPPredicate)aPredicate trueExpression:(CPExpression)trueExpression falseExpression:(CPExpression)falseExpression
+{
+    return [[_CPConditionalExpression alloc] initWithPredicate:aPredicate trueExpression:trueExpression falseExpression:falseExpression];
 }
 
 // Getting Information About an Expression
