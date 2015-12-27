@@ -65,6 +65,10 @@ CPIntersectSetExpressionType    = 8;
     An expression that combines two nested expression results by set subtraction.
 */
 CPMinusSetExpressionType        = 9;
+/*!
+    An expression that returns the result of evaluating a block.
+*/
+CPBlockExpressionType           = 10;
 
 /*!
     @ingroup foundation
@@ -257,6 +261,27 @@ CPMinusSetExpressionType        = 9;
 + (CPExpression)expressionForSubquery:(CPExpression)expression usingIteratorVariable:(CPString)variable predicate:(CPPredicate)predicate
 {
     return [[_CPSubqueryExpression alloc] initWithExpression:expression usingIteratorVariable:variable predicate:predicate];
+}
+
+/*!
+   Returns Creates an NSExpression object that will use the Block for evaluating objects.
+   @param aBlock The Block is applied to the object to be evaluated.
+
+The Block takes three arguments and returns a value:
+
+evaluatedObject
+The object to be evaluated.
+expressions
+An array of predicate expressions that evaluates to a collection.
+context
+A dictionary that the expression can use to store temporary state for one predicate evaluation.
+
+@discussion Note that context is mutable, and that it can only be accessed during the evaluation of the expression.
+@param arguments An array containing NSExpression objects that will be used as parameters during the invocation of the block.
+*/
++ (CPExpression)expressionForBlock:(Function)aBlock arguments:(CPArray)args
+{
+    return [[_CPBlockExpression alloc] initWithBlock:aBlock arguments:args];
 }
 
 // Getting Information About an Expression

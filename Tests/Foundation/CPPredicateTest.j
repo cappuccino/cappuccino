@@ -79,6 +79,13 @@
 
     var expression_minusset = [CPExpression expressionForMinusSet:set with:array];
     [self assertNotNull:expression_minusset message:"MinusSet Expression should not be nil"];
+
+    var expression_block = [CPExpression expressionForBlock:function(obj, args, bindings)
+    {
+        return obj;
+    } arguments:nil];
+
+    [self assertNotNull:expression_block message:"Block Expression should not be nil"];
 }
 
 - (void)testSetExpressionEvaluation
@@ -145,6 +152,19 @@
         eval = [expression expressionValueWithObject:dict context:@{"KidVariable":[CPExpression expressionForConstantValue:"Kid"]}],
         expected = [CPArray arrayWithObjects:"Kid1", "Kid2"];
     [self assertTrue:([eval isEqual:expected]) message:"'" + [expression predicateFormat]  + "' result is "+ eval + "but should be " + expected];
+}
+
+- (void)testBlockExpressionEvaluation
+{
+    var block = function(obj, args, bindings)
+    {
+        return [obj stringByAppendingString:[args componentsJoinedByString:"-"]];
+    };
+
+    var expression = [CPExpression expressionForBlock:block arguments:[[CPExpression expressionForConstantValue:"A"], [CPExpression expressionForConstantValue:"B"]]];
+
+    var eval = [expression expressionValueWithObject:"OBJ" context:@{}];
+    [self assertTrue:([eval isEqual:"OBJA-B"]) message:"'" + [expression description]  + "' result is "+ eval + "but should be " + "OBJA-B"];
 }
 
 - (void)testOptions
