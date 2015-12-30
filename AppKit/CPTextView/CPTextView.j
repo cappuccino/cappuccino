@@ -626,7 +626,6 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
        return;
 
    [self lockFocus];
-
    [self drawRect:aRect];
    [self unlockFocus];
 }
