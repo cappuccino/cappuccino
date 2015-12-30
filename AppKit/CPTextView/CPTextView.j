@@ -780,6 +780,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     switch (granularity)
     {
         case CPSelectByWord:
+            if (_isNewlineCharacter([string characterAtIndex:proposedRange.location]))
+                return CPMakeRange(proposedRange.location, 1);
+
             var wordRange = [self _characterRangeForIndex:proposedRange.location inRange:proposedRange asDefinedByRegex:[[self class] _wordBoundaryRegex] skip:YES];
 
             if (proposedRange.length)
@@ -788,6 +791,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
             return wordRange;
 
         case CPSelectByParagraph:
+            if (_isNewlineCharacter([string characterAtIndex:proposedRange.location]))
+                return CPMakeRange(proposedRange.location, 1);
+
             var parRange = [self _characterRangeForIndex:proposedRange.location inRange:proposedRange asDefinedByRegex:[[self class] _paragraphBoundaryRegex] skip:YES];
 
             if (proposedRange.length)
