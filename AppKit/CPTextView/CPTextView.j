@@ -1002,27 +1002,22 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     if (![self isSelectable])
         return;
 
-    var fraction = [],
-        sindex = [self selectedRange].location,
-        rectSource = [_layoutManager boundingRectForGlyphRange:CPMakeRange(sindex, 1) inTextContainer:_textContainer],
-        point = rectSource.origin;
+    var dindex = [self selectedRange].location,
+        rectSource = [_layoutManager boundingRectForGlyphRange:CPMakeRange(dindex, 1) inTextContainer:_textContainer];
+    
+    if (rectSource.origin.x > 0)
+        dindex = [_layoutManager glyphIndexForPoint:CGPointMake(0, rectSource.origin.y + 1) inTextContainer:_textContainer fractionOfDistanceThroughGlyph:nil];
 
-    if (point.y <= 2)
+    if (dindex < 1)
         return;
 
-    if (_stickyXLocation)
-        point.x = _stickyXLocation;
+    rectSource = [_layoutManager boundingRectForGlyphRange:CPMakeRange(dindex - 1, 1) inTextContainer:_textContainer]; // the line above
+    dindex = [_layoutManager glyphIndexForPoint:CGPointMake(_stickyXLocation, rectSource.origin.y + 1) inTextContainer:_textContainer fractionOfDistanceThroughGlyph:nil];
 
-    point.y -= 2;    // FIXME <!> these should not be constants
-
-    var dindex = [_layoutManager glyphIndexForPoint:point inTextContainer:_textContainer fractionOfDistanceThroughGlyph:fraction],
-        oldStickyLoc = _stickyXLocation;
-
-    if (fraction[0] > 0.5)
-        dindex++;
-
+    var  oldStickyLoc = _stickyXLocation;
     [self _establishSelection:CPMakeRange(dindex,0) byExtending:NO];
     _stickyXLocation = oldStickyLoc;
+
     [self scrollRangeToVisible:CPMakeRange(dindex, 0)];
 }
 
