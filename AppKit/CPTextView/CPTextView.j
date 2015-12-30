@@ -770,46 +770,50 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         return CPMakeRange(0, 0);
 
     if (proposedRange.location >= textStorageLength)
-        return CPMakeRange(textStorageLength, 0);
+        proposedRange = CPMakeRange(textStorageLength, 0);
 
     if (CPMaxRange(proposedRange) > textStorageLength)
         proposedRange.length = textStorageLength - proposedRange.location;
 
-    var string = [_textStorage string];
+    var string = [_textStorage string],
+        regex,
+        loc = proposedRange.location;
+
 
     switch (granularity)
     {
         case CPSelectByWord:
-            if (_isNewlineCharacter([string characterAtIndex:proposedRange.location]))
-                return CPMakeRange(proposedRange.location, 1);
-
-            var wordRange = [self _characterRangeForIndex:proposedRange.location inRange:proposedRange asDefinedByRegex:[[self class] _wordBoundaryRegex] skip:YES];
-
-            if (proposedRange.length)
-                wordRange = CPUnionRange(wordRange, [self _characterRangeForIndex:CPMaxRange(proposedRange) inRange:proposedRange asDefinedByRegex:[[self class] _wordBoundaryRegex] skip:NO]);
-
-            return wordRange;
-
+            regex = [[self class] _wordBoundaryRegex];
+            break;
         case CPSelectByParagraph:
-            if (_isNewlineCharacter([string characterAtIndex:proposedRange.location]))
-                return CPMakeRange(proposedRange.location, 1);
-
-            var parRange = [self _characterRangeForIndex:proposedRange.location inRange:proposedRange asDefinedByRegex:[[self class] _paragraphBoundaryRegex] skip:YES];
-
-            if (proposedRange.length)
-                parRange = CPUnionRange(parRange, [self _characterRangeForIndex:CPMaxRange(proposedRange)
-                                                                        inRange:proposedRange
-                                                               asDefinedByRegex:[[self class] _paragraphBoundaryRegex]
-                                                                           skip:NO]);
-
-            if (parRange.length > 0 && [self _isCharacterAtIndex:CPMaxRange(parRange) granularity:CPSelectByParagraph])
-                parRange.length++;
-
-            return parRange;
-
+            regex = [[self class] _paragraphBoundaryRegex];
+            break;
         default:
             return proposedRange;
     }
+
+    if (loc > 0 && _isNewlineCharacter([string characterAtIndex:loc]))
+        loc--;
+
+    var granularRange = [self _characterRangeForIndex:loc inRange:proposedRange asDefinedByRegex:regex skip:YES];
+
+    if (proposedRange.length == 0 && _isNewlineCharacter([string characterAtIndex:proposedRange.location]))
+        return _MakeRangeFromAbs(_isNewlineCharacter([string characterAtIndex:loc])? proposedRange.location : granularRange.location, proposedRange.location + 1);
+
+    if (proposedRange.length)
+        granularRange = CPUnionRange(granularRange, [self _characterRangeForIndex:CPMaxRange(proposedRange)
+                                                                          inRange:proposedRange
+                                                                 asDefinedByRegex:regex
+                                                                             skip:YES]);
+
+    switch (granularity)
+    {
+        case CPSelectByParagraph:
+            if (_isNewlineCharacter([string characterAtIndex:CPMaxRange(granularRange)]))
+                granularRange.length++;
+    }
+
+    return granularRange;
 }
 
 #pragma mark -
