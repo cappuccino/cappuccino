@@ -1024,8 +1024,12 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     if (dindex < 1)
        return;
 
+    var fraction = [];
     rectSource = [_layoutManager boundingRectForGlyphRange:CPMakeRange(dindex - 1, 1) inTextContainer:_textContainer];
-    dindex = [_layoutManager glyphIndexForPoint:CGPointMake(_stickyXLocation, rectSource.origin.y + 1) inTextContainer:_textContainer fractionOfDistanceThroughGlyph:nil];
+    dindex = [_layoutManager glyphIndexForPoint:CGPointMake(_stickyXLocation, rectSource.origin.y + 1) inTextContainer:_textContainer fractionOfDistanceThroughGlyph:fraction];
+
+    if (fraction[0] > 0.5)
+        dindex++;
 
     var  oldStickyLoc = _stickyXLocation;
     [self _establishSelection:CPMakeRange(dindex,0) byExtending:NO];
