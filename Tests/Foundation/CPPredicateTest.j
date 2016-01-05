@@ -577,6 +577,17 @@
     }
 }
 
+- (void)testPredicateFormatWithNullGeneratesCorrectString
+{
+    var predicate1 = [CPPredicate predicateWithFormat:@"value == %@", [CPNull null]],
+        predicate2 = [CPPredicate predicateWithFormat:@"value == null"],
+        predicate3 = [CPPredicate predicateWithFormat:@"value == nil"];
+
+    [self assert:[predicate1 predicateFormat] equals:@"value == nil"];
+    [self assert:[predicate2 predicateFormat] equals:@"value == nil"];
+    [self assert:[predicate3 predicateFormat] equals:@"value == nil"];
+}
+
 @end
 
 @implementation CPObject (PredicateTesting)
