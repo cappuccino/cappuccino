@@ -28,14 +28,14 @@
                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                 <subviews>
                     <box autoresizesSubviews="NO" title="Box" boxType="custom" borderType="line" titlePosition="noTitle" id="8dP-W1-DEG">
-                        <rect key="frame" x="24" y="344" width="659" height="25"/>
+                        <rect key="frame" x="15" y="344" width="675" height="25"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                         <view key="contentView">
-                            <rect key="frame" x="1" y="1" width="657" height="23"/>
+                            <rect key="frame" x="1" y="1" width="673" height="23"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <subviews>
                                 <button verticalHuggingPriority="750" id="a5G-uv-Jh5">
-                                    <rect key="frame" x="27" y="1" width="18" height="18"/>
+                                    <rect key="frame" x="36" y="1" width="18" height="18"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="bevel" bezelStyle="rounded" image="NSRemoveTemplate" imagePosition="overlaps" alignment="center" imageScaling="proportionallyDown" inset="2" id="m9m-c6-gXQ">
                                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -46,7 +46,7 @@
                                     </connections>
                                 </button>
                                 <button verticalHuggingPriority="750" id="ptZ-ZV-lx6">
-                                    <rect key="frame" x="2" y="1" width="18" height="18"/>
+                                    <rect key="frame" x="11" y="1" width="18" height="18"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="bevel" bezelStyle="rounded" image="NSAddTemplate" imagePosition="overlaps" alignment="center" imageScaling="proportionallyDown" inset="2" id="siU-8Y-18W">
                                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -62,7 +62,7 @@
                         <color key="fillColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                     </box>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="hxZ-8y-6la">
-                        <rect key="frame" x="22" y="630" width="78" height="17"/>
+                        <rect key="frame" x="13" y="630" width="78" height="17"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Processing" id="z3i-n2-bXk">
                             <font key="font" metaFont="systemBold"/>
@@ -71,7 +71,7 @@
                         </textFieldCell>
                     </textField>
                     <button id="gw9-CL-i1A">
-                        <rect key="frame" x="22" y="569" width="161" height="18"/>
+                        <rect key="frame" x="13" y="569" width="161" height="18"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <buttonCell key="cell" type="check" title="Convert interface files" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="NYY-y5-6rO">
                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -79,7 +79,7 @@
                         </buttonCell>
                     </button>
                     <button id="SKq-er-x3F">
-                        <rect key="frame" x="22" y="534" width="213" height="18"/>
+                        <rect key="frame" x="13" y="534" width="213" height="18"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <buttonCell key="cell" type="check" title="Check for compilation warnings" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="Bnz-A8-KNi">
                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -87,7 +87,7 @@
                         </buttonCell>
                     </button>
                     <button id="exr-30-Q2Y">
-                        <rect key="frame" x="22" y="497" width="139" height="18"/>
+                        <rect key="frame" x="13" y="497" width="139" height="18"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <buttonCell key="cell" type="check" title="Check code style" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="Qeb-PZ-NHe">
                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -95,7 +95,7 @@
                         </buttonCell>
                     </button>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ZNO-19-AIC">
-                        <rect key="frame" x="22" y="286" width="180" height="17"/>
+                        <rect key="frame" x="13" y="286" width="180" height="17"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Auxiliary Frameworks Path" id="mTA-c9-6W0">
                             <font key="font" metaFont="systemBold"/>
@@ -104,7 +104,7 @@
                         </textFieldCell>
                     </textField>
                     <textField verticalHuggingPriority="750" id="hnb-Pa-uDm">
-                        <rect key="frame" x="24" y="256" width="659" height="22"/>
+                        <rect key="frame" x="15" y="256" width="675" height="22"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="XJs-xO-XNP">
                             <font key="font" metaFont="system"/>
@@ -113,7 +113,7 @@
                         </textFieldCell>
                     </textField>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="FyO-aK-pG2">
-                        <rect key="frame" x="22" y="425" width="192" height="17"/>
+                        <rect key="frame" x="13" y="425" width="192" height="17"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Additional Toolchain Paths" id="uha-Up-yBS">
                             <font key="font" metaFont="systemBold"/>
@@ -121,17 +121,8 @@
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
-                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="622-Zz-4dl">
-                        <rect key="frame" x="22" y="202" width="219" height="17"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Folders &amp; Files Ignoring Patterns" id="FET-Jz-zZf">
-                            <font key="font" metaFont="systemBold"/>
-                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                        </textFieldCell>
-                    </textField>
                     <textField verticalHuggingPriority="750" id="7vM-ti-8t2">
-                        <rect key="frame" x="24" y="15" width="659" height="179"/>
+                        <rect key="frame" x="15" y="15" width="675" height="179"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <textFieldCell key="cell" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="4C5-05-WvU">
                             <font key="font" metaFont="system"/>
@@ -143,20 +134,20 @@
                         </connections>
                     </textField>
                     <scrollView autohidesScrollers="YES" horizontalLineScroll="24" horizontalPageScroll="10" verticalLineScroll="24" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="YPz-NV-kTz">
-                        <rect key="frame" x="24" y="367" width="659" height="50"/>
+                        <rect key="frame" x="15" y="367" width="675" height="50"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                         <clipView key="contentView" id="hAg-8q-dkR">
-                            <rect key="frame" x="1" y="1" width="657" height="48"/>
+                            <rect key="frame" x="1" y="1" width="673" height="48"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <subviews>
                                 <tableView focusRingType="none" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnReordering="NO" columnSelection="YES" autosaveColumns="NO" id="StS-tw-b37">
-                                    <rect key="frame" x="0.0" y="0.0" width="657" height="24"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="673" height="48"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <size key="intercellSpacing" width="11" height="7"/>
                                     <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                     <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                     <tableColumns>
-                                        <tableColumn width="646" minWidth="40" maxWidth="999999999999" id="4pc-qQ-ME9">
+                                        <tableColumn width="662" minWidth="40" maxWidth="999999999999" id="4pc-qQ-ME9">
                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left">
                                                 <font key="font" metaFont="smallSystem"/>
                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -188,7 +179,7 @@
                         </scroller>
                     </scrollView>
                     <button id="KG4-K6-sDW">
-                        <rect key="frame" x="22" y="606" width="210" height="18"/>
+                        <rect key="frame" x="13" y="606" width="210" height="18"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <buttonCell key="cell" type="check" title="Create Objective-C class pairs" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="jqE-La-F7P">
                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -196,7 +187,7 @@
                         </buttonCell>
                     </button>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="wW5-4S-2dR">
-                        <rect key="frame" x="42" y="593" width="266" height="11"/>
+                        <rect key="frame" x="33" y="593" width="266" height="11"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" controlSize="mini" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Create an Objective-C class pair from each Objective-J file" id="EJm-3v-WdN">
                             <font key="font" metaFont="miniSystem"/>
@@ -205,7 +196,7 @@
                         </textFieldCell>
                     </textField>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="07V-g7-3ML">
-                        <rect key="frame" x="42" y="558" width="244" height="11"/>
+                        <rect key="frame" x="33" y="558" width="244" height="11"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" controlSize="mini" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Automatically convert XIB files to Cappuccino CIB files" id="Xym-Of-FkY">
                             <font key="font" metaFont="miniSystem"/>
@@ -214,7 +205,7 @@
                         </textFieldCell>
                     </textField>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="4mo-sA-kKg">
-                        <rect key="frame" x="42" y="521" width="206" height="11"/>
+                        <rect key="frame" x="33" y="521" width="206" height="11"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" controlSize="mini" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Check your code for compilation warnings" id="cvO-EN-bma">
                             <font key="font" metaFont="miniSystem"/>
@@ -223,7 +214,7 @@
                         </textFieldCell>
                     </textField>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="SbY-Js-Fu2">
-                        <rect key="frame" x="42" y="484" width="300" height="11"/>
+                        <rect key="frame" x="33" y="484" width="300" height="11"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" controlSize="mini" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Check your code against the Cappuccino code style guidelines" id="toL-pB-4xD">
                             <font key="font" metaFont="miniSystem"/>
@@ -232,53 +223,62 @@
                         </textFieldCell>
                     </textField>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="kgM-V4-xiU">
-                        <rect key="frame" x="459" y="425" width="226" height="11"/>
+                        <rect key="frame" x="466" y="425" width="226" height="11"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
-                        <textFieldCell key="cell" controlSize="mini" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Paths to check for Cappuccino toolchain binaries" id="qww-Qf-9aT">
+                        <textFieldCell key="cell" controlSize="mini" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Paths to check for Cappuccino toolchain binaries" id="qww-Qf-9aT">
                             <font key="font" metaFont="miniSystem"/>
                             <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="3If-Bv-8P9">
-                        <rect key="frame" x="470" y="286" width="215" height="11"/>
+                        <rect key="frame" x="477" y="286" width="215" height="11"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
-                        <textFieldCell key="cell" controlSize="mini" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Path to check for auxiliary Cappuccino libraries" id="tbk-zV-Oyt">
+                        <textFieldCell key="cell" controlSize="mini" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Path to check for auxiliary Cappuccino libraries" id="tbk-zV-Oyt">
                             <font key="font" metaFont="miniSystem"/>
                             <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="7fT-UI-5xj">
-                        <rect key="frame" x="521" y="197" width="164" height="11"/>
+                        <rect key="frame" x="524" y="202" width="168" height="11"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
-                        <textFieldCell key="cell" controlSize="mini" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Patterns of files and folder to ignore" id="mYf-u8-aFY">
+                        <textFieldCell key="cell" controlSize="mini" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Patterns of files and folders to ignore" id="mYf-u8-aFY">
                             <font key="font" metaFont="miniSystem"/>
                             <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
                     <box verticalHuggingPriority="750" title="Box" boxType="separator" titlePosition="noTitle" id="Ymf-vY-Anj">
-                        <rect key="frame" x="13" y="458" width="678" height="5"/>
+                        <rect key="frame" x="15" y="458" width="675" height="5"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                         <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
                         <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                         <font key="titleFont" metaFont="system"/>
                     </box>
                     <box verticalHuggingPriority="750" title="Box" boxType="separator" titlePosition="noTitle" id="Ysi-BK-r28">
-                        <rect key="frame" x="14" y="319" width="678" height="5"/>
+                        <rect key="frame" x="15" y="319" width="675" height="5"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                         <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
                         <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                         <font key="titleFont" metaFont="system"/>
                     </box>
                     <box verticalHuggingPriority="750" title="Box" boxType="separator" titlePosition="noTitle" id="k5X-iK-H77">
-                        <rect key="frame" x="14" y="235" width="678" height="5"/>
+                        <rect key="frame" x="15" y="235" width="675" height="5"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                         <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
                         <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                         <font key="titleFont" metaFont="system"/>
                     </box>
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="622-Zz-4dl">
+                        <rect key="frame" x="13" y="202" width="219" height="17"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Folders &amp; Files Ignoring Patterns" id="FET-Jz-zZf">
+                            <font key="font" metaFont="systemBold"/>
+                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
                 </subviews>
             </view>
             <color key="borderColor" red="0.98039221759999995" green="0.98039221759999995" blue="0.98039221759999995" alpha="1" colorSpace="deviceRGB"/>
