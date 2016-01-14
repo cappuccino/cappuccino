@@ -84,23 +84,35 @@
     // We will have to adjust the z-index of all windows starting at this index.
     var count = [_windows count],
         zIndex = (anIndex === CPNotFound ? count : anIndex),
-        isVisible = aWindow._isVisible;
+        isVisible = aWindow._isVisible,
+        isLocal = [_windows containsObject:aWindow];
 
-    // If the window is already a resident of this layer, remove it.
+    // if the window is visible
     if (isVisible)
     {
-        // Adjust the z-index to start at the window being inserted
-        zIndex = MIN(zIndex, aWindow._index);
+        // If the window is already a resident of this layer, remove it.
+        if (isLocal)
+        {
+            // Adjust the z-index to start at the window being inserted
+            zIndex = MIN(zIndex, aWindow._index);
 
-        // If the window being inserted is below the insertion index,
-        // the index will be one less after we remove the window below.
-        if (aWindow._index < anIndex)
-            --anIndex;
+            // If the window being inserted is below the insertion index,
+            // the index will be one less after we remove the window below.
+            if (aWindow._index < anIndex)
+                --anIndex;
 
-        [_windows removeObjectAtIndex:aWindow._index];
+            [_windows removeObjectAtIndex:aWindow._index];
+
+         }
+         else
+             ++count;
     }
     else
-        ++count;
+    {
+        // otherwise, remove the window from it's previous layer
+        var windowLayer = [[aWindow platformWindow]._windowLayers objectForKey:aWindow._level];
+        [windowLayer removeWindow:aWindow];
+    }
 
     if (anIndex === CPNotFound || anIndex >= count)
         [_windows addObject:aWindow];
