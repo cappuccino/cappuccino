@@ -880,7 +880,11 @@ Returns a hash for the object. Unlike Cocoa, the hash value does not take conten
     return join.call([self _javaScriptArrayCopy], aString);
 }
 
-/* @ignore */
+/*!
+    Returns an Array formed by applying a function to the objects in the receiver.
+    @param aFunction a function taking two arguments: (element, index).
+    @return an Array containing the transformed elements.
+*/
 - (CPArray)arrayByApplyingBlock:(Function/*element, index*/)aFunction
 {
 	var result = [],
