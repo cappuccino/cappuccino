@@ -3917,7 +3917,6 @@ var interpolate = function(fromValue, toValue, progress)
     do
     {
         // Initialize this run
-        
         _restartHandlingTrackingAreaEvent = NO;
 
         _mouseEnteredStack = [];
@@ -4146,12 +4145,12 @@ var interpolate = function(fromValue, toValue, progress)
         // (this is done by comparing their draw order)
 
         var firstView      = frontmostView,
-        firstSuperview = [firstView superview];
+            firstSuperview = [firstView superview];
 
         while (firstView !== _contentView)
         {
             var secondView      = aView,
-            secondSuperview = [secondView superview];
+                secondSuperview = [secondView superview];
 
             while ((secondSuperview !== _contentView) && (firstSuperview !== secondSuperview))
             {
