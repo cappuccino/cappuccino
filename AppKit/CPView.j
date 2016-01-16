@@ -32,6 +32,7 @@
 @import "CPGraphicsContext.j"
 @import "CPResponder.j"
 @import "CPTheme.j"
+@import "CPTrackingArea.j"
 @import "CPWindow_Constants.j"
 @import "_CPDisplayServer.j"
 
@@ -239,6 +240,9 @@ var CPViewHighDPIDrawingEnabled = YES;
     BOOL                _allowsVibrancy         @accessors(property=allowsVibrancy);
     CPAppearance        _appearance             @accessors(getter=appearance);
     CPAppearance        _effectiveAppearance;
+
+    CPMutableArray      _trackingAreas          @accessors(getter=trackingAreas, copy);
+    BOOL                _inhibitUpdateTrackingAreas;
 }
 
 /*
@@ -351,6 +355,8 @@ var CPViewHighDPIDrawingEnabled = YES;
         _subviews = [];
         _registeredDraggedTypes = [CPSet set];
         _registeredDraggedTypesArray = [];
+
+        _trackingAreas = [];
 
         _tag = -1;
 
@@ -799,8 +805,30 @@ var CPViewHighDPIDrawingEnabled = YES;
         [_window _noteUnregisteredDraggedTypes:_registeredDraggedTypes];
         [aWindow _noteRegisteredDraggedTypes:_registeredDraggedTypes];
     }
+    
+    // View must be removed from the current window viewsWithTrackingAreas
+    if (_window && (_trackingAreas.length > 0))
+        [_window _removeTrackingAreaView:self];
 
     _window = aWindow;
+    
+    if (_window)
+    {
+        var owners;
+
+        if (_trackingAreas.length > 0)
+        {
+            // View must be added to the new window viewsWithTrackingAreas
+            [_window _addTrackingAreaView:self];
+            owners = [self _calcTrackingAreaOwners];
+        }
+        else
+            owners = [self];
+
+        // Notify that view tracking areas should be updated
+        // Cocoa doesn't notify on leaving a window
+        [self _updateTrackingAreasForOwners:owners];
+    }
 
     var count = [_subviews count];
 
@@ -994,6 +1022,9 @@ var CPViewHighDPIDrawingEnabled = YES;
 
     if (_isSuperviewAClipView)
         [[self superview] viewFrameChanged:[[CPNotification alloc] initWithName:CPViewFrameDidChangeNotification object:self userInfo:nil]];
+
+    if (!_inhibitUpdateTrackingAreas)
+        [self _updateTrackingAreas];
 }
 
 /*!
@@ -1064,6 +1095,9 @@ var CPViewHighDPIDrawingEnabled = YES;
 
     CPDOMDisplayServerSetStyleLeftTop(_DOMElement, transform, origin.x, origin.y);
 #endif
+
+    if (!_inhibitUpdateTrackingAreas && !_inhibitFrameAndBoundsChangedNotifications)
+        [self _updateTrackingAreas];
 }
 
 /*!
@@ -1215,6 +1249,9 @@ var CPViewHighDPIDrawingEnabled = YES;
 
     if (_isSuperviewAClipView && !_inhibitFrameAndBoundsChangedNotifications)
         [[self superview] viewFrameChanged:[[CPNotification alloc] initWithName:CPViewFrameDidChangeNotification object:self userInfo:nil]];
+
+    if (!_inhibitUpdateTrackingAreas && !_inhibitFrameAndBoundsChangedNotifications)
+        [self _updateTrackingAreas];
 }
 
 /*!
@@ -1261,6 +1298,9 @@ var CPViewHighDPIDrawingEnabled = YES;
 
     if (_isSuperviewAClipView)
         [[self superview] viewBoundsChanged:[[CPNotification alloc] initWithName:CPViewBoundsDidChangeNotification object:self userInfo:nil]];
+
+    if (!_inhibitUpdateTrackingAreas)
+        [self _updateTrackingAreas];
 }
 
 /*!
@@ -1326,6 +1366,9 @@ var CPViewHighDPIDrawingEnabled = YES;
 
     if (_isSuperviewAClipView && !_inhibitFrameAndBoundsChangedNotifications)
         [[self superview] viewBoundsChanged:[[CPNotification alloc] initWithName:CPViewBoundsDidChangeNotification object:self userInfo:nil]];
+
+    if (!_inhibitUpdateTrackingAreas && !_inhibitFrameAndBoundsChangedNotifications)
+        [self _updateTrackingAreas];
 }
 
 /*!
@@ -1367,6 +1410,9 @@ var CPViewHighDPIDrawingEnabled = YES;
 
     if (_isSuperviewAClipView && !_inhibitFrameAndBoundsChangedNotifications)
         [[self superview] viewBoundsChanged:[[CPNotification alloc] initWithName:CPViewBoundsDidChangeNotification object:self userInfo:nil]];
+
+    if (!_inhibitUpdateTrackingAreas && !_inhibitFrameAndBoundsChangedNotifications)
+        [self _updateTrackingAreas];
 }
 
 
@@ -3403,6 +3449,141 @@ setBoundsOrigin:
 
 @end
 
+@implementation CPView (TrackingAreaAdditions)
+
+- (void)addTrackingArea:(CPTrackingArea)trackingArea
+{
+    // Consistency check
+    if (!trackingArea || [_trackingAreas containsObjectIdenticalTo:trackingArea])
+        return;
+    
+    if ([trackingArea view])
+        [CPException raise:CPInternalInconsistencyException reason:"Tracking area has already been added to another view."];
+
+    [_trackingAreas addObject:trackingArea];
+    [trackingArea setView:self];
+    
+    if (_window)
+        [_window _addTrackingArea:trackingArea];
+  
+    [trackingArea _updateWindowRect];
+}
+
+- (void)removeTrackingArea:(CPTrackingArea)trackingArea
+{
+    // Consistency check
+    if (!trackingArea)
+        return;
+    
+    if (![_trackingAreas containsObjectIdenticalTo:trackingArea])
+        [CPException raise:CPInternalInconsistencyException reason:"Trying to remove unreferenced trackingArea"];
+
+    [self _removeTrackingArea:trackingArea];
+}
+
+/*! 
+ Invoked automatically when the view’s geometry changes such that its tracking areas need to be recalculated.
+
+ You should override this method to remove out of date tracking areas and add recomputed tracking areas;
+ 
+ Cocoa calls this on every view, whereas they have tracking area(s) or not.
+ Cappuccino behaves differently :
+ - updateTrackingAreas is called when placing a view in the view hierarchy (that is in a window)
+ - if you have only CPTrackingInVisibleRect tracking areas attached to a view, it will not be called again (until you move the view in the hierarchy)
+ - if you have at least one non-CPTrackingInVisibleRect tracking area attached, it will be called every time the view geometry could be modified
+   You don't have to touch to CPTrackingInVisibleRect tracking areas, they will be automatically updated
+ 
+ Please note that it is the owner of a tracking area who is called for updateTrackingAreas.
+ But, if a view without any tracking area is inserted in the view hierarchy (that is, in a window), the view is called for updateTrackingAreas.
+ This enables you to use updateTrackingArea to initially attach your tracking areas to the view.
+*/
+- (void)updateTrackingAreas
+{
+
+}
+
+/*!
+ This utility method is intended for CPView subclasses overriding updateTrackingAreas
+ 
+ Typical use would be :
+ 
+ - (void)updateTrackingAreas
+ {
+      [self removeAllTrackingAreas];
+ 
+      ... add your specific updated tracking areas ...
+  }
+ 
+*/
+- (void)removeAllTrackingAreas
+{
+    while (_trackingAreas.length > 0)
+        [self _removeTrackingArea:_trackingAreas[0]];
+}
+
+// Internal methods
+
+- (void)_removeTrackingArea:(CPTrackingArea)trackingArea
+{
+    if (_window)
+        [_window _removeTrackingArea:trackingArea];
+    
+    [trackingArea setView:nil];
+    [_trackingAreas removeObjectIdenticalTo:trackingArea];
+}
+
+- (void)_updateTrackingAreas
+{
+    _inhibitUpdateTrackingAreas = YES;
+    
+    [self _recursivelyUpdateTrackingAreas];
+    
+    _inhibitUpdateTrackingAreas = NO;
+}
+
+- (void)_recursivelyUpdateTrackingAreas
+{
+    [self _updateTrackingAreasForOwners:[self _calcTrackingAreaOwners]];
+    
+    for (var i = 0; i < _subviews.length; i++)
+        [_subviews[i] _recursivelyUpdateTrackingAreas];
+}
+
+- (CPArray)_calcTrackingAreaOwners
+{
+    // First search all owners that must be notified
+    // Remark: 99.99% of time, the only owner will be the view itself
+    // In the same time, update the rects of InVisibleRect tracking areas
+    
+    var owners = [];
+    
+    for (var i = 0; i < _trackingAreas.length; i++)
+    {
+        var trackingArea = _trackingAreas[i];
+        
+        if ([trackingArea options] & CPTrackingInVisibleRect)
+            [trackingArea _updateWindowRect];
+        
+        else
+        {
+            var owner = [trackingArea owner];
+            
+            if (![owners containsObjectIdenticalTo:owner])
+                [owners addObject:owner];
+        }
+    }
+    
+    return owners;
+}
+
+- (void)_updateTrackingAreasForOwners:(CPArray)owners
+{
+    for (var i = 0; i < owners.length; i++)
+        [owners[i] updateTrackingAreas];
+}
+
+@end
+
 var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     CPViewAutoresizesSubviewsKey    = @"CPViewAutoresizesSubviews",
     CPViewBackgroundColorKey        = @"CPViewBackgroundColor",
@@ -3423,6 +3604,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     CPViewSizeScaleKey              = @"CPViewSizeScaleKey",
     CPViewIsScaledKey               = @"CPViewIsScaledKey",
     CPViewAppearanceKey             = @"CPViewAppearanceKey";
+    CPViewTrackingAreasKey          = @"CPViewTrackingAreasKey";
 
 @implementation CPView (CPCoding)
 
@@ -3450,6 +3632,11 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 
     if (self)
     {
+        _trackingAreas = [aCoder decodeObjectForKey:CPViewTrackingAreasKey];
+        
+        if (!_trackingAreas)
+            _trackingAreas = [];
+        
         // We have to manually check because it may be 0, so we can't use ||
         _tag = [aCoder containsValueForKey:CPViewTagKey] ? [aCoder decodeIntForKey:CPViewTagKey] : -1;
         _identifier = [aCoder decodeObjectForKey:CPReuseIdentifierKey];
@@ -3607,6 +3794,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     [aCoder encodeSize:[self _hierarchyScaleSize] forKey:CPViewSizeScaleKey];
     [aCoder encodeBool:_isScaled forKey:CPViewIsScaledKey];
     [aCoder encodeObject:_appearance forKey:CPViewAppearanceKey];
+    [aCoder encodeObject:_trackingAreas forKey:CPViewTrackingAreasKey];
 }
 
 @end

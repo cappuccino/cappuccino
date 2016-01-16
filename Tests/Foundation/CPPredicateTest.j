@@ -139,10 +139,10 @@
 {
     var collection = [CPExpression expressionForKeyPath:@"Record1.Children"],
         iteratorVariable = @"x",
-        predicate = [CPPredicate predicateWithFormat:@"$x BEGINSWITH 'Kid'"];
+        predicate = [CPPredicate predicateWithFormat:@"$x BEGINSWITH $KidVariable"];
 
     var expression = [CPExpression expressionForSubquery:collection usingIteratorVariable:iteratorVariable predicate:predicate],
-        eval = [expression expressionValueWithObject:dict context:nil],
+        eval = [expression expressionValueWithObject:dict context:@{"KidVariable":[CPExpression expressionForConstantValue:"Kid"]}],
         expected = [CPArray arrayWithObjects:"Kid1", "Kid2"];
     [self assertTrue:([eval isEqual:expected]) message:"'" + [expression predicateFormat]  + "' result is "+ eval + "but should be " + expected];
 }
@@ -369,8 +369,8 @@
     [self assertTrue:[predicate evaluateWithObject:nil] message:"Predicate " + predicate + " should be TRUE"];
 
     // TEST Subquery -- This means: search people who have 2 boys.
-    predicate = [CPPredicate predicateWithFormat: @"SUBQUERY(Record1.Children, $x, $x BEGINSWITH 'Kid')[SIZE] = 2"];
-    [self assertTrue:[predicate evaluateWithObject:dict] message:"Predicate " + predicate + " should evaluate to TRUE"];
+    predicate = [CPPredicate predicateWithFormat: @"SUBQUERY(Record1.Children, $x, $x BEGINSWITH $Begining)[SIZE] = 2"];
+    [self assertTrue:[predicate evaluateWithObject:dict substitutionVariables:@{"Begining":"Kid"}] message:"Predicate " + predicate + " should evaluate to TRUE"];
 
     // Test Set expressions
     // Parsing is ok but the evaluation of this predicate will return NO because:
@@ -575,6 +575,17 @@
         [self assert:fixture.expected_yes equals:fixture.values.map(evalYesPredicate) message:fixture.message + " with YES-predicate"];
         [self assert:fixture.expected_no equals:fixture.values.map(evalNoPredicate) message:fixture.message + " with NO-predicate"];
     }
+}
+
+- (void)testPredicateFormatWithNullGeneratesCorrectString
+{
+    var predicate1 = [CPPredicate predicateWithFormat:@"value == %@", [CPNull null]],
+        predicate2 = [CPPredicate predicateWithFormat:@"value == null"],
+        predicate3 = [CPPredicate predicateWithFormat:@"value == nil"];
+
+    [self assert:[predicate1 predicateFormat] equals:@"value == nil"];
+    [self assert:[predicate2 predicateFormat] equals:@"value == nil"];
+    [self assert:[predicate3 predicateFormat] equals:@"value == nil"];
 }
 
 @end

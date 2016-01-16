@@ -344,11 +344,26 @@
     [self _setTextColor:[NSColor colorWithCalibratedRed:107.0/255.0 green:148.0/255.0 blue:236.0/255.0 alpha:1.0] forButton:sender];
 
     if (sender == self->buttonSelectConfigurationTab)
+    {
+        [_operationsViewController setSelected:NO];
+        [_errorsViewController setSelected:NO];
         [self->tabViewProject selectTabViewItemAtIndex:0];
-    if (sender == self->buttonSelectErrorsTab)
+    }
+    else if (sender == self->buttonSelectErrorsTab)
+    {
+        [_operationsViewController setSelected:NO];
+        [_errorsViewController setSelected:YES];
         [self->tabViewProject selectTabViewItemAtIndex:1];
-    if (sender == self->buttonSelectOperationsTab)
+        [_errorsViewController reload];
+    }
+    else if (sender == self->buttonSelectOperationsTab)
+    {
+        [_operationsViewController setSelected:YES];
+        [_errorsViewController setSelected:NO];
         [self->tabViewProject selectTabViewItemAtIndex:2];
+        [_operationsViewController reload];
+    }
+    
 }
 
 

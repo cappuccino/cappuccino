@@ -20,10 +20,44 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import <Foundation/CPObject.j>
+@import <Foundation/CPFormatter.j>
 
-@implementation NSFormatter : CPObject
+@implementation CPFormatter (NSCoding)
+
+- (id)NS_initWithCoder:(CPCoder)aCoder
 {
+    return [self init];
+}
+
+@end
+
+@implementation NSFormatter : CPFormatter
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    return [self NS_initWithCoder:aCoder];
+}
+
+- (Class)classForKeyedArchiver
+{
+    return [CPFormatter class];
+}
+
+@end
+
+/*
+    Xcode uses a proxy class called IBCustomFormatter when a "Custom Formatter"
+    is placed in a xib. During nib2cib, an IBCustomFormatter instance is created
+    and stringForObjectValue is eventually called, which means we have to define
+    it here at least so that the conversion will work.
+
+    At runtime, the actual formatter class is used, not IBCustomFormatter.
+*/
+@implementation IBCustomFormatter : NSFormatter
+
+- (CPString)stringForObjectValue:(id)anObject
+{
+    return nil;
 }
 
 @end

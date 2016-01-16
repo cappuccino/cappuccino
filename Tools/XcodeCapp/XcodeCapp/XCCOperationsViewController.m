@@ -56,6 +56,9 @@
 
 - (void)reload
 {
+    if (!_selected)
+        return;
+    
     [self->operationTableView reloadData];
 
     [self _showMaskingView:![self.cappuccinoProjectController projectRelatedOperations].count];
