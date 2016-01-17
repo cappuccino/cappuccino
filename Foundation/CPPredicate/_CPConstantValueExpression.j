@@ -66,6 +66,9 @@
     if ([_value isKindOfClass:[CPString class]])
         return @"\"" + _value + @"\"";
 
+    if (_value === [CPNull null])
+        return @"nil";
+
     return [_value description];
 }
 

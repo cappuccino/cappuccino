@@ -233,6 +233,19 @@ var concat = Array.prototype.concat,
     return join.call(self, aString);
 }
 
+- (CPArray)arrayByApplyingBlock:(Function/*element, index*/)aFunction
+{
+	var result = [];
+
+	for (var idx = 0; idx < self.length; idx++)
+	{
+	    var obj = aFunction(self[idx], idx);
+		result.push(obj);
+	}
+
+	return result;
+}
+
 - (void)insertObject:(id)anObject atIndex:(CPUInteger)anIndex
 {
     if (anIndex > self.length || anIndex < 0)
@@ -334,7 +347,6 @@ var concat = Array.prototype.concat,
     else
         [super addObjectsFromArray:anArray];
 }
-
 
 - (id)copy
 {
