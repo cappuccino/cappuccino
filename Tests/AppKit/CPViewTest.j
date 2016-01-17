@@ -1360,6 +1360,144 @@ var updateTrackingAreasCalls,
     
 }
 
+- (void)testTrackingAreasLiveViewHierarchyModification
+{
+    // 1. viewB inside viewA with mouseEntered removing itself
+
+    var viewA = [[CPTrackingAreaViewWithCursorUpdate alloc] initWithFrame:CGRectMake(20, 20, 40, 40)];
+    var viewB = [[CPTrackingAreaViewLiveRemoval      alloc] initWithFrame:CGRectMake(10, 10, 20, 20)];
+
+    [[window contentView] setSubviews:[CPArray arrayWithObject:viewA]];
+    [viewA addSubview:viewB];
+
+    var options  = CPTrackingMouseEnteredAndExited | CPTrackingCursorUpdate | CPTrackingActiveInActiveApp | CPTrackingInVisibleRect;
+
+    var viewATrackingArea = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero() options:options owner:viewA userInfo:nil];
+    var viewBTrackingArea = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero() options:options owner:viewB userInfo:nil];
+
+    [viewA addTrackingArea:viewATrackingArea];
+    [viewB addTrackingArea:viewBTrackingArea];
+
+    // Step 1.1 : enter viewA
+
+    [self moveMouseAtPoint:CGPointMake(25, 25) dragging:NO];
+
+    [self assert:1 equals:mouseEnteredCalls message:@"1.1 There should be one and only one mouseEntered call"];
+    [self assert:0 equals:mouseExitedCalls  message:@"1.1 There should be no mouseExited call"];
+    [self assert:0 equals:mouseMovedCalls   message:@"1.1 There should be no mouseMoved call"];
+    [self assert:1 equals:cursorUpdateCalls message:@"1.1 There should be one and only one cursorUpdate call"];
+
+    [self assert:viewA equals:involvedViewForMouseEntered message:@"1.1 viewA should receive mouseEntered"];
+    [self assert:viewA equals:involvedViewForCursorUpdate message:@"1.1 viewA should receive cursorUpdate"];
+
+    // Step 1.2 : enter viewB
+
+    [self moveMouseAtPoint:CGPointMake(40, 40) dragging:NO];
+
+    [self assert:1 equals:mouseEnteredCalls message:@"1.2 There should be one and only one mouseEntered call"];
+    [self assert:0 equals:mouseExitedCalls  message:@"1.2 There should be no mouseExited call"];
+    [self assert:0 equals:mouseMovedCalls   message:@"1.2 There should be no mouseMoved call"];
+    [self assert:0 equals:cursorUpdateCalls message:@"1.2 There should be no cursorUpdate call"];
+
+    [self assert:viewB equals:involvedViewForMouseEntered message:@"1.2 viewB should receive mouseEntered"];
+
+    // Step 1.3 : move back to viewA (there should be no more viewB)
+
+    [self moveMouseAtPoint:CGPointMake(25, 25) dragging:NO];
+
+    [self assert:0 equals:mouseEnteredCalls message:@"1.3 There should be no mouseEntered call"];
+    [self assert:0 equals:mouseExitedCalls  message:@"1.3 There should be no mouseExited call"];
+    [self assert:0 equals:mouseMovedCalls   message:@"1.3 There should be no mouseMoved call"];
+    [self assert:1 equals:cursorUpdateCalls message:@"1.3 There should be one and only one cursorUpdate call"];
+
+    [self assert:viewA equals:involvedViewForCursorUpdate message:@"1.3 viewA should receive cursorUpdate"];
+
+    // Step 1.4 : exit viewA
+
+    [self moveMouseAtPoint:CGPointMake(5, 5) dragging:NO];
+
+    [self assert:0 equals:mouseEnteredCalls message:@"1.4 There should be one and only one mouseEntered call"];
+    [self assert:1 equals:mouseExitedCalls  message:@"1.4 There should be one and only on mouseExited call"];
+    [self assert:0 equals:mouseMovedCalls   message:@"1.4 There should be no mouseMoved call"];
+    [self assert:0 equals:cursorUpdateCalls message:@"1.4 There should be no cursorUpdate call"];
+
+    [self assert:viewA equals:involvedViewForMouseExited message:@"1.4 viewA should receive mouseExited"];
+
+    // 2. viewA with mouseEntered adding viewB inside it. Testing if viewB receive mouseEntered & cursorUpdate
+
+    var viewA = [[CPTrackingAreaViewLiveAddition alloc] initWithFrame:CGRectMake(20, 20, 40, 40)];
+
+    [[window contentView] setSubviews:[CPArray arrayWithObject:viewA]];
+
+    var options  = CPTrackingMouseEnteredAndExited | CPTrackingCursorUpdate | CPTrackingActiveInActiveApp | CPTrackingInVisibleRect;
+
+    var viewATrackingArea = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero() options:options owner:viewA userInfo:nil];
+
+    [viewA addTrackingArea:viewATrackingArea];
+
+    // Step 2.1 : enter viewA (then add viewB thus enter also viewB)
+
+    [self moveMouseAtPoint:CGPointMake(25, 25) dragging:NO];
+
+    [self assert:2 equals:mouseEnteredCalls message:@"2.1 There should be two mouseEntered calls"];
+    [self assert:0 equals:mouseExitedCalls  message:@"2.1 There should be no mouseExited call"];
+    [self assert:0 equals:mouseMovedCalls   message:@"2.1 There should be no mouseMoved call"];
+    [self assert:2 equals:cursorUpdateCalls message:@"2.1 There should be two cursorUpdate calls"];
+
+    [self assert:[[viewA subviews] firstObject] equals:involvedViewForMouseEntered message:@"2.1 viewB should receive mouseEntered"];
+    [self assert:[[viewA subviews] firstObject] equals:involvedViewForCursorUpdate message:@"2.1 viewB should receive cursorUpdate"];
+    [self assert:[CPCursor crosshairCursor]     equals:[CPCursor currentCursor]    message:@"2.1 Final cursor should be crosshair cursor, determined by viewB"];
+
+    // Step 2.2 : exit viewA (thus also viewB)
+
+    [self moveMouseAtPoint:CGPointMake(5, 5) dragging:NO];
+
+    [self assert:0 equals:mouseEnteredCalls message:@"2.2 There should be no mouseEntered calls"];
+    [self assert:2 equals:mouseExitedCalls  message:@"2.2 There should be two mouseExited call"];
+    [self assert:0 equals:mouseMovedCalls   message:@"2.2 There should be no mouseMoved call"];
+    [self assert:0 equals:cursorUpdateCalls message:@"2.2 There should be no cursorUpdate calls"];
+
+    [self assert:[[viewA subviews] firstObject] equals:involvedViewForMouseExited message:@"2.2 viewB should receive mouseExited"];
+    [self assert:[CPCursor arrowCursor]         equals:[CPCursor currentCursor]   message:@"2.2 Cursor should be an arrow"];
+
+    // 3. viewA with mouseEntered adding viewB inside it BUT with CPTrackingAssumeInside. Testing if viewB receive only cursorUpdate
+
+    var viewA = [[CPTrackingAreaViewLiveAddition2 alloc] initWithFrame:CGRectMake(20, 20, 40, 40)];
+
+    [[window contentView] setSubviews:[CPArray arrayWithObject:viewA]];
+
+    var options  = CPTrackingMouseEnteredAndExited | CPTrackingCursorUpdate | CPTrackingActiveInActiveApp | CPTrackingInVisibleRect;
+
+    var viewATrackingArea = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero() options:options owner:viewA userInfo:nil];
+
+    [viewA addTrackingArea:viewATrackingArea];
+
+    // Step 3.1 : enter viewA (then add viewB thus enter also viewB)
+
+    [self moveMouseAtPoint:CGPointMake(25, 25) dragging:NO];
+
+    [self assert:1 equals:mouseEnteredCalls message:@"3.1 There should be two mouseEntered calls"];
+    [self assert:0 equals:mouseExitedCalls  message:@"3.1 There should be no mouseExited call"];
+    [self assert:0 equals:mouseMovedCalls   message:@"3.1 There should be no mouseMoved call"];
+    [self assert:2 equals:cursorUpdateCalls message:@"3.1 There should be two cursorUpdate calls"];
+
+    [self assert:viewA                          equals:involvedViewForMouseEntered message:@"3.1 viewB should receive mouseEntered"];
+    [self assert:[[viewA subviews] firstObject] equals:involvedViewForCursorUpdate message:@"3.1 viewB should receive cursorUpdate"];
+    [self assert:[CPCursor crosshairCursor]     equals:[CPCursor currentCursor]    message:@"3.1 Final cursor should be crosshair cursor, determined by viewB"];
+
+    // Step 3.2 : exit viewA (thus also viewB)
+
+    [self moveMouseAtPoint:CGPointMake(5, 5) dragging:NO];
+
+    [self assert:0 equals:mouseEnteredCalls message:@"3.2 There should be no mouseEntered calls"];
+    [self assert:2 equals:mouseExitedCalls  message:@"3.2 There should be two mouseExited call"];
+    [self assert:0 equals:mouseMovedCalls   message:@"3.2 There should be no mouseMoved call"];
+    [self assert:0 equals:cursorUpdateCalls message:@"3.2 There should be no cursorUpdate calls"];
+
+    [self assert:[[viewA subviews] firstObject] equals:involvedViewForMouseExited message:@"3.2 viewB should receive mouseExited"];
+    [self assert:[CPCursor arrowCursor]         equals:[CPCursor currentCursor]   message:@"3.2 Cursor should be an arrow"];
+}
+
 - (void)updateTrackingAreas
 {
     updateTrackingAreasCalls++;
@@ -1468,6 +1606,77 @@ var updateTrackingAreasCalls,
 @implementation CPTrackingAreaViewWithoutCursorUpdate : CPView
 {
 
+}
+
+@end
+
+@implementation CPTrackingAreaViewLiveRemoval : CPTrackingAreaView
+{
+
+}
+
+- (void)cursorUpdate:(CPEvent)anEvent
+{
+    [[CPCursor pointingHandCursor] set];
+
+    [super cursorUpdate:anEvent];
+}
+
+- (void)mouseEntered:(CPEvent)anEvent
+{
+    [self removeFromSuperview];
+
+    [super mouseEntered:anEvent];
+}
+
+@end
+
+@implementation CPTrackingAreaViewLiveAddition : CPTrackingAreaView
+{
+
+}
+
+- (void)cursorUpdate:(CPEvent)anEvent
+{
+    [[CPCursor pointingHandCursor] set];
+
+    [super cursorUpdate:anEvent];
+}
+
+- (void)mouseEntered:(CPEvent)anEvent
+{
+    var viewB = [[CPTrackingAreaViewWithCursorUpdate alloc] initWithFrame:CGRectMake(0, 0, 40, 40)];
+
+    [self addSubview:viewB];
+
+    [viewB addTrackingArea:[[CPTrackingArea alloc] initWithRect:CGRectMakeZero() options:CPTrackingMouseEnteredAndExited | CPTrackingCursorUpdate | CPTrackingActiveInActiveApp | CPTrackingInVisibleRect owner:viewB userInfo:nil]];
+
+    [super mouseEntered:anEvent];
+}
+
+@end
+
+@implementation CPTrackingAreaViewLiveAddition2 : CPTrackingAreaView
+{
+
+}
+
+- (void)cursorUpdate:(CPEvent)anEvent
+{
+    [[CPCursor pointingHandCursor] set];
+
+    [super cursorUpdate:anEvent];
+}
+
+- (void)mouseEntered:(CPEvent)anEvent
+{
+    var viewB = [[CPTrackingAreaViewWithCursorUpdate alloc] initWithFrame:CGRectMake(0, 0, 40, 40)];
+
+    [self addSubview:viewB];
+
+    [viewB addTrackingArea:[[CPTrackingArea alloc] initWithRect:CGRectMakeZero() options:CPTrackingMouseEnteredAndExited | CPTrackingCursorUpdate | CPTrackingActiveInActiveApp | CPTrackingInVisibleRect | CPTrackingAssumeInside owner:viewB userInfo:nil]];
+
+    [super mouseEntered:anEvent];
 }
 
 @end
