@@ -3889,13 +3889,11 @@ var interpolate = function(fromValue, toValue, progress)
     {
         [_mouseEnteredStack removeObjectIdenticalTo:trackingArea];
 
-        for (var i = 0; i < _queuedEvents.length;)
-        {
+        var i = _queuedEvents.length;
+
+        while (i--)
             if ([_queuedEvents[i] trackingArea] === trackingArea)
                 [_queuedEvents removeObjectAtIndex:i];
-            else
-                i++;
-        }
 
         _cursorUpdateStack = [];
         _activeCursorTrackingArea = nil;
