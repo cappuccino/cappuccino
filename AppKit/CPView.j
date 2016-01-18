@@ -3603,7 +3603,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     CPViewScaleKey                  = @"CPViewScaleKey",
     CPViewSizeScaleKey              = @"CPViewSizeScaleKey",
     CPViewIsScaledKey               = @"CPViewIsScaledKey",
-    CPViewAppearanceKey             = @"CPViewAppearanceKey";
+    CPViewAppearanceKey             = @"CPViewAppearanceKey",
     CPViewTrackingAreasKey          = @"CPViewTrackingAreasKey";
 
 @implementation CPView (CPCoding)
