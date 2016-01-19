@@ -598,8 +598,7 @@ var CPBoxTypeKey          = @"CPBoxTypeKey",
     CPBoxBorderTypeKey    = @"CPBoxBorderTypeKey",
     CPBoxTitle            = @"CPBoxTitle",
     CPBoxTitlePosition    = @"CPBoxTitlePosition",
-    CPBoxTitleView        = @"CPBoxTitleView",
-    CPBoxContentView      = @"CPBoxContentView";
+    CPBoxTitleView        = @"CPBoxTitleView";
 
 @implementation CPBox (CPCoding)
 
@@ -616,8 +615,7 @@ var CPBoxTypeKey          = @"CPBoxTypeKey",
         _titlePosition = [aCoder decodeIntForKey:CPBoxTitlePosition];
         _titleView     = [aCoder decodeObjectForKey:CPBoxTitleView] || [CPTextField labelWithTitle:_title];
 
-        _contentView   = [aCoder decodeObjectForKey:CPBoxContentView] || [[CPView alloc] initWithFrame:[self bounds]];
-        [self replaceSubview:_contentView with:[self subviews][0]];
+        _contentView   = [self subviews][0];
 
         [self setAutoresizesSubviews:YES];
         [_contentView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
@@ -637,7 +635,6 @@ var CPBoxTypeKey          = @"CPBoxTypeKey",
     [aCoder encodeObject:_title forKey:CPBoxTitle];
     [aCoder encodeInt:_titlePosition forKey:CPBoxTitlePosition];
     [aCoder encodeObject:_titleView forKey:CPBoxTitleView];
-    [aCoder encodeObject:_contentView forKey:CPBoxContentView];
 }
 
 @end
