@@ -644,12 +644,8 @@ NOT YET IMPLEMENTED
     }];
 }
 
-// Reloads the views AND the data
-- (void)_reloadDataViews
+- (void)_setupReload
 {
-    //if (!_dataSource)
-    //    return;
-
     _reloadAllRows = YES;
     _objectValues = { };
     _cachedRowHeights = [];
@@ -661,9 +657,22 @@ NOT YET IMPLEMENTED
 
     // This updates the size too.
     [self noteNumberOfRowsChanged];
+}
 
+// Reloads the views AND the data
+- (void)_reloadDataViews
+{
+    [self _setupReload];
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
+}
+
+// Reloads the views AND the data
+- (void)_reloadDataViewsSynchronously
+{
+    [self _setupReload];
+    [self layout];
+    [self display];
 }
 
 //Target-action Behavior
@@ -4680,7 +4689,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
                 {
                     if ([self _sendDelegateShouldEditTableColumn:column row:rowIndex])
                     {
-                        [self editColumn:columnIndex row:rowIndex withEvent:nil select:YES];
+                        [self editColumn:columnIndex row:rowIndex withEvent:[CPApp currentEvent] select:YES];
                         return;
                     }
                 }
@@ -5303,6 +5312,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     if ([aView isKindOfClass:[CPTextField class]])
         [aView setBezeled:editingState];
 }
+
 /*!
     Edits the dataview at a given row and column. This method is usually invoked automatically and should rarely be invoked directly
     The row at supplied rowIndex must be selected otherwise an exception is thrown.
@@ -5317,11 +5327,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     if (![self isRowSelected:rowIndex])
         [[CPException exceptionWithName:@"Error" reason:@"Attempt to edit row " + rowIndex + " when not selected." userInfo:nil] raise];
 
-    [self reloadData];
-
-    // Process all events immediately to make sure table data views are reloaded.
-    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-
+    [self _reloadDataViewsSynchronously];
     [self scrollRowToVisible:rowIndex];
     [self scrollColumnToVisible:columnIndex];
 
