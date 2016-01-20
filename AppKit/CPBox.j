@@ -619,7 +619,7 @@ var CPBoxTypeKey          = @"CPBoxTypeKey",
         if (_boxType != CPBoxSeparator)
         {
             _contentView   = [aCoder decodeObjectForKey:CPBoxContentView] || [[CPView alloc] initWithFrame:[self bounds]];
-            [self replaceSubview:_contentView with:[self subviews][0]];
+            [self replaceSubview:[self subviews][0] with:_contentView];
         }
 
         [self setAutoresizesSubviews:YES];
