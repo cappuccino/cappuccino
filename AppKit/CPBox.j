@@ -616,8 +616,11 @@ var CPBoxTypeKey          = @"CPBoxTypeKey",
         _titlePosition = [aCoder decodeIntForKey:CPBoxTitlePosition];
         _titleView     = [aCoder decodeObjectForKey:CPBoxTitleView] || [CPTextField labelWithTitle:_title];
 
-        _contentView   = [aCoder decodeObjectForKey:CPBoxContentView] || [[CPView alloc] initWithFrame:[self bounds]];
-        [self replaceSubview:_contentView with:[self subviews][0]];
+        if (_boxType != CPBoxSeparator)
+        {
+            _contentView   = [aCoder decodeObjectForKey:CPBoxContentView] || [[CPView alloc] initWithFrame:[self bounds]];
+            [self replaceSubview:_contentView with:[self subviews][0]];
+        }
 
         [self setAutoresizesSubviews:YES];
         [_contentView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
