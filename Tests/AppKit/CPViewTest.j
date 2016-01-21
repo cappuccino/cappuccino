@@ -1127,34 +1127,32 @@ var updateTrackingAreasCalls,
 
     // Complex test for cursor update frontmost tracking area detection
 
-    var viewA = [[CPTrackingAreaView alloc] initWithFrame:CGRectMake(0, 30, 40, 40)];
-    var viewB = [[CPTrackingAreaView alloc] initWithFrame:CGRectMake(30, 20, 40, 40)];
-    var viewC = [[CPTrackingAreaView alloc] initWithFrame:CGRectMake(10, 0, 40, 40)];
+    var viewA = [[CPTrackingAreaView alloc] initWithFrame:CGRectMake(0, 30, 40, 40)],
+        viewB = [[CPTrackingAreaView alloc] initWithFrame:CGRectMake(30, 20, 40, 40)],
+        viewC = [[CPTrackingAreaView alloc] initWithFrame:CGRectMake(10, 0, 40, 40)];
 
     [contentView setSubviews:[CPArray array]];
     [contentView addSubview:viewA];
     [contentView addSubview:viewB];
     [contentView addSubview:viewC];
 
-    var subviewA = [[CPTrackingAreaView alloc] initWithFrame:CGRectMake(20, 0, 20, 20)];
-    var subviewB = [[CPTrackingAreaView alloc] initWithFrame:CGRectMake(0, 0, 20, 20)];
-    var subviewC = [[CPTrackingAreaView alloc] initWithFrame:CGRectMake(0, 20, 40, 20)];
+    var subviewA = [[CPTrackingAreaView alloc] initWithFrame:CGRectMake(20, 0, 20, 20)],
+        subviewB = [[CPTrackingAreaView alloc] initWithFrame:CGRectMake(0, 0, 20, 20)],
+        subviewC = [[CPTrackingAreaView alloc] initWithFrame:CGRectMake(0, 20, 40, 20)];
 
     [viewA addSubview:subviewA];
     [viewB addSubview:subviewB];
     [viewC addSubview:subviewC];
 
-    var options  = CPTrackingCursorUpdate | CPTrackingActiveInActiveApp | CPTrackingInVisibleRect;
-    var options2 = CPTrackingMouseEnteredAndExited | CPTrackingActiveInActiveApp | CPTrackingInVisibleRect;
-    var options3 = CPTrackingCursorUpdate | CPTrackingActiveInActiveApp;
-
-    var viewATrackingArea = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero() options:options  owner:viewA userInfo:nil];
-    var viewBTrackingArea = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero() options:options  owner:viewB userInfo:nil];
-    var viewCTrackingArea = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero() options:options2 owner:viewC userInfo:nil];
-
-    var subviewATrackingArea = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero()          options:options  owner:subviewA userInfo:nil];
-    var subviewBTrackingArea = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero()          options:options  owner:subviewB userInfo:nil];
-    var subviewCtrackingArea = [[CPTrackingArea alloc] initWithRect:CGRectMake(20, 0, 20, 20) options:options3 owner:subviewC userInfo:nil];
+    var options              = CPTrackingCursorUpdate | CPTrackingActiveInActiveApp | CPTrackingInVisibleRect,
+        options2             = CPTrackingMouseEnteredAndExited | CPTrackingActiveInActiveApp | CPTrackingInVisibleRect,
+        options3             = CPTrackingCursorUpdate | CPTrackingActiveInActiveApp,
+        viewATrackingArea    = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero() options:options  owner:viewA userInfo:nil],
+        viewBTrackingArea    = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero() options:options  owner:viewB userInfo:nil],
+        viewCTrackingArea    = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero() options:options2 owner:viewC userInfo:nil],
+        subviewATrackingArea = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero()          options:options  owner:subviewA userInfo:nil],
+        subviewBTrackingArea = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero()          options:options  owner:subviewB userInfo:nil],
+        subviewCtrackingArea = [[CPTrackingArea alloc] initWithRect:CGRectMake(20, 0, 20, 20) options:options3 owner:subviewC userInfo:nil];
 
     [viewA addTrackingArea:viewATrackingArea];
     [viewB addTrackingArea:viewBTrackingArea];
@@ -1222,18 +1220,18 @@ var updateTrackingAreasCalls,
 
     // Cursor tests
 
-    var viewA = [[CPTrackingAreaViewWithCursorUpdate alloc] initWithFrame:CGRectMake(20, 20, 40, 40)];
-    var viewB = [[CPTrackingAreaView alloc] initWithFrame:CGRectMake(10, 10, 80, 80)];
-    var viewC = [[CPTrackingAreaViewWithoutCursorUpdate alloc] initWithFrame:CGRectMake(10, 10, 80, 80)];
+    var viewA = [[CPTrackingAreaViewWithCursorUpdate alloc] initWithFrame:CGRectMake(20, 20, 40, 40)],
+        viewB = [[CPTrackingAreaView alloc] initWithFrame:CGRectMake(10, 10, 80, 80)],
+        viewC = [[CPTrackingAreaViewWithoutCursorUpdate alloc] initWithFrame:CGRectMake(10, 10, 80, 80)];
 
     [contentView setSubviews:[CPArray array]];
     [contentView addSubview:viewA];
 
     var options  = CPTrackingCursorUpdate | CPTrackingActiveInActiveApp | CPTrackingInVisibleRect;
 
-    var viewATrackingArea = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero() options:options owner:viewA userInfo:nil];
-    var viewBTrackingArea = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero() options:options owner:viewB userInfo:nil];
-    var viewCTrackingArea = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero() options:options owner:viewC userInfo:nil];
+    var viewATrackingArea = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero() options:options owner:viewA userInfo:nil],
+        viewBTrackingArea = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero() options:options owner:viewB userInfo:nil],
+        viewCTrackingArea = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero() options:options owner:viewC userInfo:nil];
 
     [viewA addTrackingArea:viewATrackingArea];
     [viewB addTrackingArea:viewBTrackingArea];
@@ -1364,16 +1362,15 @@ var updateTrackingAreasCalls,
 {
     // 1. viewB inside viewA with mouseEntered removing itself
 
-    var viewA = [[CPTrackingAreaViewWithCursorUpdate alloc] initWithFrame:CGRectMake(20, 20, 40, 40)];
-    var viewB = [[CPTrackingAreaViewLiveRemoval      alloc] initWithFrame:CGRectMake(10, 10, 20, 20)];
+    var viewA = [[CPTrackingAreaViewWithCursorUpdate alloc] initWithFrame:CGRectMake(20, 20, 40, 40)]
+        viewB = [[CPTrackingAreaViewLiveRemoval      alloc] initWithFrame:CGRectMake(10, 10, 20, 20)];
 
     [[window contentView] setSubviews:[CPArray arrayWithObject:viewA]];
     [viewA addSubview:viewB];
 
-    var options  = CPTrackingMouseEnteredAndExited | CPTrackingCursorUpdate | CPTrackingActiveInActiveApp | CPTrackingInVisibleRect;
-
-    var viewATrackingArea = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero() options:options owner:viewA userInfo:nil];
-    var viewBTrackingArea = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero() options:options owner:viewB userInfo:nil];
+    var options           = CPTrackingMouseEnteredAndExited | CPTrackingCursorUpdate | CPTrackingActiveInActiveApp | CPTrackingInVisibleRect,
+        viewATrackingArea = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero() options:options owner:viewA userInfo:nil],
+        viewBTrackingArea = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero() options:options owner:viewB userInfo:nil];
 
     [viewA addTrackingArea:viewATrackingArea];
     [viewB addTrackingArea:viewBTrackingArea];
@@ -1429,9 +1426,8 @@ var updateTrackingAreasCalls,
 
     [[window contentView] setSubviews:[CPArray arrayWithObject:viewA]];
 
-    var options  = CPTrackingMouseEnteredAndExited | CPTrackingCursorUpdate | CPTrackingActiveInActiveApp | CPTrackingInVisibleRect;
-
-    var viewATrackingArea = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero() options:options owner:viewA userInfo:nil];
+    var options           = CPTrackingMouseEnteredAndExited | CPTrackingCursorUpdate | CPTrackingActiveInActiveApp | CPTrackingInVisibleRect,
+        viewATrackingArea = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero() options:options owner:viewA userInfo:nil];
 
     [viewA addTrackingArea:viewATrackingArea];
 
@@ -1466,9 +1462,8 @@ var updateTrackingAreasCalls,
 
     [[window contentView] setSubviews:[CPArray arrayWithObject:viewA]];
 
-    var options  = CPTrackingMouseEnteredAndExited | CPTrackingCursorUpdate | CPTrackingActiveInActiveApp | CPTrackingInVisibleRect;
-
-    var viewATrackingArea = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero() options:options owner:viewA userInfo:nil];
+    var options           = CPTrackingMouseEnteredAndExited | CPTrackingCursorUpdate | CPTrackingActiveInActiveApp | CPTrackingInVisibleRect,
+        viewATrackingArea = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero() options:options owner:viewA userInfo:nil];
 
     [viewA addTrackingArea:viewATrackingArea];
 
@@ -1552,21 +1547,16 @@ var updateTrackingAreasCalls,
 @end
 
 @implementation CPTrackingAreaView : CPView
-{
-
-}
 
 - (void)mouseEntered:(CPEvent)anEvent
 {
     mouseEnteredCalls++;
-
     involvedViewForMouseEntered = [[anEvent trackingArea] view];
 }
 
 - (void)mouseExited:(CPEvent)anEvent
 {
     mouseExitedCalls++;
-
     involvedViewForMouseExited = [[anEvent trackingArea] view];
 }
 
@@ -1578,7 +1568,6 @@ var updateTrackingAreasCalls,
 - (void)cursorUpdate:(CPEvent)anEvent
 {
     cursorUpdateCalls++;
-
     involvedViewForCursorUpdate = [[anEvent trackingArea] view];
 }
 
@@ -1590,56 +1579,40 @@ var updateTrackingAreasCalls,
 @end
 
 @implementation CPTrackingAreaViewWithCursorUpdate : CPTrackingAreaView
-{
-
-}
 
 - (void)cursorUpdate:(CPEvent)anEvent
 {
     [[CPCursor crosshairCursor] set];
-
     [super cursorUpdate:anEvent];
 }
 
 @end
 
 @implementation CPTrackingAreaViewWithoutCursorUpdate : CPView
-{
-
-}
 
 @end
 
 @implementation CPTrackingAreaViewLiveRemoval : CPTrackingAreaView
-{
-
-}
 
 - (void)cursorUpdate:(CPEvent)anEvent
 {
     [[CPCursor pointingHandCursor] set];
-
     [super cursorUpdate:anEvent];
 }
 
 - (void)mouseEntered:(CPEvent)anEvent
 {
     [self removeFromSuperview];
-
     [super mouseEntered:anEvent];
 }
 
 @end
 
 @implementation CPTrackingAreaViewLiveAddition : CPTrackingAreaView
-{
-
-}
 
 - (void)cursorUpdate:(CPEvent)anEvent
 {
     [[CPCursor pointingHandCursor] set];
-
     [super cursorUpdate:anEvent];
 }
 
@@ -1657,14 +1630,10 @@ var updateTrackingAreasCalls,
 @end
 
 @implementation CPTrackingAreaViewLiveAddition2 : CPTrackingAreaView
-{
-
-}
 
 - (void)cursorUpdate:(CPEvent)anEvent
 {
     [[CPCursor pointingHandCursor] set];
-
     [super cursorUpdate:anEvent];
 }
 

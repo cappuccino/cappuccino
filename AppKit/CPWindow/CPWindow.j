@@ -3877,10 +3877,12 @@ var interpolate = function(fromValue, toValue, progress)
         _restartHandlingTrackingAreaEvent = YES;
 
     if (assumeInside)
+    {
         if (_handlingTrackingAreaEvent)
             [_mouseEnteredStack addObject:trackingArea];
         else
             [_previousMouseEnteredStack addObject:trackingArea];
+    }
 }
 
 - (void)_purgeTrackingArea:(CPTrackingArea)trackingArea
