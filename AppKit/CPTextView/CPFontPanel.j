@@ -10,6 +10,7 @@
  *
  * Created by Daniel Boehringer on 2/JAN/2014.
  * All modifications copyright Daniel Boehringer 2013.
+ * Extensive code formatting and review by Andrew Hankinson
  * Based on original work by
  * Created by Emmanuel Maillard on 06/03/2010.
  * Copyright Emmanuel Maillard 2010.
