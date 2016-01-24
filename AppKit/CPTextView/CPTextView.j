@@ -2201,6 +2201,7 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
 
 
 var _CPNativeInputField,
+    _CPNativeInputFieldLastValue,
     _CPNativeInputFieldKeyUpCalled,
     _CPNativeInputFieldKeyPressedCalled,
     _CPNativeInputFieldActive,
@@ -2297,7 +2298,7 @@ var _CPCopyPlaceholder = '-';
             return;
         }
 
-        if (!_CPNativeInputFieldActive && _CPNativeInputFieldKeyPressedCalled == NO && _CPNativeInputField.innerHTML.length && _CPNativeInputField.innerHTML != _CPCopyPlaceholder && _CPNativeInputField.innerHTML.length < 3) // chrome-trigger: keypressed is omitted for deadkeys
+        if (!_CPNativeInputFieldActive && _CPNativeInputFieldKeyPressedCalled == NO && _CPNativeInputField.innerHTML.length && _CPNativeInputField.innerHTML != _CPCopyPlaceholder && _CPNativeInputField.innerHTML.length < 3 && _CPNativeInputFieldLastValue !== _CPNativeInputField.innerHTML) // chrome-trigger: keypressed is omitted for deadkeys and cursor keys
         {
             _CPNativeInputFieldActive = YES;
             [currentFirstResponder _activateNativeInputElement:_CPNativeInputField];
@@ -2314,6 +2315,7 @@ var _CPCopyPlaceholder = '-';
 
     _CPNativeInputField.addEventListener("keydown", function(e)
     {
+        _CPNativeInputFieldLastValue = _CPNativeInputField.innerHTML;
         _CPNativeInputFieldKeyUpCalled = NO;
         _CPNativeInputFieldKeyPressedCalled = NO;
         var currentFirstResponder = [[CPApp keyWindow] firstResponder];
