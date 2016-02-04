@@ -26,9 +26,9 @@
 
 @implementation _CPSubqueryExpression : CPExpression
 {
-    CPExpression _collection;
+    CPExpression _collection @accessors(getter=collection);
     CPExpression _variableExpression;
-    CPPredicate  _subpredicate;
+    CPPredicate  _subpredicate @accessors(getter=predicate);
 }
 
 - (id)initWithExpression:(CPExpression)collection usingIteratorVariable:(CPString)variable predicate:(CPPredicate)subpredicate
@@ -81,19 +81,9 @@
     return YES;
 }
 
-- (CPExpression)collection
-{
-    return _collection;
-}
-
 - (id)copy
 {
     return [[_CPSubqueryExpression alloc] initWithExpression:[_collection copy] usingIteratorExpression:[_variableExpression copy] predicate:[_subpredicate copy]];
-}
-
-- (CPPredicate)predicate
-{
-    return _subpredicate;
 }
 
 - (CPString)description

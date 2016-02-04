@@ -15,7 +15,7 @@ with the complexities of traditional web technologies like HTML, CSS, or even
 the DOM. The unpleasantries of building complex cross browser applications are
 abstracted away for you.
 
-For more information, see <http://cappuccino-project.org>.
+For more information, see <http://cappuccino-project.org>. Follow [@cappuccino](https://twitter.com/cappuccino) on Twitter for updates on the project.
 
 System Requirements
 -------------------

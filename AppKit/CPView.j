@@ -805,13 +805,13 @@ var CPViewHighDPIDrawingEnabled = YES;
         [_window _noteUnregisteredDraggedTypes:_registeredDraggedTypes];
         [aWindow _noteRegisteredDraggedTypes:_registeredDraggedTypes];
     }
-    
+
     // View must be removed from the current window viewsWithTrackingAreas
     if (_window && (_trackingAreas.length > 0))
         [_window _removeTrackingAreaView:self];
 
     _window = aWindow;
-    
+
     if (_window)
     {
         var owners;
@@ -3456,16 +3456,16 @@ setBoundsOrigin:
     // Consistency check
     if (!trackingArea || [_trackingAreas containsObjectIdenticalTo:trackingArea])
         return;
-    
+
     if ([trackingArea view])
         [CPException raise:CPInternalInconsistencyException reason:"Tracking area has already been added to another view."];
 
     [_trackingAreas addObject:trackingArea];
     [trackingArea setView:self];
-    
+
     if (_window)
         [_window _addTrackingArea:trackingArea];
-  
+
     [trackingArea _updateWindowRect];
 }
 
@@ -3474,14 +3474,14 @@ setBoundsOrigin:
     // Consistency check
     if (!trackingArea)
         return;
-    
+
     if (![_trackingAreas containsObjectIdenticalTo:trackingArea])
         [CPException raise:CPInternalInconsistencyException reason:"Trying to remove unreferenced trackingArea"];
 
     [self _removeTrackingArea:trackingArea];
 }
 
-/*! 
+/*!
  Invoked automatically when the view’s geometry changes such that its tracking areas need to be recalculated.
 
  You should override this method to remove out of date tracking areas and add recomputed tracking areas;
@@ -3527,7 +3527,7 @@ setBoundsOrigin:
 {
     if (_window)
         [_window _removeTrackingArea:trackingArea];
-    
+
     [trackingArea setView:nil];
     [_trackingAreas removeObjectIdenticalTo:trackingArea];
 }
@@ -3535,16 +3535,16 @@ setBoundsOrigin:
 - (void)_updateTrackingAreas
 {
     _inhibitUpdateTrackingAreas = YES;
-    
+
     [self _recursivelyUpdateTrackingAreas];
-    
+
     _inhibitUpdateTrackingAreas = NO;
 }
 
 - (void)_recursivelyUpdateTrackingAreas
 {
     [self _updateTrackingAreasForOwners:[self _calcTrackingAreaOwners]];
-    
+
     for (var i = 0; i < _subviews.length; i++)
         [_subviews[i] _recursivelyUpdateTrackingAreas];
 }
@@ -3554,25 +3554,25 @@ setBoundsOrigin:
     // First search all owners that must be notified
     // Remark: 99.99% of time, the only owner will be the view itself
     // In the same time, update the rects of InVisibleRect tracking areas
-    
+
     var owners = [];
-    
+
     for (var i = 0; i < _trackingAreas.length; i++)
     {
         var trackingArea = _trackingAreas[i];
-        
+
         if ([trackingArea options] & CPTrackingInVisibleRect)
             [trackingArea _updateWindowRect];
-        
+
         else
         {
             var owner = [trackingArea owner];
-            
+
             if (![owners containsObjectIdenticalTo:owner])
                 [owners addObject:owner];
         }
     }
-    
+
     return owners;
 }
 
@@ -3603,7 +3603,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     CPViewScaleKey                  = @"CPViewScaleKey",
     CPViewSizeScaleKey              = @"CPViewSizeScaleKey",
     CPViewIsScaledKey               = @"CPViewIsScaledKey",
-    CPViewAppearanceKey             = @"CPViewAppearanceKey";
+    CPViewAppearanceKey             = @"CPViewAppearanceKey",
     CPViewTrackingAreasKey          = @"CPViewTrackingAreasKey";
 
 @implementation CPView (CPCoding)
@@ -3633,10 +3633,10 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     if (self)
     {
         _trackingAreas = [aCoder decodeObjectForKey:CPViewTrackingAreasKey];
-        
+
         if (!_trackingAreas)
             _trackingAreas = [];
-        
+
         // We have to manually check because it may be 0, so we can't use ||
         _tag = [aCoder containsValueForKey:CPViewTagKey] ? [aCoder decodeIntForKey:CPViewTagKey] : -1;
         _identifier = [aCoder decodeObjectForKey:CPReuseIdentifierKey];
