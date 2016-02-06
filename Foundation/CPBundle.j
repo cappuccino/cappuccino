@@ -214,7 +214,7 @@ var CPBundlesForURLStrings = { };
 {
     var staticResources = _bundle.staticResources();
 
-    return [staticResources arrayByApplyingBlock:function(resource, _)
+    return [staticResources arrayByApplyingBlock:function(resource)
     {
         return resource.URL();
     }];

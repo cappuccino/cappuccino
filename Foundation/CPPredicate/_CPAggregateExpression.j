@@ -51,7 +51,7 @@
 
 - (id)expressionValueWithObject:(id)object context:(CPDictionary)context
 {
-    return [_aggregate arrayByApplyingBlock:function(exp, _)
+    return [_aggregate arrayByApplyingBlock:function(exp)
     {
         return [exp expressionValueWithObject:object context:context];
     }];
@@ -59,7 +59,7 @@
 
 - (CPString)description
 {    
-    var descriptions = [_aggregate arrayByApplyingBlock:function(exp, _)
+    var descriptions = [_aggregate arrayByApplyingBlock:function(exp)
     {
         return [exp description];
     }];
@@ -69,7 +69,7 @@
 
 - (CPExpression)_expressionWithSubstitutionVariables:(CPDictionary)variables
 {
-    var subst_array = [_aggregate arrayByApplyingBlock:function(exp, _)
+    var subst_array = [_aggregate arrayByApplyingBlock:function(exp)
     {
         return [exp _expressionWithSubstitutionVariables:variables];
     }];

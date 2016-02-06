@@ -53,7 +53,7 @@
 
 - (id)expressionValueWithObject:(id)object context:(CPDictionary)context
 {
-    var args = [_arguments arrayByApplyingBlock:function(exp, _)
+    var args = [_arguments arrayByApplyingBlock:function(exp)
     {
         return [exp expressionValueWithObject:object context:context];
     }];
@@ -63,7 +63,7 @@
 
 - (CPExpression)_expressionWithSubstitutionVariables:(CPDictionary)bindings
 {
-    var args = [_arguments arrayByApplyingBlock:function(exp, _)
+    var args = [_arguments arrayByApplyingBlock:function(exp)
     {
         return [exp _expressionWithSubstitutionVariables:bindings];
     }];

@@ -133,7 +133,7 @@
 - (CPExpression)_expressionWithSubstitutionVariables:(CPDictionary)variables
 {
     var operand = [[self operand] _expressionWithSubstitutionVariables:variables],
-        args = [_arguments arrayByApplyingBlock:function(arg, _)
+        args = [_arguments arrayByApplyingBlock:function(arg)
         {
             return [arg _expressionWithSubstitutionVariables:variables];
         }];

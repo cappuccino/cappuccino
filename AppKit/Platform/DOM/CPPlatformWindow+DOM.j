@@ -1859,7 +1859,7 @@ function CPWindowList()
 {
     var windowObjectList = CPWindowObjectList();
 
-    return [windowObjectList arrayByApplyingBlock:function(windowObject, _)
+    return [windowObjectList arrayByApplyingBlock:function(windowObject)
     {
         return [windowObject windowNumber];
     }];

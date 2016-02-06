@@ -64,7 +64,7 @@
 */
 - (CPArray)themeNames
 {
-    return [_themes arrayByApplyingBlock:function(theme, _)
+    return [_themes arrayByApplyingBlock:function(theme)
     {
         return theme.substring(0, theme.indexOf(".keyedtheme"));
     }];

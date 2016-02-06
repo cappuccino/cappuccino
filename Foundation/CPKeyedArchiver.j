@@ -380,7 +380,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
 /* @ignore */
 - (void)_encodeArrayOfObjects:(CPArray)objects forKey:(CPString)aKey
 {
-    var references = [objects arrayByApplyingBlock:function(object, _)
+    var references = [objects arrayByApplyingBlock:function(object)
     {
         return _CPKeyedArchiverEncodeObject(self, object, NO);
     }];

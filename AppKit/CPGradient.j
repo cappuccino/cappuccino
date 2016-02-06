@@ -71,7 +71,7 @@ CPGradientDrawsAfterEndingLocation      = kCGGradientDrawsAfterEndLocation;
     if (self = [super init])
     {
         var colorSpace = [aColorSpace CGColorSpace] || CGColorSpaceCreateDeviceRGB,
-            cgColors = [someColors arrayByApplyingBlock:function(color, _)
+            cgColors = [someColors arrayByApplyingBlock:function(color)
             {
                 return CGColorCreate(colorSpace, [color components])
             }];

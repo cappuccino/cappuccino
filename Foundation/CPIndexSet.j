@@ -1021,7 +1021,7 @@ var CPIndexSetCountKey              = @"CPIndexSetCountKey",
 
         var rangeStrings = [aCoder decodeObjectForKey:CPIndexSetRangeStringsKey];
 
-        _ranges = [rangeStrings arrayByApplyingBlock:function(range, _)
+        _ranges = [rangeStrings arrayByApplyingBlock:function(range)
         {
             return CPRangeFromString(range);
         }];

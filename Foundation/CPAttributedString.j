@@ -763,7 +763,7 @@
 - (void)setAttributedString:(CPAttributedString)aString
 {
     _string = aString._string;
-    _rangeEntries = [aString._rangeEntries arrayByApplyingBlock:function(entry, _)
+    _rangeEntries = [aString._rangeEntries arrayByApplyingBlock:function(entry)
     {
         return copyRangeEntry(entry);
     }];

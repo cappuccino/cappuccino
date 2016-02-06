@@ -43,7 +43,7 @@ function CPDrawTiledRects(
     if (sides.length != grays.length)
         [CPException raise:CPInvalidArgumentException reason:@"sides (length: " + sides.length + ") and grays (length: " + grays.length + ") must have the same length."];
 
-    var colors = [grays arrayByApplyingBlock:function(gray, _)
+    var colors = [grays arrayByApplyingBlock:function(gray)
     {
         return [CPColor colorWithCalibratedWhite:gray alpha:1.0];
     }];

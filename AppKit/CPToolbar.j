@@ -459,7 +459,7 @@ var CPToolbarsByIdentifier              = nil,
 /* @ignore */
 - (id)_itemsWithIdentifiers:(CPArray)identifiers
 {
-    return [identifiers arrayByApplyingBlock:function(identifier, _)
+    return [identifiers arrayByApplyingBlock:function(identifier)
     {
         return [self _itemForItemIdentifier:identifier willBeInsertedIntoToolbar:NO];
     }];
