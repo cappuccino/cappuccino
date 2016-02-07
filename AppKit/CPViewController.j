@@ -149,9 +149,10 @@ var CPViewControllerCachedCibs;
 
     If you use Interface Builder to create your views, and you initialize the
     controller using the initWithCibName:bundle: methods, then you MUST NOT override
-    this method. The consequences risk shattering the space-time continuum.
-
-    Note: The cib loading system is currently synchronous.
+    this method.
+    
+    @note When using this method, the cib loading system is synchronous.
+    See the loadViewWithCompletionHandler: method for an asynchronous loading.
 */
 - (void)loadView
 {
@@ -176,6 +177,15 @@ var CPViewControllerCachedCibs;
         _view = [CPView new];
 }
 
+/*!
+    Loads asynchronously the cib and creates the view that the controller manages.
+    
+    @param aHandler A function passing the loaded view as the first argument
+    and a network error or nil as the second argument: function(view, error).
+    
+    @note If the view has already been loaded, the completion handler is run immediatly 
+    and the process is synchronous.
+*/
 - (void)loadViewWithCompletionHandler:(Function/*(view, error)*/)aHandler
 {
     if (_view)
