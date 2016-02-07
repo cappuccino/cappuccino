@@ -176,7 +176,7 @@ var CPViewControllerCachedCibs;
         _view = [CPView new];
 }
 
-- (void)loadViewAsynchronously:(Function/*(view, error)*/)aHandler
+- (void)loadViewWithCompletionHandler:(Function/*(view, error)*/)aHandler
 {
     if (_view)
         return;

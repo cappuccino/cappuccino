@@ -64,12 +64,12 @@
     var vc = [[CPViewController alloc] initWithCibName:@"ViewController" bundle:nil];
     var vc2 = [[CPViewController alloc] initWithCibName:@"ViewController2" bundle:nil];
 
-    [vc loadViewAsynchronously:function(view1, error)
+    [vc loadViewWithCompletionHandler:function(view1, error)
     {
         [view1 setBackgroundColor:[CPColor redColor]];
         [holderView addSubview:view1];
 
-        [vc2 loadViewAsynchronously:function(view2, error)
+        [vc2 loadViewWithCompletionHandler:function(view2, error)
         {
             [view2 setBackgroundColor:[CPColor greenColor]];
             [view1 addSubview:view2];
