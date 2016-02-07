@@ -485,7 +485,7 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
 
     var cookieValue = eval(cookieValue);
 
-    return [cookieValue arrayByApplyingBlock:function(value, _)
+    return [cookieValue arrayByApplyingBlock:function(value)
     {
         return [CPColor colorWithHexString:value];
     }];
