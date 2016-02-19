@@ -1,11 +1,12 @@
 language: node_js
 node_js:
     - 0.8
+language: ruby
+rvm:
+    - 2.0.0
 install:
     - ./bootstrap.sh --noprompt --directory ./narwhal
     - git clone https://github.com/cappuccino/cucapp.git
     - cd cucapp; jake install; cd ..
-script:
-    - jake test
-    - jake cucumber-test
+script: jake test
 env: PATH="$TRAVIS_BUILD_DIR/narwhal/bin:$PATH" CAPP_BUILD="$TRAVIS_BUILD_DIR/Build" NARWHAL_ENGINE=rhino BROWSER=phantomjs
