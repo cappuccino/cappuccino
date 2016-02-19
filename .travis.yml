@@ -4,6 +4,7 @@ node_js:
 install:
     - ./bootstrap.sh --noprompt --directory ./narwhal
     - git clone https://github.com/cappuccino/cucapp.git
+    - export PATH="$TRAVIS_BUILD_DIR/narwhal/bin:$PATH"
     - cd cucapp; jake install
 script:
     - jake test
