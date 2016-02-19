@@ -341,6 +341,22 @@ task("test-only", function()
         OS.exit(code);
 });
 
+task("cucumber-test", function()
+{
+    var cucumberTests = FILE.list('Tests/CucumberTests');
+
+    cucumberTests.forEach(function(cucumberTest)
+    {
+        if (cucumberTest.indexOf("Test") != -1)
+        {
+            code = OS.system("cd Tests/CucumberTests/" + cucumberTest + "; capp gen -l . --force; jake cucumber-test")
+
+            if (code !== 0)
+                OS.exit(code);
+        }
+    });
+});
+
 task("check-missing-imports", function()
 {
     var code = OS.system(serializedENV() + " " + ["js", "Tests/DetectMissingImports.js"].map(OS.enquote).join(" "));
