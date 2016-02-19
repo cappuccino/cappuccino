@@ -133,11 +133,10 @@
 - (CPExpression)_expressionWithSubstitutionVariables:(CPDictionary)variables
 {
     var operand = [[self operand] _expressionWithSubstitutionVariables:variables],
-        args = [CPArray array],
-        i = 0;
-
-    for (; i < _argc; i++)
-        [args addObject:[_arguments[i] _expressionWithSubstitutionVariables:variables]];
+        args = [_arguments arrayByApplyingBlock:function(arg)
+        {
+            return [arg _expressionWithSubstitutionVariables:variables];
+        }];
 
     return [CPExpression expressionForFunction:operand selectorName:[self _function] arguments:args];
 }

@@ -212,15 +212,12 @@ var CPBundlesForURLStrings = { };
 
 - (CPArray)staticResourceURLs
 {
-    var staticResourceURLs = [],
-        staticResources = _bundle.staticResources(),
-        index = 0,
-        count = [staticResources count];
+    var staticResources = _bundle.staticResources();
 
-    for (; index < count; ++index)
-        [staticResourceURLs addObject:staticResources[index].URL()];
-
-    return staticResourceURLs;
+    return [staticResources arrayByApplyingBlock:function(resource)
+    {
+        return resource.URL();
+    }];
 }
 
 - (CPArray)environments

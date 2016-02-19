@@ -483,13 +483,12 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
         ];
     }
 
-    var cookieValue = eval(cookieValue),
-        result = [];
+    var cookieValue = eval(cookieValue);
 
-    for (var i = 0; i < cookieValue.length; i++)
-        result.push([CPColor colorWithHexString:cookieValue[i]]);
-
-    return result;
+    return [cookieValue arrayByApplyingBlock:function(value)
+    {
+        return [CPColor colorWithHexString:value];
+    }];
 }
 
 - (CPArray)saveColorList

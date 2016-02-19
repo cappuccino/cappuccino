@@ -34,6 +34,7 @@
 
     if (self)
         _aggregate = collection;
+
     return self;
 }
 
@@ -50,41 +51,28 @@
 
 - (id)expressionValueWithObject:(id)object context:(CPDictionary)context
 {
-    var eval_array = [CPArray array],
-        collection  = [_aggregate objectEnumerator],
-        exp;
-
-    while ((exp = [collection nextObject]) !== nil)
+    return [_aggregate arrayByApplyingBlock:function(exp)
     {
-        var eval = [exp expressionValueWithObject:object context:context];
-        [eval_array addObject:eval];
-    }
-
-    return eval_array;
+        return [exp expressionValueWithObject:object context:context];
+    }];
 }
 
 - (CPString)description
-{
-    var i = 0,
-        count = [_aggregate count],
-        result = "{";
+{    
+    var descriptions = [_aggregate arrayByApplyingBlock:function(exp)
+    {
+        return [exp description];
+    }];
 
-    for (; i < count; i++)
-        result = result + [CPString stringWithFormat:@"%s%s", [[_aggregate objectAtIndex:i] description], (i + 1 < count) ? @", " : @""];
-
-    result = result + "}";
-
-    return result;
+    return "{" + [descriptions componentsJoinedByString:","] + "}" ;
 }
 
 - (CPExpression)_expressionWithSubstitutionVariables:(CPDictionary)variables
 {
-    var subst_array = [CPArray array],
-        count = [_aggregate count],
-        i = 0;
-
-    for (; i < count; i++)
-        [subst_array addObject:[[_aggregate objectAtIndex:i] _expressionWithSubstitutionVariables:variables]];
+    var subst_array = [_aggregate arrayByApplyingBlock:function(exp)
+    {
+        return [exp _expressionWithSubstitutionVariables:variables];
+    }];
 
     return [CPExpression expressionForAggregate:subst_array];
 }

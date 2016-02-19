@@ -235,15 +235,15 @@ var concat = Array.prototype.concat,
 
 - (CPArray)arrayByApplyingBlock:(Function/*element, index*/)aFunction
 {
-	var result = [];
+    var result = [];
 
-	for (var idx = 0; idx < self.length; idx++)
-	{
-	    var obj = aFunction(self[idx], idx);
-		result.push(obj);
-	}
+    for (var idx = 0; idx < self.length; idx++)
+    {
+        var obj = aFunction(self[idx], idx);
+        result.push(obj);
+    }
 
-	return result;
+    return result;
 }
 
 - (void)insertObject:(id)anObject atIndex:(CPUInteger)anIndex

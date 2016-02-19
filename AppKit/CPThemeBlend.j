@@ -64,12 +64,10 @@
 */
 - (CPArray)themeNames
 {
-    var names = [];
-
-    for (var i = 0; i < _themes.length; ++i)
-        names.push(_themes[i].substring(0, _themes[i].indexOf(".keyedtheme")));
-
-    return names;
+    return [_themes arrayByApplyingBlock:function(theme)
+    {
+        return theme.substring(0, theme.indexOf(".keyedtheme"));
+    }];
 }
 
 - (void)loadWithDelegate:(id)aDelegate

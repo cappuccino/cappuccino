@@ -53,11 +53,9 @@
 
 - (id)expressionValueWithObject:(id)object context:(CPDictionary)context
 {
-    var args = [];
-
-    [_arguments enumerateObjectsUsingBlock:function(exp, idx)
+    var args = [_arguments arrayByApplyingBlock:function(exp)
     {
-        [args addObject:[exp expressionValueWithObject:object context:context]];
+        return [exp expressionValueWithObject:object context:context];
     }];
 
     return _block(object, args, context);
@@ -65,11 +63,9 @@
 
 - (CPExpression)_expressionWithSubstitutionVariables:(CPDictionary)bindings
 {
-    var args = [];
-
-    [_arguments enumerateObjectsUsingBlock:function(exp, idx)
+    var args = [_arguments arrayByApplyingBlock:function(exp)
     {
-        [args addObject:[exp _expressionWithSubstitutionVariables:bindings]];
+        return [exp _expressionWithSubstitutionVariables:bindings];
     }];
 
     return [[_CPBlockExpression alloc] initWithBlock:_block arguments:args];
