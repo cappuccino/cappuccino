@@ -349,7 +349,7 @@ task("cucumber-test", function()
     {
         if (cucumberTest.indexOf("Test") != -1)
         {
-            code = OS.system("cd Tests/CucumberTests/" + cucumberTest + "; capp gen -l . --force; jake cucumber-test")
+            code = OS.system("cd Tests/CucumberTests/" + cucumberTest + "; capp gen -fl . --force; jake cucumber-test")
 
             if (code !== 0)
                 OS.exit(code);
