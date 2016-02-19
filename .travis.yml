@@ -4,13 +4,8 @@ node_js:
 install:
     - ./bootstrap.sh --noprompt --directory ./narwhal
     - git clone https://github.com/cappuccino/cucapp.git
-    - export PATH="$TRAVIS_BUILD_DIR/narwhal/bin:$PATH"
     - cd cucapp; jake install
 script:
     - jake test
     - jake cucumber-test
-env:
-    - PATH="$TRAVIS_BUILD_DIR/narwhal/bin:$PATH"
-    - CAPP_BUILD="$TRAVIS_BUILD_DIR/Build"
-    - NARWHAL_ENGINE=rhino
-    - BROWSER=phantomjs
+env: PATH="$TRAVIS_BUILD_DIR/narwhal/bin:$PATH" CAPP_BUILD="$TRAVIS_BUILD_DIR/Build" NARWHAL_ENGINE=rhino BROWSER=phantomjs
