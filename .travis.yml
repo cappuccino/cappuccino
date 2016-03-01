@@ -14,6 +14,9 @@ install:
     - ./bootstrap.sh --noprompt --directory ./narwhal
     - git clone https://github.com/cappuccino/cucapp.git
     - cd cucapp; jake install; cd ..
+    - git clone https://github.com/cappuccino/OJTest.git
+    - cd OJTest; jake install; cd ..
+    - which phantomjs
 script:
     - jake test
     - jake cucumber-test
