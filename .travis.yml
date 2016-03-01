@@ -15,11 +15,7 @@ install:
     - cd cucapp; jake install; cd ..
     - git clone https://github.com/cappuccino/OJTest.git
     - cd OJTest; jake install; cd ..
-before_script:
-    - "export DISPLAY=:99.0"
-    - "sh -e /etc/init.d/xvfb start"
-    - sleep 3 # give xvfb some time to start
 script:
     - jake test
     - jake cucumber-test
-env: PATH="$TRAVIS_BUILD_DIR/narwhal/bin:$PATH" CAPP_BUILD="$TRAVIS_BUILD_DIR/Build" NARWHAL_ENGINE=rhino BROWSER=firefox
+env: PATH="$TRAVIS_BUILD_DIR/narwhal/bin:$PATH" CAPP_BUILD="$TRAVIS_BUILD_DIR/Build" NARWHAL_ENGINE=rhino BROWSER=phantomjs
