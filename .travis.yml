@@ -16,7 +16,7 @@ install:
     - cd cucapp; jake install; cd ..
     - git clone https://github.com/cappuccino/OJTest.git
     - cd OJTest; jake install; cd ..
-    - which phantomjs
+    - cat /etc/host
 script:
     - jake test
     - jake cucumber-test
