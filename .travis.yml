@@ -16,5 +16,6 @@ install:
     - cd OJTest; jake install; cd ..
 script:
     - jake test
+    - which phantomjs
     - jake cucumber-test
 env: PATH="$TRAVIS_BUILD_DIR/narwhal/bin:$PATH" PATH=$TRAVIS_BUILD_DIR/travis-phantomjs/phantomjs-2.1.1-linux-x86_64/bin:$PATH CAPP_BUILD="$TRAVIS_BUILD_DIR/Build" NARWHAL_ENGINE=rhino BROWSER=phantomjs
