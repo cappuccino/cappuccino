@@ -433,6 +433,7 @@ var CPObjectControllerContentKey                        = @"CPObjectControllerCo
         [self setUsesLazyFetching:[aCoder decodeBoolForKey:CPObjectControllerUsesLazyFetchingKey]];
         _isUsingManagedProxy = [aCoder decodeBoolForKey:CPObjectControllerIsUsingManagedProxyKey];
         _managedProxy = [aCoder decodeObjectForKey:CPObjectControllerManagedProxyKey];
+
         if (content != nil)
             [self setContent:content];
 
@@ -455,6 +456,7 @@ var CPObjectControllerContentKey                        = @"CPObjectControllerCo
     [aCoder encodeBool:[self automaticallyPreparesContent] forKey:CPObjectControllerAutomaticallyPreparesContentKey];
     [aCoder encodeBool:[self usesLazyFetching] forKey:CPObjectControllerUsesLazyFetchingKey];
     [aCoder encodeBool:_isUsingManagedProxy forKey:CPObjectControllerIsUsingManagedProxyKey];
+
     if (_managedProxy)
         [aCoder encodeObject:_managedProxy forKey:CPObjectControllerManagedProxyKey];
 }
