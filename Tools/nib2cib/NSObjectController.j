@@ -43,6 +43,9 @@
 
         _isEditable = [aCoder decodeBoolForKey:@"NSEditable"];
         _automaticallyPreparesContent = [aCoder decodeBoolForKey:@"NSAutomaticallyPreparesContent"];
+        _usesLazyFetching = [aCoder decodeBoolForKey:@"_NSUsesLazyFetching"];
+        _isUsingManagedProxy = [aCoder decodeBoolForKey:@"_NSIsUsingManagedProxy"];
+        _managedProxy = [aCoder decodeObjectForKey:@"_NSManagedProxy"];
     }
 
     return self;
@@ -62,6 +65,40 @@
 - (Class)classForKeyedArchiver
 {
     return [CPObjectController class];
+}
+
+@end
+
+
+@implementation _CPManagedProxy (NSCoding)
+
+- (id)NS_initWithCoder:(CPCoder)aCoder
+{
+    self = [super init];
+
+    if (self)
+    {
+        _entityName = [aCoder decodeObjectForKey:@"NSEntityName"];
+        _fetchPredicate = [aCoder decodeObjectForKey:@"NSFetchPredicate"];
+    }
+
+    return self;
+}
+
+@end
+
+@implementation _NSManagedProxy : _CPManagedProxy
+{
+}
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    return [self NS_initWithCoder:aCoder];
+}
+
+- (Class)classForKeyedArchiver
+{
+    return [_CPManagedProxy class];
 }
 
 @end
