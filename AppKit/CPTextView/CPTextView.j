@@ -64,7 +64,7 @@ _MidRange = function(a1)
 
 function _isWhitespaceCharacter(chr)
 {
-    return (chr === '\n' || chr === '\r' || chr === ' ' || chr === '\t');
+    return (chr === '\n' || chr === '\r' || chr === ' ' || chr === '\t');
 }
 
 _characterTripletFromStringAtIndex = function(string, index)
@@ -267,24 +267,26 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)copy:(id)sender
 {
-   [_CPNativeInputManager setLastCopyWasNative:[sender isKindOfClass:[_CPNativeInputManager class]]];
-   _copySelectionGranularity = _previousSelectionGranularity;
-   [super copy:sender];
+    [_CPNativeInputManager setLastCopyWasNative:[sender isKindOfClass:[_CPNativeInputManager class]]];
+    _copySelectionGranularity = _previousSelectionGranularity;
+
+    [super copy:sender];
 
     if (![self isRichText])
         return;
 
     var selectedRange = [self selectedRange],
         pasteboard = [CPPasteboard generalPasteboard],
-	    stringForPasting = [_textStorage attributedSubstringFromRange:CPMakeRangeCopy(selectedRange)];
+        stringForPasting = [_textStorage attributedSubstringFromRange:CPMakeRangeCopy(selectedRange)];
 
-	// put rich representation on the pasteboad only if we have multliple attributes selected
-	if (stringForPasting._rangeEntries.length > 1)
-	{
-		var richData =  [_CPRTFProducer produceRTF:stringForPasting documentAttributes:@{}];
-		// [pasteboard declareTypes:[CPStringPboardType, CPRichStringPboardType] owner:nil];  // this does currently do not work due to limitations in cappuccino
-		[pasteboard setString:richData forType:CPStringPboardType];  // crude hack to make rich pasting possible in chrome and firefox: put rtf on the plain pasteboard
-	}
+    // put rich representation on the pasteboad only if we have multliple attributes selected
+    if (stringForPasting._rangeEntries.length > 1)
+    {
+        // [pasteboard declareTypes:[CPStringPboardType, CPRichStringPboardType] owner:nil];  // this does currently do not work due to limitations in cappuccino
+        var richData =  [_CPRTFProducer produceRTF:stringForPasting documentAttributes:@{}];
+        // crude hack to make rich pasting possible in chrome and firefox: put rtf on the plain pasteboard
+        [pasteboard setString:richData forType:CPStringPboardType];
+    }
 }
 
 - (void)paste:(id)sender
@@ -739,18 +741,22 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 // interface to the _CPNativeInputManager
 - (void)_activateNativeInputElement:(DOMElemet)aNativeField
 {
-    var attributes=[[self typingAttributes] copy];
-    [attributes setObject:[CPColor colorWithRed:1 green:1 blue:1 alpha:0] forKey:CPForegroundColorAttributeName]; // make it invisible
+    var attributes = [[self typingAttributes] copy];
+
+    // make it invisible
+    [attributes setObject:[CPColor colorWithRed:1 green:1 blue:1 alpha:0] forKey:CPForegroundColorAttributeName];
+
+    // FIXME: this hack to provide the visual space for the inputmanager should at least bypass the undomanager
     var placeholderString = [[CPAttributedString alloc] initWithString:aNativeField.innerHTML attributes:attributes];
-    [self insertText:placeholderString];  // FIXME: this hack to provide the visual space for the inputmanager should at least bypass the undomanager
+    [self insertText:placeholderString];
 
     var caretOrigin = [_layoutManager boundingRectForGlyphRange:CPMakeRange(MAX(0, _selectionRange.location - 1), 1) inTextContainer:_textContainer].origin;
     caretOrigin.y += [_layoutManager _characterOffsetAtLocation:MAX(0, _selectionRange.location - 1)];
     caretOrigin.x += 2; // two pixel offset to the LHS character
 
 #if PLATFORM(DOM)
-    aNativeField.style.left = caretOrigin.x+"px";
-    aNativeField.style.top = caretOrigin.y+"px";
+    aNativeField.style.left = caretOrigin.x + "px";
+    aNativeField.style.top = caretOrigin.y + "px";
     aNativeField.style.font = [[_typingAttributes objectForKey:CPFontAttributeName] cssString];
     aNativeField.style.color = [[_typingAttributes objectForKey:CPForegroundColorAttributeName] cssString];
 #endif
@@ -982,7 +988,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     // <!> FIXME: find a better way for getting the coordinates of the next line
     point.y += 2 + rectSource.size.height;
 
-        var dindex= point.y >= CPRectGetMaxY(rectEnd) ? nglyphs : [_layoutManager glyphIndexForPoint:point inTextContainer:_textContainer fractionOfDistanceThroughGlyph:fraction],
+    var dindex = point.y >= CGRectGetMaxY(rectEnd) ? nglyphs : [_layoutManager glyphIndexForPoint:point inTextContainer:_textContainer fractionOfDistanceThroughGlyph:fraction],
         oldStickyLoc = _stickyXLocation;
 
     if (fraction[0] > 0.5)
@@ -1861,20 +1867,21 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 - (void)updateInsertionPointStateAndRestartTimer:(BOOL)flag
 {
     var caretRect,
-        nglyphs= [_layoutManager numberOfCharacters];
+        numberOfGlyphs= [_layoutManager numberOfCharacters];
 
     if (_selectionRange.length)
         [_caret setVisibility:NO];
 
-    if (_selectionRange.location >= nglyphs)    // cursor is "behind" the last chacacter
+    if (_selectionRange.location >= numberOfGlyphs)    // cursor is "behind" the last chacacter
     {
         caretRect = [_layoutManager boundingRectForGlyphRange:CPMakeRange(MAX(0,_selectionRange.location - 1), 1) inTextContainer:_textContainer];
 
-        if (!nglyphs)
+        if (!numberOfGlyphs)
         {
-            var f = [_typingAttributes objectForKey:CPFontAttributeName];
-            caretRect.size.height = [f size];
-            caretRect.origin.y = ([f ascender] - [f descender]) * 0.5;
+            var font = [_typingAttributes objectForKey:CPFontAttributeName];
+
+            caretRect.size.height = [font size];
+            caretRect.origin.y = ([font ascender] - [font descender]) * 0.5;
         }
 
         caretRect.origin.x += caretRect.size.width;
@@ -1886,9 +1893,11 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         }
     }
     else
+    {
         caretRect = [_layoutManager boundingRectForGlyphRange:CPMakeRange(_selectionRange.location, 1) inTextContainer:_textContainer];
+    }
 
-    var loc = (_selectionRange.location === nglyphs && nglyphs > 0) ? _selectionRange.location - 1 : _selectionRange.location,
+    var loc = (_selectionRange.location === numberOfGlyphs && numberOfGlyphs > 0) ? _selectionRange.location - 1 : _selectionRange.location,
         caretOffset = [_layoutManager _characterOffsetAtLocation:loc],
         oldYPosition = CGRectGetMaxY(caretRect),
         caretDescend = [_layoutManager _descentAtLocation:loc];
@@ -1899,11 +1908,14 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         caretRect.size.height = oldYPosition - caretRect.origin.y;
     }
     if (caretDescend < 0)
+    {
         caretRect.size.height -= caretDescend;
+    }
 
     caretRect.origin.x += _textContainerOrigin.x;
     caretRect.origin.y += _textContainerOrigin.y;
     caretRect.size.width = 1;
+
     [_caret setRect:caretRect];
 
     if (flag)
@@ -2154,6 +2166,7 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
 
 - (void)setVisibility:(BOOL)visibilityFlag stop:(BOOL)stopFlag
 {
+
 #if PLATFORM(DOM)
     _caretDOM.style.visibility = visibilityFlag ? "visible" : "hidden";
 #endif
@@ -2161,6 +2174,7 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
     if (! visibilityFlag && stopFlag)
         [self stopBlinking];
 }
+
 - (void)setVisibility:(BOOL)visibilityFlag
 {
     [self setVisibility:visibilityFlag stop:YES];
@@ -2229,6 +2243,7 @@ var _CPCopyPlaceholder = '-';
 
 + (void)cancelCurrentNativeInputSession
 {
+
 #if PLATFORM(DOM)
     if (_CPNativeInputField.innerHTML.length > 2)
         _CPNativeInputField.innerHTML = '';
@@ -2263,7 +2278,7 @@ var _CPCopyPlaceholder = '-';
 #if PLATFORM(DOM)
     _CPNativeInputField = document.createElement("div");
     _CPNativeInputField.contentEditable = YES;
-    _CPNativeInputField.style.width="64px";
+    _CPNativeInputField.style.width = "64px";
     _CPNativeInputField.style.zIndex = 10000;
     _CPNativeInputField.style.position = "absolute";
     _CPNativeInputField.style.visibility = "visible";
@@ -2275,6 +2290,7 @@ var _CPCopyPlaceholder = '-';
     _CPNativeInputField.addEventListener("keyup", function(e)
     {
         _CPNativeInputFieldKeyUpCalled = YES;
+
         // filter out the shift-up, cursor keys and friends used to access the deadkeys
         // fixme: e.which is depreciated(?) -> find a better way to identify the modifier-keyups
         if (e.which < 27 || e.which == 91 || e.which == 93) // include apple command keys
@@ -2292,18 +2308,22 @@ var _CPCopyPlaceholder = '-';
 
         var charCode = _CPNativeInputField.innerHTML.charCodeAt(0);
 
-        if (charCode == 229 || charCode == 197) // å and Å need to be filtered out in keyDown: due to chrome inserting 229 on a deadkey
+        // å and Å need to be filtered out in keyDown: due to chrome inserting 229 on a deadkey
+        if (charCode == 229 || charCode == 197)
         {
             [currentFirstResponder insertText:_CPNativeInputField.innerHTML];
             _CPNativeInputField.innerHTML = '';
             return;
         }
 
-        if (!_CPNativeInputFieldActive && _CPNativeInputFieldKeyPressedCalled == NO && _CPNativeInputField.innerHTML.length && _CPNativeInputField.innerHTML != _CPCopyPlaceholder && _CPNativeInputField.innerHTML.length < 3 && _CPNativeInputFieldLastValue !== _CPNativeInputField.innerHTML) // chrome-trigger: keypressed is omitted for deadkeys and cursor keys
+        // chrome-trigger: keypressed is omitted for deadkeys and cursor keys
+        if (!_CPNativeInputFieldActive && _CPNativeInputFieldKeyPressedCalled == NO && _CPNativeInputField.innerHTML.length && _CPNativeInputField.innerHTML != _CPCopyPlaceholder && _CPNativeInputField.innerHTML.length < 3 && _CPNativeInputFieldLastValue !== _CPNativeInputField.innerHTML)
         {
             _CPNativeInputFieldActive = YES;
             [currentFirstResponder _activateNativeInputElement:_CPNativeInputField];
-        } else
+
+        }
+        else
         {
             if (_CPNativeInputFieldActive)
                 [self _endInputSessionWithString:_CPNativeInputField.innerHTML];
@@ -2335,6 +2355,7 @@ var _CPCopyPlaceholder = '-';
                 else if (!_CPNativeInputFieldActive)
                     [self hideInputElement];
             }, 200);
+
         return false;
     }, true); // capture mode
 
@@ -2343,6 +2364,7 @@ var _CPCopyPlaceholder = '-';
         _CPNativeInputFieldKeyUpCalled = YES;
         _CPNativeInputFieldKeyPressedCalled = YES;
         return false;
+
     }, true); // capture mode
 
     if (CPBrowserIsEngine(CPGeckoBrowserEngine))
@@ -2360,8 +2382,10 @@ var _CPCopyPlaceholder = '-';
             setTimeout(function(){   // prevent dom-flickering
                 [currentFirstResponder paste:self];
             }, 20);
+
             return false;
         }
+
         _CPNativeInputField.oncopy = function(e)
         {
             var pasteboard = [CPPasteboard generalPasteboard],
@@ -2369,30 +2393,35 @@ var _CPCopyPlaceholder = '-';
                 currentFirstResponder = [[CPApp keyWindow] firstResponder];
 
             [currentFirstResponder copy:self];
-        //  dataForPasting = [pasteboard dataForType:CPRichStringPboardType],
+
+            //  dataForPasting = [pasteboard dataForType:CPRichStringPboardType],
             stringForPasting = [pasteboard stringForType:CPStringPboardType];
             e.clipboardData.setData('text/plain', stringForPasting);
-         // e.clipboardData.setData('application/rtf', stringForPasting); // does not seem to work
-            return false;
+            // e.clipboardData.setData('application/rtf', stringForPasting); // does not seem to work
 
+            return false;
         }
+
         _CPNativeInputField.oncut = function(e)
         {
-
             var pasteboard = [CPPasteboard generalPasteboard],
                 string,
                 currentFirstResponder = [[CPApp keyWindow] firstResponder];
 
-            setTimeout(function(){   // prevent dom-flickering
+            // prevent dom-flickering
+            setTimeout(function(){
                 [currentFirstResponder cut:self];
             }, 20);
 
-            [currentFirstResponder copy:self];  // this is necessary because cut will only execute in the future
-        //  dataForPasting = [pasteboard dataForType:CPRichStringPboardType],
+            // this is necessary because cut will only execute in the future
+            [currentFirstResponder copy:self];
+
+            //dataForPasting = [pasteboard dataForType:CPRichStringPboardType],
             stringForPasting = [pasteboard stringForType:CPStringPboardType];
 
             e.clipboardData.setData('text/plain', stringForPasting);
-         // e.clipboardData.setData('application/rtf', stringForPasting); // does not seem to work
+            //e.clipboardData.setData('application/rtf', stringForPasting); // does not seem to work
+
             return false;
         }
     }
@@ -2425,10 +2454,12 @@ var _CPCopyPlaceholder = '-';
     currentFirstResponder._DOMElement.appendChild(_CPNativeInputField);
     _CPNativeInputField.focus();
 #endif
+
 }
 
 + (void)focusForClipboardOfTextView:(CPTextView)textview
 {
+
 #if PLATFORM(DOM)
     if (!_CPNativeInputFieldActive && _CPNativeInputField.innerHTML.length == 0)
         _CPNativeInputField.innerHTML = _CPCopyPlaceholder;  // make sure we have a selection to allow the native pasteboard work in safari
@@ -2453,14 +2484,17 @@ var _CPCopyPlaceholder = '-';
         selection.addRange(range);
     }
 #endif
+
 }
 
 + (void)hideInputElement
 {
+
 #if PLATFORM(DOM)
-    _CPNativeInputField.style.top="-10000px";
-    _CPNativeInputField.style.left="-10000px";
+    _CPNativeInputField.style.top = "-10000px";
+    _CPNativeInputField.style.left = "-10000px";
 #endif
+
 }
 
 @end

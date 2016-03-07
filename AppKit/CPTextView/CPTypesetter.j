@@ -26,8 +26,10 @@
  */
 
 @import <Foundation/CPObject.j>
+
 @import "CPParagraphStyle.j"
 @import "CPTextStorage.j"
+@import "CPFont.j"
 
 @global _isNewlineCharacter
 
@@ -46,9 +48,8 @@ CPTypesetterLineBreakAction       = 1 << 3;
 CPTypesetterParagraphBreakAction  = 1 << 4;
 CPTypesetterContainerBreakAction  = 1 << 5;
 
-var _sharedSimpleTypesetter;
-
-var CPSystemTypesetterFactory;
+var CPSystemTypesetterFactory,
+    _sharedSimpleTypesetter;
 
 @implementation CPTypesetter : CPObject
 
@@ -196,7 +197,7 @@ var CPSystemTypesetterFactory;
             break;
     }
 
-    [_layoutManager setLocation:CPMakePoint(myX, _lineBase) forStartOfGlyphRange:lineRange];
+    [_layoutManager setLocation:CGPointMake(myX, _lineBase) forStartOfGlyphRange:lineRange];
     [_layoutManager _setAdvancements:advancements forGlyphRange:lineRange];
 
     if (!sameLine) //fix the _lineFragments when fontsizes differ
@@ -292,10 +293,8 @@ var CPSystemTypesetterFactory;
         lineRange.length++;
         measuringRange.length++;
 
-
-        var currentChar = theString[glyphIndex];
-
-        var rangeWidth = [theString.substr(measuringRange.location, measuringRange.length) sizeWithFont:_currentFont inWidth:NULL].width + currentAnchor;
+        var currentChar = theString[glyphIndex],
+            rangeWidth = [theString.substr(measuringRange.location, measuringRange.length) sizeWithFont:_currentFont inWidth:NULL].width + currentAnchor;
 
         switch (currentChar)    // faster than sending actionForControlCharacterAtIndex: called for each char.
         {
@@ -323,7 +322,8 @@ var CPSystemTypesetterFactory;
         }
 
         var advancement = CPMakeSize(rangeWidth - prevRangeWidth, ascent);
-        advancement.descent=descent;
+
+        advancement.descent = descent;
         advancements.push(advancement);
 
         prevRangeWidth = _lineWidth = rangeWidth;
@@ -332,10 +332,10 @@ var CPSystemTypesetterFactory;
         {
             if (wrapWidth)
             {
-                lineRange = wrapRange;
-               _lineWidth = wrapWidth;
-               _lineHeight = wrapRange._height;
-               _lineBase = wrapRange._base;
+                lineRange   = wrapRange;
+               _lineWidth   = wrapWidth;
+               _lineHeight  = wrapRange._height;
+               _lineBase    = wrapRange._base;
             }
 
             isNewline = YES;

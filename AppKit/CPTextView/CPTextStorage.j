@@ -23,7 +23,9 @@
 
 @import <Foundation/CPNotificationCenter.j>
 @import <Foundation/CPAttributedString.j>
+
 @import "CPText.j"
+@import "CPFont.j"
 
 @class CPLayoutManager;
 
@@ -119,20 +121,20 @@ var CPTextStorageDelegate_textStorageWillProcessEditing_ = 1 << 1,
 
 - (void)addLayoutManager:(CPLayoutManager)aManager
 {
-    if (![_layoutManagers containsObject:aManager])
-    {
-        [aManager setTextStorage:self];
-        [_layoutManagers addObject:aManager];
-    }
+    if ([_layoutManagers containsObject:aManager])
+        return
+
+    [aManager setTextStorage:self];
+    [_layoutManagers addObject:aManager];
 }
 
 - (void)removeLayoutManager:(CPLayoutManager)aManager
 {
-    if ([_layoutManagers containsObject:aManager])
-    {
-        [aManager setTextStorage:nil];
-        [_layoutManagers removeObject:aManager];
-    }
+    if (![_layoutManagers containsObject:aManager])
+        return
+
+    [aManager setTextStorage:nil];
+    [_layoutManagers removeObject:aManager];
 }
 
 - (void)invalidateAttributesInRange:(CPRange)aRange

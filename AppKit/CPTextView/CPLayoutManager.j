@@ -31,6 +31,7 @@
 @import "CPTextContainer.j"
 @import "CGContext.j"
 @import "CPTypesetter.j"
+@import "CPFont.j"
 
 @global _MakeRangeFromAbs
 
@@ -127,6 +128,7 @@ _oncontextmenuhandler = function () { return false; };
 {
     return [_textStorage length];
 }
+
 - (int)numberOfCharacters
 {
     return [_textStorage length];
@@ -176,7 +178,7 @@ _oncontextmenuhandler = function () { return false; };
         if (fragment._textContainer === container)
         {
             var frames = [fragment glyphFrames],
-                l = frames? frames.length : 0;
+                l = frames ? frames.length : 0;
 
             for (var j = 0; j < l; j++)
             {
@@ -289,9 +291,11 @@ _oncontextmenuhandler = function () { return false; };
     // document.title=startIndex;
 
     [_typesetter layoutGlyphsInLayoutManager:self startingAtGlyphIndex:startIndex maxNumberOfLineFragments:-1 nextGlyphIndex:nil];
+
 #if PLATFORM(DOM)
     [self _cleanUpDOM];
 #endif
+
     _isValidatingLayoutAndGlyphs = NO;
 }
 
@@ -431,6 +435,7 @@ _oncontextmenuhandler = function () { return false; };
 - (void)textStorage:(CPTextStorage)textStorage edited:(unsigned)mask range:(CPRange)charRange changeInLength:(int)delta invalidatedRange:(CPRange)invalidatedRange
 {
     var actualRange = CPMakeRange(CPNotFound,0);
+
     [self invalidateLayoutForCharacterRange: invalidatedRange isSoft:NO actualCharacterRange:actualRange];
     [self invalidateDisplayForGlyphRange: actualRange];
 }
@@ -734,7 +739,7 @@ _oncontextmenuhandler = function () { return false; };
     var lineFragment = _objectWithLocationInRange(_lineFragments, glyphRange.location);
 
     if (lineFragment)
-        [lineFragment setAdvancements: someAdvancements];
+        [lineFragment setAdvancements:someAdvancements];
 }
 
 - (void)setLocation:(CGPoint)aPoint forStartOfGlyphRange:(CPRange)glyphRange
@@ -1198,7 +1203,7 @@ var _objectsInRange = function(aList, aRange)
     for (var i = 0; i < count; i++)
         _glyphsFrames[i].origin.y += (height - _fragmentRect.size.height);
 
-    _fragmentRect.size.height=height;
+    _fragmentRect.size.height = height;
 }
 
 - (CPString)description

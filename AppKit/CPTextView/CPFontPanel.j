@@ -105,7 +105,7 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
         glyphRange = [_layoutManager glyphRangeForTextContainer:_textContainer],
         usedRect = [_layoutManager usedRectForTextContainer:_textContainer],
         bounds = [self bounds],
-        pos = CPMakePoint((bounds.size.width - usedRect.size.width) / 2.0, (bounds.size.height - usedRect.size.height) / 2.0);
+        pos = CGPointMake((bounds.size.width - usedRect.size.width) / 2.0, (bounds.size.height - usedRect.size.height) / 2.0);
 
     CGContextSaveGState(ctx);
     CGContextSetFillColor(ctx, [CPColor whiteColor]);
@@ -226,12 +226,15 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
         upperView = [[CPView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(contentBounds), CGRectGetHeight(contentBounds) - (kBorderSpacing + kToolbarHeight + kInnerSpacing))];
 
     [contentView addSubview:_toolbarView];
+
     _fontBrowser = [[CPBrowser alloc] initWithFrame:CGRectMake(10,  35, 150, 350)];
     _traitBrowser = [[CPBrowser alloc] initWithFrame:CGRectMake(155, 35, 150, 350)];
     _sizeBrowser = [[CPBrowser alloc] initWithFrame:CGRectMake(300, 35, 140, 350)];
+
     [self _setupBrowser:_fontBrowser];
     [self _setupBrowser:_traitBrowser];
     [self _setupBrowser:_sizeBrowser];
+
     [[CPNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(textViewDidChangeSelection:)
                                                  name:CPTextViewDidChangeSelectionNotification

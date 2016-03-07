@@ -123,7 +123,7 @@ CPLineMovesUp = 4;
 {
     var oldSize = _size;
 
-    _size = someSize;
+    _size = CGSizeMakeCopy(someSize);
 
     if (oldSize.width != _size.width)
     {
