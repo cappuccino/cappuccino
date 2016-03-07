@@ -10,6 +10,5 @@
 
 NSString * const XCCUserDefaultsAutoOpenXcodeProject                = @"XCCUserDefaultsAutoOpenXcodeProject";
 NSString * const XCCUserDefaultsManagedProjects                     = @"XCCUserDefaultsManagedProjects";
-NSString * const XCCUserDefaultsLogLevel                            = @"XCCUserDefaultsLogLevel";
 NSString * const XCCUserDefaultsSelectedProjectPath                 = @"XCCUserDefaultsSelectedProjectPath";
 NSString * const XCCUserDefaultsMaxNumberOfConcurrentOperations     = @"XCCUserDefaultsMaxNumberOfConcurrentOperations";

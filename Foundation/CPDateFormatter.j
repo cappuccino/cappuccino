@@ -1552,7 +1552,7 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
                     month = [[self monthSymbols] indexOfObject:dateComponent] + 1;
                 }
 
-                if (month > 11 || length >= 5)
+                if (month > 12 || length >= 5)
                     return nil;
 
                 dateArray[1] = month;
@@ -1580,7 +1580,7 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
                     month = [[self standaloneMonthSymbols] indexOfObject:dateComponent] + 1;
                 }
 
-                if (month > 11 || length >= 5)
+                if (month > 12 || length >= 5)
                     return nil;
 
                 dateArray[1] = month;

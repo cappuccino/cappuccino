@@ -705,6 +705,23 @@
   [self assert:[1, [CPNull null], "3"] equals:anArray];
 }
 
+- (void)testArrayByApplyingBlock
+{
+    var arr = @[@"a", @"b", @"c", @"d"];
+
+    var mapped = [arr arrayByApplyingBlock:function(obj, idx)
+    {
+        return obj + "_" + idx;
+    }];
+
+    [self assert:[mapped count] equals:[arr count]];
+
+    [arr enumerateObjectsUsingBlock:function(obj, idx, stop)
+    {
+        [self assert:mapped[idx] equals:(obj + "_" + idx)];
+    }];
+}
+
 @end
 
 @implementation AlwaysEqual : CPObject

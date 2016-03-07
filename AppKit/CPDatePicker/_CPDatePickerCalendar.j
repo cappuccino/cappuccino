@@ -1114,30 +1114,30 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
         [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-shadow-color" inState:CPThemeStateDisabled] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateDisabled];
         [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-shadow-offset" inState:CPThemeStateDisabled] forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateDisabled];
 
-        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-font" inState:[CPThemeStateDisabled, CPThemeStateSelected]] forThemeAttribute:@"font" inState:[CPThemeStateDisabled, CPThemeStateSelected]];
-        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-color" inState:[CPThemeStateDisabled, CPThemeStateSelected]]forThemeAttribute:@"text-color" inState:[CPThemeStateDisabled, CPThemeStateSelected]];
-        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-shadow-color" inState:[CPThemeStateDisabled, CPThemeStateSelected]] forThemeAttribute:@"text-shadow-color" inState:[CPThemeStateDisabled, CPThemeStateSelected]];
-        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-shadow-offset" inState:[CPThemeStateDisabled, CPThemeStateSelected]] forThemeAttribute:@"text-shadow-offset" inState:[CPThemeStateDisabled, CPThemeStateSelected]];
+        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-font" inStates:[CPThemeStateDisabled, CPThemeStateSelected]] forThemeAttribute:@"font" inStates:[CPThemeStateDisabled, CPThemeStateSelected]];
+        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-color" inStates:[CPThemeStateDisabled, CPThemeStateSelected]]forThemeAttribute:@"text-color" inStates:[CPThemeStateDisabled, CPThemeStateSelected]];
+        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-shadow-color" inStates:[CPThemeStateDisabled, CPThemeStateSelected]] forThemeAttribute:@"text-shadow-color" inStates:[CPThemeStateDisabled, CPThemeStateSelected]];
+        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-shadow-offset" inStates:[CPThemeStateDisabled, CPThemeStateSelected]] forThemeAttribute:@"text-shadow-offset" inStates:[CPThemeStateDisabled, CPThemeStateSelected]];
 
         [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-font" inState:CPThemeStateHighlighted] forThemeAttribute:@"font" inState:CPThemeStateHighlighted];
         [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-color" inState:CPThemeStateHighlighted] forThemeAttribute:@"text-color" inState:CPThemeStateHighlighted];
         [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-shadow-color" inState:CPThemeStateHighlighted] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateHighlighted];
         [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-shadow-offset" inState:CPThemeStateHighlighted] forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateHighlighted];
 
-        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-font" inState:[CPThemeStateHighlighted, CPThemeStateSelected]] forThemeAttribute:@"font" inState:[CPThemeStateHighlighted, CPThemeStateSelected]];
-        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-color" inState:[CPThemeStateHighlighted, CPThemeStateSelected]] forThemeAttribute:@"text-color" inState:[CPThemeStateHighlighted, CPThemeStateSelected]];
-        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-shadow-color" inState:[CPThemeStateHighlighted, CPThemeStateSelected]] forThemeAttribute:@"text-shadow-color" inState:[CPThemeStateHighlighted, CPThemeStateSelected]];
-        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-shadow-offset" inState:[CPThemeStateHighlighted, CPThemeStateSelected]] forThemeAttribute:@"text-shadow-offset" inState:[CPThemeStateHighlighted, CPThemeStateSelected]];
+        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-font" inStates:[CPThemeStateHighlighted, CPThemeStateSelected]] forThemeAttribute:@"font" inStates:[CPThemeStateHighlighted, CPThemeStateSelected]];
+        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-color" inStates:[CPThemeStateHighlighted, CPThemeStateSelected]] forThemeAttribute:@"text-color" inStates:[CPThemeStateHighlighted, CPThemeStateSelected]];
+        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-shadow-color" inStates:[CPThemeStateHighlighted, CPThemeStateSelected]] forThemeAttribute:@"text-shadow-color" inStates:[CPThemeStateHighlighted, CPThemeStateSelected]];
+        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-shadow-offset" inStates:[CPThemeStateHighlighted, CPThemeStateSelected]] forThemeAttribute:@"text-shadow-offset" inStates:[CPThemeStateHighlighted, CPThemeStateSelected]];
 
-        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-font" inState:[CPThemeStateDisabled, CPThemeStateHighlighted, CPThemeStateSelected]] forThemeAttribute:@"font" inState:[CPThemeStateDisabled, CPThemeStateHighlighted, CPThemeStateSelected]];
-        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-color" inState:[CPThemeStateDisabled, CPThemeStateHighlighted, CPThemeStateSelected]] forThemeAttribute:@"text-color" inState:[CPThemeStateDisabled, CPThemeStateHighlighted, CPThemeStateSelected]];
-        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-shadow-color" inState:[CPThemeStateDisabled, CPThemeStateHighlighted, CPThemeStateSelected]] forThemeAttribute:@"text-shadow-color" inState:[CPThemeStateDisabled, CPThemeStateHighlighted, CPThemeStateSelected]];
-        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-shadow-offset" inState:[CPThemeStateDisabled, CPThemeStateHighlighted, CPThemeStateSelected]] forThemeAttribute:@"text-shadow-offset" inState:[CPThemeStateDisabled, CPThemeStateHighlighted, CPThemeStateSelected]];
+        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-font" inStates:[CPThemeStateDisabled, CPThemeStateHighlighted, CPThemeStateSelected]] forThemeAttribute:@"font" inStates:[CPThemeStateDisabled, CPThemeStateHighlighted, CPThemeStateSelected]];
+        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-color" inStates:[CPThemeStateDisabled, CPThemeStateHighlighted, CPThemeStateSelected]] forThemeAttribute:@"text-color" inStates:[CPThemeStateDisabled, CPThemeStateHighlighted, CPThemeStateSelected]];
+        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-shadow-color" inStates:[CPThemeStateDisabled, CPThemeStateHighlighted, CPThemeStateSelected]] forThemeAttribute:@"text-shadow-color" inStates:[CPThemeStateDisabled, CPThemeStateHighlighted, CPThemeStateSelected]];
+        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-shadow-offset" inStates:[CPThemeStateDisabled, CPThemeStateHighlighted, CPThemeStateSelected]] forThemeAttribute:@"text-shadow-offset" inStates:[CPThemeStateDisabled, CPThemeStateHighlighted, CPThemeStateSelected]];
 
-        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-font" inState:[CPThemeStateDisabled, CPThemeStateHighlighted]] forThemeAttribute:@"font" inState:[CPThemeStateDisabled, CPThemeStateHighlighted]];
-        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-color" inState:[CPThemeStateDisabled, CPThemeStateHighlighted]] forThemeAttribute:@"text-color" inState:[CPThemeStateDisabled, CPThemeStateHighlighted]];
-        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-shadow-color" inState:[CPThemeStateDisabled, CPThemeStateHighlighted]] forThemeAttribute:@"text-shadow-color" inState:[CPThemeStateDisabled, CPThemeStateHighlighted]];
-        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-shadow-offset" inState:[CPThemeStateDisabled, CPThemeStateHighlighted]] forThemeAttribute:@"text-shadow-offset" inState:[CPThemeStateDisabled, CPThemeStateHighlighted]];
+        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-font" inStates:[CPThemeStateDisabled, CPThemeStateHighlighted]] forThemeAttribute:@"font" inStates:[CPThemeStateDisabled, CPThemeStateHighlighted]];
+        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-color" inStates:[CPThemeStateDisabled, CPThemeStateHighlighted]] forThemeAttribute:@"text-color" inStates:[CPThemeStateDisabled, CPThemeStateHighlighted]];
+        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-shadow-color" inStates:[CPThemeStateDisabled, CPThemeStateHighlighted]] forThemeAttribute:@"text-shadow-color" inStates:[CPThemeStateDisabled, CPThemeStateHighlighted]];
+        [_textField setValue:[_datePicker valueForThemeAttribute:@"tile-text-shadow-offset" inStates:[CPThemeStateDisabled, CPThemeStateHighlighted]] forThemeAttribute:@"text-shadow-offset" inStates:[CPThemeStateDisabled, CPThemeStateHighlighted]];
 
         [self addSubview:_textField];
 

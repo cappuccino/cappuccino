@@ -31,6 +31,7 @@
     {
         _identifier     = [aCoder decodeObjectForKey:"NSIdentifier"];
         _label          = [aCoder decodeObjectForKey:"NSLabel"];
+        _image          = [aCoder decodeObjectForKey:"NSImage"];
 
         _view           = [aCoder decodeObjectForKey:"NSView"];
 

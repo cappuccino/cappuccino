@@ -41,7 +41,7 @@ function FileExecutable(/*CFURL|String*/ aURL, /*Dictionary*/ aFilenameTranslate
     if (fileContents.match(/^@STATIC;/))
         executable = decompile(fileContents, aURL);
     else if ((extension === "j" || !extension) && !fileContents.match(/^{/))
-        executable = exports.ObjJAcornCompiler.compileFileDependencies(fileContents, aURL, ObjJAcornCompiler.Flags.IncludeDebugSymbols);
+        executable = exports.ObjJAcornCompiler.compileFileDependencies(fileContents, aURL, exports.currentCompilerFlags());
     else
         executable = new Executable(fileContents, [], aURL);
 

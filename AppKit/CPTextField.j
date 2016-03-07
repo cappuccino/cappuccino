@@ -70,7 +70,6 @@ var CPTextFieldDOMCurrentElement = nil,
 
 var CPSecureTextFieldCharacter = "\u2022";
 
-
 function CPTextFieldBlurFunction(anEvent, owner, domElement, inputElement, resigning, didBlurRef)
 {
     if (owner && domElement != inputElement.parentNode)
@@ -87,7 +86,7 @@ function CPTextFieldBlurFunction(anEvent, owner, domElement, inputElement, resig
         */
         if ([owner _isWithinUsablePlatformRect])
         {
-            window.setTimeout(function()
+            [[CPRunLoop mainRunLoop] performBlock:function()
             {
                 // This will prevent to jump to the focused element
                 var previousScrollingOrigin = [owner _scrollToVisibleRectAndReturnPreviousOrigin];
@@ -95,7 +94,7 @@ function CPTextFieldBlurFunction(anEvent, owner, domElement, inputElement, resig
                 inputElement.focus();
 
                 [owner _restorePreviousScrollingOrigin:previousScrollingOrigin];
-            }, 0.0);
+            } argument:nil order:0 modes:[CPDefaultRunLoopMode]];
         }
     }
 
@@ -671,11 +670,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     CPTextFieldInputOwner = self;
 
-    window.setTimeout(function()
+    [[CPRunLoop mainRunLoop] performBlock:function()
     {
-        /*
-            setTimeout handlers are not guaranteed to fire in the order they were initiated. This can cause a race condition when several windows with text fields are opened quickly, resulting in several instances of this timeout function being fired, perhaps out of order. So we have to check that by the time this function is fired, CPTextFieldInputOwner has not been changed to another text field in the meantime.
-        */
         if (CPTextFieldInputOwner !== self)
             return;
 
@@ -688,12 +684,21 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
         // Select the text if the textfield became first responder through keyboard interaction
         if (!_willBecomeFirstResponderByClick)
+        {
             [self _selectText:self immediately:YES];
+        }
+        else
+        {
+            var point = CGPointMake([self convertPointFromBase:[[CPApp currentEvent] locationInWindow]].x - [self currentValueForThemeAttribute:@"content-inset"].left, 0),
+                position = [CPPlatformString charPositionOfString:[self stringValue] withFont:[self font] forPoint:point];
+
+            [self setSelectedRange:CPMakeRange(position, 0)];
+        }
 
         _willBecomeFirstResponderByClick = NO;
 
         [self textDidFocus:[CPNotification notificationWithName:CPTextFieldDidFocusNotification object:self userInfo:nil]];
-    }, 0.0);
+    } argument:nil order:0 modes:[CPDefaultRunLoopMode]];
 
 #endif
 
@@ -1510,7 +1515,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
                 if (immediately)
                     element.select();
                 else
-                    window.setTimeout(function() { element.select(); }, 0);
+                    [[CPRunLoop mainRunLoop] performBlock:function(){ element.select(); } argument:nil order:0 modes:[CPDefaultRunLoopMode]];
             }
             else if (wind !== nil && [wind makeFirstResponder:self])
                 [self _selectText:sender immediately:immediately];

@@ -5,7 +5,7 @@
 @import <AppKit/CPCursor.j>
 
 @implementation CursorTester : CPView
-{ 
+{
     CPCursor testCursor;
     CPTextField label;
 }
@@ -15,6 +15,7 @@
             cursor:(CPCursor)aCursor
 {
     self = [super init];
+
     if (self)
     {
         testCursor = aCursor;
@@ -26,7 +27,16 @@
                                   anOrigin.y,
                                   [label frame].size.width,
                                   [label frame].size.height)];
+
+      var trackingArea = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero()
+                                   options:CPTrackingMouseEnteredAndExited | CPTrackingActiveInKeyWindow | CPTrackingInVisibleRect
+                                     owner:self
+                                  userInfo:nil];
+
+      [self addTrackingArea:trackingArea];
+;
     }
+
     return self;
 }
 
@@ -57,7 +67,7 @@
     	yInc = 25,
         imageCursorTester = [[CursorTester alloc] initWithText:@"Image cursor"
                                                         origin:CGPointMake(x, y)
-                                                        cursor:[[CPCursor alloc] initWithImage:[[CPImage alloc] initWithContentsOfFile:[[CPBundle mainBundle] resourcePath] + @"spinner.gif"] 
+                                                        cursor:[[CPCursor alloc] initWithImage:[[CPImage alloc] initWithContentsOfFile:[[CPBundle mainBundle] resourcePath] + @"spinner.gif"]
                                                                                        hotSpot:CGPointMakeZero()]],
         arrowCursorTester = [[CursorTester alloc] initWithText:@"Arrow cursor"
                                                         origin:CGPointMake(x, y+=yInc)
@@ -110,7 +120,7 @@
         disappearingItemCursorTester = [[CursorTester alloc] initWithText:@"Disappearing item cursor"
                                                         origin:CGPointMake(x, y+=yInc)
  													    cursor:[CPCursor disappearingItemCursor]];
-        
+
     [contentView addSubview:imageCursorTester];
     [contentView addSubview:arrowCursorTester];
     [contentView addSubview:crosshairCursorTester];

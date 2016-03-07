@@ -25,6 +25,8 @@
 @import "CPRunLoop.j"
 @import "CPURLRequest.j"
 @import "CPURLResponse.j"
+@import "CPOperationQueue.j"
+@import "CPOperation.j"
 
 @protocol CPURLConnectionDelegate <CPObject>
 
@@ -93,6 +95,9 @@ var CPURLConnectionDelegate = nil;
     BOOL                            _isLocalFileConnection;
 
     HTTPRequest                     _HTTPRequest;
+
+    CPOperationQueue                _operationQueue;
+    CPOperation                     _connectionOperation @accessors(readonly, getter=operation);
 }
 
 + (void)setClassDelegate:(id <CPURLConnectionDelegate>)delegate
@@ -138,6 +143,18 @@ var CPURLConnectionDelegate = nil;
 }
 
 /*
+    Loads the data for a URL request and executes a function on an operation queue when the request completes or fails.
+    @param aRequest contains the URL to obtain data from.
+    @param aQueue The operation queue to which the function is dispatched when the request completes or failed.
+    @param aHandler The function to execute.
+    @discussion If the request completes successfully, the data parameter of the function contains the resource data, and the error parameter is nil. If the request fails, the data parameter is nil and the error parameter contain information about the failure.
+*/
++ (CPURLConnection)sendAsynchronousRequest:(CPURLRequest)aRequest queue:(CPOperationQueue)aQueue completionHandler:(Function)aHandler
+{
+    return [[self alloc] _initWithRequest:aRequest queue:aQueue completionHandler:aHandler];
+}
+
+/*
     Creates a url connection with a delegate to monitor the request progress.
     @param aRequest contains the URL to obtain data from
     @param aDelegate will be sent messages related to the request progress
@@ -161,26 +178,51 @@ var CPURLConnectionDelegate = nil;
 
     if (self)
     {
-        _request = aRequest;
-        _originalRequest = [aRequest copy];
         _delegate = aDelegate;
-        _isCanceled = NO;
+        _operationQueue = nil;
+        _connectionOperation = nil;
 
-        var URL = [_request URL],
-            scheme = [URL scheme];
+        [self _initWithRequest:aRequest];
+    }
 
-        // Browsers use "file:", Titanium uses "app:"
-        _isLocalFileConnection =    scheme === "file" ||
-                                    ((scheme === "http" || scheme === "https") &&
-                                     window.location &&
-                                     (window.location.protocol === "file:" || window.location.protocol === "app:"));
+    if (shouldStartImmediately)
+        [self start];
 
-        _HTTPRequest = new CFHTTPRequest();
-        _HTTPRequest.setTimeout([aRequest timeoutInterval] * 1000);
-        _HTTPRequest.setWithCredentials([aRequest withCredentials]);
+    return self;
+}
 
-        if (shouldStartImmediately)
-            [self start];
+- (void)_initWithRequest:(CPURLRequest)aRequest
+{
+	_request = aRequest;
+    _originalRequest = [aRequest copy];
+	_isCanceled = NO;
+
+	var URL = [_request URL],
+	    scheme = [URL scheme];
+
+	// Browsers use "file:", Titanium uses "app:"
+	_isLocalFileConnection =    scheme === "file" ||
+                                ((scheme === "http" || scheme === "https") &&
+                                 window.location &&
+                                 (window.location.protocol === "file:" || window.location.protocol === "app:"));
+
+    _HTTPRequest = new CFHTTPRequest();
+    _HTTPRequest.setTimeout([aRequest timeoutInterval] * 1000);
+    _HTTPRequest.setWithCredentials([aRequest withCredentials]);
+}
+
+- (id)_initWithRequest:(CPURLRequest)aRequest queue:(CPOperationQueue)aQueue completionHandler:(Function)aHandler
+{
+    self = [super init];
+
+    if (self)
+    {
+        _delegate = nil;
+        _operationQueue = aQueue;
+        _connectionOperation = [[_AsynchronousConnectionOperation alloc] initWithFunction:aHandler];
+
+        [self _initWithRequest:aRequest];
+        [self start];
     }
 
     return self;
@@ -232,6 +274,8 @@ var CPURLConnectionDelegate = nil;
 {
     if ([_delegate respondsToSelector:@selector(connection:didFailWithError:)])
         [_delegate connection:self didFailWithError:anException];
+    else if (_connectionOperation !== nil)
+        [self _connectionOperationDidReceiveResponse:nil data:nil error:anException];
 }
 
 /*
@@ -244,6 +288,9 @@ var CPURLConnectionDelegate = nil;
     try
     {
         _HTTPRequest.abort();
+
+        if (_connectionOperation)
+            [_connectionOperation cancel];
     }
     // We expect an exception in some browsers like FireFox.
     catch (anException)
@@ -267,7 +314,6 @@ var CPURLConnectionDelegate = nil;
 
     [self _sendDelegateDidFailWithError:exception];
 }
-
 /* @ignore */
 - (void)_readyStateDidChange
 {
@@ -280,23 +326,27 @@ var CPURLConnectionDelegate = nil;
             [CPURLConnectionDelegate connectionDidReceiveAuthenticationChallenge:self];
         else
         {
-            if ([_delegate respondsToSelector:@selector(connection:didReceiveResponse:)])
+            var response;
+
+            if (_isLocalFileConnection)
+                response = [[CPURLResponse alloc] initWithURL:URL];
+            else
             {
-                if (_isLocalFileConnection)
-                    [_delegate connection:self didReceiveResponse:[[CPURLResponse alloc] initWithURL:URL]];
-                else
-                {
-                    var response = [[CPHTTPURLResponse alloc] initWithURL:URL];
-                    [response _setStatusCode:statusCode];
-                    [response _setAllResponseHeaders:_HTTPRequest.getAllResponseHeaders()];
-                    [_delegate connection:self didReceiveResponse:response];
-                }
+                response = [[CPHTTPURLResponse alloc] initWithURL:URL];
+                [response _setStatusCode:statusCode];
+                [response _setAllResponseHeaders:_HTTPRequest.getAllResponseHeaders()];
             }
+
+            if ([_delegate respondsToSelector:@selector(connection:didReceiveResponse:)])
+                [_delegate connection:self didReceiveResponse:response];
 
             if (!_isCanceled)
             {
                 if ([_delegate respondsToSelector:@selector(connection:didReceiveData:)])
                     [_delegate connection:self didReceiveData:_HTTPRequest.responseText()];
+                else if (_connectionOperation !== nil)
+                    [self _connectionOperationDidReceiveResponse:response data:_HTTPRequest.responseText() error:nil];
+
                 if ([_delegate respondsToSelector:@selector(connectionDidFinishLoading:)])
                     [_delegate connectionDidFinishLoading:self];
             }
@@ -310,6 +360,69 @@ var CPURLConnectionDelegate = nil;
 - (HTTPRequest)_HTTPRequest
 {
     return _HTTPRequest;
+}
+
+- (void)_connectionOperationDidReceiveResponse:(CPURLResponse)aResponse data:(CPData)aData error:(CPError)anError
+{
+    [_connectionOperation _setResponse:aResponse data:aData error:anError];
+
+    if (_operationQueue)
+        [_operationQueue addOperation:_connectionOperation];
+    else
+    {
+        // Do we need to send CPOperation KVO notifications ?
+        [_connectionOperation main];
+    }
+}
+
+@end
+
+/* @ignore */
+@implementation _AsynchronousConnectionOperation : CPOperation
+{
+    BOOL          _didReceiveResponse;
+
+    CPURLResponse _response;
+    CPData        _data;
+    CPError       _error;
+    Function      _operationFunction;
+}
+
+/* @ignore */
+- (id)initWithFunction:(Function)aFunction
+{
+    self = [super init];
+
+    if (self)
+    {
+        _didReceiveResponse = NO;
+        _response = nil;
+        _data = nil;
+        _error = nil;
+        _operationFunction = aFunction;
+    }
+
+    return self;
+}
+
+- (void)_setResponse:(CPURLResponse)aResponse data:(CPData)aData error:(CPError)anError
+{
+    _didReceiveResponse = YES;
+    _response = aResponse;
+    _data = aData;
+    _error = anError;
+}
+
+/* @ignore */
+- (void)main
+{
+    _operationFunction(_response, _data, _error);
+}
+
+/* @ignore */
+- (BOOL)isReady
+{
+    return (_didReceiveResponse && [super isReady]);
 }
 
 @end

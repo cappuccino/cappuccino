@@ -20,6 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import "_CPObject+Theme.j"
 @import "_CPToolTip.j"
 @import "CALayer.j"
 @import "CGGeometry.j"
@@ -103,6 +104,7 @@
 @import "CPTokenField.j"
 @import "CPToolbar.j"
 @import "CPToolbarItem.j"
+@import "CPTrackingArea.j"
 @import "CPTreeNode.j"
 @import "CPUserDefaultsController.j"
 @import "CPView.j"

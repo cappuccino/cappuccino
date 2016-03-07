@@ -763,13 +763,10 @@
 - (void)setAttributedString:(CPAttributedString)aString
 {
     _string = aString._string;
-    _rangeEntries = [];
-
-    var i = 0,
-        count = aString._rangeEntries.length;
-
-    for (; i < count; i++)
-        _rangeEntries.push(copyRangeEntry(aString._rangeEntries[i]));
+    _rangeEntries = [aString._rangeEntries arrayByApplyingBlock:function(entry)
+    {
+        return copyRangeEntry(entry);
+    }];
 }
 
 //Private methods

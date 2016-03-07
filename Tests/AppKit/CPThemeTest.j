@@ -56,20 +56,20 @@
 
 - (void)testThemeAttributeValueForState
 {
-    var themeAttribute = [[_CPThemeAttribute alloc] initWithName:@"test" defaultValue:5];
+    var themeAttribute = [[_CPThemeAttribute alloc] initWithName:@"test" defaultValue:5 defaultAttribute:nil];
     [self assertTrue:([themeAttribute valueForState:CPThemeState("aState")] == 5) message:"Return the default value for the theme attribute if the theme attribute has no value defined for the given state"];
 
-    [themeAttribute setValue:7 forState:CPThemeState("aState")];
+    themeAttribute = [themeAttribute attributeBySettingValue:7 forState:CPThemeState("aState")];
     [self assertTrue:([themeAttribute valueForState:CPThemeState("aState")] == 7) message:"Return the correct value for the state if the state is defined"];
 
-    [themeAttribute setValue:8 forState:CPThemeState('normal')];
+    themeAttribute = [themeAttribute attributeBySettingValue:8 forState:CPThemeState('normal')];
     [self assertTrue:([themeAttribute valueForState:CPThemeState("aState1")] == 8) message:"Return the normal value for the state if the theme attribute has no value defined for the given state but has a value for the normal state defined"];
 
-    [themeAttribute setValue:10 forState:CPThemeState('aState3+aState4')];
+    themeAttribute = [themeAttribute attributeBySettingValue:10 forState:CPThemeState('aState3+aState4')];
     [self assertTrue:([themeAttribute valueForState:CPThemeState("aState3")] == 8) message:"Return the normal value for the state if the state is only a partial match on the theme attributes defined states"];
     [self assertTrue:([themeAttribute valueForState:CPThemeState("aState4+aState3")] == 10) message:"Correctly match combined states on the theme attribute"];
 
-    [themeAttribute setValue:9 forState:CPThemeState('aState3')];
+    themeAttribute = [themeAttribute attributeBySettingValue:9 forState:CPThemeState('aState3')];
     [self assertTrue:([themeAttribute valueForState:CPThemeState("aState8+aState3+aState4")] == 10) message:"Return the largest partial subset match for a combined state that isn't a perfect match"];
 }
 

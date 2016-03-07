@@ -26,9 +26,9 @@
 
 @implementation _CPSubqueryExpression : CPExpression
 {
-    CPExpression _collection;
+    CPExpression _collection @accessors(getter=collection);
     CPExpression _variableExpression;
-    CPPredicate  _subpredicate;
+    CPPredicate  _subpredicate @accessors(getter=predicate);
 }
 
 - (id)initWithExpression:(CPExpression)collection usingIteratorVariable:(CPString)variable predicate:(CPPredicate)subpredicate
@@ -47,23 +47,25 @@
         _collection = collection;
         _variableExpression = variableExpression;
     }
+
     return self;
 }
 
-- (id)expressionValueWithObject:(id)object context:(id)context
+- (id)expressionValueWithObject:(id)object context:(id)aContext
 {
-    var collection = [_collection expressionValueWithObject:object context:context],
-        count = [collection count],
+    var collection = [_collection expressionValueWithObject:object context:aContext],
         result = [CPArray array],
-        bindings = @{ [self variable]: [CPExpression expressionForEvaluatedObject] },
-        i = 0;
+        variable = [self variable],
+        context = aContext || @{};
 
-    for (; i < count; i++)
+    if ([context objectForKey:variable] == nil)
+        [context setObject:[CPExpression expressionForEvaluatedObject] forKey:variable];
+
+    [collection enumerateObjectsUsingBlock:function(exp, idx, stop)
     {
-        var item = [collection objectAtIndex:i];
-        if ([_subpredicate evaluateWithObject:item substitutionVariables:bindings])
-            [result addObject:item];
-    }
+        if ([_subpredicate evaluateWithObject:exp substitutionVariables:context])
+            [result addObject:exp];
+    }];
 
     return result;
 }
@@ -79,19 +81,9 @@
     return YES;
 }
 
-- (CPExpression)collection
-{
-    return _collection;
-}
-
 - (id)copy
 {
     return [[_CPSubqueryExpression alloc] initWithExpression:[_collection copy] usingIteratorExpression:[_variableExpression copy] predicate:[_subpredicate copy]];
-}
-
-- (CPPredicate)predicate
-{
-    return _subpredicate;
 }
 
 - (CPString)description

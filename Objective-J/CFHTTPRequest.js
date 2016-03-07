@@ -104,7 +104,8 @@ GLOBAL(CFHTTPRequest) = function()
     this._nativeRequest = new NativeRequest();
 
     // by default, all requests will assume that credentials should not be sent.
-    this._nativeRequest.withCredentials = false;
+    this._withCredentials = false;
+    this._timeout = 60000;
 
     var self = this;
     this._stateChangeHandler = function()
@@ -217,12 +218,15 @@ CFHTTPRequest.prototype.getResponseHeader = function(/*String*/ aHeader)
 
 CFHTTPRequest.prototype.setTimeout = function(/*int*/ aTimeout)
 {
-    this._nativeRequest.timeout = aTimeout;
+    this._timeout = aTimeout;
+
+    if (this._isOpen)
+        this._nativeRequest.timeout = aTimeout;
 };
 
 CFHTTPRequest.prototype.getTimeout = function(/*int*/ aTimeout)
 {
-    return this._nativeRequest.timeout;
+    return this._timeout;
 };
 
 CFHTTPRequest.prototype.getAllResponseHeaders = function()
@@ -237,13 +241,24 @@ CFHTTPRequest.prototype.overrideMimeType = function(/*String*/ aMimeType)
 
 CFHTTPRequest.prototype.open = function(/*String*/ aMethod, /*String*/ aURL, /*Boolean*/ isAsynchronous, /*String*/ aUser, /*String*/ aPassword)
 {
+    var retval;
+
     this._isOpen = true;
     this._URL = aURL;
     this._async = isAsynchronous;
     this._method = aMethod;
     this._user = aUser;
     this._password = aPassword;
-    return this._nativeRequest.open(aMethod, aURL, isAsynchronous, aUser, aPassword);
+
+    requestReturnValue = this._nativeRequest.open(aMethod, aURL, isAsynchronous, aUser, aPassword);
+
+    if (this._async)
+    {
+        this._nativeRequest.withCredentials = this._withCredentials;
+        this._nativeRequest.timeout = this._timeout;
+    }
+
+    return requestReturnValue;
 };
 
 CFHTTPRequest.prototype.send = function(/*Object*/ aBody)
@@ -283,6 +298,7 @@ CFHTTPRequest.prototype.send = function(/*Object*/ aBody)
 CFHTTPRequest.prototype.abort = function()
 {
     this._isOpen = false;
+
     return this._nativeRequest.abort();
 };
 
@@ -298,12 +314,15 @@ CFHTTPRequest.prototype.removeEventListener = function(/*String*/ anEventName, /
 
 CFHTTPRequest.prototype.setWithCredentials = function(/*Boolean*/ willSendWithCredentials)
 {
-    this._nativeRequest.withCredentials = willSendWithCredentials;
+    this._withCredentials = willSendWithCredentials;
+
+    if (this._isOpen && this._async)
+        this._nativeRequest.withCredentials = willSendWithCredentials;
 };
 
 CFHTTPRequest.prototype.withCredentials = function()
 {
-    return this._nativeRequest.withCredentials;
+    return this._withCredentials;
 };
 
 CFHTTPRequest.prototype.isTimeoutRequest = function()
@@ -320,7 +339,6 @@ function dispatchTimeoutHTTPRequestEvents(/*CFHTTPRequest*/ aRequest)
 function determineAndDispatchHTTPRequestEvents(/*CFHTTPRequest*/ aRequest)
 {
     var eventDispatcher = aRequest._eventDispatcher,
-        nativeRequest = aRequest._nativeRequest,
         readyStates = ["uninitialized", "loading", "loaded", "interactive", "complete"];
 
     eventDispatcher.dispatchEvent({ type:"readystatechange", request:aRequest});
@@ -336,7 +354,9 @@ function determineAndDispatchHTTPRequestEvents(/*CFHTTPRequest*/ aRequest)
         eventDispatcher.dispatchEvent({ type:readyStates[aRequest.readyState()], request:aRequest});
     }
     else
+    {
         eventDispatcher.dispatchEvent({ type:readyStates[aRequest.readyState()], request:aRequest});
+    }
 }
 
 function FileRequest(/*CFURL*/ aURL, onsuccess, onfailure, onprogress)
@@ -351,7 +371,7 @@ function FileRequest(/*CFURL*/ aURL, onsuccess, onfailure, onprogress)
     {
         var aFilePath = aURL.toString().substring(5),
             OS = require("os"),
-            gccFlags = require("objective-j").currentCompilerFlags(),
+            gccFlags = require("objective-j").currentGccCompilerFlags(),
             chunk,
             fileContents = "";
 
@@ -377,6 +397,7 @@ function FileRequest(/*CFURL*/ aURL, onsuccess, onfailure, onprogress)
         {
             onfailure({request: request});
         }
+
         return;
     }
 #endif

@@ -129,6 +129,33 @@ var DOMFixedWidthSpanElement    = nil,
     DOMMetricsDivElement.appendChild(DOMMetricsImgElement);
 }
 
++ (int)charPositionOfString:(CPString)aString withFont:(CPFont)aFont forPoint:(CGPoint)aPoint
+{
+    if (!aString)
+        return 0;
+
+    var position = 0,
+        stringLength = aString.length,
+        currentString = "";
+
+    for (var i = 0; i < stringLength; i++)
+    {
+        var lastChar = aString[i];
+
+        currentString += lastChar;
+
+        var sizeOfString = [self sizeOfString:currentString withFont:aFont forWidth:nil].width,
+            sizeLastChar = [self sizeOfString:lastChar withFont:aFont forWidth:nil].width;
+
+        if (sizeOfString - sizeLastChar / 2 < aPoint.x)
+            position++;
+        else
+            break;
+    }
+
+    return position;
+}
+
 + (CGSize)sizeOfString:(CPString)aString withFont:(CPFont)aFont forWidth:(float)aWidth
 {
     if (!DOMFixedWidthSpanElement)
