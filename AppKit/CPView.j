@@ -2684,20 +2684,23 @@ setBoundsOrigin:
     return _needsLayout;
 }
 
+- (void)layout
+{
+    _needsLayout = NO;
+
+    if (_viewClassFlags & CPViewHasCustomViewWillLayout)
+        [self viewWillLayout];
+
+    if (_viewClassFlags & CPViewHasCustomLayoutSubviews)
+        [self layoutSubviews];
+
+    [self viewDidLayout];
+}
+
 - (void)layoutIfNeeded
 {
     if (_needsLayout)
-    {
-        _needsLayout = NO;
-
-        if (_viewClassFlags & CPViewHasCustomViewWillLayout)
-            [self viewWillLayout];
-
-        if (_viewClassFlags & CPViewHasCustomLayoutSubviews)
-            [self layoutSubviews];
-
-        [self viewDidLayout];
-    }
+        [self layout];
 }
 
 /*!
