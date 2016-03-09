@@ -40,29 +40,32 @@
    //
    // [_textView setDelegate:self];
    //
-   //  /* build our menu */
-   //  var mainMenu = [CPApp mainMenu];
-   //
-   //  while ([mainMenu numberOfItems] > 0)
-   //      [mainMenu removeItemAtIndex:0];
-   //
-   //  var item = [mainMenu insertItemWithTitle:@"Edit" action:nil keyEquivalent:nil atIndex:0],
-   //      editMenu = [[CPMenu alloc] initWithTitle:@"Edit Menu"];
-   //
-   // [_textView2 insertText:"RTF goes here"];
-   //
-   //  [editMenu addItemWithTitle:@"Cut" action:@selector(cut:) keyEquivalent:@"x"];
-   //  [editMenu addItemWithTitle:@"Copy" action:@selector(copy:) keyEquivalent:@"c"];
-   //  [editMenu addItemWithTitle:@"Paste" action:@selector(paste:) keyEquivalent:@"v"];
-   //  [editMenu addItemWithTitle:@"Delete" action:@selector(delete:) keyEquivalent:@""];
-   //  [editMenu addItemWithTitle:@"Select All" action:@selector(selectAll:) keyEquivalent:@"a"];
-   //  [editMenu addItemWithTitle:@"Undo" action:@selector(undo:) keyEquivalent:@"z"];
-   //  [editMenu addItemWithTitle:@"Redo" action:@selector(redo:) keyEquivalent:@"Z"];
-   //
-   //  [mainMenu setSubmenu:editMenu forItem:item];
-   //
-   //  item = [mainMenu insertItemWithTitle:@"Font" action:@selector(orderFrontFontPanel:) keyEquivalent:nil atIndex:1];
-   //  item = [mainMenu insertItemWithTitle:@"RTFRoundtrip" action:@selector(makeRTF:) keyEquivalent:nil atIndex:1];
+   // build our menu
+   var mainMenu = [CPApp mainMenu];
+
+   while ([mainMenu numberOfItems] > 0)
+       [mainMenu removeItemAtIndex:0];
+
+   var item = [mainMenu insertItemWithTitle:@"Edit" action:nil keyEquivalent:nil atIndex:0],
+       editMenu = [[CPMenu alloc] initWithTitle:@"Edit Menu"];
+
+   [editMenu addItemWithTitle:@"Cut" action:@selector(cut:) keyEquivalent:@"x"];
+   [editMenu addItemWithTitle:@"Copy" action:@selector(copy:) keyEquivalent:@"c"];
+   [editMenu addItemWithTitle:@"Paste" action:@selector(paste:) keyEquivalent:@"v"];
+   [editMenu addItemWithTitle:@"Delete" action:@selector(delete:) keyEquivalent:@""];
+   [editMenu addItemWithTitle:@"Select All" action:@selector(selectAll:) keyEquivalent:@"a"];
+   [editMenu addItemWithTitle:@"Undo" action:@selector(undo:) keyEquivalent:@"z"];
+   [editMenu addItemWithTitle:@"Redo" action:@selector(redo:) keyEquivalent:@"Z"];
+
+   [mainMenu setSubmenu:editMenu forItem:item];
+
+   item = [mainMenu insertItemWithTitle:@"Format" action:nil keyEquivalent:nil atIndex:0];
+   var formatMenu = [[CPMenu alloc] initWithTitle:@"Format Menu"];
+
+   [formatMenu addItemWithTitle:@"Font panel" action:@selector(orderFrontFontPanel:) keyEquivalent:@"f"];
+
+   [mainMenu setSubmenu:formatMenu forItem:item];
+
    //
    //  var centeredParagraph=[CPParagraphStyle new];
    //  [centeredParagraph setAlignment: CPCenterTextAlignment];
