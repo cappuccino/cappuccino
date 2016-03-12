@@ -61,6 +61,7 @@
     [self setObjectValue:[cell objectValue]];
     [self setFont:[cell font]];
     [self setAlignment:[cell alignment]];
+    [self setBaseWritingDirection:[cell baseWritingDirection]];
     [self setContinuous:[cell isContinuous]];
     [self setLineBreakMode:[cell lineBreakMode]];
     [self setFormatter:[cell formatter]];

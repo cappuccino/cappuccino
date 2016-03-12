@@ -46,6 +46,7 @@
 @import "NSImageView.j"
 @import "NSLayoutConstraint.j"
 @import "NSLevelIndicator.j"
+@import "NSLocalizableString.j"
 @import "NSMatrix.j"
 @import "NSMenu.j"
 @import "NSMenuItem.j"
@@ -88,6 +89,8 @@
 @import "NSSortDescriptor.j"
 @import "NSPopover.j"
 @import "NSProgressIndicator.j"
+@import "NSAppearance.j"
+@import "NSVisualEffectView.j"
 
 
 function CP_NSMapClassName(aClassName)

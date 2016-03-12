@@ -1,0 +1,1 @@
+(object==null?null:(object.isa.method_msgSend["for:in:nil:"]||_objj_forward)(object,"for:in:nil:",a,b,nil));

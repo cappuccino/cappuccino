@@ -28,9 +28,9 @@
 
 @implementation _CPFunctionExpression : CPExpression
 {
-    CPExpression    _operand;
+    CPExpression    _operand @accessors(getter=operand);
     SEL             _selector;
-    CPArray         _arguments;
+    CPArray         _arguments @accessors(getter=arguments);
     int             _argc;
     int             _maxargs;
 }
@@ -88,16 +88,6 @@
     return [self _function];
 }
 
-- (CPArray)arguments
-{
-    return _arguments;
-}
-
-- (CPExpression)operand
-{
-    return _operand;
-}
-
 - (id)expressionValueWithObject:(id)object context:(CPDictionary)context
 {
     var target = [_operand expressionValueWithObject:object context:context],
@@ -143,11 +133,10 @@
 - (CPExpression)_expressionWithSubstitutionVariables:(CPDictionary)variables
 {
     var operand = [[self operand] _expressionWithSubstitutionVariables:variables],
-        args = [CPArray array],
-        i = 0;
-
-    for (; i < _argc; i++)
-        [args addObject:[_arguments[i] _expressionWithSubstitutionVariables:variables]];
+        args = [_arguments arrayByApplyingBlock:function(arg)
+        {
+            return [arg _expressionWithSubstitutionVariables:variables];
+        }];
 
     return [CPExpression expressionForFunction:operand selectorName:[self _function] arguments:args];
 }

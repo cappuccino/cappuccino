@@ -1,9 +1,6 @@
 @import <Foundation/Foundation.j>
 @import <AppKit/AppKit.j>
 
-[CPApplication sharedApplication];
-
-
 @implementation CPAutosizePerformance : OJTestCase
 {
     CPInteger NUMBER_OF_VIEWS;
@@ -12,6 +9,9 @@
 
 - (void)setUp
 {
+    // This will init the global var CPApp which are used internally in the AppKit
+    [[CPApplication alloc] init];
+
     NUMBER_OF_VIEWS = 50;
     RESIZES_COUNT = 250;
 }

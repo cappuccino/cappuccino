@@ -121,6 +121,8 @@ var PrimaryPlatformWindow   = NULL;
         _windowLayers = @{};
 
         _charCodes = {};
+
+        _platformPasteboard = [CPPlatformPasteboard new];
 #endif
     }
 
@@ -213,7 +215,7 @@ var PrimaryPlatformWindow   = NULL;
 - (BOOL)isVisible
 {
 #if PLATFORM(DOM)
-    return _DOMWindow !== NULL;
+    return _DOMWindow !== NULL && _DOMWindow !== undefined;
 #else
     return NO;
 #endif

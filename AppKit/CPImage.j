@@ -275,7 +275,7 @@ function CPAppKitImage(aFilename, aSize)
 */
 - (CGSize)size
 {
-    return _size;
+    return CGSizeMakeCopy(_size);
 }
 
 + (id)imageNamed:(CPString)aName

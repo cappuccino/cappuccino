@@ -72,7 +72,7 @@ var _CPCibClassSwapperClassNameKey          = @"_CPCibClassSwapperClassNameKey",
             {
                 // Switch to userland temporarily
                 self.isa = nsClass;
-                self = objj_msgSend(self, _cmd, aCoder);
+                self = nsClass.objj_msgSend1(self, _cmd, aCoder);
                 self.isa = swapperClass;
             }
             else
@@ -100,7 +100,7 @@ var _CPCibClassSwapperClassNameKey          = @"_CPCibClassSwapperClassNameKey",
             {
                 // Switch to userland temporarily
                 self.isa = nsClass;
-                objj_msgSend(self, _cmd, aCoder);
+                nsClass.objj_msgSend1(self, _cmd, aCoder);
                 self.isa = swapperClass;
             }
             else
@@ -110,7 +110,7 @@ var _CPCibClassSwapperClassNameKey          = @"_CPCibClassSwapperClassNameKey",
             // the correct class is swapped during unarchiving.
             if (nsClass)
             {
-                var classForArchiver = objj_msgSend(nsClass, "classForKeyedArchiver");
+                var classForArchiver = [nsClass classForKeyedArchiver];
 
                 if (classForArchiver)
                     aClassName = [classForArchiver className];

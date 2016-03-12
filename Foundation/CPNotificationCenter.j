@@ -25,6 +25,8 @@
 @import "CPException.j"
 @import "CPNotification.j"
 @import "CPNull.j"
+@import "CPOperationQueue.j"
+@import "CPOperation.j"
 @import "CPSet.j"
 
 @class _CPNotificationRegistry
@@ -94,13 +96,13 @@ var CPNotificationDefaultCenter = nil;
     Adds an entry to the receiver’s dispatch table with a block, and optional criteria: notification name and sender.
     @param aNotificationName the name of the notification the observer wants to watch
     @param anObject the object in the notification the observer wants to watch
-    @param queue is ignored for the moment
+    @param The operation queue to which block should be added. If you pass nil, the block is run synchronously on the posting thread.
     @param block the block to be executed when the notification is received.
 */
-- (id <CPObject>)addObserverForName:(CPString)aNotificationName object:(id)anObject queue:(id)queue usingBlock:(Function)block
+- (id <CPObject>)addObserverForName:(CPString)aNotificationName object:(id)anObject queue:(CPOperationQueue)queue usingBlock:(Function)block
 {
     var registry = [self _registryForNotificationName:aNotificationName],
-        observer = [[_CPNotificationObserver alloc] initWithBlock:block];
+        observer = [[_CPNotificationObserver alloc] initWithBlock:block queue:queue];
 
     [registry addObserver:observer object:anObject];
 
@@ -344,9 +346,10 @@ var _CPNotificationCenterPostNotification = function(/* CPNotificationCenter */ 
 /* @ignore */
 @implementation _CPNotificationObserver : CPObject
 {
-    id          _observer;
-    Function    _block;
-    SEL         _selector;
+    CPOperationQueue    _operationQueue;
+    id                  _observer;
+    Function            _block;
+    SEL                 _selector;
 }
 
 - (id)initWithObserver:(id)anObserver selector:(SEL)aSelector
@@ -360,11 +363,12 @@ var _CPNotificationCenterPostNotification = function(/* CPNotificationCenter */ 
    return self;
 }
 
-- (id)initWithBlock:(Function)aBlock
+- (id)initWithBlock:(Function)aBlock queue:(CPOperationQueue)aQueue
 {
     if (self)
     {
         _block = aBlock;
+        _operationQueue = aQueue;
     }
 
     return self;
@@ -384,11 +388,50 @@ var _CPNotificationCenterPostNotification = function(/* CPNotificationCenter */ 
 {
     if (_block)
     {
-        _block(aNotification);
+        if (!_operationQueue)
+            _block(aNotification);
+        else
+            [_operationQueue addOperation:[[_CPNotificationObserverOperation alloc] initWithBlock:_block notification:aNotification]];
+
         return;
     }
 
     [_observer performSelector:_selector withObject:aNotification];
+}
+
+@end
+
+/* @ignore */
+@implementation _CPNotificationObserverOperation : CPOperation
+{
+    CPNotification      _notification;
+    Function            _block;
+}
+
+/* @ignore */
+- (id)initWithBlock:(Function)aBlock notification:(CPNotification)aNotification
+{
+    self = [super init];
+
+    if (self)
+    {
+        _block = aBlock;
+        _notification = aNotification;
+    }
+
+    return self;
+}
+
+/* @ignore */
+- (void)main
+{
+    _block(_notification);
+}
+
+/* @ignore */
+- (BOOL)isReady
+{
+    return YES;
 }
 
 @end

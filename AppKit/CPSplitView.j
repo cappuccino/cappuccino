@@ -26,6 +26,7 @@
 @import "CPImage.j"
 @import "CPView.j"
 @import "CPCursor.j"
+@import "CPTrackingArea.j"
 
 @class CPUserDefaults
 @global CPApp
@@ -560,26 +561,6 @@ var ShouldSuppressResizeNotifications   = 1,
 {
     // Enable split view resize cursors. Commented out pending CPTrackingArea implementation.
     //[[self window] setAcceptsMouseMovedEvents:YES];
-}
-
-- (void)mouseEntered:(CPEvent)anEvent
-{
-    // Tracking code handles cursor by itself.
-    if (_currentDivider == CPNotFound)
-        [self _updateResizeCursor:anEvent];
-}
-
-- (void)mouseMoved:(CPEvent)anEvent
-{
-    if (_currentDivider == CPNotFound)
-        [self _updateResizeCursor:anEvent];
-}
-
-- (void)mouseExited:(CPEvent)anEvent
-{
-    if (_currentDivider == CPNotFound)
-        // FIXME: we should use CPCursor push/pop (if previous currentCursor != arrow).
-        [[CPCursor arrowCursor] set];
 }
 
 - (void)_updateResizeCursor:(CPEvent)anEvent
@@ -1205,6 +1186,29 @@ The sum of the views and the sum of the dividers should be equal to the size of 
 
 @end
 
+@implementation CPSplitView (CPTrackingArea)
+
+- (void)updateTrackingAreas
+{
+    [self removeAllTrackingAreas];
+
+    var options = CPTrackingCursorUpdate | CPTrackingActiveInKeyWindow;
+    
+    for (var i = 0; i < _subviews.length - 1; i++)
+        [self addTrackingArea:[[CPTrackingArea alloc] initWithRect:[self effectiveRectOfDividerAtIndex:i]
+                                                           options:options
+                                                             owner:self
+                                                          userInfo:nil]];
+}
+
+- (void)cursorUpdate:(CPEvent)anEvent
+{
+    if (_currentDivider === CPNotFound)
+        [self _updateResizeCursor:anEvent];
+}
+
+@end
+
 
 @implementation CPSplitView (CPSplitViewDelegate)
 
@@ -1376,6 +1380,8 @@ The sum of the views and the sum of the dividers should be equal to the size of 
         [_delegate splitViewDidResizeSubviews:[[CPNotification alloc] initWithName:CPSplitViewDidResizeSubviewsNotification object:self userInfo:userInfo]];
 
     [[CPNotificationCenter defaultCenter] postNotificationName:CPSplitViewDidResizeSubviewsNotification object:self userInfo:userInfo];
+
+    [self updateTrackingAreas];
 }
 
 @end

@@ -605,11 +605,11 @@
     }
     if ([self scanPredicateKeyword:@"TRUE"] || [self scanPredicateKeyword:@"YES"])
     {
-        return [CPExpression expressionForConstantValue:[CPNumber numberWithBool:YES]];
+        return [CPExpression expressionForConstantValue:YES];
     }
     if ([self scanPredicateKeyword:@"FALSE"] || [self scanPredicateKeyword:@"NO"])
     {
-        return [CPExpression expressionForConstantValue:[CPNumber numberWithBool:NO]];
+        return [CPExpression expressionForConstantValue:NO];
     }
     if ([self scanPredicateKeyword:@"SELF"])
     {
@@ -744,16 +744,43 @@
 
         if (![self scanString:@"," intoString:NULL])
             CPRaiseParseError(self, @"expression");
+
         variableExpression = [self parseExpression];
 
         if (![self scanString:@"," intoString:NULL])
             CPRaiseParseError(self, @"expression");
+
         subpredicate = [self parsePredicate];
+
+        if (![self scanString:@")" intoString:NULL])
+            CPRaiseParseError(self, @"predicate");
+
+        return [[_CPSubqueryExpression alloc] initWithExpression:collection usingIteratorExpression:variableExpression predicate:subpredicate];
+    }
+
+    if ([self scanString:@"TERNARY" intoString:NULL])
+    {
+        if (![self scanString:@"(" intoString:NULL])
+            CPRaiseParseError(self, @"expression");
+
+        var predicate = [self parsePredicate],
+            trueExpression,
+            falseExpression;
+
+        if (![self scanString:@"," intoString:NULL])
+            CPRaiseParseError(self, @"predicate");
+
+        trueExpression = [self parseExpression];
+
+        if (![self scanString:@"," intoString:NULL])
+            CPRaiseParseError(self, @"expression");
+
+        falseExpression = [self parseExpression];
 
         if (![self scanString:@")" intoString:NULL])
             CPRaiseParseError(self, @"expression");
 
-        return [[_CPSubqueryExpression alloc] initWithExpression:collection usingIteratorExpression:variableExpression predicate:subpredicate];
+        return [CPExpression expressionForConditional:predicate trueExpression:trueExpression falseExpression:falseExpression];
     }
 
     if ([self scanString:@"FUNCTION" intoString:NULL])

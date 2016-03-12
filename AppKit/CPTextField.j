@@ -34,7 +34,6 @@
 @global CPStringPboardType
 @global CPCursor
 
-
 @protocol CPTextFieldDelegate <CPControlTextEditingDelegate>
 
 @end
@@ -66,10 +65,10 @@ var CPTextFieldDOMCurrentElement = nil,
     CPTextFieldCachedSelectStartFunction = nil,
     CPTextFieldCachedDragFunction = nil,
     CPTextFieldBlurHandler = nil,
-    CPTextFieldInputFunction = nil;
+    CPTextFieldInputFunction = nil,
+    CPTexFieldCurrentCSSSelectableField = nil;
 
 var CPSecureTextFieldCharacter = "\u2022";
-
 
 function CPTextFieldBlurFunction(anEvent, owner, domElement, inputElement, resigning, didBlurRef)
 {
@@ -87,7 +86,7 @@ function CPTextFieldBlurFunction(anEvent, owner, domElement, inputElement, resig
         */
         if ([owner _isWithinUsablePlatformRect])
         {
-            window.setTimeout(function()
+            [[CPRunLoop mainRunLoop] performBlock:function()
             {
                 // This will prevent to jump to the focused element
                 var previousScrollingOrigin = [owner _scrollToVisibleRectAndReturnPreviousOrigin];
@@ -95,7 +94,8 @@ function CPTextFieldBlurFunction(anEvent, owner, domElement, inputElement, resig
                 inputElement.focus();
 
                 [owner _restorePreviousScrollingOrigin:previousScrollingOrigin];
-            }, 0.0);
+            } 
+            argument:nil order:0 modes:[CPDefaultRunLoopMode]];
         }
     }
 
@@ -376,7 +376,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
         _sendActionOn = CPKeyUpMask | CPKeyDownMask;
 
-        [self setValue:CPLeftTextAlignment forThemeAttribute:@"alignment"];
+        [self setValue:CPNaturalTextAlignment forThemeAttribute:@"alignment"];
     }
 
     return self;
@@ -671,11 +671,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     CPTextFieldInputOwner = self;
 
-    window.setTimeout(function()
+    [[CPRunLoop mainRunLoop] performBlock:function()
     {
-        /*
-            setTimeout handlers are not guaranteed to fire in the order they were initiated. This can cause a race condition when several windows with text fields are opened quickly, resulting in several instances of this timeout function being fired, perhaps out of order. So we have to check that by the time this function is fired, CPTextFieldInputOwner has not been changed to another text field in the meantime.
-        */
         if (CPTextFieldInputOwner !== self)
             return;
 
@@ -688,16 +685,40 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
         // Select the text if the textfield became first responder through keyboard interaction
         if (!_willBecomeFirstResponderByClick)
+        {
             [self _selectText:self immediately:YES];
+        }
+        else
+        {
+            var point = CGPointMake([self convertPointFromBase:[[CPApp currentEvent] locationInWindow]].x - [self currentValueForThemeAttribute:@"content-inset"].left, 0),
+                position = [CPPlatformString charPositionOfString:[self stringValue] withFont:[self font] forPoint:point];
+
+            [self setSelectedRange:CPMakeRange(position, 0)];
+        }
 
         _willBecomeFirstResponderByClick = NO;
 
         [self textDidFocus:[CPNotification notificationWithName:CPTextFieldDidFocusNotification object:self userInfo:nil]];
-    }, 0.0);
+    } argument:nil order:0 modes:[CPDefaultRunLoopMode]];
 
 #endif
 
     return YES;
+}
+
+/*!
+    Set the selection css style for the DOM element of the textField
+    @ignore
+*/
+- (void)_setEnableCSSSelection:(BOOL)shouldEnable
+{
+#if PLATFORM (DOM)
+    if (CPTexFieldCurrentCSSSelectableField)
+        CPTexFieldCurrentCSSSelectableField._DOMElement.style[CPBrowserStyleProperty(@"user-select")] = @"none";
+
+    CPTexFieldCurrentCSSSelectableField = self;
+    _DOMElement.style[CPBrowserStyleProperty(@"user-select")] = shouldEnable ? @"text" : @"none";
+#endif
 }
 
 /*!
@@ -751,6 +772,10 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
         case CPRightTextAlignment:
             element.style.textAlign = "right";
+            break;
+
+        case CPNaturalTextAlignment:
+            element.style.textAlign = "";
             break;
 
         default:
@@ -814,6 +839,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [self _resignFirstKeyResponder];
 
     _isEditing = NO;
+    
     if ([self isEditable])
     {
         [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:self userInfo:@{"CPTextMovement": [self _currentTextMovement]}]];
@@ -989,6 +1015,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     }
     else if ([self isSelectable])
     {
+        [self _setEnableCSSSelection:YES];
         if (document.attachEvent)
         {
             CPTextFieldCachedSelectStartFunction = [[self window] platformWindow]._DOMBodyElement.onselectstart;
@@ -1028,6 +1055,14 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
         return [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:YES];
     }
+}
+
+- (void)rightMouseDown:(CPEvent)anEvent
+{
+    if ([self menuForEvent:anEvent] || [[self nextResponder] isKindOfClass:CPView])
+        [super rightMouseDown:anEvent];
+    else
+        [[[anEvent window] platformWindow] _propagateContextMenuDOMEvent:YES];
 }
 
 - (void)mouseDragged:(CPEvent)anEvent
@@ -1180,7 +1215,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 - (void)textDidFocus:(CPNotification)note
 {
     // this looks to prevent false propagation of notifications for other objects
-    if ([note object] != self)
+    if ([note object] !== self)
         return;
 
     if (_implementedDelegateMethods & CPTextFieldDelegate_controlTextDidFocus_)
@@ -1482,7 +1517,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
                 if (immediately)
                     element.select();
                 else
-                    window.setTimeout(function() { element.select(); }, 0);
+                    [[CPRunLoop mainRunLoop] performBlock:function(){ element.select(); } argument:nil order:0 modes:[CPDefaultRunLoopMode]];
             }
             else if (wind !== nil && [wind makeFirstResponder:self])
                 [self _selectText:sender immediately:immediately];

@@ -579,4 +579,17 @@
     [self assert:[@"Å Ã Ê í ö û" stripDiacritics]  equals:@"A A E i o u"];
 }
 
+- (void)testStringByReplacingCharactersInRange
+{
+    var testString = @"testString";
+
+    [self assert:[testString stringByReplacingCharactersInRange:CPMakeRange(0, 0) withString:@"NewCharacters"] equals:@"NewCharacterstestString"];
+    [self assert:[testString stringByReplacingCharactersInRange:CPMakeRange(0, 10) withString:@"NewCharacters"] equals:@"NewCharacters"];
+    [self assert:[testString stringByReplacingCharactersInRange:CPMakeRange(0, 1) withString:@"NewCharacters"] equals:@"NewCharactersestString"];
+    [self assert:[testString stringByReplacingCharactersInRange:CPMakeRange(1, 0) withString:@"NewCharacters"] equals:@"tNewCharactersestString"];
+    [self assert:[testString stringByReplacingCharactersInRange:CPMakeRange(5, 0) withString:@"NewCharacters"] equals:@"testSNewCharacterstring"];
+    [self assert:[testString stringByReplacingCharactersInRange:CPMakeRange(5, 5) withString:@"NewCharacters"] equals:@"testSNewCharacters"];
+    [self assert:[testString stringByReplacingCharactersInRange:CPMakeRange(9, 0) withString:@"NewCharacters"] equals:@"testStrinNewCharactersg"];
+}
+
 @end

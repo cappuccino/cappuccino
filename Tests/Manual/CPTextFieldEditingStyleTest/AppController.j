@@ -13,6 +13,7 @@
 {
     @outlet CPWindow    theWindow;
     @outlet CPTextField textField;
+    @outlet CPTextField rightLeftTextField;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification

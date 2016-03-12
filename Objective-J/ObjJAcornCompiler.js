@@ -365,8 +365,6 @@ var MethodDef = function(name, types)
     this.types = types;
 }
 
-var currentCompilerFlags = "";
-
 var reservedIdentifiers = exports.acorn.makePredicate("self _cmd undefined localStorage arguments");
 
 var wordPrefixOperators = exports.acorn.makePredicate("delete in instanceof new typeof void");
@@ -394,24 +392,45 @@ var ObjJAcornCompiler = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*
 #ifdef BROWSER
             console.log(message);
 #else
-            print(message);
+            if (exports.outputFormatInXML)
+            {
+                var dict = new CFMutableDictionary();
+                dict.addValueForKey('line', e.line);
+                dict.addValueForKey('sourcePath', this.URL.path());
+                dict.addValueForKey('message', message);
+
+                print(CFPropertyListCreateXMLData([dict], kCFPropertyListXMLFormat_v1_0).rawString());
+            }
+            else
+            {
+                print(message);
+            }
 #endif
         }
+
         throw e;
     }
 
     this.dependencies = [];
-    this.flags = flags | ObjJAcornCompiler.Flags.IncludeDebugSymbols;
+    this.flags = flags & (ObjJAcornCompiler.Flags.IncludeDebugSymbols | ObjJAcornCompiler.Flags.InlineMsgSend | ObjJAcornCompiler.Flags.IncludeTypeSignatures);
     this.classDefs = classDefs ? classDefs : Object.create(null);
     this.protocolDefs = protocolDefs ? protocolDefs : Object.create(null);
     this.typeDefs = typeDefs ? typeDefs : Object.create(null);
     this.lastPos = 0;
-    if (currentCompilerFlags & ObjJAcornCompiler.Flags.Generate)
-        this.generate = true;
-    this.generate = true;
+    this.generate = true;   // Before there was an option to generate the code or copy & paste it from the source. Today we always generate the code.
 
     compile(this.tokens, new Scope(null ,{ compiler: this }), pass === 2 ? pass2 : pass1);
 }
+
+ObjJAcornCompiler.Flags = { };
+
+ObjJAcornCompiler.Flags.IncludeDebugSymbols   = 1 << 0;
+ObjJAcornCompiler.Flags.IncludeTypeSignatures = 1 << 1;
+ObjJAcornCompiler.Flags.Generate              = 1 << 2;
+ObjJAcornCompiler.Flags.InlineMsgSend         = 1 << 3;
+
+var currentCompilerFlags = ObjJAcornCompiler.Flags.IncludeTypeSignatures;
+var currentGccCompilerFlags = "";
 
 exports.ObjJAcornCompiler = ObjJAcornCompiler;
 
@@ -434,6 +453,8 @@ exports.ObjJAcornCompiler.compileFileDependencies = function(/*String*/ aString,
 
 ObjJAcornCompiler.prototype.compilePass2 = function()
 {
+    var warnings = [];
+
     ObjJAcornCompiler.currentCompileFile = this.URL;
     this.pass = 2;
     this.jsBuffer = new StringBuffer();
@@ -442,19 +463,72 @@ ObjJAcornCompiler.prototype.compilePass2 = function()
     compile(this.tokens, new Scope(null ,{ compiler: this }), pass2);
     for (var i = 0; i < this.warnings.length; i++)
     {
-       var message = this.prettifyMessage(this.warnings[i], "WARNING");
+        var warning = this.warnings[i],
+            type = "WARNING";
+
+        var message = this.prettifyMessage(warning, type);
 #ifdef BROWSER
         console.log(message);
 #else
-        print(message);
+        if (exports.outputFormatInXML)
+        {
+            var dict = new CFMutableDictionary();
+            dict.addValueForKey('line', warning.line)
+            dict.addValueForKey('sourcePath', this.URL.path())
+            dict.addValueForKey('message', message)
+
+            warnings.push(dict);
+        }
+        else
+        {
+            print(message);
+        }
 #endif
     }
+
+    if (warnings.length && exports.outputFormatInXML)
+        print(CFPropertyListCreateXMLData(warnings, kCFPropertyListXMLFormat_v1_0).rawString());
 
     //print(this.URL + ": " + this.jsBuffer.toString());
     return this.jsBuffer.toString();
 }
 
-var currentCompilerFlags = "";
+exports.setCurrentGccCompilerFlags = function(/*String*/ compilerFlags)
+{
+    if (currentGccCompilerFlags === compilerFlags) return;
+
+    currentGccCompilerFlags = compilerFlags;
+
+    var args = compilerFlags.split(" "),
+        count = args.length,
+        objjcFlags = ObjJAcornCompiler.Flags.IncludeTypeSignatures;
+
+    for (var index = 0; index < count; ++index)
+    {
+        var argument = args[index];
+
+        if (argument.indexOf("-g") === 0)
+            objjcFlags |= ObjJAcornCompiler.Flags.IncludeDebugSymbols;
+        else if (argument.indexOf("-O") === 0) {
+            objjcFlags |= ObjJAcornCompiler.Flags.Compress;
+            // FIXME: currently we are sending in '-O2' when we want InlineMsgSend. Here we only check if it is '-O...'.
+            // Maybe we should have some other option for this
+            if (argument.length > 2)
+                objjcFlags |= ObjJAcornCompiler.Flags.InlineMsgSend;
+        }
+        else if (argument.indexOf("-G") === 0)
+            objjcFlags |= ObjJAcornCompiler.Flags.Generate;
+        else if (argument.indexOf("-T") === 0)
+            objjcFlags &= ~ObjJAcornCompiler.Flags.IncludeTypeSignatures;
+    }
+
+    currentCompilerFlags = objjcFlags;
+}
+
+exports.currentGccCompilerFlags = function(/*String*/ compilerFlags)
+{
+    return currentGccCompilerFlags;
+}
 
 exports.setCurrentCompilerFlags = function(/*String*/ compilerFlags)
 {
@@ -465,12 +539,6 @@ exports.currentCompilerFlags = function(/*String*/ compilerFlags)
 {
     return currentCompilerFlags;
 }
-
-ObjJAcornCompiler.Flags = { };
-
-ObjJAcornCompiler.Flags.IncludeDebugSymbols   = 1 << 0;
-ObjJAcornCompiler.Flags.IncludeTypeSignatures = 1 << 1;
-ObjJAcornCompiler.Flags.Generate              = 1 << 2;
 
 ObjJAcornCompiler.prototype.addWarning = function(/* Warning */ aWarning)
 {
@@ -660,9 +728,13 @@ ObjJAcornCompiler.prototype.prettifyMessage = function(/* Message */ aMessage, /
 ObjJAcornCompiler.prototype.error_message = function(errorMessage, node)
 {
     var pos = exports.acorn.getLineInfo(this.source, node.start),
-        syntaxError = {message: errorMessage, line: pos.line, column: pos.column, lineStart: pos.lineStart, lineEnd: pos.lineEnd};
+        syntaxErrorData = {message: errorMessage, line: pos.line, column: pos.column, lineStart: pos.lineStart, lineEnd: pos.lineEnd},
+        syntaxError = new SyntaxError(this.prettifyMessage(syntaxErrorData, "ERROR"));
 
-    return new SyntaxError(this.prettifyMessage(syntaxError, "ERROR"));
+    syntaxError.line = pos.line;
+    syntaxError.path = this.URL.path();
+
+    return syntaxError;
 }
 
 ObjJAcornCompiler.prototype.pushImport = function(url)
@@ -1589,64 +1661,170 @@ Literal: function(node, st, c) {
 },
 ArrayLiteral: function(node, st, c) {
     var compiler = st.compiler,
-        generate = compiler.generate;
+        generate = compiler.generate,
+        buffer = compiler.jsBuffer;
+
     if (!generate) {
-        compiler.jsBuffer.concat(compiler.source.substring(compiler.lastPos, node.start));
+        buffer.concat(compiler.source.substring(compiler.lastPos, node.start));
         compiler.lastPos = node.start;
     }
 
     if (!generate) buffer.concat(" "); // Add an extra space if it looks something like this: "return(<expression>)". No space between return and expression.
+    if (!st.receiverLevel) st.receiverLevel = 0;
     if (!node.elements.length) {
-        compiler.jsBuffer.concat("objj_msgSend(objj_msgSend(CPArray, \"alloc\"), \"init\")");
+        if (compiler.flags & ObjJAcornCompiler.Flags.InlineMsgSend) {
+            buffer.concat("(___r");
+            buffer.concat(++st.receiverLevel + "");
+            buffer.concat(" = (CPArray.isa.method_msgSend[\"alloc\"] || _objj_forward)(CPArray, \"alloc\"), ___r");
+            buffer.concat(st.receiverLevel + "");
+            buffer.concat(" == null ? null : (___r");
+            buffer.concat(st.receiverLevel + "");
+            buffer.concat(".isa.method_msgSend[\"init\"] || _objj_forward)(___r");
+            buffer.concat(st.receiverLevel + "");
+            buffer.concat(", \"init\"))");            
+        } else {
+            buffer.concat("(___r");
+            buffer.concat(++st.receiverLevel + "");
+            buffer.concat(" = CPArray.isa.objj_msgSend0(CPArray, \"alloc\"), ___r");
+            buffer.concat(st.receiverLevel + "");
+            buffer.concat(" == null ? null : ___r");
+            buffer.concat(st.receiverLevel + "");
+            buffer.concat(".isa.objj_msgSend0(___r");
+            buffer.concat(st.receiverLevel + "");
+            buffer.concat(", \"init\"))");
+        }
+
+        if (!(st.maxReceiverLevel >= st.receiverLevel))
+            st.maxReceiverLevel = st.receiverLevel;
     } else {
-        compiler.jsBuffer.concat("objj_msgSend(objj_msgSend(CPArray, \"alloc\"), \"initWithObjects:count:\", [");
+        if (compiler.flags & ObjJAcornCompiler.Flags.InlineMsgSend) {
+            buffer.concat("(___r");
+            buffer.concat(++st.receiverLevel + "");
+            buffer.concat(" = (CPArray.isa.method_msgSend[\"alloc\"] || _objj_forward)(CPArray, \"alloc\"), ___r");
+            buffer.concat(st.receiverLevel + "");
+            buffer.concat(" == null ? null : (___r");
+            buffer.concat(st.receiverLevel + "");
+            buffer.concat(".isa.method_msgSend[\"initWithObjects:count:\"] || _objj_forward)(___r");
+            buffer.concat(st.receiverLevel + "");
+            buffer.concat(", \"initWithObjects:count:\", [");
+        } else {
+            buffer.concat("(___r");
+            buffer.concat(++st.receiverLevel + "");
+            buffer.concat(" = CPArray.isa.objj_msgSend0(CPArray, \"alloc\"), ___r");
+            buffer.concat(st.receiverLevel + "");
+            buffer.concat(" == null ? null : ___r");
+            buffer.concat(st.receiverLevel + "");
+            buffer.concat(".isa.objj_msgSend2(___r");
+            buffer.concat(st.receiverLevel + "");
+            buffer.concat(", \"initWithObjects:count:\", [");
+        }
+
+        if (!(st.maxReceiverLevel >= st.receiverLevel))
+            st.maxReceiverLevel = st.receiverLevel;
+
         for (var i = 0; i < node.elements.length; i++) {
             var elt = node.elements[i];
 
             if (i)
-                compiler.jsBuffer.concat(", ");
+                buffer.concat(", ");
 
             if (!generate) compiler.lastPos = elt.start;
             c(elt, st, "Expression");
-            if (!generate) compiler.jsBuffer.concat(compiler.source.substring(compiler.lastPos, elt.end));
+            if (!generate) buffer.concat(compiler.source.substring(compiler.lastPos, elt.end));
         }
-        compiler.jsBuffer.concat("], " + node.elements.length + ")");
+        buffer.concat("], " + node.elements.length + "))");
     }
 
+    st.receiverLevel--;
     if (!generate) compiler.lastPos = node.end;
 },
 DictionaryLiteral: function(node, st, c) {
     var compiler = st.compiler,
-        generate = compiler.generate;
+        generate = compiler.generate,
+        buffer = compiler.jsBuffer,
+        noOfKeys = node.keys.length;
+
     if (!generate) {
-        compiler.jsBuffer.concat(compiler.source.substring(compiler.lastPos, node.start));
+        buffer.concat(compiler.source.substring(compiler.lastPos, node.start));
         compiler.lastPos = node.start;
     }
 
     if (!generate) buffer.concat(" "); // Add an extra space if it looks something like this: "return(<expression>)". No space between return and expression.
-    if (!node.keys.length) {
-        compiler.jsBuffer.concat("objj_msgSend(objj_msgSend(CPDictionary, \"alloc\"), \"init\")");
+    if (!st.receiverLevel) st.receiverLevel = 0;
+    if (!noOfKeys) {
+        if (compiler.flags & ObjJAcornCompiler.Flags.InlineMsgSend) {
+            buffer.concat("(___r");
+            buffer.concat(++st.receiverLevel + "");
+            buffer.concat(" = (CPDictionary.isa.method_msgSend[\"alloc\"] || _objj_forward)(CPDictionary, \"alloc\"), ___r");
+            buffer.concat(st.receiverLevel + "");
+            buffer.concat(" == null ? null : (___r");
+            buffer.concat(st.receiverLevel + "");
+            buffer.concat(".isa.method_msgSend[\"init\"] || _objj_forward)(___r");
+            buffer.concat(st.receiverLevel + "");
+            buffer.concat(", \"init\"))");
+        } else {
+            buffer.concat("(___r");
+            buffer.concat(++st.receiverLevel + "");
+            buffer.concat(" = CPDictionary.isa.objj_msgSend0(CPDictionary, \"alloc\"), ___r");
+            buffer.concat(st.receiverLevel + "");
+            buffer.concat(" == null ? null : ___r");
+            buffer.concat(st.receiverLevel + "");
+            buffer.concat(".isa.objj_msgSend0(___r");
+            buffer.concat(st.receiverLevel + "");
+            buffer.concat(", \"init\"))");
+        }
+
+        if (!(st.maxReceiverLevel >= st.receiverLevel))
+            st.maxReceiverLevel = st.receiverLevel;
     } else {
-        compiler.jsBuffer.concat("objj_msgSend(objj_msgSend(CPDictionary, \"alloc\"), \"initWithObjectsAndKeys:\"");
-        for (var i = 0; i < node.keys.length; i++) {
-            var key = node.keys[i],
-                value = node.values[i];
+        if (compiler.flags & ObjJAcornCompiler.Flags.InlineMsgSend) {
+            buffer.concat("(___r");
+            buffer.concat(++st.receiverLevel + "");
+            buffer.concat(" = (CPDictionary.isa.method_msgSend[\"alloc\"] || _objj_forward)(CPDictionary, \"alloc\"), ___r");
+            buffer.concat(st.receiverLevel + "");
+            buffer.concat(" == null ? null : (___r");
+            buffer.concat(st.receiverLevel + "");
+            buffer.concat(".isa.method_msgSend[\"initWithObjects:forKeys:\"] || _objj_forward)(___r");
+            buffer.concat(st.receiverLevel + "");
+            buffer.concat(", \"initWithObjects:forKeys:\", [");
+        } else {
+            buffer.concat("(___r");
+            buffer.concat(++st.receiverLevel + "");
+            buffer.concat(" = CPDictionary.isa.objj_msgSend0(CPDictionary, \"alloc\"), ___r");
+            buffer.concat(st.receiverLevel + "");
+            buffer.concat(" == null ? null : ___r");
+            buffer.concat(st.receiverLevel + "");
+            buffer.concat(".isa.objj_msgSend2(___r");
+            buffer.concat(st.receiverLevel + "");
+            buffer.concat(", \"initWithObjects:forKeys:\", [");
+        }
 
-            compiler.jsBuffer.concat(", ");
+        if (!(st.maxReceiverLevel >= st.receiverLevel))
+            st.maxReceiverLevel = st.receiverLevel;
 
+        for (var i = 0; i < noOfKeys; i++) {
+            var value = node.values[i];
+
+            if (i) buffer.concat(", ");
             if (!generate) compiler.lastPos = value.start;
             c(value, st, "Expression");
-            if (!generate) compiler.jsBuffer.concat(compiler.source.substring(compiler.lastPos, value.end));
+            if (!generate) buffer.concat(compiler.source.substring(compiler.lastPos, value.end));
+        }
 
-            compiler.jsBuffer.concat(", ");
+        buffer.concat("], [");
 
+        for (var i = 0; i < noOfKeys; i++) {
+            var key = node.keys[i];
+
+            if (i) buffer.concat(", ");
             if (!generate) compiler.lastPos = key.start;
             c(key, st, "Expression");
-            if (!generate) compiler.jsBuffer.concat(compiler.source.substring(compiler.lastPos, key.end));
+            if (!generate) buffer.concat(compiler.source.substring(compiler.lastPos, key.end));
         }
-        compiler.jsBuffer.concat(")");
+        buffer.concat("]))");
     }
 
+    st.receiverLevel--;
     if (!generate) compiler.lastPos = node.end;
 },
 ImportStatement: function(node, st, c) {
@@ -2147,7 +2325,7 @@ MethodDeclarationStatement: function(node, st, c) {
         compiler.jsBuffer.concat("Nil\n");
     }
 
-    if (compiler.flags & ObjJAcornCompiler.Flags.IncludeDebugSymbols)
+    if (compiler.flags & ObjJAcornCompiler.Flags.IncludeTypeSignatures)
         compiler.jsBuffer.concat(","+JSON.stringify(types));
 
     compiler.jsBuffer.concat(")");
@@ -2220,17 +2398,48 @@ MethodDeclarationStatement: function(node, st, c) {
 MessageSendExpression: function(node, st, c) {
     var compiler = st.compiler,
         generate = compiler.generate,
+        inlineMsgSend = compiler.flags & ObjJAcornCompiler.Flags.InlineMsgSend,
         buffer = compiler.jsBuffer,
-        nodeObject = node.object;
+        nodeObject = node.object,
+        selectors = node.selectors,
+        arguments = node.arguments,
+        argumentsLength = arguments.length,
+        firstSelector = selectors[0],
+        selector = firstSelector ? firstSelector.name : "";    // There is always at least one selector
+
+    // Put together the selector. Maybe this should be done in the parser...
+    for (var i = 0; i < argumentsLength; i++)
+        if (i === 0)
+            selector += ":";
+        else
+            selector += (selectors[i] ? selectors[i].name : "") + ":";
+
     if (!generate) {
         buffer.concat(compiler.source.substring(compiler.lastPos, node.start));
         compiler.lastPos = nodeObject ? nodeObject.start : node.arguments.length ? node.arguments[0].start : node.end;
+    } else if (!inlineMsgSend) {
+        // Find out the total number of arguments so we can choose appropriate msgSend function. Only needed if call the function and not inline it
+        var totalNoOfParameters = argumentsLength;
+
+        if (node.parameters)
+            totalNoOfParameters += node.parameters.length;
     }
     if (node.superObject)
     {
         if (!generate) buffer.concat(" "); // Add an extra space if it looks something like this: "return(<expression>)". No space between return and expression.
-        buffer.concat("objj_msgSendSuper(");
-        buffer.concat("{ receiver:self, super_class:" + (st.currentMethodType() === "+" ? compiler.currentSuperMetaClass : compiler.currentSuperClass ) + " }");
+        if (inlineMsgSend) {
+            buffer.concat("(");
+            buffer.concat(st.currentMethodType() === "+" ? compiler.currentSuperMetaClass : compiler.currentSuperClass);
+            buffer.concat(".method_dtable[\"");
+            buffer.concat(selector);
+            buffer.concat("\"] || _objj_forward)(self");
+        } else {
+            buffer.concat("objj_msgSendSuper");
+            if (totalNoOfParameters < 4) {
+                buffer.concat("" + totalNoOfParameters);
+            }
+            buffer.concat("({ receiver:self, super_class:" + (st.currentMethodType() === "+" ? compiler.currentSuperMetaClass : compiler.currentSuperClass ) + " }");
+        }
     }
     else
     {
@@ -2256,6 +2465,8 @@ MessageSendExpression: function(node, st, c) {
                     c(nodeObject, st, "Expression");
                     buffer.concat(" == null ? null : ");
                 }
+                if (inlineMsgSend)
+                    buffer.concat("(");
                 c(nodeObject, st, "Expression");
             } else {
                 receiverIsNotSelf = true;
@@ -2266,12 +2477,20 @@ MessageSendExpression: function(node, st, c) {
                 c(nodeObject, st, "Expression");
                 buffer.concat("), ___r");
                 buffer.concat(st.receiverLevel + "");
-                buffer.concat(" == null ? null : ___r");
+                buffer.concat(" == null ? null : ");
+                if (inlineMsgSend)
+                    buffer.concat("(");
+                buffer.concat("___r");
                 buffer.concat(st.receiverLevel + "");
                 if (!(st.maxReceiverLevel >= st.receiverLevel))
                     st.maxReceiverLevel = st.receiverLevel;
             }
-            buffer.concat(".isa.objj_msgSend");
+            if (inlineMsgSend) {
+                buffer.concat(".isa.method_msgSend[\"");
+                buffer.concat(selector);
+                buffer.concat("\"] || _objj_forward)");
+            } else
+                buffer.concat(".isa.objj_msgSend");
         } else {
             buffer.concat(" "); // Add an extra space if it looks something like this: "return(<expression>)". No space between return and expression.
             buffer.concat("objj_msgSend(");
@@ -2279,19 +2498,11 @@ MessageSendExpression: function(node, st, c) {
         }
     }
 
-    var selectors = node.selectors,
-        arguments = node.arguments,
-        argumentsLength = arguments.length,
-        firstSelector = selectors[0],
-        selector = firstSelector ? firstSelector.name : "";    // There is always at least one selector
-
     if (generate && !node.superObject) {
-        var totalNoOfParameters = argumentsLength;
-
-        if (node.parameters)
-            totalNoOfParameters += node.parameters.length;
-        if (totalNoOfParameters < 4) {
-            buffer.concat("" + totalNoOfParameters);
+        if (!inlineMsgSend) {
+            if (totalNoOfParameters < 4) {
+                buffer.concat("" + totalNoOfParameters);
+            }
         }
 
         if (receiverIsIdentifier) {
@@ -2302,13 +2513,6 @@ MessageSendExpression: function(node, st, c) {
             buffer.concat(st.receiverLevel + "");
         }
     }
-
-    // Put together the selector. Maybe this should be done in the parser...
-    for (var i = 0; i < argumentsLength; i++)
-        if (i === 0)
-            selector += ":";
-        else
-            selector += (selectors[i] ? selectors[i].name : "") + ":";
 
     buffer.concat(", \"");
     buffer.concat(selector); // FIXME: sel_getUid(selector + "") ? This FIXME is from the old preprocessor compiler

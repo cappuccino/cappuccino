@@ -32,6 +32,11 @@
 
         <script type="text/javascript">
             OBJJ_MAIN_FILE = "main.j";
+            // The below will tell the compiler to not generate debug symbols but will generate type signatures and inline objj_msgSend functions.
+            // This will affect only Objective-J code that is compiled when loading the application. It will not affect precompiled
+            // code like the Cappuccino frameworks.
+            // Uncomment or comment on the line below to change the flags
+            OBJJ_COMPILER_FLAGS = [/*"IncludeDebugSymbols"*/, "IncludeTypeSignatures", "InlineMsgSend"];
 
             var progressBar = null;
 

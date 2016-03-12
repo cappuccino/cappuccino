@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+ARGS=($@)
+
+echo "{"
+for ((i = 0; i < $#; i++)); do
+    BINARY=${ARGS[$i]}
+    LOCATION=`which $BINARY`
+
+    if [[ $? == 1 ]]; then
+        exit 1
+    fi
+
+    END=""
+
+    if [[ $i != $(( $# - 1 )) ]]; then
+        END=","
+    fi
+
+    echo "    \"$BINARY\": \"$LOCATION\"$END"
+done;
+echo "}"

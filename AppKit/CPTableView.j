@@ -644,12 +644,8 @@ NOT YET IMPLEMENTED
     }];
 }
 
-// Reloads the views AND the data
-- (void)_reloadDataViews
+- (void)_setupReload
 {
-    //if (!_dataSource)
-    //    return;
-
     _reloadAllRows = YES;
     _objectValues = { };
     _cachedRowHeights = [];
@@ -661,9 +657,22 @@ NOT YET IMPLEMENTED
 
     // This updates the size too.
     [self noteNumberOfRowsChanged];
+}
 
+// Reloads the views AND the data
+- (void)_reloadDataViews
+{
+    [self _setupReload];
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
+}
+
+// Reloads the views AND the data
+- (void)_reloadDataViewsSynchronously
+{
+    [self _setupReload];
+    [self layout];
+    [self display];
 }
 
 //Target-action Behavior
@@ -3593,6 +3602,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         [self setNeedsDisplay:YES];
     }
 
+    if (!_isViewBased)
+        [self _setEditingState:NO forView:dataView];
+
     [self _sendDelegateWillDisplayView:dataView forTableColumn:tableColumn row:row];
 
     return dataView;
@@ -3646,7 +3658,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     var view = nil;
 
     if (_viewForTableColumnRowSelector)
-        view = objj_msgSend(self, _viewForTableColumnRowSelector, aTableColumn, aRow);
+        view = self.isa.objj_msgSend2(self, _viewForTableColumnRowSelector, aTableColumn, aRow);
 
     if (!view)
     {
@@ -4208,7 +4220,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     while (count--)
     {
         var currentIndex = indexes[count],
-            rowRect = CGRectIntersection(objj_msgSend(self, rectSelector, currentIndex), aRect);
+            rowRect = CGRectIntersection(self.isa.objj_msgSend1(self, rectSelector, currentIndex), aRect);
 
         // group rows get the same highlight style as other rows if they're source list...
         if (!drawGradient)
@@ -4282,7 +4294,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     for (var i = 0; i < count2; i++)
     {
-         var rect = objj_msgSend(self, rectSelector, indexes[i]),
+         var rect = self.isa.objj_msgSend1(self, rectSelector, indexes[i]),
              minX = CGRectGetMinX(rect) - 0.5,
              maxX = CGRectGetMaxX(rect) - 0.5,
              minY = CGRectGetMinY(rect) - 0.5,
@@ -4677,7 +4689,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
                 {
                     if ([self _sendDelegateShouldEditTableColumn:column row:rowIndex])
                     {
-                        [self editColumn:columnIndex row:rowIndex withEvent:nil select:YES];
+                        [self editColumn:columnIndex row:rowIndex withEvent:[CPApp currentEvent] select:YES];
                         return;
                     }
                 }
@@ -5196,7 +5208,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         [self _notifyViewDidBecomeFirstResponder];
 
     // This is for cell-based tables only. In view-based mode, we do not change the textfield apprearence during an edit.
-    if (!_isViewBased && _editingRow !== CPNotFound && [responder isKindOfClass:[CPTextField class]] && [responder isEditable])
+    if (!_isViewBased && _editingRow !== CPNotFound && [responder isKindOfClass:[CPTextField class]] && [responder isEditable] && [responder superview] == self)
     {
         [responder setBezeled:YES];
         [self _registerForEndEditingNote:responder];
@@ -5300,6 +5312,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     if ([aView isKindOfClass:[CPTextField class]])
         [aView setBezeled:editingState];
 }
+
 /*!
     Edits the dataview at a given row and column. This method is usually invoked automatically and should rarely be invoked directly
     The row at supplied rowIndex must be selected otherwise an exception is thrown.
@@ -5314,11 +5327,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     if (![self isRowSelected:rowIndex])
         [[CPException exceptionWithName:@"Error" reason:@"Attempt to edit row " + rowIndex + " when not selected." userInfo:nil] raise];
 
-    [self reloadData];
-
-    // Process all events immediately to make sure table data views are reloaded.
-    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-
+    [self _reloadDataViewsSynchronously];
     [self scrollRowToVisible:rowIndex];
     [self scrollColumnToVisible:columnIndex];
 
@@ -6301,17 +6310,17 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
     var showCallback = function()
     {
-        objj_msgSend(self, "setHidden:", NO)
+        [self setHidden: NO];
         isBlinking = NO;
     };
 
     var hideCallback = function()
     {
-        objj_msgSend(self, "setHidden:", YES)
+        [self setHidden: YES];
         isBlinking = YES;
     };
 
-    objj_msgSend(self, "setHidden:", YES);
+    [self setHidden: YES];
     [CPTimer scheduledTimerWithTimeInterval:0.1 callback:showCallback repeats:NO];
     [CPTimer scheduledTimerWithTimeInterval:0.19 callback:hideCallback repeats:NO];
     [CPTimer scheduledTimerWithTimeInterval:0.27 callback:showCallback repeats:NO];
@@ -6391,23 +6400,18 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
 - (void)awakeFromCib
 {
+    [super awakeFromCib];
     [self setThemeState:CPThemeStateTableDataView];
 }
 
 - (BOOL)setThemeState:(ThemeState)aState
 {
-    if (aState.isa && [aState isKindOfClass:CPArray])
-        aState = CPThemeState.apply(null, aState);
-
     [super setThemeState:aState];
     [self recursivelyPerformSelector:@selector(setThemeState:) withObject:aState startingFrom:self];
 }
 
 - (BOOL)unsetThemeState:(ThemeState)aState
 {
-    if (aState.isa && [aState isKindOfClass:CPArray])
-        aState = CPThemeState.apply(null, aState);
-
     [super unsetThemeState:aState];
     [self recursivelyPerformSelector:@selector(unsetThemeState:) withObject:aState startingFrom:self];
 }

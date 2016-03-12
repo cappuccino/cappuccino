@@ -821,12 +821,12 @@ var bottomHeight = 71;
     else if (_modalDelegate)
     {
         if (_didEndSelector)
-            objj_msgSend(_modalDelegate, _didEndSelector, self, returnCode, contextInfo);
+            _modalDelegate.isa.objj_msgSend3(_modalDelegate, _didEndSelector, self, returnCode, contextInfo);
     }
     else if (_delegate)
     {
         if (_didEndSelector)
-            objj_msgSend(_delegate, _didEndSelector, self, returnCode);
+            _delegate.isa.objj_msgSend2(_delegate, _didEndSelector, self, returnCode);
         else
             [self _sendDelegateAlertDidEndReturnCode:returnCode];
     }

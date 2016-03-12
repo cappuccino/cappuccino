@@ -1,10 +1,8 @@
-
 @import <AppKit/CPMenu.j>
 @import <AppKit/CPMenuItem.j>
 @import <AppKit/CPApplication.j>
 @import <AppKit/CPText.j>
 
-[CPApplication sharedApplication]
 
 @implementation CPMenuTest : OJTestCase
 {
@@ -21,6 +19,9 @@
 
 - (void)setUp
 {
+    // This will init the global var CPApp which are used internally in the AppKit
+    [[CPApplication alloc] init];
+
     // Set up a fairly complete menu to have something to work with.
     menu = [[CPMenu alloc] initWithTitle:@"MainMenu"];
 

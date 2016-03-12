@@ -1,0 +1,120 @@
+#!/usr/bin/python
+
+import os
+import argparse
+
+ACTIVATE_SCRIPT = """
+capp_env_deactivate() {
+    if [ -n "$__OLD_PATH" ] ; then
+        PATH="$__OLD_PATH"
+        export PATH
+        unset __OLD_PATH
+    fi;
+
+    if [ -n "$__OLD_CAPP_BUILD" ] ; then
+        CAPP_BUILD="$__OLD_CAPP_BUILD"
+        export CAPP_BUILD
+        unset __OLD_CAPP_BUILD
+    fi;
+
+    if [ -n "$__OLD_PS1" ] ; then
+        PS1="$__OLD_PS1"
+        export PS1
+        unset __OLD_PS1
+    fi;
+
+    unset __VIRTUAL_ENV
+    if [ ! "$1" = "nondestructive" ] ; then
+        unset -f capp_env_deactivate
+    fi
+}
+
+capp_env_deactivate nondestructive
+
+__VIRTUAL_ENV="%s"
+__OLD_PATH="$PATH"
+__OLD_CAPP_BUILD="$CAPP_BUILD"
+__OLD_PS1="$PS1"
+
+CAPP_BUILD="$__VIRTUAL_ENV/build"
+export CAPP_BUILD
+
+PATH="$CAPP_BUILD/Debug/CommonJS/cappuccino/bin:$CAPP_BUILD/Debug/CommonJS/objective-j/bin/:$__VIRTUAL_ENV/narwhal/bin:$PATH"
+export PATH
+
+PS1="(`basename \"$__VIRTUAL_ENV\"`)$PS1"
+export PS1
+"""
+
+def exec_shell(command, error_message=None, expected=0):
+    """
+    Execute a shell command
+    """
+    ret = os.system(command)
+    if ret != expected:
+        if error_message:
+            raise Exception(error_message)
+        else:
+            raise Exception("Error during command %s. expected %d, got %d" % (command, expected, ret))
+
+
+def create_environment(env_path):
+    """
+    Create the base environement folder
+    """
+    if os.path.exists(env_path):
+        print "Path already exists. abort"
+        return
+    os.makedirs(env_path)
+    os.makedirs("%s/sources" % env_path)
+    os.makedirs("%s/build" % env_path)
+    os.makedirs("%s/bin" % env_path)
+
+
+def install_cappuccino_base(env_path):
+    """
+    Install latest version of Cappuccino Base
+    """
+    exec_shell("curl https://raw.githubusercontent.com/cappuccino/cappuccino/v0.9.7-1/bootstrap.sh >/tmp/cb.sh")
+    exec_shell("bash /tmp/cb.sh --directory '%s/narwhal' --noprompt" % (env_path))
+    exec_shell("rm /tmp/cb.sh")
+
+
+def install_activate(env_path):
+    """
+    Create the env/bin/activate script
+    """
+    absolute_path = os.path.abspath(env_path)
+    f = open("%s/bin/activate" % env_path, 'w')
+    f.write(ACTIVATE_SCRIPT % absolute_path)
+    f.close()
+    exec_shell("chmod u+x %s/bin/activate" % env_path)
+
+
+
+
+
+
+if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser(description="Virtual Env For Cappuccino.")
+
+    parser.add_argument('-p', "--path",
+                        dest="env_path",
+                        help="Path of the virtual environement",
+                        required=True,
+                        type=str)
+
+    parser.add_argument('-a', "--activate-only",
+                        dest="activate_only",
+                        help="Only reinstall the activate script",
+                        action="store_true")
+
+    args = parser.parse_args()
+
+    if args.activate_only:
+        install_activate(args.env_path)
+    else:
+        create_environment(args.env_path)
+        install_cappuccino_base(args.env_path)
+        install_activate(args.env_path)

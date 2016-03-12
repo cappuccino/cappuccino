@@ -4,8 +4,6 @@
 
 @import "CPNotificationCenterHelper.j"
 
-[CPApplication sharedApplication];
-
 @implementation CPComboBoxTest : OJTestCase
 {
     CPComboBox comboBox;
@@ -14,6 +12,9 @@
 
 - (void)setUp
 {
+    // This will init the global var CPApp which are used internally in the AppKit
+    [[CPApplication alloc] init];
+
     comboBox = [[CPComboBox alloc] initWithFrame:CGRectMake(0, 0, 200, 30)];
 }
 

@@ -1,8 +1,6 @@
 @import <Foundation/Foundation.j>
 @import <AppKit/AppKit.j>
 
-
-
 @implementation CPTabView (TEST)
 
 - (CPSegmentedControl)tabs
@@ -27,6 +25,9 @@
 
 - (void)setUp
 {
+    // This will init the global var CPApp which are used internally in the AppKit
+    [[CPApplication alloc] init];
+
     _tabView = [[CPTabView alloc] initWithFrame:CGRectMake(0, 0, 800, 600)];
 
     _tabItem1 = [[CPTabViewItem alloc] initWithIdentifier:@"id1"];
@@ -39,6 +40,8 @@
 
     [_tabView addTabViewItem:_tabItem1];
     [_tabView addTabViewItem:_tabItem2];
+
+    [[CPRunLoop currentRunLoop] performSelectors];
 }
 
 - (void)testCreate
@@ -91,6 +94,48 @@
 {
     [_tabView removeTabViewItem:_tabItem1];
     [self assertNull:[_tabItem1 tabView]];
+}
+
+- (void)testInsertTabViewItem
+{
+    [_tabView selectTabViewItem:_tabItem2];
+
+    [self assert:[_tabView numberOfTabViewItems] equals:2];
+    [self assert:[_tabView selectedTabViewItem] equals:_tabItem2];
+
+    var tabItem3 = [[CPTabViewItem alloc] initWithIdentifier:@"insert"];
+    [tabItem3 setLabel:@"insert"];
+    [_tabView insertTabViewItem:tabItem3 atIndex:0];
+
+    [self assert:[_tabView numberOfTabViewItems] equals:3];
+    [self assert:[_tabView selectedTabViewItem] equals:_tabItem2];
+    [self assert:[_tabView indexOfTabViewItem:tabItem3] equals:0];
+}
+
+- (void)testRemoveSelectedTabViewItem
+{
+    [_tabView selectTabViewItem:_tabItem2];
+
+    [self assert:[_tabView numberOfTabViewItems] equals:2];
+    [self assert:[_tabView selectedTabViewItem] equals:_tabItem2];
+
+    [_tabView removeTabViewItem:_tabItem2];
+
+    [self assert:[_tabView numberOfTabViewItems] equals:1];
+    [self assert:[_tabView selectedTabViewItem] equals:_tabItem1];
+}
+
+- (void)testRemoveSelectedFirstTabViewItem
+{
+    [_tabView selectTabViewItem:_tabItem1];
+
+    [self assert:[_tabView numberOfTabViewItems] equals:2];
+    [self assert:[_tabView selectedTabViewItem] equals:_tabItem1];
+
+    [_tabView removeTabViewItem:_tabItem1];
+
+    [self assert:[_tabView numberOfTabViewItems] equals:1];
+    [self assert:[_tabView selectedTabViewItem] equals:_tabItem2];
 }
 
 @end

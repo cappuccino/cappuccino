@@ -33,6 +33,18 @@
         <script type="text/javascript">
             OBJJ_MAIN_FILE = "main.j";
             OBJJ_INCLUDE_PATHS = ["Frameworks/Debug", "Frameworks"];
+            // The below will tell the compiler to generate debug symbols, type signatures and not inline objj_msgSend functions.
+            // This will affect only Objective-J code that is compiled when loading the application. It will not affect precompiled
+            // code like the Cappuccino frameworks.
+            //
+            // Debug symbols will give each Objective-J method a Javascript function name. Without a name it will be very hard to find
+            // the methods in the debugger.
+            // Type Signatures will give type information to the Objective-J runtime for instance variables and methods.
+            // Inline objj_msgSend will give a speed increase but decorators will not work. Check below on debug options for
+            // more information on decorators.
+            //
+            // Uncomment or comment on the line below to change the flags
+            OBJJ_COMPILER_FLAGS = ["IncludeDebugSymbols", "IncludeTypeSignatures"/*, "InlineMsgSend"*/];
 
             var progressBar = null;
 
@@ -62,6 +74,7 @@
             objj_msgSend_reset();
 
             // DEBUG OPTIONS:
+            // Decorators will only work when the code is compiled without the compiler option 'InlineMsgSend'. Check above.
 
             // Uncomment to enable printing of backtraces on exceptions:
             //objj_msgSend_decorate(objj_backtrace_decorator);

@@ -70,11 +70,12 @@ CPGradientDrawsAfterEndingLocation      = kCGGradientDrawsAfterEndLocation;
 {
     if (self = [super init])
     {
-        var cgColors = [],
-            count = [someColors count],
-            colorSpace = [aColorSpace CGColorSpace] || CGColorSpaceCreateDeviceRGB;
-        for (var i = 0; i < count; i++)
-            cgColors.push(CGColorCreate(colorSpace, [someColors[i] components]));
+        var colorSpace = [aColorSpace CGColorSpace] || CGColorSpaceCreateDeviceRGB,
+            cgColors = [someColors arrayByApplyingBlock:function(color)
+            {
+                return CGColorCreate(colorSpace, [color components])
+            }];
+
         _gradient = CGGradientCreateWithColors(colorSpace, cgColors, someLocations);
     }
 

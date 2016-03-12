@@ -384,6 +384,19 @@ var themedButtonValues = nil,
             "themedTokenFieldTokenCloseButton"];
 }
 
++ (CPColor)themedColor
+{
+    var color = [CPColor blackColor],
+        themedColorValues =
+    [
+        [@"alternate-selected-control-color", [[CPColor alloc] _initWithRGBA:[0.22, 0.46, 0.84, 1.0]]],
+        [@"secondary-selected-control-color", [[CPColor alloc] _initWithRGBA:[0.83, 0.83, 0.83, 1.0]]]
+    ];
+
+    [self registerThemeValues:themedColorValues forObject:color];
+
+    return color;
+}
 
 + (CPButton)makeButton
 {
@@ -2992,6 +3005,24 @@ var themedButtonValues = nil,
             [@"spinning-mini-gif", spinningMini],
             [@"spinning-small-gif", spinningSmall],
             [@"spinning-regular-gif", spinningRegular]
+        ];
+
+    [self registerThemeValues:themeValues forView:progressBar];
+
+    return progressBar;
+}
+
++ (CPProgressIndicator)themedCircularProgressIndicator
+{
+    var progressBar = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(0, 0, 32, 32)];
+    [progressBar setStyle:CPProgressIndicatorSpinningStyle];
+    [progressBar setIndeterminate:NO];
+
+    var themeValues =
+        [
+            [@"circular-border-color", [CPColor colorWithHexString:@"C7C7C7"]],
+            [@"circular-border-size", 1],
+            [@"circular-color", [CPColor colorWithHexString:@"89B5CD"]]
         ];
 
     [self registerThemeValues:themeValues forView:progressBar];

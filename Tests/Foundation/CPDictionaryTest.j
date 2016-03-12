@@ -49,6 +49,15 @@
     [self assert:[dict_cm count] equals:2];
 }
 
+- (void)testInitWithObjectsDuplicatedKeys
+{
+    var dict = [[CPDictionary alloc] initWithObjects:[@"1", @"2", @"Extra1"] forKeys:[@"key1", @"key2", @"key1"]];
+    // The first value for "key1" should be inte the dictionary to be compliant with Cocoa
+    [self assert:[dict objectForKey:@"key1"] equals:@"1"];
+    [self assert:[dict objectForKey:@"key2"] equals:@"2"];
+    [self assert:[dict count] equals:2];
+}
+
 - (void)testDictionaryWithObject
 {
     var dict = [CPDictionary dictionaryWithObject:@"1" forKey:@"key1"];
@@ -421,6 +430,17 @@
 {
     var dict = [[CPDictionary alloc] initWithObjectsAndKeys:@"Value1", @"Key1", @"Value3", @"Key3"];
 
+    [self assert:2 equals:[dict count]];
+    [self assert:@"Value1" equals:[dict objectForKey:@"Key1"]];
+    [self assert:nil equals:[dict objectForKey:@"Key2"]]; // No key/value pair
+    [self assert:@"Value3" equals:[dict objectForKey:@"Key3"]];
+}
+
+- (void)testInitWithObjectsAndKeysDuplicatedKeys
+{
+    var dict = [[CPDictionary alloc] initWithObjectsAndKeys:@"Value1", @"Key1", @"Value3", @"Key3", @"ExtraValue1", @"Key1"];
+
+    // The first value for "key1" should be inte the dictionary to be compliant with Cocoa
     [self assert:2 equals:[dict count]];
     [self assert:@"Value1" equals:[dict objectForKey:@"Key1"]];
     [self assert:nil equals:[dict objectForKey:@"Key2"]]; // No key/value pair

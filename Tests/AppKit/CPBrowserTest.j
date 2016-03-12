@@ -2,7 +2,6 @@
 
 @class CPBrowserDelegate
 
-
 @implementation CPBrowserTest : OJTestCase
 {
     CPBrowser   browser;
@@ -11,6 +10,9 @@
 
 - (void)setUp
 {
+    // This will init the global var CPApp which are used internally in the AppKit
+    [[CPApplication alloc] init];
+
     browser = [[CPBrowser alloc] initWithFrame:CGRectMake(0, 0, 500, 300)];
     delegate = [CPBrowserDelegate new];
     [delegate setEntries:[".1", ".1.1", ".1.2", ".1.2.1", ".1.2.2", ".2", ".3", ".3.1"]];

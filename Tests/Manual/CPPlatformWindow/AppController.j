@@ -27,6 +27,23 @@
     [theWindow setDelegate:self];
 }
 
+- (void)applicationWillTerminate:(CPApplication)sender
+{
+    CPLog.debug(@"applicationWillTerminate");
+}
+
+- (CPApplicationTerminateReply)applicationShouldTerminate:(CPApplication)sender
+{
+    CPLog.debug(@"applicationShouldTerminate");
+    return CPTerminateCancel;
+}
+
+- (CPString)applicationShouldTerminateMessage:(CPApplication)sender
+{
+    CPLog.debug(@"applicationShouldTerminate");
+    return @"Oula attention - achtung - carefull - you are about to reload";
+}
+
 - (void)awakeFromCib
 {
     // This is called when the cib is done loading.

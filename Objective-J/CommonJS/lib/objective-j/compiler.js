@@ -46,18 +46,39 @@ function compileWithResolvedFlags(aFilePath, objjcFlags, gccFlags, asPlainJavasc
 
     if (!shouldObjjPreprocess)
     {
-        if (OS.popen("which gcc").stdout.read().length === 0)
-            fileContents = FILE.read(aFilePath, { charset:"UTF-8" });
-        else
+        try
         {
-            // GCC preprocess the file.
-            var gcc = OS.popen("gcc -E -x c -P " + (gccFlags ? gccFlags.join(" ") : "") + " " + OS.enquote(aFilePath), { charset:"UTF-8" }),
-                chunk = "";
+            var p = OS.popen("which gcc");
 
-            while (chunk = gcc.stdout.read())
-                fileContents += chunk;
+            if (p.stdout.read().length === 0)
+            {
+                fileContents = FILE.read(aFilePath, { charset:"UTF-8" });
+            }
+            else
+            {
+                try
+                {
+                    var gcc = OS.popen("gcc -E -x c -P " + (gccFlags ? gccFlags.join(" ") : "") + " " + OS.enquote(aFilePath), { charset:"UTF-8" }),
+                        chunk = "";
 
+                    while (chunk = gcc.stdout.read())
+                        fileContents += chunk;
+                }
+                finally
+                {
+                    gcc.stdin.close();
+                    gcc.stdout.close();
+                    gcc.stderr.close();
+                }
+            }
         }
+        finally
+        {
+            p.stdin.close();
+            p.stdout.close();
+            p.stderr.close();
+        }
+
         return fileContents;
     }
 
@@ -166,13 +187,17 @@ function resolveFlags(args)
             objjcFlags &= ~ObjectiveJ.ObjJAcornCompiler.Flags.CheckSyntax;
 
         else if (argument.indexOf("-T") === 0)
-            objjcFlags |= ObjectiveJ.ObjJAcornCompiler.Flags.IncludeTypeSignatures;
+            objjcFlags &= ~ObjectiveJ.ObjJAcornCompiler.Flags.IncludeTypeSignatures;
 
         else if (argument.indexOf("-g") === 0)
             objjcFlags |= ObjectiveJ.ObjJAcornCompiler.Flags.IncludeDebugSymbols;
 
-        else if (argument.indexOf("-O") === 0)
+        else if (argument.indexOf("-O") === 0) {
             objjcFlags |= ObjectiveJ.ObjJAcornCompiler.Flags.Compress;
+            // FIXME: currently we are sending in '-O2' when we want InlineMsgSend. Here we only check if we it is '-O...'
+            if (argument.length > 2)
+                objjcFlags |= ObjectiveJ.ObjJAcornCompiler.Flags.InlineMsgSend;
+        }
 
         else if (argument.indexOf("-G") === 0)
             objjcFlags |= ObjectiveJ.ObjJAcornCompiler.Flags.Generate;
@@ -234,12 +259,16 @@ exports.main = function(args)
         if (argv[0] === "--help" || argv[0].substr(0, 1) == '-')
         {
             print("Usage (objjc 2.0): " + args[0] + " [options] [--] file...");
-            print("  -p, --print                    print the output directly to stdout");
-            print("  --unmarked                     don't tag the output with @STATIC header");
+            print("  -p, --print                         print the output directly to stdout");
+            print("  --unmarked                          don't tag the output with @STATIC header");
             print("");
-            print("  -T, --includeTypeSignatures    include type signatures in the compiled output");
+            print("  -T, --dont-include-type-signatures  include type signatures in the compiled output");
+            print("  -g, --include-debug-symbols         include debug symbols in the compiled output");
+            print("  -T, --include-type-signatures       include type signatures in the compiled output");
+            print("  -O, --compress                      compress the compiled output");
+            print("  -O2, --inline-msg-send              inline objj_msgSend function in the compiled output");
             print("");
-            print("  --help                         print this help");
+            print("  --help                              print this help");
             return;
         }
 

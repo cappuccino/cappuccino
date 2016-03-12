@@ -28,6 +28,7 @@
 @import <AppKit/CPButtonBar.j>
 @import <AppKit/CPCheckBox.j>
 @import <AppKit/CPComboBox.j>
+@import <AppKit/CPColor.j>
 @import <AppKit/CPColorWell.j>
 @import <AppKit/CPDatePicker.j>
 @import <AppKit/CPLevelIndicator.j>
@@ -96,7 +97,22 @@ var themedButtonValues = nil,
             "themedRuleEditor",
             "themedTableDataView",
             "themedCornerview",
-            "themedTokenFieldTokenCloseButton"];
+            "themedTokenFieldTokenCloseButton",
+            "themedColor"];
+}
+
++ (CPColor)themedColor
+{
+    var color = [CPColor redColor],
+        themedColorValues =
+    [
+        [@"alternate-selected-control-color", [[CPColor alloc] _initWithRGBA:[0.22, 0.46, 0.84, 1.0]]],
+        [@"secondary-selected-control-color", [[CPColor alloc] _initWithRGBA:[0.83, 0.83, 0.83, 1.0]]]
+    ];
+
+    [self registerThemeValues:themedColorValues forObject:color];
+
+    return color;
 }
 
 + (CPButton)makeButton
@@ -310,7 +326,7 @@ var themedButtonValues = nil,
     var button = [self button];
 
     [button setTitle:@"OK"];
-    [button setThemeState:[CPButtonStateBezelStyleRounded, CPThemeStateDefault]];
+    [button setThemeStates:[CPButtonStateBezelStyleRounded, CPThemeStateDefault]];
 
     return button;
 }
@@ -688,7 +704,8 @@ var themedButtonValues = nil,
         [@"text-color",         [CPColor blackColor],                                       [CPThemeStateTableDataView, CPThemeStateSelectedDataView, CPThemeStateEditable, CPThemeStateFirstResponder, CPThemeStateKeyWindow]],
         [@"content-inset",      CGInsetMake(7.0, 7.0, 5.0, 10.0),                           [CPThemeStateTableDataView, CPThemeStateEditable]],
         [@"font",               [CPFont systemFontOfSize:CPFontCurrentSystemSize],          [CPThemeStateTableDataView, CPThemeStateEditing]],
-        [@"bezel-inset",        CGInsetMake(-2.0, -2.0, -2.0, -2.0),                        [CPThemeStateTableDataView, CPThemeStateEditing]],
+        [@"bezel-inset",        CGInsetMake(-2.0, -2.0, -2.0, -2.0),                        [CPThemeStateTableDataView, CPThemeStateEditable, CPThemeStateEditing]],
+        [@"bezel-inset",        CGInsetMake(1.0, 1.0, 1.0, 1.0),                            [CPThemeStateTableDataView, CPThemeStateEditable]],
 
         [@"text-color",         [CPColor colorWithCalibratedWhite:125.0 / 255.0 alpha:1.0], [CPThemeStateTableDataView, CPThemeStateGroupRow]],
         [@"text-color",         [CPColor whiteColor],                                       [CPThemeStateTableDataView, CPThemeStateGroupRow, CPThemeStateSelectedDataView, CPThemeStateFirstResponder, CPThemeStateKeyWindow]],
@@ -2492,6 +2509,24 @@ var themedButtonValues = nil,
             [@"spinning-mini-gif", spinningMini],
             [@"spinning-small-gif", spinningSmall],
             [@"spinning-regular-gif", spinningRegular]
+        ];
+
+    [self registerThemeValues:themeValues forView:progressBar];
+
+    return progressBar;
+}
+
++ (CPProgressIndicator)themedCircularProgressIndicator
+{
+    var progressBar = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(0, 0, 32, 32)];
+    [progressBar setStyle:CPProgressIndicatorSpinningStyle];
+    [progressBar setIndeterminate:NO];
+
+    var themeValues =
+        [
+            [@"circular-border-color", [CPColor colorWithHexString:@"A0A0A0"]],
+            [@"circular-border-size", 1],
+            [@"circular-color", [CPColor colorWithHexString:@"5982DA"]]
         ];
 
     [self registerThemeValues:themeValues forView:progressBar];

@@ -35,9 +35,9 @@
 
         _type = flags & 0x7;
 
-        _items           = [aCoder decodeObjectForKey:@"NSTabViewItems"];
-        _selectedIndex   = [_items indexOfObject:[aCoder decodeObjectForKey:@"NSSelectedTabViewItem"]];
-        _font            = [aCoder decodeObjectForKey:@"NSFont"];
+        _items               = [aCoder decodeObjectForKey:@"NSTabViewItems"];
+        _selectedTabViewItem = [aCoder decodeObjectForKey:@"NSSelectedTabViewItem"];
+        _font                = [aCoder decodeObjectForKey:@"NSFont"];
 
         //_delegate               = [aCoder decodeObjectForKey:@""];
 

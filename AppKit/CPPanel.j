@@ -22,9 +22,12 @@
 
 @import "CPWindow.j"
 
+@global CPApp
 
 CPOKButton      = 1;
 CPCancelButton  = 0;
+
+CPDocModalWindowMask    = 1 << 6;
 
 /*!
     @ingroup appkit
@@ -51,8 +54,6 @@ CPCancelButton  = 0;
     @global
     @class CPWindow
 */
-CPDocModalWindowMask    = 1 << 6;
-
 @implementation CPPanel : CPWindow
 {
     BOOL    _becomesKeyOnlyIfNeeded;
