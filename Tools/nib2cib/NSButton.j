@@ -203,6 +203,7 @@ var NSButtonIsBorderedMask = 0x00800000,
     [self setImage:[cell normalImage]];
     [self setAlternateImage:alternateImage];
     [self setImagePosition:[cell imagePosition]];
+    [self setImageScaling:[cell imageScaling]];
 
     [self setEnabled:[cell isEnabled]];
 
@@ -417,8 +418,8 @@ var NSButtonIsBorderedMask = 0x00800000,
     CPImage     _alternateImage     @accessors(readonly, getter=alternateImage);
 
     BOOL        _allowsMixedState   @accessors(readonly, getter=allowsMixedState);
-    BOOL        _imagePosition      @accessors(readonly, getter=imagePosition);
-
+    int         _imagePosition      @accessors(readonly, getter=imagePosition);
+    int         _imageScaling       @accessors(readonly, getter=imageScaling);
     int         _highlightsBy       @accessors(readonly, getter=highlightsBy);
     int         _showsStateBy       @accessors(readonly, getter=showsStateBy);
 
@@ -439,6 +440,7 @@ var NSButtonIsBorderedMask = 0x00800000,
 
         _isBordered = (buttonFlags & NSButtonIsBorderedMask) ? YES : NO;
         _bezelStyle = (buttonFlags2 & 0x7) | ((buttonFlags2 & 0x20) >> 2);
+        _imageScaling = (((buttonFlags2 >> 6) & 0x3) + 2) % 4;
 
         // NSContents/NSAlternateContents for NSButton is actually the title/alternate title
         _title = [aCoder decodeObjectForKey:@"NSContents"];
