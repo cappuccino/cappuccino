@@ -256,6 +256,13 @@ FIXME: Do we need this?
     return self;
 }
 
+- (int)integerValue
+{
+    if (typeof self == "boolean")
+        return self ? 1 : 0;
+    return self;
+}
+
 - (long long)longLongValue
 {
     if (typeof self == "boolean")
