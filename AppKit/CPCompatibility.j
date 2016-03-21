@@ -116,7 +116,7 @@ if (typeof window !== "undefined" && window.opera)
 }
 
 // Internet Explorer
-else if (typeof window !== "undefined" && window.attachEvent) // Must follow Opera check.
+else if (typeof window !== "undefined" && (window.attachEvent || (!(window.ActiveXObject) && "ActiveXObject" in window))) // Must follow Opera check.
 {
     PLATFORM_ENGINE = CPInternetExplorerBrowserEngine;
 
