@@ -34,8 +34,7 @@ CPSearchFieldRecentsMenuItemTag         = 1001;
 CPSearchFieldClearRecentsMenuItemTag    = 1002;
 CPSearchFieldNoRecentsMenuItemTag       = 1003;
 
-var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotification",
-    RECENT_SEARCH_PREFIX = @"   ";
+var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotification";
 
 /*!
     @ingroup appkit
@@ -629,10 +628,10 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
 
                 for (var recentIndex = 0; recentIndex < countOfRecents; ++recentIndex)
                 {
-                    // RECENT_SEARCH_PREFIX is a hack until CPMenuItem -setIndentationLevel works
-                    var recentItem = [[CPMenuItem alloc] initWithTitle:RECENT_SEARCH_PREFIX + [_recentSearches objectAtIndex:recentIndex]
+                    var recentItem = [[CPMenuItem alloc] initWithTitle:[_recentSearches objectAtIndex:recentIndex]
                                                                  action:itemAction
                                                           keyEquivalent:[item keyEquivalent]];
+                    [recentItem setIndentationLevel:1];
                     [item setTarget:self];
                     [menu addItem:recentItem];
                 }
@@ -718,7 +717,7 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
 
 - (void)_searchFieldSearch:(id)sender
 {
-    var searchString = [[sender title] substringFromIndex:[RECENT_SEARCH_PREFIX length]];
+    var searchString = [sender title];
 
     if ([sender tag] != CPSearchFieldRecentsMenuItemTag)
         [self _addStringToRecentSearches:searchString];
