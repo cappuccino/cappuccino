@@ -149,9 +149,10 @@ var CPViewControllerCachedCibs;
 
     If you use Interface Builder to create your views, and you initialize the
     controller using the initWithCibName:bundle: methods, then you MUST NOT override
-    this method. The consequences risk shattering the space-time continuum.
-
-    Note: The cib loading system is currently synchronous.
+    this method.
+    
+    @note When using this method, the cib loading system is synchronous.
+    See the loadViewWithCompletionHandler: method for an asynchronous loading.
 */
 - (void)loadView
 {
@@ -174,6 +175,67 @@ var CPViewControllerCachedCibs;
     }
     else
         _view = [CPView new];
+}
+
+/*!
+    Loads asynchronously the cib and creates the view that the controller manages.
+    
+    @param aHandler A function passing the loaded view as the first argument
+    and a network error or nil as the second argument: function(view, error).
+    
+    @note If the view has already been loaded, the completion handler is run immediatly 
+    and the process is synchronous.
+*/
+- (void)loadViewWithCompletionHandler:(Function/*(view, error)*/)aHandler
+{
+    if (_view)
+        return;
+
+    if (_cibName)
+    {
+        // check if a cib is already cached for the current _cibName
+        var cib = [CPViewControllerCachedCibs objectForKey:_cibName];
+
+        if (!cib)
+        {
+            var cibName = _cibName;
+
+            if (![cibName hasSuffix:@".cib"])
+                cibName = [cibName stringByAppendingString:@".cib"];
+
+            // If aBundle is nil, use mainBundle, but ONLY for searching for the nib, not for resources later.
+            var bundle = _cibBundle || [CPBundle mainBundle],
+                url = [bundle _cibPathForResource:cibName];
+
+            // if the cib isn't cached yet : fetch it and cache it
+            [CPURLConnection sendAsynchronousRequest:[CPURLRequest requestWithURL:url] queue:[CPOperationQueue mainQueue] completionHandler:function(aResponse, aData, anError)
+            {
+                if (anError == nil)
+                {
+                    var data = [CPData dataWithRawString:aData],
+                        aCib = [[CPCib alloc] _initWithData:data bundle:_cibBundle cibName:_cibName];
+
+                    [CPViewControllerCachedCibs setObject:aCib forKey:_cibName];
+                    [aCib instantiateCibWithExternalNameTable:_cibExternalNameTable];
+                    aHandler(_view, nil);
+                }
+                else
+                {
+                    aHandler(nil, anError);
+                }
+            }];
+        }
+        else
+        {
+            [cib instantiateCibWithExternalNameTable:_cibExternalNameTable];
+            aHandler(_view, nil);
+        }
+    }
+    else
+    {
+        _view = [CPView new];
+        aHandler(_view, nil);
+    }
 }
 
 /*!
