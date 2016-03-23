@@ -239,6 +239,7 @@ FIXME: Do we need this?
 {
     if (typeof self == "boolean")
         return self ? 1 : 0;
+
     return self;
 }
 
@@ -246,6 +247,7 @@ FIXME: Do we need this?
 {
     if (typeof self == "boolean")
         return self ? 1 : 0;
+
     return self;
 }
 
@@ -253,6 +255,7 @@ FIXME: Do we need this?
 {
     if (typeof self == "boolean")
         return self ? 1 : 0;
+
     return self;
 }
 
@@ -260,6 +263,7 @@ FIXME: Do we need this?
 {
     if (typeof self == "boolean")
         return self ? 1 : 0;
+
     return self;
 }
 
@@ -267,6 +271,7 @@ FIXME: Do we need this?
 {
     if (typeof self == "boolean")
         return self ? 1 : 0;
+
     return self;
 }
 
@@ -274,6 +279,7 @@ FIXME: Do we need this?
 {
     if (typeof self == "boolean")
         return self ? 1 : 0;
+
     return self;
 }
 
@@ -281,6 +287,7 @@ FIXME: Do we need this?
 {
     if (typeof self == "boolean")
         return self ? 1 : 0;
+
     return self;
 }
 
@@ -298,6 +305,7 @@ FIXME: Do we need this?
 {
     if (typeof self == "boolean")
         return self ? 1 : 0;
+
     return self;
 }
 /*
@@ -311,6 +319,7 @@ FIXME: Do we need this?
 {
     if (typeof self == "boolean")
         return self ? 1 : 0;
+
     return self;
 }
 
@@ -318,6 +327,7 @@ FIXME: Do we need this?
 {
     if (typeof self == "boolean")
         return self ? 1 : 0;
+
     return self;
 }
 
