@@ -15,7 +15,7 @@
 - (void)testintValue
 {
     var testStrings = [
-            [090,   90],
+//            [090,   90],   // Removed cause Rhino does not support numbers starting with '0'
             [-1,    -1],
             [3.1415, 3],
             [2.7183, 2],
