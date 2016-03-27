@@ -732,6 +732,14 @@ var CPStringNull = [CPNull null];
 }
 
 /*!
+    Returns the text as an integer
+*/
+- (int)integerValue
+{
+    return parseInt(self, 10);
+}
+
+/*!
     Returns an the path components of this string. This
     method assumes that the string's content is a '/'
     separated file system path.
