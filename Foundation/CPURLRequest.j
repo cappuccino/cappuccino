@@ -97,6 +97,8 @@ CPURLRequestReturnCacheDataDontLoad = 3;
     {
         _cachePolicy = aCachePolicy;
         _timeoutInterval = aTimeoutInterval;
+        
+        [self _updateCacheControlHeader];
     }
 
     return self;
@@ -122,31 +124,8 @@ CPURLRequestReturnCacheDataDontLoad = 3;
         _cachePolicy = CPURLRequestUseProtocolCachePolicy;
 
         [self setValue:"Thu, 01 Jan 1970 00:00:00 GMT" forHTTPHeaderField:"If-Modified-Since"];
-
-        switch (_cachePolicy)
-        {
-            case CPURLRequestUseProtocolCachePolicy:
-                // TODO: implement everything about cache...
-                [self setValue:"no-cache" forHTTPHeaderField:"Cache-Control"];
-                break;
-
-            case CPURLRequestReturnCacheDataElseLoad:
-                [self setValue:"max-stale=31536000" forHTTPHeaderField:"Cache-Control"];
-                break;
-
-            case CPURLRequestReturnCacheDataDontLoad:
-                [self setValue:"only-if-cached" forHTTPHeaderField:"Cache-Control"];
-                break;
-
-            case CPURLRequestReloadIgnoringLocalCacheData:
-                [self setValue:"no-cache" forHTTPHeaderField:"Cache-Control"];
-                break;
-
-            default:
-                [self setValue:"no-cache" forHTTPHeaderField:"Cache-Control"];
-        }
-
         [self setValue:"XMLHttpRequest" forHTTPHeaderField:"X-Requested-With"];
+        [self _updateCacheControlHeader];
     }
 
     return self;
@@ -179,6 +158,35 @@ CPURLRequestReturnCacheDataDontLoad = 3;
 - (void)setValue:(CPString)aValue forHTTPHeaderField:(CPString)aField
 {
     [_HTTPHeaderFields setObject:aValue forKey:aField];
+}
+
+/*
+  @ignore
+*/
+- (void)_updateCacheControlHeader
+{
+    switch (_cachePolicy)
+    {
+      case CPURLRequestUseProtocolCachePolicy:
+          // TODO: implement everything about cache...
+          [self setValue:"no-cache" forHTTPHeaderField:"Cache-Control"];
+          break;
+
+      case CPURLRequestReturnCacheDataElseLoad:
+          [self setValue:"max-stale=31536000" forHTTPHeaderField:"Cache-Control"];
+          break;
+
+      case CPURLRequestReturnCacheDataDontLoad:
+          [self setValue:"only-if-cached" forHTTPHeaderField:"Cache-Control"];
+          break;
+
+      case CPURLRequestReloadIgnoringLocalCacheData:
+          [self setValue:"no-cache" forHTTPHeaderField:"Cache-Control"];
+          break;
+
+      default:
+          [self setValue:"no-cache" forHTTPHeaderField:"Cache-Control"];
+    }
 }
 
 @end
