@@ -81,10 +81,10 @@ task ("clean-sprites", function()
 
 task ("clobber-theme", function()
 {
-    var f = new FileList(FILE.join(SYSTEM.env.CAPP_BUILD, "**/Aristo.blend"), FILE.join(SYSTEM.env.CAPP_BUILD, "**/Aristo2.blend")),
+    var f = new FileList(FILE.join(SYSTEM.env.CAPP_BUILD, "**/Aristo.blend"), FILE.join(SYSTEM.env.CAPP_BUILD, "**/Aristo2.blend"), FILE.join(SYSTEM.env.CAPP_BUILD, "**/AristoFlat.blend")),
         paths = f.items();
 
-    f = new FileList(FILE.join(SYSTEM.env.CAPP_BUILD, "Aristo.build"), FILE.join(SYSTEM.env.CAPP_BUILD, "Aristo2.build"));
+    f = new FileList(FILE.join(SYSTEM.env.CAPP_BUILD, "Aristo.build"), FILE.join(SYSTEM.env.CAPP_BUILD, "Aristo2.build"),  FILE.join(SYSTEM.env.CAPP_BUILD, "AristoFlat.build"));
     paths = paths.concat(f.items());
 
     paths.forEach(function(path)
