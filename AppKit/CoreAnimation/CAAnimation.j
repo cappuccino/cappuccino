@@ -30,8 +30,10 @@
 */
 @implementation CAAnimation : CPObject
 {
-    BOOL    _isRemovedOnCompletion;
-    id      _delegate;
+    BOOL                    _isRemovedOnCompletion;
+    id                      _delegate;
+    CAMediaTimingFunction   _timingFunction @accessors(property=timingFunction);
+    double                  _duration @accessors(property=duration);
 }
 
 /*!
@@ -47,8 +49,10 @@
 {
     self = [super init];
 
-    if (self)
-        _isRemovedOnCompletion = YES;
+    _isRemovedOnCompletion = YES;
+    _timingFunction = nil;
+    _duration = 0.0;
+    _delegate = nil;
 
     return self;
 }
@@ -102,7 +106,7 @@
 - (CAMediaTimingFunction)timingFunction
 {
     // Linear Pacing
-    return nil;
+    return _timingFunction;
 }
 
 /*!
@@ -125,133 +129,6 @@
 - (void)runActionForKey:(CPString)aKey object:(id)anObject arguments:(CPDictionary)arguments
 {
     [anObject addAnimation:self forKey:aKey];
-}
-
-@end
-
-/*
-
-*/
-@implementation CAPropertyAnimation : CAAnimation
-{
-    CPString    _keyPath;
-
-    BOOL        _isCumulative;
-    BOOL        _isAdditive;
-}
-
-+ (id)animationWithKeyPath:(CPString)aKeyPath
-{
-    var animation = [self animation];
-
-    [animation setKeyPath:aKeyPath];
-
-    return animation;
-}
-
-- (void)setKeyPath:(CPString)aKeyPath
-{
-    _keyPath = aKeyPath;
-}
-
-- (CPString)keyPath
-{
-    return _keyPath;
-}
-
-- (void)setCumulative:(BOOL)isCumulative
-{
-    _isCumulative = isCumulative;
-}
-
-- (BOOL)cumulative
-{
-    return _isCumulative;
-}
-
-- (BOOL)isCumulative
-{
-    return _isCumulative;
-}
-
-- (void)setAdditive:(BOOL)isAdditive
-{
-    _isAdditive = isAdditive;
-}
-
-- (BOOL)additive
-{
-    return _isAdditive;
-}
-
-- (BOOL)isAdditive
-{
-    return _isAdditive;
-}
-
-@end
-
-/*!
-    A CABasicAnimation is a simple animation that moves a
-    CALayer from one point to another over a specified
-    period of time.
-*/
-@implementation CABasicAnimation : CAPropertyAnimation
-{
-    id  _fromValue;
-    id  _toValue;
-    id  _byValue;
-}
-
-/*!
-    Sets the starting position for the animation.
-    @param aValue the animation starting position
-*/
-- (void)setFromValue:(id)aValue
-{
-    _fromValue = aValue;
-}
-
-/*!
-    Returns the animation's starting position.
-*/
-- (id)fromValue
-{
-    return _fromValue;
-}
-
-/*!
-    Sets the ending position for the animation.
-    @param aValue the animation ending position
-*/
-- (void)setToValue:(id)aValue
-{
-    _toValue = aValue;
-}
-
-/*!
-    Returns the animation's ending position.
-*/
-- (id)toValue
-{
-    return _toValue;
-}
-
-/*!
-    Sets the optional byValue for animation interpolation.
-    @param aValue the byValue
-*/
-- (void)setByValue:(id)aValue
-{
-    _byValue = aValue;
-}
-
-/*!
-    Returns the animation's byValue.
-*/
-- (id)byValue
-{
-    return _byValue;
 }
 
 @end
