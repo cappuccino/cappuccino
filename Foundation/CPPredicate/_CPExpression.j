@@ -65,6 +65,14 @@ CPIntersectSetExpressionType    = 8;
     An expression that combines two nested expression results by set subtraction.
 */
 CPMinusSetExpressionType        = 9;
+/*!
+    An expression that returns the result of evaluating a block.
+*/
+CPBlockExpressionType           = 10;
+/*!
+    An expression that returns an expression that depends on the evaluation of a predicate.
+*/
+CPConditionalExpressionType     = 11;
 
 /*!
     @ingroup foundation
@@ -259,6 +267,32 @@ CPMinusSetExpressionType        = 9;
     return [[_CPSubqueryExpression alloc] initWithExpression:expression usingIteratorVariable:variable predicate:predicate];
 }
 
+/*!
+   Returns Creates an NSExpression object that will use the Block for evaluating objects.
+   @param aBlock The Block is applied to the object to be evaluated.
+
+The Block takes three arguments and returns a value:
+
+evaluatedObject
+The object to be evaluated.
+expressions
+An array of predicate expressions that evaluates to a collection.
+context
+A dictionary that the expression can use to store temporary state for one predicate evaluation.
+
+@discussion Note that context is mutable, and that it can only be accessed during the evaluation of the expression.
+@param arguments An array containing NSExpression objects that will be used as parameters during the invocation of the block.
+*/
++ (CPExpression)expressionForBlock:(Function)aBlock arguments:(CPArray)args
+{
+    return [[_CPBlockExpression alloc] initWithBlock:aBlock arguments:args];
+}
+
++ (CPExpression)expressionForConditional:(CPPredicate)aPredicate trueExpression:(CPExpression)trueExpression falseExpression:(CPExpression)falseExpression
+{
+    return [[_CPConditionalExpression alloc] initWithPredicate:aPredicate trueExpression:trueExpression falseExpression:falseExpression];
+}
+
 // Getting Information About an Expression
 /*!
     Returns the expression type for the receiver.
@@ -316,7 +350,7 @@ CPMinusSetExpressionType        = 9;
 
 /*!
     Returns the arguments for the receiver.
-    @return The arguments for the receiver—that is, the array of expressions that will be passed as parameters during invocation of the selector on the operand of a function expression.
+    @return The arguments for the receiver—that is, the array of expressions that will be passed as parameters during invocation of the selector on the operand of a function expression or as a parameter of the block of a block expression.
     This method raises an exception if it is not applicable to the receiver.
 */
 - (CPArray)arguments
@@ -337,8 +371,8 @@ CPMinusSetExpressionType        = 9;
 }
 
 /*!
-    Returns the predicate in a subquery expression.
-    @return The predicate in a subquery expression..
+    Returns the predicate in a subquery expression or a conditional expression.
+    @return The predicate in a subquery expression or a conditional expression.
     This method raises an exception if it is not applicable to the receiver.
 */
 - (CPPredicate)predicate
@@ -375,6 +409,39 @@ CPMinusSetExpressionType        = 9;
     This method raises an exception if it is not applicable to the receiver.
 */
 - (CPExpression)rightExpression
+{
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
+    return nil;
+}
+
+/*!
+    Returns the block of a block expression.
+    @return The block of a block expression.
+    This method raises an exception if it is not applicable to the receiver.
+*/
+- (Function)expressionBlock
+{
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
+    return nil;
+}
+
+/*!
+    Returns the true expression of a conditional expression.
+    @return The true expression of a conditional expression.
+    This method raises an exception if it is not applicable to the receiver.
+*/
+- (CPExpression)trueExpression
+{
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
+    return nil;
+}
+
+/*!
+    Returns the false expression of a conditional expression.
+    @return The false expression of a conditional expression.
+    This method raises an exception if it is not applicable to the receiver.
+*/
+- (CPExpression)falseExpression
 {
     _CPRaiseInvalidAbstractInvocation(self, _cmd);
     return nil;

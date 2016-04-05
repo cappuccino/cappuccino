@@ -361,15 +361,10 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 */
 - (CPArray)itemTitles
 {
-    var titles = [],
-        items = [self itemArray],
-        index = 0,
-        count = [items count];
-
-    for (; index < count; ++index)
-        titles.push([items[index] title]);
-
-    return titles;
+    return [[self itemArray] arrayByApplyingBlock:function(item)
+    {
+        return [item title];
+    }];
 }
 
 /*!

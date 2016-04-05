@@ -138,4 +138,26 @@
     [self setNeedsLayout];
 }
 
+- (CPView)createEphemeralSubviewNamed:(CPString)aName
+{
+    if (aName === "bezel-view")
+    {
+        var view = [[CPView alloc] initWithFrame:CGRectMakeZero()];
+
+        [view setHitTests:NO];
+
+        return view;
+    }
+    else
+    {
+        var view = [[_CPImageAndTextView alloc] initWithFrame:CGRectMakeZero()];
+
+        [view setHitTests:NO];
+
+        return view;
+    }
+
+    return [super createEphemeralSubviewNamed:aName];
+}
+
 @end

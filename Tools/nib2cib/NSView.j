@@ -70,6 +70,8 @@ var NSViewAutoresizingMask = 0x3F,
         _isHidden = vFlags & NSViewHiddenMask;
         _opacity = 1.0;//[aCoder decodeIntForKey:CPViewOpacityKey];
 
+        _trackingAreas = [];
+
         _themeClass = [self themeClass];
         _themeAttributes = {};
         _themeState = CPThemeStateNormal;

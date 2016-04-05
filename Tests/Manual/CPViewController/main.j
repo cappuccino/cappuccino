@@ -1,9 +1,9 @@
 /*
  * AppController.j
- * CPViewNoDisplayAfterHidingAndResizeBug
+ * CPViewController
  *
- * Created by You on February 24, 2013.
- * Copyright 2013, Your Company All rights reserved.
+ * Created by You on November 11, 2015.
+ * Copyright 2015, Your Company All rights reserved.
  */
 
 @import <Foundation/Foundation.j>

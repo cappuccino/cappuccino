@@ -94,7 +94,8 @@ function CPTextFieldBlurFunction(anEvent, owner, domElement, inputElement, resig
                 inputElement.focus();
 
                 [owner _restorePreviousScrollingOrigin:previousScrollingOrigin];
-            } argument:nil order:0 modes:[CPDefaultRunLoopMode]];
+            } 
+            argument:nil order:0 modes:[CPDefaultRunLoopMode]];
         }
     }
 
@@ -838,6 +839,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [self _resignFirstKeyResponder];
 
     _isEditing = NO;
+    
     if ([self isEditable])
     {
         [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:self userInfo:@{"CPTextMovement": [self _currentTextMovement]}]];
@@ -1213,7 +1215,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 - (void)textDidFocus:(CPNotification)note
 {
     // this looks to prevent false propagation of notifications for other objects
-    if ([note object] != self)
+    if ([note object] !== self)
         return;
 
     if (_implementedDelegateMethods & CPTextFieldDelegate_controlTextDidFocus_)

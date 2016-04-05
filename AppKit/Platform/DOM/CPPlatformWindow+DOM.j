@@ -1857,11 +1857,10 @@ function CPWindowObjectList()
 
 function CPWindowList()
 {
-    var windowObjectList = CPWindowObjectList(),
-        windowList = [];
+    var windowObjectList = CPWindowObjectList();
 
-    for (var i = 0, count = [windowObjectList count]; i < count; i++)
-        windowList.push([windowObjectList[i] windowNumber]);
-
-    return windowList;
+    return [windowObjectList arrayByApplyingBlock:function(windowObject)
+    {
+        return [windowObject windowNumber];
+    }];
 }

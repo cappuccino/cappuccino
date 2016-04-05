@@ -264,8 +264,11 @@ var CPCacheDelegate_cache_willEvictObject_ = 1 << 1;
 
     // Sort keys by position
     var sortedKeys = [[_items allKeys] sortedArrayUsingFunction:
-        function(k1, k2) {
-            return [[[_items objectForKey:k1] position] compare:[[_items objectForKey:k2] position]]; }];
+            function(k1, k2)
+            {
+                return [[[_items objectForKey:k1] position] compare:[[_items objectForKey:k2] position]];
+            }
+        ];
 
     // Affect new positions
     for (var i = 0; i < sortedKeys.length; ++i)
@@ -300,8 +303,11 @@ var CPCacheDelegate_cache_willEvictObject_ = 1 << 1;
 
     // Sort keys by position
     var sortedKeys = [[_items allKeys] sortedArrayUsingFunction:
-        function(k1, k2) {
-            return [[[_items objectForKey:k1] position] compare:[[_items objectForKey:k2] position]]; }];
+            function(k1, k2)
+            {
+                return [[[_items objectForKey:k1] position] compare:[[_items objectForKey:k2] position]];
+            }
+        ];
 
     // Remove oldest objects until to satisfy the break condition
     for (var i = 0; i < sortedKeys.length; ++i)
@@ -313,7 +319,7 @@ var CPCacheDelegate_cache_willEvictObject_ = 1 << 1;
         [self _sendDelegateWillEvictObjectForKey:sortedKeys[i]];
 
         // Remove object
-        [_items removeObjectForKey: sortedKeys[i]];
+        [_items removeObjectForKey:sortedKeys[i]];
 
         // Invalid cost cache
         _totalCostCache = -1;

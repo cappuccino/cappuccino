@@ -61,9 +61,9 @@ CPLocaleLanguageDirectionRightToLeft        = @"CPLocaleLanguageDirectionRightTo
 CPLocaleLanguageDirectionTopToBottom        = @"CPLocaleLanguageDirectionTopToBottom";
 CPLocaleLanguageDirectionBottomToTop        = @"CPLocaleLanguageDirectionBottomToTop";
 
-var countryCodes = [@"DE", @"FR", @"ES", @"GB", @"US"],
-    languageCodes = [@"en", @"de", @"es", @"fr"],
-    availableLocaleIdentifiers = [@"de_DE", @"en_GB", @"en_US", @"es_ES", @"fr_FR"];
+var countryCodes = [@"DE", @"FR", @"ES", @"GB", @"US", @"SE"],
+    languageCodes = [@"en", @"de", @"es", @"fr", @"sv"],
+    availableLocaleIdentifiers = [@"de_DE", @"en_GB", @"en_US", @"es_ES", @"fr_FR", @"sv_SE"];
 
 var sharedSystemLocale = nil,
     sharedCurrentLocale = nil;
