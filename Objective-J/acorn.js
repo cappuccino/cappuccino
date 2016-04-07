@@ -193,7 +193,7 @@ if (typeof exports != "undefined" && !exports.acorn) {
     var builtinMacro = macrosBuiltinMacros[macroIdentifier];
     return builtinMacro ? builtinMacro() : null;
   }
-  
+
   function defineMacros(macroArray) {
     for (var i = 0, size = macroArray.length; i < size; i++) {
       var savedInput = input;
@@ -1705,7 +1705,7 @@ if (typeof exports != "undefined" && !exports.acorn) {
   // Parse an  expression — either a single token that is an
   // expression, an expression started by a keyword like `defined`,
   // or an expression wrapped in punctuation like `()`.
-  // When `processMacros` is true any macros will we transformed to its definition 
+  // When `processMacros` is true any macros will we transformed to its definition
 
   function preprocessParseExpression(processMacros) {
     return preprocessParseExprOps(processMacros);
@@ -2164,14 +2164,14 @@ if (typeof exports != "undefined" && !exports.acorn) {
           //preprocessExpect(_parenL);
           //lastTokPos = tokPos;
           if (input.charCodeAt(tokPos++) !== 40) raise(tokPos - 1, "Expected '(' before macro prarameters");
-          onlySkipSpace(true, true, true); 
+          onlySkipSpace(true, true, true);
           var code = input.charCodeAt(tokPos++);
           while (tokPos < inputLen && code !== 41) {
             if (first)
               first = false;
             else
               if (code === 44) { // ','
-                onlySkipSpace(true, true, true); 
+                onlySkipSpace(true, true, true);
                 code = input.charCodeAt(tokPos++);
               } else
                 raise(tokPos - 1, "Expected ',' between macro parameters");
