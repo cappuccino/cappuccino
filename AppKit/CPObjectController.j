@@ -192,6 +192,12 @@
 */
 - (void)setEntityName:(CPString)newEntityName
 {
+    if (!_managedProxy)
+    {
+        _managedProxy = [[_CPManagedProxy alloc] init];
+        _isUsingManagedProxy = YES;
+    }
+
     [_managedProxy setEntityName:newEntityName];
 }
 
