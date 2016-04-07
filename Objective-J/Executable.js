@@ -169,6 +169,10 @@ Executable.prototype.execute = function()
         this._compiler.popImport();
 
         this.setCode(this._compiler.compilePass2());
+
+    if (FileExecutable.printWarningsAndErrors(this._compiler, exports.messageOutputFormatInXML))
+            throw "Compilation error";
+
         this._compiler = null;
     }
 
@@ -499,7 +503,7 @@ Executable.fileExecutableSearcherForURL = function(/*CFURL*/ referenceURL)
             {
                 if (!aStaticResource)
                 {
-                    var compilingFileUrl = ObjJAcornCompiler ? ObjJAcornCompiler.currentCompileFile : null;
+                    var compilingFileUrl = exports.ObjJCompiler ? exports.ObjJCompiler.currentCompileFile : null;
                     throw new Error("Could not load file at " + aURL + (compilingFileUrl ? " when compiling " + compilingFileUrl : ""));
                 }
 
