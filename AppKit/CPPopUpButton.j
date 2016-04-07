@@ -847,7 +847,17 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 {
     var count = [aValue count],
         options = [_info objectForKey:CPOptionsKey],
-        offset = [self _getInsertNullOffset];
+        offset = [self _getInsertNullOffset],
+        selectedBindingInfo = [_source infoForBinding:CPSelectedObjectBinding],
+        selectedObject = nil;
+
+    if (selectedBindingInfo)
+    {
+        var destination = [selectedBindingInfo objectForKey:CPObservedObjectKey],
+            keyPath = [selectedBindingInfo objectForKey:CPObservedKeyPathKey];
+
+        selectedObject = [destination valueForKeyPath:keyPath];
+    }
 
     if (count + offset != [_source numberOfItems])
     {
@@ -858,9 +868,19 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
         for (var i = 0; i < count; i++)
         {
-            var item = [[CPMenuItem alloc] initWithTitle:@"" action:NULL keyEquivalent:nil];
-            [self _setValue:[aValue objectAtIndex:i] forItem:item withOptions:options];
+            var item = [[CPMenuItem alloc] initWithTitle:@"" action:NULL keyEquivalent:nil],
+                itemValue = [aValue objectAtIndex:i];
+
+            [self _setValue:itemValue forItem:item withOptions:options];
             [_source addItem:item];
+
+            // Select this item if it is the one selected by the selected object binding
+            // This is needed if the selected object binding is set before the items
+            // from the content binding
+            if (itemValue === selectedObject)
+            {
+                [_source setSelectedIndex:[_source numberOfItems] - 1];
+            }
         }
     }
     else
