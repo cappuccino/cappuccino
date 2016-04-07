@@ -1519,19 +1519,19 @@ if (typeof exports != "undefined" && !exports.acorn) {
   // Escape characters in stringify string.
 
   function preprocessStringifyEscape(aString) {
-    for (var escaped = "", pos = 0, ch = aString.charAt(pos); ch !== ""; ch = aString.charAt(++pos)) {
+    for (var escaped = "", pos = 0, size = aString.length, ch = aString.charCodeAt(pos); pos < size; ch = aString.charCodeAt(++pos)) {
       switch (ch) {
-        case '"': escaped += '\\\\\\"'; break;
-        case "\n": escaped += "\\\\n"; break;
-        case "\r": escaped += "\\\\r"; break;
-        case "\t": escaped += "\\\\t"; break;
-        case "\b": escaped += "\\\\b"; break;
-        case "\v": escaped += "\\\\v"; break;
-        case "\u00A0": escaped += "\\\\u00A0"; break;
-        case "\u2028": escaped += "\\\\u2028"; break;
-        case "\u2029": escaped += "\\\\u2029"; break;
-        case "\\": escaped += "\\\\"; break;
-        default: escaped += ch; break;
+        case 34: escaped += '\\\\\\"'; break; // "
+        case 10: escaped += "\\\\n"; break; // LF (\n)
+        case 13: escaped += "\\\\r"; break; // CR (\r)
+        case 9: escaped += "\\\\t"; break; // TAB (\t)
+        case 8: escaped += "\\\\b"; break; // BS (\b)
+        case 11: escaped += "\\\\v"; break; // VT (\v)
+        case 0x00A0: escaped += "\\\\u00A0"; break; // CR (\r)
+        case 0x2028: escaped += "\\\\u2028"; break; // LINE SEPARATOR
+        case 0x2029: escaped += "\\\\u2029"; break; // PARAGRAPH SEPARATOR
+        case 92: escaped += "\\\\"; break; // BACKSLASH
+        default: escaped += aString.charAt(pos); break;
       }
     }
     return escaped;
