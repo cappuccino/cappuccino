@@ -172,6 +172,7 @@ var CPViewHighDPIDrawingEnabled = YES;
     CPArray             _registeredDraggedTypesArray;
 
     BOOL                _isHidden;
+    BOOL                _isHiddenOrHasHiddenAncestor;
     BOOL                _hitTests;
     BOOL                _clipsToBounds;
 
@@ -372,6 +373,7 @@ var CPViewHighDPIDrawingEnabled = YES;
 
         _opacity = 1.0;
         _isHidden = NO;
+        _isHiddenOrHasHiddenAncestor = NO;
         _hitTests = YES;
 
         _hierarchyScaleSize = CGSizeMake(1.0 , 1.0);
@@ -598,7 +600,7 @@ var CPViewHighDPIDrawingEnabled = YES;
         [aSubview _removeFromSuperview];
 
         // Set ourselves as the superview.
-        aSubview._superview = self;
+        [aSubview _setSuperview:self];
     }
 
     if (anIndex === CPNotFound || anIndex >= count)
@@ -622,11 +624,6 @@ var CPViewHighDPIDrawingEnabled = YES;
 
     [aSubview setNextResponder:self];
     [aSubview _scaleSizeUnitSquareToSize:[self _hierarchyScaleSize]];
-
-    // If the subview is not hidden and one of its ancestors is hidden,
-    // notify the subview that it is now hidden.
-    if (![aSubview isHidden] && [self isHiddenOrHasHiddenAncestor])
-        [aSubview _notifyViewDidHide];
 
     [aSubview viewDidMoveToSuperview];
 
@@ -697,13 +694,10 @@ var CPViewHighDPIDrawingEnabled = YES;
 
     // If the view is not hidden and one of its ancestors is hidden,
     // notify the view that it is now unhidden.
-    if (!_isHidden && [_superview isHiddenOrHasHiddenAncestor])
-        [self _notifyViewDidUnhide];
+    [self _setSuperview:nil];
 
     [self _notifyWindowDidResignKey];
     [self _notifyViewDidResignFirstResponder];
-
-    _superview = nil;
 }
 
 /*!
@@ -1599,7 +1593,7 @@ var CPViewHighDPIDrawingEnabled = YES;
 
 //  FIXME: Should we return to visibility?  This breaks in FireFox, Opera, and IE.
 //    _DOMElement.style.visibility = (_isHidden = aFlag) ? "hidden" : "visible";
-    _isHidden = aFlag;
+
 
 #if PLATFORM(DOM)
     _DOMElement.style.display = _isHidden ? "none" : "block";
@@ -1622,33 +1616,61 @@ var CPViewHighDPIDrawingEnabled = YES;
             while (view = [view superview]);
         }
 
-        [self _notifyViewDidHide];
+        [self _recursiveGainedHiddenAncestor];
     }
     else
     {
         [self setNeedsDisplay:YES];
-        [self _notifyViewDidUnhide];
+
+        [self _recursiveLostHiddenAncestor];
     }
+
+    _isHidden = aFlag;
 }
 
-- (void)_notifyViewDidHide
+- (void)_setSuperview:(CPView)aSuperview
 {
-    [self viewDidHide];
+    var hasOldSuperview = (_superview !== nil),
+          hasNewSuperview = (aSuperview !== nil),
+          oldSuperviewIsHidden = hasOldSuperview && [_superview isHiddenOrHasHiddenAncestor],
+          newSuperviewIsHidden = hasNewSuperview && [aSuperview isHiddenOrHasHiddenAncestor];
 
-    var count = [_subviews count];
+    if (!newSuperviewIsHidden && oldSuperviewIsHidden)
+         [self _recursiveLostHiddenAncestor];
 
-    while (count--)
-        [_subviews[count] _notifyViewDidHide];
+    if (newSuperviewIsHidden && !oldSuperviewIsHidden)
+        [self _recursiveGainedHiddenAncestor];
+
+    _superview = aSuperview;
 }
 
-- (void)_notifyViewDidUnhide
+- (void)_recursiveLostHiddenAncestor
 {
-    [self viewDidUnhide];
+    if (_isHiddenOrHasHiddenAncestor)
+    {
+        _isHiddenOrHasHiddenAncestor = NO;
+        [self viewDidUnhide];
+    }
 
-    var count = [_subviews count];
+    [_subviews enumerateObjectsUsingBlock:function(view, idx, stop)
+    {
+        [view _recursiveLostHiddenAncestor];
+    }];
+}
 
-    while (count--)
-        [_subviews[count] _notifyViewDidUnhide];
+- (void)_recursiveGainedHiddenAncestor
+{
+    if (!_isHidden)
+    {
+        [self viewDidHide];
+    }
+
+    _isHiddenOrHasHiddenAncestor = YES;
+
+    [_subviews enumerateObjectsUsingBlock:function(view, idx, stop)
+    {
+        [view _recursiveGainedHiddenAncestor];
+    }];
 }
 
 /*!
@@ -1718,12 +1740,7 @@ var CPViewHighDPIDrawingEnabled = YES;
 */
 - (BOOL)isHiddenOrHasHiddenAncestor
 {
-    var view = self;
-
-    while (view && ![view isHidden])
-        view = [view superview];
-
-    return view !== nil;
+    return _isHiddenOrHasHiddenAncestor;
 }
 
 /*!
@@ -3494,14 +3511,14 @@ setBoundsOrigin:
  Invoked automatically when the view’s geometry changes such that its tracking areas need to be recalculated.
 
  You should override this method to remove out of date tracking areas and add recomputed tracking areas;
- 
+
  Cocoa calls this on every view, whereas they have tracking area(s) or not.
  Cappuccino behaves differently :
  - updateTrackingAreas is called when placing a view in the view hierarchy (that is in a window)
  - if you have only CPTrackingInVisibleRect tracking areas attached to a view, it will not be called again (until you move the view in the hierarchy)
  - if you have at least one non-CPTrackingInVisibleRect tracking area attached, it will be called every time the view geometry could be modified
    You don't have to touch to CPTrackingInVisibleRect tracking areas, they will be automatically updated
- 
+
  Please note that it is the owner of a tracking area who is called for updateTrackingAreas.
  But, if a view without any tracking area is inserted in the view hierarchy (that is, in a window), the view is called for updateTrackingAreas.
  This enables you to use updateTrackingArea to initially attach your tracking areas to the view.
@@ -3513,16 +3530,16 @@ setBoundsOrigin:
 
 /*!
  This utility method is intended for CPView subclasses overriding updateTrackingAreas
- 
+
  Typical use would be :
- 
+
  - (void)updateTrackingAreas
  {
       [self removeAllTrackingAreas];
- 
+
       ... add your specific updated tracking areas ...
   }
- 
+
 */
 - (void)removeAllTrackingAreas
 {
@@ -3707,6 +3724,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 #endif
 
         [self setHidden:[aCoder decodeBoolForKey:CPViewIsHiddenKey]];
+        _isHiddenOrHasHiddenAncestor = NO;
 
         if ([aCoder containsValueForKey:CPViewOpacityKey])
             [self setAlphaValue:[aCoder decodeIntForKey:CPViewOpacityKey]];
