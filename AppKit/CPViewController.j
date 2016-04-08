@@ -213,7 +213,7 @@ var CPViewControllerCachedCibs;
                 if (anError == nil)
                 {
                     var data = [CPData dataWithRawString:aData],
-                        aCib = [[CPCib alloc] _initWithData:data bundle:_cibBundle cibName:_cibName];
+                          aCib = [[CPCib alloc] _initWithData:data bundle:_cibBundle cibName:_cibName];
 
                     [CPViewControllerCachedCibs setObject:aCib forKey:_cibName];
                     [aCib instantiateCibWithExternalNameTable:_cibExternalNameTable];
@@ -286,13 +286,16 @@ var CPViewControllerCachedCibs;
 
 - (void)_viewDidLoad
 {
-    [self _viewDidLoadWithCompletionHandler:function() {
-        [self viewDidLoad];
-    }];
+    [self willChangeValueForKey:"isViewLoaded"];
+    [self viewDidLoad];
+    _isViewLoaded = YES;
+    [self didChangeValueForKey:"isViewLoaded"];
 }
 
 - (void)_viewDidLoadWithCompletionHandler:(Function)aHandler
 {
+    [self _registerOrUnregister:YES notificationsForView:_view];
+
     [self willChangeValueForKey:"isViewLoaded"];
     aHandler(_view, nil);
     _isViewLoaded = YES;
@@ -325,6 +328,9 @@ var CPViewControllerCachedCibs;
 {
     var willChangeIsViewLoaded = (_isViewLoaded == NO && aView != nil) || (_isViewLoaded == YES && aView == nil);
 
+    [self _registerOrUnregister:NO notificationsForView:_view];
+    [self _registerOrUnregister:YES notificationsForView:aView];
+
     if (willChangeIsViewLoaded)
         [self willChangeValueForKey:"isViewLoaded"];
 
@@ -338,6 +344,30 @@ var CPViewControllerCachedCibs;
 - (BOOL)automaticallyNotifiesObserversOfIsViewLoaded
 {
     return NO;
+}
+
+- (void)_registerOrUnregister:(BOOL)shouldRegister notificationsForView:(CPView)aView
+{
+    if (aView === nil)
+        return;
+
+    var center = [CPNotificationCenter defaultCenter],
+        notifs_to_sel = @{_CPViewWillAppearNotification : @"viewWillAppear",
+                          _CPViewDidAppearNotification : @"viewDidAppear",
+                          _CPViewWillDisappearNotification : @"viewWillDisappear",
+                          _CPViewDidDisappearNotification : @"viewDidDisappear"};
+
+    [notifs_to_sel enumerateKeysAndObjectsUsingBlock:function(notif, selString, stop)
+    {
+        var selector = CPSelectorFromString(selString);
+        if ([self implementsSelector:selector])
+        {
+            if (shouldRegister)
+                [center addObserver:self selector:selector name:notif object:aView];
+            else
+                [center removeObserver:self name:notif object:aView];
+        }
+    }];
 }
 
 @end
