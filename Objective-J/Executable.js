@@ -168,7 +168,7 @@ Executable.prototype.execute = function()
         }
         this._compiler.popImport();
 
-        this.setCode(this._compiler.compilePass2());
+        this.setCode(this._compiler.compilePass2(), this._compiler.map());
 
     if (FileExecutable.printWarningsAndErrors(this._compiler, exports.messageOutputFormatInXML))
             throw "Compilation error";
@@ -197,7 +197,7 @@ Executable.prototype.code = function()
 
 DISPLAY_NAME(Executable.prototype.code);
 
-Executable.prototype.setCode = function(code)
+Executable.prototype.setCode = function(code, sourceMap)
 {
     this._code = code;
 
@@ -219,7 +219,15 @@ Executable.prototype.setCode = function(code)
     //if (YES) {
         var absoluteString = this.URL().absoluteString();
 
-        code += "/**/\n//# sourceURL=" + absoluteString;
+        code += "/**/\n//# sourceURL=" + absoluteString + "s";
+        if (sourceMap)
+        {
+            // The new Function constructor will add a function header before the first line
+            // The compiler adds a new line as the first character to the code to get the spurce
+            // mapping correct. We have to remove it here
+            code = code.substring(2);
+            code += "\n//# sourceMappingURL=data:application/json;base64," + (typeof btoa === 'function' ? btoa(sourceMap) : new Buffer(sourceMap).toString("base64"))
+        }
     //} else {
     //    // Firebug only does it for "eval()", not "new Function()". Ugh. Slower.
     //    var functionText = "(function(){"+GET_CODE(aFragment)+"/**/\n})\n//# sourceURL="+GET_FILE(aFragment).path;

@@ -17,13 +17,12 @@
 (function(mod)
 {
     //print("Compiler INIT! exports: " + typeof exports + ", module: " + typeof module + ", define: " + typeof define);
-    mod(exports.ObjJCompiler || (exports.ObjJCompiler = {}), exports.acorn, exports.acorn.walk/*, sourceMap*/); // Plain browser env
+    mod(exports.ObjJCompiler || (exports.ObjJCompiler = {}), exports.acorn, exports.acorn.walk, typeof sourceMap != "undefined" ? sourceMap : null); // Plain browser env
 })(function(exports, acorn, walk, sourceMap)
 {
 "use strict";
 
 exports.version = "0.3.7";
-//exports.acorn = acorn;
 
 var Scope = function(prev, base)
 {
@@ -308,7 +307,7 @@ StringBuffer.prototype.toStringString = function()
 
 StringBuffer.prototype.toStringSourceNode = function()
 {
-    return this.rootNode.toStringWithSourceMap({file: this.file});
+    return this.rootNode.toStringWithSourceMap({file: this.file.substr(this.file.lastIndexOf('/') + 1) + "s", sourceRoot:this.file.substr(0, this.file.lastIndexOf('/') + 1)});
 }
 
 StringBuffer.prototype.concatString = function(aString)
@@ -1968,7 +1967,7 @@ SequenceExpression: function(node, st, c, format) {
         buffer;
     if (generate) {
         buffer = compiler.jsBuffer;
-        buffer.concat("(");
+        buffer.concat("(", node);
     }
     for (var i = 0; i < node.expressions.length; ++i) {
       if (generate && i !== 0)
@@ -2079,7 +2078,7 @@ AssignmentExpression: function(node, st, c, format) {
         if (!generate) buffer.concat(compiler.source.substring(compiler.lastPos, node.start));
 
         // Output the dereference function, "(...)(z)"
-        buffer.concat("(");
+        buffer.concat("(", node);
         // What's being dereferenced could itself be an expression, such as when dereferencing a deref.
         if (!generate) compiler.lastPos = node.left.expr.start;
         c(node.left.expr, st, "Expression");
@@ -2316,7 +2315,7 @@ ArrayLiteral: function(node, st, c) {
         buffer.concat("@[");
     } else if (!elementLength) {
         if (compiler.options.inlineMsgSendFunctions) {
-            buffer.concat("(___r");
+            buffer.concat("(___r", node);
             buffer.concat(++st.receiverLevel + "");
             buffer.concat(" = (CPArray.isa.method_msgSend[\"alloc\"] || _objj_forward)(CPArray, \"alloc\"), ___r");
             buffer.concat(st.receiverLevel + "");
@@ -2341,7 +2340,7 @@ ArrayLiteral: function(node, st, c) {
             st.maxReceiverLevel = st.receiverLevel;
     } else {
         if (compiler.options.inlineMsgSendFunctions) {
-            buffer.concat("(___r");
+            buffer.concat("(___r", node);
             buffer.concat(++st.receiverLevel + "");
             buffer.concat(" = (CPArray.isa.method_msgSend[\"alloc\"] || _objj_forward)(CPArray, \"alloc\"), ___r");
             buffer.concat(st.receiverLevel + "");
@@ -2351,7 +2350,7 @@ ArrayLiteral: function(node, st, c) {
             buffer.concat(st.receiverLevel + "");
             buffer.concat(", \"initWithObjects:count:\", [");
         } else {
-            buffer.concat("(___r");
+            buffer.concat("(___r", node);
             buffer.concat(++st.receiverLevel + "");
             buffer.concat(" = CPArray.isa.objj_msgSend0(CPArray, \"alloc\"), ___r");
             buffer.concat(st.receiverLevel + "");
@@ -2410,7 +2409,7 @@ DictionaryLiteral: function(node, st, c) {
         buffer.concat("}");
     } else if (!keyLength) {
         if (compiler.options.inlineMsgSendFunctions) {
-            buffer.concat("(___r");
+            buffer.concat("(___r", node);
             buffer.concat(++st.receiverLevel + "");
             buffer.concat(" = (CPDictionary.isa.method_msgSend[\"alloc\"] || _objj_forward)(CPDictionary, \"alloc\"), ___r");
             buffer.concat(st.receiverLevel + "");
@@ -2435,7 +2434,7 @@ DictionaryLiteral: function(node, st, c) {
             st.maxReceiverLevel = st.receiverLevel;
     } else {
         if (compiler.options.inlineMsgSendFunctions) {
-            buffer.concat("(___r");
+            buffer.concat("(___r", node);
             buffer.concat(++st.receiverLevel + "");
             buffer.concat(" = (CPDictionary.isa.method_msgSend[\"alloc\"] || _objj_forward)(CPDictionary, \"alloc\"), ___r");
             buffer.concat(st.receiverLevel + "");
@@ -2445,7 +2444,7 @@ DictionaryLiteral: function(node, st, c) {
             buffer.concat(st.receiverLevel + "");
             buffer.concat(", \"initWithObjects:forKeys:\", [");
         } else {
-            buffer.concat("(___r");
+            buffer.concat("(___r", node);
             buffer.concat(++st.receiverLevel + "");
             buffer.concat(" = CPDictionary.isa.objj_msgSend0(CPDictionary, \"alloc\"), ___r");
             buffer.concat(st.receiverLevel + "");
@@ -2518,7 +2517,7 @@ ClassDeclarationStatement: function(node, st, c, format) {
         generateObjJ = compiler.options.generateObjJ;
 
     compiler.imBuffer = new StringBuffer(compiler.createSourceMap, compiler.URL);
-    compiler.cmBuffer = new StringBuffer(compiler.createSourceMap), compiler.URL;
+    compiler.cmBuffer = new StringBuffer(compiler.createSourceMap, compiler.URL);
     compiler.classBodyBuffer = new StringBuffer(compiler.createSourceMap, compiler.URL);      // TODO: Check if this is needed
 
     if (compiler.getTypeDef(className))
@@ -2756,12 +2755,18 @@ ClassDeclarationStatement: function(node, st, c, format) {
         getterSetterBuffer.concat("\n@end");
 
         // Remove all @accessors or we will get a recursive loop in infinity
-        var b = getterSetterBuffer.toString().replace(/@accessors(\(.*\))?/g, "");
+        var b = getterSetterBuffer.toString();
+
+        if (compiler.createSourceMap)
+            b = b.code;
+
+        b = b.replace(/@accessors(\(.*\))?/g, "");
+
         var imBuffer = exports.compileToIMBuffer(b, "Accessors", compiler.options);
 
         // Add the accessors methods first to instance method buffer.
         // This will allow manually added set and get methods to override the compiler generated
-        compiler.imBuffer.concat(imBuffer);
+        compiler.imBuffer.concat(compiler.createSourceMap ? imBuffer.toString().code : imBuffer.toString());
     }
 
     // We will store the ivars into the classDef first after accessors are done so we don't get a duplicate ivars error when generating accessors
@@ -3227,13 +3232,13 @@ MessageSendExpression: function(node, st, c) {
             buffer.concat("[super ");
         } else {
             if (inlineMsgSend) {
-                buffer.concat("(");
+                buffer.concat("(", node);
                 buffer.concat(st.currentMethodType() === "+" ? compiler.currentSuperMetaClass : compiler.currentSuperClass);
                 buffer.concat(".method_dtable[\"");
                 buffer.concat(selector);
                 buffer.concat("\"] || _objj_forward)(self");
             } else {
-                buffer.concat("objj_msgSendSuper");
+                buffer.concat("objj_msgSendSuper", node);
                 if (totalNoOfParameters < 4) {
                     buffer.concat("" + totalNoOfParameters);
                 }
@@ -3261,12 +3266,12 @@ MessageSendExpression: function(node, st, c) {
                 }
 
                 if (receiverIsNotSelf) {
-                    buffer.concat("(");
+                    buffer.concat("(", node);
                     c(nodeObject, st, "Expression");
                     buffer.concat(" == null ? null : ");
                 }
                 if (inlineMsgSend)
-                    buffer.concat("(");
+                    buffer.concat("(", receiverIsNotSelf ? null : node);
                 c(nodeObject, st, "Expression");
             } else {
                 receiverIsNotSelf = true;
@@ -3525,7 +3530,7 @@ TypeDefStatement: function(node, st, c) {
     if (!generate)
         buffer.concat(compiler.source.substring(compiler.lastPos, node.start));
 
-    buffer.concat("{var the_typedef = objj_allocateTypeDef(\"" + typeDefName + "\");");
+    buffer.concat("{var the_typedef = objj_allocateTypeDef(\"" + typeDefName + "\");", node);
 
     typeDef = new TypeDef(typeDefName);
     compiler.typeDefs[typeDefName] = typeDef;

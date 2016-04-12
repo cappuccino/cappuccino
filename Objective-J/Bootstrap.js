@@ -66,6 +66,10 @@ if (typeof OBJJ_COMPILER_FLAGS !== 'undefined')
             case "InlineMsgSend":
                 flags.inlineMsgSendFunctions = true;
                 break;
+
+            case "SourceMap":
+                flags.sourceMap = true;
+                break;
         }
     }
     FileExecutable.setCurrentCompilerFlags(flags);
