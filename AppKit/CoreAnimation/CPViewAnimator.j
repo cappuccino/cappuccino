@@ -1,6 +1,7 @@
 
 @import "_CPObjectAnimator.j"
 @import "CPView.j"
+@import "_CPImageAndTextView.j"
 
 @implementation CPViewAnimator : _CPObjectAnimator
 {
@@ -185,7 +186,7 @@ var DEFAULT_CSS_PROPERTIES = nil;
 
 - (id)DOMElementForKeyPath:(CPString)aKeyPath
 {
-    return _DOMElement;
+    return self._DOMElement;
 }
 
 + (CAAnimation)defaultAnimationForKey:(CPString)aKey
@@ -217,6 +218,76 @@ var DEFAULT_CSS_PROPERTIES = nil;
 - (void)setAnimations:(CPDictionary)animationsDict
 {
     _animationsDictionary = [animationsDict copy];
+}
+
+@end
+
+@implementation CPButtonAnimator : CPViewAnimator
+{
+}
+
+- (void)setTextColor:(CPColor)aColor
+{
+    var contentView = [_target ephemeralSubviewNamed:@"content-view"];
+
+    [[contentView animator] _setTargetValue:aColor withKeyPath:@"textColor" fallback:nil completion:function()
+    {
+        [_target setTextColor:aColor];
+        [[CPRunLoop currentRunLoop] performSelectors];
+    }];
+}
+
+- (void)setFont:(CPFont)aFont
+{
+    var contentView = [_target ephemeralSubviewNamed:@"content-view"];
+
+    [[contentView animator] _setTargetValue:aFont withKeyPath:@"font" fallback:nil completion:function()
+    {
+        [_target setFont:aFont];
+        [[CPRunLoop currentRunLoop] performSelectors];
+    }];
+}
+
+- (void)setFontSize:(CPInteger)aFontSize
+{
+    var contentView = [_target ephemeralSubviewNamed:@"content-view"],
+        font = [[_target font] fontOfSize:aFontSize];
+
+    [[contentView animator] _setTargetValue:aFontSize withKeyPath:@"fontSize" fallback:nil completion:function()
+    {
+        [_target setFont:font];
+        [[CPRunLoop currentRunLoop] performSelectors];
+    }];
+}
+
+@end
+
+@implementation _CPImageAndTextView (CPAnimatablePropertyContainer)
+
++ (CPArray)cssPropertiesForKeyPath:(CPString)aKeyPath
+{
+    if (aKeyPath == @"textColor")
+        return @[@{"property":"color", "value":function(s,v){return [v cssString];}}];
+    else if (aKeyPath == @"font")
+        return @[@{"property":"font", "value":function(s,v){return [v cssString];}}];
+    else if (aKeyPath == @"fontSize")
+        return @[@{"property":"font-size", "value":function(s,v){return v + "px";}}];
+
+    return [super cssPropertiesForKeyPath:aKeyPath];
+}
+
+- (float)fontSize
+{
+    return [[self font] size];
+}
+
+@end
+
+@implementation CPFont (CPViewAnimator)
+
+- (CPFont)fontOfSize:(CPInteger)aSize
+{
+    return [CPFont _fontWithName:_name size:aSize bold:_isBold italic:_isItalic];
 }
 
 @end

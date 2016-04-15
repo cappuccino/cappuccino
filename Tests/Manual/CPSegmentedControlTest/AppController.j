@@ -43,12 +43,13 @@ CPLogRegister(CPLogConsole);
     var n = [segmentedControl1 segmentCount];
 
     [segmentedControl1 setSegmentCount:n + 1];
-    [segmentedControl1 setLabel:@"" + n + 1 forSegment:n];
-    [segmentedControl1 setWidth:width forSegment:n];
+    [segmentedControl1 setLabel:@"label label" + n + 1 forSegment:n];
+    [segmentedControl1 setWidth:50 forSegment:n];
 
     [segmentedControl2 setSegmentCount:n + 1];
     [segmentedControl2 setLabel:@"" + n + 1 forSegment:n];
-    [segmentedControl2 setWidth:width forSegment:n];
+    [segmentedControl2 setWidth:50 forSegment:n];
+
 }
 
 - (IBAction)removeSegment:(id)aSender
