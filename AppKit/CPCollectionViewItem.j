@@ -21,6 +21,7 @@
  */
 
 @import "CPViewController.j"
+@import "CABasicAnimation.j"
 
 /*!
     Represents an object inside a CPCollectionView.
@@ -54,6 +55,16 @@
     [copy setSelected:_isSelected];
 
     return copy;
+}
+
+- (void)viewDidLoad
+{
+    var animation = [CABasicAnimation animationWithKeyPath:@"alphaValue"];
+    [animation setFromValue:1];
+    [animation setToValue:0];
+    [animation setTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear]];
+
+    [[self view] setAnimations:@{@"CPAnimationTriggerOrderOut":animation}];
 }
 
 // Setting the Represented Object
