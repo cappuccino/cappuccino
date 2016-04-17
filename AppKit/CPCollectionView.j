@@ -386,7 +386,7 @@ var HORIZONTAL_MARGIN = 2.0,
         return ![_content containsObject:obj];
     }];
 
-    console.log(" OLD CONTENT " + _content + "NEW "+ anArray + "REMOVED " +_removedItems  + " ADDED " + _addedIndexes);
+    CPLog.debug(" OLD CONTENT={" + _content + "} NEW={"+ anArray + "}\nREMOVED={" +_removedItems  + "} ADDED={" + _addedIndexes + "}");
 
     _content = [anArray copy];
 
@@ -410,6 +410,14 @@ var HORIZONTAL_MARGIN = 2.0,
         [_items[index] setSelected:YES];
 
     [self tileIfNeeded:NO];
+}
+
+/*!
+    @deprecated  Use -setContent: to change the content and update the layout
+*/
+- (void)reloadContent
+{
+    CPLog.warn("Deprecated, use -setContent: to change the content and update the layout");
 }
 
 /*!
