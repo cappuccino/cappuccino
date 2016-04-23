@@ -680,17 +680,20 @@ var createUpdateFrame = function(aView, aKeyPath)
     if (aKeyPath !== "frame" && aKeyPath !== "frameSize")
         return nil;
 
-    var style = getComputedStyle(aView._DOMElement);
+    var style = getComputedStyle(aView._DOMElement),
+          getCSSPropertyValue = function(prop) {
+                return ROUND(parseFloat(style.getPropertyValue(prop)));
+          };
 
     var updateFrame = function(timestamp)
     {
-        var width  = ROUND(style.getPropertyCSSValue('width').getFloatValue(CSSPrimitiveValue.CSS_PX)),
-            height = ROUND(style.getPropertyCSSValue('height').getFloatValue(CSSPrimitiveValue.CSS_PX));
+        var width  = getCSSPropertyValue("width"),
+            height = getCSSPropertyValue("height");
 
         if (aKeyPath == "frame")
         {
-            var left   = ROUND(style.getPropertyCSSValue('left').getFloatValue(CSSPrimitiveValue.CSS_PX)),
-                top    = ROUND(style.getPropertyCSSValue('top').getFloatValue(CSSPrimitiveValue.CSS_PX)),
+            var left   = getCSSPropertyValue("left"),
+                top    = getCSSPropertyValue("top"),
                 frame  = CGRectMake(left, top, width, height);
 
             [aView setFrame:frame];
