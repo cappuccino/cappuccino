@@ -163,8 +163,12 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
     {
         if (needsFrameTimer)
             [self stopFrameUpdaterWithIdentifier:objectId];
-        else if (animationCompletion)
+
+        if (animationCompletion)
             animationCompletion();
+
+        if (needsFrameTimer || animationCompletion)
+            [[CPRunLoop currentRunLoop] performSelectors];
 
         if (_completionHandlerAgent)
             _completionHandlerAgent.decrement();
@@ -299,9 +303,6 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
 
             cssAnimation.addPropertyAnimation(property, getter, duration, anAction.keytimes, anAction.values, timingFunctions, completionFunction);
         }];
-
-        if (needsFrameTimer)
-            cssAnimation.setRemoveAnimationPropertyOnCompletion(false);
     }
 
     if (needsFrameTimer)
@@ -640,17 +641,7 @@ FrameUpdater.prototype.start = function()
 
 FrameUpdater.prototype.stop = function()
 {
-CPLog.debug("stop FrameUpdater with id " + this.identifier());
-
     this._stop = true;
-
-    var targets = this._targets;
-
-    for (var i = 0; i < targets.length; i++)
-    {
-        CPLog.debug(targets[i] + " Remove animation-name property");
-        targets[i]._DOMElement.style.removeProperty(CPBrowserCSSProperty("animation-name"));
-    }
 };
 
 FrameUpdater.prototype.updateFunction = function()
