@@ -7,7 +7,6 @@
  */
 
 @import <Foundation/CPObject.j>
-//@import "CPCollectionView.j"
 
 CPLogRegister(CPLogConsole);
 
@@ -18,6 +17,7 @@ CPLogRegister(CPLogConsole);
     @outlet     CPCollectionView     emptyCollectionView;
     @outlet     InternalProtoypeItem prototypeItemInternal;
     @outlet     ExternalProtoypeItem prototypeItemExternal;
+    @outlet     ArrayController      arrayController;
     @outlet     CPTableView          tableView;
 }
 
@@ -42,7 +42,8 @@ CPLogRegister(CPLogConsole);
 
     [collectionView registerForDraggedTypes:[@"DragType"]];
     [emptyCollectionView registerForDraggedTypes:[@"DragType"]];
-    //[theWindow setFullPlatformWindow:YES];
+
+    [theWindow setTitle:@"Animatable Collection View. Items can be reordered with Drag & Drop"];
 }
 
 - (IBAction)setPrototypeItem:(id)sender
@@ -151,21 +152,30 @@ CPLogRegister(CPLogConsole);
 {
     var pboard = [draggingInfo draggingPasteboard],
         dragIndexes = [pboard dataForType:@"DragType"],
-        draggingSource = [draggingInfo draggingSource];
+        draggingSource = [draggingInfo draggingSource],
+        destinationContent = [[aCollectionView content] copy];
 
     if (aCollectionView == draggingSource)
-        [[aCollectionView content] moveIndexes:dragIndexes toIndex:proposedIndex];
+    {
+        [dragIndexes enumerateIndexesUsingBlock:function(idx, stop)
+        {
+            var view = [[aCollectionView itemAtIndex:idx] view];
+            [aCollectionView addSubview:view];
+        }];
+
+        [destinationContent moveIndexes:dragIndexes toIndex:proposedIndex];
+        [aCollectionView setContent:destinationContent];
+        [tableView reloadData];
+    }
     else
     {
-        var sourceObjects = [[draggingSource content] objectsAtIndexes:dragIndexes]; // copy ?
-        [[aCollectionView content] insertObjects:sourceObjects atIndexes:[CPIndexSet indexSetWithIndex:proposedIndex]];
+        var sourceObjects = [[draggingSource content] objectsAtIndexes:dragIndexes];
+        var copy = [[CPArray alloc] initWithArray:sourceObjects copyItems:YES];
+        [destinationContent insertObjects:copy atIndexes:[CPIndexSet indexSetWithIndex:proposedIndex]];
+        [aCollectionView setContent:destinationContent];
     }
 
-    [aCollectionView reloadContent];
-    [tableView reloadData];
-
     [CPCursor pop];
-
     return YES;
 }
 
@@ -213,9 +223,14 @@ CPLogRegister(CPLogConsole);
 @end
 
 
-var keyCode = 0;
 @implementation ArrayController : CPArrayController
 {
+    CPInteger keyCode;
+}
+
+- (void)awakeFromCib
+{
+    keyCode = 0;
 }
 
 - (void)newObject
