@@ -391,14 +391,7 @@ var HORIZONTAL_MARGIN = 2;
     _isSelectable = isSelectable;
 
     if (!_isSelectable)
-    {
-        var index = CPNotFound,
-            itemCount = [_items count];
-
-        // Be wary of invalid selection ranges since setContent: does not clear selection indexes.
-        while ((index = [_selectionIndexes indexGreaterThanIndex:index]) != CPNotFound && index < itemCount)
-            [_items[index] setSelected:NO];
-    }
+        [self _applySelectionToItems:NO];
 }
 
 /*!
@@ -452,22 +445,15 @@ var HORIZONTAL_MARGIN = 2;
 {
     if (!anIndexSet)
         anIndexSet = [CPIndexSet indexSet];
+
     if (!_isSelectable || [_selectionIndexes isEqual:anIndexSet])
         return;
 
-    var index = CPNotFound,
-        itemCount = [_items count];
-
-    // Be wary of invalid selection ranges since setContent: does not clear selection indexes.
-    while ((index = [_selectionIndexes indexGreaterThanIndex:index]) !== CPNotFound && index < itemCount)
-        [_items[index] setSelected:NO];
+    [self _applySelectionToItems:NO];
 
     _selectionIndexes = anIndexSet;
 
-    var index = CPNotFound;
-
-    while ((index = [_selectionIndexes indexGreaterThanIndex:index]) !== CPNotFound)
-        [_items[index] setSelected:YES];
+    [self _applySelectionToItems:YES];
 
     var binderClass = [[self class] _binderClassForBinding:@"selectionIndexes"];
     [[binderClass getBinding:@"selectionIndexes" forObject:self] reverseSetValueFor:@"selectionIndexes"];
@@ -977,6 +963,20 @@ var HORIZONTAL_MARGIN = 2;
         frame = CGRectUnion(frame, [self frameForItemAtIndex:indexArray[index]]);
 
     return frame;
+}
+
+- (void)_applySelectionToItems:(BOOL)select
+{
+    var numberOfItems = [_items count];
+
+    [_selectionIndexes enumerateIndexesUsingBlock:function(idx, stop)
+    {
+        if (idx < numberOfItems)
+            [[_items objectAtIndex:idx] setSelected:select];
+        else {
+            stop(YES);
+        }
+    }];
 }
 
 @end
