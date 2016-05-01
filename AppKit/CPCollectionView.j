@@ -132,7 +132,6 @@ var HORIZONTAL_MARGIN = 2;
     CGSize                          _storedFrameSize;
 
     BOOL                            _uniformSubviewsResizing @accessors(property=uniformSubviewsResizing);
-    BOOL                            _lockResizing;
 
     CPInteger                       _currentDropIndex;
     CPDragOperation                 _currentDragOperation;
@@ -190,7 +189,7 @@ var HORIZONTAL_MARGIN = 2;
 
     _needsMinMaxItemSizeUpdate = YES;
     _uniformSubviewsResizing = NO;
-    _lockResizing = NO;
+    _inLiveResize = NO;
 
     _currentDropIndex      = -1;
     _currentDragOperation  = CPDragOperationNone;
@@ -533,14 +532,14 @@ var HORIZONTAL_MARGIN = 2;
 
 - (void)resizeWithOldSuperviewSize:(CGSize)oldBoundsSize
 {
-    if (_lockResizing)
+    if (_inLiveResize)
         return;
 
-    _lockResizing = YES;
+    _inLiveResize = YES;
 
     [self tile];
 
-    _lockResizing = NO;
+    _inLiveResize = NO;
 }
 
 - (void)tile
