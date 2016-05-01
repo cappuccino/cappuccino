@@ -140,6 +140,14 @@ var HORIZONTAL_MARGIN = 2;
     _CPCollectionViewDropIndicator  _dropView;
 }
 
++ (Class)_binderClassForBinding:(CPString)aBinding
+{
+    if (aBinding == CPContentBinding)
+        return [_CPCollectionViewContentBinder class];
+
+    return [super _binderClassForBinding:aBinding];
+}
+
 - (id)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
@@ -1583,6 +1591,17 @@ var CPCollectionViewMinItemSizeKey              = @"CPCollectionViewMinItemSizeK
     [aCoder encodeFloat:_verticalMargin forKey:CPCollectionViewVerticalMarginKey];
 
     [aCoder encodeObject:_backgroundColors forKey:CPCollectionViewBackgroundColorsKey];
+}
+
+@end
+
+@implementation _CPCollectionViewContentBinder : CPBinder
+{
+}
+
+- (void)setValue:(id)aValue forBinding:(CPString)aBinding
+{
+    [_source setContent:aValue];
 }
 
 @end
