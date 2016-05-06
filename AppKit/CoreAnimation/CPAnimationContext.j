@@ -612,6 +612,7 @@ CFRunLoopRemoveObserver = function(runloop, observer, mode)
 var FrameUpdater = function(anIdentifier)
 {
     this._identifier = anIdentifier;
+    this._requestId = null;
     this._duration = 0;
     this._stop = false;
     this._targets = [];
@@ -636,11 +637,15 @@ var FrameUpdater = function(anIdentifier)
 
 FrameUpdater.prototype.start = function()
 {
-    window.requestAnimationFrame(this._updateFunction);
+    this._requestId = window.requestAnimationFrame(this._updateFunction);
 };
 
 FrameUpdater.prototype.stop = function()
 {
+    // window.cancelAnimationFrame support is Chrome 24, Firefox 23, IE 10, Opera 15, Safari 6.1
+    if (window.cancelAnimationFrame)
+        window.cancelAnimationFrame(this._requestId);
+
     this._stop = true;
 };
 
