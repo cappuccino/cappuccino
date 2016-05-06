@@ -617,20 +617,21 @@ var FrameUpdater = function(anIdentifier)
     this._stop = false;
     this._targets = [];
     this._callbacks = [];
+
     var frameUpdater = this;
 
     this._updateFunction = function(timestamp)
     {
+        if (frameUpdater._startDate == null)
+            frameUpdater._startDate = timestamp;
+
         if (frameUpdater._stop)
             return;
-
-        if (this._startDate == null)
-            this._startDate = timestamp;
 
         for (var i = 0; i < frameUpdater._callbacks.length; i++)
             frameUpdater._callbacks[i]();
 
-        if (timestamp - this._startDate < frameUpdater._duration * 1000)
+        if (timestamp - frameUpdater._startDate < frameUpdater._duration * 1000)
             window.requestAnimationFrame(frameUpdater._updateFunction);
     };
 };
