@@ -399,7 +399,8 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
 
 - (void)_replaceModifiersForKey:(CPString)aKey
 {
-    if (![_replacedKeys containsObject:aKey] && [_nativeClass automaticallyNotifiesObserversForKey:aKey]) {
+    if (![_replacedKeys containsObject:aKey] && [_nativeClass automaticallyNotifiesObserversForKey:aKey])
+    {
         [_replacedKeys addObject:aKey];
 
         var theClass = _nativeClass,
