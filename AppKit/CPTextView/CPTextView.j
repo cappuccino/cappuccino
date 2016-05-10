@@ -623,14 +623,13 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     [_caret setVisibility:flag stop:NO];
 }
 
-// remove unnecessary call to CGContextClearRect from CPView implementation
 - (void)displayRectIgnoringOpacity:(CGRect)aRect inContext:(CPGraphicsContext)aGraphicsContext
 {    if ([self isHidden])
        return;
 
-   [self lockFocus];
+   // [self lockFocus];  // this line crashes FF for obscure reasons when displaying large documents (2k+ lines)
    [self drawRect:aRect];
-   [self unlockFocus];
+   // [self unlockFocus];
 }
 
 - (void)drawRect:(CGRect)aRect
