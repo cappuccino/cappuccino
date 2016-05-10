@@ -17,7 +17,6 @@
 
 - (void)orderFrontFontPanel:(id)sender
 {
-   [CPFontManager setFontPanelFactory:[CPFontPanel class]];
    [[CPFontManager sharedFontManager] orderFrontFontPanel:self];
 }
 
