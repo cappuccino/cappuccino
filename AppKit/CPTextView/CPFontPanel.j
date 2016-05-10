@@ -499,4 +499,4 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
 
 @end
 
-[CPFontManager setFontPanelFactory:CPFontPanel];
+[CPFontManager setFontPanelFactory:[CPFontPanel class]];

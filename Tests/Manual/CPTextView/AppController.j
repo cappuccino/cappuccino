@@ -7,11 +7,18 @@
 
 @import <Foundation/Foundation.j>
 @import <AppKit/CPTextView.j>
+@import <AppKit/CPFontPanel.j>
 
 @implementation AppController : CPObject
 {
     CPTextView  _textView;
     CPTextView  _textView2;
+}
+
+- (void)orderFrontFontPanel:(id)sender
+{
+   [CPFontManager setFontPanelFactory:[CPFontPanel class]];
+   [[CPFontManager sharedFontManager] orderFrontFontPanel:self];
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
@@ -24,6 +31,8 @@
     [contentView setBackgroundColor:[CPColor colorWithWhite:0.95 alpha:1.0]];
 
     _textView = [[CPTextView alloc] initWithFrame:CGRectMake(0,0,500,500)];
+    [_textView setRichText:YES];
+
    //  _textView2 = [[CPTextView alloc] initWithFrame:CGRectMake(0,0,500,500)];
    //  _textView2._isRichText = NO;
    //  [_textView setBackgroundColor:[CPColor whiteColor]];
@@ -61,9 +70,7 @@
 
    item = [mainMenu insertItemWithTitle:@"Format" action:nil keyEquivalent:nil atIndex:0];
    var formatMenu = [[CPMenu alloc] initWithTitle:@"Format Menu"];
-
    [formatMenu addItemWithTitle:@"Font panel" action:@selector(orderFrontFontPanel:) keyEquivalent:@"f"];
-
    [mainMenu setSubmenu:formatMenu forItem:item];
 
    //
@@ -85,11 +92,6 @@
     [CPMenu setMenuBarVisible:YES];
 }
 
-// //-> CPApplication (?)
-// - (void)orderFrontFontPanel:sender
-// {
-//    [[CPFontManager sharedFontManager] orderFrontFontPanel:self];
-// }
 //
 // - (void) makeRTF:sender
 // {
