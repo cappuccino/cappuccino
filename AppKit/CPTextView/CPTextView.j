@@ -768,60 +768,6 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     return [_selectionRange];
 }
 
-- (CPRange)selectionRangeForProposedRange:(CPRange)proposedRange granularity:(CPSelectionGranularity)granularity
-{
-    var textStorageLength = [_layoutManager numberOfCharacters];
-
-    if (textStorageLength == 0)
-        return CPMakeRange(0, 0);
-
-    if (proposedRange.location >= textStorageLength)
-        proposedRange = CPMakeRange(textStorageLength, 0);
-
-    if (CPMaxRange(proposedRange) > textStorageLength)
-        proposedRange.length = textStorageLength - proposedRange.location;
-
-    var string = [_textStorage string],
-        regex,
-        loc = proposedRange.location;
-
-
-    switch (granularity)
-    {
-        case CPSelectByWord:
-            regex = [[self class] _wordBoundaryRegex];
-            break;
-        case CPSelectByParagraph:
-            regex = [[self class] _paragraphBoundaryRegex];
-            break;
-        default:
-            return proposedRange;
-    }
-
-    if (loc > 0 && _isNewlineCharacter([string characterAtIndex:loc]))
-        loc--;
-
-    var granularRange = [self _characterRangeForIndex:loc inRange:proposedRange asDefinedByRegex:regex skip:YES];
-
-    if (proposedRange.length == 0 && _isNewlineCharacter([string characterAtIndex:proposedRange.location]))
-        return _MakeRangeFromAbs(_isNewlineCharacter([string characterAtIndex:loc])? proposedRange.location : granularRange.location, proposedRange.location + 1);
-
-    if (proposedRange.length)
-        granularRange = CPUnionRange(granularRange, [self _characterRangeForIndex:CPMaxRange(proposedRange)
-                                                                          inRange:proposedRange
-                                                                 asDefinedByRegex:regex
-                                                                             skip:YES]);
-
-    switch (granularity)
-    {
-        case CPSelectByParagraph:
-            if (_isNewlineCharacter([string characterAtIndex:CPMaxRange(granularRange)]))
-                granularRange.length++;
-    }
-
-    return granularRange;
-}
-
 #pragma mark -
 #pragma mark Keyboard events
 
