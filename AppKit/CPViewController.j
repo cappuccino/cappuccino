@@ -150,7 +150,7 @@ var CPViewControllerCachedCibs;
     If you use Interface Builder to create your views, and you initialize the
     controller using the initWithCibName:bundle: methods, then you MUST NOT override
     this method.
-    
+
     @note When using this method, the cib loading system is synchronous.
     See the loadViewWithCompletionHandler: method for an asynchronous loading.
 */
@@ -179,11 +179,11 @@ var CPViewControllerCachedCibs;
 
 /*!
     Loads asynchronously the cib and creates the view that the controller manages.
-    
+
     @param aHandler A function passing the loaded view as the first argument
     and a network error or nil as the second argument: function(view, error).
-    
-    @note If the view has already been loaded, the completion handler is run immediatly 
+
+    @note If the view has already been loaded, the completion handler is run immediatly
     and the process is synchronous.
 */
 - (void)loadViewWithCompletionHandler:(Function/*(view, error)*/)aHandler
@@ -217,7 +217,7 @@ var CPViewControllerCachedCibs;
 
                     [CPViewControllerCachedCibs setObject:aCib forKey:_cibName];
                     [aCib instantiateCibWithExternalNameTable:_cibExternalNameTable];
-                    aHandler(_view, nil);
+                    [self _viewDidLoadWithCompletionHandler:aHandler];
                 }
                 else
                 {
@@ -228,13 +228,13 @@ var CPViewControllerCachedCibs;
         else
         {
             [cib instantiateCibWithExternalNameTable:_cibExternalNameTable];
-            aHandler(_view, nil);
+            [self _viewDidLoadWithCompletionHandler:aHandler];
         }
     }
     else
     {
         _view = [CPView new];
-        aHandler(_view, nil);
+        [self _viewDidLoadWithCompletionHandler:aHandler];
     }
 }
 
@@ -286,8 +286,15 @@ var CPViewControllerCachedCibs;
 
 - (void)_viewDidLoad
 {
+    [self _viewDidLoadWithCompletionHandler:function() {
+        [self viewDidLoad];
+    }];
+}
+
+- (void)_viewDidLoadWithCompletionHandler:(Function)aHandler
+{
     [self willChangeValueForKey:"isViewLoaded"];
-    [self viewDidLoad];
+    aHandler(_view, nil);
     _isViewLoaded = YES;
     [self didChangeValueForKey:"isViewLoaded"];
 }
