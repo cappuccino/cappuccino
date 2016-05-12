@@ -474,6 +474,8 @@ CPTransformableAttributeType = 1800;
         value = [aView intValue];
     else if (attributeType == CPBooleanAttributeType)
         value = [aView state];
+    else if (attributeType == CPDateAttributeType)
+        value = [aView dateValue];
     else
         value = [aView stringValue];
 
