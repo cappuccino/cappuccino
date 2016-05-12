@@ -275,13 +275,13 @@ CPLog(@"Got some class: %@", inst);
 }
 
 /*!
-    Tests whether the receiver implements to the provided selector regardless of inheritance.
+    Tests if the receiver implements the provided selector regardless of inheritance.
     @param aSelector the selector for which to test the receiver
     @return \c YES if the receiver implements the selector
 */
 - (BOOL)implementsSelector:(SEL)aSelector
 {
-    var methods = class_copyMethodList(isa),
+    var methods = class_copyMethodList([self class]),
         count = methods.length;
 
     while (count--)
