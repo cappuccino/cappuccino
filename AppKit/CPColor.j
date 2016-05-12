@@ -100,8 +100,10 @@ var cachedBlackColor,
 + (CPDictionary)themeAttributes
 {
     return @{
-            @"alternate-selected-control-color": [CPNull null],
-            @"secondary-selected-control-color" : [CPNull null]
+            @"alternate-selected-control-color":        [CPNull null],
+            @"secondary-selected-control-color":        [CPNull null],
+            @"selected-text-background-color":          [CPNull null],
+            @"selected-text-inactive-background-color": [CPNull null]
         };
 }
 
@@ -500,12 +502,12 @@ var cachedBlackColor,
 
 + (CPColor)selectedTextBackgroundColor
 {
-    return [CPColor colorWithHexString:"99CCFF"];
+    return [[self _cachedThemeColor] valueForThemeAttribute:@"selected-text-background-color"];
 }
 
 + (CPColor)_selectedTextBackgroundColorUnfocussed
 {
-    return [CPColor colorWithHexString:"CCCCCC"];
+    return [[self _cachedThemeColor] valueForThemeAttribute:@"selected-text-inactive-background-color"];
 }
 
 /* @ignore */
