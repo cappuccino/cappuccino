@@ -624,12 +624,10 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 }
 
 - (void)displayRectIgnoringOpacity:(CGRect)aRect inContext:(CPGraphicsContext)aGraphicsContext
-{    if ([self isHidden])
+{   if ([self isHidden])
        return;
 
-   // [self lockFocus];  // this line crashes FF for obscure reasons when displaying large documents (2k+ lines)
-   [self drawRect:aRect];
-   // [self unlockFocus];
+    [self drawRect:aRect];
 }
 
 - (void)drawRect:(CGRect)aRect
