@@ -502,12 +502,12 @@ var cachedBlackColor,
 
 + (CPColor)selectedTextBackgroundColor
 {
-    return [[self _cachedThemeColor] valueForThemeAttribute:@"selected-text-background-color"];
+    return [[self _cachedThemeColor] valueForThemeAttribute:@"selected-text-background-color"] || [CPColor colorWithHexString:"99CCFF"];
 }
 
 + (CPColor)_selectedTextBackgroundColorUnfocussed
 {
-    return [[self _cachedThemeColor] valueForThemeAttribute:@"selected-text-inactive-background-color"];
+    return [[self _cachedThemeColor] valueForThemeAttribute:@"selected-text-inactive-background-color"] || [CPColor colorWithHexString:"CCCCCC"];
 }
 
 /* @ignore */
