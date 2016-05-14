@@ -1053,9 +1053,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     }
 
     else
-    {
         aSel = CPMakeRange((aSel.location < _startTrackingLocation? aSel.location : CPMaxRange(aSel)) + move, 0);
-    }
 
     aSel = _MakeRangeFromAbs(_startTrackingLocation, aSel.location);
     [self _performSelectionFixupForRange:aSel];
