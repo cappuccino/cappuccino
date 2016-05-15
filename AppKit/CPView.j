@@ -243,6 +243,9 @@ var CPViewHighDPIDrawingEnabled = YES;
 
     CPMutableArray      _trackingAreas          @accessors(getter=trackingAreas, copy);
     BOOL                _inhibitUpdateTrackingAreas;
+
+    id                  _animator;
+    CPDictionary        _animationsDictionary;
 }
 
 /*
@@ -388,6 +391,9 @@ var CPViewHighDPIDrawingEnabled = YES;
         _DOMImageParts = [];
         _DOMImageSizes = [];
 #endif
+
+        _animator = nil;
+        _animationsDictionary = @{};
 
         [self _setupViewFlags];
         [self _loadThemeAttributes];
@@ -2684,20 +2690,23 @@ setBoundsOrigin:
     return _needsLayout;
 }
 
+- (void)layout
+{
+    _needsLayout = NO;
+
+    if (_viewClassFlags & CPViewHasCustomViewWillLayout)
+        [self viewWillLayout];
+
+    if (_viewClassFlags & CPViewHasCustomLayoutSubviews)
+        [self layoutSubviews];
+
+    [self viewDidLayout];
+}
+
 - (void)layoutIfNeeded
 {
     if (_needsLayout)
-    {
-        _needsLayout = NO;
-
-        if (_viewClassFlags & CPViewHasCustomViewWillLayout)
-            [self viewWillLayout];
-
-        if (_viewClassFlags & CPViewHasCustomLayoutSubviews)
-            [self layoutSubviews];
-
-        [self viewDidLayout];
-    }
+        [self layout];
 }
 
 /*!

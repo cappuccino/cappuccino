@@ -224,6 +224,7 @@ var rootItems = [CPArray arrayWithObject:[CPDictionary dictionaryWithObjectsAndK
     	[smartOutlineView reloadData];
 
     	[self saveSmartFolders];
+    	[aSheet orderOut:nil];
     }
 }
 // convenience method

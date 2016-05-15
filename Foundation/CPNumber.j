@@ -25,6 +25,8 @@
 @import "CPObject.j"
 @import "CPObjJRuntime.j"
 
+#define CAST_TO_INT(x) ((x) >= 0 ? Math.floor((x)) : Math.ceil((x)))
+
 var CPNumberUIDs    = new CFMutableDictionary();
 
 /*!
@@ -239,6 +241,7 @@ FIXME: Do we need this?
 {
     if (typeof self == "boolean")
         return self ? 1 : 0;
+
     return self;
 }
 
@@ -246,35 +249,33 @@ FIXME: Do we need this?
 {
     if (typeof self == "boolean")
         return self ? 1 : 0;
+
     return self;
 }
 
 - (int)intValue
 {
-    if (typeof self == "boolean")
-        return self ? 1 : 0;
-    return self;
+    return CAST_TO_INT(self);
+}
+
+- (int)integerValue
+{
+    return CAST_TO_INT(self);
 }
 
 - (long long)longLongValue
 {
-    if (typeof self == "boolean")
-        return self ? 1 : 0;
-    return self;
+    return CAST_TO_INT(self);
 }
 
 - (long)longValue
 {
-    if (typeof self == "boolean")
-        return self ? 1 : 0;
-    return self;
+    return CAST_TO_INT(self);
 }
 
 - (short)shortValue
 {
-    if (typeof self == "boolean")
-        return self ? 1 : 0;
-    return self;
+    return CAST_TO_INT(self);
 }
 
 - (CPString)stringValue
@@ -289,9 +290,8 @@ FIXME: Do we need this?
 
 - (unsigned int)unsignedIntValue
 {
-    if (typeof self == "boolean")
-        return self ? 1 : 0;
-    return self;
+    // Despite the name this method does not make a negative value positive in Objective-C, so neither does it here.
+    return CAST_TO_INT(self);
 }
 /*
 - (unsigned long long)unsignedLongLongValue
@@ -302,16 +302,14 @@ FIXME: Do we need this?
 */
 - (unsigned long)unsignedLongValue
 {
-    if (typeof self == "boolean")
-        return self ? 1 : 0;
-    return self;
+    // Despite the name this method does not make a negative value positive in Objective-C, so neither does it here.
+    return CAST_TO_INT(self);
 }
 
 - (unsigned short)unsignedShortValue
 {
-    if (typeof self == "boolean")
-        return self ? 1 : 0;
-    return self;
+    // Despite the name this method does not make a negative value positive in Objective-C, so neither does it here.
+    return CAST_TO_INT(self);
 }
 
 - (CPComparisonResult)compare:(CPNumber)aNumber

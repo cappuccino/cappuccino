@@ -366,11 +366,12 @@
         count       = [_ruleOptionViews count],
         sliceFrame  = [self frame],
         image       = [_ruleEditor _imageAdd],
+        imageSize   = image ? [image size] : CGSizeMake(0,0),
 
-        buttonFrame = CGRectMake(CGRectGetWidth(sliceFrame) - [image size].width - [self _rowButtonsRightHorizontalPadding], ([_ruleEditor rowHeight] - [image size].height) / 2 - 1, [image size].width, [image size].height);
+        buttonFrame = CGRectMake(CGRectGetWidth(sliceFrame) - imageSize.width - [self _rowButtonsRightHorizontalPadding], ([_ruleEditor rowHeight] - imageSize.height) / 2 - 1, imageSize.width, imageSize.height);
 
     [_addButton setFrame:buttonFrame];
-    buttonFrame.origin.x -= [image size].width + [self _rowButtonsInterviewHorizontalPadding];
+    buttonFrame.origin.x -= imageSize.width + [self _rowButtonsInterviewHorizontalPadding];
     [_subtractButton setFrame:buttonFrame];
 
     if (widthChanged)

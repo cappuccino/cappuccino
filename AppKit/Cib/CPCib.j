@@ -55,6 +55,18 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
     id          _loadDelegate;
 }
 
+- (id)_initWithData:(CPData)data bundle:(CPBundle)aBundle cibName:(CPString)aCibName
+{
+    self = [super init];
+
+    _data = data;
+    _cibName = aCibName;
+    _bundle = aBundle;
+    _awakenCustomResources = YES;
+
+    return self;
+}
+
 - (id)initWithContentsOfURL:(CPURL)aURL
 {
     self = [super init];

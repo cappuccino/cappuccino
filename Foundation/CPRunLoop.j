@@ -200,6 +200,7 @@ var CPRunLoopLastNativeRunLoop = 0;
 
     CPArray _orderedPerforms;
     int     _runLoopInsuranceTimer;
+    CPArray _observers;
 }
 
 /*
@@ -224,6 +225,7 @@ var CPRunLoopLastNativeRunLoop = 0;
         _timersForModes = {};
         _nativeTimersForModes = {};
         _nextTimerFireDatesForModes = {};
+        _observers = nil;
     }
 
     return self;
@@ -472,6 +474,19 @@ var CPRunLoopLastNativeRunLoop = 0;
     }
     else
         _orderedPerforms = performs;
+
+    if (_observers)
+    {
+        var count = _observers.length;
+        while(count--)
+        {
+            var obs = _observers[count];
+            obs.callout();
+
+            if (!obs.repeats)
+                _observers.splice(count, 1);
+        }
+    }
 
     _runLoopLock = NO;
 

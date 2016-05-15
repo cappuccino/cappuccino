@@ -116,7 +116,7 @@ if (typeof window !== "undefined" && window.opera)
 }
 
 // Internet Explorer
-else if (typeof window !== "undefined" && window.attachEvent) // Must follow Opera check.
+else if (typeof window !== "undefined" && (window.attachEvent || (!(window.ActiveXObject) && "ActiveXObject" in window))) // Must follow Opera check.
 {
     PLATFORM_ENGINE = CPInternetExplorerBrowserEngine;
 
@@ -367,6 +367,18 @@ function CPBrowserStyleProperty(aProperty)
                     };
 
                 r = candidates[PLATFORM_STYLE_JS_PROPERTIES['transform']] || nil;
+                break;
+
+            case 'animationend':
+                var candidates = {
+                        'WebkitAnimation' : 'webkitAnimationEnd',
+                        'MozAnimation'    : 'animationend',
+                        'OAnimation'      : 'oAnimationEnd',
+                        'msAnimation'     : 'MSAnimationEnd',
+                        'animation'       : 'animationend'
+                    };
+
+                r = candidates[PLATFORM_STYLE_JS_PROPERTIES['animation']] || nil;
                 break;
 
             default:

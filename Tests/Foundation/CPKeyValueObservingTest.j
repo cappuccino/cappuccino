@@ -265,6 +265,22 @@ var _getCheeseCounter;
     [self assert:dependantKeyPathTester equals:_lastObject];
 }
 
+- (void)testSendNotificationsForMultipleDependantKeyPathsToTheSameObject
+{
+    var observingTester = [ObservingTester testerWithCheese:@"cheese"],
+        dependantKeyPathTester = [DependantKeyPathsTester testerWithObservingTester:observingTester],
+        anotherDependantKeyPathTester = [DependantKeyPathsTester testerWithObservingTester:observingTester];
+
+    [dependantKeyPathTester addObserver:self forKeyPath:@"observedCheese" options:CPKeyValueObservingOptionNew context:nil];
+    [anotherDependantKeyPathTester addObserver:self forKeyPath:@"observedCheese" options:CPKeyValueObservingOptionNew context:nil];
+    [observingTester setCheese:@"changed cheese"];
+
+    [self assert:@"observedCheese" equals:_lastKeyPath];
+    [self assert:@"observedCheese" equals:_secondLastKeyPath];
+    [self assertTrue:[[dependantKeyPathTester, anotherDependantKeyPathTester] containsObject:_lastObject] message:@"Last observed object must be one of the DependantKeyPathsTester"];
+    [self assertTrue:[[dependantKeyPathTester, anotherDependantKeyPathTester] containsObject:_secondLastObject] message:@"Second last observed object must be one of the DependantKeyPathsTester"];
+}
+
 - (void)testOnlyInsertObject_AtKeyIndex_Implemented
 {
     var insertSelector = @selector(insertObject:inObjectsAtIndex:),
