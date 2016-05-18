@@ -417,8 +417,7 @@ var CPTableHeaderViewResizeZone = 3.0,
     }
     else if (_isDragging)
     {
-        // Disable autoscrolling until it behaves correctly.
-        //[self _autoscroll:theEvent localLocation:currentLocation];
+        [self _autoscroll:theEvent localLocation:currentLocation];
         [self _dragTableColumn:_activeColumn to:currentLocation];
     }
     else // tracking a press, could become a drag
