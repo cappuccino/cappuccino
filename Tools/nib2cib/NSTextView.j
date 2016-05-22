@@ -43,6 +43,7 @@
         [self setBackgroundColor:[aTextViewSharedData backgroundColor]];
         [self setInsertionPointColor:[aTextViewSharedData insertionColor]];
         [self setSelectedTextAttributes:[aTextViewSharedData selectedTextAttributes]];
+        [[self textContainer] setWidthTracksTextView:YES];
     }
 
     return self;
