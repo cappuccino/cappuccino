@@ -94,7 +94,7 @@ CPStringSizeCachingEnabled = YES;
 
     size = CPStringSizeWithFontInWidthCache[self][cacheKey];
 
-    if (size !== undefined)
+    if (CPStringSizeWithFontInWidthCache[self].hasOwnProperty(cacheKey) && size !== undefined)
         return CGSizeMakeCopy(size);
 
     if (!CPStringSizeDidTestCanvasSizingValid)
