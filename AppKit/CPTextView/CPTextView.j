@@ -1536,23 +1536,14 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)setTextColor:(CPColor)aColor
 {
-    _textColor = aColor;
-
-    if (_textColor)
-        [_textStorage addAttribute:CPForegroundColorAttributeName value:_textColor range:CPMakeRange(0, [_layoutManager numberOfCharacters])];
-    else
-        [_textStorage removeAttribute:CPForegroundColorAttributeName range:CPMakeRange(0, [_layoutManager numberOfCharacters])];
-
-    [_layoutManager _validateLayoutAndGlyphs];
-    [self scrollRangeToVisible:CPMakeRange([_layoutManager numberOfCharacters], 0)];
+    _textColor = [aColor copy];
+    [self setTextColor:aColor range:CPMakeRange(0, [_layoutManager numberOfCharacters])];
+    [_typingAttributes setObject:_textColor forKey:CPForegroundColorAttributeName];
 }
 
 - (void)setTextColor:(CPColor)aColor range:(CPRange)range
 {
-    if (![self isRichText])
-        return;
-
-    if (!CPEmptyRange(_selectionRange))
+    if (!CPEmptyRange(range))
     {
         if (aColor)
             [_textStorage addAttribute:CPForegroundColorAttributeName value:aColor range:CPMakeRangeCopy(range)];
@@ -1560,13 +1551,10 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
             [_textStorage removeAttribute:CPForegroundColorAttributeName range:CPMakeRangeCopy(range)];
     }
     else
-    {
         [_typingAttributes setObject:aColor forKey:CPForegroundColorAttributeName];
-    }
 
+    [_layoutManager textStorage:_textStorage edited:0 range:range changeInLength:0 invalidatedRange:range];
     [_layoutManager _validateLayoutAndGlyphs];
-    [self setNeedsDisplay:YES];
-    [self scrollRangeToVisible:CPMakeRange(CPMaxRange(range), 0)];
 }
 
 - (void)underline:(id)sender
