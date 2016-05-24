@@ -261,7 +261,7 @@ CPKernAttributeName = @"CPKernAttributeName";
     _CPRaiseInvalidAbstractInvocation(self, _cmd);
 }
 
-- (void)setFont:(CPFont)aFont rang:(CPRange)aRange
+- (void)setFont:(CPFont)aFont range:(CPRange)aRange
 {
     _CPRaiseInvalidAbstractInvocation(self, _cmd);
 }
