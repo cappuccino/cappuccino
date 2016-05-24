@@ -1552,7 +1552,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     else
         [_typingAttributes setObject:aColor forKey:CPForegroundColorAttributeName];
 
-    [_layoutManager textStorage:_textStorage edited:0 range:range changeInLength:0 invalidatedRange:range];
+    [_layoutManager textStorage:_textStorage edited:0 range:range changeInLength:0 invalidatedRange:CPMakeRangeCopy(range)];
     [_layoutManager _validateLayoutAndGlyphs];
 }
 
