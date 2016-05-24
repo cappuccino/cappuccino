@@ -1479,7 +1479,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         [_textStorage setFont:_font];
     }
 
-    [_textStorage addAttribute:CPFontAttributeName value:font range:range];
+    [_textStorage addAttribute:CPFontAttributeName value:font range:CPMakeRangeCopy(range)];
     [_layoutManager _validateLayoutAndGlyphs];
 }
 
