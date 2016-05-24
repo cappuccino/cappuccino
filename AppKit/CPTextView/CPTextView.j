@@ -1542,6 +1542,12 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)setTextColor:(CPColor)aColor range:(CPRange)range
 {
+    var currentAttributes = [_textStorage attributesAtIndex:range.location effectiveRange:nil] || _typingAttributes;
+
+    [[[[self window] undoManager] prepareWithInvocationTarget:self]
+                setTextColor:[currentAttributes objectForKey:CPForegroundColorAttributeName]
+                range:CPMakeRangeCopy(range)];
+
     if (!CPEmptyRange(range))
     {
         if (aColor)
