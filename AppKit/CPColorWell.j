@@ -255,6 +255,8 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 
     var colorPanel = [CPColorPanel sharedColorPanel];
 
+    [colorPanel setPlatformWindow:[[self window] platformWindow]];
+
     [colorPanel setColor:_color];
     [colorPanel orderFront:self];
 }
