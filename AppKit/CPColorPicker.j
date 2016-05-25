@@ -106,6 +106,7 @@
     CPView          _pickerView;
     CPView          _brightnessSlider;
     __CPColorWheel  _hueSaturationView;
+    DOMElement      _brightnessSliderImage;
 
     CPColor         _cachedColor;
 }
@@ -125,8 +126,6 @@
     _brightnessSlider = [[CPSlider alloc] initWithFrame:CGRectMake(0, (aFrame.size.height - 34), aFrame.size.width, 15)];
 
     [_brightnessSlider setValue:15.0 forThemeAttribute:@"track-width"];
-    [_brightnessSlider setValue:[CPColor colorWithPatternImage:[[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPColorPicker class]] pathForResource:@"brightness_bar.png"]]] forThemeAttribute:@"track-color"];
-
     [_brightnessSlider setMinValue:0.0];
     [_brightnessSlider setMaxValue:100.0];
     [_brightnessSlider setFloatValue:100.0];
@@ -141,6 +140,14 @@
 
     [_pickerView addSubview:_hueSaturationView];
     [_pickerView addSubview:_brightnessSlider];
+
+#if PLATFORM(DOM)
+    _brightnessSliderImage = new Image();
+    _brightnessSliderImage.src = [[CPBundle bundleForClass:CPColorPicker] pathForResource:@"brightness_bar.png"];
+    _brightnessSlider._DOMElement.appendChild(_brightnessSliderImage);
+    _brightnessSliderImage.style.width = (_brightnessSlider._frame.size.width - 16) + "px";
+    _brightnessSliderImage.style.height = "15px";
+#endif
 }
 
 - (void)brightnessSliderDidChange:(id)sender
