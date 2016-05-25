@@ -106,7 +106,6 @@
     CPView          _pickerView;
     CPView          _brightnessSlider;
     __CPColorWheel  _hueSaturationView;
-    DOMElement      _brightnessSliderImage;
 
     CPColor         _cachedColor;
 }
@@ -142,7 +141,7 @@
     [_pickerView addSubview:_brightnessSlider];
 
 #if PLATFORM(DOM)
-    _brightnessSliderImage = new Image();
+    var _brightnessSliderImage = new Image();
     _brightnessSliderImage.src = [[CPBundle bundleForClass:CPColorPicker] pathForResource:@"brightness_bar.png"];
     _brightnessSlider._DOMElement.appendChild(_brightnessSliderImage);
     _brightnessSliderImage.style.width = (_brightnessSlider._frame.size.width - 16) + "px";
