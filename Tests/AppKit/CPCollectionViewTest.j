@@ -13,6 +13,9 @@
     [[CPApplication alloc] init];
 
     _collectionView = [[CPCollectionView alloc] initWithFrame:CGRectMakeZero()];
+    var itemPrototype = [[CPCollectionViewItem alloc] init];
+    [_collectionView setItemPrototype:itemPrototype];
+
     _globalResults = nil;
 }
 
@@ -37,11 +40,49 @@
 
 - (void)testSetContent
 {
-    var collectionView = [[_CPCollectionViewWithHooks alloc] initWithFrame:CGRectMakeZero()],
-        content = [1, 2, 3];
+    var content = [1, 2, 3];
 
-    [collectionView setContent:content];
-    [self assert:content equals:[collectionView content] message:@"collection view content should be equal to the content assigned"];
+    [_collectionView setContent:content];
+    [self assert:content equals:[_collectionView content] message:@"collection view content should be equal to the content assigned"];
+}
+
+- (void)testSetContentStressTest
+{
+    [self assertNoThrow:function()
+    {
+        [_collectionView setContent:@["A","B"]];
+        [self assert:[[_collectionView items] valueForKey:@"representedObject"] equals:[_collectionView content]];
+        [_collectionView setContent:@["A"]];
+        [self assert:[[_collectionView items] valueForKey:@"representedObject"] equals:[_collectionView content]];
+        [_collectionView setContent:@["A", "C"]];
+        [self assert:[[_collectionView items] valueForKey:@"representedObject"] equals:[_collectionView content]];
+        [_collectionView setContent:@["C","D"]];
+        [self assert:[[_collectionView items] valueForKey:@"representedObject"] equals:[_collectionView content]];
+        [_collectionView setContent:@["B","E","C"]];
+        [self assert:[[_collectionView items] valueForKey:@"representedObject"] equals:[_collectionView content]];
+        [_collectionView setContent:@["C","E"]];
+        [self assert:[[_collectionView items] valueForKey:@"representedObject"] equals:[_collectionView content]];
+        [_collectionView setContent:@[]];
+        [self assert:[[_collectionView items] valueForKey:@"representedObject"] equals:[_collectionView content]];
+    }];
+}
+
+- (void)testCollectionViewSetContentPerfTest
+{
+    var c = 1000,
+        content = @[];
+
+    while (c--)
+        [content addObject:(@"Item " + c)];
+
+    [_collectionView setContent:content];
+
+    [content insertObject:"NEW ITEM" atIndex:0];
+
+    var d = new Date();
+    [_collectionView setContent:[content copy]];
+
+    CPLog.warn("CPCollectionView : Inserted 1 item to 1000 items in " + (new Date() - d) + " ms");
 }
 
 - (void)testSelectionIndexes
@@ -54,8 +95,6 @@
 
 - (void)_testCollectionViewItemIsSelected
 {
-    var itemPrototype = [[CPCollectionViewItem alloc] init];
-    [_collectionView setItemPrototype:itemPrototype];
     [_collectionView setContent:[1, 2, 3]];
 
     [_collectionView setSelectionIndexes:[CPIndexSet indexSetWithIndex:1]];
