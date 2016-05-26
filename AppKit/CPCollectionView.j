@@ -31,6 +31,8 @@
 @import "CPDragServer_Constants.j"
 @import "CPPasteboard.j"
 @import "CPView.j"
+@import "CPKeyValueBinding.j"
+@import "CPDragServer_Constants.j"
 
 @class _CPCollectionViewDropIndicator
 
@@ -60,8 +62,6 @@ var CPCollectionViewDelegate_collectionView_acceptDrop_index_dropOperation_     
 
 @end
 
-var HORIZONTAL_MARGIN = 2;
-
 /*!
     @ingroup appkit
     @class CPCollectionView
@@ -90,12 +90,18 @@ var HORIZONTAL_MARGIN = 2;
     @param indices the indices to obtain drag types
     @return an array of drag types (CPString)
 */
+
+var HORIZONTAL_MARGIN = 2.0,
+    ANIMATION_DURATION = 0.6;
+
 @implementation CPCollectionView : CPView
 {
     CPArray                         _content;
     CPArray                         _items;
+    CPArray                         _removedItems;
+    CPIndexSet                      _addedIndexes;
+    CPIndexSet                      _unchangedIndexes;
 
-    CPData                          _itemData;
     CPCollectionViewItem            _itemPrototype;
     CPCollectionViewItem            _itemForDragging;
     CPArray                         _reusableItems;
@@ -173,11 +179,13 @@ var HORIZONTAL_MARGIN = 2;
 
 - (void)_init
 {
-    _content = [];
+    _content = @[];
 
-    _items = [];
-    _reusableItems = [];
-
+    _items = @[];
+    _reusableItems = @[];
+    _removedItems = @[];
+    _addedIndexes = [CPIndexSet indexSet];
+    _unchangedIndexes = [CPIndexSet indexSet];
     _numberOfColumns = CPNotFound;
     _numberOfRows = CPNotFound;
 
@@ -288,14 +296,14 @@ var HORIZONTAL_MARGIN = 2;
 @endcode
 
 */
-- (void)setItemPrototype:(CPCollectionViewItem)anItem
+- (void)setItemPrototype:(CPCollectionViewItem)aPrototypeItem
 {
     _reusableItems = [];
-    _itemData = nil;
+    _removedItems = [_items copy];
     _itemForDragging = nil;
-    _itemPrototype = anItem;
+    _itemPrototype = aPrototypeItem;
 
-    [self _reloadContentCachingRemovedItems:NO];
+    [self setContent:_content];
 }
 
 /*!
@@ -365,11 +373,82 @@ var HORIZONTAL_MARGIN = 2;
 
     @param anArray a content array
 */
-- (void)setContent:(CPArray)anArray
+- (void)setContent:(CPArray)newContent
 {
-    _content = anArray;
+    [self _setContent:newContent];
 
-    [self reloadContent];
+    var binderClass = [[self class] _binderClassForBinding:CPContentBinding];
+    [[binderClass getBinding:CPContentBinding forObject:self] reverseSetValueFor:@"content"];
+}
+
+- (void)_setContent:(CPArray)newContent
+{
+    var newItems = @[];
+
+    [_content enumerateObjectsUsingBlock:function(obj, idx, stop)
+    {
+        if (![newContent containsObjectIdenticalTo:obj])
+        {
+            var removedItem = [_items objectAtIndex:idx];
+            [_removedItems addObject:removedItem];
+        }
+    }];
+
+    [newContent enumerateObjectsUsingBlock:function(obj, indexInNewContent, stop)
+    {
+        var indexInOldContent = [_content indexOfObjectIdenticalTo:obj],
+            newItem;
+
+        if (indexInOldContent != CPNotFound)
+        {
+            newItem = [_items objectAtIndex:indexInOldContent];
+            [_unchangedIndexes addIndex:indexInNewContent];
+        }
+        else
+        {
+            newItem = [self newItemForRepresentedObject:obj];
+            [_addedIndexes addIndex:indexInNewContent];
+        }
+
+        if (_itemPrototype)
+            [newItems addObject:newItem];
+    }];
+
+    //CPLog.debug(" OLD CONTENT={" + _content + "} NEW={"+ newContent + "}\nREMOVED={" +_removedItems  + "} ADDED={" + _addedIndexes + "}");
+
+    _content = [newContent copy];
+
+    // Deselect selectionIndexes
+    [self _reflectSelectionWithState:NO];
+
+    [_items removeAllObjects];
+    [_items addObjectsFromArray:newItems];
+    //CPLog.debug("NEW ITEMS " + _items + " : CACHED ITEMS " + _reusableItems);
+    // Reselect selectionIndexes
+    [self _reflectSelectionWithState:YES];
+    [self tileIfNeeded:NO];
+}
+
+- (void)_reflectSelectionWithState:(BOOL)select
+{
+    var count = [_items count];
+
+    [_selectionIndexes enumerateIndexesUsingBlock:function(idx, stop)
+    {
+        // Be wary of invalid selection ranges since setContent: does not clear selection indexes.
+        if (idx < count)
+            [[self itemAtIndex:idx] setSelected:select];
+        else
+            stop(YES);
+    }];
+}
+
+/*!
+    @deprecated  Use -setContent: to change the content and update the layout
+*/
+- (void)reloadContent
+{
+    CPLog.warn("Deprecated, use -setContent: to change the content and update the layout");
 }
 
 /*!
@@ -477,50 +556,6 @@ var HORIZONTAL_MARGIN = 2;
     return [_selectionIndexes copy];
 }
 
-- (void)reloadContent
-{
-    [self _reloadContentCachingRemovedItems:YES];
-}
-
-/* @ignore */
-- (void)_reloadContentCachingRemovedItems:(BOOL)shouldCache
-{
-    // Remove current views
-    var count = _items.length;
-
-    while (count--)
-    {
-        [[_items[count] view] removeFromSuperview];
-        [_items[count] setSelected:NO];
-
-        if (shouldCache)
-            _cachedItems.push(_items[count]);
-    }
-
-    _items = [];
-
-    if (!_itemPrototype)
-        return;
-
-    var index = 0;
-
-    count = _content.length;
-
-    for (; index < count; ++index)
-    {
-        _items.push([self newItemForRepresentedObject:_content[index]]);
-
-        [self addSubview:[_items[index] view]];
-    }
-
-    index = CPNotFound;
-    // Be wary of invalid selection ranges since setContent: does not clear selection indexes.
-    while ((index = [_selectionIndexes indexGreaterThanIndex:index]) != CPNotFound && index < count)
-        [_items[index] setSelected:YES];
-
-    [self tileIfNeeded:NO];
-}
-
 - (void)resizeSubviewsWithOldSize:(CGSize)oldBoundsSize
 {
     // Desactivate subviews autoresizing
@@ -562,7 +597,7 @@ var HORIZONTAL_MARGIN = 2;
 
     //CPLog.debug("frameSize="+CPStringFromSize(frameSize) + "itemSize="+CPStringFromSize(itemSize) + " ncols=" +  colsRowsCount[0] +" nrows="+ colsRowsCount[1]+" displayCount="+ colsRowsCount[2]);
 
-    [self setFrameSize:_storedFrameSize];
+    [super setFrameSize:_storedFrameSize];
 
     //CPLog.debug("OLD " + oldNumberOfColumns + " NEW " + _numberOfColumns);
     if (!lazyFlag ||
@@ -570,7 +605,7 @@ var HORIZONTAL_MARGIN = 2;
         _numberOfRows    !== oldNumberOfRows ||
         !CGSizeEqualToSize(_itemSize, oldItemSize))
 
-        [self displayItems:_items frameSize:_storedFrameSize itemSize:_itemSize columns:_numberOfColumns rows:_numberOfRows count:count];
+        [self displayItems:_items count:count animate:(!_inLiveResize && count > 0)];
 }
 
 - (void)_computeGridWithSize:(CGSize)aSuperviewSize count:(Function)countRef
@@ -623,36 +658,59 @@ var HORIZONTAL_MARGIN = 2;
     countRef(MIN(itemsCount, numberOfColumns * numberOfRows));
 }
 
-- (void)displayItems:(CPArray)displayItems frameSize:(CGSize)aFrameSize itemSize:(CGSize)anItemSize columns:(CPInteger)numberOfColumns rows:(CPInteger)numberOfRows count:(CPInteger)displayCount
+- (void)displayItems:(CPArray)displayItems count:(CPInteger)displayCount animate:(BOOL)shouldAnimate
 {
-//    CPLog.debug("DISPLAY ITEMS " + numberOfColumns + " " +  numberOfRows);
+    //CPLog.debug("DISPLAY ITEMS " + _numberOfColumns + ":" +  _numberOfRows + " removed:" + [_removedItems description]);
+    _horizontalMargin = _uniformSubviewsResizing ? FLOOR((_storedFrameSize.width - _numberOfColumns * _itemSize.width) / (_numberOfColumns + 1)) : HORIZONTAL_MARGIN;
 
-    _horizontalMargin = _uniformSubviewsResizing ? FLOOR((aFrameSize.width - numberOfColumns * anItemSize.width) / (numberOfColumns + 1)) : HORIZONTAL_MARGIN;
-
-    var x = _horizontalMargin,
-        y = -anItemSize.height;
-
-    [displayItems enumerateObjectsUsingBlock:function(item, idx, stop)
+    // Remove what needs to be removed
+    [_removedItems enumerateObjectsUsingBlock:function(anItem, idx, stop)
     {
-        var view = [item view];
-
-        if (idx >= displayCount)
-        {
-            [view setFrameOrigin:CGPointMake(-anItemSize.width, -anItemSize.height)];
-            return;
-        }
-
-        if (idx % numberOfColumns == 0)
-        {
-            x = _horizontalMargin;
-            y += _verticalMargin + anItemSize.height;
-        }
-
-        [view setFrameOrigin:CGPointMake(x, y)];
-        [view setFrameSize:anItemSize];
-
-        x += anItemSize.width + _horizontalMargin;
+        [[anItem view] removeFromSuperview];
+        //CPLog.debug("Remove view " + [anItem view]);
     }];
+
+    //CPLog.debug("Unchanged indexes = " + unchangedIndexes);
+    // Move what needs to be moved
+    [_unchangedIndexes enumerateIndexesUsingBlock:function(idx, stop)
+    {
+        var item = [_items objectAtIndex:idx],
+            view = [item view],
+            x = _horizontalMargin + (_itemSize.width + _horizontalMargin) * (idx % _numberOfColumns),
+            y = _verticalMargin + _itemSize.height * FLOOR(idx / _numberOfColumns),
+            newframeOrigin = CGPointMake(x, y);
+
+        [view setFrameSize:_itemSize];
+
+        if (!CGPointEqualToPoint([view frameOrigin], newframeOrigin))
+        {
+            //CPLog.debug("Move item " + [_items objectAtIndex:idx] + " to index " + idx + " from " + CPStringFromPoint([view frameOrigin]) + " to " + CPStringFromPoint(newframeOrigin));
+            [view setFrameOrigin:newframeOrigin];
+        }
+    }];
+    // Add what needs to be added.
+    [_addedIndexes enumerateIndexesUsingBlock:function(idx, stop)
+    {
+        var view = [[_items objectAtIndex:idx] view],
+            x = _horizontalMargin + (_itemSize.width + _horizontalMargin) * (idx % _numberOfColumns),
+            y = _verticalMargin + _itemSize.height * FLOOR(idx / _numberOfColumns);
+
+        [view setFrame:CGRectMake(x, y, _itemSize.width, _itemSize.height)];
+        [self addSubview:view];
+        //CPLog.debug("Add view for New item At Index " + idx);
+    }];
+
+    [self _displayDidEnd];
+}
+
+- (void)_displayDidEnd
+{
+    [self _enqueueReusableItems:_removedItems];
+    [_removedItems makeObjectsPerformSelector:@selector(setSelected:) withObject:NO];
+
+    [_removedItems removeAllObjects];
+    [_unchangedIndexes removeAllIndexes];
+    [_addedIndexes removeAllIndexes];
 }
 
 - (void)_updateMinMaxItemSizeIfNeeded
@@ -1068,12 +1126,12 @@ var HORIZONTAL_MARGIN = 2;
 
 - (CPView)draggingViewForItemsAtIndexes:(CPIndexSet)indexes withEvent:(CPEvent)event offset:(CGPoint)dragImageOffset
 {
-    var idx = _content[[indexes firstIndex]];
+    var dragIndex = [indexes firstIndex];
 
     if (!_itemForDragging)
-        _itemForDragging = [self newItemForRepresentedObject:idx];
-    else
-        [_itemForDragging setRepresentedObject:idx];
+        _itemForDragging = [_items[dragIndex] copy];
+
+    [_itemForDragging setRepresentedObject:_content[dragIndex]];
 
     return [_itemForDragging view];
 }

@@ -38,20 +38,10 @@
 - (void)testSetContent
 {
     var collectionView = [[_CPCollectionViewWithHooks alloc] initWithFrame:CGRectMakeZero()],
-        content = [1, 2, 3],
-        reloadContentCount;
+        content = [1, 2, 3];
 
-    reloadContentCount = [collectionView reloadContentCallCount];
     [collectionView setContent:content];
-    [self assert:reloadContentCount + 1 equals:[collectionView reloadContentCallCount] message:@"first call to setContent should have called reloadContent once"];
-
-    [content removeObjectAtIndex:0];
-    [self assertTrue:[collectionView content] === content message:@"collection view content should be as assigned"];
-
-    // make sure we call reloadContent even when the content hasn't changed for key-value binding compatibility
-    reloadContentCount = [collectionView reloadContentCallCount];
-    [collectionView setContent:content];
-    [self assert:[collectionView reloadContentCallCount] equals:reloadContentCount + 1 message:@"subsequent calls to setContent should have called reloadContent once"];
+    [self assert:content equals:[collectionView content] message:@"collection view content should be equal to the content assigned"];
 }
 
 - (void)testSelectionIndexes
