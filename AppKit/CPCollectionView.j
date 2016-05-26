@@ -465,8 +465,8 @@ var HORIZONTAL_MARGIN = 2;
 
     [self _applySelectionToItems:YES];
 
-    var binderClass = [[self class] _binderClassForBinding:@"selectionIndexes"];
-    [[binderClass getBinding:@"selectionIndexes" forObject:self] reverseSetValueFor:@"selectionIndexes"];
+    var binderClass = [[self class] _binderClassForBinding:CPSelectionIndexesBinding];
+    [[binderClass getBinding:CPSelectionIndexesBinding forObject:self] reverseSetValueFor:@"selectionIndexes"];
 }
 
 /*!
@@ -1610,7 +1610,7 @@ var CPCollectionViewMinItemSizeKey              = @"CPCollectionViewMinItemSizeK
 
 - (void)setValue:(id)aValue forBinding:(CPString)aBinding
 {
-    [_source setContent:aValue];
+    [_source _setContent:aValue];
 }
 
 @end
