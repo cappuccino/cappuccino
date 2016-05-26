@@ -98,7 +98,7 @@ var HORIZONTAL_MARGIN = 2;
     CPData                          _itemData;
     CPCollectionViewItem            _itemPrototype;
     CPCollectionViewItem            _itemForDragging;
-    CPMutableArray                  _cachedItems;
+    CPArray                         _reusableItems;
 
     unsigned                        _maxNumberOfRows;
     unsigned                        _maxNumberOfColumns;
@@ -176,7 +176,7 @@ var HORIZONTAL_MARGIN = 2;
     _content = [];
 
     _items = [];
-    _cachedItems = [];
+    _reusableItems = [];
 
     _numberOfColumns = CPNotFound;
     _numberOfRows = CPNotFound;
@@ -290,7 +290,7 @@ var HORIZONTAL_MARGIN = 2;
 */
 - (void)setItemPrototype:(CPCollectionViewItem)anItem
 {
-    _cachedItems = [];
+    _reusableItems = [];
     _itemData = nil;
     _itemForDragging = nil;
     _itemPrototype = anItem;
@@ -312,18 +312,28 @@ var HORIZONTAL_MARGIN = 2;
 */
 - (CPCollectionViewItem)newItemForRepresentedObject:(id)anObject
 {
-    var item = nil;
+    var item = [self _dequeueReusableItem];
 
-    if (_cachedItems.length)
-        item = _cachedItems.pop();
-
-    else
+    if (item === nil)
         item = [_itemPrototype copy];
 
     [item setRepresentedObject:anObject];
     [[item view] setFrameSize:_itemSize];
 
     return item;
+}
+
+- (CPCollectionViewItem)_dequeueReusableItem
+{
+    if (_reusableItems.length)
+        return _reusableItems.pop();
+
+    return nil;
+}
+
+- (void)_enqueueReusableItems:(CPArray)items
+{
+    [_reusableItems addObjectsFromArray:items];
 }
 
 // Working with the Responder Chain
