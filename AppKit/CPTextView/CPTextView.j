@@ -2341,7 +2341,7 @@ var _CPCopyPlaceholder = '-';
             //  dataForPasting = [pasteboard dataForType:CPRichStringPboardType],
             var stringForPasting = [pasteboard stringForType:CPStringPboardType];
             e.clipboardData.setData('text/plain', stringForPasting);
-            // e.clipboardData.setData('application/rtf', stringForPasting); // does not seem to work
+            // e.clipboardData.setData('text/rtf', stringForPasting); // does not seem to work
 
             return false;
         }
@@ -2364,7 +2364,7 @@ var _CPCopyPlaceholder = '-';
             var stringForPasting = [pasteboard stringForType:CPStringPboardType];
 
             e.clipboardData.setData('text/plain', stringForPasting);
-            //e.clipboardData.setData('application/rtf', stringForPasting); // does not seem to work
+            //e.clipboardData.setData('text/rtf', stringForPasting); // does not seem to work
 
             return false;
         }
