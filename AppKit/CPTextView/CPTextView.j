@@ -138,6 +138,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     int                         _stickyXLocation;
 
     CPArray                     _selectionSpans;
+    CPView                      _observedClipView;
+    CGRect                      _exposedRect;
+
     CPTimer                     _scrollingTimer;
 }
 
@@ -248,6 +251,86 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     [super _addObservers];
     [self _setObserveWindowKeyNotifications:YES];
+    [self _startObservingClipView];
+}
+- (void)_startObservingClipView
+{
+    if (!_observedClipView)
+        return;
+
+    var defaultCenter = [CPNotificationCenter defaultCenter];
+
+    [_observedClipView setPostsFrameChangedNotifications:YES];
+    [_observedClipView setPostsBoundsChangedNotifications:YES];
+
+    [defaultCenter addObserver:self
+                      selector:@selector(superviewFrameChanged:)
+                          name:CPViewFrameDidChangeNotification
+                        object:_observedClipView];
+
+    [defaultCenter addObserver:self
+                      selector:@selector(superviewBoundsChanged:)
+                          name:CPViewBoundsDidChangeNotification
+                        object:_observedClipView];
+}
+- (CGRect)exposedRect
+{
+    if (!_exposedRect)
+    {
+        var superview = [self superview];
+
+        if ([superview isKindOfClass:[CPClipView class]])
+            _exposedRect = [superview bounds];
+        else
+            _exposedRect = [self bounds];
+    }
+
+    return _exposedRect;
+}
+
+/*!
+    @ignore
+*/
+- (void)superviewBoundsChanged:(CPNotification)aNotification
+{
+    _exposedRect = nil;
+    [self setNeedsDisplay:YES];
+}
+
+/*!
+    @ignore
+*/
+- (void)superviewFrameChanged:(CPNotification)aNotification
+{
+    _exposedRect = nil;
+}
+
+- (void)viewWillMoveToSuperview:(CPView)aView
+{
+    if ([aView isKindOfClass:[CPClipView class]])
+        _observedClipView = aView;
+    else
+        [self _stopObservingClipView];
+
+    [super viewWillMoveToSuperview:aView];
+}
+
+- (void)_stopObservingClipView
+{
+    if (!_observedClipView)
+        return;
+
+    var defaultCenter = [CPNotificationCenter defaultCenter];
+
+    [defaultCenter removeObserver:self
+                             name:CPViewFrameDidChangeNotification
+                           object:_observedClipView];
+
+    [defaultCenter removeObserver:self
+                             name:CPViewBoundsDidChangeNotification
+                           object:_observedClipView];
+
+    _observedClipView = nil;
 }
 
 - (void)_windowDidResignKey:(CPNotification)aNotification
