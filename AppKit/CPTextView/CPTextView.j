@@ -2339,7 +2339,7 @@ var _CPCopyPlaceholder = '-';
             [currentFirstResponder copy:self];
 
             //  dataForPasting = [pasteboard dataForType:CPRichStringPboardType],
-            stringForPasting = [pasteboard stringForType:CPStringPboardType];
+            var stringForPasting = [pasteboard stringForType:CPStringPboardType];
             e.clipboardData.setData('text/plain', stringForPasting);
             // e.clipboardData.setData('application/rtf', stringForPasting); // does not seem to work
 
