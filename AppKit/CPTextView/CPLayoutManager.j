@@ -1169,7 +1169,6 @@ var _objectsInRange = function(aList, aRange)
 
             var color = [attributes objectForKey:CPForegroundColorAttributeName],
                 elem = [self createDOMElementWithText:string andFont:font andColor:color],
-                run = {_range:CPMakeRangeCopy(effectiveRange), elem:elem, string:string};
                 run = {_range:CPMakeRangeCopy(effectiveRange), color:color, font:font, elem:nil, string:string};
 
             _runs.push(run);
