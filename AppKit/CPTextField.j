@@ -411,6 +411,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [self setThemeState:CPThemeStateEditable];
     else
         [self unsetThemeState:CPThemeStateEditable];
+
+    [self updateTrackingAreas];
 }
 
 /*!
@@ -432,6 +434,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     // We only allow first responder status if the field is enabled.
     if (!shouldBeEnabled && [[self window] firstResponder] === self)
         [[self window] makeFirstResponder:nil];
+
+    [self updateTrackingAreas];
 }
 
 /*!
@@ -441,6 +445,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 - (void)setSelectable:(BOOL)aFlag
 {
     _isSelectable = aFlag;
+
+    [self updateTrackingAreas];
 }
 
 /*!
@@ -999,14 +1005,11 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     [self textDidChange:[CPNotification notificationWithName:CPControlTextDidChangeNotification object:self userInfo:nil]];
 }
 
-- (void)mouseMoved:(CPEvent)anEvent
-{
-    [super mouseMoved:anEvent];
-    [self _updateCursorForEvent:anEvent];
-}
-
 - (void)mouseDown:(CPEvent)anEvent
 {
+    if (![self isEnabled])
+        return [[self nextResponder] mouseDown:anEvent];
+
     // Don't track! (ever?)
     if ([self isEditable] && [self isEnabled])
     {
@@ -1259,27 +1262,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     if (_implementedDelegateMethods & CPTextFieldDelegate_controlTextDidEndEditing_)
         [_delegate controlTextDidEndEditing:note];
-}
-
-- (void)_updateCursorForEvent:(CPEvent)anEvent
-{
-    var frame = CGRectMakeCopy([self frame]),
-        contentInset = [self currentValueForThemeAttribute:@"content-inset"];
-
-    frame = [[self superview] convertRectToBase:CGRectInsetByInset(frame, contentInset)];
-
-    if ([self isEnabled] && ([self isSelectable] || [self isEditable]) && CGRectContainsPoint(frame, [anEvent locationInWindow]))
-    {
-#if PLATFORM(DOM)
-        self._DOMElement.style.cursor = "text";
-#endif
-    }
-    else
-    {
-#if PLATFORM(DOM)
-        self._DOMElement.style.cursor = "default";
-#endif
-    }
 }
 
 /*!
@@ -2200,6 +2182,31 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
         [_source setPlaceholderString:[self _placeholderForMarker:CPNullMarker]];
 
     [_source setObjectValue:aValue];
+}
+
+@end
+
+@implementation CPTextField (CPTrackingArea)
+
+- (void)updateTrackingAreas
+{
+    [self removeAllTrackingAreas];
+
+    if ([self isEnabled] && (_isEditable || _isSelectable))
+    {
+        var myBounds     = CGRectMakeCopy([self bounds]),
+            contentInset = [self currentValueForThemeAttribute:@"content-inset"];
+
+        [self addTrackingArea:[[CPTrackingArea alloc] initWithRect:CGRectInsetByInset(myBounds, contentInset)
+                                                       options:CPTrackingMouseEnteredAndExited | CPTrackingCursorUpdate | CPTrackingActiveInKeyWindow
+                                                         owner:self
+                                                      userInfo:nil]];
+    }
+}
+
+- (void)cursorUpdate:(CPEvent)anEvent
+{
+    [[CPCursor IBeamCursor] set];
 }
 
 @end
