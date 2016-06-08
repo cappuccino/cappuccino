@@ -1653,7 +1653,6 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         [_typingAttributes setObject:aColor forKey:CPForegroundColorAttributeName];
 
     [_layoutManager textStorage:_textStorage edited:0 range:range changeInLength:0 invalidatedRange:CPMakeRangeCopy(range)];
-    [_layoutManager _validateLayoutAndGlyphs];
 }
 
 - (void)underline:(id)sender
