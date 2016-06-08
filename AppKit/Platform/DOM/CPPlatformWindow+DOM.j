@@ -1245,12 +1245,16 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
     {
         if (_mouseIsDown)
         {
+            if (aDOMEvent.button !== _firstMouseDownButton)
+                return;
+
             event = _CPEventFromNativeMouseEvent(aDOMEvent, _mouseDownIsRightClick ? CPRightMouseUp : CPLeftMouseUp, location, modifierFlags, timestamp, windowNumber, nil, -1, CPDOMEventGetClickCount(_lastMouseUp, timestamp, location), 0, nil);
 
             _mouseIsDown = NO;
             _lastMouseUp = event;
             _mouseDownWindow = nil;
             _mouseDownIsRightClick = NO;
+            _firstMouseDownButton = -1;
         }
 
         if (_DOMEventMode)
@@ -1269,6 +1273,16 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
         var button = aDOMEvent.button;
 
         _mouseDownIsRightClick = button == 2 || (CPBrowserIsOperatingSystem(CPMacOperatingSystem) && button == 0 && modifierFlags & CPControlKeyMask);
+
+        // If mouse is already down, that means that a second mouse button is pushed. This could interfere in mouse events treatment. Just ignore it.
+        // BUT we have to track which button will be first released.
+        if (_mouseIsDown)
+        {
+            _mouseDownIsRightClick = !_mouseDownIsRightClick;
+            return;
+        }
+
+        _firstMouseDownButton = button;
 
         if ((sourceElement.tagName === "INPUT" || sourceElement.tagName === "TEXTAREA") && sourceElement != _DOMFocusElement)
         {
