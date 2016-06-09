@@ -1652,7 +1652,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     else
         [_typingAttributes setObject:aColor forKey:CPForegroundColorAttributeName];
 
-    [_layoutManager textStorage:_textStorage edited:0 range:range changeInLength:0 invalidatedRange:CPMakeRangeCopy(range)];
+    [_layoutManager textStorage:_textStorage edited:0 range:CPMakeRangeCopy(range) changeInLength:0 invalidatedRange:CPMakeRangeCopy(range)];
 }
 
 - (void)underline:(id)sender
@@ -1676,6 +1676,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         else
             [_typingAttributes setObject:[CPNumber numberWithInt:1] forKey:CPUnderlineStyleAttributeName];
     }
+
+    [_layoutManager textStorage:_textStorage edited:0 range:CPMakeRangeCopy(_selectionRange) changeInLength:0 invalidatedRange:CPMakeRangeCopy(_selectionRange)];
 }
 
 - (CPSelectionAffinity)selectionAffinity

@@ -436,8 +436,8 @@ _oncontextmenuhandler = function () { return false; };
 {
     var actualRange = CPMakeRange(CPNotFound,0);
 
-    [self invalidateLayoutForCharacterRange: invalidatedRange isSoft:NO actualCharacterRange:actualRange];
-    [self invalidateDisplayForGlyphRange: actualRange];
+    [self invalidateLayoutForCharacterRange:invalidatedRange isSoft:NO actualCharacterRange:actualRange];
+    [self invalidateDisplayForGlyphRange:actualRange];
     [self _validateLayoutAndGlyphs];
     [[self firstTextView] sizeToFit];
 }
