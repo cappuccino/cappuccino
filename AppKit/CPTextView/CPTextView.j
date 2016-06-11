@@ -1793,17 +1793,17 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     return characterSet.exec(_characterTripletFromStringAtIndex([_textStorage string], index)) !== null;
 }
 
-+ (JSRegEx)_wordBoundaryRegex
++ (JSObject)_wordBoundaryRegex
 {
     return /^.[^-\.,+#'"!§$%&/\(<\[\]>\)=?`´*\s{}\|¶]/m;
 }
 
-+ (JSRegEx)_paragraphBoundaryRegex
++ (JSObject)_paragraphBoundaryRegex
 {
     return /^.[\n\r]/m;
 }
 
-+ (JSRegEx)_whitespaceRegex
++ (JSObject)_whitespaceRegex
 {
     return /^.[ \t]+/m;
 }
@@ -1873,6 +1873,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
             return proposedRange;
     }
 
+    // triple click right in last line of a paragraph-> select this paragraph completely
     if (loc > 0 && _isNewlineCharacter([string characterAtIndex:loc]))
         loc--;
 
