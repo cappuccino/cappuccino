@@ -1859,7 +1859,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
             regex = [[self class] _paragraphBoundaryRegex];
 
             // triple click right in last line of a paragraph-> select this paragraph completely
-            if (loc > 0 && _isNewlineCharacter([string characterAtIndex:loc]))
+            if (loc > 0 && _isNewlineCharacter([string characterAtIndex:loc]) &&
+                !_isNewlineCharacter([string characterAtIndex:loc - 1]))
                 loc--;
 
             break;
