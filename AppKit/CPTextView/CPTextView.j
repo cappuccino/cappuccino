@@ -1793,13 +1793,19 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     return characterSet.exec(_characterTripletFromStringAtIndex([_textStorage string], index)) !== null;
 }
 
-+ (CPArray)_wordBoundaryRegex
++ (JSRegEx)_wordBoundaryRegex
 {
-    return /^(.|[\r\n])[^-\.,+#'"!§$%&/\(<\[\]>\)=?`´*\s{}\|¶]/m;
+    return /^.[^-\.,+#'"!§$%&/\(<\[\]>\)=?`´*\s{}\|¶]/m;
 }
-+ (CPArray)_paragraphBoundaryRegex
+
++ (JSRegEx)_paragraphBoundaryRegex
 {
-    return /^(.|[\r\n])[\n\r]/m;
+    return /^.[\n\r]/m;
+}
+
++ (JSRegEx)_whitespaceRegex
+{
+    return /^.[ \t]+/m;
 }
 
 - (CPRange)_characterRangeForIndex:(unsigned)index inRange:(CPRange) aRange asDefinedByRegex:(JSObject)regex skip:(BOOL)flag
@@ -1858,7 +1864,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     switch (granularity)
     {
         case CPSelectByWord:
-            regex = [[self class] _wordBoundaryRegex];
+            regex = _isWhitespaceCharacter([string characterAtIndex:loc])? [[self class] _whitespaceRegex] : [[self class] _wordBoundaryRegex];
             break;
         case CPSelectByParagraph:
             regex = [[self class] _paragraphBoundaryRegex];
