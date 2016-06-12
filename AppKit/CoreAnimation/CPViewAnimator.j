@@ -110,7 +110,7 @@ var DEFAULT_CSS_PROPERTIES = nil;
 
 @implementation CPView (CPAnimatablePropertyContainer)
 
-+ (CPDictionary)defaultCSSProperties
++ (CPDictionary)_defaultCSSProperties
 {
     if (DEFAULT_CSS_PROPERTIES == nil)
     {
@@ -131,9 +131,9 @@ var DEFAULT_CSS_PROPERTIES = nil;
     return DEFAULT_CSS_PROPERTIES;
 }
 
-+ (CPArray)cssPropertiesForKeyPath:(CPString)aKeyPath
++ (CPArray)_cssPropertiesForKeyPath:(CPString)aKeyPath
 {
-    return [[self defaultCSSProperties] objectForKey:aKeyPath];
+    return [[self _defaultCSSProperties] objectForKey:aKeyPath];
 }
 
 + (Class)animatorClass
@@ -168,7 +168,7 @@ var DEFAULT_CSS_PROPERTIES = nil;
         return nil;
     }
 
-    if ([self cssPropertiesForKeyPath:aKey] !== nil)
+    if ([self _cssPropertiesForKeyPath:aKey] !== nil)
         return [CAAnimation animation];
 
     return nil;

@@ -293,7 +293,7 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
             cssAnimations.push(cssAnimation);
         }
 
-        var css_mapping = [[aTargetView class] cssPropertiesForKeyPath:keyPath];
+        var css_mapping = [[aTargetView class] _cssPropertiesForKeyPath:keyPath];
 
         [css_mapping enumerateObjectsUsingBlock:function(aDict, anIndex, stop)
         {
