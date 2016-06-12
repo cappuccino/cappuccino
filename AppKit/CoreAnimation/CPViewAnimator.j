@@ -6,35 +6,6 @@
 {
 }
 
-- (void)viewWillMoveToSuperview:(CPView)aSuperview
-{
-    var orderInAnim = [self animationForKey:@"CPAnimationTriggerOrderIn"];
-
-    if (orderInAnim && [orderInAnim isKindOfClass:[CAPropertyAnimation class]])
-    {
-        [_target setValue:[orderInAnim fromValue] forKeyPath:[orderInAnim keyPath]];
-    }
-
-    [_target viewWillMoveToSuperview:aSuperview];
-}
-
-- (void)viewDidMoveToSuperview
-{
-    var orderInAnim = [self animationForKey:@"CPAnimationTriggerOrderIn"];
-
-    if (orderInAnim && [orderInAnim isKindOfClass:[CAPropertyAnimation class]])
-    {
-        [self _setTargetValue:YES withKeyPath:@"CPAnimationTriggerOrderIn" fallback:nil completion:function()
-        {
-            [_target setValue:[orderInAnim toValue] forKeyPath:[orderInAnim keyPath]];
-        }];
-    }
-    else
-    {
-        [_target viewDidMoveToSuperview];
-    }
-}
-
 - (void)removeFromSuperview
 {
     [self _setTargetValue:nil withKeyPath:@"CPAnimationTriggerOrderOut" setter:_cmd];
@@ -190,6 +161,13 @@ var DEFAULT_CSS_PROPERTIES = nil;
 
 + (CAAnimation)defaultAnimationForKey:(CPString)aKey
 {
+    // TODO: remove when supported.
+    if (aKey == @"CPAnimationTriggerOrderIn")
+    {
+        CPLog.warn("CPView animated key path CPAnimationTriggerOrderIn is not supported yet.");
+        return nil;
+    }
+
     if ([self cssPropertiesForKeyPath:aKey] !== nil)
         return [CAAnimation animation];
 
