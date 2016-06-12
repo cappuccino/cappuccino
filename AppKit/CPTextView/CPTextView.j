@@ -1795,7 +1795,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 + (JSObject)_wordBoundaryRegex
 {
-    return /^.[^-\.,+#'"!§$%&/\(<\[\]>\)=?`´*\s{}\|¶]/m;
+    return /(^[0-9][\.,])|(^.[^-\.,+#'"!§$%&/\(<\[\]>\)=?`´*\s{}\|¶])/m;
 }
 
 + (JSObject)_paragraphBoundaryRegex
