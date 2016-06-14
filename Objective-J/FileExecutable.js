@@ -22,6 +22,9 @@
 
 var FileExecutablesForURLStrings = { };
 
+var currentCompilerFlags = {};
+var currentGccCompilerFlags = "";
+
 function FileExecutable(/*CFURL|String*/ aURL, /*Dictionary*/ aFilenameTranslateDictionary)
 {
     aURL = makeAbsoluteURL(aURL);
@@ -41,7 +44,17 @@ function FileExecutable(/*CFURL|String*/ aURL, /*Dictionary*/ aFilenameTranslate
     if (fileContents.match(/^@STATIC;/))
         executable = decompile(fileContents, aURL);
     else if ((extension === "j" || !extension) && !fileContents.match(/^{/))
-        executable = exports.ObjJAcornCompiler.compileFileDependencies(fileContents, aURL, exports.currentCompilerFlags());
+    {
+        var compiler = exports.ObjJCompiler.compileFileDependencies(fileContents, aURL, currentCompilerFlags || {});
+
+        if (FileExecutable.printWarningsAndErrors(compiler, exports.messageOutputFormatInXML))
+            throw "Compilation error";
+
+        var fileDependencies = compiler.dependencies.map(function (aFileDep) {
+            return new FileDependency(new CFURL(aFileDep.url), aFileDep.isLocal);
+        });
+        executable = new Executable(compiler.jsBuffer ? compiler.jsBuffer.toString() : null, fileDependencies, compiler.URL, null, compiler);
+    }
     else
         executable = new Executable(fileContents, [], aURL);
 
@@ -139,3 +152,110 @@ FileExecutable._lookupCachedFunction = function(/*CFURL|String*/ aURL)
     aURL = typeof aURL === "string" ? aURL : aURL.absoluteString();
     return FunctionCache[aURL];
 }
+
+FileExecutable.setCurrentGccCompilerFlags = function(/*String*/ compilerFlags)
+{
+    if (currentGccCompilerFlags === compilerFlags) return;
+
+    currentGccCompilerFlags = compilerFlags;
+
+    var args = compilerFlags.split(" "),
+        count = args.length,
+        objjcFlags = {};
+
+    for (var index = 0; index < count; ++index)
+    {
+        var argument = args[index];
+
+        if (argument.indexOf("-g") === 0)
+            objjcFlags.includeMethodFunctionNames = true;
+        else if (argument.indexOf("-O") === 0) {
+            objjcFlags.inlineMsgSendFunctions = true;
+            // FIXME: currently we are sending in '-O2' when we want InlineMsgSend. Here we only check if it is '-O...'.
+            // Maybe we should have some other option for this
+            if (argument.length > 2)
+                objjcFlags.inlineMsgSendFunctions = true;
+        }
+        //else if (argument.indexOf("-G") === 0)
+            //objjcFlags |= ObjJAcornCompiler.Flags.Generate;
+        else if (argument.indexOf("-T") === 0) {
+            objjcFlags.includeIvarTypeSignatures = false;
+            objjcFlags.includeMethodArgumentTypeSignatures = false;
+        }
+    }
+
+    FileExecutable.setCurrentCompilerFlags(objjcFlags);
+}
+
+FileExecutable.currentGccCompilerFlags = function(/*String*/ compilerFlags)
+{
+    return currentGccCompilerFlags;
+}
+
+FileExecutable.setCurrentCompilerFlags = function(/*JSObject*/ compilerFlags)
+{
+    currentCompilerFlags = compilerFlags;
+    // Here we set the default flags if they are not included. We do this as the default values
+    // in the compiler might not be what we want.
+    if (currentCompilerFlags.transformNamedFunctionDeclarationToAssignment == null)
+        currentCompilerFlags.transformNamedFunctionDeclarationToAssignment = true;
+    if (currentCompilerFlags.sourceMap == null)
+        currentCompilerFlags.sourceMap = false;
+    if (currentCompilerFlags.inlineMsgSendFunctions == null)
+        currentCompilerFlags.inlineMsgSendFunctions = false;
+}
+
+FileExecutable.currentCompilerFlags = function(/*JSObject*/ compilerFlags)
+{
+    return currentCompilerFlags;
+}
+
+/*!
+    This funtion prints all errors and warnings for the provieded compiler. It returns true if there
+    are any errors in the list. it will print it in xml format if printXML is 'true'
+ */
+FileExecutable.printWarningsAndErrors = function(/*ObjJCompiler*/ compiler, /*BOOL*/ printXML)
+{
+    var warnings = [],
+        anyErrors = false;
+
+    for (var i = 0; i < compiler.warningsAndErrors.length; i++)
+    {
+        var warning = compiler.warningsAndErrors[i],
+            message = compiler.prettifyMessage(warning);
+
+        // Set anyErrors to 'true' if there are any errors in the list
+        anyErrors = anyErrors || warning.messageType === "ERROR";
+#ifdef BROWSER
+        console.log(message);
+#else
+        if (printXML)
+        {
+            var dict = new CFMutableDictionary();
+            if (warning.messageOnLine != null) dict.addValueForKey('line', warning.messageOnLine)
+            if (warning.path != null) dict.addValueForKey('sourcePath', new CFURL(warning.path).path())
+            if (message != null) dict.addValueForKey('message', message)
+
+            warnings.push(dict);
+        }
+        else
+        {
+            print(message);
+        }
+#endif
+    }
+
+#ifndef BROWSER
+    if (warnings.length && printXML)
+        try {
+            print(CFPropertyListCreateXMLData(warnings, kCFPropertyListXMLFormat_v1_0).rawString());
+        } catch (e) {
+            print ("XML encode error: " + e);
+        }
+#endif
+
+    return anyErrors;
+}
+
+// Set the compiler flags to empty dictionary so the default values are correct.
+FileExecutable.setCurrentCompilerFlags({});

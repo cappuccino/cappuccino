@@ -49,17 +49,26 @@ if (DOMBaseElementsCount > 0)
 
 if (typeof OBJJ_COMPILER_FLAGS !== 'undefined')
 {
-    var flags = 0;
+    var flags = {};
     for (var i = 0; i < OBJJ_COMPILER_FLAGS.length; i++)
     {
-        var flag = ObjJAcornCompiler.Flags[OBJJ_COMPILER_FLAGS[i]];
-
-        if (flag != null)
+        switch (OBJJ_COMPILER_FLAGS[i])
         {
-            flags |= flag;
+            case "IncludeDebugSymbols":
+                flags.includeMethodFunctionNames = true;
+                break;
+
+            case "IncludeTypeSignatures":
+                flags.includeIvarTypeSignatures = true;
+                flags.includeMethodArgumentTypeSignatures = true;
+                break;
+
+            case "InlineMsgSend":
+                flags.inlineMsgSendFunctions = true;
+                break;
         }
     }
-    exports.setCurrentCompilerFlags(flags);
+    FileExecutable.setCurrentCompilerFlags(flags);
 }
 
 // Turn the main file into a URL.
