@@ -13,6 +13,9 @@
     [[CPApplication alloc] init];
 
     _collectionView = [[CPCollectionView alloc] initWithFrame:CGRectMakeZero()];
+    var itemPrototype = [[CPCollectionViewItem alloc] init];
+    [_collectionView setItemPrototype:itemPrototype];
+
     _globalResults = nil;
 }
 
@@ -37,21 +40,49 @@
 
 - (void)testSetContent
 {
-    var collectionView = [[_CPCollectionViewWithHooks alloc] initWithFrame:CGRectMakeZero()],
-        content = [1, 2, 3],
-        reloadContentCount;
+    var content = [1, 2, 3];
 
-    reloadContentCount = [collectionView reloadContentCallCount];
-    [collectionView setContent:content];
-    [self assert:reloadContentCount + 1 equals:[collectionView reloadContentCallCount] message:@"first call to setContent should have called reloadContent once"];
+    [_collectionView setContent:content];
+    [self assert:content equals:[_collectionView content] message:@"collection view content should be equal to the content assigned"];
+}
 
-    [content removeObjectAtIndex:0];
-    [self assertTrue:[collectionView content] === content message:@"collection view content should be as assigned"];
+- (void)testSetContentStressTest
+{
+    [self assertNoThrow:function()
+    {
+        [_collectionView setContent:@["A","B"]];
+        [self assert:[[_collectionView items] valueForKey:@"representedObject"] equals:[_collectionView content]];
+        [_collectionView setContent:@["A"]];
+        [self assert:[[_collectionView items] valueForKey:@"representedObject"] equals:[_collectionView content]];
+        [_collectionView setContent:@["A", "C"]];
+        [self assert:[[_collectionView items] valueForKey:@"representedObject"] equals:[_collectionView content]];
+        [_collectionView setContent:@["C","D"]];
+        [self assert:[[_collectionView items] valueForKey:@"representedObject"] equals:[_collectionView content]];
+        [_collectionView setContent:@["B","E","C"]];
+        [self assert:[[_collectionView items] valueForKey:@"representedObject"] equals:[_collectionView content]];
+        [_collectionView setContent:@["C","E"]];
+        [self assert:[[_collectionView items] valueForKey:@"representedObject"] equals:[_collectionView content]];
+        [_collectionView setContent:@[]];
+        [self assert:[[_collectionView items] valueForKey:@"representedObject"] equals:[_collectionView content]];
+    }];
+}
 
-    // make sure we call reloadContent even when the content hasn't changed for key-value binding compatibility
-    reloadContentCount = [collectionView reloadContentCallCount];
-    [collectionView setContent:content];
-    [self assert:[collectionView reloadContentCallCount] equals:reloadContentCount + 1 message:@"subsequent calls to setContent should have called reloadContent once"];
+- (void)testCollectionViewSetContentPerfTest
+{
+    var c = 1000,
+        content = @[];
+
+    while (c--)
+        [content addObject:(@"Item " + c)];
+
+    [_collectionView setContent:content];
+
+    [content insertObject:"NEW ITEM" atIndex:0];
+
+    var d = new Date();
+    [_collectionView setContent:[content copy]];
+
+    CPLog.warn("CPCollectionView : Inserted 1 item to 1000 items in " + (new Date() - d) + " ms");
 }
 
 - (void)testSelectionIndexes
@@ -64,8 +95,6 @@
 
 - (void)_testCollectionViewItemIsSelected
 {
-    var itemPrototype = [[CPCollectionViewItem alloc] init];
-    [_collectionView setItemPrototype:itemPrototype];
     [_collectionView setContent:[1, 2, 3]];
 
     [_collectionView setSelectionIndexes:[CPIndexSet indexSetWithIndex:1]];

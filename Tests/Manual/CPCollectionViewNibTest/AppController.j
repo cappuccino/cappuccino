@@ -7,7 +7,6 @@
  */
 
 @import <Foundation/CPObject.j>
-//@import "CPCollectionView.j"
 
 CPLogRegister(CPLogConsole);
 
@@ -18,7 +17,17 @@ CPLogRegister(CPLogConsole);
     @outlet     CPCollectionView     emptyCollectionView;
     @outlet     InternalProtoypeItem prototypeItemInternal;
     @outlet     ExternalProtoypeItem prototypeItemExternal;
+    @outlet     CPArrayController    arrayController;
     @outlet     CPTableView          tableView;
+
+    CPArray     content @accessors;
+    CPInteger   keyCode;
+}
+
++ (void)initialize
+{
+    [CPValueTransformer setValueTransformer:[ColorTransformer new] forName:@"ColorTransformer"];
+    keyCode = 65;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
@@ -42,7 +51,34 @@ CPLogRegister(CPLogConsole);
 
     [collectionView registerForDraggedTypes:[@"DragType"]];
     [emptyCollectionView registerForDraggedTypes:[@"DragType"]];
-    //[theWindow setFullPlatformWindow:YES];
+
+    [theWindow setTitle:@"Animatable Collection View. Items can be reordered with Drag & Drop"];
+
+    var newObject = [self newObject];
+    [self setContent:@[newObject]];
+}
+
+- (IBAction)insert:(id)sender
+{
+    var newContent = [content copy],
+        newObject = [self newObject],
+        insertIdx = [[tableView selectedRowIndexes] lastIndex] + 1;
+
+    [newContent insertObject:newObject atIndex:insertIdx];
+    [self setContent:newContent];
+    [arrayController setSelectionIndexes:[CPIndexSet indexSetWithIndex:insertIdx]];
+}
+
+-(IBAction)remove:(id)sender
+{
+    var newContent = [content copy];
+    [newContent removeObjectsAtIndexes:[tableView selectedRowIndexes]];
+    [self setContent:newContent];
+}
+
+-(CPDictionary)newObject
+{
+    return @{"value":(String.fromCharCode(65 + keyCode++)), "color":[CPColor randomColor]};
 }
 
 - (IBAction)setPrototypeItem:(id)sender
@@ -139,11 +175,13 @@ CPLogRegister(CPLogConsole);
     if (aCollectionView !== draggingSource)
     {
         [[CPCursor dragCopyCursor] set];
+
         return CPDragOperationCopy;
     }
     else if (proposedIndex == dragIndex || proposedIndex == dragIndex + 1)
         return CPDragOperationNone;
 
+    [[CPCursor arrowCursor] set];
     return CPDragOperationMove;
 }
 
@@ -151,20 +189,23 @@ CPLogRegister(CPLogConsole);
 {
     var pboard = [draggingInfo draggingPasteboard],
         dragIndexes = [pboard dataForType:@"DragType"],
-        draggingSource = [draggingInfo draggingSource];
+        draggingSource = [draggingInfo draggingSource],
+        destinationContent = [[aCollectionView content] copy];
 
     if (aCollectionView == draggingSource)
-        [[aCollectionView content] moveIndexes:dragIndexes toIndex:proposedIndex];
+    {
+        [destinationContent moveIndexes:dragIndexes toIndex:proposedIndex];
+        [aCollectionView setContent:destinationContent];
+    }
     else
     {
-        var sourceObjects = [[draggingSource content] objectsAtIndexes:dragIndexes]; // copy ?
-        [[aCollectionView content] insertObjects:sourceObjects atIndexes:[CPIndexSet indexSetWithIndex:proposedIndex]];
+        var sourceObjects = [[draggingSource content] objectsAtIndexes:dragIndexes];
+        var copy = [[CPArray alloc] initWithArray:sourceObjects copyItems:YES];
+        [destinationContent insertObjects:copy atIndexes:[CPIndexSet indexSetWithIndex:proposedIndex]];
+        [aCollectionView setContent:destinationContent];
     }
 
-    [aCollectionView reloadContent];
-    [tableView reloadData];
-
-    [CPCursor pop];
+    [[CPCursor arrowCursor] set];
 
     return YES;
 }
@@ -208,19 +249,6 @@ CPLogRegister(CPLogConsole);
 {
     [super setRepresentedObject:anObject];
     [[self view] setColor:[anObject objectForKey:@"color"]];
-}
-
-@end
-
-
-var keyCode = 0;
-@implementation ArrayController : CPArrayController
-{
-}
-
-- (void)newObject
-{
-    return [CPDictionary dictionaryWithObjectsAndKeys:(String.fromCharCode(65 + keyCode++)), @"value", [CPColor randomColor], @"color"];
 }
 
 @end
@@ -277,6 +305,17 @@ var keyCode = 0;
 
         index = [indexes indexLessThanIndex:index];
     }
+}
+
+@end
+
+@implementation ColorTransformer : CPValueTransformer
+{
+}
+
+- (id)transformedValue:(BOOL)aValue
+{
+    return aValue ? [CPColor whiteColor] : [CPColor blackColor];
 }
 
 @end

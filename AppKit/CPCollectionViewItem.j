@@ -50,7 +50,7 @@
         // copy connections
     }
 
-    [copy setRepresentedObject:[self representedObject]];
+    [copy setRepresentedObject:[[self representedObject] copy]];
     [copy setSelected:_isSelected];
 
     return copy;
