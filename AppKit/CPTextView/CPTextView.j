@@ -818,6 +818,26 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
        [_CPNativeInputManager focusForClipboardOfTextView:self];
 }
 
+#if PLATFORM(DOM)
+- (CGPoint)_cumulativeOffset
+{
+    var top = 0,
+        left = 0,
+        element = self._DOMElement;
+
+    do
+    {
+        top += element.offsetTop  || 0;
+        left += element.offsetLeft || 0;
+        element = element.offsetParent;
+    }
+    while(element);
+
+    return CGPointMake(left, top);
+}
+#endif
+
+
 // interface to the _CPNativeInputManager
 - (void)_activateNativeInputElement:(DOMElemet)aNativeField
 {
@@ -833,10 +853,12 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     var caretOrigin = [_layoutManager boundingRectForGlyphRange:CPMakeRange(MAX(0, _selectionRange.location - 1), 1) inTextContainer:_textContainer].origin;
     caretOrigin.y += [_layoutManager _characterOffsetAtLocation:MAX(0, _selectionRange.location - 1)];
     caretOrigin.x += 2; // two pixel offset to the LHS character
+    var cumulativeOffset = [self _cumulativeOffset];
+
 
 #if PLATFORM(DOM)
-    aNativeField.style.left = caretOrigin.x + "px";
-    aNativeField.style.top = caretOrigin.y + "px";
+    aNativeField.style.left = (caretOrigin.x + cumulativeOffset.x) + "px";
+    aNativeField.style.top = (caretOrigin.y + cumulativeOffset.y) + "px";
     aNativeField.style.font = [[_typingAttributes objectForKey:CPFontAttributeName] cssString];
     aNativeField.style.color = [[_typingAttributes objectForKey:CPForegroundColorAttributeName] cssString];
 #endif
@@ -2313,6 +2335,7 @@ var _CPCopyPlaceholder = '-';
     _CPNativeInputField.style.margin = "0px";
     _CPNativeInputField.style.whiteSpace = "pre";
     _CPNativeInputField.style.outline = "0px solid transparent";
+    document.body.appendChild(_CPNativeInputField);
 
     _CPNativeInputField.addEventListener("keyup", function(e)
     {
@@ -2358,12 +2381,13 @@ var _CPCopyPlaceholder = '-';
             _CPNativeInputField.innerHTML = '';
         }
 
+        _CPNativeInputFieldLastValue = _CPNativeInputField.innerHTML;
+
         return false; // prevent the default behaviour
     }, true);
 
     _CPNativeInputField.addEventListener("keydown", function(e)
     {
-        _CPNativeInputFieldLastValue = _CPNativeInputField.innerHTML;
         _CPNativeInputFieldKeyUpCalled = NO;
         _CPNativeInputFieldKeyPressedCalled = NO;
         var currentFirstResponder = [[CPApp keyWindow] firstResponder];
@@ -2463,22 +2487,6 @@ var _CPCopyPlaceholder = '-';
     [self hideInputElement];
 
 #if PLATFORM(DOM)
-    // only append the _CPNativeInputField if it is not already there
-    var children = currentFirstResponder._DOMElement.childNodes,
-        l = children.length;
-
-    for (var i = 0; i < l; i++)
-    {
-        if (children[i] === _CPNativeInputField)   // we are (almost) done
-        {
-            if (document.activeElement !== _CPNativeInputField) // focus the _CPNativeInputField if necessary
-                _CPNativeInputField.focus();
-
-            return;
-        }
-    }
-
-    currentFirstResponder._DOMElement.appendChild(_CPNativeInputField);
     _CPNativeInputField.focus();
 #endif
 
