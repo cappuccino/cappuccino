@@ -2378,7 +2378,9 @@ var _CPCopyPlaceholder = '-';
             if (_CPNativeInputFieldActive)
                 [self _endInputSessionWithString:_CPNativeInputField.innerHTML];
 
-            _CPNativeInputField.innerHTML = '';
+            // prevent the copy placeholder beeing removed by cursor keys
+            if (_CPNativeInputField.innerHTML != _CPCopyPlaceholder || _CPNativeInputFieldKeyPressedCalled)
+               _CPNativeInputField.innerHTML = '';
         }
 
         _CPNativeInputFieldLastValue = _CPNativeInputField.innerHTML;
