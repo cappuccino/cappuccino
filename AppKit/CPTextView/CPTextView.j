@@ -2335,6 +2335,8 @@ var _CPCopyPlaceholder = '-';
     _CPNativeInputField.style.margin = "0px";
     _CPNativeInputField.style.whiteSpace = "pre";
     _CPNativeInputField.style.outline = "0px solid transparent";
+    _CPNativeInputField.oncontextmenu = _CPNativeInputField.onmousedown = _CPNativeInputField.onselectstart = _oncontextmenuhandler;
+
     document.body.appendChild(_CPNativeInputField);
 
     _CPNativeInputField.addEventListener("keyup", function(e)
@@ -2379,7 +2381,7 @@ var _CPCopyPlaceholder = '-';
                 [self _endInputSessionWithString:_CPNativeInputField.innerHTML];
 
             // prevent the copy placeholder beeing removed by cursor keys
-            if (_CPNativeInputField.innerHTML != _CPCopyPlaceholder || _CPNativeInputFieldKeyPressedCalled)
+            if (_CPNativeInputFieldKeyPressedCalled)
                _CPNativeInputField.innerHTML = '';
         }
 
