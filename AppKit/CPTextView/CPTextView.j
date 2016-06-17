@@ -877,10 +877,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 - (void)keyDown:(CPEvent)event
 {
 
-    [[_window platformWindow] _propagateCurrentDOMEvent:YES];  // for the _CPNativeInputManager
-
-    if ([_CPNativeInputManager isNativeInputFieldActive])
-       return;
+    [[_window platformWindow] _propagateCurrentDOMEvent:YES];  // for the _CPNativeInputManager (necessary at least on FF and chrome)
 
     if ([event charactersIgnoringModifiers].charCodeAt(0) != 229) // filter out 229 because this would be inserted in chrome on each deadkey
         [self interpretKeyEvents:[event]];
@@ -2294,6 +2291,7 @@ var _CPCopyPlaceholder = '-';
 {
 
 #if PLATFORM(DOM)
+    // backspace in safari tends to insert <br>s -> eliminate these
     if (_CPNativeInputField.innerHTML.length > 2)
         _CPNativeInputField.innerHTML = '';
 #endif
@@ -2318,6 +2316,9 @@ var _CPCopyPlaceholder = '-';
 
     [currentFirstResponder setSelectedRange:placeholderRange];
     [currentFirstResponder insertText:aStr];
+    _CPNativeInputField.innerHTML = _CPNativeInputFieldLastValue = '';
+
+
     [self hideInputElement];
     [currentFirstResponder updateInsertionPointStateAndRestartTimer:YES];
 }
@@ -2335,7 +2336,6 @@ var _CPCopyPlaceholder = '-';
     _CPNativeInputField.style.margin = "0px";
     _CPNativeInputField.style.whiteSpace = "pre";
     _CPNativeInputField.style.outline = "0px solid transparent";
-    _CPNativeInputField.oncontextmenu = _CPNativeInputField.onmousedown = _CPNativeInputField.onselectstart = _oncontextmenuhandler;
 
     document.body.appendChild(_CPNativeInputField);
 
