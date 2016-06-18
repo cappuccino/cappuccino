@@ -934,22 +934,6 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     [self mouseDragged:[CPApp currentEvent]];
 }
 
-- (void)_clearRange:(CPRange)range
-{
-    var rects = [_layoutManager rectArrayForCharacterRange:nil
-                              withinSelectedCharacterRange:range
-                                           inTextContainer:_textContainer
-                                                 rectCount:nil],
-        l = rects.length;
-
-    for (var i = 0; i < l; i++)
-    {
-        rects[i].origin.x += _textContainerOrigin.x;
-        rects[i].origin.y += _textContainerOrigin.y;
-        [self setNeedsDisplayInRect:rects[i]];
-    }
-}
-
 - (void)mouseDragged:(CPEvent)event
 {
     var fraction = [],
@@ -971,16 +955,10 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         index++;
 
     if (index > oldRange.location)
-    {
-        [self _clearRange:_MakeRangeFromAbs(oldRange.location,index)];
         _scrollingDownward = YES;
-    }
 
     if (index < CPMaxRange(oldRange))
-    {
-        [self _clearRange:_MakeRangeFromAbs(index, CPMaxRange(oldRange))];
         _scrollingDownward = NO;
-    }
 
     if (index < _startTrackingLocation)
         [self setSelectedRange:CPMakeRange(index, _startTrackingLocation - index)
@@ -1127,7 +1105,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (unsigned)_calculateMoveSelectionFromRange:(CPRange)aRange intoDirection:(integer)move granularity:(CPSelectionGranularity)granularity
 {
-    var inWord = ![self _isCharacterAtIndex:(move > 0 ? CPMaxRange(aRange) : aRange.location) + move granularity:granularity],
+    var inWord = [self _isCharacterAtIndex:(move > 0 ? CPMaxRange(aRange) : aRange.location) + move granularity:granularity],
         aSel = [self selectionRangeForProposedRange:CPMakeRange((move > 0 ? CPMaxRange(aRange) : aRange.location) + move, 0) granularity:granularity],
         bSel = [self selectionRangeForProposedRange:CPMakeRange((move > 0 ? CPMaxRange(aSel) : aSel.location) + move, 0) granularity:granularity];
 
@@ -1837,7 +1815,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     if (regex.exec(_characterTripletFromStringAtIndex([_textStorage string], index)) !== null)
     {
         // -> extend to the left
-        for (var searchIndex = index - 1; searchIndex > 0 && regex.exec(_characterTripletFromStringAtIndex(string, searchIndex)) !== null; searchIndex--)
+        for (var searchIndex = index - 1; searchIndex >= 0 && regex.exec(_characterTripletFromStringAtIndex(string, searchIndex)) !== null; searchIndex--)
             wordRange.location = searchIndex;
 
         // -> extend to the right
