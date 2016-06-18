@@ -949,8 +949,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     if (index === CPNotFound)
         index = _scrollingDownward ? CPMaxRange(oldRange) : oldRange.location;
-
-    if (fraction[0] > 0.5)
+    else if (fraction[0] > 0.5)
         index++;
 
     if (index > oldRange.location)
