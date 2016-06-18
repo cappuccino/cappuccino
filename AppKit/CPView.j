@@ -1593,8 +1593,6 @@ var CPViewHighDPIDrawingEnabled = YES;
 
 //  FIXME: Should we return to visibility?  This breaks in FireFox, Opera, and IE.
 //    _DOMElement.style.visibility = (_isHidden = aFlag) ? "hidden" : "visible";
-
-
 #if PLATFORM(DOM)
     _DOMElement.style.display = aFlag ? "none" : "block";
 #endif
@@ -1631,9 +1629,9 @@ var CPViewHighDPIDrawingEnabled = YES;
 - (void)_setSuperview:(CPView)aSuperview
 {
     var hasOldSuperview = (_superview !== nil),
-          hasNewSuperview = (aSuperview !== nil),
-          oldSuperviewIsHidden = hasOldSuperview && [_superview isHiddenOrHasHiddenAncestor],
-          newSuperviewIsHidden = hasNewSuperview && [aSuperview isHiddenOrHasHiddenAncestor];
+        hasNewSuperview = (aSuperview !== nil),
+        oldSuperviewIsHidden = hasOldSuperview && [_superview isHiddenOrHasHiddenAncestor],
+        newSuperviewIsHidden = hasNewSuperview && [aSuperview isHiddenOrHasHiddenAncestor];
 
     if (!newSuperviewIsHidden && oldSuperviewIsHidden)
          [self _recursiveLostHiddenAncestor];
