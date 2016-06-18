@@ -1881,9 +1881,6 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
                                                                 asDefinedByLRegex:lregex
                                                                         andRRegex:rregex]);
 
-    if (granularity == CPSelectByParagraph && _isNewlineCharacter([string characterAtIndex:CPMaxRange(granularRange)]))
-        granularRange.length++;
-
     return granularRange;
 }
 
