@@ -907,7 +907,7 @@ BundleTask.prototype.defineSourceTasks = function()
                         basePath = absolutePath.substring(0, absolutePath.length - theTranslatedFilename.length);
 
                     // Here we set the current compiler flags so the load system will know what compiler flags to use
-                    ObjectiveJ.setCurrentGccCompilerFlags(environmentCompilerFlags);
+                    ObjectiveJ.FileExecutable.setCurrentGccCompilerFlags(environmentCompilerFlags);
                     // Here we tell the CFBundle to load frameworks for the current build enviroment and not the enviroment that is running
                     CFBundle.environments = function() {return [anEnvironment.name(), "ObjJ"]};
                     ObjectiveJ.make_narwhal_factory(absolutePath, basePath, translateFilenameToPath)(require, e, module, system, print);
