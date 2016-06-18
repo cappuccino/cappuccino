@@ -1596,7 +1596,7 @@ var CPViewHighDPIDrawingEnabled = YES;
 
 
 #if PLATFORM(DOM)
-    _DOMElement.style.display = _isHidden ? "none" : "block";
+    _DOMElement.style.display = aFlag ? "none" : "block";
 #endif
 
     if (aFlag)
