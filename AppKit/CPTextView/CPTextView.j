@@ -901,7 +901,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     var fraction = [],
         point = [self convertPoint:[event locationInWindow] fromView:nil],
-        granularities = [-1, CPSelectByCharacter, CPSelectByWord, CPSelectByParagraph];
+        granularities = [CPNotFound, CPSelectByCharacter, CPSelectByWord, CPSelectByParagraph];
 
     [_caret setVisibility:NO];
 
