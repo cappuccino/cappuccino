@@ -918,8 +918,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     [self setSelectionGranularity:granularities[[event clickCount]]];
 
-    var setRange = [self selectionRangeForProposedRange:CPMakeRange(_startTrackingLocation, 0) granularity:[self selectionGranularity]];
-    _startTrackingLocation = CPMaxRange(setRange)
+    var setRange = CPMakeRange(_startTrackingLocation, 0);
 
     if ([event modifierFlags] & CPShiftKeyMask)
         setRange = _MakeRangeFromAbs(_startTrackingLocation < _MidRange(_selectionRange) ? CPMaxRange(_selectionRange) : _selectionRange.location, _startTrackingLocation);
