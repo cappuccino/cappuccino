@@ -77,6 +77,13 @@ _characterTripletFromStringAtIndex = function(string, index)
     return [string substringWithRange:tripletRange];
 }
 
+_regexMatchesStringAtIndex=function(regex, string, index)
+{
+    var triplet = _characterTripletFromStringAtIndex(string, index);
+
+    return regex.exec(triplet)  !== null;
+}
+
 /*
     CPSelectionGranularity
 */
@@ -1780,7 +1787,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
             // FIXME if (!characterSet) croak!
     }
 
-    return characterSet.exec(_characterTripletFromStringAtIndex([_textStorage string], index)) !== null;
+    return _regexMatchesStringAtIndex(characterSet, [_textStorage string], index);
 }
 
 + (JSObject)_wordBoundaryRegex
