@@ -2273,9 +2273,7 @@ var _CPCopyPlaceholder = '-';
 {
 
 #if PLATFORM(DOM)
-    // backspace in safari tends to insert <br>s -> eliminate these
-    if (_CPNativeInputField.innerHTML.length > 2)
-        _CPNativeInputField.innerHTML = '';
+    _CPNativeInputField.innerHTML = '';
 #endif
 
     [self _endInputSessionWithString:_CPNativeInputField.innerHTML];
