@@ -1846,40 +1846,48 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     var string = [_textStorage string],
         lregex,
         rregex,
-        loc = proposedRange.location;
+        lloc = proposedRange.location,
+        rloc = CPMaxRange(proposedRange);
 
     switch (granularity)
     {
         case CPSelectByWord:
-            lregex = _isWhitespaceCharacter([string characterAtIndex:loc])? [[self class] _whitespaceRegex] : [[self class] _wordBoundaryRegex];
+            lregex = _isWhitespaceCharacter([string characterAtIndex:lloc])? [[self class] _whitespaceRegex] : [[self class] _wordBoundaryRegex];
             rregex = _isWhitespaceCharacter([string characterAtIndex:CPMaxRange(proposedRange)])? [[self class] _whitespaceRegex] : [[self class] _wordBoundaryRegex];
             break;
         case CPSelectByParagraph:
             lregex = rregex = [[self class] _paragraphBoundaryRegex];
 
             // triple click right in last line of a paragraph-> select this paragraph completely
-            if (loc > 0 && _isNewlineCharacter([string characterAtIndex:loc]) &&
-                !_isNewlineCharacter([string characterAtIndex:loc - 1]))
-                loc--;
+            if (lloc > 0 && _isNewlineCharacter([string characterAtIndex:lloc]) &&
+                !_isNewlineCharacter([string characterAtIndex:lloc - 1]))
+                lloc--;
+
+            if (rloc > 0 && _isNewlineCharacter([string characterAtIndex:rloc]))
+                rloc--;
 
             break;
         default:
             return proposedRange;
     }
 
-    var granularRange = [self _characterRangeForIndex:loc
+    var granularRange = [self _characterRangeForIndex:lloc
                                               inRange:proposedRange
                                     asDefinedByLRegex:lregex
                                             andRRegex:rregex];
 
     if (proposedRange.length == 0 && _isNewlineCharacter([string characterAtIndex:proposedRange.location]))
-        return _MakeRangeFromAbs(_isNewlineCharacter([string characterAtIndex:loc])? proposedRange.location : granularRange.location, proposedRange.location + 1);
+        return _MakeRangeFromAbs(_isNewlineCharacter([string characterAtIndex:lloc])? proposedRange.location : granularRange.location, proposedRange.location + 1);
 
     if (proposedRange.length)
-        granularRange = CPUnionRange(granularRange, [self _characterRangeForIndex:CPMaxRange(proposedRange)
+        granularRange = CPUnionRange(granularRange, [self _characterRangeForIndex:rloc
                                                                           inRange:proposedRange
                                                                 asDefinedByLRegex:lregex
                                                                         andRRegex:rregex]);
+
+    // include the newline character in case of triple click selecting as is done by apple
+    if (granularity == CPSelectByParagraph && _isNewlineCharacter([string characterAtIndex:CPMaxRange(granularRange)]))
+        granularRange.length++;
 
     return granularRange;
 }
