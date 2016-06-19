@@ -1806,12 +1806,12 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     return /^.[ \t]+/m;
 }
 
-- (CPRange)_characterRangeForIndex:(unsigned)index inRange:(CPRange) aRange asDefinedByRegex:(JSObject)regex
+- (CPRange)_characterRangeForIndex:(unsigned)index asDefinedByRegex:(JSObject)regex
 {
-    return [self _characterRangeForIndex:index inRange:aRange asDefinedByLRegex:regex andRRegex:regex]
+    return [self _characterRangeForIndex:index asDefinedByLRegex:regex andRRegex:regex]
 }
 
-- (CPRange)_characterRangeForIndex:(unsigned)index inRange:(CPRange) aRange asDefinedByLRegex:(JSObject)lregex andRRegex:(JSObject)rregex
+- (CPRange)_characterRangeForIndex:(unsigned)index asDefinedByLRegex:(JSObject)lregex andRRegex:(JSObject)rregex
 {
     var wordRange = CPMakeRange(index, 0),
         numberOfCharacters = [_layoutManager numberOfCharacters],
@@ -1872,7 +1872,6 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     }
 
     var granularRange = [self _characterRangeForIndex:lloc
-                                              inRange:proposedRange
                                     asDefinedByLRegex:lregex
                                             andRRegex:rregex];
 
@@ -1881,7 +1880,6 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     if (proposedRange.length)
         granularRange = CPUnionRange(granularRange, [self _characterRangeForIndex:rloc
-                                                                          inRange:proposedRange
                                                                 asDefinedByLRegex:lregex
                                                                         andRRegex:rregex]);
 
