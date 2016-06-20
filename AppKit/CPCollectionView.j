@@ -31,6 +31,7 @@
 @import "CPDragServer_Constants.j"
 @import "CPPasteboard.j"
 @import "CPView.j"
+@import "CPKeyValueBinding.j"
 
 @class _CPCollectionViewDropIndicator
 
