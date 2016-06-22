@@ -369,14 +369,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         pasteboard = [CPPasteboard generalPasteboard],
         stringForPasting = [_textStorage attributedSubstringFromRange:CPMakeRangeCopy(selectedRange)];
 
-    // put rich representation on the pasteboad only if we have multliple attributes selected
-    if (stringForPasting._rangeEntries.length > 1)
-    {
-        // [pasteboard declareTypes:[CPStringPboardType, CPRichStringPboardType] owner:nil];  // this does currently do not work due to limitations in cappuccino
-        var richData =  [_CPRTFProducer produceRTF:stringForPasting documentAttributes:@{}];
-        // crude hack to make rich pasting possible in chrome and firefox: put rtf on the plain pasteboard
-        [pasteboard setString:richData forType:CPStringPboardType];
-    }
+        [pasteboard declareTypes:[CPStringPboardType, CPRTFPboardType] owner:nil];
+        [pasteboard setString:stringForPasting._string forType:CPStringPboardType];
+        [pasteboard setString:richData forType:CPRTFPboardType];
 }
 
 - (void)paste:(id)sender
@@ -2418,11 +2413,17 @@ var _CPCopyPlaceholder = '-';
         _CPNativeInputField.onpaste = function(e)
         {
             var pasteboard = [CPPasteboard generalPasteboard];
-            [pasteboard declareTypes:[CPStringPboardType] owner:nil];
 
-             var data = e.clipboardData.getData('text/plain');
-            [pasteboard setString:data forType:CPStringPboardType];
+            var data = e.clipboardData.getData('text/plain'),
+                cappString = [pasteboard stringForType:CPStringPboardType];
 
+            // capp string is invalid -> overwrite with system clipboard
+            if (cappString !== data)
+            {
+                [pasteboard declareTypes:[CPStringPboardType] owner:nil];
+                [pasteboard setString:data forType:CPStringPboardType];
+            }
+ 
             var currentFirstResponder = [[CPApp keyWindow] firstResponder];
 
             setTimeout(function(){   // prevent dom-flickering
@@ -2440,10 +2441,8 @@ var _CPCopyPlaceholder = '-';
 
             [currentFirstResponder copy:self];
 
-            //  dataForPasting = [pasteboard dataForType:CPRichStringPboardType],
             var stringForPasting = [pasteboard stringForType:CPStringPboardType];
             e.clipboardData.setData('text/plain', stringForPasting);
-            // e.clipboardData.setData('text/rtf', stringForPasting); // does not seem to work
 
             return false;
         }
@@ -2462,11 +2461,9 @@ var _CPCopyPlaceholder = '-';
             // this is necessary because cut will only execute in the future
             [currentFirstResponder copy:self];
 
-            //dataForPasting = [pasteboard dataForType:CPRichStringPboardType],
             var stringForPasting = [pasteboard stringForType:CPStringPboardType];
 
             e.clipboardData.setData('text/plain', stringForPasting);
-            //e.clipboardData.setData('text/rtf', stringForPasting); // does not seem to work
 
             return false;
         }
