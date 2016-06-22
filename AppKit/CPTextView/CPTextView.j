@@ -890,7 +890,10 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 - (void)keyUp:(CPEvent)event
 {
     [super keyUp:event];
-    [_caret setPermanentlyVisible:NO];
+
+    setTimeout(function() {
+                              [_caret setPermanentlyVisible:NO];
+                          }, 500);
 }
 
 
