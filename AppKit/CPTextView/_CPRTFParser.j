@@ -534,7 +534,7 @@ var kRgsymRtf = {
                     blue = [oldColor blueComponent];
 
                 _colorArray.pop();
-                _colorArray.push([CPColor colorWithRed: parseInt(param) / 255 green:green blue:blue alpha:1.0]);
+                _colorArray.push([CPColor colorWithRed:parseInt(param) / 255 green:green blue:blue alpha:1.0]);
                 break;
 
             case "green":
@@ -543,7 +543,7 @@ var kRgsymRtf = {
                     blue = [oldColor blueComponent];
 
                 _colorArray.pop();
-                _colorArray.push([CPColor colorWithRed: red green: parseInt(param) / 255 blue:blue alpha:1.0]);
+                _colorArray.push([CPColor colorWithRed:red green: parseInt(param) / 255 blue:blue alpha:1.0]);
                 break;
 
             case "blue":
@@ -552,7 +552,8 @@ var kRgsymRtf = {
                     red = [oldColor redComponent];
 
                 _colorArray.pop();
-                _colorArray.push([CPColor colorWithRed: red green:green blue:parseInt(param) / 255 alpha:1.0]);
+                _colorArray.push([CPColor colorWithRed:red green:green blue:parseInt(param) / 255 alpha:1.0]);
+                _colorArray.push([CPColor blackColor]); // placeholder for next color
                 break;
 
             case "cf":  // change foreground color
