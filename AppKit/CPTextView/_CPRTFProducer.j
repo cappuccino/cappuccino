@@ -149,11 +149,10 @@ function _points2twips(a) { return (a) * 20.0; }
         next,
         i;
 
-    while ((next = [keyEnum nextObject]) != nil)
+    while ((next = [keyEnum nextObject]) !== nil)
     {
         var cn = [colorDict objectForKey:next];
-
-        [list insertObject:next atIndex:[cn intValue] - 1];
+        [list insertObject:[CPColor colorWithCSSString:next] atIndex:[cn intValue]-1];
     }
 
     result = [CPString stringWithString:@"{\\colortbl;"];
@@ -276,18 +275,13 @@ function _points2twips(a) { return (a) * 20.0; }
 
 - (int)numberForColor:(CPColor)color
 {
-    var cn,
-        num = [colorDict objectForKey:color];
+    var num = [colorDict objectForKey:[color cssString]];
 
-    if (num === nil)
-    {
-        cn = [colorDict count];
-        [colorDict setObject:[CPNumber numberWithInt:cn + 1] forKey:color];
-    }
-    else
-        cn = [num intValue];
+    if (!num)
+        [colorDict setObject:num = [CPNumber numberWithInt:[colorDict count] + 1]
+		              forKey:[color cssString]];
 
-    return cn + 1;
+    return [num intValue];
 }
 
 - (CPString)paragraphStyle:(CPParagraphStyle)paraStyle

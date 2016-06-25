@@ -569,8 +569,7 @@ var kRgsymRtf = {
 
                  if (_currentRun && fontIndex >= 0 && fontIndex < _fontArray.length)
                      _currentRun.fontName = _fontArray[fontIndex];
-
-                break;
+                 break;
 
             case "fs":  // change font size
                  _currentRun.fontSize = parseInt(param) / 2;
