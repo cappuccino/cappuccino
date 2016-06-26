@@ -286,7 +286,7 @@ function _points2twips(a) { return (a) * 20.0; }
 
 - (CPString)paragraphStyle:(CPParagraphStyle)paraStyle
 {
-    var headerString = [CPString stringWithString:@"\\pard\\plain"],
+    var headerString = [CPString stringWithString:@"\\pard"],
         twips;
 
     if (paraStyle == nil)

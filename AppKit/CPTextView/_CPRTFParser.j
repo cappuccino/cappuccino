@@ -4,8 +4,8 @@
 
    Copyright (C) 2014 Daniel Boehringer
 
-FIXME: this really sucks and should be redone using a 'real' parser
-e.g. using zaach/jison on github
+FIXME: this class should be redone using a 'real' parser
+
  * all paragraph spacing information is currently not parsed
 
 
@@ -406,9 +406,11 @@ var kRgsymRtf = {
         var dict = [_currentRun dictionary];
 
         [_result setAttributes:dict range:_currentRun._range];  // flush previous run
+        _currentRun.fgColour = [CPColor blackColor];
     }
+    else
+        _currentRun = [_RTFAttribute new];
 
-    _currentRun = [_RTFAttribute new];
     _currentRun._range = CPMakeRange(newOffset, 0);  // open a new one
 }
 
