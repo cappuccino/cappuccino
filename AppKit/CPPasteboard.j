@@ -51,8 +51,7 @@ UTF8PboardType          = @"public.utf8-plain-text";
 CPImagePboardType       = @"CPImagePboardType";
 
 
-var CPPasteboards = nil,
-    supportsNativePasteboard = NO;
+var CPPasteboards = nil;
 
 /*!
     @ingroup appkit
@@ -68,8 +67,6 @@ var CPPasteboards = nil,
 
     unsigned        _changeCount;
     CPString        _stateUID;
-
-    CPWebScriptObject _nativePasteboard;
 }
 
 /*
@@ -83,9 +80,6 @@ var CPPasteboards = nil,
     [self setVersion:1.0];
 
     CPPasteboards = @{};
-
-    if (typeof window.cpPasteboardWithName !== "undefined")
-        supportsNativePasteboard = YES;
 }
 
 /*!
@@ -128,12 +122,6 @@ var CPPasteboards = nil,
         _provided = @{};
 
         _changeCount = 0;
-
-        if (supportsNativePasteboard)
-        {
-            _nativePasteboard = window.cpPasteboardWithName(aName);
-            [self _synchronizePasteboard];
-        }
     }
 
     return self;
@@ -163,15 +151,6 @@ var CPPasteboards = nil,
         [_owners setObject:anOwner forKey:type];
     }
 
-    if (_nativePasteboard)
-    {
-        var nativeTypes = [types copy];
-        if ([types containsObject:CPStringPboardType])
-            nativeTypes.push(UTF8PboardType);
-
-        _nativePasteboard.addTypes_(nativeTypes);
-    }
-
     return ++_changeCount;
 }
 
@@ -183,12 +162,6 @@ var CPPasteboards = nil,
 */
 - (unsigned)declareTypes:(CPArray)types owner:(id)anOwner
 {
-    [self _declareTypes:types owner:anOwner updateNativePasteboard:YES];
-}
-
-/*! @ignore */
-- (unsigned)_declareTypes:(CPArray)types owner:(id)anOwner updateNativePasteboard:(BOOL)shouldUpdate
-{
     [_types setArray:types];
 
     _owners = @{};
@@ -199,16 +172,6 @@ var CPPasteboards = nil,
         var count = _types.length;
         while (count--)
             [_owners setObject:anOwner forKey:_types[count]];
-    }
-
-    if (_nativePasteboard && shouldUpdate)
-    {
-        var nativeTypes = [types copy];
-        if ([types containsObject:CPStringPboardType])
-            nativeTypes.push(UTF8PboardType);
-
-        _nativePasteboard.declareTypes_(nativeTypes);
-        _changeCount = _nativePasteboard.changeCount();
     }
 
     return ++_changeCount;
@@ -273,7 +236,6 @@ var CPPasteboards = nil,
 */
 - (CPArray)types
 {
-    [self _synchronizePasteboard];
     return _types;
 }
 
@@ -310,36 +272,6 @@ var CPPasteboards = nil,
         return [self dataForType:UTF8PboardType];
 
     return nil;
-}
-
-- (void)_synchronizePasteboard
-{
-    if (_nativePasteboard && _nativePasteboard.changeCount() > _changeCount)
-    {
-        var nativeTypes = [_nativePasteboard.types() copy];
-        if ([nativeTypes containsObject:UTF8PboardType])
-            nativeTypes.push(CPStringPboardType);
-
-        [self _declareTypes:nativeTypes owner:self updateNativePasteboard:NO];
-
-        _changeCount = _nativePasteboard.changeCount();
-    }
-}
-
-/*! @ignore
-    method provided for integration with native pasteboard
-*/
-- (void)pasteboard:(CPPasteboard)aPasteboard provideDataForType:(CPString)aType
-{
-    if (aType === CPStringPboardType)
-    {
-        var string = _nativePasteboard.stringForType_(UTF8PboardType);
-
-        [self setString:string forType:CPStringPboardType];
-        [self setString:string forType:UTF8PboardType];
-    }
-    else
-        [self setString:_nativePasteboard.stringForType_(aType) forType:aType];
 }
 
 /*!
