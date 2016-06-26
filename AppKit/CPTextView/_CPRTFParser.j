@@ -310,7 +310,7 @@ var kRgsymRtf = {
                 return sym[4];
 
         case 1:
-            CPLogConsole("skipped : " + sym[4]);
+            // CPLogConsole("skipped : " + sym[4]);
             return '';
 
         default:
