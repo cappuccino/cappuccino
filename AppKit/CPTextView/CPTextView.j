@@ -2329,6 +2329,9 @@ var _CPCopyPlaceholder = '-';
         // fixme: e.which is depreciated(?) -> find a better way to identify the modifier-keyups
         if (e.which < 27 || e.which == 91 || e.which == 93) // include apple command keys
         {
+            if (e.which == 13)
+                _CPNativeInputField.innerHTML = '';
+
             if (_CPNativeInputField.innerHTML.length == 0 || _CPNativeInputField.innerHTML.length > 2) // backspace
                 [self cancelCurrentInputSessionIfNeeded];
 
