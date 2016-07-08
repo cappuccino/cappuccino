@@ -308,7 +308,7 @@ CPTexturedBackgroundWindowMask
             [self setPlatformWindow:[CPPlatformWindow primaryPlatformWindow]];
         else
         {
-            // give zero sized borderless bridge windows a default size if we're not in the browser so they show up in NativeHost.
+            // give zero sized borderless bridge windows a default size.
             if ((aStyleMask & CPBorderlessBridgeWindowMask) && aContentRect.size.width === 0 && aContentRect.size.height === 0)
             {
                 var visibleFrame = [[[CPScreen alloc] init] visibleFrame];
@@ -655,7 +655,6 @@ CPTexturedBackgroundWindowMask
     CPBorderlessWindowMask
     CPTitledWindowMask
     CPClosableWindowMask
-    CPMiniaturizableWindowMask (NOTE: only available in NativeHost)
     CPResizableWindowMask
     CPTexturedBackgroundWindowMask
     CPBorderlessBridgeWindowMask
