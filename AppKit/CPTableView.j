@@ -5098,6 +5098,17 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     }
     else if (!_isViewBased && [aView isKindOfClass:[CPControl class]] && ![aView isKindOfClass:[CPTextField class]])
     {
+        // we are currently in an edit session but the user clicked on a non-text control
+        if (_editingColumn !== -1)
+        {
+            var currentFirstResponder = [[CPApp keyWindow] firstResponder];
+            // make sure the currently edited control is commited
+            [self _commitDataViewObjectValue:currentFirstResponder];
+            // resend the same event in next run loop iteration
+            [[CPRunLoop currentRunLoop] performSelector:@selector(sendEvent:) target:CPApp argument:[CPApp currentEvent] order:0 modes:[CPDefaultRunLoopMode]];
+            return currentFirstResponder;
+        }
+
         [self getColumn:@ref(column) row:@ref(row) forView:aView];
 
         _editingColumn = column;
