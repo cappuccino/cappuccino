@@ -235,7 +235,7 @@ var kRgsymRtf = {
         "ftnsep"                             : [ "ftnsep",   0,        false,     kRTFParserType_dest,    "destSkip"],
         "ftnsepc"                            : [ "ftnsepc",  0,        false,     kRTFParserType_dest,    "destSkip"],
         "fprq"                               : [ "fprq",     0,        false,     kRTFParserType_dest,    "destSkip"],
-        "fcharset"                           : [ "fcharset", 0,        false,     kRTFParserType_dest,    "destSkip"],
+//      "fcharset"                           : [ "fcharset", 0,        false,     kRTFParserType_dest,    "destSkip"],
         "rquote"                             : [ "rquote",   0,        false,     kRTFParserType_char,    "'"],
 //      "s"                                  : [ "s",        0,        false,     kRTFParserType_dest,    "destSkip"],
         "header"                             : [ "header",   0,        false,     kRTFParserType_dest,    "destSkip"],
