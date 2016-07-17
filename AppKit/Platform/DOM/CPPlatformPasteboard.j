@@ -387,7 +387,7 @@ Return true if the event may be a copy and paste event, but the target is not an
         var pasteboard = [CPPasteboard generalPasteboard],
             cappString = [pasteboard stringForType:CPStringPboardType];
 
-        if (cappString !== value)
+        if (cappString != value)
         {
             [pasteboard declareTypes:[CPStringPboardType] owner:self];
             [pasteboard setString:value forType:CPStringPboardType];
@@ -454,7 +454,7 @@ Return true if the event may be a copy and paste event, but the target is not an
         var pasteboard = [CPPasteboard generalPasteboard],
             cappString = [pasteboard stringForType:CPStringPboardType];
 
-        if (cappString !== value)
+        if (cappString != value)
         {
             [pasteboard declareTypes:[CPStringPboardType] owner:self];
             [pasteboard setString:value forType:CPStringPboardType];
