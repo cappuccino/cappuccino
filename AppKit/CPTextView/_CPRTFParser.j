@@ -559,6 +559,7 @@ var kRgsymRtf = {
                 break;
 
             case "cf":  // change foreground color
+                 [self _flushCurrentRun];
                  var fontIndex = parseInt(param) - 1;
 
                  if (_currentRun && fontIndex >= 0)
@@ -567,6 +568,7 @@ var kRgsymRtf = {
                 break;
 
             case "f":  // change font
+                 [self _flushCurrentRun];
                  var fontIndex = parseInt(param);
 
                  if (_currentRun && fontIndex >= 0 && fontIndex < _fontArray.length)
