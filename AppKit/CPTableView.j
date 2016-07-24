@@ -5290,8 +5290,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     // is implemented.
     [editingTableColumn _reverseSetDataView:aDataView forRow:row];
 
-    if (_editingRow !== CPNotFound && column !== CPNotFound)
-        [self reloadDataForRowIndexes:[CPIndexSet indexSetWithIndex:row] columnIndexes:[CPIndexSet indexSetWithIndex:column]];
+    if (row !== CPNotFound && column !== CPNotFound)
+        [self _reloadDataForRowIndexes:[CPIndexSet indexSetWithIndex:row] columnIndexes:[CPIndexSet indexSetWithIndex:column]];
 }
 
 - (void)_setEditingState:(BOOL)editingState forView:(CPView)aView
@@ -5348,8 +5348,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         [self getColumn:@ref(column) row:@ref(row) forView:object];
 
         [self _commitDataViewObjectValue:object forColumn:column andRow:row];
-        _editingRow = CPNotFound;
-        _editingColumn = CPNotFound;
     }
 }
 
