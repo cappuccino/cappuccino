@@ -5346,7 +5346,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
             column;
 
         [self getColumn:@ref(column) row:@ref(row) forView:object];
-
         [self _commitDataViewObjectValue:object forColumn:column andRow:row];
     }
 }
