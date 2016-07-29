@@ -84,6 +84,32 @@ _regexMatchesStringAtIndex=function(regex, string, index)
     return regex.exec(triplet)  !== null;
 }
 
+// these two functions are to support chrome rich native paste
+_CPwalkTheDOM = function(node, func)
+{
+    func(node);
+    node = node.firstChild;
+    while (node)
+    {
+        _CPwalkTheDOM(node, func);
+        node = node.nextSibling;
+    }
+}
+
+_CPgetStyle = function(className)
+{
+    for (var i = 0; i < document.styleSheets.length; i++)
+    {
+        var classes = document.styleSheets[i].rules || document.styleSheets[i].cssRules;
+
+        for (var x = 0; x < classes.length; x++)
+        {
+            if (classes[x].selectorText == className)
+                return classes[x].cssText ? classes[x].cssText : classes[x].style.cssText;
+        }
+    }
+}
+
 /*
     CPSelectionGranularity
 */
@@ -357,9 +383,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)copy:(id)sender
 {
-    [_CPNativeInputManager setLastCopyWasNative:[sender isKindOfClass:[_CPNativeInputManager class]]];
     _copySelectionGranularity = _previousSelectionGranularity;
-
     [super copy:sender];
 
     if (![self isRichText])
@@ -367,7 +391,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     var selectedRange = [self selectedRange],
         pasteboard = [CPPasteboard generalPasteboard],
-        stringForPasting = [_textStorage attributedSubstringFromRange:CPMakeRangeCopy(selectedRange)];
+        stringForPasting = [[self textStorage] attributedSubstringFromRange:CPMakeRangeCopy(selectedRange)];
+        richData =  [_CPRTFProducer produceRTF:stringForPasting documentAttributes:@{}];
 
         [pasteboard declareTypes:[CPStringPboardType, CPRTFPboardType] owner:nil];
         [pasteboard setString:stringForPasting._string forType:CPStringPboardType];
@@ -376,9 +401,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)paste:(id)sender
 {
-    var e = [CPApp currentEvent]._DOMEvent;
-    if (e && e.currentTarget == document) // this is somehow necessary to prevent double pasting
-        return;
+    if (![sender isKindOfClass:_CPNativeInputManager] && [[CPApp currentEvent] type] != CPAppKitDefined)
+        return
 
     var stringForPasting = [self _stringForPasting];
 
@@ -2248,22 +2272,11 @@ var _CPNativeInputField,
     _CPNativeInputFieldKeyDownCalled,
     _CPNativeInputFieldKeyUpCalled,
     _CPNativeInputFieldKeyPressedCalled,
-    _CPNativeInputFieldActive,
-    _CPNativeInputFieldLastCopyWasNative = 1;
+    _CPNativeInputFieldActive;
 
 var _CPCopyPlaceholder = '-';
 
 @implementation _CPNativeInputManager : CPObject
-
-+ (BOOL)lastCopyWasNative
-{
-    return _CPNativeInputFieldLastCopyWasNative;
-}
-
-+ (void)setLastCopyWasNative:(BOOL)flag
-{
-    _CPNativeInputFieldLastCopyWasNative = flag;
-}
 
 + (BOOL)isNativeInputFieldActive
 {
@@ -2415,31 +2428,129 @@ var _CPCopyPlaceholder = '-';
 
     }, true); // capture mode
 
-    if (CPBrowserIsEngine(CPGeckoBrowserEngine))
+    _CPNativeInputField.onpaste = function(e)
     {
-        _CPNativeInputField.onpaste = function(e)
-        {
-            var pasteboard = [CPPasteboard generalPasteboard];
-
-            var data = e.clipboardData.getData('text/plain'),
-                cappString = [pasteboard stringForType:CPStringPboardType];
-
-            // capp string is invalid -> overwrite with system clipboard
-            if (cappString !== data)
+        var nativeClipboard = (e.originalEvent || e).clipboardData,
+            richtext,
+            pasteboard = [CPPasteboard generalPasteboard],
+            rtfdata = [CPAttributedString new],
+            _CPDOMParsefunction = function(node)
             {
-                [pasteboard declareTypes:[CPStringPboardType] owner:nil];
-                [pasteboard setString:data forType:CPStringPboardType];
-            }
- 
-            var currentFirstResponder = [[CPApp keyWindow] firstResponder];
+                if (node.nodeType === 3 && node.parentElement)
+                {
+                    var text = node.data;
+                    var style = _CPgetStyle('span.'+node.parentElement.className);
+    
+                    if (style)
+                    {
+                        // extract color from DOM
+                        var rgbmatch = style.match(new RegExp(/rgb\((\d+)[, ]+(\d+)[, ]+(\d+)\)/));
+                        if (text && rgbmatch)
+                        {
+                            [rtfdata appendAttributedString:[[CPAttributedString alloc] initWithString:text
+                                                                                            attributes:@{CPForegroundColorAttributeName:[CPColor colorWithRed:rgbmatch[1]/255.0 green:rgbmatch[2]/255.0 blue:rgbmatch[3]/255.0 alpha:1]}]];
+                        }
+                        else
+                            [rtfdata appendAttributedString:[[CPAttributedString alloc] initWithString:text]];
+                    }
+                }
+            };
 
-            setTimeout(function(){   // prevent dom-flickering
+        // this is the native rich safari path
+        // the detection leverages the observation that safari puts a lot of cryptic types on the pasteboard (16 or so)
+        // this is not the case with any other browser that i have seen so far.
+        // safari does not currently provide data for any of the rich types that it advertises, though.
+        // for this reason, we have to let the paste execute and collect data from the DOM afterwards
+        // i did not get this working so far. the event is not forwarded for reasons that are beyond my understanding :-(
+        // for this reason, i disabled the code path so at least the plain content gets pasted
+
+        if (NO && nativeClipboard.types.length > 10)
+        {
+            // http://stackoverflow.com/questions/2176861/javascript-get-clipboard-data-on-paste-event-cross-browser/6804718#6804718
+            function waitForPastedData(elem)
+            {
+                if (elem.childNodes && elem.childNodes.length > 0)
+                {
+                    _CPwalkTheDOM(elem, _CPDOMParsefunction);
+                    [pasteboard declareTypes:[CPRTFPboardType] owner:nil];
+                    [pasteboard setString:[_CPRTFProducer produceRTF:rtfdata documentAttributes:@{}] forType:CPRTFPboardType];
+
+                    [[[CPApp keyWindow] firstResponder] paste:self];
+                    elem.innerHTML = _CPCopyPlaceholder;
+                }
+                else
+                {
+                    setTimeout(function()
+                    {
+                        waitForPastedData(elem)
+                    }, 20);
+                }
+            }
+
+            waitForPastedData(_CPNativeInputField);
+
+            return true;
+        }
+
+        // this is the rich chrome path:
+        // we have to construct an CPAttributedString whilst walking the dom and looking at the CSS attributes
+        // currently, only the text color is extracted.
+        // FIXME: extract font attributes from the style strings.
+
+        if (richtext = nativeClipboard.getData('text/html'))
+        {
+            e.preventDefault();
+            _CPNativeInputField.innerHTML = richtext;
+            _CPwalkTheDOM(_CPNativeInputField, _CPDOMParsefunction);
+
+            [pasteboard declareTypes:[CPRTFPboardType] owner:nil];
+            [pasteboard setString:[_CPRTFProducer produceRTF:rtfdata documentAttributes:@{}] forType:CPRTFPboardType];
+
+            [[[CPApp keyWindow] firstResponder] paste:self];
+            _CPNativeInputField.innerHTML = _CPCopyPlaceholder;
+            return false;
+        }
+
+        // this is the rich FF codepath (here we can use RTF directly)
+
+        if (richtext = nativeClipboard.getData('text/rtf'))
+        {
+            e.preventDefault();
+            [pasteboard declareTypes:[CPRTFPboardType] owner:nil];
+            [pasteboard setString:richtext forType:CPRTFPboardType];
+
+            // prevent dom-flickering (settimeout does not work here)
+            var currentFirstResponder = [[CPApp keyWindow] firstResponder];
+    
+            setTimeout(function(){   // prevent dom-flickering (only FF)
                 [currentFirstResponder paste:self];
             }, 20);
 
             return false;
         }
 
+        // plain is the same in all browsers...
+
+        var data = e.clipboardData.getData('text/plain'),
+        cappString = [pasteboard stringForType:CPStringPboardType];
+
+        if (cappString != data)
+        {
+            [pasteboard declareTypes:[CPStringPboardType] owner:nil];
+            [pasteboard setString:data forType:CPStringPboardType];
+        }
+ 
+        var currentFirstResponder = [[CPApp keyWindow] firstResponder];
+
+        setTimeout(function(){   // prevent dom-flickering (only needed for FF)
+            [currentFirstResponder paste:self];
+        }, 20);
+
+        return false;
+    }
+
+    if (CPBrowserIsEngine(CPGeckoBrowserEngine))
+    {
         _CPNativeInputField.oncopy = function(e)
         {
             var pasteboard = [CPPasteboard generalPasteboard],
