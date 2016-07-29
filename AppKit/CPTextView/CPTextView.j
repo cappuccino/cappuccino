@@ -2245,7 +2245,6 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
 
 
 var _CPNativeInputField,
-    _CPNativeInputFieldLastValue,
     _CPNativeInputFieldKeyDownCalled,
     _CPNativeInputFieldKeyUpCalled,
     _CPNativeInputFieldKeyPressedCalled,
@@ -2298,7 +2297,7 @@ var _CPCopyPlaceholder = '-';
 
     [currentFirstResponder setSelectedRange:placeholderRange];
     [currentFirstResponder insertText:aStr];
-    _CPNativeInputField.innerHTML = _CPNativeInputFieldLastValue = '';
+    _CPNativeInputField.innerHTML = '';
 
 
     [self hideInputElement];
@@ -2353,8 +2352,8 @@ var _CPCopyPlaceholder = '-';
             return;
         }
 
-        // chrome-trigger: keypressed is omitted for deadkeys and cursor keys
-        if (!_CPNativeInputFieldActive && _CPNativeInputFieldKeyPressedCalled == NO && _CPNativeInputField.innerHTML.length && _CPNativeInputField.innerHTML != _CPCopyPlaceholder && _CPNativeInputField.innerHTML.length < 3 && _CPNativeInputFieldLastValue !== _CPNativeInputField.innerHTML)
+        // chrome-trigger: keypressed is omitted for deadkeys
+        if (!_CPNativeInputFieldActive && _CPNativeInputFieldKeyPressedCalled == NO && _CPNativeInputField.innerHTML.length && _CPNativeInputField.innerHTML != _CPCopyPlaceholder && _CPNativeInputField.innerHTML.length < 3)
         {
             _CPNativeInputFieldActive = YES;
             [currentFirstResponder _activateNativeInputElement:_CPNativeInputField];
@@ -2370,8 +2369,6 @@ var _CPCopyPlaceholder = '-';
                _CPNativeInputField.innerHTML = '';
         }
 
-        _CPNativeInputFieldLastValue = _CPNativeInputField.innerHTML;
-
         return false; // prevent the default behaviour
     }, true);
 
@@ -2385,6 +2382,10 @@ var _CPCopyPlaceholder = '-';
         _CPNativeInputFieldKeyUpCalled = NO;
         _CPNativeInputFieldKeyPressedCalled = NO;
         var currentFirstResponder = [[CPApp keyWindow] firstResponder];
+
+        // webkit-browsers: cursor keys do not emit keypressed and would otherwise activate deadkey mode
+        if (!CPBrowserIsEngine(CPGeckoBrowserEngine) && e.which >= 37 && e.which <= 40)
+            _CPNativeInputFieldKeyPressedCalled = YES;
 
         if (![currentFirstResponder respondsToSelector:@selector(_activateNativeInputElement:)])
             return;
