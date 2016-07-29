@@ -139,7 +139,7 @@ function _points2twips(a) { return (a) * 20.0; }
 
 - (CPString)colorTable
 {
-    if (![fontDict count])
+    if (![colorDict count])
         return @"";
 
     var result,
