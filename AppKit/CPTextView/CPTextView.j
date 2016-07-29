@@ -391,8 +391,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     var selectedRange = [self selectedRange],
         pasteboard = [CPPasteboard generalPasteboard],
-        stringForPasting = [[self textStorage] attributedSubstringFromRange:CPMakeRangeCopy(selectedRange)];
-        richData =  [_CPRTFProducer produceRTF:stringForPasting documentAttributes:@{}];
+        stringForPasting = [[self textStorage] attributedSubstringFromRange:CPMakeRangeCopy(selectedRange)],
+        richData = [_CPRTFProducer produceRTF:stringForPasting documentAttributes:@{}];
 
         [pasteboard declareTypes:[CPStringPboardType, CPRTFPboardType] owner:nil];
         [pasteboard setString:stringForPasting._string forType:CPStringPboardType];
