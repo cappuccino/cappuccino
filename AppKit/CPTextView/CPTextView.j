@@ -96,20 +96,6 @@ _CPwalkTheDOM = function(node, func)
     }
 }
 
-_CPgetStyle = function(className)
-{
-    for (var i = 0; i < document.styleSheets.length; i++)
-    {
-        var classes = document.styleSheets[i].rules || document.styleSheets[i].cssRules;
-
-        for (var x = 0; x < classes.length; x++)
-        {
-            if (classes[x].selectorText == className)
-                return classes[x].cssText ? classes[x].cssText : classes[x].style.cssText;
-        }
-    }
-}
-
 /*
     CPSelectionGranularity
 */
@@ -2436,23 +2422,31 @@ var _CPCopyPlaceholder = '-';
             rtfdata = [CPAttributedString new],
             _CPDOMParsefunction = function(node)
             {
-                if (node.nodeType === 3 && node.parentElement)
+                if (node.nodeType === 1 && node.nodeName === 'SPAN')
                 {
-                    var text = node.data;
-                    var style = _CPgetStyle('span.'+node.parentElement.className);
-    
-                    if (style)
-                    {
-                        // extract color from DOM
-                        var rgbmatch = style.match(new RegExp(/rgb\((\d+)[, ]+(\d+)[, ]+(\d+)\)/));
-                        if (text && rgbmatch)
-                        {
-                            [rtfdata appendAttributedString:[[CPAttributedString alloc] initWithString:text
-                                                                                            attributes:@{CPForegroundColorAttributeName:[CPColor colorWithRed:rgbmatch[1]/255.0 green:rgbmatch[2]/255.0 blue:rgbmatch[3]/255.0 alpha:1]}]];
-                        }
-                        else
-                            [rtfdata appendAttributedString:[[CPAttributedString alloc] initWithString:text]];
-                    }
+                    var text = node.innerText,
+                        style = window.getComputedStyle(node),
+                        styleAttributes = @{};
+
+                    // extract color from the DOM
+                    var rgbmatch = style.getPropertyValue('color').match(new RegExp(/rgb\((\d+)[, ]+(\d+)[, ]+(\d+)\)/));
+
+                    if (rgbmatch)
+                        [styleAttributes setObject:[CPColor colorWithRed:rgbmatch[1]/255.0 green:rgbmatch[2]/255.0 blue:rgbmatch[3]/255.0 alpha:1]
+                                            forKey:CPForegroundColorAttributeName];
+
+                    // extract font from the DOM
+                    var fontname = style.getPropertyValue('font-family'),
+                        fontsize = style.getPropertyValue('font-size'),
+                        isBold = style.getPropertyValue('font-weight').indexOf('bold') >= 0,
+                        isItalic = style.getPropertyValue('font-style').indexOf('italic') >= 0;
+
+                    if (fontname && fontsize)
+                        [styleAttributes setObject:isBold? [CPFont boldFontWithName:fontname size:fontsize italic:isItalic] :
+                                                           [CPFont fontWithName:fontname size:fontsize italic:isItalic]
+                                            forKey:CPFontAttributeName];
+
+                    [rtfdata appendAttributedString: [[CPAttributedString alloc] initWithString:text attributes:styleAttributes]];
                 }
             };
 
@@ -2463,7 +2457,6 @@ var _CPCopyPlaceholder = '-';
         // for this reason, we have to let the paste execute and collect data from the DOM afterwards
         // i did not get this working so far. the event is not forwarded for reasons that are beyond my understanding :-(
         // for this reason, i disabled the code path so at least the plain content gets pasted
-
         if (NO && nativeClipboard.types.length > 10)
         {
             // http://stackoverflow.com/questions/2176861/javascript-get-clipboard-data-on-paste-event-cross-browser/6804718#6804718
@@ -2492,11 +2485,10 @@ var _CPCopyPlaceholder = '-';
             return true;
         }
 
-        // this is the rich chrome path:
+        // this is the native rich chrome path:
         // we have to construct an CPAttributedString whilst walking the dom and looking at the CSS attributes
         // currently, only the text color is extracted.
         // FIXME: extract font attributes from the style strings.
-
         if (richtext = nativeClipboard.getData('text/html'))
         {
             e.preventDefault();
@@ -2512,7 +2504,6 @@ var _CPCopyPlaceholder = '-';
         }
 
         // this is the rich FF codepath (here we can use RTF directly)
-
         if (richtext = nativeClipboard.getData('text/rtf'))
         {
             e.preventDefault();
