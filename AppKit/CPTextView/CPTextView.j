@@ -2436,17 +2436,18 @@ var _CPCopyPlaceholder = '-';
                                             forKey:CPForegroundColorAttributeName];
 
                     // extract font from the DOM
+
                     var fontname = style.getPropertyValue('font-family'),
-                        fontsize = style.getPropertyValue('font-size'),
-                        isBold = style.getPropertyValue('font-weight').indexOf('bold') >= 0,
-                        isItalic = style.getPropertyValue('font-style').indexOf('italic') >= 0;
+                        fontsize = parseInt(style.getPropertyValue('font-size'), 10),
+                        isBold = node.firstChild && node.firstChild.nodeName === 'B' || node.firstChild.firstChild && node.firstChild.firstChild.nodeName === 'B',
+                        isItalic = node.firstChild && node.firstChild.nodeName === 'I' || node.firstChild.firstChild && node.firstChild.firstChild.nodeName === 'I';
 
                     if (fontname && fontsize)
                         [styleAttributes setObject:isBold? [CPFont boldFontWithName:fontname size:fontsize italic:isItalic] :
                                                            [CPFont fontWithName:fontname size:fontsize italic:isItalic]
                                             forKey:CPFontAttributeName];
 
-                    [rtfdata appendAttributedString: [[CPAttributedString alloc] initWithString:text attributes:styleAttributes]];
+                    [rtfdata appendAttributedString:[[CPAttributedString alloc] initWithString:text attributes:styleAttributes]];
                 }
             };
 
@@ -2487,8 +2488,6 @@ var _CPCopyPlaceholder = '-';
 
         // this is the native rich chrome path:
         // we have to construct an CPAttributedString whilst walking the dom and looking at the CSS attributes
-        // currently, only the text color is extracted.
-        // FIXME: extract font attributes from the style strings.
         if (richtext = nativeClipboard.getData('text/html'))
         {
             e.preventDefault();
