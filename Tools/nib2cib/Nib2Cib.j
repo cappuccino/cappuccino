@@ -204,7 +204,10 @@ var FILE = require("file"),
 
         [self loadThemesFromList:themeList];
         [self loadFrameworks:options.frameworks verbosity:options.verbosity];
-        [self loadNSClassesFromBundle:[CPBundle mainBundle]];
+
+        var mainBundle = [CPBundle mainBundle];
+        [mainBundle loadWithDelegate:nil];
+        [self loadNSClassesFromBundle:mainBundle];
 
         var frameworkList = [];
 
