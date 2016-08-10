@@ -112,6 +112,11 @@ CPViewHeightSizable = 16;
 */
 CPViewMaxYMargin    = 32;
 
+_CPViewWillAppearNotification        = @"CPViewWillAppearNotification";
+_CPViewDidAppearNotification         = @"CPViewDidAppearNotification";
+_CPViewWillDisappearNotification     = @"CPViewWillDisappearNotification";
+_CPViewDidDisappearNotification      = @"CPViewDidDisappearNotification";
+
 CPViewBoundsDidChangeNotification   = @"CPViewBoundsDidChangeNotification";
 CPViewFrameDidChangeNotification    = @"CPViewFrameDidChangeNotification";
 
@@ -404,7 +409,6 @@ var CPViewHighDPIDrawingEnabled = YES;
     return self;
 }
 
-
 /*!
     Sets the tooltip for the receiver.
 
@@ -599,6 +603,7 @@ var CPViewHighDPIDrawingEnabled = YES;
         // Remove the view from its previous superview.
         [aSubview _removeFromSuperview];
 
+        [aSubview _postViewWillAppearNotification];
         // Set ourselves as the superview.
         [aSubview _setSuperview:self];
     }
@@ -685,6 +690,7 @@ var CPViewHighDPIDrawingEnabled = YES;
     [[self window] _dirtyKeyViewLoop];
 
     [_superview willRemoveSubview:self];
+    [self _postViewWillDisappearNotification];
 
     [_superview._subviews removeObjectIdenticalTo:self];
 
@@ -1614,16 +1620,38 @@ var CPViewHighDPIDrawingEnabled = YES;
             while (view = [view superview]);
         }
 
+        [self _postViewWillDisappearNotification];
         [self _recursiveGainedHiddenAncestor];
     }
     else
     {
         [self setNeedsDisplay:YES];
 
+        [self _postViewWillAppearNotification];
         [self _recursiveLostHiddenAncestor];
     }
 
     _isHidden = aFlag;
+}
+
+- (void)_postViewWillAppearNotification
+{
+    [[CPNotificationCenter defaultCenter] postNotificationName:_CPViewWillAppearNotification object:self userInfo:nil];
+}
+
+- (void)_postViewDidAppearNotification
+{
+    [[CPNotificationCenter defaultCenter] postNotificationName:_CPViewDidAppearNotification object:self userInfo:nil];
+}
+
+- (void)_postViewWillDisappearNotification
+{
+    [[CPNotificationCenter defaultCenter] postNotificationName:_CPViewWillDisappearNotification object:self userInfo:nil];
+}
+
+- (void)_postViewDidDisappearNotification
+{
+    [[CPNotificationCenter defaultCenter] postNotificationName:_CPViewDidDisappearNotification object:self userInfo:nil];
 }
 
 - (void)_setSuperview:(CPView)aSuperview
@@ -1634,12 +1662,18 @@ var CPViewHighDPIDrawingEnabled = YES;
         newSuperviewIsHidden = hasNewSuperview && [aSuperview isHiddenOrHasHiddenAncestor];
 
     if (!newSuperviewIsHidden && oldSuperviewIsHidden)
-         [self _recursiveLostHiddenAncestor];
+        [self _recursiveLostHiddenAncestor];
 
     if (newSuperviewIsHidden && !oldSuperviewIsHidden)
         [self _recursiveGainedHiddenAncestor];
 
     _superview = aSuperview;
+
+    if (hasOldSuperview)
+        [self _postViewDidDisappearNotification];
+
+    if (hasNewSuperview)
+        [self _postViewDidAppearNotification];
 }
 
 - (void)_recursiveLostHiddenAncestor
@@ -3667,7 +3701,6 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 
         _window = [aCoder decodeObjectForKey:CPViewWindowKey];
         _superview = [aCoder decodeObjectForKey:CPViewSuperviewKey];
-
         // We have to manually add the subviews so that they will receive
         // viewWillMoveToSuperview: and viewDidMoveToSuperview:
         _subviews = [];
