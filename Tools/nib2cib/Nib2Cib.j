@@ -230,6 +230,8 @@ var FILE = require("file"),
         CPLog.info("Aux themes    : " + themeList.slice(1).join(", "));
         CPLog.info("Config file   : " + (configInfo.path || ""));
         CPLog.info("System Font   : " + [CPFont systemFontSize] + "px " + [CPFont systemFontFace]);
+        CPLog.info("NSClasses     : " + userNSClasses);
+
         CPLog.info("-------------------------------------------------------------\n");
 
         var converter = [[Converter alloc] initWithInputPath:inputPath outputPath:outputPath];
