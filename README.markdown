@@ -22,6 +22,8 @@ System Requirements
 To run Cappuccino applications, all you need is a web browser that understands
 JavaScript.
 
+To develop Cappuccino applications, all you need is a simple text editor. However, Cappuccino's integrated Xcode support leverages the eases of Cocoa development for web development. 
+
 To build Cappuccino itself, please read below. More information is available
 here: [Getting and Building the Source](http://wiki.github.com/cappuccino/cappuccino/getting-and-building-the-source>).
 
