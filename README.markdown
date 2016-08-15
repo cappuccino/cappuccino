@@ -23,7 +23,7 @@ To run Cappuccino applications, all you need is a web browser that understands
 JavaScript.
 
 To develop Cappuccino applications, all you need the starter package and a simple text editor.
-If your codebase grows and launch time matters, you need to use the build system that comes with cappuccino. This depends on gcc or clang to compile Objective-J code from the command line.
+When your codebase grows and launch time matters, you need to use the build system that comes with cappuccino. This in turn depends on gcc or clang to compile Objective-J code from the command line.
 Finally, Cappuccino's integrated Xcode support leverages all the eases of Cocoa development for web development. 
 
 To build Cappuccino itself, please read below. More information is available
