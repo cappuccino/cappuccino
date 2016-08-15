@@ -952,50 +952,44 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
                                   timestamp:timestamp windowNumber:windowNumber context:nil eventNumber:-1 clickCount:1 pressure:0];
     event._DOMEvent = aDOMEvent;
 
-    // We lag 1 event behind without this timeout.
-    setTimeout(function()
+    if (aDOMEvent.deltaMode !== undefined && aDOMEvent.deltaMode !== 0)
     {
-        if (aDOMEvent.deltaMode !== undefined && aDOMEvent.deltaMode !== 0)
-        {
-            event._hasPreciseScrollingDeltas = NO;
-            event._scrollingDeltaX = aDOMEvent.deltaX;
-            event._scrollingDeltaY = aDOMEvent.deltaY;
-            event._deltaX = aDOMEvent.deltaX * SCROLLWHEEL_LINE_PIXELS;
-            event._deltaY = aDOMEvent.deltaY * SCROLLWHEEL_LINE_PIXELS;
-        }
-        else
-        {
-            event._hasPreciseScrollingDeltas = YES;
-            event._scrollingDeltaX = (_DOMScrollingElement.scrollLeft - 150) || aDOMEvent.deltaX || 0;
-            event._scrollingDeltaY = (_DOMScrollingElement.scrollTop - 150) || aDOMEvent.deltaY || 0;
-            event._deltaX = event._scrollingDeltaX;
-            event._deltaY = event._scrollingDeltaY;
-        }
+        event._hasPreciseScrollingDeltas = NO;
+        event._scrollingDeltaX = aDOMEvent.deltaX;
+        event._scrollingDeltaY = aDOMEvent.deltaY;
+        event._deltaX = aDOMEvent.deltaX * SCROLLWHEEL_LINE_PIXELS;
+        event._deltaY = aDOMEvent.deltaY * SCROLLWHEEL_LINE_PIXELS;
+    }
+    else
+    {
+        event._hasPreciseScrollingDeltas = YES;
+        event._scrollingDeltaX = (_DOMScrollingElement.scrollLeft - 150) || aDOMEvent.deltaX || 0;
+        event._scrollingDeltaY = (_DOMScrollingElement.scrollTop - 150) || aDOMEvent.deltaY || 0;
+        event._deltaX = event._scrollingDeltaX;
+        event._deltaY = event._scrollingDeltaY;
+    }
 
-        // If we scroll super with momentum,
-        // there are so many events going off that
-        // a tiny percent don't actually have any deltas.
-        //
-        // This does *not* make scrolling appear sluggish,
-        // it just seems like that is something that happens.
-        //
-        // We get free performance boost if we skip sending these events,
-        // as sending a scroll event with no deltas doesn't do anything.
-        if (event._deltaX || event._deltaY)
-            [CPApp sendEvent:event];
+    // If we scroll super with momentum,
+    // there are so many events going off that
+    // a tiny percent don't actually have any deltas.
+    //
+    // This does *not* make scrolling appear sluggish,
+    // it just seems like that is something that happens.
+    //
+    // We get free performance boost if we skip sending these events,
+    // as sending a scroll event with no deltas doesn't do anything.
+    if (event._deltaX || event._deltaY)
+        [CPApp sendEvent:event];
 
-        // We set StopDOMEventPropagation = NO on line 1008
-        //if (StopDOMEventPropagation)
-        //    _CPDOMEventStop(aDOMEvent, self);
+    // We set StopDOMEventPropagation = NO on line 1008
+    //if (StopDOMEventPropagation)
+    //    _CPDOMEventStop(aDOMEvent, self);
 
-        // Reset the DOM elements scroll offset
-        _DOMScrollingElement.scrollLeft = 150;
-        _DOMScrollingElement.scrollTop = 150;
+    // Reset the DOM elements scroll offset
+    _DOMScrollingElement.scrollLeft = 150;
+    _DOMScrollingElement.scrollTop = 150;
 
-        // Is this needed?
-        //[[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-
-    }, 0);
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 
     // We hide the dom element after a little bit
     // so that other DOM elements such as inputs
