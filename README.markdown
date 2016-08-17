@@ -23,7 +23,7 @@ To run Cappuccino applications, all you need is a HTML5 compliant web browser.
 
 To develop Cappuccino applications, all you need is a simple text editor and the starter package.
 
-However, Cappuccino's integrated build system and the Xcode integration bring the eases of Cocoa development to web development. 
+However, Cappuccino's build system and the Xcode integration bring the eases of Cocoa development to web development. 
 
 To build Cappuccino itself, please read below. More information is available
 here: [Getting and Building the Source](http://wiki.github.com/cappuccino/cappuccino/getting-and-building-the-source>).
