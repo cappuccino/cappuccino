@@ -71,7 +71,7 @@
 
     var label = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
 
-    [label setStringValue:@"Hello World!"];
+    [label setStringValue:@"Do you see the Hello World Canvas?"];
     [label setFont:[CPFont boldSystemFontOfSize:24.0]];
 
     [label sizeToFit];
