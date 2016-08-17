@@ -575,8 +575,11 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 - (void)setString:(CPString)aString
 {
     [_textStorage replaceCharactersInRange:CPMakeRange(0, [_layoutManager numberOfCharacters]) withString:aString];
-    [self setSelectedRange:CPMakeRange(0, 0)];
-    [self didChangeText];
+
+    if(CPMaxRange(_selectionRange) > [_layoutManager numberOfCharacters])
+        [self setSelectedRange:CPMakeRange([_layoutManager numberOfCharacters], 0)]
+
+   [self didChangeText];
     [_layoutManager _validateLayoutAndGlyphs];
     [self sizeToFit];
     [self setNeedsDisplay:YES];
