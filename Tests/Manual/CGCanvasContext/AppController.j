@@ -50,6 +50,10 @@
     var innerRect = CGRectInset(aRect, CGRectGetWidth(aRect)/2 - 10, CGRectGetHeight(aRect)/2 - 10);
     CGContextStrokeRectWithWidth(context, innerRect, 4);
 
+    CGContextSetTextPosition(context, innerRect.origin.x + 10, innerRect.origin.x + 10);
+    CGContextSetFillColor(context, [CPColor blueColor]);
+    CGContextShowText(context, 'Hello World Canvas!');
+
     [self unlockFocus];
 }
 

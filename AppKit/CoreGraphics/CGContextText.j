@@ -84,16 +84,3 @@ function CGContextShowTextAtPoint(/* CGContext */ aContext, /* float */ x, /* fl
     
     aContext._textPosition = CGPointMake(x + width, y);
 }
-
-// FIXME: these are hacks that override the default behavior.
-
-function CGContextSetFillColor(/* CGContext */ aContext, /* CPColor */ aColor)
-{
-    aContext.fillStyle = [aColor cssString];
-    aContext._CPColor = aColor;
-}
-
-function CGContextGetFillColor(/* CGContext */ aContext)
-{
-    return aContext._CPColor;
-}
