@@ -579,7 +579,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     if(CPMaxRange(_selectionRange) > [_layoutManager numberOfCharacters])
         [self setSelectedRange:CPMakeRange([_layoutManager numberOfCharacters], 0)]
 
-   [self didChangeText];
+    [self didChangeText];
     [_layoutManager _validateLayoutAndGlyphs];
     [self sizeToFit];
     [self setNeedsDisplay:YES];
