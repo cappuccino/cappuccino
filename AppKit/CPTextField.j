@@ -1997,7 +1997,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     frame.origin = [wind convertBaseToGlobal:frame.origin];
 
-    // Here we restore the the previous scrolling posiition
+    // Here we restore the previous scrolling posiition
     [self _restorePreviousScrollingOrigin:previousScrollingOrigin];
 
     return (CGRectGetMinX(frame) >= CGRectGetMinX(usableRect) &&
