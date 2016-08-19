@@ -9,6 +9,7 @@
 @import <Foundation/Foundation.j>
 @import <AppKit/AppKit.j>
 @import "Test1Controller.j"
+@import "Test2Controller.j"
 
 
 @implementation AppController : CPObject
@@ -23,6 +24,28 @@
     // This is called when the application is done loading.
 }
 
+- (@action)next:(id)sender
+{
+    [self activateTest:[Test2Controller new]];
+    [sender setEnabled:NO];
+}
+
+- (void)activateTest:aController
+{
+    var viewFrame = [testView frame],
+        resizingMask = [testView autoresizingMask];
+
+    [aController loadViewWithCompletionHandler:function(aView, error)
+    {
+        [aView setFrame:viewFrame];
+        [aView setAutoresizingMask:resizingMask];
+        [[theWindow contentView] replaceSubview:testView with:aView];
+        testView = aView;
+        [theWindow makeFirstResponder:[aView nextValidKeyView]];
+    }];
+
+}
+
 - (void)awakeFromCib
 {
     // This is called when the cib is done loading.
@@ -32,17 +55,7 @@
     // In this case, we want the window from Cib to become our full browser window
     [theWindow setFullPlatformWindow:YES];
 
-    var test1Controller = [Test1Controller new],
-        viewFrame = [testView frame],
-        resizingMask = [testView autoresizingMask];
-    [test1Controller loadViewWithCompletionHandler:function(aView, error)
-    {
-        [aView setFrame:viewFrame];
-        [aView setAutoresizingMask:resizingMask];
-        [[theWindow contentView] replaceSubview:testView with:aView];
-        testView = aView;
-        [theWindow makeFirstResponder:[aView nextValidKeyView]];
-    }];
+    [self activateTest:[Test1Controller new]];
 }
 
 @end
