@@ -13,11 +13,11 @@
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
         <view id="1uw-bt-qdI">
-            <rect key="frame" x="0.0" y="0.0" width="375" height="632"/>
+            <rect key="frame" x="0.0" y="0.0" width="375" height="525"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
                 <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" id="rCm-w1-9Vy">
-                    <rect key="frame" x="18" y="595" width="339" height="17"/>
+                    <rect key="frame" x="18" y="488" width="339" height="17"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="1. The text field below should be the first responder." id="efl-hH-HgI">
                         <font key="font" metaFont="system"/>
@@ -26,7 +26,7 @@
                     </textFieldCell>
                 </textField>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="MVy-6a-bmn">
-                    <rect key="frame" x="18" y="464" width="339" height="17"/>
+                    <rect key="frame" x="18" y="357" width="339" height="17"/>
                     <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="You typed:" id="gcI-MY-VpS">
                         <font key="font" metaFont="system"/>
@@ -42,7 +42,7 @@
                     </connections>
                 </textField>
                 <textField verticalHuggingPriority="750" id="QQB-7H-iNj">
-                    <rect key="frame" x="20" y="565" width="335" height="22"/>
+                    <rect key="frame" x="20" y="458" width="335" height="22"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="ZN8-1s-rtm">
                         <font key="font" metaFont="system"/>
@@ -58,7 +58,7 @@
                     </connections>
                 </textField>
                 <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" id="kvK-Y3-gbr">
-                    <rect key="frame" x="18" y="489" width="339" height="68"/>
+                    <rect key="frame" x="18" y="382" width="339" height="68"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" sendsActionOnEndEditing="YES" id="ifs-XG-wJH">
                         <font key="font" metaFont="system"/>
@@ -68,7 +68,7 @@
                     </textFieldCell>
                 </textField>
                 <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" id="MTj-IO-Hdd">
-                    <rect key="frame" x="18" y="388" width="339" height="68"/>
+                    <rect key="frame" x="18" y="281" width="339" height="68"/>
                     <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" sendsActionOnEndEditing="YES" id="XEZ-92-TT2">
                         <font key="font" metaFont="system"/>
