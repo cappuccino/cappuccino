@@ -952,8 +952,8 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
                                   timestamp:timestamp windowNumber:windowNumber context:nil eventNumber:-1 clickCount:1 pressure:0];
     event._DOMEvent = aDOMEvent;
 
-    // We lag 1 event behind without this timeout.
-    setTimeout(function()
+    // We lag 1 event behind without this approach
+    window.requestAnimationFrame(function()
     {
         if (aDOMEvent.deltaMode !== undefined && aDOMEvent.deltaMode !== 0)
         {
@@ -992,10 +992,10 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
         _DOMScrollingElement.scrollLeft = 150;
         _DOMScrollingElement.scrollTop = 150;
 
-        // Is this needed?
-        //[[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+        // this is needed to prevent flickering during scrolling
+        [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 
-    }, 0);
+    });
 
     // We hide the dom element after a little bit
     // so that other DOM elements such as inputs
