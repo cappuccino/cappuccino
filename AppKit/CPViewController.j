@@ -178,10 +178,10 @@ var CPViewControllerCachedCibs;
 }
 
 /*!
-    Loads asynchronously the cib and creates the view that the controller manages.
+    Asynchronously load the cib and create the view that the controller manages.
 
-    @param aHandler A function passing the loaded view as the first argument
-    and a network error or nil as the second argument: function(view, error).
+    @param aHandler a function which will be passed the loaded view as the first
+    argument and a network error or nil as the second argument: function(view, error).
 
     @note If the view has already been loaded, the completion handler is run immediatly
     and the process is synchronous.

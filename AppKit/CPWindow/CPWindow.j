@@ -4201,12 +4201,11 @@ var interpolate = function(fromValue, toValue, progress)
 {
     // This will put a tracking event in the _queuedTrackingEvents queue.
     //
-    // We optimize this queue with this policy :
+    // We optimize this queue with this policy:
     // - if mouseEntered, search if queue contains a previous mouseExited for the same tracking area. If so, discard both.
     // - if mouseExited, search if queue contains a previous mouseEntered for the same tracking area. If so, discard both.
     //
-    // This is not Cocoa way of doing as it would send every event.
-    // But final result should be the same.
+    // This is not the Cocoa way of doing as it would send every event, but the final result should be the same.
 
     var eventType    = [anEvent type],
         trackingArea = [anEvent trackingArea];

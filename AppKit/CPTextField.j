@@ -77,26 +77,16 @@ function CPTextFieldBlurFunction(anEvent, owner, domElement, inputElement, resig
 
     var ownerWindow = [owner window];
 
-    if (!resigning && [ownerWindow isKeyWindow])
+    if (!resigning && [ownerWindow isKeyWindow] && [ownerWindow firstResponder] === owner)
     {
         /*
-            Browsers blur text fields when a click occurs anywhere outside the text field. That is normal for browsers, but in Cocoa the key view retains focus unless the click target accepts first responder. So if we lost focus but were not told to resign and our window is still key, restore focus,
-            but only if the text field is completely within the browser window. If we restore focus when it
-            is off screen, the entire body scrolls out of our control.
+        Previously we had code here which would force the input to regain focus if the input lost focus without the CPTextField having actually lost first responder status. This typically happened because the user clicked away from the input in the browser, without clicking on something that could become the first responder. In the browser, clicking outside of an input blurs it, but in Cocoa and Cappuccino it does not (unless you actually click something that will become the first responder).
+
+        That refocusing code has now been removed because we simply prevent the default action on clicks in the browser instead, which combined with the fix in 58d5d7d7, successfully prevents unintentional focus loss in (at least) Safari 9.1.1, Chrome 51 and Safari for iOS 9.3 when you click outside of a text field.
+
+        Now we can still lose focus unexpectedly: this is when the 'done' button is tapped on the virtual keyboard of a mobile device. In this case we actually do want to resign first responder status, because that is what the done button should do (and if we did not the keyboard would go away and then immediately come back which looks dumb and isn't what the user wanted).
         */
-        if ([owner _isWithinUsablePlatformRect])
-        {
-            [[CPRunLoop mainRunLoop] performBlock:function()
-            {
-                // This will prevent to jump to the focused element
-                var previousScrollingOrigin = [owner _scrollToVisibleRectAndReturnPreviousOrigin];
-
-                inputElement.focus();
-
-                [owner _restorePreviousScrollingOrigin:previousScrollingOrigin];
-            } 
-            argument:nil order:0 modes:[CPDefaultRunLoopMode]];
-        }
+        [ownerWindow makeFirstResponder:nil];
     }
 
     CPTextFieldHandleBlur(anEvent, @ref(owner));
@@ -403,7 +393,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     else
         [self unsetThemeState:CPThemeStateEditable];
 
-    // We only allow first responder status if the field is enable, and editable or selectable.
+    // We only allow first responder status if the field is enabled, and editable or selectable.
     if (!(shouldBeEditable && ![self isSelectable]) && [[self window] firstResponder] === self)
         [[self window] makeFirstResponder:nil];
 
@@ -845,7 +835,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [self _resignFirstKeyResponder];
 
     _isEditing = NO;
-    
+
     if ([self isEditable])
     {
         [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:self userInfo:@{"CPTextMovement": [self _currentTextMovement]}]];
@@ -1997,7 +1987,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     frame.origin = [wind convertBaseToGlobal:frame.origin];
 
-    // Here we restore the the previous scrolling posiition
+    // Here we restore the previous scrolling posiition
     [self _restorePreviousScrollingOrigin:previousScrollingOrigin];
 
     return (CGRectGetMinX(frame) >= CGRectGetMinX(usableRect) &&
