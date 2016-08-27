@@ -177,7 +177,7 @@ var CPSystemTypesetterFactory,
         rect = CGRectMake(lineOrigin.x, lineOrigin.y, _lineWidth, _lineHeight),
         containerSize = aContainer._size;
 
-    [_layoutManager setTextContainer:_currentTextContainer forGlyphRange:lineRange];  // creates a new lineFragment
+    [_layoutManager _appendNewLineFragmentInTextContainer:_currentTextContainer forGlyphRange:lineRange]
 
     var fragment = [_layoutManager._lineFragments lastObject];
     fragment._isLast = !sameLine;

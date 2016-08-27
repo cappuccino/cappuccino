@@ -636,17 +636,18 @@ _oncontextmenuhandler = function () { return false; };
     // FIXME
 }
 
+- (void)_appendNewLineFragmentInTextContainer:(CPTextContainer)aTextContainer forGlyphRange:(CPRange)glyphRange
+{
+    _lineFragments.push([[_lineFragmentFactory alloc] initWithRange:glyphRange textContainer:aTextContainer textStorage:_textStorage]);
+}
+
 - (void)setTextContainer:(CPTextContainer)aTextContainer forGlyphRange:(CPRange)glyphRange
 {
     var fragments = _objectsInRange(_lineFragments, glyphRange),
         l = fragments.length;
 
     for (var i = 0; i < l; i++)
-        [fragments[i] invalidate];
-
-    var lineFragment = [[_lineFragmentFactory alloc] initWithRange:glyphRange textContainer:aTextContainer textStorage:_textStorage];
-
-    _lineFragments.push(lineFragment);
+        fragments[i]._textContainer = aTextContainer;
 }
 
 - (id)_lineFragmentForLocation:(unsigned) aLoc
