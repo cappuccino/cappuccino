@@ -1063,33 +1063,16 @@ var _objectWithLocationInRange = function(aList, aLocation)
 
 var _objectsInRange = function(aList, aRange)
 {
-    var list = [],
-        c = aList.length,
-        location = aRange.location;
+    var firstIndex = [aList _indexOfObject:aRange.location sortedByFunction:_sortRange context:nil],
+        lastIndex = [aList _indexOfObject:CPMaxRange(aRange) sortedByFunction:_sortRange context:nil];
+ 
+    if (firstIndex === CPNotFound)
+        firstIndex = 0;
 
-    for (var i = 0; i < c; i++)
-    {
-        if (CPLocationInRange(location, aList[i]._range))
-        {
-            list.push(aList[i]);
+   if (lastIndex === CPNotFound)
+        lastIndex = aList.length - 1;
 
-            if (CPMaxRange(aList[i]._range) <= CPMaxRange(aRange))
-                location = CPMaxRange(aList[i]._range);
-            else
-                break;
-        }
-        else if (CPLocationInRange(CPMaxRange(aRange), aList[i]._range))
-        {
-            list.push(aList[i]);
-            break;
-        }
-        else if (CPRangeInRange(aRange, aList[i]._range))
-        {
-            list.push(aList[i]);
-        }
-    }
-
-    return list;
+    return aList.slice(firstIndex, lastIndex + 1);
 }
 
 @implementation _CPLineFragment : CPObject
