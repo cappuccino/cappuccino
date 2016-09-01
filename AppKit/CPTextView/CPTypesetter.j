@@ -108,7 +108,6 @@ var CPSystemTypesetterFactory,
 
     CPRange             _attributesRange;
     CPDictionary        _currentAttributes;
-    CPFont              _currentFont;
     CPParagraphStyle    _currentParagraph;
 
     float               _lineHeight;
@@ -190,11 +189,11 @@ var CPSystemTypesetterFactory,
             break;
 
         case CPCenterTextAlignment:
-            myX = (containerSizeWidth - _lineWidth) / 2;
+            myX = (containerSize.width - _lineWidth) / 2;
             break;
 
         case CPRightTextAlignment:
-            myX = containerSizeWidth - _lineWidth;
+            myX = containerSize.width - _lineWidth;
             break;
     }
 
@@ -259,7 +258,12 @@ var CPSystemTypesetterFactory,
         prevRangeWidth = 0,
         measuringRange = CPMakeRange(glyphIndex, 0),
         currentAnchor = 0,
-        previousFont;
+        currentFont,
+        currentFontLineHeight,
+        previousFont,
+        currentParagraphMinimumLineHeight,
+        currentParagraphMaximumLineHeight,
+        currentParagraphLineSpacing;
 
     if (glyphIndex > 0)
         lineOrigin = CGPointCreateCopy([_layoutManager lineFragmentRectForGlyphAtIndex:glyphIndex effectiveRange:nil].origin);
@@ -277,32 +281,37 @@ var CPSystemTypesetterFactory,
 
     for (; numLines != maxNumLines && glyphIndex < numberOfGlyphs; glyphIndex++)
     {
+        // check whether there any change in the attributes from here on
         if (!CPLocationInRange(glyphIndex, _attributesRange))
         {
             _currentAttributes = [_textStorage attributesAtIndex:glyphIndex effectiveRange:_attributesRange];
-            _currentFont = [_currentAttributes objectForKey:CPFontAttributeName];
+            currentFont = [_currentAttributes objectForKey:CPFontAttributeName];
             _currentParagraph = [_currentAttributes objectForKey:CPParagraphStyleAttributeName] || [CPParagraphStyle defaultParagraphStyle];
+            currentParagraphMinimumLineHeight = [_currentParagraph minimumLineHeight];
+            currentParagraphMaximumLineHeight = [_currentParagraph maximumLineHeight];
+            currentParagraphLineSpacing = [_currentParagraph lineSpacing];
 
-            if (!_currentFont)
-                _currentFont = [_textStorage font] || [CPFont systemFontOfSize:12.0];
+            if (!currentFont)
+                currentFont = [_textStorage font] || [CPFont systemFontOfSize:12.0];
 
-            ascent = [_currentFont ascender]
-            descent = [_currentFont descender]
+            ascent = [currentFont ascender]
+            descent = [currentFont descender]
             leading = (ascent - descent) * 0.2; // FAKE leading
-        }
 
-        if (previousFont !== _currentFont)
-        {
-            measuringRange = CPMakeRange(glyphIndex, 0);
-            currentAnchor = prevRangeWidth;
-            previousFont = _currentFont;
+            if (previousFont !== currentFont)
+            {
+                measuringRange = CPMakeRange(glyphIndex, 0);
+                currentAnchor = prevRangeWidth;
+                previousFont = currentFont;
+            }
+
         }
 
         lineRange.length++;
         measuringRange.length++;
 
         var currentCharCode = theString.charCodeAt(glyphIndex),  // use pure javascript methods for performance reasons
-            rangeWidth = [theString.substr(measuringRange.location, measuringRange.length) sizeWithFont:_currentFont inWidth:NULL].width + currentAnchor;
+            rangeWidth = [theString.substr(measuringRange.location, measuringRange.length) sizeWithFont:currentFont inWidth:NULL].width + currentAnchor;
 
         switch (currentCharCode)    // faster than sending actionForControlCharacterAtIndex: called for each char.
         {
@@ -329,10 +338,7 @@ var CPSystemTypesetterFactory,
                 isNewline = YES;
         }
 
-        var advancement = CPMakeSize(rangeWidth - prevRangeWidth, ascent);
-
-        advancement.descent = descent;
-        advancements.push(advancement);
+        advancements.push({width: rangeWidth - prevRangeWidth, height: ascent, descent: descent});
 
         prevRangeWidth = _lineWidth = rangeWidth;
 
@@ -351,8 +357,14 @@ var CPSystemTypesetterFactory,
             glyphIndex = CPMaxRange(lineRange) - 1;  // start the line starts directly at current character
         }
 
-        _lineHeight = MAX(_lineHeight, ascent - descent + leading);
-        _lineBase = MAX(_lineBase, ascent);
+        currentFontLineHeight = ascent - descent + leading;
+
+        if (currentFontLineHeight > _lineHeight)
+            _lineHeight = currentFontLineHeight;
+
+        if (ascent > _lineBase)
+            _lineBase = ascent;
+
 
         if (isNewline || isTabStop)
         {
@@ -367,16 +379,16 @@ var CPSystemTypesetterFactory,
 
             if (isNewline)
             {
-                if ([_currentParagraph minimumLineHeight])
-                    _lineHeight = MAX(_lineHeight, [_currentParagraph minimumLineHeight]);
+                if (currentParagraphMinimumLineHeight && currentParagraphMinimumLineHeight > _lineHeight)
+                    _lineHeight = currentParagraphMinimumLineHeight;
 
-                if ([_currentParagraph maximumLineHeight])
-                    _lineHeight = MIN(_lineHeight, [_currentParagraph maximumLineHeight]);
+                if (currentParagraphMaximumLineHeight && currentParagraphMaximumLineHeight < _lineHeight)
+                    _lineHeight = currentParagraphMaximumLineHeight;
 
                 lineOrigin.y += _lineHeight;
 
-                if ([_currentParagraph lineSpacing])
-                    lineOrigin.y += [_currentParagraph lineSpacing];
+                if (currentParagraphLineSpacing)
+                    lineOrigin.y += currentParagraphLineSpacing;
 
                 if (lineOrigin.y > containerSizeHeight)
                 {
