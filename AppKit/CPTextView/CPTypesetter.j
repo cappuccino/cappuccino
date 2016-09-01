@@ -294,10 +294,10 @@ var CPSystemTypesetterFactory,
         lineRange.length++;
         measuringRange.length++;
 
-        var currentChar = theString[glyphIndex],
+        var currentCharCode = theString.charCodeAt(glyphIndex),  // use pure javascript methods for performance reasons
             rangeWidth = [theString.substr(measuringRange.location, measuringRange.length) sizeWithFont:_currentFont inWidth:NULL].width + currentAnchor;
 
-        switch (currentChar)    // faster than sending actionForControlCharacterAtIndex: called for each char.
+        switch (currentCharCode)    // faster than sending actionForControlCharacterAtIndex: called for each char.
         {
             case 9: // '\t'
             {
@@ -320,8 +320,6 @@ var CPSystemTypesetterFactory,
             case 10:
             case 13:
                 isNewline = YES;
-                break;
-            default:
         }
 
         var advancement = CPMakeSize(rangeWidth - prevRangeWidth, ascent);
