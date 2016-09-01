@@ -424,7 +424,6 @@ var CPSystemTypesetterFactory,
     }
 
     var rect = CGRectMake(0, lineOrigin.y, containerSizeWidth, [_layoutManager._lineFragments lastObject]._usedRect.size.height - descent);
-document.title= [_layoutManager._lineFragments lastObject]._usedRect.size.height - descent
     [_layoutManager setExtraLineFragmentRect:rect usedRect:rect textContainer:_currentTextContainer];
 }
 
