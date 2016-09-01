@@ -86,18 +86,20 @@ CPStringSizeCachingEnabled = YES;
     if (!CPStringSizeCachingEnabled)
         return [CPPlatformString sizeOfString:self withFont:aFont forWidth:aWidth];
 
-    if (CPStringSizeWithFontInWidthCache[self] === undefined)
-        CPStringSizeWithFontInWidthCache[self] = [];
+    var sizeCacheForFont = CPStringSizeWithFontInWidthCache[self];
+
+    if (sizeCacheForFont === undefined)
+        sizeCacheForFont = [];
 
     var cssString = [aFont cssString],
         cacheKey = cssString + '_' + aWidth;
 
-    size = CPStringSizeWithFontInWidthCache[self][cacheKey];
+    size = sizeCacheForFont[cacheKey];
 
-    if (CPStringSizeWithFontInWidthCache[self].hasOwnProperty(cacheKey) && size !== undefined)
+    if (size !== undefined && sizeCacheForFont.hasOwnProperty(cacheKey))
         return CGSizeMakeCopy(size);
 
-    if (!CPStringSizeDidTestCanvasSizingValid)
+    if (CPStringSizeDidTestCanvasSizingValid  === undefined)
     {
         [self _initializeStringSizing];
         CPStringSizeDidTestCanvasSizingValid = YES;
@@ -118,7 +120,7 @@ CPStringSizeCachingEnabled = YES;
         size = CGSizeMake(CPStringSizeMeasuringContext.measureText(self).width, fontHeight);
     }
 
-    CPStringSizeWithFontInWidthCache[self][cacheKey] = size;
+    sizeCacheForFont[cacheKey] = size;
 #else
         size = CGSizeMake(0, 0);
 #endif
