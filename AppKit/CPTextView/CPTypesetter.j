@@ -390,11 +390,13 @@ var CPSystemTypesetterFactory,
                 if (currentParagraphLineSpacing)
                     lineOrigin.y += currentParagraphLineSpacing;
 
-                if (lineOrigin.y > containerSizeHeight)
+                if (lineOrigin.y > containerSizeHeight && _indexOfCurrentContainer < textContainersCount - 1)
                 {
                     _indexOfCurrentContainer++;
-                    _indexOfCurrentContainer = MAX(_indexOfCurrentContainer, textContainersCount - 1);
-                    _currentTextContainer = textContainers[_indexOfCurrentContainer];
+                    _currentTextContainer = [textContainers objectAtIndex:_indexOfCurrentContainer];
+                    containerSize = [_currentTextContainer containerSize];
+                    containerSizeWidth = containerSize.width;
+                    containerSizeHeight = containerSize.height;
                 }
 
                 lineOrigin.x = 0;
