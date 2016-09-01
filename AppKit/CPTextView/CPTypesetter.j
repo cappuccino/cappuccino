@@ -223,18 +223,25 @@ var CPSystemTypesetterFactory,
         maxNumberOfLineFragments:(unsigned)maxNumLines
         nextGlyphIndex:(UIntegerReference)nextGlyph
 {
+    var textContainers = [layoutManager textContainers],
+        textContainersCount = [textContainers count];
+
     _layoutManager = layoutManager;
     _textStorage = [_layoutManager textStorage];
-    _indexOfCurrentContainer = MAX(0, [[_layoutManager textContainers]
+    _indexOfCurrentContainer = MAX(0, [textContainers
                                    indexOfObject:[_layoutManager textContainerForGlyphAtIndex:glyphIndex effectiveRange:nil withoutAdditionalLayout:YES]
-                                         inRange:CPMakeRange(0, [[_layoutManager textContainers] count])]);
-    _currentTextContainer = [[_layoutManager textContainers] objectAtIndex:_indexOfCurrentContainer];
+                                         inRange:CPMakeRange(0, textContainersCount)]);
+
+    _currentTextContainer = textContainers[_indexOfCurrentContainer];
+
     _attributesRange = CPMakeRange(0, 0);
     _lineHeight = 0;
     _lineBase = 0;
     _lineWidth = 0;
 
     var containerSize = [_currentTextContainer containerSize],
+        containerSizeWidth = containerSize.width,
+        containerSizeHeight = containerSize.height,
         lineRange = CPMakeRange(glyphIndex, 0),
         wrapRange = CPMakeRange(0, 0),
         wrapWidth = 0,
@@ -374,8 +381,8 @@ var CPSystemTypesetterFactory,
                 if (lineOrigin.y > [_currentTextContainer containerSize].height)
                 {
                     _indexOfCurrentContainer++;
-                    _indexOfCurrentContainer = MAX(_indexOfCurrentContainer, [[_layoutManager textContainers] count] - 1);
-                    _currentTextContainer = [[_layoutManager textContainers] objectAtIndex:_indexOfCurrentContainer];
+                    _indexOfCurrentContainer = MAX(_indexOfCurrentContainer, textContainersCount - 1);
+                    _currentTextContainer = textContainers[_indexOfCurrentContainer];
                 }
 
                 lineOrigin.x = 0;
