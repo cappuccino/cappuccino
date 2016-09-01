@@ -190,11 +190,11 @@ var CPSystemTypesetterFactory,
             break;
 
         case CPCenterTextAlignment:
-            myX = (containerSize.width - _lineWidth) / 2;
+            myX = (containerSizeWidth - _lineWidth) / 2;
             break;
 
         case CPRightTextAlignment:
-            myX = containerSize.width - _lineWidth;
+            myX = containerSizeWidth - _lineWidth;
             break;
     }
 
@@ -336,7 +336,7 @@ var CPSystemTypesetterFactory,
 
         prevRangeWidth = _lineWidth = rangeWidth;
 
-        if (lineOrigin.x + rangeWidth > containerSize.width)
+        if (lineOrigin.x + rangeWidth > containerSizeWidth)
         {
             if (wrapWidth)
             {
@@ -378,7 +378,7 @@ var CPSystemTypesetterFactory,
                 if ([_currentParagraph lineSpacing])
                     lineOrigin.y += [_currentParagraph lineSpacing];
 
-                if (lineOrigin.y > [_currentTextContainer containerSize].height)
+                if (lineOrigin.y > containerSizeHeight)
                 {
                     _indexOfCurrentContainer++;
                     _indexOfCurrentContainer = MAX(_indexOfCurrentContainer, textContainersCount - 1);
@@ -411,7 +411,7 @@ var CPSystemTypesetterFactory,
         [self _flushRange:lineRange lineOrigin:lineOrigin currentContainer:_currentTextContainer advancements:advancements lineCount:numLines sameLine:NO];
     }
 
-    var rect = CGRectMake(0, lineOrigin.y, containerSize.width, [_layoutManager._lineFragments lastObject]._usedRect.size.height - descent);
+    var rect = CGRectMake(0, lineOrigin.y, containerSizeWidth, [_layoutManager._lineFragments lastObject]._usedRect.size.height - descent);
     [_layoutManager setExtraLineFragmentRect:rect usedRect:rect textContainer:_currentTextContainer];
 }
 
