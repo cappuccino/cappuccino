@@ -31,8 +31,6 @@
 @import "CPTextStorage.j"
 @import "CPFont.j"
 
-@global _isNewlineCharacter
-
 // forward declare these classes for type matching
 @class CPLayoutManager
 @class CPTextContainer
@@ -301,7 +299,7 @@ var CPSystemTypesetterFactory,
 
         switch (currentChar)    // faster than sending actionForControlCharacterAtIndex: called for each char.
         {
-            case '\t':
+            case 9: // '\t'
             {
                 var nextTab = [self textTabForWidth:rangeWidth + lineOrigin.x writingDirection:0];
 
@@ -312,16 +310,18 @@ var CPSystemTypesetterFactory,
                 else
                     rangeWidth += 28;   //FIXME
             }  // fallthrough intentional
-            case  ' ':
+            case 32: // ' '
                 wrapRange = CPMakeRangeCopy(lineRange);
                 wrapWidth = rangeWidth;
                 wrapRange._height = _lineHeight;
                 wrapRange._base = _lineBase;
                 break;
 
+            case 10:
+            case 13:
+                isNewline = YES;
+                break;
             default:
-                if (_isNewlineCharacter(currentChar))
-                    isNewline = YES;
         }
 
         var advancement = CPMakeSize(rangeWidth - prevRangeWidth, ascent);
