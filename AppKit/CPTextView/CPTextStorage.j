@@ -186,24 +186,26 @@ var CPTextStorageDelegate_textStorageWillProcessEditing_ = 1 << 1,
 
 - (void)edited:(unsigned)editedMask range:(CPRange)aRange changeInLength:(int)lengthChange
 {
-    if (_editCount == 0) /* used outside a beginEditing/endEditing */
+    var copyRange = CPMakeRangeCopy(aRange);
+
+    if (_editCount == 0) // used outside a beginEditing/endEditing
     {
         _editedMask = editedMask;
         _changeInLength = lengthChange;
-        aRange.length += lengthChange;
-        _editedRange = aRange;
+        copyRange.length += lengthChange;
+        _editedRange = copyRange;
         [self processEditing];
     }
     else
     {
         _editedMask |= editedMask;
         _changeInLength += lengthChange;
-        aRange.length += lengthChange;
+        copyRange.length += lengthChange;
 
-        if (_editedRange.location === CPNotFound)
-            _editedRange = aRange;
+        if (_editedRange.location == CPNotFound)
+            _editedRange = copyRange;
         else
-            _editedRange = CPUnionRange(_editedRange,aRange);
+            _editedRange = CPUnionRange(_editedRange,copyRange);
     }
 }
 
