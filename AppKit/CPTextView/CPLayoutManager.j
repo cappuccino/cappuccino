@@ -999,7 +999,7 @@ var CPLayoutManagerTextStorageKey  = @"CPLayoutManagerTextStorageKey";
 
 - (unsigned)_indexOfObject:(id)anObject sortedByFunction:(Function)aFunction context:(id)aContext
 {
-    var length= [self count];
+    var length= self.length;
 
     if (!aFunction)
         return CPNotFound;
