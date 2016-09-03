@@ -339,6 +339,14 @@ var _CPEventPeriodicEventPeriod         = 0,
 }
 
 /*!
+    Returns the subtype of the event.
+*/
+- (CPEventType)subtype
+{
+    return _subtype;
+}
+
+/*!
     Returns the event's associated window.
 */
 - (CPWindow)window

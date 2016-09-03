@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="10117" systemVersion="15F34" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+    <dependencies>
+        <deployment version="1050" identifier="macosx"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="10117"/>
+    </dependencies>
+    <objects>
+        <customObject id="-2" userLabel="File's Owner" customClass="NSViewController">
+            <connections>
+                <outlet property="view" destination="1uw-bt-qdI" id="dzb-ew-bjQ"/>
+            </connections>
+        </customObject>
+        <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
+        <customObject id="-3" userLabel="Application" customClass="NSObject"/>
+        <view id="1uw-bt-qdI">
+            <rect key="frame" x="0.0" y="0.0" width="375" height="525"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" id="rCm-w1-9Vy">
+                    <rect key="frame" x="18" y="488" width="339" height="17"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="1. The text field below should be the first responder." id="efl-hH-HgI">
+                        <font key="font" metaFont="system"/>
+                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="MVy-6a-bmn">
+                    <rect key="frame" x="18" y="357" width="339" height="17"/>
+                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                    <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="You typed:" id="gcI-MY-VpS">
+                        <font key="font" metaFont="system"/>
+                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                    <connections>
+                        <binding destination="8b9-mi-3ry" name="displayPatternValue1" keyPath="selection.field1" id="JO4-tI-gAH">
+                            <dictionary key="options">
+                                <string key="NSDisplayPattern">You typed: %{value1}@</string>
+                            </dictionary>
+                        </binding>
+                    </connections>
+                </textField>
+                <textField verticalHuggingPriority="750" id="QQB-7H-iNj">
+                    <rect key="frame" x="20" y="458" width="335" height="22"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="ZN8-1s-rtm">
+                        <font key="font" metaFont="system"/>
+                        <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                    <connections>
+                        <binding destination="8b9-mi-3ry" name="value" keyPath="selection.field1" id="p4m-dy-IvJ">
+                            <dictionary key="options">
+                                <bool key="NSContinuouslyUpdatesValue" value="YES"/>
+                            </dictionary>
+                        </binding>
+                    </connections>
+                </textField>
+                <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" id="kvK-Y3-gbr">
+                    <rect key="frame" x="18" y="382" width="339" height="68"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <textFieldCell key="cell" sendsActionOnEndEditing="YES" id="ifs-XG-wJH">
+                        <font key="font" metaFont="system"/>
+                        <string key="title">2. Using the iOS virtual keyboard, type something and then tap "Done". The text field should resign first responder status. The virtual keyboard should dismiss.</string>
+                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+                <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" id="MTj-IO-Hdd">
+                    <rect key="frame" x="18" y="281" width="339" height="68"/>
+                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                    <textFieldCell key="cell" sendsActionOnEndEditing="YES" id="XEZ-92-TT2">
+                        <font key="font" metaFont="system"/>
+                        <string key="title">It should not be possible to unfocus the field by tapping outside of it. Neither should tab on a hardware keyboard or return on the virtual keyboard cause the field to lose focus.</string>
+                        <color key="textColor" white="0.25" alpha="0.84999999999999998" colorSpace="calibratedWhite"/>
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+            </subviews>
+            <connections>
+                <outlet property="nextKeyView" destination="QQB-7H-iNj" id="rhW-S2-aO8"/>
+            </connections>
+            <point key="canvasLocation" x="222.5" y="143"/>
+        </view>
+        <objectController automaticallyPreparesContent="YES" id="8b9-mi-3ry">
+            <declaredKeys>
+                <string>field1</string>
+            </declaredKeys>
+        </objectController>
+    </objects>
+</document>
