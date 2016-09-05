@@ -61,17 +61,12 @@ var ANIMATION_DURATION = 0.9;
     vanillaView = [[ColorView alloc] initWithFrame:CGRectMake(30,30,148,115)];
     [vanillaView setBackgroundColor:[vanillaView color]];
 
-    var fadeIn = [CABasicAnimation animationWithKeyPath:@"alphaValue"];
-    [fadeIn setFromValue:0];
-    [fadeIn setToValue:1];
-    [fadeIn setDuration:ANIMATION_DURATION];
-
     var fadeOut = [CABasicAnimation animationWithKeyPath:@"alphaValue"];
     [fadeOut setFromValue:1];
     [fadeOut setToValue:0];
     [fadeOut setDuration:ANIMATION_DURATION];
 
-    [vanillaView setAnimations:@{@"CPAnimationTriggerOrderIn":fadeIn, @"CPAnimationTriggerOrderOut":fadeOut}];
+    [vanillaView setAnimations:@{@"CPAnimationTriggerOrderOut":fadeOut}];
 
     var ctx = [CPAnimationContext currentContext];
     [ctx setCompletionHandler:function()
@@ -80,7 +75,7 @@ var ANIMATION_DURATION = 0.9;
             [self testDidPass];
     }];
 
-    [[theWindow contentView] addSubview:[vanillaView animator]];
+    [[theWindow contentView] addSubview:vanillaView];
 }
 
 - (void)test1
