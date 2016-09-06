@@ -335,11 +335,34 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 
     [_tabs setSelectedSegment:anIndex];
     _selectedTabViewItem = aTabViewItem;
-    [self _displayItemView:[aTabViewItem view]];
+    [self _loadTabViewItem:aTabViewItem];
 
     [self _sendDelegateDidSelectTabViewItem:aTabViewItem];
 
     return YES;
+}
+
+- (void)_loadTabViewItem:(CPTabViewItem)aTabViewItem
+{
+    var controller = [aTabViewItem viewController];
+
+    if (controller && ![controller isViewLoaded])
+    {
+        [controller loadViewWithCompletionHandler:function(view, error)
+        {
+            if (view !== nil && error == nil)
+            {
+                [aTabViewItem setView:view];
+
+                if ([self selectedTabViewItem] == aTabViewItem)
+                    [self _displayItemView:view];
+            }
+        }];
+    }
+    else
+    {
+        [self _displayItemView:[aTabViewItem view]];
+    }
 }
 
 /*!
