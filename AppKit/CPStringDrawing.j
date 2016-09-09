@@ -89,7 +89,7 @@ CPStringSizeCachingEnabled = YES;
     var sizeCacheForFont = CPStringSizeWithFontInWidthCache[self];
 
     if (sizeCacheForFont === undefined)
-        sizeCacheForFont = [];
+        sizeCacheForFont = CPStringSizeWithFontInWidthCache[self] = [];
 
     var cssString = [aFont cssString],
         cacheKey = cssString + '_' + aWidth;
