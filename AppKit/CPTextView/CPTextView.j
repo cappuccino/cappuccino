@@ -1717,8 +1717,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 {
     var minSize = [self minSize],
         maxSize = [self maxSize],
-        desiredSize = aSize,
-        rect = [_layoutManager boundingRectForGlyphRange:CPMakeRange(0, MAX(0, [_layoutManager numberOfCharacters] - 1)) inTextContainer:_textContainer],
+        desiredSize = CGSizeCreateCopy(aSize),
+        rect = CGRectUnion([_layoutManager boundingRectForGlyphRange:CPMakeRange(0, 1) inTextContainer:_textContainer],
+                           [_layoutManager boundingRectForGlyphRange:CPMakeRange(MAX(0, [_layoutManager numberOfCharacters] - 2), 1) inTextContainer:_textContainer]),
         myClipviewSize = nil;
 
     if ([[self superview] isKindOfClass:[CPClipView class]])
@@ -1730,6 +1731,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     if (_isHorizontallyResizable)
     {
+        rect = [_layoutManager boundingRectForGlyphRange:CPMakeRange(0, MAX(0, [_layoutManager numberOfCharacters] - 1)) inTextContainer:_textContainer]; // needs expensive "deep" recalculation
+
         desiredSize.width = rect.size.width + 2 * _textContainerInset.width;
 
         if (desiredSize.width < minSize.width)
