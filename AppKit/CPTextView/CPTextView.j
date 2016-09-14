@@ -672,16 +672,6 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     [self _fixupReplaceForRange:CPMakeRange(CPMaxRange(aRange), 0)];
 }
 
-- (void)_replaceCharactersInRange:(CPRange)aRange withString:(CPString)aString
-{
-    [[[[self window] undoManager] prepareWithInvocationTarget:self]
-                _replaceCharactersInRange:CPMakeRange(aRange.location, [aString length])
-                               withString:[[self string] substringWithRange:CPMakeRangeCopy(aRange)]];
-
-    [_textStorage replaceCharactersInRange:CPMakeRangeCopy(aRange) withString:aString];
-    [self _fixupReplaceForRange:CPMakeRange(CPMaxRange(aRange), 0)];
-}
-
 - (void)insertText:(CPString)aString
 {
     var isAttributed = [aString isKindOfClass:CPAttributedString],
