@@ -1725,7 +1725,6 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     if ([[self superview] isKindOfClass:[CPClipView class]])
         myClipviewSize = [[self superview] frame].size;
 
-
     if ([_layoutManager extraLineFragmentTextContainer] === _textContainer)
         rect = CGRectUnion(rect, [_layoutManager extraLineFragmentRect]);
 
