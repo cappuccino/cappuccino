@@ -1158,6 +1158,9 @@ var _objectsInRange = function(aList, aRange)
                 run = {_range:CPMakeRangeCopy(effectiveRange), color:color, font:font, elem:nil, string:string};
 
             _runs.push(run);
+
+            if (!CPMaxRange(effectiveRange))
+                break;
         }
     }
 
