@@ -300,9 +300,6 @@ var CPSystemTypesetterFactory,
 
             currentFontLineHeight = ascent - descent + leading;
 
-            if (ascent > _lineBase)
-                _lineBase = ascent;
-
             if (previousFont !== currentFont)
             {
                 measuringRange = CPMakeRange(glyphIndex, 0);
@@ -314,6 +311,9 @@ var CPSystemTypesetterFactory,
 
         if (currentFontLineHeight > _lineHeight)
             _lineHeight = currentFontLineHeight;
+
+        if (ascent > _lineBase)
+            _lineBase = ascent;
 
         lineRange.length++;
         measuringRange.length++;
@@ -401,14 +401,14 @@ var CPSystemTypesetterFactory,
                 numLines++;
                 isNewline = NO;
                 _lineFragments = [];
+                _lineHeight    = 0;
+                _lineBase      = ascent;
             }
 
             _lineWidth      = 0;
             advancements    = [];
             currentAnchor   = 0;
             prevRangeWidth  = 0;
-            _lineHeight     = 0;
-            _lineBase       = ascent;
             lineRange       = CPMakeRange(glyphIndex + 1, 0);
             measuringRange  = CPMakeRange(glyphIndex + 1, 0);
             wrapRange       = CPMakeRange(0, 0);
