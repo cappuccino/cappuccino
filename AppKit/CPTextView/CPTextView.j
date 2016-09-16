@@ -2360,7 +2360,6 @@ var _CPCopyPlaceholder = '-';
         {
             _CPNativeInputFieldActive = YES;
             [currentFirstResponder _activateNativeInputElement:_CPNativeInputField];
-
         }
         else
         {
@@ -2378,7 +2377,7 @@ var _CPCopyPlaceholder = '-';
     _CPNativeInputField.addEventListener("keydown", function(e)
     {
         // this protects from heavy typing
-        if (CPBrowserIsEngine(CPGeckoBrowserEngine) && _CPNativeInputFieldKeyDownCalled)
+        if (_CPNativeInputFieldKeyDownCalled)
             return true;
 
         _CPNativeInputFieldKeyDownCalled = YES;
