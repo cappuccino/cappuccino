@@ -1170,8 +1170,14 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)moveToEndOfParagraph:(id)sender
 {
-    if ([self isSelectable])
+    if (![self isSelectable])
+        return;
+
+    if (!_isNewlineCharacter([[_textStorage string] characterAtIndex:_selectionRange.location]))
        [self _moveSelectionIntoDirection:1 granularity:CPSelectByParagraph];
+
+    if (_isNewlineCharacter([[_textStorage string] characterAtIndex:MAX(0, _selectionRange.location - 1)]))
+       [self moveLeft:sender];
 }
 
 - (void)moveToEndOfParagraphAndModifySelection:(id)sender
@@ -1244,7 +1250,10 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)moveToBeginningOfParagraph:(id)sender
 {
-    if ([self isSelectable])
+    if (![self isSelectable])
+        return;
+
+    if (!_isNewlineCharacter([[_textStorage string] characterAtIndex:MAX(0, _selectionRange.location - 1)]))
         [self _moveSelectionIntoDirection:-1 granularity:CPSelectByParagraph];
 }
 
