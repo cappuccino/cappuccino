@@ -2376,7 +2376,7 @@ var _CPCopyPlaceholder = '-';
 
     _CPNativeInputField.addEventListener("keydown", function(e)
     {
-        // this protects from heavy typing
+        // this protects from heavy typing and the shift key
         if (_CPNativeInputFieldKeyDownCalled)
             return true;
 
