@@ -2371,6 +2371,8 @@ var _CPCopyPlaceholder = '-';
                _CPNativeInputField.innerHTML = '';
         }
 
+        _CPNativeInputFieldKeyDownCalled = NO;
+
         return false; // prevent the default behaviour
     }, true);
 
