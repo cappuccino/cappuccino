@@ -550,14 +550,16 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
                 case CPLineBreakByCharWrapping:
                 case CPLineBreakByWordWrapping:
                     textStyle.wordWrap = "break-word";
-                    try {
+                    try
+                    {
                         textStyle.whiteSpace = "pre";
                         textStyle.whiteSpace = "-o-pre-wrap";
                         textStyle.whiteSpace = "-pre-wrap";
                         textStyle.whiteSpace = "-moz-pre-wrap";
                         textStyle.whiteSpace = "pre-wrap";
                     }
-                    catch (e) {
+                    catch (e)
+                    {
                         //internet explorer doesn't like these properties
                         textStyle.whiteSpace = "pre";
                     }

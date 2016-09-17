@@ -91,9 +91,14 @@ NSString * const XCCNib2CibDidEndNotification                       = @"XCCNib2C
 
 - (NSDictionary*)_launchTaskWithCommand:(NSString*)aCommand arguments:(NSArray*)arguments
 {
+    return [self _launchTaskWithCommand:aCommand arguments:arguments currentDirectoryPath:nil];
+}
+
+- (NSDictionary*)_launchTaskWithCommand:(NSString*)aCommand arguments:(NSArray*)arguments currentDirectoryPath:(NSString *)aDirectory
+{
     NSLog(@"Running processing task: %@ on file: %@", aCommand, self.sourcePath);
 
-    self->task = [self->taskLauncher taskWithCommand:aCommand arguments:arguments];
+    self->task = [self->taskLauncher taskWithCommand:aCommand arguments:arguments currentDirectoryPath:aDirectory];
 
     [self _updateOperationInformation];
 
@@ -125,7 +130,7 @@ NSString * const XCCNib2CibDidEndNotification                       = @"XCCNib2C
     [self dispatchNotificationName:XCCNib2CibDidStartNotification];
 
     NSArray         *arguments  = @[@"--no-colors", self.sourcePath];
-    NSDictionary    *result     = [self _launchTaskWithCommand:@"nib2cib" arguments:arguments];
+    NSDictionary    *result     = [self _launchTaskWithCommand:@"nib2cib" arguments:arguments currentDirectoryPath:self.cappuccinoProject.projectPath];
     int             code        = [result[@"status"] intValue];
 
     if (code != 0)

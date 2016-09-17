@@ -905,6 +905,21 @@ var updateTrackingAreasCalls,
     [self assert:expectedResult equals:methodCalled];
 }
 
+- (void)testAddViewRemoveView
+{
+    var expectedResult = [@"viewWillMoveToSuperview_view2",
+    @"viewDidMoveToSuperview_view2",
+    @"viewWillMoveToSuperview_view2",
+    @"viewDidMoveToSuperview_view2",
+    @"viewWillMoveToWindow_view2",
+    @"viewDidMoveToWindow_view2"];
+
+    [view1 addSubview:view2];
+    [view2 removeFromSuperview];
+
+    [self assert:expectedResult equals:methodCalled];
+}
+
 - (void)testViewGainedHiddenAncestor
 {
     var expectedResult = [@"viewDidHide_view1",
@@ -917,14 +932,16 @@ var updateTrackingAreasCalls,
 
     [view1 setHidden:YES];
     [view2 addSubview:view3];
+    CPLog.warn("will add view2");
     [view1 addSubview:view2];
 
-    [self assert:expectedResult equals:methodCalled];
-    [self assertTrue: [view2 isHiddenOrHasHiddenAncestor] message:@"Expected isHiddenOrHasHiddenAncestor = YES"];
+    [self assertTrue: [view2 isHiddenOrHasHiddenAncestor] message:@"Expected " + [view2 identifier] + "isHiddenOrHasHiddenAncestor = YES"];
     [self assertTrue: [view3 isHiddenOrHasHiddenAncestor] message:@"Expected isHiddenOrHasHiddenAncestor = YES"];
 
     [self assertFalse:[view2 isHidden]];
     [self assertFalse:[view3 isHidden]];
+
+    [self assert:expectedResult equals:methodCalled];
 }
 
 - (void)testRemoveViewsHiddenByAncestor
