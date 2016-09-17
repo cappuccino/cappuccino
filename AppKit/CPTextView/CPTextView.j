@@ -2214,7 +2214,7 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
     _caretDOM.style.visibility = visibilityFlag ? "visible" : "hidden";
 #endif
 
-    if (! visibilityFlag && stopFlag)
+    if (!visibilityFlag && stopFlag)
         [self stopBlinking];
 }
 
