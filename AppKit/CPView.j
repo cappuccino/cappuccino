@@ -2906,8 +2906,8 @@ setBoundsOrigin:
     return YES;
 }
 
-/*
-    FIXME Not yet implemented
+/*!
+    Scrolls the view’s CPClipView in the direction of a mouse event that occurs outside of it.
 */
 - (BOOL)autoscroll:(CPEvent)anEvent
 {
