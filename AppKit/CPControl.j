@@ -25,7 +25,7 @@
 
 @import "CPFont.j"
 @import "CPShadow.j"
-@import "CPView.j"
+@import "CPText.j"
 @import "CPKeyValueBinding.j"
 @import "CPTrackingArea.j"
 

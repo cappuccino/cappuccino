@@ -171,7 +171,9 @@ var DOMFixedWidthSpanElement    = nil,
         span.style.width = ROUND(aWidth) + "px";
     }
 
-    span.style.font = [(aFont || DefaultFont) cssString];
+    var effectiveFontCSSString = [(aFont || DefaultFont) cssString];
+    if (span.style.font !== effectiveFontCSSString)
+        span.style.font = effectiveFontCSSString;
 
     if (CPFeatureIsCompatible(CPJavaScriptInnerTextFeature))
         span.innerText = aString;
