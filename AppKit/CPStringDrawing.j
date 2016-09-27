@@ -32,7 +32,8 @@ var CPStringSizeWithFontInWidthCache = [],
     CPStringSizeWithFontHeightCache = [],
     CPStringSizeMeasuringContext,
     CPStringSizeIsCanvasSizingInvalid,
-    CPStringSizeDidTestCanvasSizingValid;
+    CPStringSizeDidTestCanvasSizingValid,
+    CPStringSizeNeedsAlwaysSetFont;
 
 CPStringSizeCachingEnabled = YES;
 
@@ -74,6 +75,12 @@ CPStringSizeCachingEnabled = YES;
         CPStringSizeMeasuringContext.font = [aFont cssString];
         var teststring = "0123456879abcdefghiklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.-()";
         CPStringSizeIsCanvasSizingInvalid = ABS([CPPlatformString sizeOfString:teststring withFont:aFont forWidth:0].width - CPStringSizeMeasuringContext.measureText(teststring).width) > 2;
+
+        CPStringSizeNeedsAlwaysSetFont = NO;
+        var ua = navigator.userAgent.toLowerCase();
+        
+        if (ua.indexOf('safari') !== -1 && ua.indexOf('chrome') === -1)
+            CPStringSizeNeedsAlwaysSetFont = YES; // Safari
     }
 #endif
 }
@@ -109,7 +116,7 @@ CPStringSizeCachingEnabled = YES;
         size = [CPPlatformString sizeOfString:self withFont:aFont forWidth:aWidth];
     else
     {
-        if (CPStringSizeMeasuringContext.font !== cssString)
+        if (CPStringSizeNeedsAlwaysSetFont || CPStringSizeMeasuringContext.font !== cssString)
             CPStringSizeMeasuringContext.font = cssString;
 
         var fontHeight = CPStringSizeWithFontHeightCache[cssString];
