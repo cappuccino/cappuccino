@@ -1,9 +1,9 @@
 /*
- * NSAttributedString.j
+ * NSTextContainer.j
  * nib2cib
  *
- * Created by Alexander Ljungberg.
- * Copyright 2011, WireLoad Inc.
+ * Created by Alexendre Wilhelm.
+ * Copyright 2014 The Cappuccino Foundation.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,27 +20,45 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import <AppKit/CPTextContainer.j>
 
-@import <Foundation/CPObject.j>
-@import <Foundation/CPAttributedString.j>
+@class Nib2Cib
 
-/*!
-    Placeholder for nib2cib not to bail out when it sees even an empty NSAttributedString.
-*/
-@implementation NSAttributedString : CPAttributedString
+@implementation CPTextContainer (NSCoding)
+
+- (id)NS_initWithCoder:(CPCoder)aCoder
+{
+    self = [super init];
+
+    _size = CGSizeMake([aCoder decodeIntForKey:@"NSWidth"], 1e7);
+
+    _layoutManager = [aCoder decodeObjectForKey:@"NSLayoutManager"];
+    [_layoutManager addTextContainer:self];
+
+    return self;
+}
+
+@end
+
+@implementation NSTextContainer : CPTextContainer
 {
 }
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
-     return [[CPAttributedString alloc] initWithString:""];
+    self = [self NS_initWithCoder:aCoder];
+
+    if (self)
+    {
+
+    }
+
+    return self;
 }
 
-@end
-
-@implementation NSMutableAttributedString : NSAttributedString
+- (Class)classForKeyedArchiver
 {
-
+    return [CPTextContainer class];
 }
 
 @end
