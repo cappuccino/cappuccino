@@ -187,8 +187,6 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
 /*! @ignore */
 - (void)_setupToolbarView
 {
-    var colorPanel = [CPColorPanel sharedColorPanel];
-
     _toolbarView = [[CPView alloc] initWithFrame:CGRectMake(0, kBorderSpacing, CGRectGetWidth([self frame]), kToolbarHeight)];
     [_toolbarView setAutoresizingMask:CPViewWidthSizable];
 
@@ -196,8 +194,6 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
     _textColorWell = [[CPColorWell alloc] initWithFrame:CGRectMake(10, 0, 25, 25)];
     [_textColorWell setColor:_textColor];
     [_toolbarView addSubview:_textColorWell];
-    [colorPanel setTarget:self];
-    [colorPanel setAction:@selector(changeColor:)];
 }
 
 - (void)_setupBrowser:(CPBrowser)aBrowser
