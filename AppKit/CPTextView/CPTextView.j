@@ -929,7 +929,6 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 - (void)mouseDown:(CPEvent)event
 {
     [_CPNativeInputManager cancelCurrentInputSessionIfNeeded];
-    
     [_caret setVisibility:NO];
     
     _startTrackingLocation = [self _characterIndexFromEvent:event];
@@ -946,12 +945,12 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         originPoint.x += _textContainerOrigin.x;
         originPoint.y += _textContainerOrigin.y;
         
-        dragPlaceholder._DOMElement.style.opacity = '0.5';
+        dragPlaceholder._DOMElement.style.opacity = '0.4';
         var attributes = [_textStorage attributesAtIndex:_selectionRange.location effectiveRange:nil];
         [dragPlaceholder setFont:[attributes objectForKey:CPFontAttributeName]];
         [dragPlaceholder setTextColor:[attributes objectForKey:CPForegroundColorAttributeName]];
         var effectiveRange = CPIntersectionRange(CPMakeRange(_selectionRange.location, 10), _selectionRange),
-        placeholderString = [[self stringValue] substringWithRange:effectiveRange];
+            placeholderString = [[self stringValue] substringWithRange:effectiveRange];
         
         if (_selectionRange.length > 10)
             placeholderString += '...';
