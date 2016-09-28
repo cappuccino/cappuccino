@@ -941,13 +941,22 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     {
         _movingSelection = CPMakeRange(_startTrackingLocation, 0);
         var dragPlaceholder = [CPTextField new],
-            originPoint = [_layoutManager locationForGlyphAtIndex:[self selectedRange].location];
+            originPoint = [_layoutManager locationForGlyphAtIndex:_selectionRange.location];
         
-        originPoint.y +=  [_layoutManager _characterOffsetAtLocation:_selectionRange.location] + _textContainerOrigin.y - 1;
         originPoint.x += _textContainerOrigin.x;
-
-        dragPlaceholder._DOMElement.style.opacity = '0.6';
-        [dragPlaceholder setStringValue:[[self stringValue] substringWithRange:_selectionRange]];
+        originPoint.y += _textContainerOrigin.y;
+        
+        dragPlaceholder._DOMElement.style.opacity = '0.5';
+        var attributes = [_textStorage attributesAtIndex:_selectionRange.location effectiveRange:nil];
+        [dragPlaceholder setFont:[attributes objectForKey:CPFontAttributeName]];
+        [dragPlaceholder setTextColor:[attributes objectForKey:CPForegroundColorAttributeName]];
+        var effectiveRange = CPIntersectionRange(CPMakeRange(_selectionRange.location, 10), _selectionRange),
+        placeholderString = [[self stringValue] substringWithRange:effectiveRange];
+        
+        if (_selectionRange.length > 10)
+            placeholderString += '...';
+        
+        [dragPlaceholder setStringValue:placeholderString];
         [dragPlaceholder sizeToFit];
         
         var stringForPasting = [_textStorage attributedSubstringFromRange:CPMakeRangeCopy(_selectionRange)],
