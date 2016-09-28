@@ -2730,6 +2730,7 @@ var _CPCopyPlaceholder = '-';
     [self _replaceEveryOccurenceOfRegularExpression:/&lt;/i withString:'<'];
     [self _replaceEveryOccurenceOfRegularExpression:/&gt;/i withString:'>'];
     [self _replaceEveryOccurenceOfRegularExpression:/&amp;/i withString:'&'];
+    [self _replaceEveryOccurenceOfRegularExpression:/&nbsp;/i withString:' '];
 
     return self;
 }
