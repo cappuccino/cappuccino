@@ -942,11 +942,11 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         _movingSelection = CPMakeRange(_startTrackingLocation, 0);
         var dragPlaceholder = [CPTextField new],
             originPoint = [_layoutManager locationForGlyphAtIndex:[self selectedRange].location];
-
-        originPoint.y -= [_layoutManager _descentAtLocation:_selectionRange.location];
+        
+        originPoint.y +=  [_layoutManager _characterOffsetAtLocation:_selectionRange.location] + _textContainerOrigin.y - 1;
         originPoint.x += _textContainerOrigin.x;
-        originPoint.y += _textContainerOrigin.y;
 
+        dragPlaceholder._DOMElement.style.opacity = '0.6';
         [dragPlaceholder setStringValue:[[self stringValue] substringWithRange:_selectionRange]];
         [dragPlaceholder sizeToFit];
         
@@ -2024,6 +2024,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
             [self setSelectedRange:_movingSelection];
             return;
         }
+
+        if (_movingSelection.location > CPMaxRange(_selectionRange))
+            _movingSelection.location -= _selectionRange.length;
 
         [self _deleteForRange:_selectionRange];
         [self setSelectedRange:_movingSelection];
