@@ -942,7 +942,11 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         _movingSelection = CPMaxRange(_startTrackingLocation, 0);
         var dragPlaceholder = [CPTextField new],
 			originPoint = [_layoutManager locationForGlyphAtIndex:[self selectedRange].location];
-        
+
+        originPoint.y -= [_layoutManager _descentAtLocation:_selectionRange.location];
+        originPoint.x += _textContainerOrigin.x;
+        originPoint.y += _textContainerOrigin.y;
+
         [dragPlaceholder setStringValue:[[self stringValue] substringWithRange:_selectionRange]];
         [dragPlaceholder sizeToFit];
         
