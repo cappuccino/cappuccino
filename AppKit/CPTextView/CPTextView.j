@@ -2022,6 +2022,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         if (CPLocationInRange(_movingSelection.location, _selectionRange))
         {
             [self setSelectedRange:_movingSelection];
+            _movingSelection = nil;
             return;
         }
 
