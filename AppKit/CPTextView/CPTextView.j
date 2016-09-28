@@ -153,6 +153,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     CPTimer                     _scrollingTimer;
 
     BOOL                        _scrollingDownward;
+    BOOL						_movingSelection;
 
     int                         _stickyXLocation;
 
@@ -899,6 +900,24 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
                           }, 500);
 }
 
+- (CGPoint)_characterIndexFromEvent:(CPEvent)event
+{
+    var fraction = [],
+    point = [self convertPoint:[event locationInWindow] fromView:nil];
+    
+    // convert to container coordinate
+    point.x -= _textContainerOrigin.x;
+    point.y -= _textContainerOrigin.y;
+    
+    var index = [_layoutManager glyphIndexForPoint:point inTextContainer:_textContainer fractionOfDistanceThroughGlyph:fraction];
+    
+    if (index === CPNotFound)
+        index = [_layoutManager numberOfCharacters];
+    else if (fraction[0] > 0.5)
+        index++;
+    
+    return index;
+}
 
 #pragma mark -
 #pragma mark Mouse Events
@@ -907,24 +926,16 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 {
     [_CPNativeInputManager cancelCurrentInputSessionIfNeeded];
 
-    var fraction = [],
-        point = [self convertPoint:[event locationInWindow] fromView:nil],
-        granularities = [CPNotFound, CPSelectByCharacter, CPSelectByWord, CPSelectByParagraph];
-
-    [_caret setVisibility:NO];
-
-    // convert to container coordinate
-    point.x -= _textContainerOrigin.x;
-    point.y -= _textContainerOrigin.y;
-
-    _startTrackingLocation = [_layoutManager glyphIndexForPoint:point inTextContainer:_textContainer fractionOfDistanceThroughGlyph:fraction];
-
-    if (_startTrackingLocation === CPNotFound)
-        _startTrackingLocation = [_layoutManager numberOfCharacters];
-    else if (fraction[0] > 0.5)
-        _startTrackingLocation++;
-
+    _startTrackingLocation = [self _characterIndexFromEvent:event];
+    
+    var granularities = [CPNotFound, CPSelectByCharacter, CPSelectByWord, CPSelectByParagraph];
     [self setSelectionGranularity:granularities[[event clickCount]]];
+    
+    if ([self selectionGranularity] == CPSelectByCharacter && CPLocationInRange(_startTrackingLocation, _selectionRange))
+    {
+        _movingSelection = YES;
+        return;
+    }
 
     var setRange = CPMakeRange(_startTrackingLocation, 0);
 
@@ -943,22 +954,11 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)mouseDragged:(CPEvent)event
 {
-    var fraction = [],
-        point = [self convertPoint:[event locationInWindow] fromView:nil];
-
-    // convert to container coordinate
-    point.x -= _textContainerOrigin.x;
-    point.y -= _textContainerOrigin.y;
-
+    if (_movingSelection)
+        return;
+    
     var oldRange = [self selectedRange],
-        index = [_layoutManager glyphIndexForPoint:point
-                                   inTextContainer:_textContainer
-                    fractionOfDistanceThroughGlyph:fraction];
-
-    if (index === CPNotFound)
-        index = _scrollingDownward ? CPMaxRange(oldRange) : oldRange.location;
-    else if (fraction[0] > 0.5)
-        index++;
+		index = [self _characterIndexFromEvent:event];
 
     if (index > oldRange.location)
         _scrollingDownward = YES;
