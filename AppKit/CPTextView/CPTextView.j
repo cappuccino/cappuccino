@@ -939,33 +939,24 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     if ([self selectionGranularity] == CPSelectByCharacter && CPLocationInRange(_startTrackingLocation, _selectionRange))
     {
         _movingSelection = CPMakeRange(_startTrackingLocation, 0);
-        var dragPlaceholder = [CPTextField new],
-            originPoint = [_layoutManager locationForGlyphAtIndex:_selectionRange.location];
+        var placeholderRect = CGRectIntersection([_layoutManager boundingRectForGlyphRange:_selectionRange inTextContainer:_textContainer], _frame),
+            dragPlaceholder;
         
-        originPoint.x += _textContainerOrigin.x;
-        originPoint.y += _textContainerOrigin.y;
-        
-        dragPlaceholder._DOMElement.style.opacity = '0.4';
-        var attributes = [_textStorage attributesAtIndex:_selectionRange.location effectiveRange:nil];
-        [dragPlaceholder setFont:[attributes objectForKey:CPFontAttributeName]];
-        [dragPlaceholder setTextColor:[attributes objectForKey:CPForegroundColorAttributeName]];
-        var effectiveRange = CPIntersectionRange(CPMakeRange(_selectionRange.location, 10), _selectionRange),
-            placeholderString = [[self stringValue] substringWithRange:effectiveRange];
-        
-        if (_selectionRange.length > 10)
-            placeholderString += '...';
-        
-        [dragPlaceholder setStringValue:placeholderString];
-        [dragPlaceholder sizeToFit];
-        
+        placeholderRect.size.width += 10; // prevent wrapping
+        dragPlaceholder = [[CPTextView alloc] initWithFrame:placeholderRect];
+        [dragPlaceholder insertText:[_textStorage attributedSubstringFromRange:CPMakeRangeCopy(_selectionRange)]];
+#if PLATFORM(DOM)
+        dragPlaceholder._DOMElement.style.backgroundColor = "transparent";
+        dragPlaceholder._DOMElement.style.opacity = "0.5";
+#endif
         var stringForPasting = [_textStorage attributedSubstringFromRange:CPMakeRangeCopy(_selectionRange)],
             richData = [_CPRTFProducer produceRTF:stringForPasting documentAttributes:@{}],
             draggingPasteboard = [CPPasteboard pasteboardWithName:CPDragPboard];
         [draggingPasteboard declareTypes:[CPRTFPboardType] owner:nil];
         [draggingPasteboard setString:richData forType:CPRTFPboardType];
-
+        
         [self dragView:dragPlaceholder
-                    at:originPoint
+                    at:placeholderRect.origin
                 offset:nil
                  event:event
             pasteboard:draggingPasteboard
