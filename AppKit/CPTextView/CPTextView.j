@@ -942,13 +942,12 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         var placeholderRect = CGRectIntersection([_layoutManager boundingRectForGlyphRange:_selectionRange inTextContainer:_textContainer], _frame),
             dragPlaceholder;
         
-        placeholderRect.size.width += 10; // prevent wrapping
+        placeholderRect.size.width += 2; // prevent wrapping
         dragPlaceholder = [[CPTextView alloc] initWithFrame:placeholderRect];
         [dragPlaceholder insertText:[_textStorage attributedSubstringFromRange:CPMakeRangeCopy(_selectionRange)]];
-#if PLATFORM(DOM)
-        dragPlaceholder._DOMElement.style.backgroundColor = "transparent";
-        dragPlaceholder._DOMElement.style.opacity = "0.5";
-#endif
+        [dragPlaceholder setBackgroundColor:[CPColor colorWithRed:1 green:1 blue:1 alpha:0]];
+        [dragPlaceholder setAlphaValue:0.5];
+
         var stringForPasting = [_textStorage attributedSubstringFromRange:CPMakeRangeCopy(_selectionRange)],
             richData = [_CPRTFProducer produceRTF:stringForPasting documentAttributes:@{}],
             draggingPasteboard = [CPPasteboard pasteboardWithName:CPDragPboard];
@@ -2001,7 +2000,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     var point = [info draggingLocation],
         location = [self _characterIndexFromRawPoint:point];
         
-    _movingSelection = CPMakeRange(location, 0)
+    _movingSelection = CPMakeRange(location, 0);
     [_caret _drawCaretAtLocation:_movingSelection.location];
     [_caret setVisibility:YES];
 }
