@@ -939,11 +939,11 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     if ([self selectionGranularity] == CPSelectByCharacter && CPLocationInRange(_startTrackingLocation, _selectionRange))
     {
         var lineBeginningIndex = [_layoutManager _firstLineFragmentForLineFromLocation:_selectionRange.location]._range.location,
-			placeholderRange = _MakeRangeFromAbs(lineBeginningIndex, CPMaxRange(_selectionRange)),
-			placeholderString = [_textStorage attributedSubstringFromRange:placeholderRange],
-			placeholderFrame = CGRectIntersection([_layoutManager boundingRectForGlyphRange:placeholderRange inTextContainer:_textContainer], _frame),
-			rangeToHide = CPMakeRange(0, _selectionRange.location - lineBeginningIndex),
-			dragPlaceholder;
+            placeholderRange = _MakeRangeFromAbs(lineBeginningIndex, CPMaxRange(_selectionRange)),
+            placeholderString = [_textStorage attributedSubstringFromRange:placeholderRange],
+            placeholderFrame = CGRectIntersection([_layoutManager boundingRectForGlyphRange:placeholderRange inTextContainer:_textContainer], _frame),
+            rangeToHide = CPMakeRange(0, _selectionRange.location - lineBeginningIndex),
+            dragPlaceholder;
         
         [placeholderString addAttribute:CPForegroundColorAttributeName
                                   value:[CPColor colorWithRed:1 green:1 blue:1 alpha:0]
@@ -958,8 +958,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         [dragPlaceholder setAlphaValue:0.5];
         
         var stringForPasting = [_textStorage attributedSubstringFromRange:CPMakeRangeCopy(_selectionRange)],
-			richData = [_CPRTFProducer produceRTF:stringForPasting documentAttributes:@{}],
-			draggingPasteboard = [CPPasteboard pasteboardWithName:CPDragPboard];
+            richData = [_CPRTFProducer produceRTF:stringForPasting documentAttributes:@{}],
+            draggingPasteboard = [CPPasteboard pasteboardWithName:CPDragPboard];
         [draggingPasteboard declareTypes:[CPRTFPboardType] owner:nil];
         [draggingPasteboard setString:richData forType:CPRTFPboardType];
         
