@@ -2326,7 +2326,6 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
 - (void)_drawCaretAtLocation:(int)aLoc
 {
     var rect = [_textView._layoutManager boundingRectForGlyphRange:CPMakeRange(aLoc, 1) inTextContainer:_textView._textContainer];
-    rect.origin.x = CGRectGetMaxX(rect);
     [self setRect:rect];
 }
 
