@@ -139,7 +139,7 @@ else if (typeof window !== "undefined" && (window.attachEvent || (!(window.Activ
     PLATFORM_FEATURES[CPJavaScriptClipboardAccessFeature] = YES;
 }
 
-// Safari (WebKit)
+// Safari + Chrome (WebKit and Blink)
 else if (USER_AGENT.indexOf("AppleWebKit/") != -1)
 {
     PLATFORM_ENGINE = CPWebKitBrowserEngine;
@@ -185,10 +185,8 @@ else if (USER_AGENT.indexOf("AppleWebKit/") != -1)
         PLATFORM_FEATURES[CPTextSizingAlwaysNeedsSetFontFeature] = YES;
     }
 	else
-    {
         PLATFORM_ENGINE = CPBlinkBrowserEngine;
 
-    }
     // Assume this bug was introduced around Safari 5.1/Chrome 16. This could probably be tighter.
     if (majorVersion > 533)
         PLATFORM_BUGS |= CPCanvasParentDrawErrorsOnMovementBug;
