@@ -30,7 +30,8 @@ CPGeckoBrowserEngine                    = 1;
 CPInternetExplorerBrowserEngine         = 2;
 CPKHTMLBrowserEngine                    = 3;
 CPOperaBrowserEngine                    = 4;
-CPWebKitBrowserEngine                   = 5;
+CPWebKitBrowserEngine                   = 5;  // Safari
+CPBlinkBrowserEngine                    = 6;  // Chrome
 
 // Operating Systems
 CPMacOperatingSystem                    = 0;
@@ -80,6 +81,8 @@ CPFileAPIFeature                        = 31;
 
 CPAltEnterTextAreaFeature               = 32;
 
+//  Safari calculates incorrect text size unless you set the canvas font even if it is already set
+CPTextSizingAlwaysNeedsSetFontFeature  = 33;
 
 
 /*
@@ -136,7 +139,7 @@ else if (typeof window !== "undefined" && (window.attachEvent || (!(window.Activ
     PLATFORM_FEATURES[CPJavaScriptClipboardAccessFeature] = YES;
 }
 
-// WebKit
+// Safari (WebKit)
 else if (USER_AGENT.indexOf("AppleWebKit/") != -1)
 {
     PLATFORM_ENGINE = CPWebKitBrowserEngine;
@@ -179,8 +182,13 @@ else if (USER_AGENT.indexOf("AppleWebKit/") != -1)
         PLATFORM_BUGS |= CPJavaScriptPasteRequiresEditableTarget;
         // https://bugs.webkit.org/show_bug.cgi?id=39689
         PLATFORM_BUGS |= CPJavaScriptPasteCantRefocus;
+        PLATFORM_FEATURES[CPTextSizingAlwaysNeedsSetFontFeature] = YES;
     }
+	else
+    {
+        PLATFORM_ENGINE = CPBlinkBrowserEngine;
 
+    }
     // Assume this bug was introduced around Safari 5.1/Chrome 16. This could probably be tighter.
     if (majorVersion > 533)
         PLATFORM_BUGS |= CPCanvasParentDrawErrorsOnMovementBug;

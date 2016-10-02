@@ -30,10 +30,7 @@
 
 var CPStringSizeWithFontInWidthCache = [],
     CPStringSizeWithFontHeightCache = [],
-    CPStringSizeMeasuringContext,
-    CPStringSizeIsCanvasSizingInvalid,
-    CPStringSizeDidTestCanvasSizingValid,
-    CPStringSizeNeedsAlwaysSetFont;
+    CPStringSizeMeasuringContext;
 
 CPStringSizeCachingEnabled = YES;
 
@@ -60,28 +57,12 @@ CPStringSizeCachingEnabled = YES;
     return [self sizeWithFont:aFont inWidth:NULL];
 }
 
-- (void) _initializeStringSizing
++ (void) initialize
 {
+    [super initialize];
 #if PLATFORM(DOM)
-    CPStringSizeIsCanvasSizingInvalid = YES;
-
-    if (CPFeatureIsCompatible(CPHTMLCanvasFeature))
-    {
-        var aFont = [CPFont systemFontOfSize:12.0];
-
-        if (!CPStringSizeMeasuringContext)
-            CPStringSizeMeasuringContext = CGBitmapGraphicsContextCreate();
-
-        CPStringSizeMeasuringContext.font = [aFont cssString];
-        var teststring = "0123456879abcdefghiklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.-()";
-        CPStringSizeIsCanvasSizingInvalid = ABS([CPPlatformString sizeOfString:teststring withFont:aFont forWidth:0].width - CPStringSizeMeasuringContext.measureText(teststring).width) > 2;
-
-        CPStringSizeNeedsAlwaysSetFont = NO;
-        var ua = navigator.userAgent.toLowerCase();
-        
-        if (ua.indexOf('safari') !== -1 && ua.indexOf('chrome') === -1)
-            CPStringSizeNeedsAlwaysSetFont = YES; // Safari
-    }
+    if (CPFeatureIsCompatible(CPHTMLCanvasFeature) && !CPStringSizeMeasuringContext)
+        CPStringSizeMeasuringContext = CGBitmapGraphicsContextCreate();
 #endif
 }
 
@@ -106,17 +87,11 @@ CPStringSizeCachingEnabled = YES;
     if (size !== undefined && sizeCacheForFont.hasOwnProperty(cacheKey))
         return CGSizeMakeCopy(size);
 
-    if (CPStringSizeDidTestCanvasSizingValid  === undefined)
-    {
-        [self _initializeStringSizing];
-        CPStringSizeDidTestCanvasSizingValid = YES;
-    }
-
-    if (CPStringSizeIsCanvasSizingInvalid || aWidth > 0)
+    if (!CPFeatureIsCompatible(CPHTMLCanvasFeature) || aWidth > 0)
         size = [CPPlatformString sizeOfString:self withFont:aFont forWidth:aWidth];
     else
     {
-        if (CPStringSizeNeedsAlwaysSetFont || CPStringSizeMeasuringContext.font !== cssString)
+        if (CPFeatureIsCompatible(CPTextSizingAlwaysNeedsSetFontFeature) || CPStringSizeMeasuringContext.font !== cssString)
             CPStringSizeMeasuringContext.font = cssString;
 
         var fontHeight = CPStringSizeWithFontHeightCache[cssString];
