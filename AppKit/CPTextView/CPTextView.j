@@ -952,7 +952,6 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         
         _movingSelection = CPMakeRange(_startTrackingLocation, 0);
         
-        placeholderFrame.size.width += 2; // prevent wrapping
         dragPlaceholder = [[CPTextView alloc] initWithFrame:placeholderFrame];
         [dragPlaceholder insertText:placeholderString];
         [dragPlaceholder setBackgroundColor:[CPColor colorWithRed:1 green:1 blue:1 alpha:0]];
