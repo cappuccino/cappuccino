@@ -2039,9 +2039,12 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
         [self _deleteForRange:_selectionRange];
         [self setSelectedRange:_movingSelection];
-            
+
         var dataForPasting = [pasteboard stringForType:CPRTFPboardType];
-        [self insertText:[[_CPRTFParser new] parseRTF:dataForPasting]];
+        //  setTimeout is to a work around a transaction issue with the undomanager
+        setTimeout(function(){
+            [self insertText:[[_CPRTFParser new] parseRTF:dataForPasting]];
+        }, 0);
     }
         
     if ([pasteboard availableTypeFromArray:[CPColorDragType]])
