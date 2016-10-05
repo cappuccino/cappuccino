@@ -3550,25 +3550,6 @@ setBoundsOrigin:
     _inhibitUpdateTrackingAreas = NO;
 }
 
-/*
-- (void)_updateTrackingAreas
-{
-    _inhibitUpdateTrackingAreas = YES;
-
-    [self _recursivelyUpdateTrackingAreas];
-
-    _inhibitUpdateTrackingAreas = NO;
-}
-
-- (void)_recursivelyUpdateTrackingAreas
-{
-    [self _updateTrackingAreasForOwners:[self _calcTrackingAreaOwners]];
-
-    for (var i = 0; i < _subviews.length; i++)
-        [_subviews[i] _recursivelyUpdateTrackingAreas];
-}
- */
-
 - (CPArray)_calcTrackingAreaOwners
 {
     // First search all owners that must be notified
