@@ -1024,7 +1024,7 @@ var CPViewHighDPIDrawingEnabled = YES;
         [[self superview] viewFrameChanged:[[CPNotification alloc] initWithName:CPViewFrameDidChangeNotification object:self userInfo:nil]];
 
     if (!_inhibitUpdateTrackingAreas)
-        [self _updateTrackingAreas];
+        [self _updateTrackingAreasWithRecursion:YES];
 }
 
 /*!
@@ -1097,7 +1097,7 @@ var CPViewHighDPIDrawingEnabled = YES;
 #endif
 
     if (!_inhibitUpdateTrackingAreas && !_inhibitFrameAndBoundsChangedNotifications)
-        [self _updateTrackingAreas];
+        [self _updateTrackingAreasWithRecursion:YES];
 }
 
 /*!
@@ -1251,7 +1251,7 @@ var CPViewHighDPIDrawingEnabled = YES;
         [[self superview] viewFrameChanged:[[CPNotification alloc] initWithName:CPViewFrameDidChangeNotification object:self userInfo:nil]];
 
     if (!_inhibitUpdateTrackingAreas && !_inhibitFrameAndBoundsChangedNotifications)
-        [self _updateTrackingAreas];
+        [self _updateTrackingAreasWithRecursion:!_autoresizesSubviews];
 }
 
 /*!
@@ -1300,7 +1300,7 @@ var CPViewHighDPIDrawingEnabled = YES;
         [[self superview] viewBoundsChanged:[[CPNotification alloc] initWithName:CPViewBoundsDidChangeNotification object:self userInfo:nil]];
 
     if (!_inhibitUpdateTrackingAreas)
-        [self _updateTrackingAreas];
+        [self _updateTrackingAreasWithRecursion:YES];
 }
 
 /*!
@@ -1368,7 +1368,7 @@ var CPViewHighDPIDrawingEnabled = YES;
         [[self superview] viewBoundsChanged:[[CPNotification alloc] initWithName:CPViewBoundsDidChangeNotification object:self userInfo:nil]];
 
     if (!_inhibitUpdateTrackingAreas && !_inhibitFrameAndBoundsChangedNotifications)
-        [self _updateTrackingAreas];
+        [self _updateTrackingAreasWithRecursion:YES];
 }
 
 /*!
@@ -1412,7 +1412,7 @@ var CPViewHighDPIDrawingEnabled = YES;
         [[self superview] viewBoundsChanged:[[CPNotification alloc] initWithName:CPViewBoundsDidChangeNotification object:self userInfo:nil]];
 
     if (!_inhibitUpdateTrackingAreas && !_inhibitFrameAndBoundsChangedNotifications)
-        [self _updateTrackingAreas];
+        [self _updateTrackingAreasWithRecursion:YES];
 }
 
 
@@ -3532,21 +3532,21 @@ setBoundsOrigin:
     [_trackingAreas removeObjectIdenticalTo:trackingArea];
 }
 
-- (void)_updateTrackingAreas
+- (void)_updateTrackingAreasWithRecursion:(BOOL)shouldCallRecursively
 {
     _inhibitUpdateTrackingAreas = YES;
-    
-    [self _recursivelyUpdateTrackingAreas];
-    
-    _inhibitUpdateTrackingAreas = NO;
-}
 
-- (void)_recursivelyUpdateTrackingAreas
-{
     [self _updateTrackingAreasForOwners:[self _calcTrackingAreaOwners]];
-    
-    for (var i = 0; i < _subviews.length; i++)
-        [_subviews[i] _recursivelyUpdateTrackingAreas];
+
+    if (shouldCallRecursively)
+    {
+        // Now, call _updateTrackingAreasWithRecursion on subviews
+
+        for (var i = 0; i < _subviews.length; i++)
+            [_subviews[i] _updateTrackingAreasWithRecursion:YES];
+    }
+
+    _inhibitUpdateTrackingAreas = NO;
 }
 
 - (CPArray)_calcTrackingAreaOwners
