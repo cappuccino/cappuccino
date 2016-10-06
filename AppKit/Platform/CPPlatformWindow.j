@@ -60,6 +60,7 @@ var PrimaryPlatformWindow   = NULL;
 
     BOOL                    _mouseIsDown;
     BOOL                    _mouseDownIsRightClick;
+    int                     _firstMouseDownButton;
     CGPoint                 _lastMouseEventLocation;
     CPWindow                _mouseDownWindow;
     CPTimeInterval          _lastMouseUp;

@@ -1142,11 +1142,9 @@ var CPComboBoxTextSubview = @"text",
     // Directly nuke _items, [_items removeAll] will trigger an extra call to setContent
     _items = [];
 
-    var values = [];
-
-    [anArray enumerateObjectsUsingBlock:function(object)
+    var values = [anArray arrayByApplyingBlock:function(object)
     {
-        values.push([object description]);
+        return [object description];
     }];
 
     [self addItemsWithObjectValues:values];

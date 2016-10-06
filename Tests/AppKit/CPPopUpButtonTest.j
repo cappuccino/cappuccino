@@ -324,6 +324,36 @@
     [self assert:2 equals:[[self button] indexOfSelectedItem]];
 }
 
+- (void)testSimpleObjectBindingArrayControllerWithLateContent
+{
+    var arrayController = [[CPArrayController alloc] init],
+        objectController = [[CPObjectController alloc] init],
+        testObject = [CPMutableDictionary dictionary],
+        martin = [CPDictionary dictionaryWithJSObject:{@"name": @"Martin"}],
+        malte = [CPDictionary dictionaryWithJSObject:{@"name": @"Malte"}],
+        johan = [CPDictionary dictionaryWithJSObject:{@"name": @"Johan"}],
+        menuObjects = [martin, malte, johan];
+
+    [testObject setObject:@"I'm a testObject" forKey:@"Who am I"];
+    [objectController setContent:testObject];
+
+    [button bind:CPContentBinding toObject:arrayController withKeyPath:@"arrangedObjects" options:nil];
+    [button bind:CPContentValuesBinding toObject:arrayController withKeyPath:@"arrangedObjects.name" options:nil];
+    [button bind:CPSelectedObjectBinding toObject:objectController withKeyPath:@"selection.xxx" options:nil];
+
+    [testObject setObject:martin forKey:@"xxx"];
+    [arrayController setContent:menuObjects];
+    [self assert:0 equals:[[self button] indexOfSelectedItem]];
+    [arrayController setContent:nil];
+    [testObject setObject:malte forKey:@"xxx"];
+    [arrayController setContent:menuObjects];
+    [self assert:1 equals:[[self button] indexOfSelectedItem]];
+    [arrayController setContent:nil];
+    [testObject setObject:johan forKey:@"xxx"];
+    [arrayController setContent:menuObjects];
+    [self assert:2 equals:[[self button] indexOfSelectedItem]];
+}
+
 - (void)testObjectBindingNullPlaceholderOption
 {
     var arrayController = [[CPArrayController alloc] init],

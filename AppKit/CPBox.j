@@ -618,8 +618,17 @@ var CPBoxTypeKey          = @"CPBoxTypeKey",
 
         if (_boxType != CPBoxSeparator)
         {
-            _contentView   = [aCoder decodeObjectForKey:CPBoxContentView] || [[CPView alloc] initWithFrame:[self bounds]];
-            [self replaceSubview:_contentView with:[self subviews][0]];
+            // FIXME: we have a problem with CIB decoding here.
+            // We should be able to simply add : _contentView = [self subviews][0]
+            // but first box subview seems to be malformed (badly decoded).
+            // For example, when deployed, this view doesn't have its _trackingAreas array initialized.
+            // As a (temporary) workaround, we encode/decode the _contentView property. We then transfer the subview hierarchy
+            // and replace the first (and only) box subview with this _contentView
+
+            _contentView = [aCoder decodeObjectForKey:CPBoxContentView] || [[CPView alloc] initWithFrame:[self bounds]];
+            var malformedContentView = [self subviews][0];
+            [_contentView setSubviews:[malformedContentView subviews]];
+            [self replaceSubview:malformedContentView with:_contentView];
         }
 
         [self setAutoresizesSubviews:YES];

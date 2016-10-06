@@ -62,6 +62,49 @@
     [self assert:[CPIndexSet indexSet] equals:[_collectionView selectionIndexes]];
 }
 
+- (void)_testCollectionViewItemIsSelected
+{
+    var itemPrototype = [[CPCollectionViewItem alloc] init];
+    [_collectionView setItemPrototype:itemPrototype];
+    [_collectionView setContent:[1, 2, 3]];
+
+    [_collectionView setSelectionIndexes:[CPIndexSet indexSetWithIndex:1]];
+    [self assertTrue:[[_collectionView itemAtIndex:1] isSelected]];
+
+    [_collectionView setSelectionIndexes:[CPIndexSet indexSetWithIndex:0]];
+    [self assertTrue:[[_collectionView itemAtIndex:0] isSelected]];
+    // The item is correctly deselected when the selection indexes changes.
+    [self assertFalse:[[_collectionView itemAtIndex:1] isSelected]];
+}
+
+- (void)testBindingSupport
+{
+    var content = [1,2,3];
+    var ac = [[CPArrayController alloc] initWithContent:content];
+    [ac setSelectsInsertedObjects:YES];
+    [_collectionView bind:CPContentBinding toObject:ac withKeyPath:@"arrangedObjects" options:nil];
+    [_collectionView bind:CPSelectionIndexesBinding toObject:ac withKeyPath:@"selectionIndexes" options:nil];
+
+    [self assert:[1,2,3] equals:[_collectionView content]];
+
+    [ac setContent:[6,7]];
+    [self assert:[6,7] equals:[_collectionView content]];
+
+    [ac setSelectionIndexes:[CPIndexSet indexSetWithIndex:1]];
+    [self assert:[CPIndexSet indexSetWithIndex:1] equals:[_collectionView selectionIndexes]];
+
+    [ac insertObject:4 atArrangedObjectIndex:2];
+    [self assert:[CPIndexSet indexSetWithIndex:2] equals:[_collectionView selectionIndexes]];
+
+    // collection view selection is reflected on the array controller selection
+    [_collectionView setSelectionIndexes:[CPIndexSet indexSetWithIndex:0]];
+    [self assert:[CPIndexSet indexSetWithIndex:0] equals:[ac selectionIndexes]];
+
+    // collection view content is reflected on the array controller content
+    //[_collectionView setContent:[8,9]];
+    //[self assert:[8,9] equals:[ac content]];
+}
+
 - (void)testSetContentAndSelectionIndexes
 {
     // Changing the content does not automatically clear the selection indexes. The previous

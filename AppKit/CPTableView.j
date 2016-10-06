@@ -644,12 +644,8 @@ NOT YET IMPLEMENTED
     }];
 }
 
-// Reloads the views AND the data
-- (void)_reloadDataViews
+- (void)_setupReload
 {
-    //if (!_dataSource)
-    //    return;
-
     _reloadAllRows = YES;
     _objectValues = { };
     _cachedRowHeights = [];
@@ -661,9 +657,22 @@ NOT YET IMPLEMENTED
 
     // This updates the size too.
     [self noteNumberOfRowsChanged];
+}
 
+// Reloads the views AND the data
+- (void)_reloadDataViews
+{
+    [self _setupReload];
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
+}
+
+// Reloads the views AND the data
+- (void)_reloadDataViewsSynchronously
+{
+    [self _setupReload];
+    [self layout];
+    [self display];
 }
 
 //Target-action Behavior
@@ -4680,7 +4689,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
                 {
                     if ([self _sendDelegateShouldEditTableColumn:column row:rowIndex])
                     {
-                        [self editColumn:columnIndex row:rowIndex withEvent:nil select:YES];
+                        [self editColumn:columnIndex row:rowIndex withEvent:[CPApp currentEvent] select:YES];
                         return;
                     }
                 }
@@ -5088,14 +5097,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         }
     }
     else if (!_isViewBased && [aView isKindOfClass:[CPControl class]] && ![aView isKindOfClass:[CPTextField class]])
-    {
-        [self getColumn:@ref(column) row:@ref(row) forView:aView];
-
-        _editingColumn = column;
-        _editingRow = row;
-
         [aView addObserver:self forKeyPath:@"objectValue" options:CPKeyValueObservingOptionOld | CPKeyValueObservingOptionNew context:"editing"];
-    }
 
     return aView;
 }
@@ -5227,7 +5229,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     if (!_isViewBased)
     {
         [self _setEditingState:NO forView:textField];
-        [self _commitDataViewObjectValue:textField];
+        [self _commitDataViewObjectValue:textField forColumn:_editingColumn andRow:_editingRow];
     }
     else
         [textField setBezeled:NO];
@@ -5277,19 +5279,19 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     The action for any dataview that supports editing. This will only be called when the value was changed.
     The table view becomes the first responder after user is done editing a dataview.
 */
-- (void)_commitDataViewObjectValue:(id)aDataView
+- (void)_commitDataViewObjectValue:(id)aDataView forColumn:(CPInteger)column andRow:(CPInteger)row
 {
-    var editingTableColumn = _tableColumns[_editingColumn];
+    var editingTableColumn = _tableColumns[column];
 
     if (_implementedDataSourceMethods & CPTableViewDataSource_tableView_setObjectValue_forTableColumn_row_)
-        [_dataSource tableView:self setObjectValue:[aDataView objectValue] forTableColumn:editingTableColumn row:_editingRow];
+        [_dataSource tableView:self setObjectValue:[aDataView objectValue] forTableColumn:editingTableColumn row:row];
 
     // Allow the column binding to do a reverse set. Note that we do this even if the data source method above
     // is implemented.
-    [editingTableColumn _reverseSetDataView:aDataView forRow:_editingRow];
+    [editingTableColumn _reverseSetDataView:aDataView forRow:row];
 
-    if (_editingRow !== CPNotFound && _editingColumn !== CPNotFound)
-        [self reloadDataForRowIndexes:[CPIndexSet indexSetWithIndex:_editingRow] columnIndexes:[CPIndexSet indexSetWithIndex:_editingColumn]];
+    if (row !== CPNotFound && column !== CPNotFound)
+        [self _reloadDataForRowIndexes:[CPIndexSet indexSetWithIndex:row] columnIndexes:[CPIndexSet indexSetWithIndex:column]];
 }
 
 - (void)_setEditingState:(BOOL)editingState forView:(CPView)aView
@@ -5303,6 +5305,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     if ([aView isKindOfClass:[CPTextField class]])
         [aView setBezeled:editingState];
 }
+
 /*!
     Edits the dataview at a given row and column. This method is usually invoked automatically and should rarely be invoked directly
     The row at supplied rowIndex must be selected otherwise an exception is thrown.
@@ -5317,11 +5320,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     if (![self isRowSelected:rowIndex])
         [[CPException exceptionWithName:@"Error" reason:@"Attempt to edit row " + rowIndex + " when not selected." userInfo:nil] raise];
 
-    [self reloadData];
-
-    // Process all events immediately to make sure table data views are reloaded.
-    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-
+    [self _reloadDataViewsSynchronously];
     [self scrollRowToVisible:rowIndex];
     [self scrollColumnToVisible:columnIndex];
 
@@ -5342,9 +5341,12 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     if (context === "editing" && [object superview] === self)
     {
         [object removeObserver:self forKeyPath:keyPath];
-        [self _commitDataViewObjectValue:object];
-        _editingRow = CPNotFound;
-        _editingColumn = CPNotFound;
+
+        var row,
+            column;
+
+        [self getColumn:@ref(column) row:@ref(row) forView:object];
+        [self _commitDataViewObjectValue:object forColumn:column andRow:row];
     }
 }
 

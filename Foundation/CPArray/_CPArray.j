@@ -881,22 +881,22 @@ Returns a hash for the object. Unlike Cocoa, the hash value does not take conten
 }
 
 /*!
-    Returns an Array formed by applying a function to the objects in the receiver.
+    Returns an Array formed by applying a function to each object in the receiver.
     @param aFunction a function taking two arguments: (element, index).
     @return an Array containing the transformed elements.
 */
 - (CPArray)arrayByApplyingBlock:(Function/*element, index*/)aFunction
 {
-	var result = [],
-	    count = [self count];
+    var result = [],
+        count = [self count];
 
-	for (var idx = 0; idx < count; idx++)
-	{
-	    var obj = aFunction([self objectAtIndex:idx], idx);
-		[result addObject:obj];
-	}
+    for (var idx = 0; idx < count; idx++)
+    {
+        var obj = aFunction([self objectAtIndex:idx], idx);
+        [result addObject:obj];
+    }
 
-	return result;
+    return result;
 }
 
 // Creating a description of the array

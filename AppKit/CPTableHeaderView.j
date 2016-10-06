@@ -417,8 +417,7 @@ var CPTableHeaderViewResizeZone = 3.0,
     }
     else if (_isDragging)
     {
-        // Disable autoscrolling until it behaves correctly.
-        //[self _autoscroll:theEvent localLocation:currentLocation];
+        [self _autoscroll:theEvent localLocation:currentLocation];
         [self _dragTableColumn:_activeColumn to:currentLocation];
     }
     else // tracking a press, could become a drag
@@ -466,9 +465,12 @@ var CPTableHeaderViewResizeZone = 3.0,
 - (void)updateTrackingAreas
 {
     [self removeAllTrackingAreas];
-    
+
     var options = CPTrackingCursorUpdate | CPTrackingActiveInKeyWindow;
-    
+
+    if (!_tableView)
+      return;
+
     for (var i = 0; i < _tableView._tableColumns.length; i++)
         [self addTrackingArea:[[CPTrackingArea alloc] initWithRect:[self _cursorRectForColumn:i]
                                                            options:options

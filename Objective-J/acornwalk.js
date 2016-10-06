@@ -101,8 +101,7 @@ if (!exports.acorn) {
   };
   exports.TryStatement = function(node, st, c) {
     c(node.block, st, "Statement");
-    for (var i = 0; i < node.handlers.length; ++i)
-      c(node.handlers[i].body, st, "ScopeBody");
+    if (node.handler) c(node.handler.body, st, "ScopeBody");
     if (node.finalizer) c(node.finalizer, st, "Statement");
   };
   exports.WhileStatement = function(node, st, c) {
@@ -267,10 +266,10 @@ if (!exports.acorn) {
     },
     TryStatement: function(node, scope, c) {
       c(node.block, scope, "Statement");
-      for (var i = 0; i < node.handlers.length; ++i) {
-        var handler = node.handlers[i], inner = makeScope(scope);
-        inner.vars[handler.param.name] = {type: "catch clause", node: handler.param};
-        c(handler.body, inner, "ScopeBody");
+      if (node.handler) {
+        var inner = makeScope(scope);
+        inner.vars[node.handler.param.name] = {type: "catch clause", node: node.handler.param};
+        c(node.handler.body, inner, "ScopeBody");
       }
       if (node.finalizer) c(node.finalizer, scope, "Statement");
     },

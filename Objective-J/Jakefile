@@ -32,7 +32,7 @@ $BROWSER_FILE       = FILE.join("Browser", "Objective-J.js");
 $BUILD_OBJECTIVE_J  = FILE.join($BUILD_CONFIGURATION_DIR, "Objective-J");
 $BUILD_BROWSER_FILE = FILE.join($BUILD_OBJECTIVE_J, "Objective-J.js");
 
-$INCLUDE_FLAGS      = ["-I" + FILE.cwd()];
+$INCLUDE_FLAGS      = ["'-I" + FILE.cwd() + "'"];
 $DEBUG_FLAGS        = $CONFIGURATION === "Debug" ? ["-DDEBUG=1"] : [""];
 $OBJECTIVEJ_FILES   = new FileList("*.js");
 

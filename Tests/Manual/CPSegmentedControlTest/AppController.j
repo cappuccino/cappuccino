@@ -118,6 +118,13 @@ CPLogRegister(CPLogConsole);
         return;
 }
 
+- (IBAction)enable:(id)sender
+{
+    var enable = [sender state];
+    [segmentedControl1 setEnabled:enable];
+    [segmentedControl2 setEnabled:enable];
+}
+
 - (BOOL)assertTrue:(BOOL)value
 {
     [passedLabel setStringValue:value?@"Passed":@"Failed"];

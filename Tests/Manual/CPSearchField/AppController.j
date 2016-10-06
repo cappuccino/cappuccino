@@ -6,8 +6,7 @@
  * Copyright 2010, Your Company All rights reserved.
  */
 
-var categories = ["firstName", "lastName"],
-    MenuItemPrefix = @"   ";
+var categories = ["firstName", "lastName"];
 
 @implementation AppController : CPObject
 {
@@ -40,18 +39,20 @@ var categories = ["firstName", "lastName"],
                               keyEquivalent:@""
                                     atIndex:0];
 
-    var item = [[CPMenuItem alloc] initWithTitle:MenuItemPrefix + @"First Name"
+    var item = [[CPMenuItem alloc] initWithTitle:@"First Name"
                                           action:@selector(changeCategory:)
                                    keyEquivalent:@""];
-
+    [item setIndentationLevel:1];
     [item setTarget:self];
     [item setTag:1];
     [item setState:CPOnState];
     [searchMenuTemplate insertItem:item atIndex:1];
 
-    item = [[CPMenuItem alloc] initWithTitle:MenuItemPrefix + @"Last Name"
+    item = [[CPMenuItem alloc] initWithTitle:@"Last Name"
                                       action:@selector(changeCategory:)
                                 keyEquivalent:@""];
+
+    [item setIndentationLevel:1];
     [item setTarget:self];
     [item setTag:2];
     [item setState:CPOffState];
@@ -104,7 +105,7 @@ var categories = ["firstName", "lastName"],
 - (void)changeCategory:(CPMenuItem)menuItem
 {
     searchCategoryIndex = [menuItem tag] - 1;
-    [searchField setPlaceholderString:[[menuItem title] substringFromIndex:[MenuItemPrefix length]]];
+    [searchField setPlaceholderString:[menuItem title]];
 
     [self _updateSearchMenuTemplate];
 }

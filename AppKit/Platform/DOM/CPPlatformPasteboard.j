@@ -384,9 +384,10 @@ Return true if the event may be a copy and paste event, but the target is not an
 
     if ([value length])
     {
-        var pasteboard = [CPPasteboard generalPasteboard];
+        var pasteboard = [CPPasteboard generalPasteboard],
+            cappString = [pasteboard stringForType:CPStringPboardType];
 
-        if ([pasteboard _stateUID] != value)
+        if (cappString != value)
         {
             [pasteboard declareTypes:[CPStringPboardType] owner:self];
             [pasteboard setString:value forType:CPStringPboardType];
@@ -450,9 +451,10 @@ Return true if the event may be a copy and paste event, but the target is not an
 
     if ([value length])
     {
-        var pasteboard = [CPPasteboard generalPasteboard];
+        var pasteboard = [CPPasteboard generalPasteboard],
+            cappString = [pasteboard stringForType:CPStringPboardType];
 
-        if ([pasteboard _stateUID] != value)
+        if (cappString != value)
         {
             [pasteboard declareTypes:[CPStringPboardType] owner:self];
             [pasteboard setString:value forType:CPStringPboardType];
