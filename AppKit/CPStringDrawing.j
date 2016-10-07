@@ -91,7 +91,7 @@ CPStringSizeCachingEnabled = YES;
         size = [CPPlatformString sizeOfString:self withFont:aFont forWidth:aWidth];
     else
     {
-        if (CPFeatureIsCompatible(CPTextSizingAlwaysNeedsSetFontFeature) || CPStringSizeMeasuringContext.font !== cssString)
+        if (CPPlatformHasBug(CPTextSizingAlwaysNeedsSetFontBug) || CPStringSizeMeasuringContext.font !== cssString)
             CPStringSizeMeasuringContext.font = cssString;
 
         var fontHeight = CPStringSizeWithFontHeightCache[cssString];

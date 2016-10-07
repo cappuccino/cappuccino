@@ -81,8 +81,6 @@ CPFileAPIFeature                        = 31;
 
 CPAltEnterTextAreaFeature               = 32;
 
-//  Safari calculates incorrect text size unless you set the canvas font even if it is already set
-CPTextSizingAlwaysNeedsSetFontFeature  = 33;
 
 
 /*
@@ -91,9 +89,12 @@ CPTextSizingAlwaysNeedsSetFontFeature  = 33;
 CPCanvasParentDrawErrorsOnMovementBug   = 1 << 0;
 
 // The paste event is only sent if an input or textarea has focus.
-CPJavaScriptPasteRequiresEditableTarget   = 1 << 1;
+CPJavaScriptPasteRequiresEditableTarget = 1 << 1;
 // Redirecting the focus of the browser on keydown to an input for Cmd-V or Ctrl-V makes the paste fail.
 CPJavaScriptPasteCantRefocus            = 1 << 2;
+
+//  Safari calculates incorrect text size unless you set the canvas font even if it is already set
+CPTextSizingAlwaysNeedsSetFontBug       = 1 << 3;
 
 
 var USER_AGENT                          = "",
@@ -182,7 +183,7 @@ else if (USER_AGENT.indexOf("AppleWebKit/") != -1)
         PLATFORM_BUGS |= CPJavaScriptPasteRequiresEditableTarget;
         // https://bugs.webkit.org/show_bug.cgi?id=39689
         PLATFORM_BUGS |= CPJavaScriptPasteCantRefocus;
-        PLATFORM_FEATURES[CPTextSizingAlwaysNeedsSetFontFeature] = YES;
+        PLATFORM_BUGS |= CPTextSizingAlwaysNeedsSetFontBug;
     }
 	else
         PLATFORM_ENGINE = CPBlinkBrowserEngine;
