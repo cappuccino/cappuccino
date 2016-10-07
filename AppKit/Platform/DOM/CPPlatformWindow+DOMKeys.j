@@ -181,7 +181,7 @@ CPKeyCodes.firesKeyPressEvent = function(keyCode, opt_heldKeyCode, opt_shiftKey,
     switch (keyCode)
     {
         case CPKeyCodes.ENTER: return true;
-        case CPKeyCodes.ESC:   return !(CPBrowserIsEngine(CPWebKitBrowserEngine) || CPBrowserIsEngine(CPBlinkBrowserEngine));
+        case CPKeyCodes.ESC:   return !CPBrowserIsEngine(CPWebKitBrowserEngine);
     }
 
     return CPKeyCodes.isCharacterKey(keyCode);

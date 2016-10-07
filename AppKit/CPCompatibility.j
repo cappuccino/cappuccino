@@ -26,12 +26,12 @@
 
 // Browser Engines
 CPUnknownBrowserEngine                  = 0;
-CPGeckoBrowserEngine                    = 1;
-CPInternetExplorerBrowserEngine         = 2;
-CPKHTMLBrowserEngine                    = 3;
-CPOperaBrowserEngine                    = 4;
-CPWebKitBrowserEngine                   = 5;  // Safari
-CPBlinkBrowserEngine                    = 6;  // Chrome
+CPGeckoBrowserEngine                    = 1 << 0;
+CPInternetExplorerBrowserEngine         = 1 << 1;
+CPKHTMLBrowserEngine                    = 1 << 2;
+CPOperaBrowserEngine                    = 1 << 3;
+CPWebKitBrowserEngine                   = 1 << 4;
+CPBlinkBrowserEngine                    = 1 << 5;  // Chrome
 
 // Operating Systems
 CPMacOperatingSystem                    = 0;
@@ -114,7 +114,7 @@ if (typeof window !== "undefined" && typeof window.navigator !== "undefined")
 // Opera
 if (typeof window !== "undefined" && window.opera)
 {
-    PLATFORM_ENGINE = CPOperaBrowserEngine;
+    PLATFORM_ENGINE |= CPOperaBrowserEngine;
 
     PLATFORM_FEATURES[CPJavaScriptCanvasDrawFeature] = YES;
 }
@@ -122,7 +122,7 @@ if (typeof window !== "undefined" && window.opera)
 // Internet Explorer
 else if (typeof window !== "undefined" && (window.attachEvent || (!(window.ActiveXObject) && "ActiveXObject" in window))) // Must follow Opera check.
 {
-    PLATFORM_ENGINE = CPInternetExplorerBrowserEngine;
+    PLATFORM_ENGINE |= CPInternetExplorerBrowserEngine;
 
     // Features we can only be sure of with IE (no known independent tests)
     PLATFORM_FEATURES[CPVMLFeature] = YES;
@@ -143,7 +143,7 @@ else if (typeof window !== "undefined" && (window.attachEvent || (!(window.Activ
 // Safari + Chrome (WebKit and Blink)
 else if (USER_AGENT.indexOf("AppleWebKit/") != -1)
 {
-    PLATFORM_ENGINE = CPWebKitBrowserEngine;
+    PLATFORM_ENGINE |= CPWebKitBrowserEngine;
 
     // Features we can only be sure of with WebKit (no known independent tests)
     PLATFORM_FEATURES[CPCSSRGBAFeature] = YES;
@@ -185,8 +185,8 @@ else if (USER_AGENT.indexOf("AppleWebKit/") != -1)
         PLATFORM_BUGS |= CPJavaScriptPasteCantRefocus;
         PLATFORM_BUGS |= CPTextSizingAlwaysNeedsSetFontBug;
     }
-	else
-        PLATFORM_ENGINE = CPBlinkBrowserEngine;
+    else if ((window.chrome || (window.Intl && Intl.v8BreakIterator)) && 'CSS' in window)
+        PLATFORM_ENGINE |= CPBlinkBrowserEngine;
 
     // Assume this bug was introduced around Safari 5.1/Chrome 16. This could probably be tighter.
     if (majorVersion > 533)
@@ -196,13 +196,13 @@ else if (USER_AGENT.indexOf("AppleWebKit/") != -1)
 // KHTML
 else if (USER_AGENT.indexOf("KHTML") != -1) // Must follow WebKit check.
 {
-    PLATFORM_ENGINE = CPKHTMLBrowserEngine;
+    PLATFORM_ENGINE |= CPKHTMLBrowserEngine;
 }
 
 // Gecko
 else if (USER_AGENT.indexOf("Gecko") !== -1) // Must follow KHTML check.
 {
-    PLATFORM_ENGINE = CPGeckoBrowserEngine;
+    PLATFORM_ENGINE |= CPGeckoBrowserEngine;
 
     PLATFORM_FEATURES[CPJavaScriptCanvasDrawFeature] = YES;
 
@@ -293,7 +293,7 @@ function CPPlatformHasBug(aBug)
 
 function CPBrowserIsEngine(anEngine)
 {
-    return PLATFORM_ENGINE === anEngine;
+    return PLATFORM_ENGINE & anEngine;
 }
 
 function CPBrowserIsOperatingSystem(anOperatingSystem)
