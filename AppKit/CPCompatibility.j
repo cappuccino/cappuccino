@@ -30,8 +30,8 @@ CPGeckoBrowserEngine                    = 1 << 0;
 CPInternetExplorerBrowserEngine         = 1 << 1;
 CPKHTMLBrowserEngine                    = 1 << 2;
 CPOperaBrowserEngine                    = 1 << 3;
-CPWebKitBrowserEngine                   = 1 << 4;
-CPBlinkBrowserEngine                    = 1 << 5;  // Chrome
+CPWebKitBrowserEngine                   = 1 << 4;  // Safari + Chrome
+CPBlinkBrowserEngine                    = 1 << 5;  // Recent Chrome
 
 // Operating Systems
 CPMacOperatingSystem                    = 0;
@@ -93,7 +93,9 @@ CPJavaScriptPasteRequiresEditableTarget = 1 << 1;
 // Redirecting the focus of the browser on keydown to an input for Cmd-V or Ctrl-V makes the paste fail.
 CPJavaScriptPasteCantRefocus            = 1 << 2;
 
-//  Safari calculates incorrect text size unless you set the canvas font even if it is already set
+// Safari calculates incorrect text size unless you set the canvas font even if it is already set
+// You can see the bug after disabling the workaround and opening the font panel in the CPTextView manual text and typing some 'i' letters.
+// The cursor will be displaced in Safari.
 CPTextSizingAlwaysNeedsSetFontBug       = 1 << 3;
 
 
