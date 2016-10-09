@@ -85,7 +85,7 @@ CPAltEnterTextAreaFeature               = 32;
 
 /*
     When an absolutely positioned div (CPView) with an absolutely positioned canvas in it (CPView with drawRect:) moves things on top of the canvas (subviews) don't redraw correctly. E.g. if you have a bunch of text fields in a CPBox in a sheet which animates in, some of the text fields might not be visible because the CPBox has a canvas at the bottom and the box moved form offscreen to onscreen. This bug is probably very related: https://bugs.webkit.org/show_bug.cgi?id=67203
-*/
+ */
 CPCanvasParentDrawErrorsOnMovementBug   = 1 << 0;
 
 // The paste event is only sent if an input or textarea has focus.
@@ -93,9 +93,12 @@ CPJavaScriptPasteRequiresEditableTarget = 1 << 1;
 // Redirecting the focus of the browser on keydown to an input for Cmd-V or Ctrl-V makes the paste fail.
 CPJavaScriptPasteCantRefocus            = 1 << 2;
 
-// Safari calculates incorrect text size unless you set the canvas font even if it is already set
-// You can see the bug after disabling the workaround and opening the font panel in the CPTextView manual text and typing some 'i' letters.
-// The cursor will be displaced in Safari.
+/*
+   Safari calculates incorrect text size unless you set the canvas font even if it is already set
+       You can see the bug after disabling the workaround and opening any panel while typing.
+       You can use the font panel in the manual test for CPTextView.
+       Look out for a displaced cursor, i.e. after typing letters of small width, such as the 'i'.
+ */
 CPTextSizingAlwaysNeedsSetFontBug       = 1 << 3;
 
 
