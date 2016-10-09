@@ -98,6 +98,7 @@ CPJavaScriptPasteCantRefocus            = 1 << 2;
        You can see the bug after disabling the workaround and opening any panel while typing.
        You can use the font panel in the manual test for CPTextView.
        Look out for a displaced cursor, i.e. after typing letters of small width, such as the 'i'.
+	   https://bugs.webkit.org/show_bug.cgi?id=150224
  */
 CPTextSizingAlwaysNeedsSetFontBug       = 1 << 3;
 
