@@ -164,7 +164,7 @@ _oncontextmenuhandler = function () { return false; };
     if (![self numberOfGlyphs])
         return CGRectMake(0, 0, 1, 12);    // crude hack to give a cursor in an empty doc.
 
-    if (CPMaxRange(aRange) >= [self numberOfGlyphs])
+    if (CPMaxRange(aRange) > [self numberOfGlyphs])
         aRange = CPMakeRange([self numberOfGlyphs] - 1, 1);
 
     var fragments = _objectsInRange(_lineFragments, aRange),
