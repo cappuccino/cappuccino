@@ -4098,6 +4098,9 @@ var interpolate = function(fromValue, toValue, progress)
             [overlappingTrackingAreas addObject:aTrackingArea];
     }
 
+    if (overlappingTrackingAreas.length === 0)
+        return;
+
     var frontmostTrackingArea = overlappingTrackingAreas[0],
         frontmostView         = [frontmostTrackingArea view];
 
