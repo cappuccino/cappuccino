@@ -59,7 +59,9 @@ CPStringSizeCachingEnabled = YES;
 
 + (void) initialize
 {
-    [super initialize];
+    if ([self class] != [CPString class])
+        return;
+
 #if PLATFORM(DOM)
     if (CPFeatureIsCompatible(CPHTMLCanvasFeature) && !CPStringSizeMeasuringContext)
         CPStringSizeMeasuringContext = CGBitmapGraphicsContextCreate();
