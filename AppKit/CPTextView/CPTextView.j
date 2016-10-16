@@ -122,7 +122,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 @implementation CPTextView : CPText
 {
     BOOL                        _allowsUndo                   @accessors(property=allowsUndo);
-    BOOL                        _isHorizontallyResizable      @accessors(getter=isHorizontallyResizable, setter=setHorinzontallyResizable:);
+    BOOL                        _isHorizontallyResizable      @accessors(getter=isHorizontallyResizable, setter=setHorizontallyResizable:);
     BOOL                        _isVerticallyResizable        @accessors(getter=isVerticallyResizable, setter=setVerticallyResizable:);
     BOOL                        _usesFontPanel                @accessors(property=usesFontPanel);
     CGPoint                     _textContainerOrigin          @accessors(getter=textContainerOrigin);
