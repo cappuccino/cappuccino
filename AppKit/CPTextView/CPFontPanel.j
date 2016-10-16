@@ -4,8 +4,7 @@
  *
  * TODOs:
  *  1. make browser-width for size smaller and fix columns
- *  2. sampleview is currently not shown
- *  3. add all the missing features from the MacOS X counterpart
+ *  2. add all the missing features from the MacOS X counterpart (sampleview)
  *
  *
  * Created by Daniel Boehringer on 2/JAN/2014.
@@ -68,54 +67,6 @@ var kTypefaceIndex_Normal = 0,
 var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
     _availableSizes = [@"9", @"10", @"11", @"12", @"13", @"14", @"18", @"24", @"36", @"48", @"72", @"96"];
 
-@implementation _CPFontPanelSampleView : CPView
-{
-    CPLayoutManager _layoutManager;
-    CPTextStorage   _textStorage;
-    CPTextContainer _textContainer;
-}
-
-- (id)initWithFrame:(CGRect)rect
-{
-    if (self = [super initWithFrame:rect])
-    {
-        _textStorage = [[CPTextStorage alloc] init];
-        _layoutManager = [[CPLayoutManager alloc] init];
-
-        _textContainer = [[CPTextContainer alloc] init];
-        [_layoutManager addTextContainer:_textContainer];
-
-        [_textStorage addLayoutManager:_layoutManager];
-    }
-
-    return self;
-}
-
-- (void)setAttributedString:(CPAttributedString)aSting
-{
-    [_textStorage replaceCharactersInRange:CPMakeRange(0, [_textStorage length])
-                  withAttributedString:aSting];
-
-    [self setNeedsDisplay:YES];
-}
-
-- (void)drawRect:(CGRect)rect
-{
-    var ctx = [[CPGraphicsContext currentContext] graphicsPort],
-        glyphRange = [_layoutManager glyphRangeForTextContainer:_textContainer],
-        usedRect = [_layoutManager usedRectForTextContainer:_textContainer],
-        bounds = [self bounds],
-        pos = CGPointMake((bounds.size.width - usedRect.size.width) / 2.0, (bounds.size.height - usedRect.size.height) / 2.0);
-
-    CGContextSaveGState(ctx);
-    CGContextSetFillColor(ctx, [CPColor whiteColor]);
-    CGContextFillRect(ctx, bounds);
-    CGContextRestoreGState(ctx);
-
-    [_layoutManager drawGlyphsForGlyphRange:glyphRange atPoint:pos];
-}
-
-@end
 
 /*!
     @ingroup appkit
@@ -132,8 +83,6 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
     int     _currentColorButtonTag;
     BOOL    _setupDone;
     int     _fontChanges;
-
-    _CPFontPanelSampleView _sampleView;
 }
 
 
@@ -187,8 +136,6 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
 /*! @ignore */
 - (void)_setupToolbarView
 {
-    var colorPanel = [CPColorPanel sharedColorPanel];
-
     _toolbarView = [[CPView alloc] initWithFrame:CGRectMake(0, kBorderSpacing, CGRectGetWidth([self frame]), kToolbarHeight)];
     [_toolbarView setAutoresizingMask:CPViewWidthSizable];
 
@@ -196,8 +143,6 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
     _textColorWell = [[CPColorWell alloc] initWithFrame:CGRectMake(10, 0, 25, 25)];
     [_textColorWell setColor:_textColor];
     [_toolbarView addSubview:_textColorWell];
-    [colorPanel setTarget:self];
-    [colorPanel setAction:@selector(changeColor:)];
 }
 
 - (void)_setupBrowser:(CPBrowser)aBrowser
@@ -424,10 +369,6 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
 
     if ([self currentTrait] != typefaceIndex)
         [self setCurrentTrait:typefaceIndex ];
-
-    [_sampleView setAttributedString: [[CPAttributedString alloc] initWithString:[font familyName]
-                                                                      attributes:[CPDictionary dictionaryWithObjects:[font, [CPColor blackColor]]
-                                                                         forKeys:[CPFontAttributeName, CPForegroundColorAttributeName]]]];
 
     _fontChanges = kNothingChanged;
 }
