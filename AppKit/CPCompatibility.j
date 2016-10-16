@@ -26,11 +26,12 @@
 
 // Browser Engines
 CPUnknownBrowserEngine                  = 0;
-CPGeckoBrowserEngine                    = 1;
-CPInternetExplorerBrowserEngine         = 2;
-CPKHTMLBrowserEngine                    = 3;
-CPOperaBrowserEngine                    = 4;
-CPWebKitBrowserEngine                   = 5;
+CPGeckoBrowserEngine                    = 1 << 0;
+CPInternetExplorerBrowserEngine         = 1 << 1;
+CPKHTMLBrowserEngine                    = 1 << 2;
+CPOperaBrowserEngine                    = 1 << 3;
+CPWebKitBrowserEngine                   = 1 << 4;  // Safari + Chrome
+CPBlinkBrowserEngine                    = 1 << 5;  // Recent Chrome
 
 // Operating Systems
 CPMacOperatingSystem                    = 0;
@@ -84,13 +85,22 @@ CPAltEnterTextAreaFeature               = 32;
 
 /*
     When an absolutely positioned div (CPView) with an absolutely positioned canvas in it (CPView with drawRect:) moves things on top of the canvas (subviews) don't redraw correctly. E.g. if you have a bunch of text fields in a CPBox in a sheet which animates in, some of the text fields might not be visible because the CPBox has a canvas at the bottom and the box moved form offscreen to onscreen. This bug is probably very related: https://bugs.webkit.org/show_bug.cgi?id=67203
-*/
+ */
 CPCanvasParentDrawErrorsOnMovementBug   = 1 << 0;
 
 // The paste event is only sent if an input or textarea has focus.
-CPJavaScriptPasteRequiresEditableTarget   = 1 << 1;
+CPJavaScriptPasteRequiresEditableTarget = 1 << 1;
 // Redirecting the focus of the browser on keydown to an input for Cmd-V or Ctrl-V makes the paste fail.
 CPJavaScriptPasteCantRefocus            = 1 << 2;
+
+/*
+   Safari calculates incorrect text size unless you set the canvas font even if it is already set
+       You can see the bug after disabling the workaround and opening any panel while typing.
+       You can use the font panel in the manual test for CPTextView.
+       Look out for a displaced cursor, i.e. after typing letters of small width, such as the 'i'.
+       https://bugs.webkit.org/show_bug.cgi?id=150224
+ */
+CPTextSizingAlwaysNeedsSetFontBug       = 1 << 3;
 
 
 var USER_AGENT                          = "",
@@ -110,7 +120,7 @@ if (typeof window !== "undefined" && typeof window.navigator !== "undefined")
 // Opera
 if (typeof window !== "undefined" && window.opera)
 {
-    PLATFORM_ENGINE = CPOperaBrowserEngine;
+    PLATFORM_ENGINE |= CPOperaBrowserEngine;
 
     PLATFORM_FEATURES[CPJavaScriptCanvasDrawFeature] = YES;
 }
@@ -118,7 +128,7 @@ if (typeof window !== "undefined" && window.opera)
 // Internet Explorer
 else if (typeof window !== "undefined" && (window.attachEvent || (!(window.ActiveXObject) && "ActiveXObject" in window))) // Must follow Opera check.
 {
-    PLATFORM_ENGINE = CPInternetExplorerBrowserEngine;
+    PLATFORM_ENGINE |= CPInternetExplorerBrowserEngine;
 
     // Features we can only be sure of with IE (no known independent tests)
     PLATFORM_FEATURES[CPVMLFeature] = YES;
@@ -136,10 +146,10 @@ else if (typeof window !== "undefined" && (window.attachEvent || (!(window.Activ
     PLATFORM_FEATURES[CPJavaScriptClipboardAccessFeature] = YES;
 }
 
-// WebKit
+// Safari + Chrome (WebKit and Blink)
 else if (USER_AGENT.indexOf("AppleWebKit/") != -1)
 {
-    PLATFORM_ENGINE = CPWebKitBrowserEngine;
+    PLATFORM_ENGINE |= CPWebKitBrowserEngine;
 
     // Features we can only be sure of with WebKit (no known independent tests)
     PLATFORM_FEATURES[CPCSSRGBAFeature] = YES;
@@ -179,7 +189,10 @@ else if (USER_AGENT.indexOf("AppleWebKit/") != -1)
         PLATFORM_BUGS |= CPJavaScriptPasteRequiresEditableTarget;
         // https://bugs.webkit.org/show_bug.cgi?id=39689
         PLATFORM_BUGS |= CPJavaScriptPasteCantRefocus;
+        PLATFORM_BUGS |= CPTextSizingAlwaysNeedsSetFontBug;
     }
+    else if ((window.chrome || (window.Intl && Intl.v8BreakIterator)) && 'CSS' in window)
+        PLATFORM_ENGINE |= CPBlinkBrowserEngine;
 
     // Assume this bug was introduced around Safari 5.1/Chrome 16. This could probably be tighter.
     if (majorVersion > 533)
@@ -189,13 +202,13 @@ else if (USER_AGENT.indexOf("AppleWebKit/") != -1)
 // KHTML
 else if (USER_AGENT.indexOf("KHTML") != -1) // Must follow WebKit check.
 {
-    PLATFORM_ENGINE = CPKHTMLBrowserEngine;
+    PLATFORM_ENGINE |= CPKHTMLBrowserEngine;
 }
 
 // Gecko
 else if (USER_AGENT.indexOf("Gecko") !== -1) // Must follow KHTML check.
 {
-    PLATFORM_ENGINE = CPGeckoBrowserEngine;
+    PLATFORM_ENGINE |= CPGeckoBrowserEngine;
 
     PLATFORM_FEATURES[CPJavaScriptCanvasDrawFeature] = YES;
 
@@ -286,7 +299,7 @@ function CPPlatformHasBug(aBug)
 
 function CPBrowserIsEngine(anEngine)
 {
-    return PLATFORM_ENGINE === anEngine;
+    return PLATFORM_ENGINE & anEngine;
 }
 
 function CPBrowserIsOperatingSystem(anOperatingSystem)
