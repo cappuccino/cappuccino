@@ -182,6 +182,15 @@ var ANIMATIONS_NAMES = ["Fade In", "Fade Out", "Background Color", "Frame Origin
     [[rightView animator] removeFromSuperview];
 }
 
+- (IBAction)addSubview:(id)sender
+{
+    if (![leftView superview])
+        [animationSandbox addSubview:[leftView animator]];
+
+    if (![rightView superview])
+        [animationSandbox addSubview:[rightView animator]];
+}
+
 - (IBAction)revert:(id)sender
 {
     [self setupGroup1:nil];
@@ -323,12 +332,24 @@ var ANIMATIONS_NAMES = ["Fade In", "Fade Out", "Background Color", "Frame Origin
     return anim;
 }
 
-- (CABasicAnimation)fadeOutAnimation
+- (CABasicAnimation)animationTriggerOrderOut
 {
     var animation = [CABasicAnimation animationWithKeyPath:@"alphaValue"];
     [animation setDuration:0.2];
     [animation setFromValue:1];
     [animation setToValue:0];
+
+    [animation setTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear]];
+
+    return animation;
+}
+
+- (CABasicAnimation)animationTriggerOrderIn
+{
+    var animation = [CABasicAnimation animationWithKeyPath:@"alphaValue"];
+    [animation setDuration:0.3];
+    [animation setFromValue:0];
+    [animation setToValue:1];
 
     [animation setTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear]];
 
@@ -418,7 +439,9 @@ var ANIMATIONS_NAMES = ["Fade In", "Fade Out", "Background Color", "Frame Origin
 
     }
 
-    var anims = [CPDictionary dictionaryWithObject:[self fadeOutAnimation] forKey:@"CPAnimationTriggerOrderOut"];
+    var anims = @{@"CPAnimationTriggerOrderOut" : [self animationTriggerOrderOut],
+                  @"CPAnimationTriggerOrderIn" : [self animationTriggerOrderIn]};
+
     [view setAnimations:anims];
 
     return view;
