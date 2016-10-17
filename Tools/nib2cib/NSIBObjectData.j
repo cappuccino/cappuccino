@@ -50,7 +50,12 @@
         _classesKeys = [aCoder decodeObjectForKey:@"NSClassesKeys"];
         _classesValues = [aCoder decodeObjectForKey:@"NSClassesValues"];
 
-        _connections = [aCoder decodeObjectForKey:@"NSConnections"];
+        var connections = [aCoder decodeObjectForKey:@"NSConnections"];
+        // Filter out connections with invalid destinations.
+        _connections = [connections filteredArrayUsingBlock:function(conn, idx, stop)
+        {
+            return [conn destination] !== nil;
+        }];
 
         //_fontManager = [aCoder decodeObjectForKey:@"NSFontManager"] retain];
         _framework = [aCoder decodeObjectForKey:@"NSFramework"];
