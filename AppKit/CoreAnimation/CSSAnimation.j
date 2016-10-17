@@ -51,7 +51,6 @@ CSSAnimation = function(aTarget/*DOM Element*/, anIdentifier)
         this.animationsdurations = [];
         this.islive = false;
         this.didBuildDOMElements = false;
-        this.removeAnimationPropertyOnCompletion = true;
 
         animation = this;
         CURRENT_ANIMATIONS[anIdentifier] = animation;
@@ -177,21 +176,21 @@ CSSAnimation.prototype.endEventListener = function()
             if (idx !== -1)
                 inFlightAnimationsNames.splice(idx, 1);
 
-            if (inFlightAnimationsNames.length == 0)
+            if (inFlightAnimationsNames.length > 0)
+                return;
+
+            for (var i = 0; i < animationsNames.length; i++)
             {
-                for (var i = 0; i < animationsNames.length; i++)
-                {
-                    var completion = animation.completionFunctionForAnimationName(animationsNames[i]);
-                    if (completion)
-                        completion();
-                }
+                var completion = animation.completionFunctionForAnimationName(animationsNames[i]);
+                if (completion)
+                    completion();
+            }
 
-                var eventTarget = event.target,
-                    style = eventTarget.style;
+            var eventTarget = event.target,
+                style = eventTarget.style;
 
-                if (animation.removeAnimationPropertyOnCompletion)
-                    style.removeProperty(ANIMATION_NAME_PROPERTY);
-
+            try {
+                style.removeProperty(ANIMATION_NAME_PROPERTY);
                 style.removeProperty(ANIMATION_DURATION_PROPERTY);
                 style.removeProperty(ANIMATION_FILL_MODE_PROPERTY);
                 style.removeProperty("-webkit-backface-visibility");
@@ -204,6 +203,8 @@ CSSAnimation.prototype.endEventListener = function()
                 eventTarget.removeEventListener(ANIMATION_END_EVENT_NAME, AnimationEndListener);
                 animation.listener = null;
                 delete (CURRENT_ANIMATIONS[animation.identifier]);
+            } catch (err) {
+                CPLog.warn("CSSAnimation.j - " + err);
             }
         };
 
@@ -258,11 +259,6 @@ CSSAnimation.prototype.buildDOMElements = function()
     this.setTargetStyleProperties();
 
     this.didBuildDOMElements = true;
-}
-
-CSSAnimation.prototype.setRemoveAnimationPropertyOnCompletion = function(flag)
-{
-    this.removeAnimationPropertyOnCompletion = flag;
 }
 
 CSSAnimation.prototype.start = function()
