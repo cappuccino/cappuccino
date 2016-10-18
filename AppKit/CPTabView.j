@@ -346,11 +346,15 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 {
     var controller = [aTabViewItem viewController];
 
-    if (controller && ![controller isViewLoaded])
+    if (controller !== nil && ![controller isViewLoaded])
     {
         [controller loadViewWithCompletionHandler:function(view, error)
         {
-            if (view !== nil && error == nil)
+            if (error !== nil)
+            {
+                CPLog.warn("Could not load the view for item " + aTabViewItem + ". " + error);
+            }
+            else if (view !== nil)
             {
                 [aTabViewItem setView:view];
 
