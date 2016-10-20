@@ -270,7 +270,7 @@ CPPressedTab    = 2;
         [self setLabel:title];
 
     if ([_tabView selectedTabViewItem] == self)
-        [_tabView _displayItemView:[_viewController view]];
+        [_tabView _loadTabViewItem:self];
 }
 
 @end

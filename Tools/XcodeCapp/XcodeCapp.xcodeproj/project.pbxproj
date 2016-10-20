@@ -31,8 +31,6 @@
 		6841F2461AF98CE600CFE60E /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6841F2451AF98CE600CFE60E /* Images.xcassets */; };
 		6841F26C1AF98DDD00CFE60E /* mod_pbxproj.py in Resources */ = {isa = PBXBuildFile; fileRef = 6841F2691AF98DDD00CFE60E /* mod_pbxproj.py */; };
 		6841F26E1AF98DDD00CFE60E /* pbxprojModifier.py in Resources */ = {isa = PBXBuildFile; fileRef = 6841F26B1AF98DDD00CFE60E /* pbxprojModifier.py */; };
-		6841F27C1AF990C300CFE60E /* Debug.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 6841F27A1AF990C300CFE60E /* Debug.xcconfig */; };
-		6841F27D1AF990C300CFE60E /* Release.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 6841F27B1AF990C300CFE60E /* Release.xcconfig */; };
 		6841F2A51AF9932300CFE60E /* project.pbxproj in Resources */ = {isa = PBXBuildFile; fileRef = 6841F28A1AF9932300CFE60E /* project.pbxproj */; };
 		6841F2B71AFA83D500CFE60E /* XCCUserDefaults.m in Sources */ = {isa = PBXBuildFile; fileRef = 6841F2B61AFA83D500CFE60E /* XCCUserDefaults.m */; };
 		6841F2BF1AFA965300CFE60E /* XCCTaskLauncher.m in Sources */ = {isa = PBXBuildFile; fileRef = 6841F2BE1AFA965300CFE60E /* XCCTaskLauncher.m */; };
@@ -324,7 +322,7 @@
 		6841F2331AF98CE600CFE60E /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0630;
+				LastUpgradeCheck = 0800;
 				ORGANIZATIONNAME = "cappuccino-project";
 				TargetAttributes = {
 					6841F23A1AF98CE600CFE60E = {
@@ -364,10 +362,8 @@
 				021B94671B20D1F800F12DDA /* OperationsView.xib in Resources */,
 				021B94711B20E31F00F12DDA /* SettingsView.xib in Resources */,
 				0258004B1B1E67090000EB7D /* supawhich in Resources */,
-				6841F27C1AF990C300CFE60E /* Debug.xcconfig in Resources */,
 				6841F26E1AF98DDD00CFE60E /* pbxprojModifier.py in Resources */,
 				6841F2A51AF9932300CFE60E /* project.pbxproj in Resources */,
-				6841F27D1AF990C300CFE60E /* Release.xcconfig in Resources */,
 				0257A65B1B3A2B0000015C1F /* MainMenu.xib in Resources */,
 				6841F26C1AF98DDD00CFE60E /* mod_pbxproj.py in Resources */,
 				021B94691B20D6FC00F12DDA /* ErrorsView.xib in Resources */,
@@ -437,8 +433,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_IDENTITY = "-";
@@ -447,6 +445,7 @@
 				DEPLOYMENT_LOCATION = YES;
 				DSTROOT = /;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -462,7 +461,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
@@ -483,8 +482,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_IDENTITY = "-";
@@ -502,7 +503,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
 			};
@@ -518,6 +519,7 @@
 				INFOPLIST_FILE = XcodeCapp/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				PRODUCT_BUNDLE_IDENTIFIER = org.cappuccino.xcodecapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -532,6 +534,7 @@
 				INFOPLIST_FILE = XcodeCapp/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				PRODUCT_BUNDLE_IDENTIFIER = org.cappuccino.xcodecapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
