@@ -42,6 +42,9 @@ NIB_CONNECTION_EQUIVALENCY_TABLE = {};
         _destination = [aCoder decodeObjectForKey:@"NSDestination"];
         _label = [aCoder decodeObjectForKey:@"NSLabel"];
 
+        if (_destination == nil)
+            CPLog.warn(_label);
+
         var sourceUID = [_source UID],
             destinationUID = [_destination UID];
 

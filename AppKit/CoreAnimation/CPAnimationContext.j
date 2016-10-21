@@ -163,8 +163,12 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
     {
         if (needsFrameTimer)
             [self stopFrameUpdaterWithIdentifier:objectId];
-        else if (animationCompletion)
+
+        if (animationCompletion)
             animationCompletion();
+
+        if (needsFrameTimer || animationCompletion)
+            [[CPRunLoop currentRunLoop] performSelectors];
 
         if (_completionHandlerAgent)
             _completionHandlerAgent.decrement();
@@ -289,7 +293,7 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
             cssAnimations.push(cssAnimation);
         }
 
-        var css_mapping = [[aTargetView class] cssPropertiesForKeyPath:keyPath];
+        var css_mapping = [[aTargetView class] _cssPropertiesForKeyPath:keyPath];
 
         [css_mapping enumerateObjectsUsingBlock:function(aDict, anIndex, stop)
         {
@@ -299,9 +303,6 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
 
             cssAnimation.addPropertyAnimation(property, getter, duration, anAction.keytimes, anAction.values, timingFunctions, completionFunction);
         }];
-
-        if (needsFrameTimer)
-            cssAnimation.setRemoveAnimationPropertyOnCompletion(false);
     }
 
     if (needsFrameTimer)
@@ -611,46 +612,42 @@ CFRunLoopRemoveObserver = function(runloop, observer, mode)
 var FrameUpdater = function(anIdentifier)
 {
     this._identifier = anIdentifier;
+    this._requestId = null;
     this._duration = 0;
     this._stop = false;
     this._targets = [];
     this._callbacks = [];
+
     var frameUpdater = this;
 
     this._updateFunction = function(timestamp)
     {
+        if (frameUpdater._startDate == null)
+            frameUpdater._startDate = timestamp;
+
         if (frameUpdater._stop)
             return;
-
-        if (this._startDate == null)
-            this._startDate = timestamp;
 
         for (var i = 0; i < frameUpdater._callbacks.length; i++)
             frameUpdater._callbacks[i]();
 
-        if (timestamp - this._startDate < frameUpdater._duration * 1000)
+        if (timestamp - frameUpdater._startDate < frameUpdater._duration * 1000)
             window.requestAnimationFrame(frameUpdater._updateFunction);
     };
 };
 
 FrameUpdater.prototype.start = function()
 {
-    window.requestAnimationFrame(this._updateFunction);
+    this._requestId = window.requestAnimationFrame(this._updateFunction);
 };
 
 FrameUpdater.prototype.stop = function()
 {
-CPLog.debug("stop FrameUpdater with id " + this.identifier());
+    // window.cancelAnimationFrame support is Chrome 24, Firefox 23, IE 10, Opera 15, Safari 6.1
+    if (window.cancelAnimationFrame)
+        window.cancelAnimationFrame(this._requestId);
 
     this._stop = true;
-
-    var targets = this._targets;
-
-    for (var i = 0; i < targets.length; i++)
-    {
-        CPLog.debug(targets[i] + " Remove animation-name property");
-        targets[i]._DOMElement.style.removeProperty(CPBrowserCSSProperty("animation-name"));
-    }
 };
 
 FrameUpdater.prototype.updateFunction = function()

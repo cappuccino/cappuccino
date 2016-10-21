@@ -7,6 +7,7 @@
  */
 @import <AppKit/AppKit.j>
 @import <Foundation/CPObject.j>
+@import "TabViewController.j"
 
 CPLogRegister(CPLogConsole);
 
@@ -15,7 +16,6 @@ CPLogRegister(CPLogConsole);
     CPWindow    theWindow; //this "outlet" is connected automatically by the Cib
     @outlet     CPTabView nibTabView;
     @outlet     CPTabView nibTabViewEmpty;
-    @outlet     CPViewController viewController;
     @outlet     CPStepper insertStepper;
     @outlet     CPStepper removeStepper;
     @outlet     CPButton fromViewController;
@@ -23,21 +23,23 @@ CPLogRegister(CPLogConsole);
 
 - (IBAction)insertTabViewItem:(id)sender
 {
-    var idx = [insertStepper intValue],
-        item;
-
-    if ([fromViewController state])
-        item = [CPTabViewItem tabViewItemWithViewController:viewController];
-    else
-    {
-        item = [[CPTabViewItem alloc] initWithIdentifier:@"Insert" + idx];
-        var view = [[CPView alloc] initWithFrame:CGRectMakeZero()];
-        [view setBackgroundColor:[CPColor randomColor]];
-        [item setView:view];
-        [item setLabel:@"Insert" + idx];
-    }
+    var idx = [insertStepper objectValue];
+    var item = [[CPTabViewItem alloc] initWithIdentifier:@"Insert" + idx];
+    var view = [[CPView alloc] initWithFrame:CGRectMakeZero()];
+    [view setBackgroundColor:[CPColor randomColor]];
+    [item setView:view];
+    [item setLabel:@"Insert" + idx];
 
     [nibTabView insertTabViewItem:item atIndex:idx];
+}
+
+- (IBAction)insertViewControllerTabViewItem:(id)sender
+{
+    var ctl = [[TabViewController alloc] initWithCibName:@"TabViewItem" bundle:nil];
+    [ctl setTitle:@"View Controller"];
+    var item = [CPTabViewItem tabViewItemWithViewController:ctl];
+
+    [nibTabView insertTabViewItem:item atIndex:0];
 }
 
 - (IBAction)removeTabViewItem:(id)sender
