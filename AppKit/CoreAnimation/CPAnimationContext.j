@@ -83,7 +83,9 @@ var _CPAnimationContextStack   = nil,
 {
     if (!_animationFlushingObserver)
     {
+#if (DEBUG)
         CPLog.debug("create new observer");
+#endif
         _animationFlushingObserver = CFRunLoopObserverCreate(2, true, 0, _animationFlushingObserverCallback,0);
         CFRunLoopAddObserver([CPRunLoop mainRunLoop], _animationFlushingObserver);
     }
@@ -115,7 +117,9 @@ var _CPAnimationContextStack   = nil,
     [context _flushAnimations];
     [_CPAnimationContextStack removeLastObject];
 
-CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
+#if (DEBUG)
+    CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
+#endif
     return YES;
 }
 
@@ -255,7 +259,9 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
     var k = timers.length;
     while(k--)
     {
+#if (DEBUG)
         CPLog.debug("START TIMER " + timers[k].identifier());
+#endif
         timers[k].start();
     }
 
@@ -263,7 +269,9 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
     var n = cssAnimations.length;
     while(n--)
     {
+#if (DEBUG)
         CPLog.debug("START ANIMATION " + cssAnimations[n].animationsnames);
+#endif
         cssAnimations[n].start();
     }
 }
@@ -338,12 +346,28 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
              if (CGRectEqualToRect([aSubview frame], targetFrame))
                  return;
 
+<<<<<<< HEAD
              if ([aSubview hasCustomDrawRect])
              {
                  action.completion = function()
                  {
                      [aSubview setFrame:targetFrame];
                      CPLog.debug(aSubview + " setFrame: ");
+=======
+            if ([aSubview hasCustomDrawRect])
+            {
+                action.completion = function()
+                {
+                    [aSubview setFrame:targetFrame];
+#if (DEBUG)
+                    CPLog.debug(aSubview + " setFrame: ");
+#endif
+
+                    if (idx == lastIndex)
+                        [self stopFrameUpdaterWithIdentifier:frameTimerId];
+                };
+            }
+>>>>>>> aea4557... Style: print debug logs in debug mode only
 
                      if (idx == lastIndex)
                          [self stopFrameUpdaterWithIdentifier:frameTimerId];
@@ -553,7 +577,9 @@ CompletionHandlerAgent.prototype.invalidate = function()
 
 var _animationFlushingObserverCallback = function()
 {
-CPLog.debug("_animationFlushingObserverCallback");
+#if (DEBUG)
+    CPLog.debug("_animationFlushingObserverCallback");
+#endif
     if ([_CPAnimationContextStack count] == 1)
     {
         var context = [_CPAnimationContextStack lastObject];
@@ -561,11 +587,15 @@ CPLog.debug("_animationFlushingObserverCallback");
         [_CPAnimationContextStack removeLastObject];
     }
 
-CPLog.debug("_animationFlushingObserver "+_animationFlushingObserver+" stack:" + [_CPAnimationContextStack count]);
+#if (DEBUG)
+    CPLog.debug("_animationFlushingObserver "+_animationFlushingObserver+" stack:" + [_CPAnimationContextStack count]);
+#endif
 
     if (_animationFlushingObserver && ![_CPAnimationContextStack count])
     {
+#if (DEBUG)
         CPLog.debug("removeObserver");
+#endif
         CFRunLoopObserverInvalidate([CPRunLoop mainRunLoop], _animationFlushingObserver);
         _animationFlushingObserver = nil;
     }
