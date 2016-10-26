@@ -133,7 +133,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     CPColor                     _textColor                    @accessors(property=textColor);
     CPDictionary                _selectedTextAttributes       @accessors(property=selectedTextAttributes);
     CPDictionary                _typingAttributes             @accessors(property=typingAttributes);
-    CPFont                      _font                         @accessors(property=font);
+    CPFont                      _font;
     CPLayoutManager             _layoutManager                @accessors(getter=layoutManager);
     CPRange                     _selectionRange               @accessors(getter=selectedRange);
     CPSelectionGranularity      _selectionGranularity         @accessors(property=selectionGranularity);
@@ -1585,6 +1585,11 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 #pragma mark -
 #pragma mark Font methods
+
+- (CPFont)font
+{
+    return _font || [CPFont systemFontOfSize:12.0];
+}
 
 - (void)setFont:(CPFont)font
 {
