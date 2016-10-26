@@ -607,7 +607,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     _textContainer = aContainer;
     _layoutManager = [_textContainer layoutManager];
     _textStorage = [_layoutManager textStorage];
-    [_textStorage setFont:_font];
+    [_textStorage setFont:[self font]];
     [_textStorage setForegroundColor:_textColor];
 
     [self invalidateTextContainerOrigin];
@@ -1616,7 +1616,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     var currentAttributes = [_textStorage attributesAtIndex:range.location effectiveRange:nil] || _typingAttributes;
 
     [[[[self window] undoManager] prepareWithInvocationTarget:self]
-                                                      setFont:[currentAttributes objectForKey:CPFontAttributeName] || _font
+                                                      setFont:[currentAttributes objectForKey:CPFontAttributeName] || [self font]
                                                         range:CPMakeRangeCopy(range)];
 
     [_textStorage addAttribute:CPFontAttributeName value:font range:CPMakeRangeCopy(range)];
