@@ -125,6 +125,16 @@ var transformFrameToHeight = function(start, current)
     return current.size.height + "px";
 };
 
+var transformFrameToLeft = function(start, current)
+{
+    return current.origin.x + "px";
+};
+
+var transformFrameToTop = function(start, current)
+{
+    return current.origin.y + "px";
+};
+
 var transformSizeToWidth = function(start, current)
 {
     return current.width + "px";
@@ -133,6 +143,41 @@ var transformSizeToWidth = function(start, current)
 var transformSizeToHeight = function(start, current)
 {
     return current.height + "px";
+};
+
+var CSSStringFromCGAffineTransform = function(anAffineTransform)
+{
+    // Firefox : add px to the translate values.
+    return "matrix(" + anAffineTransform.a + ", " + anAffineTransform.b + ", " + anAffineTransform.c + ", " + anAffineTransform.d + ", " + anAffineTransform.tx + ", " + anAffineTransform.ty + ")";
+};
+
+var frameOriginToCSSTransformMatrix = function(start, current)
+{
+    var affine = CGAffineTransformMakeTranslation(current.x - start.x, current.y - start.y);
+
+    return CSSStringFromCGAffineTransform(affine);
+};
+
+var frameSizeToCSSTransformMatrix = function(start, current)
+{
+    // !! Zero start size
+    var offsetX = (current.width - start.width) / 2,
+        offsetY = (current.height - start.height) / 2;
+
+    var affine = CGAffineTransformMake(current.width / start.width, 0, 0, current.height / start.height, offsetX, offsetY);
+
+    return CSSStringFromCGAffineTransform(affine);
+};
+
+var frameToCSSTransformMatrix = function(start, current)
+{
+    // !! Zero start size
+    var offsetX = (current.size.width  - start.size.width)  / 2,
+        offsetY = (current.size.height - start.size.height) / 2;
+
+    var affine = CGAffineTransformMake(current.size.width / start.size.width, 0, 0, current.size.height / start.size.height, current.origin.x - start.origin.x + offsetX, current.origin.y - start.origin.y + offsetY);
+
+    return CSSStringFromCGAffineTransform(affine);
 };
 
 var DEFAULT_CSS_PROPERTIES = nil;
@@ -146,15 +191,12 @@ var DEFAULT_CSS_PROPERTIES = nil;
         var transformProperty = CPBrowserCSSProperty("transform");
 
         DEFAULT_CSS_PROPERTIES =  @{
-            "backgroundColor"  : [@{"property":"background", "value":function(sv, val){return [val cssString];}}],
-            "alphaValue"       : [@{"property":"opacity"}],
-            "frame"            : [@{"property":transformProperty, "value":transformFrameToTranslate},
-                                  @{"property":"width", "value":transformFrameToWidth},
-                                  @{"property":"height", "value":transformFrameToHeight}],
-            "frameOrigin"      : [@{"property":transformProperty, "value":transformOrigin}],
-            "frameSize"        : [@{"property":"width", "value":transformSizeToWidth},
-                                  @{"property":"height", "value":transformSizeToHeight}]
-        };
+                                    "backgroundColor"  : [@{"property":"background", "value":function(sv, val){return [val cssString];}}],
+                                    "alphaValue"       : [@{"property":"opacity"}],
+                                    "frame"            : [@{"property":transformProperty, "value":frameToCSSTransformMatrix}],
+                                    "frameOrigin"      : [@{"property":transformProperty, "value":frameOriginToCSSTransformMatrix}],
+                                    "frameSize"        : [@{"property":transformProperty, "value":frameSizeToCSSTransformMatrix}]
+                                    };
     }
 
     return DEFAULT_CSS_PROPERTIES;

@@ -152,7 +152,7 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
 
     duration = [animation duration] || [self duration];
 
-    var needsFrameTimer = (aKeyPath == @"frame" || aKeyPath == @"frameSize") &&
+    var needsFrameTimer = (aKeyPath === @"frame" || aKeyPath === @"frameSize" || aKeyPath === @"frameOrigin") &&
                           ([anObject hasCustomLayoutSubviews] || [anObject hasCustomDrawRect]) &&
                           (objectId = [anObject UID]);
 
@@ -259,7 +259,7 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
 - (void)getAnimations:(CPArray)cssAnimations getTimers:(CPArray)timers forView:(CPView)aTargetView usingAction:(Object)anAction rootView:(CPView)rootView cssAnimate:(BOOL)needsCSSAnimation
 {
     var keyPath = anAction.keypath,
-        isFrameKeyPath = (keyPath == @"frame" || keyPath == @"frameSize"),
+        isFrameKeyPath = (keyPath === @"frame" || keyPath === @"frameSize" || keyPath === @"frameOrigin"),
         customLayout = [aTargetView hasCustomLayoutSubviews],
         customDrawing = [aTargetView hasCustomDrawRect],
         needsFrameTimer = isFrameKeyPath && (customLayout || customDrawing);
@@ -328,7 +328,7 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
             if (CGRectEqualToRect([aSubview frame], targetFrame))
                 return;
 
-            if ([aSubview hasCustomDrawRect])
+            if ([aSubview hasCustomDrawRect] || [aSubview hasCustomLayoutSubviews])
             {
                 action.completion = function()
                 {
@@ -677,31 +677,44 @@ FrameUpdater.prototype.addTarget = function(target, keyPath, duration)
 
 var createUpdateFrame = function(aView, aKeyPath)
 {
-    if (aKeyPath !== "frame" && aKeyPath !== "frameSize")
+    if (aKeyPath !== "frame" && aKeyPath !== "frameSize" && aKeyPath !== "frameOrigin")
         return nil;
 
     var style = getComputedStyle(aView._DOMElement),
           getCSSPropertyValue = function(prop) {
                 return ROUND(parseFloat(style.getPropertyValue(prop)));
-          };
+          },
 
-    var updateFrame = function(timestamp)
+        initialFrame  = [aView frame],
+        initialX      = initialFrame.origin.x,
+        initialY      = initialFrame.origin.y,
+        initialWidth  = initialFrame.size.width,
+        initialHeight = initialFrame.size.height,
+
+        updateFrame = function(timestamp)
     {
-        var width  = getCSSPropertyValue("width"),
-            height = getCSSPropertyValue("height");
+        var matrix = style["transform"].split('(')[1].split(')')[0].split(','),
+            width  = ROUND(initialWidth  * parseFloat(matrix[0])),
+            height = ROUND(initialHeight * parseFloat(matrix[3])),
+            x      = ROUND(initialX + parseFloat(matrix[4]) - (width  - initialWidth )/2),
+            y      = ROUND(initialY + parseFloat(matrix[5]) - (height - initialHeight)/2);
 
-        if (aKeyPath == "frame")
+        [aView _setInhibitDOMUpdates:YES];
+
+        if (aKeyPath === "frame")
         {
-            var left   = getCSSPropertyValue("left"),
-                top    = getCSSPropertyValue("top"),
-                frame  = CGRectMake(left, top, width, height);
-
-            [aView setFrame:frame];
+            [aView setFrame:CGRectMake(x, y, width, height)];
         }
-        else if (aKeyPath == "frameSize")
+        else if (aKeyPath === "frameSize")
         {
             [aView setFrameSize:CGSizeMake(width, height)];
         }
+        else
+        {
+            [aView setFrameOrigin:CGPointMake(x, y)];
+        }
+
+        [aView _setInhibitDOMUpdates:NO];
 
         [[CPRunLoop currentRunLoop] performSelectors];
     };
