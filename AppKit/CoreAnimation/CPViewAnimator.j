@@ -1,6 +1,7 @@
 
 @import "_CPObjectAnimator.j"
 @import "CPView.j"
+@import "CPCompatibility.j"
 
 @implementation CPViewAnimator : _CPObjectAnimator
 {
@@ -118,7 +119,10 @@
 var CSSStringFromCGAffineTransform = function(anAffineTransform)
 {
     // Firefox : add px to the translate values.
-    return "matrix(" + anAffineTransform.a + ", " + anAffineTransform.b + ", " + anAffineTransform.c + ", " + anAffineTransform.d + ", " + anAffineTransform.tx + ", " + anAffineTransform.ty + ")";
+    if (CPBrowserIsEngine(CPGeckoBrowserEngine))
+        return "matrix(" + anAffineTransform.a + ", " + anAffineTransform.b + ", " + anAffineTransform.c + ", " + anAffineTransform.d + ", " + anAffineTransform.tx + "px, " + anAffineTransform.ty + "px)";
+    else
+        return "matrix(" + anAffineTransform.a + ", " + anAffineTransform.b + ", " + anAffineTransform.c + ", " + anAffineTransform.d + ", " + anAffineTransform.tx + ", " + anAffineTransform.ty + ")";
 };
 
 var frameOriginToCSSTransformMatrix = function(start, current)
