@@ -253,6 +253,7 @@ var CPViewHighDPIDrawingEnabled = YES;
     id                  _animator;
     CPDictionary        _animationsDictionary;
     BOOL                _inhibitDOMUpdates      @accessors(setter=_setInhibitDOMUpdates);
+    BOOL                _forceDOMUpdates        @accessors(setter=_setForceDOMUpdates);
 }
 
 /*
@@ -1014,7 +1015,7 @@ var CPViewHighDPIDrawingEnabled = YES;
 */
 - (void)setFrame:(CGRect)aFrame
 {
-    if (CGRectEqualToRect(_frame, aFrame))
+    if (CGRectEqualToRect(_frame, aFrame) && !_forceDOMUpdates)
         return;
 
     _inhibitFrameAndBoundsChangedNotifications = YES;
@@ -1085,7 +1086,7 @@ var CPViewHighDPIDrawingEnabled = YES;
 {
     var origin = _frame.origin;
 
-    if (!aPoint || CGPointEqualToPoint(origin, aPoint))
+    if ((!aPoint || CGPointEqualToPoint(origin, aPoint)) && !_forceDOMUpdates)
         return;
 
     origin.x = aPoint.x;
@@ -1120,7 +1121,7 @@ var CPViewHighDPIDrawingEnabled = YES;
 {
     var size = _frame.size;
 
-    if (!aSize || CGSizeEqualToSize(size, aSize))
+    if ((!aSize || CGSizeEqualToSize(size, aSize)) && !_forceDOMUpdates)
         return;
 
     var oldSize = CGSizeMakeCopy(size);

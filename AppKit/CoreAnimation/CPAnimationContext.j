@@ -162,9 +162,15 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
     var completionFunction = function()
     {
         if (needsFrameTimer)
+        {
             [self stopFrameUpdaterWithIdentifier:objectId];
-        else if (animationCompletion)
+            [anObject _setForceDOMUpdates:YES];
+        }
+
+        if (animationCompletion)
             animationCompletion();
+
+        [anObject _setForceDOMUpdates:NO];
 
         if (_completionHandlerAgent)
             _completionHandlerAgent.decrement();
