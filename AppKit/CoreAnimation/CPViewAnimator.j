@@ -115,46 +115,6 @@
 
 @end
 
-var transformOrigin = function(start, current)
-{
-    return "translate(" + (current.x - start.x) + "px," + (current.y - start.y) + "px)";
-};
-
-var transformFrameToTranslate = function(start, current)
-{
-    return transformOrigin(start.origin, current.origin);
-};
-
-var transformFrameToWidth = function(start, current)
-{
-    return current.size.width + "px";
-};
-
-var transformFrameToHeight = function(start, current)
-{
-    return current.size.height + "px";
-};
-
-var transformFrameToLeft = function(start, current)
-{
-    return current.origin.x + "px";
-};
-
-var transformFrameToTop = function(start, current)
-{
-    return current.origin.y + "px";
-};
-
-var transformSizeToWidth = function(start, current)
-{
-    return current.width + "px";
-};
-
-var transformSizeToHeight = function(start, current)
-{
-    return current.height + "px";
-};
-
 var CSSStringFromCGAffineTransform = function(anAffineTransform)
 {
     // Firefox : add px to the translate values.
