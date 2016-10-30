@@ -4,6 +4,16 @@
 
 @implementation CPViewAnimator : _CPObjectAnimator
 {
+    BOOL    wantPeriodicFrameUpdates    @accessors;
+}
+
+- (id)initWithTarget:(id)aTarget
+{
+    self = [super initWithTarget:aTarget];
+
+    wantPeriodicFrameUpdates = ([aTarget hasCustomDrawRect] || [aTarget hasCustomLayoutSubviews]);
+
+    return self;
 }
 
 - (void)viewWillMoveToSuperview:(CPView)aSuperview

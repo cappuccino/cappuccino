@@ -153,7 +153,7 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
     duration = [animation duration] || [self duration];
 
     var needsFrameTimer = (aKeyPath === @"frame" || aKeyPath === @"frameSize" || aKeyPath === @"frameOrigin") &&
-                          ([anObject hasCustomLayoutSubviews] || [anObject hasCustomDrawRect]) &&
+                          [[anObject animator] wantPeriodicFrameUpdates] &&
                           (objectId = [anObject UID]);
 
     if (_completionHandlerAgent)
@@ -233,7 +233,7 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
 
         [animByKeyPath enumerateKeysAndObjectsUsingBlock:function(aKey, anAction, stop)
         {
-            [self getAnimations:cssAnimations getTimers:timers forView:targetView usingAction:anAction rootView:targetView  cssAnimate:YES];
+            [self getAnimations:cssAnimations getTimers:timers forView:targetView usingAction:anAction rootView:targetView cssAnimate:YES];
         }];
 
         _animationsByObject.remove(targetView);
@@ -258,11 +258,9 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
 
 - (void)getAnimations:(CPArray)cssAnimations getTimers:(CPArray)timers forView:(CPView)aTargetView usingAction:(Object)anAction rootView:(CPView)rootView cssAnimate:(BOOL)needsCSSAnimation
 {
-    var keyPath = anAction.keypath,
-        isFrameKeyPath = (keyPath === @"frame" || keyPath === @"frameSize" || keyPath === @"frameOrigin"),
-        customLayout = [aTargetView hasCustomLayoutSubviews],
-        customDrawing = [aTargetView hasCustomDrawRect],
-        needsFrameTimer = isFrameKeyPath && (customLayout || customDrawing);
+    var keyPath         = anAction.keypath,
+        isFrameKeyPath  = (keyPath === @"frame" || keyPath === @"frameSize" || keyPath === @"frameOrigin"),
+        needsFrameTimer = isFrameKeyPath && [[aTargetView animator] wantPeriodicFrameUpdates];
 
     if (needsCSSAnimation)
     {
@@ -328,7 +326,7 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
             if (CGRectEqualToRect([aSubview frame], targetFrame))
                 return;
 
-            if ([aSubview hasCustomDrawRect] || [aSubview hasCustomLayoutSubviews])
+            if ([[aSubview animator] wantPeriodicFrameUpdates])
             {
                 action.completion = function()
                 {
@@ -340,7 +338,7 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
                 };
             }
 
-            [self getAnimations:cssAnimations getTimers:timers forView:aSubview usingAction:action rootView:rootView cssAnimate:!customLayout];
+            [self getAnimations:cssAnimations getTimers:timers forView:aSubview usingAction:action rootView:rootView cssAnimate:![aTargetView hasCustomLayoutSubviews]];
         }];
     }
 }
@@ -684,20 +682,14 @@ var createUpdateFrame = function(aView, aKeyPath)
           getCSSPropertyValue = function(prop) {
                 return ROUND(parseFloat(style.getPropertyValue(prop)));
           },
-
-        initialFrame  = [aView frame],
-        initialX      = initialFrame.origin.x,
-        initialY      = initialFrame.origin.y,
-        initialWidth  = initialFrame.size.width,
-        initialHeight = initialFrame.size.height,
-
-        updateFrame = function(timestamp)
+        initialFrame = CGRectMakeCopy([aView frame]),
+        updateFrame  = function(timestamp)
     {
         var matrix = style["transform"].split('(')[1].split(')')[0].split(','),
-            width  = ROUND(initialWidth  * parseFloat(matrix[0])),
-            height = ROUND(initialHeight * parseFloat(matrix[3])),
-            x      = ROUND(initialX + parseFloat(matrix[4]) - (width  - initialWidth )/2),
-            y      = ROUND(initialY + parseFloat(matrix[5]) - (height - initialHeight)/2);
+            width  = ROUND(initialFrame.size.width  * parseFloat(matrix[0])),
+            height = ROUND(initialFrame.size.height * parseFloat(matrix[3])),
+            x      = ROUND(initialFrame.origin.x + parseFloat(matrix[4]) - (width  - initialFrame.size.width )/2),
+            y      = ROUND(initialFrame.origin.y + parseFloat(matrix[5]) - (height - initialFrame.size.height)/2);
 
         [aView _setInhibitDOMUpdates:YES];
 
