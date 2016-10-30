@@ -133,7 +133,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     CPColor                     _textColor                    @accessors(property=textColor);
     CPDictionary                _selectedTextAttributes       @accessors(property=selectedTextAttributes);
     CPDictionary                _typingAttributes             @accessors(property=typingAttributes);
-    CPFont                      _font                         @accessors(property=font);
+    CPFont                      _font;
     CPLayoutManager             _layoutManager                @accessors(getter=layoutManager);
     CPRange                     _selectionRange               @accessors(getter=selectedRange);
     CPSelectionGranularity      _selectionGranularity         @accessors(property=selectionGranularity);
@@ -607,7 +607,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     _textContainer = aContainer;
     _layoutManager = [_textContainer layoutManager];
     _textStorage = [_layoutManager textStorage];
-    [_textStorage setFont:_font];
+    [_textStorage setFont:[self font]];
     [_textStorage setForegroundColor:_textColor];
 
     [self invalidateTextContainerOrigin];
@@ -1586,6 +1586,11 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 #pragma mark -
 #pragma mark Font methods
 
+- (CPFont)font
+{
+    return _font || [CPFont systemFontOfSize:12.0];
+}
+
 - (void)setFont:(CPFont)font
 {
     _font = font;
@@ -1611,7 +1616,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     var currentAttributes = [_textStorage attributesAtIndex:range.location effectiveRange:nil] || _typingAttributes;
 
     [[[[self window] undoManager] prepareWithInvocationTarget:self]
-                                                      setFont:[currentAttributes objectForKey:CPFontAttributeName] || _font
+                                                      setFont:[currentAttributes objectForKey:CPFontAttributeName] || [self font]
                                                         range:CPMakeRangeCopy(range)];
 
     [_textStorage addAttribute:CPFontAttributeName value:font range:CPMakeRangeCopy(range)];
