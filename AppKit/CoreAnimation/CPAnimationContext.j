@@ -152,8 +152,8 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
 
     duration = [animation duration] || [self duration];
 
-    var needsFrameTimer = (aKeyPath == @"frame" || aKeyPath == @"frameSize") &&
-                          ([anObject hasCustomLayoutSubviews] || [anObject hasCustomDrawRect]) &&
+    var needsFrameTimer = (aKeyPath === @"frame" || aKeyPath === @"frameSize" || aKeyPath === @"frameOrigin") &&
+                          [[anObject animator] wantPeriodicFrameUpdates] &&
                           (objectId = [anObject UID]);
 
     if (_completionHandlerAgent)
@@ -237,7 +237,7 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
 
         [animByKeyPath enumerateKeysAndObjectsUsingBlock:function(aKey, anAction, stop)
         {
-            [self getAnimations:cssAnimations getTimers:timers forView:targetView usingAction:anAction rootView:targetView  cssAnimate:YES];
+            [self getAnimations:cssAnimations getTimers:timers forView:targetView usingAction:anAction rootView:targetView cssAnimate:YES];
         }];
 
         _animationsByObject.remove(targetView);
@@ -262,11 +262,9 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
 
 - (void)getAnimations:(CPArray)cssAnimations getTimers:(CPArray)timers forView:(CPView)aTargetView usingAction:(Object)anAction rootView:(CPView)rootView cssAnimate:(BOOL)needsCSSAnimation
 {
-    var keyPath = anAction.keypath,
-        isFrameKeyPath = (keyPath == @"frame" || keyPath == @"frameSize"),
-        customLayout = [aTargetView hasCustomLayoutSubviews],
-        customDrawing = [aTargetView hasCustomDrawRect],
-        needsFrameTimer = isFrameKeyPath && (customLayout || customDrawing);
+    var keyPath         = anAction.keypath,
+        isFrameKeyPath  = (keyPath === @"frame" || keyPath === @"frameSize" || keyPath === @"frameOrigin"),
+        needsFrameTimer = isFrameKeyPath && [[aTargetView animator] wantPeriodicFrameUpdates];
 
     if (needsCSSAnimation)
     {
@@ -329,7 +327,7 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
             if (CGRectEqualToRect([aSubview frame], targetFrame))
                 return;
 
-            if ([aSubview hasCustomDrawRect])
+            if ([[aSubview animator] wantPeriodicFrameUpdates])
             {
                 action.completion = function()
                 {
@@ -341,7 +339,7 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
                 };
             }
 
-            [self getAnimations:cssAnimations getTimers:timers forView:aSubview usingAction:action rootView:rootView cssAnimate:!customLayout];
+            [self getAnimations:cssAnimations getTimers:timers forView:aSubview usingAction:action rootView:rootView cssAnimate:![aTargetView hasCustomLayoutSubviews]];
         }];
     }
 }
@@ -674,31 +672,38 @@ FrameUpdater.prototype.addTarget = function(target, keyPath, duration)
 
 var createUpdateFrame = function(aView, aKeyPath)
 {
-    if (aKeyPath !== "frame" && aKeyPath !== "frameSize")
+    if (aKeyPath !== "frame" && aKeyPath !== "frameSize" && aKeyPath !== "frameOrigin")
         return nil;
 
     var style = getComputedStyle(aView._DOMElement),
           getCSSPropertyValue = function(prop) {
                 return ROUND(parseFloat(style.getPropertyValue(prop)));
-          };
-
-    var updateFrame = function(timestamp)
+          },
+        initialFrame = CGRectMakeCopy([aView frame]),
+        updateFrame  = function(timestamp)
     {
-        var width  = getCSSPropertyValue("width"),
-            height = getCSSPropertyValue("height");
+        var matrix = style["transform"].split('(')[1].split(')')[0].split(','),
+            width  = ROUND(initialFrame.size.width  * parseFloat(matrix[0])),
+            height = ROUND(initialFrame.size.height * parseFloat(matrix[3])),
+            x      = ROUND(initialFrame.origin.x + parseFloat(matrix[4]) - (width  - initialFrame.size.width )/2),
+            y      = ROUND(initialFrame.origin.y + parseFloat(matrix[5]) - (height - initialFrame.size.height)/2);
 
-        if (aKeyPath == "frame")
+        [aView _setInhibitDOMUpdates:YES];
+
+        if (aKeyPath === "frame")
         {
-            var left   = getCSSPropertyValue("left"),
-                top    = getCSSPropertyValue("top"),
-                frame  = CGRectMake(left, top, width, height);
-
-            [aView setFrame:frame];
+            [aView setFrame:CGRectMake(x, y, width, height)];
         }
-        else if (aKeyPath == "frameSize")
+        else if (aKeyPath === "frameSize")
         {
             [aView setFrameSize:CGSizeMake(width, height)];
         }
+        else
+        {
+            [aView setFrameOrigin:CGPointMake(x, y)];
+        }
+
+        [aView _setInhibitDOMUpdates:NO];
 
         [[CPRunLoop currentRunLoop] performSelectors];
     };
