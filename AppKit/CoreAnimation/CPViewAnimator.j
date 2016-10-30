@@ -6,35 +6,6 @@
 {
 }
 
-- (void)viewWillMoveToSuperview:(CPView)aSuperview
-{
-    var orderInAnim = [self animationForKey:@"CPAnimationTriggerOrderIn"];
-
-    if (orderInAnim && [orderInAnim isKindOfClass:[CAPropertyAnimation class]])
-    {
-        [_target setValue:[orderInAnim fromValue] forKeyPath:[orderInAnim keyPath]];
-    }
-
-    [_target viewWillMoveToSuperview:aSuperview];
-}
-
-- (void)viewDidMoveToSuperview
-{
-    var orderInAnim = [self animationForKey:@"CPAnimationTriggerOrderIn"];
-
-    if (orderInAnim && [orderInAnim isKindOfClass:[CAPropertyAnimation class]])
-    {
-        [self _setTargetValue:YES withKeyPath:@"CPAnimationTriggerOrderIn" fallback:nil completion:function()
-        {
-            [_target setValue:[orderInAnim toValue] forKeyPath:[orderInAnim keyPath]];
-        }];
-    }
-    else
-    {
-        [_target viewDidMoveToSuperview];
-    }
-}
-
 - (void)removeFromSuperview
 {
     [self _setTargetValue:nil withKeyPath:@"CPAnimationTriggerOrderOut" setter:_cmd];
@@ -139,7 +110,7 @@ var DEFAULT_CSS_PROPERTIES = nil;
 
 @implementation CPView (CPAnimatablePropertyContainer)
 
-+ (CPDictionary)defaultCSSProperties
++ (CPDictionary)_defaultCSSProperties
 {
     if (DEFAULT_CSS_PROPERTIES == nil)
     {
@@ -160,9 +131,9 @@ var DEFAULT_CSS_PROPERTIES = nil;
     return DEFAULT_CSS_PROPERTIES;
 }
 
-+ (CPArray)cssPropertiesForKeyPath:(CPString)aKeyPath
++ (CPArray)_cssPropertiesForKeyPath:(CPString)aKeyPath
 {
-    return [[self defaultCSSProperties] objectForKey:aKeyPath];
+    return [[self _defaultCSSProperties] objectForKey:aKeyPath];
 }
 
 + (Class)animatorClass
@@ -190,7 +161,14 @@ var DEFAULT_CSS_PROPERTIES = nil;
 
 + (CAAnimation)defaultAnimationForKey:(CPString)aKey
 {
-    if ([self cssPropertiesForKeyPath:aKey] !== nil)
+    // TODO: remove when supported.
+    if (aKey == @"CPAnimationTriggerOrderIn")
+    {
+        CPLog.warn("CPView animated key path CPAnimationTriggerOrderIn is not supported yet.");
+        return nil;
+    }
+
+    if ([self _cssPropertiesForKeyPath:aKey] !== nil)
         return [CAAnimation animation];
 
     return nil;

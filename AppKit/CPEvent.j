@@ -28,7 +28,6 @@
 
 @import "CPCompatibility.j"
 @import "CGGeometry.j"
-@import "CPText.j"
 @import "CPTrackingArea.j"
 
 @class CPTextField
@@ -36,6 +35,9 @@
 @class CPGraphicsContext
 
 @global CPApp
+@global CPNewlineCharacter
+@global CPCarriageReturnCharacter
+@global CPEnterCharacter
 
 @typedef DOMEvent
 @typedef CPEventType

@@ -136,6 +136,8 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 
 - (void)_insertTabViewItems:(CPArray)tabViewItems atIndexes:(CPIndexSet)indexes
 {
+    var prevItemsCount = [self numberOfTabViewItems];
+
     [_tabs insertSegments:tabViewItems atIndexes:indexes];
     [tabViewItems makeObjectsPerformSelector:@selector(_setTabView:) withObject:self];
 
@@ -143,6 +145,10 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
     [self _reverseSetContent];
 
     [self _sendDelegateTabViewDidChangeNumberOfTabViewItems];
+
+    // Do not allow empty selection if selection bindings are not enabled.
+    if (prevItemsCount == 0 && [self numberOfTabViewItems] > 0 && ![self _isSelectionBinded])
+        [self _selectTabViewItemAtIndex:0];
 }
 
 /*!
@@ -169,7 +175,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 - (void)_didRemoveTabViewItem:(CPTabViewItem)aTabViewItem atIndex:(CPInteger)idx
 {
     // If the selection is managed by bindings, let the binder do that.
-    if ([self binderForBinding:CPSelectionIndexesBinding] || [self binderForBinding:CPSelectedIndexBinding])
+    if ([self _isSelectionBinded])
         return;
 
     if (_selectedTabViewItem == aTabViewItem)
@@ -335,11 +341,38 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 
     [_tabs setSelectedSegment:anIndex];
     _selectedTabViewItem = aTabViewItem;
-    [self _displayItemView:[aTabViewItem view]];
+    [self _loadTabViewItem:aTabViewItem];
 
     [self _sendDelegateDidSelectTabViewItem:aTabViewItem];
 
     return YES;
+}
+
+- (void)_loadTabViewItem:(CPTabViewItem)aTabViewItem
+{
+    var controller = [aTabViewItem viewController];
+
+    if (controller !== nil && ![controller isViewLoaded])
+    {
+        [controller loadViewWithCompletionHandler:function(view, error)
+        {
+            if (error !== nil)
+            {
+                CPLog.warn("Could not load the view for item " + aTabViewItem + ". " + error);
+            }
+            else if (view !== nil)
+            {
+                [aTabViewItem setView:view];
+
+                if ([self selectedTabViewItem] == aTabViewItem)
+                    [self _displayItemView:view];
+            }
+        }];
+    }
+    else
+    {
+        [self _displayItemView:[aTabViewItem view]];
+    }
 }
 
 /*!
@@ -586,6 +619,11 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 {
     var cls = [[self class] _binderClassForBinding:aBinding]
     return [cls getBinding:aBinding forObject:self];
+}
+
+- (BOOL)_isSelectionBinded
+{
+    return [self binderForBinding:CPSelectionIndexesBinding] || [self binderForBinding:CPSelectedIndexBinding];
 }
 
 - (void)setItems:(CPArray)tabViewItems

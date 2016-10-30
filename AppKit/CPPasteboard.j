@@ -44,6 +44,7 @@ CPStringPboardType      = @"CPStringPboardType";
 CPURLPboardType         = @"CPURLPboardType";
 CPImagesPboardType      = @"CPImagesPboardType";
 CPVideosPboardType      = @"CPVideosPboardType";
+CPRTFPboardType         = @"CPRTFPboardType";
 
 UTF8PboardType          = @"public.utf8-plain-text";
 

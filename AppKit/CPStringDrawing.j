@@ -24,9 +24,13 @@
 
 @import "CGGeometry.j"
 @import "CPPlatformString.j"
+@import "CPFont.j"
+@import "CPCompatibility.j"
 
 
-var CPStringSizeWithFontInWidthCache = {};
+var CPStringSizeWithFontInWidthCache = [],
+    CPStringSizeWithFontHeightCache = [],
+    CPStringSizeMeasuringContext;
 
 CPStringSizeCachingEnabled = YES;
 
@@ -53,20 +57,57 @@ CPStringSizeCachingEnabled = YES;
     return [self sizeWithFont:aFont inWidth:NULL];
 }
 
++ (void) initialize
+{
+    if ([self class] != [CPString class])
+        return;
+
+#if PLATFORM(DOM)
+    if (CPFeatureIsCompatible(CPHTMLCanvasFeature) && !CPStringSizeMeasuringContext)
+        CPStringSizeMeasuringContext = CGBitmapGraphicsContextCreate();
+#endif
+}
+
 - (CGSize)sizeWithFont:(CPFont)aFont inWidth:(float)aWidth
 {
+    var size;
+
+#if PLATFORM(DOM)
     if (!CPStringSizeCachingEnabled)
         return [CPPlatformString sizeOfString:self withFont:aFont forWidth:aWidth];
 
-    var cacheKey = self + [aFont cssString] + aWidth,
-        size = CPStringSizeWithFontInWidthCache[cacheKey];
+    var sizeCacheForFont = CPStringSizeWithFontInWidthCache[self];
 
-    if (size === undefined)
-    {
+    if (sizeCacheForFont === undefined)
+        sizeCacheForFont = CPStringSizeWithFontInWidthCache[self] = [];
+
+    var cssString = [aFont cssString],
+        cacheKey = cssString + '_' + aWidth;
+
+    size = sizeCacheForFont[cacheKey];
+
+    if (size !== undefined && sizeCacheForFont.hasOwnProperty(cacheKey))
+        return CGSizeMakeCopy(size);
+
+    if (!CPFeatureIsCompatible(CPHTMLCanvasFeature) || aWidth > 0)
         size = [CPPlatformString sizeOfString:self withFont:aFont forWidth:aWidth];
-        CPStringSizeWithFontInWidthCache[cacheKey] = size;
+    else
+    {
+        if (CPPlatformHasBug(CPTextSizingAlwaysNeedsSetFontBug) || CPStringSizeMeasuringContext.font !== cssString)
+            CPStringSizeMeasuringContext.font = cssString;
+
+        var fontHeight = CPStringSizeWithFontHeightCache[cssString];
+
+        if (fontHeight === undefined)
+            fontHeight = CPStringSizeWithFontHeightCache[cssString] = [aFont defaultLineHeightForFont];
+
+        size = CGSizeMake(CPStringSizeMeasuringContext.measureText(self).width, fontHeight);
     }
 
+    sizeCacheForFont[cacheKey] = size;
+#else
+        size = CGSizeMake(0, 0);
+#endif
     return CGSizeMakeCopy(size);
 }
 

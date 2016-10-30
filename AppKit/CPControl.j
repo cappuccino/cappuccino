@@ -25,7 +25,7 @@
 
 @import "CPFont.j"
 @import "CPShadow.j"
-@import "CPView.j"
+@import "CPText.j"
 @import "CPKeyValueBinding.j"
 @import "CPTrackingArea.j"
 
@@ -169,7 +169,7 @@ var CPControlBlackColor = [CPColor blackColor];
 }
 
 /*!
-    Reverse set the binding iff the CPContinuouslyUpdatesValueBindingOption is set.
+    Reverse set the binding if the CPContinuouslyUpdatesValueBindingOption is set.
 */
 - (void)_continuouslyReverseSetBinding
 {

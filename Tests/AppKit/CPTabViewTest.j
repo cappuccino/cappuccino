@@ -138,4 +138,16 @@
     [self assert:[_tabView selectedTabViewItem] equals:_tabItem2];
 }
 
+- (void)testTabViewItemSelectionNotEmpty
+{
+    // after insertion from empty and no explicit selection.
+    [self assert:[_tabView numberOfTabViewItems] equals:2];
+    [self assert:[_tabView selectedTabViewItem] equals:_tabItem1];
+
+    // Removes selected Item.
+    [_tabView removeTabViewItem:_tabItem1];
+    [self assert:[_tabView numberOfTabViewItems] equals:1];
+    [self assert:[_tabView selectedTabViewItem] equals:_tabItem2];
+}
+
 @end

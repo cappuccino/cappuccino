@@ -64,7 +64,7 @@ var CPCacheDelegate_cache_willEvictObject_ = 1 << 1;
 {
     CPDictionary            _items;
     int                     _currentPosition;
-    BOOL                    _totalCostCache;
+    int                     _totalCostCache;
     unsigned                _implementedDelegateMethods;
 
     CPString                _name               @accessors(property=name);
