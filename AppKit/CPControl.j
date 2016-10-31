@@ -169,7 +169,7 @@ var CPControlBlackColor = [CPColor blackColor];
 }
 
 /*!
-    Reverse set the binding iff the CPContinuouslyUpdatesValueBindingOption is set.
+    Reverse set the binding if the CPContinuouslyUpdatesValueBindingOption is set.
 */
 - (void)_continuouslyReverseSetBinding
 {
