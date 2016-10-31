@@ -71,9 +71,8 @@
         }
 
         _title         = [[aCoder decodeObjectForKey:@"NSTitleCell"] objectValue] || @"";
-        _titlePosition = [aCoder decodeObjectForKey:@"NSTitlePosition"];
 
-        if (_titlePosition === undefined)
+        if (_titlePosition === undefined && _boxType !== CPBoxSeparator)
             _titlePosition = CPAtTop;
     }
 
