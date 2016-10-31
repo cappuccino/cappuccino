@@ -1,9 +1,20 @@
 
 @import "_CPObjectAnimator.j"
 @import "CPView.j"
+@import "CPCompatibility.j"
 
 @implementation CPViewAnimator : _CPObjectAnimator
 {
+    BOOL    wantPeriodicFrameUpdates    @accessors;
+}
+
+- (id)initWithTarget:(id)aTarget
+{
+    self = [super initWithTarget:aTarget];
+
+    wantPeriodicFrameUpdates = ([aTarget hasCustomDrawRect] || [aTarget hasCustomLayoutSubviews]);
+
+    return self;
 }
 
 - (void)removeFromSuperview
@@ -76,34 +87,42 @@
 
 @end
 
-var transformOrigin = function(start, current)
+var CSSStringFromCGAffineTransform = function(anAffineTransform)
 {
-    return "translate(" + (current.x - start.x) + "px," + (current.y - start.y) + "px)";
+    // Firefox : add px to the translate values.
+    if (CPBrowserIsEngine(CPGeckoBrowserEngine))
+        return "matrix(" + anAffineTransform.a + ", " + anAffineTransform.b + ", " + anAffineTransform.c + ", " + anAffineTransform.d + ", " + anAffineTransform.tx + "px, " + anAffineTransform.ty + "px)";
+    else
+        return "matrix(" + anAffineTransform.a + ", " + anAffineTransform.b + ", " + anAffineTransform.c + ", " + anAffineTransform.d + ", " + anAffineTransform.tx + ", " + anAffineTransform.ty + ")";
 };
 
-var transformFrameToTranslate = function(start, current)
+var frameOriginToCSSTransformMatrix = function(start, current)
 {
-    return transformOrigin(start.origin, current.origin);
+    var affine = CGAffineTransformMakeTranslation(current.x - start.x, current.y - start.y);
+
+    return CSSStringFromCGAffineTransform(affine);
 };
 
-var transformFrameToWidth = function(start, current)
+var frameSizeToCSSTransformMatrix = function(start, current)
 {
-    return current.size.width + "px";
+    // !! Zero start size
+    var offsetX = (current.width - start.width) / 2,
+        offsetY = (current.height - start.height) / 2;
+
+    var affine = CGAffineTransformMake(current.width / start.width, 0, 0, current.height / start.height, offsetX, offsetY);
+
+    return CSSStringFromCGAffineTransform(affine);
 };
 
-var transformFrameToHeight = function(start, current)
+var frameToCSSTransformMatrix = function(start, current)
 {
-    return current.size.height + "px";
-};
+    // !! Zero start size
+    var offsetX = (current.size.width  - start.size.width)  / 2,
+        offsetY = (current.size.height - start.size.height) / 2;
 
-var transformSizeToWidth = function(start, current)
-{
-    return current.width + "px";
-};
+    var affine = CGAffineTransformMake(current.size.width / start.size.width, 0, 0, current.size.height / start.size.height, current.origin.x - start.origin.x + offsetX, current.origin.y - start.origin.y + offsetY);
 
-var transformSizeToHeight = function(start, current)
-{
-    return current.height + "px";
+    return CSSStringFromCGAffineTransform(affine);
 };
 
 var DEFAULT_CSS_PROPERTIES = nil;
@@ -117,15 +136,12 @@ var DEFAULT_CSS_PROPERTIES = nil;
         var transformProperty = CPBrowserCSSProperty("transform");
 
         DEFAULT_CSS_PROPERTIES =  @{
-            "backgroundColor"  : [@{"property":"background", "value":function(sv, val){return [val cssString];}}],
-            "alphaValue"       : [@{"property":"opacity"}],
-            "frame"            : [@{"property":transformProperty, "value":transformFrameToTranslate},
-                                  @{"property":"width", "value":transformFrameToWidth},
-                                  @{"property":"height", "value":transformFrameToHeight}],
-            "frameOrigin"      : [@{"property":transformProperty, "value":transformOrigin}],
-            "frameSize"        : [@{"property":"width", "value":transformSizeToWidth},
-                                  @{"property":"height", "value":transformSizeToHeight}]
-        };
+                                    "backgroundColor"  : [@{"property":"background", "value":function(sv, val){return [val cssString];}}],
+                                    "alphaValue"       : [@{"property":"opacity"}],
+                                    "frame"            : [@{"property":transformProperty, "value":frameToCSSTransformMatrix}],
+                                    "frameOrigin"      : [@{"property":transformProperty, "value":frameOriginToCSSTransformMatrix}],
+                                    "frameSize"        : [@{"property":transformProperty, "value":frameSizeToCSSTransformMatrix}]
+                                    };
     }
 
     return DEFAULT_CSS_PROPERTIES;
