@@ -165,7 +165,7 @@ ConverterConversionException = @"ConverterConversionException";
         if (system.engine === "rhino")
             plistContents = String(java.lang.String(plistContents).replaceAll("\\<key\\>\\s*CF\\$UID\\s*\\<\/key\\>", "<key>CP\\$UID</key>"));
         else
-            plistContents = plistContents.replace(/\<key\>\s*CF\$UID\s*\<\/key\>/g, "<key>CP$UID</key>");
+            plistContents = plistContents.replace("/\<key\>\s*CF\$UID\s*\<\/key\>/g", "<key>CP$UID</key>");
 
         plistContents = plistContents.replace(/<string>[\u0000-\u0008\u000B\u000C\u000E-\u001F]<\/string>/g, function(c)
         {
