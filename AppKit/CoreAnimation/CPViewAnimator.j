@@ -5,14 +5,14 @@
 
 @implementation CPViewAnimator : _CPObjectAnimator
 {
-    BOOL    wantPeriodicFrameUpdates    @accessors;
+    BOOL    _wantPeriodicFrameUpdates   @accessors(property=wantPeriodicFrameUpdates);
 }
 
 - (id)initWithTarget:(id)aTarget
 {
     self = [super initWithTarget:aTarget];
 
-    wantPeriodicFrameUpdates = ([aTarget hasCustomDrawRect] || [aTarget hasCustomLayoutSubviews]);
+    _wantPeriodicFrameUpdates = ([aTarget hasCustomDrawRect] || [aTarget hasCustomLayoutSubviews]);
 
     return self;
 }
@@ -89,11 +89,7 @@
 
 var CSSStringFromCGAffineTransform = function(anAffineTransform)
 {
-    // Firefox : add px to the translate values.
-    if (CPBrowserIsEngine(CPGeckoBrowserEngine))
-        return "matrix(" + anAffineTransform.a + ", " + anAffineTransform.b + ", " + anAffineTransform.c + ", " + anAffineTransform.d + ", " + anAffineTransform.tx + "px, " + anAffineTransform.ty + "px)";
-    else
-        return "matrix(" + anAffineTransform.a + ", " + anAffineTransform.b + ", " + anAffineTransform.c + ", " + anAffineTransform.d + ", " + anAffineTransform.tx + ", " + anAffineTransform.ty + ")";
+    return "matrix(" + anAffineTransform.a + ", " + anAffineTransform.b + ", " + anAffineTransform.c + ", " + anAffineTransform.d + ", " + anAffineTransform.tx + (CPBrowserIsEngine(CPGeckoBrowserEngine) ? "px, " : ", ") + anAffineTransform.ty + (CPBrowserIsEngine(CPGeckoBrowserEngine) ? "px)" : ")");
 };
 
 var frameOriginToCSSTransformMatrix = function(start, current)

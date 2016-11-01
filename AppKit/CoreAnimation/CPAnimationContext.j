@@ -152,28 +152,28 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
 
     duration = [animation duration] || [self duration];
 
-    var needsFrameTimer = (aKeyPath === @"frame" || aKeyPath === @"frameSize" || aKeyPath === @"frameOrigin") &&
-                          [[anObject animator] wantPeriodicFrameUpdates] &&
-                          (objectId = [anObject UID]);
+    var needsPeriodicFrameUpdates = (aKeyPath === @"frame" || aKeyPath === @"frameSize" || aKeyPath === @"frameOrigin") &&
+                                    [[anObject animator] wantPeriodicFrameUpdates] &&
+                                    (objectId = [anObject UID]);
 
     if (_completionHandlerAgent)
         _completionHandlerAgent.increment();
 
     var completionFunction = function()
     {
-        if (needsFrameTimer)
+        if (needsPeriodicFrameUpdates)
         {
             [self stopFrameUpdaterWithIdentifier:objectId];
-            [anObject _setForceDOMUpdates:YES];
+            [anObject _setForceUpdates:YES];
         }
 
         if (animationCompletion)
             animationCompletion();
 
-        if (needsFrameTimer || animationCompletion)
+        if (needsPeriodicFrameUpdates || animationCompletion)
             [[CPRunLoop currentRunLoop] performSelectors];
 
-        [anObject _setForceDOMUpdates:NO];
+        [anObject _setForceUpdates:NO];
 
         if (_completionHandlerAgent)
             _completionHandlerAgent.decrement();
@@ -267,9 +267,9 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
 
 - (void)getAnimations:(CPArray)cssAnimations getTimers:(CPArray)timers forView:(CPView)aTargetView usingAction:(Object)anAction rootView:(CPView)rootView cssAnimate:(BOOL)needsCSSAnimation
 {
-    var keyPath = anAction.keypath,
-        isFrameKeyPath  = (keyPath === @"frame" || keyPath === @"frameSize" || keyPath === @"frameOrigin"),
-        needsFrameTimer = isFrameKeyPath && [[aTargetView animator] wantPeriodicFrameUpdates];
+    var keyPath                   = anAction.keypath,
+        isFrameKeyPath            = (keyPath === @"frame" || keyPath === @"frameSize" || keyPath === @"frameOrigin"),
+        needsPeriodicFrameUpdates = isFrameKeyPath && [[aTargetView animator] wantPeriodicFrameUpdates];
 
     if (needsCSSAnimation)
     {
@@ -308,7 +308,7 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
         }];
     }
 
-    if (needsFrameTimer)
+    if (needsPeriodicFrameUpdates)
     {
         var timer = [self addFrameUpdaterWithIdentifier:[rootView UID] forView:aTargetView keyPath:keyPath duration:anAction.duration];
 
