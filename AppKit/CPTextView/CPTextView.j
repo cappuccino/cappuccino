@@ -1848,18 +1848,18 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 + (JSObject)_wordBoundaryRegex
 {
-    return new RegExp("/(^[0-9][\.,])|(^.[^-\.,+#'\"!§$%&/\(<\[\]>\)=?`´*\s{}\|¶])/m");
+    return new RegExp("(^[0-9][\\.,])|(^.[^-\\.,+#'\\\"!§$%&/\\(<\\[\\]>\\)=?`´*\\s{}\\|¶])", "m");
 }
 
 + (JSObject)_paragraphBoundaryRegex
 {
-    return new RegExp("/^.[^\n\r]/m");
+    return new RegExp(/^.[^\n\r]/m);
 }
 
 + (JSObject)_whitespaceRegex
 {
     // do not include \n here or we will get cross paragraph selections
-    return new RegExp("/^.[ \t]+/m");
+    return new RegExp(/^.[ \t]+/m);
 }
 
 - (CPRange)_characterRangeForIndex:(unsigned)index asDefinedByRegex:(JSObject)regex

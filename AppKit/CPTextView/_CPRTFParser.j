@@ -350,7 +350,7 @@ var kRgsymRtf = {
 
             var hex = '';
 
-            while (new RegExp("/[a-fA-F0-9\']/").test(ch))
+            while (new RegExp("[a-fA-F0-9\\']").test(ch))
             {
                 if (ch == "'")
                 {
@@ -377,7 +377,7 @@ var kRgsymRtf = {
 
              var code = '';
 
-             while (new RegExp("/[0-9]/").test(ch))
+             while (new RegExp("[0-9]").test(ch))
              {
                  code += (ch + '');
                  ch = _rtf.charAt(++_currentParseIndex);
@@ -621,7 +621,7 @@ var kRgsymRtf = {
     if (!/[a-zA-Z]/.test(ch))
         return [self _translateKeyword:ch parameter:nil fParameter:fParam];
 
-    while (new RegExp("/[a-zA-Z]/").test(ch))
+    while (new RegExp("[a-zA-Z]").test(ch))
     {
         keyword += ch;
         ch = rtf.charAt(++_currentParseIndex);
@@ -635,7 +635,7 @@ var kRgsymRtf = {
 
     fParam = true;
 
-    while (new RegExp("/[0-9]/").test(ch))
+    while (new RegExp("[0-9]").test(ch))
     {
         param += (ch + '');
         ch = rtf.charAt(++_currentParseIndex);
