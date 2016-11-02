@@ -5,14 +5,14 @@
 
 @implementation CPViewAnimator : _CPObjectAnimator
 {
-    BOOL    _wantPeriodicFrameUpdates   @accessors(property=wantPeriodicFrameUpdates);
+    BOOL    _wantsPeriodicFrameUpdates  @accessors(property=wantsPeriodicFrameUpdates);
 }
 
 - (id)initWithTarget:(id)aTarget
 {
     self = [super initWithTarget:aTarget];
 
-    _wantPeriodicFrameUpdates = ([aTarget hasCustomDrawRect] || [aTarget hasCustomLayoutSubviews]);
+    _wantsPeriodicFrameUpdates = ([aTarget hasCustomDrawRect] || [aTarget hasCustomLayoutSubviews]);
 
     return self;
 }
@@ -87,6 +87,26 @@
 
 @end
 
+var transformFrameToWidth = function(start, current)
+{
+    return current.size.width + "px";
+};
+
+var transformFrameToHeight = function(start, current)
+{
+    return current.size.height + "px";
+};
+
+var transformSizeToWidth = function(start, current)
+{
+    return current.width + "px";
+};
+
+var transformSizeToHeight = function(start, current)
+{
+    return current.height + "px";
+};
+
 var CSSStringFromCGAffineTransform = function(anAffineTransform)
 {
     return "matrix(" + anAffineTransform.a + ", " + anAffineTransform.b + ", " + anAffineTransform.c + ", " + anAffineTransform.d + ", " + anAffineTransform.tx + (CPBrowserIsEngine(CPGeckoBrowserEngine) ? "px, " : ", ") + anAffineTransform.ty + (CPBrowserIsEngine(CPGeckoBrowserEngine) ? "px)" : ")");
@@ -99,24 +119,9 @@ var frameOriginToCSSTransformMatrix = function(start, current)
     return CSSStringFromCGAffineTransform(affine);
 };
 
-var frameSizeToCSSTransformMatrix = function(start, current)
+var frameToCSSTranslationTransformMatrix = function(start, current)
 {
-    // !! Zero start size
-    var offsetX = (current.width - start.width) / 2,
-        offsetY = (current.height - start.height) / 2;
-
-    var affine = CGAffineTransformMake(current.width / start.width, 0, 0, current.height / start.height, offsetX, offsetY);
-
-    return CSSStringFromCGAffineTransform(affine);
-};
-
-var frameToCSSTransformMatrix = function(start, current)
-{
-    // !! Zero start size
-    var offsetX = (current.size.width  - start.size.width)  / 2,
-        offsetY = (current.size.height - start.size.height) / 2;
-
-    var affine = CGAffineTransformMake(current.size.width / start.size.width, 0, 0, current.size.height / start.size.height, current.origin.x - start.origin.x + offsetX, current.origin.y - start.origin.y + offsetY);
+    var affine = CGAffineTransformMakeTranslation(current.origin.x - start.origin.x, current.origin.y - start.origin.y);
 
     return CSSStringFromCGAffineTransform(affine);
 };
@@ -134,9 +139,12 @@ var DEFAULT_CSS_PROPERTIES = nil;
         DEFAULT_CSS_PROPERTIES =  @{
                                     "backgroundColor"  : [@{"property":"background", "value":function(sv, val){return [val cssString];}}],
                                     "alphaValue"       : [@{"property":"opacity"}],
-                                    "frame"            : [@{"property":transformProperty, "value":frameToCSSTransformMatrix}],
+                                    "frame"            : [@{"property":transformProperty, "value":frameToCSSTranslationTransformMatrix},
+                                                          @{"property":"width", "value":transformFrameToWidth},
+                                                          @{"property":"height", "value":transformFrameToHeight}],
                                     "frameOrigin"      : [@{"property":transformProperty, "value":frameOriginToCSSTransformMatrix}],
-                                    "frameSize"        : [@{"property":transformProperty, "value":frameSizeToCSSTransformMatrix}]
+                                    "frameSize"        : [@{"property":"width", "value":transformSizeToWidth},
+                                                          @{"property":"height", "value":transformSizeToHeight}]
                                     };
     }
 
