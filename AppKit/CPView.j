@@ -1145,113 +1145,110 @@ var CPViewHighDPIDrawingEnabled = YES;
     [self setNeedsDisplay:YES];
 
 #if PLATFORM(DOM)
-    if (!_inhibitDOMUpdates)
+    [self _setDisplayServerSetStyleSize:size];
+
+    if (_backgroundType !== BackgroundTrivialColor)
     {
-        [self _setDisplayServerSetStyleSize:size];
-
-        if (_backgroundType !== BackgroundTrivialColor)
+        if (_backgroundType === BackgroundTransparentColor)
         {
-            if (_backgroundType === BackgroundTransparentColor)
+            CPDOMDisplayServerSetStyleSize(_DOMImageParts[0], size.width, size.height);
+        }
+        else
+        {
+            var images = [[_backgroundColor patternImage] imageSlices],
+                partIndex = 0,
+                frameSize = aSize;
+
+            if (_backgroundType === BackgroundVerticalThreePartImage)
             {
-                CPDOMDisplayServerSetStyleSize(_DOMImageParts[0], size.width, size.height);
+                var top = _DOMImageSizes[0] ? _DOMImageSizes[0].height : 0,
+                    bottom = _DOMImageSizes[2] ? _DOMImageSizes[2].height : 0;
+
+                // Make sure to repeat the top and bottom pieces horizontally if they're not the exact width needed.
+                if (top)
+                {
+                    CPDOMDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], frameSize.width + "px", top + "px");
+                    CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], size.width, top);
+                    partIndex++;
+                }
+                if (_DOMImageSizes[1])
+                {
+                    var height = frameSize.height - top - bottom;
+
+                    CPDOMDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], frameSize.width + "px", height + "px");
+                    CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], size.width, size.height - top - bottom);
+                    partIndex++;
+                }
+                if (bottom)
+                {
+                    CPDOMDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], frameSize.width + "px", bottom + "px");
+                    CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], size.width, bottom);
+                }
             }
-            else
+            else if (_backgroundType === BackgroundHorizontalThreePartImage)
             {
-                var images = [[_backgroundColor patternImage] imageSlices],
-                    partIndex = 0,
-                    frameSize = aSize;
+                var left = _DOMImageSizes[0] ? _DOMImageSizes[0].width : 0,
+                    right = _DOMImageSizes[2] ? _DOMImageSizes[2].width : 0;
 
-                if (_backgroundType === BackgroundVerticalThreePartImage)
+                // Make sure to repeat the left and right pieces vertically if they're not the exact height needed.
+                if (left)
                 {
-                    var top = _DOMImageSizes[0] ? _DOMImageSizes[0].height : 0,
-                        bottom = _DOMImageSizes[2] ? _DOMImageSizes[2].height : 0;
-
-                    // Make sure to repeat the top and bottom pieces horizontally if they're not the exact width needed.
-                    if (top)
-                    {
-                        CPDOMDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], frameSize.width + "px", top + "px");
-                        CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], size.width, top);
-                        partIndex++;
-                    }
-                    if (_DOMImageSizes[1])
-                    {
-                        var height = frameSize.height - top - bottom;
-
-                        CPDOMDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], frameSize.width + "px", height + "px");
-                        CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], size.width, size.height - top - bottom);
-                        partIndex++;
-                    }
-                    if (bottom)
-                    {
-                        CPDOMDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], frameSize.width + "px", bottom + "px");
-                        CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], size.width, bottom);
-                    }
+                    CPDOMDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], left + "px", frameSize.height + "px");
+                    CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], left, size.height);
+                    partIndex++;
                 }
-                else if (_backgroundType === BackgroundHorizontalThreePartImage)
+                if (_DOMImageSizes[1])
                 {
-                    var left = _DOMImageSizes[0] ? _DOMImageSizes[0].width : 0,
-                        right = _DOMImageSizes[2] ? _DOMImageSizes[2].width : 0;
+                    var width = (frameSize.width - left - right);
 
-                    // Make sure to repeat the left and right pieces vertically if they're not the exact height needed.
-                    if (left)
-                    {
-                        CPDOMDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], left + "px", frameSize.height + "px");
-                        CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], left, size.height);
-                        partIndex++;
-                    }
-                    if (_DOMImageSizes[1])
-                    {
-                        var width = (frameSize.width - left - right);
-
-                        CPDOMDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], width + "px", frameSize.height + "px");
-                        CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], size.width - left - right, size.height);
-                        partIndex++;
-                    }
-                    if (right)
-                    {
-                        CPDOMDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], right + "px", frameSize.height + "px");
-                        CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], right, size.height);
-                    }
+                    CPDOMDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], width + "px", frameSize.height + "px");
+                    CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], size.width - left - right, size.height);
+                    partIndex++;
                 }
-                else if (_backgroundType === BackgroundNinePartImage)
+                if (right)
                 {
-                    var left = _DOMImageSizes[0] ? _DOMImageSizes[0].width : 0,
-                        right = _DOMImageSizes[2] ? _DOMImageSizes[2].width : 0,
-                        top = _DOMImageSizes[0] ? _DOMImageSizes[0].height : 0,
-                        bottom = _DOMImageSizes[6] ? _DOMImageSizes[6].height : 0,
-                        width = size.width - left - right,
-                        height = size.height - top - bottom;
+                    CPDOMDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], right + "px", frameSize.height + "px");
+                    CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], right, size.height);
+                }
+            }
+            else if (_backgroundType === BackgroundNinePartImage)
+            {
+                var left = _DOMImageSizes[0] ? _DOMImageSizes[0].width : 0,
+                    right = _DOMImageSizes[2] ? _DOMImageSizes[2].width : 0,
+                    top = _DOMImageSizes[0] ? _DOMImageSizes[0].height : 0,
+                    bottom = _DOMImageSizes[6] ? _DOMImageSizes[6].height : 0,
+                    width = size.width - left - right,
+                    height = size.height - top - bottom;
 
-                    if (_DOMImageSizes[0])
-                        partIndex++;
-                    if (_DOMImageSizes[1])
-                    {
-                        CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], width, top);
-                        partIndex++;
-                    }
-                    if (_DOMImageSizes[2])
-                        partIndex++;
-                    if (_DOMImageSizes[3])
-                    {
-                        CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], _DOMImageSizes[3].width, height);
-                        partIndex++;
-                    }
-                    if (_DOMImageSizes[4])
-                    {
-                        CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], width, height);
-                        partIndex++;
-                    }
-                    if (_DOMImageSizes[5])
-                    {
-                        CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], _DOMImageSizes[5].width, height);
-                        partIndex++;
-                    }
-                    if (_DOMImageSizes[6])
-                        partIndex++;
-                    if (_DOMImageSizes[7])
-                    {
-                        CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], width, _DOMImageSizes[7].height);
-                    }
+                if (_DOMImageSizes[0])
+                    partIndex++;
+                if (_DOMImageSizes[1])
+                {
+                    CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], width, top);
+                    partIndex++;
+                }
+                if (_DOMImageSizes[2])
+                    partIndex++;
+                if (_DOMImageSizes[3])
+                {
+                    CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], _DOMImageSizes[3].width, height);
+                    partIndex++;
+                }
+                if (_DOMImageSizes[4])
+                {
+                    CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], width, height);
+                    partIndex++;
+                }
+                if (_DOMImageSizes[5])
+                {
+                    CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], _DOMImageSizes[5].width, height);
+                    partIndex++;
+                }
+                if (_DOMImageSizes[6])
+                    partIndex++;
+                if (_DOMImageSizes[7])
+                {
+                    CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], width, _DOMImageSizes[7].height);
                 }
             }
         }

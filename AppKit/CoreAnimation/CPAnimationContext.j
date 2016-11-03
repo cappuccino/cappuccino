@@ -606,14 +606,14 @@ var createUpdateFrame = function(aView, aKeyPath)
         var width  = getCSSPropertyValue("width"),
             height = getCSSPropertyValue("height");
 
-        [aView _setInhibitDOMUpdates:YES];
-
         if (aKeyPath === "frameSize")
         {
             [aView setFrameSize:CGSizeMake(width, height)];
         }
         else
         {
+            [aView _setInhibitDOMUpdates:YES];
+            
             var matrix = style[transformProperty].split('(')[1].split(')')[0].split(','),
                 x      = ROUND(initialOrigin.x + parseFloat(matrix[4])),
                 y      = ROUND(initialOrigin.y + parseFloat(matrix[5]));
@@ -626,9 +626,9 @@ var createUpdateFrame = function(aView, aKeyPath)
             {
                 [aView setFrameOrigin:CGPointMake(x, y)];
             }
-        }
 
-        [aView _setInhibitDOMUpdates:NO];
+            [aView _setInhibitDOMUpdates:NO];
+        }
 
         [[CPRunLoop currentRunLoop] performSelectors];
     };
