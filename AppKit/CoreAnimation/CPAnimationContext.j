@@ -603,25 +603,29 @@ var createUpdateFrame = function(aView, aKeyPath)
         transformProperty = CPBrowserCSSProperty("transform"),
         updateFrame       = function(timestamp)
     {
-        var matrix = style[transformProperty].split('(')[1].split(')')[0].split(','),
-            width  = getCSSPropertyValue("width"),
-            height = getCSSPropertyValue("height"),
-            x      = ROUND(initialOrigin.x + parseFloat(matrix[4])),
-            y      = ROUND(initialOrigin.y + parseFloat(matrix[5]));
+        var width  = getCSSPropertyValue("width"),
+            height = getCSSPropertyValue("height");
 
         [aView _setInhibitDOMUpdates:YES];
 
-        if (aKeyPath === "frame")
-        {
-            [aView setFrame:CGRectMake(x, y, width, height)];
-        }
-        else if (aKeyPath === "frameSize")
+        if (aKeyPath === "frameSize")
         {
             [aView setFrameSize:CGSizeMake(width, height)];
         }
         else
         {
-            [aView setFrameOrigin:CGPointMake(x, y)];
+            var matrix = style[transformProperty].split('(')[1].split(')')[0].split(','),
+                x      = ROUND(initialOrigin.x + parseFloat(matrix[4])),
+                y      = ROUND(initialOrigin.y + parseFloat(matrix[5]));
+
+            if (aKeyPath === "frame")
+            {
+                [aView setFrame:CGRectMake(x, y, width, height)];
+            }
+            else
+            {
+                [aView setFrameOrigin:CGPointMake(x, y)];
+            }
         }
 
         [aView _setInhibitDOMUpdates:NO];
