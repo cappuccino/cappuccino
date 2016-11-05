@@ -406,6 +406,9 @@ var CPViewHighDPIDrawingEnabled = YES;
 
         [self _setupViewFlags];
         [self _loadThemeAttributes];
+
+        _inhibitDOMUpdates = NO;
+        _forceUpdates = NO;
     }
 
     return self;
@@ -1086,7 +1089,7 @@ var CPViewHighDPIDrawingEnabled = YES;
 {
     var origin = _frame.origin;
 
-    if ((!aPoint || CGPointEqualToPoint(origin, aPoint)) && !_forceUpdates)
+    if (!aPoint || (CGPointEqualToPoint(origin, aPoint) && !_forceUpdates))
         return;
 
     origin.x = aPoint.x;
@@ -1121,7 +1124,7 @@ var CPViewHighDPIDrawingEnabled = YES;
 {
     var size = _frame.size;
 
-    if ((!aSize || CGSizeEqualToSize(size, aSize)) && !_forceUpdates)
+    if (!aSize || (CGSizeEqualToSize(size, aSize) && !_forceUpdates))
         return;
 
     var oldSize = CGSizeMakeCopy(size);

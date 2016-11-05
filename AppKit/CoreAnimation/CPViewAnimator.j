@@ -12,7 +12,7 @@
 {
     self = [super initWithTarget:aTarget];
 
-    _wantsPeriodicFrameUpdates = ([aTarget hasCustomDrawRect] || [aTarget hasCustomLayoutSubviews]);
+    _wantsPeriodicFrameUpdates = NO;
 
     return self;
 }
