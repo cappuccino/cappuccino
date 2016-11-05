@@ -152,9 +152,8 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
 
     duration = [animation duration] || [self duration];
 
-    var needsPeriodicFrameUpdates = (((aKeyPath == @"frame" || aKeyPath == @"frameSize") &&
-                                    ([anObject hasCustomLayoutSubviews] || [anObject hasCustomDrawRect])) || [[anObject animator] wantsPeriodicFrameUpdates]) &&
-                                    (objectId = [anObject UID]);
+    var needsPeriodicFrameUpdates = ((aKeyPath === @"frame" || aKeyPath === @"frameSize" || [[anObject animator] wantsPeriodicFrameUpdates]) &&
+                                     (objectId = [anObject UID]));
 
     if (_completionHandlerAgent)
         _completionHandlerAgent.increment();
@@ -272,9 +271,7 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
 {
     var keyPath = anAction.keypath,
         isFrameKeyPath = (keyPath == @"frame" || keyPath == @"frameSize"),
-        customLayout = [aTargetView hasCustomLayoutSubviews],
-        customDrawing = [aTargetView hasCustomDrawRect],
-        needsPeriodicFrameUpdates = ((isFrameKeyPath && (customLayout || customDrawing)) || [[aTargetView animator] wantsPeriodicFrameUpdates]);
+        needsPeriodicFrameUpdates = (isFrameKeyPath || [[aTargetView animator] wantsPeriodicFrameUpdates]);
 
     if (needsCSSAnimation)
     {
@@ -320,61 +317,6 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
         if (timer)
             timers.push(timer);
     }
-
-    var subviews = [aTargetView subviews],
-        count = [subviews count],
-        customLayout = [aTargetView hasCustomLayoutSubviews];
-
-    if (count && isFrameKeyPath)
-    {
-        var frameTimerId = [rootView UID],
-        lastIndex = count - 1;
-
-        [subviews enumerateObjectsUsingBlock:function(aSubview, idx, stop)
-         {
-             var action = [self actionFromAction:anAction forAnimatedSubview:aSubview],
-                targetFrame = [action.values lastObject];
-
-             if (CGRectEqualToRect([aSubview frame], targetFrame))
-                 return;
-
-             if ([aSubview hasCustomDrawRect])
-             {
-                 action.completion = function()
-                 {
-                     [aSubview setFrame:targetFrame];
-                     CPLog.debug(aSubview + " setFrame: ");
-
-                     if (idx == lastIndex)
-                         [self stopFrameUpdaterWithIdentifier:frameTimerId];
-                 };
-             }
-
-             [self getAnimations:cssAnimations getTimers:timers forView:aSubview usingAction:action rootView:rootView cssAnimate:!customLayout];
-         }];
-    }
-}
-
-- (Object)actionFromAction:(Object)anAction forAnimatedSubview:(CPView)aView
-{
-    var targetValue = [anAction.values lastObject],
-        endFrame,
-        values;
-
-    if (anAction.keypath == @"frame")
-        targetValue = targetValue.size;
-
-    endFrame = [aView frameWithNewSuperviewSize:targetValue];
-    values = [[aView frame], endFrame];
-
-    return {
-                object:aView,
-                keypath:"frame",
-                values:values,
-                keytimes:[0, 1],
-                duration:anAction.duration,
-                timingfunctions:anAction.timingFunctions
-            };
 }
 
 - (Function)addFrameUpdaterWithIdentifier:(CPString)anIdentifier forView:(CPView)aView keyPath:(CPString)aKeyPath duration:(float)aDuration
@@ -426,41 +368,6 @@ CPLog.debug(_cmd + "context stack =" + _CPAnimationContextStack);
 @end
 
 @implementation CPView (CPAnimationContext)
-
-- (CGRect)frameWithNewSuperviewSize:(CGSize)newSize
-{
-    var mask = [self autoresizingMask];
-
-    
-    if (mask == CPViewNotSizable)
-        return _frame;
-
-    var oldSize = _superview._frame.size,
-        newFrame = CGRectMakeCopy(_frame),
-        dX = newSize.width - oldSize.width,
-        dY = newSize.height - oldSize.height,
-        evenFractionX = 1.0 / ((mask & CPViewMinXMargin ? 1 : 0) + (mask & CPViewWidthSizable ? 1 : 0) + (mask & CPViewMaxXMargin ? 1 : 0)),
-        evenFractionY = 1.0 / ((mask & CPViewMinYMargin ? 1 : 0) + (mask & CPViewHeightSizable ? 1 : 0) + (mask & CPViewMaxYMargin ? 1 : 0)),
-        baseX = (mask & CPViewMinXMargin    ? _frame.origin.x : 0) +
-                (mask & CPViewWidthSizable  ? _frame.size.width : 0) +
-                (mask & CPViewMaxXMargin    ? oldSize.width - _frame.size.width - _frame.origin.x : 0),
-        baseY = (mask & CPViewMinYMargin    ? _frame.origin.y : 0) +
-                (mask & CPViewHeightSizable ? _frame.size.height : 0) +
-                (mask & CPViewMaxYMargin    ? oldSize.height - _frame.size.height - _frame.origin.y : 0);
-
-
-    if (mask & CPViewMinXMargin)
-        newFrame.origin.x += dX * (baseX > 0 ? _frame.origin.x / baseX : evenFractionX);
-    if (mask & CPViewWidthSizable)
-        newFrame.size.width += dX * (baseX > 0 ? _frame.size.width / baseX : evenFractionX);
-
-    if (mask & CPViewMinYMargin)
-        newFrame.origin.y += dY * (baseY > 0 ? _frame.origin.y / baseY : evenFractionY);
-    if (mask & CPViewHeightSizable)
-        newFrame.size.height += dY * (baseY > 0 ? _frame.size.height / baseY : evenFractionY);
-
-    return newFrame;
-}
 
 - (BOOL)hasCustomDrawRect
 {
