@@ -252,6 +252,8 @@ var CPViewHighDPIDrawingEnabled = YES;
 
     id                  _animator;
     CPDictionary        _animationsDictionary;
+    BOOL                _inhibitDOMUpdates      @accessors(setter=_setInhibitDOMUpdates);
+    BOOL                _forceUpdates           @accessors(setter=_setForceUpdates);
 }
 
 /*
@@ -404,6 +406,9 @@ var CPViewHighDPIDrawingEnabled = YES;
 
         [self _setupViewFlags];
         [self _loadThemeAttributes];
+
+        _inhibitDOMUpdates = NO;
+        _forceUpdates = NO;
     }
 
     return self;
@@ -1013,7 +1018,7 @@ var CPViewHighDPIDrawingEnabled = YES;
 */
 - (void)setFrame:(CGRect)aFrame
 {
-    if (CGRectEqualToRect(_frame, aFrame))
+    if (CGRectEqualToRect(_frame, aFrame) && !_forceUpdates)
         return;
 
     _inhibitFrameAndBoundsChangedNotifications = YES;
@@ -1084,7 +1089,7 @@ var CPViewHighDPIDrawingEnabled = YES;
 {
     var origin = _frame.origin;
 
-    if (!aPoint || CGPointEqualToPoint(origin, aPoint))
+    if (!aPoint || (CGPointEqualToPoint(origin, aPoint) && !_forceUpdates))
         return;
 
     origin.x = aPoint.x;
@@ -1097,9 +1102,12 @@ var CPViewHighDPIDrawingEnabled = YES;
         [[self superview] viewFrameChanged:[[CPNotification alloc] initWithName:CPViewFrameDidChangeNotification object:self userInfo:nil]];
 
 #if PLATFORM(DOM)
-    var transform = _superview ? _superview._boundsTransform : NULL;
+    if (!_inhibitDOMUpdates)
+    {
+        var transform = _superview ? _superview._boundsTransform : NULL;
 
-    CPDOMDisplayServerSetStyleLeftTop(_DOMElement, transform, origin.x, origin.y);
+        CPDOMDisplayServerSetStyleLeftTop(_DOMElement, transform, origin.x, origin.y);
+    }
 #endif
 
     if (!_inhibitUpdateTrackingAreas && !_inhibitFrameAndBoundsChangedNotifications)
@@ -1116,7 +1124,7 @@ var CPViewHighDPIDrawingEnabled = YES;
 {
     var size = _frame.size;
 
-    if (!aSize || CGSizeEqualToSize(size, aSize))
+    if (!aSize || (CGSizeEqualToSize(size, aSize) && !_forceUpdates))
         return;
 
     var oldSize = CGSizeMakeCopy(size);
