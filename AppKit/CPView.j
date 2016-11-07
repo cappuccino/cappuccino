@@ -1278,7 +1278,8 @@ var CPViewHighDPIDrawingEnabled = YES;
 #if PLATFORM(DOM)
     var scale = [self scaleSize];
 
-    CPDOMDisplayServerSetStyleSize(_DOMElement, aSize.width * 1 / scale.width, aSize.height * 1 / scale.height);
+    if (!_inhibitDOMUpdates)
+        CPDOMDisplayServerSetStyleSize(_DOMElement, aSize.width * 1 / scale.width, aSize.height * 1 / scale.height);
 
     if (_DOMContentsElement)
     {
