@@ -346,29 +346,14 @@ var _CPAnimationContextStack   = nil,
              if (CGRectEqualToRect([aSubview frame], targetFrame))
                  return;
 
-<<<<<<< HEAD
              if ([aSubview hasCustomDrawRect])
              {
                  action.completion = function()
                  {
                      [aSubview setFrame:targetFrame];
-                     CPLog.debug(aSubview + " setFrame: ");
-=======
-            if ([aSubview hasCustomDrawRect])
-            {
-                action.completion = function()
-                {
-                    [aSubview setFrame:targetFrame];
 #if (DEBUG)
                     CPLog.debug(aSubview + " setFrame: ");
 #endif
-
-                    if (idx == lastIndex)
-                        [self stopFrameUpdaterWithIdentifier:frameTimerId];
-                };
-            }
->>>>>>> aea4557... Style: print debug logs in debug mode only
-
                      if (idx == lastIndex)
                          [self stopFrameUpdaterWithIdentifier:frameTimerId];
                  };
@@ -455,7 +440,7 @@ var _CPAnimationContextStack   = nil,
 {
     var mask = [self autoresizingMask];
 
-    
+
     if (mask == CPViewNotSizable)
         return _frame;
 
@@ -735,7 +720,7 @@ var createUpdateFrame = function(aView, aKeyPath)
         else
         {
             [aView _setInhibitDOMUpdates:YES];
-            
+
             var matrix = style[transformProperty].split('(')[1].split(')')[0].split(','),
                 x      = ROUND(initialOrigin.x + parseFloat(matrix[4])),
                 y      = ROUND(initialOrigin.y + parseFloat(matrix[5]));
