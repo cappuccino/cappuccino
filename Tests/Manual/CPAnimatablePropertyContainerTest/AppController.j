@@ -19,7 +19,7 @@ var ANIMATIONS_NAMES = ["Fade In", "Fade Out", "Background Color", "Frame Origin
     @outlet CPBox group1Box;
     @outlet CPBox group2Box;
 
-    @outlet CPView animationSandbox;
+    @outlet AnimationSandbox animationSandbox;
 
     CPView leftView;
     CPView rightView;
@@ -37,6 +37,7 @@ var ANIMATIONS_NAMES = ["Fade In", "Fade Out", "Background Color", "Frame Origin
 
     CPString timingFunction1 @accessors;
     CPString timingFunction2 @accessors;
+    BOOL     periodicFrameUpdates;
 }
 
 - (id)init
@@ -62,6 +63,8 @@ var ANIMATIONS_NAMES = ["Fade In", "Fade Out", "Background Color", "Frame Origin
 
     selectedTimingFunction1 = 1;
     selectedTimingFunction2 = 1;
+
+    periodicFrameUpdates = NO;
 
     return self;
 }
@@ -186,6 +189,7 @@ var ANIMATIONS_NAMES = ["Fade In", "Fade Out", "Background Color", "Frame Origin
 {
     [self setupGroup1:nil];
     [self setupGroup2:nil];
+    [animationSandbox setNeedsDisplay:YES];
 }
 /*
 - (IBAction)addSubview:(id)sender
@@ -233,6 +237,7 @@ var ANIMATIONS_NAMES = ["Fade In", "Fade Out", "Background Color", "Frame Origin
         size.width += 100;
         size.height += 100;
 
+        [[aView animator] setWantsPeriodicFrameUpdates:periodicFrameUpdates];
         [[aView animator] setFrame:frame];
         return;
     }
@@ -242,6 +247,7 @@ var ANIMATIONS_NAMES = ["Fade In", "Fade Out", "Background Color", "Frame Origin
         [[aView animations] setObject:[self bounceAnimation:aView] forKey:@"frameOrigin"];
 
         var origin = CGPointMakeCopy([aView frameOrigin]);
+        [[aView animator] setWantsPeriodicFrameUpdates:periodicFrameUpdates];
         [[aView animator] setFrameOrigin:origin];
     }
     else if ([enabledIndexes containsIndex:3])
@@ -251,6 +257,7 @@ var ANIMATIONS_NAMES = ["Fade In", "Fade Out", "Background Color", "Frame Origin
         var origin = CGPointMakeCopy([aView frameOrigin]);
         origin.x +=550;
         origin.y +=300;
+        [[aView animator] setWantsPeriodicFrameUpdates:periodicFrameUpdates];
         [[aView animator] setFrameOrigin:origin];
     }
 
@@ -315,10 +322,10 @@ var ANIMATIONS_NAMES = ["Fade In", "Fade Out", "Background Color", "Frame Origin
         easein = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseIn],
         easeout = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
 
-    [anim setKeyTimes:[0, 0.25, 0.5, 0.75, 1]];
+    [anim setKeyTimes:[0, 0.2, 0.3, 0.5, 0.7, 0.8]];
     var origin = CGPointMakeCopy([aView frameOrigin]);
-    [anim setValues:[origin, CGPointMake(origin.x, origin.y + 50), origin, CGPointMake(origin.x, origin.y + 25), origin]];
-    [anim setTimingFunctions:[easeout, easein, easeout, easein]];
+    [anim setValues:[origin, CGPointMake(origin.x, origin.y + 200), origin, CGPointMake(origin.x, origin.y + 100), origin, CGPointMake(origin.x, origin.y + 50)]];
+    [anim setTimingFunctions:[easeout, easein, easeout, easein, easeout]];
 
     return anim;
 }
@@ -352,6 +359,7 @@ var ANIMATIONS_NAMES = ["Fade In", "Fade Out", "Background Color", "Frame Origin
     if (leftView)
     {
         [leftView setFrame:CGRectMake(0, 0, 200, 200)];
+        [leftView setTag:1];
         [animationSandbox addSubview:leftView];
     }
 
@@ -374,11 +382,15 @@ var ANIMATIONS_NAMES = ["Fade In", "Fade Out", "Background Color", "Frame Origin
     if (rightView)
     {
         [rightView setFrame:CGRectMake(250, 0, 200, 200)];
+        [rightView setTag:2];
         [animationSandbox addSubview:rightView];
     }
 
     if (leftView)
+    {
+        [leftView setTag:1];
         [animationSandbox addSubview:leftView];
+    }
 
     if (hasSubviews)
         [self addSubviewsToView:rightView autoLayout:!customLayout customDrawSubviews:NO];
@@ -451,6 +463,12 @@ var ANIMATIONS_NAMES = ["Fade In", "Fade Out", "Background Color", "Frame Origin
     [self setBackgroundColor:[CPColor randomColor]];
 
     return self;
+}
+
+- (void)setFrameOrigin:(CGPoint)anOrigin
+{
+    [super setFrameOrigin:anOrigin];
+    [[self superview] setNeedsDisplay:YES];
 }
 
 @end
@@ -528,6 +546,29 @@ var ANIMATIONS_NAMES = ["Fade In", "Fade Out", "Background Color", "Frame Origin
     {
         [view setFrameOrigin:CGPointMake(dx * idx, dy * idx)];
     }];
+}
+
+@end
+
+@implementation AnimationSandbox : CPView
+{
+
+}
+
+- (void)drawRect:(CGRect)aRect
+{
+    if ([[self subviews] count] < 2)
+        return;
+
+    var context = [[CPGraphicsContext currentContext] graphicsPort],
+        leftViewCenter = [[self viewWithTag:1] center],
+        rightViewCenter = [[self viewWithTag:2] center];
+
+    CGContextBeginPath(context);
+    CGContextMoveToPoint(context, leftViewCenter.x, leftViewCenter.y);
+    CGContextAddLineToPoint(context, rightViewCenter.x, rightViewCenter.y);
+    CGContextSetLineWidth(context, 2);
+    CGContextStrokePath(context);
 }
 
 @end
