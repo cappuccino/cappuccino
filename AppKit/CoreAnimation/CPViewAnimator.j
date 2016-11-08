@@ -1,9 +1,20 @@
 
 @import "_CPObjectAnimator.j"
 @import "CPView.j"
+@import "CPCompatibility.j"
 
 @implementation CPViewAnimator : _CPObjectAnimator
 {
+    BOOL    _wantsPeriodicFrameUpdates  @accessors(property=wantsPeriodicFrameUpdates);
+}
+
+- (id)initWithTarget:(id)aTarget
+{
+    self = [super initWithTarget:aTarget];
+
+    _wantsPeriodicFrameUpdates = NO;
+
+    return self;
 }
 
 - (void)removeFromSuperview
@@ -76,16 +87,6 @@
 
 @end
 
-var transformOrigin = function(start, current)
-{
-    return "translate(" + (current.x - start.x) + "px," + (current.y - start.y) + "px)";
-};
-
-var transformFrameToTranslate = function(start, current)
-{
-    return transformOrigin(start.origin, current.origin);
-};
-
 var transformFrameToWidth = function(start, current)
 {
     return current.size.width + "px";
@@ -106,6 +107,25 @@ var transformSizeToHeight = function(start, current)
     return current.height + "px";
 };
 
+var CSSStringFromCGAffineTransform = function(anAffineTransform)
+{
+    return "matrix(" + anAffineTransform.a + ", " + anAffineTransform.b + ", " + anAffineTransform.c + ", " + anAffineTransform.d + ", " + anAffineTransform.tx + (CPBrowserIsEngine(CPGeckoBrowserEngine) ? "px, " : ", ") + anAffineTransform.ty + (CPBrowserIsEngine(CPGeckoBrowserEngine) ? "px)" : ")");
+};
+
+var frameOriginToCSSTransformMatrix = function(start, current)
+{
+    var affine = CGAffineTransformMakeTranslation(current.x - start.x, current.y - start.y);
+
+    return CSSStringFromCGAffineTransform(affine);
+};
+
+var frameToCSSTranslationTransformMatrix = function(start, current)
+{
+    var affine = CGAffineTransformMakeTranslation(current.origin.x - start.origin.x, current.origin.y - start.origin.y);
+
+    return CSSStringFromCGAffineTransform(affine);
+};
+
 var DEFAULT_CSS_PROPERTIES = nil;
 
 @implementation CPView (CPAnimatablePropertyContainer)
@@ -117,15 +137,15 @@ var DEFAULT_CSS_PROPERTIES = nil;
         var transformProperty = CPBrowserCSSProperty("transform");
 
         DEFAULT_CSS_PROPERTIES =  @{
-            "backgroundColor"  : [@{"property":"background", "value":function(sv, val){return [val cssString];}}],
-            "alphaValue"       : [@{"property":"opacity"}],
-            "frame"            : [@{"property":transformProperty, "value":transformFrameToTranslate},
-                                  @{"property":"width", "value":transformFrameToWidth},
-                                  @{"property":"height", "value":transformFrameToHeight}],
-            "frameOrigin"      : [@{"property":transformProperty, "value":transformOrigin}],
-            "frameSize"        : [@{"property":"width", "value":transformSizeToWidth},
-                                  @{"property":"height", "value":transformSizeToHeight}]
-        };
+                                    "backgroundColor"  : [@{"property":"background", "value":function(sv, val){return [val cssString];}}],
+                                    "alphaValue"       : [@{"property":"opacity"}],
+                                    "frame"            : [@{"property":transformProperty, "value":frameToCSSTranslationTransformMatrix},
+                                                          @{"property":"width", "value":transformFrameToWidth},
+                                                          @{"property":"height", "value":transformFrameToHeight}],
+                                    "frameOrigin"      : [@{"property":transformProperty, "value":frameOriginToCSSTransformMatrix}],
+                                    "frameSize"        : [@{"property":"width", "value":transformSizeToWidth},
+                                                          @{"property":"height", "value":transformSizeToHeight}]
+                                    };
     }
 
     return DEFAULT_CSS_PROPERTIES;
