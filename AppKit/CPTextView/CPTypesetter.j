@@ -282,7 +282,7 @@ var CPSystemTypesetterFactory,
 
     for (; numLines != maxNumLines && glyphIndex < numberOfGlyphs; glyphIndex++)
     {
-        // check whether there any change in the attributes from here on
+        // check whether there any changes in the attributes from here on
         if (!CPLocationInRange(glyphIndex, _attributesRange))
         {
             _currentAttributes = [_textStorage attributesAtIndex:glyphIndex effectiveRange:_attributesRange];
