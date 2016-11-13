@@ -224,7 +224,7 @@ var CPSystemTypesetterFactory,
 {
     var textContainers = [layoutManager textContainers],
         textContainersCount = [textContainers count],
-		sizingFunction = class_getMethodImplementation(CPString, @selector(sizeWithFont:inWidth:));
+        sizingFunction = class_getMethodImplementation(CPString, @selector(sizeWithFont:inWidth:));
 
     _layoutManager = layoutManager;
     _textStorage = [_layoutManager textStorage];
