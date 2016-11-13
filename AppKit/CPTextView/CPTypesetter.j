@@ -223,7 +223,8 @@ var CPSystemTypesetterFactory,
         nextGlyphIndex:(UIntegerReference)nextGlyph
 {
     var textContainers = [layoutManager textContainers],
-        textContainersCount = [textContainers count];
+        textContainersCount = [textContainers count],
+		sizingFunction = class_getMethodImplementation(CPString, @selector(sizeWithFont:inWidth:));
 
     _layoutManager = layoutManager;
     _textStorage = [_layoutManager textStorage];
@@ -319,7 +320,7 @@ var CPSystemTypesetterFactory,
         measuringRange.length++;
 
         var currentCharCode = theString.charCodeAt(glyphIndex),  // use pure javascript methods for performance reasons
-            rangeWidth = [theString.substr(measuringRange.location, measuringRange.length) sizeWithFont:currentFont inWidth:NULL].width + currentAnchor;
+            rangeWidth = sizingFunction(theString.substr(measuringRange.location, measuringRange.length), nil, currentFont, NULL).width + currentAnchor;
 
         switch (currentCharCode)    // faster than sending actionForControlCharacterAtIndex: called for each char.
         {
