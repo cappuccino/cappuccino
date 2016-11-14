@@ -84,17 +84,6 @@ _regexMatchesStringAtIndex=function(regex, string, index)
     return regex.exec(triplet)  !== null;
 }
 
-// these two functions are to support chrome rich native paste
-_CPwalkTheDOM = function(node, func)
-{
-    func(node);
-    node = node.firstChild;
-    while (node)
-    {
-        _CPwalkTheDOM(node, func);
-        node = node.nextSibling;
-    }
-}
 
 /*
     CPSelectionGranularity
@@ -2506,30 +2495,51 @@ var _CPCopyPlaceholder = '-';
             richtext,
             pasteboard = [CPPasteboard generalPasteboard],
             rtfdata = [CPAttributedString new],
-            _CPDOMParsefunction = function(node)
+            _CPDOMParsefunction = function(nodeArray)
             {
-                if (node.nodeType === 1 && node.nodeName === 'SPAN')
+                if (!nodeArray || !nodeArray.length)
+                    return;
+
+                var l = nodeArray.length;
+
+                for (var i = 0; i < l; i++)
                 {
-                    var text = node.innerHTML,
-                        style = window.getComputedStyle(node),
-                        styleAttributes = @{};
+                    var nodes = nodeArray[i].childNodes,
+                        m = nodes.length;
 
-                    // extract color from the DOM
-                    var rgbmatch = style.getPropertyValue('color').match(new RegExp(/rgb\((\d+)[, ]+(\d+)[, ]+(\d+)\)/));
+                    for (var j = 0; j < m; j++)
+                    {
+                        var node = nodes[j];
 
-                    if (rgbmatch)
-                        [styleAttributes setObject:[CPColor colorWithRed:rgbmatch[1]/255.0 green:rgbmatch[2]/255.0 blue:rgbmatch[3]/255.0 alpha:1]
-                                            forKey:CPForegroundColorAttributeName];
+                        if(node.nodeName === 'SPAN')
+                        {
+                            var text = node.innerHTML,
+                                style = window.getComputedStyle(node),
+                                styleAttributes = @{};
 
-                    // extract font from the DOM
+                            // extract color from the DOM
+                            var rgbmatch = style.getPropertyValue('color').match(new RegExp(/rgb\((\d+)[, ]+(\d+)[, ]+(\d+)\)/));
 
-                    var fontname = style.getPropertyValue('font-family'),
-                        fontsize = parseInt(style.getPropertyValue('font-size'), 10);
+                            if (rgbmatch)
+                                [styleAttributes setObject:[CPColor colorWithRed:rgbmatch[1]/255.0 green:rgbmatch[2]/255.0 blue:rgbmatch[3]/255.0 alpha:1]
+                                                    forKey:CPForegroundColorAttributeName];
 
-                    if (fontname && fontsize)
-                        [styleAttributes setObject:[CPFont fontWithName:fontname size:fontsize italic:NO] forKey:CPFontAttributeName];
+                            // extract font from the DOM
 
-                    [rtfdata appendAttributedString:[[[CPAttributedString alloc] initWithString:text attributes:styleAttributes] _stringByParsingHTMLEntities]];
+                            var fontname = style.getPropertyValue('font-family'),
+                                fontsize = parseInt(style.getPropertyValue('font-size'), 10);
+
+                            if (fontname && fontsize)
+                                [styleAttributes setObject:[CPFont fontWithName:fontname size:fontsize italic:NO] forKey:CPFontAttributeName];
+
+                            [rtfdata appendAttributedString:[[[CPAttributedString alloc] initWithString:text attributes:styleAttributes] _stringByParsingHTMLEntities]];
+                        }
+                        else if (node.nodeName === '#text')
+                            [rtfdata appendAttributedString:[[CPAttributedString alloc] initWithString:node.nodeValue attributes:@{}]];
+
+                        if (l > 1)
+                            [rtfdata appendAttributedString:[[CPAttributedString alloc] initWithString:"\n" attributes:@{}]];
+                    }
                 }
             };
 
@@ -2547,7 +2557,7 @@ var _CPCopyPlaceholder = '-';
             {
                 if (elem.childNodes && elem.childNodes.length > 0)
                 {
-                    _CPwalkTheDOM(elem, _CPDOMParsefunction);
+                    _CPDOMParsefunction(elem.getElementsByTagName("p"));
                     [pasteboard declareTypes:[CPRTFPboardType] owner:nil];
                     [pasteboard setString:[_CPRTFProducer produceRTF:rtfdata documentAttributes:@{}] forType:CPRTFPboardType];
 
@@ -2574,9 +2584,11 @@ var _CPCopyPlaceholder = '-';
         {
             e.preventDefault();
             _CPNativeInputField.innerHTML = richtext;
-            _CPwalkTheDOM(_CPNativeInputField, _CPDOMParsefunction);
+            _CPDOMParsefunction(_CPNativeInputField.getElementsByTagName("p"));
 
             [pasteboard declareTypes:[CPRTFPboardType] owner:nil];
+ var rtf = [_CPRTFProducer produceRTF:rtfdata documentAttributes:@{}];
+ debugger
             [pasteboard setString:[_CPRTFProducer produceRTF:rtfdata documentAttributes:@{}] forType:CPRTFPboardType];
 
             [[[CPApp keyWindow] firstResponder] paste:self];
