@@ -68,7 +68,7 @@ CPStringSizeCachingEnabled = YES;
 #endif
 }
 
-- (CGSize)sizeWithFont:(CPFont)aFont inWidth:(float)aWidth
+- (CGSize)_sizeWithFont:(CPFont)aFont inWidth:(float)aWidth
 {
     var size;
 
@@ -101,7 +101,7 @@ CPStringSizeCachingEnabled = YES;
         if (fontHeight === undefined)
             fontHeight = CPStringSizeWithFontHeightCache[cssString] = [aFont defaultLineHeightForFont];
 
-        size = CGSizeMake(CEIL(CPStringSizeMeasuringContext.measureText(self).width), fontHeight);
+        size = CGSizeMake(CPStringSizeMeasuringContext.measureText(self).width, fontHeight);
     }
 
     sizeCacheForFont[cacheKey] = size;
@@ -109,6 +109,12 @@ CPStringSizeCachingEnabled = YES;
         size = CGSizeMake(0, 0);
 #endif
     return CGSizeMakeCopy(size);
+}
+
+- (CGSize)sizeWithFont:(CPFont)aFont inWidth:(float)aWidth
+{
+    var size = [self _sizeWithFont:aFont inWidth:aWidth];
+    return CGSizeMake(CEIL(size.width), size.height);
 }
 
 @end

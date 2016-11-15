@@ -1,4 +1,3 @@
-
 /*
  *  CPTypesetter.j
  *  AppKit
@@ -319,7 +318,7 @@ var CPSystemTypesetterFactory,
         measuringRange.length++;
 
         var currentCharCode = theString.charCodeAt(glyphIndex),  // use pure javascript methods for performance reasons
-            rangeWidth = [theString.substr(measuringRange.location, measuringRange.length) sizeWithFont:currentFont inWidth:NULL].width + currentAnchor;
+            rangeWidth = [theString.substr(measuringRange.location, measuringRange.length) _sizeWithFont:currentFont inWidth:NULL].width + currentAnchor;
 
         switch (currentCharCode)    // faster than sending actionForControlCharacterAtIndex: called for each char.
         {
