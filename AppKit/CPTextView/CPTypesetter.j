@@ -224,7 +224,8 @@ var CPSystemTypesetterFactory,
 {
     var textContainers = [layoutManager textContainers],
         textContainersCount = [textContainers count],
-        sizingFunction = class_getMethodImplementation(CPString, @selector(sizeWithFont:inWidth:));
+		sizingSelector = @selector(sizeWithFont:inWidth:),
+        sizingFunction = class_getMethodImplementation(CPString, sizingSelector);
 
     _layoutManager = layoutManager;
     _textStorage = [_layoutManager textStorage];
@@ -320,7 +321,7 @@ var CPSystemTypesetterFactory,
         measuringRange.length++;
 
         var currentCharCode = theString.charCodeAt(glyphIndex),  // use pure javascript methods for performance reasons
-            rangeWidth = sizingFunction(theString.substr(measuringRange.location, measuringRange.length), nil, currentFont, NULL).width + currentAnchor;
+            rangeWidth = sizingFunction(theString.substr(measuringRange.location, measuringRange.length), sizingSelector, currentFont, NULL).width + currentAnchor;
 
         switch (currentCharCode)    // faster than sending actionForControlCharacterAtIndex: called for each char.
         {
