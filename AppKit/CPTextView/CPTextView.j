@@ -2536,10 +2536,9 @@ var _CPCopyPlaceholder = '-';
                         }
                         else if (node.nodeName === '#text')
                             [rtfdata appendAttributedString:[[CPAttributedString alloc] initWithString:node.nodeValue attributes:@{}]];
-
-                        if (l > 1)
-                            [rtfdata appendAttributedString:[[CPAttributedString alloc] initWithString:"\n" attributes:@{}]];
                     }
+                    if (l > 1)
+                        [rtfdata appendAttributedString:[[CPAttributedString alloc] initWithString:"\n" attributes:@{}]];
                 }
             };
 
@@ -2587,8 +2586,6 @@ var _CPCopyPlaceholder = '-';
             _CPDOMParsefunction(_CPNativeInputField.getElementsByTagName("p"));
 
             [pasteboard declareTypes:[CPRTFPboardType] owner:nil];
- var rtf = [_CPRTFProducer produceRTF:rtfdata documentAttributes:@{}];
- debugger
             [pasteboard setString:[_CPRTFProducer produceRTF:rtfdata documentAttributes:@{}] forType:CPRTFPboardType];
 
             [[[CPApp keyWindow] firstResponder] paste:self];
