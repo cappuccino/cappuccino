@@ -15,6 +15,28 @@
     CPTextView  _textView2;
 }
 
+
+
+- (void) openSheet:(id)sender
+{
+    var plusPopover =[CPPopover new];
+    [plusPopover setDelegate:self];
+    [plusPopover setAnimates:NO];
+    [plusPopover setBehavior:CPPopoverBehaviorTransient];
+    [plusPopover setAppearance:CPPopoverAppearanceMinimal];
+    var myViewController=[CPViewController new];
+    [plusPopover setContentViewController:myViewController];
+    var textView = [[CPTextView alloc] initWithFrame:CGRectMake(0, 0, 200, 10)];
+    [textView setBackgroundColor:[CPColor whiteColor]];
+    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0, 0, 200, 150)];
+
+    [scrollView setDocumentView:textView];
+    [myViewController setView:scrollView];
+    [plusPopover showRelativeToRect:NULL ofView:sender preferredEdge:nil];
+    [[textView window] makeFirstResponder:textView];
+    
+}
+
 - (void)orderFrontFontPanel:(id)sender
 {
    [[CPFontManager sharedFontManager] orderFrontFontPanel:self];
@@ -28,6 +50,13 @@
         contentView = [theWindow contentView];
 
     [contentView setBackgroundColor:[CPColor colorWithWhite:0.95 alpha:1.0]];
+
+    var mybutton=[[CPButton alloc] initWithFrame:CGRectMake(0, 0,50, 25)];
+    [mybutton setTitle:"Open sheet"]
+    [mybutton setTarget:self]
+    [mybutton setAction:@selector(openSheet:)]
+    [contentView addSubview:mybutton]
+
 
     _textView = [[CPTextView alloc] initWithFrame:CGRectMake(0,0,500,500)];
     [_textView setRichText:YES];

@@ -923,6 +923,11 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     return [self _characterIndexFromRawPoint:[event locationInWindow]];
 }
 
+- (BOOL)needsPanelToBecomeKey
+{
+	return YES;
+}
+
 #pragma mark -
 #pragma mark Mouse Events
 
