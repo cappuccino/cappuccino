@@ -1973,7 +1973,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
             var font = [_typingAttributes objectForKey:CPFontAttributeName] || [self font];
 
             caretRect.size.height = [font size];
-            caretRect.origin.y = ([font ascender] - [font descender]) * 0.5;
+            caretRect.origin.y = ([font ascender] - [font descender]) * 0.5 + _textContainerOrigin.y;
         }
 
         caretRect.origin.x += caretRect.size.width;
