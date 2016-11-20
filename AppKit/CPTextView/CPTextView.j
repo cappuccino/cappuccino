@@ -1959,7 +1959,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 - (void)updateInsertionPointStateAndRestartTimer:(BOOL)flag
 {
     var caretRect,
-        numberOfGlyphs= [_layoutManager numberOfCharacters];
+        numberOfGlyphs = [_layoutManager numberOfCharacters];
 
     if (_selectionRange.length)
         [_caret setVisibility:NO];
@@ -1970,7 +1970,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
         if (!numberOfGlyphs)
         {
-            var font = [_typingAttributes objectForKey:CPFontAttributeName];
+            var font = [_typingAttributes objectForKey:CPFontAttributeName] || [self font];
 
             caretRect.size.height = [font size];
             caretRect.origin.y = ([font ascender] - [font descender]) * 0.5;
@@ -1985,9 +1985,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         }
     }
     else
-    {
         caretRect = [_layoutManager boundingRectForGlyphRange:CPMakeRange(_selectionRange.location, 1) inTextContainer:_textContainer];
-    }
 
     var loc = (_selectionRange.location === numberOfGlyphs && numberOfGlyphs > 0) ? _selectionRange.location - 1 : _selectionRange.location,
         caretOffset = [_layoutManager _characterOffsetAtLocation:loc],
