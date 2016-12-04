@@ -897,7 +897,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     setTimeout(function() {
                               [_caret setPermanentlyVisible:NO];
-                          }, 500);
+                          }, 1000);
 }
 
 - (CGPoint)_characterIndexFromRawPoint:(CGPoint)point
