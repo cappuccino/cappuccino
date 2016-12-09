@@ -2493,119 +2493,18 @@ var _CPCopyPlaceholder = '-';
     {
         var nativeClipboard = (e.originalEvent || e).clipboardData,
             richtext,
-            pasteboard = [CPPasteboard generalPasteboard],
-            rtfdata = [CPAttributedString new],
-            _CPDOMParsefunction = function(nodeArray)
-            {
-                if (!nodeArray || !nodeArray.length)
-                    return;
+			pasteboard = [CPPasteboard generalPasteboard];
 
-                var l = nodeArray.length;
-
-                for (var i = 0; i < l; i++)
-                {
-                    var nodes = nodeArray[i].childNodes,
-                        m = nodes.length;
-
-                    for (var j = 0; j < m; j++)
-                    {
-                        var node = nodes[j];
-
-                        if(node.nodeName === 'SPAN')
-                        {
-                            var text = node.innerHTML,
-                                style = window.getComputedStyle(node),
-                                styleAttributes = @{};
-
-                            // extract color from the DOM
-                            var rgbmatch = style.getPropertyValue('color').match(new RegExp(/rgb\((\d+)[, ]+(\d+)[, ]+(\d+)\)/));
-
-                            if (rgbmatch)
-                                [styleAttributes setObject:[CPColor colorWithRed:rgbmatch[1]/255.0 green:rgbmatch[2]/255.0 blue:rgbmatch[3]/255.0 alpha:1]
-                                                    forKey:CPForegroundColorAttributeName];
-
-                            // extract font from the DOM
-
-                            var fontname = style.getPropertyValue('font-family'),
-                                fontsize = parseInt(style.getPropertyValue('font-size'), 10);
-
-                            if (fontname && fontsize)
-                                [styleAttributes setObject:[CPFont fontWithName:fontname size:fontsize italic:NO] forKey:CPFontAttributeName];
-
-                            [rtfdata appendAttributedString:[[[CPAttributedString alloc] initWithString:text attributes:styleAttributes] _stringByParsingHTMLEntities]];
-                        }
-                        else if (node.nodeName === '#text')
-                            [rtfdata appendAttributedString:[[CPAttributedString alloc] initWithString:node.nodeValue attributes:@{}]];
-                    }
-                    if (l > 1)
-                        [rtfdata appendAttributedString:[[CPAttributedString alloc] initWithString:"\n" attributes:@{}]];
-                }
-            };
-
-        // this is the native rich safari path
-        // the detection leverages the observation that safari puts a lot of cryptic types on the pasteboard (16 or so)
-        // this is not the case with any other browser that i have seen so far.
-        // safari does not currently provide data for any of the rich types that it advertises, though.
-        // for this reason, we have to let the paste execute and collect data from the DOM afterwards
-        // i did not get this working so far. the event is not forwarded for reasons that are beyond my understanding :-(
-        // for this reason, i disabled the code path so at least the plain content gets pasted
-        if (NO && nativeClipboard.types.length > 10)
-        {
-            // http://stackoverflow.com/questions/2176861/javascript-get-clipboard-data-on-paste-event-cross-browser/6804718#6804718
-            function waitForPastedData(elem)
-            {
-                if (elem.childNodes && elem.childNodes.length > 0)
-                {
-                    _CPDOMParsefunction(elem.getElementsByTagName("p"));
-                    [pasteboard declareTypes:[CPRTFPboardType] owner:nil];
-                    [pasteboard setString:[_CPRTFProducer produceRTF:rtfdata documentAttributes:@{}] forType:CPRTFPboardType];
-
-                    [[[CPApp keyWindow] firstResponder] paste:self];
-                    elem.innerHTML = _CPCopyPlaceholder;
-                }
-                else
-                {
-                    setTimeout(function()
-                    {
-                        waitForPastedData(elem)
-                    }, 20);
-                }
-            }
-
-            waitForPastedData(_CPNativeInputField);
-
-            return true;
-        }
-
-        // this is the native rich chrome path:
-        // we have to construct an CPAttributedString whilst walking the dom and looking at the CSS attributes
-        if (richtext = nativeClipboard.getData('text/html'))
-        {
-            e.preventDefault();
-            _CPNativeInputField.innerHTML = richtext;
-            _CPDOMParsefunction(_CPNativeInputField.getElementsByTagName("p"));
-
-            [pasteboard declareTypes:[CPRTFPboardType] owner:nil];
-            [pasteboard setString:[_CPRTFProducer produceRTF:rtfdata documentAttributes:@{}] forType:CPRTFPboardType];
-
-            [[[CPApp keyWindow] firstResponder] paste:self];
-            _CPNativeInputField.innerHTML = _CPCopyPlaceholder;
-            return false;
-        }
-
-        // this is the rich FF codepath (here we can use RTF directly)
+        // this is the rich chrome / FF codepath (where we can use RTF directly)
         if (richtext = nativeClipboard.getData('text/rtf'))
         {
             e.preventDefault();
             [pasteboard declareTypes:[CPRTFPboardType] owner:nil];
             [pasteboard setString:richtext forType:CPRTFPboardType];
 
-            // prevent dom-flickering (settimeout does not work here)
+			// prevent dom-flickering (necessary only in FF)
             var currentFirstResponder = [[CPApp keyWindow] firstResponder];
-    
-            setTimeout(function(){   // prevent dom-flickering (only FF)
-                [currentFirstResponder paste:self];
-            }, 20);
+            [currentFirstResponder insertText:[[_CPRTFParser new] parseRTF:richtext]]
 
             return false;
         }
@@ -2721,43 +2620,6 @@ var _CPCopyPlaceholder = '-';
     _CPNativeInputField.style.left = "-10000px";
 #endif
 
-}
-
-@end
-
-@implementation CPAttributedString(_MinimalHTMLParser)
-
--(void) _setRegularExpression:(JSObject)re toFontTrait:(CPFontTrait)aTrait
-{
-    var match;
-    while (match = re.exec(_string))
-    {
-        var attribs = [[self attributesAtIndex:match.index effectiveRange:nil] copy],
-            font = [attribs objectForKey:CPFontAttributeName];
-        [attribs setObject:[[CPFontManager sharedFontManager] convertFont:font toHaveTrait:aTrait] forKey:CPFontAttributeName]
-        [self setAttributes:attribs range:CPMakeRange(match.index, match[0].length)];
-    }
-}
-
--(void) _replaceEveryOccurenceOfRegularExpression:(JSObject)re withString:(CPString)aString
-{
-    var match;
-    while (match = re.exec(_string))
-        [self replaceCharactersInRange:CPMakeRange(match.index, match[0].length) withString:aString];
-}
-
-
--(CPAttributedString) _stringByParsingHTMLEntities
-{
-    [self _setRegularExpression:/<b>(.+?)<\/b>/gi toFontTrait:CPFontBoldTrait];
-    [self _setRegularExpression:/<i>(.+?)<\/i>/gi toFontTrait:CPFontItalicTrait];
-    [self _replaceEveryOccurenceOfRegularExpression:/<[^>]+>/i withString:''];
-    [self _replaceEveryOccurenceOfRegularExpression:/&lt;/i withString:'<'];
-    [self _replaceEveryOccurenceOfRegularExpression:/&gt;/i withString:'>'];
-    [self _replaceEveryOccurenceOfRegularExpression:/&amp;/i withString:'&'];
-    [self _replaceEveryOccurenceOfRegularExpression:/&nbsp;/i withString:' '];
-
-    return self;
 }
 
 @end
