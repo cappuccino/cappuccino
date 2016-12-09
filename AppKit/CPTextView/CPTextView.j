@@ -2502,7 +2502,13 @@ var _CPCopyPlaceholder = '-';
             [pasteboard declareTypes:[CPRTFPboardType] owner:nil];
             [pasteboard setString:richtext forType:CPRTFPboardType];
 
-            [[[CPApp keyWindow] firstResponder] insertText:[[_CPRTFParser new] parseRTF:richtext]]
+            // prevent flickering in FF
+            if (CPBrowserIsEngine(CPGeckoBrowserEngine))
+                setTimeout(function(){
+                    [[[CPApp keyWindow] firstResponder] insertText:[[_CPRTFParser new] parseRTF:richtext]]
+                }, 20);
+			else
+                [[[CPApp keyWindow] firstResponder] insertText:[[_CPRTFParser new] parseRTF:richtext]]
 
             return false;
         }
