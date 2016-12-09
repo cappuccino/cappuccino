@@ -2502,9 +2502,7 @@ var _CPCopyPlaceholder = '-';
             [pasteboard declareTypes:[CPRTFPboardType] owner:nil];
             [pasteboard setString:richtext forType:CPRTFPboardType];
 
-			// prevent dom-flickering (necessary only in FF)
-            var currentFirstResponder = [[CPApp keyWindow] firstResponder];
-            [currentFirstResponder insertText:[[_CPRTFParser new] parseRTF:richtext]]
+            [[[CPApp keyWindow] firstResponder] insertText:[[_CPRTFParser new] parseRTF:richtext]]
 
             return false;
         }
