@@ -2493,7 +2493,7 @@ var _CPCopyPlaceholder = '-';
     {
         var nativeClipboard = (e.originalEvent || e).clipboardData,
             richtext,
-			pasteboard = [CPPasteboard generalPasteboard];
+            pasteboard = [CPPasteboard generalPasteboard];
 
         // this is the rich chrome / FF codepath (where we can use RTF directly)
         if (richtext = nativeClipboard.getData('text/rtf'))
@@ -2502,12 +2502,11 @@ var _CPCopyPlaceholder = '-';
             [pasteboard declareTypes:[CPRTFPboardType] owner:nil];
             [pasteboard setString:richtext forType:CPRTFPboardType];
 
-            // prevent flickering in FF
             if (CPBrowserIsEngine(CPGeckoBrowserEngine))
                 setTimeout(function(){
                     [[[CPApp keyWindow] firstResponder] insertText:[[_CPRTFParser new] parseRTF:richtext]]
                 }, 20);
-			else
+            else
                 [[[CPApp keyWindow] firstResponder] insertText:[[_CPRTFParser new] parseRTF:richtext]]
 
             return false;
