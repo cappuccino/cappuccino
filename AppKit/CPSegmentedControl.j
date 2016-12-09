@@ -604,7 +604,12 @@ CPSegmentSwitchTrackingMomentary = 2;
 - (CPView)createEphemeralSubviewNamed:(CPString)aName
 {
     if ([aName hasPrefix:@"segment-content"])
-        return [[_CPImageAndTextView alloc] initWithFrame:CGRectMakeZero()];
+    {
+        var view = [[_CPImageAndTextView alloc] initWithFrame:CGRectMakeZero()];
+        [view _setUsesSingleLineMode:YES];
+
+        return view;
+    }
 
     return [[CPView alloc] initWithFrame:CGRectMakeZero()];
 }
