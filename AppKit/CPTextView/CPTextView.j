@@ -2505,16 +2505,21 @@ var _CPCopyPlaceholder = '-';
     {
         var nativeClipboard = (e.originalEvent || e).clipboardData,
             richtext,
-            pasteboard = [CPPasteboard generalPasteboard];
+            pasteboard = [CPPasteboard generalPasteboard],
+            currentFirstResponder = [[CPApp keyWindow] firstResponder],
+            isPlain = NO;
+
+        if ([currentFirstResponder respondsToSelector:@selector(isRichText)] && ![currentFirstResponder isRichText])
+            isPlain = YES;
 
         // this is the rich chrome / FF codepath (where we can use RTF directly)
-        if ((richtext = nativeClipboard.getData('text/rtf')) && !(!!window.event.shiftKey))
+        if ((richtext = nativeClipboard.getData('text/rtf')) && !(!!window.event.shiftKey) && !isPlain)
         {
             e.preventDefault();
 
             // setTimeout to prevent flickering in FF
 			setTimeout(function(){
-				[[[CPApp keyWindow] firstResponder] insertText:[[_CPRTFParser new] parseRTF:richtext]]
+				[currentFirstResponder insertText:[[_CPRTFParser new] parseRTF:richtext]]
 			}, 20);
 
             return false;
@@ -2530,8 +2535,6 @@ var _CPCopyPlaceholder = '-';
             [pasteboard declareTypes:[CPStringPboardType] owner:nil];
             [pasteboard setString:data forType:CPStringPboardType];
         }
- 
-        var currentFirstResponder = [[CPApp keyWindow] firstResponder];
 
         setTimeout(function(){   // prevent dom-flickering (only needed for FF)
             [currentFirstResponder paste:self];

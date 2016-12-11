@@ -657,6 +657,8 @@ var kRgsymRtf = {
 }
 - (CPAttributedString)parseRTF:(CPString)rtf
 {
+    rtf = rtf.replace(/\\\n/g, "\\par\n")
+
     if (rtf.length == 0)
         return '';
 
