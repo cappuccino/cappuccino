@@ -375,15 +375,10 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         [pasteboard setString:richData forType:CPRTFPboardType];
 }
 
-- (void)paste:(id)sender
+- (void)_pasteString:(id)stringForPasting
 {
-    if (![sender isKindOfClass:_CPNativeInputManager] && [[CPApp currentEvent] type] != CPAppKitDefined)
-        return
-
-    var stringForPasting = [self _stringForPasting];
-
     if (!stringForPasting)
-       return;
+        return;
 
     if (_copySelectionGranularity > 0 && _selectionRange.location > 0)
     {
@@ -425,6 +420,21 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
             [self insertText:" "];
         }
     }
+}
+- (void)pasteAsPlainText:(id)sender
+{
+    if (![sender isKindOfClass:_CPNativeInputManager] && [[CPApp currentEvent] type] != CPAppKitDefined)
+        return
+
+	[self _pasteString:[self _plainStringForPasting]];
+}
+
+- (void)paste:(id)sender
+{
+    if (![sender isKindOfClass:_CPNativeInputManager] && [[CPApp currentEvent] type] != CPAppKitDefined)
+        return
+
+	[self _pasteString:[self _stringForPasting]];
 }
 
 #pragma mark -
@@ -672,6 +682,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     if (!isAttributed)
         aString = [[CPAttributedString alloc] initWithString:aString attributes:_typingAttributes];
+    else if (![self isRichText])
+        aString = [[CPAttributedString alloc] initWithString:string attributes:_typingAttributes];
 
     var undoManager = [[self window] undoManager];
     [undoManager setActionName:@"Replace/insert text"];
@@ -2496,18 +2508,14 @@ var _CPCopyPlaceholder = '-';
             pasteboard = [CPPasteboard generalPasteboard];
 
         // this is the rich chrome / FF codepath (where we can use RTF directly)
-        if (richtext = nativeClipboard.getData('text/rtf'))
+        if ((richtext = nativeClipboard.getData('text/rtf')) && !(!!window.event.shiftKey))
         {
             e.preventDefault();
-            [pasteboard declareTypes:[CPRTFPboardType] owner:nil];
-            [pasteboard setString:richtext forType:CPRTFPboardType];
 
-            if (CPBrowserIsEngine(CPGeckoBrowserEngine))
-                setTimeout(function(){
-                    [[[CPApp keyWindow] firstResponder] insertText:[[_CPRTFParser new] parseRTF:richtext]]
-                }, 20);
-            else
-                [[[CPApp keyWindow] firstResponder] insertText:[[_CPRTFParser new] parseRTF:richtext]]
+            // setTimeout to prevent flickering in FF
+			setTimeout(function(){
+				[[[CPApp keyWindow] firstResponder] insertText:[[_CPRTFParser new] parseRTF:richtext]]
+			}, 20);
 
             return false;
         }
@@ -2515,7 +2523,7 @@ var _CPCopyPlaceholder = '-';
         // plain is the same in all browsers...
 
         var data = e.clipboardData.getData('text/plain'),
-        cappString = [pasteboard stringForType:CPStringPboardType];
+			cappString = [pasteboard stringForType:CPStringPboardType];
 
         if (cappString != data)
         {
