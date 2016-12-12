@@ -662,14 +662,15 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     [self setNeedsDisplay:YES];
 }
 
-- (void)_replaceCharactersInRange:aRange withAttributedString:(CPString)aString
+- (void)_replaceCharactersInRange:(CPRange)aRange withAttributedString:(CPString)aString selectionRange:(CPRange)selectionRange
 {
     [[[[self window] undoManager] prepareWithInvocationTarget:self]
                 _replaceCharactersInRange:CPMakeRange(aRange.location, [aString length])
-                     withAttributedString:[_textStorage attributedSubstringFromRange:CPMakeRangeCopy(aRange)]];
+                     withAttributedString:[_textStorage attributedSubstringFromRange:CPMakeRangeCopy(aRange)]
+						   selectionRange:CPMakeRangeCopy(_selectionRange)];
 
     [_textStorage replaceCharactersInRange:aRange withAttributedString:aString];
-    [self _fixupReplaceForRange:CPMakeRange(CPMaxRange(aRange), 0)];
+    [self _fixupReplaceForRange:selectionRange];
 }
 
 - (void)insertText:(CPString)aString
@@ -690,7 +691,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     [[undoManager prepareWithInvocationTarget:self]
                     _replaceCharactersInRange:CPMakeRange(_selectionRange.location, [aString length])
-                         withAttributedString:[_textStorage attributedSubstringFromRange:CPMakeRangeCopy(_selectionRange)]];
+                         withAttributedString:[_textStorage attributedSubstringFromRange:CPMakeRangeCopy(_selectionRange)]
+		                       selectionRange:CPMakeRangeCopy(_selectionRange)];
 
     [_textStorage replaceCharactersInRange:CPMakeRangeCopy(_selectionRange) withAttributedString:aString];
 
@@ -1449,7 +1451,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     changedRange = CPIntersectionRange(CPMakeRange(0, [_layoutManager numberOfCharacters]), changedRange);
 
-    [[[_window undoManager] prepareWithInvocationTarget:self] _replaceCharactersInRange:CPMakeRange(changedRange.location, 0) withAttributedString:[_textStorage attributedSubstringFromRange:CPMakeRangeCopy(changedRange)]];
+    [[[_window undoManager] prepareWithInvocationTarget:self] _replaceCharactersInRange:CPMakeRange(changedRange.location, 0)
+                                                                   withAttributedString:[_textStorage attributedSubstringFromRange:CPMakeRangeCopy(changedRange)]
+                                                                         selectionRange:CPMakeRangeCopy(_selectionRange)];
     [_textStorage deleteCharactersInRange:CPMakeRangeCopy(changedRange)];
 
     [self setSelectedRange:CPMakeRange(changedRange.location, 0)];
