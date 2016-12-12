@@ -223,7 +223,9 @@ var CPSystemTypesetterFactory,
         nextGlyphIndex:(UIntegerReference)nextGlyph
 {
     var textContainers = [layoutManager textContainers],
-        textContainersCount = [textContainers count];
+        textContainersCount = [textContainers count],
+		sizingSelector = @selector(sizeWithFont:inWidth:),
+        sizingFunction = class_getMethodImplementation(CPString, sizingSelector);
 
     _layoutManager = layoutManager;
     _textStorage = [_layoutManager textStorage];
@@ -281,7 +283,7 @@ var CPSystemTypesetterFactory,
 
     for (; numLines != maxNumLines && glyphIndex < numberOfGlyphs; glyphIndex++)
     {
-        // check whether there any change in the attributes from here on
+        // check whether there any changes in the attributes from here on
         if (!CPLocationInRange(glyphIndex, _attributesRange))
         {
             _currentAttributes = [_textStorage attributesAtIndex:glyphIndex effectiveRange:_attributesRange];
@@ -319,7 +321,7 @@ var CPSystemTypesetterFactory,
         measuringRange.length++;
 
         var currentCharCode = theString.charCodeAt(glyphIndex),  // use pure javascript methods for performance reasons
-            rangeWidth = [theString.substr(measuringRange.location, measuringRange.length) sizeWithFont:currentFont inWidth:NULL].width + currentAnchor;
+            rangeWidth = sizingFunction(theString.substr(measuringRange.location, measuringRange.length), sizingSelector, currentFont, NULL).width + currentAnchor;
 
         switch (currentCharCode)    // faster than sending actionForControlCharacterAtIndex: called for each char.
         {
