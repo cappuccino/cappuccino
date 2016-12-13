@@ -514,7 +514,7 @@ var kRgsymRtf = {
                 return [self _applyPropChange:sym parameter:param];
 
             case kRTFParserType_char:
-                if((param + '') !== 'NaN' && (param + '').length)
+                if((param + '') !== 'NaN' && (param + '') !== 'null' && (param + '').length)
                     _currentParseIndex -= (param + '').length;
 
                 return [self _checkChar:sym parameter:param];
@@ -657,6 +657,8 @@ var kRgsymRtf = {
 }
 - (CPAttributedString)parseRTF:(CPString)rtf
 {
+    rtf = rtf.replace(/\\\n/g, "\\par\n")
+
     if (rtf.length == 0)
         return '';
 
