@@ -66,6 +66,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
     CPString                _text;
 
     CGSize                  _textSize;
+    BOOL                    _usesSingleLineMode @accessors;
 
     unsigned                _flags;
 
@@ -107,6 +108,8 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
         }
 
         _textSize = nil;
+        _usesSingleLineMode = NO;
+
         [self setHitTests:NO];
     }
 
@@ -725,6 +728,9 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
                         _lineBreakMode === CPLineBreakByWordWrapping)
                     {
                         _textSize = [_text sizeWithFont:_font inWidth:textRectWidth];
+
+                        if (_usesSingleLineMode)
+                            _textSize.height = [_font defaultLineHeightForFont];
                     }
                     else
                     {
