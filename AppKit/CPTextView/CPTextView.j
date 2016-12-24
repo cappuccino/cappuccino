@@ -164,6 +164,15 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     CPTimer                     _scrollingTimer;
 }
 
++ (Class)_binderClassForBinding:(CPString)aBinding
+{
+    if (aBinding === CPValueBinding)
+        return [_CPTextViewValueBinder class];
+    else if (aBinding === CPAttributedStringBinding)
+        return [_CPTextViewAttributedStringBinder class];
+
+    return [super _binderClassForBinding:aBinding];
+}
 
 #pragma mark -
 #pragma mark Class methods
