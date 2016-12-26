@@ -128,7 +128,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     CPSelectionGranularity      _selectionGranularity         @accessors(property=selectionGranularity);
 
     CPSelectionGranularity      _previousSelectionGranularity;  // private
-    CPSelectionGranularity      _copySelectionGranularity;       // private
+    CPSelectionGranularity      _copySelectionGranularity;      // private
 
     CPTextContainer             _textContainer                @accessors(property=textContainer);
     CPTextStorage               _textStorage                  @accessors(getter=textStorage);
@@ -151,6 +151,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     CGRect                      _exposedRect;
 
     CPTimer                     _scrollingTimer;
+
+    CPString					_placeholderString;
 }
 
 + (Class)_binderClassForBinding:(CPString)aBinding
@@ -576,10 +578,16 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (CPString)objectValue
 {
+    if (_placeholderString)
+        return nil;
+
     return [self isRichText]? _textStorage : _textStorage._string;
 }
-- (CPString)setObjectValue:(id)aValue
+- (void)setObjectValue:(id)aValue
 {
+    if (_placeholderString)
+        return;
+
     if (!aValue)
         aValue = @"";
 
@@ -959,8 +967,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     
     var granularities = [CPNotFound, CPSelectByCharacter, CPSelectByWord, CPSelectByParagraph];
     [self setSelectionGranularity:granularities[[event clickCount]]];
-    
-    if ([self selectionGranularity] == CPSelectByCharacter && CPLocationInRange(_startTrackingLocation, _selectionRange))
+
+    // dragging the selection
+    if ([self isSelectable] && [self selectionGranularity] == CPSelectByCharacter && CPLocationInRange(_startTrackingLocation, _selectionRange))
     {
         var lineBeginningIndex = [_layoutManager _firstLineFragmentForLineFromLocation:_selectionRange.location]._range.location,
             placeholderRange = _MakeRangeFromAbs(lineBeginningIndex, CPMaxRange(_selectionRange)),
@@ -2082,9 +2091,21 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         [self setTextColor:[CPKeyedUnarchiver unarchiveObjectWithData:[pasteboard dataForType:CPColorDragType]] range:_selectionRange];
 }
 
+- (BOOL)isSelectable
+{	return [super isSelectable] && !_placeholderString
+}
+- (BOOL)isEditable
+{	return [super isEditable] && !_placeholderString
+}
+
 - (void)_setPlaceholderString:(CPString)aString
 {
-// <!> fixme
+    if (_placeholderString === aString)
+        return;
+
+    _placeholderString = aString;
+
+    [self setString:[[CPAttributedString alloc] initWithString:_placeholderString attributes:@{CPForegroundColorAttributeName:[CPColor colorWithRed:0.66 green:0.66 blue:0.66 alpha:1]}]];
 }
 
 - (void)_continuouslyReverseSetBinding
@@ -2696,13 +2717,14 @@ var _CPCopyPlaceholder = '-';
 - (void)setPlaceholderValue:(id)aValue withMarker:(CPString)aMarker forBinding:(CPString)aBinding
 {
     [_source _setPlaceholderString:aValue];
-    [_source setString:@""];
 }
 
 - (void)setValue:(id)aValue forBinding:(CPString)aBinding
 {
     if (!aValue || (aValue.isa && [aValue isMemberOfClass:CPNull]))
         [_source _setPlaceholderString:[self _placeholderForMarker:CPNullMarker]];
+    else
+        [_source _setPlaceholderString:nil];
 
     [_source setObjectValue:aValue];
 }

@@ -718,9 +718,10 @@
                                     <size key="maxSize" width="463" height="10000000"/>
                                     <color key="insertionPointColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                     <connections>
-                                        <binding destination="562" name="attributedString" keyPath="selection.volume" id="lYe-VE-R5X">
+                                        <binding destination="562" name="attributedString" keyPath="selection.volume" id="TtY-ir-omX">
                                             <dictionary key="options">
                                                 <bool key="NSContinuouslyUpdatesValue" value="YES"/>
+                                                <string key="NSNullPlaceholder">null placeholder</string>
                                             </dictionary>
                                         </binding>
                                     </connections>
