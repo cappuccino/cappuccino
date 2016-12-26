@@ -960,6 +960,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)mouseDown:(CPEvent)event
 {
+    if (![self isSelectable])
+        return;
+
     [_CPNativeInputManager cancelCurrentInputSessionIfNeeded];
     [_caret setVisibility:NO];
     
@@ -969,7 +972,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     [self setSelectionGranularity:granularities[[event clickCount]]];
 
     // dragging the selection
-    if ([self isSelectable] && [self selectionGranularity] == CPSelectByCharacter && CPLocationInRange(_startTrackingLocation, _selectionRange))
+    if ([self selectionGranularity] == CPSelectByCharacter && CPLocationInRange(_startTrackingLocation, _selectionRange))
     {
         var lineBeginningIndex = [_layoutManager _firstLineFragmentForLineFromLocation:_selectionRange.location]._range.location,
             placeholderRange = _MakeRangeFromAbs(lineBeginningIndex, CPMaxRange(_selectionRange)),
@@ -1024,6 +1027,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)mouseDragged:(CPEvent)event
 {
+    if (![self isSelectable])
+        return;
+
     if (_movingSelection)
         return;
     
@@ -1047,6 +1053,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)mouseUp:(CPEvent)event
 {
+    if (![self isSelectable])
+        return;
+
     _movingSelection = nil;
 
     // will post CPTextViewDidChangeSelectionNotification
@@ -2723,7 +2732,7 @@ var _CPCopyPlaceholder = '-';
 
 - (void)setValue:(id)aValue forBinding:(CPString)aBinding
 {
-    if (!aValue || (aValue.isa && [aValue isMemberOfClass:CPNull]))
+    if (aValue === nil || (aValue.isa && [aValue isMemberOfClass:CPNull]))
         [_source _setPlaceholderString:[self _placeholderForMarker:CPNullMarker]];
     else
         [_source _setPlaceholderString:nil];
