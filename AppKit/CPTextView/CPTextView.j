@@ -1028,6 +1028,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)mouseDragged:(CPEvent)event
 {
+
     if (![self isSelectable])
         return;
 
@@ -1054,9 +1055,6 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)mouseUp:(CPEvent)event
 {
-    if (![self isSelectable])
-        return;
-
     _movingSelection = nil;
 
     // will post CPTextViewDidChangeSelectionNotification
@@ -2103,11 +2101,11 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (BOOL)isSelectable
 {
-    return [super isSelectable] && !_placeholderString
+	return [super isSelectable] && _placeholderString === nil;
 }
 - (BOOL)isEditable
 {
-    return [super isEditable] && !_placeholderString
+	return [super isEditable] && _placeholderString === nil;
 }
 
 - (void)_setPlaceholderString:(CPString)aString
