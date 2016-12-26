@@ -152,7 +152,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     CPTimer                     _scrollingTimer;
 
-    CPString					_placeholderString;
+    CPString                    _placeholderString;
 }
 
 + (Class)_binderClassForBinding:(CPString)aBinding
@@ -599,14 +599,14 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)setString:(id)aString
 {
-	if ([aString isKindOfClass:[CPAttributedString class]])
+    if ([aString isKindOfClass:[CPAttributedString class]])
     {
         [_textStorage replaceCharactersInRange:CPMakeRange(0, [_layoutManager numberOfCharacters]) withAttributedString:aString];
     }
-	else
-	{
+    else
+    {
         [_textStorage replaceCharactersInRange:CPMakeRange(0, [_layoutManager numberOfCharacters]) withString:aString];
-	}
+    }
 
     if (CPMaxRange(_selectionRange) > [_layoutManager numberOfCharacters])
         [self setSelectedRange:CPMakeRange([_layoutManager numberOfCharacters], 0)];
@@ -2092,10 +2092,12 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 }
 
 - (BOOL)isSelectable
-{	return [super isSelectable] && !_placeholderString
+{
+    return [super isSelectable] && !_placeholderString
 }
 - (BOOL)isEditable
-{	return [super isEditable] && !_placeholderString
+{
+    return [super isEditable] && !_placeholderString
 }
 
 - (void)_setPlaceholderString:(CPString)aString
@@ -2110,21 +2112,21 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)_continuouslyReverseSetBinding
 {
-	var binderClass = [[self class] _binderClassForBinding:CPAttributedStringBinding] ||
-					  [[self class] _binderClassForBinding:CPValueBinding],
-	    theBinding = [binderClass getBinding:CPAttributedStringBinding forObject:self] || [binderClass getBinding:CPValueBinding forObject:self];
+    var binderClass = [[self class] _binderClassForBinding:CPAttributedStringBinding] ||
+                      [[self class] _binderClassForBinding:CPValueBinding],
+        theBinding = [binderClass getBinding:CPAttributedStringBinding forObject:self] || [binderClass getBinding:CPValueBinding forObject:self];
 
-	if ([theBinding continuouslyUpdatesValue])
-		[theBinding reverseSetValueFor:@"objectValue"];
+    if ([theBinding continuouslyUpdatesValue])
+        [theBinding reverseSetValueFor:@"objectValue"];
 }
 
 - (void)_reverseSetBinding
 {
     var binderClass = [[self class] _binderClassForBinding:CPAttributedStringBinding] ||
-					  [[self class] _binderClassForBinding:CPValueBinding],
+                      [[self class] _binderClassForBinding:CPValueBinding],
         theBinding = [binderClass getBinding:CPAttributedStringBinding forObject:self] || [binderClass getBinding:CPValueBinding forObject:self];
 
-	[theBinding reverseSetValueFor:@"objectValue"];
+    [theBinding reverseSetValueFor:@"objectValue"];
 }
 
 @end
