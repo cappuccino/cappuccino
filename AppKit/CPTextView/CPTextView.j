@@ -155,10 +155,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 + (Class)_binderClassForBinding:(CPString)aBinding
 {
-    if (aBinding === CPValueBinding)
+    if (aBinding === CPValueBinding || aBinding === CPAttributedStringBinding)
         return [_CPTextViewValueBinder class];
-    else if (aBinding === CPAttributedStringBinding)
-        return [_CPTextViewAttributedStringBinder class];
 
     return [super _binderClassForBinding:aBinding];
 }
@@ -435,7 +433,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     if (![sender isKindOfClass:_CPNativeInputManager] && [[CPApp currentEvent] type] != CPAppKitDefined)
         return
 
-	[self _pasteString:[self _plainStringForPasting]];
+    [self _pasteString:[self _plainStringForPasting]];
 }
 
 - (void)paste:(id)sender
@@ -443,7 +441,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     if (![sender isKindOfClass:_CPNativeInputManager] && [[CPApp currentEvent] type] != CPAppKitDefined)
         return
 
-	[self _pasteString:[self _stringForPasting]];
+    [self _pasteString:[self _stringForPasting]];
 }
 
 #pragma mark -
@@ -575,15 +573,25 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     return _textStorage._string;
 }
 
-// fixme: rich text should return attributed string, shouldn't it?
 - (CPString)objectValue
 {
-    return [self stringValue];
+    return [self isRichText]? _textStorage : _textStorage._string;
+}
+- (CPString)setObjectValue:(id)aValue
+{
+    [self setString:aValue];
 }
 
-- (void)setString:(CPString)aString
+- (void)setString:(id)aString
 {
-    [_textStorage replaceCharactersInRange:CPMakeRange(0, [_layoutManager numberOfCharacters]) withString:aString];
+	if ([aString isKindOfClass:[CPAttributedString class]])
+    {
+        [_textStorage replaceCharactersInRange:CPMakeRange(0, [_layoutManager numberOfCharacters]) withAttributedString:aString];
+    }
+	else
+	{
+        [_textStorage replaceCharactersInRange:CPMakeRange(0, [_layoutManager numberOfCharacters]) withString:aString];
+	}
 
     if (CPMaxRange(_selectionRange) > [_layoutManager numberOfCharacters])
         [self setSelectedRange:CPMakeRange([_layoutManager numberOfCharacters], 0)];
@@ -676,7 +684,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     [[[[self window] undoManager] prepareWithInvocationTarget:self]
                 _replaceCharactersInRange:CPMakeRange(aRange.location, [aString length])
                      withAttributedString:[_textStorage attributedSubstringFromRange:CPMakeRangeCopy(aRange)]
-						   selectionRange:CPMakeRangeCopy(_selectionRange)];
+                           selectionRange:CPMakeRangeCopy(_selectionRange)];
 
     [_textStorage replaceCharactersInRange:aRange withAttributedString:aString];
     [self _fixupReplaceForRange:selectionRange];
@@ -701,7 +709,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     [[undoManager prepareWithInvocationTarget:self]
                     _replaceCharactersInRange:CPMakeRange(_selectionRange.location, [aString length])
                          withAttributedString:[_textStorage attributedSubstringFromRange:CPMakeRangeCopy(_selectionRange)]
-		                       selectionRange:CPMakeRangeCopy(_selectionRange)];
+                               selectionRange:CPMakeRangeCopy(_selectionRange)];
 
     [_textStorage replaceCharactersInRange:CPMakeRangeCopy(_selectionRange) withAttributedString:aString];
 
@@ -937,7 +945,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (BOOL)needsPanelToBecomeKey
 {
-	return YES;
+    return YES;
 }
 
 #pragma mark -
@@ -2534,9 +2542,9 @@ var _CPCopyPlaceholder = '-';
             e.preventDefault();
 
             // setTimeout to prevent flickering in FF
-			setTimeout(function(){
-				[currentFirstResponder insertText:[[_CPRTFParser new] parseRTF:richtext]]
-			}, 20);
+            setTimeout(function(){
+                [currentFirstResponder insertText:[[_CPRTFParser new] parseRTF:richtext]]
+            }, 20);
 
             return false;
         }
@@ -2544,7 +2552,7 @@ var _CPCopyPlaceholder = '-';
         // plain is the same in all browsers...
 
         var data = e.clipboardData.getData('text/plain'),
-			cappString = [pasteboard stringForType:CPStringPboardType];
+            cappString = [pasteboard stringForType:CPStringPboardType];
 
         if (cappString != data)
         {
@@ -2651,5 +2659,32 @@ var _CPCopyPlaceholder = '-';
 #endif
 
 }
+- (void)_setPlaceholderString:(CPString)aString
+{
+}
 
 @end
+
+
+@class _CPTextFieldValueBinder;
+
+@implementation _CPTextViewValueBinder : _CPTextFieldValueBinder
+
+- (void)setPlaceholderValue:(id)aValue withMarker:(CPString)aMarker forBinding:(CPString)aBinding
+{
+    [_source _setPlaceholderString:aValue];
+    [_source setString:@""];
+}
+
+- (void)setValue:(id)aValue forBinding:(CPString)aBinding
+{
+    if (!aValue || (aValue.isa && [aValue isMemberOfClass:CPNull]))
+        [_source _setPlaceholderString:[self _placeholderForMarker:CPNullMarker]];
+
+    [_source setObjectValue:aValue];
+}
+                              
+@end
+
+
+                              
