@@ -236,12 +236,12 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     _caret = [[_CPCaret alloc] initWithTextView:self];
     [_caret setRect:CGRectMake(0, 0, 1, 11)]
 
-	var pboardTypes = [CPStringPboardType, CPColorDragType];
+    var pboardTypes = [CPStringPboardType, CPColorDragType];
 
-	if ([self isRichText])
-		pboardTypes.push(CPRTFPboardType);
+    if ([self isRichText])
+        pboardTypes.push(CPRTFPboardType);
 
-	[self registerForDraggedTypes:pboardTypes];
+    [self registerForDraggedTypes:pboardTypes];
 }
 
 - (void)_setObserveWindowKeyNotifications:(BOOL)shouldObserve
@@ -994,7 +994,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         _movingSelection = CPMakeRange(_startTrackingLocation, 0);
         
         dragPlaceholder = [[CPTextView alloc] initWithFrame:placeholderFrame];
-		[dragPlaceholder._textStorage replaceCharactersInRange:CPMakeRange(0, 0) withAttributedString:placeholderString];
+        [dragPlaceholder._textStorage replaceCharactersInRange:CPMakeRange(0, 0) withAttributedString:placeholderString];
 
         [dragPlaceholder setBackgroundColor:[CPColor colorWithRed:1 green:1 blue:1 alpha:0]];
         [dragPlaceholder setAlphaValue:0.5];
@@ -1003,8 +1003,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
             richData = [_CPRTFProducer produceRTF:stringForPasting documentAttributes:@{}],
             draggingPasteboard = [CPPasteboard pasteboardWithName:CPDragPboard];
         [draggingPasteboard declareTypes:[CPRTFPboardType, CPStringPboardType] owner:nil];
-		[draggingPasteboard setString:richData forType:CPRTFPboardType];
-		[draggingPasteboard setString:stringForPasting._string forType:CPStringPboardType];
+        [draggingPasteboard setString:richData forType:CPRTFPboardType];
+        [draggingPasteboard setString:stringForPasting._string forType:CPStringPboardType];
 
         [self dragView:dragPlaceholder
                     at:placeholderFrame.origin
@@ -2095,13 +2095,13 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
         var dataForPasting = [pasteboard stringForType:CPRTFPboardType] || [pasteboard stringForType:CPStringPboardType];
 
-		//  setTimeout is to a work around a transaction issue with the undomanager
+        //  setTimeout is to a work around a transaction issue with the undomanager
         setTimeout(function(){
 
-			if ([dataForPasting hasPrefix:"{\\rtf"])
-				[self insertText:[[_CPRTFParser new] parseRTF:dataForPasting]];
-			else
-				[self insertText:dataForPasting];
+            if ([dataForPasting hasPrefix:"{\\rtf"])
+                [self insertText:[[_CPRTFParser new] parseRTF:dataForPasting]];
+            else
+                [self insertText:dataForPasting];
         }, 0);
     }
         
@@ -2111,11 +2111,11 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (BOOL)isSelectable
 {
-	return [super isSelectable] && !_placeholderString;
+    return [super isSelectable] && !_placeholderString;
 }
 - (BOOL)isEditable
 {
-	return [super isEditable] && !_placeholderString;
+    return [super isEditable] && !_placeholderString;
 }
 
 - (void)_setPlaceholderString:(CPString)aString
