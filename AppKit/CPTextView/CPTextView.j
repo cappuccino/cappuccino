@@ -202,13 +202,6 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         _typingAttributes = [[CPDictionary alloc] initWithObjects:[_font, _textColor] forKeys:[CPFontAttributeName, CPForegroundColorAttributeName]];
    }
 
-	var pboardTypes = [CPColorDragType, CPStringPboardType];
-
-	if ([self isRichText])
-		pboardTypes.push(CPRTFPboardType);
-
-    [self registerForDraggedTypes:pboardTypes];
-
     return self;
 }
 
@@ -242,6 +235,13 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     _caret = [[_CPCaret alloc] initWithTextView:self];
     [_caret setRect:CGRectMake(0, 0, 1, 11)]
+
+	var pboardTypes = [CPStringPboardType, CPColorDragType];
+
+	if ([self isRichText])
+		pboardTypes.push(CPRTFPboardType);
+
+	[self registerForDraggedTypes:pboardTypes];
 }
 
 - (void)_setObserveWindowKeyNotifications:(BOOL)shouldObserve
