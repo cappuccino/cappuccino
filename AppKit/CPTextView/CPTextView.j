@@ -202,7 +202,12 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         _typingAttributes = [[CPDictionary alloc] initWithObjects:[_font, _textColor] forKeys:[CPFontAttributeName, CPForegroundColorAttributeName]];
    }
 
-    [self registerForDraggedTypes:[CPColorDragType, CPRTFPboardType]];
+	var pboardTypes = [CPColorDragType, CPStringPboardType];
+
+	if ([self isRichText])
+		pboardTypes.push(CPRTFPboardType);
+
+    [self registerForDraggedTypes:pboardTypes];
 
     return self;
 }
@@ -838,7 +843,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         if ([self _isFirstResponder])
             [self updateInsertionPointStateAndRestartTimer:((_selectionRange.length === 0) && ![_caret isBlinking])];
 
-        if (doOverwrite)
+        if (doOverwrite && !_placeholderString)
             [self setTypingAttributes:[_textStorage attributesAtIndex:CPMaxRange(range) effectiveRange:nil]];
 
         [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeSelectionNotification object:self];
@@ -997,9 +1002,10 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         var stringForPasting = [_textStorage attributedSubstringFromRange:CPMakeRangeCopy(_selectionRange)],
             richData = [_CPRTFProducer produceRTF:stringForPasting documentAttributes:@{}],
             draggingPasteboard = [CPPasteboard pasteboardWithName:CPDragPboard];
-        [draggingPasteboard declareTypes:[CPRTFPboardType] owner:nil];
-        [draggingPasteboard setString:richData forType:CPRTFPboardType];
-        
+        [draggingPasteboard declareTypes:[CPRTFPboardType, CPStringPboardType] owner:nil];
+		[draggingPasteboard setString:richData forType:CPRTFPboardType];
+		[draggingPasteboard setString:stringForPasting._string forType:CPStringPboardType];
+
         [self dragView:dragPlaceholder
                     at:placeholderFrame.origin
                 offset:nil
@@ -1028,7 +1034,6 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)mouseDragged:(CPEvent)event
 {
-
     if (![self isSelectable])
         return;
 
@@ -2071,7 +2076,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     var location = [self convertPoint:[aSender draggingLocation] fromView:nil],
         pasteboard = [aSender draggingPasteboard];
         
-    if ([pasteboard availableTypeFromArray:[CPRTFPboardType]])
+    if ([pasteboard availableTypeFromArray:[CPRTFPboardType, CPStringPboardType]])
     {
         [_caret setVisibility:NO];
         
@@ -2088,10 +2093,15 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         [self _deleteForRange:_selectionRange];
         [self setSelectedRange:_movingSelection];
 
-        var dataForPasting = [pasteboard stringForType:CPRTFPboardType];
-        //  setTimeout is to a work around a transaction issue with the undomanager
+        var dataForPasting = [pasteboard stringForType:CPRTFPboardType] || [pasteboard stringForType:CPStringPboardType];
+
+		//  setTimeout is to a work around a transaction issue with the undomanager
         setTimeout(function(){
-            [self insertText:[[_CPRTFParser new] parseRTF:dataForPasting]];
+
+			if ([dataForPasting hasPrefix:"{\\rtf"])
+				[self insertText:[[_CPRTFParser new] parseRTF:dataForPasting]];
+			else
+				[self insertText:dataForPasting];
         }, 0);
     }
         
@@ -2101,11 +2111,11 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (BOOL)isSelectable
 {
-	return [super isSelectable] && _placeholderString === nil;
+	return [super isSelectable] && !_placeholderString;
 }
 - (BOOL)isEditable
 {
-	return [super isEditable] && _placeholderString === nil;
+	return [super isEditable] && !_placeholderString;
 }
 
 - (void)_setPlaceholderString:(CPString)aString
