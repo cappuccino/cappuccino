@@ -2044,9 +2044,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         caretRect.size.height = oldYPosition - caretRect.origin.y;
     }
     if (caretDescend < 0)
-    {
         caretRect.size.height -= caretDescend;
-    }
 
     caretRect.origin.x += _textContainerOrigin.x;
     caretRect.origin.y += _textContainerOrigin.y;
@@ -2061,7 +2059,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 - (void)draggingUpdated:(CPDraggingInfo)info
 {
     var point = [info draggingLocation],
-        location = [self _characterIndexFromRawPoint:point];
+        location = [self _characterIndexFromRawPoint:CGPointCreateCopy(point)];
         
     _movingSelection = CPMakeRange(location, 0);
     [_caret _drawCaretAtLocation:_movingSelection.location];
