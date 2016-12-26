@@ -989,7 +989,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         _movingSelection = CPMakeRange(_startTrackingLocation, 0);
         
         dragPlaceholder = [[CPTextView alloc] initWithFrame:placeholderFrame];
-        [dragPlaceholder insertText:placeholderString];
+		[dragPlaceholder._textStorage replaceCharactersInRange:CPMakeRange(0, 0) withAttributedString:placeholderString];
+
         [dragPlaceholder setBackgroundColor:[CPColor colorWithRed:1 green:1 blue:1 alpha:0]];
         [dragPlaceholder setAlphaValue:0.5];
         
