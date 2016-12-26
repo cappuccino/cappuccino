@@ -705,12 +705,12 @@
                     </textField>
                     <scrollView misplaced="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" id="Ff5-4Z-qv6">
                         <rect key="frame" x="19" y="54" width="222" height="70"/>
-                        <autoresizingMask key="autoresizingMask"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <clipView key="contentView" id="iBn-dR-GkU">
                             <rect key="frame" x="1" y="1" width="205" height="68"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <subviews>
-                                <textView importsGraphics="NO" usesFontPanel="YES" findStyle="panel" continuousSpellChecking="YES" allowsUndo="YES" usesRuler="YES" allowsNonContiguousLayout="YES" quoteSubstitution="YES" dashSubstitution="YES" smartInsertDelete="YES" id="xCr-yo-JbT">
+                                <textView importsGraphics="NO" richText="NO" usesFontPanel="YES" findStyle="panel" continuousSpellChecking="YES" allowsUndo="YES" usesRuler="YES" allowsNonContiguousLayout="YES" quoteSubstitution="YES" dashSubstitution="YES" smartInsertDelete="YES" id="xCr-yo-JbT">
                                     <rect key="frame" x="0.0" y="0.0" width="205" height="68"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
@@ -718,7 +718,11 @@
                                     <size key="maxSize" width="463" height="10000000"/>
                                     <color key="insertionPointColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                     <connections>
-                                        <binding destination="562" name="attributedString" keyPath="selection.volume" id="7En-3t-nN4"/>
+                                        <binding destination="562" name="attributedString" keyPath="selection.volume" id="lYe-VE-R5X">
+                                            <dictionary key="options">
+                                                <bool key="NSContinuouslyUpdatesValue" value="YES"/>
+                                            </dictionary>
+                                        </binding>
                                     </connections>
                                 </textView>
                             </subviews>
@@ -735,7 +739,7 @@
                     </scrollView>
                     <textField verticalHuggingPriority="750" misplaced="YES" id="LZg-jC-bXw">
                         <rect key="frame" x="17" y="12" width="332" height="34"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="This is to check whether the attributedString binding of CPTextView works" id="jB1-Qh-L4O">
                             <font key="font" metaFont="system"/>
                             <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>

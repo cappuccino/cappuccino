@@ -471,6 +471,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (BOOL)resignFirstResponder
 {
+    [self _reverseSetBinding];
     [_caret stopBlinking];
     [self setNeedsDisplay:YES];
     [_CPNativeInputManager cancelCurrentInputSessionIfNeeded];
@@ -579,6 +580,12 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 }
 - (CPString)setObjectValue:(id)aValue
 {
+    if (!aValue)
+        aValue = @"";
+
+    if (![aValue isKindOfClass:[CPAttributedString class]] && ![aValue isKindOfClass:[CPString class]] && [aValue respondsToSelector:@selector(description)])
+        aValue = [aValue description];
+
     [self setString:aValue];
 }
 
@@ -605,17 +612,6 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 - (CPString)string
 {
     return [_textStorage string];
-}
-
-// KVO support
-- (void)setValue:(CPString)aValue
-{
-    [self setString:[aValue description]];
-}
-
-- (id)value
-{
-    [self string];
 }
 
 - (void)setTextContainer:(CPTextContainer)aContainer
@@ -711,7 +707,10 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
                          withAttributedString:[_textStorage attributedSubstringFromRange:CPMakeRangeCopy(_selectionRange)]
                                selectionRange:CPMakeRangeCopy(_selectionRange)];
 
+    [self willChangeValueForKey:@"objectValue"];
     [_textStorage replaceCharactersInRange:CPMakeRangeCopy(_selectionRange) withAttributedString:aString];
+    [self didChangeValueForKey:@"objectValue"];
+    [self _continuouslyReverseSetBinding];
 
     [self _setSelectedRange:CPMakeRange(_selectionRange.location + [string length], 0) affinity:0 stillSelecting:NO overwriteTypingAttributes:NO];
     _startTrackingLocation = _selectionRange.location;
@@ -1476,7 +1475,10 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     [[[_window undoManager] prepareWithInvocationTarget:self] _replaceCharactersInRange:CPMakeRange(changedRange.location, 0)
                                                                    withAttributedString:[_textStorage attributedSubstringFromRange:CPMakeRangeCopy(changedRange)]
                                                                          selectionRange:CPMakeRangeCopy(_selectionRange)];
+    [self willChangeValueForKey:@"objectValue"];
     [_textStorage deleteCharactersInRange:CPMakeRangeCopy(changedRange)];
+    [self didChangeValueForKey:@"objectValue"];
+    [self _continuouslyReverseSetBinding];
 
     [self setSelectedRange:CPMakeRange(changedRange.location, 0)];
     [self didChangeText];
@@ -2080,6 +2082,30 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         [self setTextColor:[CPKeyedUnarchiver unarchiveObjectWithData:[pasteboard dataForType:CPColorDragType]] range:_selectionRange];
 }
 
+- (void)_setPlaceholderString:(CPString)aString
+{
+// <!> fixme
+}
+
+- (void)_continuouslyReverseSetBinding
+{
+	var binderClass = [[self class] _binderClassForBinding:CPAttributedStringBinding] ||
+					  [[self class] _binderClassForBinding:CPValueBinding],
+	    theBinding = [binderClass getBinding:CPAttributedStringBinding forObject:self] || [binderClass getBinding:CPValueBinding forObject:self];
+
+	if ([theBinding continuouslyUpdatesValue])
+		[theBinding reverseSetValueFor:@"objectValue"];
+}
+
+- (void)_reverseSetBinding
+{
+    var binderClass = [[self class] _binderClassForBinding:CPAttributedStringBinding] ||
+					  [[self class] _binderClassForBinding:CPValueBinding],
+        theBinding = [binderClass getBinding:CPAttributedStringBinding forObject:self] || [binderClass getBinding:CPValueBinding forObject:self];
+
+	[theBinding reverseSetValueFor:@"objectValue"];
+}
+
 @end
 
 
@@ -2659,9 +2685,6 @@ var _CPCopyPlaceholder = '-';
 #endif
 
 }
-- (void)_setPlaceholderString:(CPString)aString
-{
-}
 
 @end
 
@@ -2683,7 +2706,7 @@ var _CPCopyPlaceholder = '-';
 
     [_source setObjectValue:aValue];
 }
-                              
+
 @end
 
 
