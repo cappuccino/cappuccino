@@ -843,7 +843,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         if ([self _isFirstResponder])
             [self updateInsertionPointStateAndRestartTimer:((_selectionRange.length === 0) && ![_caret isBlinking])];
 
-        if (doOverwrite && !_placeholderString)
+        if (doOverwrite && _placeholderString === nil)
             [self setTypingAttributes:[_textStorage attributesAtIndex:CPMaxRange(range) effectiveRange:nil]];
 
         [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeSelectionNotification object:self];
