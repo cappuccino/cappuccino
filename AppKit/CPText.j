@@ -155,6 +155,11 @@ CPKernAttributeName = @"CPKernAttributeName";
     [pasteboard setString:[[self stringValue] substringWithRange:selectedRange] forType:CPStringPboardType];
 }
 
+- (id)_plainStringForPasting
+{
+    return [[CPPasteboard generalPasteboard] stringForType:CPStringPboardType];
+}
+
 - (id)_stringForPasting
 {
     var pasteboard = [CPPasteboard generalPasteboard],

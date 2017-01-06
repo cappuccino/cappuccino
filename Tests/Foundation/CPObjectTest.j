@@ -25,6 +25,15 @@
     [self assertFalse:[receiver implementsSelector:@selector(notImplementedInSuperNorReceiver)]];
 }
 
+- (void)testInstancesImplementSelector
+{
+    [self assertTrue:[Receiver instancesImplementSelector:@selector(implementedInReceiverAndSuper)]];
+    [self assertTrue:[Receiver instancesImplementSelector:@selector(implementedInReceiverOnly)]];
+
+    [self assertFalse:[Receiver instancesImplementSelector:@selector(implementedInSuperOnly)]];
+    [self assertFalse:[Receiver instancesImplementSelector:@selector(notImplementedInSuperNorReceiver)]];
+}
+
 - (void)testVersion
 {
     // zero by default
