@@ -128,7 +128,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     CPSelectionGranularity      _selectionGranularity         @accessors(property=selectionGranularity);
 
     CPSelectionGranularity      _previousSelectionGranularity;  // private
-    CPSelectionGranularity      _copySelectionGranularity;       // private
+    CPSelectionGranularity      _copySelectionGranularity;      // private
 
     CPTextContainer             _textContainer                @accessors(property=textContainer);
     CPTextStorage               _textStorage                  @accessors(getter=textStorage);
@@ -151,8 +151,17 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     CGRect                      _exposedRect;
 
     CPTimer                     _scrollingTimer;
+
+    CPString                    _placeholderString;
 }
 
++ (Class)_binderClassForBinding:(CPString)aBinding
+{
+    if (aBinding === CPValueBinding || aBinding === CPAttributedStringBinding)
+        return [_CPTextViewValueBinder class];
+
+    return [super _binderClassForBinding:aBinding];
+}
 
 #pragma mark -
 #pragma mark Class methods
@@ -193,8 +202,6 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         _typingAttributes = [[CPDictionary alloc] initWithObjects:[_font, _textColor] forKeys:[CPFontAttributeName, CPForegroundColorAttributeName]];
    }
 
-    [self registerForDraggedTypes:[CPColorDragType, CPRTFPboardType]];
-
     return self;
 }
 
@@ -228,6 +235,13 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     _caret = [[_CPCaret alloc] initWithTextView:self];
     [_caret setRect:CGRectMake(0, 0, 1, 11)]
+
+    var pboardTypes = [CPStringPboardType, CPColorDragType];
+
+    if ([self isRichText])
+        pboardTypes.push(CPRTFPboardType);
+
+    [self registerForDraggedTypes:pboardTypes];
 }
 
 - (void)_setObserveWindowKeyNotifications:(BOOL)shouldObserve
@@ -426,7 +440,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     if (![sender isKindOfClass:_CPNativeInputManager] && [[CPApp currentEvent] type] != CPAppKitDefined)
         return
 
-	[self _pasteString:[self _plainStringForPasting]];
+    [self _pasteString:[self _plainStringForPasting]];
 }
 
 - (void)paste:(id)sender
@@ -434,7 +448,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     if (![sender isKindOfClass:_CPNativeInputManager] && [[CPApp currentEvent] type] != CPAppKitDefined)
         return
 
-	[self _pasteString:[self _stringForPasting]];
+    [self _pasteString:[self _stringForPasting]];
 }
 
 #pragma mark -
@@ -464,6 +478,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (BOOL)resignFirstResponder
 {
+    [self _reverseSetBinding];
     [_caret stopBlinking];
     [self setNeedsDisplay:YES];
     [_CPNativeInputManager cancelCurrentInputSessionIfNeeded];
@@ -566,15 +581,37 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     return _textStorage._string;
 }
 
-// fixme: rich text should return attributed string, shouldn't it?
 - (CPString)objectValue
 {
-    return [self stringValue];
+    if (_placeholderString)
+        return nil;
+
+    return [self isRichText]? _textStorage : _textStorage._string;
+}
+- (void)setObjectValue:(id)aValue
+{
+    if (_placeholderString)
+        return;
+
+    if (!aValue)
+        aValue = @"";
+
+    if (![aValue isKindOfClass:[CPAttributedString class]] && ![aValue isKindOfClass:[CPString class]] && [aValue respondsToSelector:@selector(description)])
+        aValue = [aValue description];
+
+    [self setString:aValue];
 }
 
-- (void)setString:(CPString)aString
+- (void)setString:(id)aString
 {
-    [_textStorage replaceCharactersInRange:CPMakeRange(0, [_layoutManager numberOfCharacters]) withString:aString];
+    if ([aString isKindOfClass:[CPAttributedString class]])
+    {
+        [_textStorage replaceCharactersInRange:CPMakeRange(0, [_layoutManager numberOfCharacters]) withAttributedString:aString];
+    }
+    else
+    {
+        [_textStorage replaceCharactersInRange:CPMakeRange(0, [_layoutManager numberOfCharacters]) withString:aString];
+    }
 
     if (CPMaxRange(_selectionRange) > [_layoutManager numberOfCharacters])
         [self setSelectedRange:CPMakeRange([_layoutManager numberOfCharacters], 0)];
@@ -588,17 +625,6 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 - (CPString)string
 {
     return [_textStorage string];
-}
-
-// KVO support
-- (void)setValue:(CPString)aValue
-{
-    [self setString:[aValue description]];
-}
-
-- (id)value
-{
-    [self string];
 }
 
 - (void)setTextContainer:(CPTextContainer)aContainer
@@ -667,7 +693,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     [[[[self window] undoManager] prepareWithInvocationTarget:self]
                 _replaceCharactersInRange:CPMakeRange(aRange.location, [aString length])
                      withAttributedString:[_textStorage attributedSubstringFromRange:CPMakeRangeCopy(aRange)]
-						   selectionRange:CPMakeRangeCopy(_selectionRange)];
+                           selectionRange:CPMakeRangeCopy(_selectionRange)];
 
     [_textStorage replaceCharactersInRange:aRange withAttributedString:aString];
     [self _fixupReplaceForRange:selectionRange];
@@ -692,9 +718,12 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     [[undoManager prepareWithInvocationTarget:self]
                     _replaceCharactersInRange:CPMakeRange(_selectionRange.location, [aString length])
                          withAttributedString:[_textStorage attributedSubstringFromRange:CPMakeRangeCopy(_selectionRange)]
-		                       selectionRange:CPMakeRangeCopy(_selectionRange)];
+                               selectionRange:CPMakeRangeCopy(_selectionRange)];
 
+    [self willChangeValueForKey:@"objectValue"];
     [_textStorage replaceCharactersInRange:CPMakeRangeCopy(_selectionRange) withAttributedString:aString];
+    [self didChangeValueForKey:@"objectValue"];
+    [self _continuouslyReverseSetBinding];
 
     [self _setSelectedRange:CPMakeRange(_selectionRange.location + [string length], 0) affinity:0 stillSelecting:NO overwriteTypingAttributes:NO];
     _startTrackingLocation = _selectionRange.location;
@@ -814,7 +843,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         if ([self _isFirstResponder])
             [self updateInsertionPointStateAndRestartTimer:((_selectionRange.length === 0) && ![_caret isBlinking])];
 
-        if (doOverwrite)
+        if (doOverwrite && _placeholderString === nil)
             [self setTypingAttributes:[_textStorage attributesAtIndex:CPMaxRange(range) effectiveRange:nil]];
 
         [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeSelectionNotification object:self];
@@ -928,7 +957,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (BOOL)needsPanelToBecomeKey
 {
-	return YES;
+    return YES;
 }
 
 #pragma mark -
@@ -936,6 +965,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)mouseDown:(CPEvent)event
 {
+    if (![self isSelectable])
+        return;
+
     [_CPNativeInputManager cancelCurrentInputSessionIfNeeded];
     [_caret setVisibility:NO];
     
@@ -943,7 +975,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     
     var granularities = [CPNotFound, CPSelectByCharacter, CPSelectByWord, CPSelectByParagraph];
     [self setSelectionGranularity:granularities[[event clickCount]]];
-    
+
+    // dragging the selection
     if ([self selectionGranularity] == CPSelectByCharacter && CPLocationInRange(_startTrackingLocation, _selectionRange))
     {
         var lineBeginningIndex = [_layoutManager _firstLineFragmentForLineFromLocation:_selectionRange.location]._range.location,
@@ -961,16 +994,18 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         _movingSelection = CPMakeRange(_startTrackingLocation, 0);
         
         dragPlaceholder = [[CPTextView alloc] initWithFrame:placeholderFrame];
-        [dragPlaceholder insertText:placeholderString];
+        [dragPlaceholder._textStorage replaceCharactersInRange:CPMakeRange(0, 0) withAttributedString:placeholderString];
+
         [dragPlaceholder setBackgroundColor:[CPColor colorWithRed:1 green:1 blue:1 alpha:0]];
         [dragPlaceholder setAlphaValue:0.5];
         
         var stringForPasting = [_textStorage attributedSubstringFromRange:CPMakeRangeCopy(_selectionRange)],
             richData = [_CPRTFProducer produceRTF:stringForPasting documentAttributes:@{}],
             draggingPasteboard = [CPPasteboard pasteboardWithName:CPDragPboard];
-        [draggingPasteboard declareTypes:[CPRTFPboardType] owner:nil];
+        [draggingPasteboard declareTypes:[CPRTFPboardType, CPStringPboardType] owner:nil];
         [draggingPasteboard setString:richData forType:CPRTFPboardType];
-        
+        [draggingPasteboard setString:stringForPasting._string forType:CPStringPboardType];
+
         [self dragView:dragPlaceholder
                     at:placeholderFrame.origin
                 offset:nil
@@ -999,6 +1034,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)mouseDragged:(CPEvent)event
 {
+    if (![self isSelectable])
+        return;
+
     if (_movingSelection)
         return;
     
@@ -1459,7 +1497,10 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     [[[_window undoManager] prepareWithInvocationTarget:self] _replaceCharactersInRange:CPMakeRange(changedRange.location, 0)
                                                                    withAttributedString:[_textStorage attributedSubstringFromRange:CPMakeRangeCopy(changedRange)]
                                                                          selectionRange:CPMakeRangeCopy(_selectionRange)];
+    [self willChangeValueForKey:@"objectValue"];
     [_textStorage deleteCharactersInRange:CPMakeRangeCopy(changedRange)];
+    [self didChangeValueForKey:@"objectValue"];
+    [self _continuouslyReverseSetBinding];
 
     [self setSelectedRange:CPMakeRange(changedRange.location, 0)];
     [self didChangeText];
@@ -2003,9 +2044,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         caretRect.size.height = oldYPosition - caretRect.origin.y;
     }
     if (caretDescend < 0)
-    {
         caretRect.size.height -= caretDescend;
-    }
 
     caretRect.origin.x += _textContainerOrigin.x;
     caretRect.origin.y += _textContainerOrigin.y;
@@ -2020,7 +2059,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 - (void)draggingUpdated:(CPDraggingInfo)info
 {
     var point = [info draggingLocation],
-        location = [self _characterIndexFromRawPoint:point];
+        location = [self _characterIndexFromRawPoint:CGPointCreateCopy(point)];
         
     _movingSelection = CPMakeRange(location, 0);
     [_caret _drawCaretAtLocation:_movingSelection.location];
@@ -2035,7 +2074,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     var location = [self convertPoint:[aSender draggingLocation] fromView:nil],
         pasteboard = [aSender draggingPasteboard];
         
-    if ([pasteboard availableTypeFromArray:[CPRTFPboardType]])
+    if ([pasteboard availableTypeFromArray:[CPRTFPboardType, CPStringPboardType]])
     {
         [_caret setVisibility:NO];
         
@@ -2052,15 +2091,58 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         [self _deleteForRange:_selectionRange];
         [self setSelectedRange:_movingSelection];
 
-        var dataForPasting = [pasteboard stringForType:CPRTFPboardType];
+        var dataForPasting = [pasteboard stringForType:CPRTFPboardType] || [pasteboard stringForType:CPStringPboardType];
+
         //  setTimeout is to a work around a transaction issue with the undomanager
         setTimeout(function(){
-            [self insertText:[[_CPRTFParser new] parseRTF:dataForPasting]];
+
+            if ([dataForPasting hasPrefix:"{\\rtf"])
+                [self insertText:[[_CPRTFParser new] parseRTF:dataForPasting]];
+            else
+                [self insertText:dataForPasting];
         }, 0);
     }
         
     if ([pasteboard availableTypeFromArray:[CPColorDragType]])
         [self setTextColor:[CPKeyedUnarchiver unarchiveObjectWithData:[pasteboard dataForType:CPColorDragType]] range:_selectionRange];
+}
+
+- (BOOL)isSelectable
+{
+    return [super isSelectable] && !_placeholderString;
+}
+- (BOOL)isEditable
+{
+    return [super isEditable] && !_placeholderString;
+}
+
+- (void)_setPlaceholderString:(CPString)aString
+{
+    if (_placeholderString === aString)
+        return;
+
+    _placeholderString = aString;
+
+    [self setString:[[CPAttributedString alloc] initWithString:_placeholderString attributes:@{CPForegroundColorAttributeName:[CPColor colorWithRed:0.66 green:0.66 blue:0.66 alpha:1]}]];
+}
+
+- (void)_continuouslyReverseSetBinding
+{
+    var binderClass = [[self class] _binderClassForBinding:CPAttributedStringBinding] ||
+                      [[self class] _binderClassForBinding:CPValueBinding],
+        theBinding = [binderClass getBinding:CPAttributedStringBinding forObject:self] || [binderClass getBinding:CPValueBinding forObject:self];
+
+    if ([theBinding continuouslyUpdatesValue])
+        [theBinding reverseSetValueFor:@"objectValue"];
+}
+
+- (void)_reverseSetBinding
+{
+    var binderClass = [[self class] _binderClassForBinding:CPAttributedStringBinding] ||
+                      [[self class] _binderClassForBinding:CPValueBinding],
+        theBinding = [binderClass getBinding:CPAttributedStringBinding forObject:self] || [binderClass getBinding:CPValueBinding forObject:self];
+
+    [theBinding reverseSetValueFor:@"objectValue"];
 }
 
 @end
@@ -2341,6 +2423,10 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
 - (void)_drawCaretAtLocation:(int)aLoc
 {
     var rect = [_textView._layoutManager boundingRectForGlyphRange:CPMakeRange(aLoc, 1) inTextContainer:_textView._textContainer];
+
+	if (aLoc >= [_textView._layoutManager numberOfCharacters])
+		rect.origin.x = CGRectGetMaxX(rect)
+
     [self setRect:rect];
 }
 
@@ -2525,9 +2611,9 @@ var _CPCopyPlaceholder = '-';
             e.preventDefault();
 
             // setTimeout to prevent flickering in FF
-			setTimeout(function(){
-				[currentFirstResponder insertText:[[_CPRTFParser new] parseRTF:richtext]]
-			}, 20);
+            setTimeout(function(){
+                [currentFirstResponder insertText:[[_CPRTFParser new] parseRTF:richtext]]
+            }, 20);
 
             return false;
         }
@@ -2535,7 +2621,7 @@ var _CPCopyPlaceholder = '-';
         // plain is the same in all browsers...
 
         var data = e.clipboardData.getData('text/plain'),
-			cappString = [pasteboard stringForType:CPStringPboardType];
+            cappString = [pasteboard stringForType:CPStringPboardType];
 
         if (cappString != data)
         {
@@ -2644,3 +2730,28 @@ var _CPCopyPlaceholder = '-';
 }
 
 @end
+
+
+@class _CPTextFieldValueBinder;
+
+@implementation _CPTextViewValueBinder : _CPTextFieldValueBinder
+
+- (void)setPlaceholderValue:(id)aValue withMarker:(CPString)aMarker forBinding:(CPString)aBinding
+{
+    [_source _setPlaceholderString:aValue];
+}
+
+- (void)setValue:(id)aValue forBinding:(CPString)aBinding
+{
+    if (aValue === nil || (aValue.isa && [aValue isMemberOfClass:CPNull]))
+        [_source _setPlaceholderString:[self _placeholderForMarker:CPNullMarker]];
+    else
+        [_source _setPlaceholderString:nil];
+
+    [_source setObjectValue:aValue];
+}
+
+@end
+
+
+                              
