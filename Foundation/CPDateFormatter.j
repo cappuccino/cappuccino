@@ -1931,7 +1931,7 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
 */
 - (int)_secondsFromTimeZoneDefaultFormatString:(CPString)aTimeZoneFormatString
 {
-    var format =  /\w*([HPG-GMT])?([+-])(\d{1,2})([:])?(\d{2})\w*/,
+    var format = new RegExp("\\w*([HPG-GMT])?([+-])(\\d{1,2})([:])?(\\d{2})\\w*"),
         result = aTimeZoneFormatString.match(new RegExp(format)),
         seconds = 0;
 
@@ -1969,7 +1969,7 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
     var character = [aToken characterAtIndex:0],
         length = [aToken length],
         targetedArray,
-        format = /\w*([HPG-GMT])?([+-])(\d{1,2})([:])?(\d{2})\w*/,
+        format = new RegExp("\\w*([HPG-GMT])?([+-])(\\d{1,2})([:])?(\\d{2})\\w*"),
         result = aString.match(new RegExp(format));
 
     switch (character)
