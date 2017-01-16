@@ -68,7 +68,7 @@ CPStringSizeCachingEnabled = YES;
 #endif
 }
 
-- (CGSize)sizeWithFont:(CPFont)aFont inWidth:(float)aWidth
+- (CGSize)_sizeWithFont:(CPFont)aFont inWidth:(float)aWidth
 {
     var size;
 
@@ -80,6 +80,9 @@ CPStringSizeCachingEnabled = YES;
 
     if (sizeCacheForFont === undefined)
         sizeCacheForFont = CPStringSizeWithFontInWidthCache[self] = [];
+
+    if (!aWidth)
+        aWidth = '0';
 
     var cssString = [aFont cssString],
         cacheKey = cssString + '_' + aWidth;
@@ -109,6 +112,12 @@ CPStringSizeCachingEnabled = YES;
         size = CGSizeMake(0, 0);
 #endif
     return CGSizeMakeCopy(size);
+}
+
+- (CGSize)sizeWithFont:(CPFont)aFont inWidth:(float)aWidth
+{
+    var size = [self _sizeWithFont:aFont inWidth:aWidth];
+    return CGSizeMake(CEIL(size.width), size.height);
 }
 
 @end
