@@ -918,6 +918,7 @@ CPTextColorBinding                        = @"textColor";
 CPTitleBinding                            = @"title";
 CPToolTipBinding                          = @"toolTip";
 CPValueBinding                            = @"value";
+CPAttributedStringBinding                 = @"attributedString";
 CPValueURLBinding                         = @"valueURL";
 CPValuePathBinding                        = @"valuePath";
 CPDataBinding                             = @"data";
