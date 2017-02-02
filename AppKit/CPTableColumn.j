@@ -537,6 +537,14 @@ CPTableColumnUserResizingMask   = 1 << 1;
     return _headerToolTip;
 }
 
+/*!
+    @ignore
+*/
+- (CPString)description
+{
+    return [CPString stringWithFormat:"<%@ 0x%@ identifier=%@>", [self className], [CPString stringWithHash:[self UID]], [self identifier]];
+}
+
 @end
 
 @implementation CPTableColumnValueBinder : CPBinder
