@@ -5748,10 +5748,10 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     @ignore
     Call the delegate didDragTableColumn with the given tableColumn
 */
-- (void)_sendDelegateDidDragTableColumn:(CPInteger)column
+- (void)_sendDelegateDidDragTableColumn:(CPTableColumn)aTableColumn
 {
     if (_implementedDelegateMethods & CPTableViewDelegate_tableView_didDragTableColumn_)
-        [_delegate tableView:self didDragTableColumn:_tableColumns[column]];
+        [_delegate tableView:self didDragTableColumn:aTableColumn];
 }
 
 /*!
