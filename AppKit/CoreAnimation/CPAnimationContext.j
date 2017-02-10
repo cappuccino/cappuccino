@@ -382,7 +382,7 @@ var _CPAnimationContextStack   = nil,
                 values:values,
                 keytimes:[0, 1],
                 duration:anAction.duration,
-                timingfunctions:anAction.timingFunctions
+                timingfunctions:anAction.timingfunctions
             };
 }
 
