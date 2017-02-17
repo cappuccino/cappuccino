@@ -586,54 +586,6 @@ var _animationFlushingObserverCallback = function()
     }
 };
 
-CFRunLoopObserver = function(activities, repeats, order, callout, context)
-{
-    this.activities = activities;
-    this.repeats = repeats;
-    this.order = order;
-    this.callout = callout;
-    this.context = context;
-
-    this.isvalid = true;
-};
-
-CFRunLoopObserverCreate = function(activities, repeats, order, callout, context)
-{
-    return new CFRunLoopObserver(activities, repeats, order, callout, context);
-};
-
-CFRunLoopAddObserver = function(runloop, observer, mode)
-{
-    var observers = runloop._observers;
-
-    if (!observers)
-        observers = (runloop._observers = []);
-
-    if (observers.indexOf(observer) == -1)
-        observers.push(observer);
-};
-
-CFRunLoopObserverInvalidate = function(runloop, observer, mode)
-{
-    CFRunLoopRemoveObserver(runloop, observer, mode);
-};
-
-CFRunLoopRemoveObserver = function(runloop, observer, mode)
-{
-    var observers = runloop._observers;
-    if (observers)
-    {
-        var idx = observers.indexOf(observer);
-        if (idx !== -1)
-        {
-            observers.splice(idx, 1);
-
-            if (observers.length == 0)
-                runloop._observers = nil;
-        }
-    }
-};
-
 var FrameUpdater = function(anIdentifier)
 {
     this._identifier = anIdentifier;
