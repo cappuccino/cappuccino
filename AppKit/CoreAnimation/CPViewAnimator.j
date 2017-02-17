@@ -217,4 +217,9 @@ var DEFAULT_CSS_PROPERTIES = nil;
     _animationsDictionary = [animationsDict copy];
 }
 
+- (CPString)debug_description
+{
+    return [self identifier] || [self className];
+}
+
 @end

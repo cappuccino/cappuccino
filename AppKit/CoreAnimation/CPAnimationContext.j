@@ -260,7 +260,7 @@ var _CPAnimationContextStack   = nil,
     while(k--)
     {
 #if (DEBUG)
-        CPLog.debug("START TIMER " + timers[k].identifier());
+        CPLog.debug("START TIMER " + timers[k].description());
 #endif
         timers[k].start();
     }
@@ -270,7 +270,7 @@ var _CPAnimationContextStack   = nil,
     while(n--)
     {
 #if (DEBUG)
-        CPLog.debug("START ANIMATION " + cssAnimations[n].animationsnames);
+        CPLog.debug("START ANIMATION " + cssAnimations[n].description());
 #endif
         cssAnimations[n].start();
     }
