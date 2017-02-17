@@ -63,7 +63,9 @@
 {
     var handler = function()
     {
+        [_target _setForceUpdates:YES];
         [_target performSelector:aSelector withObject:aTargetValue];
+        [_target _setForceUpdates:NO];
     };
 
     [self _setTargetValue:aTargetValue withKeyPath:aKeyPath fallback:handler completion:handler];

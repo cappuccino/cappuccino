@@ -169,8 +169,6 @@ var _CPAnimationContextStack   = nil,
         {
             [self stopFrameUpdaterWithIdentifier:objectId];
 
-            if ([anObject respondsToSelector:@selector(_setForceUpdates:)])
-                [anObject _setForceUpdates:YES];
         }
 
         if (animationCompletion)
@@ -178,9 +176,6 @@ var _CPAnimationContextStack   = nil,
 
         if (needsPeriodicFrameUpdates || animationCompletion)
             [[CPRunLoop currentRunLoop] performSelectors];
-
-        if (needsPeriodicFrameUpdates && [anObject respondsToSelector:@selector(_setForceUpdates:)])
-            [anObject _setForceUpdates:NO];
 
         if (_completionHandlerAgent)
             _completionHandlerAgent.decrement();
