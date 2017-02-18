@@ -4,10 +4,7 @@
 
 @import <Foundation/CPTimer.j>
 
-@import "jshashtable.j"
-@import "CSSAnimation.j"
-
-@typedef HashTable;
+@typedef Map;
 
 var _CPAnimationContextStack   = nil,
     _animationFlushingObserver = nil,
@@ -18,7 +15,7 @@ var _CPAnimationContextStack   = nil,
     double                  _duration               @accessors(property=duration);
     CAMediaTimingFunction   _timingFunction         @accessors(property=timingFunction);
     Function                _completionHandlerAgent;
-    HashTable               _animationsByObject;
+    Map                     _animationsByObject;
 }
 
 + (id)currentContext
@@ -64,7 +61,7 @@ var _CPAnimationContextStack   = nil,
     _duration = 0.0;
     _timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear];
     _completionHandlerAgent = nil;
-    _animationsByObject = new Hashtable();
+    _animationsByObject = new Map();
 
     return self;
 }
@@ -135,7 +132,7 @@ var _CPAnimationContextStack   = nil,
     if (!animByKeyPath)
     {
         var newAnimByKeyPath = @{aKeyPath:resolvedAction};
-        _animationsByObject.put(anObject, newAnimByKeyPath);
+        _animationsByObject.set(anObject, newAnimByKeyPath);
     }
     else
         [animByKeyPath setObject:resolvedAction forKey:aKeyPath];
@@ -223,7 +220,7 @@ var _CPAnimationContextStack   = nil,
     if (![_CPAnimationContextStack count])
         return;
 
-    if (_animationsByObject.size() == 0)
+    if (_animationsByObject.size == 0)
     {
         if (_completionHandlerAgent)
             _completionHandlerAgent.fire();
@@ -234,21 +231,18 @@ var _CPAnimationContextStack   = nil,
 
 - (void)_startAnimations
 {
-    var targetViews = _animationsByObject.keys(),
-        cssAnimations = [],
+    var cssAnimations = [],
         timers = [];
 
-    [targetViews enumerateObjectsUsingBlock:function(targetView, idx, stop)
+    _animationsByObject.forEach(function(animByKeyPath, targetView)
     {
-        var animByKeyPath = _animationsByObject.get(targetView);
-
         [animByKeyPath enumerateKeysAndObjectsUsingBlock:function(aKey, anAction, stop)
         {
             [self getAnimations:cssAnimations getTimers:timers forView:targetView usingAction:anAction rootView:targetView  cssAnimate:YES];
         }];
+    });
 
-        _animationsByObject.remove(targetView);
-    }];
+    _animationsByObject.clear();
 
 // start timers
     var k = timers.length;
