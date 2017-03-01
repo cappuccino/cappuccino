@@ -88,6 +88,13 @@ _CPWindowViewResizeSlop = 3;
             @"shadow-inset": CGInsetMakeZero(),
             @"shadow-distance": 5,
             @"window-shadow-color": [CPColor clearColor],
+            @"border-top-radius": 6,
+            @"border-bottom-radius": 7,
+            @"box-shadow-color": [CPColor colorWithWhite:160/255 alpha:0.5],
+            @"box-shadow-x-offset": 0,
+            @"box-shadow-y-offset": 8,
+            @"box-shadow-blur": 30,
+            @"box-shadow-spread": 2,
             @"size-indicator": CGSizeMakeZero(),
             @"resize-indicator": [CPNull null],
             @"attached-sheet-shadow-color": [CPColor blackColor],
@@ -148,9 +155,30 @@ _CPWindowViewResizeSlop = 3;
         _styleMask = aStyleMask;
         _resizeIndicatorOffset = CGSizeMakeZero();
         _toolbarOffset = CGSizeMakeZero();
+
+        [self _updateCSSBorder];
     }
 
     return self;
+}
+
+- (void)_updateCSSBorder
+{
+    var top_radius = [self valueForThemeAttribute:@"border-top-radius"],
+        bottom_radius = [self valueForThemeAttribute:@"border-bottom-radius"];
+
+    if (top_radius == 0 && bottom_radius == 0)
+        return;
+
+    var bottom_right_radius = [self showsResizeIndicator] ? 0 : bottom_radius,
+        css_radius = [CPString stringWithFormat:@"%dpx %dpx %dpx %dpx", top_radius, top_radius, bottom_right_radius, bottom_radius];
+
+#if PLATFORM(DOM)
+    var style = _DOMElement.style;
+    style.setProperty(CPBrowserCSSProperty("border-radius"), css_radius);
+    // The border has no width and acts as a mask.
+    style.setProperty(CPBrowserCSSProperty("border-width"), "0px");
+#endif
 }
 
 - (void)setDocumentEdited:(BOOL)isEdited
@@ -736,6 +764,7 @@ _CPWindowViewResizeSlop = 3;
         _resizeIndicator = nil;
     }
 
+    [self _updateCSSBorder];
     [self setNeedsLayout];
 }
 
@@ -911,13 +940,18 @@ _CPWindowViewResizeSlop = 3;
         _sheetShadowView = [[CPView alloc] initWithFrame:CGRectMake(FLOOR((myWidth - shadowWidth) / 2), 0, shadowWidth, shadowHeight)];
         [_sheetShadowView setAutoresizingMask:CPViewWidthSizable];
         [self addSubview:_sheetShadowView];
+
+        [self setValue:0 forThemeAttribute:@"border-top-radius"];
     }
     else
     {
         [_sheetShadowView removeFromSuperview];
         _sheetShadowView = nil;
+        var radius = [[CPTheme defaultTheme] valueForAttributeWithName:@"border-top-radius" forClass:[_CPWindowView class]];
+        [self setValue:radius forThemeAttribute:@"border-top-radius"];
     }
 
+    [self _updateCSSBorder];
     [self setNeedsLayout];
 }
 
@@ -985,4 +1019,3 @@ _CPWindowViewResizeSlop = 3;
 }
 
 @end
-

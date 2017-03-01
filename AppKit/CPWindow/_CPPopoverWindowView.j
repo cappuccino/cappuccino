@@ -58,7 +58,9 @@ var _CPPopoverWindowViewDefaultCursorSize = CGSizeMake(16, 10);
             @"border-radius": 5.0,
             @"stroke-width": 1.0,
             @"shadow-size": CGSizeMake(0, 6),
-            @"shadow-blur": 15.0
+            @"shadow-blur": 15.0,
+            @"border-top-radius": 0,
+            @"border-bottom-radius": 0
         };
 }
 

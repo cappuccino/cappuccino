@@ -263,6 +263,15 @@ var CPWindowActionMessageKeys = [
     _CPWindowFrameAnimation             _frameAnimation;
 }
 
++ (void)initialize
+{
+    if ([self class] !== [CPWindow class])
+        return;
+
+    var isCompatible = (CPBrowserCSSProperty("box-shadow") !== nil) && (CPBrowserCSSProperty("border-radius") !== nil);
+    CPSetPlatformFeature(CPNativeShadowFeature, isCompatible);
+}
+
 + (Class)_binderClassForBinding:(CPString)aBinding
 {
     if ([aBinding hasPrefix:CPDisplayPatternTitleBinding])
@@ -784,7 +793,7 @@ CPTexturedBackgroundWindowMask
 
             [_windowView setFrameSize:size];
 
-            if (_hasShadow)
+            if (_hasShadow && !CPFeatureIsCompatible(CPNativeShadowFeature))
                 [_shadowView setNeedsLayout];
 
             if (!_isAnimating)
@@ -1376,8 +1385,25 @@ CPTexturedBackgroundWindowMask
     return _hasShadow;
 }
 
+- (CPString)_boxShadowProperty
+{
+    return CPBrowserCSSProperty("box-shadow");
+}
+
+-  (BOOL)_hasCSSBoxShadow
+{
+#if PLATFORM(DOM)
+    return _windowView._DOMElement.style.getPropertyValue([self _boxShadowProperty]) !== "";
+#endif
+
+    return NO;
+}
+
 - (void)_updateShadow
 {
+    if (_windowView == nil)
+        return;
+
     if ([self _sharesChromeWithPlatformWindow])
     {
         if (_shadowView)
@@ -1393,7 +1419,36 @@ CPTexturedBackgroundWindowMask
         return;
     }
 
-    if (_hasShadow && !_shadowView)
+    if (_hasShadow)
+    {
+        [self _addShadow];
+    }
+    else
+    {
+        [self _removeShadow];
+    }
+}
+
+- (void)_addShadow
+{
+    var supportsNativeShadow = CPFeatureIsCompatible(CPNativeShadowFeature);
+
+    if (supportsNativeShadow && ![self _hasCSSBoxShadow])
+    {
+        var x = [_windowView valueForThemeAttribute:@"box-shadow-x-offset"],
+            y = [_windowView valueForThemeAttribute:@"box-shadow-y-offset"],
+            blur = [_windowView valueForThemeAttribute:@"box-shadow-blur"],
+            spread = [_windowView valueForThemeAttribute:@"box-shadow-spread"],
+            color = [[_windowView valueForThemeAttribute:@"box-shadow-color"] cssString],
+            prop = [self _boxShadowProperty],
+            val = [CPString stringWithFormat:@"%@ %dpx %dpx %dpx %dpx", color, x, y, blur, spread];
+
+#if PLATFORM(DOM)
+        _windowView._DOMElement.style.setProperty(prop, val);
+#endif
+    }
+
+    if (!supportsNativeShadow && !_shadowView)
     {
         _shadowView = [[_CPShadowWindowView alloc] initWithFrame:CGRectMakeZero()];
 
@@ -1405,7 +1460,20 @@ CPTexturedBackgroundWindowMask
         CPDOMDisplayServerInsertBefore(_DOMElement, _shadowView._DOMElement, _windowView._DOMElement);
 #endif
     }
-    else if (!_hasShadow && _shadowView)
+}
+
+- (void)_removeShadow
+{
+    var supportsNativeShadow = CPFeatureIsCompatible(CPNativeShadowFeature);
+
+    if (supportsNativeShadow && [self _hasCSSBoxShadow])
+    {
+#if PLATFORM(DOM)
+        _windowView._DOMElement.style.removeProperty([self _boxShadowProperty]);
+#endif
+    }
+
+    if (!supportsNativeShadow && _shadowView)
     {
 #if PLATFORM(DOM)
         CPDOMDisplayServerRemoveChild(_DOMElement, _shadowView._DOMElement);
@@ -2955,10 +3023,10 @@ CPTexturedBackgroundWindowMask
     // The sheet starts hidden just above the top of a clip rect
     // TODO : Make properly for the -1 in endY
     var sheetFrame = [sheet frame],
-        sheetShadowFrame = sheet._hasShadow ? [sheet._shadowView frame] : sheetFrame,
+        sheetShadowFrameSize = [sheet _contentSize],
         frame = [self frame],
         originX = frame.origin.x + FLOOR((frame.size.width - sheetFrame.size.width) / 2),
-        startFrame = CGRectMake(originX, -sheetShadowFrame.size.height, sheetFrame.size.width, sheetFrame.size.height),
+        startFrame = CGRectMake(originX, -sheetShadowFrameSize.height, sheetFrame.size.width, sheetFrame.size.height),
         endY = -1 + [_windowView bodyOffset] - [[self contentView] frame].origin.y,
         endFrame = CGRectMake(originX, endY, sheetFrame.size.width, sheetFrame.size.height);
 
@@ -2984,6 +3052,23 @@ CPTexturedBackgroundWindowMask
     [sheet _setFrame:endFrame delegate:self duration:[self animationResizeTime:endFrame] curve:CPAnimationEaseOut];
 }
 
+// Frame size with decorations (shadow).
+- (CGSize)_contentSize
+{
+    if (!_hasShadow)
+        return [self frameSize];
+
+    if (!CPFeatureIsCompatible(CPNativeShadowFeature))
+        return [_shadowView frameSize];
+
+    var windowViewFrameSize = [_windowView frameSize],
+        spread = [_windowView valueForThemeAttribute:@"box-shadow-spread"],
+        blur   = [_windowView valueForThemeAttribute:@"box-shadow-blur"],
+        d      = (spread + blur) * 2;
+
+    return CGSizeMake(windowViewFrameSize.width + d, windowViewFrameSize.height + d);
+}
+
 - (void)_sheetShouldAnimateOut:(CPTimer)timer
 {
     if (_sheetContext["isOpening"])
@@ -2998,7 +3083,7 @@ CPTexturedBackgroundWindowMask
     {
         var sheet = _sheetContext["sheet"],
             sheetFrame = [sheet frame],
-            fullHeight = sheet._hasShadow ? [sheet._shadowView frame].size.height : sheetFrame.size.height,
+            fullHeight = [sheet _contentSize].height,
             endFrame = CGRectMakeCopy(sheetFrame),
             contentOrigin = [self convertBaseToGlobal:[[self contentView] frame].origin];
 
