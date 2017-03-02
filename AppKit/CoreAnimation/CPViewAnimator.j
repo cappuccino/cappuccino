@@ -2,6 +2,10 @@
 @import "_CPObjectAnimator.j"
 @import "CPView.j"
 @import "CPCompatibility.j"
+@import "CSSAnimation.j"
+
+var DEFAULT_CSS_PROPERTIES = nil,
+    FRAME_UPDATERS = {};
 
 @implementation CPViewAnimator : _CPObjectAnimator
 {
@@ -87,6 +91,97 @@
     }
 }
 
++ (CPDictionary)_defaultCSSProperties
+{
+    if (DEFAULT_CSS_PROPERTIES == nil)
+    {
+        var transformProperty = "transform";
+
+        DEFAULT_CSS_PROPERTIES =  @{
+                                    "backgroundColor"  : [@{"property":"background", "value":function(sv, val){return [val cssString];}}],
+                                    "alphaValue"       : [@{"property":"opacity"}],
+                                    "frame"            : [@{"property":transformProperty, "value":frameToCSSTranslationTransformMatrix},
+                                                          @{"property":"width", "value":transformFrameToWidth},
+                                                          @{"property":"height", "value":transformFrameToHeight}],
+                                    "frameOrigin"      : [@{"property":transformProperty, "value":frameOriginToCSSTransformMatrix}],
+                                    "frameSize"        : [@{"property":"width", "value":transformSizeToWidth},
+                                                          @{"property":"height", "value":transformSizeToHeight}]
+                                    };
+    }
+
+    return DEFAULT_CSS_PROPERTIES;
+}
+
++ (void)addAnimations:(CPArray)animations forAction:(id)anAction
+{
+    var target = anAction.object;
+
+    return [self _addAnimations:animations forAction:anAction domElement:[target _DOMElement] identifier:[target UID]];
+}
+
++ (void)_addAnimations:(CPArray)animations forAction:(id)anAction domElement:(Object)aDomElement identifier:(CPString)anIdentifier
+{
+    var animation = [animations objectPassingTest:function(anim, idx, stop)
+    {
+        return anim.identifier == anIdentifier;
+    }];
+
+    if (animation == nil)
+    {
+        animation = new CSSAnimation(aDomElement, anIdentifier, [anAction.object debug_description]);
+        [animations addObject:animation];
+    }
+
+    var css_mapping = [self _cssPropertiesForKeyPath:anAction.keypath];
+
+    [css_mapping enumerateObjectsUsingBlock:function(aDict, anIndex, stop)
+    {
+        var completionFunction = (anIndex == 0) ? anAction.completion : null,
+            property = [aDict objectForKey:@"property"],
+            getter = [aDict objectForKey:@"value"];
+
+        animation.addPropertyAnimation(property, getter, anAction.duration, anAction.keytimes, anAction.values, anAction.timingfunctions, completionFunction);
+    }];
+}
+
++ (CPArray)_cssPropertiesForKeyPath:(CPString)aKeyPath
+{
+    return [[self _defaultCSSProperties] objectForKey:aKeyPath];
+}
+
++ (void)addFrameUpdaters:(CPArray)frameUpdaters forAction:(id)anAction
+{
+    var rootIdentifier = [anAction.root UID];
+
+    var frameUpdater = [frameUpdaters objectPassingTest:function(updater, idx, stop)
+    {
+        // There is one timer, linked to the top view, that updates the whole hierarchy.
+        return updater.identifier() == rootIdentifier;
+    }];
+
+    if (frameUpdater == nil)
+    {
+        frameUpdater = new FrameUpdater(rootIdentifier);
+        [frameUpdaters addObject:frameUpdater];
+        FRAME_UPDATERS[rootIdentifier] = frameUpdater;
+    }
+
+    frameUpdater.addTarget(anAction.object, anAction.keypath, anAction.duration);
+}
+
++ (void)stopUpdaterWithIdentifier:(CPString)anIdentifier
+{
+    var frameUpdater = FRAME_UPDATERS[anIdentifier];
+
+    if (frameUpdater)
+    {
+        frameUpdater.stop();
+        delete FRAME_UPDATERS[anIdentifier];
+    }
+    else
+        CPLog.warn("Could not find FrameUpdater with identifier " + anIdentifier);
+}
+
 - (BOOL)needsPeriodicFrameUpdatesForKeyPath:(CPString)aKeyPath
 {
     return ((aKeyPath == @"frame" || aKeyPath == @"frameSize") &&
@@ -136,35 +231,7 @@ var frameToCSSTranslationTransformMatrix = function(start, current)
     return CSSStringFromCGAffineTransform(affine);
 };
 
-var DEFAULT_CSS_PROPERTIES = nil;
-
 @implementation CPView (CPAnimatablePropertyContainer)
-
-+ (CPDictionary)_defaultCSSProperties
-{
-    if (DEFAULT_CSS_PROPERTIES == nil)
-    {
-        var transformProperty = CPBrowserCSSProperty("transform");
-
-        DEFAULT_CSS_PROPERTIES =  @{
-                                    "backgroundColor"  : [@{"property":"background", "value":function(sv, val){return [val cssString];}}],
-                                    "alphaValue"       : [@{"property":"opacity"}],
-                                    "frame"            : [@{"property":transformProperty, "value":frameToCSSTranslationTransformMatrix},
-                                                          @{"property":"width", "value":transformFrameToWidth},
-                                                          @{"property":"height", "value":transformFrameToHeight}],
-                                    "frameOrigin"      : [@{"property":transformProperty, "value":frameOriginToCSSTransformMatrix}],
-                                    "frameSize"        : [@{"property":"width", "value":transformSizeToWidth},
-                                                          @{"property":"height", "value":transformSizeToHeight}]
-                                    };
-    }
-
-    return DEFAULT_CSS_PROPERTIES;
-}
-
-+ (CPArray)_cssPropertiesForKeyPath:(CPString)aKeyPath
-{
-    return [[self _defaultCSSProperties] objectForKey:aKeyPath];
-}
 
 + (Class)animatorClass
 {
@@ -184,11 +251,6 @@ var DEFAULT_CSS_PROPERTIES = nil;
     return _animator;
 }
 
-- (id)DOMElementForKeyPath:(CPString)aKeyPath
-{
-    return _DOMElement;
-}
-
 + (CAAnimation)defaultAnimationForKey:(CPString)aKey
 {
     // TODO: remove when supported.
@@ -198,7 +260,7 @@ var DEFAULT_CSS_PROPERTIES = nil;
         return nil;
     }
 
-    if ([self _cssPropertiesForKeyPath:aKey] !== nil)
+    if ([[self animatorClass] _cssPropertiesForKeyPath:aKey] !== nil)
         return [CAAnimation animation];
 
     return nil;
@@ -227,11 +289,29 @@ var DEFAULT_CSS_PROPERTIES = nil;
     _animationsDictionary = [animationsDict copy];
 }
 
+- (Object)_DOMElement
+{
+    return _DOMElement;
+}
+
 - (CPString)debug_description
 {
     return [self identifier] || [self className];
 }
 
+@end
+
+@implementation CPArray (Additions)
+
+- (CPArray)objectPassingTest:(Function)aFunction
+{
+    var idx = [self indexOfObjectPassingTest:aFunction];
+
+    if (idx !== CPNotFound)
+        return [self objectAtIndex:idx];
+
+    return nil;
+}
 @end
 
 var FrameUpdater = function(anIdentifier)
