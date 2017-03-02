@@ -204,6 +204,7 @@ var _CPAnimationContextStack   = nil,
 
     return {
                 object:anObject,
+                root:anObject,
                 keypath:animatedKeyPath,
                 values:values,
                 keytimes:keyTimes,
@@ -236,7 +237,7 @@ var _CPAnimationContextStack   = nil,
     {
         [animByKeyPath enumerateKeysAndObjectsUsingBlock:function(aKey, anAction, stop)
         {
-            [self getAnimations:cssAnimations getTimers:timers forView:targetView usingAction:anAction rootView:targetView  cssAnimate:YES];
+            [self getAnimations:cssAnimations getTimers:timers usingAction:anAction cssAnimate:YES];
         }];
     });
 
@@ -263,9 +264,8 @@ var _CPAnimationContextStack   = nil,
     }
 }
 
-- (void)getAnimations:(CPArray)cssAnimations getTimers:(CPArray)timers forView:(CPView)aTargetView usingAction:(Object)anAction rootView:(CPView)rootView cssAnimate:(BOOL)needsCSSAnimation
+- (void)getAnimations:(CPArray)cssAnimations getTimers:(CPArray)timers usingAction:(Object)anAction cssAnimate:(BOOL)needsCSSAnimation
 {
-    var keyPath = anAction.keypath,
         isFrameKeyPath = (keyPath == @"frame" || keyPath == @"frameSize"),
         customLayout = [aTargetView hasCustomLayoutSubviews],
         customDrawing = [aTargetView hasCustomDrawRect],
@@ -302,6 +302,8 @@ var _CPAnimationContextStack   = nil,
             var completionFunction = (anIndex == 0) ? anAction.completion : null;
             var property = [aDict objectForKey:@"property"],
                 getter = [aDict objectForKey:@"value"];
+    var targetView                   = anAction.object,
+        keyPath                      = anAction.keypath,
         needsPeriodicFrameUpdates    = [[targetView animator] needsPeriodicFrameUpdatesForKeyPath:keyPath],
 
             cssAnimation.addPropertyAnimation(property, getter, duration, anAction.keytimes, anAction.values, timingFunctions, completionFunction);
@@ -322,9 +324,6 @@ var _CPAnimationContextStack   = nil,
 
     if (count && isFrameKeyPath)
     {
-        var frameTimerId = [rootView UID],
-        lastIndex = count - 1;
-
         [subviews enumerateObjectsUsingBlock:function(aSubview, idx, stop)
          {
              var action = [self actionFromAction:anAction forAnimatedSubview:aSubview],
@@ -341,8 +340,8 @@ var _CPAnimationContextStack   = nil,
 #if (DEBUG)
                     CPLog.debug(aSubview + " setFrame: " + CPStringFromRect(targetFrame));
 #endif
-                     if (idx == lastIndex)
-                         [self stopFrameUpdaterWithIdentifier:frameTimerId];
+                    if (idx == count - 1)
+                        [animatorClass stopUpdaterWithIdentifier:[anAction.root UID]];
                  };
              }
 
@@ -366,6 +365,7 @@ var _CPAnimationContextStack   = nil,
 
     return {
                 object:aView,
+                root:anAction.root,
                 keypath:"frame",
                 values:values,
                 keytimes:[0, 1],
