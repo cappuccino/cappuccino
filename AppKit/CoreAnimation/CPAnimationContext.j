@@ -147,15 +147,13 @@ var _CPAnimationContextStack   = nil,
         keyTimes,
         timingFunctions,
         objectId;
+        needsPeriodicFrameUpdates,
 
     if (!aKeyPath || !anObject || !(animation = [anObject animationForKey:aKeyPath]) || ![animation isKindOfClass:[CAAnimation class]])
         return nil;
 
     duration = [animation duration] || [self duration];
-
-    var needsPeriodicFrameUpdates = (((aKeyPath == @"frame" || aKeyPath == @"frameSize") &&
-                                    ([anObject hasCustomLayoutSubviews] || [anObject hasCustomDrawRect])) || [[anObject animator] wantsPeriodicFrameUpdates]) &&
-                                    (objectId = [anObject UID]);
+    needsPeriodicFrameUpdates = [[anObject animator] needsPeriodicFrameUpdatesForKeyPath:aKeyPath];
 
     if (_completionHandlerAgent)
         _completionHandlerAgent.increment();
@@ -271,7 +269,6 @@ var _CPAnimationContextStack   = nil,
         isFrameKeyPath = (keyPath == @"frame" || keyPath == @"frameSize"),
         customLayout = [aTargetView hasCustomLayoutSubviews],
         customDrawing = [aTargetView hasCustomDrawRect],
-        needsPeriodicFrameUpdates = ((isFrameKeyPath && (customLayout || customDrawing)) || [[aTargetView animator] wantsPeriodicFrameUpdates]);
 
     if (needsCSSAnimation)
     {
@@ -305,6 +302,7 @@ var _CPAnimationContextStack   = nil,
             var completionFunction = (anIndex == 0) ? anAction.completion : null;
             var property = [aDict objectForKey:@"property"],
                 getter = [aDict objectForKey:@"value"];
+        needsPeriodicFrameUpdates    = [[targetView animator] needsPeriodicFrameUpdatesForKeyPath:keyPath],
 
             cssAnimation.addPropertyAnimation(property, getter, duration, anAction.keytimes, anAction.values, timingFunctions, completionFunction);
         }];
@@ -348,7 +346,8 @@ var _CPAnimationContextStack   = nil,
                  };
              }
 
-             [self getAnimations:cssAnimations getTimers:timers forView:aSubview usingAction:action rootView:rootView cssAnimate:!customLayout];
+             var animate = !needsPeriodicFrameUpdates;
+             [self getAnimations:cssAnimations getTimers:timers usingAction:action cssAnimate:animate];
          }];
     }
 }

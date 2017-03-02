@@ -87,6 +87,14 @@
     }
 }
 
+- (BOOL)needsPeriodicFrameUpdatesForKeyPath:(CPString)aKeyPath
+{
+    return ((aKeyPath == @"frame" || aKeyPath == @"frameSize") &&
+            (([_target hasCustomLayoutSubviews] && ![_target implementsSelector:@selector(frameRectOfView:inSuperviewSize:)])
+             || [_target hasCustomDrawRect]))
+            || [self wantsPeriodicFrameUpdates];
+}
+
 @end
 
 var transformFrameToWidth = function(start, current)
