@@ -86,7 +86,7 @@ var _CPAnimationContextStack   = nil,
 #if (DEBUG)
         CPLog.debug("create new observer");
 #endif
-        _animationFlushingObserver = CFRunLoopObserverCreate(2, true, 0, _animationFlushingObserverCallback,0);
+        _animationFlushingObserver = CFRunLoopObserverCreate(2, true, 0, _animationFlushingObserverCallback, 0);
         CFRunLoopAddObserver([CPRunLoop mainRunLoop], _animationFlushingObserver);
     }
 }
@@ -343,16 +343,16 @@ var _CPAnimationContextStack   = nil,
              var action = [self actionFromAction:anAction forAnimatedSubview:aSubview],
                 targetFrame = [action.values lastObject];
 
-             if (CGRectEqualToRect([aSubview frame], targetFrame))
-                 return;
+            if (CGRectEqualToRect([aSubview frame], targetFrame))
+                return;
 
-             if ([aSubview hasCustomDrawRect])
-             {
-                 action.completion = function()
-                 {
-                     [aSubview setFrame:targetFrame];
+            if ([aSubview hasCustomDrawRect])
+            {
+                action.completion = function()
+                {
+                    [aSubview setFrame:targetFrame];
 #if (DEBUG)
-                    CPLog.debug(aSubview + " setFrame: ");
+                    CPLog.debug(aSubview + " setFrame: " + CPStringFromRect(targetFrame));
 #endif
                      if (idx == lastIndex)
                          [self stopFrameUpdaterWithIdentifier:frameTimerId];
@@ -370,7 +370,7 @@ var _CPAnimationContextStack   = nil,
         endFrame,
         values;
 
-    if (anAction.keypath == @"frame")
+    if (anAction.keypath == "frame")
         targetValue = targetValue.size;
 
     endFrame = [aView frameWithNewSuperviewSize:targetValue];
