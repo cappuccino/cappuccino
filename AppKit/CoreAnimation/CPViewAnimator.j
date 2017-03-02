@@ -80,7 +80,7 @@ var DEFAULT_CSS_PROPERTIES = nil,
     var animation = [_target animationForKey:aKeyPath],
         context = [CPAnimationContext currentContext];
 
-    if (!animation || ![animation isKindOfClass:[CAAnimation class]] || (![context duration] && ![animation duration]) || ![_CPObjectAnimator supportsCSSAnimations])
+    if (!animation || ![animation isKindOfClass:[CAAnimation class]] || (![context duration] && ![animation duration]) || !CPFeatureIsCompatible(CPCSSAnimationFeature))
     {
         if (fallback)
             fallback();

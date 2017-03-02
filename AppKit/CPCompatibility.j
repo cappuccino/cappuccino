@@ -81,7 +81,7 @@ CPFileAPIFeature                        = 31;
 
 CPAltEnterTextAreaFeature               = 32;
 
-
+CPCSSAnimationFeature                   = 33;
 
 /*
     When an absolutely positioned div (CPView) with an absolutely positioned canvas in it (CPView with drawRect:) moves things on top of the canvas (subviews) don't redraw correctly. E.g. if you have a bunch of text fields in a CPBox in a sheet which animates in, some of the text fields might not be visible because the CPBox has a canvas at the bottom and the box moved form offscreen to onscreen. This bug is probably very related: https://bugs.webkit.org/show_bug.cgi?id=67203
