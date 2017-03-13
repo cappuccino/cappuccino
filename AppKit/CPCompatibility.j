@@ -336,6 +336,14 @@ else
 }
 
 /*!
+    Sets a feature with the given value.
+*/
+function CPSetPlatformFeature(aFeature, aBool)
+{
+    PLATFORM_FEATURES[aFeature] = aBool;
+}
+
+/*!
     Return the properly prefixed JS property for the given name. E.g. in a webkit browser,
     CPBrowserStyleProperty('transition') -> WebkitTransition
 
