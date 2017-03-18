@@ -34,7 +34,7 @@ var removeFromParent = function(aNode)
         parentNode.removeChild(aNode);
 };
 
-CSSAnimation = function(aTarget/* DOM Element */, anIdentifier)
+CSSAnimation = function(aTarget/* DOM Element */, anIdentifier, aTargetName)
 {
     defineCSSProperties();
 
@@ -52,6 +52,7 @@ CSSAnimation = function(aTarget/* DOM Element */, anIdentifier)
     {
         this.target = aTarget;
         this.identifier = anIdentifier;
+        this.targetName = aTargetName;
         this.animationName = animationName;
         this.listener = null;
         this.styleElement = null;
@@ -68,6 +69,11 @@ CSSAnimation = function(aTarget/* DOM Element */, anIdentifier)
 
     return animation;
 };
+
+CSSAnimation.prototype.description = function()
+{
+    return "<animation " + this.identifier + " target=" + this.targetName + " properties=" + this.propertyanimations.map(function(anim){return anim.property;}).join(",") + " >";
+}
 
 CSSAnimation.prototype.addPropertyAnimation = function(propertyName/* String */, valueFunction/* Function */, aDuration/* float */, aKeyTimes/* (d, [d]) */, aValues/* Array */, aTimingFunctions/* [d,d,d,d], [[d,d,d,d]] */, aCompletionfunction/* Function */)
 {

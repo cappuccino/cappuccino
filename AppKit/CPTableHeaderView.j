@@ -681,20 +681,21 @@ var CPTableHeaderViewResizeZone = 3.0,
     [_columnDragClipView removeFromSuperview];
     [_tableView _setDraggedColumn:-1];
 
-    var headerView = [[[_tableView tableColumns] objectAtIndex:aColumnIndex] headerView];
+    var tableColumn = [[_tableView tableColumns] objectAtIndex:aColumnIndex],
+        headerView = [tableColumn headerView];
 
     [[headerView subviews] makeObjectsPerformSelector:@selector(setHidden:) withObject:NO];
 
     if (_tableView._draggedColumnIsSelected)
         [headerView setThemeState:CPThemeStateSelected];
 
-    var columnRect = [_tableView rectOfColumn:aColumnIndex];
-
     [_tableView _reloadDataViews];
     [[_tableView headerView] setNeedsLayout];
 
     [[CPCursor arrowCursor] set];
     [self updateTrackingAreas];
+
+    [_tableView _sendDelegateDidDragTableColumn:tableColumn];
 }
 
 - (BOOL)_shouldResizeTableColumn:(CPInteger)aColumnIndex at:(CGPoint)aPoint
