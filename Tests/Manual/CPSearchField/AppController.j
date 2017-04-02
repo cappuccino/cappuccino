@@ -74,6 +74,8 @@ var categories = ["firstName", "lastName"];
 
     [self changeCategory:[[searchField menu] itemAtIndex:1]];
     [self updateFilter:searchField];
+    
+    [searchField setDelegate:self];
 
     [searchField setDelegate:self];
 

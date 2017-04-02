@@ -105,6 +105,8 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
     [self setBordered:YES];
     [self setEditable:YES];
     [self setContinuous:YES];
+    
+    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_searchFieldTextDidChange:) name:CPControlTextDidChangeNotification object:self];
 
     var bounds = [self bounds],
         cancelButton = [[CPButton alloc] initWithFrame:[self cancelButtonRectForBounds:bounds]],
