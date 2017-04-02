@@ -54,7 +54,7 @@ var URL_RE = new RegExp( /* url */
         "(" + /* authority */
             "(?:" +
                 "(" + /* userInfo */
-                    "([^:@]*)" + /* user */
+                    "([^:@]+)" + /* user */
                     ":?" +
                     "([^:@]*)" + /* password */
                 ")?" +
