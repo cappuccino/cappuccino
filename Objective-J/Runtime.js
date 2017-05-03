@@ -64,7 +64,6 @@ GLOBAL(objj_class) = function(displayName)
     this.version        = 0;
 
     this.super_class    = NULL;
-    this.sub_classes    = [];
 
     this.name           = NULL;
     this.info           = 0;
