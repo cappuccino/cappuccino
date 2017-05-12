@@ -117,6 +117,7 @@ var ShouldSuppressResizeNotifications   = 1,
     CPArray                     _DOMDividerElements;
     CPString                    _dividerImagePath;
     int                         _drawingDivider;
+    BOOL                        _isTracking;
 
     CPString                    _autosaveName;
     BOOL                        _shouldAutosave;
@@ -158,6 +159,7 @@ var ShouldSuppressResizeNotifications   = 1,
         _buttonBars = [];
 
         _shouldAutosave = YES;
+        _isTracking = NO;
 
         [self _setVertical:YES];
     }
@@ -473,12 +475,13 @@ var ShouldSuppressResizeNotifications   = 1,
 
     if (type == CPLeftMouseUp)
     {
-        // We disabled autosaving during tracking.
-        _shouldAutosave = YES;
-
-        if (_currentDivider != CPNotFound)
+        if ([anEvent clickCount] == 2 || (_isTracking && _currentDivider != CPNotFound))
         {
+            // We disabled autosaving during tracking.
+            _shouldAutosave = YES;
             _currentDivider = CPNotFound;
+            _isTracking = NO;
+
             [self _autosave];
             [self _updateResizeCursor:anEvent];
         }
@@ -504,6 +507,7 @@ var ShouldSuppressResizeNotifications   = 1,
                     [self _delegateRespondsToSplitViewCanCollapseSubview] &&
                     [self _delegateRespondsToSplitViewshouldCollapseSubviewForDoubleClickOnDividerAtIndex])
                 {
+                    _currentDivider = i;
                     var minPosition = [self minPossiblePositionOfDividerAtIndex:i],
                         maxPosition = [self maxPossiblePositionOfDividerAtIndex:i],
                         preCollapsePosition = [_preCollapsePositions objectForKey:"" + i] || 0;
@@ -543,6 +547,15 @@ var ShouldSuppressResizeNotifications   = 1,
 
     else if (type == CPLeftMouseDragged && _currentDivider != CPNotFound)
     {
+        if (!_isTracking)
+        {
+            // Don't autosave during a resize. We'll wait until it's done.
+            _shouldAutosave = NO;
+            [self _postNotificationWillResize];
+
+            _isTracking = YES;
+        }
+
         var point = [self convertPoint:[anEvent locationInWindow] fromView:nil];
 
         [self setPosition:(point[_originComponent] + _initialOffset) ofDividerAtIndex:_currentDivider];
@@ -1195,7 +1208,7 @@ The sum of the views and the sum of the dividers should be equal to the size of 
     [self removeAllTrackingAreas];
 
     var options = CPTrackingCursorUpdate | CPTrackingActiveInKeyWindow;
-    
+
     for (var i = 0; i < _subviews.length - 1; i++)
         [self addTrackingArea:[[CPTrackingArea alloc] initWithRect:[self effectiveRectOfDividerAtIndex:i]
                                                            options:options
@@ -1440,6 +1453,7 @@ var CPSplitViewDelegateKey          = "CPSplitViewDelegateKey",
 
         _currentDivider = CPNotFound;
         _shouldAutosave = YES;
+        _isTracking = NO;
 
         _DOMDividerElements = [];
 
