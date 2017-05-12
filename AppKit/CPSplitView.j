@@ -532,6 +532,8 @@ var ShouldSuppressResizeNotifications   = 1,
                     _shouldAutosave = NO;
                     [self _postNotificationWillResize];
                 }
+
+                break;
             }
         }
 
