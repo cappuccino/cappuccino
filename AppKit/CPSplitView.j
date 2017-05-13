@@ -454,15 +454,25 @@ var ShouldSuppressResizeNotifications   = 1,
         return nil;
 
     var point = [self convertPoint:aPoint fromView:[self superview]],
-        count = [_subviews count] - 1;
+        dividerIndex = [self _dividerAtPoint:point];
+
+    if (dividerIndex !== CPNotFound)
+        return self;
+
+    return [super hitTest:aPoint];
+}
+
+- (CPInteger)_dividerAtPoint:(CGPoint)aPoint
+{
+    var count = [_subviews count] - 1;
 
     for (var i = 0; i < count; i++)
     {
-        if ([self cursorAtPoint:point hitDividerAtIndex:i])
-            return self;
+        if ([self cursorAtPoint:aPoint hitDividerAtIndex:i])
+            return i;
     }
 
-    return [super hitTest:aPoint];
+    return CPNotFound;
 }
 
 /*
@@ -568,8 +578,11 @@ var ShouldSuppressResizeNotifications   = 1,
 
 - (void)mouseDown:(CPEvent)anEvent
 {
-    // FIXME: This should not trap events if not on a divider!
-    [self trackDivider:anEvent];
+    var point = [self convertPoint:[anEvent locationInWindow] fromView:nil],
+        dividerIndex = [self _dividerAtPoint:point];
+
+    if (dividerIndex !== CPNotFound)
+        [self trackDivider:anEvent];
 }
 
 - (void)viewDidMoveToWindow
