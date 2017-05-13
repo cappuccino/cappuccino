@@ -474,7 +474,6 @@ var ShouldSuppressResizeNotifications   = 1,
 
     return CPNotFound;
 }
-
 /*
     Tracks the divider.
     @param anEvent the input event
@@ -501,60 +500,44 @@ var ShouldSuppressResizeNotifications   = 1,
 
     if (type == CPLeftMouseDown)
     {
-        var point = [self convertPoint:[anEvent locationInWindow] fromView:nil],
-            count = [_subviews count] - 1;
+        var point = [self convertPoint:[anEvent locationInWindow] fromView:nil];
+        _currentDivider = [self _dividerAtPoint:point];
 
-        _currentDivider = CPNotFound;
+        var frame = [_subviews[_currentDivider] frame],
+            startPosition = frame.origin[_originComponent] + frame.size[_sizeComponent];
 
-        for (var i = 0; i < count; i++)
+        if ([anEvent clickCount] == 2 &&
+            [self _delegateRespondsToSplitViewCanCollapseSubview] &&
+            [self _delegateRespondsToSplitViewshouldCollapseSubviewForDoubleClickOnDividerAtIndex])
         {
-            var frame = [_subviews[i] frame],
-                startPosition = frame.origin[_originComponent] + frame.size[_sizeComponent];
+            var minPosition = [self minPossiblePositionOfDividerAtIndex:_currentDivider],
+                maxPosition = [self maxPossiblePositionOfDividerAtIndex:_currentDivider],
+                preCollapsePosition = [_preCollapsePositions objectForKey:"" + _currentDivider] || 0;
 
-            if ([self cursorAtPoint:point hitDividerAtIndex:i])
+            if ([self _sendDelegateSplitViewCanCollapseSubview:_subviews[_currentDivider]] && [self _sendDelegateSplitViewShouldCollapseSubview:_subviews[_currentDivider] forDoubleClickOnDividerAtIndex:_currentDivider])
             {
-                if ([anEvent clickCount] == 2 &&
-                    [self _delegateRespondsToSplitViewCanCollapseSubview] &&
-                    [self _delegateRespondsToSplitViewshouldCollapseSubviewForDoubleClickOnDividerAtIndex])
-                {
-                    _currentDivider = i;
-                    var minPosition = [self minPossiblePositionOfDividerAtIndex:i],
-                        maxPosition = [self maxPossiblePositionOfDividerAtIndex:i],
-                        preCollapsePosition = [_preCollapsePositions objectForKey:"" + i] || 0;
-
-                    if ([self _sendDelegateSplitViewCanCollapseSubview:_subviews[i]] && [self _sendDelegateSplitViewShouldCollapseSubview:_subviews[i] forDoubleClickOnDividerAtIndex:i])
-                    {
-                        if ([self isSubviewCollapsed:_subviews[i]])
-                            [self setPosition:preCollapsePosition ? preCollapsePosition : (minPosition + (maxPosition - minPosition) / 2) ofDividerAtIndex:i];
-                        else
-                            [self setPosition:minPosition ofDividerAtIndex:i];
-                    }
-                    else if ([self _sendDelegateSplitViewCanCollapseSubview:_subviews[i + 1]] && [self _sendDelegateSplitViewShouldCollapseSubview:_subviews[i + 1] forDoubleClickOnDividerAtIndex:i])
-                    {
-                        if ([self isSubviewCollapsed:_subviews[i + 1]])
-                            [self setPosition:preCollapsePosition ? preCollapsePosition : (minPosition + (maxPosition - minPosition) / 2) ofDividerAtIndex:i];
-                        else
-                            [self setPosition:maxPosition ofDividerAtIndex:i];
-                    }
-                }
+                if ([self isSubviewCollapsed:_subviews[_currentDivider]])
+                    [self setPosition:preCollapsePosition ? preCollapsePosition : (minPosition + (maxPosition - minPosition) / 2) ofDividerAtIndex:_currentDivider];
                 else
-                {
-                    _currentDivider = i;
-                    _initialOffset = startPosition - point[_originComponent];
-
-                    // Don't autosave during a resize. We'll wait until it's done.
-                    _shouldAutosave = NO;
-                    [self _postNotificationWillResize];
-                }
-
-                break;
+                    [self setPosition:minPosition ofDividerAtIndex:_currentDivider];
+            }
+            else if ([self _sendDelegateSplitViewCanCollapseSubview:_subviews[_currentDivider + 1]] && [self _sendDelegateSplitViewShouldCollapseSubview:_subviews[_currentDivider + 1] forDoubleClickOnDividerAtIndex:_currentDivider])
+            {
+                if ([self isSubviewCollapsed:_subviews[_currentDivider + 1]])
+                    [self setPosition:preCollapsePosition ? preCollapsePosition : (minPosition + (maxPosition - minPosition) / 2) ofDividerAtIndex:_currentDivider];
+                else
+                    [self setPosition:maxPosition ofDividerAtIndex:_currentDivider];
             }
         }
+        else
+        {
+            _initialOffset = startPosition - point[_originComponent];
+            // Don't autosave during a resize. We'll wait until it's done.
+            _shouldAutosave = NO;
+            [self _postNotificationWillResize];
+        }
 
-        if (_currentDivider === CPNotFound)
-            return;
     }
-
     else if (type == CPLeftMouseDragged && _currentDivider != CPNotFound)
     {
         if (!_isTracking)
