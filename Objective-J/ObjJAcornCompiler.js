@@ -584,7 +584,7 @@ ProtocolDef.prototype.getClassMethod = function(name) {
 
     for (var i = 0, size = protocols.length; i < size; i++) {
         var protocol = protocols[i],
-            method = protocol.getInstanceMethod(name);
+            method = protocol.getClassMethod(name);
 
         if (method)
             return method;

@@ -3,22 +3,19 @@
 @import "CPView.j"
 
 @import <Foundation/CPTimer.j>
+@import <Foundation/CPRunLoop.j>
 
-@import "jshashtable.j"
-@import "CSSAnimation.j"
-
-@typedef HashTable;
+@typedef Map;
 
 var _CPAnimationContextStack   = nil,
-    _animationFlushingObserver = nil,
-    _animationFrameUpdaters    = {};
+    _animationFlushingObserver = nil;
 
 @implementation CPAnimationContext : CPObject
 {
     double                  _duration               @accessors(property=duration);
     CAMediaTimingFunction   _timingFunction         @accessors(property=timingFunction);
     Function                _completionHandlerAgent;
-    HashTable               _animationsByObject;
+    Map                     _animationsByObject;
 }
 
 + (id)currentContext
@@ -64,7 +61,7 @@ var _CPAnimationContextStack   = nil,
     _duration = 0.0;
     _timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear];
     _completionHandlerAgent = nil;
-    _animationsByObject = new Hashtable();
+    _animationsByObject = new Map();
 
     return self;
 }
@@ -86,7 +83,7 @@ var _CPAnimationContextStack   = nil,
 #if (DEBUG)
         CPLog.debug("create new observer");
 #endif
-        _animationFlushingObserver = CFRunLoopObserverCreate(2, true, 0, _animationFlushingObserverCallback,0);
+        _animationFlushingObserver = CFRunLoopObserverCreate(2, true, 0, _animationFlushingObserverCallback, 0);
         CFRunLoopAddObserver([CPRunLoop mainRunLoop], _animationFlushingObserver);
     }
 }
@@ -135,7 +132,7 @@ var _CPAnimationContextStack   = nil,
     if (!animByKeyPath)
     {
         var newAnimByKeyPath = @{aKeyPath:resolvedAction};
-        _animationsByObject.put(anObject, newAnimByKeyPath);
+        _animationsByObject.set(anObject, newAnimByKeyPath);
     }
     else
         [animByKeyPath setObject:resolvedAction forKey:aKeyPath];
@@ -149,38 +146,30 @@ var _CPAnimationContextStack   = nil,
         values,
         keyTimes,
         timingFunctions,
-        objectId;
+        needsPeriodicFrameUpdates,
+        objectId = [anObject UID];
 
     if (!aKeyPath || !anObject || !(animation = [anObject animationForKey:aKeyPath]) || ![animation isKindOfClass:[CAAnimation class]])
         return nil;
 
     duration = [animation duration] || [self duration];
-
-    var needsPeriodicFrameUpdates = (((aKeyPath == @"frame" || aKeyPath == @"frameSize") &&
-                                    ([anObject hasCustomLayoutSubviews] || [anObject hasCustomDrawRect])) || [[anObject animator] wantsPeriodicFrameUpdates]) &&
-                                    (objectId = [anObject UID]);
+    needsPeriodicFrameUpdates = [[anObject animator] needsPeriodicFrameUpdatesForKeyPath:aKeyPath];
 
     if (_completionHandlerAgent)
         _completionHandlerAgent.increment();
 
+    var animatorClass = [[anObject class] animatorClass];
+
     var completionFunction = function()
     {
         if (needsPeriodicFrameUpdates)
-        {
-            [self stopFrameUpdaterWithIdentifier:objectId];
-
-            if ([anObject respondsToSelector:@selector(_setForceUpdates:)])
-                [anObject _setForceUpdates:YES];
-        }
+            [animatorClass stopUpdaterWithIdentifier:objectId];
 
         if (animationCompletion)
             animationCompletion();
 
         if (needsPeriodicFrameUpdates || animationCompletion)
             [[CPRunLoop currentRunLoop] performSelectors];
-
-        if (needsPeriodicFrameUpdates && [anObject respondsToSelector:@selector(_setForceUpdates:)])
-            [anObject _setForceUpdates:NO];
 
         if (_completionHandlerAgent)
             _completionHandlerAgent.decrement();
@@ -214,6 +203,7 @@ var _CPAnimationContextStack   = nil,
 
     return {
                 object:anObject,
+                root:anObject,
                 keypath:animatedKeyPath,
                 values:values,
                 keytimes:keyTimes,
@@ -228,7 +218,7 @@ var _CPAnimationContextStack   = nil,
     if (![_CPAnimationContextStack count])
         return;
 
-    if (_animationsByObject.size() == 0)
+    if (_animationsByObject.size == 0)
     {
         if (_completionHandlerAgent)
             _completionHandlerAgent.fire();
@@ -239,28 +229,25 @@ var _CPAnimationContextStack   = nil,
 
 - (void)_startAnimations
 {
-    var targetViews = _animationsByObject.keys(),
-        cssAnimations = [],
+    var cssAnimations = [],
         timers = [];
 
-    [targetViews enumerateObjectsUsingBlock:function(targetView, idx, stop)
+    _animationsByObject.forEach(function(animByKeyPath, targetView)
     {
-        var animByKeyPath = _animationsByObject.get(targetView);
-
         [animByKeyPath enumerateKeysAndObjectsUsingBlock:function(aKey, anAction, stop)
         {
-            [self getAnimations:cssAnimations getTimers:timers forView:targetView usingAction:anAction rootView:targetView  cssAnimate:YES];
+            [self getAnimations:cssAnimations getTimers:timers usingAction:anAction cssAnimate:YES];
         }];
+    });
 
-        _animationsByObject.remove(targetView);
-    }];
+    _animationsByObject.clear();
 
 // start timers
     var k = timers.length;
     while(k--)
     {
 #if (DEBUG)
-        CPLog.debug("START TIMER " + timers[k].identifier());
+        CPLog.debug("START TIMER " + timers[k].description());
 #endif
         timers[k].start();
     }
@@ -270,96 +257,78 @@ var _CPAnimationContextStack   = nil,
     while(n--)
     {
 #if (DEBUG)
-        CPLog.debug("START ANIMATION " + cssAnimations[n].animationsnames);
+        CPLog.debug("START ANIMATION " + cssAnimations[n].description());
 #endif
         cssAnimations[n].start();
     }
 }
 
-- (void)getAnimations:(CPArray)cssAnimations getTimers:(CPArray)timers forView:(CPView)aTargetView usingAction:(Object)anAction rootView:(CPView)rootView cssAnimate:(BOOL)needsCSSAnimation
+- (void)getAnimations:(CPArray)cssAnimations getTimers:(CPArray)timers usingAction:(Object)anAction cssAnimate:(BOOL)needsCSSAnimation
 {
-    var keyPath = anAction.keypath,
-        isFrameKeyPath = (keyPath == @"frame" || keyPath == @"frameSize"),
-        customLayout = [aTargetView hasCustomLayoutSubviews],
-        customDrawing = [aTargetView hasCustomDrawRect],
-        needsPeriodicFrameUpdates = ((isFrameKeyPath && (customLayout || customDrawing)) || [[aTargetView animator] wantsPeriodicFrameUpdates]);
+    var values = anAction.values;
+
+    if (values.length == 2)
+    {
+        var start = values[0],
+            end = values[1];
+
+        if (anAction.keypath    == @"frame" && CGRectEqualToRect(start, end)
+            || anAction.keypath == @"frameSize" && CGSizeEqualToSize(start, end)
+            || anAction.keypath == @"frameOrigin" && CGPointEqualToPoint(start, end))
+            return;
+    }
+
+    var targetView                   = anAction.object,
+        keyPath                      = anAction.keypath,
+        isFrameKeyPath               = (keyPath == @"frame" || keyPath == @"frameSize"),
+        customLayout                 = [targetView hasCustomLayoutSubviews],
+        customDrawing                = [targetView hasCustomDrawRect],
+        declarative_subviews_layout  = (!customLayout || [targetView implementsSelector:@selector(frameRectOfView:inSuperviewSize:)]),
+        needsPeriodicFrameUpdates    = [[targetView animator] needsPeriodicFrameUpdatesForKeyPath:keyPath],
+        timer                        = nil,
+        animatorClass                = [[targetView class] animatorClass];
 
     if (needsCSSAnimation)
     {
-        var identifier = [aTargetView UID],
-            duration = anAction.duration,
-            timingFunctions = anAction.timingfunctions,
-            properties = [],
-            valueFunctions = [],
-            cssAnimation = nil;
-
-        [cssAnimations enumerateObjectsUsingBlock:function(anim, idx, stop)
-        {
-            if (anim.identifier == identifier)
-            {
-                cssAnimation = anim;
-                stop(YES);
-            }
-        }];
-
-        if (cssAnimation == nil)
-        {
-            var domElement = [aTargetView DOMElementForKeyPath:keyPath];
-            cssAnimation = new CSSAnimation(domElement, identifier);
-            cssAnimations.push(cssAnimation);
-        }
-
-        var css_mapping = [[aTargetView class] _cssPropertiesForKeyPath:keyPath];
-
-        [css_mapping enumerateObjectsUsingBlock:function(aDict, anIndex, stop)
-        {
-            var completionFunction = (anIndex == 0) ? anAction.completion : null;
-            var property = [aDict objectForKey:@"property"],
-                getter = [aDict objectForKey:@"value"];
-
-            cssAnimation.addPropertyAnimation(property, getter, duration, anAction.keytimes, anAction.values, timingFunctions, completionFunction);
-        }];
+        [animatorClass addAnimations:cssAnimations forAction:anAction];
     }
 
     if (needsPeriodicFrameUpdates)
     {
-        var timer = [self addFrameUpdaterWithIdentifier:[rootView UID] forView:aTargetView keyPath:keyPath duration:anAction.duration];
-
-        if (timer)
-            timers.push(timer);
+        [animatorClass addFrameUpdaters:timers forAction:anAction];
     }
 
-    var subviews = [aTargetView subviews],
-        count = [subviews count],
-        customLayout = [aTargetView hasCustomLayoutSubviews];
+    var subviews = [targetView subviews],
+        count = [subviews count];
 
     if (count && isFrameKeyPath)
     {
-        var frameTimerId = [rootView UID],
-        lastIndex = count - 1;
-
         [subviews enumerateObjectsUsingBlock:function(aSubview, idx, stop)
-         {
-             var action = [self actionFromAction:anAction forAnimatedSubview:aSubview],
+        {
+            if (!declarative_subviews_layout && [aSubview autoresizingMask] == 0)
+                return;
+
+            var action = [self actionFromAction:anAction forAnimatedSubview:aSubview],
                 targetFrame = [action.values lastObject];
 
-             if (CGRectEqualToRect([aSubview frame], targetFrame))
-                 return;
+            if (CGRectEqualToRect([aSubview frame], targetFrame))
+                return;
 
-             if ([aSubview hasCustomDrawRect])
-             {
-                 action.completion = function()
-                 {
-                     [aSubview setFrame:targetFrame];
+            if ([aSubview hasCustomDrawRect])
+            {
+                action.completion = function()
+                {
+                    [aSubview setFrame:targetFrame];
 #if (DEBUG)
-                    CPLog.debug(aSubview + " setFrame: ");
+                    CPLog.debug(aSubview + " setFrame: " + CPStringFromRect(targetFrame));
 #endif
-                     if (idx == lastIndex)
-                         [self stopFrameUpdaterWithIdentifier:frameTimerId];
+                    if (idx == count - 1)
+                        [animatorClass stopUpdaterWithIdentifier:[anAction.root UID]];
                  };
              }
 
-             [self getAnimations:cssAnimations getTimers:timers forView:aSubview usingAction:action rootView:rootView cssAnimate:!customLayout];
+             var animate = !needsPeriodicFrameUpdates;
+             [self getAnimations:cssAnimations getTimers:timers usingAction:action cssAnimate:animate];
          }];
     }
 }
@@ -367,53 +336,25 @@ var _CPAnimationContextStack   = nil,
 - (Object)actionFromAction:(Object)anAction forAnimatedSubview:(CPView)aView
 {
     var targetValue = [anAction.values lastObject],
+        startFrame = [aView frame],
         endFrame,
         values;
 
-    if (anAction.keypath == @"frame")
+    if (anAction.keypath == "frame")
         targetValue = targetValue.size;
 
-    endFrame = [aView frameWithNewSuperviewSize:targetValue];
-    values = [[aView frame], endFrame];
+    endFrame = [[aView superview] frameRectOfView:aView inSuperviewSize:targetValue];
+    values = [startFrame, endFrame];
 
     return {
                 object:aView,
+                root:anAction.root,
                 keypath:"frame",
                 values:values,
                 keytimes:[0, 1],
                 duration:anAction.duration,
                 timingfunctions:anAction.timingfunctions
             };
-}
-
-- (Function)addFrameUpdaterWithIdentifier:(CPString)anIdentifier forView:(CPView)aView keyPath:(CPString)aKeyPath duration:(float)aDuration
-{
-    var frameUpdater = _animationFrameUpdaters[anIdentifier],
-        result = nil;
-
-    if (frameUpdater == null)
-    {
-        frameUpdater = new FrameUpdater(anIdentifier);
-        _animationFrameUpdaters[anIdentifier] = frameUpdater;
-        result = frameUpdater;
-    }
-
-    frameUpdater.addTarget(aView, aKeyPath, aDuration);
-
-    return result;
-}
-
-- (void)stopFrameUpdaterWithIdentifier:(CPString)anIdentifier
-{
-    var frameUpdater = _animationFrameUpdaters[anIdentifier];
-
-    if (frameUpdater)
-    {
-        frameUpdater.stop();
-        delete _animationFrameUpdaters[anIdentifier];
-    }
-    else
-        CPLog.warn("Could not find FrameUpdater with identifier " + anIdentifier);
 }
 
 - (void)setCompletionHandler:(Function)aCompletionHandler
@@ -436,10 +377,14 @@ var _CPAnimationContextStack   = nil,
 
 @implementation CPView (CPAnimationContext)
 
+- (CGRect)frameRectOfView:(CPView)aView inSuperviewSize:(CGSize)aSize
+{
+    return [aView frameWithNewSuperviewSize:aSize];
+}
+
 - (CGRect)frameWithNewSuperviewSize:(CGSize)newSize
 {
     var mask = [self autoresizingMask];
-
 
     if (mask == CPViewNotSizable)
         return _frame;
@@ -584,161 +529,4 @@ var _animationFlushingObserverCallback = function()
         CFRunLoopObserverInvalidate([CPRunLoop mainRunLoop], _animationFlushingObserver);
         _animationFlushingObserver = nil;
     }
-};
-
-CFRunLoopObserver = function(activities, repeats, order, callout, context)
-{
-    this.activities = activities;
-    this.repeats = repeats;
-    this.order = order;
-    this.callout = callout;
-    this.context = context;
-
-    this.isvalid = true;
-};
-
-CFRunLoopObserverCreate = function(activities, repeats, order, callout, context)
-{
-    return new CFRunLoopObserver(activities, repeats, order, callout, context);
-};
-
-CFRunLoopAddObserver = function(runloop, observer, mode)
-{
-    var observers = runloop._observers;
-
-    if (!observers)
-        observers = (runloop._observers = []);
-
-    if (observers.indexOf(observer) == -1)
-        observers.push(observer);
-};
-
-CFRunLoopObserverInvalidate = function(runloop, observer, mode)
-{
-    CFRunLoopRemoveObserver(runloop, observer, mode);
-};
-
-CFRunLoopRemoveObserver = function(runloop, observer, mode)
-{
-    var observers = runloop._observers;
-    if (observers)
-    {
-        var idx = observers.indexOf(observer);
-        if (idx !== -1)
-        {
-            observers.splice(idx, 1);
-
-            if (observers.length == 0)
-                runloop._observers = nil;
-        }
-    }
-};
-
-var FrameUpdater = function(anIdentifier)
-{
-    this._identifier = anIdentifier;
-    this._requestId = null;
-    this._duration = 0;
-    this._stop = false;
-    this._targets = [];
-    this._callbacks = [];
-
-    var frameUpdater = this;
-
-    this._updateFunction = function(timestamp)
-    {
-        if (frameUpdater._startDate == null)
-            frameUpdater._startDate = timestamp;
-
-        if (frameUpdater._stop)
-            return;
-
-        for (var i = 0; i < frameUpdater._callbacks.length; i++)
-            frameUpdater._callbacks[i]();
-
-        if (timestamp - frameUpdater._startDate < frameUpdater._duration * 1000)
-            window.requestAnimationFrame(frameUpdater._updateFunction);
-    };
-};
-
-FrameUpdater.prototype.start = function()
-{
-    this._requestId = window.requestAnimationFrame(this._updateFunction);
-};
-
-FrameUpdater.prototype.stop = function()
-{
-    // window.cancelAnimationFrame support is Chrome 24, Firefox 23, IE 10, Opera 15, Safari 6.1
-    if (window.cancelAnimationFrame)
-        window.cancelAnimationFrame(this._requestId);
-
-    this._stop = true;
-};
-
-FrameUpdater.prototype.updateFunction = function()
-{
-    return this._updateFunction;
-};
-
-FrameUpdater.prototype.identifier = function()
-{
-    return this._identifier;
-};
-
-FrameUpdater.prototype.addTarget = function(target, keyPath, duration)
-{
-    var callback = createUpdateFrame(target, keyPath);
-
-    if (callback)
-    {
-        this._duration = MAX(this._duration, duration);
-        this._targets.push(target);
-        this._callbacks.push(callback);
-    }
-};
-
-var createUpdateFrame = function(aView, aKeyPath)
-{
-    if (aKeyPath !== "frame" && aKeyPath !== "frameSize" && aKeyPath !== "frameOrigin")
-        return nil;
-
-    var style = getComputedStyle(aView._DOMElement),
-        getCSSPropertyValue = function(prop) {
-            return ROUND(parseFloat(style.getPropertyValue(prop)));
-        },
-        initialOrigin     = CGPointMakeCopy([aView frameOrigin]),
-        transformProperty = CPBrowserCSSProperty("transform"),
-        updateFrame       = function(timestamp)
-    {
-        var width  = getCSSPropertyValue("width"),
-            height = getCSSPropertyValue("height");
-
-        if (aKeyPath === "frameSize")
-        {
-            [aView setFrameSize:CGSizeMake(width, height)];
-        }
-        else
-        {
-            [aView _setInhibitDOMUpdates:YES];
-
-            var matrix = style[transformProperty].split('(')[1].split(')')[0].split(','),
-                x      = ROUND(initialOrigin.x + parseFloat(matrix[4])),
-                y      = ROUND(initialOrigin.y + parseFloat(matrix[5]));
-
-            if (aKeyPath === "frame")
-            {
-                [aView setFrame:CGRectMake(x, y, width, height)];
-            }
-            else
-            {
-                [aView setFrameOrigin:CGPointMake(x, y)];
-            }
-
-            [aView _setInhibitDOMUpdates:NO];
-        }
-
-        [[CPRunLoop currentRunLoop] performSelectors];
-    };
-
-    return updateFrame;
 };
