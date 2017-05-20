@@ -2018,6 +2018,25 @@ CPTexturedBackgroundWindowMask
     }
 }
 
+- (void)_startLiveResize
+{
+    [[CPNotificationCenter defaultCenter]
+        postNotificationName:CPWindowWillStartLiveResizeNotification
+                      object:self];
+}
+
+- (void)_endLiveResize
+{
+    [[CPNotificationCenter defaultCenter]
+        postNotificationName:CPWindowDidEndLiveResizeNotification
+                      object:self];
+}
+
+- (BOOL)_inLiveResize
+{
+    return [_windowView _isTracking];
+}
+
 /*!
     Returns the window's number in the desktop's screen list
 */
