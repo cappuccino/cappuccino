@@ -215,6 +215,9 @@ var ShouldSuppressResizeNotifications   = 1,
             [_subviews[index] setFrame:CGRectMake(0, ROUND((eachSize + dividerThickness) * index), frame.size.width, eachSize)];
     }
 
+    if (_DOMDividerElements[_drawingDivider])
+        [self _setupDOMDivider];
+
     [self setNeedsDisplay:YES];
     [self _postNotificationDidResize];
 
@@ -365,9 +368,9 @@ var ShouldSuppressResizeNotifications   = 1,
         _DOMDividerElements[_drawingDivider].style.backgroundRepeat = "repeat";
 
         CPDOMDisplayServerAppendChild(_DOMElement, _DOMDividerElements[_drawingDivider]);
+        [self _setupDOMDivider];
     }
 
-    [self _setupDOMDivider];
     CPDOMDisplayServerSetStyleLeftTop(_DOMDividerElements[_drawingDivider], NULL, CGRectGetMinX(aRect), CGRectGetMinY(aRect));
     CPDOMDisplayServerSetStyleSize(_DOMDividerElements[_drawingDivider], CGRectGetWidth(aRect), CGRectGetHeight(aRect));
 #endif
