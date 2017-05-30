@@ -217,11 +217,11 @@ var CPURLConnectionDelegate = nil;
 {
     _isCanceled = NO;
 
-    _HTTPRequest.setWithCredentials(_withCredentials);
-
     try
     {
         _HTTPRequest.open([_request HTTPMethod], [[_request URL] absoluteString], YES);
+
+        _HTTPRequest.setWithCredentials(_withCredentials);
 
         _HTTPRequest.onreadystatechange = function() { [self _readyStateDidChange]; };
 
@@ -256,6 +256,14 @@ var CPURLConnectionDelegate = nil;
     catch (anException)
     {
     }
+}
+
+/*
+    Returns the current request
+*/
+- (CPURLRequest)currentRequest
+{
+    return _request;
 }
 
 - (BOOL)isLocalFileConnection
