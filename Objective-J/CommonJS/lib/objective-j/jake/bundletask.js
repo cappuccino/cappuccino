@@ -470,6 +470,12 @@ BundleTask.prototype.resourcesPath = function()
 
 // Don't sprite images larger than 32KB, IE 8 doesn't like it.
 BundleTask.isSpritable = function(aResourcePath) {
+
+    if (FILE.size(aResourcePath) >= 32768)
+    {
+        TERM.stream.print("\0red(WARNING: " + aResourcePath + " is larger than 32KB. IE8 does not like this so this image will not be sprited.\0)");
+    }
+
     return isImage(aResourcePath) && FILE.size(aResourcePath) < 32768 &&
            ("data:" + mimeType(aResourcePath) + ";base64," +
             base64.encode(FILE.read(aResourcePath, "b"))).length < 32768;
@@ -642,14 +648,24 @@ BundleTask.prototype.defineSpritedImagesTask = function()
 
             prerequisites.forEach(function(aFilename)
             {
-                var resourcePath = "Resources/" + FILE.relative(resourcesPath, aFilename);
+                TERM.stream.print("Processing file: " + aFilename);
 
-                dataURLStream.write("u;" + resourcePath.length + ";" + resourcePath);
+                try 
+                {
+                    var resourcePath = "Resources/" + FILE.relative(resourcesPath, aFilename);
 
-                var contents =  "data:" + mimeType(aFilename) +
-                                ";base64," + FILE.read(aFilename, "b").decodeToString("UTF-8");
+                    dataURLStream.write("u;" + resourcePath.length + ";" + resourcePath);
 
-                dataURLStream.write(contents.length + ";" + contents);
+                    var contents =  "data:" + mimeType(aFilename) +
+                                    ";base64," + FILE.read(aFilename, "b").decodeToString("UTF-8");
+
+                    dataURLStream.write(contents.length + ";" + contents);
+                } 
+                catch (error)
+                {
+                    TERM.stream.print("Error: " + error);
+                }
+
             });
 
             dataURLStream.write("e;");
