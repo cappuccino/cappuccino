@@ -111,7 +111,7 @@ function environmentFlags()
 
 var SHRINKSAFE = require("minify/shrinksafe");
 function compressor(code) {
-    return SHRINKSAFE.compress(code, { charset : "UTF-8", useServer : true });
+    return SHRINKSAFE.compress(code, { charset : "UTF-8", useServer : false });
 }
 
 function gcc(inputFilePath, outputFilePath, flags, compress)
@@ -120,12 +120,15 @@ function gcc(inputFilePath, outputFilePath, flags, compress)
 
     // GCC preprocess the file.
     var cmd = ["gcc", "-E", "-x", "c", "-P"].concat(flags, inputFilePath).join(" "),
-        contents = FILE.read("header.txt", { charset : "UTF-8" });
+        array = [FILE.read("header.txt", { charset : "UTF-8" })];
 
     try
     {
         var gcc = OS.popen(cmd, { charset:"UTF-8" });
-        contents += gcc.stdout.read();
+        var r;
+        while ((r = gcc.stdout.read())) {
+            array.push(r);
+        }
     }
     finally
     {
@@ -133,6 +136,7 @@ function gcc(inputFilePath, outputFilePath, flags, compress)
         gcc.stdout.close();
         gcc.stderr.close();
     }
+    var contents = array.join("");
 
     if (FILE.extension(inputFilePath) === ".js" && compress)
         contents = compressor(contents);
