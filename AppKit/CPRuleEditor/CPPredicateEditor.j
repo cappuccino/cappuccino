@@ -295,7 +295,7 @@
     var copyTemplate = [matchedTemplate copy],
         subpredicates = [matchedTemplate displayableSubpredicatesOfPredicate:predicate];
 
-    if (subpredicates == nil)
+    if (![predicate isKindOfClass:[CPCompoundPredicate class]])
     {
         [copyTemplate _setComparisonPredicate:predicate];
         type = CPRuleEditorRowTypeSimple;
