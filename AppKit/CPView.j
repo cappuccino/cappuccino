@@ -320,6 +320,16 @@ var CPViewHighDPIDrawingEnabled = YES;
     return nil;
 }
 
++ (BOOL)hasCustomLayout
+{
+    return (self !== CPView) && [self instancesImplementSelector:@selector(layoutSubviews)];
+}
+
++ (BOOL)hasCustomDrawing
+{
+    return (self !== CPView) && ([self instancesImplementSelector:@selector(drawRect:)] || [self instancesImplementSelector:@selector(viewWillDraw)]);
+}
+
 - (void)_setupViewFlags
 {
     var theClass = [self class],
@@ -329,14 +339,13 @@ var CPViewHighDPIDrawingEnabled = YES;
     {
         var flags = 0;
 
-        if ([theClass instanceMethodForSelector:@selector(drawRect:)] !== [CPView instanceMethodForSelector:@selector(drawRect:)]
-            || [theClass instanceMethodForSelector:@selector(viewWillDraw)] !== [CPView instanceMethodForSelector:@selector(viewWillDraw)])
+        if ([theClass hasCustomDrawing])
             flags |= CPViewHasCustomDrawRect;
 
         if ([theClass instanceMethodForSelector:@selector(viewWillLayout)] !== [CPView instanceMethodForSelector:@selector(viewWillLayout)])
             flags |= CPViewHasCustomViewWillLayout;
 
-        if ([theClass instanceMethodForSelector:@selector(layoutSubviews)] !== [CPView instanceMethodForSelector:@selector(layoutSubviews)])
+        if ([theClass hasCustomLayout])
             flags |= CPViewHasCustomLayoutSubviews;
 
         CPViewFlags[classUID] = flags;

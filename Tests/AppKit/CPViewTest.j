@@ -659,7 +659,7 @@ var updateTrackingAreasCalls,
     [layoutView setIdentifier:@"layoutView"];
 
     [[window contentView] addSubview:layoutView];
-    [layoutView setNeedsLayout]
+    [layoutView setNeedsLayout];
 
     methodCalled = [];
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
@@ -1607,6 +1607,18 @@ var updateTrackingAreasCalls,
     [self assert:[CPCursor arrowCursor]         equals:[CPCursor currentCursor]   message:@"3.2 Cursor should be an arrow"];
 }
 
+- (void)testHasCustomLayout
+{
+    [self assertTrue:[CPLayoutView hasCustomLayout]];
+    [self assertFalse:[CPView hasCustomLayout]];
+}
+
+- (void)testHasCustomDrawing
+{
+    [self assertTrue:[CPDrawView hasCustomDrawing]];
+    [self assertFalse:[CPView hasCustomDrawing]];
+}
+
 - (void)updateTrackingAreas
 {
     updateTrackingAreasCalls++;
@@ -1774,6 +1786,19 @@ var updateTrackingAreasCalls,
     [super layoutSubviews];
 
     var string = @"layoutSubivews_" + [self identifier];
+    [methodCalled addObject:string];
+}
+
+@end
+
+@implementation CPDrawView : CPView
+{
+
+}
+
+- (void)drawRect:(CGRect)dirtyRect
+{
+    var string = @"drawRect_" + [self identifier];
     [methodCalled addObject:string];
 }
 
