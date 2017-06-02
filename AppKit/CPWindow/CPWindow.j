@@ -338,6 +338,7 @@ CPTexturedBackgroundWindowMask
         _isSheet = NO;
         _sheetContext = nil;
         _parentView = nil;
+        _frameAnimation = nil;
         _frameAnimationDelegate = nil;
 
         // Set up our window number.
