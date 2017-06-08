@@ -30,6 +30,7 @@ var displayObjects      = [],
     layoutObjects       = [],
     layoutObjectsByUID  = { },
 
+    isPaused           = NO,
     runLoop             = [CPRunLoop mainRunLoop];
 
 function _CPDisplayServerAddDisplayObject(anObject)
@@ -62,9 +63,32 @@ function _CPDisplayServerAddLayoutObject(anObject)
 {
 }
 
++ (void)isPaused
+{
+    return isPaused;
+}
+
++ (void)pause
+{
+    if (isPaused)
+        return;
+
+    [runLoop performSelector:@selector(run) target:self argument:nil order:0 modes:[CPDefaultRunLoopMode]];
+    isPaused = YES;
+}
+
++ (void)resume
+{
+    if (!isPaused)
+        return;
+
+    isPaused = NO;
+    [runLoop performSelector:@selector(run) target:self argument:nil order:0 modes:[CPDefaultRunLoopMode]];
+}
+
 + (void)run
 {
-    while (layoutObjects.length || displayObjects.length)
+    while (!isPaused && (layoutObjects.length || displayObjects.length))
     {
         var index = 0;
 
@@ -103,6 +127,7 @@ function _CPDisplayServerAddLayoutObject(anObject)
 
     [runLoop performSelector:@selector(run) target:self argument:nil order:0 modes:[CPDefaultRunLoopMode]];
 }
+
 
 @end
 
