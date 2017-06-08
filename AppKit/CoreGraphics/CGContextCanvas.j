@@ -587,11 +587,6 @@ function CGContextDrawImage(aContext, aRect, anImage)
     aContext.hasPath = NO;
 }
 
-function to_string(aColor)
-{
-    return "rgba(" + ROUND(aColor.components[0] * 255) + ", " + ROUND(aColor.components[1] * 255) + ", " + ROUND(255 * aColor.components[2]) + ", " + aColor.components[3] + ")";
-}
-
 function CGContextDrawLinearGradient(aContext, aGradient, aStartPoint, anEndPoint, options)
 {
     var colors = aGradient.colors,
@@ -599,7 +594,7 @@ function CGContextDrawLinearGradient(aContext, aGradient, aStartPoint, anEndPoin
         linearGradient = aContext.createLinearGradient(aStartPoint.x, aStartPoint.y, anEndPoint.x, anEndPoint.y);
 
     while (count--)
-        linearGradient.addColorStop(aGradient.locations[count], to_string(colors[count]));
+        linearGradient.addColorStop(aGradient.locations[count], colors[count]._cssString);
 
     aContext.fillStyle = linearGradient;
     aContext.fill();
@@ -613,7 +608,7 @@ function CGContextDrawRadialGradient(aContext, aGradient, aStartCenter, aStartRa
         linearGradient = aContext.createRadialGradient(aStartCenter.x, aStartCenter.y, aStartRadius, anEndCenter.x, anEndCenter.y, anEndRadius);
 
     while (count--)
-        linearGradient.addColorStop(aGradient.locations[count], to_string(colors[count]));
+        linearGradient.addColorStop(aGradient.locations[count], colors[count]._cssString);
 
     aContext.fillStyle = linearGradient;
     aContext.fill();
