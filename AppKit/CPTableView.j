@@ -4698,6 +4698,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     } //end of editing conditional
 
+    _clickedRow = [self rowAtPoint:aPoint];
+    _clickedColumn = [self columnAtPoint:lastPoint];
+
     //double click actions
     if ([[CPApp currentEvent] clickCount] === 2 && _doubleAction)
         [self sendAction:_doubleAction to:_target];
