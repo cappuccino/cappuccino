@@ -656,7 +656,7 @@ var _CPMenuBarVisible               = NO,
         }
 
         var validator = [CPApp targetForAction:[item action] to:[item target] from:item],
-            shouldBeEnabled = YES;
+            shouldBeEnabled = [item isEnabled];
 
         if (!validator)
         {
