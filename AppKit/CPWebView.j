@@ -366,6 +366,10 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
 
 - (void)_setEffectiveScrollMode:(int)aScrollMode
 {
+    // _iframe is not set when the class is instantiated in a CIB from the press tool.
+    if(!_iframe)
+        return;
+     
     _effectiveScrollMode = aScrollMode;
 
     _ignoreLoadStart = YES;
