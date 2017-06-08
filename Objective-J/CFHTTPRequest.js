@@ -373,7 +373,18 @@ function FileRequest(/*CFURL*/ aURL, onsuccess, onfailure, onprogress)
             OS = require("os"),
             gccFlags = require("objective-j").FileExecutable.currentGccCompilerFlags(),
             chunk,
-            fileContents = "";
+            error,
+            fileContents = "",
+            fileErrors = "";
+
+        while (error = gcc.stderr.read())
+            fileErrors += error;
+
+        if (fileErrors.length > 0)
+        {
+            var TERM = require("narwhal/term");
+            TERM.stream.print("\0red(\nErrors/Warnings after gcc compilation :\n" + fileErrors + "\0)");
+        }
 
         try
         {
