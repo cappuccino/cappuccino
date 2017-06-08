@@ -737,8 +737,8 @@ CPButtonImageOffset   = 3.0;
             }
             else
             {
-                title = _title;
-                image = [self image];
+                title = ([self hasThemeState:CPThemeStateHighlighted] && _alternateTitle) ? _alternateTitle : _title;
+                image = [self currentValueForThemeAttribute:@"image"];
             }
         }
         else
@@ -751,7 +751,7 @@ CPButtonImageOffset   = 3.0;
             else
             {
                 title = _title;
-                image = [self image];
+                image = [self currentValueForThemeAttribute:@"image"];
             }
         }
 
