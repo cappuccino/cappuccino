@@ -155,9 +155,6 @@ var _CPAnimationContextStack   = nil,
     duration = [animation duration] || [self duration];
     needsPeriodicFrameUpdates = [[anObject animator] needsPeriodicFrameUpdatesForKeyPath:aKeyPath];
 
-    if (_completionHandlerAgent)
-        _completionHandlerAgent.increment();
-
     var animatorClass = [[anObject class] animatorClass];
 
     var completionFunction = function()
@@ -242,8 +239,19 @@ var _CPAnimationContextStack   = nil,
 
     _animationsByObject.clear();
 
+    var k = timers.length,
+        n = cssAnimations.length;
+
+    if (_completionHandlerAgent)
+    {
+        if (n == 0)
+            _completionHandlerAgent.fire();
+        else
+            _completionHandlerAgent.increment(n);
+    }
+
 // start timers
-    var k = timers.length;
+
     while(k--)
     {
 #if (DEBUG)
@@ -253,7 +261,6 @@ var _CPAnimationContextStack   = nil,
     }
 
 // start css animations
-    var n = cssAnimations.length;
     while(n--)
     {
 #if (DEBUG)
@@ -482,9 +489,9 @@ CompletionHandlerAgent.prototype.fire = function()
     this._completionHandler();
 };
 
-CompletionHandlerAgent.prototype.increment = function()
+CompletionHandlerAgent.prototype.increment = function(inc)
 {
-    this.total++;
+    this.total += inc;
 };
 
 CompletionHandlerAgent.prototype.decrement = function()
