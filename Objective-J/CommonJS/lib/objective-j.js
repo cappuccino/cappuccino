@@ -1,6 +1,7 @@
 
 var FILE = require("file");
 var sprintf = require("printf").sprintf;
+var OS = require("os");
 
 var window = exports.window = require("browser/window");
 
@@ -80,6 +81,7 @@ exports.run = function(args)
 
         // copy the args since we're going to modify them
         var argv = args.slice(1);
+        var outputFormatInXML = false;
 
         if (argv[0] === "--version" || argv[0] === "-v")
         {
@@ -120,25 +122,33 @@ exports.run = function(args)
                 case "-x":
                 case "--xml":
                     argv.shift();
-                    exports.outputFormatInXML = true;
+                    exports.messageOutputFormatInXML = true;
+                    outputFormatInXML = true;
                     break;
 
                 case "-g":
                 case "--include-debug-symbols":
                     argv.shift();
-                    (OBJJ_COMPILER_FLAGS || (OBJJ_COMPILER_FLAGS = [])).push("IncludeDebugSymbols");
+                    var flags = ObjectiveJ.FileExecutable.currentCompilerFlags();
+                    flags.includeMethodFunctionNames = true;
+                    ObjectiveJ.FileExecutable.setCurrentCompilerFlags(flags);
                     break;
 
                 case "-T":
                 case "--dont-include-type-signatures":
                     argv.shift();
-                    (OBJJ_COMPILER_FLAGS || (OBJJ_COMPILER_FLAGS = [])).push("IncludeTypeSignatures");
+                    var flags = ObjectiveJ.FileExecutable.currentCompilerFlags();
+                    flags.includeIvarTypeSignatures = true;
+                    flags.includeMethodArgumentTypeSignatures = true;
+                    ObjectiveJ.FileExecutable.setCurrentCompilerFlags(flags);
                     break;
 
                 case "-O2":
                 case "--inline-msg-send":
                     argv.shift();
-                    (OBJJ_COMPILER_FLAGS || (OBJJ_COMPILER_FLAGS = [])).push("InlineMsgSend");
+                    var flags = ObjectiveJ.FileExecutable.currentCompilerFlags();
+                    flags.inlineMsgSendFunctions = true;
+                    ObjectiveJ.FileExecutable.setCurrentCompilerFlags(flags);
                     break;
             }
         }
@@ -160,19 +170,7 @@ exports.run = function(args)
             }
             catch(e)
             {
-                if (exports.outputFormatInXML)
-                {
-                    var dict = new CFMutableDictionary();
-                    dict.addValueForKey('line', e.line ? e.line : 0);
-                    dict.addValueForKey('sourcePath', e.path ? e.path : mainFilePath);
-                    dict.addValueForKey('message', e.message);
-
-                    errors.push(dict);
-                }
-                else
-                {
-                    errors.push("\n" + e);
-                }
+                errors.push(e);
             }
 
             if (typeof main === "function")
@@ -194,10 +192,8 @@ exports.run = function(args)
 
         if (errors.length)
         {
-            if (exports.outputFormatInXML)
-                throw CFPropertyListCreateXMLData(errors, kCFPropertyListXMLFormat_v1_0).rawString();
-            else
-                throw errors;
+            // Make sure we get exit will failiure
+            OS.exit(1);
         }
     }
     else
@@ -271,7 +267,6 @@ function getPackage() {
 exports.version = function() { return getPackage()["version"]; }
 exports.revision = function() { return getPackage()["cappuccino-revision"]; }
 exports.timestamp = function() { return new Date(getPackage()["cappuccino-timestamp"]); }
-exports.outputFormatInXML = false;
 
 exports.fullVersionString = function() {
     return sprintf("objective-j %s (%04d-%02d-%02d %s)",

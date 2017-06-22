@@ -125,7 +125,8 @@
     _brightnessSlider = [[CPSlider alloc] initWithFrame:CGRectMake(0, (aFrame.size.height - 34), aFrame.size.width, 15)];
 
     [_brightnessSlider setValue:15.0 forThemeAttribute:@"track-width"];
-    [_brightnessSlider setValue:[CPColor colorWithPatternImage:[[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPColorPicker class]] pathForResource:@"brightness_bar.png"]]] forThemeAttribute:@"track-color"];
+    var brightnessImage = [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPColorPicker class]] pathForResource:@"brightness_bar.png"] size:CGSizeMake(272, 20)];
+    [_brightnessSlider setValue:[CPColor colorWithPatternImage:brightnessImage] forThemeAttribute:@"track-color"];
 
     [_brightnessSlider setMinValue:0.0];
     [_brightnessSlider setMaxValue:100.0];

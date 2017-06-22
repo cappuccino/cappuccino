@@ -322,7 +322,7 @@ GLOBAL(class_addProtocol) = function(/*Class*/ aClass, /*Protocol*/ aProtocol)
         return;
     }
 
-    (aClass.protocol_list || (aClass.protocol_list == [])).push(aProtocol);
+    (aClass.protocol_list || (aClass.protocol_list = [])).push(aProtocol);
 
     return true;
 }

@@ -6,10 +6,6 @@ var FILE = require("file"),
 
 require("objective-j/rhino/regexp-rhino-patch");
 
-ObjectiveJ.ObjJAcornCompiler.Flags.Preprocess   = 1 << 10;
-ObjectiveJ.ObjJAcornCompiler.Flags.Compress     = 1 << 11;
-ObjectiveJ.ObjJAcornCompiler.Flags.CheckSyntax  = 1 << 12;
-
 var compressors = {
     ss  : { id : "minify/shrinksafe" }
     //,yui : { id : "minify/yuicompressor" }
@@ -37,9 +33,8 @@ function compressor(code)
 
 function compileWithResolvedFlags(aFilePath, objjcFlags, gccFlags, asPlainJavascript)
 {
-    var shouldObjjPreprocess = objjcFlags & ObjectiveJ.ObjJAcornCompiler.Flags.Preprocess,
-        shouldCheckSyntax = objjcFlags & ObjectiveJ.ObjJAcornCompiler.Flags.CheckSyntax,
-        shouldCompress = objjcFlags & ObjectiveJ.ObjJAcornCompiler.Flags.Compress,
+    var shouldObjjPreprocess = true,
+        shouldCompress = objjcFlags.compress,
         fileContents = "",
         executable,
         code;
@@ -118,7 +113,7 @@ function compileWithResolvedFlags(aFilePath, objjcFlags, gccFlags, asPlainJavasc
             }
         }
 
-        ObjectiveJ.setCurrentCompilerFlags(objjcFlags);
+        ObjectiveJ.FileExecutable.setCurrentCompilerFlags(objjcFlags);
         ObjectiveJ.make_narwhal_factory(absolutePath, basePath, translateFilenameToPath)(require, {}, module, system, print);
 
         executable = new ObjectiveJ.FileExecutable(FILE.basename(aFilePath));
@@ -153,7 +148,7 @@ function resolveFlags(args)
         count = args.length,
 
         gccFlags = [],
-        objjcFlags = ObjectiveJ.ObjJAcornCompiler.Flags.Preprocess | ObjectiveJ.ObjJAcornCompiler.Flags.CheckSyntax;
+        objjcFlags = {};
 
     for (; index < count; ++index)
     {
@@ -180,27 +175,23 @@ function resolveFlags(args)
             }
         }
 
-        else if (argument.indexOf("-E") === 0)
-            objjcFlags &= ~ObjectiveJ.ObjJAcornCompiler.Flags.Preprocess;
-
-        else if (argument.indexOf("-S") === 0)
-            objjcFlags &= ~ObjectiveJ.ObjJAcornCompiler.Flags.CheckSyntax;
-
         else if (argument.indexOf("-T") === 0)
-            objjcFlags &= ~ObjectiveJ.ObjJAcornCompiler.Flags.IncludeTypeSignatures;
-
+        {
+            objjcFlags.includeIvarTypeSignatures = false;
+            objjcFlags.includeMethodArgumentTypeSignatures = false;
+        }
         else if (argument.indexOf("-g") === 0)
-            objjcFlags |= ObjectiveJ.ObjJAcornCompiler.Flags.IncludeDebugSymbols;
+            objjcFlags.includeMethodFunctionNames = true;
 
         else if (argument.indexOf("-O") === 0) {
-            objjcFlags |= ObjectiveJ.ObjJAcornCompiler.Flags.Compress;
+            objjcFlags.compress = true;
             // FIXME: currently we are sending in '-O2' when we want InlineMsgSend. Here we only check if we it is '-O...'
             if (argument.length > 2)
-                objjcFlags |= ObjectiveJ.ObjJAcornCompiler.Flags.InlineMsgSend;
+                objjcFlags.inlineMsgSendFunctions = true;
         }
 
         else if (argument.indexOf("-G") === 0)
-            objjcFlags |= ObjectiveJ.ObjJAcornCompiler.Flags.Generate;
+            objjcFlags.generate = true;
 
         else
             filePaths.push(argument);
@@ -223,7 +214,7 @@ exports.main = function(args)
 {
     var shouldPrintOutput = false,
         asPlainJavascript = false,
-        objjcFlags = 0;
+        objjcFlags = {};
 
     var argv = args.slice(1);
 
@@ -251,7 +242,8 @@ exports.main = function(args)
 
         if (argv[0] === "-T" || argv[0] === "--includeTypeSignatures")
         {
-            objjcFlags |= ObjectiveJ.ObjJAcornCompiler.Flags.IncludeTypeSignatures;
+            objjcFlags.includeIvarTypeSignatures = true;
+            objjcFlags.includeMethodArgumentTypeSignatures = true;
             argv.shift();
             continue;
         }
@@ -280,9 +272,19 @@ exports.main = function(args)
 
     var resolved = resolveFlags(argv),
         outputFilePaths = resolved.outputFilePaths,
-        gccFlags = resolved.gccFlags;
+        gccFlags = resolved.gccFlags,
+        resolvedObjjcFlags = resolved.objjcFlags;
 
-    objjcFlags |= resolved.objjcFlags;
+    // Merge resolved keys into objjcFlags
+    for (var key in resolvedObjjcFlags)
+    {
+        if (resolvedObjjcFlags.hasOwnProperty(key))
+        {
+            if (resolvedObjjcFlags[key])
+                objjcFlags[key] = resolvedObjjcFlags[key];
+        }
+    }
+
     resolved.filePaths.forEach(function(filePath, index)
     {
         if (!shouldPrintOutput)

@@ -119,7 +119,7 @@ function CPDecimalMakeWithString(string, locale)
     // Note: this doesn't accept .01 for example, should it?
     // If yes simply add '?' after integer part group, i.e. ([+\-]?)((?:0|[1-9]\d*)?)
     // Note: now it accept .01 style.
-    var matches = string.match(/^([+\-]?)((?:0|[0-9]\d*)?)(?:\.(\d*))?(?:[eE]([+\-]?)(\d+))?$/);
+    var matches = string.match(new RegExp("^([+\\-]?)((?:0|[0-9]\\d*)?)(?:\\.(\\d*))?(?:[eE]([+\\-]?)(\\d+))?$"));
 
     if (!matches)
         return CPDecimalMakeNaN();

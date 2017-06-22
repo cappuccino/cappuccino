@@ -66,6 +66,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
     CPString                _text;
 
     CGSize                  _textSize;
+    BOOL                    _usesSingleLineMode @accessors;
 
     unsigned                _flags;
 
@@ -107,6 +108,8 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
         }
 
         _textSize = nil;
+        _usesSingleLineMode = NO;
+
         [self setHitTests:NO];
     }
 
@@ -550,14 +553,16 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
                 case CPLineBreakByCharWrapping:
                 case CPLineBreakByWordWrapping:
                     textStyle.wordWrap = "break-word";
-                    try {
+                    try
+                    {
                         textStyle.whiteSpace = "pre";
                         textStyle.whiteSpace = "-o-pre-wrap";
                         textStyle.whiteSpace = "-pre-wrap";
                         textStyle.whiteSpace = "-moz-pre-wrap";
                         textStyle.whiteSpace = "pre-wrap";
                     }
-                    catch (e) {
+                    catch (e)
+                    {
                         //internet explorer doesn't like these properties
                         textStyle.whiteSpace = "pre";
                     }
@@ -723,6 +728,9 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
                         _lineBreakMode === CPLineBreakByWordWrapping)
                     {
                         _textSize = [_text sizeWithFont:_font inWidth:textRectWidth];
+
+                        if (_usesSingleLineMode)
+                            _textSize.height = [_font defaultLineHeightForFont];
                     }
                     else
                     {

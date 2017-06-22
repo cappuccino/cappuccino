@@ -322,7 +322,7 @@ function ThemeState(stateNames)
     var stateNameKeys = [];
     this._stateNames = {};
 
-    for (key in stateNames)
+    for (var key in stateNames)
     {
         if (!stateNames.hasOwnProperty(key))
             continue;

@@ -82,18 +82,6 @@ task ("deploy", ["release"], function()
     printResults("Deployment")
 });
 
-task ("desktop", ["release"], function()
-{
-    FILE.mkdirs(FILE.join("Build", "Desktop", projectName));
-    require("cappuccino/nativehost").buildNativeHost(FILE.join("Build", "Release", projectName), FILE.join("Build", "Desktop", projectName, "__project.nameasidentifier__.app"));
-    printResults("Desktop")
-});
-
-task ("run-desktop", ["desktop"], function()
-{
-    OS.system([FILE.join("Build", "Desktop", projectName, "__project.nameasidentifier__.app", "Contents", "MacOS", "NativeHost"), "-i"]);
-});
-
 function printResults(configuration)
 {
     print("----------------------------");

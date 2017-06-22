@@ -417,8 +417,7 @@ var CPTableHeaderViewResizeZone = 3.0,
     }
     else if (_isDragging)
     {
-        // Disable autoscrolling until it behaves correctly.
-        //[self _autoscroll:theEvent localLocation:currentLocation];
+        [self _autoscroll:theEvent localLocation:currentLocation];
         [self _dragTableColumn:_activeColumn to:currentLocation];
     }
     else // tracking a press, could become a drag
@@ -682,20 +681,21 @@ var CPTableHeaderViewResizeZone = 3.0,
     [_columnDragClipView removeFromSuperview];
     [_tableView _setDraggedColumn:-1];
 
-    var headerView = [[[_tableView tableColumns] objectAtIndex:aColumnIndex] headerView];
+    var tableColumn = [[_tableView tableColumns] objectAtIndex:aColumnIndex],
+        headerView = [tableColumn headerView];
 
     [[headerView subviews] makeObjectsPerformSelector:@selector(setHidden:) withObject:NO];
 
     if (_tableView._draggedColumnIsSelected)
         [headerView setThemeState:CPThemeStateSelected];
 
-    var columnRect = [_tableView rectOfColumn:aColumnIndex];
-
     [_tableView _reloadDataViews];
     [[_tableView headerView] setNeedsLayout];
 
     [[CPCursor arrowCursor] set];
     [self updateTrackingAreas];
+
+    [_tableView _sendDelegateDidDragTableColumn:tableColumn];
 }
 
 - (BOOL)_shouldResizeTableColumn:(CPInteger)aColumnIndex at:(CGPoint)aPoint

@@ -952,8 +952,8 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
                                   timestamp:timestamp windowNumber:windowNumber context:nil eventNumber:-1 clickCount:1 pressure:0];
     event._DOMEvent = aDOMEvent;
 
-    // We lag 1 event behind without this timeout.
-    setTimeout(function()
+    // We lag 1 event behind without this approach
+    window.requestAnimationFrame(function()
     {
         if (aDOMEvent.deltaMode !== undefined && aDOMEvent.deltaMode !== 0)
         {
@@ -992,10 +992,10 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
         _DOMScrollingElement.scrollLeft = 150;
         _DOMScrollingElement.scrollTop = 150;
 
-        // Is this needed?
-        //[[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+        // this is needed to prevent flickering during scrolling
+        [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 
-    }, 0);
+    });
 
     // We hide the dom element after a little bit
     // so that other DOM elements such as inputs
@@ -1171,7 +1171,11 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
         var touch = aDOMEvent.touches.length ? aDOMEvent.touches[0] : aDOMEvent.changedTouches[0];
 
         newEvent.clientX = touch.clientX;
-        newEvent.clientY = touch.clientY;
+
+        /*
+        Normally the document can't scroll in Cappuccino: our body element has top:0 and bottom:0 with absolute positioning. So it should always be exactly the height of the viewport. The below handles a special case. iOS scrolls the document when the virtual keyboard is present and it needs to move a text input upwards visually to avoid covering the input with the keyboard. For most purposes we can ignore this, except here. In theory I think we could always apply this (scrollTop should always be 0 on every other device and situation) but let's be defensive and only apply it for touch events to minimise the risk of surprises.
+        */
+        newEvent.clientY = _DOMWindow.document.body.scrollTop + touch.clientY;
 
         newEvent.timestamp = [CPEvent currentTimestamp];
         newEvent.target = aDOMEvent.target;
@@ -1245,12 +1249,16 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
     {
         if (_mouseIsDown)
         {
+            if (aDOMEvent.button !== _firstMouseDownButton)
+                return;
+
             event = _CPEventFromNativeMouseEvent(aDOMEvent, _mouseDownIsRightClick ? CPRightMouseUp : CPLeftMouseUp, location, modifierFlags, timestamp, windowNumber, nil, -1, CPDOMEventGetClickCount(_lastMouseUp, timestamp, location), 0, nil);
 
             _mouseIsDown = NO;
             _lastMouseUp = event;
             _mouseDownWindow = nil;
             _mouseDownIsRightClick = NO;
+            _firstMouseDownButton = -1;
         }
 
         if (_DOMEventMode)
@@ -1269,6 +1277,16 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
         var button = aDOMEvent.button;
 
         _mouseDownIsRightClick = button == 2 || (CPBrowserIsOperatingSystem(CPMacOperatingSystem) && button == 0 && modifierFlags & CPControlKeyMask);
+
+        // If mouse is already down, that means that a second mouse button is pushed. This could interfere in mouse events treatment. Just ignore it.
+        // BUT we have to track which button will be first released.
+        if (_mouseIsDown)
+        {
+            _mouseDownIsRightClick = !_mouseDownIsRightClick;
+            return;
+        }
+
+        _firstMouseDownButton = button;
 
         if ((sourceElement.tagName === "INPUT" || sourceElement.tagName === "TEXTAREA") && sourceElement != _DOMFocusElement)
         {

@@ -112,6 +112,11 @@ CPViewHeightSizable = 16;
 */
 CPViewMaxYMargin    = 32;
 
+_CPViewWillAppearNotification        = @"CPViewWillAppearNotification";
+_CPViewDidAppearNotification         = @"CPViewDidAppearNotification";
+_CPViewWillDisappearNotification     = @"CPViewWillDisappearNotification";
+_CPViewDidDisappearNotification      = @"CPViewDidDisappearNotification";
+
 CPViewBoundsDidChangeNotification   = @"CPViewBoundsDidChangeNotification";
 CPViewFrameDidChangeNotification    = @"CPViewFrameDidChangeNotification";
 
@@ -172,6 +177,7 @@ var CPViewHighDPIDrawingEnabled = YES;
     CPArray             _registeredDraggedTypesArray;
 
     BOOL                _isHidden;
+    BOOL                _isHiddenOrHasHiddenAncestor;
     BOOL                _hitTests;
     BOOL                _clipsToBounds;
 
@@ -246,6 +252,8 @@ var CPViewHighDPIDrawingEnabled = YES;
 
     id                  _animator;
     CPDictionary        _animationsDictionary;
+    BOOL                _inhibitDOMUpdates      @accessors(setter=_setInhibitDOMUpdates);
+    BOOL                _forceUpdates           @accessors(setter=_setForceUpdates);
 }
 
 /*
@@ -372,6 +380,7 @@ var CPViewHighDPIDrawingEnabled = YES;
 
         _opacity = 1.0;
         _isHidden = NO;
+        _isHiddenOrHasHiddenAncestor = NO;
         _hitTests = YES;
 
         _hierarchyScaleSize = CGSizeMake(1.0 , 1.0);
@@ -397,11 +406,13 @@ var CPViewHighDPIDrawingEnabled = YES;
 
         [self _setupViewFlags];
         [self _loadThemeAttributes];
+
+        _inhibitDOMUpdates = NO;
+        _forceUpdates = NO;
     }
 
     return self;
 }
-
 
 /*!
     Sets the tooltip for the receiver.
@@ -410,7 +421,7 @@ var CPViewHighDPIDrawingEnabled = YES;
 */
 - (void)setToolTip:(CPString)aToolTip
 {
-    if (_toolTip == aToolTip)
+    if (_toolTip === aToolTip)
         return;
 
     if (aToolTip && ![aToolTip isKindOfClass:CPString])
@@ -568,7 +579,7 @@ var CPViewHighDPIDrawingEnabled = YES;
     [[self window] _dirtyKeyViewLoop];
 
     // If this is already one of our subviews, remove it.
-    if (aSubview._superview == self)
+    if (aSubview._superview === self)
     {
         var index = [_subviews indexOfObjectIdenticalTo:aSubview];
 
@@ -597,8 +608,9 @@ var CPViewHighDPIDrawingEnabled = YES;
         // Remove the view from its previous superview.
         [aSubview _removeFromSuperview];
 
+        [aSubview _postViewWillAppearNotification];
         // Set ourselves as the superview.
-        aSubview._superview = self;
+        [aSubview _setSuperview:self];
     }
 
     if (anIndex === CPNotFound || anIndex >= count)
@@ -622,11 +634,6 @@ var CPViewHighDPIDrawingEnabled = YES;
 
     [aSubview setNextResponder:self];
     [aSubview _scaleSizeUnitSquareToSize:[self _hierarchyScaleSize]];
-
-    // If the subview is not hidden and one of its ancestors is hidden,
-    // notify the subview that it is now hidden.
-    if (![aSubview isHidden] && [self isHiddenOrHasHiddenAncestor])
-        [aSubview _notifyViewDidHide];
 
     [aSubview viewDidMoveToSuperview];
 
@@ -688,6 +695,7 @@ var CPViewHighDPIDrawingEnabled = YES;
     [[self window] _dirtyKeyViewLoop];
 
     [_superview willRemoveSubview:self];
+    [self _postViewWillDisappearNotification];
 
     [_superview._subviews removeObjectIdenticalTo:self];
 
@@ -697,13 +705,10 @@ var CPViewHighDPIDrawingEnabled = YES;
 
     // If the view is not hidden and one of its ancestors is hidden,
     // notify the view that it is now unhidden.
-    if (!_isHidden && [_superview isHiddenOrHasHiddenAncestor])
-        [self _notifyViewDidUnhide];
+    [self _setSuperview:nil];
 
     [self _notifyWindowDidResignKey];
     [self _notifyViewDidResignFirstResponder];
-
-    _superview = nil;
 }
 
 /*!
@@ -863,7 +868,7 @@ var CPViewHighDPIDrawingEnabled = YES;
 
     do
     {
-        if (view == aView)
+        if (view === aView)
             return YES;
     } while(view = [view superview])
 
@@ -978,7 +983,7 @@ var CPViewHighDPIDrawingEnabled = YES;
 
 - (CPView)viewWithTag:(CPInteger)aTag
 {
-    if ([self tag] == aTag)
+    if ([self tag] === aTag)
         return self;
 
     var index = 0,
@@ -1013,7 +1018,7 @@ var CPViewHighDPIDrawingEnabled = YES;
 */
 - (void)setFrame:(CGRect)aFrame
 {
-    if (CGRectEqualToRect(_frame, aFrame))
+    if (CGRectEqualToRect(_frame, aFrame) && !_forceUpdates)
         return;
 
     _inhibitFrameAndBoundsChangedNotifications = YES;
@@ -1030,7 +1035,7 @@ var CPViewHighDPIDrawingEnabled = YES;
         [[self superview] viewFrameChanged:[[CPNotification alloc] initWithName:CPViewFrameDidChangeNotification object:self userInfo:nil]];
 
     if (!_inhibitUpdateTrackingAreas)
-        [self _updateTrackingAreas];
+        [self _updateTrackingAreasWithRecursion:YES];
 }
 
 /*!
@@ -1084,7 +1089,7 @@ var CPViewHighDPIDrawingEnabled = YES;
 {
     var origin = _frame.origin;
 
-    if (!aPoint || CGPointEqualToPoint(origin, aPoint))
+    if (!aPoint || (CGPointEqualToPoint(origin, aPoint) && !_forceUpdates))
         return;
 
     origin.x = aPoint.x;
@@ -1097,13 +1102,16 @@ var CPViewHighDPIDrawingEnabled = YES;
         [[self superview] viewFrameChanged:[[CPNotification alloc] initWithName:CPViewFrameDidChangeNotification object:self userInfo:nil]];
 
 #if PLATFORM(DOM)
-    var transform = _superview ? _superview._boundsTransform : NULL;
+    if (!_inhibitDOMUpdates)
+    {
+        var transform = _superview ? _superview._boundsTransform : NULL;
 
-    CPDOMDisplayServerSetStyleLeftTop(_DOMElement, transform, origin.x, origin.y);
+        CPDOMDisplayServerSetStyleLeftTop(_DOMElement, transform, origin.x, origin.y);
+    }
 #endif
 
     if (!_inhibitUpdateTrackingAreas && !_inhibitFrameAndBoundsChangedNotifications)
-        [self _updateTrackingAreas];
+        [self _updateTrackingAreasWithRecursion:YES];
 }
 
 /*!
@@ -1116,7 +1124,7 @@ var CPViewHighDPIDrawingEnabled = YES;
 {
     var size = _frame.size;
 
-    if (!aSize || CGSizeEqualToSize(size, aSize))
+    if (!aSize || (CGSizeEqualToSize(size, aSize) && !_forceUpdates))
         return;
 
     var oldSize = CGSizeMakeCopy(size);
@@ -1257,7 +1265,7 @@ var CPViewHighDPIDrawingEnabled = YES;
         [[self superview] viewFrameChanged:[[CPNotification alloc] initWithName:CPViewFrameDidChangeNotification object:self userInfo:nil]];
 
     if (!_inhibitUpdateTrackingAreas && !_inhibitFrameAndBoundsChangedNotifications)
-        [self _updateTrackingAreas];
+        [self _updateTrackingAreasWithRecursion:!_autoresizesSubviews];
 }
 
 /*!
@@ -1270,7 +1278,8 @@ var CPViewHighDPIDrawingEnabled = YES;
 #if PLATFORM(DOM)
     var scale = [self scaleSize];
 
-    CPDOMDisplayServerSetStyleSize(_DOMElement, aSize.width * 1 / scale.width, aSize.height * 1 / scale.height);
+    if (!_inhibitDOMUpdates)
+        CPDOMDisplayServerSetStyleSize(_DOMElement, aSize.width * 1 / scale.width, aSize.height * 1 / scale.height);
 
     if (_DOMContentsElement)
     {
@@ -1306,7 +1315,7 @@ var CPViewHighDPIDrawingEnabled = YES;
         [[self superview] viewBoundsChanged:[[CPNotification alloc] initWithName:CPViewBoundsDidChangeNotification object:self userInfo:nil]];
 
     if (!_inhibitUpdateTrackingAreas)
-        [self _updateTrackingAreas];
+        [self _updateTrackingAreasWithRecursion:YES];
 }
 
 /*!
@@ -1374,7 +1383,7 @@ var CPViewHighDPIDrawingEnabled = YES;
         [[self superview] viewBoundsChanged:[[CPNotification alloc] initWithName:CPViewBoundsDidChangeNotification object:self userInfo:nil]];
 
     if (!_inhibitUpdateTrackingAreas && !_inhibitFrameAndBoundsChangedNotifications)
-        [self _updateTrackingAreas];
+        [self _updateTrackingAreasWithRecursion:YES];
 }
 
 /*!
@@ -1418,7 +1427,7 @@ var CPViewHighDPIDrawingEnabled = YES;
         [[self superview] viewBoundsChanged:[[CPNotification alloc] initWithName:CPViewBoundsDidChangeNotification object:self userInfo:nil]];
 
     if (!_inhibitUpdateTrackingAreas && !_inhibitFrameAndBoundsChangedNotifications)
-        [self _updateTrackingAreas];
+        [self _updateTrackingAreasWithRecursion:YES];
 }
 
 
@@ -1430,7 +1439,7 @@ var CPViewHighDPIDrawingEnabled = YES;
 {
     var mask = [self autoresizingMask];
 
-    if (mask == CPViewNotSizable)
+    if (mask === CPViewNotSizable)
         return;
 
     var frame = _superview._frame,
@@ -1599,10 +1608,8 @@ var CPViewHighDPIDrawingEnabled = YES;
 
 //  FIXME: Should we return to visibility?  This breaks in FireFox, Opera, and IE.
 //    _DOMElement.style.visibility = (_isHidden = aFlag) ? "hidden" : "visible";
-    _isHidden = aFlag;
-
 #if PLATFORM(DOM)
-    _DOMElement.style.display = _isHidden ? "none" : "block";
+    _DOMElement.style.display = aFlag ? "none" : "block";
 #endif
 
     if (aFlag)
@@ -1613,7 +1620,7 @@ var CPViewHighDPIDrawingEnabled = YES;
         {
             do
             {
-               if (self == view)
+               if (self === view)
                {
                   [_window makeFirstResponder:[self nextValidKeyView]];
                   break;
@@ -1622,33 +1629,89 @@ var CPViewHighDPIDrawingEnabled = YES;
             while (view = [view superview]);
         }
 
-        [self _notifyViewDidHide];
+        [self _postViewWillDisappearNotification];
+        [self _recursiveGainedHiddenAncestor];
     }
     else
     {
         [self setNeedsDisplay:YES];
-        [self _notifyViewDidUnhide];
+
+        [self _postViewWillAppearNotification];
+        [self _recursiveLostHiddenAncestor];
     }
+
+    _isHidden = aFlag;
 }
 
-- (void)_notifyViewDidHide
+- (void)_postViewWillAppearNotification
 {
-    [self viewDidHide];
-
-    var count = [_subviews count];
-
-    while (count--)
-        [_subviews[count] _notifyViewDidHide];
+    [[CPNotificationCenter defaultCenter] postNotificationName:_CPViewWillAppearNotification object:self userInfo:nil];
 }
 
-- (void)_notifyViewDidUnhide
+- (void)_postViewDidAppearNotification
 {
-    [self viewDidUnhide];
+    [[CPNotificationCenter defaultCenter] postNotificationName:_CPViewDidAppearNotification object:self userInfo:nil];
+}
 
-    var count = [_subviews count];
+- (void)_postViewWillDisappearNotification
+{
+    [[CPNotificationCenter defaultCenter] postNotificationName:_CPViewWillDisappearNotification object:self userInfo:nil];
+}
 
-    while (count--)
-        [_subviews[count] _notifyViewDidUnhide];
+- (void)_postViewDidDisappearNotification
+{
+    [[CPNotificationCenter defaultCenter] postNotificationName:_CPViewDidDisappearNotification object:self userInfo:nil];
+}
+
+- (void)_setSuperview:(CPView)aSuperview
+{
+    var hasOldSuperview = (_superview !== nil),
+        hasNewSuperview = (aSuperview !== nil),
+        oldSuperviewIsHidden = hasOldSuperview && [_superview isHiddenOrHasHiddenAncestor],
+        newSuperviewIsHidden = hasNewSuperview && [aSuperview isHiddenOrHasHiddenAncestor];
+
+    if (!newSuperviewIsHidden && oldSuperviewIsHidden)
+        [self _recursiveLostHiddenAncestor];
+
+    if (newSuperviewIsHidden && !oldSuperviewIsHidden)
+        [self _recursiveGainedHiddenAncestor];
+
+    _superview = aSuperview;
+
+    if (hasOldSuperview)
+        [self _postViewDidDisappearNotification];
+
+    if (hasNewSuperview)
+        [self _postViewDidAppearNotification];
+}
+
+- (void)_recursiveLostHiddenAncestor
+{
+    if (_isHiddenOrHasHiddenAncestor)
+    {
+        _isHiddenOrHasHiddenAncestor = NO;
+        [self viewDidUnhide];
+    }
+
+    [_subviews enumerateObjectsUsingBlock:function(view, idx, stop)
+    {
+        [view _recursiveLostHiddenAncestor];
+    }];
+}
+
+- (void)_recursiveGainedHiddenAncestor
+{
+    if (!_isHidden)
+    {
+        [self viewDidHide];
+    }
+
+    _isHiddenOrHasHiddenAncestor = YES;
+
+    [_subviews enumerateObjectsUsingBlock:function(view, idx, stop)
+    {
+        [view _recursiveGainedHiddenAncestor];
+    }];
 }
 
 /*!
@@ -1683,7 +1746,7 @@ var CPViewHighDPIDrawingEnabled = YES;
 */
 - (void)setAlphaValue:(float)anAlphaValue
 {
-    if (_opacity == anAlphaValue)
+    if (_opacity === anAlphaValue)
         return;
 
     _opacity = anAlphaValue;
@@ -1718,12 +1781,7 @@ var CPViewHighDPIDrawingEnabled = YES;
 */
 - (BOOL)isHiddenOrHasHiddenAncestor
 {
-    var view = self;
-
-    while (view && ![view isHidden])
-        view = [view superview];
-
-    return view !== nil;
+    return _isHiddenOrHasHiddenAncestor;
 }
 
 /*!
@@ -1887,10 +1945,10 @@ var CPViewHighDPIDrawingEnabled = YES;
 */
 - (void)setBackgroundColor:(CPColor)aColor
 {
-    if (_backgroundColor == aColor)
+    if (_backgroundColor === aColor)
         return;
 
-    if (aColor == [CPNull null])
+    if (aColor === [CPNull null])
         aColor = nil;
 
     _backgroundColor = aColor;
@@ -1933,7 +1991,7 @@ var CPViewHighDPIDrawingEnabled = YES;
             var image = slices[i],
                 size = [image size];
 
-            if (!size || (size.width == 0 && size.height == 0))
+            if (!size || (size.width === 0 && size.height === 0))
                 size = nil;
 
             _DOMImageSizes[i] = size;
@@ -1988,10 +2046,12 @@ var CPViewHighDPIDrawingEnabled = YES;
             CPDOMDisplayServerSetStyleSize(_DOMImageParts[0], size.width, size.height);
         }
         else
+        {
             _DOMElement.style.background = colorCSS;
 
             if (patternImage)
                 CPDOMDisplayServerSetStyleBackgroundSize(_DOMElement, [patternImage size].width + "px", [patternImage size].height + "px");
+        }
     }
     else
     {
@@ -2025,7 +2085,7 @@ var CPViewHighDPIDrawingEnabled = YES;
             partIndex++;
         }
 
-        if (_backgroundType == BackgroundNinePartImage)
+        if (_backgroundType === BackgroundNinePartImage)
         {
             var left = _DOMImageSizes[0] ? _DOMImageSizes[0].width : 0,
                 right = _DOMImageSizes[2] ? _DOMImageSizes[2].width : 0,
@@ -2086,7 +2146,7 @@ var CPViewHighDPIDrawingEnabled = YES;
                 CPDOMDisplayServerSetStyleRightBottom(_DOMImageParts[partIndex], NULL, 0.0, 0.0);
             }
         }
-        else if (_backgroundType == BackgroundVerticalThreePartImage)
+        else if (_backgroundType === BackgroundVerticalThreePartImage)
         {
             var top = _DOMImageSizes[0] ? _DOMImageSizes[0].height : 0,
                 bottom = _DOMImageSizes[2] ? _DOMImageSizes[2].height : 0;
@@ -2118,7 +2178,7 @@ var CPViewHighDPIDrawingEnabled = YES;
                 CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], frameSize.width, bottom);
             }
         }
-        else if (_backgroundType == BackgroundHorizontalThreePartImage)
+        else if (_backgroundType === BackgroundHorizontalThreePartImage)
         {
             var left = _DOMImageSizes[0] ? _DOMImageSizes[0].width : 0,
                 right = _DOMImageSizes[2] ? _DOMImageSizes[2].width : 0;
@@ -2857,8 +2917,8 @@ setBoundsOrigin:
     return YES;
 }
 
-/*
-    FIXME Not yet implemented
+/*!
+    Scrolls the view’s CPClipView in the direction of a mouse event that occurs outside of it.
 */
 - (BOOL)autoscroll:(CPEvent)anEvent
 {
@@ -3080,7 +3140,7 @@ setBoundsOrigin:
 */
 - (void)setLayer:(CALayer)aLayer
 {
-    if (_layer == aLayer)
+    if (_layer === aLayer)
         return;
 
     if (_layer)
@@ -3494,14 +3554,14 @@ setBoundsOrigin:
  Invoked automatically when the view’s geometry changes such that its tracking areas need to be recalculated.
 
  You should override this method to remove out of date tracking areas and add recomputed tracking areas;
- 
+
  Cocoa calls this on every view, whereas they have tracking area(s) or not.
  Cappuccino behaves differently :
  - updateTrackingAreas is called when placing a view in the view hierarchy (that is in a window)
  - if you have only CPTrackingInVisibleRect tracking areas attached to a view, it will not be called again (until you move the view in the hierarchy)
  - if you have at least one non-CPTrackingInVisibleRect tracking area attached, it will be called every time the view geometry could be modified
    You don't have to touch to CPTrackingInVisibleRect tracking areas, they will be automatically updated
- 
+
  Please note that it is the owner of a tracking area who is called for updateTrackingAreas.
  But, if a view without any tracking area is inserted in the view hierarchy (that is, in a window), the view is called for updateTrackingAreas.
  This enables you to use updateTrackingArea to initially attach your tracking areas to the view.
@@ -3513,16 +3573,16 @@ setBoundsOrigin:
 
 /*!
  This utility method is intended for CPView subclasses overriding updateTrackingAreas
- 
+
  Typical use would be :
- 
+
  - (void)updateTrackingAreas
  {
       [self removeAllTrackingAreas];
- 
+
       ... add your specific updated tracking areas ...
   }
- 
+
 */
 - (void)removeAllTrackingAreas
 {
@@ -3541,21 +3601,21 @@ setBoundsOrigin:
     [_trackingAreas removeObjectIdenticalTo:trackingArea];
 }
 
-- (void)_updateTrackingAreas
+- (void)_updateTrackingAreasWithRecursion:(BOOL)shouldCallRecursively
 {
     _inhibitUpdateTrackingAreas = YES;
 
-    [self _recursivelyUpdateTrackingAreas];
-
-    _inhibitUpdateTrackingAreas = NO;
-}
-
-- (void)_recursivelyUpdateTrackingAreas
-{
     [self _updateTrackingAreasForOwners:[self _calcTrackingAreaOwners]];
 
-    for (var i = 0; i < _subviews.length; i++)
-        [_subviews[i] _recursivelyUpdateTrackingAreas];
+    if (shouldCallRecursively)
+    {
+        // Now, call _updateTrackingAreasWithRecursion on subviews
+
+        for (var i = 0; i < _subviews.length; i++)
+            [_subviews[i] _updateTrackingAreasWithRecursion:YES];
+    }
+
+    _inhibitUpdateTrackingAreas = NO;
 }
 
 - (CPArray)_calcTrackingAreaOwners
@@ -3652,7 +3712,6 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 
         _window = [aCoder decodeObjectForKey:CPViewWindowKey];
         _superview = [aCoder decodeObjectForKey:CPViewSuperviewKey];
-
         // We have to manually add the subviews so that they will receive
         // viewWillMoveToSuperview: and viewDidMoveToSuperview:
         _subviews = [];
@@ -3707,6 +3766,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 #endif
 
         [self setHidden:[aCoder decodeBoolForKey:CPViewIsHiddenKey]];
+        _isHiddenOrHasHiddenAncestor = NO;
 
         if ([aCoder containsValueForKey:CPViewOpacityKey])
             [self setAlphaValue:[aCoder decodeIntForKey:CPViewOpacityKey]];

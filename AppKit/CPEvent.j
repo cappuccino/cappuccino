@@ -28,7 +28,6 @@
 
 @import "CPCompatibility.j"
 @import "CGGeometry.j"
-@import "CPText.j"
 @import "CPTrackingArea.j"
 
 @class CPTextField
@@ -36,6 +35,9 @@
 @class CPGraphicsContext
 
 @global CPApp
+@global CPNewlineCharacter
+@global CPCarriageReturnCharacter
+@global CPEnterCharacter
 
 @typedef DOMEvent
 @typedef CPEventType
@@ -83,7 +85,7 @@ var _CPEventPeriodicEventPeriod         = 0,
     BOOL                _suppressCappuccinoCut;
     BOOL                _suppressCappuccinoPaste;
 #endif
-    
+
     CPTrackingArea      _trackingArea;
 }
 
@@ -146,7 +148,7 @@ var _CPEventPeriodicEventPeriod         = 0,
 
 /*!
     Creates a new mouse tracking event.
- 
+
     @param anEventType the event type
     @param aPoint the location of the cursor in the window specified by \c aWindowNumber
     @param modifierFlags a bitwise combination of the modifiers specified in the CPEvent globals
@@ -232,7 +234,7 @@ var _CPEventPeriodicEventPeriod         = 0,
 {
     if ((anEventType != CPMouseEntered) && (anEventType != CPMouseExited) && (anEventType != CPCursorUpdate))
         [CPException raise:CPInternalInconsistencyException reason:"Invalid event type"];
-  
+
     if (self = [self _initWithType:anEventType])
     {
         _location = CGPointCreateCopy(aPoint);
@@ -243,7 +245,7 @@ var _CPEventPeriodicEventPeriod         = 0,
         _trackingArea = aTrackingArea;
         _window = [CPApp windowWithWindowNumber:aWindowNumber];
     }
-    
+
     return self;
 }
 
@@ -334,6 +336,14 @@ var _CPEventPeriodicEventPeriod         = 0,
 - (CPEventType)type
 {
     return _type;
+}
+
+/*!
+    Returns the subtype of the event.
+*/
+- (CPEventType)subtype
+{
+    return _subtype;
 }
 
 /*!
@@ -633,7 +643,7 @@ var _CPEventPeriodicEventPeriod         = 0,
 {
     if ((_type !== CPMouseEntered) && (_type !== CPMouseExited) && (_type !== CPCursorUpdate))
         [CPException raise:CPInternalInconsistencyException format:@"You can't call trackingArea for events of type %#x", _type]
-    
+
     return _trackingArea;
 }
 

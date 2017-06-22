@@ -57,4 +57,31 @@
     }
 }
 
+- (void)testObjectValueWithRightWildcard
+{
+    [self _testAttribute:CPDateAttributeType value:[CPDate date]];
+    [self _testAttribute:CPInteger16AttributeType value:2.0];
+    [self _testAttribute:CPDoubleAttributeType value:2.5];
+    [self _testAttribute:CPFloatAttributeType value:2.5];
+    [self _testAttribute:CPStringAttributeType value:@"toto"];
+    [self _testAttribute:CPBooleanAttributeType value:1];
+}
+
+- (void)_testAttribute:(int)attr value:(id)value
+{
+    var leftExp = [CPExpression expressionForKeyPath:@"keypath"],
+        rightExp = [CPExpression expressionForConstantValue:value],
+        predicate = [CPComparisonPredicate predicateWithLeftExpression:leftExp rightExpression:rightExp modifier:0 type:CPEqualToPredicateOperatorType options:0],
+        compound = [[CPCompoundPredicate alloc] initWithType:CPAndPredicateType subpredicates:@[predicate]];
+
+    var t1 = [[CPPredicateEditorRowTemplate alloc] initWithCompoundTypes:[0,1,2]],
+        t2 = [[CPPredicateEditorRowTemplate alloc] initWithLeftExpressions:@[leftExp] rightExpressionAttributeType:attr modifier:0 operators:@[CPEqualToPredicateOperatorType] options:0];
+
+    [_editor setRowTemplates:@[t1, t2]];
+
+    [_editor setObjectValue:compound];
+    [_editor reloadPredicate];
+    [self assert:compound equals:[_editor objectValue]];
+}
+
 @end

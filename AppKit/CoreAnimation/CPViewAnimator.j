@@ -1,38 +1,24 @@
 
 @import "_CPObjectAnimator.j"
 @import "CPView.j"
+@import "CPCompatibility.j"
+@import "CSSAnimation.j"
+
+var DEFAULT_CSS_PROPERTIES = nil,
+    FRAME_UPDATERS = {};
 
 @implementation CPViewAnimator : _CPObjectAnimator
 {
+    BOOL    _wantsPeriodicFrameUpdates  @accessors(property=wantsPeriodicFrameUpdates);
 }
 
-- (void)viewWillMoveToSuperview:(CPView)aSuperview
+- (id)initWithTarget:(id)aTarget
 {
-    var orderInAnim = [self animationForKey:@"CPAnimationTriggerOrderIn"];
+    self = [super initWithTarget:aTarget];
 
-    if (orderInAnim && [orderInAnim isKindOfClass:[CAPropertyAnimation class]])
-    {
-        [_target setValue:[orderInAnim fromValue] forKeyPath:[orderInAnim keyPath]];
-    }
+    _wantsPeriodicFrameUpdates = NO;
 
-    [_target viewWillMoveToSuperview:aSuperview];
-}
-
-- (void)viewDidMoveToSuperview
-{
-    var orderInAnim = [self animationForKey:@"CPAnimationTriggerOrderIn"];
-
-    if (orderInAnim && [orderInAnim isKindOfClass:[CAPropertyAnimation class]])
-    {
-        [self _setTargetValue:YES withKeyPath:@"CPAnimationTriggerOrderIn" fallback:nil completion:function()
-        {
-            [_target setValue:[orderInAnim toValue] forKeyPath:[orderInAnim keyPath]];
-        }];
-    }
-    else
-    {
-        [_target viewDidMoveToSuperview];
-    }
+    return self;
 }
 
 - (void)removeFromSuperview
@@ -81,7 +67,9 @@
 {
     var handler = function()
     {
+        [_target _setForceUpdates:YES];
         [_target performSelector:aSelector withObject:aTargetValue];
+        [_target _setForceUpdates:NO];
     };
 
     [self _setTargetValue:aTargetValue withKeyPath:aKeyPath fallback:handler completion:handler];
@@ -92,7 +80,7 @@
     var animation = [_target animationForKey:aKeyPath],
         context = [CPAnimationContext currentContext];
 
-    if (!animation || ![animation isKindOfClass:[CAAnimation class]] || (![context duration] && ![animation duration]) || ![_CPObjectAnimator supportsCSSAnimations])
+    if (!animation || ![animation isKindOfClass:[CAAnimation class]] || (![context duration] && ![animation duration]) || !CPFeatureIsCompatible(CPCSSAnimationFeature))
     {
         if (fallback)
             fallback();
@@ -103,17 +91,106 @@
     }
 }
 
++ (CPDictionary)_defaultCSSProperties
+{
+    if (DEFAULT_CSS_PROPERTIES == nil)
+    {
+        var transformProperty = "transform";
+
+        DEFAULT_CSS_PROPERTIES =  @{
+                                    "backgroundColor"  : [@{"property":"background", "value":function(sv, val){return [val cssString];}}],
+                                    "alphaValue"       : [@{"property":"opacity"}],
+                                    "frame"            : [@{"property":transformProperty, "value":frameToCSSTranslationTransformMatrix},
+                                                          @{"property":"width", "value":transformFrameToWidth},
+                                                          @{"property":"height", "value":transformFrameToHeight}],
+                                    "frameOrigin"      : [@{"property":transformProperty, "value":frameOriginToCSSTransformMatrix}],
+                                    "frameSize"        : [@{"property":"width", "value":transformSizeToWidth},
+                                                          @{"property":"height", "value":transformSizeToHeight}]
+                                    };
+    }
+
+    return DEFAULT_CSS_PROPERTIES;
+}
+
++ (void)addAnimations:(CPArray)animations forAction:(id)anAction
+{
+    var target = anAction.object;
+
+    return [self _addAnimations:animations forAction:anAction domElement:[target _DOMElement] identifier:[target UID]];
+}
+
++ (void)_addAnimations:(CPArray)animations forAction:(id)anAction domElement:(Object)aDomElement identifier:(CPString)anIdentifier
+{
+    var animation = [animations objectPassingTest:function(anim, idx, stop)
+    {
+        return anim.identifier == anIdentifier;
+    }];
+
+    if (animation == nil)
+    {
+        animation = new CSSAnimation(aDomElement, anIdentifier, [anAction.object debug_description]);
+        [animations addObject:animation];
+    }
+
+    var css_mapping = [self _cssPropertiesForKeyPath:anAction.keypath];
+
+    [css_mapping enumerateObjectsUsingBlock:function(aDict, anIndex, stop)
+    {
+        var completionFunction = (anIndex == 0) ? anAction.completion : null,
+            property = [aDict objectForKey:@"property"],
+            getter = [aDict objectForKey:@"value"];
+
+        animation.addPropertyAnimation(property, getter, anAction.duration, anAction.keytimes, anAction.values, anAction.timingfunctions, completionFunction);
+    }];
+}
+
++ (CPArray)_cssPropertiesForKeyPath:(CPString)aKeyPath
+{
+    return [[self _defaultCSSProperties] objectForKey:aKeyPath];
+}
+
++ (void)addFrameUpdaters:(CPArray)frameUpdaters forAction:(id)anAction
+{
+    var rootIdentifier = [anAction.root UID];
+
+    var frameUpdater = [frameUpdaters objectPassingTest:function(updater, idx, stop)
+    {
+        // There is one timer, linked to the top view, that updates the whole hierarchy.
+        return updater.identifier() == rootIdentifier;
+    }];
+
+    if (frameUpdater == nil)
+    {
+        frameUpdater = new FrameUpdater(rootIdentifier);
+        [frameUpdaters addObject:frameUpdater];
+        FRAME_UPDATERS[rootIdentifier] = frameUpdater;
+    }
+
+    frameUpdater.addTarget(anAction.object, anAction.keypath, anAction.duration);
+}
+
++ (void)stopUpdaterWithIdentifier:(CPString)anIdentifier
+{
+    var frameUpdater = FRAME_UPDATERS[anIdentifier];
+
+    if (frameUpdater)
+    {
+        frameUpdater.stop();
+        delete FRAME_UPDATERS[anIdentifier];
+    }
+    else
+        CPLog.warn("Could not find FrameUpdater with identifier " + anIdentifier);
+}
+
+- (BOOL)needsPeriodicFrameUpdatesForKeyPath:(CPString)aKeyPath
+{
+    return ((aKeyPath == @"frame" || aKeyPath == @"frameSize") &&
+            (([_target hasCustomLayoutSubviews] && ![_target implementsSelector:@selector(frameRectOfView:inSuperviewSize:)])
+             || [_target hasCustomDrawRect]))
+            || [self wantsPeriodicFrameUpdates];
+}
+
 @end
-
-var transformOrigin = function(start, current)
-{
-    return "translate(" + (current.x - start.x) + "px," + (current.y - start.y) + "px)";
-};
-
-var transformFrameToTranslate = function(start, current)
-{
-    return transformOrigin(start.origin, current.origin);
-};
 
 var transformFrameToWidth = function(start, current)
 {
@@ -135,35 +212,26 @@ var transformSizeToHeight = function(start, current)
     return current.height + "px";
 };
 
-var DEFAULT_CSS_PROPERTIES = nil;
+var CSSStringFromCGAffineTransform = function(anAffineTransform)
+{
+    return "matrix(" + anAffineTransform.a + ", " + anAffineTransform.b + ", " + anAffineTransform.c + ", " + anAffineTransform.d + ", " + anAffineTransform.tx + (CPBrowserIsEngine(CPGeckoBrowserEngine) ? "px, " : ", ") + anAffineTransform.ty + (CPBrowserIsEngine(CPGeckoBrowserEngine) ? "px)" : ")");
+};
+
+var frameOriginToCSSTransformMatrix = function(start, current)
+{
+    var affine = CGAffineTransformMakeTranslation(current.x - start.x, current.y - start.y);
+
+    return CSSStringFromCGAffineTransform(affine);
+};
+
+var frameToCSSTranslationTransformMatrix = function(start, current)
+{
+    var affine = CGAffineTransformMakeTranslation(current.origin.x - start.origin.x, current.origin.y - start.origin.y);
+
+    return CSSStringFromCGAffineTransform(affine);
+};
 
 @implementation CPView (CPAnimatablePropertyContainer)
-
-+ (CPDictionary)defaultCSSProperties
-{
-    if (DEFAULT_CSS_PROPERTIES == nil)
-    {
-        var transformProperty = CPBrowserCSSProperty("transform");
-
-        DEFAULT_CSS_PROPERTIES =  @{
-            "backgroundColor"  : [@{"property":"background", "value":function(sv, val){return [val cssString];}}],
-            "alphaValue"       : [@{"property":"opacity"}],
-            "frame"            : [@{"property":transformProperty, "value":transformFrameToTranslate},
-                                  @{"property":"width", "value":transformFrameToWidth},
-                                  @{"property":"height", "value":transformFrameToHeight}],
-            "frameOrigin"      : [@{"property":transformProperty, "value":transformOrigin}],
-            "frameSize"        : [@{"property":"width", "value":transformSizeToWidth},
-                                  @{"property":"height", "value":transformSizeToHeight}]
-        };
-    }
-
-    return DEFAULT_CSS_PROPERTIES;
-}
-
-+ (CPArray)cssPropertiesForKeyPath:(CPString)aKeyPath
-{
-    return [[self defaultCSSProperties] objectForKey:aKeyPath];
-}
 
 + (Class)animatorClass
 {
@@ -183,14 +251,16 @@ var DEFAULT_CSS_PROPERTIES = nil;
     return _animator;
 }
 
-- (id)DOMElementForKeyPath:(CPString)aKeyPath
-{
-    return _DOMElement;
-}
-
 + (CAAnimation)defaultAnimationForKey:(CPString)aKey
 {
-    if ([self cssPropertiesForKeyPath:aKey] !== nil)
+    // TODO: remove when supported.
+    if (aKey == @"CPAnimationTriggerOrderIn")
+    {
+        CPLog.warn("CPView animated key path CPAnimationTriggerOrderIn is not supported yet.");
+        return nil;
+    }
+
+    if ([[self animatorClass] _cssPropertiesForKeyPath:aKey] !== nil)
         return [CAAnimation animation];
 
     return nil;
@@ -219,4 +289,147 @@ var DEFAULT_CSS_PROPERTIES = nil;
     _animationsDictionary = [animationsDict copy];
 }
 
+- (Object)_DOMElement
+{
+    return _DOMElement;
+}
+
+- (CPString)debug_description
+{
+    return [self identifier] || [self className];
+}
+
 @end
+
+@implementation CPArray (Additions)
+
+- (CPArray)objectPassingTest:(Function)aFunction
+{
+    var idx = [self indexOfObjectPassingTest:aFunction];
+
+    if (idx !== CPNotFound)
+        return [self objectAtIndex:idx];
+
+    return nil;
+}
+@end
+
+var FrameUpdater = function(anIdentifier)
+{
+    this._identifier = anIdentifier;
+    this._requestId = null;
+    this._duration = 0;
+    this._stop = false;
+    this._targets = [];
+    this._callbacks = [];
+
+    var frameUpdater = this;
+
+    this._updateFunction = function(timestamp)
+    {
+        if (frameUpdater._startDate == null)
+            frameUpdater._startDate = timestamp;
+
+        if (frameUpdater._stop)
+            return;
+
+        for (var i = 0; i < frameUpdater._callbacks.length; i++)
+            frameUpdater._callbacks[i]();
+
+        if (timestamp - frameUpdater._startDate < frameUpdater._duration * 1000)
+            window.requestAnimationFrame(frameUpdater._updateFunction);
+    };
+};
+
+FrameUpdater.prototype.start = function()
+{
+    this._requestId = window.requestAnimationFrame(this._updateFunction);
+};
+
+FrameUpdater.prototype.stop = function()
+{
+    CPLog.warn("STOP FrameUpdater" + this._identifier);
+
+    // window.cancelAnimationFrame support is Chrome 24, Firefox 23, IE 10, Opera 15, Safari 6.1
+    if (window.cancelAnimationFrame)
+        window.cancelAnimationFrame(this._requestId);
+
+    this._stop = true;
+};
+
+FrameUpdater.prototype.updateFunction = function()
+{
+    return this._updateFunction;
+};
+
+FrameUpdater.prototype.identifier = function()
+{
+    return this._identifier;
+};
+
+FrameUpdater.prototype.description = function()
+{
+    return "<timer " + this._identifier + " " + this._targets.map(function(t){return [t debug_description];}) + ">";
+};
+
+FrameUpdater.prototype.addTarget = function(target, keyPath, duration)
+{
+    var callback = createUpdateFrame(target, keyPath);
+
+    if (callback)
+    {
+        this._duration = MAX(this._duration, duration);
+        this._targets.push(target);
+        this._callbacks.push(callback);
+    }
+};
+
+var createUpdateFrame = function(aView, aKeyPath)
+{
+    if (aKeyPath !== "frame" && aKeyPath !== "frameSize" && aKeyPath !== "frameOrigin")
+        return nil;
+
+    var style = getComputedStyle([aView _DOMElement]),
+        getCSSPropertyValue = function(prop) {
+            return ROUND(parseFloat(style.getPropertyValue(prop)));
+        },
+        initialOrigin     = CGPointMakeCopy([aView frameOrigin]),
+        transformProperty = CPBrowserStyleProperty("transform"),
+        updateFrame       = function(timestamp)
+        {
+                if (aKeyPath === "frameSize")
+                {
+                    var width  = getCSSPropertyValue("width"),
+                        height = getCSSPropertyValue("height");
+
+                    [aView setFrameSize:CGSizeMake(width, height)];
+                }
+                else
+                {
+                    [aView _setInhibitDOMUpdates:YES];
+
+                    var matrix = style[transformProperty].split('(')[1].split(')')[0].split(','),
+                             x = ROUND(initialOrigin.x + parseFloat(matrix[4])),
+                             y = ROUND(initialOrigin.y + parseFloat(matrix[5]));
+
+                    if (aKeyPath === "frame")
+                    {
+                        var width  = getCSSPropertyValue("width"),
+                            height = getCSSPropertyValue("height");
+
+                        [aView setFrame:CGRectMake(x, y, width, height)];
+                    }
+                    else
+                    {
+                        [aView setFrameOrigin:CGPointMake(x, y)];
+                    }
+
+                    [aView _setInhibitDOMUpdates:NO];
+                }
+
+            [[CPRunLoop currentRunLoop] performSelectors];
+    //        CPLog.debug("update " + [aView debug_description]);
+        };
+
+    return updateFrame;
+};

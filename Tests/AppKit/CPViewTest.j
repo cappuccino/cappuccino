@@ -895,70 +895,184 @@ var updateTrackingAreasCalls,
     [self assert:nil equals:[view effectiveAppearance]];
 }
 
+- (void)testViewDidHideDidUnhide
+{
+    var expectedResult = [@"viewDidHide_view1", @"viewDidUnhide_view1"];
+
+    [view1 setHidden:YES];
+    [view1 setHidden:NO];
+
+    [self assert:expectedResult equals:methodCalled];
+}
+
+- (void)testAddViewRemoveView
+{
+    var expectedResult = [@"viewWillMoveToSuperview_view2",
+    @"viewDidMoveToSuperview_view2",
+    @"viewWillMoveToSuperview_view2",
+    @"viewDidMoveToSuperview_view2",
+    @"viewWillMoveToWindow_view2",
+    @"viewDidMoveToWindow_view2"];
+
+    [view1 addSubview:view2];
+    [view2 removeFromSuperview];
+
+    [self assert:expectedResult equals:methodCalled];
+}
+
+- (void)testViewGainedHiddenAncestor
+{
+    var expectedResult = [@"viewDidHide_view1",
+    @"viewWillMoveToSuperview_view3",
+    @"viewDidMoveToSuperview_view3",
+    @"viewWillMoveToSuperview_view2",
+    @"viewDidHide_view2",
+    @"viewDidHide_view3",
+    @"viewDidMoveToSuperview_view2"];
+
+    [view1 setHidden:YES];
+    [view2 addSubview:view3];
+    CPLog.warn("will add view2");
+    [view1 addSubview:view2];
+
+    [self assertTrue: [view2 isHiddenOrHasHiddenAncestor] message:@"Expected " + [view2 identifier] + "isHiddenOrHasHiddenAncestor = YES"];
+    [self assertTrue: [view3 isHiddenOrHasHiddenAncestor] message:@"Expected isHiddenOrHasHiddenAncestor = YES"];
+
+    [self assertFalse:[view2 isHidden]];
+    [self assertFalse:[view3 isHidden]];
+
+    [self assert:expectedResult equals:methodCalled];
+}
+
+- (void)testRemoveViewsHiddenByAncestor
+{
+    var expectedResult = @[
+    @"viewWillMoveToSuperview_view2",
+    @"viewDidUnhide_view2",
+    @"viewDidUnhide_view3",
+    @"viewDidMoveToSuperview_view2",
+    @"viewWillMoveToWindow_view2",
+    @"viewWillMoveToWindow_view3",
+    @"viewDidMoveToWindow_view3",
+    @"viewDidMoveToWindow_view2"
+];
+
+    [view1 setHidden:YES];
+    [view1 addSubview:view2];
+    [view2 addSubview:view3];
+
+    [self assertTrue: [view2 isHiddenOrHasHiddenAncestor] message:@"Expected isHiddenOrHasHiddenAncestor = YES" ];
+    [self assertFalse:[view2 isHidden]];
+
+    [self assertTrue: [view3 isHiddenOrHasHiddenAncestor] message:@"Expected isHiddenOrHasHiddenAncestor = YES" ];
+    [self assertFalse:[view3 isHidden]];
+
+    methodCalled = [];
+
+    [view2 removeFromSuperview];
+
+    [self assertFalse: [view2 isHiddenOrHasHiddenAncestor] message:@"Expected isHiddenOrHasHiddenAncestor = NO" ];
+    [self assertFalse: [view3 isHiddenOrHasHiddenAncestor] message:@"Expected isHiddenOrHasHiddenAncestor = NO" ];
+
+    [self assert:expectedResult equals:methodCalled];
+}
+
+- (void)testRemoveHiddenView
+{
+    var expectedResult = [@"viewWillMoveToSuperview_view2",    @"viewDidMoveToSuperview_view2",    @"viewWillMoveToWindow_view2",    @"viewDidMoveToWindow_view2"];
+
+    [view1 addSubview:view2];
+    [view2 setHidden:YES];
+
+    methodCalled = [];
+
+    [view2 removeFromSuperview];
+    [self assertTrue: [view2 isHiddenOrHasHiddenAncestor] message:@"Expected isHiddenOrHasHiddenAncestor = YES" ];
+    [self assert:expectedResult equals:methodCalled];
+}
+
+- (void)testLostHiddenAncestorAfterMovingToNewSuperview
+{
+    var expectedResult = @[
+    @"viewWillMoveToSuperview_view2",
+    @"viewDidMoveToSuperview_view2",
+    @"viewDidHide_view1",
+    @"viewDidHide_view2",
+    @"viewWillMoveToSuperview_view2",
+    @"viewDidUnhide_view2",
+    @"viewDidMoveToSuperview_view2"
+];
+
+    [view1 addSubview:view2];
+    [view1 setHidden:YES];
+    [view3 addSubview:view2];
+
+    [self assert:expectedResult equals:methodCalled];
+}
 // TrackingAreaAdditions
 
 - (void)testTrackingAreas
 {
     var trackingArea = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero() options:CPTrackingMouseEnteredAndExited | CPTrackingActiveInKeyWindow | CPTrackingInVisibleRect owner:self userInfo:nil];
-    
+
     [self assert:0 equals:[[view trackingAreas] count] message:@"Initially, a view has no tracking area"];
 
     //
-    
+
     [view addTrackingArea:trackingArea];
     [self assert:1 equals:[[view trackingAreas] count] message:@"After adding a tracking area"];
     [self assert:view equals:[trackingArea view] message:@"Tracking area should be linked to view"];
 
     //
-    
+
     [view removeTrackingArea:trackingArea];
     [self assert:0 equals:[[view trackingAreas] count] message:@"After removing the only tracking area"];
     [self assert:nil equals:[trackingArea view] message:@"Tracking area should be unlinked"];
-    
+
     //
-    
+
     [view addTrackingArea:trackingArea];
     [view addTrackingArea:trackingArea];
     [view addTrackingArea:trackingArea];
     [self assert:1 equals:[[view trackingAreas] count] message:@"Adding the same tracking area multiple times should add it once"];
     [self assert:view equals:[trackingArea view] message:@"Tracking area should be linked to view"];
-    
+
     var trackingArea2 = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero() options:CPTrackingMouseEnteredAndExited | CPTrackingActiveInKeyWindow owner:self userInfo:nil];
 
     //
-    
+
     [view addTrackingArea:trackingArea2];
     [self assert:2 equals:[[view trackingAreas] count] message:@"After adding a second tracking area"];
     [self assert:view equals:[trackingArea2 view] message:@"Tracking area should be linked to view"];
 
     //
-    
+
     [view removeAllTrackingAreas];
     [self assert:0 equals:[[view trackingAreas] count] message:@"After removing all tracking areas"];
     [self assert:nil equals:[trackingArea view] message:@"Tracking area should be unlinked"];
     [self assert:nil equals:[trackingArea2 view] message:@"Tracking area should be unlinked"];
 
     //
-    
+
     [view addTrackingArea:trackingArea];
-    
+
     var contentView = [window contentView];
 
     [contentView addSubview:view];
     [self assert:0 equals:updateTrackingAreasCalls message:@"Putting a view with a CPTrackingAreaInVisibleRect in a window should not call updateTrackingAreas"];
-    
+
     [view removeFromSuperview];
 
     //
-    
+
     [view addTrackingArea:trackingArea2];
     [contentView addSubview:view];
     [self assert:1 equals:updateTrackingAreasCalls message:@"Putting a view with a non CPTrackingAreaInVisibleRect in a window should call updateTrackingAreas"];
-    
+
     [view removeAllTrackingAreas];
-    
+
     //
-    
+
     var viewTA = [[CPTrackingAreaView alloc] initWithFrame:CGRectMakeZero()];
     updateTrackingAreasCalls = 0;
 
@@ -966,17 +1080,17 @@ var updateTrackingAreasCalls,
     [self assert:1 equals:updateTrackingAreasCalls message:@"Putting a view with no tracking areas in a window should call updateTrackingAreas"];
 
     //
-    
+
     updateTrackingAreasCalls = 0;
 
     [viewTA addTrackingArea:trackingArea];
     [viewTA setFrame:CGRectMake(10, 10, 10, 10)];
     [self assert:0 equals:updateTrackingAreasCalls message:@"Changing geometry of a view with a CPTrackingAreaInVisibleRect should not call updateTrackingAreas"];
-    
+
     //
-    
+
     updateTrackingAreasCalls = 0;
-    
+
     [viewTA addTrackingArea:trackingArea2];
     [viewTA setFrame:CGRectMake(20, 20, 20, 20)];
     [self assert:1 equals:updateTrackingAreasCalls message:@"Changing geometry of a view with a non CPTrackingAreaInVisibleRect should call updateTrackingAreas"];
@@ -1048,7 +1162,7 @@ var updateTrackingAreasCalls,
 
     [viewTA removeAllTrackingAreas];
     [viewTA addTrackingArea:trackingAreaAllWithDrag];
-    
+
     // Mouse enters the tracking area while dragging (option set)
 
     [self moveMouseAtPoint:CGPointMake(21, 21) dragging:YES];
@@ -1103,7 +1217,7 @@ var updateTrackingAreasCalls,
     [self assert:0 equals:mouseExitedCalls  message:@"Mouse entering inner tracking area should not call mouseExited"];
     [self assert:1 equals:mouseMovedCalls   message:@"Mouse entering inner tracking area should call mouseMoved"];
     [self assert:1 equals:cursorUpdateCalls message:@"Mouse entering inner tracking area should call cursorUpdate"];
-    
+
     // Mouse moves in inner view
 
     [self moveMouseAtPoint:CGPointMake(27, 27) dragging:NO];
@@ -1112,7 +1226,7 @@ var updateTrackingAreasCalls,
     [self assert:0 equals:mouseExitedCalls  message:@"Mouse moving in inner tracking area should not call mouseExited"];
     [self assert:2 equals:mouseMovedCalls   message:@"Mouse moving in inner tracking area should call mouseMoved for both views"];
     [self assert:0 equals:cursorUpdateCalls message:@"Mouse moving in inner tracking area should not call cursorUpdate"];
-    
+
     // Mouse leaves inner view but remains in outer view
 
     [self moveMouseAtPoint:CGPointMake(36, 36) dragging:NO];
@@ -1121,7 +1235,7 @@ var updateTrackingAreasCalls,
     [self assert:1 equals:mouseExitedCalls  message:@"Mouse moving from inner to outer tracking area should call mouseExited (for inner)"];
     [self assert:1 equals:mouseMovedCalls   message:@"Mouse moving from inner to outer tracking area should call mouseMoved (for outer)"];
     [self assert:1 equals:cursorUpdateCalls message:@"Mouse moving from inner to outer tracking area should call cursorUpdate (for outer)"];
-    
+
     [self assert:innerViewTA equals:involvedViewForMouseExited  message:@"Inner view should receive mouseExited"];
     [self assert:viewTA      equals:involvedViewForCursorUpdate message:@"Outer view should receive cursorUpdate"];
 
@@ -1278,7 +1392,7 @@ var updateTrackingAreasCalls,
     [self mouseUpAtPoint:CGPointMake(10, 10)];
 
     [self assert:[CPCursor arrowCursor] equals:[CPCursor currentCursor] message:@"Step 1.7 : cursor should be an arrow"];
-    
+
     //
 
     [self moveMouseAtPoint:CGPointMake(1, 1) dragging:NO];
@@ -1292,7 +1406,7 @@ var updateTrackingAreasCalls,
     [self moveMouseAtPoint:CGPointMake(5, 5) dragging:NO];
 
     [self assert:[CPCursor arrowCursor] equals:[CPCursor currentCursor] message:@"Step 2.1 : cursor should be an arrow"];
-    
+
     // Step 2.2 : inside the superview / outside the subview
 
     [self moveMouseAtPoint:CGPointMake(15, 15) dragging:NO];
@@ -1310,7 +1424,7 @@ var updateTrackingAreasCalls,
     [self moveMouseAtPoint:CGPointMake(15, 15) dragging:NO];
 
     [self assert:[CPCursor crosshairCursor] equals:[CPCursor currentCursor] message:@"Step 2.4 : cursor should be a crosshair"];
-    
+
     // Step 2.5 : outside the superview
 
     [self moveMouseAtPoint:CGPointMake(5, 5) dragging:NO];
@@ -1355,14 +1469,14 @@ var updateTrackingAreasCalls,
     [self moveMouseAtPoint:CGPointMake(5, 5) dragging:NO];
 
     [self assert:[CPCursor arrowCursor] equals:[CPCursor currentCursor] message:@"Step 3.5 : cursor should be an arrow"];
-    
+
 }
 
 - (void)testTrackingAreasLiveViewHierarchyModification
 {
     // 1. viewB inside viewA with mouseEntered removing itself
 
-    var viewA = [[CPTrackingAreaViewWithCursorUpdate alloc] initWithFrame:CGRectMake(20, 20, 40, 40)]
+    var viewA = [[CPTrackingAreaViewWithCursorUpdate alloc] initWithFrame:CGRectMake(20, 20, 40, 40)],
         viewB = [[CPTrackingAreaViewLiveRemoval      alloc] initWithFrame:CGRectMake(10, 10, 20, 20)];
 
     [[window contentView] setSubviews:[CPArray arrayWithObject:viewA]];
@@ -1688,6 +1802,18 @@ var updateTrackingAreasCalls,
 - (void)viewWillMoveToWindow:(CPWindow)newWindow
 {
     var string = @"viewWillMoveToWindow_" + [self identifier];
+    [methodCalled addObject:string];
+}
+
+- (void)viewDidUnhide
+{
+    var string = _cmd + @"_" + [self identifier];
+    [methodCalled addObject:string];
+}
+
+- (void)viewDidHide
+{
+    var string = _cmd + @"_" + [self identifier];
     [methodCalled addObject:string];
 }
 

@@ -150,7 +150,7 @@ var CPViewControllerCachedCibs;
     If you use Interface Builder to create your views, and you initialize the
     controller using the initWithCibName:bundle: methods, then you MUST NOT override
     this method.
-    
+
     @note When using this method, the cib loading system is synchronous.
     See the loadViewWithCompletionHandler: method for an asynchronous loading.
 */
@@ -178,12 +178,12 @@ var CPViewControllerCachedCibs;
 }
 
 /*!
-    Loads asynchronously the cib and creates the view that the controller manages.
-    
-    @param aHandler A function passing the loaded view as the first argument
-    and a network error or nil as the second argument: function(view, error).
-    
-    @note If the view has already been loaded, the completion handler is run immediatly 
+    Asynchronously load the cib and create the view that the controller manages.
+
+    @param aHandler a function which will be passed the loaded view as the first
+    argument and a network error or nil as the second argument: function(view, error).
+
+    @note If the view has already been loaded, the completion handler is run immediatly
     and the process is synchronous.
 */
 - (void)loadViewWithCompletionHandler:(Function/*(view, error)*/)aHandler
@@ -213,11 +213,11 @@ var CPViewControllerCachedCibs;
                 if (anError == nil)
                 {
                     var data = [CPData dataWithRawString:aData],
-                        aCib = [[CPCib alloc] _initWithData:data bundle:_cibBundle cibName:_cibName];
+                          aCib = [[CPCib alloc] _initWithData:data bundle:_cibBundle cibName:_cibName];
 
                     [CPViewControllerCachedCibs setObject:aCib forKey:_cibName];
                     [aCib instantiateCibWithExternalNameTable:_cibExternalNameTable];
-                    aHandler(_view, nil);
+                    [self _viewDidLoadWithCompletionHandler:aHandler];
                 }
                 else
                 {
@@ -228,13 +228,13 @@ var CPViewControllerCachedCibs;
         else
         {
             [cib instantiateCibWithExternalNameTable:_cibExternalNameTable];
-            aHandler(_view, nil);
+            [self _viewDidLoadWithCompletionHandler:aHandler];
         }
     }
     else
     {
         _view = [CPView new];
-        aHandler(_view, nil);
+        [self _viewDidLoadWithCompletionHandler:aHandler];
     }
 }
 
@@ -292,6 +292,16 @@ var CPViewControllerCachedCibs;
     [self didChangeValueForKey:"isViewLoaded"];
 }
 
+- (void)_viewDidLoadWithCompletionHandler:(Function)aHandler
+{
+    [self _registerOrUnregister:YES notificationsForView:_view];
+
+    [self willChangeValueForKey:"isViewLoaded"];
+    aHandler(_view, nil);
+    _isViewLoaded = YES;
+    [self didChangeValueForKey:"isViewLoaded"];
+}
+
 /*!
     This method is called after the view controller has loaded its associated views into memory.
 
@@ -305,6 +315,79 @@ var CPViewControllerCachedCibs;
 
 }
 
+/*!
+    Called after the view controller’s view has been loaded into memory is about to be added to the
+    view hierarchy in the window.
+
+    @discussion You can override this method to perform tasks prior to a view controller’s view
+    getting added to view hierarchy, such as setting the view’s highlight color. This method is called when:
+
+        • The view is about to be added to the view hierarchy of the view controller
+
+    If you override this method, call this method on super at some point in your implementation in case
+    a superclass also overrides this method.
+
+    The default implementation of this method does nothing.
+*/
+- (void)viewWillAppear
+{
+
+}
+
+/*!
+    Called when the view controller’s view is fully transitioned onto the screen.
+
+    @discussion This method is called after the completion of any drawing and animations
+    involved in the initial appearance of the view. You can override this method to
+    perform tasks appropriate for that time, such as work that should not interfere
+    with the presentation animation, or starting an animation that you want to begin
+    after the view appears.
+
+    If you override this method, call this method on super at some point in your
+    implementation in case a superclass also overrides this method.
+
+    The default implementation of this method does nothing.
+*/
+- (void)viewDidAppear
+{
+
+}
+
+/*!
+    Called when the view controller’s view is about to be removed from the view hierarchy in the window.
+
+    @discussion You can override this method to perform tasks that are to precede the disappearance
+    of the view controller’s view, such as stopping a continuous animation that you
+    started in response to the viewDidAppear method call. This method is called when:
+
+        • The view is about to be removed from the view hierarchy of the window
+
+    If you override this method, call this method on super at some point in your
+    implementation in case a superclass also overrides this method.
+
+    The default implementation of this method does nothing.
+*/
+- (void)viewWillDisappear
+{
+
+}
+
+/*!
+    Called after the view controller’s view is removed from the view hierarchy in a window.
+
+    @discussion You can override this method to perform tasks associated with removing the view
+    controller’s view from the window’s view hierarchy, such as releasing resources
+    not needed when the view is not visible or no longer part of the window.
+
+    If you override this method, call this method on super at some point in your
+    implementation in case a superclass also overrides this method.
+
+    The default implementation of this method does nothing.
+*/
+- (void)viewDidDisappear
+{
+
+}
 
 /*!
     Manually sets the view that the controller manages.
@@ -317,6 +400,9 @@ var CPViewControllerCachedCibs;
 - (void)setView:(CPView)aView
 {
     var willChangeIsViewLoaded = (_isViewLoaded == NO && aView != nil) || (_isViewLoaded == YES && aView == nil);
+
+    [self _registerOrUnregister:NO notificationsForView:_view];
+    [self _registerOrUnregister:YES notificationsForView:aView];
 
     if (willChangeIsViewLoaded)
         [self willChangeValueForKey:"isViewLoaded"];
@@ -331,6 +417,30 @@ var CPViewControllerCachedCibs;
 - (BOOL)automaticallyNotifiesObserversOfIsViewLoaded
 {
     return NO;
+}
+
+- (void)_registerOrUnregister:(BOOL)shouldRegister notificationsForView:(CPView)aView
+{
+    if (aView === nil)
+        return;
+
+    var center = [CPNotificationCenter defaultCenter],
+        notifs_to_sel = @{_CPViewWillAppearNotification : @"viewWillAppear",
+                          _CPViewDidAppearNotification : @"viewDidAppear",
+                          _CPViewWillDisappearNotification : @"viewWillDisappear",
+                          _CPViewDidDisappearNotification : @"viewDidDisappear"};
+
+    [notifs_to_sel enumerateKeysAndObjectsUsingBlock:function(notif, selString, stop)
+    {
+        var selector = CPSelectorFromString(selString);
+        if ([self implementsSelector:selector])
+        {
+            if (shouldRegister)
+                [center addObserver:self selector:selector name:notif object:aView];
+            else
+                [center removeObserver:self name:notif object:aView];
+        }
+    }];
 }
 
 @end

@@ -152,6 +152,11 @@ TableTestDragAndDropTableViewDataType = @"TableTestDragAndDropTableViewDataType"
     return YES;
 }
 
+- (void)tableView:(CPTableView)aTableView didDragTableColumn:(CPTableColumn)aTableColumn
+{
+    CPLog.debug(_cmd + aTableColumn);
+}
+
 @end
 
 

@@ -308,7 +308,7 @@ CPTexturedBackgroundWindowMask
             [self setPlatformWindow:[CPPlatformWindow primaryPlatformWindow]];
         else
         {
-            // give zero sized borderless bridge windows a default size if we're not in the browser so they show up in NativeHost.
+            // give zero sized borderless bridge windows a default size.
             if ((aStyleMask & CPBorderlessBridgeWindowMask) && aContentRect.size.width === 0 && aContentRect.size.height === 0)
             {
                 var visibleFrame = [[[CPScreen alloc] init] visibleFrame];
@@ -655,7 +655,6 @@ CPTexturedBackgroundWindowMask
     CPBorderlessWindowMask
     CPTitledWindowMask
     CPClosableWindowMask
-    CPMiniaturizableWindowMask (NOTE: only available in NativeHost)
     CPResizableWindowMask
     CPTexturedBackgroundWindowMask
     CPBorderlessBridgeWindowMask
@@ -4099,6 +4098,9 @@ var interpolate = function(fromValue, toValue, progress)
             [overlappingTrackingAreas addObject:aTrackingArea];
     }
 
+    if (overlappingTrackingAreas.length === 0)
+        return;
+
     var frontmostTrackingArea = overlappingTrackingAreas[0],
         frontmostView         = [frontmostTrackingArea view];
 
@@ -4202,12 +4204,11 @@ var interpolate = function(fromValue, toValue, progress)
 {
     // This will put a tracking event in the _queuedTrackingEvents queue.
     //
-    // We optimize this queue with this policy :
+    // We optimize this queue with this policy:
     // - if mouseEntered, search if queue contains a previous mouseExited for the same tracking area. If so, discard both.
     // - if mouseExited, search if queue contains a previous mouseEntered for the same tracking area. If so, discard both.
     //
-    // This is not Cocoa way of doing as it would send every event.
-    // But final result should be the same.
+    // This is not the Cocoa way of doing as it would send every event, but the final result should be the same.
 
     var eventType    = [anEvent type],
         trackingArea = [anEvent trackingArea];

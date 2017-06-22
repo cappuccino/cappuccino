@@ -471,9 +471,11 @@ CPTransformableAttributeType = 1800;
 
     var value;
     if (attributeType >= CPInteger16AttributeType && attributeType <= CPFloatAttributeType)
-        value = [aView intValue];
+        value = [aView floatValue];
     else if (attributeType == CPBooleanAttributeType)
         value = [aView state];
+    else if (attributeType == CPDateAttributeType)
+        value = [aView dateValue];
     else
         value = [aView stringValue];
 
