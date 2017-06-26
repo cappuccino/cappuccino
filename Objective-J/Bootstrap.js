@@ -184,4 +184,4 @@ GLOBAL(objj_import) = function()
 {
     CPLog.warn("objj_import is deprecated, use objj_importFile instead");
     objj_importFile.apply(this, arguments);
-}
+};
