@@ -226,7 +226,16 @@ Executable.prototype.setCode = function(code, sourceMap)
             // The compiler adds a new line as the first character to the code to get the spurce
             // mapping correct. We have to remove it here
             code = code.substring(2);
-            code += "\n//# sourceMappingURL=data:application/json;base64," + (typeof btoa === 'function' ? btoa(sourceMap) : new Buffer(sourceMap).toString("base64"))
+
+            var sourceMapBase64;
+
+            if (typeof btoa === 'function')
+                sourceMapBase64 = btoa(UTF16ToUTF8(sourceMap));
+            else if (typeof Buffer === 'function')
+                sourceMapBase64 = new Buffer(sourceMap).toString("base64");
+
+            if (sourceMapBase64)
+                code += "\n//# sourceMappingURL=data:application/json;charset=utf-8;base64," + sourceMapBase64;
         }
     //} else {
     //    // Firebug only does it for "eval()", not "new Function()". Ugh. Slower.
@@ -527,3 +536,110 @@ Executable.fileExecutableSearcherForURL = function(/*CFURL*/ referenceURL)
 }
 
 DISPLAY_NAME(Executable.fileExecutableSearcherForURL);
+
+/*
+ * Adaption to javascript by Malte Tancred   2012 from ConvertUTF.[ch] by Unicode, Inc.
+ * Speed improvements by     Martin Carlberg 2016
+ *
+ * Original copyright follows.
+ */
+
+/*
+ * Copyright 2001-2004 Unicode, Inc.
+ *
+ * Disclaimer
+ *
+ * This source code is provided as is by Unicode, Inc. No claims are
+ * made as to fitness for any particular purpose. No warranties of any
+ * kind are expressed or implied. The recipient agrees to determine
+ * applicability of information provided. If this file has been
+ * purchased on magnetic or optical media from Unicode, Inc., the
+ * sole remedy for any claim will be exchange of defective media
+ * within 90 days of receipt.
+ *
+ * Limitations on Rights to Redistribute This Code
+ *
+ * Unicode, Inc. hereby grants the right to freely use the information
+ * supplied in this file in the creation of products supporting the
+ * Unicode Standard, and to make copies of this file in any form
+ * for internal or external distribution as long as this notice
+ * remains attached.
+ */
+
+/* ---------------------------------------------------------------------
+
+   Conversions between UTF32, UTF-16, and UTF-8. Source code file.
+   Author: Mark E. Davis, 1994.
+   Rev History: Rick McGowan, fixes & updates May 2001.
+   Sept 2001: fixed const & error conditions per
+   mods suggested by S. Parent & A. Lillich.
+   June 2002: Tim Dodd added detection and handling of incomplete
+   source sequences, enhanced error detection, added casts
+   to eliminate compiler warnings.
+   July 2003: slight mods to back out aggressive FFFE detection.
+   Jan 2004: updated switches in from-UTF8 conversions.
+   Oct 2004: updated to use UNI_MAX_LEGAL_UTF32 in UTF-32 conversions.
+
+   See the header file "ConvertUTF.h" for complete documentation.
+
+------------------------------------------------------------------------ */
+var SURROGATE_HIGH_START = 0xD800;
+var SURROGATE_HIGH_END =   0xDBFF;
+var SURROGATE_LOW_START =  0xDC00;
+var SURROGATE_LOW_END =    0xDFFF;
+var REPLACEMENT_CHAR =     0xFFFD;
+var FIRSTBYTEMARK =        [0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC];
+
+function UTF16ToUTF8(source) {
+    var target = "";
+    var currentPos = 0;
+    for (var i = 0; i < source.length; i++) {
+        var c = source.charCodeAt(i);
+        if (c < 0x80) continue;
+
+        if (i > currentPos)
+            target += source.substring(currentPos, i);
+
+        if (c >= SURROGATE_HIGH_START && c <= SURROGATE_HIGH_END) {
+            i++;
+            if (i < source.length) {
+                var c2 = source.charCodeAt(i);
+                if (c2 >= SURROGATE_LOW_START && c2 <= SURROGATE_LOW_END) {
+                    c = ((c - SURROGATE_HIGH_START) << 10) + (c2 - SURROGATE_LOW_START) + 0x10000;
+                } else {
+                    // illegal second surrogate char
+                    return null;
+                }
+            } else {
+                // missing second surrogate in pair
+                return null;
+            }
+        } else if (c >= SURROGATE_LOW_START && c <= SURROGATE_LOW_END) {
+            // stray surrogate
+            return null;
+        }
+
+        currentPos = i + 1;
+        enc = [];
+
+        var cc = c;
+
+        if (cc >= 0x110000) { cc = 0x800; c = REPLACEMENT_CHAR; }
+        if (cc >= 0x10000)  { enc.unshift(String.fromCharCode((c | 0x80) & 0xBF)); c >>= 6; }
+        if (cc >= 0x800)    { enc.unshift(String.fromCharCode((c | 0x80) & 0xBF)); c >>= 6; }
+        if (cc >= 0x80)     { enc.unshift(String.fromCharCode((c | 0x80) & 0xBF)); c >>= 6; }
+
+        enc.unshift(String.fromCharCode( c | FIRSTBYTEMARK[enc.length]));
+
+        target += enc.join("");
+    }
+
+    if (currentPos === 0) return source;
+
+    if (i > currentPos)
+        target += source.substring(currentPos, i);
+
+    return target;
+}
+
+DISPLAY_NAME(UTF16ToUTF8);
