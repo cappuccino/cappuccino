@@ -21,9 +21,10 @@
  */
 
 
-var ExecutableUnloadedFileDependencies  = 0,
-    ExecutableLoadingFileDependencies   = 1,
-    ExecutableLoadedFileDependencies    = 2,
+var ExecutableUnloadedFileDependencies         = 0,
+    ExecutableLoadingFileDependencies          = 1,
+    ExecutableLoadedFileDependencies           = 2,
+    ExecutableCantStartLoadYetFileDependencies = 3,
     AnonymousExecutableCount            = 0;
 
 function Executable(/*String*/ aCode, /*Array*/ fileDependencies, /*CFURL|String*/ aURL, /*Function*/ aFunction, /*ObjJCompiler*/aCompiler, /*Dictionary*/ aFilenameTranslateDictionary)
@@ -40,13 +41,21 @@ function Executable(/*String*/ aCode, /*Array*/ fileDependencies, /*CFURL|String
     this._fileDependencies = fileDependencies;
     this._filenameTranslateDictionary = aFilenameTranslateDictionary;
 
-    if (fileDependencies.length)
+    // This is a little hacky but if fileDependencies is null we can start loading file dependencies yet
+    if (!fileDependencies)
+    {
+        this._fileDependencyStatus = ExecutableCantStartLoadYetFileDependencies;
+        this._fileDependencyCallbacks = [];
+    }
+    else if (fileDependencies.length)
     {
         this._fileDependencyStatus = ExecutableUnloadedFileDependencies;
         this._fileDependencyCallbacks = [];
     }
     else
+    {
         this._fileDependencyStatus = ExecutableLoadedFileDependencies;
+    }
 
     if (this._function)
         return;
@@ -261,6 +270,13 @@ Executable.prototype.fileDependencies = function()
 
 DISPLAY_NAME(Executable.prototype.fileDependencies);
 
+Executable.prototype.setFileDependencies = function(newValue)
+{
+    this._fileDependencies = newValue;
+}
+
+DISPLAY_NAME(Executable.prototype.setFileDependencies);
+
 Executable.prototype.hasLoadedFileDependencies = function()
 {
     return this._fileDependencyStatus === ExecutableLoadedFileDependencies;
@@ -294,6 +310,21 @@ Executable.prototype.loadFileDependencies = function(aCallback)
 }
 
 DISPLAY_NAME(Executable.prototype.loadFileDependencies);
+
+Executable.prototype.setExecutableUnloadedFileDependencies = function()
+{
+    if (this._fileDependencyStatus === ExecutableCantStartLoadYetFileDependencies)
+        this._fileDependencyStatus = ExecutableUnloadedFileDependencies;
+}
+
+DISPLAY_NAME(Executable.prototype.setExecutableUnloadedFileDependencies);
+
+Executable.prototype.isExecutableCantStartLoadYetFileDependencies = function()
+{
+    return this._fileDependencyStatus === ExecutableCantStartLoadYetFileDependencies;
+}
+
+DISPLAY_NAME(Executable.prototype.setExecutableUnloadedFileDependencies);
 
 function loadFileDependenciesForExecutable(/*Executable*/ anExecutable)
 {
@@ -490,11 +521,12 @@ Executable.resetCachedFileExecutableSearchers = function()
 Executable.fileExecutableSearcherForURL = function(/*CFURL*/ referenceURL)
 {
     var referenceURLString = referenceURL.absoluteString(),
-        cachedFileExecutableSearcher = cachedFileExecutableSearchers[referenceURLString],
-        aFilenameTranslateDictionary = Executable.filenameTranslateDictionary ? Executable.filenameTranslateDictionary() : null;
+        cachedFileExecutableSearcher = cachedFileExecutableSearchers[referenceURLString];
 
     if (!cachedFileExecutableSearcher)
     {
+        var aFilenameTranslateDictionary = Executable.filenameTranslateDictionary ? Executable.filenameTranslateDictionary() : null;
+
         cachedFileExecutableSearcher = function(/*CFURL*/ aURL, /*BOOL*/ isQuoted, /*Function*/ success)
         {
             var cacheUID = (isQuoted && referenceURL || "") + aURL,
@@ -520,7 +552,7 @@ Executable.fileExecutableSearcherForURL = function(/*CFURL*/ referenceURL)
                 if (!aStaticResource)
                 {
                     var compilingFileUrl = exports.ObjJCompiler ? exports.ObjJCompiler.currentCompileFile : null;
-                    throw new Error("Could not load file at " + aURL + (compilingFileUrl ? " when compiling " + compilingFileUrl : ""));
+                    throw new Error("Could not load file at " + aURL + (compilingFileUrl ? " when compiling " + compilingFileUrl : "") + "\nwith includeURLs: " + StaticResource.includeURLs());
                 }
 
                 cachedFileExecutableSearchResults[cacheUID] = aStaticResource;

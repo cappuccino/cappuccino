@@ -692,6 +692,12 @@ var isInInstanceof = acorn.makePredicate("in instanceof");
 
     // Turn off `inlineMsgSendFunctions` to use message send functions. Needed to use message send decorators.
     inlineMsgSendFunctions: true,
+
+    // An array of macro objects and/or text definitions may be passed in.
+    // Definitions may be in one of two forms:
+    //    macro
+    //    macro=body
+    macros: null,
   };
 
   // We copy the options to a new object as we don't want to mess up incoming options when we start compiling.
@@ -981,6 +987,76 @@ ObjJAcornCompiler.prototype.getTypeDef = function(/* String */ aTypeDefName)
     }
 
     return null;
+}
+
+/*!
+    Return a parsed option dictionary
+ */
+exports.parseGccCompilerFlags = function(/* String */ compilerFlags)
+{
+    var args = (compilerFlags || "").split(" "),
+        count = args.length,
+        objjcFlags = {};
+
+    for (var index = 0; index < count; ++index)
+    {
+        var argument = args[index];
+
+        if (argument.indexOf("-g") === 0)
+            objjcFlags.includeMethodFunctionNames = true;
+        else if (argument.indexOf("-O") === 0) {
+            objjcFlags.inlineMsgSendFunctions = true;
+            // FIXME: currently we are sending in '-O2' when we want InlineMsgSend. Here we only check if it is '-O...'.
+            // Maybe we should have some other option for this
+            if (argument.length > 2)
+                objjcFlags.inlineMsgSendFunctions = true;
+        }
+        //else if (argument.indexOf("-G") === 0)
+            //objjcFlags |= ObjJAcornCompiler.Flags.Generate;
+        else if (argument.indexOf("-T") === 0) {
+            objjcFlags.includeIvarTypeSignatures = false;
+            objjcFlags.includeMethodArgumentTypeSignatures = false;
+        }
+        else if (argument.indexOf("-S") === 0) {
+            objjcFlags.sourceMap = true;
+            objjcFlags.sourceMapIncludeSource = true;
+        }
+        else if (argument.indexOf("--include") === 0) {
+            var includeUrl = args[++index],
+                firstChar = includeUrl && includeUrl.charCodeAt(0);
+
+            // Poor mans unquote
+            if (firstChar === 34 || firstChar === 39) // '"', "'"
+                includeUrl = includeUrl.substring(1, includeUrl.length - 1);
+
+            (objjcFlags.includeFiles || (objjcFlags.includeFiles = [])).push(includeUrl);
+        }
+/*        else if (argument.indexOf("-I") === 0) {
+            var includeUrl = argument.substring(2),
+                firstChar = includeUrl && includeUrl.charCodeAt(0);
+
+            (objjcFlags.includeFiles || (objjcFlags.includeFiles = [])).push(includeUrl);
+        }
+        else if (argument.indexOf("'-I") === 0) {
+            var includeUrl = argument.substring(3, argument.length - 1),
+                firstChar = includeUrl && includeUrl.charCodeAt(0);
+
+            (objjcFlags.includeFiles || (objjcFlags.includeFiles = [])).push(includeUrl);
+        }
+        else if (argument.indexOf('"-I') === 0) {
+            var includeUrl = argument.substring(3, argument.length - 1),
+                firstChar = includeUrl && includeUrl.charCodeAt(0);
+
+            (objjcFlags.includeFiles || (objjcFlags.includeFiles = [])).push(includeUrl);
+        }*/
+        else if (argument.indexOf("-D") === 0) {
+            var macroDefinition = argument.substring(2);
+
+            (objjcFlags.macros || (objjcFlags.macros = [])).push(macroDefinition);
+        }
+    }
+
+    return objjcFlags;
 }
 
 ObjJAcornCompiler.methodDefsFromMethodList = function(/* Array */ methodList)
