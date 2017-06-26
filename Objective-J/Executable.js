@@ -399,6 +399,7 @@ function fileExecutableDependencyLoadFinished()
 Executable.prototype.referenceURL = function()
 {
     if (this._referenceURL === undefined)
+        // Removed the filename (if any) from the path to get the directory
         this._referenceURL = new CFURL(".", this.URL());
 
     return this._referenceURL;
