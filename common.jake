@@ -256,7 +256,6 @@ function reforkWithPackages()
     if (additionalPackages().length > 0)
     {
         var cmd = serializedENV() + " " + system.args.map(OS.enquote).join(" ");
-        //print("REFORKING: " + cmd);
         OS.exit(OS.system(cmd));
     }
 }
