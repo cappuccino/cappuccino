@@ -79,16 +79,6 @@ var compile = function(self, fileContents, aURL, compilerOptions, aFilenameTrans
             var isAbsoluteURL = (includeURL instanceof CFURL) && includeURL.scheme(),
                 compileWhenCompleted = NO;
 
-            if (isQuoted || isAbsoluteURL)
-            {
-                if (!isAbsoluteURL)
-                    includeURL = new CFURL(includeURL, new CFURL((aFilenameTranslateDictionary[aURL.lastPathComponent()] || "."), referenceURL));
-
-                StaticResource.resolveResourceAtURL(includeURL, NO, completed);
-            }
-            else
-                StaticResource.resolveResourceAtURLSearchingIncludeURLs(includeURL, completed);
-
             function completed(/*StaticResource*/ aStaticResource) {
                 var includeString = aStaticResource && aStaticResource.contents(),
                     lastCharacter = includeString && includeString.charCodeAt(includeString.length - 1);
@@ -106,6 +96,16 @@ var compile = function(self, fileContents, aURL, compilerOptions, aFilenameTrans
                 if (compileWhenCompleted)
                     compile(self, fileContents, aURL, compilerOptions, aFilenameTranslateDictionary);
             }
+
+            if (isQuoted || isAbsoluteURL)
+            {
+                if (!isAbsoluteURL)
+                    includeURL = new CFURL(includeURL, new CFURL((aFilenameTranslateDictionary[aURL.lastPathComponent()] || "."), referenceURL));
+
+                StaticResource.resolveResourceAtURL(includeURL, NO, completed);
+            }
+            else
+                StaticResource.resolveResourceAtURLSearchingIncludeURLs(includeURL, completed);
 
             // Now we try to get the cached result again. If we get it then the completed function has already
             // executed and we can return the include dictionary.
