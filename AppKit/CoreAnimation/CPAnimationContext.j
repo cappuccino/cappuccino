@@ -218,7 +218,12 @@ var _CPAnimationContextStack   = nil,
     if (_animationsByObject.size == 0)
     {
         if (_completionHandlerAgent)
+        {
+#if (DEBUG)
+            CPLog.debug("No animations are scheduled. Firing completion handler");
+#endif
             _completionHandlerAgent.fire();
+        }
     }
     else
         [self _startAnimations];
@@ -245,7 +250,12 @@ var _CPAnimationContextStack   = nil,
     if (_completionHandlerAgent)
     {
         if (n == 0)
+        {
+#if (DEBUG)
+            CPLog.debug("Animations are not needed. Firing completion handler");
+#endif
             _completionHandlerAgent.fire();
+        }
         else
             _completionHandlerAgent.increment(n);
     }
@@ -487,11 +497,14 @@ var _CPAnimationContextStack   = nil,
 
 @end
 
+var COMPLETION_AGENT_ID = 0;
+
 var CompletionHandlerAgent = function(aCompletionHandler)
 {
     this._completionHandler = aCompletionHandler;
     this.total = 0;
     this.valid = true;
+    this.id = COMPLETION_AGENT_ID++;
 };
 
 CompletionHandlerAgent.prototype.completionHandler = function()
