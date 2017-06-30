@@ -261,7 +261,6 @@ var _CPAnimationContextStack   = nil,
     }
 
 // start timers
-
     while(k--)
     {
 #if (DEBUG)
