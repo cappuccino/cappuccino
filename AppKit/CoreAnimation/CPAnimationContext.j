@@ -501,7 +501,12 @@ CompletionHandlerAgent.prototype.completionHandler = function()
 
 CompletionHandlerAgent.prototype.fire = function()
 {
-    this._completionHandler();
+    if (this.valid)
+    {
+        this._completionHandler();
+        this.valid = false;
+        this.total = 0;
+    }
 };
 
 CompletionHandlerAgent.prototype.increment = function(inc)
@@ -525,6 +530,8 @@ CompletionHandlerAgent.prototype.decrement = function()
 CompletionHandlerAgent.prototype.invalidate = function()
 {
     this.valid = false;
+    this.total = 0;
+    this._completionHandler = null;
 };
 
 var _animationFlushingObserverCallback = function()
