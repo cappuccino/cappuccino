@@ -367,9 +367,24 @@ var _CPAnimationContextStack   = nil,
 - (void)setCompletionHandler:(Function)aCompletionHandler
 {
     if (_completionHandlerAgent)
-        _completionHandlerAgent.invalidate();
+    {
+        if (aCompletionHandler === _completionHandlerAgent._completionHandler)
+            return;
 
-    _completionHandlerAgent = aCompletionHandler ? (new CompletionHandlerAgent(aCompletionHandler)) : nil;
+        _completionHandlerAgent.invalidate();
+    }
+
+    if (aCompletionHandler)
+    {
+        _completionHandlerAgent = new CompletionHandlerAgent(aCompletionHandler);
+#if (DEBUG)
+        CPLog.debug("created a new completion Agent with id " + _completionHandlerAgent.id);
+#endif
+    }
+    else
+    {
+        _completionHandlerAgent = nil;
+    }
 }
 
 - (void)completionHandler
