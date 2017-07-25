@@ -66,16 +66,6 @@ var _CPAnimationContextStack   = nil,
     return self;
 }
 
-- (id)copy
-{
-    var context = [[CPAnimationContext alloc] init];
-    [context setDuration:[self duration]];
-    [context setTimingFunction:[self timingFunction]];
-    [context setCompletionHandler:[self completionHandler]];
-
-    return context;
-}
-
 + (void)_scheduleAnimationContextStackFlush
 {
     if (!_animationFlushingObserver)
@@ -90,16 +80,13 @@ var _CPAnimationContextStack   = nil,
 
 + (void)beginGrouping
 {
-    var newContext;
+    var newContext = [[CPAnimationContext alloc] init];
 
     if ([_CPAnimationContextStack count])
     {
         var currentContext = [_CPAnimationContextStack lastObject];
-        newContext = [currentContext copy];
-    }
-    else
-    {
-        newContext = [[CPAnimationContext alloc] init];
+        [newContext setDuration:[currentContext duration]];
+        [newContext setTimingFunction:[currentContext timingFunction]];
     }
 
     [_CPAnimationContextStack addObject:newContext];

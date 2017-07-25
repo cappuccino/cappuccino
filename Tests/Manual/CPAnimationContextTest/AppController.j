@@ -89,7 +89,22 @@
 {
     var completions = @[];
 
+    var ctx = [CPAnimationContext currentContext];
+    [ctx setDuration:0.1];
+
     [CPAnimationContext beginGrouping];
+    [ctx setCompletionHandler:function()
+    {
+        [completions addObject:@"done"];
+        UIAssert([completions isEqualToArray:@["done"]]);
+    }];
+
+    [CPAnimationContext endGrouping];
+}
+
+- (void)testCompletionHandlerWithoutAnimatorWithGrouping2
+{
+    var completions = @[];
 
     var ctx = [CPAnimationContext currentContext];
     [ctx setDuration:0.1];
@@ -98,6 +113,14 @@
         [completions addObject:@"done"];
         UIAssert([completions isEqualToArray:@["done"]]);
     }];
+
+    // Cocoa : When grouping begins, the grouping context inherits
+    // the duration & timingFunction properties from the current context
+    // but NOT the completionHandler.
+    // In this test, the completion handler should be performed once as part
+    // of the current context (with no animations) but not as part of the
+    // grouping context.
+    [CPAnimationContext beginGrouping];
 
     [CPAnimationContext endGrouping];
 }
