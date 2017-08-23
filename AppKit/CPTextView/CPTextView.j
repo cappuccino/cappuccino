@@ -1999,7 +1999,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (BOOL)shouldDrawInsertionPoint
 {
-    return (_selectionRange.length === 0 && [self _isFocused]);
+    return (_selectionRange.length === 0 && [self _isFocused] && !_placeholderString);
 }
 
 - (void)updateInsertionPointStateAndRestartTimer:(BOOL)flag
