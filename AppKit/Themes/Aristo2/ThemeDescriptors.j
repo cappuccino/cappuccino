@@ -508,7 +508,7 @@ var themedButtonValues = nil,
                 orientation: PatternIsVertical
             }),
 
-        trackColorLegacy     = PatternColor("scroller-legacy-vertical-track-center.png", 14.0, 1.0),
+        trackColorLegacy = PatternColor("scroller-legacy-vertical-track-center.png", 14.0, 1.0),
 
         knobColor = PatternColor(
             "scroller-vertical-knob{style}{position}.png",
