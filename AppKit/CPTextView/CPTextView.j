@@ -128,7 +128,6 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     CPSelectionGranularity      _selectionGranularity         @accessors(property=selectionGranularity);
 
     CPSelectionGranularity      _previousSelectionGranularity;  // private
-    CPSelectionGranularity      _copySelectionGranularity;      // private
 
     CPTextContainer             _textContainer                @accessors(property=textContainer);
     CPTextStorage               _textStorage                  @accessors(getter=textStorage);
@@ -373,7 +372,6 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)copy:(id)sender
 {
-    _copySelectionGranularity = _previousSelectionGranularity;
     [super copy:sender];
 
     if (![self isRichText])
@@ -387,6 +385,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         [pasteboard declareTypes:[CPStringPboardType, CPRTFPboardType] owner:nil];
         [pasteboard setString:stringForPasting._string forType:CPStringPboardType];
         [pasteboard setString:richData forType:CPRTFPboardType];
+        [pasteboard setString:_previousSelectionGranularity + '' forType:_CPSmartPboardType];
 }
 
 - (void)_pasteString:(id)stringForPasting
@@ -394,7 +393,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     if (!stringForPasting)
         return;
 
-    if (_copySelectionGranularity > 0 && _selectionRange.location > 0)
+    var shouldUseSmartPasting = [self _shouldUseSmartPasting];
+
+    if (shouldUseSmartPasting && _selectionRange.location > 0)
     {
         if (!_isWhitespaceCharacter([[_textStorage string] characterAtIndex:_selectionRange.location - 1]) &&
             _selectionRange.location != [_layoutManager numberOfCharacters])
@@ -403,29 +404,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         }
     }
 
-    if (_copySelectionGranularity == CPSelectByParagraph)
-    {
-        var peekStr = stringForPasting,
-            i = 0;
-
-        if (![stringForPasting isKindOfClass:[CPString class]])
-            peekStr = stringForPasting._string;
-
-        while (_isWhitespaceCharacter([peekStr characterAtIndex:i]))
-            i++;
-
-        if (i)
-        {
-            if ([stringForPasting isKindOfClass:[CPString class]])
-                stringForPasting = [stringForPasting stringByReplacingCharactersInRange:CPMakeRange(0, i) withString:''];
-            else
-                [stringForPasting replaceCharactersInRange:CPMakeRange(0, i) withString:''];
-        }
-    }
-
     [self insertText:stringForPasting];
 
-    if (_copySelectionGranularity > 0)
+    if (shouldUseSmartPasting)
     {
         if (!_isWhitespaceCharacter([[_textStorage string] characterAtIndex:CPMaxRange(_selectionRange)]) &&
             !_isNewlineCharacter([[_textStorage string] characterAtIndex:MAX(0, _selectionRange.location - 1)]) &&
@@ -1514,7 +1495,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     [_CPNativeInputManager cancelCurrentInputSessionIfNeeded];  // handle ESC during native input
 }
 
-- (void)deleteBackward:(id)sender ignoreSmart:(BOOL)ignoreFlag
+- (void)deleteBackward:(id)sender handleSmart:(BOOL)handleSmart
 {
     var changedRange;
 
@@ -1524,7 +1505,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         changedRange = _selectionRange;
 
     // smart delete
-    if (!ignoreFlag && _copySelectionGranularity > 0 &&
+    if (handleSmart &&
         changedRange.location > 0 && _isWhitespaceCharacter([[_textStorage string] characterAtIndex:_selectionRange.location - 1]) &&
         changedRange.location < [[self string] length] && _isWhitespaceCharacter([[_textStorage string] characterAtIndex:CPMaxRange(changedRange)]))
         changedRange.length++;
@@ -1535,8 +1516,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)deleteBackward:(id)sender
 {
-    _copySelectionGranularity = _previousSelectionGranularity; // smart delete
-    [self deleteBackward:self ignoreSmart:_selectionRange.length > 0? NO:YES];
+    [self deleteBackward:self handleSmart:[self _shouldUseSmartPasting] && _selectionRange.length > 0];
 }
 
 - (void)deleteForward:(id)sender
@@ -1559,7 +1539,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         return;
 
     [self copy:sender];
-    [self deleteBackward:sender ignoreSmart:NO];
+    [self deleteBackward:sender handleSmart:_previousSelectionGranularity];
 }
 
 - (void)insertLineBreak:(id)sender
