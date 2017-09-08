@@ -181,8 +181,18 @@ var ANIMATIONS_NAMES = ["Fade In", "Fade Out", "Background Color", "Frame Origin
 */
 - (IBAction)removeFromSuperview:(id)sender
 {
+    [CPAnimationContext beginGrouping];
+    [[CPAnimationContext currentContext] setDuration:3];
+    [[CPAnimationContext currentContext] setCompletionHandler:function()
+    {
+        CPLogConsole("removedFromSuperview");
+    }];
+
     [[leftView animator] removeFromSuperview];
     [[rightView animator] removeFromSuperview];
+
+    [CPAnimationContext endGrouping];
+
 }
 
 - (IBAction)revert:(id)sender
@@ -333,7 +343,7 @@ var ANIMATIONS_NAMES = ["Fade In", "Fade Out", "Background Color", "Frame Origin
 - (CABasicAnimation)fadeOutAnimation
 {
     var animation = [CABasicAnimation animationWithKeyPath:@"alphaValue"];
-    [animation setDuration:0.2];
+    [animation setDuration:2];
     [animation setFromValue:1];
     [animation setToValue:0];
 
