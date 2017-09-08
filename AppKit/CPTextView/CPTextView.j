@@ -2606,7 +2606,7 @@ var _CPCopyPlaceholder = '-';
             isPlain = YES;
 
         // this is the rich chrome / FF codepath (where we can use RTF directly)
-        if ((richtext = nativeClipboard.getData('text/rtf')) && !(!!window.event.shiftKey) && !isPlain)
+        if ((richtext = nativeClipboard.getData('text/rtf')) && !(!!(e.originalEvent || e).shiftKey) && !isPlain)
         {
             e.preventDefault();
 
