@@ -26,6 +26,13 @@ var FILE = require("file"),
     OS = require("os"),
     stream = require("narwhal/term").stream;
 
+    var walk = require("./acornwalk").acorn.walk;
+
+acorn = {walk: walk};
+acorn = require("./acorn").acorn;
+
+    var compiler = require("./ObjJAcornCompiler").ObjJCompiler;
+
 //$BUILD_CONFIGURATION_DIR = "../Build"
 $BROWSER_FILE       = FILE.join("Browser", "Objective-J.js");
 
@@ -106,7 +113,7 @@ function environmentFlags()
 
     return environments.map(function(anEnvironment) {
         return "-D" + anEnvironment.toUpperCase();
-    }).concat("-DENVIRONMENTS=" + OS.enquote(JSON.stringify(environments)));
+    }).concat("-DENVIRONMENTS=" + JSON.stringify(environments));
 }
 
 var SHRINKSAFE = require("minify/shrinksafe");
@@ -114,25 +121,40 @@ function compressor(code) {
     return SHRINKSAFE.compress(code, { charset : "UTF-8", useServer : true });
 }
 
+var headerText = FILE.read("header.txt", { charset : "UTF-8" });
 function gcc(inputFilePath, outputFilePath, flags, compress)
 {
     stream.print("Building... \0green(" + outputFilePath +"\0)");
 
-    // GCC preprocess the file.
-    var cmd = ["gcc", "-E", "-x", "c", "-P"].concat(flags, inputFilePath).join(" "),
-        contents = FILE.read("header.txt", { charset : "UTF-8" });
+    var source = FILE.read(inputFilePath, { charset : "UTF-8" });
+    var compilerOptions = compiler.parseGccCompilerFlags(flags.join(" "));
+    var acornOptions = compilerOptions.acornOptions || (compilerOptions.acornOptions = {});
 
-    try
-    {
-        var gcc = OS.popen(cmd, { charset:"UTF-8" });
-        contents += gcc.stdout.read();
+    acornOptions.preprocessGetIncludeFile = function(filePath, isQuoted) {
+        var includeContent = FILE.read(filePath, { charset : "UTF-8" });
+        //print ("Include content for file '" + filePath + "': " + includeContent);
+        //print ("Include file '" + filePath + "'");
+        return {include: includeContent, sourceFile: filePath};
     }
-    finally
+
+    var c = compiler.compile(source, inputFilePath, compilerOptions);
+    var warnings = [],
+        anyErrors = false;
+
+    for (var i = 0; i < c.warningsAndErrors.length; i++)
     {
-        gcc.stdin.close();
-        gcc.stdout.close();
-        gcc.stderr.close();
+        var warning = c.warningsAndErrors[i],
+            message = c.prettifyMessage(warning);
+
+        // Set anyErrors to 'true' if there are any errors in the list
+        anyErrors = anyErrors || warning.messageType === "ERROR";
+        print(message);
     }
+
+    if (anyErrors) throw "Compilation Error";
+
+    var code = c.code();
+    var contents = headerText + code;
 
     if (FILE.extension(inputFilePath) === ".js" && compress)
         contents = compressor(contents);

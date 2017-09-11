@@ -1011,4 +1011,4 @@ Preprocessor.prototype.error_message = function(errorMessage)
     return errorMessage + " <Context File: "+ this._URL +
                                 (this._currentClass ? " Class: "+this._currentClass : "") +
                                 (this._currentSelector ? " Method: "+this._currentSelector : "") +">";
-}
+};
