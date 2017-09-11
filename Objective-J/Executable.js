@@ -27,7 +27,7 @@ var ExecutableUnloadedFileDependencies         = 0,
     ExecutableCantStartLoadYetFileDependencies = 3,
     AnonymousExecutableCount            = 0;
 
-function Executable(/*String*/ aCode, /*Array*/ fileDependencies, /*CFURL|String*/ aURL, /*Function*/ aFunction, /*ObjJCompiler*/aCompiler, /*Dictionary*/ aFilenameTranslateDictionary)
+function Executable(/*String*/ aCode, /*Array*/ fileDependencies, /*CFURL|String*/ aURL, /*Function*/ aFunction, /*ObjJCompiler*/aCompiler, /*Dictionary*/ aFilenameTranslateDictionary, /* Base64 String */ sourceMap)
 {
     if (arguments.length === 0)
         return this;
@@ -40,6 +40,9 @@ function Executable(/*String*/ aCode, /*Array*/ fileDependencies, /*CFURL|String
 
     this._fileDependencies = fileDependencies;
     this._filenameTranslateDictionary = aFilenameTranslateDictionary;
+
+    if (sourceMap)
+        this._base64EncodedSourceMap = sourceMap;
 
     // This is a little hacky but if fileDependencies is null we can start loading file dependencies yet
     if (!fileDependencies)
@@ -148,6 +151,12 @@ Executable.prototype.toMarkedString = function()
     for (; index < count; ++index)
         markedString += dependencies[index].toMarkedString();
 
+    var sourceMap = this._base64EncodedSourceMap;
+
+    if (sourceMap) {
+        markedString += MARKER_SOURCE_MAP + ";" + sourceMap.length + ";" + sourceMap;
+    }
+
     var code = this.code();
 
     return markedString + MARKER_TEXT + ";" + code.length + ";" + code;
@@ -179,7 +188,7 @@ Executable.prototype.execute = function()
 
         this.setCode(this._compiler.compilePass2(), this._compiler.map());
 
-    if (FileExecutable.printWarningsAndErrors(this._compiler, exports.messageOutputFormatInXML))
+        if (FileExecutable.printWarningsAndErrors(this._compiler, exports.messageOutputFormatInXML))
             throw "Compilation error";
 
         this._compiler = null;
@@ -211,6 +220,7 @@ Executable.prototype.setCode = function(code, sourceMap)
     this._code = code;
 
     var parameters = this.functionParameters().join(",");
+    var sourceMapBase64;
 
 #if COMMONJS
     if (typeof system !== "undefined" && system.engine === "rhino")
@@ -222,6 +232,9 @@ Executable.prototype.setCode = function(code, sourceMap)
     {
 #endif
 #if DEBUG
+        // Check if base64 source map is available
+        sourceMapBase64 = this._base64EncodedSourceMap;
+
     // "//# sourceURL=" at the end lets us name our eval'd files for debuggers, etc.
     // * WebKit:  http://pmuellr.blogspot.com/2009/06/debugger-friendly.html
     // * Firebug: http://blog.getfirebug.com/2009/08/11/give-your-eval-a-name-with-sourceurl/
@@ -229,22 +242,23 @@ Executable.prototype.setCode = function(code, sourceMap)
         var absoluteString = this.URL().absoluteString();
 
         code += "/**/\n//# sourceURL=" + absoluteString + "s";
+
         if (sourceMap)
         {
-            // The new Function constructor will add a function header before the first line
-            // The compiler adds a new line as the first character to the code to get the spurce
-            // mapping correct. We have to remove it here
-            code = code.substring(2);
-
-            var sourceMapBase64;
-
             if (typeof btoa === 'function')
                 sourceMapBase64 = btoa(UTF16ToUTF8(sourceMap));
             else if (typeof Buffer === 'function')
                 sourceMapBase64 = new Buffer(sourceMap).toString("base64");
+        }
 
-            if (sourceMapBase64)
-                code += "\n//# sourceMappingURL=data:application/json;charset=utf-8;base64," + sourceMapBase64;
+        if (sourceMapBase64) {
+            // The new Function constructor will add a function header before the first line
+            // The compiler adds two newlines as the first character to the code to get the source
+            // mapping correct. We have to remove it here. As Javascript engines adds diffentent
+            // amount of lines at the top we need to calculate how many.
+            code = code.substring(exports.ObjJCompiler.numberOfLinesAtTopOfFunction());
+            this._base64EncodedSourceMap = sourceMapBase64;
+            code += "\n//# sourceMappingURL=data:application/json;charset=utf-8;base64," + sourceMapBase64;
         }
     //} else {
     //    // Firebug only does it for "eval()", not "new Function()". Ugh. Slower.
