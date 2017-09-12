@@ -2391,7 +2391,7 @@ Identifier: function(node, st, c) {
                 st.addMaybeWarning(message);
         }
     }
-    if (generate) compiler.jsBuffer.concat(identifier, node, "self");
+    if (generate) compiler.jsBuffer.concat(identifier, node, identifier === "self" ? "self" : null);
 },
 // Use this when there should not be a look up to issue warnings or add 'self.' before ivars
 IdentifierName: function(node, st, c) {
