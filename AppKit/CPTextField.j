@@ -877,7 +877,16 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     CPTextFieldInputResigning = NO;
 
     if (element.parentNode == _DOMElement)
-        element.parentNode.removeChild(element);
+    {
+        // this is to workaround a bug in chrome that raises a DOM exception sometimes
+        try
+        {
+            element.parentNode.removeChild(element);
+        } catch(e)
+        {
+            // silently ignore
+        }
+    }
 
     CPTextFieldInputIsActive = NO;
 
