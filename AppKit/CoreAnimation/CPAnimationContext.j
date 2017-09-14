@@ -66,16 +66,6 @@ var _CPAnimationContextStack   = nil,
     return self;
 }
 
-- (id)copy
-{
-    var context = [[CPAnimationContext alloc] init];
-    [context setDuration:[self duration]];
-    [context setTimingFunction:[self timingFunction]];
-    [context setCompletionHandler:[self completionHandler]];
-
-    return context;
-}
-
 + (void)_scheduleAnimationContextStackFlush
 {
     if (!_animationFlushingObserver)
@@ -90,16 +80,13 @@ var _CPAnimationContextStack   = nil,
 
 + (void)beginGrouping
 {
-    var newContext;
+    var newContext = [[CPAnimationContext alloc] init];
 
     if ([_CPAnimationContextStack count])
     {
         var currentContext = [_CPAnimationContextStack lastObject];
-        newContext = [currentContext copy];
-    }
-    else
-    {
-        newContext = [[CPAnimationContext alloc] init];
+        [newContext setDuration:[currentContext duration]];
+        [newContext setTimingFunction:[currentContext timingFunction]];
     }
 
     [_CPAnimationContextStack addObject:newContext];
@@ -154,9 +141,6 @@ var _CPAnimationContextStack   = nil,
 
     duration = [animation duration] || [self duration];
     needsPeriodicFrameUpdates = [[anObject animator] needsPeriodicFrameUpdatesForKeyPath:aKeyPath];
-
-    if (_completionHandlerAgent)
-        _completionHandlerAgent.increment();
 
     var animatorClass = [[anObject class] animatorClass];
 
@@ -221,7 +205,12 @@ var _CPAnimationContextStack   = nil,
     if (_animationsByObject.size == 0)
     {
         if (_completionHandlerAgent)
+        {
+#if (DEBUG)
+            CPLog.debug("No animations are scheduled. Firing completion handler");
+#endif
             _completionHandlerAgent.fire();
+        }
     }
     else
         [self _startAnimations];
@@ -242,8 +231,23 @@ var _CPAnimationContextStack   = nil,
 
     _animationsByObject.clear();
 
+    var k = timers.length,
+        n = cssAnimations.length;
+
+    if (_completionHandlerAgent)
+    {
+        if (n == 0)
+        {
+#if (DEBUG)
+            CPLog.debug("Animations are not needed. Firing completion handler");
+#endif
+            _completionHandlerAgent.fire();
+        }
+        else
+            _completionHandlerAgent.increment(n);
+    }
+
 // start timers
-    var k = timers.length;
     while(k--)
     {
 #if (DEBUG)
@@ -253,7 +257,6 @@ var _CPAnimationContextStack   = nil,
     }
 
 // start css animations
-    var n = cssAnimations.length;
     while(n--)
     {
 #if (DEBUG)
@@ -360,9 +363,24 @@ var _CPAnimationContextStack   = nil,
 - (void)setCompletionHandler:(Function)aCompletionHandler
 {
     if (_completionHandlerAgent)
-        _completionHandlerAgent.invalidate();
+    {
+        if (aCompletionHandler === _completionHandlerAgent._completionHandler)
+            return;
 
-    _completionHandlerAgent = aCompletionHandler ? (new CompletionHandlerAgent(aCompletionHandler)) : nil;
+        _completionHandlerAgent.invalidate();
+    }
+
+    if (aCompletionHandler)
+    {
+        _completionHandlerAgent = new CompletionHandlerAgent(aCompletionHandler);
+#if (DEBUG)
+        CPLog.debug("created a new completion Agent with id " + _completionHandlerAgent.id);
+#endif
+    }
+    else
+    {
+        _completionHandlerAgent = nil;
+    }
 }
 
 - (void)completionHandler
@@ -465,11 +483,14 @@ var _CPAnimationContextStack   = nil,
 
 @end
 
+var COMPLETION_AGENT_ID = 0;
+
 var CompletionHandlerAgent = function(aCompletionHandler)
 {
     this._completionHandler = aCompletionHandler;
     this.total = 0;
     this.valid = true;
+    this.id = COMPLETION_AGENT_ID++;
 };
 
 CompletionHandlerAgent.prototype.completionHandler = function()
@@ -479,12 +500,17 @@ CompletionHandlerAgent.prototype.completionHandler = function()
 
 CompletionHandlerAgent.prototype.fire = function()
 {
-    this._completionHandler();
+    if (this.valid)
+    {
+        this._completionHandler();
+        this.valid = false;
+        this.total = 0;
+    }
 };
 
-CompletionHandlerAgent.prototype.increment = function()
+CompletionHandlerAgent.prototype.increment = function(inc)
 {
-    this.total++;
+    this.total += inc;
 };
 
 CompletionHandlerAgent.prototype.decrement = function()
@@ -503,6 +529,8 @@ CompletionHandlerAgent.prototype.decrement = function()
 CompletionHandlerAgent.prototype.invalidate = function()
 {
     this.valid = false;
+    this.total = 0;
+    this._completionHandler = null;
 };
 
 var _animationFlushingObserverCallback = function()

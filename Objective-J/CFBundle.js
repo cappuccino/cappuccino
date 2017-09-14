@@ -914,4 +914,4 @@ GLOBAL(CFCopyLocalizedStringWithDefaultValue) = function (key, tableName, bundle
 GLOBAL(CFBundleGetMainBundle) = function ()
 {
     return CFBundle.mainBundle();
-}
+};
