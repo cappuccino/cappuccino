@@ -646,11 +646,15 @@ GLOBAL(objj_allocateClassPair) = function(/*Class*/ superclass, /*String*/ aName
     classObject.name = aName;
     classObject.info = CLS_CLASS;
     classObject._UID = objj_generateObjectUID();
+    // It needs initialize
+    classObject.init = true;
 
     metaClassObject.isa = rootClassObject.isa;
     metaClassObject.name = aName;
     metaClassObject.info = CLS_META;
     metaClassObject._UID = objj_generateObjectUID();
+    // It needs initialize
+    metaClassObject.init = true;
 
     return classObject;
 }
@@ -837,7 +841,16 @@ GLOBAL(objj_msgSend) = function(/*id*/ aReceiver, /*SEL*/ aSelector)
 
     var isa = aReceiver.isa;
 
-    CLASS_GET_METHOD_IMPLEMENTATION(var implementation, isa, aSelector);
+    // Here we should do the following line: CLASS_GET_METHOD_IMPLEMENTATION(var implementation, isa, aSelector);
+    // But set the 'init' attribute to 'true' when register the class pair and just check for that here is around 20% faster depending
+    // on environment. The '_class_initialize' function sets the 'init' attribute to 'false' when the class is initialized
+
+    if (isa.init)
+        _class_initialize(isa);
+
+    var method = isa.method_dtable[aSelector];
+
+    var implementation = method ? method.method_imp : _objj_forward;
 
 #ifdef MAXIMUM_RECURSION_CHECKS
     if (__objj_msgSend__StackDepth++ > MAXIMUM_RECURSION_DEPTH)
@@ -851,6 +864,9 @@ GLOBAL(objj_msgSend) = function(/*id*/ aReceiver, /*SEL*/ aSelector)
         case 2: return implementation(aReceiver, aSelector);
         case 3: return implementation(aReceiver, aSelector, arguments[2]);
         case 4: return implementation(aReceiver, aSelector, arguments[2], arguments[3]);
+        case 5: return implementation(aReceiver, aSelector, arguments[2], arguments[3], arguments[4]);
+        case 6: return implementation(aReceiver, aSelector, arguments[2], arguments[3], arguments[4], arguments[5]);
+        case 7: return implementation(aReceiver, aSelector, arguments[2], arguments[3], arguments[4], arguments[5], arguments[6]);
     }
 
     return implementation.apply(aReceiver, arguments);
