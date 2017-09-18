@@ -1665,7 +1665,9 @@
     if (!preprocessToken && !preNotSkipping && code !== 35) { // '#'
       // If we are skipping take the whole line if the token does not start with '#' (preprocess tokens)
       preprocesSkipRestOfLine();
-      return preprocessFinishToken(_preprocessSkipLine, input.slice(preTokStart, tokPos++));
+      preprocessFinishToken(_preprocessSkipLine, input.slice(preTokStart, tokPos));
+      preprocessSkipSpace(true, true); // Don't skip comments and skip EOL
+      return;
     } else if (preprocessMacroParameterListMode && code !== 41 && code !== 44) { // ')', ','
       var parenLevel = 0;
       // If we are parsing a macro parameter list parentheses within each argument must balance
