@@ -1608,8 +1608,8 @@
   // Skip whitespaces sometimes without line breaks
   // Returns true if it stops at a line break.
 
-  function preprocessSkipSpace(skipComments, skipEOL) {
-    var ch = onlySkipSpace(!skipEOL);
+  function preprocessSkipSpace(dontSkipComments, skipEOL) {
+    var ch = onlySkipSpace(!skipEOL, false, dontSkipComments);
     // Can't see that this line break test is used anymore
     //lineBreak.lastIndex = 0;
     //var match = lineBreak.exec(input.slice(tokPos, tokPos + 2));
@@ -1720,7 +1720,7 @@
     preTokEnd = overrideTokEnd || tokPos;
     if (type !== _eol) firstTokEnd = preTokEnd;
     //tokRegexpAllowed = type.beforeExpr;
-    var ch = preprocessSkipSpace(false, skipEOL); // Dont skip comments
+    var ch = preprocessSkipSpace(false, skipEOL); // Skip comments
     if (ch === 35 && options.preprocess && !preprocessDontConcatenate && input.charCodeAt(tokPos + 1) === 35) { // '##'
       var val1 = val != null ? val : type.keyword || type.type;
       tokPos += 2;
@@ -1762,7 +1762,7 @@
     preTokType = type;
     preTokVal = val;
     firstTokEnd = preTokEnd = tokPos;
-    preprocessSkipSpace(true); // 'true' for skip comments
+    preprocessSkipSpace(true); // 'true' for don't skip comments
   }
 
   // Continue to the next token.
