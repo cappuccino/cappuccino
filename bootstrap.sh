@@ -169,7 +169,7 @@ tmp_zip="/tmp/cappuccino.zip"
 local_distrib=""
 
 github_user="cappuccino"
-github_ref="v0.9.9"
+github_ref="v0.9.10"
 
 noprompt=""
 install_capp=""

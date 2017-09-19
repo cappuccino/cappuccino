@@ -66,6 +66,10 @@ if (typeof OBJJ_COMPILER_FLAGS !== 'undefined')
             case "InlineMsgSend":
                 flags.inlineMsgSendFunctions = true;
                 break;
+
+            case "SourceMap":
+                flags.sourceMap = true;
+                break;
         }
     }
     FileExecutable.setCurrentCompilerFlags(flags);
@@ -180,4 +184,4 @@ GLOBAL(objj_import) = function()
 {
     CPLog.warn("objj_import is deprecated, use objj_importFile instead");
     objj_importFile.apply(this, arguments);
-}
+};

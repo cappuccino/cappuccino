@@ -26,10 +26,6 @@
 // [dammit]: acorn_loose.js
 // [walk]: util/walk.js
 
-if (typeof exports != "undefined" && !exports.acorn) {
-  exports.acorn = {};
-  exports.acorn.walk = {};
-}
 
 (function(exports, walk) {
   "use strict";
@@ -134,7 +130,14 @@ if (typeof exports != "undefined" && !exports.acorn) {
     // #if macro1
     // #else
     // #endif
+    // etc...
     preprocess: true,
+    // Preprocess 'get include file' function. It should return an object with two attributes
+    // 'include': a string with the file to be included
+    // 'sourceFile': is optional and should be a string with the filename. It will
+    // be included in the locations property as 'source'
+    // Return null if file can't be found. The parser will raise an exception
+    preprocessGetIncludeFile: defaultGetIncludeFile,
     // Preprocess add macro function
     preprocessAddMacro: defaultAddMacro,
     // Preprocess get macro function
@@ -150,7 +153,12 @@ if (typeof exports != "undefined" && !exports.acorn) {
     macros: null,
     // Turn off lineNoInErrorMessage to exclude line number in error messages
     // Needs to be on to run test cases
-    lineNoInErrorMessage: true
+    lineNoInErrorMessage: true,
+    // Array of files to parse before parsing the main file. Each item is an
+    // object containing the properties 'include' and 'sourceFile'. 'include'
+    // has the content from the file and 'sourceFile' has the file path.
+    // The preprocess options must be turn on for this.
+    preIncludeFiles: null
   };
 
   function setOptions(opts) {
@@ -166,10 +174,17 @@ if (typeof exports != "undefined" && !exports.acorn) {
   var macrosMakeBuiltin = function(name, macro, endPos) {return new Macro(name, macro, null, endPos - name.length)}
 
   var macrosBuiltinMacros = {
-                              __OBJJ__: function() {return macrosMakeBuiltin("__OBJJ__", options.objj ? "1" : null, tokPos)},
-                              __BROWSER__: function() {return macrosMakeBuiltin("__BROWSER__", typeof(window) !== "undefined" ? "1" : null, tokPos)},
-                              __LINE__: function() {return macrosMakeBuiltin("__LINE__", String(options.locations ? tokCurLine : getLineInfo(input, tokPos).line), tokPos)},
+                              __OBJJ__: function() {return macrosMakeBuiltin("__OBJJ__", options.objj ? "1" : null, tokPos)}
                             }
+
+  macrosBuiltinMacros["__" + "BROWSER" + "__"] = function() {return macrosMakeBuiltin("__BROWSER__", typeof(window) !== "undefined" ? "1" : null, tokPos)};
+  macrosBuiltinMacros["__" + "LINE" + "__"] = function() {return macrosMakeBuiltin("__LINE__", String(options.locations ? tokCurLine : getLineInfo(input, tokPos).line), tokPos)};
+  macrosBuiltinMacros["__" + "DATE" + "__"] = function() {var date, day; return macrosMakeBuiltin("__DATE__", (date = new Date(), day = String(date.getDate()), ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][date.getMonth()] + (day.length > 1 ? " " : "  ") + day + " " + date.getFullYear()), tokPos)};
+  macrosBuiltinMacros["__" + "TIME" + "__"] = function() {var date; return macrosMakeBuiltin("__TIME__", (date = new Date(), ("0" + date.getHours()).slice(-2)   + ":" + ("0" + date.getMinutes()).slice(-2) + ":" + ("0" + date.getSeconds()).slice(-2)), tokPos)};
+
+  function defaultGetIncludeFile(filename) {
+    return {include: "#define FOO(x) x\n", sourceFile: filename};
+  }
 
   function defaultAddMacro(macro) {
     macros[macro.identifier] = macro;
@@ -292,7 +307,19 @@ if (typeof exports != "undefined" && !exports.acorn) {
   // tokMacroOffset is the offset to the current macro for the current token
   // tokPosMacroOffset is the offset to the current macro for the current tokPos
 
-  var tokFirstStart, tokStart, tokEnd, tokMacroOffset, tokPosMacroOffset, lastTokMacroOffset;
+  var tokFirstStart, firstTokEnd, tokStart, tokEnd, tokMacroOffset, tokPosMacroOffset, lastTokMacroOffset;
+
+  // This is the end position for the last token in the current `input` buffer. Both regular and preprocess
+  // tokens count. It is '0' when entering a new buffer. It is used to determinate if a preprocess (#if) token
+  // is at the begining of a line
+
+  var localLastEnd;
+
+  // Is null except when a macro has ended and then contains the position of the last position in the tokens macro.
+  // `lastEndOfFile` contains this value for the last token. It is used to allow a semicolon to be inserted at the
+  // end of a macro. You can say an end of file is equivalent to a new line.
+
+  var firstEndOfFile, lastEndOfFile;
 
   // When `options.locations` is true, these hold objects
   // containing the tokens start and end line/column pairs.
@@ -337,7 +364,7 @@ if (typeof exports != "undefined" && !exports.acorn) {
   // Same as input but for the current token. If options.preprocess is used
   // this can differ due to macros.
 
-  var tokInput, preTokInput, tokFirstInput;
+  var tokInput, preTokInput, lastEndInput;
 
   // These store the position of the previous token, which is useful
   // when finishing a node and assigning its `end` position.
@@ -369,6 +396,7 @@ if (typeof exports != "undefined" && !exports.acorn) {
   var preprocessParameterScope;
   var preTokParameterScope;
   var preprocessOverrideTokEndLoc;
+  var preprocessDontConcatenate;    // Don't concatenate tokens when finishing preprocess tokens
 
   // True if we are concatenating two tokens. This is needed to handle when the second part is an empty macro
   // This is also used when stingifying tokens to get an empty macro
@@ -492,6 +520,7 @@ if (typeof exports != "undefined" && !exports.acorn) {
   var _preWarning = {keyword: "warning"};
   var _preprocessParamItem = {type: "preprocessParamItem"}
   var _preprocessSkipLine = {type: "skipLine"}
+  var _preInclude = {keyword: "include"};
 
   // Map keyword names to token types.
 
@@ -523,7 +552,7 @@ if (typeof exports != "undefined" && !exports.acorn) {
 
   var keywordTypesPreprocessor = {"define": _preDefine, "pragma": _prePragma, "ifdef": _preIfdef, "ifndef": _preIfndef,
                                 "undef": _preUndef, "if": _preIf, "endif": _preEndif, "else": _preElse, "elif": _preElseIf,
-                                "defined": _preDefined, "warning": _preWarning, "error": _preError};
+                                "defined": _preDefined, "warning": _preWarning, "error": _preError, "include": _preInclude};
 
   // Punctuation token types. Again, the `type` property is purely for debugging.
 
@@ -646,7 +675,7 @@ if (typeof exports != "undefined" && !exports.acorn) {
 
   // The preprocessor keywords.
 
-  var isKeywordPreprocessor = makePredicate("define undef pragma if ifdef ifndef else elif endif defined error warning");
+  var isKeywordPreprocessor = makePredicate("define undef pragma if ifdef ifndef else elif endif defined error warning include");
 
   // ## Character categories
 
@@ -752,6 +781,7 @@ if (typeof exports != "undefined" && !exports.acorn) {
     preprocessStack = [];
     preprocessStackLastItem = null;
     preprocessOnlyTransformArgumentsForLastToken = null;
+    preprocessDontConcatenate = false;
     preNotSkipping = true;
     preConcatenating = false;
     preIfLevel = [];
@@ -764,15 +794,15 @@ if (typeof exports != "undefined" && !exports.acorn) {
 
   function finishToken(type, val, overrideTokEnd) {
     if (overrideTokEnd) {
-      tokEnd = overrideTokEnd;
+      firstTokEnd = tokEnd = overrideTokEnd;
       if (options.locations) tokEndLoc = preprocessOverrideTokLoc;
     } else {
-      tokEnd = tokPos;
+      firstTokEnd = tokEnd = tokPos;
       if (options.locations) tokEndLoc = new line_loc_t;
     }
     tokType = type;
-    skipSpace();
-    if (options.preprocess && input.charCodeAt(tokPos) === 35 && input.charCodeAt(tokPos + 1) === 35) { // '##'
+    var ch = skipSpace();
+    if (ch === 35 && options.preprocess && input.charCodeAt(tokPos + 1) === 35) { // '##'
       var val1 = val != null ? val : type.keyword || type.type;
       tokPos += 2;
       if (val1 != null) {
@@ -874,21 +904,26 @@ if (typeof exports != "undefined" && !exports.acorn) {
   // will store all skipped comments in `tokComments`. If
   // `options.trackSpaces` is on, will store the last skipped spaces in
   // `tokSpaces`.
+  // Returns the char code of the first none whitespace or comment
 
   function skipSpace() {
     tokComments = null;
     tokSpaces = null;
-    onlySkipSpace();
+    return onlySkipSpace();
   }
+
+  // Returns the char code of the first none whitespace or comment
 
   function onlySkipSpace(dontSkipEOL, dontSkipMacroBoundary, dontSkipComments) {
     var spaceStart = tokPos,
-        lastIsNewlinePos;
+        lastIsNewlinePos,
+        ch;
     for(;;) {
-      var ch = input.charCodeAt(tokPos);
+      ch = input.charCodeAt(tokPos);
       if (ch === 32) { // ' '
         ++tokPos;
-      } else if (ch === 13 && !dontSkipEOL) {
+      } else if (ch === 13) {
+        if (dontSkipEOL) break;
         lastIsNewlinePos = tokPos;
         ++tokPos;
         var next = input.charCodeAt(tokPos);
@@ -899,7 +934,8 @@ if (typeof exports != "undefined" && !exports.acorn) {
           ++tokCurLine;
           tokLineStart = tokPos;
         }
-      } else if (ch === 10 && !dontSkipEOL) {
+      } else if (ch === 10) {
+        if (dontSkipEOL) break;
         lastIsNewlinePos = tokPos;
         ++tokPos;
         if (options.locations) {
@@ -908,7 +944,8 @@ if (typeof exports != "undefined" && !exports.acorn) {
         }
       } else if (ch === 9) {
         ++tokPos;
-      } else if (ch === 47 && !dontSkipComments) { // '/'
+      } else if (ch === 47) { // '/'
+        if (dontSkipComments) break;
         var next = input.charCodeAt(tokPos+1);
         if (next === 42) { // '*'
           if (options.trackSpaces)
@@ -927,27 +964,33 @@ if (typeof exports != "undefined" && !exports.acorn) {
         if (options.preprocess) {
           if (dontSkipMacroBoundary) return true;
           if (!preprocessStack.length) break;
+          // If this is the first end of file after the token save to position to allow a semicolon to be inserted
+          // the end of file, if needed.
+          if (firstEndOfFile == null) firstEndOfFile = tokPos;
           // If we are at the end of the input inside a macro continue at last position
           var lastItem = preprocessStack.pop();
+          var saveInputForPrint = input;
+          var saveSourceFileForPrint = sourceFile;
           tokPos = lastItem.end;
           input = lastItem.input;
           inputLen = lastItem.inputLen;
           tokCurLine = lastItem.currentLine;
           tokLineStart = lastItem.currentLineStart;
-          /*tokStart = *///tokFirstStart = lastItem.tokStart;
-          //lastEnd = lastItem.lastEnd;
-          //lastStart = lastItem.lastStart;
           preprocessOnlyTransformArgumentsForLastToken = lastItem.onlyTransformArgumentsForLastToken;
           preprocessParameterScope = lastItem.parameterScope;
           tokPosMacroOffset = lastItem.macroOffset;
+          sourceFile = lastItem.sourceFile;
+          firstTokEnd = lastItem.lastEnd;
+
           // Set the last item
           var lastIndex = preprocessStack.length;
           preprocessStackLastItem = lastIndex ? preprocessStack[lastIndex - 1] : null;
-          onlySkipSpace(dontSkipEOL);
+          return onlySkipSpace(dontSkipEOL);
         } else {
           break;
         }
-      } else if (ch === 92 && options.preprocess) { // '\'
+      } else if (ch === 92) { // '\'
+        if (!options.preprocess) break;
         // Check if we have an escaped newline. We are using a relaxed treatment of escaped newlines like gcc.
         // We allow spaces, horizontal and vertical tabs, and form feeds between the backslash and the subsequent newline
         var pos = tokPos + 1;
@@ -969,6 +1012,7 @@ if (typeof exports != "undefined" && !exports.acorn) {
         break;
       }
     }
+    return ch;
   }
 
   // ### Token reading
@@ -1028,7 +1072,7 @@ if (typeof exports != "undefined" && !exports.acorn) {
   }
 
   function readToken_lt_gt(code, finisher) { // '<>'
-    if (tokType === _import && options.objj && code === 60) {  // '<'
+    if (code === 60 && (tokType === _import || preTokType === _preInclude) && options.objj) {  // '<'
       for (var start = tokPos + 1;;) {
         var ch = input.charCodeAt(++tokPos);
         if (ch === 62)  // '>'
@@ -1216,6 +1260,30 @@ if (typeof exports != "undefined" && !exports.acorn) {
         raise(start, "Error: " + String(preprocessEvalExpression(expr)));
         break;
 
+      case _preInclude:
+        if (!preNotSkipping) {
+          return finisher(_preInclude);
+        }
+        preprocessReadToken();
+        if (preTokType === _string)
+          var localfilepath = true;
+        else if (preTokType ===_filename)
+          var localfilepath = false;
+        else
+          raise(preTokStart, "Expected \"FILENAME\" or <FILENAME>: " + (preTokType.keyword || preTokType.type));
+
+        var theFileName = preTokVal;
+        var includeDict = options.preprocessGetIncludeFile(preTokVal, localfilepath) || raise(preTokStart, "'" + theFileName + "' file not found");
+        var includeString = includeDict.include;
+        var includeMacro = new Macro(null, includeString, null, 0, false, null, false, null, includeDict.sourceFile);
+        preprocessFinishToken(_preprocess, null, null, true); // skipEOL
+        pushMacroToStack(includeMacro, includeMacro.macro, tokPosMacroOffset, null, null, tokPos, null, true); // isIncludeFile
+        skipSpace();
+        readToken(null, null, true); // Stealth
+        return;
+
+        break;
+
       default:
         if (preprocessStackLastItem) {
           // If the current macro has parameters check if this word is one of them and should be stringifyed
@@ -1240,14 +1308,18 @@ if (typeof exports != "undefined" && !exports.acorn) {
       else
         tokSpaces = ["\n"];
     }
-    preprocessFinishToken(_preprocess, null, null, true); // skipEOL
-    return readToken();
+    preprocessFinishToken(preTokType, null, null, true); // skipEOL
+    return next(true) // Stealth
   }
 
   function preprocessParseDefine() {
     preprocessIsParsingPreprocess = true;
     preprocessReadToken();
     var macroIdentifierEnd = preTokEnd;
+
+    // We don't want to concatenate tokens when creating macros
+    preprocessDontConcatenate = true;
+
     var macroIdentifier = preprocessGetIdent();
     // '(' Must follow directly after identifier to be a valid macro with parameters
     if (input.charCodeAt(macroIdentifierEnd) === 40) { // '('
@@ -1267,7 +1339,8 @@ if (typeof exports != "undefined" && !exports.acorn) {
     while(preTokType !== _eol && preTokType !== _eof)
       preprocessReadToken();
 
-    var macroString = input.slice(start, preTokStart);
+    preprocessDontConcatenate = false;
+    var macroString = preTokInput.slice(start, preTokStart);
     macroString = macroString.replace(/\\/g, " ");
     // If variadic get the last parameter for the variadic parameter name
     options.preprocessAddMacro(new Macro(macroIdentifier, macroString, parameters, start, false, null, variadic && parameters[parameters.length - 1], positionOffset));
@@ -1436,8 +1509,8 @@ if (typeof exports != "undefined" && !exports.acorn) {
         }
         // Check if it is the first token on the line
         lineBreak.lastIndex = 0;
-        var match = lineBreak.exec(input.slice(lastEnd, tokPos));
-        if (lastEnd !== 0 && lastEnd !== tokPos && !match) {
+        var match = lineBreak.exec(input.slice(localLastEnd, tokPos));
+        if (lastEnd !== 0 && lastEnd !== tokPos && !match && ((preprocessStackLastItem && !preprocessStackLastItem.isIncludeFile) || tokPos !== 0)) {
           if (preprocessStackLastItem) {
             // Stringify next token
             return preprocessStringify();
@@ -1541,10 +1614,12 @@ if (typeof exports != "undefined" && !exports.acorn) {
   // Returns true if it stops at a line break.
 
   function preprocessSkipSpace(skipComments, skipEOL) {
-    onlySkipSpace(!skipEOL);
-    lineBreak.lastIndex = 0;
-    var match = lineBreak.exec(input.slice(tokPos, tokPos + 2));
-    return match && match.index === 0;
+    var ch = onlySkipSpace(!skipEOL);
+    // Can't see that this line break test is used anymore
+    //lineBreak.lastIndex = 0;
+    //var match = lineBreak.exec(input.slice(tokPos, tokPos + 2));
+    //return (match && match.index === 0);
+    return ch;
   }
 
   function preprocessSkipToElseOrEndif(skipElse) {
@@ -1586,7 +1661,7 @@ if (typeof exports != "undefined" && !exports.acorn) {
 
 // preprocessToken is used to cancel preNotSkipping when calling from readToken_preprocess.
 // FIXME: Refactor to not use this parameter preprocessToken. It is kind of confusing and it should be possible to do in another way
-  function preprocessReadToken(skipComments, preprocessToken, processMacros) {
+  function preprocessReadToken(skipComments, preprocessToken, processMacros, onlyTransformMacroArguments) {
     preTokStart = tokPos;
     preTokInput = input;
     preTokParameterScope = preprocessParameterScope;
@@ -1629,32 +1704,67 @@ if (typeof exports != "undefined" && !exports.acorn) {
     }
   }
 
-  function preprocessReadWord(processMacros) {
+  function preprocessReadWord(processMacros, onlyTransformMacroArguments) {
     var word = readWord1();
     var type = _name;
     if (processMacros && options.preprocess) {
-      var readMacroWordReturn = readMacroWord(word, preprocessNext);
+      var readMacroWordReturn = readMacroWord(word, preprocessNext, onlyTransformMacroArguments);
       if (readMacroWordReturn === true)
         return true;
     }
 
     if (!containsEsc && isKeywordPreprocessor(word)) type = keywordTypesPreprocessor[word];
-    preprocessFinishToken(type, word, readMacroWordReturn); // If readMacroWord returns anything except 'true' it is the real tokEndPos
+    preprocessFinishToken(type, word, readMacroWordReturn, false, processMacros); // If readMacroWord returns anything except 'true' it is the real tokEndPos
   }
 
-  function preprocessFinishToken(type, val, overrideTokEnd, skipEOL) {
+  function preprocessFinishToken(type, val, overrideTokEnd, skipEOL, processMacros) {
     preTokType = type;
     preTokVal = val;
     preTokEnd = overrideTokEnd || tokPos;
+    if (type !== _eol) firstTokEnd = preTokEnd;
     //tokRegexpAllowed = type.beforeExpr;
-    preprocessSkipSpace(false, skipEOL); // Dont skip comments
+    var ch = preprocessSkipSpace(false, skipEOL); // Dont skip comments
+    if (ch === 35 && options.preprocess && !preprocessDontConcatenate && input.charCodeAt(tokPos + 1) === 35) { // '##'
+      var val1 = val != null ? val : type.keyword || type.type;
+      tokPos += 2;
+      if (val1 != null) {
+        // Save current line and current line start. This is needed when option.locations is true
+        var positionOffset = options.locations && new PositionOffset(tokCurLine, tokLineStart);
+        // Save positions on first token to get start and end correct on node if cancatenated token is invalid
+        var saveTokInput = tokInput, saveTokEnd = preTokEnd, saveTokStart = preTokStart, start = preTokStart + tokMacroOffset, variadicName = preprocessStackLastItem && preprocessStackLastItem.macro && preprocessStackLastItem.macro.variadicName;
+        skipSpace();
+        if (variadicName && variadicName === input.slice(tokPos, tokPos + variadicName.length)) var isVariadic = true;
+        preConcatenating = true;
+        preprocessReadToken(null, null, processMacros, 2); // 2 = Don't transform macros only arguments
+        preConcatenating = false;
+        var val2 = preTokVal != null ? preTokVal : preTokType.keyword || preTokType.type;
+        if (val2 != null) {
+          // Skip token if it is a ',' concatenated with an empty variadic parameter
+          if (isVariadic && val1 === "," && val2 === "") return preprocessReadToken();
+          var concat = "" + val1 + val2, val2TokStart = preTokStart + tokPosMacroOffset;
+          // If the macro defines anything add it to the preprocess input stack
+          var concatMacro = new Macro(null, concat, null, start, false, null, false, positionOffset);
+          var r = readTokenFromMacro(concatMacro, tokPosMacroOffset, preprocessStackLastItem ? preprocessStackLastItem.parameterDict : null, null, tokPos, preprocessNext, null);
+          // Consumed the whole macro in one bite? If not the tokenizer can't create a single token from the two concatenated tokens
+          if (preprocessStackLastItem && preprocessStackLastItem.macro === concatMacro) {
+            // FIXME: Should change this to 'preTokType' and friends
+            preTokType = type;
+            preTokStart = saveTokStart;
+            preTokEnd = saveTokEnd;
+            tokInput = saveTokInput;
+            tokPosMacroOffset = val2TokStart - val1.length; // reset the macro offset to the second token to get start and end correct on node
+            if (!isVariadic) /*raise(tokStart,*/console.log("Warning: pasting formed '" + concat + "', an invalid preprocessing token");
+          } else return r;
+        }
+      }
+    }
   }
 
 // FIXME: Find out if this is really used?
   function preprocessFinishTokenSkipComments(type, val) {
     preTokType = type;
     preTokVal = val;
-    preTokEnd = tokPos;
+    firstTokEnd = preTokEnd = tokPos;
     preprocessSkipSpace(true); // 'true' for skip comments
   }
 
@@ -1662,10 +1772,11 @@ if (typeof exports != "undefined" && !exports.acorn) {
 
   function preprocessNext(stealth, onlyTransformArguments, forceRegexp, processMacros) {
     if (!stealth) {
-      preLastStart = tokStart;
-      preLastEnd = tokEnd;
+      preLastStart = preTokStart;
+      preLastEnd = preTokEnd;
     }
-    return preprocessReadToken(false, false, processMacros);
+    localLastEnd = firstTokEnd;
+    return preprocessReadToken(false, false, processMacros, onlyTransformArguments);
   }
 
   // Predicate that tests whether the next token is of the given
@@ -1682,7 +1793,7 @@ if (typeof exports != "undefined" && !exports.acorn) {
   // raise with errorMessage or an unexpected token error.
 
   function preprocessExpect(type, errorMessage, processMacros) {
-    if (preTokType === type) preprocessReadToken(processMacros);
+    if (preTokType === type) preprocessNext(false, undefined, null, processMacros);
     else raise(preTokStart, errorMessage || "Unexpected token");
   }
 
@@ -1832,7 +1943,7 @@ if (typeof exports != "undefined" && !exports.acorn) {
     else tokPos = tokStart + 1;
     if (!stealth) {
       tokFirstStart = tokStart;
-      tokFirstInput = input;
+      //tokFirstInput = input;
     }
     tokInput = input;
     tokMacroOffset = tokPosMacroOffset;
@@ -2094,7 +2205,7 @@ if (typeof exports != "undefined" && !exports.acorn) {
         // Lets look ahead to find out if we find a '##' for token concatenate
         // We don't want to prescan spaces across macro boundary as the macro stack will fall apart
         // So we do a special prescan if we have to cross a boundary all in the name of speed
-        if (onlySkipSpace(true, true)) { // don't skip EOL and don't skip macro boundary.
+        if (onlySkipSpace(true, true) === true) { // don't skip EOL and don't skip macro boundary.
           if (preprocessPrescanFor(35, 35)) // Prescan across boundary for '##' as we crossed a boundary
             onlyTransformArguments = 2;
         } else if (input.charCodeAt(tokPos) === 35 && input.charCodeAt(tokPos + 1) === 35) { // '##'
@@ -2141,7 +2252,7 @@ if (typeof exports != "undefined" && !exports.acorn) {
         var pos = tokPos;
         var loc;
         if (options.locations) loc = new line_loc_t;
-        if ((onlySkipSpace(true, true) && preprocessPrescanFor(40)) || input.charCodeAt(tokPos) === 40) { // '('
+        if ((onlySkipSpace(true, true) === true && preprocessPrescanFor(40)) || input.charCodeAt(tokPos) === 40) { // '('
           nextIsParenL = true;
         } else {
           // We didn't find a '(' so don't transform to the macro. Return the real tokEndPos so we get correct token end values.
@@ -2279,7 +2390,7 @@ if (typeof exports != "undefined" && !exports.acorn) {
         }
       }
     }
-    return scanInput.charCodeAt(scanPos) === first && (second == null || scanInput.charCodeAt(scanPos + 1) === second);
+    return scanInput && scanInput.charCodeAt(scanPos) === first && (second == null || scanInput.charCodeAt(scanPos + 1) === second);
   }
 
   // Push macro to stack and start read from it.
@@ -2289,26 +2400,37 @@ if (typeof exports != "undefined" && !exports.acorn) {
     // If we are evaluation a macro expresion an empty macro definition means true or '1'
     if(!macroString && nextFinisher === preprocessNext) macroString = "1";
     if (macroString) {
-      preprocessStackLastItem = {macro: macro, macroOffset: macroOffset, parameterDict: parameters, /*start: macroStart,*/ end:end, inputLen: inputLen, tokStart: tokStart, onlyTransformArgumentsForLastToken: preprocessOnlyTransformArgumentsForLastToken, currentLine: tokCurLine, currentLineStart: tokLineStart/*, lastStart: lastStart, lastEnd: lastEnd*/};
-      if (parameterScope) preprocessStackLastItem.parameterScope = parameterScope;
-      preprocessStackLastItem.input = input;
-      preprocessStack.push(preprocessStackLastItem);
-      preprocessOnlyTransformArgumentsForLastToken = onlyTransformArguments;
-      input = macroString;
-      inputLen = macroString.length;
-      tokPosMacroOffset = macro.start;
-      tokPos = 0;
-      tokCurLine = 0;
-      tokLineStart = 0;
+      pushMacroToStack(macro, macroString, macroOffset, parameters, parameterScope, end, onlyTransformArguments);
     } else if (preConcatenating) {
       // If we are concatenating or stringifying and the macro is empty just make an empty string.
-      finishToken(_name, "");
+      (nextFinisher === next ? finishToken : preprocessFinishToken)(_name, "");
       return true;
     }
     // Now read the next token
     onlySkipSpace();
     nextFinisher(true, onlyTransformArguments, forceRegexp, true); // Stealth and Preprocess macros
     return true;
+  }
+
+  // Push macro to stack and reset tokPos etc.
+  // macroString is the string from the macro. It is usually 'macro.macro' but the caller can modify it if needed
+  // includeFile is true if the macro should be treated as a regular file. In other words don't stringify words after '#'
+  function pushMacroToStack(macro, macroString, macroOffset, parameters, parameterScope, end, onlyTransformArguments, isIncludeFile) {
+    preprocessStackLastItem = {macro: macro, macroOffset: macroOffset, parameterDict: parameters, /*start: macroStart,*/ end:end, lastEnd: localLastEnd, inputLen: inputLen, tokStart: tokStart, onlyTransformArgumentsForLastToken: preprocessOnlyTransformArgumentsForLastToken, currentLine: tokCurLine, currentLineStart: tokLineStart, sourceFile: sourceFile};
+    if (parameterScope) preprocessStackLastItem.parameterScope = parameterScope;
+    if (isIncludeFile) preprocessStackLastItem.isIncludeFile = isIncludeFile;
+    preprocessStackLastItem.input = input;
+    preprocessStack.push(preprocessStackLastItem);
+    preprocessOnlyTransformArgumentsForLastToken = onlyTransformArguments;
+    input = macroString;
+    inputLen = macroString.length;
+    tokPosMacroOffset = macro.start;
+    tokPos = 0;
+    tokCurLine = 0;
+    tokLineStart = 0;
+    firstTokEnd = 0;
+    localLastEnd = 0;
+    if (macro.sourceFile) sourceFile = macro.sourceFile;
   }
 
   // ident is the identifier name for the macro
@@ -2319,7 +2441,7 @@ if (typeof exports != "undefined" && !exports.acorn) {
   // parameterScope is the parameter scope
   // varadicName is the name of the varadic parameter if it is a varadic macro
   // locationOffset is the current line that the macro starts at and the position on the line
-  var Macro = exports.Macro = function Macro(ident, macro, parameters, start, isArgument, parameterScope, variadicName, locationOffset) {
+  var Macro = exports.Macro = function Macro(ident, macro, parameters, start, isArgument, parameterScope, variadicName, locationOffset, aSourceFile) {
     this.identifier = ident;
     if (macro != null) this.macro = macro;
     if (parameters) this.parameters = parameters;
@@ -2328,6 +2450,7 @@ if (typeof exports != "undefined" && !exports.acorn) {
     if (parameterScope) this.parameterScope = parameterScope;
     if (variadicName) this.variadicName = variadicName;
     if (locationOffset) this.locationOffset = locationOffset;
+    if (aSourceFile) this.sourceFile = aSourceFile;
   }
 
   Macro.prototype.isParameterFunction = function() {
@@ -2364,11 +2487,14 @@ if (typeof exports != "undefined" && !exports.acorn) {
     if (!stealth) {
       lastStart = tokStart;
       lastEnd = tokEnd;
+      lastEndInput = tokInput;
+      lastEndOfFile = firstEndOfFile;
       lastEndLoc = tokEndLoc;
       lastTokMacroOffset = tokMacroOffset;
     }
-    nodeMessageSendObjectExpression = null;
-    readToken(forceRegexp, onlyTransformArguments, stealth);
+    localLastEnd = firstTokEnd;
+    firstEndOfFile = nodeMessageSendObjectExpression = null;
+    return readToken(forceRegexp, onlyTransformArguments, stealth);
   }
 
   // Enter strict mode. Re-reads the next token to please pedantic
@@ -2397,7 +2523,7 @@ if (typeof exports != "undefined" && !exports.acorn) {
   function node_loc_t() {
     this.start = tokStartLoc;
     this.end = null;
-    if (sourceFile !== null) this.source = sourceFile;
+    if (sourceFile != null) this.source = sourceFile;
   }
 
   function startNode() {
@@ -2508,9 +2634,10 @@ if (typeof exports != "undefined" && !exports.acorn) {
   // Test whether a semicolon can be inserted at the current position.
 
   function canInsertSemicolon() {
+    //if (lastEnd !== localLastEnd) print("lastEnd: " + lastEnd + ", localLastEnd: " + localLastEnd);
     return !options.strictSemicolons &&
-      (tokType === _eof || tokType === _braceR || newline.test(tokFirstInput.slice(lastEnd, tokFirstStart)) ||
-        (nodeMessageSendObjectExpression && options.objj));
+      (tokType === _eof || tokType === _braceR || newline.test(lastEndInput.slice(lastEnd, lastEndOfFile || tokFirstStart)) ||
+        (nodeMessageSendObjectExpression && options.objj) || lastEndOfFile != null);
   }
 
   // Consume a semicolon, or, failing that, see if we are allowed to
@@ -2550,9 +2677,22 @@ if (typeof exports != "undefined" && !exports.acorn) {
   // statements, and wraps them in a Program node.  Optionally takes a
   // `program` argument.  If present, the statements will be appended
   // to its body instead of creating a new node.
+  // If there are any pre include files they will be pushed onto the macro stack
 
   function parseTopLevel(program) {
-    lastStart = lastEnd = tokPos;
+    lastStart = localLastEnd = lastEnd = 0;
+
+    if (options.preprocess) {
+      var preIncludeFiles = options.preIncludeFiles;
+      if (preIncludeFiles && preIncludeFiles.length) for (var i = preIncludeFiles.length - 1; i >= 0; i--) {
+        var preIncludeFile = preIncludeFiles[i];
+
+        var preIncludeMacro = new Macro(null, preIncludeFile.include, null, 0, false, null, false, null, preIncludeFile.sourceFile);
+        pushMacroToStack(preIncludeMacro, preIncludeMacro.macro, 0, null, null, tokPos, null, true); // isIncludeFile
+        skipSpace();
+      }
+    }
+
     if (options.locations) lastEndLoc = new line_loc_t;
     inFunction = strict = null;
     labels = [];
@@ -3752,4 +3892,4 @@ if (typeof exports != "undefined" && !exports.acorn) {
     return finishNode(node, "ObjectiveJType");
   }
 
-})(exports.acorn, exports.acorn.walk);
+})(exports.acorn || (exports.acorn = {}), exports.acorn.walk || (exports.acorn.walk = (typeof acorn !== 'undefined') && acorn.walk) || (exports.acorn.walk = {}));

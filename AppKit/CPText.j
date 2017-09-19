@@ -33,6 +33,8 @@
 @import "CPView.j"
 
 @global CPStringPboardType
+@global _CPSmartPboardType
+
 @class CPAttributedString
 @class _CPRTFParser
 
@@ -173,6 +175,11 @@ CPKernAttributeName = @"CPKernAttributeName";
         stringForPasting = stringForPasting._string;
 
     return stringForPasting;
+}
+
+- (BOOL)_shouldUseSmartPasting
+{
+    return parseInt([[CPPasteboard generalPasteboard] stringForType:_CPSmartPboardType], 10) > 0 || NO;
 }
 
 - (void)paste:(id)sender

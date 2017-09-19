@@ -20,12 +20,13 @@ var _supportsCSSAnimations = null;
     id <CPAnimatablePropertyContainer> _target;
 }
 
-+ (BOOL)supportsCSSAnimations
++ (BOOL)initialize
 {
-    if (_supportsCSSAnimations === null)
-        _supportsCSSAnimations = CPBrowserCSSProperty("animation");
+    if ([self class] !== [_CPObjectAnimator class])
+        return;
 
-    return _supportsCSSAnimations;
+    var compat = (CPBrowserCSSProperty("animation") !== nil);
+    CPSetPlatformFeature(CPCSSAnimationFeature, compat);
 }
 
 - (id)initWithTarget:(id)aTarget
@@ -77,11 +78,11 @@ var _supportsCSSAnimations = null;
     var animation = [_target animationForKey:aKeyPath],
         context = [CPAnimationContext currentContext];
 
-    if (!animation || ![animation isKindOfClass:[CAAnimation class]] || (![context duration] && ![animation duration]) || ![_CPObjectAnimator supportsCSSAnimations])
+    if (!animation || ![animation isKindOfClass:[CAAnimation class]] || (![context duration] && ![animation duration]) || !CPFeatureIsCompatible(CPCSSAnimationFeature))
         [_target setValue:aTargetValue forKey:aKeyPath];
     else
     {
-        [context _enqueueActionForObject:_target keyPath:aKeyPath targetValue:aTargetValue completionHandler:function()
+        [context _enqueueActionForObject:_target keyPath:aKeyPath targetValue:aTargetValue animationCompletion:function()
         {
             [_target setValue:aTargetValue forKey:aKeyPath];
         }];
