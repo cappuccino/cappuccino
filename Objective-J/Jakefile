@@ -150,7 +150,6 @@ function gcc(inputFilePath, outputFilePath, flags, compress)
         anyErrors = anyErrors || warning.messageType === "ERROR";
         print(message);
     }
-    var contents = array.join("");
 
     if (anyErrors) throw "Compilation Error";
 
