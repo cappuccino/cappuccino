@@ -14,6 +14,7 @@ frameworks. When you program in Cappuccino, you don't need to concern yourself
 with the complexities of traditional web technologies like HTML, CSS, or even
 the DOM. The unpleasantries of building complex cross browser applications are
 abstracted away for you.
+The Xcode integration brings Apples's advanced visual development methodology to the web browser. 
 
 For more information, see <http://cappuccino-project.org>. Follow [@cappuccino](https://twitter.com/cappuccino) on Twitter for updates on the project.
 
@@ -23,12 +24,8 @@ To run Cappuccino applications, all you need is a HTML5 compliant web browser.
 
 To develop Cappuccino applications, all you need is a simple text editor and the starter package.
 
-However, Cappuccino's build system and the Xcode integration bring the eases of Cocoa development to web development. 
-
 To build Cappuccino itself, please read below. More information is available
 here: [Getting and Building the Source](http://wiki.github.com/cappuccino/cappuccino/getting-and-building-the-source>).
-
-If you're using Windows, you'll also need [Cygwin](http://www.cygwin.com/).
 
 Finally, if you want to easily stay up to date with the latest developments
 and contribute your work back to the Cappuccino community, you'll want to
