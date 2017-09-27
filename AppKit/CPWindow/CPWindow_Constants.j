@@ -176,6 +176,8 @@ CPWindowDidEndSheetNotification                 = @"CPWindowDidEndSheetNotificat
 CPWindowDidMiniaturizeNotification              = @"CPWindowDidMiniaturizeNotification";
 CPWindowWillMiniaturizeNotification             = @"CPWindowWillMiniaturizeNotification";
 CPWindowDidDeminiaturizeNotification            = @"CPWindowDidDeminiaturizeNotification";
+CPWindowWillStartLiveResizeNotification         = @"CPWindowWillStartLiveResizeNotification";
+CPWindowDidEndLiveResizeNotification            = @"CPWindowDidEndLiveResizeNotification";
 
 _CPWindowDidChangeFirstResponderNotification    = @"_CPWindowDidChangeFirstResponderNotification";
 

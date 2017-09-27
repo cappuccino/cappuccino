@@ -198,4 +198,4 @@ function justify(sign, prefix, string, suffix, width, leftJustify, padZeros)
 function pad(n, ch)
 {
     return Array(MAX(0,n)+1).join(ch);
-}
+};

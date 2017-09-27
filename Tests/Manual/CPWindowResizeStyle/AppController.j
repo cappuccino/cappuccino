@@ -16,6 +16,30 @@
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
+    var center = [CPNotificationCenter defaultCenter];
+
+    [center addObserver:self
+               selector:@selector(viewWillStartLiveResize:)
+                   name:CPWindowWillStartLiveResizeNotification
+                 object:nil];
+
+    [center addObserver:self
+               selector:@selector(viewDidEndLiveResize:)
+                   name:CPWindowDidEndLiveResizeNotification
+                 object:nil];
+}
+
+- (void)viewWillStartLiveResize:(CPNotification)note
+{
+    var w = [note object];
+    w._previousStyle = [w title];
+    [w setTitle:@"In Live Resize …"];
+}
+
+- (void)viewDidEndLiveResize:(CPNotification)note
+{
+    var w = [note object];
+    [w setTitle:w._previousStyle];
 }
 
 - (void)awakeFromCib
