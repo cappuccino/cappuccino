@@ -16,7 +16,7 @@
 
 (function(mod)
 {
-    mod(exports.ObjJCompiler || (exports.ObjJCompiler = {}), exports.acorn || acorn, (exports.acorn || acorn).walk, typeof sourceMap != "undefined" ? sourceMap : null); // Plain browser env
+    mod(exports.ObjJCompiler || (exports.ObjJCompiler = {}), exports.acorn || acorn, (exports.acorn || acorn).walk, typeof exports.sourceMap != "undefined" ? exports.sourceMap : (typeof module != "undefined" && typeof module.exports === "object" ? module.exports :  null)); // Plain browser env
 })(function(exports, acorn, walk, sourceMap)
 {
 "use strict";
@@ -821,6 +821,28 @@ exports.compileFileDependencies = function(/*String*/ aString, /*CFURL*/ aURL, o
     return new ObjJAcornCompiler(aString, aURL, options);
 }
 
+/*!
+    This function is used to calculate the number of lines that is added when a 'new Function(...) call is used.
+    This is used to make sure source maps are correct
+    Currently Safari is adding one line and Chrome and Firefox is adding two lines.
+
+    We calculate this by creating a function and counts the number of new lines at the top of the function
+    The result is cached so we only need to make the calculation once.
+ */
+exports.numberOfLinesAtTopOfFunction = function() {
+    var f = new Function("x", "return x;");
+    var fString = f.toString();
+    var index = fString.indexOf("return x;");
+    var firstPart = fString.substring(0, index);
+    var numberOfLines = (firstPart.match(/\n/g) || []).length;
+
+    ObjJAcornCompiler.numberOfLinesAtTopOfFunction = function() {
+        return numberOfLines;
+    }
+
+    return numberOfLines;
+}
+
 ObjJAcornCompiler.prototype.compilePass2 = function()
 {
     var options = this.options;
@@ -1427,7 +1449,7 @@ ExpressionStatement: function(node, st, c, format) {
         generate = compiler.generate && !format;
     if (generate) compiler.jsBuffer.concat(indentation);
     c(node.expression, st, "Expression");
-    if (generate) compiler.jsBuffer.concat(";\n");
+    if (generate) compiler.jsBuffer.concat(";\n", node);
 },
 IfStatement: function(node, st, c, format) {
     var compiler = st.compiler,
@@ -1994,7 +2016,7 @@ VariableDeclaration: function(node, st, c, format) {
       }
     }
   }
-  if (generate && !format && !st.isFor) buffer.concat(";\n"); // Don't add ';' if this is a for statement but do it if this is a statement
+  if (generate && !format && !st.isFor) buffer.concat(";\n", node); // Don't add ';' if this is a for statement but do it if this is a statement
 },
 ThisExpression: function(node, st, c) {
     var compiler = st.compiler;
@@ -2149,7 +2171,7 @@ BinaryExpression: function(node, st, c, format) {
     if (generate) {
         var buffer = compiler.jsBuffer;
         buffer.concatFormat(format ? format.beforeOperator : " ");
-        buffer.concat(node.operator);
+        buffer.concat(node.operator, node);
         buffer.concatFormat(format ? format.afterOperator : " ");
     }
     (generate && nodePrecedence(node, node.right, true) ? surroundExpression(c) : c)(node.right, st, "Expression");
@@ -2315,7 +2337,7 @@ MemberExpression: function(node, st, c) {
     if (generate)
         compiler.jsBuffer.concat(computed ? "[" : ".", node);
     st.secondMemberExpression = !computed;
-    // No parentheses when it is computed, '[' amd ']' are the same thing.
+    // No parentheses when it is computed, '[' and ']' are the same thing.
     (generate && !computed && nodePrecedence(node, node.property) ? surroundExpression(c) : c)(node.property, st, "Expression");
     st.secondMemberExpression = false;
     if (generate && computed)
@@ -2369,7 +2391,7 @@ Identifier: function(node, st, c) {
                 st.addMaybeWarning(message);
         }
     }
-    if (generate) compiler.jsBuffer.concat(identifier, node, "self");
+    if (generate) compiler.jsBuffer.concat(identifier, node, identifier === "self" ? "self" : null);
 },
 // Use this when there should not be a look up to issue warnings or add 'self.' before ivars
 IdentifierName: function(node, st, c) {
@@ -3315,7 +3337,8 @@ MessageSendExpression: function(node, st, c) {
         firstSelector = selectors[0],
         selector = firstSelector ? firstSelector.name : "",    // There is always at least one selector
         parameters = node.parameters,
-        generateObjJ = compiler.options.generateObjJ;
+        options = compiler.options,
+        generateObjJ = options.generateObjJ;
 
     // Put together the selector. Maybe this should be done in the parser...
     for (var i = 0; i < argumentsLength; i++) {
@@ -3438,10 +3461,12 @@ MessageSendExpression: function(node, st, c) {
         }
         buffer.concat("]");
     } else {
+        var selectorJSPath;
+
         if (generate && !node.superObject) {
             if (!inlineMsgSend) {
                 if (totalNoOfParameters < 4) {
-                    buffer.concat("" + totalNoOfParameters, null);
+                    buffer.concat("" + totalNoOfParameters, node);
                 }
             }
 
@@ -3451,11 +3476,34 @@ MessageSendExpression: function(node, st, c) {
             } else {
                 buffer.concat("(___r" + st.receiverLevel, node);
             }
+
+            // Only do this if source map is enabled and we have an identifier
+            if (options.sourceMap && nodeObject.type === "Identifier") {
+                // Get target expression for sourcemap to allow hovering selector to show method function. Create new buffer to write in.
+                compiler.jsBuffer = new StringBuffer();
+                c(nodeObject, st, "Expression");
+                var aTarget = compiler.jsBuffer.toString();
+                selectorJSPath = aTarget + ".isa.method_dtable[\"" + selector + "\"]"
+                // Restored buffer so everything will continue as usually.
+                compiler.jsBuffer = buffer;
+            }
         }
 
-        buffer.concat(", \"", node);
-        buffer.concat(selector); // FIXME: sel_getUid(selector + "") ? This FIXME is from the old preprocessor compiler
+        buffer.concat(", ", node);
+        if (selectorJSPath) {
+            buffer.concat("(", node);
+            for (var i = 0; i < selectors.length; i++) {
+                var nextSelector = selectors[i];
+                if (nextSelector) {
+                    buffer.concat(selectorJSPath, nextSelector);
+                    buffer.concat(", ", node);
+                }
+            }
+        }
         buffer.concat("\"", node);
+
+        buffer.concat(selector, node); // FIXME: sel_getUid(selector + "") ? This FIXME is from the old preprocessor compiler
+        buffer.concat(selectorJSPath ? "\")" : "\"", node);
 
         if (nodeArguments) for (var i = 0; i < nodeArguments.length; i++)
         {

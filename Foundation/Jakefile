@@ -53,7 +53,7 @@ foundationTask = framework ("Foundation", function(foundationTask)
     if ($CONFIGURATION === "Release")
         foundationTask.setCompilerFlags("-O2 " + INCLUDES);
     else
-        foundationTask.setCompilerFlags("-DDEBUG -g " + INCLUDES);
+        foundationTask.setCompilerFlags("-DDEBUG -g -S " + INCLUDES);
 });
 
 $BUILD_CJS_FOUNDATION = FILE.join($BUILD_CJS_CAPPUCCINO_FRAMEWORKS, "Foundation");
