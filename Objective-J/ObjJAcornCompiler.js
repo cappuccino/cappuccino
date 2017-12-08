@@ -1027,7 +1027,7 @@ exports.parseGccCompilerFlags = function(/* String */ compilerFlags)
         if (argument.indexOf("-g") === 0)
             objjcFlags.includeMethodFunctionNames = true;
         else if (argument.indexOf("-O") === 0) {
-            objjcFlags.inlineMsgSendFunctions = true;
+            objjcFlags.compress = true; // This is not used in the compiler option dictionary but we add it here as it is also done if compiling from command line.
             // FIXME: currently we are sending in '-O2' when we want InlineMsgSend. Here we only check if it is '-O...'.
             // Maybe we should have some other option for this
             if (argument.length > 2)
@@ -1052,6 +1052,11 @@ exports.parseGccCompilerFlags = function(/* String */ compilerFlags)
                 includeUrl = includeUrl.substring(1, includeUrl.length - 1);
 
             (objjcFlags.includeFiles || (objjcFlags.includeFiles = [])).push(includeUrl);
+        }
+        else if (argument.indexOf("--inline-msg-send") === 0)
+        {
+            // This option is if you only want to inline message send functions
+            objjcFlags.inlineMsgSendFunctions = true;
         }
 /*        else if (argument.indexOf("-I") === 0) {
             var includeUrl = argument.substring(2),

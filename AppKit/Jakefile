@@ -37,7 +37,7 @@ appKitTask = framework ("AppKit", function(appKitTask)
         appKitTask.setCompilerFlags("-O2 " + INCLUDES);
     }
     else
-        appKitTask.setCompilerFlags("-DDEBUG -g -S " + INCLUDES);
+        appKitTask.setCompilerFlags("-DDEBUG -g -S --inline-msg-send " + INCLUDES);
 });
 
 $BUILD_CJS_CAPPUCCINO_APPKIT = FILE.join($BUILD_CJS_CAPPUCCINO_FRAMEWORKS, "AppKit");
