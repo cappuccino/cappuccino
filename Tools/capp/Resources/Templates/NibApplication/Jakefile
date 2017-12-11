@@ -38,7 +38,7 @@ app (projectName, function(task)
     task.setInfoPlistPath("Info.plist");
 
     if (configuration === "Debug")
-        task.setCompilerFlags("-DDEBUG -g");
+        task.setCompilerFlags("-DDEBUG -g -S --inline-msg-send");
     else
         task.setCompilerFlags("-O2");
 });

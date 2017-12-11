@@ -772,6 +772,7 @@ var STATIC_MAGIC_NUMBER     = "@STATIC",
     MARKER_TEXT             = "t",
     MARKER_IMPORT_STD       = 'I',
     MARKER_IMPORT_LOCAL     = 'i';
+    MARKER_SOURCE_MAP       = 'S';
 
 function decompileStaticFile(/*Bundle*/ aBundle, /*String*/ aString, /*String*/ aPath)
 {

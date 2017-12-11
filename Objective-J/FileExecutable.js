@@ -248,7 +248,8 @@ function decompile(/*String*/ aString, /*CFURL*/ aURL)
 */
     var marker = NULL,
         code = "",
-        dependencies = [];
+        dependencies = [],
+        sourceMap;
 
     while (marker = stream.getMarker())
     {
@@ -262,14 +263,17 @@ function decompile(/*String*/ aString, /*CFURL*/ aURL)
 
         else if (marker === MARKER_IMPORT_LOCAL)
             dependencies.push(new FileDependency(new CFURL(text), YES));
+
+        else if (marker === MARKER_SOURCE_MAP)
+            sourceMap = text;
     }
 
     var fn = FileExecutable._lookupCachedFunction(aURL);
 
     if (fn)
-        return new Executable(code, dependencies, aURL, fn);
+        return new Executable(code, dependencies, aURL, fn, null, null, sourceMap);
 
-    return new Executable(code, dependencies, aURL);
+    return new Executable(code, dependencies, aURL, null, null, null, sourceMap);
 }
 
 var FunctionCache = { };
