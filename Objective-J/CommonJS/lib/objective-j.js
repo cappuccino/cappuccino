@@ -91,7 +91,7 @@ exports.run = function(args)
 
         if (argv[0] === "--help" || argv[0] === "-h")
         {
-            print("Usage (objj): " + args[0] + " [options] [--] files...");
+            print("Usage (objj): " + args[0].split("/").pop() + " [options] [--] files...");
             print("  -v, --version                       print the current version of objj");
             print("  -I, --objj-include-paths            include a specific framework paths")
             print("  -h, --help                          print this help");
@@ -150,6 +150,35 @@ exports.run = function(args)
                     flags.inlineMsgSendFunctions = true;
                     ObjectiveJ.FileExecutable.setCurrentCompilerFlags(flags);
                     break;
+
+                case "-g":
+                case "--include-debug-symbols":
+                    argv.shift();
+                    var flags = ObjectiveJ.FileExecutable.currentCompilerFlags();
+                    flags.includeMethodFunctionNames = true;
+                    ObjectiveJ.FileExecutable.setCurrentCompilerFlags(flags);
+                    break;
+
+                case "-T":
+                case "--dont-include-type-signatures":
+                    argv.shift();
+                    var flags = ObjectiveJ.FileExecutable.currentCompilerFlags();
+                    flags.includeIvarTypeSignatures = true;
+                    flags.includeMethodArgumentTypeSignatures = true;
+                    ObjectiveJ.FileExecutable.setCurrentCompilerFlags(flags);
+                    break;
+
+                case "-O2":
+                case "--inline-msg-send":
+                    argv.shift();
+                    var flags = ObjectiveJ.FileExecutable.currentCompilerFlags();
+                    flags.inlineMsgSendFunctions = true;
+                    ObjectiveJ.FileExecutable.setCurrentCompilerFlags(flags);
+                    break;
+
+                default:
+                    print(args[0].split("/").pop() + " illegal option " + argv[0]);
+                    OS.exit(1);
             }
         }
     }

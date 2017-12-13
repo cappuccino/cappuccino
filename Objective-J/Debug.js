@@ -275,4 +275,4 @@ GLOBAL(objj_debug_typecheck) = function(expectedType, object)
         actualType = typeof object;
 
     throw ("expected=" + expectedType + ", actual=" + actualType);
-}
+};

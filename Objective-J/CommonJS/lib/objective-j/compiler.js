@@ -193,6 +193,11 @@ function resolveFlags(args)
         else if (argument.indexOf("-G") === 0)
             objjcFlags.generate = true;
 
+        else if (argument.indexOf("--inline-msg-send") === 0)
+        {
+            // This option is if you only want to inline message send functions and not compress
+            objjcFlags.inlineMsgSendFunctions = true;
+        }
         else
             filePaths.push(argument);
     }

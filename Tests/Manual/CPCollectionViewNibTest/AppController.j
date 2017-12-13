@@ -7,7 +7,6 @@
  */
 
 @import <Foundation/CPObject.j>
-//@import "CPCollectionView.j"
 
 CPLogRegister(CPLogConsole);
 
@@ -42,7 +41,8 @@ CPLogRegister(CPLogConsole);
 
     [collectionView registerForDraggedTypes:[@"DragType"]];
     [emptyCollectionView registerForDraggedTypes:[@"DragType"]];
-    //[theWindow setFullPlatformWindow:YES];
+
+    [collectionView setBackgroundColors:@[[CPColor redColor], [CPColor greenColor]]];
 }
 
 - (IBAction)setPrototypeItem:(id)sender

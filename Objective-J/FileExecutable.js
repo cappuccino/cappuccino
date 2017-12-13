@@ -41,11 +41,138 @@ function FileExecutable(/*CFURL|String*/ aURL, /*Dictionary*/ aFilenameTranslate
         executable = NULL,
         extension = aURL.pathExtension().toLowerCase();
 
+    this._hasExecuted = NO;
+
     if (fileContents.match(/^@STATIC;/))
         executable = decompile(fileContents, aURL);
     else if ((extension === "j" || !extension) && !fileContents.match(/^{/))
     {
-        var compiler = exports.ObjJCompiler.compileFileDependencies(fileContents, aURL, currentCompilerFlags || {});
+        var compilerOptions = currentCompilerFlags || {};
+
+        this.cachedIncludeFileSearchResultsContent = {};
+        this.cachedIncludeFileSearchResultsURL = {};
+        compile(this, fileContents, aURL, compilerOptions, aFilenameTranslateDictionary);
+        return;
+    }
+    else
+        executable = new Executable(fileContents, [], aURL);
+
+    Executable.apply(this, [executable.code(), executable.fileDependencies(), aURL, executable._function, executable._compiler, aFilenameTranslateDictionary]);
+}
+
+exports.FileExecutable = FileExecutable;
+
+FileExecutable.prototype = new Executable();
+
+var compile = function(self, fileContents, aURL, compilerOptions, aFilenameTranslateDictionary)
+{
+    var acornOptions = compilerOptions.acornOptions || (compilerOptions.acornOptions = {});
+
+    acornOptions.preprocessGetIncludeFile = function(filePath, isQuoted) {
+        var referenceURL = new CFURL(".", aURL), // Remove the filename from the url
+            includeURL = new CFURL(filePath);
+
+        var cacheUID = (isQuoted && referenceURL || "") + includeURL,
+            cachedResult = self.cachedIncludeFileSearchResultsContent[cacheUID];
+
+        if (!cachedResult) {
+            var isAbsoluteURL = (includeURL instanceof CFURL) && includeURL.scheme(),
+                compileWhenCompleted = NO;
+
+            function completed(/*StaticResource*/ aStaticResource) {
+                var includeString = aStaticResource && aStaticResource.contents(),
+                    lastCharacter = includeString && includeString.charCodeAt(includeString.length - 1);
+
+                if (includeString == null) throw new Error("Can't load file " + includeURL);
+                // Add a new line if the last character is not. If the last thing is a '#define' of other preprocess
+                // token it will not be handled correctly if we don't have a end of line at the end.
+                if (lastCharacter !== 10 && lastCharacter !== 13 && lastCharacter !== 8232 && lastCharacter !== 8233) {
+                    includeString += '\n';
+                }
+
+                self.cachedIncludeFileSearchResultsContent[cacheUID] = includeString;
+                self.cachedIncludeFileSearchResultsURL[cacheUID] = aStaticResource.URL();
+
+                if (compileWhenCompleted)
+                    compile(self, fileContents, aURL, compilerOptions, aFilenameTranslateDictionary);
+            }
+
+            if (isQuoted || isAbsoluteURL)
+            {
+                if (!isAbsoluteURL)
+                    includeURL = new CFURL(includeURL, new CFURL((aFilenameTranslateDictionary[aURL.lastPathComponent()] || "."), referenceURL));
+
+                StaticResource.resolveResourceAtURL(includeURL, NO, completed);
+            }
+            else
+                StaticResource.resolveResourceAtURLSearchingIncludeURLs(includeURL, completed);
+
+            // Now we try to get the cached result again. If we get it then the completed function has already
+            // executed and we can return the include dictionary.
+            cachedResult = self.cachedIncludeFileSearchResultsContent[cacheUID];
+        }
+
+        if (cachedResult) {
+            return {include: cachedResult, sourceFile: self.cachedIncludeFileSearchResultsURL[cacheUID]};
+        } else {
+            // When the file is not available (resolved) return null to tell the parser to throw an exception to exit
+            // Also tell the completed function to compile when finished.
+            compileWhenCompleted = YES
+            return null;
+        }
+    };
+
+    var includeFiles = currentCompilerFlags && currentCompilerFlags.includeFiles,
+        allPreIncludesResolved = true;
+
+    acornOptions.preIncludeFiles = [];
+
+    if (includeFiles) for (var i = 0, size = includeFiles.length; i < size; i++)
+    {
+        var includeFileUrl = makeAbsoluteURL(includeFiles[i]);
+
+        try
+        {
+            // try to get all pre include files that acorn will parse before the file from 'aURL'
+            var aResource = StaticResource.resourceAtURL(makeAbsoluteURL(includeFileUrl));
+        }
+        catch (e)
+        {
+            // Ok, the file is not available (resolved). Resolve all of the files and try again when available.
+            StaticResource.resolveResourcesAtURLs(includeFiles.map(function(u) {return makeAbsoluteURL(u)}), function() {
+                compile(self, fileContents, aURL, compilerOptions, aFilenameTranslateDictionary);
+            });
+
+            allPreIncludesResolved = false;
+            break;
+        }
+
+        if (aResource)
+        {
+            if (aResource.isNotFound()) {
+                throw new Error("--include file not found " + includeUrl);
+            }
+
+            var includeString = aResource.contents();
+            var lastCharacter = includeString.charCodeAt(includeString.length - 1);
+
+            // Add a new line if the last character is not. If the last thing is a '#define' of other preprocess
+            // token it will not be handled correctly if we don't have a end of line at the end.
+            if (lastCharacter !== 10 && lastCharacter !== 13 && lastCharacter !== 8232 && lastCharacter !== 8233)
+                includeString += '\n';
+            acornOptions.preIncludeFiles.push({include: includeString, sourceFile: includeFileUrl.toString()});
+        }
+    }
+
+    if (allPreIncludesResolved)
+    {
+        var compiler = exports.ObjJCompiler.compileFileDependencies(fileContents, aURL, compilerOptions);
+        var warningsAndErrors = compiler.warningsAndErrors;
+
+        // Kind of a hack but if we get a file not found error on a #include the get include function above should have asked for the resource
+        // so we should be able to just bail out and wait for the the next call to compile when the include file is loaded (resolved)
+        if (warningsAndErrors && warningsAndErrors.length === 1 && warningsAndErrors[0].message.indexOf("file not found") > -1)
+            return;
 
         if (FileExecutable.printWarningsAndErrors(compiler, exports.messageOutputFormatInXML))
             throw "Compilation error";
@@ -53,19 +180,25 @@ function FileExecutable(/*CFURL|String*/ aURL, /*Dictionary*/ aFilenameTranslate
         var fileDependencies = compiler.dependencies.map(function (aFileDep) {
             return new FileDependency(new CFURL(aFileDep.url), aFileDep.isLocal);
         });
-        executable = new Executable(compiler.jsBuffer ? compiler.jsBuffer.toString() : null, fileDependencies, compiler.URL, null, compiler);
     }
-    else
-        executable = new Executable(fileContents, [], aURL);
 
-    Executable.apply(this, [executable.code(), executable.fileDependencies(), aURL, executable._function, executable._compiler, aFilenameTranslateDictionary]);
-
-    this._hasExecuted = NO;
+    if (self.isExecutableCantStartLoadYetFileDependencies())
+    {
+        // Include files that was not loaded has cancelled the compiler so we are already an initialized Executable.
+        // Just set the status so we can start loading the file dependencies.
+        self.setFileDependencies(fileDependencies);
+        self.setExecutableUnloadedFileDependencies();
+        self.loadFileDependencies();
+    }
+    else if (self._fileDependencyStatus == null)
+    {
+        // Are we still a FileExecutable. Call 'super' init method to make us a initilized subclass of an Executable.
+        executable = new Executable(compiler && compiler.jsBuffer ? compiler.jsBuffer.toString() : null, fileDependencies, aURL, null, compiler);
+        Executable.apply(self, [executable.code(), executable.fileDependencies(), aURL, executable._function, executable._compiler, aFilenameTranslateDictionary]);
+    }
 }
 
-exports.FileExecutable = FileExecutable;
-
-FileExecutable.prototype = new Executable();
+DISPLAY_NAME(compile);
 
 #ifdef COMMONJS
 FileExecutable.allFileExecutables = function()
@@ -115,7 +248,8 @@ function decompile(/*String*/ aString, /*CFURL*/ aURL)
 */
     var marker = NULL,
         code = "",
-        dependencies = [];
+        dependencies = [],
+        sourceMap;
 
     while (marker = stream.getMarker())
     {
@@ -129,14 +263,17 @@ function decompile(/*String*/ aString, /*CFURL*/ aURL)
 
         else if (marker === MARKER_IMPORT_LOCAL)
             dependencies.push(new FileDependency(new CFURL(text), YES));
+
+        else if (marker === MARKER_SOURCE_MAP)
+            sourceMap = text;
     }
 
     var fn = FileExecutable._lookupCachedFunction(aURL);
 
     if (fn)
-        return new Executable(code, dependencies, aURL, fn);
+        return new Executable(code, dependencies, aURL, fn, null, null, sourceMap);
 
-    return new Executable(code, dependencies, aURL);
+    return new Executable(code, dependencies, aURL, null, null, null, sourceMap);
 }
 
 var FunctionCache = { };
@@ -159,30 +296,7 @@ FileExecutable.setCurrentGccCompilerFlags = function(/*String*/ compilerFlags)
 
     currentGccCompilerFlags = compilerFlags;
 
-    var args = compilerFlags.split(" "),
-        count = args.length,
-        objjcFlags = {};
-
-    for (var index = 0; index < count; ++index)
-    {
-        var argument = args[index];
-
-        if (argument.indexOf("-g") === 0)
-            objjcFlags.includeMethodFunctionNames = true;
-        else if (argument.indexOf("-O") === 0) {
-            objjcFlags.inlineMsgSendFunctions = true;
-            // FIXME: currently we are sending in '-O2' when we want InlineMsgSend. Here we only check if it is '-O...'.
-            // Maybe we should have some other option for this
-            if (argument.length > 2)
-                objjcFlags.inlineMsgSendFunctions = true;
-        }
-        //else if (argument.indexOf("-G") === 0)
-            //objjcFlags |= ObjJAcornCompiler.Flags.Generate;
-        else if (argument.indexOf("-T") === 0) {
-            objjcFlags.includeIvarTypeSignatures = false;
-            objjcFlags.includeMethodArgumentTypeSignatures = false;
-        }
-    }
+    var objjcFlags = exports.ObjJCompiler.parseGccCompilerFlags(compilerFlags);
 
     FileExecutable.setCurrentCompilerFlags(objjcFlags);
 }

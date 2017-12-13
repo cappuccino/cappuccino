@@ -54,6 +54,7 @@
 @class CPToolbar
 @class CPWindowController
 @class _CPWindowFrameAnimation
+@class _CPWindowFrameAnimationDelegate
 
 @global CPApp
 @global _CPPlatformWindowWillCloseNotification
@@ -178,7 +179,7 @@ var CPWindowActionMessageKeys = [
     BOOL                                _isVisible;
     BOOL                                _hasBeenOrderedIn @accessors;
     BOOL                                _isMiniaturized;
-    BOOL                                _isAnimating;
+    BOOL                                _isAnimating @accessors(setter=_setAnimating:);
     BOOL                                _hasShadow;
     BOOL                                _isMovableByWindowBackground;
     BOOL                                _isMovable;
@@ -261,6 +262,7 @@ var CPWindowActionMessageKeys = [
     CPWindow                            _parentView;
     BOOL                                _isSheet;
     _CPWindowFrameAnimation             _frameAnimation;
+    _CPWindowFrameAnimationDelegate     _frameAnimationDelegate;
 }
 
 + (void)initialize
@@ -345,6 +347,8 @@ CPTexturedBackgroundWindowMask
         _isSheet = NO;
         _sheetContext = nil;
         _parentView = nil;
+        _frameAnimation = nil;
+        _frameAnimationDelegate = nil;
 
         // Set up our window number.
         _windowNumber = [CPApp._windows count];
@@ -751,7 +755,7 @@ CPTexturedBackgroundWindowMask
     {
         [_frameAnimation stopAnimation];
         _frameAnimation = [[_CPWindowFrameAnimation alloc] initWithWindow:self targetFrame:frame];
-
+        [_frameAnimation setDelegate:[self _frameAnimationDelegate]];
         [_frameAnimation startAnimation];
     }
     else
@@ -811,6 +815,13 @@ CPTexturedBackgroundWindowMask
         [_platformWindow setContentRect:aFrame];
 }
 
+- (id)_frameAnimationDelegate
+{
+    if (_frameAnimationDelegate == nil)
+        _frameAnimationDelegate = [[_CPWindowFrameAnimationDelegate alloc] initWithWindow:self];
+
+    return _frameAnimationDelegate;
+}
 /*
     Constrain a frame so that the window remains at least partially visible on screen,
     moving or resizing the frame as necessary.
@@ -2084,6 +2095,25 @@ CPTexturedBackgroundWindowMask
 
             [self _handleTrackingAreaEvent:anEvent];
     }
+}
+
+- (void)_startLiveResize
+{
+    [[CPNotificationCenter defaultCenter]
+        postNotificationName:CPWindowWillStartLiveResizeNotification
+                      object:self];
+}
+
+- (void)_endLiveResize
+{
+    [[CPNotificationCenter defaultCenter]
+        postNotificationName:CPWindowDidEndLiveResizeNotification
+                      object:self];
+}
+
+- (BOOL)_inLiveResize
+{
+    return [_windowView _isTracking];
 }
 
 /*!
@@ -3853,13 +3883,6 @@ var interpolate = function(fromValue, toValue, progress)
     return self;
 }
 
-- (void)startAnimation
-{
-    [super startAnimation];
-
-    _window._isAnimating = YES;
-}
-
 - (void)setCurrentProgress:(float)aProgress
 {
     [super setCurrentProgress:aProgress];
@@ -3867,7 +3890,7 @@ var interpolate = function(fromValue, toValue, progress)
     var value = [self currentValue];
 
     if (value == 1.0)
-        _window._isAnimating = NO;
+        [_window _setAnimating:NO];
 
     var newFrame = CGRectMake(
             interpolate(CGRectGetMinX(_startFrame), CGRectGetMinX(_targetFrame), value),
@@ -3880,6 +3903,41 @@ var interpolate = function(fromValue, toValue, progress)
 
 @end
 
+@implementation _CPWindowFrameAnimationDelegate : CPObject
+{
+    CPWindow _window;
+}
+
+- (id)initWithWindow:(CPWindow)aWindow
+{
+    self = [super init];
+
+    _window = aWindow;
+
+    return self;
+}
+
+- (BOOL)animationShouldStart:(CPAnimation)animation
+{
+    [_window _setAnimating:YES];
+    [_window _startLiveResize];
+
+    return YES;
+}
+
+- (void)animationDidStop:(CPAnimation)animation
+{
+    [_window _setAnimating:NO];
+    [_window _endLiveResize];
+}
+
+- (void)animationDidEnd:(CPAnimation)animation
+{
+    [_window _setAnimating:NO];
+    [_window _endLiveResize];
+}
+
+@end
 
 @implementation CPWindow (CPDraggingAdditions)
 

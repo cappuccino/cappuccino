@@ -197,6 +197,27 @@ StaticResource.prototype.resourceAtURL = function(/*CFURL|String*/ aURL, /*BOOL*
     return StaticResource.resourceAtURL(new CFURL(aURL, this.URL()), resolveAsDirectoriesIfNecessary);
 };
 
+/*!
+ *  Returns an object with all the resources. Can not be directories.
+ */
+StaticResource.resolveResourcesAtURLs = function(/*Array of CFURL|String*/ URLs, /*Function*/ aCallback)
+{
+    var count = URLs.length,
+        allResources = {};
+
+    for (var i = 0, size = count; i < size; i++)
+    {
+        var url = URLs[i];
+
+        StaticResource.resolveResourceAtURL(url, NO, function(aResource) {
+            allResources[url] = aResource;
+
+            if (--count === 0)
+                aCallback(allResources);
+        });
+    }
+}
+
 StaticResource.resolveResourceAtURL = function(/*CFURL|String*/ aURL, /*BOOL*/ isDirectory, /*Function*/ aCallback, /*Dictionary*/ aFilenameTranslateDictionary)
 {
     aURL = makeAbsoluteURL(aURL).absoluteURL();

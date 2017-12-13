@@ -1,9 +1,9 @@
 /*
  * Jakefile
- * __project.name__
+ * CPAnimationContextTest
  *
- * Created by __user.name__ on __project.date__.
- * Copyright __project.year__, __organization.name__ All rights reserved.
+ * Created by You on June 28, 2017.
+ * Copyright 2017, Your Company All rights reserved.
  */
 
 var ENV = require("system").env,
@@ -14,7 +14,7 @@ var ENV = require("system").env,
     app = require("cappuccino/jake").app,
     configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Debug",
     OS = require("os"),
-    projectName = "__project.nameasidentifier__";
+    projectName = "CPAnimationContextTest";
 
 app (projectName, function(task)
 {
@@ -23,22 +23,22 @@ app (projectName, function(task)
     if (configuration === "Debug")
         ENV["OBJJ_INCLUDE_PATHS"] = FILE.join(ENV["OBJJ_INCLUDE_PATHS"], configuration);
 
-    task.setBuildIntermediatesPath(FILE.join("Build", "__project.nameasidentifier__.build", configuration));
+    task.setBuildIntermediatesPath(FILE.join("Build", "CPAnimationContextTest.build", configuration));
     task.setBuildPath(FILE.join("Build", configuration));
 
-    task.setProductName("__project.name__");
-    task.setIdentifier("__project.identifier__");
+    task.setProductName("CPAnimationContextTest");
+    task.setIdentifier("com.yourcompany.CPAnimationContextTest");
     task.setVersion("1.0");
-    task.setAuthor("__organization.name__");
-    task.setEmail("__organization.email__");
-    task.setSummary("__project.name__");
+    task.setAuthor("Your Company");
+    task.setEmail("feedback @nospam@ yourcompany.com");
+    task.setSummary("CPAnimationContextTest");
     task.setSources(new FileList("**/*.j").exclude(FILE.join("Build", "**")).exclude(FILE.join("Frameworks", "Source", "**")));
     task.setResources(new FileList("Resources/**"));
     task.setIndexFilePath("index.html");
     task.setInfoPlistPath("Info.plist");
 
     if (configuration === "Debug")
-        task.setCompilerFlags("-DDEBUG -g -S --inline-msg-send");
+        task.setCompilerFlags("-DDEBUG -g");
     else
         task.setCompilerFlags("-O2");
 });
@@ -85,13 +85,13 @@ task ("deploy", ["release"], function()
 task ("desktop", ["release"], function()
 {
     FILE.mkdirs(FILE.join("Build", "Desktop", projectName));
-    require("cappuccino/nativehost").buildNativeHost(FILE.join("Build", "Release", projectName), FILE.join("Build", "Desktop", projectName, "__project.nameasidentifier__.app"));
+    require("cappuccino/nativehost").buildNativeHost(FILE.join("Build", "Release", projectName), FILE.join("Build", "Desktop", projectName, "CPAnimationContextTest.app"));
     printResults("Desktop")
 });
 
 task ("run-desktop", ["desktop"], function()
 {
-    OS.system([FILE.join("Build", "Desktop", projectName, "__project.nameasidentifier__.app", "Contents", "MacOS", "NativeHost"), "-i"]);
+    OS.system([FILE.join("Build", "Desktop", projectName, "CPAnimationContextTest.app", "Contents", "MacOS", "NativeHost"), "-i"]);
 });
 
 function printResults(configuration)

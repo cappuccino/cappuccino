@@ -64,6 +64,8 @@ _CPWindowViewResizeSlop = 3;
     CGRect      _cachedScreenFrame;
 
     CPView      _sheetShadowView;
+
+    BOOL        _isTracking @accessors(getter=_isTracking);
 }
 
 + (CGRect)contentRectForFrameRect:(CGRect)aFrameRect
@@ -155,7 +157,7 @@ _CPWindowViewResizeSlop = 3;
         _styleMask = aStyleMask;
         _resizeIndicatorOffset = CGSizeMakeZero();
         _toolbarOffset = CGSizeMakeZero();
-
+         _isTracking = NO;
         [self _updateCSSBorder];
     }
 
@@ -486,6 +488,8 @@ _CPWindowViewResizeSlop = 3;
     if (type === CPLeftMouseUp)
     {
         _cachedScreenFrame = nil;
+        _isTracking = NO;
+        [_window _endLiveResize];
         return;
     }
 
@@ -502,6 +506,12 @@ _CPWindowViewResizeSlop = 3;
     }
     else if (type === CPLeftMouseDragged)
     {
+        if (!_isTracking)
+        {
+            _isTracking = YES;
+            [_window _startLiveResize];
+        }
+
         var deltaX = globalLocation.x - _mouseDraggedPoint.x,
             deltaY = globalLocation.y - _mouseDraggedPoint.y,
             startX = CGRectGetMinX(_cachedFrame),

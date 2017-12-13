@@ -597,7 +597,7 @@ CFPropertyList.propertyListFromXML = function(/*String | XMLNode*/ aStringOrXMLN
                                             object = decodeHTMLComponent(FIRST_CHILD(XMLNode) ? TEXT_CONTENT(XMLNode) : "");
 
                                         break;
-                                        
+
             case PLIST_DATE:            var timestamp = Date.parseISO8601(TEXT_CONTENT(XMLNode));
                                         object = isNaN(timestamp) ? new Date() : new Date(timestamp);
                                         break;
@@ -667,4 +667,4 @@ GLOBAL(CPPropertyListCreateFromData) = function(/*CFData*/ data, /*Format*/ aFor
 GLOBAL(CPPropertyListCreateData) = function(/*PropertyList*/ aPropertyList, /*Format*/ aFormat)
 {
     return CFPropertyList.dataFromPropertyList(aPropertyList, aFormat);
-}
+};

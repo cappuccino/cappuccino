@@ -3096,10 +3096,15 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (CPView)dragViewForRowsWithIndexes:(CPIndexSet)theDraggedRows tableColumns:(CPArray)theTableColumns event:(CPEvent)theDragEvent offset:(CGPoint)dragViewOffset
 {
-    var bounds = [self bounds],
+    var firstRowFrame  = [self frameOfDataViewAtColumn:0 row:[theDraggedRows firstIndex]],
+        lastRowFrame   = [self frameOfDataViewAtColumn:0 row:[theDraggedRows lastIndex]],
+        dragViewHeight = CGRectGetMaxY(lastRowFrame) - CGRectGetMinY(firstRowFrame);
+
+    var bounds = CGRectMake(0, 0, CGRectGetWidth([self bounds]), dragViewHeight),
         dragView = [[CPView alloc] initWithFrame:bounds];
 
     [dragView setAlphaValue:0.7];
+//    [dragView setBackgroundColor:[CPColor colorWithWhite:1 alpha:0.5]];
 
     // We have to fetch all the data views for the selected rows and columns
     // After that we can copy these add them to a transparent drag view and use that drag view
@@ -3107,7 +3112,11 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     [self _enumerateViewsInRows:theDraggedRows tableColumns:theTableColumns usingBlock:function(v, row, tableColumn, stop)
     {
         var column = [_tableColumns indexOfObjectIdenticalTo:tableColumn],
-            newDataView = [self preparedViewAtColumn:column row:row];
+            newDataView = [self preparedViewAtColumn:column row:row],
+            origin = [newDataView frame].origin;
+
+        origin.y -= CGRectGetMinY(firstRowFrame);
+        [newDataView setFrameOrigin:origin];
 
         [dragView addSubview:newDataView];
     }];
@@ -4600,7 +4609,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
                 }
 
                 var bounds = [view bounds],
-                    viewLocation = CGPointMake(aPoint.x - CGRectGetWidth(bounds) / 2 + offset.x, aPoint.y - CGRectGetHeight(bounds) / 2 + offset.y);
+                    firstRowFrame = [self frameOfDataViewAtColumn:0 row:[_draggedRowIndexes firstIndex]],
+                    viewLocation = CGPointMake(aPoint.x - CGRectGetWidth(bounds) / 2 + offset.x, aPoint.y - CGRectGetHeight(bounds) / 2 + offset.y + CGRectGetMinY(firstRowFrame));
+
                 [self dragView:view at:viewLocation offset:CGPointMakeZero() event:[CPApp currentEvent] pasteboard:pboard source:self slideBack:YES];
                 _startTrackingPoint = nil;
 
