@@ -49,4 +49,4 @@ FileDependency.prototype.toMarkedString = function()
 FileDependency.prototype.toString = function()
 {
     return (this.isLocal() ? "LOCAL: " : "STD: ") + this.URL();
-}
+};

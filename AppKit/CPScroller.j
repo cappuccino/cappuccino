@@ -316,7 +316,7 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
     // The ordering of these tests is important.  We check the knob and
     // page rects first since they may overlap with the arrows.
 
-    if (![self hasThemeState:CPThemeStateSelected])
+    if (![self hasThemeState:CPThemeStateSelected] && ![self hasThemeState:CPThemeStateScrollViewLegacy])
         return CPScrollerNoPart;
 
     if (CGRectContainsPoint([self rectForPart:CPScrollerKnob], aPoint))

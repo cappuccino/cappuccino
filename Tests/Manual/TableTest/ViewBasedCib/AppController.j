@@ -203,6 +203,11 @@ CPLogRegister(CPLogConsole)
     return [height intValue];
 }
 
+- (void)tableView:(CPTableView)aTableView didDragTableColumn:(CPTableColumn)aTableColumn
+{
+    CPLog.debug(_cmd + aTableColumn);
+}
+
 // CELL VIEWS ACTIONS
 - (IBAction)_sliderAction:(id)sender
 {
