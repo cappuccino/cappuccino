@@ -95,13 +95,16 @@ CPSelectByWord      = 1;
 CPSelectByParagraph = 2;
 
 var kDelegateRespondsTo_textShouldBeginEditing                                          = 1 << 0,
-    kDelegateRespondsTo_textView_doCommandBySelector                                    = 1 << 1,
-    kDelegateRespondsTo_textView_willChangeSelectionFromCharacterRange_toCharacterRange = 1 << 2,
-    kDelegateRespondsTo_textView_shouldChangeTextInRange_replacementString              = 1 << 3,
-    kDelegateRespondsTo_textView_shouldChangeTypingAttributes_toAttributes              = 1 << 4,
-    kDelegateRespondsTo_textView_textDidChange                                          = 1 << 5,
-    kDelegateRespondsTo_textView_didChangeSelection                                     = 1 << 6,
-    kDelegateRespondsTo_textView_didChangeTypingAttributes                              = 1 << 7;
+    kDelegateRespondsTo_textShouldEndEditing                                            = 1 << 1
+    kDelegateRespondsTo_textView_doCommandBySelector                                    = 1 << 2,
+    kDelegateRespondsTo_textView_willChangeSelectionFromCharacterRange_toCharacterRange = 1 << 3,
+    kDelegateRespondsTo_textView_shouldChangeTextInRange_replacementString              = 1 << 4,
+    kDelegateRespondsTo_textView_shouldChangeTypingAttributes_toAttributes              = 1 << 5,
+    kDelegateRespondsTo_textView_textDidChange                                          = 1 << 6,
+    kDelegateRespondsTo_textView_didChangeSelection                                     = 1 << 7,
+    kDelegateRespondsTo_textView_didChangeTypingAttributes                              = 1 << 8,
+    kDelegateRespondsTo_textView_textDidBeginEditing                                    = 1 << 9,
+    kDelegateRespondsTo_textView_textDidEndEditing                                      = 1 << 10;
 
 @class _CPCaret;
 
@@ -494,11 +497,20 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         if ([_delegate respondsToSelector:@selector(textViewDidChangeTypingAttributes:)])
             _delegateRespondsToSelectorMask |= kDelegateRespondsTo_textView_didChangeTypingAttributes;
 
+        if ([_delegate respondsToSelector:@selector(textDidBeginEditing:)])
+            _delegateRespondsToSelectorMask |= kDelegateRespondsTo_textView_textDidBeginEditing;
+
+        if ([_delegate respondsToSelector:@selector(textDidEndEditing:)])
+            _delegateRespondsToSelectorMask |= kDelegateRespondsTo_textView_textDidEndEditing;
+
         if ([_delegate respondsToSelector:@selector(textView:doCommandBySelector:)])
             _delegateRespondsToSelectorMask |= kDelegateRespondsTo_textView_doCommandBySelector;
 
         if ([_delegate respondsToSelector:@selector(textShouldBeginEditing:)])
             _delegateRespondsToSelectorMask |= kDelegateRespondsTo_textShouldBeginEditing;
+
+        if ([_delegate respondsToSelector:@selector(textShouldEndEditing:)])
+            _delegateRespondsToSelectorMask |= kDelegateRespondsTo_textShouldEndEditing;
 
         if ([_delegate respondsToSelector:@selector(textView:willChangeSelectionFromCharacterRange:toCharacterRange:)])
             _delegateRespondsToSelectorMask |= kDelegateRespondsTo_textView_willChangeSelectionFromCharacterRange_toCharacterRange;
