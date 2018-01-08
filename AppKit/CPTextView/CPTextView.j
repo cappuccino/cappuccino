@@ -43,6 +43,7 @@
 
 @protocol CPTextViewDelegate <CPTextDelegate>
 
+@optional
 - (BOOL)textView:(CPTextView)aTextView doCommandBySelector:(SEL)aSelector;
 - (BOOL)textView:(CPTextView)aTextView shouldChangeTextInRange:(CPRange)affectedCharRange replacementString:(CPString)replacementString;
 - (CPDictionary)textView:(CPTextView)textView shouldChangeTypingAttributes:(CPDictionary)oldTypingAttributes toAttributes:(CPDictionary)newTypingAttributes;
