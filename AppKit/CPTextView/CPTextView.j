@@ -2225,7 +2225,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (CPDictionary)_sendDelegateShouldChangeTypingAttributes:(CPDictionary)typingAttributes toAttributes:(CPDictionary)attributes
 {
-    if (!(_delegateRespondsToSelectorMask & kDelegateRespondsTo_textView_doCommandBySelector))
+    if (!(_delegateRespondsToSelectorMask & kDelegateRespondsTo_textView_shouldChangeTypingAttributes_toAttributes))
         return [CPDictionary dictionary];
 
     return [_delegate textView:self shouldChangeTypingAttributes:typingAttributes toAttributes:attributes];
