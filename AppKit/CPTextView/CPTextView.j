@@ -158,6 +158,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     CPString                    _placeholderString;
 
     BOOL                        _firstResponderButNotEditingYet;
+
+    CPRange                     _mouseDownOldSelection;
 }
 
 + (Class)_binderClassForBinding:(CPString)aBinding
@@ -945,6 +947,10 @@ Sets the selection to a range of characters in response to user action.
         if ([self _isFirstResponder])
             [self updateInsertionPointStateAndRestartTimer:((newSelectionRange.length === 0) && ![_caret isBlinking])];
 
+        // If there is no new selection but the pervious mouseDown has saved a selection we check against the saved selection instead
+        if (!isNewSelection && _mouseDownOldSelection)
+            isNewSelection = !CPEqualRanges(newSelectionRange, _mouseDownOldSelection);
+
         if (doOverwrite && _placeholderString === nil && isNewSelection)
             [self setTypingAttributes:[_textStorage attributesAtIndex:CPMaxRange(range) effectiveRange:nil]];
 
@@ -1123,6 +1129,8 @@ Sets the selection to a range of characters in response to user action.
     else
         _scrollingTimer = [CPTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(_supportScrolling:) userInfo:nil repeats:YES];  // fixme: only start if we are in the scrolling areas
 
+    // Save old selection so we can only send textViewDidChangeTypingAttribute notification when selection is changed on mouse up.
+    _mouseDownOldSelection = _selectionRange;
     [self setSelectedRange:setRange affinity:0 stillSelecting:YES];
 }
 
@@ -1165,6 +1173,7 @@ Sets the selection to a range of characters in response to user action.
     _previousSelectionGranularity = [self selectionGranularity];
     [self setSelectionGranularity:CPSelectByCharacter];
     [self setSelectedRange:[self selectedRange] affinity:0 stillSelecting:NO];
+    _mouseDownOldSelection = nil;
 
     var point = [_layoutManager locationForGlyphAtIndex:[self selectedRange].location];
     _stickyXLocation = point.x;
@@ -1710,8 +1719,11 @@ Sets the selection to a range of characters in response to user action.
         [self _enrichEssentialTypingAttributes:_typingAttributes];
     }
 
-    [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeTypingAttributesNotification
-                                                        object:self];
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeTypingAttributesNotification object:self];
+
+    // We always clear the saved selection range from the last mouse down event here.
+    // This is normally done in mouseUp: but this is if that event was never sent.
+    _mouseDownOldSelection = nil;
 }
 
 - (CPDictionary)_attributesForFontPanel
