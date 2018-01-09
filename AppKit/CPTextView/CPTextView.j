@@ -882,17 +882,35 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     }
 }
 
+/*!
+Sets the selection to a range of characters in response to user action.
+@param range The range of characters to select. This range must begin and end on glyph boundaries and not split base glyphs and their nonspacing marks.
+*/
 - (void)setSelectedRange:(CPRange)range
 {
     [_CPNativeInputManager cancelCurrentInputSessionIfNeeded];
     [self setSelectedRange:range affinity:0 stillSelecting:NO];
 }
 
+/*!
+Sets the selection to a range of characters in response to user action.
+@param range The range of characters to select. This range must begin and end on glyph boundaries and not split base glyphs and their nonspacing marks.
+@param affinity The selection affinity for the selection. See selectionAffinity for more information about how affinities work.
+@param selecting YES to behave appropriately for a continuing selection where the user is still dragging the mouse, NO otherwise. If YES, the receiver doesn’t send notifications or remove the marking from its marked text. If NO, the receiver posts an NSTextViewDidChangeSelectionNotification to the default notification center and removes the marking from marked text if the new selection is greater than the marked region.
+*/
 - (void)setSelectedRange:(CPRange)range affinity:(CPSelectionAffinity)affinity stillSelecting:(BOOL)selecting
 {
     [self _setSelectedRange:range affinity:affinity stillSelecting:selecting overwriteTypingAttributes:YES];
 }
 
+
+/*!
+Sets the selection to a range of characters in response to user action.
+@param range The range of characters to select. This range must begin and end on glyph boundaries and not split base glyphs and their nonspacing marks.
+@param affinity The selection affinity for the selection. See selectionAffinity for more information about how affinities work.
+@param selecting YES to behave appropriately for a continuing selection where the user is still dragging the mouse, NO otherwise. If YES, the receiver doesn’t send notifications or remove the marking from its marked text. If NO, the receiver posts an NSTextViewDidChangeSelectionNotification to the default notification center and removes the marking from marked text if the new selection is greater than the marked region.
+@param doOverwrite YES to override typing attributes. NO to not override.
+*/
 - (void)_setSelectedRange:(CPRange)range affinity:(CPSelectionAffinity)affinity stillSelecting:(BOOL)selecting overwriteTypingAttributes:(BOOL)doOverwrite
 {
     var maxRange = CPMakeRange(0, [_layoutManager numberOfCharacters]),
