@@ -1,10 +1,12 @@
-#!/usr/bin/env objj
+#!/usr/bin/env narwhal
 
-require("narwhal").ensureEngine("rhino");
+// Copy of the flatten objj script but this has been made a narwhal script.
+//
+// This works with any ES6 narwhal engine (aka jsc and node).  For now, the
+// only ES6 aspect of this script is the use of a single multiline template
+// string.
 
-@import <Foundation/Foundation.j>
-
-@import "../lib/cappuccino/objj-analysis-tools.j"
+var ObjectiveJRuntimeAnalyzer = require("../lib/cappuccino/objj-analysis-tools.js").ObjectiveJRuntimeAnalyzer;
 
 var FILE = require("file");
 var OS = require("os");
@@ -111,7 +113,8 @@ function main(args)
     flattener.load(mainPath);
 
     print("Loading default theme.");
-    flattener.require("objective-j").objj_eval("("+(function() {
+    // Transpile some objective-j code to js and then run it.
+    flattener.objj_eval(`(function() {
 
         var defaultThemeName = [CPApplication defaultThemeName],
             bundle = nil;
@@ -123,8 +126,7 @@ function main(args)
 
         var blend = [[CPThemeBlend alloc] initWithContentsOfURL:[bundle pathForResource:defaultThemeName + @".blend"]];
         [blend loadWithDelegate:nil];
-
-    })+")")();
+    })`)();
 
     var applicationJSs = flattener.buildApplicationJS();
 
@@ -136,7 +138,7 @@ function main(args)
             print("skipping compression: " + name);
         } else {
             print("compressing: " + name);
-            applicationJS = require("minify/"+options.compressor).compress(applicationJS, { charset : "UTF-8", useServer : true });
+            applicationJS = require("minify/"+options.compressor).compress(applicationJS, { charset : "UTF-8", useServer : false });
         }
         outputPath.join(name).write(applicationJS, { charset : "UTF-8" });
     });
@@ -168,7 +170,7 @@ ObjectiveJFlattener.prototype.buildApplicationJS = function() {
     this.serializeFunctions();
     this.serializeFileCache();
 
-    var additions = FILE.read(FILE.join(FILE.dirname(module.path), "..", "..", "cappuccino", "lib", "cappuccino", "objj-flatten-additions.js"), { charset:"UTF-8" });
+    var additions = FILE.read(FILE.join(FILE.dirname(module.path), "..", "lib", "cappuccino", "objj-flatten-additions.js"), { charset:"UTF-8" });
 
     var applicationJSs = [];
 
@@ -224,7 +226,7 @@ ObjectiveJFlattener.prototype.serializeFunctions = function() {
 
     var _cachedExecutableFunctions = {};
 
-    this.require("objective-j").FileExecutable.allFileExecutables().forEach(function(executable) {
+    this.FileExecutable.allFileExecutables().forEach(function(executable) {
         var path = executable.path();
 
         if (inlineFunctions)
@@ -236,7 +238,7 @@ ObjectiveJFlattener.prototype.serializeFunctions = function() {
             this.functionsBuffer.push("ObjectiveJ.FileExecutable._cacheFunction(new CFURL("+JSON.stringify(relative)+", baseURL),\n"+functionString+");");
         }
 
-        var bundle = this.context.global.CFBundle.bundleContainingURL(path);
+        var bundle = global.CFBundle.bundleContainingURL(path);
         if (bundle && bundle.infoDictionary())
         {
             var executablePath = bundle.executablePath(),
@@ -366,3 +368,5 @@ function rewriteMainHTML(indexHTMLPath) {
     stream.print("\nAdd the following after the Objective-J script tag:");
     stream.print(scriptTagsAfter.replace(/\$1/g, "    "));
 }
+
+main(system.args);
