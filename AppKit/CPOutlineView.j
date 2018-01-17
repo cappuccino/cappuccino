@@ -757,7 +757,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
     var children = itemInfo.children;
 
-    for (var i = [children count]; i >= 0; i--)
+    for (var i = [children count] - 1; i >= 0; i--)
     {
         var child = children[i];
         [self _addPendingItem:child];
@@ -768,7 +768,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
 - (void)_cleanPendingItem
 {
-    for (var i = [_pendingItemToClean count]; i >= 0; i--)
+    for (var i = [_pendingItemToClean count] - 1; i >= 0; i--)
     {
         var item = _pendingItemToClean[i];
 
