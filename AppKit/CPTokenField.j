@@ -531,7 +531,14 @@ CPTokenFieldDeleteButtonType     = 1;
         CPTokenFieldBlurHandler();
 
     if (element.parentNode == [_tokenScrollView documentView]._DOMElement)
+    {
+        // Remove onblur while removing child because it is triggered
+        // when removing child, causing this function to be called infinitely
+        var onblur = CPTokenFieldDOMInputElement.onblur;
+        CPTokenFieldDOMInputElement.onblur = function(){};
         element.parentNode.removeChild(element);
+        CPTokenFieldDOMInputElement.onblur = onblur;   
+    }
 
     // Previosly, we unflagged CPTokenFieldInputDidBlur and CPTokenFieldInputResigning before
     // the call to removeChild. This may result in DOM exceptions in Chrome under certain conditions.
@@ -763,6 +770,7 @@ CPTokenFieldDeleteButtonType     = 1;
                         CPTokenFieldDOMInputElement,
                         CPTokenFieldInputResigning,
                         @ref(CPTokenFieldInputDidBlur));
+            CPTokenFieldDOMInputElement.style.display = "none";
         };
 
         // FIXME make this not onblur
