@@ -58,22 +58,52 @@
 
     label = [[CPTextField alloc] initWithFrame:CGRectMake(15, 15, 400, 24)];
 
-    [label setStringValue:"Respond to the alert dialog with the mouse or the keyboard."];
+    [label setStringValue:"1. Click button: respond to the alert dialog with the mouse or the keyboard."];
     [contentView addSubview:label];
 
-    var button = [CPButton buttonWithTitle:@"Start again using didEnd blocks"];
-
+    var button = [CPButton buttonWithTitle:@"Run using delegate method"];
     [button setTarget:self];
-    [button setAction:@selector(testWithBlocks:)];
-    [button setCenter:[contentView center]];
+    [button setAction:@selector(testWithDelegate:)];
+    [button sizeToFit];
+    var frame = [button frame];
+    frame.origin = CPPointMake(35, CGRectGetMaxY([label frame]) + 20);
+    [button setFrame:frame];
     [contentView addSubview:button];
+
+    var button1 = [CPButton buttonWithTitle:@"Run using didEnd blocks"];
+    [button1 setTarget:self];
+    [button1 setAction:@selector(testWithBlocks:)];
+    [button1 sizeToFit];
+    var frame1 = [button1 frame];
+    frame1.origin = CPPointMake(CGRectGetMaxX(frame) + 20, frame.origin.y);
+    [button1 setFrame:frame1];
+    [contentView addSubview:button1];
+
+    var label2 = [[CPTextField alloc] initWithFrame:CGRectMake(15, CGRectGetMaxY(frame1) + 40, 400, 30)];
+    [label2 setStringValue:"2. Click button to start 10 second delay. Put the browser to the background to test. Sheet should attach to window while browser is in the background."];
+    [label2 setLineBreakMode:CPLineBreakByWordWrapping];
+    [contentView addSubview:label2];
+
+    var button2 = [CPButton buttonWithTitle:@"Start Timer"];
+    [button2 setTarget:self];
+    [button2 setAction:@selector(startAlertTimer:)];
+    [button2 setCenter:[contentView center]];
+    frame = [button2 frame];
+    frame.origin.y = CGRectGetMaxY([label2 frame]) + 20;
+    [button2 setFrame:frame];
+    [contentView addSubview:button2];
 
     [theWindow orderFront:self];
 
-    [self showNextAlertVariation];
-
     // Uncomment the following line to turn on the standard menu bar.
     //[CPMenu setMenuBarVisible:YES];
+}
+
+- (@action)testWithDelegate:(id)sender
+{
+    useBlocks = NO;
+    [self _init];
+    [self showNextAlertVariation];
 }
 
 - (@action)testWithBlocks:(id)sender
@@ -81,6 +111,18 @@
     useBlocks = YES;
     [self _init];
     [self showNextAlertVariation];
+}
+
+- (@action)startAlertTimer:(id)sender
+{
+    [sender setEnabled:NO];
+    [self performSelector:@selector(showAlert:) withObject:sender afterDelay:10.0];
+}
+
+- (void)showAlert:(id)sender
+{
+    var alert = [CPAlert alertWithMessageText:"This sheet should attach to the main window when the browser is in background..." defaultButton:"OK" alternateButton:nil otherButton:nil informativeTextWithFormat:nil];
+    [alert beginSheetModalForWindow:[CPApp mainWindow] didEndBlock:function(alert, returnCode) {[sender setEnabled:YES];}]
 }
 
 - (void)alertDidEnd:(CPAlert)anAlert returnCode:(CPInteger)returnCode
