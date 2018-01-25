@@ -593,7 +593,7 @@ CPTokenFieldDeleteButtonType     = 1;
 {
     // We return super here because objectValue uses this method
     // If we called self we would loop infinitely
-    return [super objectValue];
+    return [super objectValue] || [];
 }
 
 - (CPString)stringValue
@@ -630,7 +630,7 @@ CPTokenFieldDeleteButtonType     = 1;
 
 - (void)setObjectValue:(id)aValue
 {
-    if (aValue !== nil && ![aValue isKindOfClass:[CPArray class]])
+    if (!aValue || ![aValue isKindOfClass:[CPArray class]])
     {
         [super setObjectValue:nil];
         return;
