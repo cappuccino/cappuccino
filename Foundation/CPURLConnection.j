@@ -21,6 +21,7 @@
  */
 
 @import "CPData.j"
+@import "CPError.j"
 @import "CPObject.j"
 @import "CPRunLoop.j"
 @import "CPURLRequest.j"
