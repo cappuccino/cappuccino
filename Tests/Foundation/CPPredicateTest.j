@@ -271,6 +271,14 @@
     pred = [[CPComparisonPredicate alloc] initWithLeftExpression:[CPExpression expressionForConstantValue:nil] rightExpression:[CPExpression expressionForConstantValue:nil] modifier:CPDirectPredicateModifier type:CPBeginsWithPredicateOperatorType options:0];
 
     [self assertFalse:[pred evaluateWithObject:dict] message:"'" + [pred description]  + "' should be false"];
+
+    pred = [[CPComparisonPredicate alloc] initWithLeftExpression:[CPExpression expressionForConstantValue:nil] rightExpression:[CPExpression expressionForConstantValue:nil] modifier:CPDirectPredicateModifier type:CPNotEqualToPredicateOperatorType options:0];
+
+    [self assertFalse:[pred evaluateWithObject:dict] message:"'" + [pred description]  + "' should be false"];
+
+    pred = [[CPComparisonPredicate alloc] initWithLeftExpression:[CPExpression expressionForKeyPath:@"Record1.Age"] rightExpression:[CPExpression expressionForConstantValue:nil] modifier:CPDirectPredicateModifier type:CPNotEqualToPredicateOperatorType options:0];
+
+    [self assertTrue:[pred evaluateWithObject:dict] message:"'" + [pred description]  + "' should be true"+[dict description]];
 }
 
 - (void)testPredicateParsing
