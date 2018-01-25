@@ -754,7 +754,7 @@ var bottomHeight = 71;
 
     _window = [[CPPanel alloc] initWithContentRect:frame styleMask:forceStyle || _defaultWindowStyle];
     [_window setLevel:CPStatusWindowLevel];
-    [_window setPlatformWindow:[[CPApp keyWindow] platformWindow]];
+    [_window setPlatformWindow:[CPApp keyWindow] ? [[CPApp keyWindow] platformWindow] : [CPPlatformWindow primaryPlatformWindow]];
 
     if (_title)
         [_window setTitle:_title];
