@@ -865,8 +865,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     var element = [self _inputElement];
 
-    var isNotTriggeredByRemoveChild = (!CPTextFieldInputResigning);
-
     CPTextFieldInputResigning = YES;
 
     if (CPTextFieldInputIsActive)
@@ -875,13 +873,11 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     if (!CPTextFieldInputDidBlur)
         CPTextFieldBlurHandler();
 
+    if (element.parentNode == _DOMElement)
+        element.parentNode.removeChild(element);
+
     CPTextFieldInputDidBlur = NO;
     CPTextFieldInputResigning = NO;
-
-    // see https://stackoverflow.com/questions/21926083/failed-to-execute-removechild-on-node
-    // for why we need to also check the second condition explicitly
-    if (element.parentNode == _DOMElement && isNotTriggeredByRemoveChild)
-        element.parentNode.removeChild(element);
 
     CPTextFieldInputIsActive = NO;
 
