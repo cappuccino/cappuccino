@@ -2118,7 +2118,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)_reverseSetBinding
 {
-    var binderClass = [[self class] _binderClassForBinding:CPAttributedStringBinding] || [[self class] _binderClassForBinding:CPValueBinding],
+    var binderClass = [[self class] _binderClassForBinding:CPAttributedStringBinding] ||
+                      [[self class] _binderClassForBinding:CPValueBinding],
         theBinding = [binderClass getBinding:CPAttributedStringBinding forObject:self] || [binderClass getBinding:CPValueBinding forObject:self];
 
     if (theBinding && [self isEditable])
