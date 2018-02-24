@@ -2118,20 +2118,11 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)_reverseSetBinding
 {
-    var binderClass  = [[self class] _binderClassForBinding:CPAttributedStringBinding] ||
-                       [[self class] _binderClassForBinding:CPValueBinding],
-        theBinding   = [binderClass getBinding:CPAttributedStringBinding forObject:self] || [binderClass getBinding:CPValueBinding forObject:self];
+    var binderClass = [[self class] _binderClassForBinding:CPAttributedStringBinding] || [[self class] _binderClassForBinding:CPValueBinding],
+        theBinding = [binderClass getBinding:CPAttributedStringBinding forObject:self] || [binderClass getBinding:CPValueBinding forObject:self];
 
-    if (theBinding)
-    {
-        var info           = theBinding._info,
-            observedObject = [info objectForKey:CPObservedObjectKey],
-            keyPath        = [info objectForKey:CPObservedKeyPathKey];
-
-        // update only if the value really changed
-        if ([observedObject valueForKeyPath:keyPath] !== [self objectValue])
-            [theBinding reverseSetValueFor:@"objectValue"];
-    }
+    if (theBinding && [self isEditable])
+        [theBinding reverseSetValueFor:@"objectValue"];
 }
 
 @end
