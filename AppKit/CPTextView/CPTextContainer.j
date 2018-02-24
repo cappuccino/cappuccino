@@ -168,10 +168,7 @@ CPLineMovesUp = 4;
 - (void)setTextView:(CPTextView)aTextView
 {
     if (_textView)
-    {
-        [self _removeAllLines];
         [_textView setTextContainer:nil];
-    }
 
     _textView = aTextView;
 
