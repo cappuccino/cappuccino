@@ -209,7 +209,7 @@
             [[self mutableArrayValueForKeyPath:aKeyPath] removeObjectsAtIndexes:indexes];
 
         else if (changeKind === CPKeyValueChangeReplacement)
-            [[self mutableArrayValueForKeyPath:aKeyPath] replaceObjectAtIndexes:indexes withObjects:newValue];
+            [[self mutableArrayValueForKeyPath:aKeyPath] replaceObjectsAtIndexes:indexes withObjects:newValue];
     }
     else
     {
