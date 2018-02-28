@@ -70,7 +70,7 @@
     return result;
 }
 
-- (BOOL)isEqual:(id)object;
+- (BOOL)isEqual:(id)object
 {
     if (self === object)
         return YES;
