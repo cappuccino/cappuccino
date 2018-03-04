@@ -35,6 +35,11 @@
     CPArray _allowedFileTypes @accessors(property=allowedFileTypes);
 }
 
++ (CPURL)proposedFileURLWithDocumentName:(CPString)aDocumentName
+{
+    return [CPURL URLWithString:aDocumentName];
+}
+
 + (id)savePanel
 {
     return [[CPSavePanel alloc] init];
