@@ -82,8 +82,7 @@
 */
 - (void)encodePoint:(CGPoint)aPoint
 {
-    [self encodeNumber:aPoint.x];
-    [self encodeNumber:aPoint.y];
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
 }
 
 /*!
@@ -92,8 +91,7 @@
 */
 - (void)encodeRect:(CGRect)aRect
 {
-    [self encodePoint:aRect.origin];
-    [self encodeSize:aRect.size];
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
 }
 
 /*!
@@ -102,8 +100,7 @@
 */
 - (void)encodeSize:(CGSize)aSize
 {
-    [self encodeNumber:aSize.width];
-    [self encodeNumber:aSize.height];
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
 }
 
 /*!
