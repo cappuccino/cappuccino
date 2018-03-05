@@ -876,6 +876,10 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     if (element.parentNode == _DOMElement)
         element.parentNode.removeChild(element);
 
+    // see https://stackoverflow.com/questions/21926083/failed-to-execute-removechild-on-node
+    // for why we need to unflag CPTextFieldInputDidBlur an CPTextFieldInputResigning
+    // only after removing the element
+
     CPTextFieldInputDidBlur = NO;
     CPTextFieldInputResigning = NO;
 
