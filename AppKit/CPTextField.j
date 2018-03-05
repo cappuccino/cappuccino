@@ -876,9 +876,11 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     if (element.parentNode == _DOMElement)
         element.parentNode.removeChild(element);
 
-    // see https://stackoverflow.com/questions/21926083/failed-to-execute-removechild-on-node
-    // for why we need to unflag CPTextFieldInputDidBlur an CPTextFieldInputResigning
-    // only after removing the element
+    // Previosly, we unflagged CPTextFieldInputDidBlur and CPTextFieldInputResigning before
+    // the call to removeChild. This resulted in DOM exceptions in Chrome.
+    // See https://stackoverflow.com/questions/21926083/failed-to-execute-removechild-on-node
+    // for why we need to unflag CPTextFieldInputDidBlur and CPTextFieldInputResigning
+    // only after removing the element.
 
     CPTextFieldInputDidBlur = NO;
     CPTextFieldInputResigning = NO;
