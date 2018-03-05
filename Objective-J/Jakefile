@@ -118,7 +118,7 @@ function environmentFlags()
 
 var SHRINKSAFE = require("minify/shrinksafe");
 function compressor(code) {
-    return SHRINKSAFE.compress(code, { charset : "UTF-8", useServer : true });
+    return SHRINKSAFE.compress(code, { charset : "UTF-8", useServer : false });
 }
 
 var headerText = FILE.read("header.txt", { charset : "UTF-8" });
