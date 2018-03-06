@@ -1,5 +1,5 @@
 /*
-   RTFProducer.j
+   _CPRTFProducer.j
 
    Serialize CPAttributedString to a RTF String
 
@@ -189,11 +189,9 @@ function _points2twips(a) { return (a) * 20.0; }
 
     if (val)
     {
-        var size = [val sizeValue];
-
         detail = [CPString stringWithFormat:@"\\paperw%d \\paperh%d",
-                         _points2twips(size.width),
-                         _points2twips(size.height)];
+                         _points2twips(val.width),
+                         _points2twips(val.height)];
 
         result += detail;
     }

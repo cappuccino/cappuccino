@@ -336,7 +336,7 @@ FIXME: Do we need this?
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
-    return [aCoder decodeNumber];
+    return [aCoder decodeObjectForKey:@"self"];
 }
 
 - (void)encodeWithCoder:(CPCoder)aCoder
