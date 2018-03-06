@@ -40,6 +40,7 @@
 
 @protocol CPTextDelegate <CPObject>
 
+@optional
 - (BOOL)textShouldBeginEditing:(CPText)aTextObject;
 - (BOOL)textShouldEndEditing:(CPText)aTextObject;
 - (void)textDidBeginEditing:(CPNotification)aNotification;
