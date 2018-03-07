@@ -523,7 +523,9 @@ CPTokenFieldDeleteButtonType     = 1;
     var element = [self _inputElement];
 
     CPTokenFieldInputResigning = YES;
-    element.blur();
+
+    if (CPTokenFieldInputIsActive)
+        element.blur();
 
     if (!CPTokenFieldInputDidBlur)
         CPTokenFieldBlurHandler();
