@@ -113,13 +113,13 @@ var hexTable = [];
 
 - (CPNumber)script
 {
-    return [CPNumber numberWithInt: script];
+    return [CPNumber numberWithInt:script];
 }
 
 - (CPNumber)underline
 {
     if (underline != 0)
-        return [CPNumber numberWithInteger: underline];
+        return [CPNumber numberWithInt:underline];
     else
         return nil;
 }
@@ -127,7 +127,7 @@ var hexTable = [];
 - (CPNumber)strikethrough
 {
     if (strikethrough != 0)
-        return [CPNumber numberWithInteger: strikethrough];
+        return [CPNumber numberWithInt:strikethrough];
     else
         return nil;
 }

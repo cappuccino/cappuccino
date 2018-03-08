@@ -738,13 +738,13 @@
         if (macroCurrentLine) this.line += macroCurrentLine;
         var macroCurrentLineStart = locationOffset.column;
         // Only add column offset if we are on the first line
-        if (macroCurrentLineStart) this.column += tokPosMacroOffset - (tokCurLine === 0 ? macroCurrentLineStart : 0);
+        if (macroCurrentLineStart) this.column += tokPosMacroOffset - (tokCurLine === 1 ? macroCurrentLineStart : 0);
       }
     }
   }
 
   function PositionOffset(line, column) {
-    this.line = line;
+    this.line = line - 1;   // Line start on one so we have to convert it to an offset
     this.column = column;
     if (preprocessStackLastItem) {
       var macro = preprocessStackLastItem.macro;
@@ -892,10 +892,6 @@
       if (ch != 32 && ch != 9 && ch != 160 && (ch < 5760 || !nonASCIIwhitespaceNoNewLine.test(String.fromCharCode(ch))))
         last = ch;
       ch = input.charCodeAt(++tokPos);
-    }
-    if (options.locations) {
-      ++tokCurLine;
-      tokLineStart = tokPos;
     }
   }
 
@@ -1320,6 +1316,8 @@
     // We don't want to concatenate tokens when creating macros
     preprocessDontConcatenate = true;
 
+    // Get position offset now as ´tokCurLine´ and ´tokLineStart´ points to next token.
+    var positionOffset = options.locations && new PositionOffset(tokCurLine, tokLineStart);
     var macroIdentifier = preprocessGetIdent();
     // '(' Must follow directly after identifier to be a valid macro with parameters
     if (input.charCodeAt(macroIdentifierEnd) === 40) { // '('
@@ -1332,10 +1330,12 @@
         if (!first) preprocessExpect(_comma, "Expected ',' between macro parameters"); else first = false;
         parameters.push(preprocessEat(_dotdotdot) ? variadic = true && "__VA_ARGS__" : preprocessGetIdent());
         if (preprocessEat(_dotdotdot)) variadic = true;
+        // Get a new position offset as macro has parameters. This is needed if line has escaped (backslash) newline
+        positionOffset = options.locations && new PositionOffset(tokCurLine, tokLineStart);
       }
     }
     var start = preTokStart;
-    var positionOffset = options.locations && new PositionOffset(tokCurLine, tokLineStart);
+
     while(preTokType !== _eol && preTokType !== _eof)
       preprocessReadToken();
 
@@ -1532,18 +1532,13 @@
 
     if (allowEndOfLineToken) {
       var r;
-      if (code === 13) {
-        r = finishOp(_eol, input.charCodeAt(tokPos+1) === 10 ? 2 : 1, finisher);
-      } else if (code === 10 || code === 8232 || code === 8233) {
-        r = finishOp(_eol, 1, finisher);
-      } else {
-        return false;
+      if (code === 13 || code === 10 || code === 8232 || code === 8233) {
+        if (options.locations) {
+          ++tokCurLine;
+          tokLineStart = tokPos;
+        }
+        return finishOp(_eol, (code === 13 && input.charCodeAt(tokPos+1) === 10) ? 2 : 1, finisher);
       }
-      if (options.locations) {
-        ++tokCurLine;
-        tokLineStart = tokPos;
-      }
-      return r;
     }
 
     return false;
@@ -1613,8 +1608,8 @@
   // Skip whitespaces sometimes without line breaks
   // Returns true if it stops at a line break.
 
-  function preprocessSkipSpace(skipComments, skipEOL) {
-    var ch = onlySkipSpace(!skipEOL);
+  function preprocessSkipSpace(dontSkipComments, skipEOL) {
+    var ch = onlySkipSpace(!skipEOL, false, dontSkipComments);
     // Can't see that this line break test is used anymore
     //lineBreak.lastIndex = 0;
     //var match = lineBreak.exec(input.slice(tokPos, tokPos + 2));
@@ -1670,7 +1665,9 @@
     if (!preprocessToken && !preNotSkipping && code !== 35) { // '#'
       // If we are skipping take the whole line if the token does not start with '#' (preprocess tokens)
       preprocesSkipRestOfLine();
-      return preprocessFinishToken(_preprocessSkipLine, input.slice(preTokStart, tokPos++));
+      preprocessFinishToken(_preprocessSkipLine, input.slice(preTokStart, tokPos));
+      preprocessSkipSpace(true, true); // Don't skip comments and skip EOL
+      return;
     } else if (preprocessMacroParameterListMode && code !== 41 && code !== 44) { // ')', ','
       var parenLevel = 0;
       // If we are parsing a macro parameter list parentheses within each argument must balance
@@ -1723,7 +1720,7 @@
     preTokEnd = overrideTokEnd || tokPos;
     if (type !== _eol) firstTokEnd = preTokEnd;
     //tokRegexpAllowed = type.beforeExpr;
-    var ch = preprocessSkipSpace(false, skipEOL); // Dont skip comments
+    var ch = preprocessSkipSpace(false, skipEOL); // Skip comments
     if (ch === 35 && options.preprocess && !preprocessDontConcatenate && input.charCodeAt(tokPos + 1) === 35) { // '##'
       var val1 = val != null ? val : type.keyword || type.type;
       tokPos += 2;
@@ -1765,7 +1762,7 @@
     preTokType = type;
     preTokVal = val;
     firstTokEnd = preTokEnd = tokPos;
-    preprocessSkipSpace(true); // 'true' for skip comments
+    preprocessSkipSpace(true); // 'true' for don't skip comments
   }
 
   // Continue to the next token.
@@ -2426,7 +2423,7 @@
     inputLen = macroString.length;
     tokPosMacroOffset = macro.start;
     tokPos = 0;
-    tokCurLine = 0;
+    tokCurLine = 1;
     tokLineStart = 0;
     firstTokEnd = 0;
     localLastEnd = 0;
@@ -2634,7 +2631,6 @@
   // Test whether a semicolon can be inserted at the current position.
 
   function canInsertSemicolon() {
-    //if (lastEnd !== localLastEnd) print("lastEnd: " + lastEnd + ", localLastEnd: " + localLastEnd);
     return !options.strictSemicolons &&
       (tokType === _eof || tokType === _braceR || newline.test(lastEndInput.slice(lastEnd, lastEndOfFile || tokFirstStart)) ||
         (nodeMessageSendObjectExpression && options.objj) || lastEndOfFile != null);
