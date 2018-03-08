@@ -523,16 +523,24 @@ CPTokenFieldDeleteButtonType     = 1;
     var element = [self _inputElement];
 
     CPTokenFieldInputResigning = YES;
-    element.blur();
+
+    if (CPTokenFieldInputIsActive)
+        element.blur();
 
     if (!CPTokenFieldInputDidBlur)
         CPTokenFieldBlurHandler();
 
-    CPTokenFieldInputDidBlur = NO;
-    CPTokenFieldInputResigning = NO;
-
     if (element.parentNode == [_tokenScrollView documentView]._DOMElement)
         element.parentNode.removeChild(element);
+
+    // Previosly, we unflagged CPTokenFieldInputDidBlur and CPTokenFieldInputResigning before
+    // the call to removeChild. This may result in DOM exceptions in Chrome under certain conditions.
+    // See https://stackoverflow.com/questions/21926083/failed-to-execute-removechild-on-node
+    // for why we need to unflag CPTokenFieldInputDidBlur and CPTokenFieldInputResigning
+    // only after removing the element.
+
+    CPTokenFieldInputDidBlur = NO;
+    CPTokenFieldInputResigning = NO;
 
     CPTokenFieldInputIsActive = NO;
 
