@@ -3426,8 +3426,6 @@ CPTexturedBackgroundWindowMask
     _defaultButtonDisabledTemporarily = YES;
 }
 
-
-
 /*!
     Removes the key equivalent for the default button.
     Note: this method is deprecated. Use disableKeyEquivalentForDefaultButton instead.
