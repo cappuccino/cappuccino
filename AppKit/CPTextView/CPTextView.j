@@ -1692,6 +1692,8 @@ Sets the selection to a range of characters in response to user action.
 - (void)insertNewline:(id)sender
 {
     [self insertLineBreak:sender];
+    // make sure that the return key is "swallowed" and the default button not triggered as in cocoa
+    [[self window] temporarilyDisableKeyEquivalentForDefaultButton];
 }
 
 - (void)_enrichEssentialTypingAttributes:(CPDictionary)attributes
