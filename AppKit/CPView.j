@@ -3866,6 +3866,28 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     [aCoder encodeObject:_trackingAreas forKey:CPViewTrackingAreasKey];
 }
 
+// needed by CPWindow's releasedWhenClosed property
+- (void)_releaseRecursively
+{
+    if (_subviews.length > 0)
+    {
+        [_subviews enumerateObjectsUsingBlock:function(anObject, idx, stop)
+            {
+                  [anObject _removeObservers];
+                  [CPBinder unbindAllForObject:anObject];
+            }
+        ];
+
+        [_subviews makeObjectsPerformSelector:@selector(_releaseRecursively)];
+    }
+    else
+    {
+        [self _removeObservers];
+        [CPBinder unbindAllForObject:self];
+        [self removeFromSuperview];
+    }
+}
+
 @end
 
 var _CPViewFullScreenModeStateMake = function(aView)
