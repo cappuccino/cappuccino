@@ -44,6 +44,7 @@
 @class CPClipView
 @class CPScrollView
 @class CALayer
+@class CPBinder
 
 @global appkit_tag_dom_elements
 
