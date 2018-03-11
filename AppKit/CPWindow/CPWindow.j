@@ -3421,7 +3421,7 @@ CPTexturedBackgroundWindowMask
     _defaultButtonEnabled = NO;
 }
 
-- (void)temporarilyDisableKeyEquivalentForDefaultButton
+- (void)_temporarilyDisableKeyEquivalentForDefaultButton
 {
     _defaultButtonDisabledTemporarily = YES;
 }
