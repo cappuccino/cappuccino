@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Main cib file base name</key>
+	<string>MainMenu.cib</string>
+	<key>CPBundleName</key>
+	<string>PopUpButtonTest</string>
+    <key>CPBundleVersion</key>
+    <string>1.0</string>
+    <key>CPHumanReadableCopyright</key>
+    <string>Copyright © 2013, Austin-Soft.com All rights reserved.</string>
+</dict>
+</plist>
