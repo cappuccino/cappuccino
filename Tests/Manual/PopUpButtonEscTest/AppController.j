@@ -9,46 +9,6 @@
 @import <Foundation/Foundation.j>
 @import <AppKit/AppKit.j>
 
-
-@implementation _CPMenuManager(XXX)
-
-- (void)interpretKeyEvent:(CPEvent)anEvent forMenu:(CPMenu)menu
-{
-    var modifierFlags = [anEvent modifierFlags],
-    character = [anEvent charactersIgnoringModifiers],
-    selectorNames = [CPKeyBinding selectorsForKey:character modifierFlags:modifierFlags];
-
-    if (selectorNames)
-    {
-        var iter = [selectorNames objectEnumerator],
-        obj;
-
-        while ((obj = [iter nextObject]) !== nil)
-        {
-            var aSelector = CPSelectorFromString(obj);
-
-            if ([self respondsToSelector:aSelector])
-                [self performSelector:aSelector withObject:menu];
-        }
-    }
-}
-
-- (void)insertNewline:(CPMenu)menu
-{
-    if ([[menu highlightedItem] hasSubmenu])
-        [self moveRight:menu];
-    else
-        [menu cancelTracking]
-}
-- (void)cancelOperation:(CPMenu)menu
-{
-    debugger
-    [menu _highlightItemAtIndex:CPNotFound];
-    [CPEvent stopPeriodicEvents];
-    [[self trackingMenu] cancelTracking];
-}
-@end
-
 @implementation AppController : CPObject
 {
     @outlet CPWindow    theWindow;
