@@ -3870,23 +3870,11 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 // needed by CPWindow's releasedWhenClosed property
 - (void)_releaseRecursively
 {
-    if (_subviews.length > 0)
-    {
-        [_subviews enumerateObjectsUsingBlock:function(anObject, idx, stop)
-            {
-                  [anObject _removeObservers];
-                  [CPBinder unbindAllForObject:anObject];
-            }
-        ];
+    [_subviews makeObjectsPerformSelector:@selector(_releaseRecursively)];
 
-        [_subviews makeObjectsPerformSelector:@selector(_releaseRecursively)];
-    }
-    else
-    {
-        [self _removeObservers];
-        [CPBinder unbindAllForObject:self];
-        [self removeFromSuperview];
-    }
+    [self _removeObservers];
+    [CPBinder unbindAllForObject:self];
+    [self removeFromSuperview];
 }
 
 @end
