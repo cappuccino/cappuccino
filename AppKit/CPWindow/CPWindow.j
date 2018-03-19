@@ -1858,7 +1858,7 @@ CPTexturedBackgroundWindowMask
             case CPLeftMouseDown:
 
                 // This is needed when a doubleClick occurs when the sheet is closing or opening
-                if (!_parentWindow)
+                if (!_parentWindow && [anEvent clickCount] > 1)
                     return;
 
                 [_windowView mouseDown:anEvent];
