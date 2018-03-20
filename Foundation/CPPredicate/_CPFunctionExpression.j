@@ -220,7 +220,7 @@ var CPSelectorNameKey   = @"CPSelectorName",
 {
     if ([object isKindOfClass:[CPDictionary class]])
         return [object objectForKey:anIndex];
-    else ([object isKindOfClass:[CPArray class]])
+    else if ([object isKindOfClass:[CPArray class]])
         return [object objectAtIndex:anIndex];
 
     [CPException raise:CPInvalidArgumentException reason:@"object[#] requires a CPDictionary or CPArray"];
