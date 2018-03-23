@@ -990,6 +990,10 @@ CPTexturedBackgroundWindowMask
         [self makeMainWindow];
 
     [_platformWindow _setShouldUpdateContentRect:YES];
+
+    if ([self attachedSheet])
+        [_platformWindow order:CPWindowAbove window:[self attachedSheet] relativeTo:nil];
+
 }
 
 /*
