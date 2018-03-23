@@ -993,7 +993,6 @@ CPTexturedBackgroundWindowMask
 
     if ([self attachedSheet])
         [_platformWindow order:CPWindowAbove window:[self attachedSheet] relativeTo:nil];
-
 }
 
 /*
