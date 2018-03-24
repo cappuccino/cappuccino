@@ -75,7 +75,22 @@
     // https://github.com/280north/cappuccino/pull/1018
     [popUpButton2 selectItemWithTag:2];
 
+    // manual test for https://github.com/cappuccino/cappuccino/issues/2471
+    var button2 = [CPButton buttonWithTitle:@"Set title to: ''"];
+
+    [button2 setCenter:CGPointMake([contentView center].x, 0)];
+    [button2 setFrameOrigin:CGPointMake(CGRectGetMinX([button frame]), CGRectGetMaxY([button frame]) + 20)];
+    [button2 setTarget:self];
+    [button2 setAction:@selector(setTitleToEmptyString:)];
+    [contentView addSubview:button2];
+
+
     [theWindow orderFront:self];
+}
+
+- (@action)setTitleToEmptyString:(id)sender
+{
+    [popUpButton setTitle:''];
 }
 
 - (@action)removeItems:(id)sender
