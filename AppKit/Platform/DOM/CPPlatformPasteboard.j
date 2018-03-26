@@ -118,7 +118,6 @@ var hasEditableTarget = function(aDOMEvent)
     _DOMPasteboardElement.style.position = "absolute";
     _DOMPasteboardElement.style.top = "-10000px";
     _DOMPasteboardElement.style.zIndex = "999";
-    _DOMPasteboardElement.className = "cpdontremove";
 
     _DOMBodyElement.appendChild(_DOMPasteboardElement);
 

@@ -244,9 +244,6 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
     if (!_DOMWindow)
         return [self contentRect];
 
-    if (_DOMWindow.cpFrame)
-        return _DOMWindow.cpFrame();
-
     var contentRect = CGRectMakeZero();
 
     if (window.screenTop)
@@ -274,9 +271,6 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 {
     if (!_DOMWindow)
         return;
-
-    if (typeof _DOMWindow["cpSetFrame"] === "function")
-        return _DOMWindow.cpSetFrame([self contentRect]);
 
     var origin = [self contentRect].origin,
         nativeOrigin = [self nativeContentRect].origin;
@@ -312,7 +306,6 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
     _DOMFocusElement.style.zIndex = "-1000";
     _DOMFocusElement.style.opacity = "0";
     _DOMFocusElement.style.filter = "alpha(opacity=0)";
-    _DOMFocusElement.className = "cpdontremove";
 
     _DOMBodyElement.appendChild(_DOMFocusElement);
 
@@ -327,7 +320,6 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
     _DOMEventGuard.style.height = "100%";
     _DOMEventGuard.style.zIndex = "999";
     _DOMEventGuard.style.display = "none";
-    _DOMEventGuard.className = "cpdontremove";
     _DOMBodyElement.appendChild(_DOMEventGuard);
 
     // We get scrolling deltas from this element
@@ -341,7 +333,6 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
     //_DOMScrollingElement.style.backgroundColor = "rgba(0,0,0,1.0)"; // debug help.
     _DOMScrollingElement.style.opacity = "0";
     _DOMScrollingElement.style.filter = "alpha(opacity=0)";
-    _DOMScrollingElement.className = "cpdontremove";
     _DOMBodyElement.appendChild(_DOMScrollingElement);
 
     var _DOMInnerScrollingElement = theDocument.createElement("div");
@@ -579,15 +570,6 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 
     if (self != [CPPlatformWindow primaryPlatformWindow])
         _DOMWindow.document.title = _title;
-
-    if (![CPPlatform isBrowser])
-    {
-        _DOMWindow.cpWindowNumber = [self._only windowNumber];
-        _DOMWindow.cpSetFrame(_contentRect);
-        _DOMWindow.cpSetLevel(_level);
-        _DOMWindow.cpSetHasShadow(_hasShadow);
-        _DOMWindow.cpSetShadowStyle(_shadowStyle);
-    }
 
     [self registerDOMWindow];
 
