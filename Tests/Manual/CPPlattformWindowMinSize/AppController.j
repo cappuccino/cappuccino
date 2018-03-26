@@ -28,11 +28,13 @@
     [textFieldWidth setEditable:YES];
     [textFieldWidth setBezeled:YES];
     [textFieldWidth setCenter:CGPointMake([contentView center].x, [contentView center].y + 40.0)];
+    [textFieldWidth setPlaceholderString:"enter min width"];
     [contentView addSubview:textFieldWidth];
 
     [textFieldHeight setEditable:YES];
     [textFieldHeight setBezeled:YES];
     [textFieldHeight setCenter:CGPointMake([contentView center].x, [contentView center].y + 65.0)];
+    [textFieldHeight setPlaceholderString:"enter min height"];
     [contentView addSubview:textFieldHeight];
 
     var button = [CPButton buttonWithTitle:@"SetMinSize"],
@@ -50,7 +52,6 @@
 - (void)setMinSize:(id)sender
 {
     [theWindow setMinSize:CGSizeMake([textFieldWidth intValue], [textFieldHeight intValue])];
-    //[[theWindow platformWindow] setMinSize:CGSizeMake([textFieldWidth intValue], [textFieldHeight intValue])];
 }
 
 @end

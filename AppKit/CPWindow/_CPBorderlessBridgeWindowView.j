@@ -81,4 +81,17 @@
     [_toolbarBackgroundView setFrame:frame];
 }
 
+- (void)setFrameSize:(CGSize)aFrameSize
+{
+    var theWindow = [self window];
+
+    [super setFrameSize:aFrameSize];
+
+    if (aFrameSize.width < theWindow._minSize.width || aFrameSize.height < theWindow._minSize.height)
+        [theWindow._contentView setFrameSize:CGSizeMake(MAX(aFrameSize.width, theWindow._minSize.width), MAX(aFrameSize.height, theWindow._minSize.height))];
+
+    _DOMElement.style.overflowX = (aFrameSize.width < theWindow._minSize.width)? "scroll":"hidden";
+    _DOMElement.style.overflowY = (aFrameSize.height < theWindow._minSize.height)? "scroll":"hidden";
+}
+
 @end
