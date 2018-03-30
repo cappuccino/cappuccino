@@ -205,6 +205,9 @@ var resizeTimer = nil;
 var PreventScroll = true;
 var blurTimer = nil;
 
+var touchStartingPointX,
+    touchStartingPointY;
+
 _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotification";
 
 
@@ -1152,10 +1155,26 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 
 - (void)touchEvent:(DOMEvent)aDOMEvent
 {
+    var newEvent = {},
+        touch = aDOMEvent.touches.length ? aDOMEvent.touches[0] : aDOMEvent.changedTouches[0];
+
+    newEvent.timestamp = [CPEvent currentTimestamp];
+    newEvent.target = aDOMEvent.target;
+    newEvent.shiftKey = newEvent.ctrlKey = newEvent.altKey = newEvent.metaKey = false;
+
+    newEvent.clientX = touch.clientX;
+
+    /*
+     Normally the document can't scroll in Cappuccino: our body element has top:0 and bottom:0 with absolute positioning. So it should always be exactly the height of the viewport. The below handles a special case. iOS scrolls the document when the virtual keyboard is present and it needs to move a text input upwards visually to avoid covering the input with the keyboard. For most purposes we can ignore this, except here. In theory I think we could always apply this (scrollTop should always be 0 on every other device and situation) but let's be defensive and only apply it for touch events to minimise the risk of surprises.
+     */
+    newEvent.clientY = _DOMWindow.document.body.scrollTop + touch.clientY;
+
+    newEvent.preventDefault = function() { if (aDOMEvent.preventDefault) aDOMEvent.preventDefault() };
+    newEvent.stopPropagation = function() { if (aDOMEvent.stopPropagation) aDOMEvent.stopPropagation() };
+
+    //  single finger event-> simulate mouse-click
     if (aDOMEvent.touches && (aDOMEvent.touches.length == 1 || (aDOMEvent.touches.length == 0 && aDOMEvent.changedTouches.length == 1)))
     {
-        var newEvent = {};
-
         switch (aDOMEvent.type)
         {
             case CPDOMEventTouchStart:  newEvent.type = CPDOMEventMouseDown;
@@ -1168,36 +1187,46 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
                                         break;
         }
 
-        var touch = aDOMEvent.touches.length ? aDOMEvent.touches[0] : aDOMEvent.changedTouches[0];
-
-        newEvent.clientX = touch.clientX;
-
-        /*
-        Normally the document can't scroll in Cappuccino: our body element has top:0 and bottom:0 with absolute positioning. So it should always be exactly the height of the viewport. The below handles a special case. iOS scrolls the document when the virtual keyboard is present and it needs to move a text input upwards visually to avoid covering the input with the keyboard. For most purposes we can ignore this, except here. In theory I think we could always apply this (scrollTop should always be 0 on every other device and situation) but let's be defensive and only apply it for touch events to minimise the risk of surprises.
-        */
-        newEvent.clientY = _DOMWindow.document.body.scrollTop + touch.clientY;
-
-        newEvent.timestamp = [CPEvent currentTimestamp];
-        newEvent.target = aDOMEvent.target;
-
-        newEvent.shiftKey = newEvent.ctrlKey = newEvent.altKey = newEvent.metaKey = false;
-
-        newEvent.preventDefault = function() { if (aDOMEvent.preventDefault) aDOMEvent.preventDefault() };
-        newEvent.stopPropagation = function() { if (aDOMEvent.stopPropagation) aDOMEvent.stopPropagation() };
-
         [self mouseEvent:newEvent];
 
         return;
     }
     else
     {
+        // touch scrolling (two fingers)
+        if (aDOMEvent.touches && aDOMEvent.touches.length == 2)
+        {
+            switch (aDOMEvent.type)
+            {
+                case CPDOMEventTouchStart:
+                    touchStartingPointX = touch.pageX;
+                    touchStartingPointY = touch.pageY;
+                    break;
+                case CPDOMEventTouchMove:
+                    debugger
+                    newEvent._hasPreciseScrollingDeltas = YES;
+                    newEvent._scrollingDeltaX =  touchStartingPointX - touch.pageX;
+                    newEvent._scrollingDeltaY =  touchStartingPointY - touch.pageY;
+                    newEvent.deltaX = newEvent._scrollingDeltaX;
+                    newEvent.deltaY = newEvent._scrollingDeltaY;
+                    newEvent.type = CPDOMEventScrollWheel;
+
+                    [self scrollEvent:newEvent];
+
+                    touchStartingPointX = touch.pageX;
+                    touchStartingPointY = touch.pageY;
+                    return;
+            }
+        }
+        // handle other touch cases specifically
+
+
         if (aDOMEvent.preventDefault)
             aDOMEvent.preventDefault();
 
         if (aDOMEvent.stopPropagation)
             aDOMEvent.stopPropagation();
     }
-    // handle touch cases specifically
 }
 
 - (void)mouseEvent:(DOMEvent)aDOMEvent
