@@ -1172,7 +1172,7 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
     newEvent.preventDefault = function() { if (aDOMEvent.preventDefault) aDOMEvent.preventDefault() };
     newEvent.stopPropagation = function() { if (aDOMEvent.stopPropagation) aDOMEvent.stopPropagation() };
 
-    //  single finger event-> simulate mouse-click
+    //  single finger event-> simulate a simple mouse-click
     if (aDOMEvent.touches && (aDOMEvent.touches.length == 1 || (aDOMEvent.touches.length == 0 && aDOMEvent.changedTouches.length == 1)))
     {
         switch (aDOMEvent.type)
@@ -1193,7 +1193,7 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
     }
     else
     {
-        // touch scrolling (two fingers)
+        // two fingers->simulate scrolling events
         if (aDOMEvent.touches && aDOMEvent.touches.length == 2)
         {
             switch (aDOMEvent.type)
@@ -1219,7 +1219,6 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
             }
         }
         // handle other touch cases specifically
-
 
         if (aDOMEvent.preventDefault)
             aDOMEvent.preventDefault();
