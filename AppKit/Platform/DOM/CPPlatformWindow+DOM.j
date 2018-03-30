@@ -1204,8 +1204,8 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
                     break;
                 case CPDOMEventTouchMove:
                     newEvent._hasPreciseScrollingDeltas = YES;
-                    newEvent.deltaX = newEvent._scrollingDeltaX = touchStartingPointX - touch.pageX;
-                    newEvent.deltaY = newEvent._scrollingDeltaY = touchStartingPointY - touch.pageY;
+                    newEvent.deltaX = touchStartingPointX - touch.pageX;
+                    newEvent.deltaY = touchStartingPointY - touch.pageY;
                     newEvent.type = CPDOMEventScrollWheel;
 
                     [self scrollEvent:newEvent];
