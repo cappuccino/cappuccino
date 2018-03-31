@@ -129,7 +129,8 @@ var DOMElementPrototype         = nil,
     BackgroundVerticalThreePartImage    = 1,
     BackgroundHorizontalThreePartImage  = 2,
     BackgroundNinePartImage             = 3,
-    BackgroundTransparentColor          = 4;
+    BackgroundTransparentColor          = 4,
+    BackgroundCSSStyling                = 5;
 #endif
 
 var CPViewFlags                     = { },
@@ -195,6 +196,10 @@ var CPViewHighDPIDrawingEnabled = YES;
     CPArray             _DOMImageSizes;
 
     unsigned            _backgroundType;
+
+    // CSS styling
+    CPArray             _cssStylePreviousState;
+    DOMElement          _cssStyleNode;
 #endif
 
     CGRect              _dirtyRect;
@@ -320,6 +325,18 @@ var CPViewHighDPIDrawingEnabled = YES;
     return nil;
 }
 
++ (CPString)defaultThemeClass
+{
+    return @"view";
+}
+
++ (CPDictionary)themeAttributes
+{
+    return @{
+             @"css-based": NO
+             };
+}
+
 - (void)_setupViewFlags
 {
     var theClass = [self class],
@@ -399,6 +416,8 @@ var CPViewHighDPIDrawingEnabled = YES;
 
         _DOMImageParts = [];
         _DOMImageSizes = [];
+
+        _cssStylePreviousState = @[];
 #endif
 
         _animator = nil;
@@ -1954,15 +1973,25 @@ var CPViewHighDPIDrawingEnabled = YES;
     _backgroundColor = aColor;
 
 #if PLATFORM(DOM)
+    if (_backgroundType === BackgroundCSSStyling)
+        [_backgroundColor restorePreviousCSSState:@ref(_cssStylePreviousState) forDOMElement:_DOMElement];
+
     var patternImage = [_backgroundColor patternImage],
         colorExists = _backgroundColor && ([_backgroundColor patternImage] || [_backgroundColor alphaComponent] > 0.0),
         colorHasAlpha = colorExists && [_backgroundColor alphaComponent] < 1.0,
         supportsRGBA = CPFeatureIsCompatible(CPCSSRGBAFeature),
         colorNeedsDOMElement = colorHasAlpha && !supportsRGBA,
         amount = 0,
-        slices;
+        slices,
+        // For CSS theming
+        isCSSBasedColor = [_backgroundColor isCSSBased];
 
-    if ([patternImage isThreePartImage])
+    if (isCSSBasedColor)
+    {
+        _backgroundType = BackgroundCSSStyling;
+        amount = -_DOMImageParts.length;
+    }
+    else if ([patternImage isThreePartImage])
     {
         _backgroundType = [patternImage isVertical] ? BackgroundVerticalThreePartImage : BackgroundHorizontalThreePartImage;
         amount = 3;
@@ -2025,7 +2054,14 @@ var CPViewHighDPIDrawingEnabled = YES;
             _DOMElement.removeChild(_DOMImageParts.pop());
     }
 
-    if (_backgroundType === BackgroundTrivialColor || _backgroundType === BackgroundTransparentColor)
+    if (_backgroundType === BackgroundCSSStyling)
+    {
+        _cssStyleNode = [_backgroundColor applyCSSColorForView:self
+                                                  onDOMElement:_DOMElement
+                                                     styleNode:_cssStyleNode
+                                                 previousState:@ref(_cssStylePreviousState)];
+    }
+    else if (_backgroundType === BackgroundTrivialColor || _backgroundType === BackgroundTransparentColor)
     {
         var colorCSS = colorExists ? [_backgroundColor cssString] : "";
 
@@ -3434,6 +3470,17 @@ setBoundsOrigin:
 
 @end
 
+@implementation CPView (CSSTheming)
+
+- (void)setDOMClassName:(CPString)aClassName
+{
+#if PLATFORM(DOM)
+    _DOMElement.className = aClassName;
+#endif
+}
+
+@end
+
 
 @implementation CPView (Appearance)
 
@@ -3749,6 +3796,8 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 
         // DOM SETUP
 #if PLATFORM(DOM)
+        _cssStylePreviousState = @[];
+
         _DOMImageParts = [];
         _DOMImageSizes = [];
 
