@@ -509,6 +509,165 @@ function CPAppKitImage(aFilename, aSize)
 
 @end
 
+#pragma mark -
+#pragma mark CSS Theming
+
+@implementation CPImage (CSSTheming)
+{
+    CPDictionary            _cssDictionary              @accessors(property=cssDictionary);
+    CPDictionary            _cssBeforeDictionary        @accessors(property=cssBeforeDictionary);
+    CPDictionary            _cssAfterDictionary         @accessors(property=cssAfterDictionary);
+}
+
++ (CPImage)imageWithCSSDictionary:(CPDictionary)aDictionary size:(CGSize)aSize
+{
+    return [[CPImage alloc] initWithCSSDictionary:aDictionary beforeDictionary:nil afterDictionary:nil size:aSize];
+}
+
++ (CPImage)imageWithCSSDictionary:(CPDictionary)aDictionary beforeDictionary:(CPDictionary)beforeDictionary afterDictionary:(CPDictionary)afterDictionary size:(CGSize)aSize
+{
+    return [[CPImage alloc] initWithCSSDictionary:aDictionary beforeDictionary:beforeDictionary afterDictionary:afterDictionary size:aSize];
+}
+
++ (CPImage)dummyCSSImageOfSize:(CGSize)aSize
+{
+    // This is used to clear a previous CSS image
+    return [[CPImage alloc] initWithCSSDictionary:@{} beforeDictionary:nil afterDictionary:nil size:aSize];
+}
+
+- (id)initWithCSSDictionary:(CPDictionary)aDictionary beforeDictionary:(CPDictionary)beforeDictionary afterDictionary:(CPDictionary)afterDictionary size:(CGSize)aSize
+{
+    self = [super init];
+
+    if (self)
+    {
+        _size = CGSizeMakeCopy(aSize);
+        _filename = @"CSS image";
+        _loadStatus = CPImageLoadStatusCompleted;
+        _cssDictionary = aDictionary;
+        _cssBeforeDictionary = beforeDictionary;
+        _cssAfterDictionary = afterDictionary;
+    }
+
+    return self;
+}
+
+- (BOOL)isCSSBased
+{
+    return !!(_cssDictionary || _cssBeforeDictionary || _cssAfterDictionary);
+}
+
+- (BOOL)hasCSSDictionary
+{
+    return ([_cssDictionary count] > 0);
+}
+
+- (BOOL)hasCSSBeforeDictionary
+{
+    return ([_cssBeforeDictionary count] > 0);
+}
+
+- (BOOL)hasCSSAfterDictionary
+{
+    return ([_cssAfterDictionary count] > 0);
+}
+
+- (DOMElement)applyCSSImageForView:(CPView)aView onDOMElement:(DOMElement)aDOMElement styleNode:(DOMElement)aStyleNode previousState:(CPArrayRef)aPreviousStateRef
+{
+#if PLATFORM(DOM)
+    // First, restore previous CSS styling before applying the new one
+
+    var aPreviousState = @deref(aPreviousStateRef);
+
+    for (var i = 0, count = aPreviousState.length; i < count; i++)
+        aDOMElement.style[aPreviousState[i][0]] = aPreviousState[i][1];
+
+    aPreviousState = @[];
+
+    // Then apply new CSS styling
+
+    [_cssDictionary enumerateKeysAndObjectsUsingBlock:function(aKey, anObject, stop)
+     {
+         [aPreviousState addObject:@[aKey, aDOMElement.style[aKey]]];
+         aDOMElement.style[aKey] = anObject;
+     }];
+
+    if (_cssBeforeDictionary || _cssAfterDictionary)
+    {
+        // We need to create a unique class name
+
+        var styleClassName = @".CP" + [aView UID],
+        styleContent = @"";
+
+        if (_cssBeforeDictionary)
+        {
+            styleContent += styleClassName + @"::before { ";
+
+            [_cssBeforeDictionary enumerateKeysAndObjectsUsingBlock:function(aKey, anObject, stop)
+             {
+                 styleContent += aKey + ": " + anObject + "; ";
+             }];
+
+            styleContent += "} ";
+        }
+
+        if (_cssAfterDictionary)
+        {
+            styleContent += styleClassName + @"::after { ";
+
+            [_cssAfterDictionary enumerateKeysAndObjectsUsingBlock:function(aKey, anObject, stop)
+             {
+                 styleContent += aKey + ": " + anObject + "; ";
+             }];
+
+            styleContent += "} ";
+        }
+
+        var styleDescription = document.createTextNode(styleContent);
+
+        if (!aStyleNode)
+        {
+            aStyleNode = document.createElement("style");
+
+            aView._DOMElement.insertBefore(aStyleNode, aView._DOMElement.firstChild);
+
+            aStyleNode.appendChild(styleDescription);
+        }
+        else
+        {
+            aStyleNode.replaceChild(styleDescription, aStyleNode.firstChild);
+        }
+
+        [aView setDOMClassName:@"CP"+[aView UID]];
+    }
+    else
+    {
+        // no before/after so remove aStyleNode if existing
+
+        if (aStyleNode)
+        {
+            aView._DOMElement.removeChild(aStyleNode);
+            aStyleNode = nil;
+        }
+    }
+
+
+    // Return actualised values
+
+    @deref(aPreviousStateRef) = aPreviousState;
+
+    return aStyleNode;
+#endif
+}
+
+@end
+
+var CPImageCSSDictionaryKey       = @"CPImageCSSDictionaryKey",
+    CPImageCSSBeforeDictionaryKey = @"CPImageCSSBeforeDictionaryKey",
+    CPImageCSSAfterDictionaryKey  = @"CPImageCSSAfterDictionaryKey";
+
+#pragma mark -
+
 @implementation CPImage (CPCoding)
 
 /*!
@@ -518,7 +677,10 @@ function CPAppKitImage(aFilename, aSize)
 */
 - (id)initWithCoder:(CPCoder)aCoder
 {
-    return [self initWithContentsOfFile:[aCoder decodeObjectForKey:@"CPFilename"] size:[aCoder decodeSizeForKey:@"CPSize"]];
+    if ([aCoder containsValueForKey:CPImageCSSDictionaryKey])
+        return [self initWithCSSDictionary:[aCoder decodeObjectForKey:CPImageCSSDictionaryKey] beforeDictionary:[aCoder decodeObjectForKey:CPImageCSSBeforeDictionaryKey] afterDictionary:[aCoder decodeObjectForKey:CPImageCSSAfterDictionaryKey] size:[aCoder decodeSizeForKey:@"CPSize"]];
+    else
+        return [self initWithContentsOfFile:[aCoder decodeObjectForKey:@"CPFilename"] size:[aCoder decodeSizeForKey:@"CPSize"]];
 }
 
 /*!
@@ -529,6 +691,14 @@ function CPAppKitImage(aFilename, aSize)
 {
     [aCoder encodeObject:_filename forKey:@"CPFilename"];
     [aCoder encodeSize:_size forKey:@"CPSize"];
+
+    // CSS Styling
+    if ([self isCSSBased])
+    {
+        [aCoder encodeObject:_cssDictionary       forKey:CPImageCSSDictionaryKey];
+        [aCoder encodeObject:_cssBeforeDictionary forKey:CPImageCSSBeforeDictionaryKey];
+        [aCoder encodeObject:_cssAfterDictionary  forKey:CPImageCSSAfterDictionaryKey];
+    }
 }
 
 @end

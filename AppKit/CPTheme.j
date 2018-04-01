@@ -24,9 +24,12 @@
 @import <Foundation/CPMutableArray.j>
 @import <Foundation/CPString.j>
 @import <Foundation/CPKeyedUnarchiver.j>
+@import <Foundation/CPBundle.j>
 
 @class CPView
 @class _CPThemeAttribute
+@class CPImage
+@class CPColor
 
 var CPThemesByName          = { },
     CPThemeDefaultTheme     = nil,
@@ -312,6 +315,50 @@ var CPThemeNameKey          = @"CPThemeNameKey",
 }
 
 @end
+
+#pragma mark -
+#pragma mark CSS Theming
+
+@implementation CPTheme (CSSTheming)
+
+- (void)setCSSResourcesPath:(CPString)pathToResources
+{
+    [_attributes enumerateKeysAndObjectsUsingBlock:function(aKey, anObject, stop)
+     {
+         [anObject enumerateKeysAndObjectsUsingBlock:function(aKey2, anObject2, stop2)
+          {
+              // anObject2 is now a _CPThemeAttribute
+
+              [[anObject2 values] enumerateKeysAndObjectsUsingBlock:function(aKey3, anObject3, stop3)
+               {
+                   if (anObject3.isa && ([anObject3 isKindOfClass:CPImage] || [anObject3 isKindOfClass:CPColor]) && [anObject3 cssDictionary])
+                   {
+                       // We have a CSS defined image or color
+                       [self _fixPathInCSSDictionary:[anObject3 cssDictionary]       withPathToResources:pathToResources];
+                       [self _fixPathInCSSDictionary:[anObject3 cssBeforeDictionary] withPathToResources:pathToResources];
+                       [self _fixPathInCSSDictionary:[anObject3 cssAfterDictionary]  withPathToResources:pathToResources];
+                   }
+               }];
+          }];
+     }];
+}
+
+- (void)_fixPathInCSSDictionary:(CPDictionary)aDictionary withPathToResources:(CPString)pathToResources
+{
+    [aDictionary enumerateKeysAndObjectsUsingBlock:function(aKey, anObject, stop)
+     {
+         [aDictionary setObject:[anObject stringByReplacingOccurrencesOfString:@"%%" withString:pathToResources] forKey:aKey];
+     }];
+}
+
+- (BOOL)isCSSBased
+{
+    return !![self valueForAttributeWithName:@"css-based" forClass:[CPView class]];
+}
+
+@end
+
+#pragma mark -
 
 /*!
  * ThemeStates are immutable objects representing a particular ThemeState.  Applications should never be creating

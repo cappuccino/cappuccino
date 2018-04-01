@@ -20,6 +20,7 @@
  */
 
 @import <Foundation/Foundation.j>
+@import "CPResponder.j"
 
 @import "CPTheme.j"
 
@@ -476,5 +477,30 @@ var NULL_THEME = {};
         _themeAttributes[attribute._name] = CPThemeAttributeDecode(aCoder, attribute);
     }
 }
+
+#pragma mark -
+#pragma mark CSS styling additions
+
+- (CPTheme)actualTheme
+{
+    return _theme ? _theme : [CPTheme defaultTheme];
+}
+
+// These methods implement inherited theme attributes thru class hierarchy.
+- (id)actualValueForThemeAttribute:(CPString)aName
+{
+    return [self actualValueForThemeAttribute:aName inState:CPThemeStateNormal];
+}
+
+- (id)actualValueForThemeAttribute:(CPString)aName inState:(ThemeState)aState
+{
+    for (var currentClass = [self class], foundAttribute = nil, currentTheme = [self actualTheme]; (currentClass && (currentClass !== CPResponder) && !foundAttribute); currentClass = [currentClass superclass])
+
+        foundAttribute = [currentTheme attributeWithName:aName forClass:currentClass];
+
+    return (foundAttribute ? [foundAttribute valueForState:aState] : nil);
+}
+
+
 
 @end
