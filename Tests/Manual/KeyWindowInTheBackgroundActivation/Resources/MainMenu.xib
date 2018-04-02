@@ -1,8 +1,8 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="11762" systemVersion="15G18013" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="13771" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
     <dependencies>
         <deployment version="1050" identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="11762"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="13771"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -328,10 +328,10 @@
                 <rect key="frame" x="0.0" y="0.0" width="480" height="270"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" id="CYV-eL-j9l">
-                        <rect key="frame" x="48" y="114" width="384" height="42"/>
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" allowsCharacterPickerTouchBarItem="YES" id="CYV-eL-j9l">
+                        <rect key="frame" x="58" y="114" width="365" height="42"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="center" title="This is window 2--bet you can't click on window 1 to bring it to front!" id="42x-Ge-M2N">
+                        <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="center" title="This is window 2--let us hope a click on window 1 will bring it to front!" id="42x-Ge-M2N">
                             <font key="font" size="15" name="Arial-BoldMT"/>
                             <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
