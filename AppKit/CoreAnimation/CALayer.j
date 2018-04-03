@@ -522,7 +522,7 @@ var CALayerRegisteredRunLoopUpdates             = nil;
     if (USE_BUFFER)
     {
         if (_delegateRespondsToDisplayLayerSelector)
-            return [_delegate displayInLayer:self];
+            return [_delegate displayLayer:self];
 
         if (CGRectGetWidth(_backingStoreFrame) == 0.0 || CGRectGetHeight(_backingStoreFrame) == 0.0)
             return;
