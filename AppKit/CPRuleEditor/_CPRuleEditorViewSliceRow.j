@@ -209,8 +209,7 @@
 
 - (void)_reconfigureSubviews
 {
-    var ruleItems,
-        criteria,
+    var criteria,
         repObject,
         menuItem,
         ruleView,
