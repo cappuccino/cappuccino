@@ -463,13 +463,13 @@ var CPProgressIndicatorSpinningStyleColors = [];
             var midX = CGRectGetMidX(rect),
                 midY = CGRectGetMidY(rect),
                 endAngle = Math.PI * 2 * (([self doubleValue] - [self minValue]) / ([self maxValue] - [self minValue])) - Math.PI / 2,
-                radius = MIN(rect.size.width / 2, rect.size.height / 2)
+                radius = MIN(rect.size.width / 2, rect.size.height / 2);
 
             CGContextBeginPath(context);
             CGContextSetLineWidth(context, borderSize);
-            CGContextSetFillColor(context, [self currentValueForThemeAttribute:@"circular-color"])
+            CGContextSetFillColor(context, [self currentValueForThemeAttribute:@"circular-color"]);
             CGContextMoveToPoint(context, midX, midY);
-            CGContextAddArc(context, midX, midY, radius, 3 * Math.PI / 2, endAngle, YES)
+            CGContextAddArc(context, midX, midY, radius, 3 * Math.PI / 2, endAngle, YES);
             CGContextAddLineToPoint(context, midX, midY);
             CGContextClosePath(context);
             CGContextFillPath(context);
@@ -478,7 +478,7 @@ var CPProgressIndicatorSpinningStyleColors = [];
         else if ([self doubleValue] == [self maxValue])
         {
             CGContextBeginPath(context);
-            CGContextSetFillColor(context, [self currentValueForThemeAttribute:@"circular-color"])
+            CGContextSetFillColor(context, [self currentValueForThemeAttribute:@"circular-color"]);
             CGContextAddEllipseInRect(context, rect);
             CGContextClosePath(context);
             CGContextFillPath(context);
