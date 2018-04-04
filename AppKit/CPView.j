@@ -449,7 +449,7 @@ var CPViewHighDPIDrawingEnabled = YES;
         return;
 
     if (!_toolTipFunctionIn)
-        _toolTipFunctionIn = function(e) { [_CPToolTip scheduleToolTipForView:self]; }
+        _toolTipFunctionIn = function(e) { [_CPToolTip scheduleToolTipForView:self]; };
 
     if (!_toolTipFunctionOut)
         _toolTipFunctionOut = function(e) { [_CPToolTip invalidateCurrentToolTipIfNeeded]; };
