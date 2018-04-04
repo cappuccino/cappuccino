@@ -153,7 +153,7 @@ var CPToolbarsByIdentifier              = nil,
 
     if (!toolbarsSharingIdentifier)
     {
-        toolbarsSharingIdentifier = []
+        toolbarsSharingIdentifier = [];
         [CPToolbarsByIdentifier setObject:toolbarsSharingIdentifier forKey:identifier];
     }
 
@@ -588,7 +588,7 @@ var CPToolbarIdentifierKey              = @"CPToolbarIdentifierKey",
     [aCoder encodeBool:_showsBaselineSeparator forKey:CPToolbarShowsBaselineSeparatorKey];
     [aCoder encodeBool:_allowsUserCustomization forKey:CPToolbarAllowsUserCustomizationKey];
     [aCoder encodeBool:_isVisible forKey:CPToolbarIsVisibleKey];
-    [aCoder encodeInt:_sizeMode forKey:CPToolbarSizeModeKey]
+    [aCoder encodeInt:_sizeMode forKey:CPToolbarSizeModeKey];
 
     [aCoder encodeObject:_identifiedItems forKey:CPToolbarIdentifiedItemsKey];
     [aCoder encodeObject:_defaultItems forKey:CPToolbarDefaultItemsKey];
