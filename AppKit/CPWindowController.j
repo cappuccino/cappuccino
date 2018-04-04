@@ -364,7 +364,7 @@
     {
         [viewControllerView removeFromSuperview];
         [viewControllerView setFrame:[contentView frame]];
-        [viewControllerView setAutoresizingMask:[contentView autoresizingMask]]
+        [viewControllerView setAutoresizingMask:[contentView autoresizingMask]];
         [[self window] setContentView:viewControllerView];
     }
     else
