@@ -292,7 +292,7 @@ CPRatingLevelIndicatorStyle                 = 3;
     [self setNeedsLayout];
 }
 
-- (void)setWarningValue:(double)warningValue;
+- (void)setWarningValue:(double)warningValue
 {
     if (_warningValue === warningValue)
         return;
@@ -301,7 +301,7 @@ CPRatingLevelIndicatorStyle                 = 3;
     [self setNeedsLayout];
 }
 
-- (void)setCriticalValue:(double)criticalValue;
+- (void)setCriticalValue:(double)criticalValue
 {
     if (_criticalValue === criticalValue)
         return;
