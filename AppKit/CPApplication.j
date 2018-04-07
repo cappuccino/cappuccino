@@ -216,7 +216,7 @@ var CPApplicationDelegate_applicationShouldTerminate_           = 1 << 0,
     }
 
     if ([_delegate respondsToSelector:@selector(applicationShouldTerminate:)])
-        _implementedDelegateMethods |= CPApplicationDelegate_applicationShouldTerminate_
+        _implementedDelegateMethods |= CPApplicationDelegate_applicationShouldTerminate_;
 
     if ([_delegate respondsToSelector:@selector(applicationShouldTerminateMessage:)])
         _implementedDelegateMethods |= CPApplicationDelegate_applicationShouldTerminateMessage_
