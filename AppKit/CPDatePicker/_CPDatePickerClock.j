@@ -142,7 +142,7 @@ var RADIANS = Math.PI / 180;
     if ([_datePicker _isAmericanFormat])
     {
         if (dateValue.getHours() > 11)
-            [_PMAMTextField setStringValue:@"PM"]
+            [_PMAMTextField setStringValue:@"PM"];
         else
             [_PMAMTextField setStringValue:@"AM"];
 
