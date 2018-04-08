@@ -352,8 +352,8 @@ CPEraDatePickerElementFlag              = 0x0100;
     if (_implementedCDatePickerDelegateMethods & CPDatePicker_validateProposedDateValue_timeInterval)
     {
         // constrain timeInterval also
-        var aStartDateRef = function(x){if (typeof x == 'undefined') return aDateValue; aDateValue = x;}
-        var aTimeIntervalRef = function(x){if (typeof x == 'undefined') return aTimeInterval; aTimeInterval = x;}
+        var aStartDateRef = function(x){if (typeof x == 'undefined') return aDateValue; aDateValue = x;};
+        var aTimeIntervalRef = function(x){if (typeof x == 'undefined') return aTimeInterval; aTimeInterval = x;};
 
         [_delegate datePicker:self validateProposedDateValue:aStartDateRef timeInterval:aTimeIntervalRef];
     }
@@ -694,7 +694,7 @@ var CPDatePickerModeKey         = @"CPDatePickerModeKey",
     [aCoder encodeInt:_datePickerStyle forKey:CPDatePickerStyleKey];
     [aCoder encodeInt:_datePickerElements forKey:CPDatePickerElementsKey];
     [aCoder encodeObject:_minDate forKey:CPMinDateKey];
-    [aCoder encodeObject:_maxDate forKey:CPMaxDateKey]
+    [aCoder encodeObject:_maxDate forKey:CPMaxDateKey];
     [aCoder encodeObject:_dateValue forKey:CPDateValueKey];;
     [aCoder encodeObject:_textFont forKey:CPTextFontKey];
     [aCoder encodeObject:_locale forKey:CPLocaleKey];
