@@ -1903,7 +1903,7 @@ CPTexturedBackgroundWindowMask
                 // Make sure the browser doesn't try to do its own tab handling.
                 // This is important or the browser might blur the shared text field or token field input field,
                 // even that we just moved it to a new first responder.
-                [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:NO]
+                [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:NO];
 #endif
                 return;
             }
@@ -1917,7 +1917,7 @@ CPTexturedBackgroundWindowMask
                     // Make sure the browser doesn't try to do its own tab handling.
                     // This is important or the browser might blur the shared text field or token field input field,
                     // even that we just moved it to a new first responder.
-                    [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:NO]
+                    [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:NO];
 #endif
 
                 }
@@ -2009,13 +2009,13 @@ CPTexturedBackgroundWindowMask
 
             if (type == CPRightMouseDragged)
             {
-                selector = @selector(rightMouseDragged:)
+                selector = @selector(rightMouseDragged:);
                 if (![_leftMouseDownView respondsToSelector:selector])
                     selector = nil;
             }
 
             if (!selector)
-                selector = @selector(mouseDragged:)
+                selector = @selector(mouseDragged:);
 
             return [_leftMouseDownView performSelector:selector withObject:anEvent];
 
