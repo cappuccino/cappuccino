@@ -769,7 +769,7 @@ var ParentAttributeForCoder = nil;
             if ([aCoder containsValueForKey:@"state"])
                 state = [aCoder decodeObjectForKey:@"state"];
             else
-                state = CPThemeStateNormalString
+                state = CPThemeStateNormalString;
 
             [_values setObject:[aCoder decodeObjectForKey:"value"] forKey:state];
         }
