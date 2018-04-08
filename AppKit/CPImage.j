@@ -246,7 +246,7 @@ function CPAppKitImage(aFilename, aSize)
         var canvas = document.createElement("canvas"),
             ctx = canvas.getContext("2d");
 
-        canvas.width = _image.width,
+        canvas.width = _image.width;
         canvas.height = _image.height;
 
         ctx.drawImage(_image, 0, 0);

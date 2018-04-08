@@ -17,3 +17,4 @@ Tests/Manual/**/*.xcodeproj
 *.sublime-project
 *.sublime-workspace
 *.tm_properties
+*.idea

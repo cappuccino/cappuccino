@@ -549,7 +549,7 @@ CPTokenFieldDeleteButtonType     = 1;
         CPTokenFieldCachedSelectStartFunction = nil;
         CPTokenFieldCachedDragFunction = nil;
 
-        document.body.ondrag = CPTokenFieldCachedDragFunction
+        document.body.ondrag = CPTokenFieldCachedDragFunction;
         document.body.onselectstart = CPTokenFieldCachedSelectStartFunction
     }
 
@@ -1247,7 +1247,7 @@ CPTokenFieldDeleteButtonType     = 1;
             var scrollToToken = _shouldScrollTo;
 
             if (scrollToToken === CPScrollDestinationLeft)
-                scrollToToken = tokens[_selectedRange.location]
+                scrollToToken = tokens[_selectedRange.location];
             else if (scrollToToken === CPScrollDestinationRight)
                 scrollToToken = tokens[MAX(0, CPMaxRange(_selectedRange) - 1)];
             [self _scrollTokenViewToVisible:scrollToToken];

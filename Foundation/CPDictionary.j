@@ -276,7 +276,7 @@ var CPDictionaryMaxDescriptionRecursion = 10;
         while (argCount-- > 2)
         {
             var key = arguments[argCount--],
-                value = arguments[argCount]
+                value = arguments[argCount];
 
             if (value === nil)
                 [CPException raise:CPInvalidArgumentException reason:@"Attempt to insert nil object from objects[" + ((argCount / 2) - 1) + @"]"];

@@ -1923,7 +1923,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
     while (index !== CPNotFound)
     {
-        [items addObject:[_outlineView itemAtRow:index]]
+        [items addObject:[_outlineView itemAtRow:index]];
         index = [theIndexes indexGreaterThanIndex:index];
     }
 
@@ -1957,7 +1957,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 - (void)_parentItemForDropOperation:(CPTableViewDropOperation)theDropOperation row:(CPInteger)theRow offset:(CGPoint)theOffset
 {
     if (theDropOperation === CPTableViewDropAbove)
-        return [_outlineView _parentItemForUpperRow:theRow - 1 andLowerRow:theRow atMouseOffset:theOffset]
+        return [_outlineView _parentItemForUpperRow:theRow - 1 andLowerRow:theRow atMouseOffset:theOffset];
 
     return [_outlineView itemAtRow:theRow];
 }

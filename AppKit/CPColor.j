@@ -1247,7 +1247,8 @@ var patternColorsFromPattern = function(pattern, attributes, imageFactory)
             bottomHeight,
             centerWidthHeight,
             centerIsNil,
-            numParts;
+            numParts,
+            isVertical;
 
         // positions are mandatory
         if (pattern.indexOf("{position}") < 0)

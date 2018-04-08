@@ -512,8 +512,8 @@
 
     if (options & CPEnumerationReverse)
     {
-        index = _ranges.length - 1,
-        stop = -1,
+        index = _ranges.length - 1;
+        stop = -1;
         increment = -1;
     }
     else
@@ -593,8 +593,8 @@
 
     if (anOptions & CPEnumerationReverse)
     {
-        index = _ranges.length - 1,
-        stop = -1,
+        index = _ranges.length - 1;
+        stop = -1;
         increment = -1;
     }
     else
@@ -652,8 +652,8 @@
 
     if (anOptions & CPEnumerationReverse)
     {
-        index = _ranges.length - 1,
-        stop = -1,
+        index = _ranges.length - 1;
+        stop = -1;
         increment = -1;
     }
     else

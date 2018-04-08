@@ -39,8 +39,8 @@ var FILE = require("file"),
 
     SharedConverter = nil;
 
-NibFormatUndetermined   = 0,
-NibFormatMac            = 1,
+NibFormatUndetermined   = 0;
+NibFormatMac            = 1;
 NibFormatIPhone         = 2;
 
 ConverterModeLegacy   = 0;
