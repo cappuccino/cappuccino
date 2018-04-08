@@ -85,7 +85,7 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
 {
     if (self = [super initWithFrame:aFrame])
     {
-        _datePicker = aDatePicker
+        _datePicker = aDatePicker;
         [self _init];
     }
 
@@ -435,7 +435,7 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
             break;
 
         default:
-            return CPShortWeekDayNameArrayEn
+            return CPShortWeekDayNameArrayEn;
             break;
     }
 }
@@ -464,7 +464,7 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
             break;
 
         default:
-            return CPShortMonthNameArrayEn
+            return CPShortMonthNameArrayEn;
             break;
     }
 
@@ -526,11 +526,11 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
         var dayLabel = _dayLabels[i];
 
         [dayLabel setStringValue:dayNames[i]];
-        [dayLabel sizeToFit]
+        [dayLabel sizeToFit];
         [dayLabel setFrameOrigin:CGPointMake(sizeTileWidth * (i + 1) - sizeTileWidth / 2 - [dayLabel frameSize].width / 2, 23)];
 
         if (i == 0)
-            firstDayTileX = sizeTileWidth * (i + 1) - sizeTileWidth / 2 - [dayLabel frameSize].width / 2
+            firstDayTileX = sizeTileWidth * (i + 1) - sizeTileWidth / 2 - [dayLabel frameSize].width / 2;
     }
 
     // Title
@@ -769,7 +769,7 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
             tileDate = [[tile date] copy],
             selected = NO;
 
-        [tileDate _resetToMidnight]
+        [tileDate _resetToMidnight];
 
         if (aStartDate)
             selected = tileDate >= aStartDate && tileDate <= endDate;
@@ -845,7 +845,7 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
 
             // Very usefull to avoid to have a line of two pixels instead one
             if (!isBorderPair)
-                y += 0.5
+                y += 0.5;
 
             CGContextMoveToPoint(context, 0, y);
             CGContextAddLineToPoint(context, [self bounds].size.width, y);
@@ -857,7 +857,7 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
 
             // Very usefull to avoid to have a line of two pixels instead one
             if (!isBorderPair)
-                x += 0.5
+                x += 0.5;
 
             CGContextMoveToPoint(context, x, 0);
             CGContextAddLineToPoint(context, x, [self bounds].size.height);
@@ -869,7 +869,7 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
 
         // Very usefull to avoid to have a line of two pixels instead one
         if (!isBorderPair)
-            y += 0.5
+            y += 0.5;
 
         CGContextMoveToPoint(context, 0, y);
         CGContextAddLineToPoint(context, [self bounds].size.width, y);
@@ -897,7 +897,7 @@ var CPShortWeekDayNameArrayEn = [@"Mo", @"Tu", @"We", @"Th", @"Fr", @"Sa", @"Su"
     _clickDate = [dateTile copy];
     _dragDate = nil;
     _indexDayTile = -1;
-    _eventDragged = nil
+    _eventDragged = nil;
 
     _datePicker._invokedByUserEvent = YES;
 
