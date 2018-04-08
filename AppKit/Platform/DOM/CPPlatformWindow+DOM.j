@@ -666,7 +666,8 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
     }
     else if (type === "dragend")
     {
-        var dropEffect = aDOMEvent.dataTransfer.dropEffect;
+        var dropEffect = aDOMEvent.dataTransfer.dropEffect,
+            dragOperation;
 
         if (dropEffect === "move")
             dragOperation = CPDragOperationMove;
@@ -944,8 +945,7 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
     if (!theWindow)
         return;
 
-    var windowNumber = [theWindow windowNumber];
-
+    windowNumber = [theWindow windowNumber];
     location = [theWindow convertBridgeToBase:location];
 
     var event = [CPEvent mouseEventWithType:CPScrollWheel location:location modifierFlags:modifierFlags
@@ -1422,7 +1422,7 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
         var insertionIndex = 0;
 
         if (middle !== undefined)
-            insertionIndex = _windowLevels[middle] > aLevel ? middle : middle + 1
+            insertionIndex = _windowLevels[middle] > aLevel ? middle : middle + 1;
 
         [_windowLevels insertObject:aLevel atIndex:insertionIndex];
         layer._DOMElement.style.zIndex = aLevel + 1;  // adding one avoids negative zIndices. These have been causing issues in Chrome
@@ -1821,7 +1821,7 @@ var _CPEventFromNativeMouseEvent = function(aNativeEvent, anEventType, aPoint, m
 var CLICK_SPACE_DELTA   = 5.0,
     CLICK_TIME_DELTA    = (typeof document != "undefined" && document.addEventListener) ? 0.55 : 1.0;
 
-var CPDOMEventGetClickCount = function(aComparisonEvent, aTimestamp, aLocation)
+CPDOMEventGetClickCount = function(aComparisonEvent, aTimestamp, aLocation)
 {
     if (!aComparisonEvent)
         return 1;
