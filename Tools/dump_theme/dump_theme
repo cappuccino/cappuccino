@@ -8,7 +8,7 @@
 var FILE = require("file"),
     OS = require("os"),
 
-    DefaultTheme = "Aristo2",
+    DefaultTheme = "AristoFlat",
     BuildTypes = ["Debug", "Release"],
 
     FILE = require("file"),

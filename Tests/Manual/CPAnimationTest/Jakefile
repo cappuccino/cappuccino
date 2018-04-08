@@ -117,10 +117,10 @@ function updateApplicationSize()
     });
 
     // Read in the default theme name, and attempt to get its size
-    var themeName = plist.valueForKey("CPDefaultTheme") || "Aristo2",
+    var themeName = plist.valueForKey("CPDefaultTheme") || "AristoFlat",
         themePath = nil;
 
-    if (themeName === "Aristo" || themeName === "Aristo2")
+    if (themeName === "Aristo" || themeName === "AristoFlat")
         themePath = FILE.join(frameworksDir, "AppKit", "Resources", themeName + ".blend");
     else
         themePath = FILE.join("Frameworks", "Resources", themeName + ".blend");
