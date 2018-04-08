@@ -1614,6 +1614,7 @@ Sets the selection to a range of characters in response to user action.
     [self didChangeText];
     [_layoutManager _validateLayoutAndGlyphs];
     [self sizeToFit];
+    [self scrollRangeToVisible:CPMakeRange(changedRange.location, 0)]
     _stickyXLocation = _caret._rect.origin.x;
 }
 
