@@ -59,7 +59,7 @@ CPUserNotificationActivationTypeActionButtonClicked = 2;
     @group CPUserNotificationActivationType
     The user replied to the notification.
 */
-CPUserNotificationActivationTypeReplied = 3,
+CPUserNotificationActivationTypeReplied = 3;
 
 /*!
     @global CPUserNotificationActivationType
