@@ -247,7 +247,7 @@
         _blackWheelImage = new Image();
         _blackWheelImage.src = path;
         _blackWheelImage.style.opacity = "0";
-        _blackWheelImage.style.filter = "alpha(opacity=0)"
+        _blackWheelImage.style.filter = "alpha(opacity=0)";
         _blackWheelImage.style.position = "absolute";
 
         _DOMElement.appendChild(_wheelImage);
