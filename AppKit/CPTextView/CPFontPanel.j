@@ -412,7 +412,7 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
         return [_availableFonts count];
 
     if (aBrowser === _traitBrowser)
-        return [_availableTraits count]
+        return [_availableTraits count];
 
     return [_availableSizes count]
 }
