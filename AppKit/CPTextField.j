@@ -331,7 +331,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
             [CPTextFieldInputOwner keyUp:cappEvent];
 
             [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-        }
+        };
 
         CPTextFieldDOMPasswordInputElement.oninput = CPTextFieldInputFunction;
         CPTextFieldDOMPasswordInputElement.onblur = CPTextFieldBlurHandler;
@@ -1040,7 +1040,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
             [[self window] platformWindow]._DOMBodyElement.ondrag = CPTextFieldCachedDragFunction;
             [[self window] platformWindow]._DOMBodyElement.onselectstart = CPTextFieldCachedSelectStartFunction;
 
-            CPTextFieldCachedSelectStartFunction = nil
+            CPTextFieldCachedSelectStartFunction = nil;
             CPTextFieldCachedDragFunction = nil;
         }
 
@@ -1243,7 +1243,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         return;
 
     if (_implementedDelegateMethods & CPTextFieldDelegate_controlTextDidBeginEditing_)
-        [_delegate controlTextDidBeginEditing:[[CPNotification alloc] initWithName:CPControlTextDidBeginEditingNotification object:self userInfo:@{"CPFieldEditor": [note object]}]]
+        [_delegate controlTextDidBeginEditing:[[CPNotification alloc] initWithName:CPControlTextDidBeginEditingNotification object:self userInfo:@{"CPFieldEditor": [note object]}]];
 
     [super textDidBeginEditing:note];
 }
@@ -1790,7 +1790,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     _implementedDelegateMethods = 0;
 
     if ([_delegate respondsToSelector:@selector(control:didFailToFormatString:errorDescription:)])
-        _implementedDelegateMethods |= CPTextFieldDelegate_control_didFailToFormatString_errorDescription_
+        _implementedDelegateMethods |= CPTextFieldDelegate_control_didFailToFormatString_errorDescription_;
 
     if ([_delegate respondsToSelector:@selector(controlTextDidBeginEditing:)])
         _implementedDelegateMethods |= CPTextFieldDelegate_controlTextDidBeginEditing_;
