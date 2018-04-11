@@ -2117,6 +2117,9 @@ CPTexturedBackgroundWindowMask
 /* @ignore */
 - (BOOL)_isFrontmostWindow
 {
+    if ([self isFullBridge])
+        return YES;
+
     var orderedWindows = [CPApp orderedWindows];
 
     if ([orderedWindows count] == 0)
