@@ -191,7 +191,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
 */
 - (void)finishEncoding
 {
-    if (_delegate && _delegateSelectors & _CPKeyedArchiverDidFinishEncodingSelector)
+    if (_delegate && _delegateSelectors & _CPKeyedArchiverWillFinishEncodingSelector)
         [_delegate archiverWillFinish:self];
 
     var i = 0,
@@ -299,10 +299,10 @@ var _CPKeyedArchiverStringClass                         = Nil,
     if ([_delegate respondsToSelector:@selector(archiver:willReplaceObject:withObject:)])
         _delegateSelectors |= _CPKeyedArchiverWillReplaceObjectWithObjectSelector;
 
-    if ([_delegate respondsToSelector:@selector(archiver:didFinishEncoding:)])
+    if ([_delegate respondsToSelector:@selector(archiverDidFinish:)])
         _delegateSelectors |= _CPKeyedArchiverDidFinishEncodingSelector;
 
-    if ([_delegate respondsToSelector:@selector(archiver:willFinishEncoding:)])
+    if ([_delegate respondsToSelector:@selector(archiverWillFinish:)])
         _delegateSelectors |= _CPKeyedArchiverWillFinishEncodingSelector;
 
 }
