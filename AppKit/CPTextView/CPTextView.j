@@ -2250,7 +2250,8 @@ Sets the selection to a range of characters in response to user action.
                       [[self class] _binderClassForBinding:CPValueBinding],
         theBinding = [binderClass getBinding:CPAttributedStringBinding forObject:self] || [binderClass getBinding:CPValueBinding forObject:self];
 
-    [theBinding reverseSetValueFor:@"objectValue"];
+    if (theBinding && [self isEditable])
+        [theBinding reverseSetValueFor:@"objectValue"];
 }
 
 @end
