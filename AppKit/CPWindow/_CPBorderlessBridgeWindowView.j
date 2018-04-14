@@ -91,8 +91,8 @@
         [theWindow._contentView setFrameSize:CGSizeMake(MAX(_frame.size.width, theWindow._minSize.width), MAX(_frame.size.height, theWindow._minSize.height))];
 
 #if PLATFORM(DOM)
-    _DOMElement.style.overflowX = (aFrameSize.width < theWindow._minSize.width)? "scroll":"hidden";
-    _DOMElement.style.overflowY = (aFrameSize.height < theWindow._minSize.height)? "scroll":"hidden";
+    _DOMElement.style.overflowX = (_frame.size.width < theWindow._minSize.width)? "scroll":"hidden";
+    _DOMElement.style.overflowY = (_frame.size.height < theWindow._minSize.height)? "scroll":"hidden";
 #endif
 }
 
