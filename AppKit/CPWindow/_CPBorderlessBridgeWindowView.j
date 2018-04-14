@@ -87,8 +87,8 @@
 
     var theWindow = [self window];
 
-    if (aFrameSize.width < theWindow._minSize.width || aFrameSize.height < theWindow._minSize.height)
-        [theWindow._contentView setFrameSize:CGSizeMake(MAX(aFrameSize.width, theWindow._minSize.width), MAX(aFrameSize.height, theWindow._minSize.height))];
+    if (_frame.size.width < theWindow._minSize.width || _frame.size.height < theWindow._minSize.height)
+        [theWindow._contentView setFrameSize:CGSizeMake(MAX(_frame.size.width, theWindow._minSize.width), MAX(_frame.size.height, theWindow._minSize.height))];
 
 #if PLATFORM(DOM)
     _DOMElement.style.overflowX = (aFrameSize.width < theWindow._minSize.width)? "scroll":"hidden";

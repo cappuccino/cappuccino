@@ -3609,6 +3609,20 @@ var keyViewComparator = function(lhs, rhs, context)
 }
 
 /*!
+ @ignore
+ get the scroll offset (if any) from native scroll bars (can happen when the platform window shrinks below minSize)
+*/
+- (CGPoint)_nativeScrollOffset
+{
+#if PLATFORM(DOM)
+    return  CGPointMake(_windowView._DOMElement.scrollLeft, _windowView._DOMElement.scrollTop);
+#else
+    CGPointMake(0, 0);
+#endif
+
+}
+
+/*!
     Converts aPoint from the global coordinate system to the window coordinate system.
 */
 - (CGPoint)convertGlobalToBase:(CGPoint)aPoint
@@ -3624,9 +3638,10 @@ var keyViewComparator = function(lhs, rhs, context)
     if ([self _sharesChromeWithPlatformWindow])
         return CGPointMakeCopy(aPoint);
 
-    var origin = [self frame].origin;
+    var origin = [self frame].origin,
+        scrollOffset = [self _nativeScrollOffset];
 
-    return CGPointMake(aPoint.x + origin.x, aPoint.y + origin.y);
+    return CGPointMake(aPoint.x + origin.x - scrollOffset.x, aPoint.y + origin.y - scrollOffset.y);
 }
 
 /*!
@@ -3637,9 +3652,10 @@ var keyViewComparator = function(lhs, rhs, context)
     if ([self _sharesChromeWithPlatformWindow])
         return CGPointMakeCopy(aPoint);
 
-    var origin = [self frame].origin;
+    var origin = [self frame].origin,
+        scrollOffset = [self _nativeScrollOffset];
 
-    return CGPointMake(aPoint.x - origin.x, aPoint.y - origin.y);
+    return CGPointMake(aPoint.x - origin.x + scrollOffset.x, aPoint.y - origin.y + scrollOffset.y);
 }
 
 - (CGPoint)convertScreenToBase:(CGPoint)aPoint

@@ -2,7 +2,7 @@
  * AppController.j
  * MinSize PlattformWindow
  *
- * Created by Daniel Boerhinger on March 25, 2018.
+ * Created by Daniel Boehringer on March 25, 2018.
  */
 
 @import <Foundation/CPObject.j>
