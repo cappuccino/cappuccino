@@ -512,6 +512,53 @@ function CPAppKitImage(aFilename, aSize)
 #pragma mark -
 #pragma mark CSS Theming
 
+// The code below adds support for CSS theming with 100% compatibility with current theming system.
+// The idea is to extend CPImage (and CPColor) with CSS components and adapt low level UI components to
+// support this new kind of CPColor/CPImage. See CPImageView, CPView and _CPImageAndTextView.
+//
+// To create a CPImage that uses CSS, simply use the new class method :
+// + (CPImage)imageWithCSSDictionary:(CPDictionary)aDictionary beforeDictionary:(CPDictionary)beforeDictionary afterDictionary:(CPDictionary)afterDictionary size:(CGSize)aSize
+// where beforeDictionary & afterDictionary are related to ::before & ::after pseudo-elements.
+// If you don't need them, just use the simplified class method :
+// + (CPImage)imageWithCSSDictionary:(CPDictionary)aDictionary size:(CGSize)aSize
+//
+// Examples :
+// regularImageNormal = [CPImage imageWithCSSDictionary:@{
+//                                                        @"border-color": A3ColorActiveBorder,
+//                                                        @"border-style": @"solid",
+//                                                        @"border-width": @"1px",
+//                                                        @"border-radius": @"50%",
+//                                                        @"box-sizing": @"border-box",
+//                                                        @"background-color": A3ColorBackgroundWhite,
+//                                                        @"transition-duration": @"0.35s",
+//                                                        @"transition-property": @"all",
+//                                                        @"transition-timing-function": @"ease"
+//                                                        }
+//                                                 size:CGSizeMake(16,16)];
+//
+// imageSearch = [CPImage imageWithCSSDictionary:@{
+//                                                 @"background-image": @"url(%%packed.png)",
+//                                                 @"background-position": @"-16px -32px",
+//                                                 @"background-repeat": @"no-repeat",
+//                                                 @"background-size": @"100px 400px"
+//                                                 }
+//                                          size:CGSizeMake(16,16)];
+//
+// Remark : Please note the special URL of the background image used in this example : url(%%packed.png)
+//          During theme loading, "%%" will be replaced by the path to the theme blend resources folder.
+//          Typically, a CSS theme will use some (rare) images all packed together in a single image resource (see packed.png in Aristo3 theme)
+//
+//          Also, please note that if you don't use one of the CSS components, you can either set it to nil (best solution) or to an empty dictionary, like :
+//          aCssImage = [CPImage imageWithCSSDictionary:@{} beforeDictionary:nil afterDictionary:@{ ... }];
+//
+// You can use -(BOOL)isCSSBased to determine how to cope with it in your code.
+// -(BOOL)hasCSSDictionary, -(BOOL)hasCSSBeforeDictionary and -(BOOL)hasCSSAfterDictionary are convience methods you can use.
+//
+// Remark : -(DOMElement)applyCSSImageForView is meant to be used by low level UI widgets (like CPImageView and _CPImageAndTextView) to implement CSS theme support.
+//
+// In some circumstances, you may have to clear a CSS image. You can do this easily by replacing your current image with the special dummy empty CSS image :
+// [CPImage dummyCSSImageOfSize:CGSizeMake(someWidth, someHeight)]
+
 @implementation CPImage (CSSTheming)
 {
     CPDictionary            _cssDictionary              @accessors(property=cssDictionary);

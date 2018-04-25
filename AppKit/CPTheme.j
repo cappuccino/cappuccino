@@ -319,6 +319,27 @@ var CPThemeNameKey          = @"CPThemeNameKey",
 #pragma mark -
 #pragma mark CSS Theming
 
+// The code below adds support for CSS theming with 100% compatibility with current theming system.
+// The idea is to extend CPColor and CPImage with CSS components and adapt low level UI components to
+// support this new kind of CPColor/CPImage. See CPImageView, CPView and _CPImageAndTextView.
+//
+// To be considered and treated as CSS based, a theme must set to YES the attrivute "css-based" for CPView
+// in the theDescriptor (default value is NO), like in the example below :
+//
+// + (CPView)themedView
+// {
+//     var view = [[CPView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];
+//
+//     [self registerThemeValues:[[@"css-based", YES]] forView:view];
+//
+//     return view;
+// }
+//
+// You can use the method -(BOOL)isCSSBased on a theme to determine how to cope with it in your own code.
+//
+// The method -(void)setCSSResourcesPath is meant to be used only by CPThemeBlend during theme loading in order to
+// replace the special path "%%" in CSS components (like in url(%%packed.png) ) with the path to the theme blend resources folder.
+
 @implementation CPTheme (CSSTheming)
 
 - (void)setCSSResourcesPath:(CPString)pathToResources

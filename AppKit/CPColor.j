@@ -880,6 +880,62 @@ url("data:image/png;base64,BASE64ENCODEDDATA")  // if there is a pattern image
 #pragma mark -
 #pragma mark CSS Theming
 
+// The code below adds support for CSS theming with 100% compatibility with current theming system.
+// The idea is to extend CPColor (and CPImage) with CSS components and adapt low level UI components to
+// support this new kind of CPColor/CPImage. See CPImageView, CPView and _CPImageAndTextView.
+//
+// To create a CPColor that uses CSS, simply use the new class method :
+// + (CPColor)colorWithCSSDictionary:(CPDictionary)aDictionary beforeDictionary:(CPDictionary)beforeDictionary afterDictionary:(CPDictionary)afterDictionary
+// where beforeDictionary & afterDictionary are related to ::before & ::after pseudo-elements.
+// If you don't need them, just use the simplified class method :
+// + (CPColor)colorWithCSSDictionary:(CPDictionary)aDictionary
+//
+// Example :
+// buttonCssColor = [CPColor colorWithCSSDictionary:@{
+//                                                    @"background-color": A3ColorBackgroundWhite,
+//                                                    @"border-color": A3ColorActiveBorder,
+//                                                    @"border-style": @"solid",
+//                                                    @"border-width": @"1px",
+//                                                    @"border-radius": @"3px",
+//                                                    @"box-sizing": @"border-box"
+//                                                    }
+//                                 beforeDictionary:@{
+//                                                    @"background-color": @"rgb(225,225,225)",
+//                                                    @"bottom": @"3px",
+//                                                    @"content": @"''",
+//                                                    @"position": @"absolute",
+//                                                    @"right": @"21px",
+//                                                    @"top": @"3px",
+//                                                    @"width": @"1px"
+//                                                    }
+//                                  afterDictionary:@{
+//                                                    @"content": @"''",
+//                                                    @"bottom": @"3px",
+//                                                    @"right": @"6px",
+//                                                    @"top": @"1px",
+//                                                    @"position": @"absolute",
+//                                                    @"height": @"14px",
+//                                                    @"width": @"9px",
+//                                                    @"margin": @"2px 0px 2px 0px",
+//                                                    @"background-image": @"url(%%packed.png)",
+//                                                    @"background-position": @"0px -64px",
+//                                                    @"background-repeat": @"no-repeat",
+//                                                    @"background-size": @"100px 400px"
+//                                                    }];
+//
+// Remark : Please note the special URL of the background image used in this example : url(%%packed.png)
+//          During theme loading, "%%" will be replaced by the path to the theme blend resources folder.
+//          Typically, a CSS theme will use some (rare) images all packed together in a single image resource (see packed.png in Aristo3 theme)
+//
+//          Also, please note that if you don't use one of the CSS components, you can either set it to nil (best solution) or to an empty dictionary, like :
+//          aCssColor = [CPColor colorWithCSSDictionary:@{} beforeDictionary:nil afterDictionary:@{ ... }];
+//
+// You can use -(BOOL)isCSSBased to determine how to cope with it in your code.
+// -(BOOL)hasCSSDictionary, -(BOOL)hasCSSBeforeDictionary and -(BOOL)hasCSSAfterDictionary are convience methods you can use.
+//
+// Remark : -(void)restorePreviousCSSState and -(DOMElement)applyCSSColorForView are meant to be used by low level UI widgets (like CPView) to implement
+//          CSS theme support.
+
 @implementation CPColor (CSSTheming)
 {
     CPDictionary    _cssDictionary              @accessors(property=cssDictionary);
