@@ -323,7 +323,7 @@ var CPThemeNameKey          = @"CPThemeNameKey",
 // The idea is to extend CPColor and CPImage with CSS components and adapt low level UI components to
 // support this new kind of CPColor/CPImage. See CPImageView, CPView and _CPImageAndTextView.
 //
-// To be considered and treated as CSS based, a theme must set to YES the attrivute "css-based" for CPView
+// To be considered and treated as CSS based, a theme must set to YES the attribute "css-based" for CPView
 // in the theDescriptor (default value is NO), like in the example below :
 //
 // + (CPView)themedView
