@@ -24,9 +24,12 @@
 @import <Foundation/CPMutableArray.j>
 @import <Foundation/CPString.j>
 @import <Foundation/CPKeyedUnarchiver.j>
+@import <Foundation/CPBundle.j>
 
 @class CPView
 @class _CPThemeAttribute
+@class CPImage
+@class CPColor
 
 var CPThemesByName          = { },
     CPThemeDefaultTheme     = nil,
@@ -312,6 +315,71 @@ var CPThemeNameKey          = @"CPThemeNameKey",
 }
 
 @end
+
+#pragma mark -
+#pragma mark CSS Theming
+
+// The code below adds support for CSS theming with 100% compatibility with current theming system.
+// The idea is to extend CPColor and CPImage with CSS components and adapt low level UI components to
+// support this new kind of CPColor/CPImage. See CPImageView, CPView and _CPImageAndTextView.
+//
+// To be considered and treated as CSS based, a theme must set to YES the attribute "css-based" for CPView
+// in the theDescriptor (default value is NO), like in the example below :
+//
+// + (CPView)themedView
+// {
+//     var view = [[CPView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];
+//
+//     [self registerThemeValues:[[@"css-based", YES]] forView:view];
+//
+//     return view;
+// }
+//
+// You can use the method -(BOOL)isCSSBased on a theme to determine how to cope with it in your own code.
+//
+// The method -(void)setCSSResourcesPath is meant to be used only by CPThemeBlend during theme loading in order to
+// replace the special path "%%" in CSS components (like in url(%%packed.png) ) with the path to the theme blend resources folder.
+
+@implementation CPTheme (CSSTheming)
+
+- (void)setCSSResourcesPath:(CPString)pathToResources
+{
+    [_attributes enumerateKeysAndObjectsUsingBlock:function(aKey, anObject, stop)
+     {
+         [anObject enumerateKeysAndObjectsUsingBlock:function(aKey2, anObject2, stop2)
+          {
+              // anObject2 is now a _CPThemeAttribute
+
+              [[anObject2 values] enumerateKeysAndObjectsUsingBlock:function(aKey3, anObject3, stop3)
+               {
+                   if (anObject3.isa && ([anObject3 isKindOfClass:CPImage] || [anObject3 isKindOfClass:CPColor]) && [anObject3 cssDictionary])
+                   {
+                       // We have a CSS defined image or color
+                       [self _fixPathInCSSDictionary:[anObject3 cssDictionary]       withPathToResources:pathToResources];
+                       [self _fixPathInCSSDictionary:[anObject3 cssBeforeDictionary] withPathToResources:pathToResources];
+                       [self _fixPathInCSSDictionary:[anObject3 cssAfterDictionary]  withPathToResources:pathToResources];
+                   }
+               }];
+          }];
+     }];
+}
+
+- (void)_fixPathInCSSDictionary:(CPDictionary)aDictionary withPathToResources:(CPString)pathToResources
+{
+    [aDictionary enumerateKeysAndObjectsUsingBlock:function(aKey, anObject, stop)
+     {
+         [aDictionary setObject:[anObject stringByReplacingOccurrencesOfString:@"%%" withString:pathToResources] forKey:aKey];
+     }];
+}
+
+- (BOOL)isCSSBased
+{
+    return !![self valueForAttributeWithName:@"css-based" forClass:[CPView class]];
+}
+
+@end
+
+#pragma mark -
 
 /*!
  * ThemeStates are immutable objects representing a particular ThemeState.  Applications should never be creating
