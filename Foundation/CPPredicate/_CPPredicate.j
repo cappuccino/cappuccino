@@ -287,7 +287,7 @@
 
 - (id)initWithString:(CPString)format args:(CPArray)args
 {
-    self = [super initWithString:format]
+    self = [super initWithString:format];
 
     if (self)
     {

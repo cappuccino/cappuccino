@@ -67,7 +67,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 
     CPSegmentedControl      _tabs;
     _CPTabViewBox           _box;
-    CPView                  _placeHolderView;
+    CPView                  _placeholderView @accessors;
 
     CPTabViewItem           _selectedTabViewItem;
 
@@ -106,7 +106,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
     [self addSubview:_box];
     [self addSubview:_tabs];
 
-    _placeHolderView = nil;
+    _placeholderView = nil;
 }
 
 - (CPArray)items
@@ -617,7 +617,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 
 - (CPBinder)binderForBinding:(CPString)aBinding
 {
-    var cls = [[self class] _binderClassForBinding:aBinding]
+    var cls = [[self class] _binderClassForBinding:aBinding];
     return [cls getBinding:aBinding forObject:self];
 }
 
@@ -652,17 +652,17 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 
 - (void)_displayPlaceholder:(CPString)aPlaceholder
 {
-    if (_placeHolderView == nil)
+    if (_placeholderView == nil)
     {
-        _placeHolderView = [[CPView alloc] initWithFrame:CGRectMakeZero()];
+        _placeholderView = [[CPView alloc] initWithFrame:CGRectMakeZero()];
         var textField = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
         [textField setTag:1000];
         [textField setTextColor:[CPColor whiteColor]];
         [textField setFont:[CPFont boldFontWithName:@"Geneva" size:18 italic:YES]];
-        [_placeHolderView addSubview:textField];
+        [_placeholderView addSubview:textField];
     }
 
-    var textField = [_placeHolderView viewWithTag:1000];
+    var textField = [_placeholderView viewWithTag:1000];
     [textField setStringValue:aPlaceholder];
     [textField sizeToFit];
 
@@ -672,7 +672,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 
     [textField setFrameOrigin:origin];
 
-    [self _displayItemView:_placeHolderView];
+    [self _displayItemView:_placeholderView];
 }
 
 #pragma mark -

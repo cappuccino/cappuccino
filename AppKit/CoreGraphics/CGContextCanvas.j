@@ -557,14 +557,14 @@ CGContextConcatCTM = function(aContext, anAffineTransform)
         b = VT.b;
         c = VT.c;
         d = VT.d;
-        scale_rotate(a, b, c, d)
+        scale_rotate(a, b, c, d);
         S.a *= sx;
         S.d *= sy;
         a = U.a;
         b = U.b;
         c = U.c;
         d = U.d;
-        rotate_scale(a, b, c, d)
+        rotate_scale(a, b, c, d);
         sx = S.a * sx;
         sy = S.d * sy;
     }

@@ -1903,7 +1903,7 @@ CPTexturedBackgroundWindowMask
                 // Make sure the browser doesn't try to do its own tab handling.
                 // This is important or the browser might blur the shared text field or token field input field,
                 // even that we just moved it to a new first responder.
-                [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:NO]
+                [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:NO];
 #endif
                 return;
             }
@@ -1917,7 +1917,7 @@ CPTexturedBackgroundWindowMask
                     // Make sure the browser doesn't try to do its own tab handling.
                     // This is important or the browser might blur the shared text field or token field input field,
                     // even that we just moved it to a new first responder.
-                    [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:NO]
+                    [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:NO];
 #endif
 
                 }
@@ -1983,7 +1983,7 @@ CPTexturedBackgroundWindowMask
             var theWindow = [anEvent window],
                 selector = type == CPRightMouseDown ? @selector(rightMouseDown:) : @selector(mouseDown:);
 
-            if ([theWindow isKeyWindow] || ([theWindow becomesKeyOnlyIfNeeded] && ![_leftMouseDownView needsPanelToBecomeKey]))
+            if (([theWindow _isFrontmostWindow] && [theWindow isKeyWindow]) || ([theWindow becomesKeyOnlyIfNeeded] && ![_leftMouseDownView needsPanelToBecomeKey]))
                 return [_leftMouseDownView performSelector:selector withObject:anEvent];
             else
             {
@@ -2009,13 +2009,13 @@ CPTexturedBackgroundWindowMask
 
             if (type == CPRightMouseDragged)
             {
-                selector = @selector(rightMouseDragged:)
+                selector = @selector(rightMouseDragged:);
                 if (![_leftMouseDownView respondsToSelector:selector])
                     selector = nil;
             }
 
             if (!selector)
-                selector = @selector(mouseDragged:)
+                selector = @selector(mouseDragged:);
 
             return [_leftMouseDownView performSelector:selector withObject:anEvent];
 
@@ -2112,6 +2112,23 @@ CPTexturedBackgroundWindowMask
 - (BOOL)isKeyWindow
 {
     return [CPApp keyWindow] == self;
+}
+
+/* @ignore */
+- (BOOL)_isFrontmostWindow
+{
+    if ([self isFullBridge])
+        return YES;
+
+    var orderedWindows = [CPApp orderedWindows];
+
+    if ([orderedWindows count] == 0)
+        return YES;
+
+    if ([orderedWindows objectAtIndex:0] === self)
+        return YES;
+
+    return NO;
 }
 
 /*!

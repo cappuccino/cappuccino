@@ -393,7 +393,7 @@
 
         while (index !== CPNotFound)
         {
-            _remove(_proxyObject, _removeSEL, index)
+            _remove(_proxyObject, _removeSEL, index);
             index = [theIndexes indexLessThanIndex:index];
         }
     }

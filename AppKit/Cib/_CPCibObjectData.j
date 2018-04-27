@@ -230,7 +230,7 @@ var _CPCibObjectDataNamesKeysKey                = @"_CPCibObjectDataNamesKeysKey
 
         if ([object respondsToSelector:@selector(_cibInstantiate)])
         {
-            var instantiatedObject = [object _cibInstantiate];
+            instantiatedObject = [object _cibInstantiate];
 
             if (instantiatedObject !== object)
             {

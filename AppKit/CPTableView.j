@@ -3760,7 +3760,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     {
         if (!dataViewsForRow)
         {
-            dataViewsForRow = {}
+            dataViewsForRow = {};
             _dataViewsForRows[row] = dataViewsForRow;
         }
 
@@ -4907,7 +4907,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         row = _retargetedDropRow;
 
     if (row === nil)
-        var row = [self _proposedRowAtPoint:location];
+        row = [self _proposedRowAtPoint:location];
 
     return [self _sendDataSourceAcceptDrop:sender row:row dropOperation:operation];
 }
@@ -6118,7 +6118,6 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
     CPTableViewGridStyleMaskKey             = @"CPTableViewGridStyleMaskKey",
     CPTableViewUsesAlternatingBackgroundKey = @"CPTableViewUsesAlternatingBackgroundKey",
     CPTableViewAlternatingRowColorsKey      = @"CPTableViewAlternatingRowColorsKey",
-    CPTableViewHeaderViewKey                = @"CPTableViewHeaderViewKey",
     CPTableViewCornerViewKey                = @"CPTableViewCornerViewKey",
     CPTableViewAutosaveNameKey              = @"CPTableViewAutosaveNameKey",
     CPTableViewArchivedReusableViewsKey     = @"CPTableViewArchivedReusableViewsKey";

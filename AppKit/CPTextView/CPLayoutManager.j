@@ -1179,7 +1179,7 @@ var _objectsInRange = function(aList, aRange)
     for (var i = 0; i < count; i++)
     {
         _glyphsFrames[i] = CGRectMake(origin.x, origin.y, someAdvancements[i].width, height);
-        _glyphsFrames[i]._descent = someAdvancements[i].descent
+        _glyphsFrames[i]._descent = someAdvancements[i].descent;
         _glyphsOffsets[i] = height - someAdvancements[i].height;
         origin.x += someAdvancements[i].width;
     }

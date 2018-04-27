@@ -48,7 +48,7 @@
     return class_createInstance(self);
 }
 
-+ (BOOL)respondsToSelector:(SEL)selector
++ (BOOL)respondsToSelector:(SEL)aSelector
 {
     return !!class_getInstanceMethod(isa, aSelector);
 }

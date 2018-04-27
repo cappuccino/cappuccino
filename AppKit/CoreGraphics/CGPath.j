@@ -132,9 +132,6 @@ function CGPathAddArc(aPath, aTransform, x, y, aRadius, aStartAngle, anEndAngle,
     }
     else
     {
-        var arcStartX = x + aRadius * COS(aStartAngle),
-            arcStartY = y + aRadius * SIN(aStartAngle);
-
         aPath.start = CGPointMake(arcStartX, arcStartY);
     }
 
@@ -274,7 +271,7 @@ function CGPathAddQuadCurveToPoint(aPath, aTransform, cpx, cpy, x, y)
         end = CGPointApplyAffineTransform(end, aTransform);
     }
 
-    aPath.elements[aPath.count++] = { type:kCGPathElementAddQuadCurveToPoint, cpx:cp.x, cpy:cp.y, x:end.x, y:end.y }
+    aPath.elements[aPath.count++] = { type:kCGPathElementAddQuadCurveToPoint, cpx:cp.x, cpy:cp.y, x:end.x, y:end.y };
     aPath.current = end;
 }
 
