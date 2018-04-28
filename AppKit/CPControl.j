@@ -1071,6 +1071,7 @@ var CPControlBlackColor = [CPColor blackColor];
                                                           owner:self
                                                        userInfo:nil];
     [self addTrackingArea:_controlTrackingArea];
+    [super updateTrackingAreas];
 }
 
 @end
