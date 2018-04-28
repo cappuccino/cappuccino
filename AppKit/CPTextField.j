@@ -169,7 +169,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 + (CPTextField)textFieldWithStringValue:(CPString)aStringValue placeholder:(CPString)aPlaceholder width:(float)aWidth theme:(CPTheme)aTheme
 {
-    var textField = [[self alloc] initWithFrame:CGRectMake(0.0, 0.0, aWidth, 29.0)];
+    var minSize = [aTheme valueForAttributeWithName:@"min-size" forClass:CPTextField],
+        textField = [[self alloc] initWithFrame:CGRectMake(0.0, 0.0, aWidth, minSize)];
 
     [textField setTheme:aTheme];
     [textField setStringValue:aStringValue];
@@ -190,7 +191,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 + (CPTextField)roundedTextFieldWithStringValue:(CPString)aStringValue placeholder:(CPString)aPlaceholder width:(float)aWidth theme:(CPTheme)aTheme
 {
-    var textField = [[CPTextField alloc] initWithFrame:CGRectMake(0.0, 0.0, aWidth, 29.0)];
+    var minSize = [aTheme valueForAttributeWithName:@"min-size" forClass:CPTextField],
+        textField = [[CPTextField alloc] initWithFrame:CGRectMake(0.0, 0.0, aWidth, minSize)];
 
     [textField setTheme:aTheme];
     [textField setStringValue:aStringValue];
