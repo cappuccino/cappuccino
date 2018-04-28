@@ -428,7 +428,12 @@ var CPViewHighDPIDrawingEnabled = YES;
 
         _inhibitDOMUpdates = NO;
         _forceUpdates = NO;
-    }
+
+        // We force here an updateTrackingAreas in order to let the view install its own tracking areas
+        // in the case where an externally owned tracking area is installed on this view before putting
+        // it in the view hierarchy.
+        [self updateTrackingAreas];
+}
 
     return self;
 }
