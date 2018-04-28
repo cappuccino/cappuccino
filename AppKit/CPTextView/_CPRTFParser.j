@@ -657,7 +657,7 @@ var kRgsymRtf = {
 }
 - (CPAttributedString)parseRTF:(CPString)rtf
 {
-    rtf = rtf.replace(/\\\n/g, "\\par\n")
+    rtf = rtf.replace(/\\\n/g, "\\par\n");
 
     if (rtf.length == 0)
         return '';
@@ -718,7 +718,7 @@ var kRgsymRtf = {
                     _freename = "";
                 }
 
-                [self _flushCurrentRun]
+                [self _flushCurrentRun];
                 break;
 
             case "\\":
@@ -751,7 +751,7 @@ var kRgsymRtf = {
                             if (hexTable && hexTable[hex.toUpperCase()] !== undefined)
                                 temp = parseInt(hexTable[hex.toUpperCase()], 16);
 
-                            [self _appendPlainString: String.fromCharCode(temp)]
+                            [self _appendPlainString: String.fromCharCode(temp)];
                             hex = '';
                         }
                     }

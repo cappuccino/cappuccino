@@ -163,7 +163,7 @@ following:
     if (normalizedFaces === _CPFontSystemFontFace)
         return;
 
-    [self _invalidateSystemFontCache]
+    [self _invalidateSystemFontCache];
     _CPFontSystemFontFace = aFace;
 }
 

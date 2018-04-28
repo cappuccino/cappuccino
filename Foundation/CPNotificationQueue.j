@@ -300,7 +300,7 @@ var runLoop = [CPRunLoop mainRunLoop];
         if (coalesceMask & CPNotificationCoalescingOnName && coalesceMask & CPNotificationCoalescingOnSender)
         {
             if ([notification object] == sender && [notification name] == name)
-                [notificationsToRemove addObject:notification]
+                [notificationsToRemove addObject:notification];
 
             continue;
         }
@@ -308,7 +308,7 @@ var runLoop = [CPRunLoop mainRunLoop];
         if (coalesceMask & CPNotificationCoalescingOnName)
         {
             if ([notification name] == name)
-                [notificationsToRemove addObject:notification]
+                [notificationsToRemove addObject:notification];
 
             continue;
         }
@@ -316,7 +316,7 @@ var runLoop = [CPRunLoop mainRunLoop];
         if (coalesceMask & CPNotificationCoalescingOnSender)
         {
             if ([notification object] == sender)
-                [notificationsToRemove addObject:notification]
+                [notificationsToRemove addObject:notification];
 
             continue;
         }

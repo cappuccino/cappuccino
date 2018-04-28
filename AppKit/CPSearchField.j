@@ -386,9 +386,9 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
 */
 - (void)setRecentSearches:(CPArray)searches
 {
-    var max = MIN([self maximumRecents], [searches count]),
-        searches = [searches subarrayWithRange:CPMakeRange(0, max)];
+    var max = MIN([self maximumRecents], [searches count]);
 
+    searches = [searches subarrayWithRange:CPMakeRange(0, max)];
     _recentSearches = searches;
     [self _autosaveRecentSearchList];
 }

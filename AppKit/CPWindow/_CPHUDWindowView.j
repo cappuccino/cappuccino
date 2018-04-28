@@ -183,7 +183,7 @@
     if (_styleMask & CPClosableWindowMask)
     {
         [_closeButton setFrameOrigin:[self valueForThemeAttribute:@"close-image-origin"]];
-        [_closeButton setFrameSize:[self valueForThemeAttribute:@"close-image-size"]]
+        [_closeButton setFrameSize:[self valueForThemeAttribute:@"close-image-size"]];
         [_closeButton setImage:[self valueForThemeAttribute:@"close-image"]];
         [_closeButton setAlternateImage:[self valueForThemeAttribute:@"close-active-image"]];
     }

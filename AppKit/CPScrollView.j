@@ -1253,7 +1253,7 @@ Notifies the delegate when the scroll view has finished scrolling.
     }
 
     if (_timerScrollersHide)
-        [_timerScrollersHide invalidate]
+        [_timerScrollersHide invalidate];
 
     _timerScrollersHide = [CPTimer scheduledTimerWithTimeInterval:CPScrollViewFadeOutTime target:self selector:@selector(_hideScrollers:) userInfo:nil repeats:NO];
 }

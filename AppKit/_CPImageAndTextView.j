@@ -331,9 +331,9 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
     {
         var textStyle = _DOMTextElement.style;
 
-        textFrame.origin.y = parseInt(textStyle.top.substr(0, textStyle.top.length - 2), 10),
-        textFrame.origin.x = parseInt(textStyle.left.substr(0, textStyle.left.length - 2), 10),
-        textFrame.size.width = parseInt(textStyle.width.substr(0, textStyle.width.length - 2), 10),
+        textFrame.origin.y = parseInt(textStyle.top.substr(0, textStyle.top.length - 2), 10);
+        textFrame.origin.x = parseInt(textStyle.left.substr(0, textStyle.left.length - 2), 10);
+        textFrame.size.width = parseInt(textStyle.width.substr(0, textStyle.width.length - 2), 10);
         textFrame.size.height = parseInt(textStyle.height.substr(0, textStyle.height.length - 2), 10);
 
         textFrame.size.width += _textShadowOffset.width;
@@ -437,55 +437,67 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
 
     var textStyle = hasDOMTextElement ? _DOMTextElement.style : nil;
 
-    // Create or destroy the DOM Text Shadow element as necessary.
-    // If _textShadowColor's alphaComponent is 0, don't bother drawing anything (issue #1412).
-    // This improves performance as we get rid of an invisible element, and makes IE <9.0 capable
-    // of correctly 'rendering' shadows with [CPColor clearColor].
-    var needsDOMTextShadowElement = hasDOMTextElement && [_textShadowColor alphaComponent] > 0.0,
-        hasDOMTextShadowElement = !!_DOMTextShadowElement;
-
-    if (needsDOMTextShadowElement !== hasDOMTextShadowElement)
+    // If theme is CSS based and if shadow color is a CSS dictionary, we don't need a separate DOM element,
+    // we simply put shadow styling on the regular text element
+    if (hasDOMTextElement && [[self actualTheme] isCSSBased] && [_textShadowColor cssDictionary])
     {
-        if (hasDOMTextShadowElement)
+        [[_textShadowColor cssDictionary] enumerateKeysAndObjectsUsingBlock:function(aKey, anObject, stop)
+         {
+             _DOMTextElement.style[aKey] = anObject;
+         }];
+    }
+    else
+    {
+        // Create or destroy the DOM Text Shadow element as necessary.
+        // If _textShadowColor's alphaComponent is 0, don't bother drawing anything (issue #1412).
+        // This improves performance as we get rid of an invisible element, and makes IE <9.0 capable
+        // of correctly 'rendering' shadows with [CPColor clearColor].
+        var needsDOMTextShadowElement = hasDOMTextElement && [_textShadowColor alphaComponent] > 0.0,
+            hasDOMTextShadowElement = !!_DOMTextShadowElement;
+
+        if (needsDOMTextShadowElement !== hasDOMTextShadowElement)
         {
-            _DOMElement.removeChild(_DOMTextShadowElement);
-
-            _DOMTextShadowElement = nil;
-
-            hasDOMTextShadowElement = NO;
-        }
-        else
-        {
-            _DOMTextShadowElement = document.createElement("div");
-
-            var shadowStyle = _DOMTextShadowElement.style,
-                font = (_font || [CPFont systemFontOfSize:CPFontCurrentSystemSize]);
-
-            shadowStyle.font = [font cssString];
-            shadowStyle.position = "absolute";
-            shadowStyle.whiteSpace = textStyle.whiteSpace;
-            shadowStyle.wordWrap = textStyle.wordWrap;
-            shadowStyle.color = [_textShadowColor cssString];
-            shadowStyle.lineHeight = [font defaultLineHeightForFont] + "px";
-
-            shadowStyle.zIndex = 150;
-            shadowStyle.textOverflow = textStyle.textOverflow;
-
-            if (document.attachEvent)
+            if (hasDOMTextShadowElement)
             {
-                shadowStyle.overflow = textStyle.overflow;
+                _DOMElement.removeChild(_DOMTextShadowElement);
+
+                _DOMTextShadowElement = nil;
+
+                hasDOMTextShadowElement = NO;
             }
             else
             {
-                shadowStyle.overflowX = textStyle.overflowX;
-                shadowStyle.overflowY = textStyle.overflowY;
+                _DOMTextShadowElement = document.createElement("div");
+
+                var shadowStyle = _DOMTextShadowElement.style,
+                    font = (_font || [CPFont systemFontOfSize:CPFontCurrentSystemSize]);
+
+                shadowStyle.font = [font cssString];
+                shadowStyle.position = "absolute";
+                shadowStyle.whiteSpace = textStyle.whiteSpace;
+                shadowStyle.wordWrap = textStyle.wordWrap;
+                shadowStyle.color = [_textShadowColor cssString];
+                shadowStyle.lineHeight = [font defaultLineHeightForFont] + "px";
+
+                shadowStyle.zIndex = 150;
+                shadowStyle.textOverflow = textStyle.textOverflow;
+
+                if (document.attachEvent)
+                {
+                    shadowStyle.overflow = textStyle.overflow;
+                }
+                else
+                {
+                    shadowStyle.overflowX = textStyle.overflowX;
+                    shadowStyle.overflowY = textStyle.overflowY;
+                }
+
+                _DOMElement.appendChild(_DOMTextShadowElement);
+
+                hasDOMTextShadowElement = YES;
+
+                _flags |= _CPImageAndTextViewTextChangedFlag; //sigh...
             }
-
-            _DOMElement.appendChild(_DOMTextShadowElement);
-
-            hasDOMTextShadowElement = YES;
-
-            _flags |= _CPImageAndTextViewTextChangedFlag; //sigh...
         }
     }
 
@@ -591,41 +603,55 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
     }
 
     var needsDOMImageElement = _image !== nil && _imagePosition !== CPNoImage,
-        hasDOMImageElement = !!_DOMImageElement;
+        hasDOMImageElement = !!_DOMImageElement,
+        // For CSS theming
+        isCSSBasedImage = [_image isCSSBased],
+        isIMGImageElement = hasDOMImageElement && (_DOMImageElement.nodeName == "IMG");
 
-    // Create or destroy DOM Image element
-    if (needsDOMImageElement !== hasDOMImageElement)
+    // First, check if we need to destroy a current DOM image element. This is the case if :
+    // - we have one but don't need it anymore
+    // - we have one but not the right one (that is a DIV but needing an IMG, and vice versa)
+
+    if (hasDOMImageElement)
     {
-        if (hasDOMImageElement)
+        if (!needsDOMImageElement || (isIMGImageElement && isCSSBasedImage) || (!isIMGImageElement && !isCSSBasedImage))
         {
+            // OK, destroy it
+
             _DOMElement.removeChild(_DOMImageElement);
 
             _DOMImageElement = nil;
 
             hasDOMImageElement = NO;
-        }
 
-        else
+            // CSS styling cleaning
+            _cssStylePreviousState = @[];
+            _cssStyleNode = nil;
+        }
+    }
+
+    // Now, if we need a DOM image element and if we don't have one, create a new one
+
+    if (needsDOMImageElement && !hasDOMImageElement)
+    {
+        _DOMImageElement = document.createElement(isCSSBasedImage ? "div" : "img");
+
+        if ([CPPlatform supportsDragAndDrop])
         {
-            _DOMImageElement = document.createElement("img");
-
-            if ([CPPlatform supportsDragAndDrop])
-            {
-                _DOMImageElement.setAttribute("draggable", "true");
-                _DOMImageElement.style["-khtml-user-drag"] = "element";
-            }
-
-            var imageStyle = _DOMImageElement.style;
-
-            imageStyle.top = "0px";
-            imageStyle.left = "0px";
-            imageStyle.position = "absolute";
-            imageStyle.zIndex = 100;
-
-            _DOMElement.appendChild(_DOMImageElement);
-
-            hasDOMImageElement = YES;
+            _DOMImageElement.setAttribute("draggable", "true");
+            _DOMImageElement.style["-khtml-user-drag"] = "element";
         }
+
+        var imageStyle = _DOMImageElement.style;
+
+        imageStyle.top = "0px";
+        imageStyle.left = "0px";
+        imageStyle.position = "absolute";
+        imageStyle.zIndex = 100;
+
+        _DOMElement.appendChild(_DOMImageElement);
+
+        hasDOMImageElement = YES;
     }
 
     var size = [self bounds].size,
@@ -637,7 +663,15 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
             var imageStyle = _DOMImageElement.style;
 
         if (_flags & _CPImageAndTextViewImageChangedFlag)
-            _DOMImageElement.src = [_image filename];
+        {
+            if (isCSSBasedImage)
+                _cssStyleNode = [_image applyCSSImageForView:self
+                                                onDOMElement:_DOMImageElement
+                                                   styleNode:_cssStyleNode
+                                               previousState:@ref(_cssStylePreviousState)];
+            else
+                _DOMImageElement.src = [_image filename];
+        }
 
         var centerX = size.width / 2.0,
             centerY = size.height / 2.0,

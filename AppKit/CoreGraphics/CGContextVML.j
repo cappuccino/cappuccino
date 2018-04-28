@@ -242,7 +242,7 @@ function CGContextDrawPath(aContext, aMode)
     vml.push("\">");
 
     if (gState.gradient)
-        vml.push(gState.gradient)
+        vml.push(gState.gradient);
 
     else if (fill)
     {

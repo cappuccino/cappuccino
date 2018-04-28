@@ -66,7 +66,7 @@ var _CPEventPeriodicEventPeriod         = 0,
     CPWindow            _window;
     Number              _windowNumber;
     CPString            _characters;
-    CPString            _charactersIgnoringModifiers
+    CPString            _charactersIgnoringModifiers;
     BOOL                _isARepeat;
     unsigned            _keyCode;
     DOMEvent            _DOMEvent;
@@ -642,7 +642,7 @@ var _CPEventPeriodicEventPeriod         = 0,
 - (CPTrackingArea)trackingArea
 {
     if ((_type !== CPMouseEntered) && (_type !== CPMouseExited) && (_type !== CPCursorUpdate))
-        [CPException raise:CPInternalInconsistencyException format:@"You can't call trackingArea for events of type %#x", _type]
+        [CPException raise:CPInternalInconsistencyException format:@"You can't call trackingArea for events of type %#x", _type];
 
     return _trackingArea;
 }

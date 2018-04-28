@@ -638,7 +638,7 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
             if ([self _isEnglishFormat])
                 format += @"h:mm:ss a";
             else
-                format += @"H:mm:ss"
+                format += @"H:mm:ss";
 
             break;
 
@@ -1218,7 +1218,7 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
             if ([self _isEnglishFormat])
                 format += @" h:mm:ss a";
             else
-                format += @" H:mm:ss"
+                format += @" H:mm:ss";
             break;
 
         case CPDateFormatterLongStyle:
@@ -1534,7 +1534,7 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
                 var month;
 
                 if (length <= 2)
-                    month = parseInt(dateComponent)
+                    month = parseInt(dateComponent);
 
                 if (length == 3)
                 {
@@ -1847,7 +1847,7 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
         tmpDate.setFullYear(dateArray[0]);
         tmpDate.setMonth(0);
 
-        tmpDate.setDate(dayOfYear)
+        tmpDate.setDate(dayOfYear);
 
         dateArray[1] = tmpDate.getMonth() + 1;
         dateArray[2] = tmpDate.getDate();

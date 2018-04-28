@@ -574,7 +574,7 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
                             _isOpening = NO;
 
                             [_delegate _popoverWindowDidShow];
-                        }
+                        };
 
 #if PLATFORM(DOM)
                         _DOMElement.addEventListener(CPBrowserStyleProperty('transitionend'), _transitionCompleteFunction, YES);

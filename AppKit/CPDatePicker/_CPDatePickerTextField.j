@@ -80,7 +80,7 @@ var CPZeroKeyCode = 48,
 {
     if (self = [super initWithFrame:aFrame])
     {
-        _datePicker = aDatePicker
+        _datePicker = aDatePicker;
         [self _init];
     }
     return self;
