@@ -177,7 +177,7 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
 - (void)resetSearchButton
 {
     var button = [self searchButton],
-        searchButtonImage = (_searchMenuTemplate === nil) ? [self valueForThemeAttribute:@"image-search"] : [self valueForThemeAttribute:@"image-find"];
+        searchButtonImage = (_searchMenuTemplate === nil) ? [self currentValueForThemeAttribute:@"image-search"] : [self currentValueForThemeAttribute:@"image-find"];
 
     [button setBordered:NO];
     [button setImageScaling:CPImageScaleAxesIndependently];
