@@ -177,6 +177,11 @@
                 break;
         }
 
+        var stateViewFrameOrigin = [_stateView frameOrigin];
+
+        stateViewFrameOrigin.x = x;
+        [_stateView setFrameOrigin:stateViewFrameOrigin];
+
         x += [self valueForThemeAttribute:@"state-column-width"];
     }
     else
