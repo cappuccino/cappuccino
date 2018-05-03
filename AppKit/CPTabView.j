@@ -531,7 +531,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 {
     var segmentIndex = [_tabs testSegment:[_tabs convertPoint:[anEvent locationInWindow] fromView:nil]];
 
-    if (segmentIndex != CPNotFound)
+    if (segmentIndex != CPNotFound && [self _sendDelegateShouldSelectTabViewItem:[self tabViewItemAtIndex:segmentIndex]])
         [_tabs trackSegment:anEvent];
 }
 
