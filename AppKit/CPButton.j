@@ -378,7 +378,7 @@ CPButtonImageOffset   = 3.0;
 
 - (void)setImage:(CPImage)anImage
 {
-    [self setValue:anImage forThemeAttribute:@"image"];
+    [self setValue:anImage forThemeAttribute:@"image" inState:CPThemeStateNormal];
 }
 
 - (CPImage)image
