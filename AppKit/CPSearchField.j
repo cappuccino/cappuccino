@@ -80,7 +80,7 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
 + (Class)_binderClassForBinding:(CPString)aBinding
 {
     if (aBinding === CPPredicateBinding)
-    return [_CPSearchFieldPredicateBinder class];
+        return [_CPSearchFieldPredicateBinder class];
 
     return [super _binderClassForBinding:aBinding];
 }
