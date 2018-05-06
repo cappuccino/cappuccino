@@ -11,58 +11,6 @@
 
 @import "Person.j"
 
-@implementation CPSearchField(XXX)
-
-+ (Class)_binderClassForBinding:(CPString)aBinding
-{
-    if (aBinding === CPPredicateBinding)
-        return [_CPSearchFieldPredicateBinder class];
-
-    return [super _binderClassForBinding:aBinding];
-}
-
-@end
-
-@implementation _CPSearchFieldPredicateBinder : CPBinder
-{
-    CPArrayController  _controller;
-    CPString           _predicteFormat;
-
-}
-- (void)setValue:(id)aValue forBinding:(CPString)aBinding
-{
-    if (aBinding === CPPredicateBinding)
-    {
-        var options = [_info objectForKey:CPOptionsKey];
-
-        _controller = [_info objectForKey:CPObservedObjectKey];
-        _predicteFormat = [options objectForKey:"CPPredicateFormat"];
-        [_source bind:CPValueBinding toObject:self withKeyPath:"searchFieldValue" options:nil];
-    }
-}
-- (void)setSearchFieldValue:(CPString)aValue
-{
-    var destination = [_info objectForKey:CPObservedObjectKey],
-        keyPath     = [_info objectForKey:CPObservedKeyPathKey];
-
-    var formatString = _predicteFormat.replace(/\$value/g, "%@");
-    [self suppressSpecificNotificationFromObject:destination keyPath:keyPath];
-
-    if (aValue)
-        [_controller setFilterPredicate:[CPPredicate predicateWithFormat:formatString, aValue]];
-    else
-        [_controller setFilterPredicate:nil];
-
-    [self unsuppressSpecificNotificationFromObject:destination keyPath:keyPath];
-}
-- (CPString)searchFieldValue
-{
-    return [_source stringValue];
-}
-
-@end
-
-
 @implementation AppController : CPObject
 {
     @outlet CPWindow        theWindow;
