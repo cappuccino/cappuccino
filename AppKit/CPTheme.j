@@ -471,7 +471,6 @@ var _savedThemesByName = { };
     for (var i = 0, count = windows.length; i < count; i++)
     {
         [windows[i] _setThemeIncludingDescendants:newTheme];
-        // FIXME: il faut aussi traiter les autres vues d'une fenêtre !!!
     }
 
     // Update the menu bar
