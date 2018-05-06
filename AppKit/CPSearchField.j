@@ -838,8 +838,8 @@ var CPRecentsAutosaveNameKey            = @"CPRecentsAutosaveNameKey",
 {
     CPArrayController  _controller;
     CPString           _predicateFormat;
-
 }
+
 - (void)setValue:(id)aValue forBinding:(CPString)aBinding
 {
     if (aBinding === CPPredicateBinding)
