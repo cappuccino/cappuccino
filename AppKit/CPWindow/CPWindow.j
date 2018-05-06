@@ -4359,6 +4359,19 @@ var interpolate = function(fromValue, toValue, progress)
 
 @end
 
+#pragma mark -
+
+@implementation CPWindow (CSSTheming)
+
+- (void)_setThemeIncludingDescendants:(CPTheme)aTheme
+{
+    [[self contentView] _setThemeIncludingDescendants:aTheme];
+}
+
+@end
+
+#pragma mark -
+
 function _CPWindowFullPlatformWindowSessionMake(aWindowView, aContentRect, hasShadow, aLevel)
 {
     return { windowView:aWindowView, contentRect:aContentRect, hasShadow:hasShadow, level:aLevel };

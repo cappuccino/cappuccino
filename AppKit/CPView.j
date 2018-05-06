@@ -333,7 +333,8 @@ var CPViewHighDPIDrawingEnabled = YES;
 + (CPDictionary)themeAttributes
 {
     return @{
-             @"css-based": NO
+             @"css-based": NO,
+             @"dynamic-set": [CPNull null]
              };
 }
 

@@ -103,7 +103,7 @@
         aTheme = [CPTheme themeNamed:aThemeName];
 
         if ([aTheme isCSSBased])
-            [aTheme setCSSResourcesPath:[aBundle resourcePath]];
+            [aTheme _initializeDynamicAttributesAndResourcesPathWithBundle:aBundle];
     }
 
     [_loadDelegate blendDidFinishLoading:self];

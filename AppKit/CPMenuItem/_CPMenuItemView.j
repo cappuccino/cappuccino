@@ -252,6 +252,31 @@
 
 @end
 
+#pragma mark -
+
+@implementation _CPMenuItemView (CSSTheming)
+
+#pragma mark Override
+
+- (void)_setThemeIncludingDescendants:(CPTheme)aTheme
+{
+    [self setTheme:aTheme];
+    [_view _setThemeIncludingDescendants:aTheme];
+
+    // Items must also perform this (without this, only the selected item does)
+
+    [_imageAndTextView _setThemeIncludingDescendants:aTheme];
+    [_submenuView _setThemeIncludingDescendants:aTheme];
+    [[_menuItem view] _setThemeIncludingDescendants:aTheme];
+
+    if ([_view respondsToSelector:@selector(update)])
+        [_view update];
+}
+
+@end
+
+#pragma mark -
+
 @implementation _CPMenuItemArrowView : CPView
 {
     CPColor _color;
