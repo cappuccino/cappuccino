@@ -779,6 +779,16 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
         _recentSearches = list;
 }
 
+- (void)unbind:(CPString)aBinding
+{
+    [super unbind:aBinding];
+
+    // our CPPredicateBinding binder adds a binding to the value.
+    // this private binding has to be also removed
+    if (aBinding === CPPredicateBinding)
+        [[[self class] _binderClassForBinding:aBinding] unbind:CPValueBinding forObject:self];
+}
+
 @end
 
 var CPRecentsAutosaveNameKey            = @"CPRecentsAutosaveNameKey",
@@ -851,6 +861,7 @@ var CPRecentsAutosaveNameKey            = @"CPRecentsAutosaveNameKey",
         [_source bind:CPValueBinding toObject:self withKeyPath:"searchFieldValue" options:nil];
     }
 }
+
 - (void)setSearchFieldValue:(CPString)aValue
 {
     var destination = [_info objectForKey:CPObservedObjectKey],
