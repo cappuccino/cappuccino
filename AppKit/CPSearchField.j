@@ -608,6 +608,8 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
         countOfRecents = [_recentSearches count],
         numberOfItems = [_searchMenuTemplate numberOfItems];
 
+    [menu setAutoenablesItems:NO];
+
     for (var i = 0; i < numberOfItems; i++)
     {
         var item = [[_searchMenuTemplate itemAtIndex:i] copy];
