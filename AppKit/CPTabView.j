@@ -933,8 +933,8 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
             [self drawSegmentBezel:_trackingSegment highlight:NO];
 
             _trackingSegment = CPNotFound;
-            return;
 
+            return;
             break;
 
         case CPLeftMouseDown:
@@ -960,9 +960,6 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
                     [self drawSegmentBezel:_trackingSegment highlight:YES];
             }
 
-            break;
-
-        default:
             break;
     }
 
