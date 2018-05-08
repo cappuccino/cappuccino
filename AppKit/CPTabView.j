@@ -95,6 +95,8 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
     _tabs = [[CPSegmentedControl alloc] initWithFrame:CGRectMakeZero()];
     [_tabs setHitTests:NO];
     [_tabs setSegments:[CPArray array]];
+    [_tabs setAction:@selector(_reflectSelectedTab:)];
+    [_tabs setTarget:self];
 
     var height = [_tabs valueForThemeAttribute:@"min-size"].height;
     [_tabs setFrameSize:CGSizeMake(0, height)];
@@ -529,7 +531,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 {
     var segmentIndex = [_tabs testSegment:[_tabs convertPoint:[anEvent locationInWindow] fromView:nil]];
 
-    if (segmentIndex != CPNotFound && [self selectTabViewItemAtIndex:segmentIndex])
+    if (segmentIndex != CPNotFound && [self _sendDelegateShouldSelectTabViewItem:[self tabViewItemAtIndex:segmentIndex]])
         [_tabs trackSegment:anEvent];
 }
 
@@ -547,6 +549,11 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 - (void)_displayItemView:(CPView)aView
 {
     [_box setContentView:aView];
+}
+
+- (void)_reflectSelectedTab:(id)aSender
+{
+    [self selectTabViewItemAtIndex:[_tabs selectedSegment]];
 }
 
 // DELEGATE METHODS
