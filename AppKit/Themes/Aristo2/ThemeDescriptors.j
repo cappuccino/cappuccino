@@ -2869,7 +2869,7 @@ var themedButtonValues = nil,
 
 + (_CPBorderlessBridgeWindowView)themedBorderlessBridgeWindowView
 {
-    var bordelessBridgeWindowView = [[_CPBorderlessBridgeWindowView alloc] initWithFrame:CGRectMake(0,0,0,0)],
+    var borderlessBridgeWindowView = [[_CPBorderlessBridgeWindowView alloc] initWithFrame:CGRectMake(0,0,0,0)],
 
         toolbarBackgroundColor = PatternColor(
             [
@@ -2883,9 +2883,9 @@ var themedButtonValues = nil,
             [@"toolbar-background-color", toolbarBackgroundColor]
         ];
 
-    [self registerThemeValues:themeValues forView:bordelessBridgeWindowView inherit:themedWindowViewValues];
+    [self registerThemeValues:themeValues forView:borderlessBridgeWindowView inherit:themedWindowViewValues];
 
-    return bordelessBridgeWindowView;
+    return borderlessBridgeWindowView;
 }
 
 + (_CPToolbarView)themedToolbarView

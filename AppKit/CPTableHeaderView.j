@@ -89,7 +89,7 @@
     var inset = [self currentValueForThemeAttribute:@"text-inset"],
         bounds = [self bounds];
 
-    [_textField setFrame:CGRectMake(inset.right, inset.top, bounds.size.width - inset.right - inset.left, bounds.size.height - inset.top - inset.bottom)];
+    [_textField setFrame:CGRectMake(inset.left, inset.top, bounds.size.width - inset.right - inset.left, bounds.size.height - inset.top - inset.bottom)];
     [_textField setTextColor:[self currentValueForThemeAttribute:@"text-color"]];
     [_textField setFont:[self currentValueForThemeAttribute:@"font"]];
     [_textField setTextShadowColor:[self currentValueForThemeAttribute:@"text-shadow-color"]];

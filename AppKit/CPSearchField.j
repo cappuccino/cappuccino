@@ -177,7 +177,7 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
 - (void)resetSearchButton
 {
     var button = [self searchButton],
-        searchButtonImage = (_searchMenuTemplate === nil) ? [self valueForThemeAttribute:@"image-search"] : [self valueForThemeAttribute:@"image-find"];
+        searchButtonImage = (_searchMenuTemplate === nil) ? [self currentValueForThemeAttribute:@"image-search"] : [self currentValueForThemeAttribute:@"image-find"];
 
     [button setBordered:NO];
     [button setImageScaling:CPImageScaleAxesIndependently];
@@ -531,19 +531,16 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
 }
 
 /*!
-    Provides the common case items for a recent searches menu. If there are not recent searches,
-    displays a single disabled item:
-
-        No Recent Searches
+    Provides the common case items for a recent searches menu.
 
     If there are 1 more recent searches, it displays:
 
-        Recent Searches
-           recent search 1
-           recent search 2
-           etc.
+        Clear
         ---------------------
-        Clear Recent Searches
+        Recent Searches
+        recent search 1
+        recent search 2
+        etc.
 
     If you wish to add items before or after the template, you can. If you put items
     before, a separator will automatically be placed before the default template item.
@@ -568,6 +565,13 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
     var template = [[CPMenu alloc] init],
         item;
 
+    item = [[CPMenuItem alloc] initWithTitle:@"Clear"
+                                      action:@selector(_searchFieldClearRecents:)
+                               keyEquivalent:@""];
+    [item setTag:CPSearchFieldClearRecentsMenuItemTag];
+    [item setTarget:self];
+    [template addItem:item];
+
     item = [[CPMenuItem alloc] initWithTitle:@"Recent Searches"
                                       action:nil
                                keyEquivalent:@""];
@@ -582,20 +586,6 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
     [item setTarget:self];
     [template addItem:item];
 
-    item = [[CPMenuItem alloc] initWithTitle:@"Clear Recent Searches"
-                                      action:@selector(_searchFieldClearRecents:)
-                               keyEquivalent:@""];
-    [item setTag:CPSearchFieldClearRecentsMenuItemTag];
-    [item setTarget:self];
-    [template addItem:item];
-
-    item = [[CPMenuItem alloc] initWithTitle:@"No Recent Searches"
-                                      action:nil
-                               keyEquivalent:@""];
-    [item setTag:CPSearchFieldNoRecentsMenuItemTag];
-    [item setEnabled:NO];
-    [template addItem:item];
-
     return template;
 }
 
@@ -607,6 +597,8 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
     var menu = [[CPMenu alloc] init],
         countOfRecents = [_recentSearches count],
         numberOfItems = [_searchMenuTemplate numberOfItems];
+
+    [menu setAutoenablesItems:NO];
 
     for (var i = 0; i < numberOfItems; i++)
     {
@@ -631,7 +623,6 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
                     var recentItem = [[CPMenuItem alloc] initWithTitle:[_recentSearches objectAtIndex:recentIndex]
                                                                  action:itemAction
                                                           keyEquivalent:[item keyEquivalent]];
-                    [recentItem setIndentationLevel:1];
                     [item setTarget:self];
                     [menu addItem:recentItem];
                 }
@@ -689,7 +680,7 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
 
 - (void)_showMenu
 {
-    if (_searchMenu === nil || [_searchMenu numberOfItems] === 0 || ![self isEnabled])
+    if (_searchMenu === nil || [_searchMenu numberOfItems] === 0 || ![self isEnabled] || ([_recentSearches count] === 0))
         return;
 
     var aFrame = [[self superview] convertRect:[self frame] toView:nil],

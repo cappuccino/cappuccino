@@ -368,7 +368,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
             @"dropview-above-border-color": [CPNull null],
             @"dropview-above-border-width": [CPNull null],
             @"dropview-above-selected-border-color": [CPNull null],
-            @"dropview-above-selected-border-width": [CPNull null]
+            @"dropview-above-selected-border-width": [CPNull null],
+            @"header-view-height": [CPNull null]
         };
 }
 
@@ -390,8 +391,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         _selectionHighlightStyle = CPTableViewSelectionHighlightStyleRegular;
 
         [self setUsesAlternatingRowBackgroundColors:NO];
-        [self setAlternatingRowBackgroundColors:
-            [[CPColor whiteColor], [CPColor colorWithRed:245.0 / 255.0 green:249.0 / 255.0 blue:252.0 / 255.0 alpha:1.0]]];
+        [self setAlternatingRowBackgroundColors:[self valueForThemeAttribute:@"alternating-row-colors"]];
 
         _tableColumns = [];
         _tableColumnRanges = [];
@@ -401,10 +401,10 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         _intercellSpacing = CGSizeMake(3.0, 2.0);
         _rowHeight = [self valueForThemeAttribute:@"default-row-height"];
 
-        [self setGridColor:[CPColor colorWithHexString:@"dce0e2"]];
+        [self setGridColor:[self valueForThemeAttribute:@"grid-color"]];
         [self setGridStyleMask:CPTableViewGridNone];
 
-        [self setHeaderView:[[CPTableHeaderView alloc] initWithFrame:CGRectMake(0, 0, [self bounds].size.width, _rowHeight)]];
+        [self setHeaderView:[[CPTableHeaderView alloc] initWithFrame:CGRectMake(0, 0, [self bounds].size.width, [self valueForThemeAttribute:@"header-view-height"] || _rowHeight)]];
         [self setCornerView:[[_CPCornerView alloc] initWithFrame:CGRectMake(0, 0, [CPScroller scrollerWidth], CGRectGetHeight([_headerView frame]))]];
 
         _currentHighlightedTableColumn = nil;
