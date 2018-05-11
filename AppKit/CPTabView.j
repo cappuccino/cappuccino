@@ -529,7 +529,8 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 
 - (void)mouseDown:(CPEvent)anEvent
 {
-    [_tabs trackSegment:anEvent];
+    if ([_tabs testSegment:[_tabs convertPoint:[anEvent locationInWindow] fromView:nil]] !== CPNotFound)
+        [_tabs trackSegment:anEvent];
 }
 
 - (void)_repositionTabs
