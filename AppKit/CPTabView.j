@@ -97,8 +97,6 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
     [_tabs setTabView:self];
     [_tabs setHitTests:NO];
     [_tabs setSegments:[CPArray array]];
-    [_tabs setAction:@selector(_reflectSelectedTab:)];
-    [_tabs setTarget:self];
 
     var height = [_tabs valueForThemeAttribute:@"min-size"].height;
     [_tabs setFrameSize:CGSizeMake(0, height)];
@@ -550,11 +548,6 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
     [_box setContentView:aView];
 }
 
-- (void)_reflectSelectedTab:(id)aSender
-{
-    [self selectTabViewItemAtIndex:[_tabs selectedSegment]];
-}
-
 // DELEGATE METHODS
 
 - (BOOL)_sendDelegateShouldSelectTabViewItem:(CPTabViewItem)aTabViewItem
@@ -915,8 +908,8 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
         location       = [self convertPoint:[anEvent locationInWindow] fromView:nil],
         currentSegment = [self testSegment:location];
 
-    switch (type) {
-
+    switch (type)
+    {
         case CPLeftMouseUp:
 
             if (_trackingSegment === CPNotFound)
@@ -927,7 +920,7 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
             {
                 [self setSelected:YES forSegment:_trackingSegment];
                 _selectedSegment = _trackingSegment;
-                [self sendAction:[self action] to:[self target]];
+                [_tabView selectTabViewItemAtIndex:_selectedSegment];
             }
 
             [self drawSegmentBezel:_trackingSegment highlight:NO];
@@ -935,7 +928,6 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
             _trackingSegment = CPNotFound;
 
             return;
-            break;
 
         case CPLeftMouseDown:
 
