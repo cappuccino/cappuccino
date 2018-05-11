@@ -872,8 +872,8 @@ CPSegmentSwitchTrackingMomentary = 2;
     var type = [anEvent type],
         location = [self convertPoint:[anEvent locationInWindow] fromView:nil];
 
-    switch (type) {
-
+    switch (type)
+    {
         case CPLeftMouseUp:
 
             if (_trackingSegment === CPNotFound)
@@ -906,7 +906,6 @@ CPSegmentSwitchTrackingMomentary = 2;
             _trackingSegment = CPNotFound;
 
             return;
-            break;
 
         case CPLeftMouseDown:
 
