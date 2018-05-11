@@ -320,6 +320,19 @@ var CPViewHighDPIDrawingEnabled = YES;
     return nil;
 }
 
++ (CPString)defaultThemeClass
+{
+    return @"view";
+}
+
++ (CPDictionary)themeAttributes
+{
+    return @{
+             @"css-based": NO,
+             @"nib2cib-adjustment-frame": CGRectMakeZero()
+             };
+}
+
 - (void)_setupViewFlags
 {
     var theClass = [self class],
