@@ -113,6 +113,8 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
     [self resetSearchButton];
 
     _canResignFirstResponder = YES;
+
+    [self _initTrackingAreas];
 }
 
 
@@ -775,6 +777,12 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
 {
     CPTrackingArea      _searchButtonTrackingArea;
     CPTrackingArea      _cancelButtonTrackingArea;
+}
+
+- (void)_initTrackingAreas
+{
+    _searchButtonTrackingArea = nil;
+    _cancelButtonTrackingArea = nil;
 }
 
 - (void)updateTrackingAreas
