@@ -2117,7 +2117,7 @@ CPTexturedBackgroundWindowMask
     if ([orderedWindows count] == 0)
         return YES;
 
-    if ([[orderedWindows objectAtIndex:0] level] === self)
+    if ([orderedWindows objectAtIndex:0] === self)
         return YES;
 
     // this is necessary, because the CPMainMenuWindow is always the first object in orderedWindows, even if another window is in front of it
