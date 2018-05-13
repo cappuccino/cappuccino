@@ -95,7 +95,6 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 {
     _tabs = [[_CPSegmentedControl alloc] initWithFrame:CGRectMakeZero()];
     [_tabs setTabView:self];
-    [_tabs setHitTests:NO];
     [_tabs setSegments:[CPArray array]];
 
     var height = [_tabs valueForThemeAttribute:@"min-size"].height;
@@ -525,12 +524,6 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 - (CPColor)backgroundColor
 {
     return [_box backgroundColor];
-}
-
-- (void)mouseDown:(CPEvent)anEvent
-{
-    if ([_tabs testSegment:[_tabs convertPoint:[anEvent locationInWindow] fromView:nil]] !== CPNotFound)
-        [_tabs trackSegment:anEvent];
 }
 
 - (void)_repositionTabs
