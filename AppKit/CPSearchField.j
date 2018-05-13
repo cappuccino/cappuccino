@@ -73,7 +73,8 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
             @"image-cancel": [CPNull null],
             @"image-cancel-pressed": [CPNull null],
             @"image-search-inset" : CGInsetMake(0, 0, 0, 5),
-            @"image-cancel-inset" : CGInsetMake(0, 5, 0, 0)
+            @"image-cancel-inset" : CGInsetMake(0, 5, 0, 0),
+            @"search-right-margin": 2
         };
 }
 
@@ -246,8 +247,9 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
 
     if (_searchButton)
     {
-        var searchBounds = [self searchButtonRectForBounds:bounds];
-        leftOffset = CGRectGetMaxX(searchBounds) + 2;
+        var searchBounds = [self searchButtonRectForBounds:bounds],
+            rightMargin  = [self currentValueForThemeAttribute:@"search-right-margin"];
+        leftOffset = CGRectGetMaxX(searchBounds) + rightMargin;
     }
 
     if (_cancelButton)
