@@ -47,10 +47,10 @@
             @"text-alignment": CPLeftTextAlignment,
             @"line-break-mode": CPLineBreakByTruncatingTail,
             @"text-inset": CGInsetMakeZero(),
-            @"text-color": [CPNull null],
-            @"font": [CPNull null],
-            @"text-shadow-color": [CPNull null],
-            @"text-shadow-offset": CGSizeMakeZero()
+            @"text-color": [CPColor colorWithRed:51.0 / 255.0 green:51.0 / 255.0 blue:51.0 / 255.0 alpha:1.0],
+            @"font": [CPFont boldSystemFontOfSize:12.0],
+            @"text-shadow-color": [CPColor whiteColor],
+            @"text-shadow-offset": CGSizeMake(0,1)
         };
 }
 
@@ -66,20 +66,21 @@
 
 - (void)_init
 {
-    var inset = [self valueForThemeAttribute:@"text-inset"];
+    var inset = [self currentValueForThemeAttribute:@"text-inset"],
+        bounds = [self bounds];
 
     _textField = [[_CPImageAndTextView alloc] initWithFrame:
-        CGRectMake(inset.left, inset.top, CGRectGetWidth([self bounds]) - (inset.left + inset.right), CGRectGetHeight([self bounds]) - (inset.top + inset.bottom))];
+                  CGRectMake(inset.left, inset.top, bounds.size.width - inset.right - inset.left, bounds.size.height - inset.top - inset.bottom)];
 
     [_textField setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
-
-    [_textField setLineBreakMode:[self valueForThemeAttribute:@"line-break-mode"]];
-    [_textField setTextColor:[self valueForThemeAttribute:@"text-color"]];
-    [_textField setFont:[self valueForThemeAttribute:@"font"]];
-    [_textField setAlignment:[self valueForThemeAttribute:@"text-alignment"]];
     [_textField setVerticalAlignment:CPCenterVerticalTextAlignment];
-    [_textField setTextShadowColor:[self valueForThemeAttribute:@"text-shadow-color"]];
-    [_textField setTextShadowOffset:[self valueForThemeAttribute:@"text-shadow-offset"]];
+
+    [_textField setTextColor:[self currentValueForThemeAttribute:@"text-color"]];
+    [_textField setFont:[self currentValueForThemeAttribute:@"font"]];
+    [_textField setTextShadowColor:[self currentValueForThemeAttribute:@"text-shadow-color"]];
+    [_textField setTextShadowOffset:[self currentValueForThemeAttribute:@"text-shadow-offset"]];
+    [_textField setAlignment:[self currentValueForThemeAttribute:@"text-alignment"]];
+    [_textField setLineBreakMode:[self currentValueForThemeAttribute:@"line-break-mode"]];
 
     [self addSubview:_textField];
 }
