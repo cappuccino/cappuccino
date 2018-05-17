@@ -66,20 +66,18 @@
 
 - (void)_init
 {
-    var inset = [self valueForThemeAttribute:@"text-inset"];
-
     _textField = [[_CPImageAndTextView alloc] initWithFrame:
-        CGRectMake(inset.left, inset.top, CGRectGetWidth([self bounds]) - (inset.left + inset.right), CGRectGetHeight([self bounds]) - (inset.top + inset.bottom))];
+        CGRectMake(5.0, 0.0, CGRectGetWidth([self bounds]) - 10.0, CGRectGetHeight([self bounds]))];
 
     [_textField setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
 
-    [_textField setLineBreakMode:[self valueForThemeAttribute:@"line-break-mode"]];
-    [_textField setTextColor:[self valueForThemeAttribute:@"text-color"]];
-    [_textField setFont:[self valueForThemeAttribute:@"font"]];
-    [_textField setAlignment:[self valueForThemeAttribute:@"text-alignment"]];
+    [_textField setLineBreakMode:CPLineBreakByTruncatingTail];
+    [_textField setTextColor:[CPColor colorWithRed:51.0 / 255.0 green:51.0 / 255.0 blue:51.0 / 255.0 alpha:1.0]];
+    [_textField setFont:[CPFont boldSystemFontOfSize:12.0]];
+    [_textField setAlignment:CPLeftTextAlignment];
     [_textField setVerticalAlignment:CPCenterVerticalTextAlignment];
-    [_textField setTextShadowColor:[self valueForThemeAttribute:@"text-shadow-color"]];
-    [_textField setTextShadowOffset:[self valueForThemeAttribute:@"text-shadow-offset"]];
+    [_textField setTextShadowColor:[CPColor whiteColor]];
+    [_textField setTextShadowOffset:CGSizeMake(0,1)];
 
     [self addSubview:_textField];
 }
