@@ -461,21 +461,38 @@ var CPTableHeaderViewResizeZone = 3.0,
 @end
 
 @implementation CPTableHeaderView (CPTrackingArea)
+{
+    CPMutableArray  _tableHeaderViewTrackingAreas;
+}
 
 - (void)updateTrackingAreas
 {
-    [self removeAllTrackingAreas];
+    if (_tableHeaderViewTrackingAreas)
+    {
+        for (var i = 0, count = [_tableHeaderViewTrackingAreas count]; i < count; i++)
+            [self removeTrackingArea:_tableHeaderViewTrackingAreas[i]];
+
+        _tableHeaderViewTrackingAreas = nil;
+    }
 
     var options = CPTrackingCursorUpdate | CPTrackingActiveInKeyWindow;
 
     if (!_tableView)
       return;
 
+    _tableHeaderViewTrackingAreas = @[];
+
     for (var i = 0; i < _tableView._tableColumns.length; i++)
-        [self addTrackingArea:[[CPTrackingArea alloc] initWithRect:[self _cursorRectForColumn:i]
-                                                           options:options
-                                                             owner:self
-                                                          userInfo:nil]];
+    {
+        [_tableHeaderViewTrackingAreas addObject:[[CPTrackingArea alloc] initWithRect:[self _cursorRectForColumn:i]
+                                                                              options:options
+                                                                                owner:self
+                                                                             userInfo:nil]];
+
+        [self addTrackingArea:_tableHeaderViewTrackingAreas[i]];
+    }
+
+    [super updateTrackingAreas];
 }
 
 - (void)cursorUpdate:(CPEvent)anEvent

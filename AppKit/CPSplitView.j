@@ -1201,18 +1201,35 @@ The sum of the views and the sum of the dividers should be equal to the size of 
 @end
 
 @implementation CPSplitView (CPTrackingArea)
+{
+    CPMutableArray  _splitViewTrackingAreas;
+}
 
 - (void)updateTrackingAreas
 {
-    [self removeAllTrackingAreas];
+    if (_splitViewTrackingAreas)
+    {
+        for (var i = 0, count = [_splitViewTrackingAreas count]; i < count; i++)
+            [self removeTrackingArea:_splitViewTrackingAreas[i]];
+
+        _splitViewTrackingAreas = nil;
+    }
 
     var options = CPTrackingCursorUpdate | CPTrackingActiveInKeyWindow;
 
+    _splitViewTrackingAreas = @[];
+
     for (var i = 0; i < _subviews.length - 1; i++)
-        [self addTrackingArea:[[CPTrackingArea alloc] initWithRect:[self effectiveRectOfDividerAtIndex:i]
-                                                           options:options
-                                                             owner:self
-                                                          userInfo:nil]];
+    {
+        [_splitViewTrackingAreas addObject:[[CPTrackingArea alloc] initWithRect:[self effectiveRectOfDividerAtIndex:i]
+                                                                        options:options
+                                                                          owner:self
+                                                                       userInfo:nil]];
+
+        [self addTrackingArea:_splitViewTrackingAreas[i]];
+    }
+
+    [super updateTrackingAreas];
 }
 
 - (void)cursorUpdate:(CPEvent)anEvent
