@@ -1047,7 +1047,8 @@ var updateTrackingAreasCalls,
 
     //
 
-    [view removeAllTrackingAreas];
+    [view removeTrackingArea:trackingArea];
+    [view removeTrackingArea:trackingArea2];
     [self assert:0 equals:[[view trackingAreas] count] message:@"After removing all tracking areas"];
     [self assert:nil equals:[trackingArea view] message:@"Tracking area should be unlinked"];
     [self assert:nil equals:[trackingArea2 view] message:@"Tracking area should be unlinked"];
@@ -1069,7 +1070,8 @@ var updateTrackingAreasCalls,
     [contentView addSubview:view];
     [self assert:1 equals:updateTrackingAreasCalls message:@"Putting a view with a non CPTrackingAreaInVisibleRect in a window should call updateTrackingAreas"];
 
-    [view removeAllTrackingAreas];
+    [view removeTrackingArea:trackingArea];
+    [view removeTrackingArea:trackingArea2];
 
     //
 
@@ -1099,7 +1101,8 @@ var updateTrackingAreasCalls,
 
     var trackingAreaAll = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero() options:CPTrackingMouseEnteredAndExited | CPTrackingMouseMoved | CPTrackingCursorUpdate | CPTrackingActiveInActiveApp | CPTrackingInVisibleRect owner:viewTA userInfo:nil];
 
-    [viewTA removeAllTrackingAreas];
+    [viewTA removeTrackingArea:trackingArea];
+    [viewTA removeTrackingArea:trackingArea2];
     [viewTA addTrackingArea:trackingAreaAll];
 
     // Mouse enters the tracking area
@@ -1160,7 +1163,7 @@ var updateTrackingAreasCalls,
 
     var trackingAreaAllWithDrag = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero() options:CPTrackingMouseEnteredAndExited | CPTrackingMouseMoved | CPTrackingCursorUpdate | CPTrackingActiveInActiveApp | CPTrackingInVisibleRect | CPTrackingEnabledDuringMouseDrag owner:viewTA userInfo:nil];
 
-    [viewTA removeAllTrackingAreas];
+    [viewTA removeTrackingArea:trackingAreaAll];
     [viewTA addTrackingArea:trackingAreaAllWithDrag];
 
     // Mouse enters the tracking area while dragging (option set)
