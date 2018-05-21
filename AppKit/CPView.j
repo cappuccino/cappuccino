@@ -3624,25 +3624,6 @@ setBoundsOrigin:
 
 }
 
-/*!
- This utility method is intended for CPView subclasses overriding updateTrackingAreas
-
- Typical use would be :
-
- - (void)updateTrackingAreas
- {
-      [self removeAllTrackingAreas];
-
-      ... add your specific updated tracking areas ...
-  }
-
-*/
-- (void)removeAllTrackingAreas
-{
-    while (_trackingAreas.length > 0)
-        [self _removeTrackingArea:_trackingAreas[0]];
-}
-
 // Internal methods
 
 - (void)_removeTrackingArea:(CPTrackingArea)trackingArea
