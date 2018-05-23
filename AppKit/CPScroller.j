@@ -460,9 +460,6 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
 */
 - (void)fadeOut
 {
-    if ([self hasThemeState:CPThemeStateScrollViewLegacy])
-        return;
-
     [_animationScroller startAnimation];
 }
 
