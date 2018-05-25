@@ -341,13 +341,13 @@
 
 - (void)testDocumentVisibleRect
 {
+    [CPScrollView setGlobalScrollerStyle:CPScrollerStyleOverlay];
+
     var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(0.0, 0.0, 1024.0, 768.0)
                                         styleMask:CPWindowNotSizable],
         windowView    = [theWindow contentView],
         aScrollView   = [[CPScrollView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)],
         aDocumentView = [[CPView alloc]       initWithFrame:CGRectMake(0, 0, 200, 200)];
-
-    [CPScrollView setGlobalScrollerStyle:CPScrollerStyleOverlay];
 
     [aScrollView setDocumentView:aDocumentView];
     [windowView addSubview:aScrollView];
