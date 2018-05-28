@@ -460,9 +460,6 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
 */
 - (void)fadeOut
 {
-    if ([self hasThemeState:CPThemeStateScrollViewLegacy])
-        return;
-
     [_animationScroller startAnimation];
 }
 
@@ -765,7 +762,10 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
     if (_timerFadeOut)
         [_timerFadeOut invalidate];
 
-    _timerFadeOut = [CPTimer scheduledTimerWithTimeInterval:1.2 target:self selector:@selector(_performFadeOut:) userInfo:nil repeats:NO];
+    if ([self hasThemeState:CPThemeStateScrollViewLegacy])
+        [self unsetThemeState:CPThemeStateSelected];
+    else
+        _timerFadeOut = [CPTimer scheduledTimerWithTimeInterval:1.2 target:self selector:@selector(_performFadeOut:) userInfo:nil repeats:NO];
 }
 
 
