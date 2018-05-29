@@ -2183,21 +2183,32 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 @end
 
 @implementation CPTextField (CPTrackingArea)
+{
+    CPTrackingArea      _textFieldTrackingArea;
+}
 
 - (void)updateTrackingAreas
 {
-    [self removeAllTrackingAreas];
+    if (_textFieldTrackingArea)
+    {
+        [self removeTrackingArea:_textFieldTrackingArea];
+        _textFieldTrackingArea = nil;
+    }
 
     if ([self isEnabled] && (_isEditable || _isSelectable))
     {
         var myBounds     = CGRectMakeCopy([self bounds]),
             contentInset = [self currentValueForThemeAttribute:@"content-inset"];
+        
+        _textFieldTrackingArea = [[CPTrackingArea alloc] initWithRect:CGRectInsetByInset(myBounds, contentInset)
+                                                              options:CPTrackingCursorUpdate | CPTrackingActiveInKeyWindow
+                                                                owner:self
+                                                             userInfo:nil];
 
-        [self addTrackingArea:[[CPTrackingArea alloc] initWithRect:CGRectInsetByInset(myBounds, contentInset)
-                                                       options:CPTrackingMouseEnteredAndExited | CPTrackingCursorUpdate | CPTrackingActiveInKeyWindow
-                                                         owner:self
-                                                      userInfo:nil]];
+        [self addTrackingArea:_textFieldTrackingArea];
     }
+    
+    [super updateTrackingAreas];
 }
 
 - (void)cursorUpdate:(CPEvent)anEvent

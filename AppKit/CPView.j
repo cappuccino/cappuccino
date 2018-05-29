@@ -428,7 +428,12 @@ var CPViewHighDPIDrawingEnabled = YES;
 
         _inhibitDOMUpdates = NO;
         _forceUpdates = NO;
-    }
+
+        // We force here an updateTrackingAreas in order to let the view install its own tracking areas
+        // in the case where an externally owned tracking area is installed on this view before putting
+        // it in the view hierarchy.
+        [self updateTrackingAreas];
+}
 
     return self;
 }
@@ -3600,11 +3605,12 @@ setBoundsOrigin:
 /*!
  Invoked automatically when the view’s geometry changes such that its tracking areas need to be recalculated.
 
- You should override this method to remove out of date tracking areas and add recomputed tracking areas;
+ You should override this method to remove out of date tracking areas, add recomputed tracking areas and then call super;
 
  Cocoa calls this on every view, whereas they have tracking area(s) or not.
  Cappuccino behaves differently :
- - updateTrackingAreas is called when placing a view in the view hierarchy (that is in a window)
+ - updateTrackingAreas is called during initWithFrame
+ - updateTrackingAreas is also called when placing a view in the view hierarchy (that is in a window)
  - if you have only CPTrackingInVisibleRect tracking areas attached to a view, it will not be called again (until you move the view in the hierarchy)
  - if you have at least one non-CPTrackingInVisibleRect tracking area attached, it will be called every time the view geometry could be modified
    You don't have to touch to CPTrackingInVisibleRect tracking areas, they will be automatically updated
@@ -3616,25 +3622,6 @@ setBoundsOrigin:
 - (void)updateTrackingAreas
 {
 
-}
-
-/*!
- This utility method is intended for CPView subclasses overriding updateTrackingAreas
-
- Typical use would be :
-
- - (void)updateTrackingAreas
- {
-      [self removeAllTrackingAreas];
-
-      ... add your specific updated tracking areas ...
-  }
-
-*/
-- (void)removeAllTrackingAreas
-{
-    while (_trackingAreas.length > 0)
-        [self _removeTrackingArea:_trackingAreas[0]];
 }
 
 // Internal methods
