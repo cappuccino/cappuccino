@@ -1290,9 +1290,6 @@ Notifies the delegate when the scroll view has finished scrolling.
     if (_isObserving)
         return;
 
-    //Make sure to have the last global style for the scroller
-    [self _didReceiveDefaultStyleChange:nil];
-
     [[CPNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(_didReceiveDefaultStyleChange:)
                                                  name:CPScrollerStyleGlobalChangeNotification
