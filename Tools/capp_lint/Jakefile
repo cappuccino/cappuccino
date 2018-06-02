@@ -1,12 +1,13 @@
-
 require ("../../common.jake");
 
-var OS = require("os"),
-    task = require("jake").task;
+var task = require("jake").task;
 
 task ("build", function()
 {
-    sudo(["./install.sh"]);
+    sudo(["mkdir", "-p", "/usr/local/narwhal/bin"])
+    sudo(["cp", "capp_lint", "/usr/local/narwhal/bin"]);
+
+    copyManPage("capp_lint", 1);
 });
 
 task ("default", ["build"]);
