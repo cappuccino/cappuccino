@@ -24,7 +24,7 @@ System Requirements
 -------------------
 To run Cappuccino applications, all you need is a HTML5 compliant web browser.
 
-Our tight integration with Xcode on MacOS brings the full power of native Cocoa development to the web.
+Our tight integration with Xcode on MacOS brings the full power of visual Cocoa development to the web.
 
 However, you can also work on other platforms using only a simple text editor.
 
@@ -45,9 +45,7 @@ If you need help with Cappuccino, you can get help from the following sources:
   - [FAQ](http://cappuccino-project.org/support/faq.html)
   - [Documentation](http://cappuccino-project.org/learn/)
   - [Wiki](http://github.com/cappuccino/cappuccino/wikis)
-  - Mailing Lists:
-    - [Objective-J](http://groups.google.com/group/objectivej)
-    - [Objective-J Developers](http://groups.google.com/group/objectivej-dev)
+  - [Mailing list](http://groups.google.com/group/objectivej)
   - [Gitter](https://gitter.im/cappuccino/cappuccino)
 
 If you discover any bugs, please [file a ticket](http://github.com/cappuccino/cappuccino/issues)
