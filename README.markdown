@@ -15,6 +15,8 @@ frameworks.
 With Cappuccino, you don't need to concern yourself
 with HTML, CSS, or the DOM.
 
+Check out a "live demo of the widgets in Cappuccino here: <https://cappuccino-testbook.5apps.com/#ThemeKitchenSink>.
+
 Check out some live demos and tutorials here: https://cappuccino-cookbook.5apps.com/
 
 For more information, see <http://cappuccino-project.org> and <https://github.com/cappuccino/cappuccino/wiki>.
