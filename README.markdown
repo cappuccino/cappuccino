@@ -15,9 +15,9 @@ frameworks.
 With Cappuccino, you don't need to concern yourself
 with HTML, CSS, or the DOM.
 
-Check out a "live demo of the widgets in Cappuccino here: <https://cappuccino-testbook.5apps.com/#ThemeKitchenSink>.
+Check out a [live demo of the widgets in Cappuccino](https://cappuccino-testbook.5apps.com/#ThemeKitchenSink)
 
-Check out some live demos and tutorials here: https://cappuccino-cookbook.5apps.com/
+Check out some [live demos and tutorials](https://cappuccino-cookbook.5apps.com)
 
 For more information, see <http://cappuccino-project.org> and <https://github.com/cappuccino/cappuccino/wiki>.
 
@@ -50,11 +50,9 @@ If you need help with Cappuccino, you can get help from the following sources:
   - Mailing Lists:
     - [Objective-J](http://groups.google.com/group/objectivej)
     - [Objective-J Developers](http://groups.google.com/group/objectivej-dev)
-  - [Gitter] (https://gitter.im/cappuccino/cappuccino)
+  - [Gitter](https://gitter.im/cappuccino/cappuccino)
 
-If you discover any bugs, please file a ticket at:
-
-  <http://github.com/cappuccino/cappuccino/issues>
+If you discover any bugs, please [file a ticket](http://github.com/cappuccino/cappuccino/issues)
 
 License
 -------
