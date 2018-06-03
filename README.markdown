@@ -19,7 +19,7 @@ Check out a [live demo of the widgets in Cappuccino](https://cappuccino-testbook
 
 Check out some [live demos and tutorials](https://cappuccino-cookbook.5apps.com)
 
-For more information, see <http://cappuccino-project.org> and <https://github.com/cappuccino/cappuccino/wiki>.
+For more information, see [the official website](http://cappuccino-project.org) and [the Github Wiki](https://github.com/cappuccino/cappuccino/wiki).
 
 Follow [@cappuccino](https://twitter.com/cappuccino) on Twitter for updates on the project.
 
