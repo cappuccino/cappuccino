@@ -73,7 +73,8 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
             @"image-cancel": [CPNull null],
             @"image-cancel-pressed": [CPNull null],
             @"image-search-inset" : CGInsetMake(0, 0, 0, 5),
-            @"image-cancel-inset" : CGInsetMake(0, 5, 0, 0)
+            @"image-cancel-inset" : CGInsetMake(0, 5, 0, 0),
+            @"search-right-margin": 2
         };
 }
 
@@ -87,10 +88,6 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
         _recentsAutosaveName = nil;
 
         [self _init];
-#if PLATFORM(DOM)
-        _cancelButton._DOMElement.style.cursor = "default";
-        _searchButton._DOMElement.style.cursor = "default";
-#endif
     }
 
     return self;
@@ -246,8 +243,9 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
 
     if (_searchButton)
     {
-        var searchBounds = [self searchButtonRectForBounds:bounds];
-        leftOffset = CGRectGetMaxX(searchBounds) + 2;
+        var searchBounds = [self searchButtonRectForBounds:bounds],
+            rightMargin  = [self currentValueForThemeAttribute:@"search-right-margin"];
+        leftOffset = CGRectGetMaxX(searchBounds) + rightMargin;
     }
 
     if (_cancelButton)
@@ -763,6 +761,63 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
 }
 
 @end
+
+#pragma mark -
+
+@implementation CPSearchField (CPTrackingArea)
+{
+    CPTrackingArea      _searchButtonTrackingArea;
+    CPTrackingArea      _cancelButtonTrackingArea;
+}
+
+- (void)updateTrackingAreas
+{
+    if (_searchButtonTrackingArea)
+    {
+        [self removeTrackingArea:_searchButtonTrackingArea];
+        _searchButtonTrackingArea = nil;
+    }
+
+    if (_cancelButtonTrackingArea)
+    {
+        [self removeTrackingArea:_cancelButtonTrackingArea];
+        _cancelButtonTrackingArea = nil;
+    }
+
+    if (_searchButton)
+    {
+        _searchButtonTrackingArea = [[CPTrackingArea alloc] initWithRect:[_searchButton frame]
+                                                                 options:CPTrackingCursorUpdate | CPTrackingActiveInKeyWindow
+                                                                   owner:self
+                                                                userInfo:@{ @"isButton": YES }];
+
+        [self addTrackingArea:_searchButtonTrackingArea];
+    }
+
+    if (_cancelButton)
+    {
+        _cancelButtonTrackingArea = [[CPTrackingArea alloc] initWithRect:[_cancelButton frame]
+                                                                 options:CPTrackingCursorUpdate | CPTrackingActiveInKeyWindow
+                                                                   owner:self
+                                                                userInfo:@{ @"isButton": YES }];
+
+        [self addTrackingArea:_cancelButtonTrackingArea];
+    }
+
+    [super updateTrackingAreas];
+}
+
+- (void)cursorUpdate:(CPEvent)anEvent
+{
+    if ([[[anEvent trackingArea] userInfo] objectForKey:@"isButton"])
+        [[CPCursor arrowCursor] set];
+    else
+        [super cursorUpdate:anEvent];
+}
+
+@end
+
+#pragma mark -
 
 var CPRecentsAutosaveNameKey            = @"CPRecentsAutosaveNameKey",
     CPSendsWholeSearchStringKey         = @"CPSendsWholeSearchStringKey",

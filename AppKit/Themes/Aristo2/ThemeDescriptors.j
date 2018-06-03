@@ -534,7 +534,7 @@ var themedButtonValues = nil,
 
             // Overlay
             [@"scroller-width",         14.0,                               CPThemeStateVertical],
-            [@"knob-inset",             CGInsetMake(2.0, 0.0, 0.0, 0.0),    CPThemeStateVertical],
+            [@"knob-inset",             CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateVertical],
             [@"track-inset",            CGInsetMake(2.0, 0.0, 2.0, 0.0),    CPThemeStateVertical],
             [@"track-border-overlay",   12.0,                               CPThemeStateVertical],
             [@"knob-slot-color",        [CPNull null],                      CPThemeStateVertical],
@@ -610,7 +610,7 @@ var themedButtonValues = nil,
 
             // Overlay
             [@"scroller-width",         9.0],
-            [@"knob-inset",             CGInsetMake(0.0, 0.0, 0.0, 2.0)],
+            [@"knob-inset",             CGInsetMake(0.0, 0.0, 0.0, 0.0)],
             [@"track-inset",            CGInsetMake(0.0, 2.0, 0.0, 2.0)],
             [@"track-border-overlay",   12.0],
             [@"knob-slot-color",        [CPNull null]],
