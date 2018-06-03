@@ -12,27 +12,19 @@ Cappuccino is built on top of standard web technologies like JavaScript, and
 it implements most of the familiar APIs from GNUstep and Apple's Cocoa
 frameworks. When you program in Cappuccino, you don't need to concern yourself
 with the complexities of traditional web technologies like HTML, CSS, or even
-the DOM. The unpleasantries of building complex cross browser applications are
-abstracted away for you.
+the DOM.
 
-For more information, see <http://cappuccino-project.org>. Follow [@cappuccino](https://twitter.com/cappuccino) on Twitter for updates on the project.
+Check out some live demos and tutorials here: https://cappuccino-cookbook.5apps.com/
+
+For more information, see <http://cappuccino-project.org> and our Github wiki <https://github.com/cappuccino/cappuccino/wiki>.
+
+Follow [@cappuccino](https://twitter.com/cappuccino) on Twitter for updates on the project.
 
 System Requirements
 -------------------
 To run Cappuccino applications, all you need is a HTML5 compliant web browser.
-
-To develop Cappuccino applications, all you need is a simple text editor and the starter package.
-
-However, Cappuccino's build system and the Xcode integration bring the eases of Cocoa development to web development. 
-
-To build Cappuccino itself, please read below. More information is available
-here: [Getting and Building the Source](http://wiki.github.com/cappuccino/cappuccino/getting-and-building-the-source>).
-
-If you're using Windows, you'll also need [Cygwin](http://www.cygwin.com/).
-
-Finally, if you want to easily stay up to date with the latest developments
-and contribute your work back to the Cappuccino community, you'll want to
-[install Git](http://git-scm.com/).
+Our tight integration with Xcode brings the power of native Cocoa development to the web.
+However, you can also work on other platforms using only a simple text editor
 
 Getting Started
 ---------------
@@ -41,30 +33,7 @@ To get started, download and install the current release version of Cappuccino:
     $ curl https://raw.githubusercontent.com/cappuccino/cappuccino/v0.9.10/bootstrap.sh >/tmp/cappuccino_bootstrap.sh && bash /tmp/cappuccino_bootstrap.sh
 
 If you'd just like to get started using Cappuccino for your web apps, you are done.
-
-The rest of these instructions are for building a development copy of Cappuccino.
-To build Cappuccino from source, check out the most recent stable version from GitHub:
-
-    $ git clone git://github.com/cappuccino/cappuccino.git (git)
-
-or download the zipball of the most recent source code:
-
-  <http://github.com/cappuccino/cappuccino/zipball/master> (zip)
-
-Then, simply type `jake` from within the root of the Cappuccino directory. If you
-get an error like `jake: command not found`, you forgot to run the bootstrap script
-as described above.
-
-Jake will build a "release" copy of the frameworks. Typing `jake debug` will
-build a debug version.
-
-`jake install` will build Cappuccino and associated tools and install them for general use.
-
-Editors
--------
-The Cappuccino TextMate Bundle: <http://github.com/malkomalko/Cappuccino.tmbundle>.
-
-The Cappuccino Xcode Plugin: <http://github.com/rbartolome/xcode-cappuccino>.
+To build Cappuccino from source, please read here: [Getting and Building the Source](http://wiki.github.com/cappuccino/cappuccino/getting-and-building-the-source>).
 
 Getting Help
 ------------
