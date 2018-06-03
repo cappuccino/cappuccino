@@ -16,7 +16,7 @@ the DOM.
 
 Check out some live demos and tutorials here: https://cappuccino-cookbook.5apps.com/
 
-For more information, see <http://cappuccino-project.org> and our Github wiki <https://github.com/cappuccino/cappuccino/wiki>.
+For more information, see <http://cappuccino-project.org> and <https://github.com/cappuccino/cappuccino/wiki>.
 
 Follow [@cappuccino](https://twitter.com/cappuccino) on Twitter for updates on the project.
 
