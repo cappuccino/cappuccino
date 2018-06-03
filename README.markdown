@@ -9,10 +9,11 @@ Cappuccino is an open source framework that makes it easy to build
 desktop-caliber applications that run in a web browser.
 
 Cappuccino is built on top of standard web technologies like JavaScript, and
-it implements most of the familiar APIs from GNUstep and Apple's Cocoa
-frameworks. When you program in Cappuccino, you don't need to concern yourself
-with the complexities of traditional web technologies like HTML, CSS, or even
-the DOM.
+it implements most of the familiar APIs from Apple's Cocoa
+frameworks.
+
+With Cappuccino, you don't need to concern yourself
+with HTML, CSS, or the DOM.
 
 Check out some live demos and tutorials here: https://cappuccino-cookbook.5apps.com/
 
