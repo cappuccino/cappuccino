@@ -23,7 +23,9 @@ Follow [@cappuccino](https://twitter.com/cappuccino) on Twitter for updates on t
 System Requirements
 -------------------
 To run Cappuccino applications, all you need is a HTML5 compliant web browser.
+
 Our tight integration with Xcode brings the power of native Cocoa development to the web.
+
 However, you can also work on other platforms using only a simple text editor
 
 Getting Started
@@ -33,7 +35,7 @@ To get started, download and install the current release version of Cappuccino:
     $ curl https://raw.githubusercontent.com/cappuccino/cappuccino/v0.9.10/bootstrap.sh >/tmp/cappuccino_bootstrap.sh && bash /tmp/cappuccino_bootstrap.sh
 
 If you'd just like to get started using Cappuccino for your web apps, you are done.
-To build Cappuccino from source, please read here: [Getting and Building the Source](http://wiki.github.com/cappuccino/cappuccino/getting-and-building-the-source>).
+To build Cappuccino from source, please read here: [Getting and Building the Source](<http://wiki.github.com/cappuccino/cappuccino/getting-and-building-the-source>).
 
 Getting Help
 ------------
