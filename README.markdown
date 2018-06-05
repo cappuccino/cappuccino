@@ -3,6 +3,10 @@
 Welcome to Cappuccino!
 ======================
 
+Special event
+-------------
+Release 1.0 is scheduled for [CappCon 2018 on September 4, 2018 at Université de Liège in Belgium](https://www.meetup.com/de-DE/CappCon/events/248886408).
+
 Introduction
 ------------
 Cappuccino is an open source framework that makes it easy to build
