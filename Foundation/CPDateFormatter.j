@@ -84,7 +84,7 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
     relativeDateFormating = @{
       @"fr" : [@"demain", 1, @"apr" + String.fromCharCode(233) + @"s-demain", 2, @"apr" + String.fromCharCode(233) + @"s-apr" + String.fromCharCode(233) + @"s-demain", 3, @"hier", -1, @"avant-hier", -2, @"avant-avant-hier", -3],
       @"en" : [@"tomorrow", 1, @"yesterday", -1],
-      @"de" : [],
+      @"de" : [@"morgen", 1, @"gestern", -1, String.fromCharCode(129) + @"bermorgen", 2, @"vorgestern", -2],
       @"es" : []
     };
 
@@ -559,7 +559,13 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
             if ([self _isAmericanFormat])
                 format = @"M/d/yy";
             else
-                format = @"dd/MM/yy";
+            {
+                if ([_locale objectForKey:CPLocaleLanguageCode] === 'de')
+                    format = @"dd.MM.yy";
+                else
+                    format = @"dd/MM/yy";
+
+            }
 
             break;
 
