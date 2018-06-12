@@ -22,7 +22,7 @@ Check out some [live demos and tutorials](https://cappuccino-cookbook.5apps.com)
 
 For more information, see the
   - [Official website](http://cappuccino-project.org)
-  - [Github Wiki](https://github.com/cappuccino/cappuccino/wiki).
+  - [Github Wiki](https://github.com/cappuccino/cappuccino/wiki)
   - [FAQ](http://cappuccino-project.org/support/faq.html)
   - [Documentation](http://cappuccino-project.org/learn/)
   - [Mailing list](http://groups.google.com/group/objectivej)
@@ -30,7 +30,7 @@ For more information, see the
 
 Follow [@cappuccino](https://twitter.com/cappuccino) on Twitter for updates on the project.
 
-If you discover any bugs, please [file a ticket](http://github.com/cappuccino/cappuccino/issues)
+If you discover any bugs, please [file a ticket](http://github.com/cappuccino/cappuccino/issues).
 
 System Requirements
 -------------------
@@ -42,7 +42,7 @@ However, you can also work on other platforms using only a simple text editor.
 
 Getting Started
 ---------------
-To write you first application, [download the starter package](http://www.cappuccino-project.org/#download)
+To write you first application, [download the starter package](http://www.cappuccino-project.org/#download).
 
 To contribute to Cappuccino, please read here: [Getting and Building the Source](<http://wiki.github.com/cappuccino/cappuccino/getting-and-building-the-source>).
 
