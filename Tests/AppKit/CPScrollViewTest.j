@@ -321,33 +321,15 @@
     [self assertFalse:hasScrolled];
 }
 
--(void)testNotificationsRegistered
-{
-    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)],
-        theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(0.0, 0.0, 1024.0, 768.0)
-                                                styleMask:CPWindowNotSizable];
-
-    [self assert:[CPNotificationCenterHelper registeredNotificationsForObserver:scrollView] equals:[] message:@"Notications registered for the scrollView in the notification center are wrong"];
-
-    [[theWindow contentView] addSubview:scrollView];
-    [self assert:[CPNotificationCenterHelper registeredNotificationsForObserver:scrollView] equals:[@"CPScrollerStyleGlobalChangeNotification"] message:@"Notications registered for the scrollView in the notification center are wrong"];
-
-    [[theWindow contentView] addSubview:scrollView];
-    [self assert:[CPNotificationCenterHelper registeredNotificationsForObserver:scrollView] equals:[@"CPScrollerStyleGlobalChangeNotification"] message:@"Notications registered for the scrollView in the notification center are wrong"];
-
-    [scrollView removeFromSuperview];
-    [self assert:[CPNotificationCenterHelper registeredNotificationsForObserver:scrollView] equals:[] message:@"Notications registered for the scrollView in the notification center are wrong"];
-}
-
 - (void)testDocumentVisibleRect
 {
-    [CPScrollView setGlobalScrollerStyle:CPScrollerStyleOverlay];
-
     var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(0.0, 0.0, 1024.0, 768.0)
                                         styleMask:CPWindowNotSizable],
         windowView    = [theWindow contentView],
         aScrollView   = [[CPScrollView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)],
         aDocumentView = [[CPView alloc]       initWithFrame:CGRectMake(0, 0, 200, 200)];
+
+    [CPScrollView setGlobalScrollerStyle:CPScrollerStyleOverlay];
 
     [aScrollView setDocumentView:aDocumentView];
     [windowView addSubview:aScrollView];
@@ -363,6 +345,39 @@
 
     [aDocumentView setScaleSize:CGSizeMake(0.5, 0.5)];
     [self assertRect:CGRectMake(80, 80, 200, 200) equals:[aScrollView documentVisibleRect] message:@"documentVisibleRect is wrong in CPScrollView"];
+}
+
+- (void)testSetGlobalScrollerStyle
+{
+    // In this test, we set global scroller style to legacy, we create a scroll view, change global scroller style to overlay BEFORE placing the
+    // scroll view in the view hierarchy, then we insert the scroll view in the view hierarchy and it should then have overlay as scroller style.
+
+    [CPScrollView setGlobalScrollerStyle:CPScrollerStyleLegacy];
+
+    var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(0.0, 0.0, 1024.0, 768.0)
+                                                styleMask:CPWindowNotSizable],
+        windowView    = [theWindow contentView],
+        aScrollView   = [[CPScrollView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)],
+        aDocumentView = [[CPView alloc]       initWithFrame:CGRectMake(0, 0, 200, 200)];
+
+    [CPScrollView setGlobalScrollerStyle:CPScrollerStyleOverlay];
+
+    [aScrollView setDocumentView:aDocumentView];
+    [windowView addSubview:aScrollView];
+
+    [self assert:CPScrollerStyleOverlay equals:[aScrollView scrollerStyle] message:@"Global scroller style was not applied to this CPScrollView"];
+
+    // In this test, we have global scroller style set to overlay. We create a scroll view, set the scroller style to legacy BEFORE placing the
+    // scroll view in the view hierarchy, then insert it. It should have legacy as scroller style.
+
+    var anotherScrollView   = [[CPScrollView alloc] initWithFrame:CGRectMake(100, 100, 100, 100)],
+        anotherDocumentView = [[CPView alloc]       initWithFrame:CGRectMake(0, 0, 200, 200)];
+
+    [anotherScrollView setScrollerStyle:CPScrollerStyleLegacy];
+    [anotherScrollView setDocumentView:anotherDocumentView];
+    [windowView addSubview:anotherScrollView];
+
+    [self assert:CPScrollerStyleLegacy equals:[anotherScrollView scrollerStyle] message:@"Specific scroller style was overrided by global scroller style"];
 }
 
 - (void)assertPoint:(CGPoint)expected equals:(CGPoint)actual message:(CPString)message

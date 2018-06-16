@@ -95,6 +95,10 @@ var TIMER_INTERVAL                              = 0.2,
 var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
     CPScrollerStyleGlobalChangeNotification     = @"CPScrollerStyleGlobalChangeNotification";
 
+// _CPScrollViews will hold all created CPScrollView's in order to propagate changes
+// of scroller global style
+var _CPScrollViews;
+
 /*!
     @ingroup appkit
     @class CPScrollView
@@ -151,6 +155,8 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
         CPScrollerStyleGlobal = _isBrowserUsingOverlayScrollers() ? CPScrollerStyleOverlay : CPScrollerStyleLegacy
     else
         CPScrollerStyleGlobal = globalValue;
+
+    _CPScrollViews = @[];
 }
 
 + (CPString)defaultThemeClass
@@ -233,7 +239,10 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
 + (void)setGlobalScrollerStyle:(int)aStyle
 {
     CPScrollerStyleGlobal = aStyle;
-    [[CPNotificationCenter defaultCenter] postNotificationName:CPScrollerStyleGlobalChangeNotification object:nil];
+
+    // We propagate the new scroller global style to all existing CPScrollView's
+    for (var i = 0, count = [_CPScrollViews count]; i < count; i++)
+        [_CPScrollViews[i] setScrollerStyle:CPScrollerStyleGlobal];
 }
 
 
@@ -271,6 +280,8 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
         _delegate = nil;
         _scrollTimer = nil;
         _implementedDelegateMethods = 0;
+
+        [_CPScrollViews addObject:self];
     }
 
     return self;
@@ -1272,37 +1283,6 @@ Notifies the delegate when the scroll view has finished scrolling.
 #pragma mark -
 #pragma mark Overrides
 
-
-- (void)_removeObservers
-{
-    if (!_isObserving)
-        return;
-
-    [[CPNotificationCenter defaultCenter] removeObserver:self
-                                                    name:CPScrollerStyleGlobalChangeNotification
-                                                  object:nil];
-
-    [super _removeObservers];
-}
-
-- (void)_addObservers
-{
-    if (_isObserving)
-        return;
-
-    //Make sure to have the last global style for the scroller
-    [self _didReceiveDefaultStyleChange:nil];
-
-    [[CPNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(_didReceiveDefaultStyleChange:)
-                                                 name:CPScrollerStyleGlobalChangeNotification
-                                               object:nil];
-
-    [super _addObservers];
-}
-
-
-
 - (void)drawRect:(CGRect)aRect
 {
     [super drawRect:aRect];
@@ -1568,10 +1548,7 @@ var CPScrollViewContentViewKey          = @"CPScrollViewContentView",
         _scrollerStyle = [aCoder decodeObjectForKey:CPScrollViewScrollerStyleKey] || CPScrollerStyleGlobal;
         _scrollerKnobStyle = [aCoder decodeObjectForKey:CPScrollViewScrollerKnobStyleKey] || CPScrollerKnobStyleDefault;
 
-        [[CPNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(_didReceiveDefaultStyleChange:)
-                                                     name:CPScrollerStyleGlobalChangeNotification
-                                                   object:nil];
+        [_CPScrollViews addObject:self];
     }
 
     return self;
