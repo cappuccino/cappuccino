@@ -74,7 +74,7 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
             @"image-cancel-pressed": [CPNull null],
             @"image-search-inset" : CGInsetMake(0, 0, 0, 5),
             @"image-cancel-inset" : CGInsetMake(0, 5, 0, 0),
-            @"search-menu-offset": CGSizeMake(10, -4)
+            @"search-menu-offset": CGPointMake(10, -4)
         };
 }
 
@@ -695,7 +695,7 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
 
     var aFrame = [[self superview] convertRect:[self frame] toView:nil],
         offset = [self currentValueForThemeAttribute:@"search-menu-offset"],
-        location = CGPointMake(aFrame.origin.x + offset.width, aFrame.origin.y + aFrame.size.height + offset.height);
+        location = CGPointMake(aFrame.origin.x + offset.x, aFrame.origin.y + aFrame.size.height + offset.y);
 
     var anEvent = [CPEvent mouseEventWithType:CPRightMouseDown location:location modifierFlags:0 timestamp:[[CPApp currentEvent] timestamp] windowNumber:[[self window] windowNumber] context:nil eventNumber:1 clickCount:1 pressure:0];
 
