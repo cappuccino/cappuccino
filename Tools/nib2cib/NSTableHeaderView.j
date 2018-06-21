@@ -38,7 +38,8 @@
         if (_bounds.size.height === 17)
         {
             var theme = [Nib2Cib defaultTheme],
-                height = [theme valueForAttributeWithName:@"default-row-height" forClass:CPTableView];
+                themedHeaderViewHeight = [theme valueForAttributeWithName:@"header-view-height" forClass:CPTableView],
+                height = (themedHeaderViewHeight !== [CPNull null]) ? themedHeaderViewHeight : [theme valueForAttributeWithName:@"default-row-height" forClass:CPTableView];
 
             _bounds.size.height = height;
             _frame.size.height = height;
