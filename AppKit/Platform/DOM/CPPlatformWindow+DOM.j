@@ -1193,9 +1193,16 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
     }
     else
     {
+
         // two fingers->simulate scrolling events
         if (aDOMEvent.touches && aDOMEvent.touches.length == 2)
         {
+            if (aDOMEvent.preventDefault)
+                aDOMEvent.preventDefault();
+
+            if (aDOMEvent.stopPropagation)
+                aDOMEvent.stopPropagation();
+
             switch (aDOMEvent.type)
             {
                 case CPDOMEventTouchStart:
@@ -1216,12 +1223,6 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
             }
         }
         // handle other touch cases specifically
-
-        if (aDOMEvent.preventDefault)
-            aDOMEvent.preventDefault();
-
-        if (aDOMEvent.stopPropagation)
-            aDOMEvent.stopPropagation();
     }
 }
 
