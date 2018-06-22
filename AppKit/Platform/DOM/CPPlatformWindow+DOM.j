@@ -1193,7 +1193,6 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
     }
     else
     {
-
         // two fingers->simulate scrolling events
         if (aDOMEvent.touches && aDOMEvent.touches.length == 2)
         {
