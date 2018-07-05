@@ -20,9 +20,17 @@ Check out a [live demo of the widgets in Cappuccino](https://cappuccino-testbook
 
 Check out some [live demos and tutorials](https://cappuccino-cookbook.5apps.com)
 
-For more information, see [the official website](http://cappuccino-project.org) and [the Github Wiki](https://github.com/cappuccino/cappuccino/wiki).
+For more information, see the
+  - [Official website](http://cappuccino-project.org)
+  - [Github Wiki](https://github.com/cappuccino/cappuccino/wiki)
+  - [FAQ](http://cappuccino-project.org/support/faq.html)
+  - [Documentation](http://cappuccino-project.org/learn/)
+  - [Mailing list](http://groups.google.com/group/objectivej)
+  - [Gitter](https://gitter.im/cappuccino/cappuccino)
 
 Follow [@cappuccino](https://twitter.com/cappuccino) on Twitter for updates on the project.
+
+If you discover any bugs, please [file a ticket](http://github.com/cappuccino/cappuccino/issues).
 
 System Requirements
 -------------------
@@ -34,25 +42,9 @@ However, you can also work on other platforms using only a simple text editor.
 
 Getting Started
 ---------------
-To get started, download and install the current release version of Cappuccino:
+To write you first application, [download the starter package](http://www.cappuccino-project.org/#download).
 
-    $ curl https://raw.githubusercontent.com/cappuccino/cappuccino/v0.9.10/bootstrap.sh >/tmp/cappuccino_bootstrap.sh && bash /tmp/cappuccino_bootstrap.sh
-
-If you'd just like to get started using Cappuccino for your web apps, you are done.
-
-To build Cappuccino from source, please read here: [Getting and Building the Source](<http://wiki.github.com/cappuccino/cappuccino/getting-and-building-the-source>).
-
-Getting Help
-------------
-If you need help with Cappuccino, you can get help from the following sources:
-
-  - [FAQ](http://cappuccino-project.org/support/faq.html)
-  - [Documentation](http://cappuccino-project.org/learn/)
-  - [Wiki](http://github.com/cappuccino/cappuccino/wikis)
-  - [Mailing list](http://groups.google.com/group/objectivej)
-  - [Gitter](https://gitter.im/cappuccino/cappuccino)
-
-If you discover any bugs, please [file a ticket](http://github.com/cappuccino/cappuccino/issues)
+To contribute to Cappuccino, please read here: [Getting and Building the Source](<http://wiki.github.com/cappuccino/cappuccino/getting-and-building-the-source>).
 
 License
 -------
