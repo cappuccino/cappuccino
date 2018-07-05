@@ -49,7 +49,6 @@ var DOMFixedWidthSpanElement    = nil,
         bodyElement = [CPPlatform mainBodyElement];
 
     DOMFlexibleWidthSpanElement = document.createElement("span");
-    DOMFlexibleWidthSpanElement.className = "cpdontremove";
     style = DOMFlexibleWidthSpanElement.style;
     style.position = "absolute";
     style.left = "-100000px";
@@ -60,7 +59,6 @@ var DOMFixedWidthSpanElement    = nil,
     style.whiteSpace = "pre";
 
     DOMFixedWidthSpanElement = document.createElement("span");
-    DOMFixedWidthSpanElement.className = "cpdontremove";
     style = DOMFixedWidthSpanElement.style;
     style.display = "block";
     style.position = "absolute";
@@ -96,7 +94,6 @@ var DOMFixedWidthSpanElement    = nil,
         bodyElement = [CPPlatform mainBodyElement];
 
     DOMMetricsDivElement = document.createElement("div");
-    DOMMetricsDivElement.className = "cpdontremove";
     style = DOMMetricsDivElement.style;
     style.position = "absolute";
     style.left = "-100000px";
@@ -113,7 +110,6 @@ var DOMFixedWidthSpanElement    = nil,
     var imgPath = [[CPBundle bundleForClass:[CPView class]] pathForResource:@"empty.png"];
 
     DOMMetricsImgElement = document.createElement("img");
-    DOMMetricsImgElement.className = "cpdontremove";
     DOMMetricsImgElement.setAttribute("src", imgPath);
     DOMMetricsImgElement.setAttribute("width", "1");
     DOMMetricsImgElement.setAttribute("height", "1");
