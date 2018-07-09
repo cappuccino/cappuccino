@@ -770,6 +770,13 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
         _timerFadeOut = [CPTimer scheduledTimerWithTimeInterval:1.2 target:self selector:@selector(_performFadeOut:) userInfo:nil repeats:NO];
 }
 
+- (float)scrollerWidth
+{
+    if (_style == CPScrollerStyleLegacy)
+        return [self valueForThemeAttribute:@"scroller-width" inState:CPThemeStateScrollViewLegacy];
+
+    return [self currentValueForThemeAttribute:@"scroller-width"];
+}
 
 #pragma mark -
 #pragma mark Delegates
