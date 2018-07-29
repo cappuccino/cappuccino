@@ -20,7 +20,7 @@ var _supportsCSSAnimations = null;
     id <CPAnimatablePropertyContainer> _target;
 }
 
-+ (void)initialize
++ (BOOL)initialize
 {
     if ([self class] !== [_CPObjectAnimator class])
         return;
