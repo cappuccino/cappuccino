@@ -78,6 +78,14 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
         };
 }
 
++ (Class)_binderClassForBinding:(CPString)aBinding
+{
+    if (aBinding === CPPredicateBinding)
+        return [_CPSearchFieldPredicateBinder class];
+
+    return [super _binderClassForBinding:aBinding];
+}
+
 - (id)initWithFrame:(CGRect)frame
 {
     if (self = [super initWithFrame:frame])
@@ -760,6 +768,16 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
         _recentSearches = list;
 }
 
+- (void)unbind:(CPString)aBinding
+{
+    [super unbind:aBinding];
+
+    // our CPPredicateBinding binder adds a binding to the value.
+    // this private binding has to be also removed
+    if (aBinding === CPPredicateBinding)
+        [[[self class] _binderClassForBinding:aBinding] unbind:CPValueBinding forObject:self];
+}
+
 @end
 
 #pragma mark -
@@ -871,3 +889,44 @@ var CPRecentsAutosaveNameKey            = @"CPRecentsAutosaveNameKey",
 }
 
 @end
+
+@implementation _CPSearchFieldPredicateBinder : CPBinder
+{
+    CPArrayController  _controller;
+    CPString           _predicateFormat;
+}
+
+- (void)setValue:(id)aValue forBinding:(CPString)aBinding
+{
+    if (aBinding === CPPredicateBinding)
+    {
+        var options = [_info objectForKey:CPOptionsKey];
+
+        _controller = [_info objectForKey:CPObservedObjectKey];
+        _predicateFormat = [options objectForKey:"CPPredicateFormat"];
+        [_source bind:CPValueBinding toObject:self withKeyPath:"searchFieldValue" options:nil];
+    }
+}
+
+- (void)setSearchFieldValue:(CPString)aValue
+{
+    var destination = [_info objectForKey:CPObservedObjectKey],
+        keyPath     = [_info objectForKey:CPObservedKeyPathKey];
+
+    var formatString = _predicateFormat.replace(/\$value/g, "%@");
+    [self suppressSpecificNotificationFromObject:destination keyPath:keyPath];
+
+    if (aValue)
+        [_controller setFilterPredicate:[CPPredicate predicateWithFormat:formatString, aValue]];
+    else
+        [_controller setFilterPredicate:nil];
+
+    [self unsuppressSpecificNotificationFromObject:destination keyPath:keyPath];
+}
+- (CPString)searchFieldValue
+{
+    return [_source stringValue];
+}
+
+@end
+
