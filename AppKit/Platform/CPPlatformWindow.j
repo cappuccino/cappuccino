@@ -224,10 +224,18 @@ var PrimaryPlatformWindow   = NULL;
 
 - (void)deminiaturize:(id)sender
 {
+#if PLATFORM(DOM)
+    if (_DOMWindow && typeof _DOMWindow["cpDeminiaturize"] === "function")
+        _DOMWindow.cpDeminiaturize();
+#endif
 }
 
 - (void)miniaturize:(id)sender
 {
+#if PLATFORM(DOM)
+    if (_DOMWindow && typeof _DOMWindow["cpMiniaturize"] === "function")
+        _DOMWindow.cpMiniaturize();
+#endif
 }
 
 - (void)moveWindow:(CPWindow)aWindow fromLevel:(int)fromLevel toLevel:(int)toLevel
@@ -247,16 +255,31 @@ var PrimaryPlatformWindow   = NULL;
 - (void)setLevel:(CPInteger)aLevel
 {
     _level = aLevel;
+
+#if PLATFORM(DOM)
+    if (_DOMWindow && _DOMWindow.cpSetLevel)
+        _DOMWindow.cpSetLevel(aLevel);
+#endif
 }
 
 - (void)setHasShadow:(BOOL)shouldHaveShadow
 {
     _hasShadow = shouldHaveShadow;
+
+#if PLATFORM(DOM)
+    if (_DOMWindow && _DOMWindow.cpSetHasShadow)
+        _DOMWindow.cpSetHasShadow(shouldHaveShadow);
+#endif
 }
 
 - (void)setShadowStyle:(int)aStyle
 {
     _shadowStyle = aStyle;
+
+#if PLATFORM(DOM)
+    if (_DOMWindow && _DOMWindow.cpSetShadowStyle)
+        _shadowStyle.cpSetShadowStyle(aStyle);
+#endif
 }
 
 - (BOOL)supportsFullPlatformWindows
