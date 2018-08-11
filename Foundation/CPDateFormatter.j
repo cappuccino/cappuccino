@@ -743,7 +743,7 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
             continue;
         }
 
-        if ([character isEqualToString:@","] || [character isEqualToString:@":"] || [character isEqualToString:@"/"] || [character isEqualToString:@"-"] || [character isEqualToString:@" "])
+        if ([character isEqualToString:@","] || [character isEqualToString:@":"] || [character isEqualToString:@"/"] || [character isEqualToString:@"-"] || [character isEqualToString:@" "] || [character isEqualToString:@"."])
         {
             result += [self _stringFromToken:currentToken date:aDate];
             result += character;
