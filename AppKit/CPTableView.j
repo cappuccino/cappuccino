@@ -5139,7 +5139,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 {
     [super viewWillMoveToWindow:aWindow];
 
-    [self _stopObservingFirstResponderForWindow:aWindow];
+    [self _stopObservingFirstResponderForWindow:[self window]];
 
     if (aWindow)
         [self _startObservingFirstResponderForWindow:aWindow];
