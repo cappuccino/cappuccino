@@ -247,9 +247,6 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
     if (!_DOMWindow)
         return [self contentRect];
 
-    if (_DOMWindow.cpFrame)
-        return _DOMWindow.cpFrame();
-
     var contentRect = CGRectMakeZero();
 
     if (window.screenTop)
@@ -277,9 +274,6 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 {
     if (!_DOMWindow)
         return;
-
-    if (typeof _DOMWindow["cpSetFrame"] === "function")
-        return _DOMWindow.cpSetFrame([self contentRect]);
 
     var origin = [self contentRect].origin,
         nativeOrigin = [self nativeContentRect].origin;
@@ -576,21 +570,11 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 
     [PlatformWindows addObject:self];
 
-    // FIXME: cpSetFrame?
     _DOMWindow.document.write('<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"></head><body style="background-color:transparent; overflow:hidden"></body></html>');
     _DOMWindow.document.close();
 
     if (self != [CPPlatformWindow primaryPlatformWindow])
         _DOMWindow.document.title = _title;
-
-    if (![CPPlatform isBrowser])
-    {
-        _DOMWindow.cpWindowNumber = [self._only windowNumber];
-        _DOMWindow.cpSetFrame(_contentRect);
-        _DOMWindow.cpSetLevel(_level);
-        _DOMWindow.cpSetHasShadow(_hasShadow);
-        _DOMWindow.cpSetShadowStyle(_shadowStyle);
-    }
 
     [self registerDOMWindow];
 
