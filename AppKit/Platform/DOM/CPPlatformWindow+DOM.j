@@ -433,10 +433,10 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
         theDocument.addEventListener("keydown", keyEventCallback, NO);
         theDocument.addEventListener("keypress", keyEventCallback, NO);
 
-        theDocument.addEventListener("touchstart", touchEventCallback, NO);
-        theDocument.addEventListener("touchend", touchEventCallback, NO);
-        theDocument.addEventListener("touchmove", touchEventCallback, NO);
-        theDocument.addEventListener("touchcancel", touchEventCallback, NO);
+        theDocument.addEventListener("touchstart", touchEventCallback, {passive: false});
+        theDocument.addEventListener("touchend", touchEventCallback, {passive: false});
+        theDocument.addEventListener("touchmove", touchEventCallback, {passive: false});
+        theDocument.addEventListener("touchcancel", touchEventCallback, {passive: false});
 
         _DOMWindow.addEventListener("DOMMouseScroll", scrollEventCallback, NO);
         _DOMWindow.addEventListener("wheel", scrollEventCallback, NO);
@@ -1196,6 +1196,12 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
         // two fingers->simulate scrolling events
         if (aDOMEvent.touches && aDOMEvent.touches.length == 2)
         {
+            if (aDOMEvent.preventDefault)
+                aDOMEvent.preventDefault();
+
+            if (aDOMEvent.stopPropagation)
+                aDOMEvent.stopPropagation();
+
             switch (aDOMEvent.type)
             {
                 case CPDOMEventTouchStart:
@@ -1215,7 +1221,8 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
                     return;
             }
         }
-        // handle other touch cases specifically
+        
+        // cancel other touch cases preventively
 
         if (aDOMEvent.preventDefault)
             aDOMEvent.preventDefault();
