@@ -119,7 +119,10 @@
                                                         cursor:[CPCursor closedHandCursor]],
         disappearingItemCursorTester = [[CursorTester alloc] initWithText:@"Disappearing item cursor"
                                                         origin:CGPointMake(x, y+=yInc)
- 													    cursor:[CPCursor disappearingItemCursor]];
+ 													    cursor:[CPCursor disappearingItemCursor]],
+        verticalTextCursorTester = [[CursorTester alloc] initWithText:@"Vertical text cursor"
+                                                               origin:CGPointMake(x, y+=yInc)
+                                                               cursor:[CPCursor IBeamCursorForVerticalLayout]];
 
     [contentView addSubview:imageCursorTester];
     [contentView addSubview:arrowCursorTester];
@@ -139,6 +142,7 @@
     [contentView addSubview:openHandCursorTester];
     [contentView addSubview:closedHandCursorTester];
     [contentView addSubview:disappearingItemCursorTester];
+    [contentView addSubview:verticalTextCursorTester];
 
     [theWindow orderFront:self];
 }

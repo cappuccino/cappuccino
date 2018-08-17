@@ -23,6 +23,7 @@ Cursor support by browser:
 
 @import <Foundation/CPObject.j>
 @import "CPImage.j"
+@import "CPCompatibility.j"
 
 @global CPApp
 
@@ -30,6 +31,12 @@ var currentCursor = nil,
     cursorStack = [],
     cursors = {},
     ieCursorMap = {};
+
+@typedef CPCursorPlatform
+CPCursorPlatformNone    = 0;
+CPCursorPlatformMac     = 1;
+CPCursorPlatformWindows = 2;
+CPCursorPlatformBoth    = 3;
 
 @implementation CPCursor : CPObject
 {
@@ -157,7 +164,7 @@ var currentCursor = nil,
 }
 
 // Internal method that is used to return the system cursors.  Caches the system cursors for performance.
-+ (CPCursor)_systemCursorWithName:(CPString)cursorName cssString:(CPString)aString hasImage:(BOOL)doesHaveImage
++ (CPCursor)_nativeSystemCursorWithName:(CPString)cursorName cssString:(CPString)aString
 {
     var cursor = cursors[cursorName];
 
@@ -165,155 +172,217 @@ var currentCursor = nil,
     {
         var cssString;
 
-        if (doesHaveImage)
-        {
-            var themeResourcePath = [[[CPApp themeBlend] bundle] resourcePath],
-                extension = CPBrowserIsEngine(CPInternetExplorerBrowserEngine) ? @"cur" : @"png";
+        // IE <= 8 does not support some cursors, map them to supported cursors
+        var ieLessThan9 = CPBrowserIsEngine(CPInternetExplorerBrowserEngine) && !CPFeatureIsCompatible(CPHTMLCanvasFeature);
 
-            cssString = [CPString stringWithFormat:@"url(%@cursors/%@.%@), %@", themeResourcePath, cursorName, extension, aString];
-        }
-
+        if (ieLessThan9)
+            cssString = ieCursorMap[aString] || aString;
         else
-        {
-            // IE <= 8 does not support some cursors, map them to supported cursors
-            var ieLessThan9 = CPBrowserIsEngine(CPInternetExplorerBrowserEngine) && !CPFeatureIsCompatible(CPHTMLCanvasFeature);
+            cssString = aString;
 
-            if (ieLessThan9)
-                cssString = ieCursorMap[aString] || aString;
-            else
-                cssString = aString;
-        }
-
-        cursor = [[CPCursor alloc] initWithCSSString:cssString];
-        cursors[cursorName] = cursor;
+        cursors[cursorName] = cursor = [[CPCursor alloc] initWithCSSString:cssString];
     }
 
     return cursor;
 }
 
++ (CPCursor)_imageCursorWithName:(CPString)cursorName cssString:(CPString)aString
+{
+    var cursor = cursors[cursorName];
+
+    if (typeof cursor === "undefined")
+    {
+        var themeResourcePath = [[[CPApp themeBlend] bundle] resourcePath],
+            extension = CPBrowserIsOperatingSystem(CPWindowsOperatingSystem) ? @"cur" : @"png";
+
+        cssString = [CPString stringWithFormat:@"url(%@cursors/%@.%@), %@", themeResourcePath, cursorName, extension, aString];
+
+        cursors[cursorName] = cursor = [[CPCursor alloc] initWithCSSString:cssString];
+    }
+
+    return cursor;
+}
+
++ (CPCursor)_tryUsingNativeSystemCursorWithName:(CPString)cursorName cssString:(CPString)cssName onPlatform:(CPCursorPlatform)shouldUseNativeCursorOn fallingBackWithImageAndCSSPointer:(CPString)aString
+{
+    var useNativeSystemCursor = (((shouldUseNativeCursorOn == CPCursorPlatformBoth) ||
+                                  ((shouldUseNativeCursorOn == CPCursorPlatformMac) && CPBrowserIsOperatingSystem(CPMacOperatingSystem)) ||
+                                  ((shouldUseNativeCursorOn == CPCursorPlatformWindows) && CPBrowserIsOperatingSystem(CPWindowsOperatingSystem)))
+                                 && [CPCursor _nativeCursorExists:cssName]);
+
+    if (useNativeSystemCursor)
+        return [CPCursor _nativeSystemCursorWithName:cursorName cssString:cssName];
+    else
+        return [CPCursor _imageCursorWithName:cursorName cssString:aString];
+}
+
++ (BOOL)_nativeCursorExists:(CPString)cursorCSSName
+{
+#if PLATFORM(DOM)
+
+    // FIXME: Trick until FF/Win & Chrome/Win correctly implement context-menu cursor
+    // They will answer that they implement it but they actually don't
+
+    if ([cursorCSSName isEqualToString:@"context-menu"] && CPBrowserIsOperatingSystem(CPWindowsOperatingSystem) && !CPBrowserIsEngine(CPInternetExplorerBrowserEngine) && !CPBrowserIsEngine(CPEdgeBrowserEngine))
+        return NO;
+
+    // Normal usage : try to set the cursor and check if resulting cursor is the one we tried to set.
+    // If yes, then the browser implements the cursor. If no (and usually we get "default"), then it doesn't.
+
+    var platformWindows = [[CPPlatformWindow visiblePlatformWindows] allObjects],
+        count = [platformWindows count];
+
+    if (count > 0)
+    {
+        var currentPlatformCursor = platformWindows[0]._DOMBodyElement.style.cursor;
+        platformWindows[0]._DOMBodyElement.style.cursor = cursorCSSName;
+        var doesExist = (platformWindows[0]._DOMBodyElement.style.cursor == cursorCSSName);
+        platformWindows[0]._DOMBodyElement.style.cursor = currentPlatformCursor;
+
+        return doesExist;
+    }
+#endif
+
+    return NO;
+}
+
 + (CPCursor)arrowCursor
 {
-    return [CPCursor _systemCursorWithName:CPStringFromSelector(_cmd) cssString:@"default" hasImage:NO];
+    return [CPCursor _nativeSystemCursorWithName:CPStringFromSelector(_cmd) cssString:@"default"];
 }
 
 + (CPCursor)crosshairCursor
 {
-    return [CPCursor _systemCursorWithName:CPStringFromSelector(_cmd) cssString:@"crosshair" hasImage:NO];
+    return [CPCursor _nativeSystemCursorWithName:CPStringFromSelector(_cmd) cssString:@"crosshair"];
 }
 
 + (CPCursor)IBeamCursor
 {
-    return [CPCursor _systemCursorWithName:CPStringFromSelector(_cmd) cssString:@"text" hasImage:NO];
+    return [CPCursor _nativeSystemCursorWithName:CPStringFromSelector(_cmd) cssString:@"text"];
 }
 
 + (CPCursor)pointingHandCursor
 {
-    return [CPCursor _systemCursorWithName:CPStringFromSelector(_cmd) cssString:@"pointer" hasImage:NO];
+    return [CPCursor _nativeSystemCursorWithName:CPStringFromSelector(_cmd) cssString:@"pointer"];
 }
 
 + (CPCursor)resizeNorthwestCursor
 {
-    return [CPCursor _systemCursorWithName:CPStringFromSelector(_cmd) cssString:@"nw-resize" hasImage:NO];
+    return [CPCursor _nativeSystemCursorWithName:CPStringFromSelector(_cmd) cssString:@"nw-resize"];
 }
 
 + (CPCursor)resizeNorthwestSoutheastCursor
 {
-    return [CPCursor _systemCursorWithName:CPStringFromSelector(_cmd) cssString:@"nwse-resize" hasImage:NO];
+    return [CPCursor _nativeSystemCursorWithName:CPStringFromSelector(_cmd) cssString:@"nwse-resize"];
 }
 
 + (CPCursor)resizeNortheastCursor
 {
-    return [CPCursor _systemCursorWithName:CPStringFromSelector(_cmd) cssString:@"ne-resize" hasImage:NO];
+    return [CPCursor _nativeSystemCursorWithName:CPStringFromSelector(_cmd) cssString:@"ne-resize"];
 }
 
 + (CPCursor)resizeNortheastSouthwestCursor
 {
-    return [CPCursor _systemCursorWithName:CPStringFromSelector(_cmd) cssString:@"nesw-resize" hasImage:NO];
+    return [CPCursor _nativeSystemCursorWithName:CPStringFromSelector(_cmd) cssString:@"nesw-resize"];
 }
 
 + (CPCursor)resizeSouthwestCursor
 {
-    return [CPCursor _systemCursorWithName:CPStringFromSelector(_cmd) cssString:@"sw-resize" hasImage:NO];
+    return [CPCursor _nativeSystemCursorWithName:CPStringFromSelector(_cmd) cssString:@"sw-resize"];
 }
 
 + (CPCursor)resizeSoutheastCursor
 {
-    return [CPCursor _systemCursorWithName:CPStringFromSelector(_cmd) cssString:@"se-resize" hasImage:NO];
+    return [CPCursor _nativeSystemCursorWithName:CPStringFromSelector(_cmd) cssString:@"se-resize"];
 }
 
 + (CPCursor)resizeDownCursor
 {
-    return [CPCursor _systemCursorWithName:CPStringFromSelector(_cmd) cssString:@"s-resize" hasImage:NO];
+    return [CPCursor _nativeSystemCursorWithName:CPStringFromSelector(_cmd) cssString:@"s-resize"];
 }
 
 + (CPCursor)resizeUpCursor
 {
-    return [CPCursor _systemCursorWithName:CPStringFromSelector(_cmd) cssString:@"n-resize" hasImage:NO];
+    return [CPCursor _nativeSystemCursorWithName:CPStringFromSelector(_cmd) cssString:@"n-resize"];
 }
 
 + (CPCursor)resizeLeftCursor
 {
-    return [CPCursor _systemCursorWithName:CPStringFromSelector(_cmd) cssString:@"w-resize" hasImage:NO];
+    return [CPCursor _nativeSystemCursorWithName:CPStringFromSelector(_cmd) cssString:@"w-resize"];
 }
 
 + (CPCursor)resizeRightCursor
 {
-    return [CPCursor _systemCursorWithName:CPStringFromSelector(_cmd) cssString:@"e-resize" hasImage:NO];
+    return [CPCursor _nativeSystemCursorWithName:CPStringFromSelector(_cmd) cssString:@"e-resize"];
 }
 
 + (CPCursor)resizeLeftRightCursor
 {
-    return [CPCursor _systemCursorWithName:CPStringFromSelector(_cmd) cssString:@"col-resize" hasImage:NO];
+    return [CPCursor _nativeSystemCursorWithName:CPStringFromSelector(_cmd) cssString:@"col-resize"];
 }
 
 + (CPCursor)resizeEastWestCursor
 {
-    return [CPCursor _systemCursorWithName:CPStringFromSelector(_cmd) cssString:@"ew-resize" hasImage:NO];
+    return [CPCursor _nativeSystemCursorWithName:CPStringFromSelector(_cmd) cssString:@"ew-resize"];
 }
 
 + (CPCursor)resizeUpDownCursor
 {
-    return [CPCursor _systemCursorWithName:CPStringFromSelector(_cmd) cssString:@"row-resize" hasImage:NO];
+    return [CPCursor _nativeSystemCursorWithName:CPStringFromSelector(_cmd) cssString:@"row-resize"];
 }
 
 + (CPCursor)resizeNorthSouthCursor
 {
-    return [CPCursor _systemCursorWithName:CPStringFromSelector(_cmd) cssString:@"ns-resize" hasImage:NO];
+    return [CPCursor _nativeSystemCursorWithName:CPStringFromSelector(_cmd) cssString:@"ns-resize"];
 }
 
 + (CPCursor)operationNotAllowedCursor
 {
-    return [CPCursor _systemCursorWithName:CPStringFromSelector(_cmd) cssString:@"not-allowed" hasImage:NO];
+    return [CPCursor _nativeSystemCursorWithName:CPStringFromSelector(_cmd) cssString:@"not-allowed"];
 }
 
 + (CPCursor)dragCopyCursor
 {
-    return [CPCursor _systemCursorWithName:CPStringFromSelector(_cmd) cssString:@"copy" hasImage:YES];
+    return [CPCursor _nativeSystemCursorWithName:CPStringFromSelector(_cmd) cssString:@"copy"];
 }
 
 + (CPCursor)dragLinkCursor
 {
-    return [CPCursor _systemCursorWithName:CPStringFromSelector(_cmd) cssString:@"alias" hasImage:YES];
+    return [CPCursor _nativeSystemCursorWithName:CPStringFromSelector(_cmd) cssString:@"alias"];
 }
 
 + (CPCursor)contextualMenuCursor
 {
-    return [CPCursor _systemCursorWithName:CPStringFromSelector(_cmd) cssString:@"context-menu" hasImage:YES];
+    return [CPCursor _tryUsingNativeSystemCursorWithName:CPStringFromSelector(_cmd)
+                                               cssString:@"context-menu"
+                                              onPlatform:CPCursorPlatformBoth
+                       fallingBackWithImageAndCSSPointer:@"default"];
 }
 
 + (CPCursor)openHandCursor
 {
-    return [CPCursor _systemCursorWithName:CPStringFromSelector(_cmd) cssString:@"move" hasImage:YES];
+    return [CPCursor _tryUsingNativeSystemCursorWithName:CPStringFromSelector(_cmd)
+                                               cssString:@"grab"
+                                              onPlatform:CPCursorPlatformMac
+                       fallingBackWithImageAndCSSPointer:@"default"];
 }
 
 + (CPCursor)closedHandCursor
 {
-    return [CPCursor _systemCursorWithName:CPStringFromSelector(_cmd) cssString:@"-moz-grabbing" hasImage:YES];
+    return [CPCursor _tryUsingNativeSystemCursorWithName:CPStringFromSelector(_cmd)
+                                               cssString:@"grabbing"
+                                              onPlatform:CPCursorPlatformMac
+                       fallingBackWithImageAndCSSPointer:@"default"];
 }
 
 + (CPCursor)disappearingItemCursor
 {
-    return [CPCursor _systemCursorWithName:CPStringFromSelector(_cmd) cssString:@"auto" hasImage:YES];
+    return [CPCursor _imageCursorWithName:CPStringFromSelector(_cmd) cssString:@"default"];
+}
+
++ (CPCursor)IBeamCursorForVerticalLayout
+{
+    return [CPCursor _nativeSystemCursorWithName:CPStringFromSelector(_cmd) cssString:@"vertical-text"];
 }
 
 @end
