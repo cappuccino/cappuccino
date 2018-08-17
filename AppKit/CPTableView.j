@@ -3154,7 +3154,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     // Now a view that clips the column data views, which itself is clipped to the content view
     var columnVisRect = CGRectIntersection(columnRect, visibleRect);
 
-    frame = CGRectMake(0.0, CGRectGetHeight(headerFrame), CGRectGetWidth(columnRect), CGRectGetHeight(columnRect));
+    frame = CGRectMake(0.0, CGRectGetHeight(headerFrame), CGRectGetWidth(columnRect), CGRectGetHeight(columnVisRect));
 
     var columnClipView = [[CPView alloc] initWithFrame:frame];
 
