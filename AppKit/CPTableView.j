@@ -6368,7 +6368,7 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
     if (tableView._draggedColumnIsSelected)
     {
-        CGContextSetFillColor(context, [tableView selectionHighlightColor]);
+        CGContextSetFillColor(context, [tableView _isFocused] ? [tableView selectionHighlightColor] : [tableView unfocusedSelectionHighlightColor]);
         CGContextFillRect(context, bounds);
     }
     else
