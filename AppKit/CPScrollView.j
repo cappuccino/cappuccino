@@ -1510,6 +1510,51 @@ Notifies the delegate when the scroll view has finished scrolling.
 
 @end
 
+#pragma mark -
+
+@implementation CPScrollView (FirstResponder)
+
+// Those 4 next methods are needed to (un)set CPThemeStateFirstResponder based on content view
+
+- (void)viewWillMoveToWindow:(CPWindow)aWindow
+{
+    [super viewWillMoveToWindow:aWindow];
+
+    [self _stopObservingFirstResponderForWindow:[self window]];
+
+    if (aWindow)
+        [self _startObservingFirstResponderForWindow:aWindow];
+}
+
+- (void)_startObservingFirstResponderForWindow:(CPWindow)aWindow
+{
+    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_firstResponderDidChange:) name:_CPWindowDidChangeFirstResponderNotification object:aWindow];
+}
+
+- (void)_stopObservingFirstResponderForWindow:(CPWindow)aWindow
+{
+    [[CPNotificationCenter defaultCenter] removeObserver:self name:_CPWindowDidChangeFirstResponderNotification object:aWindow];
+}
+
+- (void)_firstResponderDidChange:(CPNotification)aNotification
+{
+    var responder = [[self window] firstResponder],
+        // FIXME: We add focus ring only on table views right now. When focus ring management will be added, this must be adapted.
+        shouldAddFocusRing = [responder isKindOfClass:[CPTableView class]],
+        found;
+
+    while (!(found = (responder === self)) && responder)
+        responder = [responder superview];
+
+    if (found && shouldAddFocusRing)
+        [self setThemeState:CPThemeStateFirstResponder];
+    else
+        [self unsetThemeState:CPThemeStateFirstResponder];
+}
+
+@end
+
+#pragma mark -
 
 var CPScrollViewContentViewKey          = @"CPScrollViewContentView",
     CPScrollViewHeaderClipViewKey       = @"CPScrollViewHeaderClipViewKey",
