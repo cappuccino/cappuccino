@@ -238,6 +238,7 @@ var CPWindowActionMessageKeys = [
 
     CPButton                            _defaultButton;
     BOOL                                _defaultButtonEnabled;
+    BOOL                                _defaultButtonDisabledTemporarily;
 
     BOOL                                _autorecalculatesKeyViewLoop;
     BOOL                                _keyViewLoopIsDirty;
@@ -402,6 +403,7 @@ CPTexturedBackgroundWindowMask
 
         _autorecalculatesKeyViewLoop = NO;
         _defaultButtonEnabled = YES;
+        _defaultButtonDisabledTemporarily = NO;
         _keyViewLoopIsDirty = NO;
         _hasBecomeKeyWindow = NO;
 
@@ -1930,8 +1932,7 @@ CPTexturedBackgroundWindowMask
             [[self firstResponder] keyDown:anEvent];
 
             // Trigger the default button if needed
-            // FIXME: Is this only applicable in a sheet? See isse: #722.
-            if (![self disableKeyEquivalentForDefaultButton])
+            if (_defaultButtonEnabled && !_defaultButtonDisabledTemporarily)
             {
                 var defaultButton = [self defaultButton],
                     keyEquivalent = [defaultButton keyEquivalent],
@@ -1940,6 +1941,8 @@ CPTexturedBackgroundWindowMask
                 if ([anEvent _triggersKeyEquivalent:keyEquivalent withModifierMask:modifierMask])
                     [[self defaultButton] performClick:self];
             }
+
+            _defaultButtonDisabledTemporarily = NO;
 
             return;
 
@@ -3437,6 +3440,11 @@ CPTexturedBackgroundWindowMask
 - (void)disableKeyEquivalentForDefaultButton
 {
     _defaultButtonEnabled = NO;
+}
+
+- (void)_temporarilyDisableKeyEquivalentForDefaultButton
+{
+    _defaultButtonDisabledTemporarily = YES;
 }
 
 /*!
