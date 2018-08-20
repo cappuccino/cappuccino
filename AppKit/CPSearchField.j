@@ -73,8 +73,18 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
             @"image-cancel": [CPNull null],
             @"image-cancel-pressed": [CPNull null],
             @"image-search-inset" : CGInsetMake(0, 0, 0, 5),
-            @"image-cancel-inset" : CGInsetMake(0, 5, 0, 0)
+            @"image-cancel-inset" : CGInsetMake(0, 5, 0, 0),
+            @"search-menu-offset": CGPointMake(10, -4),
+            @"search-right-margin": 2
         };
+}
+
++ (Class)_binderClassForBinding:(CPString)aBinding
+{
+    if (aBinding === CPPredicateBinding)
+        return [_CPSearchFieldPredicateBinder class];
+
+    return [super _binderClassForBinding:aBinding];
 }
 
 - (id)initWithFrame:(CGRect)frame
@@ -87,10 +97,6 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
         _recentsAutosaveName = nil;
 
         [self _init];
-#if PLATFORM(DOM)
-        _cancelButton._DOMElement.style.cursor = "default";
-        _searchButton._DOMElement.style.cursor = "default";
-#endif
     }
 
     return self;
@@ -177,7 +183,7 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
 - (void)resetSearchButton
 {
     var button = [self searchButton],
-        searchButtonImage = (_searchMenuTemplate === nil) ? [self valueForThemeAttribute:@"image-search"] : [self valueForThemeAttribute:@"image-find"];
+        searchButtonImage = (_searchMenuTemplate === nil) ? [self currentValueForThemeAttribute:@"image-search"] : [self currentValueForThemeAttribute:@"image-find"];
 
     [button setBordered:NO];
     [button setImageScaling:CPImageScaleAxesIndependently];
@@ -246,8 +252,9 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
 
     if (_searchButton)
     {
-        var searchBounds = [self searchButtonRectForBounds:bounds];
-        leftOffset = CGRectGetMaxX(searchBounds) + 2;
+        var searchBounds = [self searchButtonRectForBounds:bounds],
+            rightMargin  = [self currentValueForThemeAttribute:@"search-right-margin"];
+        leftOffset = CGRectGetMaxX(searchBounds) + rightMargin;
     }
 
     if (_cancelButton)
@@ -386,9 +393,9 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
 */
 - (void)setRecentSearches:(CPArray)searches
 {
-    var max = MIN([self maximumRecents], [searches count]),
-        searches = [searches subarrayWithRange:CPMakeRange(0, max)];
+    var max = MIN([self maximumRecents], [searches count]);
 
+    searches = [searches subarrayWithRange:CPMakeRange(0, max)];
     _recentSearches = searches;
     [self _autosaveRecentSearchList];
 }
@@ -531,19 +538,16 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
 }
 
 /*!
-    Provides the common case items for a recent searches menu. If there are not recent searches,
-    displays a single disabled item:
-
-        No Recent Searches
+    Provides the common case items for a recent searches menu.
 
     If there are 1 more recent searches, it displays:
 
-        Recent Searches
-           recent search 1
-           recent search 2
-           etc.
+        Clear
         ---------------------
-        Clear Recent Searches
+        Recent Searches
+        recent search 1
+        recent search 2
+        etc.
 
     If you wish to add items before or after the template, you can. If you put items
     before, a separator will automatically be placed before the default template item.
@@ -568,6 +572,13 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
     var template = [[CPMenu alloc] init],
         item;
 
+    item = [[CPMenuItem alloc] initWithTitle:@"Clear"
+                                      action:@selector(_searchFieldClearRecents:)
+                               keyEquivalent:@""];
+    [item setTag:CPSearchFieldClearRecentsMenuItemTag];
+    [item setTarget:self];
+    [template addItem:item];
+
     item = [[CPMenuItem alloc] initWithTitle:@"Recent Searches"
                                       action:nil
                                keyEquivalent:@""];
@@ -582,20 +593,6 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
     [item setTarget:self];
     [template addItem:item];
 
-    item = [[CPMenuItem alloc] initWithTitle:@"Clear Recent Searches"
-                                      action:@selector(_searchFieldClearRecents:)
-                               keyEquivalent:@""];
-    [item setTag:CPSearchFieldClearRecentsMenuItemTag];
-    [item setTarget:self];
-    [template addItem:item];
-
-    item = [[CPMenuItem alloc] initWithTitle:@"No Recent Searches"
-                                      action:nil
-                               keyEquivalent:@""];
-    [item setTag:CPSearchFieldNoRecentsMenuItemTag];
-    [item setEnabled:NO];
-    [template addItem:item];
-
     return template;
 }
 
@@ -607,6 +604,8 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
     var menu = [[CPMenu alloc] init],
         countOfRecents = [_recentSearches count],
         numberOfItems = [_searchMenuTemplate numberOfItems];
+
+    [menu setAutoenablesItems:NO];
 
     for (var i = 0; i < numberOfItems; i++)
     {
@@ -631,7 +630,6 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
                     var recentItem = [[CPMenuItem alloc] initWithTitle:[_recentSearches objectAtIndex:recentIndex]
                                                                  action:itemAction
                                                           keyEquivalent:[item keyEquivalent]];
-                    [recentItem setIndentationLevel:1];
                     [item setTarget:self];
                     [menu addItem:recentItem];
                 }
@@ -689,11 +687,12 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
 
 - (void)_showMenu
 {
-    if (_searchMenu === nil || [_searchMenu numberOfItems] === 0 || ![self isEnabled])
+    if (_searchMenu === nil || [_searchMenu numberOfItems] === 0 || ![self isEnabled] || ([_recentSearches count] === 0))
         return;
 
     var aFrame = [[self superview] convertRect:[self frame] toView:nil],
-        location = CGPointMake(aFrame.origin.x + 10, aFrame.origin.y + aFrame.size.height - 4);
+        offset = [self currentValueForThemeAttribute:@"search-menu-offset"],
+        location = CGPointMake(aFrame.origin.x + offset.x, aFrame.origin.y + aFrame.size.height + offset.y);
 
     var anEvent = [CPEvent mouseEventWithType:CPRightMouseDown location:location modifierFlags:0 timestamp:[[CPApp currentEvent] timestamp] windowNumber:[[self window] windowNumber] context:nil eventNumber:1 clickCount:1 pressure:0];
 
@@ -771,7 +770,74 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
         _recentSearches = list;
 }
 
+- (void)unbind:(CPString)aBinding
+{
+    [super unbind:aBinding];
+
+    // our CPPredicateBinding binder adds a binding to the value.
+    // this private binding has to be also removed
+    if (aBinding === CPPredicateBinding)
+        [[[self class] _binderClassForBinding:aBinding] unbind:CPValueBinding forObject:self];
+}
+
 @end
+
+#pragma mark -
+
+@implementation CPSearchField (CPTrackingArea)
+{
+    CPTrackingArea      _searchButtonTrackingArea;
+    CPTrackingArea      _cancelButtonTrackingArea;
+}
+
+- (void)updateTrackingAreas
+{
+    if (_searchButtonTrackingArea)
+    {
+        [self removeTrackingArea:_searchButtonTrackingArea];
+        _searchButtonTrackingArea = nil;
+    }
+
+    if (_cancelButtonTrackingArea)
+    {
+        [self removeTrackingArea:_cancelButtonTrackingArea];
+        _cancelButtonTrackingArea = nil;
+    }
+
+    if (_searchButton)
+    {
+        _searchButtonTrackingArea = [[CPTrackingArea alloc] initWithRect:[_searchButton frame]
+                                                                 options:CPTrackingCursorUpdate | CPTrackingActiveInKeyWindow
+                                                                   owner:self
+                                                                userInfo:@{ @"isButton": YES }];
+
+        [self addTrackingArea:_searchButtonTrackingArea];
+    }
+
+    if (_cancelButton)
+    {
+        _cancelButtonTrackingArea = [[CPTrackingArea alloc] initWithRect:[_cancelButton frame]
+                                                                 options:CPTrackingCursorUpdate | CPTrackingActiveInKeyWindow
+                                                                   owner:self
+                                                                userInfo:@{ @"isButton": YES }];
+
+        [self addTrackingArea:_cancelButtonTrackingArea];
+    }
+
+    [super updateTrackingAreas];
+}
+
+- (void)cursorUpdate:(CPEvent)anEvent
+{
+    if ([[[anEvent trackingArea] userInfo] objectForKey:@"isButton"])
+        [[CPCursor arrowCursor] set];
+    else
+        [super cursorUpdate:anEvent];
+}
+
+@end
+
+#pragma mark -
 
 var CPRecentsAutosaveNameKey            = @"CPRecentsAutosaveNameKey",
     CPSendsWholeSearchStringKey         = @"CPSendsWholeSearchStringKey",
@@ -825,3 +891,44 @@ var CPRecentsAutosaveNameKey            = @"CPRecentsAutosaveNameKey",
 }
 
 @end
+
+@implementation _CPSearchFieldPredicateBinder : CPBinder
+{
+    CPArrayController  _controller;
+    CPString           _predicateFormat;
+}
+
+- (void)setValue:(id)aValue forBinding:(CPString)aBinding
+{
+    if (aBinding === CPPredicateBinding)
+    {
+        var options = [_info objectForKey:CPOptionsKey];
+
+        _controller = [_info objectForKey:CPObservedObjectKey];
+        _predicateFormat = [options objectForKey:"CPPredicateFormat"];
+        [_source bind:CPValueBinding toObject:self withKeyPath:"searchFieldValue" options:nil];
+    }
+}
+
+- (void)setSearchFieldValue:(CPString)aValue
+{
+    var destination = [_info objectForKey:CPObservedObjectKey],
+        keyPath     = [_info objectForKey:CPObservedKeyPathKey];
+
+    var formatString = _predicateFormat.replace(/\$value/g, "%@");
+    [self suppressSpecificNotificationFromObject:destination keyPath:keyPath];
+
+    if (aValue)
+        [_controller setFilterPredicate:[CPPredicate predicateWithFormat:formatString, aValue]];
+    else
+        [_controller setFilterPredicate:nil];
+
+    [self unsuppressSpecificNotificationFromObject:destination keyPath:keyPath];
+}
+- (CPString)searchFieldValue
+{
+    return [_source stringValue];
+}
+
+@end
+

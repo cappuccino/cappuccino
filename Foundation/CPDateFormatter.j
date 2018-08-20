@@ -84,7 +84,7 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
     relativeDateFormating = @{
       @"fr" : [@"demain", 1, @"apr" + String.fromCharCode(233) + @"s-demain", 2, @"apr" + String.fromCharCode(233) + @"s-apr" + String.fromCharCode(233) + @"s-demain", 3, @"hier", -1, @"avant-hier", -2, @"avant-avant-hier", -3],
       @"en" : [@"tomorrow", 1, @"yesterday", -1],
-      @"de" : [],
+      @"de" : [@"morgen", 1, @"gestern", -1, String.fromCharCode(129) + @"bermorgen", 2, @"vorgestern", -2],
       @"es" : []
     };
 
@@ -559,7 +559,13 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
             if ([self _isAmericanFormat])
                 format = @"M/d/yy";
             else
-                format = @"dd/MM/yy";
+            {
+                if ([_locale objectForKey:CPLocaleLanguageCode] === 'de')
+                    format = @"dd.MM.yy";
+                else
+                    format = @"dd/MM/yy";
+
+            }
 
             break;
 
@@ -638,7 +644,7 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
             if ([self _isEnglishFormat])
                 format += @"h:mm:ss a";
             else
-                format += @"H:mm:ss"
+                format += @"H:mm:ss";
 
             break;
 
@@ -737,7 +743,7 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
             continue;
         }
 
-        if ([character isEqualToString:@","] || [character isEqualToString:@":"] || [character isEqualToString:@"/"] || [character isEqualToString:@"-"] || [character isEqualToString:@" "])
+        if ([character isEqualToString:@","] || [character isEqualToString:@":"] || [character isEqualToString:@"/"] || [character isEqualToString:@"-"] || [character isEqualToString:@" "] || [character isEqualToString:@"."])
         {
             result += [self _stringFromToken:currentToken date:aDate];
             result += character;
@@ -1218,7 +1224,7 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
             if ([self _isEnglishFormat])
                 format += @" h:mm:ss a";
             else
-                format += @" H:mm:ss"
+                format += @" H:mm:ss";
             break;
 
         case CPDateFormatterLongStyle:
@@ -1534,7 +1540,7 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
                 var month;
 
                 if (length <= 2)
-                    month = parseInt(dateComponent)
+                    month = parseInt(dateComponent);
 
                 if (length == 3)
                 {
@@ -1847,7 +1853,7 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
         tmpDate.setFullYear(dateArray[0]);
         tmpDate.setMonth(0);
 
-        tmpDate.setDate(dayOfYear)
+        tmpDate.setDate(dayOfYear);
 
         dateArray[1] = tmpDate.getMonth() + 1;
         dateArray[2] = tmpDate.getDate();

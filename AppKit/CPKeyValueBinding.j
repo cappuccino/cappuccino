@@ -857,7 +857,7 @@ var CPBindingOperationAnd = 0,
 - (id)initWithName:(CPString)aName
 {
     if (self = [super init])
-        _name = aName
+        _name = aName;
 
     return self;
 }

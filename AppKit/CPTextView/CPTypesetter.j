@@ -173,7 +173,7 @@ var CPSystemTypesetterFactory,
         rect = CGRectMake(lineOrigin.x, lineOrigin.y, _lineWidth, _lineHeight),
         containerSize = aContainer._size;
 
-    [_layoutManager _appendNewLineFragmentInTextContainer:_currentTextContainer forGlyphRange:lineRange]
+    [_layoutManager _appendNewLineFragmentInTextContainer:_currentTextContainer forGlyphRange:lineRange];
 
     var fragment = [_layoutManager._lineFragments lastObject];
     fragment._isLast = !sameLine;
@@ -293,8 +293,8 @@ var CPSystemTypesetterFactory,
             if (!currentFont)
                 currentFont = [_textStorage font] || [CPFont systemFontOfSize:12.0];
 
-            ascent = [currentFont ascender]
-            descent = [currentFont descender]
+            ascent = [currentFont ascender];
+            descent = [currentFont descender];
             leading = (ascent - descent) * 0.2; // FAKE leading
 
             currentFontLineHeight = ascent - descent + leading;

@@ -95,7 +95,7 @@ CPSelectByWord      = 1;
 CPSelectByParagraph = 2;
 
 var kDelegateRespondsTo_textShouldBeginEditing                                          = 1 << 0,
-    kDelegateRespondsTo_textShouldEndEditing                                            = 1 << 1
+    kDelegateRespondsTo_textShouldEndEditing                                            = 1 << 1,
     kDelegateRespondsTo_textView_doCommandBySelector                                    = 1 << 2,
     kDelegateRespondsTo_textView_willChangeSelectionFromCharacterRange_toCharacterRange = 1 << 3,
     kDelegateRespondsTo_textView_shouldChangeTextInRange_replacementString              = 1 << 4,
@@ -241,7 +241,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     _selectedTextAttributes = [CPMutableDictionary new];
 
     _caret = [[_CPCaret alloc] initWithTextView:self];
-    [_caret setRect:CGRectMake(0, 0, 1, 11)]
+    [_caret setRect:CGRectMake(0, 0, 1, 11)];
 
     var pboardTypes = [CPStringPboardType, CPColorDragType];
 
@@ -1586,7 +1586,7 @@ Sets the selection to a range of characters in response to user action.
 - (void)moveWordLeft:(id)sender
 {
     if ([self isSelectable])
-        [self _moveSelectionIntoDirection:-1 granularity:CPSelectByWord]
+        [self _moveSelectionIntoDirection:-1 granularity:CPSelectByWord];
 }
 
 - (void)moveRight:(id)sender
@@ -1614,6 +1614,7 @@ Sets the selection to a range of characters in response to user action.
     [self didChangeText];
     [_layoutManager _validateLayoutAndGlyphs];
     [self sizeToFit];
+    [self scrollRangeToVisible:CPMakeRange(changedRange.location, 0)];
     _stickyXLocation = _caret._rect.origin.x;
 }
 
@@ -1672,6 +1673,8 @@ Sets the selection to a range of characters in response to user action.
 - (void)insertLineBreak:(id)sender
 {
     [self insertText:@"\n"];
+    // make sure that the return key is "swallowed" and the default button not triggered as is the case in cocoa
+    [[self window] _temporarilyDisableKeyEquivalentForDefaultButton];
 }
 
 - (void)insertTab:(id)sender
@@ -2249,7 +2252,8 @@ Sets the selection to a range of characters in response to user action.
                       [[self class] _binderClassForBinding:CPValueBinding],
         theBinding = [binderClass getBinding:CPAttributedStringBinding forObject:self] || [binderClass getBinding:CPValueBinding forObject:self];
 
-    [theBinding reverseSetValueFor:@"objectValue"];
+    if (theBinding && [self isEditable])
+        [theBinding reverseSetValueFor:@"objectValue"];
 }
 
 @end
@@ -2390,7 +2394,7 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
 {
     DOMElement  _selectionBoxDOM;
     CGRect      _rect;
-    CPColor     _color
+    CPColor     _color;
     CPTextView  _textView;
 }
 
@@ -2540,7 +2544,7 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
     var rect = [_textView._layoutManager boundingRectForGlyphRange:CPMakeRange(aLoc, 1) inTextContainer:_textView._textContainer];
 
 	if (aLoc >= [_textView._layoutManager numberOfCharacters])
-		rect.origin.x = CGRectGetMaxX(rect)
+		rect.origin.x = CGRectGetMaxX(rect);
 
     [self setRect:rect];
 }
@@ -2749,7 +2753,7 @@ var _CPCopyPlaceholder = '-';
         }, 20);
 
         return false;
-    }
+    };
 
     if (CPBrowserIsEngine(CPGeckoBrowserEngine))
     {
@@ -2765,7 +2769,7 @@ var _CPCopyPlaceholder = '-';
             e.clipboardData.setData('text/plain', stringForPasting);
 
             return false;
-        }
+        };
 
         _CPNativeInputField.oncut = function(e)
         {

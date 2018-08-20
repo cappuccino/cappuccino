@@ -88,7 +88,7 @@ var FILE = require("file"),
             if (resourceInfo && resourceInfo.path)
             {
                 // Include subdirectories in the name
-                match = /^.+\/Resources\/(.+)$/.exec(resourceInfo.path)
+                match = /^.+\/Resources\/(.+)$/.exec(resourceInfo.path);
                 _resourceName = match[1];
             }
         }

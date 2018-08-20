@@ -287,7 +287,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
     if (width < [self minWidth])
         [self setMinWidth:width];
     else if (width > [self maxWidth])
-        [self setMaxWidth:width]
+        [self setMaxWidth:width];
 
     if (_width !== width)
         [self setWidth:width];
@@ -499,7 +499,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
 */
 - (void)setHidden:(BOOL)shouldBeHidden
 {
-    shouldBeHidden = !!shouldBeHidden
+    shouldBeHidden = !!shouldBeHidden;
 
     if (_isHidden === shouldBeHidden)
         return;
