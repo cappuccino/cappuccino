@@ -247,9 +247,6 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
     if (!_DOMWindow)
         return [self contentRect];
 
-    if (_DOMWindow.cpFrame)
-        return _DOMWindow.cpFrame();
-
     var contentRect = CGRectMakeZero();
 
     if (window.screenTop)
@@ -277,9 +274,6 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 {
     if (!_DOMWindow)
         return;
-
-    if (typeof _DOMWindow["cpSetFrame"] === "function")
-        return _DOMWindow.cpSetFrame([self contentRect]);
 
     var origin = [self contentRect].origin,
         nativeOrigin = [self nativeContentRect].origin;
@@ -433,10 +427,10 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
         theDocument.addEventListener("keydown", keyEventCallback, NO);
         theDocument.addEventListener("keypress", keyEventCallback, NO);
 
-        theDocument.addEventListener("touchstart", touchEventCallback, NO);
-        theDocument.addEventListener("touchend", touchEventCallback, NO);
-        theDocument.addEventListener("touchmove", touchEventCallback, NO);
-        theDocument.addEventListener("touchcancel", touchEventCallback, NO);
+        theDocument.addEventListener("touchstart", touchEventCallback, {passive: false});
+        theDocument.addEventListener("touchend", touchEventCallback, {passive: false});
+        theDocument.addEventListener("touchmove", touchEventCallback, {passive: false});
+        theDocument.addEventListener("touchcancel", touchEventCallback, {passive: false});
 
         _DOMWindow.addEventListener("DOMMouseScroll", scrollEventCallback, NO);
         _DOMWindow.addEventListener("wheel", scrollEventCallback, NO);
@@ -576,21 +570,11 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 
     [PlatformWindows addObject:self];
 
-    // FIXME: cpSetFrame?
     _DOMWindow.document.write('<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"></head><body style="background-color:transparent; overflow:hidden"></body></html>');
     _DOMWindow.document.close();
 
     if (self != [CPPlatformWindow primaryPlatformWindow])
         _DOMWindow.document.title = _title;
-
-    if (![CPPlatform isBrowser])
-    {
-        _DOMWindow.cpWindowNumber = [self._only windowNumber];
-        _DOMWindow.cpSetFrame(_contentRect);
-        _DOMWindow.cpSetLevel(_level);
-        _DOMWindow.cpSetHasShadow(_hasShadow);
-        _DOMWindow.cpSetShadowStyle(_shadowStyle);
-    }
 
     [self registerDOMWindow];
 
@@ -1196,6 +1180,12 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
         // two fingers->simulate scrolling events
         if (aDOMEvent.touches && aDOMEvent.touches.length == 2)
         {
+            if (aDOMEvent.preventDefault)
+                aDOMEvent.preventDefault();
+
+            if (aDOMEvent.stopPropagation)
+                aDOMEvent.stopPropagation();
+
             switch (aDOMEvent.type)
             {
                 case CPDOMEventTouchStart:
@@ -1215,7 +1205,8 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
                     return;
             }
         }
-        // handle other touch cases specifically
+        
+        // cancel other touch cases preventively
 
         if (aDOMEvent.preventDefault)
             aDOMEvent.preventDefault();

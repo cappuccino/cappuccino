@@ -1851,15 +1851,11 @@ CPTexturedBackgroundWindowMask
     // CPLeftMouseDown is needed for window moving and resizing to work.
     // CPMouseMoved is needed for rollover effects on title bar buttons.
 
-    if (sheet)
+    if (sheet && _sheetContext["isAttached"])
     {
         switch (type)
         {
             case CPLeftMouseDown:
-
-                // This is needed when a doubleClick occurs when the sheet is closing or opening
-                if (!_parentWindow)
-                    return;
 
                 [_windowView mouseDown:anEvent];
 
@@ -1983,7 +1979,7 @@ CPTexturedBackgroundWindowMask
             var theWindow = [anEvent window],
                 selector = type == CPRightMouseDown ? @selector(rightMouseDown:) : @selector(mouseDown:);
 
-            if (([theWindow _isFrontmostWindow] && [theWindow isKeyWindow]) || ([theWindow becomesKeyOnlyIfNeeded] && ![_leftMouseDownView needsPanelToBecomeKey]))
+            if ([theWindow isKeyWindow] || ([theWindow becomesKeyOnlyIfNeeded] && ![_leftMouseDownView needsPanelToBecomeKey]))
                 return [_leftMouseDownView performSelector:selector withObject:anEvent];
             else
             {
@@ -2112,23 +2108,6 @@ CPTexturedBackgroundWindowMask
 - (BOOL)isKeyWindow
 {
     return [CPApp keyWindow] == self;
-}
-
-/* @ignore */
-- (BOOL)_isFrontmostWindow
-{
-    if ([self isFullBridge])
-        return YES;
-
-    var orderedWindows = [CPApp orderedWindows];
-
-    if ([orderedWindows count] == 0)
-        return YES;
-
-    if ([orderedWindows objectAtIndex:0] === self)
-        return YES;
-
-    return NO;
 }
 
 /*!

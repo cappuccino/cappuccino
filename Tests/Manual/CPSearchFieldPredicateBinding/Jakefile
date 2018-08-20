@@ -1,9 +1,9 @@
 /*
  * Jakefile
- * WindowFrontTest
+ * 44-Sorting-CPTableView
  *
- * Created by You on January 15, 2018.
- * Copyright 2018, Your Company All rights reserved.
+ * Created by Argos Oz on May 1, 2018.
+ * Copyright 2018, Army of Me, Inc. All rights reserved.
  */
 
 var ENV = require("system").env,
@@ -14,7 +14,7 @@ var ENV = require("system").env,
     app = require("cappuccino/jake").app,
     configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Debug",
     OS = require("os"),
-    projectName = "WindowFrontTest";
+    projectName = "44SortingCPTableView";
 
 app (projectName, function(task)
 {
@@ -23,22 +23,22 @@ app (projectName, function(task)
     if (configuration === "Debug")
         ENV["OBJJ_INCLUDE_PATHS"] = FILE.join(ENV["OBJJ_INCLUDE_PATHS"], configuration);
 
-    task.setBuildIntermediatesPath(FILE.join("Build", "WindowFrontTest.build", configuration));
+    task.setBuildIntermediatesPath(FILE.join("Build", "44SortingCPTableView.build", configuration));
     task.setBuildPath(FILE.join("Build", configuration));
 
-    task.setProductName("WindowFrontTest");
-    task.setIdentifier("com.yourcompany.WindowFrontTest");
+    task.setProductName("44-Sorting-CPTableView");
+    task.setIdentifier("com.yourcompany.44SortingCPTableView");
     task.setVersion("1.0");
-    task.setAuthor("Your Company");
+    task.setAuthor("Army of Me, Inc.");
     task.setEmail("feedback @nospam@ yourcompany.com");
-    task.setSummary("WindowFrontTest");
+    task.setSummary("44-Sorting-CPTableView");
     task.setSources(new FileList("**/*.j").exclude(FILE.join("Build", "**")).exclude(FILE.join("Frameworks", "Source", "**")));
     task.setResources(new FileList("Resources/**"));
     task.setIndexFilePath("index.html");
     task.setInfoPlistPath("Info.plist");
 
     if (configuration === "Debug")
-        task.setCompilerFlags("-DDEBUG -g");
+        task.setCompilerFlags("-DDEBUG -g -S --inline-msg-send");
     else
         task.setCompilerFlags("-O2");
 });

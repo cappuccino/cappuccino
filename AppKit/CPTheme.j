@@ -727,6 +727,7 @@ CPThemeStateNormalString        = String(CPThemeStateNormal);
 
 - (id)valueForState:(ThemeState)aState
 {
+    // First, search in cache.
     var stateName = String(aState),
         value = _cache[stateName];
 
@@ -734,50 +735,76 @@ CPThemeStateNormalString        = String(CPThemeStateNormal);
     if (value !== undefined)
         return value;
 
+    // Not in cache. OK, search in values.
     value = [_values objectForKey:stateName];
 
-    if (value === undefined || value === nil)
+    if ((value !== undefined) && (value !== nil))
+        return _cache[stateName] = value;
+
+    // No direct match in values.
+    // If this is a composite state, find the closest partial subset match.
+    if (aState._stateNameCount > 1)
     {
-        // If this is a composite state, find the closest partial subset match.
-        if (aState._stateNameCount > 1)
+        var largestThemeState = [self largestThemeStateMatchForState:aState returnedValue:@ref(value)];
+
+        if ((value !== undefined) && (value !== nil))
+            return _cache[stateName] = value;
+    }
+
+    // Still don't have a value? OK, let's use the normal value.
+    value = [_values objectForKey:String(CPThemeStateNormal)];
+
+    if ((value !== undefined) && (value !== nil))
+        return _cache[stateName] = value;
+
+    // No normal value, try asking _themeDefaultAttribute
+    value = [_themeDefaultAttribute valueForState:aState];
+
+    if ((value !== undefined) && (value !== nil))
+        return _cache[stateName] = value;
+
+    // Well, last option, use default value
+    value = _defaultValue;
+
+    // Class theme attributes cannot use nil because it's a dictionary.
+    // So transform CPNull into nil.
+    if (value === [CPNull null])
+        value = nil;
+
+    return _cache[stateName] = value;
+}
+
+- (CPInteger)largestThemeStateMatchForState:(ThemeState)aState returnedValue:(id)valueRef
+{
+    var stateName = String(aState),
+        value,
+        states = [_values allKeys],
+        count = states ? states.length : 0,
+        largestThemeState = 0;
+
+    while (count--)
+    {
+        var stateObject = CPThemeState(states[count]);
+
+        if (stateObject.isSubsetOf(aState) && stateObject._stateNameCount > largestThemeState)
         {
-            var states = [_values allKeys],
-                count = states ? states.length : 0,
-                largestThemeState = 0;
-
-            while (count--)
-            {
-                var stateObject = CPThemeState(states[count]);
-
-                if (stateObject.isSubsetOf(aState) && stateObject._stateNameCount > largestThemeState)
-                {
-                    value = [_values objectForKey:states[count]];
-                    largestThemeState = stateObject._stateNameCount;
-                }
-            }
+            value = [_values objectForKey:states[count]];
+            largestThemeState = stateObject._stateNameCount;
         }
-
-        // Still don't have a value? OK, let's use the normal value.
-        if (value === undefined || value === nil)
-            value = [_values objectForKey:String(CPThemeStateNormal)];
     }
 
-    if (value === undefined || value === nil)
-        value = [_themeDefaultAttribute valueForState:aState];
+    // _themeDefaultAttribute may have a larger theme state match. If so, we have to take it. If not, we take our closest match.
+    var defaultAttributeFoundValue,
+        defaultAttributeMatchLength = [_themeDefaultAttribute largestThemeStateMatchForState:aState returnedValue:@ref(defaultAttributeFoundValue)];
 
-    if (value === undefined || value === nil)
+    if (defaultAttributeMatchLength > largestThemeState)
     {
-        value = _defaultValue;
-
-        // Class theme attributes cannot use nil because it's a dictionary.
-        // So transform CPNull into nil.
-        if (value === [CPNull null])
-            value = nil;
+        value = defaultAttributeFoundValue;
+        largestThemeState = defaultAttributeMatchLength;
     }
 
-    _cache[stateName] = value;
-
-    return value;
+    @deref(valueRef) = value;
+    return largestThemeState;
 }
 
 - (_CPThemeAttribute)attributeBySettingParentAttribute:(_CPThemeAttribute)anAttribute

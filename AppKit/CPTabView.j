@@ -35,6 +35,7 @@ CPNoTabsLineBorder       = 5; //Has no tabs and displays a line border.
 CPNoTabsNoBorder         = 6; //Displays no tabs and no border.
 
 @class _CPTabViewBox
+@class _CPSegmentedControl
 
 var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
     CPTabViewShouldSelectTabViewItemSelector        = 1 << 2,
@@ -65,7 +66,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 {
     CPArray                 _items;
 
-    CPSegmentedControl      _tabs;
+    _CPSegmentedControl     _tabs;
     _CPTabViewBox           _box;
     CPView                  _placeholderView @accessors;
 
@@ -92,8 +93,8 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 
 - (void)_init
 {
-    _tabs = [[CPSegmentedControl alloc] initWithFrame:CGRectMakeZero()];
-    [_tabs setHitTests:NO];
+    _tabs = [[_CPSegmentedControl alloc] initWithFrame:CGRectMakeZero()];
+    [_tabs setTabView:self];
     [_tabs setSegments:[CPArray array]];
 
     var height = [_tabs valueForThemeAttribute:@"min-size"].height;
@@ -525,14 +526,6 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
     return [_box backgroundColor];
 }
 
-- (void)mouseDown:(CPEvent)anEvent
-{
-    var segmentIndex = [_tabs testSegment:[_tabs convertPoint:[anEvent locationInWindow] fromView:nil]];
-
-    if (segmentIndex != CPNotFound && [self selectTabViewItemAtIndex:segmentIndex])
-        [_tabs trackSegment:anEvent];
-}
-
 - (void)_repositionTabs
 {
     var horizontalCenterOfSelf = CGRectGetWidth([self bounds]) / 2,
@@ -887,3 +880,77 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
 }
 
 @end
+
+# pragma mark -
+
+// This subclass of CPSegmentedControl implements specific behaviour needed by CPTabView, which
+// differs in some ways from normal CPSegmentedControl habits :
+//
+// - all items are enabled
+// - when you select a tab (mouse down, holding) and drag upon another tab, the second one reacts
+//   (showing a pushed state) and can then be selected by releasing the mouse over it.
+// - a delegate has the opportunity to accept or not the selection of an item
+
+@implementation _CPSegmentedControl : CPSegmentedControl
+{
+    CPTabView   _tabView        @accessors(property=tabView);
+}
+
+- (void)trackSegment:(CPEvent)anEvent
+{
+    var type           = [anEvent type],
+        location       = [self convertPoint:[anEvent locationInWindow] fromView:nil],
+        currentSegment = [self testSegment:location];
+
+    switch (type)
+    {
+        case CPLeftMouseUp:
+
+            if (_trackingSegment === CPNotFound)
+                return;
+
+            if ((_trackingSegment !== _selectedSegment) &&
+                [_tabView _sendDelegateShouldSelectTabViewItem:[_tabView tabViewItemAtIndex:_trackingSegment]])
+            {
+                [self setSelected:YES forSegment:_trackingSegment];
+                _selectedSegment = _trackingSegment;
+                [_tabView selectTabViewItemAtIndex:_selectedSegment];
+            }
+
+            [self drawSegmentBezel:_trackingSegment highlight:NO];
+
+            _trackingSegment = CPNotFound;
+
+            return;
+
+        case CPLeftMouseDown:
+
+            if (currentSegment > CPNotFound)
+            {
+                _trackingSegment = currentSegment;
+                [self drawSegmentBezel:_trackingSegment highlight:YES];
+            }
+
+            break;
+
+        case CPLeftMouseDragged:
+
+            if (_trackingSegment !== currentSegment)
+            {
+                if (_trackingSegment > CPNotFound)
+                    [self drawSegmentBezel:_trackingSegment highlight:NO];
+
+                _trackingSegment = currentSegment;
+
+                if (_trackingSegment > CPNotFound)
+                    [self drawSegmentBezel:_trackingSegment highlight:YES];
+            }
+
+            break;
+    }
+
+    [CPApp setTarget:self selector:@selector(trackSegment:) forNextEventMatchingMask:CPLeftMouseDraggedMask | CPLeftMouseUpMask untilDate:nil inMode:nil dequeue:YES];
+}
+
+@end
+

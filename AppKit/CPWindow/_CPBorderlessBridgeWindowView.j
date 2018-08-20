@@ -29,7 +29,7 @@
 
 + (CPString)defaultThemeClass
 {
-    return @"bordeless-bridge-window-view";
+    return @"borderless-bridge-window-view";
 }
 
 + (CPDictionary)themeAttributes

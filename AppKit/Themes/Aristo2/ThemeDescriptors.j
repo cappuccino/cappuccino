@@ -534,7 +534,7 @@ var themedButtonValues = nil,
 
             // Overlay
             [@"scroller-width",         14.0,                               CPThemeStateVertical],
-            [@"knob-inset",             CGInsetMake(2.0, 0.0, 0.0, 0.0),    CPThemeStateVertical],
+            [@"knob-inset",             CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateVertical],
             [@"track-inset",            CGInsetMake(2.0, 0.0, 2.0, 0.0),    CPThemeStateVertical],
             [@"track-border-overlay",   12.0,                               CPThemeStateVertical],
             [@"knob-slot-color",        [CPNull null],                      CPThemeStateVertical],
@@ -610,7 +610,7 @@ var themedButtonValues = nil,
 
             // Overlay
             [@"scroller-width",         9.0],
-            [@"knob-inset",             CGInsetMake(0.0, 0.0, 0.0, 2.0)],
+            [@"knob-inset",             CGInsetMake(0.0, 0.0, 0.0, 0.0)],
             [@"track-inset",            CGInsetMake(0.0, 2.0, 0.0, 2.0)],
             [@"track-border-overlay",   12.0],
             [@"knob-slot-color",        [CPNull null]],
@@ -2869,7 +2869,7 @@ var themedButtonValues = nil,
 
 + (_CPBorderlessBridgeWindowView)themedBorderlessBridgeWindowView
 {
-    var bordelessBridgeWindowView = [[_CPBorderlessBridgeWindowView alloc] initWithFrame:CGRectMake(0,0,0,0)],
+    var borderlessBridgeWindowView = [[_CPBorderlessBridgeWindowView alloc] initWithFrame:CGRectMake(0,0,0,0)],
 
         toolbarBackgroundColor = PatternColor(
             [
@@ -2883,9 +2883,9 @@ var themedButtonValues = nil,
             [@"toolbar-background-color", toolbarBackgroundColor]
         ];
 
-    [self registerThemeValues:themeValues forView:bordelessBridgeWindowView inherit:themedWindowViewValues];
+    [self registerThemeValues:themeValues forView:borderlessBridgeWindowView inherit:themedWindowViewValues];
 
-    return bordelessBridgeWindowView;
+    return borderlessBridgeWindowView;
 }
 
 + (_CPToolbarView)themedToolbarView

@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <!--
- index.html
- WindowFrontTest
+ index-debug.html
+ 44-Sorting-CPTableView
 
- Created by You on January 15, 2018.
- Copyright 2018, Your Company All rights reserved.
+ Created by Argos Oz on May 1, 2018.
+ Copyright 2018, Army of Me, Inc. All rights reserved.
 -->
     <head>
         <meta charset="utf-8">
@@ -25,18 +25,26 @@
         <link rel="apple-touch-icon" href="Resources/icon.png">
         <link rel="apple-touch-startup-image" href="Resources/default.png">
 
-        <title>WindowFrontTest</title>
+        <title>44-Sorting-CPTableView</title>
 
         <!-- Custom javascript goes here -->
         <!-- End custom javascript -->
 
         <script type="text/javascript">
             OBJJ_MAIN_FILE = "main.j";
-            // The below will tell the compiler to not generate debug symbols but will generate type signatures and inline objj_msgSend functions.
+            OBJJ_INCLUDE_PATHS = ["Frameworks/Debug", "Frameworks"];
+            // The below will tell the compiler to generate debug symbols, type signatures and not inline objj_msgSend functions.
             // This will affect only Objective-J code that is compiled when loading the application. It will not affect precompiled
             // code like the Cappuccino frameworks.
+            //
+            // Debug symbols will give each Objective-J method a Javascript function name. Without a name it will be very hard to find
+            // the methods in the debugger.
+            // Type Signatures will give type information to the Objective-J runtime for instance variables and methods.
+            // Inline objj_msgSend will give a speed increase but decorators will not work. Check below on debug options for
+            // more information on decorators.
+            //
             // Uncomment or comment on the line below to change the flags
-            OBJJ_COMPILER_FLAGS = [/*"IncludeDebugSymbols"*/, "IncludeTypeSignatures", "InlineMsgSend"];
+            OBJJ_COMPILER_FLAGS = ["IncludeDebugSymbols", "IncludeTypeSignatures", "SourceMap", "InlineMsgSend"];
 
             var progressBar = null;
 
@@ -60,7 +68,37 @@
                     '</div>';
         </script>
 
-        <script type="text/javascript" src="Frameworks/Objective-J/Objective-J.js" charset="UTF-8"></script>
+        <script type="text/javascript" src="Frameworks/Debug/Objective-J/Objective-J.js" charset="UTF-8"></script>
+
+        <script type="text/javascript">
+            objj_msgSend_reset();
+
+            // DEBUG OPTIONS:
+            // Decorators will only work when the code is compiled without the compiler option 'InlineMsgSend'. Check above.
+
+            // Uncomment to enable printing of backtraces on exceptions:
+            //objj_msgSend_decorate(objj_backtrace_decorator);
+
+            // Uncomment to supress exceptions that take place inside a message
+            //objj_msgSend_decorate(objj_supress_exceptions_decorator)
+
+            // Uncomment to enable runtime type checking:
+            //objj_msgSend_decorate(objj_typecheck_decorator);
+
+            // Uncomment (along with both above) to print backtraces on type check errors:
+            //objj_typecheck_prints_backtrace = true;
+
+            // Uncomment to disable the default logger (CPLogConsole if window.console exists, CPLogPopup otherwise):
+            //CPLogUnregister(CPLogDefault);
+
+            // Uncomment to enable a specific logger:
+            //CPLogRegister(CPLogConsole);
+            //CPLogRegister(CPLogPopup);
+
+            // Tag view DOM elements with a "data-cappuccino-view" attribute that contains
+            // the class name of the view that created them. Comment this or set to false to disable.
+            appkit_tag_dom_elements = true;
+        </script>
 
         <style type="text/css">
             html, body, h1, p {

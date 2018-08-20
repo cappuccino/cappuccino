@@ -56,7 +56,7 @@ var CPCollectionViewDelegate_collectionView_acceptDrop_index_dropOperation_     
 - (CPData)collectionView:(CPCollectionView)collectionView dataForItemsAtIndexes:(CPIndexSet)indices forType:(CPString)aType;
 - (CPDragOperation)collectionView:(CPCollectionView)collectionView validateDrop:(id)draggingInfo proposedIndex:(CPInteger)proposedDropIndex dropOperation:(CPCollectionViewDropOperation)proposedDropOperation;
 - (CPMenu)collectionView:(CPCollectionView)collectionView menuForItemAtIndex:(CPInteger)anIndex;
-- (CPView)collectionView:(CPCollectionView)collectionView dragginViewForItemsAtIndexes:(CPIndexSet)indexes withEvent:(CPEvent)event offset:(CGPoint)dragImageOffset;
+- (CPView)collectionView:(CPCollectionView)collectionView draggingViewForItemsAtIndexes:(CPIndexSet)indexes withEvent:(CPEvent)event offset:(CGPoint)dragImageOffset;
 - (void)collectionView:(CPCollectionView)collectionView didDoubleClickOnItemAtIndex:(int)index;
 
 @end
