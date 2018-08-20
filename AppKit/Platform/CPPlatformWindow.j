@@ -285,7 +285,7 @@ var PrimaryPlatformWindow   = NULL;
 
 - (BOOL)_canUpdateContentRect
 {
-    // We onyl update the contentRect with the frame of the bridgeless window if we have initialized the platform with the method initWithWindow:
+    // We only update the contentRect with the frame of the bridgeless window if we have initialized the platform with the method initWithWindow:
     return _shouldUpdateContentRect && _hasInitializeInstanceWithWindow;
 }
 
