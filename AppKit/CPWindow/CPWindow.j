@@ -1982,7 +1982,7 @@ CPTexturedBackgroundWindowMask
             var theWindow = [anEvent window],
                 selector = type == CPRightMouseDown ? @selector(rightMouseDown:) : @selector(mouseDown:);
 
-            if ([theWindow isKeyWindow] || ([theWindow becomesKeyOnlyIfNeeded] && ![_leftMouseDownView needsPanelToBecomeKey]))
+            if (([theWindow _isFrontmostWindow] && [theWindow isKeyWindow]) || ([theWindow becomesKeyOnlyIfNeeded] && ![_leftMouseDownView needsPanelToBecomeKey]))
                 return [_leftMouseDownView performSelector:selector withObject:anEvent];
             else
             {
@@ -2103,6 +2103,28 @@ CPTexturedBackgroundWindowMask
         that is not the same as the resizable mask.
     */
     return (_styleMask & CPTitledWindowMask) || [self isFullPlatformWindow] || _isSheet;
+}
+
+    /* @ignore */
+- (BOOL)_isFrontmostWindow
+{
+    if ([self isFullBridge])
+        return YES;
+
+    var orderedWindows = [CPApp orderedWindows];
+
+    if ([orderedWindows count] == 0)
+        return YES;
+
+    if ([orderedWindows objectAtIndex:0] === self)
+        return YES;
+
+    // this is necessary, because the CPMainMenuWindow is always the first object in orderedWindows, even if another window is in front of it
+    if ([[orderedWindows objectAtIndex:0] level] === CPMainMenuWindowLevel &&
+        [orderedWindows count] > 1 && [orderedWindows objectAtIndex:1]  === self)
+        return YES;
+
+    return NO;
 }
 
 /*!
