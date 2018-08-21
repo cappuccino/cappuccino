@@ -327,16 +327,16 @@
         theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(0.0, 0.0, 1024.0, 768.0)
                                                 styleMask:CPWindowNotSizable];
 
-    [self assert:[CPNotificationCenterHelper registeredNotificationsForObserver:scrollView] equals:[] message:@"Notications registered for the scrollView in the notification center are wrong"];
+    [self assert:[CPNotificationCenterHelper registeredNotificationsForObserver:scrollView] equals:[] message:@"Notications registered for the scrollView in the notification center are wrong -1-"];
 
     [[theWindow contentView] addSubview:scrollView];
-    [self assert:[CPNotificationCenterHelper registeredNotificationsForObserver:scrollView] equals:[@"CPScrollerStyleGlobalChangeNotification"] message:@"Notications registered for the scrollView in the notification center are wrong"];
+    [self assert:[CPNotificationCenterHelper registeredNotificationsForObserver:scrollView] equals:[@"CPScrollerStyleGlobalChangeNotification", @"_CPWindowDidChangeFirstResponderNotification"] message:@"Notications registered for the scrollView in the notification center are wrong -2-"];
 
     [[theWindow contentView] addSubview:scrollView];
-    [self assert:[CPNotificationCenterHelper registeredNotificationsForObserver:scrollView] equals:[@"CPScrollerStyleGlobalChangeNotification"] message:@"Notications registered for the scrollView in the notification center are wrong"];
+    [self assert:[CPNotificationCenterHelper registeredNotificationsForObserver:scrollView] equals:[@"CPScrollerStyleGlobalChangeNotification", @"_CPWindowDidChangeFirstResponderNotification"] message:@"Notications registered for the scrollView in the notification center are wrong -3-"];
 
     [scrollView removeFromSuperview];
-    [self assert:[CPNotificationCenterHelper registeredNotificationsForObserver:scrollView] equals:[] message:@"Notications registered for the scrollView in the notification center are wrong"];
+    [self assert:[CPNotificationCenterHelper registeredNotificationsForObserver:scrollView] equals:[] message:@"Notications registered for the scrollView in the notification center are wrong -4-"];
 }
 
 - (void)testDocumentVisibleRect
