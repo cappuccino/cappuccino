@@ -3189,6 +3189,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     // While dragging, the column is deselected in the table view
     [_selectedColumnIndexes removeIndex:columnIndex];
+    [self setNeedsDisplay:YES];
 
     return dragView;
 }
