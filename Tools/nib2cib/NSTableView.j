@@ -86,6 +86,13 @@
         _allowsColumnReordering = (flags & 0x80000000) ? YES : NO;
 
         [self setBackgroundColor:[aCoder decodeObjectForKey:@"NSBackgroundColor"]];
+
+        var headerViewHeight = [theme valueForAttributeWithName:@"header-view-height" forClass:CPTableView];
+
+        if (!headerViewHeight)
+            headerViewHeight = [self currentValueForThemeAttribute:@"header-view-height"];
+
+        [_headerView _setHeight:headerViewHeight];
     }
 
     return self;
