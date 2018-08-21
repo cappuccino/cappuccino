@@ -550,7 +550,7 @@ var CPTableHeaderViewResizeZone = 3.0,
 - (void)_autoscroll:(CPEvent)theEvent localLocation:(CGPoint)theLocation
 {
     // Constrain the y coordinate so we don't autoscroll vertically
-    var constrainedLocation = CGPointMake(theLocation.x, CGRectGetMinY([_tableView visibleRect])),
+    var constrainedLocation = CGPointMake(theLocation.x, CGRectGetMaxY([self frame])),
         constrainedEvent = [CPEvent mouseEventWithType:CPLeftMouseDragged
                                              location:[self convertPoint:constrainedLocation toView:nil]
                                         modifierFlags:[theEvent modifierFlags]
