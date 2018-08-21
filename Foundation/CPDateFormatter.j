@@ -743,7 +743,7 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
             continue;
         }
 
-        if ([character isEqualToString:@","] || [character isEqualToString:@":"] || [character isEqualToString:@"/"] || [character isEqualToString:@"-"] || [character isEqualToString:@" "] || [character isEqualToString:@"."])
+        if ([self _isCharacterASeparator:character])
         {
             result += [self _stringFromToken:currentToken date:aDate];
             result += character;
@@ -765,6 +765,15 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
     }
 
     return result;
+}
+
+/*! Return a bool to know if the character is a separator for a date
+    @param aCharacter
+    @return a bool
+*/
+- (BOOL)_isCharacterASeparator:(CPString)aCharacter
+{
+    return [aCharacter isEqualToString:@","] || [aCharacter isEqualToString:@":"] || [aCharacter isEqualToString:@"/"] || [aCharacter isEqualToString:@"-"] || [aCharacter isEqualToString:@" "] || [aCharacter isEqualToString:@"."]
 }
 
 /*! Return a string representation of the given token and date
