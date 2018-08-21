@@ -90,6 +90,7 @@ CPBelowBottom = 6;
             @"inner-shadow-size": 6.0,
             @"inner-shadow-color": [CPNull null],
             @"content-margin": CGSizeMakeZero(),
+            @"nib2cib-adjustment-primary-frame": CGRectMakeZero(4, -4, -8, -6)
         };
 }
 
