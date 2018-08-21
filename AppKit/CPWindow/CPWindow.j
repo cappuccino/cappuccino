@@ -238,6 +238,7 @@ var CPWindowActionMessageKeys = [
 
     CPButton                            _defaultButton;
     BOOL                                _defaultButtonEnabled;
+    BOOL                                _defaultButtonDisabledTemporarily;
 
     BOOL                                _autorecalculatesKeyViewLoop;
     BOOL                                _keyViewLoopIsDirty;
@@ -402,6 +403,7 @@ CPTexturedBackgroundWindowMask
 
         _autorecalculatesKeyViewLoop = NO;
         _defaultButtonEnabled = YES;
+        _defaultButtonDisabledTemporarily = NO;
         _keyViewLoopIsDirty = NO;
         _hasBecomeKeyWindow = NO;
 
@@ -990,6 +992,9 @@ CPTexturedBackgroundWindowMask
         [self makeMainWindow];
 
     [_platformWindow _setShouldUpdateContentRect:YES];
+
+    if ([self attachedSheet])
+        [_platformWindow order:CPWindowAbove window:[self attachedSheet] relativeTo:nil];
 }
 
 /*
@@ -1927,8 +1932,7 @@ CPTexturedBackgroundWindowMask
             [[self firstResponder] keyDown:anEvent];
 
             // Trigger the default button if needed
-            // FIXME: Is this only applicable in a sheet? See isse: #722.
-            if (![self disableKeyEquivalentForDefaultButton])
+            if (_defaultButtonEnabled && !_defaultButtonDisabledTemporarily)
             {
                 var defaultButton = [self defaultButton],
                     keyEquivalent = [defaultButton keyEquivalent],
@@ -1937,6 +1941,8 @@ CPTexturedBackgroundWindowMask
                 if ([anEvent _triggersKeyEquivalent:keyEquivalent withModifierMask:modifierMask])
                     [[self defaultButton] performClick:self];
             }
+
+            _defaultButtonDisabledTemporarily = NO;
 
             return;
 
@@ -1979,7 +1985,7 @@ CPTexturedBackgroundWindowMask
             var theWindow = [anEvent window],
                 selector = type == CPRightMouseDown ? @selector(rightMouseDown:) : @selector(mouseDown:);
 
-            if ([theWindow isKeyWindow] || ([theWindow becomesKeyOnlyIfNeeded] && ![_leftMouseDownView needsPanelToBecomeKey]))
+            if (([theWindow _isFrontmostWindow] && [theWindow isKeyWindow]) || ([theWindow becomesKeyOnlyIfNeeded] && ![_leftMouseDownView needsPanelToBecomeKey]))
                 return [_leftMouseDownView performSelector:selector withObject:anEvent];
             else
             {
@@ -2100,6 +2106,28 @@ CPTexturedBackgroundWindowMask
         that is not the same as the resizable mask.
     */
     return (_styleMask & CPTitledWindowMask) || [self isFullPlatformWindow] || _isSheet;
+}
+
+    /* @ignore */
+- (BOOL)_isFrontmostWindow
+{
+    if ([self isFullBridge])
+        return YES;
+
+    var orderedWindows = [CPApp orderedWindows];
+
+    if ([orderedWindows count] == 0)
+        return YES;
+
+    if ([orderedWindows objectAtIndex:0] === self)
+        return YES;
+
+    // this is necessary, because the CPMainMenuWindow is always the first object in orderedWindows, even if another window is in front of it
+    if ([[orderedWindows objectAtIndex:0] level] === CPMainMenuWindowLevel &&
+        [orderedWindows count] > 1 && [orderedWindows objectAtIndex:1]  === self)
+        return YES;
+
+    return NO;
 }
 
 /*!
@@ -3414,6 +3442,11 @@ CPTexturedBackgroundWindowMask
     _defaultButtonEnabled = NO;
 }
 
+- (void)_temporarilyDisableKeyEquivalentForDefaultButton
+{
+    _defaultButtonDisabledTemporarily = YES;
+}
+
 /*!
     Removes the key equivalent for the default button.
     Note: this method is deprecated. Use disableKeyEquivalentForDefaultButton instead.
@@ -3605,6 +3638,20 @@ var keyViewComparator = function(lhs, rhs, context)
 }
 
 /*!
+ @ignore
+ get the scroll offset (if any) from native scroll bars (can happen when the platform window shrinks below minSize)
+*/
+- (CGPoint)_nativeScrollOffset
+{
+#if PLATFORM(DOM)
+    return  CGPointMake(_windowView._DOMElement.scrollLeft, _windowView._DOMElement.scrollTop);
+#else
+    CGPointMake(0, 0);
+#endif
+
+}
+
+/*!
     Converts aPoint from the global coordinate system to the window coordinate system.
 */
 - (CGPoint)convertGlobalToBase:(CGPoint)aPoint
@@ -3620,9 +3667,10 @@ var keyViewComparator = function(lhs, rhs, context)
     if ([self _sharesChromeWithPlatformWindow])
         return CGPointMakeCopy(aPoint);
 
-    var origin = [self frame].origin;
+    var origin = [self frame].origin,
+        scrollOffset = [self _nativeScrollOffset];
 
-    return CGPointMake(aPoint.x + origin.x, aPoint.y + origin.y);
+    return CGPointMake(aPoint.x + origin.x - scrollOffset.x, aPoint.y + origin.y - scrollOffset.y);
 }
 
 /*!
@@ -3633,9 +3681,10 @@ var keyViewComparator = function(lhs, rhs, context)
     if ([self _sharesChromeWithPlatformWindow])
         return CGPointMakeCopy(aPoint);
 
-    var origin = [self frame].origin;
+    var origin = [self frame].origin,
+        scrollOffset = [self _nativeScrollOffset];
 
-    return CGPointMake(aPoint.x - origin.x, aPoint.y - origin.y);
+    return CGPointMake(aPoint.x - origin.x + scrollOffset.x, aPoint.y - origin.y + scrollOffset.y);
 }
 
 - (CGPoint)convertScreenToBase:(CGPoint)aPoint

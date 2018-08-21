@@ -491,9 +491,17 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
         if (index < 0)
         {
-            [self addItemWithTitle:aTitle];
 
-            index = [self numberOfItems] - 1;
+            // this ist to match cocoa where setting an empty string does not add it but simply clears the title
+            // and sets objectValue to -1
+            if (aTitle === '')
+                [self selectItemAtIndex:-1];
+            else
+            {
+                [self addItemWithTitle:aTitle];
+
+                index = [self numberOfItems] - 1;
+            }
         }
 
         [self selectItemAtIndex:index];

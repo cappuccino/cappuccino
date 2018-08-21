@@ -132,10 +132,10 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 */
 - (void)insertTabViewItem:(CPTabViewItem)aTabViewItem atIndex:(CPUInteger)anIndex
 {
-    [self _insertTabViewItems:[aTabViewItem] atIndexes:[CPIndexSet indexSetWithIndex:anIndex]];
+    [self _insertTabViewItems:[aTabViewItem] atIndexes:[CPIndexSet indexSetWithIndex:anIndex] canUpdateSelectedTab:YES];
 }
 
-- (void)_insertTabViewItems:(CPArray)tabViewItems atIndexes:(CPIndexSet)indexes
+- (void)_insertTabViewItems:(CPArray)tabViewItems atIndexes:(CPIndexSet)indexes canUpdateSelectedTab:(BOOL)canUpdateSelectedTab
 {
     var prevItemsCount = [self numberOfTabViewItems];
 
@@ -148,7 +148,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
     [self _sendDelegateTabViewDidChangeNumberOfTabViewItems];
 
     // Do not allow empty selection if selection bindings are not enabled.
-    if (prevItemsCount == 0 && [self numberOfTabViewItems] > 0 && ![self _isSelectionBinded])
+    if (prevItemsCount == 0 && [self numberOfTabViewItems] > 0 && ![self _isSelectionBinded] && canUpdateSelectedTab)
         [self _selectTabViewItemAtIndex:0];
 }
 
@@ -796,7 +796,7 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
         [_tabs setFont:_font];
 
         var items = [aCoder decodeObjectForKey:CPTabViewItemsKey] || [CPArray array];
-        [self _insertTabViewItems:items atIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [items count])]];
+        [self _insertTabViewItems:items atIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [items count])] canUpdateSelectedTab:NO];
 
         [self setDelegate:[aCoder decodeObjectForKey:CPTabViewDelegateKey]];
 

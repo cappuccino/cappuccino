@@ -3154,7 +3154,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     // Now a view that clips the column data views, which itself is clipped to the content view
     var columnVisRect = CGRectIntersection(columnRect, visibleRect);
 
-    frame = CGRectMake(0.0, CGRectGetHeight(headerFrame), CGRectGetWidth(columnVisRect), CGRectGetHeight(columnVisRect));
+    frame = CGRectMake(0.0, CGRectGetHeight(headerFrame), CGRectGetWidth(columnRect), CGRectGetHeight(columnVisRect));
 
     var columnClipView = [[CPView alloc] initWithFrame:frame];
 
@@ -3189,6 +3189,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     // While dragging, the column is deselected in the table view
     [_selectedColumnIndexes removeIndex:columnIndex];
+    [self setNeedsDisplay:YES];
 
     return dragView;
 }
@@ -6368,7 +6369,7 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
     if (tableView._draggedColumnIsSelected)
     {
-        CGContextSetFillColor(context, [tableView selectionHighlightColor]);
+        CGContextSetFillColor(context, [tableView _isFocused] ? [tableView selectionHighlightColor] : [tableView unfocusedSelectionHighlightColor]);
         CGContextFillRect(context, bounds);
     }
     else
