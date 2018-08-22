@@ -34,7 +34,7 @@
     return self;
 }
 
-- (void)_setHeight:(CPInteger)height
+- (void)_setHeightIfDefaultValue:(CPInteger)height
 {
     if (_bounds.size.height === 17)
     {
