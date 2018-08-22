@@ -92,7 +92,7 @@
         if (!headerViewHeight)
             headerViewHeight = [self currentValueForThemeAttribute:@"header-view-height"];
 
-        [_headerView _setHeight:headerViewHeight];
+        [_headerView _setHeightIfDefaultValue:headerViewHeight];
     }
 
     return self;
