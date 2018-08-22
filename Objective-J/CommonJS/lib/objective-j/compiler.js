@@ -6,10 +6,6 @@ var FILE = require("file"),
 
 require("objective-j/rhino/regexp-rhino-patch");
 
-ObjectiveJ.ObjJAcornCompiler.Flags.Preprocess   = 1 << 10;
-ObjectiveJ.ObjJAcornCompiler.Flags.Compress     = 1 << 11;
-ObjectiveJ.ObjJAcornCompiler.Flags.CheckSyntax  = 1 << 12;
-
 var compressors = {
     ss  : { id : "minify/shrinksafe" }
     //,yui : { id : "minify/yuicompressor" }
@@ -37,27 +33,47 @@ function compressor(code)
 
 function compileWithResolvedFlags(aFilePath, objjcFlags, gccFlags, asPlainJavascript)
 {
-    var shouldObjjPreprocess = objjcFlags & ObjectiveJ.ObjJAcornCompiler.Flags.Preprocess,
-        shouldCheckSyntax = objjcFlags & ObjectiveJ.ObjJAcornCompiler.Flags.CheckSyntax,
-        shouldCompress = objjcFlags & ObjectiveJ.ObjJAcornCompiler.Flags.Compress,
+    var shouldObjjPreprocess = true,
+        shouldCompress = objjcFlags.compress,
         fileContents = "",
         executable,
         code;
 
     if (!shouldObjjPreprocess)
     {
-        if (OS.popen("which gcc").stdout.read().length === 0)
-            fileContents = FILE.read(aFilePath, { charset:"UTF-8" });
-        else
+        try
         {
-            // GCC preprocess the file.
-            var gcc = OS.popen("gcc -E -x c -P " + (gccFlags ? gccFlags.join(" ") : "") + " " + OS.enquote(aFilePath), { charset:"UTF-8" }),
-                chunk = "";
+            var p = OS.popen("which gcc");
 
-            while (chunk = gcc.stdout.read())
-                fileContents += chunk;
+            if (p.stdout.read().length === 0)
+            {
+                fileContents = FILE.read(aFilePath, { charset:"UTF-8" });
+            }
+            else
+            {
+                try
+                {
+                    var gcc = OS.popen("gcc -E -x c -P " + (gccFlags ? gccFlags.join(" ") : "") + " " + OS.enquote(aFilePath), { charset:"UTF-8" }),
+                        chunk = "";
 
+                    while (chunk = gcc.stdout.read())
+                        fileContents += chunk;
+                }
+                finally
+                {
+                    gcc.stdin.close();
+                    gcc.stdout.close();
+                    gcc.stderr.close();
+                }
+            }
         }
+        finally
+        {
+            p.stdin.close();
+            p.stdout.close();
+            p.stderr.close();
+        }
+
         return fileContents;
     }
 
@@ -97,7 +113,7 @@ function compileWithResolvedFlags(aFilePath, objjcFlags, gccFlags, asPlainJavasc
             }
         }
 
-        ObjectiveJ.setCurrentCompilerFlags(objjcFlags);
+        ObjectiveJ.FileExecutable.setCurrentCompilerFlags(objjcFlags);
         ObjectiveJ.make_narwhal_factory(absolutePath, basePath, translateFilenameToPath)(require, {}, module, system, print);
 
         executable = new ObjectiveJ.FileExecutable(FILE.basename(aFilePath));
@@ -132,7 +148,7 @@ function resolveFlags(args)
         count = args.length,
 
         gccFlags = [],
-        objjcFlags = ObjectiveJ.ObjJAcornCompiler.Flags.Preprocess | ObjectiveJ.ObjJAcornCompiler.Flags.CheckSyntax;
+        objjcFlags = {};
 
     for (; index < count; ++index)
     {
@@ -159,24 +175,29 @@ function resolveFlags(args)
             }
         }
 
-        else if (argument.indexOf("-E") === 0)
-            objjcFlags &= ~ObjectiveJ.ObjJAcornCompiler.Flags.Preprocess;
-
-        else if (argument.indexOf("-S") === 0)
-            objjcFlags &= ~ObjectiveJ.ObjJAcornCompiler.Flags.CheckSyntax;
-
         else if (argument.indexOf("-T") === 0)
-            objjcFlags |= ObjectiveJ.ObjJAcornCompiler.Flags.IncludeTypeSignatures;
-
+        {
+            objjcFlags.includeIvarTypeSignatures = false;
+            objjcFlags.includeMethodArgumentTypeSignatures = false;
+        }
         else if (argument.indexOf("-g") === 0)
-            objjcFlags |= ObjectiveJ.ObjJAcornCompiler.Flags.IncludeDebugSymbols;
+            objjcFlags.includeMethodFunctionNames = true;
 
-        else if (argument.indexOf("-O") === 0)
-            objjcFlags |= ObjectiveJ.ObjJAcornCompiler.Flags.Compress;
+        else if (argument.indexOf("-O") === 0) {
+            objjcFlags.compress = true;
+            // FIXME: currently we are sending in '-O2' when we want InlineMsgSend. Here we only check if we it is '-O...'
+            if (argument.length > 2)
+                objjcFlags.inlineMsgSendFunctions = true;
+        }
 
         else if (argument.indexOf("-G") === 0)
-            objjcFlags |= ObjectiveJ.ObjJAcornCompiler.Flags.Generate;
+            objjcFlags.generate = true;
 
+        else if (argument.indexOf("--inline-msg-send") === 0)
+        {
+            // This option is if you only want to inline message send functions and not compress
+            objjcFlags.inlineMsgSendFunctions = true;
+        }
         else
             filePaths.push(argument);
     }
@@ -198,7 +219,7 @@ exports.main = function(args)
 {
     var shouldPrintOutput = false,
         asPlainJavascript = false,
-        objjcFlags = 0;
+        objjcFlags = {};
 
     var argv = args.slice(1);
 
@@ -226,7 +247,8 @@ exports.main = function(args)
 
         if (argv[0] === "-T" || argv[0] === "--includeTypeSignatures")
         {
-            objjcFlags |= ObjectiveJ.ObjJAcornCompiler.Flags.IncludeTypeSignatures;
+            objjcFlags.includeIvarTypeSignatures = true;
+            objjcFlags.includeMethodArgumentTypeSignatures = true;
             argv.shift();
             continue;
         }
@@ -234,12 +256,16 @@ exports.main = function(args)
         if (argv[0] === "--help" || argv[0].substr(0, 1) == '-')
         {
             print("Usage (objjc 2.0): " + args[0] + " [options] [--] file...");
-            print("  -p, --print                    print the output directly to stdout");
-            print("  --unmarked                     don't tag the output with @STATIC header");
+            print("  -p, --print                         print the output directly to stdout");
+            print("  --unmarked                          don't tag the output with @STATIC header");
             print("");
-            print("  -T, --includeTypeSignatures    include type signatures in the compiled output");
+            print("  -T, --dont-include-type-signatures  include type signatures in the compiled output");
+            print("  -g, --include-debug-symbols         include debug symbols in the compiled output");
+            print("  -T, --include-type-signatures       include type signatures in the compiled output");
+            print("  -O, --compress                      compress the compiled output");
+            print("  -O2, --inline-msg-send              inline objj_msgSend function in the compiled output");
             print("");
-            print("  --help                         print this help");
+            print("  --help                              print this help");
             return;
         }
 
@@ -251,9 +277,19 @@ exports.main = function(args)
 
     var resolved = resolveFlags(argv),
         outputFilePaths = resolved.outputFilePaths,
-        gccFlags = resolved.gccFlags;
+        gccFlags = resolved.gccFlags,
+        resolvedObjjcFlags = resolved.objjcFlags;
 
-    objjcFlags |= resolved.objjcFlags;
+    // Merge resolved keys into objjcFlags
+    for (var key in resolvedObjjcFlags)
+    {
+        if (resolvedObjjcFlags.hasOwnProperty(key))
+        {
+            if (resolvedObjjcFlags[key])
+                objjcFlags[key] = resolvedObjjcFlags[key];
+        }
+    }
+
     resolved.filePaths.forEach(function(filePath, index)
     {
         if (!shouldPrintOutput)

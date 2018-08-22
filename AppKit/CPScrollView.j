@@ -33,6 +33,15 @@
 #define SHOULD_SHOW_CORNER_VIEW() (_scrollerStyle === CPScrollerStyleLegacy && _verticalScroller && ![_verticalScroller isHidden])
 
 
+@protocol CPScrollViewDelegate <CPObject>
+
+@optional
+- (void)scrollViewWillScroll:(CPScrollView)aScrollView;
+- (void)scrollViewDidScroll:(CPScrollView)aScrollView;
+
+@end
+
+
 /*! @ignore */
 var _isBrowserUsingOverlayScrollers = function()
 {
@@ -77,15 +86,6 @@ var _isBrowserUsingOverlayScrollers = function()
 #endif
 };
 
-/*!
-    @ingroup appkit
-    @class CPScrollView
-
-    Used to display views that are too large for the viewing area. the CPScrollView
-    places scroll bars on the side of the view to allow the user to scroll and see the entire
-    contents of the view.
-*/
-
 var TIMER_INTERVAL                              = 0.2,
     CPScrollViewDelegate_scrollViewWillScroll_  = 1 << 0,
     CPScrollViewDelegate_scrollViewDidScroll_   = 1 << 1,
@@ -95,38 +95,45 @@ var TIMER_INTERVAL                              = 0.2,
 var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
     CPScrollerStyleGlobalChangeNotification     = @"CPScrollerStyleGlobalChangeNotification";
 
+/*!
+    @ingroup appkit
+    @class CPScrollView
 
+    Used to display views that are too large for the viewing area. the CPScrollView
+    places scroll bars on the side of the view to allow the user to scroll and see the entire
+    contents of the view.
+*/
 @implementation CPScrollView : CPView
 {
-    CPClipView      _contentView;
-    CPClipView      _headerClipView;
-    CPView          _cornerView;
-    CPView          _bottomCornerView;
+    CPClipView                  _contentView;
+    CPClipView                  _headerClipView;
+    CPView                      _cornerView;
+    CPView                      _bottomCornerView;
 
-    id              _delegate;
-    CPTimer         _scrollTimer;
+    id <CPScrollViewDelegate>   _delegate;
+    CPTimer                     _scrollTimer;
 
-    BOOL            _hasVerticalScroller;
-    BOOL            _hasHorizontalScroller;
-    BOOL            _autohidesScrollers;
+    BOOL                        _hasVerticalScroller;
+    BOOL                        _hasHorizontalScroller;
+    BOOL                        _autohidesScrollers;
 
-    CPScroller      _verticalScroller;
-    CPScroller      _horizontalScroller;
+    CPScroller                  _verticalScroller;
+    CPScroller                  _horizontalScroller;
 
-    CPInteger       _recursionCount;
-    CPInteger       _implementedDelegateMethods;
+    CPInteger                   _recursionCount;
+    CPInteger                   _implementedDelegateMethods;
 
-    float           _verticalLineScroll;
-    float           _verticalPageScroll;
-    float           _horizontalLineScroll;
-    float           _horizontalPageScroll;
+    float                       _verticalLineScroll;
+    float                       _verticalPageScroll;
+    float                       _horizontalLineScroll;
+    float                       _horizontalPageScroll;
 
-    CPBorderType    _borderType;
+    CPBorderType                _borderType;
 
-    CPTimer         _timerScrollersHide;
+    CPTimer                     _timerScrollersHide;
 
-    int             _scrollerStyle;
-    int             _scrollerKnobStyle;
+    int                         _scrollerStyle;
+    int                         _scrollerKnobStyle;
 }
 
 
@@ -161,14 +168,13 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
 
 + (CGSize)contentSizeForFrameSize:(CGSize)frameSize hasHorizontalScroller:(BOOL)hFlag hasVerticalScroller:(BOOL)vFlag borderType:(CPBorderType)borderType
 {
-    var bounds = [self _insetBounds:CGRectMake(0.0, 0.0, frameSize.width, frameSize.height) borderType:borderType],
-        scrollerWidth = [CPScroller scrollerWidth];
+    var bounds = [self _insetBounds:CGRectMake(0.0, 0.0, frameSize.width, frameSize.height) borderType:borderType];
 
     if (hFlag)
-        bounds.size.height -= scrollerWidth;
+        bounds.size.height -= [_horizontalScroller scrollerWidth];
 
     if (vFlag)
-        bounds.size.width -= scrollerWidth;
+        bounds.size.width -= [_verticalScroller scrollerWidth];
 
     return bounds.size;
 }
@@ -178,14 +184,13 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
     var bounds = [self _insetBounds:CGRectMake(0.0, 0.0, contentSize.width, contentSize.height) borderType:borderType],
         widthInset = contentSize.width - bounds.size.width,
         heightInset = contentSize.height - bounds.size.height,
-        frameSize = CGSizeMake(contentSize.width + widthInset, contentSize.height + heightInset),
-        scrollerWidth = [CPScroller scrollerWidth];
+        frameSize = CGSizeMake(contentSize.width + widthInset, contentSize.height + heightInset);
 
     if (hFlag)
-        frameSize.height += scrollerWidth;
+        frameSize.height += [_horizontalScroller scrollerWidth];
 
     if (vFlag)
-        frameSize.width += scrollerWidth;
+        frameSize.width += [_verticalScroller scrollerWidth];
 
     return frameSize;
 }
@@ -264,11 +269,6 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
         _delegate = nil;
         _scrollTimer = nil;
         _implementedDelegateMethods = 0;
-
-        [[CPNotificationCenter defaultCenter] addObserver:self
-                                 selector:@selector(_didReceiveDefaultStyleChange:)
-                                     name:CPScrollerStyleGlobalChangeNotification
-                                   object:nil];
     }
 
     return self;
@@ -301,7 +301,7 @@ Notifies the delegate when the scroll view has finished scrolling.
 @endcode
 
 */
-- (void)setDelegate:(id)aDelegate
+- (void)setDelegate:(id <CPScrollViewDelegate>)aDelegate
 {
     if (aDelegate === _delegate)
         return;
@@ -527,8 +527,8 @@ Notifies the delegate when the scroll view has finished scrolling.
     {
         var bounds = [self _insetBounds];
 
-        [self setHorizontalScroller:[[CPScroller alloc] initWithFrame:CGRectMake(0.0, 0.0, MAX(CGRectGetWidth(bounds), [CPScroller scrollerWidthInStyle:_scrollerStyle] + 1), [CPScroller scrollerWidthInStyle:_scrollerStyle])]];
-        [[self horizontalScroller] setFrameSize:CGSizeMake(CGRectGetWidth(bounds), [CPScroller scrollerWidthInStyle:_scrollerStyle])];
+        [self setHorizontalScroller:[[CPScroller alloc] initWithFrame:CGRectMake(0.0, 0.0, MAX(CGRectGetWidth(bounds), [_horizontalScroller scrollerWidth] + 1), [_horizontalScroller scrollerWidth])]];
+        [[self horizontalScroller] setFrameSize:CGSizeMake(CGRectGetWidth(bounds), [_horizontalScroller scrollerWidth])];
     }
 
     [self reflectScrolledClipView:_contentView];
@@ -592,8 +592,8 @@ Notifies the delegate when the scroll view has finished scrolling.
     {
         var bounds = [self _insetBounds];
 
-        [self setVerticalScroller:[[CPScroller alloc] initWithFrame:CGRectMake(0.0, 0.0, [CPScroller scrollerWidthInStyle:_scrollerStyle], MAX(CGRectGetHeight(bounds), [CPScroller scrollerWidthInStyle:_scrollerStyle] + 1))]];
-        [[self verticalScroller] setFrameSize:CGSizeMake([CPScroller scrollerWidthInStyle:_scrollerStyle], CGRectGetHeight(bounds))];
+        [self setVerticalScroller:[[CPScroller alloc] initWithFrame:CGRectMake(0.0, 0.0, [_verticalScroller scrollerWidth], MAX(CGRectGetHeight(bounds), [_verticalScroller scrollerWidth] + 1))]];
+        [[self verticalScroller] setFrameSize:CGSizeMake([_verticalScroller scrollerWidth], CGRectGetHeight(bounds))];
     }
 
     [self reflectScrolledClipView:_contentView];
@@ -909,8 +909,8 @@ Notifies the delegate when the scroll view has finished scrolling.
 
     bottomCornerFrame.origin.x = CGRectGetMinX(verticalFrame);
     bottomCornerFrame.origin.y = CGRectGetMaxY(verticalFrame);
-    bottomCornerFrame.size.width = [CPScroller scrollerWidthInStyle:_scrollerStyle];
-    bottomCornerFrame.size.height = [CPScroller scrollerWidthInStyle:_scrollerStyle];
+    bottomCornerFrame.size.width = [_verticalScroller scrollerWidth];
+    bottomCornerFrame.size.height = [_horizontalScroller scrollerWidth];
 
     return bottomCornerFrame;
 }
@@ -1122,8 +1122,8 @@ Notifies the delegate when the scroll view has finished scrolling.
     contentFrame.size.height -= headerClipViewHeight;
 
     var difference = CGSizeMake(CGRectGetWidth(documentFrame) - CGRectGetWidth(contentFrame), CGRectGetHeight(documentFrame) - CGRectGetHeight(contentFrame)),
-        verticalScrollerWidth = [CPScroller scrollerWidthInStyle:[_verticalScroller style]],
-        horizontalScrollerHeight = [CPScroller scrollerWidthInStyle:[_horizontalScroller style]],
+        verticalScrollerWidth = [_verticalScroller scrollerWidth],
+        horizontalScrollerHeight = [_horizontalScroller scrollerWidth],
         hasVerticalScroll = difference.height > 0.0,
         hasHorizontalScroll = difference.width > 0.0,
         shouldShowVerticalScroller = _hasVerticalScroller && (!_autohidesScrollers || hasVerticalScroll),
@@ -1251,7 +1251,7 @@ Notifies the delegate when the scroll view has finished scrolling.
     }
 
     if (_timerScrollersHide)
-        [_timerScrollersHide invalidate]
+        [_timerScrollersHide invalidate];
 
     _timerScrollersHide = [CPTimer scheduledTimerWithTimeInterval:CPScrollViewFadeOutTime target:self selector:@selector(_hideScrollers:) userInfo:nil repeats:NO];
 }
@@ -1269,6 +1269,37 @@ Notifies the delegate when the scroll view has finished scrolling.
 
 #pragma mark -
 #pragma mark Overrides
+
+
+- (void)_removeObservers
+{
+    if (!_isObserving)
+        return;
+
+    [[CPNotificationCenter defaultCenter] removeObserver:self
+                                                    name:CPScrollerStyleGlobalChangeNotification
+                                                  object:nil];
+
+    [super _removeObservers];
+}
+
+- (void)_addObservers
+{
+    if (_isObserving)
+        return;
+
+    //Make sure to have the last global style for the scroller
+    [self _didReceiveDefaultStyleChange:nil];
+
+    [[CPNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(_didReceiveDefaultStyleChange:)
+                                                 name:CPScrollerStyleGlobalChangeNotification
+                                               object:nil];
+
+    [super _addObservers];
+}
+
+
 
 - (void)drawRect:(CGRect)aRect
 {
@@ -1403,7 +1434,16 @@ Notifies the delegate when the scroll view has finished scrolling.
     if (![_horizontalScroller isHidden] || ![_verticalScroller isHidden])
         _timerScrollersHide = [CPTimer scheduledTimerWithTimeInterval:CPScrollViewFadeOutTime target:self selector:@selector(_hideScrollers:) userInfo:nil repeats:NO];
 
-    [self _respondToScrollWheelEventWithDeltaX:[anEvent deltaX] deltaY:[anEvent deltaY]];
+    var deltaX = [anEvent scrollingDeltaX],
+        deltaY = [anEvent scrollingDeltaY];
+
+    if (![anEvent hasPreciseScrollingDeltas])
+    {
+        deltaX *= (_horizontalLineScroll || 1.0);
+        deltaY *= (_verticalLineScroll || 1.0);
+    }
+
+    [self _respondToScrollWheelEventWithDeltaX:deltaX deltaY:deltaY];
 }
 
 - (void)scrollPageUp:(id)sender
@@ -1468,6 +1508,51 @@ Notifies the delegate when the scroll view has finished scrolling.
 
 @end
 
+#pragma mark -
+
+@implementation CPScrollView (FirstResponder)
+
+// Those 4 next methods are needed to (un)set CPThemeStateFirstResponder based on content view
+
+- (void)viewWillMoveToWindow:(CPWindow)aWindow
+{
+    [super viewWillMoveToWindow:aWindow];
+
+    [self _stopObservingFirstResponderForWindow:[self window]];
+
+    if (aWindow)
+        [self _startObservingFirstResponderForWindow:aWindow];
+}
+
+- (void)_startObservingFirstResponderForWindow:(CPWindow)aWindow
+{
+    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_firstResponderDidChange:) name:_CPWindowDidChangeFirstResponderNotification object:aWindow];
+}
+
+- (void)_stopObservingFirstResponderForWindow:(CPWindow)aWindow
+{
+    [[CPNotificationCenter defaultCenter] removeObserver:self name:_CPWindowDidChangeFirstResponderNotification object:aWindow];
+}
+
+- (void)_firstResponderDidChange:(CPNotification)aNotification
+{
+    var responder = [[self window] firstResponder],
+        // FIXME: We add focus ring only on table views right now. When focus ring management will be added, this must be adapted.
+        shouldAddFocusRing = [responder isKindOfClass:[CPTableView class]],
+        found;
+
+    while (!(found = (responder === self)) && responder)
+        responder = [responder superview];
+
+    if (found && shouldAddFocusRing)
+        [self setThemeState:CPThemeStateFirstResponder];
+    else
+        [self unsetThemeState:CPThemeStateFirstResponder];
+}
+
+@end
+
+#pragma mark -
 
 var CPScrollViewContentViewKey          = @"CPScrollViewContentView",
     CPScrollViewHeaderClipViewKey       = @"CPScrollViewHeaderClipViewKey",
@@ -1540,6 +1625,8 @@ var CPScrollViewContentViewKey          = @"CPScrollViewContentView",
 */
 - (void)awakeFromCib
 {
+    [super awakeFromCib];
+
     [self _updateScrollerStyle];
     [self _updateCornerAndHeaderView];
 }

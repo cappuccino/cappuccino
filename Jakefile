@@ -111,6 +111,15 @@ task ("documentation-no-frame", function()
     generateDocs(true);
 });
 
+task ("docset", function()
+{
+    generateDocs(true);
+    var documentationDir = FILE.canonical(FILE.join("Tools", "Documentation")),
+        docsetShell = FILE.join(documentationDir, "support", "docset.sh");
+
+    OS.system([docsetShell, documentationDir]);
+});
+
 function generateDocs(/* boolean */ noFrame)
 {
     // try to find a doxygen executable in the PATH;
@@ -119,12 +128,21 @@ function generateDocs(/* boolean */ noFrame)
     // If the Doxygen application is installed on Mac OS X, use that
     if (!doxygen && executableExists("mdfind"))
     {
-        var p = OS.popen(["mdfind", "kMDItemContentType == 'com.apple.application-bundle' && kMDItemCFBundleIdentifier == 'org.doxygen'"]);
-        if (p.wait() === 0)
+        try
         {
-            var doxygenApps = p.stdout.read().split("\n");
-            if (doxygenApps[0])
-                doxygen = FILE.join(doxygenApps[0], "Contents/Resources/doxygen");
+            var p = OS.popen(["mdfind", "kMDItemContentType == 'com.apple.application-bundle' && kMDItemCFBundleIdentifier == 'org.doxygen'"]);
+            if (p.wait() === 0)
+            {
+                var doxygenApps = p.stdout.read().split("\n");
+                if (doxygenApps[0])
+                    doxygen = FILE.join(doxygenApps[0], "Contents/Resources/doxygen");
+            }
+        }
+        finally
+        {
+            p.stdin.close();
+            p.stdout.close();
+            p.stderr.close();
         }
     }
 

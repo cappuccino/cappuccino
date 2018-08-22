@@ -27,6 +27,9 @@
 @import "CPView.j"
 
 @class CPSlider
+@class _CPColorPanelToolbar
+@class _CPColorPanelSwatches
+@class _CPColorPanelPreview
 
 @global CPApp
 
@@ -68,7 +71,6 @@ var SharedColorPanel = nil,
 */
 @implementation CPColorPanel : CPPanel
 {
-    _CPColorPanelToolbar    _toolbar;
     _CPColorPanelSwatches   _swatchView;
     _CPColorPanelPreview    _previewView;
 
@@ -481,13 +483,12 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
         ];
     }
 
-    var cookieValue = eval(cookieValue),
-        result = [];
+    var cookieValue = eval(cookieValue);
 
-    for (var i = 0; i < cookieValue.length; i++)
-        result.push([CPColor colorWithHexString:cookieValue[i]]);
-
-    return result;
+    return [cookieValue arrayByApplyingBlock:function(value)
+    {
+        return [CPColor colorWithHexString:value];
+    }];
 }
 
 - (CPArray)saveColorList

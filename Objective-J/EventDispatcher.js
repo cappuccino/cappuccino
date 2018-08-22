@@ -81,4 +81,4 @@ EventDispatcher.prototype.dispatchEvent = function(/*Event*/ anEvent)
 
     if (manual)
         manual(anEvent);
-}
+};

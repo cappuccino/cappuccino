@@ -40,8 +40,10 @@
 @class CPClipView
 @class CPUserDefaults
 @class CPTableHeaderView
+@class _CPTableColumnHeaderView
 @class CPClipView
 @class CPButton
+@class _CPDropOperationDrawingView
 
 @global CPApp
 
@@ -80,10 +82,12 @@ var CPTableViewDelegate_selectionShouldChangeInTableView_                       
     CPTableViewDelegate_tableView_typeSelectStringForTableColumn_row_                                   = 1 << 17,
     CPTableViewDelegate_tableView_willDisplayView_forTableColumn_row_                                   = 1 << 18,
     CPTableViewDelegate_tableView_willRemoveView_forTableColumn_row_                                    = 1 << 19,
-    CPTableViewDelegate_tableViewSelectionDidChange_                                                    = 1 << 20,
-    CPTableViewDelegate_tableViewSelectionIsChanging_                                                   = 1 << 21,
-    CPTableViewDelegate_tableViewMenuForTableColumn_row_                                                = 1 << 22,
-    CPTableViewDelegate_tableView_shouldReorderColumn_toColumn_                                         = 1 << 23;
+    CPTableViewDelegate_tableViewColumnDidMove_                                                         = 1 << 20,
+    CPTableViewDelegate_tableViewColumnDidResize_                                                       = 1 << 21,
+    CPTableViewDelegate_tableViewSelectionDidChange_                                                    = 1 << 22,
+    CPTableViewDelegate_tableViewSelectionIsChanging_                                                   = 1 << 23,
+    CPTableViewDelegate_tableViewMenuForTableColumn_row_                                                = 1 << 24,
+    CPTableViewDelegate_tableView_shouldReorderColumn_toColumn_                                         = 1 << 25;
 
 //CPTableViewDraggingDestinationFeedbackStyles
 CPTableViewDraggingDestinationFeedbackStyleNone = -1;
@@ -170,7 +174,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 @implementation _CPTableDrawView : CPView
 {
-    CPTableView _tableView;
+    id _tableView;
 }
 
 - (id)initWithTableView:(CPTableView)aTableView
@@ -199,7 +203,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     @ingroup appkit
     @class CPTableView
 
-    CPTableView object displays record-oriented data in a table and
+    A table view control displays record-oriented data in a table and
     allows the user to edit values and resize and rearrange columns.
     A CPTableView requires you to either set a data source which implements
     @ref numberofrows "numberOfRowsInTableView:" and @ref objectValueForTable "tableView:objectValueForTableColumn:row:",
@@ -232,13 +236,14 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     CPInteger                   _numberOfHiddenColumns;
 
     BOOL                        _reloadAllRows;
+    BOOL                        _invalidateObjectValuesCache;
     Object                      _objectValues;
 
     CGRect                      _exposedRect;
     CPIndexSet                  _exposedRows;
     CPIndexSet                  _exposedColumns;
 
-    Object                      _dataViewsForTableColumns;
+    Object                      _dataViewsForRows;
     Object                      _cachedDataViews;
     CPDictionary                _archivedDataViews;
     Object                      _unavailable_custom_cibs;
@@ -285,7 +290,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     CGPoint                     _startTrackingPoint;
     CPDate                      _startTrackingTimestamp;
     BOOL                        _trackingPointMovedOutOfClickSlop;
-    CGPoint                     _editingCellIndex;
     CPInteger                   _editingRow;
     CPInteger                   _editingColumn;
 
@@ -308,7 +312,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     CPDragOperation             _dragOperationDefaultMask;
     int                         _retargetedDropRow;
     CPDragOperation             _retargetedDropOperation;
-    CPArray                     _draggingViews;
 
     BOOL                        _disableAutomaticResizing @accessors(property=disableAutomaticResizing);
     BOOL                        _lastColumnShouldSnap;
@@ -318,8 +321,15 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     SEL                         _viewForTableColumnRowSelector;
 
-    CPTableColumn               _draggedColumn;
+    CPInteger                   _draggedColumnIndex;
+    BOOL                        _draggedColumnIsSelected;
+    BOOL                        _needsDifferedTableColumnRemove;
     CPArray                     _differedColumnDataToRemove;
+
+    Function                    _BlockDeselectView;
+    Function                    _BlockSelectView;
+
+    CPView                      _observedClipView;
 }
 
 /*!
@@ -336,8 +346,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 + (CPDictionary)themeAttributes
 {
     return @{
-            @"alternating-row-colors": [CPNull null],
-            @"grid-color": [CPNull null],
+            @"alternating-row-colors": @[[CPColor whiteColor], [CPColor colorWithRed:245.0 / 255.0 green:249.0 / 255.0 blue:252.0 / 255.0 alpha:1.0]],
+            @"grid-color": [CPColor colorWithHexString:@"dce0e2"],
             @"grid-line-thickness": 1.0,
             @"highlighted-grid-color": [CPNull null],
             @"selection-color": [CPNull null],
@@ -358,7 +368,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
             @"dropview-above-border-color": [CPNull null],
             @"dropview-above-border-width": [CPNull null],
             @"dropview-above-selected-border-color": [CPNull null],
-            @"dropview-above-selected-border-width": [CPNull null]
+            @"dropview-above-selected-border-width": [CPNull null],
+            @"header-view-height": 25.0
         };
 }
 
@@ -380,8 +391,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         _selectionHighlightStyle = CPTableViewSelectionHighlightStyleRegular;
 
         [self setUsesAlternatingRowBackgroundColors:NO];
-        [self setAlternatingRowBackgroundColors:
-            [[CPColor whiteColor], [CPColor colorWithRed:245.0 / 255.0 green:249.0 / 255.0 blue:252.0 / 255.0 alpha:1.0]]];
+        [self setAlternatingRowBackgroundColors:[self valueForThemeAttribute:@"alternating-row-colors"]];
 
         _tableColumns = [];
         _tableColumnRanges = [];
@@ -391,10 +401,10 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         _intercellSpacing = CGSizeMake(3.0, 2.0);
         _rowHeight = [self valueForThemeAttribute:@"default-row-height"];
 
-        [self setGridColor:[CPColor colorWithHexString:@"dce0e2"]];
+        [self setGridColor:[self valueForThemeAttribute:@"grid-color"]];
         [self setGridStyleMask:CPTableViewGridNone];
 
-        [self setHeaderView:[[CPTableHeaderView alloc] initWithFrame:CGRectMake(0, 0, [self bounds].size.width, _rowHeight)]];
+        [self setHeaderView:[[CPTableHeaderView alloc] initWithFrame:CGRectMake(0, 0, [self bounds].size.width, [self valueForThemeAttribute:@"header-view-height"])]];
         [self setCornerView:[[_CPCornerView alloc] initWithFrame:CGRectMake(0, 0, [CPScroller scrollerWidth], CGRectGetHeight([_headerView frame]))]];
 
         _currentHighlightedTableColumn = nil;
@@ -441,7 +451,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     _numberOfHiddenColumns = 0;
 
     _objectValues = { };
-    _dataViewsForTableColumns = { };
+    _invalidateObjectValuesCache = NO;
+    _dataViewsForRows = { };
     _numberOfRows = 0;
     _exposedRows = [CPIndexSet indexSet];
     _exposedColumns = [CPIndexSet indexSet];
@@ -457,8 +468,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     [_tableDrawView setBackgroundColor:[CPColor clearColor]];
     [self addSubview:_tableDrawView];
 
-    _draggedColumn = nil;
-    _draggingViews = [CPArray array];
+    _draggedColumnIndex = -1;
+    _draggedColumnIsSelected = NO;
 
     _editingRow = CPNotFound;
     _editingColumn = CPNotFound;
@@ -469,12 +480,26 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     _sourceListInactiveTopLineColor = [CPColor colorWithCalibratedRed:(173.0/255.0) green:(187.0/255.0) blue:(209.0/255.0) alpha:1.0];
     _sourceListInactiveBottomLineColor = [CPColor colorWithCalibratedRed:(150.0/255.0) green:(161.0/255.0) blue:(183.0/255.0) alpha:1.0];*/
     _differedColumnDataToRemove = [];
+    _needsDifferedTableColumnRemove = NO;
     _implementsCustomDrawRow = [self implementsSelector:@selector(drawRow:clipRect:)];
 
     if (!_sortDescriptors)
         _sortDescriptors = [];
 
-    [self _startObservingFirstResponder];
+    [self _initSubclass];
+}
+
+- (void)_initSubclass
+{
+    _BlockDeselectView = function(view, row, column)
+    {
+        [view unsetThemeState:CPThemeStateSelectedDataView];
+    };
+
+    _BlockSelectView = function(view, row, column)
+    {
+        [view setThemeState:CPThemeStateSelectedDataView];
+    };
 }
 
 /*!
@@ -579,7 +604,7 @@ NOT YET IMPLEMENTED
     if ([_dataSource respondsToSelector:@selector(tableView:sortDescriptorsDidChange:)])
         _implementedDataSourceMethods |= CPTableViewDataSource_tableView_sortDescriptorsDidChange_;
 
-    [self reloadData];
+    [self _reloadDataViews];
 }
 
 /*!
@@ -591,6 +616,13 @@ NOT YET IMPLEMENTED
 }
 
 //Loading Data
+/*!
+    Reloads the data for visible data views.
+*/
+- (void)reloadData
+{
+    [self _reloadDataViews];
+}
 
 /*!
     Reloads the data for only the specified rows and columns.
@@ -600,18 +632,20 @@ NOT YET IMPLEMENTED
 - (void)reloadDataForRowIndexes:(CPIndexSet)rowIndexes columnIndexes:(CPIndexSet)columnIndexes
 {
     [self reloadData];
-//    [_previouslyExposedRows removeIndexes:rowIndexes];
-//    [_previouslyExposedColumns removeIndexes:columnIndexes];
 }
 
-/*!
-    Reloads the data for all rows and columns.
-*/
-- (void)reloadData
+// Reloads the data, not the views
+- (void)_reloadDataForRowIndexes:(CPIndexSet)rowIndexes columnIndexes:(CPIndexSet)columnIndexes
 {
-    //if (!_dataSource)
-    //    return;
+    [self _enumerateViewsInRows:rowIndexes columns:columnIndexes usingBlock:function(view, row, column, stop)
+    {
+        var tableColumn = [_tableColumns objectAtIndex:column];
+        [self _setObjectValueForTableColumn:tableColumn row:row forView:view useCache:NO];
+    }];
+}
 
+- (void)_setupReload
+{
     _reloadAllRows = YES;
     _objectValues = { };
     _cachedRowHeights = [];
@@ -623,9 +657,22 @@ NOT YET IMPLEMENTED
 
     // This updates the size too.
     [self noteNumberOfRowsChanged];
+}
 
+// Reloads the views AND the data
+- (void)_reloadDataViews
+{
+    [self _setupReload];
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
+}
+
+// Reloads the views AND the data
+- (void)_reloadDataViewsSynchronously
+{
+    [self _setupReload];
+    [self layout];
+    [self display];
 }
 
 //Target-action Behavior
@@ -771,11 +818,10 @@ NOT YET IMPLEMENTED
     _dirtyTableColumnRangeIndex = 0; // so that _recalculateTableColumnRanges will work
     [self _recalculateTableColumnRanges];
 
-    [self setNeedsLayout];
     [_headerView setNeedsDisplay:YES];
     [_headerView setNeedsLayout];
 
-    [self reloadData];
+    [self _reloadDataViews];
 }
 
 /*!
@@ -964,7 +1010,7 @@ NOT YET IMPLEMENTED
 </pre>
 */
 
-- (void)unfocusedSelectionGradientColors
+- (CPColor)unfocusedSelectionGradientColors
 {
     if (!_unfocusedSourceListSelectionColor)
     {
@@ -1092,6 +1138,7 @@ NOT YET IMPLEMENTED
 
     // we defer the actual removal until the end of the runloop in order to keep a reference to the column.
     [_differedColumnDataToRemove addObject:{"column":aTableColumn, "shouldBeHidden": [aTableColumn isHidden]}];
+    _needsDifferedTableColumnRemove = YES;
 
     [aTableColumn setHidden:YES];
     [aTableColumn setTableView:nil];
@@ -1106,30 +1153,24 @@ NOT YET IMPLEMENTED
     else
         _dirtyTableColumnRangeIndex = MIN(index, _dirtyTableColumnRangeIndex);
 
-    [_tableColumns removeObject:aTableColumn];
-
-    [self setNeedsLayout];
+    [self reloadData];
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 }
 
 /*!
     @ignore
     Internally used to set a column that will be dragged
 */
-- (void)_setDraggedColumn:(CPTableColumn)aColumn
+- (void)_setDraggedColumn:(CPInteger)columnIndex
 {
-    if (_draggedColumn === aColumn)
+    if (_draggedColumnIndex === columnIndex)
         return;
 
-    var previouslyDraggedColumn = _draggedColumn;
-    _draggedColumn = aColumn;
+    // If ending a column drag, reselect the column if it was selected before the drag
+    if (columnIndex === -1 && _draggedColumnIsSelected)
+        [_selectedColumnIndexes addIndex:_draggedColumnIndex];
 
-    // if a column is currently being dragged, update that column (removing data views)
-    if (aColumn)
-        [self reloadDataForRowIndexes:_exposedRows columnIndexes:[CPIndexSet indexSetWithIndex:[_tableColumns indexOfObject:aColumn]]];
-
-    // when the column is dropped, we should also update it.
-    if (previouslyDraggedColumn)
-        [self reloadDataForRowIndexes:_exposedRows columnIndexes:[CPIndexSet indexSetWithIndex:[_tableColumns indexOfObject:previouslyDraggedColumn]]];
+    _draggedColumnIndex = columnIndex;
 }
 
 /*
@@ -1150,7 +1191,8 @@ NOT YET IMPLEMENTED
     else
         _dirtyTableColumnRangeIndex = MIN(fromIndex, toIndex, _dirtyTableColumnRangeIndex);
 
-    var tableColumn = _tableColumns[fromIndex];
+    var tableColumn = _tableColumns[fromIndex],
+        selectedTableColumns = [_tableColumns objectsAtIndexes:_selectedColumnIndexes];
 
     [_tableColumns removeObjectAtIndex:fromIndex];
     [_tableColumns insertObject:tableColumn atIndex:toIndex];
@@ -1158,16 +1200,34 @@ NOT YET IMPLEMENTED
     [[self headerView] setNeedsLayout];
     [[self headerView] setNeedsDisplay:YES];
 
-    var rowIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self numberOfRows])],
-        columnIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(fromIndex, toIndex)];
+    var range = CPMakeRange(MIN(fromIndex, toIndex), ABS(fromIndex - toIndex) + 1),
+        layoutColumnIndexes = [CPIndexSet indexSetWithIndexesInRange:range],
+        selectedColumnIndexes = [CPIndexSet indexSet];
 
-    [self reloadDataForRowIndexes:rowIndexes columnIndexes:columnIndexes];
+    [_tableColumns enumerateObjectsUsingBlock:function(tableColumn, idx, stop)
+    {
+        if ([selectedTableColumns containsObjectIdenticalTo:tableColumn])
+            [selectedColumnIndexes addIndex:idx];
+    }];
+
+    if ([_selectedColumnIndexes containsIndex:fromIndex])
+        [selectedColumnIndexes addIndex:toIndex];
+
+    if (_draggedColumnIndex !== -1)
+        [layoutColumnIndexes removeIndex:toIndex];
+
+    [self _layoutViewsForRowIndexes:_exposedRows columnIndexes:layoutColumnIndexes];
+    [self selectColumnIndexes:selectedColumnIndexes byExtendingSelection:NO];
+    [self setNeedsDisplay:YES];
 
     // Notify even if programmatically moving a column as in Cocoa.
     // TODO Only notify when a column drag operation ends, not each time a column reaches a new slot?
     [[CPNotificationCenter defaultCenter] postNotificationName:CPTableViewColumnDidMoveNotification
                                                         object:self
                                                       userInfo:@{  @"CPOldColumn": fromIndex, @"CPNewColumn": toIndex }];
+
+    if (_implementedDelegateMethods & CPTableViewDelegate_tableViewColumnDidMove_)
+        [_delegate tableViewColumnDidMove:[[CPNotification alloc] initWithName:CPTableViewColumnDidMoveNotification object:self userInfo:@{  @"CPOldColumn": fromIndex, @"CPNewColumn": toIndex }]];
 }
 
 /*!
@@ -1198,7 +1258,7 @@ NOT YET IMPLEMENTED
     [[self headerView] setNeedsDisplay:YES];
 
     var rowIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self numberOfRows])];
-    [self reloadDataForRowIndexes:rowIndexes columnIndexes:[CPIndexSet indexSetWithIndex:columnIndex]];
+    [self _layoutViewsForRowIndexes:rowIndexes columnIndexes:[CPIndexSet indexSetWithIndex:columnIndex]];
 }
 
 /*!
@@ -1246,9 +1306,17 @@ NOT YET IMPLEMENTED
 /*!
     @ignore
 */
-- (void)_didResizeTableColumn:(CPTableColumn)theColumn
+- (void)_didResizeTableColumn:(CPTableColumn)theColumn oldWidth:(int)oldWidth
 {
     [self _autosave];
+
+    [[CPNotificationCenter defaultCenter]
+        postNotificationName:CPTableViewColumnDidResizeNotification
+                      object:self
+                    userInfo:@{ @"CPTableColumn": theColumn, @"CPOldWidth": oldWidth }];
+
+    if (_implementedDelegateMethods & CPTableViewDelegate_tableViewColumnDidResize_)
+        [_delegate tableViewColumnDidResize:[[CPNotification alloc] initWithName:CPTableViewColumnDidResizeNotification object:self userInfo:@{ @"CPTableColumn": theColumn, @"CPOldWidth": oldWidth }]];
 }
 
 //Selecting Columns and Rows
@@ -1262,7 +1330,7 @@ NOT YET IMPLEMENTED
 - (void)selectColumnIndexes:(CPIndexSet)columns byExtendingSelection:(BOOL)shouldExtendSelection
 {
     // If we're out of range, just return
-    if (([columns firstIndex] != CPNotFound && [columns firstIndex] < 0) || [columns lastIndex] >= [self numberOfColumns])
+    if (([columns firstIndex] != CPNotFound && [columns firstIndex] < 0) || [columns lastIndex] >= [self numberOfColumns] || (!shouldExtendSelection && [columns isEqualToIndexSet:_selectedColumnIndexes]) || (shouldExtendSelection && [columns count] === 0))
         return;
 
     // We deselect all rows when selecting columns.
@@ -1382,40 +1450,10 @@ NOT YET IMPLEMENTED
 */
 - (void)_updateHighlightWithOldRows:(CPIndexSet)oldRows newRows:(CPIndexSet)newRows
 {
-    var firstExposedRow = [_exposedRows firstIndex],
-        exposedLength = [_exposedRows lastIndex] - firstExposedRow + 1,
-        deselectRows = [],
-        selectRows = [],
-        deselectRowIndexes = [oldRows copy],
-        selectRowIndexes = [newRows copy];
+    [self _enumerateViewsInRows:oldRows columns:_exposedColumns usingBlock:_BlockDeselectView];
 
-    [deselectRowIndexes removeMatches:selectRowIndexes];
-    [deselectRowIndexes getIndexes:deselectRows maxCount:-1 inIndexRange:CPMakeRange(firstExposedRow, exposedLength)];
-    [selectRowIndexes getIndexes:selectRows maxCount:-1 inIndexRange:CPMakeRange(firstExposedRow, exposedLength)];
-
-    var showsSelection = _selectionHighlightStyle !== CPTableViewSelectionHighlightStyleNone,
-        selectors = [@selector(unsetThemeState:), @selector(setThemeState:)],
-        selectInfo = [
-            { rows:deselectRows, selectorIndex:0 },
-            { rows:selectRows,   selectorIndex:showsSelection ? 1 : 0 }
-        ];
-
-    for (var identifier in _dataViewsForTableColumns)
-    {
-        var dataViewsInTableColumn = _dataViewsForTableColumns[identifier];
-
-        for (var i = 0; i < selectInfo.length; ++i)
-        {
-            var info = selectInfo[i],
-                count = info.rows.length;
-
-            while (count--)
-            {
-                var view = dataViewsInTableColumn[info.rows[count]];
-                [view performSelector:selectors[info.selectorIndex] withObject:CPThemeStateSelectedDataView];
-            }
-        }
-    }
+    if (_selectionHighlightStyle !== CPTableViewSelectionHighlightStyleNone)
+        [self _enumerateViewsInRows:newRows columns:_exposedColumns usingBlock:_BlockSelectView];
 }
 
 /*!
@@ -1423,64 +1461,25 @@ NOT YET IMPLEMENTED
 */
 - (void)_updateHighlightWithOldColumns:(CPIndexSet)oldColumns newColumns:(CPIndexSet)newColumns
 {
-    var firstExposedColumn = [_exposedColumns firstIndex],
-        exposedLength = [_exposedColumns lastIndex] - firstExposedColumn  +1,
-        deselectColumns  = [],
-        selectColumns  = [],
-        deselectColumnIndexes = [oldColumns copy],
-        selectColumnIndexes = [newColumns copy],
-        selectRows = [];
-
-    [deselectColumnIndexes removeMatches:selectColumnIndexes];
-    [deselectColumnIndexes getIndexes:deselectColumns maxCount:-1 inIndexRange:CPMakeRange(firstExposedColumn, exposedLength)];
-    [selectColumnIndexes getIndexes:selectColumns maxCount:-1 inIndexRange:CPMakeRange(firstExposedColumn, exposedLength)];
-    [_exposedRows getIndexes:selectRows maxCount:-1 inIndexRange:nil];
-
-    var showsSelection = _selectionHighlightStyle !== CPTableViewSelectionHighlightStyleNone,
-        selectors = [@selector(unsetThemeState:), @selector(setThemeState:)],
-
-        // Rows do not show selection with CPTableViewSelectionHighlightStyleNone, but headers do
-        selectInfo = [
-            {
-                columns:deselectColumns,
-                rowSelectorIndex:0,
-                headerSelectorIndex:0
-            },
-            {
-                columns:selectColumns,
-                rowSelectorIndex:showsSelection ? 1 : 0,
-                headerSelectorIndex:1
-            }
-        ],
-        rowsCount = selectRows.length;
-
-    for (var selectIndex = 0; selectIndex < selectInfo.length; ++selectIndex)
+    var blockDeselectHeader = function(column, stop)
     {
-        var info = selectInfo[selectIndex],
-            count = info.columns.length,
-            rowSelector = selectors[info.rowSelectorIndex],
-            headerSelector = selectors[info.headerSelectorIndex];
+         var headerView = [_tableColumns[column] headerView];
+         [headerView unsetThemeState:CPThemeStateSelected];
+    };
 
-        while (count--)
+    var showSelection = _selectionHighlightStyle !== CPTableViewSelectionHighlightStyleNone;
+
+    [self _enumerateViewsInRows:_exposedRows columns:oldColumns usingBlock:_BlockDeselectView];
+    [oldColumns enumerateIndexesUsingBlock:blockDeselectHeader];
+
+    if (_selectionHighlightStyle !== CPTableViewSelectionHighlightStyleNone)
+    {
+        [self _enumerateViewsInRows:_exposedRows columns:newColumns usingBlock:_BlockSelectView];
+        [newColumns enumerateIndexesUsingBlock:function(column, stop)
         {
-            var columnIndex = info.columns[count],
-                identifier = [_tableColumns[columnIndex] UID],
-                dataViewsInTableColumn = _dataViewsForTableColumns[identifier];
-
-            for (var i = 0; i < rowsCount; i++)
-            {
-                var rowIndex = selectRows[i],
-                    dataView = dataViewsInTableColumn[rowIndex];
-
-                [dataView performSelector:rowSelector withObject:CPThemeStateSelectedDataView];
-            }
-
-            if (_headerView)
-            {
-                var headerView = [_tableColumns[columnIndex] headerView];
-                [headerView performSelector:headerSelector withObject:CPThemeStateSelected];
-            }
-        }
+             var headerView = [_tableColumns[column] headerView];
+             [headerView setThemeState:CPThemeStateSelected];
+        }];
     }
 }
 
@@ -1632,93 +1631,33 @@ NOT YET IMPLEMENTED
 */
 - (int)numberOfRows
 {
-    if (_numberOfRows !== nil)
-        return _numberOfRows;
+    return _numberOfRows;
+}
 
-    var contentBindingInfo = [self infoForBinding:@"content"];
+- (int)_numberOfRows
+{
+    var numberOfRows,
+        contentBindingInfo = [self infoForBinding:@"content"];
 
     if (contentBindingInfo)
     {
         var destination = [contentBindingInfo objectForKey:CPObservedObjectKey],
             keyPath = [contentBindingInfo objectForKey:CPObservedKeyPathKey];
 
-        _numberOfRows = [[destination valueForKeyPath:keyPath] count];
+        numberOfRows = [[destination valueForKeyPath:keyPath] count];
     }
+    else if (_dataSource && (_implementedDataSourceMethods & CPTableViewDataSource_numberOfRowsInTableView_))
+        numberOfRows = [_dataSource numberOfRowsInTableView:self] || 0;
     else
     {
-        _numberOfRows = [self _sendDataSourceNumberOfRowsInTableView];
-
-        if (!_numberOfRows)
-        {
-            if (_dataSource && ![self _dataSourceRespondsToNumberOfRowsinTableView])
+        if (_dataSource)
                 CPLog(@"no content binding established and data source " + [_dataSource description] + " does not implement numberOfRowsInTableView:");
-
-            _numberOfRows = 0;
-        }
+        numberOfRows = 0;
     }
 
-    return _numberOfRows;
+    return numberOfRows;
 }
 
-/*!
-    Edits the dataview at a given row and column. This method is usually invoked automatically and should rarely be invoked directly
-    The row at supplied rowIndex must be selected otherwise an exception is thrown.
-
-    @param columnIndex the index of the column to edit
-    @param rowIndex the index of the row to edit
-    @param theEvent the mouse event which triggers the edit, you can pass nil
-    @param flag YES if the dataview text should be selected, otherwise NO. (NOT YET IMPLEMENTED)
-*/
-- (void)editColumn:(CPInteger)columnIndex row:(CPInteger)rowIndex withEvent:(CPEvent)theEvent select:(BOOL)flag
-{
-    // FIX ME: Cocoa documentation says all this should be called in THIS method:
-    // sets up the field editor, and sends selectWithFrame:inView:editor:delegate:start:length: and editWithFrame:inView:editor:delegate:event: to the field editor's NSCell object with the NSTableView as the text delegate.
-    if (_isViewBased)
-    {
-        var identifier = [_tableColumns[columnIndex] UID],
-            view = _dataViewsForTableColumns[identifier][rowIndex];
-
-        [[self window] makeFirstResponder:view];
-    }
-    else
-    {
-        if (![self isRowSelected:rowIndex])
-            [[CPException exceptionWithName:@"Error" reason:@"Attempt to edit row="+rowIndex+" when not selected." userInfo:nil] raise];
-
-        [self scrollRowToVisible:rowIndex];
-        [self scrollColumnToVisible:columnIndex];
-
-        // TODO Do something with flag.
-
-        _editingCellIndex = CGPointMake(columnIndex, rowIndex);
-        _editingCellIndex._shouldSelect = flag;
-
-        [self reloadDataForRowIndexes:[CPIndexSet indexSetWithIndex:rowIndex]
-            columnIndexes:[CPIndexSet indexSetWithIndex:columnIndex]];
-    }
-}
-
-/*!
-    Returns the column of the currently edited cell, or CPNotFound if none.
-*/
-- (CPInteger)editedColumn
-{
-    if (!_editingCellIndex)
-        return CPNotFound;
-
-    return _editingCellIndex.x;
-}
-
-/*!
-    Returns the row of the currently edited cell, or CPNotFound if none.
-*/
-- (CPInteger)editedRow
-{
-    if (!_editingCellIndex)
-        return CPNotFound;
-
-    return _editingCellIndex.y;
-}
 
 /*!
     Returns the cornerview for the scrollview
@@ -2131,7 +2070,11 @@ NOT YET IMPLEMENTED
 */
 - (CPInteger)rowForView:(CPView)aView
 {
-    return [self rowNotColumn:YES forView:aView];
+    var row;
+
+    [self getColumn:nil row:@ref(row) forView:aView];
+
+    return row;
 }
 
 /*!
@@ -2144,66 +2087,69 @@ NOT YET IMPLEMENTED
 */
 - (CPInteger)columnForView:(CPView)aView
 {
-    return [self rowNotColumn:NO forView:aView];
+    var column;
+
+    [self getColumn:@ref(column) row:nil forView:aView];
+
+    return column;
 }
 
 /*!
     @ignore
 */
-- (CPInteger)rowNotColumn:(BOOL)isRow forView:(CPView)aView
+- (void)getColumn:(Function)columnRef row:(Function)rowRef forView:(CPView)aView
 {
-    if (![aView isKindOfClass:[CPView class]])
-        return -1;
+    var columnResult = -1,
+        rowResult = -1;
 
-    var cellView = aView,
-        contentView = [[self window] contentView],
-        max_rec = 100;
-
-    while (max_rec--)
+    if (aView && [aView isKindOfClass:[CPView class]] && ![aView isKindOfClass:[CPTableView class]])
     {
-        if (!cellView || cellView === contentView)
-        {
-            return -1;
-        }
-        else
-        {
-            var superview = [cellView superview];
+        var cellView = aView,
+            contentView = [[self window] contentView],
+            found = NO,
+            max_rec = 100;
 
-            if ([superview isKindOfClass:[CPTableView class]])
+        while (max_rec--)
+        {
+            if (!cellView || cellView === contentView)
             {
+                found = NO;
                 break;
             }
+            else
+            {
+                var superview = [cellView superview];
 
-            cellView = superview;
+                if ([superview isKindOfClass:[CPTableView class]])
+                {
+                    found = YES;
+                    break;
+                }
+
+                cellView = superview;
+            }
         }
-    }
 
-    var exposedRows = [],
-        exposedColumns = [];
-
-    [_exposedRows getIndexes:exposedRows maxCount:-1 inIndexRange:nil];
-    [_exposedColumns getIndexes:exposedColumns maxCount:-1 inIndexRange:nil];
-
-    var colcount = exposedColumns.length,
-        countOfRows = exposedRows.length;
-
-    while (colcount--)
-    {
-        var column = exposedColumns[colcount],
-            tableColumnUID = [_tableColumns[column] UID],
-            dataViewsInTableColumn = _dataViewsForTableColumns[tableColumnUID],
-            rowcount = countOfRows;
-
-        while (rowcount--)
+        if (found)
         {
-            var row = exposedRows[rowcount];
+            [self _enumerateViewsInRows:_exposedRows columns:_exposedColumns usingBlock:function(view, row, column, stop)
+            {
 
-            if (cellView == dataViewsInTableColumn[row])
-                return isRow ? row : column;
+                if (view === cellView)
+                {
+                    columnResult = column;
+                    rowResult = row;
+                    stop(YES);
+                }
+            }];
         }
     }
 
-    return -1;
+    if (columnRef)
+        columnRef(columnResult);
+
+    if (rowRef)
+        rowRef(rowResult);
 }
 
 /*!
@@ -2448,27 +2394,27 @@ NOT YET IMPLEMENTED
 {
     var oldNumberOfRows = _numberOfRows;
 
-    _numberOfRows = nil;
+    _numberOfRows = [self _numberOfRows];
+
     _cachedRowHeights = [];
 
     // this line serves two purposes
     // 1. it updates the _numberOfRows cache with the -numberOfRows call
     // 2. it updates the row height cache if needed
-    [self noteHeightOfRowsWithIndexesChanged:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self numberOfRows])]];
+    [self _noteHeightOfRowsWithIndexesChanged:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, _numberOfRows)]];
 
     // remove row indexes from the selection if they no longer exist
     var hangingSelections = oldNumberOfRows - _numberOfRows;
 
     if (hangingSelections > 0)
     {
-        // For optimal performance, only send a notification if indices were actually removed.
         var previousSelectionCount = [_selectedRowIndexes count];
-
         [_selectedRowIndexes removeIndexesInRange:CPMakeRange(_numberOfRows, hangingSelections)];
 
         if (![_selectedRowIndexes containsIndex:[self selectedRow]])
             _lastSelectedRow = CPNotFound;
 
+        // For optimal performance, only send a notification if indices were actually removed.
         if (previousSelectionCount > [_selectedRowIndexes count])
             [self _noteSelectionDidChange];
     }
@@ -2490,7 +2436,7 @@ NOT YET IMPLEMENTED
 
     @param anIndexSet an index set containing the indexes of the rows which changed height
 */
-- (void)noteHeightOfRowsWithIndexesChanged:(CPIndexSet)anIndexSet
+- (void)_noteHeightOfRowsWithIndexesChanged:(CPIndexSet)anIndexSet
 {
     if (!HAS_VARIABLE_ROW_HEIGHTS())
         return;
@@ -2516,6 +2462,17 @@ NOT YET IMPLEMENTED
         _cachedRowHeights[i] = {y:y, height:height};
         y += height + _intercellSpacing.height;
     }
+}
+
+/*!
+    Informs the receiver that the rows specified in indexSet have changed height.
+
+    @param anIndexSet an index set containing the indexes of the rows which changed height
+*/
+- (void)noteHeightOfRowsWithIndexesChanged:(CPIndexSet)anIndexSet
+{
+    [self _noteHeightOfRowsWithIndexesChanged:anIndexSet];
+    [self _reloadDataViews];
 }
 
 /*!
@@ -2861,35 +2818,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     if (_delegate === aDelegate)
         return;
 
-    var defaultCenter = [CPNotificationCenter defaultCenter];
-
-    if (_delegate)
-    {
-        if ([_delegate respondsToSelector:@selector(tableViewColumnDidMove:)])
-            [defaultCenter
-                removeObserver:_delegate
-                          name:CPTableViewColumnDidMoveNotification
-                        object:self];
-
-        if ([_delegate respondsToSelector:@selector(tableViewColumnDidResize:)])
-            [defaultCenter
-                removeObserver:_delegate
-                          name:CPTableViewColumnDidResizeNotification
-                        object:self];
-
-        if ([_delegate respondsToSelector:@selector(tableViewSelectionDidChange:)])
-            [defaultCenter
-                removeObserver:_delegate
-                          name:CPTableViewSelectionDidChangeNotification
-                        object:self];
-
-        if ([_delegate respondsToSelector:@selector(tableViewSelectionIsChanging:)])
-            [defaultCenter
-                removeObserver:_delegate
-                          name:CPTableViewSelectionIsChangingNotification
-                        object:self];
-    }
-
     _delegate = aDelegate;
     _implementedDelegateMethods = 0;
 
@@ -2964,32 +2892,16 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         _implementedDelegateMethods |= CPTableViewDelegate_tableView_shouldReorderColumn_toColumn_;
 
     if ([_delegate respondsToSelector:@selector(tableViewColumnDidMove:)])
-        [defaultCenter
-            addObserver:_delegate
-            selector:@selector(tableViewColumnDidMove:)
-            name:CPTableViewColumnDidMoveNotification
-            object:self];
+        _implementedDelegateMethods |= CPTableViewDelegate_tableViewColumnDidMove_;
 
     if ([_delegate respondsToSelector:@selector(tableViewColumnDidResize:)])
-        [defaultCenter
-            addObserver:_delegate
-            selector:@selector(tableViewColumnDidResize:)
-            name:CPTableViewColumnDidResizeNotification
-            object:self];
+        _implementedDelegateMethods |= CPTableViewDelegate_tableViewColumnDidResize_;
 
     if ([_delegate respondsToSelector:@selector(tableViewSelectionDidChange:)])
-        [defaultCenter
-            addObserver:_delegate
-            selector:@selector(tableViewSelectionDidChange:)
-            name:CPTableViewSelectionDidChangeNotification
-            object:self];
+        _implementedDelegateMethods |= CPTableViewDelegate_tableViewSelectionDidChange_;
 
     if ([_delegate respondsToSelector:@selector(tableViewSelectionIsChanging:)])
-        [defaultCenter
-            addObserver:_delegate
-            selector:@selector(tableViewSelectionIsChanging:)
-            name:CPTableViewSelectionIsChangingNotification
-            object:self];
+        _implementedDelegateMethods |= CPTableViewDelegate_tableViewSelectionIsChanging_;
 }
 
 /*!
@@ -3044,6 +2956,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 /*!
     @ignore
 */
+
 - (void)_changeSortDescriptorsForClickOnColumn:(CPInteger)column
 {
     var tableColumn = [_tableColumns objectAtIndex:column],
@@ -3183,86 +3096,115 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (CPView)dragViewForRowsWithIndexes:(CPIndexSet)theDraggedRows tableColumns:(CPArray)theTableColumns event:(CPEvent)theDragEvent offset:(CGPoint)dragViewOffset
 {
-    var bounds = [self bounds],
-        view = [[CPView alloc] initWithFrame:bounds];
+    var firstRowFrame  = [self frameOfDataViewAtColumn:0 row:[theDraggedRows firstIndex]],
+        lastRowFrame   = [self frameOfDataViewAtColumn:0 row:[theDraggedRows lastIndex]],
+        dragViewHeight = CGRectGetMaxY(lastRowFrame) - CGRectGetMinY(firstRowFrame);
 
-    [view setAlphaValue:0.7];
+    var bounds = CGRectMake(0, 0, CGRectGetWidth([self bounds]), dragViewHeight),
+        dragView = [[CPView alloc] initWithFrame:bounds];
+
+    [dragView setAlphaValue:0.7];
+//    [dragView setBackgroundColor:[CPColor colorWithWhite:1 alpha:0.5]];
 
     // We have to fetch all the data views for the selected rows and columns
     // After that we can copy these add them to a transparent drag view and use that drag view
     // to make it appear we are dragging images of those rows (as you would do in regular Cocoa)
-    var columnIndex = [theTableColumns count];
-    while (columnIndex--)
+    [self _enumerateViewsInRows:theDraggedRows tableColumns:theTableColumns usingBlock:function(v, row, tableColumn, stop)
     {
-        var tableColumn = [theTableColumns objectAtIndex:columnIndex],
-            row = [theDraggedRows firstIndex];
+        var column = [_tableColumns indexOfObjectIdenticalTo:tableColumn],
+            newDataView = [self preparedViewAtColumn:column row:row],
+            origin = [newDataView frame].origin;
 
-        while (row !== CPNotFound)
-        {
-            var dataView = [self _newDataViewForRow:row tableColumn:tableColumn];
+        origin.y -= CGRectGetMinY(firstRowFrame);
+        [newDataView setFrameOrigin:origin];
 
-            [dataView setFrame:[self frameOfDataViewAtColumn:columnIndex row:row]];
-
-            [self _setObjectValueForTableColumn:tableColumn row:row forView:dataView];
-            [view addSubview:dataView];
-            [_draggingViews addObject:dataView];
-
-            row = [theDraggedRows indexGreaterThanIndex:row];
-        }
-    }
+        [dragView addSubview:newDataView];
+    }];
 
     var dragPoint = [self convertPoint:[theDragEvent locationInWindow] fromView:nil];
     dragViewOffset.x = CGRectGetWidth(bounds) / 2 - dragPoint.x;
     dragViewOffset.y = CGRectGetHeight(bounds) / 2 - dragPoint.y;
 
-    return view;
+    return dragView;
 }
 
-/*!
-    @ignore
-    // Fetches all the data views (from the datasource) for the column and it's visible rows
-    // Copy the dataviews add them to a transparent drag view and use that drag view
-    // to make it appear we are dragging images of those rows (as you would do in regular Cocoa)
-*/
-- (CPView)_dragViewForColumn:(CPInteger)theColumnIndex event:(CPEvent)theDragEvent offset:(CGPoint)theDragViewOffset
+- (CPView)_dragViewForColumn:(CPInteger)columnIndex
 {
-    var dragView = [[_CPColumnDragView alloc] initWithLineColor:[self gridColor]],
-        tableColumn = [[self tableColumns] objectAtIndex:theColumnIndex],
-        defaultRowHeight = [self valueForThemeAttribute:@"default-row-height"],
-        bounds = CGRectMake(0.0, 0.0, [tableColumn width], CGRectGetHeight([self exposedRect]) + defaultRowHeight),
-        columnRect = [self rectOfColumn:theColumnIndex],
-        headerView = [tableColumn headerView],
-        row = [_exposedRows firstIndex];
+    var headerFrame = [_headerView frame],
+        visibleRect = [self visibleRect],
+        visibleRows = [self rowsInRect:visibleRect],
+        columnRect = [self rectOfColumn:columnIndex],
+        tableColumn = [[self tableColumns] objectAtIndex:columnIndex],
+        tableColumnUID = [tableColumn UID],
+        columnHeaderView = [tableColumn headerView],
+        columnHeaderFrame = [columnHeaderView frame],
+        frame = CGRectMake(MAX(CGRectGetMinX(columnRect) - CGRectGetMinX(visibleRect), 0.0),
+                            0.0,
+                            CGRectGetWidth(columnHeaderFrame),
+                            CGRectGetHeight(visibleRect) + CGRectGetHeight(headerFrame));
 
-    [dragView setFrame:bounds];
+    // We need a wrapper view around the header and column, this is what will be dragged
+    var dragView = [[_CPColumnDragDrawingView alloc] initWithFrame:frame];
 
-    while (row !== CPNotFound)
+    [dragView setTableView:self];
+    [dragView setColumnIndex:columnIndex];
+    [dragView setBackgroundColor:[CPColor clearColor]];
+    [dragView setAlphaValue:0.6];
+
+    // Now a view that clips the column data views, which itself is clipped to the content view
+    var columnVisRect = CGRectIntersection(columnRect, visibleRect);
+
+    frame = CGRectMake(0.0, CGRectGetHeight(headerFrame), CGRectGetWidth(columnRect), CGRectGetHeight(columnVisRect));
+
+    var columnClipView = [[CPView alloc] initWithFrame:frame];
+
+    [dragView addSubview:columnClipView];
+    [dragView setColumnClipView:columnClipView];
+    _draggedColumnIsSelected = [self isColumnSelected:columnIndex];
+
+    var columnLeft = CGRectGetMinX(columnRect),
+        offset = CGPointMake(columnLeft, CGRectGetMinY(visibleRect));
+
+    [self _enumerateViewsInRows:_exposedRows columns:[CPIndexSet indexSetWithIndex:columnIndex] usingBlock:function(dataView, row, column, stop)
     {
-        var dataView = [self _newDataViewForRow:row tableColumn:tableColumn],
-            dataViewFrame = [self frameOfDataViewAtColumn:theColumnIndex row:row];
+        [self _addDraggedDataView:dataView toView:columnClipView forColumn:column row:row offset:offset];
 
-        // Only one column is ever dragged so we just place the view at
-        dataViewFrame.origin.x = 0.0;
+        delete (_dataViewsForRows[row][tableColumnUID]);
+    }];
 
-        // Offset by table header height - scroll position
-        dataViewFrame.origin.y = ( CGRectGetMinY(dataViewFrame) - CGRectGetMinY([self exposedRect]) ) + defaultRowHeight;
-        [dataView setFrame:dataViewFrame];
+    // Add the column header view
+    columnHeaderFrame.origin = CGPointMakeZero();
 
-        [self _setObjectValueForTableColumn:tableColumn row:row forView:dataView];
-        [dragView addSubview:dataView];
-        [_draggingViews addObject:dataView];
+    var dragColumnHeaderView = [[_CPTableColumnHeaderView alloc] initWithFrame:columnHeaderFrame],
+        image = [columnHeaderView _indicatorImage];
 
-        row = [_exposedRows indexGreaterThanIndex:row];
-    }
+    [dragColumnHeaderView setStringValue:[columnHeaderView stringValue]];
+    [dragColumnHeaderView setThemeState:[columnHeaderView themeState]];
+    [dragColumnHeaderView _setIndicatorImage:image];
 
-    // Add a copy of the header view.
-    var columnHeaderView = [CPKeyedUnarchiver unarchiveObjectWithData:[CPKeyedArchiver archivedDataWithRootObject:headerView]];
-    [dragView addSubview:columnHeaderView];
+    // Give it a tag so it can be found later
+    [dragColumnHeaderView setTag:1];
 
-    [dragView setBackgroundColor:[CPColor whiteColor]];
-    [dragView setAlphaValue:0.7];
+    [dragView addSubview:dragColumnHeaderView];
+
+    // While dragging, the column is deselected in the table view
+    [_selectedColumnIndexes removeIndex:columnIndex];
+    [self setNeedsDisplay:YES];
 
     return dragView;
+}
+
+- (void)_addDraggedDataView:(CPView)aDataView toView:(CPView)aSuperview forColumn:(CPInteger)column row:(CPInteger)row offset:(CGPoint)offset
+{
+    var dataViewFrame = [self frameOfDataViewAtColumn:column row:row];
+
+    dataViewFrame.origin.x -= offset.x;
+    // Offset by table header height - scroll position
+    dataViewFrame.origin.y -= offset.y;
+
+    [aDataView setFrame:dataViewFrame];
+
+    [aSuperview addSubview:aDataView];
 }
 
 /*!
@@ -3421,8 +3363,10 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 /*!
     @ignore
 */
-- (id)_objectValueForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRowIndex
+- (id)_objectValueForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRowIndex useCache:(BOOL)useCache
 {
+    var objectValue;
+
     var tableColumnUID = [aTableColumn UID],
         tableColumnObjectValues = _objectValues[tableColumnUID];
 
@@ -3432,7 +3376,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         _objectValues[tableColumnUID] = tableColumnObjectValues;
     }
 
-    var objectValue = tableColumnObjectValues[aRowIndex];
+    if (useCache)
+        objectValue = tableColumnObjectValues[aRowIndex];
 
     // tableView:objectValueForTableColumn:row: is optional if content bindings are in place.
     if (objectValue === undefined)
@@ -3525,21 +3470,32 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     [self setNeedsDisplay:YES];
 
     // if we have any columns to remove do that here
-    if ([_differedColumnDataToRemove count])
+
+    if (_needsDifferedTableColumnRemove)
     {
-        for (var i = 0; i < _differedColumnDataToRemove.length; i++)
+        var removeCount = [_differedColumnDataToRemove count],
+            removeIndexes = [CPIndexSet indexSet];
+
+        for (var i = 0; i < removeCount; i++)
         {
             var data = _differedColumnDataToRemove[i],
-                column = data.column,
-                tableColumnUID = [column UID],
-                dataViews = _dataViewsForTableColumns[tableColumnUID];
+                tableColumn = data.column,
+                columnIdx = [_tableColumns indexOfObject:tableColumn];
 
-            for (var j = 0; j < [dataViews count]; j++)
-            {
-                [self _enqueueReusableDataView:[dataViews objectAtIndex:j]];
-            }
+            if (columnIdx !== CPNotFound)
+                [removeIndexes addIndex:columnIdx];
         }
+
+        var rowIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self numberOfRows])];
+        [self _unloadDataViewsInRows:rowIndexes columns:removeIndexes];
+
+        [_tableColumns removeObjectsAtIndexes:removeIndexes];
+
+        _dirtyTableColumnRangeIndex = 0;
+        [self _recalculateTableColumnRanges];
+
         [_differedColumnDataToRemove removeAllObjects];
+        _needsDifferedTableColumnRemove = NO;
     }
 
     // Now clear all the leftovers
@@ -3557,160 +3513,122 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 /*!
     @ignore
 */
-- (void)_unloadDataViewsInRows:(CPIndexSet)rows columns:(CPIndexSet)columns
+- (void)_unloadDataViewsInRows:(CPIndexSet)rowIndexes columns:(CPIndexSet)columnIndexes
 {
-    if (![rows count] || ![columns count])
+    if (![rowIndexes count] || ![columnIndexes count] || [columnIndexes lastIndex] >=  [_tableColumns count])
         return;
 
-    var rowArray = [],
-        columnArray = [];
+    // If and edited view is about to be unloaded, cleanup its state before enqueuing.
+    if ([columnIndexes containsIndex:_editingColumn] && [rowIndexes containsIndex:_editingRow])
+        [self _resignEditedView];
 
-    [rows getIndexes:rowArray maxCount:-1 inIndexRange:nil];
-    [columns getIndexes:columnArray maxCount:-1 inIndexRange:nil];
+    var tableColumns = [_tableColumns objectsAtIndexes:columnIndexes];
 
-    var columnIndex = 0,
-        columnsCount = columnArray.length;
-
-    for (; columnIndex < columnsCount; ++columnIndex)
+    [self _enumerateViewsInRows:rowIndexes tableColumns:tableColumns usingBlock:function(dataView, row, tableColumn, stop)
     {
-        var column = columnArray[columnIndex],
-            tableColumn = _tableColumns[column],
-            tableColumnUID = [tableColumn UID],
-            rowIndex = 0,
-            rowsCount = rowArray.length;
+        var dataViewsForRows = _dataViewsForRows[row],
+            tableColumnUID = [tableColumn UID];
 
-        for (; rowIndex < rowsCount; ++rowIndex)
-        {
-            var row = rowArray[rowIndex],
-                dataViews = _dataViewsForTableColumns[tableColumnUID];
+        delete (dataViewsForRows[tableColumnUID]);
 
-            if (!dataViews || row >= dataViews.length)
-                continue;
-
-            if (row === _editingRow && column === _editingColumn)
-                [[self window] makeFirstResponder:self];
-
-            var dataView = [dataViews objectAtIndex:row];
-
-            [self _sendDelegateWillRemoveView:dataView forTableColumn:tableColumn row:row];
-
-            [dataViews replaceObjectAtIndex:row withObject:nil];
-
-            [self _enqueueReusableDataView:dataView];
-        }
-    }
+        [self _sendDelegateWillRemoveView:dataView forTableColumn:tableColumn row:row];
+        [self _enqueueReusableDataView:dataView];
+    }];
 }
 
 /*!
     @ignore
 */
-- (void)_loadDataViewsInRows:(CPIndexSet)rows columns:(CPIndexSet)columns
+- (void)_loadDataViewsInRows:(CPIndexSet)rowIndexes columns:(CPIndexSet)columnIndexes
 {
-    if (![rows count] || ![columns count])
+    if (![rowIndexes count] || ![columnIndexes count])
         return;
-
-    var rowArray = [],
-        rowRects = [],
-        columnArray = [];
-
-    [rows getIndexes:rowArray maxCount:-1 inIndexRange:nil];
-    [columns getIndexes:columnArray maxCount:-1 inIndexRange:nil];
 
     UPDATE_COLUMN_RANGES_IF_NECESSARY();
 
-    var columnIndex = 0,
-        columnsCount = columnArray.length;
-
-    for (; columnIndex < columnsCount; ++columnIndex)
-    {
-        var column = columnArray[columnIndex],
-            tableColumn = _tableColumns[column];
-
-        if ([tableColumn isHidden] || tableColumn === _draggedColumn)
-            continue;
-
-        var tableColumnUID = [tableColumn UID];
-
-        if (!_dataViewsForTableColumns[tableColumnUID])
-            _dataViewsForTableColumns[tableColumnUID] = [];
-
-        var rowIndex = 0,
-            rowsCount = rowArray.length,
-            isColumnSelected = [_selectedColumnIndexes containsIndex:column];
-
-        for (; rowIndex < rowsCount; ++rowIndex)
+    if (_numberOfHiddenColumns > 0)
+        columnIndexes = [columnIndexes indexesPassingTest:function(idx, stop)
         {
-            var row = rowArray[rowIndex],
-                dataView = [self _newDataViewForRow:row tableColumn:tableColumn],
-                isButton = [dataView isKindOfClass:[CPButton class]],
-                isTextField = [dataView isKindOfClass:[CPTextField class]];
+            return ![_tableColumns[idx] isHidden];
+        }];
 
-            [dataView setFrame:[self frameOfDataViewAtColumn:column row:row]];
+    [rowIndexes enumerateIndexesUsingBlock:function(rowIndex, stopRow)
+    {
+        if (!_dataViewsForRows[rowIndex])
+            _dataViewsForRows[rowIndex] = {};
 
-            [self _setObjectValueForTableColumn:tableColumn row:row forView:dataView];
+        var dataViewsForRow = _dataViewsForRows[rowIndex],
+            isRowSelected = [self isRowSelected:rowIndex],
+            row = rowIndex;
 
-            if ((_selectionHighlightStyle !== CPTableViewSelectionHighlightStyleNone) &&
-                (isColumnSelected || [self isRowSelected:row]))
-            {
-                [dataView setThemeState:CPThemeStateSelectedDataView];
-            }
-            else
-                [dataView unsetThemeState:CPThemeStateSelectedDataView];
-
-            // FIX ME: for performance reasons we might consider diverging from cocoa and moving this to the reloadData method
-            if ([self _sendDelegateIsGroupRow:row])
-            {
-                [_groupRows addIndex:row];
-                [dataView setThemeState:CPThemeStateGroupRow];
-
-            }
-            else
-            {
-                [_groupRows removeIndexesInRange:CPMakeRange(row, 1)];
-                [dataView unsetThemeState:CPThemeStateGroupRow];
-            }
-
-            [self _sendDelegateWillDisplayView:dataView forTableColumn:tableColumn row:row];
-            [self setNeedsDisplay:YES];
+        [columnIndexes enumerateIndexesUsingBlock:function(columnIndex, stopCol)
+        {
+            var tableColumn = _tableColumns[columnIndex],
+                tableColumnUID = [tableColumn UID],
+                dataView = [self _preparedViewAtColumn:columnIndex row:row isRowSelected:isRowSelected];
 
             if ([dataView superview] !== self)
                 [self addSubview:dataView];
 
-            _dataViewsForTableColumns[tableColumnUID][row] = dataView;
+            dataViewsForRow[tableColumnUID] = dataView;
+        }];
+    }];
+}
 
-            if (_isViewBased)
-                continue;
+- (CPView)preparedViewAtColumn:(CPInteger)column row:(CPInteger)row
+{
+    return [self _preparedViewAtColumn:column row:row isRowSelected:[self isRowSelected:row]];
+}
 
-            if (isButton || (_editingCellIndex && _editingCellIndex.x === column && _editingCellIndex.y === row))
-            {
-                if (isTextField)
-                {
-                    [dataView setEditable:YES];
-                    [dataView setSendsActionOnEndEditing:YES];
-                    [dataView setSelectable:YES];
-                    [dataView selectText:nil];
-                    [dataView setBezeled:YES];
-                    [dataView setDelegate:self];
-                }
+- (CPView)_preparedViewAtColumn:(CPInteger)column row:(CPInteger)row isRowSelected:(BOOL)isRowSelected
+{
+    var tableColumn = _tableColumns[column],
+        tableColumnUID = [tableColumn UID],
+        dataView = [self _newDataViewForRow:row tableColumn:tableColumn];
 
-                [dataView setTarget:self];
-                [dataView setAction:@selector(_commitDataViewObjectValue:)];
-                dataView.tableViewEditedColumnObj = tableColumn;
-                dataView.tableViewEditedRowIndex = row;
-            }
-            else if (isTextField)
-            {
-                [dataView setEditable:NO];
-                [dataView setSelectable:NO];
-            }
+    [dataView setFrame:[self frameOfDataViewAtColumn:column row:row]];
+
+    [self _setObjectValueForTableColumn:tableColumn row:row forView:dataView];
+
+    if (_selectionHighlightStyle !== CPTableViewSelectionHighlightStyleNone && (isRowSelected || [self isColumnSelected:column]))
+        _BlockSelectView(dataView, row, column);
+    else
+        _BlockDeselectView(dataView, row, column);
+
+            // FIX ME: for performance reasons we might consider diverging from cocoa and moving this to the reloadData method
+    if (_implementedDelegateMethods & CPTableViewDelegate_tableView_isGroupRow_)
+    {
+        if ([_delegate tableView:self isGroupRow:row])
+        {
+            [_groupRows addIndex:row];
+            [dataView setThemeState:CPThemeStateGroupRow];
         }
+        else
+        {
+            [_groupRows removeIndexesInRange:CPMakeRange(row, 1)];
+            [dataView unsetThemeState:CPThemeStateGroupRow];
+        }
+
+        [self setNeedsDisplay:YES];
     }
+
+    if (!_isViewBased)
+        [self _setEditingState:NO forView:dataView];
+
+    [self _sendDelegateWillDisplayView:dataView forTableColumn:tableColumn row:row];
+
+    return dataView;
 }
 
 - (void)_setObjectValueForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow forView:(CPView)aDataView
 {
-    if ([self _dataSourceRespondsToObjectValueForTableColumn])
-        [aDataView setObjectValue:[self _objectValueForTableColumn:aTableColumn row:aRow]];
+    [self _setObjectValueForTableColumn:aTableColumn row:aRow forView:aDataView useCache:!_invalidateObjectValuesCache];
+}
+
+- (void)_setObjectValueForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow forView:(CPView)aDataView useCache:(BOOL)useCache
+{
+    if (_implementedDataSourceMethods & CPTableViewDataSource_tableView_objectValueForTableColumn_row_)
+        [aDataView setObjectValue:[self _objectValueForTableColumn:aTableColumn row:aRow useCache:useCache]];
 
     // This gives the table column an opportunity to apply its bindings.
     // It will override the value set above if there is a binding.
@@ -3734,97 +3652,12 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 /*!
     @ignore
 */
-- (void)_layoutDataViewsInRows:(CPIndexSet)rows columns:(CPIndexSet)columns
+- (void)_layoutViewsForRowIndexes:(CPIndexSet)rowIndexes columnIndexes:(CPIndexSet)columnIndexes
 {
-    var rowArray = [],
-        columnArray = [];
-
-    [rows getIndexes:rowArray maxCount:-1 inIndexRange:nil];
-    [columns getIndexes:columnArray maxCount:-1 inIndexRange:nil];
-
-    var columnIndex = 0,
-        columnsCount = columnArray.length;
-
-    for (; columnIndex < columnsCount; ++columnIndex)
+    [self _enumerateViewsInRows:rowIndexes columns:columnIndexes usingBlock:function(view, row, column, stop)
     {
-        var column = columnArray[columnIndex],
-            tableColumn = _tableColumns[column],
-            tableColumnUID = [tableColumn UID],
-            dataViewsForTableColumn = _dataViewsForTableColumns[tableColumnUID],
-            rowIndex = 0,
-            rowsCount = rowArray.length;
-
-        if (dataViewsForTableColumn)
-        {
-            for (; rowIndex < rowsCount; ++rowIndex)
-            {
-                var row = rowArray[rowIndex],
-                    dataView = dataViewsForTableColumn[row];
-
-                [dataView setFrame:[self frameOfDataViewAtColumn:column row:row]];
-            }
-        }
-    }
-}
-
-/*!
-    @ignore
-    The action for any dataview that supports editing. This will only be called when the value was changed.
-    The table view becomes the first responder after user is done editing a dataview.
-*/
-- (void)_commitDataViewObjectValue:(id)sender
-{
-    /*
-        makeFirstResponder at the end of this method causes the dataview to resign.
-        If the dataview resigning triggers the action (as CPTextField does), we come right
-        back here and start an infinite loop. So we have to check this flag first.
-    */
-    if ([sender respondsToSelector:@selector(sendsActionOnEndEditing)] && [sender sendsActionOnEndEditing] && _editingCellIndex === nil)
-        return;
-
-    _editingCellIndex = nil;
-
-    [self _sendDataSourceSetObjectValue:[sender objectValue] forTableColumn:sender.tableViewEditedColumnObj row:sender.tableViewEditedRowIndex];
-
-    // Allow the column binding to do a reverse set. Note that we do this even if the data source method above
-    // is implemented.
-    [sender.tableViewEditedColumnObj _reverseSetDataView:sender forRow:sender.tableViewEditedRowIndex];
-
-    if ([sender respondsToSelector:@selector(setEditable:)])
-        [sender setEditable:NO];
-
-    if ([sender respondsToSelector:@selector(setSelectable:)])
-        [sender setSelectable:NO];
-
-    if ([sender isKindOfClass:[CPTextField class]])
-        [sender setBezeled:NO];
-
-    [self reloadDataForRowIndexes:[CPIndexSet indexSetWithIndex:sender.tableViewEditedRowIndex]
-                    columnIndexes:[CPIndexSet indexSetWithIndex:[_tableColumns indexOfObject:sender.tableViewEditedColumnObj]]];
-
-    [[self window] makeFirstResponder:self];
-
-}
-
-/*!
-    @ignore
-    Blur notification handler for editing textfields. This will always be called when a textfield loses focus.
-    This method is responsible for restoring the dataview to its non editable state.
-*/
-- (void)controlTextDidBlur:(CPNotification)theNotification
-{
-    var dataView = [theNotification object];
-
-    if ([dataView respondsToSelector:@selector(setEditable:)])
-        [dataView setEditable:NO];
-
-    if ([dataView respondsToSelector:@selector(setSelectable:)])
-        [dataView setSelectable:NO];
-
-    if ([dataView isKindOfClass:[CPTextField class]])
-        [dataView setBezeled:NO];
-
-    _editingCellIndex = nil;
+        [view setFrame:[self frameOfDataViewAtColumn:column row:row]];
+    }];
 }
 
 /*!
@@ -3835,22 +3668,30 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     var view = nil;
 
     if (_viewForTableColumnRowSelector)
-        view = objj_msgSend(self, _viewForTableColumnRowSelector, aTableColumn, aRow);
+        view = self.isa.objj_msgSend2(self, _viewForTableColumnRowSelector, aTableColumn, aRow);
 
     if (!view)
     {
-        var columnIdentifier = [aTableColumn identifier];
+        // For cell-based tables, use the dataView prototype identifier as view identifier
+        // instead of column identifier because 1/ the column identifier may be nil
+        // and 2/ the tableColumn dataView may change after the column identifier was set.
+        var identifier;
 
-        // For Pre-Lion nibs, there is no automatic identifier for table column; use UID as identifier.
-        if (!columnIdentifier)
-            columnIdentifier = [aTableColumn UID];
+        if (_isViewBased)
+        {
+            identifier = [aTableColumn identifier];
+            view = [self makeViewWithIdentifier:identifier owner:_delegate];
+        }
+        else
+        {
+            identifier = [[aTableColumn dataView] UID];
+            view = [self makeViewWithIdentifier:identifier owner:_delegate];
 
-        view = [self makeViewWithIdentifier:columnIdentifier owner:_delegate];
+            if (!view)
+                view = [aTableColumn _newDataView];
+        }
 
-        if (!view)
-            view = [aTableColumn _newDataView];
-
-        [view setIdentifier:columnIdentifier];
+        [view setIdentifier:identifier];
     }
 
     return view;
@@ -3873,7 +3714,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     if (!anIdentifier)
         return nil;
 
-    var view,
+    var view = nil,
         // See if we have some reusable views available
         reusableViews = _cachedDataViews[anIdentifier];
 
@@ -3882,6 +3723,64 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     // Otherwise see if we have a view in the cib with this identifier
     else if (_isViewBased)
         view = [self _unarchiveViewWithIdentifier:anIdentifier owner:anOwner];
+
+    return view;
+}
+
+/*!
+    Returns an instance of CPView
+
+    @param column The index of the column in the tableColumn array
+    @param row The index of the row
+    @param makeIfNecessary YES if a view is required, NO if you want to update properties on a view, if one is available.
+
+    @discussion
+    This method first attempts to return an available view, which is generally in the visible area. If there is no available view, and makeIfNecessary is YES, a prepared temporary view is returned. If makeIfNecessary is NO, and the view is not available, nil will be returned.
+
+    An exception will be thrown if row is an invalid row index and if column is an invalid column index
+*/
+- (id)viewAtColumn:(CPInteger)column row:(CPInteger)row makeIfNecessary:(BOOL)makeIfNecessary
+{
+    if (row > (_numberOfRows - 1))
+        [CPException raise:CPInvalidArgumentException
+                    reason:@"Row " + row + " out of row range [0-" + (_numberOfRows - 1) + "] for rowViewAtRow:createIfNeeded:"];
+
+    if (column > (NUMBER_OF_COLUMNS() - 1))
+        [CPException raise:CPInvalidArgumentException
+                    reason:@"Column " + column + " out of row range [0-" + (NUMBER_OF_COLUMNS ()- 1) + "] for rowViewAtRow:createIfNeeded:"];
+
+    var dataViewsForRow = _dataViewsForRows[row],
+        tableColumn = _tableColumns[column],
+        tableColumnUID = [tableColumn UID],
+        view = dataViewsForRow ? dataViewsForRow[tableColumnUID] : nil;
+
+    if (!makeIfNecessary)
+        return view || nil;
+
+    if (!view)
+    {
+        if (!dataViewsForRow)
+        {
+            dataViewsForRow = {};
+            _dataViewsForRows[row] = dataViewsForRow;
+        }
+
+        // Here we will add this view to the tableView and add it to the exposedRows adn columns.
+        // The view will be deleted if necessary during the next run loop cycle of the table view
+        // This is how cocoa works
+        view = [self preparedViewAtColumn:column row:row];
+
+        if ([view superview] !== self)
+            [self addSubview:view];
+
+        dataViewsForRow[tableColumnUID] = view;
+
+        [_exposedRows addIndex:row];
+        [_exposedColumns addIndex:column];
+
+        // Make sure to layout the tableView again
+        [self setNeedsLayout];
+    }
 
     return view;
 }
@@ -3940,6 +3839,88 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 }
 
 /*!
+    Allows the enumeration of all the table views that are known to the table view.
+
+    @param handler The function to apply to elements in the set.
+
+    The function takes three arguments:
+
+    @param dataView
+    The view for the column and row.
+    @param column
+    The column index of the view.
+    @param row
+    The row index of the view.
+*/
+
+- (void)enumerateAvailableViewsUsingBlock:(Function/*CPView *dataView, CPInteger row, CPInteger column*, @ref stop*/)handler
+{
+    [self reloadData];
+
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+    [self _enumerateViewsInRows:_exposedRows columns:_exposedColumns usingBlock:handler];
+}
+
+/*!
+    @ignore
+*/
+
+- (void)_enumerateViewsInRows:(CPIndexSet)rowIndexes columns:(CPIndexSet)columnIndexes usingBlock:(Function/*CPView dataView, CPInteger row, CPInteger column, @ref stop*/)handler
+{
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+    [rowIndexes enumerateIndexesUsingBlock:function(rowIndex, stopRow)
+    {
+        var dataViewsForRow = _dataViewsForRows[rowIndex];
+
+        if (!dataViewsForRow)
+            return;
+
+        var row = rowIndex;
+
+        [columnIndexes enumerateIndexesUsingBlock:function(columnIndex, stopCol)
+        {
+            var tableColumnUID = [_tableColumns[columnIndex] UID],
+                view = dataViewsForRow[tableColumnUID];
+
+            if (view)
+                handler(view, row, columnIndex, stopCol);
+
+            if (stopCol())
+                stopRow(YES);
+        }];
+    }];
+}
+
+- (void)_enumerateViewsInRows:(CPIndexSet)rowIndexes tableColumns:(CPArray)tableColumns usingBlock:(Function/*CPView dataView, CPInteger row, CPtableColumn tableColumn, CPInteger column, @ref stop*/)handler
+{
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+    [rowIndexes enumerateIndexesUsingBlock:function(rowIndex, stopRow)
+    {
+        var dataViewsForRow = _dataViewsForRows[rowIndex];
+
+        if (!dataViewsForRow)
+            return;
+
+        var row = rowIndex;
+
+        [tableColumns enumerateObjectsUsingBlock:function(tableColumn, idx, stopCol)
+        {
+            var tableColumnUID = [tableColumn UID],
+                view = dataViewsForRow[tableColumnUID];
+
+            if (view)
+                handler(view, row, tableColumn, stopCol);
+
+            if (stopCol())
+                stopRow(YES);
+        }];
+    }];
+}
+
+/*!
     @ignore
 */
 - (void)_enqueueReusableDataView:(CPView)aDataView
@@ -3949,6 +3930,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     // FIXME: yuck!
     var identifier = [aDataView identifier];
+
+    if ([aDataView hasThemeState:CPThemeStateSelectedDataView])
+        [aDataView unsetThemeState:CPThemeStateSelectedDataView];
 
     if (!_cachedDataViews[identifier])
         _cachedDataViews[identifier] = [aDataView];
@@ -4025,9 +4009,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (BOOL)_isFocused
 {
-    var isEditing = _editingRow !== CPNotFound || _editingCellIndex;
-
-    return [[self window] isKeyWindow] && ([[self window] firstResponder] === self || isEditing);
+    return [[self window] isKeyWindow] && ([[self window] firstResponder] === self || _editingRow !== CPNotFound);
 }
 
 /*!
@@ -4248,7 +4230,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     while (count--)
     {
         var currentIndex = indexes[count],
-            rowRect = CGRectIntersection(objj_msgSend(self, rectSelector, currentIndex), aRect);
+            rowRect = CGRectIntersection(self.isa.objj_msgSend1(self, rectSelector, currentIndex), aRect);
 
         // group rows get the same highlight style as other rows if they're source list...
         if (!drawGradient)
@@ -4322,7 +4304,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     for (var i = 0; i < count2; i++)
     {
-         var rect = objj_msgSend(self, rectSelector, indexes[i]),
+         var rect = self.isa.objj_msgSend1(self, rectSelector, indexes[i]),
              minX = CGRectGetMinX(rect) - 0.5,
              maxX = CGRectGetMaxX(rect) - 0.5,
              minY = CGRectGetMinY(rect) - 0.5,
@@ -4453,39 +4435,17 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (void)viewWillMoveToSuperview:(CPView)aView
 {
-    var superview = [self superview],
-        defaultCenter = [CPNotificationCenter defaultCenter];
-
-    if (superview)
-    {
-        [defaultCenter
-            removeObserver:self
-                      name:CPViewFrameDidChangeNotification
-                    object:superview];
-
-        [defaultCenter
-            removeObserver:self
-                      name:CPViewBoundsDidChangeNotification
-                    object:superview];
-    }
-
     if ([aView isKindOfClass:[CPClipView class]])
     {
-        [aView setPostsFrameChangedNotifications:YES];
-        [aView setPostsBoundsChangedNotifications:YES];
-
-        [defaultCenter
-            addObserver:self
-               selector:@selector(superviewFrameChanged:)
-                   name:CPViewFrameDidChangeNotification
-                 object:aView];
-
-        [defaultCenter
-            addObserver:self
-               selector:@selector(superviewBoundsChanged:)
-                   name:CPViewBoundsDidChangeNotification
-                 object:aView];
+        _observedClipView = aView;
     }
+    else
+    {
+        [self _stopObservingClipView];
+        _observedClipView = nil;
+    }
+
+    [super viewWillMoveToSuperview:aView];
 }
 
 /*!
@@ -4526,6 +4486,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     [[self window] makeFirstResponder:self];
 
     var row = [self rowAtPoint:aPoint];
+
+    _clickedRow = row;
+    _clickedColumn = [self columnAtPoint:aPoint];
 
     // If the user clicks outside a row then deselect everything.
     if (row < 0 && _allowsEmptySelection)
@@ -4589,6 +4552,12 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     }
     else
         [CPApp sendEvent:anEvent];
+
+    if ([anEvent type] == CPLeftMouseUp)
+    {
+        _clickedRow = CPNotFound;
+        _clickedColumn = CPNotFound;
+    }
 }
 
 /*
@@ -4597,6 +4566,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 - (BOOL)continueTracking:(CGPoint)lastPoint at:(CGPoint)aPoint
 {
     var row = [self rowAtPoint:aPoint];
+
+    _clickedRow = row;
+    _clickedColumn = [self columnAtPoint:aPoint];
 
     // begin the drag is the datasource lets us, we've move at least +-3px vertical or horizontal,
     // or we're dragging from selected rows and we haven't begun a drag session
@@ -4638,7 +4610,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
                 }
 
                 var bounds = [view bounds],
-                    viewLocation = CGPointMake(aPoint.x - CGRectGetWidth(bounds) / 2 + offset.x, aPoint.y - CGRectGetHeight(bounds) / 2 + offset.y);
+                    firstRowFrame = [self frameOfDataViewAtColumn:0 row:[_draggedRowIndexes firstIndex]],
+                    viewLocation = CGPointMake(aPoint.x - CGRectGetWidth(bounds) / 2 + offset.x, aPoint.y - CGRectGetHeight(bounds) / 2 + offset.y + CGRectGetMinY(firstRowFrame));
+
                 [self dragView:view at:viewLocation offset:CGPointMakeZero() event:[CPApp currentEvent] pasteboard:pboard source:self slideBack:YES];
                 _startTrackingPoint = nil;
 
@@ -4686,9 +4660,12 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         rowIndex,
         shouldEdit = YES;
 
+    _clickedRow = [self rowAtPoint:aPoint];
+    _clickedColumn = [self columnAtPoint:aPoint];
+
     if ([self _dataSourceRespondsToWriteRowsWithIndexesToPasteboard])
     {
-        rowIndex = [self rowAtPoint:aPoint];
+        rowIndex = _clickedRow;
 
         if (rowIndex !== -1)
         {
@@ -4710,7 +4687,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         && ([self _dataSourceRespondsToSetObjectValueForTableColumnRow]
             || [self infoForBinding:@"content"]))
     {
-        columnIndex = [self columnAtPoint:lastPoint];
+        columnIndex = _clickedColumn;
 
         if (columnIndex !== -1)
         {
@@ -4724,7 +4701,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
                 {
                     if ([self _sendDelegateShouldEditTableColumn:column row:rowIndex])
                     {
-                        [self editColumn:columnIndex row:rowIndex withEvent:nil select:YES];
+                        [self editColumn:columnIndex row:rowIndex withEvent:[CPApp currentEvent] select:YES];
                         return;
                     }
                 }
@@ -4735,11 +4712,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     //double click actions
     if ([[CPApp currentEvent] clickCount] === 2 && _doubleAction)
-    {
-        _clickedRow = [self rowAtPoint:aPoint];
-        _clickedColumn = [self columnAtPoint:lastPoint];
         [self sendAction:_doubleAction to:_target];
-    }
 }
 
 /*
@@ -4792,7 +4765,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     _retargetedDropRow = nil;
     _draggedRowIndexes = [CPIndexSet indexSet];
     [_dropOperationFeedbackView removeFromSuperview];
-    [self _enqueueDraggingViews];
 }
 
 /*
@@ -4889,9 +4861,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     if (_retargetedDropRow !== nil)
         row = _retargetedDropRow;
+
     if (_retargetedDropOperation !== nil)
         dropOperation = _retargetedDropOperation;
-
 
     if (dropOperation === CPTableViewDropOn && row >= numberOfRows)
         row = numberOfRows - 1;
@@ -4900,10 +4872,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     if (row === -1)
         rect = [self exposedRect];
-
     else if (dropOperation === CPTableViewDropAbove)
         rect = [self _rectForDropHighlightViewBetweenUpperRow:row - 1 andLowerRow:row offset:location];
-
     else
         rect = [self _rectForDropHighlightViewOnRow:row];
 
@@ -4938,7 +4908,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         row = _retargetedDropRow;
 
     if (row === nil)
-        var row = [self _proposedRowAtPoint:location];
+        row = [self _proposedRowAtPoint:location];
 
     return [self _sendDataSourceAcceptDrop:sender row:row dropOperation:operation];
 }
@@ -4948,7 +4918,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (void)concludeDragOperation:(id)sender
 {
-    [self reloadData];
+    [self _reloadDataViews];
 }
 
 /*
@@ -4959,16 +4929,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 {
     [self _draggingEnded];
     [self draggedImage:aView endedAt:aLocation operation:anOperation];
-}
-
-- (void)_enqueueDraggingViews
-{
-    [_draggingViews enumerateObjectsUsingBlock:function(dataView, idx)
-    {
-        [self _enqueueReusableDataView:dataView];
-    }];
-
-    [_draggingViews removeAllObjects];
 }
 
 /*!
@@ -5067,6 +5027,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         postNotificationName:CPTableViewSelectionIsChangingNotification
                       object:self
                     userInfo:nil];
+
+    if (_implementedDelegateMethods & CPTableViewDelegate_tableViewSelectionIsChanging_)
+        [_delegate tableViewSelectionIsChanging:[[CPNotification alloc] initWithName:CPTableViewSelectionIsChangingNotification object:self userInfo:nil]];
 }
 
 /*!
@@ -5078,6 +5041,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         postNotificationName:CPTableViewSelectionDidChangeNotification
                       object:self
                     userInfo:nil];
+
+    if (_implementedDelegateMethods & CPTableViewDelegate_tableViewSelectionDidChange_)
+        [_delegate tableViewSelectionDidChange:[[CPNotification alloc] initWithName:CPTableViewSelectionDidChangeNotification object:self userInfo:nil]];
 }
 
 /*!
@@ -5119,44 +5085,135 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 {
     var hit = [super hitTest:aPoint];
 
-    if ([[CPApp currentEvent] type] == CPLeftMouseDown && [hit acceptsFirstResponder] && ![self isRowSelected:[self rowForView:hit]])
-        return self;
+    if ([[CPApp currentEvent] type] !== CPLeftMouseDown)
+        return hit;
 
-    return hit;
+    return [self _hitTest:hit];
 }
 
-- (void)_startObservingFirstResponder
+- (id)_hitTest:(CPView)aView
 {
-    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_firstResponderDidChange:) name:_CPWindowDidChangeFirstResponderNotification object:[self window]];
+    var column,
+        row;
+
+    if ([aView acceptsFirstResponder])
+    {
+        [self getColumn:@ref(column) row:@ref(row) forView:aView];
+
+        if (![self isRowSelected:row])
+        {
+            if (_selectionHighlightStyle == CPTableViewSelectionHighlightStyleNone)
+                return aView;
+
+            return self;
+        }
+    }
+    else if (!_isViewBased && [aView isKindOfClass:[CPControl class]] && ![aView isKindOfClass:[CPTextField class]])
+        [aView addObserver:self forKeyPath:@"objectValue" options:CPKeyValueObservingOptionOld | CPKeyValueObservingOptionNew context:"editing"];
+
+    return aView;
 }
 
-- (void)_stopObservingFirstResponder
+- (void)_removeObservers
 {
-    [[CPNotificationCenter defaultCenter] removeObserver:self name:_CPWindowDidChangeFirstResponderNotification object:[self window]];
+    if (!_isObserving)
+        return;
+
+    [self _stopObservingClipView];
+    [super _removeObservers];
+}
+
+- (void)_addObservers
+{
+    if (_isObserving)
+        return;
+
+    [self _startObservingClipView];
+    [super _addObservers];
+}
+
+/*!
+    Called when the receiver is about to be moved to a new window.
+    @param aWindow the window to which the receiver will be moved.
+*/
+- (void)viewWillMoveToWindow:(CPWindow)aWindow
+{
+    [super viewWillMoveToWindow:aWindow];
+
+    [self _stopObservingFirstResponderForWindow:[self window]];
+
+    if (aWindow)
+        [self _startObservingFirstResponderForWindow:aWindow];
+}
+
+- (void)_startObservingClipView
+{
+    if (!_observedClipView)
+        return;
+
+    var defaultCenter = [CPNotificationCenter defaultCenter];
+
+    [_observedClipView setPostsFrameChangedNotifications:YES];
+    [_observedClipView setPostsBoundsChangedNotifications:YES];
+
+    [defaultCenter addObserver:self
+                          selector:@selector(superviewFrameChanged:)
+                              name:CPViewFrameDidChangeNotification
+                            object:_observedClipView];
+
+    [defaultCenter addObserver:self
+                      selector:@selector(superviewBoundsChanged:)
+                          name:CPViewBoundsDidChangeNotification
+                        object:_observedClipView];
+}
+
+- (void)_stopObservingClipView
+{
+    if (!_observedClipView)
+        return;
+
+    var defaultCenter = [CPNotificationCenter defaultCenter];
+
+    [defaultCenter removeObserver:self
+                             name:CPViewFrameDidChangeNotification
+                           object:_observedClipView];
+
+    [defaultCenter removeObserver:self
+                          name:CPViewBoundsDidChangeNotification
+                        object:_observedClipView];
+}
+
+- (void)_startObservingFirstResponderForWindow:(CPWindow)aWindow
+{
+    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_firstResponderDidChange:) name:_CPWindowDidChangeFirstResponderNotification object:aWindow];
+}
+
+- (void)_stopObservingFirstResponderForWindow:(CPWindow)aWindow
+{
+    [[CPNotificationCenter defaultCenter] removeObserver:self name:_CPWindowDidChangeFirstResponderNotification object:aWindow];
 }
 
 - (void)_firstResponderDidChange:(CPNotification)aNotification
 {
-    var responder = [[self window] firstResponder];
+    var responder = [[self window] firstResponder],
+        column,
+        row;
 
-    if (![responder isKindOfClass:[CPView class]] || ![responder isDescendantOf:self])
-    {
-        _editingRow = CPNotFound;
-        _editingColumn = CPNotFound;
+    [self getColumn:@ref(column) row:@ref(row) forView:responder];
 
-        // This is needed to unset the themeState firstResponder of the tableView
-        [self _notifyViewDidResignFirstResponder];
-        return;
-    }
-
-    _editingRow = [self rowForView:responder];
-    _editingColumn = [self columnForView:responder];
+    _editingRow = row;
+    _editingColumn = column;
 
     // We want to keep the 'First Responder' theme state for the table view as a whole, even when a subview is being edited.
     // This makes sure the theming effects of a focused table remain in effect even as cells are being edited in it.
-    [self _notifyViewDidBecomeFirstResponder];
+    // Check if the firstResponder is outside the tableview:
+    if (responder !== self && _editingRow == CPNotFound && _editingColumn == CPNotFound)
+        [self _notifyViewDidResignFirstResponder];
+    else
+        [self _notifyViewDidBecomeFirstResponder];
 
-    if (_editingRow !== CPNotFound && [responder isKindOfClass:[CPTextField class]] && ![responder isBezeled])
+    // This is for cell-based tables only. In view-based mode, we do not change the textfield apprearence during an edit.
+    if (!_isViewBased && _editingRow !== CPNotFound && [responder isKindOfClass:[CPTextField class]] && [responder isEditable] && [responder superview] == self)
     {
         [responder setBezeled:YES];
         [self _registerForEndEditingNote:responder];
@@ -5180,11 +5237,42 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     var textField = [aNote object];
 
     [self _unregisterForEndEditingNote:textField];
-    [textField setBezeled:NO];
 
-    var action = [self _disableActionIfExists:textField];
-    [textField resignFirstResponder];
-    [textField setAction:action];
+    if (!_isViewBased)
+    {
+        [self _setEditingState:NO forView:textField];
+        [self _commitDataViewObjectValue:textField forColumn:_editingColumn andRow:_editingRow];
+    }
+    else
+        [textField setBezeled:NO];
+
+    [self _resignFirstResponderWithoutSendingAction:textField];
+}
+
+- (void)_resignFirstResponderWithoutSendingAction:(CPView)aView
+{
+    var action = [self _disableActionIfExists:aView];
+
+    [[self window] makeFirstResponder:self];
+
+    if (action)
+        [aView setAction:action];
+}
+
+- (void)_resignEditedView
+{
+    var view = [[self window] firstResponder];
+
+    if ([view respondsToSelector:@selector(selectText:)])
+        [view selectText:nil];
+
+    if (!_isViewBased)
+    {
+        [self _unregisterForEndEditingNote:view];
+        [self _setEditingState:NO forView:view];
+    }
+
+    [self _resignFirstResponderWithoutSendingAction:view];
 }
 
 - (SEL)_disableActionIfExists:(CPView)aView
@@ -5196,6 +5284,98 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         [aView setAction:nil];
 
     return action;
+}
+
+/*!
+    @ignore
+    The action for any dataview that supports editing. This will only be called when the value was changed.
+    The table view becomes the first responder after user is done editing a dataview.
+*/
+- (void)_commitDataViewObjectValue:(id)aDataView forColumn:(CPInteger)column andRow:(CPInteger)row
+{
+    var editingTableColumn = _tableColumns[column];
+
+    if (_implementedDataSourceMethods & CPTableViewDataSource_tableView_setObjectValue_forTableColumn_row_)
+        [_dataSource tableView:self setObjectValue:[aDataView objectValue] forTableColumn:editingTableColumn row:row];
+
+    // Allow the column binding to do a reverse set. Note that we do this even if the data source method above
+    // is implemented.
+    [editingTableColumn _reverseSetDataView:aDataView forRow:row];
+
+    if (row !== CPNotFound && column !== CPNotFound)
+        [self _reloadDataForRowIndexes:[CPIndexSet indexSetWithIndex:row] columnIndexes:[CPIndexSet indexSetWithIndex:column]];
+}
+
+- (void)_setEditingState:(BOOL)editingState forView:(CPView)aView
+{
+    if ([aView respondsToSelector:@selector(setEditable:)])
+        [aView setEditable:editingState];
+
+    if ([aView respondsToSelector:@selector(setSelectable:)])
+        [aView setSelectable:editingState];
+
+    if ([aView isKindOfClass:[CPTextField class]])
+        [aView setBezeled:editingState];
+}
+
+/*!
+    Edits the dataview at a given row and column. This method is usually invoked automatically and should rarely be invoked directly
+    The row at supplied rowIndex must be selected otherwise an exception is thrown.
+
+    @param columnIndex the index of the column to edit
+    @param rowIndex the index of the row to edit
+    @param theEvent the mouse event which triggers the edit, you can pass nil
+    @param flag YES if the dataview text should be selected, otherwise NO. (NOT YET IMPLEMENTED)
+*/
+- (void)editColumn:(CPInteger)columnIndex row:(CPInteger)rowIndex withEvent:(CPEvent)theEvent select:(BOOL)flag
+{
+    if (![self isRowSelected:rowIndex])
+        [[CPException exceptionWithName:@"Error" reason:@"Attempt to edit row " + rowIndex + " when not selected." userInfo:nil] raise];
+
+    [self _reloadDataViewsSynchronously];
+    [self scrollRowToVisible:rowIndex];
+    [self scrollColumnToVisible:columnIndex];
+
+    // TODO Do something with flag.
+
+    _editingRow = rowIndex;
+    _editingColumn = columnIndex;
+
+    var editingTableColumnUID = [_tableColumns[_editingColumn] UID],
+        editingView = _dataViewsForRows[_editingRow][editingTableColumnUID];
+
+    [self _setEditingState:YES forView:editingView];
+    [[self window] makeFirstResponder:editingView];
+}
+
+- (void)observeValueForKeyPath:(CPString)keyPath ofObject:(id)object change:(CPDictionary)change context:(void)context
+{
+    if (context === "editing" && [object superview] === self)
+    {
+        [object removeObserver:self forKeyPath:keyPath];
+
+        var row,
+            column;
+
+        [self getColumn:@ref(column) row:@ref(row) forView:object];
+        [self _commitDataViewObjectValue:object forColumn:column andRow:row];
+    }
+}
+
+/*!
+    Returns the column of the currently edited cell, or CPNotFound if none.
+*/
+- (CPInteger)editedColumn
+{
+    return _editingColumn;
+}
+
+/*!
+    Returns the row of the currently edited cell, or CPNotFound if none.
+*/
+- (CPInteger)editedRow
+{
+    return _editingRow;
 }
 
 /*!
@@ -5573,17 +5753,17 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 - (void)_sendDelegateDidClickTableColumn:(CPInteger)column
 {
     if (_implementedDelegateMethods & CPTableViewDelegate_tableView_didClickTableColumn_)
-            [_delegate tableView:self didClickTableColumn:_tableColumns[column]];
+        [_delegate tableView:self didClickTableColumn:_tableColumns[column]];
 }
 
 /*!
     @ignore
     Call the delegate didDragTableColumn with the given tableColumn
 */
-- (void)_sendDelegateDidDragTableColumn:(CPInteger)column
+- (void)_sendDelegateDidDragTableColumn:(CPTableColumn)aTableColumn
 {
     if (_implementedDelegateMethods & CPTableViewDelegate_tableView_didDragTableColumn_)
-            [_delegate tableView:self didDragTableColumn:_tableColumns[column]];
+        [_delegate tableView:self didDragTableColumn:aTableColumn];
 }
 
 /*!
@@ -5593,7 +5773,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 - (void)_sendDelegateMouseDownInHeaderOfTableColumn:(CPInteger)column
 {
     if (_implementedDelegateMethods & CPTableViewDelegate_tableView_mouseDownInHeaderOfTableColumn_)
-            [_delegate tableView:self mouseDownInHeaderOfTableColumn:_tableColumns[column]];
+        [_delegate tableView:self mouseDownInHeaderOfTableColumn:_tableColumns[column]];
 }
 
 /*
@@ -5895,10 +6075,10 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
 - (void)bind:(CPString)aBinding toObject:(id)anObject withKeyPath:(CPString)aKeyPath options:(CPDictionary)options
 {
-    [super bind:aBinding toObject:anObject withKeyPath:aKeyPath options:options];
-
     if (aBinding == @"content")
         _contentBindingExplicitlySet = YES;
+
+    [super bind:aBinding toObject:anObject withKeyPath:aKeyPath options:options];
 }
 
 @end
@@ -5915,8 +6095,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         keyPath = [_info objectForKey:CPObservedKeyPathKey];
 
     _content = [destination valueForKey:keyPath];
-
-    [_source reloadData];
+    // FIXME: reload data for all rows or just exposed rows ?
+    [_source _reloadDataViews];
 }
 
 @end
@@ -5939,7 +6119,6 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
     CPTableViewGridStyleMaskKey             = @"CPTableViewGridStyleMaskKey",
     CPTableViewUsesAlternatingBackgroundKey = @"CPTableViewUsesAlternatingBackgroundKey",
     CPTableViewAlternatingRowColorsKey      = @"CPTableViewAlternatingRowColorsKey",
-    CPTableViewHeaderViewKey                = @"CPTableViewHeaderViewKey",
     CPTableViewCornerViewKey                = @"CPTableViewCornerViewKey",
     CPTableViewAutosaveNameKey              = @"CPTableViewAutosaveNameKey",
     CPTableViewArchivedReusableViewsKey     = @"CPTableViewArchivedReusableViewsKey";
@@ -6004,6 +6183,11 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 {
     [super encodeWithCoder:aCoder];
 
+    // We do this in order to avoid encoding the _tableDrawView, which
+    // should just automatically be created programmatically as needed.
+    if (_tableDrawView)
+        [_tableDrawView removeFromSuperview];
+
     [aCoder encodeObject:_dataSource forKey:CPTableViewDataSourceKey];
     [aCoder encodeObject:_delegate forKey:CPTableViewDelegateKey];
 
@@ -6034,33 +6218,6 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
     if (_archivedDataViews)
         [aCoder encodeObject:_archivedDataViews forKey:CPTableViewArchivedReusableViewsKey];
-}
-
-@end
-
-
-@implementation CPIndexSet (tableview)
-
-- (void)removeMatches:(CPIndexSet)otherSet
-{
-    var firstindex = [self firstIndex],
-        index = MIN(firstindex, [otherSet firstIndex]),
-        switchFlag = (index == firstindex);
-
-    while (index != CPNotFound)
-    {
-        var indexSet = (switchFlag) ? otherSet : self,
-            otherIndex = [indexSet indexGreaterThanOrEqualToIndex:index];
-
-        if (otherIndex == index)
-        {
-            [self removeIndex:index];
-            [otherSet removeIndex:index];
-        }
-
-        index = otherIndex;
-        switchFlag = !switchFlag;
-    }
 }
 
 @end
@@ -6160,17 +6317,17 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
     var showCallback = function()
     {
-        objj_msgSend(self, "setHidden:", NO)
+        [self setHidden: NO];
         isBlinking = NO;
     };
 
     var hideCallback = function()
     {
-        objj_msgSend(self, "setHidden:", YES)
+        [self setHidden: YES];
         isBlinking = YES;
     };
 
-    objj_msgSend(self, "setHidden:", YES);
+    [self setHidden: YES];
     [CPTimer scheduledTimerWithTimeInterval:0.1 callback:showCallback repeats:NO];
     [CPTimer scheduledTimerWithTimeInterval:0.19 callback:hideCallback repeats:NO];
     [CPTimer scheduledTimerWithTimeInterval:0.27 callback:showCallback repeats:NO];
@@ -6179,44 +6336,66 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 @end
 
 
-@implementation _CPColumnDragView : CPView
+@implementation _CPColumnDragDrawingView : CPView
 {
-    CPColor _lineColor;
+    CPTableView tableView       @accessors;
+    int         columnIndex     @accessors;
+    CPView      columnClipView  @accessors;
 }
 
-- (id)initWithLineColor:(CPColor)aColor
+- (void)drawRect:(CGRect)dirtyRect
 {
-    self = [super initWithFrame:CGRectMakeZero()];
+    var context = [[CPGraphicsContext currentContext] graphicsPort],
+        columnRect = [tableView rectOfColumn:columnIndex],
+        headerHeight = CGRectGetHeight([[tableView headerView] frame]),
+        bounds = [columnClipView bounds],
+        visibleRect = [tableView visibleRect],
+        xScroll = CGRectGetMinX(visibleRect),
+        yScroll = CGRectGetMinY(visibleRect);
 
-    if (self)
-        _lineColor = aColor;
+    // Because we are sharing drawing code with regular table drawing,
+    // we have to play a few tricks to fool the drawing code into thinking
+    // our drag column is in the same place as the real column.
 
-    return self;
-}
+    // Shift the bounds origin to align with the column rect, and extend it vertically to ensure
+    // it reaches the bottom of the tableView when scrolled.
+    bounds.origin.x = CGRectGetMinX(columnRect) - xScroll;
+    bounds.size.height += yScroll;
 
-- (void)drawRect:(CGRect)aRect
-{
-    var context = [[CPGraphicsContext currentContext] graphicsPort];
+    // Fix up the CTM to account for the header and scroll
+    CGContextTranslateCTM(context, -bounds.origin.x, headerHeight - yScroll);
 
-    CGContextSetStrokeColor(context, _lineColor);
+    //[tableView drawBackgroundInClipRect:bounds];
 
-    var points = [
-                    CGPointMake(0.5, 0),
-                    CGPointMake(0.5, aRect.size.height)
-                 ];
+    if (tableView._draggedColumnIsSelected)
+    {
+        CGContextSetFillColor(context, [tableView _isFocused] ? [tableView selectionHighlightColor] : [tableView unfocusedSelectionHighlightColor]);
+        CGContextFillRect(context, bounds);
+    }
+    else
+        [tableView highlightSelectionInClipRect:bounds];
 
-    CGContextStrokeLineSegments(context, points, 2);
+    //[tableView _drawHorizontalGridInClipRect:bounds];
 
-    points = [
-                CGPointMake(aRect.size.width - 0.5, 0),
-                CGPointMake(aRect.size.width - 0.5, aRect.size.height)
-             ];
+    var minX = CGRectGetMinX(bounds) + 0.5,
+        maxX = CGRectGetMaxX(bounds) - 0.5;
 
-    CGContextStrokeLineSegments(context, points, 2);
+    CGContextSetLineWidth(context, 1.0);
+    CGContextSetAlpha(context, 1.0);
+    CGContextSetStrokeColor(context, [tableView gridColor]);
+
+    CGContextBeginPath(context);
+
+    CGContextMoveToPoint(context, minX, CGRectGetMinY(bounds));
+    CGContextAddLineToPoint(context, minX, CGRectGetMaxY(bounds));
+
+    CGContextMoveToPoint(context, maxX, CGRectGetMinY(bounds));
+    CGContextAddLineToPoint(context, maxX, CGRectGetMaxY(bounds));
+
+    CGContextStrokePath(context);
 }
 
 @end
-
 
 @implementation CPTableCellView : CPView
 {
@@ -6228,23 +6407,18 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
 - (void)awakeFromCib
 {
+    [super awakeFromCib];
     [self setThemeState:CPThemeStateTableDataView];
 }
 
 - (BOOL)setThemeState:(ThemeState)aState
 {
-    if (aState.isa && [aState isKindOfClass:CPArray])
-        aState = CPThemeState.apply(null, aState);
-
     [super setThemeState:aState];
     [self recursivelyPerformSelector:@selector(setThemeState:) withObject:aState startingFrom:self];
 }
 
 - (BOOL)unsetThemeState:(ThemeState)aState
 {
-    if (aState.isa && [aState isKindOfClass:CPArray])
-        aState = CPThemeState.apply(null, aState);
-
     [super unsetThemeState:aState];
     [self recursivelyPerformSelector:@selector(unsetThemeState:) withObject:aState startingFrom:self];
 }

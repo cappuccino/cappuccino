@@ -127,6 +127,7 @@
 @import "CPText.j"
 @import "CPWindow_Constants.j"
 
+@class CPApplication
 @class CPDragServer
 @class _CPToolTip
 
@@ -202,6 +203,17 @@ var ModifierKeyCodes = [
 
 var resizeTimer = nil;
 var PreventScroll = true;
+var blurTimer = nil;
+
+var touchStartingPointX,
+    touchStartingPointY;
+
+_CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotification";
+
+
+// When scrolling with an old-style scroll wheel with discete steps ('clicks'), the scroll amount can indicate how many "lines" to
+// scroll.
+#define SCROLLWHEEL_LINE_PIXELS 6.0
 
 #if PLATFORM(DOM)
 
@@ -235,9 +247,6 @@ var PreventScroll = true;
     if (!_DOMWindow)
         return [self contentRect];
 
-    if (_DOMWindow.cpFrame)
-        return _DOMWindow.cpFrame();
-
     var contentRect = CGRectMakeZero();
 
     if (window.screenTop)
@@ -265,9 +274,6 @@ var PreventScroll = true;
 {
     if (!_DOMWindow)
         return;
-
-    if (typeof _DOMWindow["cpSetFrame"] === "function")
-        return _DOMWindow.cpSetFrame([self contentRect]);
 
     var origin = [self contentRect].origin,
         nativeOrigin = [self nativeContentRect].origin;
@@ -356,6 +362,7 @@ var PreventScroll = true;
         _DOMBodyElement.style["-khtml-user-select"] = "none";
 
     _DOMBodyElement.webkitTouchCallout = "none";
+    _DOMBodyElement.style[CPBrowserStyleProperty(@"user-select")] = @"none";
 
     [self createDOMElements];
     [self _addLayers];
@@ -389,7 +396,15 @@ var PreventScroll = true;
 
         touchEventSelector = @selector(touchEvent:),
         touchEventImplementation = class_getMethodImplementation(theClass, touchEventSelector),
-        touchEventCallback = function (anEvent) { touchEventImplementation(self, nil, anEvent); };
+        touchEventCallback = function (anEvent) { touchEventImplementation(self, nil, anEvent); },
+
+        onFocusEventSelector = @selector(focusEvent:),
+        onFocusEventImplementation = class_getMethodImplementation(theClass, onFocusEventSelector),
+        onFocusEventCallback = function (anEvent) { onFocusEventImplementation(self, nil, anEvent); },
+
+        onBlurEventSelector = @selector(blurEvent:),
+        onBlurEventImplementation = class_getMethodImplementation(theClass, onBlurEventSelector),
+        onBlurEventCallback = function (anEvent) { onBlurEventImplementation(self, nil, anEvent); };
 
     if (theDocument.addEventListener)
     {
@@ -412,10 +427,10 @@ var PreventScroll = true;
         theDocument.addEventListener("keydown", keyEventCallback, NO);
         theDocument.addEventListener("keypress", keyEventCallback, NO);
 
-        theDocument.addEventListener("touchstart", touchEventCallback, NO);
-        theDocument.addEventListener("touchend", touchEventCallback, NO);
-        theDocument.addEventListener("touchmove", touchEventCallback, NO);
-        theDocument.addEventListener("touchcancel", touchEventCallback, NO);
+        theDocument.addEventListener("touchstart", touchEventCallback, {passive: false});
+        theDocument.addEventListener("touchend", touchEventCallback, {passive: false});
+        theDocument.addEventListener("touchmove", touchEventCallback, {passive: false});
+        theDocument.addEventListener("touchcancel", touchEventCallback, {passive: false});
 
         _DOMWindow.addEventListener("DOMMouseScroll", scrollEventCallback, NO);
         _DOMWindow.addEventListener("wheel", scrollEventCallback, NO);
@@ -423,8 +438,15 @@ var PreventScroll = true;
 
         _DOMWindow.addEventListener("resize", resizeEventCallback, NO);
 
+        _DOMWindow.addEventListener("blur", onBlurEventCallback, NO);
+        _DOMWindow.addEventListener("focus", onFocusEventCallback, NO);
+
         _DOMWindow.addEventListener("unload", function()
         {
+            _DOMWindow.removeEventListener("unload", arguments.callee, NO);
+
+            [self blurEvent:nil];
+            [self _notifyPlatformWindowWillClose];
             [self updateFromNativeContentRect];
             [self _removeLayers];
 
@@ -443,12 +465,13 @@ var PreventScroll = true;
 
             _DOMWindow.removeEventListener("resize", resizeEventCallback, NO);
 
+            _DOMWindow.removeEventListener("blur", onBlurEventCallback, NO);
+            _DOMWindow.removeEventListener("focus", onFocusEventCallback, NO);
+
             //FIXME: does firefox really need a different value?
             _DOMWindow.removeEventListener("DOMMouseScroll", scrollEventCallback, NO);
             _DOMWindow.removeEventListener("wheel", scrollEventCallback, NO);
             _DOMWindow.removeEventListener("mousewheel", scrollEventCallback, NO);
-
-            //_DOMWindow.removeEventListener("beforeunload", this, NO);
 
             [PlatformWindows removeObject:self];
 
@@ -471,6 +494,9 @@ var PreventScroll = true;
 
         _DOMWindow.attachEvent("onresize", resizeEventCallback);
 
+        _DOMWindow.attachEvent("onfocus", onFocusEventCallback);
+        _DOMWindow.attachEvent("onblur", onBlurEventCallback);
+
         _DOMWindow.onmousewheel = scrollEventCallback;
         theDocument.onmousewheel = scrollEventCallback;
 
@@ -479,6 +505,10 @@ var PreventScroll = true;
 
         _DOMWindow.attachEvent("onunload", function()
         {
+            _DOMWindow.detachEvent("unload", arguments.callee);
+
+            [self blurEvent:nil];
+            [self _notifyPlatformWindowWillClose];
             [self updateFromNativeContentRect];
             [self _removeLayers];
 
@@ -494,13 +524,15 @@ var PreventScroll = true;
 
             _DOMWindow.detachEvent("onresize", resizeEventCallback);
 
+            _DOMWindow.detachEvent("onfocus", onBlurEventCallback);
+            _DOMWindow.detachEvent("onblur", onFocusEventCallback);
+
             _DOMWindow.onmousewheel = NULL;
+
             theDocument.onmousewheel = NULL;
 
             _DOMBodyElement.ondrag = NULL;
             _DOMBodyElement.onselectstart = NULL;
-
-            //_DOMWindow.removeEvent("beforeunload", this);
 
             [PlatformWindows removeObject:self];
 
@@ -533,23 +565,16 @@ var PreventScroll = true;
 
     _DOMWindow = window.open("about:blank", "_blank", "menubar=no,location=no,resizable=yes,scrollbars=no,status=no,left=" + CGRectGetMinX(_contentRect) + ",top=" + CGRectGetMinY(_contentRect) + ",width=" + CGRectGetWidth(_contentRect) + ",height=" + CGRectGetHeight(_contentRect));
 
+    if (!_DOMWindow)
+        return;
+
     [PlatformWindows addObject:self];
 
-    // FIXME: cpSetFrame?
-    _DOMWindow.document.write('<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"></head><body style="background-color:transparent;"></body></html>');
+    _DOMWindow.document.write('<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"></head><body style="background-color:transparent; overflow:hidden"></body></html>');
     _DOMWindow.document.close();
 
     if (self != [CPPlatformWindow primaryPlatformWindow])
         _DOMWindow.document.title = _title;
-
-    if (![CPPlatform isBrowser])
-    {
-        _DOMWindow.cpWindowNumber = [self._only windowNumber];
-        _DOMWindow.cpSetFrame(_contentRect);
-        _DOMWindow.cpSetLevel(_level);
-        _DOMWindow.cpSetHasShadow(_hasShadow);
-        _DOMWindow.cpSetShadowStyle(_shadowStyle);
-    }
 
     [self registerDOMWindow];
 
@@ -628,7 +653,8 @@ var PreventScroll = true;
     }
     else if (type === "dragend")
     {
-        var dropEffect = aDOMEvent.dataTransfer.dropEffect;
+        var dropEffect = aDOMEvent.dataTransfer.dropEffect,
+            dragOperation;
 
         if (dropEffect === "move")
             dragOperation = CPDragOperationMove;
@@ -906,20 +932,32 @@ var PreventScroll = true;
     if (!theWindow)
         return;
 
-    var windowNumber = [theWindow windowNumber];
-
+    windowNumber = [theWindow windowNumber];
     location = [theWindow convertBridgeToBase:location];
 
     var event = [CPEvent mouseEventWithType:CPScrollWheel location:location modifierFlags:modifierFlags
                                   timestamp:timestamp windowNumber:windowNumber context:nil eventNumber:-1 clickCount:1 pressure:0];
     event._DOMEvent = aDOMEvent;
 
-    // We lag 1 event behind without this timeout.
-    setTimeout(function()
+    // We lag 1 event behind without this approach
+    window.requestAnimationFrame(function()
     {
-        // Find the scroll delta
-        var deltaX = _DOMScrollingElement.scrollLeft - 150,
-            deltaY = (_DOMScrollingElement.scrollTop - 150) || (aDOMEvent.deltaY === undefined ? 0 : aDOMEvent.deltaY);
+        if (aDOMEvent.deltaMode !== undefined && aDOMEvent.deltaMode !== 0)
+        {
+            event._hasPreciseScrollingDeltas = NO;
+            event._scrollingDeltaX = aDOMEvent.deltaX;
+            event._scrollingDeltaY = aDOMEvent.deltaY;
+            event._deltaX = aDOMEvent.deltaX * SCROLLWHEEL_LINE_PIXELS;
+            event._deltaY = aDOMEvent.deltaY * SCROLLWHEEL_LINE_PIXELS;
+        }
+        else
+        {
+            event._hasPreciseScrollingDeltas = YES;
+            event._scrollingDeltaX = (_DOMScrollingElement.scrollLeft - 150) || aDOMEvent.deltaX || 0;
+            event._scrollingDeltaY = (_DOMScrollingElement.scrollTop - 150) || aDOMEvent.deltaY || 0;
+            event._deltaX = event._scrollingDeltaX;
+            event._deltaY = event._scrollingDeltaY;
+        }
 
         // If we scroll super with momentum,
         // there are so many events going off that
@@ -930,13 +968,8 @@ var PreventScroll = true;
         //
         // We get free performance boost if we skip sending these events,
         // as sending a scroll event with no deltas doesn't do anything.
-        if (deltaX || deltaY)
-        {
-            event._deltaX = deltaX;
-            event._deltaY = deltaY;
-
+        if (event._deltaX || event._deltaY)
             [CPApp sendEvent:event];
-        }
 
         // We set StopDOMEventPropagation = NO on line 1008
         //if (StopDOMEventPropagation)
@@ -946,10 +979,10 @@ var PreventScroll = true;
         _DOMScrollingElement.scrollLeft = 150;
         _DOMScrollingElement.scrollTop = 150;
 
-        // Is this needed?
-        //[[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+        // this is needed to prevent flickering during scrolling
+        [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 
-    }, 0);
+    });
 
     // We hide the dom element after a little bit
     // so that other DOM elements such as inputs
@@ -976,6 +1009,7 @@ var PreventScroll = true;
 
 - (void)_actualResizeEvent
 {
+    _shouldUpdateContentRect = NO;
     resizeTimer = nil;
 
     // FIXME: This is not the right way to do this.
@@ -1009,14 +1043,122 @@ var PreventScroll = true;
     //window.liveResize = NO;
 
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+    _shouldUpdateContentRect = YES;
 }
+
+/*!
+    @ignore
+*/
+- (void)blurEvent:(DOMEvent)aDOMEvent
+{
+    if ([CPApp keyWindow] == _currentKeyWindow)
+        [_currentKeyWindow resignKeyWindow];
+
+    if ([CPApp mainWindow] == _currentMainWindow)
+        [_currentMainWindow resignMainWindow];
+
+    _previousKeyWindow = aDOMEvent ? _currentKeyWindow : nil;
+    _previousMainWindow = aDOMEvent ? _currentMainWindow : nil;
+
+    [blurTimer invalidate];
+    blurTimer = [CPTimer scheduledTimerWithTimeInterval:0.2 target:self selector:@selector(_blurEventTimer:) userInfo:nil repeats:NO];
+}
+
+/*!
+    @ignore
+*/
+- (void)_blurEventTimer:(CPTimer)aTimer
+{
+    if (![CPApp mainWindow])
+        [[CPApplication sharedApplication] deactivate];
+
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+}
+
+/*!
+    @ignore
+*/
+- (void)focusEvent:(DOMEvent)aDOMEvent
+{
+    [blurTimer invalidate];
+    [CPApp activateIgnoringOtherApps:YES];
+
+    var keyWindow = _previousKeyWindow;
+
+    if (!keyWindow)
+       keyWindow = [[[_windowLayers objectForKey:[_windowLevels firstObject]] orderedWindows] firstObject];
+
+    if (!keyWindow)
+        return;
+
+    [self _makeKeyWindow:keyWindow];
+
+    if ([keyWindow isKeyWindow] && ([keyWindow firstResponder] === keyWindow || ![keyWindow firstResponder]))
+       [keyWindow makeFirstResponder:[keyWindow initialFirstResponder]];
+
+    [self _makeMainWindow:keyWindow];
+
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+    _previousKeyWindow = nil;
+    _previousMainWindow = nil;
+}
+
+/*!
+    @ignore
+*/
+- (void)_makeKeyWindow:(CPWindow)aWindow
+{
+    if ([CPApp keyWindow] === aWindow || ![aWindow canBecomeKeyWindow])
+        return;
+
+    [[CPApp keyWindow] resignKeyWindow];
+    [aWindow becomeKeyWindow];
+}
+
+/*!
+    @ignore
+*/
+- (void)_makeMainWindow:(CPWindow)aWindow
+{
+    // Sheets cannot be main. Their parent window becomes main.
+    if (aWindow._isSheet)
+    {
+        [self _makeMainWindow:aWindow._parentView];
+        return;
+    }
+
+    if ([CPApp mainWindow] === aWindow || ![aWindow canBecomeMainWindow])
+        return;
+
+    [[CPApp mainWindow] resignMainWindow];
+    [aWindow becomeMainWindow];
+}
+
 
 - (void)touchEvent:(DOMEvent)aDOMEvent
 {
+    var newEvent = {},
+        touch = aDOMEvent.touches.length ? aDOMEvent.touches[0] : aDOMEvent.changedTouches[0];
+
+    newEvent.timestamp = [CPEvent currentTimestamp];
+    newEvent.target = aDOMEvent.target;
+    newEvent.shiftKey = newEvent.ctrlKey = newEvent.altKey = newEvent.metaKey = false;
+
+    newEvent.clientX = touch.clientX;
+
+    /*
+     Normally the document can't scroll in Cappuccino: our body element has top:0 and bottom:0 with absolute positioning. So it should always be exactly the height of the viewport. The below handles a special case. iOS scrolls the document when the virtual keyboard is present and it needs to move a text input upwards visually to avoid covering the input with the keyboard. For most purposes we can ignore this, except here. In theory I think we could always apply this (scrollTop should always be 0 on every other device and situation) but let's be defensive and only apply it for touch events to minimise the risk of surprises.
+     */
+    newEvent.clientY = _DOMWindow.document.body.scrollTop + touch.clientY;
+
+    newEvent.preventDefault = function() { if (aDOMEvent.preventDefault) aDOMEvent.preventDefault() };
+    newEvent.stopPropagation = function() { if (aDOMEvent.stopPropagation) aDOMEvent.stopPropagation() };
+
+    //  single finger event-> simulate a simple mouse-click
     if (aDOMEvent.touches && (aDOMEvent.touches.length == 1 || (aDOMEvent.touches.length == 0 && aDOMEvent.changedTouches.length == 1)))
     {
-        var newEvent = {};
-
         switch (aDOMEvent.type)
         {
             case CPDOMEventTouchStart:  newEvent.type = CPDOMEventMouseDown;
@@ -1029,32 +1171,49 @@ var PreventScroll = true;
                                         break;
         }
 
-        var touch = aDOMEvent.touches.length ? aDOMEvent.touches[0] : aDOMEvent.changedTouches[0];
-
-        newEvent.clientX = touch.clientX;
-        newEvent.clientY = touch.clientY;
-
-        newEvent.timestamp = [CPEvent currentTimestamp];
-        newEvent.target = aDOMEvent.target;
-
-        newEvent.shiftKey = newEvent.ctrlKey = newEvent.altKey = newEvent.metaKey = false;
-
-        newEvent.preventDefault = function() { if (aDOMEvent.preventDefault) aDOMEvent.preventDefault() };
-        newEvent.stopPropagation = function() { if (aDOMEvent.stopPropagation) aDOMEvent.stopPropagation() };
-
         [self mouseEvent:newEvent];
 
         return;
     }
     else
     {
+        // two fingers->simulate scrolling events
+        if (aDOMEvent.touches && aDOMEvent.touches.length == 2)
+        {
+            if (aDOMEvent.preventDefault)
+                aDOMEvent.preventDefault();
+
+            if (aDOMEvent.stopPropagation)
+                aDOMEvent.stopPropagation();
+
+            switch (aDOMEvent.type)
+            {
+                case CPDOMEventTouchStart:
+                    touchStartingPointX = touch.pageX;
+                    touchStartingPointY = touch.pageY;
+                    break;
+                case CPDOMEventTouchMove:
+                    newEvent._hasPreciseScrollingDeltas = YES;
+                    newEvent.deltaX = touchStartingPointX - touch.pageX;
+                    newEvent.deltaY = touchStartingPointY - touch.pageY;
+                    newEvent.type = CPDOMEventScrollWheel;
+
+                    [self scrollEvent:newEvent];
+
+                    touchStartingPointX = touch.pageX;
+                    touchStartingPointY = touch.pageY;
+                    return;
+            }
+        }
+        
+        // cancel other touch cases preventively
+
         if (aDOMEvent.preventDefault)
             aDOMEvent.preventDefault();
 
         if (aDOMEvent.stopPropagation)
             aDOMEvent.stopPropagation();
     }
-    // handle touch cases specifically
 }
 
 - (void)mouseEvent:(DOMEvent)aDOMEvent
@@ -1106,12 +1265,16 @@ var PreventScroll = true;
     {
         if (_mouseIsDown)
         {
+            if (aDOMEvent.button !== _firstMouseDownButton)
+                return;
+
             event = _CPEventFromNativeMouseEvent(aDOMEvent, _mouseDownIsRightClick ? CPRightMouseUp : CPLeftMouseUp, location, modifierFlags, timestamp, windowNumber, nil, -1, CPDOMEventGetClickCount(_lastMouseUp, timestamp, location), 0, nil);
 
             _mouseIsDown = NO;
             _lastMouseUp = event;
             _mouseDownWindow = nil;
             _mouseDownIsRightClick = NO;
+            _firstMouseDownButton = -1;
         }
 
         if (_DOMEventMode)
@@ -1131,7 +1294,17 @@ var PreventScroll = true;
 
         _mouseDownIsRightClick = button == 2 || (CPBrowserIsOperatingSystem(CPMacOperatingSystem) && button == 0 && modifierFlags & CPControlKeyMask);
 
-        if (sourceElement.tagName === "INPUT" && sourceElement != _DOMFocusElement)
+        // If mouse is already down, that means that a second mouse button is pushed. This could interfere in mouse events treatment. Just ignore it.
+        // BUT we have to track which button will be first released.
+        if (_mouseIsDown)
+        {
+            _mouseDownIsRightClick = !_mouseDownIsRightClick;
+            return;
+        }
+
+        _firstMouseDownButton = button;
+
+        if ((sourceElement.tagName === "INPUT" || sourceElement.tagName === "TEXTAREA") && sourceElement != _DOMFocusElement)
         {
             if ([CPPlatform supportsDragAndDrop])
             {
@@ -1265,10 +1438,10 @@ var PreventScroll = true;
         var insertionIndex = 0;
 
         if (middle !== undefined)
-            insertionIndex = _windowLevels[middle] > aLevel ? middle : middle + 1
+            insertionIndex = _windowLevels[middle] > aLevel ? middle : middle + 1;
 
         [_windowLevels insertObject:aLevel atIndex:insertionIndex];
-        layer._DOMElement.style.zIndex = aLevel;
+        layer._DOMElement.style.zIndex = aLevel + 1;  // adding one avoids negative zIndices. These have been causing issues in Chrome
 
         _DOMBodyElement.appendChild(layer._DOMElement);
     }
@@ -1278,6 +1451,9 @@ var PreventScroll = true;
 
 - (void)order:(CPWindowOrderingMode)orderingMode window:(CPWindow)aWindow relativeTo:(CPWindow)otherWindow
 {
+    if (!_DOMWindow)
+        return;
+
     [CPPlatform initializeScreenIfNecessary];
 
     // Grab the appropriate level for the layer, and create it if
@@ -1287,7 +1463,10 @@ var PreventScroll = true;
     // When ordering out, ignore otherWindow, simply remove aWindow from its level.
     // If layer is nil, this will be a no-op.
     if (orderingMode === CPWindowOut)
+    {
+        [aWindow _windowWillBeRemovedFromTheDOM];
         return [layer removeWindow:aWindow];
+    }
 
     /*
         If aWindow is a child of otherWindow and is not yet visible,
@@ -1332,6 +1511,8 @@ var PreventScroll = true;
 
     if (otherWindow)
         insertionIndex = orderingMode === CPWindowAbove ? otherWindow._index + 1 : otherWindow._index;
+
+    [aWindow _windowWillBeAddedToTheDOM];
 
     // Place the window at the appropriate index.
     [layer insertWindow:aWindow atIndex:insertionIndex];
@@ -1382,6 +1563,9 @@ var PreventScroll = true;
             parent = furthestParent;
 
         var index = ordering === CPWindowAbove ? parent._index + 1 : parent._index;
+
+        if (!childWasVisible)
+            [child _windowWillBeAddedToTheDOM];
 
         [aLayer insertWindow:child atIndex:index];
 
@@ -1609,6 +1793,13 @@ var PreventScroll = true;
     KeyCodesToPrevent = {};
 }
 
+- (void)_notifyPlatformWindowWillClose
+{
+    [[CPNotificationCenter defaultCenter] postNotificationName:_CPPlatformWindowWillCloseNotification
+                                                        object:self
+                                                      userInfo:nil];
+}
+
 @end
 #endif
 
@@ -1646,7 +1837,7 @@ var _CPEventFromNativeMouseEvent = function(aNativeEvent, anEventType, aPoint, m
 var CLICK_SPACE_DELTA   = 5.0,
     CLICK_TIME_DELTA    = (typeof document != "undefined" && document.addEventListener) ? 0.55 : 1.0;
 
-var CPDOMEventGetClickCount = function(aComparisonEvent, aTimestamp, aLocation)
+CPDOMEventGetClickCount = function(aComparisonEvent, aTimestamp, aLocation)
 {
     if (!aComparisonEvent)
         return 1;
@@ -1700,11 +1891,10 @@ function CPWindowObjectList()
 
 function CPWindowList()
 {
-    var windowObjectList = CPWindowObjectList(),
-        windowList = [];
+    var windowObjectList = CPWindowObjectList();
 
-    for (var i = 0, count = [windowObjectList count]; i < count; i++)
-        windowList.push([windowObjectList[i] windowNumber]);
-
-    return windowList;
+    return [windowObjectList arrayByApplyingBlock:function(windowObject)
+    {
+        return [windowObject windowNumber];
+    }];
 }

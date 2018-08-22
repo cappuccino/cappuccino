@@ -25,11 +25,13 @@
 
 @global CPApp
 
+@typedef CPTickMarkPosition
 CPTickMarkBelow                             = 0;
 CPTickMarkAbove                             = 1;
 CPTickMarkLeft                              = CPTickMarkAbove;
 CPTickMarkRight                             = CPTickMarkBelow;
 
+@typedef CPLevelIndicatorStyle
 CPRelevancyLevelIndicatorStyle              = 0;
 CPContinuousCapacityLevelIndicatorStyle     = 1;
 CPDiscreteCapacityLevelIndicatorStyle       = 2;
@@ -290,7 +292,7 @@ CPRatingLevelIndicatorStyle                 = 3;
     [self setNeedsLayout];
 }
 
-- (void)setWarningValue:(double)warningValue;
+- (void)setWarningValue:(double)warningValue
 {
     if (_warningValue === warningValue)
         return;
@@ -299,7 +301,7 @@ CPRatingLevelIndicatorStyle                 = 3;
     [self setNeedsLayout];
 }
 
-- (void)setCriticalValue:(double)criticalValue;
+- (void)setCriticalValue:(double)criticalValue
 {
     if (_criticalValue === criticalValue)
         return;

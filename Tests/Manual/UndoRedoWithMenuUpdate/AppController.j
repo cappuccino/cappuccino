@@ -142,7 +142,7 @@
     [_menuItemView setDirty];
 }
 
-// Performs autoenable processing, returns isEnabled to propagate state to NativeHost
+// Performs autoenable processing, returns isEnabled to propagate state
 - (BOOL)_performAutoenable
 {
     if ([_menu autoenablesItems])
@@ -162,7 +162,7 @@
         }
         else
         {
-            // XXX: will toggle state as part of _target check, required to sync stane with NativeHost
+            // XXX: will toggle state as part of _target check
             _isEnabled = isEnabled;
             [_menuItemView setDirty];
 

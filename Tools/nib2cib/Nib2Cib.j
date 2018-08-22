@@ -204,7 +204,10 @@ var FILE = require("file"),
 
         [self loadThemesFromList:themeList];
         [self loadFrameworks:options.frameworks verbosity:options.verbosity];
-        [self loadNSClassesFromBundle:[CPBundle mainBundle]];
+
+        var mainBundle = [CPBundle mainBundle];
+        [mainBundle loadWithDelegate:nil];
+        [self loadNSClassesFromBundle:mainBundle];
 
         var frameworkList = [];
 
@@ -230,6 +233,8 @@ var FILE = require("file"),
         CPLog.info("Aux themes    : " + themeList.slice(1).join(", "));
         CPLog.info("Config file   : " + (configInfo.path || ""));
         CPLog.info("System Font   : " + [CPFont systemFontSize] + "px " + [CPFont systemFontFace]);
+        CPLog.info("NSClasses     : " + userNSClasses);
+
         CPLog.info("-------------------------------------------------------------\n");
 
         var converter = [[Converter alloc] initWithInputPath:inputPath outputPath:outputPath];
@@ -837,7 +842,7 @@ var FILE = require("file"),
 
     // By default when we try to load the bundle it will use the CommonJS environment,
     // but we want the Browser environment. So we override mostEligibleEnvironment().
-    themeBundle.mostEligibleEnvironment = function() { return "Browser"; }
+    themeBundle.mostEligibleEnvironment = function() { return "Browser"; };
     themeBundle.load();
 
     var keyedThemes = themeBundle.valueForInfoDictionaryKey("CPKeyedThemes");

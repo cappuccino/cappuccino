@@ -7,8 +7,8 @@
 
 - (void)setUp
 {
-    // CPApplication must be initialised for some event handling to work.
-    [CPApplication sharedApplication];
+    // This will init the global var CPApp which are used internally in the AppKit
+    [[CPApplication alloc] init];
 }
 
 /*!
@@ -21,6 +21,8 @@
     [self assert:0 equals:[anEvent deltaX] message:"default event delta X should be 0"];
     [self assert:0 equals:[anEvent deltaY] message:"default event delta Y should be 0"];
     [self assert:0 equals:[anEvent deltaZ] message:"default event delta Z should be 0"];
+    [self assert:0 equals:[anEvent scrollingDeltaX] message:"default event scrolling delta X should be 0"];
+    [self assert:0 equals:[anEvent scrollingDeltaY] message:"default event scrolling delta Y should be 0"];
 }
 
 - (void)testDescription
@@ -35,7 +37,7 @@
 
     anEvent = [CPEvent otherEventWithType:CPApplicationDefined location:CGPointMakeZero() modifierFlags:0 timestamp:500.5 windowNumber:2 context:nil subtype:5 data1:15 data2:25];
 
-    [self assert:@"CPEvent: type=15 loc={0, 0} time=500.5 flags=0x0 win=null winNum=0 ctxt=null subtype=5 data1=15 data2=25" equals:[anEvent description]];
+    [self assert:@"CPEvent: type=15 loc={0, 0} time=500.5 flags=0x0 win=null winNum=2 ctxt=null subtype=5 data1=15 data2=25" equals:[anEvent description]];
 }
 
 - (void)testModifierFlags

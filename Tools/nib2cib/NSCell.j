@@ -31,26 +31,28 @@
 
 @implementation NSCell : CPObject
 {
-    int             _state                      @accessors(readonly, getter=state);
-    BOOL            _isHighlighted              @accessors(readonly, getter=isHighlighted);
-    BOOL            _isEnabled                  @accessors(readonly, getter=isEnabled);
-    BOOL            _isEditable                 @accessors(readonly, getter=isEditable);
-    BOOL            _isBordered                 @accessors(readonly, getter=isBordered);
-    BOOL            _isBezeled                  @accessors(readonly, getter=isBezeled);
-    BOOL            _isSelectable               @accessors(readonly, getter=isSelectable);
-    BOOL            _isScrollable               @accessors(readonly, getter=isScrollable);
-    BOOL            _isContinuous               @accessors(readonly, getter=isContinuous);
-    BOOL            _scrolls                    @accessors(readonly, getter=scrolls);
-    BOOL            _wraps                      @accessors(readonly, getter=wraps);
-    BOOL            _truncates                  @accessors(readonly, getter=truncates);
-    BOOL            _sendsActionOnEndEditing    @accessors(readonly, getter=sendsActionOnEndEditing);
-    CPTextAlignment _alignment                  @accessors(readonly, getter=alignment);
-    CPControlSize   _controlSize                @accessors(readonly, getter=controlSize);
-    id              _objectValue                @accessors(readonly, getter=objectValue);
-    CPFont          _font                       @accessors(readonly, getter=font);
-    int             _lineBreakMode              @accessors(readonly, getter=lineBreakMode);
-    CPFormatter     _formatter                  @accessors(readonly, getter=formatter);
-    int             _tag                        @accessors(readonly, getter=tag);
+    int                 _state                      @accessors(readonly, getter=state);
+    BOOL                _isHighlighted              @accessors(readonly, getter=isHighlighted);
+    BOOL                _isEnabled                  @accessors(readonly, getter=isEnabled);
+    BOOL                _isEditable                 @accessors(readonly, getter=isEditable);
+    BOOL                _isBordered                 @accessors(readonly, getter=isBordered);
+    BOOL                _isBezeled                  @accessors(readonly, getter=isBezeled);
+    BOOL                _isSelectable               @accessors(readonly, getter=isSelectable);
+    BOOL                _isScrollable               @accessors(readonly, getter=isScrollable);
+    BOOL                _isContinuous               @accessors(readonly, getter=isContinuous);
+    BOOL                _scrolls                    @accessors(readonly, getter=scrolls);
+    BOOL                _wraps                      @accessors(readonly, getter=wraps);
+    BOOL                _truncates                  @accessors(readonly, getter=truncates);
+    BOOL                _sendsActionOnEndEditing    @accessors(readonly, getter=sendsActionOnEndEditing);
+    CPTextAlignment     _alignment                  @accessors(readonly, getter=alignment);
+    CPWritingDirection  _baseWritingDirection       @accessors(readonly, getter=baseWritingDirection);
+    CPControlSize       _controlSize                @accessors(readonly, getter=controlSize);
+    id                  _objectValue                @accessors(readonly, getter=objectValue);
+    CPFont              _font                       @accessors(readonly, getter=font);
+    int                 _lineBreakMode              @accessors(readonly, getter=lineBreakMode);
+    CPFormatter         _formatter                  @accessors(readonly, getter=formatter);
+    int                 _tag                        @accessors(readonly, getter=tag);
+    BOOL                _usesSingleLineMode         @accessors(readonly, getter=usesSingleLineMode);
 }
 
 - (id)initWithCoder:(CPCoder)aCoder
@@ -62,22 +64,24 @@
         var flags  = [aCoder decodeIntForKey:@"NSCellFlags"],
             flags2 = [aCoder decodeIntForKey:@"NSCellFlags2"];
 
-        _state          = (flags & 0x80000000) ? CPOnState : CPOffState;
-        _isHighlighted  = (flags & 0x40000000) ? YES : NO;
-        _isEnabled      = (flags & 0x20000000) ? NO : YES;
-        _isEditable     = (flags & 0x10000000) ? YES : NO;
-        _isBordered     = (flags & 0x00800000) ? YES : NO;
-        _isBezeled      = (flags & 0x00400000) ? YES : NO;
-        _isSelectable   = (flags & 0x00200000) ? YES : NO;
-        _isScrollable   = (flags & 0x00100000) ? YES : NO;
-        _isContinuous   = (flags & 0x00080100) ? YES : NO;
-        _scrolls        = (flags & 0x00100000) && (flags & 0x00000040);
-        _wraps          = (flags & 0x00100000 === 0) && (flags & 0x00000040 === 0);
-        _truncates      = !(flags & 0x00100000) && (flags & 0x00000040);
-        _alignment      = (flags2 & 0x1c000000) >> 26;
-        _lineBreakMode  = (flags2 & 0x0E00) >> 9;
-        _controlSize    = (flags2 & 0xE0000) >> 17;
-        _sendsActionOnEndEditing = (flags2 & 0x00400000) ? YES : NO;
+        _state                      = (flags & 0x80000000) ? CPOnState : CPOffState;
+        _isHighlighted              = (flags & 0x40000000) ? YES : NO;
+        _isEnabled                  = (flags & 0x20000000) ? NO : YES;
+        _isEditable                 = (flags & 0x10000000) ? YES : NO;
+        _isBordered                 = (flags & 0x00800000) ? YES : NO;
+        _isBezeled                  = (flags & 0x00400000) ? YES : NO;
+        _isSelectable               = (flags & 0x00200000) ? YES : NO;
+        _isScrollable               = (flags & 0x00100000) ? YES : NO;
+        _isContinuous               = (flags & 0x00080100) ? YES : NO;
+        _scrolls                    = (flags & 0x00100000) && (flags & 0x00000040) ? YES : NO;
+        _wraps                      = !(flags & 0x00100000) && !(flags & 0x00000040) ? YES : NO;
+        _truncates                  = (flags & 0x00100000) && !(flags & 0x00000040) ? YES : NO;
+        _alignment                  = (flags2 & 0x1c000000) >> 26;
+        _baseWritingDirection       = ((flags2 & 0x6000) >> 13) - 1;
+        _lineBreakMode              = (flags2 & 0x0E00) >> 9;
+        _controlSize                = (flags2 & 0xE0000) >> 17;
+        _sendsActionOnEndEditing    = (flags2 & 0x00400000) ? YES : NO;
+        _usesSingleLineMode         = (flags2 & 0xF4240) ? YES : NO;
 
         _tag = [aCoder decodeIntForKey:@"NSTag"];
 

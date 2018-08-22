@@ -26,7 +26,10 @@
 @class CPSplitView
 
 @global CPPopUpButtonStatePullsDown
-
+@global CPKeyValueChangeOldKey
+@global CPKeyValueChangeNewKey
+@global CPKeyValueObservingOptionNew
+@global CPKeyValueObservingOptionOld
 
 @implementation CPButtonBar : CPView
 {
@@ -109,6 +112,8 @@
 
 - (void)awakeFromCib
 {
+    [super awakeFromCib];
+
     var view = [self superview],
         subview = self;
 
@@ -129,10 +134,20 @@
 
 - (void)setButtons:(CPArray)buttons
 {
+    for (var i = [_buttons count] - 1; i >= 0; i--)
+    {
+        [_buttons[i] removeFromSuperview];
+        [_buttons[i] removeObserver:self forKeyPath:@"hidden"];
+    }
+
+
     _buttons = [CPArray arrayWithArray:buttons];
 
-    for (var i = 0, count = [_buttons count]; i < count; i++)
+    for (var i = [_buttons count] - 1; i >= 0; i--)
+    {
+        [_buttons[i] addObserver:self forKeyPath:@"hidden" options:CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld context:nil];
         [_buttons[i] setBordered:YES];
+    }
 
     [self setNeedsLayout];
 }
@@ -218,8 +233,15 @@
         count = [buttonsNotHidden count];
 
     while (count--)
-        if ([buttonsNotHidden[count] isHidden])
-            [buttonsNotHidden removeObject:buttonsNotHidden[count]];
+    {
+        var button = buttonsNotHidden[count];
+
+        if ([button isHidden])
+        {
+            [button removeFromSuperview];
+            [buttonsNotHidden removeObject:button];
+        }
+    }
 
     var currentButtonOffset = _resizeControlIsLeftAligned ? CGRectGetMaxX([self bounds]) + 1 : -1,
         bounds = [self bounds],
@@ -250,15 +272,15 @@
             currentButtonOffset += width - 1;
         }
 
-        [button setValue:normalColor forThemeAttribute:@"bezel-color" inState:[CPThemeStateNormal, CPThemeStateBordered]];
-        [button setValue:highlightedColor forThemeAttribute:@"bezel-color" inState:[CPThemeStateHighlighted,  CPThemeStateBordered, ]];
-        [button setValue:disabledColor forThemeAttribute:@"bezel-color" inState:[CPThemeStateDisabled, CPThemeStateBordered]];
+        [button setValue:normalColor forThemeAttribute:@"bezel-color" inStates:[CPThemeStateNormal, CPThemeStateBordered]];
+        [button setValue:highlightedColor forThemeAttribute:@"bezel-color" inStates:[CPThemeStateHighlighted,  CPThemeStateBordered, ]];
+        [button setValue:disabledColor forThemeAttribute:@"bezel-color" inStates:[CPThemeStateDisabled, CPThemeStateBordered]];
         [button setValue:textColor forThemeAttribute:@"text-color" inState:CPThemeStateBordered];
 
         // FIXME shouldn't need this
-        [button setValue:normalColor forThemeAttribute:@"bezel-color" inState:[CPThemeStateNormal, CPThemeStateBordered, CPPopUpButtonStatePullsDown]];
-        [button setValue:highlightedColor forThemeAttribute:@"bezel-color" inState:[CPThemeStateHighlighted, CPThemeStateBordered, CPPopUpButtonStatePullsDown]];
-        [button setValue:disabledColor forThemeAttribute:@"bezel-color" inState:[CPThemeStateDisabled, CPThemeStateBordered, CPPopUpButtonStatePullsDown]];
+        [button setValue:normalColor forThemeAttribute:@"bezel-color" inStates:[CPThemeStateNormal, CPThemeStateBordered, CPPopUpButtonStatePullsDown]];
+        [button setValue:highlightedColor forThemeAttribute:@"bezel-color" inStates:[CPThemeStateHighlighted, CPThemeStateBordered, CPPopUpButtonStatePullsDown]];
+        [button setValue:disabledColor forThemeAttribute:@"bezel-color" inStates:[CPThemeStateDisabled, CPThemeStateBordered, CPPopUpButtonStatePullsDown]];
 
         [self addSubview:button];
     }
@@ -272,6 +294,14 @@
         [resizeControlView setAutoresizingMask: _resizeControlIsLeftAligned ? CPViewMaxXMargin : CPViewMinXMargin];
         [resizeControlView setBackgroundColor:[self currentValueForThemeAttribute:@"resize-control-color"]];
     }
+}
+
+- (void)observeValueForKeyPath:(CPString)keyPath ofObject:(id)object change:(CPDictionary)change context:(id)context
+{
+    if ([change objectForKey:CPKeyValueChangeOldKey] == [change objectForKey:CPKeyValueChangeNewKey])
+        return;
+
+    [self setNeedsLayout];
 }
 
 - (void)setFrameSize:(CGSize)aSize

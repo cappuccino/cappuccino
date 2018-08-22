@@ -471,9 +471,11 @@ CPTransformableAttributeType = 1800;
 
     var value;
     if (attributeType >= CPInteger16AttributeType && attributeType <= CPFloatAttributeType)
-        value = [aView intValue];
+        value = [aView floatValue];
     else if (attributeType == CPBooleanAttributeType)
         value = [aView state];
+    else if (attributeType == CPDateAttributeType)
+        value = [aView dateValue];
     else
         value = [aView stringValue];
 
@@ -487,9 +489,9 @@ CPTransformableAttributeType = 1800;
 
 - (id)copy
 {
-    var views = [CPArray array];
+    var views = [CPArray array],
+        copy = [[[self class] alloc] init];
 
-    var copy = [[[self class] alloc] init];
     [copy _setTemplateType:_templateType];
     [copy _setOptions:_predicateOptions];
     [copy _setModifier:_predicateModifier];
@@ -708,7 +710,10 @@ CPTransformableAttributeType = 1800;
         view = [[CPCheckBox alloc] initWithFrame:CGRectMake(0, 0, 50, 26)];
     }
     else if (attributeType == CPDateAttributeType)
+    {
         view = [[CPDatePicker alloc] initWithFrame:CGRectMake(0, 0, 180, 26)];
+        [view setDatePickerElements:CPYearMonthDayDatePickerElementFlag];
+    }
     else
         return nil;
 

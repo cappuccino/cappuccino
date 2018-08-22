@@ -1,5 +1,7 @@
 var CPMenuValidatedUserInterfaceItemTestValidatedItems = [];
 
+@class MenuTarget
+
 @implementation CPMenuValidatedUserInterfaceItemTest : OJTestCase
 {
     CPMenu                          _menu @accessors(property=menu);
@@ -9,6 +11,9 @@ var CPMenuValidatedUserInterfaceItemTestValidatedItems = [];
 
 - (void)setUp
 {
+    // This will init the global var CPApp which are used internally in the AppKit
+    [[CPApplication alloc] init];
+
     _menuTarget = [[MenuTarget alloc] init];
     [[CPApplication sharedApplication] setDelegate:_menuTarget];
 

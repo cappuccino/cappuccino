@@ -62,6 +62,7 @@
 
     [numberFormatter setMinimum:10];
     [numberFormatter setMaximum:20];
+    [numberFormatter setGeneratesDecimalNumbers:NO];
 
     [self assertTrue:[numberFormatter getObjectValue:objectValueRef forString:@"10" errorDescription:nil]
              message:@"MinMax T1: Expected True."];

@@ -35,7 +35,12 @@ function BundleTask(aName, anApplication)
 {
     Task.apply(this, arguments);
 
-    this.setEnvironments([environment.Browser, environment.CommonJS]);
+    var ignoreCommonJS = system.env["CAPP_IGNORE_COMMONJS_ENV"];
+
+    if (ignoreCommonJS && ignoreCommonJS.toLowerCase() == "no" || ignoreCommonJS == "1")
+        this.setEnvironments([environment.Browser]);
+    else
+        this.setEnvironments([environment.Browser, environment.CommonJS]);
 
     this._author = null;
     this._email = null;
@@ -902,7 +907,7 @@ BundleTask.prototype.defineSourceTasks = function()
                         basePath = absolutePath.substring(0, absolutePath.length - theTranslatedFilename.length);
 
                     // Here we set the current compiler flags so the load system will know what compiler flags to use
-                    ObjectiveJ.setCurrentCompilerFlags(environmentCompilerFlags);
+                    ObjectiveJ.FileExecutable.setCurrentGccCompilerFlags(environmentCompilerFlags);
                     // Here we tell the CFBundle to load frameworks for the current build enviroment and not the enviroment that is running
                     CFBundle.environments = function() {return [anEnvironment.name(), "ObjJ"]};
                     ObjectiveJ.make_narwhal_factory(absolutePath, basePath, translateFilenameToPath)(require, e, module, system, print);

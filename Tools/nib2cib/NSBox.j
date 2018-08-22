@@ -30,8 +30,8 @@
 
     if (self)
     {
-        _boxType       = [aCoder decodeIntForKey:@"NSBoxType"];
-        _borderType    = [aCoder decodeIntForKey:@"NSBorderType"];
+        _boxType        = [aCoder decodeIntForKey:@"NSBoxType"];
+        _borderType     = [aCoder decodeIntForKey:@"NSBorderType"];
 
         var borderColor = [aCoder decodeObjectForKey:@"NSBorderColor2"],
             fillColor = [aCoder decodeObjectForKey:@"NSFillColor2"],
@@ -52,7 +52,8 @@
             frame.size.height -= 6;
         }
 
-        [self setFrame:frame];
+        _frame = frame;
+        _bounds.size = CGSizeMakeCopy(frame.size);
 
         if (_boxType !== CPBoxPrimary && _boxType !== CPBoxSecondary)
         {

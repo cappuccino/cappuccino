@@ -25,8 +25,9 @@
 
 @import "CPFont.j"
 @import "CPShadow.j"
-@import "CPView.j"
+@import "CPText.j"
 @import "CPKeyValueBinding.j"
+@import "CPTrackingArea.j"
 
 @global CPApp
 
@@ -42,16 +43,12 @@
 
 @end
 
-CPLeftTextAlignment      = 0;
-CPRightTextAlignment     = 1;
-CPCenterTextAlignment    = 2;
-CPJustifiedTextAlignment = 3;
-CPNaturalTextAlignment   = 4;
-
+@typedef CPControlSize
 CPRegularControlSize = 0;
 CPSmallControlSize   = 1;
 CPMiniControlSize    = 2;
 
+@typedef CPLineBreakMode
 CPLineBreakByWordWrapping     = 0;
 CPLineBreakByCharWrapping     = 1;
 CPLineBreakByClipping         = 2;
@@ -59,11 +56,13 @@ CPLineBreakByTruncatingHead   = 3;
 CPLineBreakByTruncatingTail   = 4;
 CPLineBreakByTruncatingMiddle = 5;
 
+@typedef CPVerticalTextAlignment
 CPTopVerticalTextAlignment    = 1;
 CPCenterVerticalTextAlignment = 2;
 CPBottomVerticalTextAlignment = 3;
 
 // Deprecated for use with images, use the CPImageScale constants
+@typedef CPImageScaling
 CPScaleProportionally = 0;
 CPScaleToFit          = 1;
 CPScaleNone           = 2;
@@ -73,6 +72,7 @@ CPImageScaleAxesIndependently      = 1;
 CPImageScaleNone                   = 2;
 CPImageScaleProportionallyUpOrDown = 3;
 
+@typedef CPCellImagePosition
 CPNoImage       = 0;
 CPImageOnly     = 1;
 CPImageLeft     = 2;
@@ -118,6 +118,10 @@ var CPControlBlackColor = [CPColor blackColor];
     BOOL                _trackingWasWithinFrame;
     unsigned            _trackingMouseDownFlags;
     CGPoint             _previousTrackingLocation;
+
+    CPControlSize       _controlSize;
+
+    CPWritingDirection  _baseWritingDirection   @accessors(property=baseWritingDirection);
 }
 
 + (CPDictionary)themeAttributes
@@ -134,6 +138,7 @@ var CPControlBlackColor = [CPColor blackColor];
             @"image-scaling": CPScaleToFit,
             @"min-size": CGSizeMakeZero(),
             @"max-size": CGSizeMake(-1.0, -1.0),
+            @"nib2cib-adjustment-frame": CGRectMakeZero()
         };
 }
 
@@ -164,7 +169,7 @@ var CPControlBlackColor = [CPColor blackColor];
 }
 
 /*!
-    Reverse set the binding iff the CPContinuouslyUpdatesValueBindingOption is set.
+    Reverse set the binding if the CPContinuouslyUpdatesValueBindingOption is set.
 */
 - (void)_continuouslyReverseSetBinding
 {
@@ -189,12 +194,93 @@ var CPControlBlackColor = [CPColor blackColor];
 
     if (self)
     {
-        _sendActionOn = CPLeftMouseUpMask;
+        _sendActionOn           = CPLeftMouseUpMask;
         _trackingMouseDownFlags = 0;
     }
 
     return self;
 }
+
+#pragma mark -
+#pragma mark Control Size
+
+/*!
+    Returns the control's control size
+*/
+- (CPControlSize)controlSize
+{
+    return _controlSize;
+}
+
+/*!
+    Sets the control's size.
+    @param aControlSize the control's size
+*/
+- (void)setControlSize:(CPControlSize)aControlSize
+{
+    if (_controlSize === aControlSize)
+        return;
+
+    [self unsetThemeState:[self _controlSizeThemeState]];
+    _controlSize = aControlSize;
+    [self setThemeState:[self _controlSizeThemeState]];
+
+    [self setNeedsLayout];
+    [self setNeedsDisplay:YES];
+}
+
+/*!
+    Gets the current theme state according to the current controlSize.
+    @return a CPThemeState
+*/
+- (ThemeState)_controlSizeThemeState
+{
+    switch (_controlSize)
+    {
+        case CPSmallControlSize:
+            return CPThemeStateControlSizeSmall;
+
+        case CPMiniControlSize:
+            return CPThemeStateControlSizeMini;
+
+        case CPRegularControlSize:
+        default:
+            return CPThemeStateControlSizeRegular;
+    }
+}
+
+/*!
+    @ignore
+    Change frame size according to the theme control size theme constraints
+    Basically for height to min-size.
+*/
+- (void)_sizeToControlSize
+{
+    var frameSize = [self frameSize],
+        minSize = [self currentValueForThemeAttribute:@"min-size"],
+        maxSize = [self currentValueForThemeAttribute:@"max-size"];
+
+    if (minSize.width > 0)
+    {
+        frameSize.width = MAX(minSize.width, frameSize.width);
+
+        if (maxSize.width > 0)
+            frameSize.width = MIN(maxSize.width, frameSize.width);
+    }
+
+    if (minSize.height > 0)
+    {
+        frameSize.height = MAX(minSize.height, frameSize.height);
+
+        if (maxSize.height > 0)
+            frameSize.height = MIN(maxSize.height, frameSize.height);
+    }
+
+    [self setFrameSize:frameSize];
+}
+
+
+#pragma mark -
 
 /*!
     Sets the receiver's target action.
@@ -925,16 +1011,81 @@ var CPControlBlackColor = [CPColor blackColor];
     return [self hasThemeState:CPThemeStateHighlighted];
 }
 
+
+#pragma mark -
+#pragma mark Base writing direction
+
+/*!
+    Sets the initial writing direction of the receiver
+    @param writingDirection - It could be CPWritingDirectionNatural, CPWritingDirectionLeftToRight, CPWritingDirectionRightToLeft
+*/
+- (void)setBaseWritingDirection:(CPWritingDirection)writingDirection
+{
+    if (writingDirection == _baseWritingDirection)
+        return;
+
+    [self willChangeValueForKey:@"baseWritingDirection"];
+    _baseWritingDirection = writingDirection;
+    [self didChangeValueForKey:@"baseWritingDirection"];
+
+#if PLATFORM(DOM)
+
+    var style;
+
+    switch (_baseWritingDirection)
+    {
+        case CPWritingDirectionNatural:
+            style = "initial";
+            break;
+
+        case CPWritingDirectionLeftToRight:
+            style = "ltr";
+            break;
+
+        case CPWritingDirectionRightToLeft:
+            style = "rtl";
+            break;
+
+        default:
+            style = "initial";
+    }
+
+    _DOMElement.style.direction = style;
+#endif
+}
+
 @end
 
-var CPControlValueKey                   = @"CPControlValueKey",
+@implementation CPControl (CPTrackingArea)
+{
+    CPTrackingArea      _controlTrackingArea;
+}
+
+- (void)updateTrackingAreas
+{
+    if (_controlTrackingArea)
+        [self removeTrackingArea:_controlTrackingArea];
+    
+    _controlTrackingArea = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero()
+                                                        options:CPTrackingMouseEnteredAndExited | CPTrackingActiveInKeyWindow | CPTrackingInVisibleRect
+                                                          owner:self
+                                                       userInfo:nil];
+    [self addTrackingArea:_controlTrackingArea];
+    [super updateTrackingAreas];
+}
+
+@end
+
+var CPControlActionKey                  = @"CPControlActionKey",
+    CPControlControlSizeKey             = @"CPControlControlSizeKey",
     CPControlControlStateKey            = @"CPControlControlStateKey",
-    CPControlIsEnabledKey               = @"CPControlIsEnabledKey",
-    CPControlTargetKey                  = @"CPControlTargetKey",
-    CPControlActionKey                  = @"CPControlActionKey",
-    CPControlSendActionOnKey            = @"CPControlSendActionOnKey",
     CPControlFormatterKey               = @"CPControlFormatterKey",
+    CPControlIsEnabledKey               = @"CPControlIsEnabledKey",
+    CPControlSendActionOnKey            = @"CPControlSendActionOnKey",
     CPControlSendsActionOnEndEditingKey = @"CPControlSendsActionOnEndEditingKey",
+    CPControlTargetKey                  = @"CPControlTargetKey",
+    CPControlValueKey                   = @"CPControlValueKey",
+    CPControlBaseWrittingDirectionKey   = @"CPControlBaseWrittingDirectionKey";
 
     __Deprecated__CPImageViewImageKey   = @"CPImageViewImageKey";
 
@@ -961,6 +1112,10 @@ var CPControlValueKey                   = @"CPControlValueKey",
         [self setSendsActionOnEndEditing:[aCoder decodeBoolForKey:CPControlSendsActionOnEndEditingKey]];
 
         [self setFormatter:[aCoder decodeObjectForKey:CPControlFormatterKey]];
+
+        [self setControlSize:[aCoder decodeIntForKey:CPControlControlSizeKey]];
+
+        [self setBaseWritingDirection:[aCoder decodeIntForKey:CPControlBaseWrittingDirectionKey]];
     }
 
     return self;
@@ -993,6 +1148,11 @@ var CPControlValueKey                   = @"CPControlValueKey",
 
     if (_formatter !== nil)
         [aCoder encodeObject:_formatter forKey:CPControlFormatterKey];
+
+    [aCoder encodeInt:_controlSize forKey:CPControlControlSizeKey];
+
+    [aCoder encodeInt:_baseWritingDirection forKey:CPControlBaseWrittingDirectionKey];
+
 }
 
 @end

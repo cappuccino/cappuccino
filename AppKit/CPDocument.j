@@ -515,7 +515,9 @@ var CPDocumentUntitledCount = 0;
 
         alert("There was an error retrieving the document.");
 
-        objj_msgSend(session.delegate, session.didReadSelector, self, NO, session.contextInfo);
+        var theDelegate = session.delegate;
+
+        theDelegate.isa.objj_msgSend3(theDelegate, session.didReadSelector, self, NO, session.contextInfo);
     }
     else
     {
@@ -540,7 +542,9 @@ var CPDocumentUntitledCount = 0;
 
                 _writeRequest = nil;
 
-                objj_msgSend(session.delegate, session.didSaveSelector, self, NO, session.contextInfo);
+                var theDelegate = session.delegate;
+
+                theDelegate.isa.objj_msgSend3(theDelegate, session.didSaveSelector, self, NO, session.contextInfo);
                 [self _sendDocumentSavedNotification:NO];
             }
         }
@@ -553,14 +557,15 @@ var CPDocumentUntitledCount = 0;
 */
 - (void)connection:(CPURLConnection)aConnection didReceiveData:(CPString)aData
 {
-    var session = aConnection.session;
+    var session = aConnection.session,
+        theDelegate = session.delegate;
 
     // READ
     if (aConnection == _readConnection)
     {
         [self readFromData:[CPData dataWithRawString:aData] ofType:session.fileType error:nil];
 
-        objj_msgSend(session.delegate, session.didReadSelector, self, YES, session.contextInfo);
+        theDelegate.isa.objj_msgSend3(theDelegate, session.didReadSelector, self, YES, session.contextInfo);
     }
     else
     {
@@ -569,7 +574,7 @@ var CPDocumentUntitledCount = 0;
 
         _writeRequest = nil;
 
-        objj_msgSend(session.delegate, session.didSaveSelector, self, YES, session.contextInfo);
+        theDelegate.isa.objj_msgSend3(theDelegate, session.didSaveSelector, self, YES, session.contextInfo);
         [self _sendDocumentSavedNotification:YES];
     }
 }
@@ -580,10 +585,11 @@ var CPDocumentUntitledCount = 0;
 */
 - (void)connection:(CPURLConnection)aConnection didFailWithError:(CPError)anError
 {
-    var session = aConnection.session;
+    var session = aConnection.session,
+        theDelegate = session.delegate;
 
     if (_readConnection == aConnection)
-        objj_msgSend(session.delegate, session.didReadSelector, self, NO, session.contextInfo);
+        theDelegate.isa.objj_msgSend3(theDelegate, session.didReadSelector, self, NO, session.contextInfo);
 
     else
     {
@@ -597,7 +603,7 @@ var CPDocumentUntitledCount = 0;
 
         alert("There was an error saving the document.");
 
-        objj_msgSend(session.delegate, session.didSaveSelector, self, NO, session.contextInfo);
+        theDelegate.isa.objj_msgSend3(theDelegate, session.didSaveSelector, self, NO, session.contextInfo);
         [self _sendDocumentSavedNotification:NO];
     }
 }
@@ -858,21 +864,24 @@ var CPDocumentUntitledCount = 0;
         [self canCloseDocumentWithDelegate:self shouldCloseSelector:@selector(_document:shouldClose:context:) contextInfo:{delegate:delegate, selector:selector, context:info}];
 
     else if ([delegate respondsToSelector:selector])
-        objj_msgSend(delegate, selector, self, YES, info);
+        delegate.isa.objj_msgSend3(delegate, selector, self, YES, info);
 }
 
 - (void)_document:(CPDocument)aDocument shouldClose:(BOOL)shouldClose context:(Object)context
 {
+    var theDelegate = context.delegate;
+
     if (aDocument === self && shouldClose)
         [self close];
 
-    objj_msgSend(context.delegate, context.selector, aDocument, shouldClose, context.context);
+    if (theDelegate != null)
+        theDelegate.isa.objj_msgSend3(theDelegate, context.selector, aDocument, shouldClose, context.context);
 }
 
 - (void)canCloseDocumentWithDelegate:(id)aDelegate shouldCloseSelector:(SEL)aSelector contextInfo:(Object)context
 {
     if (![self isDocumentEdited])
-        return [aDelegate respondsToSelector:aSelector] && objj_msgSend(aDelegate, aSelector, self, YES, context);
+        return [aDelegate respondsToSelector:aSelector] && aDelegate.isa.objj_msgSend3(aDelegate, aSelector, self, YES, context);
 
     _canCloseAlert = [[CPAlert alloc] init];
 
@@ -901,8 +910,8 @@ var CPDocumentUntitledCount = 0;
 
     if (returnCode === 0)
         [self saveDocumentWithDelegate:delegate didSaveSelector:selector contextInfo:context];
-    else
-        objj_msgSend(delegate, selector, self, returnCode === 2, context);
+    else if (delegate != null)
+        delegate.isa.objj_msgSend3(delegate, selector, self, returnCode === 2, context);
 
     _canCloseAlert = nil;
 }

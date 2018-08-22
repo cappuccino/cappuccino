@@ -209,6 +209,14 @@ var concat = Array.prototype.concat,
 }
 
 /*!
+Returns a hash for the object. Unlike Cocoa, the hash value does not take content into account, so two arrays with the same content (\c isEqual: === YES) will not generate the same hash.
+*/
+- (unsigned)hash
+{
+    return [self UID];
+}
+
+/*!
     Returns the first object in the array. If the array is empty, returns \c nil
 */
 - (id)firstObject
@@ -870,6 +878,25 @@ var concat = Array.prototype.concat,
 - (CPString)componentsJoinedByString:(CPString)aString
 {
     return join.call([self _javaScriptArrayCopy], aString);
+}
+
+/*!
+    Returns an Array formed by applying a function to each object in the receiver.
+    @param aFunction a function taking two arguments: (element, index).
+    @return an Array containing the transformed elements.
+*/
+- (CPArray)arrayByApplyingBlock:(Function/*element, index*/)aFunction
+{
+    var result = [],
+        count = [self count];
+
+    for (var idx = 0; idx < count; idx++)
+    {
+        var obj = aFunction([self objectAtIndex:idx], idx);
+        [result addObject:obj];
+    }
+
+    return result;
 }
 
 // Creating a description of the array

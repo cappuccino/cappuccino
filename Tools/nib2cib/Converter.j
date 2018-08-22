@@ -39,8 +39,8 @@ var FILE = require("file"),
 
     SharedConverter = nil;
 
-NibFormatUndetermined   = 0,
-NibFormatMac            = 1,
+NibFormatUndetermined   = 0;
+NibFormatMac            = 1;
 NibFormatIPhone         = 2;
 
 ConverterModeLegacy   = 0;
@@ -119,8 +119,19 @@ ConverterConversionException = @"ConverterConversionException";
             // Compile xib or nib to make sure we have a non-new format nib.
             temporaryNibFilePath = FILE.join("/tmp", FILE.basename(aFilePath) + ".tmp.nib");
 
-            if (OS.popen(["/usr/bin/ibtool", aFilePath, "--compile", temporaryNibFilePath]).wait() === 1)
-                [CPException raise:ConverterConversionException reason:@"Could not compile file: " + aFilePath];
+            try
+            {
+                var p = OS.popen(["/usr/bin/ibtool", aFilePath, "--compile", temporaryNibFilePath]);
+                if (p.wait() === 1)
+                    [CPException raise:ConverterConversionException reason:@"Could not compile file: " + aFilePath];
+            }
+            finally
+            {
+                p.stdin.close();
+                p.stdout.close();
+                p.stderr.close();
+            }
+
         }
         else
         {
@@ -130,8 +141,18 @@ ConverterConversionException = @"ConverterConversionException";
         // Convert from binary plist to XML plist
         var temporaryPlistFilePath = FILE.join("/tmp", FILE.basename(aFilePath) + ".tmp.plist");
 
-        if (OS.popen(["/usr/bin/plutil", "-convert", "xml1", temporaryNibFilePath, "-o", temporaryPlistFilePath]).wait() === 1)
-            [CPException raise:ConverterConversionException reason:@"Could not convert to xml plist for file: " + aFilePath];
+        try
+        {
+            var p = OS.popen(["/usr/bin/plutil", "-convert", "xml1", temporaryNibFilePath, "-o", temporaryPlistFilePath]);
+            if (p.wait() === 1)
+                [CPException raise:ConverterConversionException reason:@"Could not convert to xml plist for file: " + aFilePath];
+        }
+        finally
+        {
+            p.stdin.close();
+            p.stdout.close();
+            p.stderr.close();
+        }
 
         if (!FILE.isReadable(temporaryPlistFilePath))
             [CPException raise:ConverterConversionException reason:@"Unable to convert nib file."];
@@ -144,9 +165,9 @@ ConverterConversionException = @"ConverterConversionException";
         if (system.engine === "rhino")
             plistContents = String(java.lang.String(plistContents).replaceAll("\\<key\\>\\s*CF\\$UID\\s*\\<\/key\\>", "<key>CP\\$UID</key>"));
         else
-            plistContents = plistContents.replace(/\<key\>\s*CF\$UID\s*\<\/key\>/g, "<key>CP$UID</key>");
+            plistContents = plistContents.replace(new RegExp("\\<key\\>\\s*CF\\$UID\\s*\\<\\/key\\>", "g"), "<key>CP$UID</key>");
 
-        plistContents = plistContents.replace(/<string>[\u0000-\u0008\u000B\u000C\u000E-\u001F]<\/string>/g, function(c)
+        plistContents = plistContents.replace(new RegExp("<string>[\\u0000-\\u0008\\u000B\\u000C\\u000E-\\u001F]<\\/string>", "g"), function(c)
         {
             CPLog.warn("Warning: converting character 0x" + c.charCodeAt(8).toString(16) + " to base64 representation");
             return "<string type=\"base64\">" + CFData.encodeBase64String(c.charAt(8)) + "</string>";

@@ -7,10 +7,10 @@
 - (void)testSetWithCredentials
 {
     var cfHTTPRequest = new CFHTTPRequest();
-    [self assertFalse:cfHTTPRequest.getWithCredentials()];
+    [self assertFalse:cfHTTPRequest.withCredentials()];
 
     cfHTTPRequest.setWithCredentials(YES);
-    [self assertTrue:cfHTTPRequest.getWithCredentials()];
+    [self assertTrue:cfHTTPRequest.withCredentials()];
 }
 
 @end

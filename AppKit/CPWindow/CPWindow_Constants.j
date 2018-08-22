@@ -81,6 +81,7 @@ CPWindowMinYMargin              = 8;
 CPWindowHeightSizable           = 16;
 CPWindowMaxYMargin              = 32;
 
+@typedef CPWindowLevel
 CPBackgroundWindowLevel         = -1;
 /*
     Default level for windows
@@ -143,6 +144,7 @@ CPDraggingWindowLevel           = 500;
 */
 CPScreenSaverWindowLevel        = 1000;
 
+@typedef CPWindowOrderingMode
 /*
     The receiver is placed directly in front of the window specified.
     @global
@@ -174,6 +176,8 @@ CPWindowDidEndSheetNotification                 = @"CPWindowDidEndSheetNotificat
 CPWindowDidMiniaturizeNotification              = @"CPWindowDidMiniaturizeNotification";
 CPWindowWillMiniaturizeNotification             = @"CPWindowWillMiniaturizeNotification";
 CPWindowDidDeminiaturizeNotification            = @"CPWindowDidDeminiaturizeNotification";
+CPWindowWillStartLiveResizeNotification         = @"CPWindowWillStartLiveResizeNotification";
+CPWindowDidEndLiveResizeNotification            = @"CPWindowDidEndLiveResizeNotification";
 
 _CPWindowDidChangeFirstResponderNotification    = @"_CPWindowDidChangeFirstResponderNotification";
 

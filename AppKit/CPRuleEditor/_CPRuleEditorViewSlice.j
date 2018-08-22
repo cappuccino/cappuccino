@@ -19,6 +19,8 @@
 
 @import "CPView.j"
 
+@class CPRuleEditor
+
 @implementation _CPRuleEditorViewSlice : CPView
 {
     CPRuleEditor _ruleEditor;
@@ -27,7 +29,6 @@
     CGRect       _animationTargetRect   @accessors(property=_animationTargetRect);
     BOOL         _selected              @accessors(getter=_isSelected, setter=_setSelected:);
     BOOL         _lastSelected          @accessors(getter=_isLastSelected, setter=_setLastSelected:);
-    CPColor      _backgroundColor       @accessors(property=backgroundColor);
     BOOL         _editable              @accessors(getter=isEditable, setter=setEditable:);
 }
 
@@ -61,9 +62,9 @@
 - (void)drawRect:(CGRect)rect
 {
     var context = [[CPGraphicsContext currentContext] graphicsPort],
-        bounds = [self bounds],
-        maxX = CGRectGetWidth(bounds),
-        maxY = CGRectGetHeight(bounds);
+        bounds  = [self bounds],
+        maxX    = CGRectGetWidth(bounds),
+        maxY    = CGRectGetHeight(bounds);
 
     // Draw background
     if ([self _isSelected])

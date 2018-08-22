@@ -24,6 +24,7 @@
 @import "_CPMenuManager.j"
 
 @class _CPMenuView
+@class CPMenu
 
 @global CPMenuDidAddItemNotification
 @global CPMenuDidChangeItemNotification
@@ -31,7 +32,6 @@
 
 @implementation _CPMenuBarWindow : CPPanel
 {
-    CPMenu      _menu;
     CPView      _highlightView;
     CPArray     _menuItemViews;
 

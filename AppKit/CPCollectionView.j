@@ -31,7 +31,9 @@
 @import "CPDragServer_Constants.j"
 @import "CPPasteboard.j"
 @import "CPView.j"
+@import "CPKeyValueBinding.j"
 
+@class _CPCollectionViewDropIndicator
 
 var CPCollectionViewDelegate_collectionView_acceptDrop_index_dropOperation_                 = 1 << 0,
     CPCollectionViewDelegate_collectionView_canDragItemsAtIndexes_withEvent_                = 1 << 1,
@@ -40,9 +42,8 @@ var CPCollectionViewDelegate_collectionView_acceptDrop_index_dropOperation_     
     CPCollectionViewDelegate_collectionView_dataForItemsAtIndexes_forType_                  = 1 << 4,
     CPCollectionViewDelegate_collectionView_validateDrop_proposedIndex_dropOperation_       = 1 << 5,
     CPCollectionViewDelegate_collectionView_didDoubleClickOnItemAtIndex_                    = 1 << 6,
-    CPCollectionViewDelegate_collectionViewDidChangeSelection_                              = 1 << 7,
-    CPCollectionViewDelegate_collectionView_menuForItemAtIndex_                             = 1 << 8,
-    CPCollectionViewDelegate_collectionView_draggingViewForItemsAtIndexes_withEvent_offset  = 1 << 9;
+    CPCollectionViewDelegate_collectionView_menuForItemAtIndex_                             = 1 << 7,
+    CPCollectionViewDelegate_collectionView_draggingViewForItemsAtIndexes_withEvent_offset  = 1 << 8;
 
 
 @protocol CPCollectionViewDelegate <CPObject>
@@ -55,11 +56,12 @@ var CPCollectionViewDelegate_collectionView_acceptDrop_index_dropOperation_     
 - (CPData)collectionView:(CPCollectionView)collectionView dataForItemsAtIndexes:(CPIndexSet)indices forType:(CPString)aType;
 - (CPDragOperation)collectionView:(CPCollectionView)collectionView validateDrop:(id)draggingInfo proposedIndex:(CPInteger)proposedDropIndex dropOperation:(CPCollectionViewDropOperation)proposedDropOperation;
 - (CPMenu)collectionView:(CPCollectionView)collectionView menuForItemAtIndex:(CPInteger)anIndex;
-- (CPView)collectionView:(CPCollectionView)collectionView dragginViewForItemsAtIndexes:(CPIndexSet)indexes withEvent:(CPEvent)event offset:(CGPoint)dragImageOffset;
+- (CPView)collectionView:(CPCollectionView)collectionView draggingViewForItemsAtIndexes:(CPIndexSet)indexes withEvent:(CPEvent)event offset:(CGPoint)dragImageOffset;
 - (void)collectionView:(CPCollectionView)collectionView didDoubleClickOnItemAtIndex:(int)index;
-- (void)collectionViewDidChangeSelection:(CPCollectionView)collectionView;
 
 @end
+
+var HORIZONTAL_MARGIN = 2;
 
 /*!
     @ingroup appkit
@@ -70,10 +72,6 @@ var CPCollectionViewDelegate_collectionView_acceptDrop_index_dropOperation_     
     setting that item as the collection view prototype.
 
     @par Delegate Methods
-
-    @delegate - (void)collectionViewDidChangeSelection:(CPCollectionView)collectionView;
-    DEPRECATED: Please do not use.
-    @param collectionView the collection view who's selection changed
 
     @delegate - (void)collectionView:(CPCollectionView)collectionView didDoubleClickOnItemAtIndex:(int)index;
     Called when the user double-clicks on an item in the collection view.
@@ -93,9 +91,6 @@ var CPCollectionViewDelegate_collectionView_acceptDrop_index_dropOperation_     
     @param indices the indices to obtain drag types
     @return an array of drag types (CPString)
 */
-
-var HORIZONTAL_MARGIN = 2;
-
 @implementation CPCollectionView : CPView
 {
     CPArray                         _content;
@@ -138,12 +133,19 @@ var HORIZONTAL_MARGIN = 2;
     CGSize                          _storedFrameSize;
 
     BOOL                            _uniformSubviewsResizing @accessors(property=uniformSubviewsResizing);
-    BOOL                            _lockResizing;
 
     CPInteger                       _currentDropIndex;
     CPDragOperation                 _currentDragOperation;
 
     _CPCollectionViewDropIndicator  _dropView;
+}
+
++ (Class)_binderClassForBinding:(CPString)aBinding
+{
+    if (aBinding == CPContentBinding)
+        return [_CPCollectionViewContentBinder class];
+
+    return [super _binderClassForBinding:aBinding];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -188,7 +190,7 @@ var HORIZONTAL_MARGIN = 2;
 
     _needsMinMaxItemSizeUpdate = YES;
     _uniformSubviewsResizing = NO;
-    _lockResizing = NO;
+    _inLiveResize = NO;
 
     _currentDropIndex      = -1;
     _currentDragOperation  = CPDragOperationNone;
@@ -235,9 +237,6 @@ var HORIZONTAL_MARGIN = 2;
 
     if ([_delegate respondsToSelector:@selector(collectionView:didDoubleClickOnItemAtIndex:)])
         _implementedDelegateMethods |= CPCollectionViewDelegate_collectionView_didDoubleClickOnItemAtIndex_;
-
-    if ([_delegate respondsToSelector:@selector(collectionViewDidChangeSelection:)])
-        _implementedDelegateMethods |= CPCollectionViewDelegate_collectionViewDidChangeSelection_;
 
     if ([_delegate respondsToSelector:@selector(collectionView:menuForItemAtIndex:)])
         _implementedDelegateMethods |= CPCollectionViewDelegate_collectionView_menuForItemAtIndex_;
@@ -393,14 +392,7 @@ var HORIZONTAL_MARGIN = 2;
     _isSelectable = isSelectable;
 
     if (!_isSelectable)
-    {
-        var index = CPNotFound,
-            itemCount = [_items count];
-
-        // Be wary of invalid selection ranges since setContent: does not clear selection indexes.
-        while ((index = [_selectionIndexes indexGreaterThanIndex:index]) != CPNotFound && index < itemCount)
-            [_items[index] setSelected:NO];
-    }
+        [self _applySelectionToItems:NO];
 }
 
 /*!
@@ -454,31 +446,18 @@ var HORIZONTAL_MARGIN = 2;
 {
     if (!anIndexSet)
         anIndexSet = [CPIndexSet indexSet];
+
     if (!_isSelectable || [_selectionIndexes isEqual:anIndexSet])
         return;
 
-    var index = CPNotFound,
-        itemCount = [_items count];
-
-    // Be wary of invalid selection ranges since setContent: does not clear selection indexes.
-    while ((index = [_selectionIndexes indexGreaterThanIndex:index]) !== CPNotFound && index < itemCount)
-        [_items[index] setSelected:NO];
+    [self _applySelectionToItems:NO];
 
     _selectionIndexes = anIndexSet;
 
-    var index = CPNotFound;
-
-    while ((index = [_selectionIndexes indexGreaterThanIndex:index]) !== CPNotFound)
-        [_items[index] setSelected:YES];
+    [self _applySelectionToItems:YES];
 
     var binderClass = [[self class] _binderClassForBinding:@"selectionIndexes"];
     [[binderClass getBinding:@"selectionIndexes" forObject:self] reverseSetValueFor:@"selectionIndexes"];
-
-    if ([_delegate respondsToSelector:@selector(collectionViewDidChangeSelection:)])
-    {
-        CPLog.warn("The delegate method collectionViewDidChangeSelection: is deprecated and will be removed in a future version, please bind to selectionIndexes instead.");
-        [_delegate collectionViewDidChangeSelection:self];
-    }
 }
 
 /*!
@@ -540,14 +519,14 @@ var HORIZONTAL_MARGIN = 2;
 
 - (void)resizeWithOldSuperviewSize:(CGSize)oldBoundsSize
 {
-    if (_lockResizing)
+    if (_inLiveResize)
         return;
 
-    _lockResizing = YES;
+    _inLiveResize = YES;
 
     [self tile];
 
-    _lockResizing = NO;
+    _inLiveResize = NO;
 }
 
 - (void)tile
@@ -623,7 +602,7 @@ var HORIZONTAL_MARGIN = 2;
 
     height = MAX(height, numberOfRows * (_minItemSize.height + _verticalMargin));
 
-    var itemSizeHeight = FLOOR(height / numberOfRows);
+    var itemSizeHeight = FLOOR(height / numberOfRows) - _verticalMargin;
 
     if (maxItemSizeHeight > 0)
         itemSizeHeight = MIN(itemSizeHeight, maxItemSizeHeight);
@@ -985,6 +964,20 @@ var HORIZONTAL_MARGIN = 2;
         frame = CGRectUnion(frame, [self frameForItemAtIndex:indexArray[index]]);
 
     return frame;
+}
+
+- (void)_applySelectionToItems:(BOOL)select
+{
+    var numberOfItems = [_items count];
+
+    [_selectionIndexes enumerateIndexesUsingBlock:function(idx, stop)
+    {
+        if (idx < numberOfItems)
+            [[_items objectAtIndex:idx] setSelected:select];
+        else {
+            stop(YES);
+        }
+    }];
 }
 
 @end
@@ -1514,17 +1507,6 @@ Not supported. Use -collectionView:dataForItemsAtIndexes:fortype:
     return [_delegate collectionView:self didDoubleClickOnItemAtIndex:index];
 }
 
-/*!
-    @ignore
-    Call delegate collectionViewDidChangeSelection
-*/
-- (void)_sendDelegateCollectionViewDidChangeSelection:(CPCollectionView)collectionView
-{
-    if (!(_implementedDelegateMethods & CPCollectionViewDelegate_collectionViewDidChangeSelection_))
-        return;
-
-    return [_delegate collectionViewDidChangeSelection:self];
-}
 
 /*!
     @ignore
@@ -1609,6 +1591,17 @@ var CPCollectionViewMinItemSizeKey              = @"CPCollectionViewMinItemSizeK
     [aCoder encodeFloat:_verticalMargin forKey:CPCollectionViewVerticalMarginKey];
 
     [aCoder encodeObject:_backgroundColors forKey:CPCollectionViewBackgroundColorsKey];
+}
+
+@end
+
+@implementation _CPCollectionViewContentBinder : CPBinder
+{
+}
+
+- (void)setValue:(id)aValue forBinding:(CPString)aBinding
+{
+    [_source setContent:aValue];
 }
 
 @end

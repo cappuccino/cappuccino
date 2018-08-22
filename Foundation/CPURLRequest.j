@@ -25,6 +25,12 @@
 @import "CPString.j"
 @import "CPURL.j"
 
+@typedef CPURLRequestCachePolicy
+CPURLRequestUseProtocolCachePolicy = 0;
+CPURLRequestReloadIgnoringLocalCacheData = 1;
+CPURLRequestReturnCacheDataElseLoad = 2;
+CPURLRequestReturnCacheDataDontLoad = 3;
+
 /*!
     @class CPURLRequest
     @ingroup foundation
@@ -35,12 +41,16 @@
 */
 @implementation CPURLRequest : CPObject
 {
-    CPURL       _URL;
+    CPURL                       _URL                @accessors(property=URL);
 
     // FIXME: this should be CPData
-    CPString        _HTTPBody;
-    CPString        _HTTPMethod;
-    CPDictionary    _HTTPHeaderFields;
+    CPString                    _HTTPBody           @accessors(property=HTTPBody);
+    CPString                    _HTTPMethod         @accessors(property=HTTPMethod);
+    BOOL                        _withCredentials    @accessors(property=withCredentials);
+
+    CPDictionary                _HTTPHeaderFields   @accessors(readonly, getter=allHTTPHeaderFields);
+    CPTimeInterval              _timeoutInterval    @accessors(readonly, getter=timeoutInterval);
+    CPURLRequestCachePolicy     _cachePolicy        @accessors(readonly, getter=cachePolicy);
 }
 
 /*!
@@ -51,6 +61,18 @@
 + (id)requestWithURL:(CPURL)aURL
 {
     return [[CPURLRequest alloc] initWithURL:aURL];
+}
+
+/*!
+    Creates a request with a specified URL, cachePolicy and timeoutInterval
+    @param aURL the URL of the request
+    @param aCachePolicy the cache policy of the request
+    @param aTimeoutInterval the timeoutInterval of the request
+    @return a CPURLRequest
+*/
++ (id)requestWithURL:(CPURL)anURL cachePolicy:(CPURLRequestCachePolicy)aCachePolicy timeoutInterval:(CPTimeInterval)aTimeoutInterval
+{
+    return [[CPURLRequest alloc] initWithURL:anURL cachePolicy:aCachePolicy timeoutInterval:aTimeoutInterval];
 }
 
 /*!
@@ -65,34 +87,48 @@
     Initializes the request with a URL. This is the designated initializer.
 
     @param aURL the url to set
+    @param aCachePolicy the cache policy of the request
+    @param aTimeoutInterval the timeoutInterval of the request
     @return the initialized CPURLRequest
 */
-- (id)initWithURL:(CPURL)aURL
+- (id)initWithURL:(CPURL)anURL cachePolicy:(CPURLRequestCachePolicy)aCachePolicy timeoutInterval:(CPTimeInterval)aTimeoutInterval
 {
-    self = [super init];
-
-    if (self)
+    if (self = [self initWithURL:anURL])
     {
-        [self setURL:aURL];
-
-        _HTTPBody = @"";
-        _HTTPMethod = @"GET";
-        _HTTPHeaderFields = @{};
-
-        [self setValue:"Thu, 01 Jan 1970 00:00:00 GMT" forHTTPHeaderField:"If-Modified-Since"];
-        [self setValue:"no-cache" forHTTPHeaderField:"Cache-Control"];
-        [self setValue:"XMLHttpRequest" forHTTPHeaderField:"X-Requested-With"];
+        _cachePolicy = aCachePolicy;
+        _timeoutInterval = aTimeoutInterval;
+        
+        [self _updateCacheControlHeader];
     }
 
     return self;
 }
 
 /*!
-    Returns the request URL
+    Initializes the request with a URL. This is the designated initializer.
+
+    @param aURL the url to set
+    @return the initialized CPURLRequest
 */
-- (CPURL)URL
+- (id)initWithURL:(CPURL)aURL
 {
-    return _URL;
+    if (self = [super init])
+    {
+        [self setURL:aURL];
+
+        _HTTPBody = @"";
+        _HTTPMethod = @"GET";
+        _HTTPHeaderFields = @{};
+        _withCredentials = NO;
+        _timeoutInterval = 60.0;
+        _cachePolicy = CPURLRequestUseProtocolCachePolicy;
+
+        [self setValue:"Thu, 01 Jan 1970 00:00:00 GMT" forHTTPHeaderField:"If-Modified-Since"];
+        [self setValue:"XMLHttpRequest" forHTTPHeaderField:"X-Requested-With"];
+        [self _updateCacheControlHeader];
+    }
+
+    return self;
 }
 
 /*!
@@ -103,48 +139,6 @@
 {
     // Lenient and accept strings.
     _URL = new CFURL(aURL);
-}
-
-/*!
-    Sets the HTTP body for this request
-    @param anHTTPBody the new HTTP body
-*/
-- (void)setHTTPBody:(CPString)anHTTPBody
-{
-    _HTTPBody = anHTTPBody;
-}
-
-/*!
-    Returns the request's http body.
-*/
-- (CPString)HTTPBody
-{
-    return _HTTPBody;
-}
-
-/*!
-    Sets the request's http method.
-    @param anHTPPMethod the new http method
-*/
-- (void)setHTTPMethod:(CPString)anHTTPMethod
-{
-    _HTTPMethod = anHTTPMethod;
-}
-
-/*!
-    Returns the request's http method
-*/
-- (CPString)HTTPMethod
-{
-    return _HTTPMethod;
-}
-
-/*!
-    Returns a dictionary of the http header fields
-*/
-- (CPDictionary)allHTTPHeaderFields
-{
-    return _HTTPHeaderFields;
 }
 
 /*!
@@ -164,6 +158,55 @@
 - (void)setValue:(CPString)aValue forHTTPHeaderField:(CPString)aField
 {
     [_HTTPHeaderFields setObject:aValue forKey:aField];
+}
+
+/*
+  @ignore
+*/
+- (void)_updateCacheControlHeader
+{
+    switch (_cachePolicy)
+    {
+      case CPURLRequestUseProtocolCachePolicy:
+          // TODO: implement everything about cache...
+          [self setValue:"no-cache" forHTTPHeaderField:"Cache-Control"];
+          break;
+
+      case CPURLRequestReturnCacheDataElseLoad:
+          [self setValue:"max-stale=31536000" forHTTPHeaderField:"Cache-Control"];
+          break;
+
+      case CPURLRequestReturnCacheDataDontLoad:
+          [self setValue:"only-if-cached" forHTTPHeaderField:"Cache-Control"];
+          break;
+
+      case CPURLRequestReloadIgnoringLocalCacheData:
+          [self setValue:"no-cache" forHTTPHeaderField:"Cache-Control"];
+          break;
+
+      default:
+          [self setValue:"no-cache" forHTTPHeaderField:"Cache-Control"];
+    }
+}
+
+@end
+
+/*
+    Implements the CPCopying Protocol for a CPURLRequest to provide deep copying for CPURLRequests
+*/
+@implementation CPURLRequest (CPCopying)
+{
+}
+
+- (id)copy
+{
+    var request = [[CPURLRequest alloc] initWithURL:[self URL]];
+    [request setHTTPBody:[self HTTPBody]];
+    [request setHTTPMethod:[self HTTPMethod]];
+    [request setWithCredentials:[self withCredentials]];
+    request._HTTPHeaderFields = [self allHTTPHeaderFields];
+
+    return request;
 }
 
 @end

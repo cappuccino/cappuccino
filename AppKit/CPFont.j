@@ -24,6 +24,7 @@
 @import <Foundation/CPBundle.j>
 
 @import "CPView.j"
+@import "CPFontDescriptor.j"
 
 CPFontDefaultSystemFontFace = @"Arial, sans-serif";
 CPFontDefaultSystemFontSize = 12;
@@ -162,7 +163,7 @@ following:
     if (normalizedFaces === _CPFontSystemFontFace)
         return;
 
-    [self _invalidateSystemFontCache]
+    [self _invalidateSystemFontCache];
     _CPFontSystemFontFace = aFace;
 }
 
@@ -174,20 +175,20 @@ following:
     return _CPFontSystemFontSize;
 }
 
-+ (float)systemFontSizeForControlSize:(CPControlSize)aSize
++ (CPFont)systemFontForControlSize:(CPControlSize)aSize
 {
     // TODO These sizes should be themable or made less arbitrary in some other way.
     switch (aSize)
     {
         case CPSmallControlSize:
-            return _CPFontSystemFontSize - 1;
+            return [self systemFontOfSize:_CPFontSystemFontSize - 1];
 
         case CPMiniControlSize:
-            return _CPFontSystemFontSize - 2;
+            return [self systemFontOfSize:_CPFontSystemFontSize - 2];
 
         case CPRegularControlSize:
         default:
-            return _CPFontSystemFontSize;
+            return [self systemFontOfSize:_CPFontSystemFontSize];
     }
 }
 
@@ -432,6 +433,43 @@ following:
 }
 
 @end
+
+@implementation CPFont(DescriptorAdditions)
+
+- (id)_initWithFontDescriptor:(CPFontDescriptor)fontDescriptor
+{
+    var aName = [fontDescriptor objectForKey: CPFontNameAttribute] ,
+        aSize = [fontDescriptor pointSize],
+        isBold = [fontDescriptor symbolicTraits] & CPFontBoldTrait,
+        isItalic = [fontDescriptor symbolicTraits] & CPFontItalicTrait;
+
+    return [self _initWithName:aName size:aSize bold:isBold italic:isItalic system:NO];
+}
+
++ (CPFont)fontWithDescriptor:(CPFontDescriptor)fontDescriptor size:(float)aSize
+{
+    var aName = [fontDescriptor objectForKey: CPFontNameAttribute],
+        isBold = [fontDescriptor symbolicTraits] & CPFontBoldTrait,
+        isItalic = [fontDescriptor symbolicTraits] & CPFontItalicTrait;
+
+    return [self _fontWithName:aName size:aSize || [fontDescriptor pointSize] bold:isBold italic:isItalic];
+}
+
+- (CPFontDescriptor)fontDescriptor
+{
+    var traits = 0;
+
+    if ([self isBold])
+        traits |= CPFontBoldTrait;
+
+    if ([self isItalic])
+        traits |= CPFontItalicTrait;
+
+    return [[CPFontDescriptor fontDescriptorWithName:_name size:_size] fontDescriptorWithSymbolicTraits:traits];
+}
+
+@end
+
 
 var CPFontNameKey     = @"CPFontNameKey",
     CPFontSizeKey     = @"CPFontSizeKey",

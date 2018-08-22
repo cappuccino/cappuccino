@@ -1,8 +1,6 @@
 
 require("../common.jake");
 
-checkUlimit();
-
 var framework = require("objective-j/jake").framework,
     BundleTask = require("objective-j/jake").BundleTask;
 
@@ -35,10 +33,11 @@ appKitTask = framework ("AppKit", function(appKitTask)
         return "--include \"" + aFilename + "\"";
     }).join(" ");
 
-    if ($CONFIGURATION === "Release")
-        appKitTask.setCompilerFlags("-O " + INCLUDES);
+    if ($CONFIGURATION === "Release") {
+        appKitTask.setCompilerFlags("-O2 " + INCLUDES);
+    }
     else
-        appKitTask.setCompilerFlags("-DDEBUG -g " + INCLUDES);
+        appKitTask.setCompilerFlags("-DDEBUG -g -S --inline-msg-send " + INCLUDES);
 });
 
 $BUILD_CJS_CAPPUCCINO_APPKIT = FILE.join($BUILD_CJS_CAPPUCCINO_FRAMEWORKS, "AppKit");

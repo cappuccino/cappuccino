@@ -33,89 +33,6 @@ SYSTEM.args.slice(1).forEach(function(arg)
         requiresSudo = true;
 });
 
-function ensurePackageUpToDate(packageName, requiredVersion, options)
-{
-    return;
-
-    options = options || {};
-
-    var packageInfo = require("narwhal/packages").catalog[packageName];
-    if (!packageInfo)
-    {
-        if (options.optional)
-            return;
-
-        print("You are missing package \"" + packageName + "\", version " + requiredVersion + " or later. Please install using \"tusk install "+ packageName +"\" and re-run jake");
-        OS.exit(1);
-    }
-
-    var version = packageInfo.version;
-    if (typeof version === "string")
-        version = version.split(".");
-
-    if (typeof requiredVersion === "string")
-        requiredVersion = requiredVersion.split(".");
-
-    if (version && UTIL.compare(version, requiredVersion) !== -1)
-        return;
-
-    print("Your copy of " + packageName + " is out of date (" + (version || ["0"]).join(".") + " installed, " + requiredVersion.join(".") + " required).");
-
-    if (!options.noupdate)
-    {
-        print("Update? Existing package will be overwritten. yes or no:");
-
-        if (!SYSTEM.env["CAPP_AUTO_UPGRADE"] && system.stdin.readLine() !== "yes\n")
-        {
-            print("Jake aborted.");
-            OS.exit(1);
-        }
-
-        if (requiresSudo)
-        {
-            if (OS.system(["sudo", "tusk", "install", "--force", packageName]))
-            {
-                // Attempt a hackish work-around for sudo compiled with the --with-secure-path option
-                if (OS.system("sudo bash -c 'source " + getShellConfigFile() + "; tusk install --force "+ packageName))
-                    OS.exit(1); //rake abort if ($? != 0)
-            }
-        }
-        else
-            OS.system(["tusk", "install", "--force", packageName]);
-    }
-
-    if (options.after)
-    {
-        options.after(packageInfo.directory);
-    }
-
-    if (options.message)
-    {
-        print(options.message);
-        OS.exit(1);
-    }
-}
-
-// This is disabled because tusk causes a lot of problems, and no packages will
-// never be updated anyway
-// // UPDATE THESE TO PICK UP CORRESPONDING CHANGES IN DEPENDENCIES
-// ensurePackageUpToDate("jake",           "0.3");
-// ensurePackageUpToDate("browserjs",      "0.1.1");
-// ensurePackageUpToDate("shrinksafe",     "0.2");
-// ensurePackageUpToDate("narwhal",        "0.3.1", {
-//     noupdate : true,
-//     message : "Update Narwhal by re-running bootstrap.sh, or pulling the latest from git (see: http://github.com/280north/narwhal)."
-// });
-// ensurePackageUpToDate("narwhal-jsc",    "0.3", {
-//     optional : true,
-//     after : function(dir) {
-//         if (OS.system("cd " + OS.enquote(dir) + " && make webkit")) {
-//             print("Problem building narwhal-jsc.");
-//             OS.exit(1);
-//         }
-//     }
-// });
-
 var JAKE = require("jake");
 
 // Set up development environment variables.
@@ -148,6 +65,7 @@ global.filedir = JAKE.filedir;
 global.FileList = JAKE.FileList;
 
 global.$CONFIGURATION                   = SYSTEM.env['CONFIG'];
+global.$INLINE_MSG_SEND                 = SYSTEM.env['INLINE_MSG_SEND'];
 global.$BUILD_DIR                       = SYSTEM.env['BUILD_PATH'];
 global.$BUILD_CONFIGURATION_DIR         = FILE.join($BUILD_DIR, $CONFIGURATION);
 
@@ -255,7 +173,6 @@ function reforkWithPackages()
     if (additionalPackages().length > 0)
     {
         var cmd = serializedENV() + " " + system.args.map(OS.enquote).join(" ");
-        //print("REFORKING: " + cmd);
         OS.exit(OS.system(cmd));
     }
 }
@@ -378,11 +295,20 @@ global.setPackageMetadata = function(packagePath)
 {
     var pkg = JSON.parse(FILE.read(packagePath, { charset : "UTF-8" }));
 
-    var p = OS.popen(["git", "rev-parse", "--verify", "HEAD"]);
-    if (p.wait() === 0) {
-        var sha = p.stdout.read().split("\n")[0];
-        if (sha.length === 40)
-            pkg["cappuccino-revision"] = sha;
+    try
+    {
+        var p = OS.popen(["git", "rev-parse", "--verify", "HEAD"]);
+        if (p.wait() === 0) {
+            var sha = p.stdout.read().split("\n")[0];
+            if (sha.length === 40)
+                pkg["cappuccino-revision"] = sha;
+        }
+    }
+    finally
+    {
+        p.stdin.close();
+        p.stdout.close();
+        p.stderr.close();
     }
 
     pkg["cappuccino-timestamp"] = new Date().getTime();
@@ -576,31 +502,6 @@ global.colorPrint = function(/* String */ message, /* String */ color)
 {
     stream.print(colorize(message, color));
 };
-
-var minUlimit = 1024;
-
-global.checkUlimit = function()
-{
-    var ulimitPath = executableExists("ulimit");
-
-    if (!ulimitPath)
-        return;
-
-    var p = OS.popen([ulimitPath, "-n"]);
-
-    if (p.wait() === 0)
-    {
-        var limit = p.stdout.read().split("\n")[0];
-
-        if (Number(limit) < minUlimit)
-        {
-            stream.print("\0red(\0bold(ERROR:\0)\0) Cappuccino may need to open more files than this terminal session currently allows (" + limit + "). Add the following line to your login configuration file (.bash_profile, .bashrc, etc.), start a new terminal session, then try again:\n");
-            stream.print("ulimit -n " + minUlimit);
-            OS.exit(1);
-        }
-    }
-}
-
 
 // built in tasks
 

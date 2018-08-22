@@ -310,18 +310,18 @@ var XML_XML                 = "xml",
 #define FIRST_CHILD(anXMLNode)      (anXMLNode.firstChild)
 #define NEXT_SIBLING(anXMLNode)     (anXMLNode.nextSibling)
 #define PARENT_NODE(anXMLNode)      (anXMLNode.parentNode)
-#define DOCUMENT_ELEMENT(aDocument) (aDocument.documentElement)
+#define DOCUMENT_ELEMENT(aDocument) (aDocument && aDocument.documentElement)
 
 #define HAS_ATTRIBUTE_VALUE(anXMLNode, anAttributeName, aValue) (anXMLNode.getAttribute(anAttributeName) === aValue)
 
 #define IS_OF_TYPE(anXMLNode, aType) (NODE_NAME(anXMLNode) === aType)
 #define IS_PLIST(anXMLNode) IS_OF_TYPE(anXMLNode, PLIST_PLIST)
 
-#define IS_WHITESPACE(anXMLNode) (NODE_TYPE(anXMLNode) === 8 || NODE_TYPE(anXMLNode) === 3)
+#define IS_WHITESPACE(anXMLNode) (NODE_TYPE(anXMLNode) === 8 || NODE_TYPE(anXMLNode) === 3 || NODE_TYPE(anXMLNode) === 7)
 #define IS_DOCUMENTTYPE(anXMLNode) (NODE_TYPE(anXMLNode) === 10)
 
 #define PLIST_NEXT_SIBLING(anXMLNode) while ((anXMLNode = NEXT_SIBLING(anXMLNode)) && IS_WHITESPACE(anXMLNode));
-#define PLIST_FIRST_CHILD(anXMLNode) { anXMLNode = FIRST_CHILD(anXMLNode); if (anXMLNode !== NULL && IS_WHITESPACE(anXMLNode)) PLIST_NEXT_SIBLING(anXMLNode) }
+#define PLIST_FIRST_CHILD(anXMLNode) { anXMLNode = FIRST_CHILD(anXMLNode); if (anXMLNode != NULL && IS_WHITESPACE(anXMLNode)) PLIST_NEXT_SIBLING(anXMLNode) }
 
 var textContent = function(nodes)
 {
@@ -544,15 +544,16 @@ CFPropertyList.propertyListFromXML = function(/*String | XMLNode*/ aStringOrXMLN
         XMLNode = parseXML(aStringOrXMLNode);
 
     // Skip over DOCTYPE and so forth.
-    while (IS_OF_TYPE(XMLNode, XML_DOCUMENT) || IS_OF_TYPE(XMLNode, XML_XML))
+    while (XMLNode && (IS_OF_TYPE(XMLNode, XML_DOCUMENT) || IS_OF_TYPE(XMLNode, XML_XML))) {
         PLIST_FIRST_CHILD(XMLNode);
+    }
 
     // Skip over the DOCTYPE... see a pattern?
-    if (IS_DOCUMENTTYPE(XMLNode))
+    if (XMLNode && IS_DOCUMENTTYPE(XMLNode))
         PLIST_NEXT_SIBLING(XMLNode);
 
     // If this is not a PLIST, bail.
-    if (!IS_PLIST(XMLNode))
+    if (!XMLNode || !IS_PLIST(XMLNode))
         return NULL;
 
     var key = "",
@@ -597,7 +598,7 @@ CFPropertyList.propertyListFromXML = function(/*String | XMLNode*/ aStringOrXMLN
                                             object = decodeHTMLComponent(FIRST_CHILD(XMLNode) ? TEXT_CONTENT(XMLNode) : "");
 
                                         break;
-                                        
+
             case PLIST_DATE:            var timestamp = Date.parseISO8601(TEXT_CONTENT(XMLNode));
                                         object = isNaN(timestamp) ? new Date() : new Date(timestamp);
                                         break;
@@ -667,4 +668,4 @@ GLOBAL(CPPropertyListCreateFromData) = function(/*CFData*/ data, /*Format*/ aFor
 GLOBAL(CPPropertyListCreateData) = function(/*PropertyList*/ aPropertyList, /*Format*/ aFormat)
 {
     return CFPropertyList.dataFromPropertyList(aPropertyList, aFormat);
-}
+};

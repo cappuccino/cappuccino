@@ -28,13 +28,17 @@ static const char *kCloseXcodeProjectScript =
 @implementation XcodeProjectCloser
 
 + (void)closeXcodeProjectForProject:(NSString *)projectPath
-{
-    NSString *format = [NSString stringWithUTF8String:kCloseXcodeProjectScript];
-    NSString *source = [NSString stringWithFormat:format, projectPath];
-    NSAppleScript *script = [[NSAppleScript alloc] initWithSource:source];
-
-    NSAppleEventDescriptor *descriptor;
-    descriptor = [script executeAndReturnError:nil];
+{    
+    NSString    *format     = @(kCloseXcodeProjectScript);
+    NSString    *source     = [NSString stringWithFormat:format, projectPath];
+    NSString    *arguments  = [NSString stringWithFormat:@"-e %@", source];
+    NSTask      *task       = [[NSTask alloc] init];
+    
+    [task setLaunchPath:@"/usr/bin/osascript"];
+    [task setArguments:[NSArray arrayWithObjects:arguments, nil]];
+    [task launch];
+    
+    NSLog(@"Osascript launched for the project %@", projectPath);
 }
 
 @end

@@ -23,6 +23,7 @@
 @import <Foundation/CPObject.j>
 @import <Foundation/CPRunLoop.j>
 
+@typedef HTMLAudioElement
 
 @protocol CPSoundDelegate <CPObject>
 

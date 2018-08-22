@@ -20,11 +20,16 @@
 {
     var button = [[CPButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 20.0)];
 
-    [button setValue:[CPColor blueColor] forThemeAttribute:@"bezel-color"];
-    [button setValue:[CPColor greenColor] forThemeAttribute:@"bezel-color" inState:CPThemeStateHighlighted];
+    var themedButtonValues =
+    [
+        [@"text-color",                 [CPColor redColor]],
+        [@"text-color",                 [CPColor yellowColor], CPThemeStateHighlighted],
 
-    [button setValue:[CPColor redColor] forThemeAttribute:@"text-color"];
-    [button setValue:[CPColor yellowColor] forThemeAttribute:@"text-color" inState:CPThemeStateHighlighted];
+        [@"bezel-color",                [CPColor blueColor]],
+        [@"bezel-color",                [CPColor greenColor], CPThemeStateHighlighted],
+    ];
+
+    [self registerThemeValues:themedButtonValues forView:button];
 
     [button setTitle:@"Yikes!"];
 

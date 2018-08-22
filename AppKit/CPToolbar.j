@@ -37,6 +37,8 @@ var CPToolbarDelegate_toolbar_itemForItemIdentifier_willBeInsertedIntoToolbar_  
     CPToolbarDelegate_toolbarSelectableItemIdentifiers_                         = 1 << 4,
     CPToolbarDelegate_toolbarWillAddItem_                                       = 1 << 5;
 
+
+@typedef CPToolbarDisplayMode
 /*
     @global
     @group CPToolbarDisplayMode
@@ -58,7 +60,7 @@ CPToolbarDisplayModeIconOnly            = 2;
 */
 CPToolbarDisplayModeLabelOnly           = 3;
 
-
+@typedef CPToolbarSizeMode
 CPToolbarSizeModeDefault                = 0;
 CPToolbarSizeModeRegular                = 1;
 CPToolbarSizeModeSmall                  = 2;
@@ -151,7 +153,7 @@ var CPToolbarsByIdentifier              = nil,
 
     if (!toolbarsSharingIdentifier)
     {
-        toolbarsSharingIdentifier = []
+        toolbarsSharingIdentifier = [];
         [CPToolbarsByIdentifier setObject:toolbarsSharingIdentifier forKey:identifier];
     }
 
@@ -457,11 +459,10 @@ var CPToolbarsByIdentifier              = nil,
 /* @ignore */
 - (id)_itemsWithIdentifiers:(CPArray)identifiers
 {
-    var items = [];
-    for (var i = 0; i < identifiers.length; i++)
-        [items addObject:[self _itemForItemIdentifier:identifiers[i] willBeInsertedIntoToolbar:NO]];
-
-    return items;
+    return [identifiers arrayByApplyingBlock:function(identifier)
+    {
+        return [self _itemForItemIdentifier:identifier willBeInsertedIntoToolbar:NO];
+    }];
 }
 
 /* @ignore */
@@ -587,7 +588,7 @@ var CPToolbarIdentifierKey              = @"CPToolbarIdentifierKey",
     [aCoder encodeBool:_showsBaselineSeparator forKey:CPToolbarShowsBaselineSeparatorKey];
     [aCoder encodeBool:_allowsUserCustomization forKey:CPToolbarAllowsUserCustomizationKey];
     [aCoder encodeBool:_isVisible forKey:CPToolbarIsVisibleKey];
-    [aCoder encodeInt:_sizeMode forKey:CPToolbarSizeModeKey]
+    [aCoder encodeInt:_sizeMode forKey:CPToolbarSizeModeKey];
 
     [aCoder encodeObject:_identifiedItems forKey:CPToolbarIdentifiedItemsKey];
     [aCoder encodeObject:_defaultItems forKey:CPToolbarDefaultItemsKey];

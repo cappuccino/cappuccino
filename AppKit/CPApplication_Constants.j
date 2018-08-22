@@ -31,6 +31,7 @@ CPApplicationWillResignActiveNotification           = @"CPApplicationWillResignA
 CPApplicationDidResignActiveNotification            = @"CPApplicationDidResignActiveNotification";
 CPApplicationDidChangeScreenParametersNotification  = @"CPApplicationDidChangeScreenParametersNotification";
 
+@typedef CPApplicationTerminateReply
 CPTerminateNow      = YES;
 CPTerminateCancel   = NO;
 CPTerminateLater    = -1; // not currently supported

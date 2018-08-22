@@ -164,10 +164,11 @@
 + (BOOL)automaticallyNotifiesObserversForKey:(CPString)aKey
 {
     var capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substring(1),
-        selector = "automaticallyNotifiesObserversOf" + capitalizedKey;
+        selector = "automaticallyNotifiesObserversOf" + capitalizedKey,
+        aClass = [self class];
 
-    if ([[self class] respondsToSelector:selector])
-        return objj_msgSend([self class], selector);
+    if ([aClass respondsToSelector:selector])
+        return aClass.isa.objj_msgSend0(aClass, selector);
 
     return YES;
 }
@@ -175,10 +176,11 @@
 + (CPSet)keyPathsForValuesAffectingValueForKey:(CPString)aKey
 {
     var capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substring(1),
-        selector = "keyPathsForValuesAffecting" + capitalizedKey;
+        selector = "keyPathsForValuesAffecting" + capitalizedKey,
+        aClass = [self class];
 
-    if ([[self class] respondsToSelector:selector])
-        return objj_msgSend([self class], selector);
+    if ([aClass respondsToSelector:selector])
+        return aClass.isa.objj_msgSend0(aClass, selector);
 
     return [CPSet set];
 }
@@ -207,7 +209,7 @@
             [[self mutableArrayValueForKeyPath:aKeyPath] removeObjectsAtIndexes:indexes];
 
         else if (changeKind === CPKeyValueChangeReplacement)
-            [[self mutableArrayValueForKeyPath:aKeyPath] replaceObjectAtIndexes:indexes withObjects:newValue];
+            [[self mutableArrayValueForKeyPath:aKeyPath] replaceObjectsAtIndexes:indexes withObjects:newValue];
     }
     else
     {
@@ -327,6 +329,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
     Class           _nativeClass;
     CPDictionary    _changesForKey;
     CPDictionary    _nestingForKey;
+    CPDictionary    _minOptionsForKey;
     Object          _observersForKey;
     int             _observersForKeyLength;
     CPSet           _replacedKeys;
@@ -354,6 +357,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
         _observersForKey    = {};
         _changesForKey      = {};
         _nestingForKey      = {};
+        _minOptionsForKey   = {};
         _observersForKeyLength = 0;
 
         [self _replaceClass];
@@ -395,299 +399,299 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
 
 - (void)_replaceModifiersForKey:(CPString)aKey
 {
-    if ([_replacedKeys containsObject:aKey] || ![_nativeClass automaticallyNotifiesObserversForKey:aKey])
-        return;
-
-    [_replacedKeys addObject:aKey];
-
-    var theClass = _nativeClass,
-        KVOClass = _targetObject.isa,
-        capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substring(1);
-
-    // Attribute and To-One Relationships
-    var setKey_selector = sel_getUid("set" + capitalizedKey + ":"),
-        setKey_method = class_getInstanceMethod(theClass, setKey_selector);
-
-    if (setKey_method)
+    if (![_replacedKeys containsObject:aKey] && [_nativeClass automaticallyNotifiesObserversForKey:aKey])
     {
-        var setKey_method_imp = setKey_method.method_imp;
+        [_replacedKeys addObject:aKey];
 
-        class_addMethod(KVOClass, setKey_selector, function(self, _cmd, anObject)
+        var theClass = _nativeClass,
+            KVOClass = _targetObject.isa,
+            capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substring(1);
+
+        // Attribute and To-One Relationships
+        var setKey_selector = sel_getUid("set" + capitalizedKey + ":"),
+            setKey_method = class_getInstanceMethod(theClass, setKey_selector);
+
+        if (setKey_method)
         {
-            [self willChangeValueForKey:aKey];
+            var setKey_method_imp = setKey_method.method_imp;
 
-            setKey_method_imp(self, _cmd, anObject);
-
-            [self didChangeValueForKey:aKey];
-        }, "");
-    }
-
-    // FIXME: Deprecated.
-    var _setKey_selector = sel_getUid("_set" + capitalizedKey + ":"),
-        _setKey_method = class_getInstanceMethod(theClass, _setKey_selector);
-
-    if (_setKey_method)
-    {
-        var _setKey_method_imp = _setKey_method.method_imp;
-
-        class_addMethod(KVOClass, _setKey_selector, function(self, _cmd, anObject)
-        {
-            [self willChangeValueForKey:aKey];
-
-            _setKey_method_imp(self, _cmd, anObject);
-
-            [self didChangeValueForKey:aKey];
-        }, "");
-    }
-
-    // Ordered To-Many Relationships
-    var insertObject_inKeyAtIndex_selector = sel_getUid("insertObject:in" + capitalizedKey + "AtIndex:"),
-        insertObject_inKeyAtIndex_method =
-            class_getInstanceMethod(theClass, insertObject_inKeyAtIndex_selector),
-
-        insertKey_atIndexes_selector = sel_getUid("insert" + capitalizedKey + ":atIndexes:"),
-        insertKey_atIndexes_method =
-            class_getInstanceMethod(theClass, insertKey_atIndexes_selector),
-
-        removeObjectFromKeyAtIndex_selector = sel_getUid("removeObjectFrom" + capitalizedKey + "AtIndex:"),
-        removeObjectFromKeyAtIndex_method =
-            class_getInstanceMethod(theClass, removeObjectFromKeyAtIndex_selector),
-
-        removeKeyAtIndexes_selector = sel_getUid("remove" + capitalizedKey + "AtIndexes:"),
-        removeKeyAtIndexes_method = class_getInstanceMethod(theClass, removeKeyAtIndexes_selector);
-
-    if ((insertObject_inKeyAtIndex_method || insertKey_atIndexes_method) &&
-        (removeObjectFromKeyAtIndex_method || removeKeyAtIndexes_method))
-    {
-        if (insertObject_inKeyAtIndex_method)
-        {
-            var insertObject_inKeyAtIndex_method_imp = insertObject_inKeyAtIndex_method.method_imp;
-
-            class_addMethod(KVOClass, insertObject_inKeyAtIndex_selector, function(self, _cmd, anObject, anIndex)
+            class_addMethod(KVOClass, setKey_selector, function(self, _cmd, anObject)
             {
-                [self willChange:CPKeyValueChangeInsertion
-                 valuesAtIndexes:[CPIndexSet indexSetWithIndex:anIndex]
-                          forKey:aKey];
+                [self willChangeValueForKey:aKey];
 
-                insertObject_inKeyAtIndex_method_imp(self, _cmd, anObject, anIndex);
+                setKey_method_imp(self, _cmd, anObject);
 
-                [self didChange:CPKeyValueChangeInsertion
-                valuesAtIndexes:[CPIndexSet indexSetWithIndex:anIndex]
-                         forKey:aKey];
-            }, "");
+                [self didChangeValueForKey:aKey];
+            }, setKey_method.method_types);
         }
 
-        if (insertKey_atIndexes_method)
+        // FIXME: Deprecated.
+        var _setKey_selector = sel_getUid("_set" + capitalizedKey + ":"),
+            _setKey_method = class_getInstanceMethod(theClass, _setKey_selector);
+
+        if (_setKey_method)
         {
-            var insertKey_atIndexes_method_imp = insertKey_atIndexes_method.method_imp;
+            var _setKey_method_imp = _setKey_method.method_imp;
 
-            class_addMethod(KVOClass, insertKey_atIndexes_selector, function(self, _cmd, objects, indexes)
+            class_addMethod(KVOClass, _setKey_selector, function(self, _cmd, anObject)
             {
-                [self willChange:CPKeyValueChangeInsertion
-                 valuesAtIndexes:[indexes copy]
-                          forKey:aKey];
+                [self willChangeValueForKey:aKey];
 
-                insertKey_atIndexes_method_imp(self, _cmd, objects, indexes);
+                _setKey_method_imp(self, _cmd, anObject);
 
-                [self didChange:CPKeyValueChangeInsertion
-                valuesAtIndexes:[indexes copy]
-                         forKey:aKey];
-            }, "");
+                [self didChangeValueForKey:aKey];
+            }, _setKey_method.method_types);
         }
 
-        if (removeObjectFromKeyAtIndex_method)
+        // Ordered To-Many Relationships
+        var insertObject_inKeyAtIndex_selector = sel_getUid("insertObject:in" + capitalizedKey + "AtIndex:"),
+            insertObject_inKeyAtIndex_method =
+                class_getInstanceMethod(theClass, insertObject_inKeyAtIndex_selector),
+
+            insertKey_atIndexes_selector = sel_getUid("insert" + capitalizedKey + ":atIndexes:"),
+            insertKey_atIndexes_method =
+                class_getInstanceMethod(theClass, insertKey_atIndexes_selector),
+
+            removeObjectFromKeyAtIndex_selector = sel_getUid("removeObjectFrom" + capitalizedKey + "AtIndex:"),
+            removeObjectFromKeyAtIndex_method =
+                class_getInstanceMethod(theClass, removeObjectFromKeyAtIndex_selector),
+
+            removeKeyAtIndexes_selector = sel_getUid("remove" + capitalizedKey + "AtIndexes:"),
+            removeKeyAtIndexes_method = class_getInstanceMethod(theClass, removeKeyAtIndexes_selector);
+
+        if ((insertObject_inKeyAtIndex_method || insertKey_atIndexes_method) &&
+            (removeObjectFromKeyAtIndex_method || removeKeyAtIndexes_method))
         {
-            var removeObjectFromKeyAtIndex_method_imp = removeObjectFromKeyAtIndex_method.method_imp;
-
-            class_addMethod(KVOClass, removeObjectFromKeyAtIndex_selector, function(self, _cmd, anIndex)
+            if (insertObject_inKeyAtIndex_method)
             {
-                [self willChange:CPKeyValueChangeRemoval
-                 valuesAtIndexes:[CPIndexSet indexSetWithIndex:anIndex]
-                          forKey:aKey];
+                var insertObject_inKeyAtIndex_method_imp = insertObject_inKeyAtIndex_method.method_imp;
 
-                removeObjectFromKeyAtIndex_method_imp(self, _cmd, anIndex);
+                class_addMethod(KVOClass, insertObject_inKeyAtIndex_selector, function(self, _cmd, anObject, anIndex)
+                {
+                    [self willChange:CPKeyValueChangeInsertion
+                     valuesAtIndexes:[CPIndexSet indexSetWithIndex:anIndex]
+                              forKey:aKey];
 
-                [self didChange:CPKeyValueChangeRemoval
-                valuesAtIndexes:[CPIndexSet indexSetWithIndex:anIndex]
-                         forKey:aKey];
-            }, "");
+                    insertObject_inKeyAtIndex_method_imp(self, _cmd, anObject, anIndex);
+
+                    [self didChange:CPKeyValueChangeInsertion
+                    valuesAtIndexes:[CPIndexSet indexSetWithIndex:anIndex]
+                             forKey:aKey];
+                }, insertObject_inKeyAtIndex_method.method_types);
+            }
+
+            if (insertKey_atIndexes_method)
+            {
+                var insertKey_atIndexes_method_imp = insertKey_atIndexes_method.method_imp;
+
+                class_addMethod(KVOClass, insertKey_atIndexes_selector, function(self, _cmd, objects, indexes)
+                {
+                    [self willChange:CPKeyValueChangeInsertion
+                     valuesAtIndexes:[indexes copy]
+                              forKey:aKey];
+
+                    insertKey_atIndexes_method_imp(self, _cmd, objects, indexes);
+
+                    [self didChange:CPKeyValueChangeInsertion
+                    valuesAtIndexes:[indexes copy]
+                             forKey:aKey];
+                }, insertKey_atIndexes_method.method_types);
+            }
+
+            if (removeObjectFromKeyAtIndex_method)
+            {
+                var removeObjectFromKeyAtIndex_method_imp = removeObjectFromKeyAtIndex_method.method_imp;
+
+                class_addMethod(KVOClass, removeObjectFromKeyAtIndex_selector, function(self, _cmd, anIndex)
+                {
+                    [self willChange:CPKeyValueChangeRemoval
+                     valuesAtIndexes:[CPIndexSet indexSetWithIndex:anIndex]
+                              forKey:aKey];
+
+                    removeObjectFromKeyAtIndex_method_imp(self, _cmd, anIndex);
+
+                    [self didChange:CPKeyValueChangeRemoval
+                    valuesAtIndexes:[CPIndexSet indexSetWithIndex:anIndex]
+                             forKey:aKey];
+                }, removeObjectFromKeyAtIndex_method.method_types);
+            }
+
+            if (removeKeyAtIndexes_method)
+            {
+                var removeKeyAtIndexes_method_imp = removeKeyAtIndexes_method.method_imp;
+
+                class_addMethod(KVOClass, removeKeyAtIndexes_selector, function(self, _cmd, indexes)
+                {
+                    [self willChange:CPKeyValueChangeRemoval
+                     valuesAtIndexes:[indexes copy]
+                              forKey:aKey];
+
+                    removeKeyAtIndexes_method_imp(self, _cmd, indexes);
+
+                    [self didChange:CPKeyValueChangeRemoval
+                    valuesAtIndexes:[indexes copy]
+                             forKey:aKey];
+                }, removeKeyAtIndexes_method.method_types);
+            }
+
+            // These are optional.
+            var replaceObjectInKeyAtIndex_withObject_selector =
+                    sel_getUid("replaceObjectIn" + capitalizedKey + "AtIndex:withObject:"),
+                replaceObjectInKeyAtIndex_withObject_method =
+                    class_getInstanceMethod(theClass, replaceObjectInKeyAtIndex_withObject_selector);
+
+            if (replaceObjectInKeyAtIndex_withObject_method)
+            {
+                var replaceObjectInKeyAtIndex_withObject_method_imp =
+                        replaceObjectInKeyAtIndex_withObject_method.method_imp;
+
+                class_addMethod(KVOClass, replaceObjectInKeyAtIndex_withObject_selector,
+                function(self, _cmd, anIndex, anObject)
+                {
+                    [self willChange:CPKeyValueChangeReplacement
+                     valuesAtIndexes:[CPIndexSet indexSetWithIndex:anIndex]
+                              forKey:aKey];
+
+                    replaceObjectInKeyAtIndex_withObject_method_imp(self, _cmd, anIndex, anObject);
+
+                    [self didChange:CPKeyValueChangeReplacement
+                    valuesAtIndexes:[CPIndexSet indexSetWithIndex:anIndex]
+                             forKey:aKey];
+                }, replaceObjectInKeyAtIndex_withObject_method.method_types);
+            }
+
+            var replaceKeyAtIndexes_withKey_selector =
+                    sel_getUid("replace" + capitalizedKey + "AtIndexes:with" + capitalizedKey + ":"),
+                replaceKeyAtIndexes_withKey_method =
+                    class_getInstanceMethod(theClass, replaceKeyAtIndexes_withKey_selector);
+
+            if (replaceKeyAtIndexes_withKey_method)
+            {
+                var replaceKeyAtIndexes_withKey_method_imp = replaceKeyAtIndexes_withKey_method.method_imp;
+
+                class_addMethod(KVOClass, replaceKeyAtIndexes_withKey_selector, function(self, _cmd, indexes, objects)
+                {
+                    [self willChange:CPKeyValueChangeReplacement
+                     valuesAtIndexes:[indexes copy]
+                              forKey:aKey];
+
+                    replaceObjectInKeyAtIndex_withObject_method_imp(self, _cmd, indexes, objects);
+
+                    [self didChange:CPKeyValueChangeReplacement
+                    valuesAtIndexes:[indexes copy]
+                             forKey:aKey];
+                }, replaceKeyAtIndexes_withKey_method.method_types);
+            }
         }
 
-        if (removeKeyAtIndexes_method)
+        // Unordered To-Many Relationships
+        var addKeyObject_selector = sel_getUid("add" + capitalizedKey + "Object:"),
+            addKeyObject_method = class_getInstanceMethod(theClass, addKeyObject_selector),
+
+            addKey_selector = sel_getUid("add" + capitalizedKey + ":"),
+            addKey_method = class_getInstanceMethod(theClass, addKey_selector),
+
+            removeKeyObject_selector = sel_getUid("remove" + capitalizedKey + "Object:"),
+            removeKeyObject_method = class_getInstanceMethod(theClass, removeKeyObject_selector),
+
+            removeKey_selector = sel_getUid("remove" + capitalizedKey + ":"),
+            removeKey_method = class_getInstanceMethod(theClass, removeKey_selector);
+
+        if ((addKeyObject_method || addKey_method) && (removeKeyObject_method || removeKey_method))
         {
-            var removeKeyAtIndexes_method_imp = removeKeyAtIndexes_method.method_imp;
-
-            class_addMethod(KVOClass, removeKeyAtIndexes_selector, function(self, _cmd, indexes)
+            if (addKeyObject_method)
             {
-                [self willChange:CPKeyValueChangeRemoval
-                 valuesAtIndexes:[indexes copy]
-                          forKey:aKey];
+                var addKeyObject_method_imp = addKeyObject_method.method_imp;
 
-                removeKeyAtIndexes_method_imp(self, _cmd, indexes);
+                class_addMethod(KVOClass, addKeyObject_selector, function(self, _cmd, anObject)
+                {
+                    [self willChangeValueForKey:aKey
+                                withSetMutation:CPKeyValueUnionSetMutation
+                                   usingObjects:[CPSet setWithObject:anObject]];
 
-                [self didChange:CPKeyValueChangeRemoval
-                valuesAtIndexes:[indexes copy]
-                         forKey:aKey];
-            }, "");
-        }
+                    addKeyObject_method_imp(self, _cmd, anObject);
 
-        // These are optional.
-        var replaceObjectInKeyAtIndex_withObject_selector =
-                sel_getUid("replaceObjectIn" + capitalizedKey + "AtIndex:withObject:"),
-            replaceObjectInKeyAtIndex_withObject_method =
-                class_getInstanceMethod(theClass, replaceObjectInKeyAtIndex_withObject_selector);
+                    [self didChangeValueForKey:aKey
+                               withSetMutation:CPKeyValueUnionSetMutation
+                                  usingObjects:[CPSet setWithObject:anObject]];
+                }, addKeyObject_method.method_types);
+            }
 
-        if (replaceObjectInKeyAtIndex_withObject_method)
-        {
-            var replaceObjectInKeyAtIndex_withObject_method_imp =
-                    replaceObjectInKeyAtIndex_withObject_method.method_imp;
-
-            class_addMethod(KVOClass, replaceObjectInKeyAtIndex_withObject_selector,
-            function(self, _cmd, anIndex, anObject)
+            if (addKey_method)
             {
-                [self willChange:CPKeyValueChangeReplacement
-                 valuesAtIndexes:[CPIndexSet indexSetWithIndex:anIndex]
-                          forKey:aKey];
+                var addKey_method_imp = addKey_method.method_imp;
 
-                replaceObjectInKeyAtIndex_withObject_method_imp(self, _cmd, anIndex, anObject);
+                class_addMethod(KVOClass, addKey_selector, function(self, _cmd, objects)
+                {
+                    [self willChangeValueForKey:aKey
+                                withSetMutation:CPKeyValueUnionSetMutation
+                                   usingObjects:[objects copy]];
 
-                [self didChange:CPKeyValueChangeReplacement
-                valuesAtIndexes:[CPIndexSet indexSetWithIndex:anIndex]
-                         forKey:aKey];
-            }, "");
-        }
+                    addKey_method_imp(self, _cmd, objects);
 
-        var replaceKeyAtIndexes_withKey_selector =
-                sel_getUid("replace" + capitalizedKey + "AtIndexes:with" + capitalizedKey + ":"),
-            replaceKeyAtIndexes_withKey_method =
-                class_getInstanceMethod(theClass, replaceKeyAtIndexes_withKey_selector);
+                    [self didChangeValueForKey:aKey
+                               withSetMutation:CPKeyValueUnionSetMutation
+                                  usingObjects:[objects copy]];
+                }, addKey_method.method_types);
+            }
 
-        if (replaceKeyAtIndexes_withKey_method)
-        {
-            var replaceKeyAtIndexes_withKey_method_imp = replaceKeyAtIndexes_withKey_method.method_imp;
-
-            class_addMethod(KVOClass, replaceKeyAtIndexes_withKey_selector, function(self, _cmd, indexes, objects)
+            if (removeKeyObject_method)
             {
-                [self willChange:CPKeyValueChangeReplacement
-                 valuesAtIndexes:[indexes copy]
-                          forKey:aKey];
+                var removeKeyObject_method_imp = removeKeyObject_method.method_imp;
 
-                replaceObjectInKeyAtIndex_withObject_method_imp(self, _cmd, indexes, objects);
+                class_addMethod(KVOClass, removeKeyObject_selector, function(self, _cmd, anObject)
+                {
+                    [self willChangeValueForKey:aKey
+                                withSetMutation:CPKeyValueMinusSetMutation
+                                   usingObjects:[CPSet setWithObject:anObject]];
 
-                [self didChange:CPKeyValueChangeReplacement
-                valuesAtIndexes:[indexes copy]
-                         forKey:aKey];
-            }, "");
-        }
-    }
+                    removeKeyObject_method_imp(self, _cmd, anObject);
 
-    // Unordered To-Many Relationships
-    var addKeyObject_selector = sel_getUid("add" + capitalizedKey + "Object:"),
-        addKeyObject_method = class_getInstanceMethod(theClass, addKeyObject_selector),
+                    [self didChangeValueForKey:aKey
+                               withSetMutation:CPKeyValueMinusSetMutation
+                                  usingObjects:[CPSet setWithObject:anObject]];
+                }, removeKeyObject_method.method_types);
+            }
 
-        addKey_selector = sel_getUid("add" + capitalizedKey + ":"),
-        addKey_method = class_getInstanceMethod(theClass, addKey_selector),
-
-        removeKeyObject_selector = sel_getUid("remove" + capitalizedKey + "Object:"),
-        removeKeyObject_method = class_getInstanceMethod(theClass, removeKeyObject_selector),
-
-        removeKey_selector = sel_getUid("remove" + capitalizedKey + ":"),
-        removeKey_method = class_getInstanceMethod(theClass, removeKey_selector);
-
-    if ((addKeyObject_method || addKey_method) && (removeKeyObject_method || removeKey_method))
-    {
-        if (addKeyObject_method)
-        {
-            var addKeyObject_method_imp = addKeyObject_method.method_imp;
-
-            class_addMethod(KVOClass, addKeyObject_selector, function(self, _cmd, anObject)
+            if (removeKey_method)
             {
-                [self willChangeValueForKey:aKey
-                            withSetMutation:CPKeyValueUnionSetMutation
-                               usingObjects:[CPSet setWithObject:anObject]];
+                var removeKey_method_imp = removeKey_method.method_imp;
 
-                addKeyObject_method_imp(self, _cmd, anObject);
+                class_addMethod(KVOClass, removeKey_selector, function(self, _cmd, objects)
+                {
+                    [self willChangeValueForKey:aKey
+                                withSetMutation:CPKeyValueMinusSetMutation
+                                   usingObjects:[objects copy]];
 
-                [self didChangeValueForKey:aKey
-                           withSetMutation:CPKeyValueUnionSetMutation
-                              usingObjects:[CPSet setWithObject:anObject]];
-            }, "");
-        }
+                    removeKey_method_imp(self, _cmd, objects);
 
-        if (addKey_method)
-        {
-            var addKey_method_imp = addKey_method.method_imp;
+                    [self didChangeValueForKey:aKey
+                               withSetMutation:CPKeyValueMinusSetMutation
+                                  usingObjects:[objects copy]];
+                }, removeKey_method.method_types);
+            }
 
-            class_addMethod(KVOClass, addKey_selector, function(self, _cmd, objects)
+            // intersect<Key>: is optional.
+            var intersectKey_selector = sel_getUid("intersect" + capitalizedKey + ":"),
+                intersectKey_method = class_getInstanceMethod(theClass, intersectKey_selector);
+
+            if (intersectKey_method)
             {
-                [self willChangeValueForKey:aKey
-                            withSetMutation:CPKeyValueUnionSetMutation
-                               usingObjects:[objects copy]];
+                var intersectKey_method_imp = intersectKey_method.method_imp;
 
-                addKey_method_imp(self, _cmd, objects);
+                class_addMethod(KVOClass, intersectKey_selector, function(self, _cmd, aSet)
+                {
+                    [self willChangeValueForKey:aKey
+                                withSetMutation:CPKeyValueIntersectSetMutation
+                                   usingObjects:[aSet copy]];
 
-                [self didChangeValueForKey:aKey
-                           withSetMutation:CPKeyValueUnionSetMutation
-                              usingObjects:[objects copy]];
-            }, "");
-        }
+                    intersectKey_method_imp(self, _cmd, aSet);
 
-        if (removeKeyObject_method)
-        {
-            var removeKeyObject_method_imp = removeKeyObject_method.method_imp;
-
-            class_addMethod(KVOClass, removeKeyObject_selector, function(self, _cmd, anObject)
-            {
-                [self willChangeValueForKey:aKey
-                            withSetMutation:CPKeyValueMinusSetMutation
-                               usingObjects:[CPSet setWithObject:anObject]];
-
-                removeKeyObject_method_imp(self, _cmd, anObject);
-
-                [self didChangeValueForKey:aKey
-                           withSetMutation:CPKeyValueMinusSetMutation
-                              usingObjects:[CPSet setWithObject:anObject]];
-            }, "");
-        }
-
-        if (removeKey_method)
-        {
-            var removeKey_method_imp = removeKey_method.method_imp;
-
-            class_addMethod(KVOClass, removeKey_selector, function(self, _cmd, objects)
-            {
-                [self willChangeValueForKey:aKey
-                            withSetMutation:CPKeyValueMinusSetMutation
-                               usingObjects:[objects copy]];
-
-                removeKey_method_imp(self, _cmd, objects);
-
-                [self didChangeValueForKey:aKey
-                           withSetMutation:CPKeyValueMinusSetMutation
-                              usingObjects:[objects copy]];
-            }, "");
-        }
-
-        // intersect<Key>: is optional.
-        var intersectKey_selector = sel_getUid("intersect" + capitalizedKey + ":"),
-            intersectKey_method = class_getInstanceMethod(theClass, intersectKey_selector);
-
-        if (intersectKey_method)
-        {
-            var intersectKey_method_imp = intersectKey_method.method_imp;
-
-            class_addMethod(KVOClass, intersectKey_selector, function(self, _cmd, aSet)
-            {
-                [self willChangeValueForKey:aKey
-                            withSetMutation:CPKeyValueIntersectSetMutation
-                               usingObjects:[aSet copy]];
-
-                intersectKey_method_imp(self, _cmd, aSet);
-
-                [self didChangeValueForKey:aKey
-                           withSetMutation:CPKeyValueIntersectSetMutation
-                              usingObjects:[aSet copy]];
-            }, "");
+                    [self didChangeValueForKey:aKey
+                               withSetMutation:CPKeyValueIntersectSetMutation
+                                  usingObjects:[aSet copy]];
+                }, intersectKey_method.method_types);
+            }
         }
     }
 
@@ -767,12 +771,20 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
 
     if (options & CPKeyValueObservingOptionInitial)
     {
-        var newValue = [_targetObject valueForKeyPath:aPath];
+        var changes;
 
-        if (newValue === nil || newValue === undefined)
-            newValue = [CPNull null];
+        if (options & CPKeyValueObservingOptionNew)
+        {
+            var newValue = [_targetObject valueForKeyPath:aPath];
 
-        var changes = @{ CPKeyValueChangeNewKey: newValue };
+            if (newValue == nil)
+                newValue = [CPNull null];
+
+            changes = @{ CPKeyValueChangeKindKey: CPKeyValueChangeSetting, CPKeyValueChangeNewKey: newValue };
+        } else {
+            changes = @{ CPKeyValueChangeKindKey: CPKeyValueChangeSetting };
+        }
+
         [anObserver observeValueForKeyPath:aPath ofObject:_targetObject change:changes context:aContext];
     }
 }
@@ -819,7 +831,9 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
 
 - (void)_sendNotificationsForKey:(CPString)aKey changeOptions:(CPDictionary)changeOptions isBefore:(BOOL)isBefore
 {
-    var changes = _changesForKey[aKey];
+    var changes = _changesForKey[aKey],
+        observers = [_observersForKey[aKey] allValues],
+        observersMinimumOptions = 0;
 
     if (isBefore)
     {
@@ -838,61 +852,78 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
 
         _nestingForKey[aKey] = 1;
 
+        // Get the combined minimum of the ...Old and ...New options for all observers
+        var count = observers ? observers.length : 0;
+
+        while (count--)
+        {
+            var observerInfo = observers[count];
+
+            observersMinimumOptions |= observerInfo.options & kvoNewAndOld;
+        }
+
+        _minOptionsForKey[aKey] = observersMinimumOptions;
         changes = changeOptions;
 
-        var indexes = [changes objectForKey:CPKeyValueChangeIndexesKey],
-            setMutationKind = changes[_CPKeyValueChangeSetMutationKindKey];
-
-        if (setMutationKind)
+        if (observersMinimumOptions & CPKeyValueObservingOptionOld)
         {
-            var setMutationObjects = [changes[_CPKeyValueChangeSetMutationObjectsKey] copy],
-                setExistingObjects = [[_targetObject valueForKey: aKey] copy];
+            var indexes = [changes objectForKey:CPKeyValueChangeIndexesKey],
+                setMutationKind = changes[_CPKeyValueChangeSetMutationKindKey];
 
-            if (setMutationKind == CPKeyValueMinusSetMutation)
+            if (setMutationKind)
             {
-                [setExistingObjects intersectSet: setMutationObjects];
-                [changes setValue:setExistingObjects forKey:CPKeyValueChangeOldKey];
+                var setMutationObjects = [changes[_CPKeyValueChangeSetMutationObjectsKey] copy],
+                    setExistingObjects = [[_targetObject valueForKey: aKey] copy];
+
+                if (setMutationKind == CPKeyValueMinusSetMutation)
+                {
+                    [setExistingObjects intersectSet: setMutationObjects];
+                    [changes setValue:setExistingObjects forKey:CPKeyValueChangeOldKey];
+                }
+                else if (setMutationKind === CPKeyValueIntersectSetMutation || setMutationKind === CPKeyValueSetSetMutation)
+                {
+                    [setExistingObjects minusSet: setMutationObjects];
+                    [changes setValue:setExistingObjects forKey:CPKeyValueChangeOldKey];
+                }
+
+                //for unordered to-many relationships (CPSet) even new values can only be calculated before!!!
+                if (setMutationKind === CPKeyValueUnionSetMutation || setMutationKind === CPKeyValueSetSetMutation)
+                {
+                    [setMutationObjects minusSet: setExistingObjects];
+                    //hide new value (for CPKeyValueObservingOptionPrior messages)
+                    //as long as "didChangeValue..." is not yet called!
+                    changes[_CPKeyValueChangeSetMutationNewValueKey] = setMutationObjects;
+                }
             }
-            else if (setMutationKind === CPKeyValueIntersectSetMutation || setMutationKind === CPKeyValueSetSetMutation)
+            else if (indexes)
             {
-                [setExistingObjects minusSet: setMutationObjects];
-                [changes setValue:setExistingObjects forKey:CPKeyValueChangeOldKey];
-            }
+                var type = [changes objectForKey:CPKeyValueChangeKindKey];
 
-            //for unordered to-many relationships (CPSet) even new values can only be calculated before!!!
-            if (setMutationKind === CPKeyValueUnionSetMutation || setMutationKind === CPKeyValueSetSetMutation)
+                // for ordered to-many relationships, oldvalue is only sensible for replace and remove
+                if (type === CPKeyValueChangeReplacement || type === CPKeyValueChangeRemoval)
+                {
+                    //FIXME: do we need to go through and replace "" with CPNull?
+                    var newValues = [[_targetObject mutableArrayValueForKeyPath:aKey] objectsAtIndexes:indexes];
+                    [changes setValue:newValues forKey:CPKeyValueChangeOldKey];
+                }
+            }
+            else
             {
-                [setMutationObjects minusSet: setExistingObjects];
-                //hide new value (for CPKeyValueObservingOptionPrior messages)
-                //as long as "didChangeValue..." is not yet called!
-                changes[_CPKeyValueChangeSetMutationNewValueKey] = setMutationObjects;
+                var oldValue = [_targetObject valueForKey:aKey];
+
+                if (oldValue === nil || oldValue === undefined)
+                    oldValue = [CPNull null];
+
+                [changes setObject:oldValue forKey:CPKeyValueChangeOldKey];
             }
-        }
-        else if (indexes)
-        {
-            var type = [changes objectForKey:CPKeyValueChangeKindKey];
 
-            // for ordered to-many relationships, oldvalue is only sensible for replace and remove
-            if (type === CPKeyValueChangeReplacement || type === CPKeyValueChangeRemoval)
-            {
-                //FIXME: do we need to go through and replace "" with CPNull?
-                var newValues = [[_targetObject mutableArrayValueForKeyPath:aKey] objectsAtIndexes:indexes];
-                [changes setValue:newValues forKey:CPKeyValueChangeOldKey];
-            }
-        }
-        else
-        {
-            var oldValue = [_targetObject valueForKey:aKey];
-
-            if (oldValue === nil || oldValue === undefined)
-                oldValue = [CPNull null];
-
-            [changes setObject:oldValue forKey:CPKeyValueChangeOldKey];
         }
 
         [changes setObject:1 forKey:CPKeyValueChangeNotificationIsPriorKey];
-
         _changesForKey[aKey] = changes;
+
+        // Clear ...New option as it should never be sent for a ...Prior option
+        observersMinimumOptions &= ~CPKeyValueObservingOptionNew;
     }
     else
     {
@@ -927,55 +958,97 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
 
         [changes removeObjectForKey:CPKeyValueChangeNotificationIsPriorKey];
 
-        var indexes = [changes objectForKey:CPKeyValueChangeIndexesKey],
-            setMutationKind = changes[_CPKeyValueChangeSetMutationKindKey];
+        observersMinimumOptions = _minOptionsForKey[aKey];
 
-        if (setMutationKind)
+        if (observersMinimumOptions & CPKeyValueObservingOptionNew)
         {
-            //old and new values for unordered to-many relationships can only be calculated before
-            //set recalculated hidden new value as soon as "didChangeValue..." is called!
-            var newValue = changes[_CPKeyValueChangeSetMutationNewValueKey];
-            [changes setValue:newValue forKey:CPKeyValueChangeNewKey];
+            var indexes = [changes objectForKey:CPKeyValueChangeIndexesKey],
+                setMutationKind = changes[_CPKeyValueChangeSetMutationKindKey];
 
-            //delete hidden values
-            delete changes[_CPKeyValueChangeSetMutationNewValueKey];
-            delete changes[_CPKeyValueChangeSetMutationObjectsKey];
-            delete changes[_CPKeyValueChangeSetMutationKindKey];
-        }
-        else if (indexes)
-        {
-            var type = [changes objectForKey:CPKeyValueChangeKindKey];
-
-            // for ordered to-many relationships, newvalue is only sensible for replace and insert
-            if (type == CPKeyValueChangeReplacement || type == CPKeyValueChangeInsertion)
+            if (setMutationKind)
             {
-                //FIXME: do we need to go through and replace "" with CPNull?
-                var newValues = [[_targetObject mutableArrayValueForKeyPath:aKey] objectsAtIndexes:indexes];
-                [changes setValue:newValues forKey:CPKeyValueChangeNewKey];
+                //old and new values for unordered to-many relationships can only be calculated before
+                //set recalculated hidden new value as soon as "didChangeValue..." is called!
+                var newValue = changes[_CPKeyValueChangeSetMutationNewValueKey];
+                [changes setValue:newValue forKey:CPKeyValueChangeNewKey];
+
+                //delete hidden values
+                delete changes[_CPKeyValueChangeSetMutationNewValueKey];
+                delete changes[_CPKeyValueChangeSetMutationObjectsKey];
+                delete changes[_CPKeyValueChangeSetMutationKindKey];
+            }
+            else if (indexes)
+            {
+                var type = [changes objectForKey:CPKeyValueChangeKindKey];
+
+                // for ordered to-many relationships, newvalue is only sensible for replace and insert
+                if (type == CPKeyValueChangeReplacement || type == CPKeyValueChangeInsertion)
+                {
+                    //FIXME: do we need to go through and replace "" with CPNull?
+                    var newValues = [[_targetObject mutableArrayValueForKeyPath:aKey] objectsAtIndexes:indexes];
+                    [changes setValue:newValues forKey:CPKeyValueChangeNewKey];
+                }
+            }
+            else
+            {
+                var newValue = [_targetObject valueForKey:aKey];
+
+                if (newValue === nil || newValue === undefined)
+                    newValue = [CPNull null];
+
+                [changes setObject:newValue forKey:CPKeyValueChangeNewKey];
+            }
+        }
+
+        delete _minOptionsForKey[aKey];
+        delete _changesForKey[aKey];
+    }
+
+    var count = observers ? observers.length : 0,
+        changesCache = {};
+
+    while (count--)
+    {
+        var observerInfo = observers[count],
+            options = observerInfo.options,
+            onlyNewAndOldOptions = options & kvoNewAndOld,
+            observerChanges = nil;
+
+        if (isBefore)
+        {
+            // Only send 'observeValueForKeyPath:' for '...Prior' option when handling 'willChangeValue...'
+            if (options & CPKeyValueObservingOptionPrior)
+            {
+                observerChanges = changes;
+                // The new values are not yet created in the change dictionary so remove ...New option to get a working cache below
+                onlyNewAndOldOptions &= ~CPKeyValueObservingOptionNew;
             }
         }
         else
         {
-            var newValue = [_targetObject valueForKey:aKey];
-
-            if (newValue === nil || newValue === undefined)
-                newValue = [CPNull null];
-
-            [changes setObject:newValue forKey:CPKeyValueChangeNewKey];
+            observerChanges = changes;
         }
 
-        delete _changesForKey[aKey];
-    }
-
-    var observers = [_observersForKey[aKey] allValues],
-        count = observers ? observers.length : 0;
-
-    while (count--)
-    {
-        var observerInfo = observers[count];
-
-        if (!isBefore || (observerInfo.options & CPKeyValueObservingOptionPrior))
-            [observerInfo.observer observeValueForKeyPath:aKey ofObject:_targetObject change:changes context:observerInfo.context];
+        if (observerChanges)
+        {
+            // Don't change the 'change' dictionary when the observer wants the minimum options.
+            // The ...New option is remved above for the ...Prior case
+            if (onlyNewAndOldOptions !== observersMinimumOptions)
+            {
+                // Use a subset of the 'change' dictionary. First try to find it in the cache
+                observerChanges = changesCache[onlyNewAndOldOptions];
+                if (!observerChanges)
+                {
+                    // Not in the cache. Build a new dictionary and store it in the cache
+                    changesCache[onlyNewAndOldOptions] = observerChanges = [changes mutableCopy];
+                    if (!(onlyNewAndOldOptions & CPKeyValueObservingOptionOld))
+                        [observerChanges removeObjectForKey:CPKeyValueChangeOldKey];
+                    if (!(onlyNewAndOldOptions & CPKeyValueObservingOptionNew))
+                        [observerChanges removeObjectForKey:CPKeyValueChangeNewKey];
+                }
+            }
+            [observerInfo.observer observeValueForKeyPath:aKey ofObject:_targetObject change:observerChanges context:observerInfo.context];
+        }
     }
 
     var dependentKeysMap = _nativeClass[DependentKeysKey];
@@ -1226,24 +1299,39 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
 {
     if (aKeyPath === _firstPart)
     {
-        var oldValue = [_value valueForKeyPath:_secondPart],
-            newValue = [_object valueForKeyPath:_firstPart + "." + _secondPart],
-            pathChanges = @{
-                    CPKeyValueChangeNewKey: newValue ? newValue : [CPNull null],
-                    CPKeyValueChangeOldKey: oldValue ? oldValue : [CPNull null],
-                    CPKeyValueChangeKindKey: CPKeyValueChangeSetting,
-                };
+        var pathChanges = [CPMutableDictionary dictionaryWithObject:CPKeyValueChangeSetting forKey:CPKeyValueChangeKindKey];
+        var isBeforeFlag = !![changes objectForKey:CPKeyValueChangeNotificationIsPriorKey];
+
+        if (isBeforeFlag)
+            [pathChanges setObject:1 forKey:CPKeyValueChangeNotificationIsPriorKey];
+
+        if (_options & CPKeyValueObservingOptionOld)
+        {
+            var oldValue = [_value valueForKeyPath:_secondPart];
+
+            [pathChanges setObject:oldValue != null ? oldValue : [CPNull null] forKey:CPKeyValueChangeOldKey];
+        }
+
+        if (!isBeforeFlag && (_options & CPKeyValueObservingOptionNew))
+        {
+            var newValue = [_object valueForKeyPath:_firstPart + "." + _secondPart];
+
+            [pathChanges setObject:newValue != null ? newValue : [CPNull null] forKey:CPKeyValueChangeNewKey];
+        }
 
         [_observer observeValueForKeyPath:_firstPart + "." + _secondPart ofObject:_object change:pathChanges context:_context];
 
-        //since a has changed, we should remove ourselves as an observer of the old a, and observe the new one
-        if (_value)
-            [_value removeObserver:self forKeyPath:_secondPart];
+        // Nothing has changed yet when doing willChange....
+        if (!isBeforeFlag) {
+            //since a has changed, we should remove ourselves as an observer of the old a, and observe the new one
+            if (_value)
+                [_value removeObserver:self forKeyPath:_secondPart];
 
-        _value = [_object valueForKey:_firstPart];
+            _value = [_object valueForKey:_firstPart];
 
-        if (_value)
-            [_value addObserver:self forKeyPath:_secondPart options:_options context:nil];
+            if (_value)
+                [_value addObserver:self forKeyPath:_secondPart options:_options context:nil];
+        }
     }
     else
     {

@@ -79,6 +79,17 @@
 
     var expression_minusset = [CPExpression expressionForMinusSet:set with:array];
     [self assertNotNull:expression_minusset message:"MinusSet Expression should not be nil"];
+
+    var expression_block = [CPExpression expressionForBlock:function(obj, args, bindings)
+    {
+        return obj;
+    } arguments:nil];
+
+    [self assertNotNull:expression_block message:"Block Expression should not be nil"];
+
+    var expression_conditional = [CPExpression expressionForConditional:[CPPredicate predicateWithValue:YES] trueExpression:expression_minusset falseExpression:expression_block];
+
+    [self assertNotNull:expression_conditional message:"Conditional Expression should not be nil"];
 }
 
 - (void)testSetExpressionEvaluation
@@ -139,12 +150,33 @@
 {
     var collection = [CPExpression expressionForKeyPath:@"Record1.Children"],
         iteratorVariable = @"x",
-        predicate = [CPPredicate predicateWithFormat:@"$x BEGINSWITH 'Kid'"];
+        predicate = [CPPredicate predicateWithFormat:@"$x BEGINSWITH $KidVariable"];
 
     var expression = [CPExpression expressionForSubquery:collection usingIteratorVariable:iteratorVariable predicate:predicate],
-        eval = [expression expressionValueWithObject:dict context:nil],
+        eval = [expression expressionValueWithObject:dict context:@{"KidVariable":[CPExpression expressionForConstantValue:"Kid"]}],
         expected = [CPArray arrayWithObjects:"Kid1", "Kid2"];
     [self assertTrue:([eval isEqual:expected]) message:"'" + [expression predicateFormat]  + "' result is "+ eval + "but should be " + expected];
+}
+
+- (void)testBlockExpressionEvaluation
+{
+    var block = function(obj, args, bindings)
+    {
+        return [obj stringByAppendingString:[args componentsJoinedByString:"-"]];
+    };
+
+    var expression = [CPExpression expressionForBlock:block arguments:[[CPExpression expressionForConstantValue:"A"], [CPExpression expressionForConstantValue:"B"]]];
+
+    var eval = [expression expressionValueWithObject:"OBJ" context:@{}];
+    [self assertTrue:([eval isEqual:"OBJA-B"]) message:"'" + [expression description]  + "' result is "+ eval + "but should be " + "OBJA-B"];
+}
+
+- (void)testConditionalExpressionEvaluation
+{
+    var expression = [CPExpression expressionForConditional:[CPPredicate predicateWithFormat:"SELF = $variable"] trueExpression:[CPExpression expressionForConstantValue:"TRUE_EXP"] falseExpression:[CPExpression expressionForConstantValue:"FALSE_EXP"]];
+
+    var eval = [expression expressionValueWithObject:"OBJ" context:@{"variable":"OBJ"}];
+    [self assertTrue:([eval isEqual:"TRUE_EXP"]) message:"'" + [expression description]  + "' result is "+ eval + "but should be " + "TRUE_EXP"];
 }
 
 - (void)testOptions
@@ -369,8 +401,8 @@
     [self assertTrue:[predicate evaluateWithObject:nil] message:"Predicate " + predicate + " should be TRUE"];
 
     // TEST Subquery -- This means: search people who have 2 boys.
-    predicate = [CPPredicate predicateWithFormat: @"SUBQUERY(Record1.Children, $x, $x BEGINSWITH 'Kid')[SIZE] = 2"];
-    [self assertTrue:[predicate evaluateWithObject:dict] message:"Predicate " + predicate + " should evaluate to TRUE"];
+    predicate = [CPPredicate predicateWithFormat: @"SUBQUERY(Record1.Children, $x, $x BEGINSWITH $Begining)[SIZE] = 2"];
+    [self assertTrue:[predicate evaluateWithObject:dict substitutionVariables:@{"Begining":"Kid"}] message:"Predicate " + predicate + " should evaluate to TRUE"];
 
     // Test Set expressions
     // Parsing is ok but the evaluation of this predicate will return NO because:
@@ -381,6 +413,9 @@
     predicate = [CPPredicate predicateWithFormat:@"a UNION {'b'} = {'a','b'}"];
     var left = [[predicate leftExpression] expressionValueWithObject:object context:nil];
     [self assertTrue:[left isEqualToSet:result] message:"Expression eval " + left + " should be " + result];
+
+    predicate = [CPPredicate predicateWithFormat:@"TERNARY(Record1.Children[SIZE] = 1, 'Single', Record1.Name) = 'John'"];
+    [self assertTrue:[predicate evaluateWithObject:dict] message:"Predicate " + predicate + " should evaluate to TRUE"];
 }
 
 - (void)testExpressionAndPredicateIsEqual
@@ -439,6 +474,10 @@
     pred1 = [CPPredicate predicateWithFormat:@"a = 'a' AND b = 'b'"];
     pred2 = [CPPredicate predicateWithFormat:@"a = 'a' AND b = 'b'"];
     [self assert:pred1 equals:pred2];
+
+    pred1 = [CPPredicate predicateWithFormat:@"TERNARY(Record1.Children[FIRST] BEGINSWITH Record1.Name, 'SAME', 'DIFFERENT') = 'DIFFERENT'"];
+    pred2 = [CPPredicate predicateWithFormat:@"TERNARY(Record1.Children[FIRST] BEGINSWITH Record1.Name, 'SAME', 'DIFFERENT') = 'DIFFERENT'"];
+    [self assert:pred1 equals:pred2];
 }
 
 - (void)testExpressionAndPredicateIsNotEqualToNil
@@ -490,6 +529,10 @@
 
     [self assert:pred1 notEqual:nil];
 
+    pred1 = [CPPredicate predicateWithFormat:@"TERNARY(Record1.Children[FIRST] BEGINSWITH Record1.Name, 'SAME', 'DIFFERENT') = 'DIFFERENT'"];
+
+    [self assert:pred1 notEqual:nil];
+
     pred1 = [CPPredicate predicateWithFormat:@"$x CONTAINS 'a'"];
 
     [self assert:pred1 notEqual:nil];
@@ -524,6 +567,68 @@
     // fails if evaluateWithObject:substitutionVariables: isn't implemented in CPPredicate_BOOL
     result = [data filteredArrayUsingPredicate:ctpred];
     [self assertTrue:[result isEqual:data] message:"[1, 2, 3] filtered with '" + [ctpred description] + "' should return [1, 2, 3]"];
+}
+
+- (void)testConstantValueExpressionWithBooleanValueIsBoolean
+{
+    var right = [[CPPredicate predicateWithFormat:@"k = YES"] rightExpression];
+
+    [self assert:CPConstantValueExpressionType equals:[right expressionType]];
+    [self assert:YES equals:[right constantValue]];
+    [self assert:'boolean' equals:typeof [right constantValue]];
+
+    right = [[CPPredicate predicateWithFormat:@"k = NO"] rightExpression];
+
+    [self assert:CPConstantValueExpressionType equals:[right expressionType]];
+    [self assert:NO equals:[right constantValue]];
+    [self assert:'boolean' equals:typeof [right constantValue]];
+}
+
+- (void)testEvaluateBooleanConstantValueExpressionWithDifferentObjects
+{
+    var yesPredicate = [CPPredicate predicateWithFormat:@"self = YES"],
+        noPredicate = [CPPredicate predicateWithFormat:@"self = NO"];
+
+    var evalYesPredicate = function(object) { return [yesPredicate evaluateWithObject:object]; },
+        evalNoPredicate = function(object) { return [noPredicate evaluateWithObject:object]; };
+
+    var fixtures = [
+        {
+            message:@"booleans",
+            values:       [YES,  NO],
+            expected_yes: [YES,  NO],
+            expected_no:  [ NO, YES]
+        },
+        {
+            message:@"numbers",
+            values:       [  0,   1,  2],
+            expected_yes: [ NO, YES, NO],
+            expected_no:  [YES,  NO, NO]
+        },
+        {
+            message:@"strings",
+            values:       [@"1", @"2", @"true", @"false", @"", @"YES", @"NO"],
+            expected_yes: [ NO ,  NO ,     NO ,      NO ,  NO,    NO ,   NO ],
+            expected_no:  [ NO ,  NO ,     NO ,      NO ,  NO,    NO ,   NO ]
+        }];
+
+    for (var i = 0; i < [fixtures count]; i++)
+    {
+        var fixture = fixtures[i];
+        [self assert:fixture.expected_yes equals:fixture.values.map(evalYesPredicate) message:fixture.message + " with YES-predicate"];
+        [self assert:fixture.expected_no equals:fixture.values.map(evalNoPredicate) message:fixture.message + " with NO-predicate"];
+    }
+}
+
+- (void)testPredicateFormatWithNullGeneratesCorrectString
+{
+    var predicate1 = [CPPredicate predicateWithFormat:@"value == %@", [CPNull null]],
+        predicate2 = [CPPredicate predicateWithFormat:@"value == null"],
+        predicate3 = [CPPredicate predicateWithFormat:@"value == nil"];
+
+    [self assert:[predicate1 predicateFormat] equals:@"value == nil"];
+    [self assert:[predicate2 predicateFormat] equals:@"value == nil"];
+    [self assert:[predicate3 predicateFormat] equals:@"value == nil"];
 }
 
 @end

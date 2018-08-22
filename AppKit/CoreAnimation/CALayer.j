@@ -27,7 +27,8 @@
 
 @import "CGContext.j"
 @import "CGGeometry.j"
-
+@import "CPColor.j"
+@import "CPView.j"
 
 #define DOM(aLayer) aLayer._DOMElement
 
@@ -494,11 +495,11 @@ var CALayerRegisteredRunLoopUpdates             = nil;
 */
 - (void)display
 {
+#if PLATFORM(DOM)
     if (!_context)
     {
         _context = CGBitmapGraphicsContextCreate();
 
-#if PLATFORM(DOM)
         _DOMContentsElement = _context.DOMElement;
 
         _DOMContentsElement.style.zIndex = -100;
@@ -516,13 +517,12 @@ var CALayerRegisteredRunLoopUpdates             = nil;
         _DOMContentsElement.style.height = ROUND(CGRectGetHeight(_backingStoreFrame)) + "px";
 
         _DOMElement.appendChild(_DOMContentsElement);
-#endif
     }
 
     if (USE_BUFFER)
     {
         if (_delegateRespondsToDisplayLayerSelector)
-            return [_delegate displayInLayer:self];
+            return [_delegate displayLayer:self];
 
         if (CGRectGetWidth(_backingStoreFrame) == 0.0 || CGRectGetHeight(_backingStoreFrame) == 0.0)
             return;
@@ -534,6 +534,7 @@ var CALayerRegisteredRunLoopUpdates             = nil;
 
         [self drawInContext:CABackingStoreGetContext(_contents)];
     }
+#endif
 
     [self composite];
 }
@@ -796,7 +797,6 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
 
         if (mask & CALayerDisplayUpdateMask)
             [layer display];
-
         else if (mask & CALayerFrameSizeUpdateMask || mask & CALayerCompositeUpdateMask)
             [layer composite];
 

@@ -33,6 +33,9 @@
 @import "CPTextField.j"
 @import "CPWindow_Constants.j"
 
+@class _CPTokenFieldTokenCloseButton
+@class _CPTokenFieldTokenDisclosureButton
+
 @global CPApp
 @global CPTextFieldDidFocusNotification
 @global CPTextFieldDidBlurNotification
@@ -105,7 +108,7 @@ CPTokenFieldDeleteButtonType     = 1;
     int                         _buttonType @accessors(property=buttonType);
 
     id <CPTokenFieldDelegate>   _tokenFieldDelegate;
-    unsigned                    _implementedDelegateMethods;
+    unsigned                    _implementedTokenFieldDelegateMethods;
 }
 
 + (CPCharacterSet)defaultTokenizingCharacterSet
@@ -177,25 +180,25 @@ CPTokenFieldDeleteButtonType     = 1;
         return;
 
     _tokenFieldDelegate = aDelegate;
-    _implementedDelegateMethods = 0;
+    _implementedTokenFieldDelegateMethods = 0;
 
     if ([_tokenFieldDelegate respondsToSelector:@selector(tokenField:hasMenuForRepresentedObject:)])
-        _implementedDelegateMethods |= CPTokenFieldDelegate_tokenField_hasMenuForRepresentedObject_;
+        _implementedTokenFieldDelegateMethods |= CPTokenFieldDelegate_tokenField_hasMenuForRepresentedObject_;
 
     if ([_tokenFieldDelegate respondsToSelector:@selector(tokenField:completionsForSubstring:indexOfToken:indexOfSelectedItem:)])
-        _implementedDelegateMethods |= CPTokenFieldDelegate_tokenField_completionsForSubstring_indexOfToken_indexOfSelectedItem_;
+        _implementedTokenFieldDelegateMethods |= CPTokenFieldDelegate_tokenField_completionsForSubstring_indexOfToken_indexOfSelectedItem_;
 
     if ([_tokenFieldDelegate respondsToSelector:@selector(tokenField:shouldAddObjects:atIndex:)])
-        _implementedDelegateMethods |= CPTokenFieldDelegate_tokenField_shouldAddObjects_atIndex_;
+        _implementedTokenFieldDelegateMethods |= CPTokenFieldDelegate_tokenField_shouldAddObjects_atIndex_;
 
     if ([_tokenFieldDelegate respondsToSelector:@selector(tokenField:menuForRepresentedObject:)])
-        _implementedDelegateMethods |= CPTokenFieldDelegate_tokenField_menuForRepresentedObject_;
+        _implementedTokenFieldDelegateMethods |= CPTokenFieldDelegate_tokenField_menuForRepresentedObject_;
 
     if ([_tokenFieldDelegate respondsToSelector:@selector(tokenField:displayStringForRepresentedObject:)])
-        _implementedDelegateMethods |= CPTokenFieldDelegate_tokenField_displayStringForRepresentedObject_;
+        _implementedTokenFieldDelegateMethods |= CPTokenFieldDelegate_tokenField_displayStringForRepresentedObject_;
 
     if ([_tokenFieldDelegate respondsToSelector:@selector(tokenField:representedObjectForEditingString:)])
-        _implementedDelegateMethods |= CPTokenFieldDelegate_tokenField_representedObjectForEditingString_;
+        _implementedTokenFieldDelegateMethods |= CPTokenFieldDelegate_tokenField_representedObjectForEditingString_;
 
     [super setDelegate:_tokenFieldDelegate];
 }
@@ -445,21 +448,27 @@ CPTokenFieldDeleteButtonType     = 1;
     element.style.width = CGRectGetWidth(contentRect) + "px";
     element.style.height = [font defaultLineHeightForFont] + "px";
 
-    window.setTimeout(function()
+    [[CPRunLoop mainRunLoop] performBlock:function()
     {
         [_tokenScrollView documentView]._DOMElement.appendChild(element);
 
         //post CPControlTextDidBeginEditingNotification
         [self textDidBeginEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
 
-        window.setTimeout(function()
+        [[CPRunLoop mainRunLoop] performBlock:function()
         {
+            // This will prevent to jump to the focused element
+            var previousScrollingOrigin = [self _scrollToVisibleRectAndReturnPreviousOrigin];
+
             element.focus();
+
+            [self _restorePreviousScrollingOrigin:previousScrollingOrigin];
+
             CPTokenFieldInputOwner = self;
-        }, 0.0);
+        } argument:nil order:0 modes:[CPDefaultRunLoopMode]];
 
         [self textDidFocus:[CPNotification notificationWithName:CPTextFieldDidFocusNotification object:self userInfo:nil]];
-    }, 0.0);
+    } argument:nil order:0 modes:[CPDefaultRunLoopMode]];
 
     [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
 
@@ -514,16 +523,24 @@ CPTokenFieldDeleteButtonType     = 1;
     var element = [self _inputElement];
 
     CPTokenFieldInputResigning = YES;
-    element.blur();
+
+    if (CPTokenFieldInputIsActive)
+        element.blur();
 
     if (!CPTokenFieldInputDidBlur)
         CPTokenFieldBlurHandler();
 
-    CPTokenFieldInputDidBlur = NO;
-    CPTokenFieldInputResigning = NO;
-
     if (element.parentNode == [_tokenScrollView documentView]._DOMElement)
         element.parentNode.removeChild(element);
+
+    // Previosly, we unflagged CPTokenFieldInputDidBlur and CPTokenFieldInputResigning before
+    // the call to removeChild. This may result in DOM exceptions in Chrome under certain conditions.
+    // See https://stackoverflow.com/questions/21926083/failed-to-execute-removechild-on-node
+    // for why we need to unflag CPTokenFieldInputDidBlur and CPTokenFieldInputResigning
+    // only after removing the element.
+
+    CPTokenFieldInputDidBlur = NO;
+    CPTokenFieldInputResigning = NO;
 
     CPTokenFieldInputIsActive = NO;
 
@@ -532,7 +549,7 @@ CPTokenFieldDeleteButtonType     = 1;
         CPTokenFieldCachedSelectStartFunction = nil;
         CPTokenFieldCachedDragFunction = nil;
 
-        document.body.ondrag = CPTokenFieldCachedDragFunction
+        document.body.ondrag = CPTokenFieldCachedDragFunction;
         document.body.onselectstart = CPTokenFieldCachedSelectStartFunction
     }
 
@@ -1030,6 +1047,21 @@ CPTokenFieldDeleteButtonType     = 1;
     [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
 }
 
+- (BOOL)performKeyEquivalent:(CPEvent)anEvent
+{
+    var characters = [anEvent characters];
+
+    // Here we handle the event when getting a CPNewlineCharacter or CPCarriageReturnCharacter when the menu is open
+    // We don't want that the application dispatches the event to the other controls
+    if ([self hasThemeState:CPThemeStateAutocompleting] && (characters === CPNewlineCharacter || characters === CPCarriageReturnCharacter))
+    {
+        [self keyDown:anEvent];
+        return YES;
+    }
+
+    return [super performKeyEquivalent:anEvent];
+}
+
 - (void)textDidChange:(CPNotification)aNotification
 {
     if ([aNotification object] !== self)
@@ -1215,7 +1247,7 @@ CPTokenFieldDeleteButtonType     = 1;
             var scrollToToken = _shouldScrollTo;
 
             if (scrollToToken === CPScrollDestinationLeft)
-                scrollToToken = tokens[_selectedRange.location]
+                scrollToToken = tokens[_selectedRange.location];
             else if (scrollToToken === CPScrollDestinationRight)
                 scrollToToken = tokens[MAX(0, CPMaxRange(_selectedRange) - 1)];
             [self _scrollTokenViewToVisible:scrollToToken];
@@ -1248,7 +1280,7 @@ CPTokenFieldDeleteButtonType     = 1;
 */
 - (CPArray)_completionsForSubstring:(CPString)substring indexOfToken:(int)tokenIndex indexOfSelectedItem:(int)selectedIndex
 {
-    if (!(_implementedDelegateMethods & CPTokenFieldDelegate_tokenField_completionsForSubstring_indexOfToken_indexOfSelectedItem_))
+    if (!(_implementedTokenFieldDelegateMethods & CPTokenFieldDelegate_tokenField_completionsForSubstring_indexOfToken_indexOfSelectedItem_))
         return [];
 
     return [_tokenFieldDelegate tokenField:self completionsForSubstring:substring indexOfToken:tokenIndex indexOfSelectedItem:selectedIndex];
@@ -1274,7 +1306,7 @@ CPTokenFieldDeleteButtonType     = 1;
 */
 - (CPString)_displayStringForRepresentedObject:(id)representedObject
 {
-    if (_implementedDelegateMethods & CPTokenFieldDelegate_tokenField_displayStringForRepresentedObject_)
+    if (_implementedTokenFieldDelegateMethods & CPTokenFieldDelegate_tokenField_displayStringForRepresentedObject_)
     {
         var stringForRepresentedObject = [_tokenFieldDelegate tokenField:self displayStringForRepresentedObject:representedObject];
 
@@ -1296,7 +1328,7 @@ CPTokenFieldDeleteButtonType     = 1;
 */
 - (CPArray)_shouldAddObjects:(CPArray)tokens atIndex:(int)index
 {
-    if (_implementedDelegateMethods & CPTokenFieldDelegate_tokenField_shouldAddObjects_atIndex_)
+    if (_implementedTokenFieldDelegateMethods & CPTokenFieldDelegate_tokenField_shouldAddObjects_atIndex_)
     {
         var approvedObjects = [_tokenFieldDelegate tokenField:self shouldAddObjects:tokens atIndex:index];
 
@@ -1318,7 +1350,7 @@ CPTokenFieldDeleteButtonType     = 1;
 */
 - (id)_representedObjectForEditingString:(CPString)aString
 {
-    if (_implementedDelegateMethods & CPTokenFieldDelegate_tokenField_representedObjectForEditingString_)
+    if (_implementedTokenFieldDelegateMethods & CPTokenFieldDelegate_tokenField_representedObjectForEditingString_)
     {
         var token = [_tokenFieldDelegate tokenField:self representedObjectForEditingString:aString];
 
@@ -1333,8 +1365,8 @@ CPTokenFieldDeleteButtonType     = 1;
 
 - (BOOL)_hasMenuForRepresentedObject:(id)aRepresentedObject
 {
-    if ((_implementedDelegateMethods & CPTokenFieldDelegate_tokenField_hasMenuForRepresentedObject_) &&
-        (_implementedDelegateMethods & CPTokenFieldDelegate_tokenField_menuForRepresentedObject_))
+    if ((_implementedTokenFieldDelegateMethods & CPTokenFieldDelegate_tokenField_hasMenuForRepresentedObject_) &&
+        (_implementedTokenFieldDelegateMethods & CPTokenFieldDelegate_tokenField_menuForRepresentedObject_))
         return [_tokenFieldDelegate tokenField:self hasMenuForRepresentedObject:aRepresentedObject];
 
     return NO;
@@ -1342,8 +1374,8 @@ CPTokenFieldDeleteButtonType     = 1;
 
 - (CPMenu)_menuForRepresentedObject:(id)aRepresentedObject
 {
-    if ((_implementedDelegateMethods & CPTokenFieldDelegate_tokenField_hasMenuForRepresentedObject_) &&
-        (_implementedDelegateMethods & CPTokenFieldDelegate_tokenField_menuForRepresentedObject_))
+    if ((_implementedTokenFieldDelegateMethods & CPTokenFieldDelegate_tokenField_hasMenuForRepresentedObject_) &&
+        (_implementedTokenFieldDelegateMethods & CPTokenFieldDelegate_tokenField_menuForRepresentedObject_))
     {
         var hasMenu = [_tokenFieldDelegate tokenField:self hasMenuForRepresentedObject:aRepresentedObject];
 
@@ -1451,9 +1483,6 @@ CPTokenFieldDeleteButtonType     = 1;
 
 - (BOOL)setThemeState:(ThemeState)aState
 {
-   if (aState.isa && [aState isKindOfClass:CPArray])
-        aState = CPThemeState.apply(null, aState);
-
     var r = [super setThemeState:aState];
 
     // Share hover state with the disclosure and delete buttons.
@@ -1468,9 +1497,6 @@ CPTokenFieldDeleteButtonType     = 1;
 
 - (BOOL)unsetThemeState:(ThemeState)aState
 {
-   if (aState.isa && [aState isKindOfClass:CPArray])
-        aState = CPThemeState.apply(null, aState);
-
     var r = [super unsetThemeState:aState];
 
     // Share hover state with the disclosure and delete button.

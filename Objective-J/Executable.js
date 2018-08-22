@@ -21,12 +21,13 @@
  */
 
 
-var ExecutableUnloadedFileDependencies  = 0,
-    ExecutableLoadingFileDependencies   = 1,
-    ExecutableLoadedFileDependencies    = 2,
+var ExecutableUnloadedFileDependencies         = 0,
+    ExecutableLoadingFileDependencies          = 1,
+    ExecutableLoadedFileDependencies           = 2,
+    ExecutableCantStartLoadYetFileDependencies = 3,
     AnonymousExecutableCount            = 0;
 
-function Executable(/*String*/ aCode, /*Array*/ fileDependencies, /*CFURL|String*/ aURL, /*Function*/ aFunction, /*ObjJCompiler*/aCompiler, /*Dictionary*/ aFilenameTranslateDictionary)
+function Executable(/*String*/ aCode, /*Array*/ fileDependencies, /*CFURL|String*/ aURL, /*Function*/ aFunction, /*ObjJCompiler*/aCompiler, /*Dictionary*/ aFilenameTranslateDictionary, /* Base64 String */ sourceMap)
 {
     if (arguments.length === 0)
         return this;
@@ -40,13 +41,24 @@ function Executable(/*String*/ aCode, /*Array*/ fileDependencies, /*CFURL|String
     this._fileDependencies = fileDependencies;
     this._filenameTranslateDictionary = aFilenameTranslateDictionary;
 
-    if (fileDependencies.length)
+    if (sourceMap)
+        this._base64EncodedSourceMap = sourceMap;
+
+    // This is a little hacky but if fileDependencies is null we can start loading file dependencies yet
+    if (!fileDependencies)
+    {
+        this._fileDependencyStatus = ExecutableCantStartLoadYetFileDependencies;
+        this._fileDependencyCallbacks = [];
+    }
+    else if (fileDependencies.length)
     {
         this._fileDependencyStatus = ExecutableUnloadedFileDependencies;
         this._fileDependencyCallbacks = [];
     }
     else
+    {
         this._fileDependencyStatus = ExecutableLoadedFileDependencies;
+    }
 
     if (this._function)
         return;
@@ -139,6 +151,12 @@ Executable.prototype.toMarkedString = function()
     for (; index < count; ++index)
         markedString += dependencies[index].toMarkedString();
 
+    var sourceMap = this._base64EncodedSourceMap;
+
+    if (sourceMap) {
+        markedString += MARKER_SOURCE_MAP + ";" + sourceMap.length + ";" + sourceMap;
+    }
+
     var code = this.code();
 
     return markedString + MARKER_TEXT + ";" + code.length + ";" + code;
@@ -168,7 +186,11 @@ Executable.prototype.execute = function()
         }
         this._compiler.popImport();
 
-        this.setCode(this._compiler.compilePass2());
+        this.setCode(this._compiler.compilePass2(), this._compiler.map());
+
+        if (FileExecutable.printWarningsAndErrors(this._compiler, exports.messageOutputFormatInXML))
+            throw "Compilation error";
+
         this._compiler = null;
     }
 
@@ -193,11 +215,12 @@ Executable.prototype.code = function()
 
 DISPLAY_NAME(Executable.prototype.code);
 
-Executable.prototype.setCode = function(code)
+Executable.prototype.setCode = function(code, sourceMap)
 {
     this._code = code;
 
     var parameters = this.functionParameters().join(",");
+    var sourceMapBase64;
 
 #if COMMONJS
     if (typeof system !== "undefined" && system.engine === "rhino")
@@ -209,16 +232,37 @@ Executable.prototype.setCode = function(code)
     {
 #endif
 #if DEBUG
-    // "//@ sourceURL=" at the end lets us name our eval'd files for debuggers, etc.
+        // Check if base64 source map is available
+        sourceMapBase64 = this._base64EncodedSourceMap;
+
+    // "//# sourceURL=" at the end lets us name our eval'd files for debuggers, etc.
     // * WebKit:  http://pmuellr.blogspot.com/2009/06/debugger-friendly.html
     // * Firebug: http://blog.getfirebug.com/2009/08/11/give-your-eval-a-name-with-sourceurl/
     //if (YES) {
         var absoluteString = this.URL().absoluteString();
 
-        code += "/**/\n//@ sourceURL=" + absoluteString;
+        code += "/**/\n//# sourceURL=" + absoluteString + "s";
+
+        if (sourceMap)
+        {
+            if (typeof btoa === 'function')
+                sourceMapBase64 = btoa(UTF16ToUTF8(sourceMap));
+            else if (typeof Buffer === 'function')
+                sourceMapBase64 = new Buffer(sourceMap).toString("base64");
+        }
+
+        if (sourceMapBase64) {
+            // The new Function constructor will add a function header before the first line
+            // The compiler adds two newlines as the first character to the code to get the source
+            // mapping correct. We have to remove it here. As Javascript engines adds diffentent
+            // amount of lines at the top we need to calculate how many.
+            code = code.substring(exports.ObjJCompiler.numberOfLinesAtTopOfFunction());
+            this._base64EncodedSourceMap = sourceMapBase64;
+            code += "\n//# sourceMappingURL=data:application/json;charset=utf-8;base64," + sourceMapBase64;
+        }
     //} else {
     //    // Firebug only does it for "eval()", not "new Function()". Ugh. Slower.
-    //    var functionText = "(function(){"+GET_CODE(aFragment)+"/**/\n})\n//@ sourceURL="+GET_FILE(aFragment).path;
+    //    var functionText = "(function(){"+GET_CODE(aFragment)+"/**/\n})\n//# sourceURL="+GET_FILE(aFragment).path;
     //    compiled = eval(functionText);
     //}
 #endif
@@ -239,6 +283,13 @@ Executable.prototype.fileDependencies = function()
 }
 
 DISPLAY_NAME(Executable.prototype.fileDependencies);
+
+Executable.prototype.setFileDependencies = function(newValue)
+{
+    this._fileDependencies = newValue;
+}
+
+DISPLAY_NAME(Executable.prototype.setFileDependencies);
 
 Executable.prototype.hasLoadedFileDependencies = function()
 {
@@ -273,6 +324,21 @@ Executable.prototype.loadFileDependencies = function(aCallback)
 }
 
 DISPLAY_NAME(Executable.prototype.loadFileDependencies);
+
+Executable.prototype.setExecutableUnloadedFileDependencies = function()
+{
+    if (this._fileDependencyStatus === ExecutableCantStartLoadYetFileDependencies)
+        this._fileDependencyStatus = ExecutableUnloadedFileDependencies;
+}
+
+DISPLAY_NAME(Executable.prototype.setExecutableUnloadedFileDependencies);
+
+Executable.prototype.isExecutableCantStartLoadYetFileDependencies = function()
+{
+    return this._fileDependencyStatus === ExecutableCantStartLoadYetFileDependencies;
+}
+
+DISPLAY_NAME(Executable.prototype.setExecutableUnloadedFileDependencies);
 
 function loadFileDependenciesForExecutable(/*Executable*/ anExecutable)
 {
@@ -347,6 +413,7 @@ function fileExecutableDependencyLoadFinished()
 Executable.prototype.referenceURL = function()
 {
     if (this._referenceURL === undefined)
+        // Removed the filename (if any) from the path to get the directory
         this._referenceURL = new CFURL(".", this.URL());
 
     return this._referenceURL;
@@ -469,12 +536,12 @@ Executable.resetCachedFileExecutableSearchers = function()
 Executable.fileExecutableSearcherForURL = function(/*CFURL*/ referenceURL)
 {
     var referenceURLString = referenceURL.absoluteString(),
-        cachedFileExecutableSearcher = cachedFileExecutableSearchers[referenceURLString],
-        aFilenameTranslateDictionary = Executable.filenameTranslateDictionary ? Executable.filenameTranslateDictionary() : null;
-        cachedSearchResults = { };
+        cachedFileExecutableSearcher = cachedFileExecutableSearchers[referenceURLString];
 
     if (!cachedFileExecutableSearcher)
     {
+        var aFilenameTranslateDictionary = Executable.filenameTranslateDictionary ? Executable.filenameTranslateDictionary() : null;
+
         cachedFileExecutableSearcher = function(/*CFURL*/ aURL, /*BOOL*/ isQuoted, /*Function*/ success)
         {
             var cacheUID = (isQuoted && referenceURL || "") + aURL,
@@ -499,8 +566,8 @@ Executable.fileExecutableSearcherForURL = function(/*CFURL*/ referenceURL)
             {
                 if (!aStaticResource)
                 {
-                    var compilingFileUrl = ObjJAcornCompiler ? ObjJAcornCompiler.currentCompileFile : null;
-                    throw new Error("Could not load file at " + aURL + (compilingFileUrl ? " when compiling " + compilingFileUrl : ""));
+                    var compilingFileUrl = exports.ObjJCompiler ? exports.ObjJCompiler.currentCompileFile : null;
+                    throw new Error("Could not load file at " + aURL + (compilingFileUrl ? " when compiling " + compilingFileUrl : "") + "\nwith includeURLs: " + StaticResource.includeURLs());
                 }
 
                 cachedFileExecutableSearchResults[cacheUID] = aStaticResource;
@@ -516,3 +583,110 @@ Executable.fileExecutableSearcherForURL = function(/*CFURL*/ referenceURL)
 }
 
 DISPLAY_NAME(Executable.fileExecutableSearcherForURL);
+
+/*
+ * Adaption to javascript by Malte Tancred   2012 from ConvertUTF.[ch] by Unicode, Inc.
+ * Speed improvements by     Martin Carlberg 2016
+ *
+ * Original copyright follows.
+ */
+
+/*
+ * Copyright 2001-2004 Unicode, Inc.
+ *
+ * Disclaimer
+ *
+ * This source code is provided as is by Unicode, Inc. No claims are
+ * made as to fitness for any particular purpose. No warranties of any
+ * kind are expressed or implied. The recipient agrees to determine
+ * applicability of information provided. If this file has been
+ * purchased on magnetic or optical media from Unicode, Inc., the
+ * sole remedy for any claim will be exchange of defective media
+ * within 90 days of receipt.
+ *
+ * Limitations on Rights to Redistribute This Code
+ *
+ * Unicode, Inc. hereby grants the right to freely use the information
+ * supplied in this file in the creation of products supporting the
+ * Unicode Standard, and to make copies of this file in any form
+ * for internal or external distribution as long as this notice
+ * remains attached.
+ */
+
+/* ---------------------------------------------------------------------
+
+   Conversions between UTF32, UTF-16, and UTF-8. Source code file.
+   Author: Mark E. Davis, 1994.
+   Rev History: Rick McGowan, fixes & updates May 2001.
+   Sept 2001: fixed const & error conditions per
+   mods suggested by S. Parent & A. Lillich.
+   June 2002: Tim Dodd added detection and handling of incomplete
+   source sequences, enhanced error detection, added casts
+   to eliminate compiler warnings.
+   July 2003: slight mods to back out aggressive FFFE detection.
+   Jan 2004: updated switches in from-UTF8 conversions.
+   Oct 2004: updated to use UNI_MAX_LEGAL_UTF32 in UTF-32 conversions.
+
+   See the header file "ConvertUTF.h" for complete documentation.
+
+------------------------------------------------------------------------ */
+var SURROGATE_HIGH_START = 0xD800;
+var SURROGATE_HIGH_END =   0xDBFF;
+var SURROGATE_LOW_START =  0xDC00;
+var SURROGATE_LOW_END =    0xDFFF;
+var REPLACEMENT_CHAR =     0xFFFD;
+var FIRSTBYTEMARK =        [0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC];
+
+function UTF16ToUTF8(source) {
+    var target = "";
+    var currentPos = 0;
+    for (var i = 0; i < source.length; i++) {
+        var c = source.charCodeAt(i);
+        if (c < 0x80) continue;
+
+        if (i > currentPos)
+            target += source.substring(currentPos, i);
+
+        if (c >= SURROGATE_HIGH_START && c <= SURROGATE_HIGH_END) {
+            i++;
+            if (i < source.length) {
+                var c2 = source.charCodeAt(i);
+                if (c2 >= SURROGATE_LOW_START && c2 <= SURROGATE_LOW_END) {
+                    c = ((c - SURROGATE_HIGH_START) << 10) + (c2 - SURROGATE_LOW_START) + 0x10000;
+                } else {
+                    // illegal second surrogate char
+                    return null;
+                }
+            } else {
+                // missing second surrogate in pair
+                return null;
+            }
+        } else if (c >= SURROGATE_LOW_START && c <= SURROGATE_LOW_END) {
+            // stray surrogate
+            return null;
+        }
+
+        currentPos = i + 1;
+        enc = [];
+
+        var cc = c;
+
+        if (cc >= 0x110000) { cc = 0x800; c = REPLACEMENT_CHAR; }
+        if (cc >= 0x10000)  { enc.unshift(String.fromCharCode((c | 0x80) & 0xBF)); c >>= 6; }
+        if (cc >= 0x800)    { enc.unshift(String.fromCharCode((c | 0x80) & 0xBF)); c >>= 6; }
+        if (cc >= 0x80)     { enc.unshift(String.fromCharCode((c | 0x80) & 0xBF)); c >>= 6; }
+
+        enc.unshift(String.fromCharCode( c | FIRSTBYTEMARK[enc.length]));
+
+        target += enc.join("");
+    }
+
+    if (currentPos === 0) return source;
+
+    if (i > currentPos)
+        target += source.substring(currentPos, i);
+
+    return target;
+}
+
+DISPLAY_NAME(UTF16ToUTF8);

@@ -146,9 +146,11 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
             @"slice-top-border-color": [CPNull null],
             @"slice-bottom-border-color": [CPNull null],
             @"slice-last-bottom-border-color": [CPNull null],
-            @"font": [CPNull null],
+            @"font": [CPFont systemFontOfSize:12],
+            @"font-color": [CPNull null],
             @"add-image": [CPNull null],
             @"remove-image": [CPNull null],
+            @"vertical-alignment": [CPNull null]
         };
 }
 
@@ -159,7 +161,7 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
     {
         _slices = [[CPMutableArray alloc] init];
 
-        _sliceHeight = 26.;
+        _sliceHeight = 26.0;
         _nestingMode = CPRuleEditorNestingModeSimple; // 10.5 default is CPRuleEditorNestingModeCompound
         _editable = YES;
         _allowsEmptyCompoundRows = NO;
@@ -1885,14 +1887,34 @@ TODO: implement
     return [self valueForThemeAttribute:@"font"];
 }
 
-- (CPImage)_addImage
+- (CPColor)_fontColor
 {
-    return [self valueForThemeAttribute:@"add-image"];
+    return [self valueForThemeAttribute:@"font-color"];
 }
 
-- (CPImage)_removeImage
+- (CPImage)_imageAdd
 {
-    return [self valueForThemeAttribute:@"remove-image"];
+    return [self valueForThemeAttribute:@"add-image" inState:CPThemeStateNormal];
+}
+
+- (CPImage)_imageAddHighlighted
+{
+    return [self valueForThemeAttribute:@"add-image" inState:CPThemeStateHighlighted];
+}
+
+- (CPImage)_imageRemove
+{
+    return [self valueForThemeAttribute:@"remove-image" inState:CPThemeStateNormal];
+}
+
+- (CPImage)_imageRemoveHighlighted
+{
+    return [self valueForThemeAttribute:@"remove-image" inState:CPThemeStateHighlighted];
+}
+
+- (CPVerticalTextAlignment)_verticalAlignment
+{
+    return [self valueForThemeAttribute:@"vertical-alignment"];
 }
 
 - (CPString)_toolTipForAddCompoundRowButton
@@ -2099,7 +2121,7 @@ TODO: implement
         return;
 
     var point = [self convertPoint:[event locationInWindow] fromView:nil],
-        view = [_slices objectAtIndex:FLOOR(point.y / _sliceHeight)];
+        view = [_slices objectAtIndex:FLOOR(MAX(0, point.y) / _sliceHeight)];
 
     if ([self _dragShouldBeginFromMouseDown:view])
         [self _performDragForSlice:view withEvent:event];
@@ -2185,7 +2207,7 @@ TODO: implement
         indexOfDropLine =  FLOOR(y / _sliceHeight),
         numberOfRows = [self numberOfRows];
 
-    if (indexOfDropLine < 0 || indexOfDropLine > numberOfRows || (indexOfDropLine >= [_draggingRows firstIndex] && indexOfDropLine <= [_draggingRows lastIndex] + 1))
+    if (indexOfDropLine <= 0 || indexOfDropLine > numberOfRows || (indexOfDropLine >= [_draggingRows firstIndex] && indexOfDropLine <= [_draggingRows lastIndex] + 1))
     {
         if (_subviewIndexOfDropLine !== CPNotFound && indexOfDropLine !== _subviewIndexOfDropLine)
             [self _clearDropLine];

@@ -35,6 +35,7 @@
 {
     CPDate _date;
     CPDateFormatter _dateFormatter;
+    CPDateFormatter _nonEnDateFormatter;
 }
 
 - (void)setUp
@@ -45,6 +46,9 @@
     [_dateFormatter setTimeStyle:CPDateFormatterShortStyle];
     [_dateFormatter setLocale:[[CPLocale alloc] initWithLocaleIdentifier:@"en_US"]];
     [_dateFormatter setTimeZone:[CPTimeZone timeZoneWithAbbreviation:@"PDT"]];
+
+    _nonEnDateFormatter = [[CPDateFormatter alloc] init];
+    [_nonEnDateFormatter setLocale:[[CPLocale alloc] initWithLocaleIdentifier:@"pt"]];
 }
 
 
@@ -631,17 +635,49 @@
     var result = [_dateFormatter dateFromString:@"10"];
     [self assert:result equals:[[CPDate alloc] initWithString:@"2000-10-01 08:00:00 +0000"]];
 
+    [_dateFormatter setDateFormat:@"M"];
+    var result = [_dateFormatter dateFromString:@"1"];
+    [self assert:result equals:[[CPDate alloc] initWithString:@"2000-01-01 08:00:00 +0000"]];
+
+    [_dateFormatter setDateFormat:@"M"];
+    var result = [_dateFormatter dateFromString:@"12"];
+    [self assert:result equals:[[CPDate alloc] initWithString:@"2000-12-01 08:00:00 +0000"]];
+
     [_dateFormatter setDateFormat:@"MM"];
     var result = [_dateFormatter dateFromString:@"7"];
     [self assert:result equals:[[CPDate alloc] initWithString:@"2000-07-01 08:00:00 +0000"]];
+
+    [_dateFormatter setDateFormat:@"MM"];
+    var result = [_dateFormatter dateFromString:@"1"];
+    [self assert:result equals:[[CPDate alloc] initWithString:@"2000-01-01 08:00:00 +0000"]];
+
+    [_dateFormatter setDateFormat:@"MM"];
+    var result = [_dateFormatter dateFromString:@"12"];
+    [self assert:result equals:[[CPDate alloc] initWithString:@"2000-12-01 08:00:00 +0000"]];
 
     [_dateFormatter setDateFormat:@"MMM"];
     var result = [_dateFormatter dateFromString:@"Sep"];
     [self assert:result equals:[[CPDate alloc] initWithString:@"2000-09-01 08:00:00 +0000"]];
 
+    [_dateFormatter setDateFormat:@"MMM"];
+    var result = [_dateFormatter dateFromString:@"Jan"];
+    [self assert:result equals:[[CPDate alloc] initWithString:@"2000-01-01 08:00:00 +0000"]];
+
+    [_dateFormatter setDateFormat:@"MMM"];
+    var result = [_dateFormatter dateFromString:@"Dec"];
+    [self assert:result equals:[[CPDate alloc] initWithString:@"2000-12-01 08:00:00 +0000"]];
+
     [_dateFormatter setDateFormat:@"MMMM"];
     var result = [_dateFormatter dateFromString:@"September"];
     [self assert:result equals:[[CPDate alloc] initWithString:@"2000-09-01 08:00:00 +0000"]];
+
+    [_dateFormatter setDateFormat:@"MMMM"];
+    var result = [_dateFormatter dateFromString:@"December"];
+    [self assert:result equals:[[CPDate alloc] initWithString:@"2000-12-01 08:00:00 +0000"]];
+
+    [_dateFormatter setDateFormat:@"MMMM"];
+    var result = [_dateFormatter dateFromString:@"January"];
+    [self assert:result equals:[[CPDate alloc] initWithString:@"2000-01-01 08:00:00 +0000"]];
 
     [_dateFormatter setDateFormat:@"MMMMM"];
     var result = [_dateFormatter dateFromString:@"S"];
@@ -678,17 +714,49 @@
     var result = [_dateFormatter dateFromString:@"10"];
     [self assert:result equals:[[CPDate alloc] initWithString:@"2000-10-01 08:00:00 +0000"]];
 
+    [_dateFormatter setDateFormat:@"L"];
+    var result = [_dateFormatter dateFromString:@"1"];
+    [self assert:result equals:[[CPDate alloc] initWithString:@"2000-01-01 08:00:00 +0000"]];
+
+    [_dateFormatter setDateFormat:@"L"];
+    var result = [_dateFormatter dateFromString:@"12"];
+    [self assert:result equals:[[CPDate alloc] initWithString:@"2000-12-01 08:00:00 +0000"]];
+
     [_dateFormatter setDateFormat:@"LL"];
     var result = [_dateFormatter dateFromString:@"7"];
     [self assert:result equals:[[CPDate alloc] initWithString:@"2000-07-01 08:00:00 +0000"]];
+
+    [_dateFormatter setDateFormat:@"LL"];
+    var result = [_dateFormatter dateFromString:@"1"];
+    [self assert:result equals:[[CPDate alloc] initWithString:@"2000-01-01 08:00:00 +0000"]];
+
+    [_dateFormatter setDateFormat:@"LL"];
+    var result = [_dateFormatter dateFromString:@"12"];
+    [self assert:result equals:[[CPDate alloc] initWithString:@"2000-12-01 08:00:00 +0000"]];
 
     [_dateFormatter setDateFormat:@"LLL"];
     var result = [_dateFormatter dateFromString:@"Sep"];
     [self assert:result equals:[[CPDate alloc] initWithString:@"2000-09-01 08:00:00 +0000"]];
 
+    [_dateFormatter setDateFormat:@"LLL"];
+    var result = [_dateFormatter dateFromString:@"Dec"];
+    [self assert:result equals:[[CPDate alloc] initWithString:@"2000-12-01 08:00:00 +0000"]];
+
+    [_dateFormatter setDateFormat:@"LLL"];
+    var result = [_dateFormatter dateFromString:@"Jan"];
+    [self assert:result equals:[[CPDate alloc] initWithString:@"2000-01-01 08:00:00 +0000"]];
+
     [_dateFormatter setDateFormat:@"LLLL"];
     var result = [_dateFormatter dateFromString:@"September"];
     [self assert:result equals:[[CPDate alloc] initWithString:@"2000-09-01 08:00:00 +0000"]];
+
+    [_dateFormatter setDateFormat:@"LLLL"];
+    var result = [_dateFormatter dateFromString:@"December"];
+    [self assert:result equals:[[CPDate alloc] initWithString:@"2000-12-01 08:00:00 +0000"]];
+
+    [_dateFormatter setDateFormat:@"LLLL"];
+    var result = [_dateFormatter dateFromString:@"January"];
+    [self assert:result equals:[[CPDate alloc] initWithString:@"2000-01-01 08:00:00 +0000"]];
 
     [_dateFormatter setDateFormat:@"LLLLL"];
     var result = [_dateFormatter dateFromString:@"S"];
@@ -1136,7 +1204,13 @@
 {
     [_dateFormatter setDateFormat:@"hh v"];
     var result = [_dateFormatter dateFromString:@"02 PT"];
-    [self assert:result equals:[[CPDate alloc] initWithString:@"2000-01-01 10:00:00 +0000"]];
+    // As the CPTimeZone does not care about daylight saving time. The 'PT' time zone can result in 'PST' or 'PDT'.
+    // The assert below can be any of the two version depending which time zone abbreviation CPDictionary 'keyEnumerator'
+    // will return first. This behaviour is undefined.
+    if ([[CPTimeZone _timeZoneFromString:@"PT" style:CPTimeZoneNameStyleShortGeneric locale:[_dateFormatter locale]] abbreviation] === @"PDT")
+        [self assert:result equals:[[CPDate alloc] initWithString:@"2000-01-01 09:00:00 +0000"]];
+    else
+        [self assert:result equals:[[CPDate alloc] initWithString:@"2000-01-01 10:00:00 +0000"]];
 
     [_dateFormatter setDateFormat:@"hh vvvv"];
     var result = [_dateFormatter dateFromString:@"8 GMT-08:35"];
@@ -1217,6 +1291,137 @@
     [self assert:result equals:NO];
     [self assert:date equals:nil];
     [self assert:error equals:@"The value \"ezr 12\" is invalid."];
+}
+
+#pragma mark -
+#pragma mark non-en locales
+
+// Unless we have full locale support any non-supported locale should return the english values as they are the only defined ones at the moment.
+
+- (void)testGetNonEnAMSymbol
+{
+    var enValue = [_dateFormatter AMSymbol],
+        value = [_nonEnDateFormatter AMSymbol];
+    [self assert:enValue equals:value];
+}
+
+- (void)testGetNonEnPMSymbol
+{
+    var enValue = [_dateFormatter PMSymbol],
+        value = [_nonEnDateFormatter PMSymbol];
+    [self assert:enValue equals:value];
+}
+
+- (void)testGetNonEnWeekdaySymbols
+{
+    var enValue = [_dateFormatter weekdaySymbols],
+        value = [_nonEnDateFormatter weekdaySymbols];
+    [self assert:enValue equals:value];
+}
+
+- (void)testGetNonEnShortWeekdaySymbols
+{
+    var enValue = [_dateFormatter shortWeekdaySymbols],
+        value = [_nonEnDateFormatter shortWeekdaySymbols];
+    [self assert:enValue equals:value];
+}
+
+- (void)testGetNonEnVeryShortWeekdaySymbols
+{
+    var enValue = [_dateFormatter veryShortWeekdaySymbols],
+        value = [_nonEnDateFormatter veryShortWeekdaySymbols];
+    [self assert:enValue equals:value];
+}
+
+- (void)testGetNonEnStandaloneWeekdaySymbols
+{
+    var enValue = [_dateFormatter standaloneWeekdaySymbols],
+        value = [_nonEnDateFormatter standaloneWeekdaySymbols];
+    [self assert:enValue equals:value];
+}
+
+- (void)testGetNonEnShortStandaloneWeekdaySymbols
+{
+    var enValue = [_dateFormatter shortStandaloneWeekdaySymbols],
+        value = [_nonEnDateFormatter shortStandaloneWeekdaySymbols];
+    [self assert:enValue equals:value];
+}
+
+- (void)testGetNonEnVeryShortStandaloneWeekdaySymbols
+{
+    var enValue = [_dateFormatter veryShortStandaloneWeekdaySymbols],
+        value = [_nonEnDateFormatter veryShortStandaloneWeekdaySymbols];
+    [self assert:enValue equals:value];
+}
+
+- (void)testGetNonEnMonthSymbols
+{
+    var enValue = [_dateFormatter monthSymbols],
+        value = [_nonEnDateFormatter monthSymbols];
+    [self assert:enValue equals:value];
+}
+
+- (void)testGetNonEnShortMonthSymbols
+{
+    var enValue = [_dateFormatter shortMonthSymbols],
+        value = [_nonEnDateFormatter shortMonthSymbols];
+    [self assert:enValue equals:value];
+}
+
+- (void)testGetNonEnVeryShortMonthSymbols
+{
+    var enValue = [_dateFormatter veryShortMonthSymbols],
+        value = [_nonEnDateFormatter veryShortMonthSymbols];
+    [self assert:enValue equals:value];
+}
+
+- (void)testGetNonEnStandaloneMonthSymbols
+{
+    var enValue = [_dateFormatter standaloneMonthSymbols],
+        value = [_nonEnDateFormatter standaloneMonthSymbols];
+    [self assert:enValue equals:value];
+}
+
+- (void)testGetNonEnShortStandaloneMonthSymbols
+{
+    var enValue = [_dateFormatter shortStandaloneMonthSymbols],
+        value = [_nonEnDateFormatter shortStandaloneMonthSymbols];
+    [self assert:enValue equals:value];
+}
+
+- (void)testGetNonEnVeryShortStandaloneMonthSymbols
+{
+    var enValue = [_dateFormatter veryShortStandaloneMonthSymbols],
+        value = [_nonEnDateFormatter veryShortStandaloneMonthSymbols];
+    [self assert:enValue equals:value];
+}
+
+- (void)testGetNonEnQuarterSymbols
+{
+    var enValue = [_dateFormatter quarterSymbols],
+        value = [_nonEnDateFormatter quarterSymbols];
+    [self assert:enValue equals:value];
+}
+
+- (void)testGetNonEnShortQuarterSymbols
+{
+    var enValue = [_dateFormatter shortQuarterSymbols],
+        value = [_nonEnDateFormatter shortQuarterSymbols];
+    [self assert:enValue equals:value];
+}
+
+- (void)testGetNonEnStandaloneQuarterSymbols
+{
+    var enValue = [_dateFormatter standaloneQuarterSymbols],
+        value = [_nonEnDateFormatter standaloneQuarterSymbols];
+    [self assert:enValue equals:value];
+}
+
+- (void)testGetNonEnShortStandaloneQuarterSymbols
+{
+    var enValue = [_dateFormatter shortStandaloneQuarterSymbols],
+        value = [_nonEnDateFormatter shortStandaloneQuarterSymbols];
+    [self assert:enValue equals:value];
 }
 
 @end

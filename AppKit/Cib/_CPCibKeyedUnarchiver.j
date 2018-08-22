@@ -21,16 +21,22 @@
  */
 
 @import <Foundation/CPKeyedUnarchiver.j>
-
+@import <Foundation/CPBundle.j>
 
 @implementation _CPCibKeyedUnarchiver : CPKeyedUnarchiver
 {
-    CPBundle        _bundle;
-    BOOL            _awakenCustomResources;
-    CPDictionary    _externalObjectsForProxyIdentifiers;
+    BOOL            _awakenCustomResources              @accessors(getter=awakenCustomResources);
+    CPBundle        _bundle                             @accessors(getter=bundle);
+    CPDictionary    _externalObjectsForProxyIdentifiers @accessors(setter=setExternalObjectsForProxyIdentifiers:);
+    CPString        _cibName                            @accessors(getter=cibName);
 }
 
 - (id)initForReadingWithData:(CPData)data bundle:(CPBundle)aBundle awakenCustomResources:(BOOL)shouldAwakenCustomResources
+{
+    return [self initForReadingWithData:data bundle:aBundle awakenCustomResources:shouldAwakenCustomResources cibName:@""];
+}
+
+- (id)initForReadingWithData:(CPData)data bundle:(CPBundle)aBundle awakenCustomResources:(BOOL)shouldAwakenCustomResources cibName:(CPString)aCibName
 {
     self = [super initForReadingWithData:data];
 
@@ -38,26 +44,12 @@
     {
         _bundle = aBundle;
         _awakenCustomResources = shouldAwakenCustomResources;
+        _cibName = aCibName;
 
         [self setDelegate:self];
     }
 
     return self;
-}
-
-- (CPBundle)bundle
-{
-    return _bundle;
-}
-
-- (BOOL)awakenCustomResources
-{
-    return _awakenCustomResources;
-}
-
-- (void)setExternalObjectsForProxyIdentifiers:(CPDictionary)externalObjectsForProxyIdentifiers
-{
-    _externalObjectsForProxyIdentifiers = externalObjectsForProxyIdentifiers;
 }
 
 - (id)externalObjectForProxyIdentifier:(CPString)anIdentifier

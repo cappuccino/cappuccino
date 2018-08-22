@@ -25,6 +25,7 @@
 
 @import "CPCib.j"
 @import "CPResponder.j"
+@import "CPViewController.j"
 @import "CPWindow.j"
 
 @class CPDocument
@@ -363,7 +364,7 @@
     {
         [viewControllerView removeFromSuperview];
         [viewControllerView setFrame:[contentView frame]];
-        [viewControllerView setAutoresizingMask:[contentView autoresizingMask]]
+        [viewControllerView setAutoresizingMask:[contentView autoresizingMask]];
         [[self window] setContentView:viewControllerView];
     }
     else

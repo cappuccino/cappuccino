@@ -24,30 +24,51 @@
 @import "CPObject.j"
 @import "CPString.j"
 
-CPCappuccinoErrorDomain = CPCocoaErrorDomain = @"CPCappuccinoErrorDomain";
-// CPPOSIXErrorDomain      = @"CPPOSIXErrorDomain";
-// CPOSStatusErrorDomain   = @"CPOSStatusErrorDomain";
+CPCappuccinoErrorDomain                 = kCFErrorDomainCappuccino;
+CPCocoaErrorDomain                      = kCFErrorDomainCappuccino; // compat
 
-CPUnderlyingErrorKey                    = @"CPUnderlyingErrorKey";
+CPUnderlyingErrorKey                    = kCFErrorUnderlyingErrorKey;
 
-CPLocalizedDescriptionKey               = @"CPLocalizedDescriptionKey";
-CPLocalizedFailureReasonErrorKey        = @"CPLocalizedFailureReasonErrorKey";
-CPLocalizedRecoverySuggestionErrorKey   = @"CPLocalizedRecoverySuggestionErrorKey";
+CPLocalizedDescriptionKey               = kCFErrorLocalizedDescriptionKey;
+CPLocalizedFailureReasonErrorKey        = kCFErrorLocalizedFailureReasonKey;
+CPLocalizedRecoverySuggestionErrorKey   = kCFErrorLocalizedRecoverySuggestionKey;
 CPLocalizedRecoveryOptionsErrorKey      = @"CPLocalizedRecoveryOptionsErrorKey";
 CPRecoveryAttempterErrorKey             = @"CPRecoveryAttempterErrorKey";
 CPHelpAnchorErrorKey                    = @"CPHelpAnchorErrorKey";
 
 CPStringEncodingErrorKey                = @"CPStringEncodingErrorKey";
-CPURLErrorKey                           = @"CPURLErrorKey";
-CPFilePathErrorKey                      = @"CPFilePathErrorKey";
+CPURLErrorKey                           = kCFErrorURLKey;
+CPFilePathErrorKey                      = kCFErrorFilePathKey;
 
+/*!
+    @class CPError
+    @ingroup foundation
+    @brief Used for encapsulating, presenting, and recovery from errors.
 
+    CPError is toll-free bridged with CFError() methods.
+
+    An example of initializing a CPError:
+<pre>
+
+var userInfo = @{CPLocalizedDescriptionKey: @"A localized error description",
+                 CPLocalizedFailureReasonErrorKey: @"A localized failure reason",
+                 CPUnderlyingErrorKey: @"An underlying error message"},
+
+    err = [CPError errorWithDomain:CPCappuccinoErrorDomain code:-10 userInfo:userInfo];
+</pre>
+ */
 @implementation CPError : CPObject
 {
-    CPInteger       _code @accessors(property=code, readonly);
-    CPString        _domain @accessors(property=domain, readonly);
-    CPDictionary    _userInfo @accessors(property=userInfo, readonly);
 }
+
++ (id)alloc
+{
+    var obj = new CFError();
+    obj.isa = [self class];
+
+    return obj;
+}
+
 
 + (id)errorWithDomain:(CPString)aDomain code:(CPInteger)aCode userInfo:(CPDictionary)aDict
 {
@@ -56,44 +77,94 @@ CPFilePathErrorKey                      = @"CPFilePathErrorKey";
 
 - (id)initWithDomain:(CPString)aDomain code:(CPInteger)aCode userInfo:(CPDictionary)aDict
 {
-    if (self = [super init])
-    {
-        _domain = aDomain;
-        _code = aCode;
-        _userInfo = aDict;
-    }
-
-    return self;
+    var result = new CFError(aDomain, aCode, aDict);
+    result.isa = [self class];
+    return result;
 }
 
+- (CPInteger)code
+{
+    return self.code();
+}
+
+- (CPString)userInfo
+{
+    return self.userInfo();
+}
+
+- (CPString)domain
+{
+    return self.domain();
+}
+
+/*!
+    By default this method returns the object in the user info dictionary for the key
+    CPLocalizedDescriptionKey. If the user info dictionary doesn’t contain a value for
+    CPLocalizedDescriptionKey, a default string is constructed from the domain and code.
+ */
 - (CPString)localizedDescription
 {
-   return [_userInfo objectForKey:CPLocalizedDescriptionKey];
+    return self.description();
 }
 
 - (CPString)localizedFailureReason
 {
-   return [_userInfo objectForKey:CPLocalizedFailureReasonErrorKey];
+   return self.failureReason();
 }
 
 - (CPArray)localizedRecoveryOptions
 {
-   return [_userInfo objectForKey:CPLocalizedRecoveryOptionsErrorKey];
+    var userInfo = self.userInfo(),
+        recoveryOptions = userInfo.valueForKey(CPLocalizedRecoveryOptionsErrorKey);
+
+    return recoveryOptions;
 }
 
 - (CPString)localizedRecoverySuggestion
 {
-   return [_userInfo objectForKey:CPLocalizedRecoverySuggestionErrorKey];
+    return self.recoverySuggestion();
 }
 
 - (id)recoveryAttempter
 {
-   return [_userInfo objectForKey:CPRecoveryAttempterErrorKey];
+    var userInfo = self.userInfo(),
+        recoveryAttempter = userInfo.valueForKey(CPRecoveryAttempterErrorKey);
+
+    return recoveryAttempter;
 }
 
 - (CPString)description
 {
-   return [CPString stringWithFormat:@"Error Domain=%@ Code=%d UserInfo=%p %@", _domain, _code, _userInfo, [self localizedDescription]];
+    return [CPString stringWithFormat:@"Error Domain=%@ Code=%d \"%@\" UserInfo=%@", self.domain(), self.code(), self.description(), self.userInfo()];
 }
 
 @end
+
+var CPErrorCodeKey = @"CPErrorCodeKey",
+    CPErrorDomainKey = @"CPErrorDomainKey",
+    CPErrorUserInfoKey = @"CPErrorUserInfoKey";
+
+@implementation CPError (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    var code = [aCoder decodeIntForKey:CPErrorCodeKey],
+        domain = [aCoder decodeObjectForKey:CPErrorDomainKey],
+        userInfo = [aCoder decodeObjectForKey:CPErrorUserInfoKey];
+
+    return [self initWithDomain:domain
+                           code:code
+                       userInfo:userInfo];
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [aCoder encodeObject:self.domain() forKey:CPErrorDomainKey];
+    [aCoder encodeObject:self.code() forKey:CPErrorCodeKey];
+    [aCoder encodeObject:self.userInfo() forKey:CPErrorUserInfoKey];
+}
+
+@end
+
+CFError.prototype.isa = CPError;
+

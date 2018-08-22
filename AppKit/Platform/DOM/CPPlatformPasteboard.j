@@ -384,9 +384,10 @@ Return true if the event may be a copy and paste event, but the target is not an
 
     if ([value length])
     {
-        var pasteboard = [CPPasteboard generalPasteboard];
+        var pasteboard = [CPPasteboard generalPasteboard],
+            cappString = [pasteboard stringForType:CPStringPboardType];
 
-        if ([pasteboard _stateUID] != value)
+        if (cappString != value)
         {
             [pasteboard declareTypes:[CPStringPboardType] owner:self];
             [pasteboard setString:value forType:CPStringPboardType];
@@ -450,9 +451,10 @@ Return true if the event may be a copy and paste event, but the target is not an
 
     if ([value length])
     {
-        var pasteboard = [CPPasteboard generalPasteboard];
+        var pasteboard = [CPPasteboard generalPasteboard],
+            cappString = [pasteboard stringForType:CPStringPboardType];
 
-        if ([pasteboard _stateUID] != value)
+        if (cappString != value)
         {
             [pasteboard declareTypes:[CPStringPboardType] owner:self];
             [pasteboard setString:value forType:CPStringPboardType];
@@ -467,7 +469,7 @@ Return true if the event may be a copy and paste event, but the target is not an
     // By default we'll stop the native handling of the event since we're handling it ourselves. However, we need to
     // stop it before we send the event so that the event can overrule our choice. CPTextField for instance wants the
     // default handling when focused (which is to insert into the field).
-    [platformWindow _propagateCurrentDOMEvent:NO]
+    [platformWindow _propagateCurrentDOMEvent:NO];
 
     [CPApp sendEvent:anEvent];
 
@@ -490,7 +492,7 @@ Return true if the event may be a copy and paste event, but the target is not an
 
     SUPPRESS_CAPPUCCINO_CUT_FOR_EVENT(anEvent);
 
-    [platformWindow _propagateCurrentDOMEvent:NO]
+    [platformWindow _propagateCurrentDOMEvent:NO];
 
     // Let the app react through copy: and cut: actions.
     [CPApp sendEvent:anEvent];

@@ -37,6 +37,8 @@
 @import "CPWindowController.j"
 @import "_CPPopoverWindow.j"
 
+@typedef CPModalSession
+
 var CPMainCibFile               = @"CPMainCibFile",
     CPMainCibFileHumanFriendly  = @"Main cib file base name",
     CPEventModifierFlags = 0;
@@ -45,6 +47,8 @@ var CPMainCibFile               = @"CPMainCibFile",
 @protocol CPApplicationDelegate <CPObject>
 
 @optional
+- (CPApplicationTerminateReply)applicationShouldTerminate:(CPApplication)sender;
+- (CPString)applicationShouldTerminateMessage:(CPApplication)sender;
 - (void)applicationDidBecomeActive:(CPNotification)aNotification;
 - (void)applicationDidChangeScreenParameters:(CPNotification)aNotification;
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification;
@@ -55,6 +59,9 @@ var CPMainCibFile               = @"CPMainCibFile",
 - (void)applicationWillTerminate:(CPNotification)aNotification;
 
 @end
+
+var CPApplicationDelegate_applicationShouldTerminate_           = 1 << 0,
+    CPApplicationDelegate_applicationShouldTerminateMessage_    = 1 << 1;
 
 /*!
     @ingroup appkit
@@ -101,6 +108,8 @@ var CPMainCibFile               = @"CPMainCibFile",
 
     //
     id <CPApplicationDelegate>  _delegate;
+    CPInteger                   _implementedDelegateMethods;
+
     BOOL                        _finishedLaunching;
     BOOL                        _isActive;
 
@@ -163,6 +172,8 @@ var CPMainCibFile               = @"CPMainCibFile",
     if (_delegate == aDelegate)
         return;
 
+    _implementedDelegateMethods = 0;
+
     var defaultCenter = [CPNotificationCenter defaultCenter],
         delegateNotifications =
         [
@@ -203,6 +214,12 @@ var CPMainCibFile               = @"CPMainCibFile",
         if ([_delegate respondsToSelector:selector])
             [defaultCenter addObserver:_delegate selector:selector name:notificationName object:self];
     }
+
+    if ([_delegate respondsToSelector:@selector(applicationShouldTerminate:)])
+        _implementedDelegateMethods |= CPApplicationDelegate_applicationShouldTerminate_;
+
+    if ([_delegate respondsToSelector:@selector(applicationShouldTerminateMessage:)])
+        _implementedDelegateMethods |= CPApplicationDelegate_applicationShouldTerminateMessage_
 }
 
 /*!
@@ -424,12 +441,7 @@ var CPMainCibFile               = @"CPMainCibFile",
 {
     // callback method for terminate:
     if (didCloseAll)
-    {
-        if ([_delegate respondsToSelector:@selector(applicationShouldTerminate:)])
-            [self replyToApplicationShouldTerminate:[_delegate applicationShouldTerminate:self]];
-        else
-            [self replyToApplicationShouldTerminate:YES];
-    }
+        [self replyToApplicationShouldTerminate:[self _sendDelegateApplicationShouldTerminate]];
 }
 
 - (void)replyToApplicationShouldTerminate:(BOOL)terminate
@@ -443,16 +455,22 @@ var CPMainCibFile               = @"CPMainCibFile",
 
 - (void)activateIgnoringOtherApps:(BOOL)shouldIgnoreOtherApps
 {
+    if (_isActive)
+        return;
+
     [self _willBecomeActive];
 
     [CPPlatform activateIgnoringOtherApps:shouldIgnoreOtherApps];
     _isActive = YES;
 
-    [self _willResignActive];
+    [self _didBecomeActive];
 }
 
 - (void)deactivate
 {
+    if (!_isActive)
+        return;
+
     [self _willResignActive];
 
     [CPPlatform deactivate];
@@ -478,6 +496,15 @@ var CPMainCibFile               = @"CPMainCibFile",
 - (void)run
 {
     [self finishLaunching];
+    [self sendEvent:[CPEvent otherEventWithType:CPAppKitDefined
+                                       location:CGPointMakeZero()
+                                  modifierFlags:0
+                                      timestamp:[CPEvent currentTimestamp]
+                                   windowNumber:[_keyWindow windowNumber]
+                                        context:nil
+                                        subtype:nil
+                                          data1:nil
+                                          data2:nil]];
 }
 
 // Managing the Event Loop
@@ -601,11 +628,6 @@ var CPMainCibFile               = @"CPMainCibFile",
 
     var theWindow = [anEvent window];
 
-    // Check if this is a candidate for key equivalent...
-    if ([anEvent _couldBeKeyEquivalent] && [self _handleKeyEquivalent:anEvent])
-        // The key equivalent was handled.
-        return;
-
     if ([anEvent type] == CPMouseMoved)
     {
         if (theWindow !== _lastMouseMoveWindow)
@@ -641,6 +663,11 @@ var CPMainCibFile               = @"CPMainCibFile",
     }
 
     _eventListenerInsertionIndex = _eventListeners.length;
+
+    // Check if this is a candidate for key equivalent...
+    if ([anEvent _couldBeKeyEquivalent] && [self _handleKeyEquivalent:anEvent])
+        // The key equivalent was handled.
+        return;
 
     if (theWindow)
         [theWindow sendEvent:anEvent];
@@ -957,7 +984,7 @@ var CPMainCibFile               = @"CPMainCibFile",
 */
 - (void)setTarget:(id)aTarget selector:(SEL)aSelector forNextEventMatchingMask:(unsigned int)aMask untilDate:(CPDate)anExpiration inMode:(CPString)aMode dequeue:(BOOL)shouldDequeue
 {
-    _eventListeners.splice(_eventListenerInsertionIndex++, 0, _CPEventListenerMake(aMask, function (anEvent) { objj_msgSend(aTarget, aSelector, anEvent); }, shouldDequeue));
+    _eventListeners.splice(_eventListenerInsertionIndex++, 0, _CPEventListenerMake(aMask, function (anEvent) { if (aTarget != null) aTarget.isa.objj_msgSend1(aTarget, aSelector, anEvent); }, shouldDequeue));
 }
 
 /*!
@@ -986,7 +1013,9 @@ var CPMainCibFile               = @"CPMainCibFile",
         return;
     }
 
-    [aSheet._windowView _enableSheet:YES inWindow:aWindow];
+    if (![aWindow attachedSheet])
+        [aSheet._windowView _enableSheet:YES inWindow:aWindow];
+
     [aWindow _attachSheet:aSheet modalDelegate:aModalDelegate didEndSelector:didEndSelector contextInfo:contextInfo];
 }
 
@@ -1173,7 +1202,7 @@ var CPMainCibFile               = @"CPMainCibFile",
         [[self keyWindow] orderFront:self];
     else if ([self mainWindow])
         [[self mainWindow] makeKeyAndOrderFront:self];
-    else
+    else if ([self mainMenu])
         [[self mainMenu]._menuWindow makeKeyWindow]; //FIXME this may not actually work
 
     _previousKeyWindow = nil;
@@ -1189,6 +1218,22 @@ var CPMainCibFile               = @"CPMainCibFile",
     [[CPNotificationCenter defaultCenter] postNotificationName:CPApplicationWillResignActiveNotification
                                                         object:self
                                                       userInfo:nil];
+}
+
+- (BOOL)_sendDelegateApplicationShouldTerminate
+{
+    if (!(_implementedDelegateMethods & CPApplicationDelegate_applicationShouldTerminate_))
+        return YES;
+
+    return [_delegate applicationShouldTerminate:self];
+}
+
+- (CPString)_sendDelegateApplicationShouldTerminateMessage
+{
+    if (!(_implementedDelegateMethods & CPApplicationDelegate_applicationShouldTerminateMessage_))
+        return @"You have attempted to leave this page. Are you sure you want to exit this page?";
+
+    return [_delegate applicationShouldTerminateMessage:self];
 }
 
 - (void)_didResignActive
@@ -1313,7 +1358,7 @@ var _CPAppBootstrapperActions = nil;
     {
         var action = _CPAppBootstrapperActions.shift();
 
-        if (objj_msgSend(self, action))
+        if (self.isa.objj_msgSend0(self, action))
             return;
     }
 

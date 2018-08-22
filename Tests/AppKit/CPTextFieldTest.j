@@ -1,9 +1,14 @@
 @import <AppKit/CPTextField.j>
 
-[CPApplication sharedApplication]
 
 @implementation CPTextFieldTest : OJTestCase
 {
+}
+
+- (void)setUp
+{
+    // This will init the global var CPApp which are used internally in the AppKit
+    [[CPApplication alloc] init];
 }
 
 /*!
@@ -29,6 +34,7 @@
 
     [numberFormatter setNumberStyle:CPNumberFormatterDecimalStyle];
     [numberFormatter setMaximumFractionDigits:3];
+    [numberFormatter setGeneratesDecimalNumbers:NO];
 
     [control setFormatter:numberFormatter];
     [control setStringValue:@"12.3456"];

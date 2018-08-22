@@ -1,6 +1,7 @@
 
 var FILE = require("file");
 var sprintf = require("printf").sprintf;
+var OS = require("os");
 
 var window = exports.window = require("browser/window");
 
@@ -68,6 +69,8 @@ with (window)
 // runs the objj repl or file provided in args
 exports.run = function(args)
 {
+    var multipleFiles = false;
+
     if (args)
     {
         // we expect args to be in the format:
@@ -78,28 +81,149 @@ exports.run = function(args)
 
         // copy the args since we're going to modify them
         var argv = args.slice(1);
+        var outputFormatInXML = false;
 
-        if (argv[0] === "--version")
+        if (argv[0] === "--version" || argv[0] === "-v")
         {
             print(exports.fullVersionString());
             return;
         }
 
-        while (argv.length && argv[0].indexOf('-I') === 0)
-            OBJJ_INCLUDE_PATHS.unshift.apply(OBJJ_INCLUDE_PATHS, argv.shift().substr(2).split(':'));
+        if (argv[0] === "--help" || argv[0] === "-h")
+        {
+            print("Usage (objj): " + args[0].split("/").pop() + " [options] [--] files...");
+            print("  -v, --version                       print the current version of objj");
+            print("  -I, --objj-include-paths            include a specific framework paths")
+            print("  -h, --help                          print this help");
+            print("  -m, --multifiles                    launch objj on several files")
+            print("  -x, --xml                           specify the output format in xml.")
+            print("  -g, --include-debug-symbols         Include debug symbols when compiling.")
+            print("  -T, --dont-include-type-signatures  Do not include type signatures when compiling.")
+            print("  -O2, --inline-msg-send              Inline objj_msgSend function when compiling.")
+            return;
+        }
+
+        while (argv.length && argv[0].indexOf('-') === 0)
+        {
+            switch (argv[0])
+            {
+                case "--objj-include-paths":
+                case "-I":
+                    argv.shift();
+                    OBJJ_INCLUDE_PATHS.unshift.apply(OBJJ_INCLUDE_PATHS, argv.shift().split(":"));
+                    break;
+
+                case "--multifiles":
+                case "-m":
+                    argv.shift();
+                    multipleFiles = true;
+                    break
+
+                case "-x":
+                case "--xml":
+                    argv.shift();
+                    exports.messageOutputFormatInXML = true;
+                    outputFormatInXML = true;
+                    break;
+
+                case "-g":
+                case "--include-debug-symbols":
+                    argv.shift();
+                    var flags = ObjectiveJ.FileExecutable.currentCompilerFlags();
+                    flags.includeMethodFunctionNames = true;
+                    ObjectiveJ.FileExecutable.setCurrentCompilerFlags(flags);
+                    break;
+
+                case "-T":
+                case "--dont-include-type-signatures":
+                    argv.shift();
+                    var flags = ObjectiveJ.FileExecutable.currentCompilerFlags();
+                    flags.includeIvarTypeSignatures = true;
+                    flags.includeMethodArgumentTypeSignatures = true;
+                    ObjectiveJ.FileExecutable.setCurrentCompilerFlags(flags);
+                    break;
+
+                case "-O2":
+                case "--inline-msg-send":
+                    argv.shift();
+                    var flags = ObjectiveJ.FileExecutable.currentCompilerFlags();
+                    flags.inlineMsgSendFunctions = true;
+                    ObjectiveJ.FileExecutable.setCurrentCompilerFlags(flags);
+                    break;
+
+                case "-g":
+                case "--include-debug-symbols":
+                    argv.shift();
+                    var flags = ObjectiveJ.FileExecutable.currentCompilerFlags();
+                    flags.includeMethodFunctionNames = true;
+                    ObjectiveJ.FileExecutable.setCurrentCompilerFlags(flags);
+                    break;
+
+                case "-T":
+                case "--dont-include-type-signatures":
+                    argv.shift();
+                    var flags = ObjectiveJ.FileExecutable.currentCompilerFlags();
+                    flags.includeIvarTypeSignatures = true;
+                    flags.includeMethodArgumentTypeSignatures = true;
+                    ObjectiveJ.FileExecutable.setCurrentCompilerFlags(flags);
+                    break;
+
+                case "-O2":
+                case "--inline-msg-send":
+                    argv.shift();
+                    var flags = ObjectiveJ.FileExecutable.currentCompilerFlags();
+                    flags.inlineMsgSendFunctions = true;
+                    ObjectiveJ.FileExecutable.setCurrentCompilerFlags(flags);
+                    break;
+
+                default:
+                    print(args[0].split("/").pop() + " illegal option " + argv[0]);
+                    OS.exit(1);
+            }
+        }
     }
 
     if (argv && argv.length > 0)
     {
-        var arg0 = argv.shift();
-        var mainFilePath = FILE.canonical(arg0);
+        var endCommand = false,
+            errors = [];
 
-        exports.make_narwhal_factory(mainFilePath)(require, { }, module, system, print);
+        while (argv.length > 0)
+        {
+            var arg0 = argv.shift(),
+                mainFilePath = FILE.canonical(arg0);
 
-        if (typeof main === "function")
-            main([arg0].concat(argv));
+            try
+            {
+                exports.make_narwhal_factory(mainFilePath)(require, { }, module, system, print);
+            }
+            catch(e)
+            {
+                errors.push(e);
+            }
 
-        require("browser/timeout").serviceTimeouts();
+            if (typeof main === "function")
+            {
+                main([arg0].concat(argv));
+                endCommand = true;
+            }
+
+            require("browser/timeout").serviceTimeouts();
+
+            if (!multipleFiles || endCommand)
+                break;
+
+            ObjectiveJ.Executable.resetCachedFileExecutableSearchers();
+            ObjectiveJ.StaticResource.resetRootResources();
+            ObjectiveJ.FileExecutable.resetFileExecutables();
+            objj_resetRegisterClasses();
+        }
+
+        if (errors.length)
+        {
+            // Make sure we get exit will failiure
+            OS.exit(1);
+        }
     }
     else
     {

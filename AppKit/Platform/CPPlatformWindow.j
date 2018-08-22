@@ -27,8 +27,11 @@
 
 @class CPMenu
 @class CPPlatformPasteboard
+@class CPWindow
 
 @global CPApp
+
+@typedef DOMWindow
 
 var PrimaryPlatformWindow   = NULL;
 
@@ -40,6 +43,8 @@ var PrimaryPlatformWindow   = NULL;
     BOOL                    _hasShadow;
     unsigned                _shadowStyle;
     CPString                _title;
+    BOOL                    _shouldUpdateContentRect;
+    BOOL                    _hasInitializeInstanceWithWindow;
 
 #if PLATFORM(DOM)
     DOMWindow               _DOMWindow;
@@ -55,6 +60,7 @@ var PrimaryPlatformWindow   = NULL;
 
     BOOL                    _mouseIsDown;
     BOOL                    _mouseDownIsRightClick;
+    int                     _firstMouseDownButton;
     CGPoint                 _lastMouseEventLocation;
     CPWindow                _mouseDownWindow;
     CPTimeInterval          _lastMouseUp;
@@ -70,6 +76,12 @@ var PrimaryPlatformWindow   = NULL;
     CPPlatformPasteboard    _platformPasteboard;
 
     CPString                _overriddenEventType;
+
+    CPWindow                _currentKeyWindow;
+    CPWindow                _previousKeyWindow;
+
+    CPWindow                _currentMainWindow;
+    CPWindow                _previousMainWindow;
 #endif
 }
 
@@ -110,8 +122,21 @@ var PrimaryPlatformWindow   = NULL;
         _windowLayers = @{};
 
         _charCodes = {};
+
+        _platformPasteboard = [CPPlatformPasteboard new];
 #endif
     }
+
+    return self;
+}
+
+- (id)initWithWindow:(CPWindow)aWindow
+{
+    self = [self initWithContentRect:CGRectMakeCopy([aWindow frame])];
+
+    _hasInitializeInstanceWithWindow = YES;
+    [aWindow setPlatformWindow:self];
+    [aWindow setFullPlatformWindow:YES];
 
     return self;
 }
@@ -191,7 +216,7 @@ var PrimaryPlatformWindow   = NULL;
 - (BOOL)isVisible
 {
 #if PLATFORM(DOM)
-    return _DOMWindow !== NULL;
+    return _DOMWindow !== NULL && _DOMWindow !== undefined;
 #else
     return NO;
 #endif
@@ -199,18 +224,10 @@ var PrimaryPlatformWindow   = NULL;
 
 - (void)deminiaturize:(id)sender
 {
-#if PLATFORM(DOM)
-    if (_DOMWindow && typeof _DOMWindow["cpDeminiaturize"] === "function")
-        _DOMWindow.cpDeminiaturize();
-#endif
 }
 
 - (void)miniaturize:(id)sender
 {
-#if PLATFORM(DOM)
-    if (_DOMWindow && typeof _DOMWindow["cpMiniaturize"] === "function")
-        _DOMWindow.cpMiniaturize();
-#endif
 }
 
 - (void)moveWindow:(CPWindow)aWindow fromLevel:(int)fromLevel toLevel:(int)toLevel
@@ -230,31 +247,16 @@ var PrimaryPlatformWindow   = NULL;
 - (void)setLevel:(CPInteger)aLevel
 {
     _level = aLevel;
-
-#if PLATFORM(DOM)
-    if (_DOMWindow && _DOMWindow.cpSetLevel)
-        _DOMWindow.cpSetLevel(aLevel);
-#endif
 }
 
 - (void)setHasShadow:(BOOL)shouldHaveShadow
 {
     _hasShadow = shouldHaveShadow;
-
-#if PLATFORM(DOM)
-    if (_DOMWindow && _DOMWindow.cpSetHasShadow)
-        _DOMWindow.cpSetHasShadow(shouldHaveShadow);
-#endif
 }
 
 - (void)setShadowStyle:(int)aStyle
 {
     _shadowStyle = aStyle;
-
-#if PLATFORM(DOM)
-    if (_DOMWindow && _DOMWindow.cpSetShadowStyle)
-        _shadowStyle.cpSetShadowStyle(aStyle);
-#endif
 }
 
 - (BOOL)supportsFullPlatformWindows
@@ -279,6 +281,22 @@ var PrimaryPlatformWindow   = NULL;
 - (CPString)title
 {
     return _title;
+}
+
+- (BOOL)_canUpdateContentRect
+{
+    // We only update the contentRect with the frame of the bridgeless window if we have initialized the platform with the method initWithWindow:
+    return _shouldUpdateContentRect && _hasInitializeInstanceWithWindow;
+}
+
+- (BOOL)_hasInitializeInstanceWithWindow
+{
+    return _hasInitializeInstanceWithWindow;
+}
+
+- (void)_setShouldUpdateContentRect:(BOOL)aBoolean
+{
+    _shouldUpdateContentRect = aBoolean;
 }
 
 @end

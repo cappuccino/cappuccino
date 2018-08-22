@@ -332,7 +332,7 @@ var CPArrayClass                                                            = Ni
 */
 - (id)decodeObjectForKey:(CPString)aKey
 {
-    var object = _plistObject.valueForKey(aKey),
+    var object = _plistObject && _plistObject.valueForKey(aKey),
         objectClass = (object != nil) && object.isa;
 
     if (objectClass === CPDictionaryClass || objectClass === CPMutableDictionaryClass)

@@ -29,6 +29,7 @@
 @global CPImagesPboardType
 @global appkit_tag_dom_elements
 
+@typedef CPImageAlignment
 CPImageAlignCenter      = 0;
 CPImageAlignTop         = 1;
 CPImageAlignTopLeft     = 2;
@@ -97,10 +98,32 @@ var CPImageViewEmptyPlaceholderImage = nil;
 - (void)_createDOMImageElement
 {
 #if PLATFORM(DOM)
-    if (_DOMImageElement)
-        return;
+    var image = [self objectValue],
+    isCSSBasedImage = [image isCSSBased],
+    isIMGImageElement = _DOMImageElement && (_DOMImageElement.nodeName == "IMG");
 
-    _DOMImageElement = document.createElement("img");
+    // First, check if we need to destroy a current DOM image element. This is the case if :
+    // - we have one but not the right one (that is a DIV but needing an IMG, and vice versa)
+
+    if (_DOMImageElement)
+    {
+        if ((isIMGImageElement && isCSSBasedImage) || (!isIMGImageElement && !isCSSBasedImage))
+        {
+            // OK, destroy it
+
+            _DOMElement.removeChild(_DOMImageElement);
+
+            _DOMImageElement = nil;
+
+            // CSS styling cleaning
+            _cssStylePreviousState = @[];
+            _cssStyleNode = nil;
+        }
+        else
+            return;
+    }
+
+    _DOMImageElement = document.createElement(isCSSBasedImage ? "div" : "img");
     _DOMImageElement.style.position = "absolute";
     _DOMImageElement.style.left = "0px";
     _DOMImageElement.style.top = "0px";
@@ -149,10 +172,15 @@ var CPImageViewEmptyPlaceholderImage = nil;
     var newImage = [self objectValue];
 
 #if PLATFORM(DOM)
-    if (!_DOMImageElement)
-        [self _createDOMImageElement];
+    [self _createDOMImageElement];
 
-    _DOMImageElement.src = newImage ? [newImage filename] : [CPImageViewEmptyPlaceholderImage filename];
+    if ([newImage isCSSBased])
+        _cssStyleNode = [newImage applyCSSImageForView:self
+                                          onDOMElement:_DOMImageElement
+                                             styleNode:_cssStyleNode
+                                         previousState:@ref(_cssStylePreviousState)];
+    else
+        _DOMImageElement.src = newImage ? [newImage filename] : [CPImageViewEmptyPlaceholderImage filename];
 #endif
 
     var size = [newImage size];
@@ -178,6 +206,7 @@ var CPImageViewEmptyPlaceholderImage = nil;
 
 - (void)imageDidLoad:(CPNotification)aNotification
 {
+    [[CPNotificationCenter defaultCenter] removeObserver:self name:CPImageDidLoadNotification object:[self objectValue]];
     [self hideOrDisplayContents];
 
     [self setNeedsLayout];

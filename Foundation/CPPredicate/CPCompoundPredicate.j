@@ -26,7 +26,7 @@
 @import "CPArray.j"
 @import "_CPPredicate.j"
 
-var CPCompoundPredicateType;
+@typedef CPCompoundPredicateType
 
 /*!
     @class CPCompoundPredicate

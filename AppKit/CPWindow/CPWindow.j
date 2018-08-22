@@ -36,6 +36,7 @@
 @import "CPResponder.j"
 @import "CPScreen.j"
 @import "CPText.j"
+@import "CPTrackingArea.j"
 @import "CPView.j"
 @import "CPWindow_Constants.j"
 @import "_CPBorderlessBridgeWindowView.j"
@@ -50,29 +51,43 @@
 
 @class CPMenu
 @class CPProgressIndicator
+@class CPToolbar
+@class CPWindowController
+@class _CPWindowFrameAnimation
+@class _CPWindowFrameAnimationDelegate
 
 @global CPApp
+@global _CPPlatformWindowWillCloseNotification
+
+@typedef _CPWindowFullPlatformWindowSession
+
 
 @protocol CPWindowDelegate <CPObject>
 
 @optional
 - (BOOL)windowShouldClose:(CPWindow)aWindow;
+- (CGSize)windowWillResize:(CPWindow)sender toSize:(CGSize)aSize;
 - (CPUndoManager)windowWillReturnUndoManager:(CPWindow)window;
 - (void)windowDidBecomeKey:(CPNotification)aNotification;
 - (void)windowDidBecomeMain:(CPNotification)aNotification;
+- (void)windowDidDeminiaturize:(CPNotification)notification;
 - (void)windowDidEndSheet:(CPNotification)aNotification;
+- (void)windowDidMiniaturize:(CPNotification)notification;
 - (void)windowDidMove:(CPNotification)aNotification;
 - (void)windowDidResignKey:(CPNotification)aNotification;
 - (void)windowDidResignMain:(CPNotification)aNotification;
 - (void)windowDidResize:(CPNotification)aNotification;
+- (void)windowWillMiniaturize:(CPNotification)notification;
 - (void)windowWillBeginSheet:(CPNotification)aNotification;
 - (void)windowWillClose:(CPWindow)aWindow;
 
 @end
 
-var CPWindowDelegate_windowShouldClose_             = 1 << 1
+var CPWindowDelegate_windowShouldClose_             = 1 << 1,
     CPWindowDelegate_windowWillReturnUndoManager_   = 1 << 2,
-    CPWindowDelegate_windowWillClose_               = 1 << 3;
+    CPWindowDelegate_windowWillClose_               = 1 << 3,
+    CPWindowDelegate_windowWillResize_toSize_       = 1 << 4;
+
 
 var CPWindowSaveImage       = nil,
 
@@ -164,7 +179,7 @@ var CPWindowActionMessageKeys = [
     BOOL                                _isVisible;
     BOOL                                _hasBeenOrderedIn @accessors;
     BOOL                                _isMiniaturized;
-    BOOL                                _isAnimating;
+    BOOL                                _isAnimating @accessors(setter=_setAnimating:);
     BOOL                                _hasShadow;
     BOOL                                _isMovableByWindowBackground;
     BOOL                                _isMovable;
@@ -184,7 +199,16 @@ var CPWindowActionMessageKeys = [
     CPView                              _contentView;
     CPView                              _toolbarView;
 
+    BOOL                                _handlingTrackingAreaEvent;
+    BOOL                                _restartHandlingTrackingAreaEvent;
+    CPArray                             _previousMouseEnteredStack;
+    CPArray                             _previousCursorUpdateStack;
     CPArray                             _mouseEnteredStack;
+    CPArray                             _cursorUpdateStack;
+    CPArray                             _queuedEvents;
+    CPArray                             _trackingAreaViews;
+    id                                  _activeCursorTrackingArea;
+    CPArray                             _queuedTrackingEvents;
     CPView                              _leftMouseDownView;
     CPView                              _rightMouseDownView;
 
@@ -214,6 +238,7 @@ var CPWindowActionMessageKeys = [
 
     CPButton                            _defaultButton;
     BOOL                                _defaultButtonEnabled;
+    BOOL                                _defaultButtonDisabledTemporarily;
 
     BOOL                                _autorecalculatesKeyViewLoop;
     BOOL                                _keyViewLoopIsDirty;
@@ -238,6 +263,7 @@ var CPWindowActionMessageKeys = [
     CPWindow                            _parentView;
     BOOL                                _isSheet;
     _CPWindowFrameAnimation             _frameAnimation;
+    _CPWindowFrameAnimationDelegate     _frameAnimationDelegate;
 }
 
 + (Class)_binderClassForBinding:(CPString)aBinding
@@ -285,7 +311,7 @@ CPTexturedBackgroundWindowMask
             [self setPlatformWindow:[CPPlatformWindow primaryPlatformWindow]];
         else
         {
-            // give zero sized borderless bridge windows a default size if we're not in the browser so they show up in NativeHost.
+            // give zero sized borderless bridge windows a default size.
             if ((aStyleMask & CPBorderlessBridgeWindowMask) && aContentRect.size.width === 0 && aContentRect.size.height === 0)
             {
                 var visibleFrame = [[[CPScreen alloc] init] visibleFrame];
@@ -313,6 +339,8 @@ CPTexturedBackgroundWindowMask
         _isSheet = NO;
         _sheetContext = nil;
         _parentView = nil;
+        _frameAnimation = nil;
+        _frameAnimationDelegate = nil;
 
         // Set up our window number.
         _windowNumber = [CPApp._windows count];
@@ -321,6 +349,17 @@ CPTexturedBackgroundWindowMask
         _styleMask = aStyleMask;
 
         [self setLevel:CPNormalWindowLevel];
+
+        _handlingTrackingAreaEvent = NO;
+        _restartHandlingTrackingAreaEvent = NO;
+        _trackingAreaViews = [];
+        _previousMouseEnteredStack = [];
+        _previousCursorUpdateStack = [];
+        _mouseEnteredStack = [];
+        _cursorUpdateStack = [];
+        _queuedEvents = [];
+        _queuedTrackingEvents = [];
+        _activeCursorTrackingArea = nil;
 
         // Create our border view which is the actual root of our view hierarchy.
         _windowView = [[windowViewClass alloc] initWithFrame:CGRectMake(0.0, 0.0, CGRectGetWidth(_frame), CGRectGetHeight(_frame)) styleMask:aStyleMask];
@@ -364,6 +403,7 @@ CPTexturedBackgroundWindowMask
 
         _autorecalculatesKeyViewLoop = NO;
         _defaultButtonEnabled = YES;
+        _defaultButtonDisabledTemporarily = NO;
         _keyViewLoopIsDirty = NO;
         _hasBecomeKeyWindow = NO;
 
@@ -544,6 +584,11 @@ CPTexturedBackgroundWindowMask
     }
 }
 
+- (CPView)_windowView
+{
+    return _windowView;
+}
+
 /*!
     Sets the receiver as a full platform window. If you pass YES the CPWindow instance will fill the entire browser content area,
     otherwise the CPWindow will be a window inside of your browser window which the user can drag around, and resize (if you allow).
@@ -568,6 +613,9 @@ CPTexturedBackgroundWindowMask
 
         var fullPlatformWindowViewClass = [[self class] _windowViewClassForFullPlatformWindowStyleMask:_styleMask],
             windowView = [[fullPlatformWindowViewClass alloc] initWithFrame:CGRectMakeZero() styleMask:_styleMask];
+
+        if (_platformWindow != [CPPlatformWindow primaryPlatformWindow] && [_platformWindow _hasInitializeInstanceWithWindow])
+            [_platformWindow setContentRect:[self frame]];
 
         [self _setWindowView:windowView];
 
@@ -613,7 +661,6 @@ CPTexturedBackgroundWindowMask
     CPBorderlessWindowMask
     CPTitledWindowMask
     CPClosableWindowMask
-    CPMiniaturizableWindowMask (NOTE: only available in NativeHost)
     CPResizableWindowMask
     CPTexturedBackgroundWindowMask
     CPBorderlessBridgeWindowMask
@@ -701,7 +748,7 @@ CPTexturedBackgroundWindowMask
     {
         [_frameAnimation stopAnimation];
         _frameAnimation = [[_CPWindowFrameAnimation alloc] initWithWindow:self targetFrame:frame];
-
+        [_frameAnimation setDelegate:[self _frameAnimationDelegate]];
         [_frameAnimation startAnimation];
     }
     else
@@ -738,6 +785,9 @@ CPTexturedBackgroundWindowMask
             size.width = newSize.width;
             size.height = newSize.height;
 
+            if (!_isAnimating)
+                size = [self _sendDelegateWindowWillResizeToSize:size];
+
             [_windowView setFrameSize:size];
 
             if (_hasShadow)
@@ -753,8 +803,18 @@ CPTexturedBackgroundWindowMask
         if (originMoved)
             [self _moveChildWindows:delta];
     }
+
+    if ([_platformWindow _canUpdateContentRect] && _isFullPlatformWindow && _platformWindow != [CPPlatformWindow primaryPlatformWindow])
+        [_platformWindow setContentRect:aFrame];
 }
 
+- (id)_frameAnimationDelegate
+{
+    if (_frameAnimationDelegate == nil)
+        _frameAnimationDelegate = [[_CPWindowFrameAnimationDelegate alloc] initWithWindow:self];
+
+    return _frameAnimationDelegate;
+}
 /*
     Constrain a frame so that the window remains at least partially visible on screen,
     moving or resizing the frame as necessary.
@@ -901,16 +961,25 @@ CPTexturedBackgroundWindowMask
 
 - (void)_orderFront
 {
+
 #if PLATFORM(DOM)
+
+    if (!_isVisible)
+        [_platformWindow _setShouldUpdateContentRect:NO];
+
     // -dw- if a sheet is clicked, the parent window should come up too
     if (_isSheet)
         [_parentView orderFront:self];
 
-    if (!_isVisible)
-        [self _setFrame:_frame display:YES animate:NO constrainWidth:YES constrainHeight:YES];
+    // Save the boolean since it will be updated in the method order:window:relativeTo:
+    var wasVisible = _isVisible;
 
     [_platformWindow orderFront:self];
     [_platformWindow order:CPWindowAbove window:self relativeTo:nil];
+
+    // setFrame is set after ordering the window as this method can send some notifications
+    if (!wasVisible)
+        [self _setFrame:_frame display:YES animate:NO constrainWidth:YES constrainHeight:YES];
 #endif
 
     if (!CPApp._keyWindow)
@@ -921,6 +990,11 @@ CPTexturedBackgroundWindowMask
 
     if (!CPApp._mainWindow)
         [self makeMainWindow];
+
+    [_platformWindow _setShouldUpdateContentRect:YES];
+
+    if ([self attachedSheet])
+        [_platformWindow order:CPWindowAbove window:[self attachedSheet] relativeTo:nil];
 }
 
 /*
@@ -930,6 +1004,31 @@ CPTexturedBackgroundWindowMask
 - (void)_parentDidOrderInChild
 {
 }
+
+/*
+    Called when the window is displayed in the DOM
+*/
+- (void)_windowWillBeAddedToTheDOM
+{
+    [[CPNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(_didReceivePlatformWindowWillCloseNotification:)
+                                                 name:_CPPlatformWindowWillCloseNotification
+                                               object:_platformWindow];
+
+    [[self contentView] _addObservers];
+}
+
+/*
+    Called when the window is removed in the DOM
+*/
+- (void)_windowWillBeRemovedFromTheDOM
+{
+    [[CPNotificationCenter defaultCenter] removeObserver:self name:_CPPlatformWindowWillCloseNotification object:nil];
+
+    [[self contentView] _removeObservers];
+    _hasBecomeKeyWindow = NO;
+}
+
 
 /*
     Makes the receiver the last window in the screen ordering.
@@ -974,9 +1073,13 @@ CPTexturedBackgroundWindowMask
     if ([self _sharesChromeWithPlatformWindow])
         [_platformWindow orderOut:self];
 
+    if (_isFullPlatformWindow && _platformWindow != [CPPlatformWindow primaryPlatformWindow])
+        [_platformWindow orderOut:self];
+
     [_platformWindow order:CPWindowOut window:self relativeTo:nil];
 #endif
 
+    [self makeFirstResponder:nil];
     [self _updateMainAndKeyWindows];
 }
 
@@ -1378,6 +1481,9 @@ CPTexturedBackgroundWindowMask
     [defaultCenter removeObserver:_delegate name:CPWindowDidResizeNotification object:self];
     [defaultCenter removeObserver:_delegate name:CPWindowWillBeginSheetNotification object:self];
     [defaultCenter removeObserver:_delegate name:CPWindowDidEndSheetNotification object:self];
+    [defaultCenter removeObserver:_delegate name:CPWindowDidMiniaturizeNotification object:self];
+    [defaultCenter removeObserver:_delegate name:CPWindowDidDeminiaturizeNotification object:self];
+    [defaultCenter removeObserver:_delegate name:CPWindowWillMiniaturizeNotification object:self];
 
     _delegate = aDelegate;
     _implementedDelegateMethods = 0;
@@ -1390,6 +1496,9 @@ CPTexturedBackgroundWindowMask
 
     if ([_delegate respondsToSelector:@selector(windowWillClose:)])
         _implementedDelegateMethods |= CPWindowDelegate_windowWillClose_;
+
+    if ([_delegate respondsToSelector:@selector(windowWillResize:toSize:)])
+        _implementedDelegateMethods |= CPWindowDelegate_windowWillResize_toSize_;
 
     if ([_delegate respondsToSelector:@selector(windowDidResignKey:)])
         [defaultCenter
@@ -1445,6 +1554,27 @@ CPTexturedBackgroundWindowMask
             addObserver:_delegate
                selector:@selector(windowDidEndSheet:)
                    name:CPWindowDidEndSheetNotification
+                 object:self];
+
+    if ([_delegate respondsToSelector:@selector(windowDidMiniaturize:)])
+        [defaultCenter
+            addObserver:_delegate
+               selector:@selector(windowDidMiniaturize:)
+                   name:CPWindowDidMiniaturizeNotification
+                 object:self];
+
+    if ([_delegate respondsToSelector:@selector(windowWillMiniaturize:)])
+        [defaultCenter
+            addObserver:_delegate
+               selector:@selector(windowWillMiniaturize:)
+                   name:CPWindowWillMiniaturizeNotification
+                 object:self];
+
+    if ([_delegate respondsToSelector:@selector(windowDidDeminiaturize:)])
+        [defaultCenter
+            addObserver:_delegate
+               selector:@selector(windowDidDeminiaturize:)
+                   name:CPWindowDidDeminiaturizeNotification
                  object:self];
 }
 
@@ -1726,15 +1856,11 @@ CPTexturedBackgroundWindowMask
     // CPLeftMouseDown is needed for window moving and resizing to work.
     // CPMouseMoved is needed for rollover effects on title bar buttons.
 
-    if (sheet)
+    if (sheet && _sheetContext["isAttached"])
     {
         switch (type)
         {
             case CPLeftMouseDown:
-
-                // This is needed when a doubleClick occurs when the sheet is closing or opening
-                if (!_parentWindow)
-                    return;
 
                 [_windowView mouseDown:anEvent];
 
@@ -1758,6 +1884,9 @@ CPTexturedBackgroundWindowMask
 
     switch (type)
     {
+        case CPAppKitDefined:
+            return [CPApp activateIgnoringOtherApps:YES];
+
         case CPFlagsChanged:
             return [[self firstResponder] flagsChanged:anEvent];
 
@@ -1775,7 +1904,7 @@ CPTexturedBackgroundWindowMask
                 // Make sure the browser doesn't try to do its own tab handling.
                 // This is important or the browser might blur the shared text field or token field input field,
                 // even that we just moved it to a new first responder.
-                [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:NO]
+                [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:NO];
 #endif
                 return;
             }
@@ -1789,7 +1918,7 @@ CPTexturedBackgroundWindowMask
                     // Make sure the browser doesn't try to do its own tab handling.
                     // This is important or the browser might blur the shared text field or token field input field,
                     // even that we just moved it to a new first responder.
-                    [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:NO]
+                    [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:NO];
 #endif
 
                 }
@@ -1803,8 +1932,7 @@ CPTexturedBackgroundWindowMask
             [[self firstResponder] keyDown:anEvent];
 
             // Trigger the default button if needed
-            // FIXME: Is this only applicable in a sheet? See isse: #722.
-            if (![self disableKeyEquivalentForDefaultButton])
+            if (_defaultButtonEnabled && !_defaultButtonDisabledTemporarily)
             {
                 var defaultButton = [self defaultButton],
                     keyEquivalent = [defaultButton keyEquivalent],
@@ -1813,6 +1941,8 @@ CPTexturedBackgroundWindowMask
                 if ([anEvent _triggersKeyEquivalent:keyEquivalent withModifierMask:modifierMask])
                     [[self defaultButton] performClick:self];
             }
+
+            _defaultButtonDisabledTemporarily = NO;
 
             return;
 
@@ -1831,6 +1961,9 @@ CPTexturedBackgroundWindowMask
 
             _leftMouseDownView = nil;
 
+            // If mouseUp ends a drag operation, send delayed events for tracking views under the mouse, then flush delayed events
+            [self _flushTrackingEventQueueForMouseAt:point];
+
             return;
 
         case CPLeftMouseDown:
@@ -1841,12 +1974,18 @@ CPTexturedBackgroundWindowMask
             if (_leftMouseDownView !== _firstResponder && [_leftMouseDownView acceptsFirstResponder])
                 [self makeFirstResponder:_leftMouseDownView];
 
+            var keyWindow = [CPApp keyWindow];
+
+            // This is only when we move from a platform to another one
+            if ([keyWindow platformWindow] != [self platformWindow])
+                [self makeKeyAndOrderFront:self];
+
             [CPApp activateIgnoringOtherApps:YES];
 
             var theWindow = [anEvent window],
                 selector = type == CPRightMouseDown ? @selector(rightMouseDown:) : @selector(mouseDown:);
 
-            if ([theWindow isKeyWindow] || ([theWindow becomesKeyOnlyIfNeeded] && ![_leftMouseDownView needsPanelToBecomeKey]))
+            if (([theWindow _isFrontmostWindow] && [theWindow isKeyWindow]) || ([theWindow becomesKeyOnlyIfNeeded] && ![_leftMouseDownView needsPanelToBecomeKey]))
                 return [_leftMouseDownView performSelector:selector withObject:anEvent];
             else
             {
@@ -1860,6 +1999,11 @@ CPTexturedBackgroundWindowMask
 
         case CPLeftMouseDragged:
         case CPRightMouseDragged:
+            // First, we search for any tracking area requesting CPTrackingEnabledDuringMouseDrag.
+            // At the same time, we update the entered stack.
+            [self _handleTrackingAreaEvent:anEvent];
+
+            // Normal mouseDragged workflow
             if (!_leftMouseDownView)
                 return [[_windowView hitTest:point] mouseDragged:anEvent];
 
@@ -1867,73 +2011,43 @@ CPTexturedBackgroundWindowMask
 
             if (type == CPRightMouseDragged)
             {
-                selector = @selector(rightMouseDragged:)
+                selector = @selector(rightMouseDragged:);
                 if (![_leftMouseDownView respondsToSelector:selector])
                     selector = nil;
             }
 
             if (!selector)
-                selector = @selector(mouseDragged:)
+                selector = @selector(mouseDragged:);
 
             return [_leftMouseDownView performSelector:selector withObject:anEvent];
 
         case CPMouseMoved:
-            [_windowView setCursorForLocation:point resizing:NO];
 
             // Ignore mouse moves for parents of sheets
             if (!_acceptsMouseMovedEvents || sheet)
                 return;
 
-            if (!_mouseEnteredStack)
-                _mouseEnteredStack = [];
-
-            var hitTestView = [_windowView hitTest:point];
-
-            if ([_mouseEnteredStack count] && [_mouseEnteredStack lastObject] === hitTestView)
-                return [hitTestView mouseMoved:anEvent];
-
-            var view = hitTestView,
-                mouseEnteredStack = [];
-
-            while (view)
-            {
-                mouseEnteredStack.unshift(view);
-
-                view = [view superview];
-            }
-
-            var deviation = MIN(_mouseEnteredStack.length, mouseEnteredStack.length);
-
-            while (deviation--)
-                if (_mouseEnteredStack[deviation] === mouseEnteredStack[deviation])
-                    break;
-
-            var index = deviation + 1,
-                count = _mouseEnteredStack.length;
-
-            if (index < count)
-            {
-                var event = [CPEvent mouseEventWithType:CPMouseExited location:point modifierFlags:[anEvent modifierFlags] timestamp:[anEvent timestamp] windowNumber:_windowNumber context:nil eventNumber:-1 clickCount:1 pressure:0];
-
-                for (; index < count; ++index)
-                    [_mouseEnteredStack[index] mouseExited:event];
-            }
-
-            index = deviation + 1;
-            count = mouseEnteredStack.length;
-
-            if (index < count)
-            {
-                var event = [CPEvent mouseEventWithType:CPMouseEntered location:point modifierFlags:[anEvent modifierFlags] timestamp:[anEvent timestamp] windowNumber:_windowNumber context:nil eventNumber:-1 clickCount:1 pressure:0];
-
-                for (; index < count; ++index)
-                    [mouseEnteredStack[index] mouseEntered:event];
-            }
-
-            _mouseEnteredStack = mouseEnteredStack;
-
-            [hitTestView mouseMoved:anEvent];
+            [self _handleTrackingAreaEvent:anEvent];
     }
+}
+
+- (void)_startLiveResize
+{
+    [[CPNotificationCenter defaultCenter]
+        postNotificationName:CPWindowWillStartLiveResizeNotification
+                      object:self];
+}
+
+- (void)_endLiveResize
+{
+    [[CPNotificationCenter defaultCenter]
+        postNotificationName:CPWindowDidEndLiveResizeNotification
+                      object:self];
+}
+
+- (BOOL)_inLiveResize
+{
+    return [_windowView _isTracking];
 }
 
 /*!
@@ -1966,6 +2080,7 @@ CPTexturedBackgroundWindowMask
 
     [self _setupFirstResponder];
     _hasBecomeKeyWindow = YES;
+    _platformWindow._currentKeyWindow = self;
 
     [_windowView noteKeyWindowStateChanged];
     [_contentView _notifyWindowDidBecomeKey];
@@ -1991,6 +2106,28 @@ CPTexturedBackgroundWindowMask
         that is not the same as the resizable mask.
     */
     return (_styleMask & CPTitledWindowMask) || [self isFullPlatformWindow] || _isSheet;
+}
+
+    /* @ignore */
+- (BOOL)_isFrontmostWindow
+{
+    if ([self isFullBridge])
+        return YES;
+
+    var orderedWindows = [CPApp orderedWindows];
+
+    if ([orderedWindows count] == 0)
+        return YES;
+
+    if ([orderedWindows objectAtIndex:0] === self)
+        return YES;
+
+    // this is necessary, because the CPMainMenuWindow is always the first object in orderedWindows, even if another window is in front of it
+    if ([[orderedWindows objectAtIndex:0] level] === CPMainMenuWindowLevel &&
+        [orderedWindows count] > 1 && [orderedWindows objectAtIndex:1]  === self)
+        return YES;
+
+    return NO;
 }
 
 /*!
@@ -2036,6 +2173,7 @@ CPTexturedBackgroundWindowMask
     if (CPApp._keyWindow === self)
         CPApp._keyWindow = nil;
 
+    _platformWindow._currentKeyWindow = nil;
     [_windowView noteKeyWindowStateChanged];
     [_contentView _notifyWindowDidResignKey];
 
@@ -2419,6 +2557,7 @@ CPTexturedBackgroundWindowMask
 - (void)becomeMainWindow
 {
     CPApp._mainWindow = self;
+    _platformWindow._currentMainWindow = self;
 
     [self _synchronizeSaveMenuWithDocumentSaving];
 
@@ -2441,6 +2580,7 @@ CPTexturedBackgroundWindowMask
     if (CPApp._mainWindow === self)
         CPApp._mainWindow = nil;
 
+    _platformWindow._currentMainWindow = nil;
     [_windowView noteMainWindowStateChanged];
 }
 
@@ -2472,7 +2612,7 @@ CPTexturedBackgroundWindowMask
                 if (currentWindow === self || currentWindow === menuWindow)
                     continue;
 
-                if ([currentWindow isVisible] && [currentWindow canBecomeKeyWindow])
+                if ([currentWindow isVisible] && [currentWindow canBecomeKeyWindow] && [currentWindow platformWindow] == [keyWindow platformWindow])
                 {
                     [currentWindow makeKeyWindow];
                     break;
@@ -2674,6 +2814,23 @@ CPTexturedBackgroundWindowMask
     [attachedSheet setFrame:sheetFrame display:YES animate:NO];
 }
 
+- (void)_previousSheetIsClosedNotification:(CPNotification)aNotification
+{
+    [[CPNotificationCenter defaultCenter] removeObserver:self name:CPWindowDidEndSheetNotification object:self];
+
+    var sheet = _sheetContext[@"nextSheet"],
+        modalDelegate = _sheetContext[@"nextModalDelegate"],
+        endSelector = _sheetContext[@"nextEndSelector"],
+        contextInfo = _sheetContext[@"nextContextInfo"];
+
+    // Needed, because when the notification CPWindowDidEndSheetNotification is sent, the sheetContext is not up to date...
+    setTimeout(function()
+    {
+        [sheet._windowView _enableSheet:YES inWindow:self];
+        [self _attachSheet:sheet modalDelegate:modalDelegate didEndSelector:endSelector contextInfo:contextInfo];
+    }, 0)
+}
+
 /*
     Starting point for sheet session, called from CPApplication beginSheet:
 */
@@ -2682,9 +2839,24 @@ CPTexturedBackgroundWindowMask
 {
     if (_sheetContext)
     {
-        [CPException raise:CPInternalInconsistencyException
-            reason:@"The target window of beginSheet: already has a sheet, did you forget orderOut: ?"];
-        return;
+        // Here we wait till the current sheet is closed
+        if (_sheetContext[@"isClosing"])
+        {
+            // Here we save the next sheet to open
+            _sheetContext[@"nextSheet"] = aSheet;
+            _sheetContext[@"nextModalDelegate"] = aModalDelegate;
+            _sheetContext[@"nextEndSelector"] = didEndSelector;
+            _sheetContext[@"nextContextInfo"] = contextInfo;
+
+            [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_previousSheetIsClosedNotification:) name:CPWindowDidEndSheetNotification object:self];
+            return;
+        }
+        else
+        {
+            [CPException raise:CPInternalInconsistencyException
+                reason:@"The target window of beginSheet: already has a sheet, did you forget orderOut: ?"];
+            return;
+        }
     }
 
     _sheetContext = {
@@ -2723,7 +2895,7 @@ CPTexturedBackgroundWindowMask
     if (delegate && endSelector)
     {
         if (_sheetContext["isAttached"])
-            objj_msgSend(delegate, endSelector, _sheetContext["sheet"], _sheetContext["returnCode"],
+            delegate.isa.objj_msgSend3(delegate, endSelector, _sheetContext["sheet"], _sheetContext["returnCode"],
                 _sheetContext["contextInfo"]);
         else
             _sheetContext["deferDidEndSelector"] = YES;
@@ -2736,7 +2908,12 @@ CPTexturedBackgroundWindowMask
 */
 - (void)_detachSheetWindow
 {
+    if (_sheetContext["isClosing"])
+        return;
+
     _sheetContext["isAttached"] = NO;
+    _sheetContext["isClosing"] = YES;
+    _sheetContext["opened"] = NO;
 
     // A timer seems to be necessary for the animation to work correctly.
     // It would be ideal to block here and spin the event loop, until attach is complete.
@@ -2782,7 +2959,8 @@ CPTexturedBackgroundWindowMask
         _sheetContext = nil;
         sheet._parentView = nil;
 
-        objj_msgSend(delegate, selector, sheet, returnCode, contextInfo);
+        if (delegate != null)
+            delegate.isa.objj_msgSend3(delegate, selector, sheet, returnCode, contextInfo);
     }
     else
     {
@@ -2868,12 +3046,6 @@ CPTexturedBackgroundWindowMask
         _sheetContext["shouldClose"] = YES;
         return;
     }
-
-    if (_sheetContext["isClosing"])
-        return;
-
-    _sheetContext["opened"] = NO;
-    _sheetContext["isClosing"] = YES;
 
     // The parent window can be orderedOut to disable the sheet animate out, as in Cocoa
     if ([self isVisible])
@@ -3270,6 +3442,11 @@ CPTexturedBackgroundWindowMask
     _defaultButtonEnabled = NO;
 }
 
+- (void)_temporarilyDisableKeyEquivalentForDefaultButton
+{
+    _defaultButtonDisabledTemporarily = YES;
+}
+
 /*!
     Removes the key equivalent for the default button.
     Note: this method is deprecated. Use disableKeyEquivalentForDefaultButton instead.
@@ -3285,6 +3462,14 @@ CPTexturedBackgroundWindowMask
         [self setTitle:aValue || @""];
     else
         [super setValue:aValue forKey:aKey];
+}
+
+- (void)_didReceivePlatformWindowWillCloseNotification:(CPNotification)aNotification
+{
+    if ([aNotification object] != _platformWindow)
+        return;
+
+    [self close];
 }
 
 @end
@@ -3377,6 +3562,18 @@ var keyViewComparator = function(lhs, rhs, context)
     [_delegate windowWillClose:self];
 }
 
+/*!
+    @ignore
+    Call the delegate windowWillResize:toSize:
+*/
+- (CGSize)_sendDelegateWindowWillResizeToSize:(CGSize)aSize
+{
+    if (!(_implementedDelegateMethods & CPWindowDelegate_windowWillResize_toSize_))
+        return aSize;
+
+    return [_delegate windowWillResize:self toSize:aSize];
+}
+
 @end
 
 
@@ -3441,6 +3638,20 @@ var keyViewComparator = function(lhs, rhs, context)
 }
 
 /*!
+ @ignore
+ get the scroll offset (if any) from native scroll bars (can happen when the platform window shrinks below minSize)
+*/
+- (CGPoint)_nativeScrollOffset
+{
+#if PLATFORM(DOM)
+    return  CGPointMake(_windowView._DOMElement.scrollLeft, _windowView._DOMElement.scrollTop);
+#else
+    CGPointMake(0, 0);
+#endif
+
+}
+
+/*!
     Converts aPoint from the global coordinate system to the window coordinate system.
 */
 - (CGPoint)convertGlobalToBase:(CGPoint)aPoint
@@ -3456,9 +3667,10 @@ var keyViewComparator = function(lhs, rhs, context)
     if ([self _sharesChromeWithPlatformWindow])
         return CGPointMakeCopy(aPoint);
 
-    var origin = [self frame].origin;
+    var origin = [self frame].origin,
+        scrollOffset = [self _nativeScrollOffset];
 
-    return CGPointMake(aPoint.x + origin.x, aPoint.y + origin.y);
+    return CGPointMake(aPoint.x + origin.x - scrollOffset.x, aPoint.y + origin.y - scrollOffset.y);
 }
 
 /*!
@@ -3469,9 +3681,10 @@ var keyViewComparator = function(lhs, rhs, context)
     if ([self _sharesChromeWithPlatformWindow])
         return CGPointMakeCopy(aPoint);
 
-    var origin = [self frame].origin;
+    var origin = [self frame].origin,
+        scrollOffset = [self _nativeScrollOffset];
 
-    return CGPointMake(aPoint.x - origin.x, aPoint.y - origin.y);
+    return CGPointMake(aPoint.x - origin.x + scrollOffset.x, aPoint.y - origin.y + scrollOffset.y);
 }
 
 - (CGPoint)convertScreenToBase:(CGPoint)aPoint
@@ -3630,13 +3843,6 @@ var interpolate = function(fromValue, toValue, progress)
     return self;
 }
 
-- (void)startAnimation
-{
-    [super startAnimation];
-
-    _window._isAnimating = YES;
-}
-
 - (void)setCurrentProgress:(float)aProgress
 {
     [super setCurrentProgress:aProgress];
@@ -3644,7 +3850,7 @@ var interpolate = function(fromValue, toValue, progress)
     var value = [self currentValue];
 
     if (value == 1.0)
-        _window._isAnimating = NO;
+        [_window _setAnimating:NO];
 
     var newFrame = CGRectMake(
             interpolate(CGRectGetMinX(_startFrame), CGRectGetMinX(_targetFrame), value),
@@ -3657,6 +3863,41 @@ var interpolate = function(fromValue, toValue, progress)
 
 @end
 
+@implementation _CPWindowFrameAnimationDelegate : CPObject
+{
+    CPWindow _window;
+}
+
+- (id)initWithWindow:(CPWindow)aWindow
+{
+    self = [super init];
+
+    _window = aWindow;
+
+    return self;
+}
+
+- (BOOL)animationShouldStart:(CPAnimation)animation
+{
+    [_window _setAnimating:YES];
+    [_window _startLiveResize];
+
+    return YES;
+}
+
+- (void)animationDidStop:(CPAnimation)animation
+{
+    [_window _setAnimating:NO];
+    [_window _endLiveResize];
+}
+
+- (void)animationDidEnd:(CPAnimation)animation
+{
+    [_window _setAnimating:NO];
+    [_window _endLiveResize];
+}
+
+@end
 
 @implementation CPWindow (CPDraggingAdditions)
 
@@ -3686,6 +3927,462 @@ var interpolate = function(fromValue, toValue, progress)
         return self;
 
     return nil;
+}
+
+@end
+
+@implementation CPWindow (TrackingAreaAdditions)
+
+- (void)_addTrackingAreaView:(CPView)aView
+{
+    var trackingAreas = [aView trackingAreas];
+
+    for (var i = 0; i < trackingAreas.length; i++)
+        [self _addTrackingArea:trackingAreas[i]];
+}
+
+- (void)_removeTrackingAreaView:(CPView)aView
+{
+    var trackingAreas = [aView trackingAreas];
+
+    for (var i = 0; i < trackingAreas.length; i++)
+        [self _removeTrackingArea:trackingAreas[i]];
+}
+
+- (void)_addTrackingArea:(CPTrackingArea)trackingArea
+{
+    var trackingAreaView = [trackingArea view];
+
+    if (![_trackingAreaViews containsObjectIdenticalTo:trackingAreaView])
+        [_trackingAreaViews addObject:trackingAreaView];
+
+    // If CPTrackingAssumeInside option is set, insert the tracking area in the events management system
+    // in order to have the first event sent only when mouse leaves the tracking area
+
+    [self _insertTrackingArea:trackingArea assumeInside:([trackingArea options] & CPTrackingAssumeInside)];
+}
+
+- (void)_removeTrackingArea:(CPTrackingArea)trackingArea
+{
+    // If mouse is in the tracking area, we remove it from the stack to avoid to fire a future mouseExited event
+
+    [self _purgeTrackingArea:trackingArea];
+
+    var trackingAreaView = [trackingArea view];
+
+    [_trackingAreaViews removeObjectIdenticalTo:trackingAreaView];
+}
+
+- (void)_insertTrackingArea:(CPTrackingArea)trackingArea assumeInside:(BOOL)assumeInside
+{
+    if (_handlingTrackingAreaEvent)
+        _restartHandlingTrackingAreaEvent = YES;
+
+    if (assumeInside)
+    {
+        if (_handlingTrackingAreaEvent)
+            [_mouseEnteredStack addObject:trackingArea];
+        else
+            [_previousMouseEnteredStack addObject:trackingArea];
+    }
+}
+
+- (void)_purgeTrackingArea:(CPTrackingArea)trackingArea
+{
+    if (_handlingTrackingAreaEvent)
+    {
+        [_mouseEnteredStack removeObjectIdenticalTo:trackingArea];
+
+        var i = _queuedEvents.length;
+
+        while (i--)
+            if ([_queuedEvents[i] trackingArea] === trackingArea)
+                [_queuedEvents removeObjectAtIndex:i];
+
+        _cursorUpdateStack = [];
+        _activeCursorTrackingArea = nil;
+    }
+    else
+    {
+        [_previousMouseEnteredStack removeObjectIdenticalTo:trackingArea];
+        [_previousCursorUpdateStack removeObjectIdenticalTo:trackingArea];
+    }
+}
+
+- (void)_handleTrackingAreaEvent:(CPEvent)anEvent
+{
+    _handlingTrackingAreaEvent = YES;
+
+    var point    = [anEvent locationInWindow],
+        dragging = ([anEvent type] !== CPMouseMoved);
+
+    do
+    {
+        // Initialize this run
+        _restartHandlingTrackingAreaEvent = NO;
+
+        _mouseEnteredStack = [];
+        _cursorUpdateStack = [];
+
+        // Important remark: we must queue events to avoid running conditions when a view uses a mouse event to modify view hierarchy
+
+        _queuedEvents = [];
+
+        // Handle mouse entering tracking areas (and calc _mouseEnteredStack and _cursorUpdateStack)
+
+        [self _handleMouseMovedAndEnteredEventsForEvent:anEvent atPoint:point dragging:dragging];
+
+        // Handle mouse exiting tracking areas
+
+        [self _handleMouseExitedEventsForEvent:anEvent atPoint:point dragging:dragging];
+
+        // Cursor update
+
+        if (_cursorUpdateStack.length > 0)
+        {
+            [self _handleCursorUpdateEventsForEvent:anEvent atPoint:point dragging:dragging];
+        }
+        else if (!dragging)
+        {
+            // Here, we are outside the window content view tracking area, so let _windowView set the cursor (resize cursor, ...)
+
+            [_windowView setCursorForLocation:point resizing:NO];
+            _activeCursorTrackingArea = nil;
+        }
+
+        // Send all queued events
+        // Important remark : as an event can modify the view hierarchy, the events queue could be modified while processing it
+
+        while (_queuedEvents.length > 0)
+        {
+            var queuedEvent   = _queuedEvents[0],
+                trackingArea  = [queuedEvent trackingArea],
+                trackingOwner = [trackingArea owner];
+
+            switch ([queuedEvent type])
+            {
+                case CPMouseEntered:
+                    [trackingOwner mouseEntered:queuedEvent];
+                    break;
+
+                case CPMouseExited:
+                    [trackingOwner mouseExited:queuedEvent];
+                    break;
+
+                case CPCursorUpdate:
+                    [trackingOwner cursorUpdate:queuedEvent];
+                    break;
+            }
+
+            if (queuedEvent === _queuedEvents[0])
+                [_queuedEvents removeObjectAtIndex:0];
+        }
+
+        // Prepare for next call
+
+        _previousMouseEnteredStack = _mouseEnteredStack;
+        _previousCursorUpdateStack = _cursorUpdateStack;
+    }
+    while (_restartHandlingTrackingAreaEvent)
+
+    _handlingTrackingAreaEvent = NO;
+}
+
+- (void)_handleMouseMovedAndEnteredEventsForEvent:(CPEvent)anEvent atPoint:(CGPoint)point dragging:(BOOL)dragging
+{
+    var isKeyWindow = [self isKeyWindow];
+
+    for (var i = 0; i < _trackingAreaViews.length; i++)
+    {
+        var aView         = _trackingAreaViews[i],
+            trackingAreas = [aView trackingAreas];
+
+        if ([aView isHidden])
+            continue;
+
+        for (var j = 0; j < trackingAreas.length; j++)
+        {
+            var aTrackingArea              = trackingAreas[j],
+                trackingOptions            = [aTrackingArea options],
+                trackingImplementedMethods = [aTrackingArea implementedOwnerMethods];
+
+            if (!(((trackingOptions & CPTrackingActiveAlways) ||
+                   (trackingOptions & CPTrackingActiveInActiveApp) ||
+                   ((trackingOptions & CPTrackingActiveInKeyWindow) && isKeyWindow) ||
+                   ((trackingOptions & CPTrackingActiveWhenFirstResponder) && isKeyWindow && (_firstResponder === aView))) &&
+                  (CGRectContainsPoint([aTrackingArea windowRect], point))))
+            {
+                continue;
+            }
+
+            [_mouseEnteredStack addObject:aTrackingArea];
+
+            if ([_previousMouseEnteredStack containsObjectIdenticalTo:aTrackingArea])
+            {
+                // Mouse was already in this rect so it's a mouseMoved
+
+                if (!dragging && (trackingOptions & CPTrackingMouseMoved) && (trackingImplementedMethods & CPTrackingOwnerImplementsMouseMoved))
+                    [[aTrackingArea owner] mouseMoved:anEvent];
+            }
+            else if ((trackingOptions & CPTrackingMouseEnteredAndExited) && (trackingImplementedMethods & CPTrackingOwnerImplementsMouseEntered))
+            {
+                var mouseEnteredEvent = [CPEvent enterExitEventWithType:CPMouseEntered
+                                                               location:point
+                                                          modifierFlags:[anEvent modifierFlags]
+                                                              timestamp:[anEvent timestamp]
+                                                           windowNumber:_windowNumber
+                                                                context:nil
+                                                            eventNumber:-1
+                                                           trackingArea:aTrackingArea];
+
+                if (dragging && !(trackingOptions & CPTrackingEnabledDuringMouseDrag))
+                    [self _queueTrackingEvent:mouseEnteredEvent];
+                else
+                    [_queuedEvents addObject:mouseEnteredEvent];
+            }
+
+            if ((trackingOptions & CPTrackingCursorUpdate) && (trackingImplementedMethods & CPTrackingOwnerImplementsCursorUpdate))
+                [_cursorUpdateStack addObject:aTrackingArea];
+        }
+    }
+}
+
+- (void)_handleMouseExitedEventsForEvent:(CPEvent)anEvent atPoint:(CGPoint)point dragging:(BOOL)dragging
+{
+    // Search for exited views (were in _previousMouseEnteredStack but no more in _mouseEnteredStack)
+
+    for (var i = 0; i < _previousMouseEnteredStack.length; i++)
+    {
+        var aTrackingArea   = _previousMouseEnteredStack[i],
+            trackingOptions = [aTrackingArea options];
+
+        if ([_mouseEnteredStack containsObjectIdenticalTo:aTrackingArea])
+            continue;
+
+        // Mouse is no more in this area so it's a mouseExited
+
+        if ((trackingOptions & CPTrackingMouseEnteredAndExited) && ([aTrackingArea implementedOwnerMethods] & CPTrackingOwnerImplementsMouseExited))
+        {
+            var theView = [aTrackingArea owner],
+                mouseExitedEvent = [CPEvent enterExitEventWithType:CPMouseExited
+                                                          location:point
+                                                     modifierFlags:[anEvent modifierFlags]
+                                                         timestamp:[anEvent timestamp]
+                                                      windowNumber:_windowNumber
+                                                           context:nil
+                                                       eventNumber:-1
+                                                      trackingArea:aTrackingArea];
+
+            if (dragging && !(trackingOptions & CPTrackingEnabledDuringMouseDrag))
+                [self _queueTrackingEvent:mouseExitedEvent];
+            else
+                [_queuedEvents addObject:mouseExitedEvent];
+        }
+
+        // If this is the active cursor area, we reset _previousCursorUpdateStack so a new active area will be computed
+
+        if (aTrackingArea === _activeCursorTrackingArea)
+        {
+            _previousCursorUpdateStack = [];
+            _activeCursorTrackingArea = nil;
+        }
+    }
+}
+
+- (void)_handleCursorUpdateEventsForEvent:(CPEvent)anEvent atPoint:(CGPoint)point dragging:(BOOL)dragging
+{
+    var overlappingTrackingAreas = [];
+
+    for (var i = 0; i < _cursorUpdateStack.length; i++)
+    {
+        var aTrackingArea = _cursorUpdateStack[i];
+
+        if ((![_previousCursorUpdateStack containsObjectIdenticalTo:aTrackingArea]) || (aTrackingArea === _activeCursorTrackingArea))
+            [overlappingTrackingAreas addObject:aTrackingArea];
+    }
+
+    if (overlappingTrackingAreas.length === 0)
+        return;
+
+    var frontmostTrackingArea = overlappingTrackingAreas[0],
+        frontmostView         = [frontmostTrackingArea view];
+
+    for (var i = 1; i < overlappingTrackingAreas.length; i++)
+    {
+        var aTrackingArea = overlappingTrackingAreas[i],
+            aView         = [aTrackingArea view];
+
+        // First, if aView is _windowView, skip to next overlapping tracking area
+        // as _windowView can't be the frontmost view if there's multiple overlapping tracking areas.
+
+        if (aView === _windowView)
+            continue;
+
+        // Then, if frontmostView is _windowView, aView must become frontmostView
+
+        if (frontmostView === _windowView)
+        {
+            frontmostTrackingArea = aTrackingArea;
+            frontmostView         = aView;
+
+            continue;
+        }
+
+        // Next verify if aView is a subview of frontmostView
+        // If so, it's our new frontmost view
+
+        var searchingView = aView;
+
+        while ((searchingView !== _contentView) && ([searchingView superview] !== frontmostView))
+            searchingView = [searchingView superview];
+
+        if (searchingView !== _contentView)
+        {
+            frontmostTrackingArea = aTrackingArea;
+            frontmostView         = aView;
+
+            continue;
+        }
+
+        // aView is not a subview of frontmostView
+        // Search in view hierarchy which one will be over the other
+        // (this is done by comparing their draw order)
+
+        var firstView      = frontmostView,
+            firstSuperview = [firstView superview];
+
+        while (firstView !== _contentView)
+        {
+            var secondView      = aView,
+                secondSuperview = [secondView superview];
+
+            while ((secondSuperview !== _contentView) && (firstSuperview !== secondSuperview))
+            {
+                secondView      = secondSuperview;
+                secondSuperview = [secondView superview];
+            }
+
+            if (firstSuperview === secondSuperview)
+                break;
+
+            firstView      = firstSuperview;
+            firstSuperview = [firstView superview];
+        }
+
+        if (firstSuperview !== secondSuperview)
+            [CPException raise:CPInternalInconsistencyException reason:"Problem with view hierarchy"];
+
+        var firstSuperviewSubviews = [firstSuperview subviews],
+            firstViewIndex         = [firstSuperviewSubviews indexOfObject:firstView],
+            secondViewIndex        = [firstSuperviewSubviews indexOfObject:secondView];
+
+        if (secondViewIndex > firstViewIndex)
+        {
+            frontmostTrackingArea = aTrackingArea;
+            frontmostView         = aView;
+        }
+    }
+
+    if (frontmostTrackingArea !== _activeCursorTrackingArea)
+    {
+        var cursorUpdateEvent = [CPEvent enterExitEventWithType:CPCursorUpdate
+                                                       location:point
+                                                  modifierFlags:[anEvent modifierFlags]
+                                                      timestamp:[anEvent timestamp]
+                                                   windowNumber:_windowNumber
+                                                        context:nil
+                                                    eventNumber:-1
+                                                   trackingArea:frontmostTrackingArea];
+
+        if (dragging)
+            [self _queueTrackingEvent:cursorUpdateEvent];
+        else
+            [_queuedEvents addObject:cursorUpdateEvent];
+
+        _activeCursorTrackingArea = frontmostTrackingArea;
+    }
+}
+
+- (void)_queueTrackingEvent:(CPEvent)anEvent
+{
+    // This will put a tracking event in the _queuedTrackingEvents queue.
+    //
+    // We optimize this queue with this policy:
+    // - if mouseEntered, search if queue contains a previous mouseExited for the same tracking area. If so, discard both.
+    // - if mouseExited, search if queue contains a previous mouseEntered for the same tracking area. If so, discard both.
+    //
+    // This is not the Cocoa way of doing as it would send every event, but the final result should be the same.
+
+    var eventType    = [anEvent type],
+        trackingArea = [anEvent trackingArea];
+
+    switch ([anEvent type])
+    {
+        case CPMouseEntered:
+            for (var i = 0; i < _queuedTrackingEvents.length; i++)
+            {
+                var queuedEvent = _queuedTrackingEvents[i];
+
+                if (([queuedEvent trackingArea] === trackingArea) && ([queuedEvent type] === CPMouseExited))
+                {
+                    [_queuedTrackingEvents removeObjectAtIndex:i];
+                    return;
+                }
+            }
+
+            [_queuedTrackingEvents addObject:anEvent];
+            break;
+
+        case CPMouseExited:
+            for (var i = 0; i < _queuedTrackingEvents.length; i++)
+            {
+                var queuedEvent = _queuedTrackingEvents[i];
+
+                if (([queuedEvent trackingArea] === trackingArea) && ([queuedEvent type] === CPMouseEntered))
+                {
+                    [_queuedTrackingEvents removeObjectAtIndex:i];
+                    return;
+                }
+            }
+
+            [_queuedTrackingEvents addObject:anEvent];
+            break;
+
+        case CPCursorUpdate:
+            [_queuedTrackingEvents addObject:anEvent];
+            break;
+    }
+}
+
+- (void)_flushTrackingEventQueueForMouseAt:(CGPoint)point
+{
+    for (var i = 0; i < _queuedTrackingEvents.length; i++)
+    {
+        var queuedEvent   = _queuedTrackingEvents[i],
+            trackingArea  = [queuedEvent trackingArea],
+            trackingOwner = [trackingArea owner];
+
+        switch ([queuedEvent type])
+        {
+            case CPMouseEntered:
+                [trackingOwner mouseEntered:queuedEvent];
+                break;
+
+            case CPMouseExited:
+                [trackingOwner mouseExited:queuedEvent];
+                break;
+
+            case CPCursorUpdate:
+                [trackingOwner updateTrackingAreas];
+
+                if (CGRectContainsPoint([trackingArea windowRect], point))
+                    [trackingOwner cursorUpdate:queuedEvent];
+
+                break;
+        }
+    }
+
+    _queuedTrackingEvents = [];
 }
 
 @end

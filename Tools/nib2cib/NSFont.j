@@ -22,7 +22,8 @@
 
 @import <AppKit/CPFont.j>
 
-IBDefaultFontFace = @"Lucida Grande";
+IBDefaultFontFace = @".AppleSystemUIFont";
+IBDefaultFontFaceLegacy = @"Lucida Grande";
 IBDefaultFontSize = 13.0;
 
 var OS = require("os"),
@@ -59,7 +60,7 @@ var OS = require("os"),
 
 - (id)cibFontForNibFont
 {
-    if (_name === IBDefaultFontFace)
+    if (_name === IBDefaultFontFaceLegacy || _name == IBDefaultFontFace)
     {
         if (_size === IBDefaultFontSize && !_isBold && !_isItalic)
             return nil;
@@ -83,7 +84,7 @@ var OS = require("os"),
     if (self !== [NSFont class])
         return;
 
-    CPLog.debug("NSFont: default IB font: %s %f", IBDefaultFontFace, IBDefaultFontSize);
+    CPLog.debug("NSFont: default IB font: %s (legacy %s) %f", IBDefaultFontFace, IBDefaultFontFaceLegacy, IBDefaultFontSize);
 }
 
 + (CPString)descriptorForFont:(CPFont)aFont

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Main cib file base name</key>
+	<string>MainMenu.cib</string>
+	<key>CPBundleName</key>
+	<string>CPLocalizationTest</string>
+    <key>CPBundleVersion</key>
+    <string>1.0</string>
+    <key>CPHumanReadableCopyright</key>
+    <string>Copyright © 2015, Your Company All rights reserved.</string>
+    <key>CPBundleLocalizableStrings</key>
+    <array>
+        <string>Localizable.strings</string>
+        <string>SecondLocalizable.strings</string>
+        <string>MainMenu.strings</string>
+    </array>
+    <key>CPBundleTypeOfLocalization</key>
+    <string>CPBundleBaseLocalizationType</string>
+    <key>CPBundleDefaultLanguage</key>
+    <string>en</string>
+</dict>
+</plist>

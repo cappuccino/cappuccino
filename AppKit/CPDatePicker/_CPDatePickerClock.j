@@ -25,7 +25,6 @@
 @import "CPImageView.j"
 @import "CALayer.j"
 
-
 @class _CPCibCustomResource
 @class CPDatePicker
 
@@ -140,10 +139,10 @@ var RADIANS = Math.PI / 180;
     [_minuteHandLayer setImage:[_datePicker currentValueForThemeAttribute:@"minute-hand-image"]];
     [_secondHandLayer setImage:[_datePicker currentValueForThemeAttribute:@"second-hand-image"]];
 
-    if ([_datePicker _isEnglishFormat])
+    if ([_datePicker _isAmericanFormat])
     {
         if (dateValue.getHours() > 11)
-            [_PMAMTextField setStringValue:@"PM"]
+            [_PMAMTextField setStringValue:@"PM"];
         else
             [_PMAMTextField setStringValue:@"AM"];
 

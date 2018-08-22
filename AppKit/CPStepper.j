@@ -25,7 +25,6 @@
 @import "CPTextField.j"
 
 
-
 /*!
     CPStepper is an implementation of Cocoa NSStepper.
 
@@ -53,9 +52,9 @@
     @param maxValue the maximal acceptable value of the stepper
     @return Initialized CPStepper
 */
-+ (CPStepper)stepperWithInitialValue:(float)aValue minValue:(float)aMinValue maxValue:(float)aMaxValue
++ (id)stepperWithInitialValue:(float)aValue minValue:(float)aMinValue maxValue:(float)aMaxValue
 {
-    var stepper = [[CPStepper alloc] initWithFrame:CGRectMakeZero()];
+    var stepper = [[self alloc] initWithFrame:CGRectMakeZero()];
 
     [stepper setDoubleValue:aValue];
     [stepper setMinValue:aMinValue];
@@ -75,14 +74,14 @@
 
     @return Initialized CPStepper
 */
-+ (CPStepper)stepper
++ (id)stepper
 {
     return [CPStepper stepperWithInitialValue:0.0 minValue:0.0 maxValue:59.0];
 }
 
 + (Class)_binderClassForBinding:(CPString)aBinding
 {
-    if (aBinding == CPValueBinding || aBinding == CPMinValueBinding || aBinding == CPMaxValueBinding)
+    if (aBinding === CPValueBinding || aBinding === CPMinValueBinding || aBinding === CPMaxValueBinding)
         return [_CPStepperValueBinder class];
 
     return [super _binderClassForBinding:aBinding];
@@ -90,7 +89,7 @@
 
 - (CPString)_replacementKeyPathForBinding:(CPString)aBinding
 {
-    if (aBinding == CPValueBinding)
+    if (aBinding === CPValueBinding)
         return @"doubleValue";
 
     return [super _replacementKeyPathForBinding:aBinding];
@@ -138,7 +137,14 @@
     [self setContinuous:_autorepeat];
     [self addSubview:_buttonDown];
 
+    [self _sizeToFit];
     [self setNeedsLayout];
+}
+
+- (void)setControlSize:(CPControlSize)aControlSize
+{
+    [super setControlSize:aControlSize];
+    [self _sizeToFit];
 }
 
 #pragma mark -
@@ -159,8 +165,8 @@
 
 - (void)setFrame:(CGRect)aFrame
 {
-    var upSize = [self valueForThemeAttribute:@"up-button-size"],
-        downSize = [self valueForThemeAttribute:@"down-button-size"],
+    var upSize = [self currentValueForThemeAttribute:@"up-button-size"],
+        downSize = [self currentValueForThemeAttribute:@"down-button-size"],
         minSize = CGSizeMake(upSize.width, upSize.height + downSize.height),
         frame = CGRectMakeCopy(aFrame);
 
@@ -172,21 +178,22 @@
 /*! @ignore */
 - (void)layoutSubviews
 {
-    var aFrame = [self frame],
-        upSize = [self valueForThemeAttribute:@"up-button-size"],
-        downSize = [self valueForThemeAttribute:@"down-button-size"],
-        upFrame = CGRectMake(aFrame.size.width - upSize.width, 0, upSize.width, upSize.height),
-        downFrame = CGRectMake(aFrame.size.width - downSize.width, upSize.height, downSize.width, downSize.height);
+    var controlSizeThemeState = [self _controlSizeThemeState],
+        aFrame = [self frame],
+        upSize = [self valueForThemeAttribute:@"up-button-size" inState:controlSizeThemeState],
+        downSize = [self valueForThemeAttribute:@"down-button-size" inState:controlSizeThemeState],
+        upFrame = CGRectMake(0, 0, upSize.width, upSize.height),
+        downFrame = CGRectMake(0, upSize.height, downSize.width, downSize.height);
 
     [_buttonUp setFrame:upFrame];
     [_buttonDown setFrame:downFrame];
 
-    [_buttonUp setValue:[self valueForThemeAttribute:@"bezel-color-up-button" inState:CPThemeStateBordered] forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered];
-    [_buttonUp setValue:[self valueForThemeAttribute:@"bezel-color-up-button" inState:[CPThemeStateBordered, CPThemeStateDisabled]] forThemeAttribute:@"bezel-color" inState:[CPThemeStateBordered, CPThemeStateDisabled]];
-    [_buttonUp setValue:[self valueForThemeAttribute:@"bezel-color-up-button" inState:[CPThemeStateBordered, CPThemeStateHighlighted]] forThemeAttribute:@"bezel-color" inState:[CPThemeStateBordered, CPThemeStateHighlighted]];
-    [_buttonDown setValue:[self valueForThemeAttribute:@"bezel-color-down-button" inState:CPThemeStateBordered] forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered];
-    [_buttonDown setValue:[self valueForThemeAttribute:@"bezel-color-down-button" inState:[CPThemeStateBordered, CPThemeStateDisabled]] forThemeAttribute:@"bezel-color" inState:[CPThemeStateBordered, CPThemeStateDisabled]];
-    [_buttonDown setValue:[self valueForThemeAttribute:@"bezel-color-down-button" inState:[CPThemeStateBordered, CPThemeStateHighlighted]] forThemeAttribute:@"bezel-color" inState:[CPThemeStateBordered, CPThemeStateHighlighted]];
+    [_buttonUp setValue:[self valueForThemeAttribute:@"bezel-color-up-button" inStates:[controlSizeThemeState, CPThemeStateBordered]] forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered];
+    [_buttonUp setValue:[self valueForThemeAttribute:@"bezel-color-up-button" inStates:[controlSizeThemeState, CPThemeStateBordered, CPThemeStateDisabled]] forThemeAttribute:@"bezel-color" inStates:[CPThemeStateBordered, CPThemeStateDisabled]];
+    [_buttonUp setValue:[self valueForThemeAttribute:@"bezel-color-up-button" inStates:[controlSizeThemeState, CPThemeStateBordered, CPThemeStateHighlighted]] forThemeAttribute:@"bezel-color" inStates:[CPThemeStateBordered, CPThemeStateHighlighted]];
+    [_buttonDown setValue:[self valueForThemeAttribute:@"bezel-color-down-button" inStates:[controlSizeThemeState, CPThemeStateBordered]] forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered];
+    [_buttonDown setValue:[self valueForThemeAttribute:@"bezel-color-down-button" inStates:[controlSizeThemeState, CPThemeStateBordered, CPThemeStateDisabled]] forThemeAttribute:@"bezel-color" inStates:[CPThemeStateBordered, CPThemeStateDisabled]];
+    [_buttonDown setValue:[self valueForThemeAttribute:@"bezel-color-down-button" inStates:[controlSizeThemeState, CPThemeStateBordered, CPThemeStateHighlighted]] forThemeAttribute:@"bezel-color" inStates:[CPThemeStateBordered, CPThemeStateHighlighted]];
 }
 
 - (void)_sizeToFit
@@ -232,7 +239,7 @@
     if (![self isEnabled])
         return;
 
-    if (aSender == _buttonUp)
+    if (aSender === _buttonUp)
         [self setDoubleValue:([self doubleValue] + _increment)];
     else
         [self setDoubleValue:([self doubleValue] - _increment)];
@@ -285,7 +292,7 @@
 
 - (void)_updatePlaceholdersWithOptions:(CPDictionary)options forBinding:(CPString)aBinding
 {
-    var placeholder = (aBinding == CPMaxValueBinding) ? [_source maxValue] : [_source minValue];
+    var placeholder = (aBinding === CPMaxValueBinding) ? [_source maxValue] : [_source minValue];
 
     [super _updatePlaceholdersWithOptions:options];
 

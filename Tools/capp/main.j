@@ -46,13 +46,14 @@ function printUsage()
     print("      -l                     Same as --symlink --build, symlinks $CAPP_BUILD Frameworks into your project");
     print("      -t, --template NAME    Specify the template name to use (see `capp gen --list-templates`)");
     print("      -f, --frameworks       Copy/symlink *only* the Frameworks directory to a new or existing project");
-    print("      -F, --framework NAME   Additional framework to copy/symlink (default: Objective-J, Foundation, AppKit)")
+    print("      -F, --framework NAME   Additional framework to copy/symlink (default: Objective-J, Foundation, AppKit)");
+    print("      -T, --theme NAME       Additional Theme to copy/symlink into Resource (default: nothing)");
     print("      --force                Overwrite Frameworks directory if it already exists");
     print("      --symlink              Symlink the source Frameworks directory to the project, don't copy");
     print("      --build                Copy/symlink the Frameworks directory files from your $CAPP_BUILD directory");
     print("      --noconfig             Use the default configuration when replacing template variables");
     print("");
-    print("      Without -l or --build, frameworks from your narwhal installation are copied/symlinked")
+    print("      Without -l or --build, frameworks from your narwhal installation are copied/symlinked");
     print("");
     print("  gen --list-templates     List the template names available for use with `capp gen -t/--template`");
     print("  gen --list-frameworks    List the framework names available for use with `capp gen -F/--framework`");

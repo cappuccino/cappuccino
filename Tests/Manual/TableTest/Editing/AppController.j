@@ -10,12 +10,14 @@
 @import <AppKit/CPTableColumn.j>
 @import <AppKit/CPTableView.j>
 
+CPLogRegister(CPLogConsole);
+
 @implementation AppController : CPObject
 {
     CPArray rowData;
     CPArray rowEdits;
-    Int numberOfRows;
-    Int numberOfEditsKept;
+    CPInteger numberOfRows;
+    CPInteger numberOfEditsKept;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
@@ -26,7 +28,7 @@
 
     // Initialize data structures.
 
-    numberOfRows = 10;
+    numberOfRows = 100;
     numberOfEditsKept = 6;
 
     var i = numberOfRows;
@@ -104,6 +106,7 @@
 
 - (void)tableView:(CPTableView)tableView setObjectValue:(id)aValue forTableColumn:(CPTableColumn)tableColumn row:(CPInteger)aRow
 {
+CPLog.debug(_cmd + tableColumn + aRow + aValue);
     var name = [tableColumn identifier];
 
     switch (name)
@@ -113,6 +116,7 @@
             rowEdits[aRow].unshift(rowData[aRow]);
             rowEdits[aRow].pop;
             rowData[aRow] = aValue;
+            [tableView reloadData];
             break;
         }
     }

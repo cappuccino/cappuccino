@@ -24,7 +24,9 @@
 @import "CPCompatibility.j"
 @import "CGGeometry.j"
 @import "CGPath.j"
+@import "CGContextText.j"
 
+@typedef CGContext
 
 kCGLineCapButt              = 0;
 kCGLineCapRound             = 1;
@@ -737,7 +739,7 @@ else if (CPFeatureIsCompatible(CPVMLFeature))
 else
 {
     // I have declared these functions here to make it compile without warnings with the new compiler under rhino.
-    CGContextClearRect = CGContextDrawLinearGradient = CGContextClip = CGContextClipToRect = function() {throw new Error("function is not declared in this environment")}
+    CGContextClearRect = CGContextDrawLinearGradient = CGContextClip = CGContextClipToRect = CGContextDrawImage = function() {throw new Error("function is not declared in this environment")}
 }
 /*!
 @endcond

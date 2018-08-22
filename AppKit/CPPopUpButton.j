@@ -26,8 +26,6 @@
 @import "CPMenu.j"
 @import "CPMenuItem.j"
 
-var VISIBLE_MARGIN = 7.0;
-
 CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
 /*!
@@ -363,15 +361,10 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 */
 - (CPArray)itemTitles
 {
-    var titles = [],
-        items = [self itemArray],
-        index = 0,
-        count = [items count];
-
-    for (; index < count; ++index)
-        titles.push([items[index] title]);
-
-    return titles;
+    return [[self itemArray] arrayByApplyingBlock:function(item)
+    {
+        return [item title];
+    }];
 }
 
 /*!
@@ -498,9 +491,17 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
         if (index < 0)
         {
-            [self addItemWithTitle:aTitle];
 
-            index = [self numberOfItems] - 1;
+            // this ist to match cocoa where setting an empty string does not add it but simply clears the title
+            // and sets objectValue to -1
+            if (aTitle === '')
+                [self selectItemAtIndex:-1];
+            else
+            {
+                [self addItemWithTitle:aTitle];
+
+                index = [self numberOfItems] - 1;
+            }
         }
 
         [self selectItemAtIndex:index];
@@ -773,13 +774,6 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
             [[self selectedItem] setState:CPOffState];
 }
 
-- (void)_reverseSetBinding
-{
-    [_CPPopUpButtonSelectionBinder reverseSetValueForObject:self];
-
-    [super _reverseSetBinding];
-}
-
 @end
 
 @implementation CPPopUpButton (BindingSupport)
@@ -800,6 +794,20 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     }
 
     return [super _binderClassForBinding:aBinding];
+}
+
++ (BOOL)isBindingExclusive:(CPString)aBinding
+{
+    return (aBinding == CPSelectedIndexBinding ||
+           aBinding == CPSelectedTagBinding ||
+           aBinding == CPSelectedValueBinding);
+}
+
+- (void)_reverseSetBinding
+{
+    [_CPPopUpButtonSelectionBinder _reverseSetValueFromExclusiveBinderForObject:self];
+
+    [super _reverseSetBinding];
 }
 
 @end
@@ -847,7 +855,17 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 {
     var count = [aValue count],
         options = [_info objectForKey:CPOptionsKey],
-        offset = [self _getInsertNullOffset];
+        offset = [self _getInsertNullOffset],
+        selectedBindingInfo = [_source infoForBinding:CPSelectedObjectBinding],
+        selectedObject = nil;
+
+    if (selectedBindingInfo)
+    {
+        var destination = [selectedBindingInfo objectForKey:CPObservedObjectKey],
+            keyPath = [selectedBindingInfo objectForKey:CPObservedKeyPathKey];
+
+        selectedObject = [destination valueForKeyPath:keyPath];
+    }
 
     if (count + offset != [_source numberOfItems])
     {
@@ -858,9 +876,19 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
         for (var i = 0; i < count; i++)
         {
-            var item = [[CPMenuItem alloc] initWithTitle:@"" action:NULL keyEquivalent:nil];
-            [self _setValue:[aValue objectAtIndex:i] forItem:item withOptions:options];
+            var item = [[CPMenuItem alloc] initWithTitle:@"" action:NULL keyEquivalent:nil],
+                itemValue = [aValue objectAtIndex:i];
+
+            [self _setValue:itemValue forItem:item withOptions:options];
             [_source addItem:item];
+
+            // Select this item if it is the one selected by the selected object binding
+            // This is needed if the selected object binding is set before the items
+            // from the content binding
+            if (itemValue === selectedObject)
+            {
+                [_source setSelectedIndex:[_source numberOfItems] - 1];
+            }
         }
     }
     else
@@ -931,30 +959,8 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
 @end
 
-var binderForObject = {};
-
 @implementation _CPPopUpButtonSelectionBinder : CPBinder
 {
-    CPString _selectionBinding @accessors;
-}
-
-- (id)initWithBinding:(CPString)aBinding name:(CPString)aName to:(id)aDestination keyPath:(CPString)aKeyPath options:(CPDictionary)options from:(id)aSource
-{
-    self = [super initWithBinding:aBinding name:aName to:aDestination keyPath:aKeyPath options:options from:aSource];
-
-    if (self)
-    {
-        binderForObject[[aSource UID]] = self;
-        _selectionBinding = aName;
-    }
-
-    return self;
-}
-
-+ (void)reverseSetValueForObject:(id)aSource
-{
-    var binder = binderForObject[[aSource UID]];
-    [binder reverseSetValueFor:[binder _selectionBinding]];
 }
 
 - (void)setPlaceholderValue:(id)aValue withMarker:(CPString)aMarker forBinding:(CPString)aBinding

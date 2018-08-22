@@ -22,14 +22,14 @@ var randomFromTo = function(from, to)
 
 @implementation AppController : CPObject
 {
-    CPWindow        theWindow;
-    CPTextField     dateField1;
-    CPTextField     dateField2;
-    CPTextField     error1;
-    CPTextField     textField;
-    CPTextField     error2;
-    CPTextField     recordField;
-    CPPopUpButton   recordMenu;
+    @outlet CPWindow        theWindow;
+    @outlet CPTextField     dateField1;
+    @outlet CPTextField     dateField2;
+    @outlet CPTextField     error1;
+    @outlet CPTextField     textField;
+    @outlet CPTextField     error2;
+    @outlet CPTextField     recordField;
+    @outlet CPPopUpButton   recordMenu;
 }
 
 - (void)awakeFromCib
@@ -44,29 +44,27 @@ var randomFromTo = function(from, to)
                                                  name:CPTextFieldDidFocusNotification
                                                object:nil];
 
-    [textField setFormatter:[TextFormatter new]];
     [textField setDelegate:self];
 
     [error1 setStringValue:@""];
     [error2 setStringValue:@""];
 
-    [recordField setFormatter:[ContactFormatter new]];
     [recordField setObjectValue:RecordData[0]];
 }
 
-- (void)selectRecord:(id)sender
+- (@action)selectRecord:(id)sender
 {
     var record = RecordData[[sender selectedIndex]];
 
     [recordField setObjectValue:record];
 }
 
-- (void)setDate1:(id)sender
+- (@action)setDate1:(id)sender
 {
     [self setDate:dateField1];
 }
 
-- (void)setDate2:(id)sender
+- (@action)setDate2:(id)sender
 {
     [self setDate:dateField2];
 }
@@ -78,24 +76,69 @@ var randomFromTo = function(from, to)
     [field setObjectValue:date];
 }
 
-- (void)objectValue1:(id)sender
+- (@action)objectValue1:(id)sender
 {
     CPLog.info("Date 1: %s", [[dateField1 objectValue] description]);
 }
 
-- (void)objectValue2:(id)sender
+- (@action)objectValue2:(id)sender
 {
     CPLog.info("Date 2: %s", [[dateField2 objectValue] description]);
 }
 
-- (void)setNil:(id)sender
+- (@action)setNil:(id)sender
 {
     [dateField1 setStringValue:nil];  // should log a warning and do nothing
 }
 
-- (void)setEmptyOK:(id)sender
+- (@action)setEmptyOK:(id)sender
 {
     [[dateField2 formatter] setEmptyIsValid:[sender state] === CPOnState];
+}
+
+- (@action)deleteBackward1:(id)sender
+{
+    [dateField1 deleteBackward:self];
+}
+
+- (@action)deleteBackward2:(id)sender
+{
+    [dateField2 deleteBackward:self];
+}
+
+- (@action)deleteBackward3:(id)sender
+{
+    [textField deleteBackward:self];
+}
+
+- (@action)deleteForward1:(id)sender
+{
+    [dateField1 deleteForward:self];
+}
+
+- (@action)deleteForward2:(id)sender
+{
+    [dateField2 deleteForward:self];
+}
+
+- (@action)deleteForward3:(id)sender
+{
+    [textField deleteForward:self];
+}
+
+- (@action)delete1:(id)sender
+{
+    [dateField1 delete:self];
+}
+
+- (@action)delete2:(id)sender
+{
+    [dateField2 delete:self];
+}
+
+- (@action)delete3:(id)sender
+{
+    [textField delete:self];
 }
 
 - (void)controlTextDidChange:(CPNotification)aNotification
@@ -167,7 +210,7 @@ var randomFromTo = function(from, to)
     else
         anObject(aString);
 
-    result = error === nil;
+    var result = error === nil;
 
     CPLog.info("getObjectValue:forString:%s ==> %s", aString, result);
     return result;

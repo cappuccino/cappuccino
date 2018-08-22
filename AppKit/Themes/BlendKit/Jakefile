@@ -20,7 +20,7 @@ blendKitTask = framework ("BlendKit", function(blendKitTask)
     blendKitTask.setFlattensSources(true); // FIXME: how do we non flatten?
 
     if ($CONFIGURATION === "Release")
-        blendKitTask.setCompilerFlags("-O");
+        blendKitTask.setCompilerFlags("-O2");
     else
         blendKitTask.setCompilerFlags("-DDEBUG -g");
 });

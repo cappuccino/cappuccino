@@ -23,7 +23,7 @@
  */
 
 @import <Foundation/CPIndexSet.j>
-
+@import <Foundation/CPPredicate.j>
 @import "CPObjectController.j"
 @import "CPKeyValueBinding.j"
 
@@ -563,7 +563,7 @@
 */
 - (BOOL)setSelectionIndexes:(CPIndexSet)indexes
 {
-    [self _selectionWillChange]
+    [self _selectionWillChange];
     var r = [self __setSelectionIndexes:indexes avoidEmpty:NO];
     [self _selectionDidChange];
     return r;

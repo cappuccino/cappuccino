@@ -1,8 +1,6 @@
 @import <AppKit/CPStepper.j>
 @import <AppKit/CPApplication.j>
 
-[CPApplication sharedApplication]
-
 @implementation CPStepperTest : OJTestCase
 {
     CPStepper stepper;
@@ -10,6 +8,9 @@
 
 - (void)setUp
 {
+    // This will init the global var CPApp which are used internally in the AppKit
+    [[CPApplication alloc] init];
+
     stepper = [CPStepper stepper];
     [stepper setValueWraps:NO];
 }
@@ -32,14 +33,14 @@
     [self assert:1 equals:[stepper doubleValue]];
 }
 
-- (void)testPerformIncreaseWithIncrement
+- (void)testPerformClickUpIncreaseWithIncrement
 {
     [stepper setIncrement:10];
     [stepper performClickUp:nil];
     [self assert:10 equals:[stepper doubleValue]];
 }
 
-- (void)testPerformIncreaseWithIncrement
+- (void)testPerformClickDownIncreaseWithIncrement
 {
     [stepper setIncrement:10];
     [stepper performClickDown:nil];

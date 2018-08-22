@@ -29,8 +29,7 @@
 @import "CPWindow_Constants.j"
 
 /* @group CPBezelStyle */
-
-                                       // IB style
+@typedef CPBezelStyle
 CPRoundedBezelStyle             = 1;   // Push
 CPRegularSquareBezelStyle       = 2;   // Bevel
 CPThickSquareBezelStyle         = 3;
@@ -49,6 +48,7 @@ CPHUDBezelStyle                 = -1;
 
 
 /* @group CPButtonType */
+@typedef CPButtonType
 CPMomentaryLightButton  = 0;
 CPPushOnPushOffButton   = 1;
 CPToggleButton          = 2;
@@ -108,7 +108,6 @@ CPButtonImageOffset   = 3.0;
 
     // NS-style Display Properties
     CPBezelStyle        _bezelStyle;
-    CPControlSize       _controlSize;
 
     CPString            _keyEquivalent;
     unsigned            _keyEquivalentModifierMask;
@@ -189,8 +188,6 @@ CPButtonImageOffset   = 3.0;
 
 - (void)_init
 {
-    _controlSize = CPRegularControlSize;
-
     _keyEquivalent = @"";
     _keyEquivalentModifierMask = 0;
 
@@ -200,6 +197,20 @@ CPButtonImageOffset   = 3.0;
 
     [self setButtonType:CPMomentaryPushInButton];
 }
+
+#pragma mark -
+#pragma mark Control Size
+
+- (void)setControlSize:(CPControlSize)aControlSize
+{
+    [super setControlSize:aControlSize];
+
+    if ([self isBordered])
+        [self _sizeToControlSize];
+}
+
+
+#pragma mark -
 
 // Setting the state
 /*!
@@ -269,7 +280,7 @@ CPButtonImageOffset   = 3.0;
             break;
 
         case CPOffState:
-            [self unsetThemeState:[CPThemeStateSelected, CPButtonStateMixed, CPThemeStateHighlighted]];
+            [self unsetThemeStates:[CPThemeStateSelected, CPButtonStateMixed, CPThemeStateHighlighted]];
     }
 }
 
@@ -367,7 +378,7 @@ CPButtonImageOffset   = 3.0;
 
 - (void)setImage:(CPImage)anImage
 {
-    [self setValue:anImage forThemeAttribute:@"image"];
+    [self setValue:anImage forThemeAttribute:@"image" inState:CPThemeStateNormal];
 }
 
 - (CPImage)image

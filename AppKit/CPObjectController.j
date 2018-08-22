@@ -27,6 +27,9 @@
 @import "CPController.j"
 @import "CPKeyValueBinding.j"
 
+@class _CPManagedProxy
+@class CPPredicate;
+
 /*!
     @class
 
@@ -47,6 +50,9 @@
 
     BOOL            _isEditable;
     BOOL            _automaticallyPreparesContent;
+    BOOL            _usesLazyFetching @accessors(getter=usesLazyFetching, setter=setUsesLazyFetching:);
+    BOOL            _isUsingManagedProxy;
+    _CPManagedProxy _managedProxy;
 
     CPCountedSet    _observedKeys;
 }
@@ -180,6 +186,52 @@
 }
 
 /*!
+    Sets the entity name the controller handles.
+
+    @param CPString newEntityName - The new entity name.
+*/
+- (void)setEntityName:(CPString)newEntityName
+{
+    if (!_managedProxy)
+    {
+        _managedProxy = [[_CPManagedProxy alloc] init];
+        _isUsingManagedProxy = YES;
+    }
+
+    [_managedProxy setEntityName:newEntityName];
+}
+
+/*!
+    Returns the entity name.
+
+    @return CPString - The name of the entity.
+*/
+- (CPString)entityName
+{
+    return [_managedProxy entityName];
+}
+
+/*!
+    Sets the predicate used to fetch content.
+
+    @param CPPredicate newPredicate - The fetch predicate.
+*/
+- (void)setFetchPredicate:(CPPredicate)newPredicate
+{
+    [_managedProxy setFetchPredicate:newPredicate];
+}
+
+/*!
+    Returns the fetch predicate.
+
+    @return CPPredicate - The predicate used to fetch content.
+*/
+- (CPPredicate)fetchPredicate
+{
+    return [_managedProxy fetchPredicate];
+}
+
+/*!
     Overridden by a subclass that require control over the creation of new objects.
 */
 - (void)prepareContent
@@ -189,6 +241,7 @@
 
 /*!
     Sets the object class when creating new objects.
+
     @param Class - the class of new objects that will be created.
 */
 - (void)setObjectClass:(Class)aClass
@@ -385,7 +438,10 @@
 var CPObjectControllerContentKey                        = @"CPObjectControllerContentKey",
     CPObjectControllerObjectClassNameKey                = @"CPObjectControllerObjectClassNameKey",
     CPObjectControllerIsEditableKey                     = @"CPObjectControllerIsEditableKey",
-    CPObjectControllerAutomaticallyPreparesContentKey   = @"CPObjectControllerAutomaticallyPreparesContentKey";
+    CPObjectControllerAutomaticallyPreparesContentKey   = @"CPObjectControllerAutomaticallyPreparesContentKey",
+    CPObjectControllerUsesLazyFetchingKey               = @"CPObjectControllerUsesLazyFetchingKey",
+    CPObjectControllerIsUsingManagedProxyKey            = @"CPObjectControllerIsUsingManagedProxyKey",
+    CPObjectControllerManagedProxyKey                   = @"CPObjectControllerManagedProxyKey";
 
 @implementation CPObjectController (CPCoding)
 
@@ -396,12 +452,18 @@ var CPObjectControllerContentKey                        = @"CPObjectControllerCo
     if (self)
     {
         var objectClassName = [aCoder decodeObjectForKey:CPObjectControllerObjectClassNameKey],
-            objectClass = CPClassFromString(objectClassName);
+            objectClass = CPClassFromString(objectClassName),
+            content = [aCoder decodeObjectForKey:CPObjectControllerContentKey];
 
         [self setObjectClass:objectClass || [CPMutableDictionary class]];
         [self setEditable:[aCoder decodeBoolForKey:CPObjectControllerIsEditableKey]];
         [self setAutomaticallyPreparesContent:[aCoder decodeBoolForKey:CPObjectControllerAutomaticallyPreparesContentKey]];
-        [self setContent:[aCoder decodeObjectForKey:CPObjectControllerContentKey]];
+        [self setUsesLazyFetching:[aCoder decodeBoolForKey:CPObjectControllerUsesLazyFetchingKey]];
+        _isUsingManagedProxy = [aCoder decodeBoolForKey:CPObjectControllerIsUsingManagedProxyKey];
+        _managedProxy = [aCoder decodeObjectForKey:CPObjectControllerManagedProxyKey];
+
+        if (content != nil)
+            [self setContent:content];
 
         _observedKeys = [[CPCountedSet alloc] init];
     }
@@ -420,6 +482,11 @@ var CPObjectControllerContentKey                        = @"CPObjectControllerCo
 
     [aCoder encodeBool:[self isEditable] forKey:CPObjectControllerIsEditableKey];
     [aCoder encodeBool:[self automaticallyPreparesContent] forKey:CPObjectControllerAutomaticallyPreparesContentKey];
+    [aCoder encodeBool:[self usesLazyFetching] forKey:CPObjectControllerUsesLazyFetchingKey];
+    [aCoder encodeBool:_isUsingManagedProxy forKey:CPObjectControllerIsUsingManagedProxyKey];
+
+    if (_managedProxy)
+        [aCoder encodeObject:_managedProxy forKey:CPObjectControllerManagedProxyKey];
 }
 
 - (void)awakeFromCib
@@ -481,13 +548,13 @@ var CPObjectControllerContentKey                        = @"CPObjectControllerCo
 
 - (BOOL)isEqual:(id)anObject
 {
-    if ([anObject class] === [self class])
-    {
-        if (anObject._observer === _observer && [anObject._keyPath isEqual:_keyPath] && [anObject._object isEqual:_object])
-            return YES;
-    }
+    if (self === anObject)
+        return YES;
 
-    return NO;
+    if (!anObject || [anObject class] !== [self class] || anObject._observer !== _observer || anObject._keyPath !== _keyPath || anObject._object !== _object)
+            return NO;
+
+    return YES;
 }
 
 - (void)observeValueForKeyPath:(CPString)aKeyPath ofObject:(id)anObject change:(CPDictionary)change context:(id)context
@@ -771,7 +838,7 @@ var CPObjectControllerContentKey                        = @"CPObjectControllerCo
 
 - (void)setValue:(id)theValue forKey:(CPString)theKeyPath
 {
-    [self setValue:theKeyPath forKeyPath:theKeyPath];
+    [self setValue:theValue forKeyPath:theKeyPath];
 }
 
 - (unsigned)count
@@ -830,15 +897,55 @@ var CPObjectControllerContentKey                        = @"CPObjectControllerCo
 
 - (void)removeObserver:(id)anObject forKeyPath:(CPString)aKeyPath
 {
-    var proxy = [[_CPObservationProxy alloc] initWithKeyPath:aKeyPath observer:anObject object:self],
-        index = [_observationProxies indexOfObject:proxy];
+    [_observationProxies enumerateObjectsUsingBlock:function(aProxy, idx, stop)
+    {
+        if (aProxy._object === self && aProxy._keyPath == aKeyPath && aProxy._observer === anObject)
+        {
+            var observedObjects = _observedObjectsByKeyPath[aKeyPath];
 
-    var observedObjects = _observedObjectsByKeyPath[aKeyPath];
-    [observedObjects removeObserver:[_observationProxies objectAtIndex:index] forKeyPath:aKeyPath];
+            [observedObjects removeObserver:aProxy forKeyPath:aKeyPath];
+            [_observationProxies removeObjectAtIndex:idx];
 
-    [_observationProxies removeObjectAtIndex:index];
+            _observedObjectsByKeyPath[aKeyPath] = nil;
 
-    _observedObjectsByKeyPath[aKeyPath] = nil;
+            stop(YES);
+        }
+    }];
+}
+
+@end
+
+
+@implementation _CPManagedProxy : CPObject
+{
+    CPString    _entityName @accessors(getter=entityName, setter=setEntityName:);
+    CPPredicate _fetchPredicate @accessors(getter=fetchPredicate, setter=setFetchPredicate:);
+}
+
+@end
+
+var CPManagedProxyEntityNameKey                         = @"CPManagedProxyEntityNameKey",
+    CPManagedProxyFetchPredicateKey                     = @"CPManagedProxyFetchPredicateKey";
+
+@implementation _CPManagedProxy (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super init];
+
+    if (self)
+    {
+        [self setEntityName:[aCoder decodeObjectForKey:CPManagedProxyEntityNameKey]];
+        [self setFetchPredicate:[aCoder decodeObjectForKey:CPManagedProxyFetchPredicateKey]];
+    }
+
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [aCoder encodeObject:[self entityName] forKey:CPManagedProxyEntityNameKey];
+    [aCoder encodeObject:[self fetchPredicate] forKey:CPManagedProxyFetchPredicateKey];
 }
 
 @end

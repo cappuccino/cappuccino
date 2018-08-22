@@ -26,42 +26,7 @@
 @import "CPNull.j"
 @import "CPObject.j"
 
-//FIXME: After release of 0.9.7 remove below variable
-var CPDictionaryShowNilDeprecationMessage = YES,
-
-    CPDictionaryMaxDescriptionRecursion = 10;
-
-/* @ignore */
-@implementation _CPDictionaryValueEnumerator : CPEnumerator
-{
-    CPEnumerator    _keyEnumerator;
-    CPDictionary    _dictionary;
-}
-
-- (id)initWithDictionary:(CPDictionary)aDictionary
-{
-    self = [super init];
-
-    if (self)
-    {
-        _keyEnumerator = [aDictionary keyEnumerator];
-        _dictionary = aDictionary;
-    }
-
-    return self;
-}
-
-- (id)nextObject
-{
-    var key = [_keyEnumerator nextObject];
-
-    if (key === nil)
-        return nil;
-
-    return [_dictionary objectForKey:key];
-}
-
-@end
+var CPDictionaryMaxDescriptionRecursion = 10;
 
 /*!
     @class CPDictionary
@@ -257,41 +222,23 @@ var CPDictionaryShowNilDeprecationMessage = YES,
 {
     self = [super init];
 
-    if ([objects count] != [keyArray count])
+    var i = [keyArray count];
+
+    if ([objects count] != i)
         [CPException raise:CPInvalidArgumentException reason:[CPString stringWithFormat:@"Counts are different.(%d != %d)", [objects count], [keyArray count]]];
 
     if (self)
     {
-        var i = [keyArray count];
-
         while (i--)
         {
             var value = objects[i],
                 key = keyArray[i];
 
             if (value === nil)
-            {
-                CPDictionaryShowNilDeprecationMessage = NO;
-                CPLog.warn([CPString stringWithFormat:@"[%s %s] DEPRECATED: Attempt to insert nil object from objects[%d]", [self className], _cmd, i]);
-
-                if (typeof(objj_backtrace_print) === "function")
-                    objj_backtrace_print(CPLog.warn);
-
-                // FIXME: After release of 0.9.7 change this block to:
-                // [CPException raise:CPInvalidArgumentException reason:@"Attempt to insert nil object from objects[" + i + @"]"];
-            }
+                [CPException raise:CPInvalidArgumentException reason:@"Attempt to insert nil object from objects[" + i + @"]"];
 
             if (key === nil)
-            {
-                CPDictionaryShowNilDeprecationMessage = NO;
-                CPLog.warn([CPString stringWithFormat:@"[%s %s] DEPRECATED: Attempt to insert nil key from keys[%d]", [self className], _cmd, i]);
-
-                if (typeof(objj_backtrace_print) === "function")
-                    objj_backtrace_print(CPLog.warn);
-
-                // FIXME: After release of 0.9.7 change this block to:
-                // [CPException raise:CPInvalidArgumentException reason:@"Attempt to insert nil key from keys[" + i + @"]"];
-            }
+                [CPException raise:CPInvalidArgumentException reason:@"Attempt to insert nil key from keys[" + i + @"]"];
 
             [self setObject:value forKey:key];
         }
@@ -326,36 +273,16 @@ var CPDictionaryShowNilDeprecationMessage = YES,
     if (self)
     {
         // The arguments array contains self and _cmd, so the first object is at position 2.
-        var index = 2;
-
-        for (; index < argCount; index += 2)
+        while (argCount-- > 2)
         {
-            var value = arguments[index],
-                key = arguments[index + 1];
+            var key = arguments[argCount--],
+                value = arguments[argCount];
 
             if (value === nil)
-            {
-                CPDictionaryShowNilDeprecationMessage = NO;
-                CPLog.warn([CPString stringWithFormat:@"[%s %s] DEPRECATED: Attempt to insert nil object from objects[%d]", [self className], _cmd, (index / 2) - 1]);
-
-                if (typeof(objj_backtrace_print) === "function")
-                    objj_backtrace_print(CPLog.warn);
-
-                // FIXME: After release of 0.9.7 change 3 lines above to this:
-                // [CPException raise:CPInvalidArgumentException reason:@"Attempt to insert nil object from objects[" + ((index / 2) - 1) + @"]"];
-            }
+                [CPException raise:CPInvalidArgumentException reason:@"Attempt to insert nil object from objects[" + ((argCount / 2) - 1) + @"]"];
 
             if (key === nil)
-            {
-                CPDictionaryShowNilDeprecationMessage = NO;
-                CPLog.warn([CPString stringWithFormat:@"[%s %s] DEPRECATED: Attempt to insert nil key from keys[%d]", [self className], _cmd, (index / 2) - 1]);
-
-                if (typeof(objj_backtrace_print) === "function")
-                    objj_backtrace_print(CPLog.warn);
-
-                // FIXME: After release of 0.9.7 change 3 lines above to this:
-                // [CPException raise:CPInvalidArgumentException reason:@"Attempt to insert nil key from keys[" + ((index / 2) - 1) + @"]"];
-            }
+                [CPException raise:CPInvalidArgumentException reason:@"Attempt to insert nil key from keys[" + ((argCount / 2) - 1) + @"]"];
 
             [self setObject:value forKey:key];
         }
@@ -666,34 +593,11 @@ var CPDictionaryShowNilDeprecationMessage = YES,
 */
 - (void)setObject:(id)anObject forKey:(id)aKey
 {
-    // FIXME: After release of 0.9.7, remove this test and leave the contents of its block
-    if (CPDictionaryShowNilDeprecationMessage)
-    {
-        if (aKey === nil)
-        {
-            CPLog.warn([CPString stringWithFormat:@"[%s %s] DEPRECATED: key cannot be nil", [self className], _cmd]);
+    if (aKey === nil)
+        [CPException raise:CPInvalidArgumentException reason:@"key cannot be nil"];
 
-            if (typeof(objj_backtrace_print) === "function")
-                objj_backtrace_print(CPLog.warn);
-
-            // FIXME: After release of 0.9.7 change this block to:
-            // [CPException raise:CPInvalidArgumentException reason:@"key cannot be nil"];
-        }
-
-        if (anObject === nil)
-        {
-            CPLog.warn([CPString stringWithFormat:@"[%s %s] DEPRECATED: object cannot be nil (key: %s)", [self className], _cmd, aKey]);
-
-            if (typeof(objj_backtrace_print) === "function")
-                objj_backtrace_print(CPLog.warn);
-
-            // FIXME: After release of 0.9.7 change this block to:
-            // [CPException raise:CPInvalidArgumentException reason:@"object cannot be nil (key: " + aKey + @")"];
-        }
-    }
-    // FIXME: After release of 0.9.7 remove 2 lines below.
-    else
-        CPDictionaryShowNilDeprecationMessage = YES;
+    if (anObject === nil)
+        [CPException raise:CPInvalidArgumentException reason:@"object cannot be nil (key: " + aKey + @")"];
 
     self.setValueForKey(aKey, anObject);
 }
@@ -800,6 +704,40 @@ var CPDictionaryShowNilDeprecationMessage = YES,
 }
 
 @end
+
+
+/* @ignore */
+@implementation _CPDictionaryValueEnumerator : CPEnumerator
+{
+    CPEnumerator    _keyEnumerator;
+    CPDictionary    _dictionary;
+}
+
+- (id)initWithDictionary:(CPDictionary)aDictionary
+{
+    self = [super init];
+
+    if (self)
+    {
+        _keyEnumerator = [aDictionary keyEnumerator];
+        _dictionary = aDictionary;
+    }
+
+    return self;
+}
+
+- (id)nextObject
+{
+    var key = [_keyEnumerator nextObject];
+
+    if (key === nil)
+        return nil;
+
+    return [_dictionary objectForKey:key];
+}
+
+@end
+
 
 /*!
     @class CPMutableDictionary

@@ -176,12 +176,13 @@ var _CPToolTipHeight = 24.0,
         _toolTipWindow = aWindow;
         _constrainsToUsableScreen = NO;
 
+        [self setPlatformWindow:[_toolTipWindow platformWindow]];
+
         textFrameSize.height += 4;
 
         _content = [CPTextField labelWithTitle:aString];
-        [_content setFont:[CPFont systemFontOfSize:_CPToolTipFontSize]]
+        [_content setFont:[CPFont systemFontOfSize:_CPToolTipFontSize]];
         [_content setLineBreakMode:CPLineBreakByCharWrapping];
-        [_content setAlignment:CPJustifiedTextAlignment];
         [_content setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
         [_content setFrameOrigin:CGPointMake(0.0, 0.0)];
         [_content setFrameSize:textFrameSize];
@@ -194,6 +195,7 @@ var _CPToolTipHeight = 24.0,
         [self setAlphaValue:0.9];
 
         [_windowView setNeedsDisplay:YES];
+
     }
 
     return self;
