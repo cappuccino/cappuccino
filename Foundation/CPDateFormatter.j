@@ -49,6 +49,8 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
     relativeDateFormating,
     patternStringTokens;
 
+var _separatorsCharacterSet = nil;
+
 /*!
     @ingroup foundation
     @class CPDateFormatter
@@ -84,7 +86,7 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
     relativeDateFormating = @{
       @"fr" : [@"demain", 1, @"apr" + String.fromCharCode(233) + @"s-demain", 2, @"apr" + String.fromCharCode(233) + @"s-apr" + String.fromCharCode(233) + @"s-demain", 3, @"hier", -1, @"avant-hier", -2, @"avant-avant-hier", -3],
       @"en" : [@"tomorrow", 1, @"yesterday", -1],
-      @"de" : [],
+      @"de" : [@"morgen", 1, @"gestern", -1, String.fromCharCode(129) + @"bermorgen", 2, @"vorgestern", -2],
       @"es" : []
     };
 
@@ -134,6 +136,14 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
 + (void)setDefaultFormatterBehavior:(CPDateFormatterBehavior)behavior
 {
     defaultDateFormatterBehavior = behavior;
+}
+
++ (CPCharacterSet)_separatorsCharacterSet
+{
+    if (_separatorsCharacterSet == nil)
+        _separatorsCharacterSet = [CPCharacterSet characterSetWithCharactersInString:@" ,:/-."];
+
+    return _separatorsCharacterSet;
 }
 
 /*! Init a dateFormatter
@@ -559,7 +569,13 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
             if ([self _isAmericanFormat])
                 format = @"M/d/yy";
             else
-                format = @"dd/MM/yy";
+            {
+                if ([_locale objectForKey:CPLocaleLanguageCode] === 'de')
+                    format = @"dd.MM.yy";
+                else
+                    format = @"dd/MM/yy";
+
+            }
 
             break;
 
@@ -737,7 +753,7 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
             continue;
         }
 
-        if ([character isEqualToString:@","] || [character isEqualToString:@":"] || [character isEqualToString:@"/"] || [character isEqualToString:@"-"] || [character isEqualToString:@" "])
+        if ([[CPDateFormatter _separatorsCharacterSet] characterIsMember:character])
         {
             result += [self _stringFromToken:currentToken date:aDate];
             result += character;

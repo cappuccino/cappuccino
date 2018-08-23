@@ -1673,6 +1673,8 @@ Sets the selection to a range of characters in response to user action.
 - (void)insertLineBreak:(id)sender
 {
     [self insertText:@"\n"];
+    // make sure that the return key is "swallowed" and the default button not triggered as is the case in cocoa
+    [[self window] _temporarilyDisableKeyEquivalentForDefaultButton];
 }
 
 - (void)insertTab:(id)sender

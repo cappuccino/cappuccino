@@ -984,15 +984,22 @@ _CPWindowViewResizeSlop = 3;
 @end
 
 @implementation _CPWindowView (TrackingAreaAdditions)
+{
+    CPTrackingArea  _windowViewTrackingArea;
+}
 
 - (void)updateTrackingAreas
 {
-    [self removeAllTrackingAreas];
+    if (_windowViewTrackingArea)
+        [self removeTrackingArea:_windowViewTrackingArea];
 
-    [self addTrackingArea:[[CPTrackingArea alloc] initWithRect:[self contentRectForFrameRect:[self frame]]
-                                                       options:CPTrackingCursorUpdate | CPTrackingActiveInActiveApp
-                                                         owner:self
-                                                      userInfo:nil]];
+    _windowViewTrackingArea = [[CPTrackingArea alloc] initWithRect:[self contentRectForFrameRect:[self frame]]
+                                                           options:CPTrackingCursorUpdate | CPTrackingActiveInActiveApp
+                                                             owner:self
+                                                          userInfo:nil];
+
+    [self addTrackingArea:_windowViewTrackingArea];
+    [super updateTrackingAreas];
 }
 
 @end

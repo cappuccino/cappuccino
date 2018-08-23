@@ -74,8 +74,17 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
             @"image-cancel-pressed": [CPNull null],
             @"image-search-inset" : CGInsetMake(0, 0, 0, 5),
             @"image-cancel-inset" : CGInsetMake(0, 5, 0, 0),
+            @"search-menu-offset": CGPointMake(10, -4),
             @"search-right-margin": 2
         };
+}
+
++ (Class)_binderClassForBinding:(CPString)aBinding
+{
+    if (aBinding === CPPredicateBinding)
+        return [_CPSearchFieldPredicateBinder class];
+
+    return [super _binderClassForBinding:aBinding];
 }
 
 - (id)initWithFrame:(CGRect)frame
@@ -88,10 +97,6 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
         _recentsAutosaveName = nil;
 
         [self _init];
-#if PLATFORM(DOM)
-        _cancelButton._DOMElement.style.cursor = "default";
-        _searchButton._DOMElement.style.cursor = "default";
-#endif
     }
 
     return self;
@@ -686,7 +691,8 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
         return;
 
     var aFrame = [[self superview] convertRect:[self frame] toView:nil],
-        location = CGPointMake(aFrame.origin.x + 10, aFrame.origin.y + aFrame.size.height - 4);
+        offset = [self currentValueForThemeAttribute:@"search-menu-offset"],
+        location = CGPointMake(aFrame.origin.x + offset.x, aFrame.origin.y + aFrame.size.height + offset.y);
 
     var anEvent = [CPEvent mouseEventWithType:CPRightMouseDown location:location modifierFlags:0 timestamp:[[CPApp currentEvent] timestamp] windowNumber:[[self window] windowNumber] context:nil eventNumber:1 clickCount:1 pressure:0];
 
@@ -764,7 +770,74 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
         _recentSearches = list;
 }
 
+- (void)unbind:(CPString)aBinding
+{
+    [super unbind:aBinding];
+
+    // our CPPredicateBinding binder adds a binding to the value.
+    // this private binding has to be also removed
+    if (aBinding === CPPredicateBinding)
+        [[[self class] _binderClassForBinding:aBinding] unbind:CPValueBinding forObject:self];
+}
+
 @end
+
+#pragma mark -
+
+@implementation CPSearchField (CPTrackingArea)
+{
+    CPTrackingArea      _searchButtonTrackingArea;
+    CPTrackingArea      _cancelButtonTrackingArea;
+}
+
+- (void)updateTrackingAreas
+{
+    if (_searchButtonTrackingArea)
+    {
+        [self removeTrackingArea:_searchButtonTrackingArea];
+        _searchButtonTrackingArea = nil;
+    }
+
+    if (_cancelButtonTrackingArea)
+    {
+        [self removeTrackingArea:_cancelButtonTrackingArea];
+        _cancelButtonTrackingArea = nil;
+    }
+
+    if (_searchButton)
+    {
+        _searchButtonTrackingArea = [[CPTrackingArea alloc] initWithRect:[_searchButton frame]
+                                                                 options:CPTrackingCursorUpdate | CPTrackingActiveInKeyWindow
+                                                                   owner:self
+                                                                userInfo:@{ @"isButton": YES }];
+
+        [self addTrackingArea:_searchButtonTrackingArea];
+    }
+
+    if (_cancelButton)
+    {
+        _cancelButtonTrackingArea = [[CPTrackingArea alloc] initWithRect:[_cancelButton frame]
+                                                                 options:CPTrackingCursorUpdate | CPTrackingActiveInKeyWindow
+                                                                   owner:self
+                                                                userInfo:@{ @"isButton": YES }];
+
+        [self addTrackingArea:_cancelButtonTrackingArea];
+    }
+
+    [super updateTrackingAreas];
+}
+
+- (void)cursorUpdate:(CPEvent)anEvent
+{
+    if ([[[anEvent trackingArea] userInfo] objectForKey:@"isButton"])
+        [[CPCursor arrowCursor] set];
+    else
+        [super cursorUpdate:anEvent];
+}
+
+@end
+
+#pragma mark -
 
 var CPRecentsAutosaveNameKey            = @"CPRecentsAutosaveNameKey",
     CPSendsWholeSearchStringKey         = @"CPSendsWholeSearchStringKey",
@@ -818,3 +891,44 @@ var CPRecentsAutosaveNameKey            = @"CPRecentsAutosaveNameKey",
 }
 
 @end
+
+@implementation _CPSearchFieldPredicateBinder : CPBinder
+{
+    CPArrayController  _controller;
+    CPString           _predicateFormat;
+}
+
+- (void)setValue:(id)aValue forBinding:(CPString)aBinding
+{
+    if (aBinding === CPPredicateBinding)
+    {
+        var options = [_info objectForKey:CPOptionsKey];
+
+        _controller = [_info objectForKey:CPObservedObjectKey];
+        _predicateFormat = [options objectForKey:"CPPredicateFormat"];
+        [_source bind:CPValueBinding toObject:self withKeyPath:"searchFieldValue" options:nil];
+    }
+}
+
+- (void)setSearchFieldValue:(CPString)aValue
+{
+    var destination = [_info objectForKey:CPObservedObjectKey],
+        keyPath     = [_info objectForKey:CPObservedKeyPathKey];
+
+    var formatString = _predicateFormat.replace(/\$value/g, "%@");
+    [self suppressSpecificNotificationFromObject:destination keyPath:keyPath];
+
+    if (aValue)
+        [_controller setFilterPredicate:[CPPredicate predicateWithFormat:formatString, aValue]];
+    else
+        [_controller setFilterPredicate:nil];
+
+    [self unsuppressSpecificNotificationFromObject:destination keyPath:keyPath];
+}
+- (CPString)searchFieldValue
+{
+    return [_source stringValue];
+}
+
+@end
+
