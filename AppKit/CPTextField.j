@@ -273,7 +273,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         CPTextFieldDOMStandardInputElement.style.border     = "0px";
         CPTextFieldDOMStandardInputElement.style.padding    = "0px";
         CPTextFieldDOMStandardInputElement.style.margin     = "0px";
-        CPTextFieldDOMStandardInputElement.style.whiteSpace = "pre";
+        CPTextFieldDOMStandardInputElement.style.whiteSpace = "pre-wrap";
         CPTextFieldDOMStandardInputElement.style.background = "transparent";
         CPTextFieldDOMStandardInputElement.style.outline    = "none";
         CPTextFieldDOMStandardInputElement.spellcheck       = NO;
@@ -286,7 +286,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         CPTextFieldDOMPasswordInputElement.style.border     = "0px";
         CPTextFieldDOMPasswordInputElement.style.padding    = "0px";
         CPTextFieldDOMPasswordInputElement.style.margin     = "0px";
-        CPTextFieldDOMPasswordInputElement.style.whiteSpace = "pre";
+        CPTextFieldDOMPasswordInputElement.style.whiteSpace = "pre-wrap";
         CPTextFieldDOMPasswordInputElement.style.background = "transparent";
         CPTextFieldDOMPasswordInputElement.style.outline    = "none";
         CPTextFieldDOMPasswordInputElement.type             = "password";
@@ -791,7 +791,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     element.style.font          = [font cssString];
 
     if (isTextArea)
-        element.style.whiteSpace = _wraps ? "pre" : "nowrap";
+        element.style.whiteSpace = _wraps ? "pre-wrap" : "nowrap";
 
 #endif
 }
