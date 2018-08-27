@@ -49,6 +49,8 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
     relativeDateFormating,
     patternStringTokens;
 
+var _separatorsCharacterSet = nil;
+
 /*!
     @ingroup foundation
     @class CPDateFormatter
@@ -134,6 +136,14 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
 + (void)setDefaultFormatterBehavior:(CPDateFormatterBehavior)behavior
 {
     defaultDateFormatterBehavior = behavior;
+}
+
++ (CPCharacterSet)_separatorsCharacterSet
+{
+    if (_separatorsCharacterSet == nil)
+        _separatorsCharacterSet = [CPCharacterSet characterSetWithCharactersInString:@" ,:/-."];
+
+    return _separatorsCharacterSet;
 }
 
 /*! Init a dateFormatter
@@ -743,7 +753,7 @@ var defaultDateFormatterBehavior = CPDateFormatterBehavior10_4,
             continue;
         }
 
-        if ([character isEqualToString:@","] || [character isEqualToString:@":"] || [character isEqualToString:@"/"] || [character isEqualToString:@"-"] || [character isEqualToString:@" "] || [character isEqualToString:@"."])
+        if ([[CPDateFormatter _separatorsCharacterSet] characterIsMember:character])
         {
             result += [self _stringFromToken:currentToken date:aDate];
             result += character;
