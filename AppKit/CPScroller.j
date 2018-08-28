@@ -226,6 +226,7 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
 
     if (_style === CPScrollerStyleLegacy)
     {
+        _allowFadingOut = NO;
         [self fadeIn];
         [self setThemeState:CPThemeStateScrollViewLegacy];
     }
@@ -758,7 +759,7 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
     if ([self isHidden] || ![self isEnabled] || !_isMouseOver)
         return;
 
-    _allowFadingOut = YES;
+    _allowFadingOut = (_style !== CPScrollerStyleLegacy);
     _isMouseOver = NO;
 
     if (_timerFadeOut)
