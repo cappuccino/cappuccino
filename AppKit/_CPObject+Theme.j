@@ -335,13 +335,6 @@ var NULL_THEME = {};
 
 - (void)setValue:(id)aValue forThemeAttribute:(CPString)aName
 {
-    // If in a tableView, then we should set the value for the theme state CPThemeStateTableDataView instead of CPThemeStateNormal
-    if ([self hasThemeState:CPThemeStateTableDataView])
-    {
-        [self setValue:aValue forThemeAttribute:aName inState:CPThemeStateTableDataView];
-        return;
-    }
-
     var themeAttr = _themeAttributes && _themeAttributes[aName];
 
     if (!themeAttr)
@@ -383,10 +376,6 @@ var NULL_THEME = {};
 
 - (id)valueForThemeAttribute:(CPString)aName
 {
-    // If in a tableView, then we should get the value from the theme state CPThemeStateTableDataView instead of CPThemeStateNormal
-    if ([self hasThemeState:CPThemeStateTableDataView])
-        return [self valueForThemeAttribute:aName inState:CPThemeStateTableDataView];
-
     var themeAttr = _themeAttributes && _themeAttributes[aName];
 
     if (!themeAttr)
