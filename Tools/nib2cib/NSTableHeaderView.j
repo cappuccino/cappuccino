@@ -23,24 +23,29 @@
 @import <AppKit/CPTableHeaderView.j>
 
 @class CPTableView
+@class Nib2Cib
+
 
 @implementation CPTableHeaderView (NSCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
     if (self = [super NS_initWithCoder:aCoder])
+    {
         _tableView = [aCoder decodeObjectForKey:"NSTableView"];
 
-    return self;
-}
+        // change the default height
+        if (_bounds.size.height === 17)
+        {
+            var theme = [Nib2Cib defaultTheme],
+                height = [_tableView currentValueForThemeAttribute:@"header-view-height"];
 
-- (void)_setHeightIfDefaultValue:(CPInteger)height
-{
-    if (_bounds.size.height === 17)
-    {
-        _bounds.size.height = height;
-        _frame.size.height = height;
+            _bounds.size.height = height;
+            _frame.size.height = height;
+        }
     }
+
+    return self;
 }
 
 @end
