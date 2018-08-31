@@ -2217,3 +2217,22 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 }
 
 @end
+
+#pragma mark -
+
+@implementation CPTextField (TableDataView)
+
+// We overide here _CPObject+Theme setValue:forThemeAttribute as CPTextField can be used as tableView data view
+// So, when outside a table data view, setValue:forThemeAttribute should store the value with the CPThemeStateNormal (default behavior)
+// When inside a table data view, it should store the value with the CPThemeStateTableDataView. If not, the value won't be used if the
+// theme defined a value for this attribute for state CPThemeStateTableDataView
+
+- (void)setValue:(id)aValue forThemeAttribute:(CPString)aName
+{
+    [super setValue:aValue forThemeAttribute:aName];
+    [super setValue:aValue forThemeAttribute:aName inState:CPThemeStateTableDataView];
+}
+
+@end
+
+
