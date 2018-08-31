@@ -185,6 +185,7 @@ while [ $# -gt 0 ]; do
         --copy-local)       local_distrib="$2"; shift;;
         --github-user)      github_user="$2"; shift;;
         --github-ref)       github_ref="$2"; shift;;
+        --rsync-base)       local_base="$2"; shift;;
         -q|--quiet)         verbosity=$[verbosity - 1];;
         -v|--verbose)       verbosity=$[verbosity + 1];;
         *)                  cat >&2 <<-EOT
@@ -197,6 +198,7 @@ usage: ./bootstrap.sh [OPTIONS]
     --copy-local:           Use a local copy instead of downloading zips.
     --github-user [USER]:   Github user (default: $github_user).
     --github-ref [REF]:     Use another git ref (default: $github_ref).
+    --rsync-base:           Use a local development base repo instead of downloading zips.
     -q | --quiet:           Output less logging.
     -v | --verbose:         Output more logging.
 EOT
@@ -311,6 +313,16 @@ if [ "$install_cappuccino" ]; then
         echo "Cloning Cappuccino base from \"$git_repo\"..."
         git clone "$git_repo" "$install_directory"
         (cd "$install_directory" && git checkout "origin/$github_ref")
+    elif [ -n "local_base" ]; then
+        echo "rsyncing local copy of the base distribution from $local_base to $install_directory"
+
+        quiet_arg=""
+        if (( $verbosity < 2 )); then quiet_arg="-q"; fi
+		# Use rsync to copy a local version of cappuccino-base to install directory
+		# Unlike --local-copy option, leave rsync source directory intact
+		# for further development and/or testing
+		rsync -avz --exclude '.git' "$local_base" "$install_directory"
+        check_and_exit
     elif [ -n "$local_distrib" ]; then
         echo "Extracting local copy of the distribution from $local_distrib to $install_directory"
 
@@ -379,7 +391,7 @@ if [ `uname` = "Darwin" ]; then
         if $(autoconf --version | head -1 | python -c "import sys, re; major, minor=re.search(r'(\d+)\.(\d+)', sys.stdin.read()).groups(); sys.exit((int(major) < $needed_autoconf_major or int(minor) < $needed_autoconf_minor) and 1)"); then
             # Don't bother checking the return code of this operation. Even if it fails, it's still
             # worthwhile to continue and attempt the full build.
-            (cd "$install_directory/packages/narwhal-jsc/deps/libedit-20100424-3.0" && autoreconf -if)
+            (cd "$install_directory/packages/narwhal-jsc/deps/libedit-20180525-3.1" && autoreconf -if)
         fi
 
         if ! (cd "$install_directory/packages/narwhal-jsc/" && make webkit); then
