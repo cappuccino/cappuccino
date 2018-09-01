@@ -66,6 +66,7 @@ const NSTimeInterval kFadeOutTime = 0.7;  // seconds
     _indeterminate = YES;
     _currentValue = 0.0;
     _maxValue = 100.0;
+    _usesThreadedAnimation = NO; // YES crashes on launch when compiled with Xcode 10 beta 6
 }
 
 #pragma mark - NSView overrides

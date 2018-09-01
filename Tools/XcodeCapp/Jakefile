@@ -44,14 +44,14 @@ task ("build", function()
 
     if (executableExists("xcodebuild"))
     {
-        var args = "-sdk macosx -alltargets -configuration Release",
-            installPath = FILE.join("/", "Applications", applicationName);
+        var args = installPath = FILE.join("/", "Applications", applicationName);
 
-        // Remove an old symlink, the application is built directly into /Applications now.
+        // Remove old symlink, if present.
+		//The application is now built directly into /Applications
         if (FILE.isLink(installPath))
             FILE.remove(installPath);
 
-        if (OS.system("xcodebuild " + args))
+		if (!OS.system("xcodebuild install"))
             colorPrint("Unable to build XcodeCapp. Skipping", "orange");
     }
     else
