@@ -517,6 +517,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				DSTROOT = /;
 				INFOPLIST_FILE = XcodeCapp/Info.plist;
+				INSTALL_PATH = "$(LOCAL_APPS_DIR)";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				PRODUCT_BUNDLE_IDENTIFIER = org.cappuccino.xcodecapp;
@@ -532,6 +533,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				DSTROOT = /;
 				INFOPLIST_FILE = XcodeCapp/Info.plist;
+				INSTALL_PATH = "$(LOCAL_APPS_DIR)";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				PRODUCT_BUNDLE_IDENTIFIER = org.cappuccino.xcodecapp;
