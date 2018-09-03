@@ -44,7 +44,7 @@ Getting Started
 ---------------
 To write you first application, [download the starter package](http://www.cappuccino-project.org/#download).
 
-To contribute to Cappuccino, please read here: [Getting and Building the Source](<http://wiki.github.com/cappuccino/cappuccino/getting-and-building-the-source>).
+To contribute to Cappuccino, please read here: [Getting and Building the Source](http://wiki.github.com/cappuccino/cappuccino/getting-and-building-the-source).
 
 License
 -------
