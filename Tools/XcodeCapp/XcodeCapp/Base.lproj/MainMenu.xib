@@ -350,6 +350,7 @@
                     </menu>
                 </menuItem>
             </items>
+            <point key="canvasLocation" x="-225" y="-276"/>
         </menu>
         <window title="XcodeCapp" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" frameAutosaveName="main-window" animationBehavior="default" id="QvC-M9-y7g">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
@@ -713,39 +714,30 @@
         </window>
         <window title="About" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" restorable="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" id="EMp-Db-uhU" customClass="NSPanel">
             <windowStyleMask key="styleMask" titled="YES" closable="YES"/>
-            <rect key="contentRect" x="196" y="240" width="296" height="191"/>
+            <rect key="contentRect" x="196" y="240" width="324" height="200"/>
             <rect key="screenRect" x="0.0" y="0.0" width="1440" height="877"/>
             <view key="contentView" id="dj4-iP-S2b">
-                <rect key="frame" x="0.0" y="0.0" width="296" height="191"/>
+                <rect key="frame" x="0.0" y="0.0" width="324" height="200"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="3j4-r5-Ybe">
-                        <rect key="frame" x="74" y="64" width="149" height="17"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="88" y="73" width="149" height="17"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="XcodeCapp" id="qvL-bN-A9R">
                             <font key="font" metaFont="systemBold" size="15"/>
                             <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
-                    <textField verticalHuggingPriority="750" id="IH1-cn-Xc9">
-                        <rect key="frame" x="18" y="20" width="260" height="14"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="Copyright © 2012-2016 Cappuccino Project." id="8lT-Ky-ecV">
-                            <font key="font" metaFont="smallSystem"/>
-                            <color key="textColor" white="0.5" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
-                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                        </textFieldCell>
-                    </textField>
                     <imageView id="Q2t-aL-TDg">
-                        <rect key="frame" x="107" y="89" width="82" height="82"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <rect key="frame" x="121" y="98" width="82" height="82"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                         <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="logo" id="zF2-py-kAi"/>
                     </imageView>
                     <textField verticalHuggingPriority="750" id="vIx-Hh-v8Z">
-                        <rect key="frame" x="108" y="42" width="81" height="14"/>
+                        <rect key="frame" x="18" y="51" width="288" height="14"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
-                        <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="Version 4.0" id="WUW-Ut-m7V">
+                        <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="Value from Info.plist displayed using bindings" id="WUW-Ut-m7V">
                             <font key="font" metaFont="smallSystem"/>
                             <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -754,9 +746,21 @@
                             <binding destination="Voe-Tx-rLC" name="value" keyPath="self.version" id="Nfs-HY-nea"/>
                         </connections>
                     </textField>
+                    <textField verticalHuggingPriority="750" textCompletion="NO" id="IH1-cn-Xc9">
+                        <rect key="frame" x="18" y="0.0" width="292" height="43"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" controlSize="small" allowsUndo="NO" sendsActionOnEndEditing="YES" alignment="center" title="Set in Info.plist, displayed using bindings" id="8lT-Ky-ecV">
+                            <font key="font" metaFont="smallSystem"/>
+                            <color key="textColor" white="0.5" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                        <connections>
+                            <binding destination="Voe-Tx-rLC" name="value" keyPath="self.copyright" id="cHX-2a-APu"/>
+                        </connections>
+                    </textField>
                 </subviews>
             </view>
-            <point key="canvasLocation" x="-218" y="94.5"/>
+            <point key="canvasLocation" x="-304" y="-20"/>
         </window>
         <userDefaultsController representsSharedInstance="YES" id="GHK-nR-IEq" userLabel="User Defaults Controller"/>
         <window title="XcodeCapp Preferences" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" frameAutosaveName="xcc-prefs" animationBehavior="default" id="ekp-cc-W2F">
@@ -826,7 +830,7 @@
                     </textField>
                 </subviews>
             </view>
-            <point key="canvasLocation" x="-156.5" y="-126"/>
+            <point key="canvasLocation" x="136" y="-20"/>
         </window>
         <box boxType="custom" borderType="line" borderWidth="0.0" title="Box" titlePosition="noTitle" id="fYW-ua-i1m">
             <rect key="frame" x="0.0" y="0.0" width="271" height="313"/>
