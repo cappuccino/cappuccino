@@ -44,7 +44,7 @@ var IEFlashCLSID = "clsid:D27CDB6E-AE6D-11cf-96B8-444553540000";
 - (id)initWithFrame:(CGRect)aFrame
 {
 
-    CPLog.warn("CPFlashView is not supported by Cappuccino, this is now deprecated and it will be removed in the version 1.1 of Cappuccino");
+    CPLog.warn("CPFlashView is deprecated and it will be removed in version 1.1.");
 
     self = [super initWithFrame:aFrame];
 
