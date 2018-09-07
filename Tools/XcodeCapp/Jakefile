@@ -51,7 +51,7 @@ task ("build", function()
         if (FILE.isLink(installPath))
             FILE.remove(installPath);
 
-		if (!OS.system("xcodebuild install"))
+		if (OS.system("xcodebuild install"))
             colorPrint("Unable to build XcodeCapp. Skipping", "orange");
     }
     else
