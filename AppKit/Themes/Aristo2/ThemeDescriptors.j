@@ -2104,7 +2104,6 @@ var themedButtonValues = nil,
             [@"sort-image-reversed",                    sortImageReversed],
             [@"image-generic-file",                     imageGenericFile],
             [@"default-row-height",                     25.0],
-            [@"header-view-height",                     25.0],
 
             [@"dropview-on-background-color",           [CPColor colorWithRed:72 / 255 green:134 / 255 blue:202 / 255 alpha:0.25]],
             [@"dropview-on-border-color",               [CPColor colorWithHexString:@"4886ca"]],

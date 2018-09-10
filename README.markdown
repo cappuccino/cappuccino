@@ -3,18 +3,12 @@
 Welcome to Cappuccino!
 ======================
 
-Special event
--------------
-Release 1.0 is scheduled for [CappCon 2018 on September 4, 2018 at Université de Liège in Belgium](https://www.meetup.com/de-DE/CappCon/events/248886408).
-
 Introduction
 ------------
 Cappuccino is an open source framework that makes it easy to build
 desktop-caliber applications that run in a web browser.
 
-
-With Cappuccino, you don't concern yourself
-with HTML, CSS, or the DOM. You rather write applications with the APIs from Apple's Cocoa frameworks and the Objective-J language.
+With Cappuccino, you don't concern yourself with HTML, CSS, or the DOM. You  write applications with the APIs from Apple's Cocoa frameworks and the Objective-J language.
 
 Check out a [live demo of the widgets in Cappuccino](https://cappuccino-testbook.5apps.com/#ThemeKitchenSink)
 
@@ -44,7 +38,7 @@ Getting Started
 ---------------
 To write you first application, [download the starter package](http://www.cappuccino-project.org/#download).
 
-To contribute to Cappuccino, please read here: [Getting and Building the Source](<http://wiki.github.com/cappuccino/cappuccino/getting-and-building-the-source>).
+To contribute to Cappuccino, please read here: [Getting and Building the Source](http://wiki.github.com/cappuccino/cappuccino/getting-and-building-the-source).
 
 License
 -------
