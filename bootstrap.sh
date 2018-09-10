@@ -313,7 +313,7 @@ if [ "$install_cappuccino" ]; then
         echo "Cloning Cappuccino base from \"$git_repo\"..."
         git clone "$git_repo" "$install_directory"
         (cd "$install_directory" && git checkout "origin/$github_ref")
-    elif [ -n "local_base" ]; then
+    elif [ -n "$local_base" ]; then
         echo "rsyncing local copy of the base distribution from $local_base to $install_directory"
 
         quiet_arg=""
