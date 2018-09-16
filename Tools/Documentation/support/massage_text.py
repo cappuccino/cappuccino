@@ -28,10 +28,15 @@ transforms = [
 html = glob.glob(os.path.join(sys.argv[1], "*.html"))
 
 for count, filename in enumerate(html):
-    f = open(filename, "r+")
-    text = f.read()
+    try:
+        # For some reason we get some UTF errors in the output HTML. Ignoring them should be fine.
+        f = open(filename, "r+", encoding='UTF-8', errors='ignore')
+        text = f.read()
+    except:
+        print("Failed to read %s." % filename)
+        raise
+        
     i = 0
-
     while i < len(transforms):
         text = transforms[i].sub(transforms[i + 1], text)
         i += 2
