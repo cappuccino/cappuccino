@@ -5,6 +5,9 @@
 # $1 Cappuccino documentation directory
 
 
+Encoding.default_external = 'UTF-8'
+
+
 ACCESSOR_GET_TEMPLATE = <<EOS
 /*!
 Synthesized accessor method.
@@ -39,7 +42,7 @@ DUMMY_IVAR = "    id __doxygen__;"
 
 def makeHeaderFileFrom(fileName)
     # Grab the entire file (text)
-    sourceFile = File.new(fileName, "r")
+    sourceFile = File.new(fileName, "r", :encoding => 'UTF-8')
     source = sourceFile.read
     sourceFile.close()
 
@@ -51,7 +54,7 @@ def makeHeaderFileFrom(fileName)
     source.gsub!(/^\s*(@implementation \s*\w+(?:\s*:\s*\w+)?)\n(\s*[^{])/, "\\1\n{\n#{DUMMY_IVAR}\n}\n\\2")
     source.gsub!(/^\s*(@implementation \s*\w+(?:\s*:\s*\w+)?)\n\s*\{\s*\}/, "\\1\n{\n#{DUMMY_IVAR}\n}")
 
-    sourceFile = File.new(fileName, "w")
+    sourceFile = File.new(fileName, "w", :encoding => 'UTF-8')
 
     # Remove @accessor declarations from ivars before writing the source file
     sourceFile.write(source.gsub(/(\s*\w+\s+\w+)\s+@accessors(\(.+?\))?;/m, "\\1;"))

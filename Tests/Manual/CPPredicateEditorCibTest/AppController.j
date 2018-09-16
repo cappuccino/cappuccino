@@ -7,7 +7,7 @@
  */
 
 @import <AppKit/CPScrollView.j>
-@import "Predicatetransformer.j"
+@import "PredicateTransformer.j"
 
 @implementation AppController : CPObject
 {

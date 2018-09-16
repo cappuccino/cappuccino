@@ -2183,21 +2183,32 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 @end
 
 @implementation CPTextField (CPTrackingArea)
+{
+    CPTrackingArea      _textFieldTrackingArea;
+}
 
 - (void)updateTrackingAreas
 {
-    [self removeAllTrackingAreas];
+    if (_textFieldTrackingArea)
+    {
+        [self removeTrackingArea:_textFieldTrackingArea];
+        _textFieldTrackingArea = nil;
+    }
 
     if ([self isEnabled] && (_isEditable || _isSelectable))
     {
         var myBounds     = CGRectMakeCopy([self bounds]),
             contentInset = [self currentValueForThemeAttribute:@"content-inset"];
+        
+        _textFieldTrackingArea = [[CPTrackingArea alloc] initWithRect:CGRectInsetByInset(myBounds, contentInset)
+                                                              options:CPTrackingCursorUpdate | CPTrackingActiveInKeyWindow
+                                                                owner:self
+                                                             userInfo:nil];
 
-        [self addTrackingArea:[[CPTrackingArea alloc] initWithRect:CGRectInsetByInset(myBounds, contentInset)
-                                                       options:CPTrackingMouseEnteredAndExited | CPTrackingCursorUpdate | CPTrackingActiveInKeyWindow
-                                                         owner:self
-                                                      userInfo:nil]];
+        [self addTrackingArea:_textFieldTrackingArea];
     }
+    
+    [super updateTrackingAreas];
 }
 
 - (void)cursorUpdate:(CPEvent)anEvent
@@ -2206,3 +2217,22 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 }
 
 @end
+
+#pragma mark -
+
+@implementation CPTextField (TableDataView)
+
+// We overide here _CPObject+Theme setValue:forThemeAttribute as CPTextField can be used as tableView data view
+// So, when outside a table data view, setValue:forThemeAttribute should store the value with the CPThemeStateNormal (default behavior)
+// When inside a table data view, it should store the value with the CPThemeStateTableDataView. If not, the value won't be used if the
+// theme defined a value for this attribute for state CPThemeStateTableDataView
+
+- (void)setValue:(id)aValue forThemeAttribute:(CPString)aName
+{
+    [super setValue:aValue forThemeAttribute:aName];
+    [super setValue:aValue forThemeAttribute:aName inState:CPThemeStateTableDataView];
+}
+
+@end
+
+
