@@ -450,12 +450,20 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     var shouldUseSmartPasting = [self _shouldUseSmartPasting];
 
-    if (shouldUseSmartPasting && _selectionRange.location > 0)
+    if (shouldUseSmartPasting)
     {
-        if (!_isWhitespaceCharacter([[_textStorage string] characterAtIndex:_selectionRange.location - 1]) &&
-            _selectionRange.location != [_layoutManager numberOfCharacters])
+        if (_isWhitespaceCharacter([[stringForPasting string] characterAtIndex:0]))
         {
-            [self insertText:" "];
+            if (_selectionRange.location == 0 ||
+                _isWhitespaceCharacter([[_textStorage string] characterAtIndex:_selectionRange.location - 1]) &&
+                _selectionRange.location != [_layoutManager numberOfCharacters])
+                [stringForPasting deleteCharactersInRange:CPMakeRange(0, 1)];
+        }
+        else
+        {
+            if (_selectionRange.location > 0 &
+                !_isWhitespaceCharacter([[_textStorage string] characterAtIndex:_selectionRange.location - 1]))
+                [self insertText:" "];
         }
     }
 
