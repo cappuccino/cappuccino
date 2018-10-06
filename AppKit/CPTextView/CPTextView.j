@@ -51,7 +51,7 @@
 - (CPRange)textView:(CPTextView)aTextView willChangeSelectionFromCharacterRange:(CPRange)oldSelectedCharRange toCharacterRange:(CPRange)newSelectedCharRange;
 - (void)textViewDidChangeSelection:(CPNotification)aNotification;
 - (void)textViewDidChangeTypingAttributes:(CPNotification)aNotification;
-- (CPMenu)textView:(CPTextView)view menu:(CPMenu)menu forEvent:(CPEvent)event atIndex:(unsigned)charIndex
+- (CPMenu)textView:(CPTextView)view menu:(CPMenu)menu forEvent:(CPEvent)event atIndex:(unsigned)charIndex;
 
 @end
 
@@ -605,7 +605,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         if ([_delegate respondsToSelector:@selector(textView:shouldChangeTypingAttributes:toAttributes:)])
             _delegateRespondsToSelectorMask |= kDelegateRespondsTo_textView_shouldChangeTypingAttributes_toAttributes;
 
-        if ([_delegate respondsToSelector:@selector(textView:menu:forEvent:atIndex:])
+        if ([_delegate respondsToSelector:@selector(textView:menu:forEvent:atIndex:)])
             _delegateRespondsToSelectorMask |= kDelegateRespondsTo_textView_menu_forEvent_atIndex;
 
         if (_superview)
@@ -1157,7 +1157,7 @@ Sets the selection to a range of characters in response to user action.
      var myMenu = [super menuForEvent:anEvent];
 
      if (_delegateRespondsToSelectorMask & kDelegateRespondsTo_textView_menu_forEvent_atIndex)
-        myMenu = [_delegate textView:self menu:myMenu forEvent:anEventatIndex:_selectionRange.location]);
+        myMenu = [_delegate textView:self menu:myMenu forEvent:anEvent atIndex:_selectionRange.location];
 
      return myMenu;
  }
