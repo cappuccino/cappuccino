@@ -177,10 +177,10 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 {
     var editMenu = [CPMenu new];
 
+    // FIXME I8N
     [editMenu addItemWithTitle:@"Cut" action:@selector(cut:) keyEquivalent:@"x"];
     [editMenu addItemWithTitle:@"Copy" action:@selector(copy:) keyEquivalent:@"c"];
     [editMenu addItemWithTitle:@"Paste" action:@selector(paste:) keyEquivalent:@"v"];
-    [editMenu addItemWithTitle:@"Delete" action:@selector(delete:) keyEquivalent:@""];
 
     return editMenu;
 }
