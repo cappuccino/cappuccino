@@ -182,6 +182,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     [editMenu addItemWithTitle:@"Copy" action:@selector(copy:) keyEquivalent:@"c"];
     [editMenu addItemWithTitle:@"Paste" action:@selector(paste:) keyEquivalent:@"v"];
 
+    [editMenu setAutoenablesItems:NO]
+
     return editMenu;
 }
 
@@ -1155,6 +1157,11 @@ Sets the selection to a range of characters in response to user action.
 - (CPMenu)menuForEvent:(CPEvent)anEvent
  {
      var myMenu = [super menuForEvent:anEvent];
+     if (_selectionRange.length === 0)
+     {
+         [[myMenu itemAtIndex:0] setEnabled:NO];
+         [[myMenu itemAtIndex:1] setEnabled:NO];
+     }
 
      if (_delegateRespondsToSelectorMask & kDelegateRespondsTo_textView_menu_forEvent_atIndex)
         myMenu = [_delegate textView:self menu:myMenu forEvent:anEvent atIndex:_selectionRange.location];
