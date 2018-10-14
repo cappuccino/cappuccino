@@ -1277,7 +1277,7 @@ var _objectsInRange = function(aList, aRange)
     }
 }
 
-- (void)backgroundColorForGlyphAtIndex:(unsigned)index
+- (CPColor)backgroundColorForGlyphAtIndex:(unsigned)index
 {
     var run = _objectWithLocationInRange(_runs, index);
 
