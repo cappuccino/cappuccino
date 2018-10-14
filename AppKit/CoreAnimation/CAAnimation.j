@@ -61,7 +61,7 @@
     Returns \c YES
     @return \c YES
 */
-- (void)shouldArchiveValueForKey:(CPString)aKey
+- (BOOL)shouldArchiveValueForKey:(CPString)aKey
 {
     return YES;
 }
