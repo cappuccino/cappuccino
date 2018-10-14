@@ -1131,7 +1131,7 @@ var _CPMenuBarVisible               = NO,
     }
 }
 
-- (void)_menuWithName:(CPString)aName
+- (CPMenu)_menuWithName:(CPString)aName
 {
     if (aName === _name)
         return self;
