@@ -42,6 +42,7 @@
     self._valueWraps = [cell valueWraps];
     self._autorepeat = [cell autorepeat];
     self._objectValue = [cell objectValue];
+    [self setEnabled:[cell isEnabled]];
 }
 
 @end
