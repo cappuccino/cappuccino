@@ -350,7 +350,7 @@
 
 - (CPFont)font
 {
-    return [CPFont systemFontOfSize:[CPFont systemFontSize]];
+    [CPFont systemFontOfSize:[CPFont systemFontSize]];
 }
 
 - (void)tile
