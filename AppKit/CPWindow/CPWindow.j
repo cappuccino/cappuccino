@@ -1815,7 +1815,7 @@ CPTexturedBackgroundWindowMask
 /*!
     Returns \c YES if the window can be moved.
 */
-- (void)isMovable
+- (BOOL)isMovable
 {
     return _isMovable;
 }
