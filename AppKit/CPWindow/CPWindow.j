@@ -2390,7 +2390,7 @@ CPTexturedBackgroundWindowMask
 /*!
     Returns YES if the window is minimized.
 */
-- (void)isMiniaturized
+- (BOOL)isMiniaturized
 {
     return _isMiniaturized;
 }
