@@ -92,8 +92,15 @@
     [displayButton setAction:@selector(displaySheetWithToolBar:)];
     [[wind contentView] addSubview:displayButton];
 
+    var shadowButton = [[CPButton alloc] initWithFrame:CGRectMake(160, 210, 180, buttonHeight)];
+    [shadowButton setTitle:"Enable Native Shadow"];
+    [shadowButton setTarget:self];
+    [shadowButton setAction:@selector(nativeShadow:)];
+    [[wind contentView] addSubview:shadowButton];
+
     [wind orderFront:self]
 }
+
 
 - (void)displaySheetWithToolBar:(id)sender
 {
