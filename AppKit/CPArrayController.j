@@ -220,17 +220,6 @@
 }
 
 /*!
-    Whether the receiver will always return the multiple values marker when multiple
-    items are selected, even if the items have the same value.
-
-    @return BOOL YES if the receiver always uses the multiple values marker
-*/
-- (BOOL)alwaysUsesMultipleValuesMarker
-{
-    return _alwaysUsesMultipleValuesMarker;
-}
-
-/*!
     Sets whether the receiver should always return the multiple values marker when multiple
     items are selected, even if the items have the same value.
 
