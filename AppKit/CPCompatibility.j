@@ -32,6 +32,7 @@ CPKHTMLBrowserEngine                    = 1 << 2;
 CPOperaBrowserEngine                    = 1 << 3;
 CPWebKitBrowserEngine                   = 1 << 4;  // Safari + Chrome
 CPBlinkBrowserEngine                    = 1 << 5;  // Recent Chrome
+CPEdgeBrowserEngine                     = 1 << 6;
 
 // Operating Systems
 CPMacOperatingSystem                    = 0;
@@ -144,6 +145,28 @@ else if (typeof window !== "undefined" && (window.attachEvent || (!(window.Activ
 
     // IE allows free clipboard access.
     PLATFORM_FEATURES[CPJavaScriptClipboardAccessFeature] = YES;
+}
+
+// Edge
+else if (USER_AGENT.indexOf("Edge/") != -1)
+{
+    PLATFORM_ENGINE |= CPEdgeBrowserEngine;
+
+    PLATFORM_FEATURES[CPCSSRGBAFeature] = YES;
+    PLATFORM_FEATURES[CPHTMLContentEditableFeature] = YES;
+
+    PLATFORM_FEATURES[CPJavaScriptClipboardEventsFeature] = YES;
+    PLATFORM_FEATURES[CPJavaScriptClipboardAccessFeature] = NO;
+    PLATFORM_FEATURES[CPJavaScriptShadowFeature] = YES;
+
+    var versionStart = USER_AGENT.indexOf("Edge/") + "Edge/".length,
+        versionEnd = USER_AGENT.indexOf(" ", versionStart),
+        versionString = USER_AGENT.substring(versionStart, versionEnd),
+        versionDivision = versionString.indexOf('.'),
+        majorVersion = parseInt(versionString.substring(0, versionDivision)),
+        minorVersion = parseInt(versionString.substr(versionDivision + 1));
+
+    PLATFORM_FEATURES[CPJavaScriptRemedialKeySupport] = YES;
 }
 
 // Safari + Chrome (WebKit and Blink)

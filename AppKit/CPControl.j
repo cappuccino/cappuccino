@@ -1057,14 +1057,21 @@ var CPControlBlackColor = [CPColor blackColor];
 @end
 
 @implementation CPControl (CPTrackingArea)
+{
+    CPTrackingArea      _controlTrackingArea;
+}
 
 - (void)updateTrackingAreas
 {
-    [self removeAllTrackingAreas];
-    [self addTrackingArea:[[CPTrackingArea alloc] initWithRect:CGRectMakeZero()
-                                                       options:CPTrackingMouseEnteredAndExited | CPTrackingActiveInKeyWindow | CPTrackingInVisibleRect
-                                                         owner:self
-                                                      userInfo:nil]];
+    if (_controlTrackingArea)
+        [self removeTrackingArea:_controlTrackingArea];
+    
+    _controlTrackingArea = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero()
+                                                        options:CPTrackingMouseEnteredAndExited | CPTrackingActiveInKeyWindow | CPTrackingInVisibleRect
+                                                          owner:self
+                                                       userInfo:nil];
+    [self addTrackingArea:_controlTrackingArea];
+    [super updateTrackingAreas];
 }
 
 @end

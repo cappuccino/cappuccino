@@ -95,6 +95,17 @@
         [unarchiver finishDecoding];
     }
 
+    // CSS Theming
+
+    for (var i = 0, nb = [_themes count], allThemes = [self themeNames], aThemeName, aTheme; i < nb; i++)
+    {
+        aThemeName = allThemes[i];
+        aTheme = [CPTheme themeNamed:aThemeName];
+
+        if ([aTheme isCSSBased])
+            [aTheme setCSSResourcesPath:[aBundle resourcePath]];
+    }
+
     [_loadDelegate blendDidFinishLoading:self];
 }
 

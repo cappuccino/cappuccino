@@ -214,7 +214,7 @@ var transformSizeToHeight = function(start, current)
 
 var CSSStringFromCGAffineTransform = function(anAffineTransform)
 {
-    return "matrix(" + anAffineTransform.a + ", " + anAffineTransform.b + ", " + anAffineTransform.c + ", " + anAffineTransform.d + ", " + anAffineTransform.tx + (CPBrowserIsEngine(CPGeckoBrowserEngine) ? "px, " : ", ") + anAffineTransform.ty + (CPBrowserIsEngine(CPGeckoBrowserEngine) ? "px)" : ")");
+    return [CPString stringWithFormat:@"matrix(%d,%d,%d,%d,%d,%d)", anAffineTransform.a, anAffineTransform.b, anAffineTransform.c, anAffineTransform.d, anAffineTransform.tx, anAffineTransform.ty];
 };
 
 var frameOriginToCSSTransformMatrix = function(start, current)

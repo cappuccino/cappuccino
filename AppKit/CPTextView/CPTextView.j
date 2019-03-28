@@ -1614,7 +1614,7 @@ Sets the selection to a range of characters in response to user action.
     [self didChangeText];
     [_layoutManager _validateLayoutAndGlyphs];
     [self sizeToFit];
-    [self scrollRangeToVisible:CPMakeRange(changedRange.location, 0)]
+    [self scrollRangeToVisible:CPMakeRange(changedRange.location, 0)];
     _stickyXLocation = _caret._rect.origin.x;
 }
 
@@ -1673,6 +1673,8 @@ Sets the selection to a range of characters in response to user action.
 - (void)insertLineBreak:(id)sender
 {
     [self insertText:@"\n"];
+    // make sure that the return key is "swallowed" and the default button not triggered as is the case in cocoa
+    [[self window] _temporarilyDisableKeyEquivalentForDefaultButton];
 }
 
 - (void)insertTab:(id)sender
@@ -2250,7 +2252,8 @@ Sets the selection to a range of characters in response to user action.
                       [[self class] _binderClassForBinding:CPValueBinding],
         theBinding = [binderClass getBinding:CPAttributedStringBinding forObject:self] || [binderClass getBinding:CPValueBinding forObject:self];
 
-    [theBinding reverseSetValueFor:@"objectValue"];
+    if (theBinding && [self isEditable])
+        [theBinding reverseSetValueFor:@"objectValue"];
 }
 
 @end

@@ -103,7 +103,8 @@ var cachedBlackColor,
             @"alternate-selected-control-color":        [CPNull null],
             @"secondary-selected-control-color":        [CPNull null],
             @"selected-text-background-color":          [CPNull null],
-            @"selected-text-inactive-background-color": [CPNull null]
+            @"selected-text-inactive-background-color": [CPNull null],
+            @"css-based":                               NO
         };
 }
 
@@ -876,9 +877,221 @@ url("data:image/png;base64,BASE64ENCODEDDATA")  // if there is a pattern image
 
 @end
 
+#pragma mark -
+#pragma mark CSS Theming
+
+// The code below adds support for CSS theming with 100% compatibility with current theming system.
+// The idea is to extend CPColor (and CPImage) with CSS components and adapt low level UI components to
+// support this new kind of CPColor/CPImage. See CPImageView, CPView and _CPImageAndTextView.
+//
+// To create a CPColor that uses CSS, simply use the new class method :
+// + (CPColor)colorWithCSSDictionary:(CPDictionary)aDictionary beforeDictionary:(CPDictionary)beforeDictionary afterDictionary:(CPDictionary)afterDictionary
+// where beforeDictionary & afterDictionary are related to ::before & ::after pseudo-elements.
+// If you don't need them, just use the simplified class method :
+// + (CPColor)colorWithCSSDictionary:(CPDictionary)aDictionary
+//
+// Example :
+// buttonCssColor = [CPColor colorWithCSSDictionary:@{
+//                                                    @"background-color": A3ColorBackgroundWhite,
+//                                                    @"border-color": A3ColorActiveBorder,
+//                                                    @"border-style": @"solid",
+//                                                    @"border-width": @"1px",
+//                                                    @"border-radius": @"3px",
+//                                                    @"box-sizing": @"border-box"
+//                                                    }
+//                                 beforeDictionary:@{
+//                                                    @"background-color": @"rgb(225,225,225)",
+//                                                    @"bottom": @"3px",
+//                                                    @"content": @"''",
+//                                                    @"position": @"absolute",
+//                                                    @"right": @"21px",
+//                                                    @"top": @"3px",
+//                                                    @"width": @"1px"
+//                                                    }
+//                                  afterDictionary:@{
+//                                                    @"content": @"''",
+//                                                    @"bottom": @"3px",
+//                                                    @"right": @"6px",
+//                                                    @"top": @"1px",
+//                                                    @"position": @"absolute",
+//                                                    @"height": @"14px",
+//                                                    @"width": @"9px",
+//                                                    @"margin": @"2px 0px 2px 0px",
+//                                                    @"background-image": @"url(%%packed.png)",
+//                                                    @"background-position": @"0px -64px",
+//                                                    @"background-repeat": @"no-repeat",
+//                                                    @"background-size": @"100px 400px"
+//                                                    }];
+//
+// Remark : Please note the special URL of the background image used in this example : url(%%packed.png)
+//          During theme loading, "%%" will be replaced by the path to the theme blend resources folder.
+//          Typically, a CSS theme will use some (rare) images all packed together in a single image resource (see packed.png in Aristo3 theme)
+//
+//          Also, please note that if you don't use one of the CSS components, you can either set it to nil (best solution) or to an empty dictionary, like :
+//          aCssColor = [CPColor colorWithCSSDictionary:@{} beforeDictionary:nil afterDictionary:@{ ... }];
+//
+// You can use -(BOOL)isCSSBased to determine how to cope with it in your code.
+// -(BOOL)hasCSSDictionary, -(BOOL)hasCSSBeforeDictionary and -(BOOL)hasCSSAfterDictionary are convience methods you can use.
+//
+// Remark : -(void)restorePreviousCSSState and -(DOMElement)applyCSSColorForView are meant to be used by low level UI widgets (like CPView) to implement
+//          CSS theme support.
+
+@implementation CPColor (CSSTheming)
+{
+    CPDictionary    _cssDictionary              @accessors(property=cssDictionary);
+    CPDictionary    _cssBeforeDictionary        @accessors(property=cssBeforeDictionary);
+    CPDictionary    _cssAfterDictionary         @accessors(property=cssAfterDictionary);
+}
+
++ (CPColor)colorWithCSSDictionary:(CPDictionary)aDictionary
+{
+    return [[CPColor alloc] _initWithCSSDictionary:aDictionary beforeDictionary:nil afterDictionary:nil];
+}
+
++ (CPColor)colorWithCSSDictionary:(CPDictionary)aDictionary beforeDictionary:(CPDictionary)beforeDictionary afterDictionary:(CPDictionary)afterDictionary
+{
+    return [[CPColor alloc] _initWithCSSDictionary:aDictionary beforeDictionary:beforeDictionary afterDictionary:afterDictionary];
+}
+
+- (id)_initWithCSSDictionary:(CPDictionary)aDictionary beforeDictionary:(CPDictionary)beforeDictionary afterDictionary:(CPDictionary)afterDictionary
+{
+    self = [super init];
+
+    if (self)
+    {
+        _cssDictionary       = aDictionary;
+        _cssBeforeDictionary = beforeDictionary;
+        _cssAfterDictionary  = afterDictionary;
+        _components          = [0.0, 0.0, 0.0, 1.0];
+
+        _theme = [CPTheme defaultTheme];
+        _themeState = CPThemeStateNormal;
+        [self _loadThemeAttributes];
+    }
+
+    return self;
+}
+
+- (BOOL)isCSSBased
+{
+    return !!(_cssDictionary || _cssBeforeDictionary || _cssAfterDictionary);
+}
+
+- (BOOL)hasCSSDictionary
+{
+    return ([_cssDictionary count] > 0);
+}
+
+- (BOOL)hasCSSBeforeDictionary
+{
+    return ([_cssBeforeDictionary count] > 0);
+}
+
+- (BOOL)hasCSSAfterDictionary
+{
+    return ([_cssAfterDictionary count] > 0);
+}
+
+- (void)restorePreviousCSSState:(CPArrayRef)aPreviousStateRef forDOMElement:(DOMElement)aDOMElement
+{
+#if PLATFORM(DOM)
+    var aPreviousState = @deref(aPreviousStateRef);
+
+    for (var i = 0, count = aPreviousState.length; i < count; i++)
+        aDOMElement.style[aPreviousState[i][0]] = aPreviousState[i][1];
+
+    @deref(aPreviousStateRef) = @[];
+#endif
+}
+
+- (DOMElement)applyCSSColorForView:(CPView)aView onDOMElement:(DOMElement)aDOMElement styleNode:(DOMElement)aStyleNode previousState:(CPArrayRef)aPreviousStateRef
+{
+#if PLATFORM(DOM)
+    var aPreviousState = @deref(aPreviousStateRef);
+
+    [_cssDictionary enumerateKeysAndObjectsUsingBlock:function(aKey, anObject, stop)
+     {
+         [aPreviousState addObject:@[aKey, aDOMElement.style[aKey]]];
+         aDOMElement.style[aKey] = anObject;
+     }];
+
+    if ([self hasCSSBeforeDictionary] || [self hasCSSAfterDictionary])
+    {
+        // We need to create a unique class name
+
+        var styleClassName = @".CP" + [aView UID],
+        styleContent = @"";
+
+        if ([self hasCSSBeforeDictionary])
+        {
+            styleContent += styleClassName + @"::before { ";
+
+            [_cssBeforeDictionary enumerateKeysAndObjectsUsingBlock:function(aKey, anObject, stop)
+             {
+                 styleContent += aKey + ": " + anObject + "; ";
+             }];
+
+            styleContent += "} ";
+        }
+
+        if ([self hasCSSAfterDictionary])
+        {
+            styleContent += styleClassName + @"::after { ";
+
+            [_cssAfterDictionary enumerateKeysAndObjectsUsingBlock:function(aKey, anObject, stop)
+             {
+                 styleContent += aKey + ": " + anObject + "; ";
+             }];
+
+            styleContent += "} ";
+        }
+
+        var styleDescription = document.createTextNode(styleContent);
+
+        if (!aStyleNode)
+        {
+            aStyleNode = document.createElement("style");
+
+            aView._DOMElement.insertBefore(aStyleNode, aView._DOMElement.firstChild);
+
+            aStyleNode.appendChild(styleDescription);
+        }
+        else
+        {
+            aStyleNode.replaceChild(styleDescription, aStyleNode.firstChild);
+        }
+
+        [aView setDOMClassName:@"CP"+[aView UID]];
+    }
+    else
+    {
+        // no before/after so remove aStyleNode if existing
+
+        if (aStyleNode)
+        {
+            aView._DOMElement.removeChild(aStyleNode);
+            aStyleNode = nil;
+        }
+    }
+
+    // Return actualised values
+
+    @deref(aPreviousStateRef) = aPreviousState;
+
+    return aStyleNode;
+#endif
+}
+
+@end
+
+#pragma mark -
+
 /// @cond IGNORE
-var CPColorComponentsKey    = @"CPColorComponentsKey",
-    CPColorPatternImageKey  = @"CPColorPatternImageKey";
+var CPColorComponentsKey            = @"CPColorComponentsKey",
+    CPColorPatternImageKey          = @"CPColorPatternImageKey",
+    CPColorCssDictionaryKey         = @"CPColorCssDictionaryKey",
+    CPColorCssBeforeDictionaryKey   = @"CPColorCssBeforeDictionaryKey",
+    CPColorCssAfterDictionaryKey    = @"CPColorCssAfterDictionaryKey";
 /// @endcond
 
 @implementation CPColor (CPCoding)
@@ -891,6 +1104,10 @@ var CPColorComponentsKey    = @"CPColorComponentsKey",
 {
     if ([aCoder containsValueForKey:CPColorPatternImageKey])
         self = [self _initWithPatternImage:[aCoder decodeObjectForKey:CPColorPatternImageKey]];
+    else if ([aCoder containsValueForKey:CPColorCssDictionaryKey])
+        self = [self _initWithCSSDictionary:[aCoder decodeObjectForKey:CPColorCssDictionaryKey]
+                           beforeDictionary:[aCoder decodeObjectForKey:CPColorCssBeforeDictionaryKey]
+                            afterDictionary:[aCoder decodeObjectForKey:CPColorCssAfterDictionaryKey]];
     else
         self = [self _initWithRGBA:[aCoder decodeObjectForKey:CPColorComponentsKey]];
 
@@ -907,6 +1124,12 @@ var CPColorComponentsKey    = @"CPColorComponentsKey",
 {
     if (_patternImage)
         [aCoder encodeObject:_patternImage forKey:CPColorPatternImageKey];
+    else if (_cssDictionary)
+    {
+        [aCoder encodeObject:_cssDictionary       forKey:CPColorCssDictionaryKey];
+        [aCoder encodeObject:_cssBeforeDictionary forKey:CPColorCssBeforeDictionaryKey];
+        [aCoder encodeObject:_cssAfterDictionary  forKey:CPColorCssAfterDictionaryKey];
+    }
     else
         [aCoder encodeObject:_components forKey:CPColorComponentsKey];
 
