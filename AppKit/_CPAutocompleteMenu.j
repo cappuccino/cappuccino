@@ -268,7 +268,7 @@ var _CPAutocompleteMenuMaximumHeight = 307;
     return [contentArray count];
 }
 
-- (id)tableView:(CPTableView)tableView objectValueForTableColumn:(CPTableColumn)tableColumn row:(CPInteger)row
+- (void)tableView:(CPTableView)tableView objectValueForTableColumn:(CPTableColumn)tableColumn row:(CPInteger)row
 {
     return [contentArray objectAtIndex:row];
 }
