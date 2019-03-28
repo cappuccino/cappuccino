@@ -982,7 +982,7 @@ Sets the selection to a range of characters in response to user action.
 
 
 // interface to the _CPNativeInputManager
-- (void)_activateNativeInputElement:(DOMElemet)aNativeField
+- (void)_activateNativeInputElement:(DOMElement)aNativeField
 {
     var attributes = [[self typingAttributes] copy];
 
