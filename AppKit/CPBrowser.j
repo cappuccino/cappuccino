@@ -42,7 +42,6 @@
 - (CPDragOperation)browser:(CPBrowser)browser validateDrop:(id)info proposedRow:(CPInteger)row column:(CPInteger)column dropOperation:(CPTableViewDropOperation)dropOperation;
 - (CPImage)browser:(CPBrowser)browser imageValueForItem:(id)anItem;
 - (CPImage)browser:(CPBrowser)browser draggingImageForRowsWithIndexes:(CPIndexSet)rowIndexes inColumn:(CPInteger)column withEvent:(CPEvent)event offset:(CGPoint)dragImageOffset;
-- (CPImage)browser:(CPBrowser)browser imageValueForItem:(id)item;
 - (CPIndexSet)browser:(CPBrowser)browser selectionIndexesForProposedSelection:(CPIndexSet)proposedSelectionIndexes inColumn:(CPInteger)column;
 - (CPInteger)browser:(CPBrowser)browser numberOfChildrenOfItem:(id)item;
 - (CPView)browser:(CPBrowser)browser draggingViewForRowsWithIndexes:(CPIndexSet)rowIndexes inColumn:(CPInteger)column withEvent:(CPEvent)event offset:(CGPoint)dragImageOffset;
