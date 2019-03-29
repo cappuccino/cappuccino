@@ -668,7 +668,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     [self setString:aValue];
 }
 
-- (void)setString:(id)aString
+- (void)setString:(CPString)aString
 {
     if ([aString isKindOfClass:[CPAttributedString class]])
     {
@@ -1297,7 +1297,7 @@ Sets the selection to a range of characters in response to user action.
     _startTrackingLocation = _selectionRange.location;
 }
 
-- (unsigned)_calculateMoveSelectionFromRange:(CPRange)aRange intoDirection:(integer)move granularity:(CPSelectionGranularity)granularity
+- (unsigned)_calculateMoveSelectionFromRange:(CPRange)aRange intoDirection:(int)move granularity:(CPSelectionGranularity)granularity
 {
     var inWord = [self _isCharacterAtIndex:(move > 0 ? CPMaxRange(aRange) : aRange.location) + move granularity:granularity],
         aSel = [self selectionRangeForProposedRange:CPMakeRange((move > 0 ? CPMaxRange(aRange) : aRange.location) + move, 0) granularity:granularity],
@@ -1306,7 +1306,7 @@ Sets the selection to a range of characters in response to user action.
     return move > 0 ? CPMaxRange(inWord? aSel:bSel) : (inWord? aSel:bSel).location;
 }
 
-- (void)_moveSelectionIntoDirection:(integer)move granularity:(CPSelectionGranularity)granularity
+- (void)_moveSelectionIntoDirection:(int)move granularity:(CPSelectionGranularity)granularity
 {
     var pos = [self _calculateMoveSelectionFromRange:_selectionRange intoDirection:move granularity:granularity];
 
@@ -1314,7 +1314,7 @@ Sets the selection to a range of characters in response to user action.
     _startTrackingLocation = _selectionRange.location;
 }
 
-- (void)_extendSelectionIntoDirection:(integer)move granularity:(CPSelectionGranularity)granularity
+- (void)_extendSelectionIntoDirection:(int)move granularity:(CPSelectionGranularity)granularity
 {
     var aSel = CPMakeRangeCopy(_selectionRange);
 
@@ -2523,7 +2523,7 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
     _caretTimer = [CPTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(_blinkCaret:) userInfo:nil repeats:YES];
 }
 
-- (void)isBlinking
+- (BOOL)isBlinking
 {
     return [_caretTimer isValid];
 }
