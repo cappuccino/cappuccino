@@ -2152,7 +2152,7 @@ var themedButtonValues = nil,
     [segmentedControl setTag:3 forSegment:2];
 
     return segmentedControl;
-};
+}
 
 + (CPSegmentedControl)themedSegmentedControl
 {
