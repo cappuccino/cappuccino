@@ -330,7 +330,7 @@ var hasEditableTarget = function(aDOMEvent)
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 }
 
-- (boolean)beforePasteEvent:(DOMEvent)aDOMEvent
+- (BOOL)beforePasteEvent:(DOMEvent)aDOMEvent
 {
     // Set up to capture the paste in a temporary input field. We'll send the event after capture.
     if ([self _mayRequireDOMPasteboardElementHack:aDOMEvent flags:CPPlatformActionKeyMask])
@@ -348,7 +348,7 @@ var hasEditableTarget = function(aDOMEvent)
 /*
 Return true if the event may be a copy and paste event, but the target is not an input or text area.
 */
-- (void)_mayRequireDOMPasteboardElementHack:(DOMEvent)aDOMEvent flags:(unsigned)modifierFlags
+- (BOOL)_mayRequireDOMPasteboardElementHack:(DOMEvent)aDOMEvent flags:(unsigned)modifierFlags
 {
     return !hasEditableTarget(aDOMEvent) && (modifierFlags & CPPlatformActionKeyMask);
 }
@@ -407,7 +407,7 @@ Return true if the event may be a copy and paste event, but the target is not an
     _DOMPasteboardElement.blur();
 }
 
-- (boolean)nativeBeforeClipboardEvent:(DOMEvent)aDOMEvent
+- (BOOL)nativeBeforeClipboardEvent:(DOMEvent)aDOMEvent
 {
     // Our job here is to return "false" if the given clipboard operation should be enabled even in a situation where
     // the browser might normally grey the option out.
@@ -437,7 +437,7 @@ Return true if the event may be a copy and paste event, but the target is not an
     return returnValue;
 }
 
-- (boolean)nativePasteEvent:(DOMEvent)aDOMEvent
+- (BOOL)nativePasteEvent:(DOMEvent)aDOMEvent
 {
     // This shouldn't happen.
     if (!supportsNativeCopyAndPaste)
@@ -481,7 +481,7 @@ Return true if the event may be a copy and paste event, but the target is not an
     return false;
 }
 
-- (boolean)nativeCopyOrCutEvent:(DOMEvent)aDOMEvent
+- (BOOL)nativeCopyOrCutEvent:(DOMEvent)aDOMEvent
 {
     // This shouldn't happen.
     if (!supportsNativeCopyAndPaste)
