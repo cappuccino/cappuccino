@@ -37,6 +37,7 @@
 
 
 @class CPClipView;
+@class CPMenu;
 @class _CPSelectionBox;
 @class _CPCaret;
 @class _CPNativeInputManager;
@@ -50,6 +51,7 @@
 - (CPRange)textView:(CPTextView)aTextView willChangeSelectionFromCharacterRange:(CPRange)oldSelectedCharRange toCharacterRange:(CPRange)newSelectedCharRange;
 - (void)textViewDidChangeSelection:(CPNotification)aNotification;
 - (void)textViewDidChangeTypingAttributes:(CPNotification)aNotification;
+- (CPMenu)textView:(CPTextView)view menu:(CPMenu)menu forEvent:(CPEvent)event atIndex:(unsigned)charIndex;
 
 @end
 
@@ -105,6 +107,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     kDelegateRespondsTo_textView_didChangeTypingAttributes                              = 1 << 8,
     kDelegateRespondsTo_textView_textDidBeginEditing                                    = 1 << 9,
     kDelegateRespondsTo_textView_textDidEndEditing                                      = 1 << 10;
+    kDelegateRespondsTo_textView_menu_forEvent_atIndex                                  = 1 << 11;
 
 @class _CPCaret;
 
@@ -168,6 +171,20 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         return [_CPTextViewValueBinder class];
 
     return [super _binderClassForBinding:aBinding];
+}
+
++ (CPMenu)defaultMenu
+{
+    var editMenu = [CPMenu new];
+
+    // FIXME I8N
+    [editMenu addItemWithTitle:@"Cut" action:@selector(cut:) keyEquivalent:@"x"];
+    [editMenu addItemWithTitle:@"Copy" action:@selector(copy:) keyEquivalent:@"c"];
+    [editMenu addItemWithTitle:@"Paste" action:@selector(paste:) keyEquivalent:@"v"];
+
+    [editMenu setAutoenablesItems:NO]
+
+    return editMenu;
 }
 
 #pragma mark -
@@ -589,6 +606,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
         if ([_delegate respondsToSelector:@selector(textView:shouldChangeTypingAttributes:toAttributes:)])
             _delegateRespondsToSelectorMask |= kDelegateRespondsTo_textView_shouldChangeTypingAttributes_toAttributes;
+
+        if ([_delegate respondsToSelector:@selector(textView:menu:forEvent:atIndex:)])
+            _delegateRespondsToSelectorMask |= kDelegateRespondsTo_textView_menu_forEvent_atIndex;
 
         if (_superview)
             [self _addDelegateObservers];
@@ -1133,6 +1153,21 @@ Sets the selection to a range of characters in response to user action.
     _mouseDownOldSelection = _selectionRange;
     [self setSelectedRange:setRange affinity:0 stillSelecting:YES];
 }
+
+- (CPMenu)menuForEvent:(CPEvent)anEvent
+ {
+     var myMenu = [super menuForEvent:anEvent];
+     if (_selectionRange.length === 0)
+     {
+         [[myMenu itemAtIndex:0] setEnabled:NO];
+         [[myMenu itemAtIndex:1] setEnabled:NO];
+     }
+
+     if (_delegateRespondsToSelectorMask & kDelegateRespondsTo_textView_menu_forEvent_atIndex)
+        myMenu = [_delegate textView:self menu:myMenu forEvent:anEvent atIndex:_selectionRange.location];
+
+     return myMenu;
+ }
 
 - (void)_supportScrolling:(CPTimer)aTimer
 {
