@@ -803,7 +803,7 @@ var CPControlBlackColor = [CPColor blackColor];
     CPBottomVerticalTextAlignment
     </pre>
 */
-- (void)setVerticalAlignment:(CPTextVerticalAlignment)alignment
+- (void)setVerticalAlignment:(CPVerticalTextAlignment)alignment
 {
     [self setValue:alignment forThemeAttribute:@"vertical-alignment"];
 }
