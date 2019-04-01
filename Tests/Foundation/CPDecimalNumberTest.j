@@ -291,6 +291,7 @@
 
     // underflow  , if dcnm2 is < 10 this is LossOfPrecision, is this correct? check vs cocoa.
     dcmn1 = [CPDecimalNumber decimalNumberWithString:@"-1e-128"];
+    dcmn1._raiseOnExactness = YES;
     dcmn2 = [CPDecimalNumber decimalNumberWithString:@"10"];
 
     try
