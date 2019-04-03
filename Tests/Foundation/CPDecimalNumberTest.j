@@ -291,12 +291,16 @@
 
     // underflow  , if dcnm2 is < 10 this is LossOfPrecision, is this correct? check vs cocoa.
     dcmn1 = [CPDecimalNumber decimalNumberWithString:@"-1e-128"];
-    dcmn1._raiseOnExactness = YES;
     dcmn2 = [CPDecimalNumber decimalNumberWithString:@"10"];
 
     try
     {
-        dcmn3 = [dcmn1 decimalNumberByDividingBy:dcmn2];
+        dcmn3 = [dcmn1 decimalNumberByDividingBy:dcmn2
+                                    withBehavior:[CPDecimalNumberHandler decimalNumberHandlerWithRoundingMode:CPRoundPlain scale:0
+                                                                                             raiseOnExactness:YES
+                                                                                              raiseOnOverflow:YES
+                                                                                             raiseOnUnderflow:YES
+                                                                                          raiseOnDivideByZero:YES]];
         [self fail:"decimalNumberByDividingBy: TEX3 - should have thrown underflow error "];
     }
     catch (e)
