@@ -108,7 +108,7 @@
     return [_textField text];
 }
 
-- (void)textField
+- (CPTextField)textField
 {
     return _textField;
 }
