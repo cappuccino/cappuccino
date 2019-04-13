@@ -700,16 +700,40 @@ CPButtonImageOffset   = 3.0;
 
 - (void)layoutSubviews
 {
-    var bezelView = [self layoutEphemeralSubviewNamed:@"bezel-view"
-                                           positioned:CPWindowBelow
-                      relativeToEphemeralSubviewNamed:@"content-view"];
+    var bezelColor = [self currentValueForThemeAttribute:@"bezel-color"];
 
-    [bezelView setBackgroundColor:[self currentValueForThemeAttribute:@"bezel-color"]];
+    if ([bezelColor isCSSBased])
+    {
+        // CSS Styling
+        // We don't need bezelView as we apply CSS styling directly on the button view itself
+        
+        [self setBackgroundColor:bezelColor];
 
-    var contentView = [self layoutEphemeralSubviewNamed:@"content-view"
-                                             positioned:CPWindowAbove
-                        relativeToEphemeralSubviewNamed:@"bezel-view"];
+        var contentView = [self layoutEphemeralSubviewNamed:@"content-view"
+                                                 positioned:CPWindowAbove
+                            relativeToEphemeralSubviewNamed:nil];
+    }
+    else if (bezelColor)
+    {
+        var bezelView = [self layoutEphemeralSubviewNamed:@"bezel-view"
+                                               positioned:CPWindowBelow
+                          relativeToEphemeralSubviewNamed:@"content-view"];
+        
+        [bezelView setBackgroundColor:bezelColor];
 
+        var contentView = [self layoutEphemeralSubviewNamed:@"content-view"
+                                                 positioned:CPWindowAbove
+                            relativeToEphemeralSubviewNamed:@"bezel-view"];
+    }
+    else
+    {
+        // As we have no bezelColor, we only need a contentView
+        
+        var contentView = [self layoutEphemeralSubviewNamed:@"content-view"
+                                                 positioned:CPWindowAbove
+                            relativeToEphemeralSubviewNamed:nil];
+    }
+    
     if (contentView)
     {
         var title = nil,
