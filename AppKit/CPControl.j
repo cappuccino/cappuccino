@@ -196,6 +196,8 @@ var CPControlBlackColor = [CPColor blackColor];
     {
         _sendActionOn           = CPLeftMouseUpMask;
         _trackingMouseDownFlags = 0;
+        
+        [self updateTrackingAreas];
     }
 
     return self;
