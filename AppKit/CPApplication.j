@@ -479,7 +479,7 @@ var CPApplicationDelegate_applicationShouldTerminate_           = 1 << 0,
     [self _didResignActive];
 }
 
-- (void)isActive
+- (BOOL)isActive
 {
     return _isActive;
 }

@@ -31,7 +31,7 @@ var _CPCibClassSwapperClassNameKey          = @"_CPCibClassSwapperClassNameKey",
 {
 }
 
-+ (void)allocObjectWithCoder:(CPCoder)aCoder className:(CPString)aClassName
++ (id)allocObjectWithCoder:(CPCoder)aCoder className:(CPString)aClassName
 {
     // FIXME: Also check class classForClassName:
     var theClass = [aCoder classForClassName:aClassName];

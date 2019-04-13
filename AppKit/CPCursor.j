@@ -193,9 +193,8 @@ CPCursorPlatformBoth    = 3;
     if (typeof cursor === "undefined")
     {
         var themeResourcePath = [[[CPApp themeBlend] bundle] resourcePath],
-            extension = CPBrowserIsOperatingSystem(CPWindowsOperatingSystem) ? @"cur" : @"png";
-
-        cssString = [CPString stringWithFormat:@"url(%@cursors/%@.%@), %@", themeResourcePath, cursorName, extension, aString];
+            extension = CPBrowserIsOperatingSystem(CPWindowsOperatingSystem) ? @"cur" : @"png",
+            cssString = [CPString stringWithFormat:@"url(%@cursors/%@.%@), %@", themeResourcePath, cursorName, extension, aString];
 
         cursors[cursorName] = cursor = [[CPCursor alloc] initWithCSSString:cssString];
     }

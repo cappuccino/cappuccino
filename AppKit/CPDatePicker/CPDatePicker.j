@@ -695,7 +695,7 @@ var CPDatePickerModeKey         = @"CPDatePickerModeKey",
     [aCoder encodeInt:_datePickerElements forKey:CPDatePickerElementsKey];
     [aCoder encodeObject:_minDate forKey:CPMinDateKey];
     [aCoder encodeObject:_maxDate forKey:CPMaxDateKey];
-    [aCoder encodeObject:_dateValue forKey:CPDateValueKey];;
+    [aCoder encodeObject:_dateValue forKey:CPDateValueKey];
     [aCoder encodeObject:_textFont forKey:CPTextFontKey];
     [aCoder encodeObject:_locale forKey:CPLocaleKey];
     [aCoder encodeObject:_backgroundColor forKey:CPBackgroundColorKey];

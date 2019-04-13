@@ -208,7 +208,7 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
 /*!
     Returns the scroller's style
 */
-- (void)style
+- (int)style
 {
     return _style;
 }

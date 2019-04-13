@@ -1815,7 +1815,7 @@ CPTexturedBackgroundWindowMask
 /*!
     Returns \c YES if the window can be moved.
 */
-- (void)isMovable
+- (BOOL)isMovable
 {
     return _isMovable;
 }
@@ -2390,7 +2390,7 @@ CPTexturedBackgroundWindowMask
 /*!
     Returns YES if the window is minimized.
 */
-- (void)isMiniaturized
+- (BOOL)isMiniaturized
 {
     return _isMiniaturized;
 }

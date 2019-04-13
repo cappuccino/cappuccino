@@ -122,7 +122,7 @@ var CPTextStorageDelegate_textStorageWillProcessEditing_ = 1 << 1,
 - (void)addLayoutManager:(CPLayoutManager)aManager
 {
     if ([_layoutManagers containsObject:aManager])
-        return
+        return;
 
     [aManager setTextStorage:self];
     [_layoutManagers addObject:aManager];
@@ -131,7 +131,7 @@ var CPTextStorageDelegate_textStorageWillProcessEditing_ = 1 << 1,
 - (void)removeLayoutManager:(CPLayoutManager)aManager
 {
     if (![_layoutManagers containsObject:aManager])
-        return
+        return;
 
     [aManager setTextStorage:nil];
     [_layoutManagers removeObject:aManager];

@@ -378,7 +378,7 @@
     _viewControllerContainerView = aView;
 }
 
-- (void)viewControllerContainerView
+- (CPView)viewControllerContainerView
 {
     return _viewControllerContainerView;
 }
