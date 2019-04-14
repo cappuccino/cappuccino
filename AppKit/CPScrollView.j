@@ -162,7 +162,15 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
 {
     return @{
             @"bottom-corner-color": [CPColor whiteColor],
-            @"border-color": [CPColor blackColor]
+            @"border-color": [CPColor blackColor],
+            @"content-inset-no-border":     CGInsetMake(0, 0, 0, 0),
+            @"content-inset-line-border":   CGInsetMake(1, 1, 1, 1),
+            @"content-inset-bezel-border":  CGInsetMake(1, 1, 1, 1),
+            @"content-inset-groove-border": CGInsetMake(2, 2, 2, 2),
+            @"background-color-no-border":     [CPNull null],
+            @"background-color-line-border":   [CPNull null],
+            @"background-color-bezel-border":  [CPNull null],
+            @"background-color-groove-border": [CPNull null]
         };
 }
 
