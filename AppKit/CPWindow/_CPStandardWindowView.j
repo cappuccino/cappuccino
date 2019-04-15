@@ -123,6 +123,8 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
             @"close-image-highlighted-button": [CPNull null],
             @"unsaved-image-button": [CPNull null],
             @"unsaved-image-highlighted-button": [CPNull null],
+            @"zoom-image-button": [CPNull null],
+            @"zoom-image-highlighted-button": [CPNull null]
         };
 }
 
