@@ -190,35 +190,6 @@ CPRemoveTraitFontAction = 7;
     return ([aFont isBold] ? CPBoldFontMask : 0) | ([aFont isItalic] ? CPItalicFontMask : 0);
 }
 
-- (CPFont)convertFont:(CPFont)aFont
-{
-    if (!_activeChange)
-        return aFont;
-
-    var addTraits = [_activeChange valueForKey:@"addTraits"];
-
-    if (addTraits)
-        aFont = [self convertFont:aFont toHaveTrait:addTraits];
-
-    return aFont;
-}
-
-- (CPFont)convertFont:(CPFont)aFont toHaveTrait:(CPFontTraitMask)addTraits
-{
-    if (!aFont)
-        return nil;
-
-    var shouldBeBold = ([aFont isBold] || (addTraits & CPBoldFontMask)) && !(addTraits & CPUnboldFontMask),
-        shouldBeItalic = ([aFont isItalic] || (addTraits & CPItalicFontMask)) && !(addTraits & CPUnitalicFontMask),
-        shouldBeSize = [aFont size];
-
-    // XXX On the current platform there will always be a bold/italic version of each font, but still leave
-    // || aFont in here for future platforms.
-    aFont = [CPFont _fontWithName:[aFont familyName] size:shouldBeSize bold:shouldBeBold italic:shouldBeItalic] || aFont;
-
-    return aFont;
-}
-
 - (CPFont)convertFont:(CPFont)aFont toFace:(CPString)aTypeface
 {
     if (!aFont)
@@ -386,6 +357,7 @@ CPRemoveTraitFontAction = 7;
 - (CPFont)convertFont:(CPFont)aFont
 {
     var newFont = nil;
+
     switch (_fontAction)
     {
         case CPNoFontChangeAction:
@@ -398,6 +370,7 @@ CPRemoveTraitFontAction = 7;
 
         case CPAddTraitFontAction:
             newFont = aFont;
+
             if (!_activeChange)
                 break;
 
