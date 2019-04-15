@@ -4135,8 +4135,9 @@ var themedButtonValues = nil,
                                                                          @"z-index": @"300"
                                                                          }];
 
-    [splitView setDividerStyle:CPSplitViewDividerStyleThick];
-    [splitView setArrangesAllSubviews:YES];
+    // FIXME: remettre les 2 lignes suivantes !!!
+//    [splitView setDividerStyle:CPSplitViewDividerStyleThick];
+//    [splitView setArrangesAllSubviews:YES];
 //    [splitView addSubview:leftView];
 //    [splitView addSubview:rightView];
 
