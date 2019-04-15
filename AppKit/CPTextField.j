@@ -169,7 +169,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 + (CPTextField)textFieldWithStringValue:(CPString)aStringValue placeholder:(CPString)aPlaceholder width:(float)aWidth theme:(CPTheme)aTheme
 {
-    var textField = [[self alloc] initWithFrame:CGRectMake(0.0, 0.0, aWidth, 29.0)];
+    var minSize = [aTheme valueForAttributeWithName:@"min-size" forClass:CPTextField],
+        textField = [[self alloc] initWithFrame:CGRectMake(0.0, 0.0, aWidth, minSize)];
 
     [textField setTheme:aTheme];
     [textField setStringValue:aStringValue];
@@ -190,7 +191,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 + (CPTextField)roundedTextFieldWithStringValue:(CPString)aStringValue placeholder:(CPString)aPlaceholder width:(float)aWidth theme:(CPTheme)aTheme
 {
-    var textField = [[CPTextField alloc] initWithFrame:CGRectMake(0.0, 0.0, aWidth, 29.0)];
+    var minSize = [aTheme valueForAttributeWithName:@"min-size" forClass:CPTextField],
+        textField = [[CPTextField alloc] initWithFrame:CGRectMake(0.0, 0.0, aWidth, minSize)];
 
     [textField setTheme:aTheme];
     [textField setStringValue:aStringValue];
@@ -1862,16 +1864,31 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)layoutSubviews
 {
-    var bezelView = [self layoutEphemeralSubviewNamed:@"bezel-view"
-                                           positioned:CPWindowBelow
-                      relativeToEphemeralSubviewNamed:@"content-view"];
-
-    if (bezelView)
-        [bezelView setBackgroundColor:[self currentValueForThemeAttribute:@"bezel-color"]];
-
-    var contentView = [self layoutEphemeralSubviewNamed:@"content-view"
-                                             positioned:CPWindowAbove
-                        relativeToEphemeralSubviewNamed:@"bezel-view"];
+    var bezelColor = [self currentValueForThemeAttribute:@"bezel-color"];
+    
+    if ([bezelColor isCSSBased])
+    {
+        // CSS Styling
+        // We don't need bezelView as we apply CSS styling directly on the text field view itself
+        
+        [self setBackgroundColor:bezelColor];
+        
+        var contentView = [self layoutEphemeralSubviewNamed:@"content-view"
+                                                 positioned:CPWindowAbove
+                            relativeToEphemeralSubviewNamed:nil];
+    }
+    else
+    {
+        var bezelView = [self layoutEphemeralSubviewNamed:@"bezel-view"
+                                               positioned:CPWindowBelow
+                          relativeToEphemeralSubviewNamed:@"content-view"];
+        
+        [bezelView setBackgroundColor:bezelColor];
+        
+        var contentView = [self layoutEphemeralSubviewNamed:@"content-view"
+                                                 positioned:CPWindowAbove
+                            relativeToEphemeralSubviewNamed:@"bezel-view"];
+    }
 
     if (contentView)
     {
