@@ -79,6 +79,20 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
     unsigned                _delegateSelectors;
 }
 
++ (CPString)defaultThemeClass
+{
+    return @"tab-view";
+}
+
++ (CPDictionary)themeAttributes
+{
+    return @{
+             @"nib2cib-adjustment-frame": [CPNull null],
+             @"should-center-on-border": NO,
+             @"box-content-inset": CGInsetMakeZero()
+             };
+}
+
 - (id)initWithFrame:(CGRect)aFrame
 {
     if (self = [super initWithFrame:aFrame])
