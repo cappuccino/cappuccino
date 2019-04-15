@@ -24,6 +24,9 @@
 @import "CPMenu.j"
 @import "CPMenuItem.j"
 @import "CPTextField.j"
+@import "CPAnimationContext.j"
+@import "CPViewAnimator.j"
+@import "CPArrayController.j"
 
 @class CPUserDefaults
 
@@ -74,8 +77,10 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
             @"image-cancel-pressed": [CPNull null],
             @"image-search-inset" : CGInsetMake(0, 0, 0, 5),
             @"image-cancel-inset" : CGInsetMake(0, 5, 0, 0),
-            @"search-menu-offset": CGPointMake(10, -4),
-            @"search-right-margin": 2
+            @"search-button-rect-function": [CPNull null],
+            @"layout-function": [CPNull null],
+            @"search-right-margin": 2,
+            @"search-menu-offset": CGPointMake(10, -4)
         };
 }
 
@@ -273,10 +278,18 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
 */
 - (CGRect)searchButtonRectForBounds:(CGRect)rect
 {
-    var size = [[self currentValueForThemeAttribute:@"image-search"] size] || CGSizeMakeZero(),
-        inset = [self currentValueForThemeAttribute:@"image-search-inset"];
+    var themedRectFunction = [self currentValueForThemeAttribute:@"search-button-rect-function"];
 
-    return CGRectMake(inset.left - inset.right, inset.top - inset.bottom + (CGRectGetHeight(rect) - size.height) / 2, size.width, size.height);
+    if (themedRectFunction)
+        // There's a theme defined positioning function, just use it
+        return objj_eval("("+themedRectFunction+")")(self, rect);
+    else
+    {
+        var size = [[self currentValueForThemeAttribute:@"image-search"] size] || CGSizeMakeZero(),
+            inset = [self currentValueForThemeAttribute:@"image-search-inset"];
+
+        return CGRectMake(inset.left - inset.right, inset.top - inset.bottom + (CGRectGetHeight(rect) - size.height) / 2, size.width, size.height);
+    }
 }
 
 /*!
@@ -393,9 +406,9 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
 */
 - (void)setRecentSearches:(CPArray)searches
 {
-    var max = MIN([self maximumRecents], [searches count]);
+    var max = MIN([self maximumRecents], [searches count]),
+        searches = [searches subarrayWithRange:CPMakeRange(0, max)];
 
-    searches = [searches subarrayWithRange:CPMakeRange(0, max)];
     _recentSearches = searches;
     [self _autosaveRecentSearchList];
 }
@@ -768,6 +781,116 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
 
     if (list !== nil)
         _recentSearches = list;
+}
+
+@end
+
+#pragma mark -
+
+@implementation CPSearchField (ThemingAdditions)
+
+// Overwrite CPTextField method to permit themed layout functions
+
+- (void)layoutSubviews
+{
+    // Search for the CPImageAndTextView subview of mine
+
+    var contentView = nil;
+
+    for (var i = 0, subviews = [self subviews], nb = [subviews count]; (!contentView && (i < nb)); i++)
+        if ([subviews[i] isKindOfClass:_CPImageAndTextView])
+            contentView = subviews[i];
+
+    var bezelColor = [self currentValueForThemeAttribute:@"bezel-color"];
+
+    if ([bezelColor isCSSBased])
+    {
+        // CSS Styling
+        // We don't need bezelView as we apply CSS styling directly on the button view itself
+
+        [self setBackgroundColor:bezelColor];
+
+        if (!contentView)
+            contentView = [self layoutEphemeralSubviewNamed:@"content-view"
+                                                 positioned:CPWindowAbove
+                            relativeToEphemeralSubviewNamed:nil];
+    }
+    else if (!contentView)
+    {
+        var bezelView = [self layoutEphemeralSubviewNamed:@"bezel-view"
+                                               positioned:CPWindowBelow
+                          relativeToEphemeralSubviewNamed:@"content-view"];
+
+        [bezelView setBackgroundColor:bezelColor];
+
+        contentView = [self layoutEphemeralSubviewNamed:@"content-view"
+                                             positioned:CPWindowAbove
+                        relativeToEphemeralSubviewNamed:@"bezel-view"];
+    }
+
+    if (contentView)
+    {
+        [contentView setHidden:(_stringValue && _stringValue.length > 0) && [self hasThemeState:CPThemeStateEditing]];
+
+        [contentView setText:[self hasThemeState:CPTextFieldStatePlaceholder] ? [self placeholderString] : _stringValue];
+        [contentView setTextColor:[self currentValueForThemeAttribute:@"text-color"]];
+        [contentView setFont:[self currentValueForThemeAttribute:@"font"]];
+        [contentView setAlignment:[self currentValueForThemeAttribute:@"alignment"]];
+        [contentView setVerticalAlignment:[self currentValueForThemeAttribute:@"vertical-alignment"]];
+        [contentView setLineBreakMode:[self currentValueForThemeAttribute:@"line-break-mode"]];
+        [contentView setTextShadowColor:[self currentValueForThemeAttribute:@"text-shadow-color"]];
+        [contentView setTextShadowOffset:[self currentValueForThemeAttribute:@"text-shadow-offset"]];
+    }
+
+    if (_isEditing)
+        [self _setCSSStyleForInputElement];
+
+    [self updateSearchButton];
+}
+
+- (void)_layoutSubviews
+{
+    var themedLayoutFunction = [self currentValueForThemeAttribute:@"layout-function"];
+
+    if (themedLayoutFunction)
+        // There's a theme defined layout function, just use it
+        objj_eval("("+themedLayoutFunction+")")(self);
+}
+
+- (void)updateSearchButton
+{
+    [_searchButton setImage:(_searchMenuTemplate ? [self currentValueForThemeAttribute:@"image-find"] : [self currentValueForThemeAttribute:@"image-search"])];
+    [self updateTrackingAreas];
+}
+
+- (void)themedLayoutFunctionCompletionHandler
+{
+    [self updateSearchButton];
+    [self layoutSubviews];
+}
+
+- (void)textDidFocus:(CPNotification)note
+{
+    if ([note object] != self)
+        return;
+
+    [self _layoutSubviews];
+    [super textDidFocus:note];
+}
+
+- (void)textDidEndEditing:(CPNotification)note
+{
+    if ([note object] != self)
+        return;
+
+    [self _layoutSubviews];
+    [super textDidEndEditing:note];
+}
+
+- (void)_windowDidResignKey:(CPNotification)aNotification
+{
+    [super _windowDidResignKey:aNotification];
+    [self _layoutSubviews];
 }
 
 - (void)unbind:(CPString)aBinding
