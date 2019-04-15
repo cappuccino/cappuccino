@@ -106,6 +106,15 @@ _CPWindowViewResizeSlop = 3;
             @"title-alignment": CPCenterTextAlignment,
             @"title-line-break-mode": CPLineBreakByTruncatingTail,
             @"title-vertical-alignment": CPTopVerticalTextAlignment,
+            @"border-top-left-radius": @"0px",
+            @"border-top-right-radius": @"0px",
+            @"border-bottom-left-radius": @"0px",
+            @"border-bottom-right-radius": @"0px",
+            @"minimize-image-origin": [CPNull null],
+            @"minimize-image-size": [CPNull null],
+            @"zoom-image-origin": [CPNull null],
+            @"zoom-image-size": [CPNull null],
+            @"frame-outset": CGInsetMakeZero()
         };
 }
 
