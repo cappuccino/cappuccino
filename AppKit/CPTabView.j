@@ -79,6 +79,20 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
     unsigned                _delegateSelectors;
 }
 
++ (CPString)defaultThemeClass
+{
+    return @"tab-view";
+}
+
++ (CPDictionary)themeAttributes
+{
+    return @{
+             @"nib2cib-adjustment-frame": [CPNull null],
+             @"should-center-on-border": NO,
+             @"box-content-inset": CGInsetMakeZero()
+             };
+}
+
 - (id)initWithFrame:(CGRect)aFrame
 {
     if (self = [super initWithFrame:aFrame])
@@ -95,14 +109,19 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 {
     _tabs = [[_CPSegmentedControl alloc] initWithFrame:CGRectMakeZero()];
     [_tabs setTabView:self];
+    [_tabs setHitTests:NO];
     [_tabs setSegments:[CPArray array]];
+    [_tabs setAction:@selector(_reflectSelectedTab:)];
+    [_tabs setTarget:self];
 
     var height = [_tabs valueForThemeAttribute:@"min-size"].height;
     [_tabs setFrameSize:CGSizeMake(0, height)];
 
     _box = [[_CPTabViewBox alloc] initWithFrame:[self  bounds]];
     [_box setTabView:self];
-    [self setBackgroundColor:[CPColor colorWithCalibratedWhite:0.95 alpha:1.0]];
+    [_box setContentInset:[self currentValueForThemeAttribute:@"box-content-inset"]];
+    [_box setContentViewMargins:CGSizeMakeZero()];
+//    [self setBackgroundColor:[CPColor colorWithCalibratedWhite:0.95 alpha:1.0]];
 
     [self addSubview:_box];
     [self addSubview:_tabs];
@@ -463,10 +482,10 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
     {
         var aFrame = [self frame],
             segmentedHeight = CGRectGetHeight([_tabs frame]),
-            origin = _type === CPTopTabsBezelBorder ? segmentedHeight / 2 : 0;
+            borderWidth = [self currentValueForThemeAttribute:@"should-center-on-border"] ? [_box borderWidth] : 0,
+            origin = _type === CPTopTabsBezelBorder ? (segmentedHeight - borderWidth) / 2 : 0;
 
-        [_box setFrame:CGRectMake(0, origin, CGRectGetWidth(aFrame),
-                                   CGRectGetHeight(aFrame) - segmentedHeight / 2)];
+        [_box setFrame:CGRectMake(0, origin, CGRectGetWidth(aFrame), CGRectGetHeight(aFrame) - (segmentedHeight - borderWidth) / 2)];
 
         [self _repositionTabs];
     }
@@ -526,6 +545,11 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
     return [_box backgroundColor];
 }
 
+- (void)mouseDown:(CPEvent)anEvent
+{
+    [_tabs trackSegment:anEvent];
+}
+
 - (void)_repositionTabs
 {
     var horizontalCenterOfSelf = CGRectGetWidth([self bounds]) / 2,
@@ -540,6 +564,11 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 - (void)_displayItemView:(CPView)aView
 {
     [_box setContentView:aView];
+}
+
+- (void)_reflectSelectedTab:(id)aSender
+{
+    [self selectTabViewItemAtIndex:[_tabs selectedSegment]];
 }
 
 // DELEGATE METHODS
@@ -858,14 +887,47 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
 
 @end
 
+#pragma mark -
+
+@implementation CPTabView (CSSTheming)
+
+#pragma mark Override
+
+- (void)_setThemeIncludingDescendants:(CPTheme)aTheme
+{
+    [self setTheme:aTheme];
+    [[self subviews] makeObjectsPerformSelector:@selector(_setThemeIncludingDescendants:) withObject:aTheme];
+
+    // Items must also perform this (without this, only the selected item does)
+
+    for (var i = 0, allItems = [self items], count = allItems.length; i < count; i++)
+        if (allItems[i] != _selectedTabViewItem)
+            [[allItems[i] view] _setThemeIncludingDescendants:aTheme];
+}
+
+@end
+
+#pragma mark -
+
 @implementation _CPTabViewBox : CPBox
 {
-    CPTabView _tabView @accessors(property=tabView);
+    CPTabView   _tabView        @accessors(property=tabView);
+    CGInset     _contentInset   @accessors(property=contentInset);
 }
 
 
 #pragma mark -
 #pragma mark Override
+
+- (id)initWithFrame:(CGRect)aFrame
+{
+    if (self = [super initWithFrame:aFrame])
+    {
+        [self setBoxType:CPBoxPrimary];
+    }
+
+    return self;
+}
 
 - (CPView)hitTest:(CGPoint)aPoint
 {
@@ -877,6 +939,50 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
         return nil;
 
     return [super hitTest:aPoint];
+}
+
+// Some CPBox overrides because CPTabView use of CPBox differs from legacy CPBox regarding layout.
+
+- (void)setContentView:(CPView)aView
+{
+    if (aView === _contentView)
+        return;
+
+    // FIXME: here
+    if (_contentInset)
+        [aView setFrame:CGRectInsetByInset([self bounds], _contentInset)];
+    [aView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+
+    //  A nil contentView is allowed (tested in Cocoa 2013-02-22).
+    if (!aView)
+        [_contentView removeFromSuperview];
+    else if (_contentView)
+        [_boxView replaceSubview:_contentView with:aView];
+    else
+        [_boxView addSubview:aView];
+
+    _contentView = aView;
+
+    [self refreshDisplay];
+}
+
+// FIXME: peut-être besoin de setFrameFromContentFrame
+
+- (void)sizeToFit
+{
+    var offset = [self _titleHeightOffset],
+        size = [self frameSize];
+
+    [_boxView setFrame:CGRectMake(0, offset[1], size.width, size.height - offset[0])];
+
+    if (!_contentView)
+        return;
+
+    var boxSize = [_boxView frameSize];
+
+    // FIXME: here
+    if (_contentInset)
+        [_contentView setFrame:CGRectMake(_contentInset.left, _contentInset.top, boxSize.width - _contentInset.left - _contentInset.right, boxSize.height - _contentInset.top - _contentInset.bottom)];
 }
 
 @end
@@ -914,7 +1020,7 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
             {
                 [self setSelected:YES forSegment:_trackingSegment];
                 _selectedSegment = _trackingSegment;
-                [_tabView selectTabViewItemAtIndex:_selectedSegment];
+                [self sendAction:[self action] to:[self target]];
             }
 
             [self drawSegmentBezel:_trackingSegment highlight:NO];
