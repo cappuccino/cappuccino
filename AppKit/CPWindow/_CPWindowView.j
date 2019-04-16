@@ -70,12 +70,52 @@ _CPWindowViewResizeSlop = 3;
 
 + (CGRect)contentRectForFrameRect:(CGRect)aFrameRect
 {
-    return CGRectMakeCopy(aFrameRect);
+    // First, we have to check if we are compiling a theme or running an application because if working on a theme,
+    // we can't use theme attributes to determine the inset ! This would be a kind of circular reference...
+
+    var compilingATheme = [[[CPBundle mainBundle] objectForInfoDictionaryKey:@"CPApplicationDelegateClass"] isEqualToString:@"BKShowcaseController"],
+        frameOutset = compilingATheme ? CGInsetMakeZero() : [[CPTheme defaultTheme] valueForAttributeWithName:@"frame-outset" forClass:_CPWindowView];
+
+    if (!frameOutset)
+        // No value found in theme. Get default value.
+        frameOutset = [[self themeAttributes] objectForKey:@"frame-outset"];
+
+    if (!frameOutset)
+        // No value found in defaults. Get default value for _CPWindowView (we know here that the window class is not _CPWindowView)
+        frameOutset = [[_CPWindowView themeAttributes] objectForKey:@"frame-outset"];
+
+    return CGRectMake(aFrameRect.origin.x - frameOutset.left, aFrameRect.origin.y - frameOutset.top, aFrameRect.size.width + frameOutset.left + frameOutset.right, aFrameRect.size.height + frameOutset.top + frameOutset.bottom);
+
+//    return CGRectMakeCopy(aFrameRect);
 }
 
 + (CGRect)frameRectForContentRect:(CGRect)aContentRect
 {
-    return CGRectMakeCopy(aContentRect);
+    // First, we have to check if we are compiling a theme or running an application because if working on a theme,
+    // we can't use theme attributes to determine the inset ! This would be a kind of circular reference...
+
+    CPLog.error("frameRectForContentRect:"+CPStringFromRect(aContentRect));
+    var compilingATheme = [[[CPBundle mainBundle] objectForInfoDictionaryKey:@"CPApplicationDelegateClass"] isEqualToString:@"BKShowcaseController"],
+        frameOutset = compilingATheme ? CGInsetMakeZero() : [[CPTheme defaultTheme] valueForAttributeWithName:@"frame-outset" forClass:[self class]]; // _CPWindowView - [self class]
+    CPLog.trace("frameOutset="+frameOutset);
+
+
+    if (!frameOutset)
+        // No value found in theme. Get default value.
+        frameOutset = [[self themeAttributes] objectForKey:@"frame-outset"];
+    CPLog.trace("frameOutset2="+frameOutset);
+
+    if (!frameOutset)
+        // No value found in theme. Get default value for _CPWindowView
+        frameOutset = [[_CPWindowView themeAttributes] objectForKey:@"frame-outset"];
+    CPLog.trace("frameOutset3="+frameOutset);
+    CPLog.trace("outset="+frameOutset.top+","+frameOutset.right+","+frameOutset.bottom+","+frameOutset.left);
+    var toto = CGRectMake(aContentRect.origin.x, aContentRect.origin.y, aContentRect.size.width + frameOutset.left + frameOutset.right, aContentRect.size.height + frameOutset.top + frameOutset.bottom);
+    CPLog.trace("result="+CPStringFromRect(toto));
+
+    return CGRectMake(aContentRect.origin.x - frameOutset.left, aContentRect.origin.y - frameOutset.top, aContentRect.size.width + frameOutset.left + frameOutset.right, aContentRect.size.height + frameOutset.top + frameOutset.bottom);
+
+    //    return CGRectMakeCopy(aContentRect);
 }
 
 + (CPString)defaultThemeClass
@@ -106,6 +146,15 @@ _CPWindowViewResizeSlop = 3;
             @"title-alignment": CPCenterTextAlignment,
             @"title-line-break-mode": CPLineBreakByTruncatingTail,
             @"title-vertical-alignment": CPTopVerticalTextAlignment,
+            @"border-top-left-radius": @"0px",
+            @"border-top-right-radius": @"0px",
+            @"border-bottom-left-radius": @"0px",
+            @"border-bottom-right-radius": @"0px",
+            @"minimize-image-origin": [CPNull null],
+            @"minimize-image-size": [CPNull null],
+            @"zoom-image-origin": [CPNull null],
+            @"zoom-image-size": [CPNull null],
+            @"frame-outset": CGInsetMakeZero()
         };
 }
 

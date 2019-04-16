@@ -367,6 +367,23 @@ CPTexturedBackgroundWindowMask
         [_windowView _setWindow:self];
         [_windowView setNextResponder:self];
 
+        // CSS Styling
+#if PLATFORM(DOM)
+        var radius;
+        
+        if (radius = [_windowView actualValueForThemeAttribute:@"border-top-left-radius"])
+            _windowView._DOMElement.style.borderTopLeftRadius = radius;
+        
+        if (radius = [_windowView actualValueForThemeAttribute:@"border-top-right-radius"])
+            _windowView._DOMElement.style.borderTopRightRadius = radius;
+        
+        if (radius = [_windowView actualValueForThemeAttribute:@"border-bottom-left-radius"])
+            _windowView._DOMElement.style.borderBottomLeftRadius = radius;
+        
+        if (radius = [_windowView actualValueForThemeAttribute:@"border-bottom-right-radius"])
+            _windowView._DOMElement.style.borderBottomRightRadius = radius;
+#endif
+        
         // Size calculation needs _windowView
         _minSize = [self _calculateMinSizeForProposedSize:CGSizeMake(0.0, 0.0)];
         _maxSize = CGSizeMake(1000000.0, 1000000.0);
@@ -1408,25 +1425,51 @@ CPTexturedBackgroundWindowMask
 
         return;
     }
-
-    if (_hasShadow && !_shadowView)
+    
+    if ([[self actualTheme] isCSSBased])
     {
-        _shadowView = [[_CPShadowWindowView alloc] initWithFrame:CGRectMakeZero()];
-
-        [_shadowView setWindowView:_windowView];
-        [_shadowView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
-        [_shadowView setNeedsLayout];
-
+        // When using CSS theming, we get rid of _shadowView and add CSS shadowing directly
+        // on the _windowView
+        
 #if PLATFORM(DOM)
-        CPDOMDisplayServerInsertBefore(_DOMElement, _shadowView._DOMElement, _windowView._DOMElement);
+        // We must check that _windowView exists as _updateShadow can be called by
+        // _setSharesChromeWithPlatformWindow whereas _windowView is not yet created
+        if (_windowView && _windowView._DOMElement)
+        {
+            var currentBoxShadow = _windowView._DOMElement.style.boxShadow;
+            
+            if (_hasShadow && (currentBoxShadow.length == 0))
+            {
+                _windowView._DOMElement.style.boxShadow = [_windowView actualValueForThemeAttribute:@"window-shadow-color"];
+            }
+            else if (!_hasShadow && (currentBoxShadow.length > 0))
+            {
+                _windowView._DOMElement.style.boxShadow = "";
+            }
+        }
 #endif
     }
-    else if (!_hasShadow && _shadowView)
+    else
     {
+        if (_hasShadow && !_shadowView)
+        {
+            _shadowView = [[_CPShadowWindowView alloc] initWithFrame:CGRectMakeZero()];
+            
+            [_shadowView setWindowView:_windowView];
+            [_shadowView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+            [_shadowView setNeedsLayout];
+            
 #if PLATFORM(DOM)
-        CPDOMDisplayServerRemoveChild(_DOMElement, _shadowView._DOMElement);
+            CPDOMDisplayServerInsertBefore(_DOMElement, _shadowView._DOMElement, _windowView._DOMElement);
 #endif
-        _shadowView = nil;
+        }
+        else if (!_hasShadow && _shadowView)
+        {
+#if PLATFORM(DOM)
+            CPDOMDisplayServerRemoveChild(_DOMElement, _shadowView._DOMElement);
+#endif
+            _shadowView = nil;
+        }
     }
 }
 
@@ -4386,6 +4429,19 @@ var interpolate = function(fromValue, toValue, progress)
 }
 
 @end
+
+#pragma mark -
+
+@implementation CPWindow (CSSTheming)
+
+- (void)_setThemeIncludingDescendants:(CPTheme)aTheme
+{
+    [[self contentView] _setThemeIncludingDescendants:aTheme];
+}
+
+@end
+
+#pragma mark -
 
 function _CPWindowFullPlatformWindowSessionMake(aWindowView, aContentRect, hasShadow, aLevel)
 {

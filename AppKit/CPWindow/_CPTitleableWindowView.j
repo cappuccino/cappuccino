@@ -47,7 +47,7 @@
 
 + (CGRect)frameRectForContentRect:(CGRect)aContentRect
 {
-    var frameRect = CGRectMakeCopy(aContentRect),
+    var frameRect = [super frameRectForContentRect:aContentRect],
         titleBarHeight = [self titleBarHeight];
 
     frameRect.origin.y -= titleBarHeight;
