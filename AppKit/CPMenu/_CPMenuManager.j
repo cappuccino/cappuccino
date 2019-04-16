@@ -28,6 +28,8 @@
 
 @class CPWindow
 @class _CPMenuWindow
+@class _CPMenuView
+@class CPMenuItem
 
 
 @global CPApp
@@ -352,7 +354,23 @@ var STICKY_TIME_INTERVAL            = 0.4,
         if ([activeMenuContainer isMenuBar])
             newMenuOrigin = CGPointMake(CGRectGetMinX(activeItemRect), CGRectGetMaxY(activeItemRect));
         else
-            newMenuOrigin = CGPointMake(CGRectGetMaxX(activeItemRect), CGRectGetMinY(activeItemRect));
+        {
+            // New theme attributes to have more precise submenus positioning
+
+            var defaultTheme     = [CPTheme defaultTheme],
+                themeDeltaX      = [defaultTheme valueForAttributeWithName:@"menu-window-submenu-delta-x" forClass:_CPMenuView],
+                themeDeltaY      = [defaultTheme valueForAttributeWithName:@"menu-window-submenu-delta-y" forClass:_CPMenuView],
+                themeFirstDeltaY = [defaultTheme valueForAttributeWithName:@"menu-window-submenu-first-level-delta-y" forClass:_CPMenuView],
+                activeMenuIndex  = [_menuContainerStack indexOfObject:activeMenuContainer],
+
+                deltaX = themeDeltaX ? themeDeltaX : 0,
+                deltaY = themeDeltaY ? themeDeltaY : 0;
+
+            if (themeFirstDeltaY && (activeMenuIndex == 1) && [_menuContainerStack[0] isMenuBar])
+                deltaY += themeFirstDeltaY;
+
+            newMenuOrigin = CGPointMake(CGRectGetMaxX(activeItemRect)+deltaX, CGRectGetMinY(activeItemRect)+deltaY);
+        }
 
         newMenuOrigin = [activeMenuContainer convertBaseToGlobal:newMenuOrigin];
 

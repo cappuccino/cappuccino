@@ -26,6 +26,7 @@
 @import "_CPMenuManager.j"
 
 @class _CPMenuView
+@class CPMenuItem
 
 var _CPMenuWindowPool                       = [],
     _CPMenuWindowPoolCapacity               = 5,
@@ -419,6 +420,21 @@ _CPMenuWindowAttachedMenuBackgroundStyle    = 2;
 
 @end
 
+#pragma mark -
+
+@implementation _CPMenuWindow (CSSTheming)
+
+- (void)_setThemeIncludingDescendants:(CPTheme)aTheme
+{
+    [[self contentView] _setThemeIncludingDescendants:aTheme];
+    [_menuView _setThemeIncludingDescendants:aTheme];
+    [_menuView tile];
+}
+
+@end
+
+#pragma mark -
+
 /*
     @ignore
 */
@@ -449,6 +465,7 @@ _CPMenuWindowAttachedMenuBackgroundStyle    = 2;
             @"menu-bar-window-background-color": [CPNull null],
             @"menu-bar-window-background-selected-color": [CPNull null],
             @"menu-bar-window-font": [CPNull null],
+            @"menu-bar-window-first-item-font": [CPNull null],
             @"menu-bar-window-height": 30.0,
             @"menu-bar-window-margin": 10.0,
             @"menu-bar-window-left-margin": 10.0,
@@ -466,6 +483,9 @@ _CPMenuWindowAttachedMenuBackgroundStyle    = 2;
             @"menu-general-icon-new": [CPNull null],
             @"menu-general-icon-save": [CPNull null],
             @"menu-general-icon-open": [CPNull null],
+            @"menu-window-submenu-delta-x": 0.0,
+            @"menu-window-submenu-delta-y": 0.0,
+            @"menu-window-submenu-first-level-delta-y": 0.0
         };
 }
 
@@ -552,6 +572,7 @@ _CPMenuWindowAttachedMenuBackgroundStyle    = 2;
 
         [view setFrameOrigin:CGPointMake(0.0, y)];
 
+        [view _setThemeIncludingDescendants:[CPTheme defaultTheme]];
         [self addSubview:view];
 
         var size = [view minSize],
@@ -579,6 +600,21 @@ _CPMenuWindowAttachedMenuBackgroundStyle    = 2;
 {
     [super setMenu:aMenu];
     [self tile];
+}
+
+@end
+
+#pragma mark -
+
+@implementation _CPMenuView (CSSTheming)
+
+- (void)_setThemeIncludingDescendants:(CPTheme)aTheme
+{
+    [self setTheme:aTheme];
+    [_menuItemViews makeObjectsPerformSelector:@selector(_setThemeIncludingDescendants:) withObject:aTheme];
+
+    for (var i = 0, items = [[self menu] itemArray], count = [items count]; i < count; i++)
+        [[items[i] _menuItemView] _setThemeIncludingDescendants:aTheme];
 }
 
 @end

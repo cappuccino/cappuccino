@@ -63,6 +63,8 @@
             @"menu-item-default-mixed-state-image": [CPNull null],
             @"menu-item-default-mixed-state-highlighted-image": [CPNull null],
             @"menu-item-separator-color": [CPNull null],
+            @"menu-item-separator-height": 1.0,
+            @"menu-item-separator-view-height": 10.0,
             @"left-margin": 3.0,
             @"right-margin": 17.0,
             @"state-column-width": 14.0,
@@ -91,6 +93,7 @@
         _stateView = [[CPImageView alloc] initWithFrame:CGRectMake(0.0, 0.0, 0.0, 0.0)];
 
         [_stateView setImageScaling:CPImageScaleNone];
+        [_stateView setImageAlignment:CPImageAlignCenter];
 
         [self addSubview:_stateView];
 
@@ -177,6 +180,11 @@
             default:
                 break;
         }
+
+        var stateViewFrameOrigin = [_stateView frameOrigin];
+
+        stateViewFrameOrigin.x = x;
+        [_stateView setFrameOrigin:stateViewFrameOrigin];
 
         x += [self valueForThemeAttribute:@"state-column-width"];
     }
@@ -346,6 +354,22 @@
 }
 
 @end
+
+#pragma mark -
+
+@implementation _CPMenuItemStandardView (CSSTheming)
+
+#pragma mark Override
+
+- (void)_setThemeIncludingDescendants:(CPTheme)aTheme
+{
+    [self setTheme:aTheme];
+    [[self subviews] makeObjectsPerformSelector:@selector(_setThemeIncludingDescendants:) withObject:aTheme];
+}
+
+@end
+
+#pragma mark -
 
 @implementation _CPMenuItemSubmenuIndicatorView : CPView
 {
