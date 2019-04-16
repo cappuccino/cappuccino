@@ -71,7 +71,7 @@ CPSegmentSwitchTrackingMomentary = 2;
             @"right-segment-bezel-color": [CPNull null],
             @"center-segment-bezel-color": [CPNull null],
             @"divider-bezel-color": [CPNull null],
-            @"divider-thickness": 1.0,
+            @"divider-thickness": 1.0
         };
 }
 
@@ -316,7 +316,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 // Working with Individual Segments
 /*!
     Sets the width of the specified segment.
-    @param aWidth the new width for the segment
+    @param aWidth the new width for the segment (0 for automatic width)
     @param aSegment the segment to set the width for
     @throws CPRangeException if \c aSegment is out of bounds
 */
@@ -530,12 +530,24 @@ CPSegmentSwitchTrackingMomentary = 2;
 
 - (float)_leftOffsetForSegment:(unsigned)segment
 {
-    if (segment == 0)
-        return [self currentValueForThemeAttribute:@"bezel-inset"].left;
+    if ([[self actualTheme] isCSSBased])
+    {
+        // CSS styling
+        if (segment == 0)
+            return 0;
 
-    var thickness = [self currentValueForThemeAttribute:@"divider-thickness"];
+        return [self _leftOffsetForSegment:segment - 1] + CGRectGetWidth([self frameForSegment:segment - 1]) -1; // FIXME: -1 for collapse of borders
+    }
+    else
+    {
+        // Legacy styling
+        if (segment == 0)
+            return [self currentValueForThemeAttribute:@"bezel-inset"].left;
 
-    return [self _leftOffsetForSegment:segment - 1] + CGRectGetWidth([self frameForSegment:segment - 1]) + thickness;
+        var thickness = [self currentValueForThemeAttribute:@"divider-thickness"];
+
+        return [self _leftOffsetForSegment:segment - 1] + CGRectGetWidth([self frameForSegment:segment - 1]) + thickness;
+    }
 }
 
 - (unsigned)_indexOfLastSegment
@@ -568,19 +580,28 @@ CPSegmentSwitchTrackingMomentary = 2;
     }
     else if (aName.indexOf("segment-bezel") === 0)
     {
-        var segment = parseInt(aName.substring("segment-bezel-".length), 10),
+        if ([[self actualTheme] isCSSBased])
+        {
+            var segment = parseInt(aName.substring("segment-bezel-".length), 10);
+
+            return [self bezelFrameForSegment:segment];
+        }
+        else
+        {
+            var segment = parseInt(aName.substring("segment-bezel-".length), 10),
             frame = CGRectCreateCopy([self frameForSegment:segment]);
 
-        if (segment === 0)
-        {
-            frame.origin.x += contentInset.left;
-            frame.size.width -= contentInset.left;
+            if (segment === 0)
+            {
+                frame.origin.x += contentInset.left;
+                frame.size.width -= contentInset.left;
+            }
+
+            if (segment === [self segmentCount] - 1)
+                frame.size.width = CGRectGetWidth([self bounds]) - contentInset.right - frame.origin.x;
+
+            return frame;
         }
-
-        if (segment === [self segmentCount] - 1)
-            frame.size.width = CGRectGetWidth([self bounds]) - contentInset.right - frame.origin.x;
-
-        return frame;
     }
     else if (aName.indexOf("divider-bezel") === 0)
     {
@@ -619,48 +640,88 @@ CPSegmentSwitchTrackingMomentary = 2;
     if ([self segmentCount] <= 0)
         return;
 
-    var themeState = _themeStates[0],
-        isDisabled = [self hasThemeState:CPThemeStateDisabled],
-        isControlSizeSmall = [self hasThemeState:CPThemeStateControlSizeSmall],
-        isControlSizeMini = [self hasThemeState:CPThemeStateControlSizeMini];
-
-    themeState = isDisabled ? themeState.and(CPThemeStateDisabled) : themeState;
-
-    if (isControlSizeSmall)
-        themeState = themeState.and(CPThemeStateControlSizeSmall);
-    else if (isControlSizeMini)
-        themeState = themeState.and(CPThemeStateControlSizeMini);
-
-    var leftCapColor = [self valueForThemeAttribute:@"left-segment-bezel-color"
-                                            inState:themeState],
-
-        leftBezelView = [self layoutEphemeralSubviewNamed:@"left-segment-bezel"
-                                               positioned:CPWindowBelow
-                          relativeToEphemeralSubviewNamed:nil];
-
-    [leftBezelView setBackgroundColor:leftCapColor];
-
-    var themeState = _themeStates[_themeStates.length - 1];
-
-    themeState = isDisabled ? themeState.and(CPThemeStateDisabled) : themeState;
-
-    if (isControlSizeSmall)
-        themeState = themeState.and(CPThemeStateControlSizeSmall);
-    else if (isControlSizeMini)
-        themeState = themeState.and(CPThemeStateControlSizeMini);
-
-    var rightCapColor = [self valueForThemeAttribute:@"right-segment-bezel-color"
-                                             inState:themeState],
-
-        rightBezelView = [self layoutEphemeralSubviewNamed:@"right-segment-bezel"
-                                               positioned:CPWindowBelow
-                          relativeToEphemeralSubviewNamed:nil];
-
-    [rightBezelView setBackgroundColor:rightCapColor];
-
-    for (var i = 0, count = _themeStates.length; i < count; i++)
+    if ([[self actualTheme] isCSSBased])
     {
-        var themeState = _themeStates[i];
+        // CSS Styling
+
+        var isDisabled         = [self hasThemeState:CPThemeStateDisabled],
+            isControlSizeSmall = [self hasThemeState:CPThemeStateControlSizeSmall],
+            isControlSizeMini  = [self hasThemeState:CPThemeStateControlSizeMini],
+            isKeyWindow        = [self hasThemeState:CPThemeStateKeyWindow];
+
+        for (var i = 0, count = _themeStates.length; i < count; i++)
+        {
+            var themeState = _themeStates[i];
+
+            themeState = isDisabled ? themeState.and(CPThemeStateDisabled) : themeState;
+
+            if (isControlSizeSmall)
+                themeState = themeState.and(CPThemeStateControlSizeSmall);
+            else if (isControlSizeMini)
+                themeState = themeState.and(CPThemeStateControlSizeMini);
+
+            themeState = isKeyWindow ? themeState.and(CPThemeStateKeyWindow) : themeState;
+
+            var bezelColor,
+                segment = _segments[i],
+                bezelView = [self layoutEphemeralSubviewNamed:"segment-bezel-" + i
+                                                   positioned:CPWindowBelow
+                              relativeToEphemeralSubviewNamed:nil],
+                contentView = [self layoutEphemeralSubviewNamed:@"segment-content-" + i
+                                                     positioned:CPWindowAbove
+                                relativeToEphemeralSubviewNamed:"segment-bezel-" + i];
+
+            if (i == 0)
+                bezelColor = [self valueForThemeAttribute:@"left-segment-bezel-color" inState:themeState];
+            else if (i < count - 1)
+                bezelColor = [self valueForThemeAttribute:@"center-segment-bezel-color" inState:themeState];
+            else
+                bezelColor = [self valueForThemeAttribute:@"right-segment-bezel-color" inState:themeState];
+
+            [bezelView setBackgroundColor:bezelColor];
+
+            // Trick : Put selected segments over unselected ones to automaticaly manage borders
+
+#if PLATFORM(DOM)
+            contentView._DOMElement.style.zIndex = ([segment selected] ? 1 : 0);
+            bezelView._DOMElement.style.zIndex   = ([segment selected] ? 1 : 0);
+#endif
+//
+//            if ([bezelColor hasCSSBeforeDictionary] || [bezelColor hasCSSAfterDictionary])
+//            {
+//                // We must specify a class name so that ::before and/or ::after styling can be applied
+//                // class name = "CP" + the UID
+//                // Style declaration is done in CPView's setBackgroundColor
+//
+//                [bezelView setDOMClassName:@"CP"+[bezelView UID]];
+//            }
+
+            [contentView setText:[segment label]];
+            [contentView setImage:[segment image]];
+
+            [contentView setFont:[self valueForThemeAttribute:@"font" inState:themeState]];
+            [contentView setTextColor:[self valueForThemeAttribute:@"text-color" inState:([segment enabled] ? themeState : themeState.and(CPThemeStateDisabled))]];
+            [contentView setAlignment:[self valueForThemeAttribute:@"alignment" inState:themeState]];
+            [contentView setVerticalAlignment:[self valueForThemeAttribute:@"vertical-alignment" inState:themeState]];
+            [contentView setLineBreakMode:[self valueForThemeAttribute:@"line-break-mode" inState:themeState]];
+            [contentView setTextShadowColor:[self valueForThemeAttribute:@"text-shadow-color" inState:themeState]];
+            [contentView setTextShadowOffset:[self valueForThemeAttribute:@"text-shadow-offset" inState:themeState]];
+            [contentView setImageScaling:[self valueForThemeAttribute:@"image-scaling" inState:themeState]];
+
+            if ([segment image] && [segment label])
+                [contentView setImagePosition:[self valueForThemeAttribute:@"image-position" inState:themeState]];
+            else if ([segment image])
+                [contentView setImagePosition:CPImageOnly];
+
+            CPLog.warn("SEGMENTED layout i="+i+" label="+[segment label]+" frame="+CPStringFromRect([segment frame])+" self="+CPStringFromRect([self frame]));
+        }
+    }
+    else
+    {
+        var themeState = _themeStates[0],
+            isDisabled = [self hasThemeState:CPThemeStateDisabled],
+            isControlSizeSmall = [self hasThemeState:CPThemeStateControlSizeSmall],
+            isControlSizeMini = [self hasThemeState:CPThemeStateControlSizeMini];
 
         themeState = isDisabled ? themeState.and(CPThemeStateDisabled) : themeState;
 
@@ -669,59 +730,98 @@ CPSegmentSwitchTrackingMomentary = 2;
         else if (isControlSizeMini)
             themeState = themeState.and(CPThemeStateControlSizeMini);
 
-        var bezelColor = [self valueForThemeAttribute:@"center-segment-bezel-color"
-                                              inState:themeState],
+        var leftCapColor = [self valueForThemeAttribute:@"left-segment-bezel-color"
+                                                inState:themeState],
 
-            bezelView = [self layoutEphemeralSubviewNamed:"segment-bezel-" + i
-                                               positioned:CPWindowBelow
-                          relativeToEphemeralSubviewNamed:nil];
+            leftBezelView = [self layoutEphemeralSubviewNamed:@"left-segment-bezel"
+                                                   positioned:CPWindowBelow
+                              relativeToEphemeralSubviewNamed:nil];
 
-        [bezelView setBackgroundColor:bezelColor];
+        [leftBezelView setBackgroundColor:leftCapColor];
 
-        // layout image/title views
-        var segment = _segments[i],
-            contentView = [self layoutEphemeralSubviewNamed:@"segment-content-" + i
-                                                 positioned:CPWindowAbove
-                            relativeToEphemeralSubviewNamed:@"segment-bezel-" + i];
+        var themeState = _themeStates[_themeStates.length - 1];
 
-        [contentView setText:[segment label]];
-        [contentView setImage:[segment image]];
-
-        [contentView setFont:[self valueForThemeAttribute:@"font" inState:themeState]];
-        [contentView setTextColor:[self valueForThemeAttribute:@"text-color" inState:themeState]];
-        [contentView setAlignment:[self valueForThemeAttribute:@"alignment" inState:themeState]];
-        [contentView setVerticalAlignment:[self valueForThemeAttribute:@"vertical-alignment" inState:themeState]];
-        [contentView setLineBreakMode:[self valueForThemeAttribute:@"line-break-mode" inState:themeState]];
-        [contentView setTextShadowColor:[self valueForThemeAttribute:@"text-shadow-color" inState:themeState]];
-        [contentView setTextShadowOffset:[self valueForThemeAttribute:@"text-shadow-offset" inState:themeState]];
-        [contentView setImageScaling:[self valueForThemeAttribute:@"image-scaling" inState:themeState]];
-
-        if ([segment image] && [segment label])
-            [contentView setImagePosition:[self valueForThemeAttribute:@"image-position" inState:themeState]];
-        else if ([segment image])
-            [contentView setImagePosition:CPImageOnly];
-
-        if (i == count - 1)
-            continue;
-
-
-        var borderState = _themeStates[i].and(_themeStates[i + 1]);
-
-        borderState = isDisabled ? borderState.and(CPThemeStateDisabled) : borderState;
+        themeState = isDisabled ? themeState.and(CPThemeStateDisabled) : themeState;
 
         if (isControlSizeSmall)
-            borderState = borderState.and(CPThemeStateControlSizeSmall);
+            themeState = themeState.and(CPThemeStateControlSizeSmall);
         else if (isControlSizeMini)
-            borderState = borderState.and(CPThemeStateControlSizeMini);
+            themeState = themeState.and(CPThemeStateControlSizeMini);
 
-        var borderColor = [self valueForThemeAttribute:@"divider-bezel-color"
-                                               inState:borderState],
+        var rightCapColor = [self valueForThemeAttribute:@"right-segment-bezel-color"
+                                                 inState:themeState],
+
+            rightBezelView = [self layoutEphemeralSubviewNamed:@"right-segment-bezel"
+                                                    positioned:CPWindowBelow
+                               relativeToEphemeralSubviewNamed:nil];
+
+        [rightBezelView setBackgroundColor:rightCapColor];
+
+        for (var i = 0, count = _themeStates.length; i < count; i++)
+        {
+            var themeState = _themeStates[i];
+
+            themeState = isDisabled ? themeState.and(CPThemeStateDisabled) : themeState;
+
+            if (isControlSizeSmall)
+                themeState = themeState.and(CPThemeStateControlSizeSmall);
+            else if (isControlSizeMini)
+                themeState = themeState.and(CPThemeStateControlSizeMini);
+
+            var bezelColor = [self valueForThemeAttribute:@"center-segment-bezel-color"
+                                                  inState:themeState],
+
+                bezelView = [self layoutEphemeralSubviewNamed:"segment-bezel-" + i
+                                                   positioned:CPWindowBelow
+                              relativeToEphemeralSubviewNamed:nil];
+
+            [bezelView setBackgroundColor:bezelColor];
+
+            // layout image/title views
+            var segment = _segments[i],
+                contentView = [self layoutEphemeralSubviewNamed:@"segment-content-" + i
+                                                     positioned:CPWindowAbove
+                                relativeToEphemeralSubviewNamed:@"segment-bezel-" + i];
+
+            [contentView setText:[segment label]];
+            [contentView setImage:[segment image]];
+
+            [contentView setFont:[self valueForThemeAttribute:@"font" inState:themeState]];
+            [contentView setTextColor:[self valueForThemeAttribute:@"text-color" inState:themeState]];
+            [contentView setAlignment:[self valueForThemeAttribute:@"alignment" inState:themeState]];
+            [contentView setVerticalAlignment:[self valueForThemeAttribute:@"vertical-alignment" inState:themeState]];
+            [contentView setLineBreakMode:[self valueForThemeAttribute:@"line-break-mode" inState:themeState]];
+            [contentView setTextShadowColor:[self valueForThemeAttribute:@"text-shadow-color" inState:themeState]];
+            [contentView setTextShadowOffset:[self valueForThemeAttribute:@"text-shadow-offset" inState:themeState]];
+            [contentView setImageScaling:[self valueForThemeAttribute:@"image-scaling" inState:themeState]];
+
+            if ([segment image] && [segment label])
+                [contentView setImagePosition:[self valueForThemeAttribute:@"image-position" inState:themeState]];
+            else if ([segment image])
+                [contentView setImagePosition:CPImageOnly];
+
+            if (i == count - 1)
+                continue;
+
+
+            var borderState = _themeStates[i].and(_themeStates[i + 1]);
+
+            borderState = isDisabled ? borderState.and(CPThemeStateDisabled) : borderState;
+
+            if (isControlSizeSmall)
+                borderState = borderState.and(CPThemeStateControlSizeSmall);
+            else if (isControlSizeMini)
+                borderState = borderState.and(CPThemeStateControlSizeMini);
+
+            var borderColor = [self valueForThemeAttribute:@"divider-bezel-color"
+                                                   inState:borderState],
 
             borderView = [self layoutEphemeralSubviewNamed:"divider-bezel-" + i
                                                 positioned:CPWindowBelow
                            relativeToEphemeralSubviewNamed:nil];
 
-        [borderView setBackgroundColor:borderColor];
+            [borderView setBackgroundColor:borderColor];
+        }
     }
 }
 
@@ -802,6 +902,8 @@ CPSegmentSwitchTrackingMomentary = 2;
             label = [segment label],
             image = [segment image];
 
+        contentInsetWidth += ([[self actualTheme] isCSSBased] && ((aSegment == 0) || (aSegment == [self _indexOfLastSegment])) ? [self valueForThemeAttribute:@"divider-thickness" inState:themeState] : 0);
+
         width = (label ? [label sizeWithFont:[self font]].width : 4.0) + (image ? [image size].width : 0) + contentInsetWidth;
     }
 
@@ -810,6 +912,16 @@ CPSegmentSwitchTrackingMomentary = 2;
 
 - (CGRect)contentFrameForSegment:(unsigned)aSegment
 {
+    if ([[self actualTheme] isCSSBased])
+    {
+        // FIXME : here !!!
+
+        var bezelFrame = [self bezelFrameForSegment:aSegment],
+            contentInset = [self currentValueForThemeAttribute:@"content-inset"];
+
+        return CGRectInsetByInset(bezelFrame, contentInset);
+    }
+
     var height = [self currentValueForThemeAttribute:@"min-size"].height,
         contentInset = [self currentValueForThemeAttribute:@"content-inset"],
         width = CGRectGetWidth([self frameForSegment:aSegment]),
@@ -872,68 +984,64 @@ CPSegmentSwitchTrackingMomentary = 2;
     var type = [anEvent type],
         location = [self convertPoint:[anEvent locationInWindow] fromView:nil];
 
-    switch (type)
+    if (type == CPLeftMouseUp)
     {
-        case CPLeftMouseUp:
-
-            if (_trackingSegment === CPNotFound)
-                return;
-
-            if (_trackingSegment === [self testSegment:location])
-            {
-                if (_trackingMode == CPSegmentSwitchTrackingSelectAny)
-                {
-                    [self setSelected:![self isSelectedForSegment:_trackingSegment] forSegment:_trackingSegment];
-
-                    // With ANY, _selectedSegment means last pressed.
-                    _selectedSegment = _trackingSegment;
-                }
-                else
-                    [self setSelected:YES forSegment:_trackingSegment];
-
-                [self sendAction:[self action] to:[self target]];
-
-                if (_trackingMode == CPSegmentSwitchTrackingMomentary)
-                {
-                    [self setSelected:NO forSegment:_trackingSegment];
-
-                    _selectedSegment = CPNotFound;
-                }
-            }
-
-            [self drawSegmentBezel:_trackingSegment highlight:NO];
-
-            _trackingSegment = CPNotFound;
-
+        if (_trackingSegment == -1)
             return;
 
-        case CPLeftMouseDown:
-
-            var trackingSegment = [self testSegment:location];
-            if (trackingSegment > CPNotFound && [self isEnabledForSegment:trackingSegment])
+        if (_trackingSegment === [self testSegment:location])
+        {
+            if (_trackingMode == CPSegmentSwitchTrackingSelectAny)
             {
-                _trackingHighlighted = YES;
-                _trackingSegment = trackingSegment;
-                [self drawSegmentBezel:_trackingSegment highlight:YES];
+                [self setSelected:![self isSelectedForSegment:_trackingSegment] forSegment:_trackingSegment];
+
+                // With ANY, _selectedSegment means last pressed.
+                _selectedSegment = _trackingSegment;
             }
+            else
+                [self setSelected:YES forSegment:_trackingSegment];
 
-            break;
+            [self sendAction:[self action] to:[self target]];
 
-        case CPLeftMouseDragged:
-
-            if (_trackingSegment === CPNotFound)
-                return;
-
-            var highlighted = [self testSegment:location] === _trackingSegment;
-
-            if (highlighted != _trackingHighlighted)
+            if (_trackingMode == CPSegmentSwitchTrackingMomentary)
             {
-                _trackingHighlighted = highlighted;
+                [self setSelected:NO forSegment:_trackingSegment];
 
-                [self drawSegmentBezel:_trackingSegment highlight:_trackingHighlighted];
+                _selectedSegment = CPNotFound;
             }
+        }
 
-            break;
+        [self drawSegmentBezel:_trackingSegment highlight:NO];
+
+        _trackingSegment = -1;
+
+        return;
+    }
+
+    if (type == CPLeftMouseDown)
+    {
+        var trackingSegment = [self testSegment:location];
+        if (trackingSegment > -1 && [self isEnabledForSegment:trackingSegment])
+        {
+            _trackingHighlighted = YES;
+            _trackingSegment = trackingSegment;
+            [self drawSegmentBezel:_trackingSegment highlight:YES];
+        }
+    }
+
+    else if (type == CPLeftMouseDragged)
+    {
+        if (_trackingSegment == -1)
+            return;
+
+        var highlighted = [self testSegment:location] === _trackingSegment;
+
+        if (highlighted != _trackingHighlighted)
+        {
+            _trackingHighlighted = highlighted;
+
+            [self drawSegmentBezel:_trackingSegment highlight:_trackingHighlighted];
+        }
     }
 
     [CPApp setTarget:self selector:@selector(trackSegment:) forNextEventMatchingMask:CPLeftMouseDraggedMask | CPLeftMouseUpMask untilDate:nil inMode:nil dequeue:YES];
