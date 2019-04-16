@@ -220,10 +220,13 @@ var NSButtonIsBorderedMask = 0x00800000,
     var frameAdjustment = [super _nib2CibAdjustment],
         positionOffsetSizeWidth = 0,
         positionOffsetOriginX = 0,
-        positionOffsetOriginY = 0;
+        positionOffsetOriginY = 0,
+        directAdjustment = [[Nib2Cib defaultTheme] valueForAttributeWithName:@"direct-nib2cib-adjustment" inState:[self themeState] forClass:[self class]];
+
+    CPLog.info(">>> class="+[self className]+" direct="+directAdjustment);
 
     // We want certain control like CPPopupButton to have their own nib2cib-adjustment-frame theme attribute
-    if (![self isBordered] || [self isKindOfClass:[CPPopUpButton class]])
+    if (![self isBordered] || [self isKindOfClass:[CPPopUpButton class]] || directAdjustment)
         return frameAdjustment;
 
     // Map Cocoa bezel styles to Cappuccino bezel styles and adjust frame
