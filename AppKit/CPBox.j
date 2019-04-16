@@ -60,6 +60,7 @@ CPBelowBottom = 6;
     CPBoxType       _boxType;
     CPBorderType    _borderType;
     CPView          _contentView;
+    CPView          _boxView;   // needed for CSS theming, will be transparent for non CSS themes
 
     CPString        _title @accessors(getter=title);
     int             _titlePosition @accessors(getter=titlePosition);
@@ -90,6 +91,14 @@ CPBelowBottom = 6;
             @"inner-shadow-size": 6.0,
             @"inner-shadow-color": [CPNull null],
             @"content-margin": CGSizeMakeZero(),
+            @"title-font": [CPNull null],
+            @"title-left-offset": 5.0,
+            @"title-top-offset": 0.0,
+            @"title-color": [CPNull null],
+            @"nib2cib-adjustment-primary-frame": CGRectMake(4, -4, -8, -6),
+            @"content-adjustment": CGRectMakeZero(),
+            @"min-y-correction-no-title": 0,
+            @"min-y-correction-title": 0
         };
 }
 
@@ -118,12 +127,21 @@ CPBelowBottom = 6;
 
         _titlePosition = CPNoTitle;
         _titleView = [CPTextField labelWithTitle:@""];
+        [_titleView setFont:[self titleFont]];
+        [_titleView setTextColor:[self titleColor]];
+
+        _boxView = [[CPView alloc] initWithFrame:[self bounds]];
+        [_boxView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
 
         _contentView = [[CPView alloc] initWithFrame:[self bounds]];
         [_contentView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
 
         [self setAutoresizesSubviews:YES];
-        [self addSubview:_contentView];
+        [self addSubview:_boxView];
+        [_boxView setAutoresizesSubviews:YES];
+        [_boxView addSubview:_contentView];
+
+        [self sizeToFit];
     }
 
     return self;
@@ -177,7 +195,8 @@ CPBelowBottom = 6;
         return;
 
     _borderType = aBorderType;
-    [self setNeedsDisplay:YES];
+
+    [self refreshDisplay];
 }
 
 /*!
@@ -221,7 +240,8 @@ CPBelowBottom = 6;
         return;
 
     _boxType = aBoxType;
-    [self setNeedsDisplay:YES];
+
+    [self refreshDisplay];
 }
 
 - (CPColor)borderColor
@@ -286,21 +306,20 @@ CPBelowBottom = 6;
     if (aView === _contentView)
         return;
 
-    var borderWidth = [self borderWidth],
-        contentMargin = [self valueForThemeAttribute:@"content-margin"];
-
-    [aView setFrame:CGRectInset([self bounds], contentMargin.width + borderWidth, contentMargin.height + borderWidth)];
     [aView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
 
     //  A nil contentView is allowed (tested in Cocoa 2013-02-22).
     if (!aView)
         [_contentView removeFromSuperview];
     else if (_contentView)
-        [self replaceSubview:_contentView with:aView];
+        [_boxView replaceSubview:_contentView with:aView];
     else
-        [self addSubview:aView];
+        [_boxView addSubview:aView];
 
     _contentView = aView;
+
+    [self sizeToFit];
+    [self refreshDisplay];
 }
 
 - (CGSize)contentViewMargins
@@ -320,9 +339,14 @@ CPBelowBottom = 6;
 {
     var offset = [self _titleHeightOffset],
         borderWidth = [self borderWidth],
-        contentMargin = [self valueForThemeAttribute:@"content-margin"];
+        contentMargin = [self valueForThemeAttribute:@"content-margin"],
+        contentAdjustment = [self valueForThemeAttribute:@"content-adjustment"],
+        minYCorrection = [self valueForThemeAttribute:(_titlePosition === CPNoTitle ? @"min-y-correction-no-title" : @"min-y-correction-title")];
 
-    [self setFrame:CGRectInset(aRect, -(contentMargin.width + borderWidth), -(contentMargin.height + offset[0] + borderWidth))];
+    [self setFrame:CGRectMake(aRect.origin.x - contentAdjustment.origin.x - contentMargin.width  + borderWidth,
+                              aRect.origin.y - contentAdjustment.origin.y - contentMargin.height + borderWidth - minYCorrection,
+                              aRect.size.width  + 2 * contentMargin.width  - contentAdjustment.size.width,
+                              aRect.size.height + 2 * contentMargin.height - contentAdjustment.size.height)];
 }
 
 - (void)setTitle:(CPString)aTitle
@@ -347,12 +371,40 @@ CPBelowBottom = 6;
 
 - (CPFont)titleFont
 {
-    return [_titleView font];
+    if ([self hasThemeAttribute:@"title-font"])
+        return [self valueForThemeAttribute:@"title-font"];
+    else
+        return [_titleView font];
 }
 
 - (void)setTitleFont:(CPFont)aFont
 {
+    if ([aFont isEqual:[self titleFont]])
+        return;
+
+    if ([self hasThemeAttribute:@"title-font"])
+        [self setValue:aFont forThemeAttribute:@"title-font"];
+
     [_titleView setFont:aFont];
+}
+
+- (CPColor)titleColor
+{
+    if ([self hasThemeAttribute:@"title-color"])
+        return [self valueForThemeAttribute:@"title-color"];
+    else
+        return [_titleView textColor];
+}
+
+- (void)setTitleColor:(CPColor)aColor
+{
+    if ([aColor isEqual:[self titleColor]])
+        return;
+
+    if ([self hasThemeAttribute:@"title-color"])
+        [self setValue:aColor forThemeAttribute:@"title-color"];
+
+    [_titleView setTextColor:aColor];
 }
 
 /*!
@@ -370,20 +422,26 @@ CPBelowBottom = 6;
     if (_titlePosition == CPNoTitle)
     {
         [_titleView removeFromSuperview];
-        [self setNeedsDisplay:YES];
+
+        if (_boxType !== CPBoxSeparator)
+            [self sizeToFit];
+
+        [self refreshDisplay];
         return;
     }
 
     [_titleView setStringValue:_title];
     [_titleView sizeToFit];
-    [self addSubview:_titleView];
+
+    var titleLeftOffset = [self valueForThemeAttribute:@"title-left-offset"],
+        titleTopOffset  = [self valueForThemeAttribute:@"title-top-offset"];
 
     switch (_titlePosition)
     {
         case CPAtTop:
         case CPAboveTop:
         case CPBelowTop:
-            [_titleView setFrameOrigin:CGPointMake(5.0, 0.0)];
+            [_titleView setFrameOrigin:CGPointMake(titleLeftOffset, titleTopOffset)]; // FIXME: was 0.0
             [_titleView setAutoresizingMask:CPViewNotSizable];
             break;
 
@@ -391,39 +449,49 @@ CPBelowBottom = 6;
         case CPAtBottom:
         case CPBelowBottom:
             var h = [_titleView frameSize].height;
-            [_titleView setFrameOrigin:CGPointMake(5.0, [self frameSize].height - h)];
+            [_titleView setFrameOrigin:CGPointMake(titleLeftOffset, [self frameSize].height - h - titleTopOffset)];
             [_titleView setAutoresizingMask:CPViewMinYMargin];
             break;
     }
 
+    [self addSubview:_titleView];
     [self sizeToFit];
-    [self setNeedsDisplay:YES];
+    [self refreshDisplay];
 }
 
 - (void)sizeToFit
 {
-    var contentFrame = [_contentView frame],
-        offset = [self _titleHeightOffset],
-        contentMargin = [self valueForThemeAttribute:@"content-margin"];
+    var offset = [self _titleHeightOffset],
+        size = [self frameSize];
 
-    if (!contentFrame)
+    [_boxView setFrame:CGRectMake(0, offset[1], size.width, size.height - offset[0])];
+
+    if (!_contentView)
         return;
 
-    [_contentView setFrameOrigin:CGPointMake(contentMargin.width, contentMargin.height + offset[1])];
+    var boxSize = [_boxView frameSize],
+        contentMargin = [self valueForThemeAttribute:@"content-margin"],
+        contentAdjustment = [self valueForThemeAttribute:@"content-adjustment"],
+        borderWidth = [self valueForThemeAttribute:@"border-width"],
+        minYCorrection = [self valueForThemeAttribute:(_titlePosition === CPNoTitle ? @"min-y-correction-no-title" : @"min-y-correction-title")];
+
+    [_contentView setFrame:CGRectMake(contentAdjustment.origin.x + contentMargin.width  - borderWidth,
+                                      contentAdjustment.origin.y + contentMargin.height - borderWidth + minYCorrection,
+                                      boxSize.width  - 2 * contentMargin.width  + contentAdjustment.size.width,
+                                      boxSize.height - 2 * contentMargin.height + contentAdjustment.size.height)];
 }
 
-- (float)_titleHeightOffset
+- (CPArray)_titleHeightOffset
 {
-    if (_titlePosition == CPNoTitle)
-        return [0.0, 0.0];
+    var titleTopOffset = [self valueForThemeAttribute:@"title-top-offset"];
 
     switch (_titlePosition)
     {
         case CPAtTop:
-            return [[_titleView frameSize].height, [_titleView frameSize].height];
+            return [[_titleView frameSize].height + titleTopOffset, [_titleView frameSize].height + titleTopOffset];
 
         case CPAtBottom:
-            return [[_titleView frameSize].height, 0.0];
+            return [[_titleView frameSize].height + titleTopOffset, 0.0];
 
         default:
             return [0.0, 0.0];
@@ -440,6 +508,9 @@ CPBelowBottom = 6;
 
 - (void)drawRect:(CGRect)rect
 {
+    if ([self isCSSBased])
+        return;
+
     var bounds = [self bounds];
 
     switch (_boxType)
@@ -594,12 +665,83 @@ CPBelowBottom = 6;
 
 @end
 
+#pragma mark -
+
+@implementation CPBox (CSSTheming)
+
+- (void)layoutSubviews
+{
+    if (![self isCSSBased])
+        return;
+
+    var bounds = [self bounds];
+
+    if (_boxType === CPBoxSeparator)
+    {
+        if (bounds.size.width === 5.0)
+        {
+            // Vertical separator
+            [_boxView setFrame:CGRectMake(2,0,1,bounds.size.height)];
+        }
+        else
+        {
+            // Horizontal separator
+            [_boxView setFrame:CGRectMake(0,2,bounds.size.width,1)];
+        }
+
+        [_boxView setBackgroundColor:[self valueForThemeAttribute:@"border-color"]];
+
+        return;
+    }
+
+    // Primary or secondary type boxes always draw the same way, unless they are CPNoBorder.
+    if ((_boxType === CPBoxPrimary || _boxType === CPBoxSecondary) && _borderType !== CPNoBorder)
+    {
+        [_boxView setBackgroundColor:[self valueForThemeAttribute:@"background-color"]];
+        return;
+    }
+
+    switch (_borderType)
+    {
+        case CPBezelBorder:
+//            [self _drawBezelBorderInRect:bounds];
+            break;
+
+        case CPGrooveBorder:
+        case CPLineBorder:
+//            [self _drawLineBorderInRect:bounds];
+            break;
+
+        case CPNoBorder:
+//            [self _drawNoBorderInRect:bounds];
+            break;
+    }
+}
+
+- (BOOL)isCSSBased
+{
+    return [[self theme] isCSSBased];
+}
+
+- (void)refreshDisplay
+{
+    if ([self isCSSBased])
+        [self setNeedsLayout:YES];
+    else
+        [self setNeedsDisplay:YES];
+}
+
+@end
+
+#pragma mark -
+
 var CPBoxTypeKey          = @"CPBoxTypeKey",
     CPBoxBorderTypeKey    = @"CPBoxBorderTypeKey",
-    CPBoxTitle            = @"CPBoxTitle",
-    CPBoxTitlePosition    = @"CPBoxTitlePosition",
-    CPBoxTitleView        = @"CPBoxTitleView",
-    CPBoxContentView      = @"CPBoxContentView";
+    CPBoxTitleKey         = @"CPBoxTitleKey",
+    CPBoxTitlePositionKey = @"CPBoxTitlePositionKey",
+    CPBoxTitleViewKey     = @"CPBoxTitleViewKey",
+    CPBoxContentViewKey   = @"CPBoxContentViewKey",
+    CPBoxBoxViewKey       = @"CPBoxBoxViewKey";
 
 @implementation CPBox (CPCoding)
 
@@ -612,33 +754,56 @@ var CPBoxTypeKey          = @"CPBoxTypeKey",
         _boxType       = [aCoder decodeIntForKey:CPBoxTypeKey];
         _borderType    = [aCoder decodeIntForKey:CPBoxBorderTypeKey];
 
-        _title         = [aCoder decodeObjectForKey:CPBoxTitle];
-        _titlePosition = [aCoder decodeIntForKey:CPBoxTitlePosition];
-        _titleView     = [aCoder decodeObjectForKey:CPBoxTitleView] || [CPTextField labelWithTitle:_title];
+        _title         = [aCoder decodeObjectForKey:CPBoxTitleKey];
+        _titlePosition = [aCoder decodeIntForKey:CPBoxTitlePositionKey];
 
-        if (_boxType != CPBoxSeparator)
+        // Important : see comment on encodeWithCoder below
+
+        _boxView = [aCoder decodeObjectForKey:CPBoxBoxViewKey];
+
+        if (!_boxView)
         {
-            // FIXME: we have a problem with CIB decoding here.
-            // We should be able to simply add : _contentView = [self subviews][0]
-            // but first box subview seems to be malformed (badly decoded).
-            // For example, when deployed, this view doesn't have its _trackingAreas array initialized.
-            // As a (temporary) workaround, we encode/decode the _contentView property. We then transfer the subview hierarchy
-            // and replace the first (and only) box subview with this _contentView
+            // We're coming from nib2cib.
 
-            _contentView = [aCoder decodeObjectForKey:CPBoxContentView] || [[CPView alloc] initWithFrame:[self bounds]];
-            var malformedContentView = [self subviews][0];
-            [_contentView setSubviews:[malformedContentView subviews]];
-            [self replaceSubview:malformedContentView with:_contentView];
+            _boxView     = [[CPView alloc] initWithFrame:[self bounds]];
+            _titleView   = [CPTextField labelWithTitle:_title];
         }
         else
         {
-            _titlePosition = CPNoTitle;        
+            // We're coming from elsewhere
+
+            _titleView   = [aCoder decodeObjectForKey:CPBoxTitleViewKey];
         }
-        
-        [self setAutoresizesSubviews:YES];
+
+        _contentView = [aCoder decodeObjectForKey:CPBoxContentViewKey];
+
+        // FIXME: super-mega-hyper-trick : _contentView has a superview which is not normal !
+        // FIXME: (see encodeWithCoder to understand why this is not possible)
+        // FIXME: we fix this by hand. This is horrible so please find a structural solution !
+
+        if (_contentView)
+            _contentView._superview = nil;
+
         [_contentView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+        [_boxView     setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+        [_boxView     setAutoresizesSubviews:YES];
+        [self         setAutoresizesSubviews:YES];
+
+        if (_contentView)
+            [_boxView setSubviews:@[_contentView]];
+
+        [self addSubview:_boxView];
+        [self addSubview:_titleView];
+
+        if (_boxType === CPBoxSeparator)
+            _titlePosition = CPNoTitle;
+
+        [_titleView setFont:[self titleFont]];
+        [_titleView setTextColor:[self titleColor]];
 
         [self _manageTitlePositioning];
+
+        [self refreshDisplay];
     }
 
     return self;
@@ -646,14 +811,47 @@ var CPBoxTypeKey          = @"CPBoxTypeKey",
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
+    // We have to distinguish between 2 cases :
+    // - we come from nib2cib
+    // - we come from elsewhere
+    //
+    // When coming from nib2cib, we have no _boxView, _contentView, _titleView.
+    // We fix _contentView to be the first (and only) subview.
+    // They will have to be added on decoding.
+    //
+    // When coming from elsewhere, we remove _boxView (and thus _contentView) and _titleView
+    // from the view hierarchy as we'll already encode them via variables.
+    // They will be putted back during decoding. This way, we reduce the space and speed needed for coding.
+
+    var subviews = [self subviews];
+
+    if (!_boxView)
+    {
+        // We're coming from nib2cib.
+
+        _contentView = subviews[0];
+
+        [_contentView removeFromSuperview];
+    }
+    else
+    {
+        // We're coming from elsewhere.
+
+        [_boxView   removeFromSuperview];
+        [_titleView removeFromSuperview];
+    }
+
     [super encodeWithCoder:aCoder];
+
+    [self setSubviews:subviews];
 
     [aCoder encodeInt:_boxType forKey:CPBoxTypeKey];
     [aCoder encodeInt:_borderType forKey:CPBoxBorderTypeKey];
-    [aCoder encodeObject:_title forKey:CPBoxTitle];
-    [aCoder encodeInt:_titlePosition forKey:CPBoxTitlePosition];
-    [aCoder encodeObject:_titleView forKey:CPBoxTitleView];
-    [aCoder encodeObject:_contentView forKey:CPBoxContentView];
+    [aCoder encodeObject:_title forKey:CPBoxTitleKey];
+    [aCoder encodeInt:_titlePosition forKey:CPBoxTitlePositionKey];
+    [aCoder encodeConditionalObject:_contentView forKey:CPBoxContentViewKey];
+    [aCoder encodeConditionalObject:_titleView forKey:CPBoxTitleViewKey];
+    [aCoder encodeConditionalObject:_boxView forKey:CPBoxBoxViewKey];
 }
 
 @end
