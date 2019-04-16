@@ -346,11 +346,12 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 + (CPDictionary)themeAttributes
 {
     return @{
-            @"alternating-row-colors": @[[CPColor whiteColor], [CPColor colorWithRed:245.0 / 255.0 green:249.0 / 255.0 blue:252.0 / 255.0 alpha:1.0]],
-            @"grid-color": [CPColor colorWithHexString:@"dce0e2"],
+            @"alternating-row-colors": [CPNull null],
+            @"grid-color": [CPNull null],
             @"grid-line-thickness": 1.0,
             @"highlighted-grid-color": [CPNull null],
             @"selection-color": [CPNull null],
+            @"unfocused-selection-color": [CPNull null],
             @"sourcelist-selection-color": [CPNull null],
             @"sort-image": [CPNull null],
             @"sort-image-reversed": [CPNull null],
@@ -369,7 +370,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
             @"dropview-above-border-width": [CPNull null],
             @"dropview-above-selected-border-color": [CPNull null],
             @"dropview-above-selected-border-width": [CPNull null],
-            @"header-view-height": 25.0
+            @"header-view-height": 25
         };
 }
 
@@ -631,7 +632,7 @@ NOT YET IMPLEMENTED
 */
 - (void)reloadDataForRowIndexes:(CPIndexSet)rowIndexes columnIndexes:(CPIndexSet)columnIndexes
 {
-    [self reloadData];
+    [self reloadData]; // FIXME: recharge tout !.. Pourquoi ne pas utiliser la méthode ci-après ?
 }
 
 // Reloads the data, not the views
@@ -966,7 +967,7 @@ NOT YET IMPLEMENTED
 - (CPColor)unfocusedSelectionHighlightColor
 {
     if (!_unfocusedSelectionHighlightColor)
-        _unfocusedSelectionHighlightColor = [self _unfocusedSelectionColorFromColor:[self selectionHighlightColor] saturation:0];
+        _unfocusedSelectionHighlightColor = [self hasThemeAttribute:@"unfocused-selection-color"] ? [self valueForThemeAttribute:@"unfocused-selection-color"] : [self _unfocusedSelectionColorFromColor:[self selectionHighlightColor] saturation:0];
 
     return _unfocusedSelectionHighlightColor;
 }
@@ -3130,6 +3131,16 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
 - (CPView)_dragViewForColumn:(CPInteger)columnIndex
 {
+    return [self _makeGhostViewForColumn:columnIndex forDragging:YES];
+}
+
+- (CPView)_animationViewForColumn:(CPInteger)columnIndex
+{
+    return [self _makeGhostViewForColumn:columnIndex forDragging:NO];
+}
+
+- (CPView)_makeGhostViewForColumn:(CPInteger)columnIndex forDragging:(BOOL)isForDragging
+{
     var headerFrame = [_headerView frame],
         visibleRect = [self visibleRect],
         visibleRows = [self rowsInRect:visibleRect],
@@ -3138,7 +3149,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         tableColumnUID = [tableColumn UID],
         columnHeaderView = [tableColumn headerView],
         columnHeaderFrame = [columnHeaderView frame],
-        frame = CGRectMake(MAX(CGRectGetMinX(columnRect) - CGRectGetMinX(visibleRect), 0.0),
+        frame = CGRectMake(MAX(CGRectGetMinX(columnRect)/* - CGRectGetMinX(visibleRect)*/, 0.0),
                             0.0,
                             CGRectGetWidth(columnHeaderFrame),
                             CGRectGetHeight(visibleRect) + CGRectGetHeight(headerFrame));
@@ -3149,7 +3160,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     [dragView setTableView:self];
     [dragView setColumnIndex:columnIndex];
     [dragView setBackgroundColor:[CPColor clearColor]];
-    [dragView setAlphaValue:0.6];
+    [dragView setAlphaValue:(isForDragging ? 0.6 : 1.0)];
+    [dragView setShouldDrawBorders:isForDragging];
+    [dragView setIsSelected:[self isColumnSelected:columnIndex]];
 
     // Now a view that clips the column data views, which itself is clipped to the content view
     var columnVisRect = CGRectIntersection(columnRect, visibleRect);
@@ -3160,7 +3173,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     [dragView addSubview:columnClipView];
     [dragView setColumnClipView:columnClipView];
-    _draggedColumnIsSelected = [self isColumnSelected:columnIndex];
+
+    if (isForDragging)
+        _draggedColumnIsSelected = [self isColumnSelected:columnIndex];
 
     var columnLeft = CGRectGetMinX(columnRect),
         offset = CGPointMake(columnLeft, CGRectGetMinY(visibleRect));
@@ -3182,8 +3197,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     [dragColumnHeaderView setThemeState:[columnHeaderView themeState]];
     [dragColumnHeaderView _setIndicatorImage:image];
 
-    // Give it a tag so it can be found later
-    [dragColumnHeaderView setTag:1];
+    if (isForDragging)
+        // Give it a tag so it can be found later
+        [dragColumnHeaderView setTag:1];
 
     [dragView addSubview:dragColumnHeaderView];
 
@@ -6119,6 +6135,7 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
     CPTableViewGridStyleMaskKey             = @"CPTableViewGridStyleMaskKey",
     CPTableViewUsesAlternatingBackgroundKey = @"CPTableViewUsesAlternatingBackgroundKey",
     CPTableViewAlternatingRowColorsKey      = @"CPTableViewAlternatingRowColorsKey",
+    CPTableViewHeaderViewKey                = @"CPTableViewHeaderViewKey",
     CPTableViewCornerViewKey                = @"CPTableViewCornerViewKey",
     CPTableViewAutosaveNameKey              = @"CPTableViewAutosaveNameKey",
     CPTableViewArchivedReusableViewsKey     = @"CPTableViewArchivedReusableViewsKey";
@@ -6159,6 +6176,9 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
         _headerView = [aCoder decodeObjectForKey:CPTableViewHeaderViewKey];
         _cornerView = [aCoder decodeObjectForKey:CPTableViewCornerViewKey];
+
+        // Fix _cornerView height to match _headerView height
+        [_cornerView setFrameSize:CGSizeMake([CPScroller scrollerWidth], CGRectGetHeight([_headerView frame]))];
 
         [self setDataSource:[aCoder decodeObjectForKey:CPTableViewDataSourceKey]];
         [self setDelegate:[aCoder decodeObjectForKey:CPTableViewDelegateKey]];
@@ -6338,9 +6358,11 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
 @implementation _CPColumnDragDrawingView : CPView
 {
-    CPTableView tableView       @accessors;
-    int         columnIndex     @accessors;
-    CPView      columnClipView  @accessors;
+    CPTableView tableView           @accessors;
+    int         columnIndex         @accessors;
+    CPView      columnClipView      @accessors;
+    BOOL        shouldDrawBorders   @accessors;
+    BOOL        isSelected          @accessors;
 }
 
 - (void)drawRect:(CGRect)dirtyRect
@@ -6367,7 +6389,8 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
     //[tableView drawBackgroundInClipRect:bounds];
 
-    if (tableView._draggedColumnIsSelected)
+//    if (tableView._draggedColumnIsSelected)
+    if (isSelected)
     {
         CGContextSetFillColor(context, [tableView _isFocused] ? [tableView selectionHighlightColor] : [tableView unfocusedSelectionHighlightColor]);
         CGContextFillRect(context, bounds);
@@ -6377,22 +6400,25 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
     //[tableView _drawHorizontalGridInClipRect:bounds];
 
-    var minX = CGRectGetMinX(bounds) + 0.5,
-        maxX = CGRectGetMaxX(bounds) - 0.5;
+    if (shouldDrawBorders)
+    {
+        var minX = CGRectGetMinX(bounds) + 0.5,
+            maxX = CGRectGetMaxX(bounds) - 0.5;
 
-    CGContextSetLineWidth(context, 1.0);
-    CGContextSetAlpha(context, 1.0);
-    CGContextSetStrokeColor(context, [tableView gridColor]);
+        CGContextSetLineWidth(context, 1.0);
+        CGContextSetAlpha(context, 1.0);
+        CGContextSetStrokeColor(context, [tableView gridColor]);
 
-    CGContextBeginPath(context);
+        CGContextBeginPath(context);
 
-    CGContextMoveToPoint(context, minX, CGRectGetMinY(bounds));
-    CGContextAddLineToPoint(context, minX, CGRectGetMaxY(bounds));
+        CGContextMoveToPoint(context, minX, CGRectGetMinY(bounds));
+        CGContextAddLineToPoint(context, minX, CGRectGetMaxY(bounds));
 
-    CGContextMoveToPoint(context, maxX, CGRectGetMinY(bounds));
-    CGContextAddLineToPoint(context, maxX, CGRectGetMaxY(bounds));
+        CGContextMoveToPoint(context, maxX, CGRectGetMinY(bounds));
+        CGContextAddLineToPoint(context, maxX, CGRectGetMaxY(bounds));
 
-    CGContextStrokePath(context);
+        CGContextStrokePath(context);
+    }
 }
 
 @end

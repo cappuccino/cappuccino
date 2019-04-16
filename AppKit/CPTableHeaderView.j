@@ -25,6 +25,10 @@
 @import "CPCursor.j"
 @import "_CPImageAndTextView.j"
 @import "CPTrackingArea.j"
+@import "CPAnimationContext.j"
+@import "CPViewAnimator.j"
+@import "CPScrollView.j"
+@import <Foundation/CPGeometry.j>
 
 @class CPTableView
 
@@ -50,7 +54,8 @@
             @"text-color": [CPNull null],
             @"font": [CPNull null],
             @"text-shadow-color": [CPNull null],
-            @"text-shadow-offset": CGSizeMakeZero()
+            @"text-shadow-offset": CGSizeMakeZero(),
+            @"dont-draw-separator": NO
         };
 }
 
@@ -66,18 +71,22 @@
 
 - (void)_init
 {
+    [self setBackgroundColor:[self currentValueForThemeAttribute:@"background-color"]];
+
+    var inset = [self valueForThemeAttribute:@"text-inset"];
+
     _textField = [[_CPImageAndTextView alloc] initWithFrame:
-        CGRectMake(5.0, 0.0, CGRectGetWidth([self bounds]) - 10.0, CGRectGetHeight([self bounds]))];
+        CGRectMake(inset.left, inset.top, CGRectGetWidth([self bounds]) - (inset.left + inset.right), CGRectGetHeight([self bounds]) - (inset.top + inset.bottom))];
 
     [_textField setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
 
-    [_textField setLineBreakMode:CPLineBreakByTruncatingTail];
-    [_textField setTextColor:[CPColor colorWithRed:51.0 / 255.0 green:51.0 / 255.0 blue:51.0 / 255.0 alpha:1.0]];
-    [_textField setFont:[CPFont boldSystemFontOfSize:12.0]];
-    [_textField setAlignment:CPLeftTextAlignment];
+    [_textField setLineBreakMode:[self valueForThemeAttribute:@"line-break-mode"]];
+    [_textField setTextColor:[self valueForThemeAttribute:@"text-color"]];
+    [_textField setFont:[self valueForThemeAttribute:@"font"]];
+    [_textField setAlignment:[self valueForThemeAttribute:@"text-alignment"]];
     [_textField setVerticalAlignment:CPCenterVerticalTextAlignment];
-    [_textField setTextShadowColor:[CPColor whiteColor]];
-    [_textField setTextShadowOffset:CGSizeMake(0,1)];
+    [_textField setTextShadowColor:[self valueForThemeAttribute:@"text-shadow-color"]];
+    [_textField setTextShadowOffset:[self valueForThemeAttribute:@"text-shadow-offset"]];
 
     [self addSubview:_textField];
 }
@@ -188,6 +197,9 @@
 
 - (void)drawRect:(CGRect)aRect
 {
+    if ([self valueForThemeAttribute:@"dont-draw-separator"])
+        return;
+
     var bounds = [self bounds];
 
     if (!CGRectIntersectsRect(aRect, bounds))
@@ -223,7 +235,8 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
         [self _init];
         [self _setIndicatorImage:[aCoder decodeObjectForKey:_CPTableColumnHeaderViewImageKey]];
         [self setStringValue:[aCoder decodeObjectForKey:_CPTableColumnHeaderViewStringValueKey]];
-        [self setFont:[aCoder decodeObjectForKey:_CPTableColumnHeaderViewFontKey]];
+        // FIXME: pourquoi dans actif, font=null ?
+//        [self setFont:[aCoder decodeObjectForKey:_CPTableColumnHeaderViewFontKey]];
     }
 
     return self;
@@ -257,11 +270,13 @@ var CPTableHeaderViewResizeZone = 3.0,
 
     BOOL        _isResizing;
     BOOL        _isDragging;
+    BOOL        _isAnimating;
     BOOL        _canDragColumn;
 
     CPView      _columnDragView;
     CPView      _columnDragHeaderView;
     CPView      _columnDragClipView;
+    CPScrollView    _columnDragScrollView; // FIXME: here
 
     float       _columnOldWidth;
 
@@ -278,7 +293,9 @@ var CPTableHeaderViewResizeZone = 3.0,
     return @{
             @"background-color": [CPNull null],
             @"divider-color": [CPColor grayColor],
-            @"divider-thickness": 1.0
+            @"divider-thickness": 1.0,
+            @"swap-animation": [CPNull null],
+            @"return-animation": [CPNull null]
         };
 }
 
@@ -442,6 +459,14 @@ var CPTableHeaderViewResizeZone = 3.0,
     }
     else if (_isDragging)
     {
+        // First, we have to avoid a running condition where user stops dragging while a swap animation is running
+        if (_isAnimating)
+        {
+            [CPTimer scheduledTimerWithTimeInterval:0.05 target:self selector:@selector(_retry_mouseUp:) userInfo:theEvent repeats:NO];
+
+            return;
+        }
+
         [self _stopDraggingTableColumn:_activeColumn];
     }
     else if (_activeColumn != -1)
@@ -456,6 +481,11 @@ var CPTableHeaderViewResizeZone = 3.0,
     [self _updateResizeCursor:[CPApp currentEvent]];
 
     _activeColumn = -1;
+}
+
+- (void)_retry_mouseUp:(CPTimer)aTimer
+{
+    [self mouseUp:[aTimer userInfo]];
 }
 
 @end
@@ -562,7 +592,21 @@ var CPTableHeaderViewResizeZone = 3.0,
                                              pressure:[theEvent pressure]];
 
     [self autoscroll:constrainedEvent];
+
+    var contentView = [_tableView superview],
+        boundsOriginBefore = [contentView boundsOrigin];
+
     [_tableView autoscroll:constrainedEvent];
+
+    var boundsOriginAfter = [contentView boundsOrigin],
+        deltaX = boundsOriginAfter.x - boundsOriginBefore.x;
+
+    if (_isDragging)
+    {
+        var dragContentView = [_columnDragScrollView contentView],
+            dragContentBoundsOrigin = [dragContentView boundsOrigin];
+        [dragContentView setBoundsOrigin:CGPointMake(dragContentBoundsOrigin.x + deltaX, dragContentBoundsOrigin.y)];
+    }
 }
 
 - (CGRect)_headerRectOfLastVisibleColumn
@@ -584,16 +628,91 @@ var CPTableHeaderViewResizeZone = 3.0,
 - (CGPoint)_constrainDragPoint:(CGPoint)aPoint
 {
     // This effectively clamps the value between the minimum and maximum
-    var visibleRect = [_tableView visibleRect],
-        lastColumnRect = [self _headerRectOfLastVisibleColumn],
-        activeColumnRect = [self headerRectOfColumn:_activeColumn],
-        maxX = CGRectGetMaxX(lastColumnRect) - CGRectGetWidth(activeColumnRect) - CGRectGetMinX(visibleRect),
-        point = CGPointMake(MAX(MIN(aPoint.x, maxX), -CGRectGetMinX(visibleRect)), aPoint.y);
+    var tableFrame = [_tableView frame],
+        dragFrame  = [_columnDragView frame],
+        maxX = tableFrame.size.width - dragFrame.size.width,
+        point = CGPointMake(MAX(MIN(aPoint.x, maxX),0), aPoint.y);
 
     return point;
 }
 
 - (void)_moveColumn:(CPInteger)aFromIndex toColumn:(CPInteger)aToIndex
+{
+    if (_isAnimating)
+        return;
+
+    var swapAnimation = [self currentValueForThemeAttribute:@"swap-animation"];
+
+    if (swapAnimation)
+    {
+        _isAnimating = YES;
+
+        // There's a theme defined animation function, just use it
+        objj_eval("("+swapAnimation+")")(self, aFromIndex, aToIndex, _columnDragClipView, _columnDragView);
+
+//        var animatedColumn       = [[_tableView tableColumns] objectAtIndex:aToIndex],
+//            animatedHeader       = [animatedColumn headerView],
+//            animatedHeaderOrigin = [animatedHeader frameOrigin],
+//
+//            destinationX,
+//            draggedHeader        = [[[_tableView tableColumns] objectAtIndex:aFromIndex] headerView],
+//
+//            scrollView = [self enclosingScrollView],
+//            animatedView = [_tableView _animationViewForColumn:aToIndex],
+//            animatedOrigin = [animatedView frameOrigin];
+//
+//        [_columnDragClipView addSubview:animatedView positioned:CPWindowBelow relativeTo:_columnDragView];
+//
+//        [[animatedHeader subviews] makeObjectsPerformSelector:@selector(setHidden:) withObject:YES];
+//        [animatedHeader setThemeState:CPThemeStateVertical];
+//
+//        if (aFromIndex < aToIndex)
+//            destinationX = CGRectGetMinX([_tableView rectOfColumn:aFromIndex]);
+//        else
+//            destinationX = animatedOrigin.x + CGRectGetWidth([_tableView rectOfColumn:aFromIndex]);
+//
+//        [CPAnimationContext beginGrouping];
+//
+//        var context = [CPAnimationContext currentContext];
+//
+//        [context setDuration:0.15];
+//        [context setTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut]];
+//        [context setCompletionHandler:function() {
+//            [animatedView removeFromSuperview];
+//
+//            [self _finalize_moveColumn:aFromIndex toColumn:aToIndex];
+//
+//            [animatedHeader unsetThemeState:CPThemeStateVertical];
+//            [[animatedHeader subviews] makeObjectsPerformSelector:@selector(setHidden:) withObject:NO];
+//
+//            if ([animatedView isSelected])
+//            {
+//                [animatedHeader setThemeState:CPThemeStateSelected];
+//
+//                // We have to reselect the animated column
+//                [[_tableView selectedColumnIndexes] addIndex:aFromIndex];
+//            }
+//
+//            // Reload animated column
+//            var columnVisRect  = CGRectIntersection([_tableView rectOfColumn:aFromIndex], [_tableView visibleRect]),
+//                rowsIndexes    = [CPIndexSet indexSetWithIndexesInRange:[_tableView rowsInRect:columnVisRect]],
+//                columnsIndexes = [CPIndexSet indexSetWithIndex:aFromIndex];
+//
+//            [_tableView _loadDataViewsInRows:rowsIndexes columns:columnsIndexes];
+//            [_tableView _layoutViewsForRowIndexes:rowsIndexes columnIndexes:columnsIndexes];
+//
+//            [_tableView._tableDrawView displayRect:columnVisRect];
+//        }];
+//
+//        [[animatedView animator] setFrameOrigin:CGPointMake(destinationX, animatedOrigin.y)];
+//
+//        [CPAnimationContext endGrouping];
+    }
+    else
+        [self _finalize_moveColumn:aFromIndex toColumn:aToIndex];
+}
+
+- (void)_finalize_moveColumn:(CPInteger)aFromIndex toColumn:(CPInteger)aToIndex
 {
     [_tableView moveColumn:aFromIndex toColumn:aToIndex];
     _activeColumn = aToIndex;
@@ -602,6 +721,8 @@ var CPTableHeaderViewResizeZone = 3.0,
     [_tableView _setDraggedColumn:_activeColumn];
 
     [self setNeedsDisplay:YES];
+
+    _isAnimating = NO;
 }
 
 - (BOOL)isDragging
@@ -618,17 +739,30 @@ var CPTableHeaderViewResizeZone = 3.0,
     // Create a new clip view for the drag view that clips to the header + visible content
     var headerHeight = CGRectGetHeight([self frame]),
         scrollView = [self enclosingScrollView],
-        contentFrame = [[scrollView contentView] frame];
+        contentFrame = [[scrollView contentView] frame],
+        contentBounds = [[scrollView contentView] bounds];
 
     contentFrame.origin.y -= headerHeight;
     contentFrame.size.height += headerHeight;
 
-    _columnDragClipView = [[CPView alloc] initWithFrame:contentFrame];
+    _columnDragScrollView = [[CPScrollView alloc] initWithFrame:contentFrame];
+
+    [_columnDragScrollView setHasHorizontalScroller:NO];
+    [_columnDragScrollView setHasVerticalScroller:NO];
+    [_columnDragScrollView setBorderType:CPNoBorder];
+
+    var tableFrame = [_tableView frame],
+        clipFrame = CGRectMake(0, 0, tableFrame.size.width, contentFrame.size.height);
+
+    _columnDragClipView = [[CPView alloc] initWithFrame:clipFrame];
 
     [_columnDragClipView addSubview:_columnDragView];
 
+    [_columnDragScrollView setDocumentView:_columnDragClipView];
+    [[_columnDragScrollView contentView] setBoundsOrigin:CGPointMake(contentBounds.origin.x, 0)];
+
     // Insert the clip view above the table header (and content)
-    [scrollView addSubview:_columnDragClipView positioned:CPWindowAbove relativeTo:self];
+    [scrollView addSubview:_columnDragScrollView positioned:CPWindowAbove relativeTo:self];
 
     // Hide the underlying column header subviews, we just want to draw the chrome
     var headerView = [[[_tableView tableColumns] objectAtIndex:aColumnIndex] headerView];
@@ -637,6 +771,9 @@ var CPTableHeaderViewResizeZone = 3.0,
 
     // The underlying column header shows normal state
     [headerView unsetThemeStates:[CPThemeStateHighlighted, CPThemeStateSelected]];
+
+    // FIXME: Just a little hack to get a special background (using an unused theme state)
+    [headerView setThemeState:CPThemeStateVertical];
 
     // Keep track of the location within the column header where the original mousedown occurred
     _columnDragHeaderView = [_columnDragView viewWithTag:CPTableHeaderViewDragColumnHeaderTag];
@@ -693,9 +830,42 @@ var CPTableHeaderViewResizeZone = 3.0,
 
 - (void)_stopDraggingTableColumn:(CPInteger)aColumnIndex
 {
+    var returnAnimation = [self currentValueForThemeAttribute:@"return-animation"];
+
+    if (returnAnimation)
+    {
+        _isAnimating = YES;
+
+        // There's a theme defined animation function, just use it
+        objj_eval("("+returnAnimation+")")(self, aColumnIndex, _columnDragView);
+
+//        var animatedColumn       = [[_tableView tableColumns] objectAtIndex:aColumnIndex],
+//            animatedHeader       = [animatedColumn headerView],
+//            animatedHeaderOrigin = [animatedHeader frameOrigin];
+//
+//        [CPAnimationContext beginGrouping];
+//
+//        var context = [CPAnimationContext currentContext];
+//
+//        [context setDuration:0.15];
+//        [context setTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut]];
+//        [context setCompletionHandler:function() {
+//
+//            [self _finalize_stopDraggingTableColumn:aColumnIndex];
+//        }];
+//
+//        [[_columnDragView animator] setFrameOrigin:CGPointMake(animatedHeaderOrigin.x, 0)];
+//
+//        [CPAnimationContext endGrouping];
+    }
+    else
+        [self _finalize_stopDraggingTableColumn:aColumnIndex];
+}
+
+- (void)_finalize_stopDraggingTableColumn:(CPInteger)aColumnIndex
+{
     _isDragging = NO;
 
-    [_columnDragClipView removeFromSuperview];
     [_tableView _setDraggedColumn:-1];
 
     var tableColumn = [[_tableView tableColumns] objectAtIndex:aColumnIndex],
@@ -703,16 +873,30 @@ var CPTableHeaderViewResizeZone = 3.0,
 
     [[headerView subviews] makeObjectsPerformSelector:@selector(setHidden:) withObject:NO];
 
+    // Restore headerView background
+    [headerView unsetThemeState:CPThemeStateVertical];
+
     if (_tableView._draggedColumnIsSelected)
         [headerView setThemeState:CPThemeStateSelected];
 
-    [_tableView _reloadDataViews];
-    [[_tableView headerView] setNeedsLayout];
+    // Reload animated column
+    var columnVisRect  = CGRectIntersection([_tableView rectOfColumn:aColumnIndex], [_tableView visibleRect]),
+        rowsIndexes    = [CPIndexSet indexSetWithIndexesInRange:[_tableView rowsInRect:columnVisRect]],
+        columnsIndexes = [CPIndexSet indexSetWithIndex:aColumnIndex];
 
-    [[CPCursor arrowCursor] set];
+    [_tableView _loadDataViewsInRows:rowsIndexes columns:columnsIndexes];
+    [_tableView _layoutViewsForRowIndexes:rowsIndexes columnIndexes:columnsIndexes];
+
+    [_tableView._tableDrawView displayRect:columnVisRect];
+
+    [[CPCursor arrowCursor] set]; // FIXME: retirer ?
     [self updateTrackingAreas];
 
+    [_columnDragScrollView removeFromSuperview];
+
     [_tableView _sendDelegateDidDragTableColumn:tableColumn];
+
+    _isAnimating = NO;
 }
 
 - (BOOL)_shouldResizeTableColumn:(CPInteger)aColumnIndex at:(CGPoint)aPoint
