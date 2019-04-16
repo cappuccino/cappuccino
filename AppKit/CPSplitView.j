@@ -5,6 +5,9 @@
  * Created by Thomas Robinson.
  * Copyright 2008, 280 North, Inc.
  *
+ * Adapted by Didier Korthoudt
+ * Copyright 2018 <didier.korthoudt@uliege.be>
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -45,6 +48,7 @@
 - (void)splitView:(CPSplitView)splitView resizeSubviewsWithOldSize:(CGSize)oldSize;
 - (void)splitViewDidResizeSubviews:(CPNotification)aNotification;
 - (void)splitViewWillResizeSubviews:(CPNotification)aNotification;
+// FIXME: missing splitView:shouldHideDividerAtIndex:
 
 @end
 
@@ -89,6 +93,30 @@ var ShouldSuppressResizeNotifications   = 1,
     DidPostWillResizeNotification       = 1 << 1,
     DidSuppressResizeNotification       = 1 << 2;
 
+// FIXME: Previous implementation (before October 2018 and Aristo3) uses direct DOM elements manipulations to render dividers.
+//        In order to maintain compatibility, the new implementation (based on CSS theming) lives in parallel with the previous one.
+//        When, in the future, we will have decided to remove image based themes compatibility, please clean the code.
+//        New code is generally protected with _isCSSBased.
+//
+//        When we'll implement storyboards, we'll also have to implement NSSplitViewController & NSSplitViewItem
+//        See https://asciiwwdc.com/2015/sessions/221 & https://developer.apple.com/documentation/appkit/nssplitviewcontroller?language=objc
+
+@typedef CPSplitViewDividerStyle
+    CPSplitViewDividerStyleThick        = 1;
+    CPSplitViewDividerStyleThin         = 2;
+    CPSplitViewDividerStylePaneSplitter = 3;
+
+// Dividers specific theme states
+
+CPThemeStateSplitViewDividerStyleThick        = CPThemeState("splitview-divider-thick");
+CPThemeStateSplitViewDividerStyleThin         = CPThemeState("splitview-divider-thin");
+CPThemeStateSplitViewDividerStylePaneSplitter = CPThemeState("splitview-divider-pane-splitter");
+
+var CPThemeStatesForSplitViewDivider = @[@"dummy one as CPSplitViewDividerStyle is not zero-based",
+                                         CPThemeStateSplitViewDividerStyleThick,
+                                         CPThemeStateSplitViewDividerStyleThin,
+                                         CPThemeStateSplitViewDividerStylePaneSplitter];
+
 /*!
     @ingroup appkit
     @class CPSplitView
@@ -129,6 +157,19 @@ var ShouldSuppressResizeNotifications   = 1,
     CPArray                     _buttonBars;
 
     unsigned                    _implementedDelegateMethods;
+
+    CPSplitViewDividerStyle     _dividerStyle;
+    BOOL                        _isCSSBased;        // Cache for [[self theme] isCSSBased]
+    CPMutableArray              _dividerSubviews;
+    CPMutableArray              _arrangedSubviews;  // Subset of _realSubviews
+    CPMutableArray              _realSubviews;      // These are all subviews (arranged and non arranged) without divider subviews
+    BOOL                        _arrangesAllSubviews;
+    BOOL                        _subviewsManagementDisabled;
+
+    // Geometry caches
+    CPMutableArray              _initialSizes;
+    CPMutableArray              _ratios;
+    CPMutableArray              _isFlexible;
 }
 
 + (CPString)defaultThemeClass
@@ -139,32 +180,79 @@ var ShouldSuppressResizeNotifications   = 1,
 + (CPDictionary)themeAttributes
 {
     return @{
-            @"divider-thickness": 1.0,
+            @"divider-thickness": 1.0,  // Used by CSS Theming
             @"pane-divider-thickness": 10.0,
             @"pane-divider-color": [CPColor grayColor],
             @"horizontal-divider-color": [CPNull null],
             @"vertical-divider-color": [CPNull null],
+            @"divider-color": [CPColor redColor]  // Used by CSS Theming
         };
 }
 
 - (id)initWithFrame:(CGRect)aFrame
 {
     if (self = [super initWithFrame:aFrame])
-    {
-        _suppressResizeNotificationsMask = 0;
-        _preCollapsePositions = [CPMutableDictionary new];
-        _currentDivider = CPNotFound;
-
-        _DOMDividerElements = [];
-        _buttonBars = [];
-
-        _shouldAutosave = YES;
-        _isTracking = NO;
-
-        [self _setVertical:YES];
-    }
+        [self _init];
 
     return self;
+}
+
+- (void)_init
+{
+    _suppressResizeNotificationsMask = 0;
+    _preCollapsePositions = @{};
+    _currentDivider = CPNotFound;
+
+    //        _DOMDividerElements = [];
+    _buttonBars = [];
+
+    _shouldAutosave = YES;
+    _isTracking = NO;
+
+    _isCSSBased          = [[self theme] isCSSBased];
+    _dividerSubviews     = @[];
+    _arrangedSubviews    = @[];
+    _realSubviews        = @[];
+    _initialSizes        = @[];
+    _ratios              = @[];
+    _isFlexible          = @[];
+    _arrangesAllSubviews = YES; // Default for previous behavior compatibility
+
+    [self setDividerStyle:CPSplitViewDividerStyleThick]; // Default of Xcode IB
+
+    [self _setVertical:YES];
+}
+
+#pragma mark - Properties
+
+- (CPSplitViewDividerStyle)dividerStyle
+{
+    return _dividerStyle;
+}
+
+- (void)setDividerStyle:(CPSplitViewDividerStyle)aStyle
+{
+    if (aStyle === _dividerStyle)
+        return;
+
+    _dividerStyle = aStyle;
+
+    [self unsetThemeStates:@[CPThemeStateSplitViewDividerStyleThick, CPThemeStateSplitViewDividerStyleThin, CPThemeStateSplitViewDividerStylePaneSplitter]];
+    [self setThemeState:CPThemeStatesForSplitViewDivider[_dividerStyle]];
+
+    [self setNeedsLayout];
+}
+
+- (CPColor)dividerColor
+{
+    if (_isCSSBased)
+        return [self currentValueForThemeAttribute:@"divider-color"];
+
+    // For compatibility with Aristo2
+    if ([self isPaneSplitter])
+        return [self currentValueForThemeAttribute:@"pane-divider-color"];
+
+    return [self currentValueForThemeAttribute:(_isVertical ? @"vertical-divider-color" : @"horizontal-divider-color")];
 }
 
 /*!
@@ -173,6 +261,10 @@ var ShouldSuppressResizeNotifications   = 1,
 */
 - (float)dividerThickness
 {
+    if (_isCSSBased)
+        return [self currentValueForThemeAttribute:@"divider-thickness"];
+
+    // For compatibility with Aristo2
     return [self currentValueForThemeAttribute:[self isPaneSplitter] ? @"pane-divider-thickness" : @"divider-thickness"];
 }
 
@@ -191,6 +283,7 @@ var ShouldSuppressResizeNotifications   = 1,
 */
 - (void)setVertical:(BOOL)shouldBeVertical
 {
+    // FIXME: revoir
     if (![self _setVertical:shouldBeVertical])
         return;
 
@@ -204,7 +297,7 @@ var ShouldSuppressResizeNotifications   = 1,
         index = 0,
         count = _subviews.length;
 
-    if ([self isVertical])
+    if (_isVertical)
     {
         for (; index < count; ++index)
             [_subviews[index] setFrame:CGRectMake(ROUND((eachSize + dividerThickness) * index), 0, eachSize, frame.size.height)];
@@ -215,8 +308,8 @@ var ShouldSuppressResizeNotifications   = 1,
             [_subviews[index] setFrame:CGRectMake(0, ROUND((eachSize + dividerThickness) * index), frame.size.width, eachSize)];
     }
 
-    if (_DOMDividerElements[_drawingDivider])
-        [self _setupDOMDivider];
+//    if (_DOMDividerElements[_drawingDivider])
+//        [self _setupDOMDivider];
 
     [self setNeedsDisplay:YES];
     [self _postNotificationDidResize];
@@ -229,83 +322,268 @@ var ShouldSuppressResizeNotifications   = 1,
 
     _isVertical = shouldBeVertical;
 
-    _originComponent = [self isVertical] ? "x" : "y";
-    _sizeComponent = [self isVertical] ? "width" : "height";
-    _dividerImagePath = [self isVertical] ? [[self valueForThemeAttribute:@"vertical-divider-color"] filename] : [[self valueForThemeAttribute:@"horizontal-divider-color"] filename];
+    _originComponent = _isVertical ? "x" : "y";
+    _sizeComponent = _isVertical ? "width" : "height";
+//    _dividerImagePath = _isVertical ? [[self valueForThemeAttribute:@"vertical-divider-color"] filename] : [[self valueForThemeAttribute:@"horizontal-divider-color"] filename];
+
+    if (_isVertical)
+        [self setThemeState:CPThemeStateVertical];
+    else
+        [self unsetThemeState:CPThemeStateVertical];
 
     return changed;
 }
 
-/*!
-    Use to find if the divider is a larger pane splitter.
-
-    @return BOOL - YES if the dividers are the larger pane splitters. Otherwise NO.
-*/
-- (BOOL)isPaneSplitter
+- (BOOL)arrangesAllSubviews
 {
-    return _isPaneSplitter;
+    return _arrangesAllSubviews;
 }
 
-/*!
-    Used to set if the split view dividers should be the larger pane splitter.
-
-    @param shouldBePaneSplitter - YES if the dividers should be the thicker pane splitter, otherwise NO.
-*/
-- (void)setIsPaneSplitter:(BOOL)shouldBePaneSplitter
+- (void)setArrangesAllSubviews:(BOOL)shouldArrangeAllSubviews
 {
-    if (_isPaneSplitter == shouldBePaneSplitter)
+    if (shouldArrangeAllSubviews == _arrangesAllSubviews)
         return;
 
-    _isPaneSplitter = shouldBePaneSplitter;
+    _arrangesAllSubviews = shouldArrangeAllSubviews;
 
-    if (_DOMDividerElements[_drawingDivider])
-        [self _setupDOMDivider];
+    if (_arrangesAllSubviews)
+    {
+        // We take all real subviews and put them in arranged subviews in the same order
+        // Using plain add/remove methods will ensure a correct dividers management
+        var views = [_realSubviews copy];
 
-    // The divider changes size when pane splitter mode is toggled, so the
-    // subviews need to change size too.
+        // First, remove all real subviews (arranged & non arranged)
+        for (var i = views.length - 1; i >= 0; i--)
+            [views[i] removeFromSuperview];
+
+        // Then add all real subviews as arranged subviews
+        for (var i = 0, count = views.length; i < count; i++)
+            [self addArrangedSubview:views[i]]
+    }
+
+    [self setNeedsLayout];
+}
+
+#pragma mark - Subviews management
+
+// TODO: adapter le commentaire ci-dessous !!!
+// Cocoa behavior:
+// - When adding an arranged subview :
+//   - the resulting sizes of arranged subviews are computed like this (here for vertical dividers) :
+//     - existing total width (ETW) = sum of the widths of existing arranged subviews
+//     - new view width (NVW)
+//     - ETW ratio : ETWr = ETW / (ETW + NVW)
+//     - NVW ratio : NVWr = NVW / (ETW + NVW)
+//     - usable width UW = view width - number of dividers * divider thickness
+//     - final NVW : fNVW = UW * NVWr
+//     - final ETW : fETW = UW * ETWr
+//     - fETW is distributed to existing arranged subviews keeping the relative ratios
+//   - BUT it tries to respect non resizable instructions given by the delegate (if possible). If not possible, it tries
+//     to shrink evenly all fixed size subviews (after having collapsed all flexible subviews).
+//     Remark : when a fixed size subview has been shrinked, as it is marked as fixed, it won't grow back to its original size !
+//
+// - When removing an arranged subview :
+//   - The removed arranged subview remains a subview (!) keeping its size and position at the moment of the removal
+//   - The proportions of remaining arranged subviews are maintained
+
+- (CPArray)arrangedSubviews
+{
+    return [_arrangedSubviews copy];
+}
+
+- (void)addArrangedSubview:(CPView)view
+{
+    _subviewsManagementDisabled = YES;
+
+    // TODO: Cocoa :
+    // - quand on fait un addArranged -> il fait aussi un addSubview
+    // - quand pas arranges all subviews, quand on fait un addSubview -> ne fait pas un addArranged
+    // - quand arranges all subviews, quand on fait un addSubview -> fait un addArranged
+
+    [self _addArrangedSubview:view];
+    [self addSubview:view];
+
+    _subviewsManagementDisabled = NO;
+//    _needsResizeSubviews        = YES;
+}
+
+- (void)_addArrangedSubview:(CPView)view
+{
+    // First, compute some geometry
+
+    var thickness     = [self currentValueForThemeAttribute:@"divider-thickness"],
+        newViewFrame  = [view frame],
+        myFrame       = [self frame],
+        flexibleSpace = 0,
+        flexibleCount = 0,
+        fixedSpace    = 0,
+        fixedCount    = 0;
+
+    // We have to reinitialize this cache as flexibility can change over time (determined by the delegate)
+    _isFlexible = @[];
+
+    // We temporarily set the size of the new arranged subview
+    var size = CGSizeMakeCopy(myFrame.size);
+    size[_sizeComponent] = newViewFrame.size[_sizeComponent];
+    [view setFrameSize:size];
+
+    [_arrangedSubviews addObject:view];
+    [_realSubviews     addObject:view];
+    [_initialSizes     addObject:newViewFrame.size[_sizeComponent]];
+    [_ratios           addObject:0];
+
+    for (var i = 0, count = _arrangedSubviews.length, isFlexible; i < count; i++)
+    {
+        [_isFlexible addObject:(isFlexible = [self _sendDelegateSplitViewShouldAdjustSizeOfSubview:_arrangedSubviews[i]])];
+
+        if (isFlexible)
+        {
+            flexibleSpace += _initialSizes[i];
+            flexibleCount++;
+        }
+        else
+        {
+            fixedSpace += _initialSizes[i];
+            fixedCount++;
+        }
+    }
+
+    for (var i = 0, count = _arrangedSubviews.length; i < count; i++)
+        if (_isFlexible[i])
+            [_ratios replaceObjectAtIndex:i withObject:(_initialSizes[i] / flexibleSpace)];
+        else
+            [_ratios replaceObjectAtIndex:i withObject:(_initialSizes[i] / fixedSpace)];
+
+    // If we have more than one arranged subview, then we have to add a divider
+    if (_arrangedSubviews.length > 1)
+    {
+        var dividerFrame = CGRectMakeZero();
+
+        dividerFrame.size                 = CGSizeMakeCopy(myFrame.size);
+        dividerFrame.size[_sizeComponent] = thickness;
+
+        var divider = [[CPView alloc] initWithFrame:dividerFrame];
+
+        [divider setBackgroundColor:[self currentValueForThemeAttribute:@"divider-color"]];
+
+        [_dividerSubviews addObject:divider];
+        [super            addSubview:divider];
+    }
+
+    //    if (newFixedSpace < usableSpace)
+    //    {
+    //        // We have enough space
+    //        [self _adaptArrangedSubviewsFromIndex:0 toIndex:_arrangedSubviews.length-1 toFitSize:usableSpace withFixedSize:newFixedSpace];
+    //        CPLog.trace("Case 1");
+    //    }
+    //    else
+    //    {
+    //        // We don't have enough space
+    //        // FIXME: ne pas oublier de changer les initiales des fixed quand on les réduit (pas agrandit)
+    //        CPLog.trace("Case 2");
+    //    }
+
+    //    [self _adaptArrangedSubviewsFromIndex:0 toIndex:_arrangedSubviews.length-1 toFitSize:usableSpace withFixedSize:newFixedSpace];
+
+    [_realSubviews addObject:view];
+
+    _needsResizeSubviews        = YES;
+
+    //    [self setNeedsLayout];
+    [self adjustSubviews];
+    [self _layoutSubviews];
+}
+
+- (void)insertArrangedSubview:(CPView)view atIndex:(CPInteger)index
+{
+    // TODO: here
+    // pas oublier de mettre dans les subviews
+    // + gérer les dividers
+}
+
+- (void)removeArrangedSubview:(CPView)view
+{
+    // TODO: here
+    // pas oublier de retirer dans les subviews
+    // + gérer les dividers
+}
+
+- (void)addSubview:(CPView)aSubview
+{
+    // TODO: Cocoa : si on fait un addSubview ET si on a arrangesAllSubviews -> on doit aussi faire un addArrangedSubviews (mais sans appeler à nouveau addSubview)
+
+    [super addSubview:aSubview];
+
+    if (_subviewsManagementDisabled)
+        return;
+
+    // FIXME : si on a arrangesAllSubviews, on doit mettre la subview dans les arrangedSubviews ; sinon, on prévient temporairement qu'il faut peut-être utiliser l'autre
+
+    if (_arrangesAllSubviews)
+        [self _addArrangedSubview:aSubview];
+
     _needsResizeSubviews = YES;
-    [self setNeedsDisplay:YES];
 }
 
 - (void)didAddSubview:(CPView)aSubview
 {
+    // FIXME: ajouter ici une subview pour divider (puisqu'on vient d'ajouter une subview)
+    // Peut-être conserver un tableau des vraies subviews en + de celui des dividers
+
+//    if (aSubview === _newDividerView)
+//    {
+//        _newDividerView = nil;
+//        return;
+//    }
+
+//    _newDividerView = [[CPView alloc] initWithFrame:CGRectMake(XXX,XXX,XXX,XXX)];
+
+    if (_subviewsManagementDisabled)
+        return;
+
     _needsResizeSubviews = YES;
 }
 
-/*!
-    Returns YES if the supplied subview is collapsed, otherwise NO.
-    @param aSubview - the subview you are interested in.
-    @return BOOL - YES if the subview is collapsed, otherwise NO.
-*/
-- (BOOL)isSubviewCollapsed:(CPView)subview
+- (void)willRemoveSubview:(CPView)aView
 {
-    return [subview frame].size[_sizeComponent] < 1 ? YES : NO;
+    // FIXME: si arrangesAllSubviews, retirer aussi des arrangedSubviews ; sinon prévenir
+    // FIXME: retirer un divider
+
+//#if PLATFORM(DOM)
+//    var dividerToRemove = _DOMDividerElements.pop();
+//
+//    // The divider may not exist if we never rendered out the DOM.
+//    if (dividerToRemove)
+//        CPDOMDisplayServerRemoveChild(_DOMElement, dividerToRemove);
+//#endif
+
+    _needsResizeSubviews = YES;
+    [self setNeedsLayout];
+    [self setNeedsDisplay:YES];
 }
 
-/*!
-    Returns the CGRect of the divider at a given index.
+#pragma mark - Layout subviews
 
-    @param int - The index of a divider.
-    @return CGRect - The rect of a divider.
-*/
 - (CGRect)rectOfDividerAtIndex:(int)aDivider
 {
-    var frame = [_subviews[aDivider] frame],
-        rect = CGRectMakeZero();
+    return [_dividerSubviews[aDivider] frame];
 
-    rect.size = [self frame].size;
-    rect.size[_sizeComponent] = [self dividerThickness];
-    rect.origin[_originComponent] = frame.origin[_originComponent] + frame.size[_sizeComponent];
-
-    return rect;
+//    var frame = [_subviews[aDivider] frame],
+//    rect = CGRectMakeZero();
+//
+//    rect.size = [self frame].size;
+//    rect.size[_sizeComponent] = [self dividerThickness];
+//    rect.origin[_originComponent] = frame.origin[_originComponent] + frame.size[_sizeComponent];
+//
+//    return rect;
 }
 
 /*!
-    Returns the rect of the divider which the user is able to drag to resize.
+ Returns the rect of the divider which the user is able to drag to resize.
 
-    @param int - The index of the divider.
-    @return CGRect - The rect the user can drag.
-*/
+ @param int - The index of the divider.
+ @return CGRect - The rect the user can drag.
+ */
 - (CGRect)effectiveRectOfDividerAtIndex:(int)aDivider
 {
     var realRect = [self rectOfDividerAtIndex:aDivider],
@@ -317,82 +595,315 @@ var ShouldSuppressResizeNotifications   = 1,
     return realRect;
 }
 
-- (void)drawRect:(CGRect)rect
+- (void)setFrameSize:(CGSize)aSize
 {
-    var count = [_subviews count] - 1;
+    if (_shouldRestoreFromAutosaveUnlessFrameSize)
+        _shouldAutosave = NO;
+    else
+        [self _adjustSubviewsWithCalculatedSize];
 
-    while ((count--) > 0)
-    {
-        _drawingDivider = count;
-        [self drawDividerInRect:[self rectOfDividerAtIndex:count]];
-    }
-}
+    [super setFrameSize:aSize];
 
-/*!
-    @ignore
-    Because we're use drawRect: to draw the dividers, but use DOM elements instead of CoreGraphics
-    We must remove those DOM elements (the splitters) when the subview is removed.
-*/
-- (void)willRemoveSubview:(CPView)aView
-{
-#if PLATFORM(DOM)
-    var dividerToRemove = _DOMDividerElements.pop();
+    if (_shouldRestoreFromAutosaveUnlessFrameSize)
+        _shouldAutosave = YES;
 
-    // The divider may not exist if we never rendered out the DOM.
-    if (dividerToRemove)
-        CPDOMDisplayServerRemoveChild(_DOMElement, dividerToRemove);
-#endif
-
-    _needsResizeSubviews = YES;
-    [self setNeedsLayout];
     [self setNeedsDisplay:YES];
+
 }
 
-- (void)layoutSubviews
+- (void)resizeSubviewsWithOldSize:(CGSize)oldSize
 {
-    [self _adjustSubviewsWithCalculatedSize]
+    if ([self _delegateRespondsToSplitViewResizeSubviewsWithOldSize])
+    {
+        [self _sendDelegateSplitViewResizeSubviewsWithOldSize:oldSize];
+        return;
+    }
+
+//    [super resizeSubviewsWithOldSize:oldSize];
+
+    // FIXME: utile ?
+    [self adjustSubviews];
+    [self _layoutSubviews];
 }
 
 /*!
-    Draws the divider at a given rect.
-    @param aRect - the rect of the divider to draw.
-*/
-- (void)drawDividerInRect:(CGRect)aRect
+ Adjusts the sizes of the split view’s subviews so they (plus the dividers) fill the split view.
+
+ When you call this method, the split view’s subviews are resized proportionally; the relative sizes of the subviews do not change.
+
+ The default implementation of this method resizes subviews proportionally so that the ratio of heights (when using horizontal dividers)
+ or widths (when using vertical dividers) does not change, even though the absolute sizes change.
+
+ Call this method on split views from which subviews have been added or removed, to reestablish the consistency of subview placement.
+
+ This method invalidates the cursor when it is over a divider, ensuring the cursor is always of the correct type during and after resizing animations.
+ */
+- (void)adjustSubviews
 {
-#if PLATFORM(DOM)
-    if (!_DOMDividerElements[_drawingDivider])
+    CPLog.trace("adjustSubviews");
+//    - (void)_adaptArrangedSubviewsFromIndex:(CPInteger)fromIndex toIndex:(CPInteger)toIndex toFitSize:(CPInteger)sizeToFit withFixedSize:(CPInteger)fixedSize
+
+    SPLIT_VIEW_MAYBE_POST_WILL_RESIZE();
+    [self _postNotificationWillResize];
+
+    // 2 possibilities : we have, or not, enough flexible space to accomodate fixed size subviews
+
+    var sizeToFit  = [self frame].size[_sizeComponent] - _dividerSubviews.length * [self currentValueForThemeAttribute:@"divider-thickness"],
+        fixedSize  = 0,
+        nbSubviews = _arrangedSubviews.length;
+
+    for (var i = 0, count = _arrangedSubviews.length; i < count; i++)
+        if (!_isFlexible[i])
+            fixedSize += [_arrangedSubviews[i] frameSize][_sizeComponent];
+
+    if (fixedSize < sizeToFit)
     {
-        _DOMDividerElements[_drawingDivider] = document.createElement("div");
+        // There's enough space to maintain fixed and flexible subviews
+        // So we only deal with flexible subviews, resizing them while keeping all ratios
 
-        _DOMDividerElements[_drawingDivider].style.position = "absolute";
-        _DOMDividerElements[_drawingDivider].style.backgroundRepeat = "repeat";
+        var newFlexibleSize = sizeToFit - fixedSize,
+            remainingSpace  = newFlexibleSize,
+            flexibleCount   = 0;
 
-        CPDOMDisplayServerAppendChild(_DOMElement, _DOMDividerElements[_drawingDivider]);
-        [self _setupDOMDivider];
-    }
+        for (var i = 0, size, floatSize, intSize, cumulativeFloatSize = 0.0, cumulativeIntSize = 0; i < nbSubviews; i++)
+            if (_isFlexible[i])
+            {
+                flexibleCount++;
 
-    CPDOMDisplayServerSetStyleLeftTop(_DOMDividerElements[_drawingDivider], NULL, CGRectGetMinX(aRect), CGRectGetMinY(aRect));
-    CPDOMDisplayServerSetStyleSize(_DOMDividerElements[_drawingDivider], CGRectGetWidth(aRect), CGRectGetHeight(aRect));
-#endif
-}
+                // Cocoa doesn't seem to round arranged subviews sizes.
+                // So the next computation ensures we get the same results but with rounded sizes.
+                size = CGSizeMakeCopy([_arrangedSubviews[i] frameSize]);
+                floatSize = MIN((newFlexibleSize * _ratios[i]), remainingSpace);
+                cumulativeFloatSize += floatSize;
 
-- (void)_setupDOMDivider
-{
-    if (_isPaneSplitter)
-    {
-        _DOMDividerElements[_drawingDivider].style.backgroundColor = "";
-        _DOMDividerElements[_drawingDivider].style.backgroundImage = "url('"+_dividerImagePath+"')";
+                intSize = ROUND(cumulativeFloatSize) - cumulativeIntSize;
+                cumulativeIntSize += intSize;
+
+                remainingSpace -= size[_sizeComponent] = intSize;
+
+                [_arrangedSubviews[i] setFrameSize:size];
+            }
+
+        if (remainingSpace > 0)
+            // Due to roundings, some pixels remain to attribute. We do this in reverse order of views.
+            // For example, if we have 9px to distribute on 4 views, we do : +2 +2 +2 +3
+            [self _distribute:remainingSpace amoung:flexibleCount onFlexible:YES fromIndex:0 toIndex:nbSubviews-1];
     }
     else
     {
-        _DOMDividerElements[_drawingDivider].style.backgroundColor = [[self currentValueForThemeAttribute:@"pane-divider-color"] cssString];
-        _DOMDividerElements[_drawingDivider].style.backgroundImage = "";
+        // There's not enough space to maintain fixed and flexible subviews
+        // So we collapse all flexible subviews and shrink evenly fixed subviews
+
+        var remainingSpace = sizeToFit,
+            fixedCount     = 0;
+
+        // FIXME: here !
+
+        for (var i = 0, size, floatSize, intSize, cumulativeFloatSize = 0.0, cumulativeIntSize = 0; i < nbSubviews; i++)
+        {
+            size = CGSizeMakeCopy([_arrangedSubviews[i] frameSize]);
+
+            if (_isFlexible[i])
+                size[_sizeComponent] = 0;
+            else
+            {
+                fixedCount++;
+
+                // Cocoa doesn't seem to round arranged subviews sizes.
+                // So the next computation ensures we get the same results but with rounded sizes.
+                floatSize = MIN((sizeToFit * _ratios[i]), remainingSpace);
+                cumulativeFloatSize += floatSize;
+
+                intSize = ROUND(cumulativeFloatSize) - cumulativeIntSize;
+                cumulativeIntSize += intSize;
+
+                remainingSpace -= size[_sizeComponent] = intSize;
+            }
+
+            [_arrangedSubviews[i] setFrameSize:size];
+        }
+
+        if (remainingSpace > 0)
+            [self _distribute:remainingSpace amoung:fixedCount onFlexible:NO fromIndex:0 toIndex:nbSubviews-1];
     }
+
+
+//    if (_isCSSBased)
+//        return;
+//
+//    var count = [_subviews count];
+//
+//    if (!count)
+//        return;
+//
+//    SPLIT_VIEW_MAYBE_POST_WILL_RESIZE();
+//    [self _postNotificationWillResize];
+//
+//    var index = 0,
+//        bounds = [self bounds],
+//        boundsSize = bounds.size[_sizeComponent],
+//        oldSize = [self _calculateSize],
+//        dividerThickness = [self dividerThickness],
+//        totalDividers = count - 1,
+//        oldFlexibleSpace = 0,
+//        totalSizablePanes = 0,
+//        isSizableMap = {},
+//        viewSizes = [];
+//
+//    // What we want to do is to preserve non resizable sizes first, and then to preserve the ratio of size to available
+//    // non fixed space for every other subview. E.g. assume fixed space was 20 pixels initially, view 1 was 20 and
+//    // view 2 was 30 pixels, for a total of 70 pixels. Then the new total size becomes 140 pixels. Now we want the fixed
+//    // space to still be 20 pixels, view 1 to be 48 pixels and view 2 to be 72 pixels. This way the relative size of
+//    // view 1 to view 2 remains the same - view 1 was 66% of view 2 initially and after the resize view 1 is still
+//    // 66% of view 2's size.
+//    //
+//    // For this calculation, we can consider the dividers themselves to also be fixed size areas - they should remain
+//    // the same size before and after.
+//
+//    // How much flexible size do we have in pre-resize pixels?
+//    for (index = 0; index < count; ++index)
+//    {
+//        var view = _subviews[index],
+//        isSizable = [self _sendDelegateSplitViewShouldAdjustSizeOfSubview:view],
+//        size = [view frame].size[_sizeComponent];
+//
+//        isSizableMap[index] = isSizable;
+//        viewSizes.push(size);
+//
+//        if (isSizable)
+//        {
+//            oldFlexibleSpace += size;
+//            totalSizablePanes++;
+//        }
+//    }
+//
+//    // nonSizableSpace is the number of fixed pixels in pre-resize terms and the desired number post-resize.
+//    var nonSizableSpace = oldSize[_sizeComponent] - oldFlexibleSpace,
+//        newFlexibleSpace = boundsSize - nonSizableSpace,
+//        remainingFixedPixelsToRemove = 0;
+//
+//    if (newFlexibleSpace < 0)
+//    {
+//        remainingFixedPixelsToRemove = -newFlexibleSpace;
+//        newFlexibleSpace = 0;
+//    }
+//
+//    var remainingFixedPanes = count - totalSizablePanes;
+//
+//    for (index = 0; index < count; ++index)
+//    {
+//        var view = _subviews[index],
+//            viewFrame = CGRectMakeCopy(bounds),
+//            isSizable = isSizableMap[index],
+//            targetSize = 0;
+//
+//        // The last area must take up exactly the remaining space, fixed or not.
+//        if (index + 1 === count)
+//            targetSize = boundsSize - viewFrame.origin[_originComponent];
+//        // Try to keep fixed size areas the same size.
+//        else if (!isSizable)
+//        {
+//            var removedFixedPixels = MIN(remainingFixedPixelsToRemove / remainingFixedPanes, viewSizes[index]);
+//            targetSize = viewSizes[index] - removedFixedPixels;
+//            remainingFixedPixelsToRemove -= removedFixedPixels;
+//            remainingFixedPanes--;
+//        }
+//        // (new size / flexible size available) == (old size / old flexible size available)
+//        else if (oldFlexibleSpace > 0)
+//            targetSize = newFlexibleSpace * viewSizes[index] / oldFlexibleSpace;
+//        // oldFlexibleSpace <= 0 so all flexible areas were crushed. When we get space, allocate it evenly.
+//        // totalSizablePanes cannot be 0 since isSizable.
+//        else
+//            targetSize = newFlexibleSpace / totalSizablePanes;
+//
+//        targetSize = MAX(0, ROUND(targetSize));
+//        viewFrame.size[_sizeComponent] = targetSize;
+//        [view setFrame:viewFrame];
+//        bounds.origin[_originComponent] += targetSize + dividerThickness;
+//    }
+
+    SPLIT_VIEW_MAYBE_POST_DID_RESIZE();
 }
 
-- (void)viewWillDraw
+#pragma mark - Private layout utilities
+
+- (CPInteger)_usableSize
 {
-    [self _adjustSubviewsWithCalculatedSize];
+    // FIXME: utile ?
+    return [self frame].size[_sizeComponent] - _dividerSubviews.length * [self currentValueForThemeAttribute:@"divider-thickness"];
+}
+
+- (void)_distribute:(CPInteger)remainingSpace amoung:(CPInteger)count onFlexible:(BOOL)onFlexible fromIndex:(CPInteger)fromIndex toIndex:(CPInteger)toIndex
+{
+    for (var i = toIndex, size, supplement; i >= fromIndex; i--)
+        if (_isFlexible[i] == onFlexible)
+        {
+            size = CGSizeMakeCopy([_arrangedSubviews[i] frameSize]);
+            remainingSpace -= supplement = CEIL(remainingSpace / count);
+            size[_sizeComponent] += supplement;
+            [_arrangedSubviews[i] setFrameSize:size];
+
+            count--;
+        }
+}
+
+- (void)_layoutSubviews
+{
+    //    [self _adjustSubviewsWithCalculatedSize]
+
+    for (var i = 0, count = _arrangedSubviews.length, position = 0, origin; i < count; i++)
+    {
+        origin                   = CGPointMakeZero();
+        origin[_originComponent] = position;
+        position                += [_arrangedSubviews[i] frame].size[_sizeComponent];
+
+        [_arrangedSubviews[i] setFrameOrigin:origin];
+
+        if (i < count - 1)
+        {
+            origin                   = CGPointMakeZero();
+            origin[_originComponent] = position;
+            position                += [_dividerSubviews[i] frame].size[_sizeComponent];
+
+            [_dividerSubviews[i] setFrameOrigin:origin];
+        }
+    }
+
+    [self updateTrackingAreas];
+}
+
+- (void)_updateRatios
+{
+    // When a divider is moved, we have to compute new ratios based on new sizes
+
+    var flexibleSpace = 0,
+        flexibleCount = 0,
+        fixedSpace    = 0,
+        fixedCount    = 0;
+
+    for (var i = 0, count = _arrangedSubviews.length, isFlexible; i < count; i++)
+    {
+        [_isFlexible replaceObjectAtIndex:i withObject:(isFlexible = [self _sendDelegateSplitViewShouldAdjustSizeOfSubview:_arrangedSubviews[i]])];
+
+        [_initialSizes replaceObjectAtIndex:i withObject:[_arrangedSubviews[i] frame].size[_sizeComponent]];
+
+        if (isFlexible)
+        {
+            flexibleSpace += _initialSizes[i];
+            flexibleCount++;
+        }
+        else
+        {
+            fixedSpace += _initialSizes[i];
+            fixedCount++;
+        }
+    }
+
+    for (var i = 0, count = _arrangedSubviews.length; i < count; i++)
+        if (_isFlexible[i])
+            [_ratios replaceObjectAtIndex:i withObject:(_initialSizes[i] / flexibleSpace)];
+        else
+            [_ratios replaceObjectAtIndex:i withObject:(_initialSizes[i] / fixedSpace)];
 }
 
 - (void)_adjustSubviewsWithCalculatedSize
@@ -402,6 +913,7 @@ var ShouldSuppressResizeNotifications   = 1,
 
     _needsResizeSubviews = NO;
 
+    // FIXME : revoir ! Performances ??? Mettre en cache la old size ?
     [self resizeSubviewsWithOldSize:[self _calculateSize]];
 }
 
@@ -411,7 +923,7 @@ var ShouldSuppressResizeNotifications   = 1,
         count = subviews.length,
         size = CGSizeMakeZero();
 
-    if ([self isVertical])
+    if (_isVertical)
     {
         size.width += [self dividerThickness] * (count - 1);
         size.height = CGRectGetHeight([self frame]);
@@ -428,9 +940,88 @@ var ShouldSuppressResizeNotifications   = 1,
     return size;
 }
 
+#pragma mark -
+
+/*!
+    Returns YES if the supplied subview is collapsed, otherwise NO.
+    @param aSubview - the subview you are interested in.
+    @return BOOL - YES if the subview is collapsed, otherwise NO.
+*/
+- (BOOL)isSubviewCollapsed:(CPView)subview
+{
+    return ([subview frame].size[_sizeComponent] < 1);
+}
+
+/*!
+    Returns the CGRect of the divider at a given index.
+
+    @param int - The index of a divider.
+    @return CGRect - The rect of a divider.
+*/
+- (void)drawRect:(CGRect)rect
+{
+    if (_isCSSBased)
+        return;
+
+    var count = [_subviews count] - 1;
+
+    while ((count--) > 0)
+    {
+        _drawingDivider = count;
+        [self drawDividerInRect:[self rectOfDividerAtIndex:count]];
+    }
+}
+
+/*!
+    Draws the divider at a given rect.
+    @param aRect - the rect of the divider to draw.
+*/
+- (void)drawDividerInRect:(CGRect)aRect
+{
+    // FIXME: vérifier que OK
+    if (_isCSSBased)
+        return;
+
+//#if PLATFORM(DOM)
+//    if (!_DOMDividerElements[_drawingDivider])
+//    {
+//        _DOMDividerElements[_drawingDivider] = document.createElement("div");
+//
+//        _DOMDividerElements[_drawingDivider].style.position = "absolute";
+//        _DOMDividerElements[_drawingDivider].style.backgroundRepeat = "repeat";
+//
+//        CPDOMDisplayServerAppendChild(_DOMElement, _DOMDividerElements[_drawingDivider]);
+//        [self _setupDOMDivider];
+//    }
+//
+//    CPDOMDisplayServerSetStyleLeftTop(_DOMDividerElements[_drawingDivider], NULL, CGRectGetMinX(aRect), CGRectGetMinY(aRect));
+//    CPDOMDisplayServerSetStyleSize(_DOMDividerElements[_drawingDivider], CGRectGetWidth(aRect), CGRectGetHeight(aRect));
+//#endif
+}
+
+//- (void)_setupDOMDivider
+//{
+//    if (_isPaneSplitter)
+//    {
+//        _DOMDividerElements[_drawingDivider].style.backgroundColor = "";
+//        _DOMDividerElements[_drawingDivider].style.backgroundImage = "url('"+_dividerImagePath+"')";
+//    }
+//    else
+//    {
+//        _DOMDividerElements[_drawingDivider].style.backgroundColor = [[self currentValueForThemeAttribute:@"pane-divider-color"] cssString];
+//        _DOMDividerElements[_drawingDivider].style.backgroundImage = "";
+//    }
+//}
+
+//- (void)viewWillDraw
+//{
+//    [self _adjustSubviewsWithCalculatedSize];
+//}
+
 - (BOOL)cursorAtPoint:(CGPoint)aPoint hitDividerAtIndex:(int)anIndex
 {
-    var frame = [_subviews[anIndex] frame],
+    // FIXME : revoir
+    var frame = [_arrangedSubviews[anIndex] frame],
         startPosition = frame.origin[_originComponent] + frame.size[_sizeComponent],
         effectiveRect = [self effectiveRectOfDividerAtIndex:anIndex],
         buttonBar = _buttonBars[anIndex],
@@ -467,7 +1058,8 @@ var ShouldSuppressResizeNotifications   = 1,
 
 - (CPInteger)_dividerAtPoint:(CGPoint)aPoint
 {
-    var count = [_subviews count] - 1;
+    // FIXME : revoir
+    var count = [_dividerSubviews count];
 
     for (var i = 0; i < count; i++)
     {
@@ -506,7 +1098,7 @@ var ShouldSuppressResizeNotifications   = 1,
         var point = [self convertPoint:[anEvent locationInWindow] fromView:nil];
         _currentDivider = [self _dividerAtPoint:point];
 
-        var frame = [_subviews[_currentDivider] frame],
+        var frame = [_arrangedSubviews[_currentDivider] frame],
             startPosition = frame.origin[_originComponent] + frame.size[_sizeComponent];
 
         if ([anEvent clickCount] == 2 &&
@@ -517,16 +1109,16 @@ var ShouldSuppressResizeNotifications   = 1,
                 maxPosition = [self maxPossiblePositionOfDividerAtIndex:_currentDivider],
                 preCollapsePosition = [_preCollapsePositions objectForKey:"" + _currentDivider] || 0;
 
-            if ([self _sendDelegateSplitViewCanCollapseSubview:_subviews[_currentDivider]] && [self _sendDelegateSplitViewShouldCollapseSubview:_subviews[_currentDivider] forDoubleClickOnDividerAtIndex:_currentDivider])
+            if ([self _sendDelegateSplitViewCanCollapseSubview:_arrangedSubviews[_currentDivider]] && [self _sendDelegateSplitViewShouldCollapseSubview:_arrangedSubviews[_currentDivider] forDoubleClickOnDividerAtIndex:_currentDivider])
             {
-                if ([self isSubviewCollapsed:_subviews[_currentDivider]])
+                if ([self isSubviewCollapsed:_arrangedSubviews[_currentDivider]])
                     [self setPosition:preCollapsePosition ? preCollapsePosition : (minPosition + (maxPosition - minPosition) / 2) ofDividerAtIndex:_currentDivider];
                 else
                     [self setPosition:minPosition ofDividerAtIndex:_currentDivider];
             }
-            else if ([self _sendDelegateSplitViewCanCollapseSubview:_subviews[_currentDivider + 1]] && [self _sendDelegateSplitViewShouldCollapseSubview:_subviews[_currentDivider + 1] forDoubleClickOnDividerAtIndex:_currentDivider])
+            else if ([self _sendDelegateSplitViewCanCollapseSubview:_arrangedSubviews[_currentDivider + 1]] && [self _sendDelegateSplitViewShouldCollapseSubview:_arrangedSubviews[_currentDivider + 1] forDoubleClickOnDividerAtIndex:_currentDivider])
             {
-                if ([self isSubviewCollapsed:_subviews[_currentDivider + 1]])
+                if ([self isSubviewCollapsed:_arrangedSubviews[_currentDivider + 1]])
                     [self setPosition:preCollapsePosition ? preCollapsePosition : (minPosition + (maxPosition - minPosition) / 2) ofDividerAtIndex:_currentDivider];
                 else
                     [self setPosition:maxPosition ofDividerAtIndex:_currentDivider];
@@ -579,6 +1171,7 @@ var ShouldSuppressResizeNotifications   = 1,
 
 - (void)_updateResizeCursor:(CPEvent)anEvent
 {
+    // FIXME: problème quand 2 collapsed à gauche : flèche OK pour le + à droite, pas OK pour le + à gauche
     var point = [self convertPoint:[anEvent locationInWindow] fromView:nil];
 
     if ([anEvent type] === CPLeftMouseUp && ![[self window] acceptsMouseMovedEvents])
@@ -587,15 +1180,15 @@ var ShouldSuppressResizeNotifications   = 1,
         return;
     }
 
-    for (var i = 0, count = [_subviews count] - 1; i < count; i++)
+    for (var i = 0, count = [_arrangedSubviews count] - 1; i < count; i++)
     {
         // If we are currently tracking, keep the resize cursor active even outside of hit areas.
         if (_currentDivider === i || (_currentDivider == CPNotFound && [self cursorAtPoint:point hitDividerAtIndex:i]))
         {
-            var frameA = [_subviews[i] frame],
+            var frameA = [_arrangedSubviews[i] frame],
                 sizeA = frameA.size[_sizeComponent],
                 startPosition = frameA.origin[_originComponent] + sizeA,
-                frameB = [_subviews[i + 1] frame],
+                frameB = [_arrangedSubviews[i + 1] frame],
                 sizeB = frameB.size[_sizeComponent],
                 canShrink = [self _realPositionForPosition:startPosition - 1 ofDividerAtIndex:i] < startPosition,
                 canGrow = [self _realPositionForPosition:startPosition + 1 ofDividerAtIndex:i] > startPosition,
@@ -603,7 +1196,7 @@ var ShouldSuppressResizeNotifications   = 1,
 
             if (sizeA === 0)
                 canGrow = YES; // Subview is collapsed.
-            else if (!canShrink && [self _sendDelegateSplitViewCanCollapseSubview:_subviews[i]])
+            else if (!canShrink && [self _sendDelegateSplitViewCanCollapseSubview:_arrangedSubviews[i]])
                 canShrink = YES; // Subview is collapsible.
 
             if (sizeB === 0)
@@ -613,7 +1206,7 @@ var ShouldSuppressResizeNotifications   = 1,
                 // It's safe to assume it can always be uncollapsed.
                 canShrink = YES;
             }
-            else if (!canGrow && [self _sendDelegateSplitViewCanCollapseSubview:_subviews[i + 1]])
+            else if (!canGrow && [self _sendDelegateSplitViewCanCollapseSubview:_arrangedSubviews[i + 1]])
             {
                 canGrow = YES; // Right/lower subview is collapsible.
             }
@@ -646,9 +1239,9 @@ var ShouldSuppressResizeNotifications   = 1,
 */
 - (float)maxPossiblePositionOfDividerAtIndex:(int)dividerIndex
 {
-    var frame = [_subviews[dividerIndex + 1] frame];
+    var frame = [_arrangedSubviews[dividerIndex + 1] frame];
 
-    if (dividerIndex + 1 < [_subviews count] - 1)
+    if (dividerIndex + 1 < [_arrangedSubviews count] - 1)
         return frame.origin[_originComponent] + frame.size[_sizeComponent] - [self dividerThickness];
     else
         return [self frame].size[_sizeComponent] - [self dividerThickness];
@@ -663,7 +1256,7 @@ var ShouldSuppressResizeNotifications   = 1,
 {
     if (dividerIndex > 0)
     {
-        var frame = [_subviews[dividerIndex - 1] frame];
+        var frame = [_arrangedSubviews[dividerIndex - 1] frame];
 
         return frame.origin[_originComponent] + frame.size[_sizeComponent] + [self dividerThickness];
     }
@@ -695,8 +1288,8 @@ var ShouldSuppressResizeNotifications   = 1,
     if (_IS_NUMERIC(proposedActualMax))
         actualMax = proposedActualMax;
 
-    var viewA = _subviews[dividerIndex],
-        viewB = _subviews[dividerIndex + 1],
+    var viewA = _arrangedSubviews[dividerIndex],
+        viewB = _arrangedSubviews[dividerIndex + 1],
         realPosition = MAX(MIN(position, actualMax), actualMin);
 
     // Is this position past the halfway point to collapse?
@@ -722,17 +1315,22 @@ var ShouldSuppressResizeNotifications   = 1,
     _shouldRestoreFromAutosaveUnlessFrameSize = nil;
 
     SPLIT_VIEW_SUPPRESS_RESIZE_NOTIFICATIONS(YES);
-    [self _adjustSubviewsWithCalculatedSize];
+//    [self _adjustSubviewsWithCalculatedSize];
 
     var realPosition = [self _realPositionForPosition:position ofDividerAtIndex:dividerIndex],
-        viewA = _subviews[dividerIndex],
+        viewA = _arrangedSubviews[dividerIndex],
         frameA = [viewA frame],
-        viewB = _subviews[dividerIndex + 1],
+        viewB = _arrangedSubviews[dividerIndex + 1],
         frameB = [viewB frame],
         preCollapsePosition = 0,
         preSize = frameA.size[_sizeComponent];
 
     frameA.size[_sizeComponent] = realPosition - frameA.origin[_originComponent];
+
+    // We update the ratio of first view (= new size * old ratio / old size)
+    // FIXME: problème quand le vue était collapsed (preSize = 0 -> ratio devient n'importe quoi)
+    // FIXME: quid des initialesSizes ? ne doit-on pas les changer quand l'utilisateur intervient manuellement sur le divideur ?
+//    _ratios[dividerIndex] = frameA.size[_sizeComponent] * _ratios[dividerIndex] / preSize;
 
     if (preSize !== 0 && frameA.size[_sizeComponent] === 0)
         preCollapsePosition = preSize;
@@ -740,7 +1338,7 @@ var ShouldSuppressResizeNotifications   = 1,
     if (preSize !== frameA.size[_sizeComponent])
     {
         SPLIT_VIEW_MAYBE_POST_WILL_RESIZE();
-        [_subviews[dividerIndex] setFrame:frameA];
+        [_arrangedSubviews[dividerIndex] setFrame:frameA];
         SPLIT_VIEW_MAYBE_POST_DID_RESIZE();
     }
 
@@ -748,6 +1346,9 @@ var ShouldSuppressResizeNotifications   = 1,
 
     var preOrigin = frameB.origin[_originComponent];
     frameB.size[_sizeComponent] = frameB.origin[_originComponent] + frameB.size[_sizeComponent] - realPosition - [self dividerThickness];
+
+    // We update the ratio of second view (= new size * old ratio / old size)
+//    _ratios[dividerIndex+1] = frameB.size[_sizeComponent] * _ratios[dividerIndex+1] / preSize;
 
     if (preSize !== 0 && frameB.size[_sizeComponent] === 0)
         preCollapsePosition = frameB.origin[_originComponent];
@@ -757,141 +1358,32 @@ var ShouldSuppressResizeNotifications   = 1,
     if (preSize !== frameB.size[_sizeComponent] || preOrigin !== frameB.origin[_originComponent])
     {
         SPLIT_VIEW_MAYBE_POST_WILL_RESIZE();
-        [_subviews[dividerIndex + 1] setFrame:frameB];
+        [_arrangedSubviews[dividerIndex + 1] setFrame:frameB];
         SPLIT_VIEW_MAYBE_POST_DID_RESIZE();
     }
 
     if (preCollapsePosition)
         [_preCollapsePositions setObject:preCollapsePosition forKey:"" + dividerIndex];
 
-    [self setNeedsDisplay:YES];
+    // Update the divider position
+    var dividerOrigin = [_dividerSubviews[dividerIndex] frameOrigin];
+    dividerOrigin[_originComponent] = realPosition;
+    [_dividerSubviews[dividerIndex] setFrameOrigin:dividerOrigin];
+
+    // FIXME: recalculer tous les ratios !
+//    [_ratios replaceObjectAtIndex:i withObject:(_initialSizes[i] / flexibleSpace)];
+    [self _updateRatios];
+
+//    _adjustSubviewsWithCalculatedSize
+//    {
+//        if (!_needsResizeSubviews
+
+//    [self setNeedsDisplay:YES];
 
     if (SPLIT_VIEW_DID_SUPPRESS_RESIZE_NOTIFICATION())
         [self _postNotificationDidResize];
 
     SPLIT_VIEW_SUPPRESS_RESIZE_NOTIFICATIONS(NO);
-}
-
-- (void)setFrameSize:(CGSize)aSize
-{
-    if (_shouldRestoreFromAutosaveUnlessFrameSize)
-        _shouldAutosave = NO;
-    else
-        [self _adjustSubviewsWithCalculatedSize];
-
-    [super setFrameSize:aSize];
-
-    if (_shouldRestoreFromAutosaveUnlessFrameSize)
-        _shouldAutosave = YES;
-
-    [self setNeedsDisplay:YES];
-}
-
-- (void)resizeSubviewsWithOldSize:(CGSize)oldSize
-{
-    if ([self _delegateRespondsToSplitViewResizeSubviewsWithOldSize])
-    {
-        [self _sendDelegateSplitViewResizeSubviewsWithOldSize:oldSize];
-        return;
-    }
-
-    [self adjustSubviews];
-}
-
-- (void)adjustSubviews
-{
-    var count = [_subviews count];
-
-    if (!count)
-        return;
-
-    SPLIT_VIEW_MAYBE_POST_WILL_RESIZE();
-    [self _postNotificationWillResize];
-
-    var index = 0,
-        bounds = [self bounds],
-        boundsSize = bounds.size[_sizeComponent],
-        oldSize = [self _calculateSize],
-        dividerThickness = [self dividerThickness],
-        totalDividers = count - 1,
-        oldFlexibleSpace = 0,
-        totalSizablePanes = 0,
-        isSizableMap = {},
-        viewSizes = [];
-
-    // What we want to do is to preserve non resizable sizes first, and then to preserve the ratio of size to available
-    // non fixed space for every other subview. E.g. assume fixed space was 20 pixels initially, view 1 was 20 and
-    // view 2 was 30 pixels, for a total of 70 pixels. Then the new total size becomes 140 pixels. Now we want the fixed
-    // space to still be 20 pixels, view 1 to be 48 pixels and view 2 to be 72 pixels. This way the relative size of
-    // view 1 to view 2 remains the same - view 1 was 66% of view 2 initially and after the resize view 1 is still
-    // 66% of view 2's size.
-    //
-    // For this calculation, we can consider the dividers themselves to also be fixed size areas - they should remain
-    // the same size before and after.
-
-    // How much flexible size do we have in pre-resize pixels?
-    for (index = 0; index < count; ++index)
-    {
-        var view = _subviews[index],
-            isSizable = [self _sendDelegateSplitViewShouldAdjustSizeOfSubview:view],
-            size = [view frame].size[_sizeComponent];
-
-        isSizableMap[index] = isSizable;
-        viewSizes.push(size);
-
-        if (isSizable)
-        {
-            oldFlexibleSpace += size;
-            totalSizablePanes++;
-        }
-    }
-
-    // nonSizableSpace is the number of fixed pixels in pre-resize terms and the desired number post-resize.
-    var nonSizableSpace = oldSize[_sizeComponent] - oldFlexibleSpace,
-        newFlexibleSpace = boundsSize - nonSizableSpace,
-        remainingFixedPixelsToRemove = 0;
-
-    if (newFlexibleSpace < 0)
-    {
-        remainingFixedPixelsToRemove = -newFlexibleSpace;
-        newFlexibleSpace = 0;
-    }
-
-    var remainingFixedPanes = count - totalSizablePanes;
-
-    for (index = 0; index < count; ++index)
-    {
-        var view = _subviews[index],
-            viewFrame = CGRectMakeCopy(bounds),
-            isSizable = isSizableMap[index],
-            targetSize = 0;
-
-        // The last area must take up exactly the remaining space, fixed or not.
-        if (index + 1 === count)
-            targetSize = boundsSize - viewFrame.origin[_originComponent];
-        // Try to keep fixed size areas the same size.
-        else if (!isSizable)
-        {
-            var removedFixedPixels = MIN(remainingFixedPixelsToRemove / remainingFixedPanes, viewSizes[index]);
-            targetSize = viewSizes[index] - removedFixedPixels;
-            remainingFixedPixelsToRemove -= removedFixedPixels;
-            remainingFixedPanes--;
-        }
-        // (new size / flexible size available) == (old size / old flexible size available)
-        else if (oldFlexibleSpace > 0)
-            targetSize = newFlexibleSpace * viewSizes[index] / oldFlexibleSpace;
-        // oldFlexibleSpace <= 0 so all flexible areas were crushed. When we get space, allocate it evenly.
-        // totalSizablePanes cannot be 0 since isSizable.
-        else
-            targetSize = newFlexibleSpace / totalSizablePanes;
-
-        targetSize = MAX(0, ROUND(targetSize));
-        viewFrame.size[_sizeComponent] = targetSize;
-        [view setFrame:viewFrame];
-        bounds.origin[_originComponent] += targetSize + dividerThickness;
-    }
-
-    SPLIT_VIEW_MAYBE_POST_DID_RESIZE();
 }
 
 /*!
@@ -1095,13 +1587,13 @@ The sum of the views and the sum of the dividers should be equal to the size of 
     var userDefaults = [CPUserDefaults standardUserDefaults],
         autosaveName = [self _framesKeyForAutosaveName:[self autosaveName]],
         autosavePrecollapseName = [self _precollapseKeyForAutosaveName:[self autosaveName]],
-        count = [_subviews count],
+        count = [_arrangedSubviews count],
         positions = [CPMutableArray new],
         preCollapseArray = [CPMutableArray new];
 
     for (var i = 0; i < count; i++)
     {
-        var frame = [_subviews[i] frame];
+        var frame = [_arrangedSubviews[i] frame];
         [positions addObject:CGStringFromRect(frame)];
         [preCollapseArray addObject:[_preCollapsePositions objectForKey:"" + i]];
     }
@@ -1200,16 +1692,19 @@ The sum of the views and the sum of the dividers should be equal to the size of 
 
 @end
 
+#pragma mark -
+
 @implementation CPSplitView (CPTrackingArea)
 {
     CPMutableArray  _splitViewTrackingAreas;
 }
 
+// FIXME: appeler quand on modifie les subviews (arranged)
 - (void)updateTrackingAreas
 {
     if (_splitViewTrackingAreas)
     {
-        for (var i = 0, count = [_splitViewTrackingAreas count]; i < count; i++)
+        for (var i = 0, count = _splitViewTrackingAreas.length; i < count; i++)
             [self removeTrackingArea:_splitViewTrackingAreas[i]];
 
         _splitViewTrackingAreas = nil;
@@ -1219,14 +1714,18 @@ The sum of the views and the sum of the dividers should be equal to the size of 
 
     _splitViewTrackingAreas = @[];
 
-    for (var i = 0; i < _subviews.length - 1; i++)
+    // FIXME: Seems to be needed when compiling themes
+    if (_dividerSubviews)
     {
-        [_splitViewTrackingAreas addObject:[[CPTrackingArea alloc] initWithRect:[self effectiveRectOfDividerAtIndex:i]
-                                                                        options:options
-                                                                          owner:self
-                                                                       userInfo:nil]];
+        for (var i = 0, count = _dividerSubviews.length; i < count; i++)
+        {
+            [_splitViewTrackingAreas addObject:[[CPTrackingArea alloc] initWithRect:[self effectiveRectOfDividerAtIndex:i]
+                                                                            options:options
+                                                                              owner:self
+                                                                           userInfo:nil]];
 
-        [self addTrackingArea:_splitViewTrackingAreas[i]];
+            [self addTrackingArea:_splitViewTrackingAreas[i]];
+        }
     }
 
     [super updateTrackingAreas];
@@ -1240,6 +1739,7 @@ The sum of the views and the sum of the dividers should be equal to the size of 
 
 @end
 
+#pragma mark -
 
 @implementation CPSplitView (CPSplitViewDelegate)
 
@@ -1417,12 +1917,18 @@ The sum of the views and the sum of the dividers should be equal to the size of 
 
 @end
 
+#pragma mark -
 
-var CPSplitViewDelegateKey          = "CPSplitViewDelegateKey",
-    CPSplitViewIsVerticalKey        = "CPSplitViewIsVerticalKey",
-    CPSplitViewIsPaneSplitterKey    = "CPSplitViewIsPaneSplitterKey",
-    CPSplitViewButtonBarsKey        = "CPSplitViewButtonBarsKey",
-    CPSplitViewAutosaveNameKey      = "CPSplitViewAutosaveNameKey";
+var CPSplitViewDelegateKey            = @"CPSplitViewDelegateKey",
+    CPSplitViewIsVerticalKey          = @"CPSplitViewIsVerticalKey",
+    CPSplitViewIsPaneSplitterKey      = @"CPSplitViewIsPaneSplitterKey",
+    CPSplitViewButtonBarsKey          = @"CPSplitViewButtonBarsKey",
+    CPSplitViewAutosaveNameKey        = @"CPSplitViewAutosaveNameKey",
+    CPSplitViewDividerStyleKey        = @"CPSplitViewDividerStyleKey",
+    CPSplitViewDividerSubviewsKey     = @"CPSplitViewDividerSubviewsKey",
+    CPSplitViewArrangedSubviewsKey    = @"CPSplitViewArrangedSubviewsKey",
+    CPSplitViewArrangesAllSubviewsKey = @"CPSplitViewArrangesAllSubviewsKey",
+    CPSplitViewRealSubviewsKey        = @"CPSplitViewRealSubviewsKey";
 
 @implementation CPSplitView (CPCoding)
 
@@ -1460,10 +1966,17 @@ var CPSplitViewDelegateKey          = "CPSplitViewDelegateKey",
         [[CPRunLoop currentRunLoop] performSelector:@selector(_restoreFromAutosaveIfNeeded) target:self argument:nil order:0 modes:[CPDefaultRunLoopMode]];
     }
 
+    // As subviews are often not fully ready to use at this time, we'll try to finalize the initialization after all views initializations are done
+
+    [[CPRunLoop currentRunLoop] performSelector:@selector(_finalizeInitWithCoder) target:self argument:nil order:0 modes:[CPDefaultRunLoopMode]];
+
     self = [super initWithCoder:aCoder];
 
     if (self)
     {
+        [self _init];
+        // FIXME: vérifier si pas des trucs en double avec le _init
+
         _suppressResizeNotificationsMask = 0;
         _preCollapsePositions = [CPMutableDictionary new];
 
@@ -1471,14 +1984,33 @@ var CPSplitViewDelegateKey          = "CPSplitViewDelegateKey",
         _shouldAutosave = YES;
         _isTracking = NO;
 
-        _DOMDividerElements = [];
+        _DOMDividerElements = @[];
 
-        _buttonBars = [aCoder decodeObjectForKey:CPSplitViewButtonBarsKey] || [];
+        _buttonBars = [aCoder decodeObjectForKey:CPSplitViewButtonBarsKey] || @[];
 
         [self setDelegate:[aCoder decodeObjectForKey:CPSplitViewDelegateKey]];
 
         _isPaneSplitter = [aCoder decodeBoolForKey:CPSplitViewIsPaneSplitterKey];
         [self _setVertical:[aCoder decodeBoolForKey:CPSplitViewIsVerticalKey]];
+
+        _dividerSubviews  = [aCoder decodeObjectForKey:CPSplitViewDividerSubviewsKey]  || @[];
+        _arrangedSubviews = [aCoder decodeObjectForKey:CPSplitViewArrangedSubviewsKey] || @[];
+        _realSubviews     = [aCoder decodeObjectForKey:CPSplitViewRealSubviewsKey]     || @[];
+
+        // FIXME: pourquoi devoir faire ça ? Peut-être retirer après adaptation nib2cib
+//        if (!_dividerSubviews)
+//            _dividerSubviews = @[];
+
+        CPLog.info("CODER: #arranged="+[_arrangedSubviews count]+" #divider="+[_dividerSubviews count]+" #real="+[_realSubviews count]+" #subviews="+[[self subviews] count]);
+
+        [self setArrangesAllSubviews:[aCoder decodeBoolForKey:CPSplitViewArrangesAllSubviewsKey]];
+        [self setDividerStyle:[aCoder decodeIntForKey:CPSplitViewDividerStyleKey]];
+
+        _isCSSBased = [[self theme] isCSSBased];
+
+        // Subviews received from Xcode IB are in fact arranged subviews
+//        for (var i = 0, subviews = [self subviews], count = [subviews count]; i < count; i++)
+//            [self _addArrangedSubview:subviews[i]];
 
         if (_autosaveName)
         {
@@ -1490,6 +2022,22 @@ var CPSplitViewDelegateKey          = "CPSplitViewDelegateKey",
     }
 
     return self;
+}
+
+- (void)_finalizeInitWithCoder
+{
+    CPLog.info("_finalizeInitWithCoder");
+
+    // Subviews received from Xcode IB are in fact arranged subviews
+
+    _subviewsManagementDisabled = YES;
+
+    for (var i = 0, subviews = [self subviews], count = subviews.length; i < count; i++)
+        [self _addArrangedSubview:subviews[i]];
+
+    _subviewsManagementDisabled = NO;
+
+    // FIXME: vérifier qu'il n'y a pas d'interférence avec le autosave quand il y en a un
 }
 
 /*
@@ -1505,10 +2053,58 @@ var CPSplitViewDelegateKey          = "CPSplitViewDelegateKey",
 
     [aCoder encodeConditionalObject:_delegate forKey:CPSplitViewDelegateKey];
 
-    [aCoder encodeBool:_isVertical forKey:CPSplitViewIsVerticalKey];
-    [aCoder encodeBool:_isPaneSplitter forKey:CPSplitViewIsPaneSplitterKey];
+    [aCoder encodeBool:  _isVertical          forKey:CPSplitViewIsVerticalKey];
+    [aCoder encodeBool:  _isPaneSplitter      forKey:CPSplitViewIsPaneSplitterKey];
+    [aCoder encodeInt:   _dividerStyle        forKey:CPSplitViewDividerStyleKey];
+    [aCoder encodeObject:_dividerSubviews     forKey:CPSplitViewDividerSubviewsKey];
+    [aCoder encodeObject:_arrangedSubviews    forKey:CPSplitViewArrangedSubviewsKey];
+    [aCoder encodeObject:_realSubviews        forKey:CPSplitViewRealSubviewsKey];
+    [aCoder encodeBool:  _arrangesAllSubviews forKey:CPSplitViewArrangesAllSubviewsKey];
+    [aCoder encodeObject:_autosaveName        forKey:CPSplitViewAutosaveNameKey];
 
-    [aCoder encodeObject:_autosaveName forKey:CPSplitViewAutosaveNameKey];
+    CPLog.info("CPSPlitView encodeWithCoder arranged="+_arrangedSubviews+" count="+(_arrangedSubviews ? [_arrangedSubviews count] : @"--"));
 }
 
 @end
+
+#pragma mark -
+
+@implementation CPSplitView (Deprecated)
+
+/*!
+ Use to find if the divider is a larger pane splitter.
+
+ @return BOOL - YES if the dividers are the larger pane splitters. Otherwise NO.
+ */
+- (BOOL)isPaneSplitter
+{
+    CPLog.warn("isPaneSplitter is now deprecated. Use dividerStyle instead.");
+
+    return _isPaneSplitter;
+}
+
+/*!
+ Used to set if the split view dividers should be the larger pane splitter.
+
+ @param shouldBePaneSplitter - YES if the dividers should be the thicker pane splitter, otherwise NO.
+ */
+- (void)setIsPaneSplitter:(BOOL)shouldBePaneSplitter
+{
+    CPLog.warn("setIsPaneSplitter is now deprecated. Use setDividerStyle instead.");
+
+    if (_isPaneSplitter == shouldBePaneSplitter)
+        return;
+
+    _isPaneSplitter = shouldBePaneSplitter;
+
+//    if (_DOMDividerElements[_drawingDivider])
+//        [self _setupDOMDivider];
+
+    // The divider changes size when pane splitter mode is toggled, so the
+    // subviews need to change size too.
+    _needsResizeSubviews = YES;
+    [self setNeedsDisplay:YES];
+}
+
+@end
+
