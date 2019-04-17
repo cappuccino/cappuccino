@@ -1083,6 +1083,8 @@ var CPSliderMinValueKey                 = "CPSliderMinValueKey",
         _tickMarkPosition         = [aCoder decodeIntForKey:   CPSliderTickMarkPositionKey];
         _numberOfTickMarks        = [aCoder decodeIntForKey:   CPSliderNumberOfTickMarksKey];
 
+        _isContinuous = (_sendActionOn & CPLeftMouseDraggedMask) !== 0;
+
         [self _refreshCachesAndStates];
 
         [self setNeedsLayout];
