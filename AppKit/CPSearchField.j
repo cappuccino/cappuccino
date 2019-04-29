@@ -616,9 +616,6 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
             case CPSearchFieldRecentsTitleMenuItemTag:
                 if (countOfRecents === 0)
                     continue;
-
-                if ([menu numberOfItems] > 0)
-                    [self _addSeparatorToMenu:menu];
                 break;
 
             case CPSearchFieldRecentsMenuItemTag:
@@ -641,9 +638,6 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
                 if (countOfRecents === 0)
                     continue;
 
-                if ([menu numberOfItems] > 0)
-                    [self _addSeparatorToMenu:menu];
-
                 [item setAction:@selector(_searchFieldClearRecents:)];
                 [item setTarget:self];
                 break;
@@ -651,9 +645,6 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
             case CPSearchFieldNoRecentsMenuItemTag:
                 if (countOfRecents !== 0)
                     continue;
-
-                if ([menu numberOfItems] > 0)
-                    [self _addSeparatorToMenu:menu];
                 break;
             }
 
@@ -687,7 +678,7 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
 
 - (void)_showMenu
 {
-    if (_searchMenu === nil || [_searchMenu numberOfItems] === 0 || ![self isEnabled] || ([_recentSearches count] === 0))
+    if (_searchMenu === nil || [_searchMenu numberOfItems] === 0 || ![self isEnabled])
         return;
 
     var aFrame = [[self superview] convertRect:[self frame] toView:nil],
