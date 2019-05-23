@@ -244,6 +244,9 @@ else if (USER_AGENT.indexOf("Gecko") !== -1) // Must follow KHTML check.
     if (version < 3.0)
         PLATFORM_FEATURES[CPJavaScriptMouseWheelValues_8_15] = YES;
 
+    if (version >= 66)
+        PLATFORM_FEATURES[CPJavaScriptRemedialKeySupport] = YES;
+
     // Some day this might be fixed and should be version prefixed. No known fixed version yet.
     PLATFORM_FEATURES[CPInput1PxLeftPadding] = YES;
 
