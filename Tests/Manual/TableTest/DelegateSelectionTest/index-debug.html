@@ -2,10 +2,10 @@
 <html lang="en">
 <!--
  index-debug.html
- DelegateSelectionTest
+ __project.name__
 
- Created by You on October 16, 2013.
- Copyright 2013, Your Company All rights reserved.
+ Created by __user.name__ on __project.date__.
+ Copyright __project.year__, __organization.name__ All rights reserved.
 -->
     <head>
         <meta charset="utf-8">
@@ -25,7 +25,7 @@
         <link rel="apple-touch-icon" href="Resources/icon.png">
         <link rel="apple-touch-startup-image" href="Resources/default.png">
 
-        <title>DelegateSelectionTest</title>
+        <title>__project.name__</title>
 
         <!-- Custom javascript goes here -->
         <!-- End custom javascript -->
@@ -33,6 +33,18 @@
         <script type="text/javascript">
             OBJJ_MAIN_FILE = "main.j";
             OBJJ_INCLUDE_PATHS = ["Frameworks/Debug", "Frameworks"];
+            // The below will tell the compiler to generate debug symbols, type signatures and not inline objj_msgSend functions.
+            // This will affect only Objective-J code that is compiled when loading the application. It will not affect precompiled
+            // code like the Cappuccino frameworks.
+            //
+            // Debug symbols will give each Objective-J method a Javascript function name. Without a name it will be very hard to find
+            // the methods in the debugger.
+            // Type Signatures will give type information to the Objective-J runtime for instance variables and methods.
+            // Inline objj_msgSend will give a speed increase but decorators will not work. Check below on debug options for
+            // more information on decorators.
+            //
+            // Uncomment or comment on the line below to change the flags
+            OBJJ_COMPILER_FLAGS = ["IncludeDebugSymbols", "IncludeTypeSignatures", "SourceMap", "InlineMsgSend"];
 
             var progressBar = null;
 
@@ -62,6 +74,7 @@
             objj_msgSend_reset();
 
             // DEBUG OPTIONS:
+            // Decorators will only work when the code is compiled without the compiler option 'InlineMsgSend'. Check above.
 
             // Uncomment to enable printing of backtraces on exceptions:
             //objj_msgSend_decorate(objj_backtrace_decorator);
@@ -102,7 +115,7 @@
                 width: 100%;
 
                 /* Put it at the bottom of the stack so it doesn't interfere with UI */
-                z-index: -1000;
+                z-index: 0;
             }
 
             #cappuccino-body .container {
@@ -180,7 +193,7 @@
                 <div class="container">
                     <div class="content">
                         <div id="noscript">
-                            <p style="font-size:120%; margin-bottom:.75em">JavaScript is required for this site.</p>
+                            <p style="font-size:120%; margin-bottom:.75em">JavaScript is required for this application.</p>
                             <p><a href="http://www.enable-javascript.com" target="_blank">Enable JavaScript</a></p>
                         </div>
                     </div>
