@@ -84,6 +84,7 @@ CPAltEnterTextAreaFeature               = 32;
 
 CPCSSAnimationFeature                   = 33;
 
+CPBackspaceTriggersPageBack             = 34;
 /*
     When an absolutely positioned div (CPView) with an absolutely positioned canvas in it (CPView with drawRect:) moves things on top of the canvas (subviews) don't redraw correctly. E.g. if you have a bunch of text fields in a CPBox in a sheet which animates in, some of the text fields might not be visible because the CPBox has a canvas at the bottom and the box moved form offscreen to onscreen. This bug is probably very related: https://bugs.webkit.org/show_bug.cgi?id=67203
  */
@@ -234,6 +235,7 @@ else if (USER_AGENT.indexOf("Gecko") !== -1) // Must follow KHTML check.
     PLATFORM_ENGINE |= CPGeckoBrowserEngine;
 
     PLATFORM_FEATURES[CPJavaScriptCanvasDrawFeature] = YES;
+    PLATFORM_FEATURES[CPBackspaceTriggersPageBack] = YES;
 
     var index = USER_AGENT.indexOf("Firefox"),
         version = (index === -1) ? 2.0 : parseFloat(USER_AGENT.substring(index + "Firefox".length + 1));
