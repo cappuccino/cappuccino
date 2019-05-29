@@ -106,7 +106,7 @@ var CPSharedDocumentController = nil;
     @param aType the type of the new document
     @param shouldDisplay whether to display the document on screen
 */
-- (void)openUntitledDocumentOfType:(CPString)aType display:(BOOL)shouldDisplay
+- (CPDocument)openUntitledDocumentOfType:(CPString)aType display:(BOOL)shouldDisplay
 {
     var theDocument = [self makeUntitledDocumentOfType:aType error:nil];
 
