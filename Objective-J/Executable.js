@@ -231,7 +231,6 @@ Executable.prototype.setCode = function(code, sourceMap)
     else
     {
 #endif
-#if DEBUG
         // Check if base64 source map is available
         sourceMapBase64 = this._base64EncodedSourceMap;
 
@@ -265,11 +264,8 @@ Executable.prototype.setCode = function(code, sourceMap)
     //    var functionText = "(function(){"+GET_CODE(aFragment)+"/**/\n})\n//# sourceURL="+GET_FILE(aFragment).path;
     //    compiled = eval(functionText);
     //}
-#endif
         this._function = new Function(parameters, code);
-#if DEBUG
-    this._function.displayName = absoluteString;
-#endif
+        this._function.displayName = absoluteString;
 #if COMMONJS
     }
 #endif
