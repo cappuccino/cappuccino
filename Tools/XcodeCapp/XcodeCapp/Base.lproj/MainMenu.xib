@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="14113" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14113"/>
-        <capability name="box content view" minToolsVersion="7.0"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14490.70"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -376,12 +375,12 @@
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                         <clipView key="contentView" drawsBackground="NO" id="Zlj-Y5-TaS">
                                             <rect key="frame" x="0.0" y="0.0" width="263" height="634"/>
-                                            <autoresizingMask key="autoresizingMask"/>
+                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
-                                                <tableView appearanceType="vibrantLight" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnResizing="NO" multipleSelection="NO" autosaveColumns="NO" typeSelect="NO" rowHeight="72" rowSizeStyle="automatic" viewBased="YES" id="Mss-Tu-7kR">
+                                                <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnResizing="NO" multipleSelection="NO" autosaveColumns="NO" typeSelect="NO" rowHeight="72" rowSizeStyle="automatic" viewBased="YES" id="Mss-Tu-7kR">
                                                     <rect key="frame" x="0.0" y="0.0" width="263" height="634"/>
                                                     <autoresizingMask key="autoresizingMask"/>
-                                                    <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                    <color key="backgroundColor" name="windowBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                     <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                                     <tableColumns>
                                                         <tableColumn identifier="MainCell" editable="NO" width="263" minWidth="40" maxWidth="1000" id="UKo-y4-Q5Q">
@@ -410,7 +409,7 @@
                                                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                             </textFieldCell>
                                                                         </textField>
-                                                                        <box autoresizesSubviews="NO" boxType="custom" borderType="line" borderWidth="0.0" cornerRadius="100" title="Box" titlePosition="noTitle" id="kpw-qm-NQG">
+                                                                        <box autoresizesSubviews="NO" boxType="custom" borderType="line" borderWidth="0.0" cornerRadius="5" title="Box" titlePosition="noTitle" id="kpw-qm-NQG">
                                                                             <rect key="frame" x="5" y="52" width="10" height="10"/>
                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                             <view key="contentView" id="S9K-TP-K5A">
@@ -567,8 +566,8 @@
                                                 </button>
                                             </subviews>
                                         </view>
-                                        <color key="borderColor" red="1" green="1" blue="1" alpha="0.41999999999999998" colorSpace="calibratedRGB"/>
-                                        <color key="fillColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                        <color key="borderColor" name="gridColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="fillColor" name="windowBackgroundColor" catalog="System" colorSpace="catalog"/>
                                     </box>
                                 </subviews>
                             </customView>
@@ -596,8 +595,8 @@
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" focusRingType="none" title="Project Name" id="ylH-C3-MHM">
                                                                 <font key="font" metaFont="system"/>
-                                                                <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
-                                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                             </textFieldCell>
                                                             <connections>
                                                                 <binding destination="923-ke-ovW" name="value" keyPath="self.currentCappuccinoProjectController.cappuccinoProject.nickname" id="Teo-iY-bEl"/>
@@ -608,8 +607,8 @@
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                                             <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" selectable="YES" sendsActionOnEndEditing="YES" title="Project Path" id="NvI-dv-Vcf">
                                                                 <font key="font" metaFont="smallSystem"/>
-                                                                <color key="textColor" red="0.76319916294850176" green="0.76061204714189667" blue="0.76578627875510685" alpha="1" colorSpace="calibratedRGB"/>
-                                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                             </textFieldCell>
                                                             <connections>
                                                                 <binding destination="923-ke-ovW" name="value" keyPath="self.currentCappuccinoProjectController.cappuccinoProject.projectPath" id="IT9-Ja-icI"/>
@@ -617,8 +616,8 @@
                                                         </textField>
                                                     </subviews>
                                                 </view>
-                                                <color key="borderColor" red="0.96862745098039216" green="0.50588235294117645" blue="0.16470588235294117" alpha="1" colorSpace="calibratedRGB"/>
-                                                <color key="fillColor" red="0.34509803921568627" green="0.34509803921568627" blue="0.34509803921568627" alpha="1" colorSpace="calibratedRGB"/>
+                                                <color key="borderColor" name="gridColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="fillColor" name="windowBackgroundColor" catalog="System" colorSpace="catalog"/>
                                             </box>
                                             <box autoresizesSubviews="NO" boxType="custom" borderType="line" borderWidth="0.0" title="Box" id="ic3-Xg-i5j">
                                                 <rect key="frame" x="0.0" y="562" width="599" height="26"/>
@@ -681,8 +680,8 @@
                                                         </box>
                                                     </subviews>
                                                 </view>
-                                                <color key="borderColor" red="0.93725490196078431" green="0.93725490196078431" blue="0.93725490196078431" alpha="1" colorSpace="calibratedRGB"/>
-                                                <color key="fillColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                                <color key="borderColor" name="gridColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="fillColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                             </box>
                                             <tabView drawsBackground="NO" type="noTabsNoBorder" id="00d-fn-q41">
                                                 <rect key="frame" x="0.0" y="0.0" width="599" height="562"/>
@@ -850,8 +849,8 @@
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="XcodeCapp" id="Oar-AW-2i5">
                                     <font key="font" metaFont="system" size="18"/>
-                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                             </textField>
                             <textField verticalHuggingPriority="750" id="fUL-eL-YkQ">
@@ -859,7 +858,7 @@
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="Version 4.0" id="unR-NY-aap">
                                     <font key="font" metaFont="smallSystem"/>
-                                    <color key="textColor" white="0.31343064259999998" alpha="1" colorSpace="calibratedWhite"/>
+                                    <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                                 <connections>
@@ -870,9 +869,9 @@
                     </customView>
                 </subviews>
             </view>
-            <color key="borderColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
-            <color key="fillColor" red="0.98039221759999995" green="0.98039221759999995" blue="0.98039221759999995" alpha="1" colorSpace="deviceRGB"/>
-            <point key="canvasLocation" x="310.5" y="-302.5"/>
+            <color key="borderColor" name="gridColor" catalog="System" colorSpace="catalog"/>
+            <color key="fillColor" name="windowBackgroundColor" catalog="System" colorSpace="catalog"/>
+            <point key="canvasLocation" x="630" y="-361"/>
         </box>
         <box boxType="custom" borderType="line" borderWidth="0.0" title="Box" titlePosition="noTitle" id="stz-Vu-tYo" customClass="XCCWelcomeView">
             <rect key="frame" x="0.0" y="0.0" width="464" height="401"/>
@@ -889,15 +888,15 @@
                                 <rect key="frame" x="40" y="116" width="354" height="5"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                             </box>
-                            <box autoresizesSubviews="NO" boxType="custom" borderType="line" cornerRadius="100" title="Box" titlePosition="noTitle" id="Tbj-mM-87j">
-                                <rect key="frame" x="189" y="28" width="57" height="57"/>
+                            <box autoresizesSubviews="NO" boxType="custom" borderType="line" cornerRadius="28" title="Box" titlePosition="noTitle" id="Tbj-mM-87j">
+                                <rect key="frame" x="189" y="28" width="56" height="56"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                 <view key="contentView" id="aoX-nH-ofv">
-                                    <rect key="frame" x="1" y="1" width="55" height="55"/>
+                                    <rect key="frame" x="1" y="1" width="54" height="54"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <button focusRingType="none" id="wQo-c7-sD7">
-                                            <rect key="frame" x="14" y="15" width="27" height="26"/>
+                                            <rect key="frame" x="14" y="14" width="27" height="26"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                             <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="NSAddTemplate" imagePosition="only" alignment="center" focusRingType="none" imageScaling="proportionallyDown" inset="2" id="o7j-4e-NNJ">
                                                 <behavior key="behavior" lightByContents="YES"/>
@@ -907,15 +906,15 @@
                                                 <action selector="addProject:" target="923-ke-ovW" id="YGQ-yu-Glg"/>
                                             </connections>
                                         </button>
+                                        <progressIndicator wantsLayer="YES" horizontalHuggingPriority="750" verticalHuggingPriority="750" maxValue="100" bezeled="NO" indeterminate="YES" style="spinning" id="vPH-Iq-Ray">
+                                            <rect key="frame" x="11" y="11" width="32" height="32"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                        </progressIndicator>
                                     </subviews>
                                 </view>
-                                <color key="borderColor" red="0.97254901960784312" green="0.50196078431372548" blue="0.15686274509803921" alpha="1" colorSpace="calibratedRGB"/>
-                                <color key="fillColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                <color key="borderColor" red="0.97254901959999995" green="0.50196078430000002" blue="0.15686274510000001" alpha="1" colorSpace="custom" customColorSpace="calibratedRGB"/>
+                                <color key="fillColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                             </box>
-                            <progressIndicator wantsLayer="YES" horizontalHuggingPriority="750" verticalHuggingPriority="750" maxValue="100" bezeled="NO" indeterminate="YES" style="spinning" id="vPH-Iq-Ray">
-                                <rect key="frame" x="201" y="40" width="32" height="32"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            </progressIndicator>
                             <button focusRingType="none" id="wdl-kS-DYD">
                                 <rect key="frame" x="124" y="150" width="186" height="186"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
@@ -931,8 +930,8 @@
                     </customView>
                 </subviews>
             </view>
-            <color key="borderColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
-            <color key="fillColor" red="0.98039221759999995" green="0.98039221759999995" blue="0.98039221759999995" alpha="1" colorSpace="deviceRGB"/>
+            <color key="borderColor" name="gridColor" catalog="System" colorSpace="catalog"/>
+            <color key="fillColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
             <connections>
                 <outlet property="boxImport" destination="Tbj-mM-87j" id="Nly-uI-l8C"/>
                 <outlet property="loadingIndicator" destination="vPH-Iq-Ray" id="qiU-X4-gPI"/>
