@@ -260,6 +260,9 @@ var hasEditableTarget = function(aDOMEvent)
             currentEventShouldBeSuppressed = YES;
     }
 
+    if (CPFeatureIsCompatible(CPBackspaceTriggersPageBack) && characters === CPDeleteCharacter && !hasEditableTarget(aDOMEvent))
+        currentEventShouldBeSuppressed = YES;
+
     if (!currentEventShouldBeSuppressed)
     {
         if (characters === "v")
