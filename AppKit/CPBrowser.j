@@ -463,7 +463,7 @@ var CPBrowserDelegate_browser_acceptDrop_atRow_column_dropOperation_            
 
 - (id)itemAtRow:(CPInteger)row inColumn:(CPInteger)column
 {
-    return [_tableDelegates[column] childAtIndex:row];
+    return [_tableDelegates[column] childAtIndex:row] || nil;
 }
 
 - (BOOL)isLeafItem:(id)item
@@ -473,7 +473,7 @@ var CPBrowserDelegate_browser_acceptDrop_atRow_column_dropOperation_            
 
 - (id)parentForItemsInColumn:(CPInteger)column
 {
-    return [_tableDelegates[column] _item];
+    return [_tableDelegates[column] _item] || nil;
 }
 
 - (CPSet)selectedItems
