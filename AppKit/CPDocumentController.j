@@ -297,7 +297,7 @@ var CPSharedDocumentController = nil;
     var iter = [_documents objectEnumerator],
         obj;
 
-    while ((obj = [iter nextObject]) !== nil)
+    while ((obj = [iter nextObject]) != nil)
     {
         if ([obj isDocumentEdited])
             return YES;

@@ -164,7 +164,7 @@ var _CPMenuBarVisible               = NO,
 
 + (void)_setOrRemoveMenuBarAttribute:(id)aValue forKey:(id)aKey
 {
-    if (aValue === nil)
+    if (aValue == nil)
         [_CPMenuBarAttributes removeObjectForKey:aKey];
     else
         [_CPMenuBarAttributes setObject:aValue forKey:aKey];

@@ -113,7 +113,7 @@ function _points2twips(a) { return (a) * 20.0; }
     keyArray = [keyArray sortedArrayUsingSelector:@selector(compare:)];
     fontEnum = [keyArray objectEnumerator];
 
-    while ((currFont = [fontEnum nextObject]) !== nil)
+    while ((currFont = [fontEnum nextObject]) != nil)
     {
         var fontFamily,
             detail;
@@ -149,7 +149,7 @@ function _points2twips(a) { return (a) * 20.0; }
         next,
         i;
 
-    while ((next = [keyEnum nextObject]) !== nil)
+    while ((next = [keyEnum nextObject]) != nil)
     {
         var cn = [colorDict objectForKey:next];
         [list insertObject:[CPColor colorWithCSSString:next] atIndex:[cn intValue]-1];

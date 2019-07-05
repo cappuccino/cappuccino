@@ -593,7 +593,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
 {
     var options = [_info objectForKey:CPOptionsKey],
         optionValue = [options objectForKey:CPCreatesSortDescriptorBindingOption];
-    return optionValue === nil ? YES : [optionValue boolValue];
+    return optionValue == nil ? YES : [optionValue boolValue];
 }
 
 @end

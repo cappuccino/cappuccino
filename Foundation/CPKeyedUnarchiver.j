@@ -253,7 +253,7 @@ var CPArrayClass                                                            = Ni
 {
     var f = [self decodeObjectForKey:aKey];
 
-    return f === nil ? 0.0 : f;
+    return f == nil ? 0.0 : f;
 }
 
 /*
@@ -265,7 +265,7 @@ var CPArrayClass                                                            = Ni
 {
     var d = [self decodeObjectForKey:aKey];
 
-    return d === nil ? 0.0 : d;
+    return d == nil ? 0.0 : d;
 }
 
 /*
@@ -277,7 +277,7 @@ var CPArrayClass                                                            = Ni
 {
     var i = [self decodeObjectForKey:aKey];
 
-    return i === nil ? 0 : i;
+    return i == nil ? 0 : i;
 }
 
 /*

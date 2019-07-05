@@ -37,7 +37,7 @@
     var object,
         objectEnumerator = [self objectEnumerator];
 
-    while ((object = [objectEnumerator nextObject]) !== nil)
+    while ((object = [objectEnumerator nextObject]) != nil)
         if (![aPredicate evaluateWithObject:object])
             [self removeObject:object];
 }
@@ -72,7 +72,7 @@
     var object,
         objectEnumerator = [self objectEnumerator];
 
-    while ((object = [objectEnumerator nextObject]) !== nil)
+    while ((object = [objectEnumerator nextObject]) != nil)
         [self removeObject:object];
 }
 
@@ -97,7 +97,7 @@
     var object,
         objectEnumerator = [aSet objectEnumerator];
 
-    while ((object = [objectEnumerator nextObject]) !== nil)
+    while ((object = [objectEnumerator nextObject]) != nil)
         [self addObject:object];
 }
 
@@ -110,7 +110,7 @@
     var object,
         objectEnumerator = [aSet objectEnumerator];
 
-    while ((object = [objectEnumerator nextObject]) !== nil)
+    while ((object = [objectEnumerator nextObject]) != nil)
         [self removeObject:object];
 }
 
@@ -124,7 +124,7 @@
         objectEnumerator = [self objectEnumerator],
         objectsToRemove = [];
 
-    while ((object = [objectEnumerator nextObject]) !== nil)
+    while ((object = [objectEnumerator nextObject]) != nil)
         if (![aSet containsObject:object])
             objectsToRemove.push(object);
 

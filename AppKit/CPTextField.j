@@ -1331,7 +1331,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         // If there is a formatter, make sure the object value can be formatted successfully
         var formattedString = [self hasThemeState:CPThemeStateEditing] ? [formatter editingStringForObjectValue:aValue] : [formatter stringForObjectValue:aValue];
 
-        if (formattedString === nil)
+        if (formattedString == nil)
         {
             var value = nil;
 
@@ -1341,7 +1341,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
                 value = undefined;
 
             [super setObjectValue:value];
-            _stringValue = (value === nil || value === undefined) ? @"" : String(value);
+            _stringValue = (value == nil) ? @"" : String(value);
         }
         else
             _stringValue = formattedString;
@@ -1497,7 +1497,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
                 else
                     [[CPRunLoop mainRunLoop] performBlock:function(){ element.select(); } argument:nil order:0 modes:[CPDefaultRunLoopMode]];
             }
-            else if (wind !== nil && [wind makeFirstResponder:self])
+            else if (wind != nil && [wind makeFirstResponder:self])
                 [self _selectText:sender immediately:immediately];
         }
         else
@@ -1507,7 +1507,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 #else
         // Even if we can't actually select the text we need to preserve the first
         // responder side effect.
-        if (wind !== nil && [wind firstResponder] !== self)
+        if (wind != nil && [wind firstResponder] !== self)
             [wind makeFirstResponder:self];
 #endif
     }
@@ -2152,7 +2152,7 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
         newValue    = [self valueForBinding:aBinding],
         value       = [destination valueForKeyPath:keyPath];
 
-    if (CPIsControllerMarker(value) && newValue === nil)
+    if (CPIsControllerMarker(value) && newValue == nil)
         return;
 
     newValue = [self reverseTransformValue:newValue withOptions:options];

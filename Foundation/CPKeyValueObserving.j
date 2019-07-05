@@ -911,7 +911,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
             {
                 var oldValue = [_targetObject valueForKey:aKey];
 
-                if (oldValue === nil || oldValue === undefined)
+                if (oldValue == nil)
                     oldValue = [CPNull null];
 
                 [changes setObject:oldValue forKey:CPKeyValueChangeOldKey];
@@ -993,7 +993,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
             {
                 var newValue = [_targetObject valueForKey:aKey];
 
-                if (newValue === nil || newValue === undefined)
+                if (newValue == nil)
                     newValue = [CPNull null];
 
                 [changes setObject:newValue forKey:CPKeyValueChangeNewKey];

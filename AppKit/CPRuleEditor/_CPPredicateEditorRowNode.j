@@ -131,7 +131,7 @@
 {
     var title = [self title];
 
-    if (title !== nil)
+    if (title != nil)
         return title;
 
     return [self templateView];

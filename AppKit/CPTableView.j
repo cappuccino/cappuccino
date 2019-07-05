@@ -2977,7 +2977,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         oldMainSortDescriptor = [[self sortDescriptors] objectAtIndex: 0];
 
     // Remove every main descriptor equivalents (normally only one)
-    while ((descriptor = [e nextObject]) !== nil)
+    while ((descriptor = [e nextObject]) != nil)
     {
         if ([[descriptor key] isEqual: [newMainSortDescriptor key]])
             [outdatedDescriptors addObject:descriptor];
@@ -3319,7 +3319,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     var oldSortDescriptors = [[self sortDescriptors] copy],
         newSortDescriptors = [CPArray array];
 
-    if (sortDescriptors !== nil)
+    if (sortDescriptors != nil)
         [newSortDescriptors addObjectsFromArray:sortDescriptors];
 
     if ([newSortDescriptors isEqual:oldSortDescriptors])
@@ -3380,7 +3380,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         objectValue = tableColumnObjectValues[aRowIndex];
 
     // tableView:objectValueForTableColumn:row: is optional if content bindings are in place.
-    if (objectValue === undefined)
+    if (objectValue == nil)
     {
         if ([self _dataSourceRespondsToObjectValueForTableColumn])
         {
@@ -3835,7 +3835,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     else if ([self _delegateRespondsToDataViewForTableColumn])
         _viewForTableColumnRowSelector = @selector(_sendDelegateDataViewForTableColumn:row:);
 
-     _isViewBased = (_viewForTableColumnRowSelector !== nil || _archivedDataViews !== nil);
+     _isViewBased = (_viewForTableColumnRowSelector != nil || _archivedDataViews != nil);
 }
 
 /*!
@@ -4724,7 +4724,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         dropOperation = [self _proposedDropOperationAtPoint:location],
         row = [self _proposedRowAtPoint:location];
 
-    if (_retargetedDropRow !== nil)
+    if (_retargetedDropRow != nil)
         row = _retargetedDropRow;
 
     var draggedTypes = [self registeredDraggedTypes],
@@ -4780,7 +4780,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (CPTableViewDropOperation)_proposedDropOperationAtPoint:(CGPoint)theDragPoint
 {
-    if (_retargetedDropOperation !== nil)
+    if (_retargetedDropOperation != nil)
         return _retargetedDropOperation;
 
     var row = [self _proposedRowAtPoint:theDragPoint],
@@ -4859,10 +4859,10 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         row = [self _proposedRowAtPoint:location],
         dragOperation = [self _sendDataSourceValidateDrop:sender proposedRow:row proposedDropOperation:dropOperation];
 
-    if (_retargetedDropRow !== nil)
+    if (_retargetedDropRow != nil)
         row = _retargetedDropRow;
 
-    if (_retargetedDropOperation !== nil)
+    if (_retargetedDropOperation != nil)
         dropOperation = _retargetedDropOperation;
 
     if (dropOperation === CPTableViewDropOn && row >= numberOfRows)
@@ -4907,7 +4907,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         operation = [self _proposedDropOperationAtPoint:location],
         row = _retargetedDropRow;
 
-    if (row === nil)
+    if (row == nil)
         row = [self _proposedRowAtPoint:location];
 
     return [self _sendDataSourceAcceptDrop:sender row:row dropOperation:operation];

@@ -752,7 +752,7 @@ _CPWindowViewResizeSlop = 3;
 
 - (BOOL)showsResizeIndicator
 {
-    return _resizeIndicator !== nil;
+    return _resizeIndicator != nil;
 }
 
 - (void)setResizeIndicatorOffset:(CGSize)anOffset

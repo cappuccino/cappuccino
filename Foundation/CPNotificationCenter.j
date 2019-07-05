@@ -136,7 +136,7 @@ var CPNotificationDefaultCenter = nil;
     var name = nil,
         names = [_namedRegistries keyEnumerator];
 
-    while ((name = [names nextObject]) !== nil)
+    while ((name = [names nextObject]) != nil)
         [[_namedRegistries objectForKey:name] removeObserver:anObserver object:nil];
 
     [_unnamedRegistry removeObserver:anObserver object:nil];
@@ -155,7 +155,7 @@ var CPNotificationDefaultCenter = nil;
         var name = nil,
             names = [_namedRegistries keyEnumerator];
 
-        while ((name = [names nextObject]) !== nil)
+        while ((name = [names nextObject]) != nil)
             [[_namedRegistries objectForKey:name] removeObserver:anObserver object:anObject];
 
         [_unnamedRegistry removeObserver:anObserver object:anObject];
@@ -258,13 +258,13 @@ var _CPNotificationCenterPostNotification = function(/* CPNotificationCenter */ 
             keys = [_objectObservers keyEnumerator];
 
         // Iterate through every set of observers
-        while ((key = [keys nextObject]) !== nil)
+        while ((key = [keys nextObject]) != nil)
         {
             var observers = [_objectObservers objectForKey:key],
                 observer = nil,
                 observersEnumerator = [observers objectEnumerator];
 
-            while ((observer = [observersEnumerator nextObject]) !== nil)
+            while ((observer = [observersEnumerator nextObject]) != nil)
                 if ([observer observer] == anObserver ||
                     ([observer block] && [anObserver respondsToSelector:@selector(block)] && [observer block] == [anObserver block]))
                     [observers removeObject:observer];
@@ -280,7 +280,7 @@ var _CPNotificationCenterPostNotification = function(/* CPNotificationCenter */ 
             observer = nil,
             observersEnumerator = [observers objectEnumerator];
 
-        while ((observer = [observersEnumerator nextObject]) !== nil)
+        while ((observer = [observersEnumerator nextObject]) != nil)
             if ([observer observer] == anObserver ||
                 ([observer block] && [anObserver respondsToSelector:@selector(block)] && [observer block] == [anObserver block]))
                 [observers removeObject:observer];
@@ -311,7 +311,7 @@ var _CPNotificationCenterPostNotification = function(/* CPNotificationCenter */ 
             observer = nil,
             observersEnumerator = [observers objectEnumerator];
 
-        while ((observer = [observersEnumerator nextObject]) !== nil)
+        while ((observer = [observersEnumerator nextObject]) != nil)
         {
             // CPSet containsObject is N(1) so this is a fast check.
             if ([currentObservers containsObject:observer])
@@ -328,7 +328,7 @@ var _CPNotificationCenterPostNotification = function(/* CPNotificationCenter */ 
     var observers = [currentObservers copy],
         observersEnumerator = [observers objectEnumerator];
 
-    while ((observer = [observersEnumerator nextObject]) !== nil)
+    while ((observer = [observersEnumerator nextObject]) != nil)
     {
         // CPSet containsObject is N(1) so this is a fast check.
         if ([currentObservers containsObject:observer])

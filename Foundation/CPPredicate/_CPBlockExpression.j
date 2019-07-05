@@ -45,7 +45,7 @@
     if (self === object)
         return YES;
 
-    if (object === nil || object.isa !== self.isa || [object expressionBlock] !== _block || ![[object arguments] isEqual:_arguments])
+    if (object == nil || object.isa !== self.isa || [object expressionBlock] !== _block || ![[object arguments] isEqual:_arguments])
         return NO;
 
     return YES;

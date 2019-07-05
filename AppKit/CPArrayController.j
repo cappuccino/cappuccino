@@ -271,7 +271,7 @@
     if (_disableSetContent)
         return;
 
-    if (value === nil)
+    if (value == nil)
         value = [];
 
     if (![value isKindOfClass:[CPArray class]])
@@ -763,7 +763,7 @@
         _filterPredicate = nil;
         [self _rearrangeObjects];
     }
-    else if (_filterPredicate === nil || [_filterPredicate evaluateWithObject:object])
+    else if (_filterPredicate == nil || [_filterPredicate evaluateWithObject:object])
     {
         // Insert directly into the array.
         var pos = [_arrangedObjects insertObject:object inArraySortedByDescriptors:_sortDescriptors];
@@ -776,7 +776,7 @@
             [_selectionIndexes shiftIndexesStartingAtIndex:pos by:1];
     }
     /*
-    else if (_filterPredicate !== nil)
+    else if (_filterPredicate != nil)
     ...
     // Implies _filterPredicate && ![_filterPredicate evaluateWithObject:object], so the new object does
     // not appear in arrangedObjects and we do not have to update at all.
@@ -876,7 +876,7 @@
 
     _disableSetContent = NO;
 
-    if (_filterPredicate === nil || [_filterPredicate evaluateWithObject:object])
+    if (_filterPredicate == nil || [_filterPredicate evaluateWithObject:object])
     {
         // selectionIndexes change notification will be fired as a result of the
         // content change. Don't fire manually.

@@ -979,7 +979,7 @@ Sets the selection to a range of characters in response to user action.
         if (!isNewSelection && _mouseDownOldSelection)
             isNewSelection = !CPEqualRanges(newSelectionRange, _mouseDownOldSelection);
 
-        if (doOverwrite && _placeholderString === nil && isNewSelection)
+        if (doOverwrite && _placeholderString == nil && isNewSelection)
             [self setTypingAttributes:[_textStorage attributesAtIndex:CPMaxRange(range) effectiveRange:nil]];
 
         [[CPNotificationCenter defaultCenter] postNotificationName:CPTextViewDidChangeSelectionNotification object:self];
@@ -2905,7 +2905,7 @@ var _CPCopyPlaceholder = '-';
 
 - (void)setValue:(id)aValue forBinding:(CPString)aBinding
 {
-    if (aValue === nil || (aValue.isa && [aValue isMemberOfClass:CPNull]))
+    if (aValue == nil || (aValue.isa && [aValue isMemberOfClass:CPNull]))
         [_source _setPlaceholderString:[self _placeholderForMarker:CPNullMarker]];
     else
         [_source _setPlaceholderString:nil];

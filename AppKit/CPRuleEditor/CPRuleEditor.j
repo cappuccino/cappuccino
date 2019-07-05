@@ -157,7 +157,7 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
 - (id)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
-    if (self !== nil)
+    if (self)
     {
         _slices = [[CPMutableArray alloc] init];
 
@@ -419,7 +419,7 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
 */
 - (void)setFormattingStringsFilename:(CPString)stringsFilename
 {
-    if (_standardLocalizer === nil)
+    if (_standardLocalizer == nil)
         _standardLocalizer = [_CPRuleEditorLocalizer new];
 
     if (_stringsFilename !== stringsFilename)
@@ -427,14 +427,14 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
         // Convert an empty string to nil
         _stringsFilename = stringsFilename || nil;
 
-        if (stringsFilename !== nil)
+        if (stringsFilename != nil)
         {
             if (![stringsFilename hasSuffix:@".strings"])
                 stringsFilename = stringsFilename + @".strings";
 
             var path = [[CPBundle mainBundle] pathForResource:stringsFilename];
 
-            if (path !== nil)
+            if (path != nil)
                 [_standardLocalizer loadContentOfURL:[CPURL URLWithString:path]];
         }
     }
@@ -465,7 +465,7 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
 */
 - (void)setCriteria:(CPArray)criteria andDisplayValues:(CPArray)values forRowAtIndex:(int)rowIndex
 {
-    if (criteria === nil || values === nil)
+    if (criteria == nil || values == nil)
         [CPException raise:CPInvalidArgumentException reason:_cmd + @". criteria and values parameters must not be nil."];
 
     if (rowIndex < 0 || rowIndex >= [self numberOfRows])
@@ -852,7 +852,7 @@ TODO: implement
         while (current_index !== CPNotFound)
         {
             var subpredicate = [self predicateForRow:current_index];
-            if (subpredicate !== nil)
+            if (subpredicate != nil)
                 [subpredicates addObject:subpredicate];
 
             current_index = [subrowsIndexes indexGreaterThanIndex:current_index];
@@ -888,33 +888,33 @@ TODO: implement
         modifier = [predicateParts objectForKey:CPRuleEditorPredicateComparisonModifier],
         selector = CPSelectorFromString([predicateParts objectForKey:CPRuleEditorPredicateCustomSelector]);
 
-    if (lhs === nil)
+    if (lhs == nil)
     {
         CPLogConsole(@"missing left expression in predicate parts dictionary");
         return NULL;
     }
 
-    if (rhs === nil)
+    if (rhs ==  nil)
     {
         CPLogConsole(@"missing right expression in predicate parts dictionary");
         return NULL;
     }
 
-    if (selector === nil && operator === nil)
+    if (selector == nil && operator == nil)
     {
         CPLogConsole(@"missing operator and selector in predicate parts dictionary");
         return NULL;
     }
 
-    if (modifier === nil)
+    if (modifier == nil)
         CPLogConsole(@"missing modifier in predicate parts dictionary. Setting default: CPDirectPredicateModifier");
 
-    if (options === nil)
+    if (options == nil)
         CPLogConsole(@"missing options in predicate parts dictionary. Setting default: CPCaseInsensitivePredicateOption");
 
     try
     {
-        if (selector !== nil)
+        if (selector != nil)
             predicate = [CPComparisonPredicate predicateWithLeftExpression:lhs
                                                            rightExpression:rhs
                                                             customSelector:selector
@@ -1167,7 +1167,7 @@ TODO: implement
 
 - (BOOL)_wantsRowAnimations
 {
-    return (_currentAnimation !== nil);
+    return (_currentAnimation != nil);
 }
 
 - (void)_updateButtonVisibilities
@@ -1753,7 +1753,7 @@ TODO: implement
     {
         var subpredicate = [self predicateForRow:current_index];
 
-        if (subpredicate !== nil)
+        if (subpredicate != nil)
             [subpredicates addObject:subpredicate];
 
         current_index = [subindexes indexGreaterThanIndex:current_index];
@@ -1795,7 +1795,7 @@ TODO: implement
             startRect = [aslice frame],
             startIndex = [aslice rowIndex] - 1;
 
-        if ([aslice superview] === nil)
+        if ([aslice superview] == nil)
         {
             startRect = CGRectMake(0, startIndex * _sliceHeight, CGRectGetWidth(startRect), _sliceHeight);
             [aslice _reconfigureSubviews];
@@ -2129,7 +2129,7 @@ TODO: implement
 
 - (BOOL)_dragShouldBeginFromMouseDown:(CPView)view
 {
-    return (([self nestingMode] === CPRuleEditorNestingModeList ||  [view rowIndex] !== 0) && _editable && [view isKindOfClass:[_CPRuleEditorViewSliceRow class]] && _draggingRows === nil);
+    return (([self nestingMode] === CPRuleEditorNestingModeList ||  [view rowIndex] !== 0) && _editable && [view isKindOfClass:[_CPRuleEditorViewSliceRow class]] && _draggingRows == nil);
 }
 
 - (BOOL)_performDragForSlice:(id)slice withEvent:(CPEvent)event
@@ -2321,7 +2321,7 @@ TODO: implement
 
 - (void)_postRowCountChangedNotificationOfType:(CPString)notificationName indexes:indexes
 {
-    var userInfo = indexes === nil ? @{} : @{ "indexes": indexes };
+    var userInfo = indexes == nil ? @{} : @{ "indexes": indexes };
     [[CPNotificationCenter defaultCenter] postNotificationName:notificationName object:self userInfo:userInfo];
 }
 
@@ -2386,7 +2386,7 @@ TODO: implement
     var criteria = [self criteriaForRow:aRow];
     indexofCriterion = [criteria indexOfObject:criterion];
 
-    if (parentItem !== nil
+    if (parentItem != nil
         && indexofCriterion !== CPNotFound
         && indexofCriterion < [criteria count] - 1)
     {
@@ -2469,7 +2469,7 @@ var CPRuleEditorAlignmentGridWidthKey       = @"CPRuleEditorAlignmentGridWidth",
 - (id)initWithCoder:(CPCoder)coder
 {
     self = [super initWithCoder:coder];
-    if (self !== nil)
+    if (self)
     {
         [self setFormattingStringsFilename:[coder decodeObjectForKey:CPRuleEditorStringsFilenameKey]];
         _alignmentGridWidth      = [coder decodeFloatForKey:CPRuleEditorAlignmentGridWidthKey];
@@ -2553,7 +2553,7 @@ var CriteriaKey         = @"criteria",
 - (id)initWithCoder:(CPCoder)coder
 {
     self = [super init];
-    if (self !== nil)
+    if (self)
     {
         subrows = [coder decodeObjectForKey:SubrowsKey];
         criteria = [coder decodeObjectForKey:CriteriaKey];
