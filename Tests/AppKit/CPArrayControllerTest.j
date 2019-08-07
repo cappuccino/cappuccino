@@ -1020,6 +1020,26 @@
     [self assertTrue:[[arrayController arrangedObjects] count] > 0];
 }
 
+- (void)testArrangedObjectsWhenSetContentAndClearsFilterOnInsertionIsTrue
+{
+    var arrayController = [[CPArrayController alloc] init];
+    [arrayController setClearsFilterPredicateOnInsertion:YES];
+    [arrayController setFilterPredicate:[CPPredicate predicateWithValue:NO]];
+    [arrayController setContent:[CPArray arrayWithObject:@"a"]];
+
+    [self assertTrue:[[arrayController arrangedObjects] count] == 0];
+}
+
+- (void)testArrangedObjectsWhenBindingAndClearsFilterOnInsertionIsTrue
+{
+    var arrayController = [[CPArrayController alloc] init];
+    [arrayController setClearsFilterPredicateOnInsertion:YES];
+    [arrayController setFilterPredicate:[CPPredicate predicateWithValue:NO]];
+    [arrayController bind:@"contentArray" toObject:self withKeyPath:@"_contentArray" options:nil];
+
+    [self assertTrue:[[arrayController arrangedObjects] count] == 0];
+}
+
 - (void)testArrangedObjectsWithPredicateFilteringAfterContentArrayBinding
 {
     _contentArray = [self makeTestArray];
