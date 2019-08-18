@@ -210,6 +210,7 @@ var touchStartingPointX,
 
 _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotification";
 
+var _capsLockActive;
 
 // When scrolling with an old-style scroll wheel with discete steps ('clicks'), the scroll amount can indicate how many "lines" to
 // scroll.
@@ -744,7 +745,10 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 
             // check for caps lock state
             if (_keyCode === CPKeyCodes.CAPS_LOCK)
+            {
                 _capsLockActive = YES;
+                break;
+            }
 
             if ([ModifierKeyCodes containsObject:_keyCode])
             {
