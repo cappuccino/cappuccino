@@ -747,6 +747,8 @@ var _capsLockActive;
             if (_keyCode === CPKeyCodes.CAPS_LOCK)
             {
                 _capsLockActive = YES;
+
+                // we need to break out in order to prevent a keyDown: event from pressing the CAPS_LOCK key
                 break;
             }
 
