@@ -749,6 +749,7 @@ var capsLockActive;
                 capsLockActive = YES;
 
                 // we need to break out in order to prevent a keyDown: event from pressing the CAPS_LOCK key
+                // this would cause insertion of weird whitespace characters in e.g. CPTextView, just by pressing CAPS_LOCK
                 break;
             }
 
