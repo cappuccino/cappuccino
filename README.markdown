@@ -12,7 +12,7 @@ With Cappuccino, you don't concern yourself with HTML, CSS, or the DOM. You  wri
 
 Check out a [live demo of the widgets in Cappuccino](https://cappuccino-testbook.5apps.com/#ThemeKitchenSink)
 
-Check out some [live demos and tutorials](https://cappuccino-cookbook.5apps.com)
+Check out some [tutorials](https://cappuccino-cookbook.5apps.com)
 
 For more information, see the
   - [Official website](http://cappuccino-project.org)
