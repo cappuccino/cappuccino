@@ -838,7 +838,7 @@ var __objj_msgSend__StackDepth = 0;
 GLOBAL(objj_msgSend) = function(/*id*/ aReceiver, /*SEL*/ aSelector)
 {
     if (aReceiver == nil)
-        return nil;
+        return aReceiver;
 
     var isa = aReceiver.isa;
 

@@ -41,6 +41,16 @@
     return anotherNumber - aNumber;
 }
 
+-(id)nil
+{
+    return nil;
+}
+
+-(id)undefined
+{
+    return undefined;
+}
+
 @end
 
 @implementation MethodTest : OJTestCase
@@ -133,6 +143,16 @@
     [self assert:method_copyArgumentType(method, 1) equals:@"SEL"];
     [self assertTrue:method_copyArgumentType(method, 2) === nil];
     [self assert:method_getNumberOfArguments(method) equals:3];
+}
+
+- (void)testReturnNil
+{
+    [self assert:[[testClass nil] someSelector] equals:null];
+}
+
+- (void)testReturnUndefined
+{
+    [self assert:[[testClass undefined] someSelector] equals:undefined];
 }
 
 @end
