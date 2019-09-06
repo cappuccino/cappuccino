@@ -210,8 +210,6 @@ var touchStartingPointX,
 
 _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotification";
 
-var capsLockActive;
-
 // When scrolling with an old-style scroll wheel with discete steps ('clicks'), the scroll amount can indicate how many "lines" to
 // scroll.
 #define SCROLLWHEEL_LINE_PIXELS 6.0
@@ -741,12 +739,12 @@ var capsLockActive;
             if (!characters)
                 characters = String.fromCharCode(_keyCode).toLowerCase();
 
-            overrideCharacters = (modifierFlags & CPShiftKeyMask || capsLockActive) ? characters.toUpperCase() : characters;
+            overrideCharacters = (modifierFlags & CPShiftKeyMask || _capsLockActive) ? characters.toUpperCase() : characters;
 
             // check for caps lock state
             if (_keyCode === CPKeyCodes.CAPS_LOCK)
             {
-                capsLockActive = YES;
+                _capsLockActive = YES;
 
                 // we need to break out in order to prevent a keyDown: event from pressing the CAPS_LOCK key
                 // this would cause insertion of weird whitespace characters in e.g. CPTextView, just by pressing CAPS_LOCK
@@ -805,7 +803,7 @@ var capsLockActive;
             charactersIgnoringModifiers = characters.toLowerCase(); // FIXME: This isn't correct. It SHOULD include Shift.
 
             // Safari won't send proper capitalization during cmd-key events
-            if (!overrideCharacters && (modifierFlags & CPCommandKeyMask) && ((modifierFlags & CPShiftKeyMask) || capsLockActive))
+            if (!overrideCharacters && (modifierFlags & CPCommandKeyMask) && ((modifierFlags & CPShiftKeyMask) || _capsLockActive))
                 characters = characters.toUpperCase();
 
             event = [CPEvent keyEventWithType:CPKeyDown location:location modifierFlags:modifierFlags
@@ -824,7 +822,7 @@ var capsLockActive;
 
             // check for caps lock state
             if (keyCode === CPKeyCodes.CAPS_LOCK)
-                capsLockActive = NO;
+                _capsLockActive = NO;
 
             if ([ModifierKeyCodes containsObject:keyCode])
             {
@@ -839,7 +837,7 @@ var capsLockActive;
             var characters = KeyCodesToUnicodeMap[charCode] || String.fromCharCode(charCode);
             charactersIgnoringModifiers = characters.toLowerCase();
 
-            if (!(modifierFlags & CPShiftKeyMask) && (modifierFlags & CPCommandKeyMask) && !capsLockActive)
+            if (!(modifierFlags & CPShiftKeyMask) && (modifierFlags & CPCommandKeyMask) && !_capsLockActive)
                 characters = charactersIgnoringModifiers;
 
             event = [CPEvent keyEventWithType:CPKeyUp location:location modifierFlags:modifierFlags
