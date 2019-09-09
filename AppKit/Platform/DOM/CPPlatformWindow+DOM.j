@@ -196,7 +196,8 @@ var ModifierKeyCodes = [
         CPKeyCodes.MAC_FF_META,
         CPKeyCodes.CTRL,
         CPKeyCodes.ALT,
-        CPKeyCodes.SHIFT
+        CPKeyCodes.SHIFT,
+        CPKeyCodes.CAPS_LOCK
     ],
 
     supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
@@ -691,7 +692,8 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
         modifierFlags = (aDOMEvent.shiftKey ? CPShiftKeyMask : 0) |
                         (aDOMEvent.ctrlKey ? CPControlKeyMask : 0) |
                         (aDOMEvent.altKey ? CPAlternateKeyMask : 0) |
-                        (aDOMEvent.metaKey ? CPCommandKeyMask : 0);
+                        (aDOMEvent.metaKey ? CPCommandKeyMask : 0) |
+                        (_capsLockActive ? CPAlphaShiftKeyMask : 0);
 
     // With a few exceptions, all key events are blocked from propagating to
     // the browser.  Here the following exceptions are being allowed:
@@ -746,9 +748,8 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
             {
                 _capsLockActive = YES;
 
-                // we need to break out in order to prevent a keyDown: event from pressing the CAPS_LOCK key
-                // this would cause insertion of weird whitespace characters in e.g. CPTextView, just by pressing CAPS_LOCK
-                break;
+                // Make sure the caps lock flag is set in modifierFlags
+                modifierFlags |= CPAlphaShiftKeyMask;
             }
 
             if ([ModifierKeyCodes containsObject:_keyCode])
@@ -822,7 +823,12 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 
             // check for caps lock state
             if (keyCode === CPKeyCodes.CAPS_LOCK)
+            {
                 _capsLockActive = NO;
+                
+                // Make sure the caps lock flag is cleared in modifierFlags
+                modifierFlags &= ~CPAlphaShiftKeyMask;
+            }
 
             if ([ModifierKeyCodes containsObject:keyCode])
             {
