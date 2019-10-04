@@ -1098,7 +1098,9 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
     var keyWindow = _previousKeyWindow;
 
     if (!keyWindow)
-       keyWindow = [[[_windowLayers objectForKey:[_windowLevels firstObject]] orderedWindows] firstObject];
+        // If we don't have a previous key window take the modal window if we are in a modal session.
+        // If not in a modal session just take the first window in the most background layer
+        keyWindow = (CPApp._currentSession && CPApp._currentSession._window) || [[[_windowLayers objectForKey:[_windowLevels firstObject]] orderedWindows] firstObject];
 
     if (!keyWindow)
         return;
