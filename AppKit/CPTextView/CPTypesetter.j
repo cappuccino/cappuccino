@@ -343,6 +343,13 @@ var CPSystemTypesetterFactory,
             case 10:
             case 13:
                 isNewline = YES;
+                break;
+            case 65532: // in case of CPAttachmentCharacter
+                // Needs to be fixed
+                wrapRange = CPMakeRangeCopy(lineRange);
+                wrapWidth = 64//rangeWidth;
+                wrapRange._height = _lineHeight;
+                wrapRange._base = _lineBase;
         }
 
         advancements.push({width: rangeWidth - prevRangeWidth, height: ascent, descent: descent});
