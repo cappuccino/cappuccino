@@ -308,6 +308,12 @@ var CPSystemTypesetterFactory,
 
         }
 
+        // Check if the lineHeight needs to be higher
+        if(theString.charCodeAt(glyphIndex) == 65532 &&
+            64 > currentFontLineHeight)
+            _lineHeight = 64;
+
+
         if (currentFontLineHeight > _lineHeight)
             _lineHeight = currentFontLineHeight;
 
@@ -345,11 +351,9 @@ var CPSystemTypesetterFactory,
                 isNewline = YES;
                 break;
             case 65532: // in case of CPAttachmentCharacter
-                // Needs to be fixed
-                wrapRange = CPMakeRangeCopy(lineRange);
-                wrapWidth = 64//rangeWidth;
-                wrapRange._height = _lineHeight;
-                wrapRange._base = _lineBase;
+                // Assume all CPAttachmentCharatcter is size 64x64
+                rangeWidth = 64 + currentAnchor;
+                ascent = 64;
         }
 
         advancements.push({width: rangeWidth - prevRangeWidth, height: ascent, descent: descent});
