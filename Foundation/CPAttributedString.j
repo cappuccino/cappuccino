@@ -27,8 +27,6 @@
 @import "CPRange.j"
 @import "CPString.j"
 
-CPAttachmentCharacter = "\ufffc";
-
 /*!
     @class CPAttributedString
     @ingroup foundation
@@ -769,11 +767,6 @@ CPAttachmentCharacter = "\ufffc";
     {
         return copyRangeEntry(entry);
     }];
-}
-
-+ (CPAttributedString)attributedStringWithAttachment//(CPTextAttachment)attachment
-{
-    return [self initWithString:CPAttachmentCharacter];
 }
 
 //Private methods
