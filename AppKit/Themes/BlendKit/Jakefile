@@ -20,9 +20,9 @@ blendKitTask = framework ("BlendKit", function(blendKitTask)
     blendKitTask.setFlattensSources(true); // FIXME: how do we non flatten?
 
     if ($CONFIGURATION === "Release")
-        blendKitTask.setCompilerFlags("-O2");
+        blendKitTask.setCompilerFlags("-O2 -Wno-unused-but-set-variable");
     else
-        blendKitTask.setCompilerFlags("-DDEBUG -g");
+        blendKitTask.setCompilerFlags("-DDEBUG -g -Wno-unused-but-set-variable");
 });
 
 $BUILD_CJS_PRODUCT_BLENDKIT = FILE.join($BUILD_CJS_CAPPUCCINO_FRAMEWORKS, "BlendKit");

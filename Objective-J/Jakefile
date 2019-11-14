@@ -49,7 +49,7 @@ filedir($BUILD_BROWSER_FILE, $BROWSER_FILES, function(aTask)
 {
     gcc($BROWSER_FILE,
         $BUILD_BROWSER_FILE,
-        environmentFlags("Browser", "ObjJ").concat($INCLUDE_FLAGS, $DEBUG_FLAGS), $CONFIGURATION !== "Debug");
+        environmentFlags("Browser", "ObjJ").concat($INCLUDE_FLAGS, $DEBUG_FLAGS, ["-Wno-unused-but-set-variable"]), $CONFIGURATION !== "Debug");
 });
 
 $LICENSE        = FILE.join("CommonJS", "lib", "objective-j", "jake", "LICENSES", "LGPL-v2.1");
@@ -78,7 +78,7 @@ new FileList("CommonJS/**/*").forEach(function(aFilename)
         else
             gcc(aFilename,
                 buildFilename,
-                environmentFlags("CommonJS", "ObjJ").concat($INCLUDE_FLAGS, $DEBUG_FLAGS), false);
+                environmentFlags("CommonJS", "ObjJ").concat($INCLUDE_FLAGS, $DEBUG_FLAGS, ["-Wno-unused-but-set-variable"]), false);
     });
 
     // HACK: narwhal should copy permissions
