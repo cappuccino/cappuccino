@@ -1131,7 +1131,7 @@ var _objectsInRange = function(aList, aRange)
     var style,
         img = document.createElement("img");
 
-    img.oncontextmenu = span.onmousedown = span.onselectstart = _oncontextmenuhandler;
+    img.oncontextmenu = img.onmousedown = img.onselectstart = _oncontextmenuhandler;
     // fixme: config the img accoringly
 
     return img;
