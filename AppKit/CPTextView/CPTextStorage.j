@@ -261,9 +261,9 @@ var CPTextStorageDelegate_textStorageWillProcessEditing_ = 1 << 1,
     return [super attributedSubstringFromRange:aRange];
 }
 
-- (id)attributedStringWithImageAttachment:(CPImage)someImage
++ (id)attributedStringWithImageAttachment:(CPImage)someImage
 {
-    var  result = [self initWithString:String.fromCharCode(CPAttachmentCharacter)];
+    var  result = [[self alloc] initWithString:String.fromCharCode(CPAttachmentCharacter)];
 
     [result setAttributes:@{ _CPAttachmentImageSize:CGStringFromSize([someImage size]),
                              _CPAttachmentImageFile:[someImage filename]
