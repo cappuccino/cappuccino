@@ -1167,7 +1167,8 @@ var _objectsInRange = function(aList, aRange)
             if (string === String.fromCharCode(CPAttachmentCharacter))
             {
                // <!> fixme
-               // var elem = [self createDOMElementWithImage:string andFont:font andColor:color],
+               // var imageExtractedFromAttachment = ...
+               // var elem = [self createDOMElementWithImage:imageExtractedFromAttachment],
                //     run = {_range:CPMakeRangeCopy(effectiveRange), color:color, font:font, elem:nil, string:string};
 
                // _runs.push(run);
@@ -1175,10 +1176,7 @@ var _objectsInRange = function(aList, aRange)
             }
             else
             {
-                var font = [textStorage font] || [CPFont systemFontOfSize:12.0];
-
-                if ([attributes containsKey:CPFontAttributeName])
-                     font = [attributes objectForKey:CPFontAttributeName];
+                var font = [attributes objectForKey:CPFontAttributeName] || [textStorage font] || [CPFont systemFontOfSize:12.0];
 
                 var color = [attributes objectForKey:CPForegroundColorAttributeName],
                     elem = [self createDOMElementWithText:string andFont:font andColor:color],
