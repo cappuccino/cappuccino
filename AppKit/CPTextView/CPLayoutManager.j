@@ -1125,6 +1125,20 @@ var _objectsInRange = function(aList, aRange)
     return nil;
 #endif
 }
+- (id)createDOMElementWithImage:(CPImage)anImage
+{
+#if PLATFORM(DOM)
+    var style,
+        img = document.createElement("img");
+
+    img.oncontextmenu = span.onmousedown = span.onselectstart = _oncontextmenuhandler;
+    // fixme: config the img accoringly
+
+    return img;
+#else
+    return nil;
+#endif
+}
 
 - (id)initWithRange:(CPRange)aRange textContainer:(CPTextContainer)aContainer textStorage:(CPTextStorage)textStorage
 {
@@ -1147,17 +1161,31 @@ var _objectsInRange = function(aList, aRange)
 
             effectiveRange = attributes ? CPIntersectionRange(aRange, effectiveRange) : aRange;
 
-            var string = [textStorage._string substringWithRange:effectiveRange],
-                font = [textStorage font] || [CPFont systemFontOfSize:12.0];
+            var string = [textStorage._string substringWithRange:effectiveRange];
 
-            if ([attributes containsKey:CPFontAttributeName])
-                 font = [attributes objectForKey:CPFontAttributeName];
+            // this is an attachment -> create a run for this
+            if (string === String.fromCharCode(CPAttachmentCharacter))
+            {
+               // <!> fixme
+               // var elem = [self createDOMElementWithImage:string andFont:font andColor:color],
+               //     run = {_range:CPMakeRangeCopy(effectiveRange), color:color, font:font, elem:nil, string:string};
 
-            var color = [attributes objectForKey:CPForegroundColorAttributeName],
-                elem = [self createDOMElementWithText:string andFont:font andColor:color],
-                run = {_range:CPMakeRangeCopy(effectiveRange), color:color, font:font, elem:nil, string:string};
+               // _runs.push(run);
 
-            _runs.push(run);
+            }
+            else
+            {
+                var font = [textStorage font] || [CPFont systemFontOfSize:12.0];
+
+                if ([attributes containsKey:CPFontAttributeName])
+                     font = [attributes objectForKey:CPFontAttributeName];
+
+                var color = [attributes objectForKey:CPForegroundColorAttributeName],
+                    elem = [self createDOMElementWithText:string andFont:font andColor:color],
+                    run = {_range:CPMakeRangeCopy(effectiveRange), color:color, font:font, elem:nil, string:string};
+
+                _runs.push(run);
+            }
 
             if (!CPMaxRange(effectiveRange))
                 break;

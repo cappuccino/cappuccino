@@ -245,6 +245,7 @@ var CPSystemTypesetterFactory,
         wrapWidth = 0,
         isNewline = NO,
         isTabStop = NO,
+        isAttachment = NO,
         isWordWrapped = NO,
         numberOfGlyphs= [_textStorage length],
         leading,
@@ -322,6 +323,23 @@ var CPSystemTypesetterFactory,
 
         switch (currentCharCode)    // faster than sending actionForControlCharacterAtIndex: called for each char.
         {
+            case CPAttachmentCharacter:
+            {
+                var attributes = [_textStorage attributesAtIndex:glyphIndex effectiveRange:nil],
+                    imageSize = CGSizeFromString([attributes objectForKey:_CPAttachmentImageSize],
+                    filename = [attributes objectForKey:_CPAttachmentImageFile];
+
+                rangeWidth = prevRangeWidth + imageSize.width; // undo sizing of dummy character
+
+                 if (imageSize.heigth > _lineBase)
+                    _lineBase = imageSize.heigth;
+
+                 isAttachment = YES;
+                 wrapRange = CPMakeRangeCopy(lineRange);
+                 wrapWidth = rangeWidth;
+                 wrapRange._height = _lineHeight;
+                 wrapRange._base = _lineBase;
+                 break;
             case 9: // '\t'
             {
                 var nextTab = [self textTabForWidth:rangeWidth + lineOrigin.x writingDirection:0];
@@ -373,6 +391,12 @@ var CPSystemTypesetterFactory,
             {
                lineOrigin.x += rangeWidth;
                isTabStop = NO;
+            }
+
+            if (isAttachment)
+            {
+               lineOrigin.x += rangeWidth;
+               isAttachment = NO;
             }
 
             if (isNewline)
