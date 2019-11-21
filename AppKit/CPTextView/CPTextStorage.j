@@ -268,7 +268,7 @@ var CPTextStorageDelegate_textStorageWillProcessEditing_ = 1 << 1,
     [result setAttributes:@{ _CPAttachmentImageSize:CGStringFromSize([someImage size]),
                              _CPAttachmentImageFile:[someImage filename]
                            }
-                    range:CPMakeRange(0, 0)];
+                    range:CPMakeRange(0, 1)];
 
     return result;
 }
