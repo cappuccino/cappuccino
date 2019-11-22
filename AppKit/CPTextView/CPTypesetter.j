@@ -326,7 +326,7 @@ var CPSystemTypesetterFactory,
             case CPAttachmentCharacter:
             {
                 var attributes = [_textStorage attributesAtIndex:glyphIndex effectiveRange:nil],
-                    imageSize = CGSizeFromString([attributes objectForKey:_CPAttachmentImageSize],
+                    imageSize = CGSizeFromString([attributes objectForKey:_CPAttachmentImageSize]),
                     filename = [attributes objectForKey:_CPAttachmentImageFile];
 
                 rangeWidth = prevRangeWidth + imageSize.width; // undo sizing of dummy character

@@ -1129,12 +1129,27 @@ var _objectsInRange = function(aList, aRange)
 {
 #if PLATFORM(DOM)
     var style,
-        img = document.createElement("img");
+        img = document.createElement("img"),
+        span = document.createElement("span");
 
-    img.oncontextmenu = img.onmousedown = img.onselectstart = _oncontextmenuhandler;
-    // fixme: config the img accoringly
+    style = span.style;
+    style.position = "absolute";
+    style.visibility = "visible";
+    style.padding = "0px";
+    style.margin = "0px";
+    style.whiteSpace = "pre";
+    style.backgroundColor = "transparent";
 
-    return img;
+    img.oncontextmenu = img.onmousedown = img.onselectstart = _oncontextmenuhandler;  // fixme: is this really necessary if parent span is already set up this way?
+    span.oncontextmenu = span.onmousedown = span.onselectstart = _oncontextmenuhandler;
+
+    img.src = [anImage filename];
+    img.height = [anImage size].height;
+    img.width = [anImage size].width;
+
+    span.innerHTML = "<img src='"+[anImage filename]+"' height='"+[anImage size].height+"' width='"+[anImage size].width+"'>";
+
+    return span;
 #else
     return nil;
 #endif
@@ -1166,13 +1181,11 @@ var _objectsInRange = function(aList, aRange)
             // this is an attachment -> create a run for this
             if (string === String.fromCharCode(CPAttachmentCharacter))
             {
-               // <!> fixme
-               // var imageExtractedFromAttachment = ...
-               // var elem = [self createDOMElementWithImage:imageExtractedFromAttachment],
-               //     run = {_range:CPMakeRangeCopy(effectiveRange), color:color, font:font, elem:nil, string:string};
+               var imageExtractedFromAttachment = [[CPImage alloc] initWithContentsOfFile:[attributes objectForKey:_CPAttachmentImageFile] size:[attributes objectForKey:_CPAttachmentImageSize]],
+                   elem = [self createDOMElementWithImage:imageExtractedFromAttachment],
+                   run = {_range:CPMakeRangeCopy(effectiveRange), color:nil, font:nil, elem:elem, string:nil};
 
-               // _runs.push(run);
-
+               _runs.push(run);
             }
             else
             {
