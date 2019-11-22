@@ -340,6 +340,7 @@ var CPSystemTypesetterFactory,
                  wrapRange._height = _lineHeight;
                  wrapRange._base = _lineBase;
                  break;
+            }
             case 9: // '\t'
             {
                 var nextTab = [self textTabForWidth:rangeWidth + lineOrigin.x writingDirection:0];
