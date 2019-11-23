@@ -331,8 +331,8 @@ var CPSystemTypesetterFactory,
 
                 rangeWidth = prevRangeWidth + imageSize.width; // undo sizing of dummy character
 
-                 if (imageSize.heigth > _lineBase)
-                    _lineBase = imageSize.heigth;
+                 if (imageSize.height > _lineBase)
+                    _lineBase = imageSize.height;
 
                  isAttachment = YES;
                  wrapRange = CPMakeRangeCopy(lineRange);
