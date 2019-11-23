@@ -333,12 +333,16 @@ var CPSystemTypesetterFactory,
 
                  if (imageSize.height > _lineBase)
                     _lineBase = imageSize.height;
+                    
+                 if (imageSize.height > _lineHeight)
+                    _lineHeight = imageSize.height+descent+leading;
 
                  isAttachment = YES;
                  wrapRange = CPMakeRangeCopy(lineRange);
                  wrapWidth = rangeWidth;
                  wrapRange._height = _lineHeight;
                  wrapRange._base = _lineBase;
+                 ascent = imageSize.height;
                  break;
             }
             case 9: // '\t'
