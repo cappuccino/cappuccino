@@ -335,7 +335,7 @@ var CPSystemTypesetterFactory,
                     _lineBase = imageSize.height;
                     
                  if (imageSize.height > _lineHeight)
-                    _lineHeight = imageSize.height+descent+leading;
+                    _lineHeight = imageSize.height - descent + leading;
 
                  isAttachment = YES;
                  wrapRange = CPMakeRangeCopy(lineRange);
