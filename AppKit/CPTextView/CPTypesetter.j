@@ -368,10 +368,6 @@ var CPSystemTypesetterFactory,
                 isNewline = YES;
         }
 
-        advancements.push({width: rangeWidth - prevRangeWidth, height: ascent, descent: descent});
-
-        prevRangeWidth = _lineWidth = rangeWidth;
-
         if (lineOrigin.x + rangeWidth > containerSizeWidth)
         {
             if (wrapWidth)
@@ -385,6 +381,13 @@ var CPSystemTypesetterFactory,
             isNewline = YES;
             isWordWrapped = YES;
             glyphIndex = CPMaxRange(lineRange) - 1;  // start the line starts directly at current character
+        }
+        
+        if(!isWordWrapped)
+        {
+            advancements.push({width: rangeWidth - prevRangeWidth, height: ascent, descent: descent});
+
+            prevRangeWidth = _lineWidth = rangeWidth;
         }
 
         if (isNewline || isTabStop || isAttachment)
