@@ -259,6 +259,9 @@ _oncontextmenuhandler = function () { return false; };
         {
             if (_lineFragments[i]._isInvalid)
             {
+                while (i > 0 && !_lineFragments[i - 1]._isLast)
+                    i--;
+
                 startIndex = _lineFragments[i]._range.location;
                 removeRange.location = i;
                 removeRange.length = l - i;
