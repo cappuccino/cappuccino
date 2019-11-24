@@ -335,7 +335,7 @@ var CPSystemTypesetterFactory,
                     _lineHeight = imageSize.height;
 
                  isAttachment = YES;
-                 wrapRange = CPMakeRangeCopy(lineRange);
+                 wrapRange = CPMakeRange(lineRange.location, lineRange.length - 1);
                  wrapWidth = rangeWidth;
                  wrapRange._height = _lineHeight;
                  wrapRange._base = _lineBase;
