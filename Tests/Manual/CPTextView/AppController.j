@@ -103,6 +103,9 @@
    [formatMenu addItemWithTitle:@"Font panel" action:@selector(orderFrontFontPanel:) keyEquivalent:@"f"];
    [mainMenu setSubmenu:formatMenu forItem:item];
 
+    var tempImag = [[CPImage alloc] initWithContentsOfFile:@"Resources/spinner.gif" size:CGSizeMake(64, 64)];
+    [_textView insertText:[CPTextStorage attributedStringWithImageAttachment:tempImag]];
+
    //
    //  var centeredParagraph=[CPParagraphStyle new];
    //  [centeredParagraph setAlignment: CPCenterTextAlignment];
