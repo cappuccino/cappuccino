@@ -1184,7 +1184,7 @@ var _objectsInRange = function(aList, aRange)
             // this is an attachment -> create a run for this
             if (string === String.fromCharCode(CPAttachmentCharacter))
             {
-               var imageExtractedFromAttachment = [[CPImage alloc] initWithContentsOfFile:[attributes objectForKey:_CPAttachmentImageFile] size:[attributes objectForKey:_CPAttachmentImageSize]],
+               var imageExtractedFromAttachment = [[CPImage alloc] initWithContentsOfFile:[attributes objectForKey:_CPAttachmentImageFile] size:CGSizeFromString([attributes objectForKey:_CPAttachmentImageSize])],
                    elem = [self createDOMElementWithImage:imageExtractedFromAttachment],
                    run = {_range:CPMakeRangeCopy(effectiveRange), color:nil, font:nil, elem:elem, string:nil};
 
