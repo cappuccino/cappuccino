@@ -938,15 +938,14 @@ _oncontextmenuhandler = function () { return false; };
                     var correctedRect = CGRectCreateCopy(frames[j]);
                     correctedRect.size.height -= frames[j]._descent;
                     correctedRect.origin.y -= frames[j]._descent;
+
                     if (!rect)
                         rect = CGRectCreateCopy(correctedRect);
                     else
                         rect = CGRectUnion(rect, correctedRect);
 
                     if (_isNewlineCharacter([[_textStorage string] characterAtIndex:MAX(0, CPMaxRange(selectedCharRange) - 1)]))
-                    {
                          rect.size.width = containerSize.width - rect.origin.x;
-                    }
                 }
             }
 
