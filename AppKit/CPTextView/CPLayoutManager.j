@@ -359,6 +359,9 @@ _oncontextmenuhandler = function () { return false; };
     // patch the linefragments instead of re-layoutung
     if (isIdentical)
     {
+//        while (startLineForDOMRemoval > 0 && !_lineFragments[startLineForDOMRemoval - 1]._isLast)
+//            startLineForDOMRemoval--;
+
         var rangeOffset = CPMaxRange(_lineFragments[targetLine]._range) - CPMaxRange(_lineFragmentsForRescue[startLineForDOMRemoval]._range);
 
         if (ABS(rangeOffset) !== ABS(newLength - oldLength))

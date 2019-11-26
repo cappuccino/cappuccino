@@ -2155,38 +2155,23 @@ Sets the selection to a range of characters in response to user action.
     return (_selectionRange.length === 0 && [self _isFocused] && !_placeholderString);
 }
 
-- (void)updateInsertionPointStateAndRestartTimer:(BOOL)flag
+- (CPRect)_getCaretRect
 {
-    var caretRect,
-        numberOfGlyphs = [_layoutManager numberOfCharacters];
+    var numberOfGlyphs = [_layoutManager numberOfCharacters];
 
-    if (_selectionRange.length)
-        [_caret setVisibility:NO];
-
-    if (_selectionRange.location >= numberOfGlyphs)    // cursor is "behind" the last chacacter
+    if (!numberOfGlyphs)
     {
-        caretRect = [_layoutManager boundingRectForGlyphRange:CPMakeRange(MAX(0, _selectionRange.location - 1), 1) inTextContainer:_textContainer];
-
-        if (!numberOfGlyphs)
-        {
-            var font = [_typingAttributes objectForKey:CPFontAttributeName] || [self font];
-
-            caretRect.size.height = [font size];
-            caretRect.origin.y = ([font ascender] - [font descender]) * 0.5 + _textContainerOrigin.y;
-        }
-
-        caretRect.origin.x += caretRect.size.width;
-
-        if (_selectionRange.location > 0 && _isNewlineCharacter([[_textStorage string] characterAtIndex:_selectionRange.location - 1]))
-        {
-            caretRect.origin.y += caretRect.size.height;
-            caretRect.origin.x = 0;
-        }
+        var font = [_typingAttributes objectForKey:CPFontAttributeName] || [self font];
+        return CGRectMake(1, ([font ascender] - [font descender]) * 0.5 + _textContainerOrigin.y, 1, [font size]);
     }
-    else
-        caretRect = [_layoutManager boundingRectForGlyphRange:CPMakeRange(_selectionRange.location, 1) inTextContainer:_textContainer];
 
-    var loc = (_selectionRange.location === numberOfGlyphs && numberOfGlyphs > 0) ? _selectionRange.location - 1 : _selectionRange.location,
+    // cursor is at a newline character -> jump to next line
+    if (_selectionRange.location == numberOfGlyphs && _isNewlineCharacter([[_textStorage string] characterAtIndex:_selectionRange.location - 1]))
+        return CGRectCreateCopy([_layoutManager extraLineFragmentRect]);
+
+    var caretRect = [_layoutManager boundingRectForGlyphRange:CPMakeRange(_selectionRange.location, 1) inTextContainer:_textContainer];
+
+    var loc = (_selectionRange.location == numberOfGlyphs) ? _selectionRange.location - 1 : _selectionRange.location,
         caretOffset = [_layoutManager _characterOffsetAtLocation:loc],
         oldYPosition = CGRectGetMaxY(caretRect),
         caretDescend = [_layoutManager _descentAtLocation:loc];
@@ -2196,14 +2181,24 @@ Sets the selection to a range of characters in response to user action.
         caretRect.origin.y += caretOffset;
         caretRect.size.height = oldYPosition - caretRect.origin.y;
     }
+
     if (caretDescend < 0)
         caretRect.size.height -= caretDescend;
 
+    if (_selectionRange.location == numberOfGlyphs)
+        caretRect.origin.x += caretRect.size.width;
+
     caretRect.origin.x += _textContainerOrigin.x;
     caretRect.origin.y += _textContainerOrigin.y;
-    caretRect.size.width = 1;
 
-    [_caret setRect:caretRect];
+    return caretRect;
+}
+- (void)updateInsertionPointStateAndRestartTimer:(BOOL)flag
+{
+    if (_selectionRange.length)
+        [_caret setVisibility:NO];
+
+    [_caret setRect:[self _getCaretRect]];
 
     if (flag)
         [_caret startBlinking];

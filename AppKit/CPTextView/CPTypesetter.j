@@ -439,7 +439,7 @@ var CPSystemTypesetterFactory,
     if (lineRange.length)
         [self _flushRange:lineRange lineOrigin:lineOrigin currentContainer:_currentTextContainer advancements:advancements lineCount:numLines sameLine:NO];
 
-    var rect = CGRectMake(0, lineOrigin.y, containerSizeWidth, [_layoutManager._lineFragments lastObject]._usedRect.size.height - descent);
+    var rect = CGRectMake(1, lineOrigin.y - descent, containerSizeWidth, currentFontLineHeight);
     [_layoutManager setExtraLineFragmentRect:rect usedRect:rect textContainer:_currentTextContainer];
 }
 
