@@ -1149,6 +1149,7 @@ var _objectsInRange = function(aList, aRange)
     img.src = [anImage filename];
     img.height = [anImage size].height;
     img.width = [anImage size].width;
+    span.style.zIndex = "-100000";
 
     span.innerHTML = "<img src='"+[anImage filename]+"' height='"+[anImage size].height+"' width='"+[anImage size].width+"'>";
 
