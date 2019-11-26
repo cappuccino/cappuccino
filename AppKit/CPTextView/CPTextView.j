@@ -2165,7 +2165,7 @@ Sets the selection to a range of characters in response to user action.
 
     if (_selectionRange.location >= numberOfGlyphs)    // cursor is "behind" the last chacacter
     {
-        caretRect = [_layoutManager boundingRectForGlyphRange:CPMakeRange(MAX(0,_selectionRange.location - 1), 1) inTextContainer:_textContainer];
+        caretRect = [_layoutManager boundingRectForGlyphRange:CPMakeRange(MAX(0, _selectionRange.location - 1), 1) inTextContainer:_textContainer];
 
         if (!numberOfGlyphs)
         {
@@ -2177,7 +2177,7 @@ Sets the selection to a range of characters in response to user action.
 
         caretRect.origin.x += caretRect.size.width;
 
-        if (_selectionRange.location > 0 && [[_textStorage string] characterAtIndex:_selectionRange.location - 1] === '\n')
+        if (_selectionRange.location > 0 && _isNewlineCharacter([[_textStorage string] characterAtIndex:_selectionRange.location - 1]))
         {
             caretRect.origin.y += caretRect.size.height;
             caretRect.origin.x = 0;
