@@ -199,13 +199,11 @@ var CPSystemTypesetterFactory,
     [_layoutManager setLocation:CGPointMake(myX, _lineBase) forStartOfGlyphRange:lineRange];
     [_layoutManager _setAdvancements:advancements forGlyphRange:lineRange];
 
-    if (!sameLine) //fix the _lineFragments when fontsizes differ
-    {
-        var l = _lineFragments.length;
+    //fix the _lineFragments when fontsizes differ
+    var l = _lineFragments.length;
 
-        for (var i = 0 ; i < l ; i++)
-            [_lineFragments[i] _adjustForHeight:_lineHeight];
-    }
+    for (var i = 0 ; i < l ; i++)
+        [_lineFragments[i] _adjustForHeight:_lineHeight];
 
     if (!lineCount)  // do not rescue on first line
         return NO;

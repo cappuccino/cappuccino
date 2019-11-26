@@ -105,6 +105,11 @@
 
     var tempImag = [[CPImage alloc] initWithContentsOfFile:@"Resources/spinner.gif" size:CGSizeMake(64, 64)];
     [_textView insertText:[CPTextStorage attributedStringWithImageAttachment:tempImag]];
+    [_textView insertText:"xx"];
+
+    tempImag = [[CPImage alloc] initWithContentsOfFile:@"Resources/spinner.gif" size:CGSizeMake(64, 100)];
+    [_textView insertText:[CPTextStorage attributedStringWithImageAttachment:tempImag]];
+
 
    //
    //  var centeredParagraph=[CPParagraphStyle new];
