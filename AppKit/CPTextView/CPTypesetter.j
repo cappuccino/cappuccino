@@ -389,17 +389,8 @@ var CPSystemTypesetterFactory,
             if ([self _flushRange:lineRange lineOrigin:lineOrigin currentContainer:_currentTextContainer advancements:advancements lineCount:numLines sameLine:!isNewline])
                 return;
 
-            if (isTabStop)
-            {
+            if (isTabStop || isAttachment)
                lineOrigin.x += rangeWidth;
-               isTabStop = NO;
-            }
-
-            if (isAttachment)
-            {
-               lineOrigin.x += rangeWidth;
-               isAttachment = NO;
-            }
 
             if (isNewline)
             {
@@ -430,6 +421,9 @@ var CPSystemTypesetterFactory,
                 _lineBase      = ascent;
             }
 
+            isTabStop       = NO;
+            isAttachment    = NO;
+            isWordWrapped   = NO;
             _lineWidth      = 0;
             advancements    = [];
             currentAnchor   = 0;
@@ -438,15 +432,12 @@ var CPSystemTypesetterFactory,
             measuringRange  = CPMakeRange(glyphIndex + 1, 0);
             wrapRange       = CPMakeRange(0, 0);
             wrapWidth       = 0;
-            isWordWrapped   = NO;
         }
     }
 
     // this is to "flush" the remaining characters
     if (lineRange.length)
-    {
         [self _flushRange:lineRange lineOrigin:lineOrigin currentContainer:_currentTextContainer advancements:advancements lineCount:numLines sameLine:NO];
-    }
 
     var rect = CGRectMake(0, lineOrigin.y, containerSizeWidth, [_layoutManager._lineFragments lastObject]._usedRect.size.height - descent);
     [_layoutManager setExtraLineFragmentRect:rect usedRect:rect textContainer:_currentTextContainer];
