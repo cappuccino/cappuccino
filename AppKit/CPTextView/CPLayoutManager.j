@@ -359,15 +359,12 @@ _oncontextmenuhandler = function () { return false; };
     // patch the linefragments instead of re-layoutung
     if (isIdentical)
     {
-//        while (startLineForDOMRemoval > 0 && !_lineFragments[startLineForDOMRemoval - 1]._isLast)
-//            startLineForDOMRemoval--;
-
         var rangeOffset = CPMaxRange(_lineFragments[targetLine]._range) - CPMaxRange(_lineFragmentsForRescue[startLineForDOMRemoval]._range);
 
         if (ABS(rangeOffset) !== ABS(newLength - oldLength))
             return NO;
 
-        var verticalOffset = _lineFragments[targetLine]._fragmentRect.origin.y - _lineFragmentsForRescue[startLineForDOMRemoval]._fragmentRect.origin.y,
+        var verticalOffset = CGRectGetMaxY(_lineFragments[targetLine]._fragmentRect) - CGRectGetMaxY(_lineFragmentsForRescue[startLineForDOMRemoval]._fragmentRect),
             l = _lineFragmentsForRescue.length,
             newTargetLine = startLineForDOMRemoval + removalSkip;
 
