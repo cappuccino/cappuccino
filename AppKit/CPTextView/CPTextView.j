@@ -818,6 +818,28 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     else if (![self isRichText])
         aString = [[CPAttributedString alloc] initWithString:string attributes:_typingAttributes];
 
+   // Resize an image when the image with > bounds with
+    if([aString string].charCodeAt(0) == CPAttachmentCharacter)
+    {
+        var attributes = [aString attributesAtIndex:0 effectiveRange:nil],
+            imageSize = CGSizeFromString([attributes objectForKey:_CPAttachmentImageSize]),
+            filename = [attributes objectForKey:_CPAttachmentImageFile];
+
+        if(imageSize.width > [self frameSize].width)
+        {
+            imageSize.height = imageSize.height * [self frameSize].width/imageSize.width * 0.9;
+            imageSize.width = [self frameSize].width * 0.9;
+
+            console.log(CGStringFromSize(imageSize));
+
+            aString = [[CPAttributedString alloc] initWithString:String.fromCharCode(CPAttachmentCharacter)];
+            [aString setAttributes:@{ _CPAttachmentImageSize:CGStringFromSize(imageSize),
+                                     _CPAttachmentImageFile:filename
+                                   }
+                            range:CPMakeRange(0, 1)];
+        }
+    }
+
     var undoManager = [[self window] undoManager];
     [undoManager setActionName:@"Replace/insert text"];
 
