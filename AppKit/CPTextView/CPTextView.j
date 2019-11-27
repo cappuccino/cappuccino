@@ -2520,6 +2520,7 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
             style.whiteSpace = "pre";
             style.backgroundColor = "black";
             _caretDOM.style.width = "1px";
+            _caretDOM.style.zIndex = 10001;
             _textView = aView;
             _textView._DOMElement.appendChild(_caretDOM);
         }
