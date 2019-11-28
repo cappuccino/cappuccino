@@ -328,7 +328,7 @@ var CPSystemTypesetterFactory,
                     filename = [attributes objectForKey:_CPAttachmentImageFile];
 
                 rangeWidth = prevRangeWidth + imageSize.width; // undo sizing of dummy character
-                
+
                 if (imageSize.height > _lineBase)
                     _lineBase = imageSize.height;
 
@@ -337,6 +337,10 @@ var CPSystemTypesetterFactory,
 
                  isAttachment = YES;
                  wrapRange = CPMakeRange(lineRange.location, lineRange.length - 1); // wrap before image
+
+                 if (rangeWidth + lineOrigin.x > containerSizeWidth)
+                    wrapRange.length++;
+
                  wrapWidth = rangeWidth;
                  wrapRange._height = _lineHeight;
                  wrapRange._base = _lineBase;
