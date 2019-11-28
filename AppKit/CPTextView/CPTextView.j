@@ -1112,7 +1112,8 @@ Sets the selection to a range of characters in response to user action.
     // dragging the selection
     if ([self selectionGranularity] == CPSelectByCharacter && CPLocationInRange(_startTrackingLocation, _selectionRange))
     {
-        var lineBeginningIndex = [_layoutManager _firstLineFragmentForLineFromLocation:_selectionRange.location]._range.location,
+        var firstFragment = [_layoutManager _firstLineFragmentForLineFromLocation:_selectionRange.location],
+            lineBeginningIndex = firstFragment._range.location,
             placeholderRange = _MakeRangeFromAbs(lineBeginningIndex, CPMaxRange(_selectionRange)),
             placeholderString = [_textStorage attributedSubstringFromRange:placeholderRange],
             placeholderFrame = CGRectIntersection([_layoutManager boundingRectForGlyphRange:placeholderRange inTextContainer:_textContainer], _frame),
@@ -1128,6 +1129,7 @@ Sets the selection to a range of characters in response to user action.
 
         dragPlaceholder = [[CPTextView alloc] initWithFrame:placeholderFrame];
         [dragPlaceholder._textStorage replaceCharactersInRange:CPMakeRange(0, 0) withAttributedString:placeholderString];
+        [dragPlaceholder. _layoutManager _firstLineFragmentForLineFromLocation:0]._glyphsOffsets = firstFragment._glyphsOffsets;
 
         [dragPlaceholder setBackgroundColor:[CPColor colorWithRed:1 green:1 blue:1 alpha:0]];
         [dragPlaceholder setAlphaValue:0.5];

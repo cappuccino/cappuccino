@@ -103,12 +103,12 @@
    [formatMenu addItemWithTitle:@"Font panel" action:@selector(orderFrontFontPanel:) keyEquivalent:@"f"];
    [mainMenu setSubmenu:formatMenu forItem:item];
 
-    var tempImag = [[CPImage alloc] initWithContentsOfFile:@"Resources/spinner.gif" size:CGSizeMake(530, 530)];
+    var tempImag = [[CPImage alloc] initWithContentsOfFile:@"Resources/spinner.gif" size:CGSizeMake(32, 32)];
     [_textView insertText:[CPTextStorage attributedStringWithImageAttachment:tempImag]];
     [_textView insertText:"xx"];
 
-    //tempImag = [[CPImage alloc] initWithContentsOfFile:@"Resources/spinner.gif" size:CGSizeMake(64, 100)];
-    //[_textView insertText:[CPTextStorage attributedStringWithImageAttachment:tempImag]];
+    tempImag = [[CPImage alloc] initWithContentsOfFile:@"Resources/spinner.gif" size:CGSizeMake(64, 100)];
+    [_textView insertText:[CPTextStorage attributedStringWithImageAttachment:tempImag]];
 
 
    //
