@@ -739,8 +739,9 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
                 characters = KeyCodesToUnicodeMap[_keyCode];
 
             if (!characters)
-                characters = String.fromCharCode(_keyCode).toLowerCase();
+                characters = (aDOMEvent.key && aDOMEvent.key.length == 1) ? aDOMEvent.key.toLowerCase() : String.fromCharCode(_keyCode).toLowerCase();
 
+            document.title = aDOMEvent.key + ' ' + _keyCode;
             overrideCharacters = (modifierFlags & CPShiftKeyMask || _capsLockActive) ? characters.toUpperCase() : characters;
 
             // check for caps lock state
@@ -767,7 +768,7 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
                 //this lets us be consistent in all browsers and send on the keydown
                 //which means we can cancel the event early enough, but only if sendEvent needs to
             }
-            else if (CPKeyCodes.firesKeyPressEvent(_keyCode, _lastKey, aDOMEvent.shiftKey, aDOMEvent.ctrlKey, aDOMEvent.altKey))
+            else if (CPKeyCodes.firesKeyPressEvent(_keyCode, aDOMEvent.key, _lastKey, aDOMEvent.shiftKey, aDOMEvent.ctrlKey, aDOMEvent.altKey))
             {
                 // this branch is taken by events which fire keydown, keypress, and keyup.
                 // this is the only time we'll ALLOW character keys to propagate (needed for text fields)
