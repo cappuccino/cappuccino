@@ -738,6 +738,12 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
             if (aDOMEvent.which === 0 || aDOMEvent.charCode === 0 || (aDOMEvent.which === undefined && aDOMEvent.charCode === undefined))
                 characters = KeyCodesToUnicodeMap[_keyCode];
 
+            // The problem with keyCode is that this property refers to keys on the keyboard and not to characters
+            // This is why String.fromCharCode does not work in more recent versions of Firefox
+            // E.g. pressing a '#' gives you a charCode of 163, which refers to '£' and not '#'
+            // The property key works fine, though. From there we can get the actual character more robustly.
+            // Therefore we prefer key over keyCode whenever possible
+
             if (!characters)
                 characters = (aDOMEvent.key && aDOMEvent.key.length == 1) ? aDOMEvent.key.toLowerCase() : String.fromCharCode(_keyCode).toLowerCase();
 
