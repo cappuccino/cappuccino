@@ -1129,7 +1129,7 @@ Sets the selection to a range of characters in response to user action.
 
         dragPlaceholder = [[CPTextView alloc] initWithFrame:placeholderFrame];
         [dragPlaceholder._textStorage replaceCharactersInRange:CPMakeRange(0, 0) withAttributedString:placeholderString];
-        [dragPlaceholder. _layoutManager _firstLineFragmentForLineFromLocation:0]._glyphsOffsets = firstFragment._glyphsOffsets;
+        [dragPlaceholder._layoutManager _firstLineFragmentForLineFromLocation:0]._glyphsOffsets = firstFragment._glyphsOffsets;
 
         [dragPlaceholder setBackgroundColor:[CPColor colorWithRed:1 green:1 blue:1 alpha:0]];
         [dragPlaceholder setAlphaValue:0.5];
