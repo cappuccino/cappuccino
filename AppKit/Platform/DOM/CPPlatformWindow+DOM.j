@@ -739,8 +739,8 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
                 characters = KeyCodesToUnicodeMap[_keyCode];
 
             // The problem with keyCode is that this property refers to keys on the keyboard and not to characters
-            // This is why String.fromCharCode does not work in more recent versions of Firefox
-            // E.g. pressing a '#' gives you a charCode of 163, which refers to '£' and not '#'
+            // This is why String.fromCharCode does not always work in more recent versions of Firefox
+            // E.g. pressing a '#' on a German keyboard gives you a charCode of 163, which refers to '£' and not '#'
             // The property key works fine, though. From there we can get the actual character more robustly.
             // Therefore we prefer key over keyCode whenever possible
 
