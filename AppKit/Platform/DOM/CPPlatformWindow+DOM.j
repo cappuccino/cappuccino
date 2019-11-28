@@ -741,7 +741,6 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
             if (!characters)
                 characters = (aDOMEvent.key && aDOMEvent.key.length == 1) ? aDOMEvent.key.toLowerCase() : String.fromCharCode(_keyCode).toLowerCase();
 
-            document.title = aDOMEvent.key + ' ' + _keyCode;
             overrideCharacters = (modifierFlags & CPShiftKeyMask || _capsLockActive) ? characters.toUpperCase() : characters;
 
             // check for caps lock state
