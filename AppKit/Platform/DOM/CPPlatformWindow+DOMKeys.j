@@ -159,7 +159,7 @@ CPKeyCodes = {
  */
 CPKeyCodes.firesKeyPressEvent = function(keyCode, key, opt_heldKeyCode, opt_shiftKey, opt_ctrlKey, opt_altKey)
 {
-    if (key.length == 1)
+    if (key && key.length == 1)
         return true;
 
     if (!CPFeatureIsCompatible(CPJavaScriptRemedialKeySupport))
