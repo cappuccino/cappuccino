@@ -45,7 +45,7 @@ CPTextStorageDidProcessEditingNotification = @"CPTextStorageDidProcessEditingNot
 CPAttachmentCharacter = 65532; // "\ufffc";
 _CPAttachmentImageSize = "_CPAttachmentImageSize";
 _CPAttachmentImageFile = "_CPAttachmentImageFile";
-
+_CPAttachmentInvisible = "_CPAttachmentInvisible";
 
 var CPTextStorageDelegate_textStorageWillProcessEditing_ = 1 << 1,
     CPTextStorageDelegate_textStorageDidProcessEditing_ = 1 << 2;
