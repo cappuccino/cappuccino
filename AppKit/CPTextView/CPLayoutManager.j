@@ -696,7 +696,7 @@ _oncontextmenuhandler = function () { return false; };
         {
             var j = i;
 
-            while (!_lineFragments[j]._isLast)
+            while (j < l && !_lineFragments[j]._isLast)
                 j++;
 
             return _lineFragments[j];

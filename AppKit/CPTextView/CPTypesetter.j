@@ -445,6 +445,11 @@ var CPSystemTypesetterFactory,
 
     var rect = CGRectMake(1, lineOrigin.y - descent, containerSizeWidth, currentFontLineHeight);
     [_layoutManager setExtraLineFragmentRect:rect usedRect:rect textContainer:_currentTextContainer];
+
+    var fragment = [_layoutManager._lineFragments lastObject];
+
+    if (fragment)
+        fragment._isLast = YES;
 }
 
 @end
