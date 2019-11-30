@@ -1173,12 +1173,12 @@ var _objectsInRange = function(aList, aRange)
 
             var string = [textStorage._string substringWithRange:effectiveRange];
 
-            // this is an attachment -> create a run for this
-            if (string === String.fromCharCode(CPAttachmentCharacter))
+            // this is an attachment -> create a run for it
+            if (string === _CPAttachmentCharacterAsString)
             {
                 if (![attributes objectForKey:_CPAttachmentInvisible])
                 {
-                     var imageExtractedFromAttachment = [[CPImage alloc] initWithContentsOfFile:[attributes objectForKey:_CPAttachmentImageFile] size:CGSizeFromString([attributes objectForKey:_CPAttachmentImageSize])],
+                    var imageExtractedFromAttachment = [[CPImage alloc] initWithContentsOfFile:[attributes objectForKey:_CPAttachmentImageFile] size:CGSizeFromString([attributes objectForKey:_CPAttachmentImageSize])],
                         elem = [self createDOMElementWithImage:imageExtractedFromAttachment],
                         run = {_range:CPMakeRangeCopy(effectiveRange), color:nil, font:nil, elem:elem, string:nil};
 

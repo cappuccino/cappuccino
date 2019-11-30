@@ -43,6 +43,8 @@ CPTextStorageDidProcessEditingNotification = @"CPTextStorageDidProcessEditingNot
 @end
 
 CPAttachmentCharacter = 65532; // "\ufffc";
+_CPAttachmentCharacterAsString = String.fromCharCode(CPAttachmentCharacter);
+
 _CPAttachmentImageSize = "_CPAttachmentImageSize";
 _CPAttachmentImageFile = "_CPAttachmentImageFile";
 _CPAttachmentInvisible = "_CPAttachmentInvisible";
