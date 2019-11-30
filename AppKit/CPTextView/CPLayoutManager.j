@@ -674,12 +674,10 @@ _oncontextmenuhandler = function () { return false; };
         {
             var j = i;
 
-            while (--j > 0 && !_lineFragments[j]._isLast)
-            {
-                // body intentionally left empty
-            }
+            while (j > 0 && !_lineFragments[j - 1]._isLast)
+                j--;
 
-            return _lineFragments[j + 1];
+            return _lineFragments[j];
         }
     }
 
@@ -688,6 +686,9 @@ _oncontextmenuhandler = function () { return false; };
 - (id)_lastLineFragmentForLineFromLocation:(unsigned)location
 {
     var l = _lineFragments.length;
+
+    if (location >= CPMaxRange(_lineFragments[l - 1]._range))
+        return _lineFragments[l - 1];
 
     for (var i = 0; i < l; i++)
     {
@@ -1285,7 +1286,7 @@ var _objectsInRange = function(aList, aRange)
 
         if (!run.elem && CPRectIntersectsRect([_textContainer._textView exposedRect], _fragmentRect))
         {
-            run.elem = [self createDOMElementWithText:run.string andFont:run.font andColor:run.color];
+            run.elem = [self createDOMElementWithText:run.string andFont:run.font andColor:run.color]; // fixme: createDOMElementWithRun:
         }
 
         if (run.DOMactive && !run.DOMpatched)

@@ -1093,6 +1093,17 @@ Sets the selection to a range of characters in response to user action.
     return YES;
 }
 
+- (void)_hideRange:(CPRange)rangeToHide inDragPlaceholderString:(CPTextView)placeholderString
+{
+    if (!rangeToHide.length)
+        return;
+
+    [placeholderString addAttribute:CPForegroundColorAttributeName
+                              value:[CPColor colorWithRed:1 green:1 blue:1 alpha:0] // invisibleInk
+                              range:rangeToHide];
+    [placeholderString addAttribute:_CPAttachmentInvisible value:YES range:rangeToHide];
+}
+
 #pragma mark -
 #pragma mark Mouse Events
 
@@ -1113,33 +1124,24 @@ Sets the selection to a range of characters in response to user action.
     if ([self selectionGranularity] == CPSelectByCharacter && CPLocationInRange(_startTrackingLocation, _selectionRange))
     {
         var firstFragment = [_layoutManager _firstLineFragmentForLineFromLocation:_selectionRange.location],
+            lastFragment = [_layoutManager _lastLineFragmentForLineFromLocation:CPMaxRange(_selectionRange)],
             lineBeginningIndex = firstFragment._range.location,
-            placeholderRange = _MakeRangeFromAbs(lineBeginningIndex, CPMaxRange(_selectionRange)),
+            lineEndIndex = CPMaxRange(lastFragment._range),
+            placeholderRange = _MakeRangeFromAbs(lineBeginningIndex, lineEndIndex),
             placeholderString = [_textStorage attributedSubstringFromRange:placeholderRange],
             placeholderFrame = CGRectIntersection([_layoutManager boundingRectForGlyphRange:placeholderRange inTextContainer:_textContainer], _frame),
-            rangeToHide = CPMakeRange(0, _selectionRange.location - lineBeginningIndex),
+            rangeToHideLHS = CPMakeRange(0, _selectionRange.location - lineBeginningIndex),
+            rangeToHideRHS = _MakeRangeFromAbs(CPMaxRange(_selectionRange) - lineBeginningIndex, lineEndIndex - lineBeginningIndex),
             dragPlaceholder;
 
-        // hide the left part of the first line of the selection that is not included with a zero alpha
-        [placeholderString addAttribute:CPForegroundColorAttributeName
-                                  value:[CPColor colorWithRed:1 green:1 blue:1 alpha:0]
-                                  range:rangeToHide];
-        //make sure that attachments are  invisible as these are independent of text alpha
-        [placeholderString addAttribute:_CPAttachmentInvisible value:YES range:rangeToHide];
+        // hide the left/right parts of the first line of the selection that is not included
+        [self _hideRange:rangeToHideLHS inDragPlaceholderString:placeholderString];
+        [self _hideRange:rangeToHideRHS inDragPlaceholderString:placeholderString];
 
         _movingSelection = CPMakeRange(_startTrackingLocation, 0);
 
-        placeholderFrame.size.width += 2;
         dragPlaceholder = [[CPTextView alloc] initWithFrame:placeholderFrame];
         [dragPlaceholder._textStorage replaceCharactersInRange:CPMakeRange(0, 0) withAttributedString:placeholderString];
-
-        // copy over the vertical offsets to make sure that baselines are identical
-        // this may not be the case when a larger image is on the same line right to the selection
-        var l = dragPlaceholder._layoutManager._lineFragments.length,
-            j = [_layoutManager._lineFragments indexOfObjectIdenticalTo:firstFragment inRange:nil];
-
-        for(var i = 0; i < l; i++)
-            dragPlaceholder._layoutManager._lineFragments[i]._glyphsOffsets = _layoutManager._lineFragments[j++]._glyphsOffsets;
 
         [dragPlaceholder setBackgroundColor:[CPColor colorWithRed:1 green:1 blue:1 alpha:0]];
         [dragPlaceholder setAlphaValue:0.5];
