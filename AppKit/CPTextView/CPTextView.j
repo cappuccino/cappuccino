@@ -1134,7 +1134,7 @@ Sets the selection to a range of characters in response to user action.
             rangeToHideRHS = _MakeRangeFromAbs(CPMaxRange(_selectionRange) - lineBeginningIndex, lineEndIndex - lineBeginningIndex),
             dragPlaceholder;
 
-        // hide the left/right parts of the first line of the selection that is not included
+        // hide the left/right parts of the first/last lines of the selection that are not included
         [self _hideRange:rangeToHideLHS inDragPlaceholderString:placeholderString];
         [self _hideRange:rangeToHideRHS inDragPlaceholderString:placeholderString];
 
