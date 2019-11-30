@@ -454,10 +454,11 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         stringForPasting = [[self textStorage] attributedSubstringFromRange:CPMakeRangeCopy(selectedRange)],
         richData = [_CPRTFProducer produceRTF:stringForPasting documentAttributes:@{}];
 
-        [pasteboard declareTypes:[CPStringPboardType, CPRTFPboardType] owner:nil];
+        [pasteboard declareTypes:[CPStringPboardType, CPRTFPboardType, _CPSmartPboardType, _CPASPboardType] owner:nil];
         [pasteboard setString:stringForPasting._string forType:CPStringPboardType];
         [pasteboard setString:richData forType:CPRTFPboardType];
         [pasteboard setString:_previousSelectionGranularity + '' forType:_CPSmartPboardType];
+        [pasteboard setString:[[CPKeyedArchiver archivedDataWithRootObject:stringForPasting] rawString] forType:_CPASPboardType];
 }
 
 - (void)_pasteString:(id)stringForPasting
@@ -1150,9 +1151,10 @@ Sets the selection to a range of characters in response to user action.
         var stringForPasting = [_textStorage attributedSubstringFromRange:CPMakeRangeCopy(_selectionRange)],
             richData = [_CPRTFProducer produceRTF:stringForPasting documentAttributes:@{}],
             draggingPasteboard = [CPPasteboard pasteboardWithName:CPDragPboard];
-        [draggingPasteboard declareTypes:[CPRTFPboardType, CPStringPboardType] owner:nil];
+        [draggingPasteboard declareTypes:[CPRTFPboardType, CPStringPboardType, _CPASPboardType] owner:nil];
         [draggingPasteboard setString:richData forType:CPRTFPboardType];
         [draggingPasteboard setString:stringForPasting._string forType:CPStringPboardType];
+        [draggingPasteboard setString:[[CPKeyedArchiver archivedDataWithRootObject:stringForPasting] rawString] forType:_CPASPboardType];
 
         [self dragView:dragPlaceholder
                     at:placeholderFrame.origin
