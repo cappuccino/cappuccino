@@ -1285,7 +1285,7 @@ var _objectsInRange = function(aList, aRange)
 
         if (!run.elem && CPRectIntersectsRect([_textContainer._textView exposedRect], _fragmentRect))
         {
-            run.elem=[self createDOMElementWithText:run.string andFont:run.font andColor:run.color];
+            run.elem = [self createDOMElementWithText:run.string andFont:run.font andColor:run.color];
         }
 
         if (run.DOMactive && !run.DOMpatched)
@@ -1310,7 +1310,6 @@ var _objectsInRange = function(aList, aRange)
         }
 
         run.DOMpatched = NO;
-
     }
 }
 
