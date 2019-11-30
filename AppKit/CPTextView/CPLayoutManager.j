@@ -1131,7 +1131,6 @@ var _objectsInRange = function(aList, aRange)
 {
 #if PLATFORM(DOM)
     var style,
-        img = document.createElement("img"),
         span = document.createElement("span");
 
     style = span.style;
@@ -1142,13 +1141,7 @@ var _objectsInRange = function(aList, aRange)
     style.whiteSpace = "pre";
     style.backgroundColor = "transparent";
 
-    img.oncontextmenu = img.onmousedown = img.onselectstart = _oncontextmenuhandler;  // fixme: is this really necessary if parent span is already set up this way?
     span.oncontextmenu = span.onmousedown = span.onselectstart = _oncontextmenuhandler;
-
-    img.src = [anImage filename];
-    img.height = [anImage size].height;
-    img.width = [anImage size].width;
-
     span.innerHTML = "<img src='"+[anImage filename]+"' height='"+[anImage size].height+"' width='"+[anImage size].width+"'>";
 
     return span;
