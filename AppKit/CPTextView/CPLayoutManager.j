@@ -1103,7 +1103,6 @@ var _objectsInRange = function(aList, aRange)
         span = document.createElement("span");
 
     span.oncontextmenu = span.onmousedown = span.onselectstart = _oncontextmenuhandler;
-    // span.contentEditable = true;   // this unfortunately does not work to make native pasting work on safari
 
     style = span.style;
     style.position = "absolute";
@@ -1122,7 +1121,6 @@ var _objectsInRange = function(aList, aRange)
     else if (CPFeatureIsCompatible(CPJavaScriptTextContentFeature))
         span.textContent = aString;
 
-    //<!> FIXME aString.replace(/&/g,'&amp;')
     return span;
 #else
     return nil;
@@ -1191,7 +1189,6 @@ var _objectsInRange = function(aList, aRange)
                 var font = [attributes objectForKey:CPFontAttributeName] || [textStorage font] || [CPFont systemFontOfSize:12.0];
 
                 var color = [attributes objectForKey:CPForegroundColorAttributeName],
-                    elem = [self createDOMElementWithText:string andFont:font andColor:color],
                     run = {_range:CPMakeRangeCopy(effectiveRange), color:color, font:font, elem:nil, string:string};
 
                 _runs.push(run);
@@ -1285,9 +1282,7 @@ var _objectsInRange = function(aList, aRange)
         var run = runs[i];
 
         if (!run.elem && CPRectIntersectsRect([_textContainer._textView exposedRect], _fragmentRect))
-        {
-            run.elem = [self createDOMElementWithText:run.string andFont:run.font andColor:run.color]; // fixme: createDOMElementWithRun:
-        }
+            run.elem = [self createDOMElementWithText:run.string andFont:run.font andColor:run.color];
 
         if (run.DOMactive && !run.DOMpatched)
             continue;
