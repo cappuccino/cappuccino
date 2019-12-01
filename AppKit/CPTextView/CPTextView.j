@@ -1124,11 +1124,12 @@ Sets the selection to a range of characters in response to user action.
     // dragging the selection
     if ([self selectionGranularity] == CPSelectByCharacter && CPLocationInRange(_startTrackingLocation, _selectionRange))
     {
-        var firstFragment = [_layoutManager _firstLineFragmentForLineFromLocation:_selectionRange.location],
+        var visibleRange = [_layoutManager glyphRangeForBoundingRect:_exposedRect inTextContainer:_textContainer],
+            firstFragment = [_layoutManager _firstLineFragmentForLineFromLocation:_selectionRange.location],
             lastFragment = [_layoutManager _lastLineFragmentForLineFromLocation:CPMaxRange(_selectionRange)],
             lineBeginningIndex = firstFragment._range.location,
             lineEndIndex = CPMaxRange(lastFragment._range),
-            placeholderRange = _MakeRangeFromAbs(lineBeginningIndex, lineEndIndex),
+            placeholderRange = CPIntersectionRange(_MakeRangeFromAbs(lineBeginningIndex, lineEndIndex), visibleRange),
             placeholderString = [_textStorage attributedSubstringFromRange:placeholderRange],
             placeholderFrame = CGRectIntersection([_layoutManager boundingRectForGlyphRange:placeholderRange inTextContainer:_textContainer], _frame),
             rangeToHideLHS = CPMakeRange(0, _selectionRange.location - lineBeginningIndex),
