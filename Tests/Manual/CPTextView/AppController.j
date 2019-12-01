@@ -103,42 +103,31 @@
    [formatMenu addItemWithTitle:@"Font panel" action:@selector(orderFrontFontPanel:) keyEquivalent:@"f"];
    [mainMenu setSubmenu:formatMenu forItem:item];
 
+    [_textView insertText:"123"];
+    var tempImag = [[CPImage alloc] initWithContentsOfFile:@"Resources/spinner.gif" size:CGSizeMake(532, 32)];
+    [_textView insertText:[CPTextStorage attributedStringWithImageAttachment:tempImag]];
+    [_textView insertText:" 456 "];
     var tempImag = [[CPImage alloc] initWithContentsOfFile:@"Resources/spinner.gif" size:CGSizeMake(32, 32)];
     [_textView insertText:[CPTextStorage attributedStringWithImageAttachment:tempImag]];
-    [_textView insertText:"xx"];
+    [_textView insertText:" 789 "];
 
-    tempImag = [[CPImage alloc] initWithContentsOfFile:@"Resources/spinner.gif" size:CGSizeMake(64, 100)];
-    [_textView insertText:[CPTextStorage attributedStringWithImageAttachment:tempImag]];
+    var centeredParagraph=[CPParagraphStyle new];
+        [centeredParagraph setAlignment: CPCenterTextAlignment];
+    [_textView insertText:[[CPAttributedString alloc] initWithString:@"Fusce\n"
+        attributes:[CPDictionary dictionaryWithObjects:[centeredParagraph, [CPFont boldFontWithName:"Arial" size:18], [CPColor redColor]]
+         forKeys:[CPParagraphStyleAttributeName, CPFontAttributeName, CPForegroundColorAttributeName]]]];
 
-
-   //
-   //  var centeredParagraph=[CPParagraphStyle new];
-   //  [centeredParagraph setAlignment: CPCenterTextAlignment];
-   //  [_textView insertText:[[CPAttributedString alloc] initWithString:@"Fusce\n"
-   //             attributes:[CPDictionary dictionaryWithObjects:[centeredParagraph, [CPFont boldFontWithName:"Arial" size:18], [CPColor redColor]]
-   //                                      forKeys:[CPParagraphStyleAttributeName, CPFontAttributeName, CPForegroundColorAttributeName]]]];
-   //
-   //  [_textView insertText: [[CPAttributedString alloc] initWithString:@"lectus neque cr     as eget lectus neque cr as eget lectus cr as eget lectus"
-   //              attributes:[CPDictionary dictionaryWithObjects:[ [CPFont fontWithName:"Arial" size:12]] forKeys: [CPFontAttributeName]]]];
-   //
-   //  [_textView insertText:[[CPAttributedString alloc] initWithString:@" proin, this is text in boldface "
-   //              attributes:[CPDictionary dictionaryWithObjects:[ [CPFont boldFontWithName:"Arial" size:12]] forKeys: [CPFontAttributeName]]]];
-   //  [_textView insertText:[[CPAttributedString alloc] initWithString:@"111111 neque cr as eget lectus neque cr as eget lectus cr as eget lectus"
-   //              attributes:[CPDictionary dictionaryWithObjects:[ [CPFont fontWithName:"Arial" size:12.0]] forKeys: [CPFontAttributeName]]]];
-   //
     [theWindow orderFront:self];
     [CPMenu setMenuBarVisible:YES];
 }
 
-//
-// - (void) makeRTF:sender
-// {
-//    [_textView2 setString: [_CPRTFProducer produceRTF:[_textView textStorage] documentAttributes: @{}] ];
-//    var tc = [_CPRTFParser new];
-//    var mystr=[tc parseRTF:[_textView2 stringValue]];
-//    [_textView selectAll: self];
-//    [_textView insertText: mystr];
-//
-// }
+- (void) makeRTF:sender
+{
+    [_textView2 setString: [_CPRTFProducer produceRTF:[_textView textStorage] documentAttributes: @{}] ];
+    var tc = [_CPRTFParser new];
+    var mystr=[tc parseRTF:[_textView2 stringValue]];
+    [_textView selectAll: self];
+    [_textView insertText: mystr];
+}
 
 @end
