@@ -1149,12 +1149,11 @@ Sets the selection to a range of characters in response to user action.
         [dragPlaceholder setAlphaValue:0.5];
 
         var stringForPasting = [_textStorage attributedSubstringFromRange:CPMakeRangeCopy(_selectionRange)],
-            richData = [_CPRTFProducer produceRTF:stringForPasting documentAttributes:@{}],
             draggingPasteboard = [CPPasteboard pasteboardWithName:CPDragPboard];
-        [draggingPasteboard declareTypes:[CPRTFPboardType, CPStringPboardType, _CPASPboardType] owner:nil];
-        [draggingPasteboard setString:richData forType:CPRTFPboardType];
-        [draggingPasteboard setString:stringForPasting._string forType:CPStringPboardType];
+        [draggingPasteboard declareTypes:[_CPASPboardType, CPStringPboardType] owner:nil];
         [draggingPasteboard setString:[[CPKeyedArchiver archivedDataWithRootObject:stringForPasting] rawString] forType:_CPASPboardType];
+        // this is necessary because the drag will not work without data of kind CPStringPboardType
+        [draggingPasteboard setString:stringForPasting._string forType:CPStringPboardType];
 
         [self dragView:dragPlaceholder
                     at:placeholderFrame.origin
@@ -2227,6 +2226,10 @@ Sets the selection to a range of characters in response to user action.
         location = [self _characterIndexFromRawPoint:CGPointCreateCopy(point)];
 
     _movingSelection = CPMakeRange(location, 0);
+
+    if (CPLocationInRange(location, _selectionRange))
+        return;
+
     [_caret _drawCaretAtLocation:_movingSelection.location];
     [_caret setVisibility:YES];
 }
@@ -2239,7 +2242,7 @@ Sets the selection to a range of characters in response to user action.
     var location = [self convertPoint:[aSender draggingLocation] fromView:nil],
         pasteboard = [aSender draggingPasteboard];
 
-    if ([pasteboard availableTypeFromArray:[CPRTFPboardType, CPStringPboardType]])
+    if ([pasteboard availableTypeFromArray:[_CPASPboardType]])
     {
         [_caret setVisibility:NO];
 
@@ -2256,15 +2259,10 @@ Sets the selection to a range of characters in response to user action.
         [self _deleteForRange:_selectionRange];
         [self setSelectedRange:_movingSelection];
 
-        var dataForPasting = [pasteboard stringForType:CPRTFPboardType] || [pasteboard stringForType:CPStringPboardType];
-
+        var stringForPasting = [CPKeyedUnarchiver unarchiveObjectWithData:[CPData dataWithRawString:[pasteboard stringForType:_CPASPboardType]]];
         //  setTimeout is to a work around a transaction issue with the undomanager
         setTimeout(function(){
-
-            if ([dataForPasting hasPrefix:"{\\rtf"])
-                [self insertText:[[_CPRTFParser new] parseRTF:dataForPasting]];
-            else
-                [self insertText:dataForPasting];
+            [self insertText:stringForPasting];
         }, 0);
     }
 
