@@ -104,7 +104,7 @@
    [mainMenu setSubmenu:formatMenu forItem:item];
 
     [_textView insertText:"123"];
-    var tempImag = [[CPImage alloc] initWithContentsOfFile:@"Resources/spinner.gif" size:CGSizeMake(532, 32)];
+    var tempImag = [[CPImage alloc] initWithContentsOfFile:@"Resources/spinner.gif" size:CGSizeMake(32, 32)];
     [_textView insertText:[CPTextStorage attributedStringWithImageAttachment:tempImag]];
     [_textView insertText:" 456 "];
     var tempImag = [[CPImage alloc] initWithContentsOfFile:@"Resources/spinner.gif" size:CGSizeMake(32, 32)];
