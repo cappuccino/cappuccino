@@ -1093,7 +1093,7 @@ var _objectsInRange = function(aList, aRange)
 #pragma mark -
 #pragma mark Init methods
 
-- (id)createDOMElementWithText:(CPString)aString andFont:(CPFont)aFont andColor:(CPColor)aColor
+- (id)createDOMElementWithText:(CPString)aString andFont:(CPFont)aFont andColor:(CPColor)aColor andUnderline:(CPNumber)aUnderline
 {
 #if PLATFORM(DOM)
     var style,
@@ -1110,6 +1110,27 @@ var _objectsInRange = function(aList, aRange)
     style.whiteSpace = "pre";
     style.backgroundColor = "transparent";
     style.font = [aFont cssString];
+    
+    if(aUnderline == CPUnderlineStyleSingle)
+    {
+        style.textDecoration = "underline";
+        style.textDecorationStyle = "solid";
+    }
+    if(aUnderline == CPUnderlineStyleDouble)
+    {
+        style.textDecoration = "underline";
+        style.textDecorationStyle = "double";
+    }
+    if(aUnderline == CPUnderlineStylePatternDot)
+    {
+        style.textDecoration = "underline";
+        style.textDecorationStyle = "dotted";
+    }
+    if(aUnderline == CPUnderlineStylePatternDash)
+    {
+        style.textDecoration = "underline";
+        style.textDecorationStyle = "dashed";
+    }
 
     if (aColor)
         style.color = [aColor cssString];
@@ -1148,14 +1169,15 @@ var _objectsInRange = function(aList, aRange)
             effectiveRange = attributes ? CPIntersectionRange(aRange, effectiveRange) : aRange;
 
             var string = [textStorage._string substringWithRange:effectiveRange],
-                font = [textStorage font] || [CPFont systemFontOfSize:12.0];
+                font = [textStorage font] || [CPFont systemFontOfSize:12.0],
+                underline = [attributes objectForKey:CPUnderlineStyleAttributeName] || CPUnderlineStyleNone ;
 
             if ([attributes containsKey:CPFontAttributeName])
                  font = [attributes objectForKey:CPFontAttributeName];
 
             var color = [attributes objectForKey:CPForegroundColorAttributeName],
                 elem = [self createDOMElementWithText:string andFont:font andColor:color],
-                run = {_range:CPMakeRangeCopy(effectiveRange), color:color, font:font, elem:nil, string:string};
+                run = {_range:CPMakeRangeCopy(effectiveRange), color:color, font:font, elem:nil, string:string, underline:underline};
 
             _runs.push(run);
 
@@ -1248,7 +1270,7 @@ var _objectsInRange = function(aList, aRange)
 
         if (!run.elem && CPRectIntersectsRect([_textContainer._textView exposedRect], _fragmentRect))
         {
-            run.elem=[self createDOMElementWithText:run.string andFont:run.font andColor:run.color];
+            run.elem=[self createDOMElementWithText:run.string andFont:run.font andColor:run.color andUnderline:run.underline];
         }
 
         if (run.DOMactive && !run.DOMpatched)
