@@ -84,6 +84,10 @@ CPCenterTextAlignment           = 2;
 CPJustifiedTextAlignment        = 3;
 CPNaturalTextAlignment          = 4;
 
+@typedef CPUnderlineStyle
+CPUnderlineStyleNone            = 0;
+CPUnderlineStyleSingle          = 1;
+
 /*
     CPText notifications
 */
