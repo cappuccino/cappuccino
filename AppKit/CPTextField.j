@@ -791,9 +791,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     element.style.font          = [font cssString];
 
     if (isTextArea)
-        element.style.whiteSpace = _wraps ? "pre-wrap" : "nowrap";
-    else
-        element.style.whiteSpace = "nowrap";
+        element.style.whiteSpace = _wraps ? "pre" : "nowrap";
 
 #endif
 }
