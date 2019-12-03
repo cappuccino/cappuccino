@@ -332,6 +332,7 @@ var CPSystemTypesetterFactory,
                 isAttachment = YES;
                 wrapRange = CPMakeRange(lineRange.location, lineRange.length - 1); // wrap before image
 
+                // prevent crash when image is larger than text container
                 if (imageSize.width > containerSizeWidth)
                     wrapRange.length++;
 

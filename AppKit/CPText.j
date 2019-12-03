@@ -168,10 +168,10 @@ CPKernAttributeName = @"CPKernAttributeName";
     var pasteboard = [CPPasteboard generalPasteboard],
         dataForPasting = [pasteboard stringForType:CPRTFPboardType],
         stringForPasting = [pasteboard stringForType:CPStringPboardType],
-        attributedString = [CPKeyedUnarchiver unarchiveObjectWithData:[CPData dataWithRawString:[pasteboard stringForType:_CPASPboardType]]];
+        attributedStringData = [pasteboard stringForType:_CPASPboardType];
 
-    if ([self isRichText] && attributedString)
-        return attributedString;
+    if ([self isRichText] && attributedStringData)
+        return [CPKeyedUnarchiver unarchiveObjectWithData:[CPData dataWithRawString:attributedStringData]];
 
     if (dataForPasting || [stringForPasting hasPrefix:"{\\rtf1\\ansi"])
         stringForPasting = [[_CPRTFParser new] parseRTF:dataForPasting ? dataForPasting : stringForPasting];
