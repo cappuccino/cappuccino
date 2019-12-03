@@ -1116,7 +1116,7 @@ var _objectsInRange = function(aList, aRange)
     style.backgroundColor = "transparent";
     style.font = [aFont cssString];
     
-    if(!aUnderline)
+    if(aUnderline)
     {
         style.textDecoration = "underline";
         
