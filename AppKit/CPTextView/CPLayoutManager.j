@@ -1093,6 +1093,11 @@ var _objectsInRange = function(aList, aRange)
 #pragma mark -
 #pragma mark Init methods
 
+- (id)createDOMElementWithText:(CPString)aString andFont:(CPFont)aFont andColor:(CPColor)aColor
+{
+    return [self createDOMElementWithText:aString andFont:aFont andColor:aColor andUnderline:nil];
+}
+
 - (id)createDOMElementWithText:(CPString)aString andFont:(CPFont)aFont andColor:(CPColor)aColor andUnderline:(CPNumber)aUnderline
 {
 #if PLATFORM(DOM)
@@ -1111,25 +1116,28 @@ var _objectsInRange = function(aList, aRange)
     style.backgroundColor = "transparent";
     style.font = [aFont cssString];
     
-    if(aUnderline == CPUnderlineStyleSingle)
+    if(!aUnderline)
     {
         style.textDecoration = "underline";
-        style.textDecorationStyle = "solid";
-    }
-    if(aUnderline == CPUnderlineStyleDouble)
-    {
-        style.textDecoration = "underline";
-        style.textDecorationStyle = "double";
-    }
-    if(aUnderline == CPUnderlineStylePatternDot)
-    {
-        style.textDecoration = "underline";
-        style.textDecorationStyle = "dotted";
-    }
-    if(aUnderline == CPUnderlineStylePatternDash)
-    {
-        style.textDecoration = "underline";
-        style.textDecorationStyle = "dashed";
+        
+        switch (aUnderline)
+        {
+            case CPUnderlineStyleSingle:
+                style.textDecorationStyle = "solid";
+                break;
+
+            case CPUnderlineStyleDouble:
+                style.textDecorationStyle = "double";
+                break;
+
+            case CPUnderlineStylePatternDot:
+                style.textDecorationStyle = "dotted";
+                break;
+
+            case CPUnderlineStylePatternDash:
+                style.textDecorationStyle = "dashed";
+                break;
+        }
     }
 
     if (aColor)
