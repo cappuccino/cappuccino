@@ -1098,7 +1098,7 @@ var _objectsInRange = function(aList, aRange)
     return [self createDOMElementWithText:aString andFont:aFont andColor:aColor andUnderline:nil];
 }
 
-- (id)createDOMElementWithText:(CPString)aString andFont:(CPFont)aFont andColor:(CPColor)aColor andUnderline:(CPNumber)aUnderline
+- (id)createDOMElementWithText:(CPString)aString andFont:(CPFont)aFont andColor:(CPColor)aColor andUnderline:(CPUnderlineStyle)aUnderline
 {
 #if PLATFORM(DOM)
     var style,
@@ -1116,7 +1116,7 @@ var _objectsInRange = function(aList, aRange)
     style.backgroundColor = "transparent";
     style.font = [aFont cssString];
     
-    if(aUnderline)
+    if (aUnderline)
     {
         style.textDecoration = "underline";
         
