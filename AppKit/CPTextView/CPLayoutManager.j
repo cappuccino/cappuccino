@@ -495,16 +495,6 @@ _oncontextmenuhandler = function () { return false; };
 
 }
 
-- (void)drawUnderlineForGlyphRange:(CPRange)glyphRange
-                     underlineType:(int)underlineVal
-                    baselineOffset:(float)baselineOffset
-                  lineFragmentRect:(CGRect)lineFragmentRect
-            lineFragmentGlyphRange:(CPRange)lineGlyphRange
-                   containerOrigin:(CGPoint)containerOrigin
-{
-// FIXME
-}
-
 - (void)drawGlyphsForGlyphRange:(CPRange)aRange atPoint:(CGPoint)aPoint
 {
     var lineFragments = _objectsInRange(_lineFragments, aRange);
