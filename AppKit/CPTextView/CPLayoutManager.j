@@ -1282,6 +1282,9 @@ var _objectsInRange = function(aList, aRange)
             run.elem.style.left = (orig.x) + "px";
             run.elem.style.top = (orig.y) + "px";
 
+            if (run.view)
+                [run.view setFrameOrigin:orig];
+
             if (!run.DOMactive)
             {
                 if (run.view)
