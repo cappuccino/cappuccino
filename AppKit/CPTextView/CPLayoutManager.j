@@ -1126,28 +1126,6 @@ var _objectsInRange = function(aList, aRange)
     return nil;
 #endif
 }
-- (id)createDOMElementWithImage:(CPImage)anImage
-{
-#if PLATFORM(DOM)
-    var style,
-        span = document.createElement("span");
-
-    style = span.style;
-    style.position = "absolute";
-    style.visibility = "visible";
-    style.padding = "0px";
-    style.margin = "0px";
-    style.whiteSpace = "pre";
-    style.backgroundColor = "transparent";
-
-    span.oncontextmenu = span.onmousedown = span.onselectstart = _oncontextmenuhandler;
-    span.innerHTML = "<img src='"+[anImage filename]+"' height='"+[anImage size].height+"' width='"+[anImage size].width+"'>";
-
-    return span;
-#else
-    return nil;
-#endif
-}
 
 - (id)initWithRange:(CPRange)aRange textContainer:(CPTextContainer)aContainer textStorage:(CPTextStorage)textStorage
 {
@@ -1177,9 +1155,12 @@ var _objectsInRange = function(aList, aRange)
             {
                 if (![attributes objectForKey:_CPAttachmentInvisible])
                 {
-                    var imageExtractedFromAttachment = [[CPImage alloc] initWithContentsOfFile:[attributes objectForKey:_CPAttachmentImageFile] size:CGSizeFromString([attributes objectForKey:_CPAttachmentImageSize])],
-                        elem = [self createDOMElementWithImage:imageExtractedFromAttachment],
-                        run = {_range:CPMakeRangeCopy(effectiveRange), color:nil, font:nil, elem:elem, string:nil};
+                    var view = [attributes objectForKey:_CPAttachmentView],
+                        viewCopy = [CPKeyedUnarchiver unarchiveObjectWithData:[CPKeyedArchiver archivedDataWithRootObject:view]];
+
+                    var elem = viewCopy._DOMElement;
+
+                    run = {_range:CPMakeRangeCopy(effectiveRange), color:nil, font:nil, elem:elem, string:nil, view:viewCopy};
 
                     _runs.push(run);
                 }
@@ -1264,7 +1245,12 @@ var _objectsInRange = function(aList, aRange)
     for (var i = 0; i < l; i++)
     {
         if (_runs[i].elem && _runs[i].DOMactive)
-            _textContainer._textView._DOMElement.removeChild(_runs[i].elem);
+        {
+            if (_runs[i].view)
+                [_runs[i].view removeFromSuperview];
+            else
+                _textContainer._textView._DOMElement.removeChild(_runs[i].elem);
+        }
 
         _runs[i].elem = nil;
         _runs[i].DOMactive = NO;
@@ -1300,7 +1286,12 @@ var _objectsInRange = function(aList, aRange)
             run.elem.style.top = (orig.y) + "px";
 
             if (!run.DOMactive)
-                _textContainer._textView._DOMElement.appendChild(run.elem);
+            {
+                if (run.view)
+                    [self._textContainer._textView addSubview:run.view];
+                else
+                    _textContainer._textView._DOMElement.appendChild(run.elem);
+            }
 
             run.DOMactive = YES;
         }
@@ -1357,6 +1348,9 @@ var _objectsInRange = function(aList, aRange)
 
         if (verticalOffset && _runs[i].elem)
         {
+            if (_runs[i].view)
+                _runs[i].view._frame.origin.y += verticalOffset;
+
             _runs[i].elem.top = (_runs[i].elem.top + verticalOffset) + 'px';
             _runs[i].DOMpatched = YES;
         }

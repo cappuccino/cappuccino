@@ -104,18 +104,17 @@
    [mainMenu setSubmenu:formatMenu forItem:item];
 
     [_textView insertText:"123"];
-    var tempImag = [[CPImage alloc] initWithContentsOfFile:@"Resources/spinner.gif" size:CGSizeMake(32, 32)];
-    [_textView insertText:[CPTextStorage attributedStringWithImageAttachment:tempImag]];
-    [_textView insertText:" 456 "];
-    var tempImag = [[CPImage alloc] initWithContentsOfFile:@"Resources/spinner.gif" size:CGSizeMake(32, 32)];
-    [_textView insertText:[CPTextStorage attributedStringWithImageAttachment:tempImag]];
-    [_textView insertText:" 789 "];
+    var tempImageView = [[CPImageView alloc] initWithFrame:CGRectMake(0, 0, 32, 32)];
+    [tempImageView setImage:[[CPImage alloc] initWithContentsOfFile:@"Resources/spinner.gif" size:CGSizeMake(32, 32)]]
 
-    var centeredParagraph=[CPParagraphStyle new];
-        [centeredParagraph setAlignment: CPCenterTextAlignment];
-    [_textView insertText:[[CPAttributedString alloc] initWithString:@"Fusce\n"
-        attributes:[CPDictionary dictionaryWithObjects:[centeredParagraph, [CPFont boldFontWithName:"Arial" size:18], [CPColor redColor]]
-         forKeys:[CPParagraphStyleAttributeName, CPFontAttributeName, CPForegroundColorAttributeName]]]];
+    [_textView insertText:[CPTextStorage attributedStringWithAttachment:tempImageView]];
+    [_textView insertText:" 456 "];
+
+//    var centeredParagraph=[CPParagraphStyle new];
+//        [centeredParagraph setAlignment: CPCenterTextAlignment];
+//    [_textView insertText:[[CPAttributedString alloc] initWithString:@"Fusce\n"
+//        attributes:[CPDictionary dictionaryWithObjects:[centeredParagraph, [CPFont boldFontWithName:"Arial" size:18], [CPColor redColor]]
+//         forKeys:[CPParagraphStyleAttributeName, CPFontAttributeName, CPForegroundColorAttributeName]]]];
 
     [theWindow orderFront:self];
     [CPMenu setMenuBarVisible:YES];

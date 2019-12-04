@@ -45,8 +45,7 @@ CPTextStorageDidProcessEditingNotification = @"CPTextStorageDidProcessEditingNot
 CPAttachmentCharacter = 65532; // "\ufffc";
 _CPAttachmentCharacterAsString = String.fromCharCode(CPAttachmentCharacter);
 
-_CPAttachmentImageSize = "_CPAttachmentImageSize";
-_CPAttachmentImageFile = "_CPAttachmentImageFile";
+_CPAttachmentView      = "_CPAttachmentView";
 _CPAttachmentInvisible = "_CPAttachmentInvisible";
 
 var CPTextStorageDelegate_textStorageWillProcessEditing_ = 1 << 1,
@@ -263,14 +262,11 @@ var CPTextStorageDelegate_textStorageWillProcessEditing_ = 1 << 1,
     return [super attributedSubstringFromRange:aRange];
 }
 
-+ (id)attributedStringWithImageAttachment:(CPImage)someImage
++ (id)attributedStringWithAttachment:(CPView)someView
 {
-    var  result = [[self alloc] initWithString:String.fromCharCode(CPAttachmentCharacter)];
+    var  result = [[self alloc] initWithString:_CPAttachmentCharacterAsString];
 
-    [result setAttributes:@{ _CPAttachmentImageSize:CGStringFromSize([someImage size]),
-                             _CPAttachmentImageFile:[someImage filename]
-                           }
-                    range:CPMakeRange(0, 1)];
+    [result setAttributes:@{_CPAttachmentView:someView} range:CPMakeRange(0, 1)];
 
     return result;
 }

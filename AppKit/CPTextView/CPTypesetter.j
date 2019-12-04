@@ -324,29 +324,29 @@ var CPSystemTypesetterFactory,
             case CPAttachmentCharacter:
             {
                 var attributes = [_textStorage attributesAtIndex:glyphIndex effectiveRange:nil],
-                    imageSize = CGSizeFromString([attributes objectForKey:_CPAttachmentImageSize]),
-                    filename = [attributes objectForKey:_CPAttachmentImageFile];
+                    view = [attributes objectForKey:_CPAttachmentView],
+                    viewSize = view ? view._frame.size : CGSizeMake(0, 0);
 
-                rangeWidth = prevRangeWidth + imageSize.width; // undo sizing of dummy character
+                rangeWidth = prevRangeWidth + viewSize.width; // undo sizing of dummy character
 
                 isAttachment = YES;
                 wrapRange = CPMakeRange(lineRange.location, lineRange.length - 1); // wrap before image
 
                 // prevent crash when image is larger than text container
-                if (imageSize.width > containerSizeWidth)
+                if (viewSize.width > containerSizeWidth)
                     wrapRange.length++;
 
                 wrapWidth = rangeWidth;
                 wrapRange._height = _lineHeight;
                 wrapRange._base = _lineBase;
 
-                if (imageSize.height > _lineBase)
-                    _lineBase = imageSize.height;
+                if (viewSize.height > _lineBase)
+                    _lineBase = viewSize.height;
 
-                if (imageSize.height > _lineHeight)
-                    _lineHeight = imageSize.height - descent + leading;
+                if (viewSize.height > _lineHeight)
+                    _lineHeight = viewSize.height - descent + leading;
 
-                ascent = imageSize.height;
+                ascent = viewSize.height;
                 break;
             }
             case 9: // '\t'
