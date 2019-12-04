@@ -110,6 +110,9 @@
     [_textView insertText:[CPTextStorage attributedStringWithAttachment:tempImageView]];
     [_textView insertText:" 456 "];
 
+    var tempButton = [[CPButton alloc] initWithFrame:CGRectMake(0, 0, 64, 28)]
+    [_textView insertText:[CPTextStorage attributedStringWithAttachment:tempButton]];
+
 //    var centeredParagraph=[CPParagraphStyle new];
 //        [centeredParagraph setAlignment: CPCenterTextAlignment];
 //    [_textView insertText:[[CPAttributedString alloc] initWithString:@"Fusce\n"

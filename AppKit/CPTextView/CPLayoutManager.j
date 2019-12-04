@@ -1157,18 +1157,16 @@ var _objectsInRange = function(aList, aRange)
                 {
                     var view = [attributes objectForKey:_CPAttachmentView],
                         viewCopy = [CPKeyedUnarchiver unarchiveObjectWithData:[CPKeyedArchiver archivedDataWithRootObject:view]],
-                        elem = viewCopy._DOMElement;
-
-                    run = {_range:CPMakeRangeCopy(effectiveRange), color:nil, font:nil, elem:elem, string:nil, view:viewCopy};
+                        elem = viewCopy._DOMElement,
+                        run = {_range:CPMakeRangeCopy(effectiveRange), color:nil, font:nil, elem:elem, string:nil, view:viewCopy};
 
                     _runs.push(run);
                 }
             }
             else
             {
-                var font = [attributes objectForKey:CPFontAttributeName] || [textStorage font] || [CPFont systemFontOfSize:12.0];
-
-                var color = [attributes objectForKey:CPForegroundColorAttributeName],
+                var font = [attributes objectForKey:CPFontAttributeName] || [textStorage font] || [CPFont systemFontOfSize:12.0],
+                    color = [attributes objectForKey:CPForegroundColorAttributeName],
                     run = {_range:CPMakeRangeCopy(effectiveRange), color:color, font:font, elem:nil, string:string};
 
                 _runs.push(run);
