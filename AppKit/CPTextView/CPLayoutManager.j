@@ -1156,9 +1156,8 @@ var _objectsInRange = function(aList, aRange)
                 if (![attributes objectForKey:_CPAttachmentInvisible])
                 {
                     var view = [attributes objectForKey:_CPAttachmentView],
-                        viewCopy = [CPKeyedUnarchiver unarchiveObjectWithData:[CPKeyedArchiver archivedDataWithRootObject:view]];
-
-                    var elem = viewCopy._DOMElement;
+                        viewCopy = [CPKeyedUnarchiver unarchiveObjectWithData:[CPKeyedArchiver archivedDataWithRootObject:view]],
+                        elem = viewCopy._DOMElement;
 
                     run = {_range:CPMakeRangeCopy(effectiveRange), color:nil, font:nil, elem:elem, string:nil, view:viewCopy};
 
