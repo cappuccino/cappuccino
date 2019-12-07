@@ -28,12 +28,6 @@
 
     [[theWindow contentView] addSubview:textView];
     
-    var button = [[CPButton alloc] initWithFrame:CGRectMake(400,10,75,25)];
-    [button setTitle:@"Underline"];
-    [button setTarget:textView];
-    [button setAction:@selector(underline:)];
-    [[theWindow contentView] addSubview:button];
-
     delegateSpy = spy(self);
 }
 
