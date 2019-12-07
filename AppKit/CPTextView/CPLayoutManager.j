@@ -1168,7 +1168,6 @@ var _objectsInRange = function(aList, aRange)
             effectiveRange = attributes ? CPIntersectionRange(aRange, effectiveRange) : aRange;
 
             var string = [textStorage._string substringWithRange:effectiveRange],
-                font = [attributes objectForKey:CPFontAttributeName] || [textStorage font] || [CPFont systemFontOfSize:12.0],
                 underline = [attributes objectForKey:CPUnderlineStyleAttributeName] || CPUnderlineStyleNone;
 
             // this is an attachment -> create a run for it
@@ -1187,6 +1186,7 @@ var _objectsInRange = function(aList, aRange)
             else
             {
                 var color = [attributes objectForKey:CPForegroundColorAttributeName],
+                    font = [attributes objectForKey:CPFontAttributeName] || [textStorage font] || [CPFont systemFontOfSize:12.0],
                     run = {_range:CPMakeRangeCopy(effectiveRange), color:color, font:font, elem:nil, string:string};
 
                 _runs.push(run);
