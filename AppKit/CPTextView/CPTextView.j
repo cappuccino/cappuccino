@@ -455,7 +455,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         richData = [_CPRTFProducer produceRTF:stringForPasting documentAttributes:@{}];
 
         [pasteboard declareTypes:[CPStringPboardType, CPRTFPboardType, _CPSmartPboardType, _CPASPboardType] owner:nil];
-        [pasteboard setString:stringForPasting._string forType:CPStringPboardType];
+        [pasteboard setString:[stringForPasting._string stringByReplacingOccurrencesOfString:_CPAttachmentCharacterAsString withString:''] forType:CPStringPboardType];
         [pasteboard setString:richData forType:CPRTFPboardType];
         [pasteboard setString:_previousSelectionGranularity + '' forType:_CPSmartPboardType];
         [pasteboard setString:[[CPKeyedArchiver archivedDataWithRootObject:stringForPasting] rawString] forType:_CPASPboardType];
