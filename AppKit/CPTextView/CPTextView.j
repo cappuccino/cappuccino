@@ -1142,8 +1142,7 @@ Sets the selection to a range of characters in response to user action.
 
         _movingSelection = CPMakeRange(_startTrackingLocation, 0);
 
-        placeholderFrame.size.width += 2;
-        dragPlaceholder = [[CPTextView alloc] initWithFrame:placeholderFrame];
+        dragPlaceholder = [[CPTextView alloc] initWithFrame:_frame];
         [dragPlaceholder._textStorage replaceCharactersInRange:CPMakeRange(0, 0) withAttributedString:placeholderString];
 
         [dragPlaceholder setBackgroundColor:[CPColor colorWithRed:1 green:1 blue:1 alpha:0]];
