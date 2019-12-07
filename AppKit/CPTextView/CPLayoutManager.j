@@ -498,16 +498,6 @@ _oncontextmenuhandler = function () { return false; };
 
 }
 
-- (void)drawUnderlineForGlyphRange:(CPRange)glyphRange
-                     underlineType:(int)underlineVal
-                    baselineOffset:(float)baselineOffset
-                  lineFragmentRect:(CGRect)lineFragmentRect
-            lineFragmentGlyphRange:(CPRange)lineGlyphRange
-                   containerOrigin:(CGPoint)containerOrigin
-{
-// FIXME
-}
-
 - (void)drawGlyphsForGlyphRange:(CPRange)aRange atPoint:(CGPoint)aPoint
 {
     var lineFragments = _objectsInRange(_lineFragments, aRange);
@@ -1098,6 +1088,11 @@ var _objectsInRange = function(aList, aRange)
 
 - (id)createDOMElementWithText:(CPString)aString andFont:(CPFont)aFont andColor:(CPColor)aColor
 {
+    return [self createDOMElementWithText:aString andFont:aFont andColor:aColor andUnderline:nil];
+}
+
+- (id)createDOMElementWithText:(CPString)aString andFont:(CPFont)aFont andColor:(CPColor)aColor andUnderline:(CPUnderlineStyle)aUnderline
+{
 #if PLATFORM(DOM)
     var style,
         span = document.createElement("span");
@@ -1112,6 +1107,30 @@ var _objectsInRange = function(aList, aRange)
     style.whiteSpace = "pre";
     style.backgroundColor = "transparent";
     style.font = [aFont cssString];
+    
+    if (aUnderline)
+    {
+        style.textDecoration = "underline";
+        
+        switch (aUnderline)
+        {
+            case CPUnderlineStyleSingle:
+                style.textDecorationStyle = "solid";
+                break;
+
+            case CPUnderlineStyleDouble:
+                style.textDecorationStyle = "double";
+                break;
+
+            case CPUnderlineStylePatternDot:
+                style.textDecorationStyle = "dotted";
+                break;
+
+            case CPUnderlineStylePatternDash:
+                style.textDecorationStyle = "dashed";
+                break;
+        }
+    }
 
     if (aColor)
         style.color = [aColor cssString];
@@ -1148,7 +1167,9 @@ var _objectsInRange = function(aList, aRange)
 
             effectiveRange = attributes ? CPIntersectionRange(aRange, effectiveRange) : aRange;
 
-            var string = [textStorage._string substringWithRange:effectiveRange];
+            var string = [textStorage._string substringWithRange:effectiveRange],
+                font = [attributes objectForKey:CPFontAttributeName] || [textStorage font] || [CPFont systemFontOfSize:12.0],
+                underline = [attributes objectForKey:CPUnderlineStyleAttributeName] || CPUnderlineStyleNone ;
 
             // this is an attachment -> create a run for it
             if (string === _CPAttachmentCharacterAsString)
@@ -1165,8 +1186,7 @@ var _objectsInRange = function(aList, aRange)
             }
             else
             {
-                var font = [attributes objectForKey:CPFontAttributeName] || [textStorage font] || [CPFont systemFontOfSize:12.0],
-                    color = [attributes objectForKey:CPForegroundColorAttributeName],
+                var color = [attributes objectForKey:CPForegroundColorAttributeName],
                     run = {_range:CPMakeRangeCopy(effectiveRange), color:color, font:font, elem:nil, string:string};
 
                 _runs.push(run);
@@ -1265,7 +1285,7 @@ var _objectsInRange = function(aList, aRange)
         var run = runs[i];
 
         if (!run.elem && CPRectIntersectsRect([_textContainer._textView exposedRect], _fragmentRect))
-            run.elem = [self createDOMElementWithText:run.string andFont:run.font andColor:run.color];
+            run.elem=[self createDOMElementWithText:run.string andFont:run.font andColor:run.color andUnderline:run.underline];
 
         if (run.DOMactive && !run.DOMpatched)
             continue;

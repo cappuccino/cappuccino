@@ -1939,14 +1939,14 @@ Sets the selection to a range of characters in response to user action.
         if ([attrib containsKey:CPUnderlineStyleAttributeName] && [[attrib objectForKey:CPUnderlineStyleAttributeName] intValue])
             [_textStorage removeAttribute:CPUnderlineStyleAttributeName range:_selectionRange];
         else
-            [_textStorage addAttribute:CPUnderlineStyleAttributeName value:[CPNumber numberWithInt:1] range:CPMakeRangeCopy(_selectionRange)];
+            [_textStorage addAttribute:CPUnderlineStyleAttributeName value:CPUnderlineStyleSingle range:CPMakeRangeCopy(_selectionRange)];
     }
     else
     {
         if ([_typingAttributes containsKey:CPUnderlineStyleAttributeName] && [[_typingAttributes  objectForKey:CPUnderlineStyleAttributeName] intValue])
-            [_typingAttributes setObject:[CPNumber numberWithInt:0] forKey:CPUnderlineStyleAttributeName];
+            [_typingAttributes setObject:CPUnderlineStyleNone forKey:CPUnderlineStyleAttributeName];
         else
-            [_typingAttributes setObject:[CPNumber numberWithInt:1] forKey:CPUnderlineStyleAttributeName];
+            [_typingAttributes setObject:CPUnderlineStyleSingle forKey:CPUnderlineStyleAttributeName];
     }
 
     [_layoutManager textStorage:_textStorage edited:0 range:CPMakeRangeCopy(_selectionRange) changeInLength:0 invalidatedRange:CPMakeRangeCopy(_selectionRange)];
