@@ -1169,7 +1169,7 @@ var _objectsInRange = function(aList, aRange)
 
             var string = [textStorage._string substringWithRange:effectiveRange],
                 font = [attributes objectForKey:CPFontAttributeName] || [textStorage font] || [CPFont systemFontOfSize:12.0],
-                underline = [attributes objectForKey:CPUnderlineStyleAttributeName] || CPUnderlineStyleNone ;
+                underline = [attributes objectForKey:CPUnderlineStyleAttributeName] || CPUnderlineStyleNone;
 
             // this is an attachment -> create a run for it
             if (string === _CPAttachmentCharacterAsString)
@@ -1285,7 +1285,7 @@ var _objectsInRange = function(aList, aRange)
         var run = runs[i];
 
         if (!run.elem && CPRectIntersectsRect([_textContainer._textView exposedRect], _fragmentRect))
-            run.elem=[self createDOMElementWithText:run.string andFont:run.font andColor:run.color andUnderline:run.underline];
+            run.elem = [self createDOMElementWithText:run.string andFont:run.font andColor:run.color andUnderline:run.underline];
 
         if (run.DOMactive && !run.DOMpatched)
             continue;
