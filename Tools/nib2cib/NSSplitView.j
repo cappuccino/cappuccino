@@ -30,12 +30,26 @@ var NSThinDividerStyle = 2;
 {
     if (self = [super NS_initWithCoder:aCoder])
     {
-        self._isVertical = [aCoder decodeBoolForKey:@"NSIsVertical"];
+        [self _init];
+
+        [self _setVertical:[aCoder decodeBoolForKey:@"NSIsVertical"]];
+
+        // TODO: the _isPaneSplitter is no more used. This should be removed someday.
 
         // The possible values appear to be: no value (thick divider), 2 (thin divider) and 3 (pane splitter). For
         // Cappuccino's purposes we treat thick divider and pane splitter as the same thing since the only difference
         // seems to be graphical.
         self._isPaneSplitter = [aCoder decodeIntForKey:@"NSDividerStyle"] != NSThinDividerStyle;
+
+        [self setDividerStyle:[aCoder decodeIntForKey:@"NSDividerStyle"]];
+
+        // Xcode IB seems to forget to specify a value for thick dividers.
+        if ([self dividerStyle] < 1)
+            [self setDividerStyle:CPSplitViewDividerStyleThick];
+
+        // IMPORTANT REMARK:
+        // Subviews received from Xcode IB are in fact arranged subviews !!!
+        // This will be treated in CPSplitView -initWithCoder
 
         self._autosaveName = [aCoder decodeObjectForKey:@"NSAutosaveName"];
     }
