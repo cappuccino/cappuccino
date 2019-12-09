@@ -469,6 +469,9 @@ var CPThemeStatesForSplitViewDivider = @[@"dummy one as CPSplitViewDividerStyle 
 
     if ([_delegate respondsToSelector:@selector(splitView:resizeSubviewsWithOldSize:)])
         _implementedDelegateMethods |= CPSplitViewDelegate_splitView_resizeSubviewsWithOldSize_;
+
+    // We have to recompute flexible/fixed caches as the new delegate could consider things differently...
+    [self _updateRatios];
 }
 
 - (id <CPSplitViewDelegate>)delegate
