@@ -190,11 +190,12 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 #pragma mark -
 #pragma mark Class methods
 
-/* <!> FIXME
-    just a testing characterSet
-    all of this depend of the current language.
-    Need some CPLocale support and maybe even a FSM...
- */
++ (CPDictionary)themeAttributes
+{
+    return @{
+            @"bezel-color": [CPNull null]
+        };
+}
 
 #pragma mark -
 #pragma mark Init methods
@@ -209,7 +210,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         [self setEditable:YES];
         [self setSelectable:YES];
         [self setRichText:NO];
-        [self setBackgroundColor:[CPColor whiteColor]];
+        [self setBackgroundColor:[self currentValueForThemeAttribute:@"bezel-color"]];
 
         _usesFontPanel = YES;
         _allowsUndo = YES;
@@ -1129,7 +1130,7 @@ Sets the selection to a range of characters in response to user action.
         dragPlaceholder = [[CPTextView alloc] initWithFrame:placeholderFrame];
         [dragPlaceholder._textStorage replaceCharactersInRange:CPMakeRange(0, 0) withAttributedString:placeholderString];
 
-        [dragPlaceholder setBackgroundColor:[CPColor colorWithRed:1 green:1 blue:1 alpha:0]];
+        [dragPlaceholder setBackgroundColor:[self currentValueForThemeAttribute:@"bezel-color"]];
         [dragPlaceholder setAlphaValue:0.5];
 
         var stringForPasting = [_textStorage attributedSubstringFromRange:CPMakeRangeCopy(_selectionRange)],
