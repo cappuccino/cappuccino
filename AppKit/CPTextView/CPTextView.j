@@ -190,6 +190,11 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 #pragma mark -
 #pragma mark Class methods
 
++ (CPString)defaultThemeClass
+{
+    return "textview";
+}
+
 + (CPDictionary)themeAttributes
 {
     return @{
