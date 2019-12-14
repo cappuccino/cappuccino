@@ -50,6 +50,7 @@
 @import <AppKit/CPAlert.j>
 @import <AppKit/_CPToolTip.j>
 @import <AppKit/CPPopover.j>
+@import <AppKit/CPTextView.j>
 
 var themedButtonValues = nil,
     themedTextFieldValues = nil,
@@ -3100,6 +3101,21 @@ var themedButtonValues = nil,
     [self registerThemeValues:themeValues forView:popoverWindowView];
 
     return popoverWindowView;
+}
+
++ (CPTextView)themedTextView
+{
+    var textView = [[CPTextView alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, 200.0)],
+
+    themeValues =
+    [
+     [@"background-color",  [CPColor whiteColor]],
+     [@"content-inset",     CGSizeMake(2, 0)]
+     ];
+
+    [self registerThemeValues:themeValues forView:textView];
+
+    return textView;
 }
 
 @end

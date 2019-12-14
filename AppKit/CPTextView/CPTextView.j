@@ -192,14 +192,14 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 + (CPString)defaultThemeClass
 {
-    return "textview";
+    return @"textview";
 }
 
 + (CPDictionary)themeAttributes
 {
     return @{
-            @"background-color": [CPNull null],
-            @"content-inset": [CPNull null]
+            @"background-color": [CPColor whiteColor],
+            @"content-inset": CGSizeMake(2, 0)
         };
 }
 
@@ -250,7 +250,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 #endif
 
     _selectionRange = CPMakeRange(0, 0);
-    _textContainerInset = [self currentValueForThemeAttribute:@"content-inset"] || CGSizeMake(2, 0);
+    _textContainerInset = [self currentValueForThemeAttribute:@"content-inset"];
     _textContainerOrigin = CGPointMake(_bounds.origin.x, _bounds.origin.y);
 
     _selectionGranularity = CPSelectByCharacter;
