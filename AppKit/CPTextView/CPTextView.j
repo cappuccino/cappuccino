@@ -216,7 +216,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         [self setEditable:YES];
         [self setSelectable:YES];
         [self setRichText:NO];
-        [self setBackgroundColor:[self currentValueForThemeAttribute:@"bezel-color"]];
+        [self setBackgroundColor:[self currentValueForThemeAttribute:@"background-color"]];
 
         _usesFontPanel = YES;
         _allowsUndo = YES;
@@ -250,7 +250,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 #endif
 
     _selectionRange = CPMakeRange(0, 0);
-    _textContainerInset = CGSizeMake(2, 0);
+    _textContainerInset = [self currentValueForThemeAttribute:@"content-inset"] || CGSizeMake(2, 0);
     _textContainerOrigin = CGPointMake(_bounds.origin.x, _bounds.origin.y);
 
     _selectionGranularity = CPSelectByCharacter;
@@ -1136,7 +1136,7 @@ Sets the selection to a range of characters in response to user action.
         dragPlaceholder = [[CPTextView alloc] initWithFrame:placeholderFrame];
         [dragPlaceholder._textStorage replaceCharactersInRange:CPMakeRange(0, 0) withAttributedString:placeholderString];
 
-        [dragPlaceholder setBackgroundColor:[self currentValueForThemeAttribute:@"bezel-color"]];
+        [dragPlaceholder setBackgroundColor:[self currentValueForThemeAttribute:@"background-color"]];
         [dragPlaceholder setAlphaValue:0.5];
 
         var stringForPasting = [_textStorage attributedSubstringFromRange:CPMakeRangeCopy(_selectionRange)],
