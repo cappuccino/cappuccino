@@ -198,7 +198,8 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 + (CPDictionary)themeAttributes
 {
     return @{
-            @"bezel-color": [CPNull null]
+            @"background-color": [CPNull null],
+            @"content-inset": [CPNull null]
         };
 }
 
