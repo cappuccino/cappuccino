@@ -250,8 +250,10 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 #endif
 
     _selectionRange = CPMakeRange(0, 0);
-    _textContainerInset = [self currentValueForThemeAttribute:@"content-inset"];
-    _textContainerOrigin = CGPointMake(_bounds.origin.x, _bounds.origin.y);
+
+    // We have to || with CGSizeMakeZero() for theme compilation
+    _textContainerInset = [self currentValueForThemeAttribute:@"content-inset"] || CGSizeMakeZero();
+    _textContainerOrigin = CGPointMake(_bounds.origin.x + _textContainerInset.width, _bounds.origin.y + _textContainerInset.height);
 
     _selectionGranularity = CPSelectByCharacter;
 
