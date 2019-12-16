@@ -1092,7 +1092,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)keyDown:(CPEvent)anEvent
 {
-    if (!([self isEnabled] && [self isEditable]))
+    // Has to be enabled, and it also has to be editable or selectable.
+    if (![self isEnabled] || !([self isEditable] || [self isSelectable]))
         return;
 
     // CPTextField uses an HTML input element to take the input so we need to

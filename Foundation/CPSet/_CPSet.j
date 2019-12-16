@@ -320,16 +320,19 @@
 
 /*!
     Enumberates over the objects in a set using a given function.
-    @param aFunction a callback for each itteration, should be of the format: function(anObject).
+    @param aFunction a callback for each itteration, should be of the format: function(anObject, stop).
 */
-- (void)enumerateObjectsUsingBlock:(Function)aFunction
+- (void)enumerateObjectsUsingBlock:(Function /*(id anObject, @ref BOOL stop)*/)aFunction
 {
     var object,
-        objectEnumerator = [self objectEnumerator];
+        objectEnumerator = [self objectEnumerator],
+        shouldStop = NO;
 
-    while ((object = [objectEnumerator nextObject]) != nil)
-        if (aFunction(object))
-            break;
+    while (!shouldStop && (object = [objectEnumerator nextObject]) != nil) {
+        if (aFunction(object, @ref(shouldStop)) !== undefined) {
+            throw "DEPRECATED: The method enumerateObjectsUsingBlock: does not support returning a value in the block to stop the iteration. Please use the stop variable";
+        }
+    }
 }
 
 // FIXME: stop is broken.

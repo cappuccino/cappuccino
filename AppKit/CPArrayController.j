@@ -297,27 +297,18 @@
         class.
     */
 
-    if (_clearsFilterPredicateOnInsertion)
-        [self willChangeValueForKey:@"filterPredicate"];
-
     // Don't use [super setContent:] as that would fire the contentObject change.
     // We need to be in control of when notifications fire.
     // Note that if we have a contentArray binding, setting the content does /not/
     // cause a reverse binding set.
     _contentObject = value;
 
-    if (_clearsFilterPredicateOnInsertion && _filterPredicate != nil)
-        [self __setFilterPredicate:nil]; // Causes a _rearrangeObjects.
-    else
-        [self _rearrangeObjects];
+    [self _rearrangeObjects];
 
     if ([self preservesSelection])
         [self __setSelectedObjects:oldSelectedObjects];
     else
         [self __setSelectionIndexes:oldSelectionIndexes];
-
-    if (_clearsFilterPredicateOnInsertion)
-        [self didChangeValueForKey:@"filterPredicate"];
 }
 
 /*!

@@ -196,7 +196,8 @@ var ModifierKeyCodes = [
         CPKeyCodes.MAC_FF_META,
         CPKeyCodes.CTRL,
         CPKeyCodes.ALT,
-        CPKeyCodes.SHIFT
+        CPKeyCodes.SHIFT,
+        CPKeyCodes.CAPS_LOCK
     ],
 
     supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
@@ -209,7 +210,6 @@ var touchStartingPointX,
     touchStartingPointY;
 
 _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotification";
-
 
 // When scrolling with an old-style scroll wheel with discete steps ('clicks'), the scroll amount can indicate how many "lines" to
 // scroll.
@@ -692,7 +692,8 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
         modifierFlags = (aDOMEvent.shiftKey ? CPShiftKeyMask : 0) |
                         (aDOMEvent.ctrlKey ? CPControlKeyMask : 0) |
                         (aDOMEvent.altKey ? CPAlternateKeyMask : 0) |
-                        (aDOMEvent.metaKey ? CPCommandKeyMask : 0);
+                        (aDOMEvent.metaKey ? CPCommandKeyMask : 0) |
+                        (_capsLockActive ? CPAlphaShiftKeyMask : 0);
 
     // With a few exceptions, all key events are blocked from propagating to
     // the browser.  Here the following exceptions are being allowed:
@@ -744,7 +745,12 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 
             // check for caps lock state
             if (_keyCode === CPKeyCodes.CAPS_LOCK)
+            {
                 _capsLockActive = YES;
+
+                // Make sure the caps lock flag is set in modifierFlags
+                modifierFlags |= CPAlphaShiftKeyMask;
+            }
 
             if ([ModifierKeyCodes containsObject:_keyCode])
             {
@@ -817,7 +823,12 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 
             // check for caps lock state
             if (keyCode === CPKeyCodes.CAPS_LOCK)
+            {
                 _capsLockActive = NO;
+                
+                // Make sure the caps lock flag is cleared in modifierFlags
+                modifierFlags &= ~CPAlphaShiftKeyMask;
+            }
 
             if ([ModifierKeyCodes containsObject:keyCode])
             {
@@ -1087,7 +1098,9 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
     var keyWindow = _previousKeyWindow;
 
     if (!keyWindow)
-       keyWindow = [[[_windowLayers objectForKey:[_windowLevels firstObject]] orderedWindows] firstObject];
+        // If we don't have a previous key window take the modal window if we are in a modal session.
+        // If not in a modal session just take the first window in the most background layer
+        keyWindow = (CPApp._currentSession && CPApp._currentSession._window) || [[[_windowLayers objectForKey:[_windowLevels firstObject]] orderedWindows] firstObject];
 
     if (!keyWindow)
         return;
