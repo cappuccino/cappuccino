@@ -535,7 +535,7 @@ CPButtonImageOffset   = 3.0;
 
 - (void)mouseDown:(CPEvent)anEvent
 {
-    if ([self isContinuous])
+    if ([self isEnabled] && [self isContinuous])
     {
         _continuousDelayTimer = [CPTimer scheduledTimerWithTimeInterval:_periodicDelay callback: function()
         {
