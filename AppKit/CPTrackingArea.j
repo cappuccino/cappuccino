@@ -126,7 +126,16 @@ CPTrackingOwnerImplementsCursorUpdate = 1 << 4;
 
 - (void)_updateWindowRect
 {
-    _windowRect = [_referencingView convertRect:((_options & CPTrackingInVisibleRect) ? [_referencingView visibleRect] : _viewRect) toView:[[_referencingView window] _windowView]];
+    [self _updateWindowRectWithReferencingSuperViewVisibleRect:nil];
+}
+
+/*!
+ To speed up things we allow the caller to pass the visible rect of the referencing view's superview.
+ This allows the visible rect calculations to be optimized when traveling down the view hierarchy.
+*/
+- (void)_updateWindowRectWithReferencingSuperViewVisibleRect:(CGRect)referencingSuperviewVisibleRect
+{
+    _windowRect = [_referencingView convertRect:((_options & CPTrackingInVisibleRect) ? [_referencingView _visibleRectWithSuperviewVisibleRect:referencingSuperviewVisibleRect] : _viewRect) toView:[[_referencingView window] _windowView]];
 }
 
 @end

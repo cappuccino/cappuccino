@@ -2844,10 +2844,15 @@ setBoundsOrigin:
 */
 - (CGRect)visibleRect
 {
+    return [self _visibleRectWithSuperviewVisibleRect:nil];
+}
+
+- (CGRect)_visibleRectWithSuperviewVisibleRect:(CGRect)superviewVisibleRect
+{
     if (!_superview)
         return _bounds;
 
-    return CGRectIntersection([self convertRect:[_superview visibleRect] fromView:_superview], _bounds);
+    return CGRectIntersection([self convertRect:superviewVisibleRect || [_superview _visibleRectWithSuperviewVisibleRect:nil] fromView:_superview], _bounds);
 }
 
 // Scrolling
@@ -3638,21 +3643,35 @@ setBoundsOrigin:
 - (void)_updateTrackingAreasWithRecursion:(BOOL)shouldCallRecursively
 {
     _inhibitUpdateTrackingAreas = YES;
+    [self _updateTrackingAreasWithRecursion:shouldCallRecursively withReferencingSuperViewVisibleRect:[_superview visibleRect]];
+}
 
-    [self _updateTrackingAreasForOwners:[self _calcTrackingAreaOwners]];
+/*!
+ The referencingSuperViewVisibleRect is used to speed up the execution of this as the visibleRect method is a heavy operation.
+ It has to go up the view hierarchy and get every superviews visibleRect to transform and intersect them together.
+ Here we keep the superviews visible rect when we are going down the view hierarchy to make the operation much faster.
+*/
+- (void)_updateTrackingAreasWithRecursion:(BOOL)shouldCallRecursively withReferencingSuperViewVisibleRect:(CGRect)referencingSuperViewVisibleRect
+{
+    [self _updateTrackingAreasForOwners:[self _calcTrackingAreaOwnersWithReferencingSuperViewVisibleRect:referencingSuperViewVisibleRect]];
 
     if (shouldCallRecursively)
     {
         // Now, call _updateTrackingAreasWithRecursion on subviews
 
         for (var i = 0; i < _subviews.length; i++)
-            [_subviews[i] _updateTrackingAreasWithRecursion:YES];
+            [_subviews[i] _updateTrackingAreasWithRecursion:YES withReferencingSuperViewVisibleRect:[self _visibleRectWithSuperviewVisibleRect:referencingSuperViewVisibleRect]];
     }
 
     _inhibitUpdateTrackingAreas = NO;
 }
 
 - (CPArray)_calcTrackingAreaOwners
+{
+    return [self _calcTrackingAreaOwnersWithReferencingSuperViewVisibleRect:nil];
+}
+
+- (CPArray)_calcTrackingAreaOwnersWithReferencingSuperViewVisibleRect:(CGRect)referencingSuperViewVisibleRect
 {
     // First search all owners that must be notified
     // Remark: 99.99% of time, the only owner will be the view itself
@@ -3665,7 +3684,7 @@ setBoundsOrigin:
         var trackingArea = _trackingAreas[i];
 
         if ([trackingArea options] & CPTrackingInVisibleRect)
-            [trackingArea _updateWindowRect];
+            [trackingArea _updateWindowRectWithReferencingSuperViewVisibleRect:referencingSuperViewVisibleRect];
 
         else
         {
