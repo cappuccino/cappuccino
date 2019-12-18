@@ -264,7 +264,7 @@ var CPTextStorageDelegate_textStorageWillProcessEditing_ = 1 << 1,
 
 + (id)attributedStringWithAttachment:(CPView)someView
 {
-    var  result = [[self alloc] initWithString:_CPAttachmentCharacterAsString];
+    var result = [[self alloc] initWithString:_CPAttachmentCharacterAsString];
 
     [result setAttributes:@{_CPAttachmentView:someView} range:CPMakeRange(0, 1)];
 
