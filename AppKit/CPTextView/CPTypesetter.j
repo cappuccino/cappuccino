@@ -199,13 +199,11 @@ var CPSystemTypesetterFactory,
     [_layoutManager setLocation:CGPointMake(myX, _lineBase) forStartOfGlyphRange:lineRange];
     [_layoutManager _setAdvancements:advancements forGlyphRange:lineRange];
 
-    if (!sameLine) //fix the _lineFragments when fontsizes differ
-    {
-        var l = _lineFragments.length;
+    //fix the _lineFragments when fontsizes differ
+    var l = _lineFragments.length;
 
-        for (var i = 0 ; i < l ; i++)
-            [_lineFragments[i] _adjustForHeight:_lineHeight];
-    }
+    for (var i = 0 ; i < l ; i++)
+        [_lineFragments[i] _adjustForHeight:_lineHeight];
 
     if (!lineCount)  // do not rescue on first line
         return NO;
@@ -245,6 +243,7 @@ var CPSystemTypesetterFactory,
         wrapWidth = 0,
         isNewline = NO,
         isTabStop = NO,
+        isAttachment = NO,
         isWordWrapped = NO,
         numberOfGlyphs= [_textStorage length],
         leading,
@@ -322,6 +321,34 @@ var CPSystemTypesetterFactory,
 
         switch (currentCharCode)    // faster than sending actionForControlCharacterAtIndex: called for each char.
         {
+            case CPAttachmentCharacter:
+            {
+                var attributes = [_textStorage attributesAtIndex:glyphIndex effectiveRange:nil],
+                    view = [attributes objectForKey:_CPAttachmentView],
+                    viewSize = view ? view._frame.size : CGSizeMake(0, 0);
+
+                rangeWidth = prevRangeWidth + viewSize.width; // undo sizing of dummy character
+
+                isAttachment = YES;
+                wrapRange = CPMakeRange(lineRange.location, lineRange.length - 1); // wrap before image
+
+                // prevent crash when image is larger than text container
+                if (viewSize.width > containerSizeWidth)
+                    wrapRange.length++;
+
+                wrapWidth = rangeWidth;
+                wrapRange._height = _lineHeight;
+                wrapRange._base = _lineBase;
+
+                if (viewSize.height > _lineBase)
+                    _lineBase = viewSize.height;
+
+                if (viewSize.height > _lineHeight)
+                    _lineHeight = viewSize.height - descent + leading;
+
+                ascent = viewSize.height;
+                break;
+            }
             case 9: // '\t'
             {
                 var nextTab = [self textTabForWidth:rangeWidth + lineOrigin.x writingDirection:0];
@@ -346,7 +373,6 @@ var CPSystemTypesetterFactory,
         }
 
         advancements.push({width: rangeWidth - prevRangeWidth, height: ascent, descent: descent});
-
         prevRangeWidth = _lineWidth = rangeWidth;
 
         if (lineOrigin.x + rangeWidth > containerSizeWidth)
@@ -364,16 +390,13 @@ var CPSystemTypesetterFactory,
             glyphIndex = CPMaxRange(lineRange) - 1;  // start the line starts directly at current character
         }
 
-        if (isNewline || isTabStop)
+        if (isNewline || isTabStop || isAttachment)
         {
             if ([self _flushRange:lineRange lineOrigin:lineOrigin currentContainer:_currentTextContainer advancements:advancements lineCount:numLines sameLine:!isNewline])
                 return;
 
-            if (isTabStop)
-            {
+            if (isTabStop || isAttachment)
                lineOrigin.x += rangeWidth;
-               isTabStop = NO;
-            }
 
             if (isNewline)
             {
@@ -404,6 +427,9 @@ var CPSystemTypesetterFactory,
                 _lineBase      = ascent;
             }
 
+            isTabStop       = NO;
+            isAttachment    = NO;
+            isWordWrapped   = NO;
             _lineWidth      = 0;
             advancements    = [];
             currentAnchor   = 0;
@@ -412,18 +438,20 @@ var CPSystemTypesetterFactory,
             measuringRange  = CPMakeRange(glyphIndex + 1, 0);
             wrapRange       = CPMakeRange(0, 0);
             wrapWidth       = 0;
-            isWordWrapped   = NO;
         }
     }
 
     // this is to "flush" the remaining characters
     if (lineRange.length)
-    {
         [self _flushRange:lineRange lineOrigin:lineOrigin currentContainer:_currentTextContainer advancements:advancements lineCount:numLines sameLine:NO];
-    }
 
-    var rect = CGRectMake(0, lineOrigin.y, containerSizeWidth, [_layoutManager._lineFragments lastObject]._usedRect.size.height - descent);
+    var rect = CGRectMake(1, lineOrigin.y - descent, containerSizeWidth, currentFontLineHeight);
     [_layoutManager setExtraLineFragmentRect:rect usedRect:rect textContainer:_currentTextContainer];
+
+    var fragment = [_layoutManager._lineFragments lastObject];
+
+    if (fragment)
+        fragment._isLast = YES;
 }
 
 @end

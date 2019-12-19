@@ -259,6 +259,9 @@ _oncontextmenuhandler = function () { return false; };
         {
             if (_lineFragments[i]._isInvalid)
             {
+                while (i > 0 && !_lineFragments[i - 1]._isLast)
+                    i--;
+
                 startIndex = _lineFragments[i]._range.location;
                 removeRange.location = i;
                 removeRange.length = l - i;
@@ -361,7 +364,7 @@ _oncontextmenuhandler = function () { return false; };
         if (ABS(rangeOffset) !== ABS(newLength - oldLength))
             return NO;
 
-        var verticalOffset = _lineFragments[targetLine]._fragmentRect.origin.y - _lineFragmentsForRescue[startLineForDOMRemoval]._fragmentRect.origin.y,
+        var verticalOffset = CGRectGetMaxY(_lineFragments[targetLine]._fragmentRect) - CGRectGetMaxY(_lineFragmentsForRescue[startLineForDOMRemoval]._fragmentRect),
             l = _lineFragmentsForRescue.length,
             newTargetLine = startLineForDOMRemoval + removalSkip;
 
@@ -661,12 +664,10 @@ _oncontextmenuhandler = function () { return false; };
         {
             var j = i;
 
-            while (--j > 0 && !_lineFragments[j]._isLast)
-            {
-                // body intentionally left empty
-            }
+            while (j > 0 && !_lineFragments[j - 1]._isLast)
+                j--;
 
-            return _lineFragments[j + 1];
+            return _lineFragments[j];
         }
     }
 
@@ -676,13 +677,16 @@ _oncontextmenuhandler = function () { return false; };
 {
     var l = _lineFragments.length;
 
+    if (location >= CPMaxRange(_lineFragments[l - 1]._range))
+        return _lineFragments[l - 1];
+
     for (var i = 0; i < l; i++)
     {
         if (CPLocationInRange(location, _lineFragments[i]._range))
         {
             var j = i;
 
-            while (!_lineFragments[j]._isLast)
+            while (j < l && !_lineFragments[j]._isLast)
                 j++;
 
             return _lineFragments[j];
@@ -925,15 +929,14 @@ _oncontextmenuhandler = function () { return false; };
                     var correctedRect = CGRectCreateCopy(frames[j]);
                     correctedRect.size.height -= frames[j]._descent;
                     correctedRect.origin.y -= frames[j]._descent;
+
                     if (!rect)
                         rect = CGRectCreateCopy(correctedRect);
                     else
                         rect = CGRectUnion(rect, correctedRect);
 
                     if (_isNewlineCharacter([[_textStorage string] characterAtIndex:MAX(0, CPMaxRange(selectedCharRange) - 1)]))
-                    {
                          rect.size.width = containerSize.width - rect.origin.x;
-                    }
                 }
             }
 
@@ -1095,7 +1098,6 @@ var _objectsInRange = function(aList, aRange)
         span = document.createElement("span");
 
     span.oncontextmenu = span.onmousedown = span.onselectstart = _oncontextmenuhandler;
-    // span.contentEditable = true;   // this unfortunately does not work to make native pasting work on safari
 
     style = span.style;
     style.position = "absolute";
@@ -1138,7 +1140,6 @@ var _objectsInRange = function(aList, aRange)
     else if (CPFeatureIsCompatible(CPJavaScriptTextContentFeature))
         span.textContent = aString;
 
-    //<!> FIXME aString.replace(/&/g,'&amp;')
     return span;
 #else
     return nil;
@@ -1167,16 +1168,29 @@ var _objectsInRange = function(aList, aRange)
             effectiveRange = attributes ? CPIntersectionRange(aRange, effectiveRange) : aRange;
 
             var string = [textStorage._string substringWithRange:effectiveRange],
-                font = [textStorage font] || [CPFont systemFontOfSize:12.0],
-                underline = [attributes objectForKey:CPUnderlineStyleAttributeName] || CPUnderlineStyleNone ;
+                underline = [attributes objectForKey:CPUnderlineStyleAttributeName] || CPUnderlineStyleNone;
 
-            if ([attributes containsKey:CPFontAttributeName])
-                 font = [attributes objectForKey:CPFontAttributeName];
+            // this is an attachment -> create a run for it
+            if (string === _CPAttachmentCharacterAsString)
+            {
+                if (![attributes objectForKey:_CPAttachmentInvisible])
+                {
+                    var view = [attributes objectForKey:_CPAttachmentView],
+                        viewCopy = [CPKeyedUnarchiver unarchiveObjectWithData:[CPKeyedArchiver archivedDataWithRootObject:view]],
+                        elem = viewCopy._DOMElement,
+                        run = {_range:CPMakeRangeCopy(effectiveRange), color:nil, font:nil, elem:elem, string:nil, view:viewCopy};
 
-            var color = [attributes objectForKey:CPForegroundColorAttributeName],
-                run = {_range:CPMakeRangeCopy(effectiveRange), color:color, font:font, elem:nil, string:string, underline:underline};
+                    _runs.push(run);
+                }
+            }
+            else
+            {
+                var color = [attributes objectForKey:CPForegroundColorAttributeName],
+                    font = [attributes objectForKey:CPFontAttributeName] || [textStorage font] || [CPFont systemFontOfSize:12.0],
+                    run = {_range:CPMakeRangeCopy(effectiveRange), color:color, font:font, elem:nil, string:string};
 
-            _runs.push(run);
+                _runs.push(run);
+            }
 
             if (!CPMaxRange(effectiveRange))
                 break;
@@ -1248,7 +1262,12 @@ var _objectsInRange = function(aList, aRange)
     for (var i = 0; i < l; i++)
     {
         if (_runs[i].elem && _runs[i].DOMactive)
-            _textContainer._textView._DOMElement.removeChild(_runs[i].elem);
+        {
+            if (_runs[i].view)
+                [_runs[i].view removeFromSuperview];
+            else
+                _textContainer._textView._DOMElement.removeChild(_runs[i].elem);
+        }
 
         _runs[i].elem = nil;
         _runs[i].DOMactive = NO;
@@ -1266,9 +1285,7 @@ var _objectsInRange = function(aList, aRange)
         var run = runs[i];
 
         if (!run.elem && CPRectIntersectsRect([_textContainer._textView exposedRect], _fragmentRect))
-        {
-            run.elem=[self createDOMElementWithText:run.string andFont:run.font andColor:run.color andUnderline:run.underline];
-        }
+            run.elem = [self createDOMElementWithText:run.string andFont:run.font andColor:run.color andUnderline:run.underline];
 
         if (run.DOMactive && !run.DOMpatched)
             continue;
@@ -1285,14 +1302,21 @@ var _objectsInRange = function(aList, aRange)
             run.elem.style.left = (orig.x) + "px";
             run.elem.style.top = (orig.y) + "px";
 
+            if (run.view)
+                [run.view setFrameOrigin:orig];
+
             if (!run.DOMactive)
-                _textContainer._textView._DOMElement.appendChild(run.elem);
+            {
+                if (run.view)
+                    [self._textContainer._textView addSubview:run.view];
+                else
+                    _textContainer._textView._DOMElement.appendChild(run.elem);
+            }
 
             run.DOMactive = YES;
         }
 
         run.DOMpatched = NO;
-
     }
 }
 
@@ -1344,6 +1368,9 @@ var _objectsInRange = function(aList, aRange)
 
         if (verticalOffset && _runs[i].elem)
         {
+            if (_runs[i].view)
+                _runs[i].view._frame.origin.y += verticalOffset;
+
             _runs[i].elem.top = (_runs[i].elem.top + verticalOffset) + 'px';
             _runs[i].DOMpatched = YES;
         }
