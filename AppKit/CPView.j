@@ -250,10 +250,9 @@ var CPViewHighDPIDrawingEnabled = YES;
 
     BOOL                _allowsVibrancy         @accessors(property=allowsVibrancy);
     CPAppearance        _appearance             @accessors(getter=appearance);
-    CPAppearance        _effectiveAppearance;
+    CPAppearance        _currentAppearance;
 
     CPMutableArray      _trackingAreas          @accessors(getter=trackingAreas, copy);
-    BOOL                _inhibitUpdateTrackingAreas;
 
     id                  _animator;
     CPDictionary        _animationsDictionary;
@@ -422,6 +421,9 @@ var CPViewHighDPIDrawingEnabled = YES;
 
         _animator = nil;
         _animationsDictionary = @{};
+
+        // Set the current appearance to something that can't be the correct one so it will recalculate it at the first layout.
+        _currentAppearance = aFrame;
 
         [self _setupViewFlags];
         [self _loadThemeAttributes];
@@ -1045,10 +1047,22 @@ var CPViewHighDPIDrawingEnabled = YES;
     if (CGRectEqualToRect(_frame, aFrame) && !_forceUpdates)
         return;
 
+    // Save the previous value as we can be traveling down the view hierarchy.
+    // If view is not connected with a window don't update tracking areas.
+    var saveInhibitUpdateTrackingAreas = _window ? _window._inhibitUpdateTrackingAreas : YES;
+
+    // We only want to update tracking areas once so turn it off for all views.
+    if (_window)
+        _window._inhibitUpdateTrackingAreas = YES;
+
+    // Turn off change notifications for only this view
     _inhibitFrameAndBoundsChangedNotifications = YES;
 
     [self setFrameOrigin:aFrame.origin];
     [self setFrameSize:aFrame.size];
+
+    if (_window)
+        _window._inhibitUpdateTrackingAreas = saveInhibitUpdateTrackingAreas;
 
     _inhibitFrameAndBoundsChangedNotifications = NO;
 
@@ -1058,7 +1072,7 @@ var CPViewHighDPIDrawingEnabled = YES;
     if (_isSuperviewAClipView)
         [[self superview] viewFrameChanged:[[CPNotification alloc] initWithName:CPViewFrameDidChangeNotification object:self userInfo:nil]];
 
-    if (!_inhibitUpdateTrackingAreas)
+    if (!saveInhibitUpdateTrackingAreas)
         [self _updateTrackingAreasWithRecursion:YES];
 }
 
@@ -1134,7 +1148,7 @@ var CPViewHighDPIDrawingEnabled = YES;
     }
 #endif
 
-    if (!_inhibitUpdateTrackingAreas && !_inhibitFrameAndBoundsChangedNotifications)
+    if (_window && !_window._inhibitUpdateTrackingAreas && !_inhibitFrameAndBoundsChangedNotifications)
         [self _updateTrackingAreasWithRecursion:YES];
 }
 
@@ -1288,7 +1302,7 @@ var CPViewHighDPIDrawingEnabled = YES;
     if (_isSuperviewAClipView && !_inhibitFrameAndBoundsChangedNotifications)
         [[self superview] viewFrameChanged:[[CPNotification alloc] initWithName:CPViewFrameDidChangeNotification object:self userInfo:nil]];
 
-    if (!_inhibitUpdateTrackingAreas && !_inhibitFrameAndBoundsChangedNotifications)
+    if (_window && !_window._inhibitUpdateTrackingAreas && !_inhibitFrameAndBoundsChangedNotifications)
         [self _updateTrackingAreasWithRecursion:!_autoresizesSubviews];
 }
 
@@ -1338,7 +1352,7 @@ var CPViewHighDPIDrawingEnabled = YES;
     if (_isSuperviewAClipView)
         [[self superview] viewBoundsChanged:[[CPNotification alloc] initWithName:CPViewBoundsDidChangeNotification object:self userInfo:nil]];
 
-    if (!_inhibitUpdateTrackingAreas)
+    if (_window && !_window._inhibitUpdateTrackingAreas)
         [self _updateTrackingAreasWithRecursion:YES];
 }
 
@@ -1406,7 +1420,7 @@ var CPViewHighDPIDrawingEnabled = YES;
     if (_isSuperviewAClipView && !_inhibitFrameAndBoundsChangedNotifications)
         [[self superview] viewBoundsChanged:[[CPNotification alloc] initWithName:CPViewBoundsDidChangeNotification object:self userInfo:nil]];
 
-    if (!_inhibitUpdateTrackingAreas && !_inhibitFrameAndBoundsChangedNotifications)
+    if (_window && !_window._inhibitUpdateTrackingAreas && !_inhibitFrameAndBoundsChangedNotifications)
         [self _updateTrackingAreasWithRecursion:YES];
 }
 
@@ -1450,7 +1464,7 @@ var CPViewHighDPIDrawingEnabled = YES;
     if (_isSuperviewAClipView && !_inhibitFrameAndBoundsChangedNotifications)
         [[self superview] viewBoundsChanged:[[CPNotification alloc] initWithName:CPViewBoundsDidChangeNotification object:self userInfo:nil]];
 
-    if (!_inhibitUpdateTrackingAreas && !_inhibitFrameAndBoundsChangedNotifications)
+    if (_window && !_window._inhibitUpdateTrackingAreas && !_inhibitFrameAndBoundsChangedNotifications)
         [self _updateTrackingAreasWithRecursion:YES];
 }
 
@@ -2823,7 +2837,7 @@ setBoundsOrigin:
 */
 - (void)viewDidLayout
 {
-    [self _recomputeAppearance];
+    [self _recomputeAppearanceWithSuperviewEffectiveAppearance:[self effectiveAppearance]];
 }
 
 - (void)layoutSubviews
@@ -3516,53 +3530,59 @@ setBoundsOrigin:
     [self setNeedsLayout:YES];
 }
 
+var CPAppearanceAqua = [CPAppearance appearanceNamed:CPAppearanceNameAqua];
+var CPAppearanceLightContent = [CPAppearance appearanceNamed:CPAppearanceNameLightContent];
+var CPAppearanceVibrantLight = [CPAppearance appearanceNamed:CPAppearanceNameVibrantLight];
+var CPAppearanceVibrantDark = [CPAppearance appearanceNamed:CPAppearanceNameVibrantDark];
+
 /*! @ignore
 */
-- (void)_recomputeAppearance
+- (void)_recomputeAppearanceWithSuperviewEffectiveAppearance:(CPAppearance)superviewEffectiveAppearance
 {
-    var effectiveAppearance = [self effectiveAppearance];
+    var effectiveAppearance = _appearance || superviewEffectiveAppearance;
 
-    if ([effectiveAppearance isEqual:[CPAppearance appearanceNamed:CPAppearanceNameAqua]])
-    {
-        [self setThemeState:CPThemeStateAppearanceAqua];
-        [self unsetThemeState:CPThemeStateAppearanceLightContent];
-        [self unsetThemeState:CPThemeStateAppearanceVibrantLight];
-        [self unsetThemeState:CPThemeStateAppearanceVibrantDark];
-    }
-    else if ([effectiveAppearance isEqual:[CPAppearance appearanceNamed:CPAppearanceNameLightContent]])
-    {
-        [self unsetThemeState:CPThemeStateAppearanceAqua];
-        [self setThemeState:CPThemeStateAppearanceLightContent];
-        [self unsetThemeState:CPThemeStateAppearanceVibrantLight];
-        [self unsetThemeState:CPThemeStateAppearanceVibrantDark];
-    }
-    else if ([effectiveAppearance isEqual:[CPAppearance appearanceNamed:CPAppearanceNameVibrantLight]])
-    {
-        [self unsetThemeState:CPThemeStateAppearanceAqua];
-        [self unsetThemeState:CPThemeStateAppearanceLightContent];
-        [self setThemeState:CPThemeStateAppearanceVibrantLight];
-        [self unsetThemeState:CPThemeStateAppearanceVibrantDark];
-    }
-    else if ([effectiveAppearance isEqual:[CPAppearance appearanceNamed:CPAppearanceNameVibrantDark]])
-    {
-        [self unsetThemeState:CPThemeStateAppearanceAqua];
-        [self unsetThemeState:CPThemeStateAppearanceLightContent];
-        [self unsetThemeState:CPThemeStateAppearanceVibrantLight];
-        [self setThemeState:CPThemeStateAppearanceVibrantDark];
-    }
-    else
-    {
-        [self unsetThemeState:CPThemeStateAppearanceAqua];
-        [self unsetThemeState:CPThemeStateAppearanceLightContent];
-        [self unsetThemeState:CPThemeStateAppearanceVibrantLight];
-        [self unsetThemeState:CPThemeStateAppearanceVibrantDark];
+    // Only reset the themestates if it is different from the current one so we get good performance.
+    if (effectiveAppearance != _currentAppearance) {
+        switch (effectiveAppearance) {
+            case CPAppearanceAqua:
+                [self setThemeState:CPThemeStateAppearanceAqua];
+                [self unsetThemeState:CPThemeStateAppearanceLightContent];
+                [self unsetThemeState:CPThemeStateAppearanceVibrantLight];
+                [self unsetThemeState:CPThemeStateAppearanceVibrantDark];
+                break;
+            case CPAppearanceLightContent:
+                [self unsetThemeState:CPThemeStateAppearanceAqua];
+                [self setThemeState:CPThemeStateAppearanceLightContent];
+                [self unsetThemeState:CPThemeStateAppearanceVibrantLight];
+                [self unsetThemeState:CPThemeStateAppearanceVibrantDark];
+                break;
+            case CPAppearanceVibrantLight:
+                [self unsetThemeState:CPThemeStateAppearanceAqua];
+                [self unsetThemeState:CPThemeStateAppearanceLightContent];
+                [self setThemeState:CPThemeStateAppearanceVibrantLight];
+                [self unsetThemeState:CPThemeStateAppearanceVibrantDark];
+                break;
+            case CPAppearanceVibrantDark:
+                [self unsetThemeState:CPThemeStateAppearanceAqua];
+                [self unsetThemeState:CPThemeStateAppearanceLightContent];
+                [self unsetThemeState:CPThemeStateAppearanceVibrantLight];
+                [self setThemeState:CPThemeStateAppearanceVibrantDark];
+                break;
+            default:
+                [self unsetThemeState:CPThemeStateAppearanceAqua];
+                [self unsetThemeState:CPThemeStateAppearanceLightContent];
+                [self unsetThemeState:CPThemeStateAppearanceVibrantLight];
+                [self unsetThemeState:CPThemeStateAppearanceVibrantDark];
+        }
+
+        _currentAppearance = effectiveAppearance;
     }
 
 //    var start = [CPDate new];
 
     for (var i = 0, size = [_subviews count]; i < size; i++)
     {
-        [[_subviews objectAtIndex:i] _recomputeAppearance];
+        [[_subviews objectAtIndex:i] _recomputeAppearanceWithSuperviewEffectiveAppearance:effectiveAppearance];
     }
 //    [_subviews makeObjectsPerformSelector:@selector(_recomputeAppearance)];
 
@@ -3662,8 +3682,6 @@ setBoundsOrigin:
         for (var i = 0; i < _subviews.length; i++)
             [_subviews[i] _updateTrackingAreasWithRecursion:YES withReferencingSuperViewVisibleRect:[self _visibleRectWithSuperviewVisibleRect:referencingSuperViewVisibleRect]];
     }
-
-    _inhibitUpdateTrackingAreas = NO;
 }
 
 - (CPArray)_calcTrackingAreaOwners
@@ -3833,6 +3851,8 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         [self _decodeThemeObjectsWithCoder:aCoder];
 
         [self setAppearance:[aCoder decodeObjectForKey:CPViewAppearanceKey]];
+        // Set the current appearance to something that can't be the correct one so it will recalculate it at the first layout.
+        _currentAppearance = _frame;
 
         [self setNeedsDisplay:YES];
         [self setNeedsLayout];

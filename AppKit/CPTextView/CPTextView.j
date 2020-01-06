@@ -454,10 +454,11 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         stringForPasting = [[self textStorage] attributedSubstringFromRange:CPMakeRangeCopy(selectedRange)],
         richData = [_CPRTFProducer produceRTF:stringForPasting documentAttributes:@{}];
 
-        [pasteboard declareTypes:[CPStringPboardType, CPRTFPboardType] owner:nil];
-        [pasteboard setString:stringForPasting._string forType:CPStringPboardType];
+        [pasteboard declareTypes:[CPStringPboardType, CPRTFPboardType, _CPSmartPboardType, _CPASPboardType] owner:nil];
+        [pasteboard setString:[stringForPasting._string stringByReplacingOccurrencesOfString:_CPAttachmentCharacterAsString withString:''] forType:CPStringPboardType];
         [pasteboard setString:richData forType:CPRTFPboardType];
         [pasteboard setString:_previousSelectionGranularity + '' forType:_CPSmartPboardType];
+        [pasteboard setString:[[CPKeyedArchiver archivedDataWithRootObject:stringForPasting] rawString] forType:_CPASPboardType];
 }
 
 - (void)_pasteString:(id)stringForPasting
@@ -1093,6 +1094,17 @@ Sets the selection to a range of characters in response to user action.
     return YES;
 }
 
+- (void)_hideRange:(CPRange)rangeToHide inDragPlaceholderString:(CPTextView)placeholderString
+{
+    if (!rangeToHide.length)
+        return;
+
+    [placeholderString addAttribute:CPForegroundColorAttributeName
+                              value:[CPColor colorWithRed:1 green:1 blue:1 alpha:0] // invisibleInk
+                              range:rangeToHide];
+    [placeholderString addAttribute:_CPAttachmentInvisible value:YES range:rangeToHide];
+}
+
 #pragma mark -
 #pragma mark Mouse Events
 
@@ -1112,31 +1124,35 @@ Sets the selection to a range of characters in response to user action.
     // dragging the selection
     if ([self selectionGranularity] == CPSelectByCharacter && CPLocationInRange(_startTrackingLocation, _selectionRange))
     {
-        var lineBeginningIndex = [_layoutManager _firstLineFragmentForLineFromLocation:_selectionRange.location]._range.location,
-            placeholderRange = _MakeRangeFromAbs(lineBeginningIndex, CPMaxRange(_selectionRange)),
+        var visibleRange = [_layoutManager glyphRangeForBoundingRect:_exposedRect inTextContainer:_textContainer],
+            firstFragment = [_layoutManager _firstLineFragmentForLineFromLocation:_selectionRange.location],
+            lastFragment = [_layoutManager _lastLineFragmentForLineFromLocation:CPMaxRange(_selectionRange)],
+            lineBeginningIndex = firstFragment._range.location,
+            lineEndIndex = CPMaxRange(lastFragment._range),
+            placeholderRange = CPIntersectionRange(_MakeRangeFromAbs(lineBeginningIndex, lineEndIndex), visibleRange),
             placeholderString = [_textStorage attributedSubstringFromRange:placeholderRange],
             placeholderFrame = CGRectIntersection([_layoutManager boundingRectForGlyphRange:placeholderRange inTextContainer:_textContainer], _frame),
-            rangeToHide = CPMakeRange(0, _selectionRange.location - lineBeginningIndex),
+            rangeToHideLHS = CPMakeRange(0, _selectionRange.location - lineBeginningIndex),
+            rangeToHideRHS = _MakeRangeFromAbs(CPMaxRange(_selectionRange) - lineBeginningIndex, lineEndIndex - lineBeginningIndex),
             dragPlaceholder;
 
-        // hide the left part of the first line of the selection that is not included
-        [placeholderString addAttribute:CPForegroundColorAttributeName
-                                  value:[CPColor colorWithRed:1 green:1 blue:1 alpha:0]
-                                  range:rangeToHide];
+        // hide the left/right parts of the first/last lines of the selection that are not included
+        [self _hideRange:rangeToHideLHS inDragPlaceholderString:placeholderString];
+        [self _hideRange:rangeToHideRHS inDragPlaceholderString:placeholderString];
 
         _movingSelection = CPMakeRange(_startTrackingLocation, 0);
 
-        dragPlaceholder = [[CPTextView alloc] initWithFrame:placeholderFrame];
+        dragPlaceholder = [[CPTextView alloc] initWithFrame:_frame];
         [dragPlaceholder._textStorage replaceCharactersInRange:CPMakeRange(0, 0) withAttributedString:placeholderString];
 
         [dragPlaceholder setBackgroundColor:[CPColor colorWithRed:1 green:1 blue:1 alpha:0]];
         [dragPlaceholder setAlphaValue:0.5];
 
         var stringForPasting = [_textStorage attributedSubstringFromRange:CPMakeRangeCopy(_selectionRange)],
-            richData = [_CPRTFProducer produceRTF:stringForPasting documentAttributes:@{}],
             draggingPasteboard = [CPPasteboard pasteboardWithName:CPDragPboard];
-        [draggingPasteboard declareTypes:[CPRTFPboardType, CPStringPboardType] owner:nil];
-        [draggingPasteboard setString:richData forType:CPRTFPboardType];
+        [draggingPasteboard declareTypes:[_CPASPboardType, CPStringPboardType] owner:nil];
+        [draggingPasteboard setString:[[CPKeyedArchiver archivedDataWithRootObject:stringForPasting] rawString] forType:_CPASPboardType];
+        // this is necessary because the drag will not work without data of kind CPStringPboardType
         [draggingPasteboard setString:stringForPasting._string forType:CPStringPboardType];
 
         [self dragView:dragPlaceholder
@@ -2155,38 +2171,23 @@ Sets the selection to a range of characters in response to user action.
     return (_selectionRange.length === 0 && [self _isFocused] && !_placeholderString);
 }
 
-- (void)updateInsertionPointStateAndRestartTimer:(BOOL)flag
+- (CPRect)_getCaretRect
 {
-    var caretRect,
-        numberOfGlyphs = [_layoutManager numberOfCharacters];
+    var numberOfGlyphs = [_layoutManager numberOfCharacters];
 
-    if (_selectionRange.length)
-        [_caret setVisibility:NO];
-
-    if (_selectionRange.location >= numberOfGlyphs)    // cursor is "behind" the last chacacter
+    if (!numberOfGlyphs)
     {
-        caretRect = [_layoutManager boundingRectForGlyphRange:CPMakeRange(MAX(0,_selectionRange.location - 1), 1) inTextContainer:_textContainer];
-
-        if (!numberOfGlyphs)
-        {
-            var font = [_typingAttributes objectForKey:CPFontAttributeName] || [self font];
-
-            caretRect.size.height = [font size];
-            caretRect.origin.y = ([font ascender] - [font descender]) * 0.5 + _textContainerOrigin.y;
-        }
-
-        caretRect.origin.x += caretRect.size.width;
-
-        if (_selectionRange.location > 0 && [[_textStorage string] characterAtIndex:_selectionRange.location - 1] === '\n')
-        {
-            caretRect.origin.y += caretRect.size.height;
-            caretRect.origin.x = 0;
-        }
+        var font = [_typingAttributes objectForKey:CPFontAttributeName] || [self font];
+        return CGRectMake(1, ([font ascender] - [font descender]) * 0.5 + _textContainerOrigin.y, 1, [font size]);
     }
-    else
-        caretRect = [_layoutManager boundingRectForGlyphRange:CPMakeRange(_selectionRange.location, 1) inTextContainer:_textContainer];
 
-    var loc = (_selectionRange.location === numberOfGlyphs && numberOfGlyphs > 0) ? _selectionRange.location - 1 : _selectionRange.location,
+    // cursor is at a newline character -> jump to next line
+    if (_selectionRange.location == numberOfGlyphs && _isNewlineCharacter([[_textStorage string] characterAtIndex:_selectionRange.location - 1]))
+        return CGRectCreateCopy([_layoutManager extraLineFragmentRect]);
+
+    var caretRect = [_layoutManager boundingRectForGlyphRange:CPMakeRange(_selectionRange.location, 1) inTextContainer:_textContainer];
+
+    var loc = (_selectionRange.location == numberOfGlyphs) ? _selectionRange.location - 1 : _selectionRange.location,
         caretOffset = [_layoutManager _characterOffsetAtLocation:loc],
         oldYPosition = CGRectGetMaxY(caretRect),
         caretDescend = [_layoutManager _descentAtLocation:loc];
@@ -2196,14 +2197,24 @@ Sets the selection to a range of characters in response to user action.
         caretRect.origin.y += caretOffset;
         caretRect.size.height = oldYPosition - caretRect.origin.y;
     }
+
     if (caretDescend < 0)
         caretRect.size.height -= caretDescend;
 
+    if (_selectionRange.location == numberOfGlyphs)
+        caretRect.origin.x += caretRect.size.width;
+
     caretRect.origin.x += _textContainerOrigin.x;
     caretRect.origin.y += _textContainerOrigin.y;
-    caretRect.size.width = 1;
 
-    [_caret setRect:caretRect];
+    return caretRect;
+}
+- (void)updateInsertionPointStateAndRestartTimer:(BOOL)flag
+{
+    if (_selectionRange.length)
+        [_caret setVisibility:NO];
+
+    [_caret setRect:[self _getCaretRect]];
 
     if (flag)
         [_caret startBlinking];
@@ -2215,6 +2226,10 @@ Sets the selection to a range of characters in response to user action.
         location = [self _characterIndexFromRawPoint:CGPointCreateCopy(point)];
 
     _movingSelection = CPMakeRange(location, 0);
+
+    if (CPLocationInRange(location, _selectionRange))
+        return;
+
     [_caret _drawCaretAtLocation:_movingSelection.location];
     [_caret setVisibility:YES];
 }
@@ -2227,7 +2242,7 @@ Sets the selection to a range of characters in response to user action.
     var location = [self convertPoint:[aSender draggingLocation] fromView:nil],
         pasteboard = [aSender draggingPasteboard];
 
-    if ([pasteboard availableTypeFromArray:[CPRTFPboardType, CPStringPboardType]])
+    if ([pasteboard availableTypeFromArray:[_CPASPboardType]])
     {
         [_caret setVisibility:NO];
 
@@ -2244,15 +2259,10 @@ Sets the selection to a range of characters in response to user action.
         [self _deleteForRange:_selectionRange];
         [self setSelectedRange:_movingSelection];
 
-        var dataForPasting = [pasteboard stringForType:CPRTFPboardType] || [pasteboard stringForType:CPStringPboardType];
-
+        var stringForPasting = [CPKeyedUnarchiver unarchiveObjectWithData:[CPData dataWithRawString:[pasteboard stringForType:_CPASPboardType]]];
         //  setTimeout is to a work around a transaction issue with the undomanager
         setTimeout(function(){
-
-            if ([dataForPasting hasPrefix:"{\\rtf"])
-                [self insertText:[[_CPRTFParser new] parseRTF:dataForPasting]];
-            else
-                [self insertText:dataForPasting];
+            [self insertText:stringForPasting];
         }, 0);
     }
 
@@ -2525,6 +2535,7 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
             style.whiteSpace = "pre";
             style.backgroundColor = "black";
             _caretDOM.style.width = "1px";
+            _caretDOM.style.zIndex = 10001;
             _textView = aView;
             _textView._DOMElement.appendChild(_caretDOM);
         }
