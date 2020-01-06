@@ -250,7 +250,7 @@ var CPViewHighDPIDrawingEnabled = YES;
 
     BOOL                _allowsVibrancy         @accessors(property=allowsVibrancy);
     CPAppearance        _appearance             @accessors(getter=appearance);
-    CPAppearance        _effectiveAppearance;
+    CPAppearance        _currentAppearance;
 
     CPMutableArray      _trackingAreas          @accessors(getter=trackingAreas, copy);
 
@@ -421,6 +421,9 @@ var CPViewHighDPIDrawingEnabled = YES;
 
         _animator = nil;
         _animationsDictionary = @{};
+
+        // Set the current appearance to something that can't be the correct one so it will recalculate it at the first layout.
+        _currentAppearance = aFrame;
 
         [self _setupViewFlags];
         [self _loadThemeAttributes];
@@ -2834,7 +2837,7 @@ setBoundsOrigin:
 */
 - (void)viewDidLayout
 {
-    [self _recomputeAppearance];
+    [self _recomputeAppearanceWithSuperviewEffectiveAppearance:[self effectiveAppearance]];
 }
 
 - (void)layoutSubviews
@@ -3522,53 +3525,59 @@ setBoundsOrigin:
     [self setNeedsLayout:YES];
 }
 
+var CPAppearanceAqua = [CPAppearance appearanceNamed:CPAppearanceNameAqua];
+var CPAppearanceLightContent = [CPAppearance appearanceNamed:CPAppearanceNameLightContent];
+var CPAppearanceVibrantLight = [CPAppearance appearanceNamed:CPAppearanceNameVibrantLight];
+var CPAppearanceVibrantDark = [CPAppearance appearanceNamed:CPAppearanceNameVibrantDark];
+
 /*! @ignore
 */
-- (void)_recomputeAppearance
+- (void)_recomputeAppearanceWithSuperviewEffectiveAppearance:(CPAppearance)superviewEffectiveAppearance
 {
-    var effectiveAppearance = [self effectiveAppearance];
+    var effectiveAppearance = _appearance || superviewEffectiveAppearance;
 
-    if ([effectiveAppearance isEqual:[CPAppearance appearanceNamed:CPAppearanceNameAqua]])
-    {
-        [self setThemeState:CPThemeStateAppearanceAqua];
-        [self unsetThemeState:CPThemeStateAppearanceLightContent];
-        [self unsetThemeState:CPThemeStateAppearanceVibrantLight];
-        [self unsetThemeState:CPThemeStateAppearanceVibrantDark];
-    }
-    else if ([effectiveAppearance isEqual:[CPAppearance appearanceNamed:CPAppearanceNameLightContent]])
-    {
-        [self unsetThemeState:CPThemeStateAppearanceAqua];
-        [self setThemeState:CPThemeStateAppearanceLightContent];
-        [self unsetThemeState:CPThemeStateAppearanceVibrantLight];
-        [self unsetThemeState:CPThemeStateAppearanceVibrantDark];
-    }
-    else if ([effectiveAppearance isEqual:[CPAppearance appearanceNamed:CPAppearanceNameVibrantLight]])
-    {
-        [self unsetThemeState:CPThemeStateAppearanceAqua];
-        [self unsetThemeState:CPThemeStateAppearanceLightContent];
-        [self setThemeState:CPThemeStateAppearanceVibrantLight];
-        [self unsetThemeState:CPThemeStateAppearanceVibrantDark];
-    }
-    else if ([effectiveAppearance isEqual:[CPAppearance appearanceNamed:CPAppearanceNameVibrantDark]])
-    {
-        [self unsetThemeState:CPThemeStateAppearanceAqua];
-        [self unsetThemeState:CPThemeStateAppearanceLightContent];
-        [self unsetThemeState:CPThemeStateAppearanceVibrantLight];
-        [self setThemeState:CPThemeStateAppearanceVibrantDark];
-    }
-    else
-    {
-        [self unsetThemeState:CPThemeStateAppearanceAqua];
-        [self unsetThemeState:CPThemeStateAppearanceLightContent];
-        [self unsetThemeState:CPThemeStateAppearanceVibrantLight];
-        [self unsetThemeState:CPThemeStateAppearanceVibrantDark];
+    // Only reset the themestates if it is different from the current one so we get good performance.
+    if (effectiveAppearance != _currentAppearance) {
+        switch (effectiveAppearance) {
+            case CPAppearanceAqua:
+                [self setThemeState:CPThemeStateAppearanceAqua];
+                [self unsetThemeState:CPThemeStateAppearanceLightContent];
+                [self unsetThemeState:CPThemeStateAppearanceVibrantLight];
+                [self unsetThemeState:CPThemeStateAppearanceVibrantDark];
+                break;
+            case CPAppearanceLightContent:
+                [self unsetThemeState:CPThemeStateAppearanceAqua];
+                [self setThemeState:CPThemeStateAppearanceLightContent];
+                [self unsetThemeState:CPThemeStateAppearanceVibrantLight];
+                [self unsetThemeState:CPThemeStateAppearanceVibrantDark];
+                break;
+            case CPAppearanceVibrantLight:
+                [self unsetThemeState:CPThemeStateAppearanceAqua];
+                [self unsetThemeState:CPThemeStateAppearanceLightContent];
+                [self setThemeState:CPThemeStateAppearanceVibrantLight];
+                [self unsetThemeState:CPThemeStateAppearanceVibrantDark];
+                break;
+            case CPAppearanceVibrantDark:
+                [self unsetThemeState:CPThemeStateAppearanceAqua];
+                [self unsetThemeState:CPThemeStateAppearanceLightContent];
+                [self unsetThemeState:CPThemeStateAppearanceVibrantLight];
+                [self setThemeState:CPThemeStateAppearanceVibrantDark];
+                break;
+            default:
+                [self unsetThemeState:CPThemeStateAppearanceAqua];
+                [self unsetThemeState:CPThemeStateAppearanceLightContent];
+                [self unsetThemeState:CPThemeStateAppearanceVibrantLight];
+                [self unsetThemeState:CPThemeStateAppearanceVibrantDark];
+        }
+
+        _currentAppearance = effectiveAppearance;
     }
 
 //    var start = [CPDate new];
 
     for (var i = 0, size = [_subviews count]; i < size; i++)
     {
-        [[_subviews objectAtIndex:i] _recomputeAppearance];
+        [[_subviews objectAtIndex:i] _recomputeAppearanceWithSuperviewEffectiveAppearance:effectiveAppearance];
     }
 //    [_subviews makeObjectsPerformSelector:@selector(_recomputeAppearance)];
 
@@ -3822,6 +3831,8 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         [self _decodeThemeObjectsWithCoder:aCoder];
 
         [self setAppearance:[aCoder decodeObjectForKey:CPViewAppearanceKey]];
+        // Set the current appearance to something that can't be the correct one so it will recalculate it at the first layout.
+        _currentAppearance = _frame;
 
         [self setNeedsDisplay:YES];
         [self setNeedsLayout];
