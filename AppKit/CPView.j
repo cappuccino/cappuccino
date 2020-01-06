@@ -253,7 +253,6 @@ var CPViewHighDPIDrawingEnabled = YES;
     CPAppearance        _effectiveAppearance;
 
     CPMutableArray      _trackingAreas          @accessors(getter=trackingAreas, copy);
-    BOOL                _inhibitUpdateTrackingAreas;
 
     id                  _animator;
     CPDictionary        _animationsDictionary;
@@ -1045,10 +1044,22 @@ var CPViewHighDPIDrawingEnabled = YES;
     if (CGRectEqualToRect(_frame, aFrame) && !_forceUpdates)
         return;
 
+    // Save the previous value as we can be traveling down the view hierarchy.
+    // If view is not connected with a window don't update tracking areas.
+    var saveInhibitUpdateTrackingAreas = _window ? _window._inhibitUpdateTrackingAreas : YES;
+
+    // We only want to update tracking areas once so turn it off for all views.
+    if (_window)
+        _window._inhibitUpdateTrackingAreas = YES;
+
+    // Turn off change notifications for only this view
     _inhibitFrameAndBoundsChangedNotifications = YES;
 
     [self setFrameOrigin:aFrame.origin];
     [self setFrameSize:aFrame.size];
+
+    if (_window)
+        _window._inhibitUpdateTrackingAreas = saveInhibitUpdateTrackingAreas;
 
     _inhibitFrameAndBoundsChangedNotifications = NO;
 
@@ -1058,7 +1069,7 @@ var CPViewHighDPIDrawingEnabled = YES;
     if (_isSuperviewAClipView)
         [[self superview] viewFrameChanged:[[CPNotification alloc] initWithName:CPViewFrameDidChangeNotification object:self userInfo:nil]];
 
-    if (!_inhibitUpdateTrackingAreas)
+    if (!saveInhibitUpdateTrackingAreas)
         [self _updateTrackingAreasWithRecursion:YES];
 }
 
@@ -1134,7 +1145,7 @@ var CPViewHighDPIDrawingEnabled = YES;
     }
 #endif
 
-    if (!_inhibitUpdateTrackingAreas && !_inhibitFrameAndBoundsChangedNotifications)
+    if (_window && !_window._inhibitUpdateTrackingAreas && !_inhibitFrameAndBoundsChangedNotifications)
         [self _updateTrackingAreasWithRecursion:YES];
 }
 
@@ -1288,7 +1299,7 @@ var CPViewHighDPIDrawingEnabled = YES;
     if (_isSuperviewAClipView && !_inhibitFrameAndBoundsChangedNotifications)
         [[self superview] viewFrameChanged:[[CPNotification alloc] initWithName:CPViewFrameDidChangeNotification object:self userInfo:nil]];
 
-    if (!_inhibitUpdateTrackingAreas && !_inhibitFrameAndBoundsChangedNotifications)
+    if (_window && !_window._inhibitUpdateTrackingAreas && !_inhibitFrameAndBoundsChangedNotifications)
         [self _updateTrackingAreasWithRecursion:!_autoresizesSubviews];
 }
 
@@ -1338,7 +1349,7 @@ var CPViewHighDPIDrawingEnabled = YES;
     if (_isSuperviewAClipView)
         [[self superview] viewBoundsChanged:[[CPNotification alloc] initWithName:CPViewBoundsDidChangeNotification object:self userInfo:nil]];
 
-    if (!_inhibitUpdateTrackingAreas)
+    if (_window && !_window._inhibitUpdateTrackingAreas)
         [self _updateTrackingAreasWithRecursion:YES];
 }
 
@@ -1406,7 +1417,7 @@ var CPViewHighDPIDrawingEnabled = YES;
     if (_isSuperviewAClipView && !_inhibitFrameAndBoundsChangedNotifications)
         [[self superview] viewBoundsChanged:[[CPNotification alloc] initWithName:CPViewBoundsDidChangeNotification object:self userInfo:nil]];
 
-    if (!_inhibitUpdateTrackingAreas && !_inhibitFrameAndBoundsChangedNotifications)
+    if (_window && !_window._inhibitUpdateTrackingAreas && !_inhibitFrameAndBoundsChangedNotifications)
         [self _updateTrackingAreasWithRecursion:YES];
 }
 
@@ -1450,7 +1461,7 @@ var CPViewHighDPIDrawingEnabled = YES;
     if (_isSuperviewAClipView && !_inhibitFrameAndBoundsChangedNotifications)
         [[self superview] viewBoundsChanged:[[CPNotification alloc] initWithName:CPViewBoundsDidChangeNotification object:self userInfo:nil]];
 
-    if (!_inhibitUpdateTrackingAreas && !_inhibitFrameAndBoundsChangedNotifications)
+    if (_window && !_window._inhibitUpdateTrackingAreas && !_inhibitFrameAndBoundsChangedNotifications)
         [self _updateTrackingAreasWithRecursion:YES];
 }
 
@@ -3637,7 +3648,6 @@ setBoundsOrigin:
 
 - (void)_updateTrackingAreasWithRecursion:(BOOL)shouldCallRecursively
 {
-    _inhibitUpdateTrackingAreas = YES;
 
     [self _updateTrackingAreasForOwners:[self _calcTrackingAreaOwners]];
 
@@ -3648,8 +3658,6 @@ setBoundsOrigin:
         for (var i = 0; i < _subviews.length; i++)
             [_subviews[i] _updateTrackingAreasWithRecursion:YES];
     }
-
-    _inhibitUpdateTrackingAreas = NO;
 }
 
 - (CPArray)_calcTrackingAreaOwners

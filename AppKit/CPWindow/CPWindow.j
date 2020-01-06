@@ -264,6 +264,8 @@ var CPWindowActionMessageKeys = [
     BOOL                                _isSheet;
     _CPWindowFrameAnimation             _frameAnimation;
     _CPWindowFrameAnimationDelegate     _frameAnimationDelegate;
+
+    BOOL                                _inhibitUpdateTrackingAreas;    // Used by the CPView when updating tracking areas
 }
 
 + (Class)_binderClassForBinding:(CPString)aBinding
