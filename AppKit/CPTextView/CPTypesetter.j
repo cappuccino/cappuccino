@@ -197,7 +197,7 @@ var CPSystemTypesetterFactory,
     }
 
     [_layoutManager setLocation:CGPointMake(myX, _lineBase) forStartOfGlyphRange:lineRange];
-    [_layoutManager _setAdvancements:advancements forGlyphRange:lineRange];
+    [_layoutManager _setAdvancements:advancements forGlyphRange:lineRange withLineBase:_lineBase];
 
     //fix the _lineFragments when fontsizes differ
     var l = _lineFragments.length;
