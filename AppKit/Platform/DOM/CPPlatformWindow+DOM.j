@@ -738,8 +738,14 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
             if (aDOMEvent.which === 0 || aDOMEvent.charCode === 0 || (aDOMEvent.which === undefined && aDOMEvent.charCode === undefined))
                 characters = KeyCodesToUnicodeMap[_keyCode];
 
+            // The problem with keyCode is that this property refers to keys on the keyboard and not to characters
+            // This is why String.fromCharCode does not always work in more recent versions of Firefox
+            // E.g. pressing a '#' on a German keyboard gives you a charCode of 163, which refers to '£' and not '#'
+            // The property key works fine, though. From there we can get the actual character more robustly.
+            // Therefore we prefer key over keyCode whenever possible
+
             if (!characters)
-                characters = String.fromCharCode(_keyCode).toLowerCase();
+                characters = (aDOMEvent.key && aDOMEvent.key.length == 1) ? aDOMEvent.key.toLowerCase() : String.fromCharCode(_keyCode).toLowerCase();
 
             overrideCharacters = (modifierFlags & CPShiftKeyMask || _capsLockActive) ? characters.toUpperCase() : characters;
 
@@ -767,7 +773,7 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
                 //this lets us be consistent in all browsers and send on the keydown
                 //which means we can cancel the event early enough, but only if sendEvent needs to
             }
-            else if (CPKeyCodes.firesKeyPressEvent(_keyCode, _lastKey, aDOMEvent.shiftKey, aDOMEvent.ctrlKey, aDOMEvent.altKey))
+            else if (CPKeyCodes.firesKeyPressEvent(_keyCode, aDOMEvent.key, _lastKey, aDOMEvent.shiftKey, aDOMEvent.ctrlKey, aDOMEvent.altKey))
             {
                 // this branch is taken by events which fire keydown, keypress, and keyup.
                 // this is the only time we'll ALLOW character keys to propagate (needed for text fields)
