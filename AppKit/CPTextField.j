@@ -791,7 +791,46 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     element.style.font          = [font cssString];
 
     if (isTextArea)
-        element.style.whiteSpace = _wraps ? "pre" : "nowrap";
+    {
+        switch ([self lineBreakMode])
+        {
+            case CPLineBreakByClipping:
+                element.style.overflow = "hidden";
+                element.style.textOverflow = "clip";
+                element.style.whiteSpace = "pre";
+                element.style.wordWrap = "normal";
+                break;
+            case CPLineBreakByTruncatingHead:
+            case CPLineBreakByTruncatingMiddle: // Don't have support for these (yet?), so just degrade to truncating tail.
+            case CPLineBreakByTruncatingTail:
+                element.style.textOverflow = "ellipsis";
+                element.style.whiteSpace = "pre";
+                element.style.overflow = "hidden";
+                element.style.wordWrap = "normal";
+                break;
+            case CPLineBreakByCharWrapping:
+            case CPLineBreakByWordWrapping:
+                element.style.wordWrap = "break-word";
+                try
+                {
+                    element.style.whiteSpace = "pre";
+                    element.style.whiteSpace = "-o-pre-wrap";
+                    element.style.whiteSpace = "-pre-wrap";
+                    element.style.whiteSpace = "-moz-pre-wrap";
+                    element.style.whiteSpace = "pre-wrap";
+                }
+                catch (e)
+                {
+                    //internet explorer doesn't like these properties
+                    element.style.whiteSpace = "pre";
+                }
+                element.style.overflow = "hidden";
+                element.style.textOverflow = "clip";
+                break;
+        }
+    }
+    else
+        element.style.whiteSpace = "nowrap";
 
 #endif
 }
