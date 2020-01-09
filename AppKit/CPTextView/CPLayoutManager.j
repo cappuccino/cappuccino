@@ -708,18 +708,6 @@ _oncontextmenuhandler = function () { return false; };
     return lineFragment._glyphsOffsets[index];
 }
 
-- (double)_descentAtLocation:(unsigned)location
-{
-    var lineFragment = _objectWithLocationInRange(_lineFragments, location);
-
-    if (!lineFragment)
-        return 0.0;
-
-    var index = location - lineFragment._range.location;
-
-    return lineFragment._glyphsFrames[index]._descent;
-}
-
 - (void)setLineFragmentRect:(CGRect)fragmentRect forGlyphRange:(CPRange)glyphRange usedRect:(CGRect)usedRect
 {
     var lineFragment = _objectWithLocationInRange(_lineFragments, glyphRange.location);
@@ -927,8 +915,6 @@ _oncontextmenuhandler = function () { return false; };
                 if (CPLocationInRange(fragment._range.location + j, selectedCharRange))
                 {
                     var correctedRect = CGRectCreateCopy(frames[j]);
-                    correctedRect.size.height -= frames[j]._descent;
-                    correctedRect.origin.y -= frames[j]._descent;
 
                     if (!rect)
                         rect = CGRectCreateCopy(correctedRect);
@@ -1212,7 +1198,6 @@ var _objectsInRange = function(aList, aRange)
     for (var i = 0; i < count; i++)
     {
         _glyphsFrames[i] = CGRectMake(origin.x, origin.y, someAdvancements[i].width, height);
-        _glyphsFrames[i]._descent = 0; //someAdvancements[i].descent;
         _glyphsOffsets[i] = lineBase - someAdvancements[i].height;
         origin.x += someAdvancements[i].width;
     }
