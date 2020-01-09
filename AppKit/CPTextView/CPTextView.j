@@ -2189,17 +2189,13 @@ Sets the selection to a range of characters in response to user action.
 
     var loc = (_selectionRange.location == numberOfGlyphs) ? _selectionRange.location - 1 : _selectionRange.location,
         caretOffset = [_layoutManager _characterOffsetAtLocation:loc],
-        oldYPosition = CGRectGetMaxY(caretRect),
-        caretDescend = [_layoutManager _descentAtLocation:loc];
+        oldYPosition = CGRectGetMaxY(caretRect);
 
     if (caretOffset > 0)
     {
         caretRect.origin.y += caretOffset;
         caretRect.size.height = oldYPosition - caretRect.origin.y;
     }
-
-    if (caretDescend < 0)
-        caretRect.size.height -= caretDescend;
 
     if (_selectionRange.location == numberOfGlyphs)
         caretRect.origin.x += caretRect.size.width;
