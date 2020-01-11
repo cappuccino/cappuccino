@@ -265,7 +265,7 @@ var CPTextStorageDelegate_textStorageWillProcessEditing_ = 1 << 1,
 /*!
     Returns an instance of CPTextStorage that contains the provided instance of CPView.
     This can be used to insert arbitrary views into the text. These views are treated as individual characters during editing.
-    This works only with views that implement to the CPCoding protocol
+    This works only with views that conform to the CPCoding protocol
 */
 
 + (id)attributedStringWithAttachment:(CPView)someView
