@@ -205,9 +205,9 @@ var NumberRegex = new RegExp('(-)?(\\d*)(\\.(\\d*))?');
     // this will return false if we've received anything but a number, most likely NaN
     if (!isFinite(value))
         error = @"Value is not a number";
-    else if (_minimum !== nil && value < _minimum)
+    else if (_minimum != nil && value < _minimum)
         error = @"Value is less than the minimum allowed value";
-    else if (_maximum !== nil && value > _maximum)
+    else if (_maximum != nil && value > _maximum)
         error = @"Value is greater than the maximum allowed value";
 
     if (error)

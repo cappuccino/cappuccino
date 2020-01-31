@@ -147,7 +147,7 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
 
     var globalValue = [[CPBundle mainBundle] objectForInfoDictionaryKey:@"CPScrollersGlobalStyle"];
 
-    if (globalValue === nil || globalValue === -1)
+    if (globalValue == nil || globalValue === -1)
         CPScrollerStyleGlobal = _isBrowserUsingOverlayScrollers() ? CPScrollerStyleOverlay : CPScrollerStyleLegacy
     else
         CPScrollerStyleGlobal = globalValue;
@@ -309,7 +309,7 @@ Notifies the delegate when the scroll view has finished scrolling.
     _delegate = aDelegate;
     _implementedDelegateMethods = 0;
 
-    if (_delegate === nil)
+    if (_delegate == nil)
         return;
 
     if ([_delegate respondsToSelector:@selector(scrollViewWillScroll:)])

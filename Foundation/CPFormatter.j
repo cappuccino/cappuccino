@@ -159,7 +159,7 @@
         @deref(aPartialStringRef) = newString;
 
         // If a new string is passed back, the selection is always put at the end
-        if (newString !== nil)
+        if (newString != nil)
             @deref(aProposedSelectedRangeRef) = CPMakeRange(newString.length, 0);
     }
 

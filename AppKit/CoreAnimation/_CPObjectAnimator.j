@@ -25,7 +25,7 @@ var _supportsCSSAnimations = null;
     if ([self class] !== [_CPObjectAnimator class])
         return;
 
-    var compat = (CPBrowserCSSProperty("animation") !== nil);
+    var compat = (CPBrowserCSSProperty("animation") != nil);
     CPSetPlatformFeature(CPCSSAnimationFeature, compat);
 }
 

@@ -800,7 +800,7 @@ var CPViewHighDPIDrawingEnabled = YES;
     var addedSubview = nil,
         addedSubviewEnumerator = [addedSubviews objectEnumerator];
 
-    while ((addedSubview = [addedSubviewEnumerator nextObject]) !== nil)
+    while ((addedSubview = [addedSubviewEnumerator nextObject]) != nil)
         [self addSubview:addedSubview];
 
     // If the order is fine, no need to reorder.
@@ -1703,8 +1703,8 @@ var CPViewHighDPIDrawingEnabled = YES;
 
 - (void)_setSuperview:(CPView)aSuperview
 {
-    var hasOldSuperview = (_superview !== nil),
-        hasNewSuperview = (aSuperview !== nil),
+    var hasOldSuperview = (_superview != nil),
+        hasNewSuperview = (aSuperview != nil),
         oldSuperviewIsHidden = hasOldSuperview && [_superview isHiddenOrHasHiddenAncestor],
         newSuperviewIsHidden = hasNewSuperview && [aSuperview isHiddenOrHasHiddenAncestor];
 
@@ -3802,7 +3802,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 
         // Other views (CPBox) might set an autoresizes mask on their subviews before it is actually decoded.
         // We make sure we don't override the value by checking if it was already set.
-        if (_autoresizingMask === nil)
+        if (_autoresizingMask == nil)
             _autoresizingMask = [aCoder decodeIntForKey:CPViewAutoresizingMaskKey] || CPViewNotSizable;
 
         _autoresizesSubviews = ![aCoder containsValueForKey:CPViewAutoresizesSubviewsKey] || [aCoder decodeBoolForKey:CPViewAutoresizesSubviewsKey];
@@ -3876,7 +3876,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     [aCoder encodeRect:_bounds forKey:CPViewBoundsKey];
 
     // This will come out nil on the other side with decodeObjectForKey:
-    if (_window !== nil)
+    if (_window != nil)
         [aCoder encodeConditionalObject:_window forKey:CPViewWindowKey];
 
     var count = [_subviews count],
@@ -3895,7 +3895,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         [aCoder encodeObject:encodedSubviews forKey:CPViewSubviewsKey];
 
     // This will come out nil on the other side with decodeObjectForKey:
-    if (_superview !== nil)
+    if (_superview != nil)
         [aCoder encodeConditionalObject:_superview forKey:CPViewSuperviewKey];
 
     if (_autoresizingMask !== CPViewNotSizable)
@@ -3904,7 +3904,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     if (!_autoresizesSubviews)
         [aCoder encodeBool:_autoresizesSubviews forKey:CPViewAutoresizesSubviewsKey];
 
-    if (_backgroundColor !== nil)
+    if (_backgroundColor != nil)
         [aCoder encodeObject:_backgroundColor forKey:CPViewBackgroundColorKey];
 
     if (_hitTests !== YES)
@@ -3921,12 +3921,12 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 
     var nextKeyView = [self nextKeyView];
 
-    if (nextKeyView !== nil && ![nextKeyView isEqual:self])
+    if (nextKeyView != nil && ![nextKeyView isEqual:self])
         [aCoder encodeConditionalObject:nextKeyView forKey:CPViewNextKeyViewKey];
 
     var previousKeyView = [self previousKeyView];
 
-    if (previousKeyView !== nil && ![previousKeyView isEqual:self])
+    if (previousKeyView != nil && ![previousKeyView isEqual:self])
         [aCoder encodeConditionalObject:previousKeyView forKey:CPViewPreviousKeyViewKey];
 
     [self _encodeThemeObjectsWithCoder:aCoder];

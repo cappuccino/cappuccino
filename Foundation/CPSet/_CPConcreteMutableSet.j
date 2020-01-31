@@ -92,7 +92,7 @@ var hasOwnProperty = Object.prototype.hasOwnProperty;
 */
 - (void)addObject:(id)anObject
 {
-    if (anObject === nil || anObject === undefined)
+    if (anObject == nil)
         [CPException raise:CPInvalidArgumentException reason:@"attempt to insert nil or undefined"];
 
     if ([self containsObject:anObject])
@@ -109,14 +109,14 @@ var hasOwnProperty = Object.prototype.hasOwnProperty;
 - (void)removeObject:(id)anObject
 {
     // Removing nil is an error.
-    if (anObject === nil || anObject === undefined)
+    if (anObject == nil)
         [CPException raise:CPInvalidArgumentException reason:@"attempt to remove nil or undefined"];
 
     // anObject might be isEqual: another object in the set. We need the exact instance so we can remove it by UID.
     var object = [self member:anObject];
 
     // ...but removing an object not present in the set is not an error.
-    if (object !== nil)
+    if (object != nil)
     {
         delete _contents[[object UID]];
         _count--;

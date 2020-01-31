@@ -94,7 +94,7 @@ var _availableTraits= [@"Normal", @"Italic", @"Bold", @"Bold Italic"],
 */
 + (BOOL)sharedFontPanelExists
 {
-    return _sharedFontPanel !== nil;
+    return _sharedFontPanel != nil;
 }
 
 /*!

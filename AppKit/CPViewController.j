@@ -258,7 +258,7 @@ var CPViewControllerCachedCibs;
 
         [self loadView];
 
-        if (_view === nil && [cibOwner isKindOfClass:[CPDocument class]])
+        if (_view == nil && [cibOwner isKindOfClass:[CPDocument class]])
             [self setView:[cibOwner valueForKey:@"view"]];
 
         if (!_view)
@@ -408,7 +408,7 @@ var CPViewControllerCachedCibs;
         [self willChangeValueForKey:"isViewLoaded"];
 
     _view = aView;
-    _isViewLoaded = aView !== nil;
+    _isViewLoaded = aView != nil;
 
     if (willChangeIsViewLoaded)
         [self didChangeValueForKey:"isViewLoaded"];
@@ -421,7 +421,7 @@ var CPViewControllerCachedCibs;
 
 - (void)_registerOrUnregister:(BOOL)shouldRegister notificationsForView:(CPView)aView
 {
-    if (aView === nil)
+    if (aView == nil)
         return;
 
     var center = [CPNotificationCenter defaultCenter],

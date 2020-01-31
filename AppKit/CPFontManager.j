@@ -207,7 +207,7 @@ CPRemoveTraitFontAction = 7;
 - (@action)addFontTrait:(id)sender
 {
     var tag = [sender tag];
-    _activeChange = tag === nil ? @{} : @{ @"addTraits": tag };
+    _activeChange = tag == nil ? @{} : @{ @"addTraits": tag };
     _fontAction = CPAddTraitFontAction;
 
     [self sendAction];

@@ -1168,7 +1168,7 @@ The sum of the views and the sum of the dividers should be equal to the size of 
         {
             var item = preCollapseArray[i];
 
-            if (item === nil)
+            if (item == nil)
                 [_preCollapsePositions removeObjectForKey:String(i)];
             else
                 [_preCollapsePositions setObject:item forKey:String(i)];

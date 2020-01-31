@@ -397,7 +397,7 @@ var CPResponderNextResponderKey = @"CPResponderNextResponderKey",
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     // This will come out nil on the other side with decodeObjectForKey:
-    if (_nextResponder !== nil)
+    if (_nextResponder != nil)
         [aCoder encodeConditionalObject:_nextResponder forKey:CPResponderNextResponderKey];
 
     [aCoder encodeObject:_menu forKey:CPResponderMenuKey];

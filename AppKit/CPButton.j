@@ -807,7 +807,7 @@ CPButtonImageOffset   = 3.0;
 {
     var selfWindow = [self window];
 
-    if (selfWindow === aWindow || aWindow === nil)
+    if (selfWindow === aWindow || aWindow == nil)
         return;
 
     if ([selfWindow defaultButton] === self)

@@ -3119,7 +3119,7 @@ CPTexturedBackgroundWindowMask
 */
 - (CPWindow)attachedSheet
 {
-    if (_sheetContext === nil)
+    if (_sheetContext == nil)
         return nil;
 
    return _sheetContext["sheet"];

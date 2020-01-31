@@ -160,13 +160,13 @@ var CPUserDefaultsControllerSharedKey = "CPUserDefaultsControllerSharedKey";
 - (id)valueForKey:(CPString)aKey
 {
     var value = [_cachedValues objectForKey:aKey];
-    if (value === nil)
+    if (value == nil)
     {
         value = [[_controller defaults] objectForKey:aKey];
-        if (value === nil)
+        if (value == nil)
             value = [[_controller initialValues] objectForKey:aKey];
 
-        if (value !== nil)
+        if (value != nil)
             [_cachedValues setObject:value forKey:aKey];
     }
     return value;
@@ -220,7 +220,7 @@ var CPUserDefaultsControllerSharedKey = "CPUserDefaultsControllerSharedKey";
         [self willChangeValueForKey:key];
 
         var initialValue = [initial objectForKey:key];
-        if (initialValue !== nil)
+        if (initialValue != nil)
             [_cachedValues setObject:initialValue forKey:key];
         else
             [_cachedValues removeObjectForKey:key];
