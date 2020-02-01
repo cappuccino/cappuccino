@@ -1788,8 +1788,8 @@ var CPSplitViewDelegateKey            = @"CPSplitViewDelegateKey",
 
     */
 
-    // As subviews are often not fully ready to use at this time, we'll try to finalize the initialization after all views initializations are done
-    [[CPRunLoop currentRunLoop] performSelector:@selector(_finalizeInitWithCoder) target:self argument:nil order:0 modes:[CPDefaultRunLoopMode]];
+    // As subviews are often not fully ready to use at this time, we'll try to finalize the
+    // initialization after all views initializations are done, in _cibInstantiate.
 
     self = [super initWithCoder:aCoder];
 
@@ -1825,7 +1825,7 @@ var CPSplitViewDelegateKey            = @"CPSplitViewDelegateKey",
     return self;
 }
 
-- (void)_finalizeInitWithCoder
+- (id)_cibInstantiate
 {
     // Subviews received from Xcode IB are in fact arranged subviews
 
@@ -1842,6 +1842,8 @@ var CPSplitViewDelegateKey            = @"CPSplitViewDelegateKey",
 
     [self _updateRatios];
     [self adjustSubviews];
+
+    return self;
 }
 
 /*
