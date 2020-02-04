@@ -2,9 +2,6 @@
  *  CPLayoutManager.j
  *  AppKit
  *
- *  FIXME remove from DOM when scrolled out of visible area? (as done in CPTableView)
- *
- *
  *  Created by Daniel Boehringer on 27/12/2013.
  *  All modifications copyright Daniel Boehringer 2013.
  *  Extensive code formatting and review by Andrew Hankinson
