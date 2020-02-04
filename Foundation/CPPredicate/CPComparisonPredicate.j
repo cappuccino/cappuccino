@@ -287,10 +287,13 @@
         rightIsNil = (rhs == nil || [rhs isEqual:[CPNull null]]);
 
     if ((leftIsNil || rightIsNil) && _type != CPCustomSelectorPredicateOperatorType)
-        return (leftIsNil == rightIsNil &&
-               (_type == CPEqualToPredicateOperatorType ||
-                _type == CPLessThanOrEqualToPredicateOperatorType ||
-                _type == CPGreaterThanOrEqualToPredicateOperatorType));
+        return (leftIsNil === rightIsNil &&
+               (_type === CPEqualToPredicateOperatorType ||
+                _type === CPLessThanOrEqualToPredicateOperatorType ||
+                _type === CPGreaterThanOrEqualToPredicateOperatorType))
+               ||
+               (leftIsNil !== rightIsNil &&
+               (_type === CPNotEqualToPredicateOperatorType));
 
     var string_compare_options = 0;
 
