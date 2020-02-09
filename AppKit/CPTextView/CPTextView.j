@@ -198,7 +198,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 + (CPDictionary)themeAttributes
 {
     return @{
-            @"background-color": [CPColor whiteColor],
+            @"background-color": [CPColor textBackgroundColor],
             @"content-inset": CGSizeMake(2, 0)
         };
 }
@@ -2285,7 +2285,7 @@ Sets the selection to a range of characters in response to user action.
 
     _placeholderString = aString;
 
-    [self setString:[[CPAttributedString alloc] initWithString:_placeholderString attributes:@{CPForegroundColorAttributeName:[CPColor colorWithRed:0.66 green:0.66 blue:0.66 alpha:1]}]];
+    [self setString:[[CPAttributedString alloc] initWithString:_placeholderString attributes:@{CPForegroundColorAttributeName:[CPColor disabledControlTextColor]}]];
 }
 
 - (void)_continuouslyReverseSetBinding
