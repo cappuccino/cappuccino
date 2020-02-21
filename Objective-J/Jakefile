@@ -22,6 +22,11 @@
 
 require("../common.jake");
 
+// Make sure we can use new functions in an in old javascript engines like Rhino
+// This is only needed if new things are introduced in OldBrowserCompatibility.js
+// as we are running in an already built Objective-J environment
+require("./OldBrowserCompatibility");
+
 var FILE = require("file"),
     OS = require("os"),
     stream = require("narwhal/term").stream;
