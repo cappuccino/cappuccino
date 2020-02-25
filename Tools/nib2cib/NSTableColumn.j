@@ -118,6 +118,10 @@ var IBDefaultFontSizeTableHeader = 11.0;
             [dataView setValue:selectedColor forThemeAttribute:@"text-color" inState:CPThemeState(CPThemeStateTableDataView, CPThemeStateSelectedDataView)];
             [dataView setValue:textColor forThemeAttribute:@"text-color" inState:CPThemeState(CPThemeStateTableDataView, CPThemeStateSelectedDataView, CPThemeStateEditing)];
         }
+
+        // We have to set the selected/editing font otherwise it defaults to the default font
+        [dataView setValue:[dataView font] forThemeAttribute:@"font" inState:CPThemeState(CPThemeStateTableDataView, CPThemeStateSelectedDataView)];
+        [dataView setValue:[dataView font] forThemeAttribute:@"font" inState:CPThemeState(CPThemeStateTableDataView, CPThemeStateSelectedDataView, CPThemeStateEditing)];
     }
 
     return dataView;

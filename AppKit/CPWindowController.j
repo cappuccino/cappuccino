@@ -168,7 +168,7 @@
 */
 - (BOOL)isWindowLoaded
 {
-    return _window !== nil;
+    return _window != nil;
 }
 
 /*!
@@ -184,7 +184,7 @@
 
         [self loadWindow];
 
-        if (_window === nil && [_cibOwner isKindOfClass:[CPDocument class]])
+        if (_window == nil && [_cibOwner isKindOfClass:[CPDocument class]])
             [self setWindow:[_cibOwner valueForKey:@"window"]];
 
         if (!_window)

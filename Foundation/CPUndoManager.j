@@ -657,7 +657,7 @@ if (_currentGroup == nil)
 */
 - (void)setActionName:(CPString)anActionName
 {
-    if (anActionName !== nil && _currentGrouping)
+    if (anActionName != nil && _currentGrouping)
         [_currentGrouping setActionName:anActionName];
 }
 
@@ -827,7 +827,7 @@ if (_currentGroup == nil)
     // Don't add no-ops to the undo stack.
     var before = [aChange valueForKey:CPKeyValueChangeOldKey],
         after = [aChange valueForKey:CPKeyValueChangeNewKey];
-    if (before === after || (before !== nil && before.isa && (after === nil || after.isa) && [before isEqual:after]))
+    if (before === after || (before != nil && before.isa && (after == nil || after.isa) && [before isEqual:after]))
         return;
 
     [[self prepareWithInvocationTarget:anObject]

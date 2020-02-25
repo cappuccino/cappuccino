@@ -264,7 +264,7 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
     originTop.x += platformRect.size.width / 2.0 - frameSize.width / 2.0;
     originTop.y -= frameSize.height;
 
-    var requestedEdge = (anEdge !== nil) ? anEdge : CPMaxXEdge,
+    var requestedEdge = (anEdge != nil) ? anEdge : CPMaxXEdge,
         requestedOrigin;
 
     switch (requestedEdge)

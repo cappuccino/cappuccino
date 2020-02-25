@@ -40,7 +40,7 @@ var LocalizerStringsRegex = new RegExp("\"(.+)\"\\s*=\\s*\"(.+)\"\\s*;\\s*(//.+)
 
 - (void)reloadIfNeeded
 {
-    if (connection !== nil) // Connection waiting
+    if (connection != nil) // Connection waiting
     {
         connection = nil;
 
@@ -51,7 +51,7 @@ var LocalizerStringsRegex = new RegExp("\"(.+)\"\\s*=\\s*\"(.+)\"\\s*;\\s*(//.+)
 
 - (void)connection:(CPURLConnection)aConnection didReceiveData:(CPString)rawString
 {
-    if (connection !== nil && rawString !== nil)
+    if (connection != nil && rawString != nil)
         [self loadContent:rawString];
 
     connection = nil;
@@ -83,11 +83,11 @@ var LocalizerStringsRegex = new RegExp("\"(.+)\"\\s*=\\s*\"(.+)\"\\s*;\\s*(//.+)
 {
     [self reloadIfNeeded];
 
-    if (_dictionary !== nil && aString !== nil)
+    if (_dictionary != nil && aString != nil)
     {
         var localized = [_dictionary objectForKey:aString];
 
-        if (localized !== nil)
+        if (localized != nil)
             return localized;
     }
 

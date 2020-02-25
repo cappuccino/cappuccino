@@ -608,7 +608,7 @@ var _CPEventPeriodicEventPeriod         = 0,
 */
 + (void)stopPeriodicEvents
 {
-    if (_CPEventPeriodicEventTimer === nil)
+    if (_CPEventPeriodicEventTimer == nil)
         return;
 
     window.clearTimeout(_CPEventPeriodicEventTimer);

@@ -394,7 +394,7 @@ Every brace gets its own line, very simple to remember:
 
 In JavaScript, the null object value should be written as null. In Objective-J, it should be written as `nil` when the variable refers to an object, and `Nil` when it refers to a `Class`. Objective-J `BOOL` values should be written as `YES` and `NO`.
 
-Tests for `true/false`, `null/non-null`, and zero/non-zero should all be done without equality comparisons, except for cases when a value could be both 0 or `null` (or another "falsey" value). In this case, the comparison should be preceded by a comment explaining the distinction.
+Tests for `true/false`, `null/non-null`, and zero/non-zero should all be done without equality comparisons, except for cases when a value could be both 0, "" or `null` (or another "falsey" value). In this case, the comparison should be preceded by a comment explaining the distinction. When comparing with nil/null always use '==' / '!=' as the value cound also be undefined.
 
 ##### Right:
 
@@ -407,8 +407,8 @@ Tests for `true/false`, `null/non-null`, and zero/non-zero should all be done wi
     if (!count)
         return;
 
-    // object is an ID number, so 0 is OK, but null is not.
-    if (object === null)
+    // object is an ID number, so 0 is OK, but null/undefined is not.
+    if (object == null)
         return;
 
 ##### Wrong:
@@ -416,13 +416,13 @@ Tests for `true/false`, `null/non-null`, and zero/non-zero should all be done wi
     if (condition == true)
         doIt();
 
-    if (ptr == NULL)
+    if (ptr === NULL)
         return;
 
     if (count == 0)
         return;
 
-    if (object == null)
+    if (object === null)
         return;
 
 ---

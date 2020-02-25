@@ -34,10 +34,10 @@ appKitTask = framework ("AppKit", function(appKitTask)
     }).join(" ");
 
     if ($CONFIGURATION === "Release") {
-        appKitTask.setCompilerFlags("-O2 " + INCLUDES);
+        appKitTask.setCompilerFlags("-O2 -Wno-unused-but-set-variable " + INCLUDES);
     }
     else
-        appKitTask.setCompilerFlags("-DDEBUG -g -S --inline-msg-send " + INCLUDES);
+        appKitTask.setCompilerFlags("-DDEBUG -g -S --inline-msg-send -Wno-unused-but-set-variable " + INCLUDES);
 });
 
 $BUILD_CJS_CAPPUCCINO_APPKIT = FILE.join($BUILD_CJS_CAPPUCCINO_FRAMEWORKS, "AppKit");

@@ -452,7 +452,7 @@ var NSButtonIsBorderedMask = 0x00800000,
         _alternateImage = [aCoder decodeObjectForKey:@"NSAlternateImage"];
 
         // this check is needed to work around an IB issue that sometimes archives a NSFont into the _alternateImage
-        if (![_alternateImage isKindOfClass:[NSButtonImageSource class]])
+        if ([_alternateImage isKindOfClass:[NSFont class]])
             _alternateImage = nil;
 
         _allowsMixedState = (cellFlags2 & NSButtonAllowsMixedStateMask) ? YES : NO;

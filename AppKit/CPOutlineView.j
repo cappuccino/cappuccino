@@ -1438,7 +1438,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     _shouldRetargetChildIndex = YES;
 
     // set CPTableView's _retargetedDropRow based on retargetedItem and retargetedChildIndex
-    var retargetedItemInfo = (_retargetedItem !== nil) ? _itemInfosForItems[[_retargetedItem UID]] : _rootItemInfo;
+    var retargetedItemInfo = (_retargetedItem != nil) ? _itemInfosForItems[[_retargetedItem UID]] : _rootItemInfo;
 
     if (_retargedChildIndex === [retargetedItemInfo.children count])
     {
@@ -1940,7 +1940,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     if (theDropOperation === CPTableViewDropAbove)
     {
         var parentItem = [_outlineView _parentItemForUpperRow:theRow - 1 andLowerRow:theRow atMouseOffset:theOffset],
-            itemInfo = (parentItem !== nil) ? _outlineView._itemInfosForItems[[parentItem UID]] : _outlineView._rootItemInfo,
+            itemInfo = (parentItem != nil) ? _outlineView._itemInfosForItems[[parentItem UID]] : _outlineView._rootItemInfo,
             children = itemInfo.children;
 
         childIndex = [children indexOfObject:[_outlineView itemAtRow:theRow]];

@@ -363,7 +363,7 @@ var CPToolbarsByIdentifier              = nil,
 
         item = [item copy];
 
-        if (item === nil)
+        if (item == nil)
             [CPException raise:CPInvalidArgumentException
                          reason:@"Toolbar delegate " + _delegate + " returned nil toolbar item for identifier \"" + identifier + "\""];
 

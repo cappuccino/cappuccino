@@ -667,6 +667,69 @@
 
 }
 
+/*!
+    Test that we don't build up an array with all the value for each key path and then pick the row and
+    throws away all the other values. This is performance critical as this is done for every column on every row.
+
+    This is tested by setting up a key path to the name property that is combined. We count the number of times each
+    part in the key path is accessed with valueForKey.
+*/
+- (void)testLazyPrepareDataView
+{
+    //objj_msgSend_decorate(objj_backtrace_decorator);
+
+    var frameRect = CGRectMake(0, 0, 1024, 64);
+
+    [theWindow setFrame:frameRect];
+
+    var table = [[CPTableView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)],
+        container = [TestDataSource new];
+
+    var tc1 = [[CPTableColumn alloc] initWithIdentifier:@"A"];
+    [table addTableColumn:tc1];
+
+    var tc2 = [[CPTableColumn alloc] initWithIdentifier:@"B"];
+    [table addTableColumn:tc2];
+
+    var scrollView = [[CPScrollView alloc] initWithFrame:frameRect];
+
+    [[theWindow contentView] addSubview:scrollView];
+    [scrollView setDocumentView:table];
+    [theWindow makeFirstResponder:table];
+
+    var i = 1;
+    var dataArray = @[
+        [ValueForKeyCountingDictionary dictionaryWithObject:[ValueForKeyCountingDictionary dictionaryWithObject:@{@"name":@"B"+i, @"longname": @"BB"+i++} forKey:@"b"] forKey:@"a"],
+        [ValueForKeyCountingDictionary dictionaryWithObject:[ValueForKeyCountingDictionary dictionaryWithObject:@{@"name":@"B"+i, @"longname": @"BB"+i++} forKey:@"b"] forKey:@"a"],
+        [ValueForKeyCountingDictionary dictionaryWithObject:[ValueForKeyCountingDictionary dictionaryWithObject:@{@"name":@"B"+i, @"longname": @"BB"+i++} forKey:@"b"] forKey:@"a"],
+    ];
+
+    var ac = [[CPArrayController alloc] init];
+    [ac bind:@"contentArray" toObject:container withKeyPath:@"tableEntries" options:nil];
+    [tc1 bind:@"value" toObject:ac withKeyPath:@"arrangedObjects.a.b.name" options:nil];
+    [tc2 bind:@"value" toObject:ac withKeyPath:@"arrangedObjects.a.b.longname" options:nil];
+
+    [container setTableEntries:dataArray];
+
+    // The first two are visible so they are accessed both when setting up the observers and displaying the cell in the table view
+    [self assert:[[dataArray[0] countingDictionary] objectForKey:@"a"] equals:5];
+    [self assert:[[dataArray[1] countingDictionary] objectForKey:@"a"] equals:5];
+     // This is not visible so it is only accessed when setting up the observers
+    [self assert:[[dataArray[2] countingDictionary] objectForKey:@"a"] equals:2];
+
+    var enumerateViewsInRowsCall = 0;
+
+    // Checks that the displayed data matches the model data.
+    [table enumerateAvailableViewsUsingBlock:function(dataView, aRow, aColumn, stop)
+    {
+        enumerateViewsInRowsCall++;
+        var data_value = [[[container tableEntries] objectAtIndex:aRow] valueForKeyPath:aColumn === 0 ? @"a.b.name" : @"a.b.longname"];
+        [self assert:[dataView objectValue] equals:data_value];
+    }];
+
+    [self assert:enumerateViewsInRowsCall equals:4]; // Only 4 views visible
+}
+
 @end
 
 @implementation FirstResponderConfigurableTableView : CPTableView
@@ -750,6 +813,35 @@
 @end
 
 @implementation CustomTextView1 : CPTextField
+@end
+
+@implementation ValueForKeyCountingDictionary : CPMutableDictionary
+{
+    CPMutableDictionary countingDictionary @accessors;
+}
+
+- (id)initWithObjects:(CPArray)objects forKeys:(CPArray)keyArray
+{
+    self = [super initWithObjects:objects forKeys:keyArray];
+    if (self) {
+        countingDictionary = [CPDictionary new];
+    }
+
+    return self;
+}
+
+- (id)valueForKey:(CPString)aKey
+{
+    var countsForKey = [countingDictionary objectForKey:aKey];
+
+    countsForKey = (countsForKey == nil ? 1 : countsForKey + 1);
+    //print([self UID] + @": valueForKey:" + aKey + ", countForKey: " + countsForKey);
+    //objj_backtrace_print(CPLog.error);
+    [countingDictionary setObject:countsForKey forKey:aKey];
+
+    return [super valueForKey:aKey];
+}
+
 @end
 
 var getAllViews = function(aView)

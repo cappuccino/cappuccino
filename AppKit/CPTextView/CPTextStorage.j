@@ -42,6 +42,11 @@ CPTextStorageDidProcessEditingNotification = @"CPTextStorageDidProcessEditingNot
 
 @end
 
+CPAttachmentCharacter = 65532; // "\ufffc";
+_CPAttachmentCharacterAsString = String.fromCharCode(CPAttachmentCharacter);
+
+_CPAttachmentView      = "_CPAttachmentView";
+_CPAttachmentInvisible = "_CPAttachmentInvisible";
 
 var CPTextStorageDelegate_textStorageWillProcessEditing_ = 1 << 1,
     CPTextStorageDelegate_textStorageDidProcessEditing_ = 1 << 2;
@@ -257,6 +262,21 @@ var CPTextStorageDelegate_textStorageWillProcessEditing_ = 1 << 1,
     return [super attributedSubstringFromRange:aRange];
 }
 
+/*!
+    Returns an instance of CPTextStorage that contains the provided instance of CPView.
+    This can be used to insert arbitrary views into the text. These views are treated as individual characters during editing.
+    This works only with views that conform to the CPCoding protocol
+*/
+
++ (id)attributedStringWithAttachment:(CPView)someView
+{
+    var result = [[self alloc] initWithString:_CPAttachmentCharacterAsString];
+
+    [result setAttributes:@{_CPAttachmentView:someView} range:CPMakeRange(0, 1)];
+
+    return result;
+}
+
 @end
 
 
@@ -276,28 +296,6 @@ var CPTextStorageDelegate_textStorageWillProcessEditing_ = 1 << 1,
         [_delegate textStorageWillProcessEditing:[[CPNotification alloc] initWithName:CPTextStorageDidProcessEditingNotification object:self userInfo:nil]];
 
     [[CPNotificationCenter defaultCenter] postNotificationName:CPTextStorageDidProcessEditingNotification object:self];
-}
-
-@end
-
-
-@implementation CPTextStorage (CPCoding)
-
-- (id)initWithCoder:(CPCoder)aCoder
-{
-    self = [super initWithCoder:aCoder];
-
-    if (self)
-    {
-
-    }
-
-    return self;
-}
-
-- (void)encodeWithCoder:(CPCoder)aCoder
-{
-    [super encodeWithCoder:aCoder];
 }
 
 @end

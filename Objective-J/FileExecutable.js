@@ -166,7 +166,8 @@ var compile = function(self, fileContents, aURL, compilerOptions, aFilenameTrans
 
     if (allPreIncludesResolved)
     {
-        var compiler = exports.ObjJCompiler.compileFileDependencies(fileContents, aURL, compilerOptions);
+        // '(exports.ObjJCompiler || ObjJCompiler)' is a temporary fix so it can work both in the Narwhal (exports.ObjJCompiler) and Node (ObjJCompiler) world
+        var compiler = (exports.ObjJCompiler || ObjJCompiler).compileFileDependencies(fileContents, aURL, compilerOptions);
         var warningsAndErrors = compiler.warningsAndErrors;
 
         // Kind of a hack but if we get a file not found error on a #include the get include function above should have asked for the resource
@@ -296,7 +297,8 @@ FileExecutable.setCurrentGccCompilerFlags = function(/*String*/ compilerFlags)
 
     currentGccCompilerFlags = compilerFlags;
 
-    var objjcFlags = exports.ObjJCompiler.parseGccCompilerFlags(compilerFlags);
+    // '(exports.ObjJCompiler || ObjJCompiler)' is a temporary fix so it can work both in the Narwhal (exports.ObjJCompiler) and Node (ObjJCompiler) world
+    var objjcFlags = (exports.ObjJCompiler || ObjJCompiler).parseGccCompilerFlags(compilerFlags);
 
     FileExecutable.setCurrentCompilerFlags(objjcFlags);
 }

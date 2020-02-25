@@ -224,7 +224,7 @@
         object,
         objectEnumerator = [self objectEnumerator];
 
-    while ((object = [objectEnumerator nextObject]) !== nil)
+    while ((object = [objectEnumerator nextObject]) != nil)
         objects.push(object);
 
     return objects;
@@ -244,7 +244,7 @@
 */
 - (BOOL)containsObject:(id)anObject
 {
-    return [self member:anObject] !== nil;
+    return [self member:anObject] != nil;
 }
 
 /*!
@@ -257,7 +257,7 @@
         object,
         objectEnumerator = [self objectEnumerator];
 
-    while ((object = [objectEnumerator nextObject]) !== nil)
+    while ((object = [objectEnumerator nextObject]) != nil)
         if ([aPredicate evaluateWithObject:object])
             objects.push(object);
 
@@ -294,7 +294,7 @@
         objectEnumerator = [self objectEnumerator],
         argumentsArray = [nil, aSelector].concat(objects || []);
 
-    while ((object = [objectEnumerator nextObject]) !== nil)
+    while ((object = [objectEnumerator nextObject]) != nil)
     {
         argumentsArray[0] = object;
         objj_msgSend.apply(this, argumentsArray);
@@ -320,16 +320,19 @@
 
 /*!
     Enumberates over the objects in a set using a given function.
-    @param aFunction a callback for each itteration, should be of the format: function(anObject).
+    @param aFunction a callback for each itteration, should be of the format: function(anObject, stop).
 */
-- (void)enumerateObjectsUsingBlock:(Function)aFunction
+- (void)enumerateObjectsUsingBlock:(Function /*(id anObject, @ref BOOL stop)*/)aFunction
 {
     var object,
-        objectEnumerator = [self objectEnumerator];
+        objectEnumerator = [self objectEnumerator],
+        shouldStop = NO;
 
-    while ((object = [objectEnumerator nextObject]) !== nil)
-        if (aFunction(object))
-            break;
+    while (!shouldStop && (object = [objectEnumerator nextObject]) != nil) {
+        if (aFunction(object, @ref(shouldStop)) !== undefined) {
+            throw "DEPRECATED: The method enumerateObjectsUsingBlock: does not support returning a value in the block to stop the iteration. Please use the stop variable";
+        }
+    }
 }
 
 // FIXME: stop is broken.
@@ -339,7 +342,7 @@
         object = nil,
         objectEnumerator = [self objectEnumerator];
 
-    while ((object = [objectEnumerator nextObject]) !== nil)
+    while ((object = [objectEnumerator nextObject]) != nil)
         if (aFunction(object))
             objects.push(object);
 
@@ -355,7 +358,7 @@
     var object = nil,
         objectEnumerator = [self objectEnumerator];
 
-    while ((object = [objectEnumerator nextObject]) !== nil)
+    while ((object = [objectEnumerator nextObject]) != nil)
         if (![aSet containsObject:object])
             return NO;
 
@@ -375,7 +378,7 @@
     var object = nil,
         objectEnumerator = [self objectEnumerator];
 
-    while ((object = [objectEnumerator nextObject]) !== nil)
+    while ((object = [objectEnumerator nextObject]) != nil)
         if ([aSet containsObject:object])
             return YES;
 
@@ -474,7 +477,7 @@ var CPSetObjectsKey = @"CPSetObjectsKey";
         object,
         objectEnumerator = [self objectEnumerator];
 
-    while ((object = [objectEnumerator nextObject]) !== nil)
+    while ((object = [objectEnumerator nextObject]) != nil)
     {
         var value = [object valueForKey:aKey];
 
@@ -489,7 +492,7 @@ var CPSetObjectsKey = @"CPSetObjectsKey";
     var object,
         objectEnumerator = [self objectEnumerator];
 
-    while ((object = [objectEnumerator nextObject]) !== nil)
+    while ((object = [objectEnumerator nextObject]) != nil)
         [object setValue:aValue forKey:aKey];
 }
 

@@ -342,7 +342,7 @@ var StandardUserDefaults;
     var data = [[self persistentStoreForDomain:aDomain] data],
         domain = data ? [CPKeyedUnarchiver unarchiveObjectWithData:data] : nil;
 
-    if (domain === nil)
+    if (domain == nil)
         [_domains removeObjectForKey:aDomain];
     else
         [_domains setObject:domain forKey:aDomain];
@@ -438,7 +438,7 @@ var StandardUserDefaults;
 - (float)floatForKey:(CPString)aKey
 {
     var value = [self objectForKey:aKey];
-    if (value === nil)
+    if (value == nil)
         return 0;
 
     if ([value respondsToSelector:@selector(floatValue)])
@@ -453,7 +453,7 @@ var StandardUserDefaults;
 - (int)integerForKey:(CPString)aKey
 {
     var value = [self objectForKey:aKey];
-    if (value === nil)
+    if (value == nil)
         return 0;
 
     if ([value respondsToSelector:@selector(intValue)])
