@@ -708,7 +708,7 @@ Returns a hash for the object. Unlike Cocoa, the hash value does not take conten
     var count = [self count],
         otherCount = [anArray count];
 
-    if (anArray === nil || count !== otherCount)
+    if (anArray == nil || count !== otherCount)
         return NO;
 
     var index = 0;

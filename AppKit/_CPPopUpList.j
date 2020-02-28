@@ -233,13 +233,13 @@ var ListColumnIdentifier = @"1";
         // Start with a default size, we will resize it later
         var frame = CGRectMake(0, 0, 200, 200);
 
-        _tableColumn = [[CPTableColumn alloc] initWithIdentifier:ListColumnIdentifier];
-        [_tableColumn setWidth:CGRectGetWidth(frame) - [CPScroller scrollerWidth]];
-        [_tableColumn setResizingMask:CPTableColumnAutoresizingMask];
-        [_tableView addTableColumn:_tableColumn];
-
         _scrollView = [self makeScrollViewWithFrame:CGRectMake(0, 0, CGRectGetWidth(frame), CGRectGetHeight(frame))];
         [_scrollView setDocumentView:_tableView];
+
+        _tableColumn = [[CPTableColumn alloc] initWithIdentifier:ListColumnIdentifier];
+        [_tableColumn setWidth:CGRectGetWidth(frame) - [[_scrollView verticalScroller] scrollerWidth]];
+        [_tableColumn setResizingMask:CPTableColumnAutoresizingMask];
+        [_tableView addTableColumn:_tableColumn];
 
         // This has to be done after setDocumentView so that the table knows which scroll view to update
         [_tableView setHeaderView:nil];
@@ -523,7 +523,7 @@ var ListColumnIdentifier = @"1";
 {
     var value = [self selectedObjectValue];
 
-    return value !== nil ? [_dataSource list:self stringValueForObjectValue:value] : nil;
+    return value != nil ? [_dataSource list:self stringValueForObjectValue:value] : nil;
 }
 
 /*!

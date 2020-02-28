@@ -32,6 +32,7 @@ CPKHTMLBrowserEngine                    = 1 << 2;
 CPOperaBrowserEngine                    = 1 << 3;
 CPWebKitBrowserEngine                   = 1 << 4;  // Safari + Chrome
 CPBlinkBrowserEngine                    = 1 << 5;  // Recent Chrome
+CPEdgeBrowserEngine                     = 1 << 6;
 
 // Operating Systems
 CPMacOperatingSystem                    = 0;
@@ -83,6 +84,7 @@ CPAltEnterTextAreaFeature               = 32;
 
 CPCSSAnimationFeature                   = 33;
 
+CPBackspaceTriggersPageBack             = 34;
 /*
     When an absolutely positioned div (CPView) with an absolutely positioned canvas in it (CPView with drawRect:) moves things on top of the canvas (subviews) don't redraw correctly. E.g. if you have a bunch of text fields in a CPBox in a sheet which animates in, some of the text fields might not be visible because the CPBox has a canvas at the bottom and the box moved form offscreen to onscreen. This bug is probably very related: https://bugs.webkit.org/show_bug.cgi?id=67203
  */
@@ -144,6 +146,28 @@ else if (typeof window !== "undefined" && (window.attachEvent || (!(window.Activ
 
     // IE allows free clipboard access.
     PLATFORM_FEATURES[CPJavaScriptClipboardAccessFeature] = YES;
+}
+
+// Edge
+else if (USER_AGENT.indexOf("Edge/") != -1)
+{
+    PLATFORM_ENGINE |= CPEdgeBrowserEngine;
+
+    PLATFORM_FEATURES[CPCSSRGBAFeature] = YES;
+    PLATFORM_FEATURES[CPHTMLContentEditableFeature] = YES;
+
+    PLATFORM_FEATURES[CPJavaScriptClipboardEventsFeature] = YES;
+    PLATFORM_FEATURES[CPJavaScriptClipboardAccessFeature] = NO;
+    PLATFORM_FEATURES[CPJavaScriptShadowFeature] = YES;
+
+    var versionStart = USER_AGENT.indexOf("Edge/") + "Edge/".length,
+        versionEnd = USER_AGENT.indexOf(" ", versionStart),
+        versionString = USER_AGENT.substring(versionStart, versionEnd),
+        versionDivision = versionString.indexOf('.'),
+        majorVersion = parseInt(versionString.substring(0, versionDivision)),
+        minorVersion = parseInt(versionString.substr(versionDivision + 1));
+
+    PLATFORM_FEATURES[CPJavaScriptRemedialKeySupport] = YES;
 }
 
 // Safari + Chrome (WebKit and Blink)
@@ -211,6 +235,7 @@ else if (USER_AGENT.indexOf("Gecko") !== -1) // Must follow KHTML check.
     PLATFORM_ENGINE |= CPGeckoBrowserEngine;
 
     PLATFORM_FEATURES[CPJavaScriptCanvasDrawFeature] = YES;
+    PLATFORM_FEATURES[CPBackspaceTriggersPageBack] = YES;
 
     var index = USER_AGENT.indexOf("Firefox"),
         version = (index === -1) ? 2.0 : parseFloat(USER_AGENT.substring(index + "Firefox".length + 1));
@@ -220,6 +245,9 @@ else if (USER_AGENT.indexOf("Gecko") !== -1) // Must follow KHTML check.
 
     if (version < 3.0)
         PLATFORM_FEATURES[CPJavaScriptMouseWheelValues_8_15] = YES;
+
+    if (version >= 66)
+        PLATFORM_FEATURES[CPJavaScriptRemedialKeySupport] = YES;
 
     // Some day this might be fixed and should be version prefixed. No known fixed version yet.
     PLATFORM_FEATURES[CPInput1PxLeftPadding] = YES;

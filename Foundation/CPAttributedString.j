@@ -141,7 +141,7 @@
 // private method
 - (unsigned)_indexOfEntryWithIndex:(unsigned)anIndex
 {
-    if (anIndex < 0 || anIndex > _string.length || anIndex === undefined)
+    if (anIndex < 0 || anIndex > _string.length || anIndex == nil)
         return CPNotFound;
 
     // find the range entry that contains anIndex.

@@ -84,6 +84,18 @@ CPCenterTextAlignment           = 2;
 CPJustifiedTextAlignment        = 3;
 CPNaturalTextAlignment          = 4;
 
+@typedef CPUnderlineStyle
+CPUnderlineStyleNone            = 0;
+CPUnderlineStyleSingle          = 1;
+CPUnderlineStyleThick           = 2;
+CPUnderlineStyleDouble          = 3;
+CPUnderlineStylePatternSolid    = 4;
+CPUnderlineStylePatternDot      = 5;
+CPUnderlineStylePatternDash     = 6;
+CPUnderlineStylePatternDashDot  = 7;
+CPUnderlineStylePatternDashDotDot = 8;
+CPUnderlineStyleByWord          = 9;
+
 /*
     CPText notifications
 */
@@ -167,7 +179,11 @@ CPKernAttributeName = @"CPKernAttributeName";
 {
     var pasteboard = [CPPasteboard generalPasteboard],
         dataForPasting = [pasteboard stringForType:CPRTFPboardType],
-        stringForPasting = [pasteboard stringForType:CPStringPboardType];
+        stringForPasting = [pasteboard stringForType:CPStringPboardType],
+        attributedStringData = [pasteboard stringForType:_CPASPboardType];
+
+    if ([self isRichText] && attributedStringData)
+        return [CPKeyedUnarchiver unarchiveObjectWithData:[CPData dataWithRawString:attributedStringData]];
 
     if (dataForPasting || [stringForPasting hasPrefix:"{\\rtf1\\ansi"])
         stringForPasting = [[_CPRTFParser new] parseRTF:dataForPasting ? dataForPasting : stringForPasting];

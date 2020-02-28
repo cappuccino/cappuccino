@@ -196,7 +196,8 @@ var ModifierKeyCodes = [
         CPKeyCodes.MAC_FF_META,
         CPKeyCodes.CTRL,
         CPKeyCodes.ALT,
-        CPKeyCodes.SHIFT
+        CPKeyCodes.SHIFT,
+        CPKeyCodes.CAPS_LOCK
     ],
 
     supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
@@ -209,7 +210,6 @@ var touchStartingPointX,
     touchStartingPointY;
 
 _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotification";
-
 
 // When scrolling with an old-style scroll wheel with discete steps ('clicks'), the scroll amount can indicate how many "lines" to
 // scroll.
@@ -247,9 +247,6 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
     if (!_DOMWindow)
         return [self contentRect];
 
-    if (_DOMWindow.cpFrame)
-        return _DOMWindow.cpFrame();
-
     var contentRect = CGRectMakeZero();
 
     if (window.screenTop)
@@ -277,9 +274,6 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 {
     if (!_DOMWindow)
         return;
-
-    if (typeof _DOMWindow["cpSetFrame"] === "function")
-        return _DOMWindow.cpSetFrame([self contentRect]);
 
     var origin = [self contentRect].origin,
         nativeOrigin = [self nativeContentRect].origin;
@@ -433,10 +427,10 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
         theDocument.addEventListener("keydown", keyEventCallback, NO);
         theDocument.addEventListener("keypress", keyEventCallback, NO);
 
-        theDocument.addEventListener("touchstart", touchEventCallback, NO);
-        theDocument.addEventListener("touchend", touchEventCallback, NO);
-        theDocument.addEventListener("touchmove", touchEventCallback, NO);
-        theDocument.addEventListener("touchcancel", touchEventCallback, NO);
+        theDocument.addEventListener("touchstart", touchEventCallback, {passive: false});
+        theDocument.addEventListener("touchend", touchEventCallback, {passive: false});
+        theDocument.addEventListener("touchmove", touchEventCallback, {passive: false});
+        theDocument.addEventListener("touchcancel", touchEventCallback, {passive: false});
 
         _DOMWindow.addEventListener("DOMMouseScroll", scrollEventCallback, NO);
         _DOMWindow.addEventListener("wheel", scrollEventCallback, NO);
@@ -576,21 +570,11 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 
     [PlatformWindows addObject:self];
 
-    // FIXME: cpSetFrame?
     _DOMWindow.document.write('<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"></head><body style="background-color:transparent; overflow:hidden"></body></html>');
     _DOMWindow.document.close();
 
     if (self != [CPPlatformWindow primaryPlatformWindow])
         _DOMWindow.document.title = _title;
-
-    if (![CPPlatform isBrowser])
-    {
-        _DOMWindow.cpWindowNumber = [self._only windowNumber];
-        _DOMWindow.cpSetFrame(_contentRect);
-        _DOMWindow.cpSetLevel(_level);
-        _DOMWindow.cpSetHasShadow(_hasShadow);
-        _DOMWindow.cpSetShadowStyle(_shadowStyle);
-    }
 
     [self registerDOMWindow];
 
@@ -708,7 +692,8 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
         modifierFlags = (aDOMEvent.shiftKey ? CPShiftKeyMask : 0) |
                         (aDOMEvent.ctrlKey ? CPControlKeyMask : 0) |
                         (aDOMEvent.altKey ? CPAlternateKeyMask : 0) |
-                        (aDOMEvent.metaKey ? CPCommandKeyMask : 0);
+                        (aDOMEvent.metaKey ? CPCommandKeyMask : 0) |
+                        (_capsLockActive ? CPAlphaShiftKeyMask : 0);
 
     // With a few exceptions, all key events are blocked from propagating to
     // the browser.  Here the following exceptions are being allowed:
@@ -753,14 +738,25 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
             if (aDOMEvent.which === 0 || aDOMEvent.charCode === 0 || (aDOMEvent.which === undefined && aDOMEvent.charCode === undefined))
                 characters = KeyCodesToUnicodeMap[_keyCode];
 
+            // The problem with keyCode is that this property refers to keys on the keyboard and not to characters
+            // This is why String.fromCharCode does not always work in more recent versions of Firefox
+            // E.g. pressing a '#' on a German keyboard gives you a charCode of 163, which refers to '£' and not '#'
+            // The property key works fine, though. From there we can get the actual character more robustly.
+            // Therefore we prefer key over keyCode whenever possible
+
             if (!characters)
-                characters = String.fromCharCode(_keyCode).toLowerCase();
+                characters = (aDOMEvent.key && aDOMEvent.key.length == 1) ? aDOMEvent.key.toLowerCase() : String.fromCharCode(_keyCode).toLowerCase();
 
             overrideCharacters = (modifierFlags & CPShiftKeyMask || _capsLockActive) ? characters.toUpperCase() : characters;
 
             // check for caps lock state
             if (_keyCode === CPKeyCodes.CAPS_LOCK)
+            {
                 _capsLockActive = YES;
+
+                // Make sure the caps lock flag is set in modifierFlags
+                modifierFlags |= CPAlphaShiftKeyMask;
+            }
 
             if ([ModifierKeyCodes containsObject:_keyCode])
             {
@@ -777,7 +773,7 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
                 //this lets us be consistent in all browsers and send on the keydown
                 //which means we can cancel the event early enough, but only if sendEvent needs to
             }
-            else if (CPKeyCodes.firesKeyPressEvent(_keyCode, _lastKey, aDOMEvent.shiftKey, aDOMEvent.ctrlKey, aDOMEvent.altKey))
+            else if (CPKeyCodes.firesKeyPressEvent(_keyCode, aDOMEvent.key, _lastKey, aDOMEvent.shiftKey, aDOMEvent.ctrlKey, aDOMEvent.altKey))
             {
                 // this branch is taken by events which fire keydown, keypress, and keyup.
                 // this is the only time we'll ALLOW character keys to propagate (needed for text fields)
@@ -833,7 +829,12 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 
             // check for caps lock state
             if (keyCode === CPKeyCodes.CAPS_LOCK)
+            {
                 _capsLockActive = NO;
+                
+                // Make sure the caps lock flag is cleared in modifierFlags
+                modifierFlags &= ~CPAlphaShiftKeyMask;
+            }
 
             if ([ModifierKeyCodes containsObject:keyCode])
             {
@@ -1103,7 +1104,9 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
     var keyWindow = _previousKeyWindow;
 
     if (!keyWindow)
-       keyWindow = [[[_windowLayers objectForKey:[_windowLevels firstObject]] orderedWindows] firstObject];
+        // If we don't have a previous key window take the modal window if we are in a modal session.
+        // If not in a modal session just take the first window in the most background layer
+        keyWindow = (CPApp._currentSession && CPApp._currentSession._window) || [[[_windowLayers objectForKey:[_windowLevels firstObject]] orderedWindows] firstObject];
 
     if (!keyWindow)
         return;
@@ -1196,6 +1199,12 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
         // two fingers->simulate scrolling events
         if (aDOMEvent.touches && aDOMEvent.touches.length == 2)
         {
+            if (aDOMEvent.preventDefault)
+                aDOMEvent.preventDefault();
+
+            if (aDOMEvent.stopPropagation)
+                aDOMEvent.stopPropagation();
+
             switch (aDOMEvent.type)
             {
                 case CPDOMEventTouchStart:
@@ -1215,7 +1224,8 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
                     return;
             }
         }
-        // handle other touch cases specifically
+        
+        // cancel other touch cases preventively
 
         if (aDOMEvent.preventDefault)
             aDOMEvent.preventDefault();

@@ -51,23 +51,25 @@
 
     [contentView setBackgroundColor:[CPColor colorWithWhite:0.95 alpha:1.0]];
 
-    var mybutton=[[CPButton alloc] initWithFrame:CGRectMake(0, 0,50, 25)];
-    [mybutton setTitle:"Open sheet"]
-    [mybutton setTarget:self]
-    [mybutton setAction:@selector(openSheet:)]
-    [contentView addSubview:mybutton]
+    var mybutton=[[CPButton alloc] initWithFrame:CGRectMake(0, 0, 250, 25)];
+    [mybutton setTitle:"Open sheet (must not be triggered by return)"]
+    [mybutton setTarget:self];
+    [mybutton setAction:@selector(openSheet:)];
+    [mybutton setKeyEquivalent:@"\r"];
+
+    [contentView addSubview:mybutton];
 
 
-    _textView = [[CPTextView alloc] initWithFrame:CGRectMake(0,0,500,500)];
+    _textView = [[CPTextView alloc] initWithFrame:CGRectMake(0, 0, 500, 500)];
     [_textView setRichText:YES];
 
-    _textView2 = [[CPTextView alloc] initWithFrame:CGRectMake(0,0,500,500)];
+    _textView2 = [[CPTextView alloc] initWithFrame:CGRectMake(0, 0, 500, 500)];
     _textView2._isRichText = NO;
     [_textView setBackgroundColor:[CPColor whiteColor]];
     [_textView2 setBackgroundColor:[CPColor whiteColor]];
    
-    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(20, 20,520,510)];
-    var scrollView2 = [[CPScrollView alloc] initWithFrame:CGRectMake(560, 20,520,510)];
+    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(20, 70, 520, 510)];
+    var scrollView2 = [[CPScrollView alloc] initWithFrame:CGRectMake(560, 70, 520, 510)];
     // [scrollView setAutohidesScrollers:YES];
     [scrollView setDocumentView:_textView];
     [scrollView2 setDocumentView:_textView2];
@@ -99,36 +101,36 @@
    item = [mainMenu insertItemWithTitle:@"Format" action:nil keyEquivalent:nil atIndex:0];
    var formatMenu = [[CPMenu alloc] initWithTitle:@"Format Menu"];
    [formatMenu addItemWithTitle:@"Font panel" action:@selector(orderFrontFontPanel:) keyEquivalent:@"f"];
+   [formatMenu addItemWithTitle:@"Underline" action:@selector(underline:) keyEquivalent:@"u"];
    [mainMenu setSubmenu:formatMenu forItem:item];
 
-   //
-   //  var centeredParagraph=[CPParagraphStyle new];
-   //  [centeredParagraph setAlignment: CPCenterTextAlignment];
-   //  [_textView insertText:[[CPAttributedString alloc] initWithString:@"Fusce\n"
-   //             attributes:[CPDictionary dictionaryWithObjects:[centeredParagraph, [CPFont boldFontWithName:"Arial" size:18], [CPColor redColor]]
-   //                                      forKeys:[CPParagraphStyleAttributeName, CPFontAttributeName, CPForegroundColorAttributeName]]]];
-   //
-   //  [_textView insertText: [[CPAttributedString alloc] initWithString:@"lectus neque cr     as eget lectus neque cr as eget lectus cr as eget lectus"
-   //              attributes:[CPDictionary dictionaryWithObjects:[ [CPFont fontWithName:"Arial" size:12]] forKeys: [CPFontAttributeName]]]];
-   //
-   //  [_textView insertText:[[CPAttributedString alloc] initWithString:@" proin, this is text in boldface "
-   //              attributes:[CPDictionary dictionaryWithObjects:[ [CPFont boldFontWithName:"Arial" size:12]] forKeys: [CPFontAttributeName]]]];
-   //  [_textView insertText:[[CPAttributedString alloc] initWithString:@"111111 neque cr as eget lectus neque cr as eget lectus cr as eget lectus"
-   //              attributes:[CPDictionary dictionaryWithObjects:[ [CPFont fontWithName:"Arial" size:12.0]] forKeys: [CPFontAttributeName]]]];
-   //
+    [_textView insertText:"123"];
+    var tempImageView = [[CPImageView alloc] initWithFrame:CGRectMake(0, 0, 32, 32)];
+    [tempImageView setImage:[[CPImage alloc] initWithContentsOfFile:@"Resources/spinner.gif" size:CGSizeMake(32, 32)]]
+
+    [_textView insertText:[CPTextStorage attributedStringWithAttachment:tempImageView]];
+    [_textView insertText:" 456 "];
+
+    var tempButton = [[CPButton alloc] initWithFrame:CGRectMake(0, 0, 64, 28)]
+    [_textView insertText:[CPTextStorage attributedStringWithAttachment:tempButton]];
+
+//    var centeredParagraph=[CPParagraphStyle new];
+//        [centeredParagraph setAlignment: CPCenterTextAlignment];
+//    [_textView insertText:[[CPAttributedString alloc] initWithString:@"Fusce\n"
+//        attributes:[CPDictionary dictionaryWithObjects:[centeredParagraph, [CPFont boldFontWithName:"Arial" size:18], [CPColor redColor]]
+//         forKeys:[CPParagraphStyleAttributeName, CPFontAttributeName, CPForegroundColorAttributeName]]]];
+
     [theWindow orderFront:self];
     [CPMenu setMenuBarVisible:YES];
 }
 
-//
-// - (void) makeRTF:sender
-// {
-//    [_textView2 setString: [_CPRTFProducer produceRTF:[_textView textStorage] documentAttributes: @{}] ];
-//    var tc = [_CPRTFParser new];
-//    var mystr=[tc parseRTF:[_textView2 stringValue]];
-//    [_textView selectAll: self];
-//    [_textView insertText: mystr];
-//
-// }
+- (void) makeRTF:sender
+{
+    [_textView2 setString: [_CPRTFProducer produceRTF:[_textView textStorage] documentAttributes: @{}] ];
+    var tc = [_CPRTFParser new];
+    var mystr=[tc parseRTF:[_textView2 stringValue]];
+    [_textView selectAll: self];
+    [_textView insertText: mystr];
+}
 
 @end

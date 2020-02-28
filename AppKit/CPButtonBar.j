@@ -70,7 +70,7 @@
     [button addItemWithTitle:nil];
     [[button lastItem] setImage:image];
     [button setImagePosition:CPImageOnly];
-    [button setValue:CGInsetMake(0, 0, 0, 0) forThemeAttribute:"content-inset"];
+    [button setValue:CGInsetMake(0, 0, 0, 0) forThemeAttribute:"content-inset" inState:CPPopUpButtonStatePullsDown];
 
     [button setPullsDown:YES];
 

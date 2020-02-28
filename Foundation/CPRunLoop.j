@@ -373,7 +373,7 @@ var CPRunLoopLastNativeRunLoop = 0;
         _didAddTimer = NO;
 
         // Cancel existing window.setTimeout
-        if (_nativeTimersForModes[aMode] !== nil)
+        if (_nativeTimersForModes[aMode] != nil)
         {
             window.clearNativeTimeout(_nativeTimersForModes[aMode]);
 
@@ -400,7 +400,7 @@ var CPRunLoopLastNativeRunLoop = 0;
 
             // Timer may or may not still be valid
             if (timer._isValid)
-                nextFireDate = (nextFireDate === nil) ? timer._fireDate : [nextFireDate earlierDate:timer._fireDate];
+                nextFireDate = (nextFireDate == nil) ? timer._fireDate : [nextFireDate earlierDate:timer._fireDate];
 
             else
             {
@@ -425,7 +425,7 @@ var CPRunLoopLastNativeRunLoop = 0;
                 var timer = newTimers[index];
 
                 if ([timer isValid])
-                    nextFireDate = (nextFireDate === nil) ? timer._fireDate : [nextFireDate earlierDate:timer._fireDate];
+                    nextFireDate = (nextFireDate == nil) ? timer._fireDate : [nextFireDate earlierDate:timer._fireDate];
                 else
                     newTimers.splice(index, 1);
             }
@@ -438,7 +438,7 @@ var CPRunLoopLastNativeRunLoop = 0;
         _nextTimerFireDatesForModes[aMode] = nextFireDate;
 
         //initiate a new window.setTimeout if there are any timers
-        if (_nextTimerFireDatesForModes[aMode] !== nil)
+        if (_nextTimerFireDatesForModes[aMode] != nil)
             _nativeTimersForModes[aMode] = window.setNativeTimeout(function()
                 {
                     _effectiveDate = nextFireDate;

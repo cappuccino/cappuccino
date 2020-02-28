@@ -224,6 +224,18 @@
     }
 }
 
+/*!
+    This valueForKey method is used by _CPKVOForwardingObserver when getting values.
+    The default action is to just return the valueForKey value.
+    Override this method if you want any other behavior.
+    It can be used to just return nil if you are implementing a lazy load behaviour on a class.
+    It can allow a combined binding to observe this object without trigger any lazy loading.
+*/
+- (id)kvoValueForKey:(CPString)aKey
+{
+    return [self valueForKey:aKey];
+}
+
 @end
 
 @implementation CPDictionary (KeyValueObserving)
@@ -911,7 +923,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
             {
                 var oldValue = [_targetObject valueForKey:aKey];
 
-                if (oldValue === nil || oldValue === undefined)
+                if (oldValue == nil)
                     oldValue = [CPNull null];
 
                 [changes setObject:oldValue forKey:CPKeyValueChangeOldKey];
@@ -993,7 +1005,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
             {
                 var newValue = [_targetObject valueForKey:aKey];
 
-                if (newValue === nil || newValue === undefined)
+                if (newValue == nil)
                     newValue = [CPNull null];
 
                 [changes setObject:newValue forKey:CPKeyValueChangeNewKey];
@@ -1287,7 +1299,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
     [_object addObserver:self forKeyPath:_firstPart options:_options context:nil];
 
     //the current value of a (not the value of a.b)
-    _value = [_object valueForKey:_firstPart];
+    _value = [_object kvoValueForKey:_firstPart];
 
     if (_value)
         [_value addObserver:self forKeyPath:_secondPart options:_options context:nil]; //we're observing b on current a
@@ -1314,7 +1326,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
 
         if (!isBeforeFlag && (_options & CPKeyValueObservingOptionNew))
         {
-            var newValue = [_object valueForKeyPath:_firstPart + "." + _secondPart];
+            var newValue = [[_object kvoValueForKey:_firstPart] valueForKeyPath:_secondPart];
 
             [pathChanges setObject:newValue != null ? newValue : [CPNull null] forKey:CPKeyValueChangeNewKey];
         }
@@ -1327,7 +1339,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
             if (_value)
                 [_value removeObserver:self forKeyPath:_secondPart];
 
-            _value = [_object valueForKey:_firstPart];
+            _value = [_object kvoValueForKey:_firstPart];
 
             if (_value)
                 [_value addObserver:self forKeyPath:_secondPart options:_options context:nil];

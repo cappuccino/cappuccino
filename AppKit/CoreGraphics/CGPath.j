@@ -188,7 +188,7 @@ function CGPathAddCurveToPoint(aPath, aTransform, cp1x, cp1y, cp2x, cp2y, x, y)
 
 function CGPathAddLines(aPath, aTransform, points, count)
 {
-    if (count === null || count === undefined)
+    if (count == null)
         count = points.length;
 
     if (!aPath || count < 1)
@@ -284,7 +284,7 @@ function CGPathAddRects(aPath, aTransform, rects, count)
 {
     var i = 0;
 
-    if (count === NULL)
+    if (count == NULL)
         var count = rects.length;
 
     for (; i < count; ++i)

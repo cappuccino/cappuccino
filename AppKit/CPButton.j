@@ -378,7 +378,7 @@ CPButtonImageOffset   = 3.0;
 
 - (void)setImage:(CPImage)anImage
 {
-    [self setValue:anImage forThemeAttribute:@"image"];
+    [self setValue:anImage forThemeAttribute:@"image" inState:CPThemeStateNormal];
 }
 
 - (CPImage)image
@@ -535,7 +535,7 @@ CPButtonImageOffset   = 3.0;
 
 - (void)mouseDown:(CPEvent)anEvent
 {
-    if ([self isContinuous])
+    if ([self isEnabled] && [self isContinuous])
     {
         _continuousDelayTimer = [CPTimer scheduledTimerWithTimeInterval:_periodicDelay callback: function()
         {
@@ -807,7 +807,7 @@ CPButtonImageOffset   = 3.0;
 {
     var selfWindow = [self window];
 
-    if (selfWindow === aWindow || aWindow === nil)
+    if (selfWindow === aWindow || aWindow == nil)
         return;
 
     if ([selfWindow defaultButton] === self)

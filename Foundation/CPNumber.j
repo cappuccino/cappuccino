@@ -314,7 +314,7 @@ FIXME: Do we need this?
 
 - (CPComparisonResult)compare:(CPNumber)aNumber
 {
-    if (aNumber === nil || aNumber['isa'] === CPNull)
+    if (aNumber == nil || aNumber['isa'] === CPNull)
         [CPException raise:CPInvalidArgumentException reason:"nil argument"];
 
     if (self > aNumber)

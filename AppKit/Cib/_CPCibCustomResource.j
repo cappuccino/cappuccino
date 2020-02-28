@@ -222,3 +222,28 @@ var _CPCibCustomResourceClassNameKey    = @"_CPCibCustomResourceClassNameKey",
 }
 
 @end
+
+@implementation _CPCibCustomResource (CSSTheming)
+
+- (BOOL)isCSSBased
+{
+    return NO;
+}
+
+- (BOOL)hasCSSDictionary
+{
+    return NO;
+}
+
+- (BOOL)hasCSSBeforeDictionary
+{
+    return NO;
+}
+
+- (BOOL)hasCSSAfterDictionary
+{
+    return NO;
+}
+
+@end
+

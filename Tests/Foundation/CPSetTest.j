@@ -368,4 +368,34 @@
     [self assertTrue:[set2 member:dict2] === dict1];
 }
 
+- (void)testEnumateObjectsUsingBlock
+{
+    var input0 = [],
+        input1 = [CPSet setWithArray:[1, 3, "b"]],
+        output = [CPMutableDictionary dictionary],
+        idx = 0,
+        outputFunction = function(anObject)
+        {
+            [output setValue:anObject forKey:"" + idx++];
+        };
+
+    [input0 enumerateObjectsUsingBlock:outputFunction];
+    [self assert:0 equals:[output count] message:@"output when enumerating empty set"];
+
+    [input1 enumerateObjectsUsingBlock:outputFunction];
+    [self assert:3 equals:[output count] message:@"output when enumerating input1"];
+
+    var stoppingFunction = function(anObject, stop)
+    {
+        [output setValue:anObject forKey:"" + idx++];
+        if ([output count] > 1)
+            @deref(stop) = YES;
+    }
+    output = [CPMutableDictionary dictionary];
+    idx = 0;
+
+    [input1 enumerateObjectsUsingBlock:stoppingFunction];
+    [self assert:2 equals:[output count] message:@"output when enumerating input1 and stopping after 2"];
+}
+
 @end

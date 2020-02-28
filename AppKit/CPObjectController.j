@@ -384,7 +384,7 @@
 */
 - (void)_selectionDidChange
 {
-    if (_selection === undefined || _selection === nil)
+    if (_selection == nil)
         _selection = [[CPControllerSelectionProxy alloc] initWithController:self];
 
     [_selection controllerDidChange];
@@ -770,7 +770,7 @@ var CPObjectControllerContentKey                        = @"CPObjectControllerCo
         }
     }
 
-    if (value === nil || value.isa && [value isEqual:[CPNull null]])
+    if (value == nil || value.isa && [value isEqual:[CPNull null]])
         value = CPNullMarker;
 
     return value;

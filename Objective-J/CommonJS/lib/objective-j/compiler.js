@@ -256,14 +256,20 @@ exports.main = function(args)
         if (argv[0] === "--help" || argv[0].substr(0, 1) == '-')
         {
             print("Usage (objjc 2.0): " + args[0] + " [options] [--] file...");
-            print("  -p, --print                         print the output directly to stdout");
-            print("  --unmarked                          don't tag the output with @STATIC header");
+            print("  -p, --print                                  print the output directly to stdout");
+            print("  --unmarked                                   don't tag the output with @STATIC header");
             print("");
-            print("  -T, --dont-include-type-signatures  include type signatures in the compiled output");
-            print("  -g, --include-debug-symbols         include debug symbols in the compiled output");
-            print("  -T, --include-type-signatures       include type signatures in the compiled output");
-            print("  -O, --compress                      compress the compiled output");
-            print("  -O2, --inline-msg-send              inline objj_msgSend function in the compiled output");
+            print("  -T, --dont-include-type-signatures           include type signatures in the compiled output");
+            print("  -g, --include-debug-symbols                  include debug symbols in the compiled output");
+            print("  -T, --include-type-signatures                include type signatures in the compiled output");
+            print("  -O, --compress                               compress the compiled output");
+            print("  -O2, --inline-msg-send                       inline objj_msgSend function in the compiled output");
+            print("  -Wno-unused-but-set-variable                 turn off warning when a local variable is never read");
+            print("  -Wno-shadow-ivar                             turn off warning when a local variable is shadowing an instance variable for the class");
+            print("  -Wno-create-global-inside-function-or-method turn off warning when creating a global variable inside a function or method");
+            print("  -Wno-unknown-class-or-global.                turn off warning when a class or global variable is not known");
+            print("  -Wno-unknown-ivar-type                       turn off warning when the type for an instance variable is not known");
+            print("  To turn on a warning flag remove the 'no-' prefix. Example: -Wunused-but-set-variable");
             print("");
             print("  --help                              print this help");
             return;

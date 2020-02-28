@@ -156,7 +156,7 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
 
         _headView = [[_CPTexturedWindowHeadView alloc] initWithFrame:CGRectMake(0.0, 0.0, CGRectGetWidth(bounds), [self valueForThemeAttribute:@"title-bar-height"]) windowView:self];
 
-        [_headView setAutoresizingMask:CPViewWidthSizable];;
+        [_headView setAutoresizingMask:CPViewWidthSizable];
         [_headView setHitTests:NO];
 
         [self addSubview:_headView positioned:CPWindowBelow relativeTo:_titleField];

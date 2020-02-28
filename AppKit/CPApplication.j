@@ -479,7 +479,7 @@ var CPApplicationDelegate_applicationShouldTerminate_           = 1 << 0,
     [self _didResignActive];
 }
 
-- (void)isActive
+- (BOOL)isActive
 {
     return _isActive;
 }
@@ -628,11 +628,6 @@ var CPApplicationDelegate_applicationShouldTerminate_           = 1 << 0,
 
     var theWindow = [anEvent window];
 
-    // Check if this is a candidate for key equivalent...
-    if ([anEvent _couldBeKeyEquivalent] && [self _handleKeyEquivalent:anEvent])
-        // The key equivalent was handled.
-        return;
-
     if ([anEvent type] == CPMouseMoved)
     {
         if (theWindow !== _lastMouseMoveWindow)
@@ -668,6 +663,11 @@ var CPApplicationDelegate_applicationShouldTerminate_           = 1 << 0,
     }
 
     _eventListenerInsertionIndex = _eventListeners.length;
+
+    // Check if this is a candidate for key equivalent...
+    if ([anEvent _couldBeKeyEquivalent] && [self _handleKeyEquivalent:anEvent])
+        // The key equivalent was handled.
+        return;
 
     if (theWindow)
         [theWindow sendEvent:anEvent];

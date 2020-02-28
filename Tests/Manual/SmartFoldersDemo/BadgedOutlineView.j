@@ -72,7 +72,7 @@ var CPSourceListDataSource_sourceList_itemHasBadge_                   = 1 << 1,
 
     //Make sure that the item has a badge
     if (![self itemHasBadge:rowItem])
-        return CGSizeZero();
+        return CGSizeMakeZero();
 
     var badgeString = [CPString stringWithFormat:@"%d", [self badgeValueForItem:rowItem]];
 

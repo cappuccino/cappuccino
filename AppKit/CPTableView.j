@@ -346,8 +346,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 + (CPDictionary)themeAttributes
 {
     return @{
-            @"alternating-row-colors": [CPNull null],
-            @"grid-color": [CPNull null],
+            @"alternating-row-colors": @[[CPColor whiteColor], [CPColor colorWithRed:245.0 / 255.0 green:249.0 / 255.0 blue:252.0 / 255.0 alpha:1.0]],
+            @"grid-color": [CPColor colorWithHexString:@"dce0e2"],
             @"grid-line-thickness": 1.0,
             @"highlighted-grid-color": [CPNull null],
             @"selection-color": [CPNull null],
@@ -368,7 +368,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
             @"dropview-above-border-color": [CPNull null],
             @"dropview-above-border-width": [CPNull null],
             @"dropview-above-selected-border-color": [CPNull null],
-            @"dropview-above-selected-border-width": [CPNull null]
+            @"dropview-above-selected-border-width": [CPNull null],
+            @"header-view-height": 25.0
         };
 }
 
@@ -390,8 +391,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         _selectionHighlightStyle = CPTableViewSelectionHighlightStyleRegular;
 
         [self setUsesAlternatingRowBackgroundColors:NO];
-        [self setAlternatingRowBackgroundColors:
-            [[CPColor whiteColor], [CPColor colorWithRed:245.0 / 255.0 green:249.0 / 255.0 blue:252.0 / 255.0 alpha:1.0]]];
+        [self setAlternatingRowBackgroundColors:[self valueForThemeAttribute:@"alternating-row-colors"]];
 
         _tableColumns = [];
         _tableColumnRanges = [];
@@ -401,10 +401,10 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         _intercellSpacing = CGSizeMake(3.0, 2.0);
         _rowHeight = [self valueForThemeAttribute:@"default-row-height"];
 
-        [self setGridColor:[CPColor colorWithHexString:@"dce0e2"]];
+        [self setGridColor:[self valueForThemeAttribute:@"grid-color"]];
         [self setGridStyleMask:CPTableViewGridNone];
 
-        [self setHeaderView:[[CPTableHeaderView alloc] initWithFrame:CGRectMake(0, 0, [self bounds].size.width, _rowHeight)]];
+        [self setHeaderView:[[CPTableHeaderView alloc] initWithFrame:CGRectMake(0, 0, [self bounds].size.width, [self valueForThemeAttribute:@"header-view-height"])]];
         [self setCornerView:[[_CPCornerView alloc] initWithFrame:CGRectMake(0, 0, [CPScroller scrollerWidth], CGRectGetHeight([_headerView frame]))]];
 
         _currentHighlightedTableColumn = nil;
@@ -2977,7 +2977,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         oldMainSortDescriptor = [[self sortDescriptors] objectAtIndex: 0];
 
     // Remove every main descriptor equivalents (normally only one)
-    while ((descriptor = [e nextObject]) !== nil)
+    while ((descriptor = [e nextObject]) != nil)
     {
         if ([[descriptor key] isEqual: [newMainSortDescriptor key]])
             [outdatedDescriptors addObject:descriptor];
@@ -3154,7 +3154,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     // Now a view that clips the column data views, which itself is clipped to the content view
     var columnVisRect = CGRectIntersection(columnRect, visibleRect);
 
-    frame = CGRectMake(0.0, CGRectGetHeight(headerFrame), CGRectGetWidth(columnVisRect), CGRectGetHeight(columnVisRect));
+    frame = CGRectMake(0.0, CGRectGetHeight(headerFrame), CGRectGetWidth(columnRect), CGRectGetHeight(columnVisRect));
 
     var columnClipView = [[CPView alloc] initWithFrame:frame];
 
@@ -3189,6 +3189,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     // While dragging, the column is deselected in the table view
     [_selectedColumnIndexes removeIndex:columnIndex];
+    [self setNeedsDisplay:YES];
 
     return dragView;
 }
@@ -3318,7 +3319,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     var oldSortDescriptors = [[self sortDescriptors] copy],
         newSortDescriptors = [CPArray array];
 
-    if (sortDescriptors !== nil)
+    if (sortDescriptors != nil)
         [newSortDescriptors addObjectsFromArray:sortDescriptors];
 
     if ([newSortDescriptors isEqual:oldSortDescriptors])
@@ -3379,7 +3380,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         objectValue = tableColumnObjectValues[aRowIndex];
 
     // tableView:objectValueForTableColumn:row: is optional if content bindings are in place.
-    if (objectValue === undefined)
+    if (objectValue == nil)
     {
         if ([self _dataSourceRespondsToObjectValueForTableColumn])
         {
@@ -3834,7 +3835,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     else if ([self _delegateRespondsToDataViewForTableColumn])
         _viewForTableColumnRowSelector = @selector(_sendDelegateDataViewForTableColumn:row:);
 
-     _isViewBased = (_viewForTableColumnRowSelector !== nil || _archivedDataViews !== nil);
+     _isViewBased = (_viewForTableColumnRowSelector != nil || _archivedDataViews != nil);
 }
 
 /*!
@@ -4723,7 +4724,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         dropOperation = [self _proposedDropOperationAtPoint:location],
         row = [self _proposedRowAtPoint:location];
 
-    if (_retargetedDropRow !== nil)
+    if (_retargetedDropRow != nil)
         row = _retargetedDropRow;
 
     var draggedTypes = [self registeredDraggedTypes],
@@ -4779,7 +4780,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (CPTableViewDropOperation)_proposedDropOperationAtPoint:(CGPoint)theDragPoint
 {
-    if (_retargetedDropOperation !== nil)
+    if (_retargetedDropOperation != nil)
         return _retargetedDropOperation;
 
     var row = [self _proposedRowAtPoint:theDragPoint],
@@ -4858,10 +4859,10 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         row = [self _proposedRowAtPoint:location],
         dragOperation = [self _sendDataSourceValidateDrop:sender proposedRow:row proposedDropOperation:dropOperation];
 
-    if (_retargetedDropRow !== nil)
+    if (_retargetedDropRow != nil)
         row = _retargetedDropRow;
 
-    if (_retargetedDropOperation !== nil)
+    if (_retargetedDropOperation != nil)
         dropOperation = _retargetedDropOperation;
 
     if (dropOperation === CPTableViewDropOn && row >= numberOfRows)
@@ -4906,7 +4907,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         operation = [self _proposedDropOperationAtPoint:location],
         row = _retargetedDropRow;
 
-    if (row === nil)
+    if (row == nil)
         row = [self _proposedRowAtPoint:location];
 
     return [self _sendDataSourceAcceptDrop:sender row:row dropOperation:operation];
@@ -5139,7 +5140,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 {
     [super viewWillMoveToWindow:aWindow];
 
-    [self _stopObservingFirstResponderForWindow:aWindow];
+    [self _stopObservingFirstResponderForWindow:[self window]];
 
     if (aWindow)
         [self _startObservingFirstResponderForWindow:aWindow];
@@ -6368,7 +6369,7 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
     if (tableView._draggedColumnIsSelected)
     {
-        CGContextSetFillColor(context, [tableView selectionHighlightColor]);
+        CGContextSetFillColor(context, [tableView _isFocused] ? [tableView selectionHighlightColor] : [tableView unfocusedSelectionHighlightColor]);
         CGContextFillRect(context, bounds);
     }
     else

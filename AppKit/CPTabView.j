@@ -35,6 +35,7 @@ CPNoTabsLineBorder       = 5; //Has no tabs and displays a line border.
 CPNoTabsNoBorder         = 6; //Displays no tabs and no border.
 
 @class _CPTabViewBox
+@class _CPSegmentedControl
 
 var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
     CPTabViewShouldSelectTabViewItemSelector        = 1 << 2,
@@ -65,7 +66,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 {
     CPArray                 _items;
 
-    CPSegmentedControl      _tabs;
+    _CPSegmentedControl     _tabs;
     _CPTabViewBox           _box;
     CPView                  _placeholderView @accessors;
 
@@ -92,8 +93,8 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 
 - (void)_init
 {
-    _tabs = [[CPSegmentedControl alloc] initWithFrame:CGRectMakeZero()];
-    [_tabs setHitTests:NO];
+    _tabs = [[_CPSegmentedControl alloc] initWithFrame:CGRectMakeZero()];
+    [_tabs setTabView:self];
     [_tabs setSegments:[CPArray array]];
 
     var height = [_tabs valueForThemeAttribute:@"min-size"].height;
@@ -131,10 +132,10 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 */
 - (void)insertTabViewItem:(CPTabViewItem)aTabViewItem atIndex:(CPUInteger)anIndex
 {
-    [self _insertTabViewItems:[aTabViewItem] atIndexes:[CPIndexSet indexSetWithIndex:anIndex]];
+    [self _insertTabViewItems:[aTabViewItem] atIndexes:[CPIndexSet indexSetWithIndex:anIndex] canUpdateSelectedTab:YES];
 }
 
-- (void)_insertTabViewItems:(CPArray)tabViewItems atIndexes:(CPIndexSet)indexes
+- (void)_insertTabViewItems:(CPArray)tabViewItems atIndexes:(CPIndexSet)indexes canUpdateSelectedTab:(BOOL)canUpdateSelectedTab
 {
     var prevItemsCount = [self numberOfTabViewItems];
 
@@ -147,7 +148,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
     [self _sendDelegateTabViewDidChangeNumberOfTabViewItems];
 
     // Do not allow empty selection if selection bindings are not enabled.
-    if (prevItemsCount == 0 && [self numberOfTabViewItems] > 0 && ![self _isSelectionBinded])
+    if (prevItemsCount == 0 && [self numberOfTabViewItems] > 0 && ![self _isSelectionBinded] && canUpdateSelectedTab)
         [self _selectTabViewItemAtIndex:0];
 }
 
@@ -274,7 +275,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 */
 - (void)selectNextTabViewItem:(id)aSender
 {
-    if (_selectedTabViewItem === nil)
+    if (_selectedTabViewItem == nil)
         return;
 
     var nextIndex = [self indexOfTabViewItem:_selectedTabViewItem] + 1;
@@ -292,7 +293,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 */
 - (void)selectPreviousTabViewItem:(id)aSender
 {
-    if (_selectedTabViewItem === nil)
+    if (_selectedTabViewItem == nil)
         return;
 
     var previousIndex = [self indexOfTabViewItem:_selectedTabViewItem] - 1;
@@ -352,15 +353,15 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 {
     var controller = [aTabViewItem viewController];
 
-    if (controller !== nil && ![controller isViewLoaded])
+    if (controller != nil && ![controller isViewLoaded])
     {
         [controller loadViewWithCompletionHandler:function(view, error)
         {
-            if (error !== nil)
+            if (error != nil)
             {
                 CPLog.warn("Could not load the view for item " + aTabViewItem + ". " + error);
             }
-            else if (view !== nil)
+            else if (view != nil)
             {
                 [aTabViewItem setView:view];
 
@@ -525,14 +526,6 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
     return [_box backgroundColor];
 }
 
-- (void)mouseDown:(CPEvent)anEvent
-{
-    var segmentIndex = [_tabs testSegment:[_tabs convertPoint:[anEvent locationInWindow] fromView:nil]];
-
-    if (segmentIndex != CPNotFound && [self selectTabViewItemAtIndex:segmentIndex])
-        [_tabs trackSegment:anEvent];
-}
-
 - (void)_repositionTabs
 {
     var horizontalCenterOfSelf = CGRectGetWidth([self bounds]) / 2,
@@ -606,7 +599,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 {
     var theBinder = [self binderForBinding:CPSelectionIndexesBinding];
 
-    if (theBinder !== nil)
+    if (theBinder != nil)
         [theBinder reverseSetValueFor:@"selectionIndexes"];
     else
     {
@@ -803,7 +796,7 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
         [_tabs setFont:_font];
 
         var items = [aCoder decodeObjectForKey:CPTabViewItemsKey] || [CPArray array];
-        [self _insertTabViewItems:items atIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [items count])]];
+        [self _insertTabViewItems:items atIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [items count])] canUpdateSelectedTab:NO];
 
         [self setDelegate:[aCoder decodeObjectForKey:CPTabViewDelegateKey]];
 
@@ -887,3 +880,77 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
 }
 
 @end
+
+# pragma mark -
+
+// This subclass of CPSegmentedControl implements specific behaviour needed by CPTabView, which
+// differs in some ways from normal CPSegmentedControl habits :
+//
+// - all items are enabled
+// - when you select a tab (mouse down, holding) and drag upon another tab, the second one reacts
+//   (showing a pushed state) and can then be selected by releasing the mouse over it.
+// - a delegate has the opportunity to accept or not the selection of an item
+
+@implementation _CPSegmentedControl : CPSegmentedControl
+{
+    CPTabView   _tabView        @accessors(property=tabView);
+}
+
+- (void)trackSegment:(CPEvent)anEvent
+{
+    var type           = [anEvent type],
+        location       = [self convertPoint:[anEvent locationInWindow] fromView:nil],
+        currentSegment = [self testSegment:location];
+
+    switch (type)
+    {
+        case CPLeftMouseUp:
+
+            if (_trackingSegment === CPNotFound)
+                return;
+
+            if ((_trackingSegment !== _selectedSegment) &&
+                [_tabView _sendDelegateShouldSelectTabViewItem:[_tabView tabViewItemAtIndex:_trackingSegment]])
+            {
+                [self setSelected:YES forSegment:_trackingSegment];
+                _selectedSegment = _trackingSegment;
+                [_tabView selectTabViewItemAtIndex:_selectedSegment];
+            }
+
+            [self drawSegmentBezel:_trackingSegment highlight:NO];
+
+            _trackingSegment = CPNotFound;
+
+            return;
+
+        case CPLeftMouseDown:
+
+            if (currentSegment > CPNotFound)
+            {
+                _trackingSegment = currentSegment;
+                [self drawSegmentBezel:_trackingSegment highlight:YES];
+            }
+
+            break;
+
+        case CPLeftMouseDragged:
+
+            if (_trackingSegment !== currentSegment)
+            {
+                if (_trackingSegment > CPNotFound)
+                    [self drawSegmentBezel:_trackingSegment highlight:NO];
+
+                _trackingSegment = currentSegment;
+
+                if (_trackingSegment > CPNotFound)
+                    [self drawSegmentBezel:_trackingSegment highlight:YES];
+            }
+
+            break;
+    }
+
+    [CPApp setTarget:self selector:@selector(trackSegment:) forNextEventMatchingMask:CPLeftMouseDraggedMask | CPLeftMouseUpMask untilDate:nil inMode:nil dequeue:YES];
+}
+
+@end
+
