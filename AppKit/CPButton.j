@@ -764,6 +764,7 @@ CPButtonImageOffset   = 3.0;
         [contentView setAlignment:[self currentValueForThemeAttribute:@"alignment"]];
         [contentView setVerticalAlignment:[self currentValueForThemeAttribute:@"vertical-alignment"]];
         [contentView setLineBreakMode:[self currentValueForThemeAttribute:@"line-break-mode"]];
+        [contentView setUsesSingleLineMode:YES];
         [contentView setTextShadowColor:[self currentValueForThemeAttribute:@"text-shadow-color"]];
         [contentView setTextShadowOffset:[self currentValueForThemeAttribute:@"text-shadow-offset"]];
         [contentView setImagePosition:[self currentValueForThemeAttribute:@"image-position"]];
