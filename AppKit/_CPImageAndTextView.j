@@ -66,7 +66,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
     CPString                _text;
 
     CGSize                  _textSize;
-    BOOL                    _usesSingleLineMode @accessors(property=usesSingleLineMode);
+    BOOL                    _usesSingleLineMode @accessors;
 
     unsigned                _flags;
 
