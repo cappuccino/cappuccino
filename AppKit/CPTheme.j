@@ -685,12 +685,7 @@ CPThemeStateNormalString        = String(CPThemeStateNormal);
 
 - (_CPThemeAttribute)attributeBySettingValue:(id)aValue
 {
-    var attribute = [[_CPThemeAttribute alloc] initWithName:_name defaultValue:_defaultValue defaultAttribute:_themeDefaultAttribute];
-
-    if (aValue != nil)
-        attribute._values = @{ CPThemeStateNormalString: aValue };
-
-    return attribute;
+    return [self attributeBySettingValue:aValue forState:CPThemeStateNormal];
 }
 
 - (_CPThemeAttribute)attributeBySettingValue:(id)aValue forState:(ThemeState)aState
