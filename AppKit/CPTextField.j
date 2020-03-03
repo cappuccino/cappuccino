@@ -686,8 +686,38 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         }
         else
         {
-            var point = CGPointMake([self convertPointFromBase:[[CPApp currentEvent] locationInWindow]].x - [self currentValueForThemeAttribute:@"content-inset"].left, 0),
-                position = [CPPlatformString charPositionOfString:[self stringValue] withFont:[self font] forPoint:point];
+            var x            = [self convertPointFromBase:[[CPApp currentEvent] locationInWindow]].x,
+                contentInset = [self currentValueForThemeAttribute:@"content-inset"],
+                text         = [self stringValue],
+                font         = [self font];
+
+            switch ([self alignment]) {
+                case CPCenterTextAlignment:
+
+                    var contentWidth = [self bounds].size.width - contentInset.left - contentInset.right,
+                        textWidth    = [text sizeWithFont:font].width;
+
+                    x -= (contentWidth - textWidth) / 2 + contentInset.left;
+
+                    break;
+
+                case CPRightTextAlignment:
+
+                    var contentWidth = [self bounds].size.width - contentInset.left - contentInset.right,
+                        textWidth    = [text sizeWithFont:font].width;
+
+                    x -= (contentWidth - textWidth) + contentInset.left;
+
+                    break;
+
+                default: // CPLeftTextAlignment, CPJustifiedTextAlignment, CPNaturalTextAlignment
+
+                    x -= contentInset.left;
+
+                    break;
+            }
+
+            var position = [CPPlatformString charPositionOfString:text withFont:font forPoint:CGPointMake(x, 0)];
 
             [self setSelectedRange:CPMakeRange(position, 0)];
         }
