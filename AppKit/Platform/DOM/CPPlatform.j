@@ -21,6 +21,10 @@
  */
 
 @global CPApp
+@global CPTerminateNow
+@global CPFeatureIsCompatible
+@global CPHTMLDragAndDropFeature
+@global CPPlatformWindow
 
 if (typeof window["CPPlatformEnableHTMLDragAndDrop"] === "undefined")
     CPPlatformEnableHTMLDragAndDrop = NO;

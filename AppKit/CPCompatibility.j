@@ -109,7 +109,8 @@ var USER_AGENT                          = "",
     PLATFORM_ENGINE                     = CPUnknownBrowserEngine,
     PLATFORM_FEATURES                   = [],
     PLATFORM_BUGS                       = 0,
-    PLATFORM_STYLE_JS_PROPERTIES        = {};
+    PLATFORM_STYLE_JS_PROPERTIES        = {},
+    OPERATING_SYSTEM                    = CPOtherOperatingSystem;
 
 // default these features to true
 PLATFORM_FEATURES[CPInputTypeCanBeChangedFeature] = YES;
@@ -334,8 +335,6 @@ function CPBrowserIsOperatingSystem(anOperatingSystem)
 {
     return OPERATING_SYSTEM === anOperatingSystem;
 }
-
-OPERATING_SYSTEM = CPOtherOperatingSystem;
 
 if (USER_AGENT.indexOf("Mac") !== -1)
 {

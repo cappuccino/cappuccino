@@ -65,6 +65,7 @@ var themedButtonValues = nil,
     themedIndeterminateProgressIndicator = nil,
     themedCheckBoxValues = nil,
     themedRadioButtonValues = nil,
+    themedRoundedTextFieldValues = nil,
     regularTextColor = [CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0],
     regularTextShadowColor = [CPColor colorWithCalibratedWhite:1.0 alpha:0.2],
     regularDisabledTextColor = [CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:0.6],
@@ -519,14 +520,6 @@ var themedButtonValues = nil,
                 orientation: PatternIsVertical
             }),
 
-        knobColorLegacy = PatternColor(
-            "scroller-legacy-vertical-knob{position}.png",
-            {
-                width: 14.0,
-                height: 3.0,
-                orientation: PatternIsVertical
-            });
-
     themedVerticalScrollerValues =
         [
             // Common
@@ -594,14 +587,6 @@ var themedButtonValues = nil,
                 height: 9.0,
                 orientation: PatternIsHorizontal
             }),
-
-        knobColorLegacy = PatternColor(
-            "scroller-legacy-horizontal-knob{position}.png",
-            {
-                width: 3.0,
-                height: 14.0,
-                orientation: PatternIsHorizontal
-            });
 
     themedHorizontalScrollerValues =
         [
@@ -2792,7 +2777,7 @@ var themedButtonValues = nil,
         closeButtonImageInactive =          PatternImage(@"window-standard-close-button-inactive.png", 16, 16),
         closeButtonImageHighlighted =       PatternImage(@"window-standard-button-highlighted.png", 16, 16),
         unsavedButtonImage =                PatternImage(@"window-standard-button-unsaved.png", 16, 16),
-        unsavedButtonImageInactive =        PatternImage(@"window-standard-button-unsaved-inactive.png", 16, 16),
+        //unsavedButtonImageInactive =        PatternImage(@"window-standard-button-unsaved-inactive.png", 16, 16),
         unsavedButtonImageHighlighted =     PatternImage(@"window-standard-close-button-unsaved-highlighted.png", 16, 16),
         minimizeButtonImage =               PatternImage(@"window-standard-minimize-button.png", 16, 16),
         minimizeButtonImageHighlighted =    PatternImage(@"window-standard-minimize-button-highlighted.png", 16, 16),
@@ -3309,7 +3294,7 @@ var themedButtonValues = nil,
         miniImageSelectedHighlighted = PatternImage("HUD/radio-image-selected-highlighted.png", 16.0, 16.0),
         miniImageSelectedDisabled = PatternImage("HUD/radio-image-selected.png", 16.0, 16.0),
         miniImageDisabled = PatternImage("HUD/radio-image.png", 16.0, 16.0),
-        miniImageHighlighted = PatternImage("HUD/radio-image-highlighted.png", 16.0, 16.0);
+        miniImageHighlighted = PatternImage("HUD/radio-image-highlighted.png", 16.0, 16.0),
 
         hudSpecific =
         [

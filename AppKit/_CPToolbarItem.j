@@ -27,6 +27,10 @@
 @import "CPView.j"
 
 @class CPToolbar
+@class _CPToolbarSeparatorItem
+@class _CPToolbarSpaceItem
+@class _CPToolbarFlexibleSpaceItem
+@class _CPToolbarShowColorsItem
 @global CPApp
 
 CPToolbarItemVisibilityPriorityStandard = 0;

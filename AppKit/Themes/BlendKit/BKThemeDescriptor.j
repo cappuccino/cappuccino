@@ -26,6 +26,7 @@
 @import <AppKit/CPImage.j>
 @import <AppKit/CPView.j>
 @import <AppKit/_CPCibCustomResource.j>
+@import "BKThemedObjectTemplate.j"
 
 
 PatternIsHorizontal = CPColorPatternIsHorizontal;
@@ -49,7 +50,7 @@ var ItemSizes               = { },
     // Grab Theme Descriptor Classes.
     var themeDescriptorClasses = [];
 
-    for (candidate in global)
+    for (var candidate in global)
     {
         var theClass = objj_getClass(candidate),
             theClassName = class_getName(theClass);

@@ -30,6 +30,7 @@
 @import "CGGeometry.j"
 @import "CPCompatibility.j"
 
+@class CPView
 
 @protocol CPImageDelegate <CPObject>
 

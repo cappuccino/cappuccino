@@ -787,7 +787,7 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
 */
 + (void)runLoopUpdateLayers
 {
-    for (UID in CALayerRegisteredRunLoopUpdates)
+    for (var UID in CALayerRegisteredRunLoopUpdates)
     {
         var layer = CALayerRegisteredRunLoopUpdates[UID],
             mask = layer._runLoopUpdateMask;

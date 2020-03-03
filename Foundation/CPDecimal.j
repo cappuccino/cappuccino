@@ -586,6 +586,8 @@ function CPDecimalAdd(result, leftOperand, rightOperand, roundingMode, longMode)
     else
         comp = CPOrderedAscending;
 
+    var adderror;
+
     // both negative, make positive
     if (leftOperand._isNegative)
     {
@@ -867,7 +869,7 @@ function _SimpleDivide(result, leftOperand, rightOperand, roundingMode)
             k++;
         }
 
-        error1 = CPDecimalSubtract(n1, n1, rightOperand, roundingMode);
+        var error1 = CPDecimalSubtract(n1, n1, rightOperand, roundingMode);
 
         if (error1 != CPCalculationNoError)
             error = error1;
@@ -968,14 +970,14 @@ function _SimpleMultiply(result, leftOperand, rightOperand, roundingMode, powerM
 
         n._exponent = rightOperand._mantissa.length - i - 1;
         carry = 0;
-        d = rightOperand._mantissa[i];
+        var d = rightOperand._mantissa[i];
 
         if (d == 0)
             continue;
 
         for (var j = leftOperand._mantissa.length - 1; j >= 0; j--)
         {
-            e = leftOperand._mantissa[j] * d + carry;
+            var e = leftOperand._mantissa[j] * d + carry;
 
             if (e >= 10)
             {
@@ -993,7 +995,7 @@ function _SimpleMultiply(result, leftOperand, rightOperand, roundingMode, powerM
 
         CPDecimalCompact(n);
 
-        error1 = CPDecimalAdd(result, result, n, roundingMode, YES);
+        var error1 = CPDecimalAdd(result, result, n, roundingMode, YES);
 
         if (error1 != CPCalculationNoError)
             error = error1;

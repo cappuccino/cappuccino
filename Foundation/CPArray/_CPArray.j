@@ -28,6 +28,7 @@
 
 @class _CPJavaScriptArray
 @class CPIndexSet
+@class CPMutableArray
 
 CPEnumerationNormal             = 0;
 CPEnumerationConcurrent         = 1 << 0;

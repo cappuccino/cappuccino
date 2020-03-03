@@ -22,6 +22,9 @@
 
 @import <Foundation/CPObject.j>
 
+@class CPPlatformString
+@class CPPlatformWindow
+
 
 @implementation CPBasePlatform : CPObject
 {

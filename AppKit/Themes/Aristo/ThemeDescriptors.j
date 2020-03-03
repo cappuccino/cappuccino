@@ -65,6 +65,11 @@ var themedButtonValues = nil,
     themedIndeterminateProgressIndicator = nil,
     themedWindowViewValues = nil;
 
+var textDisabledColor = nil,
+    placeholderColor = nil,
+    themedRoundedTextFieldValues,
+    themeValues;
+
 /*
     HOW TO ADD OR MODIFY THEMED ELEMENTS
 

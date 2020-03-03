@@ -26,6 +26,7 @@ Cursor support by browser:
 @import "CPCompatibility.j"
 
 @global CPApp
+@global CPPlatformWindow
 
 var currentCursor = nil,
     cursorStack = [],

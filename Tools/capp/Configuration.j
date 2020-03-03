@@ -4,6 +4,8 @@
 @import <Foundation/CPObject.j>
 @import <Foundation/CPSet.j>
 
+@global printUsage
+
 
 var FILE = require("file"),
     SYSTEM = require("system");
