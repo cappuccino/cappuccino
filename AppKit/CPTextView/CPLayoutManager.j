@@ -1156,7 +1156,9 @@ var _objectsInRange = function(aList, aRange)
         _range = CPMakeRangeCopy(aRange);
         _textContainer = aContainer;
         _isInvalid = NO;
-        _runs = [[CPMutableArray alloc] init];
+        _runs = [];
+        _glyphsFrames = [];
+        _glyphsOffsets = [];
 
         for (location = aRange.location; location < CPMaxRange(aRange); location = CPMaxRange(effectiveRange))
         {
