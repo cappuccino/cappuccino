@@ -25,10 +25,6 @@
 @import "NSCell.j"
 @import "NSView.j"
 
-
-@class Nib2Cib
-
-
 @implementation CPControl (NSCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
