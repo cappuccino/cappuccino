@@ -471,7 +471,18 @@ StringBuffer.prototype.isEmptySourceNode = function()
 
 StringBuffer.prototype.appendStringBufferString = function(stringBuffer)
 {
-    this.atoms.push.apply(this.atoms, stringBuffer.atoms);
+    // We can't do 'this.atoms.push.apply(this.atoms, stringBuffer.atoms);' as JavaScriptCore (WebKit) has a limit on number of arguments at 65536.
+    // Other browsers also has simular limits.
+    var thisAtoms = this.atoms;
+    var thisLength = thisAtoms.length;
+    var stringBufferAtoms = stringBuffer.atoms;
+    var stringBufferLength = stringBufferAtoms.length;
+
+    thisAtoms.length = thisLength + stringBufferLength;
+
+    for (var i = 0; i < stringBufferLength; i++) {
+        thisAtoms[thisLength + i] = stringBufferAtoms[i];
+    }
 }
 
 StringBuffer.prototype.appendStringBufferSourceNode = function(stringBuffer)
