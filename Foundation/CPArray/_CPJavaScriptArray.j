@@ -82,7 +82,7 @@ var concat = Array.prototype.concat,
         count = arguments.length;
 
     for (; index < count; ++index)
-        if (arguments[index] === nil)
+        if (arguments[index] == nil)
             break;
 
     return slice.call(arguments, 2, index);

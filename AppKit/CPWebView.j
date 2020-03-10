@@ -470,7 +470,7 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
 
         _iframe.src = _url;
     }
-    else if (_html !== nil)
+    else if (_html != nil)
     {
         // clear the iframe
         _iframe.src = "";
@@ -480,7 +480,7 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
 
         _ignoreLoadEnd = NO;
 
-        if (_loadHTMLStringTimer !== nil)
+        if (_loadHTMLStringTimer != nil)
         {
             window.clearTimeout(_loadHTMLStringTimer);
             _loadHTMLStringTimer = nil;
@@ -848,7 +848,7 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
 - (@action)reload:(id)sender
 {
     // If we're displaying pure HTML, redisplay it.
-    if (!_url && (_html !== nil))
+    if (!_url && (_html != nil))
         [self loadHTMLString:_html];
     else
         [self _loadMainFrameURL];

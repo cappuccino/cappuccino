@@ -260,7 +260,7 @@ var frameToCSSTranslationTransformMatrix = function(start, current)
         return nil;
     }
 
-    if ([[self animatorClass] _cssPropertiesForKeyPath:aKey] !== nil)
+    if ([[self animatorClass] _cssPropertiesForKeyPath:aKey] != nil)
         return [CAAnimation animation];
 
     return nil;

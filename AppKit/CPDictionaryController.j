@@ -69,7 +69,7 @@
     aNewObject._controller = self;
     aNewObject._key = aKey;
 
-    if (aValue !== nil)
+    if (aValue != nil)
         [aNewObject setValue:aValue];
 
     return aNewObject;
@@ -98,7 +98,7 @@
     var iter = [[CPSet setWithArray:allKeys] objectEnumerator],
         obj;
 
-    while ((obj = [iter nextObject]) !== nil)
+    while ((obj = [iter nextObject]) != nil)
         if (![_excludedKeys containsObject:obj])
             [array addObject:[self _newObjectWithKey:obj value:nil]];
 

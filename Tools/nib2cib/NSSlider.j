@@ -44,6 +44,7 @@
 
     _altIncrementValue  = [cell altIncrementValue];
     [self setSliderType:[cell sliderType]];
+    [self setEnabled:[cell isEnabled]];
 }
 
 @end

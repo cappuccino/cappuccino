@@ -531,10 +531,11 @@
 
 @implementation SensibleView : CPView
 {
-    CPString    viewName    @accessors;
-    CPCursor    viewCursor  @accessors;
-    CPColor     viewColor;
-    CPTextField coords;
+    CPString        viewName    @accessors;
+    CPCursor        viewCursor  @accessors;
+    CPColor         viewColor;
+    CPTextField     coords;
+    CPTrackingArea  trackingArea;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -666,15 +667,16 @@
 - (void)updateTrackingAreas
 {
     CPLog.trace("updateTrackingAreas @"+viewName);
+
+    if (trackingArea)
+        [self removeTrackingArea:trackingArea];
     
-    [self removeAllTrackingAreas];
+    trackingArea = [[CPTrackingArea alloc] initWithRect:CGRectMake(0, 0, 25, 25)
+                                                options:CPTrackingMouseEnteredAndExited | CPTrackingActiveInKeyWindow
+                                                  owner:self
+                                               userInfo:nil];
     
-    var t = [[CPTrackingArea alloc] initWithRect:CGRectMake(0, 0, 25, 25)
-                                         options:CPTrackingMouseEnteredAndExited | CPTrackingActiveInKeyWindow
-                                           owner:self
-                                        userInfo:nil];
-    
-    [self addTrackingArea:t];
+    [self addTrackingArea:trackingArea];
 }
 
 @end
@@ -684,15 +686,16 @@
 - (void)updateTrackingAreas
 {
     CPLog.trace("updateTrackingAreas @"+viewName);
+
+    if (trackingArea)
+        [self removeTrackingArea:trackingArea];
     
-    [self removeAllTrackingAreas];
+    trackingArea = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero()
+                                                options:CPTrackingMouseEnteredAndExited | CPTrackingActiveInKeyWindow | CPTrackingInVisibleRect
+                                                  owner:self
+                                               userInfo:nil];
     
-    var t = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero()
-                                         options:CPTrackingMouseEnteredAndExited | CPTrackingActiveInKeyWindow | CPTrackingInVisibleRect
-                                           owner:self
-                                        userInfo:nil];
-    
-    [self addTrackingArea:t];
+    [self addTrackingArea:trackingArea];
 }
 
 @end

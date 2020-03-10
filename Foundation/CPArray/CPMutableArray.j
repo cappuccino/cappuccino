@@ -527,10 +527,10 @@ var sortArrayUsingJSDescriptors = function(a, d)
                     key = dd.k;
                     value1 = C1[key];
                     value2 = C2[key];
-                    if (value1 === nil || value1 === cpNull)
-                        o = value2 === nil || value2 === cpNull ? CPOrderedSame : CPOrderedAscending;
+                    if (value1 == nil || value1 === cpNull)
+                        o = value2 == nil || value2 === cpNull ? CPOrderedSame : CPOrderedAscending;
                     else
-                        o = value2 === nil || value2 === cpNull ? CPOrderedDescending : value1.isa.objj_msgSend1(value1, dd.s, value2);
+                        o = value2 == nil || value2 === cpNull ? CPOrderedDescending : value1.isa.objj_msgSend1(value1, dd.s, value2);
 
                     if (o && !dd.a)
                         o = -o;

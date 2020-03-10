@@ -89,7 +89,7 @@
     var inset = [self currentValueForThemeAttribute:@"text-inset"],
         bounds = [self bounds];
 
-    [_textField setFrame:CGRectMake(inset.right, inset.top, bounds.size.width - inset.right - inset.left, bounds.size.height - inset.top - inset.bottom)];
+    [_textField setFrame:CGRectMake(inset.left, inset.top, bounds.size.width - inset.right - inset.left, bounds.size.height - inset.top - inset.bottom)];
     [_textField setTextColor:[self currentValueForThemeAttribute:@"text-color"]];
     [_textField setFont:[self currentValueForThemeAttribute:@"font"]];
     [_textField setTextShadowColor:[self currentValueForThemeAttribute:@"text-shadow-color"]];
@@ -108,7 +108,7 @@
     return [_textField text];
 }
 
-- (void)textField
+- (CPTextField)textField
 {
     return _textField;
 }
@@ -461,21 +461,38 @@ var CPTableHeaderViewResizeZone = 3.0,
 @end
 
 @implementation CPTableHeaderView (CPTrackingArea)
+{
+    CPMutableArray  _tableHeaderViewTrackingAreas;
+}
 
 - (void)updateTrackingAreas
 {
-    [self removeAllTrackingAreas];
+    if (_tableHeaderViewTrackingAreas)
+    {
+        for (var i = 0, count = [_tableHeaderViewTrackingAreas count]; i < count; i++)
+            [self removeTrackingArea:_tableHeaderViewTrackingAreas[i]];
+
+        _tableHeaderViewTrackingAreas = nil;
+    }
 
     var options = CPTrackingCursorUpdate | CPTrackingActiveInKeyWindow;
 
     if (!_tableView)
       return;
 
+    _tableHeaderViewTrackingAreas = @[];
+
     for (var i = 0; i < _tableView._tableColumns.length; i++)
-        [self addTrackingArea:[[CPTrackingArea alloc] initWithRect:[self _cursorRectForColumn:i]
-                                                           options:options
-                                                             owner:self
-                                                          userInfo:nil]];
+    {
+        [_tableHeaderViewTrackingAreas addObject:[[CPTrackingArea alloc] initWithRect:[self _cursorRectForColumn:i]
+                                                                              options:options
+                                                                                owner:self
+                                                                             userInfo:nil]];
+
+        [self addTrackingArea:_tableHeaderViewTrackingAreas[i]];
+    }
+
+    [super updateTrackingAreas];
 }
 
 - (void)cursorUpdate:(CPEvent)anEvent
@@ -533,7 +550,7 @@ var CPTableHeaderViewResizeZone = 3.0,
 - (void)_autoscroll:(CPEvent)theEvent localLocation:(CGPoint)theLocation
 {
     // Constrain the y coordinate so we don't autoscroll vertically
-    var constrainedLocation = CGPointMake(theLocation.x, CGRectGetMinY([_tableView visibleRect])),
+    var constrainedLocation = CGPointMake(theLocation.x, CGRectGetMaxY([self frame])),
         constrainedEvent = [CPEvent mouseEventWithType:CPLeftMouseDragged
                                              location:[self convertPoint:constrainedLocation toView:nil]
                                         modifierFlags:[theEvent modifierFlags]

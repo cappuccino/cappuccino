@@ -93,6 +93,24 @@ Scope.prototype.getIvarForCurrentClass = function(/* String */ ivarName)
     return null;
 }
 
+Scope.prototype.getLvarScope = function(/* String */ lvarName, /* BOOL */ stopAtMethod)
+{
+    if (this.vars)
+    {
+        var lvar = this.vars[lvarName];
+        if (lvar)
+            return this;
+    }
+
+    var prev = this.prev;
+
+    // Stop at the method declaration
+    if (prev && (!stopAtMethod || !this.methodType))
+        return prev.getLvarScope(lvarName, stopAtMethod);
+
+    return this;
+}
+
 Scope.prototype.getLvar = function(/* String */ lvarName, /* BOOL */ stopAtMethod)
 {
     if (this.vars)
@@ -109,6 +127,13 @@ Scope.prototype.getLvar = function(/* String */ lvarName, /* BOOL */ stopAtMetho
         return prev.getLvar(lvarName, stopAtMethod);
 
     return null;
+}
+
+Scope.prototype.getVarScope = function()
+{
+    var prev = this.prev;
+
+    return prev ? prev.getVarScope() : this;
 }
 
 Scope.prototype.currentMethodType = function()
@@ -142,6 +167,23 @@ Scope.prototype.addMaybeWarning = function(warning)
         // possible generate warnings multible times. Here we check if this warning is already added
         if (!lastWarning.isEqualTo(warning))
             maybeWarnings.push(warning);
+    }
+}
+
+Scope.prototype.variablesNotReadWarnings = function()
+{
+    var compiler = this.compiler;
+
+    // The warning option must be turned on. We can't be top scope. The scope must have some variables
+    if (compiler.options.warnings.includes(warningUnusedButSetVariable) && this.prev && this.vars) for (var key in this.vars)
+    {
+        var lvar = this.vars[key];
+
+        if (!lvar.isRead && lvar.type === "var")
+        {
+            //print("Variable '" + key + "' is never read: " + lvar.type + ", line: " + lvar.node.start);
+            compiler.addWarning(createMessage("Variable '" + key + "' is never read", lvar.node, compiler.source));
+        }
     }
 }
 
@@ -256,6 +298,51 @@ Scope.prototype.formatDescription = function(index, formatDescription, useOverri
         }
     }
 }
+
+var FunctionScope = function(prev, base)
+{
+      Scope.call(this, prev, base);
+}
+
+FunctionScope.prototype = Object.create(Scope.prototype);
+
+FunctionScope.prototype.constructor = FunctionScope;
+
+FunctionScope.prototype.getVarScope = function()
+{
+    return this;
+}
+
+FunctionScope.prototype.variablesNotReadWarnings = function()
+{
+    Scope.prototype.variablesNotReadWarnings.call(this);
+
+    var prev = this.prev;
+
+    // Any possible hoisted variable in this scope has to be moved to the previous scope if it is not declared in the previsous scope
+    // We can't be top scope. The scope must have some possible hoisted variables
+    if (prev && this.possibleHoistedVariables) for (var key in this.possibleHoistedVariables)
+    {
+        var possibleHoistedVariable = this.possibleHoistedVariables[key];
+
+        if (possibleHoistedVariable)
+        {
+            var varInPrevScope = prev.vars && prev.vars[key];
+
+            if (varInPrevScope != null)
+            {
+                var prevPossibleHoistedVariable = (prev.possibleHoistedVariables || (prev.possibleHoistedVariables = Object.create(null)))[key];
+
+                if (prevPossibleHoistedVariable == null) {
+                    prev.possibleHoistedVariables[key] = possibleHoistedVariable;
+                } else {
+                    throw new Error("Internal inconsistency, previous scope should not have this possible hoisted variable '" + key + "'");
+                }
+            }
+        }
+    }
+}
+
 
 var GlobalVariableMaybeWarning = function(/* String */ aMessage, /* SpiderMonkey AST node */ node, /* String */ code)
 {
@@ -623,6 +710,20 @@ var wordPrefixOperators = acorn.makePredicate("delete in instanceof new typeof v
 var isLogicalBinary = acorn.makePredicate("LogicalExpression BinaryExpression");
 var isInInstanceof = acorn.makePredicate("in instanceof");
 
+var warningUnusedButSetVariable = {name: "unused-but-set-variable"};
+var warningShadowIvar = {name: "shadow-ivar"};
+var warningCreateGlobalInsideFunctionOrMethod = {name: "create-global-inside-function-or-method"};
+var warningUnknownClassOrGlobal = {name: "unknown-class-or-global"};
+var warningUnknownIvarType = {name: "unknown-ivar-type"};
+
+var AllWarnings = [warningUnusedButSetVariable, warningShadowIvar, warningCreateGlobalInsideFunctionOrMethod, warningUnknownClassOrGlobal, warningUnknownIvarType];
+
+exports.warningUnusedButSetVariable = warningUnusedButSetVariable;
+exports.warningShadowIvar = warningShadowIvar;
+exports.warningCreateGlobalInsideFunctionOrMethod = warningCreateGlobalInsideFunctionOrMethod;
+exports.warningUnknownClassOrGlobal = warningUnknownClassOrGlobal;
+exports.warningUnknownIvarType = warningUnknownIvarType;
+
   // A optional argument can be given to further configure
   // the compiler. These options are recognized:
 
@@ -692,6 +793,9 @@ var isInInstanceof = acorn.makePredicate("in instanceof");
 
     // Turn off `inlineMsgSendFunctions` to use message send functions. Needed to use message send decorators.
     inlineMsgSendFunctions: true,
+
+    // `warning` includes the warnings that are turned on. It is just used for some warnings.
+    warnings: [warningUnusedButSetVariable, warningShadowIvar, warningCreateGlobalInsideFunctionOrMethod, warningUnknownClassOrGlobal, warningUnknownIvarType],
 
     // An array of macro objects and/or text definitions may be passed in.
     // Definitions may be in one of two forms:
@@ -1081,6 +1185,25 @@ exports.parseGccCompilerFlags = function(/* String */ compilerFlags)
 
             (objjcFlags.macros || (objjcFlags.macros = [])).push(macroDefinition);
         }
+        else if (argument.indexOf("-W") === 0) {
+            // TODO: Check if the warning name is a valid one. Now we just grab what is written and set/remove it.
+            var isNo = argument.indexOf("no-", 2) === 2
+            var warningName = argument.substring(isNo ? 5 : 2);
+            var indexOfWarning = (objjcFlags.warnings || (objjcFlags.warnings = defaultOptions.warnings.slice())).findIndex(function (element) { return element.name === warningName });
+
+            if (isNo) {
+                if (indexOfWarning !== -1) {
+                    // remove if it exists
+                    objjcFlags.warnings.splice(indexOfWarning, 1);
+                }
+            } else {
+                if (indexOfWarning === -1) {
+                    // Add if it does not exists
+                    var theWarning = AllWarnings.find(function (element) { return element.name === warningName });
+                    if (theWarning) objjcFlags.warnings.push(theWarning);
+                }
+            }
+        }
     }
 
     return objjcFlags;
@@ -1137,7 +1260,7 @@ ObjJAcornCompiler.prototype.prettifyMessage = function(/* Message */ aMessage)
 
     message += (new Array((aMessage.messageOnColumn || 0) + 1)).join(" ");
     if (line) message += (new Array(Math.min(1, line.length || 1) + 1)).join("^") + "\n";
-    message += aMessage.messageType + " line " + aMessage.messageOnLine + " in " + this.URL + ": " + aMessage.message;
+    message += aMessage.messageType + " line " + aMessage.messageOnLine + " in " + this.URL + ":" + aMessage.messageOnLine + ": " + aMessage.message;
 
     return message;
 }
@@ -1735,6 +1858,7 @@ TryStatement: function(node, st, c, format) {
       inner.skipIndentation = true;
       inner.endOfScopeBody = true;
       c(handler.body, inner, "ScopeBody");
+      inner.variablesNotReadWarnings();
       indentation = indentation.substring(indentationSize);
       inner.copyAddedSelfToIvarsToParent();
     }
@@ -1914,7 +2038,7 @@ Function: function(node, st, c, format) {
   var compiler = st.compiler,
       generate = compiler.generate,
       buffer = compiler.jsBuffer,
-      inner = new Scope(st),
+      inner = new FunctionScope(st),
       decl = node.type == "FunctionDeclaration",
       id = node.id;
 
@@ -1962,12 +2086,14 @@ Function: function(node, st, c, format) {
   indentation += indentStep;
   inner.endOfScopeBody = true;
   c(node.body, inner, "ScopeBody");
+  inner.variablesNotReadWarnings();
   indentation = indentation.substring(indentationSize);
   inner.copyAddedSelfToIvarsToParent();
 },
 VariableDeclaration: function(node, st, c, format) {
   var compiler = st.compiler,
       generate = compiler.generate,
+      varScope = st.getVarScope(),
       buffer;
   if (generate) {
     buffer = compiler.jsBuffer;
@@ -1976,7 +2102,24 @@ VariableDeclaration: function(node, st, c, format) {
   }
   for (var i = 0; i < node.declarations.length; ++i) {
     var decl = node.declarations[i],
-        identifier = decl.id.name;
+        identifier = decl.id.name,
+        possibleHoistedVariable = varScope.possibleHoistedVariables && varScope.possibleHoistedVariables[identifier],
+        variableDeclaration = {type: "var", node: decl.id, isRead: (possibleHoistedVariable ? possibleHoistedVariable.isRead : 0)};
+
+    // Make sure we count the access for this varaible if it is hoisted.
+    // Check if this variable has already been accessed above this declaration
+    if (possibleHoistedVariable) {
+        // 'variableDeclaration' is already marked as read. This was done by adding the already read amount above.
+
+        // Substract the same amount from possible local variable higher up in the hierarchy that is shadowed by this declaration
+        if (possibleHoistedVariable.variable) {
+            possibleHoistedVariable.variable.isRead -= possibleHoistedVariable.isRead;
+        }
+        // Remove it as we don't need to care about this variable anymore.
+        varScope.possibleHoistedVariables[identifier] = null;
+    }
+    varScope.vars[identifier] = variableDeclaration;
+
     if (i)
       if (generate) {
         if (format) {
@@ -1991,7 +2134,7 @@ VariableDeclaration: function(node, st, c, format) {
           }
         }
       }
-    st.vars[identifier] = {type: "var", node: decl.id};
+
     c(decl.id, st, "IdentifierName");
     if (decl.init) {
       if (generate) {
@@ -2015,8 +2158,11 @@ VariableDeclaration: function(node, st, c, format) {
         for (var i = 0, size = addedSelfToIvar.length; i < size; i++) {
           var dict = addedSelfToIvar[i];
           atoms[dict.index] = "";
-          compiler.addWarning(createMessage("Local declaration of '" + identifier + "' hides instance variable", dict.node, compiler.source));
+          if (compiler.options.warnings.includes(warningShadowIvar)) compiler.addWarning(createMessage("Local declaration of '" + identifier + "' hides instance variable", dict.node, compiler.source));
         }
+        // Add a read mark to the local variable for each time it is used.
+        variableDeclaration.isRead += size;
+        // Remove the variable from list of instance variable uses.
         st.addedSelfToIvars[identifier] = [];
       }
     }
@@ -2239,9 +2385,9 @@ AssignmentExpression: function(node, st, c, format) {
     if (nodeLeft.type === "Identifier" && nodeLeft.name === "self") {
         var lVar = st.getLvar("self", true);
         if (lVar) {
-            var lVarScope = lVar.scope;
-            if (lVarScope)
-                lVarScope.assignmentToSelf = true;
+            var lvarScope = lVar.scope;
+            if (lvarScope)
+                lvarScope.assignmentToSelf = true;
         }
     }
     (generate && nodePrecedence(node, nodeLeft) ? surroundExpression(c) : c)(nodeLeft, st, "Expression");
@@ -2352,48 +2498,88 @@ Identifier: function(node, st, c) {
     var compiler = st.compiler,
         generate = compiler.generate,
         identifier = node.name;
-    if (st.currentMethodType() === "-" && !st.secondMemberExpression && !st.isPropertyKey)
-    {
-        var lvar = st.getLvar(identifier, true), // Only look inside method
-            ivar = compiler.getIvarForClass(identifier, st);
-
-        if (ivar)
+    if (!st.isPropertyKey) {
+        var lvarScope = st.getLvarScope(identifier, true); // Only look inside method/function scope
+        var lvar = lvarScope.vars && lvarScope.vars[identifier];
+        if (!st.secondMemberExpression && st.currentMethodType() === "-")
         {
-            if (lvar)
-                compiler.addWarning(createMessage("Local declaration of '" + identifier + "' hides instance variable", node, compiler.source));
-            else
-            {
-                var nodeStart = node.start;
+            var ivar = compiler.getIvarForClass(identifier, st);
 
-                if (!generate) do {    // The Spider Monkey AST tree includes any parentheses in start and end properties so we have to make sure we skip those
-                    compiler.jsBuffer.concat(compiler.source.substring(compiler.lastPos, nodeStart));
-                    compiler.lastPos = nodeStart;
-                } while (compiler.source.substr(nodeStart++, 1) === "(")
-                // Save the index in where the "self." string is stored and the node.
-                // These will be used if we find a variable declaration that is hoisting this identifier.
-                ((st.addedSelfToIvars || (st.addedSelfToIvars = Object.create(null)))[identifier] || (st.addedSelfToIvars[identifier] = [])).push({node: node, index: compiler.jsBuffer.length()});
-                compiler.jsBuffer.concat("self.", node);
-            }
-        } else if (!reservedIdentifiers(identifier)) {  // Don't check for warnings if it is a reserved word like self, localStorage, _cmd, etc...
-            var message,
-                classOrGlobal = typeof global[identifier] !== "undefined" || (typeof window !== 'undefined' && typeof window[identifier] !== "undefined") || compiler.getClassDef(identifier),
-                globalVar = st.getLvar(identifier);
-            if (classOrGlobal && (!globalVar || globalVar.type !== "class")) { // It can't be declared with a @class statement.
-                /* Turned off this warning as there are many many warnings when compiling the Cappuccino frameworks - Martin
+            if (ivar)
+            {
                 if (lvar) {
-                    message = compiler.addWarning(createMessage("Local declaration of '" + identifier + "' hides global variable", node, compiler.source));
-                }*/
-            } else if (!globalVar) {
-                if (st.assignment) {
-                    message = new GlobalVariableMaybeWarning("Creating global variable inside function or method '" + identifier + "'", node, compiler.source);
-                    // Turn off these warnings for this identifier, we only want one.
-                    st.vars[identifier] = {type: "remove global warning", node: node};
+                    if (compiler.options.warnings.includes(warningShadowIvar)) compiler.addWarning(createMessage("Local declaration of '" + identifier + "' hides instance variable", node, compiler.source));
+                }
+                else
+                {
+                    var nodeStart = node.start;
+
+                    if (!generate) do {    // The Spider Monkey AST tree includes any parentheses in start and end properties so we have to make sure we skip those
+                        compiler.jsBuffer.concat(compiler.source.substring(compiler.lastPos, nodeStart));
+                        compiler.lastPos = nodeStart;
+                    } while (compiler.source.substr(nodeStart++, 1) === "(")
+                    // Save the index in where the "self." string is stored and the node.
+                    // These will be used if we find a variable declaration that is hoisting this identifier.
+                    ((st.addedSelfToIvars || (st.addedSelfToIvars = Object.create(null)))[identifier] || (st.addedSelfToIvars[identifier] = [])).push({node: node, index: compiler.jsBuffer.length()});
+                    compiler.jsBuffer.concat("self.", node);
+                }
+            } else if (!reservedIdentifiers(identifier)) {  // Don't check for warnings if it is a reserved word like self, localStorage, _cmd, etc...
+                var message,
+                    classOrGlobal = typeof global[identifier] !== "undefined" || (typeof window !== 'undefined' && typeof window[identifier] !== "undefined") || compiler.getClassDef(identifier),
+                    globalVar = st.getLvar(identifier);
+                if (classOrGlobal && (!globalVar || globalVar.type !== "class")) { // It can't be declared with a @class statement.
+                    /* Turned off this warning as there are many many warnings when compiling the Cappuccino frameworks - Martin
+                    if (lvar) {
+                        message = compiler.addWarning(createMessage("Local declaration of '" + identifier + "' hides global variable", node, compiler.source));
+                    }*/
+                } else if (!globalVar) {
+                    if (st.assignment && compiler.options.warnings.includes(warningCreateGlobalInsideFunctionOrMethod)) {
+                        message = new GlobalVariableMaybeWarning("Creating global variable inside function or method '" + identifier + "'", node, compiler.source);
+                        // Turn off these warnings for this identifier, we only want one.
+                        st.vars[identifier] = {type: "remove global warning", node: node};
+                    } else if (compiler.options.warnings.includes(warningUnknownClassOrGlobal)){
+                        message = new GlobalVariableMaybeWarning("Using unknown class or uninitialized global variable '" + identifier + "'", node, compiler.source);
+                    }
+                }
+                if (message)
+                    st.addMaybeWarning(message);
+            }
+        }
+        if (!st.assignment || !st.secondMemberExpression) {
+            if (lvar) {
+                lvar.isRead++;
+            } else {
+                // If the var is not declared in current var scope (function scope) we need to save which var it is as it can be hoisted.
+                // First check if the variable is declared higher up in the scope hierarchy
+                lvarScope = lvarScope.getLvarScope(identifier);
+                lvar = lvarScope.vars && lvarScope.vars[identifier];
+                // We will mark it as read.
+                if (lvar) {
+                    lvar.isRead++;
+                }
+
+                // The variable can be declared later on in this function / method scope.
+                // It can also be declared later on in a higher scope.
+                // We create a list of possible variables that will be used if it is declared.
+                // We collect how many times the variable is read and a reference to a possible variable in a
+                var possibleHoistedVariable = (lvarScope.possibleHoistedVariables || (lvarScope.possibleHoistedVariables = Object.create(null)))[identifier];
+
+                if (possibleHoistedVariable == null) {
+                    var possibleHoistedVariable = {isRead: 1};
+                    lvarScope.possibleHoistedVariables[identifier] = possibleHoistedVariable;
                 } else {
-                    message = new GlobalVariableMaybeWarning("Using unknown class or uninitialized global variable '" + identifier + "'", node, compiler.source);
+                    possibleHoistedVariable.isRead++;
+                }
+
+                if (lvar) {
+                    // If the var and scope are already set it should not be different from what we found now.
+                    if ((possibleHoistedVariable.variable && possibleHoistedVariable.variable !== lvar) || (possibleHoistedVariable.varScope && possibleHoistedVariable.varScope !== lvarScope)) {
+                        throw new Error("Internal inconsistency, var or scope is not the same");
+                    }
+                    possibleHoistedVariable.variable = lvar;
+                    possibleHoistedVariable.varScope = lvarScope;
                 }
             }
-            if (message)
-                st.addMaybeWarning(message);
         }
     }
     if (generate) compiler.jsBuffer.concat(identifier, node, identifier === "self" ? "self" : null);
@@ -2447,7 +2633,9 @@ ArrayLiteral: function(node, st, c) {
             buffer.concat(++st.receiverLevel + "");
             buffer.concat(" = (CPArray.isa.method_msgSend[\"alloc\"] || _objj_forward)(CPArray, \"alloc\"), ___r");
             buffer.concat(st.receiverLevel + "");
-            buffer.concat(" == null ? null : (___r");
+            buffer.concat(" == null ? ___r");
+            buffer.concat(st.receiverLevel + "");
+            buffer.concat(" : (___r");
             buffer.concat(st.receiverLevel + "");
             buffer.concat(".isa.method_msgSend[\"init\"] || _objj_forward)(___r");
             buffer.concat(st.receiverLevel + "");
@@ -2457,7 +2645,9 @@ ArrayLiteral: function(node, st, c) {
             buffer.concat(++st.receiverLevel + "");
             buffer.concat(" = CPArray.isa.objj_msgSend0(CPArray, \"alloc\"), ___r");
             buffer.concat(st.receiverLevel + "");
-            buffer.concat(" == null ? null : ___r");
+            buffer.concat(" == null ? ___r");
+            buffer.concat(st.receiverLevel + "");
+            buffer.concat(" : ___r");
             buffer.concat(st.receiverLevel + "");
             buffer.concat(".isa.objj_msgSend0(___r");
             buffer.concat(st.receiverLevel + "");
@@ -2472,7 +2662,9 @@ ArrayLiteral: function(node, st, c) {
             buffer.concat(++st.receiverLevel + "");
             buffer.concat(" = (CPArray.isa.method_msgSend[\"alloc\"] || _objj_forward)(CPArray, \"alloc\"), ___r");
             buffer.concat(st.receiverLevel + "");
-            buffer.concat(" == null ? null : (___r");
+            buffer.concat(" == null ? ___r");
+            buffer.concat(st.receiverLevel + "");
+            buffer.concat(" : (___r");
             buffer.concat(st.receiverLevel + "");
             buffer.concat(".isa.method_msgSend[\"initWithObjects:count:\"] || _objj_forward)(___r");
             buffer.concat(st.receiverLevel + "");
@@ -2482,7 +2674,9 @@ ArrayLiteral: function(node, st, c) {
             buffer.concat(++st.receiverLevel + "");
             buffer.concat(" = CPArray.isa.objj_msgSend0(CPArray, \"alloc\"), ___r");
             buffer.concat(st.receiverLevel + "");
-            buffer.concat(" == null ? null : ___r");
+            buffer.concat(" == null ? ___r");
+            buffer.concat(st.receiverLevel + "");
+            buffer.concat(" : ___r");
             buffer.concat(st.receiverLevel + "");
             buffer.concat(".isa.objj_msgSend2(___r");
             buffer.concat(st.receiverLevel + "");
@@ -2541,7 +2735,9 @@ DictionaryLiteral: function(node, st, c) {
             buffer.concat(++st.receiverLevel + "");
             buffer.concat(" = (CPDictionary.isa.method_msgSend[\"alloc\"] || _objj_forward)(CPDictionary, \"alloc\"), ___r");
             buffer.concat(st.receiverLevel + "");
-            buffer.concat(" == null ? null : (___r");
+            buffer.concat(" == null ? ___r");
+            buffer.concat(st.receiverLevel + "");
+            buffer.concat(" : (___r");
             buffer.concat(st.receiverLevel + "");
             buffer.concat(".isa.method_msgSend[\"init\"] || _objj_forward)(___r");
             buffer.concat(st.receiverLevel + "");
@@ -2551,7 +2747,9 @@ DictionaryLiteral: function(node, st, c) {
             buffer.concat(++st.receiverLevel + "");
             buffer.concat(" = CPDictionary.isa.objj_msgSend0(CPDictionary, \"alloc\"), ___r");
             buffer.concat(st.receiverLevel + "");
-            buffer.concat(" == null ? null : ___r");
+            buffer.concat(" == null ? ___r");
+            buffer.concat(st.receiverLevel + "");
+            buffer.concat(" : ___r");
             buffer.concat(st.receiverLevel + "");
             buffer.concat(".isa.objj_msgSend0(___r");
             buffer.concat(st.receiverLevel + "");
@@ -2566,7 +2764,9 @@ DictionaryLiteral: function(node, st, c) {
             buffer.concat(++st.receiverLevel + "");
             buffer.concat(" = (CPDictionary.isa.method_msgSend[\"alloc\"] || _objj_forward)(CPDictionary, \"alloc\"), ___r");
             buffer.concat(st.receiverLevel + "");
-            buffer.concat(" == null ? null : (___r");
+            buffer.concat(" == null ? ___r");
+            buffer.concat(st.receiverLevel + "");
+            buffer.concat(" : (___r");
             buffer.concat(st.receiverLevel + "");
             buffer.concat(".isa.method_msgSend[\"initWithObjects:forKeys:\"] || _objj_forward)(___r");
             buffer.concat(st.receiverLevel + "");
@@ -2576,7 +2776,9 @@ DictionaryLiteral: function(node, st, c) {
             buffer.concat(++st.receiverLevel + "");
             buffer.concat(" = CPDictionary.isa.objj_msgSend0(CPDictionary, \"alloc\"), ___r");
             buffer.concat(st.receiverLevel + "");
-            buffer.concat(" == null ? null : ___r");
+            buffer.concat(" == null ? ___r");
+            buffer.concat(st.receiverLevel + "");
+            buffer.concat(" : ___r");
             buffer.concat(st.receiverLevel + "");
             buffer.concat(".isa.objj_msgSend2(___r");
             buffer.concat(st.receiverLevel + "");
@@ -2774,7 +2976,7 @@ ClassDeclarationStatement: function(node, st, c, format) {
             var isTypeDefined = !ivarTypeIsClass || typeof global[ivarType] !== "undefined" || typeof window[ivarType] !== "undefined"
                                 || compiler.getClassDef(ivarType) || compiler.getTypeDef(ivarType) || ivarType == classDef.name;
 
-            if (!isTypeDefined)
+            if (!isTypeDefined && compiler.options.warnings.includes(warningUnknownIvarType))
                 compiler.addWarning(createMessage("Unknown type '" + ivarType + "' for ivar '" + ivarName + "'", ivarDecl.ivartype, compiler.source));
 
             if (generateObjJ) {
@@ -3117,7 +3319,7 @@ MethodDeclarationStatement: function(node, st, c) {
     var compiler = st.compiler,
         generate = compiler.generate,
         saveJSBuffer = compiler.jsBuffer,
-        methodScope = new Scope(st),
+        methodScope = new FunctionScope(st),
         isInstanceMethodType = node.methodtype === '-',
         selectors = node.selectors,
         nodeArguments = node.arguments,
@@ -3249,6 +3451,7 @@ MethodDeclarationStatement: function(node, st, c) {
         indentation += indentStep;
         methodScope.endOfScopeBody = true;
         c(node.body, methodScope, "Statement");
+        methodScope.variablesNotReadWarnings();
         indentation = indentation.substring(indentationSize);
         if (!generate) compiler.jsBuffer.concat(compiler.source.substring(compiler.lastPos, node.body.end));
 
@@ -3408,7 +3611,9 @@ MessageSendExpression: function(node, st, c) {
                 if (receiverIsNotSelf) {
                     buffer.concat("(", node);
                     c(nodeObject, st, "Expression");
-                    buffer.concat(" == null ? null : ", node);
+                    buffer.concat(" == null ? ", node);
+                    c(nodeObject, st, "Expression");
+                    buffer.concat(" : ", node);
                 }
                 if (inlineMsgSend)
                     buffer.concat("(", node);
@@ -3421,7 +3626,9 @@ MessageSendExpression: function(node, st, c) {
                 c(nodeObject, st, "Expression");
                 buffer.concat(")", node);
                 buffer.concat(", ___r" + st.receiverLevel, node);
-                buffer.concat(" == null ? null : ", node);
+                buffer.concat(" == null ? ", node);
+                buffer.concat("___r" + st.receiverLevel, node);
+                buffer.concat(" : ", node);
                 if (inlineMsgSend)
                     buffer.concat("(", node);
                 buffer.concat("___r" + st.receiverLevel, node);

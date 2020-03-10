@@ -13,6 +13,38 @@
 
 @end
 
+@implementation RootClassWithInitialize
+{
+}
+
++ (id)alloc
+{
+    return class_createInstance(self);
+}
+
++ (void)initialize
+{
+    throw "Initialize";
+}
+
+@end
+
+@implementation RootClassWithInitialize2
+{
+}
+
++ (id)alloc
+{
+    return class_createInstance(self);
+}
+
++ (void)initialize
+{
+    throw "Initialize";
+}
+
+@end
+
 @implementation RootClassWithDoesNotRecognizeSelector
 {
 }
@@ -24,7 +56,7 @@
 
 - (void)doesNotRecognizeSelector:(SEL)aSelector
 {
-    throw "ERROR";
+    throw "ERROR: " + sel_getName(aSelector);
 }
 
 @end
@@ -38,10 +70,6 @@
 @implementation RootClassWithForwardingTarget
 {
     Class isa;
-}
-
-+ (void)initialize
-{
 }
 
 + (id)alloc
@@ -85,10 +113,6 @@
 @end
 
 @implementation RootClassWithForwardInvocation
-{
-}
-
-+ (void)initialize
 {
 }
 
@@ -176,7 +200,7 @@ var GlobalMethodDispatchTest;
     }
     catch (anException)
     {
-        [self assert:anException equals:"RootClass does not implement doesNotRecognizeSelector:. Did you forget a superclass for RootClass?"];
+        [self assert:anException equals:"RootClass does not implement doesNotRecognizeSelector: when sending doesNotExist. Did you forget a superclass for RootClass?"];
     }
 }
 
@@ -190,7 +214,34 @@ var GlobalMethodDispatchTest;
     }
     catch (anException)
     {
-        [self assert:anException equals:"RootClass does not implement doesNotRecognizeSelector:. Did you forget a superclass for RootClass?"];
+        [self assert:anException equals:"RootClass does not implement doesNotRecognizeSelector: when sending doesNotExist. Did you forget a superclass for RootClass?"];
+    }
+}
+- (void)test_RootClassWithInitialize_class_initialize
+{
+    try
+    {
+        [RootClassWithInitialize doesNotExist];
+    }
+    catch (anException)
+    {
+        [self assert:anException equals:"Initialize"];
+    }
+}
+
+- (void)test_RootClassWithInitialize_instance_initialize
+{
+    // Here we create a new instance with Runtime function to not trigger the +initialize method.
+    // We also have to use a fresh new class or the +initialize method would have already been triggered.
+    var object = class_createInstance(RootClassWithInitialize2);
+
+    try
+    {
+        [object doesNotExist];
+    }
+    catch (anException)
+    {
+        [self assert:anException equals:"Initialize"];
     }
 }
 
@@ -202,7 +253,7 @@ var GlobalMethodDispatchTest;
     }
     catch (anException)
     {
-        [self assert:anException equals:"ERROR"];
+        [self assert:anException equals:"ERROR: doesNotExist"];
     }
 }
 
@@ -216,7 +267,7 @@ var GlobalMethodDispatchTest;
     }
     catch (anException)
     {
-        [self assert:anException equals:"ERROR"];
+        [self assert:anException equals:"ERROR: doesNotExist"];
     }
 }
 

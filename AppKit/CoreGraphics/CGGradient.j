@@ -30,7 +30,7 @@ kCGGradientDrawsAfterEndLocation    = 1 << 1;
 
 function CGGradientCreateWithColorComponents(aColorSpace, components, locations, count)
 {
-    if (locations === undefined || locations === NULL)
+    if (locations == NULL)
     {
         var num_of_colors = components.length / 4,
             locations = [];
@@ -39,7 +39,7 @@ function CGGradientCreateWithColorComponents(aColorSpace, components, locations,
             locations.push( idx / (num_of_colors - 1) );
     }
 
-    if (count === undefined || count === NULL)
+    if (count == NULL)
         count = locations.length;
 
     var colors = [];

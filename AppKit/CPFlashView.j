@@ -43,6 +43,9 @@ var IEFlashCLSID = "clsid:D27CDB6E-AE6D-11cf-96B8-444553540000";
 
 - (id)initWithFrame:(CGRect)aFrame
 {
+
+    CPLog.warn("CPFlashView is deprecated and it will be removed in version 1.1.");
+
     self = [super initWithFrame:aFrame];
 
     if (self)
@@ -142,7 +145,7 @@ var IEFlashCLSID = "clsid:D27CDB6E-AE6D-11cf-96B8-444553540000";
         var enumerator = [_params keyEnumerator],
             key;
 
-        while (_DOMObjectElement && (key = [enumerator nextObject]) !== nil)
+        while (_DOMObjectElement && (key = [enumerator nextObject]) != nil)
         {
             var param = document.createElement(@"param");
             param.name = key;
@@ -174,7 +177,7 @@ var IEFlashCLSID = "clsid:D27CDB6E-AE6D-11cf-96B8-444553540000";
         paramEnumerator = [_params keyEnumerator],
         key;
 
-    while ((key = [paramEnumerator nextObject]) !== nil)
+    while ((key = [paramEnumerator nextObject]) != nil)
         paramString = [paramString stringByAppendingFormat:@"<param name='%@' value='%@' />", key, [_params objectForKey:key]];
 
     _DOMObjectElement = document.createElement(@"object");

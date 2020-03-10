@@ -17,9 +17,12 @@
     viewA = [[CPView alloc] initWithFrame:CGRectMake(0, 0, 100, 50)];
     viewB = [[CPView alloc] initWithFrame:CGRectMake(0, 0, 100, 50)];
 
-    [splitView addSubview:viewA];
-    [splitView addSubview:viewB];
+    [splitView setArrangesAllSubviews:YES];
+    [splitView setDividerStyle:CPSplitViewDividerStyleThin];
     [splitView setVertical:NO];
+    [splitView addArrangedSubview:viewA];
+    [splitView addArrangedSubview:viewB];
+    [splitView adjustSubviews];
 
     [splitView setPosition:50 ofDividerAtIndex:0];
 }
@@ -46,9 +49,8 @@
 
     // And for multiple areas.
     var viewC = [[CPView alloc] initWithFrame:CGRectMake(0, 0, 200, 50)];
-    [splitView addSubview:viewC];
-    // Force an immediate adjustment of subview sizes.
-    [splitView viewWillDraw];
+    [splitView addArrangedSubview:viewC];
+    [splitView adjustSubviews];
     [self assert:26 equals:[viewA frameSize].height message:"adding viewC shrinks viewA"];
     [self assert:39 equals:[viewB frameSize].height message:"adding viewC shrinks viewB"];
     [self assert:33 equals:[viewC frameSize].height message:"new viewC is fit into remaining space"];
@@ -80,7 +82,8 @@
 
     // Should work just as well with three views.
     var viewC = [[CPView alloc] initWithFrame:CGRectMake(0, 0, 200, 50)];
-    [splitView addSubview:viewC];
+    [splitView addArrangedSubview:viewC];
+    [splitView adjustSubviews];
     [splitView setPosition:50 ofDividerAtIndex:0];
     [splitView setPosition:100 ofDividerAtIndex:1];
 
@@ -103,8 +106,8 @@
     // Regrow
     [splitView setFrame:CGRectMake(0, 0, 200, 100)];
     [self assert:38 equals:[viewA frameSize].height];
-    [self assert:30 equals:[viewB frameSize].height];
-    [self assert:30 equals:[viewC frameSize].height];
+    [self assert:20 equals:[viewB frameSize].height]; // was 30
+    [self assert:40 equals:[viewC frameSize].height]; // was 30
 }
 
 - (void)testAutosave
@@ -142,7 +145,7 @@
 
 - (BOOL)splitView:(CPSplitView)splitView shouldAdjustSizeOfSubview:(CPView)subview
 {
-    var subviews = [splitView subviews];
+    var subviews = [splitView arrangedSubviews];
     return (subview !== [subviews firstObject]);
 }
 

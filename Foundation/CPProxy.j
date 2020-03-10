@@ -66,7 +66,7 @@
 }
 
 // FIXME: This should be moved to the runtime?
-- (void)forward:(SEL)aSelector :(marg_list)args
+- (id)forward:(SEL)aSelector :(marg_list)args
 {
     return [CPObject methodForSelector:_cmd](self, _cmd, aSelector, args);
 }

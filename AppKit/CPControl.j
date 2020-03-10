@@ -196,6 +196,8 @@ var CPControlBlackColor = [CPColor blackColor];
     {
         _sendActionOn           = CPLeftMouseUpMask;
         _trackingMouseDownFlags = 0;
+        
+        [self updateTrackingAreas];
     }
 
     return self;
@@ -620,15 +622,15 @@ var CPControlBlackColor = [CPColor blackColor];
 */
 - (CPString)stringValue
 {
-    if (_formatter && _value !== undefined)
+    if (_formatter && _value != nil)
     {
         var formattedValue = [self hasThemeState:CPThemeStateEditing] ? [_formatter editingStringForObjectValue:_value] : [_formatter stringForObjectValue:_value];
 
-        if (formattedValue !== nil && formattedValue !== undefined)
+        if (formattedValue != nil)
             return formattedValue;
     }
 
-    return (_value === undefined || _value === nil) ? @"" : String(_value);
+    return _value == nil ? @"" : String(_value);
 }
 
 /*!
@@ -637,7 +639,7 @@ var CPControlBlackColor = [CPColor blackColor];
 - (void)setStringValue:(CPString)aString
 {
     // Cocoa raises an invalid parameter assertion and returns if you pass nil.
-    if (aString === nil || aString === undefined)
+    if (aString == nil)
     {
         CPLog.warn("nil or undefined sent to CPControl -setStringValue");
         return;
@@ -803,7 +805,7 @@ var CPControlBlackColor = [CPColor blackColor];
     CPBottomVerticalTextAlignment
     </pre>
 */
-- (void)setVerticalAlignment:(CPTextVerticalAlignment)alignment
+- (void)setVerticalAlignment:(CPVerticalTextAlignment)alignment
 {
     [self setValue:alignment forThemeAttribute:@"vertical-alignment"];
 }
@@ -1057,14 +1059,21 @@ var CPControlBlackColor = [CPColor blackColor];
 @end
 
 @implementation CPControl (CPTrackingArea)
+{
+    CPTrackingArea      _controlTrackingArea;
+}
 
 - (void)updateTrackingAreas
 {
-    [self removeAllTrackingAreas];
-    [self addTrackingArea:[[CPTrackingArea alloc] initWithRect:CGRectMakeZero()
-                                                       options:CPTrackingMouseEnteredAndExited | CPTrackingActiveInKeyWindow | CPTrackingInVisibleRect
-                                                         owner:self
-                                                      userInfo:nil]];
+    if (_controlTrackingArea)
+        [self removeTrackingArea:_controlTrackingArea];
+    
+    _controlTrackingArea = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero()
+                                                        options:CPTrackingMouseEnteredAndExited | CPTrackingActiveInKeyWindow | CPTrackingInVisibleRect
+                                                          owner:self
+                                                       userInfo:nil];
+    [self addTrackingArea:_controlTrackingArea];
+    [super updateTrackingAreas];
 }
 
 @end
@@ -1128,18 +1137,18 @@ var CPControlActionKey                  = @"CPControlActionKey",
 
     var objectValue = [self objectValue];
 
-    if (objectValue !== nil)
+    if (objectValue != nil)
         [aCoder encodeObject:objectValue forKey:CPControlValueKey];
 
-    if (_target !== nil)
+    if (_target != nil)
         [aCoder encodeConditionalObject:_target forKey:CPControlTargetKey];
 
-    if (_action !== nil)
+    if (_action != nil)
         [aCoder encodeObject:_action forKey:CPControlActionKey];
 
     [aCoder encodeInt:_sendActionOn forKey:CPControlSendActionOnKey];
 
-    if (_formatter !== nil)
+    if (_formatter != nil)
         [aCoder encodeObject:_formatter forKey:CPControlFormatterKey];
 
     [aCoder encodeInt:_controlSize forKey:CPControlControlSizeKey];

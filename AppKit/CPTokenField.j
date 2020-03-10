@@ -630,7 +630,7 @@ CPTokenFieldDeleteButtonType     = 1;
 
 - (void)setObjectValue:(id)aValue
 {
-    if (aValue !== nil && ![aValue isKindOfClass:[CPArray class]])
+    if (aValue != nil && ![aValue isKindOfClass:[CPArray class]])
     {
         [super setObjectValue:nil];
         return;
@@ -645,7 +645,7 @@ CPTokenFieldDeleteButtonType     = 1;
         newTokens = [];
 
     // Preserve as many existing tokens as possible to reduce redraw flickering.
-    if (aValue !== nil)
+    if (aValue != nil)
     {
         for (var i = 0, count = [aValue count]; i < count; i++)
         {
@@ -666,7 +666,7 @@ CPTokenFieldDeleteButtonType     = 1;
                 }
             }
 
-            if (newToken === nil)
+            if (newToken == nil)
             {
                 newToken = [_CPTokenFieldToken new];
                 [newToken setTokenField:self];
@@ -1310,7 +1310,7 @@ CPTokenFieldDeleteButtonType     = 1;
     {
         var stringForRepresentedObject = [_tokenFieldDelegate tokenField:self displayStringForRepresentedObject:representedObject];
 
-        if (stringForRepresentedObject !== nil)
+        if (stringForRepresentedObject != nil)
             return stringForRepresentedObject;
     }
 
@@ -1332,7 +1332,7 @@ CPTokenFieldDeleteButtonType     = 1;
     {
         var approvedObjects = [_tokenFieldDelegate tokenField:self shouldAddObjects:tokens atIndex:index];
 
-        if (approvedObjects !== nil)
+        if (approvedObjects != nil)
             return approvedObjects;
     }
 
@@ -1354,7 +1354,7 @@ CPTokenFieldDeleteButtonType     = 1;
     {
         var token = [_tokenFieldDelegate tokenField:self representedObjectForEditingString:aString];
 
-        if (token !== nil && token !== undefined)
+        if (token != nil)
             return token;
         // If nil was returned, assume the string is the represented object. The alternative would have been
         // to not add anything to the object value array for a nil response.

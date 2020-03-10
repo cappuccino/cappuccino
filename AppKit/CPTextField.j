@@ -689,8 +689,38 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         }
         else
         {
-            var point = CGPointMake([self convertPointFromBase:[[CPApp currentEvent] locationInWindow]].x - [self currentValueForThemeAttribute:@"content-inset"].left, 0),
-                position = [CPPlatformString charPositionOfString:[self stringValue] withFont:[self font] forPoint:point];
+            var x            = [self convertPointFromBase:[[CPApp currentEvent] locationInWindow]].x,
+                contentInset = [self currentValueForThemeAttribute:@"content-inset"],
+                text         = [self stringValue],
+                font         = [self font];
+
+            switch ([self alignment]) {
+                case CPCenterTextAlignment:
+
+                    var contentWidth = [self bounds].size.width - contentInset.left - contentInset.right,
+                        textWidth    = [text sizeWithFont:font].width;
+
+                    x -= (contentWidth - textWidth) / 2 + contentInset.left;
+
+                    break;
+
+                case CPRightTextAlignment:
+
+                    var contentWidth = [self bounds].size.width - contentInset.left - contentInset.right,
+                        textWidth    = [text sizeWithFont:font].width;
+
+                    x -= (contentWidth - textWidth) + contentInset.left;
+
+                    break;
+
+                default: // CPLeftTextAlignment, CPJustifiedTextAlignment, CPNaturalTextAlignment
+
+                    x -= contentInset.left;
+
+                    break;
+            }
+
+            var position = [CPPlatformString charPositionOfString:text withFont:font forPoint:CGPointMake(x, 0)];
 
             [self setSelectedRange:CPMakeRange(position, 0)];
         }
@@ -786,7 +816,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     element.style.zIndex        = 1000;
     element.style.top           = topPoint;
     element.style.lineHeight    = ROUND(lineHeight) + "px";
-    element.style.height        = isTextArea ? CGRectGetHeight(contentRect) + "px" : ROUND(lineHeight) + "px";;
+    element.style.height        = isTextArea ? CGRectGetHeight(contentRect) + "px" : ROUND(lineHeight) + "px";
     element.style.width         = CGRectGetWidth(contentRect) + "px";
     element.style.left          = left + "px";
     element.style.verticalAlign = "top";
@@ -1095,7 +1125,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)keyDown:(CPEvent)anEvent
 {
-    if (!([self isEnabled] && [self isEditable]))
+    // Has to be enabled, and it also has to be editable or selectable.
+    if (![self isEnabled] || !([self isEditable] || [self isSelectable]))
         return;
 
     // CPTextField uses an HTML input element to take the input so we need to
@@ -1334,7 +1365,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         // If there is a formatter, make sure the object value can be formatted successfully
         var formattedString = [self hasThemeState:CPThemeStateEditing] ? [formatter editingStringForObjectValue:aValue] : [formatter stringForObjectValue:aValue];
 
-        if (formattedString === nil)
+        if (formattedString == nil)
         {
             var value = nil;
 
@@ -1344,7 +1375,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
                 value = undefined;
 
             [super setObjectValue:value];
-            _stringValue = (value === nil || value === undefined) ? @"" : String(value);
+            _stringValue = (value == nil) ? @"" : String(value);
         }
         else
             _stringValue = formattedString;
@@ -1500,7 +1531,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
                 else
                     [[CPRunLoop mainRunLoop] performBlock:function(){ element.select(); } argument:nil order:0 modes:[CPDefaultRunLoopMode]];
             }
-            else if (wind !== nil && [wind makeFirstResponder:self])
+            else if (wind != nil && [wind makeFirstResponder:self])
                 [self _selectText:sender immediately:immediately];
         }
         else
@@ -1510,7 +1541,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 #else
         // Even if we can't actually select the text we need to preserve the first
         // responder side effect.
-        if (wind !== nil && [wind firstResponder] !== self)
+        if (wind != nil && [wind firstResponder] !== self)
             [wind makeFirstResponder:self];
 #endif
     }
@@ -2155,7 +2186,7 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
         newValue    = [self valueForBinding:aBinding],
         value       = [destination valueForKeyPath:keyPath];
 
-    if (CPIsControllerMarker(value) && newValue === nil)
+    if (CPIsControllerMarker(value) && newValue == nil)
         return;
 
     newValue = [self reverseTransformValue:newValue withOptions:options];
@@ -2186,21 +2217,32 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 @end
 
 @implementation CPTextField (CPTrackingArea)
+{
+    CPTrackingArea      _textFieldTrackingArea;
+}
 
 - (void)updateTrackingAreas
 {
-    [self removeAllTrackingAreas];
+    if (_textFieldTrackingArea)
+    {
+        [self removeTrackingArea:_textFieldTrackingArea];
+        _textFieldTrackingArea = nil;
+    }
 
     if ([self isEnabled] && (_isEditable || _isSelectable))
     {
         var myBounds     = CGRectMakeCopy([self bounds]),
             contentInset = [self currentValueForThemeAttribute:@"content-inset"];
+        
+        _textFieldTrackingArea = [[CPTrackingArea alloc] initWithRect:CGRectInsetByInset(myBounds, contentInset)
+                                                              options:CPTrackingCursorUpdate | CPTrackingActiveInKeyWindow
+                                                                owner:self
+                                                             userInfo:nil];
 
-        [self addTrackingArea:[[CPTrackingArea alloc] initWithRect:CGRectInsetByInset(myBounds, contentInset)
-                                                       options:CPTrackingMouseEnteredAndExited | CPTrackingCursorUpdate | CPTrackingActiveInKeyWindow
-                                                         owner:self
-                                                      userInfo:nil]];
+        [self addTrackingArea:_textFieldTrackingArea];
     }
+    
+    [super updateTrackingAreas];
 }
 
 - (void)cursorUpdate:(CPEvent)anEvent
@@ -2209,3 +2251,22 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 }
 
 @end
+
+#pragma mark -
+
+@implementation CPTextField (TableDataView)
+
+// We overide here _CPObject+Theme setValue:forThemeAttribute as CPTextField can be used as tableView data view
+// So, when outside a table data view, setValue:forThemeAttribute should store the value with the CPThemeStateNormal (default behavior)
+// When inside a table data view, it should store the value with the CPThemeStateTableDataView. If not, the value won't be used if the
+// theme defined a value for this attribute for state CPThemeStateTableDataView
+
+- (void)setValue:(id)aValue forThemeAttribute:(CPString)aName
+{
+    [super setValue:aValue forThemeAttribute:aName];
+    [super setValue:aValue forThemeAttribute:aName inState:CPThemeStateTableDataView];
+}
+
+@end
+
+

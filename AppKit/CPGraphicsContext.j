@@ -92,7 +92,7 @@ var CPGraphicsContextCurrent = nil,
     @param aGraphicsPort the graphics port to initialize with
     @return the initialized context
 */
-- (id)initWithGraphicsPort:(CPContext)aGraphicsPort
+- (id)initWithGraphicsPort:(CGContext)aGraphicsPort
 {
     self = [super init];
 

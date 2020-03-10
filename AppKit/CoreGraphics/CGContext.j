@@ -374,7 +374,7 @@ function CGContextFillRect(aContext, aRect)
 */
 function CGContextFillRects(aContext, rects, count)
 {
-    if (arguments[2] === undefined)
+    if (arguments[2] == nil)
         var count = rects.length;
 
     CGContextBeginPath(aContext);
@@ -641,7 +641,7 @@ function CGContextStrokeLineSegments(aContext, points, count)
 {
     var i = 0;
 
-    if (count === NULL)
+    if (count == NULL)
         var count = points.length;
 
     CGContextBeginPath(aContext);

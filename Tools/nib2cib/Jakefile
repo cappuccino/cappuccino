@@ -23,9 +23,9 @@ app ("nib2cib", function(nib2cibTask)
     nib2cibTask.setFlattensSources(true);
 
     if ($CONFIGURATION === "Release")
-        nib2cibTask.setCompilerFlags("-O");
+        nib2cibTask.setCompilerFlags("-O2 -Wno-unused-but-set-variable ");
     else
-        nib2cibTask.setCompilerFlags("-DDEBUG -g");
+        nib2cibTask.setCompilerFlags("-DDEBUG -g  -Wno-unused-but-set-variable ");
 });
 
 $BUILD_CJS_NIB2CIB = FILE.join($BUILD_CJS_CAPPUCCINO_BIN, 'nib2cib');

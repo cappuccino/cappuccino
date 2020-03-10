@@ -42,7 +42,6 @@
 - (CPDragOperation)browser:(CPBrowser)browser validateDrop:(id)info proposedRow:(CPInteger)row column:(CPInteger)column dropOperation:(CPTableViewDropOperation)dropOperation;
 - (CPImage)browser:(CPBrowser)browser imageValueForItem:(id)anItem;
 - (CPImage)browser:(CPBrowser)browser draggingImageForRowsWithIndexes:(CPIndexSet)rowIndexes inColumn:(CPInteger)column withEvent:(CPEvent)event offset:(CGPoint)dragImageOffset;
-- (CPImage)browser:(CPBrowser)browser imageValueForItem:(id)item;
 - (CPIndexSet)browser:(CPBrowser)browser selectionIndexesForProposedSelection:(CPIndexSet)proposedSelectionIndexes inColumn:(CPInteger)column;
 - (CPInteger)browser:(CPBrowser)browser numberOfChildrenOfItem:(id)item;
 - (CPView)browser:(CPBrowser)browser draggingViewForRowsWithIndexes:(CPIndexSet)rowIndexes inColumn:(CPInteger)column withEvent:(CPEvent)event offset:(CGPoint)dragImageOffset;
@@ -62,19 +61,18 @@ var CPBrowserDelegate_browser_acceptDrop_atRow_column_dropOperation_            
     CPBrowserDelegate_browser_shouldSelectRowIndexes_inColumn_                              = 1 << 4,
     CPBrowserDelegate_browser_writeRowsWithIndexes_inColumn_toPasteboard_                   = 1 << 5,
     CPBrowserDelegate_browser_validateDrop_proposedRow_column_dropOperation_                = 1 << 6,
-    CPBrowserDelegate_browser_imageValueForItem_                                            = 1 << 7,
-    CPBrowserDelegate_browser_draggingImageForRowsWithIndexes_inColumn_withEvent_offset_    = 1 << 8,
-    CPBrowserDelegate_browser_imageValueForItem_                                            = 1 << 9,
-    CPBrowserDelegate_browser_selectionIndexesForProposedSelection_inColumn_                = 1 << 10,
-    CPBrowserDelegate_browser_numberOfChildrenOfItem_                                       = 1 << 11,
-    CPBrowserDelegate_browser_draggingViewForRowsWithIndexes_inColumn_withEvent_offset_     = 1 << 12,
-    CPBrowserDelegate_browser_child_ofItem_                                                 = 1 << 13,
-    CPBrowserDelegate_browser_objectValueForItem_                                           = 1 << 14,
-    CPBrowserDelegate_rootItemForBrowser_                                                   = 1 << 15,
-    CPBrowserDelegate_browser_didChangeLastColumn_toColumn_                                 = 1 << 16,
-    CPBrowserDelegate_browser_didResizeColumn_                                              = 1 << 17,
-    CPBrowserDelegate_browserSelectionIsChanging_                                           = 1 << 18,
-    CPBrowserDelegate_browserSelectionDidChange_                                            = 1 << 19;
+    CPBrowserDelegate_browser_draggingImageForRowsWithIndexes_inColumn_withEvent_offset_    = 1 << 7,
+    CPBrowserDelegate_browser_imageValueForItem_                                            = 1 << 8,
+    CPBrowserDelegate_browser_selectionIndexesForProposedSelection_inColumn_                = 1 << 9,
+    CPBrowserDelegate_browser_numberOfChildrenOfItem_                                       = 1 << 10,
+    CPBrowserDelegate_browser_draggingViewForRowsWithIndexes_inColumn_withEvent_offset_     = 1 << 11,
+    CPBrowserDelegate_browser_child_ofItem_                                                 = 1 << 12,
+    CPBrowserDelegate_browser_objectValueForItem_                                           = 1 << 13,
+    CPBrowserDelegate_rootItemForBrowser_                                                   = 1 << 14,
+    CPBrowserDelegate_browser_didChangeLastColumn_toColumn_                                 = 1 << 15,
+    CPBrowserDelegate_browser_didResizeColumn_                                              = 1 << 16,
+    CPBrowserDelegate_browserSelectionIsChanging_                                           = 1 << 17,
+    CPBrowserDelegate_browserSelectionDidChange_                                            = 1 << 18;
 
 /*!
     @ingroup appkit
@@ -210,9 +208,6 @@ var CPBrowserDelegate_browser_acceptDrop_atRow_column_dropOperation_            
 
     if ([_delegate respondsToSelector:@selector(browser:validateDrop:proposedRow:column:dropOperation:)])
         _implementedDelegateMethods |= CPBrowserDelegate_browser_validateDrop_proposedRow_column_dropOperation_;
-
-    if ([_delegate respondsToSelector:@selector(browser:imageValueForItem:)])
-        _implementedDelegateMethods |= CPBrowserDelegate_browser_imageValueForItem_;
 
     if ([_delegate respondsToSelector:@selector(browser:draggingImageForRowsWithIndexes:inColumn:withEvent:offset:)])
         _implementedDelegateMethods |= CPBrowserDelegate_browser_draggingImageForRowsWithIndexes_inColumn_withEvent_offset_;
@@ -468,7 +463,7 @@ var CPBrowserDelegate_browser_acceptDrop_atRow_column_dropOperation_            
 
 - (id)itemAtRow:(CPInteger)row inColumn:(CPInteger)column
 {
-    return [_tableDelegates[column] childAtIndex:row];
+    return [_tableDelegates[column] childAtIndex:row] || nil;
 }
 
 - (BOOL)isLeafItem:(id)item
@@ -478,7 +473,7 @@ var CPBrowserDelegate_browser_acceptDrop_atRow_column_dropOperation_            
 
 - (id)parentForItemsInColumn:(CPInteger)column
 {
-    return [_tableDelegates[column] _item];
+    return [_tableDelegates[column] _item] || nil;
 }
 
 - (CPSet)selectedItems
