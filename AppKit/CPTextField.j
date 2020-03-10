@@ -169,8 +169,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 + (CPTextField)textFieldWithStringValue:(CPString)aStringValue placeholder:(CPString)aPlaceholder width:(float)aWidth theme:(CPTheme)aTheme
 {
-    var minSize = [aTheme valueForAttributeWithName:@"min-size" forClass:CPTextField],
-        textField = [[self alloc] initWithFrame:CGRectMake(0.0, 0.0, aWidth, minSize ? minSize.height : 29.0)];
+    var minSize   = aTheme ? [aTheme valueForAttributeWithName:@"min-size" forClass:CPTextField] : CGSizeMake(0,0),
+        textField = [[self alloc] initWithFrame:CGRectMake(0.0, 0.0, aWidth, minSize.height)];
 
     [textField setTheme:aTheme];
     [textField setStringValue:aStringValue];
@@ -191,8 +191,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 + (CPTextField)roundedTextFieldWithStringValue:(CPString)aStringValue placeholder:(CPString)aPlaceholder width:(float)aWidth theme:(CPTheme)aTheme
 {
-    var minSize = [aTheme valueForAttributeWithName:@"min-size" forClass:CPTextField],
-        textField = [[CPTextField alloc] initWithFrame:CGRectMake(0.0, 0.0, aWidth, minSize ? minSize.height : 29.0)];
+    var minSize   = aTheme ? [aTheme valueForAttributeWithName:@"min-size" forClass:CPTextField] : CGSizeMake(0,0),
+        textField = [[self alloc] initWithFrame:CGRectMake(0.0, 0.0, aWidth, minSize.height)];
 
     [textField setTheme:aTheme];
     [textField setStringValue:aStringValue];
@@ -233,6 +233,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
             @"bezel-inset": CGInsetMakeZero(),
             @"content-inset": CGInsetMake(1.0, 0.0, 0.0, 0.0),
             @"bezel-color": [CPNull null],
+            @"min-size": CGSizeMake(0, 29)
         };
 }
 
