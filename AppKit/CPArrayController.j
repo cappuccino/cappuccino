@@ -609,6 +609,25 @@
 
     return YES;
 }
+- (void)_selectionWillChange
+{
+    // Push back all data from the dirty editors before it is too late.
+
+    var editorsCount = [_editors count];
+
+    while (editorsCount--)
+    {
+        var allBindings = [CPBinder allBindingsForObject:_editors[editorsCount]],
+            allKeys = [allBindings allKeys],
+            keysCount = allKeys.length;
+
+            while (keysCount--)
+                [[allBindings objectForKey:allKeys[keysCount]] reverseSetValueFor:allKeys[keysCount]];
+    }
+
+    [super _selectionWillChange];
+}
+
 
 /*!
     Returns an array of the selected objects.

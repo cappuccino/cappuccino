@@ -2151,6 +2151,56 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 
 @implementation _CPTextFieldValueBinder : CPBinder
 
++ (void)unbind:(CPString)aBinding forObject:(id)anObject
+{
+    var theBinding = [self getBinding:aBinding forObject:anObject],
+        notificationCenter = [CPNotificationCenter defaultCenter];
+
+    if (theBinding)
+    {
+        [notificationCenter removeObserver:[theBinding._info objectForKey:CPObservedObjectKey]
+                                      name:CPControlTextDidBeginEditingNotification
+                                    object:anObject];
+
+        [notificationCenter removeObserver:[theBinding._info objectForKey:CPObservedObjectKey]
+                                      name:CPControlTextDidEndEditingNotification
+                                    object:anObject];
+
+        [super unbind:aBinding forObject:anObject];
+    }
+}
+
+- (id)initWithBinding:(CPString)aBinding name:(CPString)aName to:(id)aDestination keyPath:(CPString)aKeyPath options:(CPDictionary)options from:(id)aSource
+{
+    self = [super initWithBinding:aBinding
+                             name:aName
+                               to:aDestination
+                          keyPath:aKeyPath
+                          options:options
+                             from:aSource];
+
+    var notificationCenter = [CPNotificationCenter defaultCenter];
+
+    // This gives us support for the CPEditorRegistration informal protocol
+    if ([aDestination respondsToSelector:@selector(_objectDidBeginEditing:)])
+    {
+        [notificationCenter addObserver:aDestination
+                               selector:@selector(_objectDidBeginEditing:)
+                                   name:CPControlTextDidBeginEditingNotification
+                                 object:aSource];
+    }
+
+    if ([aDestination respondsToSelector:@selector(_objectDidEndEditing:)])
+    {
+        [notificationCenter addObserver:aDestination
+                               selector:@selector(_objectDidEndEditing:)
+                                   name:CPControlTextDidEndEditingNotification
+                                 object:aSource];
+    }
+
+    return self;
+}
+
 - (void)_updatePlaceholdersWithOptions:(CPDictionary)options forBinding:(CPString)aBinding
 {
     [super _updatePlaceholdersWithOptions:options];
