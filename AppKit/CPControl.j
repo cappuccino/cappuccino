@@ -849,7 +849,7 @@ var CPControlBlackColor = [CPColor blackColor];
 */
 - (void)setTextColor:(CPColor)aColor
 {
-    [self setValue:aColor forThemeAttribute:@"text-color"];
+    [self setValue:aColor forThemeAttribute:@"text-color" inState:[self themeState]];
 }
 
 /*!
