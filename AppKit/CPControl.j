@@ -137,8 +137,7 @@ var CPControlBlackColor = [CPColor blackColor];
             @"image-position": CPImageLeft,
             @"image-scaling": CPScaleToFit,
             @"min-size": CGSizeMakeZero(),
-            @"max-size": CGSizeMake(-1.0, -1.0),
-            @"nib2cib-adjustment-frame": CGRectMakeZero()
+            @"max-size": CGSizeMake(-1.0, -1.0)
         };
 }
 

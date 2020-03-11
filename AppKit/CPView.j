@@ -332,7 +332,8 @@ var CPViewHighDPIDrawingEnabled = YES;
 + (CPDictionary)themeAttributes
 {
     return @{
-             @"css-based": NO
+             @"css-based": NO,
+             @"nib2cib-adjustment-frame": CGRectMakeZero()
              };
 }
 
