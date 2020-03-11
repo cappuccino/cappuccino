@@ -739,7 +739,7 @@ var HORIZONTAL_MARGIN = 2;
 */
 - (void)setMinItemSize:(CGSize)aSize
 {
-    if (aSize === nil || aSize === undefined)
+    if (aSize == nil)
         [CPException raise:CPInvalidArgumentException reason:"Invalid value provided for minimum size"];
 
     if (CGSizeEqualToSize(_minItemSize, aSize))

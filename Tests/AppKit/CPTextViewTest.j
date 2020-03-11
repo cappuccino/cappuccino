@@ -27,7 +27,7 @@
     [textView setDelegate:self];
 
     [[theWindow contentView] addSubview:textView];
-
+    
     delegateSpy = spy(self);
 }
 

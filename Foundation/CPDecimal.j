@@ -941,7 +941,7 @@ function CPDecimalDivide(result, leftOperand, rightOperand, roundingMode)
 
         if (result._exponent + exp < CPDecimalMinExponent)
         {
-            CPDecimalSetZero(result);
+            _CPDecimalSetZero(result);
             return error;
         }
     }

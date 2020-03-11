@@ -275,7 +275,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 */
 - (void)selectNextTabViewItem:(id)aSender
 {
-    if (_selectedTabViewItem === nil)
+    if (_selectedTabViewItem == nil)
         return;
 
     var nextIndex = [self indexOfTabViewItem:_selectedTabViewItem] + 1;
@@ -293,7 +293,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 */
 - (void)selectPreviousTabViewItem:(id)aSender
 {
-    if (_selectedTabViewItem === nil)
+    if (_selectedTabViewItem == nil)
         return;
 
     var previousIndex = [self indexOfTabViewItem:_selectedTabViewItem] - 1;
@@ -353,15 +353,15 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 {
     var controller = [aTabViewItem viewController];
 
-    if (controller !== nil && ![controller isViewLoaded])
+    if (controller != nil && ![controller isViewLoaded])
     {
         [controller loadViewWithCompletionHandler:function(view, error)
         {
-            if (error !== nil)
+            if (error != nil)
             {
                 CPLog.warn("Could not load the view for item " + aTabViewItem + ". " + error);
             }
-            else if (view !== nil)
+            else if (view != nil)
             {
                 [aTabViewItem setView:view];
 
@@ -599,7 +599,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1 << 1,
 {
     var theBinder = [self binderForBinding:CPSelectionIndexesBinding];
 
-    if (theBinder !== nil)
+    if (theBinder != nil)
         [theBinder reverseSetValueFor:@"selectionIndexes"];
     else
     {

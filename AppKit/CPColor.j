@@ -267,7 +267,7 @@ var cachedBlackColor,
 
     @return an initialized RGB color
 */
-+ (CPColor)colorWithHexString:(string)hex
++ (CPColor)colorWithHexString:(CPString)hex
 {
     var rgba = hexToRGB(hex);
     return rgba ? [[CPColor alloc] _initWithRGBA: rgba] : null;

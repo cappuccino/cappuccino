@@ -51,7 +51,7 @@ CPTrackingOwnerImplementsCursorUpdate = 1 << 4;
 
 /*!
  @ingroup appkit
- 
+
  A CPTrackingArea defines a region of view that generates mouse-tracking and
  cursor-update events when the mouse is over that region.
  */
@@ -61,7 +61,7 @@ CPTrackingOwnerImplementsCursorUpdate = 1 << 4;
     CPTrackingAreaOptions   _options                    @accessors(getter=options);
     id                      _owner                      @accessors(getter=owner);
     CPDictionary            _userInfo                   @accessors(getter=userInfo);
-    
+
     CPView                  _referencingView            @accessors(property=view);
     CGRect                  _windowRect                 @accessors(getter=windowRect);
 
@@ -72,13 +72,13 @@ CPTrackingOwnerImplementsCursorUpdate = 1 << 4;
 #pragma mark -
 #pragma mark Initialization
 
-/*! 
- Initializes and returns an object defining a region of a view to receive mouse-tracking events, mouse-moved events, cursor-update events, or possibly 
+/*!
+ Initializes and returns an object defining a region of a view to receive mouse-tracking events, mouse-moved events, cursor-update events, or possibly
  all these events.
  */
 - (CPTrackingArea)initWithRect:(CGRect)aRect options:(CPTrackingAreaOptions)options owner:(id)owner userInfo:(CPDictionary)userInfo
 {
-    if (owner === nil)
+    if (owner == nil)
         [CPException raise:CPInternalInconsistencyException reason:"No owner specified"];
 
     if (options === 0)
@@ -116,7 +116,7 @@ CPTrackingOwnerImplementsCursorUpdate = 1 << 4;
         if ([_owner respondsToSelector:@selector(cursorUpdate:)])
             _implementedOwnerMethods |= CPTrackingOwnerImplementsCursorUpdate;
     }
-    
+
     return self;
 }
 
@@ -126,7 +126,16 @@ CPTrackingOwnerImplementsCursorUpdate = 1 << 4;
 
 - (void)_updateWindowRect
 {
-    _windowRect = [_referencingView convertRect:((_options & CPTrackingInVisibleRect) ? [_referencingView visibleRect] : _viewRect) toView:[[_referencingView window] _windowView]];
+    [self _updateWindowRectWithReferencingSuperViewVisibleRect:nil];
+}
+
+/*!
+ To speed up things we allow the caller to pass the visible rect of the referencing view's superview.
+ This allows the visible rect calculations to be optimized when traveling down the view hierarchy.
+*/
+- (void)_updateWindowRectWithReferencingSuperViewVisibleRect:(CGRect)referencingSuperviewVisibleRect
+{
+    _windowRect = [_referencingView convertRect:((_options & CPTrackingInVisibleRect) ? [_referencingView _visibleRectWithSuperviewVisibleRect:referencingSuperviewVisibleRect] : _viewRect) toView:[[_referencingView window] _windowView]];
 }
 
 @end
@@ -147,7 +156,7 @@ CPTrackingOwnerImplementsCursorUpdate = 1 << 4;
         _referencingView = [aCoder decodeObjectForKey:CPTrackingAreaReferencingViewKey];
         _windowRect      = [aCoder decodeObjectForKey:CPTrackingAreaWindowRect];
     }
-    
+
     return self;
 }
 

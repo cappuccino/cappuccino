@@ -137,8 +137,7 @@ var CPControlBlackColor = [CPColor blackColor];
             @"image-position": CPImageLeft,
             @"image-scaling": CPScaleToFit,
             @"min-size": CGSizeMakeZero(),
-            @"max-size": CGSizeMake(-1.0, -1.0),
-            @"nib2cib-adjustment-frame": CGRectMakeZero()
+            @"max-size": CGSizeMake(-1.0, -1.0)
         };
 }
 
@@ -196,6 +195,8 @@ var CPControlBlackColor = [CPColor blackColor];
     {
         _sendActionOn           = CPLeftMouseUpMask;
         _trackingMouseDownFlags = 0;
+        
+        [self updateTrackingAreas];
     }
 
     return self;
@@ -620,15 +621,15 @@ var CPControlBlackColor = [CPColor blackColor];
 */
 - (CPString)stringValue
 {
-    if (_formatter && _value !== undefined)
+    if (_formatter && _value != nil)
     {
         var formattedValue = [self hasThemeState:CPThemeStateEditing] ? [_formatter editingStringForObjectValue:_value] : [_formatter stringForObjectValue:_value];
 
-        if (formattedValue !== nil && formattedValue !== undefined)
+        if (formattedValue != nil)
             return formattedValue;
     }
 
-    return (_value === undefined || _value === nil) ? @"" : String(_value);
+    return _value == nil ? @"" : String(_value);
 }
 
 /*!
@@ -637,7 +638,7 @@ var CPControlBlackColor = [CPColor blackColor];
 - (void)setStringValue:(CPString)aString
 {
     // Cocoa raises an invalid parameter assertion and returns if you pass nil.
-    if (aString === nil || aString === undefined)
+    if (aString == nil)
     {
         CPLog.warn("nil or undefined sent to CPControl -setStringValue");
         return;
@@ -803,7 +804,7 @@ var CPControlBlackColor = [CPColor blackColor];
     CPBottomVerticalTextAlignment
     </pre>
 */
-- (void)setVerticalAlignment:(CPTextVerticalAlignment)alignment
+- (void)setVerticalAlignment:(CPVerticalTextAlignment)alignment
 {
     [self setValue:alignment forThemeAttribute:@"vertical-alignment"];
 }
@@ -848,7 +849,7 @@ var CPControlBlackColor = [CPColor blackColor];
 */
 - (void)setTextColor:(CPColor)aColor
 {
-    [self setValue:aColor forThemeAttribute:@"text-color"];
+    [self setValue:aColor forThemeAttribute:@"text-color" inState:[self themeState]];
 }
 
 /*!
@@ -1135,18 +1136,18 @@ var CPControlActionKey                  = @"CPControlActionKey",
 
     var objectValue = [self objectValue];
 
-    if (objectValue !== nil)
+    if (objectValue != nil)
         [aCoder encodeObject:objectValue forKey:CPControlValueKey];
 
-    if (_target !== nil)
+    if (_target != nil)
         [aCoder encodeConditionalObject:_target forKey:CPControlTargetKey];
 
-    if (_action !== nil)
+    if (_action != nil)
         [aCoder encodeObject:_action forKey:CPControlActionKey];
 
     [aCoder encodeInt:_sendActionOn forKey:CPControlSendActionOnKey];
 
-    if (_formatter !== nil)
+    if (_formatter != nil)
         [aCoder encodeObject:_formatter forKey:CPControlFormatterKey];
 
     [aCoder encodeInt:_controlSize forKey:CPControlControlSizeKey];

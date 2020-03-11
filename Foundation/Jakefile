@@ -51,9 +51,9 @@ foundationTask = framework ("Foundation", function(foundationTask)
     INCLUDES = "--include \"../AppKit/Platform/Platform.h\" " + INCLUDES;
 
     if ($CONFIGURATION === "Release")
-        foundationTask.setCompilerFlags("-O2 " + INCLUDES);
+        foundationTask.setCompilerFlags("-O2 -Wno-unused-but-set-variable " + INCLUDES);
     else
-        foundationTask.setCompilerFlags("-DDEBUG -g -S --inline-msg-send " + INCLUDES);
+        foundationTask.setCompilerFlags("-DDEBUG -g -S --inline-msg-send -Wno-unused-but-set-variable " + INCLUDES);
 });
 
 $BUILD_CJS_FOUNDATION = FILE.join($BUILD_CJS_CAPPUCCINO_FRAMEWORKS, "Foundation");

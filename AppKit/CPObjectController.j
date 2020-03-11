@@ -384,12 +384,34 @@
 */
 - (void)_selectionDidChange
 {
-    if (_selection === undefined || _selection === nil)
+    if (_selection == nil)
         _selection = [[CPControllerSelectionProxy alloc] initWithController:self];
 
     [_selection controllerDidChange];
     [self didChangeValueForKey:@"selection"];
 }
+
+/*!
+    @ignore
+    These two private methods map CPTextField notifications to the CPEditorRegistration protocol
+    This should be generalized in the future:
+
+    The CPEditorRegistrationProtocol can be implemented in all controls that support editing, not just CPTextField.
+    In CPArrayController there are other cases than selection change when we need to review all editor pending changes. They should be covered, including the selection change, by the wider concept described by the methods commitEditing: (forces to end editing) and discardEditing: (pending changes are lost).
+*/
+- (void)_objectDidBeginEditing:(CPNotification)notification
+{
+    [self objectDidBeginEditing:[notification object]];
+}
+
+/*!
+    @ignore
+*/
+- (void) _objectDidEndEditing:(CPNotification)notification
+{
+    [self objectDidEndEditing:[notification object]];
+}
+
 
 /*!
     @return id - Returns the keys which are being observed.
@@ -770,7 +792,7 @@ var CPObjectControllerContentKey                        = @"CPObjectControllerCo
         }
     }
 
-    if (value === nil || value.isa && [value isEqual:[CPNull null]])
+    if (value == nil || value.isa && [value isEqual:[CPNull null]])
         value = CPNullMarker;
 
     return value;

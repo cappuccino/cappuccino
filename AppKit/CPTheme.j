@@ -260,7 +260,7 @@ var CPThemesByName          = { },
         attributeNames = [attributes keyEnumerator],
         objectThemeClass = [anObject themeClass];
 
-    while ((attributeName = [attributeNames nextObject]) !== nil)
+    while ((attributeName = [attributeNames nextObject]) != nil)
         [self _recordAttribute:[attributes objectForKey:attributeName] forClass:objectThemeClass];
 }
 
@@ -860,17 +860,12 @@ CPThemeStateNormalString        = String(CPThemeStateNormal);
 
 - (_CPThemeAttribute)attributeBySettingValue:(id)aValue
 {
-    var attribute = [[_CPThemeAttribute alloc] initWithName:_name defaultValue:_defaultValue defaultAttribute:_themeDefaultAttribute];
-
-    if (aValue !== undefined && aValue !== nil)
-        attribute._values = @{ CPThemeStateNormalString: aValue };
-
-    return attribute;
+    return [self attributeBySettingValue:aValue forState:CPThemeStateNormal];
 }
 
 - (_CPThemeAttribute)attributeBySettingValue:(id)aValue forState:(ThemeState)aState
 {
-    var shouldRemoveValue = aValue === undefined || aValue === nil,
+    var shouldRemoveValue = aValue == nil,
         attribute = [[_CPThemeAttribute alloc] initWithName:_name defaultValue:_defaultValue defaultAttribute:_themeDefaultAttribute],
         values = _values;
 
@@ -913,7 +908,7 @@ CPThemeStateNormalString        = String(CPThemeStateNormal);
     // Not in cache. OK, search in values.
     value = [_values objectForKey:stateName];
 
-    if ((value !== undefined) && (value !== nil))
+    if (value != nil)
         return _cache[stateName] = value;
 
     // No direct match in values.
@@ -929,13 +924,13 @@ CPThemeStateNormalString        = String(CPThemeStateNormal);
     // Still don't have a value? OK, let's use the normal value.
     value = [_values objectForKey:String(CPThemeStateNormal)];
 
-    if ((value !== undefined) && (value !== nil))
+    if (value != nil)
         return _cache[stateName] = value;
 
     // No normal value, try asking _themeDefaultAttribute
     value = [_themeDefaultAttribute valueForState:aState];
 
-    if ((value !== undefined) && (value !== nil))
+    if (value != nil)
         return _cache[stateName] = value;
 
     // Well, last option, use default value

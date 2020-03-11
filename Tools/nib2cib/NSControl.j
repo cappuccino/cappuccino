@@ -25,10 +25,6 @@
 @import "NSCell.j"
 @import "NSView.j"
 
-
-@class Nib2Cib
-
-
 @implementation CPControl (NSCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
@@ -66,27 +62,6 @@
     [self setLineBreakMode:[cell lineBreakMode]];
     [self setFormatter:[cell formatter]];
     [self setControlSize:[cell controlSize]];
-}
-
-- (CGRect)_nib2CibAdjustment
-{
-    // Theme has not been loaded yet.
-    // Get attribute value directly from the theme or from the default value of the object otherwise.
-    var theme = [Nib2Cib defaultTheme];
-
-    return [theme valueForAttributeWithName:@"nib2cib-adjustment-frame" inState:[self themeState] forClass:[self class]] || [self currentValueForThemeAttribute:@"nib2cib-adjustment-frame"];
-}
-
-- (void)_adjustNib2CibSize
-{
-    var frame = [self frame],
-        frameAdjustment = [self _nib2CibAdjustment];
-
-    if (frameAdjustment)
-    {
-        var finalFrame = CGRectMake(frame.origin.x + frameAdjustment.origin.x, frame.origin.y - frameAdjustment.origin.y, frame.size.width + frameAdjustment.size.width, frame.size.height + frameAdjustment.size.height);
-        [self setFrame:finalFrame];
-    }
 }
 
 @end

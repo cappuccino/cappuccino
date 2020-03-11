@@ -43,7 +43,7 @@
     if (self === object)
         return YES;
 
-    if (object === nil || object.isa !== self.isa || ![[object collection] isEqual:_aggregate])
+    if (object == nil || object.isa !== self.isa || ![[object collection] isEqual:_aggregate])
         return NO;
 
     return YES;
@@ -58,7 +58,7 @@
 }
 
 - (CPString)description
-{    
+{
     var descriptions = [_aggregate arrayByApplyingBlock:function(exp)
     {
         return [exp description];

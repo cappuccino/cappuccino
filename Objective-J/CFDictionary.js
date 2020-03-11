@@ -229,7 +229,7 @@ DISPLAY_NAME(CFMutableDictionary.prototype.replaceValueForKey);
 
 CFMutableDictionary.prototype.setValueForKey = function(/*String*/ aKey, /*Object*/ aValue)
 {
-    if (aValue === nil || aValue === undefined)
+    if (aValue == nil)
         this.removeValueForKey(aKey);
 
     else if (this.containsKey(aKey))

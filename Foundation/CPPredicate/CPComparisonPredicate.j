@@ -275,7 +275,7 @@
     if (self === anObject)
         return YES;
 
-    if (anObject === nil || anObject.isa !== self.isa || _modifier !== [anObject comparisonPredicateModifier] || _type !== [anObject predicateOperatorType] || _options !== [anObject options] || _customSelector !== [anObject customSelector] || ![_left isEqual:[anObject leftExpression]] || ![_right isEqual:[anObject rightExpression]])
+    if (anObject == nil || anObject.isa !== self.isa || _modifier !== [anObject comparisonPredicateModifier] || _type !== [anObject predicateOperatorType] || _options !== [anObject options] || _customSelector !== [anObject customSelector] || ![_left isEqual:[anObject leftExpression]] || ![_right isEqual:[anObject rightExpression]])
         return NO;
 
     return YES;
@@ -287,10 +287,13 @@
         rightIsNil = (rhs == nil || [rhs isEqual:[CPNull null]]);
 
     if ((leftIsNil || rightIsNil) && _type != CPCustomSelectorPredicateOperatorType)
-        return (leftIsNil == rightIsNil &&
-               (_type == CPEqualToPredicateOperatorType ||
-                _type == CPLessThanOrEqualToPredicateOperatorType ||
-                _type == CPGreaterThanOrEqualToPredicateOperatorType));
+        return (leftIsNil === rightIsNil &&
+               (_type === CPEqualToPredicateOperatorType ||
+                _type === CPLessThanOrEqualToPredicateOperatorType ||
+                _type === CPGreaterThanOrEqualToPredicateOperatorType))
+               ||
+               (leftIsNil !== rightIsNil &&
+               (_type === CPNotEqualToPredicateOperatorType));
 
     var string_compare_options = 0;
 
@@ -388,7 +391,7 @@
             result = (_modifier == CPAllPredicateModifier),
             value;
 
-        while ((value = [e nextObject]) !== nil)
+        while ((value = [e nextObject]) != nil)
         {
             var eval = [self _evaluateValue:value rightValue:rightValue];
 

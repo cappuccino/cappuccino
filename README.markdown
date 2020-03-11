@@ -12,7 +12,7 @@ With Cappuccino, you don't concern yourself with HTML, CSS, or the DOM. You  wri
 
 Check out a [live demo of the widgets in Cappuccino](https://cappuccino-testbook.5apps.com/#ThemeKitchenSink)
 
-Check out some [live demos and tutorials](https://cappuccino-cookbook.5apps.com)
+Check out some [tutorials](https://cappuccino-cookbook.5apps.com)
 
 For more information, see the
   - [Official website](http://cappuccino-project.org)
@@ -38,7 +38,7 @@ Getting Started
 ---------------
 To write you first application, [download the starter package](http://www.cappuccino-project.org/#download).
 
-To contribute to Cappuccino, please read here: [Getting and Building the Source](http://wiki.github.com/cappuccino/cappuccino/getting-and-building-the-source).
+To contribute to Cappuccino, please read here: [Getting and Building the Source](https://github.com/cappuccino/cappuccino/wiki/Getting-and-building-the-source).
 
 License
 -------

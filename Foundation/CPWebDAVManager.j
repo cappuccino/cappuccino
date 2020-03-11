@@ -45,7 +45,7 @@ var setURLResourceValuesForKeysFromProperties = function(aURL, keys, properties)
 
     var displayName = [properties objectForKey:@"displayname"];
 
-    if (displayName !== nil)
+    if (displayName != nil)
     {
         [aURL setResourceValue:displayName forKey:CPURLNameKey];
         [aURL setResourceValue:displayName forKey:CPURLLocalizedNameKey];
@@ -84,7 +84,7 @@ CPWebDAVManagerNonCollectionResourceType    = 0;
             URLString = nil,
             URLStrings = [response keyEnumerator];
 
-        while ((URLString = [URLStrings nextObject]) !== nil)
+        while ((URLString = [URLStrings nextObject]) != nil)
         {
             var URL = [CPURL URLWithString:URLString],
                 properties = [response objectForKey:URLString];

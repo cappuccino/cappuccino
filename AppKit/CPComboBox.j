@@ -564,7 +564,7 @@ var CPComboBoxTextSubview = @"text",
 
     var selectedStringValue = [_listDelegate selectedStringValue];
 
-    if (selectedStringValue === nil)
+    if (selectedStringValue == nil)
         return NO;
     else
         _selectedStringValue = selectedStringValue;
