@@ -912,15 +912,22 @@ var CPRecentsAutosaveNameKey            = @"CPRecentsAutosaveNameKey",
 
 - (void)setSearchFieldValue:(CPString)aValue
 {
-    var destination       = [_info objectForKey:CPObservedObjectKey],
-        keyPath           = [_info objectForKey:CPObservedKeyPathKey],
-        replacementString = @"\"" + aValue + @"\"",
-        formatString      = _predicateFormat.replace(/\$value/g, replacementString);
-    
+    var destination = [_info objectForKey:CPObservedObjectKey],
+        keyPath     = [_info objectForKey:CPObservedKeyPathKey];
+
     [self suppressSpecificNotificationFromObject:destination keyPath:keyPath];
 
     if (aValue)
-        [_controller setFilterPredicate:[CPPredicate predicateWithFormat:formatString]];
+    {
+        var valueCount   = [[_predicateFormat componentsSeparatedByString:@"$value"] count] - 1,
+            formatString = _predicateFormat.replace(/\$value/g, "%@"),
+            values       = @[];
+
+        for (var i = 0; i < valueCount; i++)
+            [values addObject:aValue];
+
+        [_controller setFilterPredicate:[CPPredicate predicateWithFormat:formatString argumentArray:values]];
+    }
     else
         [_controller setFilterPredicate:nil];
 
