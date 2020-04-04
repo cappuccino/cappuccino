@@ -70,7 +70,7 @@
 
 - (CGRect)_nib2CibAdjustment
 {
-    if ((_boxType !== CPBoxSeparator) && ((_boxType === CPBoxPrimary) || (_boxType === CPBoxSecondary)))
+    if ((_boxType === CPBoxPrimary) || (_boxType === CPBoxSecondary))
     {
         // We use a special nib2cib-adjustment-frame for primary/secondary boxes
         var theme = [Nib2Cib defaultTheme],
