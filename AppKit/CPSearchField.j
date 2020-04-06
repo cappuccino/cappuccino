@@ -906,16 +906,21 @@ var CPRecentsAutosaveNameKey            = @"CPRecentsAutosaveNameKey",
     var destination = [_info objectForKey:CPObservedObjectKey],
         keyPath     = [_info objectForKey:CPObservedKeyPathKey];
 
-    var formatString = _predicateFormat.replace(/\$value/g, "%@");
     [self suppressSpecificNotificationFromObject:destination keyPath:keyPath];
 
     if (aValue)
-        [_controller setFilterPredicate:[CPPredicate predicateWithFormat:formatString, aValue]];
+    {
+        var values       = @[],
+            formatString = _predicateFormat.replace(/\$value/g, function(x) {[values addObject:aValue]; return "%@";});
+
+        [_controller setFilterPredicate:[CPPredicate predicateWithFormat:formatString argumentArray:values]];
+    }
     else
         [_controller setFilterPredicate:nil];
 
     [self unsuppressSpecificNotificationFromObject:destination keyPath:keyPath];
 }
+
 - (CPString)searchFieldValue
 {
     return [_source stringValue];
