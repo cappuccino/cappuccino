@@ -919,12 +919,8 @@ var CPRecentsAutosaveNameKey            = @"CPRecentsAutosaveNameKey",
 
     if (aValue)
     {
-        var valueCount   = [[_predicateFormat componentsSeparatedByString:@"$value"] count] - 1,
-            formatString = _predicateFormat.replace(/\$value/g, "%@"),
-            values       = @[];
-
-        for (var i = 0; i < valueCount; i++)
-            [values addObject:aValue];
+        var values       = @[],
+            formatString = _predicateFormat.replace(/\$value/g, function(x) {[values addObject:aValue]; return "%@";});
 
         [_controller setFilterPredicate:[CPPredicate predicateWithFormat:formatString argumentArray:values]];
     }
