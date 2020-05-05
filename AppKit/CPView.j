@@ -3664,7 +3664,6 @@ var CPAppearanceVibrantDark = [CPAppearance appearanceNamed:CPAppearanceNameVibr
 
 - (void)_updateTrackingAreasWithRecursion:(BOOL)shouldCallRecursively
 {
-    _inhibitUpdateTrackingAreas = YES;
     [self _updateTrackingAreasWithRecursion:shouldCallRecursively withReferencingSuperViewVisibleRect:[_superview visibleRect]];
 }
 
