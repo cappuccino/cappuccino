@@ -222,6 +222,11 @@ function CPAppKitImage(aFilename, aSize)
     return [self initWithContentsOfFile:dataURL];
 }
 
+- (id)initWithURL:(CPURL)url
+{
+    return [self initWithContentsOfFile: [url absoluteString]];
+}
+
 /*!
     Returns the path of the file associated with this image.
 */
