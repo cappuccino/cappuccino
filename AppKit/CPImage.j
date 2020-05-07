@@ -209,6 +209,17 @@ function CPAppKitImage(aFilename, aSize)
 }
 
 /*!
+    Initializes and returns an image object with the contents of the specified URL.
+    @param url the URL representing the image
+    @return the initialized image
+*/
+- (id)initWithContentsOfURL:(CPURL)url
+{
+    return [self initWithContentsOfFile: [url absoluteString]];
+}
+
+
+/*!
     Initializes the receiver with the specified data. The method loads the data into memory.
     @param someData the CPData object representing the image
     @return the initialized image
@@ -220,11 +231,6 @@ function CPAppKitImage(aFilename, aSize)
         dataURL = "data:image/" + type + ";base64," + base64;
 
     return [self initWithContentsOfFile:dataURL];
-}
-
-- (id)initWithURL:(CPURL)url
-{
-    return [self initWithContentsOfFile: [url absoluteString]];
 }
 
 /*!
