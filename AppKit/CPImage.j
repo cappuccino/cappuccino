@@ -215,7 +215,7 @@ function CPAppKitImage(aFilename, aSize)
 */
 - (id)initWithContentsOfURL:(CPURL)url
 {
-    return [self initWithContentsOfFile: [url absoluteString]];
+    return [self initWithContentsOfFile:[url absoluteString]];
 }
 
 
