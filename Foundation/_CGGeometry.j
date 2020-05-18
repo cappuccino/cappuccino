@@ -26,6 +26,7 @@ CGGeometry is not a part of Foundation. The reason _CGGeometry.j exists, and is 
 
 */
 
+@typedef CGFloat
 @typedef CGPoint
 @typedef CGSize
 @typedef CGRect
