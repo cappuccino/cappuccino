@@ -128,12 +128,21 @@ function generateDocs(/* boolean */ noFrame)
     // If the Doxygen application is installed on Mac OS X, use that
     if (!doxygen && executableExists("mdfind"))
     {
-        var p = OS.popen(["mdfind", "kMDItemContentType == 'com.apple.application-bundle' && kMDItemCFBundleIdentifier == 'org.doxygen'"]);
-        if (p.wait() === 0)
+        try
         {
-            var doxygenApps = p.stdout.read().split("\n");
-            if (doxygenApps[0])
-                doxygen = FILE.join(doxygenApps[0], "Contents/Resources/doxygen");
+            var p = OS.popen(["mdfind", "kMDItemContentType == 'com.apple.application-bundle' && kMDItemCFBundleIdentifier == 'org.doxygen'"]);
+            if (p.wait() === 0)
+            {
+                var doxygenApps = p.stdout.read().split("\n");
+                if (doxygenApps[0])
+                    doxygen = FILE.join(doxygenApps[0], "Contents/Resources/doxygen");
+            }
+        }
+        finally
+        {
+            p.stdin.close();
+            p.stdout.close();
+            p.stderr.close();
         }
     }
 

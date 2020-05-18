@@ -29,7 +29,7 @@
     [arrayController setContent:items];
 
     var label = [CPTextField labelWithTitle:@"Press buttons to see [Remove First By Object] fails while [Remove First By Index] succeeds"];
-    [label setFrameOrigin:CGPointMake(20, 20)];    
+    [label setFrameOrigin:CGPointMake(20, 20)];
     [contentView addSubview:label];
 
     var field = [CPTextField textFieldWithStringValue:@"" placeholder:@"" width:100];
@@ -65,7 +65,8 @@
 
 - (void)removeFirstByIndex:(id)sender
 {
-    [arrayController removeObjectAtArrangedObjectIndex:0];
+    if ([[arrayController contentArray] count])
+        [arrayController removeObjectAtArrangedObjectIndex:0];
 }
 
 - (void)observeValueForKeyPath:(CPString)keyPath ofObject:(id)object change:(CPDictionary)change context:(id)context

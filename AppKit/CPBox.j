@@ -90,7 +90,8 @@ CPBelowBottom = 6;
             @"inner-shadow-size": 6.0,
             @"inner-shadow-color": [CPNull null],
             @"content-margin": CGSizeMakeZero(),
-        };
+            @"nib2cib-adjustment-primary-frame": CGRectMake(4, -4, -8, -6)
+            };
 }
 
 + (id)boxEnclosingView:(CPView)aView
@@ -598,7 +599,8 @@ var CPBoxTypeKey          = @"CPBoxTypeKey",
     CPBoxBorderTypeKey    = @"CPBoxBorderTypeKey",
     CPBoxTitle            = @"CPBoxTitle",
     CPBoxTitlePosition    = @"CPBoxTitlePosition",
-    CPBoxTitleView        = @"CPBoxTitleView";
+    CPBoxTitleView        = @"CPBoxTitleView",
+    CPBoxContentView      = @"CPBoxContentView";
 
 @implementation CPBox (CPCoding)
 
@@ -615,8 +617,25 @@ var CPBoxTypeKey          = @"CPBoxTypeKey",
         _titlePosition = [aCoder decodeIntForKey:CPBoxTitlePosition];
         _titleView     = [aCoder decodeObjectForKey:CPBoxTitleView] || [CPTextField labelWithTitle:_title];
 
-        _contentView   = [self subviews][0];
+        if (_boxType != CPBoxSeparator)
+        {
+            // FIXME: we have a problem with CIB decoding here.
+            // We should be able to simply add : _contentView = [self subviews][0]
+            // but first box subview seems to be malformed (badly decoded).
+            // For example, when deployed, this view doesn't have its _trackingAreas array initialized.
+            // As a (temporary) workaround, we encode/decode the _contentView property. We then transfer the subview hierarchy
+            // and replace the first (and only) box subview with this _contentView
 
+            _contentView = [aCoder decodeObjectForKey:CPBoxContentView] || [[CPView alloc] initWithFrame:[self bounds]];
+            var malformedContentView = [self subviews][0];
+            [_contentView setSubviews:[malformedContentView subviews]];
+            [self replaceSubview:malformedContentView with:_contentView];
+        }
+        else
+        {
+            _titlePosition = CPNoTitle;        
+        }
+        
         [self setAutoresizesSubviews:YES];
         [_contentView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
 
@@ -635,6 +654,7 @@ var CPBoxTypeKey          = @"CPBoxTypeKey",
     [aCoder encodeObject:_title forKey:CPBoxTitle];
     [aCoder encodeInt:_titlePosition forKey:CPBoxTitlePosition];
     [aCoder encodeObject:_titleView forKey:CPBoxTitleView];
+    [aCoder encodeObject:_contentView forKey:CPBoxContentView];
 }
 
 @end

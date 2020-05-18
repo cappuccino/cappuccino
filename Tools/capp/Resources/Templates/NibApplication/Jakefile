@@ -38,9 +38,9 @@ app (projectName, function(task)
     task.setInfoPlistPath("Info.plist");
 
     if (configuration === "Debug")
-        task.setCompilerFlags("-DDEBUG -g");
+        task.setCompilerFlags("-DDEBUG -g -S --inline-msg-send");
     else
-        task.setCompilerFlags("-O");
+        task.setCompilerFlags("-O2");
 });
 
 task ("default", [projectName], function()
@@ -80,18 +80,6 @@ task ("deploy", ["release"], function()
     FILE.mkdirs(FILE.join("Build", "Deployment", projectName));
     OS.system(["press", "-f", FILE.join("Build", "Release", projectName), FILE.join("Build", "Deployment", projectName)]);
     printResults("Deployment")
-});
-
-task ("desktop", ["release"], function()
-{
-    FILE.mkdirs(FILE.join("Build", "Desktop", projectName));
-    require("cappuccino/nativehost").buildNativeHost(FILE.join("Build", "Release", projectName), FILE.join("Build", "Desktop", projectName, "__project.nameasidentifier__.app"));
-    printResults("Desktop")
-});
-
-task ("run-desktop", ["desktop"], function()
-{
-    OS.system([FILE.join("Build", "Desktop", projectName, "__project.nameasidentifier__.app", "Contents", "MacOS", "NativeHost"), "-i"]);
 });
 
 function printResults(configuration)

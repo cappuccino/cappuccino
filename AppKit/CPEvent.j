@@ -28,13 +28,16 @@
 
 @import "CPCompatibility.j"
 @import "CGGeometry.j"
-@import "CPText.j"
+@import "CPTrackingArea.j"
 
 @class CPTextField
 @class CPWindow
 @class CPGraphicsContext
 
 @global CPApp
+@global CPNewlineCharacter
+@global CPCarriageReturnCharacter
+@global CPEnterCharacter
 
 @typedef DOMEvent
 @typedef CPEventType
@@ -63,7 +66,7 @@ var _CPEventPeriodicEventPeriod         = 0,
     CPWindow            _window;
     Number              _windowNumber;
     CPString            _characters;
-    CPString            _charactersIgnoringModifiers
+    CPString            _charactersIgnoringModifiers;
     BOOL                _isARepeat;
     unsigned            _keyCode;
     DOMEvent            _DOMEvent;
@@ -82,6 +85,8 @@ var _CPEventPeriodicEventPeriod         = 0,
     BOOL                _suppressCappuccinoCut;
     BOOL                _suppressCappuccinoPaste;
 #endif
+
+    CPTrackingArea      _trackingArea;
 }
 
 /*!
@@ -142,6 +147,27 @@ var _CPEventPeriodicEventPeriod         = 0,
 }
 
 /*!
+    Creates a new mouse tracking event.
+
+    @param anEventType the event type
+    @param aPoint the location of the cursor in the window specified by \c aWindowNumber
+    @param modifierFlags a bitwise combination of the modifiers specified in the CPEvent globals
+    @param aTimestamp the time the event occurred
+    @param aWindowNumber the number of the CPWindow where the event occurred
+    @param aGraphicsContext the graphics context where the event occurred
+    @param anEventNumber a number for this event
+    @param aTrackingArea the tracking area that triggered the event
+    @throws CPInternalInconsistencyException if an invalid event type is provided
+    @return the new mouse event
+ */
++ (id)enterExitEventWithType:(CPEventType)anEventType location:(CGPoint)aPoint modifierFlags:(unsigned)modifierFlags
+               timestamp:(CPTimeInterval)aTimestamp windowNumber:(int)aWindowNumber context:(CPGraphicsContext)aGraphicsContext
+             eventNumber:(int)anEventNumber trackingArea:(CPTrackingArea)aTrackingArea
+{
+    return [[self alloc] _initEnterExitEventWithType:anEventType location:aPoint modifierFlags:modifierFlags timestamp:aTimestamp windowNumber:aWindowNumber context:aGraphicsContext eventNumber:anEventNumber trackingArea:aTrackingArea];
+}
+
+/*!
     Creates a new custom event.
 
     @param anEventType the event type. Must be one of CPAppKitDefined, CPSystemDefined, CPApplicationDefined or CPPeriodic
@@ -195,6 +221,28 @@ var _CPEventPeriodicEventPeriod         = 0,
         _eventNumber = anEventNumber;
         _clickCount = aClickCount;
         _pressure = aPressure;
+        _window = [CPApp windowWithWindowNumber:aWindowNumber];
+    }
+
+    return self;
+}
+
+/* @ignore */
+- (id)_initEnterExitEventWithType:(CPEventType)anEventType location:(CGPoint)aPoint modifierFlags:(unsigned)modifierFlags
+                        timestamp:(CPTimeInterval)aTimestamp windowNumber:(int)aWindowNumber context:(CPGraphicsContext)aGraphicsContext
+                      eventNumber:(int)anEventNumber trackingArea:(CPTrackingArea)aTrackingArea
+{
+    if ((anEventType != CPMouseEntered) && (anEventType != CPMouseExited) && (anEventType != CPCursorUpdate))
+        [CPException raise:CPInternalInconsistencyException reason:"Invalid event type"];
+
+    if (self = [self _initWithType:anEventType])
+    {
+        _location = CGPointCreateCopy(aPoint);
+        _modifierFlags = modifierFlags;
+        _timestamp = aTimestamp;
+        _context = aGraphicsContext;
+        _eventNumber = anEventNumber;
+        _trackingArea = aTrackingArea;
         _window = [CPApp windowWithWindowNumber:aWindowNumber];
     }
 
@@ -288,6 +336,14 @@ var _CPEventPeriodicEventPeriod         = 0,
 - (CPEventType)type
 {
     return _type;
+}
+
+/*!
+    Returns the subtype of the event.
+*/
+- (CPEventType)subtype
+{
+    return _subtype;
 }
 
 /*!
@@ -552,7 +608,7 @@ var _CPEventPeriodicEventPeriod         = 0,
 */
 + (void)stopPeriodicEvents
 {
-    if (_CPEventPeriodicEventTimer === nil)
+    if (_CPEventPeriodicEventTimer == nil)
         return;
 
     window.clearTimeout(_CPEventPeriodicEventTimer);
@@ -581,6 +637,14 @@ var _CPEventPeriodicEventPeriod         = 0,
         default:
             return [CPString stringWithFormat:@"CPEvent: type=%d loc=%@ time=%.1f flags=0x%X win=%@ winNum=%d ctxt=%@ subtype=%d data1=%d data2=%d", _type, CGStringFromPoint(_location), _timestamp, _modifierFlags, _window, _windowNumber, _context, _subtype, _data1, _data2];
     }
+}
+
+- (CPTrackingArea)trackingArea
+{
+    if ((_type !== CPMouseEntered) && (_type !== CPMouseExited) && (_type !== CPCursorUpdate))
+        [CPException raise:CPInternalInconsistencyException format:@"You can't call trackingArea for events of type %#x", _type];
+
+    return _trackingArea;
 }
 
 @end

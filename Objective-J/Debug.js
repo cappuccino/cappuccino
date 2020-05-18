@@ -185,7 +185,7 @@ GLOBAL(objj_typecheck_decorator) = function(msgSend)
         if (!aReceiver)
             return msgSend.apply(this, arguments);
 
-        var types = aReceiver.isa.method_dtable[aSelector].types;
+        var types = aReceiver.isa.method_dtable[aSelector].method_types;
         for (var i = 2; i < arguments.length; i++)
         {
             try
@@ -275,4 +275,4 @@ GLOBAL(objj_debug_typecheck) = function(expectedType, object)
         actualType = typeof object;
 
     throw ("expected=" + expectedType + ", actual=" + actualType);
-}
+};

@@ -24,6 +24,7 @@
 @import <Foundation/CPObjJRuntime.j>
 
 @import "CPEvent.j"
+@import "CPCursor.j"
 
 @class CPKeyBinding
 @class CPMenu
@@ -198,6 +199,18 @@ CPDeleteForwardKeyCode  = 46;
 - (void)mouseExited:(CPEvent)anEvent
 {
     [_nextResponder performSelector:_cmd withObject:anEvent];
+}
+
+/*!
+ Notifies the receiver that the mouse entered the receiver's area and that it can adapt the cursor.
+ @param anEvent contains information about the exit
+ */
+- (void)cursorUpdate:(CPEvent)anEvent
+{
+    if (_nextResponder)
+        [_nextResponder performSelector:_cmd withObject:anEvent];
+    else
+        [[CPCursor arrowCursor] set];
 }
 
 /*!
@@ -384,7 +397,7 @@ var CPResponderNextResponderKey = @"CPResponderNextResponderKey",
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     // This will come out nil on the other side with decodeObjectForKey:
-    if (_nextResponder !== nil)
+    if (_nextResponder != nil)
         [aCoder encodeConditionalObject:_nextResponder forKey:CPResponderNextResponderKey];
 
     [aCoder encodeObject:_menu forKey:CPResponderMenuKey];

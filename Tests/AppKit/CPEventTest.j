@@ -7,8 +7,8 @@
 
 - (void)setUp
 {
-    // CPApplication must be initialised for some event handling to work.
-    [CPApplication sharedApplication];
+    // This will init the global var CPApp which are used internally in the AppKit
+    [[CPApplication alloc] init];
 }
 
 /*!

@@ -245,7 +245,7 @@ var DefaultLineWidth = 1.0;
 /*!
     Cocoa compatibility.
 */
-- (void)getLineDash:(CPArrayRef)patternRef count:(NSInteger)count phase:(CGFloatRef)phaseRef
+- (void)getLineDash:(CPArrayRef)patternRef count:(CPInteger)count phase:(CGFloatRef)phaseRef
 {
     return [self getLineDash:patternRef phase:phaseRef];
 }
@@ -264,7 +264,7 @@ var DefaultLineWidth = 1.0;
 /*!
     Cocoa compatibility.
 */
-- (void)setLineDash:(CPArray)aPattern count:(NSInteger)count phase:(CGFloat)aPhase
+- (void)setLineDash:(CPArray)aPattern count:(CPInteger)count phase:(CGFloat)aPhase
 {
     [self setLineDash:aPattern phase:aPhase];
 }

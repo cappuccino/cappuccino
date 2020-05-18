@@ -153,7 +153,7 @@ var CPToolbarsByIdentifier              = nil,
 
     if (!toolbarsSharingIdentifier)
     {
-        toolbarsSharingIdentifier = []
+        toolbarsSharingIdentifier = [];
         [CPToolbarsByIdentifier setObject:toolbarsSharingIdentifier forKey:identifier];
     }
 
@@ -363,7 +363,7 @@ var CPToolbarsByIdentifier              = nil,
 
         item = [item copy];
 
-        if (item === nil)
+        if (item == nil)
             [CPException raise:CPInvalidArgumentException
                          reason:@"Toolbar delegate " + _delegate + " returned nil toolbar item for identifier \"" + identifier + "\""];
 
@@ -459,11 +459,10 @@ var CPToolbarsByIdentifier              = nil,
 /* @ignore */
 - (id)_itemsWithIdentifiers:(CPArray)identifiers
 {
-    var items = [];
-    for (var i = 0; i < identifiers.length; i++)
-        [items addObject:[self _itemForItemIdentifier:identifiers[i] willBeInsertedIntoToolbar:NO]];
-
-    return items;
+    return [identifiers arrayByApplyingBlock:function(identifier)
+    {
+        return [self _itemForItemIdentifier:identifier willBeInsertedIntoToolbar:NO];
+    }];
 }
 
 /* @ignore */
@@ -589,7 +588,7 @@ var CPToolbarIdentifierKey              = @"CPToolbarIdentifierKey",
     [aCoder encodeBool:_showsBaselineSeparator forKey:CPToolbarShowsBaselineSeparatorKey];
     [aCoder encodeBool:_allowsUserCustomization forKey:CPToolbarAllowsUserCustomizationKey];
     [aCoder encodeBool:_isVisible forKey:CPToolbarIsVisibleKey];
-    [aCoder encodeInt:_sizeMode forKey:CPToolbarSizeModeKey]
+    [aCoder encodeInt:_sizeMode forKey:CPToolbarSizeModeKey];
 
     [aCoder encodeObject:_identifiedItems forKey:CPToolbarIdentifiedItemsKey];
     [aCoder encodeObject:_defaultItems forKey:CPToolbarDefaultItemsKey];

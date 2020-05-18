@@ -564,7 +564,7 @@ var CPComboBoxTextSubview = @"text",
 
     var selectedStringValue = [_listDelegate selectedStringValue];
 
-    if (selectedStringValue === nil)
+    if (selectedStringValue == nil)
         return NO;
     else
         _selectedStringValue = selectedStringValue;
@@ -843,8 +843,9 @@ var CPComboBoxTextSubview = @"text",
         // In FireFox this needs to be done in setTimeout, otherwise there is no caret
         // We have to save the input element now, when we lose focus it will change.
         var element = [self _inputElement];
-        window.setTimeout(function() {
 
+        [[CPRunLoop mainRunLoop] performBlock:function()
+        {
             // This will prevent to jump to the focused element
             var previousScrollingOrigin = [self _scrollToVisibleRectAndReturnPreviousOrigin];
 
@@ -852,7 +853,7 @@ var CPComboBoxTextSubview = @"text",
 
             [self _restorePreviousScrollingOrigin:previousScrollingOrigin];
 
-        }, 0);
+        } argument:nil order:0 modes:[CPDefaultRunLoopMode]];
 #endif
 
         return NO;
@@ -1141,11 +1142,9 @@ var CPComboBoxTextSubview = @"text",
     // Directly nuke _items, [_items removeAll] will trigger an extra call to setContent
     _items = [];
 
-    var values = [];
-
-    [anArray enumerateObjectsUsingBlock:function(object)
+    var values = [anArray arrayByApplyingBlock:function(object)
     {
-        values.push([object description]);
+        return [object description];
     }];
 
     [self addItemsWithObjectValues:values];

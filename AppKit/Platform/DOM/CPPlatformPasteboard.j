@@ -260,6 +260,9 @@ var hasEditableTarget = function(aDOMEvent)
             currentEventShouldBeSuppressed = YES;
     }
 
+    if (CPFeatureIsCompatible(CPBackspaceTriggersPageBack) && characters === CPDeleteCharacter && !hasEditableTarget(aDOMEvent))
+        currentEventShouldBeSuppressed = YES;
+
     if (!currentEventShouldBeSuppressed)
     {
         if (characters === "v")
@@ -330,7 +333,7 @@ var hasEditableTarget = function(aDOMEvent)
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 }
 
-- (boolean)beforePasteEvent:(DOMEvent)aDOMEvent
+- (BOOL)beforePasteEvent:(DOMEvent)aDOMEvent
 {
     // Set up to capture the paste in a temporary input field. We'll send the event after capture.
     if ([self _mayRequireDOMPasteboardElementHack:aDOMEvent flags:CPPlatformActionKeyMask])
@@ -348,7 +351,7 @@ var hasEditableTarget = function(aDOMEvent)
 /*
 Return true if the event may be a copy and paste event, but the target is not an input or text area.
 */
-- (void)_mayRequireDOMPasteboardElementHack:(DOMEvent)aDOMEvent flags:(unsigned)modifierFlags
+- (BOOL)_mayRequireDOMPasteboardElementHack:(DOMEvent)aDOMEvent flags:(unsigned)modifierFlags
 {
     return !hasEditableTarget(aDOMEvent) && (modifierFlags & CPPlatformActionKeyMask);
 }
@@ -384,9 +387,10 @@ Return true if the event may be a copy and paste event, but the target is not an
 
     if ([value length])
     {
-        var pasteboard = [CPPasteboard generalPasteboard];
+        var pasteboard = [CPPasteboard generalPasteboard],
+            cappString = [pasteboard stringForType:CPStringPboardType];
 
-        if ([pasteboard _stateUID] != value)
+        if (cappString != value)
         {
             [pasteboard declareTypes:[CPStringPboardType] owner:self];
             [pasteboard setString:value forType:CPStringPboardType];
@@ -406,7 +410,7 @@ Return true if the event may be a copy and paste event, but the target is not an
     _DOMPasteboardElement.blur();
 }
 
-- (boolean)nativeBeforeClipboardEvent:(DOMEvent)aDOMEvent
+- (BOOL)nativeBeforeClipboardEvent:(DOMEvent)aDOMEvent
 {
     // Our job here is to return "false" if the given clipboard operation should be enabled even in a situation where
     // the browser might normally grey the option out.
@@ -436,7 +440,7 @@ Return true if the event may be a copy and paste event, but the target is not an
     return returnValue;
 }
 
-- (boolean)nativePasteEvent:(DOMEvent)aDOMEvent
+- (BOOL)nativePasteEvent:(DOMEvent)aDOMEvent
 {
     // This shouldn't happen.
     if (!supportsNativeCopyAndPaste)
@@ -450,9 +454,10 @@ Return true if the event may be a copy and paste event, but the target is not an
 
     if ([value length])
     {
-        var pasteboard = [CPPasteboard generalPasteboard];
+        var pasteboard = [CPPasteboard generalPasteboard],
+            cappString = [pasteboard stringForType:CPStringPboardType];
 
-        if ([pasteboard _stateUID] != value)
+        if (cappString != value)
         {
             [pasteboard declareTypes:[CPStringPboardType] owner:self];
             [pasteboard setString:value forType:CPStringPboardType];
@@ -467,7 +472,7 @@ Return true if the event may be a copy and paste event, but the target is not an
     // By default we'll stop the native handling of the event since we're handling it ourselves. However, we need to
     // stop it before we send the event so that the event can overrule our choice. CPTextField for instance wants the
     // default handling when focused (which is to insert into the field).
-    [platformWindow _propagateCurrentDOMEvent:NO]
+    [platformWindow _propagateCurrentDOMEvent:NO];
 
     [CPApp sendEvent:anEvent];
 
@@ -479,7 +484,7 @@ Return true if the event may be a copy and paste event, but the target is not an
     return false;
 }
 
-- (boolean)nativeCopyOrCutEvent:(DOMEvent)aDOMEvent
+- (BOOL)nativeCopyOrCutEvent:(DOMEvent)aDOMEvent
 {
     // This shouldn't happen.
     if (!supportsNativeCopyAndPaste)
@@ -490,7 +495,7 @@ Return true if the event may be a copy and paste event, but the target is not an
 
     SUPPRESS_CAPPUCCINO_CUT_FOR_EVENT(anEvent);
 
-    [platformWindow _propagateCurrentDOMEvent:NO]
+    [platformWindow _propagateCurrentDOMEvent:NO];
 
     // Let the app react through copy: and cut: actions.
     [CPApp sendEvent:anEvent];

@@ -40,5 +40,7 @@
 
 @implementation NSMutableAttributedString : NSAttributedString
 {
+
 }
+
 @end

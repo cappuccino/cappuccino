@@ -168,7 +168,7 @@
 */
 - (BOOL)isWindowLoaded
 {
-    return _window !== nil;
+    return _window != nil;
 }
 
 /*!
@@ -184,7 +184,7 @@
 
         [self loadWindow];
 
-        if (_window === nil && [_cibOwner isKindOfClass:[CPDocument class]])
+        if (_window == nil && [_cibOwner isKindOfClass:[CPDocument class]])
             [self setWindow:[_cibOwner valueForKey:@"window"]];
 
         if (!_window)
@@ -364,7 +364,7 @@
     {
         [viewControllerView removeFromSuperview];
         [viewControllerView setFrame:[contentView frame]];
-        [viewControllerView setAutoresizingMask:[contentView autoresizingMask]]
+        [viewControllerView setAutoresizingMask:[contentView autoresizingMask]];
         [[self window] setContentView:viewControllerView];
     }
     else
@@ -378,7 +378,7 @@
     _viewControllerContainerView = aView;
 }
 
-- (void)viewControllerContainerView
+- (CPView)viewControllerContainerView
 {
     return _viewControllerContainerView;
 }

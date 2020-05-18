@@ -151,7 +151,7 @@ var CPObjectAccessorsForClassKey = @"$CPObjectAccessorsForClassKey",
         var key = keys[index],
             value = [self valueForKey:key];
 
-        if (value === nil)
+        if (value == nil)
             [dictionary setObject:[CPNull null] forKey:key];
 
         else
@@ -248,7 +248,7 @@ var CPObjectAccessorsForClassKey = @"$CPObjectAccessorsForClassKey",
         key,
         keyEnumerator = [keyedValues keyEnumerator];
 
-    while ((key = [keyEnumerator nextObject]) !== nil)
+    while ((key = [keyEnumerator nextObject]) != nil)
     {
         value = [keyedValues objectForKey: key];
 
@@ -286,7 +286,7 @@ var CPObjectAccessorsForClassKey = @"$CPObjectAccessorsForClassKey",
 
 - (void)setValue:(id)aValue forKey:(CPString)aKey
 {
-    if (aValue !== nil)
+    if (aValue != nil)
         [self setObject:aValue forKey:aKey];
 
     else

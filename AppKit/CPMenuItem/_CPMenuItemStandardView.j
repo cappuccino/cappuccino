@@ -55,6 +55,7 @@
             @"menu-item-selection-color": [CPNull null],
             @"menu-item-text-shadow-color": [CPNull null],
             @"menu-item-text-color": [CPNull null],
+            @"menu-item-disabled-text-color": [CPColor lightGrayColor],
             @"menu-item-default-off-state-image": [CPNull null],
             @"menu-item-default-off-state-highlighted-image": [CPNull null],
             @"menu-item-default-on-state-image": [CPNull null],
@@ -124,7 +125,7 @@
 - (CPColor)textColor
 {
     if (![_menuItem isEnabled])
-        return [CPColor lightGrayColor];
+        return [self valueForThemeAttribute:@"menu-item-disabled-text-color"];
 
     if (_highlighted)
         return [CPColor whiteColor];
@@ -176,6 +177,11 @@
             default:
                 break;
         }
+
+        var stateViewFrameOrigin = [_stateView frameOrigin];
+
+        stateViewFrameOrigin.x = x;
+        [_stateView setFrameOrigin:stateViewFrameOrigin];
 
         x += [self valueForThemeAttribute:@"state-column-width"];
     }
@@ -345,6 +351,22 @@
 }
 
 @end
+
+#pragma mark -
+
+@implementation _CPMenuItemStandardView (CSSTheming)
+
+#pragma mark Override
+
+- (void)_setThemeIncludingDescendants:(CPTheme)aTheme
+{
+    [self setTheme:aTheme];
+    [[self subviews] makeObjectsPerformSelector:@selector(_setThemeIncludingDescendants:) withObject:aTheme];
+}
+
+@end
+
+#pragma mark -
 
 @implementation _CPMenuItemSubmenuIndicatorView : CPView
 {

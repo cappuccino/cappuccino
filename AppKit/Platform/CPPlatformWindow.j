@@ -60,6 +60,7 @@ var PrimaryPlatformWindow   = NULL;
 
     BOOL                    _mouseIsDown;
     BOOL                    _mouseDownIsRightClick;
+    int                     _firstMouseDownButton;
     CGPoint                 _lastMouseEventLocation;
     CPWindow                _mouseDownWindow;
     CPTimeInterval          _lastMouseUp;
@@ -121,6 +122,8 @@ var PrimaryPlatformWindow   = NULL;
         _windowLayers = @{};
 
         _charCodes = {};
+
+        _platformPasteboard = [CPPlatformPasteboard new];
 #endif
     }
 
@@ -213,7 +216,7 @@ var PrimaryPlatformWindow   = NULL;
 - (BOOL)isVisible
 {
 #if PLATFORM(DOM)
-    return _DOMWindow !== NULL;
+    return _DOMWindow !== NULL && _DOMWindow !== undefined;
 #else
     return NO;
 #endif
@@ -221,18 +224,10 @@ var PrimaryPlatformWindow   = NULL;
 
 - (void)deminiaturize:(id)sender
 {
-#if PLATFORM(DOM)
-    if (_DOMWindow && typeof _DOMWindow["cpDeminiaturize"] === "function")
-        _DOMWindow.cpDeminiaturize();
-#endif
 }
 
 - (void)miniaturize:(id)sender
 {
-#if PLATFORM(DOM)
-    if (_DOMWindow && typeof _DOMWindow["cpMiniaturize"] === "function")
-        _DOMWindow.cpMiniaturize();
-#endif
 }
 
 - (void)moveWindow:(CPWindow)aWindow fromLevel:(int)fromLevel toLevel:(int)toLevel
@@ -252,31 +247,16 @@ var PrimaryPlatformWindow   = NULL;
 - (void)setLevel:(CPInteger)aLevel
 {
     _level = aLevel;
-
-#if PLATFORM(DOM)
-    if (_DOMWindow && _DOMWindow.cpSetLevel)
-        _DOMWindow.cpSetLevel(aLevel);
-#endif
 }
 
 - (void)setHasShadow:(BOOL)shouldHaveShadow
 {
     _hasShadow = shouldHaveShadow;
-
-#if PLATFORM(DOM)
-    if (_DOMWindow && _DOMWindow.cpSetHasShadow)
-        _DOMWindow.cpSetHasShadow(shouldHaveShadow);
-#endif
 }
 
 - (void)setShadowStyle:(int)aStyle
 {
     _shadowStyle = aStyle;
-
-#if PLATFORM(DOM)
-    if (_DOMWindow && _DOMWindow.cpSetShadowStyle)
-        _shadowStyle.cpSetShadowStyle(aStyle);
-#endif
 }
 
 - (BOOL)supportsFullPlatformWindows
@@ -305,7 +285,7 @@ var PrimaryPlatformWindow   = NULL;
 
 - (BOOL)_canUpdateContentRect
 {
-    // We onyl update the contentRect with the frame of the bridgeless window if we have initialized the platform with the method initWithWindow:
+    // We only update the contentRect with the frame of the bridgeless window if we have initialized the platform with the method initWithWindow:
     return _shouldUpdateContentRect && _hasInitializeInstanceWithWindow;
 }
 

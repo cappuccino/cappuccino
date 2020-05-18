@@ -27,19 +27,14 @@
 - (void)awakeFromCib
 {
     [splitViewA setDelegate:self];
-
+    [splitViewB setDelegate:self];
+    [splitViewC setDelegate:self];
     // This is called when the cib is done loading.
     // You can implement this method on any object instantiated from a Cib.
     // It's a useful hook for setting up current UI values, and other things.
 
     // In this case, we want the window from Cib to become our full browser window
     [theWindow setFullPlatformWindow:YES];
-}
-
-- (BOOL)splitView:(CPSplitView)splitView shouldAdjustSizeOfSubview:(CPView)subview
-{
-    var subviews = [splitView subviews];
-    return (subview !== [subviews objectAtIndex:1]);
 }
 
 - (@action)deleteAutosave:(id)sender
@@ -84,5 +79,20 @@
     console.error(@"splitViewWillResizeSubviews")
 }
 
+- (BOOL)splitView:(CPSplitView)splitView shouldAdjustSizeOfSubview:(CPView)subview
+{
+    var subviews = [splitView subviews];
+    return (subview !== [subviews objectAtIndex:1]);
+}
+
+- (BOOL)splitView:(CPSplitView)splitView canCollapseSubview:(CPView)subview
+{
+    return subview == [[splitView subviews] objectAtIndex:0];
+}
+
+- (BOOL)splitView:(CPSplitView)splitView shouldCollapseSubview:(CPView)subview forDoubleClickOnDividerAtIndex:(CPInteger)dividerIndex
+{
+    return dividerIndex == 0;
+}
 
 @end

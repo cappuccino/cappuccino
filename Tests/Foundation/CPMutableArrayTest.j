@@ -555,6 +555,21 @@
     return self;
 }
 
+- (id)initWithObjects:(CPArray)objects count:(CPUInteger)aCount
+{
+    self = [super init];
+
+    if (self)
+    {
+      array = [];
+
+      for (var index = 0; index < aCount; ++index)
+          array.push([objects objectAtIndex:index]);
+    }
+
+    return self;
+}
+
 - (CPUInteger)count
 {
     return array.length;

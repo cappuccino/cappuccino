@@ -25,6 +25,7 @@
 
 @import "CTFont.j"
 @import "CPView.j"
+@import "CPFontDescriptor.j"
 
 CPFontDefaultSystemFontFace = @"Arial, sans-serif";
 CPFontDefaultSystemFontSize = 12;
@@ -165,7 +166,7 @@ CoreText - then CPFont can just be defined as a CTFont. Also much of this code s
     if (normalizedFaces === _CPFontSystemFontFace)
         return;
 
-    [self _invalidateSystemFontCache]
+    [self _invalidateSystemFontCache];
     _CPFontSystemFontFace = aFace;
 }
 
@@ -434,6 +435,43 @@ CoreText - then CPFont can just be defined as a CTFont. Also much of this code s
 }
 
 @end
+
+@implementation CPFont(DescriptorAdditions)
+
+- (id)_initWithFontDescriptor:(CPFontDescriptor)fontDescriptor
+{
+    var aName = [fontDescriptor objectForKey: CPFontNameAttribute] ,
+        aSize = [fontDescriptor pointSize],
+        isBold = [fontDescriptor symbolicTraits] & CPFontBoldTrait,
+        isItalic = [fontDescriptor symbolicTraits] & CPFontItalicTrait;
+
+    return [self _initWithName:aName size:aSize bold:isBold italic:isItalic system:NO];
+}
+
++ (CPFont)fontWithDescriptor:(CPFontDescriptor)fontDescriptor size:(float)aSize
+{
+    var aName = [fontDescriptor objectForKey: CPFontNameAttribute],
+        isBold = [fontDescriptor symbolicTraits] & CPFontBoldTrait,
+        isItalic = [fontDescriptor symbolicTraits] & CPFontItalicTrait;
+
+    return [self _fontWithName:aName size:aSize || [fontDescriptor pointSize] bold:isBold italic:isItalic];
+}
+
+- (CPFontDescriptor)fontDescriptor
+{
+    var traits = 0;
+
+    if ([self isBold])
+        traits |= CPFontBoldTrait;
+
+    if ([self isItalic])
+        traits |= CPFontItalicTrait;
+
+    return [[CPFontDescriptor fontDescriptorWithName:_name size:_size] fontDescriptorWithSymbolicTraits:traits];
+}
+
+@end
+
 
 var CPFontNameKey     = @"CPFontNameKey",
     CPFontSizeKey     = @"CPFontSizeKey",

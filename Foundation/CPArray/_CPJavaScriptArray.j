@@ -82,7 +82,7 @@ var concat = Array.prototype.concat,
         count = arguments.length;
 
     for (; index < count; ++index)
-        if (arguments[index] === nil)
+        if (arguments[index] == nil)
             break;
 
     return slice.call(arguments, 2, index);
@@ -91,7 +91,7 @@ var concat = Array.prototype.concat,
 - (id)initWithObjects:(CPArray)objects count:(CPUInteger)aCount
 {
     if ([objects isKindOfClass:_CPJavaScriptArray])
-        return slice.call(objects, 0);
+        return slice.call(objects, 0, aCount);
 
     var array = [],
         index = 0;
@@ -233,6 +233,19 @@ var concat = Array.prototype.concat,
     return join.call(self, aString);
 }
 
+- (CPArray)arrayByApplyingBlock:(Function/*element, index*/)aFunction
+{
+    var result = [];
+
+    for (var idx = 0; idx < self.length; idx++)
+    {
+        var obj = aFunction(self[idx], idx);
+        result.push(obj);
+    }
+
+    return result;
+}
+
 - (void)insertObject:(id)anObject atIndex:(CPUInteger)anIndex
 {
     if (anIndex > self.length || anIndex < 0)
@@ -334,7 +347,6 @@ var concat = Array.prototype.concat,
     else
         [super addObjectsFromArray:anArray];
 }
-
 
 - (id)copy
 {

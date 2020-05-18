@@ -64,12 +64,10 @@
 */
 - (CPArray)themeNames
 {
-    var names = [];
-
-    for (var i = 0; i < _themes.length; ++i)
-        names.push(_themes[i].substring(0, _themes[i].indexOf(".keyedtheme")));
-
-    return names;
+    return [_themes arrayByApplyingBlock:function(theme)
+    {
+        return theme.substring(0, theme.indexOf(".keyedtheme"));
+    }];
 }
 
 - (void)loadWithDelegate:(id)aDelegate
@@ -95,6 +93,17 @@
         [unarchiver decodeObjectForKey:@"root"];
 
         [unarchiver finishDecoding];
+    }
+
+    // CSS Theming
+
+    for (var i = 0, nb = [_themes count], allThemes = [self themeNames], aThemeName, aTheme; i < nb; i++)
+    {
+        aThemeName = allThemes[i];
+        aTheme = [CPTheme themeNamed:aThemeName];
+
+        if ([aTheme isCSSBased])
+            [aTheme _initializeDynamicAttributesAndResourcesPathWithBundle:aBundle];
     }
 
     [_loadDelegate blendDidFinishLoading:self];

@@ -26,6 +26,7 @@
 @import "_CPMenuManager.j"
 
 @class _CPMenuView
+@class CPMenuItem
 
 var _CPMenuWindowPool                       = [],
     _CPMenuWindowPoolCapacity               = 5,
@@ -419,6 +420,21 @@ _CPMenuWindowAttachedMenuBackgroundStyle    = 2;
 
 @end
 
+#pragma mark -
+
+@implementation _CPMenuWindow (CSSTheming)
+
+- (void)_setThemeIncludingDescendants:(CPTheme)aTheme
+{
+    [[self contentView] _setThemeIncludingDescendants:aTheme];
+    [_menuView _setThemeIncludingDescendants:aTheme];
+    [_menuView tile];
+}
+
+@end
+
+#pragma mark -
+
 /*
     @ignore
 */
@@ -552,6 +568,7 @@ _CPMenuWindowAttachedMenuBackgroundStyle    = 2;
 
         [view setFrameOrigin:CGPointMake(0.0, y)];
 
+        [view _setThemeIncludingDescendants:[CPTheme defaultTheme]];
         [self addSubview:view];
 
         var size = [view minSize],
@@ -579,6 +596,21 @@ _CPMenuWindowAttachedMenuBackgroundStyle    = 2;
 {
     [super setMenu:aMenu];
     [self tile];
+}
+
+@end
+
+#pragma mark -
+
+@implementation _CPMenuView (CSSTheming)
+
+- (void)_setThemeIncludingDescendants:(CPTheme)aTheme
+{
+    [self setTheme:aTheme];
+    [_menuItemViews makeObjectsPerformSelector:@selector(_setThemeIncludingDescendants:) withObject:aTheme];
+
+    for (var i = 0, items = [[self menu] itemArray], count = [items count]; i < count; i++)
+        [[items[i] _menuItemView] _setThemeIncludingDescendants:aTheme];
 }
 
 @end

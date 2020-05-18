@@ -31,6 +31,7 @@
 @import "CPDragServer_Constants.j"
 @import "CPPasteboard.j"
 @import "CPView.j"
+@import "CPKeyValueBinding.j"
 
 @class _CPCollectionViewDropIndicator
 
@@ -55,10 +56,12 @@ var CPCollectionViewDelegate_collectionView_acceptDrop_index_dropOperation_     
 - (CPData)collectionView:(CPCollectionView)collectionView dataForItemsAtIndexes:(CPIndexSet)indices forType:(CPString)aType;
 - (CPDragOperation)collectionView:(CPCollectionView)collectionView validateDrop:(id)draggingInfo proposedIndex:(CPInteger)proposedDropIndex dropOperation:(CPCollectionViewDropOperation)proposedDropOperation;
 - (CPMenu)collectionView:(CPCollectionView)collectionView menuForItemAtIndex:(CPInteger)anIndex;
-- (CPView)collectionView:(CPCollectionView)collectionView dragginViewForItemsAtIndexes:(CPIndexSet)indexes withEvent:(CPEvent)event offset:(CGPoint)dragImageOffset;
+- (CPView)collectionView:(CPCollectionView)collectionView draggingViewForItemsAtIndexes:(CPIndexSet)indexes withEvent:(CPEvent)event offset:(CGPoint)dragImageOffset;
 - (void)collectionView:(CPCollectionView)collectionView didDoubleClickOnItemAtIndex:(int)index;
 
 @end
+
+var HORIZONTAL_MARGIN = 2;
 
 /*!
     @ingroup appkit
@@ -88,9 +91,6 @@ var CPCollectionViewDelegate_collectionView_acceptDrop_index_dropOperation_     
     @param indices the indices to obtain drag types
     @return an array of drag types (CPString)
 */
-
-var HORIZONTAL_MARGIN = 2;
-
 @implementation CPCollectionView : CPView
 {
     CPArray                         _content;
@@ -133,12 +133,19 @@ var HORIZONTAL_MARGIN = 2;
     CGSize                          _storedFrameSize;
 
     BOOL                            _uniformSubviewsResizing @accessors(property=uniformSubviewsResizing);
-    BOOL                            _lockResizing;
 
     CPInteger                       _currentDropIndex;
     CPDragOperation                 _currentDragOperation;
 
     _CPCollectionViewDropIndicator  _dropView;
+}
+
++ (Class)_binderClassForBinding:(CPString)aBinding
+{
+    if (aBinding == CPContentBinding)
+        return [_CPCollectionViewContentBinder class];
+
+    return [super _binderClassForBinding:aBinding];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -183,7 +190,7 @@ var HORIZONTAL_MARGIN = 2;
 
     _needsMinMaxItemSizeUpdate = YES;
     _uniformSubviewsResizing = NO;
-    _lockResizing = NO;
+    _inLiveResize = NO;
 
     _currentDropIndex      = -1;
     _currentDragOperation  = CPDragOperationNone;
@@ -385,14 +392,7 @@ var HORIZONTAL_MARGIN = 2;
     _isSelectable = isSelectable;
 
     if (!_isSelectable)
-    {
-        var index = CPNotFound,
-            itemCount = [_items count];
-
-        // Be wary of invalid selection ranges since setContent: does not clear selection indexes.
-        while ((index = [_selectionIndexes indexGreaterThanIndex:index]) != CPNotFound && index < itemCount)
-            [_items[index] setSelected:NO];
-    }
+        [self _applySelectionToItems:NO];
 }
 
 /*!
@@ -446,22 +446,15 @@ var HORIZONTAL_MARGIN = 2;
 {
     if (!anIndexSet)
         anIndexSet = [CPIndexSet indexSet];
+
     if (!_isSelectable || [_selectionIndexes isEqual:anIndexSet])
         return;
 
-    var index = CPNotFound,
-        itemCount = [_items count];
-
-    // Be wary of invalid selection ranges since setContent: does not clear selection indexes.
-    while ((index = [_selectionIndexes indexGreaterThanIndex:index]) !== CPNotFound && index < itemCount)
-        [_items[index] setSelected:NO];
+    [self _applySelectionToItems:NO];
 
     _selectionIndexes = anIndexSet;
 
-    var index = CPNotFound;
-
-    while ((index = [_selectionIndexes indexGreaterThanIndex:index]) !== CPNotFound)
-        [_items[index] setSelected:YES];
+    [self _applySelectionToItems:YES];
 
     var binderClass = [[self class] _binderClassForBinding:@"selectionIndexes"];
     [[binderClass getBinding:@"selectionIndexes" forObject:self] reverseSetValueFor:@"selectionIndexes"];
@@ -526,14 +519,14 @@ var HORIZONTAL_MARGIN = 2;
 
 - (void)resizeWithOldSuperviewSize:(CGSize)oldBoundsSize
 {
-    if (_lockResizing)
+    if (_inLiveResize)
         return;
 
-    _lockResizing = YES;
+    _inLiveResize = YES;
 
     [self tile];
 
-    _lockResizing = NO;
+    _inLiveResize = NO;
 }
 
 - (void)tile
@@ -746,7 +739,7 @@ var HORIZONTAL_MARGIN = 2;
 */
 - (void)setMinItemSize:(CGSize)aSize
 {
-    if (aSize === nil || aSize === undefined)
+    if (aSize == nil)
         [CPException raise:CPInvalidArgumentException reason:"Invalid value provided for minimum size"];
 
     if (CGSizeEqualToSize(_minItemSize, aSize))
@@ -971,6 +964,20 @@ var HORIZONTAL_MARGIN = 2;
         frame = CGRectUnion(frame, [self frameForItemAtIndex:indexArray[index]]);
 
     return frame;
+}
+
+- (void)_applySelectionToItems:(BOOL)select
+{
+    var numberOfItems = [_items count];
+
+    [_selectionIndexes enumerateIndexesUsingBlock:function(idx, stop)
+    {
+        if (idx < numberOfItems)
+            [[_items objectAtIndex:idx] setSelected:select];
+        else {
+            stop(YES);
+        }
+    }];
 }
 
 @end
@@ -1584,6 +1591,17 @@ var CPCollectionViewMinItemSizeKey              = @"CPCollectionViewMinItemSizeK
     [aCoder encodeFloat:_verticalMargin forKey:CPCollectionViewVerticalMarginKey];
 
     [aCoder encodeObject:_backgroundColors forKey:CPCollectionViewBackgroundColorsKey];
+}
+
+@end
+
+@implementation _CPCollectionViewContentBinder : CPBinder
+{
+}
+
+- (void)setValue:(id)aValue forBinding:(CPString)aBinding
+{
+    [_source setContent:aValue];
 }
 
 @end

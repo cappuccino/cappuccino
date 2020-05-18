@@ -1417,7 +1417,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
             if (_dropItem)
             {
                 [_dropOperationFeedbackView blink];
-                [CPTimer scheduledTimerWithTimeInterval:.3 callback:objj_msgSend(self, "expandItem:", _dropItem) repeats:NO];
+                [CPTimer scheduledTimerWithTimeInterval:.3 callback:[self expandItem:_dropItem] repeats:NO];
             }
         };
 
@@ -1438,7 +1438,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     _shouldRetargetChildIndex = YES;
 
     // set CPTableView's _retargetedDropRow based on retargetedItem and retargetedChildIndex
-    var retargetedItemInfo = (_retargetedItem !== nil) ? _itemInfosForItems[[_retargetedItem UID]] : _rootItemInfo;
+    var retargetedItemInfo = (_retargetedItem != nil) ? _itemInfosForItems[[_retargetedItem UID]] : _rootItemInfo;
 
     if (_retargedChildIndex === [retargetedItemInfo.children count])
     {
@@ -1923,7 +1923,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
     while (index !== CPNotFound)
     {
-        [items addObject:[_outlineView itemAtRow:index]]
+        [items addObject:[_outlineView itemAtRow:index]];
         index = [theIndexes indexGreaterThanIndex:index];
     }
 
@@ -1940,7 +1940,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     if (theDropOperation === CPTableViewDropAbove)
     {
         var parentItem = [_outlineView _parentItemForUpperRow:theRow - 1 andLowerRow:theRow atMouseOffset:theOffset],
-            itemInfo = (parentItem !== nil) ? _outlineView._itemInfosForItems[[parentItem UID]] : _outlineView._rootItemInfo,
+            itemInfo = (parentItem != nil) ? _outlineView._itemInfosForItems[[parentItem UID]] : _outlineView._rootItemInfo,
             children = itemInfo.children;
 
         childIndex = [children indexOfObject:[_outlineView itemAtRow:theRow]];
@@ -1957,7 +1957,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 - (void)_parentItemForDropOperation:(CPTableViewDropOperation)theDropOperation row:(CPInteger)theRow offset:(CGPoint)theOffset
 {
     if (theDropOperation === CPTableViewDropAbove)
-        return [_outlineView _parentItemForUpperRow:theRow - 1 andLowerRow:theRow atMouseOffset:theOffset]
+        return [_outlineView _parentItemForUpperRow:theRow - 1 andLowerRow:theRow atMouseOffset:theOffset];
 
     return [_outlineView itemAtRow:theRow];
 }

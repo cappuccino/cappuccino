@@ -110,9 +110,9 @@ var frameworkTask = framework (productName, function(frameworkTask)
     //frameworkTask.setEnvironments([browserEnvironment]);
 
     if (configuration === "Debug")
-        frameworkTask.setCompilerFlags("-DDEBUG -g");
+        frameworkTask.setCompilerFlags("-DDEBUG -g -S --inline-msg-send");
     else
-        frameworkTask.setCompilerFlags("-O");
+        frameworkTask.setCompilerFlags("-O2");
 });
 
 task ("debug", function()

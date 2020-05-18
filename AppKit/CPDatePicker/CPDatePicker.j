@@ -352,8 +352,8 @@ CPEraDatePickerElementFlag              = 0x0100;
     if (_implementedCDatePickerDelegateMethods & CPDatePicker_validateProposedDateValue_timeInterval)
     {
         // constrain timeInterval also
-        var aStartDateRef = function(x){if (typeof x == 'undefined') return aDateValue; aDateValue = x;}
-        var aTimeIntervalRef = function(x){if (typeof x == 'undefined') return aTimeInterval; aTimeInterval = x;}
+        var aStartDateRef = function(x){if (typeof x == 'undefined') return aDateValue; aDateValue = x;};
+        var aTimeIntervalRef = function(x){if (typeof x == 'undefined') return aTimeInterval; aTimeInterval = x;};
 
         [_delegate datePicker:self validateProposedDateValue:aStartDateRef timeInterval:aTimeIntervalRef];
     }
@@ -630,14 +630,6 @@ CPEraDatePickerElementFlag              = 0x0100;
     return [[_locale objectForKey:CPLocaleCountryCode] isEqualToString:@"US"];
 }
 
-/*! Check if we are in the english format or not. Depending on the locale
-*/
-- (BOOL)_isEnglishFormat
-{
-    return [[_locale objectForKey:CPLocaleLanguageCode] isEqualToString:@"en"];
-}
-
-
 #pragma mark -
 #pragma mark Key event
 
@@ -702,8 +694,8 @@ var CPDatePickerModeKey         = @"CPDatePickerModeKey",
     [aCoder encodeInt:_datePickerStyle forKey:CPDatePickerStyleKey];
     [aCoder encodeInt:_datePickerElements forKey:CPDatePickerElementsKey];
     [aCoder encodeObject:_minDate forKey:CPMinDateKey];
-    [aCoder encodeObject:_maxDate forKey:CPMaxDateKey]
-    [aCoder encodeObject:_dateValue forKey:CPDateValueKey];;
+    [aCoder encodeObject:_maxDate forKey:CPMaxDateKey];
+    [aCoder encodeObject:_dateValue forKey:CPDateValueKey];
     [aCoder encodeObject:_textFont forKey:CPTextFontKey];
     [aCoder encodeObject:_locale forKey:CPLocaleKey];
     [aCoder encodeObject:_backgroundColor forKey:CPBackgroundColorKey];
@@ -714,6 +706,7 @@ var CPDatePickerModeKey         = @"CPDatePickerModeKey",
 
 @end
 
+// FIXME: add support for CPEditorRegistrationProtocol as implemented for CPTextField
 @implementation _CPDatePickerValueBinder : CPBinder
 {
 }

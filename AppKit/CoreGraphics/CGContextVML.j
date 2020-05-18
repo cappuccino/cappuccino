@@ -249,7 +249,7 @@ CGVMLGraphicsContext.prototype.drawPath = function(aMode)
     vml.push("\">");
 
     if (gState.gradient)
-        vml.push(gState.gradient)
+        vml.push(gState.gradient);
 
     else if (fill)
     {

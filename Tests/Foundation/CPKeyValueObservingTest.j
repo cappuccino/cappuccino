@@ -28,7 +28,7 @@ var _getCheeseCounter;
         count = arguments.length;
 
     for (; index < count; ++index)
-        class_addMethod(theClass, arguments[index], function() { });
+        class_addMethod(theClass, arguments[index], function() { }, ["void"]);
 
     return [theClass new];
 }
@@ -265,10 +265,27 @@ var _getCheeseCounter;
     [self assert:dependantKeyPathTester equals:_lastObject];
 }
 
+- (void)testSendNotificationsForMultipleDependantKeyPathsToTheSameObject
+{
+    var observingTester = [ObservingTester testerWithCheese:@"cheese"],
+        dependantKeyPathTester = [DependantKeyPathsTester testerWithObservingTester:observingTester],
+        anotherDependantKeyPathTester = [DependantKeyPathsTester testerWithObservingTester:observingTester];
+
+    [dependantKeyPathTester addObserver:self forKeyPath:@"observedCheese" options:CPKeyValueObservingOptionNew context:nil];
+    [anotherDependantKeyPathTester addObserver:self forKeyPath:@"observedCheese" options:CPKeyValueObservingOptionNew context:nil];
+    [observingTester setCheese:@"changed cheese"];
+
+    [self assert:@"observedCheese" equals:_lastKeyPath];
+    [self assert:@"observedCheese" equals:_secondLastKeyPath];
+    [self assertTrue:[[dependantKeyPathTester, anotherDependantKeyPathTester] containsObject:_lastObject] message:@"Last observed object must be one of the DependantKeyPathsTester"];
+    [self assertTrue:[[dependantKeyPathTester, anotherDependantKeyPathTester] containsObject:_secondLastObject] message:@"Second last observed object must be one of the DependantKeyPathsTester"];
+}
+
 - (void)testOnlyInsertObject_AtKeyIndex_Implemented
 {
     var insertSelector = @selector(insertObject:inObjectsAtIndex:),
-        object = [self objectWithMethods:insertSelector];
+        object = [self objectWithMethods:insertSelector],
+        methodTypes = class_getInstanceMethod(object.isa, insertSelector).method_types;
 
     // Sanity check
     [self assert:class_getInstanceMethod(object.isa, insertSelector)
@@ -415,6 +432,64 @@ var _getCheeseCounter;
     // and we didn't call will/didChange.
     [self assert:@"cheese" equals:_lastKeyPath message:"no observation when automatically notifies is off"];
     [self assert:test equals:_lastObject];
+}
+
+- (void)testMethodTypesOnKVOForSet_Key_Implemented
+{
+    var setSelector = @selector(setObjects:),
+        object = [self objectWithMethods:setSelector],
+        methodTypes = class_getInstanceMethod(object.isa, setSelector).method_types;
+
+    // Sanity check
+    [self assert:class_getInstanceMethod(object.isa, setSelector)
+            same:class_getInstanceMethod([object class], setSelector)];
+
+    [object
+        addObserver:self
+         forKeyPath:@"objects"
+            options:CPKeyValueObservingOptionOld | CPKeyValueObservingOptionNew
+            context:NULL];
+
+    // Sanity check
+    [self assert:class_getInstanceMethod(object.isa, setSelector)
+            notSame:class_getInstanceMethod([object class], setSelector)];
+
+    // Check that the return and parameter types are the same on the new method as the old
+    [self assertTrue:methodTypes != nil message:@"methodTypes can not be nil or undefined"];
+    [self assert:methodTypes equals:class_getInstanceMethod(object.isa, setSelector).method_types];
+}
+
+- (void)testMethodTypesOnKVOForInsertObject_AtKeyIndex_Implemented_and_removeFromKeyAtIndex
+{
+    var insertSelector = @selector(insertObject:inObjectsAtIndex:),
+        removeSelector = @selector(removeObjectFromObjectsAtIndex:),
+        object = [self objectWithMethods:insertSelector, removeSelector],
+        methodTypesInsert = class_getInstanceMethod(object.isa, insertSelector).method_types,
+        methodTypesRemove = class_getInstanceMethod(object.isa, removeSelector).method_types;
+
+    // Sanity check
+    [self assert:class_getInstanceMethod(object.isa, insertSelector)
+            same:class_getInstanceMethod([object class], insertSelector)];
+    [self assert:class_getInstanceMethod(object.isa, removeSelector)
+            same:class_getInstanceMethod([object class], removeSelector)];
+
+    [object
+        addObserver:self
+         forKeyPath:@"objects"
+            options:CPKeyValueObservingOptionOld | CPKeyValueObservingOptionNew
+            context:NULL];
+
+    // Sanity check
+    [self assert:class_getInstanceMethod(object.isa, insertSelector)
+            notSame:class_getInstanceMethod([object class], insertSelector)];
+    [self assert:class_getInstanceMethod(object.isa, removeSelector)
+            notSame:class_getInstanceMethod([object class], removeSelector)];
+
+    // Check that the return and parameter types are the same on the new method as the old
+    [self assertTrue:methodTypesInsert != nil message:@"methodTypes can not be nil or undefined on insert selector"];
+    [self assertTrue:methodTypesRemove != nil message:@"methodTypes can not be nil or undefined in remove selector"];
+    [self assert:methodTypesInsert equals:class_getInstanceMethod(object.isa, insertSelector).method_types];
+    [self assert:methodTypesRemove equals:class_getInstanceMethod(object.isa, removeSelector).method_types];
 }
 
 @end

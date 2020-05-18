@@ -165,6 +165,25 @@
         [self assert:[testStrings[i][0] boolValue] equals:testStrings[i][1]];
 }
 
+- (void)testintValue
+{
+    var testStrings = [
+            ["  090",   90],
+            ["  -1",    -1],
+            ["  3.1415", 3],
+            ["  2.7183", 2],
+            ["  -0",     0],
+            ["  00",     0],
+            ["  -00",    0],
+            ["  +001",   1],
+        ];
+
+    for (var i = 0; i < testStrings.length; i++)
+        [self assert:[testStrings[i][0] intValue] equals:testStrings[i][1]];
+    for (var i = 0; i < testStrings.length; i++)
+        [self assert:[testStrings[i][0] integerValue] equals:testStrings[i][1]];
+}
+
 - (void)testCommonPrefixWithString
 {
     var testStringsCase = [
@@ -577,6 +596,19 @@
     [self assert:[@"áa ée íi óo úu" stripDiacritics]  equals:@"aa ee ii oo uu"];
     [self assert:[@"ÁA ÉE ÍI ÓO ÚU" stripDiacritics]  equals:@"AA EE II OO UU"];
     [self assert:[@"Å Ã Ê í ö û" stripDiacritics]  equals:@"A A E i o u"];
+}
+
+- (void)testStringByReplacingCharactersInRange
+{
+    var testString = @"testString";
+
+    [self assert:[testString stringByReplacingCharactersInRange:CPMakeRange(0, 0) withString:@"NewCharacters"] equals:@"NewCharacterstestString"];
+    [self assert:[testString stringByReplacingCharactersInRange:CPMakeRange(0, 10) withString:@"NewCharacters"] equals:@"NewCharacters"];
+    [self assert:[testString stringByReplacingCharactersInRange:CPMakeRange(0, 1) withString:@"NewCharacters"] equals:@"NewCharactersestString"];
+    [self assert:[testString stringByReplacingCharactersInRange:CPMakeRange(1, 0) withString:@"NewCharacters"] equals:@"tNewCharactersestString"];
+    [self assert:[testString stringByReplacingCharactersInRange:CPMakeRange(5, 0) withString:@"NewCharacters"] equals:@"testSNewCharacterstring"];
+    [self assert:[testString stringByReplacingCharactersInRange:CPMakeRange(5, 5) withString:@"NewCharacters"] equals:@"testSNewCharacters"];
+    [self assert:[testString stringByReplacingCharactersInRange:CPMakeRange(9, 0) withString:@"NewCharacters"] equals:@"testStrinNewCharactersg"];
 }
 
 @end

@@ -110,7 +110,7 @@
     var object = nil,
         objectEnumerator = [_visibleWindows objectEnumerator];
 
-    while ((object = [objectEnumerator nextObject]) !== nil)
+    while ((object = [objectEnumerator nextObject]) != nil)
         [_replacementObjects[[object UID]] makeKeyAndOrderFront:self];
 }
 
@@ -230,7 +230,7 @@ var _CPCibObjectDataNamesKeysKey                = @"_CPCibObjectDataNamesKeysKey
 
         if ([object respondsToSelector:@selector(_cibInstantiate)])
         {
-            var instantiatedObject = [object _cibInstantiate];
+            instantiatedObject = [object _cibInstantiate];
 
             if (instantiatedObject !== object)
             {

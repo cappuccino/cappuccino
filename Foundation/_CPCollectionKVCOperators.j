@@ -22,7 +22,7 @@
 
 @import "CPObject.j"
 
-var _CPCollectionKVCOperatorSimpleRE = /^@(avg|count|m(ax|in)|sum|unionOfObjects|distinctUnionOfObjects|unionOfArrays|distinctUnionOfArrays|distinctUnionOfSets)(\.|$)/;
+var _CPCollectionKVCOperatorSimpleRE = new RegExp("^@(avg|count|m(ax|in)|sum|unionOfObjects|distinctUnionOfObjects|unionOfArrays|distinctUnionOfArrays|distinctUnionOfSets)(\\.|$)");
 
 
 @implementation _CPCollectionKVCOperator : CPObject
@@ -52,7 +52,7 @@ var _CPCollectionKVCOperatorSimpleRE = /^@(avg|count|m(ax|in)|sum|unionOfObjects
         enumerator = [objects objectEnumerator],
         object;
 
-    while ((object = [enumerator nextObject]) !== nil)
+    while ((object = [enumerator nextObject]) != nil)
         average += [object doubleValue];
 
     return average / [objects count];
@@ -72,7 +72,7 @@ var _CPCollectionKVCOperatorSimpleRE = /^@(avg|count|m(ax|in)|sum|unionOfObjects
         min = [enumerator nextObject],
         object;
 
-    while ((object = [enumerator nextObject]) !== nil)
+    while ((object = [enumerator nextObject]) != nil)
     {
         if ([min compare:object] > 0)
             min = object;
@@ -95,7 +95,7 @@ var _CPCollectionKVCOperatorSimpleRE = /^@(avg|count|m(ax|in)|sum|unionOfObjects
         max = [enumerator nextObject],
         object;
 
-    while ((object = [enumerator nextObject]) !== nil)
+    while ((object = [enumerator nextObject]) != nil)
     {
         if ([max compare:object] < 0)
             max = object;
@@ -114,7 +114,7 @@ var _CPCollectionKVCOperatorSimpleRE = /^@(avg|count|m(ax|in)|sum|unionOfObjects
         enumerator = [objects objectEnumerator],
         object;
 
-    while ((object = [enumerator nextObject]) !== nil)
+    while ((object = [enumerator nextObject]) != nil)
         sum += [object doubleValue];
 
     return sum;
@@ -148,7 +148,7 @@ var _CPCollectionKVCOperatorSimpleRE = /^@(avg|count|m(ax|in)|sum|unionOfObjects
         enumerator = [objects objectEnumerator],
         object;
 
-    while ((object = [enumerator nextObject]) !== nil)
+    while ((object = [enumerator nextObject]) != nil)
     {
         if ([distinctObjects indexOfObject:object] == CPNotFound)
             [distinctObjects addObject:object];
@@ -186,7 +186,7 @@ var _CPCollectionKVCOperatorSimpleRE = /^@(avg|count|m(ax|in)|sum|unionOfObjects
         enumerator = [objects objectEnumerator],
         object;
 
-    while ((object = [enumerator nextObject]) !== nil)
+    while ((object = [enumerator nextObject]) != nil)
     {
         if ([distinctObjects indexOfObject:object] == CPNotFound)
             [distinctObjects addObject:object];

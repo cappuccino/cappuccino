@@ -1,0 +1,5 @@
+/* My first context. */
+"Label from file" = "Label traduit de fr.lproj du premier context";
+
+/* My second context. */
+"Label from file" = "Label traduit de fr.lproj du second context";

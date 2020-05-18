@@ -7,13 +7,18 @@
  */
 
 @import <Foundation/CPObject.j>
-
+@import <AppKit/CPProgressIndicator.j>
+@import <AppKit/CPWindow.j>
 
 @implementation AppController : CPObject
 {
     CPWindow    theWindow; //this "outlet" is connected automatically by the Cib
     @outlet CPProgressIndicator fiftyPercentBar @accessors;
     @outlet CPProgressIndicator hundredPercentBar @accessors;
+
+    @outlet CPProgressIndicator twentyPercentCircular @accessors;
+    @outlet CPProgressIndicator fiftyPercentCircular @accessors;
+    @outlet CPProgressIndicator hundredPercentCircular @accessors;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
@@ -30,6 +35,13 @@
     // Interface Builder does not encode the current progress.
     [fiftyPercentBar setDoubleValue:50];
     [hundredPercentBar setDoubleValue:100];
+
+    [twentyPercentCircular setMaxValue:200];
+    [twentyPercentCircular setMinValue:50];
+    [twentyPercentCircular setDoubleValue:80];
+
+    [fiftyPercentCircular setDoubleValue:50];
+    [hundredPercentCircular setDoubleValue:100];
 
     [theWindow center];
 }

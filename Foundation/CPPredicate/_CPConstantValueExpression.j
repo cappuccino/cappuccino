@@ -27,7 +27,7 @@
 
 @implementation _CPConstantValueExpression : CPExpression
 {
-    id _value;
+    id _value @accessors(getter=constantValue);
 }
 
 - (id)initWithValue:(id)value
@@ -45,15 +45,10 @@
     if (self === object)
         return YES;
 
-    if (object === nil || object.isa !== self.isa || ![[object constantValue] isEqual:_value])
+    if (object == nil || object.isa !== self.isa || ![[object constantValue] isEqual:_value])
         return NO;
 
     return YES;
-}
-
-- (id)constantValue
-{
-    return _value;
 }
 
 - (id)expressionValueWithObject:(id)object context:(CPDictionary)context
@@ -65,6 +60,9 @@
 {
     if ([_value isKindOfClass:[CPString class]])
         return @"\"" + _value + @"\"";
+
+    if (_value === [CPNull null])
+        return @"nil";
 
     return [_value description];
 }

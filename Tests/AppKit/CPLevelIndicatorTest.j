@@ -7,6 +7,12 @@
 {
 }
 
+- (void)setUp
+{
+    // This will init the global var CPApp which are used internally in the AppKit
+    [[CPApplication alloc] init];
+}
+
 + (CPLevelIndicator)indicatorWithLowWarning
 {
     var levelIndicator = [[CPLevelIndicator alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];
@@ -44,7 +50,7 @@
 
     [levelIndicator setObjectValue:4];
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-    
+
     [self assert:[CPColor yellowColor] equals:[GET_LEVEL_INDICATOR_SEGMENT(levelIndicator, 0) backgroundColor]];
 }
 
@@ -54,7 +60,7 @@
 
     [levelIndicator setObjectValue:2];
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-    
+
     [self assert:[CPColor redColor] equals:[GET_LEVEL_INDICATOR_SEGMENT(levelIndicator, 0) backgroundColor]];
 }
 
@@ -74,7 +80,7 @@
 
     [levelIndicator setObjectValue:6];
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-    
+
     [self assert:[CPColor yellowColor] equals:[GET_LEVEL_INDICATOR_SEGMENT(levelIndicator, 0) backgroundColor]];
 }
 
@@ -84,7 +90,7 @@
 
     [levelIndicator setObjectValue:8];
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-    
+
     [self assert:[CPColor redColor] equals:[GET_LEVEL_INDICATOR_SEGMENT(levelIndicator, 0) backgroundColor]];
 }
 @end

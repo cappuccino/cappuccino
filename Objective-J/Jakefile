@@ -22,9 +22,21 @@
 
 require("../common.jake");
 
+// Make sure we can use new functions in an in old javascript engines like Rhino
+// This is only needed if new things are introduced in OldBrowserCompatibility.js
+// as we are running in an already built Objective-J environment
+require("./OldBrowserCompatibility");
+
 var FILE = require("file"),
     OS = require("os"),
     stream = require("narwhal/term").stream;
+
+    var walk = require("./acornwalk").acorn.walk;
+
+acorn = {walk: walk};
+acorn = require("./acorn").acorn;
+
+    var compiler = require("./ObjJAcornCompiler").ObjJCompiler;
 
 //$BUILD_CONFIGURATION_DIR = "../Build"
 $BROWSER_FILE       = FILE.join("Browser", "Objective-J.js");
@@ -32,7 +44,7 @@ $BROWSER_FILE       = FILE.join("Browser", "Objective-J.js");
 $BUILD_OBJECTIVE_J  = FILE.join($BUILD_CONFIGURATION_DIR, "Objective-J");
 $BUILD_BROWSER_FILE = FILE.join($BUILD_OBJECTIVE_J, "Objective-J.js");
 
-$INCLUDE_FLAGS      = ["-I" + FILE.cwd()];
+$INCLUDE_FLAGS      = ["'-I" + FILE.cwd() + "'"];
 $DEBUG_FLAGS        = $CONFIGURATION === "Debug" ? ["-DDEBUG=1"] : [""];
 $OBJECTIVEJ_FILES   = new FileList("*.js");
 
@@ -40,9 +52,9 @@ $BROWSER_FILES      = new FileList($BROWSER_FILE).include($OBJECTIVEJ_FILES);
 
 filedir($BUILD_BROWSER_FILE, $BROWSER_FILES, function(aTask)
 {
-    gcc($BROWSER_FILE, 
-        $BUILD_BROWSER_FILE, 
-        environmentFlags("Browser", "ObjJ").concat($INCLUDE_FLAGS, $DEBUG_FLAGS), $CONFIGURATION !== "Debug");
+    gcc($BROWSER_FILE,
+        $BUILD_BROWSER_FILE,
+        environmentFlags("Browser", "ObjJ").concat($INCLUDE_FLAGS, $DEBUG_FLAGS, ["-Wno-unused-but-set-variable"]), $CONFIGURATION !== "Debug");
 });
 
 $LICENSE        = FILE.join("CommonJS", "lib", "objective-j", "jake", "LICENSES", "LGPL-v2.1");
@@ -71,7 +83,7 @@ new FileList("CommonJS/**/*").forEach(function(aFilename)
         else
             gcc(aFilename,
                 buildFilename,
-                environmentFlags("CommonJS", "ObjJ").concat($INCLUDE_FLAGS, $DEBUG_FLAGS), false);
+                environmentFlags("CommonJS", "ObjJ").concat($INCLUDE_FLAGS, $DEBUG_FLAGS, ["-Wno-unused-but-set-variable"]), false);
     });
 
     // HACK: narwhal should copy permissions
@@ -106,7 +118,7 @@ function environmentFlags()
 
     return environments.map(function(anEnvironment) {
         return "-D" + anEnvironment.toUpperCase();
-    }).concat("-DENVIRONMENTS=" + OS.enquote(JSON.stringify(environments)));
+    }).concat("-DENVIRONMENTS=" + JSON.stringify(environments));
 }
 
 var SHRINKSAFE = require("minify/shrinksafe");
@@ -114,16 +126,40 @@ function compressor(code) {
     return SHRINKSAFE.compress(code, { charset : "UTF-8", useServer : true });
 }
 
+var headerText = FILE.read("header.txt", { charset : "UTF-8" });
 function gcc(inputFilePath, outputFilePath, flags, compress)
 {
     stream.print("Building... \0green(" + outputFilePath +"\0)");
 
-    // GCC preprocess the file.
-    var cmd = ["gcc", "-E", "-x", "c", "-P"].concat(flags, inputFilePath).join(" ");
-    var gcc = OS.popen(cmd, { charset:"UTF-8" });
+    var source = FILE.read(inputFilePath, { charset : "UTF-8" });
+    var compilerOptions = compiler.parseGccCompilerFlags(flags.join(" "));
+    var acornOptions = compilerOptions.acornOptions || (compilerOptions.acornOptions = {});
 
-    var contents = FILE.read("header.txt", { charset : "UTF-8" });
-    contents += gcc.stdout.read();
+    acornOptions.preprocessGetIncludeFile = function(filePath, isQuoted) {
+        var includeContent = FILE.read(filePath, { charset : "UTF-8" });
+        //print ("Include content for file '" + filePath + "': " + includeContent);
+        //print ("Include file '" + filePath + "'");
+        return {include: includeContent, sourceFile: filePath};
+    }
+
+    var c = compiler.compile(source, inputFilePath, compilerOptions);
+    var warnings = [],
+        anyErrors = false;
+
+    for (var i = 0; i < c.warningsAndErrors.length; i++)
+    {
+        var warning = c.warningsAndErrors[i],
+            message = c.prettifyMessage(warning);
+
+        // Set anyErrors to 'true' if there are any errors in the list
+        anyErrors = anyErrors || warning.messageType === "ERROR";
+        print(message);
+    }
+
+    if (anyErrors) throw "Compilation Error";
+
+    var code = c.code();
+    var contents = headerText + code;
 
     if (FILE.extension(inputFilePath) === ".js" && compress)
         contents = compressor(contents);

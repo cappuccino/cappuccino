@@ -24,9 +24,13 @@
 @import <Foundation/CPMutableArray.j>
 @import <Foundation/CPString.j>
 @import <Foundation/CPKeyedUnarchiver.j>
+@import <Foundation/CPBundle.j>
 
 @class CPView
 @class _CPThemeAttribute
+@class CPImage
+@class CPColor
+@class CPApplication
 
 var CPThemesByName          = { },
     CPThemeDefaultTheme     = nil,
@@ -36,7 +40,6 @@ var CPThemesByName          = { },
 /*!
     @ingroup appkit
 */
-
 @implementation CPTheme : CPObject
 {
     CPString        _name;
@@ -142,20 +145,19 @@ var CPThemesByName          = { },
 
     if (!className)
     {
-        if ([aClass isKindOfClass:[CPView class]])
+        if ([aClass respondsToSelector:@selector(defaultThemeClass)])
         {
-            if ([aClass respondsToSelector:@selector(defaultThemeClass)])
-                className = [aClass defaultThemeClass];
-            else if ([aClass respondsToSelector:@selector(themeClass)])
-            {
-                CPLog.warn(@"%@ themeClass is deprecated in favor of defaultThemeClass", CPStringFromClass(aClass));
-                className = [aClass themeClass];
-            }
-            else
-                return nil;
+            className = [aClass defaultThemeClass];
+        }
+        else if ([aClass respondsToSelector:@selector(themeClass)])
+        {
+            CPLog.warn(@"%@ themeClass is deprecated in favor of defaultThemeClass", CPStringFromClass(aClass));
+            className = [aClass themeClass];
         }
         else
-            [CPException raise:CPInvalidArgumentException reason:@"aClass must be a class object or a string."];
+        {
+            return nil;
+        }
     }
 
     return [_attributes objectForKey:className];
@@ -258,7 +260,7 @@ var CPThemesByName          = { },
         attributeNames = [attributes keyEnumerator],
         objectThemeClass = [anObject themeClass];
 
-    while ((attributeName = [attributeNames nextObject]) !== nil)
+    while ((attributeName = [attributeNames nextObject]) != nil)
         [self _recordAttribute:[attributes objectForKey:attributeName] forClass:objectThemeClass];
 }
 
@@ -315,6 +317,245 @@ var CPThemeNameKey          = @"CPThemeNameKey",
 
 @end
 
+#pragma mark -
+#pragma mark CSS Theming
+
+// The code below adds support for CSS theming with 100% compatibility with current theming system.
+// The idea is to extend CPColor and CPImage with CSS components and adapt low level UI components to
+// support this new kind of CPColor/CPImage. See CPImageView, CPView and _CPImageAndTextView.
+//
+// To be considered and treated as CSS based, a theme must set to YES the attribute "css-based" for CPView
+// in the theDescriptor (default value is NO), like in the example below :
+//
+// + (CPView)themedView
+// {
+//     var view = [[CPView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];
+//
+//     [self registerThemeValues:[[@"css-based", YES]] forView:view];
+//
+//     return view;
+// }
+//
+// You can use the method -(BOOL)isCSSBased on a theme to determine how to cope with it in your own code.
+//
+// The method -(void)setCSSResourcesPath is meant to be used only by CPThemeBlend during theme loading in order to
+// replace the special path "%%" in CSS components (like in url(%%packed.png) ) with the path to the theme blend resources folder.
+//
+// DYNAMIC ATTRIBUTES SET:
+//
+// If the default theme is CSS based and exposes some dynamic attributes (like Aristo3 does for color schema), you can switch "live"
+// to another set of values by calling [CPTheme updateDefaultThemeDynamicAttributesSetWithSet:aDynamicSet] where aDynamicSet is a
+// dictionary with keys being the names of exposed dynamic attributes (see the themeDescriptor.j of the CSS based theme you use)
+// and values, accordingly to the type of the corresponding default values provided by the theme (CPColor, a CSS color string, ...).
+// You can provide key-value pairs for a subset of the exposed dynamic attributes. If no key-value pair is specified for a dynamic
+// attribute, the theme default value will be used.
+//
+// To restore default theme values, simply pass nil as dynamic set : [CPTheme updateDefaultThemeDynamicAttributesSetWithSet:nil]
+//
+// During theme loading, if your application responds to -(CPDictionary)themeDynamicAttributesSet, the returned values set is directly
+// applied to the default set. This avoids displaying the theme with its default values and then redisplaying it with your values.
+// The -(CPDictionary)themeDynamicAttributesSet must be declared in a CPApplication category (and not in your application delegate) as
+// it will be called during application initialisation, before the delegate has been defined.
+//
+// To use default theme values, simply return nil.
+//
+//
+// TYPICAL USAGE:
+//
+// One can imagine that a user can choose between some predefined color schemas. You can store this user preference in standard user defaults:
+//
+//      [[CPUserDefaults standardUserDefaults] setObject:ConstantRepresentingAColorSchema forKey:@"userTheme"];
+//      [[CPUserDefaults standardUserDefaults] synchronize];
+//
+// As you want to use the choosen color schema at run time, you've implemented -(CPDictionary)themeDynamicAttributesSet (see below), so updating
+// the UI as soon as the user has made his choice is easy :
+//
+//      [CPTheme updateDefaultThemeDynamicAttributesSetWithSet:[[CPApplication sharedApplication] themeDynamicAttributesSet]];
+//
+// If the user chooses the theme default color schema, you can then simply remove the user default:
+//
+//      [[CPUserDefaults standardUserDefaults] removeObjectForKey:@"userTheme"];
+//      [[CPUserDefaults standardUserDefaults] synchronize];
+//
+// Your CPApplication category could then be something like:
+//
+//      @implementation CPApplication (themeColorSchema)
+//
+//      - (CPDictionary)themeDynamicAttributesSet
+//      {
+//          var userTheme = [[CPUserDefaults standardUserDefaults] objectForKey:@"userTheme"];
+//
+//          if (!userTheme)
+
+//              // Return nil to have the theme default color schema
+//              return nil;
+//
+//          switch (userTheme)
+//          {
+//              case ConstantRepresentingAColorSchema:
+//                  return @{
+//                           @"ExposedDynamicAttribute1":    [CPColor colorWithRed:245.0/255.0 green:164.0/255.0 blue:9.0/255.0 alpha:0.85],
+//                           @"ExposedDynamicAttribute2":    [CPColor colorWithRed:245.0/255.0 green:164.0/255.0 blue:9.0/255.0 alpha:0.85],
+//                           @"ExposedDynamicAttribute3":    @"rgb(245,164,9)",
+//                           @"ExposedDynamicAttribute4":    @"url(./Resources/mypacked.png)"
+//                          };
+//                  break;
+//
+//              case AnotherConstantRepresentingAColorSchema:
+//                  return @{
+//                           @"ExposedDynamicAttribute1":    [CPColor colorWithRed:39.0/255.0 green:216.0/255.0 blue:93.0/255.0 alpha:0.85],
+//                           @"ExposedDynamicAttribute3":    @"rgb(39,216,93)"
+//                          };
+//                  break;
+//
+//              ...
+//          }
+//      }
+//
+//      @end
+
+var _savedThemesByName = { };
+
+@implementation CPTheme (CSSTheming)
+
+- (void)_initializeDynamicAttributesAndResourcesPathWithBundle:(CPBundle)aBundle
+{
+    // First, save a template of the theme so dynamic attributes and images placeholders are preserved
+    _savedThemesByName[_name] = [CPKeyedArchiver archivedDataWithRootObject:self];
+
+    // Then, compute the dynamic attributes set that will be applied to the theme
+    // Does the application delegate provide a dynamic attributes set ?
+    var dynamicSet = ([[CPApplication sharedApplication] respondsToSelector:@selector(themeDynamicAttributesSet)]) ? [[CPApplication sharedApplication] themeDynamicAttributesSet] : nil;
+
+    // Take the one defined in the theme
+    var defaultDynamicSet = [self valueForAttributeWithName:@"dynamic-set" forClass:[CPView class]];
+
+    // Update the default dynamic attributes set with the one provided by the application
+    [dynamicSet enumerateKeysAndObjectsUsingBlock:function(aKey, anObject, stop)
+     {
+         [defaultDynamicSet setObject:anObject forKey:aKey];
+     }];
+
+    // Apply the resulting set
+    [self applyDynamicSet:defaultDynamicSet];
+
+    // Then fix resources path in CSS directives
+    [self setCSSResourcesPath:[aBundle resourcePath]];
+}
+
++ (void)updateDefaultThemeDynamicAttributesSetWithSet:(CPDictionary)dynamicSet
+{
+    // First, get a copy of the theme template
+    var newTheme = [CPKeyedUnarchiver unarchiveObjectWithData:_savedThemesByName[[CPThemeDefaultTheme name]]];
+
+    // Take the dynamic set defined in the theme
+    var defaultDynamicSet = [newTheme valueForAttributeWithName:@"dynamic-set" forClass:[CPView class]];
+
+    // Update the default dynamic attributes set with the one provided by the application
+    [dynamicSet enumerateKeysAndObjectsUsingBlock:function(aKey, anObject, stop)
+     {
+         [defaultDynamicSet setObject:anObject forKey:aKey];
+     }];
+
+    // Apply the resulting set to the theme
+    [newTheme applyDynamicSet:defaultDynamicSet];
+
+    // Then, fix resources path in CSS directives
+    [newTheme setCSSResourcesPath:[[[[CPApplication sharedApplication] themeBlend] bundle] resourcePath]];
+
+    // Now apply the new theme variation
+    [CPTheme setDefaultTheme:newTheme];
+
+    var windows = [[CPApplication sharedApplication] windows];
+
+    for (var i = 0, count = windows.length; i < count; i++)
+    {
+        [windows[i] _setThemeIncludingDescendants:newTheme];
+    }
+
+    // Update the menu bar
+    [CPMenu updateMenuBarAttributesWithTheme:newTheme];
+}
+
+- (void)setCSSResourcesPath:(CPString)pathToResources
+{
+    [_attributes enumerateKeysAndObjectsUsingBlock:function(aKey, anObject, stop)
+     {
+         [anObject enumerateKeysAndObjectsUsingBlock:function(aKey2, anObject2, stop2)
+          {
+              // anObject2 is now a _CPThemeAttribute
+
+              [[anObject2 values] enumerateKeysAndObjectsUsingBlock:function(aKey3, anObject3, stop3)
+               {
+                   if (anObject3.isa && ([anObject3 isKindOfClass:CPImage] || [anObject3 isKindOfClass:CPColor]) && [anObject3 cssDictionary])
+                   {
+                       // We have a CSS defined image or color
+                       [self _fixPathInCSSDictionary:[anObject3 cssDictionary]       withPathToResources:pathToResources];
+                       [self _fixPathInCSSDictionary:[anObject3 cssBeforeDictionary] withPathToResources:pathToResources];
+                       [self _fixPathInCSSDictionary:[anObject3 cssAfterDictionary]  withPathToResources:pathToResources];
+                   }
+               }];
+          }];
+     }];
+}
+
+- (void)_fixPathInCSSDictionary:(CPDictionary)aDictionary withPathToResources:(CPString)pathToResources
+{
+    [aDictionary enumerateKeysAndObjectsUsingBlock:function(aKey, anObject, stop)
+     {
+         [aDictionary setObject:[anObject stringByReplacingOccurrencesOfString:@"%%" withString:pathToResources] forKey:aKey];
+     }];
+}
+
+- (void)applyDynamicSet:(CPDictionary)dynamicSet
+{
+    [_attributes enumerateKeysAndObjectsUsingBlock:function(aKey, anObject, stop)
+     {
+         [anObject enumerateKeysAndObjectsUsingBlock:function(aKey2, anObject2, stop2)
+          {
+              var anObject2Values = [anObject2 values];
+
+              [anObject2Values enumerateKeysAndObjectsUsingBlock:function(aKey3, anObject3, stop3)
+               {
+                   if (anObject3.isa)
+                   {
+                       if (([anObject3 isKindOfClass:CPImage] || [anObject3 isKindOfClass:CPColor]) && [anObject3 cssDictionary])
+                       {
+                           // We have a CSS defined image or color
+                           [self _applyDynamicSet:dynamicSet toCSSDictionary:[anObject3 cssDictionary]];
+                           [self _applyDynamicSet:dynamicSet toCSSDictionary:[anObject3 cssBeforeDictionary]];
+                           [self _applyDynamicSet:dynamicSet toCSSDictionary:[anObject3 cssAfterDictionary]];
+                       }
+                       else if ([anObject3 isKindOfClass:CPString])
+                       {
+                           // We have a direct string value
+                           if ([dynamicSet containsKey:anObject3])
+                               [anObject2Values setObject:[dynamicSet objectForKey:anObject3] forKey:aKey3];
+                       }
+                   }
+               }];
+          }];
+     }];
+}
+
+- (void)_applyDynamicSet:(CPDictionary)dynamicSet toCSSDictionary:(CPDictionary)aDictionary
+{
+    [aDictionary enumerateKeysAndObjectsUsingBlock:function(aKey, anObject, stop)
+     {
+         if ([dynamicSet containsKey:anObject])
+             [aDictionary setObject:[dynamicSet objectForKey:anObject] forKey:aKey];
+     }];
+}
+
+- (BOOL)isCSSBased
+{
+    return !![self valueForAttributeWithName:@"css-based" forClass:[CPView class]];
+}
+
+@end
+
+#pragma mark -
+
 /*!
  * ThemeStates are immutable objects representing a particular ThemeState.  Applications should never be creating
  * ThemeStates directly but should instead use the CPThemeState function.
@@ -324,10 +565,11 @@ function ThemeState(stateNames)
     var stateNameKeys = [];
     this._stateNames = {};
 
-    for (key in stateNames)
+    for (var key in stateNames)
     {
         if (!stateNames.hasOwnProperty(key))
             continue;
+
         if (key !== 'normal')
         {
             this._stateNames[key] = true;
@@ -345,8 +587,10 @@ function ThemeState(stateNames)
     this._stateNameString = stateNameKeys[0];
 
     var stateNameLength = stateNameKeys.length;
+
     for (var stateIndex = 1; stateIndex < stateNameLength; stateIndex++)
         this._stateNameString = this._stateNameString + "+" + stateNameKeys[stateIndex];
+
     this._stateNameCount = stateNameLength;
 }
 
@@ -393,7 +637,19 @@ ThemeState.prototype.without = function(aState)
     if (!aState || aState === [CPNull null])
         return this;
 
+    var firstTransform = CPThemeWithoutTransform[this._stateNameString],
+        result;
+
+    if (firstTransform)
+    {
+        result = firstTransform[aState._stateNameString];
+
+        if (result)
+            return result;
+    }
+
     var newStates = {};
+
     for (var stateName in this._stateNames)
     {
         if (!this._stateNames.hasOwnProperty(stateName))
@@ -403,25 +659,54 @@ ThemeState.prototype.without = function(aState)
             newStates[stateName] = true;
     }
 
-    return ThemeState._cacheThemeState(new ThemeState(newStates));
+    result = ThemeState._cacheThemeState(new ThemeState(newStates));
+
+    if (!firstTransform)
+        firstTransform = CPThemeWithoutTransform[this._stateNameString] = {};
+
+    firstTransform[aState._stateNameString] = result;
+
+    return result;
 }
 
 ThemeState.prototype.and  = function(aState)
 {
-    return CPThemeState(this, aState);
+    var firstTransform = CPThemeAndTransform[this._stateNameString],
+        result;
+
+    if (firstTransform)
+    {
+        result = firstTransform[aState._stateNameString];
+
+        if (result)
+            return result;
+    }
+
+    result = CPThemeState(this, aState);
+
+    if (!firstTransform)
+        firstTransform = CPThemeAndTransform[this._stateNameString] = {};
+
+    firstTransform[aState._stateNameString] = result;
+
+    return result;
 }
 
-var CPThemeStates = {};
+var CPThemeStates = {},
+    CPThemeWithoutTransform = {},
+    CPThemeAndTransform = {};
 
 ThemeState._cacheThemeState = function(aState)
 {
     // We do this caching so themeState equality works.  Basically, doing CPThemeState('foo+bar') === CPThemeState('bar', 'foo') will return true.
     var themeState = CPThemeStates[String(aState)];
+
     if (themeState === undefined)
     {
         themeState = aState;
         CPThemeStates[String(themeState)] = themeState;
     }
+
     return themeState;
 }
 
@@ -439,14 +724,17 @@ function CPThemeState()
         throw "CPThemeState() must be called with at least one string argument";
 
     var themeState;
+
     if (arguments.length === 1 && typeof arguments[0] === 'string')
     {
         themeState = CPThemeStates[arguments[0]];
+
         if (themeState !== undefined)
             return themeState;
     }
 
     var stateNames = {};
+
     for (var argIndex = 0; argIndex < arguments.length; argIndex++)
     {
         if (arguments[argIndex] === [CPNull null] || !arguments[argIndex])
@@ -458,12 +746,14 @@ function CPThemeState()
             {
                 if (!arguments[argIndex]._stateNames.hasOwnProperty(stateName))
                     continue;
+
                 stateNames[stateName] = true;
             }
         }
         else
         {
             var allNames = arguments[argIndex].split('+');
+
             for (var nameIndex = 0; nameIndex < allNames.length; nameIndex++)
                 stateNames[allNames[nameIndex]] = true;
         }
@@ -523,6 +813,9 @@ CPThemeStateControlSizeRegular  = CPThemeState("controlSizeRegular");
 CPThemeStateControlSizeSmall    = CPThemeState("controlSizeSmall");
 CPThemeStateControlSizeMini     = CPThemeState("controlSizeMini");
 
+CPThemeStateNormalString        = String(CPThemeStateNormal);
+
+
 @implementation _CPThemeAttribute : CPObject
 {
     CPString            _name;
@@ -533,7 +826,7 @@ CPThemeStateControlSizeMini     = CPThemeState("controlSizeMini");
     _CPThemeAttribute   _themeDefaultAttribute;
 }
 
-- (id)initWithName:(CPString)aName defaultValue:(id)aDefaultValue
+- (id)initWithName:(CPString)aName defaultValue:(id)aDefaultValue defaultAttribute:(_CPThemeAttribute)aDefaultAttribute
 {
     self = [super init];
 
@@ -542,7 +835,9 @@ CPThemeStateControlSizeMini     = CPThemeState("controlSizeMini");
         _cache = { };
         _name = aName;
         _defaultValue = aDefaultValue;
-        _values = @{};
+
+        if (aDefaultAttribute)
+            _themeDefaultAttribute = aDefaultAttribute;
     }
 
     return self;
@@ -563,24 +858,36 @@ CPThemeStateControlSizeMini     = CPThemeState("controlSizeMini");
     return [_values count] > 0;
 }
 
-- (void)setValue:(id)aValue
+- (_CPThemeAttribute)attributeBySettingValue:(id)aValue
 {
-    _cache = {};
-
-    if (aValue === undefined || aValue === nil)
-        _values = @{};
-    else
-        _values = @{ String(CPThemeStateNormal): aValue };
+    return [self attributeBySettingValue:aValue forState:CPThemeStateNormal];
 }
 
-- (void)setValue:(id)aValue forState:(ThemeState)aState
+- (_CPThemeAttribute)attributeBySettingValue:(id)aValue forState:(ThemeState)aState
 {
-    _cache = { };
+    var shouldRemoveValue = aValue == nil,
+        attribute = [[_CPThemeAttribute alloc] initWithName:_name defaultValue:_defaultValue defaultAttribute:_themeDefaultAttribute],
+        values = _values;
 
-    if ((aValue === undefined) || (aValue === nil))
-        [_values removeObjectForKey:String(aState)];
-    else
-        [_values setObject:aValue forKey:String(aState)];
+    if (values != null)
+    {
+        values = [values copy];
+
+        if (shouldRemoveValue)
+            [values removeObjectForKey:String(aState)];
+        else
+            [values setObject:aValue forKey:String(aState)];
+
+        attribute._values = values;
+    }
+    else if (!shouldRemoveValue)
+    {
+        values = [[CPDictionary alloc] init];
+        [values setObject:aValue forKey:String(aState)];
+        attribute._values = values;
+    }
+
+    return attribute;
 }
 
 - (id)value
@@ -590,6 +897,7 @@ CPThemeStateControlSizeMini     = CPThemeState("controlSizeMini");
 
 - (id)valueForState:(ThemeState)aState
 {
+    // First, search in cache.
     var stateName = String(aState),
         value = _cache[stateName];
 
@@ -597,72 +905,112 @@ CPThemeStateControlSizeMini     = CPThemeState("controlSizeMini");
     if (value !== undefined)
         return value;
 
+    // Not in cache. OK, search in values.
     value = [_values objectForKey:stateName];
 
-    if (value === undefined || value === nil)
+    if (value != nil)
+        return _cache[stateName] = value;
+
+    // No direct match in values.
+    // If this is a composite state, find the closest partial subset match.
+    if (aState._stateNameCount > 1)
     {
-        // If this is a composite state, find the closest partial subset match.
-        if (aState._stateNameCount > 1)
-        {
-            var states = [_values allKeys],
-                count = states.length,
-                largestThemeState = 0;
+        var largestThemeState = [self largestThemeStateMatchForState:aState returnedValue:@ref(value)];
 
-            while (count--)
-            {
-                var stateObject = CPThemeState(states[count]);
-
-                if (stateObject.isSubsetOf(aState) && stateObject._stateNameCount > largestThemeState)
-                {
-                    value = [_values objectForKey:states[count]];
-                    largestThemeState = stateObject._stateNameCount;
-                }
-            }
-        }
-
-        // Still don't have a value? OK, let's use the normal value.
-        if (value === undefined || value === nil)
-            value = [_values objectForKey:String(CPThemeStateNormal)];
+        if ((value !== undefined) && (value !== nil))
+            return _cache[stateName] = value;
     }
 
-    if (value === undefined || value === nil)
-        value = [_themeDefaultAttribute valueForState:aState];
+    // Still don't have a value? OK, let's use the normal value.
+    value = [_values objectForKey:String(CPThemeStateNormal)];
 
-    if (value === undefined || value === nil)
-    {
-        value = _defaultValue;
+    if (value != nil)
+        return _cache[stateName] = value;
 
-        // Class theme attributes cannot use nil because it's a dictionary.
-        // So transform CPNull into nil.
-        if (value === [CPNull null])
-            value = nil;
-    }
+    // No normal value, try asking _themeDefaultAttribute
+    value = [_themeDefaultAttribute valueForState:aState];
 
-    _cache[stateName] = value;
+    if (value != nil)
+        return _cache[stateName] = value;
 
-    return value;
+    // Well, last option, use default value
+    value = _defaultValue;
+
+    // Class theme attributes cannot use nil because it's a dictionary.
+    // So transform CPNull into nil.
+    if (value === [CPNull null])
+        value = nil;
+
+    return _cache[stateName] = value;
 }
 
-- (void)setParentAttribute:(_CPThemeAttribute)anAttribute
+- (CPInteger)largestThemeStateMatchForState:(ThemeState)aState returnedValue:(id)valueRef
+{
+    var stateName = String(aState),
+        value,
+        states = [_values allKeys],
+        count = states ? states.length : 0,
+        largestThemeState = 0;
+
+    while (count--)
+    {
+        var stateObject = CPThemeState(states[count]);
+
+        if (stateObject.isSubsetOf(aState) && stateObject._stateNameCount > largestThemeState)
+        {
+            value = [_values objectForKey:states[count]];
+            largestThemeState = stateObject._stateNameCount;
+        }
+    }
+
+    // _themeDefaultAttribute may have a larger theme state match. If so, we have to take it. If not, we take our closest match.
+    var defaultAttributeFoundValue,
+        defaultAttributeMatchLength = [_themeDefaultAttribute largestThemeStateMatchForState:aState returnedValue:@ref(defaultAttributeFoundValue)];
+
+    if (defaultAttributeMatchLength > largestThemeState)
+    {
+        value = defaultAttributeFoundValue;
+        largestThemeState = defaultAttributeMatchLength;
+    }
+
+    @deref(valueRef) = value;
+    return largestThemeState;
+}
+
+- (_CPThemeAttribute)attributeBySettingParentAttribute:(_CPThemeAttribute)anAttribute
 {
     if (_themeDefaultAttribute === anAttribute)
-        return;
+        return self;
 
-    _cache = { };
-    _themeDefaultAttribute = anAttribute;
+    var attribute = [[_CPThemeAttribute alloc] initWithName:_name defaultValue:_defaultValue defaultAttribute:anAttribute];
+
+    attribute._values = [_values copy];
+
+    return attribute;
 }
 
 - (_CPThemeAttribute)attributeMergedWithAttribute:(_CPThemeAttribute)anAttribute
 {
-    var mergedAttribute = [[_CPThemeAttribute alloc] initWithName:_name defaultValue:_defaultValue];
+    var mergedAttribute = [[_CPThemeAttribute alloc] initWithName:_name defaultValue:_defaultValue defaultAttribute:_themeDefaultAttribute];
 
     mergedAttribute._values = [_values copy];
-    [mergedAttribute._values addEntriesFromDictionary:anAttribute._values];
+
+    if (anAttribute._values)
+        mergedAttribute._values ? [mergedAttribute._values addEntriesFromDictionary:anAttribute._values] : [anAttribute._values copy];
 
     return mergedAttribute;
 }
 
+- (CPString)description
+{
+    return [super description] + @" Name: " + _name + @", defaultAttribute: " + _themeDefaultAttribute + @", defaultValue: " + _defaultValue + @", values: " + _values;
+}
+
 @end
+
+
+// This is used to pass 'parrentAttribute' to the coder
+var ParentAttributeForCoder = nil;
 
 @implementation _CPThemeAttribute (CPCoding)
 
@@ -677,13 +1025,16 @@ CPThemeStateControlSizeMini     = CPThemeState("controlSizeMini");
         _name = [aCoder decodeObjectForKey:@"name"];
         _defaultValue = [aCoder decodeObjectForKey:@"defaultValue"];
         _values = @{};
+        _themeDefaultAttribute = ParentAttributeForCoder;
 
         if ([aCoder containsValueForKey:@"value"])
         {
-            var state = String(CPThemeStateNormal);
+            var state;
 
             if ([aCoder containsValueForKey:@"state"])
                 state = [aCoder decodeObjectForKey:@"state"];
+            else
+                state = CPThemeStateNormalString;
 
             [_values setObject:[aCoder decodeObjectForKey:"value"] forKey:state];
         }
@@ -711,7 +1062,7 @@ CPThemeStateControlSizeMini     = CPThemeState("controlSizeMini");
     [aCoder encodeObject:_defaultValue forKey:@"defaultValue"];
 
     var keys = [_values allKeys],
-        count = keys.length;
+        count = keys ? keys.length : 0;
 
     if (count === 1)
     {
@@ -749,7 +1100,7 @@ function CPThemeAttributeEncode(aCoder, aThemeAttribute)
     {
         var state = [values allKeys][0];
 
-        if (state === String(CPThemeStateNormal))
+        if (state === CPThemeStateNormalString)
         {
             [aCoder encodeObject:[values objectForKey:state] forKey:key];
 
@@ -767,29 +1118,23 @@ function CPThemeAttributeEncode(aCoder, aThemeAttribute)
     return NO;
 }
 
-function CPThemeAttributeDecode(aCoder, anAttributeName, aDefaultValue, aTheme, aClass)
+function CPThemeAttributeDecode(aCoder, attribute)
 {
-    var key = "$a" + anAttributeName;
+    var key = "$a" + attribute._name;
 
-    if (![aCoder containsValueForKey:key])
-        var attribute = [[_CPThemeAttribute alloc] initWithName:anAttributeName defaultValue:aDefaultValue];
-
-    else
+    if ([aCoder containsValueForKey:key])
     {
-        var attribute = [aCoder decodeObjectForKey:key];
+        ParentAttributeForCoder = attribute._themeDefaultAttribute;
 
-        if (!attribute || !attribute.isa || ![attribute isKindOfClass:[_CPThemeAttribute class]])
-        {
-            var themeAttribute = [[_CPThemeAttribute alloc] initWithName:anAttributeName defaultValue:aDefaultValue];
+        var decodedAttribute = [aCoder decodeObjectForKey:key];
 
-            [themeAttribute setValue:attribute];
+        ParentAttributeForCoder = nil;
 
-            attribute = themeAttribute;
-        }
+        if (!decodedAttribute || !decodedAttribute.isa || ![decodedAttribute isKindOfClass:[_CPThemeAttribute class]])
+            attribute = [attribute attributeBySettingValue:decodedAttribute];
+        else
+            attribute = decodedAttribute;
     }
-
-    if (aTheme && aClass)
-        [attribute setParentAttribute:[aTheme attributeWithName:anAttributeName forClass:aClass]];
 
     return attribute;
 }

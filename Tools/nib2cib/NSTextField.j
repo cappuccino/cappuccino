@@ -26,6 +26,7 @@
 @import "NSCell.j"
 @import "NSControl.j"
 
+@global NIB_CONNECTION_EQUIVALENCY_TABLE
 
 @implementation CPTextField (NSCoding)
 
@@ -82,6 +83,10 @@
     if (self)
     {
         var cell = [aCoder decodeObjectForKey:@"NSCell"];
+
+        // If we have bindings/connections connected to the text field cell make sure they are replaced
+        NIB_CONNECTION_EQUIVALENCY_TABLE[[cell UID]] = self;
+
         [self NS_initWithCell:cell];
         [self _adjustNib2CibSize];
     }

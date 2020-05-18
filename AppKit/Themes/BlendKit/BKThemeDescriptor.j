@@ -217,6 +217,11 @@ var ItemSizes               = { },
     return [[self themeName] compare:[aThemeDescriptor themeName]];
 }
 
++ (void)registerThemeValues:(CPArray)themeValues forObject:(id)anObject
+{
+    [self registerThemeValues:themeValues forView:anObject];
+}
+
 + (void)registerThemeValues:(CPArray)themeValues forView:(CPView)aView
 {
     for (var i = 0; i < themeValues.length; ++i)
@@ -227,10 +232,20 @@ var ItemSizes               = { },
             state = attributeValueState[2];
 
         if (state)
-            [aView setValue:value forThemeAttribute:attribute inState:state];
+        {
+            if (state.isa && [state isKindOfClass:CPArray])
+                [aView setValue:value forThemeAttribute:attribute inStates:state];
+            else
+                [aView setValue:value forThemeAttribute:attribute inState:state];
+        }
         else
             [aView setValue:value forThemeAttribute:attribute];
     }
+}
+
++ (void)registerThemeValues:(CPArray)themeValues forObject:(id)anObject inherit:(CPArray)inheritedValues
+{
+    [self registerThemeValues:themeValues forView:anObject inherit:inheritedValues];
 }
 
 + (void)registerThemeValues:(CPArray)themeValues forView:(CPView)aView inherit:(CPArray)inheritedValues
@@ -294,7 +309,12 @@ var ItemSizes               = { },
                 }
 
                 if (state)
-                    [aView setValue:value forThemeAttribute:attribute inState:state];
+                {
+                    if (state.isa && [state isKindOfClass:CPArray])
+                        [aView setValue:value forThemeAttribute:attribute inStates:state];
+                    else
+                        [aView setValue:value forThemeAttribute:attribute inState:state];
+                }
                 else
                     [aView setValue:value forThemeAttribute:attribute];
             }

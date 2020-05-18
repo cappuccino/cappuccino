@@ -29,7 +29,7 @@
 
 @implementation _CPVariableExpression :  CPExpression
 {
-    CPString _variable;
+    CPString _variable @accessors(getter=variable);
 }
 
 - (id)initWithVariable:(CPString)variable
@@ -48,15 +48,10 @@
     if (self === object)
         return YES;
 
-    if (object === nil || object.isa !== self.isa || ![[object variable] isEqual:_variable])
+    if (object == nil || object.isa !== self.isa || ![[object variable] isEqual:_variable])
         return NO;
 
     return YES;
-}
-
-- (CPString)variable
-{
-    return _variable;
 }
 
 - (id)expressionValueWithObject:object context:(CPDictionary)context

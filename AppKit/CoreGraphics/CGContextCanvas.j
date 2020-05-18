@@ -147,7 +147,7 @@ CGCanvasGraphicsContext.prototype.addCurveToPoint = function(aContext, cp1x, cp1
 CGCanvasGraphicsContext.prototype.addLines = function(points, count)
 {
     // implementation mirrors that of CGPathAddLines()
-    if (count === null || count === undefined)
+    if (count == null)
         count = points.length;
 
     if (count < 1)
@@ -241,7 +241,7 @@ CGCanvasGraphicsContext.prototype.addQuadCurveToPoint = function(cpx, cpy, x, y)
 
 CGCanvasGraphicsContext.prototype.addRects = function(rects, count)
 {
-    if (count === null || count === undefined)
+    if (count == null)
         count = rects.length;
 
     for (var i = 0; i < count; ++i)
@@ -306,7 +306,7 @@ CGCanvasGraphicsContext.prototype.fillRect = function(aRect)
 
 CGCanvasGraphicsContext.prototype.fillRects = function(rects, count)
 {
-    if (count === null || count === undefined)
+    if (count == null)
         count = rects.length;
 
     for (var i = 0; i < count; ++i)
@@ -342,7 +342,7 @@ CGCanvasGraphicsContext.prototype.clipToRect = function(aRect)
 
 CGCanvasGraphicsContext.prototype.clipToRects = function(rects, count)
 {
-    if (count === null || count === undefined)
+    if (count == null)
         count = rects.length;
 
     this.canvasAPI.beginPath();
@@ -514,7 +514,6 @@ CGCanvasGraphicsContext.prototype.concatCTM = function(anAffineTransform)
     }
     else
     {
-    
         var a = anAffineTransform.a,
             b = anAffineTransform.b,
             c = anAffineTransform.c,
@@ -552,19 +551,19 @@ CGCanvasGraphicsContext.prototype.concatCTM = function(anAffineTransform)
                 U = CGAffineTransformMake(u.vector_1.x, u.vector_2.x, u.vector_1.y, u.vector_2.y, 0.0, 0.0), // inline
                 VT = CGAffineTransformMake(v.vector_1.x, v.vector_1.y, v.vector_2.x, v.vector_2.y, 0.0, 0.0),
                 S = CGAffineTransformConcat(CGAffineTransformConcat(CGAffineTransformInvert(U), anAffineTransform), CGAffineTransformInvert(VT));
-    
+
             a = VT.a;
             b = VT.b;
             c = VT.c;
             d = VT.d;
-            scale_rotate(a, b, c, d)
+            scale_rotate(a, b, c, d);
             S.a *= sx;
             S.d *= sy;
             a = U.a;
             b = U.b;
             c = U.c;
             d = U.d;
-            rotate_scale(a, b, c, d)
+            rotate_scale(a, b, c, d);
             sx = S.a * sx;
             sy = S.d * sy;
         }

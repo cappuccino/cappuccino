@@ -22,14 +22,14 @@ var randomFromTo = function(from, to)
 
 @implementation AppController : CPObject
 {
-    CPWindow        theWindow;
-    CPTextField     dateField1;
-    CPTextField     dateField2;
-    CPTextField     error1;
-    CPTextField     textField;
-    CPTextField     error2;
-    CPTextField     recordField;
-    CPPopUpButton   recordMenu;
+    @outlet CPWindow        theWindow;
+    @outlet CPTextField     dateField1;
+    @outlet CPTextField     dateField2;
+    @outlet CPTextField     error1;
+    @outlet CPTextField     textField;
+    @outlet CPTextField     error2;
+    @outlet CPTextField     recordField;
+    @outlet CPPopUpButton   recordMenu;
 }
 
 - (void)awakeFromCib
@@ -44,17 +44,15 @@ var randomFromTo = function(from, to)
                                                  name:CPTextFieldDidFocusNotification
                                                object:nil];
 
-    [textField setFormatter:[TextFormatter new]];
     [textField setDelegate:self];
 
     [error1 setStringValue:@""];
     [error2 setStringValue:@""];
 
-    [recordField setFormatter:[ContactFormatter new]];
     [recordField setObjectValue:RecordData[0]];
 }
 
-- (void)selectRecord:(id)sender
+- (@action)selectRecord:(id)sender
 {
     var record = RecordData[[sender selectedIndex]];
 
@@ -212,7 +210,7 @@ var randomFromTo = function(from, to)
     else
         anObject(aString);
 
-    result = error === nil;
+    var result = error === nil;
 
     CPLog.info("getObjectValue:forString:%s ==> %s", aString, result);
     return result;

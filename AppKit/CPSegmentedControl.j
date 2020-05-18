@@ -115,8 +115,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 /*! @ignore */
 - (void)setSegments:(CPArray)segments
 {
-    [_segments removeAllObjects];
-    [_themeStates removeAllObjects];
+    [self removeSegmentsAtIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self  segmentCount])]];
 
     [self insertSegments:segments atIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [segments count])]];
 }
@@ -135,6 +134,9 @@ CPSegmentSwitchTrackingMomentary = 2;
 
     [_segments insertObjects:segments atIndexes:indices];
     [_themeStates insertObjects:newStates atIndexes:indices];
+
+    if (_selectedSegment >= [indices firstIndex])
+        _selectedSegment += [indices count];
 }
 
 /*! @ignore */
@@ -142,6 +144,16 @@ CPSegmentSwitchTrackingMomentary = 2;
 {
     if ([indices count] == 0)
         return;
+
+    [indices enumerateIndexesUsingBlock:function(idx, stop)
+    {
+        [[_segments objectAtIndex:idx] setSelected:NO];
+    }];
+
+    if ([indices containsIndex:_selectedSegment])
+        _selectedSegment = -1;
+    else if ([indices lastIndex] < _selectedSegment)
+        _selectedSegment -= [indices count];
 
     [_segments removeObjectsAtIndexes:indices];
     [_themeStates removeObjectsAtIndexes:indices];
@@ -592,7 +604,12 @@ CPSegmentSwitchTrackingMomentary = 2;
 - (CPView)createEphemeralSubviewNamed:(CPString)aName
 {
     if ([aName hasPrefix:@"segment-content"])
-        return [[_CPImageAndTextView alloc] initWithFrame:CGRectMakeZero()];
+    {
+        var view = [[_CPImageAndTextView alloc] initWithFrame:CGRectMakeZero()];
+        [view _setUsesSingleLineMode:YES];
+
+        return view;
+    }
 
     return [[CPView alloc] initWithFrame:CGRectMakeZero()];
 }
@@ -855,64 +872,68 @@ CPSegmentSwitchTrackingMomentary = 2;
     var type = [anEvent type],
         location = [self convertPoint:[anEvent locationInWindow] fromView:nil];
 
-    if (type == CPLeftMouseUp)
+    switch (type)
     {
-        if (_trackingSegment == -1)
+        case CPLeftMouseUp:
+
+            if (_trackingSegment === CPNotFound)
+                return;
+
+            if (_trackingSegment === [self testSegment:location])
+            {
+                if (_trackingMode == CPSegmentSwitchTrackingSelectAny)
+                {
+                    [self setSelected:![self isSelectedForSegment:_trackingSegment] forSegment:_trackingSegment];
+
+                    // With ANY, _selectedSegment means last pressed.
+                    _selectedSegment = _trackingSegment;
+                }
+                else
+                    [self setSelected:YES forSegment:_trackingSegment];
+
+                [self sendAction:[self action] to:[self target]];
+
+                if (_trackingMode == CPSegmentSwitchTrackingMomentary)
+                {
+                    [self setSelected:NO forSegment:_trackingSegment];
+
+                    _selectedSegment = CPNotFound;
+                }
+            }
+
+            [self drawSegmentBezel:_trackingSegment highlight:NO];
+
+            _trackingSegment = CPNotFound;
+
             return;
 
-        if (_trackingSegment === [self testSegment:location])
-        {
-            if (_trackingMode == CPSegmentSwitchTrackingSelectAny)
+        case CPLeftMouseDown:
+
+            var trackingSegment = [self testSegment:location];
+            if (trackingSegment > CPNotFound && [self isEnabledForSegment:trackingSegment])
             {
-                [self setSelected:![self isSelectedForSegment:_trackingSegment] forSegment:_trackingSegment];
-
-                // With ANY, _selectedSegment means last pressed.
-                _selectedSegment = _trackingSegment;
+                _trackingHighlighted = YES;
+                _trackingSegment = trackingSegment;
+                [self drawSegmentBezel:_trackingSegment highlight:YES];
             }
-            else
-                [self setSelected:YES forSegment:_trackingSegment];
 
-            [self sendAction:[self action] to:[self target]];
+            break;
 
-            if (_trackingMode == CPSegmentSwitchTrackingMomentary)
+        case CPLeftMouseDragged:
+
+            if (_trackingSegment === CPNotFound)
+                return;
+
+            var highlighted = [self testSegment:location] === _trackingSegment;
+
+            if (highlighted != _trackingHighlighted)
             {
-                [self setSelected:NO forSegment:_trackingSegment];
+                _trackingHighlighted = highlighted;
 
-                _selectedSegment = CPNotFound;
+                [self drawSegmentBezel:_trackingSegment highlight:_trackingHighlighted];
             }
-        }
 
-        [self drawSegmentBezel:_trackingSegment highlight:NO];
-
-        _trackingSegment = -1;
-
-        return;
-    }
-
-    if (type == CPLeftMouseDown)
-    {
-        var trackingSegment = [self testSegment:location];
-        if (trackingSegment > -1 && [self isEnabledForSegment:trackingSegment])
-        {
-            _trackingHighlighted = YES;
-            _trackingSegment = trackingSegment;
-            [self drawSegmentBezel:_trackingSegment highlight:YES];
-        }
-    }
-
-    else if (type == CPLeftMouseDragged)
-    {
-        if (_trackingSegment == -1)
-            return;
-
-        var highlighted = [self testSegment:location] === _trackingSegment;
-
-        if (highlighted != _trackingHighlighted)
-        {
-            _trackingHighlighted = highlighted;
-
-            [self drawSegmentBezel:_trackingSegment highlight:_trackingHighlighted];
-        }
+            break;
     }
 
     [CPApp setTarget:self selector:@selector(trackSegment:) forNextEventMatchingMask:CPLeftMouseDraggedMask | CPLeftMouseUpMask untilDate:nil inMode:nil dequeue:YES];

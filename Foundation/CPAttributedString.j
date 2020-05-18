@@ -141,7 +141,7 @@
 // private method
 - (unsigned)_indexOfEntryWithIndex:(unsigned)anIndex
 {
-    if (anIndex < 0 || anIndex > _string.length || anIndex === undefined)
+    if (anIndex < 0 || anIndex > _string.length || anIndex == nil)
         return CPNotFound;
 
     // find the range entry that contains anIndex.
@@ -763,13 +763,10 @@
 - (void)setAttributedString:(CPAttributedString)aString
 {
     _string = aString._string;
-    _rangeEntries = [];
-
-    var i = 0,
-        count = aString._rangeEntries.length;
-
-    for (; i < count; i++)
-        _rangeEntries.push(copyRangeEntry(aString._rangeEntries[i]));
+    _rangeEntries = [aString._rangeEntries arrayByApplyingBlock:function(entry)
+    {
+        return copyRangeEntry(entry);
+    }];
 }
 
 //Private methods

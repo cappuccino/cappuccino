@@ -512,8 +512,8 @@
 
     if (options & CPEnumerationReverse)
     {
-        index = _ranges.length - 1,
-        stop = -1,
+        index = _ranges.length - 1;
+        stop = -1;
         increment = -1;
     }
     else
@@ -593,8 +593,8 @@
 
     if (anOptions & CPEnumerationReverse)
     {
-        index = _ranges.length - 1,
-        stop = -1,
+        index = _ranges.length - 1;
+        stop = -1;
         increment = -1;
     }
     else
@@ -652,8 +652,8 @@
 
     if (anOptions & CPEnumerationReverse)
     {
-        index = _ranges.length - 1,
-        stop = -1,
+        index = _ranges.length - 1;
+        stop = -1;
         increment = -1;
     }
     else
@@ -1018,14 +1018,13 @@ var CPIndexSetCountKey              = @"CPIndexSetCountKey",
     if (self)
     {
         _count = [aCoder decodeIntForKey:CPIndexSetCountKey];
-        _ranges = [];
 
-        var rangeStrings = [aCoder decodeObjectForKey:CPIndexSetRangeStringsKey],
-            index = 0,
-            count = rangeStrings.length;
+        var rangeStrings = [aCoder decodeObjectForKey:CPIndexSetRangeStringsKey];
 
-        for (; index < count; ++index)
-            _ranges.push(CPRangeFromString(rangeStrings[index]));
+        _ranges = [rangeStrings arrayByApplyingBlock:function(range)
+        {
+            return CPRangeFromString(range);
+        }];
     }
 
     return self;

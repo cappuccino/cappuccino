@@ -448,14 +448,14 @@ CPTokenFieldDeleteButtonType     = 1;
     element.style.width = CGRectGetWidth(contentRect) + "px";
     element.style.height = [font defaultLineHeightForFont] + "px";
 
-    window.setTimeout(function()
+    [[CPRunLoop mainRunLoop] performBlock:function()
     {
         [_tokenScrollView documentView]._DOMElement.appendChild(element);
 
         //post CPControlTextDidBeginEditingNotification
         [self textDidBeginEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
 
-        window.setTimeout(function()
+        [[CPRunLoop mainRunLoop] performBlock:function()
         {
             // This will prevent to jump to the focused element
             var previousScrollingOrigin = [self _scrollToVisibleRectAndReturnPreviousOrigin];
@@ -465,10 +465,10 @@ CPTokenFieldDeleteButtonType     = 1;
             [self _restorePreviousScrollingOrigin:previousScrollingOrigin];
 
             CPTokenFieldInputOwner = self;
-        }, 0.0);
+        } argument:nil order:0 modes:[CPDefaultRunLoopMode]];
 
         [self textDidFocus:[CPNotification notificationWithName:CPTextFieldDidFocusNotification object:self userInfo:nil]];
-    }, 0.0);
+    } argument:nil order:0 modes:[CPDefaultRunLoopMode]];
 
     [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
 
@@ -523,16 +523,24 @@ CPTokenFieldDeleteButtonType     = 1;
     var element = [self _inputElement];
 
     CPTokenFieldInputResigning = YES;
-    element.blur();
+
+    if (CPTokenFieldInputIsActive)
+        element.blur();
 
     if (!CPTokenFieldInputDidBlur)
         CPTokenFieldBlurHandler();
 
-    CPTokenFieldInputDidBlur = NO;
-    CPTokenFieldInputResigning = NO;
-
     if (element.parentNode == [_tokenScrollView documentView]._DOMElement)
         element.parentNode.removeChild(element);
+
+    // Previosly, we unflagged CPTokenFieldInputDidBlur and CPTokenFieldInputResigning before
+    // the call to removeChild. This may result in DOM exceptions in Chrome under certain conditions.
+    // See https://stackoverflow.com/questions/21926083/failed-to-execute-removechild-on-node
+    // for why we need to unflag CPTokenFieldInputDidBlur and CPTokenFieldInputResigning
+    // only after removing the element.
+
+    CPTokenFieldInputDidBlur = NO;
+    CPTokenFieldInputResigning = NO;
 
     CPTokenFieldInputIsActive = NO;
 
@@ -541,7 +549,7 @@ CPTokenFieldDeleteButtonType     = 1;
         CPTokenFieldCachedSelectStartFunction = nil;
         CPTokenFieldCachedDragFunction = nil;
 
-        document.body.ondrag = CPTokenFieldCachedDragFunction
+        document.body.ondrag = CPTokenFieldCachedDragFunction;
         document.body.onselectstart = CPTokenFieldCachedSelectStartFunction
     }
 
@@ -622,7 +630,7 @@ CPTokenFieldDeleteButtonType     = 1;
 
 - (void)setObjectValue:(id)aValue
 {
-    if (aValue !== nil && ![aValue isKindOfClass:[CPArray class]])
+    if (aValue != nil && ![aValue isKindOfClass:[CPArray class]])
     {
         [super setObjectValue:nil];
         return;
@@ -637,7 +645,7 @@ CPTokenFieldDeleteButtonType     = 1;
         newTokens = [];
 
     // Preserve as many existing tokens as possible to reduce redraw flickering.
-    if (aValue !== nil)
+    if (aValue != nil)
     {
         for (var i = 0, count = [aValue count]; i < count; i++)
         {
@@ -658,7 +666,7 @@ CPTokenFieldDeleteButtonType     = 1;
                 }
             }
 
-            if (newToken === nil)
+            if (newToken == nil)
             {
                 newToken = [_CPTokenFieldToken new];
                 [newToken setTokenField:self];
@@ -1239,7 +1247,7 @@ CPTokenFieldDeleteButtonType     = 1;
             var scrollToToken = _shouldScrollTo;
 
             if (scrollToToken === CPScrollDestinationLeft)
-                scrollToToken = tokens[_selectedRange.location]
+                scrollToToken = tokens[_selectedRange.location];
             else if (scrollToToken === CPScrollDestinationRight)
                 scrollToToken = tokens[MAX(0, CPMaxRange(_selectedRange) - 1)];
             [self _scrollTokenViewToVisible:scrollToToken];
@@ -1302,7 +1310,7 @@ CPTokenFieldDeleteButtonType     = 1;
     {
         var stringForRepresentedObject = [_tokenFieldDelegate tokenField:self displayStringForRepresentedObject:representedObject];
 
-        if (stringForRepresentedObject !== nil)
+        if (stringForRepresentedObject != nil)
             return stringForRepresentedObject;
     }
 
@@ -1324,7 +1332,7 @@ CPTokenFieldDeleteButtonType     = 1;
     {
         var approvedObjects = [_tokenFieldDelegate tokenField:self shouldAddObjects:tokens atIndex:index];
 
-        if (approvedObjects !== nil)
+        if (approvedObjects != nil)
             return approvedObjects;
     }
 
@@ -1346,7 +1354,7 @@ CPTokenFieldDeleteButtonType     = 1;
     {
         var token = [_tokenFieldDelegate tokenField:self representedObjectForEditingString:aString];
 
-        if (token !== nil && token !== undefined)
+        if (token != nil)
             return token;
         // If nil was returned, assume the string is the represented object. The alternative would have been
         // to not add anything to the object value array for a nil response.
@@ -1475,9 +1483,6 @@ CPTokenFieldDeleteButtonType     = 1;
 
 - (BOOL)setThemeState:(ThemeState)aState
 {
-   if (aState.isa && [aState isKindOfClass:CPArray])
-        aState = CPThemeState.apply(null, aState);
-
     var r = [super setThemeState:aState];
 
     // Share hover state with the disclosure and delete buttons.
@@ -1492,9 +1497,6 @@ CPTokenFieldDeleteButtonType     = 1;
 
 - (BOOL)unsetThemeState:(ThemeState)aState
 {
-   if (aState.isa && [aState isKindOfClass:CPArray])
-        aState = CPThemeState.apply(null, aState);
-
     var r = [super unsetThemeState:aState];
 
     // Share hover state with the disclosure and delete button.

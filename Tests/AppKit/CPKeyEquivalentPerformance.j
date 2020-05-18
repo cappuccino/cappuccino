@@ -3,9 +3,16 @@
 @import <AppKit/CPEvent.j>
 @import <AppKit/CPButton.j>
 
-[CPApplication sharedApplication];
-
 @implementation CPKeyEquivalentPerformance : OJTestCase
+{
+
+}
+
+- (void)setUp
+{
+    // This will init the global var CPApp which are used internally in the AppKit
+    [[CPApplication alloc] init];
+}
 
 - (void)testKeyEquivalentSpeed
 {

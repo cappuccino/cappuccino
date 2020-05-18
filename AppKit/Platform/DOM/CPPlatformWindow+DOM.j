@@ -196,7 +196,8 @@ var ModifierKeyCodes = [
         CPKeyCodes.MAC_FF_META,
         CPKeyCodes.CTRL,
         CPKeyCodes.ALT,
-        CPKeyCodes.SHIFT
+        CPKeyCodes.SHIFT,
+        CPKeyCodes.CAPS_LOCK
     ],
 
     supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
@@ -205,8 +206,10 @@ var resizeTimer = nil;
 var PreventScroll = true;
 var blurTimer = nil;
 
-_CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotification";
+var touchStartingPointX,
+    touchStartingPointY;
 
+_CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotification";
 
 // When scrolling with an old-style scroll wheel with discete steps ('clicks'), the scroll amount can indicate how many "lines" to
 // scroll.
@@ -244,9 +247,6 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
     if (!_DOMWindow)
         return [self contentRect];
 
-    if (_DOMWindow.cpFrame)
-        return _DOMWindow.cpFrame();
-
     var contentRect = CGRectMakeZero();
 
     if (window.screenTop)
@@ -274,9 +274,6 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 {
     if (!_DOMWindow)
         return;
-
-    if (typeof _DOMWindow["cpSetFrame"] === "function")
-        return _DOMWindow.cpSetFrame([self contentRect]);
 
     var origin = [self contentRect].origin,
         nativeOrigin = [self nativeContentRect].origin;
@@ -365,6 +362,7 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
         _DOMBodyElement.style["-khtml-user-select"] = "none";
 
     _DOMBodyElement.webkitTouchCallout = "none";
+    _DOMBodyElement.style[CPBrowserStyleProperty(@"user-select")] = @"none";
 
     [self createDOMElements];
     [self _addLayers];
@@ -429,10 +427,10 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
         theDocument.addEventListener("keydown", keyEventCallback, NO);
         theDocument.addEventListener("keypress", keyEventCallback, NO);
 
-        theDocument.addEventListener("touchstart", touchEventCallback, NO);
-        theDocument.addEventListener("touchend", touchEventCallback, NO);
-        theDocument.addEventListener("touchmove", touchEventCallback, NO);
-        theDocument.addEventListener("touchcancel", touchEventCallback, NO);
+        theDocument.addEventListener("touchstart", touchEventCallback, {passive: false});
+        theDocument.addEventListener("touchend", touchEventCallback, {passive: false});
+        theDocument.addEventListener("touchmove", touchEventCallback, {passive: false});
+        theDocument.addEventListener("touchcancel", touchEventCallback, {passive: false});
 
         _DOMWindow.addEventListener("DOMMouseScroll", scrollEventCallback, NO);
         _DOMWindow.addEventListener("wheel", scrollEventCallback, NO);
@@ -567,23 +565,16 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 
     _DOMWindow = window.open("about:blank", "_blank", "menubar=no,location=no,resizable=yes,scrollbars=no,status=no,left=" + CGRectGetMinX(_contentRect) + ",top=" + CGRectGetMinY(_contentRect) + ",width=" + CGRectGetWidth(_contentRect) + ",height=" + CGRectGetHeight(_contentRect));
 
+    if (!_DOMWindow)
+        return;
+
     [PlatformWindows addObject:self];
 
-    // FIXME: cpSetFrame?
     _DOMWindow.document.write('<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"></head><body style="background-color:transparent; overflow:hidden"></body></html>');
     _DOMWindow.document.close();
 
     if (self != [CPPlatformWindow primaryPlatformWindow])
         _DOMWindow.document.title = _title;
-
-    if (![CPPlatform isBrowser])
-    {
-        _DOMWindow.cpWindowNumber = [self._only windowNumber];
-        _DOMWindow.cpSetFrame(_contentRect);
-        _DOMWindow.cpSetLevel(_level);
-        _DOMWindow.cpSetHasShadow(_hasShadow);
-        _DOMWindow.cpSetShadowStyle(_shadowStyle);
-    }
 
     [self registerDOMWindow];
 
@@ -662,7 +653,8 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
     }
     else if (type === "dragend")
     {
-        var dropEffect = aDOMEvent.dataTransfer.dropEffect;
+        var dropEffect = aDOMEvent.dataTransfer.dropEffect,
+            dragOperation;
 
         if (dropEffect === "move")
             dragOperation = CPDragOperationMove;
@@ -700,7 +692,8 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
         modifierFlags = (aDOMEvent.shiftKey ? CPShiftKeyMask : 0) |
                         (aDOMEvent.ctrlKey ? CPControlKeyMask : 0) |
                         (aDOMEvent.altKey ? CPAlternateKeyMask : 0) |
-                        (aDOMEvent.metaKey ? CPCommandKeyMask : 0);
+                        (aDOMEvent.metaKey ? CPCommandKeyMask : 0) |
+                        (_capsLockActive ? CPAlphaShiftKeyMask : 0);
 
     // With a few exceptions, all key events are blocked from propagating to
     // the browser.  Here the following exceptions are being allowed:
@@ -745,14 +738,25 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
             if (aDOMEvent.which === 0 || aDOMEvent.charCode === 0 || (aDOMEvent.which === undefined && aDOMEvent.charCode === undefined))
                 characters = KeyCodesToUnicodeMap[_keyCode];
 
+            // The problem with keyCode is that this property refers to keys on the keyboard and not to characters
+            // This is why String.fromCharCode does not always work in more recent versions of Firefox
+            // E.g. pressing a '#' on a German keyboard gives you a charCode of 163, which refers to '£' and not '#'
+            // The property key works fine, though. From there we can get the actual character more robustly.
+            // Therefore we prefer key over keyCode whenever possible
+
             if (!characters)
-                characters = String.fromCharCode(_keyCode).toLowerCase();
+                characters = (aDOMEvent.key && aDOMEvent.key.length == 1) ? aDOMEvent.key.toLowerCase() : String.fromCharCode(_keyCode).toLowerCase();
 
             overrideCharacters = (modifierFlags & CPShiftKeyMask || _capsLockActive) ? characters.toUpperCase() : characters;
 
             // check for caps lock state
             if (_keyCode === CPKeyCodes.CAPS_LOCK)
+            {
                 _capsLockActive = YES;
+
+                // Make sure the caps lock flag is set in modifierFlags
+                modifierFlags |= CPAlphaShiftKeyMask;
+            }
 
             if ([ModifierKeyCodes containsObject:_keyCode])
             {
@@ -769,7 +773,7 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
                 //this lets us be consistent in all browsers and send on the keydown
                 //which means we can cancel the event early enough, but only if sendEvent needs to
             }
-            else if (CPKeyCodes.firesKeyPressEvent(_keyCode, _lastKey, aDOMEvent.shiftKey, aDOMEvent.ctrlKey, aDOMEvent.altKey))
+            else if (CPKeyCodes.firesKeyPressEvent(_keyCode, aDOMEvent.key, _lastKey, aDOMEvent.shiftKey, aDOMEvent.ctrlKey, aDOMEvent.altKey))
             {
                 // this branch is taken by events which fire keydown, keypress, and keyup.
                 // this is the only time we'll ALLOW character keys to propagate (needed for text fields)
@@ -825,7 +829,12 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 
             // check for caps lock state
             if (keyCode === CPKeyCodes.CAPS_LOCK)
+            {
                 _capsLockActive = NO;
+                
+                // Make sure the caps lock flag is cleared in modifierFlags
+                modifierFlags &= ~CPAlphaShiftKeyMask;
+            }
 
             if ([ModifierKeyCodes containsObject:keyCode])
             {
@@ -940,16 +949,15 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
     if (!theWindow)
         return;
 
-    var windowNumber = [theWindow windowNumber];
-
+    windowNumber = [theWindow windowNumber];
     location = [theWindow convertBridgeToBase:location];
 
     var event = [CPEvent mouseEventWithType:CPScrollWheel location:location modifierFlags:modifierFlags
                                   timestamp:timestamp windowNumber:windowNumber context:nil eventNumber:-1 clickCount:1 pressure:0];
     event._DOMEvent = aDOMEvent;
 
-    // We lag 1 event behind without this timeout.
-    setTimeout(function()
+    // We lag 1 event behind without this approach
+    window.requestAnimationFrame(function()
     {
         if (aDOMEvent.deltaMode !== undefined && aDOMEvent.deltaMode !== 0)
         {
@@ -988,10 +996,10 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
         _DOMScrollingElement.scrollLeft = 150;
         _DOMScrollingElement.scrollTop = 150;
 
-        // Is this needed?
-        //[[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+        // this is needed to prevent flickering during scrolling
+        [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 
-    }, 0);
+    });
 
     // We hide the dom element after a little bit
     // so that other DOM elements such as inputs
@@ -1096,7 +1104,9 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
     var keyWindow = _previousKeyWindow;
 
     if (!keyWindow)
-       keyWindow = [[[_windowLayers objectForKey:[_windowLevels firstObject]] orderedWindows] firstObject];
+        // If we don't have a previous key window take the modal window if we are in a modal session.
+        // If not in a modal session just take the first window in the most background layer
+        keyWindow = (CPApp._currentSession && CPApp._currentSession._window) || [[[_windowLayers objectForKey:[_windowLevels firstObject]] orderedWindows] firstObject];
 
     if (!keyWindow)
         return;
@@ -1148,10 +1158,26 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 
 - (void)touchEvent:(DOMEvent)aDOMEvent
 {
+    var newEvent = {},
+        touch = aDOMEvent.touches.length ? aDOMEvent.touches[0] : aDOMEvent.changedTouches[0];
+
+    newEvent.timestamp = [CPEvent currentTimestamp];
+    newEvent.target = aDOMEvent.target;
+    newEvent.shiftKey = newEvent.ctrlKey = newEvent.altKey = newEvent.metaKey = false;
+
+    newEvent.clientX = touch.clientX;
+
+    /*
+     Normally the document can't scroll in Cappuccino: our body element has top:0 and bottom:0 with absolute positioning. So it should always be exactly the height of the viewport. The below handles a special case. iOS scrolls the document when the virtual keyboard is present and it needs to move a text input upwards visually to avoid covering the input with the keyboard. For most purposes we can ignore this, except here. In theory I think we could always apply this (scrollTop should always be 0 on every other device and situation) but let's be defensive and only apply it for touch events to minimise the risk of surprises.
+     */
+    newEvent.clientY = _DOMWindow.document.body.scrollTop + touch.clientY;
+
+    newEvent.preventDefault = function() { if (aDOMEvent.preventDefault) aDOMEvent.preventDefault() };
+    newEvent.stopPropagation = function() { if (aDOMEvent.stopPropagation) aDOMEvent.stopPropagation() };
+
+    //  single finger event-> simulate a simple mouse-click
     if (aDOMEvent.touches && (aDOMEvent.touches.length == 1 || (aDOMEvent.touches.length == 0 && aDOMEvent.changedTouches.length == 1)))
     {
-        var newEvent = {};
-
         switch (aDOMEvent.type)
         {
             case CPDOMEventTouchStart:  newEvent.type = CPDOMEventMouseDown;
@@ -1164,32 +1190,49 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
                                         break;
         }
 
-        var touch = aDOMEvent.touches.length ? aDOMEvent.touches[0] : aDOMEvent.changedTouches[0];
-
-        newEvent.clientX = touch.clientX;
-        newEvent.clientY = touch.clientY;
-
-        newEvent.timestamp = [CPEvent currentTimestamp];
-        newEvent.target = aDOMEvent.target;
-
-        newEvent.shiftKey = newEvent.ctrlKey = newEvent.altKey = newEvent.metaKey = false;
-
-        newEvent.preventDefault = function() { if (aDOMEvent.preventDefault) aDOMEvent.preventDefault() };
-        newEvent.stopPropagation = function() { if (aDOMEvent.stopPropagation) aDOMEvent.stopPropagation() };
-
         [self mouseEvent:newEvent];
 
         return;
     }
     else
     {
+        // two fingers->simulate scrolling events
+        if (aDOMEvent.touches && aDOMEvent.touches.length == 2)
+        {
+            if (aDOMEvent.preventDefault)
+                aDOMEvent.preventDefault();
+
+            if (aDOMEvent.stopPropagation)
+                aDOMEvent.stopPropagation();
+
+            switch (aDOMEvent.type)
+            {
+                case CPDOMEventTouchStart:
+                    touchStartingPointX = touch.pageX;
+                    touchStartingPointY = touch.pageY;
+                    break;
+                case CPDOMEventTouchMove:
+                    newEvent._hasPreciseScrollingDeltas = YES;
+                    newEvent.deltaX = touchStartingPointX - touch.pageX;
+                    newEvent.deltaY = touchStartingPointY - touch.pageY;
+                    newEvent.type = CPDOMEventScrollWheel;
+
+                    [self scrollEvent:newEvent];
+
+                    touchStartingPointX = touch.pageX;
+                    touchStartingPointY = touch.pageY;
+                    return;
+            }
+        }
+        
+        // cancel other touch cases preventively
+
         if (aDOMEvent.preventDefault)
             aDOMEvent.preventDefault();
 
         if (aDOMEvent.stopPropagation)
             aDOMEvent.stopPropagation();
     }
-    // handle touch cases specifically
 }
 
 - (void)mouseEvent:(DOMEvent)aDOMEvent
@@ -1241,12 +1284,16 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
     {
         if (_mouseIsDown)
         {
+            if (aDOMEvent.button !== _firstMouseDownButton)
+                return;
+
             event = _CPEventFromNativeMouseEvent(aDOMEvent, _mouseDownIsRightClick ? CPRightMouseUp : CPLeftMouseUp, location, modifierFlags, timestamp, windowNumber, nil, -1, CPDOMEventGetClickCount(_lastMouseUp, timestamp, location), 0, nil);
 
             _mouseIsDown = NO;
             _lastMouseUp = event;
             _mouseDownWindow = nil;
             _mouseDownIsRightClick = NO;
+            _firstMouseDownButton = -1;
         }
 
         if (_DOMEventMode)
@@ -1265,6 +1312,16 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
         var button = aDOMEvent.button;
 
         _mouseDownIsRightClick = button == 2 || (CPBrowserIsOperatingSystem(CPMacOperatingSystem) && button == 0 && modifierFlags & CPControlKeyMask);
+
+        // If mouse is already down, that means that a second mouse button is pushed. This could interfere in mouse events treatment. Just ignore it.
+        // BUT we have to track which button will be first released.
+        if (_mouseIsDown)
+        {
+            _mouseDownIsRightClick = !_mouseDownIsRightClick;
+            return;
+        }
+
+        _firstMouseDownButton = button;
 
         if ((sourceElement.tagName === "INPUT" || sourceElement.tagName === "TEXTAREA") && sourceElement != _DOMFocusElement)
         {
@@ -1400,7 +1457,7 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
         var insertionIndex = 0;
 
         if (middle !== undefined)
-            insertionIndex = _windowLevels[middle] > aLevel ? middle : middle + 1
+            insertionIndex = _windowLevels[middle] > aLevel ? middle : middle + 1;
 
         [_windowLevels insertObject:aLevel atIndex:insertionIndex];
         layer._DOMElement.style.zIndex = aLevel + 1;  // adding one avoids negative zIndices. These have been causing issues in Chrome
@@ -1413,6 +1470,9 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 
 - (void)order:(CPWindowOrderingMode)orderingMode window:(CPWindow)aWindow relativeTo:(CPWindow)otherWindow
 {
+    if (!_DOMWindow)
+        return;
+
     [CPPlatform initializeScreenIfNecessary];
 
     // Grab the appropriate level for the layer, and create it if
@@ -1796,7 +1856,7 @@ var _CPEventFromNativeMouseEvent = function(aNativeEvent, anEventType, aPoint, m
 var CLICK_SPACE_DELTA   = 5.0,
     CLICK_TIME_DELTA    = (typeof document != "undefined" && document.addEventListener) ? 0.55 : 1.0;
 
-var CPDOMEventGetClickCount = function(aComparisonEvent, aTimestamp, aLocation)
+CPDOMEventGetClickCount = function(aComparisonEvent, aTimestamp, aLocation)
 {
     if (!aComparisonEvent)
         return 1;
@@ -1850,11 +1910,10 @@ function CPWindowObjectList()
 
 function CPWindowList()
 {
-    var windowObjectList = CPWindowObjectList(),
-        windowList = [];
+    var windowObjectList = CPWindowObjectList();
 
-    for (var i = 0, count = [windowObjectList count]; i < count; i++)
-        windowList.push([windowObjectList[i] windowNumber]);
-
-    return windowList;
+    return [windowObjectList arrayByApplyingBlock:function(windowObject)
+    {
+        return [windowObject windowNumber];
+    }];
 }

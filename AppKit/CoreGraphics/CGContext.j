@@ -25,6 +25,7 @@
 @import "CGGeometry.j"
 @import "CGPath.j"
 @import "CGFont.j"
+@import "CGContextText.j"
 
 @typedef CGContext
 

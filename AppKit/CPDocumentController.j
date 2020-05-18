@@ -106,7 +106,7 @@ var CPSharedDocumentController = nil;
     @param aType the type of the new document
     @param shouldDisplay whether to display the document on screen
 */
-- (void)openUntitledDocumentOfType:(CPString)aType display:(BOOL)shouldDisplay
+- (CPDocument)openUntitledDocumentOfType:(CPString)aType display:(BOOL)shouldDisplay
 {
     var theDocument = [self makeUntitledDocumentOfType:aType error:nil];
 
@@ -297,7 +297,7 @@ var CPSharedDocumentController = nil;
     var iter = [_documents objectEnumerator],
         obj;
 
-    while ((obj = [iter nextObject]) !== nil)
+    while ((obj = [iter nextObject]) != nil)
     {
         if ([obj isDocumentEdited])
             return YES;
@@ -402,8 +402,10 @@ var CPSharedDocumentController = nil;
         }
     }
 
-    if ([context.delegate respondsToSelector:context.selector])
-        objj_msgSend(context.delegate, context.selector, self, [[self documents] count] === 0, context.context);
+    var theDelegate = context.delegate;
+
+    if ([theDelegate respondsToSelector:context.selector])
+        theDelegate.isa.objj_msgSend3(theDelegate, context.selector, self, [[self documents] count] === 0, context.context);
 }
 
 @end

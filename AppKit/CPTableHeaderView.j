@@ -24,6 +24,7 @@
 @import "CPView.j"
 @import "CPCursor.j"
 @import "_CPImageAndTextView.j"
+@import "CPTrackingArea.j"
 
 @class CPTableView
 
@@ -88,7 +89,7 @@
     var inset = [self currentValueForThemeAttribute:@"text-inset"],
         bounds = [self bounds];
 
-    [_textField setFrame:CGRectMake(inset.right, inset.top, bounds.size.width - inset.right - inset.left, bounds.size.height - inset.top - inset.bottom)];
+    [_textField setFrame:CGRectMake(inset.left, inset.top, bounds.size.width - inset.right - inset.left, bounds.size.height - inset.top - inset.bottom)];
     [_textField setTextColor:[self currentValueForThemeAttribute:@"text-color"]];
     [_textField setFont:[self currentValueForThemeAttribute:@"font"]];
     [_textField setTextShadowColor:[self currentValueForThemeAttribute:@"text-shadow-color"]];
@@ -107,7 +108,7 @@
     return [_textField text];
 }
 
-- (void)textField
+- (CPTextField)textField
 {
     return _textField;
 }
@@ -305,7 +306,9 @@ var CPTableHeaderViewResizeZone = 3.0,
     self = [super initWithFrame:aFrame];
 
     if (self)
+    {
         [self _init];
+    }
 
     return self;
 }
@@ -414,8 +417,7 @@ var CPTableHeaderViewResizeZone = 3.0,
     }
     else if (_isDragging)
     {
-        // Disable autoscrolling until it behaves correctly.
-        //[self _autoscroll:theEvent localLocation:currentLocation];
+        [self _autoscroll:theEvent localLocation:currentLocation];
         [self _dragTableColumn:_activeColumn to:currentLocation];
     }
     else // tracking a press, could become a drag
@@ -456,34 +458,46 @@ var CPTableHeaderViewResizeZone = 3.0,
     _activeColumn = -1;
 }
 
-- (void)mouseEntered:(CPEvent)theEvent
+@end
+
+@implementation CPTableHeaderView (CPTrackingArea)
 {
-    var location = [theEvent globalLocation];
-
-    if (CGPointEqualToPoint(location, _mouseEnterExitLocation))
-        return;
-
-    _mouseEnterExitLocation = location;
-
-    [self _updateResizeCursor:theEvent];
+    CPMutableArray  _tableHeaderViewTrackingAreas;
 }
 
-- (void)mouseMoved:(CPEvent)theEvent
+- (void)updateTrackingAreas
 {
-    [self _updateResizeCursor:theEvent];
+    if (_tableHeaderViewTrackingAreas)
+    {
+        for (var i = 0, count = [_tableHeaderViewTrackingAreas count]; i < count; i++)
+            [self removeTrackingArea:_tableHeaderViewTrackingAreas[i]];
+
+        _tableHeaderViewTrackingAreas = nil;
+    }
+
+    var options = CPTrackingCursorUpdate | CPTrackingActiveInKeyWindow;
+
+    if (!_tableView)
+      return;
+
+    _tableHeaderViewTrackingAreas = @[];
+
+    for (var i = 0; i < _tableView._tableColumns.length; i++)
+    {
+        [_tableHeaderViewTrackingAreas addObject:[[CPTrackingArea alloc] initWithRect:[self _cursorRectForColumn:i]
+                                                                              options:options
+                                                                                owner:self
+                                                                             userInfo:nil]];
+
+        [self addTrackingArea:_tableHeaderViewTrackingAreas[i]];
+    }
+
+    [super updateTrackingAreas];
 }
 
-- (void)mouseExited:(CPEvent)theEvent
+- (void)cursorUpdate:(CPEvent)anEvent
 {
-    var location = [theEvent globalLocation];
-
-    if (CGPointEqualToPoint(location, _mouseEnterExitLocation))
-        return;
-
-    _mouseEnterExitLocation = location;
-
-    // FIXME: we should use CPCursor push/pop (if previous currentCursor != arrow).
-    [[CPCursor arrowCursor] set];
+    [self _updateResizeCursor:anEvent];
 }
 
 @end
@@ -536,7 +550,7 @@ var CPTableHeaderViewResizeZone = 3.0,
 - (void)_autoscroll:(CPEvent)theEvent localLocation:(CGPoint)theLocation
 {
     // Constrain the y coordinate so we don't autoscroll vertically
-    var constrainedLocation = CGPointMake(theLocation.x, CGRectGetMinY([_tableView visibleRect])),
+    var constrainedLocation = CGPointMake(theLocation.x, CGRectGetMaxY([self frame])),
         constrainedEvent = [CPEvent mouseEventWithType:CPLeftMouseDragged
                                              location:[self convertPoint:constrainedLocation toView:nil]
                                         modifierFlags:[theEvent modifierFlags]
@@ -622,7 +636,7 @@ var CPTableHeaderViewResizeZone = 3.0,
     [[headerView subviews] makeObjectsPerformSelector:@selector(setHidden:) withObject:YES];
 
     // The underlying column header shows normal state
-    [headerView unsetThemeState:CPThemeStateHighlighted | CPThemeStateSelected];
+    [headerView unsetThemeStates:[CPThemeStateHighlighted, CPThemeStateSelected]];
 
     // Keep track of the location within the column header where the original mousedown occurred
     _columnDragHeaderView = [_columnDragView viewWithTag:CPTableHeaderViewDragColumnHeaderTag];
@@ -684,19 +698,21 @@ var CPTableHeaderViewResizeZone = 3.0,
     [_columnDragClipView removeFromSuperview];
     [_tableView _setDraggedColumn:-1];
 
-    var headerView = [[[_tableView tableColumns] objectAtIndex:aColumnIndex] headerView];
+    var tableColumn = [[_tableView tableColumns] objectAtIndex:aColumnIndex],
+        headerView = [tableColumn headerView];
 
     [[headerView subviews] makeObjectsPerformSelector:@selector(setHidden:) withObject:NO];
 
     if (_tableView._draggedColumnIsSelected)
         [headerView setThemeState:CPThemeStateSelected];
 
-    var columnRect = [_tableView rectOfColumn:aColumnIndex];
-
     [_tableView _reloadDataViews];
     [[_tableView headerView] setNeedsLayout];
 
     [[CPCursor arrowCursor] set];
+    [self updateTrackingAreas];
+
+    [_tableView _sendDelegateDidDragTableColumn:tableColumn];
 }
 
 - (BOOL)_shouldResizeTableColumn:(CPInteger)aColumnIndex at:(CGPoint)aPoint
@@ -762,7 +778,10 @@ var CPTableHeaderViewResizeZone = 3.0,
     var tableColumn = [[_tableView tableColumns] objectAtIndex:aColumnIndex];
 
     if ([tableColumn width] != _columnOldWidth)
+    {
         [_tableView _didResizeTableColumn:tableColumn oldWidth:_columnOldWidth];
+        [self updateTrackingAreas];
+    }
 
     [tableColumn setDisableResizingPosting:NO];
     [_tableView setDisableAutomaticResizing:NO];
@@ -772,13 +791,6 @@ var CPTableHeaderViewResizeZone = 3.0,
 
 - (void)_updateResizeCursor:(CPEvent)theEvent
 {
-    // never get stuck in resize cursor mode (FIXME take out when we turn on tracking rects)
-    if (![_tableView allowsColumnResizing] || ([theEvent type] === CPLeftMouseUp && ![[self window] acceptsMouseMovedEvents]))
-    {
-        [[CPCursor arrowCursor] set];
-        return;
-    }
-
     var mouseLocation = [self convertPoint:[theEvent locationInWindow] fromView:nil],
         mouseOverLocation = CGPointMake(MAX(mouseLocation.x - CPTableHeaderViewResizeZone, 0.0), mouseLocation.y),
         overColumn = [self columnAtPoint:mouseOverLocation];

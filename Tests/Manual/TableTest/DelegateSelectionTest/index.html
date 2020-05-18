@@ -2,10 +2,10 @@
 <html lang="en">
 <!--
  index.html
- DelegateSelectionTest
+ __project.name__
 
- Created by You on October 16, 2013.
- Copyright 2013, Your Company All rights reserved.
+ Created by __user.name__ on __project.date__.
+ Copyright __project.year__, __organization.name__ All rights reserved.
 -->
     <head>
         <meta charset="utf-8">
@@ -25,13 +25,18 @@
         <link rel="apple-touch-icon" href="Resources/icon.png">
         <link rel="apple-touch-startup-image" href="Resources/default.png">
 
-        <title>DelegateSelectionTest</title>
+        <title>__project.name__</title>
 
         <!-- Custom javascript goes here -->
         <!-- End custom javascript -->
 
         <script type="text/javascript">
             OBJJ_MAIN_FILE = "main.j";
+            // The below will tell the compiler to not generate debug symbols but will generate type signatures and inline objj_msgSend functions.
+            // This will affect only Objective-J code that is compiled when loading the application. It will not affect precompiled
+            // code like the Cappuccino frameworks.
+            // Uncomment or comment on the line below to change the flags
+            OBJJ_COMPILER_FLAGS = [/*"IncludeDebugSymbols"*/, "IncludeTypeSignatures"/*, "SourceMap"*/, "InlineMsgSend"];
 
             var progressBar = null;
 
@@ -72,7 +77,7 @@
                 width: 100%;
 
                 /* Put it at the bottom of the stack so it doesn't interfere with UI */
-                z-index: -1000;
+                z-index: 0;
             }
 
             #cappuccino-body .container {
@@ -150,7 +155,7 @@
                 <div class="container">
                     <div class="content">
                         <div id="noscript">
-                            <p style="font-size:120%; margin-bottom:.75em">JavaScript is required for this site.</p>
+                            <p style="font-size:120%; margin-bottom:.75em">JavaScript is required for this application.</p>
                             <p><a href="http://www.enable-javascript.com" target="_blank">Enable JavaScript</a></p>
                         </div>
                     </div>

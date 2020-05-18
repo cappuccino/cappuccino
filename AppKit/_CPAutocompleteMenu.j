@@ -171,9 +171,9 @@ var _CPAutocompleteMenuMaximumHeight = 307;
 
         var dataView = [tableColumn dataView],
             fontNormal = [dataView valueForThemeAttribute:@"font" inState:CPThemeStateTableDataView],
-            fontSelected = [dataView valueForThemeAttribute:@"font" inState:[CPThemeStateTableDataView, CPThemeStateSelectedDataView]],
+            fontSelected = [dataView valueForThemeAttribute:@"font" inStates:[CPThemeStateTableDataView, CPThemeStateSelectedDataView]],
             contentInsetNormal = [dataView valueForThemeAttribute:@"content-inset" inState:CPThemeStateTableDataView],
-            contentInsetSelected = [dataView valueForThemeAttribute:@"content-inset" inState:[CPThemeStateTableDataView, CPThemeStateSelectedDataView]];
+            contentInsetSelected = [dataView valueForThemeAttribute:@"content-inset" inStates:[CPThemeStateTableDataView, CPThemeStateSelectedDataView]];
 
         var mergedString = contentArray.join("\n");
 
@@ -268,7 +268,7 @@ var _CPAutocompleteMenuMaximumHeight = 307;
     return [contentArray count];
 }
 
-- (void)tableView:(CPTableView)tableView objectValueForTableColumn:(CPTableColumn)tableColumn row:(CPInteger)row
+- (id)tableView:(CPTableView)tableView objectValueForTableColumn:(CPTableColumn)tableColumn row:(CPInteger)row
 {
     return [contentArray objectAtIndex:row];
 }

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="5056" systemVersion="13E28" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="9531" systemVersion="14F1509" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
     <dependencies>
         <deployment version="1050" identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="5056"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="9531"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="NSApplication"/>
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
-        <customObject id="-3" userLabel="Application"/>
+        <customObject id="-3" userLabel="Application" customClass="NSObject"/>
         <window title="CPFormatter &amp; Friends" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" animationBehavior="default" id="371">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES"/>
             <rect key="contentRect" x="121" y="350" width="734" height="348"/>
@@ -46,7 +46,8 @@
                     <textField verticalHuggingPriority="750" id="480">
                         <rect key="frame" x="96" y="27" width="200" height="17"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="name" id="481">
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" id="481">
+                            <customFormatter key="formatter" id="mId-eu-t7h" customClass="ContactFormatter"/>
                             <font key="font" metaFont="system"/>
                             <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
@@ -218,6 +219,7 @@
                         <rect key="frame" x="94" y="92" width="271" height="22"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="531">
+                            <customFormatter key="formatter" id="UbT-e0-gXJ" customClass="TextFormatter"/>
                             <font key="font" metaFont="system"/>
                             <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -321,14 +323,14 @@
         </window>
         <customObject id="466" customClass="AppController">
             <connections>
-                <outlet property="dateField1" destination="456" id="491"/>
-                <outlet property="dateField2" destination="485" id="492"/>
-                <outlet property="error1" destination="520" id="533"/>
-                <outlet property="error2" destination="527" id="534"/>
-                <outlet property="recordField" destination="480" id="482"/>
-                <outlet property="recordMenu" destination="474" id="483"/>
-                <outlet property="textField" destination="524" id="532"/>
-                <outlet property="theWindow" destination="371" id="467"/>
+                <outlet property="dateField1" destination="456" id="lz4-0g-ydh"/>
+                <outlet property="dateField2" destination="485" id="exe-Oy-ny4"/>
+                <outlet property="error1" destination="520" id="9wr-6U-9gD"/>
+                <outlet property="error2" destination="527" id="QYi-1q-7Tc"/>
+                <outlet property="recordField" destination="480" id="1tr-jw-1bL"/>
+                <outlet property="recordMenu" destination="474" id="Sge-xk-1kD"/>
+                <outlet property="textField" destination="524" id="VhF-pp-Tt0"/>
+                <outlet property="theWindow" destination="371" id="Rqw-wR-J4Q"/>
             </connections>
         </customObject>
     </objects>

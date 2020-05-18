@@ -515,7 +515,7 @@ var CPStringNull = [CPNull null];
 */
 - (CPComparisonResult)compare:(CPString)aString options:(int)aMask
 {
-    if (aString === nil)
+    if (aString == nil)
         return CPOrderedDescending;
 
     if (aString === CPStringNull)
@@ -727,6 +727,14 @@ var CPStringNull = [CPNull null];
     Returns the text as an integer
 */
 - (int)intValue
+{
+    return parseInt(self, 10);
+}
+
+/*!
+    Returns the text as an integer
+*/
+- (int)integerValue
 {
     return parseInt(self, 10);
 }

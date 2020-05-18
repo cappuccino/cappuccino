@@ -25,8 +25,9 @@
 
 @import "CPFont.j"
 @import "CPShadow.j"
-@import "CPView.j"
+@import "CPText.j"
 @import "CPKeyValueBinding.j"
+@import "CPTrackingArea.j"
 
 @global CPApp
 
@@ -41,13 +42,6 @@
 - (BOOL)control:(CPControl)control didFailToFormatString:(CPString)string errorDescription:(CPString)error;
 
 @end
-
-@typedef CPTextAlignment
-CPLeftTextAlignment      = 0;
-CPRightTextAlignment     = 1;
-CPCenterTextAlignment    = 2;
-CPJustifiedTextAlignment = 3;
-CPNaturalTextAlignment   = 4;
 
 @typedef CPControlSize
 CPRegularControlSize = 0;
@@ -126,6 +120,8 @@ var CPControlBlackColor = [CPColor blackColor];
     CGPoint             _previousTrackingLocation;
 
     CPControlSize       _controlSize;
+
+    CPWritingDirection  _baseWritingDirection   @accessors(property=baseWritingDirection);
 }
 
 + (CPDictionary)themeAttributes
@@ -141,8 +137,7 @@ var CPControlBlackColor = [CPColor blackColor];
             @"image-position": CPImageLeft,
             @"image-scaling": CPScaleToFit,
             @"min-size": CGSizeMakeZero(),
-            @"max-size": CGSizeMake(-1.0, -1.0),
-            @"nib2cib-adjustment-frame": CGRectMakeZero()
+            @"max-size": CGSizeMake(-1.0, -1.0)
         };
 }
 
@@ -173,7 +168,7 @@ var CPControlBlackColor = [CPColor blackColor];
 }
 
 /*!
-    Reverse set the binding iff the CPContinuouslyUpdatesValueBindingOption is set.
+    Reverse set the binding if the CPContinuouslyUpdatesValueBindingOption is set.
 */
 - (void)_continuouslyReverseSetBinding
 {
@@ -200,11 +195,12 @@ var CPControlBlackColor = [CPColor blackColor];
     {
         _sendActionOn           = CPLeftMouseUpMask;
         _trackingMouseDownFlags = 0;
+        
+        [self updateTrackingAreas];
     }
 
     return self;
 }
-
 
 #pragma mark -
 #pragma mark Control Size
@@ -625,15 +621,15 @@ var CPControlBlackColor = [CPColor blackColor];
 */
 - (CPString)stringValue
 {
-    if (_formatter && _value !== undefined)
+    if (_formatter && _value != nil)
     {
         var formattedValue = [self hasThemeState:CPThemeStateEditing] ? [_formatter editingStringForObjectValue:_value] : [_formatter stringForObjectValue:_value];
 
-        if (formattedValue !== nil && formattedValue !== undefined)
+        if (formattedValue != nil)
             return formattedValue;
     }
 
-    return (_value === undefined || _value === nil) ? @"" : String(_value);
+    return _value == nil ? @"" : String(_value);
 }
 
 /*!
@@ -642,7 +638,7 @@ var CPControlBlackColor = [CPColor blackColor];
 - (void)setStringValue:(CPString)aString
 {
     // Cocoa raises an invalid parameter assertion and returns if you pass nil.
-    if (aString === nil || aString === undefined)
+    if (aString == nil)
     {
         CPLog.warn("nil or undefined sent to CPControl -setStringValue");
         return;
@@ -808,7 +804,7 @@ var CPControlBlackColor = [CPColor blackColor];
     CPBottomVerticalTextAlignment
     </pre>
 */
-- (void)setVerticalAlignment:(CPTextVerticalAlignment)alignment
+- (void)setVerticalAlignment:(CPVerticalTextAlignment)alignment
 {
     [self setValue:alignment forThemeAttribute:@"vertical-alignment"];
 }
@@ -853,7 +849,7 @@ var CPControlBlackColor = [CPColor blackColor];
 */
 - (void)setTextColor:(CPColor)aColor
 {
-    [self setValue:aColor forThemeAttribute:@"text-color"];
+    [self setValue:aColor forThemeAttribute:@"text-color" inState:[self themeState]];
 }
 
 /*!
@@ -1016,6 +1012,69 @@ var CPControlBlackColor = [CPColor blackColor];
     return [self hasThemeState:CPThemeStateHighlighted];
 }
 
+
+#pragma mark -
+#pragma mark Base writing direction
+
+/*!
+    Sets the initial writing direction of the receiver
+    @param writingDirection - It could be CPWritingDirectionNatural, CPWritingDirectionLeftToRight, CPWritingDirectionRightToLeft
+*/
+- (void)setBaseWritingDirection:(CPWritingDirection)writingDirection
+{
+    if (writingDirection == _baseWritingDirection)
+        return;
+
+    [self willChangeValueForKey:@"baseWritingDirection"];
+    _baseWritingDirection = writingDirection;
+    [self didChangeValueForKey:@"baseWritingDirection"];
+
+#if PLATFORM(DOM)
+
+    var style;
+
+    switch (_baseWritingDirection)
+    {
+        case CPWritingDirectionNatural:
+            style = "initial";
+            break;
+
+        case CPWritingDirectionLeftToRight:
+            style = "ltr";
+            break;
+
+        case CPWritingDirectionRightToLeft:
+            style = "rtl";
+            break;
+
+        default:
+            style = "initial";
+    }
+
+    _DOMElement.style.direction = style;
+#endif
+}
+
+@end
+
+@implementation CPControl (CPTrackingArea)
+{
+    CPTrackingArea      _controlTrackingArea;
+}
+
+- (void)updateTrackingAreas
+{
+    if (_controlTrackingArea)
+        [self removeTrackingArea:_controlTrackingArea];
+    
+    _controlTrackingArea = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero()
+                                                        options:CPTrackingMouseEnteredAndExited | CPTrackingActiveInKeyWindow | CPTrackingInVisibleRect
+                                                          owner:self
+                                                       userInfo:nil];
+    [self addTrackingArea:_controlTrackingArea];
+    [super updateTrackingAreas];
+}
+
 @end
 
 var CPControlActionKey                  = @"CPControlActionKey",
@@ -1027,6 +1086,7 @@ var CPControlActionKey                  = @"CPControlActionKey",
     CPControlSendsActionOnEndEditingKey = @"CPControlSendsActionOnEndEditingKey",
     CPControlTargetKey                  = @"CPControlTargetKey",
     CPControlValueKey                   = @"CPControlValueKey",
+    CPControlBaseWrittingDirectionKey   = @"CPControlBaseWrittingDirectionKey";
 
     __Deprecated__CPImageViewImageKey   = @"CPImageViewImageKey";
 
@@ -1055,6 +1115,8 @@ var CPControlActionKey                  = @"CPControlActionKey",
         [self setFormatter:[aCoder decodeObjectForKey:CPControlFormatterKey]];
 
         [self setControlSize:[aCoder decodeIntForKey:CPControlControlSizeKey]];
+
+        [self setBaseWritingDirection:[aCoder decodeIntForKey:CPControlBaseWrittingDirectionKey]];
     }
 
     return self;
@@ -1074,21 +1136,24 @@ var CPControlActionKey                  = @"CPControlActionKey",
 
     var objectValue = [self objectValue];
 
-    if (objectValue !== nil)
+    if (objectValue != nil)
         [aCoder encodeObject:objectValue forKey:CPControlValueKey];
 
-    if (_target !== nil)
+    if (_target != nil)
         [aCoder encodeConditionalObject:_target forKey:CPControlTargetKey];
 
-    if (_action !== nil)
+    if (_action != nil)
         [aCoder encodeObject:_action forKey:CPControlActionKey];
 
     [aCoder encodeInt:_sendActionOn forKey:CPControlSendActionOnKey];
 
-    if (_formatter !== nil)
+    if (_formatter != nil)
         [aCoder encodeObject:_formatter forKey:CPControlFormatterKey];
 
     [aCoder encodeInt:_controlSize forKey:CPControlControlSizeKey];
+
+    [aCoder encodeInt:_baseWritingDirection forKey:CPControlBaseWrittingDirectionKey];
+
 }
 
 @end

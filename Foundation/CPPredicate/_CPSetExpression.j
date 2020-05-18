@@ -25,8 +25,8 @@
 
 @implementation _CPSetExpression : CPExpression
 {
-    CPExpression _left;
-    CPExpression _right;
+    CPExpression _left  @accessors(getter=leftExpression);
+    CPExpression _right @accessors(getter=rightExpression);
 }
 
 - (id)initWithType:(int)type left:(CPExpression)left right:(CPExpression)right
@@ -47,7 +47,7 @@
     if (self === object)
         return YES;
 
-    if (object === nil || object.isa !== self.isa || ![[object leftExpression] isEqual:_left] || ![[object rightExpression] isEqual:_right])
+    if (object == nil || object.isa !== self.isa || ![[object leftExpression] isEqual:_left] || ![[object rightExpression] isEqual:_right])
         return NO;
 
     return YES;
@@ -86,16 +86,6 @@
 {
     // UNIMPLEMENTED
     return self;
-}
-
-- (CPExpression)leftExpression
-{
-    return _left;
-}
-
-- (CPExpression)rightExpression
-{
-    return _right;
 }
 
 - (CPString)description

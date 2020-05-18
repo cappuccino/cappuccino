@@ -137,9 +137,6 @@ function CGPathAddArc(aPath, aTransform, x, y, aRadius, aStartAngle, anEndAngle,
     }
     else
     {
-        var arcStartX = x + aRadius * COS(aStartAngle),
-            arcStartY = y + aRadius * SIN(aStartAngle);
-
         aPath.start = CGPointMake(arcStartX, arcStartY);
     }
 
@@ -196,7 +193,7 @@ function CGPathAddCurveToPoint(aPath, aTransform, cp1x, cp1y, cp2x, cp2y, x, y)
 
 function CGPathAddLines(aPath, aTransform, points, count)
 {
-    if (count === null || count === undefined)
+    if (count == null)
         count = points.length;
 
     if (!aPath || count < 1)
@@ -281,7 +278,7 @@ function CGPathAddQuadCurveToPoint(aPath, aTransform, cpx, cpy, x, y)
         end = CGPointApplyAffineTransform(end, aTransform);
     }
 
-    aPath.elements[aPath.count++] = { type:kCGPathElementAddQuadCurveToPoint, cpx:cp.x, cpy:cp.y, x:end.x, y:end.y }
+    aPath.elements[aPath.count++] = { type:kCGPathElementAddQuadCurveToPoint, cpx:cp.x, cpy:cp.y, x:end.x, y:end.y };
     aPath.current = end;
 }
 
@@ -294,7 +291,7 @@ function CGPathAddRects(aPath, aTransform, rects, count)
 {
     var i = 0;
 
-    if (count === NULL)
+    if (count == NULL)
         var count = rects.length;
 
     for (; i < count; ++i)
