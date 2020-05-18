@@ -67,6 +67,12 @@ var CPDictionaryMaxDescriptionRecursion = 10;
     return [[self alloc] init];
 }
 
++ (id)dictionaryWithCapacity:(int)capacity
+{
+    // Capacity is ignored - purely for API compatibility
+    return [self dictionary];
+}
+
 /*!
     Returns a new dictionary, initialized with the contents of \c aDictionary.
     @param aDictionary the dictionary to copy key-value pairs from

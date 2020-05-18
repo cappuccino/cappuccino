@@ -24,17 +24,24 @@
 @import "CPCompatibility.j"
 @import "CGGeometry.j"
 @import "CGPath.j"
+@import "CGFont.j"
 @import "CGContextText.j"
 
 @typedef CGContext
+
+@typedef CGLineCap
 
 kCGLineCapButt              = 0;
 kCGLineCapRound             = 1;
 kCGLineCapSquare            = 2;
 
+@typedef CGLineJoin
+
 kCGLineJoinMiter            = 0;
 kCGLineJoinRound            = 1;
 kCGLineJoinBevel            = 2;
+
+@typedef CGPathDrawingMode
 
 kCGPathFill                 = 0;
 kCGPathEOFill               = 1;
@@ -45,6 +52,8 @@ kCGPathEOFillStroke         = 4;
 /*!
     @group CGBlendMode
 */
+
+@typedef CGBlendMode
 
 kCGBlendModeNormal          = 0;
 kCGBlendModeMultiply        = 1;
@@ -75,10 +84,377 @@ kCGBlendModeXOR             = 25;
 kCGBlendModePlusDarker      = 26;
 kCGBlendModePlusLighter     = 27;
 
+kCGTextFill                 = 0;
+kCGTextStroke               = 1;
+kCGTextFillStroke           = 2;
+kCGTextInvisible            = 3;
+kCGTextFillClip             = 4;
+kCGTextStrokeClip           = 5;
+kCGTextFillStrokeClip       = 6;
+kCGTextClip                 = 7;
+
 /*!
     @defgroup coregraphics CoreGraphics
     @{
 */
+
+/*!
+    The abstract base class for concrete GraphicsContext to inherit
+*/
+function CGContext()
+{
+    this.DOMElement = document.createElement("div");
+    this.gState = CGGStateCreate();
+    this.gStateStack = [];
+    this.textMatrix = CGAffineTransformMakeIdentity();
+}
+
+CGContext.prototype.saveGState = function()
+{
+    this.gStateStack.push(CGGStateCreateCopy(this.gState));
+}
+
+CGContext.prototype.restoreGState = function()
+{
+    this.gState = this.gStateStack.pop();
+}
+
+CGContext.prototype.setLineCap = function(aLineCap)
+{
+    this.gState.lineCap = aLineCap;
+}
+CGContext.prototype.setLineDash = function(aPhase, someDashes)
+{
+    this.gState.lineDashes = someDashes;
+    this.gState.lineDashesPhase = aPhase;
+}
+
+CGContext.prototype.setLineJoin = function(aLineJoin)
+{
+    this.gState.lineJoin = aLineJoin;
+}
+
+CGContext.prototype.setLineWidth = function(aContext, aLineWidth)
+{
+    this.gState.lineWidth = aLineWidth;
+}
+
+CGContext.prototype.setMiterLimit = function(aMiterLimit)
+{
+    this.gState.miterLimit = aMiterLimit;
+}
+
+CGContext.prototype.setBlendMode = function(aBlendMode)
+{
+    this.gState.blendMode = aBlendMode;
+}
+
+CGContext.prototype.getCTM = function()
+{
+    return this.gState.CTM;
+}
+
+CGContext.prototype.setCTM = function(transform)
+{
+    this.gState.CTM = transform;
+}
+
+CGContext.prototype.concatCTM = function(transform)
+{
+    var CTM = this.getCTM();
+
+    CGAffineTransformConcatTo(CTM, transform, CTM);
+}
+
+CGContext.prototype.rotateCTM = function(anAngle)
+{
+    var CTM = this.getCTM();
+
+    this.setCTM(CGAffineTransformRotate(CTM, anAngle));
+}
+
+CGContext.prototype.scaleCTM = function(sx, sy)
+{
+    var CTM = this.getCTM();
+
+    this.setCTM(CGAffineTransformScale(CTM, sx, sy));
+}
+
+CGContext.prototype.translateCTM = function(tx, ty)
+{
+    var CTM = this.getCTM();
+
+    this.setCTM(CGAffineTransformTranslate(CTM, tx, ty));
+}
+
+CGContext.prototype.setShadow = function(aSize, aBlur)
+{
+    this.setShadowWithColor(aSize, aBlur, this.gState.shadowColor);
+}
+
+CGContext.prototype.setShadowWithColor = function(aSize, aBlur, aColor)
+{
+    this.gState.shadowOffset = CGSizeMakeCopy(aSize);
+    this.gState.shadowBlur = aBlur;
+    this.gState.shadowColor = aColor;
+}
+
+CGContext.prototype.setAlpha = function(anAlpha)
+{
+    this.gState.alpha = MAX(MIN(anAlpha, 1.0), 0.0);
+}
+
+CGContext.prototype.setFillColor = function(aColor)
+{
+    if (aColor)
+        this.gState.fillStyle = [aColor cssString];
+}
+
+CGContext.prototype.setStrokeColor = function(aColor)
+{
+    if (aColor)
+        this.gState.strokeStyle = [aColor cssString];
+}
+
+CGContext.prototype.drawPath = function(mode)
+{
+    CPLog.fatal("abstract method: drawPath()");
+}
+
+CGContext.prototype.addArc = function(x, y, radius, startAngle, endAngle, clockwise)
+{
+    CGPathAddArc(this.path, this.getCTM(), x, y, radius, startAngle, endAngle, clockwise);
+}
+
+CGContext.prototype.addArcToPoint = function(x1, y1, x2, y2, radius)
+{
+    CGPathAddArcToPoint(this.path, this.getCTM(), x1, y1, x2, y2, radius);
+}
+
+CGContext.prototype.addCurveToPoint = function(cp1x, cp1y, cp2x, cp2y, x, y)
+{
+    CGPathAddCurveToPoint(this.path, this.getCTM(), cp1x, cp1y, cp2x, cp2y, x, y);
+}
+
+CGContext.prototype.addLines = function(points, count)
+{
+    CGPathAddLines(this.path, this.getCTM(), points, count);
+}
+
+CGContext.prototype.addLineToPoint = function(x, y)
+{
+    CGPathAddLineToPoint(this.path, this.getCTM(), x, y);
+}
+
+CGContext.prototype.addPath = function(aPath)
+{
+    if (CGPathIsEmpty(aPath))
+        return;
+
+    if (!this.path)
+        this.path = CGPathCreateMutable();
+
+    CGPathAddPath(this.path, nil, aPath);
+}
+
+CGContext.prototype.addQuadCurveToPoint = function(cpx, cpy, x, y)
+{
+    CGPathAddQuadCurveToPoint(this.path, nil, cpx, cpy, x, y);
+}
+
+CGContext.prototype.addRect = function(aRect)
+{
+    CGPathAddRect(this.path, nil, aRect);
+}
+
+CGContext.prototype.addRects = function(rects, count)
+{
+    CGPathAddRects(this.path, nil, rects, count);
+}
+
+CGContext.prototype.beginPath = function()
+{
+//    CPLog.trace("CGContext.prototype.beginPath()");
+    // This clears any previous path.
+    this.path = CGPathCreateMutable();
+}
+
+CGContext.prototype.closeSubpath = function()
+{
+//    CPLog.trace("CGContext.prototype.closeSubpath()");
+    CGPathCloseSubpath(this.path);
+}
+
+CGContext.prototype.isPathEmpty = function()
+{
+    return (!this.path || CGPathIsEmpty(this.path));
+}
+
+CGContext.prototype.moveToPoint = function(x, y)
+{
+    if (!this.path)
+        this.path = CGPathCreateMutable();
+
+    CGPathMoveToPoint(this.path, nil, x, y);
+}
+
+CGContext.prototype.fillRects = function(rects, count)
+{
+    if (arguments[1] === undefined)
+        var count = rects.length;
+
+    this.beginPath();
+    this.addRects(rects, count);
+    this.closeSubpath();
+
+    this.drawPath(kCGPathFill);
+}
+
+CGContext.prototype.strokeRect = function(aRect)
+{
+    this.beginPath();
+    this.addRect(aRect);
+    this.closeSubpath();
+
+    this.strokePath();
+}
+
+CGContext.prototype.addEllipseInRect = function(aRect)
+{
+    this.beginPath();
+    this.addPath(CGPathWithEllipseInRect(aRect));
+    this.closeSubpath();
+}
+
+CGContext.prototype.strokePath = function()
+{
+    this.drawPath(kCGPathStroke);
+    this.closeSubpath();
+}
+
+CGContext.prototype.strokeLineSegments = function(points, count)
+{
+    var i = 0;
+
+    if (count === NULL)
+        var count = points.length;
+
+    this.beginPath();
+
+    for (; i < count; i += 2)
+    {
+        this.moveToPoint(points[i].x, points[i].y);
+        this.addLineToPoint(points[i + 1].x, points[i + 1].y);
+    }
+
+    this.strokePath();
+}
+
+CGContext.prototype.clearRect = function(aRect)
+{
+    CPLog.warn("CGContext.prototype.clearRect() unimplemented");
+}
+
+CGContext.prototype.clip = function()
+{
+    CPLog.warn("CGContext.prototype.clip() unimplemented");
+}
+
+CGContext.prototype.clipToRect = function(aRect)
+{
+    CPLog.warn("CGContext.prototype.clipToRect() unimplemented");
+}
+
+CGContext.prototype.clipToRects = function(aRect)
+{
+    CPLog.warn("CGContext.prototype.clipToRect() unimplemented");
+}
+
+CGContext.prototype.createPatternContext = function(aSize)
+{
+    CPLog.warn("CGContext.prototype.createPatternContext() unimplemented");
+}
+
+CGContext.prototype.setFillPattern = function(aPatternContext)
+{
+    CPLog.warn("CGContext.prototype.setFillPattern() unimplemented");
+}
+
+CGContext.prototype.setStrokePattern = function(aPatternContext)
+{
+    CPLog.warn("CGContext.prototype.setStrokePattern() unimplemented");
+}
+
+CGContext.prototype.drawImage = function(aRect, anImage)
+{
+    CPLog.warn("CGContext.prototype.drawImage() unimplemented");
+}
+
+CGContext.prototype.drawLinearGradient = function(aGradient, aStartPoint, anEndPoint, options)
+{
+    CPLog.warn("CGContext.prototype.drawLinearGradient() unimplemented");
+}
+
+CGContext.prototype.drawRadialGradient = function(aGradient, aStartCenter, aStartRadius, anEndCenter, anEndRadius, options)
+{
+    CPLog.warn("CGContext.prototype.drawRadialGradient() unimplemented");
+}
+
+CGContext.prototype.beginTransparencyLayerWithRect = function(aRect, auxiliaryInfo)
+{
+    CPLog.warn("CGContext.prototype.beginTransparencyLayerWithRect() unimplemented");
+}
+
+CGContext.prototype.endTransparencyLayer = function()
+{
+    CPLog.warn("CGContext.prototype.endTransparencyLayer unimplemented");
+}
+
+CGContext.prototype.setFont = function(aFont)
+{
+    this.gState.font = aFont;
+}
+
+CGContext.prototype.setFontSize = function(aSize)
+{
+    this.gState.fontSize = aSize;
+}
+
+CGContext.prototype.textMatrix = function()
+{
+    return this.textMatrix;
+}
+
+CGContext.prototype.setTextMatrix = function(transform)
+{
+    this.textMatrix = transform;
+}
+
+CGContext.prototype.textPosition = function()
+{
+    return CGPointMake(this.textMatrix.tx, this.textMatrix.ty);
+}
+
+CGContext.prototype.setTextPosition = function(x, y)
+{
+    this.textMatrix.tx = x;
+    this.textMatrix.ty = y;
+}
+
+CGContext.prototype.beginText = function()
+{
+    CPLog.warn("CGContext.prototype.beginText() unimplemented");
+}
+
+CGContext.prototype.showTextAtPositions = function(text, positions, count)
+{
+    CPLog.warn("CGContext.prototype.showTextAtPositions() unimplemented");
+}
+
+CGContext.prototype.endText = function()
+{
+    CPLog.warn("CGContext.prototype.endText() unimplemented");
+}
 
 /*!
     This function is just here for source compatibility.
@@ -100,15 +476,6 @@ function CGContextRetain(aContext)
     return aContext;
 }
 
-/*!
-@cond
-*/
-// BEGIN CANVAS IF
-if (!CPFeatureIsCompatible(CPHTMLCanvasFeature))
-{
-/*!
-@endcond
-*/
 
 /*!
     Creates a new graphics state, which describes all the current values for drawing.
@@ -118,7 +485,10 @@ function CGGStateCreate()
 {
     return { alpha:1.0, strokeStyle:"#000", fillStyle:"#ccc", lineWidth:1.0, lineJoin:kCGLineJoinMiter, lineCap:kCGLineCapButt, miterLimit:10.0, globalAlpha:1.0,
         blendMode:kCGBlendModeNormal,
-        shadowOffset:CGSizeMakeZero(), shadowBlur:0.0, shadowColor:NULL, CTM:CGAffineTransformMakeIdentity() };
+        shadowOffset:CGSizeMakeZero(), shadowBlur:0.0, shadowColor:[CPColor blackColor], CTM:CGAffineTransformMakeIdentity(),
+        fontSize: 0,
+        textDrawingMode: kCGTextFill
+        };
 }
 
 /*!
@@ -131,7 +501,11 @@ function CGGStateCreateCopy(aGState)
     return { alpha:aGState.alpha, strokeStyle:aGState.strokeStyle, fillStyle:aGState.fillStyle, lineWidth:aGState.lineWidth,
         lineJoin:aGState.lineJoin, lineCap:aGState.lineCap, miterLimit:aGState.miterLimit, globalAlpha:aGState.globalAlpha,
         blendMode:aGState.blendMode,
-        shadowOffset:CGSizeMakeCopy(aGState.shadowOffset), shadowBlur:aGState.shadowBlur, shadowColor:aGState.shadowColor, CTM:CGAffineTransformMakeCopy(aGState.CTM) };
+        shadowOffset:CGSizeMakeCopy(aGState.shadowOffset), shadowBlur:aGState.shadowBlur, shadowColor:aGState.shadowColor, CTM:CGAffineTransformMakeCopy(aGState.CTM),
+        fontSize: aGState.fontSize,
+        font: aGState.font,
+        textDrawingMode: aGState.textDrawingMode
+        };
 }
 
 /*!
@@ -140,7 +514,7 @@ function CGGStateCreateCopy(aGState)
 */
 function CGBitmapGraphicsContextCreate()
 {
-    return { DOMElement:document.createElement("div"), path:NULL, gState:CGGStateCreate(), gStateStack:[] };
+    return new CGContext();
 }
 
 /*!
@@ -150,7 +524,7 @@ function CGBitmapGraphicsContextCreate()
 */
 function CGContextSaveGState(aContext)
 {
-    aContext.gStateStack.push(CGGStateCreateCopy(aContext.gState));
+    aContext.saveGState();
 }
 
 /*!
@@ -160,43 +534,42 @@ function CGContextSaveGState(aContext)
 */
 function CGContextRestoreGState(aContext)
 {
-    aContext.gState = aContext.gStateStack.pop();
+    aContext.restoreGState();
 }
 
 function CGContextSetLineCap(aContext, aLineCap)
 {
-    aContext.gState.lineCap = aLineCap;
+    aContext.setLineCap(aLineCap);
 }
 
 function CGContextSetLineDash(aContext, aPhase, someDashes)
 {
-    aContext.gState.lineDashes = someDashes;
-    aContext.gState.lineDashesPhase = aPhase;
+    aContext.setLineDash(aPhase, someDashes);
 }
 
 function CGContextSetLineJoin(aContext, aLineJoin)
 {
-    aContext.gState.lineJoin = aLineJoin;
+    aContext.setLineJoin(aLineJoin);
 }
 
 function CGContextSetLineWidth(aContext, aLineWidth)
 {
-    aContext.gState.lineWidth = aLineWidth;
+    aContext.setLineWidth(aLineWidth);
 }
 
 function CGContextSetMiterLimit(aContext, aMiterLimit)
 {
-    aContext.gState.miterLimit = aMiterLimit;
+    aContext.setMiterLimit(aMiterLimit);
 }
 
 function CGContextSetBlendMode(aContext, aBlendMode)
 {
-    aContext.gState.blendMode = aBlendMode;
+    aContext.setBlendMode(aBlendMode);
 }
 
 function CGContextAddArc(aContext, x, y, radius, startAngle, endAngle, clockwise)
 {
-    CGPathAddArc(aContext.path, aContext.gState.CTM, x, y, radius, startAngle, endAngle, clockwise);
+    aContext.addArc(x, y, radius, startAngle, endAngle, clockwise);
 }
 
 /*!
@@ -211,7 +584,7 @@ function CGContextAddArc(aContext, x, y, radius, startAngle, endAngle, clockwise
 */
 function CGContextAddArcToPoint(aContext, x1, y1, x2, y2, radius)
 {
-    CGPathAddArcToPoint(aContext.path, aContext.gState.CTM, x1, y1, x2, y2, radius);
+    aContext.addArcToPoint(x1, y1, x2, y2, radius);
 }
 
 /*!
@@ -227,7 +600,7 @@ function CGContextAddArcToPoint(aContext, x1, y1, x2, y2, radius)
 */
 function CGContextAddCurveToPoint(aContext, cp1x, cp1y, cp2x, cp2y, x, y)
 {
-    CGPathAddCurveToPoint(aContext.path, aContext.gState.CTM, cp1x, cp1y, cp2x, cp2y, x, y);
+    aContext.addCurveToPoint(cp1x, cp1y, cp2x, cp2y, x, y);
 }
 
 /*!
@@ -239,7 +612,7 @@ function CGContextAddCurveToPoint(aContext, cp1x, cp1y, cp2x, cp2y, x, y)
 */
 function CGContextAddLines(aContext, points, count)
 {
-    CGPathAddLines(aContext.path, aContext.gState.CTM, points, count);
+    aContext.addLines(points, count);
 }
 
 /*!
@@ -251,7 +624,7 @@ function CGContextAddLines(aContext, points, count)
 */
 function CGContextAddLineToPoint(aContext, x, y)
 {
-    CGPathAddLineToPoint(aContext.path, aContext.gState.CTM, x, y);
+    aContext.addLineToPoint(x, y);
 }
 
 /*!
@@ -262,13 +635,7 @@ function CGContextAddLineToPoint(aContext, x, y)
 */
 function CGContextAddPath(aContext, aPath)
 {
-    if (!aContext || CGPathIsEmpty(aPath))
-        return;
-
-    if (!aContext.path)
-        aContext.path = CGPathCreateMutable();
-
-    CGPathAddPath(aContext.path, aContext.gState.CTM, aPath);
+    aContext.addPath(aPath);
 }
 
 /*!
@@ -282,7 +649,7 @@ function CGContextAddPath(aContext, aPath)
 */
 function CGContextAddQuadCurveToPoint(aContext, cpx, cpy, x, y)
 {
-    CGPathAddQuadCurveToPoint(aContext.path, aContext.gState.CTM, cpx, cpy, x, y);
+    aContext.addQuadCurveToPoint(cpx, cpy, x, y);
 }
 
 /*!
@@ -293,7 +660,7 @@ function CGContextAddQuadCurveToPoint(aContext, cpx, cpy, x, y)
 */
 function CGContextAddRect(aContext, aRect)
 {
-    CGPathAddRect(aContext.path, aContext.gState.CTM, aRect);
+    aContext.addRect(aRect);
 }
 
 /*!
@@ -305,7 +672,7 @@ function CGContextAddRect(aContext, aRect)
 */
 function CGContextAddRects(aContext, rects, count)
 {
-    CGPathAddRects(aContext.path, aContext.gState.CTM, rects, count);
+    aContext.addRects(rects, count);
 }
 
 /*!
@@ -315,8 +682,7 @@ function CGContextAddRects(aContext, rects, count)
 */
 function CGContextBeginPath(aContext)
 {
-    // This clears any previous path.
-    aContext.path = CGPathCreateMutable();
+    aContext.beginPath();
 }
 
 /*!
@@ -326,7 +692,7 @@ function CGContextBeginPath(aContext)
 */
 function CGContextClosePath(aContext)
 {
-    CGPathCloseSubpath(aContext.path);
+    aContext.closeSubpath();
 }
 
 /*!
@@ -336,7 +702,7 @@ function CGContextClosePath(aContext)
 */
 function CGContextIsPathEmpty(aContext)
 {
-    return (!aContext.path || CGPathIsEmpty(aContext.path));
+    return aContext.isPathEmpty();
 }
 
 /*!
@@ -348,10 +714,7 @@ function CGContextIsPathEmpty(aContext)
 */
 function CGContextMoveToPoint(aContext, x, y)
 {
-    if (!aContext.path)
-        aContext.path = CGPathCreateMutable();
-
-    CGPathMoveToPoint(aContext.path, aContext.gState.CTM, x, y);
+    aContext.moveToPoint(x, y);
 }
 
 /*!
@@ -374,14 +737,7 @@ function CGContextFillRect(aContext, aRect)
 */
 function CGContextFillRects(aContext, rects, count)
 {
-    if (arguments[2] == nil)
-        var count = rects.length;
-
-    CGContextBeginPath(aContext);
-    CGContextAddRects(aContext, rects, count);
-    CGContextClosePath(aContext);
-
-    CGContextDrawPath(aContext, kCGPathFill);
+    aContext.fillRects(rects, count);
 }
 
 /*!
@@ -392,11 +748,7 @@ function CGContextFillRects(aContext, rects, count)
 */
 function CGContextStrokeRect(aContext, aRect)
 {
-    CGContextBeginPath(aContext);
-    CGContextAddRect(aContext, aRect);
-    CGContextClosePath(aContext);
-
-    CGContextDrawPath(aContext, kCGPathStroke);
+    aContext.strokeRect(aRect);
 }
 
 /*!
@@ -424,9 +776,7 @@ function CGContextStrokeRectWithWidth(aContext, aRect, aWidth)
 */
 function CGContextConcatCTM(aContext, aTransform)
 {
-    var CTM = aContext.gState.CTM;
-
-    CGAffineTransformConcatTo(CTM, aTransform, CTM);
+    aContext.concatCTM(aTransform);
 }
 
 /*!
@@ -436,7 +786,7 @@ function CGContextConcatCTM(aContext, aTransform)
 */
 function CGContextGetCTM(aContext)
 {
-    return aContext.gState.CTM;
+    return aContext.getCTM();
 }
 
 /*!
@@ -448,9 +798,7 @@ function CGContextGetCTM(aContext)
 
 function CGContextRotateCTM(aContext, anAngle)
 {
-    var gState = aContext.gState;
-
-    gState.CTM = CGAffineTransformRotate(gState.CTM, anAngle);
+    aContext.rotateCTM(anAngle);
 }
 
 /*!
@@ -462,9 +810,7 @@ function CGContextRotateCTM(aContext, anAngle)
 */
 function CGContextScaleCTM(aContext, sx, sy)
 {
-    var gState = aContext.gState;
-
-    gState.CTM = CGAffineTransformScale(gState.CTM, sx, sy);
+    aContext.scaleCTM(sx, sy);
 }
 
 /*!
@@ -476,9 +822,7 @@ function CGContextScaleCTM(aContext, sx, sy)
 */
 function CGContextTranslateCTM(aContext, tx, ty)
 {
-    var gState = aContext.gState;
-
-    gState.CTM = CGAffineTransformTranslate(gState.CTM, tx, ty);
+    aContext.translateCTM(tx, ty);
 }
 
 /*!
@@ -491,11 +835,7 @@ function CGContextTranslateCTM(aContext, tx, ty)
 
 function CGContextSetShadow(aContext, aSize, aBlur)
 {
-    var gState = aContext.gState;
-
-    gState.shadowOffset = CGSizeMakeCopy(aSize);
-    gState.shadowBlur = aBlur;
-    gState.shadowColor = [CPColor shadowColor];
+    aContext.setShadow(aSize, aBlur);
 }
 
 /*!
@@ -508,11 +848,7 @@ function CGContextSetShadow(aContext, aSize, aBlur)
 */
 function CGContextSetShadowWithColor(aContext, aSize, aBlur, aColor)
 {
-    var gState = aContext.gState;
-
-    gState.shadowOffset = CGSizeMakeCopy(aSize);
-    gState.shadowBlur = aBlur;
-    gState.shadowColor = aColor;
+    aContext.setShadowWithColor(aSize, aBlur, aColor);
 }
 
 /*!
@@ -523,16 +859,8 @@ function CGContextSetShadowWithColor(aContext, aSize, aBlur, aColor)
 */
 function CGContextSetAlpha(aContext, anAlpha)
 {
-    aContext.gState.alpha = MAX(MIN(anAlpha, 1.0), 0.0);
+    aContext.setAlpha(MAX(MIN(anAlpha, 1.0), 0.0));
 }
-
-/*!
-@cond
-*/
-}   // END CANVAS IF
-/*!
-@endcond
-*/
 
 // GOOD.
 /*!
@@ -542,7 +870,7 @@ function CGContextSetAlpha(aContext, anAlpha)
 */
 function CGContextEOFillPath(aContext)
 {
-    CGContextDrawPath(aContext, kCGPathEOFill);
+    aContext.drawPath(kCGPathEOFill);
 }
 
 /*!
@@ -552,8 +880,8 @@ function CGContextEOFillPath(aContext)
 */
 function CGContextFillPath(aContext)
 {
-    CGContextDrawPath(aContext, kCGPathFill);
-    CGContextClosePath(aContext);
+    aContext.drawPath(kCGPathFill);
+    aContext.closeSubpath();
 }
 
 /*!
@@ -583,9 +911,7 @@ var KAPPA = 4.0 * ((SQRT2 - 1.0) / 3.0);
 */
 function CGContextAddEllipseInRect(aContext, aRect)
 {
-    CGContextBeginPath(aContext);
-    CGContextAddPath(aContext, CGPathWithEllipseInRect(aRect));
-    CGContextClosePath(aContext);
+    aContext.addEllipseInRect(aRect);
 }
 
 /*!
@@ -596,10 +922,8 @@ function CGContextAddEllipseInRect(aContext, aRect)
 */
 function CGContextFillEllipseInRect(aContext, aRect)
 {
-    CGContextBeginPath(aContext);
-    CGContextAddEllipseInRect(aContext, aRect);
-    CGContextClosePath(aContext);
-    CGContextFillPath(aContext);
+    aContext.addEllipseInRect(aRect);
+    aContext.drawPath(kCGPathFill);
 }
 
 /*!
@@ -610,10 +934,8 @@ function CGContextFillEllipseInRect(aContext, aRect)
 */
 function CGContextStrokeEllipseInRect(aContext, aRect)
 {
-    CGContextBeginPath(aContext);
-    CGContextAddEllipseInRect(aContext, aRect);
-    CGContextClosePath(aContext);
-    CGContextStrokePath(aContext);
+    aContext.addEllipseInRect(aRect);
+    aContext.drawPath(kCGPathStroke);
 }
 
 /*!
@@ -623,8 +945,8 @@ function CGContextStrokeEllipseInRect(aContext, aRect)
 */
 function CGContextStrokePath(aContext)
 {
-    CGContextDrawPath(aContext, kCGPathStroke);
-    CGContextClosePath(aContext);
+    aContext.drawPath(kCGPathStroke);
+    aContext.closeSubpath();
 }
 
 /*!
@@ -639,20 +961,7 @@ function CGContextStrokePath(aContext)
 */
 function CGContextStrokeLineSegments(aContext, points, count)
 {
-    var i = 0;
-
-    if (count == NULL)
-        var count = points.length;
-
-    CGContextBeginPath(aContext);
-
-    for (; i < count; i += 2)
-    {
-        CGContextMoveToPoint(aContext, points[i].x, points[i].y);
-        CGContextAddLineToPoint(aContext, points[i + 1].x, points[i + 1].y);
-    }
-
-    CGContextStrokePath(aContext);
+    aContext.strokeLineSegments(points, count);
 }
 
 
@@ -667,8 +976,7 @@ function CGContextStrokeLineSegments(aContext, points, count)
 
 function CGContextSetFillColor(aContext, aColor)
 {
-    if (aColor)
-        aContext.gState.fillStyle = [aColor cssString];
+    aContext.setFillColor(aColor);
 }
 
 /*!
@@ -679,8 +987,36 @@ function CGContextSetFillColor(aContext, aColor)
 */
 function CGContextSetStrokeColor(aContext, aColor)
 {
-    if (aColor)
-        aContext.gState.strokeStyle = [aColor cssString];
+    aContext.setStrokeColor(aColor);
+}
+
+/*!
+    Creates a context into which you can render a fill pattern
+    of the given size. Once the pattern is rendered, you can
+    set the fill or stroke pattern to the rendered pattern
+    with CGContextSetFillPattern or CGContextSetStrokePattern.
+*/
+function CGContextCreatePatternContext(aContext, aSize)
+{
+    return aContext.createPatternContext(aSize);
+}
+
+/*!
+    Sets the fill pattern for aContext to the rendered pattern context
+    returned by CGContextCreatePatternContext.
+*/
+function CGContextSetFillPattern(aContext, aPatternContext)
+{
+    aContext.setFillPattern(aPatternContext);
+}
+
+/*!
+    Sets the stroke pattern for aContext to the rendered pattern context
+    returned by CGContextCreatePatternContext.
+*/
+function CGContextSetStrokePattern(aContext, aPatternContext)
+{
+    aContext.setStrokePattern(aPatternContext);
 }
 
 /*!
@@ -722,12 +1058,196 @@ function CGContextStrokeRoundedRectangleInRect(aContext, aRect, aRadius, ne, se,
 }
 
 /*!
+    Clears the specified rectangle.
+    @param aContext the CGContext to draw into
+    @param aRect the rectangle
+    @return void
+*/
+function CGContextClearRect(aContext, aRect)
+{
+    aContext.clearRect(aRect);
+}
+
+/*!
+    Sets the current path as the clipping path.
+    @param aContext the CGContext to clip
+    @return void
+*/
+function CGContextClip(aContext)
+{
+    aContext.clip();
+}
+
+/*!
+    Sets the rect as the clipping path.
+    @param aContext the CGContext to clip
+    @param aRect the rectangle
+    @return void
+*/
+function CGContextClipToRect(aContext, aRect)
+{
+    aContext.clipToRect(aRect);
+}
+
+/*!
+    Sets the rects as the clipping path.
+    @param aContext the CGContext to clip
+    @param rects the rectangles to use as the clipping reference
+    @param count the number of rectangles
+    @return void
+*/
+function CGContextClipToRects(aContext, rects, count)
+{
+    aContext.clipToRects(rects, count);
+}
+
+/*!
+    Draws the image in the specified rect
+    @param aContext the CGContext within which to draw
+    @param aRect the rectangle
+    @param anImage the image to draw
+    @return void
+*/
+function CGContextDrawImage(aContext, aRect, anImage)
+{
+    aContext.drawImage(aRect, anImage);
+}
+
+/*!
+    Draws a linear gradient
+    @param aContext the CGContext within which to draw
+    @param aGradient a gradient comprising of a number of color stops
+    @param aStartPoint the starting location for the gradient
+    @param anEndPoint the ending location for the gradient
+    @param options currently ignored
+    @return void
+*/
+function CGContextDrawLinearGradient(aContext, aGradient, aStartPoint, anEndPoint, options)
+{
+    aContext.drawLinearGradient(aGradient, aStartPoint, anEndPoint, options);
+}
+
+/*!
+    Draws a radial gradient
+    @param aContext the CGContext within which to draw
+    @param aGradient a gradient comprising of a number of color stops
+    @param aStartPoint the starting location for the gradient
+    @param anEndPoint the ending location for the gradient
+    @param options currently ignored
+    @return void
+*/
+function CGContextDrawRadialGradient(aContext, aGradient, aStartPoint, anEndPoint, options)
+{
+    aContext.drawRadialGradient(aGradient, aStartPoint, anEndPoint, options);
+}
+
+/*!
+    Begins a transparency layer
+    @param aContext the CGContext within with to create the transparency layer
+    @param auxiliaryInfo a dictionary that specifies additional info or NULL
+*/
+function CGContextBeginTransparencyLayer(aContext, auxiliaryInfo)
+{
+    CGContextBeginTransparencyLayerWithRect(aContext, CGRectNull, auxiliaryInfo);
+}
+
+/*!
+    Begins a transparency layer
+    @param aContext the CGContext within with to create the transparency layer
+    @param aRect the area to be covered by the transparency layer
+    @param auxiliaryInfo a dictionary that specifies additional info or NULL
+*/
+function CGContextBeginTransparencyLayerWithRect(aContext, aRect, auxiliaryInfo)
+{
+    aContext.beginTransparencyLayerWithRect(aRect, auxiliaryInfo);
+}
+
+/*!
+    Ends a transparency layer
+    @param aContext the CGContext containing the transparency layer
+*/
+function CGContextEndTransparencyLayer(aContext)
+{
+    aContext.endTransparencyLayer();
+}
+
+
+
+/*!
+    Sets the current font
+    @param aContext the CGContext within which to set the font
+    @param aFont the font to set
+*/
+
+function CGContextSetFont(aContext, aFont)
+{
+    aContext.setFont(aFont);
+}
+
+function CGContextSetFontSize(aContext, aSize)
+{
+    aContext.setFontSize(aSize);
+}
+
+function CGContextGetTextMatrix(aContext)
+{
+    return aContext.textMatrix();
+}
+
+function CGContextSetTextMatrix(aContext, transform)
+{
+    aContext.setTextMatrix(transform);
+}
+
+function CGContextGetTextPosition(aContext)
+{
+    return aContext.textPosition();
+}
+
+function CGContextSetTextPosition(aContext, x, y)
+{
+    aContext.setTextPosition(x, y);
+}
+
+/*!
+    Call before beginning a series of CGContextShowTextAtPositions() calls
+    Establishes the text drawing style
+*/
+function CGContextBeginText(aContext)
+{
+    aContext.beginText();
+}
+
+/*!
+    Call at the end of a series of CGContextShowTextAtPositions() calls if you
+    started with CGContextBeginTextBeginText()
+*/
+function CGContextEndText(aContext)
+{
+    aContext.endText();
+}
+
+/*!
+    Shows the specified text
+    @param aContext the CGContext within which to show the text
+    @param text the string to show
+    @param positions the positions of the characters relative to the text position
+    @param count the number of characters
+*/
+
+function CGContextShowTextAtPositions(aContext, characters, positions, count)
+{
+    aContext.showTextAtPositions(characters, positions, count);
+}
+
+/*!
     @}
 */
 
 /*!
 @cond
 */
+
 if (CPFeatureIsCompatible(CPHTMLCanvasFeature))
 {
 #include "CGContextCanvas.j"
@@ -735,11 +1255,6 @@ if (CPFeatureIsCompatible(CPHTMLCanvasFeature))
 else if (CPFeatureIsCompatible(CPVMLFeature))
 {
 #include "CGContextVML.j"
-}
-else
-{
-    // I have declared these functions here to make it compile without warnings with the new compiler under rhino.
-    CGContextClearRect = CGContextDrawLinearGradient = CGContextClip = CGContextClipToRect = CGContextDrawImage = function() {throw new Error("function is not declared in this environment")}
 }
 /*!
 @endcond

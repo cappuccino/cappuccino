@@ -28,6 +28,8 @@
 kCGGradientDrawsBeforeStartLocation = 1 << 0;
 kCGGradientDrawsAfterEndLocation    = 1 << 1;
 
+CGGradientID                        = 0;
+
 function CGGradientCreateWithColorComponents(aColorSpace, components, locations, count)
 {
     if (locations == NULL)
@@ -55,7 +57,7 @@ function CGGradientCreateWithColorComponents(aColorSpace, components, locations,
 
 function CGGradientCreateWithColors(aColorSpace, colors, locations)
 {
-    return { colorspace:aColorSpace, colors:colors, locations:locations };
+    return { colorspace:aColorSpace, colors:colors, locations:locations, name: "grad".concat(CGGradientID++)};
 }
 
 function CGGradientRelease()

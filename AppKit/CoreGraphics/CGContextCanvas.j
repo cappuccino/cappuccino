@@ -30,114 +30,121 @@ var CANVAS_LINECAP_TABLE    = [ "butt", "round", "square" ],
                                 "destination-over", "destination-in", "destination-out", "destination-atop",
                                 "xor", "source-over", "source-over" ];
 
-#define _CGContextAddArcCanvas(aContext, x, y, radius, startAngle, endAngle, anticlockwise) aContext.arc(x, y, radius, startAngle, endAngle, anticlockwise)
-#define _CGContextAddArcToPointCanvas(aContext, x1, y1, x2, y2, radius) aContext.arcTo(x1, y1, x2, y2, radius)
-#define _CGContextAddCurveToPointCanvas(aContext, cp1x, cp1y, cp2x, cp2y, x, y) aContext.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y)
-#define _CGContextAddQuadCurveToPointCanvas(aContext, cpx, cpy, x, y) aContext.quadraticCurveTo(cpx, cpy, x, y)
-#define _CGContextAddLineToPointCanvas(aContext, x, y) aContext.lineTo(x, y)
-#define _CGContextClosePathCanvas(aContext) aContext.closePath()
-#define _CGContextMoveToPointCanvas(aContext, x, y) aContext.moveTo(x, y)
-
-#define _CGContextAddRectCanvas(aContext, aRect) aContext.rect(CGRectGetMinX(aRect), CGRectGetMinY(aRect), CGRectGetWidth(aRect), CGRectGetHeight(aRect))
-#define _CGContextBeginPathCanvas(aContext) aContext.beginPath()
-#define _CGContextFillRectCanvas(aContext, aRect) aContext.fillRect(CGRectGetMinX(aRect), CGRectGetMinY(aRect), CGRectGetWidth(aRect), CGRectGetHeight(aRect))
-#define _CGContextClipCanvas(aContext) aContext.clip()
-
-// In Cocoa, all primitives excepts rects and arcs cannot be added to the context's path
-// until a move to point has been done, because an empty path has no current point.
-var hasPath = function(aContext, methodName)
+function CGCanvasGraphicsContext(aSize)
 {
-    if (!aContext.hasPath)
-        CPLog.error(methodName + ": no current point");
+    CGContext.call(this);
+    
+    this.DOMElement = document.createElement("canvas");
 
-    return aContext.hasPath;
-}
-
-function CGContextSaveGState(aContext)
-{
-    aContext.save();
-}
-
-function CGContextRestoreGState(aContext)
-{
-    aContext.restore();
-}
-
-function CGContextSetLineCap(aContext, aLineCap)
-{
-    aContext.lineCap = CANVAS_LINECAP_TABLE[aLineCap];
-}
-
-function CGContextSetLineDash(aContext, aPhase, someDashes)
-{
-    if (aContext.setLineDash)
+    if (aSize)
     {
-        aContext.setLineDash(someDashes);
-        aContext.lineDashOffset = aPhase;
+        this.DOMElement.width = aSize.width;
+        this.DOMElement.height = aSize.height;
     }
-    else if (typeof aContext['webkitLineDash'] !== 'undefined')
+
+    this.canvasAPI = this.DOMElement.getContext("2d");
+    this.hasPath = NO;
+}
+
+CGCanvasGraphicsContext.prototype = Object.create(CGContext.prototype);
+
+CGCanvasGraphicsContext.prototype.constructor = CGCanvasGraphicsContext;
+
+CGCanvasGraphicsContext.prototype.toString = function()
+{
+    return "CGCanvasGraphicsContext";
+}
+
+function CGCanvasGraphicsContextCreate(aSize)
+{
+    return new CGCanvasGraphicsContext(aSize);
+}
+
+CGCanvasGraphicsContext.prototype.saveGState = function()
+{
+    this.canvasAPI.save();
+}
+
+CGCanvasGraphicsContext.prototype.restoreGState = function()
+{
+    this.canvasAPI.restore();
+}
+
+CGCanvasGraphicsContext.prototype.setLineCap = function(aLineCap)
+{
+    this.canvasAPI.lineCap = CANVAS_LINECAP_TABLE[aLineCap];
+}
+
+CGCanvasGraphicsContext.prototype.setLineDash = function(aPhase, someDashes)
+{
+    if (this.canvasAPI.setLineDash)
     {
-        aContext.webkitLineDash = someDashes;
-        aContext.webkitLineDashOffset = aPhase;
+        this.canvasAPI.setLineDash(someDashes);
+        this.canvasAPI.lineDashOffset = aPhase;
     }
-    else if (typeof aContext['mozDash'] !== 'undefined')
+    else if (typeof this.canvas['webkitLineDash'] !== 'undefined')
     {
-        aContext.mozDash = someDashes;
-        aContext.mozDashOffset = aPhase;
+        this.canvasAPI.webkitLineDash = someDashes;
+        this.canvasAPI.webkitLineDashOffset = aPhase;
+    }
+    else if (typeof this.canvas['mozDash'] !== 'undefined')
+    {
+        this.canvasAPI.mozDash = someDashes;
+        this.canvasAPI.mozDashOffset = aPhase;
     }
     else if (someDashes)
     {
-        CPLog.warn("CGContextSetLineDash not implemented in this environment.")
+        CPLog.warn("CGCanvasGraphicsContext.setLineDash not implemented in this environment.")
     }
 }
 
-function CGContextSetLineJoin(aContext, aLineJoin)
+CGCanvasGraphicsContext.prototype.setLineJoin = function(aLineJoin)
 {
-    aContext.lineJoin = CANVAS_LINEJOIN_TABLE[aLineJoin];
+    this.canvasAPI.lineJoin = CANVAS_LINEJOIN_TABLE[aLineJoin];
 }
 
-function CGContextSetLineWidth(aContext, aLineWidth)
+CGCanvasGraphicsContext.prototype.setLineWidth = function(aLineWidth)
 {
-    aContext.lineWidth = aLineWidth;
+    this.canvasAPI.lineWidth = aLineWidth;
 }
 
-function CGContextSetMiterLimit(aContext, aMiterLimit)
+CGCanvasGraphicsContext.prototype.setMiterLimit = function(aMiterLimit)
 {
-    aContext.miterLimit = aMiterLimit;
+    this.canvasAPI.miterLimit = aMiterLimit;
 }
 
-function CGContextSetBlendMode(aContext, aBlendMode)
+CGCanvasGraphicsContext.prototype.setBlendMode = function(aBlendMode)
 {
-    aContext.globalCompositeOperation = CANVAS_COMPOSITE_TABLE[aBlendMode];
+    this.canvasAPI.globalCompositeOperation = CANVAS_COMPOSITE_TABLE[aBlendMode];
 }
 
-function CGContextAddArc(aContext, x, y, radius, startAngle, endAngle, clockwise)
+CGCanvasGraphicsContext.prototype.addArc = function(x, y, radius, startAngle, endAngle, clockwise)
 {
     // Despite the documentation saying otherwise, the last parameter is anti-clockwise not clockwise.
     // http://developer.mozilla.org/en/docs/Canvas_tutorial:Drawing_shapes#Arcs
-    _CGContextAddArcCanvas(aContext, x, y, radius, startAngle, endAngle, !clockwise);
+    this.canvasAPI.arc(x, y, radius, startAngle, endAngle, !clockwise);
 
     // AddArc implicitly starts a path
-    aContext.hasPath = YES;
+    this.hasPath = YES;
 }
 
-function CGContextAddArcToPoint(aContext, x1, y1, x2, y2, radius)
+CGCanvasGraphicsContext.prototype.addArcToPoint = function(x1, y1, x2, y2, radius)
 {
-    if (!hasPath(aContext, "CGContextAddArcToPoint"))
+    if (!hasPath(this, "CGCanvasGraphicsContext.prototype.addArcToPoint()"))
         return;
 
-    _CGContextAddArcToPointCanvas(aContext, x1, y1, x2, y2, radius);
+    this.canvasAPI.arcTo(x1, y1, x2, y2, radius);
 }
 
-function CGContextAddCurveToPoint(aContext, cp1x, cp1y, cp2x, cp2y, x, y)
+CGCanvasGraphicsContext.prototype.addCurveToPoint = function(aContext, cp1x, cp1y, cp2x, cp2y, x, y)
 {
-    if (!hasPath(aContext, "CGContextAddCurveToPoint"))
+    if (!hasPath(this, "CGCanvasGraphicsContext.prototype.addCurveToPoint()"))
         return;
 
-    _CGContextAddCurveToPointCanvas(aContext, cp1x, cp1y, cp2x, cp2y, x, y);
+    this.canvasAPI.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y);
 }
 
-function CGContextAddLines(aContext, points, count)
+CGCanvasGraphicsContext.prototype.addLines = function(points, count)
 {
     // implementation mirrors that of CGPathAddLines()
     if (count == null)
@@ -146,33 +153,33 @@ function CGContextAddLines(aContext, points, count)
     if (count < 1)
         return;
 
-    _CGContextMoveToPointCanvas(aContext, points[0].x, points[0].y);
+    this.canvasAPI.moveTo(points[0].x, points[0].y);
 
     for (var i = 1; i < count; ++i)
-        _CGContextAddLineToPointCanvas(aContext, points[i].x, points[i].y);
+        this.canvasAPI.lineTo(points[i].x, points[i].y);
 
-    aContext.hasPath = YES;
+    this.hasPath = YES;
 }
 
-function CGContextAddLineToPoint(aContext, x, y)
+CGCanvasGraphicsContext.prototype.addLineToPoint = function(x, y)
 {
-    if (!hasPath(aContext, "CGContextAddLineToPoint"))
+    if (!hasPath(this, "CGCanvasGraphicsContext.prototype.addLineToPoint()"))
         return;
 
-    _CGContextAddLineToPointCanvas(aContext, x, y);
+    this.canvasAPI.lineTo(x, y);
 }
 
-function CGContextAddPath(aContext, aPath)
+CGCanvasGraphicsContext.prototype.addPath = function(aPath)
 {
-    if (!aContext || CGPathIsEmpty(aPath))
+    if (CGPathIsEmpty(aPath))
         return;
 
     // If the context does not have a path, explicitly begin one
-    if (!aContext.hasPath)
-        _CGContextBeginPathCanvas(aContext);
+    if (!this.hasPath)
+        this.canvasAPI.beginPath();
 
     // We must implicitly move to the start of the path
-    _CGContextMoveToPointCanvas(aContext, aPath.start.x, aPath.start.y);
+    this.canvasAPI.moveTo(aPath.start.x, aPath.start.y);
 
     var elements = aPath.elements,
         i = 0,
@@ -186,179 +193,181 @@ function CGContextAddPath(aContext, aPath)
         switch (type)
         {
             case kCGPathElementMoveToPoint:
-                _CGContextMoveToPointCanvas(aContext, element.x, element.y);
+                this.canvasAPI.moveTo(element.x, element.y);
                 break;
 
             case kCGPathElementAddLineToPoint:
-                _CGContextAddLineToPointCanvas(aContext, element.x, element.y);
+                this.canvasAPI.lineTo(element.x, element.y);
                 break;
 
             case kCGPathElementAddQuadCurveToPoint:
-                _CGContextAddQuadCurveToPointCanvas(aContext, element.cpx, element.cpy, element.x, element.y);
+                this.canvasAPI.quadraticCurveTo(element.cpx, element.cpy, element.x, element.y);
                 break;
 
             case kCGPathElementAddCurveToPoint:
-                _CGContextAddCurveToPointCanvas(aContext, element.cp1x, element.cp1y, element.cp2x, element.cp2y, element.x, element.y);
+                this.canvasAPI.bezierCurveTo(element.cp1x, element.cp1y, element.cp2x, element.cp2y, element.x, element.y);
                 break;
 
             case kCGPathElementCloseSubpath:
-                _CGContextClosePathCanvas(aContext);
+                this.canvasAPI.closePath();
                 break;
 
             case kCGPathElementAddArc:
-                _CGContextAddArcCanvas(aContext, element.x, element.y, element.radius, element.startAngle, element.endAngle, element.clockwise);
+                this.canvasAPI.arc(element.x, element.y, element.radius, element.startAngle, element.endAngle, !element.clockwise);
                 break;
 
             case kCGPathElementAddArcToPoint:
-                _CGContextAddArcToPointCanvas(aContext, element.p1x, element.p1y, element.p2x, element.p2y, element.radius);
+                this.canvasAPI.arcTo(element.p1x, element.p1y, element.p2x, element.p2y, element.radius);
                 break;
         }
     }
 
-    aContext.hasPath = YES;
+    this.hasPath = YES;
 }
 
-function CGContextAddRect(aContext, aRect)
+CGCanvasGraphicsContext.prototype.addRect = function(aRect)
 {
-    _CGContextAddRectCanvas(aContext, aRect);
-    aContext.hasPath = YES;
+    this.canvasAPI.rect(CGRectGetMinX(aRect), CGRectGetMinY(aRect), CGRectGetWidth(aRect), CGRectGetHeight(aRect));
+    this.hasPath = YES;
 }
 
-function CGContextAddQuadCurveToPoint(aContext, cpx, cpy, x, y)
+CGCanvasGraphicsContext.prototype.addQuadCurveToPoint = function(cpx, cpy, x, y)
 {
-    if (!hasPath(aContext, "CGContextAddQuadCurveToPoint"))
+    if (!hasPath(this, "CGCanvasGraphicsContext.prototype.addQuadCurveToPoint()"))
         return;
 
-    _CGContextAddQuadCurveToPointCanvas(aContext, cpx, cpy, x, y);
+    this.canvasAPI.quadraticCurveTo(cpx, cpy, x, y);
 }
 
-function CGContextAddRects(aContext, rects, count)
+CGCanvasGraphicsContext.prototype.addRects = function(rects, count)
 {
     if (count == null)
         count = rects.length;
 
     for (var i = 0; i < count; ++i)
     {
-        var rect = rects[i];
-        _CGContextAddRectCanvas(aContext, rect);
+        var aRect = rects[i];
+        this.canvasAPI.rect(CGRectGetMinX(aRect), CGRectGetMinY(aRect), CGRectGetWidth(aRect), CGRectGetHeight(aRect));
     }
 
-    aContext.hasPath = YES;
+    this.hasPath = YES;
 }
 
-function CGContextBeginPath(aContext)
+CGCanvasGraphicsContext.prototype.beginPath = function()
 {
-    _CGContextBeginPathCanvas(aContext);
-    aContext.hasPath = NO;
+//    CPLog.trace("CGCanvasGraphicsContext.prototype.beginPath()");
+    this.canvasAPI.beginPath();
+    this.hasPath = NO;
 }
 
-function CGContextClosePath(aContext)
+CGCanvasGraphicsContext.prototype.closeSubpath = function()
 {
-    _CGContextClosePathCanvas(aContext);
+//    CPLog.trace("CGCanvasGraphicsContext.prototype.closeSubpath()");
+    this.canvasAPI.closePath();
 }
 
-function CGContextIsPathEmpty(aContext)
+CGCanvasGraphicsContext.prototype.isPathEmpty = function()
 {
-    return !aContext.hasPath;
+    return !this.hasPath;
 }
 
-function CGContextMoveToPoint(aContext, x, y)
+CGCanvasGraphicsContext.prototype.moveToPoint = function(x, y)
 {
-    _CGContextMoveToPointCanvas(aContext, x, y);
-    aContext.hasPath = YES;
+    this.canvasAPI.moveTo(x, y);
+    this.hasPath = YES;
 }
 
-function CGContextClearRect(aContext, aRect)
+CGCanvasGraphicsContext.prototype.clearRect = function(aRect)
 {
-    aContext.clearRect(CGRectGetMinX(aRect), CGRectGetMinY(aRect), CGRectGetWidth(aRect), CGRectGetHeight(aRect));
-    aContext.hasPath = NO;
+    this.canvasAPI.clearRect(CGRectGetMinX(aRect), CGRectGetMinY(aRect), CGRectGetWidth(aRect), CGRectGetHeight(aRect));
+    this.hasPath = NO;
 }
 
-function CGContextDrawPath(aContext, aMode)
+CGCanvasGraphicsContext.prototype.drawPath = function(aMode)
 {
-    if (!aContext.hasPath)
+    if (!this.hasPath)
         return;
 
     if (aMode === kCGPathFill || aMode === kCGPathFillStroke)
-        aContext.fill();
+        this.canvasAPI.fill();
     else if (aMode === kCGPathStroke || aMode === kCGPathFillStroke || aMode === kCGPathEOFillStroke)
-        aContext.stroke();
+        this.canvasAPI.stroke();
     else if (aMode === kCGPathEOFill || aMode === kCGPathEOFillStroke)
-        CPLog.warn("Unimplemented fill mode in CGContextDrawPath: %d", aMode);
+        CPLog.warn("Unimplemented fill mode in CGCanvasGraphicsContext.prototype.drawPath(%d)", aMode);
 
-    aContext.hasPath = NO;
+    this.hasPath = NO;
 }
 
-function CGContextFillRect(aContext, aRect)
+CGCanvasGraphicsContext.prototype.fillRect = function(aRect)
 {
-    _CGContextFillRectCanvas(aContext, aRect);
-    aContext.hasPath = NO;
+    this.canvasAPI.fillRect(CGRectGetMinX(aRect), CGRectGetMinY(aRect), CGRectGetWidth(aRect), CGRectGetHeight(aRect));
+    this.hasPath = NO;
 }
 
-function CGContextFillRects(aContext, rects, count)
+CGCanvasGraphicsContext.prototype.fillRects = function(rects, count)
 {
     if (count == null)
         count = rects.length;
 
     for (var i = 0; i < count; ++i)
     {
-        var rect = rects[i];
-        _CGContextFillRectCanvas(aContext, rect);
+        var aRect = rects[i];
+        this.canvasAPI.fillRect(CGRectGetMinX(aRect), CGRectGetMinY(aRect), CGRectGetWidth(aRect), CGRectGetHeight(aRect));
     }
 
-    aContext.hasPath = NO;
+    this.hasPath = NO;
 }
 
-function CGContextStrokeRect(aContext, aRect)
+CGCanvasGraphicsContext.prototype.strokeRect = function(aRect)
 {
-    aContext.strokeRect(CGRectGetMinX(aRect), CGRectGetMinY(aRect), CGRectGetWidth(aRect), CGRectGetHeight(aRect));
-    aContext.hasPath = NO;
+    this.canvasAPI.strokeRect(CGRectGetMinX(aRect), CGRectGetMinY(aRect), CGRectGetWidth(aRect), CGRectGetHeight(aRect));
+    this.hasPath = NO;
 }
 
-function CGContextClip(aContext)
+CGCanvasGraphicsContext.prototype.clip = function()
 {
-    _CGContextClipCanvas(aContext);
-    aContext.hasPath = NO;
+    this.canvasAPI.clip();
+    this.hasPath = NO;
 }
 
-function CGContextClipToRect(aContext, aRect)
+CGCanvasGraphicsContext.prototype.clipToRect = function(aRect)
 {
-    _CGContextBeginPathCanvas(aContext);
-    _CGContextAddRectCanvas(aContext, aRect);
-    _CGContextClosePathCanvas(aContext);
+    this.canvasAPI.beginPath();
+    this.canvasAPI.rect(aRect);
+    this.canvasAPI.closePath();
 
-    _CGContextClipCanvas(aContext);
-    aContext.hasPath = NO;
+    this.canvasAPI.clip();
+    this.hasPath = NO;
 }
 
-function CGContextClipToRects(aContext, rects, count)
+CGCanvasGraphicsContext.prototype.clipToRects = function(rects, count)
 {
     if (count == null)
         count = rects.length;
 
-    _CGContextBeginPathCanvas(aContext);
-    CGContextAddRects(aContext, rects, count);
-    _CGContextClipCanvas(aContext);
-    aContext.hasPath = NO;
+    this.canvasAPI.beginPath();
+    this.canvasAPI.addRects(rects, count);
+    this.canvasAPI.clip();
+    this.hasPath = NO;
 }
 
-function CGContextSetAlpha(aContext, anAlpha)
+CGCanvasGraphicsContext.prototype.setAlpha = function(anAlpha)
 {
-    aContext.globalAlpha = anAlpha;
+    this.canvasAPI.globalAlpha = anAlpha;
 }
 
-function CGContextSetFillColor(aContext, aColor)
+CGCanvasGraphicsContext.prototype.setFillColor = function(aColor)
 {
     var patternImage = [aColor patternImage];
 
     if ([patternImage isSingleImage])
     {
-        var pattern = aContext.createPattern([patternImage image], "repeat");
+        var pattern = this.canvas.createPattern([patternImage image], "repeat");
 
-        aContext.fillStyle = pattern;
+        this.canvasAPI.fillStyle = pattern;
     }
     else
-        aContext.fillStyle = [aColor cssString];
+        this.canvasAPI.fillStyle = [aColor cssString];
 }
 
 /*!
@@ -367,78 +376,73 @@ function CGContextSetFillColor(aContext, aColor)
     set the fill or stroke pattern to the rendered pattern
     with CGContextSetFillPattern or CGContextSetStrokePattern.
 */
-function CGContextCreatePatternContext(aContext, aSize)
+CGCanvasGraphicsContext.prototype.createPatternContext = function(aSize)
 {
-    var pattern = document.createElement("canvas");
-
-    pattern.width = aSize.width;
-    pattern.height = aSize.height;
-
-    return pattern.getContext("2d");
+    return new CGCanvasGraphicsContext(aSize);
 }
 
 /*!
     Sets the fill pattern for aContext to the rendered pattern context
     returned by CGContextCreatePatternContext.
 */
-function CGContextSetFillPattern(aContext, aPatternContext)
+CGCanvasGraphicsContext.prototype.setFillPattern = function(aPatternContext)
 {
-    var pattern = aContext.createPattern(aPatternContext.canvas, "repeat");
-    aContext.fillStyle = pattern;
+    var pattern = this.canvasAPI.createPattern(aPatternContext.canvas.canvas, "repeat");
+    this.canvasAPI.fillStyle = pattern;
 }
 
 /*!
     Sets the stroke pattern for aContext to the rendered pattern context
     returned by CGContextCreatePatternContext.
 */
-function CGContextSetStrokePattern(aContext, aPatternContext)
+CGCanvasGraphicsContext.prototype.setStrokePattern = function(aPatternContext)
 {
-    var pattern = aContext.createPattern(aPatternContext.canvas, "repeat");
-    aContext.strokeStyle = pattern;
+    var pattern = this.canvasAPI.createPattern(aPatternContext.canvas.canvas, "repeat");
+    this.canvasAPI.strokeStyle = pattern;
 }
 
-function CGContextSetStrokeColor(aContext, aColor)
+CGCanvasGraphicsContext.prototype.setStrokeColor = function(aColor)
 {
     var patternImage = [aColor patternImage];
 
     if ([patternImage isSingleImage])
     {
-        var pattern = aContext.createPattern([patternImage image], "repeat");
+        var pattern = this.canvasAPI.createPattern([patternImage image], "repeat");
 
-        aContext.strokeStyle = pattern;
+        this.canvasAPI.strokeStyle = pattern;
     }
     else
-        aContext.strokeStyle = [aColor cssString];
+        this.canvasAPI.strokeStyle = [aColor cssString];
 }
 
-function CGContextSetShadow(aContext, aSize, aBlur)
+CGCanvasGraphicsContext.prototype.setShadow = function(aSize, aBlur)
 {
-    aContext.shadowOffsetX = aSize.width;
-    aContext.shadowOffsetY = aSize.height;
-    aContext.shadowBlur = aBlur;
+    this.canvasAPI.shadowOffsetX = aSize.width;
+    this.canvasAPI.shadowOffsetY = aSize.height;
+    this.canvasAPI.shadowBlur = aBlur;
 }
 
-function CGContextSetShadowWithColor(aContext, aSize, aBlur, aColor)
+CGCanvasGraphicsContext.prototype.setShadowWithColor = function(aSize, aBlur, aColor)
 {
-    aContext.shadowOffsetX = aSize.width;
-    aContext.shadowOffsetY = aSize.height;
-    aContext.shadowBlur = aBlur;
-    aContext.shadowColor = [aColor cssString];
+    this.canvasAPI.shadowOffsetX = aSize.width;
+    this.canvasAPI.shadowOffsetY = aSize.height;
+    this.canvasAPI.shadowBlur = aBlur;
+    this.canvasAPI.shadowColor = [aColor cssString];
 }
 
-function CGContextRotateCTM(aContext, anAngle)
+CGCanvasGraphicsContext.prototype.rotateCTM = function(anAngle)
 {
-    aContext.rotate(anAngle);
+    this.canvasAPI.rotate(anAngle);
 }
 
-function CGContextScaleCTM(aContext, sx, sy)
+CGCanvasGraphicsContext.prototype.scaleCTM = function(sx, sy)
 {
-    aContext.scale(sx, sy);
+    this.canvasAPI.scale(sx, sy);
 }
 
-function CGContextTranslateCTM(aContext, tx, ty)
+CGCanvasGraphicsContext.prototype.translateCTM = function(tx, ty)
 {
-    aContext.translate(tx, ty);
+    this.canvasAPI.translate(tx, ty);
 }
 
 var scale_rotate = function(a, b, c, d)
@@ -500,91 +504,86 @@ function eigen(anAffineTransform)
     CPLog.warn("Unimplemented function: eigen");
 }
 
-
-if (CPFeatureIsCompatible(CPJavaScriptCanvasTransformFeature))
+CGCanvasGraphicsContext.prototype.concatCTM = function(anAffineTransform)
 {
-
-CGContextConcatCTM = function(aContext, anAffineTransform)
-{
-    aContext.transform(anAffineTransform.a, anAffineTransform.b, anAffineTransform.c, anAffineTransform.d, anAffineTransform.tx, anAffineTransform.ty);
-};
-
-}
-else
-{
-
-CGContextConcatCTM = function(aContext, anAffineTransform)
-{
-    var a = anAffineTransform.a,
-        b = anAffineTransform.b,
-        c = anAffineTransform.c,
-        d = anAffineTransform.d,
-        tx = anAffineTransform.tx,
-        ty = anAffineTransform.ty,
-        sx = 1.0,
-        sy = 1.0,
-        a1 = 0.0,
-        a2 = 0.0;
-
-    // Detect the simple case of just scaling.
-    if (b === 0.0 && c === 0.0)
+    if (CPFeatureIsCompatible(CPJavaScriptCanvasTransformFeature))
     {
-        sx = a;
-        sy = d;
-    }
-
-    // a scale followed by a rotate
-    else if (a * b === -c * d)
-    {
-        scale_rotate(a, b, c, d)
-    }
-
-    // rotate, then scale.
-    else if (a * c === -b * d)
-    {
-        rotate_scale(a, b, c, d)
+    
+        this.canvasAPI.transform(anAffineTransform.a, anAffineTransform.b, anAffineTransform.c, anAffineTransform.d, anAffineTransform.tx, anAffineTransform.ty);
+    
     }
     else
     {
-        var transpose = CGAffineTransformMake(a, c, b, d, 0.0, 0.0), // inline
-            u = eigen(CGAffineTransformConcat(anAffineTransform, transpose)),
-            v = eigen(CGAffineTransformConcat(transpose, anAffineTransform)),
-            U = CGAffineTransformMake(u.vector_1.x, u.vector_2.x, u.vector_1.y, u.vector_2.y, 0.0, 0.0), // inline
-            VT = CGAffineTransformMake(v.vector_1.x, v.vector_1.y, v.vector_2.x, v.vector_2.y, 0.0, 0.0),
-            S = CGAffineTransformConcat(CGAffineTransformConcat(CGAffineTransformInvert(U), anAffineTransform), CGAffineTransformInvert(VT));
+        var a = anAffineTransform.a,
+            b = anAffineTransform.b,
+            c = anAffineTransform.c,
+            d = anAffineTransform.d,
+            tx = anAffineTransform.tx,
+            ty = anAffineTransform.ty,
+            sx = 1.0,
+            sy = 1.0,
+            a1 = 0.0,
+            a2 = 0.0;
+    
+        // Detect the simple case of just scaling.
+        if (b === 0.0 && c === 0.0)
+        {
+            sx = a;
+            sy = d;
+        }
+    
+        // a scale followed by a rotate
+        else if (a * b === -c * d)
+        {
+            scale_rotate(a, b, c, d)
+        }
+    
+        // rotate, then scale.
+        else if (a * c === -b * d)
+        {
+            rotate_scale(a, b, c, d)
+        }
+        else
+        {
+            var transpose = CGAffineTransformMake(a, c, b, d, 0.0, 0.0), // inline
+                u = eigen(CGAffineTransformConcat(anAffineTransform, transpose)),
+                v = eigen(CGAffineTransformConcat(transpose, anAffineTransform)),
+                U = CGAffineTransformMake(u.vector_1.x, u.vector_2.x, u.vector_1.y, u.vector_2.y, 0.0, 0.0), // inline
+                VT = CGAffineTransformMake(v.vector_1.x, v.vector_1.y, v.vector_2.x, v.vector_2.y, 0.0, 0.0),
+                S = CGAffineTransformConcat(CGAffineTransformConcat(CGAffineTransformInvert(U), anAffineTransform), CGAffineTransformInvert(VT));
 
-        a = VT.a;
-        b = VT.b;
-        c = VT.c;
-        d = VT.d;
-        scale_rotate(a, b, c, d);
-        S.a *= sx;
-        S.d *= sy;
-        a = U.a;
-        b = U.b;
-        c = U.c;
-        d = U.d;
-        rotate_scale(a, b, c, d);
-        sx = S.a * sx;
-        sy = S.d * sy;
+            a = VT.a;
+            b = VT.b;
+            c = VT.c;
+            d = VT.d;
+            scale_rotate(a, b, c, d);
+            S.a *= sx;
+            S.d *= sy;
+            a = U.a;
+            b = U.b;
+            c = U.c;
+            d = U.d;
+            rotate_scale(a, b, c, d);
+            sx = S.a * sx;
+            sy = S.d * sy;
+        }
+    
+        if (tx != 0 || ty != 0)
+            CGContextTranslateCTM(this, tx, ty);
+        if (a1 != 0.0)
+            CGContextRotateCTM(this, a1);
+        if (sx != 1.0 || sy != 1.0)
+            CGContextScaleCTM(this, sx, sy);
+        if (a2 != 0.0)
+            CGContextRotateCTM(this, a2);
     }
-
-    if (tx != 0 || ty != 0)
-        CGContextTranslateCTM(aContext, tx, ty);
-    if (a1 != 0.0)
-        CGContextRotateCTM(aContext, a1);
-    if (sx != 1.0 || sy != 1.0)
-        CGContextScaleCTM(aContext, sx, sy);
-    if (a2 != 0.0)
-        CGContextRotateCTM(aContext, a2);
-};
-
+    
 }
 
-function CGContextDrawImage(aContext, aRect, anImage)
+CGCanvasGraphicsContext.prototype.drawImage = function(aRect, anImage)
 {
-    aContext.drawImage(anImage._image, CGRectGetMinX(aRect), CGRectGetMinY(aRect), CGRectGetWidth(aRect), CGRectGetHeight(aRect));
-    aContext.hasPath = NO;
+    this.canvasAPI.drawImage(anImage._image, CGRectGetMinX(aRect), CGRectGetMinY(aRect), CGRectGetWidth(aRect), CGRectGetHeight(aRect));
+    this.hasPath = NO;
 }
 
 function to_string(aColor)
@@ -592,43 +591,39 @@ function to_string(aColor)
     return "rgba(" + ROUND(aColor.components[0] * 255) + ", " + ROUND(aColor.components[1] * 255) + ", " + ROUND(255 * aColor.components[2]) + ", " + aColor.components[3] + ")";
 }
 
-function CGContextDrawLinearGradient(aContext, aGradient, aStartPoint, anEndPoint, options)
+CGCanvasGraphicsContext.prototype.drawLinearGradient = function(aGradient, aStartPoint, anEndPoint, options)
 {
     var colors = aGradient.colors,
         count = colors.length,
-        linearGradient = aContext.createLinearGradient(aStartPoint.x, aStartPoint.y, anEndPoint.x, anEndPoint.y);
+        linearGradient = this.canvasAPI.createLinearGradient(aStartPoint.x, aStartPoint.y, anEndPoint.x, anEndPoint.y);
 
     while (count--)
         linearGradient.addColorStop(aGradient.locations[count], to_string(colors[count]));
 
-    aContext.fillStyle = linearGradient;
-    aContext.fill();
-    aContext.hasPath = NO;
+    this.canvasAPI.fillStyle = linearGradient;
+    this.canvasAPI.fill();
+    this.hasPath = NO;
 }
 
-function CGContextDrawRadialGradient(aContext, aGradient, aStartCenter, aStartRadius, anEndCenter, anEndRadius, options)
+CGCanvasGraphicsContext.prototype.drawRadialGradient = function(aGradient, aStartCenter, aStartRadius, anEndCenter, anEndRadius, options)
 {
     var colors = aGradient.colors,
         count = colors.length,
-        linearGradient = aContext.createRadialGradient(aStartCenter.x, aStartCenter.y, aStartRadius, anEndCenter.x, anEndCenter.y, anEndRadius);
+        linearGradient = this.canvasAPI.createRadialGradient(aStartCenter.x, aStartCenter.y, aStartRadius, anEndCenter.x, anEndCenter.y, anEndRadius);
 
     while (count--)
         linearGradient.addColorStop(aGradient.locations[count], to_string(colors[count]));
 
-    aContext.fillStyle = linearGradient;
-    aContext.fill();
-    aContext.hasPath = NO;
+    this.canvasAPI.fillStyle = linearGradient;
+    this.canvasAPI.fill();
+    this.hasPath = NO;
 }
 
+/*
+ * If the canvas is available it becomes the default implementation
+ * for CGBitmapGraphicsContextCreate()
+ */
 function CGBitmapGraphicsContextCreate()
 {
-    var DOMElement = document.createElement("canvas"),
-        context = DOMElement.getContext("2d");
-
-    context.DOMElement = DOMElement;
-
-    // canvas gives us no way to query whether the path is empty or not, so we have to track it ourselves
-    context.hasPath = NO;
-
-    return context;
+    return new CGCanvasGraphicsContext();
 }

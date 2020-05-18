@@ -61,6 +61,8 @@ CPRemoveTraitFontAction = 7;
 
 /*!
     @ingroup appkit
+    
+    plasq Note: CPFontManager should also be simply an alias for the CTFontManager
 */
 @implementation CPFontManager : CPObject
 {

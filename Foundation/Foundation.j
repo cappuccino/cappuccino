@@ -22,6 +22,7 @@
 
 @import "_CGGeometry.j"
 @import "CPArray.j"
+@import "CPAttributedString.j"
 @import "CPBundle.j"
 @import "CPByteCountFormatter.j"
 @import "CPCache.j"

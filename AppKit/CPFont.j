@@ -23,6 +23,7 @@
 @import <Foundation/CPObject.j>
 @import <Foundation/CPBundle.j>
 
+@import "CTFont.j"
 @import "CPView.j"
 @import "CPFontDescriptor.j"
 
@@ -108,11 +109,13 @@ following:
 <key>CPSystemFontFace</key>
 <string>Asap</string>
 @endcode
+
+plasq Note: Apple says that CPFont is toll-free bridged with CTFont - all this stuff should move down into
+CoreText - then CPFont can just be defined as a CTFont. Also much of this code should move into the CTFontMananger.
 */
-@implementation CPFont : CPObject
+
+@implementation CPFont : CTFont
 {
-    CPString    _name;
-    float       _size;
     float       _ascender;
     float       _descender;
     float       _lineHeight;
@@ -303,11 +306,10 @@ following:
 
 - (id)_initWithName:(CPString)aName size:(float)aSize bold:(BOOL)isBold italic:(BOOL)isItalic system:(BOOL)isSystem
 {
-    self = [super init];
+    self = [super initWithFontName: aName size: aSize];
 
     if (self)
     {
-        _size = aSize;
         _ascender = 0;
         _descender = 0;
         _lineHeight = 0;

@@ -78,6 +78,14 @@ var CPNumberUIDs    = new CFMutableDictionary();
     return anInt;
 }
 
+/*!
+    API compatibility
+ */
++ (id)numberWithUnsignedInteger:(int)anInt
+{
+    return anInt;
+}
+
 + (id)numberWithLong:(long)aLong
 {
     return aLong;

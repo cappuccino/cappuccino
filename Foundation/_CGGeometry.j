@@ -170,7 +170,6 @@ function CGRectGetWidth(aRect)
     return aRect.size.width;
 }
 
-
 function CGRectIsEmpty(aRect)
 {
     return (aRect.size.width <= 0.0 || aRect.size.height <= 0.0 || aRect.origin.x === Infinity || aRect.origin.y === Infinity);
