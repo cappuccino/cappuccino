@@ -1085,10 +1085,10 @@ var _objectsInRange = function(aList, aRange)
 
 - (id)createDOMElementWithText:(CPString)aString andFont:(CPFont)aFont andColor:(CPColor)aColor
 {
-    return [self createDOMElementWithText:aString andFont:aFont andColor:aColor andUnderline:nil];
+    return [self createDOMElementWithText:aString andFont:aFont andColor:aColor andBackgroundColor:nil andUnderline:nil ];
 }
 
-- (id)createDOMElementWithText:(CPString)aString andFont:(CPFont)aFont andColor:(CPColor)aColor andUnderline:(CPUnderlineStyle)aUnderline
+- (id)createDOMElementWithText:(CPString)aString andFont:(CPFont)aFont andColor:(CPColor)fgColor andBackgroundColor:(CPColor)bgColor andUnderline:(CPUnderlineStyle)aUnderline
 {
 #if PLATFORM(DOM)
     var style,
@@ -1129,8 +1129,11 @@ var _objectsInRange = function(aList, aRange)
         }
     }
 
-    if (aColor)
-        style.color = [aColor cssString];
+    if (fgColor)
+        style.color = [fgColor cssString];
+
+    if (bgColor)
+        style.backgroundColor = [bgColor cssString];
 
     if (CPFeatureIsCompatible(CPJavaScriptInnerTextFeature))
         span.innerText = aString;
@@ -1185,8 +1188,9 @@ var _objectsInRange = function(aList, aRange)
             else
             {
                 var color = [attributes objectForKey:CPForegroundColorAttributeName],
+                    bgcolor = [attributes objectForKey:CPBackgroundColorAttributeName],
                     font = [attributes objectForKey:CPFontAttributeName] || [textStorage font] || [CPFont systemFontOfSize:12.0],
-                    run = {_range:CPMakeRangeCopy(effectiveRange), color:color, font:font, elem:nil, string:string};
+                    run = {_range:CPMakeRangeCopy(effectiveRange), color:color, font:font, elem:nil, string:string, bgcolor:bgcolor};
 
                 _runs.push(run);
             }
@@ -1284,7 +1288,7 @@ var _objectsInRange = function(aList, aRange)
         var run = runs[i];
 
         if (!run.elem && CPRectIntersectsRect([_textContainer._textView exposedRect], _fragmentRect))
-            run.elem = [self createDOMElementWithText:run.string andFont:run.font andColor:run.color andUnderline:run.underline];
+            run.elem = [self createDOMElementWithText:run.string andFont:run.font andColor:run.color andBackgroundColor:run.bgcolor andUnderline:run.underline];
 
         if (run.DOMactive && !run.DOMpatched)
             continue;
