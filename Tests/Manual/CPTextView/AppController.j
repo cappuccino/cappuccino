@@ -127,7 +127,7 @@
     [CPMenu setMenuBarVisible:YES];
 }
 
-- (void) makeRTF:sender
+- (void) makeRTF:(id)sender
 {
     [_textView2 setString: [_CPRTFProducer produceRTF:[_textView textStorage] documentAttributes: @{}] ];
     var tc = [_CPRTFParser new];
