@@ -67,19 +67,17 @@
     _textView2._isRichText = NO;
     [_textView setBackgroundColor:[CPColor whiteColor]];
     [_textView2 setBackgroundColor:[CPColor whiteColor]];
-   
+
     var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(20, 70, 520, 510)];
     var scrollView2 = [[CPScrollView alloc] initWithFrame:CGRectMake(560, 70, 520, 510)];
-    // [scrollView setAutohidesScrollers:YES];
+
     [scrollView setDocumentView:_textView];
     [scrollView2 setDocumentView:_textView2];
-    //
+
     [contentView addSubview: scrollView];
     [contentView addSubview: scrollView2];
-   //
-   // [_textView setDelegate:self];
-   //
-   // build our menu
+
+    // build our menu
    var mainMenu = [CPApp mainMenu];
 
    while ([mainMenu numberOfItems] > 0)
