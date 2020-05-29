@@ -114,12 +114,17 @@
     var tempButton = [[CPButton alloc] initWithFrame:CGRectMake(0, 0, 64, 28)]
     [_textView insertText:[CPTextStorage attributedStringWithAttachment:tempButton]];
 
-//    var centeredParagraph=[CPParagraphStyle new];
-//        [centeredParagraph setAlignment: CPCenterTextAlignment];
-//    [_textView insertText:[[CPAttributedString alloc] initWithString:@"Fusce\n"
-//        attributes:[CPDictionary dictionaryWithObjects:[centeredParagraph, [CPFont boldFontWithName:"Arial" size:18], [CPColor redColor]]
-//         forKeys:[CPParagraphStyleAttributeName, CPFontAttributeName, CPForegroundColorAttributeName]]]];
+    var centeredParagraph=[CPParagraphStyle new];
+    [centeredParagraph setAlignment: CPCenterTextAlignment];
+    [_textView insertText:"\n"];
+    [_textView insertText:[[CPAttributedString alloc] initWithString:@"Fusce\n"
+                                                          attributes:[CPDictionary dictionaryWithObjects:[centeredParagraph, [CPFont boldFontWithName:"Arial" size:18], [CPColor redColor], [CPColor yellowColor]]
+                                                                                                 forKeys:[CPParagraphStyleAttributeName, CPFontAttributeName, CPForegroundColorAttributeName, CPBackgroundColorAttributeName]]]];
 
+    [_textView insertText:"\n"];
+    [_textView insertText:[[CPAttributedString alloc] initWithString:@"Yellow\n"
+                                                          attributes:[CPDictionary dictionaryWithObjects:[[CPFont boldFontWithName:"Arial" size:25], [CPColor yellowColor]]
+                                                                                                 forKeys:[CPFontAttributeName, CPBackgroundColorAttributeName]]]];
     [theWindow orderFront:self];
     [CPMenu setMenuBarVisible:YES];
 }
