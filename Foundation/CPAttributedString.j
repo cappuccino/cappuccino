@@ -901,7 +901,7 @@ var CPAttributedStringStringKey     = "CPAttributedStringString",
     for (var replacements = 0;
          (foundRange = [_string rangeOfString:target options:options range:searchRange]), foundRange.location != CPNotFound;
          replacements++)
-        [attributedString replaceCharactersInRange:foundRange withString:replacement];
+        [self replaceCharactersInRange:foundRange withString:replacement];
 
     return replacements;
 }
