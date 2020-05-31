@@ -887,6 +887,25 @@ var CPAttributedStringStringKey     = "CPAttributedStringString",
 */
 @implementation CPMutableAttributedString : CPAttributedString
 
+/*!
+    Replaces all occurrences of the target string in a given range with a replacement string. Returns the number of replacements.
+ */
+
+- (int)replaceOccurrencesOfString:(CPString)target
+                       withString:(CPString)replacement
+                          options:(int)options
+                            range:(CSRange)searchRange
+{
+    var foundRange;
+
+    for (var replacements = 0;
+         (foundRange = [_string rangeOfString:target options:options range:searchRange]), foundRange.location != CPNotFound;
+         replacements++)
+        [attributedString replaceCharactersInRange:foundRange withString:replacement];
+
+    return replacements;
+}
+
 @end
 
 var isEqual = function(a, b)
