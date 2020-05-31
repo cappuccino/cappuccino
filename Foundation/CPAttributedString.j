@@ -898,8 +898,7 @@ var CPAttributedStringStringKey     = "CPAttributedStringString",
 {
     var foundRange,
     searchRangeDynamic = searchRange ? CPMakeRangeCopy(searchRange) : CPMakeRange(0, [_string length]),
-    searchRangeLengthOffset = replacement.length - target.length;
-
+    searchRangeLengthOffset = [replacement length] - [target length];
 
     for (var replacements = 0;
          (foundRange = [_string rangeOfString:target options:options range:searchRangeDynamic]), foundRange.location != CPNotFound;
