@@ -891,10 +891,10 @@ var CPAttributedStringStringKey     = "CPAttributedStringString",
     Replaces all occurrences of the target string in a given range with a replacement string. Returns the number of replacements.
  */
 
-- (int)replaceOccurrencesOfString:(CPString)target
-                       withString:(CPString)replacement
-                          options:(int)options
-                            range:(CSRange)searchRange
+- (CPUInteger)replaceOccurrencesOfString:(CPString)target
+                              withString:(CPString)replacement
+                                 options:(CPStringCompareOptions)options
+                                   range:(CSRange)searchRange
 {
     var foundRange,
     searchRangeDynamic = searchRange ? CPMakeRangeCopy(searchRange) : CPMakeRange(0, [_string length]),
