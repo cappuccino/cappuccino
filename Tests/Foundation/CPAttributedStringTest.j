@@ -637,7 +637,7 @@ var sharedObject = [CPObject new];
                                options:0
                                  range:nil];
 
-    [self assertTrue:[string isEqual:"HELLO <tr> THERE"] message:"replaceOccurrencesOfString:withString:options:range: did not properly replace the search string with the replacement string. Result is: " + string];
+    [self assertTrue:[string isEqual:"HELLO <tr> THERE"] message:"replaceOccurrencesOfString:withString:options:range: did not properly replace the search string with the replacement string. Result is: " + string._string];
 }
 
 - (void)testEncoding
