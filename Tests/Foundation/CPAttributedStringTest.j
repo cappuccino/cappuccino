@@ -651,7 +651,6 @@ var sharedObject = [CPObject new];
     [self assertTrue:[string._string isEqual:"HELLO <br> THERE"] message:"replaceOccurrencesOfString:withString:options:range: did not respect the range restriction. Result is: " + string._string];
 }
 
-
 - (void)testEncoding
 {
     // We can't test using [self stringForTesting] because it contains attributes without coding support.
