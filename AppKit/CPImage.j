@@ -685,7 +685,7 @@ function CPAppKitImage(aFilename, aSize)
             aStyleNode.replaceChild(styleDescription, aStyleNode.firstChild);
         }
 
-        [aView setDOMClassName:@"CP"+[aView UID]];
+        aDOMElement.className = @"CP"+[aView UID];
     }
     else
     {

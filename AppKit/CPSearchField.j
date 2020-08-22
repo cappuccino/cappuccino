@@ -74,8 +74,10 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
             @"image-cancel-pressed": [CPNull null],
             @"image-search-inset" : CGInsetMake(0, 0, 0, 5),
             @"image-cancel-inset" : CGInsetMake(0, 5, 0, 0),
-            @"search-menu-offset": CGPointMake(10, -4),
-            @"search-right-margin": 2
+            @"search-button-rect-function": [CPNull null],
+            @"layout-function": [CPNull null],
+            @"search-right-margin": 2,
+            @"search-menu-offset": CGPointMake(10, -4)
         };
 }
 

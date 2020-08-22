@@ -90,6 +90,14 @@ CPBelowBottom = 6;
             @"inner-shadow-size": 6.0,
             @"inner-shadow-color": [CPNull null],
             @"content-margin": CGSizeMakeZero(),
+            @"title-font": [CPNull null],
+            @"title-left-offset": 5.0,
+            @"title-top-offset": 0.0,
+            @"title-color": [CPNull null],
+            @"nib2cib-adjustment-primary-frame": CGRectMake(4, -4, -8, -6),
+            @"content-adjustment": CGRectMakeZero(),
+            @"min-y-correction-no-title": 0,
+            @"min-y-correction-title": 0
         };
 }
 

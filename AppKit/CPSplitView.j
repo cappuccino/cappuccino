@@ -89,6 +89,30 @@ var ShouldSuppressResizeNotifications   = 1,
     DidPostWillResizeNotification       = 1 << 1,
     DidSuppressResizeNotification       = 1 << 2;
 
+// FIXME: Previous implementation (before October 2018 and Aristo3) uses direct DOM elements manipulations to render dividers.
+//        In order to maintain compatibility, the new implementation (based on CSS theming) lives in parallel with the previous one.
+//        When, in the future, we will have decided to remove image based themes compatibility, please clean the code.
+//        New code is generally protected with _isCSSBased.
+//
+//        When we'll implement storyboards, we'll also have to implement NSSplitViewController & NSSplitViewItem
+//        See https://asciiwwdc.com/2015/sessions/221 & https://developer.apple.com/documentation/appkit/nssplitviewcontroller?language=objc
+
+@typedef CPSplitViewDividerStyle
+    CPSplitViewDividerStyleThick        = 1;
+    CPSplitViewDividerStyleThin         = 2;
+    CPSplitViewDividerStylePaneSplitter = 3;
+
+// Dividers specific theme states
+
+CPThemeStateSplitViewDividerStyleThick        = CPThemeState("splitview-divider-thick");
+CPThemeStateSplitViewDividerStyleThin         = CPThemeState("splitview-divider-thin");
+CPThemeStateSplitViewDividerStylePaneSplitter = CPThemeState("splitview-divider-pane-splitter");
+
+var CPThemeStatesForSplitViewDivider = @[@"dummy one as CPSplitViewDividerStyle is not zero-based",
+                                         CPThemeStateSplitViewDividerStyleThick,
+                                         CPThemeStateSplitViewDividerStyleThin,
+                                         CPThemeStateSplitViewDividerStylePaneSplitter];
+
 /*!
     @ingroup appkit
     @class CPSplitView
@@ -139,11 +163,12 @@ var ShouldSuppressResizeNotifications   = 1,
 + (CPDictionary)themeAttributes
 {
     return @{
-            @"divider-thickness": 1.0,
+            @"divider-thickness": 1.0,  // Used by CSS Theming
             @"pane-divider-thickness": 10.0,
             @"pane-divider-color": [CPColor grayColor],
             @"horizontal-divider-color": [CPNull null],
             @"vertical-divider-color": [CPNull null],
+            @"divider-color": [CPColor redColor]  // Used by CSS Theming
         };
 }
 

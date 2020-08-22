@@ -26,8 +26,26 @@
 
 /*! SLIDER STATES */
 
-CPLinearSlider      = 0;
-CPCircularSlider    = 1;
+@typedef CPSliderType
+CPLinearSlider   = 0;
+CPCircularSlider = 1;
+
+/*! SLIDER TICK MARK POSITION */
+
+@typedef CPTickMarkPosition
+CPTickMarkPositionBelow    = 0;
+CPTickMarkPositionAbove    = 1;
+CPTickMarkPositionLeading  = CPTickMarkPositionAbove;
+CPTickMarkPositionTrailing = CPTickMarkPositionBelow;
+
+/*! Ticked sliders specific states */
+
+CPThemeStateTickedSlider           = CPThemeState("ticked-slider");
+CPThemeStateAboveLeftTickedSlider  = CPThemeState("above-left-ticked-slider");
+CPThemeStateBelowRightTickedSlider = CPThemeState("below-right-ticked-slider");
+
+/*! Tick mark affinity distance */
+var AFFINITY = 5;
 
 /*!
     @ingroup appkit
@@ -52,10 +70,19 @@ CPCircularSlider    = 1;
 + (CPDictionary)themeAttributes
 {
     return @{
-            @"knob-color": [CPNull null],
-            @"knob-size": CGSizeMakeZero(),
-            @"track-width": 0.0,
-            @"track-color": [CPNull null],
+             @"left-track-color": [CPNull null],
+             @"knob-color": [CPNull null],
+             @"knob-size": CGSizeMakeZero(),
+             @"knob-offset": 0.0,
+             @"track-width": 0.0,
+             @"track-color": [CPNull null],
+             @"direct-nib2cib-adjustment": NO,
+             @"tick-mark-size": CGSizeMakeZero(),
+             @"tick-mark-color": [CPNull null],
+             @"tick-mark-margin": 0,
+             @"top-margin": 0,
+             @"bottom-margin": 0,
+             @"ib-size": -1
         };
 }
 

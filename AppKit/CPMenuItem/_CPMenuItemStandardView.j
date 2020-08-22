@@ -63,6 +63,8 @@
             @"menu-item-default-mixed-state-image": [CPNull null],
             @"menu-item-default-mixed-state-highlighted-image": [CPNull null],
             @"menu-item-separator-color": [CPNull null],
+            @"menu-item-separator-height": 1.0,
+            @"menu-item-separator-view-height": 10.0,
             @"left-margin": 3.0,
             @"right-margin": 17.0,
             @"state-column-width": 14.0,

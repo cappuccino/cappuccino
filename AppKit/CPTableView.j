@@ -346,11 +346,12 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 + (CPDictionary)themeAttributes
 {
     return @{
-            @"alternating-row-colors": @[[CPColor whiteColor], [CPColor colorWithRed:245.0 / 255.0 green:249.0 / 255.0 blue:252.0 / 255.0 alpha:1.0]],
-            @"grid-color": [CPColor colorWithHexString:@"dce0e2"],
+            @"alternating-row-colors": [CPNull null],
+            @"grid-color": [CPNull null],
             @"grid-line-thickness": 1.0,
             @"highlighted-grid-color": [CPNull null],
             @"selection-color": [CPNull null],
+            @"unfocused-selection-color": [CPNull null],
             @"sourcelist-selection-color": [CPNull null],
             @"sort-image": [CPNull null],
             @"sort-image-reversed": [CPNull null],
@@ -369,7 +370,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
             @"dropview-above-border-width": [CPNull null],
             @"dropview-above-selected-border-color": [CPNull null],
             @"dropview-above-selected-border-width": [CPNull null],
-            @"header-view-height": 25.0
+            @"header-view-height": 25
         };
 }
 

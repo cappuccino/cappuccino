@@ -50,7 +50,8 @@
             @"text-color": [CPNull null],
             @"font": [CPNull null],
             @"text-shadow-color": [CPNull null],
-            @"text-shadow-offset": CGSizeMakeZero()
+            @"text-shadow-offset": CGSizeMakeZero(),
+            @"dont-draw-separator": NO
         };
 }
 
@@ -278,7 +279,9 @@ var CPTableHeaderViewResizeZone = 3.0,
     return @{
             @"background-color": [CPNull null],
             @"divider-color": [CPColor grayColor],
-            @"divider-thickness": 1.0
+            @"divider-thickness": 1.0,
+            @"swap-animation": [CPNull null],
+            @"return-animation": [CPNull null]
         };
 }
 

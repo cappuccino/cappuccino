@@ -22,14 +22,9 @@
 
 @import "CPControl.j"
 @import "CPWindow_Constants.j"
+@import "CPSlider.j"
 
 @global CPApp
-
-@typedef CPTickMarkPosition
-CPTickMarkBelow                             = 0;
-CPTickMarkAbove                             = 1;
-CPTickMarkLeft                              = CPTickMarkAbove;
-CPTickMarkRight                             = CPTickMarkBelow;
 
 @typedef CPLevelIndicatorStyle
 CPRelevancyLevelIndicatorStyle              = 0;
