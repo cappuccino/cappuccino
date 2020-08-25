@@ -933,7 +933,7 @@ url("data:image/png;base64,BASE64ENCODEDDATA")  // if there is a pattern image
 // You can use -(BOOL)isCSSBased to determine how to cope with it in your code.
 // -(BOOL)hasCSSDictionary, -(BOOL)hasCSSBeforeDictionary and -(BOOL)hasCSSAfterDictionary are convience methods you can use.
 //
-// Remark : -(void)restorePreviousCSSState and -(DOMElement)applyCSSColorForView are meant to be used by low level UI widgets (like CPView) to implement
+// Remark : +(void)restorePreviousCSSState and -(DOMElement)applyCSSColorForView are meant to be used by low level UI widgets (like CPView) to implement
 //          CSS theme support.
 
 @implementation CPColor (CSSTheming)
@@ -992,7 +992,7 @@ url("data:image/png;base64,BASE64ENCODEDDATA")  // if there is a pattern image
     return ([_cssAfterDictionary count] > 0);
 }
 
-- (void)restorePreviousCSSState:(CPArrayRef)aPreviousStateRef forDOMElement:(DOMElement)aDOMElement
++ (void)restorePreviousCSSState:(CPArrayRef)aPreviousStateRef forDOMElement:(DOMElement)aDOMElement
 {
 #if PLATFORM(DOM)
     var aPreviousState = @deref(aPreviousStateRef);
