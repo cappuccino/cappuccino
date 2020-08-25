@@ -66,7 +66,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
     CPString                _text;
 
     CGSize                  _textSize;
-    BOOL                    _usesSingleLineMode @accessors;
+    BOOL                    _usesSingleLineMode @accessors(property=usesSingleLineMode);
 
     unsigned                _flags;
 
@@ -602,7 +602,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
         }
     }
 
-    var needsDOMImageElement = _image != nil && _imagePosition !== CPNoImage,
+    var needsDOMImageElement = _image !== nil && _imagePosition !== CPNoImage,
         hasDOMImageElement = !!_DOMImageElement,
         // For CSS theming
         isCSSBasedImage = [_image isCSSBased],
@@ -687,6 +687,13 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
         else if (_imageScaling === CPImageScaleProportionallyDown)
         {
             var scale = MIN(MIN(size.width, imageWidth) / imageWidth, MIN(size.height, imageHeight) / imageHeight);
+
+            imageWidth *= scale;
+            imageHeight *= scale;
+        }
+        else if (_imageScaling === CPImageScaleProportionallyUpOrDown)
+        {
+            var scale = MIN(size.width / imageWidth, size.height + imageHeight);
 
             imageWidth *= scale;
             imageHeight *= scale;
@@ -781,7 +788,8 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
                 if (_verticalAlignment === CPCenterVerticalTextAlignment)
                 {
                     // Since we added +1 px height above to show fractional pixels on the bottom, we have to remove that when calculating vertical centre.
-                    textRectY = textRectY + (textRectHeight - _textSize.height + 1.0) / 2.0;
+                    // REMARK: Added FLOOR to mimic Cocoa rendering
+                    textRectY = textRectY + FLOOR((textRectHeight - _textSize.height + 1.0) / 2.0);
                     textRectHeight = _textSize.height;
                 }
 
@@ -794,7 +802,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
         }
 
         textStyle.top = ROUND(textRectY) + "px";
-        textStyle.left = ROUND(textRectX) + "px";
+        textStyle.left = FLOOR(textRectX) + "px";
         textStyle.width = MAX(CEIL(textRectWidth), 0) + "px";
         textStyle.height = MAX(CEIL(textRectHeight), 0) + "px";
         textStyle.verticalAlign = @"top";
