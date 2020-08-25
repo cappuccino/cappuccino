@@ -41,6 +41,18 @@ var _CPCibCustomViewClassNameKey = @"_CPCibCustomViewClassNameKey";
     if (self)
         _className = [aCoder decodeObjectForKey:@"NSClassName"];
 
+    // FIXME: Warning : trick here !
+    // Workaround for the ibtool bug which reverses subviews order when using a custom view
+    // Valid as of ibtool version 14460.31
+    var subviews         = [self subviews],
+        reversedSubviews = @[],
+        count            = [subviews count];
+
+    while (count--)
+        [reversedSubviews addObject:subviews[count]];
+
+    [self setSubviews:reversedSubviews];
+
     return self;
 }
 
