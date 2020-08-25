@@ -54,8 +54,9 @@ var _CPCibCustomResourceClassNameKey    = @"_CPCibCustomResourceClassNameKey",
         return;
 
     _CPCibCustomResourceTemplateImageMap = @{
-        "CPAddTemplate": "button-image-plus",
-        "CPRemoveTemplate": "button-image-minus"
+        "CPAddTemplate":    "button-image-plus",
+        "CPRemoveTemplate": "button-image-minus",
+        "CPActionTemplate": "button-image-action"
     };
 }
 + (id)imageResourceWithName:(CPString)aResourceName size:(CGSize)aSize
@@ -111,6 +112,19 @@ var _CPCibCustomResourceClassNameKey    = @"_CPCibCustomResourceClassNameKey",
         (![aCoder respondsToSelector:@selector(awakenCustomResources)] || [aCoder awakenCustomResources]))
         if (_className === @"CPImage")
         {
+            // Is this a material icon reference ?
+            if ([_resourceName hasSuffix:@"@MaterialIcons"])
+            {
+                var range = [_resourceName rangeOfString:@"@MaterialIcons"];
+
+                if (range.location <= 0)
+                    [CPException raise:CPRangeException reason:"Malformed Material Icon reference ("+_resourceName+")"];
+
+                var iconName = [_resourceName substringToIndex:range.location];
+
+                return [CPImage imageWithMaterialIconNamed:iconName size:CGSizeMake(16,16)];
+            }
+
             var templateImage = [_CPCibCustomResourceTemplateImageMap objectForKey:_resourceName];
 
             if (templateImage)
