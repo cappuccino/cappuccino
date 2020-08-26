@@ -458,11 +458,11 @@
             enumerator = [self objectEnumerator],
             object;
 
-        while ((object = [enumerator nextObject]) !== nil)
+        while ((object = [enumerator nextObject]) != nil)
         {
             var value = [object valueForKey:aKey];
 
-            if (value === nil || value === undefined)
+            if (value == nil)
                 value = [CPNull null];
 
             newArray.push(value);
@@ -499,11 +499,11 @@
             enumerator = [self objectEnumerator],
             object;
 
-        while ((object = [enumerator nextObject]) !== nil)
+        while ((object = [enumerator nextObject]) != nil)
         {
             var value = [object valueForKeyPath:aKeyPath];
 
-            if (value === nil || value === undefined)
+            if (value == nil)
                 value = [CPNull null];
 
             newArray.push(value);
@@ -518,7 +518,7 @@
     var enumerator = [self objectEnumerator],
         object;
 
-    while ((object = [enumerator nextObject]) !== nil)
+    while ((object = [enumerator nextObject]) != nil)
         [object setValue:aValue forKey:aKey];
 }
 
@@ -527,7 +527,7 @@
     var enumerator = [self objectEnumerator],
         object;
 
-    while ((object = [enumerator nextObject]) !== nil)
+    while ((object = [enumerator nextObject]) != nil)
         [object setValue:aValue forKeyPath:aKeyPath];
 }
 

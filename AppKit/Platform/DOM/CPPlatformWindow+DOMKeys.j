@@ -157,8 +157,14 @@ CPKeyCodes = {
  * @param opt_altKey Whether the alt key is held down.
  * @return Returns YES if it's a key that fires a keypress event.
  */
-CPKeyCodes.firesKeyPressEvent = function(keyCode, opt_heldKeyCode, opt_shiftKey, opt_ctrlKey, opt_altKey)
+CPKeyCodes.firesKeyPressEvent = function(keyCode, key, opt_heldKeyCode, opt_shiftKey, opt_ctrlKey, opt_altKey)
 {
+    // The property key from event is one character wide in case of 'regular' keys (as opposed e.g. to arrow keys)
+    // Regular keys all fire the keypress event
+
+    if (key && key.length == 1)
+        return true;
+
     if (!CPFeatureIsCompatible(CPJavaScriptRemedialKeySupport))
         return true;
 

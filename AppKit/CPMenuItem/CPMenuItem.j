@@ -897,6 +897,20 @@ CPControlKeyMask
 
 @end
 
+#pragma mark -
+
+@implementation CPMenuItem (CSSTheming)
+
+- (void)_setThemeIncludingDescendants:(CPTheme)aTheme
+{
+    [_view _setThemeIncludingDescendants:aTheme];
+    [_menuItemView _setThemeIncludingDescendants:aTheme];
+}
+
+@end
+
+#pragma mark -
+
 var CPMenuItemIsSeparatorKey                = @"CPMenuItemIsSeparatorKey",
 
     CPMenuItemTitleKey                      = @"CPMenuItemTitleKey",

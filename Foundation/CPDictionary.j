@@ -127,7 +127,7 @@ var CPDictionaryMaxDescriptionRecursion = 10;
 
         var value = object[key];
 
-        if (value === null)
+        if (value == null)
         {
             [dictionary setObject:[CPNull null] forKey:key];
             continue;
@@ -147,7 +147,7 @@ var CPDictionaryMaxDescriptionRecursion = 10;
                 {
                     var thisValue = value[i];
 
-                    if (thisValue === null)
+                    if (thisValue == null)
                     {
                         newValue.push([CPNull null]);
                     }
@@ -234,10 +234,10 @@ var CPDictionaryMaxDescriptionRecursion = 10;
             var value = objects[i],
                 key = keyArray[i];
 
-            if (value === nil)
+            if (value == nil)
                 [CPException raise:CPInvalidArgumentException reason:@"Attempt to insert nil object from objects[" + i + @"]"];
 
-            if (key === nil)
+            if (key == nil)
                 [CPException raise:CPInvalidArgumentException reason:@"Attempt to insert nil key from keys[" + i + @"]"];
 
             [self setObject:value forKey:key];
@@ -278,10 +278,10 @@ var CPDictionaryMaxDescriptionRecursion = 10;
             var key = arguments[argCount--],
                 value = arguments[argCount];
 
-            if (value === nil)
+            if (value == nil)
                 [CPException raise:CPInvalidArgumentException reason:@"Attempt to insert nil object from objects[" + ((argCount / 2) - 1) + @"]"];
 
-            if (key === nil)
+            if (key == nil)
                 [CPException raise:CPInvalidArgumentException reason:@"Attempt to insert nil key from keys[" + ((argCount / 2) - 1) + @"]"];
 
             [self setObject:value forKey:key];
@@ -593,10 +593,10 @@ var CPDictionaryMaxDescriptionRecursion = 10;
 */
 - (void)setObject:(id)anObject forKey:(id)aKey
 {
-    if (aKey === nil)
+    if (aKey == nil)
         [CPException raise:CPInvalidArgumentException reason:@"key cannot be nil"];
 
-    if (anObject === nil)
+    if (anObject == nil)
         [CPException raise:CPInvalidArgumentException reason:@"object cannot be nil (key: " + aKey + @")"];
 
     self.setValueForKey(aKey, anObject);
@@ -650,7 +650,7 @@ var CPDictionaryMaxDescriptionRecursion = 10;
 - (BOOL)containsKey:(id)aKey
 {
     var value = [self objectForKey:aKey];
-    return ((value !== nil) && (value !== undefined));
+    return (value != nil);
 }
 
 - (void)enumerateKeysAndObjectsUsingBlock:(Function /*(id aKey, id anObject, @ref BOOL stop)*/)aFunction
@@ -730,7 +730,7 @@ var CPDictionaryMaxDescriptionRecursion = 10;
 {
     var key = [_keyEnumerator nextObject];
 
-    if (key === nil)
+    if (key == nil)
         return nil;
 
     return [_dictionary objectForKey:key];

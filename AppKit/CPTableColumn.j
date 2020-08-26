@@ -593,7 +593,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
 {
     var options = [_info objectForKey:CPOptionsKey],
         optionValue = [options objectForKey:CPCreatesSortDescriptorBindingOption];
-    return optionValue === nil ? YES : [optionValue boolValue];
+    return optionValue == nil ? YES : [optionValue boolValue];
 }
 
 @end
@@ -639,6 +639,53 @@ CPTableColumnUserResizingMask   = 1 << 1;
     }
 }
 
+
+/*!
+    @ignore
+
+    This method will return the object at a row in the first found CPArray in the key path
+    that is divided in a first and second part.
+    The first part is never a combined key path. The second part can be a combined key path.
+    If this optimization is not done we will create an array with the valueForKeyPath value on each row and then pick
+    the wanted value for the row and throw away all the other rows. It is much more effective to first
+    pick the row and then do the valueForKeyPath on the rest of the key path.
+    When the second part is depleated it will stop the search for a CPArray and return the
+    current object for the first part. The second part will then be nil.
+    The secondPartRef will always be updated with the rest of the key path that can be applied
+    to the returned object.
+    It will stop the search if the object is nil
+*/
+- (CPValueCoding)_firstObjectInArrayUsingKeyPathFirstPart:(CPString)firstPart secondPart:(CPStringRef)secondPartRef sourceObject:(CPValueCoding)source forRow:(unsigned)aRow
+{
+    var firstValue = [source valueForKeyPath:firstPart];
+
+    if (firstValue == nil)
+        return firstValue;
+
+    if ([firstValue isKindOfClass:CPArray])
+        return [firstValue objectAtIndex:aRow];
+
+    var secondPart = @deref(secondPartRef);
+
+    if (secondPart == nil)
+        return firstValue;
+
+    var dotIndex = secondPart.indexOf(".");
+
+    if (dotIndex === CPNotFound)
+    {
+        firstPart = secondPart;
+        @deref(secondPartRef) = nil;
+    }
+    else
+    {
+        firstPart = secondPart.substring(0, dotIndex);
+        @deref(secondPartRef) = secondPart.substring(dotIndex + 1);
+    }
+
+    return [self _firstObjectInArrayUsingKeyPathFirstPart:firstPart secondPart:secondPartRef sourceObject:firstValue forRow:aRow];
+}
+
 /*!
     @ignore
 */
@@ -655,7 +702,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
             bindingInfo = binding._info,
             destination = [bindingInfo objectForKey:CPObservedObjectKey],
             keyPath = [bindingInfo objectForKey:CPObservedKeyPathKey],
-            dotIndex = keyPath.lastIndexOf("."),
+            dotIndex = keyPath.indexOf("."),
             value;
 
         if (dotIndex === CPNotFound)
@@ -670,17 +717,16 @@ CPTableColumnUserResizingMask   = 1 << 1;
 
                 The optimization is to get the array and access the value directly. This
                 turns the operation into a single access regardless of how long the model
-                array is.
+                array is or how long the key path is.
             */
 
             var firstPart = keyPath.substring(0, dotIndex),
-                secondPart = keyPath.substring(dotIndex + 1),
-                firstValue = [destination valueForKeyPath:firstPart];
+                secondPart = keyPath.substring(dotIndex + 1);
 
-            if ([firstValue isKindOfClass:CPArray])
-                value = [[firstValue objectAtIndex:aRow] valueForKeyPath:secondPart];
-            else
-                value = [[firstValue valueForKeyPath:secondPart] objectAtIndex:aRow];
+            value = [self _firstObjectInArrayUsingKeyPathFirstPart:firstPart secondPart:@ref(secondPart) sourceObject:destination forRow:aRow];
+
+            if (secondPart != nil)
+                value = [value valueForKeyPath:secondPart];
         }
 
         value = [binding transformValue:value withOptions:[bindingInfo objectForKey:CPOptionsKey]];

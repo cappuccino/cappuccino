@@ -295,7 +295,12 @@
 
     try
     {
-        dcmn3 = [dcmn1 decimalNumberByDividingBy:dcmn2];
+        dcmn3 = [dcmn1 decimalNumberByDividingBy:dcmn2
+                                    withBehavior:[CPDecimalNumberHandler decimalNumberHandlerWithRoundingMode:CPRoundPlain scale:0
+                                                                                             raiseOnExactness:YES
+                                                                                              raiseOnOverflow:YES
+                                                                                             raiseOnUnderflow:YES
+                                                                                          raiseOnDivideByZero:YES]];
         [self fail:"decimalNumberByDividingBy: TEX3 - should have thrown underflow error "];
     }
     catch (e)

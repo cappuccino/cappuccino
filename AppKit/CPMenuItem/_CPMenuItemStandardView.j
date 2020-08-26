@@ -178,6 +178,11 @@
                 break;
         }
 
+        var stateViewFrameOrigin = [_stateView frameOrigin];
+
+        stateViewFrameOrigin.x = x;
+        [_stateView setFrameOrigin:stateViewFrameOrigin];
+
         x += [self valueForThemeAttribute:@"state-column-width"];
     }
     else
@@ -346,6 +351,22 @@
 }
 
 @end
+
+#pragma mark -
+
+@implementation _CPMenuItemStandardView (CSSTheming)
+
+#pragma mark Override
+
+- (void)_setThemeIncludingDescendants:(CPTheme)aTheme
+{
+    [self setTheme:aTheme];
+    [[self subviews] makeObjectsPerformSelector:@selector(_setThemeIncludingDescendants:) withObject:aTheme];
+}
+
+@end
+
+#pragma mark -
 
 @implementation _CPMenuItemSubmenuIndicatorView : CPView
 {

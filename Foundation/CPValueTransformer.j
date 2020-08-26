@@ -135,7 +135,7 @@ var transformerMap = @{};
 
 - (id)transformedValue:(id)aValue
 {
-    return aValue === nil || aValue === undefined;
+    return aValue == nil;
 }
 
 @end
@@ -156,7 +156,7 @@ var transformerMap = @{};
 
 - (id)transformedValue:(id)aValue
 {
-    return aValue !== nil && aValue !== undefined;
+    return aValue != nil;
 }
 
 @end

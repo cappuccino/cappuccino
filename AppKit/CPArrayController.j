@@ -271,7 +271,7 @@
     if (_disableSetContent)
         return;
 
-    if (value === nil)
+    if (value == nil)
         value = [];
 
     if (![value isKindOfClass:[CPArray class]])
@@ -297,27 +297,18 @@
         class.
     */
 
-    if (_clearsFilterPredicateOnInsertion)
-        [self willChangeValueForKey:@"filterPredicate"];
-
     // Don't use [super setContent:] as that would fire the contentObject change.
     // We need to be in control of when notifications fire.
     // Note that if we have a contentArray binding, setting the content does /not/
     // cause a reverse binding set.
     _contentObject = value;
 
-    if (_clearsFilterPredicateOnInsertion && _filterPredicate != nil)
-        [self __setFilterPredicate:nil]; // Causes a _rearrangeObjects.
-    else
-        [self _rearrangeObjects];
+    [self _rearrangeObjects];
 
     if ([self preservesSelection])
         [self __setSelectedObjects:oldSelectedObjects];
     else
         [self __setSelectionIndexes:oldSelectionIndexes];
-
-    if (_clearsFilterPredicateOnInsertion)
-        [self didChangeValueForKey:@"filterPredicate"];
 }
 
 /*!
@@ -618,6 +609,25 @@
 
     return YES;
 }
+- (void)_selectionWillChange
+{
+    // Push back all data from the dirty editors before it is too late.
+
+    var editorsCount = [_editors count];
+
+    while (editorsCount--)
+    {
+        var allBindings = [CPBinder allBindingsForObject:_editors[editorsCount]],
+            allKeys = [allBindings allKeys],
+            keysCount = allKeys.length;
+
+            while (keysCount--)
+                [[allBindings objectForKey:allKeys[keysCount]] reverseSetValueFor:allKeys[keysCount]];
+    }
+
+    [super _selectionWillChange];
+}
+
 
 /*!
     Returns an array of the selected objects.
@@ -763,7 +773,7 @@
         _filterPredicate = nil;
         [self _rearrangeObjects];
     }
-    else if (_filterPredicate === nil || [_filterPredicate evaluateWithObject:object])
+    else if (_filterPredicate == nil || [_filterPredicate evaluateWithObject:object])
     {
         // Insert directly into the array.
         var pos = [_arrangedObjects insertObject:object inArraySortedByDescriptors:_sortDescriptors];
@@ -776,7 +786,7 @@
             [_selectionIndexes shiftIndexesStartingAtIndex:pos by:1];
     }
     /*
-    else if (_filterPredicate !== nil)
+    else if (_filterPredicate != nil)
     ...
     // Implies _filterPredicate && ![_filterPredicate evaluateWithObject:object], so the new object does
     // not appear in arrangedObjects and we do not have to update at all.
@@ -876,7 +886,7 @@
 
     _disableSetContent = NO;
 
-    if (_filterPredicate === nil || [_filterPredicate evaluateWithObject:object])
+    if (_filterPredicate == nil || [_filterPredicate evaluateWithObject:object])
     {
         // selectionIndexes change notification will be fired as a result of the
         // content change. Don't fire manually.

@@ -231,7 +231,6 @@ Executable.prototype.setCode = function(code, sourceMap)
     else
     {
 #endif
-#if DEBUG
         // Check if base64 source map is available
         sourceMapBase64 = this._base64EncodedSourceMap;
 
@@ -256,7 +255,9 @@ Executable.prototype.setCode = function(code, sourceMap)
             // The compiler adds two newlines as the first character to the code to get the source
             // mapping correct. We have to remove it here. As Javascript engines adds diffentent
             // amount of lines at the top we need to calculate how many.
-            code = code.substring(exports.ObjJCompiler.numberOfLinesAtTopOfFunction());
+
+            // '(exports.ObjJCompiler || ObjJCompiler)' is a temporary fix so it can work both in the Narwhal (exports.ObjJCompiler) and Node (ObjJCompiler) world
+            code = code.substring((exports.ObjJCompiler || ObjJCompiler).numberOfLinesAtTopOfFunction());
             this._base64EncodedSourceMap = sourceMapBase64;
             code += "\n//# sourceMappingURL=data:application/json;charset=utf-8;base64," + sourceMapBase64;
         }
@@ -265,11 +266,8 @@ Executable.prototype.setCode = function(code, sourceMap)
     //    var functionText = "(function(){"+GET_CODE(aFragment)+"/**/\n})\n//# sourceURL="+GET_FILE(aFragment).path;
     //    compiled = eval(functionText);
     //}
-#endif
         this._function = new Function(parameters, code);
-#if DEBUG
-    this._function.displayName = absoluteString;
-#endif
+        this._function.displayName = absoluteString;
 #if COMMONJS
     }
 #endif
@@ -566,7 +564,8 @@ Executable.fileExecutableSearcherForURL = function(/*CFURL*/ referenceURL)
             {
                 if (!aStaticResource)
                 {
-                    var compilingFileUrl = exports.ObjJCompiler ? exports.ObjJCompiler.currentCompileFile : null;
+                    // '(exports.ObjJCompiler || ObjJCompiler)' is a temporary fix so it can work both in the Narwhal (exports.ObjJCompiler) and Node (ObjJCompiler) world
+                    var compilingFileUrl = (exports.ObjJCompiler || ObjJCompiler) ? (exports.ObjJCompiler || ObjJCompiler).currentCompileFile : null;
                     throw new Error("Could not load file at " + aURL + (compilingFileUrl ? " when compiling " + compilingFileUrl : "") + "\nwith includeURLs: " + StaticResource.includeURLs());
                 }
 

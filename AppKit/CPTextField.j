@@ -169,7 +169,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 + (CPTextField)textFieldWithStringValue:(CPString)aStringValue placeholder:(CPString)aPlaceholder width:(float)aWidth theme:(CPTheme)aTheme
 {
-    var textField = [[self alloc] initWithFrame:CGRectMake(0.0, 0.0, aWidth, 29.0)];
+    var minSize   = aTheme ? [aTheme valueForAttributeWithName:@"min-size" forClass:CPTextField] : CGSizeMake(0,0),
+        textField = [[self alloc] initWithFrame:CGRectMake(0.0, 0.0, aWidth, minSize.height)];
 
     [textField setTheme:aTheme];
     [textField setStringValue:aStringValue];
@@ -190,7 +191,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 + (CPTextField)roundedTextFieldWithStringValue:(CPString)aStringValue placeholder:(CPString)aPlaceholder width:(float)aWidth theme:(CPTheme)aTheme
 {
-    var textField = [[CPTextField alloc] initWithFrame:CGRectMake(0.0, 0.0, aWidth, 29.0)];
+    var minSize   = aTheme ? [aTheme valueForAttributeWithName:@"min-size" forClass:CPTextField] : CGSizeMake(0,0),
+        textField = [[self alloc] initWithFrame:CGRectMake(0.0, 0.0, aWidth, minSize.height)];
 
     [textField setTheme:aTheme];
     [textField setStringValue:aStringValue];
@@ -231,6 +233,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
             @"bezel-inset": CGInsetMakeZero(),
             @"content-inset": CGInsetMake(1.0, 0.0, 0.0, 0.0),
             @"bezel-color": [CPNull null],
+            @"min-size": CGSizeMake(0, 29)
         };
 }
 
@@ -686,8 +689,38 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         }
         else
         {
-            var point = CGPointMake([self convertPointFromBase:[[CPApp currentEvent] locationInWindow]].x - [self currentValueForThemeAttribute:@"content-inset"].left, 0),
-                position = [CPPlatformString charPositionOfString:[self stringValue] withFont:[self font] forPoint:point];
+            var x            = [self convertPointFromBase:[[CPApp currentEvent] locationInWindow]].x,
+                contentInset = [self currentValueForThemeAttribute:@"content-inset"],
+                text         = [self stringValue],
+                font         = [self font];
+
+            switch ([self alignment]) {
+                case CPCenterTextAlignment:
+
+                    var contentWidth = [self bounds].size.width - contentInset.left - contentInset.right,
+                        textWidth    = [text sizeWithFont:font].width;
+
+                    x -= (contentWidth - textWidth) / 2 + contentInset.left;
+
+                    break;
+
+                case CPRightTextAlignment:
+
+                    var contentWidth = [self bounds].size.width - contentInset.left - contentInset.right,
+                        textWidth    = [text sizeWithFont:font].width;
+
+                    x -= (contentWidth - textWidth) + contentInset.left;
+
+                    break;
+
+                default: // CPLeftTextAlignment, CPJustifiedTextAlignment, CPNaturalTextAlignment
+
+                    x -= contentInset.left;
+
+                    break;
+            }
+
+            var position = [CPPlatformString charPositionOfString:text withFont:font forPoint:CGPointMake(x, 0)];
 
             [self setSelectedRange:CPMakeRange(position, 0)];
         }
@@ -1092,7 +1125,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)keyDown:(CPEvent)anEvent
 {
-    if (!([self isEnabled] && [self isEditable]))
+    // Has to be enabled, and it also has to be editable or selectable.
+    if (![self isEnabled] || !([self isEditable] || [self isSelectable]))
         return;
 
     // CPTextField uses an HTML input element to take the input so we need to
@@ -1331,7 +1365,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         // If there is a formatter, make sure the object value can be formatted successfully
         var formattedString = [self hasThemeState:CPThemeStateEditing] ? [formatter editingStringForObjectValue:aValue] : [formatter stringForObjectValue:aValue];
 
-        if (formattedString === nil)
+        if (formattedString == nil)
         {
             var value = nil;
 
@@ -1341,7 +1375,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
                 value = undefined;
 
             [super setObjectValue:value];
-            _stringValue = (value === nil || value === undefined) ? @"" : String(value);
+            _stringValue = (value == nil) ? @"" : String(value);
         }
         else
             _stringValue = formattedString;
@@ -1497,7 +1531,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
                 else
                     [[CPRunLoop mainRunLoop] performBlock:function(){ element.select(); } argument:nil order:0 modes:[CPDefaultRunLoopMode]];
             }
-            else if (wind !== nil && [wind makeFirstResponder:self])
+            else if (wind != nil && [wind makeFirstResponder:self])
                 [self _selectText:sender immediately:immediately];
         }
         else
@@ -1507,7 +1541,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 #else
         // Even if we can't actually select the text we need to preserve the first
         // responder side effect.
-        if (wind !== nil && [wind firstResponder] !== self)
+        if (wind != nil && [wind firstResponder] !== self)
             [wind makeFirstResponder:self];
 #endif
     }
@@ -2120,6 +2154,56 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 
 @implementation _CPTextFieldValueBinder : CPBinder
 
++ (void)unbind:(CPString)aBinding forObject:(id)anObject
+{
+    var theBinding = [self getBinding:aBinding forObject:anObject],
+        notificationCenter = [CPNotificationCenter defaultCenter];
+
+    if (theBinding)
+    {
+        [notificationCenter removeObserver:[theBinding._info objectForKey:CPObservedObjectKey]
+                                      name:CPControlTextDidBeginEditingNotification
+                                    object:anObject];
+
+        [notificationCenter removeObserver:[theBinding._info objectForKey:CPObservedObjectKey]
+                                      name:CPControlTextDidEndEditingNotification
+                                    object:anObject];
+
+        [super unbind:aBinding forObject:anObject];
+    }
+}
+
+- (id)initWithBinding:(CPString)aBinding name:(CPString)aName to:(id)aDestination keyPath:(CPString)aKeyPath options:(CPDictionary)options from:(id)aSource
+{
+    self = [super initWithBinding:aBinding
+                             name:aName
+                               to:aDestination
+                          keyPath:aKeyPath
+                          options:options
+                             from:aSource];
+
+    var notificationCenter = [CPNotificationCenter defaultCenter];
+
+    // This gives us support for the CPEditorRegistration informal protocol
+    if ([aDestination respondsToSelector:@selector(_objectDidBeginEditing:)])
+    {
+        [notificationCenter addObserver:aDestination
+                               selector:@selector(_objectDidBeginEditing:)
+                                   name:CPControlTextDidBeginEditingNotification
+                                 object:aSource];
+    }
+
+    if ([aDestination respondsToSelector:@selector(_objectDidEndEditing:)])
+    {
+        [notificationCenter addObserver:aDestination
+                               selector:@selector(_objectDidEndEditing:)
+                                   name:CPControlTextDidEndEditingNotification
+                                 object:aSource];
+    }
+
+    return self;
+}
+
 - (void)_updatePlaceholdersWithOptions:(CPDictionary)options forBinding:(CPString)aBinding
 {
     [super _updatePlaceholdersWithOptions:options];
@@ -2152,7 +2236,7 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
         newValue    = [self valueForBinding:aBinding],
         value       = [destination valueForKeyPath:keyPath];
 
-    if (CPIsControllerMarker(value) && newValue === nil)
+    if (CPIsControllerMarker(value) && newValue == nil)
         return;
 
     newValue = [self reverseTransformValue:newValue withOptions:options];

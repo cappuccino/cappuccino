@@ -25,6 +25,7 @@
 
 @import <AppKit/CPView.j>
 
+@class Nib2Cib
 
 var NSViewAutoresizingMask = 0x3F,
     NSViewAutoresizesSubviewsMask = 1 << 8,
@@ -115,6 +116,40 @@ var NSViewAutoresizingMask = 0x3F,
     }
 
     [self setAutoresizingMask:autoresizingMask];
+}
+
+- (CGRect)_nib2CibAdjustment
+{
+    // Theme has not been loaded yet.
+    // Get attribute value directly from the theme or from the default value of the object otherwise.
+    var theme = [Nib2Cib defaultTheme],
+        frameAdjustment = [theme valueForAttributeWithName:@"nib2cib-adjustment-frame" inState:[self themeState] forClass:[self class]];
+
+    if (frameAdjustment)
+        return frameAdjustment;
+
+    if ([self hasThemeAttribute:@"nib2cib-adjustment-frame"])
+    {
+        frameAdjustment = [self currentValueForThemeAttribute:@"nib2cib-adjustment-frame"];
+
+        if (frameAdjustment)
+            return frameAdjustment;
+    }
+
+    return nil;
+}
+
+- (void)_adjustNib2CibSize
+{
+    var frame = [self frame],
+        frameAdjustment = [self _nib2CibAdjustment];
+
+    if (frameAdjustment)
+    {
+        var finalFrame = CGRectMake(frame.origin.x + frameAdjustment.origin.x, frame.origin.y - frameAdjustment.origin.y, frame.size.width + frameAdjustment.size.width, frame.size.height + frameAdjustment.size.height);
+
+        [self setFrame:finalFrame];
+    }
 }
 
 @end

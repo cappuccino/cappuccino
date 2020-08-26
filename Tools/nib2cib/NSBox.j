@@ -39,21 +39,7 @@
             borderWidth = [aCoder decodeFloatForKey:@"NSBorderWidth2"],
             contentMargin = [aCoder decodeSizeForKey:@"NSOffsets"];
 
-        // small hack to position the box pixel perfect
-        var frame = [self frame];
-
-        // The primary and secondary boxes have a well-like look both in Cocoa and Cappuccino, but there
-        // are some sizing differences. Regular custom boxes have no size differences.
-        if (_boxType !== CPBoxSeparator && (_boxType === CPBoxPrimary || _boxType === CPBoxSecondary))
-        {
-            frame.origin.y += 4;
-            frame.origin.x += 4;
-            frame.size.width -= 8;
-            frame.size.height -= 6;
-        }
-
-        _frame = frame;
-        _bounds.size = CGSizeMakeCopy(frame.size);
+        [self _adjustNib2CibSize];
 
         if (_boxType !== CPBoxPrimary && _boxType !== CPBoxSecondary)
         {
@@ -78,6 +64,33 @@
     }
 
     return self;
+}
+
+// Override
+
+- (CGRect)_nib2CibAdjustment
+{
+    if ((_boxType === CPBoxPrimary) || (_boxType === CPBoxSecondary))
+    {
+        // We use a special nib2cib-adjustment-frame for primary/secondary boxes
+        var theme = [Nib2Cib defaultTheme],
+            frameAdjustment = [theme valueForAttributeWithName:@"nib2cib-adjustment-primary-frame" inState:[self themeState] forClass:[self class]];
+
+        if (frameAdjustment)
+            return frameAdjustment;
+
+        if ([self hasThemeAttribute:@"nib2cib-adjustment-primary-frame"])
+        {
+            frameAdjustment = [self currentValueForThemeAttribute:@"nib2cib-adjustment-primary-frame"];
+
+            if (frameAdjustment)
+                return frameAdjustment;
+        }
+
+        return CGRectMakeZero();
+    }
+    else
+        return [super _nib2CibAdjustment];
 }
 
 @end

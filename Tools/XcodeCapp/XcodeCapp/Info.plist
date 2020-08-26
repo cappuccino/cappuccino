@@ -57,5 +57,7 @@
 	<string>https://github.com/cappuccino/cappuccino/archive/master.zip</string>
 	<key>XCCLastCappuccinoReleaseURL</key>
 	<string>https://github.com/cappuccino/cappuccino/archive/1.0.0.zip</string>
+	<key>NSRequiresAquaSystemAppearance</key>
+	<false/>
 </dict>
 </plist>

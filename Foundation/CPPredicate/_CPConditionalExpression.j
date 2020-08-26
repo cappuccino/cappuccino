@@ -47,7 +47,7 @@
     if (self === object)
         return YES;
 
-    if (object === nil || object.isa !== self.isa || ![[object predicate] isEqual:_predicate] || ![[object trueExpression] isEqual:_trueExpression] || ![[object falseExpression] isEqual:_falseExpression])
+    if (object == nil || object.isa !== self.isa || ![[object predicate] isEqual:_predicate] || ![[object trueExpression] isEqual:_trueExpression] || ![[object falseExpression] isEqual:_falseExpression])
         return NO;
 
     return YES;

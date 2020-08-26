@@ -90,7 +90,8 @@ CPBelowBottom = 6;
             @"inner-shadow-size": 6.0,
             @"inner-shadow-color": [CPNull null],
             @"content-margin": CGSizeMakeZero(),
-        };
+            @"nib2cib-adjustment-primary-frame": CGRectMake(4, -4, -8, -6)
+            };
 }
 
 + (id)boxEnclosingView:(CPView)aView

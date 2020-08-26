@@ -156,7 +156,7 @@ var screenNeedsInitialization   = NO,
         platformWindowEnumerator = [platformWindows objectEnumerator],
         platformWindow = nil;
 
-    while ((platformWindow = [platformWindowEnumerator nextObject]) !== nil)
+    while ((platformWindow = [platformWindowEnumerator nextObject]) != nil)
     {
         if (platformWindow != primaryPlatformWindow)
             [platformWindow orderOut:self];

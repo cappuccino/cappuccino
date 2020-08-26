@@ -264,6 +264,8 @@ var CPWindowActionMessageKeys = [
     BOOL                                _isSheet;
     _CPWindowFrameAnimation             _frameAnimation;
     _CPWindowFrameAnimationDelegate     _frameAnimationDelegate;
+
+    BOOL                                _inhibitUpdateTrackingAreas;    // Used by the CPView when updating tracking areas
 }
 
 + (Class)_binderClassForBinding:(CPString)aBinding
@@ -3117,7 +3119,7 @@ CPTexturedBackgroundWindowMask
 */
 - (CPWindow)attachedSheet
 {
-    if (_sheetContext === nil)
+    if (_sheetContext == nil)
         return nil;
 
    return _sheetContext["sheet"];
@@ -4386,6 +4388,19 @@ var interpolate = function(fromValue, toValue, progress)
 }
 
 @end
+
+#pragma mark -
+
+@implementation CPWindow (CSSTheming)
+
+- (void)_setThemeIncludingDescendants:(CPTheme)aTheme
+{
+    [[self contentView] _setThemeIncludingDescendants:aTheme];
+}
+
+@end
+
+#pragma mark -
 
 function _CPWindowFullPlatformWindowSessionMake(aWindowView, aContentRect, hasShadow, aLevel)
 {

@@ -11,7 +11,7 @@
         notifications = [],
         name;
 
-    while ((name = [names nextObject]) !== nil)
+    while ((name = [names nextObject]) != nil)
     {
         var notificationRegistry = [defaultCenter._namedRegistries objectForKey:name],
             objectObservers = notificationRegistry._objectObservers,
@@ -19,13 +19,13 @@
             key;
 
         // Iterate through every set of observers
-        while ((key = [keys nextObject]) !== nil)
+        while ((key = [keys nextObject]) != nil)
         {
             var observers = [objectObservers objectForKey:key],
                 observer = nil,
                 observersEnumerator = [observers objectEnumerator];
 
-            while ((observer = [observersEnumerator nextObject]) !== nil)
+            while ((observer = [observersEnumerator nextObject]) != nil)
             {
                 if ([observer observer] == anObserver)
                     [notifications addObject:name];

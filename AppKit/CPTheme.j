@@ -30,6 +30,7 @@
 @class _CPThemeAttribute
 @class CPImage
 @class CPColor
+@class CPApplication
 
 var CPThemesByName          = { },
     CPThemeDefaultTheme     = nil,
@@ -259,7 +260,7 @@ var CPThemesByName          = { },
         attributeNames = [attributes keyEnumerator],
         objectThemeClass = [anObject themeClass];
 
-    while ((attributeName = [attributeNames nextObject]) !== nil)
+    while ((attributeName = [attributeNames nextObject]) != nil)
         [self _recordAttribute:[attributes objectForKey:attributeName] forClass:objectThemeClass];
 }
 
@@ -339,8 +340,142 @@ var CPThemeNameKey          = @"CPThemeNameKey",
 //
 // The method -(void)setCSSResourcesPath is meant to be used only by CPThemeBlend during theme loading in order to
 // replace the special path "%%" in CSS components (like in url(%%packed.png) ) with the path to the theme blend resources folder.
+//
+// DYNAMIC ATTRIBUTES SET:
+//
+// If the default theme is CSS based and exposes some dynamic attributes (like Aristo3 does for color schema), you can switch "live"
+// to another set of values by calling [CPTheme updateDefaultThemeDynamicAttributesSetWithSet:aDynamicSet] where aDynamicSet is a
+// dictionary with keys being the names of exposed dynamic attributes (see the themeDescriptor.j of the CSS based theme you use)
+// and values, accordingly to the type of the corresponding default values provided by the theme (CPColor, a CSS color string, ...).
+// You can provide key-value pairs for a subset of the exposed dynamic attributes. If no key-value pair is specified for a dynamic
+// attribute, the theme default value will be used.
+//
+// To restore default theme values, simply pass nil as dynamic set : [CPTheme updateDefaultThemeDynamicAttributesSetWithSet:nil]
+//
+// During theme loading, if your application responds to -(CPDictionary)themeDynamicAttributesSet, the returned values set is directly
+// applied to the default set. This avoids displaying the theme with its default values and then redisplaying it with your values.
+// The -(CPDictionary)themeDynamicAttributesSet must be declared in a CPApplication category (and not in your application delegate) as
+// it will be called during application initialisation, before the delegate has been defined.
+//
+// To use default theme values, simply return nil.
+//
+//
+// TYPICAL USAGE:
+//
+// One can imagine that a user can choose between some predefined color schemas. You can store this user preference in standard user defaults:
+//
+//      [[CPUserDefaults standardUserDefaults] setObject:ConstantRepresentingAColorSchema forKey:@"userTheme"];
+//      [[CPUserDefaults standardUserDefaults] synchronize];
+//
+// As you want to use the choosen color schema at run time, you've implemented -(CPDictionary)themeDynamicAttributesSet (see below), so updating
+// the UI as soon as the user has made his choice is easy :
+//
+//      [CPTheme updateDefaultThemeDynamicAttributesSetWithSet:[[CPApplication sharedApplication] themeDynamicAttributesSet]];
+//
+// If the user chooses the theme default color schema, you can then simply remove the user default:
+//
+//      [[CPUserDefaults standardUserDefaults] removeObjectForKey:@"userTheme"];
+//      [[CPUserDefaults standardUserDefaults] synchronize];
+//
+// Your CPApplication category could then be something like:
+//
+//      @implementation CPApplication (themeColorSchema)
+//
+//      - (CPDictionary)themeDynamicAttributesSet
+//      {
+//          var userTheme = [[CPUserDefaults standardUserDefaults] objectForKey:@"userTheme"];
+//
+//          if (!userTheme)
+
+//              // Return nil to have the theme default color schema
+//              return nil;
+//
+//          switch (userTheme)
+//          {
+//              case ConstantRepresentingAColorSchema:
+//                  return @{
+//                           @"ExposedDynamicAttribute1":    [CPColor colorWithRed:245.0/255.0 green:164.0/255.0 blue:9.0/255.0 alpha:0.85],
+//                           @"ExposedDynamicAttribute2":    [CPColor colorWithRed:245.0/255.0 green:164.0/255.0 blue:9.0/255.0 alpha:0.85],
+//                           @"ExposedDynamicAttribute3":    @"rgb(245,164,9)",
+//                           @"ExposedDynamicAttribute4":    @"url(./Resources/mypacked.png)"
+//                          };
+//                  break;
+//
+//              case AnotherConstantRepresentingAColorSchema:
+//                  return @{
+//                           @"ExposedDynamicAttribute1":    [CPColor colorWithRed:39.0/255.0 green:216.0/255.0 blue:93.0/255.0 alpha:0.85],
+//                           @"ExposedDynamicAttribute3":    @"rgb(39,216,93)"
+//                          };
+//                  break;
+//
+//              ...
+//          }
+//      }
+//
+//      @end
+
+var _savedThemesByName = { };
 
 @implementation CPTheme (CSSTheming)
+
+- (void)_initializeDynamicAttributesAndResourcesPathWithBundle:(CPBundle)aBundle
+{
+    // First, save a template of the theme so dynamic attributes and images placeholders are preserved
+    _savedThemesByName[_name] = [CPKeyedArchiver archivedDataWithRootObject:self];
+
+    // Then, compute the dynamic attributes set that will be applied to the theme
+    // Does the application delegate provide a dynamic attributes set ?
+    var dynamicSet = ([[CPApplication sharedApplication] respondsToSelector:@selector(themeDynamicAttributesSet)]) ? [[CPApplication sharedApplication] themeDynamicAttributesSet] : nil;
+
+    // Take the one defined in the theme
+    var defaultDynamicSet = [self valueForAttributeWithName:@"dynamic-set" forClass:[CPView class]];
+
+    // Update the default dynamic attributes set with the one provided by the application
+    [dynamicSet enumerateKeysAndObjectsUsingBlock:function(aKey, anObject, stop)
+     {
+         [defaultDynamicSet setObject:anObject forKey:aKey];
+     }];
+
+    // Apply the resulting set
+    [self applyDynamicSet:defaultDynamicSet];
+
+    // Then fix resources path in CSS directives
+    [self setCSSResourcesPath:[aBundle resourcePath]];
+}
+
++ (void)updateDefaultThemeDynamicAttributesSetWithSet:(CPDictionary)dynamicSet
+{
+    // First, get a copy of the theme template
+    var newTheme = [CPKeyedUnarchiver unarchiveObjectWithData:_savedThemesByName[[CPThemeDefaultTheme name]]];
+
+    // Take the dynamic set defined in the theme
+    var defaultDynamicSet = [newTheme valueForAttributeWithName:@"dynamic-set" forClass:[CPView class]];
+
+    // Update the default dynamic attributes set with the one provided by the application
+    [dynamicSet enumerateKeysAndObjectsUsingBlock:function(aKey, anObject, stop)
+     {
+         [defaultDynamicSet setObject:anObject forKey:aKey];
+     }];
+
+    // Apply the resulting set to the theme
+    [newTheme applyDynamicSet:defaultDynamicSet];
+
+    // Then, fix resources path in CSS directives
+    [newTheme setCSSResourcesPath:[[[[CPApplication sharedApplication] themeBlend] bundle] resourcePath]];
+
+    // Now apply the new theme variation
+    [CPTheme setDefaultTheme:newTheme];
+
+    var windows = [[CPApplication sharedApplication] windows];
+
+    for (var i = 0, count = windows.length; i < count; i++)
+    {
+        [windows[i] _setThemeIncludingDescendants:newTheme];
+    }
+
+    // Update the menu bar
+    [CPMenu updateMenuBarAttributesWithTheme:newTheme];
+}
 
 - (void)setCSSResourcesPath:(CPString)pathToResources
 {
@@ -369,6 +504,46 @@ var CPThemeNameKey          = @"CPThemeNameKey",
     [aDictionary enumerateKeysAndObjectsUsingBlock:function(aKey, anObject, stop)
      {
          [aDictionary setObject:[anObject stringByReplacingOccurrencesOfString:@"%%" withString:pathToResources] forKey:aKey];
+     }];
+}
+
+- (void)applyDynamicSet:(CPDictionary)dynamicSet
+{
+    [_attributes enumerateKeysAndObjectsUsingBlock:function(aKey, anObject, stop)
+     {
+         [anObject enumerateKeysAndObjectsUsingBlock:function(aKey2, anObject2, stop2)
+          {
+              var anObject2Values = [anObject2 values];
+
+              [anObject2Values enumerateKeysAndObjectsUsingBlock:function(aKey3, anObject3, stop3)
+               {
+                   if (anObject3.isa)
+                   {
+                       if (([anObject3 isKindOfClass:CPImage] || [anObject3 isKindOfClass:CPColor]) && [anObject3 cssDictionary])
+                       {
+                           // We have a CSS defined image or color
+                           [self _applyDynamicSet:dynamicSet toCSSDictionary:[anObject3 cssDictionary]];
+                           [self _applyDynamicSet:dynamicSet toCSSDictionary:[anObject3 cssBeforeDictionary]];
+                           [self _applyDynamicSet:dynamicSet toCSSDictionary:[anObject3 cssAfterDictionary]];
+                       }
+                       else if ([anObject3 isKindOfClass:CPString])
+                       {
+                           // We have a direct string value
+                           if ([dynamicSet containsKey:anObject3])
+                               [anObject2Values setObject:[dynamicSet objectForKey:anObject3] forKey:aKey3];
+                       }
+                   }
+               }];
+          }];
+     }];
+}
+
+- (void)_applyDynamicSet:(CPDictionary)dynamicSet toCSSDictionary:(CPDictionary)aDictionary
+{
+    [aDictionary enumerateKeysAndObjectsUsingBlock:function(aKey, anObject, stop)
+     {
+         if ([dynamicSet containsKey:anObject])
+             [aDictionary setObject:[dynamicSet objectForKey:anObject] forKey:aKey];
      }];
 }
 
@@ -685,17 +860,12 @@ CPThemeStateNormalString        = String(CPThemeStateNormal);
 
 - (_CPThemeAttribute)attributeBySettingValue:(id)aValue
 {
-    var attribute = [[_CPThemeAttribute alloc] initWithName:_name defaultValue:_defaultValue defaultAttribute:_themeDefaultAttribute];
-
-    if (aValue !== undefined && aValue !== nil)
-        attribute._values = @{ CPThemeStateNormalString: aValue };
-
-    return attribute;
+    return [self attributeBySettingValue:aValue forState:CPThemeStateNormal];
 }
 
 - (_CPThemeAttribute)attributeBySettingValue:(id)aValue forState:(ThemeState)aState
 {
-    var shouldRemoveValue = aValue === undefined || aValue === nil,
+    var shouldRemoveValue = aValue == nil,
         attribute = [[_CPThemeAttribute alloc] initWithName:_name defaultValue:_defaultValue defaultAttribute:_themeDefaultAttribute],
         values = _values;
 
@@ -738,7 +908,7 @@ CPThemeStateNormalString        = String(CPThemeStateNormal);
     // Not in cache. OK, search in values.
     value = [_values objectForKey:stateName];
 
-    if ((value !== undefined) && (value !== nil))
+    if (value != nil)
         return _cache[stateName] = value;
 
     // No direct match in values.
@@ -754,13 +924,13 @@ CPThemeStateNormalString        = String(CPThemeStateNormal);
     // Still don't have a value? OK, let's use the normal value.
     value = [_values objectForKey:String(CPThemeStateNormal)];
 
-    if ((value !== undefined) && (value !== nil))
+    if (value != nil)
         return _cache[stateName] = value;
 
     // No normal value, try asking _themeDefaultAttribute
     value = [_themeDefaultAttribute valueForState:aState];
 
-    if ((value !== undefined) && (value !== nil))
+    if (value != nil)
         return _cache[stateName] = value;
 
     // Well, last option, use default value

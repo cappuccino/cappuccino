@@ -3,7 +3,7 @@
 @implementation IvarTestClass : CPObject
 {
     id ivar1 @accessors;
-    var ivar2 @accessors(readonly);
+    id ivar2 @accessors(readonly);
     CPNumber ivar3;
 }
 

@@ -523,7 +523,7 @@ var ListColumnIdentifier = @"1";
 {
     var value = [self selectedObjectValue];
 
-    return value !== nil ? [_dataSource list:self stringValueForObjectValue:value] : nil;
+    return value != nil ? [_dataSource list:self stringValueForObjectValue:value] : nil;
 }
 
 /*!

@@ -706,6 +706,7 @@ var CPDatePickerModeKey         = @"CPDatePickerModeKey",
 
 @end
 
+// FIXME: add support for CPEditorRegistrationProtocol as implemented for CPTextField
 @implementation _CPDatePickerValueBinder : CPBinder
 {
 }

@@ -221,7 +221,7 @@
         var object,
             objectEnumerator = [objects objectEnumerator];
 
-        while ((object = [objectEnumerator nextObject]) !== nil)
+        while ((object = [objectEnumerator nextObject]) != nil)
             _add(_proxyObject, _addSEL, object);
     }
     else
@@ -241,7 +241,7 @@
         var object,
             objectEnumerator = [aSet objectEnumerator];
 
-        while ((object = [objectEnumerator nextObject]) !== nil)
+        while ((object = [objectEnumerator nextObject]) != nil)
             _add(_proxyObject, _addSEL, object);
     }
     else
@@ -278,7 +278,7 @@
         var object,
             objectEnumerator = [aSet objectEnumerator];
 
-        while ((object = [objectEnumerator nextObject]) !== nil)
+        while ((object = [objectEnumerator nextObject]) != nil)
             _remove(_proxyObject, _removeSEL, object);
     }
     else
@@ -301,7 +301,7 @@
         var object,
             objectEnumerator = [objects objectEnumerator];
 
-        while ((object = [objectEnumerator nextObject]) !== nil)
+        while ((object = [objectEnumerator nextObject]) != nil)
             _remove(_proxyObject, _removeSEL, object);
     }
     else
@@ -324,7 +324,7 @@
         var object,
             objectEnumerator = [[[self _representedObject] copy] objectEnumerator];
 
-        while ((object = [objectEnumerator nextObject]) !== nil)
+        while ((object = [objectEnumerator nextObject]) != nil)
             _remove(_proxyObject, _removeSEL, object);
     }
     else
@@ -414,11 +414,11 @@
             containedObjectValue,
             containedObjectEnumerator = [self objectEnumerator];
 
-        while ((containedObject = [containedObjectEnumerator nextObject]) !== nil)
+        while ((containedObject = [containedObjectEnumerator nextObject]) != nil)
         {
             containedObjectValue = [containedObject valueForKeyPath:aKeyPath];
 
-            if (containedObjectValue === nil || containedObjectValue === undefined)
+            if (containedObjectValue == nil)
                 containedObjectValue = [CPNull null];
 
             [valuesForKeySet addObject:containedObjectValue];
@@ -433,7 +433,7 @@
     var containedObject,
         containedObjectEnumerator = [self objectEnumerator];
 
-    while ((containedObject = [containedObjectEnumerator nextObject]) !== nil)
+    while ((containedObject = [containedObjectEnumerator nextObject]) != nil)
         [containedObject setValue:aValue forKey:aKey];
 }
 
