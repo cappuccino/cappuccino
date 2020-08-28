@@ -22,6 +22,7 @@
 
 @import "CPButton.j"
 @import "_CPTitleableWindowView.j"
+@import "CPApplication_Constants.j"
 
 @class _CPDocModalWindowView
 
@@ -97,9 +98,16 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
 
     CPButton                    _closeButton;
     CPButton                    _minimizeButton;
+    CPButton                    _zoomButton;
 
     BOOL                        _isDocumentEdited;
     BOOL                        _isSheet;
+    
+    CPTrackingArea              _closeButtonTrackingArea;
+    CPTrackingArea              _minimizeButtonTrackingArea;
+    CPTrackingArea              _zoomButtonTrackingArea;
+
+    int                         _buttonsWidth;
 }
 
 + (CPString)defaultThemeClass
@@ -123,6 +131,8 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
             @"close-image-highlighted-button": [CPNull null],
             @"unsaved-image-button": [CPNull null],
             @"unsaved-image-highlighted-button": [CPNull null],
+            @"zoom-image-button": [CPNull null],
+            @"zoom-image-highlighted-button": [CPNull null]
         };
 }
 
@@ -154,7 +164,7 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
         var theClass = [self class],
             bounds = [self bounds];
 
-        _headView = [[_CPTexturedWindowHeadView alloc] initWithFrame:CGRectMake(0.0, 0.0, CGRectGetWidth(bounds), [self valueForThemeAttribute:@"title-bar-height"]) windowView:self];
+        _headView = [[_CPTexturedWindowHeadView alloc] initWithFrame:CGRectMake(0.0, 0.0, CGRectGetWidth(bounds), _titleBarHeight) windowView:self];
 
         [_headView setAutoresizingMask:CPViewWidthSizable];
         [_headView setHitTests:NO];
@@ -181,28 +191,48 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
 
         if (_styleMask & CPClosableWindowMask)
         {
-            _closeButton = [[CPButton alloc] initWithFrame:CGRectMake(8.0, 8.0, 16.0, 16.0)];
+            _closeButton = [[CPButton alloc] initWithFrame:CGRectMakeZero()];
 
             [_closeButton setButtonType:CPMomentaryChangeButton];
             [_closeButton setBordered:NO];
-            [self _updateCloseButton];
 
             [self addSubview:_closeButton];
         }
 
-        if (_styleMask & CPMiniaturizableWindowMask && ![CPPlatform isBrowser])
+        if (_styleMask & CPMiniaturizableWindowMask)
         {
-            _minimizeButton = [[CPButton alloc] initWithFrame:CGRectMake(27.0, 7.0, 16.0, 16.0)];
+            _minimizeButton = [[CPButton alloc] initWithFrame:CGRectMakeZero()];
+
             [_minimizeButton setButtonType:CPMomentaryChangeButton];
             [_minimizeButton setBordered:NO];
 
             [self addSubview:_minimizeButton];
         }
 
+        if (_styleMask & CPResizableWindowMask)
+        {
+            _zoomButton = [[CPButton alloc] initWithFrame:CGRectMakeZero()];
+
+            [_zoomButton setButtonType:CPMomentaryChangeButton];
+            [_zoomButton setBordered:NO];
+
+            [self addSubview:_zoomButton];
+        }
+
+        [self _updateWindowButtons:YES];
         [self tile];
+
+        // Observe CPApplicationOSBehaviorDidChangeNotification
+        [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_osBehaviorDidChange:) name:CPApplicationOSBehaviorDidChangeNotification object:CPApp];
     }
 
     return self;
+}
+
+// This will be called by CPWindow -close so the observer can be removed
+- (void)_close
+{
+    [[CPNotificationCenter defaultCenter] removeObserver:self name:CPApplicationOSBehaviorDidChangeNotification object:CPApp];
 }
 
 - (void)viewDidMoveToWindow
@@ -212,11 +242,14 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
 
     [_minimizeButton setTarget:[self window]];
     [_minimizeButton setAction:@selector(performMiniaturize:)];
+
+    [_zoomButton setTarget:[self window]];
+    [_zoomButton setAction:@selector(performZoom:)];
 }
 
 - (CGSize)toolbarOffset
 {
-    return CGSizeMake(0.0, [self valueForThemeAttribute:@"title-bar-height"]);
+    return CGSizeMake(0.0, _titleBarHeight);
 }
 
 - (void)tile
@@ -246,14 +279,7 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
 
     [_bodyView setFrame:CGRectMake(0.0, dividerMinY, width, CGRectGetHeight(bounds) - dividerMinY)];
 
-    var leftOffset = 8;
-
-    if (_closeButton)
-        leftOffset += 19.0;
-    if (_minimizeButton)
-        leftOffset += 19.0;
-
-    [_titleField setFrame:CGRectMake(leftOffset, 0, width - leftOffset * 2.0, [self valueForThemeAttribute:@"title-bar-height"])];
+    [_titleField setFrame:CGRectMake(_buttonsWidth, 0, width - _buttonsWidth * 2.0, _titleBarHeight)];
 
     var contentFrame = [_bodyView frame];
     [[theWindow contentView] setFrame:CGRectInset(contentFrame, 1.0, 1.0)];
@@ -287,11 +313,164 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
 }
 */
 
+- (void)_updateWindowButtons:(BOOL)shouldRefreshLayout
+{
+    if (shouldRefreshLayout)
+    {
+        if (CPApplicationShouldMimicWindows)
+            [self setThemeState:CPThemeStateWindowsPlatform];
+        else
+            [self unsetThemeState:CPThemeStateWindowsPlatform];
+
+        // Remember that on Cappuccino, buttons are (left to right) : close - minimize - zoom
+        // and that on Windows, (also left to right) : minimize - zoom - close
+
+        var offset,
+            mask,
+            closeThemeOrigin    = CGPointMakeCopy([self currentValueForThemeAttribute:@"close-image-origin"]    || CGPointMakeZero()),
+            minimizeThemeOrigin = CGPointMakeCopy([self currentValueForThemeAttribute:@"minimize-image-origin"] || CGPointMakeZero()),
+            zoomThemeOrigin     = CGPointMakeCopy([self currentValueForThemeAttribute:@"zoom-image-origin"]     || CGPointMakeZero()),
+            closeThemeSize      = CGSizeMakeZero(),
+            minimizeThemeSize   = CGSizeMakeZero(),
+            zoomThemeSize       = CGSizeMakeZero(),
+            delta1,
+            delta2;
+
+        if (CPApplicationShouldMimicWindows)
+        {
+            offset = [self bounds].size.width;
+            mask   = CPViewMinXMargin;
+            delta1 = zoomThemeOrigin.x - closeThemeOrigin.x;
+            delta2 = minimizeThemeOrigin.x - zoomThemeOrigin.x;
+        }
+        else
+        {
+            offset = 0;
+            mask   = CPViewMaxXMargin;
+            delta1 = minimizeThemeOrigin.x - closeThemeOrigin.x;
+            delta2 = zoomThemeOrigin.x - minimizeThemeOrigin.x;
+        }
+
+        _buttonsWidth = 0;
+
+        if (_styleMask & CPClosableWindowMask)
+        {
+            closeThemeSize = [self currentValueForThemeAttribute:@"close-image-size"];
+
+            // For retro-compatibility:
+            if (!closeThemeSize)
+            {
+                closeThemeSize   = CGSizeMake(16.0, 16.0);
+                closeThemeOrigin = CGPointMake(8.0, 8.0);
+            }
+
+            [_closeButton setFrame:CGRectMake(closeThemeOrigin.x + offset, closeThemeOrigin.y, closeThemeSize.width, closeThemeSize.height)];
+            [_closeButton setAutoresizingMask:mask];
+
+            _buttonsWidth = ABS(closeThemeOrigin.x) + (CPApplicationShouldMimicWindows ? 0 : closeThemeSize.width);
+        }
+        else
+        {
+            minimizeThemeOrigin.x -= delta1;
+            zoomThemeOrigin.x     -= delta1;
+        }
+
+        if (CPApplicationShouldMimicWindows)
+        {
+            if (_styleMask & CPResizableWindowMask)
+            {
+                zoomThemeSize = [self currentValueForThemeAttribute:@"zoom-image-size"];
+
+                // For retro-compatibility:
+                if (!zoomThemeSize)
+                {
+                    zoomThemeSize   = CGSizeMake(16.0, 16.0);
+                    zoomThemeOrigin = CGPointMake(46.0, 8.0);
+                }
+
+                [_zoomButton setFrame:CGRectMake(zoomThemeOrigin.x + offset, zoomThemeOrigin.y, zoomThemeSize.width, zoomThemeSize.height)];
+                [_zoomButton setAutoresizingMask:mask];
+
+                _buttonsWidth = ABS(zoomThemeOrigin.x);
+            }
+            else
+                minimizeThemeOrigin.x -= delta2;
+
+            if (_styleMask & CPMiniaturizableWindowMask)
+            {
+                minimizeThemeSize = [self currentValueForThemeAttribute:@"minimize-image-size"];
+
+                // For retro-compatibility:
+                if (!minimizeThemeSize)
+                {
+                    minimizeThemeSize   = CGSizeMake(16.0, 16.0);
+                    minimizeThemeOrigin = CGPointMake(27.0, 8.0);
+                }
+
+                [_minimizeButton setFrame:CGRectMake(minimizeThemeOrigin.x + offset, minimizeThemeOrigin.y, minimizeThemeSize.width, minimizeThemeSize.height)];
+                [_minimizeButton setAutoresizingMask:mask];
+
+                _buttonsWidth = ABS(minimizeThemeOrigin.x);
+            }
+
+            if (_buttonsWidth > 0)
+                _buttonsWidth += ABS(closeThemeOrigin.x) - closeThemeSize.width;
+        }
+        else // not win
+        {
+            if (_styleMask & CPMiniaturizableWindowMask)
+            {
+                minimizeThemeSize = [self currentValueForThemeAttribute:@"minimize-image-size"];
+
+                // For retro-compatibility:
+                if (!minimizeThemeSize)
+                {
+                    minimizeThemeSize   = CGSizeMake(16.0, 16.0);
+                    minimizeThemeOrigin = CGPointMake(27.0, 8.0);
+                }
+
+                [_minimizeButton setFrame:CGRectMake(minimizeThemeOrigin.x + offset, minimizeThemeOrigin.y, minimizeThemeSize.width, minimizeThemeSize.height)];
+                [_minimizeButton setAutoresizingMask:mask];
+
+                _buttonsWidth = minimizeThemeOrigin.x + minimizeThemeSize.width;
+            }
+            else
+                zoomThemeOrigin.x -= delta2;
+
+            if (_styleMask & CPResizableWindowMask)
+            {
+                zoomThemeSize = [self currentValueForThemeAttribute:@"zoom-image-size"];
+
+                // For retro-compatibility:
+                if (!zoomThemeSize)
+                {
+                    zoomThemeSize   = CGSizeMake(16.0, 16.0);
+                    zoomThemeOrigin = CGPointMake(46.0, 8.0);
+                }
+
+                [_zoomButton setFrame:CGRectMake(zoomThemeOrigin.x + offset, zoomThemeOrigin.y, zoomThemeSize.width, zoomThemeSize.height)];
+                [_zoomButton setAutoresizingMask:mask];
+
+                _buttonsWidth = zoomThemeOrigin.x + zoomThemeSize.width;
+            }
+
+            if (_buttonsWidth > 0)
+                _buttonsWidth += closeThemeOrigin.x;
+        }
+
+        [self updateTrackingAreas];
+    }
+
+    [self _updateCloseButton];
+
+    [_minimizeButton setImage:[self currentValueForThemeAttribute:@"minimize-image-button"]];
+    [_minimizeButton setAlternateImage:[self currentValueForThemeAttribute:@"minimize-image-highlighted-button"]];
+    [_zoomButton setImage:[self currentValueForThemeAttribute:@"zoom-image-button"]];
+    [_zoomButton setAlternateImage:[self currentValueForThemeAttribute:@"zoom-image-highlighted-button"]];
+}
+
 - (void)_updateCloseButton
 {
-    [_closeButton setFrameSize:[self valueForThemeAttribute:@"close-image-size"]];
-    [_closeButton setFrameOrigin:[self valueForThemeAttribute:@"close-image-origin"]];
-
     if (_isDocumentEdited)
     {
         [_closeButton setImage:[self currentValueForThemeAttribute:@"unsaved-image-button"]];
@@ -304,9 +483,15 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
     }
 }
 
+- (void)_osBehaviorDidChange:(id)application
+{
+    [self _updateWindowButtons:YES];
+}
+
 - (void)setDocumentEdited:(BOOL)isEdited
 {
     _isDocumentEdited = isEdited;
+
     [self _updateCloseButton];
 }
 
@@ -337,9 +522,10 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
         [_dividerView setHidden:enable];
     }
 
-    [_closeButton setHidden:enable];
+    [_closeButton    setHidden:enable];
     [_minimizeButton setHidden:enable];
-    [_titleField setHidden:enable];
+    [_zoomButton     setHidden:enable];
+    [_titleField     setHidden:enable];
 
     [[self window] setMovable:!enable];
 
@@ -381,28 +567,34 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
 
 - (void)layoutSubviews
 {
-    var bounds = [self bounds];
+    var width = [self bounds].size.width;
 
     [super layoutSubviews];
-    [self _updateCloseButton];
 
-    [_minimizeButton setImage:[self valueForThemeAttribute:@"minimize-image-button"]];
-    [_minimizeButton setAlternateImage:[self valueForThemeAttribute:@"minimize-image-highlighted-button"]];
+    if (_closeButton || _minimizeButton || _zoomButton)
+        [self _updateWindowButtons:NO];
+
     [_dividerView setBackgroundColor:[self valueForThemeAttribute:@"divider-color"]];
     [_bodyView setBackgroundColor:[self valueForThemeAttribute:@"body-color"]];
 
     [_headView setNeedsLayout];
+
+    if (width - 2 * _buttonsWidth < _minimumTitleFieldSize)
+    {
+        if (width - _buttonsWidth - _titleMargin < _minimumTitleFieldSize)
+            [_titleField setFrame:CGRectMake((CPApplicationShouldMimicWindows ? _titleMargin : _buttonsWidth), 0, width - _buttonsWidth - _titleMargin, _titleBarHeight)];
+        else
+            [_titleField setFrame:CGRectMake((CPApplicationShouldMimicWindows ? width - _buttonsWidth - _minimumTitleFieldSize : _buttonsWidth), 0, _minimumTitleFieldSize, _titleBarHeight)];
+    }
 }
 
 - (CGSize)_minimumResizeSize
 {
-    // The minimum width is such that the close button would always be visible.
-    // We give the same margin to the right of the button as there is to the left.
-    var size = [super _minimumResizeSize],
-        closeSize = [self valueForThemeAttribute:@"close-image-size"],
-        closeOrigin = [self valueForThemeAttribute:@"close-image-origin"];
+    // The minimum width is such that the close/minimize/zoom button(s) would always be visible.
+    // We give the same margin to the right of the button(s) as there is to the left.
+    var size = CGSizeMakeCopy([super _minimumResizeSize]);
 
-    size.width = closeSize.width + (closeOrigin.x * 2);
+    size.width = _buttonsWidth;
     size.height += _CPStandardWindowViewDividerViewHeight;
 
     return size;
@@ -411,6 +603,96 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
 - (int)bodyOffset
 {
     return [_bodyView frame].origin.y;
+}
+
+#pragma mark -
+#pragma mark Hover management for buttons
+
+- (void)updateTrackingAreas
+{
+    if (_closeButtonTrackingArea)
+        [_closeButton removeTrackingArea:_closeButtonTrackingArea];
+
+    if (_minimizeButtonTrackingArea)
+        [_minimizeButton removeTrackingArea:_minimizeButtonTrackingArea];
+
+    if (_zoomButtonTrackingArea)
+        [_zoomButton removeTrackingArea:_zoomButtonTrackingArea];
+
+    if (_closeButton)
+    {
+        _closeButtonTrackingArea = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero()
+                                                                options:CPTrackingMouseEnteredAndExited | CPTrackingActiveAlways | CPTrackingInVisibleRect
+                                                                  owner:self
+                                                               userInfo:_closeButton];
+        [_closeButton addTrackingArea:_closeButtonTrackingArea];
+    }
+
+    if (_minimizeButton)
+    {
+        _minimizeButtonTrackingArea = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero()
+                                                                   options:CPTrackingMouseEnteredAndExited | CPTrackingActiveAlways | CPTrackingInVisibleRect
+                                                                     owner:self
+                                                                  userInfo:_minimizeButton];
+        [_minimizeButton addTrackingArea:_minimizeButtonTrackingArea];
+    }
+
+    if (_zoomButton)
+    {
+        _zoomButtonTrackingArea = [[CPTrackingArea alloc] initWithRect:CGRectMakeZero()
+                                                               options:CPTrackingMouseEnteredAndExited | CPTrackingActiveAlways | CPTrackingInVisibleRect
+                                                                 owner:self
+                                                              userInfo:_zoomButton];
+        [_zoomButton addTrackingArea:_zoomButtonTrackingArea];
+    }
+    
+    [super updateTrackingAreas];
+}
+
+- (void)mouseEntered:(CPEvent)anEvent
+{
+    var triggeredButton = [[anEvent trackingArea] userInfo],
+        state           = CPThemeStateHovered;
+
+    if (CPApplicationShouldMimicWindows)
+        state = state.and(CPThemeStateWindowsPlatform);
+
+    if (triggeredButton === _closeButton)
+    {
+        if (_isDocumentEdited)
+            [_closeButton setImage:[self valueForThemeAttribute:@"unsaved-image-button" inState:state]];
+        else
+            [_closeButton setImage:[self valueForThemeAttribute:@"close-image-button" inState:state]];
+    }
+    else if (triggeredButton === _minimizeButton)
+    {
+        [_minimizeButton setImage:[self valueForThemeAttribute:@"minimize-image-button" inState:state]];
+    }
+    else if (triggeredButton === _zoomButton)
+    {
+        [_zoomButton setImage:[self valueForThemeAttribute:@"zoom-image-button" inState:state]];
+    }
+}
+
+- (void)mouseExited:(CPEvent)anEvent
+{
+    var triggeredButton = [[anEvent trackingArea] userInfo];
+
+    if (triggeredButton === _closeButton)
+    {
+        if (_isDocumentEdited)
+            [_closeButton setImage:[self currentValueForThemeAttribute:@"unsaved-image-button"]];
+        else
+            [_closeButton setImage:[self currentValueForThemeAttribute:@"close-image-button"]];
+    }
+    else if (triggeredButton === _minimizeButton)
+    {
+        [_minimizeButton setImage:[self currentValueForThemeAttribute:@"minimize-image-button"]];
+    }
+    else if (triggeredButton === _zoomButton)
+    {
+        [_zoomButton setImage:[self currentValueForThemeAttribute:@"zoom-image-button"]];
+    }
 }
 
 @end

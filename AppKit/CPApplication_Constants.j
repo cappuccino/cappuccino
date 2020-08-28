@@ -39,3 +39,18 @@ CPTerminateLater    = -1; // not currently supported
 CPRunStoppedResponse    = -1000;
 CPRunAbortedResponse    = -1001;
 CPRunContinuesResponse  = -1002;
+
+// Should the application follow Cappuccino UX-UI (which is OSX like) or OS UX-UI (mainly Windows) ?
+// See explanation on https://github.com/cappuccino/cappuccino/wiki/CPApplicationSelectedOSBehavior
+@typedef CPApplicationOSBehavior
+CPApplicationLegacyOSBehavior = 1;
+CPApplicationFollowOSBehavior = 2;
+
+CPApplicationSelectedOSBehavior              = CPApplicationLegacyOSBehavior;
+CPApplicationShouldMimicWindows              = NO;
+CPApplicationOSBehaviorDidChangeNotification = @"CPApplicationOSBehaviorDidChangeNotification";
+CPApplicationOSBehaviors                     = @{
+                                                 @"CPApplicationLegacyOSBehavior": CPApplicationLegacyOSBehavior,
+                                                 @"CPApplicationFollowOSBehavior": CPApplicationFollowOSBehavior
+                                                 };
+_CPApplicationSimulateWindowsOS              = NO;

@@ -106,6 +106,11 @@ _CPWindowViewResizeSlop = 3;
             @"title-alignment": CPCenterTextAlignment,
             @"title-line-break-mode": CPLineBreakByTruncatingTail,
             @"title-vertical-alignment": CPTopVerticalTextAlignment,
+            @"title-margin": 20,
+            @"minimize-image-origin": [CPNull null],
+            @"minimize-image-size": [CPNull null],
+            @"zoom-image-origin": [CPNull null],
+            @"zoom-image-size": [CPNull null]
         };
 }
 

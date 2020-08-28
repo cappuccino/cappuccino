@@ -2483,6 +2483,10 @@ CPTexturedBackgroundWindowMask
 
     [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowWillCloseNotification object:self];
 
+    // Give a chance to the _windowView to do things before closing (for example, remove an observer)
+    if ([_windowView respondsToSelector:@selector(_close)])
+        [_windowView _close];
+
     [_parentWindow removeChildWindow:self];
     [self _orderOutRecursively:NO];
     [self _detachFromChildrenClosing:!_parentWindow];

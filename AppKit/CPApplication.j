@@ -1263,6 +1263,23 @@ var CPApplicationDelegate_applicationShouldTerminate_           = 1 << 0,
     return ([[CPBundle mainBundle] objectForInfoDictionaryKey:"CPDefaultTheme"] || @"Aristo2");
 }
 
+// See CPApplication_Constants.j for comments
++ (void)setOSBehavior:(CPApplicationOSBehavior)anOSBehavior
+{
+    // Verify if provided OS behavior is valid
+    if ([[CPApplicationOSBehaviors allKeysForObject:anOSBehavior] count] == 0)
+    {
+        CPLog.warn("CPApplication setOSBehavior: invalid CPApplicationOSBehavior (received "+anOSBehavior+"). Ignored.");
+        return;
+    }
+
+    CPApplicationSelectedOSBehavior = anOSBehavior;
+    CPApplicationShouldMimicWindows = (CPApplicationSelectedOSBehavior == CPApplicationFollowOSBehavior)
+                                      && (CPBrowserIsOperatingSystem(CPWindowsOperatingSystem) || _CPApplicationSimulateWindowsOS);
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPApplicationOSBehaviorDidChangeNotification object:CPApp userInfo:nil];
+}
+
 @end
 
 var _CPModalSessionMake = function(aWindow, aStopCode)
@@ -1390,6 +1407,34 @@ var _CPAppBootstrapperActions = nil;
 {
     [[CPApplication sharedApplication] setThemeBlend:aThemeBlend];
     [CPTheme setDefaultTheme:[CPTheme themeNamed:[CPApplication defaultThemeName]]];
+
+    // Search in the Info.plist if the special CPApplicationSimulateWindowsOS flag is set (for testing)
+    _CPApplicationSimulateWindowsOS = !![[CPBundle mainBundle] objectForInfoDictionaryKey:"CPApplicationSimulateWindowsOS"];
+
+    // Before loading the main CIB, try to find if a CPApplicationOSBehavior is specified in the Info.plist or in the user defaults
+    // (with user defaults precedence). Value stored must be a string representing the name of the OS behavior.
+    var plistOSBehavior = [[CPBundle mainBundle] objectForInfoDictionaryKey:"CPApplicationOSBehavior"],
+        userOSBehavior  = [[CPUserDefaults standardUserDefaults] objectForKey:@"CPApplicationOSBehavior"];
+
+    if (userOSBehavior)
+    {
+        var osBehavior = [CPApplicationOSBehaviors objectForKey:userOSBehavior];
+
+        if (osBehavior)
+            [CPApplication setOSBehavior:osBehavior];
+        else
+            CPLog.warn("Invalid CPApplicationOSBehavior specified in user defaults (found:"+userOSBehavior+"). Ignored.");
+    }
+
+    else if (plistOSBehavior)
+    {
+        var osBehavior = [CPApplicationOSBehaviors objectForKey:plistOSBehavior];
+
+        if (osBehavior)
+            [CPApplication setOSBehavior:osBehavior];
+        else
+            CPLog.warn("Invalid CPApplicationOSBehavior specified in Info.plist (found:"+plistOSBehavior+"). Ignored.");
+    }
 
     [self performActions];
 }
