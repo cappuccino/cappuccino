@@ -28,6 +28,8 @@
 
 @class CPWindow
 @class _CPMenuWindow
+@class _CPMenuView
+@class CPMenuItem
 
 
 @global CPApp
@@ -223,7 +225,7 @@ var STICKY_TIME_INTERVAL            = 0.4,
     _lastGlobalLocation = globalLocation;
 
     // If the item isn't enabled its as if we clicked on nothing.
-    if (![activeItem isEnabled] || [activeItem _isMenuBarButton])
+    if ([activeItem _isMenuBarButton])
     {
         activeItemIndex = CPNotFound;
         activeItem = nil;
@@ -352,7 +354,23 @@ var STICKY_TIME_INTERVAL            = 0.4,
         if ([activeMenuContainer isMenuBar])
             newMenuOrigin = CGPointMake(CGRectGetMinX(activeItemRect), CGRectGetMaxY(activeItemRect));
         else
-            newMenuOrigin = CGPointMake(CGRectGetMaxX(activeItemRect), CGRectGetMinY(activeItemRect));
+        {
+            // New theme attributes to have more precise submenus positioning
+
+            var defaultTheme     = [CPTheme defaultTheme],
+                themeDeltaX      = [defaultTheme valueForAttributeWithName:@"menu-window-submenu-delta-x" forClass:_CPMenuView],
+                themeDeltaY      = [defaultTheme valueForAttributeWithName:@"menu-window-submenu-delta-y" forClass:_CPMenuView],
+                themeFirstDeltaY = [defaultTheme valueForAttributeWithName:@"menu-window-submenu-first-level-delta-y" forClass:_CPMenuView],
+                activeMenuIndex  = [_menuContainerStack indexOfObject:activeMenuContainer],
+
+                deltaX = themeDeltaX ? themeDeltaX : 0,
+                deltaY = themeDeltaY ? themeDeltaY : 0;
+
+            if (themeFirstDeltaY && (activeMenuIndex == 1) && [_menuContainerStack[0] isMenuBar])
+                deltaY += themeFirstDeltaY;
+
+            newMenuOrigin = CGPointMake(CGRectGetMaxX(activeItemRect)+deltaX, CGRectGetMinY(activeItemRect)+deltaY);
+        }
 
         newMenuOrigin = [activeMenuContainer convertBaseToGlobal:newMenuOrigin];
 
@@ -580,6 +598,8 @@ var STICKY_TIME_INTERVAL            = 0.4,
         [self selectNextItemBeginningWith:_keyBuffer inMenu:menu];
         _lastGlobalLocation = nil;
     }
+
+    [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:NO];
 }
 
 - (void)selectNextItemBeginningWith:(CPString)characters inMenu:(CPMenu)menu
@@ -725,39 +745,32 @@ var STICKY_TIME_INTERVAL            = 0.4,
 
 - (void)moveDown:(CPMenu)menu
 {
-    var index = menu._highlightedIndex + 1;
+    var index = menu._highlightedIndex + 1,
+        item;
+
+    // Search for the next enabled item
+    while ((index < [menu numberOfItems]) && (item = [menu itemAtIndex:index]) && ([item isSeparatorItem] || [item isHidden] || ![item isEnabled]))
+        index++;
 
     if (index < [menu numberOfItems])
-    {
         [menu _highlightItemAtIndex:index];
-
-        var item = [menu highlightedItem];
-
-        if ([item isSeparatorItem] || [item isHidden] || ![item isEnabled])
-            [self moveDown:menu];
-    }
     else if (menu == [CPApp mainMenu])
          [menu _highlightItemAtIndex:0];
 }
 
 - (void)moveUp:(CPMenu)menu
 {
-    var index = menu._highlightedIndex - 1;
+    var index = menu._highlightedIndex - 1,
+        item;
 
-    if (index < 0)
-    {
-        if (index != CPNotFound || menu == [CPApp mainMenu])
-            [menu _highlightItemAtIndex:[menu numberOfItems] - 1];
+    // Search for the previous enabled item
+    while ((index >= 0) && (item = [menu itemAtIndex:index]) && ([item isSeparatorItem] || [item isHidden] || ![item isEnabled]))
+        index--;
 
-        return;
-    }
-
-    [menu _highlightItemAtIndex:index];
-
-    var item = [menu highlightedItem];
-
-    if ([item isSeparatorItem] || [item isHidden] || ![item isEnabled])
-        [self moveUp:menu];
+    if (index >= 0)
+        [menu _highlightItemAtIndex:index];
+    else if (menu == [CPApp mainMenu])
+        [menu _highlightItemAtIndex:[menu numberOfItems] - 1];
 }
 
 - (void)insertNewline:(CPMenu)menu

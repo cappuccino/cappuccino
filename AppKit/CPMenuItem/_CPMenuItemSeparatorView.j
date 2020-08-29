@@ -31,7 +31,9 @@
 
 + (id)view
 {
-    return [[self alloc] initWithFrame:CGRectMake(0.0, 0.0, 0.0, 10.0)];
+    var themedHeight = [[CPTheme defaultTheme] valueForAttributeWithName:@"menu-item-separator-view-height" forClass:_CPMenuItemStandardView];
+
+    return [[self alloc] initWithFrame:CGRectMake(0.0, 0.0, 0.0, (themedHeight ? themedHeight : 10.0))];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -47,12 +49,25 @@
 - (void)drawRect:(CGRect)aRect
 {
     var context = [[CPGraphicsContext currentContext] graphicsPort],
-        bounds = [self bounds];
+        bounds = [self bounds],
+        height = CGRectGetMaxY(bounds),
+        themedHeight = [[CPTheme defaultTheme] valueForAttributeWithName:@"menu-item-separator-height" forClass:_CPMenuItemStandardView],
+        lineHeight = themedHeight ? themedHeight : 1.0;
 
     CGContextBeginPath(context);
 
-    CGContextMoveToPoint(context, CGRectGetMinX(bounds), FLOOR(CGRectGetMidY(bounds)) - 0.5);
-    CGContextAddLineToPoint(context, CGRectGetMaxX(bounds), FLOOR(CGRectGetMidY(bounds)) - 0.5);
+    CGContextSetLineWidth(context, lineHeight);
+
+    if (!!((height - lineHeight) % 2))
+    {
+        CGContextMoveToPoint(context, CGRectGetMinX(bounds), FLOOR(CGRectGetMidY(bounds)) - 0.5);
+        CGContextAddLineToPoint(context, CGRectGetMaxX(bounds), FLOOR(CGRectGetMidY(bounds)) - 0.5);
+    }
+    else
+    {
+        CGContextMoveToPoint(context, CGRectGetMinX(bounds), FLOOR(CGRectGetMidY(bounds)));
+        CGContextAddLineToPoint(context, CGRectGetMaxX(bounds), FLOOR(CGRectGetMidY(bounds)));
+    }
 
     CGContextSetStrokeColor(context, [[CPTheme defaultTheme] valueForAttributeWithName:@"menu-item-separator-color" forClass:_CPMenuItemStandardView]);
     CGContextStrokePath(context);
