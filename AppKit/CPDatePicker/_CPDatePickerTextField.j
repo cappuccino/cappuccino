@@ -40,7 +40,6 @@
 @global CPRangeDateMode
 
 @global CPTextFieldAndStepperDatePickerStyle
-@global CPClockAndCalendarDatePickerStyle
 @global CPTextFieldDatePickerStyle
 
 @global CPHourMinuteDatePickerElementFlag
@@ -70,10 +69,10 @@ var CPZeroKeyCode = 48,
     _CPDatePickerElementView            _datePickerElementView;
     CPDatePicker                        _datePicker;
     CPStepper                           _stepper;
+    CPInteger                           _datePickerElements         @accessors(getter=datePickerElements);
 }
 
 
-#pragma mark -
 #pragma mark Init
 
 - (id)initWithFrame:(CGRect)aFrame withDatePicker:(CPDatePicker)aDatePicker
@@ -88,6 +87,8 @@ var CPZeroKeyCode = 48,
 
 - (void)_init
 {
+    _datePickerElements = [_datePicker datePickerElements];
+
     _datePickerElementView = [[_CPDatePickerElementView alloc] initWithFrame:CGRectMakeZero() withDatePicker:_datePicker];
     [self addSubview:_datePickerElementView];
 
@@ -98,6 +99,18 @@ var CPZeroKeyCode = 48,
 
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
+
+#if PLATFORM(DOM)
+    if ([_datePicker currentValueForThemeAttribute:@"uses-focus-ring"])
+    {
+        // As with overflow:hidden, views are clipping their content, in order
+        // to show a focus ring (which is external to a view), we need to let
+        // content extend outside the view.
+        _datePicker._DOMElement.style.overflow            = "visible";
+        _DOMElement.style.overflow                        = "visible";
+        _datePickerElementView._DOMElement.style.overflow = "visible";
+    }
+#endif
 }
 
 
@@ -163,6 +176,28 @@ var CPZeroKeyCode = 48,
     [_datePickerElementView setEnabled:aBoolean];
 }
 
+- (void)setTextColor:(CPColor)aColor
+{
+    [super setTextColor:aColor];
+    [_datePickerElementView setTextColor:aColor];
+}
+
+- (void)setTextFont:(CPFont)aFont
+{
+    [self setFont:aFont];
+    [_datePickerElementView setTextFont:aFont];
+}
+
+- (void)setDatePickerElements:(CPInteger)aDatePickerElements
+{
+    if (_datePickerElements === aDatePickerElements)
+        return;
+
+    _datePickerElements = aDatePickerElements;
+
+    [self setNeedsDisplay:YES];
+    [self setNeedsLayout];
+}
 
 #pragma mark -
 #pragma mark Notification methods
@@ -402,12 +437,12 @@ var CPZeroKeyCode = 48,
 */
 - (void)layoutSubviews
 {
-    if ([_datePicker datePickerStyle] == CPClockAndCalendarDatePickerStyle)
-        return;
+    [_datePicker _sizeToControlSize];
+    [self setFrameSize:[_datePicker frameSize]];
 
     [super layoutSubviews];
 
-    var frameSize = CGSizeMakeZero(),
+    var frameSize,
         bezelInset = [_datePicker valueForThemeAttribute:@"bezel-inset" inState:[_datePicker themeState]];
 
     // Check the mode to display or not the stepper
@@ -423,6 +458,8 @@ var CPZeroKeyCode = 48,
 
         [_datePickerElementView setFrameSize:frameSize];
         [_datePickerElementView setFrameOrigin:CGPointMake(bezelInset.left, bezelInset.top)];
+
+        [_stepper setFrameOrigin:CGPointMake(CGRectGetMaxX([_datePickerElementView frame]) + [_datePicker currentValueForThemeAttribute:@"stepper-margin"], bezelInset.top + CGRectGetHeight([_datePickerElementView frame]) / 2 - CGRectGetHeight([_stepper frame]) / 2)];
     }
     else if ([_datePicker datePickerStyle] == CPTextFieldDatePickerStyle)
     {
@@ -436,8 +473,7 @@ var CPZeroKeyCode = 48,
         [_stepper setHidden:YES];
     }
 
-    [_stepper setFrameOrigin:CGPointMake(CGRectGetMaxX([_datePickerElementView frame]) + [_datePicker currentValueForThemeAttribute:@"stepper-margin"], bezelInset.top + CGRectGetHeight([_datePickerElementView frame]) / 2 - CGRectGetHeight([_stepper frame]) / 2)];
-
+    // FIXME: should be done in a self setControlSize
     [_datePickerElementView setControlSize:[_datePicker controlSize]];
 
     [_datePickerElementView setNeedsLayout];
@@ -469,6 +505,7 @@ var CPZeroKeyCode = 48,
 
 @end
 
+#pragma mark -
 
 /*! This class is used to display the elements (all of the textFields) in the datePicker
 */
@@ -489,7 +526,6 @@ var CPZeroKeyCode = 48,
 }
 
 
-#pragma mark -
 #pragma mark Init
 
 - (id)initWithFrame:(CGRect)aFrame withDatePicker:(CPDatePicker)aDatePicker
@@ -567,10 +603,10 @@ var CPZeroKeyCode = 48,
     [_textFieldPMAM setDatePickerElementView:self];
     [self addSubview:_textFieldPMAM];
 
-    _textFieldSeparatorOne = [CPTextField labelWithTitle:@"/"];
-    _textFieldSeparatorTwo = [CPTextField labelWithTitle:@"/"];
-    _textFieldSeparatorThree = [CPTextField labelWithTitle:@":"];
-    _textFieldSeparatorFour = [CPTextField labelWithTitle:@":"];
+    _textFieldSeparatorOne   = [_CPDatePickerElementSeparator labelWithTitle:@"/"];
+    _textFieldSeparatorTwo   = [_CPDatePickerElementSeparator labelWithTitle:@"/"];
+    _textFieldSeparatorThree = [_CPDatePickerElementSeparator labelWithTitle:@":"];
+    _textFieldSeparatorFour  = [_CPDatePickerElementSeparator labelWithTitle:@":"];
 
     [self addSubview: _textFieldSeparatorOne];
     [self addSubview: _textFieldSeparatorTwo];
@@ -717,6 +753,40 @@ var CPZeroKeyCode = 48,
     [_textFieldPMAM setEnabled:aBoolean];
 }
 
+- (void)setTextColor:(CPColor)aColor
+{
+    [super setTextColor:aColor];
+
+    [_textFieldDay            setTextColor:aColor];
+    [_textFieldMonth          setTextColor:aColor];
+    [_textFieldYear           setTextColor:aColor];
+    [_textFieldHour           setTextColor:aColor];
+    [_textFieldMinute         setTextColor:aColor];
+    [_textFieldSecond         setTextColor:aColor];
+    [_textFieldSeparatorOne   setTextColor:aColor];
+    [_textFieldSeparatorTwo   setTextColor:aColor];
+    [_textFieldSeparatorThree setTextColor:aColor];
+    [_textFieldSeparatorFour  setTextColor:aColor];
+    [_textFieldPMAM           setTextColor:aColor];
+}
+
+- (void)setTextFont:(CPFont)aFont
+{
+    [self setFont:aFont];
+
+    [_textFieldDay            setFont:aFont];
+    [_textFieldMonth          setFont:aFont];
+    [_textFieldYear           setFont:aFont];
+    [_textFieldHour           setFont:aFont];
+    [_textFieldMinute         setFont:aFont];
+    [_textFieldSecond         setFont:aFont];
+    [_textFieldSeparatorOne   setFont:aFont];
+    [_textFieldSeparatorTwo   setFont:aFont];
+    [_textFieldSeparatorThree setFont:aFont];
+    [_textFieldSeparatorFour  setFont:aFont];
+    [_textFieldPMAM           setFont:aFont];
+}
+
 /*! Return YES if the hour is set to the morning
 */
 - (BOOL)_isAMHour
@@ -809,30 +879,72 @@ var CPZeroKeyCode = 48,
             dateValue.setHours(dateValue.getHours() - 12);
     }
 
+#if PLATFORM(DOM)
     _datePicker._invokedByUserEvent = YES;
+#endif
     [_datePicker _setDateValue:dateValue timeInterval:[_datePicker timeInterval]];
+#if PLATFORM(DOM)
     _datePicker._invokedByUserEvent = NO;
+#endif
 }
 
 
 #pragma mark -
 #pragma mark Layout methods
 
+- (CGRect)rectForEphemeralSubviewNamed:(CPString)aName
+{
+    if (aName === "bezel-view")
+        return [self bounds];
+
+    return [super rectForEphemeralSubviewNamed:aName];
+}
+
+- (CPView)createEphemeralSubviewNamed:(CPString)aName
+{
+    if (aName === "bezel-view")
+    {
+        var view = [[CPView alloc] initWithFrame:CGRectMakeZero()];
+
+        [view setHitTests:NO];
+
+        return view;
+    }
+
+    return [super createEphemeralSubviewNamed:aName];
+}
+
 - (void)layoutSubviews
 {
-    if ([_datePicker datePickerStyle] == CPClockAndCalendarDatePickerStyle)
-        return;
-
     [super layoutSubviews];
 
     var themeState = [_datePicker themeState];
 
-    if ([_datePicker isBezeled] && [_datePicker drawsBackground] || [_datePicker isBordered] && [_datePicker drawsBackground])
-        [self setBackgroundColor:[_datePicker valueForThemeAttribute:@"bezel-color" inState:themeState]];
-    else if ([_datePicker drawsBackground])
-        [self setBackgroundColor:[_datePicker backgroundColor]];
+    if ([self isCSSBased])
+    {
+        if ([_datePicker isBezeled] || [_datePicker isBordered])
+        {
+            var bezelView = [self layoutEphemeralSubviewNamed:@"bezel-view"
+                                                   positioned:CPWindowBelow
+                              relativeToEphemeralSubviewNamed:nil];
+
+            [bezelView setBackgroundColor:[_datePicker valueForThemeAttribute:@"bezel-color" inState:themeState]];
+        }
+
+        if ([_datePicker drawsBackground])
+            [self setBackgroundColor:[_datePicker backgroundColor]];
+        else
+            [self setBackgroundColor:[CPColor clearColor]];
+    }
     else
-        [self setBackgroundColor:[CPColor clearColor]];
+    {
+        if ([_datePicker isBezeled] && [_datePicker drawsBackground] || [_datePicker isBordered] && [_datePicker drawsBackground])
+            [self setBackgroundColor:[_datePicker valueForThemeAttribute:@"bezel-color" inState:themeState]];
+        else if ([_datePicker drawsBackground])
+            [self setBackgroundColor:[_datePicker backgroundColor]];
+        else
+            [self setBackgroundColor:[CPColor clearColor]];
+    }
 
     [self _themeTextFields];
 
@@ -875,6 +987,10 @@ var CPZeroKeyCode = 48,
 */
 - (void)_themeTextFields
 {
+    // Beginning with Aristo3, elements and separators text fields are directly themed
+    if ([self isCSSBased])
+        return;
+
     var disabledTextColor = [_datePicker valueForThemeAttribute:@"text-color" inState:CPThemeStateDisabled],
         disabledTextFieldBezelColor = [_datePicker valueForThemeAttribute:@"datepicker-textfield-bezel-color" inState:CPThemeStateDisabled],
         disabledTextShadowColor = [_datePicker valueForThemeAttribute:@"text-shadow-color" inState:CPThemeStateDisabled],
@@ -1136,49 +1252,172 @@ var CPZeroKeyCode = 48,
 */
 - (void)_updatePositions
 {
-    var contentInset = [_datePicker valueForThemeAttribute:@"content-inset" inState:[_datePicker themeState]],
-        separatorContentInset = [_datePicker valueForThemeAttribute:@"separator-content-inset"],
-        horizontalInset = contentInset.left - contentInset.right,
-        verticalInset = contentInset.top - contentInset.bottom,
-        firstTexField = _textFieldMonth,
-        secondTextField = _textFieldDay,
-        isAmericanFormat = [_datePicker _isAmericanFormat];
+    var contentInset              = [_datePicker valueForThemeAttribute:@"content-inset" inState:[_datePicker themeState]] || CGInsetMakeZero(),
+        separatorContentInset     = [_datePicker valueForThemeAttribute:@"separator-content-inset"],
+        timeSeparatorContentInset = [_datePicker valueForThemeAttribute:@"time-separator-content-inset"] || separatorContentInset,
+        horizontalInset           = contentInset.left - contentInset.right,
+        verticalInset             = contentInset.top - contentInset.bottom,
+        firstTextField            = _textFieldMonth,
+        secondTextField           = _textFieldDay,
+        isAmericanFormat          = [_datePicker _isAmericanFormat];
 
     if (!isAmericanFormat)
     {
-        firstTexField = _textFieldDay;
+        firstTextField  = _textFieldDay;
         secondTextField = _textFieldMonth;
     }
 
-    [firstTexField setFrameOrigin:CGPointMake(horizontalInset,verticalInset)];
-    [_textFieldSeparatorOne setFrameOrigin:CGPointMake(CGRectGetMaxX([firstTexField frame]) + separatorContentInset.left, verticalInset)];
+    // IMPORTANT REMARK
+    // The "content-inset" theme parameter was incorrectly used before Aristo3
+    // While an inset should shrink a rectangle as indicated by its .top, .right, .bottom and .left components,
+    // it was only used to shift origin by (.top - .bottom) and (.left - .right) values.
+    // This leads to difficulties for the theme descriptor to correctly specify positionning.
+    //
+    // In order to ensure compatibility with previous behavior, we use isCSSBased property to
+    // branch between new and old behaviors as all themes before Aristo3 use the previous uncorrect computation.
 
-    if ([firstTexField isHidden])
-        [secondTextField setFrameOrigin:CGPointMake(horizontalInset,verticalInset)];
+    if ([self isCSSBased])
+    {
+        // New behavior of the "content-inset" theme parameter
+        var currentFrameWidth,
+            newFrame,
+            currentX = contentInset.left,
+            height   = [self frame].size.height - contentInset.top - contentInset.bottom;
+
+        if (![firstTextField isHidden])
+        {
+            currentFrameWidth = [firstTextField frame].size.width;
+            newFrame          = CGRectMake(currentX, contentInset.top, currentFrameWidth, height);
+            currentX         += currentFrameWidth;
+
+            [firstTextField setFrame:newFrame];
+
+            currentFrameWidth = [_textFieldSeparatorOne frame].size.width;
+            currentX         += separatorContentInset.left;
+            newFrame          = CGRectMake(currentX, contentInset.top, currentFrameWidth, height);
+            currentX         += currentFrameWidth;
+
+            [_textFieldSeparatorOne setFrame:newFrame];
+
+            currentX         += separatorContentInset.right;
+        }
+
+        [_textFieldSeparatorOne setHidden:[firstTextField isHidden]];
+
+        if (![secondTextField isHidden])
+        {
+            currentFrameWidth = [secondTextField frame].size.width;
+            newFrame          = CGRectMake(currentX, contentInset.top, currentFrameWidth, height);
+            currentX         += currentFrameWidth;
+
+            [secondTextField setFrame:newFrame];
+
+            currentFrameWidth = [_textFieldSeparatorTwo frame].size.width;
+            currentX         += separatorContentInset.left;
+            newFrame          = CGRectMake(currentX, contentInset.top, currentFrameWidth, height);
+            currentX         += currentFrameWidth;
+
+            [_textFieldSeparatorTwo setFrame:newFrame];
+
+            currentX         += separatorContentInset.right;
+        }
+
+        [_textFieldSeparatorTwo setHidden:[secondTextField isHidden]];
+
+        if (![_textFieldYear isHidden])
+        {
+            currentFrameWidth = [_textFieldYear frame].size.width;
+            newFrame          = CGRectMake(currentX, contentInset.top, currentFrameWidth, height);
+            currentX         += currentFrameWidth;
+
+            [_textFieldYear setFrame:newFrame];
+
+            currentX         += [_datePicker currentValueForThemeAttribute:@"date-hour-margin"];
+        }
+
+        if (![_textFieldHour isHidden])
+        {
+            currentFrameWidth = [_textFieldHour frame].size.width;
+            newFrame          = CGRectMake(currentX, contentInset.top, currentFrameWidth, height);
+            currentX         += currentFrameWidth;
+
+            [_textFieldHour setFrame:newFrame];
+
+            currentFrameWidth = [_textFieldSeparatorThree frame].size.width;
+            currentX         += timeSeparatorContentInset.left;
+            newFrame          = CGRectMake(currentX, contentInset.top, currentFrameWidth, height);
+            currentX         += currentFrameWidth;
+
+            [_textFieldSeparatorThree setFrame:newFrame];
+
+            currentFrameWidth = [_textFieldMinute frame].size.width;
+            currentX         += timeSeparatorContentInset.right;
+            newFrame          = CGRectMake(currentX, contentInset.top, currentFrameWidth, height);
+            currentX         += currentFrameWidth;
+
+            [_textFieldMinute setFrame:newFrame];
+
+            if (![_textFieldSecond isHidden])
+            {
+                currentFrameWidth = [_textFieldSeparatorFour frame].size.width;
+                currentX         += timeSeparatorContentInset.left;
+                newFrame          = CGRectMake(currentX, contentInset.top, currentFrameWidth, height);
+                currentX         += currentFrameWidth;
+
+                [_textFieldSeparatorFour setFrame:newFrame];
+
+                currentFrameWidth = [_textFieldSecond frame].size.width;
+                currentX         += timeSeparatorContentInset.right;
+                newFrame          = CGRectMake(currentX, contentInset.top, currentFrameWidth, height);
+                currentX         += currentFrameWidth;
+
+                [_textFieldSecond setFrame:newFrame];
+            }
+
+            if (![_textFieldPMAM isHidden])
+            {
+                currentFrameWidth = [_textFieldPMAM frame].size.width;
+                currentX         += [_datePicker currentValueForThemeAttribute:@"hour-ampm-margin"];
+                newFrame          = CGRectMake(currentX, contentInset.top, currentFrameWidth, height);
+
+                [_textFieldPMAM setFrame:newFrame];
+            }
+        }
+    }
     else
-        [secondTextField setFrameOrigin:CGPointMake(CGRectGetMaxX([_textFieldSeparatorOne frame]) + separatorContentInset.right, verticalInset)];
+    {
+        // Old behavior of the "content-inset" theme parameter
+        [firstTextField setFrameOrigin:CGPointMake(horizontalInset,verticalInset)];
 
-    if (isAmericanFormat && [secondTextField isHidden])
-        [_textFieldSeparatorTwo setFrameOrigin:CGPointMake(CGRectGetMaxX([firstTexField frame]) + separatorContentInset.left, verticalInset)];
-    else
-        [_textFieldSeparatorTwo setFrameOrigin:CGPointMake(CGRectGetMaxX([secondTextField frame]) + separatorContentInset.left, verticalInset)];
+        [_textFieldSeparatorOne setFrameOrigin:CGPointMake(CGRectGetMaxX([firstTextField frame]) + separatorContentInset.left, verticalInset)];
 
-    [_textFieldYear setFrameOrigin:CGPointMake(CGRectGetMaxX([_textFieldSeparatorTwo frame]) + separatorContentInset.right, verticalInset)];
+        if ([firstTextField isHidden])
+            [secondTextField setFrameOrigin:CGPointMake(horizontalInset,verticalInset)];
+        else
+            [secondTextField setFrameOrigin:CGPointMake(CGRectGetMaxX([_textFieldSeparatorOne frame]) + separatorContentInset.right, verticalInset)];
 
-    if ([_textFieldMonth isHidden])
-        [_textFieldHour setFrameOrigin:CGPointMake(horizontalInset, verticalInset)];
-    else
-        [_textFieldHour setFrameOrigin:CGPointMake(CGRectGetMaxX([_textFieldYear frame]) + [_datePicker currentValueForThemeAttribute:@"date-hour-margin"], verticalInset)];
+        if (isAmericanFormat && [secondTextField isHidden])
+            [_textFieldSeparatorTwo setFrameOrigin:CGPointMake(CGRectGetMaxX([firstTextField frame]) + separatorContentInset.left, verticalInset)];
+        else
+            [_textFieldSeparatorTwo setFrameOrigin:CGPointMake(CGRectGetMaxX([secondTextField frame]) + separatorContentInset.left, verticalInset)];
 
-    [_textFieldSeparatorThree setFrameOrigin:CGPointMake(CGRectGetMaxX([_textFieldHour frame]) + separatorContentInset.left, verticalInset)];
-    [_textFieldMinute setFrameOrigin:CGPointMake(CGRectGetMaxX([_textFieldSeparatorThree frame]) + separatorContentInset.right, verticalInset)];
-    [_textFieldSeparatorFour setFrameOrigin:CGPointMake(CGRectGetMaxX([_textFieldMinute frame]) + separatorContentInset.left, verticalInset)];
-    [_textFieldSecond setFrameOrigin:CGPointMake(CGRectGetMaxX([_textFieldSeparatorFour frame]) + separatorContentInset.right, verticalInset)];
+        [_textFieldYear setFrameOrigin:CGPointMake(CGRectGetMaxX([_textFieldSeparatorTwo frame]) + separatorContentInset.right, verticalInset)];
 
-    if ([_textFieldSecond isHidden])
-        [_textFieldPMAM setFrameOrigin:CGPointMake(CGRectGetMaxX([_textFieldMinute frame]) + 2, verticalInset)];
-    else
-        [_textFieldPMAM setFrameOrigin:CGPointMake(CGRectGetMaxX([_textFieldSecond frame]) + 2, verticalInset)];
+        if ([_textFieldMonth isHidden])
+            [_textFieldHour setFrameOrigin:CGPointMake(horizontalInset, verticalInset)];
+        else
+            [_textFieldHour setFrameOrigin:CGPointMake(CGRectGetMaxX([_textFieldYear frame]) + [_datePicker currentValueForThemeAttribute:@"date-hour-margin"], verticalInset)];
+
+        [_textFieldSeparatorThree setFrameOrigin:CGPointMake(CGRectGetMaxX([_textFieldHour frame]) + separatorContentInset.left, verticalInset)];
+        [_textFieldMinute setFrameOrigin:CGPointMake(CGRectGetMaxX([_textFieldSeparatorThree frame]) + separatorContentInset.right, verticalInset)];
+        [_textFieldSeparatorFour setFrameOrigin:CGPointMake(CGRectGetMaxX([_textFieldMinute frame]) + separatorContentInset.left, verticalInset)];
+        [_textFieldSecond setFrameOrigin:CGPointMake(CGRectGetMaxX([_textFieldSeparatorFour frame]) + separatorContentInset.right, verticalInset)];
+
+        if ([_textFieldSecond isHidden])
+            [_textFieldPMAM setFrameOrigin:CGPointMake(CGRectGetMaxX([_textFieldMinute frame]) + 2, verticalInset)];
+        else
+            [_textFieldPMAM setFrameOrigin:CGPointMake(CGRectGetMaxX([_textFieldSecond frame]) + 2, verticalInset)];
+    }
 }
 
 /*! Size to fit all of the textFields
@@ -1377,6 +1616,7 @@ var CPZeroKeyCode = 48,
 
 @end
 
+#pragma mark -
 
 var CPMonthDateType = 0,
     CPDayDateType = 1,
@@ -1402,6 +1642,20 @@ var CPMonthDateType = 0,
 
     BOOL    _firstEvent;
     CPTimer _timerEdition;
+}
+
++ (CPString)defaultThemeClass
+{
+    return @"datePickerElementTextField";
+}
+
++ (CPDictionary)themeAttributes
+{
+    return @{
+             @"content-inset":  CGInsetMake(1.0, 0.0, 0.0, 0.0),
+             @"bezel-color":    [CPNull null],
+             @"min-size":       CGSizeMakeZero()
+             };
 }
 
 - (id)init
@@ -1774,9 +2028,13 @@ var CPMonthDateType = 0,
         newDateValue.setSeconds(newDateValue.getSeconds() + secondsFromGMT - secondsFromGMTTimeZone);
     }
 
+#if PLATFORM(DOM)
     _datePicker._invokedByUserEvent = YES;
+#endif
     [_datePicker _setDateValue:newDateValue timeInterval:[_datePicker timeInterval]];
+#if PLATFORM(DOM)
     _datePicker._invokedByUserEvent = NO;
+#endif
 }
 
 
@@ -1829,7 +2087,7 @@ var CPMonthDateType = 0,
         minSize = [self currentValueForThemeAttribute:@"min-size"],
         maxSize = [self currentValueForThemeAttribute:@"max-size"],
         lineBreakMode = [self lineBreakMode],
-        text = (_dateType == CPYearDateType) ? @"0000" : @"00",
+        text = (_dateType == CPYearDateType) ? @"0000" : (_dateType == CPMonthDateType) ? @"10" : @"00",
         textSize = CGSizeMakeCopy(frameSize),
         font = [self currentValueForThemeAttribute:@"font"];
 
@@ -1879,6 +2137,25 @@ var CPMonthDateType = 0,
 - (CGRect)bezelRectForBounds:(CGRect)bounds
 {
     return CGRectMakeCopy(bounds);
+}
+
+@end
+
+#pragma mark -
+
+@implementation _CPDatePickerElementSeparator : CPTextField
+
++ (CPString)defaultThemeClass
+{
+    return @"datePickerElementSeparator";
+}
+
++ (CPDictionary)themeAttributes
+{
+    return @{
+             @"content-inset":  CGInsetMake(1.0, 0.0, 0.0, 0.0),
+             @"min-size":       CGSizeMakeZero()
+             };
 }
 
 @end
