@@ -45,6 +45,13 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     return "popup-button";
 }
 
++ (CPDictionary)themeAttributes
+{
+    return @{
+             @"menu-offset": CGSizeMake(0, -1)
+             };
+}
+
 + (CPSet)keyPathsForValuesAffectingSelectedIndex
 {
     return [CPSet setWithObject:@"objectValue"];
@@ -685,14 +692,16 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     if ([self pullsDown])
     {
         var positionedItem = nil,
-            location = CGPointMake(0.0, CGRectGetMaxY(bounds) - 1);
+            menuOffset     = [self currentValueForThemeAttribute:@"menu-offset"],
+            location       = CGPointMake(menuOffset.width, CGRectGetMaxY(bounds) + menuOffset.height);
     }
     else
     {
         var contentRect = [self contentRectForBounds:bounds],
             positionedItem = [self selectedItem],
             standardLeftMargin = [_CPMenuWindow _standardLeftMargin] + [_CPMenuItemStandardView _standardLeftMargin],
-            location = CGPointMake(CGRectGetMinX(contentRect) - standardLeftMargin, 0.0);
+            menuOffset = [self currentValueForThemeAttribute:@"menu-offset"],
+            location = CGPointMake(CGRectGetMinX(contentRect) - standardLeftMargin + menuOffset.width, 0.0 + menuOffset.height);
 
         minimumWidth += standardLeftMargin;
 
