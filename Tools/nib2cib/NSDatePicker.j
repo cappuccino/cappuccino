@@ -50,23 +50,24 @@ var NSDatePickerDefaultSize = 22,
     _timeInterval = [cell timeInterval];
     _datePickerMode = [cell datePickerMode];
     _datePickerElements = [cell datePickerElements];
-    _datePickerStyle = [cell datePickerType];
     _dateValue = [cell objectValue];
-    _backgroundColor = [cell backgroundColor];
-    _drawsBackground = [cell drawsBackground];
     _formatter = [cell formatter];
 
     [self setBezeled:[cell isBezeled]];
     [self setBordered:[cell isBordered]];
     [self setEnabled:[cell isEnabled]];
     [self setControlSize:[cell controlSize]];
+    [self setDatePickerStyle:[cell datePickerType]];
+    [self setDrawsBackground:[cell drawsBackground]];
+    [self setBackgroundColor:[cell backgroundColor]];
 
-    var theme = [Nib2Cib defaultTheme];
+    var theme = [Nib2Cib defaultTheme],
+        state = [self themeState];
 
     if (_datePickerStyle != CPClockAndCalendarDatePickerStyle)
     {
-        var minSize = [theme valueForAttributeWithName:@"min-size" forClass:[self class]],
-            maxSize = [theme valueForAttributeWithName:@"max-size" forClass:[self class]];
+        var minSize = [theme valueForAttributeWithName:@"min-size" inState:state forClass:[self class]],
+            maxSize = [theme valueForAttributeWithName:@"max-size" inState:state forClass:[self class]];
 
         if (minSize.height > 0)
         {
@@ -94,38 +95,44 @@ var NSDatePickerDefaultSize = 22,
     }
     else
     {
-        var minSize = [theme valueForAttributeWithName:@"min-size-calendar" forClass:[self class]],
-            maxSize = [theme valueForAttributeWithName:@"max-size-calendar" forClass:[self class]],
-            sizeClock = [theme valueForAttributeWithName:@"size-clock" forClass:[self class]];
+        var isClockOnly = (_datePickerStyle === CPClockAndCalendarDatePickerStyle) && ((_datePickerElements & CPHourMinuteSecondDatePickerElementFlag) || (_datePickerElements & CPHourMinuteDatePickerElementFlag)) && !((_datePickerElements & CPYearMonthDayDatePickerElementFlag) || (_datePickerElements & CPYearMonthDatePickerElementFlag));
 
-        if (_datePickerElements & CPHourMinuteSecondDatePickerElementFlag || _datePickerElements & CPHourMinuteDatePickerElementFlag)
+        if (!isClockOnly)
         {
-            minSize.width += sizeClock.width + 10;
-            maxSize.width += sizeClock.width + 10;
-        }
+            var minSize             = [theme valueForAttributeWithName:@"min-size-calendar" forClass:[self class]],
+                maxSize             = [theme valueForAttributeWithName:@"max-size-calendar" forClass:[self class]],
+                sizeClock           = [theme valueForAttributeWithName:@"size-clock" forClass:[self class]],
+                calendarClockMargin = [theme valueForAttributeWithName:@"calendar-clock-margin" forClass:[self class]];
 
-        if (minSize.height > 0)
-        {
-            _frame.size.height = MAX(_frame.size.height, minSize.height);
-            _bounds.size.height = MAX(_frame.size.height, minSize.height);
-        }
+            if (_datePickerElements & CPHourMinuteSecondDatePickerElementFlag || _datePickerElements & CPHourMinuteDatePickerElementFlag)
+            {
+                minSize.width += sizeClock.width + calendarClockMargin;
+                maxSize.width += sizeClock.width + calendarClockMargin;
+            }
 
-        if (maxSize.height > 0)
-        {
-            _frame.size.height = MIN(_frame.size.height, maxSize.height);
-            _bounds.size.height = MIN(_frame.size.height, maxSize.height);
-        }
+            if (minSize.height > 0)
+            {
+                _frame.size.height = MAX(_frame.size.height, minSize.height);
+                _bounds.size.height = MAX(_frame.size.height, minSize.height);
+            }
 
-        if (minSize.width > 0)
-        {
-            _frame.size.width = MAX(_frame.size.width, minSize.width);
-            _bounds.size.width = MAX(_frame.size.width, minSize.width);
-        }
+            if (maxSize.height > 0)
+            {
+                _frame.size.height = MIN(_frame.size.height, maxSize.height);
+                _bounds.size.height = MIN(_frame.size.height, maxSize.height);
+            }
 
-        if (maxSize.width > 0)
-        {
-            _frame.size.width = MIN(_frame.size.width, maxSize.width);
-            _bounds.size.width = MAX(_frame.size.width, minSize.width);
+            if (minSize.width > 0)
+            {
+                _frame.size.width = MAX(_frame.size.width, minSize.width);
+                _bounds.size.width = MAX(_frame.size.width, minSize.width);
+            }
+
+            if (maxSize.width > 0)
+            {
+                _frame.size.width = MIN(_frame.size.width, maxSize.width);
+                _bounds.size.width = MAX(_frame.size.width, minSize.width);
+            }
         }
     }
 
@@ -145,6 +152,42 @@ var NSDatePickerDefaultSize = 22,
     return self;
 }
 
+// The frame adjustment is not the same if there's a calendar & a clock, or just a clock
+- (CGRect)_nib2CibAdjustment
+{
+    // Theme has not been loaded yet.
+    // Get attribute value directly from the theme or from the default value of the object otherwise.
+    var theme              = [Nib2Cib defaultTheme],
+        isClockOnly        = (_datePickerStyle === CPClockAndCalendarDatePickerStyle) && ((_datePickerElements & CPHourMinuteSecondDatePickerElementFlag) || (_datePickerElements & CPHourMinuteDatePickerElementFlag)) && !((_datePickerElements & CPYearMonthDayDatePickerElementFlag) || (_datePickerElements & CPYearMonthDatePickerElementFlag)),
+        themeAttributeName = isClockOnly ? @"clock-only-nib2cib-adjustment-frame" : @"nib2cib-adjustment-frame",
+        frameAdjustment    = [theme valueForAttributeWithName:themeAttributeName inState:[self themeState] forClass:[self class]];
+
+    if (frameAdjustment)
+        return frameAdjustment;
+
+    if ([self hasThemeAttribute:themeAttributeName])
+    {
+        frameAdjustment = [self currentValueForThemeAttribute:themeAttributeName];
+
+        if (frameAdjustment)
+            return frameAdjustment;
+    }
+
+    return nil;
+}
+
+- (void)_adjustNib2CibSize
+{
+    var frame = [self frame],
+    frameAdjustment = [self _nib2CibAdjustment];
+
+    if (frameAdjustment)
+    {
+        var finalFrame = CGRectMake(frame.origin.x + frameAdjustment.origin.x, frame.origin.y - frameAdjustment.origin.y, frame.size.width + frameAdjustment.size.width, frame.size.height + frameAdjustment.size.height);
+
+        [self setFrame:finalFrame];
+    }
+}
 
 @end
 
