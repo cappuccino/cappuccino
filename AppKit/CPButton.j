@@ -44,6 +44,7 @@ CPTexturedRoundedBezelStyle     = 11;  // Round Textured
 CPRoundRectBezelStyle           = 12;  // Round Rect
 CPRecessedBezelStyle            = 13;  // Recessed
 CPRoundedDisclosureBezelStyle   = 14;  // Disclosure
+CPInlineBezelStyle              = 15;  // Inline
 CPHUDBezelStyle                 = -1;
 
 
@@ -72,14 +73,32 @@ CPPushInCellMask            = CPPushInButtonMask;
 CPChangeGrayCellMask        = CPGrayButtonMask;
 CPChangeBackgroundCellMask  = CPBackgroundButtonMask;
 
-CPButtonStateMixed                  = CPThemeState("mixed");
-CPButtonStateBezelStyleRounded      = CPThemeState("rounded");
-CPButtonStateBezelStyleRoundRect    = CPThemeState("roundRect");
+CPButtonStateMixed                       = CPThemeState("mixed");
+CPButtonStateBezelStyleRounded           = CPThemeState("rounded");             // IB style : Push
+CPButtonStateBezelStyleShadowlessSquare  = CPThemeState("square");              // IB style : Square
+CPButtonStateBezelStyleSmallSquare       = CPThemeState("gradient");            // IB style : Gradient
+CPButtonStateBezelStyleTexturedRounded   = CPThemeState("textured-rounded");    // IB style : Textured rounded
+CPButtonStateBezelStyleRoundRect         = CPThemeState("roundRect");           // IB style : Round rect
+CPButtonStateBezelStyleRecessed          = CPThemeState("recessed");            // IB style : Recessed
+CPButtonStateBezelStyleInline            = CPThemeState("inline");              // IB style : Inline
+CPButtonStateBezelStyleRegularSquare     = CPThemeState("bevel");               // IB style : Bevel
+CPButtonStateBezelStyleTextured          = CPThemeState("textured");            // IB style : Textured
+CPButtonStateBezelStyleDisclosure        = CPThemeState("disclosure");          // IB style : Disclosure triangle
+CPButtonStateBezelStyleRoundedDisclosure = CPThemeState("rounded-disclosure");  // IB style : Rounded disclosure
 
 // add all future correspondance between bezel styles and theme state here.
 var CPButtonBezelStyleStateMap = @{
-        CPRoundedBezelStyle: CPButtonStateBezelStyleRounded,
-        CPRoundRectBezelStyle: CPButtonStateBezelStyleRoundRect,
+        CPRoundedBezelStyle:            CPButtonStateBezelStyleRounded,
+        CPShadowlessSquareBezelStyle:   CPButtonStateBezelStyleShadowlessSquare,
+        CPSmallSquareBezelStyle:        CPButtonStateBezelStyleSmallSquare,
+        CPTexturedRoundedBezelStyle:    CPButtonStateBezelStyleTexturedRounded,
+        CPRoundRectBezelStyle:          CPButtonStateBezelStyleRoundRect,
+        CPRecessedBezelStyle:           CPButtonStateBezelStyleRecessed,
+        CPInlineBezelStyle:             CPButtonStateBezelStyleInline,
+        CPRegularSquareBezelStyle:      CPButtonStateBezelStyleRegularSquare,
+        CPTexturedSquareBezelStyle:     CPButtonStateBezelStyleTextured,
+        CPDisclosureBezelStyle:         CPButtonStateBezelStyleDisclosure,
+        CPRoundedDisclosureBezelStyle:  CPButtonStateBezelStyleRoundedDisclosure
     };
 
 /// @cond IGNORE
@@ -108,6 +127,7 @@ CPButtonImageOffset   = 3.0;
 
     // NS-style Display Properties
     CPBezelStyle        _bezelStyle;
+    ThemeState          _bezelState;
 
     CPString            _keyEquivalent;
     unsigned            _keyEquivalentModifierMask;
@@ -117,7 +137,7 @@ CPButtonImageOffset   = 3.0;
     float               _periodicDelay;
     float               _periodicInterval;
 
-    BOOL                _isTracking;
+    BOOL                _isHighlighted;
 }
 
 + (Class)_binderClassForBinding:(CPString)aBinding
@@ -157,6 +177,13 @@ CPButtonImageOffset   = 3.0;
             @"bezel-inset": CGInsetMakeZero(),
             @"content-inset": CGInsetMakeZero(),
             @"bezel-color": [CPNull null],
+            @"image-position": CPImageLeft,
+            @"vertical-alignment": CPCenterVerticalTextAlignment,
+            @"alignment": CPCenterTextAlignment,
+            @"image-scaling": CPImageScaleNone,
+            @"invert-image": NO,
+            @"invert-image-on-push": NO,
+            @"image-color": [CPNull null] // If null, image color follows text color
         };
 }
 
@@ -172,12 +199,12 @@ CPButtonImageOffset   = 3.0;
     if (self)
     {
         // Should we instead override the defaults?
-        [self setValue:CPCenterTextAlignment forThemeAttribute:@"alignment"];
-        [self setValue:CPCenterVerticalTextAlignment forThemeAttribute:@"vertical-alignment"];
-        [self setValue:CPImageLeft forThemeAttribute:@"image-position"];
-        [self setValue:CPImageScaleNone forThemeAttribute:@"image-scaling"];
+//        [self setValue:CPCenterTextAlignment forThemeAttribute:@"alignment"];
+//        [self setValue:CPCenterVerticalTextAlignment forThemeAttribute:@"vertical-alignment"];
+//        [self setValue:CPImageLeft forThemeAttribute:@"image-position"];
+//        [self setValue:CPImageScaleNone forThemeAttribute:@"image-scaling"];
 
-        [self setBezelStyle:CPRoundRectBezelStyle];
+        [self setBezelStyle:CPRoundedBezelStyle];
         [self setBordered:YES];
 
         [self _init];
@@ -258,30 +285,6 @@ CPButtonImageOffset   = 3.0;
             anObjectValue = CPOnState;
 
     [super setObjectValue:anObjectValue];
-
-    switch ([self objectValue])
-    {
-        case CPMixedState:
-            [self unsetThemeState:CPThemeStateSelected];
-            [self setThemeState:CPButtonStateMixed];
-            if (_showsStateBy & (CPChangeGrayCellMask | CPChangeBackgroundCellMask))
-                [self setThemeState:CPThemeStateHighlighted];
-            else
-                [self unsetThemeState:CPThemeStateHighlighted];
-            break;
-
-        case CPOnState:
-            [self unsetThemeState:CPButtonStateMixed];
-            [self setThemeState:CPThemeStateSelected];
-            if (_showsStateBy & (CPChangeGrayCellMask | CPChangeBackgroundCellMask))
-                [self setThemeState:CPThemeStateHighlighted];
-            else
-                [self unsetThemeState:CPThemeStateHighlighted];
-            break;
-
-        case CPOffState:
-            [self unsetThemeStates:[CPThemeStateSelected, CPButtonStateMixed, CPThemeStateHighlighted]];
-    }
 }
 
 /*!
@@ -378,12 +381,19 @@ CPButtonImageOffset   = 3.0;
 
 - (void)setImage:(CPImage)anImage
 {
-    [self setValue:anImage forThemeAttribute:@"image" inState:CPThemeStateNormal];
+    // This is needed when compiling themes
+    if (!_bezelState)
+        _bezelState = CPThemeStateNormal;
+
+    [self setValue:anImage forThemeAttribute:@"image" inState:_bezelState];
 }
 
 - (CPImage)image
 {
-    return [self valueForThemeAttribute:@"image" inState:CPThemeStateNormal];
+    if (!_bezelState)
+        _bezelState = CPThemeStateNormal;
+
+    return [self valueForThemeAttribute:@"image" inState:_bezelState];
 }
 
 /*!
@@ -392,7 +402,8 @@ CPButtonImageOffset   = 3.0;
 */
 - (void)setAlternateImage:(CPImage)anImage
 {
-    [self setValue:anImage forThemeAttribute:@"image" inState:CPThemeStateHighlighted];
+    [self setValue:anImage forThemeAttribute:@"image" inState:_bezelState.and(CPThemeStateHighlighted)];
+    [self setValue:anImage forThemeAttribute:@"image" inState:_bezelState.and(CPThemeStateSelected)];
 }
 
 /*!
@@ -400,7 +411,17 @@ CPButtonImageOffset   = 3.0;
 */
 - (CPImage)alternateImage
 {
-    return [self valueForThemeAttribute:@"image" inState:CPThemeStateHighlighted];
+    return [self valueForThemeAttribute:@"image" inState:_bezelState.and(CPThemeStateSelected)];
+}
+
+- (void)setHoveredImage:(CPImage)anImage
+{
+    [self setValue:anImage forThemeAttribute:@"image" inState:_bezelState.and(CPThemeStateHovered)];
+}
+
+- (CPImage)hoveredImage
+{
+    return [self valueForThemeAttribute:@"image" inState:_bezelState.and(CPThemeStateHovered)];
 }
 
 - (void)setImageOffset:(float)theImageOffset
@@ -423,11 +444,6 @@ CPButtonImageOffset   = 3.0;
 
     _showsStateBy = aMask;
 
-    if (_showsStateBy & (CPChangeGrayCellMask | CPChangeBackgroundCellMask) && [self state] != CPOffState)
-        [self setThemeState:CPThemeStateHighlighted];
-    else
-        [self unsetThemeState:CPThemeStateHighlighted];
-
     [self setNeedsDisplay:YES];
     [self setNeedsLayout];
 }
@@ -444,11 +460,8 @@ CPButtonImageOffset   = 3.0;
 
     _highlightsBy = aMask;
 
-    if ([self hasThemeState:CPThemeStateHighlighted])
-    {
-        [self setNeedsDisplay:YES];
-        [self setNeedsLayout];
-    }
+    [self setNeedsDisplay:YES];
+    [self setNeedsLayout];
 }
 
 - (CPInteger)highlightsBy
@@ -533,6 +546,17 @@ CPButtonImageOffset   = 3.0;
     _periodicInterval   = anInterval;
 }
 
+- (void)highlight:(BOOL)shouldHighlight
+{
+    if (_isHighlighted == shouldHighlight)
+        return;
+
+    _isHighlighted = shouldHighlight;
+
+    [self setNeedsLayout];
+    [self setNeedsDisplay:YES];
+}
+
 - (void)mouseDown:(CPEvent)anEvent
 {
     if ([self isEnabled] && [self isContinuous])
@@ -555,46 +579,12 @@ CPButtonImageOffset   = 3.0;
         [_target performSelector:_action withObject:self];
 }
 
-- (BOOL)startTrackingAt:(CGPoint)aPoint
-{
-    _isTracking = YES;
-
-    var startedTracking = [super startTrackingAt:aPoint];
-
-    if (_highlightsBy & (CPPushInCellMask | CPChangeGrayCellMask))
-    {
-        if (_showsStateBy & (CPChangeGrayCellMask | CPChangeBackgroundCellMask))
-            [self highlight:[self state] == CPOffState];
-        else
-            [self highlight:YES];
-    }
-    else
-    {
-        if (_showsStateBy & (CPChangeGrayCellMask | CPChangeBackgroundCellMask))
-            [self highlight:[self state] != CPOffState];
-        else
-            [self highlight:NO];
-    }
-
-    return startedTracking;
-}
-
 - (void)stopTracking:(CGPoint)lastPoint at:(CGPoint)aPoint mouseIsUp:(BOOL)mouseIsUp
 {
-    _isTracking = NO;
-
     if (mouseIsUp && CGRectContainsPoint([self bounds], aPoint))
         [self setNextState];
-    else
-    {
-        if (_showsStateBy & (CPChangeGrayCellMask | CPChangeBackgroundCellMask))
-            [self highlight:[self state] != CPOffState];
-        else
-            [self highlight:NO];
-    }
 
-    [self setNeedsLayout];
-    [self setNeedsDisplay:YES];
+    [self highlight:NO];
     [self invalidateTimers];
 }
 
@@ -615,7 +605,7 @@ CPButtonImageOffset   = 3.0;
 
 - (CGRect)contentRectForBounds:(CGRect)bounds
 {
-    var contentInset = [self currentValueForThemeAttribute:@"content-inset"];
+    var contentInset = [self valueForThemeAttribute:@"content-inset" inState:[self _contentVisualState]];
 
     return CGRectInsetByInset(bounds, contentInset);
 }
@@ -626,7 +616,7 @@ CPButtonImageOffset   = 3.0;
     if (![self isBordered])
         return bounds;
 
-    var bezelInset = [self currentValueForThemeAttribute:@"bezel-inset"];
+    var bezelInset = [self currentValueForThemeAttribute:@"bezel-inset"]; // FIXME: faire comme au dessus ?
 
     return CGRectInsetByInset(bounds, bezelInset);
 }
@@ -642,7 +632,7 @@ CPButtonImageOffset   = 3.0;
         size = [contentView frameSize];
     }
     else
-        size = [([self title] || " ") sizeWithFont:[self currentValueForThemeAttribute:@"font"]];
+        size = [([self title] || " ") sizeWithFont:[self font]]; //[self currentValueForThemeAttribute:@"font"]];
 
     var contentInset = [self currentValueForThemeAttribute:@"content-inset"],
         minSize = [self currentValueForThemeAttribute:@"min-size"],
@@ -698,87 +688,164 @@ CPButtonImageOffset   = 3.0;
         return [[_CPImageAndTextView alloc] initWithFrame:CGRectMakeZero()];
 }
 
+- (CPThemeState)_backgroundVisualState
+{
+    var visualState  = [self themeState] || CPThemeStateNormal, // Needed during theme compilation
+        currentState = [self state],
+        buttonIsOn   = (currentState !== CPOffState);
+
+    if (_isHighlighted && (_highlightsBy & (CPPushInCellMask | CPChangeGrayCellMask))) // FIXME: quid background ?
+        visualState = visualState.and(CPThemeStateHighlighted);
+    else
+        visualState = visualState.without(CPThemeStateHighlighted);
+
+    if (buttonIsOn && (_showsStateBy & (CPPushInCellMask | CPChangeGrayCellMask))) // FIXME: quid background ?
+        visualState = visualState.and((currentState === CPOnState) ? CPThemeStateSelected : CPButtonStateMixed);
+    else
+        visualState = visualState.without(CPThemeStateSelected);
+
+    return visualState;
+}
+
+// Note : We have to split content and image visual states as, for example, radio buttons don't follow push buttons behavior
+- (CPThemeState)_contentVisualState
+{
+    var visualState  = [self themeState] || CPThemeStateNormal, // Needed during theme compilation
+        currentState = [self state],
+        buttonIsOn   = (currentState !== CPOffState);
+
+    // If the button is pushed (_isHighlighted), always add the highlighted state
+    if (_isHighlighted || (((_showsStateBy & CPChangeGrayCellMask) || (_showsStateBy & CPChangeBackgroundCellMask)) && buttonIsOn))
+        visualState = visualState.and(CPThemeStateHighlighted);
+    else
+        visualState = visualState.without(CPThemeStateHighlighted);
+
+    if (buttonIsOn && (_showsStateBy & CPContentsCellMask))
+        visualState = visualState.and((currentState === CPOnState) ? CPThemeStateSelected : CPButtonStateMixed);
+    else
+        visualState = visualState.without(CPThemeStateSelected);
+
+    return visualState;
+}
+
+- (CPThemeState)_imageVisualState
+{
+    var visualState  = [self themeState] || CPThemeStateNormal, // Needed during theme compilation
+        currentState = [self state],
+        buttonIsOn   = (currentState !== CPOffState);
+
+    // Remove highlighted & selected theme states
+    visualState = visualState.without(CPThemeStateHighlighted);
+    visualState = visualState.without(CPThemeStateSelected);
+
+    // Note : We have to deal with special case where button is ON, highlightsBy and showsStateBy use content, and button is pushed
+    //        BUT this should not be used for disclosure buttons !
+    if (_isHighlighted && buttonIsOn && (_highlightsBy & CPContentsCellMask) && (_showsStateBy & CPContentsCellMask) && (_bezelStyle !== CPDisclosureBezelStyle))
+        return visualState;
+
+    if (_isHighlighted && ((_highlightsBy & CPContentsCellMask) || (_highlightsBy & CPChangeGrayCellMask)))
+        visualState = visualState.and(CPThemeStateHighlighted);
+
+    if (buttonIsOn && (_showsStateBy & CPContentsCellMask))
+        visualState = visualState.and((currentState === CPOnState) ? CPThemeStateSelected : CPButtonStateMixed);
+
+    return visualState;
+}
+
+- (CPString)_currentTitle
+{
+    var buttonIsOn = ([self state] !== CPOffState);
+
+    // Note : We have to deal with special case where button is ON, highlightsBy and showsStateBy use content, and button is pushed
+    if (_isHighlighted && buttonIsOn && (_highlightsBy & CPContentsCellMask) && (_showsStateBy & CPContentsCellMask))
+        return _title;
+
+    else if (_alternateTitle && ((_isHighlighted && (_highlightsBy & CPContentsCellMask)) || (buttonIsOn && (_showsStateBy & CPContentsCellMask))))
+        return _alternateTitle;
+
+    else
+        return _title;
+}
+
+- (CPImage)_currentImage
+{
+    var visualState  = [self _imageVisualState],
+        currentImage = [self valueForThemeAttribute:@"image"       inState:visualState],
+        imageColor   = [self valueForThemeAttribute:@"image-color" inState:visualState],
+        buttonIsOn   = ([self state] !== CPOffState);
+
+    if ([currentImage isMaterialIconImage])
+    {
+        // FIXME: Keep this ?
+        if (([self valueForThemeAttribute:@"invert-image" inState:visualState] || ([self valueForThemeAttribute:@"invert-image-on-push" inState:visualState] && (_isHighlighted || (((_showsStateBy & CPChangeGrayCellMask) || (_showsStateBy & CPChangeBackgroundCellMask)) && buttonIsOn)))))
+            currentImage = [currentImage invertedImage];
+
+        else if (imageColor && [imageColor isKindOfClass:CPColor])
+            // In some buttons, image color doesn't follow text color !
+            currentImage = [currentImage imageVersionWithColor:imageColor];
+
+        else
+            // By default, image color follows text color
+            currentImage = [currentImage imageVersionWithColor:[self valueForThemeAttribute:@"text-color" inState:[self _contentVisualState]]];
+    }
+
+    return currentImage;
+}
+
 - (void)layoutSubviews
 {
-    var bezelView = [self layoutEphemeralSubviewNamed:@"bezel-view"
-                                           positioned:CPWindowBelow
-                      relativeToEphemeralSubviewNamed:@"content-view"];
+    var bezelView   = [self layoutEphemeralSubviewNamed:@"bezel-view"
+                                             positioned:CPWindowBelow
+                        relativeToEphemeralSubviewNamed:@"content-view"],
 
-    [bezelView setBackgroundColor:[self currentValueForThemeAttribute:@"bezel-color"]];
-
-    var contentView = [self layoutEphemeralSubviewNamed:@"content-view"
+        contentView = [self layoutEphemeralSubviewNamed:@"content-view"
                                              positioned:CPWindowAbove
-                        relativeToEphemeralSubviewNamed:@"bezel-view"];
+                        relativeToEphemeralSubviewNamed:@"bezel-view"],
 
-    if (contentView)
-    {
-        var title = nil,
-            image = nil;
+        image              = [self _currentImage],
+        contentVisualState = [self _contentVisualState];
 
-        if (_isTracking)
-        {
-            if (_highlightsBy & CPContentsCellMask)
-            {
-                if (_showsStateBy & CPContentsCellMask)
-                {
-                    title = ([self state] == CPOffState && _alternateTitle) ? _alternateTitle : _title;
-                    image = ([self state] == CPOffState && [self alternateImage]) ? [self alternateImage] : [self image];
-                }
-                else
-                {
-                    title = [self alternateTitle];
-                    image = [self alternateImage];
-                }
-            }
-            else if (_showsStateBy & CPContentsCellMask)
-            {
-                title = ([self state] != CPOffState && _alternateTitle) ? _alternateTitle : _title;
-                image = ([self state] != CPOffState && [self alternateImage]) ? [self alternateImage] : [self image];
-            }
-            else
-            {
-                title = _title;
-                image = [self image];
-            }
-        }
-        else
-        {
-            if (_showsStateBy & CPContentsCellMask)
-            {
-                title = ([self state] != CPOffState && _alternateTitle) ? _alternateTitle : _title;
-                image = ([self state] != CPOffState && [self alternateImage]) ? [self alternateImage] : [self image];
-            }
-            else
-            {
-                title = _title;
-                image = [self image];
-            }
-        }
+    [bezelView   setBackgroundColor:[self valueForThemeAttribute:@"bezel-color" inState:[self _backgroundVisualState]]];
+    [contentView setText:[self _currentTitle]];
+    [contentView setImage:image];
 
-        [contentView setText:title];
-        [contentView setImage:image];
-        [contentView setImageOffset:[self currentValueForThemeAttribute:@"image-offset"]];
+    [contentView setImageOffset:[self valueForThemeAttribute:@"image-offset" inState:contentVisualState]];
 
-        [contentView setFont:[self currentValueForThemeAttribute:@"font"]];
-        [contentView setTextColor:[self currentValueForThemeAttribute:@"text-color"]];
-        [contentView setAlignment:[self currentValueForThemeAttribute:@"alignment"]];
-        [contentView setVerticalAlignment:[self currentValueForThemeAttribute:@"vertical-alignment"]];
-        [contentView setLineBreakMode:[self currentValueForThemeAttribute:@"line-break-mode"]];
-        [contentView _setUsesSingleLineMode:YES];
-        [contentView setTextShadowColor:[self currentValueForThemeAttribute:@"text-shadow-color"]];
-        [contentView setTextShadowOffset:[self currentValueForThemeAttribute:@"text-shadow-offset"]];
-        [contentView setImagePosition:[self currentValueForThemeAttribute:@"image-position"]];
-        [contentView setImageScaling:[self currentValueForThemeAttribute:@"image-scaling"]];
-        [contentView setDimsImage:[self hasThemeState:CPThemeStateDisabled] && _imageDimsWhenDisabled];
-    }
+    [contentView setFont:[self font]]; //[self currentValueForThemeAttribute:@"font"]];
+    [contentView setTextColor:[self valueForThemeAttribute:@"text-color" inState:contentVisualState]];
+    [contentView setAlignment:[self valueForThemeAttribute:@"alignment"  inState:contentVisualState]];
+    [contentView setVerticalAlignment:[self valueForThemeAttribute:@"vertical-alignment" inState:contentVisualState]];
+    [contentView setLineBreakMode:[self valueForThemeAttribute:@"line-break-mode" inState:contentVisualState]];
+    [contentView _setUsesSingleLineMode:YES];
+    [contentView setTextShadowColor:[self valueForThemeAttribute:@"text-shadow-color" inState:contentVisualState]];
+    [contentView setTextShadowOffset:[self valueForThemeAttribute:@"text-shadow-offset" inState:contentVisualState]];
+    [contentView setImagePosition:[self valueForThemeAttribute:@"image-position"]];
+    [contentView setImageScaling:[self valueForThemeAttribute:@"image-scaling"]];
+
+    // We don't automatically dim material icon images as the color is driven by the theme
+    [contentView setDimsImage:[self hasThemeState:CPThemeStateDisabled] && _imageDimsWhenDisabled && ![image isMaterialIconImage]];
 }
 
 - (void)setBordered:(BOOL)shouldBeBordered
 {
     if (shouldBeBordered)
+    {
         [self setThemeState:CPThemeStateBordered];
+
+        if (_bezelState)
+            _bezelState = _bezelState.and(CPThemeStateBordered);
+        else
+            _bezelState = CPThemeStateBordered;
+    }
     else
+    {
         [self unsetThemeState:CPThemeStateBordered];
+
+        if (_bezelState)
+            _bezelState = _bezelState.without(CPThemeStateBordered);
+        else
+            _bezelState = CPThemeStateNormal;
+    }
 }
 
 - (BOOL)isBordered
@@ -874,17 +941,19 @@ CPButtonImageOffset   = 3.0;
 
     [self setState:[self nextState]];
 
-    var shouldHighlight = NO;
-
-    if (_highlightsBy & (CPPushInCellMask | CPChangeGrayCellMask))
-    {
-        if (_showsStateBy & (CPChangeGrayCellMask | CPChangeBackgroundCellMask))
-            shouldHighlight = [self state] == CPOffState;
-        else
-            shouldHighlight = YES;
-    }
-
-    [self highlight:shouldHighlight];
+    // FIXME: Here
+//    var shouldHighlight = NO;
+//
+//    if (_highlightsBy & (CPPushInCellMask | CPChangeGrayCellMask))
+//    {
+//        if (_showsStateBy & (CPChangeGrayCellMask | CPChangeBackgroundCellMask))
+//            shouldHighlight = [self state] == CPOffState;
+//        else
+//            shouldHighlight = YES;
+//    }
+//
+//    [self highlight:shouldHighlight];
+    [self highlight:YES];
 
     try
     {
@@ -896,7 +965,8 @@ CPButtonImageOffset   = 3.0;
     }
     finally
     {
-        if (shouldHighlight)
+        // FIXME: Here
+        //        if (shouldHighlight)
             [CPTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(unhighlightButtonTimerDidFinish:) userInfo:nil repeats:NO];
     }
 }
@@ -920,6 +990,18 @@ CPButtonImageOffset   = 3.0;
         [self setThemeState:newState];
 
     _bezelStyle = aBezelStyle;
+
+    if (_bezelState && newState)
+        _bezelState = _bezelState.and(newState);
+    else
+        _bezelState = newState || CPThemeStateNormal;
+
+    // For disclosure triangle and rounded, we have to move away from
+    // what Xcode tells us as we implement visual behavior with images (so content)
+    // and not background
+
+    if ((_bezelStyle === CPDisclosureBezelStyle) || (_bezelStyle === CPRoundedDisclosureBezelStyle))
+        [self setShowsStateBy:CPContentsCellMask];
 }
 
 - (unsigned)bezelStyle
@@ -930,7 +1012,7 @@ CPButtonImageOffset   = 3.0;
 @end
 
 
-var CPButtonImageKey                    = @"CPButtonImageKey",
+var CPButtonImageKey                    = @"CPButtonImageKey", // FIXME: pas utilisé ??????
     CPButtonAlternateImageKey           = @"CPButtonAlternateImageKey",
     CPButtonTitleKey                    = @"CPButtonTitleKey",
     CPButtonAlternateTitleKey           = @"CPButtonAlternateTitleKey",
@@ -943,7 +1025,8 @@ var CPButtonImageKey                    = @"CPButtonImageKey",
     CPButtonPeriodicDelayKey            = @"CPButtonPeriodicDelayKey",
     CPButtonPeriodicIntervalKey         = @"CPButtonPeriodicIntervalKey",
     CPButtonHighlightsByKey             = @"CPButtonHighlightsByKey",
-    CPButtonShowsStateByKey             = @"CPButtonShowsStateByKey";
+    CPButtonShowsStateByKey             = @"CPButtonShowsStateByKey",
+    CPButtonBezelStyleKey               = @"CPButtonBezelStyleKey";
 
 @implementation CPButton (CPCoding)
 
@@ -992,6 +1075,12 @@ var CPButtonImageKey                    = @"CPButtonImageKey",
 
         _keyEquivalentModifierMask = [aCoder decodeIntForKey:CPButtonKeyEquivalentMaskKey];
 
+        if ([aCoder containsValueForKey:CPButtonIsBorderedKey])
+            [self setBordered:[aCoder decodeBoolForKey:CPButtonIsBorderedKey]];
+
+        if ([aCoder containsValueForKey:CPButtonBezelStyleKey])
+            [self setBezelStyle:[aCoder decodeIntForKey:CPButtonBezelStyleKey]];
+
         [self setNeedsLayout];
         [self setNeedsDisplay:YES];
     }
@@ -1026,6 +1115,9 @@ var CPButtonImageKey                    = @"CPButtonImageKey",
 
     [aCoder encodeObject:_periodicDelay forKey:CPButtonPeriodicDelayKey];
     [aCoder encodeObject:_periodicInterval forKey:CPButtonPeriodicIntervalKey];
+
+    [aCoder encodeBool:[self isBordered] forKey:CPButtonIsBorderedKey];
+    [aCoder encodeInt: [self bezelStyle] forKey:CPButtonBezelStyleKey];
 }
 
 @end
