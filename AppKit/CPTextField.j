@@ -233,7 +233,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
             @"bezel-inset": CGInsetMakeZero(),
             @"content-inset": CGInsetMake(1.0, 0.0, 0.0, 0.0),
             @"bezel-color": [CPNull null],
-            @"min-size": CGSizeMake(0, 29)
+            @"min-size": CGSizeMake(0, 29),
+            @"background-inset": CGInsetMakeZero()
         };
 }
 
@@ -368,8 +369,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [self setPlaceholderString:@""];
 
         _sendActionOn = CPKeyUpMask | CPKeyDownMask;
-
-        [self setValue:CPNaturalTextAlignment forThemeAttribute:@"alignment"];
     }
 
     return self;
@@ -560,9 +559,9 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     Sets the background color, which is shown for non-bezeled text fields with drawsBackground set to YES
     @param aColor The background color
 */
-- (void)setTextFieldBackgroundColor:(CPColor)aColor
+- (void)setBackgroundColor:(CPColor)aColor
 {
-    if (_textFieldBackgroundColor == aColor)
+    if (_backgroundColor == aColor)
         return;
 
     _textFieldBackgroundColor = aColor;
@@ -574,7 +573,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 /*!
     Returns the background color.
 */
-- (CPColor)textFieldBackgroundColor
+- (CPColor)backgroundColor
 {
     return _textFieldBackgroundColor;
 }
@@ -759,7 +758,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 #if PLATFORM(DOM)
 
     var element       = [self _inputElement],
-        font          = [self currentValueForThemeAttribute:@"font"],
+        font          = [self font],
         lineHeight    = [font defaultLineHeightForFont],
         contentRect   = [self contentRectForBounds:[self bounds]],
         verticalAlign = [self currentValueForThemeAttribute:"vertical-alignment"],
@@ -1462,7 +1461,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         lineBreakMode = [self lineBreakMode],
         text = (_stringValue || @" "),
         textSize = CGSizeMakeCopy(frameSize),
-        font = [self currentValueForThemeAttribute:@"font"];
+        font = [self font];
 
     textSize.width -= contentInset.left + contentInset.right;
     textSize.height -= contentInset.top + contentInset.bottom;
@@ -1866,6 +1865,12 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     if (aName === "bezel-view")
         return [self bezelRectForBounds:[self bounds]];
 
+    else if (aName === "background-view")
+    {
+        var backgroundInset = [self currentValueForThemeAttribute:@"background-inset"];
+
+        return CGRectInsetByInset([self bounds], backgroundInset);
+    }
     else if (aName === "content-view")
         return [self contentRectForBounds:[self bounds]];
 
@@ -1875,6 +1880,14 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 - (CPView)createEphemeralSubviewNamed:(CPString)aName
 {
     if (aName === "bezel-view")
+    {
+        var view = [[CPView alloc] initWithFrame:CGRectMakeZero()];
+
+        [view setHitTests:NO];
+
+        return view;
+    }
+    else if (aName === "background-view")
     {
         var view = [[CPView alloc] initWithFrame:CGRectMakeZero()];
 
@@ -1896,16 +1909,37 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)layoutSubviews
 {
-    var bezelView = [self layoutEphemeralSubviewNamed:@"bezel-view"
-                                           positioned:CPWindowBelow
-                      relativeToEphemeralSubviewNamed:@"content-view"];
+    var bezelColor = [self currentValueForThemeAttribute:@"bezel-color"];
+    
+    if ([bezelColor isCSSBased])
+    {
+        // CSS Styling
+        // We don't need bezelView as we apply CSS styling directly on the text field view itself
 
-    if (bezelView)
-        [bezelView setBackgroundColor:[self currentValueForThemeAttribute:@"bezel-color"]];
+        // We need to call [super setBackgroundColor:] as we have redefined it here
+        [super setBackgroundColor:bezelColor];
+        
+        var contentView    = [self layoutEphemeralSubviewNamed:@"content-view"
+                                                    positioned:CPWindowAbove
+                               relativeToEphemeralSubviewNamed:nil],
+            backgroundView = [self layoutEphemeralSubviewNamed:@"background-view"
+                                                    positioned:CPWindowBelow
+                               relativeToEphemeralSubviewNamed:@"content-view"];
 
-    var contentView = [self layoutEphemeralSubviewNamed:@"content-view"
-                                             positioned:CPWindowAbove
-                        relativeToEphemeralSubviewNamed:@"bezel-view"];
+        [backgroundView setBackgroundColor:(_drawsBackground ? _textFieldBackgroundColor : [CPColor clearColor])];
+    }
+    else
+    {
+        var bezelView = [self layoutEphemeralSubviewNamed:@"bezel-view"
+                                               positioned:CPWindowBelow
+                          relativeToEphemeralSubviewNamed:@"content-view"];
+        
+        [bezelView setBackgroundColor:bezelColor];
+        
+        var contentView = [self layoutEphemeralSubviewNamed:@"content-view"
+                                                 positioned:CPWindowAbove
+                            relativeToEphemeralSubviewNamed:@"bezel-view"];
+    }
 
     if (contentView)
     {
@@ -1926,7 +1960,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [contentView setText:string];
 
         [contentView setTextColor:[self currentValueForThemeAttribute:@"text-color"]];
-        [contentView setFont:[self currentValueForThemeAttribute:@"font"]];
+        [contentView setFont:[self font]];
         [contentView setAlignment:[self currentValueForThemeAttribute:@"alignment"]];
         [contentView setVerticalAlignment:[self currentValueForThemeAttribute:@"vertical-alignment"]];
         [contentView setLineBreakMode:[self currentValueForThemeAttribute:@"line-break-mode"]];
@@ -1966,7 +2000,25 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     // We don't want to change the text-color of the placeHolder of the textField
     var placeholderColor = [self valueForThemeAttribute:@"text-color" inState:CPTextFieldStatePlaceholder];
 
-    [super setTextColor:aColor];
+    // If the text field is a cell based table data view, we need to fix the color for all possible states
+    if ([self hasThemeState:CPThemeStateTableDataView])
+    {
+        [self setTextColor:aColor inThemeStates:[CPThemeStateTableDataView]];
+        [self setTextColor:aColor inThemeStates:[CPThemeStateTableDataView, CPThemeStateSelectedDataView]];
+        [self setTextColor:aColor inThemeStates:[CPThemeStateTableDataView, CPThemeStateSelectedDataView, CPThemeStateFirstResponder, CPThemeStateKeyWindow]];
+    }
+    else
+    {
+        if ([self hasThemeState:CPTextFieldStateRounded])
+        {
+            [self setTextColor:aColor inThemeStates:[CPTextFieldStateRounded]];
+            [self setTextColor:aColor inThemeStates:[CPTextFieldStateRounded, CPThemeStateEditing]];
+        }
+
+        [self setTextColor:aColor inThemeStates:[CPThemeStateNormal]];
+        [self setTextColor:aColor inThemeStates:[CPThemeStateEditing]];
+    }
+
     [self setValue:placeholderColor forThemeAttribute:@"text-color" inState:CPTextFieldStatePlaceholder];
 }
 
@@ -2109,8 +2161,7 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
         [self setSelectable:[aCoder decodeBoolForKey:CPTextFieldIsSelectableKey]];
 
         [self setDrawsBackground:[aCoder decodeBoolForKey:CPTextFieldDrawsBackgroundKey]];
-
-        [self setTextFieldBackgroundColor:[aCoder decodeObjectForKey:CPTextFieldBackgroundColorKey]];
+        [self setBackgroundColor:[aCoder decodeObjectForKey:CPTextFieldBackgroundColorKey]];
 
         [self setLineBreakMode:[aCoder decodeIntForKey:CPTextFieldLineBreakModeKey]];
         [self setAlignment:[aCoder decodeIntForKey:CPTextFieldAlignmentKey]];
@@ -2120,6 +2171,7 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
         [self _setUsesSingleLineMode:[aCoder decodeBoolForKey:CPTextFieldUsesSingleLineMode]];
         [self _setWraps:[aCoder decodeBoolForKey:CPTextFieldWraps]];
         [self _setScrolls:[aCoder decodeBoolForKey:CPTextFieldScrolls]];
+        [self updateTrackingAreas];
     }
 
     return self;
@@ -2319,4 +2371,22 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 
 @end
 
+#pragma mark -
 
+@implementation CPTextField (Deprecated)
+
+- (void)setTextFieldBackgroundColor:(CPColor)aColor
+{
+    CPLog.error("[CPTextField setTextFieldBackgroundColor:] is deprecated, use [CPTextField setBackgroundColor:] instead.");
+
+    [self setBackgroundColor:aColor];
+}
+
+- (CPColor)textFieldBackgroundColor
+{
+    CPLog.info("[CPTextField textFieldBackgroundColor] is deprecated, use [CPTextField backgroundColor] instead.");
+
+    return [self backgroundColor];
+}
+
+@end
