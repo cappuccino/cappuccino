@@ -1,0 +1,16 @@
+
+require("../../../common.jake");
+
+var blend = require("cappuccino/jake").blend;
+
+blend ("Aristo3.blend", function(aristo3Task)
+{
+    aristo3Task.setBuildIntermediatesPath(FILE.join($BUILD_DIR, "Aristo3.build", $CONFIGURATION))
+    aristo3Task.setBuildPath(FILE.join($BUILD_DIR, $CONFIGURATION));
+
+    aristo3Task.setThemeDescriptors(new FileList("ThemeDescriptors.j"));
+    aristo3Task.setIdentifier("com.280n.blend.Aristo3");
+    aristo3Task.setResources(new FileList("Resources/*"));
+});
+
+task ("build", ["Aristo3.blend"]);

@@ -1,4 +1,4 @@
 
 require("../../common.jake");
 
-subtasks(["BlendKit", "CommonJS", "Aristo", "Aristo2"], ["build", "clean", "clobber"]);
+subtasks(["BlendKit", "CommonJS", "Aristo", "Aristo2", "Aristo3"], ["build", "clean", "clobber"]);
