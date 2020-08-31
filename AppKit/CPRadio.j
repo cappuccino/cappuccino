@@ -160,6 +160,21 @@ CPRadioImageOffset = 4.0;
         [CPApp sendAction:[_radioGroup action] to:[_radioGroup target] from:_radioGroup];
 }
 
+- (void)awakeFromCib
+{
+    // Implementation of modern Cocoa behavior : automatic radio group
+    // Search for first CPRadio subview of my superview.
+    // If this is me, do nothing.
+    // If this is another radio button and if we have the same action, set my radio group to its, so we'll live in the same radio group.
+
+    for (var i = 0, superviewSubviews = [[self superview] subviews], count = [superviewSubviews count], firstRadioButton; (i < count) && !firstRadioButton; i++)
+        if ([superviewSubviews[i] isKindOfClass:CPRadio])
+            firstRadioButton = superviewSubviews[i];
+
+    if ((firstRadioButton !== self) && [self action] && ([self action] === [firstRadioButton action]))
+        [self setRadioGroup:[firstRadioButton radioGroup]];
+}
+
 @end
 
 var CPRadioRadioGroupKey    = @"CPRadioRadioGroupKey";
