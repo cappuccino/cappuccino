@@ -852,6 +852,11 @@ var CPControlBlackColor = [CPColor blackColor];
     [self setValue:aColor forThemeAttribute:@"text-color" inState:[self themeState]];
 }
 
+- (void)setTextColor:(CPColor)aColor inThemeStates:(CPArray)themeStates
+{
+    [self setValue:aColor forThemeAttribute:@"text-color" inStates:themeStates];
+}
+
 /*!
     Returns the text color of the receiver.
 */
