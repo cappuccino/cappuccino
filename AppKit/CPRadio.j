@@ -171,7 +171,7 @@ CPRadioImageOffset = 4.0;
         if ([superviewSubviews[i] isKindOfClass:CPRadio] && [superviewSubviews[i] action])
             firstRadioButton = superviewSubviews[i];
 
-    if ((firstRadioButton !== self) && [self action] && ([self action] === [firstRadioButton action]))
+    if ((firstRadioButton !== self) && ([self action] === [firstRadioButton action]))
         [self setRadioGroup:[firstRadioButton radioGroup]];
 }
 
