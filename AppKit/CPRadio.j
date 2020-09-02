@@ -160,23 +160,52 @@ CPRadioImageOffset = 4.0;
         [CPApp sendAction:[_radioGroup action] to:[_radioGroup target] from:_radioGroup];
 }
 
-- (void)awakeFromCib
+- (void)viewDidMoveToSuperview
+{
+    [self _setRadioGroup];
+    [super viewDidMoveToSuperview];
+}
+
+- (void)setAction:(SEL)anAction
+{
+    [super setAction:anAction];
+    [self _setRadioGroup];
+}
+
+#pragma mark Private methods
+
+- (void)_setRadioGroup
 {
     // Implementation of modern Cocoa behavior : automatic radio group
-    // Search for first CPRadio subview of my superview having the same action as me (if any).
-    // If this is me, do nothing.
-    // If this is another radio button, set my radio group to its, so we'll live in the same radio group.
 
-    if (![self action])
-        // I have no action set, so there can be no grouping
+    // If I have no action set or no superview, no grouping can be done.
+    if (![self action] || ![self superview])
+    {
+        // If I'm in a group (size > 1), remove me.
+        if ([[self radioGroup] size] > 1)
+            [self setRadioGroup:[CPRadioGroup new]];
+
         return;
+    }
 
-    for (var i = 0, superviewSubviews = [[self superview] subviews], count = [superviewSubviews count], firstRadioButton; (i < count) && !firstRadioButton; i++)
-        if ([superviewSubviews[i] isKindOfClass:CPRadio] && ([superviewSubviews[i] action] === [self action]))
-            firstRadioButton = superviewSubviews[i];
+    // OK. Search now in my superview subviews for other radio buttons having the same action as mine.
+    // Take the one with the radio group having the greatest number of members.
 
-    if (firstRadioButton && (firstRadioButton !== self))
-        [self setRadioGroup:[firstRadioButton radioGroup]];
+    var radioGroup;
+
+    for (var i = 0, superviewSubviews = [[self superview] subviews], count = [superviewSubviews count], aSubview, myAction = [self action], radioGroupSize = -1; (i < count); i++)
+    {
+        aSubview = superviewSubviews[i];
+
+        if ([aSubview isKindOfClass:CPRadio] && (aSubview !== self) && ([aSubview action] === myAction) && ([[aSubview radioGroup] size] > radioGroupSize))
+        {
+            radioGroup     = [aSubview radioGroup];
+            radioGroupSize = [radioGroup size];
+        }
+    }
+
+    if (radioGroup)
+        [self setRadioGroup:radioGroup];
 }
 
 @end
@@ -321,6 +350,11 @@ var CPRadioRadioGroupKey    = @"CPRadioRadioGroupKey";
 - (CPArray)radios
 {
     return _radios;
+}
+
+- (int)size
+{
+    return [_radios count];
 }
 
 - (void)setEnabled:(BOOL)enabled
