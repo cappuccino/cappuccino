@@ -67,6 +67,18 @@ CPRadioImageOffset = 4.0;
     [[button1 radioGroup] selectedRadio] returns the currently selected
     option.
 
+    UPDATE 09/2020 : Implementation of modern Cocoa behavior :
+
+    As in Cocoa, radio buttons grouping is now automatic.
+
+    To be associated in a common group (and so being mutually exclusive),
+    radio buttons must combine 2 criteria :
+
+    - same superview (enclosing view)
+    - same action
+
+    TODO: This first implementation uses "as is" CPRadioGroup. This could
+          be simplified (no more need for radio group action, for example)
 */
 @implementation CPRadio : CPButton
 {
@@ -168,6 +180,9 @@ CPRadioImageOffset = 4.0;
 
 - (void)setAction:(SEL)anAction
 {
+    if (anAction === _action)
+        return;
+
     [super setAction:anAction];
     [self _setRadioGroup];
 }
@@ -178,7 +193,7 @@ CPRadioImageOffset = 4.0;
 {
     // Implementation of modern Cocoa behavior : automatic radio group
 
-    // If I have no action set or no superview, no grouping can be done.
+    // If no action is set or no superview, no grouping can be done.
     if (![self action] || ![self superview])
     {
         // If I'm in a group (size > 1), remove me.
@@ -188,7 +203,7 @@ CPRadioImageOffset = 4.0;
         return;
     }
 
-    // OK. Search now in my superview subviews for other radio buttons having the same action as mine.
+    // Search in superview subviews for other radio buttons having the same action.
     // Take the one with the radio group having the greatest number of members.
 
     var radioGroup;
@@ -206,6 +221,12 @@ CPRadioImageOffset = 4.0;
 
     if (radioGroup)
         [self setRadioGroup:radioGroup];
+    else
+        // No other radio buttons to group with found.
+        // It may be because this radio button was in a radio group and its action was changed.
+        // If this is the case, we must reisolate it in a new radio group.
+        if ([_radioGroup size] > 1)
+            [self setRadioGroup:[CPRadioGroup new]];
 }
 
 @end

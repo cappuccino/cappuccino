@@ -189,6 +189,69 @@
     [self assertTrue:wasClicked message:@"a user click on a radio button should fire the group action"];
 }
 
+- (void)testAutomaticRadioGroup
+{
+    var radioButton1 = [CPRadio radioWithTitle:@"Radio 1"],
+        radioButton2 = [CPRadio radioWithTitle:@"Radio 2"],
+        radioButton3 = [CPRadio radioWithTitle:@"Radio 3"],
+        simpleView1  = [[CPView alloc] initWithFrame:CGRectMakeZero()],
+        simpleView2  = [[CPView alloc] initWithFrame:CGRectMakeZero()];
+
+    // Initially, buttons are isolated
+    [self assertFalse:([radioButton1 radioGroup] === [radioButton2 radioGroup]) message:@"initially, buttons should be isolated"];
+
+    [simpleView1 addSubview:radioButton1];
+    [simpleView1 addSubview:radioButton2];
+
+    // As no actions are defined, buttons are still isolated
+    [self assertFalse:([radioButton1 radioGroup] === [radioButton2 radioGroup]) message:@"no actions defined, buttons should be isolated"];
+
+    [radioButton1 setAction:@selector(dummyAction1:)];
+    [radioButton2 setAction:@selector(dummyAction2:)];
+
+    // As different actions are defined, buttons are still isolatdd
+    [self assertFalse:([radioButton1 radioGroup] === [radioButton2 radioGroup]) message:@"different actions defined, buttons should be isolated"];
+
+    [radioButton2 setAction:@selector(dummyAction1:)];
+
+    // As the same action is defined, buttons must be grouped
+    [self assertTrue:([radioButton1 radioGroup] === [radioButton2 radioGroup]) message:@"same action defined, buttons should be grouped"];
+
+    [radioButton3 setAction:@selector(dummyAction1:)];
+
+    // As radioButton3 is not inserted in a view, it's isolated
+    [self assertTrue:([[radioButton3 radioGroup] size] === 1) message:@"not in a view, button should be isolated"];
+
+    [simpleView2 addSubview:radioButton3];
+
+    // As radioButton3 is in another view, it's isolated from radioButton1 & 2
+    [self assertTrue:([[radioButton3 radioGroup] size] === 1) message:@"alone in a view, button should be isolated"];
+
+    [simpleView1 addSubview:radioButton3];
+
+    // As all 3 buttons are in the same view, with the same action, they are grouped
+    [self assertTrue:([[radioButton3 radioGroup] size] === 3) message:@"after moving to the same view, buttons should be grouped"];
+
+    [radioButton3 setAction:@selector(dummyAction2:)];
+
+    // As the action of button 3 is now different, it's isolated
+    [self assertTrue:([[radioButton3 radioGroup] size] === 1) message:@"after changing the action, button 3 should be isolated"];
+
+    // And buttons 1 & 2 are still grouped
+    [self assertTrue:([radioButton1 radioGroup] === [radioButton2 radioGroup]) message:@"buttons 1 & 2 should remain grouped"];
+    [self assertTrue:([[radioButton1 radioGroup] size] === 2) message:@"radio group should contain only buttons 1 & 2"];
+}
+
+- (IBAction)dummyAction1:(id)sender
+{
+
+}
+
+- (IBAction)dummyAction2:(id)sender
+{
+
+}
+
 - (void)testTypeMasks
 {
     button = [[CPButton alloc] initWithFrame:CGRectMakeZero()];
