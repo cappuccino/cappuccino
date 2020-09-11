@@ -800,6 +800,9 @@ url("data:image/png;base64,BASE64ENCODEDDATA")  // if there is a pattern image
     var description = [super description],
         patternImage = [self patternImage];
 
+    if ([self isCSSBased])
+        return description + "\n" + [self cssDictionary]+ "\nBefore:\n" + [self cssBeforeDictionary] + "\nAfter:\n" + [self cssAfterDictionary];
+
     if (!patternImage)
         return description + " " + [self cssString];
 
