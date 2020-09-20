@@ -44,14 +44,9 @@ var _CPCibCustomViewClassNameKey = @"_CPCibCustomViewClassNameKey";
     // FIXME: Warning : trick here !
     // Workaround for the ibtool bug which reverses subviews order when using a custom view
     // Valid as of ibtool version 14460.31
-    var subviews         = [self subviews],
-        reversedSubviews = @[],
-        count            = [subviews count];
+    // As nib2cib doesn't deal with DOM, we can simply use reverse()
 
-    while (count--)
-        [reversedSubviews addObject:subviews[count]];
-
-    [self setSubviews:reversedSubviews];
+    _subviews.reverse();
 
     return self;
 }
