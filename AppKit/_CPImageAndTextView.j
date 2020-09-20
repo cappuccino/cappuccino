@@ -693,7 +693,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
         }
         else if (_imageScaling === CPImageScaleProportionallyUpOrDown)
         {
-            var scale = MIN(size.width / imageWidth, size.height + imageHeight);
+            var scale = MIN(size.width / imageWidth, size.height / imageHeight);
 
             imageWidth *= scale;
             imageHeight *= scale;
