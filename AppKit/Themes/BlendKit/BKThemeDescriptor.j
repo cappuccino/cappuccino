@@ -325,6 +325,15 @@ var ItemSizes               = { },
         [self registerThemeValues:themeValues forView:aView];
 }
 
++ (void)registerThemeValues:(CPArray)themeValues forView:(CPView)aView inheritFrom:(CPView)anotherView
+{
+    if (anotherView)
+        // We take all theme attributes values from anotherView
+        [aView _addThemeAttributeDictionary:[anotherView _themeAttributeDictionary]];
+
+    [self registerThemeValues:themeValues forView:aView];
+}
+
 @end
 
 function BKLabelFromIdentifier(anIdentifier)
