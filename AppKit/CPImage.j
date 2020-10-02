@@ -26,10 +26,13 @@
 @import <Foundation/CPRunLoop.j>
 @import <Foundation/CPString.j>
 @import <Foundation/CPData.j>
+@import <Foundation/CPKeyedArchiver.j>
+@import <Foundation/CPKeyedUnarchiver.j>
 
 @import "CGGeometry.j"
 @import "CPCompatibility.j"
 
+@class CPColor
 
 @protocol CPImageDelegate <CPObject>
 
@@ -85,9 +88,7 @@ function CPImageInBundle()
 
     if (typeof(arguments[1]) === "number")
     {
-        if (arguments[1] != nil)
-            size = CGSizeMake(arguments[1], arguments[2]);
-
+        size = CGSizeMake(arguments[1], arguments[2]);
         bundle = arguments[3];
     }
     else if (typeof(arguments[1]) === "object")
@@ -446,6 +447,11 @@ function CPAppKitImage(aFilename, aSize)
     return NO;
 }
 
+- (BOOL)isMaterialIconImage
+{
+    return NO;
+}
+
 - (CPString)description
 {
     var filename = [self filename],
@@ -564,6 +570,7 @@ function CPAppKitImage(aFilename, aSize)
     CPDictionary            _cssDictionary              @accessors(property=cssDictionary);
     CPDictionary            _cssBeforeDictionary        @accessors(property=cssBeforeDictionary);
     CPDictionary            _cssAfterDictionary         @accessors(property=cssAfterDictionary);
+    CGSize                  _displaySize;
 }
 
 + (CPImage)imageWithCSSDictionary:(CPDictionary)aDictionary size:(CGSize)aSize
@@ -582,6 +589,16 @@ function CPAppKitImage(aFilename, aSize)
     return [[CPImage alloc] initWithCSSDictionary:@{} beforeDictionary:nil afterDictionary:nil size:aSize];
 }
 
++ (CPImage)imageWithMaterialIconNamed:(CPString)iconName size:(CGSize)size
+{
+    return [_CPMaterialIconImage imageWithIconNamed:iconName size:size];
+}
+
++ (CPImage)imageWithMaterialIconNamed:(CPString)iconName size:(CGSize)size color:(CPColor)color
+{
+    return [_CPMaterialIconImage imageWithIconNamed:iconName size:size color:color];
+}
+
 - (id)initWithCSSDictionary:(CPDictionary)aDictionary beforeDictionary:(CPDictionary)beforeDictionary afterDictionary:(CPDictionary)afterDictionary size:(CGSize)aSize
 {
     self = [super init];
@@ -594,6 +611,7 @@ function CPAppKitImage(aFilename, aSize)
         _cssDictionary = aDictionary;
         _cssBeforeDictionary = beforeDictionary;
         _cssAfterDictionary = afterDictionary;
+        _displaySize = CGSizeMakeCopy(aSize);
     }
 
     return self;
@@ -707,6 +725,11 @@ function CPAppKitImage(aFilename, aSize)
 #endif
 }
 
+- (BOOL)_shouldBeResized
+{
+    return NO;
+}
+
 @end
 
 var CPImageCSSDictionaryKey       = @"CPImageCSSDictionaryKey",
@@ -749,6 +772,168 @@ var CPImageCSSDictionaryKey       = @"CPImageCSSDictionaryKey",
 }
 
 @end
+
+#pragma mark -
+
+@implementation _CPMaterialIconImage : CPImage
+{
+    CPMutableDictionary     _cachedColorVersions;
+    CPColor                 _cachedInvertedColor;
+}
+
++ (_CPMaterialIconImage)imageWithIconNamed:(CPString)iconName size:(CGSize)size
+{
+    return [[_CPMaterialIconImage alloc] initWithIconName:iconName size:size];
+}
+
++ (_CPMaterialIconImage)imageWithIconNamed:(CPString)iconName size:(CGSize)size color:(CPColor)color
+{
+    return [[_CPMaterialIconImage alloc] initWithIconName:iconName size:size color:color];
+}
+
++ (_CPMaterialIconImage)imageWithIconNamed:(CPString)iconName size:(CGSize)size color:(CPColor)color additionalCSSDictionary:(CPDictionary)additionalCSSDictionary
+{
+    return [[_CPMaterialIconImage alloc] initWithIconName:iconName size:size color:color additionalCSSDictionary:additionalCSSDictionary];
+}
+
+- (CPDictionary)_baseMaterialIconCSSDictionaryForIconName:(CPString)iconName size:(CGSize)size
+{
+    return @{
+             @"width": size.width + @"px",
+             @"height": size.height + @"px",
+             @"top": @"0px",
+             @"left": @"0px",
+             @"content": @"'" + iconName + @"'",
+
+             @"position": @"absolute",
+             @"z-index": @"300",
+
+             @"font-family": @"'Material Icons'",
+             @"font-weight": @"normal",
+             @"font-style": @"normal",
+             @"font-size": MIN(size.width, size.height) + @"px",
+             @"display": @"inline-block",
+             @"line-height": @"1",
+             @"text-transform": @"none",
+             @"letter-spacing": @"normal",
+             @"word-wrap": @"normal",
+             @"white-space": @"nowrap",
+             @"direction": @"ltr",
+             @"-webkit-font-smoothing": @"antialiased",
+             @"text-rendering": @"optimizeLegibility",
+             @"-moz-osx-font-smoothing": @"grayscale",
+             @"font-feature-settings": @"'liga'"
+             };
+}
+
+- (_CPMaterialIconImage)initWithIconName:(CPString)iconName size:(CGSize)size
+{
+    return [super initWithCSSDictionary:@{}
+                       beforeDictionary:@{}
+                        afterDictionary:[self _baseMaterialIconCSSDictionaryForIconName:iconName size:size]
+                                   size:size];
+}
+
+- (_CPMaterialIconImage)initWithIconName:(CPString)iconName size:(CGSize)size color:(CPColor)color
+{
+    var materialIconCSSDictionary = [self _baseMaterialIconCSSDictionaryForIconName:iconName size:size];
+
+    [materialIconCSSDictionary setObject:[color cssString] forKey:@"color"];
+
+    return [super initWithCSSDictionary:@{}
+                       beforeDictionary:@{}
+                        afterDictionary:materialIconCSSDictionary
+                                   size:size];
+}
+
+- (void)addRotationEffectWithAngle:(float)angle
+{
+    [self addCSSDictionary:@{
+                             @"transform":  @"rotate("+angle+"deg)",
+                             @"transition": @"transform 0.35s ease"
+                             }];
+}
+
+- (void)addCSSDictionary:(CPDictionary)additionalCSSDictionary
+{
+    [_cssAfterDictionary addEntriesFromDictionary:additionalCSSDictionary];
+}
+
+- (void)setSize:(CGSize)aSize
+{
+    [self _setDisplaySize:aSize];
+    [super setSize:aSize];
+}
+
+- (void)_setDisplaySize:(CGSize)aSize
+{
+    if (CGSizeEqualToSize(_displaySize, aSize))
+        return;
+
+    _displaySize = CGSizeMakeCopy(aSize);
+
+    [_cssAfterDictionary setObject:(aSize.width + @"px") forKey:@"width"];
+    [_cssAfterDictionary setObject:(aSize.height + @"px") forKey:@"height"];
+    [_cssAfterDictionary setObject:(MIN(aSize.width, aSize.height) + @"px") forKey:@"font-size"];
+}
+
+- (BOOL)_shouldBeResized
+{
+    return YES;
+}
+
+- (BOOL)isMaterialIconImage
+{
+    return YES;
+}
+
+- (_CPMaterialIconImage)invertedImage
+{
+    if (!_cachedInvertedColor)
+    {
+        var sourceCSSColor = [_cssAfterDictionary objectForKey:@"color"] || @"rgba(0,0,0,1)",
+            sourceColor    = [CPColor colorWithCSSString:sourceCSSColor];
+
+        _cachedInvertedColor = [CPColor colorWithRed:(1-[sourceColor redComponent])
+                                               green:(1-[sourceColor greenComponent])
+                                                blue:(1-[sourceColor blueComponent])
+                                               alpha:[sourceColor alphaComponent]];
+    }
+
+    return [self imageVersionWithColor:_cachedInvertedColor];
+}
+
+- (_CPMaterialIconImage)imageVersionWithColor:(CPColor)aColor
+{
+    // We can't just set the color in the cssAfterDictionary as this would not be noticed as a new image,
+    // so -setImage won't do anything, so no visual refresh won't occur.
+    // The trick here is to keep in cache a clone of this image for each needed color.
+    var colorCSSString = [aColor cssString];
+
+    if (!_cachedColorVersions)
+        _cachedColorVersions = @{};
+
+    var cachedColorVersion = [_cachedColorVersions objectForKey:colorCSSString];
+
+    if (!cachedColorVersion)
+    {
+        cachedColorVersion = [self duplicate];
+        [cachedColorVersion _setCSSColor:colorCSSString];
+
+        [_cachedColorVersions setObject:cachedColorVersion forKey:colorCSSString];
+    }
+
+    return cachedColorVersion;
+}
+
+- (void)_setCSSColor:(CPString)aCSSColor
+{
+    [_cssAfterDictionary setObject:aCSSColor forKey:@"color"];
+}
+
+@end
+
+#pragma mark -
 
 @implementation CPThreePartImage : CPObject
 {
@@ -887,6 +1072,17 @@ var CPNinePartImageImageSlicesKey   = @"CPNinePartImageImageSlicesKey";
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [aCoder encodeObject:_imageSlices forKey:CPNinePartImageImageSlicesKey];
+}
+
+@end
+
+#pragma mark -
+
+@implementation CPImage (Duplication)
+
+- (CPImage)duplicate
+{
+    return [CPKeyedUnarchiver unarchiveObjectWithData:[CPKeyedArchiver archivedDataWithRootObject:self]];
 }
 
 @end
