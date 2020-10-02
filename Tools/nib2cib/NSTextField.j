@@ -51,7 +51,7 @@
 
     [self setLineBreakMode:[cell lineBreakMode]];
     [self setAlignment:[cell alignment]];
-    [self setTextFieldBackgroundColor:[cell backgroundColor]];
+    [self setBackgroundColor:[cell backgroundColor]];
 
     [self setPlaceholderString:[cell placeholderString]];
 
@@ -70,6 +70,38 @@
 
     if ([self formatter])
         CPLog.debug(">> Formatter: " + [[self formatter] description]);
+}
+
+// Labels WITHOUT background use a special adjustment frame.
+// As we can't just let the theming system choose, we have to
+// adapt _nib2cibAdjustment
+- (CGRect)_nib2CibAdjustment
+{
+    // Theme has not been loaded yet.
+    // Get attribute value directly from the theme or from the default value of the object otherwise.
+    var theme      = [Nib2Cib defaultTheme],
+        themeState = [self themeState];
+
+    // Is this a label with a background ?
+    if (!([self hasThemeState:CPThemeStateBezeled] || [self hasThemeState:CPThemeStateBordered]) && [self drawsBackground])
+
+        // Yes, so use normal frame adjustment (that is, consider it's bezeled)
+        themeState = themeState.and(CPThemeStateBezeled);
+
+    var frameAdjustment = [theme valueForAttributeWithName:@"nib2cib-adjustment-frame" inState:themeState forClass:[self class]];
+
+    if (frameAdjustment)
+        return frameAdjustment;
+
+    if ([self hasThemeAttribute:@"nib2cib-adjustment-frame"])
+    {
+        frameAdjustment = [self valueForThemeAttribute:@"nib2cib-adjustment-frame" inState:themeState];
+
+        if (frameAdjustment)
+            return frameAdjustment;
+    }
+
+    return nil;
 }
 
 @end
