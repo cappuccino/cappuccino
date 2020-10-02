@@ -43,13 +43,13 @@ var NSButtonIsBorderedMask = 0x00800000,
     // don't really follow much of a pattern.
     NSButtonImagePositionMask = 0xFF0000,
     NSButtonImagePositionShift = 16,
-    NSButtonNoImagePositionMask = 0x04,
-    NSButtonImageAbovePositionMask = 0x0C,
-    NSButtonImageBelowPositionMask = 0x1C,
-    NSButtonImageRightPositionMask = 0x2C,
-    NSButtonImageLeftPositionMask = 0x3C,
-    NSButtonImageOnlyPositionMask = 0x44,
-    NSButtonImageOverlapsPositionMask = 0x6C,
+    NSButtonNoImagePositionMask = 0x00,
+    NSButtonImageAbovePositionMask = 0x08,
+    NSButtonImageBelowPositionMask = 0x18,
+    NSButtonImageRightPositionMask = 0x28,
+    NSButtonImageLeftPositionMask = 0x38,
+    NSButtonImageOnlyPositionMask = 0x40,
+    NSButtonImageOverlapsPositionMask = 0x48,
 
     // You cannot set neither highlightsBy nor showsStateBy in IB,
     // but you can set button type which implicitly sets the masks.
@@ -111,9 +111,25 @@ var NSButtonIsBorderedMask = 0x00800000,
     _alternateTitle = [cell alternateTitle];
 
     [self setBordered:[cell isBordered]];
-    _bezelStyle = [cell bezelStyle];
 
-    var fixedHeight;
+    var bezelStyleFromIB = [cell bezelStyle];
+
+    // Xcode IB is not consistent between popup and pulldown buttons :
+    // pulldown bordered   buttons (type "push")  get bezel type "rounded"
+    // pulldown unbordered buttons (type "bevel") get bezel type "regular square"
+    // popup bordered      buttons (type "push")  get bezel type "rounded"
+    // popup unbordered    buttons (type "bevel") get bezel type "rounded"
+    // In order to fix consistency, we force bezel type to be "regular square" in the last case
+
+    if ([self isKindOfClass:CPPopUpButton] && (![self isBordered]))
+        bezelStyleFromIB = CPRegularSquareBezelStyle;
+
+    [self setBezelStyle:bezelStyleFromIB];
+
+
+    var fixedHeight,
+        theme = [Nib2Cib defaultTheme],
+        isCSSBased = [theme valueForAttributeWithName:@"css-based" forClass:[CPView class]];
 
     // Fix height
     switch (_bezelStyle)
@@ -122,6 +138,9 @@ var NSButtonIsBorderedMask = 0x00800000,
         case CPRoundedBezelStyle:  // Push IB style
         case CPTexturedRoundedBezelStyle:  // Round Textured IB style
         case CPHUDBezelStyle:
+        case CPDisclosureBezelStyle:
+        case CPRoundedDisclosureBezelStyle:
+        case CPInlineBezelStyle:
 
         // approximations:
         case CPRoundRectBezelStyle:  // Round Rect IB style
@@ -139,10 +158,8 @@ var NSButtonIsBorderedMask = 0x00800000,
             break;
 
         // unsupported
-        case CPRoundedDisclosureBezelStyle:
         case CPHelpButtonBezelStyle:
         case CPCircularBezelStyle:
-        case CPDisclosureBezelStyle:
             CPLog.warn("NSButton [%s]: unsupported bezel style: %d", _title == null ? "<no title>" : '"' + _title + '"', _bezelStyle);
             _bezelStyle = CPHUDBezelStyle;
             fixedHeight = YES;
@@ -165,9 +182,8 @@ var NSButtonIsBorderedMask = 0x00800000,
             - If there is just a max height, use that for only for fixed height buttons.
             - If there is no max height either, don't do any height adjustments.
         */
-        var theme = [Nib2Cib defaultTheme],
-            minSize = [theme valueForAttributeWithName:@"min-size" forClass:[self class]],
-            maxSize = [theme valueForAttributeWithName:@"max-size" forClass:[self class]],
+        var minSize = [theme valueForAttributeWithName:@"min-size" inState:[self themeState] forClass:[self class]],
+            maxSize = [theme valueForAttributeWithName:@"max-size" inState:[self themeState] forClass:[self class]],
             adjustHeight = NO;
 
         if (minSize.height > 0 && maxSize.height > 0 && minSize.height === maxSize.height)
@@ -220,10 +236,11 @@ var NSButtonIsBorderedMask = 0x00800000,
     var frameAdjustment = [super _nib2CibAdjustment],
         positionOffsetSizeWidth = 0,
         positionOffsetOriginX = 0,
-        positionOffsetOriginY = 0;
+        positionOffsetOriginY = 0,
+        directAdjustment = [[Nib2Cib defaultTheme] valueForAttributeWithName:@"direct-nib2cib-adjustment" inState:[self themeState] forClass:[self class]];
 
     // We want certain control like CPPopupButton to have their own nib2cib-adjustment-frame theme attribute
-    if (![self isBordered] || [self isKindOfClass:[CPPopUpButton class]])
+    if (![self isBordered] || [self isKindOfClass:[CPPopUpButton class]] || directAdjustment)
         return frameAdjustment;
 
     // Map Cocoa bezel styles to Cappuccino bezel styles and adjust frame
