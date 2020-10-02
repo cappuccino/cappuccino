@@ -1995,7 +1995,7 @@ var CPViewHighDPIDrawingEnabled = YES;
 
 #if PLATFORM(DOM)
     if (_backgroundType === BackgroundCSSStyling)
-        [_backgroundColor restorePreviousCSSState:@ref(_cssStylePreviousState) forDOMElement:_DOMElement];
+        [CPColor restorePreviousCSSState:@ref(_cssStylePreviousState) forDOMElement:_DOMElement];
 
     var patternImage = [_backgroundColor patternImage],
         colorExists = _backgroundColor && ([_backgroundColor patternImage] || [_backgroundColor alphaComponent] > 0.0),
