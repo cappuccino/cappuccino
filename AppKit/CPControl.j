@@ -23,11 +23,12 @@
 @import <Foundation/CPFormatter.j>
 @import <Foundation/CPTimer.j>
 
-@import "CPFont.j"
 @import "CPShadow.j"
 @import "CPText.j"
 @import "CPKeyValueBinding.j"
 @import "CPTrackingArea.j"
+
+@class CPFont
 
 @global CPApp
 
@@ -47,6 +48,9 @@
 CPRegularControlSize = 0;
 CPSmallControlSize   = 1;
 CPMiniControlSize    = 2;
+
+// To get the theme state corresponding to a control size, use CPControlSizeThemeStates[controlSize]
+CPControlSizeThemeStates = @[CPThemeStateControlSizeRegular, CPThemeStateControlSizeSmall, CPThemeStateControlSizeMini];
 
 @typedef CPLineBreakMode
 CPLineBreakByWordWrapping     = 0;
@@ -131,7 +135,7 @@ var CPControlBlackColor = [CPColor blackColor];
             @"vertical-alignment": CPTopVerticalTextAlignment,
             @"line-break-mode": CPLineBreakByClipping,
             @"text-color": [CPColor blackColor],
-            @"font": [CPFont systemFontOfSize:CPFontCurrentSystemSize],
+            @"font": [CPNull null],
             @"text-shadow-color": [CPNull null],
             @"text-shadow-offset": CGSizeMakeZero(),
             @"image-position": CPImageLeft,
@@ -195,7 +199,8 @@ var CPControlBlackColor = [CPColor blackColor];
     {
         _sendActionOn           = CPLeftMouseUpMask;
         _trackingMouseDownFlags = 0;
-        
+
+        [self setControlSize:CPThemeStateControlSizeRegular];
         [self updateTrackingAreas];
     }
 
