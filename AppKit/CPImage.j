@@ -88,9 +88,7 @@ function CPImageInBundle()
 
     if (typeof(arguments[1]) === "number")
     {
-        if (arguments[1] !== nil && arguments[1] !== undefined)
-            size = CGSizeMake(arguments[1], arguments[2]);
-
+        size = CGSizeMake(arguments[1], arguments[2]);
         bundle = arguments[3];
     }
     else if (typeof(arguments[1]) === "object")
@@ -164,7 +162,7 @@ function CPAppKitImage(aFilename, aSize)
 - (id)initByReferencingFile:(CPString)aFilename size:(CGSize)aSize
 {
     // Quietly return nil like in Cocoa, rather than crashing later.
-    if (aFilename === undefined || aFilename === nil)
+    if (aFilename == nil)
         return nil;
 
     self = [super init];
