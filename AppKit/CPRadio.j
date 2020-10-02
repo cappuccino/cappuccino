@@ -183,21 +183,37 @@ var CPRadioRadioGroupKey    = @"CPRadioRadioGroupKey";
     [aCoder encodeObject:_radioGroup forKey:CPRadioRadioGroupKey];
 }
 
-- (CPImage)image
+#pragma mark -
+#pragma mark Override methods from CPButton
+
+- (CPThemeState)_contentVisualState
 {
-    return [self currentValueForThemeAttribute:@"image"];
+    // Note : Behavior differs from CPButton as title doesn't follow the highlightsBy content flag
+
+    var visualState  = [self themeState] || CPThemeStateNormal, // Needed during theme compilation
+        currentState = [self state];
+
+    if ((currentState !== CPOffState) && (_showsStateBy & CPContentsCellMask))
+        visualState = visualState.and((currentState === CPOnState) ? CPThemeStateSelected : CPButtonStateMixed);
+
+    return visualState;
 }
 
-- (CPImage)alternateImage
+- (CPThemeState)_imageVisualState
 {
-    return [self currentValueForThemeAttribute:@"image"];
-}
+    // Note : Behavior differs from CPButton as we don't force "not selected" theme state
+    //        when button is highglighted and selected
 
-- (BOOL)startTrackingAt:(CGPoint)aPoint
-{
-    var startedTracking = [super startTrackingAt:aPoint];
-    [self highlight:YES];
-    return startedTracking;
+    var visualState  = [self themeState] || CPThemeStateNormal, // Needed during theme compilation
+        currentState = [self state];
+
+    if (_isHighlighted && (_highlightsBy & CPContentsCellMask))
+        visualState = visualState.and(CPThemeStateHighlighted);
+
+    if ((currentState !== CPOffState) && (_showsStateBy & CPContentsCellMask))
+        visualState = visualState.and((currentState === CPOnState) ? CPThemeStateSelected : CPButtonStateMixed);
+
+    return visualState;
 }
 
 @end
