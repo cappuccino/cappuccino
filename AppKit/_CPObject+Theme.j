@@ -205,7 +205,7 @@ var NULL_THEME = {};
 
         if (cachedAttributes)
         {
-            attributes = attributes.length ? attributes.concat(cachedAttributes) : attributes;
+            attributes = cachedAttributes.length ? attributes.concat(cachedAttributes) : attributes;
             break;
         }
 
