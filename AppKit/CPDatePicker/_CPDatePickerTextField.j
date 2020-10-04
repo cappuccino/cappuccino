@@ -1276,148 +1276,164 @@ var CPZeroKeyCode = 48,
     // In order to ensure compatibility with previous behavior, we use isCSSBased property to
     // branch between new and old behaviors as all themes before Aristo3 use the previous uncorrect computation.
 
-    if ([self isCSSBased])
+    if (![self isCSSBased])
+        [self _deprecatedUpdatePositions];
+
+    // New behavior of the "content-inset" theme parameter
+    var currentFrameWidth,
+        newFrame,
+        currentX = contentInset.left,
+        height   = [self frame].size.height - contentInset.top - contentInset.bottom;
+
+    if (![firstTextField isHidden])
     {
-        // New behavior of the "content-inset" theme parameter
-        var currentFrameWidth,
-            newFrame,
-            currentX = contentInset.left,
-            height   = [self frame].size.height - contentInset.top - contentInset.bottom;
+        currentFrameWidth = [firstTextField frame].size.width;
+        newFrame          = CGRectMake(currentX, contentInset.top, currentFrameWidth, height);
+        currentX         += currentFrameWidth;
 
-        if (![firstTextField isHidden])
+        [firstTextField setFrame:newFrame];
+
+        currentFrameWidth = [_textFieldSeparatorOne frame].size.width;
+        currentX         += separatorContentInset.left;
+        newFrame          = CGRectMake(currentX, contentInset.top, currentFrameWidth, height);
+        currentX         += currentFrameWidth;
+
+        [_textFieldSeparatorOne setFrame:newFrame];
+
+        currentX         += separatorContentInset.right;
+    }
+
+    [_textFieldSeparatorOne setHidden:[firstTextField isHidden]];
+
+    if (![secondTextField isHidden])
+    {
+        currentFrameWidth = [secondTextField frame].size.width;
+        newFrame          = CGRectMake(currentX, contentInset.top, currentFrameWidth, height);
+        currentX         += currentFrameWidth;
+
+        [secondTextField setFrame:newFrame];
+
+        currentFrameWidth = [_textFieldSeparatorTwo frame].size.width;
+        currentX         += separatorContentInset.left;
+        newFrame          = CGRectMake(currentX, contentInset.top, currentFrameWidth, height);
+        currentX         += currentFrameWidth;
+
+        [_textFieldSeparatorTwo setFrame:newFrame];
+
+        currentX         += separatorContentInset.right;
+    }
+
+    [_textFieldSeparatorTwo setHidden:[secondTextField isHidden]];
+
+    if (![_textFieldYear isHidden])
+    {
+        currentFrameWidth = [_textFieldYear frame].size.width;
+        newFrame          = CGRectMake(currentX, contentInset.top, currentFrameWidth, height);
+        currentX         += currentFrameWidth;
+
+        [_textFieldYear setFrame:newFrame];
+
+        currentX         += [_datePicker currentValueForThemeAttribute:@"date-hour-margin"];
+    }
+
+    if (![_textFieldHour isHidden])
+    {
+        currentFrameWidth = [_textFieldHour frame].size.width;
+        newFrame          = CGRectMake(currentX, contentInset.top, currentFrameWidth, height);
+        currentX         += currentFrameWidth;
+
+        [_textFieldHour setFrame:newFrame];
+
+        currentFrameWidth = [_textFieldSeparatorThree frame].size.width;
+        currentX         += timeSeparatorContentInset.left;
+        newFrame          = CGRectMake(currentX, contentInset.top, currentFrameWidth, height);
+        currentX         += currentFrameWidth;
+
+        [_textFieldSeparatorThree setFrame:newFrame];
+
+        currentFrameWidth = [_textFieldMinute frame].size.width;
+        currentX         += timeSeparatorContentInset.right;
+        newFrame          = CGRectMake(currentX, contentInset.top, currentFrameWidth, height);
+        currentX         += currentFrameWidth;
+
+        [_textFieldMinute setFrame:newFrame];
+
+        if (![_textFieldSecond isHidden])
         {
-            currentFrameWidth = [firstTextField frame].size.width;
-            newFrame          = CGRectMake(currentX, contentInset.top, currentFrameWidth, height);
-            currentX         += currentFrameWidth;
-
-            [firstTextField setFrame:newFrame];
-
-            currentFrameWidth = [_textFieldSeparatorOne frame].size.width;
-            currentX         += separatorContentInset.left;
-            newFrame          = CGRectMake(currentX, contentInset.top, currentFrameWidth, height);
-            currentX         += currentFrameWidth;
-
-            [_textFieldSeparatorOne setFrame:newFrame];
-
-            currentX         += separatorContentInset.right;
-        }
-
-        [_textFieldSeparatorOne setHidden:[firstTextField isHidden]];
-
-        if (![secondTextField isHidden])
-        {
-            currentFrameWidth = [secondTextField frame].size.width;
-            newFrame          = CGRectMake(currentX, contentInset.top, currentFrameWidth, height);
-            currentX         += currentFrameWidth;
-
-            [secondTextField setFrame:newFrame];
-
-            currentFrameWidth = [_textFieldSeparatorTwo frame].size.width;
-            currentX         += separatorContentInset.left;
-            newFrame          = CGRectMake(currentX, contentInset.top, currentFrameWidth, height);
-            currentX         += currentFrameWidth;
-
-            [_textFieldSeparatorTwo setFrame:newFrame];
-
-            currentX         += separatorContentInset.right;
-        }
-
-        [_textFieldSeparatorTwo setHidden:[secondTextField isHidden]];
-
-        if (![_textFieldYear isHidden])
-        {
-            currentFrameWidth = [_textFieldYear frame].size.width;
-            newFrame          = CGRectMake(currentX, contentInset.top, currentFrameWidth, height);
-            currentX         += currentFrameWidth;
-
-            [_textFieldYear setFrame:newFrame];
-
-            currentX         += [_datePicker currentValueForThemeAttribute:@"date-hour-margin"];
-        }
-
-        if (![_textFieldHour isHidden])
-        {
-            currentFrameWidth = [_textFieldHour frame].size.width;
-            newFrame          = CGRectMake(currentX, contentInset.top, currentFrameWidth, height);
-            currentX         += currentFrameWidth;
-
-            [_textFieldHour setFrame:newFrame];
-
-            currentFrameWidth = [_textFieldSeparatorThree frame].size.width;
+            currentFrameWidth = [_textFieldSeparatorFour frame].size.width;
             currentX         += timeSeparatorContentInset.left;
             newFrame          = CGRectMake(currentX, contentInset.top, currentFrameWidth, height);
             currentX         += currentFrameWidth;
 
-            [_textFieldSeparatorThree setFrame:newFrame];
+            [_textFieldSeparatorFour setFrame:newFrame];
 
-            currentFrameWidth = [_textFieldMinute frame].size.width;
+            currentFrameWidth = [_textFieldSecond frame].size.width;
             currentX         += timeSeparatorContentInset.right;
             newFrame          = CGRectMake(currentX, contentInset.top, currentFrameWidth, height);
             currentX         += currentFrameWidth;
 
-            [_textFieldMinute setFrame:newFrame];
+            [_textFieldSecond setFrame:newFrame];
+        }
 
-            if (![_textFieldSecond isHidden])
-            {
-                currentFrameWidth = [_textFieldSeparatorFour frame].size.width;
-                currentX         += timeSeparatorContentInset.left;
-                newFrame          = CGRectMake(currentX, contentInset.top, currentFrameWidth, height);
-                currentX         += currentFrameWidth;
+        if (![_textFieldPMAM isHidden])
+        {
+            currentFrameWidth = [_textFieldPMAM frame].size.width;
+            currentX         += [_datePicker currentValueForThemeAttribute:@"hour-ampm-margin"];
+            newFrame          = CGRectMake(currentX, contentInset.top, currentFrameWidth, height);
 
-                [_textFieldSeparatorFour setFrame:newFrame];
-
-                currentFrameWidth = [_textFieldSecond frame].size.width;
-                currentX         += timeSeparatorContentInset.right;
-                newFrame          = CGRectMake(currentX, contentInset.top, currentFrameWidth, height);
-                currentX         += currentFrameWidth;
-
-                [_textFieldSecond setFrame:newFrame];
-            }
-
-            if (![_textFieldPMAM isHidden])
-            {
-                currentFrameWidth = [_textFieldPMAM frame].size.width;
-                currentX         += [_datePicker currentValueForThemeAttribute:@"hour-ampm-margin"];
-                newFrame          = CGRectMake(currentX, contentInset.top, currentFrameWidth, height);
-
-                [_textFieldPMAM setFrame:newFrame];
-            }
+            [_textFieldPMAM setFrame:newFrame];
         }
     }
-    else
+}
+
+// Old behavior of the "content-inset" theme parameter
+- (void)_deprecatedUpdatePositions
+{
+    var contentInset              = [_datePicker valueForThemeAttribute:@"content-inset" inState:[_datePicker themeState]] || CGInsetMakeZero(),
+        separatorContentInset     = [_datePicker valueForThemeAttribute:@"separator-content-inset"],
+        timeSeparatorContentInset = [_datePicker valueForThemeAttribute:@"time-separator-content-inset"] || separatorContentInset,
+        horizontalInset           = contentInset.left - contentInset.right,
+        verticalInset             = contentInset.top - contentInset.bottom,
+        firstTextField            = _textFieldMonth,
+        secondTextField           = _textFieldDay,
+        isAmericanFormat          = [_datePicker _isAmericanFormat];
+
+    if (!isAmericanFormat)
     {
-        // Old behavior of the "content-inset" theme parameter
-        [firstTextField setFrameOrigin:CGPointMake(horizontalInset,verticalInset)];
-
-        [_textFieldSeparatorOne setFrameOrigin:CGPointMake(CGRectGetMaxX([firstTextField frame]) + separatorContentInset.left, verticalInset)];
-
-        if ([firstTextField isHidden])
-            [secondTextField setFrameOrigin:CGPointMake(horizontalInset,verticalInset)];
-        else
-            [secondTextField setFrameOrigin:CGPointMake(CGRectGetMaxX([_textFieldSeparatorOne frame]) + separatorContentInset.right, verticalInset)];
-
-        if (isAmericanFormat && [secondTextField isHidden])
-            [_textFieldSeparatorTwo setFrameOrigin:CGPointMake(CGRectGetMaxX([firstTextField frame]) + separatorContentInset.left, verticalInset)];
-        else
-            [_textFieldSeparatorTwo setFrameOrigin:CGPointMake(CGRectGetMaxX([secondTextField frame]) + separatorContentInset.left, verticalInset)];
-
-        [_textFieldYear setFrameOrigin:CGPointMake(CGRectGetMaxX([_textFieldSeparatorTwo frame]) + separatorContentInset.right, verticalInset)];
-
-        if ([_textFieldMonth isHidden])
-            [_textFieldHour setFrameOrigin:CGPointMake(horizontalInset, verticalInset)];
-        else
-            [_textFieldHour setFrameOrigin:CGPointMake(CGRectGetMaxX([_textFieldYear frame]) + [_datePicker currentValueForThemeAttribute:@"date-hour-margin"], verticalInset)];
-
-        [_textFieldSeparatorThree setFrameOrigin:CGPointMake(CGRectGetMaxX([_textFieldHour frame]) + separatorContentInset.left, verticalInset)];
-        [_textFieldMinute setFrameOrigin:CGPointMake(CGRectGetMaxX([_textFieldSeparatorThree frame]) + separatorContentInset.right, verticalInset)];
-        [_textFieldSeparatorFour setFrameOrigin:CGPointMake(CGRectGetMaxX([_textFieldMinute frame]) + separatorContentInset.left, verticalInset)];
-        [_textFieldSecond setFrameOrigin:CGPointMake(CGRectGetMaxX([_textFieldSeparatorFour frame]) + separatorContentInset.right, verticalInset)];
-
-        if ([_textFieldSecond isHidden])
-            [_textFieldPMAM setFrameOrigin:CGPointMake(CGRectGetMaxX([_textFieldMinute frame]) + 2, verticalInset)];
-        else
-            [_textFieldPMAM setFrameOrigin:CGPointMake(CGRectGetMaxX([_textFieldSecond frame]) + 2, verticalInset)];
+        firstTextField  = _textFieldDay;
+        secondTextField = _textFieldMonth;
     }
+
+    [firstTextField setFrameOrigin:CGPointMake(horizontalInset,verticalInset)];
+
+    [_textFieldSeparatorOne setFrameOrigin:CGPointMake(CGRectGetMaxX([firstTextField frame]) + separatorContentInset.left, verticalInset)];
+
+    if ([firstTextField isHidden])
+        [secondTextField setFrameOrigin:CGPointMake(horizontalInset,verticalInset)];
+    else
+        [secondTextField setFrameOrigin:CGPointMake(CGRectGetMaxX([_textFieldSeparatorOne frame]) + separatorContentInset.right, verticalInset)];
+
+    if (isAmericanFormat && [secondTextField isHidden])
+        [_textFieldSeparatorTwo setFrameOrigin:CGPointMake(CGRectGetMaxX([firstTextField frame]) + separatorContentInset.left, verticalInset)];
+    else
+        [_textFieldSeparatorTwo setFrameOrigin:CGPointMake(CGRectGetMaxX([secondTextField frame]) + separatorContentInset.left, verticalInset)];
+
+    [_textFieldYear setFrameOrigin:CGPointMake(CGRectGetMaxX([_textFieldSeparatorTwo frame]) + separatorContentInset.right, verticalInset)];
+
+    if ([_textFieldMonth isHidden])
+        [_textFieldHour setFrameOrigin:CGPointMake(horizontalInset, verticalInset)];
+    else
+        [_textFieldHour setFrameOrigin:CGPointMake(CGRectGetMaxX([_textFieldYear frame]) + [_datePicker currentValueForThemeAttribute:@"date-hour-margin"], verticalInset)];
+
+    [_textFieldSeparatorThree setFrameOrigin:CGPointMake(CGRectGetMaxX([_textFieldHour frame]) + separatorContentInset.left, verticalInset)];
+    [_textFieldMinute setFrameOrigin:CGPointMake(CGRectGetMaxX([_textFieldSeparatorThree frame]) + separatorContentInset.right, verticalInset)];
+    [_textFieldSeparatorFour setFrameOrigin:CGPointMake(CGRectGetMaxX([_textFieldMinute frame]) + separatorContentInset.left, verticalInset)];
+    [_textFieldSecond setFrameOrigin:CGPointMake(CGRectGetMaxX([_textFieldSeparatorFour frame]) + separatorContentInset.right, verticalInset)];
+
+    if ([_textFieldSecond isHidden])
+        [_textFieldPMAM setFrameOrigin:CGPointMake(CGRectGetMaxX([_textFieldMinute frame]) + 2, verticalInset)];
+    else
+        [_textFieldPMAM setFrameOrigin:CGPointMake(CGRectGetMaxX([_textFieldSecond frame]) + 2, verticalInset)];
 }
 
 /*! Size to fit all of the textFields
