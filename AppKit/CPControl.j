@@ -917,7 +917,7 @@ var CPControlBlackColor = [CPColor blackColor];
 */
 - (CPFont)font
 {
-    return [self valueForThemeAttribute:@"font"];
+    return [self currentValueForThemeAttribute:@"font"] || [CPFont systemFontForControlSize:_controlSize];
 }
 
 /*!
@@ -1127,6 +1127,7 @@ var CPControlActionKey                  = @"CPControlActionKey",
         [self setControlSize:[aCoder decodeIntForKey:CPControlControlSizeKey]];
 
         [self setBaseWritingDirection:[aCoder decodeIntForKey:CPControlBaseWrittingDirectionKey]];
+        [self updateTrackingAreas];
     }
 
     return self;
