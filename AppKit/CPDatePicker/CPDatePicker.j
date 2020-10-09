@@ -1,7 +1,7 @@
 /* CPDatePicker.j
 * AppKit
 *
-* Created by Alexandre Wilhelm
+* Created by Alexandre Wilhelm 
 * Copyright 2012 <alexandre.wilhelmfr@gmail.com>
 *
 * This library is free software; you can redistribute it and/or
