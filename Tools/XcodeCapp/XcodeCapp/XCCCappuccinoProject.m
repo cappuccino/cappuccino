@@ -356,7 +356,7 @@ NSString * const XCCCappuccinoProjectLastEventIDKey         = @"XCCCappuccinoPro
     self->settings[XCCCappuccinoProcessCappLintKey]              = @(self.processCappLint);
     self->settings[XCCCappuccinoProcessObjj2ObjcSkeletonKey]     = @(self.processObjj2ObjcSkeleton);
     self->settings[XCCCappuccinoProcessNib2CibKey]               = @(self.processNib2Cib);
-    self->settings[XCCCappuccinoProjectPreviousStatusKey]        = [NSNumber numberWithInt:self.status];
+    self->settings[XCCCappuccinoProjectPreviousStatusKey]        = [NSNumber numberWithInt:(int)self.status];
     
     if ([self.lastEventID boolValue])
         self->settings[XCCCappuccinoProjectLastEventIDKey]           = self.lastEventID;
