@@ -259,7 +259,7 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
 - (void)setKnobProportion:(float)aProportion
 {
     if (!_IS_NUMERIC(aProportion))
-        [CPException raise:CPInvalidArgumentException reason:"aProportion must be numeric (received:"+aProportion+")"];
+        [CPException raise:CPInvalidArgumentException reason:"aProportion must be numeric, was: "+aProportion];
 
     _knobProportion = MIN(1.0, MAX(0.0001, aProportion));
 
