@@ -523,6 +523,7 @@
 				INSTALL_PATH = "$(HOME)/Applications";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MARKETING_VERSION = "Version 4.1.0";
 				PRODUCT_BUNDLE_IDENTIFIER = org.cappuccino.xcodecapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -539,6 +540,7 @@
 				INSTALL_PATH = "$(HOME)/Applications";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MARKETING_VERSION = "Version 4.1.0";
 				PRODUCT_BUNDLE_IDENTIFIER = org.cappuccino.xcodecapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};

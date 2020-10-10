@@ -34,7 +34,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>Version 4.0.1</string>
+	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
@@ -49,6 +49,8 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>NSRequiresAquaSystemAppearance</key>
+	<false/>
 	<key>NSUserNotificationAlertStyle</key>
 	<string>alert</string>
 	<key>XCCCompatibilityVersion</key>
@@ -57,7 +59,5 @@
 	<string>https://github.com/cappuccino/cappuccino/archive/master.zip</string>
 	<key>XCCLastCappuccinoReleaseURL</key>
 	<string>https://github.com/cappuccino/cappuccino/archive/1.0.0.zip</string>
-	<key>NSRequiresAquaSystemAppearance</key>
-	<false/>
 </dict>
 </plist>
