@@ -37,7 +37,7 @@ var DEFAULT_CSS_PROPERTIES = nil,
     [self _setTargetValue:YES withKeyPath:@"CPAnimationTriggerOrderOut" setter:_cmd];
 }
 
-- (void)setAlphaValue:(CGPoint)alphaValue
+- (void)setAlphaValue:(float)alphaValue
 {
     [self _setTargetValue:alphaValue withKeyPath:@"alphaValue" setter:_cmd];
 }

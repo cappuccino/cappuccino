@@ -67,6 +67,18 @@ CPRadioImageOffset = 4.0;
     [[button1 radioGroup] selectedRadio] returns the currently selected
     option.
 
+    UPDATE 09/2020 : Implementation of modern Cocoa behavior :
+
+    As in Cocoa, radio buttons grouping is now automatic.
+
+    To be associated in a common group (and so being mutually exclusive),
+    radio buttons must combine 2 criteria :
+
+    - same superview (enclosing view)
+    - same action
+
+    TODO: This first implementation uses "as is" CPRadioGroup. This could
+          be simplified (no more need for radio group action, for example)
 */
 @implementation CPRadio : CPButton
 {
@@ -160,6 +172,63 @@ CPRadioImageOffset = 4.0;
         [CPApp sendAction:[_radioGroup action] to:[_radioGroup target] from:_radioGroup];
 }
 
+- (void)viewDidMoveToSuperview
+{
+    [self _setRadioGroup];
+    [super viewDidMoveToSuperview];
+}
+
+- (void)setAction:(SEL)anAction
+{
+    if (anAction === _action)
+        return;
+
+    [super setAction:anAction];
+    [self _setRadioGroup];
+}
+
+#pragma mark Private methods
+
+- (void)_setRadioGroup
+{
+    // Implementation of modern Cocoa behavior : automatic radio group
+
+    // If no action is set or no superview, no grouping can be done.
+    if (![self action] || ![self superview])
+    {
+        // If I'm in a group (size > 1), remove me.
+        if ([[self radioGroup] size] > 1)
+            [self setRadioGroup:[CPRadioGroup new]];
+
+        return;
+    }
+
+    // Search in superview subviews for other radio buttons having the same action.
+    // Take the one with the radio group having the greatest number of members.
+
+    var radioGroup;
+
+    for (var i = 0, superviewSubviews = [[self superview] subviews], count = [superviewSubviews count], aSubview, myAction = [self action], radioGroupSize = -1; (i < count); i++)
+    {
+        aSubview = superviewSubviews[i];
+
+        if ([aSubview isKindOfClass:CPRadio] && (aSubview !== self) && ([aSubview action] === myAction) && ([[aSubview radioGroup] size] > radioGroupSize))
+        {
+            radioGroup     = [aSubview radioGroup];
+            radioGroupSize = [radioGroup size];
+        }
+    }
+
+    if (radioGroup)
+        [self setRadioGroup:radioGroup];
+    else
+        // No other radio buttons to group with found.
+        // It may be because this radio button was in a radio group and its action was changed.
+        // If this is the case, we must reisolate it in a new radio group.
+        if ([_radioGroup size] > 1)
+            [self setRadioGroup:[CPRadioGroup new]];
+}
+
 @end
 
 var CPRadioRadioGroupKey    = @"CPRadioRadioGroupKey";
@@ -183,21 +252,37 @@ var CPRadioRadioGroupKey    = @"CPRadioRadioGroupKey";
     [aCoder encodeObject:_radioGroup forKey:CPRadioRadioGroupKey];
 }
 
-- (CPImage)image
+#pragma mark -
+#pragma mark Override methods from CPButton
+
+- (CPThemeState)_contentVisualState
 {
-    return [self currentValueForThemeAttribute:@"image"];
+    // Note : Behavior differs from CPButton as title doesn't follow the highlightsBy content flag
+
+    var visualState  = [self themeState] || CPThemeStateNormal, // Needed during theme compilation
+        currentState = [self state];
+
+    if ((currentState !== CPOffState) && (_showsStateBy & CPContentsCellMask))
+        visualState = visualState.and((currentState === CPOnState) ? CPThemeStateSelected : CPButtonStateMixed);
+
+    return visualState;
 }
 
-- (CPImage)alternateImage
+- (CPThemeState)_imageVisualState
 {
-    return [self currentValueForThemeAttribute:@"image"];
-}
+    // Note : Behavior differs from CPButton as we don't force "not selected" theme state
+    //        when button is highglighted and selected
 
-- (BOOL)startTrackingAt:(CGPoint)aPoint
-{
-    var startedTracking = [super startTrackingAt:aPoint];
-    [self highlight:YES];
-    return startedTracking;
+    var visualState  = [self themeState] || CPThemeStateNormal, // Needed during theme compilation
+        currentState = [self state];
+
+    if (_isHighlighted && (_highlightsBy & CPContentsCellMask))
+        visualState = visualState.and(CPThemeStateHighlighted);
+
+    if ((currentState !== CPOffState) && (_showsStateBy & CPContentsCellMask))
+        visualState = visualState.and((currentState === CPOnState) ? CPThemeStateSelected : CPButtonStateMixed);
+
+    return visualState;
 }
 
 @end
@@ -302,6 +387,11 @@ var CPRadioRadioGroupKey    = @"CPRadioRadioGroupKey";
 - (CPArray)radios
 {
     return _radios;
+}
+
+- (int)size
+{
+    return [_radios count];
 }
 
 - (void)setEnabled:(BOOL)enabled

@@ -561,7 +561,11 @@ var cachedBlackColor,
 
 - (void)_initCSSStringFromComponents
 {
-    var hasAlpha = CPFeatureIsCompatible(CPCSSRGBAFeature) && _components[3] != 1.0;
+    // Fix to avoid a problem when compiling a theme (missing the alpha component as theme compiler doesn't have CSS rgba capability)
+    var hasAlpha = YES;
+#if PLATFORM(DOM)
+    hasAlpha = CPFeatureIsCompatible(CPCSSRGBAFeature) && _components[3] != 1.0;
+#endif
 
     _cssString = (hasAlpha ? "rgba(" : "rgb(") +
         parseInt(_components[0] * 255.0) + ", " +
@@ -800,6 +804,9 @@ url("data:image/png;base64,BASE64ENCODEDDATA")  // if there is a pattern image
     var description = [super description],
         patternImage = [self patternImage];
 
+    if ([self isCSSBased])
+        return description + "\n" + [self cssDictionary]+ "\nBefore:\n" + [self cssBeforeDictionary] + "\nAfter:\n" + [self cssAfterDictionary];
+
     if (!patternImage)
         return description + " " + [self cssString];
 
@@ -933,7 +940,7 @@ url("data:image/png;base64,BASE64ENCODEDDATA")  // if there is a pattern image
 // You can use -(BOOL)isCSSBased to determine how to cope with it in your code.
 // -(BOOL)hasCSSDictionary, -(BOOL)hasCSSBeforeDictionary and -(BOOL)hasCSSAfterDictionary are convience methods you can use.
 //
-// Remark : -(void)restorePreviousCSSState and -(DOMElement)applyCSSColorForView are meant to be used by low level UI widgets (like CPView) to implement
+// Remark : +(void)restorePreviousCSSState and -(DOMElement)applyCSSColorForView are meant to be used by low level UI widgets (like CPView) to implement
 //          CSS theme support.
 
 @implementation CPColor (CSSTheming)
@@ -992,7 +999,7 @@ url("data:image/png;base64,BASE64ENCODEDDATA")  // if there is a pattern image
     return ([_cssAfterDictionary count] > 0);
 }
 
-- (void)restorePreviousCSSState:(CPArrayRef)aPreviousStateRef forDOMElement:(DOMElement)aDOMElement
++ (void)restorePreviousCSSState:(CPArrayRef)aPreviousStateRef forDOMElement:(DOMElement)aDOMElement
 {
 #if PLATFORM(DOM)
     var aPreviousState = @deref(aPreviousStateRef);

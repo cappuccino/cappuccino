@@ -25,6 +25,8 @@
 
 @import "CPView.j"
 @import "CPFontDescriptor.j"
+@import "_CPObject+Theme.j"
+@import "CPControl.j" 
 
 CPFontDefaultSystemFontFace = @"Arial, sans-serif";
 CPFontDefaultSystemFontSize = 12;
@@ -38,12 +40,15 @@ CPFontCurrentSystemSize = -1;
 // For internal use only by this class and subclasses
 _CPFontSystemFacePlaceholder = "_CPFontSystemFacePlaceholder";
 
-var _CPFontCache          = {},
-    _CPSystemFontCache    = {},
-    _CPFontSystemFontFace = CPFontDefaultSystemFontFace,
-    _CPFontSystemFontSize = 12,
-    _CPFontFallbackFaces  = CPFontDefaultSystemFontFace.split(", "),
-    _CPFontStripRegExp    = new RegExp("(^\\s*[\"']?|[\"']?\\s*$)", "g");
+var _CPFontCache                   = {},
+    _CPSystemFontCache             = {},
+    _CPFontSystemFontFace          = CPFontDefaultSystemFontFace,
+    _CPFontSystemFontSize          = CPFontDefaultSystemFontSize,
+    _CPFontSystemFontSizeSmall     = CPFontDefaultSystemFontSize - 1,
+    _CPFontSystemFontSizeMini      = CPFontDefaultSystemFontSize - 2,
+    _CPFontFallbackFaces           = CPFontDefaultSystemFontFace.split(", "),
+    _CPFontStripRegExp             = new RegExp("(^\\s*[\"']?|[\"']?\\s*$)", "g"),
+    _CPFontSystemFontFaceSpecified = NO;
 
 
 #define _CPRealFontSize(aSize)  (aSize <= 0 ? _CPFontSystemFontSize : aSize)
@@ -109,7 +114,7 @@ following:
 <string>Asap</string>
 @endcode
 */
-@implementation CPFont : CPObject
+@implementation CPFont : CPObject <CPTheme>
 {
     CPString    _name;
     float       _size;
@@ -123,6 +128,22 @@ following:
     CPString    _cssString;
 }
 
++ (CPString)defaultThemeClass
+{
+    return @"font";
+}
+
++ (CPDictionary)themeAttributes
+{
+    return @{
+             @"system-font-face": [CPNull null],
+             @"system-font-style": [CPNull null],
+             @"system-font-size-regular": [CPNull null],
+             @"system-font-size-small": [CPNull null],
+             @"system-font-size-mini": [CPNull null]
+             };
+}
+
 + (void)initialize
 {
     if (self !== [CPFont class])
@@ -134,7 +155,10 @@ following:
         systemFontFace = [[CPBundle bundleForClass:[CPView class]] objectForInfoDictionaryKey:@"CPSystemFontFace"];
 
     if (systemFontFace)
+    {
         _CPFontSystemFontFace = _CPFontNormalizedNames(systemFontFace);
+        _CPFontSystemFontFaceSpecified = YES;
+    }
 
     var systemFontSize = [[CPBundle mainBundle] objectForInfoDictionaryKey:@"CPSystemFontSize"];
 
@@ -142,7 +166,62 @@ following:
         systemFontSize = [[CPBundle bundleForClass:[CPView class]] objectForInfoDictionaryKey:@"CPSystemFontSize"];
 
     if (systemFontSize)
+    {
         _CPFontSystemFontSize = systemFontSize;
+        _CPFontSystemFontFaceSpecified = YES;
+    }
+}
+
++ (void)initializeSystemFontFromTheme:(CPTheme)aTheme
+{
+    // If something was specified via +initialize (from an Info.plist file), don't do anything
+    if (_CPFontSystemFontFaceSpecified)
+        return;
+
+    // Reset all system font caches
+    _CPSystemFontCache = {};
+
+    // Now, try to get information from the theme
+    var systemFontFace = [aTheme valueForAttributeWithName:@"system-font-face" forClass:[CPFont class]];
+
+    if (systemFontFace)
+    {
+        [self _invalidateSystemFontCache];
+        _CPFontSystemFontFace = _CPFontNormalizedNames(systemFontFace);
+    }
+
+    var systemFontSize = [aTheme valueForAttributeWithName:@"system-font-size-regular" forClass:[CPFont class]];
+
+    if (systemFontSize)
+    {
+        [self _invalidateSystemFontCache];
+        _CPFontSystemFontSize = systemFontSize;
+    }
+
+    systemFontSize = [aTheme valueForAttributeWithName:@"system-font-size-small" forClass:[CPFont class]];
+
+    if (systemFontSize)
+    {
+        [self _invalidateSystemFontCache];
+        _CPFontSystemFontSizeSmall = systemFontSize;
+    }
+
+    systemFontSize = [aTheme valueForAttributeWithName:@"system-font-size-mini" forClass:[CPFont class]];
+
+    if (systemFontSize)
+    {
+        [self _invalidateSystemFontCache];
+        _CPFontSystemFontSizeMini = systemFontSize;
+    }
+
+    // Is there something to add to the global syle definition ?
+    var systemFontStyle = [aTheme valueForAttributeWithName:@"system-font-style" forClass:[CPFont class]];
+
+    if (systemFontStyle)
+    {
+        // Yes, so install it in the DOM Style element
+        document.getElementsByTagName("STYLE")[0].innerHTML += "\n" + [aTheme setCSSResourcesPathInString:systemFontStyle];
+    }
 }
 
 /*!
@@ -177,14 +256,13 @@ following:
 
 + (CPFont)systemFontForControlSize:(CPControlSize)aSize
 {
-    // TODO These sizes should be themable or made less arbitrary in some other way.
     switch (aSize)
     {
         case CPSmallControlSize:
-            return [self systemFontOfSize:_CPFontSystemFontSize - 1];
+            return [self systemFontOfSize:_CPFontSystemFontSizeSmall];
 
         case CPMiniControlSize:
-            return [self systemFontOfSize:_CPFontSystemFontSize - 2];
+            return [self systemFontOfSize:_CPFontSystemFontSizeMini];
 
         case CPRegularControlSize:
         default:
@@ -315,6 +393,10 @@ following:
         _isItalic = isItalic;
         _isSystem = isSystem;
 
+        _theme = [CPTheme defaultTheme];
+        _themeState = CPThemeStateNormal;
+        [self _loadThemeAttributes];
+
         if (isSystem)
         {
             _name = aName;
@@ -432,6 +514,22 @@ following:
     _lineHeight = [metrics objectForKey:@"lineHeight"];
 }
 
+- (CPControlSize)controlSizeCorrespondingToFontSize
+{
+    switch (_size)
+    {
+        case _CPFontSystemFontSizeSmall:
+            return CPSmallControlSize;
+
+        case _CPFontSystemFontSizeMini:
+            return CPMiniControlSize;
+
+        default:
+            // If we can't find a corresponding size, return regular control size
+            return CPRegularControlSize;
+    }
+}
+
 @end
 
 @implementation CPFont(DescriptorAdditions)
@@ -492,7 +590,11 @@ var CPFontNameKey     = @"CPFontNameKey",
         isItalic = [aCoder decodeBoolForKey:CPFontIsItalicKey],
         isSystem = [aCoder decodeBoolForKey:CPFontIsSystemKey];
 
-    return [self _initWithName:fontName size:size bold:isBold italic:isItalic system:isSystem];
+    self = [self _initWithName:fontName size:size bold:isBold italic:isItalic system:isSystem];
+
+    [self _decodeThemeObjectsWithCoder:aCoder];
+
+    return self;
 }
 
 /*!
@@ -506,6 +608,8 @@ var CPFontNameKey     = @"CPFontNameKey",
     [aCoder encodeBool:_isBold forKey:CPFontIsBoldKey];
     [aCoder encodeBool:_isItalic forKey:CPFontIsItalicKey];
     [aCoder encodeBool:_isSystem forKey:CPFontIsSystemKey];
+
+    [self _encodeThemeObjectsWithCoder:aCoder];
 }
 
 @end

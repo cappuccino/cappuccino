@@ -49,6 +49,8 @@ var CPThemesByName          = { },
 + (void)setDefaultTheme:(CPTheme)aTheme
 {
     CPThemeDefaultTheme = aTheme;
+
+    [CPFont initializeSystemFontFromTheme:aTheme];
 }
 
 + (CPTheme)defaultTheme

@@ -25,6 +25,7 @@
 
 @class _CPMenuView
 @class CPMenu
+@class CPMenuItem
 
 @global CPMenuDidAddItemNotification
 @global CPMenuDidChangeItemNotification
@@ -129,10 +130,12 @@
 
 - (void)setColor:(CPColor)aColor
 {
+    var targetView = [[CPTheme defaultTheme] valueForAttributeWithName:@"css-based" forClass:CPView] ? [[self contentView] superview] : [self contentView];
+
     if (!aColor)
-        [[self contentView] setBackgroundColor:[[CPTheme defaultTheme] valueForAttributeWithName:@"menu-bar-window-background-color" forClass:_CPMenuView]];
+        [targetView setBackgroundColor:[[CPTheme defaultTheme] valueForAttributeWithName:@"menu-bar-window-background-color" forClass:_CPMenuView]];
     else
-        [[self contentView] setBackgroundColor:aColor];
+        [targetView setBackgroundColor:aColor];
 }
 
 - (void)setTextColor:(CPColor)aColor
@@ -276,6 +279,16 @@
 
         [menuItemView setTextColor:_textColor];
         [menuItemView setHidden:[item isHidden]];
+
+        // If first menu item has tag -1 and if there is a special theme value menu-bar-window-first-item-font,
+        // set the corresponding font. This is used to set bold on the first item of the menubar (à la Cocoa)
+        if ((index == 0) && ([item tag] == -1))
+        {
+            var firstItemFont = [[CPTheme defaultTheme] valueForAttributeWithName:@"menu-bar-window-first-item-font" forClass:_CPMenuView];
+
+            if (firstItemFont)
+                [item setFont:firstItemFont];
+        }
 
         [menuItemView synchronizeWithMenuItem];
 

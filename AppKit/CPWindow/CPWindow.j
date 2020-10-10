@@ -193,7 +193,7 @@ var CPWindowActionMessageKeys = [
     BOOL                                _isDocumentEdited;
     BOOL                                _isDocumentSaving;
 
-    CPImageView                         _shadowView;
+    _CPShadowWindowView                 _shadowView;
 
     CPView                              _windowView;
     CPView                              _contentView;
@@ -369,6 +369,23 @@ CPTexturedBackgroundWindowMask
         [_windowView _setWindow:self];
         [_windowView setNextResponder:self];
 
+        // CSS Styling
+#if PLATFORM(DOM)
+        var radius;
+        
+        if (radius = [_windowView actualValueForThemeAttribute:@"border-top-left-radius"])
+            _windowView._DOMElement.style.borderTopLeftRadius = radius;
+        
+        if (radius = [_windowView actualValueForThemeAttribute:@"border-top-right-radius"])
+            _windowView._DOMElement.style.borderTopRightRadius = radius;
+        
+        if (radius = [_windowView actualValueForThemeAttribute:@"border-bottom-left-radius"])
+            _windowView._DOMElement.style.borderBottomLeftRadius = radius;
+        
+        if (radius = [_windowView actualValueForThemeAttribute:@"border-bottom-right-radius"])
+            _windowView._DOMElement.style.borderBottomRightRadius = radius;
+#endif
+        
         // Size calculation needs _windowView
         _minSize = [self _calculateMinSizeForProposedSize:CGSizeMake(0.0, 0.0)];
         _maxSize = CGSizeMake(1000000.0, 1000000.0);
@@ -1410,25 +1427,51 @@ CPTexturedBackgroundWindowMask
 
         return;
     }
-
-    if (_hasShadow && !_shadowView)
+    
+    if ([[self actualTheme] isCSSBased])
     {
-        _shadowView = [[_CPShadowWindowView alloc] initWithFrame:CGRectMakeZero()];
-
-        [_shadowView setWindowView:_windowView];
-        [_shadowView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
-        [_shadowView setNeedsLayout];
-
+        // When using CSS theming, we get rid of _shadowView and add CSS shadowing directly
+        // on the _windowView
+        
 #if PLATFORM(DOM)
-        CPDOMDisplayServerInsertBefore(_DOMElement, _shadowView._DOMElement, _windowView._DOMElement);
+        // We must check that _windowView exists as _updateShadow can be called by
+        // _setSharesChromeWithPlatformWindow whereas _windowView is not yet created
+        if (_windowView && _windowView._DOMElement)
+        {
+            var currentBoxShadow = _windowView._DOMElement.style.boxShadow;
+            
+            if (_hasShadow && (currentBoxShadow.length == 0))
+            {
+                _windowView._DOMElement.style.boxShadow = [_windowView actualValueForThemeAttribute:@"window-shadow-color"];
+            }
+            else if (!_hasShadow && (currentBoxShadow.length > 0))
+            {
+                _windowView._DOMElement.style.boxShadow = "";
+            }
+        }
 #endif
     }
-    else if (!_hasShadow && _shadowView)
+    else
     {
+        if (_hasShadow && !_shadowView)
+        {
+            _shadowView = [[_CPShadowWindowView alloc] initWithFrame:CGRectMakeZero()];
+            
+            [_shadowView setWindowView:_windowView];
+            [_shadowView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+            [_shadowView setNeedsLayout];
+            
 #if PLATFORM(DOM)
-        CPDOMDisplayServerRemoveChild(_DOMElement, _shadowView._DOMElement);
+            CPDOMDisplayServerInsertBefore(_DOMElement, _shadowView._DOMElement, _windowView._DOMElement);
 #endif
-        _shadowView = nil;
+        }
+        else if (!_hasShadow && _shadowView)
+        {
+#if PLATFORM(DOM)
+            CPDOMDisplayServerRemoveChild(_DOMElement, _shadowView._DOMElement);
+#endif
+            _shadowView = nil;
+        }
     }
 }
 
@@ -2814,7 +2857,7 @@ CPTexturedBackgroundWindowMask
         contentRect = [_contentView frame],
         sheetFrame = CGRectMakeCopy([attachedSheet frame]);
 
-    sheetFrame.origin.y = CGRectGetMinY(_frame) + CGRectGetMinY(contentRect);
+    sheetFrame.origin.y = [[attachedSheet _windowView] _sheetVerticalOffset]+ CGRectGetMinY(_frame) + CGRectGetMinY(contentRect);
     sheetFrame.origin.x = CGRectGetMinX(_frame) + FLOOR((CGRectGetWidth(_frame) - CGRectGetWidth(sheetFrame)) / 2.0);
 
     [attachedSheet setFrame:sheetFrame display:YES animate:NO];
@@ -3013,13 +3056,12 @@ CPTexturedBackgroundWindowMask
     }
 
     // The sheet starts hidden just above the top of a clip rect
-    // TODO : Make properly for the -1 in endY
     var sheetFrame = [sheet frame],
-        sheetShadowFrame = sheet._hasShadow ? [sheet._shadowView frame] : sheetFrame,
+        sheetShadowFrame = [sheet _shadowFrame],
         frame = [self frame],
         originX = frame.origin.x + FLOOR((frame.size.width - sheetFrame.size.width) / 2),
         startFrame = CGRectMake(originX, -sheetShadowFrame.size.height, sheetFrame.size.width, sheetFrame.size.height),
-        endY = -1 + [_windowView bodyOffset] - [[self contentView] frame].origin.y,
+        endY = [[sheet _windowView] _sheetVerticalOffset] + [_windowView bodyOffset] - [[self contentView] frame].origin.y,
         endFrame = CGRectMake(originX, endY, sheetFrame.size.width, sheetFrame.size.height);
 
     if (_toolbar && [_windowView showsToolbar] && [self isFullPlatformWindow])
@@ -3058,7 +3100,7 @@ CPTexturedBackgroundWindowMask
     {
         var sheet = _sheetContext["sheet"],
             sheetFrame = [sheet frame],
-            fullHeight = sheet._hasShadow ? [sheet._shadowView frame].size.height : sheetFrame.size.height,
+            fullHeight = [sheet _shadowFrame].size.height,
             endFrame = CGRectMakeCopy(sheetFrame),
             contentOrigin = [self convertBaseToGlobal:[[self contentView] frame].origin];
 
@@ -3090,7 +3132,7 @@ CPTexturedBackgroundWindowMask
             sheetOrigin = CGPointMakeCopy(sheetFrame.origin);
 
         [self _removeClipForSheet:sheet];
-        [sheet setFrameOrigin:CGPointMake(sheetOrigin.x, [sheet frame].origin.y + sheetOrigin.y)];
+        [self _setAttachedSheetFrameOrigin];
 
         // we wanted to close the sheet while it animated in, do that now
         if (_sheetContext["shouldClose"] === YES)
@@ -3135,6 +3177,14 @@ CPTexturedBackgroundWindowMask
 - (BOOL)isSheet
 {
     return _isSheet;
+}
+
+- (CGRect)_shadowFrame
+{
+    if (_hasShadow)
+        return _shadowView ? [_shadowView frame] : [self frame];
+
+    return [self frame];
 }
 
 //

@@ -205,7 +205,7 @@ var NULL_THEME = {};
 
         if (cachedAttributes)
         {
-            attributes = attributes.length ? attributes.concat(cachedAttributes) : attributes;
+            attributes = cachedAttributes.length ? attributes.concat(cachedAttributes) : attributes;
             break;
         }
 
@@ -298,6 +298,22 @@ var NULL_THEME = {};
     }
 
     return dictionary;
+}
+
+- (void)_addThemeAttributeDictionary:(CPDictionary)themeAttributeDictionary
+{
+    if (!themeAttributeDictionary)
+        return;
+
+    var keys = [themeAttributeDictionary allKeys];
+
+    for (var i = 0, count = [keys count], key, value; i < count; i++)
+    {
+        key = keys[i];
+        value = [themeAttributeDictionary objectForKey:key];
+
+        _themeAttributes[key] = value;
+    }
 }
 
 - (void)setValue:(id)aValue forThemeAttribute:(CPString)aName inState:(ThemeState)aState

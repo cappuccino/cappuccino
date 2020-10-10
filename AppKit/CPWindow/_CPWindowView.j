@@ -70,12 +70,40 @@ _CPWindowViewResizeSlop = 3;
 
 + (CGRect)contentRectForFrameRect:(CGRect)aFrameRect
 {
-    return CGRectMakeCopy(aFrameRect);
+    // First, we have to check if we are compiling a theme or running an application because if working on a theme,
+    // we can't use theme attributes to determine the inset ! This would be a kind of circular reference...
+
+    var compilingATheme = [[[CPBundle mainBundle] objectForInfoDictionaryKey:@"CPApplicationDelegateClass"] isEqualToString:@"BKShowcaseController"],
+        frameOutset = compilingATheme ? CGInsetMakeZero() : [[CPTheme defaultTheme] valueForAttributeWithName:@"frame-outset" forClass:_CPWindowView];
+
+    if (!frameOutset)
+        // No value found in theme. Get default value.
+        frameOutset = [[self themeAttributes] objectForKey:@"frame-outset"];
+
+    if (!frameOutset)
+        // No value found in defaults. Get default value for _CPWindowView (we know here that the window class is not _CPWindowView)
+        frameOutset = [[_CPWindowView themeAttributes] objectForKey:@"frame-outset"];
+
+    return CGRectMake(aFrameRect.origin.x - frameOutset.left, aFrameRect.origin.y - frameOutset.top, aFrameRect.size.width + frameOutset.left + frameOutset.right, aFrameRect.size.height + frameOutset.top + frameOutset.bottom);
 }
 
 + (CGRect)frameRectForContentRect:(CGRect)aContentRect
 {
-    return CGRectMakeCopy(aContentRect);
+    // First, we have to check if we are compiling a theme or running an application because if working on a theme,
+    // we can't use theme attributes to determine the inset ! This would be a kind of circular reference...
+
+    var compilingATheme = [[[CPBundle mainBundle] objectForInfoDictionaryKey:@"CPApplicationDelegateClass"] isEqualToString:@"BKShowcaseController"],
+        frameOutset = compilingATheme ? CGInsetMakeZero() : [[CPTheme defaultTheme] valueForAttributeWithName:@"frame-outset" forClass:[self class]]; // _CPWindowView - [self class]
+
+    if (!frameOutset)
+        // No value found in theme. Get default value.
+        frameOutset = [[self themeAttributes] objectForKey:@"frame-outset"];
+
+    if (!frameOutset)
+        // No value found in theme. Get default value for _CPWindowView
+        frameOutset = [[_CPWindowView themeAttributes] objectForKey:@"frame-outset"];
+
+    return CGRectMake(aContentRect.origin.x - frameOutset.left, aContentRect.origin.y - frameOutset.top, aContentRect.size.width + frameOutset.left + frameOutset.right, aContentRect.size.height + frameOutset.top + frameOutset.bottom);
 }
 
 + (CPString)defaultThemeClass
@@ -94,6 +122,7 @@ _CPWindowViewResizeSlop = 3;
             @"resize-indicator": [CPNull null],
             @"attached-sheet-shadow-color": [CPColor blackColor],
             @"shadow-height": 8,
+            @"shadown-horizontal-offset": 0,
             @"close-image-origin": [CPNull null],
             @"close-image-size": [CPNull null],
             @"close-image": [CPNull null],
@@ -107,10 +136,16 @@ _CPWindowViewResizeSlop = 3;
             @"title-line-break-mode": CPLineBreakByTruncatingTail,
             @"title-vertical-alignment": CPTopVerticalTextAlignment,
             @"title-margin": 20,
+            @"border-top-left-radius": @"0px",
+            @"border-top-right-radius": @"0px",
+            @"border-bottom-left-radius": @"0px",
+            @"border-bottom-right-radius": @"0px",
             @"minimize-image-origin": [CPNull null],
             @"minimize-image-size": [CPNull null],
             @"zoom-image-origin": [CPNull null],
-            @"zoom-image-size": [CPNull null]
+            @"zoom-image-size": [CPNull null],
+            @"frame-outset": CGInsetMakeZero(),
+            @"sheet-vertical-offset": -1
         };
 }
 
@@ -937,9 +972,14 @@ _CPWindowViewResizeSlop = 3;
     [self setNeedsLayout];
 }
 
-- (CGRect)_shadowViewWidthForParentWindow:(CPWindow)parentWindow
+- (int)_sheetVerticalOffset
 {
-    var myWidth = [self bounds].size.width,
+    return [self currentValueForThemeAttribute:@"sheet-vertical-offset"];
+}
+
+- (int)_shadowViewWidthForParentWindow:(CPWindow)parentWindow
+{
+    var myWidth = [self bounds].size.width - [self currentValueForThemeAttribute:@"shadown-horizontal-offset"],
         parentWidth = [[parentWindow contentView] bounds].size.width;
 
     return MIN(myWidth, parentWidth);

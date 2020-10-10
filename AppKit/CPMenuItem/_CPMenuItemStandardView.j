@@ -41,6 +41,8 @@
     _CPImageAndTextView     _imageAndTextView;
     _CPImageAndTextView     _keyEquivalentView;
     CPView                  _submenuIndicatorView;
+
+    BOOL                    _hasSubmenuIndicatorImage;
 }
 
 + (CPString)defaultThemeClass
@@ -63,12 +65,17 @@
             @"menu-item-default-mixed-state-image": [CPNull null],
             @"menu-item-default-mixed-state-highlighted-image": [CPNull null],
             @"menu-item-separator-color": [CPNull null],
+            @"menu-item-separator-height": 1.0,
+            @"menu-item-separator-view-height": 10.0,
             @"left-margin": 3.0,
             @"right-margin": 17.0,
             @"state-column-width": 14.0,
             @"indentation-width": 17.0,
             @"vertical-margin": 4.0,
+            @"vertical-offset": 0.0,
             @"right-columns-margin": 30.0,
+            @"submenu-indicator-image": [CPNull null],
+            @"submenu-indicator-highlighted-image": [CPNull null]
         };
 }
 
@@ -91,6 +98,7 @@
         _stateView = [[CPImageView alloc] initWithFrame:CGRectMake(0.0, 0.0, 0.0, 0.0)];
 
         [_stateView setImageScaling:CPImageScaleNone];
+        [_stateView setImageAlignment:CPImageAlignCenter];
 
         [self addSubview:_stateView];
 
@@ -109,9 +117,24 @@
 
         [self addSubview:_keyEquivalentView];
 
-        _submenuIndicatorView = [[_CPMenuItemSubmenuIndicatorView alloc] initWithFrame:CGRectMake(0.0, 0.0, 8.0, 10.0)];
+        // Do we have a submenu indicator image specified in the theme ?
+        _hasSubmenuIndicatorImage = !![self valueForThemeAttribute:@"submenu-indicator-image"];
 
-        [_submenuIndicatorView setColor:[self valueForThemeAttribute:@"submenu-indicator-color"]];
+        if (_hasSubmenuIndicatorImage)
+        {
+            // Yes, then use an imageView
+            _submenuIndicatorView = [[CPImageView alloc] initWithFrame:CGRectMakeZero()];
+
+            [_submenuIndicatorView setImageAlignment:CPImageAlignCenter];
+        }
+        else
+        {
+            // No, then use self drawing _CPMenuItemSubmenuIndicatorView
+            _submenuIndicatorView = [[_CPMenuItemSubmenuIndicatorView alloc] initWithFrame:CGRectMake(0.0, 0.0, 8.0, 10.0)];
+
+            [_submenuIndicatorView setColor:[self valueForThemeAttribute:@"submenu-indicator-color"]];
+        }
+
         [_submenuIndicatorView setAutoresizingMask:CPViewMinXMargin];
 
         [self addSubview:_submenuIndicatorView];
@@ -149,11 +172,24 @@
     _font = aFont;
 }
 
+- (CPFont)font
+{
+    // Menu item font is forced local font or _menuItem font or system font
+    return _font || [_menuItem font] || [CPFont systemFontOfSize:CPFontCurrentSystemSize];
+}
+
+// FIXME: update is called 2 times at each display. Find why and fix.
 - (void)update
 {
     var x = [self valueForThemeAttribute:@"left-margin"] + [_menuItem indentationLevel] * [self valueForThemeAttribute:@"indentation-width"],
         height = 0.0,
-        hasStateColumn = [[_menuItem menu] showsStateColumn];
+        hasStateColumn = [[_menuItem menu] showsStateColumn],
+        myFont = [self font],
+
+        // When possible, use specific vertical margin/offset value based on font size (which could have been set by control size)
+        correspondingControlSize = [myFont controlSizeCorrespondingToFontSize],
+        verticalMargin = [self valueForThemeAttribute:@"vertical-margin" inState:CPControlSizeThemeStates[correspondingControlSize]],
+        verticalOffset = [self valueForThemeAttribute:@"vertical-offset" inState:CPControlSizeThemeStates[correspondingControlSize]];
 
     if (hasStateColumn)
     {
@@ -163,15 +199,15 @@
         switch ([_menuItem state])
         {
             case CPOnState:
-                [_stateView setImage:[self valueForThemeAttribute:@"menu-item-default-on-state-image"]];
+                [_stateView setImage:[self valueForThemeAttribute:@"menu-item-default-on-state-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
                 break;
 
             case CPOffState:
-                [_stateView setImage:[self valueForThemeAttribute:@"menu-item-default-off-state-image"]];
+                [_stateView setImage:[self valueForThemeAttribute:@"menu-item-default-off-state-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
                 break;
 
             case CPMixedState:
-                [_stateView setImage:[self valueForThemeAttribute:@"menu-item-default-mixed-state-image"]];
+                [_stateView setImage:[self valueForThemeAttribute:@"menu-item-default-mixed-state-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
                 break;
 
             default:
@@ -188,7 +224,7 @@
     else
         [_stateView setHidden:YES];
 
-    [_imageAndTextView setFont:[_menuItem font] || _font];
+    [_imageAndTextView setFont:myFont];
     [_imageAndTextView setVerticalAlignment:CPCenterVerticalTextAlignment];
     [_imageAndTextView setImage:[_menuItem image]];
     [_imageAndTextView setText:[_menuItem title]];
@@ -201,7 +237,7 @@
 
     imageAndTextViewFrame.origin.x = x;
     x += CGRectGetWidth(imageAndTextViewFrame);
-    height = MAX(height, CGRectGetHeight(imageAndTextViewFrame));
+    height = MAX(height, CGRectGetHeight(imageAndTextViewFrame)); // FIXME: here, height = 0 -> MAX useless
 
     var hasKeyEquivalent = !![_menuItem keyEquivalent],
         hasSubmenu = [_menuItem hasSubmenu];
@@ -211,14 +247,14 @@
 
     if (hasKeyEquivalent)
     {
-        [_keyEquivalentView setFont:[_menuItem font] || _font];
+        [_keyEquivalentView setFont:myFont];
         [_keyEquivalentView setVerticalAlignment:CPCenterVerticalTextAlignment];
         [_keyEquivalentView setImage:[_menuItem image]];
         [_keyEquivalentView setText:[_menuItem keyEquivalentStringRepresentation]];
         [_keyEquivalentView setTextColor:[self textColor]];
         [_keyEquivalentView setTextShadowColor:[self textShadowColor]];
         [_keyEquivalentView setTextShadowOffset:CGSizeMake(0, 1)];
-        [_keyEquivalentView setFrameOrigin:CGPointMake(x, [self valueForThemeAttribute:@"vertical-margin"])];
+        [_keyEquivalentView setFrameOrigin:CGPointMake(x, verticalMargin)];
         [_keyEquivalentView sizeToFit];
 
         var keyEquivalentViewFrame = [_keyEquivalentView frame];
@@ -235,6 +271,14 @@
 
     if (hasSubmenu)
     {
+        if (_hasSubmenuIndicatorImage)
+        {
+            var submenuIndicatorImage = [self valueForThemeAttribute:@"submenu-indicator-image" inState:CPControlSizeThemeStates[correspondingControlSize]];
+
+            [_submenuIndicatorView setImage:submenuIndicatorImage];
+            [_submenuIndicatorView setFrameSize:[submenuIndicatorImage size]];
+        }
+
         [_submenuIndicatorView setHidden:NO];
 
         var submenuViewFrame = [_submenuIndicatorView frame];
@@ -247,9 +291,9 @@
     else
         [_submenuIndicatorView setHidden:YES];
 
-    height += 2.0 * [self valueForThemeAttribute:@"vertical-margin"];
+    height += 2.0 * verticalMargin;
 
-    imageAndTextViewFrame.origin.y = FLOOR((height - CGRectGetHeight(imageAndTextViewFrame)) / 2.0);
+    imageAndTextViewFrame.origin.y = FLOOR((height - CGRectGetHeight(imageAndTextViewFrame)) / 2.0) + verticalOffset;
     [_imageAndTextView setFrame:imageAndTextViewFrame];
 
     if (hasStateColumn)
@@ -257,7 +301,7 @@
 
     if (hasKeyEquivalent)
     {
-        keyEquivalentViewFrame.origin.y = FLOOR((height - CGRectGetHeight(keyEquivalentViewFrame)) / 2.0);
+        keyEquivalentViewFrame.origin.y = FLOOR((height - CGRectGetHeight(keyEquivalentViewFrame)) / 2.0) + verticalOffset;
         [_keyEquivalentView setFrame:keyEquivalentViewFrame];
     }
 
@@ -282,6 +326,8 @@
 
     _highlighted = shouldHighlight;
 
+    var correspondingControlSize = [[self font] controlSizeCorrespondingToFontSize];
+
     [_imageAndTextView setTextColor:[self textColor]];
     [_keyEquivalentView setTextColor:[self textColor]];
     [_imageAndTextView setTextShadowColor:[self textShadowColor]];
@@ -291,13 +337,21 @@
     {
         [self setBackgroundColor:[self valueForThemeAttribute:@"menu-item-selection-color"]];
         [_imageAndTextView setImage:[_menuItem alternateImage] || [_menuItem image]];
-        [_submenuIndicatorView setColor:[self textColor]];
+
+        if (_hasSubmenuIndicatorImage)
+            [_submenuIndicatorView setImage:[self valueForThemeAttribute:@"submenu-indicator-highlighted-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
+        else
+            [_submenuIndicatorView setColor:[self textColor]];
     }
     else
     {
         [self setBackgroundColor:nil];
         [_imageAndTextView setImage:[_menuItem image]];
-        [_submenuIndicatorView setColor:[self valueForThemeAttribute:@"submenu-indicator-color"]];
+
+        if (_hasSubmenuIndicatorImage)
+            [_submenuIndicatorView setImage:[self valueForThemeAttribute:@"submenu-indicator-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
+        else
+            [_submenuIndicatorView setColor:[self valueForThemeAttribute:@"submenu-indicator-color"]];
     }
 
     if ([[_menuItem menu] showsStateColumn])
@@ -307,15 +361,15 @@
             switch ([_menuItem state])
             {
                 case CPOnState:
-                    [_stateView setImage:[self valueForThemeAttribute:@"menu-item-default-on-state-highlighted-image"]];
+                    [_stateView setImage:[self valueForThemeAttribute:@"menu-item-default-on-state-highlighted-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
                     break;
 
                 case CPOffState:
-                    [_stateView setImage:[self valueForThemeAttribute:@"menu-item-default-off-state-highlighted-image"]];
+                    [_stateView setImage:[self valueForThemeAttribute:@"menu-item-default-off-state-highlighted-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
                     break;
 
                 case CPMixedState:
-                    [_stateView setImage:[self valueForThemeAttribute:@"menu-item-default-mixed-state-highlighted-image"]];
+                    [_stateView setImage:[self valueForThemeAttribute:@"menu-item-default-mixed-state-highlighted-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
                     break;
 
                 default:
@@ -327,15 +381,15 @@
             switch ([_menuItem state])
             {
                 case CPOnState:
-                    [_stateView setImage:[self valueForThemeAttribute:@"menu-item-default-on-state-image"]];
+                    [_stateView setImage:[self valueForThemeAttribute:@"menu-item-default-on-state-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
                     break;
 
                 case CPOffState:
-                    [_stateView setImage:[self valueForThemeAttribute:@"menu-item-default-off-state-image"]];
+                    [_stateView setImage:[self valueForThemeAttribute:@"menu-item-default-off-state-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
                     break;
 
                 case CPMixedState:
-                    [_stateView setImage:[self valueForThemeAttribute:@"menu-item-default-mixed-state-image"]];
+                    [_stateView setImage:[self valueForThemeAttribute:@"menu-item-default-mixed-state-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
                     break;
 
                 default:
