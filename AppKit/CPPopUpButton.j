@@ -48,7 +48,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 + (CPDictionary)themeAttributes
 {
     return @{
-             @"menu-offset": CGSizeMake(0, -1)
+             @"menu-offset": CGSizeMake(0, 0)
              };
 }
 
@@ -701,7 +701,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
             positionedItem = [self selectedItem],
             standardLeftMargin = [_CPMenuWindow _standardLeftMargin] + [_CPMenuItemStandardView _standardLeftMargin],
             menuOffset = [self currentValueForThemeAttribute:@"menu-offset"],
-            location = CGPointMake(CGRectGetMinX(contentRect) - standardLeftMargin + menuOffset.width, 0.0 + menuOffset.height);
+            location = CGPointMake(CGRectGetMinX(contentRect) - standardLeftMargin + menuOffset.width, menuOffset.height);
 
         minimumWidth += standardLeftMargin;
 
