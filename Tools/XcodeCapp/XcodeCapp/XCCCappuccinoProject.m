@@ -341,8 +341,8 @@ NSString * const XCCCappuccinoProjectLastEventIDKey         = @"XCCCappuccinoPro
 
 - (void)_writeSettings
 {
-    NSData *data = [NSPropertyListSerialization dataFromPropertyList:self->settings format:NSPropertyListXMLFormat_v1_0 errorDescription:nil];
-    
+    NSData *data = [NSPropertyListSerialization dataWithPropertyList:self->settings format:NSPropertyListXMLFormat_v1_0 options:0 error:nil];
+        [data writeToFile:self.settingsPath atomically:YES];
     [data writeToFile:self.settingsPath atomically:YES];
 }
 
@@ -370,8 +370,8 @@ NSString * const XCCCappuccinoProjectLastEventIDKey         = @"XCCCappuccinoPro
 
 - (void)_writeXcodeCappIgnoreFile
 {
-    NSData *data = [NSPropertyListSerialization dataFromPropertyList:self->settings format:NSPropertyListXMLFormat_v1_0 errorDescription:nil];
-    
+    NSData *data = [NSPropertyListSerialization dataWithPropertyList:self->settings format:NSPropertyListXMLFormat_v1_0 options:0 error:nil];
+        [data writeToFile:self.settingsPath atomically:YES];
     [data writeToFile:self.settingsPath atomically:YES];
     
     NSFileManager *fm = [NSFileManager defaultManager];
