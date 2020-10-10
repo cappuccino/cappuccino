@@ -964,8 +964,6 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
     [self refreshDisplay];
 }
 
-// FIXME: peut-être besoin de setFrameFromContentFrame
-
 - (void)sizeToFit
 {
     var offset = [self _titleHeightOffset],
