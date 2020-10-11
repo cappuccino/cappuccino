@@ -812,6 +812,8 @@ CPThemeStateKeyWindow           = CPThemeState("keyWindow");
 CPThemeStateControlSizeRegular  = CPThemeState("controlSizeRegular");
 CPThemeStateControlSizeSmall    = CPThemeState("controlSizeSmall");
 CPThemeStateControlSizeMini     = CPThemeState("controlSizeMini");
+CPThemeStateAlternateState      = CPThemeState("alternate");
+CPThemeStateComposedControl     = CPThemeState("composed");
 
 CPThemeStateNormalString        = String(CPThemeStateNormal);
 

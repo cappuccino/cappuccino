@@ -20,12 +20,12 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
+@import <Foundation/CPKeyedArchiver.j>
+@import <Foundation/CPKeyedUnarchiver.j>
 @import "CPView.j"
 @import "CPTextField.j"
 @import "CPImage.j"
 @import "CALayer.j"
-@import <Foundation/CPKeyedArchiver.j>
-@import <Foundation/CPKeyedUnarchiver.j>
 
 @class _CPCibCustomResource
 @class CPDatePicker
