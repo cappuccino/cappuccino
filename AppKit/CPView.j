@@ -3505,6 +3505,11 @@ setBoundsOrigin:
 #endif
 }
 
+- (BOOL)isCSSBased
+{
+    return [[CPTheme defaultTheme] valueForAttributeWithName:@"css-based" forClass:CPView];
+}
+
 @end
 
 
