@@ -34,6 +34,7 @@ var FILE = require("file"),
     supportedTemplateImages = {
         "NSAddTemplate": "CPAddTemplate",
         "NSRemoveTemplate": "CPRemoveTemplate",
+        "NSActionTemplate": "CPActionTemplate",
         "NSToolbarShowColors": "CPImageNameColorPanel"
     };
 
@@ -63,6 +64,12 @@ var FILE = require("file"),
             }
             else
                 [CPException raise:Nib2CibException format:@"The built in image “%@” is not supported.", _resourceName];
+        }
+        else if (/^(.+)@MaterialIcons+$/.test(_resourceName))
+        {
+            // Catch a material icon specified by "icon-name@MaterialIcons"
+            // Just do nothing and leave _resourceName as is.
+            // It will be treated during runtime by _CPCibCustomResource
         }
         else
         {

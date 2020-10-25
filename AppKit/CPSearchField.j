@@ -24,8 +24,12 @@
 @import "CPMenu.j"
 @import "CPMenuItem.j"
 @import "CPTextField.j"
+@import "CPAnimationContext.j"
+@import "CPViewAnimator.j"
+@import "CPArrayController.j"
 
 @class CPUserDefaults
+@class CALayer
 
 @global CPApp
 
@@ -58,6 +62,9 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
     BOOL        _sendsSearchStringImmediately;
     BOOL        _canResignFirstResponder;
     CPTimer     _partialStringTimer;
+
+    CPView      _contentView;
+    BOOL        _isBecomingFirstResponder;
 }
 
 + (CPString)defaultThemeClass
@@ -74,8 +81,10 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
             @"image-cancel-pressed": [CPNull null],
             @"image-search-inset" : CGInsetMake(0, 0, 0, 5),
             @"image-cancel-inset" : CGInsetMake(0, 5, 0, 0),
-            @"search-menu-offset": CGPointMake(10, -4),
-            @"search-right-margin": 2
+            @"search-button-rect-function": [CPNull null],
+            @"layout-function": [CPNull null],
+            @"search-right-margin": 2,
+            @"search-menu-offset": CGPointMake(10, -4)
         };
 }
 
@@ -123,6 +132,7 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
     [self resetSearchButton];
 
     _canResignFirstResponder = YES;
+    _isBecomingFirstResponder = NO;
 }
 
 
@@ -230,8 +240,8 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
     var button = [self cancelButton];
     [button setBordered:NO];
     [button setImageScaling:CPImageScaleAxesIndependently];
-    [button setImage:[self valueForThemeAttribute:@"image-cancel"]];
-    [button setAlternateImage:[self valueForThemeAttribute:@"image-cancel-pressed"]];
+    [button setImage:[self currentValueForThemeAttribute:@"image-cancel"]];
+    [button setAlternateImage:[self currentValueForThemeAttribute:@"image-cancel-pressed"]];
     [button setAutoresizingMask:CPViewMinXMargin];
     [button setTarget:self];
     [button setAction:@selector(cancelOperation:)];
@@ -253,7 +263,7 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
     if (_searchButton)
     {
         var searchBounds = [self searchButtonRectForBounds:bounds],
-            rightMargin  = [self currentValueForThemeAttribute:@"search-right-margin"];
+            rightMargin  = [self _potentialCurrentValueForThemeAttribute:@"search-right-margin"];
         leftOffset = CGRectGetMaxX(searchBounds) + rightMargin;
     }
 
@@ -273,10 +283,18 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
 */
 - (CGRect)searchButtonRectForBounds:(CGRect)rect
 {
-    var size = [[self currentValueForThemeAttribute:@"image-search"] size] || CGSizeMakeZero(),
-        inset = [self currentValueForThemeAttribute:@"image-search-inset"];
+    var themedRectFunction = [self _potentialCurrentValueForThemeAttribute:@"search-button-rect-function"];
 
-    return CGRectMake(inset.left - inset.right, inset.top - inset.bottom + (CGRectGetHeight(rect) - size.height) / 2, size.width, size.height);
+    if (themedRectFunction)
+        // There's a theme defined positioning function, just use it
+        return objj_eval("("+themedRectFunction+")")(self, rect);
+    else
+    {
+        var size = [[self _potentialCurrentValueForThemeAttribute:@"image-search"] size] || CGSizeMakeZero(),
+            inset = [self _potentialCurrentValueForThemeAttribute:@"image-search-inset"];
+
+        return CGRectMake(inset.left - inset.right, inset.top - inset.bottom + (CGRectGetHeight(rect) - size.height) / 2, size.width, size.height);
+    }
 }
 
 /*!
@@ -286,8 +304,8 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
 */
 - (CGRect)cancelButtonRectForBounds:(CGRect)rect
 {
-    var size = [[self currentValueForThemeAttribute:@"image-cancel"] size] || CGSizeMakeZero(),
-        inset = [self currentValueForThemeAttribute:@"image-cancel-inset"];
+    var size = [[self _potentialCurrentValueForThemeAttribute:@"image-cancel"] size] || CGSizeMakeZero(),
+        inset = [self _potentialCurrentValueForThemeAttribute:@"image-cancel-inset"];
 
     return CGRectMake(CGRectGetWidth(rect) - size.width + inset.left - inset.right, inset.top - inset.bottom + (CGRectGetHeight(rect) - size.width) / 2, size.height, size.height);
 }
@@ -395,8 +413,7 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
 {
     var max = MIN([self maximumRecents], [searches count]);
 
-    searches = [searches subarrayWithRange:CPMakeRange(0, max)];
-    _recentSearches = searches;
+    _recentSearches = [searches subarrayWithRange:CPMakeRange(0, max)];
     [self _autosaveRecentSearchList];
 }
 
@@ -481,6 +498,7 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
 
 - (BOOL)sendAction:(SEL)anAction to:(id)anObject
 {
+    [self selectAll:nil];
     [super sendAction:anAction to:anObject];
 
     [_partialStringTimer invalidate];
@@ -579,6 +597,8 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
     [item setTarget:self];
     [template addItem:item];
 
+    [self _addSeparatorToMenu:template];
+
     item = [[CPMenuItem alloc] initWithTitle:@"Recent Searches"
                                       action:nil
                                keyEquivalent:@""];
@@ -661,6 +681,7 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
 {
     var separator = [CPMenuItem separatorItem];
     [separator setEnabled:NO];
+    [separator setTag:CPSearchFieldRecentsTitleMenuItemTag];
     [aMenu addItem:separator];
 }
 
@@ -678,7 +699,7 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
 
 - (void)_showMenu
 {
-    if (_searchMenu == nil || [_searchMenu numberOfItems] === 0 || ![self isEnabled])
+    if (_searchMenu === nil || [_searchMenu numberOfItems] === 0 || ![self isEnabled])
         return;
 
     var aFrame = [[self superview] convertRect:[self frame] toView:nil],
@@ -699,10 +720,14 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
 
 - (void)cancelOperation:(id)sender
 {
-    [self setObjectValue:@""];
-    [self textDidChange:[CPNotification notificationWithName:CPControlTextDidChangeNotification object:self userInfo:nil]];
+    // If something was entered, the search field must deactivate itself (else, do nothing)
+    if ([[self stringValue] length] > 0)
+    {
+        [self setObjectValue:@""];
+        [self textDidChange:[CPNotification notificationWithName:CPControlTextDidChangeNotification object:self userInfo:nil]];
 
-    [self _updateCancelButtonVisibility];
+        [[self window] makeFirstResponder:[self window]];
+    }
 }
 
 - (void)_searchFieldSearch:(id)sender
@@ -761,6 +786,187 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
         _recentSearches = list;
 }
 
+@end
+
+#pragma mark -
+
+@implementation CPSearchField (ThemingAdditions)
+
+// Overwrite CPTextField method to permit themed layout functions
+
+- (void)layoutSubviews
+{
+    if (!_contentView)
+    {
+        // Search for the CPImageAndTextView subview of mine
+
+        for (var i = 0, subviews = [self subviews], nb = [subviews count]; (!_contentView && (i < nb)); i++)
+            if ([subviews[i] isKindOfClass:_CPImageAndTextView])
+                _contentView = subviews[i];
+    }
+
+    var bezelColor = [self currentValueForThemeAttribute:@"bezel-color"];
+
+    if ([bezelColor isCSSBased])
+    {
+        // CSS Styling
+        // We don't need bezelView as we apply CSS styling directly on the search view itself
+
+        [self _setBackgroundColor:bezelColor];
+
+        if (!_contentView)
+            _contentView = [self layoutEphemeralSubviewNamed:@"content-view"
+                                                  positioned:CPWindowAbove
+                             relativeToEphemeralSubviewNamed:nil];
+    }
+    else if (!_contentView)
+    {
+        var bezelView = [self layoutEphemeralSubviewNamed:@"bezel-view"
+                                               positioned:CPWindowBelow
+                          relativeToEphemeralSubviewNamed:@"content-view"];
+
+        [bezelView setBackgroundColor:bezelColor];
+
+        _contentView = [self layoutEphemeralSubviewNamed:@"content-view"
+                                              positioned:CPWindowAbove
+                         relativeToEphemeralSubviewNamed:@"bezel-view"];
+    }
+
+    if (_contentView)
+    {
+        [_contentView setHidden:(_stringValue && _stringValue.length > 0) && [self hasThemeState:CPThemeStateEditing]];
+
+        [_contentView setText:[self hasThemeState:CPTextFieldStatePlaceholder] ? [self placeholderString] : _stringValue];
+        [_contentView setTextColor:[self currentValueForThemeAttribute:@"text-color"]];
+        [_contentView setFont:[self font]]; //[self currentValueForThemeAttribute:@"font"]];
+        [_contentView setAlignment:[self currentValueForThemeAttribute:@"alignment"]];
+        [_contentView setVerticalAlignment:[self currentValueForThemeAttribute:@"vertical-alignment"]];
+        [_contentView setLineBreakMode:[self currentValueForThemeAttribute:@"line-break-mode"]];
+        [_contentView setTextShadowColor:[self currentValueForThemeAttribute:@"text-shadow-color"]];
+        [_contentView setTextShadowOffset:[self currentValueForThemeAttribute:@"text-shadow-offset"]];
+    }
+
+    if (_isEditing)
+        [self _setCSSStyleForInputElement];
+
+    [self updateSearchButton];
+    [self updateTrackingAreas];
+}
+
+// As CPTextField redefines setBackgroundColor, we have to bypass it
+- (void)_setBackgroundColor:(CPColor)aColor
+{
+    var grannyMethod         = class_getInstanceMethod([[self superclass] superclass], @selector(setBackgroundColor:)),
+        grannyImplementation = method_getImplementation(grannyMethod);
+
+    grannyImplementation(self, @selector(setBackgroundColor:), aColor);
+}
+
+- (void)_layoutSubviews
+{
+    var themedLayoutFunction = [self currentValueForThemeAttribute:@"layout-function"];
+
+    if (themedLayoutFunction)
+        // There's a theme defined layout function, just use it
+        objj_eval("("+themedLayoutFunction+")")(self);
+    else
+        // Call directly the completion handler
+        [self themedLayoutFunctionCompletionHandler];
+}
+
+- (void)updateSearchButton
+{
+    [_searchButton setImage:(_searchMenuTemplate ? [self currentValueForThemeAttribute:@"image-find"] : [self currentValueForThemeAttribute:@"image-search"])];
+    [self updateTrackingAreas];
+}
+
+- (void)themedLayoutFunctionCompletionHandler
+{
+    if (_isBecomingFirstResponder)
+    {
+        _isBecomingFirstResponder = NO;
+
+        // Call the real _becomeFirstKeyResponder to finish setting the input element
+        [super _becomeFirstKeyResponder];
+
+        // For some (unknown yet) reason, input field doesn't focus and text field visual state is not updated
+        var element = [self _inputElement];
+        element.focus();
+        [self layoutSubviews];
+        [CALayer runLoopUpdateLayers]; // Thank you @daboe01 for suggesting adding this
+    }
+    else
+        [self layoutSubviews];
+}
+
+// We override CPTextField method in order to delay the display of the input element until the end of the animation
+- (BOOL)_becomeFirstKeyResponder
+{
+    // As we have to return a result, we check if response could be NO
+
+    if (![self _isWithinUsablePlatformRect] || ![self isEditable])
+        return NO;
+
+    // We are now sure that response will be YES
+    _isBecomingFirstResponder = YES;
+
+    // We have to do this now in order to avoid running conditions messing things among multiple textfields
+    _stringValue = [self stringValue];
+    var element = [self _inputElement];
+    element.value = _stringValue;
+
+    [self _layoutSubviews];
+
+    return YES;
+}
+
+- (void)textDidEndEditing:(CPNotification)note
+{
+    if ([note object] != self)
+        return;
+
+    [self _layoutSubviews];
+    [super textDidEndEditing:note];
+}
+
+- (void)_windowDidResignKey:(CPNotification)aNotification
+{
+    // When the window resigns key, if the search field is empty, it must cancel first responder
+    if ([[self stringValue] length] == 0)
+        [[self window] makeFirstResponder:[self window]];
+
+    [super _windowDidResignKey:aNotification];
+    [self _layoutSubviews];
+}
+
+- (void)setPlaceholderString:(CPString)aStringValue
+{
+    [super setPlaceholderString:aStringValue];
+    [self _layoutContent];
+}
+
+- (void)_layoutContent
+{
+    [_searchButton setFrame:[self searchButtonRectForBounds:[self bounds]]];
+    [_contentView  setFrame:[self contentRectForBounds:[self bounds]]];
+    [_cancelButton setFrame:[self cancelButtonRectForBounds:[self bounds]]];
+    [self updateTrackingAreas];
+}
+
+- (void)setFrameSize:(CGSize)aSize
+{
+    [super setFrameSize:aSize];
+    [self _layoutContent];
+}
+
+- (id)_potentialCurrentValueForThemeAttribute:(CPString)aName
+{
+    if (_isBecomingFirstResponder)
+        return [self valueForThemeAttribute:aName inState:[self themeState].and(CPThemeStateEditing)];
+    else
+        return [self currentValueForThemeAttribute:aName];
+}
+
 - (void)unbind:(CPString)aBinding
 {
     [super unbind:aBinding];
@@ -805,7 +1011,7 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
         [self addTrackingArea:_searchButtonTrackingArea];
     }
 
-    if (_cancelButton)
+    if (_cancelButton && ![_cancelButton isHidden])
     {
         _cancelButtonTrackingArea = [[CPTrackingArea alloc] initWithRect:[_cancelButton frame]
                                                                  options:CPTrackingCursorUpdate | CPTrackingActiveInKeyWindow

@@ -629,6 +629,28 @@ var sharedObject = [CPObject new];
     [self assertTrue:[[self stringForTesting] isEqual:string] message:"setAttributedString should have made strings equal, but they were not"];
 }
 
+- (void)testReplaceAttributedString
+{
+    var string = [[CPMutableAttributedString alloc] initWithString:"HELLO <br> THERE"];
+    [string replaceOccurrencesOfString:"<br>"
+                            withString:"<tr>"
+                               options:0
+                                 range:nil];
+
+    [self assertTrue:[string._string isEqual:"HELLO <tr> THERE"] message:"replaceOccurrencesOfString:withString:options:range: did not properly replace the search string with the replacement string. Result is: " + string._string];
+}
+
+- (void)testReplaceAttributedStringWithRange
+{
+    var string = [[CPMutableAttributedString alloc] initWithString:"HELLO <br> THERE"];
+    [string replaceOccurrencesOfString:"<br>"
+                            withString:"<tr>"
+                               options:0
+                                 range:CPMakeRange(0, 4)];
+
+    [self assertTrue:[string._string isEqual:"HELLO <br> THERE"] message:"replaceOccurrencesOfString:withString:options:range: did not respect the range restriction. Result is: " + string._string];
+}
+
 - (void)testEncoding
 {
     // We can't test using [self stringForTesting] because it contains attributes without coding support.

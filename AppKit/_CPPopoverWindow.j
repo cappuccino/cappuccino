@@ -25,6 +25,7 @@
 @import "CPButton.j"
 @import "CPMenu.j"
 @import "CPPanel.j"
+@import "CPAnimationContext.j"
 
 // Use forward declaration because this file is imported by CPPopover
 @class CPPopover
@@ -117,7 +118,11 @@ var _CPPopoverWindow_shouldClose_    = 1 << 4,
         _isClosing                  = NO;
         _browserAnimates            = [self browserSupportsAnimation];
         _shouldPerformAnimation     = YES;
-        _orderOutTransitionFunction = function() { [self _orderOutRecursively:YES]; };
+        _orderOutTransitionFunction = function()
+                                        {
+                                            [self _orderOutRecursively:YES];
+                                            [_windowView _restoreViewBackgroundColor];
+                                        };
         _isOpening                  = YES;
 
         [self setStyleMask:aStyleMask];
