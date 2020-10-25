@@ -198,13 +198,7 @@ CPButtonImageOffset   = 3.0;
 
     if (self)
     {
-        // Should we instead override the defaults?
-//        [self setValue:CPCenterTextAlignment forThemeAttribute:@"alignment"];
-//        [self setValue:CPCenterVerticalTextAlignment forThemeAttribute:@"vertical-alignment"];
-//        [self setValue:CPImageLeft forThemeAttribute:@"image-position"];
-//        [self setValue:CPImageScaleNone forThemeAttribute:@"image-scaling"];
-
-        [self setBezelStyle:CPRoundedBezelStyle];
+        [self setBezelStyle:CPRoundRectBezelStyle];
         [self setBordered:YES];
 
         [self _init];
@@ -616,7 +610,7 @@ CPButtonImageOffset   = 3.0;
     if (![self isBordered])
         return bounds;
 
-    var bezelInset = [self currentValueForThemeAttribute:@"bezel-inset"]; // FIXME: faire comme au dessus ?
+    var bezelInset = [self currentValueForThemeAttribute:@"bezel-inset"];
 
     return CGRectInsetByInset(bounds, bezelInset);
 }
@@ -632,7 +626,7 @@ CPButtonImageOffset   = 3.0;
         size = [contentView frameSize];
     }
     else
-        size = [([self title] || " ") sizeWithFont:[self font]]; //[self currentValueForThemeAttribute:@"font"]];
+        size = [([self title] || " ") sizeWithFont:[self font]];
 
     var contentInset = [self currentValueForThemeAttribute:@"content-inset"],
         minSize = [self currentValueForThemeAttribute:@"min-size"],
@@ -694,12 +688,12 @@ CPButtonImageOffset   = 3.0;
         currentState = [self state],
         buttonIsOn   = (currentState !== CPOffState);
 
-    if (_isHighlighted && (_highlightsBy & (CPPushInCellMask | CPChangeGrayCellMask))) // FIXME: quid background ?
+    if (_isHighlighted && (_highlightsBy & (CPPushInCellMask | CPChangeGrayCellMask)))
         visualState = visualState.and(CPThemeStateHighlighted);
     else
         visualState = visualState.without(CPThemeStateHighlighted);
 
-    if (buttonIsOn && (_showsStateBy & (CPPushInCellMask | CPChangeGrayCellMask))) // FIXME: quid background ?
+    if (buttonIsOn && (_showsStateBy & (CPPushInCellMask | CPChangeGrayCellMask)))
         visualState = visualState.and((currentState === CPOnState) ? CPThemeStateSelected : CPButtonStateMixed);
     else
         visualState = visualState.without(CPThemeStateSelected);
@@ -776,7 +770,6 @@ CPButtonImageOffset   = 3.0;
 
     if ([currentImage isMaterialIconImage])
     {
-        // FIXME: Keep this ?
         if (([self valueForThemeAttribute:@"invert-image" inState:visualState] || ([self valueForThemeAttribute:@"invert-image-on-push" inState:visualState] && (_isHighlighted || (((_showsStateBy & CPChangeGrayCellMask) || (_showsStateBy & CPChangeBackgroundCellMask)) && buttonIsOn)))))
             currentImage = [currentImage invertedImage];
 
@@ -811,7 +804,7 @@ CPButtonImageOffset   = 3.0;
 
     [contentView setImageOffset:[self valueForThemeAttribute:@"image-offset" inState:contentVisualState]];
 
-    [contentView setFont:[self font]]; //[self currentValueForThemeAttribute:@"font"]];
+    [contentView setFont:[self font]];
     [contentView setTextColor:[self valueForThemeAttribute:@"text-color" inState:contentVisualState]];
     [contentView setAlignment:[self valueForThemeAttribute:@"alignment"  inState:contentVisualState]];
     [contentView setVerticalAlignment:[self valueForThemeAttribute:@"vertical-alignment" inState:contentVisualState]];
@@ -941,18 +934,6 @@ CPButtonImageOffset   = 3.0;
 
     [self setState:[self nextState]];
 
-    // FIXME: Here
-//    var shouldHighlight = NO;
-//
-//    if (_highlightsBy & (CPPushInCellMask | CPChangeGrayCellMask))
-//    {
-//        if (_showsStateBy & (CPChangeGrayCellMask | CPChangeBackgroundCellMask))
-//            shouldHighlight = [self state] == CPOffState;
-//        else
-//            shouldHighlight = YES;
-//    }
-//
-//    [self highlight:shouldHighlight];
     [self highlight:YES];
 
     try
@@ -965,9 +946,7 @@ CPButtonImageOffset   = 3.0;
     }
     finally
     {
-        // FIXME: Here
-        //        if (shouldHighlight)
-            [CPTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(unhighlightButtonTimerDidFinish:) userInfo:nil repeats:NO];
+        [CPTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(unhighlightButtonTimerDidFinish:) userInfo:nil repeats:NO];
     }
 }
 
@@ -1012,7 +991,7 @@ CPButtonImageOffset   = 3.0;
 @end
 
 
-var CPButtonImageKey                    = @"CPButtonImageKey", // FIXME: pas utilisé ??????
+var CPButtonImageKey                    = @"CPButtonImageKey",
     CPButtonAlternateImageKey           = @"CPButtonAlternateImageKey",
     CPButtonTitleKey                    = @"CPButtonTitleKey",
     CPButtonAlternateTitleKey           = @"CPButtonAlternateTitleKey",
