@@ -317,7 +317,9 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
 {
     if (shouldRefreshLayout)
     {
-        if (CPApplicationShouldMimicWindows)
+        var mimicWindows = [CPApp shouldMimicWindows];
+
+        if (mimicWindows)
             [self setThemeState:CPThemeStateWindowsPlatform];
         else
             [self unsetThemeState:CPThemeStateWindowsPlatform];
@@ -336,7 +338,29 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
             delta1,
             delta2;
 
-        if (CPApplicationShouldMimicWindows)
+        // For retro-compatibility
+        if (![self isCSSBased])
+        {
+            if (mimicWindows)
+            {
+                // There's no zoom button in Aristo2
+                closeThemeOrigin    = CGPointMake(-24.0, 8.0);
+                minimizeThemeOrigin = CGPointMake(-43.0, 8.0);
+
+                // FIXME: if someone designs a zoom button in Aristo2 one day, use those values
+                // closeThemeOrigin    = CGPointMake(-24.0, 8.0);
+                // minimizeThemeOrigin = CGPointMake(-62.0, 8.0);
+                // zoomThemeOrigin     = CGPointMake(-43.0, 8.0);
+            }
+            else
+            {
+                closeThemeOrigin    = CGPointMake(8.0, 8.0);
+                minimizeThemeOrigin = CGPointMake(27.0, 8.0);
+                zoomThemeOrigin     = CGPointMake(46.0, 8.0);
+            }
+        }
+
+        if (mimicWindows)
         {
             offset = [self bounds].size.width;
             mask   = CPViewMinXMargin;
@@ -359,15 +383,12 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
 
             // For retro-compatibility:
             if (!closeThemeSize)
-            {
-                closeThemeSize   = CGSizeMake(16.0, 16.0);
-                closeThemeOrigin = CGPointMake(8.0, 8.0);
-            }
+                closeThemeSize = CGSizeMake(16.0, 16.0);
 
             [_closeButton setFrame:CGRectMake(closeThemeOrigin.x + offset, closeThemeOrigin.y, closeThemeSize.width, closeThemeSize.height)];
             [_closeButton setAutoresizingMask:mask];
 
-            _buttonsWidth = ABS(closeThemeOrigin.x) + (CPApplicationShouldMimicWindows ? 0 : closeThemeSize.width);
+            _buttonsWidth = ABS(closeThemeOrigin.x) + (mimicWindows ? 0 : closeThemeSize.width);
         }
         else
         {
@@ -375,7 +396,7 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
             zoomThemeOrigin.x     -= delta1;
         }
 
-        if (CPApplicationShouldMimicWindows)
+        if (mimicWindows)
         {
             if (_styleMask & CPResizableWindowMask)
             {
@@ -383,10 +404,7 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
 
                 // For retro-compatibility:
                 if (!zoomThemeSize)
-                {
-                    zoomThemeSize   = CGSizeMake(16.0, 16.0);
-                    zoomThemeOrigin = CGPointMake(46.0, 8.0);
-                }
+                    zoomThemeSize = CGSizeMake(16.0, 16.0);
 
                 [_zoomButton setFrame:CGRectMake(zoomThemeOrigin.x + offset, zoomThemeOrigin.y, zoomThemeSize.width, zoomThemeSize.height)];
                 [_zoomButton setAutoresizingMask:mask];
@@ -402,10 +420,7 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
 
                 // For retro-compatibility:
                 if (!minimizeThemeSize)
-                {
-                    minimizeThemeSize   = CGSizeMake(16.0, 16.0);
-                    minimizeThemeOrigin = CGPointMake(27.0, 8.0);
-                }
+                    minimizeThemeSize = CGSizeMake(16.0, 16.0);
 
                 [_minimizeButton setFrame:CGRectMake(minimizeThemeOrigin.x + offset, minimizeThemeOrigin.y, minimizeThemeSize.width, minimizeThemeSize.height)];
                 [_minimizeButton setAutoresizingMask:mask];
@@ -424,10 +439,7 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
 
                 // For retro-compatibility:
                 if (!minimizeThemeSize)
-                {
-                    minimizeThemeSize   = CGSizeMake(16.0, 16.0);
-                    minimizeThemeOrigin = CGPointMake(27.0, 8.0);
-                }
+                    minimizeThemeSize = CGSizeMake(16.0, 16.0);
 
                 [_minimizeButton setFrame:CGRectMake(minimizeThemeOrigin.x + offset, minimizeThemeOrigin.y, minimizeThemeSize.width, minimizeThemeSize.height)];
                 [_minimizeButton setAutoresizingMask:mask];
@@ -443,10 +455,7 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
 
                 // For retro-compatibility:
                 if (!zoomThemeSize)
-                {
-                    zoomThemeSize   = CGSizeMake(16.0, 16.0);
-                    zoomThemeOrigin = CGPointMake(46.0, 8.0);
-                }
+                    zoomThemeSize = CGSizeMake(16.0, 16.0);
 
                 [_zoomButton setFrame:CGRectMake(zoomThemeOrigin.x + offset, zoomThemeOrigin.y, zoomThemeSize.width, zoomThemeSize.height)];
                 [_zoomButton setAutoresizingMask:mask];
@@ -567,7 +576,8 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
 
 - (void)layoutSubviews
 {
-    var width = [self bounds].size.width;
+    var width        = [self bounds].size.width,
+        mimicWindows = [CPApp shouldMimicWindows];
 
     [super layoutSubviews];
 
@@ -582,9 +592,9 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
     if (width - 2 * _buttonsWidth < _minimumTitleFieldSize)
     {
         if (width - _buttonsWidth - _titleMargin < _minimumTitleFieldSize)
-            [_titleField setFrame:CGRectMake((CPApplicationShouldMimicWindows ? _titleMargin : _buttonsWidth), 0, width - _buttonsWidth - _titleMargin, _titleBarHeight)];
+            [_titleField setFrame:CGRectMake((mimicWindows ? _titleMargin : _buttonsWidth), 0, width - _buttonsWidth - _titleMargin, _titleBarHeight)];
         else
-            [_titleField setFrame:CGRectMake((CPApplicationShouldMimicWindows ? width - _buttonsWidth - _minimumTitleFieldSize : _buttonsWidth), 0, _minimumTitleFieldSize, _titleBarHeight)];
+            [_titleField setFrame:CGRectMake((mimicWindows ? width - _buttonsWidth - _minimumTitleFieldSize : _buttonsWidth), 0, _minimumTitleFieldSize, _titleBarHeight)];
     }
 }
 
@@ -654,7 +664,7 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
     var triggeredButton = [[anEvent trackingArea] userInfo],
         state           = CPThemeStateHovered;
 
-    if (CPApplicationShouldMimicWindows)
+    if ([CPApp shouldMimicWindows])
         state = state.and(CPThemeStateWindowsPlatform);
 
     if (triggeredButton === _closeButton)

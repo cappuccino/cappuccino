@@ -46,11 +46,8 @@ CPRunContinuesResponse  = -1002;
 CPApplicationLegacyOSBehavior = 1;
 CPApplicationFollowOSBehavior = 2;
 
-CPApplicationSelectedOSBehavior              = CPApplicationLegacyOSBehavior;
-CPApplicationShouldMimicWindows              = NO;
 CPApplicationOSBehaviorDidChangeNotification = @"CPApplicationOSBehaviorDidChangeNotification";
 CPApplicationOSBehaviors                     = @{
                                                  @"CPApplicationLegacyOSBehavior": CPApplicationLegacyOSBehavior,
                                                  @"CPApplicationFollowOSBehavior": CPApplicationFollowOSBehavior
                                                  };
-_CPApplicationSimulateWindowsOS              = NO;
