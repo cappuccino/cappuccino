@@ -118,24 +118,9 @@ var _CPCibCustomViewClassNameKey = @"_CPCibCustomViewClassNameKey";
         [view setAlphaValue:[self alphaValue]];
         [view setIdentifier:[self identifier]];
 
-        // Trying to fix not ready view bug (or running condition)
-        view._appearance = self._appearance;
-        view._theme      = self._theme;
-
-        if (view._themeState == CPThemeStateNormal)
-            view._themeState = self._themeState;
-
-        view._themeAttributes = self._themeAttributes;
-        view._themeClass      = [theClass themeClass];
-
-        [view _loadThemeAttributes];
-
         [_superview replaceSubview:self with:view];
 
-        var backgroundColor = [self backgroundColor];
-
-        if (backgroundColor)
-            [view setBackgroundColor:backgroundColor];
+        [view setBackgroundColor:[self backgroundColor]];
     }
 
     return view;
