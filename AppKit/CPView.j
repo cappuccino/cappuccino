@@ -3773,16 +3773,21 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     // Also decode these "early".
     _frame = [aCoder decodeRectForKey:CPViewFrameKey];
     _bounds = [aCoder decodeRectForKey:CPViewBoundsKey];
+    _scaleSize = [aCoder containsValueForKey:CPViewScaleKey] ? [aCoder decodeSizeForKey:CPViewScaleKey] : CGSizeMake(1.0, 1.0);
+    _hierarchyScaleSize = [aCoder containsValueForKey:CPViewSizeScaleKey] ? [aCoder decodeSizeForKey:CPViewSizeScaleKey] : CGSizeMake(1.0, 1.0);
+    _isScaled = [aCoder containsValueForKey:CPViewIsScaledKey] ? [aCoder decodeBoolForKey:CPViewIsScaledKey] : NO;
+    _subviews = @[];
+
+    // Trying to fix "not ready" views
+    _trackingAreas = [aCoder decodeObjectForKey:CPViewTrackingAreasKey] || @[];
+
+    [self _decodeThemeObjectsWithCoder:aCoder];
+    [self setAppearance:[aCoder decodeObjectForKey:CPViewAppearanceKey]];
 
     self = [super initWithCoder:aCoder];
 
     if (self)
     {
-        _trackingAreas = [aCoder decodeObjectForKey:CPViewTrackingAreasKey];
-
-        if (!_trackingAreas)
-            _trackingAreas = [];
-
         // We have to manually check because it may be 0, so we can't use ||
         _tag = [aCoder containsValueForKey:CPViewTagKey] ? [aCoder decodeIntForKey:CPViewTagKey] : -1;
         _identifier = [aCoder decodeObjectForKey:CPReuseIdentifierKey];
@@ -3791,7 +3796,6 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         _superview = [aCoder decodeObjectForKey:CPViewSuperviewKey];
         // We have to manually add the subviews so that they will receive
         // viewWillMoveToSuperview: and viewDidMoveToSuperview:
-        _subviews = [];
 
         var subviews = [aCoder decodeObjectForKey:CPViewSubviewsKey] || [];
 
@@ -3819,10 +3823,6 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 
         if (_toolTip)
             [self _installToolTipEventHandlers];
-
-        _scaleSize = [aCoder containsValueForKey:CPViewScaleKey] ? [aCoder decodeSizeForKey:CPViewScaleKey] : CGSizeMake(1.0, 1.0);
-        _hierarchyScaleSize = [aCoder containsValueForKey:CPViewSizeScaleKey] ? [aCoder decodeSizeForKey:CPViewSizeScaleKey] : CGSizeMake(1.0, 1.0);
-        _isScaled = [aCoder containsValueForKey:CPViewIsScaledKey] ? [aCoder decodeBoolForKey:CPViewIsScaledKey] : NO;
 
         // DOM SETUP
 #if PLATFORM(DOM)
@@ -3854,12 +3854,12 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 
         [self setBackgroundColor:[aCoder decodeObjectForKey:CPViewBackgroundColorKey]];
         [self _setupViewFlags];
-        [self _decodeThemeObjectsWithCoder:aCoder];
 
         [self setAppearance:[aCoder decodeObjectForKey:CPViewAppearanceKey]];
         // Set the current appearance to something that can't be the correct one so it will recalculate it at the first layout.
         _currentAppearance = _frame;
 
+        [self updateTrackingAreas];
         [self setNeedsDisplay:YES];
         [self setNeedsLayout];
     }
