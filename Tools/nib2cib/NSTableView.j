@@ -33,6 +33,8 @@
 
     if (self)
     {
+        [self _init];
+
         var flags = [aCoder decodeIntForKey:@"NSTvFlags"];
 
         //_dataSource = [aCoder decodeObjectForKey:CPTableViewDataSourceKey];
