@@ -21,6 +21,7 @@
 
 @import <AppKit/CPBox.j>
 
+@class Nib2Cib
 
 @implementation CPBox (NSCoding)
 

@@ -26,6 +26,8 @@
 @import "NSCell.j"
 @import "NSControl.j"
 
+@class Nib2Cib
+
 @global NIB_CONNECTION_EQUIVALENCY_TABLE
 
 @implementation CPTextField (NSCoding)
