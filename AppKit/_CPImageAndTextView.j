@@ -602,7 +602,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
         }
     }
 
-    var needsDOMImageElement = _image != nil && _imagePosition !== CPNoImage,
+    var needsDOMImageElement = _image !== nil && _imagePosition !== CPNoImage,
         hasDOMImageElement = !!_DOMImageElement,
         // For CSS theming
         isCSSBasedImage = [_image isCSSBased],
@@ -676,6 +676,13 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
         else if (_imageScaling === CPImageScaleProportionallyDown)
         {
             var scale = MIN(MIN(size.width, imageWidth) / imageWidth, MIN(size.height, imageHeight) / imageHeight);
+
+            imageWidth *= scale;
+            imageHeight *= scale;
+        }
+        else if (_imageScaling === CPImageScaleProportionallyUpOrDown)
+        {
+            var scale = MIN(size.width / imageWidth, size.height / imageHeight);
 
             imageWidth *= scale;
             imageHeight *= scale;
