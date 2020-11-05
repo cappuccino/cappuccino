@@ -1293,6 +1293,37 @@ var CPMenuTitleKey              = @"CPMenuTitleKey",
 
 @end
 
+#pragma mark -
+
+@implementation CPMenu (CSSTheming)
+
++ (void)setNamedValue:(CPString)aName forKey:(CPString)aKey inAttributes:(CPDictionary)aDictionary forTheme:(CPTheme)aTheme
+{
+    var value = [aTheme valueForAttributeWithName:aName forClass:_CPMenuView];
+
+    if (value)
+        [aDictionary setObject:value forKey:aKey];
+    else
+        [aDictionary removeObjectForKey:aKey];
+}
+
++ (void)updateMenuBarAttributesWithTheme:(CPTheme)aTheme
+{
+    var newAttributes = @{};
+
+    [CPMenu setNamedValue:@"menu-bar-text-color"                  forKey:@"CPMenuBarTextColor"                inAttributes:newAttributes forTheme:aTheme];
+    [CPMenu setNamedValue:@"menu-bar-title-color"                 forKey:@"CPMenuBarTitleColor"               inAttributes:newAttributes forTheme:aTheme];
+    [CPMenu setNamedValue:@"menu-bar-text-shadow-color"           forKey:@"CPMenuBarTextShadowColor"          inAttributes:newAttributes forTheme:aTheme];
+    [CPMenu setNamedValue:@"menu-bar-title-shadow-color"          forKey:@"CPMenuBarTitleShadowColor"         inAttributes:newAttributes forTheme:aTheme];
+    [CPMenu setNamedValue:@"menu-bar-highlight-color"             forKey:@"CPMenuBarHighlightColor"           inAttributes:newAttributes forTheme:aTheme];
+    [CPMenu setNamedValue:@"menu-bar-highlight-text-color"        forKey:@"CPMenuBarHighlightTextColor"       inAttributes:newAttributes forTheme:aTheme];
+    [CPMenu setNamedValue:@"menu-bar-highlight-text-shadow-color" forKey:@"CPMenuBarHighlightTextShadowColor" inAttributes:newAttributes forTheme:aTheme];
+
+    [CPMenu setMenuBarAttributes:newAttributes];
+}
+
+@end
+
 @import "_CPMenuBarWindow.j"
 @import "_CPMenuWindow.j"
 

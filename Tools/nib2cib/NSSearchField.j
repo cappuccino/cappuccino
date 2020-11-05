@@ -58,6 +58,11 @@
     {
         var cell = [aCoder decodeObjectForKey:@"NSCell"];
         [self NS_initWithCell:cell];
+
+        // As we are a search field, if no placeholder is specified, we force "Search"
+        if (![self placeholderString])
+            [self setPlaceholderString:@"Search"];
+
         [self _adjustNib2CibSize];
     }
 

@@ -32,6 +32,7 @@
     {
         _boxType        = [aCoder decodeIntForKey:@"NSBoxType"];
         _borderType     = [aCoder decodeIntForKey:@"NSBorderType"];
+        _transparent    = [aCoder decodeBoolForKey:@"NSTransparent"];
 
         var borderColor = [aCoder decodeObjectForKey:@"NSBorderColor2"],
             fillColor = [aCoder decodeObjectForKey:@"NSFillColor2"],
@@ -70,7 +71,7 @@
 
 - (CGRect)_nib2CibAdjustment
 {
-    if ((_boxType === CPBoxPrimary) || (_boxType === CPBoxSecondary))
+    if ((_boxType !== CPBoxSeparator) && ((_boxType === CPBoxPrimary) || (_boxType === CPBoxSecondary)))
     {
         // We use a special nib2cib-adjustment-frame for primary/secondary boxes
         var theme = [Nib2Cib defaultTheme],

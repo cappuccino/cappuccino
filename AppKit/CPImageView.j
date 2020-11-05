@@ -99,8 +99,8 @@ var CPImageViewEmptyPlaceholderImage = nil;
 {
 #if PLATFORM(DOM)
     var image = [self objectValue],
-    isCSSBasedImage = [image isCSSBased],
-    isIMGImageElement = _DOMImageElement && (_DOMImageElement.nodeName == "IMG");
+        isCSSBasedImage = [image isCSSBased],
+        isIMGImageElement = _DOMImageElement && (_DOMImageElement.nodeName == "IMG");
 
     // First, check if we need to destroy a current DOM image element. This is the case if :
     // - we have one but not the right one (that is a DIV but needing an IMG, and vice versa)
@@ -443,6 +443,18 @@ var CPImageViewEmptyPlaceholderImage = nil;
         CPDOMDisplayServerSetStyleLeftTop(_DOMImageElement, NULL, x, y);
 #endif
     }
+
+#if PLATFORM(DOM)
+    if ([image isCSSBased] && [image _shouldBeResized])
+    {
+        [image _setDisplaySize:CGSizeMake(ROUND(width), ROUND(height))];
+
+        _cssStyleNode = [image applyCSSImageForView:self
+                                       onDOMElement:_DOMImageElement
+                                          styleNode:_cssStyleNode
+                                      previousState:@ref(_cssStylePreviousState)];
+    }
+#endif
 
     _imageRect = CGRectMake(x, y, width, height);
 

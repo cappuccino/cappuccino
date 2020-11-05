@@ -465,6 +465,7 @@ _CPMenuWindowAttachedMenuBackgroundStyle    = 2;
             @"menu-bar-window-background-color": [CPNull null],
             @"menu-bar-window-background-selected-color": [CPNull null],
             @"menu-bar-window-font": [CPNull null],
+            @"menu-bar-window-first-item-font": [CPNull null],
             @"menu-bar-window-height": 30.0,
             @"menu-bar-window-margin": 10.0,
             @"menu-bar-window-left-margin": 10.0,
@@ -482,6 +483,9 @@ _CPMenuWindowAttachedMenuBackgroundStyle    = 2;
             @"menu-general-icon-new": [CPNull null],
             @"menu-general-icon-save": [CPNull null],
             @"menu-general-icon-open": [CPNull null],
+            @"menu-window-submenu-delta-x": 0.0,
+            @"menu-window-submenu-delta-y": 0.0,
+            @"menu-window-submenu-first-level-delta-y": 0.0
         };
 }
 

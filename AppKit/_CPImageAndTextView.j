@@ -662,17 +662,6 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
         if (!imageStyle)
             var imageStyle = _DOMImageElement.style;
 
-        if (_flags & _CPImageAndTextViewImageChangedFlag)
-        {
-            if (isCSSBasedImage)
-                _cssStyleNode = [_image applyCSSImageForView:self
-                                                onDOMElement:_DOMImageElement
-                                                   styleNode:_cssStyleNode
-                                               previousState:@ref(_cssStylePreviousState)];
-            else
-                _DOMImageElement.src = [_image filename];
-        }
-
         var centerX = size.width / 2.0,
             centerY = size.height / 2.0,
             imageSize = [_image size],
@@ -744,6 +733,24 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
             imageStyle.top = FLOOR(centerY - imageHeight / 2.0) + "px";
             imageStyle.left = FLOOR(centerX - imageWidth / 2.0) + "px";
         }
+
+        if (_flags & _CPImageAndTextViewImageChangedFlag)
+        {
+            if (isCSSBasedImage)
+            {
+                // For material icons images & co.
+                if ([_image _shouldBeResized])
+                    [_image _setDisplaySize:CGSizeMake(imageWidth, imageHeight)];
+
+                _cssStyleNode = [_image applyCSSImageForView:self
+                                                onDOMElement:_DOMImageElement
+                                                   styleNode:_cssStyleNode
+                                               previousState:@ref(_cssStylePreviousState)];
+            }
+            else
+                _DOMImageElement.src = [_image filename];
+        }
+
     }
 
     if (hasDOMTextElement)

@@ -41,6 +41,7 @@ var _CPPopoverWindowViewDefaultCursorSize = CGSizeMake(16, 10);
     unsigned    _preferredEdge  @accessors(property=preferredEdge);
 
     CGSize      _cursorSize;
+    CPColor     _contentViewSavedBackgroundColor;
 }
 
 + (CPString)defaultThemeClass
@@ -123,6 +124,7 @@ var _CPPopoverWindowViewDefaultCursorSize = CGSizeMake(16, 10);
         _arrowOffsetY = 0.0;
         _appearance = [CPAppearance appearanceNamed:CPAppearanceNameVibrantLight];
         _cursorSize = CGSizeMakeCopy(_CPPopoverWindowViewDefaultCursorSize);
+        _contentViewSavedBackgroundColor = nil;
     }
 
     return self;
@@ -177,6 +179,24 @@ var _CPPopoverWindowViewDefaultCursorSize = CGSizeMake(16, 10);
         strokeColor = [self valueForThemeAttribute:@"stroke-color-hud"];
     }
 
+    // Cappuccino special behavior :
+    // If the content view has a background color, we use it as gradient color
+    var subviews                   = [self subviews],
+        contentView                = [subviews count] > 0 ? subviews[0] : nil,
+        contentViewBackgroundColor = [contentView backgroundColor];
+
+    if (_contentViewSavedBackgroundColor)
+    {
+        gradient = _contentViewSavedBackgroundColor;
+    }
+    else if (contentViewBackgroundColor)
+    {
+        gradient = _contentViewSavedBackgroundColor = contentViewBackgroundColor;
+
+        // We remove the content view background color (it will be restored when the popover closes)
+        [contentView setBackgroundColor:nil];
+    }
+
     // fix rect to take care of stroke and shadow
     frame.origin.x += halfStrokeWidth + shadowBlur;
     frame.origin.y += halfStrokeWidth + (shadowBlur + shadowSize.height / 2);
@@ -188,7 +208,14 @@ var _CPPopoverWindowViewDefaultCursorSize = CGSizeMake(16, 10);
 
     CGContextBeginPath(context);
     CGContextSetShadowWithColor(context, shadowSize, shadowBlur, shadowColor);
-    CGContextDrawLinearGradient(context, gradient, CGPointMake(CGRectGetMidX(frame), 0.0), CGPointMake(CGRectGetMidX(frame), frame.size.height), 0);
+
+    // Is gradient a CGGradient or a CPColor ?
+    if ('locations' in gradient)
+        // CGGradient
+        CGContextDrawLinearGradient(context, gradient, CGPointMake(CGRectGetMidX(frame), 0.0), CGPointMake(CGRectGetMidX(frame), frame.size.height), 0);
+    else
+        // CPColor or CGColor
+        CGContextSetFillColor(context, gradient);
 
     var xMin = CGRectGetMinX(frame),
         xMax = CGRectGetMaxX(frame),
@@ -399,6 +426,20 @@ var _CPPopoverWindowViewDefaultCursorSize = CGSizeMake(16, 10);
 
     CGContextAddPath(context, path);
     CGContextFillPath(context);
+}
+
+- (void)_restoreViewBackgroundColor
+{
+    if (_contentViewSavedBackgroundColor)
+    {
+        // We restore the saved background color in the content view
+        var subviews    = [self subviews],
+            contentView = [subviews count] > 0 ? subviews[0] : nil;
+
+        [contentView setBackgroundColor:_contentViewSavedBackgroundColor];
+
+        _contentViewSavedBackgroundColor = nil;
+    }
 }
 
 @end
