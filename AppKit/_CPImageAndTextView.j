@@ -795,8 +795,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
                 if (_verticalAlignment === CPCenterVerticalTextAlignment)
                 {
                     // Since we added +1 px height above to show fractional pixels on the bottom, we have to remove that when calculating vertical centre.
-                    // REMARK: Added FLOOR to mimic Cocoa rendering
-                    textRectY = textRectY + FLOOR((textRectHeight - _textSize.height + 1.0) / 2.0);
+                    textRectY = textRectY + (textRectHeight - _textSize.height + 1.0) / 2.0;
                     textRectHeight = _textSize.height;
                 }
 
@@ -809,7 +808,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
         }
 
         textStyle.top = ROUND(textRectY) + "px";
-        textStyle.left = FLOOR(textRectX) + "px";
+        textStyle.left = ROUND(textRectX) + "px";
         textStyle.width = MAX(CEIL(textRectWidth), 0) + "px";
         textStyle.height = MAX(CEIL(textRectHeight), 0) + "px";
         textStyle.verticalAlign = @"top";
