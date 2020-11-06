@@ -890,3 +890,14 @@ var CPNinePartImageImageSlicesKey   = @"CPNinePartImageImageSlicesKey";
 }
 
 @end
+
+#pragma mark -
+
+@implementation CPImage (Duplication)
+
+- (CPImage)duplicate
+{
+    return [CPKeyedUnarchiver unarchiveObjectWithData:[CPKeyedArchiver archivedDataWithRootObject:self]];
+}
+
+@end

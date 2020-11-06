@@ -265,7 +265,7 @@ _CPDatePickerClockSeconds = 3;
 
 - (void)mouseDown:(CPEvent)anEvent
 {
-    if (!_isEnabled || ![_datePicker isCSSBased])
+    if (!_isEnabled)
         return;
 
     var currentLocation = [self convertPoint:[anEvent locationInWindow] fromView:nil];
