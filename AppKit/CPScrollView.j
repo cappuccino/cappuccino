@@ -30,6 +30,8 @@
 @import "CPScroller.j"
 @import "CPView.j"
 
+@class CPTableView
+
 #define SHOULD_SHOW_CORNER_VIEW() (_scrollerStyle === CPScrollerStyleLegacy && _verticalScroller && ![_verticalScroller isHidden])
 
 
