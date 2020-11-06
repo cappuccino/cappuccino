@@ -190,13 +190,14 @@ _CPDatePickerClockSeconds = 3;
 
 - (void)setDatePickerElements:(CPInteger)aDatePickerElements
 {
-    if (_datePickerElements === aDatePickerElements)
-        return;
-
     _datePickerElements = aDatePickerElements;
 
     // Check if we have to display the hand second
+    // FIXME: Don't know why but next line will cause theme compilation to fail...
+    // Workaround: added "if PLATFORM(DOM)"
+#if PLATFORM(DOM)
     [_secondHandLayer setHidden:!((_datePickerElements & CPHourMinuteSecondDatePickerElementFlag) == CPHourMinuteSecondDatePickerElementFlag)];
+#endif
 }
 
 #pragma mark Layout methods

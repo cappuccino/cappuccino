@@ -255,6 +255,7 @@ CPEraDatePickerElementFlag              = 0x0100;
 
     [_datePickerComponent setDateValue:_dateValue];
     [_datePickerComponent setControlSize:[self controlSize]];
+    [_datePickerComponent setDatePickerElements:_datePickerElements];
 
     // FIXME: Don't know why but next line will cause theme compilation to fail...
     // Workaround: added "if PLATFORM(DOM)"
