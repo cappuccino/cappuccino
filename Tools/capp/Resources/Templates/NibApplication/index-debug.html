@@ -61,10 +61,12 @@
 
             var loadingHTML =
                     '<div id="loading">' +
-                    '    <div id="loading-text">Loading...</div>' +
-                    '    <div id="progress-indicator">' +
-                    '        <span id="progress-bar" style="width:0%"></span>' +
-                    '    </div>' +
+	                '    <div style="flex-grow: 35"></div>' +
+	                '    <div id="loading-text">Loading...</div>' +
+	                '    <div id="progress-indicator">' +
+	                '        <span id="progress-bar" style="width:0%"></span>' +
+	                '    </div>' +
+	                '    <div style="flex-grow: 65"></div>' +
                     '</div>';
         </script>
 
@@ -131,8 +133,11 @@
             }
 
             #loading {
-                position: relative;
-                top: 35%;
+                height: 100%;
+                display:flex;
+                flex-direction:column;
+                flex-wrap:nowrap;
+                justify-content: space-evenly;
             }
 
             #loading-text {
