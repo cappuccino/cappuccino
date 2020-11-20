@@ -196,9 +196,14 @@ CPRadioImageOffset = 4.0;
     // If no action is set or no superview, no grouping can be done.
     if (![self action] || ![self superview])
     {
-        // If I'm in a group (size > 1), remove me.
+        // If this radio is in a group (size > 1), remove it.
         if ([[self radioGroup] size] > 1)
+        {
             [self setRadioGroup:[CPRadioGroup new]];
+
+            if ([self state] === CPOnState)
+                [_radioGroup _setSelectedRadio:self];
+        }
 
         return;
     }
@@ -227,6 +232,9 @@ CPRadioImageOffset = 4.0;
         // If this is the case, we must reisolate it in a new radio group.
         if ([_radioGroup size] > 1)
             [self setRadioGroup:[CPRadioGroup new]];
+
+    if ([self state] === CPOnState)
+        [_radioGroup _setSelectedRadio:self];
 }
 
 @end
