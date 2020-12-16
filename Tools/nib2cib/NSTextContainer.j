@@ -35,6 +35,10 @@
     _layoutManager = [aCoder decodeObjectForKey:@"NSLayoutManager"];
     [_layoutManager addTextContainer:self];
 
+    var tcFlags = [aCoder decodeIntForKey: @"NSTCFlags"];
+    _widthTracksTextView = (tcFlags & 0x00000001) ? YES : NO;
+    _heightTracksTextView = (tcFlags & 0x00000002) ? YES : NO;
+
     return self;
 }
 

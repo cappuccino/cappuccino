@@ -1978,43 +1978,45 @@ Sets the selection to a range of characters in response to user action.
 
 - (void)setFrameSize:(CGSize)aSize
 {
-    var minSize = [self minSize],
-        maxSize = [self maxSize],
-        desiredSize = CGSizeCreateCopy(aSize),
-        rect = CGRectUnion([_layoutManager boundingRectForGlyphRange:CPMakeRange(0, 1) inTextContainer:_textContainer],
-                           [_layoutManager boundingRectForGlyphRange:CPMakeRange(MAX(0, [_layoutManager numberOfCharacters] - 2), 1) inTextContainer:_textContainer]),
-        myClipviewSize = nil;
+    var desiredSize = CGSizeCreateCopy(aSize);
+
+    if (_isHorizontallyResizable || _isVerticallyResizable)
+    {
+        var minSize = [self minSize],
+            maxSize = [self maxSize],
+            rect = CGRectUnion([_layoutManager boundingRectForGlyphRange:CPMakeRange(0, 1) inTextContainer:_textContainer],
+                           [_layoutManager boundingRectForGlyphRange:CPMakeRange(MAX(0, [_layoutManager numberOfCharacters] - 2), 1) inTextContainer:_textContainer]);
+
+        if ([_layoutManager extraLineFragmentTextContainer] === _textContainer)
+            rect = CGRectUnion(rect, [_layoutManager extraLineFragmentRect]);
+
+        if (_isHorizontallyResizable)
+        {
+            rect = [_layoutManager boundingRectForGlyphRange:CPMakeRange(0, MAX(0, [_layoutManager numberOfCharacters] - 1)) inTextContainer:_textContainer]; // needs expensive "deep" recalculation
+
+            desiredSize.width = rect.size.width + 2 * _textContainerInset.width;
+
+            if (desiredSize.width < minSize.width)
+                desiredSize.width = minSize.width;
+            else if (desiredSize.width > maxSize.width)
+                desiredSize.width = maxSize.width;
+        }
+
+        if (_isVerticallyResizable)
+        {
+            desiredSize.height = rect.size.height + 2 * _textContainerInset.height;
+
+            if (desiredSize.height < minSize.height)
+                desiredSize.height = minSize.height;
+            else if (desiredSize.height > maxSize.height)
+                desiredSize.height = maxSize.height;
+        }
+    }
 
     if ([[self superview] isKindOfClass:[CPClipView class]])
-        myClipviewSize = [[self superview] frame].size;
-
-    if ([_layoutManager extraLineFragmentTextContainer] === _textContainer)
-        rect = CGRectUnion(rect, [_layoutManager extraLineFragmentRect]);
-
-    if (_isHorizontallyResizable)
     {
-        rect = [_layoutManager boundingRectForGlyphRange:CPMakeRange(0, MAX(0, [_layoutManager numberOfCharacters] - 1)) inTextContainer:_textContainer]; // needs expensive "deep" recalculation
+        var myClipviewSize = [[self superview] frame].size;
 
-        desiredSize.width = rect.size.width + 2 * _textContainerInset.width;
-
-        if (desiredSize.width < minSize.width)
-            desiredSize.width = minSize.width;
-        else if (desiredSize.width > maxSize.width)
-            desiredSize.width = maxSize.width;
-    }
-
-    if (_isVerticallyResizable)
-    {
-        desiredSize.height = rect.size.height + 2 * _textContainerInset.height;
-
-        if (desiredSize.height < minSize.height)
-            desiredSize.height = minSize.height;
-        else if (desiredSize.height > maxSize.height)
-            desiredSize.height = maxSize.height;
-    }
-
-    if (myClipviewSize)
-    {
         if (desiredSize.width < myClipviewSize.width)
             desiredSize.width = myClipviewSize.width;
         if (desiredSize.height < myClipviewSize.height)
@@ -2382,7 +2384,11 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
     CPTextViewTextStorageKey = @"CPTextViewTextStorageKey",
     CPTextViewInsertionPointColorKey = @"CPTextViewInsertionPointColorKey",
     CPTextViewSelectedTextAttributesKey = @"CPTextViewSelectedTextAttributesKey",
-    CPTextViewDelegateKey = @"CPTextViewDelegateKey";
+    CPTextViewDelegateKey = @"CPTextViewDelegateKey",
+    CPTextViewHorizontallyResizableKey = @"CPTextViewHorizontallyResizableKey",
+    CPTextViewVerticallyResizableKey = @"CPTextViewVerticallyResizableKey",
+    CPMaxSize = @"CPMaxSize";
+
 
 @implementation CPTextView (CPCoding)
 
@@ -2423,6 +2429,10 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
         [self setFont:[_typingAttributes valueForKey:CPFontAttributeName]];
 
         [self setString:[_textStorage string]];
+
+        [self setMaxSize:[aCoder decodeSizeForKey:CPMaxSize]];
+        [self setHorizontallyResizable:[aCoder decodeBoolForKey:CPTextViewHorizontallyResizableKey]];
+        [self setVerticallyResizable:[aCoder decodeBoolForKey:CPTextViewVerticallyResizableKey]]
     }
 
     return self;
@@ -2438,6 +2448,9 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
     [aCoder encodeObject:_selectedTextAttributes forKey:CPTextViewSelectedTextAttributesKey];
     [aCoder encodeBool:_allowsUndo forKey:CPTextViewAllowsUndoKey];
     [aCoder encodeBool:_usesFontPanel forKey:CPTextViewUsesFontPanelKey];
+    [aCoder encodeBool:_isHorizontallyResizable forKey:CPTextViewHorizontallyResizableKey];
+    [aCoder encodeBool:_isVerticallyResizable forKey:CPTextViewVerticallyResizableKey];
+    [aCoder encodeSize:_maxSize forKey:CPMaxSize];
 }
 
 @end
