@@ -253,6 +253,39 @@
 
 }
 
+- (void)testRadioValueBinding {
+    var content1 = [@{ @"state": NO } mutableCopy],
+        content2 = [@{ @"state": NO } mutableCopy];
+
+    var objectController1 = [[CPObjectController alloc] initWithContent:content1],
+        objectController2 = [[CPObjectController alloc] initWithContent:content2];
+
+    var parentView = [[CPView alloc] initWithFrame:CGRectMakeZero()],
+        radio1 = [CPRadio radioWithTitle:@"Radio 1"],
+        radio2 = [CPRadio radioWithTitle:@"Radio 2"];
+
+    [radio1 setAction:@selector(dummyAction1:)];
+    [radio2 setAction:@selector(dummyAction1:)];
+
+    [parentView addSubview:radio1];
+    [parentView addSubview:radio2];
+
+    [radio1 bind:CPValueBinding toObject:objectController1 withKeyPath:@"selection.state" options:nil];
+    [radio2 bind:CPValueBinding toObject:objectController2 withKeyPath:@"selection.state" options:nil];
+
+    [radio1 performClick:self];
+
+    [self assertTrue:[content1 valueForKey:@"state"] == YES message:@"pressed radio should set value"];
+    [self assertTrue:[content2 valueForKey:@"state"] == NO message:@"not pressed radio should still have old value"];
+
+    [radio2 performClick:self];
+
+    [self assertTrue:[content2 valueForKey:@"state"] == YES message:@"second pressed radio should set value"];
+    // Observe that the radio1 radio binding is not reversed set when the radio2
+    // button is clicked
+    [self assertTrue:[content1 valueForKey:@"state"] == YES message:@"old selected radio should still have on value"];
+}
+
 - (void)testTypeMasks
 {
     button = [[CPButton alloc] initWithFrame:CGRectMakeZero()];
