@@ -1124,7 +1124,7 @@ Sets the selection to a range of characters in response to user action.
     // dragging the selection
     if ([self selectionGranularity] == CPSelectByCharacter && CPLocationInRange(_startTrackingLocation, _selectionRange))
     {
-        var visibleRange = [_layoutManager glyphRangeForBoundingRect:_exposedRect inTextContainer:_textContainer],
+        var visibleRange = [_layoutManager glyphRangeForBoundingRect:[self exposedRect] inTextContainer:_textContainer],
             firstFragment = [_layoutManager _firstLineFragmentForLineFromLocation:_selectionRange.location],
             lastFragment = [_layoutManager _lastLineFragmentForLineFromLocation:CPMaxRange(_selectionRange)],
             lineBeginningIndex = firstFragment._range.location,
