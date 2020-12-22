@@ -386,7 +386,7 @@
 
   // These are used by the preprocess tokenizer.
 
-  var preTokPos, preTokType, preTokVal, preTokStart, preTokEnd;
+  var preTokType, preTokVal, preTokStart, preTokEnd;
   var preLastStart, preLastEnd;
   var preprocessStack;
   var preprocessStackLastItem;
@@ -563,7 +563,7 @@
 
   // Objective-J token types
 
-  var _at = {type: "@"}, _dotdotdot = {type: "..."}, _numberSign = {type: "#"};
+  var _dotdotdot = {type: "..."};
 
   // Operators. These carry several kinds of properties to help the
   // parser use them properly (the presence of these properties is
@@ -965,8 +965,6 @@
           if (firstEndOfFile == null) firstEndOfFile = tokPos;
           // If we are at the end of the input inside a macro continue at last position
           var lastItem = preprocessStack.pop();
-          var saveInputForPrint = input;
-          var saveSourceFileForPrint = sourceFile;
           tokPos = lastItem.end;
           input = lastItem.input;
           inputLen = lastItem.inputLen;
@@ -1531,7 +1529,6 @@
     }
 
     if (allowEndOfLineToken) {
-      var r;
       if (code === 13 || code === 10 || code === 8232 || code === 8233) {
         if (options.locations) {
           ++tokCurLine;
@@ -2239,7 +2236,6 @@
       }
     }
     if (macro) {
-      var macroStart = tokStart;
       var parameters;
       var hasParameters = macro.parameters;
       var nextIsParenL;
@@ -2259,8 +2255,6 @@
       }
       if (!hasParameters || nextIsParenL) {
         // Now we know that we have a matching macro. Get parameters if needed
-        var macroString = macro.macro;
-        //var lastTokPos = tokPos;
         if (nextIsParenL) {
           var variadicName = macro.variadicName;
           var first = true;
