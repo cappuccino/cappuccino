@@ -132,7 +132,7 @@ var CPApplicationDelegate_applicationShouldTerminate_           = 1 << 0,
 + (CPApplication)sharedApplication
 {
     if (!CPApp)
-        CPApp = [[CPApplication alloc] init];
+        CPApp = [[self alloc] init];
 
     return CPApp;
 }
