@@ -84,6 +84,8 @@ CPLineMovesUp = 4;
     CPLayoutManager _layoutManager          @accessors(property=layoutManager);
     CPTextView      _textView               @accessors(property=textView);
     BOOL            _inResizing;
+    BOOL            _widthTracksTextView;
+    BOOL            _heightTracksTextView;
 }
 
 
@@ -139,11 +141,17 @@ CPLineMovesUp = 4;
 }
 
 // Controls whether the receiver adjusts the width of its bounding rectangle when its text view is resized.
+- (BOOL)widthTracksTextView
+{
+    return _widthTracksTextView;
+}
+
 - (void)setWidthTracksTextView:(BOOL)flag
 {
+    _widthTracksTextView = flag;
     [_textView setPostsFrameChangedNotifications:flag];
 
-    if (flag)
+    if (flag && _textView)
     {
         [[CPNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(textViewFrameChanged:)
@@ -168,12 +176,18 @@ CPLineMovesUp = 4;
 - (void)setTextView:(CPTextView)aTextView
 {
     if (_textView)
+    {
+        [self setWidthTracksTextView:NO];   // We only support width
         [_textView setTextContainer:nil];
+    }
 
     _textView = aTextView;
 
     if (_textView)
+    {
+        [self setWidthTracksTextView:_widthTracksTextView];   // We only support width
         [_textView setTextContainer:self];
+    }
 
     [_layoutManager textContainerChangedTextView:self];
 }
@@ -222,7 +236,9 @@ CPLineMovesUp = 4;
 
 
 var CPTextContainerSizeKey  = @"CPTextContainerSizeKey",
-    CPTextContainerLayoutManagerKey  = @"CPTextContainerLayoutManagerKey";
+    CPTextContainerLayoutManagerKey  = @"CPTextContainerLayoutManagerKey",
+    CPTextContainerWidthTracksTextViewKey  = @"CPTextContainerWidthTracksTextViewKey",
+    CPTextContainerHeightTracksTextViewKey  = @"CPTextContainerHeightTracksTextViewKey";
 
 @implementation CPTextContainer (CPCoding)
 
@@ -238,6 +254,9 @@ var CPTextContainerSizeKey  = @"CPTextContainerSizeKey",
 
         _layoutManager = [aCoder decodeObjectForKey:CPTextContainerLayoutManagerKey];
         [_layoutManager addTextContainer:self];
+
+        _widthTracksTextView = [aCoder decodeBoolForKey:CPTextContainerWidthTracksTextViewKey];
+        _heightTracksTextView = [aCoder decodeBoolForKey:CPTextContainerHeightTracksTextViewKey];
     }
 
     return self;
@@ -247,6 +266,8 @@ var CPTextContainerSizeKey  = @"CPTextContainerSizeKey",
 {
     [aCoder encodeSize:_size forKey:CPTextContainerSizeKey];
     [aCoder encodeObject:_layoutManager forKey:CPTextContainerLayoutManagerKey];
+    [aCoder encodeBool:_widthTracksTextView forKey:CPTextContainerWidthTracksTextViewKey];
+    [aCoder encodeBool:_heightTracksTextView forKey:CPTextContainerHeightTracksTextViewKey];
 }
 
 @end
