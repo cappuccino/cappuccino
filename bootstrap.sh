@@ -130,17 +130,14 @@ function check_install_environment () {
         exit 1
     fi
 
-    # make sure user is running the Sun JVM or OpenJDK >= 6b18
-    java_version=$(java -version 2>&1)
-    echo $java_version | grep OpenJDK > /dev/null
-    if [ "$?" = "0" ]; then # OpenJDK: make sure >= 6b18
-        openjdk_version=$(echo "$java_version" | grep "OpenJDK Runtime Environment")
-        openjdk_version_key=$(echo $openjdk_version | egrep -o '[0-9]\-?b[0-9]+')
-        if [ $(echo $openjdk_version_key | tr -d 'b' | tr -d '-') -lt 618 ]; then
-            echo "Error: Narwhal is not compatible with your version of OpenJDK: $openjdk_version."
-            echo "Please upgrade to OpenJDK >= 6b18 or switch to the Sun JVM. Then re-run bootstrap.sh."
-            exit 1
-        fi
+    # Support Java version 8 or greater
+    # This is the LTS  and last free/unencumbered version from Oracle
+    # It is also provided by OpenJDK
+    java_version=$(java -version 2>&1 | head -1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1)
+    if [ "$java_version" -lt "8" ]; then
+        echo "Error: Narwhal is not compatible with your the installed Java version: $java_version."
+        echo "Please upgrade to either Oracle or OpenJDK >= version 7. Then re-run bootstrap.sh."
+        exit 1
     fi
 }
 
