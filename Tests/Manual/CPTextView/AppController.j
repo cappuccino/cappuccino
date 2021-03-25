@@ -60,16 +60,16 @@
     [contentView addSubview:mybutton];
 
 
-    _textView = [[CPTextView alloc] initWithFrame:CGRectMake(0, 0, 500, 500)];
+    _textView = [[CPTextView alloc] initWithFrame:CGRectMake(0, 0, 500, 200)];
     [_textView setRichText:YES];
 
-    _textView2 = [[CPTextView alloc] initWithFrame:CGRectMake(0, 0, 500, 500)];
+    _textView2 = [[CPTextView alloc] initWithFrame:CGRectMake(0, 0, 1000, 200)];
     _textView2._isRichText = NO;
     [_textView setBackgroundColor:[CPColor whiteColor]];
     [_textView2 setBackgroundColor:[CPColor whiteColor]];
 
-    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(20, 70, 520, 510)];
-    var scrollView2 = [[CPScrollView alloc] initWithFrame:CGRectMake(560, 70, 520, 510)];
+    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(20, 70, 520, 220)];
+    var scrollView2 = [[CPScrollView alloc] initWithFrame:CGRectMake(20, 550, 1020, 220)];
 
     [scrollView setDocumentView:_textView];
     [scrollView2 setDocumentView:_textView2];
@@ -125,6 +125,14 @@
                                                                                                  forKeys:[CPFontAttributeName, CPBackgroundColorAttributeName]]]];
     [theWindow orderFront:self];
     [CPMenu setMenuBarVisible:YES];
+
+    console.log([[CPFont systemFontOfSize:12] cssString])
+    console.log([[CPFont systemFontOfSize:12] cssString])
+    var context = document.createElement("canvas").getContext("2d");
+    context.font = '12px Arial, sans-serif';
+    var testingText = 'A A A A A A A A';
+    console.log(ROUND(context.measureText(testingText).width));
+    console.log(ROUND([CPPlatformString sizeOfString:testingText withFont:[CPFont systemFontOfSize:12] forWidth:NULL].width));
 }
 
 - (void) makeRTF:(id)sender
