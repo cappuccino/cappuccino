@@ -68,6 +68,10 @@ CPCanvasStringSizingIsFunctional = NO;
         if (!CPStringSizeMeasuringContext)
             CPStringSizeMeasuringContext = CGBitmapGraphicsContextCreate();
 
+        // This is to make sure that Canvas based string sizing is functional.
+        // Currently, chrome has issues with certain strings, FF had issues in the past.
+        // Unfortunately, this test does fit in CPCompatibility.j where things are not sufficiently initialized.
+        
         var testingFont = [CPFont systemFontOfSize:12];
         var testingText = 'A A A A A A A A';
         CPStringSizeMeasuringContext.font = [testingFont cssString];
