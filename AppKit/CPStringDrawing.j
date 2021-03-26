@@ -32,7 +32,7 @@ var CPStringSizeWithFontInWidthCache = [],
     CPStringSizeWithFontHeightCache = [],
     CPStringSizeMeasuringContext;
 
-CPStringSizeCanvasHasBug = NO;
+CPCanvasStringSizingIsFunctional = NO;
 
 @implementation CPString (CPStringDrawing)
 
@@ -71,12 +71,12 @@ CPStringSizeCanvasHasBug = NO;
         var testingFont = [CPFont systemFontOfSize:12];
         var testingText = 'A A A A A A A A';
         CPStringSizeMeasuringContext.font = [testingFont cssString];
-        CPStringSizeCanvasHasBug = ROUND(CPStringSizeMeasuringContext.measureText(testingText).width) != ROUND([CPPlatformString sizeOfString:testingText withFont:testingFont forWidth:NULL].width);
+        CPCanvasStringSizingIsFunctional = ROUND(CPStringSizeMeasuringContext.measureText(testingText).width) == ROUND([CPPlatformString sizeOfString:testingText withFont:testingFont forWidth:NULL].width);
     }
 #endif
 }
 
-- (CGSize)_sizeWithFont:(CPFont)aFont inWidth:(float)aWidth
+- (CGSize)sizeWithFont:(CPFont)aFont inWidth:(float)aWidth
 {
     var size;
 
@@ -94,7 +94,7 @@ CPStringSizeCanvasHasBug = NO;
     if (size !== undefined && sizeCacheForFont.hasOwnProperty(cacheKey))
         return CGSizeMakeCopy(size);
 
-    if (CPStringSizeCanvasHasBug || !CPFeatureIsCompatible(CPHTMLCanvasFeature) || aWidth)
+    if (!CPCanvasStringSizingIsFunctional || aWidth)
         size = [CPPlatformString sizeOfString:self withFont:aFont forWidth:aWidth];
     else
     {
@@ -114,11 +114,6 @@ CPStringSizeCanvasHasBug = NO;
     size = CGSizeMake(0, 0);
 #endif
     return CGSizeMakeCopy(size);
-}
-
-- (CGSize)sizeWithFont:(CPFont)aFont inWidth:(float)aWidth
-{
-    return [self _sizeWithFont:aFont inWidth:aWidth];
 }
 
 @end

@@ -127,7 +127,6 @@
     [CPMenu setMenuBarVisible:YES];
 
     console.log([[CPFont systemFontOfSize:12] cssString])
-    console.log([[CPFont systemFontOfSize:12] cssString])
     var context = document.createElement("canvas").getContext("2d");
     context.font = '12px Arial, sans-serif';
     var testingText = 'A A A A A A A A';
