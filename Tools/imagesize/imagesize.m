@@ -22,9 +22,16 @@ int getImageSize(const char* utf8Path, BOOL appendLineFeed)
 	if (!image)
 		return kErrInvalidPath;
 		
-	NSSize size = [image size];
-	
-	NSMutableString* result = [NSMutableString stringWithFormat:@"{\"width\":%g, \"height\":%g}", size.width, size.height];
+    NSArray *representations = [image representations];
+
+    if ([representations count] == 0)
+        return kErrInvalidPath;
+
+    NSImageRep *representation = representations[0];
+    NSInteger width  = [representation pixelsWide];
+    NSInteger height = [representation pixelsHigh];
+
+    NSMutableString* result = [NSMutableString stringWithFormat:@"{\"width\":%ld, \"height\":%ld}", (long)width, (long)height];
 
 	if (appendLineFeed)
 		[result appendString:@"\n"];
