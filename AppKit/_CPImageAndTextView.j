@@ -60,6 +60,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
     CPCellImagePosition     _imagePosition;
     CPImageScaling          _imageScaling;
     float                   _imageOffset;
+    float                   _imageVerticalOffset;
     BOOL                    _shouldDimImage;
 
     CPImage                 _image;
@@ -85,6 +86,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
     {
         _textShadowOffset = CGSizeMakeZero();
         [self setVerticalAlignment:CPTopVerticalTextAlignment];
+        _imageVerticalOffset = 0.0;
 
         if (aControl)
         {
@@ -372,6 +374,20 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
     return _imageOffset;
 }
 
+- (void)setImageVerticalOffset:(float)theImageVerticalOffset
+{
+    if (_imageVerticalOffset === theImageVerticalOffset)
+        return;
+
+    _imageVerticalOffset = theImageVerticalOffset;
+    [self setNeedsLayout];
+}
+
+- (float)imageVerticalOffset
+{
+    return _imageVerticalOffset;
+}
+
 - (void)imageDidLoad:(CPNotification)aNotification
 {
     [[CPNotificationCenter defaultCenter] removeObserver:self name:CPImageDidLoadNotification object:_image];
@@ -602,7 +618,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
         }
     }
 
-    var needsDOMImageElement = _image != nil && _imagePosition !== CPNoImage,
+    var needsDOMImageElement = _image !== nil && _imagePosition !== CPNoImage,
         hasDOMImageElement = !!_DOMImageElement,
         // For CSS theming
         isCSSBasedImage = [_image isCSSBased],
@@ -680,6 +696,13 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
             imageWidth *= scale;
             imageHeight *= scale;
         }
+        else if (_imageScaling === CPImageScaleProportionallyUpOrDown)
+        {
+            var scale = MIN(size.width / imageWidth, size.height / imageHeight);
+
+            imageWidth *= scale;
+            imageHeight *= scale;
+        }
 
         if (CPFeatureIsCompatible(CPOpacityRequiresFilterFeature))
             imageStyle.filter = @"alpha(opacity=" + _shouldDimImage ? 50 : 100 + ")";
@@ -708,7 +731,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
         }
         else if (_imagePosition === CPImageLeft)
         {
-            imageStyle.top = FLOOR(centerY - imageHeight / 2.0) + "px";
+            imageStyle.top = _imageVerticalOffset + FLOOR(centerY - imageHeight / 2.0) + "px";
             imageStyle.left = "0px";
 
             textRect.origin.x = imageWidth + _imageOffset;
@@ -716,14 +739,14 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
         }
         else if (_imagePosition === CPImageRight)
         {
-            imageStyle.top = FLOOR(centerY - imageHeight / 2.0) + "px";
+            imageStyle.top = _imageVerticalOffset + FLOOR(centerY - imageHeight / 2.0) + "px";
             imageStyle.left = FLOOR(size.width - imageWidth) + "px";
 
             textRect.size.width -= imageWidth + _imageOffset;
         }
         else if (_imagePosition === CPImageOnly || _imagePosition == CPImageOverlaps)
         {
-            imageStyle.top = FLOOR(centerY - imageHeight / 2.0) + "px";
+            imageStyle.top = _imageVerticalOffset + FLOOR(centerY - imageHeight / 2.0) + "px";
             imageStyle.left = FLOOR(centerX - imageWidth / 2.0) + "px";
         }
 
