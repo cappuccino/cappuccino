@@ -333,8 +333,9 @@ var CPViewHighDPIDrawingEnabled = YES;
 {
     return @{
              @"css-based": NO,
-             @"dynamic-set": [CPNull null],
-             @"nib2cib-adjustment-frame": CGRectMakeZero()
+             @"nib2cib-adjustment-frame": [CPNull null],
+             @"direct-nib2cib-adjustment": NO,
+             @"dynamic-set": [CPNull null]
              };
 }
 
