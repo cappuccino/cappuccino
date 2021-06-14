@@ -20,6 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+console.log("i jakefilen för obj-j");
 require("../common.jake");
 
 // Make sure we can use new functions in an in old javascript engines like Rhino
@@ -33,18 +34,22 @@ var FILE = require("file"),
 
     var walk = require("./acornwalk").acorn.walk;
 
+var path = require("path");
+var fs = require("fs");
+var terser = require("terser");
+
 acorn = {walk: walk};
 acorn = require("./acorn").acorn;
 
     var compiler = require("./ObjJAcornCompiler").ObjJCompiler;
 
 //$BUILD_CONFIGURATION_DIR = "../Build"
-$BROWSER_FILE       = FILE.join("Browser", "Objective-J.js");
+$BROWSER_FILE       = path.join("Browser", "Objective-J.js");
 
-$BUILD_OBJECTIVE_J  = FILE.join($BUILD_CONFIGURATION_DIR, "Objective-J");
-$BUILD_BROWSER_FILE = FILE.join($BUILD_OBJECTIVE_J, "Objective-J.js");
+$BUILD_OBJECTIVE_J  = path.join($BUILD_CONFIGURATION_DIR, "Objective-J");
+$BUILD_BROWSER_FILE = path.join($BUILD_OBJECTIVE_J, "Objective-J.js");
 
-$INCLUDE_FLAGS      = ["'-I" + FILE.cwd() + "'"];
+$INCLUDE_FLAGS      = ["'-I" + process.cwd() + "'"];
 $DEBUG_FLAGS        = $CONFIGURATION === "Debug" ? ["-DDEBUG=1"] : [""];
 $OBJECTIVEJ_FILES   = new FileList("*.js");
 
@@ -62,22 +67,22 @@ $BUILD_LICENSE  = FILE.join($BUILD_OBJECTIVE_J, "LICENSE");
 
 filedir($BUILD_LICENSE, [$LICENSE], function()
 {
-    FILE.copy($LICENSE, $BUILD_LICENSE);
+    fs.copyFileSync($LICENSE, $BUILD_LICENSE);
 });
 
 new FileList("CommonJS/**/*").forEach(function(aFilename)
 {
     // . files should be left out of FileList...
-    if (!FILE.isFile(aFilename) || FILE.basename(aFilename).charAt(0) === ".")
+    if (!fs.lstatSync(aFilename).isFile() || path.basename(aFilename).charAt(0) === ".")
         return;
 
-    var buildFilename = FILE.join($BUILD_CJS_OBJECTIVE_J, FILE.relative("CommonJS/", aFilename));
+    var buildFilename = path.join($BUILD_CJS_OBJECTIVE_J, path.relative("CommonJS/", aFilename));
 
     filedir (buildFilename, new FileList(aFilename).include($OBJECTIVEJ_FILES), function ()
     {
-        if (FILE.extension(aFilename) !== ".js")
+        if (path.extname(aFilename) !== ".js")
         {
-            stream.print("Copying... \0green(" + aFilename +"\0)");
+            console.log("Copying... \0green(" + aFilename +"\0)");
             cp(aFilename, buildFilename);
         }
         else
@@ -87,23 +92,22 @@ new FileList("CommonJS/**/*").forEach(function(aFilename)
     });
 
     // HACK: narwhal should copy permissions
-    if (FILE.dirname(aFilename) === FILE.join("CommonJS", "bin"))
+    if (path.dirname(aFilename) === path.join("CommonJS", "bin"))
     {
         filedir (buildFilename, function ()
         {
-            FILE.chmod(buildFilename, 0755);
+            fs.chmodSync(buildFilename, 0o755);
         });
     }
-
     task ("build", buildFilename);
     CLOBBER.include(buildFilename);
 });
 
 task ("build", function() {
-    setPackageMetadata(FILE.join($BUILD_CJS_OBJECTIVE_J, "package.json"));
+    setPackageMetadata(path.join($BUILD_CJS_OBJECTIVE_J, "package.json"));
 });
 
-$BUILD_CJS_OBJECTIVE_J_FRAMEWORK = FILE.join($BUILD_CJS_OBJECTIVE_J, "Frameworks", "Objective-J");
+$BUILD_CJS_OBJECTIVE_J_FRAMEWORK = path.join($BUILD_CJS_OBJECTIVE_J, "Frameworks", "Objective-J");
 
 filedir($BUILD_CJS_OBJECTIVE_J_FRAMEWORK, function()
 {
@@ -122,9 +126,16 @@ function environmentFlags()
 }
 
 var SHRINKSAFE = require("minify/shrinksafe");
+
+async function compressor(srcCode) {
+    return terser.minify(srcCode)
+}
+
+var SHRINKSAFE = require("minify/shrinksafe");
+var TERSER = require("terser");
 function compressor(code) {
     return SHRINKSAFE.compress(code, { charset : "UTF-8", useServer : true });
-}
+    return TERSER.minify(code).code;
 
 var headerText = FILE.read("header.txt", { charset : "UTF-8" });
 function gcc(inputFilePath, outputFilePath, flags, compress)
