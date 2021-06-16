@@ -22,12 +22,12 @@
 
 require("../common.jake");
 
-var framework = require("objective-j/jake").framework;
-var BundleTask = require("objective-j/jake").BundleTask;
+var framework = require("./objective-j/jake").framework;
+var BundleTask = require("./objective-j/jake").BundleTask;
 
 foundationTask = framework ("Foundation", function(foundationTask)
 {
-    foundationTask.setBuildIntermediatesPath(FILE.join($BUILD_DIR, "Foundation.build", $CONFIGURATION))
+    foundationTask.setBuildIntermediatesPath(path.join($BUILD_DIR, "Foundation.build", $CONFIGURATION))
     foundationTask.setBuildPath($BUILD_CONFIGURATION_DIR);
 
     foundationTask.setAuthor("280 North, Inc.");
@@ -40,10 +40,12 @@ foundationTask = framework ("Foundation", function(foundationTask)
     foundationTask.setResources(new FileList("Resources/**/*"));
     foundationTask.setFlattensSources(true);
     foundationTask.setInfoPlistPath("Info.plist");
-    foundationTask.setEnvironments(require("objective-j/jake/environment").ObjJ);
+    foundationTask.setEnvironments(require("./objective-j/jake/environment").ObjJ);
 
     // Grab all the .h's and just include them in each file.
-    var INCLUDES = new FileList("**/*.h").map(function(aFilename)
+    var INCLUDES_LIST = new FileList();
+    INCLUDES_LIST.include("**/*.h");
+    var INCLUDES = INCLUDES_LIST.map(function(aFilename)
     {
         return "--include \"" + aFilename + "\"";
     }).join(" ");
@@ -56,7 +58,7 @@ foundationTask = framework ("Foundation", function(foundationTask)
         foundationTask.setCompilerFlags("-DDEBUG -g -S --inline-msg-send -Wno-unused-but-set-variable " + INCLUDES);
 });
 
-$BUILD_CJS_FOUNDATION = FILE.join($BUILD_CJS_CAPPUCCINO_FRAMEWORKS, "Foundation");
+$BUILD_CJS_FOUNDATION = path.join($BUILD_CJS_CAPPUCCINO_FRAMEWORKS, "Foundation");
 
 filedir ($BUILD_CJS_FOUNDATION, ["Foundation"], function()
 {

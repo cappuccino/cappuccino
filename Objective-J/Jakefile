@@ -23,25 +23,27 @@
 console.log("i jakefilen för obj-j");
 require("../common.jake");
 
+const { FileList } = require("../common.jake");
+const { task } = require("../common.jake");
+const { filedir } = require("../common.jake");
+
 // Make sure we can use new functions in an in old javascript engines like Rhino
 // This is only needed if new things are introduced in OldBrowserCompatibility.js
 // as we are running in an already built Objective-J environment
 require("./OldBrowserCompatibility");
 
-var FILE = require("file"),
+/* var FILE = require("file"),
     OS = require("os"),
-    stream = require("narwhal/term").stream;
-
-    var walk = require("./acornwalk").acorn.walk;
+    stream = require("narwhal/term").stream; */
 
 var path = require("path");
 var fs = require("fs");
 var terser = require("terser");
 
+var walk = require("./acornwalk").acorn.walk;
 acorn = {walk: walk};
 acorn = require("./acorn").acorn;
-
-    var compiler = require("./ObjJAcornCompiler").ObjJCompiler;
+var compiler = require("./ObjJAcornCompiler").ObjJCompiler;
 
 //$BUILD_CONFIGURATION_DIR = "../Build"
 $BROWSER_FILE       = path.join("Browser", "Objective-J.js");
@@ -51,9 +53,12 @@ $BUILD_BROWSER_FILE = path.join($BUILD_OBJECTIVE_J, "Objective-J.js");
 
 $INCLUDE_FLAGS      = ["'-I" + process.cwd() + "'"];
 $DEBUG_FLAGS        = $CONFIGURATION === "Debug" ? ["-DDEBUG=1"] : [""];
-$OBJECTIVEJ_FILES   = new FileList("*.js");
+$OBJECTIVEJ_FILES   = new jake.FileList();
+$OBJECTIVEJ_FILES.include("*.js");
 
-$BROWSER_FILES      = new FileList($BROWSER_FILE).include($OBJECTIVEJ_FILES);
+$BROWSER_FILES = new jake.FileList();
+$BROWSER_FILES.include($BROWSER_FILE);
+$BROWSER_FILES.include($OBJECTIVEJ_FILES);
 
 filedir($BUILD_BROWSER_FILE, $BROWSER_FILES, function(aTask)
 {
@@ -62,8 +67,8 @@ filedir($BUILD_BROWSER_FILE, $BROWSER_FILES, function(aTask)
         environmentFlags("Browser", "ObjJ").concat($INCLUDE_FLAGS, $DEBUG_FLAGS, ["-Wno-unused-but-set-variable"]), $CONFIGURATION !== "Debug");
 });
 
-$LICENSE        = FILE.join("CommonJS", "lib", "objective-j", "jake", "LICENSES", "LGPL-v2.1");
-$BUILD_LICENSE  = FILE.join($BUILD_OBJECTIVE_J, "LICENSE");
+$LICENSE        = path.join("CommonJS", "lib", "objective-j", "jake", "LICENSES", "LGPL-v2.1");
+$BUILD_LICENSE  = path.join($BUILD_OBJECTIVE_J, "LICENSE");
 
 filedir($BUILD_LICENSE, [$LICENSE], function()
 {
@@ -125,29 +130,20 @@ function environmentFlags()
     }).concat("-DENVIRONMENTS=" + JSON.stringify(environments));
 }
 
-var SHRINKSAFE = require("minify/shrinksafe");
-
 async function compressor(srcCode) {
-    return terser.minify(srcCode)
+    return srcCode;
 }
 
-var SHRINKSAFE = require("minify/shrinksafe");
-var TERSER = require("terser");
-function compressor(code) {
-    return SHRINKSAFE.compress(code, { charset : "UTF-8", useServer : true });
-    return TERSER.minify(code).code;
-
-var headerText = FILE.read("header.txt", { charset : "UTF-8" });
+var headerText = fs.readFileSync("header.txt", { encoding: "utf8"});
 function gcc(inputFilePath, outputFilePath, flags, compress)
 {
-    stream.print("Building... \0green(" + outputFilePath +"\0)");
-
-    var source = FILE.read(inputFilePath, { charset : "UTF-8" });
+    console.log("Building... \0green(" + outputFilePath +"\0)");
+    var source = fs.readFileSync(inputFilePath, { charset : "utf8" });
     var compilerOptions = compiler.parseGccCompilerFlags(flags.join(" "));
     var acornOptions = compilerOptions.acornOptions || (compilerOptions.acornOptions = {});
 
     acornOptions.preprocessGetIncludeFile = function(filePath, isQuoted) {
-        var includeContent = FILE.read(filePath, { charset : "UTF-8" });
+        var includeContent = fs.readFileSync(filePath, { charset : "utf8" });
         //print ("Include content for file '" + filePath + "': " + includeContent);
         //print ("Include file '" + filePath + "'");
         return {include: includeContent, sourceFile: filePath};
@@ -172,10 +168,11 @@ function gcc(inputFilePath, outputFilePath, flags, compress)
     var code = c.code();
     var contents = headerText + code;
 
-    if (FILE.extension(inputFilePath) === ".js" && compress)
+    
+    if (path.extname(inputFilePath) === ".js" && compress)
         contents = compressor(contents);
 
-    FILE.write(outputFilePath, contents, { charset : "UTF-8" });
+    fs.writeFileSync(outputFilePath, contents, { encoding : "utf8" });
 }
 
 task("build", [$BUILD_BROWSER_FILE, $BUILD_LICENSE, $BUILD_CJS_OBJECTIVE_J_FRAMEWORK]);

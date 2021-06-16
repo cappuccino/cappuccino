@@ -25,6 +25,7 @@
 // var UTIL = require("narwhal/util");
 // var stream = require("narwhal/term").stream;
 
+console.log("at the top of common.jake");
 var fs = require('fs');
 var child_process = require('child_process');
 var path = require('path');
@@ -362,7 +363,7 @@ global.subjake = function(/*Array<String>*/ directories, /*String*/ aTaskName)
         if (fs.lstatSync(aDirectory).isDirectory() && fs.lstatSync(path.join(aDirectory, "Jakefile")).isFile())
         {
             
-            var cmd = "cd " + enquote(aDirectory) + " && " + serializedENV() + " " + "jake"+ " " + enquote(aTaskName);
+            var cmd = "cd " + enquote(aDirectory) + " && " + serializedENV() + " " + "jake" + " " + enquote(aTaskName);
             var returnCode = systemSync(cmd);
                 
             if (returnCode)
@@ -402,7 +403,8 @@ global.symlink_executable = function(source)
 
 global.getCappuccinoVersion = function()
 {
-    var versionFile = path.join(path.dirname(module.path), "version.json");
+    console.log("sahfgdkjdkjfhgskjdhfgd");
+    var versionFile = path.join(module.path, "version.json");
     return JSON.parse(fs.readFileSync(versionFile, { encoding: "utf8" })).version;
 };
 
@@ -410,30 +412,22 @@ global.setPackageMetadata = function(packagePath)
 {
     var pkg = JSON.parse(fs.readFileSync(packagePath, { encoding: "utf8" } ));
 
-    try
-    {
-        var p = child_process.spawnSync("git", ["rev-parse", "--verify", "HEAD"]);
-        if (p.wait() === 0) {
-            var sha = p.stdout.toString().split("\n")[0];
-            if (sha.length === 40)
-                pkg["cappuccino-revision"] = sha;
-        }
-    }
-    finally
-    {
-        // FIXA: vet inte vad som händer här riktigt
-        p.disconnect();
-        /* p.stdin.close();
-        p.stdout.close();
-        p.stderr.close(); */
+    try {
+        var output = child_process.execSync("git", ["rev-parse", "--verify", "HEAD"]);
+        var sha = output.toString().split("\n")[0];
+        if (sha.length === 40)
+            pkg["cappuccino-revision"] = sha;
+
+    } catch (error) {
+        console.log("setPackageMetadata error " + error.status);
     }
 
     pkg["cappuccino-timestamp"] = new Date().getTime();
     pkg["version"] = getCappuccinoVersion();
 
-    stream.print("    Version:   \0purple(" + pkg["version"] + "\0)");
-    stream.print("    Revision:  \0purple(" + pkg["cappuccino-revision"] + "\0)");
-    stream.print("    Timestamp: \0purple(" + pkg["cappuccino-timestamp"] + "\0)");
+    console.log("    Version:   \0purple(" + pkg["version"] + "\0)");
+    console.log("    Revision:  \0purple(" + pkg["cappuccino-revision"] + "\0)");
+    console.log("    Timestamp: \0purple(" + pkg["cappuccino-timestamp"] + "\0)");
 
     fs.writeFileSync(packagePath, JSON.stringify(pkg, null, 4), 'utf8');
 };

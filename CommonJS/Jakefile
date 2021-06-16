@@ -1,14 +1,26 @@
+console.log("at the top of CommonJS/Jakefile");
 
 require("../common.jake");
 
-var FILE = require("file");
+const { FileList } = require("../common.jake");
+const { task } = require("../common.jake");
+const { filedir } = require("../common.jake");
 
-new FileList("**/*").exclude("Jakefile").forEach(function(aFilename)
+// var FILE = require("file");
+var fs = require("fs");
+var path = require("path");
+
+var tmp_list = new FileList();
+tmp_list.include("**/*");
+tmp_list.exclude("Jakefile");
+
+tmp_list.forEach(function(aFilename)
 {
-    if (!FILE.isFile(aFilename))
+    
+    if (!fs.lstatSync(aFilename).isFile())
         return;
 
-    var buildFilename = FILE.join($BUILD_CJS_CAPPUCCINO, aFilename);
+    var buildFilename = path.join($BUILD_CJS_CAPPUCCINO, aFilename);
 
     filedir (buildFilename, [aFilename], function ()
     {
@@ -16,11 +28,11 @@ new FileList("**/*").exclude("Jakefile").forEach(function(aFilename)
     });
 
     // HACK: narwhal should copy permissions
-    if (FILE.dirname(aFilename) === FILE.join("bin"))
+    if (path.dirname(aFilename) === path.join("bin"))
     {
         filedir (buildFilename, function ()
         {
-            FILE.chmod(buildFilename, 0755);
+            fs.chmodSync(buildFilename, 0o755);
         });
     }
 
@@ -29,5 +41,5 @@ new FileList("**/*").exclude("Jakefile").forEach(function(aFilename)
 });
 
 task ("build", function() {
-    setPackageMetadata(FILE.join($BUILD_CJS_CAPPUCCINO, "package.json"));
+    setPackageMetadata(path.join($BUILD_CJS_CAPPUCCINO, "package.json"));
 });
