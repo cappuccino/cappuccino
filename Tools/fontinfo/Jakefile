@@ -2,8 +2,10 @@
 require ("../../common.jake");
 
 var OS = require("os"),
-    task = require("jake").task,
-    SYSTEM = require("system");
+    task = require("../../../jake/lib/jake.js").task;
+    //SYSTEM = require("system");
+
+const child_process = require("child_process");
 
 task ("build", function()
 {
@@ -17,10 +19,13 @@ task ("build", function()
         else
             args = "-sdk macosx " + args;
 
-        var xcodebuild = SYSTEM.env.CAPP_BUILD ? "xcodebuild " : "CAPP_BUILD=../../Build xcodebuild ";
+        var xcodebuild = process.env.CAPP_BUILD ? "xcodebuild " : "CAPP_BUILD=../../Build xcodebuild ";
 
-        if (OS.system(xcodebuild + args))
-            OS.exit(1);
+        try {
+            child_process.execSync(xcodebuild + args);
+        } catch (error) {
+            process.exit(1);
+        }
     }
     else
     {

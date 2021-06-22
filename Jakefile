@@ -12,9 +12,6 @@ require("./common.jake");
 
 var fs = require('fs');
 var path = require('path');
-const { FileList } = require("./common.jake");
-const { task } = require("./common.jake");
-const { filedir } = require("./common.jake");
 
 var subprojects = ["Objective-J", "CommonJS", "Foundation", "AppKit", "Tools"];
 
@@ -41,6 +38,7 @@ $BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS = path.join($BUILD_CJS_CAPPUCCINO, "Frame
 
 filedir ($BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS, ["debug", "release"], function()
 {
+    console.log("in the task $BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS");
     fs.mkdirSync($BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS);
 
     cp_r(path.join($BUILD_DIR, "Debug", "Foundation"), path.join($BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS, "Foundation"));
@@ -52,6 +50,7 @@ task ("CommonJS", [$BUILD_CJS_OBJECTIVE_J_DEBUG_FRAMEWORKS, $BUILD_CJS_CAPPUCCIN
 
 task ("install", ["CommonJS"], function()
 {
+    console.log("in task install");
     installCopy($BUILD_CJS_OBJECTIVE_J, false);
     installCopy($BUILD_CJS_CAPPUCCINO, false);
 });

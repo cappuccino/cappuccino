@@ -2,8 +2,11 @@
 require ("../../common.jake");
 
 var FILE = require("file"),
-    SYSTEM = require("system"),
-    path = FILE.Path(FILE.join(SYSTEM.prefix, "bin", "objj2objcskeleton"));
+    SYSTEM = require("system");
 
-sudo(["cp", "-f", "objj2objcskeleton", path]);
-sudo(["chmod", "755", path]);
+const path = require("path");
+
+var p = FILE.Path(path.join(SYSTEM.prefix, "bin", "objj2objcskeleton"));
+
+sudo(["cp", "-f", "objj2objcskeleton", p]);
+sudo(["chmod", "755", p]);

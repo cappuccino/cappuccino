@@ -893,7 +893,6 @@ var ObjJAcornCompiler = function(/*String*/ aString, /*CFURL*/ aURL, options)
         this.addWarning(e);
         return;
     }
-
     this.setCompiledCode(this.jsBuffer);
 }
 

@@ -2,10 +2,6 @@ console.log("at the top of CommonJS/Jakefile");
 
 require("../common.jake");
 
-const { FileList } = require("../common.jake");
-const { task } = require("../common.jake");
-const { filedir } = require("../common.jake");
-
 // var FILE = require("file");
 var fs = require("fs");
 var path = require("path");

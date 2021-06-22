@@ -30,6 +30,9 @@ var fs = require('fs');
 var child_process = require('child_process');
 var path = require('path');
 
+// for testing
+var JAKE = require("../jake/lib/jake.js");
+
 requiresSudo = false;
 
 process.argv.slice(1).forEach(function(arg)
@@ -58,9 +61,9 @@ if (!process.env["CONFIG"])
 
 global.ENV  = process.env;
 
-// FIXA: Skillnad mellan nya jake och 280 jake
+// changed approach, now we try to port jake from narwhal to node instead
 
-newJakeTaskWrapper = function() {
+/* newJakeTaskWrapper = function() {
     console.log("nu har vi kört taskwrappern");
     var nArgs = arguments.length;
     desc(arguments[0])
@@ -95,58 +98,29 @@ newJakeFiledirWrapper = function() {
             jake.file(arguments[0]);
         }
     }
-}
+} */
 
-exports.task = newJakeTaskWrapper;
-//global.directory = JAKE.directory;
-//global.file = JAKE.file;
-exports.filedir = newJakeFiledirWrapper;
-exports.FileList = jake.FileList;
+global.task = JAKE.task;
+global.directory = JAKE.directory;
+global.file = JAKE.file;
+global.filedir = JAKE.filedir;
+global.FileList = JAKE.FileList;
 
 global.$CONFIGURATION                   = process.env['CONFIG'];
-global.$INLINE_MSG_SEND                 = process.env['INLINE_MSG_SEND']; // FIXA: I vilket sammanhang kommer denna egentligen användas?
+global.$INLINE_MSG_SEND                 = process.env['INLINE_MSG_SEND'];
 global.$BUILD_DIR                       = process.env['BUILD_PATH'];
 global.$BUILD_CONFIGURATION_DIR         = path.join($BUILD_DIR, $CONFIGURATION);
 
 global.$BUILD_CJS_OBJECTIVE_J           = path.join($BUILD_CONFIGURATION_DIR, "CommonJS", "objective-j");
+
 global.$BUILD_CJS_CAPPUCCINO            = path.join($BUILD_CONFIGURATION_DIR, "CommonJS", "cappuccino");
 global.$BUILD_CJS_CAPPUCCINO_BIN        = path.join($BUILD_CJS_CAPPUCCINO, "bin");
 global.$BUILD_CJS_CAPPUCCINO_LIB        = path.join($BUILD_CJS_CAPPUCCINO, "lib");
 global.$BUILD_CJS_CAPPUCCINO_FRAMEWORKS = path.join($BUILD_CJS_CAPPUCCINO, "Frameworks");
 
-var CLEAN = new jake.FileList();
-
-CLEAN.include(["**/*~", "**/*.bak", "**/core"]);
-
-CLEAN.clearExclusions().exclude(function(aFilename) {
-    return path.basename(aFilename) === "core" && fs.lstatSync(aFilename).isDirectory();
-});
-
-//  desc "Remove any temporary products."
-task("clean", function() {
-    CLEAN.forEach(function(aFilename) {
-        try {
-            fs.rmSync(aFilename, {recursive: true});
-        } catch(anException) {
-        }
-    });
-});
-
-var CLOBBER = new jake.FileList();
-//  desc "Remove any generated file."
-task("clobber", ["clean"], function() {
-    CLOBBER.forEach(function(aFilename) {
-        try {
-            fs.rmSync(aFilename, {recursive: true});
-        } catch(anException) {
-        }
-    });
-});
-
-// FIXA: Skillnad mellan nya jake och 280 jake
-// CLEAN och CLOBBER är FileLists 
-global.CLEAN = CLEAN;
-global.CLOBBER = CLOBBER;
+// for testing
+global.CLEAN = require("../jake/lib/jake/clean.js").CLEAN;
+global.CLOBBER = require("../jake/lib/jake/clean.js").CLOBBER;
 global.CLEAN.include(path.join(global.$BUILD_DIR, "*.build"));
 global.CLOBBER.include(global.$BUILD_DIR);
 
@@ -157,7 +131,6 @@ global.FIXME_fileDependency = function(destinationPath, sourcePath)
 {
     file(destinationPath, [sourcePath], function()
     {
-        // FIXA: Detta borde vara samma sak som FILE.touch i narwhal
         var time = new Date();     
         try {
             fs.utimesSync(destinationPath, time, time);
@@ -171,12 +144,11 @@ global.FIXME_fileDependency = function(destinationPath, sourcePath)
 // used in serializedENV()
 function additionalPackages()
 {
+    console.log("in additionalPackages");
     var builtObjectiveJPackage = path.join(path.resolve($BUILD_CONFIGURATION_DIR), "CommonJS", "objective-j");
     var builtCappuccinoPackage = path.join(path.resolve($BUILD_CONFIGURATION_DIR), "CommonJS", "cappuccino");
 
     var packages = [];
-    console.log("packages");
-    console.log(packages);
     // load built objective-j if exists, otherwise unbuilt
     if (!fs.existsSync(path.join(builtObjectiveJPackage, "package.json"))) {
         //if (!packageInCatalog(builtObjectiveJPackage))
@@ -188,7 +160,7 @@ function additionalPackages()
         //if (!packageInCatalog(builtCappuccinoPackage))
             packages.push(builtCappuccinoPackage);
     }
-
+    
     return packages;
 }
 
@@ -251,16 +223,18 @@ function getShellConfigFile()
 
 function reforkWithPackages()
 {
+    console.log("in reforkWithPackages");
     if (additionalPackages().length > 0)
     {
         var cmd = serializedENV() + " " + process.argv.map(enquote).join(" ");
+        console.log("cmd: " + cmd);
         // FIXA: oklart om detta är rätt
         child_process.execSync(cmd, {stdio: 'inherit'});
         process.exit();
     }
 }
 
-reforkWithPackages();
+// reforkWithPackages();
 
 function handleSetupEnvironmentError(e)
 {
@@ -306,7 +280,6 @@ function copyRecursiveSync (src, dest) {
     }
   };
 
-
   
 global.cp_r = function(/*String*/ from, /*String*/ to)
 {
@@ -342,12 +315,17 @@ global.mv = function(/*String*/ from, /*String*/ to)
 
 // FIXA: kör command och returnera exitkoden
 function systemSync(command) 
-{
+{   
     console.log("i systemSync");
+    console.log("command: " + command)
+    
     try {
-        child_process.execSync(command);
+        child_process.execSync(command, {stdio: 'inherit'});
+        console.log("exited gracefully")
         return 0;
     } catch (error) {
+        console.log(error);
+        console.log(error.output.toString());
         return error.status;
     }
 }
@@ -362,8 +340,8 @@ global.subjake = function(/*Array<String>*/ directories, /*String*/ aTaskName)
     {
         if (fs.lstatSync(aDirectory).isDirectory() && fs.lstatSync(path.join(aDirectory, "Jakefile")).isFile())
         {
-            
-            var cmd = "cd " + enquote(aDirectory) + " && " + serializedENV() + " " + "jake" + " " + enquote(aTaskName);
+            // just for testing
+            var cmd = "cd " + enquote(aDirectory) + " && " + serializedENV() + " " + "/Users/alfred/Developer/jake/bin/jake" + " " + enquote(aTaskName);
             var returnCode = systemSync(cmd);
                 
             if (returnCode)
@@ -413,12 +391,13 @@ global.setPackageMetadata = function(packagePath)
     var pkg = JSON.parse(fs.readFileSync(packagePath, { encoding: "utf8" } ));
 
     try {
-        var output = child_process.execSync("git", ["rev-parse", "--verify", "HEAD"]);
+        var output = child_process.execSync("git rev-parse --verify HEAD");
         var sha = output.toString().split("\n")[0];
         if (sha.length === 40)
             pkg["cappuccino-revision"] = sha;
 
     } catch (error) {
+        console.log(error.output.toString());
         console.log("setPackageMetadata error " + error.status);
     }
 
@@ -523,9 +502,10 @@ global.installCopy = function(sourcePath, useSudo)
 global.spawnJake = function(/*String*/ aTaskName)
 {
     console.log("i spawnJake");
-    if (systemSync(serializedENV() + " " + process.argv[0] + " " + "--inspect-brk" + " " + aTaskName))
+    // for testing
+    if (systemSync(serializedENV() + " " + "/Users/alfred/Developer/jake/bin/jake" + " " + aTaskName))
+        console.log("exited in spawnJake with code 1");
         process.exit(1);    //rake abort if ($? != 0)
-        console.log("hej och hå");
 };
 
 var normalizeCommand = function(/*Array or String*/ command)
@@ -570,7 +550,7 @@ global.copyManPage = function(/*String*/ name, /*int*/ section)
 {
     var manDir = "/usr/local/share/man/man" + section,
         pageFile = name + "." + section,
-        manPagePath = FILE.join(manDir, pageFile);
+        manPagePath = path.join(manDir, pageFile);
 
     
     

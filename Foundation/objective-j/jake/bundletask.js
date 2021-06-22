@@ -26,8 +26,8 @@ var /* FILE = require("file"),
     TERM = require("narwhal/term"), 
     base64 = require("base64"),
     Jake = require("jake"),*/
-    CLEAN = require("../../../common.jake").CLEAN,
-    CLOBBER = require("../../../common.jake").CLOBBER,
+    //CLEAN = require("../../../common.jake").CLEAN,
+    //CLOBBER = require("../../../common.jake").CLOBBER,
     ObjectiveJ = require("objj-runtime"),
     environment = require("./environment");
 
@@ -35,13 +35,14 @@ var /* FILE = require("file"),
 var Task = Jake.Task,
     filedir = Jake.filedir; */
 
-var jake = require("jake");
+// for testing
+var Jake = require("../../../../jake/lib/jake.js");
 var fs = require("fs-extra");
 var glob = require("glob");
 
-var Task = jake.Task;
-const { task } = require("../../../common.jake");
-const { filedir } = require("../../../common.jake");
+var task = Jake.task;
+var Task = Jake.Task;
+var filedir = Jake.filedir;
 
 var path = require("path");
 var child_process = require("child_process");
@@ -57,7 +58,7 @@ function mimeType(aFilename)
 function BundleTask(aName, anApplication)
 {
     Task.apply(this, arguments);
-    var ignoreCommonJS = system.env["CAPP_IGNORE_COMMONJS_ENV"];
+    var ignoreCommonJS = process.env["CAPP_IGNORE_COMMONJS_ENV"];
     if (ignoreCommonJS && ignoreCommonJS.toLowerCase() == "no" || ignoreCommonJS == "1")
         this.setEnvironments([environment.Browser]);
     else
@@ -309,6 +310,7 @@ BundleTask.prototype.defineTasks = function()
     this.defineSpritedImagesTask();
     CLEAN.include(this.buildIntermediatesProductPath());
     CLOBBER.include(this.buildProductPath());
+    console.log("at the end of defineTasks");
 };
 BundleTask.prototype.packageType = function()
 {
@@ -367,7 +369,7 @@ BundleTask.prototype.defineInfoPlistTask = function()
 };
 BundleTask.License = {LGPL_v2_1: "LGPL_v2_1", MIT: "MIT"};
 
-var LICENSES_PATH = path.join(path.resolve(path.extname(module.path)), "LICENSES"),
+var LICENSES_PATH = path.join(path.resolve(module.path), "LICENSES"),
     LICENSE_PATHS = {"LGPL_v2_1": path.join(LICENSES_PATH, "LGPL-v2.1"), "MIT": path.join(LICENSES_PATH, "MIT")};
 BundleTask.prototype.defineLicenseTask = function()
 {
@@ -461,6 +463,7 @@ function directoryInCommon(filenames)
 }
 BundleTask.prototype.defineResourceTasks = function()
 {
+    console.log("defineResourceTasks");
     if (!this._resources)
         return;
     var resources = [],
@@ -473,6 +476,7 @@ BundleTask.prototype.defineResourceTasks = function()
         }        else
             resources.push(aResourcePath);
     });
+    console.log(resources);
     // TODO: too lazy to look this up, assuming it returns the array without duplicates
     // resources = UTIL.unique(resources);
     resources = [... new Set(resources)];
@@ -630,21 +634,25 @@ BundleTask.prototype.defineStaticTask = function()
 BundleTask.prototype.defineSourceTasks = function()
 {
     var sources = this.sources();
-    if (!sources)
+    if (!sources) {
         return;
-    var compilerFlags = this.compilerFlags(),
-        flattensSources = this.flattensSources();
+    }
+    var compilerFlags = this.compilerFlags();
+    var flattensSources = this.flattensSources();
+
     if (!compilerFlags)
         compilerFlags = "";
     else if (compilerFlags.join)
         compilerFlags = compilerFlags.join(" ");
+    console.log("environments");
+    console.log(this.environments());
     (this.environments()).forEach(    function(anEnvironment)
     {
         var environmentSources = sources,
             folder = anEnvironment.name() + ".environment",
             sourcesPath = path.join(this.buildIntermediatesProductPath(), folder, "Sources", ""),
             staticPath = this.buildProductStaticPathForEnvironment(anEnvironment);
-        if (!Array.isArray(environmentSources) && environmentSources.constructor !== jake.FileList)
+        if (!Array.isArray(environmentSources) && environmentSources.constructor !== FileList)
         {
             environmentSources = environmentSources[anEnvironment];
             if (!environmentSources)
@@ -672,10 +680,12 @@ BundleTask.prototype.defineSourceTasks = function()
                 return;
             var relativePath = aFilename.substring(basePathLength ? basePathLength + 1 : basePathLength),
                 compiledEnvironmentSource = path.join(sourcesPath, relativePath);
-            filedir(compiledEnvironmentSource, [aFilename],             function()
+                
+            filedir(compiledEnvironmentSource, [aFilename],             async function()
             {
+                console.log("ran compiledEnvironmentSource");
                 var rhinoUglyFix = false;
-                if (system.engine === "rhino")
+                if (false/* system.engine === "rhino" */)
                 {
                     if (typeof document == "undefined")
                     {
@@ -688,36 +698,50 @@ BundleTask.prototype.defineSourceTasks = function()
                     {
                         navigator = {"userAgent": "fakenavigator"};
                         rhinoUglyFix = true;
-                    }                }                var compile;
+                    }                }
+                    
+                        
+                var compile;
                 if ((path.extname(aFilename)).toLowerCase() !== ".j")
                 {
                     console.log("Including [\0blue(" + anEnvironment + "\0)] \0purple(" + aFilename + "\0)");
                     //(TERM.stream.write("Including [\0blue(" + anEnvironment + "\0)] \0purple(" + aFilename + "\0)")).flush();
-                    var compiled = fs.readFileSync(aFilename, { encoding: "utf8"});
+                    var compiled = fs.readFileSync(aFilename, { encoding: "utf8"}).toString();
+                    console.log((Array(Math.round(compiled.length / 1024) + 3)).join("."));
+                    return await fs.promises.writeFile(compiledEnvironmentSource, compiled, { encoding: "utf8"});
                 }                else
                 {
                     var translatedFilename = translateFilenameToPath[aFilename] ? translateFilenameToPath[aFilename] : aFilename,
                         otherwayTranslatedFilename = otherwayTranslateFilenameToPath[aFilename] ? otherwayTranslateFilenameToPath[aFilename] : aFilename,
                         theTranslatedFilename = otherwayTranslatedFilename ? otherwayTranslatedFilename : translatedFilename,
-                        absolutePath = path.absolute(theTranslatedFilename),
+                        absolutePath = path.resolve(theTranslatedFilename),
                         basePath = absolutePath.substring(0, absolutePath.length - theTranslatedFilename.length);
                     ObjectiveJ.FileExecutable.setCurrentGccCompilerFlags(environmentCompilerFlags);
                     CFBundle.environments =                     function()
                     {
                         return [anEnvironment.name(), "ObjJ"];
                     };
-                    ObjectiveJ.make_narwhal_factory(absolutePath, basePath, translateFilenameToPath)(require, e, module, system, print);
-                    console.log("Compiling [\0blue(" + anEnvironment + "\0)] \0purple(" + aFilename + "\0)");
-                    //(TERM.stream.write("Compiling [\0blue(" + anEnvironment + "\0)] \0purple(" + aFilename + "\0)")).flush();
-                    var otherwayTranslatedFilename = otherwayTranslateFilenameToPath[aFilename] ? otherwayTranslateFilenameToPath[aFilename] : aFilename,
-                        translatedFilename = translateFilenameToPath[aFilename] ? translateFilenameToPath[aFilename] : aFilename,
-                        executer = new ObjectiveJ.FileExecutable(otherwayTranslatedFilename);
-                    var compiled = executer.toMarkedString();
-                }                if (rhinoUglyFix)
-                    delete document;
-                console.log(compiledEnvironmentSource);
-                console.log((Array(Math.round(compiled.length / 1024) + 3)).join("."));
-                fs.writeFileSync(compiledEnvironmentSource, compiled, { encoding: "utf8"});
+                    console.log("before make_narwhal_factory");
+                    console.log("basePath: " + basePath);
+                    //absolutePath = "/" + absolutePath;
+                    //basePath = "/" + basePath;
+                    console.log("absolutePath: " + absolutePath);
+                    return new Promise((resolve, reject) => {
+                        var callback = function() {
+                            console.log("callback called");
+                            var otherwayTranslatedFilename = otherwayTranslateFilenameToPath[aFilename] ? otherwayTranslateFilenameToPath[aFilename] : aFilename,
+                            translatedFilename = translateFilenameToPath[aFilename] ? translateFilenameToPath[aFilename] : aFilename,
+                            executer = new ObjectiveJ.FileExecutable(otherwayTranslatedFilename);
+                            var compiled = executer.toMarkedString();
+                            console.log((Array(Math.round(compiled.length / 1024) + 3)).join("."));
+                            fs.writeFileSync(compiledEnvironmentSource, compiled, { encoding: "utf8"});
+                            resolve();
+                        }
+                        ObjectiveJ.make_narwhal_factory(absolutePath, basePath, translateFilenameToPath, callback)(require, e, module, {}, console.log);
+                        console.log("Compiling [\0blue(" + anEnvironment + "\0)] \0purple(" + aFilename + "\0)");
+                        //(TERM.stream.write("Compiling [\0blue(" + anEnvironment + "\0)] \0purple(" + aFilename + "\0)")).flush();
+                    });
+                }                
             });
             filedir(staticPath, [compiledEnvironmentSource]);
             replacedFiles.push(flattensSources ? path.basename(aFilename) : relativePath);

@@ -25,8 +25,11 @@ require("../common.jake");
 var framework = require("./objective-j/jake").framework;
 var BundleTask = require("./objective-j/jake").BundleTask;
 
+const path = require("path");
+
 foundationTask = framework ("Foundation", function(foundationTask)
 {
+    console.log("in foundationTask");
     foundationTask.setBuildIntermediatesPath(path.join($BUILD_DIR, "Foundation.build", $CONFIGURATION))
     foundationTask.setBuildPath($BUILD_CONFIGURATION_DIR);
 
@@ -62,9 +65,14 @@ $BUILD_CJS_FOUNDATION = path.join($BUILD_CJS_CAPPUCCINO_FRAMEWORKS, "Foundation"
 
 filedir ($BUILD_CJS_FOUNDATION, ["Foundation"], function()
 {
+    console.log("in task $BUILD_CJS_FOUNDATION");
     cp_r(foundationTask.buildProductPath(), $BUILD_CJS_FOUNDATION);
 });
+
 
 task ("build", ["Foundation", $BUILD_CJS_FOUNDATION]);
 
 CLOBBER.include($BUILD_CJS_FOUNDATION);
+
+console.log("at the end of Foundation/jakefile");
+

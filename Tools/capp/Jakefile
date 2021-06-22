@@ -1,16 +1,20 @@
 
 require ("../../common.jake");
 
-var app = require("objective-j/jake").app,
-    BundleTask = require("objective-j/jake").BundleTask,
-    fileCreate = require("jake").fileCreate,
+var app = require("../../Foundation/objective-j/jake.js").app;
+
+var BundleTask = require("../../Foundation/objective-j/jake.js").BundleTask;
+
+/*     fileCreate = require("jake").fileCreate,
     FILE = require("file"),
     OS = require("os"),
-    stream = require("narwhal/term").stream;
+    stream = require("narwhal/term").stream; */
+
+const path = require("path");
 
 app ("capp", function(cappTask)
 {
-    cappTask.setBuildIntermediatesPath(FILE.join($BUILD_DIR, "capp.build", $CONFIGURATION))
+    cappTask.setBuildIntermediatesPath(path.join($BUILD_DIR, "capp.build", $CONFIGURATION))
     cappTask.setBuildPath($BUILD_CJS_CAPPUCCINO_LIB);
 
     cappTask.setAuthor("280 North, Inc.");
@@ -22,7 +26,7 @@ app ("capp", function(cappTask)
     cappTask.setSources(new FileList("*.j"));
     cappTask.setResources(new FileList("Resources/*"));
     cappTask.setIncludesNibsAndXibs(true);
-    cappTask.setEnvironments(require("objective-j/jake/environment").CommonJS);
+    cappTask.setEnvironments(require("../../Foundation/objective-j/jake/environment.js").CommonJS);
     cappTask.setFlattensSources(true);
     cappTask.setSpritesResources(false);
 
@@ -32,7 +36,7 @@ app ("capp", function(cappTask)
         cappTask.setCompilerFlags("-DDEBUG -g");
 });
 
-$BUILD_CJS_CAPP = FILE.join($BUILD_CJS_CAPPUCCINO_BIN, "capp");
+$BUILD_CJS_CAPP = path.join($BUILD_CJS_CAPPUCCINO_BIN, "capp");
 
 // executable in environment directory
 filedir($BUILD_CJS_CAPP, ["capp"], function()

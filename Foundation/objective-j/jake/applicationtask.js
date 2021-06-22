@@ -22,7 +22,7 @@
 
 var /* FILE = require("file"), */
     OS = require("os"),
-    Jake = require("jake"),
+    Jake = require("../../../../jake/lib/jake"),
     BundleTask = (require("./bundletask")).BundleTask;
 
 var fs = require("fs-extra");
@@ -81,7 +81,7 @@ ApplicationTask.prototype.shouldGenerateCacheManifest = function()
 };
 ApplicationTask.prototype.defineFrameworksTask = function()
 {
-    if (!this._frameworksPath && (this.environments()).indexOf((require("objective-j/jake/environment")).Browser) === -1)
+    if (!this._frameworksPath && (this.environments()).indexOf((require("./environment.js")).Browser) === -1)
         return;
     var buildPath = this.buildProductPath(),
         newFrameworks = path.join(buildPath, "Frameworks"),

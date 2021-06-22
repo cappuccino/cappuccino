@@ -23,10 +23,6 @@
 console.log("i jakefilen för obj-j");
 require("../common.jake");
 
-const { FileList } = require("../common.jake");
-const { task } = require("../common.jake");
-const { filedir } = require("../common.jake");
-
 // Make sure we can use new functions in an in old javascript engines like Rhino
 // This is only needed if new things are introduced in OldBrowserCompatibility.js
 // as we are running in an already built Objective-J environment
@@ -53,15 +49,14 @@ $BUILD_BROWSER_FILE = path.join($BUILD_OBJECTIVE_J, "Objective-J.js");
 
 $INCLUDE_FLAGS      = ["'-I" + process.cwd() + "'"];
 $DEBUG_FLAGS        = $CONFIGURATION === "Debug" ? ["-DDEBUG=1"] : [""];
-$OBJECTIVEJ_FILES   = new jake.FileList();
-$OBJECTIVEJ_FILES.include("*.js");
+$OBJECTIVEJ_FILES   = new FileList("*.js");
 
-$BROWSER_FILES = new jake.FileList();
-$BROWSER_FILES.include($BROWSER_FILE);
-$BROWSER_FILES.include($OBJECTIVEJ_FILES);
+$BROWSER_FILES      = new FileList($BROWSER_FILE).include($OBJECTIVEJ_FILES);
+
 
 filedir($BUILD_BROWSER_FILE, $BROWSER_FILES, function(aTask)
 {
+    console.log("in task $BUILD_BROWSER_FILE");
     gcc($BROWSER_FILE,
         $BUILD_BROWSER_FILE,
         environmentFlags("Browser", "ObjJ").concat($INCLUDE_FLAGS, $DEBUG_FLAGS, ["-Wno-unused-but-set-variable"]), $CONFIGURATION !== "Debug");
@@ -130,7 +125,7 @@ function environmentFlags()
     }).concat("-DENVIRONMENTS=" + JSON.stringify(environments));
 }
 
-async function compressor(srcCode) {
+function compressor(srcCode) {
     return srcCode;
 }
 
@@ -138,12 +133,13 @@ var headerText = fs.readFileSync("header.txt", { encoding: "utf8"});
 function gcc(inputFilePath, outputFilePath, flags, compress)
 {
     console.log("Building... \0green(" + outputFilePath +"\0)");
-    var source = fs.readFileSync(inputFilePath, { charset : "utf8" });
+    var source = fs.readFileSync(inputFilePath, { charset : "utf8" }).toString();
+    //console.log(source.charCodeAt);
     var compilerOptions = compiler.parseGccCompilerFlags(flags.join(" "));
     var acornOptions = compilerOptions.acornOptions || (compilerOptions.acornOptions = {});
 
     acornOptions.preprocessGetIncludeFile = function(filePath, isQuoted) {
-        var includeContent = fs.readFileSync(filePath, { charset : "utf8" });
+        var includeContent = fs.readFileSync(filePath, { charset : "utf8" }).toString();
         //print ("Include content for file '" + filePath + "': " + includeContent);
         //print ("Include file '" + filePath + "'");
         return {include: includeContent, sourceFile: filePath};
@@ -160,15 +156,18 @@ function gcc(inputFilePath, outputFilePath, flags, compress)
 
         // Set anyErrors to 'true' if there are any errors in the list
         anyErrors = anyErrors || warning.messageType === "ERROR";
-        print(message);
+        console.log(message);
     }
 
     if (anyErrors) throw "Compilation Error";
-
+    debugger
     var code = c.code();
+    //console.log(code);
     var contents = headerText + code;
-
     
+    //console.log("code");
+    //console.log(c);
+
     if (path.extname(inputFilePath) === ".js" && compress)
         contents = compressor(contents);
 
@@ -176,3 +175,5 @@ function gcc(inputFilePath, outputFilePath, flags, compress)
 }
 
 task("build", [$BUILD_BROWSER_FILE, $BUILD_LICENSE, $BUILD_CJS_OBJECTIVE_J_FRAMEWORK]);
+
+console.log("at the bottom of Objective-J/jakefile");

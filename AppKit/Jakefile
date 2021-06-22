@@ -1,19 +1,21 @@
 
 require("../common.jake");
 
-var framework = require("objective-j/jake").framework,
-    BundleTask = require("objective-j/jake").BundleTask;
+var framework = require("../Foundation/objective-j/jake").framework,
+    BundleTask = require("../Foundation/objective-j/jake").BundleTask;
 
-$BUILD_PATH = FILE.join($BUILD_DIR, $CONFIGURATION, 'AppKit');
+const path = require("path");
+
+$BUILD_PATH = path.join($BUILD_DIR, $CONFIGURATION, 'AppKit');
 
 AppKitFiles = new FileList("**/*.j").exclude('CoreGraphics/CGContextCanvas.j', 'CoreGraphics/CGContextVML.j', 'Themes/**/*', 'Tools/**/*', "Platform/DOM/CPPlatform.j", "Platform/DOM/CPPlatformString.j");
 
-FIXME_fileDependency (FILE.join("Platform", "CPPlatform.j"), FILE.join("Platform", "DOM", "CPPlatform.j"));
-FIXME_fileDependency (FILE.join("Platform", "CPPlatformString.j"), FILE.join("Platform", "DOM", "CPPlatformString.j"));
+FIXME_fileDependency (path.join("Platform", "CPPlatform.j"), path.join("Platform", "DOM", "CPPlatform.j"));
+FIXME_fileDependency (path.join("Platform", "CPPlatformString.j"), path.join("Platform", "DOM", "CPPlatformString.j"));
 
 appKitTask = framework ("AppKit", function(appKitTask)
 {
-    appKitTask.setBuildIntermediatesPath(FILE.join($BUILD_DIR, "AppKit.build", $CONFIGURATION))
+    appKitTask.setBuildIntermediatesPath(path.join($BUILD_DIR, "AppKit.build", $CONFIGURATION))
     appKitTask.setBuildPath($BUILD_CONFIGURATION_DIR);
 
     appKitTask.setAuthor("280 North, Inc.");
@@ -40,7 +42,7 @@ appKitTask = framework ("AppKit", function(appKitTask)
         appKitTask.setCompilerFlags("-DDEBUG -g -S --inline-msg-send -Wno-unused-but-set-variable " + INCLUDES);
 });
 
-$BUILD_CJS_CAPPUCCINO_APPKIT = FILE.join($BUILD_CJS_CAPPUCCINO_FRAMEWORKS, "AppKit");
+$BUILD_CJS_CAPPUCCINO_APPKIT = path.join($BUILD_CJS_CAPPUCCINO_FRAMEWORKS, "AppKit");
 
 filedir ($BUILD_CJS_CAPPUCCINO_APPKIT, ["AppKit"], function()
 {
@@ -53,11 +55,11 @@ task ("Theme", [$BUILD_CJS_CAPPUCCINO_APPKIT], function()
 {
     subjake(["Themes"], "build");
 
-    cp_r(FILE.join($BUILD_DIR, $CONFIGURATION, 'Aristo.blend'), FILE.join($BUILD_PATH, 'Resources', 'Aristo.blend'));
-    cp_r(FILE.join($BUILD_DIR, $CONFIGURATION, 'Aristo.blend'), FILE.join($BUILD_CJS_CAPPUCCINO_APPKIT, "Resources", "Aristo.blend"));
+    cp_r(path.join($BUILD_DIR, $CONFIGURATION, 'Aristo.blend'), path.join($BUILD_PATH, 'Resources', 'Aristo.blend'));
+    cp_r(path.join($BUILD_DIR, $CONFIGURATION, 'Aristo.blend'), path.join($BUILD_CJS_CAPPUCCINO_APPKIT, "Resources", "Aristo.blend"));
 
-    cp_r(FILE.join($BUILD_DIR, $CONFIGURATION, 'Aristo2.blend'), FILE.join($BUILD_PATH, 'Resources', 'Aristo2.blend'));
-    cp_r(FILE.join($BUILD_DIR, $CONFIGURATION, 'Aristo2.blend'), FILE.join($BUILD_CJS_CAPPUCCINO_APPKIT, "Resources", "Aristo2.blend"));
+    cp_r(path.join($BUILD_DIR, $CONFIGURATION, 'Aristo2.blend'), path.join($BUILD_PATH, 'Resources', 'Aristo2.blend'));
+    cp_r(path.join($BUILD_DIR, $CONFIGURATION, 'Aristo2.blend'), path.join($BUILD_CJS_CAPPUCCINO_APPKIT, "Resources", "Aristo2.blend"));
 });
 
 task ("build", ["AppKit", $BUILD_CJS_CAPPUCCINO_APPKIT, "Theme"]);
