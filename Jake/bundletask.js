@@ -20,32 +20,32 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-var /* FILE = require("file"),
-    OS = require("os"),
-    UTIL = require("narwhal/util"),
-    TERM = require("narwhal/term"), 
-    base64 = require("base64"),
-    Jake = require("jake"),*/
-    //CLEAN = require("../../../common.jake").CLEAN,
-    //CLOBBER = require("../../../common.jake").CLOBBER,
-    ObjectiveJ = require("objj-runtime"),
-    environment = require("./environment");
+// Core modules
+const child_process = require("child_process");
+const path = require("path");
 
-/*     task = Jake.task;
-var Task = Jake.Task,
-    filedir = Jake.filedir; */
+// NPM modules
+const fs = require("fs-extra");
+const glob = require("glob");
+const ObjectiveJ = require("objj-runtime");
+const term = require("objj-runtime").term;
 
-// for testing
-var Jake = require("../../../../jake/lib/jake.js");
-var fs = require("fs-extra");
-var glob = require("glob");
+// Internal modules
+const environment = require("./environment");
+const Jake = require("jake"); // TODO
+ 
+/* Old imports 
+    FILE = require("file")
+    OS = require("os")
+    UTIL = require("narwhal/util")
+    TERM = require("narwhal/term")
+    base64 = require("base64")
+    Jake = require("jake")
+*/
 
 var task = Jake.task;
 var Task = Jake.Task;
 var filedir = Jake.filedir;
-
-var path = require("path");
-var child_process = require("child_process");
 
 function isImage(aFilename)
 {
@@ -53,7 +53,16 @@ function isImage(aFilename)
 }
 function mimeType(aFilename)
 {
-    return {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".gif": "image/gif", ".tif": "image/tiff", ".tiff": "image/tiff"}[(path.extname(aFilename)).toLowerCase()];
+    var mimeTypeDict = {
+        ".png": "image/png",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".gif": "image/gif",
+        ".tif": "image/tiff",
+        ".tiff": "image/tiff"
+    };
+    var lowerCaseExt = path.extname(aFilename).toLowerCase();
+    return mimeTypeDict[lowerCaseExt];
 }
 function BundleTask(aName, anApplication)
 {
@@ -310,7 +319,6 @@ BundleTask.prototype.defineTasks = function()
     this.defineSpritedImagesTask();
     CLEAN.include(this.buildIntermediatesProductPath());
     CLOBBER.include(this.buildProductPath());
-    console.log("at the end of defineTasks");
 };
 BundleTask.prototype.packageType = function()
 {
@@ -338,7 +346,7 @@ BundleTask.prototype.infoPlist = function()
     var environmentsWithImageSprites = ((this.environments()).filter(    function(anEnvironment)
     {
         return anEnvironment.spritesImages() && (((task(this.buildProductDataURLPathForEnvironment(anEnvironment))).prerequisites()).filter(isImage)).length > 0;
-    }, this)).map(    function(anEnvironment)
+    }, this)).map(function(anEnvironment)
     {
         return anEnvironment.name();
     });
@@ -463,7 +471,6 @@ function directoryInCommon(filenames)
 }
 BundleTask.prototype.defineResourceTasks = function()
 {
-    console.log("defineResourceTasks");
     if (!this._resources)
         return;
     var resources = [],
@@ -476,7 +483,6 @@ BundleTask.prototype.defineResourceTasks = function()
         }        else
             resources.push(aResourcePath);
     });
-    console.log(resources);
     // TODO: too lazy to look this up, assuming it returns the array without duplicates
     // resources = UTIL.unique(resources);
     resources = [... new Set(resources)];
@@ -489,7 +495,7 @@ BundleTask.prototype.defineResourceTasks = function()
         this.defineResourceTask(aResourcePath, path.join(resourcesPath, aResourcePath.substring(basePathLength)));
     }, this);
 };
-var RESOURCES_PATH = path.join(path.resolve(path.dirname(module.path)), "RESOURCES"),
+var RESOURCES_PATH = path.join(path.resolve(path.dirname(module.path)), "Jake/RESOURCES"),
     MHTMLTestPath = path.join(RESOURCES_PATH, "MHTMLTest.txt");
 BundleTask.prototype.defineSpritedImagesTask = function()
 {
@@ -508,9 +514,8 @@ BundleTask.prototype.defineSpritedImagesTask = function()
                 if (fs.existsSync(dataURLPath))
                     fs.removeSync(dataURLPath);
                 return;
-            }          
-            
-            console.log("Creating data URLs file... \0green(" + dataURLPath + "\0)");
+            }
+            term.stream.print("Creating data URLs file... \0green(" + dataURLPath + "\0)");
             var dataURLStream = fs.openSync(dataURLPath, "w+");
             fs.writeSync(dataURLStream, "@STATIC;1.0;");
 
@@ -536,8 +541,7 @@ BundleTask.prototype.defineSpritedImagesTask = function()
                     fs.rmSync(MHTMLPath);
                 return;
             }
-
-            console.log("Creating MHTML paths file... \0green(" + MHTMLPath + "\0)");
+            term.stream.write("Creating MHTML paths file... \0green(" + MHTMLPath + "\0)");
             var MHTMLStream = fs.openSync(MHTMLPath, "w+");
             fs.writeSync(MHTMLStream, "@STATIC;1.0;");
 
@@ -545,11 +549,11 @@ BundleTask.prototype.defineSpritedImagesTask = function()
             {
                 var resourcePath = "Resources/" + path.relative(resourcesPath, aFilename),
                     MHTMLResourcePath = "mhtml:" + path.join(folder, "MHTMLData.txt!") + resourcePath;
-                MHTMLStream.write("u;" + resourcePath.length + ";" + resourcePath);
-                MHTMLStream.write(MHTMLResourcePath.length + ";" + MHTMLResourcePath);
+
+                fs.writeSync(MHTMLStream, "u;" + resourcePath.length + ";" + resourcePath);
+                fs.writeSync(MHTMLStream, MHTMLResourcePath.length + ";" + MHTMLResourcePath);
             });
             fs.closeSync(MHTMLStream);
-            MHTMLStream.close();
         });
         this.enhance([MHTMLPath]);
         var MHTMLDataPath = this.buildProductMHTMLDataPathForEnvironment(anEnvironment);
@@ -562,26 +566,29 @@ BundleTask.prototype.defineSpritedImagesTask = function()
                     fs.rmSync(MHTMLDataPath);
                 return;
             }
-            console.log("Creating MHTML images file... \0green(" + MHTMLDataPath + "\0)");
-            //var MHTMLDataStream = FILE.open(MHTMLDataPath, "w+", {charset: "UTF-8"});
+            term.stream.print("Creating MHTML images file... \0green(" + MHTMLDataPath + "\0)");
             var MHTMLDataStream = fs.openSync(MHTMLDataPath, "w+");
-            MHTMLDataStream.write("/*\r\nContent-Type: multipart/related; boundary=\"_ANY_STRING_WILL_DO_AS_A_SEPARATOR\"\r\n\r\n");
+            fs.writeSync(MHTMLDataStream, "/*\r\nContent-Type: multipart/related; boundary=\"_ANY_STRING_WILL_DO_AS_A_SEPARATOR\"\r\n\r\n");
             prerequisites.forEach(            function(aFilename)
             {
                 var resourcePath = "Resources/" + path.relative(resourcesPath, aFilename);
-                MHTMLDataStream.write("--_ANY_STRING_WILL_DO_AS_A_SEPARATOR\r\n");
+                fs.writeSync(MHTMLDataStream, "--_ANY_STRING_WILL_DO_AS_A_SEPARATOR\r\n");
+                fs.writeSync(MHTMLDataStream, "Content-Location:" + resourcePath + "\r\nContent-Transfer-Encoding:base64\r\n\r\n");
+                fs.writeSync(MHTMLDataStream, fs.readFileSync(aFilename).toString("utf8"));
+                fs.writeSync(MHTMLDataStream, "\r\n");
+/*                 MHTMLDataStream.write("--_ANY_STRING_WILL_DO_AS_A_SEPARATOR\r\n");
                 MHTMLDataStream.write("Content-Location:" + resourcePath + "\r\nContent-Transfer-Encoding:base64\r\n\r\n");
                 MHTMLDataStream.write(fs.readFileSync(aFilename).toString("utf8"));
-                MHTMLDataStream.write("\r\n");
+                MHTMLDataStream.write("\r\n"); */
             });
-            MHTMLDataStream.write("*/");
-            MHTMLDataStream.close();
+            fs.writeSync(MHTMLDataStream, "*/");
+            fs.closeSync(MHTMLDataStream);
         });
         this.enhance([MHTMLDataPath]);
         var MHTMLTestDestinationPath = this.buildProductMHTMLTestPathForEnvironment(anEnvironment);
         filedir(MHTMLTestDestinationPath,         function(aTask)
         {
-            console.log("Copying MHTML test file... \0green(" + MHTMLTestDestinationPath + "\0)");
+            term.stream.print("Copying MHTML test file... \0green(" + MHTMLTestDestinationPath + "\0)");
             fs.copyFileSync(MHTMLTestPath, MHTMLTestDestinationPath);
         });
         this.enhance([MHTMLTestDestinationPath]);
@@ -597,12 +604,11 @@ BundleTask.prototype.defineStaticTask = function()
             staticPath = this.buildProductStaticPathForEnvironment(anEnvironment),
             flattensSources = this.flattensSources(),
             productName = this.productName();
-        filedir(staticPath,         function(aTask)
+        filedir(staticPath, function(aTask)
         {
-            console.log("Creating static file... \0green(" + staticPath + "\0)");
-            //TERM.stream.print("Creating static file... \0green(" + staticPath + "\0)");
+            term.stream.print("Creating static file... \0green(" + staticPath + "\0)");
             var fileStream = fs.openSync(staticPath, "w+");
-            fileStream.write("@STATIC;1.0;");
+            fs.writeSync(fileStream, "@STATIC;1.0;");
             (aTask.prerequisites()).forEach(            function(aFilename)
             {
                 if (!fs.lstatSync(aFilename).isFile())
@@ -611,18 +617,22 @@ BundleTask.prototype.defineStaticTask = function()
                 if (aFilename.indexOf(sourcesPath) === 0)
                 {
                     var relativePath = flattensSources ? path.basename(aFilename) : path.relative(sourcesPath, aFilename);
-                    fileStream.write("p;" + relativePath.length + ";" + relativePath);
+                    fs.writeSync(fileStream, "p;" + relativePath.length + ";" + relativePath);
                     var fileContents = fs.readFileSync(aFilename).toString("utf8");
-                    fileStream.write("t;" + fileContents.length + ";" + fileContents);
-                }                else if (aFilename.indexOf(resourcesPath) === 0 && !isImage(aFilename))
+                    fs.writeSync(fileStream, "t;" + fileContents.length + ";" + fileContents);
+                }
+                else if (aFilename.indexOf(resourcesPath) === 0 && !isImage(aFilename))
                 {
                     var resourcePath = "Resources/" + path.relative(resourcesPath, aFilename);
                     fileStream.write("p;");
                     contents = fs.readFileSync(aFilename).toString("utf8");
                     fileStream.write(resourcePath.length + ";" + resourcePath + contents);
-                }            }, this);
-            fileStream.write("e;");
-            fileStream.close();
+                }            
+            }, this);
+            fs.writeFileSync(fileStream, "e;");
+            fs.closeSync(fileStream);
+            //fileStream.write("e;");
+            //fileStream.close();
             ObjectiveJ.Executable.resetCachedFileExecutableSearchers();
             ObjectiveJ.StaticResource.resetRootResources();
             ObjectiveJ.FileExecutable.resetFileExecutables();
@@ -644,8 +654,6 @@ BundleTask.prototype.defineSourceTasks = function()
         compilerFlags = "";
     else if (compilerFlags.join)
         compilerFlags = compilerFlags.join(" ");
-    console.log("environments");
-    console.log(this.environments());
     (this.environments()).forEach(    function(anEnvironment)
     {
         var environmentSources = sources,
@@ -681,65 +689,44 @@ BundleTask.prototype.defineSourceTasks = function()
             var relativePath = aFilename.substring(basePathLength ? basePathLength + 1 : basePathLength),
                 compiledEnvironmentSource = path.join(sourcesPath, relativePath);
                 
-            filedir(compiledEnvironmentSource, [aFilename],             async function()
-            {
-                console.log("ran compiledEnvironmentSource");
-                var rhinoUglyFix = false;
-                if (false/* system.engine === "rhino" */)
-                {
-                    if (typeof document == "undefined")
-                    {
-                        document = {createElement:                         function(x)
-                        {
-                            return {innerText: "", style: {}};
-                        }};
-                        rhinoUglyFix = true;
-                    }                    if (typeof navigator == "undefined")
-                    {
-                        navigator = {"userAgent": "fakenavigator"};
-                        rhinoUglyFix = true;
-                    }                }
-                    
-                        
-                var compile;
+            filedir(compiledEnvironmentSource, [aFilename], async function()
+            {           
                 if ((path.extname(aFilename)).toLowerCase() !== ".j")
                 {
-                    console.log("Including [\0blue(" + anEnvironment + "\0)] \0purple(" + aFilename + "\0)");
-                    //(TERM.stream.write("Including [\0blue(" + anEnvironment + "\0)] \0purple(" + aFilename + "\0)")).flush();
+                    (term.stream.write("Including [\0blue(" + anEnvironment + "\0)] \0purple(" + aFilename + "\0)")).flush();
                     var compiled = fs.readFileSync(aFilename, { encoding: "utf8"}).toString();
                     console.log((Array(Math.round(compiled.length / 1024) + 3)).join("."));
                     return await fs.promises.writeFile(compiledEnvironmentSource, compiled, { encoding: "utf8"});
-                }                else
+                }
+                else
                 {
                     var translatedFilename = translateFilenameToPath[aFilename] ? translateFilenameToPath[aFilename] : aFilename,
                         otherwayTranslatedFilename = otherwayTranslateFilenameToPath[aFilename] ? otherwayTranslateFilenameToPath[aFilename] : aFilename,
                         theTranslatedFilename = otherwayTranslatedFilename ? otherwayTranslatedFilename : translatedFilename,
                         absolutePath = path.resolve(theTranslatedFilename),
                         basePath = absolutePath.substring(0, absolutePath.length - theTranslatedFilename.length);
-                    ObjectiveJ.FileExecutable.setCurrentGccCompilerFlags(environmentCompilerFlags);
+                    ObjectiveJ.StaticResource.setCurrentGccCompilerFlags(environmentCompilerFlags);
                     CFBundle.environments =                     function()
                     {
                         return [anEnvironment.name(), "ObjJ"];
                     };
-                    console.log("before make_narwhal_factory");
-                    console.log("basePath: " + basePath);
-                    //absolutePath = "/" + absolutePath;
-                    //basePath = "/" + basePath;
-                    console.log("absolutePath: " + absolutePath);
                     return new Promise((resolve, reject) => {
                         var callback = function() {
-                            console.log("callback called");
                             var otherwayTranslatedFilename = otherwayTranslateFilenameToPath[aFilename] ? otherwayTranslateFilenameToPath[aFilename] : aFilename,
                             translatedFilename = translateFilenameToPath[aFilename] ? translateFilenameToPath[aFilename] : aFilename,
                             executer = new ObjectiveJ.FileExecutable(otherwayTranslatedFilename);
                             var compiled = executer.toMarkedString();
-                            console.log((Array(Math.round(compiled.length / 1024) + 3)).join("."));
+                            //var msg = "Compiling [\0blue(" + anEnvironment + "\0)] \0purple(" + aFilename + "\0)";
+                            var dots = (Array(Math.round(compiled.length / 1024) + 3)).join(".");
+                            term.stream.print(dots);
                             fs.writeFileSync(compiledEnvironmentSource, compiled, { encoding: "utf8"});
                             resolve();
                         }
+                        console.log("mnf");
+                        debugger;
+                        var msg = "Compiling [\0blue(" + anEnvironment + "\0)] \0purple(" + aFilename + "\0)";
+                        term.stream.print(msg);
                         ObjectiveJ.make_narwhal_factory(absolutePath, basePath, translateFilenameToPath, callback)(require, e, module, {}, console.log);
-                        console.log("Compiling [\0blue(" + anEnvironment + "\0)] \0purple(" + aFilename + "\0)");
-                        //(TERM.stream.write("Compiling [\0blue(" + anEnvironment + "\0)] \0purple(" + aFilename + "\0)")).flush();
                     });
                 }                
             });

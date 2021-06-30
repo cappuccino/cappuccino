@@ -41,6 +41,8 @@ acorn = {walk: walk};
 acorn = require("./acorn").acorn;
 var compiler = require("./ObjJAcornCompiler").ObjJCompiler;
 
+const term = require("objj-runtime").term;
+
 //$BUILD_CONFIGURATION_DIR = "../Build"
 $BROWSER_FILE       = path.join("Browser", "Objective-J.js");
 
@@ -82,7 +84,8 @@ new FileList("CommonJS/**/*").forEach(function(aFilename)
     {
         if (path.extname(aFilename) !== ".js")
         {
-            console.log("Copying... \0green(" + aFilename +"\0)");
+            term.stream.print("Copying... \0green(" + aFilename +"\0)");
+            //console.log("Copying... \0green(" + aFilename +"\0)");
             cp(aFilename, buildFilename);
         }
         else
@@ -132,7 +135,8 @@ function compressor(srcCode) {
 var headerText = fs.readFileSync("header.txt", { encoding: "utf8"});
 function gcc(inputFilePath, outputFilePath, flags, compress)
 {
-    console.log("Building... \0green(" + outputFilePath +"\0)");
+    term.stream.print("Building... \0green(" + outputFilePath +"\0)");
+    //console.log("Building... \0green(" + outputFilePath +"\0)");
     var source = fs.readFileSync(inputFilePath, { charset : "utf8" }).toString();
     //console.log(source.charCodeAt);
     var compilerOptions = compiler.parseGccCompilerFlags(flags.join(" "));

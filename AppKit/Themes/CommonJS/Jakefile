@@ -1,10 +1,10 @@
 
 require("../../../common.jake");
 
-var FILE = require("file");
+var path = require("path");
 
 $BLENDTASK              = "blendtask.j";
-$BUILD_CJS_BLENDTASK    = FILE.join($BUILD_CJS_CAPPUCCINO, "lib", "cappuccino", "jake", "blendtask.j");
+$BUILD_CJS_BLENDTASK    = path.join($BUILD_CJS_CAPPUCCINO, "lib", "cappuccino", "jake", "blendtask.j");
 
 filedir($BUILD_CJS_BLENDTASK, [$BLENDTASK], function()
 {

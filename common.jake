@@ -31,7 +31,7 @@ var child_process = require('child_process');
 var path = require('path');
 
 // for testing
-var JAKE = require("../jake/lib/jake.js");
+var JAKE = require("jake");
 
 requiresSudo = false;
 
@@ -249,7 +249,7 @@ function setupEnvironment()
 {
     try
     {
-        //require("objective-j").OBJJ_INCLUDE_PATHS.push(path.join($BUILD_CONFIGURATION_DIR, "CommonJS", "cappuccino", "Frameworks"));
+        require("objj-runtime").OBJJ_INCLUDE_PATHS.push(path.join($BUILD_CONFIGURATION_DIR, "CommonJS", "cappuccino", "Frameworks"));
     }
     catch (e)
     {
@@ -318,10 +318,8 @@ function systemSync(command)
 {   
     console.log("i systemSync");
     console.log("command: " + command)
-    
     try {
         child_process.execSync(command, {stdio: 'inherit'});
-        console.log("exited gracefully")
         return 0;
     } catch (error) {
         console.log(error);
@@ -503,7 +501,7 @@ global.spawnJake = function(/*String*/ aTaskName)
 {
     console.log("i spawnJake");
     // for testing
-    if (systemSync(serializedENV() + " " + "/Users/alfred/Developer/jake/bin/jake" + " " + aTaskName))
+    if (systemSync(serializedENV() +/*  " " + "node --inspect-brk" +  */" /Users/alfred/Developer/jake/bin/jake" + " " + aTaskName))
         console.log("exited in spawnJake with code 1");
         process.exit(1);    //rake abort if ($? != 0)
 };

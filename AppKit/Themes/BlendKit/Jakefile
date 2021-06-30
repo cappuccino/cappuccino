@@ -1,21 +1,24 @@
 
 require("../../../common.jake");
 
-var framework = require("objective-j/jake").framework;
-var BundleTask = require("objective-j/jake").BundleTask;
+const path = require("path");
+const glob = require("glob"); // FIXME: probably unnecessary to use an external library for this, maybe built into FileList?
+
+var framework = require("../../../Jake/frameworktask.js").framework;
+var BundleTask = require("../../../Jake/bundletask.js").BundleTask;
 
 blendKitTask = framework ("BlendKit", function(blendKitTask)
 {
-    blendKitTask.setBuildIntermediatesPath(FILE.join($BUILD_DIR, "BlendKit.build", $CONFIGURATION))
-    blendKitTask.setBuildPath(FILE.join($BUILD_DIR, $CONFIGURATION));
+    blendKitTask.setBuildIntermediatesPath(path.join($BUILD_DIR, "BlendKit.build", $CONFIGURATION))
+    blendKitTask.setBuildPath(path.join($BUILD_DIR, $CONFIGURATION));
 
     blendKitTask.setIdentifier("com.280n.BlendKit");
     blendKitTask.setVersion(getCappuccinoVersion());
     blendKitTask.setAuthor("280 North, Inc.");
     blendKitTask.setEmail("feedback @nospam@ 280north.com");
     blendKitTask.setSummary("BlendKit classes for Cappuccino");
-    blendKitTask.setSources(FILE.glob("*.j"));
-    blendKitTask.setResources(FILE.glob("Resources/*"));
+    blendKitTask.setSources(glob.sync("*.j"));
+    blendKitTask.setResources(glob.sync("Resources/*"));
     blendKitTask.setLicense(BundleTask.License.LGPL_v2_1);
     blendKitTask.setFlattensSources(true); // FIXME: how do we non flatten?
 
@@ -25,7 +28,7 @@ blendKitTask = framework ("BlendKit", function(blendKitTask)
         blendKitTask.setCompilerFlags("-DDEBUG -g -Wno-unused-but-set-variable");
 });
 
-$BUILD_CJS_PRODUCT_BLENDKIT = FILE.join($BUILD_CJS_CAPPUCCINO_FRAMEWORKS, "BlendKit");
+$BUILD_CJS_PRODUCT_BLENDKIT = path.join($BUILD_CJS_CAPPUCCINO_FRAMEWORKS, "BlendKit");
 
 filedir ($BUILD_CJS_PRODUCT_BLENDKIT, ["BlendKit"], function()
 {

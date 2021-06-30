@@ -22,8 +22,8 @@
 
 require("../common.jake");
 
-var framework = require("./objective-j/jake").framework;
-var BundleTask = require("./objective-j/jake").BundleTask;
+var framework = require("../Jake/frameworktask.js").framework;
+var BundleTask = require("../Jake/bundletask.js").BundleTask;
 
 const path = require("path");
 
@@ -43,7 +43,7 @@ foundationTask = framework ("Foundation", function(foundationTask)
     foundationTask.setResources(new FileList("Resources/**/*"));
     foundationTask.setFlattensSources(true);
     foundationTask.setInfoPlistPath("Info.plist");
-    foundationTask.setEnvironments(require("./objective-j/jake/environment").ObjJ);
+    foundationTask.setEnvironments(require("../Jake/environment.js").ObjJ);
 
     // Grab all the .h's and just include them in each file.
     var INCLUDES_LIST = new FileList();
@@ -65,7 +65,6 @@ $BUILD_CJS_FOUNDATION = path.join($BUILD_CJS_CAPPUCCINO_FRAMEWORKS, "Foundation"
 
 filedir ($BUILD_CJS_FOUNDATION, ["Foundation"], function()
 {
-    console.log("in task $BUILD_CJS_FOUNDATION");
     cp_r(foundationTask.buildProductPath(), $BUILD_CJS_FOUNDATION);
 });
 

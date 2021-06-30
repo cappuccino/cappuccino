@@ -12,6 +12,8 @@ require("./common.jake");
 
 var fs = require('fs');
 var path = require('path');
+const term = require("objj-runtime").term;
+
 
 var subprojects = ["Objective-J", "CommonJS", "Foundation", "AppKit", "Tools"];
 
@@ -410,9 +412,9 @@ function pushPackage(path, remote, branch)
 
     var pkg = JSON.parse(packagePath.join("package.json").read({ charset : "UTF-8" }));
 
-    stream.print("    Version:   " + colorize(pkg.version, "purple"));
-    stream.print("    Revision:  " + colorize(pkg["cappuccino-revision"], "purple"));
-    stream.print("    Timestamp: " + colorize(pkg["cappuccino-timestamp"], "purple"));
+    term.stream.print("    Version:   " + colorize(pkg.version, "purple"));
+    term.stream.print("    Revision:  " + colorize(pkg["cappuccino-revision"], "purple"));
+    term.stream.print("    Timestamp: " + colorize(pkg["cappuccino-timestamp"], "purple"));
 
     var cmd = [
         ["cd", packagePath],

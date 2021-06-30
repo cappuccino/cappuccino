@@ -1,8 +1,8 @@
 
 require("../common.jake");
 
-var framework = require("../Foundation/objective-j/jake").framework,
-    BundleTask = require("../Foundation/objective-j/jake").BundleTask;
+var framework = require("../Jake/frameworktask.js").framework,
+    BundleTask = require("../Jake/bundletask.js").BundleTask;
 
 const path = require("path");
 

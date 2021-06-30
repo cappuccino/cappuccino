@@ -12,7 +12,6 @@ tmp_list.exclude("Jakefile");
 
 tmp_list.forEach(function(aFilename)
 {
-    
     if (!fs.lstatSync(aFilename).isFile())
         return;
 
