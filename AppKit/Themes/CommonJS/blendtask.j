@@ -55,9 +55,14 @@ BlendTask.prototype.packageType = function()
 
 BlendTask.prototype.infoPlist = function()
 {
+    // these should be equivalent
+    // resources = UTIL.unique(resources);
+    // resources = [... new Set(resources)];
+
     var infoPlist = BundleTask.prototype.infoPlist.apply(this, arguments);
 
-    infoPlist.setValueForKey("CPKeyedThemes", require("narwhal/util").unique(this._keyedThemes));
+    infoPlist.setValueForKey("CPKeyedThemes", [... new Set(this._keyedThemes)]);
+    //infoPlist.setValueForKey("CPKeyedThemes", require("narwhal/util").unique(this._keyedThemes));
 
     return infoPlist;
 };
