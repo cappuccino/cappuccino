@@ -34,8 +34,8 @@ var /* FILE = require("file"), */
     filedir = require("jake").filedir,
     BundleTask = require("../../../Jake/bundletask.js").BundleTask;
 
-const fs = require("fs");
-const path = require("path");
+var fs = require("fs");
+var path = require("path");
 
 function BlendTask(aName)
 {
@@ -55,13 +55,16 @@ BlendTask.prototype.packageType = function()
 
 BlendTask.prototype.infoPlist = function()
 {
-    // these should be equivalent
-    // resources = UTIL.unique(resources);
-    // resources = [... new Set(resources)];
 
     var infoPlist = BundleTask.prototype.infoPlist.apply(this, arguments);
 
-    infoPlist.setValueForKey("CPKeyedThemes", [... new Set(this._keyedThemes)]);
+    function onlyUnique(value, index, self) {
+        return self.indexOf(value) === index;
+    }
+
+    this._keyedThemes.filter(onlyUnique)
+
+    infoPlist.setValueForKey("CPKeyedThemes", this._keyedThemes.filter(onlyUnique));
     //infoPlist.setValueForKey("CPKeyedThemes", require("narwhal/util").unique(this._keyedThemes));
 
     return infoPlist;
