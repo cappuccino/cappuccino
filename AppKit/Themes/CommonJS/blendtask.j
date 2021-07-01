@@ -28,12 +28,14 @@
 @import <BlendKit/BlendKit.j>
 
 
-var FILE = require("file"),
-    TERM = require("narwhal/term"),
+var /* FILE = require("file"), */
+    TERM = require("objj-runtime").term,
     task = require("jake").task,
     filedir = require("jake").filedir,
-    BundleTask = require("objective-j/jake/bundletask").BundleTask;
+    BundleTask = require("../../../Jake/bundletask.js").BundleTask;
 
+const fs = require("fs");
+const path = require("path");
 
 function BlendTask(aName)
 {
@@ -88,7 +90,7 @@ BlendTask.prototype.defineThemeDescriptorTasks = function()
         var folder = anEnvironment.name() + ".environment",
             themeDescriptors = this.themeDescriptors(),
             resourcesPath = this.resourcesPath(),
-            intermediatesPath = FILE.join(this.buildIntermediatesProductPath(), folder, "Resources"),
+            intermediatesPath = path.join(this.buildIntermediatesProductPath(), folder, "Resources"),
             staticPath = this.buildProductStaticPathForEnvironment(anEnvironment),
             keyedThemes = this._keyedThemes,
             themesTaskName = this.name() + ":themes";
@@ -97,12 +99,12 @@ BlendTask.prototype.defineThemeDescriptorTasks = function()
 
         themeDescriptors.forEach(function(/*CPString*/ themeDescriptorPath)
         {
-            objj_importFile(FILE.absolute(themeDescriptorPath), YES);
+            objj_importFile(path.resolve(themeDescriptorPath), YES);
         });
 
         [BKThemeDescriptor allThemeDescriptorClasses].forEach(function(aClass)
         {
-            var keyedThemePath = FILE.join(intermediatesPath, [aClass themeName] + ".keyedtheme");
+            var keyedThemePath = path.join(intermediatesPath, [aClass themeName] + ".keyedtheme");
 
             filedir (keyedThemePath, themesTaskName);
             filedir (staticPath, [keyedThemePath]);
@@ -123,9 +125,11 @@ BlendTask.prototype.defineThemeDescriptorTasks = function()
                     fileContents = themeFromCibData(data);
 
                 // No filedir in this case, so we have to make it ourselves.
-                FILE.mkdirs(intermediatesPath);
+                fs.mkdirSync(intermediatesPath, { recursive: true });
+                //FILE.mkdirs(intermediatesPath);
                 // FIXME: MARKER_TEXT isn't global, so we use "t;".
-                FILE.write(FILE.join(intermediatesPath, [aClass themeName] + ".keyedtheme"), "t;" + fileContents.length + ";" + fileContents, { charset:"UTF-8" });
+                fs.writeFileSync(path.join(intermediatesPath, [aClass themeName] + ".keyedtheme"), "t;" + fileContents.length + ";" + fileContents, { encoding: "utf8" });
+                //FILE.write(FILE.join(intermediatesPath, [aClass themeName] + ".keyedtheme"), "t;" + fileContents.length + ";" + fileContents, { charset:"UTF-8" });
             });
         });
     }, this);
