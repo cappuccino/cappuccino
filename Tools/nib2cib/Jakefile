@@ -6,8 +6,8 @@ require("../../common.jake");
 const path = require("path");
 const glob = require("glob");
 
-var app = require("../../Foundation/objective-j/jake.js").app;
-var BundleTask = require("../../Foundation/objective-j/jake.js").BundleTask;
+var app = require("../../Jake/applicationtask.js").app;
+var BundleTask = require("../../Jake/bundletask.js").BundleTask;
 
 app ("nib2cib", function(nib2cibTask)
 {
@@ -23,7 +23,7 @@ app ("nib2cib", function(nib2cibTask)
     
     nib2cibTask.setSources(glob.sync("**/*.j"));
     nib2cibTask.setResources(glob.sync("Resources/*"));
-    nib2cibTask.setEnvironments(require("../../Foundation/objective-j/jake/environment.js").CommonJS);
+    nib2cibTask.setEnvironments(require("../../Jake/environment.js").CommonJS);
     nib2cibTask.setFlattensSources(true);
 
     if ($CONFIGURATION === "Release")

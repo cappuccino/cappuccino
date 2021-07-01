@@ -30,16 +30,20 @@
 @import "Nib2CibKeyedUnarchiver.j"
 @import "Converter.j"
 @import "Converter+Mac.j"
+import { constants } from "buffer"
 
 
 Nib2CibColorizeOutput = YES;
 
-var FILE = require("file"),
-    OS = require("os"),
+const PATH = require("path");
+const fs = require("fs");
+
+var /* FILE = require("file"), */
+    /* OS = require("os"), */
     SYS = require("system"),
     FileList = require("jake").FileList,
-    stream = require("narwhal/term").stream,
-    StaticResource = require("objective-j").StaticResource,
+    stream = require("objj-runtime").term.stream,
+    StaticResource = require("objj-runtime").StaticResource,
 
     DefaultTheme = "Aristo2",
     BuildTypes = ["Debug", "Release"],
@@ -48,6 +52,7 @@ var FILE = require("file"),
     ArgsRe = /"[^\"]+"|'[^\']+'|\S+/g,
 
     SharedNib2Cib = nil;
+
 
 
 @implementation Nib2Cib : CPObject
@@ -114,13 +119,13 @@ var FILE = require("file"),
             var success = [self convertWithOptions:commandLineOptions inputPath:nil];
 
             if (!success)
-                OS.exit(1);
+                process.exit(1);
         }
     }
     catch (anException)
     {
         [self logError:[self exceptionReason:anException]];
-        OS.exit(1);
+        process.exit(1);
     }
 }
 
@@ -135,23 +140,23 @@ var FILE = require("file"),
 
 - (void)enumerateFrameworks
 {
-    var frameworksDirectory = FILE.join(appDirectory, "Frameworks"),
-        debugFrameworksDirectory = FILE.join(frameworksDirectory, "Debug");
+    var frameworksDirectory = PATH.join(appDirectory, "Frameworks"),
+        debugFrameworksDirectory = PATH.join(frameworksDirectory, "Debug");
 
     [debugFrameworksDirectory, frameworksDirectory].forEach(function(directory)
     {
-        if (FILE.isDirectory(directory))
+        if (fs.lstatSync(directory).isDirectory())
         {
-            var frameworkList = FILE.list(directory);
+            var frameworkList = fs.readdirSync(directory);
 
             frameworkList.forEach(function(framework)
             {
                 if (framework !== @"Debug" && ![frameworks containsKey:framework])
                 {
-                    var resourceDirectory = FILE.join(directory, framework, "Resources");
+                    var resourceDirectory = PATH.join(directory, framework, "Resources");
 
-                    if (FILE.isDirectory(resourceDirectory))
-                        resourceDirectory = FILE.canonical(resourceDirectory);
+                    if (fs.lstatSync(resourceDirectory).isDirectory())
+                        resourceDirectory = PATH.normalize(resourceDirectory);
                     else
                         resourceDirectory = @"";
 
@@ -255,27 +260,27 @@ var FILE = require("file"),
         watchDir = options.args[0];
 
     if (!watchDir)
-        watchDir = FILE.canonical(FILE.isDirectory("Resources") ? "Resources" : ".");
+        watchDir = PATH.normalize(fs.lstatSync("Resources").isDirectory() ? "Resources" : ".");
     else
     {
-        watchDir = FILE.canonical(watchDir);
+        watchDir = PATH.normalize(watchDir);
 
-        if (FILE.basename(watchDir) !== "Resources")
+        if (PATH.basename(watchDir) !== "Resources")
         {
-            var path = FILE.join(watchDir, "Resources");
-
-            if (FILE.isDirectory(path))
+            var path = PATH.join(watchDir, "Resources");
+            
+            if (fs.lstatSync(p).isDirectory())
                 watchDir = path;
         }
     }
 
-    if (!FILE.isDirectory(watchDir))
+    if (!fs.lstatSync(watchDir).isDirectory())
         [self failWithMessage:@"Cannot find the directory: " + watchDir];
 
     // Turn on info messages
     [self setLogLevel:1];
 
-    var nibs = new FileList(FILE.join(watchDir, "*.[nx]ib")).items(),
+    var nibs = new FileList(PATH.join(watchDir, "*.[nx]ib")).items(),
         count = nibs.length;
 
     // First time through only IB files with no corresponding cib
@@ -284,9 +289,9 @@ var FILE = require("file"),
     {
         var nib = nibs[count],
             cib = nib.substr(0, nib.length - 4) + ".cib";
-
-        if (FILE.exists(cib) && (FILE.mtime(nib) - FILE.mtime(cib)) <= 0)
-            nibInfo[nib] = FILE.mtime(nib);
+        
+        if (fs.existsSync(cib) && (fs.lstatSync(nib).mtime-fs.lstatSync(cib).mtime) <= 0)
+            nibInfo[nib] = fs.lstatSync(nib).mtime;
     }
 
     CPLog.info("Watching: " + CPLogColorize(watchDir, "debug"));
@@ -310,7 +315,7 @@ var FILE = require("file"),
             {
                 var cib = nib.substr(0, nib.length - 4) + ".cib";
 
-                if (FILE.exists(cib) && (FILE.mtime(nib) - FILE.mtime(cib)) < 0)
+                if (fs.existsSync(cib) && (fs.lstatSync(nib).mtime-fs.lstatSync(cib).mtime) < 0)
                     continue;
             }
 
@@ -330,7 +335,11 @@ var FILE = require("file"),
             }
         }
 
-        OS.sleep(1);
+        //OS.sleep(1);
+
+        // sleep does not exist as a function in node, using this hack temporarily
+        var waitTill = new Date(new Date().getTime() + 1 * 1000);
+        while(waitTill > new Date()){}
     }
 }
 
@@ -395,7 +404,7 @@ var FILE = require("file"),
     if (options.args.length > 2)
     {
         parser.printUsage(options);
-        OS.exit(0);
+        process.exit(0);
     }
 
     return options;
@@ -404,11 +413,11 @@ var FILE = require("file"),
 - (JSObject)mergeOptionsWithStoredOptions:(JSObject)options inputPath:(CPString)inputPath
 {
     // We have to clone options
-    var userOptions = [self readStoredOptionsAtPath:FILE.join(SYS.env["HOME"], ".nib2cibconfig")],
-        appOptions = [self readStoredOptionsAtPath:FILE.join(appDirectory, "nib2cib.conf")],
-        filename = FILE.basename(inputPath, FILE.extension(inputPath)) + ".conf",
-        fileOptions = [self readStoredOptionsAtPath:FILE.join(FILE.dirname(inputPath), filename)];
-
+    var userOptions = [self readStoredOptionsAtPath:PATH.join(process.env["HOME"], ".nib2cibconfig")],
+        appOptions = [self readStoredOptionsAtPath:PATH.join(appDirectory, "nib2cib.conf")],
+        filename = PATH.basename(inputPath, PATH.extname(inputPath)) + ".conf",
+        fileOptions = [self readStoredOptionsAtPath:PATH.join(PATH.dirname(inputPath), filename)];
+        
     // At this point we have an array of args without the initial command in args[0],
     // add the command and parse the options.
     userOptions = [self parseOptionsFromArgs:[options.command].concat(userOptions)];
@@ -428,17 +437,28 @@ var FILE = require("file"),
 
 - (CPArray)readStoredOptionsAtPath:(CPString)path
 {
-    path = FILE.canonical(path);
+    path = PATH.normalize(p);
 
-    if (!FILE.isReadable(path))
+/*     if (!FILE.isReadable(path))
         return [];
+ */
+    try {
+        fs.accessSync(path, fs.constants.R_OK);
+    } catch (err) {
+        return []; 
+    }
 
-    var file = FILE.open(path, "r"),
+    // reading the whole file into memory, could be problematic
+    var file = fs.readFileSync(path, { encoding: "utf8" });
+    var line = file.split("\n")[0];
+    var matches = line.match(ArgsRe) || [];
+
+/*     var file = FILE.open(path, "r"),
         line = file.readLine(),
-        matches = line.match(ArgsRe) || [];
+        matches = line.match(ArgsRe) || []; */
 
     file.close();
-    CPLog.debug("Reading stored options: " + path);
+    CPLog.debug("Reading stored options: " + p);
 
     if (matches)
     {
@@ -524,14 +544,14 @@ var FILE = require("file"),
         else if (path = [self findInputPath:inputPath extension:@".nib"])
             inputPath = path;
         else
-            [self failWithMessage:@"Cannot find the input file (.xib or .nib): " + FILE.canonical(inputPath)];
+            [self failWithMessage:@"Cannot find the input file (.xib or .nib): " + PATH.normalize(inputPath)];
     }
     else if (path = [self findInputPath:inputPath extension:nil])
         inputPath = path;
     else
-        [self failWithMessage:@"Could not read the input file: " + FILE.canonical(inputPath)];
+        [self failWithMessage:@"Could not read the input file: " + PATH.normalize(inputPath)];
 
-    return FILE.canonical(inputPath);
+    return PATH.normalize(inputPath);
 }
 
 - (void)findInputPath:(CPString)inputPath extension:(CPString)extension
@@ -541,15 +561,30 @@ var FILE = require("file"),
     if (extension)
         path += extension;
 
-    if (FILE.isReadable(path))
+    try {
+        fs.accessSync(path, fs.constants.R_OK);
         return path;
+    } catch (err) {
+        // is not readable
+    }
 
-    if (FILE.basename(FILE.dirname(inputPath)) !== "Resources" && FILE.isDirectory("Resources"))
+/*     if (FILE.isReadable(path))
+        return path; */
+    
+    if (PATH.basename(PATH.dirname(inputPath)) !== "Resources" && fs.lstatSync("Resources").isDirectory())
     {
-        path = FILE.resolve(path, FILE.join("Resources", FILE.basename(path)));
+        path = PATH.resolve(path, PATH.join("Resources", PATH.basename(path)));
 
-        if (FILE.isReadable(path))
+        try {
+            fs.accessSync(path, fs.constants.R_OK);
             return path;
+        } catch (err) {
+            // is not readable
+        }
+
+/* 
+        if (FILE.isReadable(path))
+            return path; */
     }
 
     return null;
@@ -559,13 +594,13 @@ var FILE = require("file"),
 {
     appDirectory = @"";
 
-    var parentDir = FILE.dirname(aPath),
+    var parentDir = PATH.dirname(aPath),
         match = /^(.+)(\/Resources(?:\/.+)?)$/.exec(parentDir);
 
     if (match)
     {
         appDirectory = match[1];
-        appResourceDirectory = FILE.join(appDirectory, "Resources");
+        appResourceDirectory = PATH.join(appDirectory, "Resources");
     }
     else
     {
@@ -573,9 +608,9 @@ var FILE = require("file"),
 
         if (!appResourceDirectory)
         {
-            var path = FILE.join(appDirectory, "Resources");
-
-            if (FILE.isDirectory(path))
+            var path = PATH.join(appDirectory, "Resources");
+            
+            if (fs.lstatSync(path).isDirectory())
                 appResourceDirectory = path;
         }
     }
@@ -593,13 +628,19 @@ var FILE = require("file"),
             outputPath += ".cib";
     }
     else
-        outputPath = FILE.join(FILE.dirname(aPath), FILE.basename(aPath, FILE.extension(aPath))) + ".cib";
+        outputPath = PATH.join(PATH.dirname(aPath), PATH.basename(aPath, PATH.extname(aPath))) + ".cib";
 
-    outputPath = FILE.canonical(outputPath);
+    outputPath = PATH.normalize(outputPath);
 
-    if (!FILE.isWritable(FILE.dirname(outputPath)))
+    try {
+        fs.accessSync(PATH.dirname(outputPath), fs.constants.W_OK);
+    } catch(err) {
         [self failWithMessage:@"Cannot write the output file at: " + outputPath];
+    }
 
+/*     if (!FILE.isWritable(FILE.dirname(outputPath)))
+        [self failWithMessage:@"Cannot write the output file at: " + outputPath];
+ */
     return outputPath;
 }
 
@@ -617,7 +658,7 @@ var FILE = require("file"),
         // If it is just a name with no path components, try to locate it
         if (aFramework.indexOf("/") === -1)
         {
-            frameworkPath = [self findInFrameworks:FILE.join(appDirectory, "Frameworks")
+            frameworkPath = [self findInFrameworks:PATH.join(appDirectory, "Frameworks")
                                               path:aFramework
                                        isDirectory:YES
                                           callback:function(path) { return path; }];
@@ -643,7 +684,7 @@ var FILE = require("file"),
 
             [self loadNSClassesFromBundle:frameworkBundle];
 
-            var frameworkName = FILE.basename(frameworkPath),
+            var frameworkName = PATH.basename(frameworkPath),
                 info = [frameworks valueForKey:frameworkName];
 
             info.loaded = true;
@@ -668,7 +709,7 @@ var FILE = require("file"),
         if (userNSClasses.indexOf(nsClasses[i]) >= 0)
             continue;
 
-        var path = FILE.join(bundlePath, "NS_" + nsClasses[i] + ".j");
+        var path = PATH.join(bundlePath, "NS_" + nsClasses[i] + ".j");
 
         objj_importFile(path, YES);
         CPLog.debug("Imported NS class: %s", path);
@@ -715,17 +756,17 @@ var FILE = require("file"),
     if (!cappBuild)
         return undefined;
 
-    cappBuild = FILE.canonical(cappBuild);
+    cappBuild = PATH.normalize(cappBuild);
 
-    if (FILE.isDirectory(cappBuild))
+    if (fs.lstatSync(cappBuild).isDirectory())
     {
         var result = null;
 
         for (var i = 0; i < BuildTypes.length && !result; ++i)
         {
-            var findPath = FILE.join(cappBuild, BuildTypes[i], path);
+            var findPath = PATH.join(cappBuild, BuildTypes[i], path);
 
-            if ((isDirectory && FILE.isDirectory(findPath)) || (!isDirectory && FILE.exists(findPath)))
+            if ((isDirectory && fs.lstatSync(findPath).isDirectory()) || (!isDirectory && fs.existsSync(findPath)))
                 result = callback(findPath);
         }
 
@@ -738,7 +779,7 @@ var FILE = require("file"),
 - (id)findInInstalledFrameworks:(CPString)path isDirectory:(BOOL)isDirectory callback:(JSObject)callback
 {
     // NOTE: It's safe to use '/' directly in the path, we're guaranteed to be on a Mac
-    return [self findInFrameworks:FILE.canonical(FILE.join(SYS.prefix, "packages/cappuccino/Frameworks"))
+    return [self findInFrameworks:PATH.normalize(PATH.join(SYS.prefix, "packages/cappuccino/Frameworks"))
                              path:path
                       isDirectory:isDirectory
                          callback:callback];
@@ -747,16 +788,16 @@ var FILE = require("file"),
 - (id)findInFrameworks:(CPString)frameworksPath path:(CPString)path isDirectory:(BOOL)isDirectory callback:(JSObject)callback
 {
     var result = null,
-        findPath = FILE.join(frameworksPath, "Debug", path);
+        findPath = PATH.join(frameworksPath, "Debug", path);
 
-    if ((isDirectory && FILE.isDirectory(findPath)) || (!isDirectory && FILE.exists(findPath)))
+    if ((isDirectory && fs.lstatSync(findPath).isDirectory()) || (!isDirectory && fs.existsSync(findPath)))
         result = callback(findPath);
 
     if (!result)
     {
-        findPath = FILE.join(frameworksPath, path);
+        findPath = PATH.join(frameworksPath, path);
 
-        if ((isDirectory && FILE.isDirectory(findPath)) || (!isDirectory && FILE.exists(findPath)))
+        if ((isDirectory && fs.lstatSync(findPath).isDirectory()) || (!isDirectory && fs.existsSync(findPath)))
             result = callback(findPath);
     }
 
@@ -776,8 +817,13 @@ var FILE = require("file"),
 
 - (CPString)themeNameFromPropertyList:(CPString)path
 {
-    if (!FILE.isReadable(path))
+    try {
+        fs.accessSync(path, fs.constants.R_OK);
+    } catch (error) {
         return nil;
+    }
+/*     if (!FILE.isReadable(path))
+        return nil; */
 
     var themeName = nil,
         plist = CFPropertyList.readPropertyListFromFile(path);
@@ -805,9 +851,9 @@ var FILE = require("file"),
 
     if (themeDir)
     {
-        themePath = FILE.join(FILE.canonical(themeDir), blendName);
-
-        if (!FILE.isDirectory(themePath))
+        themePath = PATH.join(PATH.normalize(themeDir), blendName);
+    
+        if (!fs.lstatSync(themePath).isDirectory())
             themePath = themeDir = null;
     }
 
@@ -823,9 +869,9 @@ var FILE = require("file"),
         // Last resort, try the cwd
         if (!themePath)
         {
-            var path = FILE.canonical(blendName);
+            var path = PATH.normalize(blendName);
 
-            if (FILE.isDirectory(path))
+            if (fs.lstatSync(path).isDirectory())
                 themePath = path;
         }
     }
@@ -878,26 +924,40 @@ var FILE = require("file"),
     // First see if the user passed a config file path
     if (configFile)
     {
-        path = FILE.canonical(configFile);
-
-        if (!FILE.isReadable(path))
+        path = PATH.normalize(configFile);
+        
+        try {
+            fs.accessSync(path, fs.constants.R_OK);
+        } catch (error) {
             [self failWithMessage:@"Cannot find the config file: " + path];
+        }
 
+/*         if (!FILE.isReadable(path))
+            [self failWithMessage:@"Cannot find the config file: " + path];
+ */
         configPath = path;
     }
     else
     {
-        path = FILE.join(appDirectory, "Info.plist");
+        path = PATH.join(appDirectory, "Info.plist");
 
-        if (FILE.isReadable(path))
+        try {
+            fs.accessSync(path, fs.constants.R_OK);
             configPath = path;
-    }
+        } catch (error) {
+            // is not readable
+        }
+
+/*         if (FILE.isReadable(path))
+            configPath = path;
+ */ }
 
     var plist = null;
 
     if (configPath)
     {
-        var plist = FILE.read(configPath);
+        var plist = fs.readFileSync(configPath, { encoding: "utf8" });
+        //var plist = FILE.read(configPath);
 
         if (!plist)
             [self failWithMessage:@"Could not read the Info.plist at: " + configPath];
@@ -913,7 +973,7 @@ var FILE = require("file"),
 
 - (CPArray)getModifiedNibsInDirectory:(CPString)path
 {
-    var nibs = new FileList(FILE.join(path, "*.[nx]ib")).items(),
+    var nibs = new FileList(PATH.join(path, "*.[nx]ib")).items(),
         count = nibs.length,
         newNibInfo = {},
         modifiedNibs = [];
@@ -922,7 +982,7 @@ var FILE = require("file"),
     {
         var nib = nibs[count];
 
-        newNibInfo[nib] = FILE.mtime(nib);
+        newNibInfo[nib] = fs.lstatSync(nib).mtime;
 
         if (!nibInfo.hasOwnProperty(nib))
             modifiedNibs.push(["add", nib]);
@@ -949,7 +1009,7 @@ var FILE = require("file"),
 - (void)printVersionAndExit
 {
     [self printVersion];
-    OS.exit(0);
+    process.exit(0);
 }
 
 - (void)printVersion
@@ -963,17 +1023,21 @@ var FILE = require("file"),
 
         Base on these paths we can locate nib2cib's Info.plist.
     */
-    var path = FILE.dirname(FILE.dirname(FILE.canonical(SYS.args[0]))),
+    var path = PATH.dirname(PATH.dirname(PATH.normalize(SYS.args[0]))),
         version = null;
 
-    if (FILE.basename(path) === "narwhal")
-        path = FILE.join(path, "packages", "cappuccino");
+    if (PATH.basename(path) === "narwhal")
+        path = PATH.join(path, "packages", "cappuccino");
 
-    path = FILE.join(path, "lib", "nib2cib", "Info.plist");
+    path = PATH.join(path, "lib", "nib2cib", "Info.plist");
 
-    if (FILE.isReadable(path))
-    {
-        var plist = FILE.read(path);
+
+    try {
+        fs.accessSync(path, fs.constants.R_OK);
+
+        //if (FILE.isReadable(path))
+        //{
+        var plist = fs.readFileSync(path, { encoding: "utf8" });
 
         if (!plist)
             return;
@@ -987,6 +1051,9 @@ var FILE = require("file"),
 
         if (version)
             stream.print("nib2cib v" + version);
+        //}
+    } catch (error) {
+        // not readable
     }
 
     if (!version)

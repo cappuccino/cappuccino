@@ -365,6 +365,7 @@ function finishBundleLoadingWithError(/*CFBundle*/ aBundle, /*Event*/ anError)
 
 function loadExecutableAndResources(/*Bundle*/ aBundle, /*BOOL*/ shouldExecute)
 {
+    console.log("loadExecutableAndResources");
     if (!aBundle.mostEligibleEnvironment())
         return failure();
 
@@ -635,6 +636,7 @@ function CFBundleHasTestedSpriteSupport()
 
 function CFBundleTestSpriteSupport(/*String*/ MHTMLPath, /*Function*/ aCallback)
 {
+    
     if (CFBundleHasTestedSpriteSupport())
         return;
 
@@ -686,6 +688,7 @@ function CFBundleNotifySpriteSupportListeners()
 
 function CFBundleTestSpriteTypes(/*Array*/ spriteTypes)
 {
+    console.log("CFBundleTestSpriteTypes");
     // If we don't support Images, then clearly we don't support sprites.
     if (!("Image" in global) || spriteTypes.length < 2)
     {

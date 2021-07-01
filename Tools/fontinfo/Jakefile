@@ -1,8 +1,7 @@
+require("../../common.jake");
 
-require ("../../common.jake");
-
-var OS = require("os"),
-    task = require("../../../jake/lib/jake.js").task;
+var /* OS = require("os"), */
+    task = require("jake").task;
     //SYSTEM = require("system");
 
 const child_process = require("child_process");
@@ -35,14 +34,24 @@ task ("build", function()
 
 task ("clean", function()
 {
-    if (executableExists("xcodebuild") && OS.system("xcodebuild clean"))
-        OS.exit(1);
+    if (executableExists("xcodebuild")) {
+        try {
+            child_process.execSync("xcodebuild clean");
+        } catch (error) {
+            process.exit(1);
+        }
+    }
 });
 
 task ("clobber", function()
 {
-    if (executableExists("xcodebuild") && OS.system("xcodebuild clean"))
-        OS.exit(1);
+    if (executableExists("xcodebuild")) {
+        try {
+            child_process.execSync("xcodebuild clean");
+        } catch (error) {
+            process.exit(1);
+        }
+    }
 });
 
 task ("default", ["build"]);

@@ -501,7 +501,7 @@ global.spawnJake = function(/*String*/ aTaskName)
 {
     console.log("i spawnJake");
     // for testing
-    if (systemSync(serializedENV() +/*  " " + "node --inspect-brk" +  */" /Users/alfred/Developer/jake/bin/jake" + " " + aTaskName))
+    if (systemSync(serializedENV() + " " + "node --inspect-brk" + " /Users/alfred/Developer/jake/bin/jake" + " " + aTaskName))
         console.log("exited in spawnJake with code 1");
         process.exit(1);    //rake abort if ($? != 0)
 };
