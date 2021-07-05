@@ -152,6 +152,25 @@ CFDictionary.prototype.toString = function()
 
 DISPLAY_NAME(CFDictionary.prototype.toString);
 
+CFDictionary.prototype.toJSObject = function()
+{
+    var jsObject = new Object(),
+        keys = this._keys,
+        index = 0,
+        count = this._count;
+
+    for (; index < count; ++index)
+    {
+        var key = keys[index];
+
+        jsObject[key] = this.valueForKey(key);
+    }
+
+    return jsObject;
+};
+
+DISPLAY_NAME(CFDictionary.prototype.toJSObject);
+
 GLOBAL(CFMutableDictionary) = function(/*CFDictionary*/ aDictionary)
 {
     CFDictionary.apply(this, []);

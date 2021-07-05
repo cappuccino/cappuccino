@@ -1,6 +1,9 @@
 
 var rootResources = { };
 
+var currentCompilerFlags = {};
+var currentGccCompilerFlags = "";
+
 function StaticResource(/*CFURL*/ aURL, /*StaticResource*/ aParent, /*BOOL*/ isDirectory, /*BOOL*/ isResolved, /*Dictionary*/ aFilenameTranslateDictionary)
 {
     this._parent = aParent;
@@ -37,19 +40,10 @@ StaticResource.rootResources = function()
     return rootResources;
 };
 
-function countProp(x) {
-    var count = 0;
-    for (var k in x) {
-        if (x.hasOwnProperty(k)) {
-            ++count;
-        }
-    }
-    return count;
-}
-
 StaticResource.resetRootResources = function()
 {
     rootResources = {};
+    FunctionCache = {};
 };
 
 StaticResource.prototype.filenameTranslateDictionary = function()
@@ -69,7 +63,7 @@ function resolveStaticResource(/*StaticResource*/ aResource)
     });
 }
 
-StaticResource.prototype.resolve = function()
+StaticResource.prototype.resolve = function(/*BOOL*/ dontCompile, /*Array*/ compileIncludeFileArray)
 {
     if (this.isDirectory())
     {
@@ -87,8 +81,41 @@ StaticResource.prototype.resolve = function()
 
         function onsuccess(/*anEvent*/ anEvent)
         {
-            self._contents = anEvent.request.responseText();
-            resolveStaticResource(self);
+            var fileContents = anEvent.request.responseText(),
+                aURL = self.URL(),
+                extension = aURL.pathExtension().toLowerCase();
+
+            self._contents = fileContents;
+
+            if (fileContents.match(/^@STATIC;/))
+            {
+                self.decompile();
+                resolveStaticResource(self);
+            }
+            else if (!dontCompile && (extension === "j" || !extension) && !fileContents.match(/^{/))
+            {
+                // Copy compiler options as this can be recursive and/or asynchronous.
+                // Specially acornOptions.preprocessGetIncludeFile that has a variable 'self' that needs to be referencing the resource.
+                var compilerOptions = Object.assign({}, currentCompilerFlags || {}),
+                    acornOptions = compilerOptions.acornOptions;
+
+                if (acornOptions)
+                    compilerOptions.acornOptions = Object.asign({}, acornOptions);
+
+                // If no include files are set use the include files from the bundle, if any.
+                if (!compilerOptions.includeFiles)
+                    compilerOptions.includeFiles = compileIncludeFileArray;
+
+                self.cachedIncludeFileSearchResultsContent = {};
+                self.cachedIncludeFileSearchResultsURL = {};
+                compile(self, fileContents, aURL, compilerOptions, aFilenameTranslateDictionary, function(aResource) {
+                    resolveStaticResource(aResource);
+                });
+            }
+            else
+            {
+                resolveStaticResource(self);
+            }
         }
 
         function onfailure()
@@ -113,6 +140,221 @@ StaticResource.prototype.resolve = function()
         new FileRequest(url, onsuccess, onfailure);
     }
 };
+
+var compile = function(self, fileContents, aURL, compilerOptions, aFilenameTranslateDictionary, success)
+{
+    var acornOptions = compilerOptions.acornOptions || (compilerOptions.acornOptions = {});
+
+    acornOptions.preprocessGetIncludeFile = function(filePath, isQuoted) {
+        var referenceURL = new CFURL(".", aURL), // Remove the filename from the url
+            includeURL = new CFURL(filePath);
+
+        var cacheUID = (isQuoted && referenceURL || "") + includeURL,
+            cachedResult = self.cachedIncludeFileSearchResultsContent[cacheUID];
+
+        if (!cachedResult) {
+            var isAbsoluteURL = (includeURL instanceof CFURL) && includeURL.scheme(),
+                compileWhenCompleted = NO;
+
+            function completed(/*StaticResource*/ aStaticResource) {
+                var includeString = aStaticResource && aStaticResource.contents(),
+                    lastCharacter = includeString && includeString.charCodeAt(includeString.length - 1);
+
+                if (includeString == null) throw new Error("Can't load file " + includeURL);
+                // Add a new line if the last character is not. If the last thing is a '#define' of other preprocess
+                // token it will not be handled correctly if we don't have a end of line at the end.
+                if (lastCharacter !== 10 && lastCharacter !== 13 && lastCharacter !== 8232 && lastCharacter !== 8233) {
+                    includeString += '\n';
+                }
+
+                self.cachedIncludeFileSearchResultsContent[cacheUID] = includeString;
+                self.cachedIncludeFileSearchResultsURL[cacheUID] = aStaticResource.URL();
+
+                if (compileWhenCompleted)
+                    compile(self, fileContents, aURL, compilerOptions, aFilenameTranslateDictionary, success);
+            }
+
+            if (isQuoted || isAbsoluteURL)
+            {
+                var translateDictionary;
+
+                if (!isAbsoluteURL) {
+                    includeURL = new CFURL(includeURL, new CFURL(((aFilenameTranslateDictionary && aFilenameTranslateDictionary[aURL.lastPathComponent()]) || "."), referenceURL));
+                }
+
+                StaticResource.resolveResourceAtURL(includeURL, NO, completed, null, true); // true = don't compile any loaded resource
+            }
+            else
+                StaticResource.resolveResourceAtURLSearchingIncludeURLs(includeURL, completed);
+
+            // Now we try to get the cached result again. If we get it then the completed function has already
+            // executed and we can return the include dictionary.
+            cachedResult = self.cachedIncludeFileSearchResultsContent[cacheUID];
+        }
+
+        if (cachedResult) {
+            return {include: cachedResult, sourceFile: self.cachedIncludeFileSearchResultsURL[cacheUID]};
+        } else {
+            // When the file is not available (resolved) return null to tell the parser to throw an exception to exit
+            // Also tell the completed function to compile when finished as it has not yet done so.
+            // If fetching the resources are synchronous the result will be found above and the completion function
+            // should not compile again.
+            compileWhenCompleted = YES;
+            return null;
+        }
+    };
+
+    var includeFiles = compilerOptions && compilerOptions.includeFiles,
+        allPreIncludesResolved = true;
+
+    acornOptions.preIncludeFiles = [];
+
+    if (includeFiles) for (var i = 0, size = includeFiles.length; i < size; i++)
+    {
+        var includeFileUrl = makeAbsoluteURL(includeFiles[i]);
+
+        try
+        {
+            // try to get all pre include files that acorn will parse before the file from 'aURL'
+            var aResource = StaticResource.resourceAtURL(makeAbsoluteURL(includeFileUrl));
+        }
+        catch (e)
+        {
+            // Ok, the file is not available (resolved). Resolve all of the files and try again when available.
+            StaticResource.resolveResourcesAtURLs(includeFiles.map(function(u) {return makeAbsoluteURL(u)}), function() {
+                compile(self, fileContents, aURL, compilerOptions, aFilenameTranslateDictionary, success);
+            });
+
+            // Now we need to bail out as the compile completion function has already been
+            // called (synchronous) or will be called in the future (asynchronous)
+            return;
+        }
+
+        if (aResource)
+        {
+            if (aResource.isNotFound()) {
+                throw new Error("--include file not found " + includeUrl);
+            }
+
+            var includeString = aResource.contents();
+            var lastCharacter = includeString.charCodeAt(includeString.length - 1);
+
+            // Add a new line if the last character is not. If the last thing is a '#define' of other preprocess
+            // token it will not be handled correctly if we don't have a end of line at the end.
+            if (lastCharacter !== 10 && lastCharacter !== 13 && lastCharacter !== 8232 && lastCharacter !== 8233)
+                includeString += '\n';
+            acornOptions.preIncludeFiles.push({include: includeString, sourceFile: includeFileUrl.toString()});
+        }
+    }
+
+    // '(exports.ObjJCompiler || ObjJCompiler)' is a temporary fix so it can work both in the Narwhal (exports.ObjJCompiler) and Node (ObjJCompiler) world
+    var compiler = (exports.ObjJCompiler || ObjJCompiler).compileFileDependencies(fileContents, aURL, compilerOptions);
+    var warningsAndErrors = compiler.warningsAndErrors;
+
+    // Kind of a hack but if we get a file not found error on a #include the get include function above should have asked for the resource
+    // so we should be able to just bail out and wait for the the next call to compile when the include file is loaded (resolved)
+    if (warningsAndErrors && warningsAndErrors.length === 1 && warningsAndErrors[0].message.indexOf("file not found") > -1)
+        return;
+
+    if (Executable.printWarningsAndErrors(compiler, exports.messageOutputFormatInXML)) {
+        throw "Compilation error";
+    }
+
+    var fileDependencies = compiler.dependencies.map(function (aFileDep) {
+        return new FileDependency(new CFURL(aFileDep.url), aFileDep.isLocal);
+    });
+
+    self._fileDependencies = fileDependencies;
+    self._compiler = compiler;
+
+    success(self);
+}
+
+StaticResource.prototype.decompile = function()
+{
+    var content = this.contents(),
+        aURL = this.URL(),
+        stream = new MarkedStream(content);
+/*
+    if (stream.version !== "1.0")
+        return;
+*/
+    var marker = NULL,
+        code = "",
+        dependencies = [],
+        sourceMap;
+
+    while (marker = stream.getMarker())
+    {
+        var text = stream.getString();
+
+        if (marker === MARKER_TEXT)
+            code += text;
+
+        else if (marker === MARKER_IMPORT_STD)
+            dependencies.push(new FileDependency(new CFURL(text), NO));
+
+        else if (marker === MARKER_IMPORT_LOCAL)
+            dependencies.push(new FileDependency(new CFURL(text), YES));
+
+        else if (marker === MARKER_SOURCE_MAP)
+            sourceMap = text;
+    }
+
+    this._fileDependencies = dependencies;
+    this._function = StaticResource._lookupCachedFunction(aURL);
+    this._sourceMap = sourceMap;
+    this._contents = code;
+}
+
+StaticResource.setCurrentGccCompilerFlags = function(/*String*/ compilerFlags)
+{
+    if (currentGccCompilerFlags === compilerFlags) return;
+
+    currentGccCompilerFlags = compilerFlags;
+
+    // '(exports.ObjJCompiler || ObjJCompiler)' is a temporary fix so it can work both in the Narwhal (exports.ObjJCompiler) and Node (ObjJCompiler) world
+    var objjcFlags = (exports.ObjJCompiler || ObjJCompiler).parseGccCompilerFlags(compilerFlags);
+
+    StaticResource.setCurrentCompilerFlags(objjcFlags);
+}
+
+StaticResource.currentGccCompilerFlags = function(/*String*/ compilerFlags)
+{
+    return currentGccCompilerFlags;
+}
+
+StaticResource.setCurrentCompilerFlags = function(/*JSObject*/ compilerFlags)
+{
+    currentCompilerFlags = compilerFlags;
+    // Here we set the default flags if they are not included. We do this as the default values
+    // in the compiler might not be what we want.
+    if (currentCompilerFlags.transformNamedFunctionDeclarationToAssignment == null)
+        currentCompilerFlags.transformNamedFunctionDeclarationToAssignment = true;
+    if (currentCompilerFlags.sourceMap == null)
+        currentCompilerFlags.sourceMap = false;
+    if (currentCompilerFlags.inlineMsgSendFunctions == null)
+        currentCompilerFlags.inlineMsgSendFunctions = false;
+}
+
+StaticResource.currentCompilerFlags = function(/*JSObject*/ compilerFlags)
+{
+    return currentCompilerFlags;
+}
+
+var FunctionCache = { };
+
+StaticResource._cacheFunction = function(/*CFURL|String*/ aURL, /*Function*/ fn)
+{
+    aURL = typeof aURL === "string" ? aURL : aURL.absoluteString();
+    FunctionCache[aURL] = fn;
+}
+
+StaticResource._lookupCachedFunction = function(/*CFURL|String*/ aURL)
+{
+    aURL = typeof aURL === "string" ? aURL : aURL.absoluteString();
+    return FunctionCache[aURL];
+}
 
 StaticResource.prototype.name = function()
 {
@@ -218,11 +460,11 @@ StaticResource.resolveResourcesAtURLs = function(/*Array of CFURL|String*/ URLs,
     }
 }
 
-StaticResource.resolveResourceAtURL = function(/*CFURL|String*/ aURL, /*BOOL*/ isDirectory, /*Function*/ aCallback, /*Dictionary*/ aFilenameTranslateDictionary)
+StaticResource.resolveResourceAtURL = function(/*CFURL|String*/ aURL, /*BOOL*/ isDirectory, /*Function*/ aCallback, /*Dictionary*/ aFilenameTranslateDictionary, /*BOOL*/ dontCompile)
 {
     aURL = makeAbsoluteURL(aURL).absoluteURL();
 
-    resolveResourceComponents(rootResourceForAbsoluteURL(aURL), isDirectory, aURL.pathComponents(), 0, aCallback, aFilenameTranslateDictionary);
+    resolveResourceComponents(rootResourceForAbsoluteURL(aURL), isDirectory, aURL.pathComponents(), 0, aCallback, aFilenameTranslateDictionary, null, dontCompile);
 };
 
 StaticResource.prototype.resolveResourceAtURL = function(/*CFURL|String*/ aURL, /*BOOL*/ isDirectory, /*Function*/ aCallback)
@@ -230,7 +472,7 @@ StaticResource.prototype.resolveResourceAtURL = function(/*CFURL|String*/ aURL, 
     StaticResource.resolveResourceAtURL(new CFURL(aURL, this.URL()).absoluteURL(), isDirectory, aCallback);
 };
 
-function resolveResourceComponents(/*StaticResource*/ aResource, /*BOOL*/ isDirectory, /*Array*/ components, /*Integer*/ index, /*Function*/ aCallback, /*Dictionry*/ aFilenameTranslateDictionary)
+function resolveResourceComponents(/*StaticResource*/ aResource, /*BOOL*/ isDirectory, /*Array*/ components, /*Integer*/ index, /*Function*/ aCallback, /*Dictionary*/ aFilenameTranslateDictionary, /*Array*/ compileIncludeFileArray, /*BOOL*/ dontCompile)
 {
     var count = components.length;
 
@@ -242,8 +484,31 @@ function resolveResourceComponents(/*StaticResource*/ aResource, /*BOOL*/ isDire
         // If the child doesn't exist, create and resolve it.
         if (!child)
         {
-            child = new StaticResource(new CFURL(name, aResource.URL()), aResource, index + 1 < count || isDirectory , NO, aFilenameTranslateDictionary);
-            child.resolve();
+            var translationDictionary = nil;
+            if (aFilenameTranslateDictionary == null) {
+                var bundle = new CFBundle(aResource.URL());
+
+                if (bundle != null) {
+                    var bundleTranslationDictionary = bundle.valueForInfoDictionaryKey("CPFileTranslationDictionary");
+
+                    if (bundleTranslationDictionary != null) {
+                        translationDictionary = bundleTranslationDictionary.toJSObject();
+                    }
+
+                    var bundleIncludeFileArray = bundle.valueForInfoDictionaryKey("CPCompileIncludeFileArray");
+
+                    if (bundleIncludeFileArray != null) {
+                        compileIncludeFileArray = bundleIncludeFileArray.map(function(includeFilePath) {
+                            return new CFURL(includeFilePath, aResource.URL());
+                        });
+                    }
+                }
+            }
+
+            var u = new CFURL(name, aResource.URL());
+
+            child = new StaticResource(u, aResource, index + 1 < count || isDirectory , NO, translationDictionary || aFilenameTranslateDictionary);
+            child.resolve(dontCompile, compileIncludeFileArray);
         }
 
         // If this resource is still being resolved, just wait and rerun this same method when it's ready.
@@ -251,7 +516,7 @@ function resolveResourceComponents(/*StaticResource*/ aResource, /*BOOL*/ isDire
             return child.addEventListener("resolve", function()
             {
                 // Continue resolving once this is done.
-                resolveResourceComponents(aResource, isDirectory, components, index, aCallback, aFilenameTranslateDictionary);
+                resolveResourceComponents(aResource, isDirectory, components, index, aCallback, aFilenameTranslateDictionary, compileIncludeFileArray, dontCompile);
             });
 
         // If we've already determined that this file doesn't exist...
@@ -364,3 +629,6 @@ StaticResource.includeURLs = function()
 
     return includeURLs;
 };
+
+// Set the compiler flags to empty dictionary so the default values are correct.
+StaticResource.setCurrentCompilerFlags({});
