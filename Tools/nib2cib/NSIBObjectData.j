@@ -50,8 +50,6 @@
         _classesKeys = [aCoder decodeObjectForKey:@"NSClassesKeys"];
         _classesValues = [aCoder decodeObjectForKey:@"NSClassesValues"];
 
-        _connections = [aCoder decodeObjectForKey:@"NSConnections"];
-
         //_fontManager = [aCoder decodeObjectForKey:@"NSFontManager"] retain];
         _framework = [aCoder decodeObjectForKey:@"NSFramework"];
 
@@ -67,6 +65,8 @@
 
         _fileOwner = [aCoder decodeObjectForKey:@"NSRoot"];
         _visibleWindows = [aCoder decodeObjectForKey:@"NSVisibleWindows"];
+
+        _connections = [aCoder decodeObjectForKey:@"NSConnections"];
     }
 
     return self;
