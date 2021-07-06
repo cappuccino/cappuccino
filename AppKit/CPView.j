@@ -44,6 +44,7 @@
 @class CPClipView
 @class CPScrollView
 @class CALayer
+@class CPBinder
 
 @global appkit_tag_dom_elements
 
@@ -3945,6 +3946,16 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     [aCoder encodeBool:_isScaled forKey:CPViewIsScaledKey];
     [aCoder encodeObject:_appearance forKey:CPViewAppearanceKey];
     [aCoder encodeObject:_trackingAreas forKey:CPViewTrackingAreasKey];
+}
+
+// needed by CPWindow's releasedWhenClosed property
+- (void)_releaseRecursively
+{
+    [_subviews makeObjectsPerformSelector:@selector(_releaseRecursively)];
+
+    [self _removeObservers];
+    [CPBinder unbindAllForObject:self];
+    [self removeFromSuperview];
 }
 
 @end
