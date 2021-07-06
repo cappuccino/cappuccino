@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="18122" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+    <dependencies>
+        <deployment version="101000" identifier="macosx"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="18122"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <customObject id="-2" userLabel="File's Owner" customClass="NSApplication">
+            <connections>
+                <outlet property="delegate" destination="450" id="451"/>
+            </connections>
+        </customObject>
+        <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
+        <customObject id="-3" userLabel="Application" customClass="NSObject"/>
+        <window title="Application Main Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" animationBehavior="default" id="371">
+            <windowStyleMask key="styleMask" titled="YES"/>
+            <windowPositionMask key="initialPositionMask" leftStrut="YES" bottomStrut="YES"/>
+            <rect key="contentRect" x="869" y="296" width="541" height="388"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1920" height="1055"/>
+            <view key="contentView" id="372">
+                <rect key="frame" x="0.0" y="0.0" width="541" height="388"/>
+                <autoresizingMask key="autoresizingMask"/>
+            </view>
+            <point key="canvasLocation" x="110" y="-204"/>
+        </window>
+        <customObject id="450" customClass="AppController">
+            <connections>
+                <outlet property="scrollView" destination="2Uh-nD-IAr" id="aUX-VL-TFe"/>
+                <outlet property="theWindow" destination="371" id="459"/>
+            </connections>
+        </customObject>
+        <window title="PagePreviewTest" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" animationBehavior="default" id="7Qy-8a-ZJ4" userLabel="Resizable Window">
+            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
+            <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
+            <rect key="contentRect" x="508" y="175" width="878" height="634"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1920" height="1055"/>
+            <view key="contentView" id="Fe0-XT-lwq">
+                <rect key="frame" x="0.0" y="0.0" width="878" height="634"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <splitView fixedFrame="YES" dividerStyle="paneSplitter" vertical="YES" translatesAutoresizingMaskIntoConstraints="NO" id="7G2-v6-POT">
+                        <rect key="frame" x="20" y="20" width="845" height="594"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <customView fixedFrame="YES" id="oLU-Z2-Lja" userLabel="Overview">
+                                <rect key="frame" x="0.0" y="0.0" width="363" height="594"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <subviews>
+                                    <box fixedFrame="YES" boxType="custom" borderType="none" cornerRadius="4" title="Overview" translatesAutoresizingMaskIntoConstraints="NO" id="XFe-YM-TJn" userLabel="Overview background box">
+                                        <rect key="frame" x="0.0" y="0.0" width="363" height="594"/>
+                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                        <view key="contentView" id="ueH-kI-8ii" userLabel="Overview content">
+                                            <rect key="frame" x="0.0" y="0.0" width="363" height="594"/>
+                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                        </view>
+                                        <color key="fillColor" name="systemGreenColor" catalog="System" colorSpace="catalog"/>
+                                    </box>
+                                </subviews>
+                            </customView>
+                            <customView fixedFrame="YES" id="OHI-rK-dzK" userLabel="Detail view">
+                                <rect key="frame" x="373" y="0.0" width="472" height="594"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <subviews>
+                                    <scrollView horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="2Uh-nD-IAr">
+                                        <rect key="frame" x="0.0" y="0.0" width="472" height="594"/>
+                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                        <clipView key="contentView" id="kcf-KR-ydK">
+                                            <rect key="frame" x="1" y="1" width="470" height="592"/>
+                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                            <subviews>
+                                                <view id="JiJ-hf-tjh">
+                                                    <rect key="frame" x="0.0" y="0.0" width="455" height="577"/>
+                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                </view>
+                                            </subviews>
+                                        </clipView>
+                                        <scroller key="horizontalScroller" wantsLayer="YES" verticalHuggingPriority="750" horizontal="YES" id="BMa-5f-YYL">
+                                            <rect key="frame" x="1" y="577" width="470" height="16"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                        </scroller>
+                                        <scroller key="verticalScroller" wantsLayer="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="NO" id="Vfx-oJ-EY7">
+                                            <rect key="frame" x="455" y="1" width="16" height="592"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                        </scroller>
+                                    </scrollView>
+                                </subviews>
+                            </customView>
+                        </subviews>
+                        <holdingPriorities>
+                            <real value="250"/>
+                            <real value="250"/>
+                        </holdingPriorities>
+                    </splitView>
+                </subviews>
+            </view>
+            <connections>
+                <outlet property="delegate" destination="450" id="ap8-04-og3"/>
+            </connections>
+            <point key="canvasLocation" x="364" y="443"/>
+        </window>
+    </objects>
+</document>
