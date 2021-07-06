@@ -19,12 +19,12 @@ fi
 # "AppKit" with "AppKit.doc" in the files path within the archive. Then unarchive the result.
 # This turns out to  be the quickest way I could find to get the correct files and rename them.
 processor_msg "Collecting source files..."
-bsdtar cf AppKit.doc.tar --exclude='_*' -s /^AppKit/AppKit.doc/ AppKit/*.j AppKit/**/*.j
+bsdtar cf AppKit.doc.tar -s /^AppKit/AppKit.doc/ AppKit/*.j AppKit/**/*.j
 bsdtar xf AppKit.doc.tar
 rm AppKit.doc.tar
 
 # Now do the same thing with Foundation files.
-bsdtar cf Foundation.doc.tar --exclude='_*' -s /^Foundation/Foundation.doc/ Foundation/*.j Foundation/**/*.j
+bsdtar cf Foundation.doc.tar -s /^Foundation/Foundation.doc/ Foundation/*.j Foundation/**/*.j
 bsdtar xf Foundation.doc.tar
 rm Foundation.doc.tar
 
