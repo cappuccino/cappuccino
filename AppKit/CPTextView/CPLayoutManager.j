@@ -705,18 +705,6 @@ _oncontextmenuhandler = function () { return false; };
     return lineFragment._glyphsOffsets[index];
 }
 
-- (double)_descentAtLocation:(unsigned)location
-{
-    var lineFragment = _objectWithLocationInRange(_lineFragments, location);
-
-    if (!lineFragment)
-        return 0.0;
-
-    var index = location - lineFragment._range.location;
-
-    return lineFragment._glyphsFrames[index]._descent;
-}
-
 - (void)setLineFragmentRect:(CGRect)fragmentRect forGlyphRange:(CPRange)glyphRange usedRect:(CGRect)usedRect
 {
     var lineFragment = _objectWithLocationInRange(_lineFragments, glyphRange.location);
@@ -728,12 +716,12 @@ _oncontextmenuhandler = function () { return false; };
     }
 }
 
-- (void)_setAdvancements:(CPArray)someAdvancements forGlyphRange:(CPRange)glyphRange
+- (void)_setAdvancements:(CPArray)someAdvancements forGlyphRange:(CPRange)glyphRange withLineBase:(CPNumber)lineBase
 {
     var lineFragment = _objectWithLocationInRange(_lineFragments, glyphRange.location);
 
     if (lineFragment)
-        [lineFragment setAdvancements:someAdvancements];
+        [lineFragment setAdvancements:someAdvancements withLineBase:lineBase];
 }
 
 - (void)setLocation:(CGPoint)aPoint forStartOfGlyphRange:(CPRange)glyphRange
@@ -924,8 +912,6 @@ _oncontextmenuhandler = function () { return false; };
                 if (CPLocationInRange(fragment._range.location + j, selectedCharRange))
                 {
                     var correctedRect = CGRectCreateCopy(frames[j]);
-                    correctedRect.size.height -= frames[j]._descent;
-                    correctedRect.origin.y -= frames[j]._descent;
 
                     if (!rect)
                         rect = CGRectCreateCopy(correctedRect);
@@ -1203,7 +1189,7 @@ var _objectsInRange = function(aList, aRange)
     return self;
 }
 
-- (void)setAdvancements:(CPArray)someAdvancements
+- (void)setAdvancements:(CPArray)someAdvancements withLineBase:(CPNumber)lineBase
 {
     var count = someAdvancements.length,
         origin = CGPointMake(_fragmentRect.origin.x + _location.x, _fragmentRect.origin.y),
@@ -1215,8 +1201,7 @@ var _objectsInRange = function(aList, aRange)
     for (var i = 0; i < count; i++)
     {
         _glyphsFrames[i] = CGRectMake(origin.x, origin.y, someAdvancements[i].width, height);
-        _glyphsFrames[i]._descent = someAdvancements[i].descent;
-        _glyphsOffsets[i] = height - someAdvancements[i].height;
+        _glyphsOffsets[i] = lineBase - someAdvancements[i].height;
         origin.x += someAdvancements[i].width;
     }
 }
