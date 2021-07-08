@@ -819,7 +819,7 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
                                                   positioned:CPWindowAbove
                              relativeToEphemeralSubviewNamed:nil];
     }
-    else if (!_contentView)
+    else
     {
         var bezelView = [self layoutEphemeralSubviewNamed:@"bezel-view"
                                                positioned:CPWindowBelow
