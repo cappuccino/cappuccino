@@ -1470,7 +1470,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         ![self isBezeled]     &&
         (lineBreakMode === CPLineBreakByWordWrapping || lineBreakMode === CPLineBreakByCharWrapping))
     {
-        textSize = [text sizeWithFont:font inWidth:textSize.width];
+        textSize = [text sizeWithFont:font inWidth:textSize.width] + 1;
     }
     else
     {
