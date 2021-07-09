@@ -2162,6 +2162,7 @@ var CPViewHighDPIDrawingEnabled = YES;
             {
                 CPDOMDisplayServerSetStyleLeftTop(_DOMImageParts[partIndex], NULL, left, 0.0);
                 CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], width, _DOMImageSizes[1].height);
+                _DOMImageParts[partIndex].style.backgroundRepeat = "repeat-x";
                 partIndex++;
             }
             if (_DOMImageSizes[2])
@@ -2173,6 +2174,7 @@ var CPViewHighDPIDrawingEnabled = YES;
             {
                 CPDOMDisplayServerSetStyleLeftTop(_DOMImageParts[partIndex], NULL, 0.0, top);
                 CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], _DOMImageSizes[3].width, height);
+                _DOMImageParts[partIndex].style.backgroundRepeat = "repeat-y";
                 partIndex++;
             }
             if (_DOMImageSizes[4])
@@ -2185,6 +2187,7 @@ var CPViewHighDPIDrawingEnabled = YES;
             {
                 CPDOMDisplayServerSetStyleRightTop(_DOMImageParts[partIndex], NULL, 0.0, top);
                 CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], _DOMImageSizes[5].width, height);
+                _DOMImageParts[partIndex].style.backgroundRepeat = "repeat-y";
                 partIndex++;
             }
             if (_DOMImageSizes[6])
@@ -2196,6 +2199,7 @@ var CPViewHighDPIDrawingEnabled = YES;
             {
                 CPDOMDisplayServerSetStyleLeftBottom(_DOMImageParts[partIndex], NULL, left, 0.0);
                 CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], width, _DOMImageSizes[7].height);
+                _DOMImageParts[partIndex].style.backgroundRepeat = "repeat-x";
                 partIndex++;
             }
             if (_DOMImageSizes[8])
