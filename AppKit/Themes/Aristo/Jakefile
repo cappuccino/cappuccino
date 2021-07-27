@@ -1,60 +1,38 @@
-
 require("../../../common.jake");
 
-const fs = require("fs");
 const path = require("path");
-const ObjectiveJ = require("objj-runtime");
-
-$BUILD_CJS_BLENDTASK = path.join($BUILD_CJS_CAPPUCCINO, "lib", "cappuccino", "jake", "blendtask.j");
 
 var callback;
+
+function callbackFunction(blendtask) {
+    callback(blendtask);
+}
+
+require("../../../CommonJS/lib/cappuccino/jake.js").initilize(callbackFunction);
+
+$BUILD_CJS_BLENDTASK = path.join($BUILD_CJS_CAPPUCCINO, "lib", "cappuccino", "jake", "blendtask.j");
 
 var promise = new Promise((resolve, reject) => {
     callback = function(BLEND_TASK) {
         exports.BlendTask = BLEND_TASK.BlendTask;
         exports.blend = BLEND_TASK.blend;
-        defineBlendTask();
-        resolve();
-        delete exports.jakePromise;
+        defineBlendTask().then(() => {
+            resolve();
+            delete exports.jakePromise;
+        });
     }
 });
 
-var blendTask = buildBlendTask({});
-
-function buildBlendTask(localExports) {
-       
-    function exposeExports(path) {
-        var object = require(path);
-
-        for (var name in object) {
-            if (object.hasOwnProperty(name)) {
-                localExports[name] = object[name];
-            }
-        }
-    }
-
-    exposeExports("jake");
-
-    // This check is only necessary because during the build process blendtask gets created much later.
-    
-    if (fs.existsSync($BUILD_CJS_BLENDTASK)) {
-        objj_importFile($BUILD_CJS_BLENDTASK, true, callback);
-        //var BLEND_TASK = require("cappuccino/jake/blendtask");
-    }
-    return localExports; 
-}
-
-function defineBlendTask() {
-    blendTask.blend ("Aristo.blend", function(aristoTask)
+async function defineBlendTask() {
+    await exports.blend ("Aristo.blend", function(aristoTask)
     {
         aristoTask.setBuildIntermediatesPath(path.join($BUILD_DIR, "Aristo.build", $CONFIGURATION))
         aristoTask.setBuildPath(path.join($BUILD_DIR, $CONFIGURATION));
-    
+
         aristoTask.setThemeDescriptors(new FileList("ThemeDescriptors.j"));
         aristoTask.setIdentifier("com.280n.blend.Aristo");
         aristoTask.setResources(new FileList("Resources/*"));
     });
-    
     task ("build", ["Aristo.blend"]);    
 }
 

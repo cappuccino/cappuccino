@@ -19,19 +19,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-// var SYSTEM = require("system");
-// var FILE = require("file");
-// var OS = require("os");
-// var UTIL = require("narwhal/util");
-// var stream = require("narwhal/term").stream;
-
-console.log("at the top of common.jake");
-var fs = require('fs');
-var child_process = require('child_process');
-var path = require('path');
-
-// for testing
-var JAKE = require("jake");
+const fs = require('fs');
+const child_process = require('child_process');
+const path = require('path');
+const jake = require("jake");
 
 requiresSudo = false;
 
@@ -60,51 +51,12 @@ if (!process.env["CONFIG"])
     process.env["CONFIG"] = "Release";
 
 global.ENV  = process.env;
-
-// changed approach, now we try to port jake from narwhal to node instead
-
-/* newJakeTaskWrapper = function() {
-    console.log("nu har vi kört taskwrappern");
-    var nArgs = arguments.length;
-    desc(arguments[0])
-    if (nArgs == 3) {
-        jake.task(arguments[0], arguments[1], arguments[2]);
-    } else if (nArgs == 2) {
-        jake.task(arguments[0], arguments[1]);
-    } else {
-        jake.task(arguments[0]);
-    }
-}
-
-newJakeFiledirWrapper = function() {
-    console.log("nu har vi kört file or dir wrappern");
-    var nArgs = arguments.length;
-    desc(arguments[0]);
-    if (!path.extname(arguments[0])) {    
-        jake.directory(arguments[0]);
-        if (nArgs == 3) {
-            jake.file(arguments[0], arguments[1], arguments[2]);
-        } else if (nArgs == 2) {
-            jake.file(arguments[0], arguments[1]);
-        } else {
-            jake.file(arguments[0]);
-        }
-    } else {
-        if (nArgs == 3) {
-            jake.file(arguments[0], arguments[1], arguments[2]);
-        } else if (nArgs == 2) {
-            jake.file(arguments[0], arguments[1]);
-        } else {
-            jake.file(arguments[0]);
-        }
-    }
-} */
-
-global.task = JAKE.task;
-global.directory = JAKE.directory;
-global.file = JAKE.file;
-global.filedir = JAKE.filedir;
-global.FileList = JAKE.FileList;
+    
+global.task = jake.task;
+global.directory = jake.directory;
+global.file = jake.file;
+global.filedir = jake.filedir;
+global.FileList = jake.FileList;
 
 global.$CONFIGURATION                   = process.env['CONFIG'];
 global.$INLINE_MSG_SEND                 = process.env['INLINE_MSG_SEND'];
@@ -174,7 +126,7 @@ function packageInCatalog(path)
     return false;
 }
 
-// FIXA: vi tar denna från narwhal
+// from narwhal
 function enquote(word) {
     return "'" + String(word).replace(/'/g, "'\"'\"'") + "'";
 }
@@ -228,7 +180,6 @@ function reforkWithPackages()
     {
         var cmd = serializedENV() + " " + process.argv.map(enquote).join(" ");
         console.log("cmd: " + cmd);
-        // FIXA: oklart om detta är rätt
         child_process.execSync(cmd, {stdio: 'inherit'});
         process.exit();
     }
@@ -249,6 +200,7 @@ function setupEnvironment()
 {
     try
     {
+        debugger;
         require("objj-runtime").OBJJ_INCLUDE_PATHS.push(path.join($BUILD_CONFIGURATION_DIR, "CommonJS", "cappuccino", "Frameworks"));
     }
     catch (e)
@@ -265,22 +217,21 @@ global.rm_rf = function(/*String*/ aFilename)
     catch (anException) { }
 };
 
-// FIXA: stackoverflow, men denna göra ju typ det som cp_r nedan gör
+// from stackoverflow
 function copyRecursiveSync (src, dest) {
     var exists = fs.existsSync(src);
     var stats = exists && fs.statSync(src);
     var isDirectory = exists && stats.isDirectory();
     if (isDirectory) {
-      fs.mkdirSync(dest);
+      fs.mkdirSync(dest, { recursive: true });
       fs.readdirSync(src).forEach(function(childItemName) {
         copyRecursiveSync(path.join(src, childItemName), path.join(dest, childItemName));
       });
     } else {
       fs.copyFileSync(src, dest);
     }
-  };
+};
 
-  
 global.cp_r = function(/*String*/ from, /*String*/ to)
 {
     if (fs.existsSync(to))
@@ -290,7 +241,6 @@ global.cp_r = function(/*String*/ from, /*String*/ to)
         copyRecursiveSync(from, to);
     else
     {
-        
         try
         {
             fs.copyFileSync(from, to);
@@ -313,7 +263,6 @@ global.mv = function(/*String*/ from, /*String*/ to)
     fs.renameSync(from, to);
 };
 
-// FIXA: kör command och returnera exitkoden
 function systemSync(command) 
 {   
     console.log("i systemSync");
@@ -424,7 +373,6 @@ global.subtasks = function(subprojects, taskNames)
     });
 };
 
-// FIXA: Oklar metod
 global.installSymlink = function(sourcePath)
 {
     if (!fs.lstatSync(sourcePath).isDirectory())
@@ -497,11 +445,12 @@ global.installCopy = function(sourcePath, useSudo)
     }
 };
 
+
 global.spawnJake = function(/*String*/ aTaskName)
 {
     console.log("i spawnJake");
     // for testing
-    if (systemSync(serializedENV() + " " + "node --inspect-brk" + " /Users/alfred/Developer/jake/bin/jake" + " " + aTaskName))
+    if (systemSync(serializedENV() + " " /* +  "node --inspect-brk" */ + " /Users/alfred/Developer/jake/bin/jake" + " " + aTaskName))
         console.log("exited in spawnJake with code 1");
         process.exit(1);    //rake abort if ($? != 0)
 };
@@ -611,7 +560,7 @@ task ("release", function()
 
 task ("debug", function()
 {
-    console.log("Hello!");
+    console.log("in debug mode");
     process.env["CONFIG"] = "Debug";
     spawnJake("build");
 });

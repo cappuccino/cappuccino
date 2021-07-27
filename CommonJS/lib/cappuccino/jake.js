@@ -1,6 +1,5 @@
-
-
-var FILE = require("file");
+var path = require("path");
+var fs = require("fs");
 
 function exposeExports(path)
 {
@@ -11,13 +10,27 @@ function exposeExports(path)
             exports[name] = object[name];
 }
 
-exposeExports("objective-j/jake");
+exposeExports("jake");
 
-// This check is only necessary because during the build process blendtask gets created much later.
-if (FILE.exists(FILE.join(FILE.dirname(module.path), "jake", "blendtask.j")))
-{
-    var BLEND_TASK = require("cappuccino/jake/blendtask");
+exports.initilize = function(callback) {
+    console.log("initilize");
 
-    exports.BlendTask = BLEND_TASK.BlendTask;
-    exports.blend = BLEND_TASK.blend;
+    // This check is only necessary because during the build process blendtask gets created much later.
+    var blendTaskPath = "/Users/alfred/Developer/cappuccino/AppKit/Themes/CommonJS/blendtask.j";
+    //var blendTaskPath = path.join(path.dirname(module.path), "jake", "blendtask.j");
+    console.log("blendTaskPath: " + blendTaskPath);
+    if (fs.existsSync(blendTaskPath))
+    {
+        var anExports = {};
+        function localCallback() {
+            callback(anExports);
+        }
+        process.env["CONFIG"] = "Debug";
+        require("objj-runtime").OBJJ_INCLUDE_PATHS.push(path.join(path.join($BUILD_DIR, "Debug"), "CommonJS", "cappuccino", "Frameworks"));
+
+        require("objj-runtime").make_narwhal_factory(blendTaskPath, null, null, localCallback)(require, anExports, module, typeof system !== "undefined" && system, console.log);
+
+        //exports.BlendTask = BLEND_TASK.BlendTask;
+        //exports.blend = BLEND_TASK.blend;
+    }
 }

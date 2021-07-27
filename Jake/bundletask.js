@@ -98,10 +98,17 @@ BundleTask.prototype.__proto__ = Task.prototype;
 BundleTask.defineTask = function(aName, aFunction)
 {
     var bundleTask = Task.defineTask.apply(this, [aName]);
-    if (aFunction)
+    if (aFunction) {
         aFunction(bundleTask);
-    bundleTask.defineTasks();
-    return bundleTask;
+    }
+    var p = bundleTask.defineTasks();
+    if (p != null) {
+        return p.then(() => {
+            return bundleTask;
+        });
+    } else {
+        return bundleTask;
+    }
 };
 BundleTask.prototype.setEnvironments = function(environments)
 {
@@ -624,9 +631,11 @@ BundleTask.prototype.defineStaticTask = function()
                 else if (aFilename.indexOf(resourcesPath) === 0 && !isImage(aFilename))
                 {
                     var resourcePath = "Resources/" + path.relative(resourcesPath, aFilename);
-                    fileStream.write("p;");
+                    fs.writeFileSync(fileStream, "p;");
+                    //fileStream.write("p;");
                     contents = fs.readFileSync(aFilename).toString("utf8");
-                    fileStream.write(resourcePath.length + ";" + resourcePath + contents);
+                    fs.writeFileSync(fileStream, resourcePath.length + ";" + resourcePath + contents);
+                    //fileStream.write(resourcePath.length + ";" + resourcePath + contents);
                 }            
             }, this);
             fs.writeFileSync(fileStream, "e;");
@@ -695,7 +704,8 @@ BundleTask.prototype.defineSourceTasks = function()
                 {
                     (term.stream.write("Including [\0blue(" + anEnvironment + "\0)] \0purple(" + aFilename + "\0)")).flush();
                     var compiled = fs.readFileSync(aFilename, { encoding: "utf8"}).toString();
-                    console.log((Array(Math.round(compiled.length / 1024) + 3)).join("."));
+                    var dots = (Array(Math.round(compiled.length / 1024 / 4) + 3)).join(".");
+                    term.stream.print(dots);
                     return await fs.promises.writeFile(compiledEnvironmentSource, compiled, { encoding: "utf8"});
                 }
                 else
@@ -717,15 +727,13 @@ BundleTask.prototype.defineSourceTasks = function()
                             executer = new ObjectiveJ.FileExecutable(otherwayTranslatedFilename);
                             var compiled = executer.toMarkedString();
                             //var msg = "Compiling [\0blue(" + anEnvironment + "\0)] \0purple(" + aFilename + "\0)";
-                            var dots = (Array(Math.round(compiled.length / 1024) + 3)).join(".");
+                            var dots = (Array(Math.round(compiled.length / 1024 / 4) + 3)).join(".");
                             term.stream.print(dots);
                             fs.writeFileSync(compiledEnvironmentSource, compiled, { encoding: "utf8"});
                             resolve();
                         }
-                        console.log("mnf");
-                        debugger;
                         var msg = "Compiling [\0blue(" + anEnvironment + "\0)] \0purple(" + aFilename + "\0)";
-                        term.stream.print(msg);
+                        term.stream.write(msg);
                         ObjectiveJ.make_narwhal_factory(absolutePath, basePath, translateFilenameToPath, callback)(require, e, module, {}, console.log);
                     });
                 }                
