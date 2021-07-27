@@ -233,6 +233,7 @@ var themedButtonValues = nil,
 
             [@"content-inset",              CGInsetMake(0.0, 5.0, 0.0, 5.0),    [CPThemeStateControlSizeSmall, CPThemeStateBordered]],
             [@"nib2cib-adjustment-frame",   CGRectMake(-3.0, 6.0, 0.0, 0.0),    [CPThemeStateControlSizeSmall, CPThemeStateBordered]],
+            [@"font",                       [CPFont boldSystemFontOfSize:11.0], [CPThemeStateControlSizeSmall, CPThemeStateBordered]],
 
             // RoundRect CPThemeStateControlSizeMini
             [@"bezel-color",
@@ -256,6 +257,7 @@ var themedButtonValues = nil,
 
             [@"content-inset",              CGInsetMake(0.0, 2.0, 2.0, 2.0),    [CPThemeStateControlSizeMini, CPThemeStateBordered]],
             [@"nib2cib-adjustment-frame",   CGRectMake(0.0, 14.0, 0.0, 0.0),    [CPThemeStateControlSizeMini, CPThemeStateBordered]],
+            [@"font",                       [CPFont boldSystemFontOfSize:10.0], [CPThemeStateControlSizeMini, CPThemeStateBordered]],
 
             // Rounded
             [@"bezel-color",
