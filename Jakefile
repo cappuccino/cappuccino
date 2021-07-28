@@ -1,19 +1,8 @@
-console.log("Inside top level Jakefile")
-
 require("./common.jake");
-
-
-/* var FILE = require("file"),
-    SYSTEM = require("system"),
-    OS = require("os"),
-    UTIL = require("narwhal/util"),
-    jake = require("jake"),
-    stream = require("narwhal/term").stream; */
 
 var fs = require('fs');
 var path = require('path');
 const term = require("objj-runtime").term;
-
 
 var subprojects = ["Objective-J", "CommonJS", "Foundation", "AppKit", "Tools"];
 

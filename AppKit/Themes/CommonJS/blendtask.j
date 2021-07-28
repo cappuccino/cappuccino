@@ -31,8 +31,8 @@ debugger;
 console.log("require: " + require);
 var /* FILE = require("file"), */
     TERM = require("objj-runtime").term,
-    task = require("jake").task,
-    filedir = require("jake").filedir,
+    task = require("objj-jake").task,
+    filedir = require("objj-jake").filedir,
     BundleTask = require("../../../Jake/bundletask.js").BundleTask;
 
 var fs = require("fs");

@@ -1,31 +1,16 @@
 {
   "name": "cappuccino",
   "version": "1.0.0",
-  "description": "[![Build Status](https://travis-ci.org/cappuccino/cappuccino.svg?branch=master)](https://travis-ci.org/cappuccino/cappuccino) [![Join the chat at https://gitter.im/cappuccino/cappuccino](https://badges.gitter.im/cappuccino/cappuccino.svg)](https://gitter.im/cappuccino/cappuccino?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)",
-  "main": "index.js",
   "devDependencies": {
     "@types/node": "^15.12.4",
     "grunt": "^1.4.1",
     "grunt-contrib-concat": "^1.0.1",
     "terser": "^5.7.0"
   },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/cappuccino/cappuccino.git"
-  },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/cappuccino/cappuccino/issues"
-  },
-  "homepage": "https://github.com/cappuccino/cappuccino#readme",
   "dependencies": {
     "fs-extra": "^10.0.0",
     "glob": "^7.1.7",
-    "jake": "file:../jake",
+    "objj-jake": "1.0.1",
     "objj-runtime": "file:../objj-runtime"
   }
 }

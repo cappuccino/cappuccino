@@ -32,7 +32,7 @@ const term = require("objj-runtime").term;
 
 // Internal modules
 const environment = require("./environment");
-const Jake = require("jake"); // TODO
+const Jake = require("objj-jake"); // TODO
  
 /* Old imports 
     FILE = require("file")

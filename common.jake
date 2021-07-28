@@ -22,7 +22,7 @@
 const fs = require('fs');
 const child_process = require('child_process');
 const path = require('path');
-const jake = require("jake");
+const jake = require("objj-jake");
 
 requiresSudo = false;
 
@@ -32,11 +32,10 @@ process.argv.slice(1).forEach(function(arg)
         requiresSudo = true;
 });
 
-// Set up development environment variables.
-// record the initial process.env so we know which need to be serialized later
-
+// Record the initial process.env so we know which need to be serialized later.
 var envInitial = Object.freeze(JSON.parse(JSON.stringify(process.env)));
 
+// Set up development environment variables.
 process.env["BUILD_PATH"] = path.resolve(
     process.env["BUILD_PATH"] ||
     process.env["CAPP_BUILD"] || // Global Cappuccino build directory.
@@ -70,9 +69,8 @@ global.$BUILD_CJS_CAPPUCCINO_BIN        = path.join($BUILD_CJS_CAPPUCCINO, "bin"
 global.$BUILD_CJS_CAPPUCCINO_LIB        = path.join($BUILD_CJS_CAPPUCCINO, "lib");
 global.$BUILD_CJS_CAPPUCCINO_FRAMEWORKS = path.join($BUILD_CJS_CAPPUCCINO, "Frameworks");
 
-// for testing
-global.CLEAN = require("../jake/lib/jake/clean.js").CLEAN;
-global.CLOBBER = require("../jake/lib/jake/clean.js").CLOBBER;
+global.CLEAN = require("objj-jake/lib/jake/clean.js").CLEAN;
+global.CLOBBER = require("objj-jake/lib/jake/clean.js").CLOBBER;
 global.CLEAN.include(path.join(global.$BUILD_DIR, "*.build"));
 global.CLOBBER.include(global.$BUILD_DIR);
 
@@ -287,8 +285,7 @@ global.subjake = function(/*Array<String>*/ directories, /*String*/ aTaskName)
     {
         if (fs.lstatSync(aDirectory).isDirectory() && fs.lstatSync(path.join(aDirectory, "Jakefile")).isFile())
         {
-            // just for testing
-            var cmd = "cd " + enquote(aDirectory) + " && " + serializedENV() + " " + "/Users/alfred/Developer/jake/bin/jake" + " " + enquote(aTaskName);
+            var cmd = "cd " + enquote(aDirectory) + " && " + serializedENV() + " " + "npx objj-jake" + " " + enquote(aTaskName);
             var returnCode = systemSync(cmd);
                 
             if (returnCode)
@@ -328,8 +325,7 @@ global.symlink_executable = function(source)
 
 global.getCappuccinoVersion = function()
 {
-    console.log("sahfgdkjdkjfhgskjdhfgd");
-    var versionFile = path.join(module.path, "version.json");
+    var versionFile = path.join(module.path, "package.json");
     return JSON.parse(fs.readFileSync(versionFile, { encoding: "utf8" })).version;
 };
 
@@ -449,8 +445,7 @@ global.installCopy = function(sourcePath, useSudo)
 global.spawnJake = function(/*String*/ aTaskName)
 {
     console.log("i spawnJake");
-    // for testing
-    if (systemSync(serializedENV() + " " /* +  "node --inspect-brk" */ + " /Users/alfred/Developer/jake/bin/jake" + " " + aTaskName))
+    if (systemSync(serializedENV() + " " + "npx objj-jake" + " " + aTaskName))
         console.log("exited in spawnJake with code 1");
         process.exit(1);    //rake abort if ($? != 0)
 };
