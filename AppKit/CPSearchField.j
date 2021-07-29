@@ -819,7 +819,7 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
                                                   positioned:CPWindowAbove
                              relativeToEphemeralSubviewNamed:nil];
     }
-    else if (!_contentView)
+    else
     {
         var bezelView = [self layoutEphemeralSubviewNamed:@"bezel-view"
                                                positioned:CPWindowBelow
@@ -827,9 +827,10 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
 
         [bezelView setBackgroundColor:bezelColor];
 
-        _contentView = [self layoutEphemeralSubviewNamed:@"content-view"
-                                              positioned:CPWindowAbove
-                         relativeToEphemeralSubviewNamed:@"bezel-view"];
+        if (!_contentView)
+            _contentView = [self layoutEphemeralSubviewNamed:@"content-view"
+                                                  positioned:CPWindowAbove
+                             relativeToEphemeralSubviewNamed:@"bezel-view"];
     }
 
     if (_contentView)
