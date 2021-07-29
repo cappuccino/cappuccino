@@ -30,18 +30,16 @@
 @import "Nib2CibKeyedUnarchiver.j"
 @import "Converter.j"
 @import "Converter+Mac.j"
-import { constants } from "buffer"
-
 
 Nib2CibColorizeOutput = YES;
 
-const PATH = require("path");
-const fs = require("fs");
+var PATH = require("path");
+var fs = require("fs");
 
 var /* FILE = require("file"), */
     /* OS = require("os"), */
-    SYS = require("system"),
-    FileList = require("jake").FileList,
+    //SYS = require("system"),
+    FileList = require("objj-jake").FileList,
     stream = require("objj-runtime").term.stream,
     StaticResource = require("objj-runtime").StaticResource,
 

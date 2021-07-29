@@ -27,7 +27,7 @@ IBDefaultFontFaceLegacy = @"Lucida Grande";
 IBDefaultFontSize = 13.0;
 
 var OS = require("os"),
-    fontinfo = require("cappuccino/fontinfo").fontinfo;
+    fontinfo = require("objj-fontinfo").fontinfo;
 
 @implementation CPFont (NSCoding)
 

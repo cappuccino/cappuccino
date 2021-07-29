@@ -1,7 +1,7 @@
 require("../../common.jake");
 
 var /* OS = require("os"), */
-    task = require("jake").task;
+    task = require("objj-jake").task;
     //SYSTEM = require("system");
 
 const child_process = require("child_process");
@@ -21,7 +21,7 @@ task ("build", function()
         var xcodebuild = process.env.CAPP_BUILD ? "xcodebuild " : "CAPP_BUILD=../../Build xcodebuild ";
 
         try {
-            child_process.execSync(xcodebuild + args);
+            console.log(child_process.execSync(xcodebuild + args).toString());
         } catch (error) {
             process.exit(1);
         }

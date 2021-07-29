@@ -1,4 +1,3 @@
-
 require("../common.jake");
 
 // nib2cib uses fontinfo and imagesize and capp uses nib2cib
@@ -6,4 +5,4 @@ require("../common.jake");
 
 //subtasks(["fontinfo", "imagesize"], ["clean", "clobber"]);
 
-//subtasks(["fontinfo", "imagesize", "nib2cib"], ["build", /*"clean", "clobber"*/]);
+subtasks(["fontinfo", "imagesize", "nib2cib"], ["build", /*"clean", "clobber"*/]);

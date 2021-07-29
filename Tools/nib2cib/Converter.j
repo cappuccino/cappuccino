@@ -34,10 +34,14 @@
 
 @global java
 
-var FILE = require("file"),
-    OS = require("os"),
+var path = require("path");
+var fs = require("fs");
+var child_process = require("child_process");
 
-    SharedConverter = nil;
+/* var FILE = require("file"),
+    OS = require("os"), */
+
+var SharedConverter = nil;
 
 NibFormatUndetermined   = 0;
 NibFormatMac            = 1;
@@ -78,13 +82,14 @@ ConverterConversionException = @"ConverterConversionException";
 - (CPData)convert
 {
     // Assume its a Mac file.
-    var inferredFormat = NibFormatMac;
+    var inferredFormat = NibFormatMac; 
 
     // Some .xibs are iPhone nibs, check the actual contents in this case.
-    if (FILE.extension(inputPath) !== ".nib" && FILE.isFile(inputPath) &&
-        FILE.read(inputPath, { charset:"UTF-8" }).indexOf("<archive type=\"com.apple.InterfaceBuilder3.CocoaTouch.XIB\"") !== -1)
+    if (path.extname(inputPath) !== ".nib" && fs.lstatSync(inputPath).isFile() &&
+        fs.readFileSync(inputPath, { encoding: "utf8" }).indexOf("<archive type=\"com.apple.InterfaceBuilder3.CocoaTouch.XIB\"") !== -1)
+        //FILE.read(inputPath, { charset:"UTF-8" }).indexOf("<archive type=\"com.apple.InterfaceBuilder3.CocoaTouch.XIB\"") !== -1)
         inferredFormat = NibFormatIPhone;
-
+        
     if (inferredFormat === NibFormatMac)
         CPLog.info("Auto-detected Cocoa nib or xib File");
     else
@@ -100,7 +105,8 @@ ConverterConversionException = @"ConverterConversionException";
         [CPException raise:ConverterConversionException reason:@"nib2cib does not understand this nib format."];
 
     if ([outputPath length])
-        FILE.write(outputPath, [convertedData rawString], { charset:"UTF-8" });
+        fs.writeFileSync(outputPath, [convertedData rawString], { encoding: "utf8" });
+        //FILE.write(outputPath, [convertedData rawString], { charset:"UTF-8" });
 
     CPLog.info("Conversion successful");
 
@@ -117,9 +123,16 @@ ConverterConversionException = @"ConverterConversionException";
         if ([outputPath length])
         {
             // Compile xib or nib to make sure we have a non-new format nib.
-            temporaryNibFilePath = FILE.join("/tmp", FILE.basename(aFilePath) + ".tmp.nib");
+            temporaryNibFilePath = path.join("/tmp", path.basename(aFilePath) + ".tmp.nib");
+            //temporaryNibFilePath = FILE.join("/tmp", FILE.basename(aFilePath) + ".tmp.nib");
 
-            try
+            try {
+                child_process.execSync("/usr/bin/ibtool" + " " + aFilePath + " " + "--compile" + " " + temporaryNibFilePath);
+            } catch(err) {
+                [CPException raise:ConverterConversionException reason:@"Could not compile file: " + aFilePath];
+            }
+
+/*             try
             {
                 var p = OS.popen(["/usr/bin/ibtool", aFilePath, "--compile", temporaryNibFilePath]);
                 if (p.wait() === 1)
@@ -130,7 +143,7 @@ ConverterConversionException = @"ConverterConversionException";
                 p.stdin.close();
                 p.stdout.close();
                 p.stderr.close();
-            }
+            } */
 
         }
         else
@@ -139,9 +152,15 @@ ConverterConversionException = @"ConverterConversionException";
         }
 
         // Convert from binary plist to XML plist
-        var temporaryPlistFilePath = FILE.join("/tmp", FILE.basename(aFilePath) + ".tmp.plist");
+        var temporaryPlistFilePath = path.join("/tmp", path.basename(aFilePath) + ".tmp.plist");
 
-        try
+        try {
+            child_process.execSync("/usr/bin/plutil" + " " + "-convert" + " " + "xml1" + " " + temporaryNibFilePath + " " + "-o" + " " +  temporaryPlistFilePath);
+        } catch(err) {
+            [CPException raise:ConverterConversionException reason:@"Could not convert to xml plist for file: " + aFilePath];
+        }
+
+/*         try
         {
             var p = OS.popen(["/usr/bin/plutil", "-convert", "xml1", temporaryNibFilePath, "-o", temporaryPlistFilePath]);
             if (p.wait() === 1)
@@ -152,12 +171,31 @@ ConverterConversionException = @"ConverterConversionException";
             p.stdin.close();
             p.stdout.close();
             p.stderr.close();
+        } */
+
+        function isReadable(p) {
+            try {
+                fs.accessSync(p, constants.R_OK);
+                return true;
+            } catch (err) {
+                return false;
+            }
         }
 
-        if (!FILE.isReadable(temporaryPlistFilePath))
+        function isWritable(p) {
+            try {
+                fs.accessSync(p, constants.W_OK);
+                return true;
+            } catch (err) {
+                return false;
+            }
+        }
+
+        if (!isReadable(temporaryPlistFilePath))
             [CPException raise:ConverterConversionException reason:@"Unable to convert nib file."];
 
-        var plistContents = FILE.read(temporaryPlistFilePath, { charset: "UTF-8" });
+        var plistContents = fs.readFileSync(temporaryPlistFilePath, { encoding: "UTF-8" });
+        //var plistContents = FILE.read(temporaryPlistFilePath, { charset: "UTF-8" });
 
         // Minor NS keyed archive to CP keyed archive conversion.
         // Use Java directly because rhino's string.replace is *so slow*. 4 seconds vs. 1 millisecond.
@@ -175,11 +213,13 @@ ConverterConversionException = @"ConverterConversionException";
     }
     finally
     {
-        if (temporaryNibFilePath !== "" && FILE.isWritable(temporaryNibFilePath))
-            FILE.remove(temporaryNibFilePath);
+        if (temporaryNibFilePath !== "" && isWritable(temporaryNibFilePath))
+            fs.rmSync(temporaryNibFilePath);
+            //FILE.remove(temporaryNibFilePath);
 
-        if (temporaryPlistFilePath !== "" && FILE.isWritable(temporaryPlistFilePath))
-            FILE.remove(temporaryPlistFilePath);
+        if (temporaryPlistFilePath !== "" && isWritable(temporaryPlistFilePath))
+            fs.rmSync(temporaryNibFilePath);
+            //FILE.remove(temporaryPlistFilePath);
     }
 
     return [CPData dataWithRawString:plistContents];

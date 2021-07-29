@@ -22,7 +22,7 @@
 
 var /* FILE = require("file"), */
     OS = require("os"),
-    Jake = require("jake"),
+    Jake = require("objj-jake"),
     BundleTask = (require("./bundletask")).BundleTask;
 
 var fs = require("fs-extra");

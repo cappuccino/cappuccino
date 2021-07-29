@@ -29,9 +29,15 @@
 
 @global CP_NSMapClassName
 
+var fs = require("fs");
+var path = require("path");
+var imageSize = require("objj-imagesize");
+
+/*
 var FILE = require("file"),
-    imageSize = require("cappuccino/imagesize").imagesize,
-    supportedTemplateImages = {
+    imageSize = require("cappuccino/imagesize").imagesize
+*/
+var supportedTemplateImages = {
         "NSAddTemplate": "CPAddTemplate",
         "NSRemoveTemplate": "CPRemoveTemplate",
         "NSActionTemplate": "CPActionTemplate",
@@ -87,7 +93,7 @@ var FILE = require("file"),
                 CPLog.warn("Resource \"" + _resourceName + "\" not found in the Resources directories");
             else
             {
-                size = imageSize(FILE.canonical(resourceInfo.path)) || CGSizeMakeZero();
+                size = imageSize(fs.realpathSync(resourceInfo.path)) || CGSizeMakeZero();
                 framework = resourceInfo.framework;
             }
 
@@ -102,7 +108,7 @@ var FILE = require("file"),
 
         if (resourceInfo && resourceInfo.path && resourceInfo.framework)
         {
-            var frameworkPath = FILE.dirname(FILE.dirname(resourceInfo.path)),
+            var frameworkPath = path.dirname(path.dirname(resourceInfo.path)),
                 bundle = [CPBundle bundleWithPath:frameworkPath];
 
             [bundle loadWithDelegate:nil];
@@ -116,7 +122,7 @@ var FILE = require("file"),
                     framework ? framework : "<none>",
                     bundleIdentifier ? " (" + bundleIdentifier + ")" :
                                         framework ? " (<no bundle identifier>)" : "",
-                    resourceInfo ? FILE.canonical(resourceInfo.path) : "",
+                    resourceInfo ? fs.realpathSync(resourceInfo.path) : "",
                     size.width,
                     size.height);
     }

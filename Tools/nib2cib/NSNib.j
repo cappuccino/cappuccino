@@ -24,10 +24,14 @@
 
 @class Converter
 
-var FILE = require("file"),
+var fs = require("fs");
+var os = require("os");
+var uuid = require("uuid");
+
+/* var FILE = require("file"),
     OS = require("os"),
     UUID = require("uuid");
-
+*/
 @implementation CPCib (NSCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
@@ -35,10 +39,12 @@ var FILE = require("file"),
     self = [super init];
 
     // FIXME: change /tmp/ to os.tmpDir() in Node
-    var nibPath = @"/tmp/" + UUID.uuid() + ".nib",
+    var nibPath = @"/tmp/" + uuid.v1() + ".nib",
         data = [aCoder decodeObjectForKey:@"NSNibFileData"];
 
-    FILE.write(nibPath, data.bytes(), { charset:"UTF-16" });
+    fs.writeFileSync(nibPath, data.bytes(), { encoding: "utf16le"});
+
+    //FILE.write(nibPath, data.bytes(), { charset:"UTF-16" });
 
     var converter = [[Converter alloc] initWithInputPath:nibPath outputPath:nil];
 

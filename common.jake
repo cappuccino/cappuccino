@@ -269,8 +269,8 @@ function systemSync(command)
         child_process.execSync(command, {stdio: 'inherit'});
         return 0;
     } catch (error) {
-        console.log(error);
-        console.log(error.output.toString());
+        //console.log(error);
+        //console.log(error.output.toString());
         return error.status;
     }
 }
@@ -308,7 +308,7 @@ global.executableExists = function(/*String*/ executableName)
     return null;
 };
 
-$OBJJ_TEMPLATE_EXECUTABLE = path.join($HOME_DIR, "Objective-J", "CommonJS", "objj-executable");
+$OBJJ_TEMPLATE_EXECUTABLE = path.join(__dirname, "Objective-J", "CommonJS", "objj-executable");
 
 global.make_objj_executable = function(aPath)
 {

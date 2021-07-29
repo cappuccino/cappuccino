@@ -10,7 +10,10 @@
   "dependencies": {
     "fs-extra": "^10.0.0",
     "glob": "^7.1.7",
-    "objj-jake": "1.0.1",
-    "objj-runtime": "file:../objj-runtime"
+    "objj-fontinfo": "file:../objj-fontinfo",
+    "objj-imagesize": "file:../objj-imagesize",
+    "objj-jake": "1.0.2",
+    "objj-runtime": "file:../objj-runtime",
+    "uuid": "^8.3.2"
   }
 }
