@@ -597,7 +597,9 @@ var CPViewHighDPIDrawingEnabled = YES;
 #endif
 
     // Notify the subview that it will be moving.
+#if PLATFORM(DOM)
     [aSubview viewWillMoveToSuperview:self];
+#endif
 
     // We will have to adjust the z-index of all views starting at this index.
     var count = _subviews.length,
@@ -663,7 +665,9 @@ var CPViewHighDPIDrawingEnabled = YES;
     [aSubview setNextResponder:self];
     [aSubview _scaleSizeUnitSquareToSize:[self _hierarchyScaleSize]];
 
+#if PLATFORM(DOM)
     [aSubview viewDidMoveToSuperview];
+#endif
 
     // Set the subview's window to our own.
     if (_window)
