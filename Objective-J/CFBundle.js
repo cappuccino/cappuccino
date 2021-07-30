@@ -365,7 +365,6 @@ function finishBundleLoadingWithError(/*CFBundle*/ aBundle, /*Event*/ anError)
 
 function loadExecutableAndResources(/*Bundle*/ aBundle, /*BOOL*/ shouldExecute)
 {
-    console.log("loadExecutableAndResources");
     if (!aBundle.mostEligibleEnvironment())
         return failure();
 

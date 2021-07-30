@@ -10,9 +10,7 @@ var subprojects = ["Objective-J", "CommonJS", "Foundation", "AppKit", "Tools"];
 {
     task (aTaskName, function()
     {
-        console.log("i build task action");
         subjake(subprojects, aTaskName);
-        console.log("ut ur build task action");
     });
 });
 

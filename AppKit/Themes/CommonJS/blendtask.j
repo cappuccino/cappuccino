@@ -27,8 +27,6 @@
 @import <AppKit/_CPCibObjectData.j>
 @import <BlendKit/BlendKit.j>
 
-debugger;
-console.log("require: " + require);
 var /* FILE = require("file"), */
     TERM = require("objj-runtime").term,
     task = require("objj-jake").task,
@@ -118,7 +116,6 @@ BlendTask.prototype.defineThemeDescriptorTasks = function()
                 var localKeyedThemes = keyedThemes;
                 var localThemesTaskName = themesTaskName;
                 
-                console.log("starting themedescriptors: " + themeDescriptorPath);
                 objj_importFile(path.resolve(themeDescriptorPath), YES, function() {
                     if (--tdLeft === 0) {
                         [BKThemeDescriptor allThemeDescriptorClasses].forEach(function(aClass)
@@ -130,7 +127,6 @@ BlendTask.prototype.defineThemeDescriptorTasks = function()
 
                             localKeyedThemes.push([aClass themeName] + ".keyedtheme");
                         });
-                        console.log("themesTaskName: " + localThemesTaskName);
                         task (localThemesTaskName, function()
                         {
                             [BKThemeDescriptor allThemeDescriptorClasses].forEach(function(aClass)

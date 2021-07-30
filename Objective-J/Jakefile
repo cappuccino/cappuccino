@@ -20,7 +20,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-console.log("i jakefilen för obj-j");
 require("../common.jake");
 
 // Make sure we can use new functions in an in old javascript engines like Rhino
@@ -58,7 +57,6 @@ $BROWSER_FILES      = new FileList($BROWSER_FILE).include($OBJECTIVEJ_FILES);
 
 filedir($BUILD_BROWSER_FILE, $BROWSER_FILES, function(aTask)
 {
-    console.log("in task $BUILD_BROWSER_FILE");
     gcc($BROWSER_FILE,
         $BUILD_BROWSER_FILE,
         environmentFlags("Browser", "ObjJ").concat($INCLUDE_FLAGS, $DEBUG_FLAGS, ["-Wno-unused-but-set-variable"]), $CONFIGURATION !== "Debug");
@@ -179,5 +177,3 @@ function gcc(inputFilePath, outputFilePath, flags, compress)
 }
 
 task("build", [$BUILD_BROWSER_FILE, $BUILD_LICENSE, $BUILD_CJS_OBJECTIVE_J_FRAMEWORK]);
-
-console.log("at the bottom of Objective-J/jakefile");

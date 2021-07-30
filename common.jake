@@ -23,6 +23,7 @@ const fs = require('fs');
 const child_process = require('child_process');
 const path = require('path');
 const jake = require("objj-jake");
+const { stream } = require('objj-runtime/lib/term');
 
 requiresSudo = false;
 
@@ -94,7 +95,6 @@ global.FIXME_fileDependency = function(destinationPath, sourcePath)
 // used in serializedENV()
 function additionalPackages()
 {
-    console.log("in additionalPackages");
     var builtObjectiveJPackage = path.join(path.resolve($BUILD_CONFIGURATION_DIR), "CommonJS", "objective-j");
     var builtCappuccinoPackage = path.join(path.resolve($BUILD_CONFIGURATION_DIR), "CommonJS", "cappuccino");
 
@@ -263,8 +263,7 @@ global.mv = function(/*String*/ from, /*String*/ to)
 
 function systemSync(command) 
 {   
-    console.log("i systemSync");
-    console.log("command: " + command)
+    //console.log("command: " + command)
     try {
         child_process.execSync(command, {stdio: 'inherit'});
         return 0;
@@ -347,9 +346,9 @@ global.setPackageMetadata = function(packagePath)
     pkg["cappuccino-timestamp"] = new Date().getTime();
     pkg["version"] = getCappuccinoVersion();
 
-    console.log("    Version:   \0purple(" + pkg["version"] + "\0)");
-    console.log("    Revision:  \0purple(" + pkg["cappuccino-revision"] + "\0)");
-    console.log("    Timestamp: \0purple(" + pkg["cappuccino-timestamp"] + "\0)");
+    stream.print("    Version:   \0purple(" + pkg["version"] + "\0)");
+    stream.print("    Revision:  \0purple(" + pkg["cappuccino-revision"] + "\0)");
+    stream.print("    Timestamp: \0purple(" + pkg["cappuccino-timestamp"] + "\0)");
 
     fs.writeFileSync(packagePath, JSON.stringify(pkg, null, 4), 'utf8');
 };
@@ -444,10 +443,9 @@ global.installCopy = function(sourcePath, useSudo)
 
 global.spawnJake = function(/*String*/ aTaskName)
 {
-    console.log("i spawnJake");
     //if (systemSync(serializedENV() + " " + "npx --node-options='--inspect-brk' objj-jake" + " " + aTaskName))
     if (systemSync(serializedENV() + " " + "npx objj-jake" + " " + aTaskName))
-        console.log("exited in spawnJake with code 1");
+        console.log("exited in spawnJake with error");
         process.exit(1);    //rake abort if ($? != 0)
 };
 
@@ -556,7 +554,6 @@ task ("release", function()
 
 task ("debug", function()
 {
-    console.log("in debug mode");
     process.env["CONFIG"] = "Debug";
     spawnJake("build");
 });

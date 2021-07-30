@@ -1,5 +1,3 @@
-console.log("at the top of CommonJS/Jakefile");
-
 require("../common.jake");
 
 // var FILE = require("file");

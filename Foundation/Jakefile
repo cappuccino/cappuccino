@@ -29,7 +29,6 @@ const path = require("path");
 
 foundationTask = framework ("Foundation", function(foundationTask)
 {
-    console.log("in foundationTask");
     foundationTask.setBuildIntermediatesPath(path.join($BUILD_DIR, "Foundation.build", $CONFIGURATION))
     foundationTask.setBuildPath($BUILD_CONFIGURATION_DIR);
 
@@ -72,6 +71,3 @@ filedir ($BUILD_CJS_FOUNDATION, ["Foundation"], function()
 task ("build", ["Foundation", $BUILD_CJS_FOUNDATION]);
 
 CLOBBER.include($BUILD_CJS_FOUNDATION);
-
-console.log("at the end of Foundation/jakefile");
-
