@@ -1,9 +1,8 @@
 
 require ("../../common.jake");
 
-var app = require("../../Foundation/objective-j/jake.js").app;
-
-var BundleTask = require("../../Foundation/objective-j/jake.js").BundleTask;
+var app = require("../../Jake/applicationtask.js").app;
+var BundleTask = require("../../Jake/bundletask.js").BundleTask;
 
 /*     fileCreate = require("jake").fileCreate,
     FILE = require("file"),
@@ -26,9 +25,9 @@ app ("capp", function(cappTask)
     cappTask.setSources(new FileList("*.j"));
     cappTask.setResources(new FileList("Resources/*"));
     cappTask.setIncludesNibsAndXibs(true);
-    cappTask.setEnvironments(require("../../Foundation/objective-j/jake/environment.js").CommonJS);
+    cappTask.setEnvironments(require("../../Jake/environment.js").CommonJS);
     cappTask.setFlattensSources(true);
-    cappTask.setSpritesResources(false);
+    cappTask.setSpritesResources(false); 
 
     if ($CONFIGURATION === "Release")
         cappTask.setCompilerFlags("-O");

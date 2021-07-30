@@ -453,7 +453,14 @@ BundleTask.prototype.defineResourceTask = function(aResourcePath, aDestinationPa
             nib2cibFlags = nib2cibFlags.join(" ");
         filedir(cibDestinationPath, [aResourcePath],         function()
         {
-            child_process.execSync("nib2cib " + aResourcePath + " " + cibDestinationPath + " " + nib2cibFlags);
+            try {
+                child_process.execSync("nib2cib " + aResourcePath + " " + cibDestinationPath + " " + nib2cibFlags);
+            } catch(error) {
+                console.log("hello?");
+                console.log(error);
+                console.log(error.output.toString());
+            }
+
         });
         this.enhance([cibDestinationPath]);
     }};
