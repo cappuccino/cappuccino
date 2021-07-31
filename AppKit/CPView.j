@@ -1479,7 +1479,7 @@ var CPViewHighDPIDrawingEnabled = YES;
 {
     var mask = [self autoresizingMask];
 
-    if (mask === CPViewNotSizable)
+    if ((mask === CPViewNotSizable) || !_superview)
         return;
 
     var frame = _superview._frame,
