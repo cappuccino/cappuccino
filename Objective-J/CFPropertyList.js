@@ -20,6 +20,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+var fs = require("fs");
+
 var OBJECT_COUNT   = 0;
 
 GLOBAL(objj_generateObjectUID) = function()
@@ -84,7 +86,8 @@ CFPropertyList.stringFromPropertyList = function(/*CFPropertyList*/ aPropertyLis
 #ifdef COMMONJS
 CFPropertyList.readPropertyListFromFile = function(/*String*/ aFilePath)
 {
-    return CFPropertyList.propertyListFromString(FILE.read(aFilePath, { charset:"UTF-8" }));
+    return CFPropertyList.propertyListFromString(fs.readFileSync(aFilePath, { encoding: "utf8" }));
+    //return CFPropertyList.propertyListFromString(FILE.read(aFilePath, { charset:"UTF-8" }));
 }
 
 CFPropertyList.writePropertyListToFile = function(/*CFPropertyList*/ aPropertyList, /*String*/ aFilePath, /*Format*/ aFormat)

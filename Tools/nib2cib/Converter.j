@@ -175,7 +175,7 @@ ConverterConversionException = @"ConverterConversionException";
 
         function isReadable(p) {
             try {
-                fs.accessSync(p, constants.R_OK);
+                fs.accessSync(p, fs.constants.R_OK);
                 return true;
             } catch (err) {
                 return false;
@@ -184,17 +184,17 @@ ConverterConversionException = @"ConverterConversionException";
 
         function isWritable(p) {
             try {
-                fs.accessSync(p, constants.W_OK);
+                fs.accessSync(p, fs.constants.W_OK);
                 return true;
             } catch (err) {
                 return false;
             }
         }
-
+        debugger;
         if (!isReadable(temporaryPlistFilePath))
             [CPException raise:ConverterConversionException reason:@"Unable to convert nib file."];
 
-        var plistContents = fs.readFileSync(temporaryPlistFilePath, { encoding: "UTF-8" });
+        var plistContents = fs.readFileSync(temporaryPlistFilePath, { encoding: "utf8" });
         //var plistContents = FILE.read(temporaryPlistFilePath, { charset: "UTF-8" });
 
         // Minor NS keyed archive to CP keyed archive conversion.
@@ -218,7 +218,7 @@ ConverterConversionException = @"ConverterConversionException";
             //FILE.remove(temporaryNibFilePath);
 
         if (temporaryPlistFilePath !== "" && isWritable(temporaryPlistFilePath))
-            fs.rmSync(temporaryNibFilePath);
+            fs.rmSync(temporaryPlistFilePath);
             //FILE.remove(temporaryPlistFilePath);
     }
 

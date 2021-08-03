@@ -53,7 +53,7 @@ var /* FILE = require("file"), */
 
 
 
-@implementation Nib2Cib : CPObject
+@implementation Nib2Cib : CPObject <CPBundleDelegate>
 {
     CPArray         commandLineArgs;
     JSObject        parser;
@@ -87,7 +87,7 @@ var /* FILE = require("file"), */
             SharedNib2Cib = self;
 
         commandLineArgs = theArgs;
-        parser = new (require("narwhal/args").Parser)();
+        //parser = new (require("narwhal/args").Parser)();
         nibInfo = {};
         appDirectory = @"";
         frameworks = [CPDictionary dictionary];
@@ -102,6 +102,7 @@ var /* FILE = require("file"), */
 
 - (void)run
 {
+    debugger;
     try
     {
         commandLineOptions = [self parseOptionsFromArgs:commandLineArgs];
@@ -114,10 +115,11 @@ var /* FILE = require("file"), */
             [self watchWithOptions:commandLineOptions];
         else
         {
-            var success = [self convertWithOptions:commandLineOptions inputPath:nil];
-
-            if (!success)
-                process.exit(1);
+            [self convertWithOptions:commandLineOptions inputPath:nil completionHandler:function(success) {
+                if (!success) {
+                    process.exit(1);
+                }
+            }];
         }
     }
     catch (anException)
@@ -129,7 +131,7 @@ var /* FILE = require("file"), */
 
 - (void)checkPrerequisites
 {
-    var fontinfo = require("cappuccino/fontinfo").fontinfo,
+    var fontinfo = require("objj-fontinfo").fontinfo,
         info = fontinfo("LucidaGrande", 13);
 
     if (!info)
@@ -143,7 +145,7 @@ var /* FILE = require("file"), */
 
     [debugFrameworksDirectory, frameworksDirectory].forEach(function(directory)
     {
-        if (fs.lstatSync(directory).isDirectory())
+        if (fs.existsSync(directory) && fs.lstatSync(directory).isDirectory())
         {
             var frameworkList = fs.readdirSync(directory);
 
@@ -153,7 +155,7 @@ var /* FILE = require("file"), */
                 {
                     var resourceDirectory = PATH.join(directory, framework, "Resources");
 
-                    if (fs.lstatSync(resourceDirectory).isDirectory())
+                    if (fs.existsSync(resourceDirectory) && fs.lstatSync(resourceDirectory).isDirectory())
                         resourceDirectory = PATH.normalize(resourceDirectory);
                     else
                         resourceDirectory = @"";
@@ -165,8 +167,9 @@ var /* FILE = require("file"), */
     });
 }
 
-- (BOOL)convertWithOptions:(JSObject)options inputPath:(CPString)inputPath
+- (void)convertWithOptions:(JSObject)options inputPath:(CPString)inputPath completionHandler:(Function /* (BOOL) */)completionBlock
 {
+    debugger;
     try
     {
         inputPath = inputPath || [self getInputPath:options.args];
@@ -204,46 +207,48 @@ var /* FILE = require("file"), */
             infoPlist = @{};
 
         var themeList = [self getThemeList:options];
+        debugger;
+        [self loadThemesFromList:themeList completionHandler: function() {
+            [self loadFrameworks:options.frameworks verbosity:options.verbosity];
 
-        [self loadThemesFromList:themeList];
-        [self loadFrameworks:options.frameworks verbosity:options.verbosity];
+            var mainBundle = [CPBundle mainBundle];
+            [mainBundle loadWithDelegate:nil];
+            [self loadNSClassesFromBundle:mainBundle];
 
-        var mainBundle = [CPBundle mainBundle];
-        [mainBundle loadWithDelegate:nil];
-        [self loadNSClassesFromBundle:mainBundle];
+            var frameworkList = [];
 
-        var frameworkList = [];
+            [frameworks allKeys].forEach(function(name)
+            {
+                var info = [frameworks valueForKey:name];
 
-        [frameworks allKeys].forEach(function(name)
-        {
-            var info = [frameworks valueForKey:name];
+                if (info.resourceDirectory)
+                    name += "*";
 
-            if (info.resourceDirectory)
-                name += "*";
+                if (info.loaded)
+                    name += "+";
 
-            if (info.loaded)
-                name += "+";
+                frameworkList.push(name);
+            });
 
-            frameworkList.push(name);
-        });
+            CPLog.info("\n-------------------------------------------------------------");
+            CPLog.info("Input         : " + inputPath);
+            CPLog.info("Output        : " + outputPath);
+            CPLog.info("Application   : " + appDirectory);
+            CPLog.info("Frameworks    : " + (frameworkList.join(", ") || ""));
+            CPLog.info("Default theme : " + themeList[0]);
+            CPLog.info("Aux themes    : " + themeList.slice(1).join(", "));
+            CPLog.info("Config file   : " + (configInfo.path || ""));
+            CPLog.info("System Font   : " + [CPFont systemFontSize] + "px " + [CPFont systemFontFace]);
+            CPLog.info("NSClasses     : " + userNSClasses);
 
-        CPLog.info("\n-------------------------------------------------------------");
-        CPLog.info("Input         : " + inputPath);
-        CPLog.info("Output        : " + outputPath);
-        CPLog.info("Application   : " + appDirectory);
-        CPLog.info("Frameworks    : " + (frameworkList.join(", ") || ""));
-        CPLog.info("Default theme : " + themeList[0]);
-        CPLog.info("Aux themes    : " + themeList.slice(1).join(", "));
-        CPLog.info("Config file   : " + (configInfo.path || ""));
-        CPLog.info("System Font   : " + [CPFont systemFontSize] + "px " + [CPFont systemFontFace]);
-        CPLog.info("NSClasses     : " + userNSClasses);
+            CPLog.info("-------------------------------------------------------------\n");
 
-        CPLog.info("-------------------------------------------------------------\n");
+            var converter = [[Converter alloc] initWithInputPath:inputPath outputPath:outputPath];
+            [converter convert];
 
-        var converter = [[Converter alloc] initWithInputPath:inputPath outputPath:outputPath];
-        [converter convert];
+            completionBlock(YES);
+        }];
 
-        return YES;
     }
     catch (anException)
     {
@@ -343,7 +348,7 @@ var /* FILE = require("file"), */
 
 - (JSObject)parseOptionsFromArgs:(CPArray)theArgs
 {
-    parser.usage("[--watch DIRECTORY] [INPUT_FILE [OUTPUT_FILE]]");
+   /*  parser.usage("[--watch DIRECTORY] [INPUT_FILE [OUTPUT_FILE]]");
 
     parser.option("--watch", "watch")
         .set(true)
@@ -396,12 +401,14 @@ var /* FILE = require("file"), */
         .help("This option is deprecated.");
 
     parser.helpful();
-
-    var options = parser.parse(theArgs, null, null, true);
-
+ */
+    var options = { args : theArgs }; //FIXME: parser.parse(theArgs, null, null, true);
+    options.args = options.args.slice(1);
     if (options.args.length > 2)
     {
-        parser.printUsage(options);
+        console.log("options.args: " + options.args);
+        console.log("options.args.length > 2, will crash");
+        //parser.printUsage(options);
         process.exit(0);
     }
 
@@ -608,7 +615,7 @@ var /* FILE = require("file"), */
         {
             var path = PATH.join(appDirectory, "Resources");
             
-            if (fs.lstatSync(path).isDirectory())
+            if (fs.existsSync(path) && fs.lstatSync(path, { throwIfNoEntry: false }).isDirectory())
                 appResourceDirectory = path;
         }
     }
@@ -718,6 +725,7 @@ var /* FILE = require("file"), */
 
 - (CPArray)getThemeList:(JSObject)options
 {
+    debugger;
     var defaultTheme = options.defaultTheme;
 
     if (!defaultTheme)
@@ -749,7 +757,7 @@ var /* FILE = require("file"), */
 // Returns undefined if $CAPP_BUILD is not defined, false if path cannot be found in $CAPP_BUILD
 - (id)findInCappBuild:(CPString)path isDirectory:(BOOL)isDirectory callback:(JSObject)callback
 {
-    var cappBuild = SYS.env["CAPP_BUILD"];
+    var cappBuild = process.env["CAPP_BUILD"];
 
     if (!cappBuild)
         return undefined;
@@ -777,7 +785,8 @@ var /* FILE = require("file"), */
 - (id)findInInstalledFrameworks:(CPString)path isDirectory:(BOOL)isDirectory callback:(JSObject)callback
 {
     // NOTE: It's safe to use '/' directly in the path, we're guaranteed to be on a Mac
-    return [self findInFrameworks:PATH.normalize(PATH.join(SYS.prefix, "packages/cappuccino/Frameworks"))
+    // FIXME: temporary fix, narwhal will not be used in the future
+    return [self findInFrameworks:PATH.normalize(PATH.join("/Users/alfred/Developer/narwhal", "packages/cappuccino/Frameworks"))
                              path:path
                       isDirectory:isDirectory
                          callback:callback];
@@ -832,13 +841,23 @@ var /* FILE = require("file"), */
     return themeName;
 }
 
-- (void)loadThemesFromList:(CPArray)themeList
+- (void)loadThemesFromList:(CPArray)themeList completionHandler:(Function)completionBlock
 {
-    for (var i = 0; i < themeList.length; ++i)
-        themes.push([self loadThemeNamed:themeList[i]]);
+    var nLoadedThemes = themeList.length;
+    themes.length = themeList.length;
+
+    [themeList enumerateObjectsUsingBlock: function(themeName, i) {
+        [self loadThemeNamed:themeName completionHandler: function(theme) {
+            themes[i] = theme;
+            nLoadedThemes--;
+            if (nLoadedThemes === 0) {
+                completionBlock();
+            }
+        }];
+    }];
 }
 
-- (CPTheme)loadThemeNamed:(CPString)themeName
+- (void)loadThemeNamed:(CPString)themeName completionHandler:(Function/* (CPTheme) */)completionBlock
 {
     if (/^.+\.blend$/.test(themeName))
         themeName = themeName.substr(0, themeName.length - ".blend".length);
@@ -877,41 +896,51 @@ var /* FILE = require("file"), */
     if (!themePath)
         [self failWithMessage:@"Cannot find the theme \"" + themeName + "\""];
 
-    return [self readThemeWithName:themeName atPath:themePath];
+    [self readThemeWithName:themeName atPath:themePath completionHandler:completionBlock];
 }
 
-- (CPTheme)readThemeWithName:(CPString)name atPath:(CPString)path
+- (void)readThemeWithName:(CPString)name atPath:(CPString)path completionHandler:(Function /* (CPTheme) */)completionBlock
 {
+    debugger;
     var themeBundle = new CFBundle(path);
 
     // By default when we try to load the bundle it will use the CommonJS environment,
     // but we want the Browser environment. So we override mostEligibleEnvironment().
     themeBundle.mostEligibleEnvironment = function() { return "Browser"; };
+
+    themeBundle.addEventListener("load", function()
+    {
+        var keyedThemes = themeBundle.valueForInfoDictionaryKey("CPKeyedThemes");
+
+        if (!keyedThemes)
+            [self failWithMessage:@"Could not find the keyed themes in the theme: " + path];
+
+        var index = keyedThemes.indexOf(name + ".keyedtheme");
+
+        if (index < 0)
+            [self failWithMessage:@"Could not find the main theme data (" + name + ".keyedtheme" + ") in the theme: " + path];
+
+        // Load the keyed theme data, making sure to resolve it
+        var resourcePath = themeBundle.pathForResource(keyedThemes[index]),
+            themeData = new CFMutableData();
+
+        themeData.setRawString(StaticResource.resourceAtURL(new CFURL(resourcePath), true).contents());
+
+        var theme = [CPKeyedUnarchiver unarchiveObjectWithData:themeData];
+
+        if (!theme)
+            [self failWithMessage:@"Could not unarchive the theme at: " + path];
+
+        CPLog.debug("Loaded theme: " + path);
+        completionBlock(theme);
+    });
+
+    themeBundle.addEventListener("error", function()
+    {
+        CPLog.error("Could not find bundle: " + self);
+    });
+
     themeBundle.load();
-
-    var keyedThemes = themeBundle.valueForInfoDictionaryKey("CPKeyedThemes");
-
-    if (!keyedThemes)
-        [self failWithMessage:@"Could not find the keyed themes in the theme: " + path];
-
-    var index = keyedThemes.indexOf(name + ".keyedtheme");
-
-    if (index < 0)
-        [self failWithMessage:@"Could not find the main theme data (" + name + ".keyedtheme" + ") in the theme: " + path];
-
-    // Load the keyed theme data, making sure to resolve it
-    var resourcePath = themeBundle.pathForResource(keyedThemes[index]),
-        themeData = new CFMutableData();
-
-    themeData.setRawString(StaticResource.resourceAtURL(new CFURL(resourcePath), true).contents());
-
-    var theme = [CPKeyedUnarchiver unarchiveObjectWithData:themeData];
-
-    if (!theme)
-        [self failWithMessage:@"Could not unarchive the theme at: " + path];
-
-    CPLog.debug("Loaded theme: " + path);
-    return theme;
 }
 
 - (JSObject)readConfigFile:(CPString)configFile inputPath:(CPString)inputPath
@@ -1021,7 +1050,7 @@ var /* FILE = require("file"), */
 
         Base on these paths we can locate nib2cib's Info.plist.
     */
-    var path = PATH.dirname(PATH.dirname(PATH.normalize(SYS.args[0]))),
+    var path = PATH.dirname(PATH.dirname(PATH.normalize(process.argv[0]))),
         version = null;
 
     if (PATH.basename(path) === "narwhal")
