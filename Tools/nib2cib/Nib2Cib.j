@@ -87,7 +87,7 @@ var /* FILE = require("file"), */
             SharedNib2Cib = self;
 
         commandLineArgs = theArgs;
-        //parser = new (require("narwhal/args").Parser)();
+        parser = new (require("objj-runtime").parser.Parser)();
         nibInfo = {};
         appDirectory = @"";
         frameworks = [CPDictionary dictionary];
@@ -102,7 +102,6 @@ var /* FILE = require("file"), */
 
 - (void)run
 {
-    debugger;
     try
     {
         commandLineOptions = [self parseOptionsFromArgs:commandLineArgs];
@@ -169,7 +168,6 @@ var /* FILE = require("file"), */
 
 - (void)convertWithOptions:(JSObject)options inputPath:(CPString)inputPath completionHandler:(Function /* (BOOL) */)completionBlock
 {
-    debugger;
     try
     {
         inputPath = inputPath || [self getInputPath:options.args];
@@ -188,7 +186,6 @@ var /* FILE = require("file"), */
 
         var configInfo = [self readConfigFile:options.configFile || @"" inputPath:inputPath],
             outputPath = [self getOutputPathFromInputPath:inputPath args:options.args];
-
         infoPlist = configInfo.plist;
 
         if (infoPlist)
@@ -207,7 +204,6 @@ var /* FILE = require("file"), */
             infoPlist = @{};
 
         var themeList = [self getThemeList:options];
-        debugger;
         [self loadThemesFromList:themeList completionHandler: function() {
             [self loadFrameworks:options.frameworks verbosity:options.verbosity];
 
@@ -263,7 +259,7 @@ var /* FILE = require("file"), */
         watchDir = options.args[0];
 
     if (!watchDir)
-        watchDir = PATH.normalize(fs.lstatSync("Resources").isDirectory() ? "Resources" : ".");
+        watchDir = PATH.normalize((fs.existsSync("Resources") && fs.lstatSync("Resources").isDirectory()) ? "Resources" : ".");
     else
     {
         watchDir = PATH.normalize(watchDir);
@@ -272,7 +268,7 @@ var /* FILE = require("file"), */
         {
             var path = PATH.join(watchDir, "Resources");
             
-            if (fs.lstatSync(p).isDirectory())
+            if (fs.lstatSync(path).isDirectory())
                 watchDir = path;
         }
     }
@@ -348,7 +344,7 @@ var /* FILE = require("file"), */
 
 - (JSObject)parseOptionsFromArgs:(CPArray)theArgs
 {
-   /*  parser.usage("[--watch DIRECTORY] [INPUT_FILE [OUTPUT_FILE]]");
+    parser.usage("[--watch DIRECTORY] [INPUT_FILE [OUTPUT_FILE]]");
 
     parser.option("--watch", "watch")
         .set(true)
@@ -401,9 +397,10 @@ var /* FILE = require("file"), */
         .help("This option is deprecated.");
 
     parser.helpful();
- */
-    var options = { args : theArgs }; //FIXME: parser.parse(theArgs, null, null, true);
-    options.args = options.args.slice(1);
+
+    //var options = { args : theArgs }; //FIXME: parser.parse(theArgs, null, null, true);
+    var options = parser.parse(theArgs, null, null, true);
+    //options.args = options.args.slice(1);
     if (options.args.length > 2)
     {
         console.log("options.args: " + options.args);
@@ -442,7 +439,7 @@ var /* FILE = require("file"), */
 
 - (CPArray)readStoredOptionsAtPath:(CPString)path
 {
-    path = PATH.normalize(p);
+    path = PATH.normalize(path);
 
 /*     if (!FILE.isReadable(path))
         return [];
@@ -725,7 +722,6 @@ var /* FILE = require("file"), */
 
 - (CPArray)getThemeList:(JSObject)options
 {
-    debugger;
     var defaultTheme = options.defaultTheme;
 
     if (!defaultTheme)
@@ -901,7 +897,6 @@ var /* FILE = require("file"), */
 
 - (void)readThemeWithName:(CPString)name atPath:(CPString)path completionHandler:(Function /* (CPTheme) */)completionBlock
 {
-    debugger;
     var themeBundle = new CFBundle(path);
 
     // By default when we try to load the bundle it will use the CommonJS environment,
