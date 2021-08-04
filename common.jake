@@ -189,7 +189,7 @@ function handleSetupEnvironmentError(e)
 {
     if (String(e).indexOf("require error") == -1)
     {
-        print("setupEnvironment warning: " + e);
+        console.log("setupEnvironment warning: " + e);
         //throw e;
     }
 }
