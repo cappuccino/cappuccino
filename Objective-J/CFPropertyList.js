@@ -20,7 +20,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-var fs = require("fs");
 
 var OBJECT_COUNT   = 0;
 
@@ -84,6 +83,8 @@ CFPropertyList.stringFromPropertyList = function(/*CFPropertyList*/ aPropertyLis
 }
 
 #ifdef COMMONJS
+var fs = require("fs");
+
 CFPropertyList.readPropertyListFromFile = function(/*String*/ aFilePath)
 {
     return CFPropertyList.propertyListFromString(fs.readFileSync(aFilePath, { encoding: "utf8" }));

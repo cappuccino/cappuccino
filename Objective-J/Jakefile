@@ -55,7 +55,7 @@ $OBJECTIVEJ_FILES   = new FileList("*.js");
 $BROWSER_FILES      = new FileList($BROWSER_FILE).include($OBJECTIVEJ_FILES);
 
 
-filedir($BUILD_BROWSER_FILE, $BROWSER_FILES, function(aTask)
+filedir($BUILD_BROWSER_FILE, $BROWSER_FILES, async function(aTask)
 {
     gcc($BROWSER_FILE,
         $BUILD_BROWSER_FILE,
@@ -70,7 +70,7 @@ filedir($BUILD_LICENSE, [$LICENSE], function()
     fs.copyFileSync($LICENSE, $BUILD_LICENSE);
 });
 
-new FileList("CommonJS/**/*").forEach(function(aFilename)
+new FileList("CommonJS/**/*").forEach( async function(aFilename)
 {
     // . files should be left out of FileList...
     if (!fs.lstatSync(aFilename).isFile() || path.basename(aFilename).charAt(0) === ".")
@@ -83,7 +83,6 @@ new FileList("CommonJS/**/*").forEach(function(aFilename)
         if (path.extname(aFilename) !== ".js")
         {
             term.stream.print("Copying... \0green(" + aFilename +"\0)");
-            //console.log("Copying... \0green(" + aFilename +"\0)");
             cp(aFilename, buildFilename);
         }
         else
@@ -126,24 +125,20 @@ function environmentFlags()
     }).concat("-DENVIRONMENTS=" + JSON.stringify(environments));
 }
 
-function compressor(srcCode) {
-    return srcCode;
+async function compressor(srcCode) {
+    return (await terser.minify(srcCode)).code;
 }
 
-var headerText = fs.readFileSync("header.txt", { encoding: "utf8"});
-function gcc(inputFilePath, outputFilePath, flags, compress)
+var headerText = fs.readFileSync("header.txt", { encoding: "utf8" });
+async function gcc(inputFilePath, outputFilePath, flags, compress)
 {
     term.stream.print("Building... \0green(" + outputFilePath +"\0)");
-    //console.log("Building... \0green(" + outputFilePath +"\0)");
     var source = fs.readFileSync(inputFilePath, { charset : "utf8" }).toString();
-    //console.log(source.charCodeAt);
     var compilerOptions = compiler.parseGccCompilerFlags(flags.join(" "));
     var acornOptions = compilerOptions.acornOptions || (compilerOptions.acornOptions = {});
 
     acornOptions.preprocessGetIncludeFile = function(filePath, isQuoted) {
         var includeContent = fs.readFileSync(filePath, { charset : "utf8" }).toString();
-        //print ("Include content for file '" + filePath + "': " + includeContent);
-        //print ("Include file '" + filePath + "'");
         return {include: includeContent, sourceFile: filePath};
     }
 
@@ -162,17 +157,11 @@ function gcc(inputFilePath, outputFilePath, flags, compress)
     }
 
     if (anyErrors) throw "Compilation Error";
-    debugger
     var code = c.code();
-    //console.log(code);
     var contents = headerText + code;
-    
-    //console.log("code");
-    //console.log(c);
-
-    if (path.extname(inputFilePath) === ".js" && compress)
-        contents = compressor(contents);
-
+    if (path.extname(inputFilePath) === ".js" && compress) {
+        contents = await compressor(contents);
+    }
     fs.writeFileSync(outputFilePath, contents, { encoding : "utf8" });
 }
 
