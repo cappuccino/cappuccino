@@ -35,6 +35,7 @@ Nib2CibColorizeOutput = YES;
 
 var PATH = require("path");
 var fs = require("fs");
+var child_process = require("child_process");
 
 var /* FILE = require("file"), */
     /* OS = require("os"), */
@@ -126,6 +127,7 @@ var /* FILE = require("file"), */
         [self logError:[self exceptionReason:anException]];
         process.exit(1);
     }
+    //while(true) {};
 }
 
 - (void)checkPrerequisites
@@ -296,10 +298,8 @@ var /* FILE = require("file"), */
     CPLog.info("Watching: " + CPLogColorize(watchDir, "debug"));
     CPLog.info("Press Control-C to stop...");
 
-    while (true)
-    {
+    fs.watch(watchDir, function() {
         var modifiedNibs = [self getModifiedNibsInDirectory:watchDir];
-
         for (var i = 0; i < modifiedNibs.length; ++i)
         {
             var action = modifiedNibs[i][0],
@@ -321,25 +321,19 @@ var /* FILE = require("file"), */
             // Let the converter log however the user configured it
             [self setLogLevel:verbosity];
 
-            var success = [self convertWithOptions:options inputPath:nib];
+            // Stripping the --watch flag from the command line arguments and running nib2cib in a child_process
+            // FIXME: this will fail if we have more advanced command line args
+            // FIXME: how to get this to work without resorting to child_process?
 
-            [self setLogLevel:1];
-
-            if (success)
-            {
-                if (verbosity > 0)
-                    stream.print();
-                else
-                    CPLog.info("Conversion successful");
+            var a = process.argv.slice();
+            var idx = a.indexOf("--watch");
+            if (idx > -1) {
+                a.splice(idx, 1);
             }
+            a.push(nib);
+            child_process.execSync(a.join(" "), {stdio: 'inherit'});
         }
-
-        //OS.sleep(1);
-
-        // sleep does not exist as a function in node, using this hack temporarily
-        var waitTill = new Date(new Date().getTime() + 1 * 1000);
-        while(waitTill > new Date()){}
-    }
+    });
 }
 
 - (JSObject)parseOptionsFromArgs:(CPArray)theArgs
@@ -934,8 +928,8 @@ var /* FILE = require("file"), */
     {
         CPLog.error("Could not find bundle: " + self);
     });
-
     themeBundle.load();
+    themeBundle._loadStatus
 }
 
 - (JSObject)readConfigFile:(CPString)configFile inputPath:(CPString)inputPath
@@ -1053,7 +1047,7 @@ var /* FILE = require("file"), */
 
     path = PATH.join(path, "lib", "nib2cib", "Info.plist");
 
-
+    console.log(path);
     try {
         fs.accessSync(path, fs.constants.R_OK);
 
