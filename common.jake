@@ -211,9 +211,10 @@ setupEnvironment();
 
 global.rm_rf = function(/*String*/ aFilename)
 {
-    try { fs.rm(aFilename, {recursive: true, force: true}); }
+    try { fs.rmSync(aFilename, {recursive: true, force: true}); }
     catch (anException) { }
 };
+
 
 // from stackoverflow
 function copyRecursiveSync (src, dest) {
