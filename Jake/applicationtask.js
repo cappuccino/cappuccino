@@ -25,7 +25,7 @@ var /* FILE = require("file"), */
     Jake = require("objj-jake"),
     BundleTask = (require("./bundletask")).BundleTask;
 
-var fs = require("fs-extra");
+var fs = require("fs");
 var path = require("path");
 
 function ApplicationTask(aName)
@@ -99,7 +99,7 @@ ApplicationTask.prototype.defineFrameworksTask = function()
                 tempPath = path.join(process.cwd(), ".__capp_Frameworks_Source__");
             if (hasSource)
                 fs.moveSync(sourcePath, tempPath);
-                fs.copySync(thisTask._frameworksPath, newFrameworks, { recursive: true });
+                copyRecursiveSync(thisTask._frameworksPath, newFrameworks);
             if (hasSource)
                 fs.moveSync(tempPath, sourcePath);
         }    });

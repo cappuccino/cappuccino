@@ -32,7 +32,7 @@ var OBJJ = require("objj-runtime"),
 
 
 // FIXME: lots of chaining using narwhals path wrapper, this file might still be broken
-var fs = require("fs-extra");
+var fs = require("fs");
 var node_path = require("path");
 var child_process = require("child_process");
 var jake = require("objj-jake");
@@ -177,7 +177,7 @@ function gen(/*va_args*/)
     else if (!fs.existsSync(destinationProject))
     {
         // FIXME???
-        fs.copySync(sourceTemplate, destinationProject, { recursive: true });
+        copyRecursiveSync(sourceTemplate, destinationProject);
 
         var files = (new jake.FileList(node_path.join(destinationProject, "**", "*"))).toArray(),
             count = files.length,
@@ -347,7 +347,7 @@ function installFramework(source, dest, force, symlink)
         if (symlink)
             fs.symlinkSync(source, dest);
         else
-            fs.copySync(source, dest, { recursive: true });
+            copyRecursiveSync(source, dest);
     }
     else
         warn("Cannot find: " + logPath(source));
@@ -408,7 +408,7 @@ function installTheme(source, dest, force, symlink)
         if (symlink)
             fs.symlinkSync(source, dest);
         else
-            fs.copySync(source, dest, { recursive: true });
+            copyRecursiveSync(source, dest);
     }
     else
         warn("Cannot find: " + logPath(source));

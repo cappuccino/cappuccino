@@ -25,7 +25,7 @@ const child_process = require("child_process");
 const path = require("path");
 
 // NPM modules
-const fs = require("fs-extra");
+const fs = require("fs");
 const ObjectiveJ = require("objj-runtime");
 const term = require("objj-runtime").term;
 
@@ -437,9 +437,9 @@ BundleTask.prototype.defineResourceTask = function(aResourcePath, aDestinationPa
                 catch(anException) {
                 }
             if (fs.lstatSync(aResourcePath).isDirectory())
-                fs.copySync(aResourcePath, aDestinationPath, { recursive: true });
+                copyRecursiveSync(aResourcePath, aDestinationPath);
             else
-                fs.copySync(aResourcePath, aDestinationPath);
+                fs.copyFileSync(aResourcePath, aDestinationPath);
         });
         this.enhance([aDestinationPath]);
     }    if ((extension === ".xib" || extension === ".nib") && !this._preventsNib2Cib)

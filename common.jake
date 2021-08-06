@@ -217,7 +217,7 @@ global.rm_rf = function(/*String*/ aFilename)
 
 
 // from stackoverflow
-function copyRecursiveSync (src, dest) {
+global.copyRecursiveSync = function (src, dest) {
     var exists = fs.existsSync(src);
     var stats = exists && fs.statSync(src);
     var isDirectory = exists && stats.isDirectory();
