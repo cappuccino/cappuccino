@@ -2020,6 +2020,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     }
 
     [self setValue:placeholderColor forThemeAttribute:@"text-color" inState:CPTextFieldStatePlaceholder];
+
+    [self layoutSubviews];
 }
 
 - (void)viewDidHide
