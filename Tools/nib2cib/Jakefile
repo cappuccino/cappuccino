@@ -1,10 +1,6 @@
-
 require("../../common.jake");
 
-// var FILE = require("file");
-
 const path = require("path");
-const glob = require("glob");
 
 var app = require("../../Jake/applicationtask.js").app;
 var BundleTask = require("../../Jake/bundletask.js").BundleTask;
@@ -21,8 +17,8 @@ app ("nib2cib", function(nib2cibTask)
     nib2cibTask.setEmail("feedback @nospam@ 280north.com");
     nib2cibTask.setSummary("nib2cib converts Cocoa nib and xibs to Cappuccino cibs");
     
-    nib2cibTask.setSources(glob.sync("**/*.j"));
-    nib2cibTask.setResources(glob.sync("Resources/*"));
+    nib2cibTask.setSources(new FileList("**/*.j"));
+    nib2cibTask.setResources(new FileList("Resources/*"));
     nib2cibTask.setEnvironments(require("../../Jake/environment.js").CommonJS);
     nib2cibTask.setFlattensSources(true);
 

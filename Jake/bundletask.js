@@ -26,7 +26,6 @@ const path = require("path");
 
 // NPM modules
 const fs = require("fs-extra");
-const glob = require("glob");
 const ObjectiveJ = require("objj-runtime");
 const term = require("objj-runtime").term;
 
@@ -493,11 +492,11 @@ BundleTask.prototype.defineResourceTasks = function()
     {
         if (fs.lstatSync(aResourcePath).isDirectory())
         {
-            resources = resources.concat(aResourcePath, glob.sync(aResourcePath + "/**"));
+            resources = resources.concat(aResourcePath, (new FileList(aResourcePath + "/**")).toArray());
         }        else
             resources.push(aResourcePath);
     });
-    // TODO: too lazy to look this up, assuming it returns the array without duplicates
+    // TODO: assuming it returns the array without duplicates
     // resources = UTIL.unique(resources);
     resources = [... new Set(resources)];
     if (resources.length <= 0)

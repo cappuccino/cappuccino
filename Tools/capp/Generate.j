@@ -35,9 +35,7 @@ var OBJJ = require("objj-runtime"),
 var fs = require("fs-extra");
 var node_path = require("path");
 var child_process = require("child_process");
-var glob = require("glob");
-
-
+var jake = require("objj-jake");
 // FIXME: removing command line options for now
 
 /* parser.usage("DESTINATION_DIRECTORY");
@@ -181,7 +179,7 @@ function gen(/*va_args*/)
         // FIXME???
         fs.copySync(sourceTemplate, destinationProject, { recursive: true });
 
-        var files = glob.sync(node_path.join(destinationProject, "**", "*")),
+        var files = (new jake.FileList(node_path.join(destinationProject, "**", "*"))).toArray(),
             count = files.length,
             name = node_path.basename(destinationProject),
             orgIdentifier = [configuration valueForKey:@"organization.identifier"] || "";

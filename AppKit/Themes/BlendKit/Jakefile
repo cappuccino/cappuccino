@@ -2,7 +2,6 @@
 require("../../../common.jake");
 
 const path = require("path");
-const glob = require("glob"); // FIXME: probably unnecessary to use an external library for this, maybe built into FileList?
 
 var framework = require("../../../Jake/frameworktask.js").framework;
 var BundleTask = require("../../../Jake/bundletask.js").BundleTask;
@@ -17,8 +16,8 @@ blendKitTask = framework ("BlendKit", function(blendKitTask)
     blendKitTask.setAuthor("280 North, Inc.");
     blendKitTask.setEmail("feedback @nospam@ 280north.com");
     blendKitTask.setSummary("BlendKit classes for Cappuccino");
-    blendKitTask.setSources(glob.sync("*.j"));
-    blendKitTask.setResources(glob.sync("Resources/*"));
+    blendKitTask.setSources(new FileList("*.j"));
+    blendKitTask.setResources(new FileList("Resources/*"));
     blendKitTask.setLicense(BundleTask.License.LGPL_v2_1);
     blendKitTask.setFlattensSources(true); // FIXME: how do we non flatten?
 
