@@ -1,13 +1,7 @@
-
 require ("../../common.jake");
 
 var app = require("../../Jake/applicationtask.js").app;
 var BundleTask = require("../../Jake/bundletask.js").BundleTask;
-
-/*     fileCreate = require("jake").fileCreate,
-    FILE = require("file"),
-    OS = require("os"),
-    stream = require("narwhal/term").stream; */
 
 const path = require("path");
 

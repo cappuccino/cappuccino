@@ -28,8 +28,7 @@
 var OBJJ = require("objj-runtime"),
     stream = require("objj-runtime").term.stream;
 
-// parser = new (require("narwhal/args").Parser)();
-
+parser = new (require("objj-runtime").parser.Parser)();
 
 // FIXME: lots of chaining using narwhals path wrapper, this file might still be broken
 var fs = require("fs");
@@ -38,7 +37,7 @@ var child_process = require("child_process");
 var jake = require("objj-jake");
 // FIXME: removing command line options for now
 
-/* parser.usage("DESTINATION_DIRECTORY");
+parser.usage("DESTINATION_DIRECTORY");
 
 parser.help("Generate a Cappuccino project or Frameworks directory");
 
@@ -93,7 +92,7 @@ parser.option("--list-frameworks", "listFrameworks")
     .set(true)
     .help("Lists available frameworks.");
 
-parser.helpful(); */
+parser.helpful();
 
 // FIXME: better way to do this:
 /* var CAPP_HOME = require("narwhal/packages").catalog["cappuccino"].directory,
@@ -103,28 +102,33 @@ var templatesDirectory = "/Users/alfred/Developer/cappuccino/Tools/capp/Resource
 
 function gen(/*va_args*/)
 {
+    console.log("in gen: " + arguments);
     var args = ["capp gen"].concat(Array.prototype.slice.call(arguments));
-    var options = { args: args };
-    
-    //options = parser.parse(args, null, null, true);
+    debugger;
+    var options = parser.parse(args, null, null, true);
+
+    console.log(options);
 
     if (options.args.length > 1)
     {
         parser.printUsage(options);
         process.exit(1);
     }
+    console.log("a");
 
     if (options.listTemplates)
     {
         listTemplates();
         return;
     }
+    console.log("b");
 
     if (options.listFrameworks)
     {
         listFrameworks();
         return;
     }
+    console.log("c");
 
     var destination = options.args[0];
 
@@ -139,43 +143,63 @@ function gen(/*va_args*/)
             process.exit(1);
         }
     }
-
     var sourceTemplate = null;
 
     if (node_path.isAbsolute(options.template))
         sourceTemplate = options.template;
     else
         sourceTemplate = node_path.join(templatesDirectory, options.template);
+
+    console.log(sourceTemplate);
     if (!fs.lstatSync(sourceTemplate).isDirectory())
     {
         stream.print(colorize("Error: ", "red") + "The template " + logPath(sourceTemplate) + " cannot be found. Available templates are:");
         listTemplates();
         process.exit(1);
     }
-
+    console.log("d");
     var configFile = node_path.join(sourceTemplate, "template.config"),
         config = {};
-
-    if (fs.lstatSync(configFile).isFile())
+    console.log(configFile);
+    if (fs.existsSync(configFile))
         config = JSON.parse(fs.readFileSync(configFile, { encoding: "utf8" }));
         //config = JSON.parse(FILE.read(configFile, { charset:"UTF-8" }));
-
+    console.log("e");
+    debugger;
     var destinationProject = destination,
         configuration = options.noconfig ? [Configuration defaultConfiguration] : [Configuration userConfiguration],
         frameworks = options.frameworks,
         themes = options.themes;
 
+    console.log("f");
+
     if (!options.noFrameworks)
         frameworks.push("Objective-J", "Foundation", "AppKit");
+
+    console.log("before if");
 
     if (options.justFrameworks)
     {
         createFrameworksInFile(frameworks, destinationProject, options.symlink, options.useCappBuild, options.force);
         createThemesInFile(themes, destinationProject, options.symlink, options.force);
     }
-
     else if (!fs.existsSync(destinationProject))
     {
+        function copyRecursiveSync(src, dest) {
+            var exists = fs.existsSync(src);
+            var stats = exists && fs.statSync(src);
+            var isDirectory = exists && stats.isDirectory();
+            if (isDirectory) {
+                fs.mkdirSync(dest, { recursive: true });
+                fs.readdirSync(src).forEach(function(childItemName) {
+                    copyRecursiveSync(node_path.join(src, childItemName), node_path.join(dest, childItemName));
+            });
+            } else {
+            fs.copyFileSync(src, dest);
+            }
+        };
+
+        console.log("before copy: " + sourceTemplate + " " + destinationProject);
         // FIXME???
         copyRecursiveSync(sourceTemplate, destinationProject);
 
@@ -209,8 +233,12 @@ function gen(/*va_args*/)
                     key = null,
                     keyEnumerator = [configuration keyEnumerator];
 
+                function escapeRegex(string) {
+                    return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+                }                       
+
                 while ((key = [keyEnumerator nextObject]) !== nil)
-                    contents = contents.replace(new RegExp("__" + RegExp.escape(key) + "__", 'g'), [configuration valueForKey:key]);
+                    contents = contents.replace(new RegExp("__" + escapeRegex(key) + "__", 'g'), [configuration valueForKey:key]);
 
                 fs.writeFileSync(path, contents, { encoding: "utf8" });
                 //FILE.write(path, contents, { charset: "UTF-8"});

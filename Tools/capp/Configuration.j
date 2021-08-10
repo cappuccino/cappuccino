@@ -5,7 +5,7 @@
 @import <Foundation/CPSet.j>
 
 var fs = require("fs");
-var path = require("path");
+var PATH = require("path");
 
 /* var FILE = require("file"),
     SYSTEM = require("system"); */
@@ -44,6 +44,7 @@ var DefaultDictionary       = nil,
 
 + (id)defaultConfiguration
 {
+    debugger;
     if (!DefaultConfiguration)
         DefaultConfiguration = [[self alloc] initWithPath:nil];
 
@@ -52,8 +53,9 @@ var DefaultDictionary       = nil,
 
 + (id)userConfiguration
 {
+    debugger;
     if (!UserConfiguration)
-        UserConfiguration = [[self alloc] initWithPath:FILE.join(process.env["HOME"], ".cappconfig")];
+        UserConfiguration = [[self alloc] initWithPath:PATH.join(process.env["HOME"], ".cappconfig")];
 
     return UserConfiguration;
 }
@@ -69,7 +71,7 @@ var DefaultDictionary       = nil,
 
         function isReadable(p) {
             try {
-                fs.accessSync(p, constants.R_OK);
+                fs.accessSync(p, fs.constants.R_OK);
                 return true;
             } catch (err) {
                 return false;
@@ -203,7 +205,7 @@ function config(/*va_args*/)
             keyEnumerator = [configuration storedKeyEnumerator];
 
         while ((key = [keyEnumerator nextObject]) !== nil)
-            print(key + '=' + [configuration valueForKey:key]);
+            console.log(key + '=' + [configuration valueForKey:key]);
     }
     else if (action === "get")
     {
