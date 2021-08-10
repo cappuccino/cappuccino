@@ -39,7 +39,6 @@ task ("CommonJS", [$BUILD_CJS_OBJECTIVE_J_DEBUG_FRAMEWORKS, $BUILD_CJS_CAPPUCCIN
 
 task ("install", ["CommonJS"], function()
 {
-    console.log("in task install");
     installCopy($BUILD_CJS_OBJECTIVE_J, false);
     installCopy($BUILD_CJS_CAPPUCCINO, false);
 });
