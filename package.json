@@ -2,14 +2,11 @@
   "name": "cappuccino",
   "version": "1.0.0",
   "devDependencies": {
-    "@types/node": "^15.12.4",
     "grunt": "^1.4.1",
     "grunt-contrib-concat": "^1.0.1",
     "terser": "^5.7.0"
   },
   "dependencies": {
-    "fs-extra": "^10.0.0",
-    "glob": "^7.1.7",
     "objj-fontinfo": "file:../objj-fontinfo",
     "objj-imagesize": "file:../objj-imagesize",
     "objj-jake": "file:../jake",
