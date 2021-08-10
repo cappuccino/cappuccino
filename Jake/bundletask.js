@@ -31,7 +31,7 @@ const term = require("objj-runtime").term;
 
 // Internal modules
 const environment = require("./environment");
-const Jake = require("objj-jake"); // TODO
+const Jake = require("objj-jake");
  
 /* Old imports 
     FILE = require("file")
@@ -45,6 +45,10 @@ const Jake = require("objj-jake"); // TODO
 var task = Jake.task;
 var Task = Jake.Task;
 var filedir = Jake.filedir;
+var FileList = Jake.FileList;
+CLEAN = require("objj-jake/lib/jake/clean.js").CLEAN;
+CLOBBER = require("objj-jake/lib/jake/clean.js").CLOBBER;
+
 
 function isImage(aFilename)
 {
