@@ -76,7 +76,7 @@ FileExecutable.prototype.execute = function(/*BOOL*/ shouldForce)
 
     this._hasExecuted = YES;
 
-    Executable.prototype.execute.call(this);
+    return Executable.prototype.execute.call(this);
 }
 
 DISPLAY_NAME(FileExecutable.prototype.execute);

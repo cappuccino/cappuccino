@@ -478,13 +478,13 @@ Executable.fileImporterForURL = function(/*CFURL|String*/ aURL)
             {
                 aFileExecutable.loadFileDependencies(function()
                 {
-                    aFileExecutable.execute();
-
+                    var result = aFileExecutable.execute();
+                                                     
                     // No more need to cache these.
                     disableCFURLCaching();
 
                     if (aCallback)
-                        aCallback();
+                        aCallback(result);
                 });
             });
         }
