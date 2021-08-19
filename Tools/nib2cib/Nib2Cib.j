@@ -40,9 +40,9 @@ var child_process = require("child_process");
 var /* FILE = require("file"), */
     /* OS = require("os"), */
     //SYS = require("system"),
-    FileList = require("objj-jake").FileList,
-    stream = require("objj-runtime").term.stream,
-    StaticResource = require("objj-runtime").StaticResource,
+    FileList = ObjectiveJ.utils.filelist.FileList,
+    stream = ObjectiveJ.term.stream,
+    StaticResource = ObjectiveJ.StaticResource,
 
     DefaultTheme = "Aristo2",
     BuildTypes = ["Debug", "Release"],
@@ -88,7 +88,7 @@ var /* FILE = require("file"), */
             SharedNib2Cib = self;
 
         commandLineArgs = theArgs;
-        parser = new (require("objj-runtime").parser.Parser)();
+        parser = new (ObjectiveJ.parser.Parser)();
         nibInfo = {};
         appDirectory = @"";
         frameworks = [CPDictionary dictionary];
@@ -127,16 +127,18 @@ var /* FILE = require("file"), */
         [self logError:[self exceptionReason:anException]];
         process.exit(1);
     }
-    //while(true) {};
 }
 
 - (void)checkPrerequisites
 {
-    var fontinfo = require("objj-fontinfo").fontinfo,
+/*     var fontinfo = require("objj-fontinfo").fontinfo,
         info = fontinfo("LucidaGrande", 13);
-
-    if (!info)
+ */
+    try {
+        child_process.execSync("which fontinfo");
+    } catch(error) {
         [self failWithMessage:@"fontinfo does not appear to be installed"];
+    }
 }
 
 - (void)enumerateFrameworks
@@ -320,18 +322,8 @@ var /* FILE = require("file"), */
 
             // Let the converter log however the user configured it
             [self setLogLevel:verbosity];
-
-            // Stripping the --watch flag from the command line arguments and running nib2cib in a child_process
-            // FIXME: this will fail if we have more advanced command line args
-            // FIXME: how to get this to work without resorting to child_process?
-
-            var a = process.argv.slice();
-            var idx = a.indexOf("--watch");
-            if (idx > -1) {
-                a.splice(idx, 1);
-            }
-            a.push(nib);
-            child_process.execSync(a.join(" "), {stdio: 'inherit'});
+            
+            [self convertWithOptions:options inputPath:nib completionHandler:function(success) { }];
         }
     });
 }
@@ -454,7 +446,7 @@ var /* FILE = require("file"), */
         matches = line.match(ArgsRe) || []; */
 
     file.close();
-    CPLog.debug("Reading stored options: " + p);
+    CPLog.debug("Reading stored options: " + path);
 
     if (matches)
     {
@@ -485,7 +477,7 @@ var /* FILE = require("file"), */
             var show = value.length !== undefined ? value.length > 0 : !!value;
 
             if (show)
-                print(option + ": " + value);
+                console.log(option + ": " + value);
         }
     }
 }
@@ -690,7 +682,7 @@ var /* FILE = require("file"), */
             [self setLogLevel:verbosity];
         }
 
-        require("browser/timeout").serviceTimeouts();
+        //require("browser/timeout").serviceTimeouts();
     });
 }
 
@@ -754,7 +746,7 @@ var /* FILE = require("file"), */
 
     cappBuild = PATH.normalize(cappBuild);
 
-    if (fs.lstatSync(cappBuild).isDirectory())
+    if (fs.existsSync(cappBuild) && fs.lstatSync(cappBuild).isDirectory())
     {
         var result = null;
 
@@ -776,7 +768,7 @@ var /* FILE = require("file"), */
 {
     // NOTE: It's safe to use '/' directly in the path, we're guaranteed to be on a Mac
     // FIXME: temporary fix, narwhal will not be used in the future
-    return [self findInFrameworks:PATH.normalize(PATH.join("/Users/alfred/Developer/narwhal", "packages/cappuccino/Frameworks"))
+    return [self findInFrameworks:PATH.normalize(PATH.resolve(fs.realpathSync(process.argv[1]), "..", "..", "Frameworks"))
                              path:path
                       isDirectory:isDirectory
                          callback:callback];
@@ -878,7 +870,7 @@ var /* FILE = require("file"), */
         {
             var path = PATH.normalize(blendName);
 
-            if (fs.lstatSync(path).isDirectory())
+            if (fs.existsSync(path) && fs.lstatSync(path).isDirectory())
                 themePath = path;
         }
     }
@@ -897,7 +889,7 @@ var /* FILE = require("file"), */
     // but we want the Browser environment. So we override mostEligibleEnvironment().
     themeBundle.mostEligibleEnvironment = function() { return "Browser"; };
 
-    themeBundle.addEventListener("load", function()
+    var loadFunction = function()
     {
         var keyedThemes = themeBundle.valueForInfoDictionaryKey("CPKeyedThemes");
 
@@ -922,14 +914,20 @@ var /* FILE = require("file"), */
 
         CPLog.debug("Loaded theme: " + path);
         completionBlock(theme);
-    });
+    };
 
-    themeBundle.addEventListener("error", function()
-    {
-        CPLog.error("Could not find bundle: " + self);
-    });
-    themeBundle.load();
-    themeBundle._loadStatus
+    if (themeBundle.isLoaded()) {
+        loadFunction();
+    } else {
+        themeBundle.addEventListener("load", loadFunction);
+
+        themeBundle.addEventListener("error", function()
+        {
+            CPLog.error("Could not find bundle: " + self);
+        });
+
+        themeBundle.load();
+    }
 }
 
 - (JSObject)readConfigFile:(CPString)configFile inputPath:(CPString)inputPath
@@ -1041,13 +1039,13 @@ var /* FILE = require("file"), */
     */
     var path = PATH.dirname(PATH.dirname(PATH.normalize(process.argv[0]))),
         version = null;
-
     if (PATH.basename(path) === "narwhal")
         path = PATH.join(path, "packages", "cappuccino");
 
     path = PATH.join(path, "lib", "nib2cib", "Info.plist");
 
-    console.log(path);
+    //TODO: path =
+
     try {
         fs.accessSync(path, fs.constants.R_OK);
 
@@ -1097,6 +1095,10 @@ var /* FILE = require("file"), */
         message = CPLogColorize(message, "fatal");
 
     stream.printError(message);
+}
+
+- (void)bundleDidFinishLoading:(CPBundle)aBundle
+{
 }
 
 @end

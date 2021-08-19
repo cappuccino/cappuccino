@@ -26,28 +26,42 @@ const path = require("path");
 
 // NPM modules
 const fs = require("fs");
-const ObjectiveJ = require("objj-runtime");
-const term = require("objj-runtime").term;
+//const ObjectiveJ = require("@objj/runtime");
+const term = ObjectiveJ.term;
 
 // Internal modules
 const environment = require("./environment");
-const Jake = require("objj-jake");
- 
+//const JAKE = require("@objj/jake");
+
 /* Old imports 
     FILE = require("file")
     OS = require("os")
     UTIL = require("narwhal/util")
     TERM = require("narwhal/term")
     base64 = require("base64")
-    Jake = require("jake")
+    JAKE = require("jake")
 */
 
-var task = Jake.task;
-var Task = Jake.Task;
-var filedir = Jake.filedir;
-var FileList = Jake.FileList;
-CLEAN = require("objj-jake/lib/jake/clean.js").CLEAN;
-CLOBBER = require("objj-jake/lib/jake/clean.js").CLOBBER;
+var copyRecursiveSync = function (src, dest) {
+    var exists = fs.existsSync(src);
+    var stats = exists && fs.statSync(src);
+    var isDirectory = exists && stats.isDirectory();
+    if (isDirectory) {
+      fs.mkdirSync(dest, { recursive: true });
+      fs.readdirSync(src).forEach(function(childItemName) {
+        copyRecursiveSync(path.join(src, childItemName), path.join(dest, childItemName));
+      });
+    } else {
+      fs.copyFileSync(src, dest);
+    }
+};
+
+var task = JAKE.task;
+var Task = JAKE.Task;
+var filedir = JAKE.filedir;
+var FileList = JAKE.FileList;
+CLEAN = JAKE.CLEAN_AND_CLOBBER.CLEAN;
+CLOBBER = JAKE.CLEAN_AND_CLOBBER.CLOBBER;
 
 
 function isImage(aFilename)
@@ -494,7 +508,7 @@ BundleTask.prototype.defineResourceTasks = function()
         basePath = null;
     this._resources.forEach(    function(aResourcePath)
     {
-        if (fs.lstatSync(aResourcePath).isDirectory())
+        if (fs.existsSync(aResourcePath) && fs.lstatSync(aResourcePath).isDirectory())
         {
             resources = resources.concat(aResourcePath, (new FileList(aResourcePath + "/**")).toArray());
         }        else
@@ -558,7 +572,7 @@ BundleTask.prototype.defineSpritedImagesTask = function()
                     fs.rmSync(MHTMLPath);
                 return;
             }
-            term.stream.write("Creating MHTML paths file... \0green(" + MHTMLPath + "\0)");
+            term.stream.print("Creating MHTML paths file... \0green(" + MHTMLPath + "\0)");
             var MHTMLStream = fs.openSync(MHTMLPath, "w+");
             fs.writeSync(MHTMLStream, "@STATIC;1.0;");
 
@@ -712,11 +726,12 @@ BundleTask.prototype.defineSourceTasks = function()
             {           
                 if ((path.extname(aFilename)).toLowerCase() !== ".j")
                 {
-                    (term.stream.write("Including [\0blue(" + anEnvironment + "\0)] \0purple(" + aFilename + "\0)")).flush();
+                    (term.stream.write("Including [\0blue(" + anEnvironment + "\0)] \0purple(" + aFilename + "\0)"));
                     var compiled = fs.readFileSync(aFilename, { encoding: "utf8"}).toString();
                     var dots = (Array(Math.round(compiled.length / 1024 / 4) + 3)).join(".");
+                    var p = await fs.promises.writeFile(compiledEnvironmentSource, compiled, { encoding: "utf8"});
                     term.stream.print(dots);
-                    return await fs.promises.writeFile(compiledEnvironmentSource, compiled, { encoding: "utf8"});
+                    return p;
                 }
                 else
                 {
@@ -738,8 +753,8 @@ BundleTask.prototype.defineSourceTasks = function()
                             var compiled = executer.toMarkedString();
                             //var msg = "Compiling [\0blue(" + anEnvironment + "\0)] \0purple(" + aFilename + "\0)";
                             var dots = (Array(Math.round(compiled.length / 1024 / 4) + 3)).join(".");
-                            term.stream.print(dots);
                             fs.writeFileSync(compiledEnvironmentSource, compiled, { encoding: "utf8"});
+                            term.stream.print(dots);
                             resolve();
                         }
                         var msg = "Compiling [\0blue(" + anEnvironment + "\0)] \0purple(" + aFilename + "\0)";

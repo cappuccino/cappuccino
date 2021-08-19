@@ -268,6 +268,8 @@ var CPWindowActionMessageKeys = [
     BOOL                                _inhibitUpdateTrackingAreas;    // Used by the CPView when updating tracking areas
 }
 
+@global document
+
 + (Class)_binderClassForBinding:(CPString)aBinding
 {
     if ([aBinding hasPrefix:CPDisplayPatternTitleBinding])

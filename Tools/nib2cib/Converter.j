@@ -200,11 +200,9 @@ ConverterConversionException = @"ConverterConversionException";
         // Minor NS keyed archive to CP keyed archive conversion.
         // Use Java directly because rhino's string.replace is *so slow*. 4 seconds vs. 1 millisecond.
         // plistContents = plistContents.replace(/\<key\>\s*CF\$UID\s*\<\/key\>/g, "<key>CP$UID</key>");
-        if (system.engine === "rhino")
-            plistContents = String(java.lang.String(plistContents).replaceAll("\\<key\\>\\s*CF\\$UID\\s*\\<\/key\\>", "<key>CP\\$UID</key>"));
-        else
-            plistContents = plistContents.replace(new RegExp("\\<key\\>\\s*CF\\$UID\\s*\\<\\/key\\>", "g"), "<key>CP$UID</key>");
-
+        
+        plistContents = plistContents.replace(new RegExp("\\<key\\>\\s*CF\\$UID\\s*\\<\\/key\\>", "g"), "<key>CP$UID</key>");
+        
         plistContents = plistContents.replace(new RegExp("<string>[\\u0000-\\u0008\\u000B\\u000C\\u000E-\\u001F]<\\/string>", "g"), function(c)
         {
             CPLog.warn("Warning: converting character 0x" + c.charCodeAt(8).toString(16) + " to base64 representation");

@@ -2,9 +2,16 @@ require("./common.jake");
 
 var fs = require('fs');
 var path = require('path');
-const term = require("objj-runtime").term;
+var child_process = require("child_process");
+debugger;
+const term = ObjectiveJ.term;
 
 var subprojects = ["Objective-J", "CommonJS", "Foundation", "AppKit", "Tools"];
+
+task ("build", function() {
+    child_process.execSync("mkdir -p $CAPP_BUILD");
+    child_process.execSync("ln -sf $PWD/node_modules $CAPP_BUILD/node_modules");
+});
 
 ["build", "clean", "clobber"].forEach(function(aTaskName)
 {
@@ -18,7 +25,7 @@ $BUILD_CJS_OBJECTIVE_J_DEBUG_FRAMEWORKS = path.join($BUILD_CJS_OBJECTIVE_J, "Fra
 
 filedir ($BUILD_CJS_OBJECTIVE_J_DEBUG_FRAMEWORKS, ["debug", "release"], function()
 {
-    fs.mkdirSync($BUILD_CJS_OBJECTIVE_J_DEBUG_FRAMEWORKS);
+    fs.mkdirSync($BUILD_CJS_OBJECTIVE_J_DEBUG_FRAMEWORKS, { recursive: true });
 
     cp_r(path.join($BUILD_DIR, "Debug", "Objective-J"), path.join($BUILD_CJS_OBJECTIVE_J_DEBUG_FRAMEWORKS, "Objective-J"));
 });
@@ -27,15 +34,16 @@ $BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS = path.join($BUILD_CJS_CAPPUCCINO, "Frame
 
 filedir ($BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS, ["debug", "release"], function()
 {
-    console.log("in the task $BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS");
-    fs.mkdirSync($BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS);
+    fs.mkdirSync($BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS, { recursive: true });
 
     cp_r(path.join($BUILD_DIR, "Debug", "Foundation"), path.join($BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS, "Foundation"));
     cp_r(path.join($BUILD_DIR, "Debug", "AppKit"), path.join($BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS, "AppKit"));
     cp_r(path.join($BUILD_DIR, "Debug", "BlendKit"), path.join($BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS, "BlendKit"));
 });
 
-task ("CommonJS", [$BUILD_CJS_OBJECTIVE_J_DEBUG_FRAMEWORKS, $BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS, "debug", "release"]);
+task ("CommonJS", [$BUILD_CJS_OBJECTIVE_J_DEBUG_FRAMEWORKS, $BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS, "debug", "release"], function() {
+    console.log("in commonjs action");
+});
 
 task ("install", ["CommonJS"], function()
 {

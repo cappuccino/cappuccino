@@ -69,20 +69,18 @@ var sourceDirs = [
 const path = require("path");
 const fs = require("fs");
 
-const stream = require("objj-runtime/lib/term").stream;
-const jake = require("objj-jake");
+const stream = ObjectiveJ.term.stream;
+const jake = JAKE;
 
-const CLEAN = require("objj-jake/lib/jake/clean").CLEAN;
-const CLOBBER = require("objj-jake/lib/jake/clean").CLOBBER;
+const CLEAN = JAKE.CLEAN_AND_CLOBBER.CLEAN;
+const CLOBBER = JAKE.CLEAN_AND_CLOBBER.CLOBBER;
 
 const FileList = jake.FileList;
 const filedir = jake.filedir;
 const task = jake.task;
 
-const JAKE_EXTRAS_PATH = "/Users/alfred/Developer/cappuccino/Jake/"; 
-
-const framework = require(path.join(JAKE_EXTRAS_PATH, "frameworktask.js")).framework;
-const browserEnvironment = require(path.join(JAKE_EXTRAS_PATH, "environment.js"));
+const framework = CAPPUCCINO.Jake.frameworktask.framework;
+//const browserEnvironment = require("@objj/cappuccino/Jake/environment.js");
 
 const configuration = env["CONFIG"] || env["CONFIGURATION"] || env["c"] || "Debug";
 const productName = "__project.nameasidentifier__";

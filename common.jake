@@ -22,8 +22,7 @@
 const fs = require('fs');
 const child_process = require('child_process');
 const path = require('path');
-const jake = require("objj-jake");
-const { stream } = require('objj-runtime/lib/term');
+const { stream } = ObjectiveJ.term;
 
 requiresSudo = false;
 
@@ -52,11 +51,11 @@ if (!process.env["CONFIG"])
 
 global.ENV  = process.env;
     
-global.task = jake.task;
-global.directory = jake.directory;
-global.file = jake.file;
-global.filedir = jake.filedir;
-global.FileList = jake.FileList;
+global.task = JAKE.task;
+global.directory = JAKE.directory;
+global.file = JAKE.file;
+global.filedir = JAKE.filedir;
+global.FileList = JAKE.FileList;
 
 global.$CONFIGURATION                   = process.env['CONFIG'];
 global.$INLINE_MSG_SEND                 = process.env['INLINE_MSG_SEND'];
@@ -70,8 +69,10 @@ global.$BUILD_CJS_CAPPUCCINO_BIN        = path.join($BUILD_CJS_CAPPUCCINO, "bin"
 global.$BUILD_CJS_CAPPUCCINO_LIB        = path.join($BUILD_CJS_CAPPUCCINO, "lib");
 global.$BUILD_CJS_CAPPUCCINO_FRAMEWORKS = path.join($BUILD_CJS_CAPPUCCINO, "Frameworks");
 
-global.CLEAN = require("objj-jake/lib/jake/clean.js").CLEAN;
-global.CLOBBER = require("objj-jake/lib/jake/clean.js").CLOBBER;
+global.OBJJ_INCLUDE_PATHS.push(global.$BUILD_CJS_CAPPUCCINO_FRAMEWORKS);
+
+global.CLEAN = JAKE.CLEAN_AND_CLOBBER.CLEAN;
+global.CLOBBER = JAKE.CLEAN_AND_CLOBBER.CLOBBER;
 global.CLEAN.include(path.join(global.$BUILD_DIR, "*.build"));
 global.CLOBBER.include(global.$BUILD_DIR);
 
@@ -198,8 +199,7 @@ function setupEnvironment()
 {
     try
     {
-        debugger;
-        require("objj-runtime").OBJJ_INCLUDE_PATHS.push(path.join($BUILD_CONFIGURATION_DIR, "CommonJS", "cappuccino", "Frameworks"));
+        ObjectiveJ.OBJJ_INCLUDE_PATHS.push(path.join($BUILD_CONFIGURATION_DIR, "CommonJS", "cappuccino", "Frameworks"));
     }
     catch (e)
     {
@@ -285,11 +285,12 @@ global.subjake = function(/*Array<String>*/ directories, /*String*/ aTaskName)
     {
         if (fs.lstatSync(aDirectory).isDirectory() && fs.lstatSync(path.join(aDirectory, "Jakefile")).isFile())
         {
-            var cmd = "cd " + enquote(aDirectory) + " && " + serializedENV() + " " + "npx objj-jake" + " " + enquote(aTaskName);
+            var cmd = "cd " + enquote(aDirectory) + " && " + serializedENV() + " " + "jake" + " " + enquote(aTaskName);
             var returnCode = systemSync(cmd);
                 
-            if (returnCode)
+            if (returnCode) {
                 process.exit(returnCode);
+            }
         }
         else
             print("warning: subjake missing: " + aDirectory + " (this is not necessarily an error, " + aDirectory + " may be optional)");
@@ -410,11 +411,16 @@ global.installSymlink = function(sourcePath)
 
 global.installCopy = function(sourcePath, useSudo)
 {
-    if (!fs.lstatSync(sourcePath).isDirectory())
+    if (!fs.existsSync(sourcePath))
         return;
 
     var packageName = path.basename(sourcePath),
-        targetPath = path.join(SYSTEM.prefix, "packages", packageName);
+        targetPath = path.join(__dirname, "dist", packageName);
+
+    // create the dist directory if it does not exist
+    if (!fs.existsSync(targetPath)) {
+        fs.mkdirSync(targetPath, { recursive: true });
+    }
 
     if (fs.lstatSync(targetPath).isDirectory())
         fs.rmSync(targetPath, {recursive: true, force: true});
@@ -431,23 +437,34 @@ global.installCopy = function(sourcePath, useSudo)
 
     var binPath = path.resolve(path.join(targetPath, "bin"))
 
+    // create the bin directory if it does not exist
+    if (!fs.existsSync(binPath)) {
+        fs.mkdirSync(targetPath)
+    }
+
     if (fs.lstatSync(binPath).isDirectory())
     {
         fs.readdirSync(binPath).forEach(function (name)
         {
             var binary = path.join(binPath, name);
+
             fs.chmodSync(binary, 0o755);
         });
     }
+    fs.readdirSync(binPath).forEach(function (name)
+    {
+        child_process.execSync("sudo ln -sf " + path.join(binPath, name) + " /usr/local/bin/" + name);
+    });
 };
 
 
 global.spawnJake = function(/*String*/ aTaskName)
 {
     //if (systemSync(serializedENV() + " " + "npx --node-options='--inspect-brk' objj-jake" + " " + aTaskName))
-    if (systemSync(serializedENV() + " " + "npx objj-jake" + " " + aTaskName))
+    if (systemSync(serializedENV() + " " + "jake" + " " + aTaskName)) {
         console.log("exited in spawnJake with error");
         process.exit(1);    //rake abort if ($? != 0)
+    }
 };
 
 var normalizeCommand = function(/*Array or String*/ command)

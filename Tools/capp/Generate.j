@@ -25,16 +25,15 @@
 /* var OS = require("os"),
     SYSTEM = require("system"),
     FILE = require("file"); */
-var OBJJ = require("objj-runtime"),
-    stream = require("objj-runtime").term.stream;
 
-parser = new (require("objj-runtime").parser.Parser)();
+var stream = ObjectiveJ.term.stream;
+
+parser = new (ObjectiveJ.parser.Parser)();
 
 // FIXME: lots of chaining using narwhals path wrapper, this file might still be broken
 var fs = require("fs");
 var node_path = require("path");
 var child_process = require("child_process");
-var jake = require("objj-jake");
 // FIXME: removing command line options for now
 
 parser.usage("DESTINATION_DIRECTORY");
@@ -98,37 +97,32 @@ parser.helpful();
 /* var CAPP_HOME = require("narwhal/packages").catalog["cappuccino"].directory,
     templatesDirectory = node_path.join(CAPP_HOME, "lib", "capp", "Resources", "Templates"); */
 
-var templatesDirectory = "/Users/alfred/Developer/cappuccino/Tools/capp/Resources/Templates";
+var templatesDirectory;
 
 function gen(/*va_args*/)
 {
-    console.log("in gen: " + arguments);
-    var args = ["capp gen"].concat(Array.prototype.slice.call(arguments));
-    debugger;
+    var mainBundlePath = arguments[0];
+    templatesDirectory = node_path.join(mainBundlePath, "..", "Resources", "Templates");
+    var args = ["capp gen"].concat(Array.prototype.slice.call(arguments, 1));
     var options = parser.parse(args, null, null, true);
-
-    console.log(options);
 
     if (options.args.length > 1)
     {
         parser.printUsage(options);
         process.exit(1);
     }
-    console.log("a");
 
     if (options.listTemplates)
     {
         listTemplates();
         return;
     }
-    console.log("b");
 
     if (options.listFrameworks)
     {
         listFrameworks();
         return;
     }
-    console.log("c");
 
     var destination = options.args[0];
 
@@ -150,33 +144,29 @@ function gen(/*va_args*/)
     else
         sourceTemplate = node_path.join(templatesDirectory, options.template);
 
-    console.log(sourceTemplate);
     if (!fs.lstatSync(sourceTemplate).isDirectory())
     {
         stream.print(colorize("Error: ", "red") + "The template " + logPath(sourceTemplate) + " cannot be found. Available templates are:");
         listTemplates();
         process.exit(1);
     }
-    console.log("d");
+
     var configFile = node_path.join(sourceTemplate, "template.config"),
         config = {};
-    console.log(configFile);
+
     if (fs.existsSync(configFile))
         config = JSON.parse(fs.readFileSync(configFile, { encoding: "utf8" }));
         //config = JSON.parse(FILE.read(configFile, { charset:"UTF-8" }));
-    console.log("e");
-    debugger;
+
     var destinationProject = destination,
         configuration = options.noconfig ? [Configuration defaultConfiguration] : [Configuration userConfiguration],
         frameworks = options.frameworks,
         themes = options.themes;
 
-    console.log("f");
 
     if (!options.noFrameworks)
         frameworks.push("Objective-J", "Foundation", "AppKit");
 
-    console.log("before if");
 
     if (options.justFrameworks)
     {
@@ -199,11 +189,10 @@ function gen(/*va_args*/)
             }
         };
 
-        console.log("before copy: " + sourceTemplate + " " + destinationProject);
         // FIXME???
         copyRecursiveSync(sourceTemplate, destinationProject);
 
-        var files = (new jake.FileList(node_path.join(destinationProject, "**", "*"))).toArray(),
+        var files = (new ObjectiveJ.utils.filelist.FileList(node_path.join(destinationProject, "**", "*"))).toArray(),
             count = files.length,
             name = node_path.basename(destinationProject),
             orgIdentifier = [configuration valueForKey:@"organization.identifier"] || "";
@@ -272,18 +261,20 @@ function gen(/*va_args*/)
 
 function createFrameworksInFile(/*Array*/ frameworks, /*String*/ aFile, /*Boolean*/ symlink, /*Boolean*/ build, /*Boolean*/ force)
 {
-    var destination = node_path.path(node_path.resolve(aFile));
+    var destination = node_path.resolve(aFile);
 
-    if (!destination.isDirectory())
+    if (!fs.lstatSync(destination).isDirectory())
         fail("Cannot create Frameworks. The directory does not exist: " + destination);
 
-    var destinationFrameworks = destination.join("Frameworks"),
-        destinationDebugFrameworks = destination.join("Frameworks", "Debug");
+    var destinationFrameworks = node_path.join(destination, "Frameworks"),
+        destinationDebugFrameworks = node_path.join(destination, "Frameworks", "Debug");
 
     stream.print("Creating Frameworks directory in " + logPath(destinationFrameworks) + "...");
 
     //destinationFrameworks.mkdirs(); // redundant
-    destinationDebugFrameworks.mkdirs();
+    //destinationDebugFrameworks.mkdirs();
+
+    fs.mkdirSync(destinationDebugFrameworks, { recursive: true });
 
     if (build)
     {
@@ -303,84 +294,59 @@ function createFrameworksInFile(/*Array*/ frameworks, /*String*/ aFile, /*Boolea
     else
     {
         // Frameworks. Search frameworks paths
-        frameworks.forEach(function(framework)
-        {
+        frameworks.forEach(function(framework) {
+            var objjHome = ObjectiveJ.OBJJ_HOME;
             // Need a special case for Objective-J
-            if (framework === "Objective-J")
-            {
+            if (framework === "Objective-J"){
                 // Objective-J. Take from OBJJ_HOME.
-                var objjHome = OBJJ.OBJJ_HOME,
-                    objjPath = node_path.join(objjHome, "Frameworks", "Objective-J"),
-                    objjDebugPath = node_path.join(objjHome, "Frameworks", "Debug", "Objective-J");
+                var objjPath = node_path.join(objjHome, "..", "objective-j", "Frameworks", "Objective-J");
+                var objjDebugPath = node_path.join(objjHome, "..", "objective-j", "Frameworks", "Debug", "Objective-J");
 
-                installFramework(objjPath, destinationFrameworks.join("Objective-J"), force, symlink);
-                installFramework(objjDebugPath, destinationDebugFrameworks.join("Objective-J"), force, symlink);
+                installFramework(objjPath, node_path.join(destinationFrameworks, "Objective-J"), force, symlink);
+                installFramework(objjDebugPath, node_path.join(destinationDebugFrameworks, "Objective-J"), force, symlink);
 
                 return;
             }
+            
+            var frameworkPath = node_path.join(objjHome, "Frameworks", framework);
+            installFramework(frameworkPath, node_path.join(destinationFrameworks, framework), force, symlink);
 
-            var found = false;
+            var frameworkDebugPath = node_path.join(objjHome, "Frameworks", "Debug", framework);
+            installFramework(frameworkDebugPath, node_path.join(destinationDebugFrameworks, framework), force, symlink);
 
-            for (var i = 0; i < OBJJ.objj_frameworks.length; i++)
-            {
-                var sourceFramework = node_path.join(OBJJ.objj_frameworks[i], framework);                
-                
-                if (fs.lstatSync(sourceFramework).isDirectory())
-                {
-                    installFramework(sourceFramework, destinationFrameworks.join(framework), force, symlink);
-                    found = true;
-                    break;
-                }
-            }
-
-            if (!found)
+/*             if (!found)
                 warn("Couldn't find the framework: " + logPath(framework));
 
-            for (var i = 0, found = false; i < OBJJ.objj_debug_frameworks.length; i++)
-            {
-                var sourceDebugFramework = node_path.join(OBJJ.objj_debug_frameworks[i], framework);
-                
-                if (fs.lstatSync(sourceDebugFramework).isDirectory())
-                {
-                    installFramework(sourceDebugFramework, destinationDebugFrameworks.join(framework), force, symlink);
-                    found = true;
-                    break;
-                }
-            }
 
             if (!found)
-                warn("Couldn't find the debug framework: " + logPath(framework));
+                warn("Couldn't find the debug framework: " + logPath(framework)); */
         });
     }
 }
 
 function installFramework(source, dest, force, symlink)
 {
-    if (dest.exists())
-    {
-        if (force)
-            dest.rmtree();
-
-        else
-        {
+    if (fs.existsSync(dest)){
+        if (force) {
+            fs.rmSync(dest, { recursive: true });
+        } else {
             warn(logPath(dest) + " already exists. Use --force to overwrite.");
             return;
         }
     }
 
-    if (source.exists())
-    {
+    if (fs.existsSync(source)) {
         stream.print((symlink ? "Symlinking " : "Copying ") + logPath(source) + " ==> " + logPath(dest));
-
-        if (symlink)
+        if (symlink) {
             fs.symlinkSync(source, dest);
-        else
+        } else {
             copyRecursiveSync(source, dest);
-    }
-    else
+        }
+    } else {
         warn("Cannot find: " + logPath(source));
+    }
 }
-
+ 
 function createThemesInFile(/*Array*/ themes, /*String*/ aFile, /*Boolean*/ symlink, /*Boolean*/ force)
 {
     var destination = node_path.resolve(aFile);
@@ -397,12 +363,12 @@ function createThemesInFile(/*Array*/ themes, /*String*/ aFile, /*Boolean*/ syml
 
     var themesBuild = node_path.join(process.env["CAPP_BUILD"], "Release"),
         sources = [];
-
+ 
     themes.forEach(function(theme)
     {
         var themeFolder = theme + ".blend",
             path = node_path.join(themesBuild, themeFolder);
-        
+        console.log("createThemesInFile: " + path);
         if (!fs.lstatSync(path).isDirectory())
             fail("Cannot find theme " + themeFolder + " in " + themesBuild);
 
@@ -417,7 +383,7 @@ function createThemesInFile(/*Array*/ themes, /*String*/ aFile, /*Boolean*/ syml
 
 function installTheme(source, dest, force, symlink)
 {
-    if (dest.exists())
+    if (dest.exists()) 
     {
         if (force)
             dest.rmtree();
@@ -482,7 +448,7 @@ function listFrameworks()
 {
     stream.print("Frameworks:");
 
-    OBJJ.objj_frameworks.forEach(function(frameworksDirectory)
+    ObjectiveJ.objj_frameworks.forEach(function(frameworksDirectory)
     {
         stream.print("  " + frameworksDirectory);
 
@@ -494,7 +460,7 @@ function listFrameworks()
 
     stream.print("Frameworks (Debug):");
 
-    OBJJ.objj_debug_frameworks.forEach(function(frameworksDirectory)
+    ObjectiveJ.objj_debug_frameworks.forEach(function(frameworksDirectory)
     {
         stream.print("  " + frameworksDirectory);
 
@@ -512,8 +478,7 @@ function executePostInstallScript(/*String*/ destinationProject)
     if (fs.existsSync(path))
     {
         stream.print(colorize("Executing postinstall script...", "cyan"));
-        child_process.execSync("/bin/sh" + " " + path + " " + destinationProject);
-        //OS.system(["/bin/sh", path, destinationProject]);  // Use sh in case it isn't marked executable
+        child_process.execSync("/bin/sh" + " " + path + " " + destinationProject); // Use sh in case it isn't marked executable
         fs.rmSync(path);
     }
 }

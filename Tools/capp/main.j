@@ -7,9 +7,7 @@ var path = require("path");
 var fs = require("fs");
 
 function main(args) {
-    debugger;
-    console.log(args);
-    args.shift();
+    var mainBundlePath = args.shift();
 
     if (args.length < 1) {
         return printUsage();
@@ -29,7 +27,7 @@ function main(args) {
 
             case "config":      return config.apply(this, args.slice(index + 1));
 
-            case "gen":         return gen.apply(this, args.slice(index + 1));
+            case "gen":         return gen.apply(this, [mainBundlePath].concat(args.slice(index + 1)));
 
             default:            print("unknown command " + argument);
         }

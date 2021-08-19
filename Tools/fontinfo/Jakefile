@@ -1,7 +1,7 @@
 require("../../common.jake");
 
 var /* OS = require("os"), */
-    task = require("objj-jake").task;
+    task = JAKE.task;
     //SYSTEM = require("system");
 
 const child_process = require("child_process");
@@ -19,16 +19,15 @@ task ("build", function()
             args = "-sdk macosx " + args;
 
         var xcodebuild = process.env.CAPP_BUILD ? "xcodebuild " : "CAPP_BUILD=../../Build xcodebuild ";
-
         try {
-            console.log(child_process.execSync(xcodebuild + args).toString());
+            child_process.execSync(xcodebuild + args).toString();
         } catch (error) {
             process.exit(1);
         }
     }
     else
     {
-        print("Building fontinfo requires Xcode.");
+        console.log("Building fontinfo requires Xcode.");
     }
 });
 

@@ -40,7 +40,7 @@ acorn = {walk: walk};
 acorn = require("./acorn").acorn;
 var compiler = require("./ObjJAcornCompiler").ObjJCompiler;
 
-const term = require("objj-runtime").term;
+const term = ObjectiveJ.term;
 
 //$BUILD_CONFIGURATION_DIR = "../Build"
 $BROWSER_FILE       = path.join("Browser", "Objective-J.js");

@@ -44,7 +44,6 @@ var DefaultDictionary       = nil,
 
 + (id)defaultConfiguration
 {
-    debugger;
     if (!DefaultConfiguration)
         DefaultConfiguration = [[self alloc] initWithPath:nil];
 
@@ -53,7 +52,6 @@ var DefaultDictionary       = nil,
 
 + (id)userConfiguration
 {
-    debugger;
     if (!UserConfiguration)
         UserConfiguration = [[self alloc] initWithPath:PATH.join(process.env["HOME"], ".cappconfig")];
 

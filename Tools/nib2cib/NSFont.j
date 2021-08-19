@@ -26,8 +26,20 @@ IBDefaultFontFace = @".AppleSystemUIFont";
 IBDefaultFontFaceLegacy = @"Lucida Grande";
 IBDefaultFontSize = 13.0;
 
-var OS = require("os"),
-    fontinfo = require("objj-fontinfo").fontinfo;
+var OS = require("os");
+
+var child_process = require("child_process");
+
+function fontinfo(name, size)
+{
+    var result;
+    try {
+        result = child_process.execSync("fontinfo -n " + name + " " + (size || 12))
+    } catch(err) {
+        console.error("fontinfo fail");
+    }
+    return result ? JSON.parse(result) : null;
+};
 
 @implementation CPFont (NSCoding)
 

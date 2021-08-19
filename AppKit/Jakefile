@@ -53,6 +53,7 @@ subtasks (["Themes"], ["clean", "clobber"]);
 
 task ("Theme", [$BUILD_CJS_CAPPUCCINO_APPKIT], function()
 {
+    console.log("in task Theme in appkit");
     subjake(["Themes"], "build");
 
     cp_r(path.join($BUILD_DIR, $CONFIGURATION, 'Aristo.blend'), path.join($BUILD_PATH, 'Resources', 'Aristo.blend'));

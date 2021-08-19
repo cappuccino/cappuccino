@@ -28,10 +28,10 @@
 @import <BlendKit/BlendKit.j>
 
 var /* FILE = require("file"), */
-    TERM = require("objj-runtime").term,
-    task = require("objj-jake").task,
-    filedir = require("objj-jake").filedir,
-    BundleTask = require("../../../Jake/bundletask.js").BundleTask;
+    TERM = ObjectiveJ.term,
+    task = JAKE.task,
+    filedir = JAKE.filedir,
+    BundleTask = CAPPUCCINO.Jake.BundleTask.BundleTask;
 
 var fs = require("fs");
 var path = require("path");

@@ -120,6 +120,8 @@ var CALayerRegisteredRunLoopUpdates             = nil;
     CGAffineTransform   _transformFromLayer;
 }
 
+@global document
+
 /*!
     Returns a new animation layer.
 */

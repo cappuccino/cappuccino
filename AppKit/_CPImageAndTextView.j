@@ -77,6 +77,8 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
 #endif
 }
 
+@global document
+
 - (id)initWithFrame:(CGRect)aFrame control:(CPControl)aControl
 {
     self = [super initWithFrame:aFrame];

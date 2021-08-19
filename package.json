@@ -1,15 +1,29 @@
 {
-  "name": "cappuccino",
-  "version": "1.0.0",
+  "name": "@objj/cappuccino",
+  "version": "1.0.1-16",
   "devDependencies": {
-    "grunt": "^1.4.1",
-    "grunt-contrib-concat": "^1.0.1",
-    "terser": "^5.7.0"
+    "terser": "^5.7.0",
+    "@objj/cappuccino": "file:."
   },
   "dependencies": {
-    "objj-fontinfo": "file:../objj-fontinfo",
-    "objj-imagesize": "file:../objj-imagesize",
-    "objj-jake": "file:../jake",
-    "objj-runtime": "file:../objj-runtime"
+    "@objj/jake": "latest",
+    "@objj/runtime": "latest"
+  },
+  "files": [
+    "dist",
+    "Jake"
+  ],
+  "main": "index.js",
+  "bin": {
+    "capp": "dist/cappuccino/bin/capp",
+    "cib-dump": "dist/cappuccino/bin/cib-dump",
+    "flatten": "dist/cappuccino/bin/flatten",
+    "fontinfo": "dist/cappuccino/bin/fontinfo",
+    "imagesize": "dist/cappuccino/bin/imagesize",
+    "nib2cib": "dist/cappuccino/bin/nib2cib",
+    "ojdepcheck": "dist/cappuccino/bin/ojdepcheck",
+    "press": "dist/cappuccino/bin/press",
+    "objj": "dist/cappuccino/bin/objj",
+    "jake": "dist/cappuccino/bin/jake"
   }
 }

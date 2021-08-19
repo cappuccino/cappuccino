@@ -11,10 +11,9 @@ const fs = require("fs");
 
 var ENV = process.env,
     //FILE = require("file"),
-    JAKE = require("objj-jake"),
     task = JAKE.task,
     FileList = JAKE.FileList,
-    app = require("/Users/alfred/Developer/cappuccino/Jake/applicationtask.js").app,
+    app = CAPPUCCINO.Jake.applicationtask.app,
     configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Debug",
     OS = require("os"),
     projectName = "__project.nameasidentifier__";

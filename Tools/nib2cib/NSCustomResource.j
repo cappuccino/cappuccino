@@ -31,7 +31,17 @@
 
 var fs = require("fs");
 var path = require("path");
-var imageSize = require("objj-imagesize");
+var child_process = require("child_process");
+
+function imagesize() {
+    var result;
+    try {
+        result = child_process.execSync("imagesize -n " + p);
+    } catch(err) {
+        console.error("imagesize failed:" + err);
+    }
+    return result ? JSON.parse(result) : null;
+}
 
 /*
 var FILE = require("file"),
@@ -93,7 +103,7 @@ var supportedTemplateImages = {
                 CPLog.warn("Resource \"" + _resourceName + "\" not found in the Resources directories");
             else
             {
-                size = imageSize(fs.realpathSync(resourceInfo.path)) || CGSizeMakeZero();
+                size = imagesize(fs.realpathSync(resourceInfo.path)) || CGSizeMakeZero();
                 framework = resourceInfo.framework;
             }
 
