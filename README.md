@@ -34,6 +34,53 @@ Our tight integration with Xcode on MacOS brings the full power of visual Cocoa 
 
 However, you can also work on other platforms using only a simple text editor.
 
+Node.js version alpha
+------------------ 
+
+There is currently an ongoing effort to switch JavaScript platform from [Narwhal](https://narwhaljs.org/) to Node.js. To try the Node.js version, do the following:
+
+1. Install Node.js and npm from the [Node.js website](https://nodejs.org/en/).
+  
+2. Run `npm set prefix ~/.npm`. This will set the default install location for npm to `~/.npm`. The reasoning behind this is outlined in the section about permission issues below.
+
+3. Add this line to your `.zshrc` or equivalent.
+    ```bash
+    export PATH="~/.npm/bin:$PATH"
+    ```
+
+4. Restart your shell.
+
+4. Run `npm install -g @objj/cappuccino`.
+
+5. Done! See below for basic usage.
+
+### Permisson issues
+
+By default npm uses `/usr/local/lib/node_modules` as the install location for globally installed packages. This causes problems since users typically lack write permissions there. It is therefore recommended to either use a version manager, or change npm's default install location manually (which is what we did above). For more details on how to do this, see [this article](https://docs.npmjs.com/resolving-eacces-permissions-errors-when-installing-packages-globally).
+
+### Basic usage
+
+If the install succeeded you will be able to do the following to create a simple Cappuccino application:
+
+1. `capp gen HelloWorld`
+2. `cd HelloWorld`
+3. `python3 -m http.server`
+4. Go to `localhost:8000` in your web browser.
+
+### Building Cappuccino from source
+
+If you want to build Cappuccino from source you should clone the GitHub repository at https://github.com/cappuccino/cappuccino/ and checkout the `node-jake` branch. Then you can use the command `jake install` to install Cappuccino and its tools locally. 
+
+To summarize:
+
+1. `git clone https://github.com/cappuccino/cappuccino.git`
+2. `cd cappuccino`
+3. `git checkout node-jake`
+4. Make changes to the codebase.
+5. `jake install`
+
+Beware that building and installing Cappuccino from source will overwrite the binaries installed from npm. To go back, simply run `npm install -g @objj/cappuccino` again.
+
 Getting Started
 ---------------
 To write you first application, [download the starter package](http://www.cappuccino-project.org/#download).

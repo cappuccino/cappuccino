@@ -1,6 +1,6 @@
 {
   "name": "@objj/cappuccino",
-  "version": "1.0.1-16",
+  "version": "1.1.0",
   "devDependencies": {
     "terser": "^5.7.0",
     "@objj/cappuccino": "file:."
@@ -26,7 +26,7 @@
     "objj": "dist/cappuccino/bin/objj",
     "jake": "dist/cappuccino/bin/jake"
   },
-  "license": "LGPL-2.1-only",
+  "license": "LGPL-2.1-or-later",
   "repository": {
     "type": "git",
     "url": "https://github.com/cappuccino/cappuccino.git"
