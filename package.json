@@ -25,5 +25,10 @@
     "press": "dist/cappuccino/bin/press",
     "objj": "dist/cappuccino/bin/objj",
     "jake": "dist/cappuccino/bin/jake"
+  },
+  "license": "LGPL-2.1-only",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cappuccino/cappuccino.git"
   }
 }

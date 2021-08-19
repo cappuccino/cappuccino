@@ -368,7 +368,6 @@ function createThemesInFile(/*Array*/ themes, /*String*/ aFile, /*Boolean*/ syml
     {
         var themeFolder = theme + ".blend",
             path = node_path.join(themesBuild, themeFolder);
-        console.log("createThemesInFile: " + path);
         if (!fs.lstatSync(path).isDirectory())
             fail("Cannot find theme " + themeFolder + " in " + themesBuild);
 
