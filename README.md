@@ -49,7 +49,7 @@ To try the Node.js version, do the following:
 2. Run `npm set prefix ~/.npm`. This will set the default install location for npm to `~/.npm`. The reasoning behind 
 this is outlined in the section about permission issues below.
 
-3. Add this line to your `.zshrc` or equivalent.
+3. Add this line to your `.zshrc` or equivalent config file.
     ```bash
     export PATH="~/.npm/bin:$PATH"
     ```
@@ -79,20 +79,28 @@ If the install succeeded you will be able to do the following to create a simple
 ### Building Cappuccino from source
 
 If you want to build Cappuccino from source you should clone the GitHub repository at 
-https://github.com/cappuccino/cappuccino/ and checkout the `node-jake` branch. Then you can use the command
+https://github.com/cappuccino/cappuccino/ and checkout the `node` branch. Then you can use the command
 `jake install` to install Cappuccino and its tools locally. 
 
-To summarize:
+To build from source, do:
 
 1. `git clone https://github.com/cappuccino/cappuccino.git`
+   
 2. `cd cappuccino`
+   
 3. `git checkout node`
-4. Make changes to the codebase.
-5. Make sure the environment variable `$CAPP_BUILD` is set to the desired build path.
-6. Run `jake install` to build and install Cappuccino.
+   
+4. Make any desired changes to the codebase.
+   
+5. Make sure the environment variable `CAPP_BUILD` is set. This is done by adding the line
+    ```bash
+    export CAPP_BUILD="/path/to/cappuccino/build/directory"
+    ```
+    to your `.zshrc` or equivalent config file and of course changing the path to where you want to build Cappuccino.
+6.  Run `jake install` to build and install Cappuccino.
 
 Beware that building and installing Cappuccino from source will overwrite the binaries installed from npm. To undo this,
- simply run `npm install -g @objj/cappuccino` again.
+simply run `npm install -g @objj/cappuccino` again.
 
 Getting Started
 ---------------
