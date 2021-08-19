@@ -19,3 +19,4 @@ Tests/Manual/**/*.xcodeproj
 *.tm_properties
 *.idea
 node_modules
+*.vscode
