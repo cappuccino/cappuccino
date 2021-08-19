@@ -20,3 +20,4 @@ Tests/Manual/**/*.xcodeproj
 *.idea
 node_modules
 *.vscode
+dist
