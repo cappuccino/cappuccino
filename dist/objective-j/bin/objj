@@ -1,0 +1,3 @@
+#!/usr/bin/env narwhal
+
+require("objective-j").run(system.args);
