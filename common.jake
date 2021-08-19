@@ -454,7 +454,7 @@ global.installCopy = function(sourcePath, useSudo)
     fs.readdirSync(binPath).forEach(function (name)
     {
         var prefix = child_process.execSync("npm prefix -g").toString().trim();
-        child_process.execSync("sudo ln -sf " + path.join(binPath, name) + " " + path.join(prefix, "bin", name));
+        child_process.execSync( (useSudo ? "sudo " : "") + "ln -sf " + path.join(binPath, name) + " " + path.join(prefix, "bin", name));
     });
 };
 
