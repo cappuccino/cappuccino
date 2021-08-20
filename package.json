@@ -30,5 +30,8 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/cappuccino/cappuccino.git"
+  },
+  "engines": {
+    "node": ">=14.0.0"
   }
 }

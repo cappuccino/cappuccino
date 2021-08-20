@@ -465,7 +465,6 @@ global.installCopy = function(sourcePath, useSudo)
 
 global.spawnJake = function(/*String*/ aTaskName)
 {
-    //if (systemSync(serializedENV() + " " + "npx --node-options='--inspect-brk' objj-jake" + " " + aTaskName))
     if (systemSync(serializedENV() + " " + "jake" + " " + aTaskName)) {
         console.log("exited in spawnJake with error");
         process.exit(1);    //rake abort if ($? != 0)
