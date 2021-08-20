@@ -431,7 +431,7 @@ global.installCopy = function(sourcePath, useSudo)
 
     // hacky way to do a sudo copy.
     if (useSudo)
-        child_process.execSync(["sudo", "cp", "-r", sourcePath, targetPath].join(" "));
+        child_process.execSync(["sudo", "cp", "-Rf", sourcePath, path.dirname(targetPath)].join(" ")).toString();
     else
         copyRecursiveSync(sourcePath, targetPath);
 
@@ -448,7 +448,11 @@ global.installCopy = function(sourcePath, useSudo)
         {
             var binary = path.join(binPath, name);
 
-            fs.chmodSync(binary, 0o755);
+            if (useSudo) {
+                child_process.execSync(["sudo", "chmod", "755", binary].join(" "));
+            } else {
+                fs.chmodSync(binary, 0o755);
+            }
         });
     }
     fs.readdirSync(binPath).forEach(function (name)
