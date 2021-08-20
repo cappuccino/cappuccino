@@ -89,15 +89,17 @@ To build from source, do:
 2. `cd cappuccino`
    
 3. `git checkout node`
+
+4. `npm install`
+
+5. Make any desired changes to the codebase.
    
-4. Make any desired changes to the codebase.
-   
-5. Make sure the environment variable `CAPP_BUILD` is set. This is done by adding the line
+6. Make sure the environment variable `CAPP_BUILD` is set. This is done by adding the line
     ```bash
     export CAPP_BUILD="/path/to/cappuccino/build/directory"
     ```
     to your `.zshrc` or equivalent config file and of course changing the path to where you want to build Cappuccino.
-6.  Run `jake install` to build and install Cappuccino.
+7.  Run `jake install` to build and install Cappuccino.
 
 Beware that building and installing Cappuccino from source will overwrite the binaries installed from npm. To undo this,
 simply run `npm install -g @objj/cappuccino` again.
