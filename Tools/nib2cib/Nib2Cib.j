@@ -1028,29 +1028,12 @@ var /* FILE = require("file"), */
 
 - (void)printVersion
 {
-    /*
-        There are two usual possibilities for the location of the nib2cib binary.
-        If we are executing the installed narwhal binary, the location is:
-            <narwhal>/packages/cappuccino/bin/nib2cib
-        If we are executing the built binary, the location is:
-            <CAPP_BUILD>/Debug|Release/CommonJS/cappuccino/bin/nib2cib
-
-        Base on these paths we can locate nib2cib's Info.plist.
-    */
-    var path = PATH.dirname(PATH.dirname(PATH.normalize(process.argv[0]))),
-        version = null;
-    if (PATH.basename(path) === "narwhal")
-        path = PATH.join(path, "packages", "cappuccino");
-
-    path = PATH.join(path, "lib", "nib2cib", "Info.plist");
-
-    //TODO: path =
-
+    var path = PATH.join(fs.realpathSync(process.argv[1]), "..", "..", "lib", "nib2cib", "Info.plist");
+    var version = null;
+    
     try {
         fs.accessSync(path, fs.constants.R_OK);
 
-        //if (FILE.isReadable(path))
-        //{
         var plist = fs.readFileSync(path, { encoding: "utf8" });
 
         if (!plist)
@@ -1063,15 +1046,16 @@ var /* FILE = require("file"), */
 
         version = plist.valueForKey("CPBundleVersion");
 
-        if (version)
+        if (version) {
             stream.print("nib2cib v" + version);
-        //}
+        }
     } catch (error) {
-        // not readable
+        console.log("Error: " + path + " is not readable.");
     }
 
-    if (!version)
+    if (!version) {
         stream.print("<No version info available>");
+    }
 }
 
 - (CPString)exceptionReason:(JSObject)exception
