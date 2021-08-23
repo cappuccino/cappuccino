@@ -687,7 +687,6 @@ function CFBundleNotifySpriteSupportListeners()
 
 function CFBundleTestSpriteTypes(/*Array*/ spriteTypes)
 {
-    console.log("CFBundleTestSpriteTypes");
     // If we don't support Images, then clearly we don't support sprites.
     if (!("Image" in global) || spriteTypes.length < 2)
     {
