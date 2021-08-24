@@ -49,22 +49,19 @@ var buildDir = "Build";
 //  Do not edit! (unless you know what you are doing)
 //===========================================================
 
-const path = require("path");
-const fs = require("fs");
-
-var stream = ObjectiveJ.term.stream,
-    task = JAKE.task,
-    FileList = JAKE.FileList,
-    CLEAN = JAKE.CLEAN_AND_CLOBBER.CLEAN,
-    CLOBBER = JAKE.CLEAN_AND_CLOBBER.CLOBBER,
-    //blend = require("cappuccino/jake").blend,
-    configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Debug",
-    productName = "__project.nameasidentifier__",
-    debugBlendKitPath = path.join("Frameworks", "Debug", "BlendKit"),
-    releaseBlendKitPath = path.join("Frameworks", "BlendKit"),
-    buildPath = path.resolve(path.join(buildDir, productName + ".build"));
-
-debugger;
+const path = require("path"),
+      fs = require("fs"),
+      stream = ObjectiveJ.term.stream,
+      task = JAKE.task,
+      FileList = JAKE.FileList,
+      CLEAN = JAKE.CLEAN_AND_CLOBBER.CLEAN,
+      CLOBBER = JAKE.CLEAN_AND_CLOBBER.CLOBBER,
+      configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Debug",
+      productName = "__project.nameasidentifier__",
+      debugBlendKitPath = path.join("Frameworks", "Debug", "BlendKit"),
+      releaseBlendKitPath = path.join("Frameworks", "BlendKit"),
+      buildPath = path.resolve(path.join(buildDir, productName + ".build")),
+      child_process = require("child_process");
 
 var callback;
 
@@ -141,12 +138,20 @@ task ("all", ["debug", "release"]);
 
 task ("test", ["debug"], function()
 {
-    OS.system(["open", "index-debug.html"]);
+    try {
+        child_process.execSync("open index-debug.html", {stdio: 'inherit'});
+    } catch (error) {
+        process.exit(1);
+    }
 });
 
 task ("test-release", ["release"], function()
 {
-    OS.system(["open", "index.html"]);
+    try {
+        child_process.execSync("open index.html", {stdio: 'inherit'});
+    } catch (error) {
+        process.exit(1);
+    }
 });
 
 CLEAN.include(buildPath);

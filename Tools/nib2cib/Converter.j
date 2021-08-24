@@ -127,7 +127,7 @@ ConverterConversionException = @"ConverterConversionException";
             //temporaryNibFilePath = FILE.join("/tmp", FILE.basename(aFilePath) + ".tmp.nib");
 
             try {
-                child_process.execSync("/usr/bin/ibtool" + " " + aFilePath + " " + "--compile" + " " + temporaryNibFilePath);
+                child_process.execSync("/usr/bin/ibtool" + " " + aFilePath + " " + "--compile" + " " + temporaryNibFilePath, {stdio: 'inherit'});
             } catch(err) {
                 [CPException raise:ConverterConversionException reason:@"Could not compile file: " + aFilePath];
             }
@@ -155,7 +155,7 @@ ConverterConversionException = @"ConverterConversionException";
         var temporaryPlistFilePath = path.join("/tmp", path.basename(aFilePath) + ".tmp.plist");
 
         try {
-            child_process.execSync("/usr/bin/plutil" + " " + "-convert" + " " + "xml1" + " " + temporaryNibFilePath + " " + "-o" + " " +  temporaryPlistFilePath);
+            child_process.execSync("/usr/bin/plutil" + " " + "-convert" + " " + "xml1" + " " + temporaryNibFilePath + " " + "-o" + " " +  temporaryPlistFilePath, {stdio: 'inherit'});
         } catch(err) {
             [CPException raise:ConverterConversionException reason:@"Could not convert to xml plist for file: " + aFilePath];
         }

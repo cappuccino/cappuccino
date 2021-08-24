@@ -431,7 +431,7 @@ global.installCopy = function(sourcePath, useSudo)
 
     // hacky way to do a sudo copy.
     if (useSudo)
-        child_process.execSync(["sudo", "cp", "-Rf", sourcePath, path.dirname(targetPath)].join(" ")).toString();
+        child_process.execSync(["sudo", "cp", "-Rf", sourcePath, path.dirname(targetPath)].join(" "));
     else
         copyRecursiveSync(sourcePath, targetPath);
 

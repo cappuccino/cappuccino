@@ -20,7 +20,7 @@ task ("build", function()
 
         var xcodebuild = process.env.CAPP_BUILD ? "xcodebuild " : "CAPP_BUILD=../../Build xcodebuild ";
         try {
-            child_process.execSync(xcodebuild + args).toString();
+            child_process.execSync(xcodebuild + args, {stdio: 'inherit'});
         } catch (error) {
             process.exit(1);
         }
@@ -35,7 +35,7 @@ task ("clean", function()
 {
     if (executableExists("xcodebuild")) {
         try {
-            child_process.execSync("xcodebuild clean");
+            child_process.execSync("xcodebuild clean", {stdio: 'inherit'});
         } catch (error) {
             process.exit(1);
         }
@@ -46,7 +46,7 @@ task ("clobber", function()
 {
     if (executableExists("xcodebuild")) {
         try {
-            child_process.execSync("xcodebuild clean");
+            child_process.execSync("xcodebuild clean", {stdio: 'inherit'});
         } catch (error) {
             process.exit(1);
         }

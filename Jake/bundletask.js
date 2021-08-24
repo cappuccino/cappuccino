@@ -471,9 +471,8 @@ BundleTask.prototype.defineResourceTask = function(aResourcePath, aDestinationPa
         filedir(cibDestinationPath, [aResourcePath],         function()
         {
             try {
-                child_process.execSync("nib2cib " + aResourcePath + " " + cibDestinationPath + " " + nib2cibFlags);
+                child_process.execSync("nib2cib " + aResourcePath + " " + cibDestinationPath + " " + nib2cibFlags, {stdio: 'inherit'});
             } catch(error) {
-                console.log("hello?");
                 console.log(error);
                 console.log(error.output.toString());
             }

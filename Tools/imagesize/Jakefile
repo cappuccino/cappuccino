@@ -17,7 +17,7 @@ task ("build", function()
             args = "-sdk macosx " + args;
 
         try {
-            child_process.execSync("xcodebuild " + args);
+            child_process.execSync("xcodebuild " + args, {stdio: 'inherit'});
         } catch(err) {
             process.exit(1);
         }
@@ -32,7 +32,7 @@ task ("clean", function()
 {
     if (executableExists("xcodebuild")) {
         try {
-            child_process.execSync("xcodebuild clean");
+            child_process.execSync("xcodebuild clean", {stdio: 'inherit'});
         } catch (error) {
             process.exit(1);
         }
@@ -43,7 +43,7 @@ task ("clobber", function()
 {
     if (executableExists("xcodebuild")) {
         try {
-            child_process.execSync("xcodebuild clean");
+            child_process.execSync("xcodebuild clean", {stdio: 'inherit'});
         } catch (error) {
             process.exit(1);
         }

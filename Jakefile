@@ -9,8 +9,8 @@ const term = ObjectiveJ.term;
 var subprojects = ["Objective-J", "CommonJS", "Foundation", "AppKit", "Tools"];
 
 task ("build", function() {
-    child_process.execSync("mkdir -p $CAPP_BUILD");
-    child_process.execSync("ln -sf $PWD/node_modules $CAPP_BUILD/node_modules");
+    child_process.execSync("mkdir -p $CAPP_BUILD", {stdio: 'inherit'});
+    child_process.execSync("ln -sf $PWD/node_modules $CAPP_BUILD/node_modules", {stdio: 'inherit'});
 });
 
 ["build", "clean", "clobber"].forEach(function(aTaskName)
