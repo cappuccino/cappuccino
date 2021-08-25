@@ -1,8 +1,8 @@
 require("../common.jake");
 
-// var FILE = require("file");
-var fs = require("fs");
-var path = require("path");
+const fs = require("fs");
+const path = require("path");
+const utilsFile = ObjectiveJ.utils.file;
 
 var tmp_list = new FileList();
 tmp_list.include("**/*");
@@ -17,7 +17,7 @@ tmp_list.forEach(function(aFilename)
 
     filedir (buildFilename, [aFilename], function ()
     {
-        cp(aFilename, buildFilename);
+        utilsFile.cp(aFilename, buildFilename);
     });
 
     // HACK: narwhal should copy permissions

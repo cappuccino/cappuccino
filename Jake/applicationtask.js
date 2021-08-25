@@ -28,19 +28,7 @@ var /* FILE = require("file"), */
 var fs = require("fs");
 var path = require("path");
 
-var copyRecursiveSync = function (src, dest) {
-    var exists = fs.existsSync(src);
-    var stats = exists && fs.statSync(src);
-    var isDirectory = exists && stats.isDirectory();
-    if (isDirectory) {
-      fs.mkdirSync(dest, { recursive: true });
-      fs.readdirSync(src).forEach(function(childItemName) {
-        copyRecursiveSync(path.join(src, childItemName), path.join(dest, childItemName));
-      });
-    } else {
-      fs.copyFileSync(src, dest);
-    }
-};
+const utilsFile = ObjectiveJ.utils.file;
 
 function ApplicationTask(aName)
 {
@@ -113,7 +101,7 @@ ApplicationTask.prototype.defineFrameworksTask = function()
                 tempPath = path.join(process.cwd(), ".__capp_Frameworks_Source__");
             if (hasSource)
                 fs.moveSync(sourcePath, tempPath);
-                copyRecursiveSync(thisTask._frameworksPath, newFrameworks);
+                utilsFile.copyRecursiveSync(thisTask._frameworksPath, newFrameworks);
             if (hasSource)
                 fs.moveSync(tempPath, sourcePath);
         }    });

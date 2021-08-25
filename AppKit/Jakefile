@@ -5,6 +5,7 @@ var framework = require("../Jake/frameworktask.js").framework,
     BundleTask = require("../Jake/bundletask.js").BundleTask;
 
 const path = require("path");
+const utilsFile = ObjectiveJ.utils.file;
 
 $BUILD_PATH = path.join($BUILD_DIR, $CONFIGURATION, 'AppKit');
 
@@ -46,7 +47,7 @@ $BUILD_CJS_CAPPUCCINO_APPKIT = path.join($BUILD_CJS_CAPPUCCINO_FRAMEWORKS, "AppK
 
 filedir ($BUILD_CJS_CAPPUCCINO_APPKIT, ["AppKit"], function()
 {
-    cp_r(appKitTask.buildProductPath(), $BUILD_CJS_CAPPUCCINO_APPKIT);
+    utilsFile.cp_r(appKitTask.buildProductPath(), $BUILD_CJS_CAPPUCCINO_APPKIT);
 });
 
 subtasks (["Themes"], ["clean", "clobber"]);
@@ -55,11 +56,11 @@ task ("Theme", [$BUILD_CJS_CAPPUCCINO_APPKIT], function()
 {
     subjake(["Themes"], "build");
 
-    cp_r(path.join($BUILD_DIR, $CONFIGURATION, 'Aristo.blend'), path.join($BUILD_PATH, 'Resources', 'Aristo.blend'));
-    cp_r(path.join($BUILD_DIR, $CONFIGURATION, 'Aristo.blend'), path.join($BUILD_CJS_CAPPUCCINO_APPKIT, "Resources", "Aristo.blend"));
+    utilsFile.cp_r(path.join($BUILD_DIR, $CONFIGURATION, 'Aristo.blend'), path.join($BUILD_PATH, 'Resources', 'Aristo.blend'));
+    utilsFile.cp_r(path.join($BUILD_DIR, $CONFIGURATION, 'Aristo.blend'), path.join($BUILD_CJS_CAPPUCCINO_APPKIT, "Resources", "Aristo.blend"));
 
-    cp_r(path.join($BUILD_DIR, $CONFIGURATION, 'Aristo2.blend'), path.join($BUILD_PATH, 'Resources', 'Aristo2.blend'));
-    cp_r(path.join($BUILD_DIR, $CONFIGURATION, 'Aristo2.blend'), path.join($BUILD_CJS_CAPPUCCINO_APPKIT, "Resources", "Aristo2.blend"));
+    utilsFile.cp_r(path.join($BUILD_DIR, $CONFIGURATION, 'Aristo2.blend'), path.join($BUILD_PATH, 'Resources', 'Aristo2.blend'));
+    utilsFile.cp_r(path.join($BUILD_DIR, $CONFIGURATION, 'Aristo2.blend'), path.join($BUILD_CJS_CAPPUCCINO_APPKIT, "Resources", "Aristo2.blend"));
 });
 
 task ("build", ["AppKit", $BUILD_CJS_CAPPUCCINO_APPKIT, "Theme"]);

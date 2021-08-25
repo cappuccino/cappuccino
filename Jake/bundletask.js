@@ -26,35 +26,11 @@ const path = require("path");
 
 // NPM modules
 const fs = require("fs");
-//const ObjectiveJ = require("@objj/runtime");
 const term = ObjectiveJ.term;
+const utilsFile = ObjectiveJ.utils.file;
 
 // Internal modules
 const environment = require("./environment");
-//const JAKE = require("@objj/jake");
-
-/* Old imports 
-    FILE = require("file")
-    OS = require("os")
-    UTIL = require("narwhal/util")
-    TERM = require("narwhal/term")
-    base64 = require("base64")
-    JAKE = require("jake")
-*/
-
-var copyRecursiveSync = function (src, dest) {
-    var exists = fs.existsSync(src);
-    var stats = exists && fs.statSync(src);
-    var isDirectory = exists && stats.isDirectory();
-    if (isDirectory) {
-      fs.mkdirSync(dest, { recursive: true });
-      fs.readdirSync(src).forEach(function(childItemName) {
-        copyRecursiveSync(path.join(src, childItemName), path.join(dest, childItemName));
-      });
-    } else {
-      fs.copyFileSync(src, dest);
-    }
-};
 
 var task = JAKE.task;
 var Task = JAKE.Task;
@@ -455,7 +431,7 @@ BundleTask.prototype.defineResourceTask = function(aResourcePath, aDestinationPa
                 catch(anException) {
                 }
             if (fs.lstatSync(aResourcePath).isDirectory())
-                copyRecursiveSync(aResourcePath, aDestinationPath);
+                utilsFile.copyRecursiveSync(aResourcePath, aDestinationPath);
             else
                 fs.copyFileSync(aResourcePath, aDestinationPath);
         });

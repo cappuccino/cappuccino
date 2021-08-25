@@ -28,13 +28,12 @@
 
 var stream = ObjectiveJ.term.stream;
 
-parser = new (ObjectiveJ.parser.Parser)();
+var parser = new (ObjectiveJ.parser.Parser)();
+var utilsFile = ObjectiveJ.utils.file;
 
-// FIXME: lots of chaining using narwhals path wrapper, this file might still be broken
 var fs = require("fs");
 var node_path = require("path");
 var child_process = require("child_process");
-// FIXME: removing command line options for now
 
 parser.usage("DESTINATION_DIRECTORY");
 
@@ -175,22 +174,7 @@ function gen(/*va_args*/)
     }
     else if (!fs.existsSync(destinationProject))
     {
-        function copyRecursiveSync(src, dest) {
-            var exists = fs.existsSync(src);
-            var stats = exists && fs.statSync(src);
-            var isDirectory = exists && stats.isDirectory();
-            if (isDirectory) {
-                fs.mkdirSync(dest, { recursive: true });
-                fs.readdirSync(src).forEach(function(childItemName) {
-                    copyRecursiveSync(node_path.join(src, childItemName), node_path.join(dest, childItemName));
-            });
-            } else {
-            fs.copyFileSync(src, dest);
-            }
-        };
-
-        // FIXME???
-        copyRecursiveSync(sourceTemplate, destinationProject);
+        utilsFile.copyRecursiveSync(sourceTemplate, destinationProject);
 
         var files = (new ObjectiveJ.utils.filelist.FileList(node_path.join(destinationProject, "**", "*"))).toArray(),
             count = files.length,
@@ -340,7 +324,7 @@ function installFramework(source, dest, force, symlink)
         if (symlink) {
             fs.symlinkSync(source, dest);
         } else {
-            copyRecursiveSync(source, dest);
+            utilsFile.copyRecursiveSync(source, dest);
         }
     } else {
         warn("Cannot find: " + logPath(source));
@@ -401,7 +385,7 @@ function installTheme(source, dest, force, symlink)
         if (symlink)
             fs.symlinkSync(source, dest);
         else
-            copyRecursiveSync(source, dest);
+            utilsFile.copyRecursiveSync(source, dest);
     }
     else
         warn("Cannot find: " + logPath(source));

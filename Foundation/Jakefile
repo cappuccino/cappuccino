@@ -26,6 +26,7 @@ var framework = require("../Jake/frameworktask.js").framework;
 var BundleTask = require("../Jake/bundletask.js").BundleTask;
 
 const path = require("path");
+const utilsFile = ObjectiveJ.utils.file;
 
 foundationTask = framework ("Foundation", function(foundationTask)
 {
@@ -64,7 +65,7 @@ $BUILD_CJS_FOUNDATION = path.join($BUILD_CJS_CAPPUCCINO_FRAMEWORKS, "Foundation"
 
 filedir ($BUILD_CJS_FOUNDATION, ["Foundation"], function()
 {
-    cp_r(foundationTask.buildProductPath(), $BUILD_CJS_FOUNDATION);
+    utilsFile.cp_r(foundationTask.buildProductPath(), $BUILD_CJS_FOUNDATION);
 });
 
 

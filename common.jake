@@ -23,6 +23,7 @@ const fs = require('fs');
 const child_process = require('child_process');
 const path = require('path');
 const { stream } = ObjectiveJ.term;
+const utilsFile = ObjectiveJ.utils.file;
 
 requiresSudo = false;
 
@@ -216,52 +217,6 @@ global.rm_rf = function(/*String*/ aFilename)
 };
 
 
-// from stackoverflow
-global.copyRecursiveSync = function (src, dest) {
-    var exists = fs.existsSync(src);
-    var stats = exists && fs.statSync(src);
-    var isDirectory = exists && stats.isDirectory();
-    if (isDirectory) {
-      fs.mkdirSync(dest, { recursive: true });
-      fs.readdirSync(src).forEach(function(childItemName) {
-        copyRecursiveSync(path.join(src, childItemName), path.join(dest, childItemName));
-      });
-    } else {
-      fs.copyFileSync(src, dest);
-    }
-};
-
-global.cp_r = function(/*String*/ from, /*String*/ to)
-{
-    if (fs.existsSync(to))
-        rm_rf(to);
-
-    if (fs.lstatSync(from).isDirectory())
-        copyRecursiveSync(from, to);
-    else
-    {
-        try
-        {
-            fs.copyFileSync(from, to);
-        }
-        catch (e)
-        {
-            print(e + fs.existsSync(from) + " " + fs.existsSync(path.dirname(to)));
-        }
-    }
-};
-
-global.cp = function(/*String*/ from, /*String*/ to)
-{
-    fs.copyFileSync(from, to)
-//    FILE.chmod(to, FILE.mod(from));
-};
-
-global.mv = function(/*String*/ from, /*String*/ to)
-{
-    fs.renameSync(from, to);
-};
-
 function systemSync(command) 
 {   
     //console.log("command: " + command)
@@ -313,7 +268,7 @@ $OBJJ_TEMPLATE_EXECUTABLE = path.join(__dirname, "Objective-J", "CommonJS", "obj
 
 global.make_objj_executable = function(aPath)
 {
-    cp($OBJJ_TEMPLATE_EXECUTABLE, aPath);
+    utilsFile.cp($OBJJ_TEMPLATE_EXECUTABLE, aPath);
     fs.chmodSync(aPath, 0o755);
 };
 
@@ -433,7 +388,7 @@ global.installCopy = function(sourcePath, useSudo)
     if (useSudo)
         child_process.execSync(["sudo", "cp", "-Rf", sourcePath, path.dirname(targetPath)].join(" "));
     else
-        copyRecursiveSync(sourcePath, targetPath);
+        utilsFile.copyRecursiveSync(sourcePath, targetPath);
 
     var binPath = path.resolve(path.join(targetPath, "bin"))
 

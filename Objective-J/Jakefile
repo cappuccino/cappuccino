@@ -41,6 +41,7 @@ acorn = require("./acorn").acorn;
 var compiler = require("./ObjJAcornCompiler").ObjJCompiler;
 
 const term = ObjectiveJ.term;
+const utilsFile = ObjectiveJ.utils.file;
 
 //$BUILD_CONFIGURATION_DIR = "../Build"
 $BROWSER_FILE       = path.join("Browser", "Objective-J.js");
@@ -83,7 +84,7 @@ new FileList("CommonJS/**/*").forEach( async function(aFilename)
         if (path.extname(aFilename) !== ".js")
         {
             term.stream.print("Copying... \0green(" + aFilename +"\0)");
-            cp(aFilename, buildFilename);
+            utilsFile.cp(aFilename, buildFilename);
         }
         else
             gcc(aFilename,
@@ -111,7 +112,7 @@ $BUILD_CJS_OBJECTIVE_J_FRAMEWORK = path.join($BUILD_CJS_OBJECTIVE_J, "Frameworks
 
 filedir($BUILD_CJS_OBJECTIVE_J_FRAMEWORK, function()
 {
-    cp_r($BUILD_OBJECTIVE_J, $BUILD_CJS_OBJECTIVE_J_FRAMEWORK);
+    utilsFile.cp_r($BUILD_OBJECTIVE_J, $BUILD_CJS_OBJECTIVE_J_FRAMEWORK);
 });
 
 CLOBBER.include($BUILD_OBJECTIVE_J);

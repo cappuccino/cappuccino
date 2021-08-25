@@ -2,13 +2,14 @@
 require("../../../common.jake");
 
 var path = require("path");
+const utilsFile = ObjectiveJ.utils.file;
 
 $BLENDTASK              = "blendtask.j";
 $BUILD_CJS_BLENDTASK    = path.join($BUILD_CJS_CAPPUCCINO, "lib", "cappuccino", "jake", "blendtask.j");
 
 filedir($BUILD_CJS_BLENDTASK, [$BLENDTASK], function()
 {
-    cp_r($BLENDTASK, $BUILD_CJS_BLENDTASK);
+    utilsFile.cp_r($BLENDTASK, $BUILD_CJS_BLENDTASK);
 });
 
 task("build", [$BUILD_CJS_BLENDTASK]);

@@ -2,6 +2,7 @@
 require("../../../common.jake");
 
 const path = require("path");
+const utilsFile = ObjectiveJ.utils.file;
 
 var framework = require("../../../Jake/frameworktask.js").framework;
 var BundleTask = require("../../../Jake/bundletask.js").BundleTask;
@@ -31,7 +32,7 @@ $BUILD_CJS_PRODUCT_BLENDKIT = path.join($BUILD_CJS_CAPPUCCINO_FRAMEWORKS, "Blend
 
 filedir ($BUILD_CJS_PRODUCT_BLENDKIT, ["BlendKit"], function()
 {
-    cp_r(blendKitTask.buildProductPath(), $BUILD_CJS_PRODUCT_BLENDKIT);
+    utilsFile.cp_r(blendKitTask.buildProductPath(), $BUILD_CJS_PRODUCT_BLENDKIT);
 });
 
 task ("build", ["BlendKit", $BUILD_CJS_PRODUCT_BLENDKIT]);
