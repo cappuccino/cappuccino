@@ -324,6 +324,14 @@ var CPURLConnectionDelegate = nil;
 
         if (statusCode === 401 && [CPURLConnectionDelegate respondsToSelector:@selector(connectionDidReceiveAuthenticationChallenge:)])
             [CPURLConnectionDelegate connectionDidReceiveAuthenticationChallenge:self];
+        else if (statusCode === 0)
+        {
+            var exception = [CPException exceptionWithName:@"Network error exception"
+                                                    reason:"An unknown network error occurred."
+                                                  userInfo:@{}];
+
+            [self _sendDelegateDidFailWithError:exception];
+        }
         else
         {
             var response;
