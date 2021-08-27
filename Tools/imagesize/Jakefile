@@ -1,9 +1,7 @@
 require("../../common.jake");
 
 const child_process = require("child_process");
-
-var /* OS = require("os"), */
-    task = JAKE.task;
+const task = JAKE.task;
 
 task ("build", function()
 {
