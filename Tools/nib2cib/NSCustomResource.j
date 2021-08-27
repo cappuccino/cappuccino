@@ -33,10 +33,10 @@ var fs = require("fs");
 var path = require("path");
 var child_process = require("child_process");
 
-function imagesize() {
+function imagesize(path) {
     var result;
     try {
-        result = child_process.execSync("imagesize -n " + p);
+        result = child_process.execSync("imagesize -n " + path);
     } catch(err) {
         console.error("imagesize failed:" + err);
     }
