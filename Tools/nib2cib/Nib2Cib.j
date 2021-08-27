@@ -539,7 +539,7 @@ var /* FILE = require("file"), */
     else
         [self failWithMessage:@"Could not read the input file: " + PATH.normalize(inputPath)];
 
-    return PATH.normalize(inputPath);
+    return PATH.resolve(inputPath);
 }
 
 - (void)findInputPath:(CPString)inputPath extension:(CPString)extension
