@@ -51,7 +51,7 @@ var os = require("os");
     var nibPath = @"/tmp/" + "nib2cib-" + generateID(40) + ".nib",
         data = [aCoder decodeObjectForKey:@"NSNibFileData"];
 
-    fs.writeFileSync(nibPath, data.bytes(), { encoding: "utf16le" });
+    fs.writeFileSync(nibPath, new Uint8Array(data.bytes()), { encoding: "utf16le" });
 
     //FILE.write(nibPath, data.bytes(), { charset:"UTF-16" });
 
