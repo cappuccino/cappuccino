@@ -923,7 +923,7 @@ var /* FILE = require("file"), */
 
         themeBundle.addEventListener("error", function()
         {
-            CPLog.error("Could not find bundle: " + self);
+            CPLog.error("Could not find bundle: " + themeBundle);
         });
 
         themeBundle.load();

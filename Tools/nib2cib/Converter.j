@@ -190,7 +190,7 @@ ConverterConversionException = @"ConverterConversionException";
                 return false;
             }
         }
-        debugger;
+
         if (!isReadable(temporaryPlistFilePath))
             [CPException raise:ConverterConversionException reason:@"Unable to convert nib file."];
 
