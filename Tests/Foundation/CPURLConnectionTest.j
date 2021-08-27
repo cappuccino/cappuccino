@@ -2,6 +2,7 @@
 
 @implementation CPURLConnectionTest : OJTestCase
 {
+    BOOL _didCallDelegateErrorMethod;
 }
 
 - (void)testParseHTTPHeaders
@@ -71,6 +72,20 @@
 
     [[conn currentRequest] setWithCredentials:YES];
     [self assert:[originalRequest withCredentials] notEqual:[currentRequest withCredentials]];
+}
+
+- (void)connection:anURLConnection didFailWithError:anError
+{
+    _didCallDelegateErrorMethod = YES;
+}
+
+- (void)testConnectionError
+{
+    _didCallDelegateErrorMethod = NO;
+
+    var req = [CPURLRequest requestWithURL:@"http://localh0st:9999/data123"], // this fictious endpoint does not exist
+        conn = [CPURLConnection connectionWithRequest:req delegate:self];     // therefore, this must trigger the delegate error notification
+    [self assertTrue:_didCallDelegateErrorMethod];
 }
 
 @end
