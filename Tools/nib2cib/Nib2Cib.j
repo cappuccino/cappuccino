@@ -976,10 +976,14 @@ var /* FILE = require("file"), */
         if (!plist)
             [self failWithMessage:@"Could not read the Info.plist at: " + configPath];
 
-        plist = CFPropertyList.propertyListFromString(plist);
+        if (plist.trim().length > 0) {
+            plist = CFPropertyList.propertyListFromString(plist);
 
-        if (!plist)
-            [self failWithMessage:@"Could not parse the Info.plist at: " + configPath];
+            if (!plist)
+                [self failWithMessage:@"Could not parse the Info.plist at: " + configPath];
+        } else {
+            plist = nil;
+        }
     }
 
     return {path: configPath, plist: plist};
