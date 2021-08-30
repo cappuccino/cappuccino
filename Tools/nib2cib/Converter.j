@@ -37,6 +37,7 @@
 var path = require("path");
 var fs = require("fs");
 var child_process = require("child_process");
+var utilsFile = ObjectiveJ.utils.file;
 
 /* var FILE = require("file"),
     OS = require("os"), */
@@ -151,11 +152,18 @@ ConverterConversionException = @"ConverterConversionException";
             temporaryNibFilePath = aFilePath;
         }
 
+        // From around Xcode 12.5.1 ibtool starts to create a folder with two files.
+        // They are a little different but we can't find any documentation about what.
+        if (fs.lstatSync(temporaryNibFilePath).isDirectory())
+        {
+            var temporaryNibFilePathInDirectoryFile = path.join(temporaryNibFilePath,"keyedobjects.nib");
+        }
+
         // Convert from binary plist to XML plist
         var temporaryPlistFilePath = path.join("/tmp", path.basename(aFilePath) + ".tmp.plist");
 
         try {
-            child_process.execSync("/usr/bin/plutil" + " " + "-convert" + " " + "xml1" + " " + temporaryNibFilePath + " " + "-o" + " " +  temporaryPlistFilePath, {stdio: 'inherit'});
+            child_process.execSync("/usr/bin/plutil" + " " + "-convert" + " " + "xml1" + " " + (temporaryNibFilePathInDirectoryFile || temporaryNibFilePath) + " " + "-o" + " " +  temporaryPlistFilePath, {stdio: 'inherit'});
         } catch(err) {
             [CPException raise:ConverterConversionException reason:@"Could not convert to xml plist for file: " + aFilePath];
         }
@@ -211,13 +219,18 @@ ConverterConversionException = @"ConverterConversionException";
     }
     finally
     {
-        if (temporaryNibFilePath !== "" && isWritable(temporaryNibFilePath))
-            fs.rmSync(temporaryNibFilePath);
-            //FILE.remove(temporaryNibFilePath);
+        if (temporaryNibFilePathInDirectoryFile && temporaryNibFilePathInDirectoryFile !=="" && isWritable(temporaryNibFilePathInDirectoryFile))
+        {
+            utilsFile.rm_rf(temporaryNibFilePathInDirectoryFile);
+        }
+        else
+        {
+            if (temporaryNibFilePath !== "" && isWritable(temporaryNibFilePath))
+                fs.rmSync(temporaryNibFilePath);
+        }
 
         if (temporaryPlistFilePath !== "" && isWritable(temporaryPlistFilePath))
             fs.rmSync(temporaryPlistFilePath);
-            //FILE.remove(temporaryPlistFilePath);
     }
 
     return [CPData dataWithRawString:plistContents];
