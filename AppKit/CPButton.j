@@ -973,7 +973,11 @@ CPButtonImageOffset   = 3.0;
     _bezelStyle = aBezelStyle;
 
     if (_bezelState && newState)
+    {
+        if (currentState)
+            _bezelState =_bezelState.without(currentState);
         _bezelState = _bezelState.and(newState);
+    }
     else
         _bezelState = newState || CPThemeStateNormal;
 
