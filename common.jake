@@ -126,11 +126,6 @@ function packageInCatalog(path)
     return false;
 }
 
-// from narwhal
-function enquote(word) {
-    return "'" + String(word).replace(/'/g, "'\"'\"'") + "'";
-}
-
 serializedENV = function()
 {
     var envNew = {};
@@ -147,13 +142,13 @@ serializedENV = function()
 
     if (packages.length)
     {
-        envNew["NARWHALOPT"] = packages.map(function(p) { return "-p " + enquote(p); }).join(" ");
+        envNew["NARWHALOPT"] = packages.map(function(p) { return "-p " + utilsFile.enquote(p); }).join(" ");
         envNew["PATH"] = packages.map(function(p) { return path.join(p, "bin"); }).concat(process.env["PATH"]).join(":");
     }
 
     return Object.keys(envNew).map(function(key)
     {
-        return key + "=" + enquote(envNew[key]);
+        return key + "=" + utilsFile.enquote(envNew[key]);
     }).join(" ");
 };
 
@@ -240,7 +235,7 @@ global.subjake = function(/*Array<String>*/ directories, /*String*/ aTaskName)
     {
         if (fs.lstatSync(aDirectory).isDirectory() && fs.lstatSync(path.join(aDirectory, "Jakefile")).isFile())
         {
-            var cmd = "cd " + enquote(aDirectory) + " && " + serializedENV() + " " + "jake" + " " + enquote(aTaskName);
+            var cmd = "cd " + utilsFile.enquote(aDirectory) + " && " + serializedENV() + " " + "jake" + " " + utilsFile.enquote(aTaskName);
             var returnCode = systemSync(cmd);
                 
             if (returnCode) {
@@ -431,7 +426,7 @@ var normalizeCommand = function(/*Array or String*/ command)
     if (Array.isArray(command))
         return command.map(function (arg)
         {
-            return enquote(arg);
+            return utilsFile.enquote(arg);
         }).join(" ");
     else    
         return command;
