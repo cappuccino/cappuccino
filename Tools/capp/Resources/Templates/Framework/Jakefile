@@ -26,6 +26,7 @@
 //===========================================================
 
 const env = process.env;
+const path = require("path");
 
 //===========================================================
 //  USER CONFIGURABLE VARIABLES
@@ -37,7 +38,7 @@ const env = process.env;
     in a "Build" directory within the project directory.
 */
 
-var buildDir = env["BUILD_PATH"] || env["CAPP_BUILD"] || "Build";
+const buildDir = path.resolve(env["BUILD_PATH"] || env["CAPP_BUILD"] || "Build");
 
 /*
     The list of directories containing Objective-J source
@@ -49,7 +50,7 @@ var buildDir = env["BUILD_PATH"] || env["CAPP_BUILD"] || "Build";
 
     Example:
 
-    var sourceDirs = [
+    const sourceDirs = [
             "Core",
             "Modules",
             "Modules/Foo",
@@ -57,8 +58,14 @@ var buildDir = env["BUILD_PATH"] || env["CAPP_BUILD"] || "Build";
         ];
 */
 
-var sourceDirs = [
+const sourceDirs = [
     ];
+
+/*
+    The path to where to install the framework
+*/
+
+const packageFrameworksPath = path.join("~", "Developer", "Frameworks");
 
 //===========================================================
 //  AUTOMATICALLY GENERATED
@@ -66,10 +73,11 @@ var sourceDirs = [
 //  Do not edit! (unless you know what you are doing)
 //===========================================================
 
-const path = require("path");
 const fs = require("fs");
+const childProcess = require("child_process");
 
 const stream = ObjectiveJ.term.stream;
+const utilsFile = ObjectiveJ.utils.file;
 const jake = JAKE;
 
 const CLEAN = JAKE.CLEAN_AND_CLOBBER.CLEAN;
@@ -80,33 +88,18 @@ const filedir = jake.filedir;
 const task = jake.task;
 
 const framework = CAPPUCCINO.Jake.frameworktask.framework;
-//const browserEnvironment = require("@objj/cappuccino/Jake/environment.js");
 
 const configuration = env["CONFIG"] || env["CONFIGURATION"] || env["c"] || "Debug";
 const productName = "__project.nameasidentifier__";
 
 const buildPath = path.join(buildDir, productName + ".build");
-const debugBuildPath = path.join("Build", "Debug");
+const debugPackagePath = path.join(packageFrameworksPath, "Debug", productName); */
+const releasePackagePath = path.join(packageFrameworksPath, productName); */
 
-/* var stream = require("narwhal/term").stream,
-    JAKE = require("jake"),
-    task = JAKE.task,
-    CLEAN = require("jake/clean").CLEAN,
-    CLOBBER = require("jake/clean").CLOBBER,
-    FileList = JAKE.FileList,
-    filedir = JAKE.filedir,
-    framework = require("cappuccino/jake").framework,
-    browserEnvironment = require("objective-j/jake/environment").Browser,
-    configuration = env["CONFIG"] || env["CONFIGURATION"] || env["c"] || "Debug",
-    productName = "__project.nameasidentifier__",
-    buildPath = FILE.canonical(FILE.join(buildDir, productName + ".build")),
-    buildPath = FILE.join(SYS.prefix, "packages", "cappuccino", "Frameworks"),
-    debugPackagePath = FILE.join(buildPath, "Debug", productName);
-    releasePackagePath = FILE.join(buildPath, productName); */
-
-var frameworkTask = framework (productName, function(frameworkTask) {
+const frameworkTask = framework (productName, function(frameworkTask)
+{
     frameworkTask.setBuildIntermediatesPath(path.join(buildPath, configuration));
-    frameworkTask.setBuildPath(path.join(debugBuildPath, configuration));
+    frameworkTask.setBuildPath(path.join(buildDir, configuration));
 
     frameworkTask.setProductName(productName);
     frameworkTask.setIdentifier("__project.identifier__");
@@ -119,7 +112,7 @@ var frameworkTask = framework (productName, function(frameworkTask) {
         return dir + "/*.j"; 
     });
 
-    var fileList = new FileList();
+    const fileList = new FileList();
 
     includes.unshift("*.j");
     fileList.include(includes);
@@ -128,7 +121,6 @@ var frameworkTask = framework (productName, function(frameworkTask) {
     frameworkTask.setFlattensSources(true);
     frameworkTask.setInfoPlistPath("Info.plist");
     frameworkTask.setLicense(BundleTask.License.LGPL_v2_1);
-    //frameworkTask.setEnvironments([browserEnvironment]);
 
     if (configuration === "Debug") {
         frameworkTask.setCompilerFlags("-DDEBUG -g -S --inline-msg-send");
@@ -151,15 +143,14 @@ task ("release", function()
 
 task ("default", ["release"]);
 
-var frameworkCJS = path.join(buildDir, configuration, "CommonJS", "cappuccino", "Frameworks", productName);
+const frameworkCJS = path.join(buildDir, configuration, "CommonJS", "cappuccino", "Frameworks", productName);
 
 filedir (frameworkCJS, [productName], function()
 {
     if (fs.existsSync(frameworkCJS))
         fs.rmSync(frameworkCJS, { recursive: true });
 
-    // TODO
-    //FILE.copyTree(frameworkTask.buildProductPath(), frameworkCJS);
+    utilsFile.cp_r(frameworkTask.buildProductPath(), frameworkCJS);
 });
 
 task ("build", [productName, frameworkCJS]);
@@ -178,7 +169,7 @@ task ("install-symlinks", ["debug", "release"], function()
 
 task ("help", function()
 {
-    var app = jake.application().name();
+    const app = jake.application().name();
 
     colorPrint("--------------------------------------------------------------------------", "bold+green");
     colorPrint("__project.name__ - Framework", "bold+green");
@@ -198,48 +189,41 @@ task ("help", function()
 CLEAN.include(buildPath);
 CLOBBER.include(path.join(buildDir, "Debug", productName))
     .include(path.join(buildDir, "Release", productName))
-    .include(debugBuildPath)
-    .include(buildPath);
+    .include(debugPackagePath)
+    .include(releasePackagePath)
 
-var install = function(action)
+const install = function(action)
 {
     ["Release", "Debug"].forEach(function(aConfig)
     {
         colorPrint((action === "symlink" ? "Symlinking " : "Copying ") + aConfig + "...", "cyan");
 
-        if (aConfig === "Debug")
-            buildPath = path.join(buildPath, aConfig);
+        const thePackageFrameworksPath = aConfig === "Debug" ? path.join(packageFrameworksPath, aConfig) : packageFrameworksPath;
 
-        if (fs.existsSync(buildPath) && !fs.lstatSync(buildPath).isDirectory())
-            sudo(["mkdir", "-p", buildPath]);
+        if (fs.existsSync(thePackageFrameworksPath) && !fs.lstatSync(thePackageFrameworksPath).isDirectory())
+            childProcess.execSync(["mkdir", "-p", thePackageFrameworksPath].map(utilsFile.enquote).join(" "));
         
         var buildPath = path.resolve(path.join(buildDir, aConfig, productName)),
-            targetPath = path.join(buildPath, productName);
+            targetPath = path.join(thePackageFrameworksPath, productName);
 
         if (action === "symlink")
             directoryOp(["ln", "-sf", buildPath, targetPath]);
         else
-            directoryOp(["cp", "-rf", buildPath, targetPath]);
+            utilsFile.cp_r(buildPath, targetPath);
     });
 };
 
-var directoryOp = function(cmd)
+const directoryOp = function(cmd)
 {
     var targetPath = cmd[cmd.length - 1];
 
-    if (FILE.isDirectory(targetPath))
-        sudo(["rm", "-rf", targetPath]);
+    if (fs.existsSync(targetPath) && fs.lstatSync(targetPath).isDirectory())
+        childProcess.execSync(["rm", "-rf", targetPath].map(utilsFile.enquote).join(" "));
 
-    sudo(cmd);
+    childProcess.execSync(cmd.map(utilsFile.enquote).join(" "));
 };
 
-var sudo = function(cmd)
-{
-    if (OS.system(cmd))
-        OS.system(["sudo"].concat(cmd));
-};
-
-var describeTask = function(application, task, description)
+const describeTask = function(application, task, description)
 {
     colorPrint("\n" + application + " " + task, "violet");
     description.split("\n").forEach(function(line)
@@ -248,7 +232,7 @@ var describeTask = function(application, task, description)
     });
 };
 
-var colorPrint = function(message, color)
+const colorPrint = function(message, color)
 {
     var matches = color.match(/(bold(?: |\+))?(.+)/);
 
