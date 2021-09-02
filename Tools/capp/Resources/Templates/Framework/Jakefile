@@ -93,8 +93,8 @@ const configuration = env["CONFIG"] || env["CONFIGURATION"] || env["c"] || "Debu
 const productName = "__project.nameasidentifier__";
 
 const buildPath = path.join(buildDir, productName + ".build");
-const debugPackagePath = path.join(packageFrameworksPath, "Debug", productName); */
-const releasePackagePath = path.join(packageFrameworksPath, productName); */
+const debugPackagePath = path.join(packageFrameworksPath, "Debug", productName);
+const releasePackagePath = path.join(packageFrameworksPath, productName);
 
 const frameworkTask = framework (productName, function(frameworkTask)
 {
@@ -127,6 +127,15 @@ const frameworkTask = framework (productName, function(frameworkTask)
     } else {
         frameworkTask.setCompilerFlags("-O2");
     }
+});
+
+task("test", function()
+{
+    var tests = new FileList('Tests/*Test.j');
+    var cmd = ["ojtest"].concat(tests.items());
+    var cmdString = cmd.map(utilsFile.enquote).join(" ");
+
+    childProcess.execSync(cmdString);
 });
 
 task ("debug", function()
@@ -178,10 +187,11 @@ task ("help", function()
     describeTask(app, "debug", "Builds a debug version at " + path.join(buildDir, "Debug", productName));
     describeTask(app, "release", "Builds a release version at " + path.join(buildDir, "Release", productName));
     describeTask(app, "all", "Builds a debug and release version");
-    describeTask(app, "install", "Builds a debug and release version, then installs in " + buildPath);
-    describeTask(app, "install-symlinks", "Builds a debug and release version, then symlinks the built versions into " + buildPath);
+    describeTask(app, "install", "Builds a debug and release version, then installs in " + packageFrameworksPath);
+    describeTask(app, "install-symlinks", "Builds a debug and release version, then symlinks the built versions into " + packageFrameworksPath);
     describeTask(app, "clean", "Removes the intermediate build files");
     describeTask(app, "clobber", "Removes the intermediate build files and the installed frameworks");
+    describeTask(app, "test", "Runs all testcases at " + path.resolve("Test"));
 
     colorPrint("--------------------------------------------------------------------------", "bold+green");
 });
