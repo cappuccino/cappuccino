@@ -234,6 +234,7 @@ var /* FILE = require("file"), */
             CPLog.info("Input         : " + inputPath);
             CPLog.info("Output        : " + outputPath);
             CPLog.info("Application   : " + appDirectory);
+            CPLog.info("Resources     : " + appResourceDirectory);
             CPLog.info("Frameworks    : " + (frameworkList.join(", ") || ""));
             CPLog.info("Default theme : " + themeList[0]);
             CPLog.info("Aux themes    : " + themeList.slice(1).join(", "));
