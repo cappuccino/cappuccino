@@ -1,4 +1,5 @@
-var FILE = require("file");
+var fs = require("fs");
+var path = require("path");
 
 @import <Foundation/CPArray.j>
 @import <Foundation/CPString.j>
@@ -173,7 +174,7 @@ var ELEMENTS = 100,
 
 - (CPArray)makeRandomText
 {
-    var the_big_sort = FILE.read(FILE.join(FILE.dirname(module.path), "the_big_sort.txt"), { charset:"UTF-8" }),
+    var the_big_sort = fs.readFileSync(path.join(path.dirname(__filename), "the_big_sort.txt"), {encoding: 'utf-8'}),
         words = the_big_sort.split(" ", ELEMENTS),
         wordcount = words.length,
         array = [];

@@ -2,7 +2,7 @@ require("./common.jake");
 
 var fs = require('fs');
 var path = require('path');
-var child_process = require("child_process");
+var childProcess = require("child_process");
 
 const term = ObjectiveJ.term;
 const utilsFile = ObjectiveJ.utils.file;
@@ -10,8 +10,8 @@ const utilsFile = ObjectiveJ.utils.file;
 var subprojects = ["Objective-J", "CommonJS", "Foundation", "AppKit", "Tools"];
 
 task ("build", function() {
-    child_process.execSync("mkdir -p $CAPP_BUILD", {stdio: 'inherit'});
-    child_process.execSync("ln -sf $PWD/node_modules $CAPP_BUILD/node_modules", {stdio: 'inherit'});
+    childProcess.execSync("mkdir -p $CAPP_BUILD", {stdio: 'inherit'});
+    childProcess.execSync("ln -sf $PWD/node_modules $CAPP_BUILD/node_modules", {stdio: 'inherit'});
 });
 
 ["build", "clean", "clobber"].forEach(function(aTaskName)
@@ -338,12 +338,11 @@ task("test", ["CommonJS", "test-only"]);
 
 task("test-only", function()
 {
-    var tests = new FileList('Tests/**/*Test.j'),
-        cmd = ["ojtest"].concat(tests.items()),
-        code = OS.system(serializedENV() + " " + cmd.map(OS.enquote).join(" "));
+    var tests = new FileList('Tests/**/*Test.j');
+    var cmd = ["ojtest"].concat(tests.items());
+    var cmdString = cmd.map(utilsFile.enquote).join(" ");
 
-    if (code !== 0)
-        OS.exit(code);
+    childProcess.execSync(cmdString);
 });
 
 task("check-missing-imports", function()

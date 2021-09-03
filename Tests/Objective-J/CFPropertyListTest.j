@@ -1,24 +1,26 @@
 @global module
 
-var FILE = require("file"),
-    FileList = require("jake").FileList;
+var fs = require("fs"),
+    path = require("path"),
+    FileList = ObjectiveJ.utils.filelist.FileList;
 
 @implementation CFPropertyListTest : OJTestCase
 
 - (void)testFormatSniffing
 {
-    var XMLPropertyLists = new FileList(FILE.join(FILE.dirname(module.path), "PropertyLists", "XML-*.plist"));
+    debugger;
+    var XMLPropertyLists = new FileList(path.join(path.dirname(__filename), "PropertyLists", "XML-*.plist"));
 
     XMLPropertyLists.forEach(function(/*String*/ aPath)
     {
-        [self assert:CFPropertyList.FormatXML_v1_0 equals:CFPropertyList.sniffedFormatOfString(FILE.read(aPath))];
+        [self assert:CFPropertyList.FormatXML_v1_0 equals:CFPropertyList.sniffedFormatOfString(fs.readFileSync(aPath).toString())];
     });
 }
 
 - (void)testDateDeserialization
 {
-    var path = FILE.join(FILE.dirname(module.path), "PropertyLists/XMLDate.plist"),
-        object = CFPropertyList.readPropertyListFromFile(path),
+    var p = path.join(path.dirname(__filename), "PropertyLists/XMLDate.plist"),
+        object = CFPropertyList.readPropertyListFromFile(p),
         date = [object objectForKey:@"date"];
 
     [self assert:[CPDate class] equals:[date class]];
@@ -45,7 +47,8 @@ var FILE = require("file"),
     }
 }
 
-- (void)testPropertyListFromXMLShouldHandleEmptiestXMLGracefully {
+// This is removed as the Node module xmldom/xmldom will print out an error (will not fail) when the xml string is empty
+/*- (void)testPropertyListFromXMLShouldHandleEmptiestXMLGracefully {
     // rhino can't parse empty XML documents
     if (system.engine !== "rhino") {
         var XML = "",
@@ -53,7 +56,7 @@ var FILE = require("file"),
     
         [self assert:object equals:null];
     }
-}
+}*/
 
 - (void)testPropertyListFromXMLShouldParseNiceAndCleanXML {
     var XML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\"><plist version=\"1.0\"><dict><key>Main cib file base name</key><string>MainMenu.cib</string><key>CPBundleName</key><string>CopyAndPaste</string><key>CPBundleVersion</key><string>1.0</string><key>CPHumanReadableCopyright</key><string>Copyright \u00a9 2013, SlevenBits, Ltd. All rights reserved.</string></dict></plist>",
