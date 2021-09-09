@@ -52,25 +52,26 @@
 
 - (CPIndexPath)indexPath
 {
-  if (_parentNode != nil)
+    if (_parentNode != nil)
     {
-      var path;
-      var index;
+        var path;
+        var index;
 
-      index = [[_parentNode childNodes] indexOfObject:self];
-      path = [_parentNode indexPath];
-      if (path != nil)
+        index = [[_parentNode childNodes] indexOfObject:self];
+        path = [_parentNode indexPath];
+
+        if (path != nil)
         {
-          return [path indexPathByAddingIndex:index];
+            return [path indexPathByAddingIndex:index];
         }
-      else
+        else
         {
-          return [CPIndexPath indexPathWithIndex:index];
+            return [CPIndexPath indexPathWithIndex:index];
         }
     }
-  else
+    else
     {
-      return nil;
+        return nil;
     }
 }
 
