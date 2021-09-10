@@ -10,4 +10,4 @@ var args = process.argv.slice(); // Copy
 args.splice(1, 1, ojtest.pathToOJTest);
 
 // Compile, load and run it
-ObjectiveJ.run(args);
+ObjectiveJ.run(args, {inlineMsgSendFunctions: true, sourceMap: true });
