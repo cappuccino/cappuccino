@@ -1,12 +1,19 @@
 
 require ("../../common.jake");
 
-var FILE = require("file"),
-    SYSTEM = require("system");
-
 const path = require("path");
+const fs = require("fs");
+const utilsFile = ObjectiveJ.utils.file;
 
-var p = FILE.Path(path.join(SYSTEM.prefix, "bin", "objj2objcskeleton"));
+const $BUILD_BIN_FILE = path.join($BUILD_CJS_CAPPUCCINO_BIN, 'objj2objcskeleton');
 
-sudo(["cp", "-f", "objj2objcskeleton", p]);
-sudo(["chmod", "755", p]);
+const $OBJJ_2_OBJC_SKELETON_FILES = new FileList("objj2objcskeleton");
+
+filedir($BUILD_BIN_FILE, $OBJJ_2_OBJC_SKELETON_FILES, function(aTask)
+{
+    utilsFile.cp("objj2objcskeleton", $BUILD_BIN_FILE);
+    fs.chmodSync($BUILD_BIN_FILE, 0o755);
+});
+
+task("build", $BUILD_BIN_FILE);
+
