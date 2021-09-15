@@ -342,7 +342,13 @@ task("test-only", function()
     var cmd = ["ojtest"].concat(tests.items());
     var cmdString = cmd.map(utilsFile.enquote).join(" ");
 
-    childProcess.execSync(cmdString);
+    try
+    {
+        childProcess.execSync(cmdString, {stdio: 'inherit'});
+    }
+    catch (e)
+    {
+    }
 });
 
 task("check-missing-imports", function()
