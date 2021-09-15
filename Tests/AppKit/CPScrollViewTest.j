@@ -229,7 +229,6 @@
         documentView = [[CPView alloc] initWithFrame:CGRectMake(0, 0, 1000, 1000)],
         textField1 = [CPTextField textFieldWithStringValue:@"Martin" placeholder:@"" width:10],
         textField2 = [CPTextField textFieldWithStringValue:@"Malte" placeholder:@"" width:10],
-        textField1Size = CGSizeMakeCopy([textField1 bounds].size),
         textField2Size = CGSizeMakeCopy([textField2 bounds].size);
 
     [scrollView setDocumentView:documentView];
@@ -277,9 +276,7 @@
     var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)],
         documentView = [[CPView alloc] initWithFrame:CGRectMake(0, 0, 1000, 1000)],
         view1 = [[CPView alloc] initWithFrame:CGRectMake(0, 0, 200, 200)],
-        view2 = [[CPView alloc] initWithFrame:CGRectMake(500, 500, 200, 200)],
-        view1Size = CGSizeMakeCopy([view1 bounds].size),
-        view2Size = CGSizeMakeCopy([view2 bounds].size);
+        view2 = [[CPView alloc] initWithFrame:CGRectMake(500, 500, 200, 200)];
 
     [scrollView setDocumentView:documentView];
 
@@ -289,8 +286,7 @@
     [documentView addSubview:view1];
     [documentView addSubview:view2];
 
-    var visibleRect = [documentView visibleRect],
-        originalVisibleSize = CGSizeMakeCopy(visibleRect.size);
+    var visibleRect = [documentView visibleRect];
 
     // Make sure we are at the top left corner
     [self assertPoint:CGPointMake(0, 0) equals:visibleRect.origin message:@"VisibleRect origin not at top left corner"];

@@ -1,4 +1,5 @@
 
+@import <AppKit/CPApplication.j>
 @import <AppKit/CPKeyValueBinding.j>
 @import <AppKit/CPTextField.j>
 
@@ -13,6 +14,7 @@
 @import <AppKit/CPClipView.j>
 @import <AppKit/CPTableView.j>
 @import <AppKit/CPArrayController.j>
+@import <AppKit/CPSegmentedControl.j>
 
 @implementation CPKeyValueBindingTest : OJTestCase
 {
@@ -358,7 +360,11 @@
     [segmented bind:CPSelectedIndexBinding toObject:model withKeyPath:@"cheese" options:nil];
 
     // Try to bind another binding (mutually exclusive) to the same value.
+    // Turn off logging so we don't get the warning about this
+    var saveCPLogDisable = CPLogDisable;
+    CPLogDisable = YES;
     [segmented bind:CPSelectedTagBinding toObject:model withKeyPath:@"cheese" options:nil];
+    CPLogDisable = saveCPLogDisable;
 
     [self assertNotNull:[segmented infoForBinding:CPSelectedIndexBinding]];
 

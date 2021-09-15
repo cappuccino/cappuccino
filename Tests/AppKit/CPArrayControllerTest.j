@@ -875,8 +875,9 @@
 
 - (void)testObservationDuringSetSelectionIndexes
 {
-    var arrayController = [self arrayController],
-        newContent = [self setupObservationFixture];
+    var arrayController = [self arrayController];
+
+    [self setupObservationFixture];
 
     var newSelection = [CPIndexSet indexSetWithIndex:2];
     [arrayController setSelectionIndexes:newSelection];
