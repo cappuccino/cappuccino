@@ -49,7 +49,7 @@ var path = require("path");
     
     self = [super init];
 
-    var nibPath = path.join(os.tmpDir(), "nib2cib-" + generateID(40) + ".nib"),
+    var nibPath = path.join(os.tmpdir(), "nib2cib-" + generateID(40) + ".nib"),
         data = [aCoder decodeObjectForKey:@"NSNibFileData"];
 
     fs.writeFileSync(nibPath, new Uint8Array(data.bytes()), { encoding: "utf16le" });
