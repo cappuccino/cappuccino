@@ -26,6 +26,7 @@
 
 var fs = require("fs");
 var os = require("os");
+var path = require("path");
 
 @implementation CPCib (NSCoding)
 
@@ -47,8 +48,8 @@ var os = require("os");
     }
     
     self = [super init];
-    // FIXME: change /tmp/ to os.tmpDir() in Node
-    var nibPath = @"/tmp/" + "nib2cib-" + generateID(40) + ".nib",
+
+    var nibPath = path.join(os.tmpDir(), "nib2cib-" + generateID(40) + ".nib"),
         data = [aCoder decodeObjectForKey:@"NSNibFileData"];
 
     fs.writeFileSync(nibPath, new Uint8Array(data.bytes()), { encoding: "utf16le" });

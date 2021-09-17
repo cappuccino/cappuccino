@@ -36,6 +36,7 @@
 
 var path = require("path");
 var fs = require("fs");
+var os = require("os");
 var child_process = require("child_process");
 var utilsFile = ObjectiveJ.utils.file;
 
@@ -124,28 +125,13 @@ ConverterConversionException = @"ConverterConversionException";
         if ([outputPath length])
         {
             // Compile xib or nib to make sure we have a non-new format nib.
-            temporaryNibFilePath = path.join("/tmp", path.basename(aFilePath) + ".tmp.nib");
-            //temporaryNibFilePath = FILE.join("/tmp", FILE.basename(aFilePath) + ".tmp.nib");
+            temporaryNibFilePath = path.join(os.tmpDir(), path.basename(aFilePath) + ".tmp.nib");
 
             try {
                 child_process.execSync("/usr/bin/ibtool" + " " + aFilePath + " " + "--compile" + " " + temporaryNibFilePath, {stdio: 'inherit'});
             } catch(err) {
                 [CPException raise:ConverterConversionException reason:@"Could not compile file: " + aFilePath];
             }
-
-/*             try
-            {
-                var p = OS.popen(["/usr/bin/ibtool", aFilePath, "--compile", temporaryNibFilePath]);
-                if (p.wait() === 1)
-                    [CPException raise:ConverterConversionException reason:@"Could not compile file: " + aFilePath];
-            }
-            finally
-            {
-                p.stdin.close();
-                p.stdout.close();
-                p.stderr.close();
-            } */
-
         }
         else
         {
@@ -160,7 +146,7 @@ ConverterConversionException = @"ConverterConversionException";
         }
 
         // Convert from binary plist to XML plist
-        var temporaryPlistFilePath = path.join("/tmp", path.basename(aFilePath) + ".tmp.plist");
+        var temporaryPlistFilePath = path.join(os.tmpDir(), path.basename(aFilePath) + ".tmp.plist");
 
         try {
             child_process.execSync("/usr/bin/plutil" + " " + "-convert" + " " + "xml1" + " " + (temporaryNibFilePathInDirectoryFile || temporaryNibFilePath) + " " + "-o" + " " +  temporaryPlistFilePath, {stdio: 'inherit'});
