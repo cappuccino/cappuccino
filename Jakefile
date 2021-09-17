@@ -11,7 +11,7 @@ var subprojects = ["Objective-J", "CommonJS", "Foundation", "AppKit", "Tools"];
 
 task ("build", function() {
     childProcess.execSync("mkdir -p $CAPP_BUILD", {stdio: 'inherit'});
-    childProcess.execSync("ln -sf $PWD/node_modules $CAPP_BUILD/node_modules", {stdio: 'inherit'});
+    childProcess.execSync("ln -snf $PWD/node_modules $CAPP_BUILD/node_modules", {stdio: 'inherit'});
 });
 
 ["build", "clean", "clobber"].forEach(function(aTaskName)
