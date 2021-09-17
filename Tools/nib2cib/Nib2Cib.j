@@ -853,7 +853,7 @@ var /* FILE = require("file"), */
     {
         themePath = PATH.join(PATH.normalize(themeDir), blendName);
     
-        if (!fs.lstatSync(themePath).isDirectory())
+        if (!fs.existsSync(themePath) || !fs.lstatSync(themePath).isDirectory())
             themePath = themeDir = null;
     }
 
