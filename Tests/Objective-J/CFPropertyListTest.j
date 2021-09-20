@@ -28,23 +28,17 @@ var fs = require("fs"),
 }
 
 - (void)testPropertyListFromXMLShouldHandleEmptyXMLGracefully {
-    // rhino can't parse empty XML documents
-    if (system.engine !== "rhino") {
-        var XML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">",
-            object = CFPropertyList.propertyListFromXML(XML);
-    
-        [self assert:object equals:null];
-    }
+    var XML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">",
+        object = CFPropertyList.propertyListFromXML(XML);
+
+    [self assert:object equals:null];
 }
 
 - (void)testPropertyListFromXMLShouldHandleEmptierXMLGracefully {
-    // rhino can't parse empty XML documents
-    if (system.engine !== "rhino") {
-        var XML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
-            object = CFPropertyList.propertyListFromXML(XML);
-    
-        [self assert:object equals:null];
-    }
+    var XML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
+        object = CFPropertyList.propertyListFromXML(XML);
+
+    [self assert:object equals:null];
 }
 
 // This is removed as the Node module xmldom/xmldom will print out an error (will not fail) when the xml string is empty
