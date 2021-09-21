@@ -40,8 +40,9 @@
 
 - (void)test
 {
-    var theDocument = [MyDocument2 new],
-        cib = [CPBundle loadCibFile:[[CPBundle bundleForClass:WithBindingsTest] pathForResource:"02_WithBindings.cib"] externalNameTable:[CPDictionary dictionaryWithObject:theDocument forKey:CPCibOwner]];
+    var theDocument = [MyDocument2 new];
+
+    [CPBundle loadCibFile:[[CPBundle bundleForClass:WithBindingsTest] pathForResource:"02_WithBindings.cib"] externalNameTable:[CPDictionary dictionaryWithObject:theDocument forKey:CPCibOwner]];
 
     [theDocument windowControllerDidLoadCib:self];
 
