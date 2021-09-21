@@ -32,7 +32,8 @@ var FILENAMES = [
 }
 
 async function compressor(srcCode) {
-    return (await terser.minify(srcCode)).code;
+    var m = await terser.minify(srcCode, { keep_fnames: false, mangle: { properties: true }, toplevel: true });
+    return m.code;
 }
 
 + (void)initialize
@@ -59,12 +60,12 @@ async function compressor(srcCode) {
                     correctInlined = fs.existsSync(p) ? fs.readFileSync(p, {encoding: "utf8"}) : correct; // Get inlined version if it exists. Otherwise use the regular one.
 
                 await [self assertNoThrow: async function() {
-                    preprocessed = ObjectiveJ.ObjJCompiler.compileToExecutable(unpreprocessed, nil, {includeMethodFunctionNames: true, includeMethodArgumentTypeSignatures: true, includeIvarTypeSignatures: true, inlineMsgSendFunctions: false, transformNamedFunctionDeclarationToAssignment: true}).code();
+                    preprocessed = ObjectiveJ.ObjJCompiler.compile(unpreprocessed, nil, {includeMethodFunctionNames: true, includeMethodArgumentTypeSignatures: true, includeIvarTypeSignatures: true, inlineMsgSendFunctions: false, transformNamedFunctionDeclarationToAssignment: true}).jsBuffer.toString();
                     preprocessed = await compressor(preprocessed);
                     correct = await compressor(correct);
 
                     // Get an Inlined version
-                    preprocessedInlined = ObjectiveJ.ObjJCompiler.compileToExecutable(unpreprocessed, nil, {includeMethodFunctionNames: true, includeMethodArgumentTypeSignatures: true, includeIvarTypeSignatures: true, inlineMsgSendFunctions: true, transformNamedFunctionDeclarationToAssignment:true}).code();
+                    preprocessedInlined = ObjectiveJ.ObjJCompiler.compile(unpreprocessed, nil, {includeMethodFunctionNames: true, includeMethodArgumentTypeSignatures: true, includeIvarTypeSignatures: true, inlineMsgSendFunctions: true, transformNamedFunctionDeclarationToAssignment: true}).jsBuffer.toString();
                     preprocessedInlined = await compressor(preprocessedInlined);
                     correctInlined = await compressor(correctInlined);
                 }];
