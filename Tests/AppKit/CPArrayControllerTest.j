@@ -1143,6 +1143,7 @@
     [self setItemsArray:[]];
     var ddd = new Date();
 
+    console.log();
     CPLog.warn("\n" + [self className] + " Performance tests");
     CPLog.warn("EmptyArray -> BigArray (" + [bigArray count] + "): " + (dd - d) + "ms.");
     CPLog.warn("BigArray (" + [bigArray count] + ") -> EmptyArray: " + (ddd - dd) + "ms.");
