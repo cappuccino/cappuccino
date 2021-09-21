@@ -261,12 +261,7 @@
 {
     var timeZone = [CPTimeZone localTimeZone],
         abbreviation = [timeZone abbreviationForDate:_date],
-        expected = String(String(_date).split("(")[1]).split(")")[0];
-
-    if (expected.includes(" "))
-        // Some browsers will now have the time zone in long format. Take first letter of each word.
-        // This is not 100% but is better than nothing.
-        expected = expected.split(" ").map(function(l) { return l[0]}).join("");
+        expected = _date.toLocaleString('en-US', {timeZoneName : 'long'}).replace(/^([0]?\d|[1][0-2])\/((?:[0]?|[1-2])\d|[3][0-1])\/([2][01]|[1][6-9])\d{2}(,?\s*([0]?\d|[1][0-2])(\:[0-5]\d){1,2})*\s*([aApP][mM]{0,2})?\s*/, "").split(" ").map(function(l) { return l[0]}).join("");
 
     [self assert:abbreviation equals:expected];
 }

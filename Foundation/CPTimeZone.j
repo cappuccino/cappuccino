@@ -46,12 +46,11 @@ var abbreviationDictionary,
 
 function abbreviationForDate(date)
 {
-    var abbreviation = String(String(date).split("(")[1]).split(")")[0];
-
-    if (abbreviation.includes(" "))
-        // Some browsers will now have the time zone in long format. Take first letter of each word.
-        // This is not 100% but is better than nothing.
-        abbreviation = abbreviation.split(" ").map(function(l) { return l[0]}).join("");
+    // Sometimes the browsers will give unmatched timezones in other languages so try one more thing
+    // Take the locale string for english in the US. It has the following format (9/21/2021, 2:40:44 PM Central European Summer Time)
+    // Remove the date and time with this regex and take first letter in each word in the time zone name.
+    // This is not 100% but is better than nothing as JAvascript has no good support for this.
+    var abbreviation = date.toLocaleString('en-US', {timeZoneName : 'long'}).replace(/^([0]?\d|[1][0-2])\/((?:[0]?|[1-2])\d|[3][0-1])\/([2][01]|[1][6-9])\d{2}(,?\s*([0]?\d|[1][0-2])(\:[0-5]\d){1,2})*\s*([aApP][mM]{0,2})?\s*/, "").split(" ").map(function(l) { return l[0]}).join("");
 
     return abbreviation;
 }
