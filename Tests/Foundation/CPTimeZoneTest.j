@@ -96,7 +96,7 @@
 {
     try
     {
-         var timeZone = [CPTimeZone timeZoneWithName:nil];
+         [CPTimeZone timeZoneWithName:nil];
          [self fail:"Invalid value provided for tzName"];
     }
     catch (e)
@@ -140,7 +140,7 @@
 {
     try
     {
-         var timeZone = [CPTimeZone timeZoneWithName:nil data:_data];
+         [CPTimeZone timeZoneWithName:nil data:_data];
          [self fail:"Invalid value provided for tzName"];
     }
     catch (e)
@@ -204,7 +204,7 @@
 {
     try
     {
-         var timeZone = [[CPTimeZone alloc] initWithName:nil];
+         [[CPTimeZone alloc] initWithName:nil];
          [self fail:"Invalid value provided for tzName"];
     }
     catch (e)
@@ -248,7 +248,7 @@
 {
     try
     {
-         var timeZone = [[CPTimeZone alloc] initWithName:nil data:_data];
+         [[CPTimeZone alloc] initWithName:nil data:_data];
          [self fail:"Invalid value provided for tzName"];
     }
     catch (e)
@@ -260,9 +260,15 @@
 - (void)testAbbreviationWithDate
 {
     var timeZone = [CPTimeZone localTimeZone],
-        abbreviation = [timeZone abbreviationForDate:_date];
+        abbreviation = [timeZone abbreviationForDate:_date],
+        expected = String(String(_date).split("(")[1]).split(")")[0];
 
-    [self assert:abbreviation equals:String(String(_date).split("(")[1]).split(")")[0]];
+    if (expected.includes(" "))
+        // Some browsers will now have the time zone in long format. Take first letter of each word.
+        // This is not 100% but is better than nothing.
+        expected = expected.split(" ").map(function(l) { return l[0]}).join("");
+
+    [self assert:abbreviation equals:expected];
 }
 
 - (void)testAbbreviationWithNilDate

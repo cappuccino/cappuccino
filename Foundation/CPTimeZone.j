@@ -44,6 +44,17 @@ var abbreviationDictionary,
     timeZoneDataVersion,
     localizedName;
 
+function abbreviationForDate(date)
+{
+    var abbreviation = String(String(date).split("(")[1]).split(")")[0];
+
+    if (abbreviation.includes(" "))
+        // Some browsers will now have the time zone in long format. Take first letter of each word.
+        // This is not 100% but is better than nothing.
+        abbreviation = abbreviation.split(" ").map(function(l) { return l[0]}).join("");
+
+    return abbreviation;
+}
 /*!
     @class CPTimeZone
     @ingroup foundation
@@ -269,11 +280,11 @@ var abbreviationDictionary,
         };
 
     var date = [CPDate date],
-        abbreviation = String(String(date).split("(")[1]).split(")")[0];
+        abbreviation = abbreviationForDate(date);
 
     localTimeZone = [self timeZoneWithAbbreviation:abbreviation];
-    systemTimeZone = [self timeZoneWithAbbreviation:abbreviation];
-    defaultTimeZone = [self timeZoneWithAbbreviation:abbreviation];
+    systemTimeZone = localTimeZone;
+    defaultTimeZone = localTimeZone;
 
     localizedName = @{
         @"en" : englishLocalizedName,
@@ -430,7 +441,7 @@ var abbreviationDictionary,
 + (void)resetSystemTimeZone
 {
     var date = [CPDate date],
-        abbreviation = String(String(date).split("(")[1]).split(")")[0];
+        abbreviation = abbreviationForDate(date);
 
     systemTimeZone = [self timeZoneWithAbbreviation:abbreviation];
 
@@ -560,7 +571,7 @@ var abbreviationDictionary,
     if (!date)
         return nil;
 
-    return String(String(date).split("(")[1]).split(")")[0];
+    return abbreviationForDate(date);
 }
 
 /*! Returns the number of seconds from GMT for the given date
@@ -573,7 +584,7 @@ var abbreviationDictionary,
     if (!date)
         return nil;
 
-    var abbreviation = String(String(date).split("(")[1]).split(")")[0];
+    var abbreviation = abbreviationForDate(date);
 
     return [timeDifferenceFromUTC valueForKey:abbreviation] * 60;
 }
