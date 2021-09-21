@@ -284,8 +284,7 @@ var _getCheeseCounter;
 - (void)testOnlyInsertObject_AtKeyIndex_Implemented
 {
     var insertSelector = @selector(insertObject:inObjectsAtIndex:),
-        object = [self objectWithMethods:insertSelector],
-        methodTypes = class_getInstanceMethod(object.isa, insertSelector).method_types;
+        object = [self objectWithMethods:insertSelector];
 
     // Sanity check
     [self assert:class_getInstanceMethod(object.isa, insertSelector)

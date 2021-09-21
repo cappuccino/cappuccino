@@ -88,7 +88,7 @@
 
 - (void)testDictionaryWithJSObjectNonRecursive
 {
-    var non_recursive_dict = [CPDictionary dictionaryWithJSObject:json recursively:NO];
+    [CPDictionary dictionaryWithJSObject:json recursively:NO];
 }
 
 - (void)testCopy
