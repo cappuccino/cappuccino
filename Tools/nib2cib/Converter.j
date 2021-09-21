@@ -122,10 +122,12 @@ ConverterConversionException = @"ConverterConversionException";
 
     try
     {
+        var tmpdir = fs.mkdtempSync(path.join(os.tmpdir(), 'nib2cib-'));
+
         if ([outputPath length])
         {
             // Compile xib or nib to make sure we have a non-new format nib.
-            temporaryNibFilePath = path.join(os.tmpdir(), path.basename(aFilePath) + ".tmp.nib");
+            temporaryNibFilePath = path.join(tmpdir, path.basename(aFilePath) + ".tmp.nib");
 
             try {
                 child_process.execSync("/usr/bin/ibtool" + " " + aFilePath + " " + "--compile" + " " + temporaryNibFilePath, {stdio: 'inherit'});
@@ -146,7 +148,7 @@ ConverterConversionException = @"ConverterConversionException";
         }
 
         // Convert from binary plist to XML plist
-        var temporaryPlistFilePath = path.join(os.tmpdir(), path.basename(aFilePath) + ".tmp.plist");
+        var temporaryPlistFilePath = path.join(tmpdir, path.basename(aFilePath) + ".tmp.plist");
 
         try {
             child_process.execSync("/usr/bin/plutil" + " " + "-convert" + " " + "xml1" + " " + (temporaryNibFilePathInDirectoryFile || temporaryNibFilePath) + " " + "-o" + " " +  temporaryPlistFilePath, {stdio: 'inherit'});
