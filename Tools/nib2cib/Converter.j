@@ -116,12 +116,14 @@ ConverterConversionException = @"ConverterConversionException";
     var PROJECT_ROOT_DIR = SYSTEM.env["PWD"];
     var PROJECT_BUILD_DIR = FILE.join(PROJECT_ROOT_DIR, "Build");
     var TMP_DIR = FILE.join(PROJECT_BUILD_DIR, "tmp");
+    
     // Does Build folder exist? If not, create it
     if(!FILE.isDirectory(PROJECT_BUILD_DIR))
     {
         print("Create 'Build' directory: " + PROJECT_BUILD_DIR);
         FILE.mkdir(PROJECT_BUILD_DIR);
     }
+    
     // Does tmp folder exist? If not, create it
     if(!FILE.isDirectory(TMP_DIR))
     {
