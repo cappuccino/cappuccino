@@ -10,8 +10,8 @@ const utilsFile = ObjectiveJ.utils.file;
 var subprojects = ["Objective-J", "CommonJS", "Foundation", "AppKit", "Tools"];
 
 task ("build", function() {
-    childProcess.execSync(["mkdir", "-p", "$CAPP_BUILD"].map(utilsFile.enquote).join(" "), {stdio: 'inherit'});
-    childProcess.execSync(['ln', '-sf', '"$PWD"/node_modules', '"$CAPP_BUILD"'].join(" "), {stdio: 'inherit'});
+    childProcess.execSync(["mkdir", "-p", $BUILD_DIR].map(utilsFile.enquote).join(" "), {stdio: 'inherit'});
+    childProcess.execSync(['ln', '-sf', '"$PWD"/node_modules', utilsFile.enquote($BUILD_DIR)].join(" "), {stdio: 'inherit'});
 });
 
 ["build", "clean", "clobber"].forEach(function(aTaskName)
