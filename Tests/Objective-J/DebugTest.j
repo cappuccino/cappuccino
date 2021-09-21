@@ -45,17 +45,19 @@ objj_test_decorator = function(msgSend)
 {
     objj_msgSend_decorate(objj_test_decorator);
     var a = [TestClass0 new];
-    [self assert:[a intify:3] equals:6];
+    // The compiler might inline the 'message send' call so we do it manually here
+    [self assert:a.isa.objj_msgSend1(a, "intify:", 3) /*[a intify:3]*/ equals:6];
     [self assert:SEEN_MESSAGES equals:[[a, @selector(intify:)]]];
 }
 
 - (void)test_objj_msgSend_decorate_should_replace_fast_msgSend_for_initialised_class
 {
     var a = [TestClass1 new];
-    [a intify:5];
+    a.isa.objj_msgSend1(a, "intify:", 5) /*[a intify:5]*/;
 
     objj_msgSend_decorate(objj_test_decorator);
-    [self assert:[a intify:3] equals:6];
+    // The compiler might inline the 'message send' call so we do it manually here
+    [self assert:a.isa.objj_msgSend1(a, "intify:", 3) /*[a intify:3]*/ equals:6];
     [self assert:SEEN_MESSAGES equals:[[a, @selector(intify:)]]];
 }
 
@@ -63,9 +65,11 @@ objj_test_decorator = function(msgSend)
 {
     objj_msgSend_decorate(objj_test_decorator);
     var a = [TestClass1 new];
-    [self assert:[a intify:3] equals:6];
+    // The compiler might inline the 'message send' call so we do it manually here
+    [self assert:a.isa.objj_msgSend1(a, "intify:", 3) /*[a intify:3]*/ equals:6];
     objj_msgSend_reset();
-    [self assert:[a intify:3] equals:6];
+    // The compiler might inline the 'message send' call so we do it manually here
+    [self assert:a.isa.objj_msgSend1(a, "intify:", 3) /*[a intify:3]*/ equals:6];
     [self assert:SEEN_MESSAGES equals:[[a, @selector(intify:)]]];
 }
 
