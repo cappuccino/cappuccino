@@ -36,6 +36,7 @@
 
 var FILE = require("file"),
     OS = require("os"),
+    SYSTEM = require("system"),
 
     SharedConverter = nil;
 
@@ -112,18 +113,44 @@ ConverterConversionException = @"ConverterConversionException";
     var temporaryNibFilePath = "",
         temporaryPlistFilePath = "";
 
+    var PROJECT_ROOT_DIR = SYSTEM.env["PWD"];
+    var PROJECT_BUILD_DIR = FILE.join(PROJECT_ROOT_DIR, "Build");
+    var TMP_DIR = FILE.join(PROJECT_BUILD_DIR, "tmp");
+    // Does Build folder exist? If not, create it
+    if(!FILE.isDirectory(PROJECT_BUILD_DIR))
+    {
+        print("Create 'Build' directory: " + PROJECT_BUILD_DIR);
+        FILE.mkdir(PROJECT_BUILD_DIR);
+    }
+    // Does tmp folder exist? If not, create it
+    if(!FILE.isDirectory(TMP_DIR))
+    {
+        print("Create 'tmp' directory: " + TMP_DIR);
+        FILE.mkdir(TMP_DIR);
+    }
+    var environment_keys = Object.keys(SYSTEM.env);
+    for (var i = 0; i < environment_keys.length - 1; i++)
+    {
+        print(environment_keys[i] + ": " + SYSTEM.env[environment_keys[i]]);
+    }
+    
     try
     {
         if ([outputPath length])
         {
             // Compile xib or nib to make sure we have a non-new format nib.
-            temporaryNibFilePath = FILE.join("/tmp", FILE.basename(aFilePath) + ".tmp.nib");
+            temporaryNibFilePath = FILE.join(TMP_DIR, FILE.basename(aFilePath) + ".tmp.nib");
 
             try
             {
                 var p = OS.popen(["/usr/bin/ibtool", aFilePath, "--compile", temporaryNibFilePath]);
-                if (p.wait() === 1)
+                var error;
+                while (error = p.stderr.read()) CPLog.info("IBTool error(" + typeof error + "): '" + error + "'");
+                var wait = p.wait();
+                if (wait === 1) {
+                    console.log(error);
                     [CPException raise:ConverterConversionException reason:@"Could not compile file: " + aFilePath];
+                }
             }
             finally
             {
@@ -131,13 +158,17 @@ ConverterConversionException = @"ConverterConversionException";
                 p.stdout.close();
                 p.stderr.close();
             }
-
         }
         else
         {
             temporaryNibFilePath = aFilePath;
         }
-
+        
+        // Check if output path results in a directory
+        if (FILE.isDirectory(temporaryNibFilePath)) {
+            temporaryNibFilePath = FILE.join(temporaryNibFilePath, "keyedobjects.nib");
+        }
+        
         // Convert from binary plist to XML plist
         var temporaryPlistFilePath = FILE.join("/tmp", FILE.basename(aFilePath) + ".tmp.plist");
 
