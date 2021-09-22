@@ -2,13 +2,13 @@
   "name": "@objj/cappuccino",
   "version": "1.2.0",
   "devDependencies": {
-    "terser": ">=5.7.0",
     "@objj/cappuccino": "file:."
   },
   "dependencies": {
     "@objj/jake": "latest",
     "@objj/ojtest": "latest",
-    "@objj/runtime": "latest"
+    "@objj/runtime": "latest",
+    "terser": ">=5.7.0"
   },
   "files": [
     "dist",
