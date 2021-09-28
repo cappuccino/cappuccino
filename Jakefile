@@ -348,6 +348,7 @@ task("test-only", function()
     }
     catch (e)
     {
+        process.exit(1);
     }
 });
 
