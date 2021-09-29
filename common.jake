@@ -102,13 +102,13 @@ function additionalPackages()
 
     var packages = [];
     // load built objective-j if exists, otherwise unbuilt
-    if (!fs.existsSync(path.join(builtObjectiveJPackage, "package.json"))) {
+    if (fs.existsSync(path.join(builtObjectiveJPackage, "package.json"))) {
         //if (!packageInCatalog(builtObjectiveJPackage))
             packages.push(builtObjectiveJPackage);
     }
 
     // load built cappuccino if it exists
-    if (!fs.existsSync(path.join(builtCappuccinoPackage, "package.json"))) {
+    if (fs.existsSync(path.join(builtCappuccinoPackage, "package.json"))) {
         //if (!packageInCatalog(builtCappuccinoPackage))
             packages.push(builtCappuccinoPackage);
     }
@@ -142,7 +142,7 @@ serializedENV = function()
 
     if (packages.length)
     {
-        envNew["NARWHALOPT"] = packages.map(function(p) { return "-p " + utilsFile.enquote(p); }).join(" ");
+        envNew["OBJJ_OPT"] = packages.map(function(p) { return "-I " + utilsFile.enquote(p); }).join(" ");
         envNew["PATH"] = packages.map(function(p) { return path.join(p, "bin"); }).concat(process.env["PATH"]).join(":");
     }
 
