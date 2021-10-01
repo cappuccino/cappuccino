@@ -24,7 +24,7 @@
     "nib2cib": "dist/cappuccino/bin/nib2cib",
     "ojdepcheck": "dist/cappuccino/bin/ojdepcheck",
     "press": "dist/cappuccino/bin/press",
-    "objj": "dist/cappuccino/bin/objj",
+    "objj": "dist/objective-j/bin/objj",
     "jake": "dist/cappuccino/bin/jake",
     "ojtest": "dist/cappuccino/bin/ojtest",
     "objj2objcskeleton": "dist/cappuccino/bin/objj2objcskeleton"
