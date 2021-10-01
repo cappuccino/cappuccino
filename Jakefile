@@ -344,7 +344,7 @@ task("test-only", function()
 
     try
     {
-        childProcess.execSync(cmdString, {stdio: 'inherit'});
+        childProcess.execSync(serializedENV() + " " + cmdString, {stdio: 'inherit'});
     }
     catch (e)
     {
