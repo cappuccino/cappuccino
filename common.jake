@@ -41,7 +41,7 @@ process.env["BUILD_PATH"] = path.resolve(
     process.env["BUILD_PATH"] ||
     process.env["CAPP_BUILD"] || // Global Cappuccino build directory.
     process.env["STEAM_BUILD"] || // Maintain backwards compatibility with steam.
-    path.join(path.dirname(module.path), "Build") // Just build here.
+    path.join(module.path, "Build") // Just build here.
 );
 
 if (!process.env["CAPP_BUILD"] && process.env["STEAM_BUILD"])
