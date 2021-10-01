@@ -142,7 +142,7 @@ serializedENV = function()
 
     if (packages.length)
     {
-        envNew["OBJJ_OPT"] = packages.map(function(p) { return "-I " + utilsFile.enquote(p); }).join(" ");
+        envNew["OBJJ_OPT"] = packages.map(function(p) { return "-I " + utilsFile.enquote(path.join(p, "Frameworks")); }).join(" ");
         envNew["PATH"] = packages.map(function(p) { return path.join(p, "bin"); }).concat(process.env["PATH"]).join(":");
     }
 
