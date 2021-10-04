@@ -120,6 +120,25 @@ ConverterConversionException = @"ConverterConversionException";
     var temporaryNibFilePath = "",
         temporaryPlistFilePath = "";
 
+
+    function isReadable(p) {
+        try {
+            fs.accessSync(p, fs.constants.R_OK);
+            return true;
+        } catch (err) {
+            return false;
+        }
+    }
+
+    function isWritable(p) {
+        try {
+            fs.accessSync(p, fs.constants.W_OK);
+            return true;
+        } catch (err) {
+            return false;
+        }
+    }
+
     try
     {
         var tmpdir = fs.mkdtempSync(path.join(os.tmpdir(), 'nib2cib-'));
@@ -168,24 +187,6 @@ ConverterConversionException = @"ConverterConversionException";
             p.stdout.close();
             p.stderr.close();
         } */
-
-        function isReadable(p) {
-            try {
-                fs.accessSync(p, fs.constants.R_OK);
-                return true;
-            } catch (err) {
-                return false;
-            }
-        }
-
-        function isWritable(p) {
-            try {
-                fs.accessSync(p, fs.constants.W_OK);
-                return true;
-            } catch (err) {
-                return false;
-            }
-        }
 
         if (!isReadable(temporaryPlistFilePath))
             [CPException raise:ConverterConversionException reason:@"Unable to convert nib file."];
