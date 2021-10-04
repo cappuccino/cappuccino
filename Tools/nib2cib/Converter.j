@@ -116,26 +116,36 @@ ConverterConversionException = @"ConverterConversionException";
     var PROJECT_ROOT_DIR = SYSTEM.env["PWD"];
     var PROJECT_BUILD_DIR = FILE.join(PROJECT_ROOT_DIR, "Build");
     var TMP_DIR = FILE.join(PROJECT_BUILD_DIR, "tmp");
-    
+
+    // System /tmp folder was previously used for ephemeral conversion artifacts
+    // In more recent versions of macOS, access permissions can be insufficient
+    // without using sudo.
+    // Additionally, temporary folders and files in /tmp were not being
+    // namespaced. This risks collisions
+    // between distinct xib files - ones named identically but in different project folders.
+    // Using a tmp folder in the project's Build folder resolves both issues.
+    // Leaving the tmp folder visible is an advantage when debugging failed conversions.
+
     // Does Build folder exist? If not, create it
     if(!FILE.isDirectory(PROJECT_BUILD_DIR))
     {
         print("Create 'Build' directory: " + PROJECT_BUILD_DIR);
         FILE.mkdir(PROJECT_BUILD_DIR);
     }
-    
+
     // Does tmp folder exist? If not, create it
     if(!FILE.isDirectory(TMP_DIR))
     {
         print("Create 'tmp' directory: " + TMP_DIR);
         FILE.mkdir(TMP_DIR);
     }
+
     var environment_keys = Object.keys(SYSTEM.env);
     for (var i = 0; i < environment_keys.length - 1; i++)
     {
         print(environment_keys[i] + ": " + SYSTEM.env[environment_keys[i]]);
     }
-    
+
     try
     {
         if ([outputPath length])
@@ -165,12 +175,12 @@ ConverterConversionException = @"ConverterConversionException";
         {
             temporaryNibFilePath = aFilePath;
         }
-        
+
         // Check if output path results in a directory
         if (FILE.isDirectory(temporaryNibFilePath)) {
             temporaryNibFilePath = FILE.join(temporaryNibFilePath, "keyedobjects.nib");
         }
-        
+
         // Convert from binary plist to XML plist
         var temporaryPlistFilePath = FILE.join("/tmp", FILE.basename(aFilePath) + ".tmp.plist");
 
