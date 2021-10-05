@@ -98,6 +98,10 @@ ConverterConversionException = @"ConverterConversionException";
     if (inferredFormat === NibFormatMac)
         var convertedData = [self convertedDataFromMacData:nibData];
     else
+        // TODO: this is insufficient to fully confirm the xib file is valid.
+        // Xcode offers to upgrade older xib file formats when they are opened in Interface Builder
+        // but this may not happen if a project is recompiled without opening the xib.
+        // We should perform the same check here and offer to upgrade the file format.
         [CPException raise:ConverterConversionException reason:@"nib2cib does not understand this nib format."];
 
     if ([outputPath length])
@@ -127,24 +131,30 @@ ConverterConversionException = @"ConverterConversionException";
     // Leaving the tmp folder visible is an advantage when debugging failed conversions.
 
     // Does Build folder exist? If not, create it
+    CPLog.info("\nCreating temporary directories for conversion process:");
     if(!FILE.isDirectory(PROJECT_BUILD_DIR))
     {
-        print("Create 'Build' directory: " + PROJECT_BUILD_DIR);
+        CPLog.info("Create 'Build' directory: " + PROJECT_BUILD_DIR);
         FILE.mkdir(PROJECT_BUILD_DIR);
     }
 
     // Does tmp folder exist? If not, create it
     if(!FILE.isDirectory(TMP_DIR))
     {
-        print("Create 'tmp' directory: " + TMP_DIR);
+        CPLog.info("Create 'tmp' directory: " + TMP_DIR);
         FILE.mkdir(TMP_DIR);
     }
 
+    // Log environment in verbose mode
+    // The conversion process is still less robust than ideal.
+    // Logging expanded debugging information may aid in diagnosis of problems.
+    CPLog.info("\nCappuccino environment:");
     var environment_keys = Object.keys(SYSTEM.env);
     for (var i = 0; i < environment_keys.length - 1; i++)
     {
-        print(environment_keys[i] + ": " + SYSTEM.env[environment_keys[i]]);
+        CPLog.info(environment_keys[i] + ": " + SYSTEM.env[environment_keys[i]]);
     }
+    CPLog.info("\n");
 
     try
     {
@@ -160,7 +170,7 @@ ConverterConversionException = @"ConverterConversionException";
                 while (error = p.stderr.read()) CPLog.info("IBTool error(" + typeof error + "): '" + error + "'");
                 var wait = p.wait();
                 if (wait === 1) {
-                    console.log(error);
+                    CPLog.info(error);
                     [CPException raise:ConverterConversionException reason:@"Could not compile file: " + aFilePath];
                 }
             }
