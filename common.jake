@@ -365,7 +365,8 @@ global.installCopy = function(sourcePath, useSudo)
         return;
 
     var packageName = path.basename(sourcePath),
-        targetPath = path.join(__dirname, "dist", packageName);
+        targetPath = path.join(__dirname, "dist", packageName),
+        binPath = path.resolve(path.join(targetPath, "bin"));
 
     // create the dist directory if it does not exist
     if (!fs.existsSync(targetPath)) {
@@ -381,11 +382,9 @@ global.installCopy = function(sourcePath, useSudo)
 
     // hacky way to do a sudo copy.
     if (useSudo)
-        child_process.execSync(["sudo", "cp", "-Rf", sourcePath, path.dirname(targetPath)].join(" "));
+        child_process.execSync(["sudo", "cp", "-Rf", sourcePath, path.dirname(targetPath)].map(utilsFile.enquote).join(" "));
     else
         utilsFile.copyRecursiveSync(sourcePath, targetPath);
-
-    var binPath = path.resolve(path.join(targetPath, "bin"))
 
     // create the bin directory if it does not exist
     if (!fs.existsSync(binPath)) {
@@ -399,19 +398,39 @@ global.installCopy = function(sourcePath, useSudo)
             var binary = path.join(binPath, name);
 
             if (useSudo) {
-                child_process.execSync(["sudo", "chmod", "755", binary].join(" "));
+                child_process.execSync(["sudo", "chmod", "755", binary].map(utilsFile.enquote).join(" "));
             } else {
                 fs.chmodSync(binary, 0o755);
             }
         });
     }
-    fs.readdirSync(binPath).forEach(function (name)
-    {
-        var prefix = child_process.execSync("npm prefix -g").toString().trim();
-        child_process.execSync( (useSudo ? "sudo " : "") + "ln -sf " + path.join(binPath, name) + " " + path.join(prefix, "bin", name));
-    });
 };
 
+global.installGlobal = function(sourcePath, useSudo)
+{
+    if (!fs.existsSync(sourcePath))
+        return;
+
+    var packageName = path.basename(sourcePath),
+        targetPath = path.join(__dirname, "dist", packageName),
+        binPath = path.resolve(path.join(targetPath, "bin"));
+
+    // create the dist directory if it does not exist
+    if (!fs.existsSync(targetPath)) {
+        fs.mkdirSync(targetPath, { recursive: true });
+    }
+
+    var prefix = child_process.execSync("npm prefix -g").toString().trim();
+
+    fs.readdirSync(binPath).forEach(function (name)
+    {
+        var p = path.join(binPath, name),
+            prefixBinPath = path.join(prefix, "bin", name);
+
+        stream.print("Symlink \0cyan(" + prefixBinPath + "\0) ==> \0cyan(" + p + "\0)");
+        child_process.execSync( (useSudo ? "sudo " : "") + "ln -sf " + utilsFile.enquote(p) + " " + utilsFile.enquote(prefixBinPath));
+    });
+}
 
 global.spawnJake = function(/*String*/ aTaskName)
 {
@@ -424,10 +443,7 @@ global.spawnJake = function(/*String*/ aTaskName)
 var normalizeCommand = function(/*Array or String*/ command)
 {
     if (Array.isArray(command))
-        return command.map(function (arg)
-        {
-            return utilsFile.enquote(arg);
-        }).join(" ");
+        return command.map(utilsFile.enquote).join(" ");
     else    
         return command;
 };

@@ -45,16 +45,31 @@ filedir ($BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS, ["debug", "release"], function(
 task ("CommonJS", [$BUILD_CJS_OBJECTIVE_J_DEBUG_FRAMEWORKS, $BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS, "debug", "release"], function() {
 });
 
-task ("install", ["CommonJS"], function()
+// Install everything in the dist directory
+task ("dist", ["CommonJS"], function()
 {
     installCopy($BUILD_CJS_OBJECTIVE_J, false);
     installCopy($BUILD_CJS_CAPPUCCINO, false);
 });
 
-task ("sudo-install", ["CommonJS"], function()
+task ("sudo-dist", ["CommonJS"], function()
 {
     installCopy($BUILD_CJS_OBJECTIVE_J, true);
     installCopy($BUILD_CJS_CAPPUCCINO, true);
+});
+
+// Install everything in the dist directory (task dist) and
+// create symlinks to the 'dist' binaries in the global 'npm prefix' path
+task ("install", ["dist"], function()
+{
+    installGlobal($BUILD_CJS_OBJECTIVE_J, false);
+    installGlobal($BUILD_CJS_CAPPUCCINO, false);
+});
+
+task ("sudo-install", ["sudo-dist"], function()
+{
+    installGlobal($BUILD_CJS_OBJECTIVE_J, true);
+    installGlobal($BUILD_CJS_CAPPUCCINO, true);
 });
 
 task ("install-symlinks", function()
