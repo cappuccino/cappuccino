@@ -36,7 +36,9 @@ However, you can also work on other platforms using only a simple text editor.
 
 Getting Started
 ---------------
-To write you first application, [download the starter package](http://www.cappuccino-project.org/#download).
+To write you first application, [download the starter package](http://cappuccino.dev/#download).
+
+To try our new Node (alpha) version of the Cappuccino framework, [check the Node installation instructions](https://github.com/cappuccino/cappuccino/wiki/node)
 
 To contribute to Cappuccino, please read here: [Getting and Building the Source](https://github.com/cappuccino/cappuccino/wiki/Getting-and-building-the-source).
 
