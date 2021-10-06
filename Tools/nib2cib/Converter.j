@@ -148,13 +148,13 @@ ConverterConversionException = @"ConverterConversionException";
     // Log environment in verbose mode
     // The conversion process is still less robust than ideal.
     // Logging expanded debugging information may aid in diagnosis of problems.
-    CPLog.info("\nCappuccino environment:");
+    CPLog.debug("\nCappuccino environment:");
     var environment_keys = Object.keys(SYSTEM.env);
     for (var i = 0; i < environment_keys.length - 1; i++)
     {
-        CPLog.info(environment_keys[i] + ": " + SYSTEM.env[environment_keys[i]]);
+        CPLog.debug(environment_keys[i] + ": " + SYSTEM.env[environment_keys[i]]);
     }
-    CPLog.info("\n");
+    CPLog.debug("\n");
 
     try
     {
