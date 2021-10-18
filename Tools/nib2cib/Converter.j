@@ -145,17 +145,6 @@ ConverterConversionException = @"ConverterConversionException";
         FILE.mkdir(TMP_DIR);
     }
 
-    // Log environment in verbose mode
-    // The conversion process is still less robust than ideal.
-    // Logging expanded debugging information may aid in diagnosis of problems.
-    CPLog.debug("\nCappuccino environment:");
-    var environment_keys = Object.keys(SYSTEM.env);
-    for (var i = 0; i < environment_keys.length - 1; i++)
-    {
-        CPLog.debug(environment_keys[i] + ": " + SYSTEM.env[environment_keys[i]]);
-    }
-    CPLog.debug("\n");
-
     try
     {
         if ([outputPath length])
