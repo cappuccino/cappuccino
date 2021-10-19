@@ -36,6 +36,7 @@
 
 var FILE = require("file"),
     OS = require("os"),
+    SYSTEM = require("system"),
 
     SharedConverter = nil;
 
@@ -97,6 +98,10 @@ ConverterConversionException = @"ConverterConversionException";
     if (inferredFormat === NibFormatMac)
         var convertedData = [self convertedDataFromMacData:nibData];
     else
+        // TODO: this is insufficient to fully confirm the xib file is valid.
+        // Xcode offers to upgrade older xib file formats when they are opened in Interface Builder
+        // but this may not happen if a project is recompiled without opening the xib.
+        // We should perform the same check here and offer to upgrade the file format.
         [CPException raise:ConverterConversionException reason:@"nib2cib does not understand this nib format."];
 
     if ([outputPath length])
@@ -112,18 +117,51 @@ ConverterConversionException = @"ConverterConversionException";
     var temporaryNibFilePath = "",
         temporaryPlistFilePath = "";
 
+    var PROJECT_ROOT_DIR = SYSTEM.env["PWD"];
+    var PROJECT_BUILD_DIR = FILE.join(PROJECT_ROOT_DIR, "Build");
+    var TMP_DIR = FILE.join(PROJECT_BUILD_DIR, "tmp");
+
+    // System /tmp folder was previously used for ephemeral conversion artifacts
+    // In more recent versions of macOS, access permissions can be insufficient
+    // without using sudo.
+    // Additionally, temporary folders and files in /tmp were not being
+    // namespaced. This risks collisions
+    // between distinct xib files - ones named identically but in different project folders.
+    // Using a tmp folder in the project's Build folder resolves both issues.
+    // Leaving the tmp folder visible is an advantage when debugging failed conversions.
+
+    // Does Build folder exist? If not, create it
+    CPLog.info("\nCreating temporary directories for conversion process:");
+    if(!FILE.isDirectory(PROJECT_BUILD_DIR))
+    {
+        CPLog.info("Create 'Build' directory: " + PROJECT_BUILD_DIR);
+        FILE.mkdir(PROJECT_BUILD_DIR);
+    }
+
+    // Does tmp folder exist? If not, create it
+    if(!FILE.isDirectory(TMP_DIR))
+    {
+        CPLog.info("Create 'tmp' directory: " + TMP_DIR);
+        FILE.mkdir(TMP_DIR);
+    }
+
     try
     {
         if ([outputPath length])
         {
             // Compile xib or nib to make sure we have a non-new format nib.
-            temporaryNibFilePath = FILE.join("/tmp", FILE.basename(aFilePath) + ".tmp.nib");
+            temporaryNibFilePath = FILE.join(TMP_DIR, FILE.basename(aFilePath) + ".tmp.nib");
 
             try
             {
                 var p = OS.popen(["/usr/bin/ibtool", aFilePath, "--compile", temporaryNibFilePath]);
-                if (p.wait() === 1)
+                var error;
+                while (error = p.stderr.read()) CPLog.info("IBTool error(" + typeof error + "): '" + error + "'");
+                var wait = p.wait();
+                if (wait === 1) {
+                    CPLog.info(error);
                     [CPException raise:ConverterConversionException reason:@"Could not compile file: " + aFilePath];
+                }
             }
             finally
             {
@@ -131,11 +169,15 @@ ConverterConversionException = @"ConverterConversionException";
                 p.stdout.close();
                 p.stderr.close();
             }
-
         }
         else
         {
             temporaryNibFilePath = aFilePath;
+        }
+
+        // Check if output path results in a directory
+        if (FILE.isDirectory(temporaryNibFilePath)) {
+            temporaryNibFilePath = FILE.join(temporaryNibFilePath, "keyedobjects.nib");
         }
 
         // Convert from binary plist to XML plist
