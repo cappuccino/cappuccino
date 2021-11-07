@@ -142,6 +142,7 @@ function abbreviationForDate(date)
         @"CLST" :  @"America/Santiago",
         @"CLT" :   @"America/Santiago",
         @"COT" :   @"America/Bogota",
+        @"CUT" :   @"UTC",
         @"CST" :   @"America/Chicago",
         @"EAT" :   @"Africa/Addis_Ababa",
         @"EDT" :   @"America/New_York",

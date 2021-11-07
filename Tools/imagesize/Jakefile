@@ -22,7 +22,7 @@ task ("build", function()
     }
     else
     {
-        print("Building imagesize requires Xcode.");
+        console.log("Building imagesize requires Xcode.");
     }
 });
 
