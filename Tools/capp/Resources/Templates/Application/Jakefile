@@ -17,7 +17,7 @@ var ENV = process.env,
     OS = require("os"),
     projectName = "__project.nameasidentifier__";
 
-var buildDir = path.resolve(env["BUILD_PATH"] || env["CAPP_BUILD"] || "Build");
+var buildDir = path.resolve(ENV["BUILD_PATH"] || ENV["CAPP_BUILD"] || "Build");
 
 app (projectName, function(task)
 {
