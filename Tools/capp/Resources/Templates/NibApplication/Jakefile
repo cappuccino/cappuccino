@@ -17,6 +17,8 @@ var ENV = process.env,
     OS = require("os"),
     projectName = "__project.nameasidentifier__";
 
+var buildDir = path.resolve(ENV["BUILD_PATH"] || ENV["CAPP_BUILD"] || "Build");
+
 app (projectName, function(task)
 {
     ENV["OBJJ_INCLUDE_PATHS"] = "Frameworks";
@@ -24,8 +26,8 @@ app (projectName, function(task)
     if (configuration === "Debug")
         ENV["OBJJ_INCLUDE_PATHS"] = path.join(ENV["OBJJ_INCLUDE_PATHS"], configuration);
 
-    task.setBuildIntermediatesPath(path.join("Build", "__project.nameasidentifier__.build", configuration));
-    task.setBuildPath(path.join("Build", configuration));
+    task.setBuildIntermediatesPath(path.join(buildDir, "__project.nameasidentifier__.build", configuration));
+    task.setBuildPath(path.join(buildDir, configuration));
 
     task.setProductName("__project.name__");
     task.setIdentifier("__project.identifier__");
