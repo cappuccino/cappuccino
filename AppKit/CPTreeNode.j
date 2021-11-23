@@ -50,6 +50,31 @@
     return self;
 }
 
+- (CPIndexPath)indexPath
+{
+    if (_parentNode != nil)
+    {
+        var path;
+        var index;
+
+        index = [[_parentNode childNodes] indexOfObject:self];
+        path = [_parentNode indexPath];
+
+        if (path != nil)
+        {
+            return [path indexPathByAddingIndex:index];
+        }
+        else
+        {
+            return [CPIndexPath indexPathWithIndex:index];
+        }
+    }
+    else
+    {
+        return nil;
+    }
+}
+
 - (BOOL)isLeaf
 {
     return [_childNodes count] <= 0;
