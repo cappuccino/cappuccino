@@ -18,6 +18,8 @@
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
     // This is called when the application is done loading.
+    // Uncomment the following line to hide the standard menu bar.
+    // [CPMenu setMenuBarVisible:NO];
 }
 
 - (void)awakeFromCib

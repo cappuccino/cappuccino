@@ -380,6 +380,8 @@ CPButtonImageOffset   = 3.0;
         _bezelState = CPThemeStateNormal;
 
     [self setValue:anImage forThemeAttribute:@"image" inState:_bezelState];
+    // if we omit this, images will disappear as soon as the button becomes disabled
+    [self setValue:anImage forThemeAttribute:@"image" inState:_bezelState.and(CPThemeStateDisabled)];
 }
 
 - (CPImage)image
@@ -971,7 +973,11 @@ CPButtonImageOffset   = 3.0;
     _bezelStyle = aBezelStyle;
 
     if (_bezelState && newState)
+    {
+        if (currentState)
+            _bezelState =_bezelState.without(currentState);
         _bezelState = _bezelState.and(newState);
+    }
     else
         _bezelState = newState || CPThemeStateNormal;
 
