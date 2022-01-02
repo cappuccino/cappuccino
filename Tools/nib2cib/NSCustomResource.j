@@ -36,7 +36,7 @@ var child_process = require("child_process");
 function imagesize(path) {
     var result;
     try {
-        result = child_process.execSync("imagesize -n " + path);
+        result = child_process.execSync("imagesize -n '" + path + "'");
     } catch(err) {
         console.error("imagesize failed:" + err);
     }
