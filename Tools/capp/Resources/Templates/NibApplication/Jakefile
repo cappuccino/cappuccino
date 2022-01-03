@@ -70,25 +70,25 @@ task ("release", function()
 
 task ("run", ["debug"], function()
 {
-    OS.system(["open", path.join("Build", "Debug", projectName, "index.html")]);
+    OS.system(["open", path.join(buildDir, "Debug", projectName, "index.html")]);
 });
 
 task ("run-release", ["release"], function()
 {
-    OS.system(["open", path.join("Build", "Release", projectName, "index.html")]);
+    OS.system(["open", path.join(buildDir, "Release", projectName, "index.html")]);
 });
 
 task ("deploy", ["release"], function()
 {
-    FILE.mkdirs(path.join("Build", "Deployment", projectName));
-    OS.system(["press", "-f", path.join("Build", "Release", projectName), path.join("Build", "Deployment", projectName)]);
+    FILE.mkdirs(path.join(buildDir, "Deployment", projectName));
+    OS.system(["press", "-f", path.join(buildDir, "Release", projectName), path.join(buildDir, "Deployment", projectName)]);
     printResults("Deployment")
 });
 
 function printResults(configuration)
 {
     console.log("----------------------------");
-    console.log(configuration+" app built at path: " + path.join("Build", configuration, projectName));
+    console.log(configuration+" app built at path: " + path.join(buildDir, configuration, projectName));
     console.log("----------------------------");
 }
 
@@ -96,7 +96,7 @@ function updateApplicationSize()
 {
     console.log("Calculating application file sizes...");
     
-    var contents = fs.readFileSync(path.join("Build", configuration, projectName, "Info.plist"), { encoding: "utf8" }),
+    var contents = fs.readFileSync(path.join(buildDir, configuration, projectName, "Info.plist"), { encoding: "utf8" }),
         format = CFPropertyList.sniffedFormatOfString(contents),
         plist = CFPropertyList.propertyListFromString(contents),
         totalBytes = {executable:0, data:0, mhtml:0};
@@ -133,7 +133,7 @@ function updateApplicationSize()
         addBundleFileSizes(themePath, totalBytes);
 
     // Add sizes for the app
-    addBundleFileSizes(path.join("Build", configuration, projectName), totalBytes);
+    addBundleFileSizes(path.join(buildDir, configuration, projectName), totalBytes);
 
     console.log("Executables: " + totalBytes.executable + ", sprite data: " + totalBytes.data + ", total: " + (totalBytes.executable + totalBytes.data));
 
@@ -144,8 +144,8 @@ function updateApplicationSize()
     dict.setValueForKey("mhtml", totalBytes.mhtml);
 
     plist.setValueForKey("CPApplicationSize", dict);
-    fs.writeFileSync(path.join("Build", configuration, projectName, "Info.plist"), CFPropertyList.stringFromPropertyList(plist, format), { encoding: "utf8" });
-    //FILE.write(path.join("Build", configuration, projectName, "Info.plist"), CFPropertyList.stringFromPropertyList(plist, format), { charset:"UTF-8" });
+    fs.writeFileSync(path.join(buildDir, configuration, projectName, "Info.plist"), CFPropertyList.stringFromPropertyList(plist, format), { encoding: "utf8" });
+    //FILE.write(path.join(buildDir, configuration, projectName, "Info.plist"), CFPropertyList.stringFromPropertyList(plist, format), { charset:"UTF-8" });
 }
 
 function addBundleFileSizes(bundlePath, totalBytes)
