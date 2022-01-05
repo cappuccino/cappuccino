@@ -548,7 +548,7 @@ CPButtonImageOffset   = 3.0;
         return;
 
     _isHighlighted = shouldHighlight;
-    [super highlight: shouldHighlight];
+    [super highlight:shouldHighlight];
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
 }
