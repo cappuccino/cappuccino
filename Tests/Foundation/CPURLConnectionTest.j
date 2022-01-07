@@ -79,12 +79,12 @@
     _didCallDelegateErrorMethod = YES;
 }
 
-- (void)testConnectionError
+- (async void)testConnectionError
 {
     _didCallDelegateErrorMethod = NO;
 
-    var req = [CPURLRequest requestWithURL:@"http://localh0st:9999/data123"], // this fictious endpoint does not exist
-        conn = [CPURLConnection connectionWithRequest:req delegate:self];     // therefore, this must trigger the delegate error notification
+    var req = [CPURLRequest requestWithURL:@"http://localh0st:9999/data123"]; // this fictious endpoint does not exist
+    await [CPURLConnection connectionWithRequest:req delegate:self];     // FIXME: this does not work as currently connectionWithRequest does not return a Promise
     [self assertTrue:_didCallDelegateErrorMethod];
 }
 
