@@ -483,7 +483,7 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
         ];
     }
 
-    var cookieValue = eval(cookieValue);
+    var cookieValue = JSON.parse(cookieValue);
 
     return [cookieValue arrayByApplyingBlock:function(value)
     {
