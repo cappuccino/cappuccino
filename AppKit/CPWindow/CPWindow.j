@@ -1901,6 +1901,9 @@ CPTexturedBackgroundWindowMask
     // CPLeftMouseDown is needed for window moving and resizing to work.
     // CPMouseMoved is needed for rollover effects on title bar buttons.
 
+    if (sheet && (_sheetContext["isClosing"] || _sheetContext["isOpening"]))
+        return;
+
     if (sheet && _sheetContext["isAttached"])
     {
         switch (type)
