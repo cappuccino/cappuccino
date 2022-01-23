@@ -1901,6 +1901,8 @@ CPTexturedBackgroundWindowMask
     // CPLeftMouseDown is needed for window moving and resizing to work.
     // CPMouseMoved is needed for rollover effects on title bar buttons.
 
+    // ignore events that happen during open / close animations
+    // not ignoring these would cause the app to freeze thereafter
     if (sheet && (_sheetContext["isClosing"] || _sheetContext["isOpening"]))
         return;
 
