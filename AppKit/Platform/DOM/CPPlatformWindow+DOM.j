@@ -694,7 +694,6 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
                         (aDOMEvent.altKey ? CPAlternateKeyMask : 0) |
                         (aDOMEvent.metaKey ? CPCommandKeyMask : 0) |
                         (_capsLockActive ? CPAlphaShiftKeyMask : 0);
-debugger
 
     // With a few exceptions, all key events are blocked from propagating to
     // the browser.  Here the following exceptions are being allowed:
