@@ -124,6 +124,7 @@
                                                           attributes:[CPDictionary dictionaryWithObjects:[[CPFont boldFontWithName:"Arial" size:25], [CPColor yellowColor]]
                                                                                                  forKeys:[CPFontAttributeName, CPBackgroundColorAttributeName]]]];
     [theWindow orderFront:self];
+    [_textView setEditable:NO];
     [CPMenu setMenuBarVisible:YES];
 }
 

@@ -2214,7 +2214,10 @@ Sets the selection to a range of characters in response to user action.
 - (void)updateInsertionPointStateAndRestartTimer:(BOOL)flag
 {
     if (_selectionRange.length || ![self isEditable])
-        [_caret setVisibility:NO];
+    {
+       [_caret setVisibility:NO];
+       return;
+    }
 
     [_caret setRect:[self _getCaretRect]];
 
