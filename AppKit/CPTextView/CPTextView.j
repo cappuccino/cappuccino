@@ -2170,6 +2170,9 @@ Sets the selection to a range of characters in response to user action.
 
 - (BOOL)shouldDrawInsertionPoint
 {
+    if (![self isEditable])
+        return NO;
+
     return (_selectionRange.length === 0 && [self _isFocused] && !_placeholderString);
 }
 
@@ -2213,11 +2216,8 @@ Sets the selection to a range of characters in response to user action.
 }
 - (void)updateInsertionPointStateAndRestartTimer:(BOOL)flag
 {
-    if (_selectionRange.length || ![self isEditable])
-    {
+    if (_selectionRange.length)
        [_caret setVisibility:NO];
-       return;
-    }
 
     [_caret setRect:[self _getCaretRect]];
 
