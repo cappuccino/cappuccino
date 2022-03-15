@@ -40,7 +40,7 @@
         self.environment[@"NARWHAL_ENGINE"] = @"jsc";
         self.environment[@"CAPP_NOSUDO"]    = @"1";
         
-        self.executables = @[@"python", @"objj", @"nib2cib",@"objj2objcskeleton", @"capp_lint", @"touch"];
+        self.executables = @[@"python3", @"objj", @"nib2cib",@"objj2objcskeleton", @"capp_lint", @"touch"];
 
         self.isValid = [self _checkExecutables];
     }
