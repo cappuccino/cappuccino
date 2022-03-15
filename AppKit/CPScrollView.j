@@ -168,20 +168,54 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
         };
 }
 
+/*! Deprecated
+ */
 + (CGSize)contentSizeForFrameSize:(CGSize)frameSize hasHorizontalScroller:(BOOL)hFlag hasVerticalScroller:(BOOL)vFlag borderType:(CPBorderType)borderType
+{
+    return [self contentSizeForFrameSize:frameSize
+                 horizontalScrollerClass:hFlag ? [CPScroller class] : nil
+                   verticalScrollerClass:vFlag ? [CPScroller class] : nil
+                              borderType:borderType
+                             controlSize:CPRegularControlSize
+                           scrollerStyle:CPScrollerStyleGlobal];
+}
+
++ (CGSize)contentSizeForFrameSize:(CGSize)frameSize
+          horizontalScrollerClass:(Class)horizontalScrollerClass
+            verticalScrollerClass:(Class)verticalScrollerClass
+                       borderType:(CPBorderType)borderType
+                      controlSize:(CPControlSize)controlSize
+                    scrollerStyle:(CPScrollerStyle)scrollerStyle
 {
     var bounds = [self _insetBounds:CGRectMake(0.0, 0.0, frameSize.width, frameSize.height) borderType:borderType];
 
-    if (hFlag)
-        bounds.size.height -= [_horizontalScroller scrollerWidth];
+    if (horizontalScrollerClass)
+        bounds.size.height -= [horizontalScrollerClass scrollerWidthInStyle:scrollerStyle];
 
-    if (vFlag)
-        bounds.size.width -= [_verticalScroller scrollerWidth];
+    if (verticalScrollerClass)
+        bounds.size.width -= [verticalScrollerClass scrollerWidthForControlSize:scrollerStyle];
 
     return bounds.size;
 }
 
+/*! Deprecated
+ */
 + (CGSize)frameSizeForContentSize:(CGSize)contentSize hasHorizontalScroller:(BOOL)hFlag hasVerticalScroller:(BOOL)vFlag borderType:(CPBorderType)borderType
+{
+    return [self frameSizeForContentSize:contentSize
+                 horizontalScrollerClass:hFlag ? [CPScroller class] : nil
+                   verticalScrollerClass:vFlag ? [CPScroller class] : nil
+                              borderType:borderType
+                             controlSize:CPRegularControlSize
+                           scrollerStyle:CPScrollerStyleGlobal];
+}
+
++ (CGSize)frameSizeForContentSize:(CGSize)contentSize
+          horizontalScrollerClass:(Class)horizontalScrollerClass
+            verticalScrollerClass:(Class)verticalScrollerClass
+                       borderType:(CPBorderType)borderType
+                      controlSize:(CPControlSize)controlSize
+                    scrollerStyle:(CPScrollerStyle)scrollerStyle
 {
     var bounds = [self _insetBounds:CGRectMake(0.0, 0.0, contentSize.width, contentSize.height) borderType:borderType],
         widthInset = contentSize.width - bounds.size.width,
@@ -189,10 +223,10 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
         frameSize = CGSizeMake(contentSize.width + widthInset, contentSize.height + heightInset);
 
     if (hFlag)
-        frameSize.height += [_horizontalScroller scrollerWidth];
+        frameSize.height += [horizontalScrollerClass scrollerWidthInStyle:scrollerStyle];
 
     if (vFlag)
-        frameSize.width += [_verticalScroller scrollerWidth];
+        frameSize.width += [verticalScrollerClass scrollerWidthForControlSize:scrollerStyle];
 
     return frameSize;
 }
@@ -220,7 +254,7 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
 /*!
     Get the system wide scroller style.
 */
-+ (int)globalScrollerStyle
++ (CPScrollerStyle)globalScrollerStyle
 {
     return CPScrollerStyleGlobal;
 }
@@ -230,7 +264,7 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
 
     @param aStyle the scroller style to set all scroller views to use (CPScrollerStyleLegacy or CPScrollerStyleOverlay)
 */
-+ (void)setGlobalScrollerStyle:(int)aStyle
++ (void)setGlobalScrollerStyle:(CPScrollerStyle)aStyle
 {
     CPScrollerStyleGlobal = aStyle;
     [[CPNotificationCenter defaultCenter] postNotificationName:CPScrollerStyleGlobalChangeNotification object:nil];
@@ -321,7 +355,7 @@ Notifies the delegate when the scroll view has finished scrolling.
         _implementedDelegateMethods |= CPScrollViewDelegate_scrollViewDidScroll_;
 }
 
-- (int)scrollerStyle
+- (CPScrollerStyle)scrollerStyle
 {
     return _scrollerStyle;
 }
@@ -332,7 +366,7 @@ Notifies the delegate when the scroll view has finished scrolling.
     - CPScrollerStyleLegacy: Standard scrollers like Windows or Mac OS X prior to 10.7
     - CPScrollerStyleOverlay: scrollers like those in Mac OS X 10.7+
 */
-- (void)setScrollerStyle:(int)aStyle
+- (void)setScrollerStyle:(CPScrollerStyle)aStyle
 {
     if (_scrollerStyle === aStyle)
         return;
