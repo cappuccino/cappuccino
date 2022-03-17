@@ -113,7 +113,7 @@ function compileWithResolvedFlags(aFilePath, objjcFlags, gccFlags, asPlainJavasc
             }
         }
 
-        ObjectiveJ.StaticResource.setCurrentCompilerFlags(objjcFlags);
+        ObjectiveJ.FileExecutable.setCurrentCompilerFlags(objjcFlags);
         ObjectiveJ.make_narwhal_factory(absolutePath, basePath, translateFilenameToPath)(require, {}, module, system, print);
 
         executable = new ObjectiveJ.FileExecutable(FILE.basename(aFilePath));

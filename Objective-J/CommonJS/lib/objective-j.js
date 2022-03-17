@@ -129,51 +129,51 @@ exports.run = function(args)
                 case "-g":
                 case "--include-debug-symbols":
                     argv.shift();
-                    var flags = ObjectiveJ.StaticResource.currentCompilerFlags();
+                    var flags = ObjectiveJ.FileExecutable.currentCompilerFlags();
                     flags.includeMethodFunctionNames = true;
-                    ObjectiveJ.StaticResource.setCurrentCompilerFlags(flags);
+                    ObjectiveJ.FileExecutable.setCurrentCompilerFlags(flags);
                     break;
 
                 case "-T":
                 case "--dont-include-type-signatures":
                     argv.shift();
-                    var flags = ObjectiveJ.StaticResource.currentCompilerFlags();
+                    var flags = ObjectiveJ.FileExecutable.currentCompilerFlags();
                     flags.includeIvarTypeSignatures = true;
                     flags.includeMethodArgumentTypeSignatures = true;
-                    ObjectiveJ.StaticResource.setCurrentCompilerFlags(flags);
+                    ObjectiveJ.FileExecutable.setCurrentCompilerFlags(flags);
                     break;
 
                 case "-O2":
                 case "--inline-msg-send":
                     argv.shift();
-                    var flags = ObjectiveJ.StaticResource.currentCompilerFlags();
+                    var flags = ObjectiveJ.FileExecutable.currentCompilerFlags();
                     flags.inlineMsgSendFunctions = true;
-                    ObjectiveJ.StaticResource.setCurrentCompilerFlags(flags);
+                    ObjectiveJ.FileExecutable.setCurrentCompilerFlags(flags);
                     break;
 
                 case "-g":
                 case "--include-debug-symbols":
                     argv.shift();
-                    var flags = ObjectiveJ.StaticResource.currentCompilerFlags();
+                    var flags = ObjectiveJ.FileExecutable.currentCompilerFlags();
                     flags.includeMethodFunctionNames = true;
-                    ObjectiveJ.StaticResource.setCurrentCompilerFlags(flags);
+                    ObjectiveJ.FileExecutable.setCurrentCompilerFlags(flags);
                     break;
 
                 case "-T":
                 case "--dont-include-type-signatures":
                     argv.shift();
-                    var flags = ObjectiveJ.StaticResource.currentCompilerFlags();
+                    var flags = ObjectiveJ.FileExecutable.currentCompilerFlags();
                     flags.includeIvarTypeSignatures = true;
                     flags.includeMethodArgumentTypeSignatures = true;
-                    ObjectiveJ.StaticResource.setCurrentCompilerFlags(flags);
+                    ObjectiveJ.FileExecutable.setCurrentCompilerFlags(flags);
                     break;
 
                 case "-O2":
                 case "--inline-msg-send":
                     argv.shift();
-                    var flags = ObjectiveJ.StaticResource.currentCompilerFlags();
+                    var flags = ObjectiveJ.FileExecutable.currentCompilerFlags();
                     flags.inlineMsgSendFunctions = true;
-                    ObjectiveJ.StaticResource.setCurrentCompilerFlags(flags);
+                    ObjectiveJ.FileExecutable.setCurrentCompilerFlags(flags);
                     break;
 
                 default:
