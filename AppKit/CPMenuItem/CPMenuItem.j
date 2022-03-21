@@ -925,6 +925,9 @@ var CPMenuItemIsSeparatorKey                = @"CPMenuItemIsSeparatorKey",
 
     CPMenuItemImageKey                      = @"CPMenuItemImageKey",
     CPMenuItemAlternateImageKey             = @"CPMenuItemAlternateImageKey",
+    CPMenuItemOnStateImageKey               = @"CPMenuItemOnStateImageKey",
+    CPMenuItemOffStateImageKey              = @"CPMenuItemOffStateImageKey",
+    CPMenuItemMixedStateImageKey            = @"CPMenuItemMixedStateImageKey",
 
     CPMenuItemSubmenuKey                    = @"CPMenuItemSubmenuKey",
     CPMenuItemMenuKey                       = @"CPMenuItemMenuKey",
@@ -969,9 +972,9 @@ var CPMenuItemIsSeparatorKey                = @"CPMenuItemIsSeparatorKey",
 
         _image = [aCoder decodeObjectForKey:CPMenuItemImageKey];
         _alternateImage = [aCoder decodeObjectForKey:CPMenuItemAlternateImageKey];
-//    CPImage         _onStateImage;
-//    CPImage         _offStateImage;
-//    CPImage         _mixedStateImage;
+        _onStateImage = [aCoder decodeObjectForKey:CPMenuItemOnStateImageKey];
+        _offStateImage = [aCoder decodeObjectForKey:CPMenuItemOffStateImageKey];
+        _mixedStateImage = [aCoder decodeObjectForKey:CPMenuItemMixedStateImageKey];
 
         // This order matters because setSubmenu: needs _menu to be around.
         _menu = [aCoder decodeObjectForKey:CPMenuItemMenuKey];
@@ -1017,6 +1020,9 @@ var CPMenuItemIsSeparatorKey                = @"CPMenuItemIsSeparatorKey",
 
     ENCODE_IFNOT(CPMenuItemImageKey, _image, nil);
     ENCODE_IFNOT(CPMenuItemAlternateImageKey, _alternateImage, nil);
+    ENCODE_IFNOT(CPMenuItemOnStateImageKey, _onStateImage, nil);
+    ENCODE_IFNOT(CPMenuItemOffStateImageKey, _offStateImage, nil);
+    ENCODE_IFNOT(CPMenuItemMixedStateImageKey, _mixedStateImage, nil);
 
     ENCODE_IFNOT(CPMenuItemSubmenuKey, _submenu, nil);
     ENCODE_IFNOT(CPMenuItemMenuKey, _menu, nil);

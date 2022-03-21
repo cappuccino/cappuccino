@@ -199,15 +199,15 @@
         switch ([_menuItem state])
         {
             case CPOnState:
-                [_stateView setImage:[self valueForThemeAttribute:@"menu-item-default-on-state-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
+                [_stateView setImage:[_menuItem onStateImage] || [self valueForThemeAttribute:@"menu-item-default-on-state-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
                 break;
 
             case CPOffState:
-                [_stateView setImage:[self valueForThemeAttribute:@"menu-item-default-off-state-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
+                [_stateView setImage:[_menuItem offStateImage] || [self valueForThemeAttribute:@"menu-item-default-off-state-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
                 break;
 
             case CPMixedState:
-                [_stateView setImage:[self valueForThemeAttribute:@"menu-item-default-mixed-state-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
+                [_stateView setImage:[_menuItem mixedStateImage] || [self valueForThemeAttribute:@"menu-item-default-mixed-state-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
                 break;
 
             default:
@@ -361,15 +361,15 @@
             switch ([_menuItem state])
             {
                 case CPOnState:
-                    [_stateView setImage:[self valueForThemeAttribute:@"menu-item-default-on-state-highlighted-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
+                    [_stateView setImage:[_menuItem onStateImage] || [self valueForThemeAttribute:@"menu-item-default-on-state-highlighted-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
                     break;
 
                 case CPOffState:
-                    [_stateView setImage:[self valueForThemeAttribute:@"menu-item-default-off-state-highlighted-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
+                    [_stateView setImage:[_menuItem offStateImage] || [self valueForThemeAttribute:@"menu-item-default-off-state-highlighted-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
                     break;
 
                 case CPMixedState:
-                    [_stateView setImage:[self valueForThemeAttribute:@"menu-item-default-mixed-state-highlighted-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
+                    [_stateView setImage:[_menuItem mixedImage] || [self valueForThemeAttribute:@"menu-item-default-mixed-state-highlighted-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
                     break;
 
                 default:
@@ -381,15 +381,15 @@
             switch ([_menuItem state])
             {
                 case CPOnState:
-                    [_stateView setImage:[self valueForThemeAttribute:@"menu-item-default-on-state-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
+                    [_stateView setImage:[_menuItem onStateImage] || [self valueForThemeAttribute:@"menu-item-default-on-state-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
                     break;
 
                 case CPOffState:
-                    [_stateView setImage:[self valueForThemeAttribute:@"menu-item-default-off-state-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
+                    [_stateView setImage:[_menuItem offStateImage] || [self valueForThemeAttribute:@"menu-item-default-off-state-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
                     break;
 
                 case CPMixedState:
-                    [_stateView setImage:[self valueForThemeAttribute:@"menu-item-default-mixed-state-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
+                    [_stateView setImage:[_menuItem mixedImage] || [self valueForThemeAttribute:@"menu-item-default-mixed-state-image" inState:CPControlSizeThemeStates[correspondingControlSize]]];
                     break;
 
                 default:

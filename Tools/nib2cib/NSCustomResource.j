@@ -35,7 +35,9 @@ var FILE = require("file"),
         "NSAddTemplate": "CPAddTemplate",
         "NSRemoveTemplate": "CPRemoveTemplate",
         "NSActionTemplate": "CPActionTemplate",
-        "NSToolbarShowColors": "CPImageNameColorPanel"
+        "NSToolbarShowColors": "CPImageNameColorPanel",
+        "NSMenuCheckmark": "CPMenuCheckmark",
+        "NSMenuMixedState": "CPMenuMixedState"
     };
 
 @implementation _CPCibCustomResource (NSCoding)
