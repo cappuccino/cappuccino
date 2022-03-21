@@ -2170,6 +2170,9 @@ Sets the selection to a range of characters in response to user action.
 
 - (BOOL)shouldDrawInsertionPoint
 {
+    if (![self isEditable])
+        return NO;
+
     return (_selectionRange.length === 0 && [self _isFocused] && !_placeholderString);
 }
 
