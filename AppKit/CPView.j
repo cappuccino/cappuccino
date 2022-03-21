@@ -597,7 +597,9 @@ var CPViewHighDPIDrawingEnabled = YES;
 #endif
 
     // Notify the subview that it will be moving.
+#if PLATFORM(DOM)
     [aSubview viewWillMoveToSuperview:self];
+#endif
 
     // We will have to adjust the z-index of all views starting at this index.
     var count = _subviews.length,
@@ -663,7 +665,9 @@ var CPViewHighDPIDrawingEnabled = YES;
     [aSubview setNextResponder:self];
     [aSubview _scaleSizeUnitSquareToSize:[self _hierarchyScaleSize]];
 
+#if PLATFORM(DOM)
     [aSubview viewDidMoveToSuperview];
+#endif
 
     // Set the subview's window to our own.
     if (_window)
@@ -2162,6 +2166,7 @@ var CPViewHighDPIDrawingEnabled = YES;
             {
                 CPDOMDisplayServerSetStyleLeftTop(_DOMImageParts[partIndex], NULL, left, 0.0);
                 CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], width, _DOMImageSizes[1].height);
+                _DOMImageParts[partIndex].style.backgroundRepeat = "repeat-x";
                 partIndex++;
             }
             if (_DOMImageSizes[2])
@@ -2173,6 +2178,7 @@ var CPViewHighDPIDrawingEnabled = YES;
             {
                 CPDOMDisplayServerSetStyleLeftTop(_DOMImageParts[partIndex], NULL, 0.0, top);
                 CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], _DOMImageSizes[3].width, height);
+                _DOMImageParts[partIndex].style.backgroundRepeat = "repeat-y";
                 partIndex++;
             }
             if (_DOMImageSizes[4])
@@ -2185,6 +2191,7 @@ var CPViewHighDPIDrawingEnabled = YES;
             {
                 CPDOMDisplayServerSetStyleRightTop(_DOMImageParts[partIndex], NULL, 0.0, top);
                 CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], _DOMImageSizes[5].width, height);
+                _DOMImageParts[partIndex].style.backgroundRepeat = "repeat-y";
                 partIndex++;
             }
             if (_DOMImageSizes[6])
@@ -2196,6 +2203,7 @@ var CPViewHighDPIDrawingEnabled = YES;
             {
                 CPDOMDisplayServerSetStyleLeftBottom(_DOMImageParts[partIndex], NULL, left, 0.0);
                 CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], width, _DOMImageSizes[7].height);
+                _DOMImageParts[partIndex].style.backgroundRepeat = "repeat-x";
                 partIndex++;
             }
             if (_DOMImageSizes[8])
@@ -3773,16 +3781,21 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     // Also decode these "early".
     _frame = [aCoder decodeRectForKey:CPViewFrameKey];
     _bounds = [aCoder decodeRectForKey:CPViewBoundsKey];
+    _scaleSize = [aCoder containsValueForKey:CPViewScaleKey] ? [aCoder decodeSizeForKey:CPViewScaleKey] : CGSizeMake(1.0, 1.0);
+    _hierarchyScaleSize = [aCoder containsValueForKey:CPViewSizeScaleKey] ? [aCoder decodeSizeForKey:CPViewSizeScaleKey] : CGSizeMake(1.0, 1.0);
+    _isScaled = [aCoder containsValueForKey:CPViewIsScaledKey] ? [aCoder decodeBoolForKey:CPViewIsScaledKey] : NO;
+    _subviews = @[];
+
+    // Trying to fix "not ready" views
+    _trackingAreas = [aCoder decodeObjectForKey:CPViewTrackingAreasKey] || @[];
+
+    [self _decodeThemeObjectsWithCoder:aCoder];
+    [self setAppearance:[aCoder decodeObjectForKey:CPViewAppearanceKey]];
 
     self = [super initWithCoder:aCoder];
 
     if (self)
     {
-        _trackingAreas = [aCoder decodeObjectForKey:CPViewTrackingAreasKey];
-
-        if (!_trackingAreas)
-            _trackingAreas = [];
-
         // We have to manually check because it may be 0, so we can't use ||
         _tag = [aCoder containsValueForKey:CPViewTagKey] ? [aCoder decodeIntForKey:CPViewTagKey] : -1;
         _identifier = [aCoder decodeObjectForKey:CPReuseIdentifierKey];
@@ -3791,7 +3804,6 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         _superview = [aCoder decodeObjectForKey:CPViewSuperviewKey];
         // We have to manually add the subviews so that they will receive
         // viewWillMoveToSuperview: and viewDidMoveToSuperview:
-        _subviews = [];
 
         var subviews = [aCoder decodeObjectForKey:CPViewSubviewsKey] || [];
 
@@ -3819,10 +3831,6 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 
         if (_toolTip)
             [self _installToolTipEventHandlers];
-
-        _scaleSize = [aCoder containsValueForKey:CPViewScaleKey] ? [aCoder decodeSizeForKey:CPViewScaleKey] : CGSizeMake(1.0, 1.0);
-        _hierarchyScaleSize = [aCoder containsValueForKey:CPViewSizeScaleKey] ? [aCoder decodeSizeForKey:CPViewSizeScaleKey] : CGSizeMake(1.0, 1.0);
-        _isScaled = [aCoder containsValueForKey:CPViewIsScaledKey] ? [aCoder decodeBoolForKey:CPViewIsScaledKey] : NO;
 
         // DOM SETUP
 #if PLATFORM(DOM)
@@ -3854,12 +3862,12 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 
         [self setBackgroundColor:[aCoder decodeObjectForKey:CPViewBackgroundColorKey]];
         [self _setupViewFlags];
-        [self _decodeThemeObjectsWithCoder:aCoder];
 
         [self setAppearance:[aCoder decodeObjectForKey:CPViewAppearanceKey]];
         // Set the current appearance to something that can't be the correct one so it will recalculate it at the first layout.
         _currentAppearance = _frame;
 
+        [self updateTrackingAreas];
         [self setNeedsDisplay:YES];
         [self setNeedsLayout];
     }

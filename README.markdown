@@ -33,9 +33,9 @@ System Requirements
 -------------------
 To run Cappuccino applications, all you need is a HTML5 compliant web browser.
 
-Our tight integration with Xcode on MacOS brings the full power of visual Cocoa development to the web.
+You can develop Cappuccino applications with only a simple text editor on any platform.
 
-However, you can also work on other platforms using only a simple text editor.
+If you are on a Mac, our integration with Xcode leverages the world-class visual development tools from Apple to create complex applications with minimal coding.
 
 Node.js version alpha
 ------------------ 

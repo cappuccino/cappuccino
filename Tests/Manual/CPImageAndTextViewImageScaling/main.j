@@ -1,9 +1,9 @@
 /*
  * AppController.j
- * CPFlashviewTest
+ * CPImageAndTextViewImageScaling
  *
- * Created by Blair Duncan on April 23, 2012.
- * Copyright 2012, SGL Studio, BBDO Toronto All rights reserved.
+ * Created by You on September 20, 2020.
+ * Copyright 2020, Your Company All rights reserved.
  */
 
 @import <Foundation/Foundation.j>

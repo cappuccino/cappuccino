@@ -62,8 +62,6 @@
 @import "CPDocument.j"
 @import "CPDocumentController.j"
 @import "CPEvent.j"
-@import "CPFlashMovie.j"
-@import "CPFlashView.j"
 @import "CPFont.j"
 @import "CPFontManager.j"
 @import "CPGradient.j"

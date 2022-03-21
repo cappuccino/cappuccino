@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="18122" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="18122"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <customObject id="-2" userLabel="File's Owner" customClass="WidgetsLayoutController">
+            <connections>
+                <outlet property="view" destination="8n8-ti-YKp" id="dJB-F9-Bxq"/>
+            </connections>
+        </customObject>
+        <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
+        <customObject id="-3" userLabel="Application" customClass="NSObject"/>
+        <box boxType="custom" borderType="line" borderWidth="18" title="Box" titlePosition="noTitle" id="8n8-ti-YKp" userLabel="Printable Page" customClass="WidgetsLayout">
+            <rect key="frame" x="0.0" y="0.0" width="792" height="612"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <view key="contentView" id="d5x-nd-C1U">
+                <rect key="frame" x="36" y="36" width="720" height="540"/>
+                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                <subviews>
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="c2e-O4-5SQ">
+                        <rect key="frame" x="199" y="256" width="322" height="28"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
+                        <textFieldCell key="cell" lineBreakMode="clipping" alignment="center" title="Page Preview" id="3mQ-CZ-w9X">
+                            <font key="font" metaFont="systemBold" size="24"/>
+                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                </subviews>
+                <connections>
+                    <outlet property="menu" destination="KUP-5Q-EiW" id="vfZ-kF-64L"/>
+                </connections>
+            </view>
+            <color key="fillColor" red="0.016804177310000001" green="0.19835099580000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <size key="contentViewMargins" width="18" height="18"/>
+            <point key="canvasLocation" x="96" y="-893"/>
+        </box>
+        <menu id="KUP-5Q-EiW">
+            <items>
+                <menuItem title="Scale to Fit" id="5GC-ew-6Du">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="scaleToFit:" target="-2" id="Lyl-1A-cif"/>
+                    </connections>
+                </menuItem>
+                <menuItem title="Actual Size" id="QeE-Ie-qNt">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="scaleToActualSize:" target="-2" id="hoV-V5-ksj"/>
+                    </connections>
+                </menuItem>
+                <menuItem title="Zoom In" keyEquivalent="+" id="pyD-tj-98u">
+                    <connections>
+                        <action selector="zoomIn:" target="-2" id="iAi-d7-A1u"/>
+                    </connections>
+                </menuItem>
+                <menuItem title="Zoom Out" keyEquivalent="-" id="08M-Wk-900">
+                    <connections>
+                        <action selector="zoomOut:" target="-2" id="RnY-xW-N68"/>
+                    </connections>
+                </menuItem>
+            </items>
+            <point key="canvasLocation" x="-422" y="-916"/>
+        </menu>
+    </objects>
+</document>

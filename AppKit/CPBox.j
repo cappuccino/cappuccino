@@ -67,6 +67,8 @@ CPBelowBottom = 6;
     CPString        _title          @accessors(getter=title);
     int             _titlePosition  @accessors(getter=titlePosition);
     CPTextField     _titleView;
+
+    BOOL            _cachedAutoresizesSubviews;
 }
 
 + (Class)_binderClassForBinding:(CPString)aBinding
@@ -262,9 +264,25 @@ CPBelowBottom = 6;
     [self _manageTitlePositioning];
 }
 
+#pragma mark -
+#pragma mark Style properties which override theme values
 /*!
-    The receiver’s border color. It must be a custom box (that is, it has a type of CPBoxCustom) and it must have a border style of CPLineBorder.
- */
+    The borderColor, borderWidth, cornerRadius and fillColor properties for the receiver
+    are only supported for boxes with boxType === CPBoxCustom and borderType === CPLineBorder.
+    Boxes with the Primary boxType have fixed values which are defined by the system theme.
+    Apple does support lineTypes of Groove and Bezel for boxes of type CPBoxCustom, CPBoxSecondary and CPBoxOldStyle,
+    but they are deprecated as of macOS 10.15.
+
+    Cappuccino has supported these in the past but no longer does so - both to simplify CSS-based theming and
+    to avoid the effort needed for supporting something which will be very short-lived.
+
+    These styles can be recreated as custom theme elements by developers, as needed.
+    Additionally, boxes with boxType === CPBoxSeparator (horizontal and vertical lines) have never allowed changing these values.
+    No warnings are generated for separator boxes.
+*/
+
+// See discussion above.
+#pragma mark borderColor
 - (CPColor)borderColor
 {
     return [self valueForThemeAttribute:@"border-color"];
@@ -272,9 +290,14 @@ CPBelowBottom = 6;
 
 - (void)setBorderColor:(CPColor)color
 {
+    if (_boxType === CPBoxSeparator)
+    {
+        return;
+    }
+    
     if ((_boxType !== CPBoxCustom) || (_borderType !== CPLineBorder))
     {
-        CPLog.warn("CPBox setBorderColor: the box must be of type CPBoxCustom AND border of type CPLineBorder in order to use setBorderColor. Ignored.");
+        CPLog.warn("CPBox setBorderColor: the box must be of type CPBoxCustom AND border of type CPLineBorder in order to use setBorderColor. Property is ignored.");
         return;
     }
 
@@ -284,9 +307,8 @@ CPBelowBottom = 6;
     [self setValue:color forThemeAttribute:@"border-color"];
 }
 
-/*!
-    The receiver’s border width. It must be a custom box (that is, it has a type of CPBoxCustom) and it must have a border style of CPLineBorder.
- */
+// See discussion above.
+#pragma mark borderWidth
 - (float)borderWidth
 {
     return [self valueForThemeAttribute:@"border-width"];
@@ -294,9 +316,14 @@ CPBelowBottom = 6;
 
 - (void)setBorderWidth:(float)width
 {
+    if (_boxType === CPBoxSeparator)
+    {
+        return;
+    }
+    
     if ((_boxType !== CPBoxCustom) || (_borderType !== CPLineBorder))
     {
-        CPLog.warn("CPBox setBorderWidth: the box must be of type CPBoxCustom AND border of type CPLineBorder in order to use setBorderWidth. Ignored.");
+        CPLog.warn("CPBox setBorderWidth: the box must be of type CPBoxCustom AND border of type CPLineBorder in order to use setBorderWidth. Property is ignored.");
         return;
     }
 
@@ -306,9 +333,8 @@ CPBelowBottom = 6;
     [self setValue:width forThemeAttribute:@"border-width"];
 }
 
-/*!
-    The receiver’s corner radius. It must be a custom box (that is, it has a type of CPBoxCustom) and it must have a border style of CPLineBorder.
- */
+// See discussion above.
+#pragma mark cornerRadius
 - (float)cornerRadius
 {
     return [self valueForThemeAttribute:@"corner-radius"];
@@ -316,9 +342,14 @@ CPBelowBottom = 6;
 
 - (void)setCornerRadius:(float)radius
 {
+    if (_boxType === CPBoxSeparator)
+    {
+        return;
+    }
+    
     if ((_boxType !== CPBoxCustom) || (_borderType !== CPLineBorder))
     {
-        CPLog.warn("CPBox setCornerRadius: the box must be of type CPBoxCustom AND border of type CPLineBorder in order to use setCornerRadius. Ignored.");
+        CPLog.warn("CPBox setCornerRadius: the box must be of type CPBoxCustom AND border of type CPLineBorder in order to use setCornerRadius. Property is ignored.");
         return;
     }
 
@@ -328,9 +359,8 @@ CPBelowBottom = 6;
     [self setValue:radius forThemeAttribute:@"corner-radius"];
 }
 
-/*!
-    The receiver’s background color. It must be a custom box (that is, it has a type of CPBoxCustom) and it must have a border style of CPLineBorder.
- */
+// See discussion above.
+#pragma mark fillColor
 - (CPColor)fillColor
 {
     return [self valueForThemeAttribute:@"background-color"];
@@ -338,9 +368,14 @@ CPBelowBottom = 6;
 
 - (void)setFillColor:(CPColor)color
 {
+    if (_boxType === CPBoxSeparator)
+    {
+        return;
+    }
+    
     if ((_boxType !== CPBoxCustom) || (_borderType !== CPLineBorder))
     {
-        CPLog.warn("CPBox setFillColor: the box must be of type CPBoxCustom AND border of type CPLineBorder in order to use setFillColor. Ignored.");
+        CPLog.warn("CPBox setFillColor: the box must be of type CPBoxCustom AND border of type CPLineBorder in order to use setFillColor. Property is ignored.");
         return;
     }
 
@@ -777,6 +812,19 @@ CPBelowBottom = 6;
         [self setNeedsLayout:YES];
     else
         [self setNeedsDisplay:YES];
+}
+
+- (void)setAutoresizesSubviews:(BOOL)flag
+{
+    // CPBox should always resize its subviews, like in Cocoa, whatever is the corresponding flag set.
+    // We have to keep the flag value as we could have to return it in -autoresizesSubview method.
+    _cachedAutoresizesSubviews = !!flag;
+    [super setAutoresizesSubviews:YES];
+}
+
+- (BOOL)autoresizesSubview
+{
+    return _cachedAutoresizesSubviews;
 }
 
 @end

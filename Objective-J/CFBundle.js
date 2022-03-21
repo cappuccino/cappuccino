@@ -829,11 +829,7 @@ function decompileStaticFile(/*Bundle*/ aBundle, /*String*/ aString, /*String*/ 
         }
 
         else if (marker === MARKER_TEXT)
-        {
             file.write(text);
-            if (text.match(/^@STATIC;/))
-                file.decompile();
-        }
     }
 }
 

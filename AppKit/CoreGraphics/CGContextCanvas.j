@@ -416,6 +416,7 @@ function CGContextSetShadow(aContext, aSize, aBlur)
     aContext.shadowOffsetX = aSize.width;
     aContext.shadowOffsetY = aSize.height;
     aContext.shadowBlur = aBlur;
+    aContext.shadowColor = [[CPColor shadowColor] cssString];
 }
 
 function CGContextSetShadowWithColor(aContext, aSize, aBlur, aColor)

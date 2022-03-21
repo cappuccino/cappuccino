@@ -154,9 +154,9 @@
     <body>
         <div id="cappuccino-body">
             <div class="container">
-                <div class="content">
+                <div class="content" id="loadingDiv">
                     <script type="text/javascript">
-                        document.write(loadingHTML);
+                        document.getElementById("loadingDiv").innerHTML = loadingHTML;
                     </script>
                 </div>
             </div>
