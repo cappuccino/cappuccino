@@ -602,7 +602,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
         }
     }
 
-    var needsDOMImageElement = _image !== nil && _imagePosition !== CPNoImage,
+    var needsDOMImageElement = _image != nil && _imagePosition !== CPNoImage,
         hasDOMImageElement = !!_DOMImageElement,
         // For CSS theming
         isCSSBasedImage = [_image isCSSBased],
