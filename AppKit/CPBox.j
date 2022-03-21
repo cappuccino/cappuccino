@@ -67,6 +67,8 @@ CPBelowBottom = 6;
     CPString        _title          @accessors(getter=title);
     int             _titlePosition  @accessors(getter=titlePosition);
     CPTextField     _titleView;
+
+    BOOL            _cachedAutoresizesSubviews;
 }
 
 + (Class)_binderClassForBinding:(CPString)aBinding
@@ -810,6 +812,19 @@ CPBelowBottom = 6;
         [self setNeedsLayout:YES];
     else
         [self setNeedsDisplay:YES];
+}
+
+- (void)setAutoresizesSubviews:(BOOL)flag
+{
+    // CPBox should always resize its subviews, like in Cocoa, whatever is the corresponding flag set.
+    // We have to keep the flag value as we could have to return it in -autoresizesSubview method.
+    _cachedAutoresizesSubviews = !!flag;
+    [super setAutoresizesSubviews:YES];
+}
+
+- (BOOL)autoresizesSubview
+{
+    return _cachedAutoresizesSubviews;
 }
 
 @end
