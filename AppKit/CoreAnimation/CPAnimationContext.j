@@ -142,7 +142,12 @@ var _CPAnimationContextStack   = nil,
     duration = [animation duration] || [self duration];
     needsPeriodicFrameUpdates = [[anObject animator] needsPeriodicFrameUpdatesForKeyPath:aKeyPath];
 
-    var animatorClass = [[anObject class] animatorClass];
+
+    var animatorClass = [[anObject class] animatorClass],
+        needsPeriodicFrameUpdates = ((aKeyPath === @"frame" || aKeyPath === @"frameSize" || [[anObject animator] wantsPeriodicFrameUpdates]) && (objectId = [anObject UID]));
+
+    if (_completionHandlerAgent)
+        _completionHandlerAgent.increment();
 
     var completionFunction = function()
     {
@@ -268,7 +273,15 @@ var _CPAnimationContextStack   = nil,
 
 - (void)getAnimations:(CPArray)cssAnimations getTimers:(CPArray)timers usingAction:(Object)anAction cssAnimate:(BOOL)needsCSSAnimation
 {
+<<<<<<< HEAD
     var values = anAction.values;
+=======
+    var keyPath = anAction.keypath,
+        isFrameKeyPath = (keyPath == @"frame" || keyPath == @"frameSize"),
+        customLayout = [aTargetView hasCustomLayoutSubviews],
+        customDrawing = [aTargetView hasCustomDrawRect],
+        needsPeriodicFrameUpdates = (isFrameKeyPath || [[aTargetView animator] wantsPeriodicFrameUpdates]);
+>>>>>>> pl_2507
 
     if (values.length == 2)
     {
@@ -300,6 +313,7 @@ var _CPAnimationContextStack   = nil,
     {
         [animatorClass addFrameUpdaters:timers forAction:anAction];
     }
+<<<<<<< HEAD
 
     var subviews = [targetView subviews],
         count = [subviews count];
@@ -358,6 +372,8 @@ var _CPAnimationContextStack   = nil,
                 duration:anAction.duration,
                 timingfunctions:anAction.timingfunctions
             };
+=======
+>>>>>>> pl_2507
 }
 
 - (void)setCompletionHandler:(Function)aCompletionHandler
