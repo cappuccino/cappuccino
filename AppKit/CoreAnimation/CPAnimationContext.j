@@ -273,15 +273,12 @@ var _CPAnimationContextStack   = nil,
 
 - (void)getAnimations:(CPArray)cssAnimations getTimers:(CPArray)timers usingAction:(Object)anAction cssAnimate:(BOOL)needsCSSAnimation
 {
-<<<<<<< HEAD
-    var values = anAction.values;
-=======
-    var keyPath = anAction.keypath,
+    var values = anAction.values,
+        keyPath = anAction.keypath,
         isFrameKeyPath = (keyPath == @"frame" || keyPath == @"frameSize"),
         customLayout = [aTargetView hasCustomLayoutSubviews],
         customDrawing = [aTargetView hasCustomDrawRect],
         needsPeriodicFrameUpdates = (isFrameKeyPath || [[aTargetView animator] wantsPeriodicFrameUpdates]);
->>>>>>> pl_2507
 
     if (values.length == 2)
     {
@@ -313,7 +310,6 @@ var _CPAnimationContextStack   = nil,
     {
         [animatorClass addFrameUpdaters:timers forAction:anAction];
     }
-<<<<<<< HEAD
 
     var subviews = [targetView subviews],
         count = [subviews count];
