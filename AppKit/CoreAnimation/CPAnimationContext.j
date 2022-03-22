@@ -368,8 +368,6 @@ var _CPAnimationContextStack   = nil,
                 duration:anAction.duration,
                 timingfunctions:anAction.timingfunctions
             };
-=======
->>>>>>> pl_2507
 }
 
 - (void)setCompletionHandler:(Function)aCompletionHandler
