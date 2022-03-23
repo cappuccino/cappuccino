@@ -122,6 +122,10 @@ var CPApplicationDelegate_applicationShouldTerminate_           = 1 << 0,
     CPPanel                     _aboutPanel;
 
     CPThemeBlend                _themeBlend @accessors(property=themeBlend);
+
+    // OS behavior
+    CPApplicationOSBehavior     _OSBehavior;
+    BOOL                        _simulatesWindows;
 }
 
 /*!
@@ -154,6 +158,9 @@ var CPApplicationDelegate_applicationShouldTerminate_           = 1 << 0,
         _eventListenerInsertionIndex = 0;
 
         _windows = [[CPNull null]];
+
+        _OSBehavior       = CPApplicationLegacyOSBehavior;
+        _simulatesWindows = NO;
     }
 
     return self;
@@ -1263,6 +1270,44 @@ var CPApplicationDelegate_applicationShouldTerminate_           = 1 << 0,
     return ([[CPBundle mainBundle] objectForInfoDictionaryKey:"CPDefaultTheme"] || @"Aristo3");
 }
 
+// See CPApplication_Constants.j for comments
+- (void)setOSBehavior:(CPApplicationOSBehavior)anOSBehavior
+{
+    // Verify if provided OS behavior is valid
+    if ([[CPApplicationOSBehaviors allKeysForObject:anOSBehavior] count] == 0)
+    {
+        CPLog.warn("CPApplication setOSBehavior: invalid CPApplicationOSBehavior (received "+anOSBehavior+"). Ignored.");
+        return;
+    }
+
+    _OSBehavior = anOSBehavior;
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPApplicationOSBehaviorDidChangeNotification object:CPApp userInfo:nil];
+}
+
+- (CPApplicationOSBehavior)OSBehavior
+{
+    return _OSBehavior;
+}
+
+- (BOOL)shouldMimicWindows
+{
+    return (_OSBehavior == CPApplicationFollowOSBehavior) && (CPBrowserIsOperatingSystem(CPWindowsOperatingSystem) || _simulatesWindows);
+}
+
+- (void)setSimulatesWindows:(BOOL)shouldSimulateWindows
+{
+    if (_simulatesWindows === shouldSimulateWindows)
+        return;
+
+    _simulatesWindows = shouldSimulateWindows;
+}
+
+- (BOOL)simulatesWindows
+{
+    return _simulatesWindows;
+}
+
 @end
 
 var _CPModalSessionMake = function(aWindow, aStopCode)
@@ -1390,6 +1435,34 @@ var _CPAppBootstrapperActions = nil;
 {
     [[CPApplication sharedApplication] setThemeBlend:aThemeBlend];
     [CPTheme setDefaultTheme:[CPTheme themeNamed:[CPApplication defaultThemeName]]];
+
+    // Search in the Info.plist if the special CPApplicationSimulateWindowsOS flag is set (for testing)
+    [CPApp setSimulatesWindows:!![[CPBundle mainBundle] objectForInfoDictionaryKey:"CPApplicationSimulateWindowsOS"]];
+
+    // Before loading the main CIB, try to find if a CPApplicationOSBehavior is specified in the Info.plist or in the user defaults
+    // (with user defaults precedence). Value stored must be a string representing the name of the OS behavior.
+    var plistOSBehavior = [[CPBundle mainBundle] objectForInfoDictionaryKey:"CPApplicationOSBehavior"],
+        userOSBehavior  = [[CPUserDefaults standardUserDefaults] objectForKey:@"CPApplicationOSBehavior"];
+
+    if (userOSBehavior)
+    {
+        var osBehavior = [CPApplicationOSBehaviors objectForKey:userOSBehavior];
+
+        if (osBehavior)
+            [CPApp setOSBehavior:osBehavior];
+        else
+            CPLog.warn("Invalid CPApplicationOSBehavior specified in user defaults (found:"+userOSBehavior+"). Ignored.");
+    }
+
+    else if (plistOSBehavior)
+    {
+        var osBehavior = [CPApplicationOSBehaviors objectForKey:plistOSBehavior];
+
+        if (osBehavior)
+            [CPApp setOSBehavior:osBehavior];
+        else
+            CPLog.warn("Invalid CPApplicationOSBehavior specified in Info.plist (found:"+plistOSBehavior+"). Ignored.");
+    }
 
     [self performActions];
 }
