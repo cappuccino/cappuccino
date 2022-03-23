@@ -1343,8 +1343,6 @@ Notifies the delegate when the scroll view has finished scrolling.
 #pragma mark -
 #pragma mark Overrides
 
-<<<<<<< HEAD
-
 - (void)_removeObservers
 {
     if (!_isObserving)
@@ -1370,10 +1368,6 @@ Notifies the delegate when the scroll view has finished scrolling.
     [super _addObservers];
 }
 
-
-
-=======
->>>>>>> pl_2719
 - (void)drawRect:(CGRect)aRect
 {
     [super drawRect:aRect];
