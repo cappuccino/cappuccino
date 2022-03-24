@@ -122,8 +122,8 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
     [self setContinuous:YES];
 
     var bounds = [self bounds],
-        cancelButton = nil, //[[CPButton alloc] initWithFrame:[self cancelButtonRectForBounds:bounds]],
-        searchButton = nil  //[[CPButton alloc] initWithFrame:[self searchButtonRectForBounds:bounds]];
+        cancelButton = nil, // [[CPButton alloc] initWithFrame:[self cancelButtonRectForBounds:bounds]],
+        searchButton = nil; // [[CPButton alloc] initWithFrame:[self searchButtonRectForBounds:bounds]];
 
     [self setCancelButton:cancelButton];
     [self resetCancelButton];
