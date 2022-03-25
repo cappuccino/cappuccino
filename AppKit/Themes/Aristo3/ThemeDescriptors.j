@@ -180,24 +180,14 @@ var themedButtonValues = nil,
 
 + (CPFont)themedFont
 {
-    var font = [CPFont systemFontOfSize:12],
-
-    themeFontStyle = @"@font-face { font-family: 'SFNSText'; src: local('.SFNSText-Light'), url('%%/fonts/SFNSText-Light.woff') format('woff'); font-weight: 300 }\n"
-                   + @"@font-face { font-family: 'SFNSText'; src: local('.SFNSText-Medium'), url('%%/fonts/SFNSText-Medium.woff') format('woff'); font-weight: 500 }\n"
-                   + @"@font-face { font-family: 'SFNSDisplay'; src: local('.SFNSDisplay-Light'), url('%%/fonts/SFNSDisplay-Light.woff') format('woff'); font-weight: 300 }\n"
-                   + @"@font-face { font-family: 'SFNSDisplay'; src: local('.SFNSDisplay-Medium'), url('%%/fonts/SFNSDisplay-Medium.woff') format('woff'); font-weight: 500 }\n"
-                   + @"@font-face { font-family: 'SFNSText'; src: local('.SFNSText'), url('%%/fonts/SFNSText-Regular.woff') format('woff'); font-weight: 400 }\n"
-                   + @"@font-face { font-family: 'SFNSText'; src: local('.SFNSText-Bold'), url('%%/fonts/SFNSText-Bold.woff') format('woff'); font-weight: 600 }\n"
-                   + @"@font-face { font-family: 'SFNSDisplay'; src: local('.SFNSDisplay'), url('%%/fonts/SFNSDisplay-Regular.woff') format('woff'); font-weight: 400 }\n"
-                   + @"@font-face { font-family: 'SFNSDisplay'; src: local('.SFNSDisplay-Bold'), url('%%/fonts/SFNSDisplay-Bold.woff') format('woff'); font-weight: 600 }\n"
+    var font = [CPFont systemFontOfSize:12];
 
     [self registerThemeValues:[
-                               [@"system-font-face", @"SFNSText, Helvetica Neue"],
+                               [@"system-font-face", @"-apple-system, BlinkMacSystemFont, sans-serif"],
                                [@"system-font-size-regular", 13],
                                [@"system-font-size-small", 11],
-                               [@"system-font-size-mini", 9],
-                               [@"system-font-style", themeFontStyle]
-                               ]
+                               [@"system-font-size-mini", 9]
+                              ]
                       forObject:font];
 
     return font;
