@@ -1,30 +1,70 @@
 
 require("../../common.jake");
 
-var OS = require("os"),
-    task = require("jake").task,
-    stream = require("narwhal/term").stream,
-    applicationName = "XcodeCapp.app";
+var OS                =  require("os"),
+    task              =  require("jake").task,
+    stream            =  require("narwhal/term").stream,
+    applicationName   =  "XcodeCapp.app";
 
-task ("build", function()
+
+function xcodebuild(mode, dstRoot, installPath)
 {
+    /*
+     `xcodebuild` is invoked (with mode and optional parameters)
+     to build Xcode projects from the command line.
+    
+     For our purposes, the mode parameter is  one of 'build', 'install' or 'clean'.
+     The destination for build and install artificats is governed
+     by the DSTROOT and INSTALL_PATH properties of the Xcode project (set for each target or scheme);
+     They can optionally be appended to the `xcodebuild` invocation to override
+     the project values for that invocation.
+     NOTE: DEPLOYMENT_LOCATION must be set to 'Yes' in the Xcode project settings for overrides to work.
+    
+     We use the builder pattern to assemble an invocation for each of the modes we use.
+     If dstRoot and/or installPath are null,
+     do not include those parameters in the command invocation.
+     If not included, defaults found in the Xcode project's settings will be used.
+     Parameters dstRoot and installPath must be non-empty strings or null.
+    */
+    
+    if (mode !== null)
+    {
+        mode = mode.toLowerCase();
+    }
+    else
+    {
+        colorPrint("Options for mode are 'build'||'install'||'clean'. Skipping", 'orange');
+        OS.exit(0);  
+    }
+    
+    if (mode == "clean")
+    {
+        dstRoot     =  null;
+        installPath =  null;
+    }
+
     // If sw_vers does not exist, we aren't on Mac OS X
     if (!executableExists("sw_vers"))
         OS.exit(0);
 
-    // No building on 10.6
+    /*
+     Minimum platform requirement is macOS 10.13
+     Note that internal platform numbering scheme changed after macOS 10.15
+     High Sierra selected as support cut-off because it is apparently the oldest for which GitHub Actions are available.
+     Used hardware supporting High Sierra is quite inexpensive - this may help some developers with hardware acquisition.
+    */
     try
     {
         var p = OS.popen(["sw_vers", "-productVersion"]);
 
         if (p.wait() === 0)
         {
-            var versions = p.stdout.read().split("."),
-                majorVersion = parseInt(versions[0], 10),
-                minorVersion = parseInt(versions[1], 10),
-                buildVersion = parseInt(versions[2], 10);
+            var versions     =  p.stdout.read().split("."),
+                majorVersion =  parseInt(versions[0], 10),
+                minorVersion =  parseInt(versions[1], 10),
+                buildVersion =  parseInt(versions[2], 10);
 
-        if (!((majorVersion == 11) || (majorVersion == 10 && minorVersion >= 12)))
+        if (!((majorVersion >= 11) || (majorVersion == 10 && minorVersion >= 13)))
             {
                 colorPrint("XcodeCapp requires at least macOS Sierra.", "red");
 
@@ -44,32 +84,41 @@ task ("build", function()
 
     if (executableExists("xcodebuild"))
     {
-        var args = installPath = FILE.join("/", "Applications", applicationName);
-
-        // Remove old symlink, if present.
-		//The application is now built directly into /Applications
-        if (FILE.isLink(installPath))
-            FILE.remove(installPath);
-
-		if (OS.system("xcodebuild install"))
-            colorPrint("Unable to build XcodeCapp. Skipping", "orange");
+        var commandInvocation = "xcodebuild -target XcodeCapp " + mode;
+        if (dstRoot !== null)
+        {
+            commandInvocation += " DSTROOT=" + dstRoot;
+        }
+        if (installPath !== null)
+        {
+            commandInvocation += " INSTALL_PATH=" + installPath;
+        }
+        if (OS.system(commandInvocation))
+        {
+            colorPrint("Unable to " + mode + " XcodeCapp. Skipping", "orange");
+        }
     }
     else
     {
-        print("Building " + applicationName + " requires Xcode.");
+        var capitalizedModeDescription = mode.replace(/^\w/, (firstCharacter) => firstCharacter.toUpperCase());
+        print(capitalizedModeDescription + "ing " + applicationName + " requires Xcode.");
     }
+};
+ 
+task ("build", xcodebuild("build", null, null));
+
+task ("install", function() {
+    /*
+     Install to the user's home directory.
+     `xcodebuild` uses DSTROOT as the base path when installing build products,
+     and appends INSTALL_PATH
+     `xcodebuild` recognizes and expands the POSIX $HOME setting automatically.
+    */
+    xcodebuild("install", "$HOME", "Applications");   
 });
 
-task ("clean", function()
-{
-    if (OS.system("xcodebuild clean"))
-        colorPrint("Unable to clean XcodeCapp. Skipping", "orange");
-});
+task ("clean", xcodebuild("clean", null, null));
 
-task ("clobber", function()
-{
-    if (OS.system("xcodebuild clean"))
-        colorPrint("Unable to clean XcodeCapp. Skipping", "orange");
-});
+task ("clobber", xcodebuild("clean", null, null));
 
 task ("default", ["build"]);
