@@ -93,7 +93,7 @@ NSString * const XCCPBXOperationDidEndNotification = @"XCCPbxCreationDidEndNotif
         
         if (shouldLaunchTask)
         {
-            self->task = [self->taskLauncher taskWithCommand:@"python3" arguments:arguments];
+            self->task = [self->taskLauncher taskWithCommand:@"python" arguments:arguments];
 
             NSDictionary *result = [self->taskLauncher runTask:self->task returnType:kTaskReturnTypeStdError];
             
