@@ -10075,24 +10075,7 @@ var themedButtonValues = nil,
 
 + (_CPDocModalWindowView)themedDocModalWindowView
 {
-    var docModalWindowView = [[_CPDocModalWindowView alloc] initWithFrame:CGRectMake(0, 0, 200, 200) styleMask:nil],
-
-    bezelColor = PatternColor(
-                              "window-standard{position}.png",
-                              {
-                              positions: "full",
-                              width: 5.0,
-                              height: 5.0
-                              }),
-
-    themeValues =
-    [
-     [@"body-color", bezelColor]
-     ];
-
-    [self registerThemeValues:themeValues forView:docModalWindowView inherit:themedWindowViewValues];
-
-    return docModalWindowView;
+    return [[_CPDocModalWindowView alloc] initWithFrame:CGRectMake(0, 0, 200, 200) styleMask:nil];
 }
 
 + (_CPBorderlessBridgeWindowView)themedBorderlessBridgeWindowView
