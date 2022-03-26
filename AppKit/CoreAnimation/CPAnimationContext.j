@@ -142,12 +142,7 @@ var _CPAnimationContextStack   = nil,
     duration = [animation duration] || [self duration];
     needsPeriodicFrameUpdates = [[anObject animator] needsPeriodicFrameUpdatesForKeyPath:aKeyPath];
 
-
-    var animatorClass = [[anObject class] animatorClass],
-        needsPeriodicFrameUpdates = ((aKeyPath === @"frame" || aKeyPath === @"frameSize" || [[anObject animator] wantsPeriodicFrameUpdates]) && (objectId = [anObject UID]));
-
-    if (_completionHandlerAgent)
-        _completionHandlerAgent.increment();
+    var animatorClass = [[anObject class] animatorClass];
 
     var completionFunction = function()
     {
@@ -273,16 +268,7 @@ var _CPAnimationContextStack   = nil,
 
 - (void)getAnimations:(CPArray)cssAnimations getTimers:(CPArray)timers usingAction:(Object)anAction cssAnimate:(BOOL)needsCSSAnimation
 {
-    var targetView                   = anAction.object,
-        values                       = anAction.values,
-        keyPath                      = anAction.keypath,
-        isFrameKeyPath               = (keyPath == @"frame" || keyPath == @"frameSize"),
-        customLayout                 = [targetView hasCustomLayoutSubviews],
-        customDrawing                = [targetView hasCustomDrawRect],
-        declarative_subviews_layout  = (!customLayout || [targetView implementsSelector:@selector(frameRectOfView:inSuperviewSize:)]),
-        needsPeriodicFrameUpdates    = [[targetView animator] needsPeriodicFrameUpdatesForKeyPath:keyPath],
-        timer                        = nil,
-        animatorClass                = [[targetView class] animatorClass];
+    var values = anAction.values;
 
     if (values.length == 2)
     {
@@ -294,6 +280,16 @@ var _CPAnimationContextStack   = nil,
             || anAction.keypath == @"frameOrigin" && CGPointEqualToPoint(start, end))
             return;
     }
+
+    var targetView                   = anAction.object,
+        keyPath                      = anAction.keypath,
+        isFrameKeyPath               = (keyPath == @"frame" || keyPath == @"frameSize"),
+        customLayout                 = [targetView hasCustomLayoutSubviews],
+        customDrawing                = [targetView hasCustomDrawRect],
+        declarative_subviews_layout  = (!customLayout || [targetView implementsSelector:@selector(frameRectOfView:inSuperviewSize:)]),
+        needsPeriodicFrameUpdates    = [[targetView animator] needsPeriodicFrameUpdatesForKeyPath:keyPath],
+        timer                        = nil,
+        animatorClass                = [[targetView class] animatorClass];
 
     if (needsCSSAnimation)
     {
