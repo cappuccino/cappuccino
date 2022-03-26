@@ -273,12 +273,16 @@ var _CPAnimationContextStack   = nil,
 
 - (void)getAnimations:(CPArray)cssAnimations getTimers:(CPArray)timers usingAction:(Object)anAction cssAnimate:(BOOL)needsCSSAnimation
 {
-    var values = anAction.values,
-        keyPath = anAction.keypath,
-        isFrameKeyPath = (keyPath == @"frame" || keyPath == @"frameSize"),
-        customLayout = [aTargetView hasCustomLayoutSubviews],
-        customDrawing = [aTargetView hasCustomDrawRect],
-        needsPeriodicFrameUpdates = (isFrameKeyPath || [[aTargetView animator] wantsPeriodicFrameUpdates]);
+    var targetView                   = anAction.object,
+        values                       = anAction.values,
+        keyPath                      = anAction.keypath,
+        isFrameKeyPath               = (keyPath == @"frame" || keyPath == @"frameSize"),
+        customLayout                 = [targetView hasCustomLayoutSubviews],
+        customDrawing                = [targetView hasCustomDrawRect],
+        declarative_subviews_layout  = (!customLayout || [targetView implementsSelector:@selector(frameRectOfView:inSuperviewSize:)]),
+        needsPeriodicFrameUpdates    = [[targetView animator] needsPeriodicFrameUpdatesForKeyPath:keyPath],
+        timer                        = nil,
+        animatorClass                = [[targetView class] animatorClass];
 
     if (values.length == 2)
     {
@@ -290,16 +294,6 @@ var _CPAnimationContextStack   = nil,
             || anAction.keypath == @"frameOrigin" && CGPointEqualToPoint(start, end))
             return;
     }
-
-    var targetView                   = anAction.object,
-        keyPath                      = anAction.keypath,
-        isFrameKeyPath               = (keyPath == @"frame" || keyPath == @"frameSize"),
-        customLayout                 = [targetView hasCustomLayoutSubviews],
-        customDrawing                = [targetView hasCustomDrawRect],
-        declarative_subviews_layout  = (!customLayout || [targetView implementsSelector:@selector(frameRectOfView:inSuperviewSize:)]),
-        needsPeriodicFrameUpdates    = [[targetView animator] needsPeriodicFrameUpdatesForKeyPath:keyPath],
-        timer                        = nil,
-        animatorClass                = [[targetView class] animatorClass];
 
     if (needsCSSAnimation)
     {
