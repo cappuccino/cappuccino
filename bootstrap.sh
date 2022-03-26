@@ -113,7 +113,9 @@ function check_and_exit () {
 
 function check_install_environment () {
     # make sure dependencies are installed and on the $PATH
-    CAPP_BUILD_DEPS=(java unzip)
+    # Python 2 has reached end-of-life and is no longer included in default installations of macOS.
+    # Use Python 3 instead, which is packaged with current versions of Xcode.
+    CAPP_BUILD_DEPS=(java unzip python3)
 
     for dep in ${CAPP_BUILD_DEPS[@]}; do
         which "$dep" &> /dev/null
@@ -385,7 +387,7 @@ if [ `uname` = "Darwin" ]; then
         # This autoreconf command improves compatibility with MacPorts, but only works with autoconf 2.65+.
         needed_autoconf_major=2
         needed_autoconf_minor=65
-        if $(autoconf --version | head -1 | python -c "import sys, re; major, minor=re.search(r'(\d+)\.(\d+)', sys.stdin.read()).groups(); sys.exit((int(major) < $needed_autoconf_major or int(minor) < $needed_autoconf_minor) and 1)"); then
+        if $(autoconf --version | head -1 | python3 -c "import sys, re; major, minor=re.search(r'(\d+)\.(\d+)', sys.stdin.read()).groups(); sys.exit((int(major) < $needed_autoconf_major or int(minor) < $needed_autoconf_minor) and 1)"); then
             # Don't bother checking the return code of this operation. Even if it fails, it's still
             # worthwhile to continue and attempt the full build.
             (cd "$install_directory/packages/narwhal-jsc/deps/libedit-20180525-3.1" && autoreconf -if)

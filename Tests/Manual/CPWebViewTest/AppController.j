@@ -44,7 +44,7 @@
     disturbing test #5 and #6. A simple way to run this test is to change the current directory
     to the root of the test and executing:
 
-    python -m "SimpleHTTPServer"
+    python3 -m http.server
     */
     if (document.location.href.indexOf('file://') == 0)
         alert("This test should be run from http://, not file:// in order to properly enable SOP testing.");
