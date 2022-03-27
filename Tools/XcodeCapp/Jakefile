@@ -104,8 +104,28 @@ function xcodebuild(mode, dstRoot, installPath)
         print(capitalizedModeDescription + "ing " + applicationName + " requires Xcode.");
     }
 };
- 
-task ("build", xcodebuild("build", null, null));
+
+/*
+ TODO: Fully separate build and install phases at Cappuccino project level.
+ This would improve the ability to automate testing of all subprojects within the main project.
+ Currently, the top-level Cappuccino Jakefile is structured in a way
+ that seems conceptually at odds with doing this.
+ It appears necessary to either add no-ops for `install` at the subproject Jakefile level
+ or to re-imagine the way subprojects are included in the Jakefile hierarchy.
+ Until automated testing and integration into the C.I. pipeline of the Tools subprojects
+ becomes a reality, the separation of phases is left incomplete.
+*/ 
+
+task ("build", function() {
+    /*
+     See notes above.
+     When `build` phase is fully separated from `install` use…
+    xcodebuild("build", null, null);
+    */
+    
+    // Same as install, for now.
+    xcodebuild("install", "$HOME", "Applications"); 
+});
 
 task ("install", function() {
     /*
