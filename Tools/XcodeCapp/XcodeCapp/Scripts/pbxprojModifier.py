@@ -1,26 +1,25 @@
 # -*- coding: utf-8 -*-
-import os.path
-import re
-import sys
-from mod_pbxproj import XcodeProject
+from    mod_pbxproj  import  XcodeProject
+import  os.path
+import  re
+import  sys
 
 
 class PBXModifier (object):
 
-    XCODE_SUPPORT_FOLDER = u".XcodeSupport"
-    SLASH_REPLACEMENT  = u"::"
-    FRAMEWORKS_RE = re.compile(ur"^(.+/Frameworks/(?:Debug|Source)/([^/]+))/.+$")
-    XCC_GENERAL_INCLUDE = u"xcc_general_include.h"
+    XCODE_SUPPORT_FOLDER  =  u".XcodeSupport"
+    SLASH_REPLACEMENT     =  u"::"
+    FRAMEWORKS_RE         =  re.compile(r"^(.+/Frameworks/(?:Debug|Source)/([^/]+))/.+$")
+    XCC_GENERAL_INCLUDE   =  u"xcc_general_include.h"
 
     def __init__(self, projectRootPath=None):
-        self.projectRootPath = projectRootPath
-        projectName = os.path.basename(projectRootPath)
-        self.pbxPath = os.path.join(projectRootPath, projectName + u".xcodeproj", u"project.pbxproj")
-        self.project = XcodeProject.Load(self.pbxPath)
-
-        self._shadowGroup = None
-        self._sourceGroup = None
-        self._frameworksGroup = None
+        self.projectRootPath   =  projectRootPath
+        projectName            =  os.path.basename(projectRootPath)
+        self.pbxPath           =  os.path.join(projectRootPath, projectName + u".xcodeproj", u"project.pbxproj")
+        self.project           =  XcodeProject.Load(self.pbxPath)
+        self._shadowGroup      =  None
+        self._sourceGroup      =  None
+        self._frameworksGroup  =  None
 
     @property
     def frameworksGroup(self):

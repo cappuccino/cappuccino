@@ -18,3 +18,4 @@ Tests/Manual/**/*.xcodeproj
 *.sublime-workspace
 *.tm_properties
 *.idea
+Applications

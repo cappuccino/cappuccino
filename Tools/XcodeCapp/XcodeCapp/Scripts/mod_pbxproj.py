@@ -126,7 +126,7 @@ class PBXType(PBXDict):
             if cls and issubclass(cls, PBXType):
                 return cls(o)
 
-            print 'warning: unknown PBX type: %s' % isa
+            print(f"warning: unknown PBX type: {isa}")
             return PBXDict(o)
         else:
             return o
@@ -200,8 +200,8 @@ class PBXFileReference(PBXType):
         self.build_phase = build_phase
 
         if f_type == '?' and not ignore_unknown_type:
-            print 'unknown file extension: %s' % ext
-            print 'please add extension and Xcode type to PBXFileReference.types'
+            print(f"unknown file extension: {ext}")
+            print("please add extension and Xcode type to PBXFileReference.types")
 
         return f_type
 
@@ -214,7 +214,7 @@ class PBXFileReference(PBXType):
     @classmethod
     def Create(cls, os_path, tree='SOURCE_ROOT', ignore_unknown_type=False):
         if tree not in cls.trees:
-            print 'Not a valid sourceTree type: %s' % tree
+            print(f"Not a valid sourceTree type: {tree}")
             return None
 
         fr = cls()
@@ -443,10 +443,10 @@ class XCBuildConfiguration(PBXType):
                 self[base][key] = PBXList(self[base][key])
 
             if escape:
-                if self[base][key].add('\\"%s\\"' % path):  # '\\"%s\\"' % path
+                if self[base][key].add(f'\\"{path}\\"'):
                     modified = True
             else:
-                if self[base][key].add(path):  # '\\"%s\\"' % path
+                if self[base][key].add(path):
                     modified = True
 
         return modified
@@ -559,7 +559,7 @@ class XcodeProject(PBXDict):
             root_group_id = self.root_object.get('mainGroup')
             self.root_group = self.objects[root_group_id]
         else:
-            print "error: project has no root object"
+            print("error: project has no root object")
             self.root_object = None
             self.root_group = None
 
@@ -892,12 +892,12 @@ class XcodeProject(PBXDict):
 
     def apply_patch(self, patch_path, xcode_path):
         if not os.path.isfile(patch_path) or not os.path.isdir(xcode_path):
-            print 'ERROR: couldn\'t apply "%s" to "%s"' % (patch_path, xcode_path)
+            print(f"ERROR: couldn\'t apply \"{patch_path}\" to \"{xcode_path}\"")
             return
 
-        print 'applying "%s" to "%s"' % (patch_path, xcode_path)
+        print(f"applying '{patch_path}' to '{xcode_path}'")
 
-        return subprocess.call(['patch', '-p1', '--forward', '--directory=%s' % xcode_path, '--input=%s' % patch_path])
+        return subprocess.call(['patch', '-p1', '--forward', f'--directory={xcode_path}', '--input={patch_path}'])
 
     def apply_mods(self, mod_dict, default_path=None):
         if not default_path:
@@ -1065,7 +1065,7 @@ class XcodeProject(PBXDict):
             file_name = self.pbxproj_path
 
         if not backup_name:
-            backup_name = "%s.%s.backup" % (file_name, datetime.datetime.now().strftime('%d%m%y-%H%M%S'))
+            backup_name = f"{file_name}.{datetime.datetime.now().strftime('%d%m%y-%H%M%S')}.backup"
 
         shutil.copy2(file_name, backup_name)
 
@@ -1197,7 +1197,7 @@ class XcodeProject(PBXDict):
                         if self.sections.get(section[0]) is None:
                             continue
 
-                        out.write('\n/* Begin %s section */' % section[0].encode("utf-8"))
+                        out.write(f'\n/* Begin {section[0].encode("utf-8")} section */')
                         self.sections.get(section[0]).sort(cmp=lambda x, y: cmp(x[0], y[0]))
 
                         for pair in self.sections.get(section[0]):
@@ -1217,7 +1217,7 @@ class XcodeProject(PBXDict):
                             self._printNewXCodeFormat(out, value, '\t\t' + deep, enters=section[1])
                             out.write(';')
 
-                        out.write('\n/* End %s section */\n' % section[0].encode("utf-8"))
+                        out.write(f'\n/* End {section[0].encode("utf-8")} section */\n')
 
                     out.write(deep + '\t}')  # close of the objects section
                 else:
@@ -1280,7 +1280,7 @@ class XcodeProject(PBXDict):
 
         # If the plist was malformed, returncode will be non-zero
         if p.returncode != 0:
-            print stdout
+            print(stdout)
             return None
 
         tree = plistlib.readPlistFromString(stdout)
@@ -1303,9 +1303,9 @@ class PBXWriter(plistlib.PlistWriter):
         """
         if value is not None:
             value = _escapeAndEncode(value)
-            self.writeln("<%s>%s</%s>" % (element, value, element))
+            self.writeln(f"<{element}>{value}</{element}>")
         else:
-            self.writeln("<%s/>" % element)
+            self.writeln("<{element}/>")
 
 
 # Regex to find any control chars, except for \t \n and \r

@@ -11,7 +11,7 @@
 #import "XCCUserDefaults.h"
 
 @implementation AppDelegate
-
+@synthesize version, copyright;
 
 #pragma mark - Utilities
 
@@ -28,15 +28,14 @@
 
 - (void)_initStatusItem
 {
-    self->imageStatusInactive   = [NSImage imageNamed:@"status-icon-inactive"];
-    self->imageStatusProcessing = [NSImage imageNamed:@"status-icon-working"];
-    self->imageStatusError      = [NSImage imageNamed:@"status-icon-error"];
-    
-    self->statusItem                 = [[NSStatusBar systemStatusBar] statusItemWithLength:NSVariableStatusItemLength];
-    self->statusItem.menu            = self->statusMenu;
-    self->statusItem.image           = self->imageStatusInactive;
-    self->statusItem.highlightMode   = YES;
-    self->statusItem.length          = self->imageStatusInactive.size.width + 12;
+    self->imageStatusInactive       =  [NSImage imageNamed:@"status-icon-inactive"];
+    self->imageStatusProcessing     =  [NSImage imageNamed:@"status-icon-working"];
+    self->imageStatusError          =  [NSImage imageNamed:@"status-icon-error"];
+    self->statusItem                =  [[NSStatusBar systemStatusBar] statusItemWithLength:NSVariableStatusItemLength];
+    self->statusItem.menu           =  self->statusMenu;
+    self->statusItem.image          =  self->imageStatusInactive;
+    self->statusItem.highlightMode  =  YES;
+    self->statusItem.length         =  self->imageStatusInactive.size.width + 12;
 }
 
 - (void)_initOperationQueue
@@ -97,7 +96,9 @@
 {
     NSLog(@"\n******************************\n**    XcodeCapp started     **\n******************************\n");
 
-    self.version = [NSBundle mainBundle].infoDictionary[@"CFBundleShortVersionString"];
+    // Cocoa bindings in MainMenu xib used to display values
+    self.version   =  [NSBundle mainBundle].infoDictionary[@"CFBundleShortVersionString"];
+    self.copyright =  [NSBundle mainBundle].infoDictionary[@"NSHumanReadableCopyright"];
 
     [self _initUserDefaults];
     [self _initOperationQueue];
