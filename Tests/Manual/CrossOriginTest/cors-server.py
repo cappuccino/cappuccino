@@ -1,14 +1,16 @@
-import SimpleHTTPServer
-import SocketServer
-import logging
-import cgi
+#!/usr/bin/env python3
+from    http.server   import  BaseHTTPRequestHandler
+from    http.server   import  HTTPServer
+import  cgi
+import  logging
 
 logging.basicConfig(level=logging.INFO)
 PORT = 8001
+HOST = "localhost"
 
-class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
+class ServerHandler(BaseHTTPRequestHandler):
 
-    def end_headers (self):
+    def end_headers(self):
         self.send_header('Set-Cookie', 'mycookie=cappuccino!')
         self.send_header('Access-Control-Allow-Origin', 'http://142.157.142.237:8000')
         self.send_header('Access-Control-Allow-Methods', 'GET, OPTIONS')
@@ -31,14 +33,17 @@ class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             self.headers['Cookie']
             logging.info("CORS: With Credentials")
             logging.info(self.headers['Cookie'])
-        except KeyError, e:
+        except KeyError as e:
             logging.info("CORS: No Credentials")
-        SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
 
-Handler = ServerHandler
+if __name__ == "__main__":        
+    httpd = HTTPServer((HOST, PORT), ServerHandler)
+    print(f"Server started http://{HOST}:{PORT}")
 
-SocketServer.TCPServer.allow_reuse_address = True
-httpd = SocketServer.TCPServer(("0.0.0.0", PORT), Handler)
+    try:
+        httpd.serve_forever()
+    except KeyboardInterrupt:
+        pass
 
-print "serving at port", PORT
-httpd.serve_forever()
+    httpd.server_close()
+    print(f"Server on http://{HOST}:{PORT} stopped.")
