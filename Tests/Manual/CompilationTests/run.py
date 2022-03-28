@@ -67,7 +67,7 @@ if __name__ == "__main__":
         actual_status, actual_output = get_actual_output(test)
 
         print("########################################")
-        print(f"Testing {test}"
+        print(f"Testing {test}")
         errored = False
         if expected_status != actual_status:
             errored = True
@@ -77,7 +77,7 @@ if __name__ == "__main__":
             errored = True
             print(f"    Error in {test}. Outputs are different")
             print(f"    EXPECTED: {expected_output}")
-            print(f"    ACTUAL:   {actual_output}"
+            print(f"    ACTUAL:   {actual_output}")
 
         if not errored:
             print("    OK")
