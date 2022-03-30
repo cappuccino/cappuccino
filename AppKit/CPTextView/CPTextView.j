@@ -1051,7 +1051,7 @@ Sets the selection to a range of characters in response to user action.
 
     [[_window platformWindow] _propagateCurrentDOMEvent:YES];  // for the _CPNativeInputManager (necessary at least on FF and chrome)
 
-    if (![_CPNativeInputManager isNativeInputFieldActive])
+    if (![_CPNativeInputManager isNativeInputFieldActive] && ![_CPNativeInputManager isDeadKey:event])
         [self interpretKeyEvents:[event]];
 
     [_caret setPermanentlyVisible:YES];
@@ -2636,7 +2636,14 @@ var _CPCopyPlaceholder = '-';
 {
     return _CPNativeInputFieldActive;
 }
++ (void)isDeadKey:(CPEvent)event
+{
+#if PLATFORM(DOM)
+    return event._DOMEvent && event._DOMEvent.key == 'Dead';
+#endif
 
+    return NO;
+}
 + (void)cancelCurrentNativeInputSession
 {
 
