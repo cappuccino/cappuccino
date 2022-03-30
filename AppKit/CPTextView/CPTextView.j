@@ -2639,7 +2639,7 @@ var _CPCopyPlaceholder = '-';
 + (void)isDeadKey:(CPEvent)event
 {
 #if PLATFORM(DOM)
-    return event._DOMEvent && event._DOMEvent.key == 'Dead';
+    return event._DOMEvent && (event._DOMEvent.key == 'Dead' || event._DOMEvent.key == 'Process');
 #endif
 
     return NO;
