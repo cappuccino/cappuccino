@@ -52,7 +52,9 @@ if (typeof OBJJ_COMPILER_FLAGS !== 'undefined')
     var flags = {};
     for (var i = 0; i < OBJJ_COMPILER_FLAGS.length; i++)
     {
-        switch (OBJJ_COMPILER_FLAGS[i])
+        var aFlag = OBJJ_COMPILER_FLAGS[i];
+
+        switch (aFlag)
         {
             case "IncludeDebugSymbols":
                 flags.includeMethodFunctionNames = true;
@@ -70,9 +72,21 @@ if (typeof OBJJ_COMPILER_FLAGS !== 'undefined')
             case "SourceMap":
                 flags.sourceMap = true;
                 break;
+
+            case "SourceMapIncludeSource":
+                flags.sourceMapIncludeSource = true;
+                break;
+
+            default:
+                if  (aFlag.indexOf("-D") === 0) {
+                    var macroDefinition = aFlag.substring(2);
+
+                    (flags.macros || (flags.macros = [])).push(macroDefinition);
+                }
+                break;
         }
     }
-    FileExecutable.setCurrentCompilerFlags(flags);
+    StaticResource.setCurrentCompilerFlags(flags);
 }
 
 // Turn the main file into a URL.

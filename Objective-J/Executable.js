@@ -24,8 +24,7 @@
 var ExecutableUnloadedFileDependencies         = 0,
     ExecutableLoadingFileDependencies          = 1,
     ExecutableLoadedFileDependencies           = 2,
-    ExecutableCantStartLoadYetFileDependencies = 3,
-    AnonymousExecutableCount            = 0;
+    AnonymousExecutableCount                   = 0;
 
 function Executable(/*String*/ aCode, /*Array*/ fileDependencies, /*CFURL|String*/ aURL, /*Function*/ aFunction, /*ObjJCompiler*/aCompiler, /*Dictionary*/ aFilenameTranslateDictionary, /* Base64 String */ sourceMap)
 {
@@ -44,13 +43,7 @@ function Executable(/*String*/ aCode, /*Array*/ fileDependencies, /*CFURL|String
     if (sourceMap)
         this._base64EncodedSourceMap = sourceMap;
 
-    // This is a little hacky but if fileDependencies is null we can start loading file dependencies yet
-    if (!fileDependencies)
-    {
-        this._fileDependencyStatus = ExecutableCantStartLoadYetFileDependencies;
-        this._fileDependencyCallbacks = [];
-    }
-    else if (fileDependencies.length)
+    if (fileDependencies.length)
     {
         this._fileDependencyStatus = ExecutableUnloadedFileDependencies;
         this._fileDependencyCallbacks = [];
@@ -188,9 +181,10 @@ Executable.prototype.execute = function()
 
         this.setCode(this._compiler.compilePass2(), this._compiler.map());
 
-        if (FileExecutable.printWarningsAndErrors(this._compiler, exports.messageOutputFormatInXML))
+        if (Executable.printWarningsAndErrors(this._compiler, exports.messageOutputFormatInXML))
             throw "Compilation error";
 
+        // We don't need to save the AST tree and the source code. It will take up a lot of memory.
         this._compiler = null;
     }
 
@@ -314,8 +308,9 @@ Executable.prototype.loadFileDependencies = function(aCallback)
 
     if (status === ExecutableUnloadedFileDependencies)
     {
-        if (fileDependencyLoadCount)
-            throw "Can't load";
+        if (fileDependencyLoadCount) {
+            throw "Can't load: " + this.URL().absoluteURL();
+        }
 
         loadFileDependenciesForExecutable(this);
     }
@@ -323,20 +318,12 @@ Executable.prototype.loadFileDependencies = function(aCallback)
 
 DISPLAY_NAME(Executable.prototype.loadFileDependencies);
 
-Executable.prototype.setExecutableUnloadedFileDependencies = function()
+Executable.prototype.hasExecutableUnloadedFileDependencies = function()
 {
-    if (this._fileDependencyStatus === ExecutableCantStartLoadYetFileDependencies)
-        this._fileDependencyStatus = ExecutableUnloadedFileDependencies;
+    return this._fileDependencyStatus === ExecutableUnloadedFileDependencies;
 }
 
-DISPLAY_NAME(Executable.prototype.setExecutableUnloadedFileDependencies);
-
-Executable.prototype.isExecutableCantStartLoadYetFileDependencies = function()
-{
-    return this._fileDependencyStatus === ExecutableCantStartLoadYetFileDependencies;
-}
-
-DISPLAY_NAME(Executable.prototype.setExecutableUnloadedFileDependencies);
+DISPLAY_NAME(Executable.prototype.hasExecutableUnloadedFileDependencies);
 
 function loadFileDependenciesForExecutable(/*Executable*/ anExecutable)
 {
@@ -442,6 +429,7 @@ DISPLAY_NAME(Executable.prototype.fileExecutableSearcher);
 
 var cachedFileExecuters = { };
 
+// All the file dependences must be loaded and executed before this can be executed.
 Executable.fileExecuterForURL = function(/*CFURL|String*/ aURL)
 {
     var referenceURL = makeAbsoluteURL(aURL),
@@ -490,13 +478,13 @@ Executable.fileImporterForURL = function(/*CFURL|String*/ aURL)
             {
                 aFileExecutable.loadFileDependencies(function()
                 {
-                    aFileExecutable.execute();
-
+                    var result = aFileExecutable.execute();
+                                                     
                     // No more need to cache these.
                     disableCFURLCaching();
 
                     if (aCallback)
-                        aCallback();
+                        aCallback(result);
                 });
             });
         }
@@ -511,16 +499,6 @@ DISPLAY_NAME(Executable.fileImporterForURL);
 
 var cachedFileExecutableSearchers = { },
     cachedFileExecutableSearchResults = { };
-
-function countProp(x) {
-    var count = 0;
-    for (var k in x) {
-        if (x.hasOwnProperty(k)) {
-            ++count;
-        }
-    }
-    return count;
-}
 
 Executable.resetCachedFileExecutableSearchers = function()
 {
@@ -582,6 +560,53 @@ Executable.fileExecutableSearcherForURL = function(/*CFURL*/ referenceURL)
 }
 
 DISPLAY_NAME(Executable.fileExecutableSearcherForURL);
+
+/*!
+    This funtion prints all errors and warnings for the provided compiler. It returns true if there
+    are any errors in the list. it will print it in xml format if printXML is 'true'
+ */
+Executable.printWarningsAndErrors = function(/*ObjJCompiler*/ compiler, /*BOOL*/ printXML)
+{
+    var warnings = [],
+        anyErrors = false;
+
+    for (var i = 0; i < compiler.warningsAndErrors.length; i++)
+    {
+        var warning = compiler.warningsAndErrors[i],
+            message = compiler.prettifyMessage(warning);
+
+        // Set anyErrors to 'true' if there are any errors in the list
+        anyErrors = anyErrors || warning.messageType === "ERROR";
+#ifdef BROWSER
+        console.log(message);
+#else
+        if (printXML)
+        {
+            var dict = new CFMutableDictionary();
+            if (warning.messageOnLine != null) dict.addValueForKey('line', warning.messageOnLine)
+            if (warning.path != null) dict.addValueForKey('sourcePath', new CFURL(warning.path).path())
+            if (message != null) dict.addValueForKey('message', message)
+
+            warnings.push(dict);
+        }
+        else
+        {
+            print(message);
+        }
+#endif
+    }
+
+#ifndef BROWSER
+    if (warnings.length && printXML)
+        try {
+            print(CFPropertyListCreateXMLData(warnings, kCFPropertyListXMLFormat_v1_0).rawString());
+        } catch (e) {
+            print ("XML encode error: " + e);
+        }
+#endif
+
+    return anyErrors;
+}
 
 /*
  * Adaption to javascript by Malte Tancred   2012 from ConvertUTF.[ch] by Unicode, Inc.
