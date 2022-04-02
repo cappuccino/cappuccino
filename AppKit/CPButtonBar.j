@@ -53,7 +53,7 @@ var _templateImageMap = @{
                           CPAddTemplateImage:    @"button-image-plus",
                           CPRemoveTemplateImage: @"button-image-minus",
                           CPActionTemplateImage: @"button-image-action"
-                          };
+                         };
 
 var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
 
@@ -132,7 +132,7 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
              @"min-size": CGSizeMake(0, 0),
              @"max-size": CGSizeMake(-1, -1),
              @"auto-resize-control": YES
-             };
+            };
 }
 
 + (CPButtonBar)_sharedDummyButtonBar
