@@ -12,21 +12,21 @@ function xcodebuild(mode, dstRoot, installPath)
     /*
      `xcodebuild` is invoked (with mode and optional parameters)
      to build Xcode projects from the command line.
-    
+
      For our purposes, the mode parameter is  one of 'build', 'install' or 'clean'.
      The destination for build and install artificats is governed
      by the DSTROOT and INSTALL_PATH properties of the Xcode project (set for each target or scheme);
      They can optionally be appended to the `xcodebuild` invocation to override
      the project values for that invocation.
      NOTE: DEPLOYMENT_LOCATION must be set to 'Yes' in the Xcode project settings for overrides to work.
-    
+
      We use the builder pattern to assemble an invocation for each of the modes we use.
      If dstRoot and/or installPath are null,
      do not include those parameters in the command invocation.
      If not included, defaults found in the Xcode project's settings will be used.
      Parameters dstRoot and installPath must be non-empty strings or null.
     */
-    
+
     if (mode !== null)
     {
         mode = mode.toLowerCase();
@@ -34,9 +34,9 @@ function xcodebuild(mode, dstRoot, installPath)
     else
     {
         colorPrint("Options for mode are 'build'||'install'||'clean'. Skipping", 'orange');
-        OS.exit(0);  
+        OS.exit(0);
     }
-    
+
     if (mode == "clean")
     {
         dstRoot     =  null;
@@ -114,7 +114,7 @@ function xcodebuild(mode, dstRoot, installPath)
  or to re-imagine the way subprojects are included in the Jakefile hierarchy.
  Until automated testing and integration into the C.I. pipeline of the Tools subprojects
  becomes a reality, the separation of phases is left incomplete.
-*/ 
+*/
 
 task ("build", function() {
     /*
@@ -122,9 +122,9 @@ task ("build", function() {
      When `build` phase is fully separated from `install` use…
     xcodebuild("build", null, null);
     */
-    
+
     // Same as install, for now.
-    xcodebuild("install", "$HOME", "Applications"); 
+    xcodebuild("install", "$HOME", "Applications");
 });
 
 task ("install", function() {
@@ -134,7 +134,7 @@ task ("install", function() {
      and appends INSTALL_PATH
      `xcodebuild` recognizes and expands the POSIX $HOME setting automatically.
     */
-    xcodebuild("install", "$HOME", "Applications");   
+    xcodebuild("install", "$HOME", "Applications");
 });
 
 task ("clean", xcodebuild("clean", null, null));
