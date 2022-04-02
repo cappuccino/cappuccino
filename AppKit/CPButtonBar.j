@@ -1519,6 +1519,9 @@ var CPButtonBarHasLeftResizeControlKey       = @"CPButtonBarHasLeftResizeControl
 #pragma mark Popup
 
 @implementation _CPButtonBarPopUpButton : CPPopUpButton
+{
+    CPImage _image;
+}
 
 + (CPString)defaultThemeClass
 {
@@ -1547,8 +1550,7 @@ var CPButtonBarHasLeftResizeControlKey       = @"CPButtonBarHasLeftResizeControl
     if (self)
     {
         [self setControlSize:CPSmallControlSize];
-        [self addItemWithTitle:nil];
-        [[self lastItem] setImage:image];
+        _image = image;
         [self setImagePosition:CPImageOnly];
         [self setAlternateImage:alternateImage];
         [self setBezelStyle:CPRegularSquareBezelStyle];
@@ -1605,11 +1607,8 @@ var CPButtonBarHasLeftResizeControlKey       = @"CPButtonBarHasLeftResizeControl
 
     if (contentView)
     {
-        var title = nil,
-            image = nil;
-
-        title = _title;
-        image = [self currentValueForThemeAttribute:@"image"];
+        var title = _title,
+            image = _image;
 
         [contentView setText:title];
         [contentView setImage:image];
