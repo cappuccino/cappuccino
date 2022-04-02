@@ -36,7 +36,7 @@ class ServerHandler(BaseHTTPRequestHandler):
         except KeyError as e:
             logging.info("CORS: No Credentials")
 
-if __name__ == "__main__":        
+if __name__ == "__main__":
     httpd = HTTPServer((HOST, PORT), ServerHandler)
     print(f"Server started http://{HOST}:{PORT}")
 
