@@ -1608,18 +1608,9 @@ var CPButtonBarHasLeftResizeControlKey       = @"CPButtonBarHasLeftResizeControl
 
     if (contentView)
     {
-        [contentView setText:_title];
         [contentView setImage:_image];
-        [contentView setImageOffset:[self currentValueForThemeAttribute:@"image-offset"]];
-        [contentView setFont:[self font]]; //[self currentValueForThemeAttribute:@"font"]];
-        [contentView setTextColor:[self currentValueForThemeAttribute:@"text-color"]];
-        [contentView setAlignment:[self currentValueForThemeAttribute:@"alignment"]];
-        [contentView setVerticalAlignment:[self currentValueForThemeAttribute:@"vertical-alignment"]];
-        [contentView setLineBreakMode:[self currentValueForThemeAttribute:@"line-break-mode"]];
-        [contentView setTextShadowColor:[self currentValueForThemeAttribute:@"text-shadow-color"]];
-        [contentView setTextShadowOffset:[self currentValueForThemeAttribute:@"text-shadow-offset"]];
-        [contentView setImagePosition:[self currentValueForThemeAttribute:@"image-position"]];
-        [contentView setImageScaling:[self currentValueForThemeAttribute:@"image-scaling"]];
+        [contentView setFrameSize:CGSizeMake(16,16)];
+        [contentView setImagePosition:CPImageLeft];
         [contentView setDimsImage:[self hasThemeState:CPThemeStateDisabled] && _imageDimsWhenDisabled];
     }
 }

@@ -1594,7 +1594,7 @@ var themedButtonValues = nil,
      [@"bezel-color",                smallDisabledButtonCssColor,               [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall, CPThemeStateBordered, CPThemeStateDisabled, CPThemeStateKeyWindow]],
      [@"content-inset",              CGInsetMake(1.0, 17.0, 1.00, 8.0),         [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall, CPThemeStateBordered]],
 //     [@"content-inset",              CGInsetMake(-2.0, 17.0, 0, 8.0),           [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall, CPThemeStateBordered]],
-     [@"min-size",                   CGSizeMake(32.0, 18.0),                    [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall]],
+     [@"min-size",                   CGSizeMake(40.0, 20.0),                    [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall]],
      [@"max-size",                   CGSizeMake(-1.0, 18.0),                    [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall]],
      [@"nib2cib-adjustment-frame",   CGRectMake(3.0, -7.0, -6.0, -4.0),         [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall]],
 
@@ -1630,7 +1630,7 @@ var themedButtonValues = nil,
      [@"bezel-color",                nbSmallDisabledButtonCssColor,             [CPButtonStateBezelStyleRegularSquare, CPThemeStateControlSizeSmall, CPThemeStateDisabled]],
      [@"bezel-color",                nbSmallDisabledButtonCssColor,             [CPButtonStateBezelStyleRegularSquare, CPThemeStateControlSizeSmall, CPThemeStateDisabled, CPThemeStateKeyWindow]],
      [@"content-inset",              CGInsetMake(1.0, 8, 1.0, 10.0),             [CPButtonStateBezelStyleRegularSquare, CPThemeStateControlSizeSmall]],
-     [@"min-size",                   CGSizeMake(32.0, 18.0),                    [CPButtonStateBezelStyleRegularSquare, CPThemeStateControlSizeSmall]],
+     [@"min-size",                   CGSizeMake(40.0, 20.0),                    [CPButtonStateBezelStyleRegularSquare, CPThemeStateControlSizeSmall]],
      [@"max-size",                   CGSizeMake(-1.0, 18.0),                    [CPButtonStateBezelStyleRegularSquare, CPThemeStateControlSizeSmall]],
      [@"nib2cib-adjustment-frame",   CGRectMake(0.0, -0.0, -0.0, -0.0),         [CPButtonStateBezelStyleRegularSquare, CPThemeStateControlSizeSmall]],
 
@@ -2274,7 +2274,7 @@ var themedButtonValues = nil,
      [@"nib2cib-adjustment-frame",  CGRectMake(3.0, -7.0, -6.0, -4.0),      [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall, CPThemeStateBordered]],
      [@"content-inset",             CGInsetMake(1.0, 17.0, 1.0, 8.0),       [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall, CPThemeStateBordered]],
 //     [@"content-inset",             CGInsetMake(-2.0, 17.0, 0, 8.0),        [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall, CPThemeStateBordered]],
-     [@"min-size",                  CGSizeMake(32.0, 18.0),                 [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall, CPThemeStateBordered]],
+     [@"min-size",                  CGSizeMake(40.0, 20.0),                 [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall, CPThemeStateBordered]],
 
      // Mini size
      [@"bezel-color",               miniButtonCssColor,                     [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateControlSizeMini, CPThemeStateBordered, CPThemeStateKeyWindow]],
@@ -2307,7 +2307,7 @@ var themedButtonValues = nil,
      [@"bezel-color",               smallNbDisabledButtonCssColor,          [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRegularSquare, CPThemeStateControlSizeSmall, CPThemeStateDisabled, CPThemeStateKeyWindow]],
      [@"nib2cib-adjustment-frame",  CGRectMake(1.0, 0.0, 0.0, 0.0),         [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRegularSquare, CPThemeStateControlSizeSmall]],
      [@"content-inset",             CGInsetMake(1.0, 11, 1.0, 9.0),          [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRegularSquare, CPThemeStateControlSizeSmall]],
-     [@"min-size",                  CGSizeMake(32.0, 18.0),                 [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRegularSquare, CPThemeStateControlSizeSmall]],
+     [@"min-size",                  CGSizeMake(40.0, 20.0),                 [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRegularSquare, CPThemeStateControlSizeSmall]],
 
      // Mini size
      [@"bezel-color",               miniNbButtonCssColor,                   [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRegularSquare, CPThemeStateControlSizeMini, CPThemeStateKeyWindow]],
@@ -6820,6 +6820,19 @@ var themedButtonValues = nil,
                                  beforeDictionary:nil
                                   afterDictionary:nil
                                              size:CGSizeMake(16,16)],
+    actionIconActive = [CPImage imageWithCSSDictionary:@{
+                                                       @"background-image": @"url(%%packed.png)",
+                                                       @"background-position": @"-80px -80px",
+                                                       @"background-repeat": @"no-repeat",
+                                                       @"background-size": @"100px 400px",
+                                                       @"transform": @"rotate(45deg)",
+                                                       @"transform-origin": @"8px 8px",
+                                                       @"transition-duration": @"0.35s",
+                                                       @"transition-property": @"transform"
+                                                  }
+                                 beforeDictionary:nil
+                                  afterDictionary:nil
+                                             size:CGSizeMake(16,16)],
 
     themedButtonBarValues =
     [
@@ -6862,7 +6875,7 @@ var themedButtonValues = nil,
      [@"button-image-action",       actionIcon],
      [@"button-image-plus",         plusIcon,       CPThemeStateHighlighted],
      [@"button-image-minus",        minusIcon,      CPThemeStateHighlighted],
-     [@"button-image-action",       actionIcon,     CPThemeStateHighlighted]
+     [@"button-image-action",       actionIconActive,     CPThemeStateHighlighted]
      ];
 
     [self registerThemeValues:themedButtonBarValues forView:buttonBar];
