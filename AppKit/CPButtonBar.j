@@ -1571,7 +1571,8 @@ var CPButtonBarHasLeftResizeControlKey       = @"CPButtonBarHasLeftResizeControl
 // This is needed as CPPopUpButton overrides setObjectValue, blocking setting the state of the button.
 - (void)layoutSubviews
 {
-    var bezelColor = [self currentValueForThemeAttribute:@"bezel-color"];
+    var bezelColor = [self currentValueForThemeAttribute:@"bezel-color"],
+        contentView;
 
     if ([bezelColor isCSSBased])
     {
@@ -1580,7 +1581,7 @@ var CPButtonBarHasLeftResizeControlKey       = @"CPButtonBarHasLeftResizeControl
 
         [self setBackgroundColor:bezelColor];
 
-        var contentView = [self layoutEphemeralSubviewNamed:@"content-view"
+        contentView = [self layoutEphemeralSubviewNamed:@"content-view"
                                                  positioned:CPWindowAbove
                             relativeToEphemeralSubviewNamed:nil];
     }
@@ -1592,28 +1593,24 @@ var CPButtonBarHasLeftResizeControlKey       = @"CPButtonBarHasLeftResizeControl
 
         [bezelView setBackgroundColor:bezelColor];
 
-        var contentView = [self layoutEphemeralSubviewNamed:@"content-view"
-                                                 positioned:CPWindowAbove
-                            relativeToEphemeralSubviewNamed:@"bezel-view"];
+        contentView = [self layoutEphemeralSubviewNamed:@"content-view"
+                                             positioned:CPWindowAbove
+                        relativeToEphemeralSubviewNamed:@"bezel-view"];
     }
     else
     {
         // As we have no bezelColor, we only need a contentView
 
-        var contentView = [self layoutEphemeralSubviewNamed:@"content-view"
-                                                 positioned:CPWindowAbove
+        contentView = [self layoutEphemeralSubviewNamed:@"content-view"
+                                             positioned:CPWindowAbove
                             relativeToEphemeralSubviewNamed:nil];
     }
 
     if (contentView)
     {
-        var title = _title,
-            image = _image;
-
-        [contentView setText:title];
-        [contentView setImage:image];
+        [contentView setText:_title];
+        [contentView setImage:_image];
         [contentView setImageOffset:[self currentValueForThemeAttribute:@"image-offset"]];
-
         [contentView setFont:[self font]]; //[self currentValueForThemeAttribute:@"font"]];
         [contentView setTextColor:[self currentValueForThemeAttribute:@"text-color"]];
         [contentView setAlignment:[self currentValueForThemeAttribute:@"alignment"]];
