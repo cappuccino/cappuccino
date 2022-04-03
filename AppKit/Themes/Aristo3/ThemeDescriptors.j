@@ -1594,7 +1594,7 @@ var themedButtonValues = nil,
      [@"bezel-color",                smallDisabledButtonCssColor,               [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall, CPThemeStateBordered, CPThemeStateDisabled, CPThemeStateKeyWindow]],
      [@"content-inset",              CGInsetMake(1.0, 17.0, 1.00, 8.0),         [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall, CPThemeStateBordered]],
 //     [@"content-inset",              CGInsetMake(-2.0, 17.0, 0, 8.0),           [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall, CPThemeStateBordered]],
-     [@"min-size",                   CGSizeMake(40.0, 20.0),                    [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall]],
+     [@"min-size",                   CGSizeMake(38.0, 20.0),                    [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall]],
      [@"max-size",                   CGSizeMake(-1.0, 18.0),                    [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall]],
      [@"nib2cib-adjustment-frame",   CGRectMake(3.0, -7.0, -6.0, -4.0),         [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall]],
 
@@ -1630,7 +1630,7 @@ var themedButtonValues = nil,
      [@"bezel-color",                nbSmallDisabledButtonCssColor,             [CPButtonStateBezelStyleRegularSquare, CPThemeStateControlSizeSmall, CPThemeStateDisabled]],
      [@"bezel-color",                nbSmallDisabledButtonCssColor,             [CPButtonStateBezelStyleRegularSquare, CPThemeStateControlSizeSmall, CPThemeStateDisabled, CPThemeStateKeyWindow]],
      [@"content-inset",              CGInsetMake(1.0, 8, 1.0, 10.0),             [CPButtonStateBezelStyleRegularSquare, CPThemeStateControlSizeSmall]],
-     [@"min-size",                   CGSizeMake(40.0, 20.0),                    [CPButtonStateBezelStyleRegularSquare, CPThemeStateControlSizeSmall]],
+     [@"min-size",                   CGSizeMake(38.0, 20.0),                    [CPButtonStateBezelStyleRegularSquare, CPThemeStateControlSizeSmall]],
      [@"max-size",                   CGSizeMake(-1.0, 18.0),                    [CPButtonStateBezelStyleRegularSquare, CPThemeStateControlSizeSmall]],
      [@"nib2cib-adjustment-frame",   CGRectMake(0.0, -0.0, -0.0, -0.0),         [CPButtonStateBezelStyleRegularSquare, CPThemeStateControlSizeSmall]],
 
@@ -2274,7 +2274,7 @@ var themedButtonValues = nil,
      [@"nib2cib-adjustment-frame",  CGRectMake(3.0, -7.0, -6.0, -4.0),      [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall, CPThemeStateBordered]],
      [@"content-inset",             CGInsetMake(1.0, 17.0, 1.0, 8.0),       [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall, CPThemeStateBordered]],
 //     [@"content-inset",             CGInsetMake(-2.0, 17.0, 0, 8.0),        [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall, CPThemeStateBordered]],
-     [@"min-size",                  CGSizeMake(40.0, 20.0),                 [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall, CPThemeStateBordered]],
+     [@"min-size",                  CGSizeMake(38.0, 20.0),                 [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall, CPThemeStateBordered]],
 
      // Mini size
      [@"bezel-color",               miniButtonCssColor,                     [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateControlSizeMini, CPThemeStateBordered, CPThemeStateKeyWindow]],
@@ -2307,7 +2307,7 @@ var themedButtonValues = nil,
      [@"bezel-color",               smallNbDisabledButtonCssColor,          [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRegularSquare, CPThemeStateControlSizeSmall, CPThemeStateDisabled, CPThemeStateKeyWindow]],
      [@"nib2cib-adjustment-frame",  CGRectMake(1.0, 0.0, 0.0, 0.0),         [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRegularSquare, CPThemeStateControlSizeSmall]],
      [@"content-inset",             CGInsetMake(1.0, 11, 1.0, 9.0),          [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRegularSquare, CPThemeStateControlSizeSmall]],
-     [@"min-size",                  CGSizeMake(40.0, 20.0),                 [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRegularSquare, CPThemeStateControlSizeSmall]],
+     [@"min-size",                  CGSizeMake(38.0, 20.0),                 [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRegularSquare, CPThemeStateControlSizeSmall]],
 
      // Mini size
      [@"bezel-color",               miniNbButtonCssColor,                   [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRegularSquare, CPThemeStateControlSizeMini, CPThemeStateKeyWindow]],
@@ -6791,25 +6791,41 @@ var themedButtonValues = nil,
                                                         @"background-color": A3ColorSplitPaneDividerBorder
                                                         }],
 
+     SVGPlusIcon =   @"url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjxzdmcKICAgeG1sbnM6ZGM9Imh0dHA6Ly9wdXJsLm9yZy9kYy9lbGVtZW50cy8xLjEvIgogICB4bWxuczpjYz0iaHR0cDovL2NyZWF0aXZlY29tbW9ucy5vcmcvbnMjIgogICB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiCiAgIHhtbG5zOnN2Zz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciCiAgIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIKICAgeG1sbnM6c29kaXBvZGk9Imh0dHA6Ly9zb2RpcG9kaS5zb3VyY2Vmb3JnZS5uZXQvRFREL3NvZGlwb2RpLTAuZHRkIgogICB4bWxuczppbmtzY2FwZT0iaHR0cDovL3d3dy5pbmtzY2FwZS5vcmcvbmFtZXNwYWNlcy9pbmtzY2FwZSIKICAgdmVyc2lvbj0iMS4xIgogICB3aWR0aD0iMTYiCiAgIGhlaWdodD0iMTYiCiAgIHZpZXdCb3g9IjAgMCAxNiAxNiIKICAgaWQ9InN2ZzEyMiIKICAgc29kaXBvZGk6ZG9jbmFtZT0icGx1cy5zdmciCiAgIGlua3NjYXBlOnZlcnNpb249IjEuMGJldGExICgzMmQ0ODEyLCAyMDE5LTA5LTE5KSI+CiAgPG1ldGFkYXRhCiAgICAgaWQ9Im1ldGFkYXRhMTI4Ij4KICAgIDxyZGY6UkRGPgogICAgICA8Y2M6V29yawogICAgICAgICByZGY6YWJvdXQ9IiI+CiAgICAgICAgPGRjOmZvcm1hdD5pbWFnZS9zdmcreG1sPC9kYzpmb3JtYXQ+CiAgICAgICAgPGRjOnR5cGUKICAgICAgICAgICByZGY6cmVzb3VyY2U9Imh0dHA6Ly9wdXJsLm9yZy9kYy9kY21pdHlwZS9TdGlsbEltYWdlIiAvPgogICAgICAgIDxkYzp0aXRsZSAvPgogICAgICA8L2NjOldvcms+CiAgICA8L3JkZjpSREY+CiAgPC9tZXRhZGF0YT4KICA8ZGVmcwogICAgIGlkPSJkZWZzMTI2IiAvPgogIDxzb2RpcG9kaTpuYW1lZHZpZXcKICAgICB1bml0cz0icHgiCiAgICAgcGFnZWNvbG9yPSIjZmZmZmZmIgogICAgIGJvcmRlcmNvbG9yPSIjNjY2NjY2IgogICAgIGlua3NjYXBlOmRvY3VtZW50LXJvdGF0aW9uPSIwIgogICAgIGJvcmRlcm9wYWNpdHk9IjEiCiAgICAgb2JqZWN0dG9sZXJhbmNlPSIxMCIKICAgICBncmlkdG9sZXJhbmNlPSIxMCIKICAgICBndWlkZXRvbGVyYW5jZT0iMTAiCiAgICAgaW5rc2NhcGU6cGFnZW9wYWNpdHk9IjAiCiAgICAgaW5rc2NhcGU6cGFnZXNoYWRvdz0iMiIKICAgICBpbmtzY2FwZTp3aW5kb3ctd2lkdGg9Ijc0MSIKICAgICBpbmtzY2FwZTp3aW5kb3ctaGVpZ2h0PSI0ODAiCiAgICAgaWQ9Im5hbWVkdmlldzEyNCIKICAgICBzaG93Z3JpZD0iZmFsc2UiCiAgICAgc2hvd2d1aWRlcz0iZmFsc2UiCiAgICAgd2lkdGg9IjExaW4iCiAgICAgaW5rc2NhcGU6em9vbT0iMi40MzI5MjU4IgogICAgIGlua3NjYXBlOmN4PSItNzguMDQyNjA3IgogICAgIGlua3NjYXBlOmN5PSI0LjM2MzgyOTYiCiAgICAgaW5rc2NhcGU6d2luZG93LXg9IjQ2IgogICAgIGlua3NjYXBlOndpbmRvdy15PSIyNSIKICAgICBpbmtzY2FwZTp3aW5kb3ctbWF4aW1pemVkPSIwIgogICAgIGlua3NjYXBlOmN1cnJlbnQtbGF5ZXI9InN2ZzEyMiIgLz4KICA8ZwogICAgIGlkPSJnMTEwIgogICAgIHRyYW5zZm9ybT0ibWF0cml4KDAuMDIxNjk4NDEsMCwwLDAuMDIyNzQ0NSwyLjUwODc5ODYsMS45MDY5ODg5KSIgLz4KICA8cGF0aAogICAgIGQ9Ik0gOC45MjEwMjQxLDYuODMxMDM3IEggMTIuMjYyNTgxIFYgOC42Mjc2NzEgSCA4LjkyMTAyNDEgWiIKICAgICBmaWxsPSIjMDAwMDAwIgogICAgIGlkPSJwYXRoMTEyIgogICAgIGlua3NjYXBlOmNvbm5lY3Rvci1jdXJ2YXR1cmU9IjAiCiAgICAgc3R5bGU9InN0cm9rZS13aWR0aDowLjAyMjIxNTMiIC8+CiAgPHBhdGgKICAgICBkPSJNIDMuODY0Mzg0OCw2LjgzMTQ5MiBIIDcuMjA3MDI0MSBWIDguNjI3NjQ4IEggMy44NjQzODQ4IFoiCiAgICAgZmlsbD0iIzAwMDAwMCIKICAgICBpZD0icGF0aDExNCIKICAgICBpbmtzY2FwZTpjb25uZWN0b3ItY3VydmF0dXJlPSIwIgogICAgIHN0eWxlPSJzdHJva2Utd2lkdGg6MC4wMjIyMTUzIiAvPgogIDxwYXRoCiAgICAgZD0ibSA3LjIwNzA0NjEsOC42MjcxOTQgaCAxLjcxNDE5NiB2IDMuNTAzNzkgaCAtMS43MTQxOTYgeiIKICAgICBmaWxsPSIjMDAwMDAwIgogICAgIGlkPSJwYXRoMTE2IgogICAgIGlua3NjYXBlOmNvbm5lY3Rvci1jdXJ2YXR1cmU9IjAiCiAgICAgc3R5bGU9InN0cm9rZS13aWR0aDowLjAyMjIxNTMiIC8+CiAgPHBhdGgKICAgICBkPSJtIDcuMjA3MDQ2MSwzLjMyNzkyODkgaCAxLjcxNDE5NiBWIDYuODMxNTE1IGggLTEuNzE0MTk2IHoiCiAgICAgZmlsbD0iIzAwMDAwMCIKICAgICBpZD0icGF0aDExOCIKICAgICBpbmtzY2FwZTpjb25uZWN0b3ItY3VydmF0dXJlPSIwIgogICAgIHN0eWxlPSJzdHJva2Utd2lkdGg6MC4wMjIyMTUzIiAvPgogIDxwYXRoCiAgICAgZD0ibSA3LjIwNzA0NjEsNi44MzE0OTIgaCAxLjcxNDE5NiB2IDEuNzk2MTU2IGggLTEuNzE0MTk2IHoiCiAgICAgZmlsbD0iIzAwMDAwMCIKICAgICBpZD0icGF0aDEyMCIKICAgICBpbmtzY2FwZTpjb25uZWN0b3ItY3VydmF0dXJlPSIwIgogICAgIHN0eWxlPSJzdHJva2Utd2lkdGg6MC4wMjIyMTUzIiAvPgo8L3N2Zz4K')",
+
     plusIcon = [CPImage imageWithCSSDictionary:@{
-                                                       @"background-image": @"url(%%packed.png)",
-                                                       @"background-position": @"-80px -48px",
-                                                       @"background-repeat": @"no-repeat",
-                                                       @"background-size": @"100px 400px"
+                                                                        @"background-image": SVGPlusIcon
+                                                }
+                             beforeDictionary:nil
+                              afterDictionary:nil
+                                         size:CGSizeMake(16,16)],
+
+    plusIconActive = [CPImage imageWithCSSDictionary:@{
+                                                             @"background-image": SVGPlusIcon,
+                                                             @"background-color": A3ColorBackgroundDarkened
+                                                      }
+                             beforeDictionary:nil
+                              afterDictionary:nil
+                                         size:CGSizeMake(16,16)],
+
+     SVGMinusIcon =   @"url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjxzdmcKICAgeG1sbnM6ZGM9Imh0dHA6Ly9wdXJsLm9yZy9kYy9lbGVtZW50cy8xLjEvIgogICB4bWxuczpjYz0iaHR0cDovL2NyZWF0aXZlY29tbW9ucy5vcmcvbnMjIgogICB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiCiAgIHhtbG5zOnN2Zz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciCiAgIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIKICAgeG1sbnM6c29kaXBvZGk9Imh0dHA6Ly9zb2RpcG9kaS5zb3VyY2Vmb3JnZS5uZXQvRFREL3NvZGlwb2RpLTAuZHRkIgogICB4bWxuczppbmtzY2FwZT0iaHR0cDovL3d3dy5pbmtzY2FwZS5vcmcvbmFtZXNwYWNlcy9pbmtzY2FwZSIKICAgdmVyc2lvbj0iMS4xIgogICB3aWR0aD0iMTYiCiAgIGhlaWdodD0iMTYiCiAgIHZpZXdCb3g9IjAgMCAxNiAxNiIKICAgaWQ9InN2ZzEyMiIKICAgc29kaXBvZGk6ZG9jbmFtZT0ibWludXMuc3ZnIgogICBpbmtzY2FwZTp2ZXJzaW9uPSIxLjBiZXRhMSAoMzJkNDgxMiwgMjAxOS0wOS0xOSkiPgogIDxtZXRhZGF0YQogICAgIGlkPSJtZXRhZGF0YTEyOCI+CiAgICA8cmRmOlJERj4KICAgICAgPGNjOldvcmsKICAgICAgICAgcmRmOmFib3V0PSIiPgogICAgICAgIDxkYzpmb3JtYXQ+aW1hZ2Uvc3ZnK3htbDwvZGM6Zm9ybWF0PgogICAgICAgIDxkYzp0eXBlCiAgICAgICAgICAgcmRmOnJlc291cmNlPSJodHRwOi8vcHVybC5vcmcvZGMvZGNtaXR5cGUvU3RpbGxJbWFnZSIgLz4KICAgICAgICA8ZGM6dGl0bGU+PC9kYzp0aXRsZT4KICAgICAgPC9jYzpXb3JrPgogICAgPC9yZGY6UkRGPgogIDwvbWV0YWRhdGE+CiAgPGRlZnMKICAgICBpZD0iZGVmczEyNiIgLz4KICA8c29kaXBvZGk6bmFtZWR2aWV3CiAgICAgdW5pdHM9InB4IgogICAgIHBhZ2Vjb2xvcj0iI2ZmZmZmZiIKICAgICBib3JkZXJjb2xvcj0iIzY2NjY2NiIKICAgICBpbmtzY2FwZTpkb2N1bWVudC1yb3RhdGlvbj0iMCIKICAgICBib3JkZXJvcGFjaXR5PSIxIgogICAgIG9iamVjdHRvbGVyYW5jZT0iMTAiCiAgICAgZ3JpZHRvbGVyYW5jZT0iMTAiCiAgICAgZ3VpZGV0b2xlcmFuY2U9IjEwIgogICAgIGlua3NjYXBlOnBhZ2VvcGFjaXR5PSIwIgogICAgIGlua3NjYXBlOnBhZ2VzaGFkb3c9IjIiCiAgICAgaW5rc2NhcGU6d2luZG93LXdpZHRoPSI3NDEiCiAgICAgaW5rc2NhcGU6d2luZG93LWhlaWdodD0iNDgwIgogICAgIGlkPSJuYW1lZHZpZXcxMjQiCiAgICAgc2hvd2dyaWQ9ImZhbHNlIgogICAgIHNob3dndWlkZXM9ImZhbHNlIgogICAgIHdpZHRoPSIxMWluIgogICAgIGlua3NjYXBlOnpvb209IjQuODQ0NDE2MSIKICAgICBpbmtzY2FwZTpjeD0iLTE4Ljk4NjUzNyIKICAgICBpbmtzY2FwZTpjeT0iMTIuODI3MTgyIgogICAgIGlua3NjYXBlOndpbmRvdy14PSI0NiIKICAgICBpbmtzY2FwZTp3aW5kb3cteT0iMjUiCiAgICAgaW5rc2NhcGU6d2luZG93LW1heGltaXplZD0iMCIKICAgICBpbmtzY2FwZTpjdXJyZW50LWxheWVyPSJzdmcxMjIiIC8+CiAgPGcKICAgICBpZD0iZzExMCIKICAgICB0cmFuc2Zvcm09Im1hdHJpeCgwLjAyMTY5ODQxLDAsMCwwLjAyMjc0NDUsMi41MDg3OTg2LDEuOTA2OTg4OSkiIC8+CiAgPHBhdGgKICAgICBkPSJNIDguOTIxMDI0MSw2LjgzMTAzNyBIIDEyLjI2MjU4MSBWIDguNjI3NjcxIEggOC45MjEwMjQxIFoiCiAgICAgZmlsbD0iIzAwMDAwMCIKICAgICBpZD0icGF0aDExMiIKICAgICBpbmtzY2FwZTpjb25uZWN0b3ItY3VydmF0dXJlPSIwIgogICAgIHN0eWxlPSJzdHJva2Utd2lkdGg6MC4wMjIyMTUzIiAvPgogIDxwYXRoCiAgICAgZD0iTSAzLjg2NDM4NDgsNi44MzE0OTIgSCA3LjIwNzAyNDEgViA4LjYyNzY0OCBIIDMuODY0Mzg0OCBaIgogICAgIGZpbGw9IiMwMDAwMDAiCiAgICAgaWQ9InBhdGgxMTQiCiAgICAgaW5rc2NhcGU6Y29ubmVjdG9yLWN1cnZhdHVyZT0iMCIKICAgICBzdHlsZT0ic3Ryb2tlLXdpZHRoOjAuMDIyMjE1MyIgLz4KICA8cGF0aAogICAgIGQ9Im0gNy4yMDcwNDYxLDYuODMxNDkyIGggMS43MTQxOTYgdiAxLjc5NjE1NiBoIC0xLjcxNDE5NiB6IgogICAgIGZpbGw9IiMwMDAwMDAiCiAgICAgaWQ9InBhdGgxMjAiCiAgICAgaW5rc2NhcGU6Y29ubmVjdG9yLWN1cnZhdHVyZT0iMCIKICAgICBzdHlsZT0ic3Ryb2tlLXdpZHRoOjAuMDIyMjE1MyIgLz4KPC9zdmc+Cg==')",
+
+    minusIcon =  [CPImage imageWithCSSDictionary:@{
+                                                    @"background-image":SVGMinusIcon,
+
                                                   }
                                  beforeDictionary:nil
                                   afterDictionary:nil
                                              size:CGSizeMake(16,16)],
 
-    minusIcon = [CPImage imageWithCSSDictionary:@{
-                                                       @"background-image": @"url(%%packed.png)",
-                                                       @"background-position": @"-80px -64px",
-                                                       @"background-repeat": @"no-repeat",
-                                                       @"background-size": @"100px 400px"
-                                                  }
-                                 beforeDictionary:nil
-                                  afterDictionary:nil
-                                             size:CGSizeMake(16,16)],
+    minusIconActive = [CPImage imageWithCSSDictionary:@{
+                                                            @"background-image":SVGMinusIcon,
+                                                            @"background-color": A3ColorBackgroundDarkened
+
+                                                        }
+                                     beforeDictionary:nil
+                                      afterDictionary:nil
+                                                 size:CGSizeMake(16,16)],
 
     actionIcon = [CPImage imageWithCSSDictionary:@{
                                                        @"background-image": @"url(%%packed.png)",
@@ -6827,11 +6843,8 @@ var themedButtonValues = nil,
                                                        @"background-size": @"100px 400px",
                                                        @"transform": @"rotate(45deg)",
                                                        @"transform-origin": @"8px 8px",
-                                                       @"transition-duration": @"0.35s",
-                                                       @"transition-property": @"transform"
+                                                       @"transition-duration": @"0.5s"
                                                   }
-                                 beforeDictionary:nil
-                                  afterDictionary:nil
                                              size:CGSizeMake(16,16)],
 
     themedButtonBarValues =
@@ -6870,12 +6883,12 @@ var themedButtonValues = nil,
 
      // WARNING : Those are also used as template images for buttons, etc.
      //           See Cib/_CPCibCustomResource.j and NSCustomResource.j (nib2cib)
-     [@"button-image-plus",         plusIcon],
-     [@"button-image-minus",        minusIcon,      CPThemeStateNormal],
-     [@"button-image-action",       actionIcon],
-     [@"button-image-plus",         plusIcon,       CPThemeStateHighlighted],
-     [@"button-image-minus",        minusIcon,      CPThemeStateHighlighted],
-     [@"button-image-action",       actionIconActive,     CPThemeStateHighlighted]
+     [@"button-image-plus",         plusIcon,         CPThemeStateNormal],
+     [@"button-image-minus",        minusIcon,        CPThemeStateNormal],
+     [@"button-image-action",       actionIcon,       CPThemeStateNormal],
+     [@"button-image-plus",         plusIconActive,   CPThemeStateHighlighted],
+     [@"button-image-minus",        minusIconActive,  CPThemeStateHighlighted],
+     [@"button-image-action",       actionIconActive, CPThemeStateHighlighted]
      ];
 
     [self registerThemeValues:themedButtonBarValues forView:buttonBar];
