@@ -427,6 +427,7 @@ var bottomHeight = 71;
     [button setTag:count];
     [button setTarget:self];
     [button setAction:@selector(_takeReturnCodeFrom:)];
+    [button setBezelStyle:CPRoundedBezelStyle];
 
     [[_window contentView] addSubview:button];
 
