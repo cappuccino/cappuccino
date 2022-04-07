@@ -104,6 +104,8 @@ var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotificat
         _sendsWholeSearchString = NO;
         _sendsSearchStringImmediately = NO;
         _recentsAutosaveName = nil;
+        
+        [self setPlaceholderString:@"Search"];
 
         [self _init];
     }
