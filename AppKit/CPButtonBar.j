@@ -1543,6 +1543,12 @@ var CPButtonBarHasLeftResizeControlKey       = @"CPButtonBarHasLeftResizeControl
     return 0;
 }
 
+// overridden to prevent the first item to be hidden
+- (BOOL)pullsDown
+{
+    return NO;
+}
+
 - (id)initWithImage:(CPImage)image alternateImage:(CPImage)alternateImage
 {
     self = [super initWithFrame:CGRectMakeZero() pullsDown:YES];
