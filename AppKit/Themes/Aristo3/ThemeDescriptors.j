@@ -745,11 +745,12 @@ var themedButtonValues = nil,
 //     [@"image-color",                   A3CPColorInactiveText,                  [CPButtonStateBezelStyleRounded, CPThemeStateBordered, CPThemeStateDefault, CPThemeStateDisabled]],
 //     [@"invert-image-on-push",          YES,                                    [CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
 
-     [@"content-inset",                 CGInsetMake(1.0, 7.0, 1.0, 7.0),       [CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
+     [@"content-inset",                 CGInsetMake(1.0, 7.0, 1.0, 7.0),        [CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
      [@"image-offset",                  1.0,                                    [CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
-     [@"nib2cib-adjustment-frame",      CGRectMake(6.0, -18.0, -12.0, -11.0),   [CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
-     [@"min-size",                      CGSizeMake(0.0, 21.0),                  [CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
-     [@"max-size",                      CGSizeMake(-1.0, 21.0),                 [CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
+     [@"nib2cib-adjustment-frame",      CGRectMake(6.0, -6.0, -12.0, 0.0),      [CPButtonStateBezelStyleRounded, CPThemeStateBordered]], // Height is fixed by min/max -size
+     [@"nib2cib-adjustment-frame",      CGRectMake(7.0, -6.0, -13.0, 0.0),      [CPButtonStateBezelStyleRounded, CPThemeStateBordered, CPThemeStateDefault]],
+     [@"min-size",                      CGSizeMake(0.0, 22.0),                  [CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
+     [@"max-size",                      CGSizeMake(-1.0, 22.0),                 [CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
 
      [@"content-inset",                 CGInsetMake(1.0, 7.0, 1.0, 7.0),       [CPButtonStateBezelStyleRounded, CPThemeStateBordered, CPThemeStateControlSizeSmall]],
      [@"image-offset",                  1.0,                                    [CPButtonStateBezelStyleRounded, CPThemeStateBordered, CPThemeStateControlSizeSmall]],
@@ -3788,187 +3789,409 @@ var themedButtonValues = nil,
 {
     var combo = [[CPComboBox alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 31.0)],
 
-    regularBezelColor = PatternColor(
-                                     "combobox-bezel{state}{position}.png",
-                                     {
-                                     states: ["", "disabled"],
-                                     width: 4.0,
-                                     height: 25.0,
-                                     rightWidth: 24.0,
-                                     orientation: PatternIsHorizontal
-                                     }),
+    // Bordered, IB style "Push" (CPRoundedBezelStyle)
 
-    regularBezelFocusedColor = PatternColor(
-                                            "combobox-bezel-focused{position}.png",
-                                            {
-                                            width: 9.0,
-                                            height: 31.0,
-                                            rightWidth: 27.0,
-                                            orientation: PatternIsHorizontal
-                                            }),
+    // Regular size
+    buttonCssColor = [CPColor colorWithCSSDictionary:@{
+                                                       @"background-color": A3ColorBackgroundWhite,
+                                                       @"border-color": A3ColorActiveBorder,
+                                                       @"border-style": @"solid",
+                                                       @"border-width": @"1px",
+                                                       @"border-radius": @"3px",
+                                                       @"box-sizing": @"border-box"
+                                                       }
+                                    beforeDictionary:@{
+                                                       @"background-color": @"rgb(225,225,225)",
+                                                       @"bottom": @"3px",
+                                                       @"content": @"''",
+                                                       @"position": @"absolute",
+                                                       @"right": @"17px",
+                                                       @"top": @"3px",
+                                                       @"width": @"1px"
+                                                       }
+                                     afterDictionary:@{
+                                                       @"content": @"''",
+                                                       @"right": @"5px",
+                                                       @"top": @"50%",
+                                                       @"bottom": @"50%",
+                                                       @"margin": @"-6px 0px 0px 0px",
+                                                       @"position": @"absolute",
+                                                       @"height": @"11px",
+                                                       @"width": @"7px",
+                                                       @"background-image": @"url(%%packed.png)",
+                                                       @"background-position": @"0px -112px",
+                                                       @"background-repeat": @"no-repeat",
+                                                       @"background-size": @"100px 400px"
+                                                       }],
 
-    regularBezelNoBorderColor = PatternColor(
-                                             "combobox-bezel-no-border{state}{position}.png",
-                                             {
-                                             states: ["", "disabled"],
-                                             width: 4.0,
-                                             height: 25.0,
-                                             rightWidth: 25.0,
-                                             orientation: PatternIsHorizontal
-                                             }),
+    notKeyButtonCssColor = [CPColor colorWithCSSDictionary:@{
+                                                             @"background-color": A3ColorBackgroundWhite,
+                                                             @"border-color": A3ColorActiveBorder,
+                                                             @"border-style": @"solid",
+                                                             @"border-width": @"1px",
+                                                             @"border-radius": @"3px",
+                                                             @"box-sizing": @"border-box"
+                                                             }
+                                          beforeDictionary:@{
+                                                             @"background-color": @"rgb(225,225,225)",
+                                                             @"bottom": @"3px",
+                                                             @"content": @"''",
+                                                             @"position": @"absolute",
+                                                             @"right": @"17px",
+                                                             @"top": @"3px",
+                                                             @"width": @"1px"
+                                                             }
+                                           afterDictionary:@{
+                                                             @"content": @"''",
+                                                             @"right": @"5px",
+                                                             @"top": @"50%",
+                                                             @"bottom": @"50%",
+                                                             @"margin": @"-6px 0px 0px 0px",
+                                                             @"position": @"absolute",
+                                                             @"height": @"11px",
+                                                             @"width": @"7px",
+                                                             @"background-image": @"url(%%packed.png)",
+                                                             @"background-position": @"-8px -112px",
+                                                             @"background-repeat": @"no-repeat",
+                                                             @"background-size": @"100px 400px"
+                                                             }],
 
-    regularBezelNoBorderFocusedColor = PatternColor(
-                                                    "combobox-bezel-no-border-focused{position}.png",
-                                                    {
-                                                    width: 9.0,
-                                                    height: 31.0,
-                                                    rightWidth: 27.0,
-                                                    orientation: PatternIsHorizontal
-                                                    }),
+    disabledButtonCssColor = [CPColor colorWithCSSDictionary:@{
+                                                               @"background-color": A3ColorBackgroundInactive,
+                                                               @"border-color": A3ColorInactiveBorder,
+                                                               @"border-style": @"solid",
+                                                               @"border-width": @"1px",
+                                                               @"border-radius": @"3px",
+                                                               @"box-sizing": @"border-box"
+                                                               }
+                                            beforeDictionary:nil
+                                             afterDictionary:@{
+                                                               @"content": @"''",
+                                                               @"right": @"5px",
+                                                               @"top": @"50%",
+                                                               @"bottom": @"50%",
+                                                               @"margin": @"-6px 0px 0px 0px",
+                                                               @"position": @"absolute",
+                                                               @"height": @"11px",
+                                                               @"width": @"7px",
+                                                               @"background-image": @"url(%%packed.png)",
+                                                               @"background-position": @"-16px -112px",
+                                                               @"background-repeat": @"no-repeat",
+                                                               @"background-size": @"100px 400px"
+                                                               }],
 
-    smallBezelColor = PatternColor(
-                                   "combobox-bezel{state}{position}.png",
-                                   {
-                                   states: ["", "disabled"],
-                                   width: 4.0,
-                                   height: 20.0,
-                                   rightWidth: 19.0,
-                                   orientation: PatternIsHorizontal
-                                   }),
+    highlightedButtonCssColor = [CPColor colorWithCSSDictionary:@{
+                                                                  @"border-color": A3ColorBorderDark,
+                                                                  @"border-style": @"solid",
+                                                                  @"border-width": @"1px",
+                                                                  @"border-radius": @"3px",
+                                                                  @"box-sizing": @"border-box",
+                                                                  @"background-color": A3ColorBackgroundHighlighted
+                                                                  }],
 
-    smallBezelFocusedColor = PatternColor(
-                                          "combobox-bezel-focused{position}.png",
-                                          {
-                                          width: 8.0,
-                                          height: 26.0,
-                                          rightWidth: 21.0,
-                                          orientation: PatternIsHorizontal
-                                          }),
+    // Small size
+    smallButtonCssColor = [CPColor colorWithCSSDictionary:@{
+                                                            @"background-color": A3ColorBackgroundWhite,
+                                                            @"border-color": A3ColorActiveBorder,
+                                                            @"border-style": @"solid",
+                                                            @"border-width": @"1px",
+                                                            @"border-radius": @"3px",
+                                                            @"box-sizing": @"border-box"
+                                                            }
+                                         beforeDictionary:@{
+                                                            @"background-color": @"rgb(225,225,225)",
+                                                            @"bottom": @"3px",
+                                                            @"content": @"''",
+                                                            @"position": @"absolute",
+                                                            @"right": @"15px",
+                                                            @"top": @"3px",
+                                                            @"width": @"1px"
+                                                            }
+                                          afterDictionary:@{
+                                                            @"content": @"''",
+                                                            @"right": @"4px",
+                                                            @"top": @"50%",
+                                                            @"bottom": @"50%",
+                                                            @"margin": @"-5px 0px 0px 0px",
+                                                            @"position": @"absolute",
+                                                            @"height": @"10px",
+                                                            @"width": @"7px",
+                                                            @"background-image": @"url(%%packed.png)",
+                                                            @"background-position": @"0px -128px",
+                                                            @"background-repeat": @"no-repeat",
+                                                            @"background-size": @"100px 400px"
+                                                            }],
 
-    smallBezelNoBorderColor = PatternColor(
-                                           "combobox-bezel-no-border{state}{position}.png",
-                                           {
-                                           states: ["", "disabled"],
-                                           width: 4.0,
-                                           height: 20.0,
-                                           rightWidth: 19.0,
-                                           orientation: PatternIsHorizontal
-                                           }),
+    smallNotKeyButtonCssColor = [CPColor colorWithCSSDictionary:@{
+                                                                  @"background-color": A3ColorBackgroundWhite,
+                                                                  @"border-color": A3ColorActiveBorder,
+                                                                  @"border-style": @"solid",
+                                                                  @"border-width": @"1px",
+                                                                  @"border-radius": @"3px",
+                                                                  @"box-sizing": @"border-box"
+                                                                  }
+                                               beforeDictionary:@{
+                                                                  @"background-color": @"rgb(225,225,225)",
+                                                                  @"bottom": @"3px",
+                                                                  @"content": @"''",
+                                                                  @"position": @"absolute",
+                                                                  @"right": @"15px",
+                                                                  @"top": @"3px",
+                                                                  @"width": @"1px"
+                                                                  }
+                                                afterDictionary:@{
+                                                                  @"content": @"''",
+                                                                  @"right": @"4px",
+                                                                  @"top": @"50%",
+                                                                  @"bottom": @"50%",
+                                                                  @"margin": @"-5px 0px 0px 0px",
+                                                                  @"position": @"absolute",
+                                                                  @"height": @"10px",
+                                                                  @"width": @"7px",
+                                                                  @"background-image": @"url(%%packed.png)",
+                                                                  @"background-position": @"-8px -128px",
+                                                                  @"background-repeat": @"no-repeat",
+                                                                  @"background-size": @"100px 400px"
+                                                                  }],
 
-    smallBezelNoBorderFocusedColor = PatternColor(
-                                                  "combobox-bezel-no-border-focused{position}.png",
-                                                  {
-                                                  width: 8.0,
-                                                  height: 26.0,
-                                                  rightWidth: 23.0,
-                                                  orientation: PatternIsHorizontal
-                                                  }),
+    smallDisabledButtonCssColor = [CPColor colorWithCSSDictionary:@{
+                                                                    @"background-color": A3ColorBackgroundInactive,
+                                                                    @"border-color": A3ColorInactiveBorder,
+                                                                    @"border-style": @"solid",
+                                                                    @"border-width": @"1px",
+                                                                    @"border-radius": @"3px",
+                                                                    @"box-sizing": @"border-box"
+                                                                    }
+                                                 beforeDictionary:nil
+                                                  afterDictionary:@{
+                                                                    @"content": @"''",
+                                                                    @"right": @"4px",
+                                                                    @"top": @"50%",
+                                                                    @"bottom": @"50%",
+                                                                    @"margin": @"-5px 0px 0px 0px",
+                                                                    @"position": @"absolute",
+                                                                    @"height": @"10px",
+                                                                    @"width": @"7px",
+                                                                    @"background-image": @"url(%%packed.png)",
+                                                                    @"background-position": @"-16px -128px",
+                                                                    @"background-repeat": @"no-repeat",
+                                                                    @"background-size": @"100px 400px"
+                                                                    }],
 
-    miniBezelColor = PatternColor(
-                                  "combobox-bezel{state}{position}.png",
-                                  {
-                                  states: ["", "disabled"],
-                                  width: 4.0,
-                                  height: 17.5,
-                                  rightWidth: 17.0,
-                                  orientation: PatternIsHorizontal
-                                  }),
+    smallHighlightedButtonCssColor = [CPColor colorWithCSSDictionary:@{
+                                                                       @"border-color": A3ColorBorderDark,
+                                                                       @"border-style": @"solid",
+                                                                       @"border-width": @"1px",
+                                                                       @"border-radius": @"3px",
+                                                                       @"box-sizing": @"border-box",
+                                                                       @"background-color": A3ColorBackgroundHighlighted
+                                                                       }],
 
-    miniBezelFocusedColor = PatternColor(
-                                         "combobox-bezel-focused{position}.png",
-                                         {
-                                         width: 6.0,
-                                         height: 22.0,
-                                         rightWidth: 19.0,
-                                         orientation: PatternIsHorizontal
-                                         }),
+    // Mini size
+    miniButtonCssColor = [CPColor colorWithCSSDictionary:@{
+                                                           @"background-color": A3ColorBackgroundWhite,
+                                                           @"border-color": A3ColorActiveBorder,
+                                                           @"border-style": @"solid",
+                                                           @"border-width": @"1px",
+                                                           @"border-radius": @"3px",
+                                                           @"box-sizing": @"border-box"
+                                                           }
+                                        beforeDictionary:@{
+                                                           @"background-color": @"rgb(225,225,225)",
+                                                           @"bottom": @"2px",
+                                                           @"content": @"''",
+                                                           @"position": @"absolute",
+                                                           @"right": @"12px",
+                                                           @"top": @"2px",
+                                                           @"width": @"1px"
+                                                           }
+                                         afterDictionary:@{
+                                                           @"content": @"''",
+                                                           @"right": @"3px",
+                                                           @"top": @"50%",
+                                                           @"bottom": @"50%",
+                                                           @"margin": @"-5px 0px 0px 0px",
+                                                           @"position": @"absolute",
+                                                           @"height": @"9px",
+                                                           @"width": @"6px",
+                                                           @"background-image": @"url(%%packed.png)",
+                                                           @"background-position": @"0px -144px",
+                                                           @"background-repeat": @"no-repeat",
+                                                           @"background-size": @"100px 400px"
+                                                           }],
 
-    miniBezelNoBorderColor = PatternColor(
-                                          "combobox-bezel-no-border{state}{position}.png",
-                                          {
-                                          states: ["", "disabled"],
-                                          width: 4.0,
-                                          height: 17.5,
-                                          rightWidth: 17.0,
-                                          orientation: PatternIsHorizontal
-                                          }),
+    miniNotKeyButtonCssColor = [CPColor colorWithCSSDictionary:@{
+                                                                 @"background-color": A3ColorBackgroundWhite,
+                                                                 @"border-color": A3ColorActiveBorder,
+                                                                 @"border-style": @"solid",
+                                                                 @"border-width": @"1px",
+                                                                 @"border-radius": @"3px",
+                                                                 @"box-sizing": @"border-box"
+                                                                 }
+                                              beforeDictionary:@{
+                                                                 @"background-color": @"rgb(225,225,225)",
+                                                                 @"bottom": @"2px",
+                                                                 @"content": @"''",
+                                                                 @"position": @"absolute",
+                                                                 @"right": @"12px",
+                                                                 @"top": @"2px",
+                                                                 @"width": @"1px"
+                                                                 }
+                                               afterDictionary:@{
+                                                                 @"content": @"''",
+                                                                 @"right": @"3px",
+                                                                 @"top": @"50%",
+                                                                 @"bottom": @"50%",
+                                                                 @"margin": @"-5px 0px 0px 0px",
+                                                                 @"position": @"absolute",
+                                                                 @"height": @"9px",
+                                                                 @"width": @"6px",
+                                                                 @"background-image": @"url(%%packed.png)",
+                                                                 @"background-position": @"-8px -144px",
+                                                                 @"background-repeat": @"no-repeat",
+                                                                 @"background-size": @"100px 400px"
+                                                                 }],
 
-    miniBezelNoBorderFocusedColor = PatternColor(
-                                                 "combobox-bezel-no-border-focused{position}.png",
-                                                 {
-                                                 width: 6.0,
-                                                 height: 22.0,
-                                                 rightWidth: 19.0,
-                                                 orientation: PatternIsHorizontal
-                                                 }),
+    miniDisabledButtonCssColor = [CPColor colorWithCSSDictionary:@{
+                                                                   @"background-color": A3ColorBackgroundInactive,
+                                                                   @"border-color": A3ColorInactiveBorder,
+                                                                   @"border-style": @"solid",
+                                                                   @"border-width": @"1px",
+                                                                   @"border-radius": @"3px",
+                                                                   @"box-sizing": @"border-box"
+                                                                   }
+                                                beforeDictionary:nil
+                                                 afterDictionary:@{
+                                                                   @"content": @"''",
+                                                                   @"right": @"3px",
+                                                                   @"top": @"50%",
+                                                                   @"bottom": @"50%",
+                                                                   @"margin": @"-5px 0px 0px 0px",
+                                                                   @"position": @"absolute",
+                                                                   @"height": @"9px",
+                                                                   @"width": @"6px",
+                                                                   @"background-image": @"url(%%packed.png)",
+                                                                   @"background-position": @"-16px -144px",
+                                                                   @"background-repeat": @"no-repeat",
+                                                                   @"background-size": @"100px 400px"
+                                                                   }],
+
+    miniHighlightedButtonCssColor = [CPColor colorWithCSSDictionary:@{
+                                                                      @"border-color": A3ColorBorderDark,
+                                                                      @"border-style": @"solid",
+                                                                      @"border-width": @"1px",
+                                                                      @"border-radius": @"3px",
+                                                                      @"box-sizing": @"border-box",
+                                                                      @"background-color": A3ColorBackgroundHighlighted
+                                                                      }],
 
     overrides =
     [
-     [@"bezel-color",        regularBezelColor["@"],                     [CPThemeStateBezeled, CPComboBoxStateButtonBordered]],
-     [@"bezel-color",        regularBezelFocusedColor,                   [CPThemeStateBezeled, CPComboBoxStateButtonBordered, CPThemeStateEditing]],
-     [@"bezel-color",        regularBezelColor["disabled"],              [CPThemeStateBezeled, CPComboBoxStateButtonBordered, CPThemeStateDisabled]],
+        [@"direct-nib2cib-adjustment",  YES],
+        [@"text-color",                 A3CPColorActiveText],
+        [@"text-color",                 A3CPColorInactiveText,                     [CPThemeStateDisabled]],
+//        [@"menu-offset",                CGSizeMake(-2, 1)],
 
-     [@"bezel-color",        regularBezelNoBorderColor["@"],             CPThemeStateBezeled],
-     [@"bezel-color",        regularBezelNoBorderFocusedColor,           [CPThemeStateBezeled, CPThemeStateEditing]],
-     [@"bezel-color",        regularBezelNoBorderColor["disabled"],      [CPThemeStateBezeled, CPThemeStateDisabled]],
+        // Bordered, IB style "Push" (CPRoundedBezelStyle)
 
-     [@"border-inset",       CGInsetMake(3.0, 3.0, 3.0, 3.0),            CPThemeStateBezeled],
+        // Regular size
+        [@"bezel-color",                buttonCssColor,                            [CPComboBoxStateButtonBordered, CPThemeStateKeyWindow]],
+        [@"bezel-color",                notKeyButtonCssColor,                      [CPComboBoxStateButtonBordered]],
+        [@"bezel-color",                highlightedButtonCssColor,                 [CPComboBoxStateButtonBordered, CPThemeStateHighlighted]],
+        [@"bezel-color",                disabledButtonCssColor,                    [CPComboBoxStateButtonBordered, CPThemeStateDisabled]],
+        [@"bezel-color",                disabledButtonCssColor,                    [CPComboBoxStateButtonBordered, CPThemeStateDisabled, CPThemeStateKeyWindow]],
+        [@"content-inset",              CGInsetMake(1.0, 19.0, 1.0, 9.0),          [CPComboBoxStateButtonBordered]],
+        [@"min-size",                   CGSizeMake(32.0, 21.0)],
+        [@"max-size",                   CGSizeMake(-1.0, 21.0)],
+        [@"nib2cib-adjustment-frame",   CGRectMake(2.0, -8.0, -5.0, -5.0)],
 
-     [@"bezel-inset",        CGInsetMake(0.0, 1.0, 0.0, 1.0),            [CPThemeStateBezeled, CPThemeStateEditing, CPComboBoxStateButtonBordered]],
-     [@"bezel-inset",        CGInsetMake(3.0, 4.0, 3.0, 4.0),            [CPThemeStateBezeled, CPThemeStateDisabled, CPComboBoxStateButtonBordered]],
+        // Small size
+        [@"bezel-color",                smallButtonCssColor,                       [CPThemeStateControlSizeSmall, CPComboBoxStateButtonBordered, CPThemeStateKeyWindow]],
+        [@"bezel-color",                smallNotKeyButtonCssColor,                 [CPThemeStateControlSizeSmall, CPComboBoxStateButtonBordered]],
+        [@"bezel-color",                smallHighlightedButtonCssColor,            [CPThemeStateControlSizeSmall, CPComboBoxStateButtonBordered, CPThemeStateHighlighted]],
+        [@"bezel-color",                smallDisabledButtonCssColor,               [CPThemeStateControlSizeSmall, CPComboBoxStateButtonBordered, CPThemeStateDisabled]],
+        [@"bezel-color",                smallDisabledButtonCssColor,               [CPThemeStateControlSizeSmall, CPComboBoxStateButtonBordered, CPThemeStateDisabled, CPThemeStateKeyWindow]],
+        [@"content-inset",              CGInsetMake(1.0, 17.0, 1.00, 8.0),         [CPThemeStateControlSizeSmall, CPComboBoxStateButtonBordered]],
+        [@"min-size",                   CGSizeMake(38.0, 20.0),                    [CPThemeStateControlSizeSmall]],
+        [@"max-size",                   CGSizeMake(-1.0, 18.0),                    [CPThemeStateControlSizeSmall]],
+        [@"nib2cib-adjustment-frame",   CGRectMake(3.0, -7.0, -6.0, -4.0),         [CPThemeStateControlSizeSmall]],
 
-     [@"bezel-inset",        CGInsetMake(0.0, 4.0, 0.0, 1.0),            [CPThemeStateBezeled, CPThemeStateEditing]],
-     [@"bezel-inset",        CGInsetMake(3.0, 5.0, 3.0, 4.0),            [CPThemeStateBezeled, CPThemeStateDisabled]],
+        // Mini size
+        [@"bezel-color",                miniButtonCssColor,                        [CPThemeStateControlSizeMini, CPComboBoxStateButtonBordered, CPThemeStateKeyWindow]],
+        [@"bezel-color",                miniNotKeyButtonCssColor,                  [CPThemeStateControlSizeMini, CPComboBoxStateButtonBordered]],
+        [@"bezel-color",                miniHighlightedButtonCssColor,             [CPThemeStateControlSizeMini, CPComboBoxStateButtonBordered, CPThemeStateHighlighted]],
+        [@"bezel-color",                miniDisabledButtonCssColor,                [CPThemeStateControlSizeMini, CPComboBoxStateButtonBordered, CPThemeStateDisabled]],
+        [@"bezel-color",                miniDisabledButtonCssColor,                [CPThemeStateControlSizeMini, CPComboBoxStateButtonBordered, CPThemeStateDisabled, CPThemeStateKeyWindow]],
+        [@"content-inset",              CGInsetMake(1.0, 14.0, 1.0, 10.0),         [CPThemeStateControlSizeMini, CPComboBoxStateButtonBordered]],
+        [@"min-size",                   CGSizeMake(32.0, 15.0),                    [CPThemeStateControlSizeMini]],
+        [@"max-size",                   CGSizeMake(-1.0, 15.0),                    [CPThemeStateControlSizeMini]],
+        [@"nib2cib-adjustment-frame",   CGRectMake(1.0, -0.0, -3.0, -0.0),         [CPThemeStateControlSizeMini]],
+
+//     [@"bezel-color",        regularBezelColor["@"],                     [CPThemeStateBezeled, CPComboBoxStateButtonBordered]],
+//     [@"bezel-color",        regularBezelFocusedColor,                   [CPThemeStateBezeled, CPComboBoxStateButtonBordered, CPThemeStateEditing]],
+//     [@"bezel-color",        regularBezelColor["disabled"],              [CPThemeStateBezeled, CPComboBoxStateButtonBordered, CPThemeStateDisabled]],
+//
+//     [@"bezel-color",        regularBezelNoBorderColor["@"],             CPThemeStateBezeled],
+//     [@"bezel-color",        regularBezelNoBorderFocusedColor,           [CPThemeStateBezeled, CPThemeStateEditing]],
+//     [@"bezel-color",        regularBezelNoBorderColor["disabled"],      [CPThemeStateBezeled, CPThemeStateDisabled]],
+//
+//     [@"border-inset",       CGInsetMake(3.0, 3.0, 3.0, 3.0),            CPThemeStateBezeled],
+//
+//     [@"bezel-inset",        CGInsetMake(0.0, 1.0, 0.0, 1.0),            [CPThemeStateBezeled, CPThemeStateEditing, CPComboBoxStateButtonBordered]],
+//     [@"bezel-inset",        CGInsetMake(3.0, 4.0, 3.0, 4.0),            [CPThemeStateBezeled, CPThemeStateDisabled, CPComboBoxStateButtonBordered]],
+//
+//     [@"bezel-inset",        CGInsetMake(0.0, 4.0, 0.0, 1.0),            [CPThemeStateBezeled, CPThemeStateEditing]],
+//     [@"bezel-inset",        CGInsetMake(3.0, 5.0, 3.0, 4.0),            [CPThemeStateBezeled, CPThemeStateDisabled]],
 
      // The right border inset has to make room for the focus ring and popup button
-     [@"content-inset",      CGInsetMake(9.0, 30.0, 7.0, 10.0),          [CPThemeStateBezeled, CPComboBoxStateButtonBordered]],
-     [@"content-inset",      CGInsetMake(9.0, 30.0, 7.0, 10.0),          CPThemeStateBezeled],
-     [@"content-inset",      CGInsetMake(9.0, 28.0, 7.0, 10.0),          [CPThemeStateBezeled, CPThemeStateEditing]],
+//     [@"content-inset",      CGInsetMake(9.0, 30.0, 7.0, 10.0),          [CPThemeStateBezeled, CPComboBoxStateButtonBordered]],
+//     [@"content-inset",      CGInsetMake(9.0, 30.0, 7.0, 10.0),          CPThemeStateBezeled],
+//     [@"content-inset",      CGInsetMake(9.0, 28.0, 7.0, 10.0),          [CPThemeStateBezeled, CPThemeStateEditing]],
 
      [@"popup-button-size",  CGSizeMake(21.0, 23.0),                     [CPThemeStateBezeled, CPComboBoxStateButtonBordered]],
-     [@"popup-button-size",  CGSizeMake(17.0, 23.0),                     CPThemeStateBezeled],
+     [@"popup-button-size",  CGSizeMake(17.0, 23.0),                     CPThemeStateBezeled]
 
      // Because combo box uses a three-part bezel, the height is fixed
-     [@"min-size",           CGSizeMake(0, 31.0)],
-     [@"max-size",           CGSizeMake(-1, 31.0)],
-     [@"nib2cib-adjustment-frame",   CGRectMake(-4.0, 0.0, 5.0, 0.0)],
+//     [@"min-size",           CGSizeMake(0, 31.0)],
+//     [@"max-size",           CGSizeMake(-1, 31.0)],
+//     [@"nib2cib-adjustment-frame",   CGRectMake(-4.0, 0.0, 5.0, 0.0)],
 
-     [@"text-color",         regularDisabledTextColor,                   [CPThemeStateBordered, CPThemeStateDisabled]],
-     [@"text-shadow-color",  regularDisabledTextShadowColor,             [CPThemeStateBordered, CPThemeStateDisabled]],
+//     [@"text-color",         regularDisabledTextColor,                   [CPThemeStateBordered, CPThemeStateDisabled]],
+//     [@"text-shadow-color",  regularDisabledTextShadowColor,             [CPThemeStateBordered, CPThemeStateDisabled]],
 
      // CPThemeStateControlSizeSmall
-     [@"bezel-color",        smallBezelColor["@"],                       [CPThemeStateControlSizeSmall, CPThemeStateBezeled, CPComboBoxStateButtonBordered]],
-     [@"bezel-color",        smallBezelFocusedColor,                     [CPThemeStateControlSizeSmall, CPThemeStateBezeled, CPComboBoxStateButtonBordered, CPThemeStateEditing]],
-     [@"bezel-color",        smallBezelColor["disabled"],                [CPThemeStateControlSizeSmall, CPThemeStateBezeled, CPComboBoxStateButtonBordered, CPThemeStateDisabled]],
+//     [@"bezel-color",        smallBezelColor["@"],                       [CPThemeStateControlSizeSmall, CPThemeStateBezeled, CPComboBoxStateButtonBordered]],
+//     [@"bezel-color",        smallBezelFocusedColor,                     [CPThemeStateControlSizeSmall, CPThemeStateBezeled, CPComboBoxStateButtonBordered, CPThemeStateEditing]],
+//     [@"bezel-color",        smallBezelColor["disabled"],                [CPThemeStateControlSizeSmall, CPThemeStateBezeled, CPComboBoxStateButtonBordered, CPThemeStateDisabled]],
+//
+//     [@"bezel-color",        smallBezelNoBorderColor["@"],               [CPThemeStateControlSizeSmall, CPThemeStateBezeled]],
+//     [@"bezel-color",        smallBezelNoBorderFocusedColor,             [CPThemeStateControlSizeSmall, CPThemeStateBezeled, CPThemeStateEditing]],
+//     [@"bezel-color",        smallBezelNoBorderColor["disabled"],        [CPThemeStateControlSizeSmall, CPThemeStateBezeled, CPThemeStateDisabled]],
+//
+//     [@"bezel-inset",        CGInsetMake(1.0, 2.0, 1.0, 2.0),            [CPThemeStateBezeled, CPThemeStateEditing, CPComboBoxStateButtonBordered, CPThemeStateControlSizeSmall]],
+//     [@"content-inset",      CGInsetMake(7.0, 28.0, 7.0, 8.0),           [CPThemeStateBezeled, CPComboBoxStateButtonBordered, CPThemeStateControlSizeSmall]],
+//     [@"content-inset",      CGInsetMake(7.0, 28.0, 7.0, 8.0),           [CPThemeStateBezeled, CPThemeStateControlSizeSmall]],
 
-     [@"bezel-color",        smallBezelNoBorderColor["@"],               [CPThemeStateControlSizeSmall, CPThemeStateBezeled]],
-     [@"bezel-color",        smallBezelNoBorderFocusedColor,             [CPThemeStateControlSizeSmall, CPThemeStateBezeled, CPThemeStateEditing]],
-     [@"bezel-color",        smallBezelNoBorderColor["disabled"],        [CPThemeStateControlSizeSmall, CPThemeStateBezeled, CPThemeStateDisabled]],
-
-     [@"bezel-inset",        CGInsetMake(1.0, 2.0, 1.0, 2.0),            [CPThemeStateBezeled, CPThemeStateEditing, CPComboBoxStateButtonBordered, CPThemeStateControlSizeSmall]],
-     [@"content-inset",      CGInsetMake(7.0, 28.0, 7.0, 8.0),           [CPThemeStateBezeled, CPComboBoxStateButtonBordered, CPThemeStateControlSizeSmall]],
-     [@"content-inset",      CGInsetMake(7.0, 28.0, 7.0, 8.0),           [CPThemeStateBezeled, CPThemeStateControlSizeSmall]],
-
-     [@"min-size",           CGSizeMake(0, 26.0),                        CPThemeStateControlSizeSmall],
-     [@"max-size",           CGSizeMake(-1, 26.0),                       CPThemeStateControlSizeSmall],
-     [@"nib2cib-adjustment-frame",   CGRectMake(-4.0, -1.0, 5.0, 0.0),   CPThemeStateControlSizeSmall],
+//     [@"min-size",           CGSizeMake(0, 26.0),                        CPThemeStateControlSizeSmall],
+//     [@"max-size",           CGSizeMake(-1, 26.0),                       CPThemeStateControlSizeSmall],
+//     [@"nib2cib-adjustment-frame",   CGRectMake(-4.0, -1.0, 5.0, 0.0),   CPThemeStateControlSizeSmall],
 
      // CPThemeStateControlSizeMini
-     [@"bezel-color",        miniBezelColor["@"],                        [CPThemeStateControlSizeMini, CPThemeStateBezeled, CPComboBoxStateButtonBordered]],
-     [@"bezel-color",        miniBezelFocusedColor,                      [CPThemeStateControlSizeMini, CPThemeStateBezeled, CPComboBoxStateButtonBordered, CPThemeStateEditing]],
-     [@"bezel-color",        miniBezelColor["disabled"],                 [CPThemeStateControlSizeMini, CPThemeStateBezeled, CPComboBoxStateButtonBordered, CPThemeStateDisabled]],
+//     [@"bezel-color",        miniBezelColor["@"],                        [CPThemeStateControlSizeMini, CPThemeStateBezeled, CPComboBoxStateButtonBordered]],
+//     [@"bezel-color",        miniBezelFocusedColor,                      [CPThemeStateControlSizeMini, CPThemeStateBezeled, CPComboBoxStateButtonBordered, CPThemeStateEditing]],
+//     [@"bezel-color",        miniBezelColor["disabled"],                 [CPThemeStateControlSizeMini, CPThemeStateBezeled, CPComboBoxStateButtonBordered, CPThemeStateDisabled]],
+//
+//     [@"bezel-color",        miniBezelNoBorderColor["@"],                [CPThemeStateControlSizeMini, CPThemeStateBezeled]],
+//     [@"bezel-color",        miniBezelNoBorderFocusedColor,              [CPThemeStateControlSizeMini, CPThemeStateBezeled, CPThemeStateEditing]],
+//     [@"bezel-color",        miniBezelNoBorderColor["disabled"],         [CPThemeStateControlSizeMini, CPThemeStateBezeled, CPThemeStateDisabled]],
+//
+//     [@"bezel-inset",        CGInsetMake(1.0, 2.0, 1.0, 2.0),            [CPThemeStateBezeled, CPThemeStateEditing, CPComboBoxStateButtonBordered, CPThemeStateControlSizeMini]],
+//     [@"content-inset",      CGInsetMake(7.0, 26.0, 7.0, 8.0),           [CPThemeStateBezeled, CPComboBoxStateButtonBordered, CPThemeStateControlSizeMini]],
+//     [@"content-inset",      CGInsetMake(7.0, 26.0, 7.0, 8.0),           [CPThemeStateBezeled, CPThemeStateControlSizeMini]],
 
-     [@"bezel-color",        miniBezelNoBorderColor["@"],                [CPThemeStateControlSizeMini, CPThemeStateBezeled]],
-     [@"bezel-color",        miniBezelNoBorderFocusedColor,              [CPThemeStateControlSizeMini, CPThemeStateBezeled, CPThemeStateEditing]],
-     [@"bezel-color",        miniBezelNoBorderColor["disabled"],         [CPThemeStateControlSizeMini, CPThemeStateBezeled, CPThemeStateDisabled]],
-
-     [@"bezel-inset",        CGInsetMake(1.0, 2.0, 1.0, 2.0),            [CPThemeStateBezeled, CPThemeStateEditing, CPComboBoxStateButtonBordered, CPThemeStateControlSizeMini]],
-     [@"content-inset",      CGInsetMake(7.0, 26.0, 7.0, 8.0),           [CPThemeStateBezeled, CPComboBoxStateButtonBordered, CPThemeStateControlSizeMini]],
-     [@"content-inset",      CGInsetMake(7.0, 26.0, 7.0, 8.0),           [CPThemeStateBezeled, CPThemeStateControlSizeMini]],
-
-     [@"min-size",           CGSizeMake(0, 22.0),                        CPThemeStateControlSizeMini],
-     [@"max-size",           CGSizeMake(-1, 22.0),                       CPThemeStateControlSizeMini],
-     [@"nib2cib-adjustment-frame",   CGRectMake(-4.0, -2.0, 6.0, 0.0),   CPThemeStateControlSizeMini],
+//     [@"min-size",           CGSizeMake(0, 22.0),                        CPThemeStateControlSizeMini],
+//     [@"max-size",           CGSizeMake(-1, 22.0),                       CPThemeStateControlSizeMini],
+//     [@"nib2cib-adjustment-frame",   CGRectMake(-4.0, -2.0, 6.0, 0.0),   CPThemeStateControlSizeMini],
      ];
 
     [self registerThemeValues:overrides forView:combo inherit:themedTextFieldValues];
