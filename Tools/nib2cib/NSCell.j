@@ -61,8 +61,9 @@
 
     if (self)
     {
-        var flags  = [aCoder decodeIntForKey:@"NSCellFlags"],
-            flags2 = [aCoder decodeIntForKey:@"NSCellFlags2"];
+        var flags          = [aCoder decodeIntForKey:@"NSCellFlags"],
+            flags2         = [aCoder decodeIntForKey:@"NSCellFlags2"],
+            newControlSize = [aCoder decodeIntForKey:@"NSControlSize2"];
 
         _state                      = (flags & 0x80000000) ? CPOnState : CPOffState;
         _isHighlighted              = (flags & 0x40000000) ? YES : NO;
@@ -84,6 +85,11 @@
         _usesSingleLineMode         = (flags2 & 0xF4240) ? YES : NO;
 
         _tag = [aCoder decodeIntForKey:@"NSTag"];
+        
+        // Since MacOS 11, there's a new control size "Large" and a new key "NSControlSize2"
+        // For compatibility reasons, we compute the control size based on the old and the new methods
+        if (newControlSize > 2)
+            _controlSize = newControlSize;
 
         _objectValue    = [aCoder decodeObjectForKey:@"NSContents"];
         _font           = [aCoder decodeObjectForKey:@"NSSupport"];
