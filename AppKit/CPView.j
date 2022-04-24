@@ -232,7 +232,7 @@ var CPViewHighDPIDrawingEnabled = YES;
     JSObject            _ephemeralSubviews;
 
     JSObject            _ephemeralSubviewsForNames;
-    CPSet               _ephereralSubviews;
+    CPSet               _ephemeralSubviews;
 
     // Key View Support
     CPView              _nextKeyView;
