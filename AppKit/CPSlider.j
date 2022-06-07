@@ -312,6 +312,9 @@ var AFFINITY = 5;
     if (!trackRect || CGRectIsEmpty(trackRect))
         trackRect = bounds;
 
+    _closestTickMarkIndex = [self closestTickMarkValueToIndex: [self doubleValue]];
+    _currentTickMarkSegment = _closestTickMarkIndex;
+
     if (_isCircular)
     {
         var angle  = 3 * PI_2 - (1.0 - [self doubleValue] - _minValue) / (_maxValue - _minValue) * PI2,
@@ -664,6 +667,32 @@ var AFFINITY = 5;
     }
 
     return _closestTickMarkIndex ? _cachedTickMarksValues[_closestTickMarkIndex] : _minValue;
+}
+
+// Returns the index of the tick mark closest to the specified value,
+// extracted from the function `closestTickMarkValueToValue` (above)
+- (int)closestTickMarkValueToIndex:(double)value
+{
+    if (_numberOfTickMarks === 1)
+        return 0;
+
+    _closestTickMarkIndex = CPNotFound;
+
+    var foundDelta = 2 * _maxValue,
+        delta;
+
+    for (var i = 0; i < _numberOfTickMarks; i++)
+    {
+        delta = ABS(value - _cachedTickMarksValues[i]);
+
+        if (delta < foundDelta)
+        {
+            foundDelta = delta;
+            _closestTickMarkIndex = i;
+        }
+    }
+
+    return (_closestTickMarkIndex != CPNotFound) ? _closestTickMarkIndex : 0;
 }
 
 // Returns the index of the tick mark closest to the location of the receiver represented by the given point.
