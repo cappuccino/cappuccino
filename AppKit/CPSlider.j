@@ -312,7 +312,7 @@ var AFFINITY = 5;
     if (!trackRect || CGRectIsEmpty(trackRect))
         trackRect = bounds;
 
-    _closestTickMarkIndex = [self closestTickMarkValueToIndex: [self doubleValue]];
+    _closestTickMarkIndex = [self closestTickMarkValueToIndex:[self doubleValue]];
     _currentTickMarkSegment = _closestTickMarkIndex;
 
     if (_isCircular)
