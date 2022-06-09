@@ -3816,18 +3816,19 @@ var themedButtonValues = nil,
                                                        @"width": @"1px"
                                                        }
                                      afterDictionary:@{
-                                                       @"content": @"''",
-                                                       @"right": @"5px",
-                                                       @"top": @"50%",
-                                                       @"bottom": @"50%",
+                                                       @"content": @"'⌅'",
+                                                       @"transform": @"rotate(180deg)",
+                                                       @"background-color": A3ColorBorderBlue,
+                                                       @"color": A3ColorBackgroundWhite,
+                                                       @"border-radius": @"3px",
+                                                       @"text-align": @"center",
+                                                       @"right": @"1px",
+                                                       @"top": @"8px",
                                                        @"margin": @"-6px 0px 0px 0px",
                                                        @"position": @"absolute",
-                                                       @"height": @"11px",
-                                                       @"width": @"7px",
-                                                       @"background-image": @"url(%%packed.png)",
-                                                       @"background-position": @"0px -112px",
-                                                       @"background-repeat": @"no-repeat",
-                                                       @"background-size": @"100px 400px"
+                                                       @"height": @"15px",
+                                                       @"width": @"15px"
+
                                                        }],
 
     notKeyButtonCssColor = [CPColor colorWithCSSDictionary:@{
@@ -3848,18 +3849,18 @@ var themedButtonValues = nil,
                                                              @"width": @"1px"
                                                              }
                                            afterDictionary:@{
-                                                             @"content": @"''",
-                                                             @"right": @"5px",
-                                                             @"top": @"50%",
-                                                             @"bottom": @"50%",
-                                                             @"margin": @"-6px 0px 0px 0px",
-                                                             @"position": @"absolute",
-                                                             @"height": @"11px",
-                                                             @"width": @"7px",
-                                                             @"background-image": @"url(%%packed.png)",
-                                                             @"background-position": @"-8px -112px",
-                                                             @"background-repeat": @"no-repeat",
-                                                             @"background-size": @"100px 400px"
+                                                               @"content": @"'⌅'",
+                                                               @"transform": @"rotate(180deg)",
+                                                               @"background-color": A3ColorActiveBorder,
+                                                               @"color": A3ColorBackgroundWhite,
+                                                               @"border-radius": @"3px",
+                                                               @"text-align": @"center",
+                                                               @"right": @"1px",
+                                                               @"top": @"8px",
+                                                               @"margin": @"-6px 0px 0px 0px",
+                                                               @"position": @"absolute",
+                                                               @"height": @"15px",
+                                                               @"width": @"15px"
                                                              }],
 
     disabledButtonCssColor = [CPColor colorWithCSSDictionary:@{
@@ -3872,18 +3873,18 @@ var themedButtonValues = nil,
                                                                }
                                             beforeDictionary:nil
                                              afterDictionary:@{
-                                                               @"content": @"''",
-                                                               @"right": @"5px",
-                                                               @"top": @"50%",
-                                                               @"bottom": @"50%",
+                                                               @"content": @"'⌅'",
+                                                               @"transform": @"rotate(180deg)",
+                                                               @"background-color": A3ColorInactiveBorder,
+                                                               @"color": A3ColorBackgroundWhite,
+                                                               @"border-radius": @"3px",
+                                                               @"text-align": @"center",
+                                                               @"right": @"1px",
+                                                               @"top": @"8px",
                                                                @"margin": @"-6px 0px 0px 0px",
                                                                @"position": @"absolute",
-                                                               @"height": @"11px",
-                                                               @"width": @"7px",
-                                                               @"background-image": @"url(%%packed.png)",
-                                                               @"background-position": @"-16px -112px",
-                                                               @"background-repeat": @"no-repeat",
-                                                               @"background-size": @"100px 400px"
+                                                               @"height": @"15px",
+                                                               @"width": @"15px"
                                                                }],
 
     highlightedButtonCssColor = [CPColor colorWithCSSDictionary:@{
