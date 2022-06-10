@@ -3823,11 +3823,12 @@ var themedButtonValues = nil,
                                                        @"border-radius": @"3px",
                                                        @"text-align": @"center",
                                                        @"right": @"1px",
-                                                       @"top": @"8px",
+                                                       @"top": @"7px",
                                                        @"margin": @"-6px 0px 0px 0px",
                                                        @"position": @"absolute",
-                                                       @"height": @"15px",
-                                                       @"width": @"15px"
+                                                       @"height": @"90%",
+                                                       @"width": @"15px",
+                                                       @"border-width": @"2px",
 
                                                        }],
 
@@ -3856,11 +3857,12 @@ var themedButtonValues = nil,
                                                                @"border-radius": @"3px",
                                                                @"text-align": @"center",
                                                                @"right": @"1px",
-                                                               @"top": @"8px",
+                                                               @"top": @"7px",
                                                                @"margin": @"-6px 0px 0px 0px",
                                                                @"position": @"absolute",
-                                                               @"height": @"15px",
-                                                               @"width": @"15px"
+                                                               @"height": @"90%",
+                                                               @"width": @"15px",
+                                                               @"border-width": @"2px",
                                                              }],
 
     disabledButtonCssColor = [CPColor colorWithCSSDictionary:@{
@@ -3880,11 +3882,12 @@ var themedButtonValues = nil,
                                                                @"border-radius": @"3px",
                                                                @"text-align": @"center",
                                                                @"right": @"1px",
-                                                               @"top": @"8px",
+                                                               @"top": @"7px",
                                                                @"margin": @"-6px 0px 0px 0px",
                                                                @"position": @"absolute",
-                                                               @"height": @"15px",
-                                                               @"width": @"15px"
+                                                               @"height": @"90%",
+                                                               @"width": @"15px",
+                                                               @"border-width": @"2px",
                                                                }],
 
     highlightedButtonCssColor = [CPColor colorWithCSSDictionary:@{
@@ -4094,10 +4097,10 @@ var themedButtonValues = nil,
 
     overrides =
     [
+        [@"uses-focus-ring",            YES],
         [@"direct-nib2cib-adjustment",  YES],
         [@"text-color",                 A3CPColorActiveText],
         [@"text-color",                 A3CPColorInactiveText,                     [CPThemeStateDisabled]],
-//        [@"menu-offset",                CGSizeMake(-2, 1)],
 
         // Bordered, IB style "Push" (CPRoundedBezelStyle)
 
