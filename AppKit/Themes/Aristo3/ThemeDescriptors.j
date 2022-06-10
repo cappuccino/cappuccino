@@ -3831,6 +3831,41 @@ var themedButtonValues = nil,
                                                        @"border-width": @"2px",
 
                                                        }],
+    bezelFocusedCssColor = [CPColor colorWithCSSDictionary:@{
+                                                                 @"background-color": A3ColorBackgroundWhite,
+                                                                 @"border-color": @"A3ColorBorderBlue",
+                                                                 @"border-style": @"solid",
+                                                                 @"border-width": @"1px",
+                                                                 @"border-radius": @"0px",
+                                                                 @"box-sizing": @"border-box",
+                                                                 @"box-shadow": @"0px 0px 2px 0px rgb(59,127,202)",
+                                                                 @"transition-duration": @"0.35s, 0.35s",
+                                                                 @"transition-property": @"box-shadow, border"
+                                                             }
+                                         beforeDictionary:@{
+                                                                 @"background-color": @"rgb(225,225,225)",
+                                                                 @"bottom": @"3px",
+                                                                 @"content": @"''",
+                                                                 @"position": @"absolute",
+                                                                 @"right": @"17px",
+                                                                 @"top": @"3px",
+                                                                 @"width": @"1px"
+                                                               }
+                                          afterDictionary:@{
+                                                                 @"content": @"'⌅'",
+                                                                 @"transform": @"rotate(180deg)",
+                                                                 @"background-color": A3ColorBorderBlue,
+                                                                 @"color": A3ColorBackgroundWhite,
+                                                                 @"border-radius": @"3px",
+                                                                 @"text-align": @"center",
+                                                                 @"right": @"1px",
+                                                                 @"top": @"7px",
+                                                                 @"margin": @"-6px 0px 0px 0px",
+                                                                 @"position": @"absolute",
+                                                                 @"height": @"90%",
+                                                                 @"width": @"15px",
+                                                                 @"border-width": @"2px",
+                                                            }],
 
     notKeyButtonCssColor = [CPColor colorWithCSSDictionary:@{
                                                              @"background-color": A3ColorBackgroundWhite,
@@ -4097,7 +4132,6 @@ var themedButtonValues = nil,
 
     overrides =
     [
-        [@"uses-focus-ring",            YES],
         [@"direct-nib2cib-adjustment",  YES],
         [@"text-color",                 A3CPColorActiveText],
         [@"text-color",                 A3CPColorInactiveText,                     [CPThemeStateDisabled]],
@@ -4105,6 +4139,7 @@ var themedButtonValues = nil,
         // Bordered, IB style "Push" (CPRoundedBezelStyle)
 
         // Regular size
+        [@"bezel-color",                bezelFocusedCssColor,                      [CPThemeStateBezeled, CPComboBoxStateButtonBordered, CPThemeStateEditing]],
         [@"bezel-color",                buttonCssColor,                            [CPComboBoxStateButtonBordered, CPThemeStateKeyWindow]],
         [@"bezel-color",                notKeyButtonCssColor,                      [CPComboBoxStateButtonBordered]],
         [@"bezel-color",                highlightedButtonCssColor,                 [CPComboBoxStateButtonBordered, CPThemeStateHighlighted]],
