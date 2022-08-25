@@ -8,7 +8,8 @@
     "@objj/jake": "latest",
     "@objj/ojtest": "latest",
     "@objj/runtime": "latest",
-    "terser": ">=5.7.0"
+    "acorn-walk": "^8.2.0",
+    "terser": "^5.14.2"
   },
   "files": [
     "dist",
