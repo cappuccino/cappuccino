@@ -7,11 +7,8 @@ var fs = require("fs"),
     walk = require("objj-parser/util/walk"),
     stream = ObjectiveJ.term;
 
-    debugger;
-
 function main(args)
 {
-    debugger;
     args.shift();
 
     if (args.length < 1)
