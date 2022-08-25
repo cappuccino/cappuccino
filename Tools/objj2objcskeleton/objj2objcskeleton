@@ -151,7 +151,7 @@ function parser(args)
             outputHeaderURL = new CFURL([outputDirectory stringByAppendingPathComponent:baseFilenameWithNoExtension + ".h"]),
             outputImplementationURL = new CFURL([outputDirectory stringByAppendingPathComponent:baseFilenameWithNoExtension + ".m"]),
             source = fs.readFileSync(sourcePath, { encoding: "utf8" }),
-            tokens = acorn.parse(source, { locations:true, sourceFile:sourcePath }),
+            tokens = acorn.parse(source, { locations:true, sourceFile:sourcePath, ecmaVersion: 2022 }),
             classesInformation = [],
             ObjectiveCSource = "",
             ObjectiveCHeader = "",

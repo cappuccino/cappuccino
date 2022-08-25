@@ -60,12 +60,12 @@ async function compressor(srcCode) {
                     correctInlined = fs.existsSync(p) ? fs.readFileSync(p, {encoding: "utf8"}) : correct; // Get inlined version if it exists. Otherwise use the regular one.
 
                 await [self assertNoThrow: async function() {
-                    preprocessed = ObjectiveJ.ObjJCompiler.compile(unpreprocessed, nil, {includeMethodFunctionNames: true, includeMethodArgumentTypeSignatures: true, includeIvarTypeSignatures: true, inlineMsgSendFunctions: false, transformNamedFunctionDeclarationToAssignment: true}).jsBuffer.toString();
+                    preprocessed = ObjectiveJ.ObjJCompiler.compile(unpreprocessed, nil, {includeMethodFunctionNames: true, includeMethodArgumentTypeSignatures: true, includeIvarTypeSignatures: true, inlineMsgSendFunctions: false, transformNamedFunctionDeclarationToAssignment: true, acornOptions: {ecmaVersion: 2022}}).jsBuffer.toString();
                     preprocessed = await compressor(preprocessed);
                     correct = await compressor(correct);
 
                     // Get an Inlined version
-                    preprocessedInlined = ObjectiveJ.ObjJCompiler.compile(unpreprocessed, nil, {includeMethodFunctionNames: true, includeMethodArgumentTypeSignatures: true, includeIvarTypeSignatures: true, inlineMsgSendFunctions: true, transformNamedFunctionDeclarationToAssignment: true}).jsBuffer.toString();
+                    preprocessedInlined = ObjectiveJ.ObjJCompiler.compile(unpreprocessed, nil, {includeMethodFunctionNames: true, includeMethodArgumentTypeSignatures: true, includeIvarTypeSignatures: true, inlineMsgSendFunctions: true, transformNamedFunctionDeclarationToAssignment: true, acornOptions: {ecmaVersion: 2022}}).jsBuffer.toString();
                     preprocessedInlined = await compressor(preprocessedInlined);
                     correctInlined = await compressor(correctInlined);
                 }];
