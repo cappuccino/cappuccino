@@ -35,10 +35,10 @@ var path = require("path");
 var fs = require("fs");
 var terser = require("terser");
 
-var walk = require("./acornwalk").acorn.walk;
+var walk = require("acorn-walk");
 acorn = {walk: walk};
-acorn = require("./acorn").acorn;
-var compiler = require("./ObjJAcornCompiler").ObjJCompiler;
+acorn = require("objj-parser");
+var compiler = require("objj-transpiler");
 
 const term = ObjectiveJ.term;
 const utilsFile = ObjectiveJ.utils.file;
@@ -136,7 +136,7 @@ async function gcc(inputFilePath, outputFilePath, flags, compress)
     term.stream.print("Building... \0green(" + outputFilePath +"\0)");
     var source = fs.readFileSync(inputFilePath, { charset : "utf8" }).toString();
     var compilerOptions = compiler.parseGccCompilerFlags(flags.join(" "));
-    var acornOptions = compilerOptions.acornOptions || (compilerOptions.acornOptions = {});
+    var acornOptions = compilerOptions.acornOptions || (compilerOptions.acornOptions = {ecmaVersion: 2022});
 
     acornOptions.preprocessGetIncludeFile = function(filePath, isQuoted) {
         var includeContent = fs.readFileSync(filePath, { charset : "utf8" }).toString();
