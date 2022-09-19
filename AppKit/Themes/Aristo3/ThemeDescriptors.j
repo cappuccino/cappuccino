@@ -3799,41 +3799,39 @@ var themedButtonValues = nil,
 
     // Regular size
     buttonCssColor = [CPColor colorWithCSSDictionary:@{
-                                                       @"background-color": A3ColorBackgroundWhite,
-                                                       @"border-color": A3ColorActiveBorder,
-                                                       @"border-style": @"solid",
-                                                       @"border-width": @"1px",
-                                                       @"border-radius": @"3px",
-                                                       @"box-sizing": @"border-box"
+                                                           @"background-color": A3ColorBackgroundWhite,
+                                                           @"border-color": A3ColorActiveBorder,
+                                                           @"border-style": @"solid",
+                                                           @"border-width": @"1px",
+                                                           @"border-radius": @"3px",
+                                                           @"box-sizing": @"border-box"
                                                        }
                                     beforeDictionary:@{
-                                                       @"background-color": @"rgb(225,225,225)",
-                                                       @"bottom": @"3px",
-                                                       @"content": @"''",
-                                                       @"position": @"absolute",
-                                                       @"right": @"17px",
-                                                       @"top": @"3px",
-                                                       @"width": @"1px"
+                                                           @"background-color": @"rgb(225,225,225)",
+                                                           @"bottom": @"3px",
+                                                           @"content": @"''",
+                                                           @"position": @"absolute",
+                                                           @"right": @"14px",
+                                                           @"top": @"3px",
+                                                           @"z-index": "+1",
+                                                           @"width": @"1px"
                                                        }
                                      afterDictionary:@{
-                                                       @"content": @"'⌅'",
-                                                       @"transform": @"rotate(180deg)",
-                                                       @"background-color": A3ColorBorderBlue,
-                                                       @"color": A3ColorBackgroundWhite,
-                                                       @"border-radius": @"3px",
-                                                       @"text-align": @"center",
-                                                       @"right": @"1px",
-                                                       @"top": @"7px",
-                                                       @"margin": @"-6px 0px 0px 0px",
-                                                       @"position": @"absolute",
-                                                       @"height": @"90%",
-                                                       @"width": @"15px",
-                                                       @"border-width": @"2px",
+                                                           @"content": @"'⌅'",
+                                                           @"transform": @"rotate(180deg)",
+                                                           @"background-color": A3ColorBackgroundWhite,
+                                                           @"color": A3ColorBorderBlue,
+                                                           @"text-align": @"center",
+                                                           @"right": @"1px",
+                                                           @"bottom": @"1px",
+                                                           @"position": @"absolute",
+                                                           @"width": @"12px",
+                                                           @"z-index": "+1",
 
                                                        }],
     bezelFocusedCssColor = [CPColor colorWithCSSDictionary:@{
                                                                  @"background-color": A3ColorBackgroundWhite,
-                                                                 @"border-color": @"A3ColorBorderBlue",
+                                                                 @"border-color": A3ColorBorderBlue,
                                                                  @"border-style": @"solid",
                                                                  @"border-width": @"1px",
                                                                  @"border-radius": @"0px",
@@ -3847,57 +3845,53 @@ var themedButtonValues = nil,
                                                                  @"bottom": @"3px",
                                                                  @"content": @"''",
                                                                  @"position": @"absolute",
-                                                                 @"right": @"17px",
+                                                                 @"right": @"14px",
                                                                  @"top": @"3px",
+                                                                 @"z-index": "+1",
                                                                  @"width": @"1px"
                                                                }
                                           afterDictionary:@{
-                                                                 @"content": @"'⌅'",
-                                                                 @"transform": @"rotate(180deg)",
-                                                                 @"background-color": A3ColorBorderBlue,
-                                                                 @"color": A3ColorBackgroundWhite,
-                                                                 @"border-radius": @"3px",
-                                                                 @"text-align": @"center",
-                                                                 @"right": @"1px",
-                                                                 @"top": @"7px",
-                                                                 @"margin": @"-6px 0px 0px 0px",
-                                                                 @"position": @"absolute",
-                                                                 @"height": @"90%",
-                                                                 @"width": @"15px",
-                                                                 @"border-width": @"2px",
+                                                                @"content": @"'⌅'",
+                                                                @"transform": @"rotate(180deg)",
+                                                                @"background-color": A3ColorBackgroundWhite,
+                                                                @"color": A3ColorBorderBlue,
+                                                                @"text-align": @"center",
+                                                                @"right": @"1px",
+                                                                @"bottom": @"1px",
+                                                                @"position": @"absolute",
+                                                                @"width": @"12px",
+                                                                @"z-index": "+1",
                                                             }],
 
     notKeyButtonCssColor = [CPColor colorWithCSSDictionary:@{
-                                                             @"background-color": A3ColorBackgroundWhite,
-                                                             @"border-color": A3ColorActiveBorder,
-                                                             @"border-style": @"solid",
-                                                             @"border-width": @"1px",
-                                                             @"border-radius": @"3px",
-                                                             @"box-sizing": @"border-box"
+                                                                 @"background-color": A3ColorBackgroundWhite,
+                                                                 @"border-color": A3ColorActiveBorder,
+                                                                 @"border-style": @"solid",
+                                                                 @"border-width": @"1px",
+                                                                 @"border-radius": @"3px",
+                                                                 @"box-sizing": @"border-box"
                                                              }
                                           beforeDictionary:@{
-                                                             @"background-color": @"rgb(225,225,225)",
-                                                             @"bottom": @"3px",
-                                                             @"content": @"''",
-                                                             @"position": @"absolute",
-                                                             @"right": @"17px",
-                                                             @"top": @"3px",
-                                                             @"width": @"1px"
+                                                                 @"background-color": @"rgb(225,225,225)",
+                                                                 @"bottom": @"3px",
+                                                                 @"content": @"''",
+                                                                 @"position": @"absolute",
+                                                                 @"right": @"14px",
+                                                                 @"top": @"3px",
+                                                                 @"z-index": "+1",
+                                                                 @"width": @"1px"
                                                              }
                                            afterDictionary:@{
-                                                               @"content": @"'⌅'",
-                                                               @"transform": @"rotate(180deg)",
-                                                               @"background-color": A3ColorActiveBorder,
-                                                               @"color": A3ColorBackgroundWhite,
-                                                               @"border-radius": @"3px",
-                                                               @"text-align": @"center",
-                                                               @"right": @"1px",
-                                                               @"top": @"7px",
-                                                               @"margin": @"-6px 0px 0px 0px",
-                                                               @"position": @"absolute",
-                                                               @"height": @"90%",
-                                                               @"width": @"15px",
-                                                               @"border-width": @"2px",
+                                                                @"content": @"'⌅'",
+                                                                @"transform": @"rotate(180deg)",
+                                                                @"background-color": A3ColorBackgroundWhite,
+                                                                @"color": A3ColorActiveBorder,
+                                                                @"text-align": @"center",
+                                                                @"right": @"1px",
+                                                                @"bottom": @"1px",
+                                                                @"position": @"absolute",
+                                                                @"width": @"12px",
+                                                                @"z-index": "+1",
                                                              }],
 
     disabledButtonCssColor = [CPColor colorWithCSSDictionary:@{
@@ -3910,19 +3904,16 @@ var themedButtonValues = nil,
                                                                }
                                             beforeDictionary:nil
                                              afterDictionary:@{
-                                                               @"content": @"'⌅'",
-                                                               @"transform": @"rotate(180deg)",
-                                                               @"background-color": A3ColorInactiveBorder,
-                                                               @"color": A3ColorBackgroundWhite,
-                                                               @"border-radius": @"3px",
-                                                               @"text-align": @"center",
-                                                               @"right": @"1px",
-                                                               @"top": @"7px",
-                                                               @"margin": @"-6px 0px 0px 0px",
-                                                               @"position": @"absolute",
-                                                               @"height": @"90%",
-                                                               @"width": @"15px",
-                                                               @"border-width": @"2px",
+                                                                    @"content": @"'⌅'",
+                                                                    @"transform": @"rotate(180deg)",
+                                                                    @"background-color": A3ColorBackgroundWhite,
+                                                                    @"color": A3ColorInactiveBorder,
+                                                                    @"text-align": @"center",
+                                                                    @"right": @"1px",
+                                                                    @"bottom": @"1px",
+                                                                    @"position": @"absolute",
+                                                                    @"width": @"12px",
+                                                                    @"z-index": "+1",
                                                                }],
 
     highlightedButtonCssColor = [CPColor colorWithCSSDictionary:@{
@@ -3953,19 +3944,21 @@ var themedButtonValues = nil,
                                                             @"width": @"1px"
                                                             }
                                           afterDictionary:@{
-                                                            @"content": @"''",
-                                                            @"right": @"4px",
-                                                            @"top": @"50%",
-                                                            @"bottom": @"50%",
-                                                            @"margin": @"-5px 0px 0px 0px",
+                                                            @"content": @"'⌅'",
+                                                            @"transform": @"rotate(180deg)",
+                                                            @"background-color": A3ColorBackgroundWhite,
+                                                            @"color": A3ColorBorderBlue,
+                                                            @"border-radius": @"3px",
+                                                            @"text-align": @"center",
+                                                            @"right": @"1px",
+                                                            @"top": @"7px",
+                                                            @"margin": @"-6px 0px 0px 0px",
                                                             @"position": @"absolute",
-                                                            @"height": @"10px",
-                                                            @"width": @"7px",
-                                                            @"background-image": @"url(%%packed.png)",
-                                                            @"background-position": @"0px -128px",
-                                                            @"background-repeat": @"no-repeat",
-                                                            @"background-size": @"100px 400px"
-                                                            }],
+                                                            @"height": @"90%",
+                                                            @"width": @"12px",
+                                                            @"border-width": @"2px",
+
+                                                        }],
 
     smallNotKeyButtonCssColor = [CPColor colorWithCSSDictionary:@{
                                                                   @"background-color": A3ColorBackgroundWhite,
@@ -4173,71 +4166,8 @@ var themedButtonValues = nil,
         [@"max-size",                   CGSizeMake(-1.0, 15.0),                    [CPThemeStateControlSizeMini]],
         [@"nib2cib-adjustment-frame",   CGRectMake(1.0, -0.0, -3.0, -0.0),         [CPThemeStateControlSizeMini]],
 
-//     [@"bezel-color",        regularBezelColor["@"],                     [CPThemeStateBezeled, CPComboBoxStateButtonBordered]],
-//     [@"bezel-color",        regularBezelFocusedColor,                   [CPThemeStateBezeled, CPComboBoxStateButtonBordered, CPThemeStateEditing]],
-//     [@"bezel-color",        regularBezelColor["disabled"],              [CPThemeStateBezeled, CPComboBoxStateButtonBordered, CPThemeStateDisabled]],
-//
-//     [@"bezel-color",        regularBezelNoBorderColor["@"],             CPThemeStateBezeled],
-//     [@"bezel-color",        regularBezelNoBorderFocusedColor,           [CPThemeStateBezeled, CPThemeStateEditing]],
-//     [@"bezel-color",        regularBezelNoBorderColor["disabled"],      [CPThemeStateBezeled, CPThemeStateDisabled]],
-//
-//     [@"border-inset",       CGInsetMake(3.0, 3.0, 3.0, 3.0),            CPThemeStateBezeled],
-//
-//     [@"bezel-inset",        CGInsetMake(0.0, 1.0, 0.0, 1.0),            [CPThemeStateBezeled, CPThemeStateEditing, CPComboBoxStateButtonBordered]],
-//     [@"bezel-inset",        CGInsetMake(3.0, 4.0, 3.0, 4.0),            [CPThemeStateBezeled, CPThemeStateDisabled, CPComboBoxStateButtonBordered]],
-//
-//     [@"bezel-inset",        CGInsetMake(0.0, 4.0, 0.0, 1.0),            [CPThemeStateBezeled, CPThemeStateEditing]],
-//     [@"bezel-inset",        CGInsetMake(3.0, 5.0, 3.0, 4.0),            [CPThemeStateBezeled, CPThemeStateDisabled]],
-
-     // The right border inset has to make room for the focus ring and popup button
-//     [@"content-inset",      CGInsetMake(9.0, 30.0, 7.0, 10.0),          [CPThemeStateBezeled, CPComboBoxStateButtonBordered]],
-//     [@"content-inset",      CGInsetMake(9.0, 30.0, 7.0, 10.0),          CPThemeStateBezeled],
-//     [@"content-inset",      CGInsetMake(9.0, 28.0, 7.0, 10.0),          [CPThemeStateBezeled, CPThemeStateEditing]],
-
-     [@"popup-button-size",  CGSizeMake(21.0, 23.0),                     [CPThemeStateBezeled, CPComboBoxStateButtonBordered]],
-     [@"popup-button-size",  CGSizeMake(17.0, 23.0),                     CPThemeStateBezeled]
-
-     // Because combo box uses a three-part bezel, the height is fixed
-//     [@"min-size",           CGSizeMake(0, 31.0)],
-//     [@"max-size",           CGSizeMake(-1, 31.0)],
-//     [@"nib2cib-adjustment-frame",   CGRectMake(-4.0, 0.0, 5.0, 0.0)],
-
-//     [@"text-color",         regularDisabledTextColor,                   [CPThemeStateBordered, CPThemeStateDisabled]],
-//     [@"text-shadow-color",  regularDisabledTextShadowColor,             [CPThemeStateBordered, CPThemeStateDisabled]],
-
-     // CPThemeStateControlSizeSmall
-//     [@"bezel-color",        smallBezelColor["@"],                       [CPThemeStateControlSizeSmall, CPThemeStateBezeled, CPComboBoxStateButtonBordered]],
-//     [@"bezel-color",        smallBezelFocusedColor,                     [CPThemeStateControlSizeSmall, CPThemeStateBezeled, CPComboBoxStateButtonBordered, CPThemeStateEditing]],
-//     [@"bezel-color",        smallBezelColor["disabled"],                [CPThemeStateControlSizeSmall, CPThemeStateBezeled, CPComboBoxStateButtonBordered, CPThemeStateDisabled]],
-//
-//     [@"bezel-color",        smallBezelNoBorderColor["@"],               [CPThemeStateControlSizeSmall, CPThemeStateBezeled]],
-//     [@"bezel-color",        smallBezelNoBorderFocusedColor,             [CPThemeStateControlSizeSmall, CPThemeStateBezeled, CPThemeStateEditing]],
-//     [@"bezel-color",        smallBezelNoBorderColor["disabled"],        [CPThemeStateControlSizeSmall, CPThemeStateBezeled, CPThemeStateDisabled]],
-//
-//     [@"bezel-inset",        CGInsetMake(1.0, 2.0, 1.0, 2.0),            [CPThemeStateBezeled, CPThemeStateEditing, CPComboBoxStateButtonBordered, CPThemeStateControlSizeSmall]],
-//     [@"content-inset",      CGInsetMake(7.0, 28.0, 7.0, 8.0),           [CPThemeStateBezeled, CPComboBoxStateButtonBordered, CPThemeStateControlSizeSmall]],
-//     [@"content-inset",      CGInsetMake(7.0, 28.0, 7.0, 8.0),           [CPThemeStateBezeled, CPThemeStateControlSizeSmall]],
-
-//     [@"min-size",           CGSizeMake(0, 26.0),                        CPThemeStateControlSizeSmall],
-//     [@"max-size",           CGSizeMake(-1, 26.0),                       CPThemeStateControlSizeSmall],
-//     [@"nib2cib-adjustment-frame",   CGRectMake(-4.0, -1.0, 5.0, 0.0),   CPThemeStateControlSizeSmall],
-
-     // CPThemeStateControlSizeMini
-//     [@"bezel-color",        miniBezelColor["@"],                        [CPThemeStateControlSizeMini, CPThemeStateBezeled, CPComboBoxStateButtonBordered]],
-//     [@"bezel-color",        miniBezelFocusedColor,                      [CPThemeStateControlSizeMini, CPThemeStateBezeled, CPComboBoxStateButtonBordered, CPThemeStateEditing]],
-//     [@"bezel-color",        miniBezelColor["disabled"],                 [CPThemeStateControlSizeMini, CPThemeStateBezeled, CPComboBoxStateButtonBordered, CPThemeStateDisabled]],
-//
-//     [@"bezel-color",        miniBezelNoBorderColor["@"],                [CPThemeStateControlSizeMini, CPThemeStateBezeled]],
-//     [@"bezel-color",        miniBezelNoBorderFocusedColor,              [CPThemeStateControlSizeMini, CPThemeStateBezeled, CPThemeStateEditing]],
-//     [@"bezel-color",        miniBezelNoBorderColor["disabled"],         [CPThemeStateControlSizeMini, CPThemeStateBezeled, CPThemeStateDisabled]],
-//
-//     [@"bezel-inset",        CGInsetMake(1.0, 2.0, 1.0, 2.0),            [CPThemeStateBezeled, CPThemeStateEditing, CPComboBoxStateButtonBordered, CPThemeStateControlSizeMini]],
-//     [@"content-inset",      CGInsetMake(7.0, 26.0, 7.0, 8.0),           [CPThemeStateBezeled, CPComboBoxStateButtonBordered, CPThemeStateControlSizeMini]],
-//     [@"content-inset",      CGInsetMake(7.0, 26.0, 7.0, 8.0),           [CPThemeStateBezeled, CPThemeStateControlSizeMini]],
-
-//     [@"min-size",           CGSizeMake(0, 22.0),                        CPThemeStateControlSizeMini],
-//     [@"max-size",           CGSizeMake(-1, 22.0),                       CPThemeStateControlSizeMini],
-//     [@"nib2cib-adjustment-frame",   CGRectMake(-4.0, -2.0, 6.0, 0.0),   CPThemeStateControlSizeMini],
+        [@"popup-button-size",  CGSizeMake(21.0, 23.0),                     [CPThemeStateBezeled, CPComboBoxStateButtonBordered]],
+        [@"popup-button-size",  CGSizeMake(17.0, 23.0),                     CPThemeStateBezeled]
      ];
 
     [self registerThemeValues:overrides forView:combo inherit:themedTextFieldValues];

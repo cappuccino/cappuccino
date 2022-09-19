@@ -91,8 +91,7 @@ var CPComboBoxTextSubview = @"text",
 {
     return @{
                 @"popup-button-size": CGSizeMake(21.0, 29.0),
-                @"border-inset": CGInsetMake(3.0, 3.0, 3.0, 3.0),
-                @"uses-focus-ring": YES,
+                @"border-inset": CGInsetMake(3.0, 3.0, 3.0, 3.0)
             };
 }
 
