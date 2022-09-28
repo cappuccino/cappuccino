@@ -4011,7 +4011,6 @@ var themedButtonValues = nil,
                                                                   @"top": @"3px",
                                                                   @"z-index": "+1",
                                                                   @"width": @"1px"
-
                                                                   }
                                                 afterDictionary:@{
                                                                     @"content": @"'⌅'",
@@ -4069,28 +4068,63 @@ var themedButtonValues = nil,
                                                            @"box-sizing": @"border-box"
                                                            }
                                         beforeDictionary:@{
-                                                           @"background-color": @"rgb(225,225,225)",
-                                                           @"bottom": @"2px",
-                                                           @"content": @"''",
-                                                           @"position": @"absolute",
-                                                           @"right": @"12px",
-                                                           @"top": @"2px",
-                                                           @"width": @"1px"
+                                                            @"background-color": @"rgb(225,225,225)",
+                                                            @"bottom": @"3px",
+                                                            @"content": @"''",
+                                                            @"position": @"absolute",
+                                                            @"right": @"14px",
+                                                            @"top": @"3px",
+                                                            @"z-index": "+1",
+                                                            @"width": @"1px"
                                                            }
                                          afterDictionary:@{
-                                                           @"content": @"''",
-                                                           @"right": @"3px",
-                                                           @"top": @"50%",
-                                                           @"bottom": @"50%",
-                                                           @"margin": @"-5px 0px 0px 0px",
-                                                           @"position": @"absolute",
-                                                           @"height": @"9px",
-                                                           @"width": @"6px",
-                                                           @"background-image": @"url(%%packed.png)",
-                                                           @"background-position": @"0px -144px",
-                                                           @"background-repeat": @"no-repeat",
-                                                           @"background-size": @"100px 400px"
+                                                            @"content": @"'⌅'",
+                                                            @"transform": @"rotate(180deg)",
+                                                            @"background-color": A3ColorBackgroundWhite,
+                                                            @"color": A3ColorBorderBlue,
+                                                            @"text-align": @"center",
+                                                            @"right": @"1px",
+                                                            @"bottom": @"0px",
+                                                            @"position": @"absolute",
+                                                            @"width": @"12px",
+                                                            @"z-index": "+1",
+                                                            @"font-size": "90%"
                                                            }],
+
+    miniBezelFocusedCssColor = [CPColor colorWithCSSDictionary:@{
+                                                            @"background-color": A3ColorBackgroundWhite,
+                                                            @"border-color": A3ColorBorderBlue,
+                                                            @"border-style": @"solid",
+                                                            @"border-width": @"1px",
+                                                            @"border-radius": @"0px",
+                                                            @"box-sizing": @"border-box",
+                                                            @"box-shadow": @"0px 0px 2px 0px rgb(59,127,202)",
+                                                            @"transition-duration": @"0.35s, 0.35s",
+                                                            @"transition-property": @"box-shadow, border"
+                                                        }
+                                               beforeDictionary:@{
+                                                            @"background-color": @"rgb(225,225,225)",
+                                                            @"bottom": @"3px",
+                                                            @"content": @"''",
+                                                            @"position": @"absolute",
+                                                            @"right": @"14px",
+                                                            @"top": @"3px",
+                                                            @"z-index": "+1",
+                                                            @"width": @"1px"
+                                                        }
+                                                afterDictionary:@{
+                                                            @"content": @"'⌅'",
+                                                            @"transform": @"rotate(180deg)",
+                                                            @"background-color": A3ColorBackgroundWhite,
+                                                            @"color": A3ColorBorderBlue,
+                                                            @"text-align": @"center",
+                                                            @"right": @"1px",
+                                                            @"bottom": @"0px",
+                                                            @"position": @"absolute",
+                                                            @"width": @"12px",
+                                                            @"z-index": "+1",
+                                                            @"font-size": "90%"
+                                                        }],
 
     miniNotKeyButtonCssColor = [CPColor colorWithCSSDictionary:@{
                                                                  @"background-color": A3ColorBackgroundWhite,
@@ -4101,27 +4135,27 @@ var themedButtonValues = nil,
                                                                  @"box-sizing": @"border-box"
                                                                  }
                                               beforeDictionary:@{
-                                                                 @"background-color": @"rgb(225,225,225)",
-                                                                 @"bottom": @"2px",
-                                                                 @"content": @"''",
-                                                                 @"position": @"absolute",
-                                                                 @"right": @"12px",
-                                                                 @"top": @"2px",
-                                                                 @"width": @"1px"
+                                                                @"background-color": @"rgb(225,225,225)",
+                                                                @"bottom": @"3px",
+                                                                @"content": @"''",
+                                                                @"position": @"absolute",
+                                                                @"right": @"14px",
+                                                                @"top": @"3px",
+                                                                @"z-index": "+1",
+                                                                @"width": @"1px"
                                                                  }
                                                afterDictionary:@{
-                                                                 @"content": @"''",
-                                                                 @"right": @"3px",
-                                                                 @"top": @"50%",
-                                                                 @"bottom": @"50%",
-                                                                 @"margin": @"-5px 0px 0px 0px",
-                                                                 @"position": @"absolute",
-                                                                 @"height": @"9px",
-                                                                 @"width": @"6px",
-                                                                 @"background-image": @"url(%%packed.png)",
-                                                                 @"background-position": @"-8px -144px",
-                                                                 @"background-repeat": @"no-repeat",
-                                                                 @"background-size": @"100px 400px"
+                                                                @"content": @"'⌅'",
+                                                                @"transform": @"rotate(180deg)",
+                                                                @"background-color": A3ColorBackgroundWhite,
+                                                                @"color": A3ColorActiveBorder,
+                                                                @"text-align": @"center",
+                                                                @"right": @"1px",
+                                                                @"bottom": @"0px",
+                                                                @"position": @"absolute",
+                                                                @"width": @"12px",
+                                                                @"z-index": "+1",
+                                                                @"font-size": "90%"
                                                                  }],
 
     miniDisabledButtonCssColor = [CPColor colorWithCSSDictionary:@{
@@ -4134,18 +4168,17 @@ var themedButtonValues = nil,
                                                                    }
                                                 beforeDictionary:nil
                                                  afterDictionary:@{
-                                                                   @"content": @"''",
-                                                                   @"right": @"3px",
-                                                                   @"top": @"50%",
-                                                                   @"bottom": @"50%",
-                                                                   @"margin": @"-5px 0px 0px 0px",
-                                                                   @"position": @"absolute",
-                                                                   @"height": @"9px",
-                                                                   @"width": @"6px",
-                                                                   @"background-image": @"url(%%packed.png)",
-                                                                   @"background-position": @"-16px -144px",
-                                                                   @"background-repeat": @"no-repeat",
-                                                                   @"background-size": @"100px 400px"
+                                                                    @"content": @"'⌅'",
+                                                                    @"transform": @"rotate(180deg)",
+                                                                    @"background-color": A3ColorBackgroundWhite,
+                                                                    @"color": A3ColorInactiveBorder,
+                                                                    @"text-align": @"center",
+                                                                    @"right": @"1px",
+                                                                    @"bottom": @"0px",
+                                                                    @"position": @"absolute",
+                                                                    @"width": @"12px",
+                                                                    @"z-index": "+1",
+                                                                    @"font-size": "90%"
                                                                    }],
 
     miniHighlightedButtonCssColor = [CPColor colorWithCSSDictionary:@{
@@ -4193,17 +4226,19 @@ var themedButtonValues = nil,
 
         // Mini size
         [@"bezel-color",                miniButtonCssColor,                        [CPThemeStateControlSizeMini, CPComboBoxStateButtonBordered, CPThemeStateKeyWindow]],
+        [@"bezel-color",                smallBezelFocusedCssColor,                 [CPThemeStateControlSizeMini, CPThemeStateBezeled, CPComboBoxStateButtonBordered, CPThemeStateEditing]],
         [@"bezel-color",                miniNotKeyButtonCssColor,                  [CPThemeStateControlSizeMini, CPComboBoxStateButtonBordered]],
         [@"bezel-color",                miniHighlightedButtonCssColor,             [CPThemeStateControlSizeMini, CPComboBoxStateButtonBordered, CPThemeStateHighlighted]],
         [@"bezel-color",                miniDisabledButtonCssColor,                [CPThemeStateControlSizeMini, CPComboBoxStateButtonBordered, CPThemeStateDisabled]],
         [@"bezel-color",                miniDisabledButtonCssColor,                [CPThemeStateControlSizeMini, CPComboBoxStateButtonBordered, CPThemeStateDisabled, CPThemeStateKeyWindow]],
-        [@"content-inset",              CGInsetMake(1.0, 14.0, 1.0, 10.0),         [CPThemeStateControlSizeMini, CPComboBoxStateButtonBordered]],
+        [@"content-inset",              CGInsetMake(1.0, 19.0, 1.0, 9.0),          [CPThemeStateControlSizeMini, CPComboBoxStateButtonBordered]],
         [@"min-size",                   CGSizeMake(32.0, 15.0),                    [CPThemeStateControlSizeMini]],
         [@"max-size",                   CGSizeMake(-1.0, 15.0),                    [CPThemeStateControlSizeMini]],
-        [@"nib2cib-adjustment-frame",   CGRectMake(1.0, -0.0, -3.0, -0.0),         [CPThemeStateControlSizeMini]],
+        [@"nib2cib-adjustment-frame",   CGRectMake(2.0, -8.0, -5.0, -5.0),         [CPThemeStateControlSizeMini]],
+        [@"content-inset",              CGInsetMake(2.0, 1.0, 0, 2),               [CPThemeStateControlSizeMini, CPThemeStateBezeled, CPComboBoxStateButtonBordered]],
 
-        [@"popup-button-size",  CGSizeMake(21.0, 23.0),                     [CPThemeStateBezeled, CPComboBoxStateButtonBordered]],
-        [@"popup-button-size",  CGSizeMake(17.0, 23.0),                     CPThemeStateBezeled]
+        [@"popup-button-size",  CGSizeMake(21.0, 23.0),                            [CPThemeStateBezeled, CPComboBoxStateButtonBordered]],
+        [@"popup-button-size",  CGSizeMake(17.0, 23.0),                            CPThemeStateBezeled]
      ];
 
     [self registerThemeValues:overrides forView:combo inherit:themedTextFieldValues];
