@@ -2342,7 +2342,6 @@ var themedButtonValues = nil,
 {
     var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 100.0)],
         borderColor = /*[CPColor colorWithWhite:0.0 alpha:0.2]*/[CPColor redColor],
-//    bottomCornerColor = PatternColor(@"scrollview-bottom-corner-color.png", 15.0, 15.0),
 
         bottomCornerColor = [CPColor colorWithCSSDictionary:@{
                                                               @"background-color": A3ColorScrollerBackground
@@ -2360,7 +2359,7 @@ var themedButtonValues = nil,
 
     bezelFocusedCssColor = [CPColor colorWithCSSDictionary:@{
                                                              @"background-color": A3ColorBackgroundWhite,
-                                                             @"border-color": @"A3ColorBorderBlue",
+                                                             @"border-color": A3ColorBorderBlue,
                                                              @"border-style": @"solid",
                                                              @"border-width": @"1px",
                                                              @"border-radius": @"0px",

@@ -533,7 +533,7 @@ var CPComboBoxTextSubview = @"text",
         CPComboBoxFocusRingWidth = inset.bottom;
     }
 
-    [_listDelegate popUpRelativeToRect:[self _borderFrame] view:self offset:CPComboBoxFocusRingWidth - 1];
+    [_listDelegate popUpRelativeToRect:[self bounds] view:self offset:CPComboBoxFocusRingWidth - 1];
     [self _selectMatchingItem];
 }
 
@@ -973,23 +973,6 @@ var CPComboBoxTextSubview = @"text",
         [_listDelegate scrollItemAtIndexToTop:index];
         _selectedStringValue = stringValue;
     }
-}
-
-/*!
-    Calculate the frame in base coordinates that will nestle just below the visible border of the text field.
-    @ignore
-*/
-- (CGRect)_borderFrame
-{
-    var inset = [self currentValueForThemeAttribute:@"border-inset"],
-        frame = [self bounds];
-
-    frame.origin.x += inset.left;
-    frame.origin.y += inset.top;
-    frame.size.width -= inset.left + inset.right;
-    frame.size.height -= inset.top + inset.bottom;
-
-    return frame;
 }
 
 /* @ignore */
