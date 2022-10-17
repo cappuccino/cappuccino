@@ -17,7 +17,7 @@ Check out a [live demo of the widgets in Cappuccino](https://cappuccino-testbook
 Check out some [tutorials](https://cappuccino-cookbook.5apps.com)
 
 For more information, see the
-  - [Official website](http://cappuccino-project.org)
+  - [Official website](https://cappuccino.dev)
   - [Github Wiki](https://github.com/cappuccino/cappuccino/wiki)
   - [FAQ](http://cappuccino-project.org/support/faq.html)
   - [Documentation](http://cappuccino-project.org/learn/)
