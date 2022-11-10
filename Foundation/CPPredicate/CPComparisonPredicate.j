@@ -320,8 +320,8 @@
                                                                 lhs = lhs.stripDiacritics();
                                                                 rhs = rhs.stripDiacritics();
                                                             }
-                                                            var commut = (_options & CPCaseInsensitivePredicateOption) ? "gi":"g",
-                                                                reg = new RegExp(rhs.escapeForRegExp(),commut);
+                                                            var commut = (_options & CPCaseInsensitivePredicateOption) ? "i":"",
+                                                                reg = new RegExp("^" + rhs.escapeForRegExp() + "$",commut);
                                                             return reg.test(lhs);
 
         case CPBeginsWithPredicateOperatorType:             var range = CPMakeRange(0, MIN([lhs length], [rhs length]));
