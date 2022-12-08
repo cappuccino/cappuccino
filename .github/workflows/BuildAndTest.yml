@@ -29,5 +29,6 @@ jobs:
     - run: echo "${PWD}/dist/cappuccino/bin" >> $GITHUB_PATH
     - run: echo "${PWD}/dist/objective-j/bin" >> $GITHUB_PATH
     - run: npm install
+    - run: npm update
     - run: jake dist
     - run: jake test-only
