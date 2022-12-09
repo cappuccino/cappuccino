@@ -8,7 +8,6 @@ var fs = require("fs"),
 
 - (void)testFormatSniffing
 {
-    debugger;
     var XMLPropertyLists = new FileList(path.join(path.dirname(__filename), "PropertyLists", "XML-*.plist"));
 
     XMLPropertyLists.forEach(function(/*String*/ aPath)
