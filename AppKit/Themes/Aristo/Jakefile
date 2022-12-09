@@ -8,8 +8,6 @@ function callbackFunction(blendtask) {
     callback(blendtask);
 }
 
-require("../../../CommonJS/lib/cappuccino/jake.js").initilize(callbackFunction);
-
 $BUILD_CJS_BLENDTASK = path.join($BUILD_CJS_CAPPUCCINO, "lib", "cappuccino", "jake", "blendtask.j");
 
 var promise = new Promise((resolve, reject) => {
@@ -22,6 +20,8 @@ var promise = new Promise((resolve, reject) => {
         });
     }
 });
+
+require("../../../CommonJS/lib/cappuccino/jake.js").initilize(callbackFunction);
 
 async function defineBlendTask() {
     await exports.blend ("Aristo.blend", function(aristoTask)
