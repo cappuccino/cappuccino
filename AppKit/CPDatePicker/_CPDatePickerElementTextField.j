@@ -385,6 +385,18 @@ CPAMPMDateType = 6;
                 return;
             }
 
+            // if we enter a day that is too high for the current month
+            // we need to increase the month by one
+            // if we do not do this, the user input woul be silently reset
+            // very poor user experience
+
+            if (parseInt(anObjectValue, 10) > [dateValue _daysInMonth])
+            {
+                [_datePickerElementView._textFieldMonth setIntValue:(dateValue.getMonth() + 2)];
+                [super setObjectValue:objectValue];
+                return;
+            }
+
             [super setObjectValue:objectValue];
             break;
 
