@@ -124,7 +124,8 @@ var errors = [],
         Reference: ignore,
         DictionaryLiteral: ignore,
         Dereference: ignore,
-        ImportStatement: ignore
+        ImportStatement: ignore,
+        SelectorLiteralExpression: ignore
     }
 );
 
