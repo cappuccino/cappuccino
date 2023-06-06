@@ -32,27 +32,19 @@
 
 @class Nib2Cib
 
-@global java
+ConverterModeLegacy           =  0;
+ConverterModeNew              =  1;
+NibFormatIPhone               =  2;
+NibFormatMac                  =  1;
+NibFormatUndetermined         =  0;
+var child_process             =  require("child_process");
+var fs                        =  require("fs");
+var os                        =  require("os");
+var path                      =  require("path");
+var SharedConverter           =  nil;
+var utilsFile                 =  ObjectiveJ.utils.file;
 
-var path = require("path");
-var fs = require("fs");
-var os = require("os");
-var child_process = require("child_process");
-var utilsFile = ObjectiveJ.utils.file;
-
-/* var FILE = require("file"),
-    OS = require("os"), */
-
-var SharedConverter = nil;
-
-NibFormatUndetermined   = 0;
-NibFormatMac            = 1;
-NibFormatIPhone         = 2;
-
-ConverterModeLegacy   = 0;
-ConverterModeNew      = 1;
-
-ConverterConversionException = @"ConverterConversionException";
+ConverterConversionException  =  @"ConverterConversionException";
 
 @implementation Converter : CPObject
 {
@@ -89,7 +81,6 @@ ConverterConversionException = @"ConverterConversionException";
     // Some .xibs are iPhone nibs, check the actual contents in this case.
     if (path.extname(inputPath) !== ".nib" && fs.lstatSync(inputPath).isFile() &&
         fs.readFileSync(inputPath, { encoding: "utf8" }).indexOf("<archive type=\"com.apple.InterfaceBuilder3.CocoaTouch.XIB\"") !== -1)
-        //FILE.read(inputPath, { charset:"UTF-8" }).indexOf("<archive type=\"com.apple.InterfaceBuilder3.CocoaTouch.XIB\"") !== -1)
         inferredFormat = NibFormatIPhone;
         
     if (inferredFormat === NibFormatMac)
@@ -108,7 +99,6 @@ ConverterConversionException = @"ConverterConversionException";
 
     if ([outputPath length])
         fs.writeFileSync(outputPath, [convertedData rawString], { encoding: "utf8" });
-        //FILE.write(outputPath, [convertedData rawString], { charset:"UTF-8" });
 
     CPLog.info("Conversion successful");
 
@@ -117,8 +107,8 @@ ConverterConversionException = @"ConverterConversionException";
 
 - (CPData)CPCompliantNibDataAtFilePath:(CPString)aFilePath
 {
-    var temporaryNibFilePath = "",
-        temporaryPlistFilePath = "";
+    var temporaryNibFilePath    =  "",
+        temporaryPlistFilePath  =  "";
 
 
     function isReadable(p) {
@@ -141,13 +131,33 @@ ConverterConversionException = @"ConverterConversionException";
 
     try
     {
+        // Make a temporary directory, used for intermediate conversion artifacts
         var tmpdir = fs.mkdtempSync(path.join(os.tmpdir(), 'nib2cib-'));
 
         if ([outputPath length])
         {
+            // If the temporary directory was successfully created:
+            // Read the xib file into memory
+            var temporaryXibFilepath = path.join(tmpdir, path.basename(aFilePath));
+            var xibContents = fs.readFileSync(aFilePath, { encoding: "utf8" });
+            
+            // Replace the <dependencies><deployment /></dependencies> element with something ibtool can handle.
+            // ibtool no longer respects either the default output format
+            // or that specified by command flags.
+            // plutil no longer understands ibtool's current output when 'convert'ing.
+            var dependenciesRegex = /<dependencies>[\s\S]*?<\/dependencies>/;
+            var dependenciesReplacement = '<dependencies><deployment version="101200" identifier="macosx"/></dependencies>';
+            
+            // Write the xib file contents to the temporary directory,
+            // with a filename the same as the original xib.
+            fs.writeFileSync(temporaryXibFilepath, xibContents.replace(dependenciesRegex, dependenciesReplacement));
+            
+            // Reset the pathname for the xib file being converted
+            // to that of the modified file in the temporary directory.
+            aFilePath = temporaryXibFilepath;
+            
             // Compile xib or nib to make sure we have a non-new format nib.
             temporaryNibFilePath = path.join(tmpdir, path.basename(aFilePath) + ".tmp.nib");
-
             try {
                 child_process.execSync("/usr/bin/ibtool" + " '" + aFilePath + "' " + "--compile" + " '" + temporaryNibFilePath + "'", {stdio: 'inherit'});
             } catch(err) {
@@ -168,36 +178,16 @@ ConverterConversionException = @"ConverterConversionException";
 
         // Convert from binary plist to XML plist
         var temporaryPlistFilePath = path.join(tmpdir, path.basename(aFilePath) + ".tmp.plist");
-
         try {
             child_process.execSync("/usr/bin/plutil" + " " + "-convert" + " " + "xml1" + " '" + (temporaryNibFilePathInDirectoryFile || temporaryNibFilePath) + "' " + "-o" + " '" +  temporaryPlistFilePath + "'", {stdio: 'inherit'});
         } catch(err) {
             [CPException raise:ConverterConversionException reason:@"Could not convert to xml plist for file: " + aFilePath];
         }
 
-/*         try
-        {
-            var p = OS.popen(["/usr/bin/plutil", "-convert", "xml1", temporaryNibFilePath, "-o", temporaryPlistFilePath]);
-            if (p.wait() === 1)
-                [CPException raise:ConverterConversionException reason:@"Could not convert to xml plist for file: " + aFilePath];
-        }
-        finally
-        {
-            p.stdin.close();
-            p.stdout.close();
-            p.stderr.close();
-        } */
-
         if (!isReadable(temporaryPlistFilePath))
             [CPException raise:ConverterConversionException reason:@"Unable to convert nib file."];
 
         var plistContents = fs.readFileSync(temporaryPlistFilePath, { encoding: "utf8" });
-        //var plistContents = FILE.read(temporaryPlistFilePath, { charset: "UTF-8" });
-
-        // Minor NS keyed archive to CP keyed archive conversion.
-        // Use Java directly because rhino's string.replace is *so slow*. 4 seconds vs. 1 millisecond.
-        // plistContents = plistContents.replace(/\<key\>\s*CF\$UID\s*\<\/key\>/g, "<key>CP$UID</key>");
-        
         plistContents = plistContents.replace(new RegExp("\\<key\\>\\s*CF\\$UID\\s*\\<\\/key\\>", "g"), "<key>CP$UID</key>");
         
         plistContents = plistContents.replace(new RegExp("<string>[\\u0000-\\u0008\\u000B\\u000C\\u000E-\\u001F]<\\/string>", "g"), function(c)
@@ -226,5 +216,3 @@ ConverterConversionException = @"ConverterConversionException";
 }
 
 @end
-
-//@import "Converter+Mac.j"
