@@ -190,11 +190,18 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 #pragma mark -
 #pragma mark Class methods
 
-/* <!> FIXME
-    just a testing characterSet
-    all of this depend of the current language.
-    Need some CPLocale support and maybe even a FSM...
- */
++ (CPString)defaultThemeClass
+{
+    return @"textview";
+}
+
++ (CPDictionary)themeAttributes
+{
+    return @{
+            @"background-color": [CPColor textBackgroundColor],
+            @"content-inset": CGSizeMake(2, 0)
+        };
+}
 
 #pragma mark -
 #pragma mark Init methods
@@ -209,7 +216,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         [self setEditable:YES];
         [self setSelectable:YES];
         [self setRichText:NO];
-        [self setBackgroundColor:[CPColor whiteColor]];
+        [self setBackgroundColor:[self currentValueForThemeAttribute:@"background-color"]];
 
         _usesFontPanel = YES;
         _allowsUndo = YES;
@@ -243,8 +250,10 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 #endif
 
     _selectionRange = CPMakeRange(0, 0);
-    _textContainerInset = CGSizeMake(2, 0);
-    _textContainerOrigin = CGPointMake(_bounds.origin.x, _bounds.origin.y);
+
+    // We have to || with CGSizeMakeZero() for theme compilation
+    _textContainerInset = [self currentValueForThemeAttribute:@"content-inset"] || CGSizeMakeZero();
+    _textContainerOrigin = CGPointMake(_bounds.origin.x + _textContainerInset.width, _bounds.origin.y + _textContainerInset.height);
 
     _selectionGranularity = CPSelectByCharacter;
 
@@ -1145,7 +1154,7 @@ Sets the selection to a range of characters in response to user action.
         dragPlaceholder = [[CPTextView alloc] initWithFrame:_frame];
         [dragPlaceholder._textStorage replaceCharactersInRange:CPMakeRange(0, 0) withAttributedString:placeholderString];
 
-        [dragPlaceholder setBackgroundColor:[CPColor colorWithRed:1 green:1 blue:1 alpha:0]];
+        [dragPlaceholder setBackgroundColor:[self currentValueForThemeAttribute:@"background-color"]];
         [dragPlaceholder setAlphaValue:0.5];
 
         var stringForPasting = [_textStorage attributedSubstringFromRange:CPMakeRangeCopy(_selectionRange)],
@@ -2291,7 +2300,7 @@ Sets the selection to a range of characters in response to user action.
 
     _placeholderString = aString;
 
-    [self setString:[[CPAttributedString alloc] initWithString:_placeholderString attributes:@{CPForegroundColorAttributeName:[CPColor colorWithRed:0.66 green:0.66 blue:0.66 alpha:1]}]];
+    [self setString:[[CPAttributedString alloc] initWithString:_placeholderString attributes:@{CPForegroundColorAttributeName:[CPColor disabledControlTextColor]}]];
 }
 
 - (void)_continuouslyReverseSetBinding
