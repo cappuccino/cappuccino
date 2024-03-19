@@ -381,7 +381,21 @@ if [ `uname` = "Darwin" ]; then
         check_build_environment
 
         # The narwhal-jsc package is already installed within the base kit.
-
+        
+        # Xcode 15's version of the 'ld' linker no longer supports
+        # the '-force_cpusubtype_ALL' flag.
+        # Although not documented, this may have been included to support PowerPC compilation.
+        # Removing the flag has been successfully tested on High Sierra/Xcode 10.1  
+        # Testing on all intermediate operating systems and Xcode versions isn't practical,
+        # or beneficial, given the imminent move to NodeJS.
+        # We apply the patch here for expediency, rather than in the 'cappuccino-base' repository.
+        # If a full final release of the narwhal branch is undertaken,
+        # the change will be applied to cappuccino-base at that time.
+        # Note: Rosetta2 is still available in macOS Sonoma.
+        # Compiling for both Intel and Apple Silicon targets requires a testing program
+        # which is, again, neither practical nor justified at this stage of Narwhal's lifecycle.
+        sed -i .orig 's/-force_cpusubtype_ALL//g' $install_directory/packages/narwhal-jsc/Makefile
+        
         # This autoreconf command improves compatibility with MacPorts, but only works with autoconf 2.65+.
         needed_autoconf_major=2
         needed_autoconf_minor=65
