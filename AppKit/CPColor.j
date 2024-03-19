@@ -87,7 +87,7 @@ var cachedBlackColor,
     CPImage     _patternImage;
     CPString    _cssString;
 }
-
+@global document
 
 #pragma mark -
 #pragma mark Theming

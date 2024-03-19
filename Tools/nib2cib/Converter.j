@@ -32,22 +32,19 @@
 
 @class Nib2Cib
 
-@global java
+ConverterModeLegacy           =  0;
+ConverterModeNew              =  1;
+NibFormatIPhone               =  2;
+NibFormatMac                  =  1;
+NibFormatUndetermined         =  0;
+var child_process             =  require("child_process");
+var fs                        =  require("fs");
+var os                        =  require("os");
+var path                      =  require("path");
+var SharedConverter           =  nil;
+var utilsFile                 =  ObjectiveJ.utils.file;
 
-var FILE = require("file"),
-    OS = require("os"),
-    SYSTEM = require("system"),
-
-    SharedConverter = nil;
-
-NibFormatUndetermined   = 0;
-NibFormatMac            = 1;
-NibFormatIPhone         = 2;
-
-ConverterModeLegacy   = 0;
-ConverterModeNew      = 1;
-
-ConverterConversionException = @"ConverterConversionException";
+ConverterConversionException  =  @"ConverterConversionException";
 
 @implementation Converter : CPObject
 {
@@ -79,13 +76,13 @@ ConverterConversionException = @"ConverterConversionException";
 - (CPData)convert
 {
     // Assume its a Mac file.
-    var inferredFormat = NibFormatMac;
+    var inferredFormat = NibFormatMac; 
 
     // Some .xibs are iPhone nibs, check the actual contents in this case.
-    if (FILE.extension(inputPath) !== ".nib" && FILE.isFile(inputPath) &&
-        FILE.read(inputPath, { charset:"UTF-8" }).indexOf("<archive type=\"com.apple.InterfaceBuilder3.CocoaTouch.XIB\"") !== -1)
+    if (path.extname(inputPath) !== ".nib" && fs.lstatSync(inputPath).isFile() &&
+        fs.readFileSync(inputPath, { encoding: "utf8" }).indexOf("<archive type=\"com.apple.InterfaceBuilder3.CocoaTouch.XIB\"") !== -1)
         inferredFormat = NibFormatIPhone;
-
+        
     if (inferredFormat === NibFormatMac)
         CPLog.info("Auto-detected Cocoa nib or xib File");
     else
@@ -98,14 +95,10 @@ ConverterConversionException = @"ConverterConversionException";
     if (inferredFormat === NibFormatMac)
         var convertedData = [self convertedDataFromMacData:nibData];
     else
-        // TODO: this is insufficient to fully confirm the xib file is valid.
-        // Xcode offers to upgrade older xib file formats when they are opened in Interface Builder
-        // but this may not happen if a project is recompiled without opening the xib.
-        // We should perform the same check here and offer to upgrade the file format.
         [CPException raise:ConverterConversionException reason:@"nib2cib does not understand this nib format."];
 
     if ([outputPath length])
-        FILE.write(outputPath, [convertedData rawString], { charset:"UTF-8" });
+        fs.writeFileSync(outputPath, [convertedData rawString], { encoding: "utf8" });
 
     CPLog.info("Conversion successful");
 
@@ -114,60 +107,61 @@ ConverterConversionException = @"ConverterConversionException";
 
 - (CPData)CPCompliantNibDataAtFilePath:(CPString)aFilePath
 {
-    var temporaryNibFilePath = "",
-        temporaryPlistFilePath = "";
+    var temporaryNibFilePath    =  "",
+        temporaryPlistFilePath  =  "";
 
-    var PROJECT_ROOT_DIR = SYSTEM.env["PWD"];
-    var PROJECT_BUILD_DIR = FILE.join(PROJECT_ROOT_DIR, "Build");
-    var TMP_DIR = FILE.join(PROJECT_BUILD_DIR, "tmp");
 
-    // System /tmp folder was previously used for ephemeral conversion artifacts
-    // In more recent versions of macOS, access permissions can be insufficient
-    // without using sudo.
-    // Additionally, temporary folders and files in /tmp were not being
-    // namespaced. This risks collisions
-    // between distinct xib files - ones named identically but in different project folders.
-    // Using a tmp folder in the project's Build folder resolves both issues.
-    // Leaving the tmp folder visible is an advantage when debugging failed conversions.
-
-    // Does Build folder exist? If not, create it
-    CPLog.info("\nCreating temporary directories for conversion process:");
-    if(!FILE.isDirectory(PROJECT_BUILD_DIR))
-    {
-        CPLog.info("Create 'Build' directory: " + PROJECT_BUILD_DIR);
-        FILE.mkdir(PROJECT_BUILD_DIR);
+    function isReadable(p) {
+        try {
+            fs.accessSync(p, fs.constants.R_OK);
+            return true;
+        } catch (err) {
+            return false;
+        }
     }
 
-    // Does tmp folder exist? If not, create it
-    if(!FILE.isDirectory(TMP_DIR))
-    {
-        CPLog.info("Create 'tmp' directory: " + TMP_DIR);
-        FILE.mkdir(TMP_DIR);
+    function isWritable(p) {
+        try {
+            fs.accessSync(p, fs.constants.W_OK);
+            return true;
+        } catch (err) {
+            return false;
+        }
     }
 
     try
     {
+        // Make a temporary directory, used for intermediate conversion artifacts
+        var tmpdir = fs.mkdtempSync(path.join(os.tmpdir(), 'nib2cib-'));
+
         if ([outputPath length])
         {
+            // If the temporary directory was successfully created:
+            // Read the xib file into memory
+            var temporaryXibFilepath = path.join(tmpdir, path.basename(aFilePath));
+            var xibContents = fs.readFileSync(aFilePath, { encoding: "utf8" });
+            
+            // Replace the <dependencies><deployment /></dependencies> element with something ibtool can handle.
+            // ibtool no longer respects either the default output format
+            // or that specified by command flags.
+            // plutil no longer understands ibtool's current output when 'convert'ing.
+            var dependenciesRegex = /<dependencies>[\s\S]*?<\/dependencies>/;
+            var dependenciesReplacement = '<dependencies><deployment version="101200" identifier="macosx"/></dependencies>';
+            
+            // Write the xib file contents to the temporary directory,
+            // with a filename the same as the original xib.
+            fs.writeFileSync(temporaryXibFilepath, xibContents.replace(dependenciesRegex, dependenciesReplacement));
+            
+            // Reset the pathname for the xib file being converted
+            // to that of the modified file in the temporary directory.
+            aFilePath = temporaryXibFilepath;
+            
             // Compile xib or nib to make sure we have a non-new format nib.
-            temporaryNibFilePath = FILE.join(TMP_DIR, FILE.basename(aFilePath) + ".tmp.nib");
-
-            try
-            {
-                var p = OS.popen(["/usr/bin/ibtool", aFilePath, "--compile", temporaryNibFilePath]);
-                var error;
-                while (error = p.stderr.read()) CPLog.info("IBTool error(" + typeof error + "): '" + error + "'");
-                var wait = p.wait();
-                if (wait === 1) {
-                    CPLog.info(error);
-                    [CPException raise:ConverterConversionException reason:@"Could not compile file: " + aFilePath];
-                }
-            }
-            finally
-            {
-                p.stdin.close();
-                p.stdout.close();
-                p.stderr.close();
+            temporaryNibFilePath = path.join(tmpdir, path.basename(aFilePath) + ".tmp.nib");
+            try {
+                child_process.execSync("/usr/bin/ibtool" + " '" + aFilePath + "' " + "--compile" + " '" + temporaryNibFilePath + "'", {stdio: 'inherit'});
+            } catch(err) {
+                [CPException raise:ConverterConversionException reason:@"Could not compile file: " + aFilePath];
             }
         }
         else
@@ -175,40 +169,27 @@ ConverterConversionException = @"ConverterConversionException";
             temporaryNibFilePath = aFilePath;
         }
 
-        // Check if output path results in a directory
-        if (FILE.isDirectory(temporaryNibFilePath)) {
-            temporaryNibFilePath = FILE.join(temporaryNibFilePath, "keyedobjects.nib");
+        // From around Xcode 12.5.1 ibtool starts to create a folder with two files.
+        // They are a little different but we can't find any documentation about what.
+        if (fs.lstatSync(temporaryNibFilePath).isDirectory())
+        {
+            var temporaryNibFilePathInDirectoryFile = path.join(temporaryNibFilePath,"keyedobjects.nib");
         }
 
         // Convert from binary plist to XML plist
-        var temporaryPlistFilePath = FILE.join("/tmp", FILE.basename(aFilePath) + ".tmp.plist");
-
-        try
-        {
-            var p = OS.popen(["/usr/bin/plutil", "-convert", "xml1", temporaryNibFilePath, "-o", temporaryPlistFilePath]);
-            if (p.wait() === 1)
-                [CPException raise:ConverterConversionException reason:@"Could not convert to xml plist for file: " + aFilePath];
-        }
-        finally
-        {
-            p.stdin.close();
-            p.stdout.close();
-            p.stderr.close();
+        var temporaryPlistFilePath = path.join(tmpdir, path.basename(aFilePath) + ".tmp.plist");
+        try {
+            child_process.execSync("/usr/bin/plutil" + " " + "-convert" + " " + "xml1" + " '" + (temporaryNibFilePathInDirectoryFile || temporaryNibFilePath) + "' " + "-o" + " '" +  temporaryPlistFilePath + "'", {stdio: 'inherit'});
+        } catch(err) {
+            [CPException raise:ConverterConversionException reason:@"Could not convert to xml plist for file: " + aFilePath];
         }
 
-        if (!FILE.isReadable(temporaryPlistFilePath))
+        if (!isReadable(temporaryPlistFilePath))
             [CPException raise:ConverterConversionException reason:@"Unable to convert nib file."];
 
-        var plistContents = FILE.read(temporaryPlistFilePath, { charset: "UTF-8" });
-
-        // Minor NS keyed archive to CP keyed archive conversion.
-        // Use Java directly because rhino's string.replace is *so slow*. 4 seconds vs. 1 millisecond.
-        // plistContents = plistContents.replace(/\<key\>\s*CF\$UID\s*\<\/key\>/g, "<key>CP$UID</key>");
-        if (system.engine === "rhino")
-            plistContents = String(java.lang.String(plistContents).replaceAll("\\<key\\>\\s*CF\\$UID\\s*\\<\/key\\>", "<key>CP\\$UID</key>"));
-        else
-            plistContents = plistContents.replace(new RegExp("\\<key\\>\\s*CF\\$UID\\s*\\<\\/key\\>", "g"), "<key>CP$UID</key>");
-
+        var plistContents = fs.readFileSync(temporaryPlistFilePath, { encoding: "utf8" });
+        plistContents = plistContents.replace(new RegExp("\\<key\\>\\s*CF\\$UID\\s*\\<\\/key\\>", "g"), "<key>CP$UID</key>");
+        
         plistContents = plistContents.replace(new RegExp("<string>[\\u0000-\\u0008\\u000B\\u000C\\u000E-\\u001F]<\\/string>", "g"), function(c)
         {
             CPLog.warn("Warning: converting character 0x" + c.charCodeAt(8).toString(16) + " to base64 representation");
@@ -217,16 +198,21 @@ ConverterConversionException = @"ConverterConversionException";
     }
     finally
     {
-        if (temporaryNibFilePath !== "" && FILE.isWritable(temporaryNibFilePath))
-            FILE.remove(temporaryNibFilePath);
+        if (temporaryNibFilePathInDirectoryFile && temporaryNibFilePathInDirectoryFile !=="" && isWritable(temporaryNibFilePathInDirectoryFile))
+        {
+            utilsFile.rm_rf(temporaryNibFilePathInDirectoryFile);
+        }
+        else
+        {
+            if (temporaryNibFilePath !== "" && isWritable(temporaryNibFilePath))
+                fs.rmSync(temporaryNibFilePath);
+        }
 
-        if (temporaryPlistFilePath !== "" && FILE.isWritable(temporaryPlistFilePath))
-            FILE.remove(temporaryPlistFilePath);
+        if (temporaryPlistFilePath !== "" && isWritable(temporaryPlistFilePath))
+            fs.rmSync(temporaryPlistFilePath);
     }
 
     return [CPData dataWithRawString:plistContents];
 }
 
 @end
-
-//@import "Converter+Mac.j"

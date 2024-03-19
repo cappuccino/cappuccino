@@ -25,6 +25,8 @@
 
 @import "CGGeometry.j"
 
+@global document
+
 @implementation CPDOMWindowLayer : CPObject
 {
     int         _level;

@@ -40,7 +40,9 @@
         self.environment[@"NARWHAL_ENGINE"] = @"jsc";
         self.environment[@"CAPP_NOSUDO"]    = @"1";
         
-        self.executables = @[@"python", @"objj", @"nib2cib",@"objj2objcskeleton", @"capp_lint", @"touch"];
+        //self.executables = @[@"python", @"objj", @"nib2cib",@"objj2objcskeleton", @"capp_lint", @"touch"];
+        // Removed python and capp_liunt as python2 is not supported anymore.
+        self.executables = @[@"objj", @"nib2cib",@"objj2objcskeleton", @"touch"];
 
         self.isValid = [self _checkExecutables];
     }

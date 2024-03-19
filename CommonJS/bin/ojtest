@@ -1,0 +1,13 @@
+#!/usr/bin/env node
+
+ObjectiveJ = require("@objj/runtime");
+//CAPPUCCINO = require("@objj/cappuccino");
+
+var ojtest = require("@objj/ojtest");
+
+// Inject path to the OJTest main Objective-J file into the arguments so it is the file to be executed.
+var args = process.argv.slice(); // Copy
+args.splice(1, 1, ojtest.pathToOJTest);
+
+// Compile, load and run it
+ObjectiveJ.run(args, {inlineMsgSendFunctions: true, sourceMap: true, sourceMapIncludeSource: true });

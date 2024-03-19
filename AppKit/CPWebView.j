@@ -39,6 +39,8 @@ CPWebViewProgressEstimateChangedNotification    = "CPWebViewProgressEstimateChan
 CPWebViewProgressStartedNotification            = "CPWebViewProgressStartedNotification";
 CPWebViewProgressFinishedNotification           = "CPWebViewProgressFinishedNotification";
 
+@global document
+
 /*!
     Automatically choose between AppKit (Cappuccino style) scrollbars and
     native scrollbars. In this mode AppKit scrollbars are always used except

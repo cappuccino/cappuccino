@@ -96,7 +96,7 @@
 {
     try
     {
-         var timeZone = [CPTimeZone timeZoneWithName:nil];
+         [CPTimeZone timeZoneWithName:nil];
          [self fail:"Invalid value provided for tzName"];
     }
     catch (e)
@@ -140,7 +140,7 @@
 {
     try
     {
-         var timeZone = [CPTimeZone timeZoneWithName:nil data:_data];
+         [CPTimeZone timeZoneWithName:nil data:_data];
          [self fail:"Invalid value provided for tzName"];
     }
     catch (e)
@@ -204,7 +204,7 @@
 {
     try
     {
-         var timeZone = [[CPTimeZone alloc] initWithName:nil];
+         [[CPTimeZone alloc] initWithName:nil];
          [self fail:"Invalid value provided for tzName"];
     }
     catch (e)
@@ -248,7 +248,7 @@
 {
     try
     {
-         var timeZone = [[CPTimeZone alloc] initWithName:nil data:_data];
+         [[CPTimeZone alloc] initWithName:nil data:_data];
          [self fail:"Invalid value provided for tzName"];
     }
     catch (e)
@@ -260,9 +260,10 @@
 - (void)testAbbreviationWithDate
 {
     var timeZone = [CPTimeZone localTimeZone],
-        abbreviation = [timeZone abbreviationForDate:_date];
+        abbreviation = [timeZone abbreviationForDate:_date],
+        expected = _date.toLocaleString('en-US', {timeZoneName : 'long'}).replace(/^([0]?\d|[1][0-2])\/((?:[0]?|[1-2])\d|[3][0-1])\/([2][01]|[1][6-9])\d{2}(,?\s*([0]?\d|[1][0-2])(\:[0-5]\d){1,2})*\s*([aApP][mM]{0,2})?\s*/, "").split(" ").map(function(l) { return l[0]}).join("");
 
-    [self assert:abbreviation equals:String(String(_date).split("(")[1]).split(")")[0]];
+    [self assert:abbreviation equals:expected];
 }
 
 - (void)testAbbreviationWithNilDate

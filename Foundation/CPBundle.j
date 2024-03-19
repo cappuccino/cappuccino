@@ -207,7 +207,10 @@ var CPBundlesForURLStrings = { };
         CPLog.error("Could not find bundle: " + self);
     });
 
-    _bundle.load(YES);
+    // Return the answer so it is possible to do 'await' on this 'loadWithDelegate:' method as the
+    // load function will return a Promise. It is still possible to not do 'await' on this method
+    // and that gives us the old behaviour.
+    return _bundle.load(YES);
 }
 
 - (CPArray)staticResourceURLs

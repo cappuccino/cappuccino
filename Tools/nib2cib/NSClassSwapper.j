@@ -116,7 +116,7 @@ var _CPCibClassSwapperClassNameKey          = @"_CPCibClassSwapperClassNameKey",
                     aClassName = [classForArchiver className];
             }
 
-            [aCoder encodeObject:aClassName forKey:_CPCibClassSwapperClassNameKey];
+            [aCoder encodeObject:aClassName === @"NSView" ? CP_NSMapClassName(aClassName) : aClassName forKey:_CPCibClassSwapperClassNameKey];
             [aCoder encodeObject:CP_NSMapClassName(anOriginalClassName) forKey:_CPCibClassSwapperOriginalClassNameKey];
         }, "");
     }

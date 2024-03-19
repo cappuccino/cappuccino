@@ -1,14 +1,13 @@
-
 require("../../common.jake");
 
-var FILE = require("file");
+const path = require("path");
 
-var app = require("objective-j/jake").app;
-var BundleTask = require("objective-j/jake").BundleTask;
+var app = require("../../Jake/applicationtask.js").app;
+var BundleTask = require("../../Jake/bundletask.js").BundleTask;
 
 app ("nib2cib", function(nib2cibTask)
 {
-    nib2cibTask.setBuildIntermediatesPath(FILE.join($BUILD_DIR, "nib2cib.build", $CONFIGURATION))
+    nib2cibTask.setBuildIntermediatesPath(path.join($BUILD_DIR, "nib2cib.build", $CONFIGURATION))
     nib2cibTask.setBuildPath($BUILD_CJS_CAPPUCCINO_LIB);
 
     nib2cibTask.setIdentifier("com.280n.nib2cib");
@@ -17,9 +16,10 @@ app ("nib2cib", function(nib2cibTask)
     nib2cibTask.setAuthor("280 North, Inc.");
     nib2cibTask.setEmail("feedback @nospam@ 280north.com");
     nib2cibTask.setSummary("nib2cib converts Cocoa nib and xibs to Cappuccino cibs");
-    nib2cibTask.setSources(FILE.glob("**/*.j"));
-    nib2cibTask.setResources(FILE.glob("Resources/*"));
-    nib2cibTask.setEnvironments(require("objective-j/jake/environment").CommonJS);
+    
+    nib2cibTask.setSources(new FileList("**/*.j"));
+    nib2cibTask.setResources(new FileList("Resources/*"));
+    nib2cibTask.setEnvironments(require("../../Jake/environment.js").CommonJS);
     nib2cibTask.setFlattensSources(true);
 
     if ($CONFIGURATION === "Release")
@@ -28,7 +28,7 @@ app ("nib2cib", function(nib2cibTask)
         nib2cibTask.setCompilerFlags("-DDEBUG -g  -Wno-unused-but-set-variable ");
 });
 
-$BUILD_CJS_NIB2CIB = FILE.join($BUILD_CJS_CAPPUCCINO_BIN, 'nib2cib');
+$BUILD_CJS_NIB2CIB = path.join($BUILD_CJS_CAPPUCCINO_BIN, 'nib2cib');
 
 // executable in environment directory
 filedir($BUILD_CJS_NIB2CIB, ["nib2cib"], function()
@@ -36,7 +36,10 @@ filedir($BUILD_CJS_NIB2CIB, ["nib2cib"], function()
     make_objj_executable($BUILD_CJS_NIB2CIB);
 });
 
-copyManPage("nib2cib", 1);
+task ("install", ["build"], function()
+{
+    copyManPage("nib2cib", 1);
+});
 
 task ("build", ["nib2cib", $BUILD_CJS_NIB2CIB]);
 

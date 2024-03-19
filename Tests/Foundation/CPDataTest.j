@@ -4,6 +4,8 @@
 @import <Foundation/CPKeyedArchiver.j>
 @import <Foundation/CPNumber.j>
 
+@global require;
+
 @implementation CPDataTest : OJTestCase
 {
 }

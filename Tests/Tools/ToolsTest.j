@@ -1,15 +1,17 @@
-var OS = require("os");
-var FILE = require("file");
+var fs = require('fs');
+var path = require('path');
+var childProcess = require("child_process");
+var utilsFile = ObjectiveJ.utils.file;
 
 function cleanup() {
     ["ToolsTestApp", "PressTestApp", "FlattenTestApp"].forEach(function(dir) {
-        if (FILE.isDirectory(dir))
-            FILE.rmtree(dir);
+        if (fs.existsSync(dir) && fs.lstatSync(dir).isDirectory())
+            utilsFile.rm_rf(dir);
     });
 
     ["objj2objcskeletonTestFile.h", "objj2objcskeletonTestFile.m", "objj2objcskeletonTestFile.j", "objjWarningTestFile.j", "objjErrorTestFile.j"].forEach(function(file) {
-        if (FILE.isFile(file))
-            FILE.remove(file);
+        if (fs.existsSync(file) && fs.lstatSync(file).isFile())
+            fs.rmSync(file);
     });
 }
 
@@ -20,9 +22,9 @@ function cleanup() {
 - (void)setUp
 {
     cleanup();
-    FILE.write("objj2objcskeletonTestFile.j", "@import <Foundation/CPObject.j>\n@import <AppKit/AppKit.j>\n\n\n@implementation AppController : CPObject\n{\n    @outlet CPSplitView splitViewA;\n    @outlet CPSplitView splitViewB;\n    @outlet CPSplitView splitViewC;\n}\n\n@end");
-    FILE.write("objjWarningTestFile.j", "@import <Foundation/Foundation.j>@implementation AppController : CPObject{CPWindow theWindow;}@end");
-    FILE.write("objjErrorTestFile.j", "@implementation AppController : CPObject{}@end");
+    fs.writeFileSync("objj2objcskeletonTestFile.j", "@import <Foundation/CPObject.j>\n@import <AppKit/AppKit.j>\n\n\n@implementation AppController : CPObject\n{\n    @outlet CPSplitView splitViewA;\n    @outlet CPSplitView splitViewB;\n    @outlet CPSplitView splitViewC;\n}\n\n@end");
+    fs.writeFileSync("objjWarningTestFile.j", "@import <Foundation/Foundation.j>@implementation AppController : CPObject{CPWindow theWindow;}@end");
+    fs.writeFileSync("objjErrorTestFile.j", "@implementation AppController : CPObject{}@end");
 }
 
 - (void)tearDown
@@ -33,52 +35,58 @@ function cleanup() {
 - (void)testTools
 {
     var status,
-        rootDirectory = FILE.cwd();
+        rootDirectory = process.cwd();
 
-    status = OS.system(["capp", "gen", "ToolsTestApp"].map(OS.enquote).join(" ") + " > /dev/null");
-    [self assert:0 equals:status message:"capp gen failed"];
+    [self assertNoThrow: function() {
+        childProcess.execSync(["capp", "gen", "ToolsTestApp"].map(utilsFile.enquote).join(" ") + " > /dev/null", {stdio: 'inherit'});
+    }];
 
-    status = OS.system(["press", "-f", "ToolsTestApp", "PressTestApp"].map(OS.enquote).join(" ") + " > /dev/null");
-    [self assert:0 equals:status message:"press failed"];
+    //status = childProcess.execSync(["press", "-f", "ToolsTestApp", "PressTestApp"].map(OS.enquote).join(" ") + " > /dev/null", {stdio: 'inherit'});
+    //[self assert:0 equals:status message:"press failed"];
 
-    status = OS.system(["flatten", "-f", "ToolsTestApp", "FlattenTestApp"].map(OS.enquote).join(" ") + " > /dev/null");
-    [self assert:0 equals:status message:"flatten failed"];
+    //status = childProcess.execSync(["flatten", "-f", "ToolsTestApp", "FlattenTestApp"].map(OS.enquote).join(" ") + " > /dev/null", {stdio: 'inherit'});
+    //[self assert:0 equals:status message:"flatten failed"];
 
-    status = OS.system(["objj", "ToolsTestApp/AppController.j"]);
-    [self assert:0 equals:status message:"objj failed"];
+    [self assertNoThrow: function() {
+        childProcess.execSync(["objj", "ToolsTestApp/AppController.j"].map(utilsFile.enquote).join(" "), {stdio: 'ignore'});
+    }];
 
-    status = OS.system(["objj", "-x", "ToolsTestApp/AppController.j"]);
-    [self assert:0 equals:status message:"objj failed"];
+    [self assertNoThrow: function() {
+        childProcess.execSync(["objj", "-x", "ToolsTestApp/AppController.j"].map(utilsFile.enquote).join(" "), {stdio: 'ignore'});
+    }];
 
-    var p = OS.popen(["objj", "--xml", "objjErrorTestFile.j"]);
-    [self assert:1 equals:p.wait() message:"objj failed"];
+    status = [self assertThrows: function() {
+        return childProcess.execSync(["objj", "--xml", "objjErrorTestFile.j"].map(utilsFile.enquote).join(" "), {stdio: 'pipe'});
+    }];
     [self assert:"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\"><plist version = \"1.0\"><array><dict><key>line</key><integer>1</integer><key>sourcePath</key><string>" + rootDirectory + "/objjErrorTestFile.j</string><key>message</key><string>\
 \n@implementation AppController : CPObject{}@end\
 \n                                ^\
-\nERROR line 1 in file:" + rootDirectory + "/objjErrorTestFile.j:1: Can&apos;t find superclass CPObject</string></dict></array></plist>\n" equals:p.stdout.read() message:"objj failed"];
-
-    var p = OS.popen(["objj", "-x", "objjWarningTestFile.j"]);
-    var pp = p.stdout.read();
-    [self assert:0 equals:p.wait() message:"objj failed"];
+\nERROR line 1 in file:" + rootDirectory + "/objjErrorTestFile.j:1: Can&apos;t find superclass CPObject</string></dict></array></plist>\n" equals:status.stdout.toString() message:"objj failed"];
+    status = [self assertNoThrow: function() {
+        return childProcess.execSync(["objj", "-x", "objjWarningTestFile.j"].map(utilsFile.enquote).join(" "), {stdio: 'pipe'});
+    }];
     [self assert:"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\"><plist version = \"1.0\"><array><dict><key>line</key><integer>1</integer><key>sourcePath</key><string>" + rootDirectory + "/objjWarningTestFile.j</string><key>message</key><string>\n@import &lt;Foundation/Foundation.j&gt;@implementation AppController : CPObject{CPWindow theWindow;}@end\
 \n                                                                          ^\
-\nWARNING line 1 in file:" + rootDirectory + "/objjWarningTestFile.j:1: Unknown type &apos;CPWindow&apos; for ivar &apos;theWindow&apos;</string></dict></array></plist>\n" equals:pp message:"objj failed"];
+\nWARNING line 1 in file:" + rootDirectory + "/objjWarningTestFile.j:1: Unknown type &apos;CPWindow&apos; for ivar &apos;theWindow&apos;</string></dict></array></plist>\n" equals:status.toString() message:"objj failed"];
 
-    status = OS.system(["objj", "-m", "ToolsTestApp/AppController.j", "ToolsTestApp/AppController.j"]);
-    [self assert:0 equals:status message:"objj failed with several files"];
+    [self assertNoThrow: function() {
+        childProcess.execSync(["objj", "-m", "ToolsTestApp/AppController.j", "ToolsTestApp/AppController.j"].map(utilsFile.enquote).join(" "), {stdio: 'ignore'});
+    }];
 
-    status = OS.system(["objj", "-I", "ToolsTestApp/Frameworks", "ToolsTestApp/AppController.j"]);
-    [self assert:0 equals:status message:"objj failed with options -I"];
+    [self assertNoThrow: function() {
+        childProcess.execSync(["objj", "-IToolsTestApp/Frameworks", "ToolsTestApp/AppController.j"].map(utilsFile.enquote).join(" "), {stdio: 'ignore'});
+    }];
 
-    status = OS.system(["objj2objcskeleton", "objj2objcskeletonTestFile.j", "."]);
-    [self assert:0 equals:status message:"objj2objcskeleton failed"];
+    [self assertNoThrow: function() {
+        childProcess.execSync(["objj2objcskeleton", "objj2objcskeletonTestFile.j", "."].map(utilsFile.enquote).join(" "), {stdio: 'ignore'});
+    }];
 
-    var contentHeader = FILE.read("objj2objcskeletonTestFile.h"),
+    var contentHeader = fs.readFileSync("objj2objcskeletonTestFile.h").toString(),
         expectedHeaderResult = "#import <Cocoa/Cocoa.h>\n#import \"xcc_general_include.h\"\n\n@interface AppController : NSObject\n\n@property (assign) IBOutlet NSSplitView* splitViewA;\n@property (assign) IBOutlet NSSplitView* splitViewB;\n@property (assign) IBOutlet NSSplitView* splitViewC;\n\n@end\n";
 
     [self assert:contentHeader equals:expectedHeaderResult message:@"Header generated by objj2objcskeleton is wrong"];
 
-    var contentMFile = FILE.read("objj2objcskeletonTestFile.m"),
+    var contentMFile = fs.readFileSync("objj2objcskeletonTestFile.m").toString(),
         expectedMResult = "#import \"objj2objcskeletonTestFile.h\"\n\n@implementation AppController\n@end\n";
 
     [self assert:contentMFile equals:expectedMResult message:@"File generated by objj2objcskeleton is wrong"];

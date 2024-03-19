@@ -257,8 +257,7 @@
 
 - (void)testKVCSumSetOperators
 {
-    var one = [CPSet setWithArray:[@"one", @"two", @"three"]],
-        two = [CPSet setWithArray:[1, 2, 3, 4, 8, 0]];
+    var two = [CPSet setWithArray:[1, 2, 3, 4, 8, 0]];
 
     [self assert:[two valueForKeyPath:"@sum.intValue"] equals:18];
 
@@ -271,8 +270,7 @@
 
 - (void)testKVCAvgSetOperators
 {
-    var one = [CPSet setWithArray:[@"one", @"two", @"three"]],
-        two = [CPSet setWithArray:[1, 2, 3, 4, 8, 0]];
+    var two = [CPSet setWithArray:[1, 2, 3, 4, 8, 0]];
 
     [self assert:[two valueForKeyPath:"@avg.doubleValue"] equals:3.0];
 

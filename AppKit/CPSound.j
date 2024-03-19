@@ -32,6 +32,7 @@
 
 @end
 
+@global document
 
 var CPSoundDelegate_sound_didFinishPlaying_ = 1 << 1;
 

@@ -37,6 +37,8 @@
     CPString    _expires;
 }
 
+@global document
+
 /*!
     Initializes a cookie with a given name \c aName.
     @param the name for the cookie
