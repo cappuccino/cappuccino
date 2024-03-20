@@ -30,7 +30,7 @@ If you discover any bugs, please [file a ticket](http://github.com/cappuccino/ca
 
 System Requirements
 -------------------
-To run Cappuccino applications, all you need is a HTML5 compliant web browser.
+To run Cappuccino applications, all you need is a web browser.
 
 You can develop Cappuccino applications with only a simple text editor on any platform.
 
@@ -38,9 +38,7 @@ If you are on a Mac, our integration with Xcode leverages the world-class visual
 
 Getting Started
 ---------------
-To write you first application, [download the starter package](http://cappuccino.dev/#download).
-
-To try our new Node (alpha) version of the Cappuccino framework, [check the Node installation instructions](https://github.com/cappuccino/cappuccino/wiki/node)
+To write you first application [check the installation instructions](https://github.com/cappuccino/cappuccino/wiki/node)
 
 To contribute to Cappuccino, please read here: [Getting and Building the Source](https://github.com/cappuccino/cappuccino/wiki/Getting-and-building-the-source).
 
