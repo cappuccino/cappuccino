@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # capp_lint.py - Check Objective-J source code formatting,
 # according to Cappuccino standards:
@@ -27,19 +27,19 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from __future__ import with_statement
-from optparse import OptionParser
-from string import Template
-import cgi
-import cStringIO
-import os
-import os.path
-import re
-import sys
-import unittest
+from    __future__  import  with_statement
+from    optparse    import  OptionParser
+from    string      import  Template
+import  cgi
+import  cStringIO
+import  os
+import  os.path
+import  re
+import  sys
+import  unittest
 
-EXIT_CODE_SHOW_HTML = 205
-EXIT_CODE_SHOW_TOOLTIP = 206
+EXIT_CODE_SHOW_HTML    =  205
+EXIT_CODE_SHOW_TOOLTIP =  206
 
 
 def exit_show_html(html):
@@ -456,7 +456,7 @@ class LintChecker(object):
                     self.error('line contains invalid unicode character(s)', type=self.ERROR_TYPE_ILLEGAL)
 
                 if self.verbose:
-                    print u'%d: %s' % (self.lineNum, tabs2spaces(self.line))
+                    print(f"{self.lineNum}: {tabs2spaces(self.line)}")
 
                 if check_line:
                     self.run_line_checks()
@@ -532,7 +532,7 @@ class LintChecker(object):
         # If there is an open comment block, eat it
         if commentOpenCount:
             if self.verbose:
-                print u'%d: BLOCK COMMENT START' % self.lineNum
+                print(f"{self.lineNum}: BLOCK COMMENT START")
         else:
             return
 
@@ -542,13 +542,13 @@ class LintChecker(object):
             match = self.BLOCK_COMMENT_END_RE.match(self.line)
 
         if self.verbose:
-            print u'%d: BLOCK COMMENT END' % self.lineNum
+            print(f"{self.lineNum}: BLOCK COMMENT END")
 
     def balance_pairs(self, squareOpenCount, curlyOpenCount, parenOpenCount):
         # The following lines have to be indented at least as much as the first identifier
         # after the var keyword at the start of the block.
         if self.verbose:
-            print "%d: BALANCE BRACKETS: '['=%d, '{'=%d, '('=%d" % (self.lineNum, squareOpenCount, curlyOpenCount, parenOpenCount)
+            print(f"{self.lineNum}: BALANCE BRACKETS: '['={squareOpenCount}, '{'={curlyOpenCount}, '('={parenOpenCount}")
 
         lineRE = re.compile(self.INDENTED_EXPRESSION_RE_TEMPLATE % len(self.identifierIndent))
 
@@ -584,16 +584,16 @@ class LintChecker(object):
                 self.get_expression(match)
 
             # Update the bracket counts
-            squareOpenCount += self.expression.count('[')
-            squareOpenCount -= self.expression.count(']')
-            curlyOpenCount += self.expression.count('{')
-            curlyOpenCount -= self.expression.count('}')
-            parenOpenCount += self.expression.count('(')
-            parenOpenCount -= self.expression.count(')')
+            squareOpenCount  +=  self.expression.count('[')
+            squareOpenCount  -=  self.expression.count(']')
+            curlyOpenCount   +=  self.expression.count('{')
+            curlyOpenCount   -=  self.expression.count('}')
+            parenOpenCount   +=  self.expression.count('(')
+            parenOpenCount   -=  self.expression.count(')')
 
             if squareOpenCount == 0 and curlyOpenCount == 0 and parenOpenCount == 0:
                 if self.verbose:
-                    print u'%d: BRACKETS BALANCED' % self.lineNum
+                    print(f"{self.lineNum}: BRACKETS BALANCED")
 
                 # The brackets are closed, this line must be separated
                 match = self.SEPARATOR_RE.match(self.expression)
@@ -609,14 +609,12 @@ class LintChecker(object):
         groups = lineMatchOrBlockMatch.groupdict()
 
         if 'assignment' in groups or 'bracket' in groups:
-            squareOpenCount = self.expression.count('[')
-            squareOpenCount -= self.expression.count(']')
-
-            curlyOpenCount = self.expression.count('{')
-            curlyOpenCount -= self.expression.count('}')
-
-            parenOpenCount = self.expression.count('(')
-            parenOpenCount -= self.expression.count(')')
+            squareOpenCount   =  self.expression.count('[')
+            squareOpenCount  -=  self.expression.count(']')
+            curlyOpenCount    =  self.expression.count('{')
+            curlyOpenCount   -=  self.expression.count('}')
+            parenOpenCount    =  self.expression.count('(')
+            parenOpenCount   -=  self.expression.count(')')
 
             if squareOpenCount or curlyOpenCount or parenOpenCount:
                 # If the brackets were not properly closed or the statement was
@@ -760,20 +758,20 @@ class LintChecker(object):
 
             # Now we have the start of a variable block
             if self.verbose:
-                print u'%d: VAR BLOCK' % self.lineNum
+                print(f"{self.lineNum}: VAR BLOCK")
 
-            varLineNum = self.lineNum
-            varLine = self.line
+            varLineNum            =  self.lineNum
+            varLine               =  self.line
 
-            haveLine, isSingleVar = self.var_block(match)
+            haveLine, isSingleVar =  self.var_block(match)
 
             if self.verbose:
-                print u'%d: END VAR BLOCK:' % self.lineNum,
+                print(f"{self.lineNum}: END VAR BLOCK:")
 
                 if isSingleVar:
-                    print u'SINGLE'
+                    print('SINGLE')
                 else:
-                    print u'MULTIPLE'
+                    print('MULTIPLE')
 
             if lastStatementWasVar and self.varDeclarations != self.VAR_DECLARATIONS_NONE:
                 if (self.varDeclarations == self.VAR_DECLARATIONS_SINGLE and lastVarWasSingle and isSingleVar) or \
@@ -789,7 +787,7 @@ class LintChecker(object):
             self.lineNum = 0
 
             if self.verbose:
-                print u'%s: %s' % (check['title'], self.sourcefile.name)
+                print(f"{check['title']}: {self.sourcefile.name}")
 
             check['action']()
 
@@ -832,19 +830,19 @@ class LintChecker(object):
 
             except StopIteration:
                 if self.verbose:
-                    print u'EOF\n'
+                    print('EOF\n')
                 pass
 
     def lint_text(self, text, filename="<stdin>"):
-        self.filename = filename
-        self.filesToCheck = []
+        self.filename     =  filename
+        self.filesToCheck =  []
 
         try:
             self.sourcefile = cStringIO.StringIO(text)
             self.run_file_checks()
         except StopIteration:
             if self.verbose:
-                print u'EOF\n'
+                print('EOF\n')
             pass
 
         return self.errors
@@ -1133,7 +1131,7 @@ if __name__ == '__main__':
         filenames = [name.rstrip() for name in sys.stdin.readlines()]
 
     if not filenames:
-        print usage.replace('%prog', os.path.basename(sys.argv[0]))
+        print(usage.replace('%prog', os.path.basename(sys.argv[0])))
         sys.exit(0)
 
     checker = LintChecker(basedir=basedir, view=None, var_declarations=LintChecker.VAR_DECLARATIONS.index(options.var_declarations), verbose=options.verbose)

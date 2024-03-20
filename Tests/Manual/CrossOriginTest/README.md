@@ -6,11 +6,11 @@ You will need to start two HTTP Servers; one on localhost:8000, and one on local
 
 The first:
 
-`$> python -m SimpleHTTPServer`  // starts it on 8000
+`$> python3 -m http.server`  // starts it on 8000
 
 In another terminal window:
 
-`$> python cors-server.py` // starts another on 8001
+`$> python3 cors-server.py` // starts another on 8001
 
 Visit http://localhost:8000 in your web browser. There are two buttons and a checkbox.
 

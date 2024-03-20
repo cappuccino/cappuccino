@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # $1 Generated documentation directory
 
@@ -33,7 +33,7 @@ for count, filename in enumerate(html):
         f = open(filename, "r+", encoding='UTF-8', errors='ignore')
         text = f.read()
     except:
-        print("Failed to read %s." % filename)
+        print(f"Failed to read {filename}.")
         raise
         
     i = 0
