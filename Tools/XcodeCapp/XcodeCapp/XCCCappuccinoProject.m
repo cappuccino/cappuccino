@@ -377,8 +377,16 @@ NSString * const XCCCappuccinoProjectLastEventIDKey         = @"XCCCappuccinoPro
 
 - (void)_writeXcodeCappIgnoreFile
 {
-    NSData *data = [NSPropertyListSerialization dataFromPropertyList:self->settings format:NSPropertyListXMLFormat_v1_0 errorDescription:nil];
-    
+    # pragma TODO
+    // More verifiable user notification of error?
+    NSError *error  = nil;
+    NSData  *data   = [NSPropertyListSerialization dataWithPropertyList: self->settings
+                                               format: NSPropertyListXMLFormat_v1_0
+                                              options: 0
+                                                error: &error];
+    if(data != nil){
+        NSLog(@"error %ld",(long)[error code]);
+    }
     [data writeToFile:self.settingsPath atomically:YES];
     
     NSFileManager *fm = [NSFileManager defaultManager];
