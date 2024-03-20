@@ -65,7 +65,7 @@
 - (void)_setTextColor:(NSColor *)color forButton:(NSButton *)button
 {
     NSMutableParagraphStyle *paragraphStyle= [NSMutableParagraphStyle new];
-    [paragraphStyle setAlignment:NSCenterTextAlignment];
+    [paragraphStyle setAlignment:NSTextAlignmentCenter];
 
     NSDictionary *attrs = @{NSFontAttributeName: [NSFont systemFontOfSize:11],
                                  NSForegroundColorAttributeName: color,
