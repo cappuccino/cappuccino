@@ -93,15 +93,17 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
     {
         [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
 
-        NSRunAlertPanel(
-                        self.cappuccinoProject.nickname,
-                        @"XcodeCapp was unable to find all necessary executables in your environment:\n\n"
-                        @"%@\n\n"
-                        @"You certainly need to change the binary paths in the project settings.",
-                        @"OK",
-                        nil,
-                        nil,
-                        [self->taskLauncher.executables componentsJoinedByString:@", "]);
+        NSAlert *alert = [[NSAlert alloc] init];
+        [alert setAlertStyle:NSAlertStyleCritical];
+        NSString *title = self.cappuccinoProject.nickname;
+        [alert setMessageText:title];
+        NSArray *informativeTextArray = @[
+            @"XcodeCapp was unable to find all necessary executables in current environment:",
+            @"Please confirm the following executables are in current $PATH:\n",
+            [self->taskLauncher.executables componentsJoinedByString:@", "]
+        ];
+        [alert setInformativeText:[informativeTextArray componentsJoinedByString:@"\n"]];
+        [alert runModal];
 
         [self _reinitializeProjectController];
     }
@@ -155,7 +157,12 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
 
     if (![fm fileExistsAtPath:self.cappuccinoProject.projectPath isDirectory:nil])
     {
-        NSRunAlertPanel(@"The project can’t be located.", @"It seems the project moved while XcodeCapp was not running.", @"Remove Project", nil, nil);
+        NSAlert *alert = [[NSAlert alloc] init];
+        [alert setAlertStyle:NSAlertStyleCritical];
+        [alert setMessageText:@"The project can’t be located"];
+        NSString *informativeText = [NSString stringWithFormat:@"The project was either moved or deleted outside of the XcodeCapp environment.\nProject will be removed."];
+        [alert setInformativeText:informativeText];
+        [alert runModal];
 
         [self.mainXcodeCappController unmanageCappuccinoProjectController:self];
         return NO;
@@ -1003,7 +1010,12 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
 
 - (void)_handleProjectPathChange:(NSString *)path
 {
-    NSRunAlertPanel(self.cappuccinoProject.nickname, @"The project directory changed. This project will be removed", @"OK", nil, nil, nil);
+    NSAlert *alert = [[NSAlert alloc] init];
+    [alert setAlertStyle:NSAlertStyleCritical];
+    [alert setMessageText:@"The project directory changed"];
+    NSString *informativeText = [NSString stringWithFormat:@"This project will be removed."];
+    [alert setInformativeText:informativeText];
+    [alert runModal];
 
     [self.mainXcodeCappController unmanageCappuccinoProjectController:self];
 }
@@ -1206,15 +1218,27 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
 
     if (!exists || !isDirectory || !isOpened)
     {
-        NSString *text;
+        NSString *projectErrorDescription;
 
         if (!isOpened)
-            text = @"The project exists, but failed to open.";
+            projectErrorDescription = @"The project exists, but failed to open.";
         else
-            text = [NSString stringWithFormat:@"%@ %@.", self.cappuccinoProject.XcodeProjectPath, !exists ? @"does not exist" : @"is not an Xcode project"];
+            projectErrorDescription = [NSString stringWithFormat:@"%@ %@.", self.cappuccinoProject.XcodeProjectPath, !exists ? @"does not exist" : @"is not an Xcode project"];
 
         [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
-        NSInteger response = NSRunAlertPanel(@"The project could not be opened.", @"%@\n\nWould you like to regenerate the project?", @"Yes", @"No", nil, text);
+
+        NSAlert *alert = [[NSAlert alloc] init];
+        [alert setAlertStyle:NSAlertStyleCritical];
+        [alert setMessageText:@"The project could not be opened"];
+        NSArray *informativeTextArray = @[
+            projectErrorDescription,
+            @"Should the project be regenerated?"
+        ];
+        NSString *informativeText = [informativeTextArray componentsJoinedByString:@"\n"];
+        [alert setInformativeText:informativeText];
+        [alert addButtonWithTitle:@"Yes"];
+        [alert addButtonWithTitle:@"No"];
+        NSInteger response = [alert runModal];
 
         if (response == NSAlertFirstButtonReturn)
             [self resetProject:self];

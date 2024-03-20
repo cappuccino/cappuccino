@@ -34,7 +34,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>Version 4.0.1</string>
+	<string>Version 4.0.2</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
@@ -44,7 +44,7 @@
 	<key>LSMinimumSystemVersion</key>
 	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>Copyright © 2012-2018 Cappuccino Project. All rights reserved.</string>
+	<string>Copyright © 2012-2024 Cappuccino Project</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
@@ -56,8 +56,6 @@
 	<key>XCCLastCappuccinoMasterBranchURL</key>
 	<string>https://github.com/cappuccino/cappuccino/archive/master.zip</string>
 	<key>XCCLastCappuccinoReleaseURL</key>
-	<string>https://github.com/cappuccino/cappuccino/archive/1.0.0.zip</string>
-	<key>NSRequiresAquaSystemAppearance</key>
-	<false/>
+	<string>https://www.cappuccino.dev/downloads/CappuccinoStarter-1.0.0.zip</string>
 </dict>
 </plist>
