@@ -24,9 +24,9 @@ task ("build", function()
                 minorVersion = parseInt(versions[1], 10),
                 buildVersion = parseInt(versions[2], 10);
 
-        if (!((majorVersion == 11) || (majorVersion == 10 && minorVersion >= 12)))
+        if (!((majorVersion >= 11) || (majorVersion == 10 && minorVersion >= 13)))
             {
-                colorPrint("XcodeCapp requires at least macOS Sierra.", "red");
+                colorPrint("XcodeCapp requires at least macOS High Sierra.", "red");
 
                 p.stdin.close();
                 p.stdout.close();

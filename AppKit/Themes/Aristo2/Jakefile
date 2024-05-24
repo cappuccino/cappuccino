@@ -23,7 +23,6 @@ var promise = new Promise((resolve, reject) => {
 
 require("../../../CommonJS/lib/cappuccino/jake.js").initilize(callbackFunction);
 
-
 async function defineBlendTask() {
     await exports.blend ("Aristo2.blend", function(aristoTask)
     {

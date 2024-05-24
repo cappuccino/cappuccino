@@ -5,9 +5,9 @@ name: Node build
 
 on:
   push:
-    branches: [ node ]
+    branches: [ main ]
   pull_request:
-    branches: [ node ]
+    branches: [ main ]
 
 jobs:
   build:
@@ -16,18 +16,19 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [16.x, 17.x]
+        node-version: [17.x, 18.x, 19.x, 20.x, 21.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
     - run: echo "${PWD}/dist/cappuccino/bin" >> $GITHUB_PATH
     - run: echo "${PWD}/dist/objective-j/bin" >> $GITHUB_PATH
     - run: npm install
+    - run: npm update
     - run: jake dist
     - run: jake test-only

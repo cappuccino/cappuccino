@@ -8,7 +8,6 @@ function callbackFunction(blendtask) {
     callback(blendtask);
 }
 
-
 $BUILD_CJS_BLENDTASK = path.join($BUILD_CJS_CAPPUCCINO, "lib", "cappuccino", "jake", "blendtask.j");
 
 var promise = new Promise((resolve, reject) => {

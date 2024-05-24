@@ -44,6 +44,7 @@
 @class CPClipView
 @class CPScrollView
 @class CALayer
+@class CPBinder
 
 @global appkit_tag_dom_elements
 
@@ -232,7 +233,7 @@ var CPViewHighDPIDrawingEnabled = YES;
     JSObject            _ephemeralSubviews;
 
     JSObject            _ephemeralSubviewsForNames;
-    CPSet               _ephereralSubviews;
+    CPSet               _ephemeralSubviews;
 
     // Key View Support
     CPView              _nextKeyView;
@@ -3731,6 +3732,16 @@ var CPAppearanceVibrantDark = [CPAppearance appearanceNamed:CPAppearanceNameVibr
 {
     for (var i = 0; i < owners.length; i++)
         [owners[i] updateTrackingAreas];
+}
+
+// needed by CPWindow's releasedWhenClosed property
+- (void)_releaseRecursively
+{
+    [_subviews makeObjectsPerformSelector:@selector(_releaseRecursively)];
+
+    [self _removeObservers];
+    [CPBinder unbindAllForObject:self];
+    [self removeFromSuperview];
 }
 
 @end
