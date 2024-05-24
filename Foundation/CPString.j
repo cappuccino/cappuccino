@@ -571,6 +571,16 @@ var CPStringNull = [CPNull null];
 }
 
 /*!
+ Returns \c YES if the receiver contains
+ the specified string. If \c aString
+ is empty, the method will return \c NO.
+ */
+- (BOOL)containsString:(CPString)aString
+{
+    return aString && aString != "" && self.indexOf(aString) >= 0;
+}
+
+/*!
     Returns \c YES if the receiver ends
     with the specified string. If \c aString
     is empty, the method will return \c NO.
