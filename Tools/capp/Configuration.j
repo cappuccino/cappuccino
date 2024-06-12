@@ -4,9 +4,11 @@
 @import <Foundation/CPObject.j>
 @import <Foundation/CPSet.j>
 
+var fs = require("fs");
+var PATH = require("path");
 
-var FILE = require("file"),
-    SYSTEM = require("system");
+/* var FILE = require("file"),
+    SYSTEM = require("system"); */
 
 var DefaultDictionary       = nil,
     DefaultConfiguration    = nil,
@@ -51,7 +53,7 @@ var DefaultDictionary       = nil,
 + (id)userConfiguration
 {
     if (!UserConfiguration)
-        UserConfiguration = [[self alloc] initWithPath:FILE.join(SYSTEM.env["HOME"], ".cappconfig")];
+        UserConfiguration = [[self alloc] initWithPath:PATH.join(process.env["HOME"], ".cappconfig")];
 
     return UserConfiguration;
 }
@@ -65,7 +67,16 @@ var DefaultDictionary       = nil,
         path = aPath;
         temporaryDictionary = @{};
 
-        if (path && FILE.isReadable(path))
+        function isReadable(p) {
+            try {
+                fs.accessSync(p, fs.constants.R_OK);
+                return true;
+            } catch (err) {
+                return false;
+            }
+        }
+
+        if (path && isReadable(path))
             dictionary = CFPropertyList.readPropertyListFromFile(path);
 
         // readPlist will return nil if the file is empty
@@ -192,7 +203,7 @@ function config(/*va_args*/)
             keyEnumerator = [configuration storedKeyEnumerator];
 
         while ((key = [keyEnumerator nextObject]) !== nil)
-            print(key + '=' + [configuration valueForKey:key]);
+            console.log(key + '=' + [configuration valueForKey:key]);
     }
     else if (action === "get")
     {

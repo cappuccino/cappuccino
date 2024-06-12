@@ -286,6 +286,8 @@
     outlineView = decoded;
     // Expansion state does not archive.
     [outlineView expandItem:nil expandChildren:YES];
+    // Set the datasource or we will get warnings about this.
+    [outlineView setDataSource:dataSource];
     // While not exhaustive, if this test works nothing is majorly broken with the unarchived outline view.
     [self testCollapse];
 }

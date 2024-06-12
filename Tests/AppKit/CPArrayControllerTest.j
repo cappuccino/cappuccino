@@ -875,8 +875,9 @@
 
 - (void)testObservationDuringSetSelectionIndexes
 {
-    var arrayController = [self arrayController],
-        newContent = [self setupObservationFixture];
+    var arrayController = [self arrayController];
+
+    [self setupObservationFixture];
 
     var newSelection = [CPIndexSet indexSetWithIndex:2];
     [arrayController setSelectionIndexes:newSelection];
@@ -1142,6 +1143,7 @@
     [self setItemsArray:[]];
     var ddd = new Date();
 
+    console.log();
     CPLog.warn("\n" + [self className] + " Performance tests");
     CPLog.warn("EmptyArray -> BigArray (" + [bigArray count] + "): " + (dd - d) + "ms.");
     CPLog.warn("BigArray (" + [bigArray count] + ") -> EmptyArray: " + (ddd - dd) + "ms.");

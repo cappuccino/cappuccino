@@ -1881,7 +1881,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
 @end
 
-@implementation _CPOutlineViewTableViewDataSource : CPObject
+@implementation _CPOutlineViewTableViewDataSource : CPObject <CPTableViewDataSource>
 {
     CPObject _outlineView;
 }
@@ -2011,7 +2011,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
 @end
 
-@implementation _CPOutlineViewTableViewDelegate : CPObject
+@implementation _CPOutlineViewTableViewDelegate : CPObject <CPTableViewDelegate>
 {
     CPOutlineView   _outlineView;
 }

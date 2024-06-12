@@ -50,6 +50,8 @@ CPJSONPCallbackReplacementString = @"${JSONP_CALLBACK}";
     DOMElement      _scriptTag;
 }
 
+@global document
+
 /*! @deprecated */
 + (CPJSONPConnection)sendRequest:(CPURLRequest)aRequest callback:(CPString)callbackParameter delegate:(id)aDelegate
 {

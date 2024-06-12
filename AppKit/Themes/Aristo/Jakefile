@@ -1,16 +1,39 @@
-
 require("../../../common.jake");
 
-var blend = require("cappuccino/jake").blend;
+const path = require("path");
 
-blend ("Aristo.blend", function(aristoTask)
-{
-    aristoTask.setBuildIntermediatesPath(FILE.join($BUILD_DIR, "Aristo.build", $CONFIGURATION))
-    aristoTask.setBuildPath(FILE.join($BUILD_DIR, $CONFIGURATION));
+var callback;
 
-    aristoTask.setThemeDescriptors(new FileList("ThemeDescriptors.j"));
-    aristoTask.setIdentifier("com.280n.blend.Aristo");
-    aristoTask.setResources(new FileList("Resources/*"));
+function callbackFunction(blendtask) {
+    callback(blendtask);
+}
+
+$BUILD_CJS_BLENDTASK = path.join($BUILD_CJS_CAPPUCCINO, "lib", "cappuccino", "jake", "blendtask.j");
+
+var promise = new Promise((resolve, reject) => {
+    callback = function(BLEND_TASK) {
+        exports.BlendTask = BLEND_TASK.BlendTask;
+        exports.blend = BLEND_TASK.blend;
+        defineBlendTask().then(() => {
+            resolve();
+            delete exports.jakePromise;
+        });
+    }
 });
 
-task ("build", ["Aristo.blend"]);
+require("../../../CommonJS/lib/cappuccino/jake.js").initilize(callbackFunction);
+
+async function defineBlendTask() {
+    await exports.blend ("Aristo.blend", function(aristoTask)
+    {
+        aristoTask.setBuildIntermediatesPath(path.join($BUILD_DIR, "Aristo.build", $CONFIGURATION))
+        aristoTask.setBuildPath(path.join($BUILD_DIR, $CONFIGURATION));
+
+        aristoTask.setThemeDescriptors(new FileList("ThemeDescriptors.j"));
+        aristoTask.setIdentifier("com.280n.blend.Aristo");
+        aristoTask.setResources(new FileList("Resources/*"));
+    });
+    task ("build", ["Aristo.blend"]);    
+}
+
+exports.jakePromise = promise;

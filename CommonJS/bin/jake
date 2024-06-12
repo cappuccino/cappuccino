@@ -1,0 +1,7 @@
+#!/usr/bin/env node
+
+JAKE = require("@objj/jake");
+ObjectiveJ = require("@objj/runtime");
+CAPPUCCINO = require("@objj/cappuccino");
+
+JAKE.application().run({ args : process.argv });

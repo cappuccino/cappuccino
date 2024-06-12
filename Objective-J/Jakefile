@@ -27,58 +27,64 @@ require("../common.jake");
 // as we are running in an already built Objective-J environment
 require("./OldBrowserCompatibility");
 
-var FILE = require("file"),
+/* var FILE = require("file"),
     OS = require("os"),
-    stream = require("narwhal/term").stream;
+    stream = require("narwhal/term").stream; */
 
-    var walk = require("./acornwalk").acorn.walk;
+var path = require("path");
+var fs = require("fs");
+var terser = require("terser");
 
+var walk = require("acorn-walk");
 acorn = {walk: walk};
-acorn = require("./acorn").acorn;
+acorn = require("objj-parser");
+var compiler = require("objj-transpiler");
 
-    var compiler = require("./ObjJAcornCompiler").ObjJCompiler;
+const term = ObjectiveJ.term;
+const utilsFile = ObjectiveJ.utils.file;
 
 //$BUILD_CONFIGURATION_DIR = "../Build"
-$BROWSER_FILE       = FILE.join("Browser", "Objective-J.js");
+$BROWSER_FILE       = path.join("Browser", "Objective-J.js");
 
-$BUILD_OBJECTIVE_J  = FILE.join($BUILD_CONFIGURATION_DIR, "Objective-J");
-$BUILD_BROWSER_FILE = FILE.join($BUILD_OBJECTIVE_J, "Objective-J.js");
+$BUILD_OBJECTIVE_J  = path.join($BUILD_CONFIGURATION_DIR, "Objective-J");
+$BUILD_BROWSER_FILE = path.join($BUILD_OBJECTIVE_J, "Objective-J.js");
 
-$INCLUDE_FLAGS      = ["'-I" + FILE.cwd() + "'"];
+$INCLUDE_FLAGS      = ["'-I" + process.cwd() + "'"];
 $DEBUG_FLAGS        = $CONFIGURATION === "Debug" ? ["-DDEBUG=1"] : [""];
 $OBJECTIVEJ_FILES   = new FileList("*.js");
 
 $BROWSER_FILES      = new FileList($BROWSER_FILE).include($OBJECTIVEJ_FILES);
 
-filedir($BUILD_BROWSER_FILE, $BROWSER_FILES, function(aTask)
+
+filedir($BUILD_BROWSER_FILE, $BROWSER_FILES, async function(aTask)
 {
     gcc($BROWSER_FILE,
         $BUILD_BROWSER_FILE,
         environmentFlags("Browser", "ObjJ").concat($INCLUDE_FLAGS, $DEBUG_FLAGS, ["-Wno-unused-but-set-variable"]), $CONFIGURATION !== "Debug");
 });
 
-$LICENSE        = FILE.join("CommonJS", "lib", "objective-j", "jake", "LICENSES", "LGPL-v2.1");
-$BUILD_LICENSE  = FILE.join($BUILD_OBJECTIVE_J, "LICENSE");
+$LICENSE        = path.join("CommonJS", "lib", "objective-j", "jake", "LICENSES", "LGPL-v2.1");
+$BUILD_LICENSE  = path.join($BUILD_OBJECTIVE_J, "LICENSE");
 
 filedir($BUILD_LICENSE, [$LICENSE], function()
 {
-    FILE.copy($LICENSE, $BUILD_LICENSE);
+    fs.copyFileSync($LICENSE, $BUILD_LICENSE);
 });
 
-new FileList("CommonJS/**/*").forEach(function(aFilename)
+new FileList("CommonJS/**/*").forEach( async function(aFilename)
 {
     // . files should be left out of FileList...
-    if (!FILE.isFile(aFilename) || FILE.basename(aFilename).charAt(0) === ".")
+    if (!fs.lstatSync(aFilename).isFile() || path.basename(aFilename).charAt(0) === ".")
         return;
 
-    var buildFilename = FILE.join($BUILD_CJS_OBJECTIVE_J, FILE.relative("CommonJS/", aFilename));
+    var buildFilename = path.join($BUILD_CJS_OBJECTIVE_J, path.relative("CommonJS/", aFilename));
 
     filedir (buildFilename, new FileList(aFilename).include($OBJECTIVEJ_FILES), function ()
     {
-        if (FILE.extension(aFilename) !== ".js")
+        if (path.extname(aFilename) !== ".js")
         {
-            stream.print("Copying... \0green(" + aFilename +"\0)");
-            cp(aFilename, buildFilename);
+            term.stream.print("Copying... \0green(" + aFilename +"\0)");
+            utilsFile.cp(aFilename, buildFilename);
         }
         else
             gcc(aFilename,
@@ -87,27 +93,26 @@ new FileList("CommonJS/**/*").forEach(function(aFilename)
     });
 
     // HACK: narwhal should copy permissions
-    if (FILE.dirname(aFilename) === FILE.join("CommonJS", "bin"))
+    if (path.dirname(aFilename) === path.join("CommonJS", "bin"))
     {
         filedir (buildFilename, function ()
         {
-            FILE.chmod(buildFilename, 0755);
+            fs.chmodSync(buildFilename, 0o755);
         });
     }
-
     task ("build", buildFilename);
     CLOBBER.include(buildFilename);
 });
 
 task ("build", function() {
-    setPackageMetadata(FILE.join($BUILD_CJS_OBJECTIVE_J, "package.json"));
+    setPackageMetadata(path.join($BUILD_CJS_OBJECTIVE_J, "package.json"));
 });
 
-$BUILD_CJS_OBJECTIVE_J_FRAMEWORK = FILE.join($BUILD_CJS_OBJECTIVE_J, "Frameworks", "Objective-J");
+$BUILD_CJS_OBJECTIVE_J_FRAMEWORK = path.join($BUILD_CJS_OBJECTIVE_J, "Frameworks", "Objective-J");
 
 filedir($BUILD_CJS_OBJECTIVE_J_FRAMEWORK, function()
 {
-    cp_r($BUILD_OBJECTIVE_J, $BUILD_CJS_OBJECTIVE_J_FRAMEWORK);
+    utilsFile.cp_r($BUILD_OBJECTIVE_J, $BUILD_CJS_OBJECTIVE_J_FRAMEWORK);
 });
 
 CLOBBER.include($BUILD_OBJECTIVE_J);
@@ -121,24 +126,20 @@ function environmentFlags()
     }).concat("-DENVIRONMENTS=" + JSON.stringify(environments));
 }
 
-var SHRINKSAFE = require("minify/shrinksafe");
-function compressor(code) {
-    return SHRINKSAFE.compress(code, { charset : "UTF-8", useServer : true });
+async function compressor(srcCode) {
+    return (await terser.minify(srcCode)).code;
 }
 
-var headerText = FILE.read("header.txt", { charset : "UTF-8" });
-function gcc(inputFilePath, outputFilePath, flags, compress)
+var headerText = fs.readFileSync("header.txt", { encoding: "utf8" });
+async function gcc(inputFilePath, outputFilePath, flags, compress)
 {
-    stream.print("Building... \0green(" + outputFilePath +"\0)");
-
-    var source = FILE.read(inputFilePath, { charset : "UTF-8" });
+    term.stream.print("Building... \0green(" + outputFilePath +"\0)");
+    var source = fs.readFileSync(inputFilePath, { charset : "utf8" }).toString();
     var compilerOptions = compiler.parseGccCompilerFlags(flags.join(" "));
-    var acornOptions = compilerOptions.acornOptions || (compilerOptions.acornOptions = {});
+    var acornOptions = compilerOptions.acornOptions || (compilerOptions.acornOptions = {ecmaVersion: 2022});
 
     acornOptions.preprocessGetIncludeFile = function(filePath, isQuoted) {
-        var includeContent = FILE.read(filePath, { charset : "UTF-8" });
-        //print ("Include content for file '" + filePath + "': " + includeContent);
-        //print ("Include file '" + filePath + "'");
+        var includeContent = fs.readFileSync(filePath, { charset : "utf8" }).toString();
         return {include: includeContent, sourceFile: filePath};
     }
 
@@ -153,18 +154,16 @@ function gcc(inputFilePath, outputFilePath, flags, compress)
 
         // Set anyErrors to 'true' if there are any errors in the list
         anyErrors = anyErrors || warning.messageType === "ERROR";
-        print(message);
+        console.log(message);
     }
 
     if (anyErrors) throw "Compilation Error";
-
     var code = c.code();
     var contents = headerText + code;
-
-    if (FILE.extension(inputFilePath) === ".js" && compress)
-        contents = compressor(contents);
-
-    FILE.write(outputFilePath, contents, { charset : "UTF-8" });
+    if (path.extname(inputFilePath) === ".js" && compress) {
+        contents = await compressor(contents);
+    }
+    fs.writeFileSync(outputFilePath, contents, { encoding : "utf8" });
 }
 
 task("build", [$BUILD_BROWSER_FILE, $BUILD_LICENSE, $BUILD_CJS_OBJECTIVE_J_FRAMEWORK]);

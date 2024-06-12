@@ -8,10 +8,10 @@ var methodsCalled;
     CPBundle bundle;
 }
 
-- (void)setUp
+- (async void)setUp
 {
     bundle = [CPBundle bundleWithPath:@"Tests/AppKit/BundleTest"];
-    [bundle loadWithDelegate:self];
+    await [bundle loadWithDelegate:self];
 }
 
 - (void)bundleDidFinishLoading:(CPBundle)aBundle

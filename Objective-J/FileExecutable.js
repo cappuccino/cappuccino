@@ -66,7 +66,7 @@ FileExecutable.prototype = new Executable();
 
 var compile = function(self, fileContents, aURL, compilerOptions, aFilenameTranslateDictionary)
 {
-    var acornOptions = compilerOptions.acornOptions || (compilerOptions.acornOptions = {});
+    var acornOptions = compilerOptions.acornOptions || (compilerOptions.acornOptions = {ecmaVersion: 2022});
 
     acornOptions.preprocessGetIncludeFile = function(filePath, isQuoted) {
         var referenceURL = new CFURL(".", aURL), // Remove the filename from the url

@@ -26,8 +26,10 @@
 
 @class Nib2Cib
 
-var FILE = require("file");
+//var FILE = require("file");
 
+var fs = require("fs");
+var node_path = require("path");
 
 @implementation Nib2CibKeyedUnarchiver : CPKeyedUnarchiver
 {
@@ -87,7 +89,7 @@ var FILE = require("file");
 
 - (CPString)_resourcePathForName:(CPString)aName inDirectory:(CPString)directory
 {
-    var pathGroups = [FILE.listPaths(directory)];
+    var pathGroups = [listPaths(directory)];
 
     while (pathGroups.length > 0)
     {
@@ -99,13 +101,11 @@ var FILE = require("file");
         {
             var path = paths[index];
 
-            if (FILE.basename(path) === aName)
+            if (node_path.basename(path) === aName)
                 return path;
-
-            else if (FILE.isDirectory(path))
-                pathGroups.push(FILE.listPaths(path));
-
-            else if (!FILE.extension(aName) && FILE.basename(path).replace(/\.[^.]*$/, "") === aName)
+            else if (fs.lstatSync(path).isDirectory())
+                pathGroups.push(listPaths(path));
+            else if (!node_path.extname(aName) && node_path.basename(path).replace(/\.[^.]*$/, "") === aName)
                 return path;
         }
     }
@@ -115,13 +115,13 @@ var FILE = require("file");
 
 @end
 
-FILE.listPaths = function(aPath)
+listPaths = function(aPath)
 {
-    var paths = FILE.list(aPath),
+    var paths = fs.readdirSync(aPath),
         count = paths.length;
 
     while (count--)
-        paths[count] = FILE.join(aPath, paths[count]);
+        paths[count] = node_path.join(aPath, paths[count]);
 
     return paths;
 };

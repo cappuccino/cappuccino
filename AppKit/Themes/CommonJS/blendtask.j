@@ -27,13 +27,14 @@
 @import <AppKit/_CPCibObjectData.j>
 @import <BlendKit/BlendKit.j>
 
+var /* FILE = require("file"), */
+    TERM = ObjectiveJ.term,
+    task = JAKE.task,
+    filedir = JAKE.filedir,
+    BundleTask = CAPPUCCINO.Jake.BundleTask.BundleTask;
 
-var FILE = require("file"),
-    TERM = require("narwhal/term"),
-    task = require("jake").task,
-    filedir = require("jake").filedir,
-    BundleTask = require("objective-j/jake/bundletask").BundleTask;
-
+var fs = require("fs");
+var path = require("path");
 
 function BlendTask(aName)
 {
@@ -53,9 +54,17 @@ BlendTask.prototype.packageType = function()
 
 BlendTask.prototype.infoPlist = function()
 {
+
     var infoPlist = BundleTask.prototype.infoPlist.apply(this, arguments);
 
-    infoPlist.setValueForKey("CPKeyedThemes", require("narwhal/util").unique(this._keyedThemes));
+    function onlyUnique(value, index, self) {
+        return self.indexOf(value) === index;
+    }
+
+    this._keyedThemes.filter(onlyUnique)
+
+    infoPlist.setValueForKey("CPKeyedThemes", this._keyedThemes.filter(onlyUnique));
+    //infoPlist.setValueForKey("CPKeyedThemes", require("narwhal/util").unique(this._keyedThemes));
 
     return infoPlist;
 };
@@ -72,9 +81,10 @@ BlendTask.prototype.setThemeDescriptors = function(/*Array | FileList*/ themeDes
 
 BlendTask.prototype.defineTasks = function()
 {
-    this.defineThemeDescriptorTasks();
-
-    BundleTask.prototype.defineTasks.apply(this, arguments);
+    var self = this;
+    return self.defineThemeDescriptorTasks().then(function() {
+        BundleTask.prototype.defineTasks.apply(self, arguments);
+    });
 };
 
 BlendTask.prototype.defineSourceTasks = function()
@@ -83,52 +93,68 @@ BlendTask.prototype.defineSourceTasks = function()
 
 BlendTask.prototype.defineThemeDescriptorTasks = function()
 {
-    this.environments().forEach(function(anEnvironment)
-    {
-        var folder = anEnvironment.name() + ".environment",
-            themeDescriptors = this.themeDescriptors(),
-            resourcesPath = this.resourcesPath(),
-            intermediatesPath = FILE.join(this.buildIntermediatesProductPath(), folder, "Resources"),
-            staticPath = this.buildProductStaticPathForEnvironment(anEnvironment),
-            keyedThemes = this._keyedThemes,
-            themesTaskName = this.name() + ":themes";
-
-        this.enhance(themesTaskName);
-
-        themeDescriptors.forEach(function(/*CPString*/ themeDescriptorPath)
+    var self = this;
+    return new Promise(function(resolve, reject) {
+        var envsLeft = self.environments().length;
+        self.environments().forEach(function(anEnvironment)
         {
-            objj_importFile(FILE.absolute(themeDescriptorPath), YES);
-        });
+            var folder = anEnvironment.name() + ".environment",
+                themeDescriptors = this.themeDescriptors(),
+                resourcesPath = this.resourcesPath(),
+                intermediatesPath = path.join(this.buildIntermediatesProductPath(), folder, "Resources"),
+                staticPath = this.buildProductStaticPathForEnvironment(anEnvironment),
+                keyedThemes = this._keyedThemes,
+                themesTaskName = this.name() + ":themes";
+            var tdLeft = themeDescriptors.length;
 
-        [BKThemeDescriptor allThemeDescriptorClasses].forEach(function(aClass)
-        {
-            var keyedThemePath = FILE.join(intermediatesPath, [aClass themeName] + ".keyedtheme");
+            this.enhance(themesTaskName);
 
-            filedir (keyedThemePath, themesTaskName);
-            filedir (staticPath, [keyedThemePath]);
-
-            keyedThemes.push([aClass themeName] + ".keyedtheme");
-        });
-
-        task (themesTaskName, function()
-        {
-            [BKThemeDescriptor allThemeDescriptorClasses].forEach(function(aClass)
+            themeDescriptors.forEach(function(/*CPString*/ themeDescriptorPath)
             {
-                var themeTemplate = [[BKThemeTemplate alloc] init];
+                var localIntermediatesPath = intermediatesPath;
+                var localStaticPath = staticPath;
+                var localKeyedThemes = keyedThemes;
+                var localThemesTaskName = themesTaskName;
+                
+                objj_importFile(path.resolve(themeDescriptorPath), YES, function() {
+                    if (--tdLeft === 0) {
+                        [BKThemeDescriptor allThemeDescriptorClasses].forEach(function(aClass)
+                        {
+                            var keyedThemePath = path.join(localIntermediatesPath, [aClass themeName] + ".keyedtheme");
 
-                [themeTemplate setValue:[aClass themeName] forKey:@"name"];
+                            filedir (keyedThemePath, themesTaskName);
+                            filedir (localStaticPath, [keyedThemePath]);
 
-                var objectTemplates = [aClass themedObjectTemplates],
-                    data = cibDataFromTopLevelObjects(objectTemplates.concat([themeTemplate])),
-                    fileContents = themeFromCibData(data);
+                            localKeyedThemes.push([aClass themeName] + ".keyedtheme");
+                        });
+                        task (localThemesTaskName, function()
+                        {
+                            [BKThemeDescriptor allThemeDescriptorClasses].forEach(function(aClass)
+                            {
+                                var themeTemplate = [[BKThemeTemplate alloc] init];
 
-                // No filedir in this case, so we have to make it ourselves.
-                FILE.mkdirs(intermediatesPath);
-                // FIXME: MARKER_TEXT isn't global, so we use "t;".
-                FILE.write(FILE.join(intermediatesPath, [aClass themeName] + ".keyedtheme"), "t;" + fileContents.length + ";" + fileContents, { charset:"UTF-8" });
+                                [themeTemplate setValue:[aClass themeName] forKey:@"name"];
+
+                                var objectTemplates = [aClass themedObjectTemplates],
+                                    data = cibDataFromTopLevelObjects(objectTemplates.concat([themeTemplate])),
+                                    fileContents = themeFromCibData(data);
+
+                                // No filedir in this case, so we have to make it ourselves.
+                                fs.mkdirSync(localIntermediatesPath, { recursive: true });
+                                //FILE.mkdirs(intermediatesPath);
+                                // FIXME: MARKER_TEXT isn't global, so we use "t;".
+                                fs.writeFileSync(path.join(localIntermediatesPath, [aClass themeName] + ".keyedtheme"), "t;" + fileContents.length + ";" + fileContents, { encoding: "utf8" });
+                                //FILE.write(FILE.join(intermediatesPath, [aClass themeName] + ".keyedtheme"), "t;" + fileContents.length + ";" + fileContents, { charset:"UTF-8" });
+                            });
+                        });
+                        if (--envsLeft === 0) {
+                            resolve();
+                        }
+                    }
+                });
             });
-        });
-    }, this);
+        }, self);
+    });
 };
 
 function cibDataFromTopLevelObjects(objects)
@@ -254,5 +280,7 @@ exports.BlendTask = BlendTask;
 exports.blend = function(aName, aFunction)
 {
     // No .apply necessary because the parameters aren't variable.
-    return BlendTask.defineTask(aName, aFunction);
+    return BlendTask.defineTask(aName, aFunction).then(function(task) {
+        return task;
+    });
 };

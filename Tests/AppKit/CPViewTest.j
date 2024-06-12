@@ -932,7 +932,7 @@ var updateTrackingAreasCalls,
 
     [view1 setHidden:YES];
     [view2 addSubview:view3];
-    CPLog.warn("will add view2");
+
     [view1 addSubview:view2];
 
     [self assertTrue: [view2 isHiddenOrHasHiddenAncestor] message:@"Expected " + [view2 identifier] + "isHiddenOrHasHiddenAncestor = YES"];

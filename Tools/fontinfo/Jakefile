@@ -1,9 +1,7 @@
+require("../../common.jake");
 
-require ("../../common.jake");
-
-var OS = require("os"),
-    task = require("jake").task,
-    SYSTEM = require("system");
+const child_process = require("child_process");
+const task = JAKE.task;
 
 task ("build", function()
 {
@@ -17,27 +15,39 @@ task ("build", function()
         else
             args = "-sdk macosx " + args;
 
-        var xcodebuild = SYSTEM.env.CAPP_BUILD ? "xcodebuild " : "CAPP_BUILD=../../Build xcodebuild ";
-
-        if (OS.system(xcodebuild + args))
-            OS.exit(1);
+        var xcodebuild = process.env.CAPP_BUILD ? "xcodebuild " : "CAPP_BUILD=../../Build xcodebuild ";
+        try {
+            child_process.execSync(xcodebuild + args, {stdio: 'inherit'});
+        } catch (error) {
+            process.exit(1);
+        }
     }
     else
     {
-        print("Building fontinfo requires Xcode.");
+        console.log("Building fontinfo requires Xcode.");
     }
 });
 
 task ("clean", function()
 {
-    if (executableExists("xcodebuild") && OS.system("xcodebuild clean"))
-        OS.exit(1);
+    if (executableExists("xcodebuild")) {
+        try {
+            child_process.execSync("xcodebuild clean", {stdio: 'inherit'});
+        } catch (error) {
+            process.exit(1);
+        }
+    }
 });
 
 task ("clobber", function()
 {
-    if (executableExists("xcodebuild") && OS.system("xcodebuild clean"))
-        OS.exit(1);
+    if (executableExists("xcodebuild")) {
+        try {
+            child_process.execSync("xcodebuild clean", {stdio: 'inherit'});
+        } catch (error) {
+            process.exit(1);
+        }
+    }
 });
 
 task ("default", ["build"]);

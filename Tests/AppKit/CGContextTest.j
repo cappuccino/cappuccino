@@ -12,11 +12,13 @@
 {
     /*
       Ensure that we have no canvas nor vml support.
+      Now when we are moving to Node we don't need to do this check anymore.
+      Before Node we had to check what engine we where running on to test correctly
     */
-    if (system.engine !== "jsc")
-    {
+    //if (system.engine !== "jsc")
+    //{
         [self assert:YES equals:!CPFeatureIsCompatible(CPHTMLCanvasFeature)];
-    }
+    //}
     [self assert:YES equals:!CPFeatureIsCompatible(CPVMLFeature)];
 }
 

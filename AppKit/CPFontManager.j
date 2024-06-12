@@ -29,6 +29,8 @@
 @global CPApp
 @class CPFontPanel
 
+@global document
+
 CPItalicFontMask                    = 1 << 0;
 CPBoldFontMask                      = 1 << 1;
 CPUnboldFontMask                    = 1 << 2;

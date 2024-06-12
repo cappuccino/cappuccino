@@ -5,7 +5,7 @@
 
 - (id)a
 {
-    @ref(_control);
+    var x = @ref(_control);
 }
 
 @end

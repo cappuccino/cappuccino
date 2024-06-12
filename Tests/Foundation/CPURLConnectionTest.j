@@ -21,7 +21,7 @@
 
 - (void)testSynchronousRequestSuccess
 {
-    var req = [CPURLRequest requestWithURL:@"Tests/Foundation/CPURLConnectionTest.j"],
+    var req = [CPURLRequest requestWithURL:@"file:Tests/Foundation/CPURLConnectionTest.j"],
         data = [CPURLConnection sendSynchronousRequest:req returningResponse:nil];
 
     [self assert:CPData equals:[data class]];
@@ -31,7 +31,7 @@
 
 - (void)testSynchronousRequestNotFound
 {
-    var req = [CPURLRequest requestWithURL:@"NotFound"],
+    var req = [CPURLRequest requestWithURL:@"file:NotFound"],
         data = [CPURLConnection sendSynchronousRequest:req returningResponse:nil];
 
     [self assertNull:data];
@@ -39,7 +39,7 @@
 
 - (void)testClassMethodConnectionWithCredentials
 {
-    var req = [CPURLRequest requestWithURL:[CPURL URLWithString:@"Tests/Foundation/CPURLConnectionTest.j"]];
+    var req = [CPURLRequest requestWithURL:[CPURL URLWithString:@"file:Tests/Foundation/CPURLConnectionTest.j"]];
     [req setWithCredentials:YES];
     var data = [CPURLConnection sendSynchronousRequest:req returningResponse:nil];
 
@@ -48,7 +48,7 @@
 
 - (void)testInstanceMethodConnectionWithCredentials
 {
-    var req = [CPURLRequest requestWithURL:[CPURL URLWithString:@"Tests/Foundation/CPURLConnectionTest.j"]];
+    var req = [CPURLRequest requestWithURL:[CPURL URLWithString:@"file:Tests/Foundation/CPURLConnectionTest.j"]];
     [req setWithCredentials:YES];
 
     var conn = [[CPURLConnection alloc] initWithRequest:req delegate:nil startImmediately:NO];
@@ -61,7 +61,7 @@
 
 - (void)testRequestGetters
 {
-    var req = [CPURLRequest requestWithURL:[CPURL URLWithString:@"Tests/Foundation/CPURLConnectionTest.j"]],
+    var req = [CPURLRequest requestWithURL:[CPURL URLWithString:@"file:Tests/Foundation/CPURLConnectionTest.j"]],
         conn = [[CPURLConnection alloc] initWithRequest:req delegate:nil startImmediately:NO];
     
     var originalRequest = [conn originalRequest],

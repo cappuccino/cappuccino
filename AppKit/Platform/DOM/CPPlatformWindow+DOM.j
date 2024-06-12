@@ -133,6 +133,8 @@
 
 @global _CPRunModalLoop
 
+@global document
+
 // List of all open native windows
 var PlatformWindows = [CPSet set];
 

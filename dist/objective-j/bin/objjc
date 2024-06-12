@@ -1,0 +1,3 @@
+#!/usr/bin/env narwhal
+
+require("objective-j/compiler").main(system.args);

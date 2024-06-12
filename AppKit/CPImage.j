@@ -33,6 +33,7 @@
 @import "CPCompatibility.j"
 
 @class CPColor
+@global document
 
 @protocol CPImageDelegate <CPObject>
 
