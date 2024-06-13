@@ -102,8 +102,10 @@ var cachedBlackColor,
     return @{
             @"alternate-selected-control-color":        [CPNull null],
             @"secondary-selected-control-color":        [CPNull null],
+            @"text-background-color":                   [CPNull null],
             @"selected-text-background-color":          [CPNull null],
             @"selected-text-inactive-background-color": [CPNull null],
+            @"text-disabled-color":                     [CPNull null],
             @"css-based":                               NO
         };
 }
@@ -506,9 +508,19 @@ var cachedBlackColor,
     return [[self _cachedThemeColor] valueForThemeAttribute:@"selected-text-background-color"] || [CPColor colorWithHexString:"99CCFF"];
 }
 
++ (CPColor)textBackgroundColor
+{
+    return [[self _cachedThemeColor] valueForThemeAttribute:@"text-background-color"] || [CPColor colorWithHexString:"FFFFFF"];
+}
+
 + (CPColor)_selectedTextBackgroundColorUnfocussed
 {
     return [[self _cachedThemeColor] valueForThemeAttribute:@"selected-text-inactive-background-color"] || [CPColor colorWithHexString:"CCCCCC"];
+}
+
++ (CPColor)disabledControlTextColor
+{
+    return [[self _cachedThemeColor] valueForThemeAttribute:@"text-disabled-color"] || [CPColor colorWithRed:0.66 green:0.66 blue:0.66 alpha:1];
 }
 
 /* @ignore */
