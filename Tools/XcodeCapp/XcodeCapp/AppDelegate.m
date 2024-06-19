@@ -99,6 +99,9 @@
 
     self.version = [NSBundle mainBundle].infoDictionary[@"CFBundleShortVersionString"];
 
+    NSString *copyrightString = [NSBundle mainBundle].infoDictionary[@"NSHumanReadableCopyright"];
+    self.copyright = [NSString stringWithFormat:@"%@\nAll rights reserved", copyrightString];
+
     [self _initUserDefaults];
     [self _initOperationQueue];
     [self _initStatusItem];
