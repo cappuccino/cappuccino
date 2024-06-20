@@ -65,7 +65,7 @@
 - (void)_setTextColor:(NSColor *)color forButton:(NSButton *)button
 {
     NSMutableParagraphStyle *paragraphStyle= [NSMutableParagraphStyle new];
-    [paragraphStyle setAlignment:NSCenterTextAlignment];
+    [paragraphStyle setAlignment:NSTextAlignmentCenter];
 
     NSDictionary *attrs = @{NSFontAttributeName: [NSFont systemFontOfSize:11],
                                  NSForegroundColorAttributeName: color,
@@ -180,13 +180,12 @@
     
     if (missingProjects.count)
     {
-        NSRunAlertPanel(@"Missing Projects",
-                        @"Some managed projects could not be found and have been removed:\n\n"
-                        @"%@\n\n",
-                        @"OK",
-                        nil,
-                        nil,
-                        [missingProjects componentsJoinedByString:@", "]);
+        NSString *informativeText = [NSString stringWithFormat:@"Some managed projects could not be found and have been removed:\n\n%@", [missingProjects componentsJoinedByString:@", "]];
+        NSAlert *alert = [[NSAlert alloc] init];
+        [alert setAlertStyle:NSAlertStyleCritical];
+        [alert setMessageText:@"Missing Projects"];
+        [alert setInformativeText:informativeText];
+        [alert runModal];
     }
 
     [self _saveManagedProjectsToUserDefaults];
@@ -238,7 +237,11 @@
 {
     if ([[self.cappuccinoProjectControllers filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"cappuccinoProject.projectPath == %@", path]] count])
     {
-        NSRunAlertPanel(@"This project is already managed.", @"Please remove the other project or use the reset button.", @"OK", nil, nil, nil);
+        NSAlert *alert = [[NSAlert alloc] init];
+        [alert setAlertStyle:NSAlertStyleCritical];
+        [alert setMessageText:@"This project is already managed."];
+        [alert setInformativeText:@"Please remove the other project or use the reset button."];
+        [alert runModal];
         return;
     }
 
@@ -306,16 +309,16 @@
 
 - (IBAction)addProject:(id)aSender
 {
-    NSOpenPanel *openPanel = [NSOpenPanel openPanel];
-    openPanel.title = @"Add a new Cappuccino Project to XcodeCapp";
-    openPanel.canCreateDirectories = YES;
-    openPanel.canChooseDirectories = YES;
-    openPanel.canChooseFiles = NO;
+    NSOpenPanel *openPanel          =  [NSOpenPanel  openPanel];
+    openPanel.title                 =  @"Add a new Cappuccino Project to XcodeCapp";
+    openPanel.canCreateDirectories  =  YES;
+    openPanel.canChooseDirectories  =  YES;
+    openPanel.canChooseFiles        =  NO;
 
-    if ([openPanel runModal] != NSFileHandlingPanelOKButton)
+    if ([openPanel runModal] != NSModalResponseOK)
         return;
     
-    NSString *projectPath = [[openPanel.URLs[0] path] stringByStandardizingPath];
+    NSString *projectPath            =  [[openPanel.URLs[0] path] stringByStandardizingPath];
 
     [self manageCappuccinoProjectControllerForPath:projectPath];
 }

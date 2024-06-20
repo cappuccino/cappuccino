@@ -28,10 +28,10 @@
 
 - (void)_initStatusItem
 {
-    self->imageStatusInactive   = [NSImage imageNamed:@"status-icon-inactive"];
-    self->imageStatusProcessing = [NSImage imageNamed:@"status-icon-working"];
-    self->imageStatusError      = [NSImage imageNamed:@"status-icon-error"];
-    
+    self->imageStatusInactive        = [NSImage imageNamed:@"status-icon-inactive"];
+    self->imageStatusProcessing      = [NSImage imageNamed:@"status-icon-working"];
+    self->imageStatusError           = [NSImage imageNamed:@"status-icon-error"];
+
     self->statusItem                 = [[NSStatusBar systemStatusBar] statusItemWithLength:NSVariableStatusItemLength];
     self->statusItem.menu            = self->statusMenu;
     self->statusItem.image           = self->imageStatusInactive;
@@ -98,6 +98,8 @@
     NSLog(@"\n******************************\n**    XcodeCapp started     **\n******************************\n");
 
     self.version = [NSBundle mainBundle].infoDictionary[@"CFBundleShortVersionString"];
+    NSString *copyrightString = [NSBundle mainBundle].infoDictionary[@"NSHumanReadableCopyright"];
+    self.copyright = [NSString stringWithFormat:@"%@\nAll rights reserved", copyrightString];
 
     [self _initUserDefaults];
     [self _initOperationQueue];

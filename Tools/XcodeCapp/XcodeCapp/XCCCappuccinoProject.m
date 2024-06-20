@@ -341,8 +341,15 @@ NSString * const XCCCappuccinoProjectLastEventIDKey         = @"XCCCappuccinoPro
 
 - (void)_writeSettings
 {
-    NSData *data = [NSPropertyListSerialization dataFromPropertyList:self->settings format:NSPropertyListXMLFormat_v1_0 errorDescription:nil];
-    
+    # pragma mark -- TODO
+    // Error should be handled with user interaction,
+    // although this hasn't previously been so either.
+    // Immedate concern is with removing noisy deprecation warnings.
+    NSError* error = nil;
+    NSData* data = [NSPropertyListSerialization dataWithPropertyList:self->settings format:NSPropertyListBinaryFormat_v1_0 options:0 error:&error];
+    if(data != nil){
+        NSLog(@"error %ld",(long)[error code]);
+    }
     [data writeToFile:self.settingsPath atomically:YES];
 }
 
@@ -357,7 +364,7 @@ NSString * const XCCCappuccinoProjectLastEventIDKey         = @"XCCCappuccinoPro
     self->settings[XCCCappuccinoProcessObjj2ObjcSkeletonKey]     = @(self.processObjj2ObjcSkeleton);
     self->settings[XCCCappuccinoProcessNib2CibKey]               = @(self.processNib2Cib);
     self->settings[XCCCappuccinoProjectPreviousStatusKey]        = [NSNumber numberWithInt:self.status];
-    
+
     if ([self.lastEventID boolValue])
         self->settings[XCCCappuccinoProjectLastEventIDKey]           = self.lastEventID;
     
@@ -370,8 +377,16 @@ NSString * const XCCCappuccinoProjectLastEventIDKey         = @"XCCCappuccinoPro
 
 - (void)_writeXcodeCappIgnoreFile
 {
-    NSData *data = [NSPropertyListSerialization dataFromPropertyList:self->settings format:NSPropertyListXMLFormat_v1_0 errorDescription:nil];
-    
+    # pragma TODO
+    // More verifiable user notification of error?
+    NSError *error  = nil;
+    NSData  *data   = [NSPropertyListSerialization dataWithPropertyList: self->settings
+                                               format: NSPropertyListXMLFormat_v1_0
+                                              options: 0
+                                                error: &error];
+    if(data != nil){
+        NSLog(@"error %ld",(long)[error code]);
+    }
     [data writeToFile:self.settingsPath atomically:YES];
     
     NSFileManager *fm = [NSFileManager defaultManager];
