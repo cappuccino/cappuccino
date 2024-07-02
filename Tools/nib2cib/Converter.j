@@ -34,11 +34,12 @@
 
 @global java
 
-var path = require("path");
-var fs = require("fs");
-var os = require("os");
-var child_process = require("child_process");
-var utilsFile = ObjectiveJ.utils.file;
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
+const { execSync, spawnSync } = require('child_process');
+const child_process = require("child_process");
+const utilsFile = ObjectiveJ.utils.file;
 
 /* var FILE = require("file"),
     OS = require("os"), */
@@ -147,11 +148,24 @@ ConverterConversionException = @"ConverterConversionException";
         {
             // Compile xib or nib to make sure we have a non-new format nib.
             temporaryNibFilePath = path.join(tmpdir, path.basename(aFilePath) + ".tmp.nib");
-
+            temporaryXibFilePath = path.join(tmpdir, path.basename(aFilePath));
+            
+            // Ensure that source xib's <deployment /> tag targets Xcode version 10.10
+            var xibContent = fs.readFileSync(aFilePath, { encoding: 'utf8' });
+            // Perform the in-memory modification of the deployment tag
+            if (xibContent.includes('<deployment ')) {
+                // Remove existing <deployment /> tag, if present
+                xibContent = xibContent.replace(/<deployment .*\/>/g, '');
+            }
+            var insertPosition = xibContent.indexOf("<dependencies>") + "<dependencies>".length;
+            var deploymentTag = '\n        <deployment version="10.10" identifier="macosx"/>';
+            var updatedXIBContent = xibContent.slice(0, insertPosition) + deploymentTag + xibContent.slice(insertPosition);
+            // console.log(updatedXIBContent);
+            fs.writeFileSync(temporaryXibFilePath, updatedXIBContent, 'utf8');
             try {
-                child_process.execSync("/usr/bin/ibtool" + " '" + aFilePath + "' " + "--compile" + " '" + temporaryNibFilePath + "'", {stdio: 'inherit'});
+                child_process.execSync("/usr/bin/ibtool" + " '" + temporaryXibFilePath + "' " + "--compile" + " '" + temporaryNibFilePath + "'", {stdio: 'inherit'});
             } catch(err) {
-                [CPException raise:ConverterConversionException reason:@"Could not compile file: " + aFilePath];
+                [CPException raise:ConverterConversionException reason:@"Could not compile file: " + temporaryXibFilePath];
             }
         }
         else
