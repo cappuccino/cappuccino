@@ -34,26 +34,23 @@
 
 @global java
 
-const fs = require('fs');
-const os = require('os');
-const path = require('path');
+const fs                      = require('fs');
+const os                      = require('os');
+const path                    = require('path');
 const { execSync, spawnSync } = require('child_process');
-const child_process = require("child_process");
-const utilsFile = ObjectiveJ.utils.file;
+const child_process           = require("child_process");
+const utilsFile               = ObjectiveJ.utils.file;
 
-/* var FILE = require("file"),
-    OS = require("os"), */
+var SharedConverter           = nil;
 
-var SharedConverter = nil;
+NibFormatUndetermined         = 0;
+NibFormatMac                  = 1;
+NibFormatIPhone               = 2;
 
-NibFormatUndetermined   = 0;
-NibFormatMac            = 1;
-NibFormatIPhone         = 2;
+ConverterModeLegacy           = 0;
+ConverterModeNew              = 1;
 
-ConverterModeLegacy   = 0;
-ConverterModeNew      = 1;
-
-ConverterConversionException = @"ConverterConversionException";
+ConverterConversionException  = @"ConverterConversionException";
 
 @implementation Converter : CPObject
 {
@@ -90,7 +87,7 @@ ConverterConversionException = @"ConverterConversionException";
     // Some .xibs are iPhone nibs, check the actual contents in this case.
     if (path.extname(inputPath) !== ".nib" && fs.lstatSync(inputPath).isFile() &&
         fs.readFileSync(inputPath, { encoding: "utf8" }).indexOf("<archive type=\"com.apple.InterfaceBuilder3.CocoaTouch.XIB\"") !== -1)
-        //FILE.read(inputPath, { charset:"UTF-8" }).indexOf("<archive type=\"com.apple.InterfaceBuilder3.CocoaTouch.XIB\"") !== -1)
+
         inferredFormat = NibFormatIPhone;
         
     if (inferredFormat === NibFormatMac)
@@ -109,7 +106,6 @@ ConverterConversionException = @"ConverterConversionException";
 
     if ([outputPath length])
         fs.writeFileSync(outputPath, [convertedData rawString], { encoding: "utf8" });
-        //FILE.write(outputPath, [convertedData rawString], { charset:"UTF-8" });
 
     CPLog.info("Conversion successful");
 
@@ -146,25 +142,44 @@ ConverterConversionException = @"ConverterConversionException";
 
         if ([outputPath length])
         {
-            // Compile xib or nib to make sure we have a non-new format nib.
+            // Compile xib or nib to make sure we have a legacy format nib.
+            
+            // Use temporary paths for intermediate products.
             temporaryNibFilePath = path.join(tmpdir, path.basename(aFilePath) + ".tmp.nib");
             temporaryXibFilePath = path.join(tmpdir, path.basename(aFilePath));
             
-            // Ensure that source xib's <deployment /> tag targets Xcode version 10.10
+            
+            // Ensure that source xib's <deployment /> tag targets deployment version 10.10
             var xibContent = fs.readFileSync(aFilePath, { encoding: 'utf8' });
+            
             // Perform the in-memory modification of the deployment tag
-            if (xibContent.includes('<deployment ')) {
-                // Remove existing <deployment /> tag, if present
+            //
+            // Remove existing <deployment /> tag, if present
+            // xib's with Xcode 14 or later do not have a <deployment /> element at all.
+            // It is simpler to ensure no <deployment /> element is present,
+            // then add what we want.
+            //
+            // Add a new <deployment /> element as the first child of the <dependencies /> element.
+            // This is the placement expected when Xcode adds the <deployment /> element.
+            // Target version 10.10 as the deployment version.
+            if (xibContent.includes('<deployment '))
+            {
                 xibContent = xibContent.replace(/<deployment .*\/>/g, '');
             }
-            var insertPosition = xibContent.indexOf("<dependencies>") + "<dependencies>".length;
-            var deploymentTag = '\n        <deployment version="10.10" identifier="macosx"/>';
+            // Where will the <deployment /> element be inserted in the string?
+            var deploymentTag     = '\n        <deployment version="10.10" identifier="macosx"/>';
+            var insertPosition    = xibContent.indexOf("<dependencies>") + "<dependencies>".length;
+            
+            // Slice the string representing the source xib and insert the new <deployment /> element.
             var updatedXIBContent = xibContent.slice(0, insertPosition) + deploymentTag + xibContent.slice(insertPosition);
-            // console.log(updatedXIBContent);
+
             fs.writeFileSync(temporaryXibFilePath, updatedXIBContent, 'utf8');
-            try {
+            try
+            {
                 child_process.execSync("/usr/bin/ibtool" + " '" + temporaryXibFilePath + "' " + "--compile" + " '" + temporaryNibFilePath + "'", {stdio: 'inherit'});
-            } catch(err) {
+            }
+            catch(err)
+            {
                 [CPException raise:ConverterConversionException reason:@"Could not compile file: " + temporaryXibFilePath];
             }
         }
@@ -183,30 +198,19 @@ ConverterConversionException = @"ConverterConversionException";
         // Convert from binary plist to XML plist
         var temporaryPlistFilePath = path.join(tmpdir, path.basename(aFilePath) + ".tmp.plist");
 
-        try {
+        try
+        {
             child_process.execSync("/usr/bin/plutil" + " " + "-convert" + " " + "xml1" + " '" + (temporaryNibFilePathInDirectoryFile || temporaryNibFilePath) + "' " + "-o" + " '" +  temporaryPlistFilePath + "'", {stdio: 'inherit'});
-        } catch(err) {
+        }
+        catch(err)
+        {
             [CPException raise:ConverterConversionException reason:@"Could not convert to xml plist for file: " + aFilePath];
         }
-
-/*         try
-        {
-            var p = OS.popen(["/usr/bin/plutil", "-convert", "xml1", temporaryNibFilePath, "-o", temporaryPlistFilePath]);
-            if (p.wait() === 1)
-                [CPException raise:ConverterConversionException reason:@"Could not convert to xml plist for file: " + aFilePath];
-        }
-        finally
-        {
-            p.stdin.close();
-            p.stdout.close();
-            p.stderr.close();
-        } */
 
         if (!isReadable(temporaryPlistFilePath))
             [CPException raise:ConverterConversionException reason:@"Unable to convert nib file."];
 
         var plistContents = fs.readFileSync(temporaryPlistFilePath, { encoding: "utf8" });
-        //var plistContents = FILE.read(temporaryPlistFilePath, { charset: "UTF-8" });
 
         // Minor NS keyed archive to CP keyed archive conversion.
         // Use Java directly because rhino's string.replace is *so slow*. 4 seconds vs. 1 millisecond.
