@@ -725,7 +725,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     }
 }
 
-
+//FIXME: Method with no code which is never called — what is this!?.
 /*!
     Draws the specified segment
     @param aSegment the segment to draw
