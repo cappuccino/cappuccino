@@ -508,7 +508,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     return [[_segments objectAtIndex:aSegment] tag];
 }
 
-// Drawings
+// Drawing
 /*!
     Draws the specified segment bezel
     @param aSegment the segment to draw the bezel for
