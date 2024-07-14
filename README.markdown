@@ -17,6 +17,7 @@ Benefits of Cocoa over raw HTML/Javascript/CSS:
 * Robust event-handling mechanisms ensure responsive and interactive applications.
 * Internationalization and localization technologies simplify global deployment.
 * Consistent and predictable behavior across different platforms enhances reliability and user experience.
+* Objective-J's message-passing architecture, which the Cocoa APIs leverage, promote loose coupling of an app's component functionality — making large scale development more reliable.
 * Comprehensive documentation for Objective-J is supplemented by two decades of resources for Objective-C and Cocoa. Additionally, a large public catalog of Objective-C Cocoa applications offers valuable guidance for development. Translation to Objective-J of such sample code is often trivial.
 * Toolchain stability - use of proven APIs means one won't experience the churn which is all too common in the generic browser-app ecosystem.
 
