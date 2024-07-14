@@ -5,15 +5,22 @@
 Welcome to Cappuccino!
 ======================
 
+Cappuccino, a web application framework in Objective-J, a superset of JavaScript, enhances web development by implementing the NeXTSTEP/Apple Cocoa APIs for web browsers. This integration supports the creation of sophisticated, desktop-class applications without imposing arbitrary complexity limits. Leveraging Cocoa’s well-established architecture, Cappuccino facilitates scalable and reliable application development. Applications can be served from any web server and deployed to any modern web browser without dependencies, offering a streamlined solution for developers.
+
 Introduction
 ------------
-Cappuccino is an open source framework that makes it easy to build
-desktop-caliber applications that run in a web browser.
+Cappuccino is an open-source framework continuously developed since 2008, released under the LGPL2 license. It implements as much of the proven NeXTStep/Apple Cocoa API as practicable in the modern web browser environment. Resulting applications are served as HTML, JavaScript, and CSS, allowing deployment from any web server.
 
-With Cappuccino, you don't concern yourself with HTML, CSS, or the DOM. You  write applications with the APIs from 
-Apple's Cocoa frameworks and the Objective-J language.
+Benefits of Cocoa over raw HTML/Javascript/CSS:
+* Cocoa's rich selection of interface controls are abstracted to HTML, CSS, and JavaScript.
+* These design patterns and APIs provide a solid foundation for application development. These proven APIs provide browser-independent functionality which is a superset of formal browser capabilities. 
+* Robust event-handling mechanisms ensure responsive and interactive applications.
+* Internationalization and localization technologies simplify global deployment.
+* Consistent and predictable behavior across different platforms enhances reliability and user experience.
+* Comprehensive documentation for Objective-J is supplemented by two decades of resources for Objective-C and Cocoa. Additionally, a large public catalog of Objective-C Cocoa applications offers valuable guidance for development. Translation to Objective-J of such sample code is often trivial.
+* Toolchain stability - use of proven APIs means one won't experience the churn which is all too common in the generic browser-app ecosystem.
 
-Check out a [live demo of the widgets in Cappuccino](https://cappuccino-testbook.5apps.com/#ThemeKitchenSink)
+Check out a [live demo of the standard interface controls provided by Cappuccino](https://cappuccino-testbook.5apps.com/#ThemeKitchenSink)
 
 Check out some [tutorials](https://cappuccino-cookbook.5apps.com)
 
@@ -25,23 +32,30 @@ For more information, see the
   - [Mailing list](http://groups.google.com/group/objectivej)
   - [Gitter](https://gitter.im/cappuccino/cappuccino)
 
-Follow [@cappuccino](https://twitter.com/cappuccino) on Twitter for updates on the project.
-
-If you discover any bugs, please [file a ticket](http://github.com/cappuccino/cappuccino/issues).
+Bugs can be reported by [creating a Github issue](http://github.com/cappuccino/cappuccino/issues).
 
 System Requirements
 -------------------
-To run Cappuccino applications, all you need is a HTML5 compliant web browser.
+An HTML5 web browser is the only requirement for running Cappuccino applications.
+They are served as standard HTML, Javascript, CSS and images from any web server.
 
-You can develop Cappuccino applications with only a simple text editor on any platform.
+Any programmer's editor can be used for coding.
 
-If you are on a Mac, our integration with Xcode leverages the world-class visual development tools from Apple to create complex applications with minimal coding.
+macOS users can use Xcode - which leverages the visual development tools from Apple for creation of complex applications with minimal coding.
 
-Node.js version alpha
+
+Notes on the transition of Cappuccino from the Narwhal Javascript engine to NodeJS
 ------------------ 
 
-There is currently an ongoing effort to switch JavaScript platform from [Narwhal](https://narwhaljs.org/) to Node.js.
-To try the Node.js version, do the following:
+Cappuccino compiles source code files written in Objective-J or Javascript to pure HTML/Javascript/CSS.
+A desktop Javascript engine with extensions for accessing local resources is required for the compilation phase.
+Historically, this engine was [Narwhal](https://narwhaljs.org/).
+Over the several calendar years, a transition to NodeJS has occured.
+The results of this are available as a Release Candidate.
+While a formal production release is scheduled for early-autumn 2024, it should be considered production-ready as-is. Multiple production deployments over the last twelve months have confirmed this.
+In addition to the NodeJS-based toolchain, the next formal release will include multiple maintenance improvements and enhancements to the API.
+
+To try the Cappuccino using the Node.js version, do the following:
 
 1. Install Node.js and npm from the [Node.js website](https://nodejs.org/en/).
   
@@ -68,7 +82,7 @@ this, see [this article](https://docs.npmjs.com/resolving-eacces-permissions-err
 
 ### Basic usage
 
-If the install succeeded you will be able to do the following to create a simple Cappuccino application:
+On successful installation, follow these steps to create a basic and fully-functional Cappuccino application:
 
 1. `capp gen HelloWorld`
 2. `cd HelloWorld`
