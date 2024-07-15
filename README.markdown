@@ -9,17 +9,18 @@ Cappuccino, a web application framework in Objective-J, a superset of JavaScript
 
 Introduction
 ------------
-Cappuccino is an open-source framework continuously developed since 2008, released under the LGPL2 license. It implements as much of the proven NeXTStep/Apple Cocoa API as practicable in the modern web browser environment. Resulting applications are served as HTML, JavaScript, and CSS, allowing deployment from any web server.
+Cappuccino is an open-source framework in continuous development since 2008 and released under the LGPL2 license. It implements as much of the proven NeXTStep/Apple Cocoa API as practicable in the modern web browser environment. Resulting applications are served as HTML, JavaScript, and CSS, allowing deployment from any web host.
 
 Benefits of Cocoa over raw HTML/Javascript/CSS:
-* Cocoa's rich selection of interface controls are abstracted to HTML, CSS, and JavaScript.
-* These design patterns and APIs provide a solid foundation for application development. These proven APIs provide browser-independent functionality which is a superset of formal browser capabilities. 
-* Robust event-handling mechanisms ensure responsive and interactive applications.
+* Cocoa's rich range of interface controls are abstracted to HTML, CSS, and JavaScript. These go beyond the functionality provided by current browser standards, and only require minimal HTML5 support.
+* These design patterns and APIs provide a solid foundation for application development. The APIs have been proven over forty years and provide browser-independent functionality which is a superset of current browser capabilities. 
+* Custom interface controls can reliably build on basic Cocoa controls if extended or new functionality is required.
+* Robust event-handling mechanisms, a superset of those provided by current browsers, ensure responsive and interactive applications.
 * Internationalization and localization technologies simplify global deployment.
 * Consistent and predictable behavior across different platforms enhances reliability and user experience.
-* Objective-J's message-passing architecture, which the Cocoa APIs leverage, promote loose coupling of an app's component functionality — making large scale development more reliable.
-* Comprehensive documentation for Objective-J is supplemented by two decades of resources for Objective-C and Cocoa. Additionally, a large public catalog of Objective-C Cocoa applications offers valuable guidance for development. Translation to Objective-J of such sample code is often trivial.
-* Toolchain stability - use of proven APIs means one won't experience the churn which is all too common in the generic browser-app ecosystem.
+* Objective-J's [message-passing architecture](https://en.wikipedia.org/wiki/Message_passing), which the Cocoa APIs leverage, promote loose coupling of an app's component functionality — making large scale development more managable.
+* Comprehensive documentation for Objective-J is supplemented by over two decades of resources for Objective-C and Cocoa. Additionally, a large public catalog of Objective-C Cocoa applications offers valuable guidance for development. Translation of such sample code to Objective-J is often trivial.
+* Toolchain stability - use of proven APIs means an absense of the churn which is all too common in the current generic browser-app ecosystem.
 
 Check out a [live demo of the standard interface controls provided by Cappuccino](https://cappuccino-testbook.5apps.com/#ThemeKitchenSink)
 
