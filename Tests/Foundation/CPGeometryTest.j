@@ -307,7 +307,6 @@
 
 - (void)testCPPointMakeZero
 {
-    var point = CGPointMake(10, 20);
     [self assertTrue:CGPointEqualToPoint(CGPointMake(0, 0), CPPointMakeZero(0, 0))];
 }
 

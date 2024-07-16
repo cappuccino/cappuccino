@@ -26,6 +26,7 @@
     var archived = [CPKeyedArchiver archivedDataWithRootObject:colorWell],
         unarchived = [CPKeyedUnarchiver unarchiveObjectWithData:archived];
 
+    [self assertNotNull:unarchived];
     [self assertFalse:[colorWell isBordered] message:"color well archived bordered state"];
     [self assert:[CPColor greenColor] equals:[colorWell color] message:"color well archived color"];
 }

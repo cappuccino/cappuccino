@@ -18,3 +18,11 @@ Tests/Manual/**/*.xcodeproj
 *.sublime-workspace
 *.tm_properties
 *.idea
+node_modules
+*.vscode
+/dist/objective-j/objj-executable
+/dist/objective-j/package.json
+/dist/objective-j/lib
+/dist/cappuccino/package.json
+/dist/cappuccino/lib
+

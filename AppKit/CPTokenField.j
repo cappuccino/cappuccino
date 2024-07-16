@@ -40,6 +40,7 @@
 @global CPTextFieldDidFocusNotification
 @global CPTextFieldDidBlurNotification
 
+@global document
 
 // TODO: should be conform to protocol CPTextFieldDelegate
 @protocol CPTokenFieldDelegate <CPObject>

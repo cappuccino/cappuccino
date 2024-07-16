@@ -24,21 +24,37 @@
 
 @class Converter
 
-var FILE = require("file"),
-    OS = require("os"),
-    UUID = require("uuid");
+var fs = require("fs");
+var os = require("os");
+var path = require("path");
 
 @implementation CPCib (NSCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
+    function getRandomIntInclusive(min, max) {
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(Math.random() * (max - min + 1) + min);
+    }
+
+    function generateID(length) {
+        var ret = "";
+        var alphaNum = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+        for (var i = 0; i < length; i++) {
+            ret += alphaNum[getRandomIntInclusive(0, alphaNum.length-1)];
+        }
+        return ret;
+    }
+    
     self = [super init];
 
-    // FIXME: change /tmp/ to os.tmpDir() in Node
-    var nibPath = @"/tmp/" + UUID.uuid() + ".nib",
+    var nibPath = path.join(os.tmpdir(), "nib2cib-" + generateID(40) + ".nib"),
         data = [aCoder decodeObjectForKey:@"NSNibFileData"];
 
-    FILE.write(nibPath, data.bytes(), { charset:"UTF-16" });
+    fs.writeFileSync(nibPath, new Uint8Array(data.bytes()), { encoding: "utf16le" });
+
+    //FILE.write(nibPath, data.bytes(), { charset:"UTF-16" });
 
     var converter = [[Converter alloc] initWithInputPath:nibPath outputPath:nil];
 

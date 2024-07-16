@@ -174,6 +174,7 @@ CPButtonImageOffset   = 3.0;
     return @{
             @"image": [CPNull null],
             @"image-offset": 0.0,
+            @"image-vertical-offset": 0.0,
             @"bezel-inset": CGInsetMakeZero(),
             @"content-inset": CGInsetMakeZero(),
             @"bezel-color": [CPNull null],
@@ -805,6 +806,7 @@ CPButtonImageOffset   = 3.0;
     [contentView setImage:image];
 
     [contentView setImageOffset:[self valueForThemeAttribute:@"image-offset" inState:contentVisualState]];
+    [contentView setImageVerticalOffset:[self valueForThemeAttribute:@"image-vertical-offset" inState:contentVisualState]];
 
     [contentView setFont:[self font]];
     [contentView setTextColor:[self valueForThemeAttribute:@"text-color" inState:contentVisualState]];
@@ -973,7 +975,11 @@ CPButtonImageOffset   = 3.0;
     _bezelStyle = aBezelStyle;
 
     if (_bezelState && newState)
+    {
+        if (currentState)
+            _bezelState =_bezelState.without(currentState);
         _bezelState = _bezelState.and(newState);
+    }
     else
         _bezelState = newState || CPThemeStateNormal;
 

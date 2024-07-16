@@ -1,4 +1,5 @@
-var FILE = require("file");
+var fs = require("fs");
+var path = require("path");
 
 @import <Foundation/CPArray.j>
 @import <Foundation/CPString.j>
@@ -33,6 +34,7 @@ var ELEMENTS = 100,
 
 - (void)testAlmostSortedNumericUsingMergeSort
 {
+    console.log();
     CPLog.warn("\nNUMERIC ALMOST SORTED");
     var a = [self makeUnsorted],
         sorted = [self sort:a usingSortSelector:@selector(sortedArrayUsingDescriptors:) withObject:descriptors];
@@ -48,6 +50,7 @@ var ELEMENTS = 100,
 
 - (void)testRandomNumericUsingMergeSort
 {
+    console.log();
     CPLog.warn("\nNUMERIC RANDOM");
     var a = [self makeRandomNumeric],
         sorted = [self sort:a usingSortSelector:@selector(sortedArrayUsingDescriptors:) withObject:descriptors];
@@ -63,6 +66,7 @@ var ELEMENTS = 100,
 
 - (void)testRandomTextUsingMergeSort
 {
+    console.log();
     CPLog.warn("\nTEXT RANDOM");
     var a = [self makeRandomText],
         sorted = [self sort:a usingSortSelector:@selector(sortedArrayUsingDescriptors:) withObject:descriptors];
@@ -78,6 +82,7 @@ var ELEMENTS = 100,
 
 - (void)testAlmostSortedNumericUsingMergeSelectorSort
 {
+    console.log();
     CPLog.warn("\nNUMERIC ALMOST SORTED (SELECTOR)");
     var a = [self makeUnsorted],
         sorted = [self sort:a usingSortSelector:@selector(sortedArrayUsingSelector:) withObject:@selector(compareAAscendingThenBDescending:)];
@@ -93,6 +98,7 @@ var ELEMENTS = 100,
 
 - (void)testRandomNumericUsingMergeSelectorSort
 {
+    console.log();
     CPLog.warn("\nNUMERIC RANDOM (SELECTOR)");
     var a = [self makeRandomNumeric],
         sorted = [self sort:a usingSortSelector:@selector(sortedArrayUsingSelector:) withObject:@selector(compareAAscendingThenBDescending:)];
@@ -108,6 +114,7 @@ var ELEMENTS = 100,
 
 - (void)testRandomTextUsingMergeSelectorSort
 {
+    console.log();
     CPLog.warn("\nTEXT RANDOM (SELECTOR)");
     var a = [self makeRandomText],
         sorted = [self sort:a usingSortSelector:@selector(sortedArrayUsingSelector:) withObject:@selector(compareAAscendingThenBDescending:)];
@@ -173,7 +180,7 @@ var ELEMENTS = 100,
 
 - (CPArray)makeRandomText
 {
-    var the_big_sort = FILE.read(FILE.join(FILE.dirname(module.path), "the_big_sort.txt"), { charset:"UTF-8" }),
+    var the_big_sort = fs.readFileSync(path.join(path.dirname(__filename), "the_big_sort.txt"), {encoding: 'utf-8'}),
         words = the_big_sort.split(" ", ELEMENTS),
         wordcount = words.length,
         array = [];
@@ -254,6 +261,7 @@ var ELEMENTS = 100,
         test2 = [array objectsAtIndexes:indexes];
     var ddd = new Date();
 
+    console.log();
     CPLog.warn("\n_CPJavaScriptArray -objectsAtIndexes:");
     CPLog.warn("           CPArray -objectsAtIndexes: " + (dd - d) + "ms.");
     CPLog.warn("_CPJavaScriptArray -objectsAtIndexes: " + (ddd - dd) + "ms.");
@@ -298,6 +306,7 @@ var ELEMENTS = 100,
     }
     var ddd = new Date();
 
+    console.log();
     CPLog.warn("\n_CPJavaScriptArray -removeObjectIdenticalTo:");
     CPLog.warn("           CPArray -removeObjectIdenticalTo: " + (dd - d) + "ms.");
     CPLog.warn("_CPJavaScriptArray -removeObjectIdenticalTo: " + (ddd - dd) + "ms.");

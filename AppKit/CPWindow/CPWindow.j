@@ -186,6 +186,7 @@ var CPWindowActionMessageKeys = [
     BOOL                                _constrainsToUsableScreen;
     unsigned                            _shadowStyle;
     BOOL                                _showsResizeIndicator;
+    BOOL                                _releasedWhenClosed @accessors(property=releasedWhenClosed);
 
     int                                 _positioningMask;
     CGRect                              _positioningScreenRect;
@@ -267,6 +268,8 @@ var CPWindowActionMessageKeys = [
 
     BOOL                                _inhibitUpdateTrackingAreas;    // Used by the CPView when updating tracking areas
 }
+
+@global document
 
 + (Class)_binderClassForBinding:(CPString)aBinding
 {
@@ -1901,6 +1904,11 @@ CPTexturedBackgroundWindowMask
     // CPLeftMouseDown is needed for window moving and resizing to work.
     // CPMouseMoved is needed for rollover effects on title bar buttons.
 
+    // ignore events that happen during open / close animations
+    // not ignoring these would cause the app to freeze thereafter
+    if (sheet && (_sheetContext["isClosing"] || _sheetContext["isOpening"]))
+        return;
+
     if (sheet && _sheetContext["isAttached"])
     {
         switch (type)
@@ -2529,6 +2537,9 @@ CPTexturedBackgroundWindowMask
     [_parentWindow removeChildWindow:self];
     [self _orderOutRecursively:NO];
     [self _detachFromChildrenClosing:!_parentWindow];
+
+    if (_releasedWhenClosed)
+        [_contentView _releaseRecursively];
 }
 
 - (void)_detachFromChildrenClosing:(BOOL)shouldCloseChildren

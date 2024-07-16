@@ -32,6 +32,8 @@
 {
     if (self = [super NS_initWithCoder:aCoder])
     {
+        [self _init];
+
         _textContainer = [aCoder decodeObjectForKey:@"NSTextContainer"];
 
         [self setEditable:[aTextViewSharedData isEditable]];

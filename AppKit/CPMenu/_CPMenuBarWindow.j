@@ -31,6 +31,8 @@
 @global CPMenuDidChangeItemNotification
 @global CPMenuDidRemoveItemNotification
 
+@global document
+
 @implementation _CPMenuBarWindow : CPPanel
 {
     CPView      _highlightView;

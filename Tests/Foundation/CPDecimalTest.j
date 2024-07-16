@@ -418,7 +418,6 @@
     // test addition of positives
     var d1 = CPDecimalMakeWithString(@"1"),
         d2 = CPDecimalMakeWithParts(1, 0),
-        dcm = CPDecimalMakeZero(),
         i = 50;
     while (i--)
         [self assert:CPDecimalAdd(d1, d1, d2, CPRoundPlain) equals:CPCalculationNoError message:"CPDecimalAdd() Tap1: addition"];

@@ -31,6 +31,7 @@
 @import "CPCibOutletConnector.j"
 @import "CPCibRuntimeAttributesConnector.j"
 @import "CPClipView.j"
+@import "_CPCibCustomObject.j"
 
 @class CPScrollView
 
@@ -163,7 +164,6 @@ var _CPCibObjectDataNamesKeysKey                = @"_CPCibObjectDataNamesKeysKey
         _classesKeys = [aCoder decodeObjectForKey:_CPCibObjectDataClassesKeysKey];
         _classesValues = [aCoder decodeObjectForKey:_CPCibObjectDataClassesValuesKey];
 
-        _connections = [aCoder decodeObjectForKey:_CPCibObjectDataConnectionsKey];
         //id              _fontManager;
 
         _framework = [aCoder decodeObjectForKey:_CPCibObjectDataFrameworkKey];
@@ -179,6 +179,8 @@ var _CPCibObjectDataNamesKeysKey                = @"_CPCibObjectDataNamesKeysKey
         _fileOwner = [aCoder decodeObjectForKey:_CPCibObjectDataFileOwnerKey];
 
         _visibleWindows = [aCoder decodeObjectForKey:_CPCibObjectDataVisibleWindowsKey];
+
+        _connections = [aCoder decodeObjectForKey:_CPCibObjectDataConnectionsKey];
     }
 
     return self;

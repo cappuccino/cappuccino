@@ -27,22 +27,22 @@
 
 - (void)testCreationMainBundle
 {
-    var bundle = [CPBundle mainBundle];
+    [CPBundle mainBundle];
 }
 
-- (void)testLoadingBundle
+- (async void)testLoadingBundle
 {
     var bundle = [CPBundle bundleWithPath:@"Tests/Foundation/BundleTest"];
-    [bundle loadWithDelegate:self];
+    await [bundle loadWithDelegate:self];
 
     [self assert:[bundle objectForInfoDictionaryKey:"CPBundleDefaultLanguage"] equals:"fr"];
     [self assert:[bundle objectForInfoDictionaryKey:"CPBundleLocalizableStrings"] equals:["Localizable.strings"]];
 }
 
-- (void)testLocalization
+- (async void)testLocalization
 {
     var bundle = [CPBundle bundleWithPath:@"Tests/Foundation/BundleTest"];
-    [bundle loadWithDelegate:self];
+    await [bundle loadWithDelegate:self];
 
     [self assert:[bundle localizedStringForKey:"Label from file" value:"" table:"Localizable"] equals:"Label traduit de fr.lproj du premier context"];
     [self assert:[bundle localizedStringForKey:"Wrong key" value:"Default value" table:"Localizable"] equals:"Default value"];

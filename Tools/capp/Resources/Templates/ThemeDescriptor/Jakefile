@@ -24,11 +24,7 @@
 //  DO NOT REMOVE
 //===========================================================
 
-var SYS = require("system"),
-    ENV = SYS.env,
-    FILE = require("file"),
-    OS = require("os");
-
+var ENV = process.env;
 
 //===========================================================
 //  USER CONFIGURABLE VARIABLES
@@ -43,6 +39,9 @@ var SYS = require("system"),
 */
 var buildDir = "Build";
 
+////////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////////////////////
 
 //===========================================================
 //  AUTOMATICALLY GENERATED
@@ -50,28 +49,68 @@ var buildDir = "Build";
 //  Do not edit! (unless you know what you are doing)
 //===========================================================
 
-var stream = require("narwhal/term").stream,
-    JAKE = require("jake"),
-    task = JAKE.task,
-    FileList = JAKE.FileList,
-    CLEAN = require("jake/clean").CLEAN,
-    CLOBBER = require("jake/clean").CLOBBER,
-    blend = require("cappuccino/jake").blend,
-    configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Debug",
-    productName = "__project.nameasidentifier__",
-    debugBlendKitPath = FILE.join("Frameworks", "Debug", "BlendKit"),
-    releaseBlendKitPath = FILE.join("Frameworks", "BlendKit"),
-    buildPath = FILE.canonical(FILE.join(buildDir, productName + ".build"));
+const path = require("path"),
+      fs = require("fs"),
+      stream = ObjectiveJ.term.stream,
+      task = JAKE.task,
+      FileList = JAKE.FileList,
+      CLEAN = JAKE.CLEAN_AND_CLOBBER.CLEAN,
+      CLOBBER = JAKE.CLEAN_AND_CLOBBER.CLOBBER,
+      configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Debug",
+      productName = "__project.nameasidentifier__",
+      debugBlendKitPath = path.join("Frameworks", "Debug", "BlendKit"),
+      releaseBlendKitPath = path.join("Frameworks", "BlendKit"),
+      buildPath = path.resolve(path.join(buildDir, productName + ".build")),
+      child_process = require("child_process");
 
-blend (productName + ".blend", function(themeBlendTask)
-{
-    themeBlendTask.setBuildIntermediatesPath(FILE.join(buildPath, configuration))
-    themeBlendTask.setBuildPath(FILE.join(buildDir, configuration));
+var callback;
 
-    themeBlendTask.setThemeDescriptors(new FileList("ThemeDescriptors.j"));
-    themeBlendTask.setIdentifier("__project.identifier__");
-    themeBlendTask.setResources(new FileList("Resources/*"));
+function callbackFunction(blendtask) {
+    callback(blendtask);
+}
+
+var initilize = function(callback) {
+    // This check is only necessary because during the build process blendtask gets created much later.
+    var blendTaskPath = path.resolve(fs.realpathSync(process.argv[1]), "..", "..", "lib", "cappuccino", "jake", "blendtask.j");
+
+    if (fs.existsSync(blendTaskPath))
+    {
+        var anExports = {};
+        function localCallback() {
+            callback(anExports);
+        }
+        process.env["CONFIG"] = "Debug";
+        ObjectiveJ.OBJJ_INCLUDE_PATHS.push(path.resolve(fs.realpathSync(process.argv[1]), "..", "..", "Frameworks"));
+        ObjectiveJ.make_narwhal_factory(blendTaskPath, null, null, localCallback)(require, anExports, module, typeof system !== "undefined" && system, console.log);
+    }
+}
+
+initilize(callbackFunction);
+
+var promise = new Promise((resolve, reject) => {
+    callback = function(BLEND_TASK) {
+        exports.BlendTask = BLEND_TASK.BlendTask;
+        exports.blend = BLEND_TASK.blend;
+        defineBlendTask().then(() => {
+            resolve();
+            delete exports.jakePromise;
+        });
+    }
 });
+
+async function defineBlendTask() {
+    await exports.blend (productName + ".blend", function(themeBlendTask)
+    {
+        themeBlendTask.setBuildIntermediatesPath(path.join(buildPath, configuration))
+        themeBlendTask.setBuildPath(path.join(buildDir, configuration));
+    
+        themeBlendTask.setThemeDescriptors(new FileList("ThemeDescriptors.j"));
+        themeBlendTask.setIdentifier("__project.identifier__");
+        themeBlendTask.setResources(new FileList("Resources/*"));
+    });
+}
+
+exports.jakePromise = promise;
 
 task ("debug", function()
 {
@@ -97,12 +136,20 @@ task ("all", ["debug", "release"]);
 
 task ("test", ["debug"], function()
 {
-    OS.system(["open", "index-debug.html"]);
+    try {
+        child_process.execSync("open index-debug.html", {stdio: 'inherit'});
+    } catch (error) {
+        process.exit(1);
+    }
 });
 
 task ("test-release", ["release"], function()
 {
-    OS.system(["open", "index.html"]);
+    try {
+        child_process.execSync("open index.html", {stdio: 'inherit'});
+    } catch (error) {
+        process.exit(1);
+    }
 });
 
 CLEAN.include(buildPath);
