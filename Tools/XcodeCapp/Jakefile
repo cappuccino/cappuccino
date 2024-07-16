@@ -3,7 +3,7 @@ require("../../common.jake");
 
 var OS = require("os"),
     task = require("jake").task,
-    stream = require("narwhal/term").stream,
+    // stream = require("narwhal/term").stream;
     applicationName = "XcodeCapp.app";
 
 task ("build", function()

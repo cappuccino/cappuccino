@@ -1,6 +1,7 @@
 
-var FILE = require("file"),
-    compressor = require("minify/shrinksafe");
+var fs = require("fs");
+var path = require("path");
+var terser = require("terser");
 
 var FILENAMES = [
         "Class/root-class",
@@ -30,6 +31,11 @@ var FILENAMES = [
 {
 }
 
+async function compressor(srcCode) {
+    var m = await terser.minify(srcCode, { keep_fnames: false, mangle: { properties: true }, toplevel: true });
+    return m.code;
+}
+
 + (void)initialize
 {
     var index = 0,
@@ -42,26 +48,26 @@ var FILENAMES = [
             var filename = FILENAMES[index],
                 testSelector = sel_getUid("test" + FILENAMES[index]);
 
-            class_addMethod(self, testSelector, function(self, _cmd)
+            class_addMethod(self, testSelector, async function(self, _cmd)
             {
-                var d = FILE.dirname(module.path),
-                    filePath = FILE.join(d, filename + ".j"),
-                    unpreprocessed = FILE.read(filePath, { charset:"UTF-8" }),
+                var d = path.dirname(__filename),
+                    filePath = path.join(d, filename + ".j"),
+                    unpreprocessed = fs.readFileSync(filePath, {encoding: "utf8"}),
                     preprocessed,
                     preprocessedInlined,
-                    correct = FILE.read(FILE.join(d, filename + ".js")),
-                    p = FILE.join(d, filename + "-inlined.js"),
-                    correctInlined = FILE.exists(p) ? FILE.read(p) : correct; // Get inlined version if it exists. Otherwise use the regular one.
+                    correct = fs.readFileSync(path.join(d, filename + ".js"), {encoding: "utf8"}),
+                    p = path.join(d, filename + "-inlined.js"),
+                    correctInlined = fs.existsSync(p) ? fs.readFileSync(p, {encoding: "utf8"}) : correct; // Get inlined version if it exists. Otherwise use the regular one.
 
-                [self assertNoThrow:function() {
-                    preprocessed = ObjectiveJ.ObjJCompiler.compileToExecutable(unpreprocessed, nil, {includeMethodFunctionNames: true, includeMethodArgumentTypeSignatures: true, includeIvarTypeSignatures: true, inlineMsgSendFunctions: false, transformNamedFunctionDeclarationToAssignment: true}).code();
-                    preprocessed = compressor.compress(preprocessed, { charset : "UTF-8", useServer : true });
-                    correct = compressor.compress(correct, { charset : "UTF-8", useServer : true });
+                await [self assertNoThrow: async function() {
+                    preprocessed = ObjectiveJ.ObjJCompiler.compile(unpreprocessed, nil, {includeMethodFunctionNames: true, includeMethodArgumentTypeSignatures: true, includeIvarTypeSignatures: true, inlineMsgSendFunctions: false, transformNamedFunctionDeclarationToAssignment: true, acornOptions: {ecmaVersion: 2022}}).jsBuffer.toString();
+                    preprocessed = await compressor(preprocessed);
+                    correct = await compressor(correct);
 
                     // Get an Inlined version
-                    preprocessedInlined = ObjectiveJ.ObjJCompiler.compileToExecutable(unpreprocessed, nil, {includeMethodFunctionNames: true, includeMethodArgumentTypeSignatures: true, includeIvarTypeSignatures: true, inlineMsgSendFunctions: true, transformNamedFunctionDeclarationToAssignment:true}).code();
-                    preprocessedInlined = compressor.compress(preprocessedInlined, { charset : "UTF-8", useServer : true });
-                    correctInlined = compressor.compress(correctInlined, { charset : "UTF-8", useServer : true });
+                    preprocessedInlined = ObjectiveJ.ObjJCompiler.compile(unpreprocessed, nil, {includeMethodFunctionNames: true, includeMethodArgumentTypeSignatures: true, includeIvarTypeSignatures: true, inlineMsgSendFunctions: true, transformNamedFunctionDeclarationToAssignment: true, acornOptions: {ecmaVersion: 2022}}).jsBuffer.toString();
+                    preprocessedInlined = await compressor(preprocessedInlined);
+                    correctInlined = await compressor(correctInlined);
                 }];
 
                 [self assert:correct equals:preprocessed];

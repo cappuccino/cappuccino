@@ -1,0 +1,41 @@
+{
+  "name": "@objj/cappuccino",
+  "version": "1.3.1",
+  "devDependencies": {
+    "@objj/cappuccino": "file:."
+  },
+  "dependencies": {
+    "@objj/jake": "latest",
+    "@objj/ojtest": "latest",
+    "@objj/runtime": "^1.2.2",
+    "acorn-walk": "^8.2.0",
+    "terser": "^5.14.2"
+  },
+  "files": [
+    "dist",
+    "Jake"
+  ],
+  "main": "index.js",
+  "bin": {
+    "capp": "dist/cappuccino/bin/capp",
+    "cib-dump": "dist/cappuccino/bin/cib-dump",
+    "flatten": "dist/cappuccino/bin/flatten",
+    "fontinfo": "dist/cappuccino/bin/fontinfo",
+    "imagesize": "dist/cappuccino/bin/imagesize",
+    "nib2cib": "dist/cappuccino/bin/nib2cib",
+    "ojdepcheck": "dist/cappuccino/bin/ojdepcheck",
+    "press": "dist/cappuccino/bin/press",
+    "objj": "dist/objective-j/bin/objj",
+    "jake": "dist/cappuccino/bin/jake",
+    "ojtest": "dist/cappuccino/bin/ojtest",
+    "objj2objcskeleton": "dist/cappuccino/bin/objj2objcskeleton"
+  },
+  "license": "LGPL-2.1-or-later",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cappuccino/cappuccino.git"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

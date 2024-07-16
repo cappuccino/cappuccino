@@ -44,6 +44,10 @@
             // more information on decorators.
             //
             // Uncomment or comment on the line below to change the flags
+            //
+            // Macros for the precompiler can also be added. It is 100% compatible with the Macros and Conditionals preprocessor
+            // directives defined in the GNU C 11.0 Preprocessor User Guide. (https://gcc.gnu.org/onlinedocs/gcc-11.2.0/cpp/)
+            // Example: OBJJ_COMPILER_FLAGS = [..., "-DMyMax(x,y)=((x)>(y))?(x):(y)]", "-DMYMACRO", "-DMYMACRO2=42"];
             OBJJ_COMPILER_FLAGS = ["IncludeDebugSymbols", "IncludeTypeSignatures", "SourceMap", "InlineMsgSend"];
 
             var progressBar = null;

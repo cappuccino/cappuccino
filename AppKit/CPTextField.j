@@ -34,6 +34,8 @@
 @global CPStringPboardType
 @global CPCursor
 
+@global document
+
 @protocol CPTextFieldDelegate <CPControlTextEditingDelegate>
 
 @end

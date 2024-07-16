@@ -29,6 +29,8 @@
 @global CPImagesPboardType
 @global appkit_tag_dom_elements
 
+@global document
+
 @typedef CPImageAlignment
 CPImageAlignCenter      = 0;
 CPImageAlignTop         = 1;

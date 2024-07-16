@@ -2,9 +2,10 @@
 
 @import <Foundation/Foundation.j>
 
-var FILE = require("file"),
-    OS = require("os"),
-    stream = require("narwhal/term").stream;
+var fs = require("fs"),
+    acorn = require("objj-parser"),
+    walk = require("acorn-walk"),
+    stream = ObjectiveJ.term;
 
 function main(args)
 {
@@ -18,14 +19,14 @@ function main(args)
 
 function printUsage()
 {
-    print("objj2objskeleton [FILE] [DESTINATION]");
-    print("Convert a objective-j file to an objective-c files skeleton (.h and .m)")
+    console.log("objj2objskeleton [FILE] [DESTINATION]");
+    console.log("Convert a objective-j file to an objective-c files skeleton (.h and .m)")
 }
 
 // Debug function to print some JS objects
 function dump(obj)
 {
-    print(JSON.stringify(obj));
+    console.log(JSON.stringify(obj));
 }
 
 function raise(pos, message)
@@ -36,8 +37,10 @@ function raise(pos, message)
     throw syntaxError;
 }
 
+function ignore(_node, _st, _c) {}
+
 var errors = [],
-    xcc = ObjectiveJ.acorn.walk.make(
+    xcc = walk.make(
     {
         ClassDeclarationStatement: function(node, st, c)
         {
@@ -83,7 +86,7 @@ var errors = [],
         {
             var selectors = node.selectors,
                 arguments = node.arguments,
-                methodReturnType = [node.returntype ? node.returntype.name : "id"],
+                //methodReturnType = [node.returntype ? node.returntype.name : "id"],
                 methodHasAction = node.action ? "IBAction" : null,
                 selector = selectors[0].name,
                 actionInfo = {"name": selector, "arguments":[]};
@@ -111,7 +114,18 @@ var errors = [],
                 else
                     raise(node.loc.start, "Action methods must have exactly one parameter");
             }
-        }
+        },
+        TypeDefStatement: ignore,
+        ClassStatement: ignore,
+        MessageSendExpression: ignore,
+        GlobalStatement: ignore,
+        ProtocolDeclarationStatement: ignore,
+        ArrayLiteral: ignore,
+        Reference: ignore,
+        DictionaryLiteral: ignore,
+        Dereference: ignore,
+        ImportStatement: ignore,
+        SelectorLiteralExpression: ignore
     }
 );
 
@@ -149,9 +163,8 @@ function parser(args)
             baseFilenameWithNoExtension = args.shift() == "-n" ?  args.shift() : baseFilename.substring(0, baseFilename.length - 2),
             outputHeaderURL = new CFURL([outputDirectory stringByAppendingPathComponent:baseFilenameWithNoExtension + ".h"]),
             outputImplementationURL = new CFURL([outputDirectory stringByAppendingPathComponent:baseFilenameWithNoExtension + ".m"]),
-            source = FILE.read(sourcePath, { charset: "UTF-8" }),
-            flags = ObjectiveJ.Preprocessor.Flags.IncludeDebugSymbols | ObjectiveJ.Preprocessor.Flags.IncludeTypeSignatures,
-            tokens = ObjectiveJ.acorn.parse(source, { locations:true, sourceFile:sourcePath }),
+            source = fs.readFileSync(sourcePath, { encoding: "utf8" }),
+            tokens = acorn.parse(source, { locations:true, sourceFile:sourcePath, ecmaVersion: 2022 }),
             classesInformation = [],
             ObjectiveCSource = "",
             ObjectiveCHeader = "",
@@ -186,7 +199,7 @@ function parser(args)
             });
 
             if (aClass.actions.length > 0)
-            	ObjectiveCHeader += "\n";
+                ObjectiveCHeader += "\n";
 
             // add each action in header
             aClass.actions.forEach(function(anAction)
@@ -204,10 +217,10 @@ function parser(args)
         });
 
         if (ObjectiveCSource.length)
-            FILE.write(outputImplementationURL, ObjectiveCSource, { charset:"UTF-8" });
+            fs.writeFileSync(outputImplementationURL.absoluteString(), ObjectiveCSource, 'utf8');
 
         if (ObjectiveCHeader.length)
-            FILE.write(outputHeaderURL, ObjectiveCHeader, { charset:"UTF-8" });
+            fs.writeFileSync(outputHeaderURL.absoluteString(), ObjectiveCHeader, 'utf8');
     }
     catch (e)
     {
@@ -227,7 +240,7 @@ function parser(args)
         stream.printError([plist rawString]);
 
         // If there were category warnings, hasErrors is NO, so return a warning status
-        OS.exit(hasErrors ? 1 : 2);
+        process.exit(hasErrors ? 1 : 2);
     }
 }
 

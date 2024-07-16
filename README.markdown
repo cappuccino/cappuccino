@@ -1,46 +1,54 @@
-[![Build Status](https://travis-ci.org/cappuccino/cappuccino.svg?branch=master)](https://travis-ci.org/cappuccino/cappuccino)
-[![Node build status](https://github.com/cappuccino/cappuccino/actions/workflows/BuildAndTest.yml/badge.svg?branch=node)](https://github.com/cappuccino/cappuccino/actions/workflows/BuildAndTest.yml)
-[![Join the chat at https://gitter.im/cappuccino/cappuccino](https://badges.gitter.im/cappuccino/cappuccino.svg)](https://gitter.im/cappuccino/cappuccino?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![build](https://github.com/cappuccino/cappuccino/actions/workflows/BuildAndTest.yml/badge.svg)](https://github.com/cappuccino/cappuccino/actions/workflows/BuildAndTest.yml)
+[![Join the chat at https://gitter.im/cappuccino/cappuccino](https://badges.gitter.im/cappuccino/cappuccino.svg)](
+  https://gitter.im/cappuccino/cappuccino?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Welcome to Cappuccino!
 ======================
 
+Cappuccino, a web application framework in Objective-J, a superset of JavaScript, enhances web development by implementing the NeXTSTEP/Apple Cocoa APIs for web browsers. This integration supports the creation of sophisticated, desktop-class applications without imposing arbitrary complexity limits. Leveraging Cocoa’s well-established architecture, Cappuccino facilitates scalable and reliable application development. Applications can be served from any web server and deployed to any modern web browser without dependencies, offering a streamlined solution for developers.
+
 Introduction
 ------------
-Cappuccino is an open source framework that makes it easy to build
-desktop-caliber applications that run in a web browser.
+Cappuccino is an open-source framework in continuous development since 2008 and released under the LGPL2 license. It implements as much of the proven NeXTStep/Apple Cocoa API as practicable in the modern web browser environment. Resulting applications are served as HTML, JavaScript, and CSS, allowing deployment from any web host.
 
-With Cappuccino, you don't concern yourself with HTML, CSS, or the DOM. You  write applications with the APIs from Apple's Cocoa frameworks and the Objective-J language.
+Benefits of Cappuccino's Cocoa implementation:
+* Cross-platform development – any programmer's text editor or IDE is sufficient. The compiler and other parts of the toolchain required to prepare applications for deployment are hosted by Node.js.
+* Cocoa's rich range of interface controls are abstracted to HTML, CSS, and JavaScript. These go well beyond the functionality provided by current browser standards, and only require minimal HTML5 support.
+* These design patterns and APIs provide a solid foundation for application development. The APIs have been proven over forty years and provide browser-independent functionality which is a superset of current browser capabilities. 
+* Custom interface controls can reliably build on basic Cocoa controls if extended or new functionality is required.
+* Robust event-handling mechanisms, a superset of those provided by current browsers, ensure responsive and interactive applications.
+* Internationalization and localization technologies simplify global deployment.
+* Consistent and predictable behavior across different platforms enhances reliability and user experience.
+* Objective-J's [message-passing architecture](https://en.wikipedia.org/wiki/Message_passing), which the Cocoa APIs leverage, promote loose coupling of an app's component functionality — making large scale development more managable.
+* Comprehensive documentation for Objective-J is supplemented by over two decades of resources for Objective-C and Cocoa. Additionally, a large public catalog of Objective-C Cocoa applications offers valuable guidance for development. Translation of such sample code to Objective-J is often trivial.
+* Toolchain stability – use of time-tested APIs means an absense of the churn which is all too common in the current generic browser-app ecosystem.
+* The first web browser and server were written in 1990 by a single person using the APIs which Apple later re-branded and extended as Cocoa. Beyond being a testament to their productivity, it doesn't seem out of place to write application software using the same APIs.
 
-Check out a [live demo of the widgets in Cappuccino](https://cappuccino-testbook.5apps.com/#ThemeKitchenSink)
+Check out a [live demo of the standard interface controls provided by Cappuccino](https://cappuccino-testbook.5apps.com/#ThemeKitchenSink)
 
 Check out some [tutorials](https://cappuccino-cookbook.5apps.com)
 
 For more information, see the
-  - [Official website](http://cappuccino-project.org)
-  - [Github Wiki](https://github.com/cappuccino/cappuccino/wiki)
-  - [FAQ](http://cappuccino-project.org/support/faq.html)
-  - [Documentation](http://cappuccino-project.org/learn/)
-  - [Mailing list](http://groups.google.com/group/objectivej)
+  - [Official website](http://cappuccino.dev)
   - [Gitter](https://gitter.im/cappuccino/cappuccino)
+  - [Github Wiki](https://github.com/cappuccino/cappuccino/wiki)
+  - [FAQ](http://cappuccino.dev/support/faq.html)
+  - [Documentation](http://cappuccino.dev/learn/)
+  - [Mailing list (inactive – for historical purposes only)](http://groups.google.com/group/objectivej)
 
-Follow [@cappuccino](https://twitter.com/cappuccino) on Twitter for updates on the project.
-
-If you discover any bugs, please [file a ticket](http://github.com/cappuccino/cappuccino/issues).
+Bugs and enhancement requrests can be reported by [creating a Github issue](http://github.com/cappuccino/cappuccino/issues).
 
 System Requirements
 -------------------
-To run Cappuccino applications, all you need is a web browser.
 
-You can develop Cappuccino applications with only a simple text editor on any platform.
 
-If you are on a Mac, our integration with Xcode leverages the world-class visual development tools from Apple to create complex applications with minimal coding.
+**Q: I have my own HTML, JavaScript, and CSS I'd like to use in a larger app. I don't see any JavaScript, HTML, or CSS in the sample code available. How do I modify the DOM?**  
+**A:** Cappuccino abstracts much of the DOM to align with Cocoa's model.  Existing Cocoa controls can be extended or new ones built from scratch to meet specific requirements. The Cocoa APIs follow a classic object-oriented programming model – most necessary functionality will be inherited from the Cappuccino base class one is starting with. The [CPWebView](https://www.cappuccino.dev/learn/documentation/interface_c_p_web_view.html) control can also be used to embed either HTML/Javascript/CSS fragments or entire web pages.
 
-Getting Started
----------------
-To write you first application [check the installation instructions](https://github.com/cappuccino/cappuccino/wiki/node)
+**Q: What are the advantages of Cappuccino over libraries and frameworks like React and Vue?**  
+**A:** Cappuccino offers several advantages:
 
-To contribute to Cappuccino, please read here: [Getting and Building the Source](https://github.com/cappuccino/cappuccino/wiki/Getting-and-building-the-source).
+
 
 License
 -------

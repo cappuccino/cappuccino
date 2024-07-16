@@ -44,6 +44,16 @@ var abbreviationDictionary,
     timeZoneDataVersion,
     localizedName;
 
+function abbreviationForDate(date)
+{
+    // Sometimes the browsers will give unmatched timezones in other languages so try one more thing
+    // Take the locale string for english in the US. It has the following format (9/21/2021, 2:40:44 PM Central European Summer Time)
+    // Remove the date and time with this regex and take first letter in each word in the time zone name.
+    // This is not 100% but is better than nothing as JAvascript has no good support for this.
+    var abbreviation = date.toLocaleString('en-US', {timeZoneName : 'long'}).replace(/^([0]?\d|[1][0-2])\/((?:[0]?|[1-2])\d|[3][0-1])\/([2][01]|[1][6-9])\d{2}(,?\s*([0]?\d|[1][0-2])(\:[0-5]\d){1,2})*\s*([aApP][mM]{0,2})?\s*/, "").split(" ").map(function(l) { return l[0]}).join("");
+
+    return abbreviation;
+}
 /*!
     @class CPTimeZone
     @ingroup foundation
@@ -132,6 +142,7 @@ var abbreviationDictionary,
         @"CLST" :  @"America/Santiago",
         @"CLT" :   @"America/Santiago",
         @"COT" :   @"America/Bogota",
+        @"CUT" :   @"UTC",
         @"CST" :   @"America/Chicago",
         @"EAT" :   @"Africa/Addis_Ababa",
         @"EDT" :   @"America/New_York",
@@ -269,11 +280,11 @@ var abbreviationDictionary,
         };
 
     var date = [CPDate date],
-        abbreviation = String(String(date).split("(")[1]).split(")")[0];
+        abbreviation = abbreviationForDate(date);
 
     localTimeZone = [self timeZoneWithAbbreviation:abbreviation];
-    systemTimeZone = [self timeZoneWithAbbreviation:abbreviation];
-    defaultTimeZone = [self timeZoneWithAbbreviation:abbreviation];
+    systemTimeZone = localTimeZone;
+    defaultTimeZone = localTimeZone;
 
     localizedName = @{
         @"en" : englishLocalizedName,
@@ -430,7 +441,7 @@ var abbreviationDictionary,
 + (void)resetSystemTimeZone
 {
     var date = [CPDate date],
-        abbreviation = String(String(date).split("(")[1]).split(")")[0];
+        abbreviation = abbreviationForDate(date);
 
     systemTimeZone = [self timeZoneWithAbbreviation:abbreviation];
 
@@ -560,7 +571,7 @@ var abbreviationDictionary,
     if (!date)
         return nil;
 
-    return String(String(date).split("(")[1]).split(")")[0];
+    return abbreviationForDate(date);
 }
 
 /*! Returns the number of seconds from GMT for the given date
@@ -573,7 +584,7 @@ var abbreviationDictionary,
     if (!date)
         return nil;
 
-    var abbreviation = String(String(date).split("(")[1]).split(")")[0];
+    var abbreviation = abbreviationForDate(date);
 
     return [timeDifferenceFromUTC valueForKey:abbreviation] * 60;
 }

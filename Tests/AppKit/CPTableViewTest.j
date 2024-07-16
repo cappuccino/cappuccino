@@ -194,7 +194,6 @@
 
     for (var row = 0; row < 50; row++)
     {
-        var column = row * 2;
         contentArray.push([CPDictionary dictionaryWithObjects:["R" + row + "C0", "R" + row + "C1"] forKeys:["c1", "c2"]]);
     }
     [arrayController setContent:contentArray];
