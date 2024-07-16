@@ -45,7 +45,7 @@ They are served as standard HTML, Javascript, CSS and images from any web server
 
 Any programmer's editor can be used for coding.
 
-macOS users can use Xcode - which leverages the visual development tools from Apple for creation of complex applications with minimal coding.
+macOS users can use Xcode – which leverages the visual development tools from Apple for creation of complex applications with minimal coding.
 
 Notes on the transition of Cappuccino from the Narwhal Javascript engine to Node.js
 ------------------ 
@@ -53,7 +53,7 @@ Notes on the transition of Cappuccino from the Narwhal Javascript engine to Node
 Cappuccino compiles source code files written in Objective-J or Javascript to pure HTML/Javascript/CSS.
 A desktop Javascript engine with CommonJS for accessing local resources is required for the compilation phase.
 Historically, this engine was [Narwhal](https://narwhaljs.org/).
-A transition to [Node.js](https://nodejs.org) is being finalized..
+A transition to [Node.js](https://nodejs.org) is being finalized.
 The results of this transition are available as a Release Candidate.
 While a formal production release is scheduled for early-autumn 2024, it should be considered production-ready as-is. Multiple production deployments over the last twelve months have confirmed this.
 In addition to the Node.js-based toolchain, the next formal release will include multiple maintenance improvements and enhancements to the API.
@@ -80,7 +80,7 @@ this is outlined in the section about permission issues below.
 
 By default npm uses `/usr/local/lib/node_modules` as the install location for globally installed packages. This causes
 problems since users typically lack write permissions there. It is therefore recommended to either use a version
-manager, or change npm's default install location manually (which is what we did above). For more details see [this article](https://docs.npmjs.com/resolving-eacces-permissions-errors-when-installing-packages-globally).
+manager, or change npm's default install location manually (which is what we did above with the `npm set prefix…` command). For more details see [this article](https://docs.npmjs.com/resolving-eacces-permissions-errors-when-installing-packages-globally).
 
 ### Basic usage
 
@@ -122,7 +122,7 @@ simply run `npm install -g @objj/cappuccino` again.
 FAQs
 ----
 **Q: Can I use Cappuccino on Windows/Linux?**  
-**A:** Yes, Cappuccino can be used on Windows or Linux. While Cappuccino technology is inspired by Apple's Cocoa framework, it is designed to be platform-independent. As long as you have a modern web browser and a compatible development environment (An LTS version of LTS and an http server), you can develop and deploy Cappuccino applications on other operating systems without any issues.
+**A:** Yes, Cappuccino can be used on Windows or Linux. While Cappuccino technology is inspired by Apple's Cocoa framework, it is designed to be platform-independent. As long as you have a modern web browser and a compatible development environment (An LTS version of node and an http server), you can develop and deploy Cappuccino applications on other operating systems without any issues.
 
 **Q: Has Apple not moved away from Objective-C and Cocoa, making this a dead end?**  
 **A:** While Apple has introduced Swift as a modern language and shifted focus to frameworks like SwiftUI, Objective-C and Cocoa remain widely used and supported. Cappuccino leverages the mature and proven Cocoa architecture, which continues to be relevant for many applications. Additionally, Cappuccino’s design abstracts these technologies to the web, ensuring that developers can create robust web applications regardless of Apple’s evolving ecosystem.
@@ -131,7 +131,7 @@ FAQs
 **A:** Objective-J’s syntax, with its brackets, is inspired by Objective-C, which has been used for decades in developing macOS and iOS applications. While it may seem unusual initially, it provides a powerful way to structure code and manage objects. Developers familiar with Objective-C will find it intuitive, and those new to it can leverage extensive documentation and community resources. The initial learning curve is offset by the productivity gains in building complex, maintainable web applications.
 
 **Q: I have my own HTML, JavaScript, and CSS I'd like to use in a larger app. I don't see any JavaScript, HTML, or CSS in the sample code available. How do I modify the DOM?**  
-**A:** Cappuccino abstracts much of the DOM to align with Cocoa's model.  Existing Cocoa controls can be extended or new ones built from scratch to meet specific requirements. The Cocoa APIs follow a classic object-oriented programming model - most necessary functionality will be inherited from the Cappuccino base class one is starting with. The [CPWebView](https://www.cappuccino.dev/learn/documentation/interface_c_p_web_view.html) control can also be used to embed either HTML/Javascript/CSS fragments or entire web pages.
+**A:** Cappuccino abstracts much of the DOM to align with Cocoa's model.  Existing Cocoa controls can be extended or new ones built from scratch to meet specific requirements. The Cocoa APIs follow a classic object-oriented programming model – most necessary functionality will be inherited from the Cappuccino base class one is starting with. The [CPWebView](https://www.cappuccino.dev/learn/documentation/interface_c_p_web_view.html) control can also be used to embed either HTML/Javascript/CSS fragments or entire web pages.
 
 **Q: What are the advantages of Cappuccino over libraries and frameworks like React and Vue?**  
 **A:** Cappuccino offers several advantages:
