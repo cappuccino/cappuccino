@@ -9,7 +9,7 @@ Cappuccino, a web application framework in Objective-J, a superset of JavaScript
 
 Introduction
 ------------
-Cappuccino is an open-source framework in continuous development since 2008 and released under the LGPL2 license. It implements as much of the proven NeXTStep/Apple Cocoa API as practicable in the modern web browser environment. Resulting applications are served as HTML, JavaScript, and CSS, allowing deployment from any web host.
+Cappuccino is an open-source framework in continuous development since 2008 and released under the LGPL2 license. It implements as much of the proven NeXTStep/Apple Cocoa API as is feasible and appropriate for the modern web browser environment.
 
 Benefits of Cappuccino's Cocoa implementation:
 * Cross-platform development – any programmer's text editor or IDE is sufficient. The compiler and other parts of the toolchain required to prepare applications for deployment are hosted by Node.js.
