@@ -44,7 +44,7 @@ They are served as standard HTML, Javascript, CSS and images from any web server
 * Any programmer's editor can be used for coding.
 * macOS users can use Xcode - which leverages the visual development tools from Apple for creation of complex applications with minimal coding.
 
-Notes on the transition of Cappuccino from the Narwhal Javascript engine to Node.js
+Installation instructions
 ------------------ 
 
 Cappuccino compiles source code files written in Objective-J to pure Javascript but can run Objective-J also directly in the browser.
