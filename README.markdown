@@ -47,7 +47,7 @@ They are served as standard HTML, Javascript, CSS and images from any web server
 Notes on the transition of Cappuccino from the Narwhal Javascript engine to Node.js
 ------------------ 
 
-Cappuccino compiles source code files written in Objective-J or Javascript to pure HTML/Javascript/CSS.
+Cappuccino compiles source code files written in Objective-J to pure Javascript but can run Objective-J also directly in the browser.
 A desktop Javascript engine with CommonJS for accessing local resources is required for the compilation phase.
 Historically, this engine was [Narwhal](https://narwhaljs.org/).
 A transition to [Node.js](https://nodejs.org) is being finalized.
