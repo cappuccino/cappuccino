@@ -132,9 +132,9 @@ FAQs
 
 * Cocoa Architecture: Leverages the mature and robust Cocoa APIs, providing a solid foundation for complex applications.
 * Object-Oriented Approach: Uses Objective-J, which extends JavaScript with powerful object-oriented capabilities.
-* Desktop-Class Applications: Designed for creating rich, desktop-like applications that run in web browsers.
+* Desktop-Class Usability: Complex controls, coherent keyboard navigation and undo/redo out of the box.
 * Unified Framework: Integrates UI components, event handling, and data management in a cohesive package.
-* Legacy and Stability: Continuous development since 2008 (1986, if going back to the inception of Objective-C and Cocoa) ensures stability and reliability.
+* Legacy and Stability: Continuous development since 2008 ensures stability and reliability.
 
 **Q: I've heard claims about Objective-C and Cocoa providing increased productivity – how true is this?**.  
 **A:** Objective-C and Cocoa are designed for efficiency and ease of use. Their mature, well-documented APIs and comprehensive frameworks enable rapid development of robust applications. The object-oriented nature of Objective-C promotes code reuse and modularity, while Cocoa’s design patterns streamline common tasks. Developers often find that these features collectively lead to increased productivity, especially for complex, desktop-class applications.
