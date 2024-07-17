@@ -22,7 +22,6 @@ Benefits of Cappuccino's Cocoa implementation:
 * Objective-J's [message-passing architecture](https://en.wikipedia.org/wiki/Message_passing), which the Cocoa APIs leverage, promote loose coupling of an app's component functionality — making large scale development more managable.
 * Comprehensive documentation for Objective-J is supplemented by over two decades of resources for Objective-C and Cocoa. Additionally, a large public catalog of Objective-C Cocoa applications offers valuable guidance for development. Translation of such sample code to Objective-J is often trivial.
 * Toolchain stability – use of time-tested APIs means an absense of the churn which is all too common in the current generic browser-app ecosystem.
-* The first web browser and server were written in 1990 by a single person using the APIs which Apple later re-branded and extended as Cocoa. Beyond being a testament to their productivity, it doesn't seem out of place to write application software using the same APIs.
 
 Check out a [live demo of the standard interface controls provided by Cappuccino](https://cappuccino-testbook.5apps.com/#ThemeKitchenSink)
 
@@ -87,7 +86,6 @@ On successful installation, follow these steps to create a basic and fully-funct
 1. `capp gen HelloWorld`
 2. `cd HelloWorld`
 3. `python3 -m http.server` (any local http server can be used)
-4. Go to `localhost:8000` in your web browser.
 
 ### Building Cappuccino from source
 
@@ -101,18 +99,16 @@ To build from source, do:
    
 2. `cd cappuccino`
    
-3. `git checkout node`
+3. `npm install`
 
-4. `npm install`
-
-5. Make any desired changes to the codebase.
+4. Make any desired changes to the codebase.
    
-6. Make sure the environment variable `CAPP_BUILD` is set. This is done by adding the line
+5. Make sure the environment variable `CAPP_BUILD` is set. This is done by adding the line
     ```bash
     export CAPP_BUILD="/path/to/cappuccino/build/directory"
     ```
     to your `.zshrc` or equivalent config file and of course changing the path to where you want to build Cappuccino.
-7.  Run `jake install` to build and install Cappuccino.
+6.  Run `jake install` to build and install Cappuccino.
 
 Beware that building and installing Cappuccino from source will overwrite the binaries installed from npm. To undo this,
 simply run `npm install -g @objj/cappuccino` again.
