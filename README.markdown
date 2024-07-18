@@ -120,6 +120,7 @@ FAQs
 
 **Q: Hasn't Apple moved away from Objective-C and Cocoa, making them obsolete?**  
 **A:** While Apple has indeed introduced Swift as a modern programming language and shifted its focus to frameworks like SwiftUI, Objective-C and Cocoa are still widely used and supported. Objective-C is a small superset of C, and similarly, Objective-J is a small superset of JavaScript. This allows developers to mix and match Objective-J with plain JavaScript, offering a level of flexibility that wouldn't be possible with Swift, which is an entirely different language. This makes Objective-J particularly advantageous for developers who want to integrate with existing JavaScript codebases without needing to learn an entirely new language.
+
 **Q: What is with the funny syntax of Objective-J and its brackets? I've never seen a language like this – how can anyone be productive with something so strange?**   
 **A:** Objective-J’s syntax, with its brackets, is inspired by Objective-C, which has been used for decades in developing macOS and iOS applications. While it may seem unusual initially, it provides a powerful way to structure code and manage objects. Developers familiar with Objective-C will find it intuitive, and those new to it can leverage extensive documentation and community resources. The initial learning curve is offset by the productivity gains in building complex, maintainable web applications.
 
