@@ -23,6 +23,8 @@ CPLogRegister(CPLogConsole);
 - (void)awakeFromCib
 {
     [theWindow setFullPlatformWindow:YES];
+	// Manually override divider bezel color to confirm it can be set.
+	// Use red to make this visually obvious.
     [segmentedControl1 setValue:[CPColor redColor] forThemeAttribute:@"divider-bezel-color"];
 }
 
