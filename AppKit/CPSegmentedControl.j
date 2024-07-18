@@ -561,10 +561,10 @@ CPSegmentSwitchTrackingMomentary = 2;
     }
     else if (aName === "right-segment-bezel")
     {
-        return CGRectMake(CGRectGetWidth([self bounds]) - contentInset.right,
-                            bezelInset.top,
-                            contentInset.right,
-                            height);
+		return CGRectMake(FLOOR(CGRectGetWidth([self bounds]) - contentInset.right),
+						  FLOOR(bezelInset.top),
+						  FLOOR(contentInset.right),
+						  FLOOR(height));
     }
     else if (aName.indexOf("segment-bezel") === 0)
     {
