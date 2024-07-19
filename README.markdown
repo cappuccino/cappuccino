@@ -2,20 +2,20 @@
 [![Join the chat at https://gitter.im/cappuccino/cappuccino](https://badges.gitter.im/cappuccino/cappuccino.svg)](
   https://gitter.im/cappuccino/cappuccino?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-Welcome to Cappuccino!
-======================
+#Welcome to Cappuccino!
 
-Cappuccino, a web application framework in Objective-J, a superset of JavaScript, enhances web development by implementing the NeXTSTEP/Apple Cocoa APIs for web browsers. This integration supports the creation of sophisticated, desktop-class applications without imposing arbitrary complexity limits. Leveraging Cocoa’s well-established architecture, Cappuccino facilitates scalable and reliable application development. Applications can be served from any web server and deployed to any modern web browser without dependencies, offering a streamlined solution for developers.
+Cappuccino, a web application framework in Objective-J (*a superset of JavaScript which is transpiled for deployment*), enhances web application development by implementing the NeXTSTEP/Apple Cocoa APIs for browsers. Leveraging Cocoa’s well-established architecture, Cappuccino facilitates scalable application development for those usage cases requiring developer productivity, reliability and sophisticated interaction support. Resulting applications are served from any web server and deployed to any modern web browser - without plugins or extensions of any kind.
 
-Introduction
-------------
-Cappuccino is an open-source framework in continuous development since 2008 and released under the LGPL2 license. It implements as much of the proven NeXTStep/Apple Cocoa API as is feasible and appropriate for the modern web browser environment.
+##Introduction
 
-Benefits of Cappuccino's Cocoa implementation:
-* Cross-platform development – any programmer's text editor or IDE is sufficient. The compiler and other parts of the toolchain required to prepare applications for deployment are hosted by Node.js.
+Cappuccino is an open-source framework developed continuously since 2008 and released under the LGPL version 2 license. It implements as much of the proven NeXTStep/Apple Cocoa API as practical in the modern web browser environment.    
+
+### Benefits of Cappuccino for Application Development:
+   
+- Cross-platform development – any programmer's text editor or IDE is sufficient. The compiler and other parts of the toolchain used to prepare applications for deployment are hosted by Node.js.
 * Cocoa's rich range of interface controls are abstracted to HTML, CSS, and JavaScript. These go well beyond the functionality provided by current browser standards, and only require minimal HTML5 support.
 * These design patterns and APIs provide a solid foundation for application development. The APIs have been proven over forty years and provide browser-independent functionality which is a superset of current browser capabilities. 
-* Custom interface controls can reliably build on basic Cocoa controls if extended or new functionality is required.
+* Custom interface controls can reliably build on basic Cocoa controls - when extended or new functionality is required.
 * Robust event-handling mechanisms, a superset of those provided by current browsers, ensure responsive and interactive applications.
 * Internationalization and localization technologies simplify global deployment.
 * Consistent and predictable behavior across different platforms enhances reliability and user experience.
@@ -37,27 +37,17 @@ For more information, see the
 
 Bugs and enhancement requrests can be reported by [creating a Github issue](http://github.com/cappuccino/cappuccino/issues).
 
-System Requirements
--------------------
+##System Requirements
+
 * A minimally HTML5-compliant web browser is the only requirement for running Cappuccino applications.
 They are served as standard HTML, Javascript, CSS and images from any web server.
 * Any programmer's editor can be used for coding.
 * macOS users can use Xcode - which leverages the visual development tools from Apple for creation of complex applications with minimal coding.
 
-Installation instructions
------------------- 
+##Installation instructions 
+To try Cappuccino:  
 
-Cappuccino compiles source code files written in Objective-J to pure Javascript but can run Objective-J also directly in the browser.
-A desktop Javascript engine with CommonJS for accessing local resources is required for the compilation phase.
-Historically, this engine was [Narwhal](https://narwhaljs.org/).
-A transition to [Node.js](https://nodejs.org) is being finalized.
-The results of this transition are available as a Release Candidate.
-While a formal production release is scheduled for early-autumn 2024, it should be considered production-ready as-is. Multiple production deployments over the last twelve months have confirmed this.
-In addition to the Node.js-based toolchain, the next formal release will include multiple maintenance improvements and enhancements to the API.
-
-To try Cappuccino using the Node.js version, do the following:
-
-1. Install Node.js and npm from the [Node.js website](https://nodejs.org/download/) or the OS-specific package manager of your choice. Long-term Support (LTS) versions are supported although others will probably work as intended.
+1. Install Node.js and npm from the [Node.js website](https://nodejs.org/download/) or the OS-specific package manager of your choice. Long-term Support (LTS) versions are tested although others will probably work as intended.
   
 2. Run `npm set prefix ~/.npm`. This will set the default install location for npm to `~/.npm`. The reasoning behind 
 this is outlined in the section about permission issues below.
@@ -71,13 +61,7 @@ this is outlined in the section about permission issues below.
 
 5. Run `npm install -g @objj/cappuccino`.
 
-6. Done! See below for basic usage.
-
-### Permisson issues
-
-By default npm uses `/usr/local/lib/node_modules` as the install location for globally installed packages. This causes
-problems since users typically lack write permissions there. It is therefore recommended to either use a version
-manager, or change npm's default install location manually (which is what we did above with the `npm set prefix…` command). For more details see [this article](https://docs.npmjs.com/resolving-eacces-permissions-errors-when-installing-packages-globally).
+6. Done! See below for basic usage.  
 
 ### Basic usage
 
@@ -86,10 +70,29 @@ On successful installation, follow these steps to create a basic and fully-funct
 1. `capp gen HelloWorld`
 2. `cd HelloWorld`
 3. `python3 -m http.server` (any local http server can be used)
+4.  Load [localhost:8000](http://localhost:8000) in any browser
+
+### Technical notes
+
+Cappuccino compiles source code files written in Objective-J to pure Javascript but can also run Objective-J directly in the browser. Pure Javascript code can be intermixed with Objective-J, just as Objective-C allows pure C code. This is because each language is a strict superset of its base language.
+
+For app compilation and running other toolchain components in preparation for deployment to production, a desktop Javascript engine supporting CommonJS for accessing local resources is required.
+Historically, this engine was [Narwhal](https://narwhaljs.org/).
+A transition to [Node.js](https://nodejs.org) is being finalized.  
+
+The results of this transition are available as a **Release Candidate**.
+While an official production release is scheduled for early-autumn 2024, it should be considered production-ready as-is. Multiple production deployments over the last twelve months have confirmed this.
+In addition to the Node.js-based toolchain, the next formal release will include both maintenance improvements and enhancements to the API.
+
+### Permisson issues
+
+By default npm uses `/usr/local/lib/node_modules` as the install location for globally installed packages. This causes
+problems since users typically lack write permissions there. It is therefore recommended to either use a version
+manager, or change npm's default install location manually (which is what we did above with the `npm set prefix…` command). For more details see [this article](https://docs.npmjs.com/resolving-eacces-permissions-errors-when-installing-packages-globally).  
 
 ### Building Cappuccino from source
 
-To build Cappuccino from source clone the GitHub repository at 
+To build Cappuccino from source (for the latest version, including un-released changes) clone the GitHub repository at 
 https://github.com/cappuccino/cappuccino/ and checkout the `main` branch. Use the command
 `jake install` to install the Cappuccino frameworks and toolchain locally. 
 
@@ -113,8 +116,47 @@ To build from source, do:
 Beware that building and installing Cappuccino from source will overwrite the binaries installed from npm. To undo this,
 simply run `npm install -g @objj/cappuccino` again.
 
-FAQs
-----
+##FAQs
+
+**Q: What is meant by desktop-class apps?**  
+**A:** Desktop-class apps refer to web applications that offer the same level of functionality, complexity, and user experience as traditional desktop applications. These apps leverage advanced user interface components, rich graphics, and responsive interactions. Cappuccino is ideally suited for developing line-of-business applications, which are essential tools used within a company for its operations. Such applications often require robust data handling, complex workflows, and a high degree of reliability. Cappuccino’s comprehensive framework, modeled after the Cocoa APIs, ensures that web applications can match the capabilities and performance of native desktop software.
+
+**Q: I don't see any support for touch-screen devices like tablets and phones. Is this supported?**  
+**A:** Cappuccino applications can be adapted to support touch-screen devices, including tablets and phones. The framework primarily targets large, information-dense displays typical of desktop environments. Achieving a seamless experience across desktops, tablets, and phones requires additional effort, such as incorporating touch event handling and responsive design. However, with the right adjustments, Cappuccino applications can deliver a consistent user experience on a variety of devices.  
+
+For those looking to extend Cappuccino for touch applications, one option worth exploring is the open source Objective-C framework ["Chameleon"](https://github.com/BigZaphod/Chameleon). This predates Apple's Catalyst efforts and ports many UIKit classes to AppKit, allowing for a seamless integration of touch features. See below for porting Objective-C code to Objective-J, something which is mostly a search-and-replace operation.
+
+**Q: How easy is it to port Objective-C code to Objective-J?**  
+**A:** Porting Objective-C code to Objective-J is mostly a search-and-replace operation, primarily focusing on adapting pointer syntax and class names to fit the Objective-J framework.  
+
+Here is a summary of the process:  
+
+1. **Replace class prefixes**: Objective-C classes with the 'NS' prefix (from the Cocoa framework) need to be replaced with the 'CP' prefix, which is used by Cappuccino. Objective-C does not support formal namespaces - class prefixes are a convention used universally to overcome this ('NS' for Apple/NeXTSTEP, 'CP' for Cappuccino). Third-party code may use another class prefix - or it may use none. For example:  
+
+    `NSString` becomes `CPString`,
+`NSArray` becomes `CPArray`, and
+`NSDictionary` becomes `CPDictionary`
+2. **Remove pointer references:** Objective-C uses pointers, indicated by the * symbol, which are not used in Objective-J. Thus, pointer references need to be removed. For instance:
+
+    `NSString *string = @"Hello";` becomes `CPString string = @"Hello";`
+
+3. **Adapt memory management:** Objective-C's manual memory management and automatic reference counting (ARC) do not apply to Objective-J. Thus, methods like retain, release, and autorelease are removed. Objective-J relies on JavaScript's garbage collection - interaction with it is not supported by any browser.
+
+5. **Modify framework-specific code:** Any code that directly interacts with Cocoa frameworks may need to be rewritten to fit the Cappuccino framework's equivalent.  Although almost always identical, this is not always true. This involves not only class replacements but also adapting any framework-specific functionality to Objective-J's counterparts.  
+
+6. **Modify code with no direct equivalent in Objective-J:** The most common of these is usage of the C language `enum` construct. Javascript and Objective-J provide no direct equivalent - it will usually be necessary to rewrite using Javascript objects or functions. 
+
+    #### Example Conversion
+Here’s a simple example of porting Objective-C code to Objective-J:
+
+    *Objective-C:*     
+```NSString *greeting = [[NSString alloc] initWithFormat:@"Hello, %@!", name];
+[greeting release];```. 
+ 
+    *Objective-J:*  
+```var greeting = CPString.stringWithFormat("Hello, %@!", name);```   
+
+
 **Q: Can I use Cappuccino on Windows/Linux?**  
 **A:** Yes, Cappuccino can be used on Windows or Linux. While Cappuccino technology is inspired by Apple's Cocoa framework, it is designed to be platform-independent. As long as you have a modern web browser and a compatible development environment (An LTS version of Node.js and an http server), you can develop and deploy Cappuccino applications on other operating systems without any issues.
 
@@ -137,11 +179,13 @@ FAQs
 * Legacy and Stability: Continuous development since 2008 ensures stability and reliability.
 
 **Q: I've heard claims about Objective-C and Cocoa providing increased productivity – how true is this?**.  
-**A:** Objective-C and Cocoa are designed for efficiency and ease of use. Their mature, well-documented APIs and comprehensive frameworks enable rapid development of robust applications. The object-oriented nature of Objective-C promotes code reuse and modularity, while Cocoa’s design patterns streamline common tasks. Developers often find that these features collectively lead to increased productivity, especially for complex, desktop-class applications.
+**A:** Objective-C and Cocoa are designed for efficiency and ease of use. Their mature, well-documented APIs and comprehensive frameworks enable rapid development of robust applications. The object-oriented nature of Objective-C promotes code reuse and modularity, while Cocoa’s design patterns streamline common tasks. The rich and extendable palette of user interface controls, while being loosely coupled, are designed to visually and programmatically work well together. Developers often find that these features collectively lead to an order of magnitude increased productivity, especially for complex, desktop-class applications.
 
+**Q: Does the license permit non-opensource development?**  
+**A:** Yes, Cappuccino is released under the Lesser General Public License (LGPL) version 2. This allows developers to use, modify, and distribute Cappuccino for both open-source and closed-source applications. Commercial and proprietary software  can be developed with Cappuccino without the obligation to release source code, provided the terms of the LGPL are adhered to. This means any modifications to the Cappuccino framework itself must be made available under the same LGPL license, but your own application code remains proprietary.  
 
-License
--------
+##License
+
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the Free
 Software Foundation; either version 2.1 of the License, or (at your option)
