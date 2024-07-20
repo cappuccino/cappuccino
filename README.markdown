@@ -2,11 +2,11 @@
 [![Join the chat at https://gitter.im/cappuccino/cappuccino](https://badges.gitter.im/cappuccino/cappuccino.svg)](
   https://gitter.im/cappuccino/cappuccino?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-#Welcome to Cappuccino!
+# Welcome to Cappuccino!
 
 Cappuccino, a web application framework in Objective-J (*a superset of JavaScript which is transpiled for deployment*), enhances app development by implementing the NeXTSTEP/Apple Cocoa APIs for browsers. Leveraging Cocoa’s well-established architecture, Cappuccino facilitates scalable application development for those usage cases requiring developer productivity, reliability and sophisticated interaction support. Resulting applications are served from any web server and deployed to any modern web browser - without plugins or extensions of any kind.
 
-##Introduction
+## Introduction
 
 Cappuccino is an open-source framework developed continuously since 2008 and released under the LGPL version 2. It implements as much of the proven NeXTStep/Apple Cocoa API as practical in the modern web browser environment.    
 
@@ -37,14 +37,14 @@ For more information, see the
 
 Bugs and enhancement requrests can be reported by [creating a Github issue](http://github.com/cappuccino/cappuccino/issues).
 
-##System Requirements
+## System Requirements
 
 * A minimally HTML5-compliant web browser is the only requirement for running Cappuccino applications.
 They are served as standard HTML, Javascript, CSS and images from any web server.
 * Any programmer's editor can be used for coding.
 * macOS users can use Xcode - which leverages the visual development tools from Apple for creation of complex applications with minimal coding.
 
-##Installation instructions 
+## Installation instructions 
 To try Cappuccino:  
 
 1. Install Node.js and npm from the [Node.js website](https://nodejs.org/download/) or the OS-specific package manager of your choice. Long-term Support (LTS) versions are tested although others will probably work as intended.
@@ -117,7 +117,7 @@ To build from source, do:
 Beware that building and installing Cappuccino from source will overwrite the binaries installed from npm. To undo this,
 simply run `npm install -g @objj/cappuccino` again.
 
-##FAQs
+## FAQs
 
 **Q: What is meant by desktop-class apps?**  
 **A:** Desktop-class apps refer to web applications that offer the same level of functionality, complexity, and user experience as traditional desktop applications. These apps leverage advanced user interface components, rich graphics, and responsive interactions. Cappuccino is ideally suited for developing line-of-business applications, which are essential tools used within a company for its operations. Such applications often require robust data handling, complex workflows, and a high degree of reliability. Cappuccino’s comprehensive framework, modeled after the Cocoa APIs, ensures that web applications can match the capabilities and performance of native desktop software.
@@ -142,15 +142,21 @@ Here is a summary of the process:
 
 4. **Modify code with no direct equivalent in Objective-J:** The most common is the C language `enum` construct. Javascript and Objective-J provide no direct equivalent - replace with Javascript objects or functions. 
 
-    **A simple example:**  
-    *Objective-C:*     
-```NSString *greeting = [NSString stringWithFormat:@"Hello, %@!", name];
-[greeting release];```. 
- 
-    *Objective-J:*  
-```let greeting = [CPString stringWithFormat:@"Hello, %@!", name];```   
+**A simple example:**
 
-    Note: While most of ES2022 is supported, Javascript template literals are not (yet).
+*Objective-C:*
+   
+```
+NSString *greeting = [NSString stringWithFormat:@"Hello, %@!", name];
+[greeting release];
+```
+*Objective-J:*
+    
+```
+let greeting = [CPString stringWithFormat:@"Hello, %@!", name];
+```
+
+Note: While most of ES2022 is supported, Javascript template literals are not (yet).
 Simple concatenation could have been used in the Objective-J example, but conversion would have been less straightforward. `async/await` is supported.
 
 **Q: Can I use Cappuccino on Windows/Linux?**  
@@ -180,7 +186,7 @@ Simple concatenation could have been used in the Objective-J example, but conver
 **Q: Does the license permit non-opensource development?**  
 **A:** Yes, Cappuccino is released under the Lesser General Public License (LGPL) version 2. This allows developers to use, modify, and distribute Cappuccino for both open-source and closed-source applications. Commercial and proprietary software  can be developed with Cappuccino without the obligation to release source code, provided the terms of the LGPL are adhered to. This means any modifications to the Cappuccino framework itself must be made available under the same LGPL license, but your own application code remains proprietary.  
 
-##License
+## License
 
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the Free
