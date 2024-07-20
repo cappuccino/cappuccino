@@ -4,11 +4,11 @@
 
 #Welcome to Cappuccino!
 
-Cappuccino, a web application framework in Objective-J (*a superset of JavaScript which is transpiled for deployment*), enhances web application development by implementing the NeXTSTEP/Apple Cocoa APIs for browsers. Leveraging Cocoa’s well-established architecture, Cappuccino facilitates scalable application development for those usage cases requiring developer productivity, reliability and sophisticated interaction support. Resulting applications are served from any web server and deployed to any modern web browser - without plugins or extensions of any kind.
+Cappuccino, a web application framework in Objective-J (*a superset of JavaScript which is transpiled for deployment*), enhances app development by implementing the NeXTSTEP/Apple Cocoa APIs for browsers. Leveraging Cocoa’s well-established architecture, Cappuccino facilitates scalable application development for those usage cases requiring developer productivity, reliability and sophisticated interaction support. Resulting applications are served from any web server and deployed to any modern web browser - without plugins or extensions of any kind.
 
 ##Introduction
 
-Cappuccino is an open-source framework developed continuously since 2008 and released under the LGPL version 2 license. It implements as much of the proven NeXTStep/Apple Cocoa API as practical in the modern web browser environment.    
+Cappuccino is an open-source framework developed continuously since 2008 and released under the LGPL version 2. It implements as much of the proven NeXTStep/Apple Cocoa API as practical in the modern web browser environment.    
 
 ### Benefits of Cappuccino for Application Development:
    
@@ -132,41 +132,38 @@ For those looking to extend Cappuccino for touch applications, one option worth 
 
 Here is a summary of the process:  
 
-1. **Replace class prefixes**: Objective-C classes with the 'NS' prefix (from the Cocoa framework) need to be replaced with the 'CP' prefix, which is used by Cappuccino. Objective-C does not support formal namespaces - class prefixes are a convention used universally to overcome this ('NS' for Apple/NeXTSTEP, 'CP' for Cappuccino). Third-party code may use another class prefix - or it may use none. For example:  
+1. **Replace class prefixes**: Objective-C classes using the 'NS' prefix need to be replaced with 'CP'. Objective-C(J) does not support formal namespaces - class prefixes are used to overcome this ('NS' for Apple/NeXTSTEP, 'CP' for Cappuccino). Third-party code may use something else - or none at all. For example:  
 
-    `NSString` becomes `CPString`,
-`NSArray` becomes `CPArray`, and
-`NSDictionary` becomes `CPDictionary`
-2. **Remove pointer references:** Objective-C uses pointers, indicated by the * symbol, which are not used in Objective-J. Thus, pointer references need to be removed. For instance:
+    `NSString` becomes `CPString`, `NSArray` becomes `CPArray`, and `NSDictionary` becomes `CPDictionary`
 
-    `NSString *string = @"Hello";` becomes `CPString string = @"Hello";`
+2. **Remove pointer references:** Objective-C uses pointers, indicated by the * symbol, which are not used in Objective-J. See example below.
 
 3. **Adapt memory management:** Objective-C's manual memory management and automatic reference counting (ARC) do not apply to Objective-J. Thus, methods like retain, release, and autorelease are removed. Objective-J relies on JavaScript's garbage collection - interaction with it is not supported by any browser.
 
-5. **Modify code with no direct equivalent in Objective-J:** The most common of these is usage of the C language `enum` construct. Javascript and Objective-J provide no direct equivalent - it will usually be necessary to rewrite using Javascript objects or functions. 
+4. **Modify code with no direct equivalent in Objective-J:** The most common is the C language `enum` construct. Javascript and Objective-J provide no direct equivalent - replace with Javascript objects or functions. 
 
-    #### Example Conversion
-Here’s a simple example of porting Objective-C code to Objective-J:
-
+    **A simple example:**  
     *Objective-C:*     
 ```NSString *greeting = [NSString stringWithFormat:@"Hello, %@!", name];
 [greeting release];```. 
  
     *Objective-J:*  
-```let greeting = [CPString stringWithFormat:@"Hello, %@!", name]```   
+```let greeting = [CPString stringWithFormat:@"Hello, %@!", name];```   
 
+    Note: While most of ES2022 is supported, Javascript template literals are not (yet).
+Simple concatenation could have been used in the Objective-J example, but conversion would have been less straightforward. `async/await` is supported.
 
 **Q: Can I use Cappuccino on Windows/Linux?**  
-**A:** Yes, Cappuccino can be used on Windows or Linux. While Cappuccino technology is inspired by Apple's Cocoa framework, it is designed to be platform-independent. As long as you have a modern web browser and a compatible development environment (An LTS version of Node.js and an http server), you can develop and deploy Cappuccino applications on other operating systems without any issues.
+**A:** Yes - while Cappuccino technology is inspired by Apple's Cocoa framework, it is inherently platform-independent. As long as you have a modern web browser and a compatible development environment (An LTS version of Node.js, a text editor, and an http server), Cappuccino applications can be developed on and deployed from other operating systems without any issues.
 
 **Q: Hasn't Apple moved away from Objective-C and Cocoa, making them obsolete?**  
-**A:** While Apple has indeed introduced Swift as a modern programming language and shifted its focus to frameworks like SwiftUI, Objective-C and Cocoa are still widely used and supported. Objective-C is a small superset of C, and similarly, Objective-J is a small superset of JavaScript. This allows developers to mix and match Objective-J with plain JavaScript, offering a level of flexibility that wouldn't be possible with Swift, which is an entirely different language. This makes Objective-J particularly advantageous for developers who want to integrate with existing JavaScript codebases without needing to learn an entirely new language.
+**A:** While Apple has indeed introduced Swift as a modern programming language and shifted its focus to frameworks like SwiftUI, Objective-C and Cocoa are still widely used and supported. Apple's most sophisticated user applications are written either entirely or substantially in Objective-C and will continue to be for the foreseeable future.
 
 **Q: What is with the funny syntax of Objective-J and its brackets? I've never seen a language like this – how can anyone be productive with something so strange?**   
 **A:** Objective-J’s syntax, with its brackets, is inspired by Objective-C, which has been used for decades in developing macOS and iOS applications. While it may seem unusual initially, it provides a powerful way to structure code and manage objects. Developers familiar with Objective-C will find it intuitive, and those new to it can leverage extensive documentation and community resources. The initial learning curve is offset by the productivity gains in building complex, maintainable web applications.
 
-**Q: I have my own HTML, JavaScript, and CSS I'd like to use in a larger app. I don't see any JavaScript, HTML, or CSS in the sample code available. How do I modify the DOM?**  
-**A:** Cappuccino abstracts much of the DOM to align with Cocoa's model.  Existing Cocoa controls can be extended or new ones built from scratch to meet specific requirements. The Cocoa APIs follow a classic object-oriented programming model – most necessary functionality will be inherited from the Cappuccino base class one is starting with. The [CPWebView](https://www.cappuccino.dev/learn/documentation/interface_c_p_web_view.html) control can also be used to embed either HTML/Javascript/CSS fragments or entire web pages.
+**Q: I have my own HTML, JavaScript, and CSS which I would like to use in a larger app. I don't see any JavaScript, HTML, or CSS in the availablesample code. How do I do this?**  
+**A:** Cappuccino abstracts much of the DOM to align with Cocoa's model.  Existing Cocoa controls can be extended or new ones built from scratch to meet specific requirements. The Cocoa APIs follow a classic object-oriented programming model – most necessary functionality will be inherited from the Cappuccino base class one is starting with. The [CPWebView](https://www.cappuccino.dev/learn/documentation/interface_c_p_web_view.html) control can also be used to embed either HTML/Javascript/CSS fragments or entire web pages. Javascript can be intermixed with Objective-J code.
 
 **Q: What are the advantages of Cappuccino over libraries and frameworks like React and Vue?**  
 **A:** Cappuccino offers several advantages:
