@@ -8,19 +8,18 @@ Cappuccino, a web application framework in Objective-J (*a superset of JavaScrip
 
 ##Introduction
 
-Cappuccino is an open-source framework developed continuously since 2008 and released under the LGPL version 2. It implements as much of the proven NeXTStep/Apple Cocoa API as practical in the modern web browser environment.    
+Cappuccino is an open-source framework developed continuously since 2008 and licensed under the LGPL version 2. It faithfully implements as much of the proven NeXTStep/Apple Cocoa API as web browser restrictions permit.    
 
 ### Benefits of Cappuccino for Application Development:
    
-* Toolchain stability – use of time-tested APIs means an absense of the churn which is all too common in the current generic browser-app ecosystem.
-* Cross-platform development – any programmer's text editor or IDE is sufficient. The compiler and other parts of the toolchain used to prepare applications for deployment are hosted by Node.js.
-* Cocoa's rich range of interface controls are abstracted to HTML, CSS, and JavaScript. These go well beyond the functionality provided by current browser standards, and only require minimal HTML5 support.
-* These design patterns and APIs provide a solid foundation for application development. The APIs have been proven over forty years and provide browser-independent functionality which is a superset of current browser capabilities. 
-* Custom interface controls can reliably build on basic Cocoa controls - when extended or new functionality is required.
-* Robust event-handling mechanisms, a superset of those provided by current browsers, ensure responsive and interactive applications.
+* Developer productivity - Cocoa's rich palette of interface controls and robust event managment APIs go well beyond the functionality provided by current browser standards, allowing rich applications to quickly be built up using high-level constructs. They then compile to standard HTML, Javascript and CSS. Unlike independent HTML components, these are designed to work well together.
+* These design patterns and APIs provide a solid foundation for application development. They have been proven over forty years and provide browser-independent functionality which is a superset of current browser capabilities.
+* Toolchain stability – use of time-tested APIs means an absense of the churn which is all too common in the browser-app ecosystem found elsewhere.
+* Cross-platform development – any programmer's text editor or IDE is sufficient. The compiler and other parts of the toolchain (used to prepare applications for deployment) are hosted by Node.js. 
+* Extensibility - custom interface controls can reliably build on basic Cocoa controls, when extended or new functionality is required.
 * Internationalization and localization technologies simplify global deployment.
 * Consistent and predictable behavior across different platforms enhances reliability and user experience.
-* Objective-J's [message-passing architecture](https://en.wikipedia.org/wiki/Message_passing), which the Cocoa APIs leverage, promote loose coupling of an app's component functionality — making large scale development more managable.
+* Objective-J's [message-passing architecture](https://en.wikipedia.org/wiki/Message_passing), which the Cocoa APIs leverage, promotes loose coupling of an app's component functionality — making large scale development more managable.
 * Comprehensive documentation for Objective-J is supplemented by over two decades of resources for Objective-C and Cocoa. Additionally, a large public catalog of Objective-C Cocoa applications offers valuable guidance for development. Translation of such sample code to Objective-J is often trivial.
 
 Check out a [live demo of the standard interface controls provided by Cappuccino](https://cappuccino-testbook.5apps.com/#ThemeKitchenSink)
