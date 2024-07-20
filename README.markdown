@@ -4,23 +4,23 @@
 
 #Welcome to Cappuccino!
 
-Cappuccino, a web application framework in Objective-J (*a superset of JavaScript which is transpiled for deployment*), enhances app development by implementing the NeXTSTEP/Apple Cocoa APIs for browsers. Leveraging Cocoa’s well-established architecture, Cappuccino facilitates scalable application development for those usage cases requiring developer productivity, reliability and sophisticated interaction support. Resulting applications are served from any web server and deployed to any modern web browser - without plugins or extensions of any kind.
+Cappuccino, a web application framework in Objective-J (*a superset of JavaScript which is transpiled for deployment*), enhances app development by implementing the NeXTSTEP/Apple Cocoa® APIs for browsers. Leveraging this well-established architecture, Cappuccino facilitates scalable application development for those usage cases requiring developer productivity, reliability and sophisticated interaction support. Resulting applications are served from any web server and deployed to any modern web browser - without plugins or extensions of any kind.
 
 ##Introduction
 
-Cappuccino is an open-source framework developed continuously since 2008 and licensed under the LGPL version 2. It faithfully implements as much of the proven NeXTStep/Apple Cocoa API as web browser restrictions permit.    
+Cappuccino is an open-source framework developed continuously since 2008 and licensed under the LGPL version 2. It faithfully implements as much of the proven NeXTStep/Apple Cocoa® API as web browser restrictions permit.    
 
 ### Benefits of Cappuccino for Application Development:
    
-* Developer productivity - Cocoa's rich palette of interface controls and robust event managment APIs go well beyond the functionality provided by current browser standards, allowing rich applications to quickly be built up using high-level constructs. They then compile to standard HTML, Javascript and CSS. Unlike independent HTML components, these are designed to work well together.
+* Developer productivity - a rich palette of interface controls and robust event managment APIs go well beyond the functionality provided by current browser standards, allowing rich applications to quickly be built up using high-level constructs. They then compile to standard HTML, Javascript and CSS. Unlike independent HTML components, these are designed to work well together.
 * These design patterns and APIs provide a solid foundation for application development. They have been proven over forty years and provide browser-independent functionality which is a superset of current browser capabilities.
 * Toolchain stability – use of time-tested APIs means an absense of the churn which is all too common in the browser-app ecosystem found elsewhere.
 * Cross-platform development – any programmer's text editor or IDE is sufficient. The compiler and other parts of the toolchain (used to prepare applications for deployment) are hosted by Node.js. 
-* Extensibility - custom interface controls can reliably build on basic Cocoa controls, when extended or new functionality is required.
+* Extensibility - custom interface controls can reliably build on framework-included controls, when extended or new functionality is required.
 * Internationalization and localization technologies simplify global deployment.
 * Consistent and predictable behavior across different platforms enhances reliability and user experience.
-* Objective-J's [message-passing architecture](https://en.wikipedia.org/wiki/Message_passing), which the Cocoa APIs leverage, promotes loose coupling of an app's component functionality — making large scale development more managable.
-* Comprehensive documentation for Objective-J is supplemented by over two decades of resources for Objective-C and Cocoa. Additionally, a large public catalog of Objective-C Cocoa applications offers valuable guidance for development. Translation of such sample code to Objective-J is often trivial.
+* Objective-J's [message-passing architecture](https://en.wikipedia.org/wiki/Message_passing), which the Cappuccino APIs leverage, promotes loose coupling of an app's component functionality — making large scale development more managable.
+* Comprehensive documentation for Objective-J is supplemented by over two decades of resources for Objective-C and Cocoa®. Additionally, a large public catalog of native Objective-C applications offers valuable guidance for development. Translation of such sample code to Objective-J is often trivial (see below).
 
 Check out a [live demo of the standard interface controls provided by Cappuccino](https://cappuccino-testbook.5apps.com/#ThemeKitchenSink)
 
@@ -119,7 +119,7 @@ simply run `npm install -g @objj/cappuccino` again.
 ##FAQs
 
 **Q: What is meant by desktop-class apps?**  
-**A:** Desktop-class apps refer to web applications that offer the same level of functionality, complexity, and user experience as traditional desktop applications. These apps leverage advanced user interface components, rich graphics, and responsive interactions. Cappuccino is ideally suited for developing line-of-business applications, which are essential tools used within a company for its operations. Such applications often require robust data handling, complex workflows, and a high degree of reliability. Cappuccino’s comprehensive framework, modeled after the Cocoa APIs, ensures that web applications can match the capabilities and performance of native desktop software.
+**A:** Desktop-class apps refer to web applications that offer the same level of functionality, complexity, and user experience as traditional desktop applications. These apps leverage advanced user interface components, rich graphics, and responsive interactions. Cappuccino is ideally suited for developing line-of-business applications, which are essential tools used within a company for its operations. Such applications often require robust data handling, complex workflows, and a high degree of reliability. Cappuccino’s comprehensive framework, modeled after the Cocoa® APIs, ensures that web applications can match the capabilities and performance of native desktop software.
 
 **Q: I don't see any support for touch-screen devices like tablets and phones. Is this supported?**  
 **A:** Cappuccino applications can be adapted to support touch-screen devices, including tablets and phones. The framework primarily targets large, information-dense displays typical of desktop environments. Achieving a seamless experience across desktops, tablets, and phones requires additional effort, such as incorporating touch event handling and responsive design. However, with the right adjustments, Cappuccino applications can deliver a consistent user experience on a variety of devices.  
@@ -153,31 +153,30 @@ Here is a summary of the process:
 Simple concatenation could have been used in the Objective-J example, but conversion would have been less straightforward. `async/await` is supported.
 
 **Q: Can I use Cappuccino on Windows/Linux?**  
-**A:** Yes - while Cappuccino technology is inspired by Apple's Cocoa framework, it is inherently platform-independent. As long as you have a modern web browser and a compatible development environment (An LTS version of Node.js, a text editor, and an http server), Cappuccino applications can be developed on and deployed from other operating systems without any issues.
+**A:** Yes - while Cappuccino technology is inspired by Apple's framework, it is inherently platform-independent. As long as you have a modern web browser and a compatible development environment (An LTS version of Node.js, a text editor, and an http server), Cappuccino applications can be developed on and deployed from other operating systems without any issues.
 
-**Q: Hasn't Apple moved away from Objective-C and Cocoa, making them obsolete?**  
-**A:** While Apple has indeed introduced Swift as a modern programming language and shifted its focus to frameworks like SwiftUI, Objective-C and Cocoa are still widely used and supported. Apple's most sophisticated user applications are written either entirely or substantially in Objective-C and will continue to be for the foreseeable future.
+**Q: Hasn't Apple moved away from Objective-C and AppKit, making them obsolete?**  
+**A:** While Apple has indeed introduced Swift as a modern programming language and shifted its focus to frameworks like SwiftUI, Objective-C and AppKit are still widely used and supported. Apple's most sophisticated user applications are written either entirely or substantially in Objective-C and will continue to be for the foreseeable future.
 
 **Q: What is with the funny syntax of Objective-J and its brackets? I've never seen a language like this – how can anyone be productive with something so strange?**   
 **A:** Objective-J’s syntax, with its brackets, is inspired by Objective-C, which has been used for decades in developing macOS and iOS applications. While it may seem unusual initially, it provides a powerful way to structure code and manage objects. Developers familiar with Objective-C will find it intuitive, and those new to it can leverage extensive documentation and community resources. The initial learning curve is offset by the productivity gains in building complex, maintainable web applications.
 
 **Q: I have my own HTML, JavaScript, and CSS which I would like to use in a larger app. I don't see any JavaScript, HTML, or CSS in the availablesample code. How do I do this?**  
-**A:** Cappuccino abstracts much of the DOM to align with Cocoa's model.  Existing Cocoa controls can be extended or new ones built from scratch to meet specific requirements. The Cocoa APIs follow a classic object-oriented programming model – most necessary functionality will be inherited from the Cappuccino base class one is starting with. The [CPWebView](https://www.cappuccino.dev/learn/documentation/interface_c_p_web_view.html) control can also be used to embed either HTML/Javascript/CSS fragments or entire web pages. Javascript can be intermixed with Objective-J code.
+**A:** Cappuccino abstracts much of the DOM to align with Cocoa®'s model.  Existing framework controls can be extended or new ones built from scratch to meet specific requirements. The Cappuccino APIs follow a classic object-oriented programming model – most necessary functionality will be inherited from the Cappuccino base class one is starting with. The [CPWebView](https://www.cappuccino.dev/learn/documentation/interface_c_p_web_view.html) control can also be used to embed either HTML/Javascript/CSS fragments or entire web pages. Javascript can be intermixed with Objective-J code.
 
 **Q: What are the advantages of Cappuccino over libraries and frameworks like React and Vue?**  
 **A:** Cappuccino offers several advantages:
 
-* Cocoa Architecture: Leverages the mature and robust Cocoa APIs, providing a solid foundation for complex applications.
-* Object-Oriented Approach: Uses Objective-J, which extends JavaScript with powerful object-oriented capabilities.
+* Cocoa®/NeXTSTEP Architecture: Leverages the mature and robust APIs developed originally by NeXTSETP in the 1980s and extended by Apple, providing a time-tested and solid foundation for complex applications. 
+* Message-Passing Object-Oriented Approach: Uses Objective-J, which extends JavaScript with powerful object-oriented capabilities. This is used to provide a loosely-coupled component architecture, allowing better opportunities for keeping functionality tightly grouped - enhancing testability, reliability and large-scale development.
 * Desktop-Class Usability: Complex controls, coherent keyboard navigation and undo/redo out of the box.
-* Unified Framework: Integrates UI components, event handling, and data management in a cohesive package.
-* Legacy and Stability: Continuous development since 2008 ensures stability and reliability.
-
-**Q: I've heard claims about Objective-C and Cocoa providing increased productivity – how true is this?**.  
-**A:** Objective-C and Cocoa are designed for efficiency and ease of use. Their mature, well-documented APIs and comprehensive frameworks enable rapid development of robust applications. The object-oriented nature of Objective-C promotes code reuse and modularity, while Cocoa’s design patterns streamline common tasks. The rich and extendable palette of user interface controls, while being loosely coupled, are designed to visually and programmatically work well together. Developers often find that these features collectively lead to an order of magnitude increased productivity, especially for complex, desktop-class applications.
+* Unified Framework: Integrated UI components, event handling, and data management in a cohesive package, well beyond what browser APIs provide as standard.
+* Legacy and Stability: Continuously in development since 2008.
 
 **Q: Does the license permit non-opensource development?**  
 **A:** Yes, Cappuccino is released under the Lesser General Public License (LGPL) version 2. This allows developers to use, modify, and distribute Cappuccino for both open-source and closed-source applications. Commercial and proprietary software  can be developed with Cappuccino without the obligation to release source code, provided the terms of the LGPL are adhered to. This means any modifications to the Cappuccino framework itself must be made available under the same LGPL license, but your own application code remains proprietary.  
+
+Cocoa® is a registered trademark of Apple Inc., covering a series of computer APIs for software user interfaces.
 
 ##License
 
