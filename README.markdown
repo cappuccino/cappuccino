@@ -143,19 +143,17 @@ Here is a summary of the process:
 
 3. **Adapt memory management:** Objective-C's manual memory management and automatic reference counting (ARC) do not apply to Objective-J. Thus, methods like retain, release, and autorelease are removed. Objective-J relies on JavaScript's garbage collection - interaction with it is not supported by any browser.
 
-5. **Modify framework-specific code:** Any code that directly interacts with Cocoa frameworks may need to be rewritten to fit the Cappuccino framework's equivalent.  Although almost always identical, this is not always true. This involves not only class replacements but also adapting any framework-specific functionality to Objective-J's counterparts.  
-
-6. **Modify code with no direct equivalent in Objective-J:** The most common of these is usage of the C language `enum` construct. Javascript and Objective-J provide no direct equivalent - it will usually be necessary to rewrite using Javascript objects or functions. 
+5. **Modify code with no direct equivalent in Objective-J:** The most common of these is usage of the C language `enum` construct. Javascript and Objective-J provide no direct equivalent - it will usually be necessary to rewrite using Javascript objects or functions. 
 
     #### Example Conversion
 Here’s a simple example of porting Objective-C code to Objective-J:
 
     *Objective-C:*     
-```NSString *greeting = [[NSString alloc] initWithFormat:@"Hello, %@!", name];
+```NSString *greeting = [NSString stringWithFormat:@"Hello, %@!", name];
 [greeting release];```. 
  
     *Objective-J:*  
-```var greeting = CPString.stringWithFormat("Hello, %@!", name);```   
+```let greeting = [CPString stringWithFormat:@"Hello, %@!", name]```   
 
 
 **Q: Can I use Cappuccino on Windows/Linux?**  
