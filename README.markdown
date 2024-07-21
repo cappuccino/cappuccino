@@ -65,7 +65,7 @@ On successful installation, follow these steps to create a basic and fully-funct
 1. `capp gen HelloWorld`
 2. `cd HelloWorld`
 3. `python3 -m http.server` (any local http server can be used)
-4.  Load [localhost:8000](http://localhost:8000) in any browser
+4.  Open [http://localhost:8000](http://localhost:8000) (any modern browser can be used)
 
 ### Technical notes
 
