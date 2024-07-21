@@ -39,8 +39,8 @@ Bugs and enhancement requrests can be reported by [creating a Github issue](http
 
 ## System Requirements
 
-* A minimally HTML5-compliant web browser is the only requirement for running Cappuccino applications.
-They are served as standard HTML, Javascript, CSS and images from any web server.
+* Any modern web browser can run Cappuccino applications.
+* Any web server can serve Cappuccino applications.
 * Any programmer's editor can be used for coding.
 * macOS users can use Xcode - which leverages the visual development tools from Apple for creation of complex applications with minimal coding.
 
