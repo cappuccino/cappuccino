@@ -13,7 +13,6 @@ Cappuccino, a open-source web application framework in Objective-J (*a superset 
 * Stability – use of time-tested APIs means an absense of the churn which is all too common in the browser-app ecosystem found elsewhere.
 * Cross-platform development – any programmer's text editor or IDE is sufficient. The compiler and other parts of the toolchain (used to prepare applications for deployment) are hosted by Node.js. 
 * Extensibility - custom interface controls can reliably build on framework-included controls, when extended or new functionality is required.
-* Internationalization and localization technologies simplify global deployment.
 * Objective-J's [message-passing architecture](https://en.wikipedia.org/wiki/Message_passing), which the Cappuccino APIs leverage, promotes loose coupling of an app's component functionality — making large scale development more managable.
 * Comprehensive documentation for Objective-J is supplemented by over two decades of resources for Objective-C and Cocoa®. Additionally, a large public catalog of native Objective-C applications offers valuable guidance for development. Translation of such sample code to Objective-J is often trivial (see below).
 
