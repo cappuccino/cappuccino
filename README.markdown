@@ -10,7 +10,7 @@ Cappuccino, a open-source web application framework in Objective-J (*a superset 
    
 * Developer productivity - a rich palette of interface controls and robust event managment APIs go well beyond the functionality provided by current browser standards, allowing rich applications to quickly be built up using high-level constructs that are designed to work well together.
 * Consistent and predictable behavior across different platforms with desktop-class usability and user experience.
-* Toolchain stability – use of time-tested APIs means an absense of the churn which is all too common in the browser-app ecosystem found elsewhere.
+* Stability – use of time-tested APIs means an absense of the churn which is all too common in the browser-app ecosystem found elsewhere.
 * Cross-platform development – any programmer's text editor or IDE is sufficient. The compiler and other parts of the toolchain (used to prepare applications for deployment) are hosted by Node.js. 
 * Extensibility - custom interface controls can reliably build on framework-included controls, when extended or new functionality is required.
 * Internationalization and localization technologies simplify global deployment.
