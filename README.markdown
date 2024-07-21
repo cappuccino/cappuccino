@@ -165,7 +165,7 @@ let greeting = [CPString stringWithFormat:@"Hello, %@!", name];
 * Cocoa®/NeXTSTEP Architecture: Leverages the mature and robust APIs developed originally by NeXTSETP in the 1980s and extended by Apple, providing a time-tested and solid foundation for complex applications. 
 * Message-Passing Object-Oriented Approach: Uses Objective-J, which extends JavaScript with powerful object-oriented capabilities. This is used to provide a loosely-coupled component architecture, allowing better opportunities for keeping functionality tightly grouped - enhancing testability, reliability and large-scale development.
 * Desktop-Class Usability: Complex controls, coherent keyboard navigation and undo/redo out of the box.
-* Unified Framework: Integrated UI components, event handling, and data management in a cohesive package, well beyond what browser APIs provide as standard.
+* Unified Framework: Integrated UI components, event handling, and data management in one cohesive package, well beyond what React and Vue provide.
 * Legacy and Stability: Continuously in development since 2008.
 
 **Q: Does the license permit non-opensource development?**  
