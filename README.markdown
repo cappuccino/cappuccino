@@ -140,7 +140,6 @@ Here is a summary of the process:
 *Objective-C:*     
 ```objc
 NSString *greeting = [NSString stringWithFormat:@"Hello, %@!", name];
-[greeting release];
 ```
  
 *Objective-J:*  
