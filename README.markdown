@@ -12,7 +12,7 @@ Cappuccino is an open-source framework developed continuously since 2008 and rel
 
 ### Benefits of Cappuccino for Application Development:
    
-- Cross-platform development – any programmer's text editor or IDE is sufficient. The compiler and other parts of the toolchain used to prepare applications for deployment are hosted by Node.js.
+* Cross-platform development – any programmer's text editor or IDE is sufficient. The compiler and other parts of the toolchain used to prepare applications for deployment are hosted by Node.js.
 * Cocoa's rich range of interface controls are abstracted to HTML, CSS, and JavaScript. These go well beyond the functionality provided by current browser standards, and only require minimal HTML5 support.
 * These design patterns and APIs provide a solid foundation for application development. The APIs have been proven over forty years and provide browser-independent functionality which is a superset of current browser capabilities. 
 * Custom interface controls can reliably build on basic Cocoa controls - when extended or new functionality is required.
