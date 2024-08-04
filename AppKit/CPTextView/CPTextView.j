@@ -116,6 +116,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 /*!
     @ingroup appkit
     @class CPTextView
+    Copy / Paste is only fully supported with a CPMenu (can be hidden)
 */
 @implementation CPTextView : CPText
 {
