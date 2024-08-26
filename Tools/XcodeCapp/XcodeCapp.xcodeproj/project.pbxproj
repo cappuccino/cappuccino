@@ -20,6 +20,7 @@
 		025800451B1E3F010000EB7D /* XCCAbstractOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 025800441B1E3F010000EB7D /* XCCAbstractOperation.m */; };
 		0258004B1B1E67090000EB7D /* supawhich in Resources */ = {isa = PBXBuildFile; fileRef = 0258004A1B1E67090000EB7D /* supawhich */; };
 		027539111B227D7500F6D824 /* YRKSpinningProgressIndicator.m in Sources */ = {isa = PBXBuildFile; fileRef = 027539101B227D7500F6D824 /* YRKSpinningProgressIndicator.m */; };
+		4110E52C2C7D030C00499CCC /* XCCEnvironment.m in Sources */ = {isa = PBXBuildFile; fileRef = 4110E52B2C7D030C00499CCC /* XCCEnvironment.m */; };
 		680621191B015BF400CB24CD /* XCCCappuccinoProjectControllerDataView.m in Sources */ = {isa = PBXBuildFile; fileRef = 680621181B015BF400CB24CD /* XCCCappuccinoProjectControllerDataView.m */; };
 		6815BBEB1AFC24430030D8BB /* XcodeProjectCloser.m in Sources */ = {isa = PBXBuildFile; fileRef = 6815BBEA1AFC24430030D8BB /* XcodeProjectCloser.m */; };
 		681ADE8F1B0D032C00FC8E08 /* XCCPath.m in Sources */ = {isa = PBXBuildFile; fileRef = 681ADE8E1B0D032C00FC8E08 /* XCCPath.m */; };
@@ -63,6 +64,8 @@
 		0258004A1B1E67090000EB7D /* supawhich */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = supawhich; sourceTree = "<group>"; };
 		0275390F1B227D7500F6D824 /* YRKSpinningProgressIndicator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YRKSpinningProgressIndicator.h; sourceTree = "<group>"; };
 		027539101B227D7500F6D824 /* YRKSpinningProgressIndicator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YRKSpinningProgressIndicator.m; sourceTree = "<group>"; };
+		4110E52A2C7D030C00499CCC /* XCCEnvironment.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = XCCEnvironment.h; path = XcodeCapp/XCCEnvironment.h; sourceTree = "<group>"; };
+		4110E52B2C7D030C00499CCC /* XCCEnvironment.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = XCCEnvironment.m; path = XcodeCapp/XCCEnvironment.m; sourceTree = "<group>"; };
 		680621171B015BF400CB24CD /* XCCCappuccinoProjectControllerDataView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XCCCappuccinoProjectControllerDataView.h; sourceTree = "<group>"; };
 		680621181B015BF400CB24CD /* XCCCappuccinoProjectControllerDataView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XCCCappuccinoProjectControllerDataView.m; sourceTree = "<group>"; };
 		6815BBE61AFBE6B00030D8BB /* XCCCappuccinoProjectController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XCCCappuccinoProjectController.h; sourceTree = "<group>"; };
@@ -287,6 +290,8 @@
 		68F3B95A1B0CFBCF00A7EF70 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				4110E52A2C7D030C00499CCC /* XCCEnvironment.h */,
+				4110E52B2C7D030C00499CCC /* XCCEnvironment.m */,
 				6841F2C21AFABD7200CFE60E /* XCCCappuccinoProject.h */,
 				6841F2C31AFABD7200CFE60E /* XCCCappuccinoProject.m */,
 				6824CDEE1B0E9F1400F73447 /* XCCOperationError.h */,
@@ -378,6 +383,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4110E52C2C7D030C00499CCC /* XCCEnvironment.m in Sources */,
 				68B6BF321B1E2546003B265B /* XCCPPXOperation.m in Sources */,
 				021B94701B20E31F00F12DDA /* XCCSettingsViewController.m in Sources */,
 				0255B8401B1F71FB000CA4BC /* AppDelegate.m in Sources */,
