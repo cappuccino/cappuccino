@@ -68,11 +68,27 @@
 
     NSArray<NSString *> *pathComponents = [path componentsSeparatedByString:@":"];
 
+    // Dictionary to hold the paths to each toolchain binary
+    NSMutableDictionary<NSString *, NSString *> *toolchainPaths = [NSMutableDictionary dictionary];
+
     // Toolchain binaries to locate
     NSArray<NSString *> *toolchainBinaries = @[@"objj", @"nib2cib", @"objj2objcskeleton"];
 
-    // Dictionary to hold the paths to each toolchain binary
-    NSMutableDictionary<NSString *, NSString *> *toolchainPaths = [NSMutableDictionary dictionary];
+    // Add default null entries in 'toolchainPaths' dictionary for each toolchainBinary
+    for (NSString *binaryName in toolchainBinaries)
+    {
+        toolchainPaths[binaryName] = NULL;
+    }
+    toolchainPaths[@"python"]     =  @"";
+    toolchainPaths[@"touch"]      =  @"";
+    toolchainPaths[@"capp_lint"]  =  @"";
+
+    // Find the capp-lint executable
+    NSString *cappLintPath = [self findCappLintInPath:pathComponents];
+    if (cappLintPath)
+    {
+        toolchainPaths[@"capp_lint"] = cappLintPath;
+    }
 
     // Find the Python 2.7 executable
     NSString *pythonPath = [self findPython27ExecutableInPath:pathComponents];
@@ -110,6 +126,20 @@
 }
 
 #pragma mark - Helper methods
+
++ (NSString *)findCappLintInPath:(NSArray<NSString *> *)pathComponents
+{
+    // Iterate over the path components
+    for (NSString *path in pathComponents)
+    {
+        NSString *cappLintPath = [path stringByAppendingPathComponent:@"capp_lint"];
+        if ([self isExecutableAtPath:cappLintPath])
+        {
+            return cappLintPath;
+        }
+    }
+    return nil;
+}
 
 + (NSString *)findPython27ExecutableInPath:(NSArray<NSString *> *)pathComponents
 {

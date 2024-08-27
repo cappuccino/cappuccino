@@ -7,6 +7,7 @@
 //
 
 #import "XCCTaskLauncher.h"
+#import "XCCEnvironment.h"
 
 @implementation XCCTaskLauncher
 
@@ -22,7 +23,9 @@
         // Add possible executable paths to PATH
         self.environment = [NSProcessInfo processInfo].environment.mutableCopy;
         self.binaryPaths = [environementPaths mutableCopy];
-        
+
+        [self.binaryPaths addObject:@"/Users/davidr/.npm/bin"];
+        [self.binaryPaths addObject:@"/opt/local/bin"];
         [self.binaryPaths addObject:@"/usr/bin"];
         [self.binaryPaths addObject:@"/usr/local/bin"];
         [self.binaryPaths addObject:@"~/bin"];
@@ -41,8 +44,7 @@
         self.environment[@"CAPP_NOSUDO"]    = @"1";
         
         //self.executables = @[@"python", @"objj", @"nib2cib",@"objj2objcskeleton", @"capp_lint", @"touch"];
-        // Removed python and capp_liunt as python2 is not supported anymore.
-        self.executables = @[@"objj", @"nib2cib",@"objj2objcskeleton", @"touch"];
+        self.executables = @[@"python", @"objj", @"nib2cib", @"objj2objcskeleton", @"touch"];
 
         self.isValid = [self _checkExecutables];
     }
@@ -53,20 +55,30 @@
 - (BOOL)_checkExecutables
 {
     NSMutableArray  *arguments = [@[] mutableCopy];
-    
-    [arguments addObject:[[NSBundle mainBundle].resourcePath stringByAppendingPathComponent:@"supawhich"]];
-    [arguments addObjectsFromArray:self.executables];
 
-    NSDictionary *taskResult = [self runTaskWithCommand:@"/bin/bash" arguments:arguments returnType:kTaskReturnTypeStdOut];
-    
-    if ([taskResult[@"status"] integerValue] != 0)
-    {
-        NSLog(@"Could not find executable in PATH: %@", self.environment[@"PATH"]);
-        return NO;
-    }
-    
-    self.executablePaths = (NSMutableDictionary*)[NSJSONSerialization JSONObjectWithData:[taskResult[@"response"] dataUsingEncoding:NSUTF8StringEncoding] options:NSJSONReadingMutableContainers error:nil];
-    
+    NSDictionary *userEnvironment = [XCCEnvironment loadEnvironmentFromUserShell];
+    NSString *userShell = [userEnvironment objectForKey:@"SHELL"];
+
+//    [arguments addObject:[[NSBundle mainBundle].resourcePath stringByAppendingPathComponent:@"supawhich"]];
+//    [arguments addObjectsFromArray:self.executables];
+//
+//    NSDictionary *taskResult = [self runTaskWithCommand:@"/bin/bash" arguments:arguments returnType:kTaskReturnTypeStdOut];
+//    
+//    if ([taskResult[@"status"] integerValue] != 0)
+//    {
+//        NSLog(@"Could not find executable in PATH: %@", self.environment[@"PATH"]);
+//        return NO;
+//    }
+//    
+//    self.executablePaths = (NSMutableDictionary*)[NSJSONSerialization JSONObjectWithData:[taskResult[@"response"] dataUsingEncoding:NSUTF8StringEncoding] options:NSJSONReadingMutableContainers error:nil];
+
+    self.executablePaths = @{
+        @"python": [userEnvironment objectForKey:@"python"],
+        @"touch": [userEnvironment objectForKey:@"touch"],
+        @"nib2cib": [userEnvironment objectForKey:@"nib2cib"],
+        @"objj2objcskeleton": [userEnvironment objectForKey:@"objj2objcskeleton"],
+        @"objj": [userEnvironment objectForKey:@"objj"]
+    };
     NSLog(@"Executable paths: %@", self.executablePaths);
     
     return YES;
