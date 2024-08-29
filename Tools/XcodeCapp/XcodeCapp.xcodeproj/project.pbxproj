@@ -18,7 +18,6 @@
 		0257A65B1B3A2B0000015C1F /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6841F2471AF98CE600CFE60E /* MainMenu.xib */; };
 		0258003C1B1E1C470000EB7D /* NSMutableArray+moveIndexes.m in Sources */ = {isa = PBXBuildFile; fileRef = 0258003B1B1E1C470000EB7D /* NSMutableArray+moveIndexes.m */; };
 		025800451B1E3F010000EB7D /* XCCAbstractOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 025800441B1E3F010000EB7D /* XCCAbstractOperation.m */; };
-		0258004B1B1E67090000EB7D /* supawhich in Resources */ = {isa = PBXBuildFile; fileRef = 0258004A1B1E67090000EB7D /* supawhich */; };
 		027539111B227D7500F6D824 /* YRKSpinningProgressIndicator.m in Sources */ = {isa = PBXBuildFile; fileRef = 027539101B227D7500F6D824 /* YRKSpinningProgressIndicator.m */; };
 		4110E52C2C7D030C00499CCC /* XCCEnvironment.m in Sources */ = {isa = PBXBuildFile; fileRef = 4110E52B2C7D030C00499CCC /* XCCEnvironment.m */; };
 		680621191B015BF400CB24CD /* XCCCappuccinoProjectControllerDataView.m in Sources */ = {isa = PBXBuildFile; fileRef = 680621181B015BF400CB24CD /* XCCCappuccinoProjectControllerDataView.m */; };
@@ -61,7 +60,6 @@
 		0258003B1B1E1C470000EB7D /* NSMutableArray+moveIndexes.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSMutableArray+moveIndexes.m"; sourceTree = "<group>"; };
 		025800431B1E3F010000EB7D /* XCCAbstractOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XCCAbstractOperation.h; sourceTree = "<group>"; };
 		025800441B1E3F010000EB7D /* XCCAbstractOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XCCAbstractOperation.m; sourceTree = "<group>"; };
-		0258004A1B1E67090000EB7D /* supawhich */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = supawhich; sourceTree = "<group>"; };
 		0275390F1B227D7500F6D824 /* YRKSpinningProgressIndicator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YRKSpinningProgressIndicator.h; sourceTree = "<group>"; };
 		027539101B227D7500F6D824 /* YRKSpinningProgressIndicator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YRKSpinningProgressIndicator.m; sourceTree = "<group>"; };
 		4110E52A2C7D030C00499CCC /* XCCEnvironment.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = XCCEnvironment.h; path = XcodeCapp/XCCEnvironment.h; sourceTree = "<group>"; };
@@ -237,7 +235,6 @@
 		6841F2681AF98DDD00CFE60E /* Scripts */ = {
 			isa = PBXGroup;
 			children = (
-				0258004A1B1E67090000EB7D /* supawhich */,
 				6841F2691AF98DDD00CFE60E /* mod_pbxproj.py */,
 				6841F26B1AF98DDD00CFE60E /* pbxprojModifier.py */,
 			);
@@ -367,7 +364,6 @@
 				6841F2461AF98CE600CFE60E /* Images.xcassets in Resources */,
 				021B94671B20D1F800F12DDA /* OperationsView.xib in Resources */,
 				021B94711B20E31F00F12DDA /* SettingsView.xib in Resources */,
-				0258004B1B1E67090000EB7D /* supawhich in Resources */,
 				6841F26E1AF98DDD00CFE60E /* pbxprojModifier.py in Resources */,
 				6841F2A51AF9932300CFE60E /* project.pbxproj in Resources */,
 				0257A65B1B3A2B0000015C1F /* MainMenu.xib in Resources */,
