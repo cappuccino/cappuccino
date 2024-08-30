@@ -1,0 +1,27 @@
+# EditorConfig reference: https://editorconfig.org
+
+# top-most EditorConfig file
+root = true
+
+# Unix-style newlines with a final newline-only as well
+[*]
+end_of_line = lf
+insert_final_newline = true
+
+# Match multiple file types using brace expansion notation
+# Set default charset
+[*.{h,m,j,js,py}]
+charset = utf-8
+
+# 4 space indentation
+[*.{h,m,j,js,py}]
+indent_style = space
+indent_size = 4
+
+# 4 space indentation
+[Jakefile]
+indent_style = space
+indent_size = 4
+
+# Trim trailing whitespace
+trim_trailing_whitespace = true
