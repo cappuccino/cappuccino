@@ -3990,7 +3990,7 @@ var themedButtonValues = nil,
                                                             @"position": @"absolute",
                                                             @"width": @"12px",
                                                             @"z-index": "+1",
-                                                            @"font-size": "90%"
+                                                            @"font-size": "80%"
                                                         }],
 
     smallNotKeyButtonCssColor = [CPColor colorWithCSSDictionary:@{
@@ -4022,7 +4022,7 @@ var themedButtonValues = nil,
                                                                     @"position": @"absolute",
                                                                     @"width": @"12px",
                                                                     @"z-index": "+1",
-                                                                    @"font-size": "90%"
+                                                                    @"font-size": "80%"
                                                                   }],
 
     smallDisabledButtonCssColor = [CPColor colorWithCSSDictionary:@{
@@ -4045,7 +4045,7 @@ var themedButtonValues = nil,
                                                                     @"position": @"absolute",
                                                                     @"width": @"12px",
                                                                     @"z-index": "+1",
-                                                                    @"font-size": "90%"
+                                                                    @"font-size": "80%"
                                                                     }],
 
     smallHighlightedButtonCssColor = [CPColor colorWithCSSDictionary:@{
@@ -4087,7 +4087,7 @@ var themedButtonValues = nil,
                                                             @"position": @"absolute",
                                                             @"width": @"12px",
                                                             @"z-index": "+1",
-                                                            @"font-size": "90%"
+                                                            @"font-size": "75%"
                                                            }],
 
     miniBezelFocusedCssColor = [CPColor colorWithCSSDictionary:@{
@@ -4122,7 +4122,7 @@ var themedButtonValues = nil,
                                                             @"position": @"absolute",
                                                             @"width": @"12px",
                                                             @"z-index": "+1",
-                                                            @"font-size": "90%"
+                                                            @"font-size": "75%"
                                                         }],
 
     miniNotKeyButtonCssColor = [CPColor colorWithCSSDictionary:@{
@@ -4154,7 +4154,7 @@ var themedButtonValues = nil,
                                                                 @"position": @"absolute",
                                                                 @"width": @"12px",
                                                                 @"z-index": "+1",
-                                                                @"font-size": "90%"
+                                                                @"font-size": "75%"
                                                                  }],
 
     miniDisabledButtonCssColor = [CPColor colorWithCSSDictionary:@{
@@ -4177,7 +4177,7 @@ var themedButtonValues = nil,
                                                                     @"position": @"absolute",
                                                                     @"width": @"12px",
                                                                     @"z-index": "+1",
-                                                                    @"font-size": "90%"
+                                                                    @"font-size": "75%"
                                                                    }],
 
     miniHighlightedButtonCssColor = [CPColor colorWithCSSDictionary:@{

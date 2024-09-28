@@ -6,5 +6,7 @@
 	<string>MainMenu.cib</string>
 	<key>CPBundleName</key>
 	<string>CPComboBoxTest</string>
+	<key>CPDefaultTheme</key>
+	<string>Aristo3</string>
 </dict>
 </plist>
