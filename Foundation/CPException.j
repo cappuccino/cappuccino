@@ -222,8 +222,30 @@ var CPExceptionNameKey      = @"CPExceptionNameKey",
 
 // toll-free bridge Error to CPException
 // [CPException alloc] uses an objj_exception, which is a subclass of Error
-Error.prototype.isa = CPException;
-Error.prototype._userInfo = null;
+if (Error.prototype.isa !== CPException)
+{
+    Object.defineProperties(Error.prototype,
+    {
+        isa:
+        {
+            value: CPException,
+            enumerable: false,
+            writable: true
+        }
+    });
+}
+if (Error.prototype._userInfo !== null)
+{
+    Object.defineProperties(Error.prototype,
+    {
+        _userInfo:
+        {
+            value: null,
+            enumerable: false,
+            writable: true
+        }
+    });
+}
 
 [CPException initialize];
 
