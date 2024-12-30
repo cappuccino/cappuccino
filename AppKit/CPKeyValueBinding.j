@@ -209,7 +209,7 @@ var CPBindingOperationAnd = 0,
         newValue = [destination valueForKeyPath:keyPath];
 
     // give nil values the chance to be transformed to true via CPNegateBoolean (issue #1986)
-    if (newValue == nil)
+    if (newValue == nil && [options objectForKey:CPValueTransformerNameBindingOption] == CPNegateBooleanTransformerName)
         newValue = [self transformValue:newValue withOptions:options];
 
     if (CPIsControllerMarker(newValue))
