@@ -1,6 +1,8 @@
 @import <AppKit/CPButton.j>
 @import <AppKit/CPApplication.j>
 @import <AppKit/CPText.j>
+@import <AppKit/CPRadio.j>
+@import <AppKit/CPObjectController.j>
 
 @implementation CPButtonTest : OJTestCase
 {

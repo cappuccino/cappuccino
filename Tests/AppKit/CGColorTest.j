@@ -32,8 +32,8 @@
 - (void)testColorCreate
 {
     var colorspace = CGColorSpaceCreateDeviceRGB(),
-        components = [2,3,4,5],
-        clruid = CFHashCode(colorspace) + components.join("");
+        components = [2,3,4,5]/*,
+        clruid = CFHashCode(colorspace) + components.join("")*/;
 
     // Can't access the colormap cache, but it would be nice to
     // [self assert:NULL equals:_CGColorMap[clruid]];

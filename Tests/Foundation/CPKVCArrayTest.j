@@ -333,8 +333,7 @@ var COUNTER;
 
 - (void)testKVCCountArrayOperators
 {
-    var one = [1, 1, 1, 1, 1, 1, 1, 1],
-        two = [1, 2, 3, 4, 8, 0];
+    var one = [1, 1, 1, 1, 1, 1, 1, 1];
 
     [self assert:[one valueForKey:"@count"] equals:8];
 
@@ -345,8 +344,7 @@ var COUNTER;
 
 - (void)testKVCSumArrayOperators
 {
-    var one = [1, 1, 1, 1, 1, 1, 1, 1],
-        two = [1, 2, 3, 4, 8, 0];
+    var one = [1, 1, 1, 1, 1, 1, 1, 1];
 
     [self assert:[one valueForKeyPath:"@sum.intValue"] equals:8];
 
@@ -363,8 +361,7 @@ var COUNTER;
 
 - (void)testKVCAvgArrayOperators
 {
-    var one = [1, 1, 1, 1, 1, 1, 1, 1],
-        two = [1, 2, 3, 4, 8, 0];
+    var two = [1, 2, 3, 4, 8, 0];
 
     [self assert:[two valueForKeyPath:"@avg.intValue"] equals:3];
 
@@ -377,8 +374,7 @@ var COUNTER;
 
 - (void)testKVCMinArrayOperators
 {
-    var one = [1, 1, 1, 1, 1, 1, 1, 1],
-        two = [1, 2, 3, 4, 8, 0];
+    var two = [1, 2, 3, 4, 8, 0];
 
     [self assert:[two valueForKeyPath:"@min.intValue"] equals:0];
 
@@ -392,8 +388,7 @@ var COUNTER;
 
 - (void)testKVCMaxArrayOperators
 {
-    var one = [1, 1, 1, 1, 1, 1, 1, 1],
-        two = [1, 2, 3, 4, 8, 0];
+    var two = [1, 2, 3, 4, 8, 0];
 
     [self assert:[two valueForKeyPath:"@max.intValue"] equals:8];
 

@@ -802,7 +802,8 @@ CPSegmentSwitchTrackingMomentary = 2;
             label = [segment label],
             image = [segment image];
 
-        width = (label ? [label sizeWithFont:[self font]].width : 4.0) + (image ? [image size].width : 0) + contentInsetWidth;
+        // add 1 pixel to account for possible fractional pixels at right edge
+        width = (label ? [label sizeWithFont:[self font]].width + 1 : 4.0) + (image ? [image size].width : 0) + contentInsetWidth;
     }
 
     return CGRectMake(left, top, width, height);

@@ -155,6 +155,31 @@ var CPURLConnectionDelegate = nil;
 }
 
 /*
+    Loads the data for a URL request and returns a Promise.
+    @param aRequest contains the URL to obtain data from.
+    @discussion If the request completes successfully, the data parameter of the function contains the resource data, and the error parameter is nil. If the request fails, the data parameter is nil and the error parameter contain information about the failure.
+    
+    Typical use can be like this:
+
+	- (async @action)doAction:(id)sender {
+	    const { response, data, error } = await [CPURLConnection sendAsynchronousRequest:[CPURLRequest requestWithURL:@"http://cappuccino.dev"]];
+	    if (error == nil) {
+		//do the stuff...
+	    } else {
+		// Handle errors
+	    }
+	}
+*/
++ (async JSObject /* { response: CPURLResponse, data: CPData, error: CPError } */)sendAsynchronousRequest:(CPURLRequest)aRequest
+{
+    return new Promise((resolve, reject) =>
+        [[self alloc] _initWithRequest:aRequest
+                                 queue:[CPOperationQueue mainQueue]
+                     completionHandler:(aResponse, aData, anError) => resolve( {response: aResponse, data: aData, error:anError })]
+    );
+}
+
+/*
     Creates a url connection with a delegate to monitor the request progress.
     @param aRequest contains the URL to obtain data from
     @param aDelegate will be sent messages related to the request progress

@@ -32,6 +32,8 @@
 
 @global _MakeRangeFromAbs
 
+@global document
+
 @class CPTextContainer
 @class CPTextView
 

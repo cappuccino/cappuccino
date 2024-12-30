@@ -55,6 +55,8 @@
 
 @end
 
+@global document
+
 _MakeRangeFromAbs = function(a1, a2)
 {
     return (a1 < a2) ? CPMakeRange(a1, a2 - a1) : CPMakeRange(a2, a1 - a2);
@@ -1051,7 +1053,7 @@ Sets the selection to a range of characters in response to user action.
 
     [[_window platformWindow] _propagateCurrentDOMEvent:YES];  // for the _CPNativeInputManager (necessary at least on FF and chrome)
 
-    if (![_CPNativeInputManager isNativeInputFieldActive] && [event charactersIgnoringModifiers].charCodeAt(0) != 229) // filter out 229 because this would be inserted in chrome on each deadkey
+    if (![_CPNativeInputManager isNativeInputFieldActive] && ![_CPNativeInputManager isDeadKey:event])
         [self interpretKeyEvents:[event]];
 
     [_caret setPermanentlyVisible:YES];
@@ -2170,6 +2172,9 @@ Sets the selection to a range of characters in response to user action.
 
 - (BOOL)shouldDrawInsertionPoint
 {
+    if (![self isEditable])
+        return NO;
+
     return (_selectionRange.length === 0 && [self _isFocused] && !_placeholderString);
 }
 
@@ -2633,7 +2638,14 @@ var _CPCopyPlaceholder = '-';
 {
     return _CPNativeInputFieldActive;
 }
++ (void)isDeadKey:(CPEvent)event
+{
+#if PLATFORM(DOM)
+    return event._DOMEvent && (event._DOMEvent.key == 'Dead' || event._DOMEvent.key == 'Process');
+#endif
 
+    return NO;
+}
 + (void)cancelCurrentNativeInputSession
 {
 
@@ -2707,14 +2719,6 @@ var _CPCopyPlaceholder = '-';
             return false; // prevent the default behaviour
 
         var charCode = _CPNativeInputField.innerHTML.charCodeAt(0);
-
-        // å and Å need to be filtered out in keyDown: due to chrome inserting 229 on a deadkey
-        if (charCode == 229 || charCode == 197)
-        {
-            [currentFirstResponder insertText:_CPNativeInputField.innerHTML];
-            _CPNativeInputField.innerHTML = '';
-            return;
-        }
 
         // chrome-trigger: keypressed is omitted for deadkeys
         if (!_CPNativeInputFieldActive && _CPNativeInputFieldKeyPressedCalled == NO && _CPNativeInputField.innerHTML.length && _CPNativeInputField.innerHTML != _CPCopyPlaceholder && _CPNativeInputField.innerHTML.length < 3)

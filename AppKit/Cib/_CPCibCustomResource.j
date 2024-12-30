@@ -56,7 +56,9 @@ var _CPCibCustomResourceClassNameKey    = @"_CPCibCustomResourceClassNameKey",
     _CPCibCustomResourceTemplateImageMap = @{
         "CPAddTemplate":    "button-image-plus",
         "CPRemoveTemplate": "button-image-minus",
-        "CPActionTemplate": "button-image-action"
+        "CPActionTemplate": "button-image-action",
+        "CPMenuCheckmark":  [CPNull null],
+        "CPMenuMixedState": [CPNull null]
     };
 }
 + (id)imageResourceWithName:(CPString)aResourceName size:(CGSize)aSize
@@ -127,10 +129,16 @@ var _CPCibCustomResourceClassNameKey    = @"_CPCibCustomResourceClassNameKey",
 
             var templateImage = [_CPCibCustomResourceTemplateImageMap objectForKey:_resourceName];
 
-            if (templateImage)
-                return [[CPTheme defaultTheme] valueForAttributeWithName:templateImage forClass:[CPButtonBar class]];
+            // Default checkmarks are handled by the theme so just let it be nil
+            if (templateImage !== [CPNull null])
+            {
+                if (templateImage)
+                    return [[CPTheme defaultTheme] valueForAttributeWithName:templateImage forClass:[CPButtonBar class]];
+                else
+                    return [self imageFromCoder:aCoder];
+            }
             else
-                return [self imageFromCoder:aCoder];
+                return nil;
         }
 
     return self;

@@ -1,26 +1,31 @@
-
 require("../common.jake");
 
-var FILE = require("file");
+const fs = require("fs");
+const path = require("path");
+const utilsFile = ObjectiveJ.utils.file;
 
-new FileList("**/*").exclude("Jakefile").forEach(function(aFilename)
+var tmp_list = new FileList();
+tmp_list.include("**/*");
+tmp_list.exclude("Jakefile");
+
+tmp_list.forEach(function(aFilename)
 {
-    if (!FILE.isFile(aFilename))
+    if (!fs.lstatSync(aFilename).isFile())
         return;
 
-    var buildFilename = FILE.join($BUILD_CJS_CAPPUCCINO, aFilename);
+    var buildFilename = path.join($BUILD_CJS_CAPPUCCINO, aFilename);
 
     filedir (buildFilename, [aFilename], function ()
     {
-        cp(aFilename, buildFilename);
+        utilsFile.cp(aFilename, buildFilename);
     });
 
     // HACK: narwhal should copy permissions
-    if (FILE.dirname(aFilename) === FILE.join("bin"))
+    if (path.dirname(aFilename) === path.join("bin"))
     {
         filedir (buildFilename, function ()
         {
-            FILE.chmod(buildFilename, 0755);
+            fs.chmodSync(buildFilename, 0o755);
         });
     }
 
@@ -29,5 +34,5 @@ new FileList("**/*").exclude("Jakefile").forEach(function(aFilename)
 });
 
 task ("build", function() {
-    setPackageMetadata(FILE.join($BUILD_CJS_CAPPUCCINO, "package.json"));
+    setPackageMetadata(path.join($BUILD_CJS_CAPPUCCINO, "package.json"));
 });

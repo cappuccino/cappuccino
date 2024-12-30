@@ -62,6 +62,7 @@ NAMES_FOR_PARTS[CPScrollerKnobSlot]         = @"knob-slot";
 NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
 
 
+@typedef CPScrollerStyle
 CPScrollerStyleLegacy           = 0;
 CPScrollerStyleOverlay          = 1;
 
@@ -134,7 +135,7 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
 /*!
     Returns the CPScroller's width for a CPRegularControlSize.
 */
-+ (float)scrollerWidthInStyle:(int)aStyle
++ (float)scrollerWidthInStyle:(CPScrollerStyle)aStyle
 {
     if (!_CACHED_THEME_SCROLLER)
         _CACHED_THEME_SCROLLER = [[self alloc] init];
@@ -217,7 +218,7 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
     Set the scroller's control size
     @param aStyle the scroller style: CPScrollerStyleLegacy or CPScrollerStyleOverlay
 */
-- (void)setStyle:(id)aStyle
+- (void)setStyle:(CPScrollerStyle)aStyle
 {
     if (_style != nil && _style === aStyle)
         return;

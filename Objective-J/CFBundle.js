@@ -286,7 +286,7 @@ DISPLAY_NAME(CFBundle.prototype.isLoaded);
 
 CFBundle.prototype.load = function(/*BOOL*/ shouldExecute)
 {
-    if (this._loadStatus !== CFBundleUnloaded)
+    if (this._loadStatus !== CFBundleUnloaded) 
         return;
 
     this._loadStatus = CFBundleLoading | CFBundleLoadingInfoPlist;
@@ -635,6 +635,7 @@ function CFBundleHasTestedSpriteSupport()
 
 function CFBundleTestSpriteSupport(/*String*/ MHTMLPath, /*Function*/ aCallback)
 {
+    
     if (CFBundleHasTestedSpriteSupport())
         return;
 
@@ -828,11 +829,7 @@ function decompileStaticFile(/*Bundle*/ aBundle, /*String*/ aString, /*String*/ 
         }
 
         else if (marker === MARKER_TEXT)
-        {
             file.write(text);
-            if (text.match(/^@STATIC;/))
-                file.decompile();
-        }
     }
 }
 

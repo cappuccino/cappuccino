@@ -50,10 +50,9 @@
         _state = [aCoder decodeIntForKey:"NSState"];
 
          _image = [aCoder decodeObjectForKey:"NSImage"];
-     // _alternateImage = [aCoder decodeObjectForKey:""];
-//      _onStateImage = [aCoder decodeObjectForKey:"NSOnImage"];
-//      _offStateImage = [aCoder decodeObjectForKey:"NSOffImage"];
-//      _mixedStateImage = [aCoder decodeObjectForKey:"NSMixedImage"];
+        _onStateImage = [aCoder decodeObjectForKey:"NSOnImage"];
+        _offStateImage = [aCoder decodeObjectForKey:"NSOffImage"];
+        _mixedStateImage = [aCoder decodeObjectForKey:"NSMixedImage"];
 
         _submenu = [aCoder decodeObjectForKey:"NSSubmenu"];
         _menu = [aCoder decodeObjectForKey:"NSMenu"];

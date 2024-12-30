@@ -109,6 +109,8 @@
     // this code should run with or without that connection.
     var cib = [CPBundle loadCibFile:[[CPBundle bundleForClass:CPKeyValueBindingSimpleBindingsTest] pathForResource:"SimpleBindingsAdoption_03.cib"] externalNameTable:@{ CPCibOwner: self }];
 
+    [self assertNotNull:cib];
+
     // Test the interaction.
     [textField setStringValue:@"0.7"];
     // Simulate user interaction. By default bindings update on action only.

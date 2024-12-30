@@ -186,6 +186,7 @@ var CPWindowActionMessageKeys = [
     BOOL                                _constrainsToUsableScreen;
     unsigned                            _shadowStyle;
     BOOL                                _showsResizeIndicator;
+    BOOL                                _releasedWhenClosed @accessors(property=releasedWhenClosed);
 
     int                                 _positioningMask;
     CGRect                              _positioningScreenRect;
@@ -267,6 +268,8 @@ var CPWindowActionMessageKeys = [
 
     BOOL                                _inhibitUpdateTrackingAreas;    // Used by the CPView when updating tracking areas
 }
+
+@global document
 
 + (Class)_binderClassForBinding:(CPString)aBinding
 {
@@ -2534,6 +2537,9 @@ CPTexturedBackgroundWindowMask
     [_parentWindow removeChildWindow:self];
     [self _orderOutRecursively:NO];
     [self _detachFromChildrenClosing:!_parentWindow];
+
+    if (_releasedWhenClosed)
+        [_contentView _releaseRecursively];
 }
 
 - (void)_detachFromChildrenClosing:(BOOL)shouldCloseChildren

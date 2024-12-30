@@ -24,10 +24,10 @@ var undefined;
 
 if (typeof window !== "undefined")
 {
-    window.setNativeTimeout = window.setTimeout;
-    window.clearNativeTimeout = window.clearTimeout;
-    window.setNativeInterval = window.setInterval;
-    window.clearNativeInterval = window.clearInterval;
+    window.setNativeTimeout = window.setTimeout || setTimeout;
+    window.clearNativeTimeout = window.clearTimeout || clearTimeout;
+    window.setNativeInterval = window.setInterval || setInterval;
+    window.clearNativeInterval = window.clearInterval || clearInterval;
 }
 
 // Objective-J Constants

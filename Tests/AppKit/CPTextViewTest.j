@@ -1,3 +1,4 @@
+@import <AppKit/CPApplication.j>
 @import <AppKit/CPTextView.j>
 @import <OJMoq/OJMoq.j>
 
