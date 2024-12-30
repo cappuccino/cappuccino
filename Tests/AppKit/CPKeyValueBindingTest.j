@@ -89,6 +89,13 @@
 
     [bindTesterA unbind:@"boolValue"];
 
+    [bindTesterB bind:@"boolValue" toObject:bindTesterA withKeyPath:@"stringValue" options:[CPDictionary dictionaryWithObject:CPNegateBooleanTransformerName forKey:CPValueTransformerNameBindingOption]];
+    [bindTesterA setStringValue:nil];
+    [self assert:nil equals:[bindTesterA stringValue] message:"A value reset"];
+    [self assert:YES equals:[bindTesterB boolValue] message:"B value updated"];
+
+    [bindTesterA unbind:@"boolValue"];
+
     [bindTesterB bind:@"boolValue" toObject:bindTesterA withKeyPath:@"stringValue" options:[CPDictionary dictionaryWithObject:CPIsNilTransformerName forKey:CPValueTransformerNameBindingOption]];
     [bindTesterB setBoolValue:NO];
     [bindTesterA setStringValue:nil];
