@@ -829,7 +829,7 @@
             </view>
             <point key="canvasLocation" x="136" y="-20"/>
         </window>
-        <box boxType="custom" borderType="line" borderWidth="0.0" title="Box" titlePosition="noTitle" id="fYW-ua-i1m">
+        <box boxType="custom" borderType="line" borderWidth="0.0" title="Box" titlePosition="noTitle" id="fYW-ua-i1m" userLabel="Masking View">
             <rect key="frame" x="0.0" y="0.0" width="271" height="313"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <view key="contentView" id="oa8-a7-MJz">
@@ -850,8 +850,8 @@
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="XcodeCapp" id="Oar-AW-2i5">
                                     <font key="font" metaFont="system" size="18"/>
-                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                             </textField>
                             <textField focusRingType="none" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="fUL-eL-YkQ">
@@ -859,7 +859,7 @@
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="Version 4.0" id="unR-NY-aap">
                                     <font key="font" metaFont="smallSystem"/>
-                                    <color key="textColor" white="0.31343064259999998" alpha="1" colorSpace="calibratedWhite"/>
+                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                                 <connections>
@@ -870,9 +870,7 @@
                     </customView>
                 </subviews>
             </view>
-            <color key="borderColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
-            <color key="fillColor" red="0.98039221759999995" green="0.98039221759999995" blue="0.98039221759999995" alpha="1" colorSpace="deviceRGB"/>
-            <point key="canvasLocation" x="310.5" y="-302.5"/>
+            <point key="canvasLocation" x="136" y="-641"/>
         </box>
         <box boxType="custom" borderType="line" borderWidth="0.0" title="Box" titlePosition="noTitle" id="stz-Vu-tYo" customClass="XCCWelcomeView">
             <rect key="frame" x="0.0" y="0.0" width="464" height="401"/>
@@ -910,7 +908,7 @@
                                     </subviews>
                                 </view>
                                 <color key="borderColor" red="0.97254901960784312" green="0.50196078431372548" blue="0.15686274509803921" alpha="1" colorSpace="calibratedRGB"/>
-                                <color key="fillColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                <color key="fillColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                             </box>
                             <progressIndicator wantsLayer="YES" horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" maxValue="100" bezeled="NO" indeterminate="YES" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="vPH-Iq-Ray">
                                 <rect key="frame" x="201" y="40" width="32" height="32"/>
@@ -931,13 +929,11 @@
                     </customView>
                 </subviews>
             </view>
-            <color key="borderColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
-            <color key="fillColor" red="0.98039221759999995" green="0.98039221759999995" blue="0.98039221759999995" alpha="1" colorSpace="deviceRGB"/>
             <connections>
                 <outlet property="boxImport" destination="Tbj-mM-87j" id="Nly-uI-l8C"/>
                 <outlet property="loadingIndicator" destination="vPH-Iq-Ray" id="qiU-X4-gPI"/>
             </connections>
-            <point key="canvasLocation" x="262" y="-248.5"/>
+            <point key="canvasLocation" x="548" y="-487"/>
         </box>
         <menu id="caT-Aq-Atw">
             <items>
