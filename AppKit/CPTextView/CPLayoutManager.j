@@ -1353,9 +1353,8 @@ var _objectsInRange = function(aList, aRange)
         if (!_RectEqualToRectHorizontally(newLineFragment._fragmentRect, _fragmentRect))
             return NO;
 
-        if (newFragmentRuns[i].color !== oldFragmentRuns[i].color || newFragmentRuns[i].font !== oldFragmentRuns[i].font)
+        if (newFragmentRuns[i].color !== oldFragmentRuns[i].color || newFragmentRuns[i].bgcolor !== oldFragmentRuns[i].bgcolor || newFragmentRuns[i].font !== oldFragmentRuns[i].font)
             return NO;
-
     }
 
     return YES;
