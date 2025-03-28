@@ -801,7 +801,7 @@
         var a = _rangeEntries[current],
             b = _rangeEntries[current + 1];
 
-        if (a && b && [a.attributes isEqualToDictionary:b.attributes])
+        if (a && b && ([a.attributes isEqualToDictionary:b.attributes] || [b.attributes count] == 0))
         {
             a.range.length = CPMaxRange(b.range) - a.range.location;
             _rangeEntries.splice(current + 1, 1);
