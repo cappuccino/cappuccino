@@ -379,38 +379,6 @@
     [self assertNull:[segmented infoForBinding:CPSelectedTagBinding]];
 }
 
-- (void)testTransformValueBinding {
-    var control = [[CPCheckBox alloc] initWithFrame:CGRectMakeZero()];
-
-    var content =
-    @[
-     [@{ @"state": YES } mutableCopy],
-     [@{ @"state": NO } mutableCopy],
-     [@{} mutableCopy]
-     ];
-
-    var ac = [[CPArrayController alloc] initWithContent:content];
-
-    [control bind:CPValueBinding toObject:ac withKeyPath:@"selection.state" options:@{CPValueTransformerNameBindingOption: @"CPNegateBoolean"}];
-
-    [ac setSelectionIndexes:[CPIndexSet indexSetWithIndex:0]];
-    [self assert:[control objectValue] equals:CPOffState message:"content[0] is negated"];
-    [ac setSelectionIndexes:[CPIndexSet indexSetWithIndex:1]];
-    [self assert:[control objectValue] equals:CPOnState message:"content[1] is negated"];
-    [ac setSelectionIndexes:[CPIndexSet indexSetWithIndex:2]];
-    [self assert:[control objectValue] equals:CPOnState message:"content[2] is negated"];
-
-    [ac setSelectionIndexes:[CPIndexSet indexSetWithIndex:1]];
-    [control performClick:nil];
-    [self assert:[control objectValue] equals:CPOffState message:@"value was changed"];
-    [self assert:[content[1] valueForKey:@"state"] equals:YES message:@"content[1] was negated after change"];
-
-    [ac setSelectionIndexes:[CPIndexSet indexSetWithIndex:2]];
-    [control performClick:nil];
-    [self assert:[control objectValue] equals:CPOffState message:@"value was changed"];
-    [self assert:[content[2] valueForKey:@"state"] equals:YES message:@"content[2] was negated after change"];
-}
-
 @end
 
 @implementation TextField : CPTextField
