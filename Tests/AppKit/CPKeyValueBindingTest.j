@@ -89,6 +89,13 @@
 
     [bindTesterA unbind:@"boolValue"];
 
+    [bindTesterB bind:@"boolValue" toObject:bindTesterA withKeyPath:@"stringValue" options:[CPDictionary dictionaryWithObject:CPNegateBooleanTransformerName forKey:CPValueTransformerNameBindingOption]];
+    [bindTesterA setStringValue:nil];
+    [self assert:nil equals:[bindTesterA stringValue] message:"A value reset"];
+    [self assert:YES equals:[bindTesterB boolValue] message:"B value updated"];
+
+    [bindTesterA unbind:@"boolValue"];
+
     [bindTesterB bind:@"boolValue" toObject:bindTesterA withKeyPath:@"stringValue" options:[CPDictionary dictionaryWithObject:CPIsNilTransformerName forKey:CPValueTransformerNameBindingOption]];
     [bindTesterB setBoolValue:NO];
     [bindTesterA setStringValue:nil];
@@ -370,6 +377,39 @@
 
     // Check that the source is not binded with the CPSelectedTagBinding
     [self assertNull:[segmented infoForBinding:CPSelectedTagBinding]];
+}
+
+- (void)testTransformValueBinding {
+    var control = [[CPButton alloc] initWithFrame:CGRectMakeZero()];
+    [control setButtonType:CPToggleButton];
+
+    var content =
+    @[
+     [@{ @"state": YES } mutableCopy],
+     [@{ @"state": NO } mutableCopy],
+     [@{} mutableCopy]
+     ];
+
+    var ac = [[CPArrayController alloc] initWithContent:content];
+
+    [control bind:CPValueBinding toObject:ac withKeyPath:@"selection.state" options:@{CPValueTransformerNameBindingOption: @"CPNegateBoolean"}];
+
+    [ac setSelectionIndexes:[CPIndexSet indexSetWithIndex:0]];
+    [self assert:[control objectValue] equals:CPOffState message:"content[0] is negated"];
+    [ac setSelectionIndexes:[CPIndexSet indexSetWithIndex:1]];
+    [self assert:[control objectValue] equals:CPOnState message:"content[1] is negated"];
+    [ac setSelectionIndexes:[CPIndexSet indexSetWithIndex:2]];
+    [self assert:[control objectValue] equals:CPOnState message:"content[2] is negated"];
+
+    [ac setSelectionIndexes:[CPIndexSet indexSetWithIndex:1]];
+    [control performClick:nil];
+    [self assert:[control objectValue] equals:CPOffState message:@"value was changed"];
+    [self assert:[content[1] valueForKey:@"state"] equals:YES message:@"content[1] was negated after change"];
+
+    [ac setSelectionIndexes:[CPIndexSet indexSetWithIndex:2]];
+    [control performClick:nil];
+    [self assert:[control objectValue] equals:CPOffState message:@"value was changed"];
+    [self assert:[content[2] valueForKey:@"state"] equals:YES message:@"content[2] was negated after change"];
 }
 
 @end
