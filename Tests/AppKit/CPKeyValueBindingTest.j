@@ -387,12 +387,12 @@
     @[
      [@{ @"state": YES } mutableCopy],
      [@{ @"state": NO } mutableCopy],
-     [@{} mutableCopy]
+     [@{ @"state": nil} mutableCopy]
      ];
 
     var ac = [[CPArrayController alloc] initWithContent:content];
 
-    [control bind:CPValueBinding toObject:ac withKeyPath:@"selection.state" options:@{CPValueTransformerNameBindingOption: @"CPNegateBoolean"}];
+    [control bind:CPValueBinding toObject:ac withKeyPath:@"selection.state" options:@{CPValueTransformerNameBindingOption: CPNegateBooleanTransformerName}];
 
     [ac setSelectionIndexes:[CPIndexSet indexSetWithIndex:0]];
     [self assert:[control objectValue] equals:CPOffState message:"content[0] is negated"];
