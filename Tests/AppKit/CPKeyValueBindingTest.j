@@ -380,8 +380,7 @@
 }
 
 - (void)testTransformValueBinding {
-    var control = [[CPButton alloc] initWithFrame:CGRectMakeZero()];
-    [control setButtonType:CPToggleButton];
+    var control = [[CPCheckBox alloc] initWithFrame:CGRectMakeZero()];
 
     var content =
     @[
