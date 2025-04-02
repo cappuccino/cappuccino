@@ -13,11 +13,7 @@ Cappuccino, a open-source web application framework in Objective-J (*a superset 
 * Consistency – predictable behavior across different platforms with desktop-class usability and user experience.
 * Stability – use of time-tested APIs means an absense of the churn which is all too common in the browser-app ecosystem found elsewhere.
 * Cross-platform development. The compiler and other parts of the toolchain (used to prepare applications for deployment) are hosted by Node.js. 
-* Comprehensive documentation for Objective-J is supplemented by over two decades of resources for Objective-C and Cocoa®. Additionally, a large public catalog of native Objective-C applications offers valuable guidance for development. Translation of such sample code to Objective-J is often trivial (see below).
-
-Check out a [live demo of the standard interface controls provided by Cappuccino](https://cappuccino-testbook.5apps.com/#ThemeKitchenSink)
-
-Check out some [tutorials](https://cappuccino-cookbook.5apps.com)
+* [Comprehensive documentation](https://cappuccino-cookbook.5apps.com) for Objective-J is supplemented by over two decades of resources for Objective-C and Cocoa®. Additionally, a large public catalog of native Objective-C applications offers valuable guidance for development. Translation of such sample code to Objective-J is often trivial (see below).
 
 For more information, see the
   - [Official website](http://cappuccino.dev)
