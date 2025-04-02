@@ -8,7 +8,7 @@ Cappuccino, a open-source web application framework in Objective-J (*a superset 
 
 ### Benefits of Cappuccino for Application Development:
    
-* Developer productivity – a rich palette of interface controls and robust event managment APIs go well beyond the functionality provided by current browser standards, allowing rich applications to quickly be built up using high-level constructs that are designed to work well together.
+* Developer productivity – a [rich palette of interface controls](https://cappuccino-testbook.5apps.com/#ThemeKitchenSink) and robust event managment APIs go well beyond the functionality provided by current browser standards, allowing rich applications to quickly be built up using high-level constructs that are designed to work well together.
 * Objective-J's [message-passing architecture](https://en.wikipedia.org/wiki/Message_passing), which the Cappuccino APIs leverage, promotes loose coupling of an app's component functionality — making large scale development more managable.
 * Consistency – predictable behavior across different platforms with desktop-class usability and user experience.
 * Stability – use of time-tested APIs means an absense of the churn which is all too common in the browser-app ecosystem found elsewhere.
