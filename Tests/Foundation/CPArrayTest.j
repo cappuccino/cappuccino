@@ -722,6 +722,22 @@
     }];
 }
 
+// As we have a tool-free bridges between many classes and JavaScript types by setting the isa property
+// on the type, for example Array and CPArray. Using the for...in enumeration the isa property should not
+// be included in the loop as the property is now not enumerable.
+- (void)testLoopingArrayWithForIn
+{
+    let array = @[@"a", @"b", @"c", @"d"],
+        i = 0;
+
+    for (const element in array) {
+        i = i + 1;
+        element + element; // Remove warning that the variable is never read
+    }
+
+    [self assert:i equals:4];
+}
+
 @end
 
 @implementation AlwaysEqual : CPObject

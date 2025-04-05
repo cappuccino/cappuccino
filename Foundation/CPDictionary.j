@@ -751,5 +751,27 @@ var CPDictionaryMaxDescriptionRecursion = 10;
 
 @end
 
-CFDictionary.prototype.isa = CPDictionary;
-CFMutableDictionary.prototype.isa = CPMutableDictionary;
+if (CFDictionary.prototype.isa !== CPDictionary)
+{
+    Object.defineProperties(CFDictionary.prototype,
+    {
+        isa:
+        {
+            value: CPDictionary,
+            enumerable: false,
+            writable: true
+        }
+    });
+}
+if (CFMutableDictionary.prototype.isa !== CPMutableDictionary)
+{
+    Object.defineProperties(CFMutableDictionary.prototype,
+    {
+        isa:
+        {
+            value: CPMutableDictionary,
+            enumerable: false,
+            writable: true
+        }
+    });
+}
