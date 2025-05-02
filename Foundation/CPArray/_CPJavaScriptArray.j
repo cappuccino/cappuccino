@@ -360,4 +360,15 @@ var concat = Array.prototype.concat,
 
 @end
 
-Array.prototype.isa = _CPJavaScriptArray;
+if (Array.prototype.isa !== _CPJavaScriptArray)
+{
+    Object.defineProperties(Array.prototype,
+    {
+        isa:
+        {
+            value: _CPJavaScriptArray,
+            enumerable: false,
+            writable: true
+        }
+    });
+}
