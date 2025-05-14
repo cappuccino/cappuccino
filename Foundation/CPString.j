@@ -1010,4 +1010,15 @@ String.prototype.stripDiacritics = function()
     return output;
 };
 
-String.prototype.isa = CPString;
+if (String.prototype.isa !== CPString)
+{
+    Object.defineProperties(String.prototype,
+    {
+        isa:
+        {
+            value: CPString,
+            enumerable: false,
+            writable: true
+        }
+    })
+};

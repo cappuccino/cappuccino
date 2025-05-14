@@ -346,6 +346,29 @@ FIXME: Do we need this?
 
 @end
 
-Number.prototype.isa = CPNumber;
-Boolean.prototype.isa = CPNumber;
+if (Number.prototype.isa !== CPNumber)
+{
+    Object.defineProperties(Number.prototype,
+    {
+        isa:
+        {
+            value: CPNumber,
+            enumerable: false,
+            writable: true
+        }
+    });
+}
+if (Boolean.prototype.isa !== CPNumber)
+{
+    Object.defineProperties(Boolean.prototype,
+    {
+        isa:
+        {
+            value: CPNumber,
+            enumerable: false,
+            writable: true
+        }
+    });
+}
+
 [CPNumber initialize];

@@ -260,4 +260,15 @@ var CPURLURLStringKey   = @"CPURLURLStringKey",
 
 @end
 
-CFURL.prototype.isa = [CPURL class];
+if (CFURL.prototype.isa !== CPURL)
+{
+    Object.defineProperties(CFURL.prototype,
+    {
+        isa:
+        {
+            value: CPURL,
+            enumerable: false,
+            writable: true
+        }
+    })
+};
