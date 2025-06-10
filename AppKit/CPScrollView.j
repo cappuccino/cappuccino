@@ -97,6 +97,12 @@ var TIMER_INTERVAL                              = 0.2,
 var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
     CPScrollerStyleGlobalChangeNotification     = @"CPScrollerStyleGlobalChangeNotification";
 
+var CPScrollViewBorderSuffixes = @[@"no-border", @"line-border", @"bezel-border", @"groove-border"];
+
+// _CPScrollViews will hold all created CPScrollView's in order to propagate changes
+// of scroller global style
+var _CPScrollViews;
+
 /*!
     @ingroup appkit
     @class CPScrollView
@@ -153,6 +159,8 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
         CPScrollerStyleGlobal = _isBrowserUsingOverlayScrollers() ? CPScrollerStyleOverlay : CPScrollerStyleLegacy
     else
         CPScrollerStyleGlobal = globalValue;
+
+    _CPScrollViews = @[];
 }
 
 + (CPString)defaultThemeClass
@@ -164,7 +172,15 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
 {
     return @{
             @"bottom-corner-color": [CPColor whiteColor],
-            @"border-color": [CPColor blackColor]
+            @"border-color": [CPColor blackColor],
+            @"content-inset-no-border":     CGInsetMake(0, 0, 0, 0),
+            @"content-inset-line-border":   CGInsetMake(1, 1, 1, 1),
+            @"content-inset-bezel-border":  CGInsetMake(1, 1, 1, 1),
+            @"content-inset-groove-border": CGInsetMake(2, 2, 2, 2),
+            @"background-color-no-border":     [CPNull null],
+            @"background-color-line-border":   [CPNull null],
+            @"background-color-bezel-border":  [CPNull null],
+            @"background-color-groove-border": [CPNull null]
         };
 }
 
@@ -233,19 +249,35 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
 
 + (CGRect)_insetBounds:(CGRect)bounds borderType:(CPBorderType)borderType
 {
+    // First, we have to check if we are compiling a theme or running an application because if working on a theme,
+    // we can't use theme attributes to determine the inset ! This would be a kind of circular reference...
+
+    var compilingATheme = [[[CPBundle mainBundle] objectForInfoDictionaryKey:@"CPApplicationDelegateClass"] isEqualToString:@"BKShowcaseController"];
+
+    if (compilingATheme)
+        return bounds;
+
+    var contentInset = [[CPTheme defaultTheme] valueForAttributeWithName:@"content-inset-"+CPScrollViewBorderSuffixes[borderType] forClass:CPScrollView];
+
+    // As this is a class method, we don't have object attributes, so if the theme doesn't declare content insets, we don't automatically get default value.
+    // Get it by hand.
+    if (!contentInset)
+        contentInset = [[self themeAttributes] objectForKey:@"content-inset-"+CPScrollViewBorderSuffixes[borderType]];
+
     switch (borderType)
     {
+        case CPNoBorder:
         case CPLineBorder:
         case CPBezelBorder:
-            return CGRectInset(bounds, 1.0, 1.0);
+            return CGRectInsetByInset(bounds, contentInset);
 
         case CPGrooveBorder:
-            bounds = CGRectInset(bounds, 2.0, 2.0);
+            // FIXME: Do something better with this
+            bounds = CGRectInsetByInset(bounds, contentInset);
             ++bounds.origin.y;
             --bounds.size.height;
             return bounds;
 
-        case CPNoBorder:
         default:
             return bounds;
     }
@@ -267,7 +299,10 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
 + (void)setGlobalScrollerStyle:(CPScrollerStyle)aStyle
 {
     CPScrollerStyleGlobal = aStyle;
-    [[CPNotificationCenter defaultCenter] postNotificationName:CPScrollerStyleGlobalChangeNotification object:nil];
+
+    // We propagate the new scroller global style to all existing CPScrollView's
+    for (var i = 0, count = [_CPScrollViews count]; i < count; i++)
+        [_CPScrollViews[i] setScrollerStyle:CPScrollerStyleGlobal];
 }
 
 
@@ -305,6 +340,8 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
         _delegate = nil;
         _scrollTimer = nil;
         _implementedDelegateMethods = 0;
+
+        [_CPScrollViews addObject:self];
     }
 
     return self;
@@ -1306,7 +1343,6 @@ Notifies the delegate when the scroll view has finished scrolling.
 #pragma mark -
 #pragma mark Overrides
 
-
 - (void)_removeObservers
 {
     if (!_isObserving)
@@ -1324,9 +1360,6 @@ Notifies the delegate when the scroll view has finished scrolling.
     if (_isObserving)
         return;
 
-    //Make sure to have the last global style for the scroller
-    [self _didReceiveDefaultStyleChange:nil];
-
     [[CPNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(_didReceiveDefaultStyleChange:)
                                                  name:CPScrollerStyleGlobalChangeNotification
@@ -1335,13 +1368,11 @@ Notifies the delegate when the scroll view has finished scrolling.
     [super _addObservers];
 }
 
-
-
 - (void)drawRect:(CGRect)aRect
 {
     [super drawRect:aRect];
 
-    if (_borderType == CPNoBorder)
+    if ([self isCSSBased] || (_borderType == CPNoBorder))
         return;
 
     var strokeRect = [self bounds],
@@ -1546,6 +1577,33 @@ Notifies the delegate when the scroll view has finished scrolling.
 
 #pragma mark -
 
+@implementation CPScrollView (CSSTheming)
+
+- (void)layoutSubviews
+{
+    if (![self isCSSBased] || (_borderType === CPNoBorder))
+        return;
+
+    [self setBackgroundColor:[self currentValueForThemeAttribute:@"background-color-"+CPScrollViewBorderSuffixes[_borderType]]];
+}
+
+- (BOOL)isCSSBased
+{
+    return [[self theme] isCSSBased];
+}
+
+- (void)refreshDisplay
+{
+    if ([self isCSSBased])
+        [self setNeedsLayout:YES];
+    else
+        [self setNeedsDisplay:YES];
+}
+
+@end
+
+#pragma mark -
+
 @implementation CPScrollView (FirstResponder)
 
 // Those 4 next methods are needed to (un)set CPThemeStateFirstResponder based on content view
@@ -1647,10 +1705,7 @@ var CPScrollViewContentViewKey          = @"CPScrollViewContentView",
         _scrollerStyle = [aCoder decodeObjectForKey:CPScrollViewScrollerStyleKey] || CPScrollerStyleGlobal;
         _scrollerKnobStyle = [aCoder decodeObjectForKey:CPScrollViewScrollerKnobStyleKey] || CPScrollerKnobStyleDefault;
 
-        [[CPNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(_didReceiveDefaultStyleChange:)
-                                                     name:CPScrollerStyleGlobalChangeNotification
-                                                   object:nil];
+        [_CPScrollViews addObject:self];
     }
 
     return self;
