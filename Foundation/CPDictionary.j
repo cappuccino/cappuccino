@@ -775,3 +775,25 @@ if (CFMutableDictionary.prototype.isa !== CPMutableDictionary)
         }
     });
 }
+
+// Now that the CPDictionary class object and its prototype have been
+// constructed by the @implementation block, we can attach the standard
+// JavaScript iterator method directly to its prototype.
+
+CPDictionary.prototype[Symbol.iterator] = function*()
+{
+    // 'this' inside this function will be the CPDictionary instance.
+    // [this allKeys] is an Objective-J message send that gets a CPArray of keys.
+    var keys = [this allKeys];
+    var count = [keys count];
+
+    for (var i = 0; i < count; i++)
+    {
+        var key = [keys objectAtIndex:i];
+        var value = [this objectForKey:key];
+
+        // The 'yield' keyword is part of the generator function. It pauses
+        // execution and provides the [key, value] array to the for...of loop.
+        yield [key, value];
+    }
+};
