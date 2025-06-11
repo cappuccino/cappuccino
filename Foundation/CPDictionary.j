@@ -780,7 +780,7 @@ if (CFMutableDictionary.prototype.isa !== CPMutableDictionary)
 // constructed by the @implementation block, we can attach the standard
 // JavaScript iterator method directly to its prototype.
 
-CPDictionary.prototype[Symbol.iterator] = function*()
+CFDictionary.prototype[Symbol.iterator] = function*()
 {
     // 'this' inside this function will be the CPDictionary instance.
     // [this allKeys] is an Objective-J message send that gets a CPArray of keys.
