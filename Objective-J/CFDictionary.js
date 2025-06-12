@@ -242,7 +242,8 @@ CFMutableDictionary.prototype.setValueForKey = function(/*String*/ aKey, /*Objec
 DISPLAY_NAME(CFMutableDictionary.prototype.setValueForKey);
 
 // This allows the use of 'for...of' loops directly on CFDictionary instances.
-CFDictionary.prototype[Symbol.iterator] = function*()
+CFDictionary.       prototype[Symbol.iterator] =
+CFMutableDictionary.prototype[Symbol.iterator] = function*()
 {
     // Access the internal storage directly for maximum performance.
     // 'this._keys' is the internal array of keys.
