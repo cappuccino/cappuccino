@@ -138,3 +138,29 @@ var hasOwnProperty = Object.prototype.hasOwnProperty;
 }
 
 @end
+
+// This makes all CPSet instances iterable using for...of or the spread operator.
+//
+// This implementation is 'lazy' and efficient, iterating directly over the
+// internal _contents object rather than creating a temporary array.
+//
+
+_CPConcreteMutableSet.prototype[Symbol.iterator] = function*()
+{
+    // 'this._contents' is the internal JavaScript object used for storage.
+    // The keys are object UIDs and the values are the objects themselves.
+    const contents = this._contents;
+
+    // A 'for...in' loop iterates over the keys (UIDs) of the contents object.
+    // This is a lazy operation and does not create an intermediate array.
+    for (const key in contents)
+    {
+        // It's crucial to check that the key is an own property and not
+        // one inherited from Object.prototype.
+        if (Object.prototype.hasOwnProperty.call(contents, key))
+        {
+            // Yield the VALUE, which is the actual object stored in the set.
+            yield contents[key];
+        }
+    }
+};
