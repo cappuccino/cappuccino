@@ -145,7 +145,7 @@ var hasOwnProperty = Object.prototype.hasOwnProperty;
 // internal _contents object rather than creating a temporary array.
 //
 
-_CPConcreteMutableSet.prototype[Symbol.iterator] = function*()
+CPSet.allocator.prototype[Symbol.iterator] = function*()
 {
     // 'this._contents' is the internal JavaScript object used for storage.
     // The keys are object UIDs and the values are the objects themselves.
