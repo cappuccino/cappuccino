@@ -780,7 +780,7 @@ var CPImageCSSDictionaryKey       = @"CPImageCSSDictionaryKey",
 
 @implementation CPImage (Drawing)
 
-- (void)drawAtPoint:(CGPoint)point fromRect:(CPRect)fromRect operation:(CPInteger)op fraction:(float)delta
+- (void)drawAtPoint:(CGPoint)point fromRect:(CPRect)fromRect operation:(CGBlendMode)op fraction:(float)delta
 {
     if (_loadStatus !== CPImageLoadStatusCompleted)
         return;
