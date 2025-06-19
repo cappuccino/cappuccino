@@ -31,6 +31,7 @@
 
 @import "CGGeometry.j"
 @import "CPCompatibility.j"
+@import "CPGraphicsContext.j"
 
 @class CPColor
 @global document
@@ -773,6 +774,44 @@ var CPImageCSSDictionaryKey       = @"CPImageCSSDictionaryKey",
 }
 
 @end
+
+#pragma mark -
+#pragma mark Drawing
+
+@implementation CPImage (Drawing)
+
+- (void)drawAtPoint:(CGPoint)point fromRect:(CPRect)fromRect operation:(CGBlendMode)op fraction:(float)delta
+{
+    if (_loadStatus !== CPImageLoadStatusCompleted)
+        return;
+
+    var context = [CPGraphicsContext currentContext].graphicsPort;
+
+    if (!context)
+        return;
+
+    CGContextSaveGState(context);
+
+    CGContextSetBlendMode(context, op);
+    CGContextSetAlpha(context, delta);
+
+    context.drawImage(
+        _image,
+        fromRect.origin.x,
+        fromRect.origin.y,
+        fromRect.size.width,
+        fromRect.size.height,
+        point.x,
+        point.y,
+        fromRect.size.width,
+        fromRect.size.height
+    );
+
+    CGContextRestoreGState(context);
+}
+
+@end
+
 
 #pragma mark -
 
