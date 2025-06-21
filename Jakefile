@@ -119,19 +119,19 @@ $DOCUMENTATION_BUILD = path.join($BUILD_DIR, "Documentation");
 task ("docs", ["documentation"]);
 
 task ("documentation", function()
-      {
+{
     generateDocs(false);
 });
 
 task ("docs-no-frame", ["documentation-no-frame"]);
 
 task ("documentation-no-frame", function()
-      {
+{
     generateDocs(true);
 });
 
 task ("docset", function()
-      {
+{
     generateDocs(true);
     var documentationDir = path.resolve("Tools", "Documentation");
     var docsetShell = path.join(documentationDir, "support", "docset.sh");
