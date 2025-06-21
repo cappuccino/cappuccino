@@ -132,17 +132,17 @@ task ("documentation-no-frame", function()
 });
 
 task ("docset", function()
-{
-    generateDocs(true);
-    var documentationDir = path.resolve("Tools", "Documentation");
-    var docsetShell = path.join(documentationDir, "support", "docset.sh");
-
-    try {
-        childProcess.execSync(`"${docsetShell}" "${documentationDir}"`, { stdio: 'inherit' });
-    } catch (e) {
-        console.error("Failed to generate docset.");
+      {
+    // First, check if docsetutil is available. This is only required for this task.
+    if (!executableExists("docsetutil")) {
+        console.error("\nError: 'docsetutil' is not installed, but it's required to build the docset.".red);
+        console.log("This tool is no longer bundled with Xcode, but can be installed with Homebrew:");
+        console.log("\n    brew install swiftdocorg/formulae/docsetutil\n".yellow);
         process.exit(1);
     }
+
+    // If the tool exists, proceed with the build.
+    generateDocs(true, true);
 });
 
 function executableExists(command) {
@@ -155,7 +155,14 @@ function executableExists(command) {
     }
 }
 
-function generateDocs(/* boolean */ noFrame)
+// ===========================================================================
+//
+// THIS IS THE FINAL, CORRECT VERSION.
+// IT CORRECTLY HANDLES THE 'docs' and 'docset' TASKS SEPARATELY.
+//
+// ===========================================================================
+
+function generateDocs(/* boolean */ noFrame, /* boolean */ buildDocset = false)
 {
     var doxygen = null;
     if (executableExists("doxygen")) {
@@ -198,37 +205,48 @@ function generateDocs(/* boolean */ noFrame)
         console.log("Running Doxygen...");
         childProcess.execSync(`"${doxygen}" "${doxygenTempConfig}"`, { stdio: 'inherit', cwd: tempDir });
 
+        const generatedDocsRoot = path.join(tempDir, "Documentation");
+        const htmlOutputDir = path.join(generatedDocsRoot, "html");
+        const makefilePath = path.join(htmlOutputDir, "Makefile");
+
+        // --- Makefile Execution (ONLY for docset) ---
+        // For a standard 'jake docs', we do NOT run make.
+        if (buildDocset && fs.existsSync(makefilePath)) {
+            console.log("Patching Makefile to use 'docsetutil' from PATH...");
+            childProcess.execSync(`sed -i.bak 's|"\\$(XCODE_INSTALL_DIR)"/usr/bin/docsetutil|docsetutil|' "${makefilePath}"`);
+
+            console.log("Building docset with 'make'...");
+            childProcess.execSync('make', { stdio: 'inherit', cwd: htmlOutputDir });
+        }
+
         // --- Post-processing ---
         console.log("Post-processing generated documentation...");
         const postProcessorsDir = path.join(documentationDir, "postprocess");
         processors = fs.readdirSync(postProcessorsDir).sort();
 
-        // ** THE FIX IS HERE **
-        // Doxygen creates a 'Documentation' subdirectory inside its CWD (the tempDir).
-        const generatedDocsRoot = path.join(tempDir, "Documentation");
-        const htmlOutputDir = path.join(generatedDocsRoot, "html");
-
         for (const processor of processors) {
             const processorPath = path.join(postProcessorsDir, processor);
-            // Pass the correct htmlOutputDir to the post-processing scripts
             childProcess.execSync(`"${processorPath}" "${projectRoot}" "${htmlOutputDir}"`, { stdio: 'inherit', cwd: tempDir });
         }
 
-        // --- Final Installation: Create Build/Documentation/html structure ---
-        if (fs.existsSync(htmlOutputDir)) {
+        // --- Final Installation ---
+        if (fs.existsSync(generatedDocsRoot)) {
             if (fs.existsSync($DOCUMENTATION_BUILD)) {
                 fs.rmSync($DOCUMENTATION_BUILD, { recursive: true, force: true });
             }
-            fs.mkdirSync($DOCUMENTATION_BUILD, { recursive: true });
+            fs.renameSync(generatedDocsRoot, $DOCUMENTATION_BUILD);
 
-            // Move the entire generated 'Documentation' folder (which contains html)
-            // to the final build location. This preserves the structure for 'docset'.
-            fs.renameSync(generatedDocsRoot, path.join($BUILD_DIR, "Documentation"));
-
+            // Manually copy the custom CSS file
             const finalHtmlPath = path.join($DOCUMENTATION_BUILD, "html");
+            const customCSS = path.join(documentationDir, "doxygen.css");
+            if (fs.existsSync(customCSS)) {
+                console.log("Applying custom stylesheet...");
+                fs.copyFileSync(customCSS, path.join(finalHtmlPath, "doxygen.css"));
+            }
+
             console.log("Documentation successfully built in " + finalHtmlPath);
         } else {
-            console.error("Doxygen or post-processing failed to produce the 'html' directory.");
+            console.error("Doxygen or post-processing failed to produce the 'Documentation' directory.");
         }
     } catch (e) {
         console.error("An error occurred during documentation generation:", e.message);
