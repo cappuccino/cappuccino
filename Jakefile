@@ -3,6 +3,7 @@ require("./common.jake");
 var fs = require('fs');
 var path = require('path');
 var childProcess = require("child_process");
+var os = require('os');
 
 const term = ObjectiveJ.term;
 const utilsFile = ObjectiveJ.utils.file;
@@ -137,7 +138,6 @@ task ("docset", function()
     var docsetShell = path.join(documentationDir, "support", "docset.sh");
 
     try {
-        // Enquote paths to handle spaces
         childProcess.execSync(`"${docsetShell}" "${documentationDir}"`, { stdio: 'inherit' });
     } catch (e) {
         console.error("Failed to generate docset.");
@@ -147,8 +147,6 @@ task ("docset", function()
 
 function executableExists(command) {
     try {
-        // 'which' is a common command on Unix-like systems (macOS, Linux)
-        // 'where' is the equivalent on Windows
         const checkCmd = process.platform === 'win32' ? 'where' : 'which';
         childProcess.execSync(`${checkCmd} ${command}`, { stdio: 'pipe' });
         return true;
@@ -160,118 +158,85 @@ function executableExists(command) {
 function generateDocs(/* boolean */ noFrame)
 {
     var doxygen = null;
-
-    // try to find a doxygen executable in the PATH;
     if (executableExists("doxygen")) {
         doxygen = "doxygen";
     }
-    // If the Doxygen application is installed on Mac OS X, use that
-    else if (process.platform === 'darwin' && executableExists("mdfind"))
-    {
-        try
-        {
-            var findResult = childProcess.execSync("mdfind \"kMDItemContentType == 'com.apple.application-bundle' && kMDItemCFBundleIdentifier == 'org.doxygen'\"", { encoding: 'utf8' });
-            var doxygenApps = findResult.trim().split("\n");
-            if (doxygenApps[0] && fs.existsSync(doxygenApps[0])) {
-                var potentialPath = path.join(doxygenApps[0], "Contents/Resources/doxygen");
-                // Verify the executable exists and is executable
-                fs.accessSync(potentialPath, fs.constants.X_OK);
-                doxygen = potentialPath;
-            }
-        }
-        catch (e) {
-            // mdfind failed, found nothing, or the result was not executable. Do nothing.
-        }
-    }
 
-    if (!doxygen)
-    {
+    if (!doxygen) {
         console.log("Doxygen not installed or not found, skipping documentation generation.");
         return;
     }
 
-    console.log("Using " + doxygen + " for doxygen binary.");
-    console.log("Pre-processing source files...");
-
-    var documentationDir = path.resolve("Tools", "Documentation");
-    var preProcessorsDir = path.join(documentationDir, "preprocess");
+    // --- Temporary Directory Setup ---
+    const projectRoot = process.cwd();
+    const tempDir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'capp-docs-')));
+    console.log(`Using temporary directory for build: ${tempDir}`);
 
     try {
+        var documentationDir = path.join(projectRoot, "Tools", "Documentation");
+
+        // --- Pre-processing ---
+        console.log("Pre-processing source files...");
+        const preProcessorsDir = path.join(documentationDir, "preprocess");
         var processors = fs.readdirSync(preProcessorsDir).sort();
 
-        for (var i = 0; i < processors.length; ++i) {
-            var processorPath = path.join(preProcessorsDir, processors[i]);
-            childProcess.execSync(`"${processorPath}" "${documentationDir}"`, { stdio: 'inherit' });
+        for (const processor of processors) {
+            const processorPath = path.join(preProcessorsDir, processor);
+            childProcess.execSync(`"${processorPath}" "${projectRoot}"`, { stdio: 'inherit', cwd: tempDir });
         }
 
-        var doxygenConfigFile = path.join(documentationDir, "Cappuccino.doxygen");
-        var doxygenConfigBackup = doxygenConfigFile + ".bak";
+        // --- Doxygen Execution ---
+        const doxygenConfigFile = path.join(documentationDir, "Cappuccino.doxygen");
+        const doxygenTempConfig = path.join(tempDir, "Cappuccino.doxygen");
+        fs.copyFileSync(doxygenConfigFile, doxygenTempConfig);
 
-        if (noFrame)
-        {
+        if (noFrame) {
             console.log("Disabling treeview for no-frame documentation.");
-            childProcess.execSync(`sed -i.bak 's/GENERATE_TREEVIEW.*=.*YES/GENERATE_TREEVIEW = NO/' "${doxygenConfigFile}"`);
-        }
-        else if (fs.existsSync(doxygenConfigBackup)) {
-            fs.renameSync(doxygenConfigBackup, doxygenConfigFile);
+            childProcess.execSync(`sed -i.bak 's/GENERATE_TREEVIEW.*=.*YES/GENERATE_TREEVIEW = NO/' "${doxygenTempConfig}"`);
         }
 
         console.log("Running Doxygen...");
-        childProcess.execSync(`"${doxygen}" "Cappuccino.doxygen"`, { stdio: 'inherit', cwd: documentationDir });
+        childProcess.execSync(`"${doxygen}" "${doxygenTempConfig}"`, { stdio: 'inherit', cwd: tempDir });
 
-        // Restore the original doxygen settings if a backup exists
-        if (fs.existsSync(doxygenConfigBackup)) {
-            fs.renameSync(doxygenConfigBackup, doxygenConfigFile);
-        }
-
+        // --- Post-processing ---
         console.log("Post-processing generated documentation...");
-
-        var postProcessorsDir = path.join(documentationDir, "postprocess");
-        var htmlOutputDir = path.join(documentationDir, "html");
+        const postProcessorsDir = path.join(documentationDir, "postprocess");
         processors = fs.readdirSync(postProcessorsDir).sort();
 
-        for (var i = 0; i < processors.length; ++i) {
-            var processorPath = path.join(postProcessorsDir, processors[i]);
-            childProcess.execSync(`"${processorPath}" "${documentationDir}" "${htmlOutputDir}"`, { stdio: 'inherit' });
+        // ** THE FIX IS HERE **
+        // Doxygen creates a 'Documentation' subdirectory inside its CWD (the tempDir).
+        const generatedDocsRoot = path.join(tempDir, "Documentation");
+        const htmlOutputDir = path.join(generatedDocsRoot, "html");
+
+        for (const processor of processors) {
+            const processorPath = path.join(postProcessorsDir, processor);
+            // Pass the correct htmlOutputDir to the post-processing scripts
+            childProcess.execSync(`"${processorPath}" "${projectRoot}" "${htmlOutputDir}"`, { stdio: 'inherit', cwd: tempDir });
         }
 
-        var generatedDocsSource = path.join(documentationDir, "Documentation");
-
-        if (fs.existsSync(generatedDocsSource)) {
-            if (!fs.existsSync($BUILD_DIR)) {
-                fs.mkdirSync($BUILD_DIR, { recursive: true });
-            }
-
+        // --- Final Installation: Create Build/Documentation/html structure ---
+        if (fs.existsSync(htmlOutputDir)) {
             if (fs.existsSync($DOCUMENTATION_BUILD)) {
                 fs.rmSync($DOCUMENTATION_BUILD, { recursive: true, force: true });
             }
+            fs.mkdirSync($DOCUMENTATION_BUILD, { recursive: true });
 
-            var debugTxtSource = path.join(documentationDir, "debug.txt");
-            if (fs.existsSync(debugTxtSource)) {
-                var debugTxtDest = path.join(generatedDocsSource, "debug.txt");
-                fs.renameSync(debugTxtSource, debugTxtDest);
-            }
+            // Move the entire generated 'Documentation' folder (which contains html)
+            // to the final build location. This preserves the structure for 'docset'.
+            fs.renameSync(generatedDocsRoot, path.join($BUILD_DIR, "Documentation"));
 
-            fs.renameSync(generatedDocsSource, $DOCUMENTATION_BUILD);
-
-            var customCSS = path.join(documentationDir, "doxygen.css");
-            var destCSS = path.join($DOCUMENTATION_BUILD, "html", "doxygen.css");
-            if(fs.existsSync(customCSS)) {
-                fs.copyFileSync(customCSS, destCSS);
-            }
-            console.log("Documentation successfully built in " + $DOCUMENTATION_BUILD);
+            const finalHtmlPath = path.join($DOCUMENTATION_BUILD, "html");
+            console.log("Documentation successfully built in " + finalHtmlPath);
         } else {
-            console.error("Doxygen ran but did not produce the expected 'Documentation' directory.");
+            console.error("Doxygen or post-processing failed to produce the 'html' directory.");
         }
     } catch (e) {
-        console.error("An error occurred during documentation generation:");
-        console.error(e.message);
-        // Clean up partially generated files
-        var generatedDocsSource = path.join(documentationDir, "Documentation");
-        if (fs.existsSync(generatedDocsSource)) {
-            fs.rmSync(generatedDocsSource, { recursive: true, force: true });
-        }
+        console.error("An error occurred during documentation generation:", e.message);
         process.exit(1);
+    } finally {
+        // --- Cleanup ---
+        console.log(`Cleaning up temporary directory: ${tempDir}`);
+        fs.rmSync(tempDir, { recursive: true, force: true });
     }
 }
 
