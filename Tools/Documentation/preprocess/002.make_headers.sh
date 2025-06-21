@@ -1,34 +1,44 @@
 #!/usr/bin/env bash
 #
-# NOTE: The working directory should be the main capp directory when this script is run
+# Creates temporary documentation source directories in the CWD (a temp dir).
 #
-# $1 Cappuccino documentation directory
+# ARGUMENTS:
+#   $1 - The absolute path to the project root.
 
-# Do this if you want to use the utility functions
-source "$1"/support/processor_setup.sh
+# Do this if you want to use the utility functions. Note the path change.
+source "$1/Tools/Documentation/support/processor_setup.sh"
 
-if [ -d AppKit.doc ]; then
-    rm -rf AppKit.doc
-fi
+# A function to collect sources. CWD is the temp dir.
+# ARGS: $1=Project Root, $2=Framework Name, $3=Output Doc Dir Name
+collect_sources() {
+    local project_root="$1"
+    local framework_name="$2"
+    local doc_dir_name="$3"
+    local tar_file="temp.tar" # Temp tar file in the CWD
 
-if [ -d Foundation.doc ]; then
-    rm -rf Foundation.doc
-fi
+    processor_msg "--------------------------------------------------"
+    processor_msg "Processing framework: $framework_name"
 
-# Tar all of the AppKit/*.j files, excluding any files that begin with "_", and replace
-# "AppKit" with "AppKit.doc" in the files path within the archive. Then unarchive the result.
-# This turns out to  be the quickest way I could find to get the correct files and rename them.
-processor_msg "Collecting source files..."
-bsdtar cf AppKit.doc.tar -s /^AppKit/AppKit.doc/ AppKit/*.j AppKit/**/*.j
-bsdtar xf AppKit.doc.tar
-rm AppKit.doc.tar
+    # Find sources relative to the project root
+    find "$project_root/$framework_name" -name "*.j" | bsdtar -s "|^$project_root/$framework_name/|$doc_dir_name/|" -cnf "$tar_file" -T -
 
-# Now do the same thing with Foundation files.
-bsdtar cf Foundation.doc.tar -s /^Foundation/Foundation.doc/ Foundation/*.j Foundation/**/*.j
-bsdtar xf Foundation.doc.tar
-rm Foundation.doc.tar
+    if [ -f "$tar_file" ]; then
+        processor_msg "Extracting archive to CWD..."
+        bsdtar xf "$tar_file"
+        rm "$tar_file"
+    else
+        processor_msg "ERROR: Failed to create tar archive for $framework_name." "red"
+        exit 1
+    fi
+}
 
-# Remove @import and @class from the source files, doxygen doesn't know what to do with them
+# --- Run Collection ---
+collect_sources "$1" "AppKit" "AppKit.doc"
+collect_sources "$1" "Foundation" "Foundation.doc"
+
+# --- Post-Process Files ---
+processor_msg "--------------------------------------------------"
 processor_msg "Removing @import and @class from source files..."
+# These directories now exist in our CWD (the temp dir)
 find AppKit.doc -name *.j -exec sed -e '/@import.*/ d' -e '/@class.*/ d' -i '' {} \;
 find Foundation.doc -name *.j -exec sed -e '/@import.*/ d' -e '/@class.*/ d' -i '' {} \;

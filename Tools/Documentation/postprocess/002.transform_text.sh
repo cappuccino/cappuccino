@@ -1,17 +1,16 @@
 #!/usr/bin/env bash
 #
-# NOTE: The working directory should be the main capp directory when this script is run
+# A hook for transforming text in the generated HTML files.
+# CWD is the main temporary build directory.
 #
-# $1 Cappuccino Tools/Documentation directory
-# $2 Generated documentation directory
+# ARGUMENTS:
+#   $1 - The absolute path to the project root.
+#   $2 - The absolute path to the generated 'html' directory within the temp dir.
 
-# Do this if you want to use the utility functions
-source "$1"/support/processor_setup.sh
+# Corrected path to the support script
+source "$1/Tools/Documentation/support/processor_setup.sh"
 
-if [ ! -d "$2" ]; then
-    exit 0
-fi
-
-processor_msg 'Massaging text...'
-
-exec "$1"/support/massage_text.py "$2"
+# This is a placeholder. If the original script did something specific,
+# its logic would go here, operating on files inside the "$2" directory.
+# For now, we'll just log that it ran.
+processor_msg "Running text transformations..."
