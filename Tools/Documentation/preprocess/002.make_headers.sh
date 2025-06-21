@@ -1,34 +1,69 @@
 #!/usr/bin/env bash
 #
-# NOTE: The working directory should be the main capp directory when this script is run
+# Creates temporary documentation source directories inside the main documentation directory.
 #
-# $1 Cappuccino documentation directory
+# ARGUMENTS:
+#   $1 - The absolute path to the main documentation directory (e.g., /path/to/cappuccino/Tools/Documentation)
 
 # Do this if you want to use the utility functions
 source "$1"/support/processor_setup.sh
 
-if [ -d AppKit.doc ]; then
-    rm -rf AppKit.doc
-fi
+# --- Main Execution ---
+MAIN_DOC_DIR="$1"
 
-if [ -d Foundation.doc ]; then
-    rm -rf Foundation.doc
-fi
+processor_msg "Starting source collection script..."
+processor_msg "Current working directory: $(pwd)"
+processor_msg "Target documentation directory: $MAIN_DOC_DIR"
 
-# Tar all of the AppKit/*.j files, excluding any files that begin with "_", and replace
-# "AppKit" with "AppKit.doc" in the files path within the archive. Then unarchive the result.
-# This turns out to  be the quickest way I could find to get the correct files and rename them.
-processor_msg "Collecting source files..."
-bsdtar cf AppKit.doc.tar -s /^AppKit/AppKit.doc/ AppKit/*.j AppKit/**/*.j
-bsdtar xf AppKit.doc.tar
-rm AppKit.doc.tar
+# A function to robustly collect sources using find and bsdtar
+# ARGS: $1=Framework Name, $2=Output Doc Dir Name
+collect_sources() {
+    local framework_name="$1"
+    local doc_dir_name="$2"
 
-# Now do the same thing with Foundation files.
-bsdtar cf Foundation.doc.tar -s /^Foundation/Foundation.doc/ Foundation/*.j Foundation/**/*.j
-bsdtar xf Foundation.doc.tar
-rm Foundation.doc.tar
+    # Construct full, absolute paths for all our work
+    local full_doc_dir_path="$MAIN_DOC_DIR/$doc_dir_name"
+    local full_tar_path="$MAIN_DOC_DIR/$doc_dir_name.tar"
 
-# Remove @import and @class from the source files, doxygen doesn't know what to do with them
+    processor_msg "--------------------------------------------------"
+    processor_msg "Processing framework: $framework_name"
+    processor_msg "Output will be in: $full_doc_dir_path"
+
+    if [ ! -d "$framework_name" ]; then
+        processor_msg "ERROR: Source directory '$framework_name' does not exist in $(pwd)." "red"
+        exit 1
+    fi
+
+    # Create the tar archive *inside* the documentation directory
+    find "$framework_name" -name "*.j" | bsdtar -s "|^$framework_name/|$doc_dir_name/|" -cnf "$full_tar_path" -T -
+
+    if [ -f "$full_tar_path" ]; then
+        processor_msg "Extracting archive into '$MAIN_DOC_DIR'..."
+        # Extract the archive *from within* the documentation directory
+        bsdtar xf "$full_tar_path" -C "$MAIN_DOC_DIR"
+        rm "$full_tar_path"
+    else
+        processor_msg "ERROR: Failed to create tar archive for $framework_name." "red"
+        exit 1
+    fi
+}
+
+
+# --- Run Collection ---
+collect_sources "AppKit" "AppKit.doc"
+collect_sources "Foundation" "Foundation.doc"
+
+
+# --- Post-Process Files ---
+processor_msg "--------------------------------------------------"
 processor_msg "Removing @import and @class from source files..."
-find AppKit.doc -name *.j -exec sed -e '/@import.*/ d' -e '/@class.*/ d' -i '' {} \;
-find Foundation.doc -name *.j -exec sed -e '/@import.*/ d' -e '/@class.*/ d' -i '' {} \;
+
+# Look for the .doc directories inside the main documentation directory
+if [ -d "$MAIN_DOC_DIR/AppKit.doc" ]; then
+    find "$MAIN_DOC_DIR/AppKit.doc" -name *.j -exec sed -e '/@import.*/ d' -e '/@class.*/ d' -i '' {} \;
+fi
+if [ -d "$MAIN_DOC_DIR/Foundation.doc" ]; then
+    find "$MAIN_DOC_DIR/Foundation.doc" -name *.j -exec sed -e '/@import.*/ d' -e '/@class.*/ d' -i '' {} \;
+fi
+
+processor_msg "Source collection script finished."
