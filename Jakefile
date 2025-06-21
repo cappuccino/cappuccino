@@ -155,13 +155,6 @@ function executableExists(command) {
     }
 }
 
-// ===========================================================================
-//
-// THIS IS THE FINAL, CORRECT VERSION.
-// IT CORRECTLY HANDLES THE 'docs' and 'docset' TASKS SEPARATELY.
-//
-// ===========================================================================
-
 function generateDocs(/* boolean */ noFrame, /* boolean */ buildDocset = false)
 {
     var doxygen = null;
