@@ -84,7 +84,8 @@ You can mix and match pure JavaScript and Objective-J, even in the same file. Yo
 ## Find Out More
 
 *   **Official Website:** [cappuccino.dev](http://cappuccino.dev)
-*   **Documentation & Tutorials:** [cappuccino.dev/learn/](http://cappuccino.dev/learn/)
+*   **Documentation & Tutorials:** [cappuccino.dev/learn/](http://cappuccino.dev/learn/),  [cappuccino cookbook](https://cappuccino-cookbook.5apps.com)
+
 *   **Gitter Community Chat:** [gitter.im/cappuccino/cappuccino](https://gitter.im/cappuccino/cappuccino)
 *   **GitHub Wiki:** [github.com/cappuccino/cappuccino/wiki](https://github.com/cappuccino/cappuccino/wiki)
 *   **FAQ:** [cappuccino.dev/support/faq.html](http://cappuccino.dev/support/faq.html)
