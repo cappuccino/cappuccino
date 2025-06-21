@@ -17,5 +17,8 @@ if [ -n "$markdown" ]; then
     "$markdown" "$1/README.markdown" > "README.html"
 else
     processor_msg "markdown binary is not installed, documentation cannot be generated." "red"
+    echo "On Mac OS X, install brew with the following command line:"
+    echo '  ruby -e "$(curl -fsSL https://raw.github.com/Homebrew/homebrew/go/install)"'
+    echo "Then use 'brew install markdown' from the command line to install markdown."
     exit 1
 fi
