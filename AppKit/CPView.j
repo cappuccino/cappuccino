@@ -4077,15 +4077,19 @@ var _CPViewGetTransform = function(/*CPView*/ fromView, /*CPView */ toView)
 
 /*    var views = [],
         view = toView;
+
     while (view)
     {
         views.push(view);
         view = view._superview;
     }
+
     var index = views.length;
+
     while (index--)
     {
         var frame = views[index]._frame;
+
         transform.tx -= CGRectGetMinX(frame);
         transform.ty -= CGRectGetMinY(frame);
     }*/
