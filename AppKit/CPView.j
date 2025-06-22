@@ -674,9 +674,6 @@ var CPViewHighDPIDrawingEnabled = YES;
     if (!_window && lastWindow)
         [aSubview _setWindow:nil];
 
-    if (isNewAddOrMove)
-        [aSubview _postViewDidAppearNotification];
-
     // This method might be called before we are fully unarchived, in which case the theme state isn't set up yet
     // and none of the below matters anyhow.
     if (_themeState)
@@ -739,7 +736,6 @@ var CPViewHighDPIDrawingEnabled = YES;
     // If the view is not hidden and one of its ancestors is hidden,
     // notify the view that it is now unhidden.
     [self _setSuperview:nil];
-    [self _postViewDidDisappearNotification];
 
     [self _notifyWindowDidResignKey];
     [self _notifyViewDidResignFirstResponder];
