@@ -602,7 +602,8 @@ var CPViewHighDPIDrawingEnabled = YES;
 
     // We will have to adjust the z-index of all views starting at this index.
     var count = _subviews.length,
-        lastWindow;
+        lastWindow,
+        isNewAddOrMove = aSubview._superview !== self;
 
     // Dirty the key view loop, in case the window wants to auto recalculate it
     [[self window] _dirtyKeyViewLoop];
@@ -673,6 +674,9 @@ var CPViewHighDPIDrawingEnabled = YES;
     if (!_window && lastWindow)
         [aSubview _setWindow:nil];
 
+    if (isNewAddOrMove)
+        [aSubview _postViewDidAppearNotification];
+
     // This method might be called before we are fully unarchived, in which case the theme state isn't set up yet
     // and none of the below matters anyhow.
     if (_themeState)
@@ -735,6 +739,7 @@ var CPViewHighDPIDrawingEnabled = YES;
     // If the view is not hidden and one of its ancestors is hidden,
     // notify the view that it is now unhidden.
     [self _setSuperview:nil];
+    [self _postViewDidDisappearNotification];
 
     [self _notifyWindowDidResignKey];
     [self _notifyViewDidResignFirstResponder];
@@ -1405,6 +1410,9 @@ var CPViewHighDPIDrawingEnabled = YES;
         _inverseBoundsTransform = nil;
     }
 
+    if (_layer)
+        [_layer _owningViewBoundsChanged];
+
 #if PLATFORM(DOM)
     var index = _subviews.length;
 
@@ -1460,6 +1468,9 @@ var CPViewHighDPIDrawingEnabled = YES;
         origin.x *= size.width / frameSize.width;
         origin.y *= size.height / frameSize.height;
     }
+
+    if (_layer)
+        [_layer _owningViewBoundsChanged];
 
     if (_postsBoundsChangedNotifications && !_inhibitFrameAndBoundsChangedNotifications)
         [CachedNotificationCenter postNotificationName:CPViewBoundsDidChangeNotification object:self];
@@ -1719,11 +1730,7 @@ var CPViewHighDPIDrawingEnabled = YES;
 
     _superview = aSuperview;
 
-    if (hasOldSuperview)
-        [self _postViewDidDisappearNotification];
-
-    if (hasNewSuperview)
-        [self _postViewDidAppearNotification];
+    // Notifications are now posted manually from _insertSubview and _removeFromSuperview
 }
 
 - (void)_recursiveLostHiddenAncestor
@@ -3214,7 +3221,8 @@ setBoundsOrigin:
     {
         _layer._owningView = nil;
 #if PLATFORM(DOM)
-        _DOMElement.removeChild(_layer._DOMElement);
+        if (_layer._DOMElement && _layer._DOMElement.parentNode === _DOMElement)
+            _DOMElement.removeChild(_layer._DOMElement);
 #endif
     }
 
@@ -3222,13 +3230,11 @@ setBoundsOrigin:
 
     if (_layer)
     {
-        var bounds = CGRectMakeCopy([self bounds]);
-
         [_layer _setOwningView:self];
+        [_layer setFrame:[self bounds]]; // Sync layer frame with view bounds
 
 #if PLATFORM(DOM)
         _layer._DOMElement.style.zIndex = 100;
-
         _DOMElement.appendChild(_layer._DOMElement);
 #endif
     }
@@ -3239,16 +3245,45 @@ setBoundsOrigin:
 */
 - (CALayer)layer
 {
+    if (_wantsLayer && !_layer)
+    {
+        // Use of @class CALayer requires dynamic lookup
+        var CALayerClass = objj_getClass("CALayer");
+        if (CALayerClass)
+        {
+            var layer = [[CALayerClass alloc] init];
+            [self setLayer:layer];
+            [self setNeedsLayout:YES];
+            [self setNeedsDisplay:YES];
+        }
+    }
     return _layer;
 }
 
 /*!
     Sets whether the receiver wants a core animation layer.
-    @param \c YES means the receiver wants a layer.
+    @param aFlag \c YES means the receiver wants a layer.
 */
 - (void)setWantsLayer:(BOOL)aFlag
 {
-    _wantsLayer = !!aFlag;
+    aFlag = !!aFlag;
+
+    if (_wantsLayer === aFlag)
+        return;
+
+    _wantsLayer = aFlag;
+
+    if (_wantsLayer)
+    {
+        // Accessing the layer will create it if it doesn't exist.
+        [self layer];
+    }
+    else
+    {
+        // Remove the layer if we no longer want it.
+        if (_layer)
+            [self setLayer:nil];
+    }
 }
 
 /*!
@@ -3258,6 +3293,36 @@ setBoundsOrigin:
 - (BOOL)wantsLayer
 {
     return _wantsLayer;
+}
+
+/*!
+    Rotates the view's frame by a given angle (in degrees) around its center point.
+    This method requires the view to be layer-backed. If the view is not
+    already layer-backed, this method will automatically set wantsLayer to YES.
+    @param angle The angle in degrees to rotate the view.
+*/
+- (void)rotateByAngle:(CGFloat)angle
+{
+    // Ensure the view is layer-backed
+    [self setWantsLayer:YES];
+
+    var layer = [self layer];
+    if (!layer)
+        return;
+
+    // Convert degrees to radians for the transform
+    var radians = angle * Math.PI / 180.0;
+
+    // Create a rotation transform.
+    // For 2D rotation, we rotate around the Z-axis.
+    var rotationTransform = CATransform3DMakeRotation(radians, 0, 0, 1);
+
+    // Get the current transform and concatenate the new rotation
+    var currentTransform = [layer transform];
+    var newTransform = CATransform3DConcat(currentTransform, rotationTransform);
+
+    // Apply the new transform to the layer
+    [layer setTransform:newTransform];
 }
 
 @end
@@ -3765,7 +3830,8 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     CPViewSizeScaleKey              = @"CPViewSizeScaleKey",
     CPViewIsScaledKey               = @"CPViewIsScaledKey",
     CPViewAppearanceKey             = @"CPViewAppearanceKey",
-    CPViewTrackingAreasKey          = @"CPViewTrackingAreasKey";
+    CPViewTrackingAreasKey          = @"CPViewTrackingAreasKey",
+    CPViewWantsLayerKey             = @"CPViewWantsLayerKey";
 
 @implementation CPView (CPCoding)
 
@@ -3868,6 +3934,10 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
             _opacity = 1.0;
 
         [self setBackgroundColor:[aCoder decodeObjectForKey:CPViewBackgroundColorKey]];
+
+        if ([aCoder containsValueForKey:CPViewWantsLayerKey])
+            [self setWantsLayer:[aCoder decodeBoolForKey:CPViewWantsLayerKey]];
+
         [self _setupViewFlags];
 
         [self setAppearance:[aCoder decodeObjectForKey:CPViewAppearanceKey]];
@@ -3954,6 +4024,9 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 
     if (_identifier)
         [aCoder encodeObject:_identifier forKey:CPReuseIdentifierKey];
+
+    if (_wantsLayer)
+        [aCoder encodeBool:_wantsLayer forKey:CPViewWantsLayerKey];
 
     [aCoder encodeSize:[self scaleSize] forKey:CPViewScaleKey];
     [aCoder encodeSize:[self _hierarchyScaleSize] forKey:CPViewSizeScaleKey];
