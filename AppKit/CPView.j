@@ -4072,4 +4072,23 @@ var _CPViewGetTransform = function(/*CPView*/ fromView, /*CPView */ toView)
     CGAffineTransformConcatTo(transform, transform2, transform);
 
     return transform;
+
+
+
+/*    var views = [],
+        view = toView;
+    while (view)
+    {
+        views.push(view);
+        view = view._superview;
+    }
+    var index = views.length;
+    while (index--)
+    {
+        var frame = views[index]._frame;
+        transform.tx -= CGRectGetMinX(frame);
+        transform.ty -= CGRectGetMinY(frame);
+    }*/
+
+    return transform;
 };
