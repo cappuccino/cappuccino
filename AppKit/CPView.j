@@ -592,40 +592,91 @@ var CPViewHighDPIDrawingEnabled = YES;
 {
     if (aSubview === self)
         [CPException raise:CPInvalidArgumentException reason:"can't add a view as a subview of itself"];
+#if DEBUG
+    if (!aSubview._superview && _subviews.indexOf(aSubview) !== CPNotFound)
+        [CPException raise:CPInvalidArgumentException reason:"can't insert a subview in duplicate (probably partially decoded)"];
+#endif
 
-    // If a view is being moved, it must be fully removed from its old hierarchy first.
-    // This ensures all disappearance and detachment notifications are sent correctly.
-    if ([aSubview superview])
-        [aSubview removeFromSuperview];
+    // Notify the subview that it will be moving.
+    [aSubview viewWillMoveToSuperview:self];
 
+    // We will have to adjust the z-index of all views starting at this index.
+    var count = _subviews.length,
+        lastWindow;
+
+    // Dirty the key view loop, in case the window wants to auto recalculate it
     [[self window] _dirtyKeyViewLoop];
 
-    [aSubview viewWillMoveToSuperview:self];
-    [aSubview _postViewWillAppearNotification];
+    // If this is already one of our subviews, remove it.
+    if (aSubview._superview === self)
+    {
+        var index = [_subviews indexOfObjectIdenticalTo:aSubview];
 
-    var count = _subviews.length;
+        // FIXME: should this be anIndex >= count? (last one)
+        if (index === anIndex || index === count - 1 && anIndex === count)
+            return;
+
+        [_subviews removeObjectAtIndex:index];
+
+#if PLATFORM(DOM)
+        CPDOMDisplayServerRemoveChild(_DOMElement, aSubview._DOMElement);
+#endif
+
+        if (anIndex > index)
+            --anIndex;
+
+        //We've effectively made the subviews array shorter, so represent that.
+        --count;
+    }
+    else
+    {
+        var superview = aSubview._superview;
+
+        lastWindow = [superview window];
+
+        // Remove the view from its previous superview.
+        [aSubview _removeFromSuperview];
+
+        // Set the subview's window to our own.
+        // This must happen before _setSuperview so that the window is available
+        // in notifications like viewDidAppear.
+        if (_window)
+            [aSubview _setWindow:_window];
+
+        if (!_window && lastWindow)
+            [aSubview _setWindow:nil];
+
+        [aSubview _postViewWillAppearNotification];
+        // Set ourselves as the superview.
+        [aSubview _setSuperview:self];
+    }
+
     if (anIndex === CPNotFound || anIndex >= count)
     {
         _subviews.push(aSubview);
+
 #if PLATFORM(DOM)
+        // Attach the actual node.
         CPDOMDisplayServerAppendChild(_DOMElement, aSubview._DOMElement);
 #endif
     }
     else
     {
         _subviews.splice(anIndex, 0, aSubview);
+
 #if PLATFORM(DOM)
+        // Attach the actual node.
         CPDOMDisplayServerInsertBefore(_DOMElement, aSubview._DOMElement, _subviews[anIndex + 1]._DOMElement);
 #endif
     }
 
-    [aSubview _setSuperview:self sendDidAppear:NO];
     [aSubview setNextResponder:self];
+    [aSubview _scaleSizeUnitSquareToSize:[self _hierarchyScaleSize]];
+
     [aSubview viewDidMoveToSuperview];
 
-    if (_window)
-        [aSubview _setWindow:_window];
-
+    // This method might be called before we are fully unarchived, in which case the theme state isn't set up yet
+    // and none of the below matters anyhow.
     if (_themeState)
     {
         if ([self hasThemeState:CPThemeStateFirstResponder])
@@ -639,12 +690,7 @@ var CPViewHighDPIDrawingEnabled = YES;
             [aSubview _notifyWindowDidResignKey];
     }
 
-    [aSubview _scaleSizeUnitSquareToSize:[self _hierarchyScaleSize]];
-
     [self didAddSubview:aSubview];
-
-    if ([aSubview superview])
-        [aSubview _postDidAppearRecursively];
 }
 
 /*!
@@ -661,7 +707,14 @@ var CPViewHighDPIDrawingEnabled = YES;
 */
 - (void)removeFromSuperview
 {
+    var superview = _superview;
+
+    [self viewWillMoveToSuperview:nil];
     [self _removeFromSuperview];
+    [self viewDidMoveToSuperview];
+
+    if (superview)
+        [self _setWindow:nil];
 }
 
 - (void)_removeFromSuperview
@@ -669,33 +722,24 @@ var CPViewHighDPIDrawingEnabled = YES;
     if (!_superview)
         return;
 
-    var oldSuperview = _superview;
-    var oldWindow = [self window];
+    // Dirty the key view loop, in case the window wants to auto recalculate it
+    [[self window] _dirtyKeyViewLoop];
 
-    [self viewWillMoveToSuperview:nil];
-
-    // Detach from window hierarchy first
-    if (oldWindow)
-        [self _setWindow:nil];
-
+    [_superview willRemoveSubview:self];
     [self _postViewWillDisappearNotification];
 
-    // Detach from view hierarchy
-    [oldSuperview willRemoveSubview:self];
-    [oldSuperview._subviews removeObjectIdenticalTo:self];
+    [_superview._subviews removeObjectIdenticalTo:self];
+
 #if PLATFORM(DOM)
-    CPDOMDisplayServerRemoveChild(oldSuperview._DOMElement, _DOMElement);
+    CPDOMDisplayServerRemoveChild(_superview._DOMElement, _DOMElement);
 #endif
 
-    [self _setSuperview:nil sendDidAppear:NO];
-    [self setNextResponder:nil];
+    // If the view is not hidden and one of its ancestors is hidden,
+    // notify the view that it is now unhidden.
+    [self _setSuperview:nil];
 
-    [self _notifyViewDidResignFirstResponder];
     [self _notifyWindowDidResignKey];
-
-    [self _postDidDisappearRecursively];
-
-    [self viewDidMoveToSuperview];
+    [self _notifyViewDidResignFirstResponder];
 }
 
 /*!
@@ -710,9 +754,9 @@ var CPViewHighDPIDrawingEnabled = YES;
 
     var index = [_subviews indexOfObjectIdenticalTo:aSubview];
 
-    // This now correctly handles the full remove/add cycle.
-    [aSubview removeFromSuperview];
     [self _insertSubview:aView atIndex:index];
+
+    [aSubview removeFromSuperview];
 }
 
 - (void)setSubviews:(CPArray)newSubviews
@@ -724,50 +768,77 @@ var CPViewHighDPIDrawingEnabled = YES;
     if ([_subviews isEqual:newSubviews])
         return;
 
+    // Trivial Case 1: No current subviews, simply add all new subviews.
+    if ([_subviews count] === 0)
+    {
+        var index = 0,
+            count = [newSubviews count];
+
+        for (; index < count; ++index)
+            [self addSubview:newSubviews[index]];
+
+        return;
+    }
+
+    // Trivial Case 2: No new subviews, simply remove all current subviews.
+    if ([newSubviews count] === 0)
+    {
+        var count = [_subviews count];
+
+        while (count--)
+            [_subviews[count] removeFromSuperview];
+
+        return;
+    }
+
     // Find out the views that were removed.
     var removedSubviews = [CPMutableSet setWithArray:_subviews];
+
     [removedSubviews removeObjectsInArray:newSubviews];
     [removedSubviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
 
-    // Find out which views need to be added or reordered.
-    for (var i = 0, count = [newSubviews count]; i < count; ++i)
-    {
-        var subview = newSubviews[i];
-        if ([subview superview] !== self)
-            [self _insertSubview:subview atIndex:i];
-        else {
-            // Reorder existing subview
-            var currentIndex = [_subviews indexOfObjectIdenticalTo:subview];
-            if (currentIndex !== i) {
-                [_subviews removeObjectAtIndex:currentIndex];
-                _subviews.splice(i, 0, subview);
+    // Find out which views need to be added.
+    var addedSubviews = [CPMutableSet setWithArray:newSubviews];
+
+    [addedSubviews removeObjectsInArray:_subviews];
+
+    var addedSubview = nil,
+        addedSubviewEnumerator = [addedSubviews objectEnumerator];
+
+    while ((addedSubview = [addedSubviewEnumerator nextObject]) != nil)
+        [self addSubview:addedSubview];
+
+    // If the order is fine, no need to reorder.
+    if ([_subviews isEqual:newSubviews])
+        return;
+
+    _subviews = [newSubviews copy];
+
 #if PLATFORM(DOM)
-                CPDOMDisplayServerRemoveChild(_DOMElement, subview._DOMElement);
-                CPDOMDisplayServerInsertBefore(_DOMElement, subview._DOMElement, (i + 1 < [_subviews count]) ? _subviews[i + 1]._DOMElement : null);
-#endif
-            }
-        }
+    var index = 0,
+        count = [_subviews count];
+
+    for (; index < count; ++index)
+    {
+        var subview = _subviews[index];
+
+        CPDOMDisplayServerRemoveChild(_DOMElement, subview._DOMElement);
+        CPDOMDisplayServerAppendChild(_DOMElement, subview._DOMElement);
     }
+#endif
 }
 
 /* @ignore */
-- (void)_willMoveToWindow:(CPWindow)aWindow
-{
-    [self viewWillMoveToWindow:aWindow];
-
-    var count = _subviews.length;
-    while(count--)
-        [_subviews[count] _willMoveToWindow:aWindow];
-}
-
-/* @ignore */
-- (void)_propagateWindowAndSetup:(CPWindow)aWindow
+- (void)_setWindow:(CPWindow)aWindow
 {
     [[self window] _dirtyKeyViewLoop];
 
     // Clear out first responder if we're the first responder and leaving.
     if ([_window firstResponder] === self && _window != aWindow)
         [_window makeFirstResponder:nil];
+
+    // Notify the view and its subviews
+    [self viewWillMoveToWindow:aWindow];
 
     // Unregister the drag events from the current window and register
     // them in the new window.
@@ -804,39 +875,19 @@ var CPViewHighDPIDrawingEnabled = YES;
     var count = [_subviews count];
 
     while (count--)
-        [_subviews[count] _propagateWindowAndSetup:aWindow];
+        [_subviews[count] _setWindow:aWindow];
 
     if ([_window isKeyWindow])
         [self setThemeState:CPThemeStateKeyWindow];
     else
         [self unsetThemeState:CPThemeStateKeyWindow];
 
+    [self viewDidMoveToWindow];
+
     [self _manageToolTipInstallation];
 
     [[self window] _dirtyKeyViewLoop];
 }
-
-/* @ignore */
-- (void)_didMoveToWindow
-{
-    var count = _subviews.length;
-    while(count--)
-        [_subviews[count] _didMoveToWindow];
-
-    [self viewDidMoveToWindow];
-}
-
-/* @ignore */
-- (void)_setWindow:(CPWindow)aWindow
-{
-    if (_window === aWindow)
-        return;
-
-    [self _willMoveToWindow:aWindow];
-    [self _propagateWindowAndSetup:aWindow];
-    [self _didMoveToWindow];
-}
-
 
 /*!
     Returns \c YES if the receiver is, or is a descendant of, \c aView.
@@ -942,6 +993,13 @@ var CPViewHighDPIDrawingEnabled = YES;
         return view._menuItem;
 
     return nil;
+/*    var view = self,
+        enclosingMenuItem = _enclosingMenuItem;
+
+    while (!enclosingMenuItem && (view = view._enclosingMenuItem))
+        view = [view superview];
+
+    return enclosingMenuItem;*/
 }
 
 - (void)setTag:(CPInteger)aTag
@@ -1638,14 +1696,6 @@ var CPViewHighDPIDrawingEnabled = YES;
     [[CPNotificationCenter defaultCenter] postNotificationName:_CPViewDidAppearNotification object:self userInfo:nil];
 }
 
-- (void)_postDidAppearRecursively
-{
-    [self _postViewDidAppearNotification];
-    var count = _subviews.length;
-    while(count--)
-        [_subviews[count] _postDidAppearRecursively];
-}
-
 - (void)_postViewWillDisappearNotification
 {
     [[CPNotificationCenter defaultCenter] postNotificationName:_CPViewWillDisappearNotification object:self userInfo:nil];
@@ -1656,15 +1706,7 @@ var CPViewHighDPIDrawingEnabled = YES;
     [[CPNotificationCenter defaultCenter] postNotificationName:_CPViewDidDisappearNotification object:self userInfo:nil];
 }
 
-- (void)_postDidDisappearRecursively
-{
-    [self _postViewDidDisappearNotification];
-    var count = _subviews.length;
-    while(count--)
-        [_subviews[count] _postDidDisappearRecursively];
-}
-
-- (void)_setSuperview:(CPView)aSuperview sendDidAppear:(BOOL)sendDidAppear
+- (void)_setSuperview:(CPView)aSuperview
 {
     var hasOldSuperview = (_superview != nil),
         hasNewSuperview = (aSuperview != nil),
@@ -1678,11 +1720,12 @@ var CPViewHighDPIDrawingEnabled = YES;
         [self _recursiveGainedHiddenAncestor];
 
     _superview = aSuperview;
-}
 
-- (void)_setSuperview:(CPView)aSuperview
-{
-    [self _setSuperview:aSuperview sendDidAppear:YES];
+    if (hasOldSuperview)
+        [self _postViewDidDisappearNotification];
+
+    if (hasNewSuperview)
+        [self _postViewDidAppearNotification];
 }
 
 - (void)_recursiveLostHiddenAncestor
@@ -2084,6 +2127,9 @@ var CPViewHighDPIDrawingEnabled = YES;
 
             var image = slices[i];
 
+            // // If image was nil, size should have been nil too.
+            // assert(image != nil);
+
             CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], size.width, size.height);
 
             _DOMImageParts[partIndex].style.background = "url(\"" + [image filename] + "\")";
@@ -2171,6 +2217,7 @@ var CPViewHighDPIDrawingEnabled = YES;
 
             partIndex = 0;
 
+            // Make sure to repeat the top and bottom pieces horizontally if they're not the exact width needed.
             if (top)
             {
                 CPDOMDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], frameSize.width + "px", top + "px");
@@ -2181,6 +2228,8 @@ var CPViewHighDPIDrawingEnabled = YES;
             if (_DOMImageSizes[1])
             {
                 var height = frameSize.height - top - bottom;
+
+                //_DOMImageParts[partIndex].style.backgroundSize =  frameSize.width + "px " + height + "px";
                 CPDOMDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], frameSize.width + "px", height + "px");
                 CPDOMDisplayServerSetStyleLeftTop(_DOMImageParts[partIndex], NULL, 0.0, top);
                 CPDOMDisplayServerSetStyleSize(_DOMImageParts[partIndex], frameSize.width, height);
@@ -2200,6 +2249,7 @@ var CPViewHighDPIDrawingEnabled = YES;
 
             partIndex = 0;
 
+            // Make sure to repeat the left and right pieces vertically if they're not the exact height needed.
             if (left)
             {
                 CPDOMDisplayServerSetStyleBackgroundSize(_DOMImageParts[partIndex], left + "px", frameSize.height + "px");
@@ -3542,11 +3592,19 @@ var CPAppearanceVibrantDark = [CPAppearance appearanceNamed:CPAppearanceNameVibr
         _currentAppearance = effectiveAppearance;
     }
 
+//    var start = [CPDate new];
+
     for (var i = 0, size = [_subviews count]; i < size; i++)
     {
         [[_subviews objectAtIndex:i] _recomputeAppearanceWithSuperviewEffectiveAppearance:effectiveAppearance];
     }
-}
+//    [_subviews makeObjectsPerformSelector:@selector(_recomputeAppearance)];
+
+/*    var now = [CPDate new];
+    var elapsedSeconds = [now timeIntervalSinceReferenceDate] - [start timeIntervalSinceReferenceDate];
+
+    CPLog.trace(@"_recomputeAppearance " + [_subviews count] + " subviews in " + elapsedSeconds + @" seconds");
+*/}
 
 
 @end
@@ -3578,13 +3636,27 @@ var CPAppearanceVibrantDark = [CPAppearance appearanceNamed:CPAppearanceNameVibr
         return;
 
     if (![_trackingAreas containsObjectIdenticalTo:trackingArea])
-        [CPException raise:CPInternalInconsistencyException reason:"Trying to remove unreferenced tracking area"];
+        [CPException raise:CPInternalInconsistencyException reason:"Trying to remove unreferenced trackingArea"];
 
     [self _removeTrackingArea:trackingArea];
 }
 
 /*!
  Invoked automatically when the view’s geometry changes such that its tracking areas need to be recalculated.
+
+ You should override this method to remove out of date tracking areas, add recomputed tracking areas and then call super;
+
+ Cocoa calls this on every view, whereas they have tracking area(s) or not.
+ Cappuccino behaves differently :
+ - updateTrackingAreas is called during initWithFrame
+ - updateTrackingAreas is also called when placing a view in the view hierarchy (that is in a window)
+ - if you have only CPTrackingInVisibleRect tracking areas attached to a view, it will not be called again (until you move the view in the hierarchy)
+ - if you have at least one non-CPTrackingInVisibleRect tracking area attached, it will be called every time the view geometry could be modified
+   You don't have to touch to CPTrackingInVisibleRect tracking areas, they will be automatically updated
+
+ Please note that it is the owner of a tracking area who is called for updateTrackingAreas.
+ But, if a view without any tracking area is inserted in the view hierarchy (that is, in a window), the view is called for updateTrackingAreas.
+ This enables you to use updateTrackingArea to initially attach your tracking areas to the view.
 */
 - (void)updateTrackingAreas
 {
@@ -3609,6 +3681,8 @@ var CPAppearanceVibrantDark = [CPAppearance appearanceNamed:CPAppearanceNameVibr
 
 /*!
  The referencingSuperViewVisibleRect is used to speed up the execution of this as the visibleRect method is a heavy operation.
+ It has to go up the view hierarchy and get every superviews visibleRect to transform and intersect them together.
+ Here we keep the superviews visible rect when we are going down the view hierarchy to make the operation much faster.
 */
 - (void)_updateTrackingAreasWithRecursion:(BOOL)shouldCallRecursively withReferencingSuperViewVisibleRect:(CGRect)referencingSuperViewVisibleRect
 {
@@ -3616,6 +3690,8 @@ var CPAppearanceVibrantDark = [CPAppearance appearanceNamed:CPAppearanceNameVibr
 
     if (shouldCallRecursively)
     {
+        // Now, call _updateTrackingAreasWithRecursion on subviews
+
         for (var i = 0; i < _subviews.length; i++)
             [_subviews[i] _updateTrackingAreasWithRecursion:YES withReferencingSuperViewVisibleRect:[self _visibleRectWithSuperviewVisibleRect:referencingSuperViewVisibleRect]];
     }
@@ -3628,6 +3704,10 @@ var CPAppearanceVibrantDark = [CPAppearance appearanceNamed:CPAppearanceNameVibr
 
 - (CPArray)_calcTrackingAreaOwnersWithReferencingSuperViewVisibleRect:(CGRect)referencingSuperViewVisibleRect
 {
+    // First search all owners that must be notified
+    // Remark: 99.99% of time, the only owner will be the view itself
+    // In the same time, update the rects of InVisibleRect tracking areas
+
     var owners = [];
 
     for (var i = 0; i < _trackingAreas.length; i++)
@@ -3693,14 +3773,21 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 
 /*!
     Initializes the view from an archive.
+    @param aCoder the coder from which to initialize
+    @return the initialized view
 */
 - (id)initWithCoder:(CPCoder)aCoder
 {
+    // We create the DOMElement "early" because there is a chance that we
+    // will decode our superview before we are done decoding, at which point
+    // we have to have an element to place in the tree.  Perhaps there is
+    // a more "elegant" way to do this...?
 #if PLATFORM(DOM)
     _DOMElement = DOMElementPrototype.cloneNode(false);
     AppKitTagDOMElement(self, _DOMElement);
 #endif
 
+    // Also decode these "early".
     _frame = [aCoder decodeRectForKey:CPViewFrameKey];
     _bounds = [aCoder decodeRectForKey:CPViewBoundsKey];
     _scaleSize = [aCoder containsValueForKey:CPViewScaleKey] ? [aCoder decodeSizeForKey:CPViewScaleKey] : CGSizeMake(1.0, 1.0);
@@ -3708,6 +3795,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     _isScaled = [aCoder containsValueForKey:CPViewIsScaledKey] ? [aCoder decodeBoolForKey:CPViewIsScaledKey] : NO;
     _subviews = @[];
 
+    // Trying to fix "not ready" views
     _trackingAreas = [aCoder decodeObjectForKey:CPViewTrackingAreasKey] || @[];
 
     [self _decodeThemeObjectsWithCoder:aCoder];
@@ -3717,23 +3805,30 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 
     if (self)
     {
+        // We have to manually check because it may be 0, so we can't use ||
         _tag = [aCoder containsValueForKey:CPViewTagKey] ? [aCoder decodeIntForKey:CPViewTagKey] : -1;
         _identifier = [aCoder decodeObjectForKey:CPReuseIdentifierKey];
 
         _window = [aCoder decodeObjectForKey:CPViewWindowKey];
         _superview = [aCoder decodeObjectForKey:CPViewSuperviewKey];
+        // We have to manually add the subviews so that they will receive
+        // viewWillMoveToSuperview: and viewDidMoveToSuperview:
 
         var subviews = [aCoder decodeObjectForKey:CPViewSubviewsKey] || [];
 
         for (var i = 0, count = [subviews count]; i < count; ++i)
         {
+            // addSubview won't do anything if the superview is already self, so clear it
             subviews[i]._superview = nil;
             [self addSubview:subviews[i]];
         }
 
+        // FIXME: Should we encode/decode this?
         _registeredDraggedTypes = [CPSet set];
         _registeredDraggedTypesArray = [];
 
+        // Other views (CPBox) might set an autoresizes mask on their subviews before it is actually decoded.
+        // We make sure we don't override the value by checking if it was already set.
         if (_autoresizingMask == nil)
             _autoresizingMask = [aCoder decodeIntForKey:CPViewAutoresizingMaskKey] || CPViewNotSizable;
 
@@ -3746,6 +3841,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         if (_toolTip)
             [self _installToolTipEventHandlers];
 
+        // DOM SETUP
 #if PLATFORM(DOM)
         _cssStylePreviousState = @[];
 
@@ -3761,6 +3857,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         for (; index < count; ++index)
         {
             CPDOMDisplayServerAppendChild(_DOMElement, _subviews[index]._DOMElement);
+            //_subviews[index]._superview = self;
         }
 #endif
 
@@ -3776,6 +3873,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         [self _setupViewFlags];
 
         [self setAppearance:[aCoder decodeObjectForKey:CPViewAppearanceKey]];
+        // Set the current appearance to something that can't be the correct one so it will recalculate it at the first layout.
         _currentAppearance = _frame;
 
         [self updateTrackingAreas];
@@ -3788,6 +3886,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 
 /*!
     Archives the view to a coder.
+    @param aCoder the object into which the view's data will be archived.
 */
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
@@ -3799,6 +3898,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     [aCoder encodeRect:_frame forKey:CPViewFrameKey];
     [aCoder encodeRect:_bounds forKey:CPViewBoundsKey];
 
+    // This will come out nil on the other side with decodeObjectForKey:
     if (_window != nil)
         [aCoder encodeConditionalObject:_window forKey:CPViewWindowKey];
 
@@ -3817,6 +3917,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     if (encodedSubviews.length > 0)
         [aCoder encodeObject:encodedSubviews forKey:CPViewSubviewsKey];
 
+    // This will come out nil on the other side with decodeObjectForKey:
     if (_superview != nil)
         [aCoder encodeConditionalObject:_superview forKey:CPViewSuperviewKey];
 
@@ -3883,6 +3984,9 @@ var _CPViewGetTransform = function(/*CPView*/ fromView, /*CPView */ toView)
     {
         var view = fromView;
 
+        // FIXME: This doesn't handle the case when the outside views are equal.
+        // If we have a fromView, "climb up" the view tree until
+        // we hit the root node or we hit the toLayer.
         while (view && view != toView)
         {
             var frame = view._frame;
@@ -3912,6 +4016,7 @@ var _CPViewGetTransform = function(/*CPView*/ fromView, /*CPView */ toView)
             view = view._superview;
         }
 
+        // If we hit toView, then we're done.
         if (view === toView)
         {
             return transform;
@@ -3926,6 +4031,7 @@ var _CPViewGetTransform = function(/*CPView*/ fromView, /*CPView */ toView)
         }
     }
 
+    // FIXME: For now we can do things this way, but eventually we need to do them the "hard" way.
     var view = toView,
         transform2 = CGAffineTransformMakeIdentity();
 
@@ -3933,6 +4039,7 @@ var _CPViewGetTransform = function(/*CPView*/ fromView, /*CPView */ toView)
     {
         var frame = CGRectMakeCopy(view._frame);
 
+        // FIXME : For now we don't care about rotate transform and so on
         if (view._isScaled)
         {
             transform2.a *= 1 / view._scaleSize.width;
@@ -3959,6 +4066,7 @@ var _CPViewGetTransform = function(/*CPView*/ fromView, /*CPView */ toView)
 
     if (view === fromView)
     {
+        // toView is inside of fromView
         return transform2;
     }
 
