@@ -602,8 +602,7 @@ var CPViewHighDPIDrawingEnabled = YES;
 
     // We will have to adjust the z-index of all views starting at this index.
     var count = _subviews.length,
-        lastWindow,
-        isNewAddOrMove = aSubview._superview !== self;
+        lastWindow;
 
     // Dirty the key view loop, in case the window wants to auto recalculate it
     [[self window] _dirtyKeyViewLoop];
