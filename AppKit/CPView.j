@@ -637,21 +637,10 @@ var CPViewHighDPIDrawingEnabled = YES;
         // Remove the view from its previous superview.
         [aSubview _removeFromSuperview];
 
-        // _setSuperview: posts the _didAppear notification,
-        // but the window is set *after* that call. The fix is to set the
-        // window property *before* calling _setSuperview:.
-
+        // Defer didAppear notification by changing the _setSuperview call.
         [aSubview _postViewWillAppearNotification];
-
-        // Set the subview's window to our own. This must happen BEFORE _setSuperview
-        // so that the window is available during the _didAppear notification.
-        if (_window)
-            [aSubview _setWindow:_window];
-        else if (lastWindow) // if we're moving out of a windowed view to a non-windowed view.
-            [aSubview _setWindow:nil];
-
-        // Set ourselves as the superview. This will post the _didAppear notification.
-        [aSubview _setSuperview:self];
+        // Set ourselves as the superview.
+        [aSubview _setSuperview:self sendDidAppear:NO];
     }
 
     if (anIndex === CPNotFound || anIndex >= count)
@@ -678,6 +667,12 @@ var CPViewHighDPIDrawingEnabled = YES;
 
     [aSubview viewDidMoveToSuperview];
 
+    // Set the subview's window to our own. This now respects the call order.
+    if (_window)
+        [aSubview _setWindow:_window];
+    else if (lastWindow)
+        [aSubview _setWindow:nil];
+
     // This method might be called before we are fully unarchived, in which case the theme state isn't set up yet
     // and none of the below matters anyhow.
     if (_themeState)
@@ -694,6 +689,10 @@ var CPViewHighDPIDrawingEnabled = YES;
     }
 
     [self didAddSubview:aSubview];
+    
+    // Post didAppear notification for the subtree now that it's fully configured.
+    if (aSubview._superview)
+        [aSubview _postDidAppearRecursively];
 }
 
 /*!
@@ -832,16 +831,23 @@ var CPViewHighDPIDrawingEnabled = YES;
 }
 
 /* @ignore */
-- (void)_setWindow:(CPWindow)aWindow
+- (void)_willMoveToWindow:(CPWindow)aWindow
+{
+    [self viewWillMoveToWindow:aWindow];
+
+    var count = _subviews.length;
+    while(count--)
+        [_subviews[count] _willMoveToWindow:aWindow];
+}
+
+/* @ignore */
+- (void)_propagateWindowAndSetup:(CPWindow)aWindow
 {
     [[self window] _dirtyKeyViewLoop];
 
     // Clear out first responder if we're the first responder and leaving.
     if ([_window firstResponder] === self && _window != aWindow)
         [_window makeFirstResponder:nil];
-
-    // Notify the view and its subviews
-    [self viewWillMoveToWindow:aWindow];
 
     // Unregister the drag events from the current window and register
     // them in the new window.
@@ -878,19 +884,39 @@ var CPViewHighDPIDrawingEnabled = YES;
     var count = [_subviews count];
 
     while (count--)
-        [_subviews[count] _setWindow:aWindow];
+        [_subviews[count] _propagateWindowAndSetup:aWindow];
 
     if ([_window isKeyWindow])
         [self setThemeState:CPThemeStateKeyWindow];
     else
         [self unsetThemeState:CPThemeStateKeyWindow];
 
-    [self viewDidMoveToWindow];
-
     [self _manageToolTipInstallation];
 
     [[self window] _dirtyKeyViewLoop];
 }
+
+/* @ignore */
+- (void)_didMoveToWindow
+{
+    [self viewDidMoveToWindow];
+
+    var count = _subviews.length;
+    while(count--)
+        [_subviews[count] _didMoveToWindow];
+}
+
+/* @ignore */
+- (void)_setWindow:(CPWindow)aWindow
+{
+    if (_window === aWindow)
+        return;
+
+    [self _willMoveToWindow:aWindow];
+    [self _propagateWindowAndSetup:aWindow];
+    [self _didMoveToWindow];
+}
+
 
 /*!
     Returns \c YES if the receiver is, or is a descendant of, \c aView.
@@ -1699,6 +1725,14 @@ var CPViewHighDPIDrawingEnabled = YES;
     [[CPNotificationCenter defaultCenter] postNotificationName:_CPViewDidAppearNotification object:self userInfo:nil];
 }
 
+- (void)_postDidAppearRecursively
+{
+    [self _postViewDidAppearNotification];
+    var count = _subviews.length;
+    while(count--)
+        [_subviews[count] _postDidAppearRecursively];
+}
+
 - (void)_postViewWillDisappearNotification
 {
     [[CPNotificationCenter defaultCenter] postNotificationName:_CPViewWillDisappearNotification object:self userInfo:nil];
@@ -1709,7 +1743,7 @@ var CPViewHighDPIDrawingEnabled = YES;
     [[CPNotificationCenter defaultCenter] postNotificationName:_CPViewDidDisappearNotification object:self userInfo:nil];
 }
 
-- (void)_setSuperview:(CPView)aSuperview
+- (void)_setSuperview:(CPView)aSuperview sendDidAppear:(BOOL)sendDidAppear
 {
     var hasOldSuperview = (_superview != nil),
         hasNewSuperview = (aSuperview != nil),
@@ -1727,8 +1761,13 @@ var CPViewHighDPIDrawingEnabled = YES;
     if (hasOldSuperview)
         [self _postViewDidDisappearNotification];
 
-    if (hasNewSuperview)
+    if (hasNewSuperview && sendDidAppear)
         [self _postViewDidAppearNotification];
+}
+
+- (void)_setSuperview:(CPView)aSuperview
+{
+    [self _setSuperview:aSuperview sendDidAppear:YES];
 }
 
 - (void)_recursiveLostHiddenAncestor
@@ -3639,7 +3678,7 @@ var CPAppearanceVibrantDark = [CPAppearance appearanceNamed:CPAppearanceNameVibr
         return;
 
     if (![_trackingAreas containsObjectIdenticalTo:trackingArea])
-        [CPException raise:CPInternalInconsistencyException reason:"Trying to remove unreferenced trackingArea"];
+        [CPException raise:CPInternalInconsistencyException reason:"Trying to remove unreferenced tracking area"];
 
     [self _removeTrackingArea:trackingArea];
 }
