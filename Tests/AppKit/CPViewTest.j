@@ -52,7 +52,7 @@ var updateTrackingAreasCalls,
 
     methodCalled = [];
     updateTrackingAreasCalls = 0;
-    windowPropertyWasNilInViewDidAppear = NO; // Add this line
+    windowPropertyWasNilInViewDidAppear = NO;
 
     [super setUp];
 }
