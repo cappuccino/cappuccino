@@ -637,8 +637,20 @@ var CPViewHighDPIDrawingEnabled = YES;
         // Remove the view from its previous superview.
         [aSubview _removeFromSuperview];
 
+        // _setSuperview: posts the _didAppear notification,
+        // but the window is set *after* that call. The fix is to set the
+        // window property *before* calling _setSuperview:.
+
         [aSubview _postViewWillAppearNotification];
-        // Set ourselves as the superview.
+
+        // Set the subview's window to our own. This must happen BEFORE _setSuperview
+        // so that the window is available during the _didAppear notification.
+        if (_window)
+            [aSubview _setWindow:_window];
+        else if (lastWindow) // if we're moving out of a windowed view to a non-windowed view.
+            [aSubview _setWindow:nil];
+
+        // Set ourselves as the superview. This will post the _didAppear notification.
         [aSubview _setSuperview:self];
     }
 
@@ -665,13 +677,6 @@ var CPViewHighDPIDrawingEnabled = YES;
     [aSubview _scaleSizeUnitSquareToSize:[self _hierarchyScaleSize]];
 
     [aSubview viewDidMoveToSuperview];
-
-    // Set the subview's window to our own.
-    if (_window)
-        [aSubview _setWindow:_window];
-
-    if (!_window && lastWindow)
-        [aSubview _setWindow:nil];
 
     // This method might be called before we are fully unarchived, in which case the theme state isn't set up yet
     // and none of the below matters anyhow.
