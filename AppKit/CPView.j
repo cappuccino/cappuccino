@@ -1730,7 +1730,11 @@ var CPViewHighDPIDrawingEnabled = YES;
 
     _superview = aSuperview;
 
-    // Notifications are now posted manually from _insertSubview and _removeFromSuperview
+    if (hasOldSuperview)
+        [self _postViewDidDisappearNotification];
+
+    if (hasNewSuperview)
+        [self _postViewDidAppearNotification];
 }
 
 - (void)_recursiveLostHiddenAncestor
