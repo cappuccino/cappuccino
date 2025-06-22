@@ -1,4 +1,4 @@
-/*
+ /*
  * Generate.j
  * capp
  *
@@ -208,7 +208,7 @@ function gen(/*va_args*/)
 
                 function escapeRegex(string) {
                     return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-                }                       
+                }
 
                 while ((key = [keyEnumerator nextObject]) !== nil)
                     contents = contents.replace(new RegExp("__" + escapeRegex(key) + "__", 'g'), [configuration valueForKey:key]);
@@ -255,9 +255,6 @@ function createFrameworksInFile(/*Array*/ frameworks, /*String*/ aFile, /*Boolea
 
     stream.print("Creating Frameworks directory in " + logPath(destinationFrameworks) + "...");
 
-    //destinationFrameworks.mkdirs(); // redundant
-    //destinationDebugFrameworks.mkdirs();
-
     fs.mkdirSync(destinationDebugFrameworks, { recursive: true });
 
     if (build)
@@ -266,13 +263,13 @@ function createFrameworksInFile(/*Array*/ frameworks, /*String*/ aFile, /*Boolea
             fail("$CAPP_BUILD must be defined to use the --build or -l option.");
 
         var builtFrameworks = process.env["CAPP_BUILD"],
-            sourceFrameworks = node_path.join(builtFrameworks, "Relesase"),
+            sourceFrameworks = node_path.join(builtFrameworks, "Release"),
             sourceDebugFrameworks = node_path.join(builtFrameworks, "Debug");
 
         frameworks.forEach(function(framework)
         {
-            installFramework(sourceFrameworks.join(framework), destinationFrameworks.join(framework), force, symlink);
-            installFramework(sourceDebugFrameworks.join(framework), destinationDebugFrameworks.join(framework), force, symlink);
+            installFramework(node_path.join(sourceFrameworks, framework), node_path.join(destinationFrameworks, framework), force, symlink);
+            installFramework(node_path.join(sourceDebugFrameworks, framework), node_path.join(destinationDebugFrameworks, framework), force, symlink);
         });
     }
     else
@@ -291,7 +288,7 @@ function createFrameworksInFile(/*Array*/ frameworks, /*String*/ aFile, /*Boolea
 
                 return;
             }
-            
+
             var frameworkPath = node_path.join(objjHome, "Frameworks", framework);
             installFramework(frameworkPath, node_path.join(destinationFrameworks, framework), force, symlink);
 
@@ -330,15 +327,15 @@ function installFramework(source, dest, force, symlink)
         warn("Cannot find: " + logPath(source));
     }
 }
- 
+
 function createThemesInFile(/*Array*/ themes, /*String*/ aFile, /*Boolean*/ symlink, /*Boolean*/ force)
 {
     var destination = node_path.resolve(aFile);
 
-    if (!destination.isDirectory())
+    if (!fs.lstatSync(destination).isDirectory())
         fail("Cannot create Themes. The directory does not exist: " + destination);
 
-    var destinationThemes = destination.join("Resources");
+    var destinationThemes = node_path.join(destination, "Resources");
 
     stream.print("Creating Themes in " + logPath(destinationThemes) + "...");
 
@@ -347,7 +344,7 @@ function createThemesInFile(/*Array*/ themes, /*String*/ aFile, /*Boolean*/ syml
 
     var themesBuild = node_path.join(process.env["CAPP_BUILD"], "Release"),
         sources = [];
- 
+
     themes.forEach(function(theme)
     {
         var themeFolder = theme + ".blend",
@@ -366,10 +363,10 @@ function createThemesInFile(/*Array*/ themes, /*String*/ aFile, /*Boolean*/ syml
 
 function installTheme(source, dest, force, symlink)
 {
-    if (dest.exists()) 
+    if (fs.existsSync(dest))
     {
         if (force)
-            dest.rmtree();
+            fs.rmSync(dest, { recursive: true });
 
         else
         {
@@ -378,7 +375,7 @@ function installTheme(source, dest, force, symlink)
         }
     }
 
-    if (source.exists())
+    if (fs.existsSync(source))
     {
         stream.print((symlink ? "Symlinking " : "Copying ") + logPath(source) + " ==> " + logPath(dest));
 
@@ -457,7 +454,7 @@ function listFrameworks()
 function executePostInstallScript(/*String*/ destinationProject)
 {
     var path = node_path.join(destinationProject, "postinstall");
-    
+
     if (fs.existsSync(path))
     {
         stream.print(colorize("Executing postinstall script...", "cyan"));
