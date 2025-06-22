@@ -592,72 +592,39 @@ var CPViewHighDPIDrawingEnabled = YES;
 {
     if (aSubview === self)
         [CPException raise:CPInvalidArgumentException reason:"can't add a view as a subview of itself"];
-#if DEBUG
-    if (!aSubview._superview && _subviews.indexOf(aSubview) !== CPNotFound)
-        [CPException raise:CPInvalidArgumentException reason:"can't insert a subview in duplicate (probably partially decoded)"];
-#endif
 
-    // Notify the subview that it will be moving.
-    [aSubview viewWillMoveToSuperview:self];
-
-    // We will have to adjust the z-index of all views starting at this index.
-    var count = _subviews.length,
-        lastWindow;
-
-    // Dirty the key view loop, in case the window wants to auto recalculate it
-    [[self window] _dirtyKeyViewLoop];
-
-    // If this is already one of our subviews, remove it.
+    // It's a no-op move, so return.
     if (aSubview._superview === self)
     {
-        var index = [_subviews indexOfObjectIdenticalTo:aSubview];
-
-        // FIXME: should this be anIndex >= count? (last one)
-        if (index === anIndex || index === count - 1 && anIndex === count)
+        var currentIndex = [_subviews indexOfObjectIdenticalTo:aSubview];
+        var count = _subviews.length;
+        if (currentIndex === anIndex || (currentIndex === count - 1 && (anIndex === CPNotFound || anIndex === count)))
             return;
-
-        [_subviews removeObjectAtIndex:index];
-
-#if PLATFORM(DOM)
-        CPDOMDisplayServerRemoveChild(_DOMElement, aSubview._DOMElement);
-#endif
-
-        if (anIndex > index)
-            --anIndex;
-
-        //We've effectively made the subviews array shorter, so represent that.
-        --count;
     }
-    else
-    {
-        var superview = aSubview._superview;
 
-        lastWindow = [superview window];
+    [aSubview viewWillMoveToSuperview:self];
 
-        // Remove the view from its previous superview.
+    if (aSubview._superview)
         [aSubview _removeFromSuperview];
 
-        // Defer didAppear notification by changing the _setSuperview call.
-        [aSubview _postViewWillAppearNotification];
-        // Set ourselves as the superview.
-        [aSubview _setSuperview:self sendDidAppear:NO];
-    }
+    [[self window] _dirtyKeyViewLoop];
+
+    [aSubview _postViewWillAppearNotification];
+    [aSubview _setSuperview:self sendDidAppear:NO];
+
+    var count = _subviews.length;
 
     if (anIndex === CPNotFound || anIndex >= count)
     {
         _subviews.push(aSubview);
-
 #if PLATFORM(DOM)
-        // Attach the actual node.
         CPDOMDisplayServerAppendChild(_DOMElement, aSubview._DOMElement);
 #endif
     }
     else
     {
         _subviews.splice(anIndex, 0, aSubview);
-
 #if PLATFORM(DOM)
-        // Attach the actual node.
         CPDOMDisplayServerInsertBefore(_DOMElement, aSubview._DOMElement, _subviews[anIndex + 1]._DOMElement);
 #endif
     }
@@ -667,14 +634,9 @@ var CPViewHighDPIDrawingEnabled = YES;
 
     [aSubview viewDidMoveToSuperview];
 
-    // Set the subview's window to our own. This now respects the call order.
     if (_window)
         [aSubview _setWindow:_window];
-    else if (lastWindow)
-        [aSubview _setWindow:nil];
 
-    // This method might be called before we are fully unarchived, in which case the theme state isn't set up yet
-    // and none of the below matters anyhow.
     if (_themeState)
     {
         if ([self hasThemeState:CPThemeStateFirstResponder])
@@ -689,8 +651,7 @@ var CPViewHighDPIDrawingEnabled = YES;
     }
 
     [self didAddSubview:aSubview];
-    
-    // Post didAppear notification for the subtree now that it's fully configured.
+
     if (aSubview._superview)
         [aSubview _postDidAppearRecursively];
 }
@@ -709,14 +670,9 @@ var CPViewHighDPIDrawingEnabled = YES;
 */
 - (void)removeFromSuperview
 {
-    var superview = _superview;
-
     [self viewWillMoveToSuperview:nil];
     [self _removeFromSuperview];
     [self viewDidMoveToSuperview];
-
-    if (superview)
-        [self _setWindow:nil];
 }
 
 - (void)_removeFromSuperview
@@ -724,11 +680,17 @@ var CPViewHighDPIDrawingEnabled = YES;
     if (!_superview)
         return;
 
+    var oldWindow = [self window];
+
     // Dirty the key view loop, in case the window wants to auto recalculate it
-    [[self window] _dirtyKeyViewLoop];
+    [oldWindow _dirtyKeyViewLoop];
 
     [_superview willRemoveSubview:self];
     [self _postViewWillDisappearNotification];
+
+    // Detach from window BEFORE detaching from superview
+    if (oldWindow)
+        [self _setWindow:nil];
 
     [_superview._subviews removeObjectIdenticalTo:self];
 
@@ -736,12 +698,12 @@ var CPViewHighDPIDrawingEnabled = YES;
     CPDOMDisplayServerRemoveChild(_superview._DOMElement, _DOMElement);
 #endif
 
-    // If the view is not hidden and one of its ancestors is hidden,
-    // notify the view that it is now unhidden.
-    [self _setSuperview:nil];
+    [self _setSuperview:nil sendDidAppear:NO];
 
     [self _notifyWindowDidResignKey];
     [self _notifyViewDidResignFirstResponder];
+
+    [self _postDidDisappearRecursively];
 }
 
 /*!
@@ -899,11 +861,11 @@ var CPViewHighDPIDrawingEnabled = YES;
 /* @ignore */
 - (void)_didMoveToWindow
 {
-    [self viewDidMoveToWindow];
-
     var count = _subviews.length;
     while(count--)
         [_subviews[count] _didMoveToWindow];
+
+    [self viewDidMoveToWindow];
 }
 
 /* @ignore */
@@ -1743,6 +1705,15 @@ var CPViewHighDPIDrawingEnabled = YES;
     [[CPNotificationCenter defaultCenter] postNotificationName:_CPViewDidDisappearNotification object:self userInfo:nil];
 }
 
+- (void)_postDidDisappearRecursively
+{
+    [self _postViewDidDisappearNotification];
+    var count = _subviews.length;
+
+    while(count--)
+        [_subviews[count] _postDidDisappearRecursively];
+}
+
 - (void)_setSuperview:(CPView)aSuperview sendDidAppear:(BOOL)sendDidAppear
 {
     var hasOldSuperview = (_superview != nil),
@@ -1758,11 +1729,8 @@ var CPViewHighDPIDrawingEnabled = YES;
 
     _superview = aSuperview;
 
-    if (hasOldSuperview)
-        [self _postViewDidDisappearNotification];
-
-    if (hasNewSuperview && sendDidAppear)
-        [self _postViewDidAppearNotification];
+    // Disappearance is handled by _removeFromSuperview now
+    // Appearance is handled by _insertSubview
 }
 
 - (void)_setSuperview:(CPView)aSuperview
