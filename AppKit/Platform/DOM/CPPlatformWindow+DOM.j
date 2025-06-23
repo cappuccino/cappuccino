@@ -208,6 +208,10 @@ var resizeTimer = nil;
 var PreventScroll = true;
 var blurTimer = nil;
 
+var MOMENTUM_DAMPING = 0.95,                // The friction factor. Higher is less friction (0.95 is a good start).
+    MIN_MOMENTUM_VELOCITY = 0.05,           // The velocity (pixels/ms) at which the scroll animation will stop.
+    MIN_MOMENTUM_START_VELOCITY = 0.1;      // The minimum velocity required from a flick to initiate momentum scrolling.
+
 var touchStartingPointX,
     touchStartingPointY;
 
@@ -239,6 +243,13 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
         [self updateFromNativeContentRect];
 
         _charCodes = {};
+
+        _momentumScrollTimer = nil;
+        _touchVelocityX = 0;
+        _touchVelocityY = 0;
+        _lastTouchMoveTimestamp = 0;
+        _lastMomentumTimestamp = 0;
+        _isTwoFingerScrolling = NO;
     }
 
     return self;
@@ -1157,6 +1168,50 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
     [aWindow becomeMainWindow];
 }
 
+- (void)_momentumScrollStep
+{
+    // Use a high-resolution timer for smooth animation
+    var now = performance.now();
+    var interval = now - _lastMomentumTimestamp;
+    _lastMomentumTimestamp = now;
+
+    // If the interval is too large (e.g., tab was backgrounded), stop the animation.
+    if (interval > 100)
+    {
+        [_momentumScrollTimer invalidate];
+        _momentumScrollTimer = nil;
+        return;
+    }
+
+    var location = _lastMouseEventLocation || CGPointMakeZero();
+
+    // Create a fake event to pass to the existing scrollEvent handler
+    var newEvent = {
+        shiftKey: NO, ctrlKey: NO, altKey: NO, metaKey: NO,
+        _overrideLocation: location,
+        _hasPreciseScrollingDeltas: YES,
+        // The scroll delta is velocity (pixels/ms) * time (ms)
+        deltaX: _touchVelocityX * interval,
+        deltaY: _touchVelocityY * interval,
+        type: CPDOMEventScrollWheel,
+        preventDefault: function() {},
+        stopPropagation: function() {}
+    };
+
+    [self scrollEvent:newEvent];
+
+    // Apply time-corrected damping for consistent friction feel across different frame rates
+    var dampingFactor = Math.pow(MOMENTUM_DAMPING, interval / (1000 / 60));
+    _touchVelocityX *= dampingFactor;
+    _touchVelocityY *= dampingFactor;
+
+    // Stop the animation when velocity is negligible
+    if (Math.abs(_touchVelocityX) < MIN_MOMENTUM_VELOCITY && Math.abs(_touchVelocityY) < MIN_MOMENTUM_VELOCITY)
+    {
+        [_momentumScrollTimer invalidate];
+        _momentumScrollTimer = nil;
+    }
+}
 
 - (void)touchEvent:(DOMEvent)aDOMEvent
 {
