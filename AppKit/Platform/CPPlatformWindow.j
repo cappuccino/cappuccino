@@ -82,6 +82,15 @@ var PrimaryPlatformWindow   = NULL;
 
     CPWindow                _currentMainWindow;
     CPWindow                _previousMainWindow;
+
+    // state of touch momentum scrolling
+    CPTimer     _momentumScrollTimer;
+    float       _touchVelocityX;
+    float       _touchVelocityY;
+    float       _lastTouchMoveTimestamp;
+    float       _lastMomentumTimestamp;
+    BOOL        _isTwoFingerScrolling;
+
 #endif
 }
 
