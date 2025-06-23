@@ -1160,80 +1160,107 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 
 - (void)touchEvent:(DOMEvent)aDOMEvent
 {
+    // Handle gesture state and momentum start/stop.
+    if (aDOMEvent.type === CPDOMEventTouchStart)
+    {
+        _isTwoFingerScrolling = aDOMEvent.touches.length === 2;
+        // A new touch always stops any existing momentum scroll.
+        if (_momentumScrollTimer) {
+            [_momentumScrollTimer invalidate];
+            _momentumScrollTimer = nil;
+        }
+    }
+    else if (aDOMEvent.type === CPDOMEventTouchEnd || aDOMEvent.type === CPDOMEventTouchCancel)
+    {
+        if (_isTwoFingerScrolling)
+        {
+            // If the gesture ends with enough velocity, start the momentum animation.
+            if (Math.abs(_touchVelocityX) > MIN_MOMENTUM_START_VELOCITY || Math.abs(_touchVelocityY) > MIN_MOMENTUM_START_VELOCITY) {
+                _lastMomentumTimestamp = aDOMEvent.timeStamp;
+                _momentumScrollTimer = [CPTimer scheduledTimerWithTimeInterval:1.0/60.0 target:self selector:@selector(_momentumScrollStep) userInfo:nil repeats:YES];
+            }
+            _isTwoFingerScrolling = NO;
+
+            // Prevent default browser actions (like pinch-zoom) for our handled scroll gesture.
+            if (aDOMEvent.preventDefault) aDOMEvent.preventDefault();
+            return;
+        }
+    }
+
     var newEvent = {},
         touch = aDOMEvent.touches.length ? aDOMEvent.touches[0] : aDOMEvent.changedTouches[0];
 
     newEvent.timestamp = [CPEvent currentTimestamp];
     newEvent.target = aDOMEvent.target;
     newEvent.shiftKey = newEvent.ctrlKey = newEvent.altKey = newEvent.metaKey = false;
-
     newEvent.clientX = touch.clientX;
-
-    /*
-     Normally the document can't scroll in Cappuccino: our body element has top:0 and bottom:0 with absolute positioning. So it should always be exactly the height of the viewport. The below handles a special case. iOS scrolls the document when the virtual keyboard is present and it needs to move a text input upwards visually to avoid covering the input with the keyboard. For most purposes we can ignore this, except here. In theory I think we could always apply this (scrollTop should always be 0 on every other device and situation) but let's be defensive and only apply it for touch events to minimise the risk of surprises.
-     */
     newEvent.clientY = _DOMWindow.document.body.scrollTop + touch.clientY;
-
     newEvent.preventDefault = function() { if (aDOMEvent.preventDefault) aDOMEvent.preventDefault() };
     newEvent.stopPropagation = function() { if (aDOMEvent.stopPropagation) aDOMEvent.stopPropagation() };
 
-    //  single finger event-> simulate a simple mouse-click
+    // Single-finger event -> simulate a simple mouse-click
     if (aDOMEvent.touches && (aDOMEvent.touches.length == 1 || (aDOMEvent.touches.length == 0 && aDOMEvent.changedTouches.length == 1)))
     {
         switch (aDOMEvent.type)
         {
-            case CPDOMEventTouchStart:  newEvent.type = CPDOMEventMouseDown;
-                                        break;
-            case CPDOMEventTouchEnd:    newEvent.type = CPDOMEventMouseUp;
-                                        break;
-            case CPDOMEventTouchMove:   newEvent.type = CPDOMEventMouseMoved;
-                                        break;
-            case CPDOMEventTouchCancel: newEvent.type = CPDOMEventMouseUp;
-                                        break;
+            case CPDOMEventTouchStart:  newEvent.type = CPDOMEventMouseDown; break;
+            case CPDOMEventTouchEnd:    newEvent.type = CPDOMEventMouseUp; break;
+            case CPDOMEventTouchMove:   newEvent.type = CPDOMEventMouseMoved; break;
+            case CPDOMEventTouchCancel: newEvent.type = CPDOMEventMouseUp; break;
         }
-
         [self mouseEvent:newEvent];
-
         return;
     }
     else
     {
-        // two fingers->simulate scrolling events
-        if (aDOMEvent.touches && aDOMEvent.touches.length == 2)
+        // Two-fingers -> simulate scrolling events
+        if (_isTwoFingerScrolling && aDOMEvent.touches && aDOMEvent.touches.length == 2)
         {
-            if (aDOMEvent.preventDefault)
-                aDOMEvent.preventDefault();
-
-            if (aDOMEvent.stopPropagation)
-                aDOMEvent.stopPropagation();
+            if (aDOMEvent.preventDefault) aDOMEvent.preventDefault();
+            if (aDOMEvent.stopPropagation) aDOMEvent.stopPropagation();
 
             switch (aDOMEvent.type)
             {
                 case CPDOMEventTouchStart:
                     touchStartingPointX = touch.pageX;
                     touchStartingPointY = touch.pageY;
+                    _lastTouchMoveTimestamp = aDOMEvent.timeStamp;
+                    _touchVelocityX = 0;
+                    _touchVelocityY = 0;
                     break;
                 case CPDOMEventTouchMove:
-                    newEvent._hasPreciseScrollingDeltas = YES;
-                    newEvent.deltaX = touchStartingPointX - touch.pageX;
-                    newEvent.deltaY = touchStartingPointY - touch.pageY;
-                    newEvent.type = CPDOMEventScrollWheel;
+                    var now = aDOMEvent.timeStamp;
+                    var deltaTime = now - _lastTouchMoveTimestamp;
 
-                    [self scrollEvent:newEvent];
+                    if (deltaTime > 0)
+                    {
+                        var deltaX = touchStartingPointX - touch.pageX;
+                        var deltaY = touchStartingPointY - touch.pageY;
+
+                        // Calculate velocity for momentum, smoothing it with an exponential moving average.
+                        var currentVelocityX = deltaX / deltaTime;
+                        var currentVelocityY = deltaY / deltaTime;
+                        _touchVelocityX = 0.8 * currentVelocityX + 0.2 * _touchVelocityX;
+                        _touchVelocityY = 0.8 * currentVelocityY + 0.2 * _touchVelocityY;
+
+                        // Send the raw delta for immediate, direct-manipulation feedback.
+                        newEvent._hasPreciseScrollingDeltas = YES;
+                        newEvent.deltaX = deltaX;
+                        newEvent.deltaY = deltaY;
+                        newEvent.type = CPDOMEventScrollWheel;
+                        [self scrollEvent:newEvent];
+                    }
 
                     touchStartingPointX = touch.pageX;
                     touchStartingPointY = touch.pageY;
+                    _lastTouchMoveTimestamp = now;
                     return;
             }
         }
-        
-        // cancel other touch cases preventively
 
-        if (aDOMEvent.preventDefault)
-            aDOMEvent.preventDefault();
-
-        if (aDOMEvent.stopPropagation)
-            aDOMEvent.stopPropagation();
+        // Preventively cancel other touch cases (e.g., 3+ fingers)
+        if (aDOMEvent.preventDefault) aDOMEvent.preventDefault();
+        if (aDOMEvent.stopPropagation) aDOMEvent.stopPropagation();
     }
 }
 
