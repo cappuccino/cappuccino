@@ -1,82 +1,156 @@
-#!/usr/bin/env objj
+#!/usr/bin/env node
 
-require("narwhal").ensureEngine("rhino");
+// Note: This script is intended to be run with `objj` but its environment is Node.js.
+// It relies on Objective-J being available in the runtime.
+
+// Standard Node.js module imports ONLY
+const fs = require('fs');
+const path = require('path');
+const { spawnSync } = require('child_process');
+
+
+/**
+ * A simple recursive file finder to replace the 'glob' package.
+ * @param {string} startPath - The directory to start searching from.
+ * @param {string} extension - The file extension to look for (e.g., '.cib').
+ * @returns {string[]} An array of full file paths.
+ */
+function findFilesRecursiveSync(startPath, extension) {
+    let results = [];
+    try {
+        const entries = fs.readdirSync(startPath, { withFileTypes: true });
+        for (const entry of entries) {
+            const fullPath = path.join(startPath, entry.name);
+            if (entry.isDirectory()) {
+                results = results.concat(findFilesRecursiveSync(fullPath, extension));
+            } else if (entry.name.endsWith(extension)) {
+                results.push(fullPath);
+            }
+        }
+    } catch (err) {
+        // Ignore errors from non-existent or unreadable directories
+    }
+    return results;
+}
+
+/**
+ * Escapes special characters in a string for use in a regular expression.
+ * @param {string} str The string to escape.
+ * @returns {string} The escaped string.
+ */
+function escapeRegExp(str) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * A simple, dependency-free argument parser to replace the 'yargs' package.
+ */
+function parseArguments(args) {
+    const options = {
+        main: 'main.j',
+        frameworks: ['Frameworks'],
+        force: false,
+        index: 'index.html',
+        pngcrush: false,
+        verbose: false,
+        _: [] // Positional arguments
+    };
+
+    for (let i = 0; i < args.length; i++) {
+        const arg = args[i];
+        if (arg.startsWith('-')) {
+            switch (arg) {
+                case '-h':
+                case '--help':
+                    printUsage();
+                    process.exit(0);
+                case '-m':
+                case '--main':
+                    options.main = args[++i];
+                    break;
+                case '-F':
+                case '--frameworks':
+                    if (options.frameworks.length === 1 && options.frameworks[0] === 'Frameworks') {
+                        options.frameworks = []; // Clear default if a new one is provided
+                    }
+                    options.frameworks.push(args[++i]);
+                    break;
+                case '-f':
+                case '--force':
+                    options.force = true;
+                    break;
+                case '--index':
+                    options.index = args[++i];
+                    break;
+                case '-p':
+                case '--pngcrush':
+                    options.pngcrush = true;
+                    break;
+                case '--manifest':
+                    options.manifest = true;
+                    break;
+                case '-v':
+                case '--verbose':
+                    options.verbose = true;
+                    break;
+                default:
+                    console.error(`Unknown option: ${arg}`);
+                    printUsage();
+                    process.exit(1);
+            }
+        } else {
+            options._.push(arg);
+        }
+    }
+    return options;
+}
+
+function printUsage() {
+    console.log(`
+Usage: press INPUT_PROJECT OUTPUT_PROJECT [options]
+
+Analyze and strip unused files from a Cappuccino project's .sj bundles.
+
+Options:
+  -m, --main <file>       The relative path to the main file (default: "main.j")
+  -F, --frameworks <dir>  Add a frameworks directory (default: "Frameworks")
+  -f, --force             Force overwriting OUTPUT_PROJECT if it exists
+  --index <file>          The root HTML file to modify (default: "index.html")
+  -p, --pngcrush          Run pngcrush on all PNGs (pngcrush must be installed)
+  --manifest              Generate HTML5 cache manifest
+  -v, --verbose           Verbose logging
+  -h, --help              Show this help message
+    `);
+}
 
 @import <Foundation/Foundation.j>
-
 @import "../lib/cappuccino/objj-analysis-tools.j"
 @import "../lib/cappuccino/cib-analysis-tools.j"
-
-var FILE = require("file");
-var OS = require("os");
-
 var CACHEMANIFEST = require("objective-j/cache-manifest");
 
-var stream = require("narwhal/term").stream;
-var parser = new (require("narwhal/args").Parser)();
+function main() {
+    // Slice off 'node' and script path
+    const options = parseArguments(process.argv.slice(2));
 
-parser.usage("INPUT_PROJECT OUTPUT_PROJECT");
-parser.help("Analyze and strip unused files from a Cappuccino project's .sj bundles.");
-
-parser.option("-m", "--main", "main")
-    .def("main.j")
-    .set()
-    .help("The relative path (from INPUT_PROJECT) to the main file (default: 'main.j')");
-
-parser.option("-F", "--framework", "frameworks")
-    .def(["Frameworks"])
-    .push()
-    .help("Add a frameworks directory, relative to INPUT_PROJECT (default: ['Frameworks'])");
-
-parser.option("-f", "--force", "force")
-   .def(false)
-   .set(true)
-   .help("Force overwriting OUTPUT_PROJECT if it exists");
-
-parser.option("--index", "index")
-   .def("index.html")
-   .set()
-   .help("The root HTML file to modify (default: index.html) (NOTE: currently only used by '--manifest' option)");
-
-parser.option("-p", "--pngcrush", "png")
-    .def(false)
-    .set(true)
-    .help("Run pngcrush on all PNGs (pngcrush must be installed!)");
-
-parser.option("--manifest", "manifest")
-    .set(true)
-    .help("Generate HTML5 cache manifest.");
-
-parser.option("-v", "--verbose", "verbose")
-    .def(false)
-    .set(true)
-    .help("Verbose logging");
-
-parser.helpful();
-
-function main(args)
-{
-    var options = parser.parse(args);
-
-    if (options.args.length < 2) {
-        parser.printUsage(options);
-        return;
+    if (options._.length < 2) {
+        console.error("Error: You must provide INPUT_PROJECT and OUTPUT_PROJECT paths.");
+        printUsage();
+        process.exit(1);
     }
+    
+    var [inputArg, outputArg] = options._;
 
     CPLogRegister(CPLogPrint);
 
-    // HACK: ensure trailing slashes for "relative" to work correctly
-    var rootPath = FILE.path(options.args[0]).absolute().join("");
-    var outputPath = FILE.path(options.args[1]).absolute().join("");
+    var rootPath = path.resolve(inputArg);
+    var outputPath = path.resolve(outputArg);
 
-    if (outputPath.exists()) {
+    if (fs.existsSync(outputPath)) {
         if (options.force) {
-            // FIXME: why doesn't this work?!
-            //outputPath.rmtree();
-            OS.system(["rm", "-rf", outputPath]);
+            fs.rmSync(outputPath, { recursive: true, force: true });
         } else {
-            stream.print("\0red(OUTPUT_PROJECT " + outputPath + " exists. Use -f to overwrite.\0)");
-            OS.exit(1);
+            console.log(`OUTPUT_PROJECT ${outputPath} exists. Use -f to overwrite.`);
+            process.exit(1);
         }
     }
 
@@ -84,155 +158,136 @@ function main(args)
 }
 
 function press(rootPath, outputPath, options) {
-    stream.print("\0yellow("+Array(81).join("=")+"\0)");
-    stream.print("Application root:    \0green(" + rootPath + "\0)");
-    stream.print("Output directory:    \0green(" + outputPath + "\0)");
+    console.log("=".repeat(80));
+    console.log("Application root:    " + rootPath);
+    console.log("Output directory:    " + outputPath);
 
     var outputFiles = {},
         totalBytes = {executable:0, data:0, mhtml:0};
 
     var environment = "Browser";
-    // analyze and gather files for each environment:
     var returnedBytes = pressEnvironment(rootPath, outputFiles, environment, options);
 
     for (var i in returnedBytes)
         totalBytes[i] += returnedBytes[i];
 
-    // phase 4: copy everything and write out the new files
-    stream.print("\0red(PHASE 4:\0) copy to output \0green(" + rootPath + "\0) => \0green(" + outputPath + "\0)");
+    console.log(`PHASE 4: copy to output ${rootPath} => ${outputPath}`);
 
-    FILE.copyTree(rootPath, outputPath);
+    fs.cpSync(rootPath, outputPath, { recursive: true });
 
-    for (var path in outputFiles) {
-        var file = outputPath.join(rootPath.relative(path));
+    for (var filePath in outputFiles) {
+        const relativePath = path.relative(rootPath, filePath);
+        const fileInOutput = path.join(outputPath, relativePath);
 
-        var parent = file.dirname();
-        if (!parent.exists()) {
+        var parent = path.dirname(fileInOutput);
+        if (!fs.existsSync(parent)) {
             CPLog.warn(parent + " doesn't exist, creating directories.");
-            parent.mkdirs();
+            fs.mkdirSync(parent, { recursive: true });
         }
 
-        if (typeof outputFiles[path] !== "string")
-            outputFiles[path] = outputFiles[path].join("");
+        if (typeof outputFiles[filePath] !== "string")
+            outputFiles[filePath] = outputFiles[filePath].join("");
 
-        stream.print((file.exists() ? "\0red(Overwriting:\0) " : "\0green(Writing:\0)     ") + file);
+        const action = fs.existsSync(fileInOutput) ? "Overwriting:" : "Writing:";
+        console.log(`${action}     ${fileInOutput}`);
 
-        FILE.write(file, outputFiles[path], { charset : "UTF-8" });
+        fs.writeFileSync(fileInOutput, outputFiles[filePath], { encoding : "UTF-8" });
     }
 
-    // phase 4a: update the info.plist to contain meta information about the app
-    stream.print("\0red(PHASE 4a:\0) Add application size data to Info.plist");
+    console.log("PHASE 4a: Add application size data to Info.plist");
 
-    var outputInfoPlistPath = FILE.join(outputPath, "Info.plist"),
-        outputInfoPlistContents = FILE.read(outputInfoPlistPath, { charset:"UTF-8" }),
-        format = CFPropertyList.sniffedFormatOfString(outputInfoPlistContents),
-        outputInfoPlist = CFPropertyList.propertyListFromString(outputInfoPlistContents);
+    var outputInfoPlistPath = path.join(outputPath, "Info.plist");
+    var outputInfoPlistContents = fs.readFileSync(outputInfoPlistPath, { encoding:"UTF-8" });
+    var format = CFPropertyList.sniffedFormatOfString(outputInfoPlistContents);
+    var outputInfoPlist = CFPropertyList.propertyListFromString(outputInfoPlistContents);
 
-    // read in the default theme name, and attempt to get its size
-    var themeName = outputInfoPlist.valueForKey("CPDefaultTheme") || "Aristo2",
-        themePath = nil;
+    var themeName = outputInfoPlist.valueForKey("CPDefaultTheme") || "Aristo2";
+    var themePath = null;
 
     if (themeName === "Aristo" || themeName === "Aristo2")
-        themePath = FILE.join(outputPath, options.frameworks, "AppKit", "Resources", themeName+".blend");
+        themePath = path.join(outputPath, options.frameworks[0], "AppKit", "Resources", themeName + ".blend");
     else
-        themePath = FILE.join(outputPath, "Resources", themeName + ".blend");
+        themePath = path.join(outputPath, "Resources", themeName + ".blend");
 
-    if (FILE.exists(themePath))
+    if (fs.existsSync(themePath))
     {
-        var themeEnvPath = FILE.join(themePath, environment + ".environment"),
-            themeExecutablePath = FILE.join(themeEnvPath, themeName+".blend.sj"),
-            themeDataPath = FILE.join(themeEnvPath, "dataURLs.txt"),
-            themeMHTMLPath = FILE.join(themeEnvPath, "MHTMLPaths.txt");
+        var themeEnvPath = path.join(themePath, environment + ".environment"),
+            themeExecutablePath = path.join(themeEnvPath, themeName + ".blend.sj"),
+            themeDataPath = path.join(themeEnvPath, "dataURLs.txt"),
+            themeMHTMLPath = path.join(themeEnvPath, "MHTMLPaths.txt");
 
-        totalBytes.executable += FILE.read(themeExecutablePath, {charset : "UTF-8"}).length;
-        totalBytes.data += FILE.read(themeDataPath, {charset : "UTF-8"}).length;
-        totalBytes.mhtml += FILE.read(themeMHTMLPath, {charset : "UTF-8"}).length;
+        totalBytes.executable += fs.readFileSync(themeExecutablePath, { encoding : "UTF-8" }).length;
+        totalBytes.data += fs.readFileSync(themeDataPath, { encoding : "UTF-8" }).length;
+        totalBytes.mhtml += fs.readFileSync(themeMHTMLPath, { encoding : "UTF-8" }).length;
     }
 
-    outputInfoPlist.setValueForKey("CPApplicationSize", [CPDictionary dictionaryWithJSObject:totalBytes]);
+    outputInfoPlist.setValueForKey("CPApplicationSize", [CPDictionary.dictionaryWithJSObject(totalBytes)]);
 
-    FILE.write(outputInfoPlistPath, CFPropertyList.stringFromPropertyList(outputInfoPlist, format), { charset:"UTF-8" });
+    fs.writeFileSync(outputInfoPlistPath, CFPropertyList.stringFromPropertyList(outputInfoPlist, format), { encoding:"UTF-8" });
 
-    // strip known unnecessary files
-    // outputPath.glob("**/Frameworks/Debug").forEach(function(debugFramework) {
-    //     outputPath.join(debugFramework).rmtree();
-    // });
-    // outputPath.join("index-debug.html").remove();
-
-    if (options.png) {
+    if (options.pngcrush) {
         pngcrushDirectory(outputPath);
     }
 
     if (options.manifest) {
         CACHEMANIFEST.generateManifest(outputPath, {
-            index : outputPath.join(options.index)
+            index : path.join(outputPath, options.index)
         });
     }
 }
 
 function pressEnvironment(rootPath, outputFiles, environment, options) {
+    var mainPath = path.join(rootPath, options.main);
+    var frameworks = options.frameworks.map(framework => path.join(rootPath, framework));
 
-    var mainPath = String(rootPath.join(options.main));
-    var frameworks = options.frameworks.map(function(framework) { return rootPath.join(framework); });
-
-    stream.print("\0yellow("+Array(81).join("=")+"\0)");
-    stream.print("Main file:           \0green(" + mainPath + "\0)");
-    stream.print("Frameworks:          \0green(" + frameworks + "\0)");
-    stream.print("Environment:         \0green(" + environment + "\0)");
+    console.log("=".repeat(80));
+    console.log("Main file:           " + mainPath);
+    console.log("Frameworks:          " + frameworks.join(', '));
+    console.log("Environment:         " + environment);
 
     var analyzer = new ObjectiveJRuntimeAnalyzer(rootPath);
-
     var _OBJJ = analyzer.require("objective-j");
 
     analyzer.setIncludePaths(frameworks);
     analyzer.setEnvironments([environment, "ObjJ"]);
 
-    // build list of cibs to inspect for dependent classes
-    // FIXME: what's the best way to determine which cibs to look in?
-    var cibs = FILE.glob(rootPath.join("**", "*.cib")).filter(function(path) { return !(/Frameworks/).test(path); });
+    var cibs = findFilesRecursiveSync(rootPath, ".cib").filter(p => !(/Frameworks/).test(p));
 
-    // phase 1: get global defines
-    stream.print("\0red(PHASE 1:\0) Loading application...");
-
+    console.log("PHASE 1: Loading application...");
     analyzer.initializeGlobalRecorder();
-
     analyzer.load(mainPath);
-
     analyzer.finishLoading();
 
-    // coalesce the results
     var dependencies = analyzer.mapGlobalsToFiles();
 
-    // log identifer => files defining
-    stream.print("Global defines:");
+    console.log("Global defines:");
     Object.keys(dependencies).sort().forEach(function(identifier) {
-        stream.print("\0blue(" + identifier + "\0) => \0cyan(" + dependencies[identifier].map(rootPath.relative.bind(rootPath)) + "\0)");
+        const relPaths = dependencies[identifier].map(p => path.relative(rootPath, p));
+        console.log(identifier + " => " + relPaths.join(', '));
     });
 
-    // phase 2: walk the dependency tree (both imports and references) to determine exactly which files need to be included
-    stream.print("\0red(PHASE 2:\0) Traverse dependency graph...");
+    console.log("PHASE 2: Traverse dependency graph...");
 
     var requiredFiles = {};
     requiredFiles[mainPath] = true;
 
     var context = {
-        ignoreFrameworkImports : true, // ignores "XXX/XXX.j" imports
-        importCallback: function(importing, imported) { requiredFiles[imported] = true; },
-        referenceCallback: function(referencing, referenced) { requiredFiles[referenced] = true; },
-        progressCallback: function(relPath) { stream.print("Processing \0cyan("+relPath+"\0)"); },
-        ignoreFrameworkImportsCallback : function(relPath) { stream.print("\0yellow(Ignoring imports in "+relPath+"\0)"); }
-    }
+        ignoreFrameworkImports : true,
+        ignoredImports: {},
+        importCallback: (importing, imported) => { requiredFiles[imported] = true; },
+        referenceCallback: (referencing, referenced) => { requiredFiles[referenced] = true; },
+        progressCallback: (relPath) => { console.log("Processing "+relPath); },
+        ignoreFrameworkImportsCallback : (relPath) => { console.log("Ignoring imports in "+relPath); }
+    };
 
-    mainExecutable = analyzer.executableForImport(mainPath);
+    var mainExecutable = analyzer.executableForImport(mainPath);
 
-    // check the code
     analyzer.traverseDependencies(mainExecutable, context);
 
-    // check the cibs
     var globalsToFiles = analyzer.mapGlobalsToFiles();
     cibs.forEach(function(cibPath) {
         var cibClasses = findCibClassDependencies(cibPath);
-        stream.print("Cib: \0green("+rootPath.relative(cibPath)+"\0) => \0cyan("+cibClasses+"\0)");
+        console.log("Cib: " + path.relative(rootPath, cibPath) + " => " + cibClasses.join(', '));
 
         var referencedFiles = {};
         markFilesReferencedByTokens(cibClasses, globalsToFiles, referencedFiles);
@@ -243,162 +298,137 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
     var includedBytes = 0, totalBytes = 0, dataBytes = 0, mhtmlBytes = 0;
 
     _OBJJ.FileExecutable.allFileExecutables().forEach(function(aFileExecutable) {
-        var path = aFileExecutable.path();
+        var filePath = aFileExecutable.path();
+        if (/\.keyedtheme$/.test(filePath))
+            requiredFiles[filePath] = true;
 
-        // mark all ".keytheme"s as required
-        if (/\.keyedtheme$/.test(path))
-            requiredFiles[path] = true;
-
-        if (requiredFiles[path]) {
-            stream.print("Included: \0green(" + rootPath.relative(path) + "\0)");
+        if (requiredFiles[filePath]) {
+            console.log("Included: " + path.relative(rootPath, filePath));
             included++;
-            includedBytes += aFileExecutable.code().length
-        }
-        else {
-            stream.print("Excluded: \0red(" + rootPath.relative(path) + "\0)");
+            includedBytes += aFileExecutable.code().length;
+        } else {
+            console.log("Excluded: " + path.relative(rootPath, filePath));
         }
         total++;
-        totalBytes += aFileExecutable.code().length
-    }, this);
-    stream.print(_OBJJ.sprintf(
-        "Saved \0green(%f%%\0) (\0blue(%s\0)); Total required files: \0magenta(%d\0) (\0blue(%s\0)) of \0magenta(%d\0) (\0blue(%s\0));",
+        totalBytes += aFileExecutable.code().length;
+    });
+
+    console.log(_OBJJ.sprintf(
+        `Saved %f%% (%s); Total required files: %d (%s) of %d (%s);`,
         Math.round(((includedBytes - totalBytes) / totalBytes) * -100),
         bytesToString(totalBytes - includedBytes),
         included, bytesToString(includedBytes),
         total, bytesToString(totalBytes)
     ));
 
-    // phase 3b: rebuild .sj files with correct imports, copy .j files
-    stream.print("\0red(PHASE 3b:\0) Rebuild .sj files");
+    console.log("PHASE 3b: Rebuild .sj files");
 
     var processedBundles = {};
 
-    for (var path in requiredFiles)
-    {
-        var executable = analyzer.executableForImport(path),
-            bundle = analyzer.context.global.CFBundle.bundleContainingURL(executable.path()),
-            relativePath = FILE.relative(FILE.join(bundle.path(), ""), executable.path());
+    for (var aPath in requiredFiles) {
+        var executable = analyzer.executableForImport(aPath);
+        var bundle = analyzer.context.global.CFBundle.bundleContainingURL(executable.path());
+        var relativePath = path.relative(path.join(bundle.path(), ""), executable.path());
 
-        if (executable.path() !== path)
-            CPLog.warn("Sanity check failed (file path): " + executable.path() + " vs. " + path);
+        if (executable.path() !== aPath)
+            CPLog.warn("Sanity check failed (file path): " + executable.path() + " vs. " + aPath);
 
-        if (bundle && bundle.infoDictionary())
-        {
+        if (bundle && bundle.infoDictionary()) {
             var executablePath = bundle.executablePath();
-            if (executablePath)
-            {
-                if (context.ignoredImports[path])
-                {
-                    stream.print("Stripping extra imports from \0blue(" + path + "\0)");
+            if (executablePath) {
+                if (context.ignoredImports[aPath]) {
+                    console.log("Stripping extra imports from " + aPath);
 
                     var code = executable.code();
-                    var dependencies = executable.fileDependencies(),
-                        fileExecutableSearcher = executable.fileExecutableSearcher();
+                    var dependencies = executable.fileDependencies();
+                    var fileExecutableSearcher = executable.fileExecutableSearcher();
+                    
                     for (var i = 0; i < dependencies.length; i++) {
                         var dependency = dependencies[i];
                         var dependencyExecutable = nil;
 
-                        fileExecutableSearcher(dependency.URL(), dependency.isLocal(), function(aFileExecutable)
-                        {
+                        fileExecutableSearcher(dependency.URL(), dependency.isLocal(), function(aFileExecutable) {
                             dependencyExecutable = aFileExecutable;
                         });
 
                         var dependencyPath = dependencyExecutable.path();
                         if (!requiredFiles[dependencyPath]) {
-                            stream.print(" -> \0red(" + dependencyPath + "\0)");
-                            // build up a regex to match objj_executeFile with optional whitespace
+                            console.log(" -> " + dependencyPath);
+                            
                             var regex = new RegExp([
-                                RegExp.escape("objj_executeFile"),
-                                RegExp.escape("("),
-                                "[\"']"+RegExp.escape(dependency.path())+"[\"']",
-                                RegExp.escape(","),
+                                escapeRegExp("objj_executeFile"),
+                                escapeRegExp("("),
+                                "[\"']" + escapeRegExp(dependency.path()) + "[\"']",
+                                escapeRegExp(","),
                                 dependency.isLocal() ? "(true|YES)" : "(false|NO)",
-                                RegExp.escape(")")
+                                escapeRegExp(")")
                             ].join("\\s*"), "g");
-                            // replace instances of "objj_executeFile()" with "(undefined)"
-                            newCode = code.replace(regex, "/* $& */ (undefined)");
-                            if (newCode === code)
-                                stream.print("\0yellow(Warning:\0) Unable to strip import for \0cyan(" + dependency.path() + "\0) (" + dependency.isLocal() + ")");
+                            
+                            var newCode = code.replace(regex, "/* $& */ (undefined)");
+                            if (newCode === code) {
+                                console.log(`Warning: Unable to strip import for ${dependency.path()} (${dependency.isLocal()})`);
+                            }
                             code = newCode;
-                            // remove from dependencies list (decrement i since we're removing an item)
                             dependencies.splice(i--, 1);
                         }
                     }
-                    if (code !== executable.code())
+                    if (code !== executable.code()) {
                         executable.setCode(code);
+                    }
                 }
 
-                if (!outputFiles[executablePath])
-                {
+                if (!outputFiles[executablePath]) {
                     outputFiles[executablePath] = [];
                     outputFiles[executablePath].push("@STATIC;1.0;");
                 }
 
                 var fileContents = executable.toMarkedString();
-
                 outputFiles[executablePath].push("p;" + relativePath.length + ";" + relativePath);
-                outputFiles[executablePath].push("t;" +  fileContents.length + ";" +  fileContents);
+                outputFiles[executablePath].push("t;" + fileContents.length + ";" + fileContents);
 
-                stream.print("Adding \0green(" + rootPath.relative(path) + "\0) to \0cyan(" + rootPath.relative(executablePath) + "\0)");
-            }
-            else
-            {
-                stream.print("Passing .j through: \0green(" + rootPath.relative(path) + "\0)");
+                console.log(`Adding ${path.relative(rootPath, aPath)} to ${path.relative(rootPath, executablePath)}`);
+            } else {
+                console.log("Passing .j through: " + path.relative(rootPath, aPath));
             }
 
-            if (!processedBundles[bundle.path()] && bundle.hasSpritedImages())
-            {
+            if (!processedBundles[bundle.path()] && bundle.hasSpritedImages()) {
                 processedBundles[bundle.path()] = bundle;
-                stream.print("Sizing bundle's sprited resources \0green(" + bundle.path() + "\0)");
+                console.log("Sizing bundle's sprited resources " + bundle.path());
 
-                var bundlePath = FILE.join(bundle.path(), environment+".environment"),
-                    bundleDataPath = FILE.join(bundlePath, "dataURLs.txt"),
-                    bundleMHTMLPath = FILE.join(bundlePath, "MHTMLPaths.txt");
+                var bundlePath = path.join(bundle.path(), environment + ".environment"),
+                    bundleDataPath = path.join(bundlePath, "dataURLs.txt"),
+                    bundleMHTMLPath = path.join(bundlePath, "MHTMLPaths.txt");
 
-                dataBytes += FILE.read(bundleDataPath, {charset : "UTF-8"}).length;
-                mhtmlBytes += FILE.read(bundleMHTMLPath, {charset : "UTF-8"}).length;
+                dataBytes += fs.readFileSync(bundleDataPath, { encoding: "UTF-8" }).length;
+                mhtmlBytes += fs.readFileSync(bundleMHTMLPath, { encoding: "UTF-8" }).length;
             }
+        } else {
+            CPLog.warn("No bundle (or info dictionary for) " + path.relative(rootPath, aPath));
         }
-        else
-            CPLog.warn("No bundle (or info dictionary for) " + rootPath.relative(path));
     }
 
-    return {executable:includedBytes, data:dataBytes, mhtml:mhtmlBytes};
+    return { executable: includedBytes, data: dataBytes, mhtml: mhtmlBytes };
 }
 
-function pngcrushDirectory(directory)
-{
-    var directoryPath = FILE.path(directory),
-        pngs = directoryPath.glob("**/*.png");
+function pngcrushDirectory(directory) {
+    const pngs = findFilesRecursiveSync(directory, ".png");
+    
+    process.stderr.write(`Running pngcrush on ${pngs.length} pngs:`);
+    
+    pngs.forEach(dstPath => {
+        const tmpPath = dstPath + ".tmp";
+        const result = spawnSync('pngcrush', ['-rem', 'alla', '-reduce', dstPath, tmpPath], { encoding: 'utf-8' });
 
-    system.stderr.print("Running pngcrush on " + pngs.length + " pngs:");
-    pngs.forEach(function(dstPath)
-    {
-        var tmpPath = FILE.path(dstPath+".tmp");
-
-        try
-        {
-            var p = OS.popen(["pngcrush", "-rem", "alla", "-reduce", /*"-brute",*/ dstPath, tmpPath]);
-
-            if (p.wait())
-            {
-                CPLog.warn("pngcrush failed. Ensure it's installed and on your PATH.");
-            }
-            else
-            {
-                FILE.move(tmpPath, dstPath);
-                system.stderr.write(".").flush();
-            }
-        }
-        finally
-        {
-            p.stdin.close();
-            p.stdout.close();
-            p.stderr.close();
+        if (result.status !== 0) {
+            CPLog.warn(`pngcrush failed for ${dstPath}. Ensure it's installed and on your PATH.`);
+            if (result.stderr) CPLog.warn(result.stderr);
+        } else {
+            fs.renameSync(tmpPath, dstPath);
+            process.stderr.write(".");
         }
     });
-
-    system.stderr.print("");
+    
+    process.stderr.write("\n");
 }
 
 function bytesToString(bytes) {
@@ -407,5 +437,8 @@ function bytesToString(bytes) {
         bytes /= 1024;
         n++;
     }
-    return Math.round(bytes*100)/100 + " " + ["", "K", "M"][n] + "B";
+    return Math.round(bytes * 100) / 100 + " " + ["", "K", "M"][n] + "B";
 }
+
+// Execute the main function
+main();
