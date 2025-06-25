@@ -7,7 +7,7 @@ var childProcess = require("child_process");
 const term = ObjectiveJ.term;
 const utilsFile = ObjectiveJ.utils.file;
 
-var subprojects = ["Objective-J", "CommonJS", "Foundation", "AppKit", "Tools"];
+var subprojects = ["CommonJS", "Foundation", "AppKit", "Tools"];
 
 task ("build", function() {
     childProcess.execSync(["mkdir", "-p", $BUILD_DIR].map(utilsFile.enquote).join(" "), {stdio: 'inherit'});
@@ -28,7 +28,7 @@ filedir ($BUILD_CJS_OBJECTIVE_J_DEBUG_FRAMEWORKS, ["debug", "release"], function
 {
     fs.mkdirSync($BUILD_CJS_OBJECTIVE_J_DEBUG_FRAMEWORKS, { recursive: true });
 
-    utilsFile.cp_r(path.join($BUILD_DIR, "Debug", "Objective-J"), path.join($BUILD_CJS_OBJECTIVE_J_DEBUG_FRAMEWORKS, "Objective-J"));
+    //utilsFile.cp_r(path.join($BUILD_DIR, "Debug", "Objective-J"), path.join($BUILD_CJS_OBJECTIVE_J_DEBUG_FRAMEWORKS, "Objective-J"));
 });
 
 $BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS = path.join($BUILD_CJS_CAPPUCCINO, "Frameworks", "Debug");
