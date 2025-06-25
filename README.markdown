@@ -98,6 +98,16 @@ Pure JavaScript and Objective-J can be mixed and matched, even in the same file.
 
 ## Frequently Asked Questions (FAQ)
 
+**Q: What are the advantages over React or Vue?**  
+**A:** React and Vue are excellent libraries for building web UIs. Cappuccino is a comprehensive **framework** for building entire **applications**. It provides a fully integrated stack—including a mature UI library, event handling, and data management—designed for large-scale development.
+
+Beyond this, Cappuccino provides a more integrated and powerful data-binding layer inspired directly by Cocoa, which dramatically reduces boilerplate code for complex UIs:
+
+*   **Sophisticated Data Bindings:** Going beyond simple state-to-view mapping, Cappuccino's binding technology, based on Key-Value Coding (KVC), allows data models to be declaratively linked directly to UI components.
+*   **Powerful Controller Layer:** Dedicated controller objects (like `CPArrayController`) are used to mediate between data and views. These controllers automatically handle sorting, filtering, and selection state, completely decoupling the UI from the business logic.
+*   **Advanced Filtering with Predicates:** A table displaying thousands of items can be filtered simply by setting a predicate (a declarative filter rule, e.g., `lastName BEGINSWITH 'S'`) on its controller. The UI updates instantly. This eliminates tons of manual state management and filtering logic code.
+*   **Automatic Value Transformation:** Data can be easily formatted for display (e.g., dates, currency, booleans to "Yes/No") directly within the binding itself using value transformers, keeping model data pure and view logic minimal.
+
 **Q: Can Cappuccino be used on Windows/Linux?**  
 **A:** Yes. The development tools run on Node.js and are platform-independent. Applications can be developed on any OS and deployed on any web server.
 
@@ -109,16 +119,6 @@ Pure JavaScript and Objective-J can be mixed and matched, even in the same file.
 
 **Q: How can custom HTML, CSS, or JavaScript libraries be integrated?**  
 **A:** Cappuccino abstracts away the DOM, but other web technologies can still be integrated. The `CPWebView` control allows arbitrary HTML/CSS/JS content to be embedded. Since Objective-J is a superset of JavaScript, JS libraries can be used and JS functions can be called directly from Objective-J code.
-
-**Q: What are the advantages over React or Vue?**  
-**A:** React and Vue are excellent libraries for building web UIs. Cappuccino is a comprehensive **framework** for building entire **applications**. It provides a fully integrated stack—including a mature UI library, event handling, and data management—designed for large-scale development.
-
-Beyond this, Cappuccino provides a more integrated and powerful data-binding layer inspired directly by Cocoa, which dramatically reduces boilerplate code for complex UIs:
-
-*   **Sophisticated Data Bindings:** Going beyond simple state-to-view mapping, Cappuccino's binding technology, based on Key-Value Coding (KVC), allows data models to be declaratively linked directly to UI components.
-*   **Powerful Controller Layer:** Dedicated controller objects (like `CPArrayController`) are used to mediate between data and views. These controllers automatically handle sorting, filtering, and selection state, completely decoupling the UI from the business logic.
-*   **Advanced Filtering with Predicates:** A table displaying thousands of items can be filtered simply by setting a predicate (a declarative filter rule, e.g., `lastName BEGINSWITH 'S'`) on its controller. The UI updates instantly. This eliminates tons of manual state management and filtering logic code.
-*   **Automatic Value Transformation:** Data can be easily formatted for display (e.g., dates, currency, booleans to "Yes/No") directly within the binding itself using value transformers, keeping model data pure and view logic minimal.
 
 **Q: Does the LGPL license permit closed-source commercial applications?**  
 **A:** Yes. The LGPLv2 license allows proprietary, closed-source applications to be built and distributed using Cappuccino. Sharing of source code is only required for any modifications made **to the Cappuccino framework itself**. The application code remains proprietary.
