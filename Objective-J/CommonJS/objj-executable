@@ -1,0 +1,9 @@
+#!/usr/bin/env node
+
+const path = require("path");
+
+var commandName = path.basename(process.argv[1]);
+var mainPath = path.resolve(__dirname, "..", "lib", commandName, "main.j");
+var args = ["objj", mainPath].concat(process.argv.slice(2));
+
+require("@objj/runtime").run(args);
