@@ -414,6 +414,20 @@ var CPViewControllerCachedCibs;
         [self didChangeValueForKey:"isViewLoaded"];
 }
 
+/*!
+    @method nextResponder
+    Returns the receiver’s next responder.
+
+    @discussion The CPViewController implementation of this method returns the superview
+    of the view controller's view. This effectively inserts the view controller
+    into the responder chain between its view and the view's superview,
+    assuming the view's next responder has been set to the view controller.
+*/
+- (id)nextResponder
+{
+    return [_view superview];
+}
+
 - (BOOL)automaticallyNotifiesObserversOfIsViewLoaded
 {
     return NO;
