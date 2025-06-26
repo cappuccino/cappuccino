@@ -91,6 +91,7 @@
     [label2 setFont:[CPFont boldSystemFontOfSize:24.0]];
     [label2 sizeToFit];
     [contentView addSubview:label2];
+
     var rotationSlider = [[CPSlider alloc] initWithFrame:CGRectMake(350, 125, 30, 30)];
     [rotationSlider setSliderType:CPCircularSlider];
     [rotationSlider setMinValue:0.0];
