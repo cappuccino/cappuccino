@@ -662,8 +662,6 @@ var themedButtonValues = nil,
         [@"color",              [CPColor textColor]],
 
         // Disabled state: Change appearance to look inactive
-        [[CPThemeStateDisabled, @"background-color"], [CPColor colorWithHexString:@"EFEFEF"]],
-        [[CPThemeStateDisabled, @"border-color"], @"#dcdcdc"],
         [[CPThemeStateDisabled, @"color"], [CPColor disabledControlTextColor]]
     ];
 
