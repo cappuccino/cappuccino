@@ -3246,7 +3246,7 @@ setBoundsOrigin:
 {
     if (_wantsLayer && !_layer)
     {
-        var layer = [[CALayerClass alloc] init];
+        var layer = [[CALayer alloc] init];
         [self setLayer:layer];
         [self setNeedsLayout:YES];
         [self setNeedsDisplay:YES];
