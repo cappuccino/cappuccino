@@ -77,7 +77,7 @@
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
-    var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(0, 0, 600, 400) styleMask:CPBorderlessBridgeWindowMask],
+    var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask],
         contentView = [theWindow contentView];
 
     // --- Create and place the DiamondView ---
