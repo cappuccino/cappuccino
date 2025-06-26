@@ -506,6 +506,10 @@ var cachedBlackColor,
     return [[self _cachedThemeColor] valueForThemeAttribute:@"selected-text-background-color"] || [CPColor colorWithHexString:"99CCFF"];
 }
 
++ (CPColor)textBackgroundColor
+{
+    return [[self _cachedThemeColor] valueForThemeAttribute:@"text-background-color"] || [CPColor colorWithHexString:"FFFFFF"];
+}
 + (CPColor)_selectedTextBackgroundColorUnfocussed
 {
     return [[self _cachedThemeColor] valueForThemeAttribute:@"selected-text-inactive-background-color"] || [CPColor colorWithHexString:"CCCCCC"];
