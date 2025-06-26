@@ -658,14 +658,8 @@ var themedButtonValues = nil,
     [
         // Default state
         [@"background-color",   [CPColor textBackgroundColor]],
-        [@"border",             @"1px solid #ababab"],
-        [@"border-radius",      @"3px"],
         [@"content-inset",      CGSizeMake(2, 2)],
         [@"color",              [CPColor textColor]],
-        [@"box-shadow",         @"none"], // Explicitly no shadow by default
-
-        // Hover state: Darken the border
-        [[CPThemeStateHovered, @"border-color"], @"#888888"],
 
         // Disabled state: Change appearance to look inactive
         [[CPThemeStateDisabled, @"background-color"], [CPColor colorWithHexString:@"EFEFEF"]],
