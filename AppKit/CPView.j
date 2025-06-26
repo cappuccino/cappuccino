@@ -3306,6 +3306,7 @@ setBoundsOrigin:
     [self setWantsLayer:YES];
 
     var layer = [self layer];
+
     if (!layer)
         return;
 

@@ -8,14 +8,37 @@
 
 @import <Foundation/CPObject.j>
 
-
 @implementation DiamondView : CPView
 {
 }
 
-- (void)drawRect:(CGRect)aRect
+// 1. Initialize the view to be layer-backed.
+- (id)initWithFrame:(CGRect)aFrame
 {
-    [super drawRect:aRect];
+    self = [super initWithFrame:aFrame];
+    if (self)
+    {
+        // This is the crucial step. It tells the view to create a CALayer
+        // and use it for all drawing and transformations.
+        [self setWantsLayer:YES];
+    }
+    return self;
+}
+
+- (void)drawInContext:(CGContext)aContext
+{
+    CGContextSetFillColor(aContext, [CPColor grayColor]);
+    CGContextFillRect(aContext, [self bounds]);
+debugger
+}
+
+// 2. Implement the layer drawing delegate method.
+// This method is called instead of drawRect: when a view is layer-backed.
+- (void)drawLayer:(CALayer)aLayer inContext:(CGContextRef)aContext
+{
+    // The drawing rectangle is now the layer's bounds, not a parameter.
+    var aRect = [aLayer bounds];
+debugger
 
     var points = [CPArray array],
         minX = CGRectGetMinX(aRect),
@@ -32,29 +55,28 @@
     [points addObject:CGPointMake(minX, midY)];
     [points addObject:CGPointMake(midX, minY)];
 
-    [self lockFocus];
+    // NOTE: [self lockFocus] and [self unlockFocus] are NOT needed here.
+    // The graphics context is provided directly.
 
-    var context = [[CPGraphicsContext currentContext] graphicsPort];
-    CGContextSetLineWidth(context, 2);
-    CGContextSetStrokeColor(context, [CPColor blueColor]);
+    // Use the provided context 'aContext'.
+    CGContextSetLineWidth(aContext, 2);
+    CGContextSetStrokeColor(aContext, [CPColor blueColor]);
 
     // test CGContextAddLines
-    CGContextBeginPath(context);
-    CGContextAddLines(context, points, NULL);
+    CGContextBeginPath(aContext);
+    CGContextAddLines(aContext, points, NULL);
 
     // test CGContextAddQuadCurveToPoint
-    CGContextAddQuadCurveToPoint(context, quarterX, midY, midX, maxY);
-    CGContextStrokePath(context);
+    CGContextAddQuadCurveToPoint(aContext, quarterX, midY, midX, maxY);
+    CGContextStrokePath(aContext);
 
     // test CGContextStrokeRectWithWidth
     var innerRect = CGRectInset(aRect, CGRectGetWidth(aRect)/2 - 10, CGRectGetHeight(aRect)/2 - 10);
-    CGContextStrokeRectWithWidth(context, innerRect, 4);
+    CGContextStrokeRectWithWidth(aContext, innerRect, 4);
 
-    CGContextSetTextPosition(context, innerRect.origin.x + 10, innerRect.origin.x + 10);
-    CGContextSetFillColor(context, [CPColor blueColor]);
-    CGContextShowText(context, 'Hello World Canvas!');
-
-    [self unlockFocus];
+    CGContextSetTextPosition(aContext, innerRect.origin.x + 10, innerRect.origin.x + 10);
+    CGContextSetFillColor(aContext, [CPColor blueColor]);
+    CGContextShowText(aContext, 'Hello World Canvas!');
 }
 
 @end
@@ -62,30 +84,57 @@
 
 @implementation AppController : CPObject
 {
+    DiamondView _diamondView;
+    var         _lastSliderAngle;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
-    var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask],
+    // Use a larger window to fit all elements
+    var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(0, 0, 600, 400) styleMask:CPBorderlessBridgeWindowMask],
         contentView = [theWindow contentView];
 
-    var label = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
+    // --- Create and place the DiamondView ---
+    _diamondView = [[DiamondView alloc] initWithFrame:CGRectMake(50, 100, 200, 200)];
+    [contentView addSubview:_diamondView];
 
+
+    // --- Create and configure the circular slider ---
+    var rotationSlider = [[CPSlider alloc] initWithFrame:CGRectMake(350, 125, 30, 30)];
+    [rotationSlider setSliderType:CPCircularSlider];
+    [rotationSlider setMinValue:0.0];
+    [rotationSlider setMaxValue:360.0];
+    [rotationSlider setFloatValue:0.0];
+    [rotationSlider setTarget:self];
+    [rotationSlider setAction:@selector(sliderDidChange:)];
+    [contentView addSubview:rotationSlider];
+
+
+    // --- Create and add the original label ---
+    var label = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
     [label setStringValue:@"Do you see the Hello World Canvas?"];
     [label setFont:[CPFont boldSystemFontOfSize:24.0]];
-
     [label sizeToFit];
-
     [label setAutoresizingMask:CPViewMinXMargin | CPViewMaxXMargin | CPViewMinYMargin | CPViewMaxYMargin];
     [label setCenter:[contentView center]];
-
     [contentView addSubview:label];
-    [contentView addSubview:[[DiamondView alloc] initWithFrame:CGRectMake(100, 100, 200, 200)]];
 
+
+    // --- Initialize state and show the window ---
+    _lastSliderAngle = [rotationSlider floatValue];
     [theWindow orderFront:self];
+}
 
-    // Uncomment the following line to turn on the standard menu bar.
-    //[CPMenu setMenuBarVisible:YES];
+// This method is called every time the slider's value changes.
+- (void)sliderDidChange:(id)sender
+{
+    var newAngle = [sender floatValue];
+    var deltaAngle = newAngle - _lastSliderAngle;
+
+    // This call now operates on the explicitly created layer of the DiamondView.
+    [_diamondView rotateByAngle:deltaAngle];
+
+    _lastSliderAngle = newAngle;
 }
 
 @end
