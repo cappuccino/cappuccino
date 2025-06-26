@@ -662,7 +662,7 @@ var themedButtonValues = nil,
         [@"color",              [CPColor textColor]],
 
         // Disabled state: Change appearance to look inactive
-        [[CPThemeStateDisabled, @"color"], [CPColor disabledControlTextColor]]
+        [@"color", [CPColor disabledControlTextColor], CPThemeStateDisabled]
     ];
 
     [self registerThemeValues:themeValues forView:textView];
