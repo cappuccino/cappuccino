@@ -581,7 +581,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
     [self _resignFirstResponder];
 
-    // Call super to ensure proper responder chain cleanup and theme state update (removes CPThemeStateFocused).
+    // Call super to ensure proper responder chain cleanup and theme state update (removes CPThemeStateEditing).
     [super resignFirstResponder];
 
     return YES;
