@@ -3248,6 +3248,7 @@ setBoundsOrigin:
     {
         // Use of @class CALayer requires dynamic lookup
         var CALayerClass = objj_getClass("CALayer");
+
         if (CALayerClass)
         {
             var layer = [[CALayerClass alloc] init];
