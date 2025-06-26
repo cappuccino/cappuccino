@@ -511,6 +511,10 @@ var cachedBlackColor,
     return [[self _cachedThemeColor] valueForThemeAttribute:@"selected-text-inactive-background-color"] || [CPColor colorWithHexString:"CCCCCC"];
 }
 
++ (CPColor)disabledControlTextColor
+{
+    return [[self _cachedThemeColor] valueForThemeAttribute:@"text-disabled-color"] || [CPColor colorWithRed:0.66 green:0.66 blue:0.66 alpha:1];
+}
 /* @ignore */
 - (id)_initWithCSSString:(CPString)aString
 {
