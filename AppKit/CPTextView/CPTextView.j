@@ -751,9 +751,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     [super setEditable:aFlag];
 
     if (![self isEditable])
-        [self addThemeState:CPThemeStateDisabled];
+        [self setThemeState:CPThemeStateDisabled];
     else
-        [self removeThemeState:CPThemeStateDisabled];
+        [self unsetThemeState:CPThemeStateDisabled];
 }
 
 - (void)setTextContainer:(CPTextContainer)aContainer
@@ -1237,13 +1237,13 @@ Sets the selection to a range of characters in response to user action.
 - (void)mouseEntered:(CPEvent)anEvent
 {
     [super mouseEntered:anEvent];
-    [self addThemeState:CPThemeStateHovered];
+    [self setThemeState:CPThemeStateHovered];
 }
 
 - (void)mouseExited:(CPEvent)anEvent
 {
     [super mouseExited:anEvent];
-    [self removeThemeState:CPThemeStateHovered];
+    [self unsetThemeState:CPThemeStateHovered];
 }
 
 - (CPMenu)menuForEvent:(CPEvent)anEvent
