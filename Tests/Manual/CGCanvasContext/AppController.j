@@ -12,33 +12,22 @@
 {
 }
 
-// 1. Initialize the view to be layer-backed.
 - (id)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
     if (self)
     {
-        // This is the crucial step. It tells the view to create a CALayer
-        // and use it for all drawing and transformations.
         [self setWantsLayer:YES];
+        [[self layer] setDelegate:self];
+        [[self layer] setBackgroundColor:[CPColor lightGrayColor]];
+        [[self layer] setNeedsDisplay];
     }
     return self;
 }
 
-- (void)drawInContext:(CGContext)aContext
+- (void)drawLayer:(CALayer)aLayer inContext:(CGContextRef)context
 {
-    CGContextSetFillColor(aContext, [CPColor grayColor]);
-    CGContextFillRect(aContext, [self bounds]);
-debugger
-}
-
-// 2. Implement the layer drawing delegate method.
-// This method is called instead of drawRect: when a view is layer-backed.
-- (void)drawLayer:(CALayer)aLayer inContext:(CGContextRef)aContext
-{
-    // The drawing rectangle is now the layer's bounds, not a parameter.
     var aRect = [aLayer bounds];
-debugger
 
     var points = [CPArray array],
         minX = CGRectGetMinX(aRect),
@@ -55,32 +44,30 @@ debugger
     [points addObject:CGPointMake(minX, midY)];
     [points addObject:CGPointMake(midX, minY)];
 
-    // NOTE: [self lockFocus] and [self unlockFocus] are NOT needed here.
-    // The graphics context is provided directly.
+    CGContextSaveGState(context);
 
-    // Use the provided context 'aContext'.
-    CGContextSetLineWidth(aContext, 2);
-    CGContextSetStrokeColor(aContext, [CPColor blueColor]);
+    CGContextSetLineWidth(context, 2);
+    CGContextSetStrokeColor(context, [CPColor blueColor]);
 
     // test CGContextAddLines
-    CGContextBeginPath(aContext);
-    CGContextAddLines(aContext, points, NULL);
+    CGContextBeginPath(context);
+    CGContextAddLines(context, points, NULL);
 
     // test CGContextAddQuadCurveToPoint
-    CGContextAddQuadCurveToPoint(aContext, quarterX, midY, midX, maxY);
-    CGContextStrokePath(aContext);
+    CGContextAddQuadCurveToPoint(context, quarterX, midY, midX, maxY);
+    CGContextStrokePath(context);
 
     // test CGContextStrokeRectWithWidth
     var innerRect = CGRectInset(aRect, CGRectGetWidth(aRect)/2 - 10, CGRectGetHeight(aRect)/2 - 10);
-    CGContextStrokeRectWithWidth(aContext, innerRect, 4);
+    CGContextStrokeRectWithWidth(context, innerRect, 4);
 
-    CGContextSetTextPosition(aContext, innerRect.origin.x + 10, innerRect.origin.x + 10);
-    CGContextSetFillColor(aContext, [CPColor blueColor]);
-    CGContextShowText(aContext, 'Hello World Canvas!');
+    CGContextSetTextPosition(context, innerRect.origin.x + 10, innerRect.origin.x + 10);
+    CGContextSetFillColor(context, [CPColor blueColor]);
+    CGContextShowText(context, 'Hello World Canvas!');
+
+    CGContextRestoreGState(context);
 }
-
 @end
-
 
 @implementation AppController : CPObject
 {
@@ -90,7 +77,6 @@ debugger
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
-    // Use a larger window to fit all elements
     var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(0, 0, 600, 400) styleMask:CPBorderlessBridgeWindowMask],
         contentView = [theWindow contentView];
 
@@ -100,6 +86,11 @@ debugger
 
 
     // --- Create and configure the circular slider ---
+    var label2 = [[CPTextField alloc] initWithFrame:CGRectMake(350, 100, 130, 30)];
+    [label2 setStringValue:@"Rotate via rotateByAngle:"];
+    [label2 setFont:[CPFont boldSystemFontOfSize:24.0]];
+    [label2 sizeToFit];
+    [contentView addSubview:label2];
     var rotationSlider = [[CPSlider alloc] initWithFrame:CGRectMake(350, 125, 30, 30)];
     [rotationSlider setSliderType:CPCircularSlider];
     [rotationSlider setMinValue:0.0];
@@ -109,8 +100,6 @@ debugger
     [rotationSlider setAction:@selector(sliderDidChange:)];
     [contentView addSubview:rotationSlider];
 
-
-    // --- Create and add the original label ---
     var label = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
     [label setStringValue:@"Do you see the Hello World Canvas?"];
     [label setFont:[CPFont boldSystemFontOfSize:24.0]];
@@ -119,8 +108,6 @@ debugger
     [label setCenter:[contentView center]];
     [contentView addSubview:label];
 
-
-    // --- Initialize state and show the window ---
     _lastSliderAngle = [rotationSlider floatValue];
     [theWindow orderFront:self];
 }
@@ -130,10 +117,7 @@ debugger
 {
     var newAngle = [sender floatValue];
     var deltaAngle = newAngle - _lastSliderAngle;
-
-    // This call now operates on the explicitly created layer of the DiamondView.
     [_diamondView rotateByAngle:deltaAngle];
-
     _lastSliderAngle = newAngle;
 }
 
