@@ -45,6 +45,7 @@
 @import <AppKit/CPTableHeaderView.j>
 @import <AppKit/CPSearchField.j>
 @import <AppKit/CPTextField.j>
+@import <AppKit/CPTextView.j>
 @import <AppKit/CPTokenField.j>
 @import <AppKit/CPWindow.j>
 @import <AppKit/CPAlert.j>
