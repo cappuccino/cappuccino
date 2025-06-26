@@ -3312,16 +3312,11 @@ setBoundsOrigin:
     // Convert degrees to radians for the transform
     var radians = angle * Math.PI / 180.0;
 
-    // Create a rotation transform.
-    // For 2D rotation, we rotate around the Z-axis.
-    var rotationTransform = CATransform3DMakeRotation(radians, 0, 0, 1);
+    var rotationTransform = CGAffineTransformMakeRotation(radians);
+    var currentTransform = [layer affineTransform];
+    var newTransform = CGAffineTransformConcat(currentTransform, rotationTransform);
 
-    // Get the current transform and concatenate the new rotation
-    var currentTransform = [layer transform];
-    var newTransform = CATransform3DConcat(currentTransform, rotationTransform);
-
-    // Apply the new transform to the layer
-    [layer setTransform:newTransform];
+    [layer setAffineTransform:newTransform];
 }
 
 @end
