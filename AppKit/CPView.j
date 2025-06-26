@@ -3240,23 +3240,18 @@ setBoundsOrigin:
 }
 
 /*!
-    Returns the core animation layer used by the receiver.
+    Returns the core animation layer used by the receiver and creates one if necessary.
 */
 - (CALayer)layer
 {
     if (_wantsLayer && !_layer)
     {
-        // Use of @class CALayer requires dynamic lookup
-        var CALayerClass = objj_getClass("CALayer");
-
-        if (CALayerClass)
-        {
-            var layer = [[CALayerClass alloc] init];
-            [self setLayer:layer];
-            [self setNeedsLayout:YES];
-            [self setNeedsDisplay:YES];
-        }
+        var layer = [[CALayerClass alloc] init];
+        [self setLayer:layer];
+        [self setNeedsLayout:YES];
+        [self setNeedsDisplay:YES];
     }
+
     return _layer;
 }
 
