@@ -1233,7 +1233,6 @@ Sets the selection to a range of characters in response to user action.
     [self setSelectedRange:setRange affinity:0 stillSelecting:YES];
 }
 
-// ADDED: Hover state handling
 - (void)mouseEntered:(CPEvent)anEvent
 {
     [super mouseEntered:anEvent];

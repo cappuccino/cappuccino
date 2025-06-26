@@ -667,10 +667,6 @@ var themedButtonValues = nil,
         // Hover state: Darken the border
         [[CPThemeStateHovered, @"border-color"], @"#888888"],
 
-        // Focused state: Add the blue focus ring effect
-        [[CPThemeStateEditing, @"border-color"], @"#60a3ce"],
-        [[CPThemeStateEditing, @"box-shadow"], @"0 0 3px #60a3ce"],
-
         // Disabled state: Change appearance to look inactive
         [[CPThemeStateDisabled, @"background-color"], [CPColor colorWithHexString:@"EFEFEF"]],
         [[CPThemeStateDisabled, @"border-color"], @"#dcdcdc"],
