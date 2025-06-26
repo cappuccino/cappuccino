@@ -808,7 +808,8 @@ var CPObjectControllerContentKey                        = @"CPObjectControllerCo
         var value = [self _controllerMarkerForValues:values];
         [_cachedValues setObject:value forKey:theKeyPath];
 
-        return value;
+        // Apple's implementation returns nil instead of CPNullMarker
+        return value === CPNullMarker ? nil : value;
     }
     else
         return values;
