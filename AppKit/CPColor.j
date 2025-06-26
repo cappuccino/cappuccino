@@ -503,6 +503,16 @@ var cachedBlackColor,
     return [[CPColor alloc] _initWithCSSString: aString];
 }
 
++ (CPColor)textColor
+{
+    return [CPColor blackColor];
+}
+
++ (CPColor)insertionPointColor
+{
+    return [CPColor blackColor];
+}
+
 + (CPColor)selectedTextBackgroundColor
 {
     return [[self _cachedThemeColor] valueForThemeAttribute:@"selected-text-background-color"] || [CPColor colorWithHexString:"99CCFF"];

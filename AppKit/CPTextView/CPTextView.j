@@ -235,9 +235,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
         _selectedTextAttributes = [CPDictionary dictionaryWithObject:[CPColor selectedTextBackgroundColor]
                                                               forKey:CPBackgroundColorAttributeName];
 
-        _insertionPointColor = [CPColor blackColor];
+        _insertionPointColor = [CPColor insertionPointColor];
 
-        _textColor = [CPColor blackColor];
+        _textColor = [CPColor textColor];
         _font = [CPFont systemFontOfSize:12.0];
         [self setFont:_font];
 
@@ -2495,7 +2495,7 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
         _typingAttributes = [[_textStorage attributesAtIndex:0 effectiveRange:nil] copy];
 
         if (![_typingAttributes valueForKey:CPForegroundColorAttributeName])
-            [_typingAttributes setObject:[CPColor blackColor] forKey:CPForegroundColorAttributeName];
+            [_typingAttributes setObject:[CPColor textColor] forKey:CPForegroundColorAttributeName];
 
         _textColor = [_typingAttributes valueForKey:CPForegroundColorAttributeName];
         [self setFont:[_typingAttributes valueForKey:CPFontAttributeName]];
