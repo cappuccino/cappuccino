@@ -659,7 +659,7 @@ var themedButtonValues = nil,
         // Default state
         [@"background-color",   [CPColor textBackgroundColor]],
         [@"content-inset",      CGSizeMake(2, 2)],
-        [@"text-color",              [CPColor textColor]],
+        [@"text-color",         [CPColor textColor]],
 
         // Disabled state: Change appearance to look inactive
         [@"text-color", [CPColor disabledControlTextColor], CPThemeStateDisabled]

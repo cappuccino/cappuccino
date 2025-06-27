@@ -106,6 +106,7 @@ var cachedBlackColor,
             @"text-background-color":                   [CPNull null],
             @"selected-text-inactive-background-color": [CPNull null],
             @"text-disabled-color":                     [CPNull null],
+            @"text-color":                              [CPNull null],
             @"css-based":                               NO
         };
 }
