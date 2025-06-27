@@ -505,7 +505,7 @@ var cachedBlackColor,
 
 + (CPColor)textColor
 {
-    return [CPColor blackColor];
+    return [[self _cachedThemeColor] valueForThemeAttribute:@"text-color"] || [CPColor blackColor];
 }
 
 + (CPColor)insertionPointColor
@@ -520,7 +520,7 @@ var cachedBlackColor,
 
 + (CPColor)textBackgroundColor
 {
-    return [[self _cachedThemeColor] valueForThemeAttribute:@"text-background-color"] || [CPColor colorWithHexString:"FFFFFF"];
+    return [[self _cachedThemeColor] valueForThemeAttribute:@"text-background-color"] || [CPColor whiteColor];
 }
 
 + (CPColor)_selectedTextBackgroundColorUnfocussed

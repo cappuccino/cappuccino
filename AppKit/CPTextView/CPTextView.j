@@ -204,7 +204,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
     return @{
             @"background-color": [CPColor textBackgroundColor],
             @"content-inset": CGSizeMake(2, 0),
-            @"color": [CPColor textColor]
+            @"text-color": [CPColor textColor]
         };
 }
 

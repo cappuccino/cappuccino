@@ -659,10 +659,10 @@ var themedButtonValues = nil,
         // Default state
         [@"background-color",   [CPColor textBackgroundColor]],
         [@"content-inset",      CGSizeMake(2, 2)],
-        [@"color",              [CPColor textColor]],
+        [@"text-color",              [CPColor textColor]],
 
         // Disabled state: Change appearance to look inactive
-        [@"color", [CPColor disabledControlTextColor], CPThemeStateDisabled]
+        [@"text-color", [CPColor disabledControlTextColor], CPThemeStateDisabled]
     ];
 
     [self registerThemeValues:themeValues forView:textView];
