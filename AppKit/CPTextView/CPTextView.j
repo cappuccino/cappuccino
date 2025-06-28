@@ -2701,11 +2701,12 @@ var _CPCopyPlaceholder = '-';
     {
         _CPNativeInputFieldKeyUpCalled = YES;
 
-        // filter out the shift-up, cursor keys and friends used to access the deadkeys
-        // fixme: e.which is depreciated(?) -> find a better way to identify the modifier-keyups
-        if (e.which < 27 || e.which == 91 || e.which == 93) // include apple command keys
+        // Filter out non-printable keys like modifiers, cursor keys, etc.
+        // A key with a name longer than one character is typically a non-printable control key.
+        // We exclude 'Dead' and 'Process' which are handled as part of dead-key composition.
+        if (e.key.length > 1 && e.key !== 'Dead' && e.key !== 'Process')
         {
-            if (e.which == 13)
+            if (e.key === 'Enter')
                 _CPNativeInputField.innerHTML = '';
 
             if (_CPNativeInputField.innerHTML.length == 0 || _CPNativeInputField.innerHTML.length > 2) // backspace
@@ -2752,7 +2753,7 @@ var _CPCopyPlaceholder = '-';
         var currentFirstResponder = [[CPApp keyWindow] firstResponder];
 
         // webkit-browsers: cursor keys do not emit keypressed and would otherwise activate deadkey mode
-        if (!CPBrowserIsEngine(CPGeckoBrowserEngine) && e.which >= 37 && e.which <= 40)
+        if (!CPBrowserIsEngine(CPGeckoBrowserEngine) && e.key.startsWith('Arrow'))
             _CPNativeInputFieldKeyPressedCalled = YES;
 
         if (![currentFirstResponder respondsToSelector:@selector(_activateNativeInputElement:)])
