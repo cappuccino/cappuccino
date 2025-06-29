@@ -1245,6 +1245,36 @@
     [self assert:result equals:nil];
 }
 
+- (void)testDateFromStringISO8601
+{
+    // This test verifies the fix for issue #2537.
+    // The parser should correctly handle the ISO 8601 format produced by Date.toISOString().
+    var dateFormatter = [[CPDateFormatter alloc] init];
+    [dateFormatter setLocale:[[CPLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"]];
+    [dateFormatter setDateFormat:@"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"];
+
+    // Test with a fixed date string.
+    var fixedISOString = @"2017-03-31T16:40:15.768Z";
+    var parsedFixedDate = [dateFormatter dateFromString:fixedISOString];
+    var expectedFixedDate = [[CPDate alloc] initWithString:@"2017-03-31 16:40:15 +0000"];
+    [expectedFixedDate setMilliseconds:768];
+
+    [self assert:parsedFixedDate equals:expectedFixedDate];
+
+    // Test with a dynamically generated date string.
+    var liveJSDate = new Date();
+    var liveISOString = liveJSDate.toISOString();
+
+    var parsedLiveDate = [dateFormatter dateFromString:liveISOString];
+
+    // The fix converts from a JS Date, so we can compare time intervals for accuracy.
+    var liveJSDateTime = liveJSDate.getTime();
+    var parsedLiveDateTime = [parsedLiveDate timeIntervalSince1970] * 1000;
+
+    // We allow a small tolerance for floating point rounding.
+    [self assertTrue:Math.abs(liveJSDateTime - parsedLiveDateTime) < 1.0];
+}
+
 - (void)testGetObjectValueAcceptsNilErrorDescription
 {
     var date = nil,

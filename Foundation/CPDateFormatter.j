@@ -1291,6 +1291,18 @@ var _separatorsCharacterSet = nil;
     if (!aString)
         return [[CPDate alloc] initWithTimeIntervalSinceReferenceDate:-31622400];
 
+    // Special case for ISO8601 format, which is poorly handled by the generic parser.
+    if (aFormat === @"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'") {
+        var d = new Date(aString);
+        if (d && !isNaN(d.getTime())) {
+            // The native JS Date object handles ISO 8601 strings correctly (as UTC).
+            // We can create a CPDate directly from the resulting timestamp.
+            var kCFAbsoluteTimeIntervalSince1970 = 978307200.0;
+            var interval = (d.getTime() / 1000.0) - kCFAbsoluteTimeIntervalSince1970;
+            return [CPDate dateWithTimeIntervalSinceReferenceDate:interval];
+        }
+    }
+
     if (aFormat == nil)
         return nil;
 
