@@ -126,6 +126,31 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
 @protocol CPOutlineViewDataSource <CPObject>
 
+/*!
+    @abstract Returns the number of child items of a given item.
+    @discussion This method is required for the outline view to function.
+    @param anOutlineView The outline view that sent the message.
+    @param anItem The item for which to return the number of children. If anItem is nil, this method should return the number of top-level items.
+    @return The number of child items of anItem.
+*/
+- (CPInteger)outlineView:(CPOutlineView)anOutlineView numberOfChildrenOfItem:(id)anItem;
+/*!
+    @abstract Returns the child item at a specific index of a given item.
+    @discussion This method is required for the outline view to function.
+    @param anOutlineView The outline view that sent the message.
+    @param anIndex The index of the child item to return.
+    @param anItem The item for which to return the child. If anItem is nil, this method should return the top-level item at index anIndex.
+    @return The child item of anItem at index anIndex.
+*/
+- (id)outlineView:(CPOutlineView)anOutlineView child:(CPInteger)anIndex ofItem:(id)anItem;
+
+/*!
+    @abstract Returns whether a given item is expandable.
+    @discussion This method is required for the outline view to function. An expandable item is one that can have children, typically displayed with a disclosure triangle.
+    @param anOutlineView The outline view that sent the message.
+    @param anItem The item to check for expandability.
+    @return YES if anItem is expandable, otherwise NO.
+*/
 @optional
 - (BOOL)outlineView:(CPOutlineView)anOutlineView acceptDrop:(id /*<CPDraggingInfo>*/)info item:(id)anItem childIndex:(CPInteger)anIndex;
 - (BOOL)outlineView:(CPOutlineView)anOutlineView shouldDeferDisplayingChildrenOfItem:(id)anItem;
