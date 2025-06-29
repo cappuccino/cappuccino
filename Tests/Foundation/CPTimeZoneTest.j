@@ -283,7 +283,6 @@
     [self assert:seconds equals:(_date.getTimezoneOffset() * -60)];
 }
 
--al
 - (void)testSecondsFromGMTForDateWithNilDate
 {
     var timeZone = [CPTimeZone localTimeZone],
