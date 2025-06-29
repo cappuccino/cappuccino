@@ -54,6 +54,35 @@ function abbreviationForDate(date)
 
     return abbreviation;
 }
+
+function _abbreviationForNameAndDate(tzName, date)
+{
+    // This is a helper function based on the existing `abbreviationForDate`.
+    // It determines the abbreviation for a given IANA name based on the provided date,
+    // which allows it to respect daylight saving time.
+    try {
+        var options = {
+            timeZone: tzName,
+            timeZoneName: 'long'
+        };
+        // The 'en-US' locale provides a predictable format for parsing.
+        var dateString = date.toLocaleString('en-US', options);
+
+        // This regex is copied from the global 'abbreviationForDate' function.
+        // It strips the date and time, leaving the long time zone name.
+        var longTZName = dateString.replace(/^([0]?\d|[1][0-2])\/((?:[0]?|[1-2])\d|[3][0-1])\/([2][01]|[1][6-9])\d{2}(,?\s*([0]?\d|[1][0-2])(\:[0-5]\d){1,2})*\s*([aApP][mM]{0,2})?\s*/, "");
+
+        // Create the abbreviation from the long name (e.g., "Pacific Daylight Time" -> "PDT")
+        var abbreviation = longTZName.split(" ").map(function(l) { return l[0]}).join("");
+
+        return abbreviation;
+    } catch (e) {
+        // The tzName might be invalid for toLocaleString, which throws a RangeError.
+        // In this case, we can't determine the abbreviation.
+        return nil;
+    }
+}
+
 /*!
     @class CPTimeZone
     @ingroup foundation
@@ -523,32 +552,20 @@ function abbreviationForDate(date)
     {
         _name = tzName;
 
-        var now = [CPDate date],
-            abbreviation = nil;
+        // Determine the abbreviation based on the current date to handle DST.
+        var currentAbbreviation = _abbreviationForNameAndDate(tzName, [CPDate date]);
 
-        // Try to get the abbreviation for the current date. This is the only reliable way to
-        // distinguish between standard and daylight saving time for a given time zone name.
-        // For example, for "America/Los_Angeles", this will return "PST" or "PDT" depending on the date.
-        try
+        // If we got a valid abbreviation from the date, and it's one we know about, use it.
+        // Otherwise, fall back to the old logic.
+        if (currentAbbreviation && [abbreviationDictionary containsKey:currentAbbreviation])
         {
-            var dateString = now.toLocaleString('en-US', { timeZone: tzName, timeZoneName: 'short' }),
-                lastPart = dateString.substring(dateString.lastIndexOf(' ') + 1);
-
-            // Verify that the abbreviation returned by the browser is one we know about
-            // and that it maps to the correct time zone name.
-            if ([[abbreviationDictionary valueForKey:lastPart] isEqualToString:tzName])
-                abbreviation = lastPart;
+            _abbreviation = currentAbbreviation;
         }
-        catch (e)
+        else
         {
-            // The browser may not support the time zone name, or toLocaleString is not fully implemented.
-            // In this case, we'll fall back to the old logic below.
-        }
-
-        // Fallback: If we couldn't determine the abbreviation dynamically,
-        // resort to the old (and potentially incorrect) method of picking the first match.
-        if (!abbreviation)
-        {
+            // FALLBACK: Find the first matching abbreviation in the dictionary.
+            // Note: This is not DST-aware and may not be correct, but it preserves
+            // the original behavior for cases where the dynamic lookup fails.
             var keys = [abbreviationDictionary keyEnumerator],
                 key;
 
@@ -558,13 +575,15 @@ function abbreviationForDate(date)
 
                 if ([value isEqualToString:_name])
                 {
-                    abbreviation = key;
+                    _abbreviation = key;
                     break;
                 }
             }
         }
 
-        _abbreviation = abbreviation;
+        // If no abbreviation could be found by any means, initialization fails.
+        if (!_abbreviation)
+            return nil;
     }
 
     return self;
