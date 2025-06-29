@@ -349,37 +349,35 @@
 
     // 1. Test a time zone that observes DST, like America/Los_Angeles.
     var laTimeZoneName = @"America/Los_Angeles";
-
-    // To create a reliable test, we determine the "ground truth" abbreviation
-    // for the current time using the same browser API the implementation uses.
     var expectedAbbreviationLA;
+
     try {
         // This logic mimics the _abbreviationForNameAndDate helper function in CPTimeZone.j
         var options = { timeZone: laTimeZoneName, timeZoneName: 'long' };
         var dateString = (new Date()).toLocaleString('en-US', options);
         var longTZName = dateString.replace(/^([0]?\d|[1][0-2])\/((?:[0]?|[1-2])\d|[3][0-1])\/([2][01]|[1][6-9])\d{2}(,?\s*([0]?\d|[1][0-2])(\:[0-5]\d){1,2})*\s*([aApP][mM]{0,2})?\s*/, "");
         expectedAbbreviationLA = longTZName.split(" ").map(function(l) { return l[0]}).join("");
-
     } catch (e) {
-        [self fail:[CPString stringWithFormat:@"Could not determine expected abbreviation for %@. Error: %@", laTimeZoneName, e.message]];
+        [self fail:"Could not determine expected abbreviation for America/Los_Angeles"];
         return;
     }
 
     var timeZoneLA = [[CPTimeZone alloc] initWithName:laTimeZoneName];
-    [self assertNotNil:timeZoneLA message:@"Time zone for America/Los_Angeles should be created successfully."];
-    [self assert:[timeZoneLA abbreviation]
-          equals:expectedAbbreviationLA
-         message:[CPString stringWithFormat:@"The abbreviation should be %@ based on the current date.", expectedAbbreviationLA]];
+
+    if (timeZoneLA == nil)
+        [self fail:"Time zone for America/Los_Angeles should be created successfully."];
+
+    [self assert:[timeZoneLA abbreviation] equals:expectedAbbreviationLA];
 
     // 2. Test a time zone that does not observe DST, like Pacific/Honolulu.
     var hnlTimeZoneName = @"Pacific/Honolulu";
     var timeZoneHNL = [[CPTimeZone alloc] initWithName:hnlTimeZoneName];
 
-    [self assertNotNil:timeZoneHNL message:@"Time zone for Pacific/Honolulu should be created successfully."];
+    if (timeZoneHNL == nil)
+        [self fail:"Time zone for Pacific/Honolulu should be created successfully."];
+
     // For a non-DST zone, the abbreviation is constant.
-    [self assert:[timeZoneHNL abbreviation]
-          equals:@"HST"
-         message:@"The abbreviation for a non-DST zone like Honolulu should always be HST."];
+    [self assert:[timeZoneHNL abbreviation] equals:@"HST"];
 }
 
 @end
