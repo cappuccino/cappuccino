@@ -127,16 +127,112 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 @protocol CPOutlineViewDataSource <CPObject>
 
 @optional
+/*!
+    @abstract Invoked when a drag operation concludes over the outline view.
+    @discussion The data source should incorporate the data from the dragging pasteboard and update its data model.
+    @param anOutlineView The outline view that is the destination of the drop.
+    @param info An object that contains information about the dragging session.
+    @param anItem The item that is the proposed parent for the dropped data. If anItem is nil, the data is to be dropped at the root level.
+    @param anIndex The index at which to drop the data among the item's children. If you want to drop on anItem, this will be CPOutlineViewDropOnItemIndex (-1).
+    @return YES if the drop was successful; otherwise, NO.
+*/
 - (BOOL)outlineView:(CPOutlineView)anOutlineView acceptDrop:(id /*<CPDraggingInfo>*/)info item:(id)anItem childIndex:(CPInteger)anIndex;
+
+/*!
+    @abstract Asks the data source whether to defer displaying the children of a given item.
+    @discussion This method is useful for implementing lazy loading of outline view data. Returning NO prevents the outline view from querying for children of anItem, even if it is expandable.
+    @param anOutlineView The outline view that sent the message.
+    @param anItem The item being considered for expansion.
+    @return YES to allow the outline view to query for children of anItem; otherwise, NO. The default is YES.
+*/
 - (BOOL)outlineView:(CPOutlineView)anOutlineView shouldDeferDisplayingChildrenOfItem:(id)anItem;
+
+/*!
+    @abstract Invoked when a drag should begin.
+    @discussion The data source should write the representation of the specified items to the pasteboard.
+    @param anOutlineView The outline view that is the source of the drag.
+    @param items An array of items to be dragged.
+    @param pboard The pasteboard to which the data for the dragged items should be written.
+    @return YES if the drag should begin; NO to prevent the drag.
+*/
 - (BOOL)outlineView:(CPOutlineView)anOutlineView writeItems:(CPArray)items toPasteboard:(CPPasteboard)pboard;
+
+/*!
+    @abstract Used for promised-file dragging.
+    @discussion When a promised-file drag is dropped, this method is invoked to ask the data source to create the files at the specified destination and return their names.
+    @param anOutlineView The outline view that was the source of the drag.
+    @param dropDestination The URL of the directory where the files should be created.
+    @param items The items that were dragged, representing the promised files.
+    @return An array of strings containing the names of the files that were created.
+*/
 - (CPArray)outlineView:(CPOutlineView)anOutlineView namesOfPromisedFilesDroppedAtDestination:(CPURL)dropDestination forDraggedItems:(CPArray)items;
+
+/*!
+    @abstract Invoked to determine if a drop is allowed at a specified location.
+    @discussion This method is called repeatedly while the user drags over the outline view. It should return the drag operation that should be performed.
+    @param anOutlineView The outline view that is the destination of the drag.
+    @param info An object that contains information about the dragging session.
+    @param anItem The item that is the proposed parent for the dropped data.
+    @param anIndex The index at which to drop the data among the item's children. If you want to drop on anItem, this will be CPOutlineViewDropOnItemIndex (-1).
+    @return A CPDragOperation value that indicates the type of operation to perform.
+*/
 - (CPDragOperation)outlineView:(CPOutlineView)anOutlineView validateDrop:(id /*<CPDraggingInfo>*/)info proposedItem:(id)anItem proposedChildIndex:(CPInteger)anIndex;
+
+/*!
+    @abstract Invoked to determine if a drop is allowed at a specified row.
+    @discussion This is a legacy method from CPTableView. It is recommended to implement outlineView:validateDrop:proposedItem:proposedChildIndex: instead for more precise control in an outline view.
+    @param anOutlineView The outline view that is the destination of the drag.
+    @param info An object that contains information about the dragging session.
+    @param theRow The proposed row for the drop.
+    @param theOperation The proposed drop operation (CPTableViewDropOn or CPTableViewDropAbove).
+    @return A CPDragOperation value that indicates the type of operation to perform.
+*/
 - (CPDragOperation)outlineView:(CPOutlineView)anOutlineView validateDrop:(id /*<CPDraggingInfo>*/)info proposedRow:(int)theRow proposedDropOperation:(CPTableViewDropOperation)theOperation;
+
+/*!
+    @abstract Used for state preservation.
+    @discussion This method is called to convert a persistent, serializable object back into a model item.
+    @param anOutlineView The outline view requesting the item.
+    @param anObject The persistent object used to identify the model item.
+    @return The model item corresponding to anObject, or nil if it cannot be found.
+*/
 - (id)outlineView:(CPOutlineView)anOutlineView itemForPersistentObject:(id)anObject;
+
+/*!
+    @abstract Returns the data object to be displayed for a given item and column.
+    @discussion This method is called by the outline view to get the value for each cell. It is required for cell-based outline views.
+    @param anOutlineView The outline view that sent the message.
+    @param aTableColumn The column for which the value is requested.
+    @param anItem The item for the row being displayed.
+    @return The data object (e.g., a CPString) for the specified item and column.
+*/
 - (id)outlineView:(CPOutlineView)anOutlineView objectValueforTableColumn:(CPTableColumn)aTableColumn byItem:(id)anItem;
+
+/*!
+    @abstract Used for state preservation.
+    @discussion This method is called to convert a model item into a persistent, serializable object (e.g., a string identifier) that can be saved.
+    @param anOutlineView The outline view requesting the persistent object.
+    @param anItem The item to be converted.
+    @return A serializable object that persistently identifies anItem.
+*/
 - (id)outlineView:(CPOutlineView)anOutlineView persistentObjectForItem:(id)anItem;
+
+/*!
+    @abstract Sets the data object for a given item and column.
+    @discussion This method is called when the user edits a cell's value. The data source should update its model with the new value.
+    @param anOutlineView The outline view that sent the message.
+    @param anObject The new value.
+    @param aTableColumn The column that was edited.
+    @param anItem The item whose value was edited.
+*/
 - (void)outlineView:(CPOutlineView)anOutlineView setObjectValue:(id)anObject forTableColumn:(CPTableColumn)aTableColumn byItem:(id)anItem;
+
+/*!
+    @abstract Notifies the data source that the sort descriptors have changed.
+    @discussion This method is called after the user clicks a column header to change the sort order. The data source should re-sort its data based on the outline view's new 'sortDescriptors' property and then call `reloadData`.
+    @param anOutlineView The outline view that sent the message.
+    @param oldDescriptors The previous sort descriptors.
+*/
 - (void)outlineView:(CPOutlineView)anOutlineView sortDescriptorsDidChange:(CPArray)oldDescriptors;
 
 @end
