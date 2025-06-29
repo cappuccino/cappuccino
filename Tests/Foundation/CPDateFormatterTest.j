@@ -1256,10 +1256,15 @@
     // Test with a fixed date string.
     var fixedISOString = @"2017-03-31T16:40:15.768Z";
     var parsedFixedDate = [dateFormatter dateFromString:fixedISOString];
-    var expectedFixedDate = [[CPDate alloc] initWithString:@"2017-03-31 16:40:15 +0000"];
-    [expectedFixedDate setMilliseconds:768];
 
-    [self assert:parsedFixedDate equals:expectedFixedDate];
+    // Create the expected date using a known-good method (JS Date parsing) to avoid relying on
+    // the code under test. We create it from a time interval, which supports millisecond precision.
+    var expectedTimestamp = new Date(fixedISOString).getTime() / 1000.0;
+    var expectedFixedDate = [CPDate dateWithTimeIntervalSince1970:expectedTimestamp];
+
+    // Now assert that the formatter produced the same date.
+    // isEqualToDate: compares the underlying time interval, which is what we want.
+    [self assertTrue:[parsedFixedDate isEqualToDate:expectedFixedDate] message:@"DateFormatter should correctly parse a fixed ISO 8601 string."];
 
     // Test with a dynamically generated date string.
     var liveJSDate = new Date();
@@ -1272,7 +1277,7 @@
     var parsedLiveDateTime = [parsedLiveDate timeIntervalSince1970] * 1000;
 
     // We allow a small tolerance for floating point rounding.
-    [self assertTrue:Math.abs(liveJSDateTime - parsedLiveDateTime) < 1.0];
+    [self assertTrue:Math.abs(liveJSDateTime - parsedLiveDateTime) < 1.0 message:@"DateFormatter should correctly parse a dynamically generated ISO 8601 string."];
 }
 
 - (void)testGetObjectValueAcceptsNilErrorDescription
