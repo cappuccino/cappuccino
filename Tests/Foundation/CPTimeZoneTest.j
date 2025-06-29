@@ -62,28 +62,50 @@
     [self assert:timeZone equals:nil];
 }
 
-- (void)testTimeZoneWithName
+- (void)testInitWithNameSelectsCorrectAbbreviationForDate
 {
-    var timeZone = [CPTimeZone timeZoneWithName:@"America/Los_Angeles"];
+    var originalDateClassMethod = CPDate.date;
 
-    // The current implementation can return daylight saving time or standard time depending on the current implmentation on CPDictionary
-    if ([timeZone abbreviation] === @"PDT") {
-        [self assert:[timeZone name] equals:@"America/Los_Angeles"];
-        [self assert:[timeZone abbreviation] equals:@"PDT"];
-        [self assert:[timeZone secondsFromGMT] equals:(-420 * 60)];
-        [self assert:[timeZone description] equals:@"America/Los_Angeles (PDT) offset -25200"];
-    } else {
-        [self assert:[timeZone name] equals:@"America/Los_Angeles"];
-        [self assert:[timeZone abbreviation] equals:@"PST"];
-        [self assert:[timeZone secondsFromGMT] equals:(-480 * 60)];
-        [self assert:[timeZone description] equals:@"America/Los_Angeles (PST) offset -28800"];
+    try
+    {
+        // Test 1: Date is during Daylight Saving Time (e.g., July in Northern Hemisphere for "America/Los_Angeles")
+        var summerDate = [[CPDate alloc] initWithString:@"2022-07-01 12:00:00 +0000"];
+        CPDate.date = function() { return summerDate; };
+
+        // Test instance method init
+        var timeZonePDT = [[CPTimeZone alloc] initWithName:@"America/Los_Angeles" data:_data];
+        [self assertNotNil:timeZonePDT message:"Time zone should not be nil for a valid name."];
+        [self assert:[timeZonePDT abbreviation] equals:@"PDT" message:"Abbreviation should be PDT during summer"];
+        [self assert:[timeZonePDT secondsFromGMT] equals:(-420 * 60) message:"Seconds from GMT should be correct for PDT"];
+        [self assert:[timeZonePDT description] equals:@"America/Los_Angeles (PDT) offset -25200" message:"Description should be correct for PDT"];
+        [self assert:[timeZonePDT data] equals:_data message:@"Data should be correctly associated with time zone"];
+
+        // Test class method factory
+        var timeZonePDTClass = [CPTimeZone timeZoneWithName:@"America/Los_Angeles"];
+        [self assert:[timeZonePDTClass abbreviation] equals:@"PDT" message:"Class method should return zone with PDT abbreviation during summer"];
+
+
+        // Test 2: Date is during Standard Time (e.g., January)
+        var winterDate = [[CPDate alloc] initWithString:@"2022-01-01 12:00:00 +0000"];
+        CPDate.date = function() { return winterDate; };
+
+        // Test instance method init
+        var timeZonePST = [[CPTimeZone alloc] initWithName:@"America/Los_Angeles" data:_data];
+        [self assertNotNil:timeZonePST message:"Time zone should not be nil for a valid name."];
+        [self assert:[timeZonePST abbreviation] equals:@"PST" message:"Abbreviation should be PST during winter"];
+        [self assert:[timeZonePST secondsFromGMT] equals:(-480 * 60) message:"Seconds from GMT should be correct for PST"];
+        [self assert:[timeZonePST description] equals:@"America/Los_Angeles (PST) offset -28800" message:"Description should be correct for PST"];
+        [self assert:[timeZonePST data] equals:_data message:"Data should be correctly associated with time zone"];
+
+        // Test class method factory
+        var timeZonePSTClass = [CPTimeZone timeZoneWithName:@"America/Los_Angeles"];
+        [self assert:[timeZonePSTClass abbreviation] equals:@"PST" message:"Class method should return zone with PST abbreviation during winter"];
     }
-    [self assert:[timeZone localizedName:CPTimeZoneNameStyleStandard locale:_locale] equals:@"Pacific Standard Time"];
-    [self assert:[timeZone localizedName:CPTimeZoneNameStyleShortStandard locale:_locale] equals:@"PST"];
-    [self assert:[timeZone localizedName:CPTimeZoneNameStyleDaylightSaving locale:_locale] equals:@"Pacific Daylight Time"];
-    [self assert:[timeZone localizedName:CPTimeZoneNameStyleShortDaylightSaving locale:_locale] equals:@"PDT"];
-    [self assert:[timeZone localizedName:CPTimeZoneNameStyleGeneric locale:_locale] equals:@"Pacific Time"];
-    [self assert:[timeZone localizedName:CPTimeZoneNameStyleShortGeneric locale:_locale] equals:@"PT"];
+    finally
+    {
+        // Restore the original class method to avoid side-effects in other tests
+        CPDate.date = originalDateClassMethod;
+    }
 }
 
 - (void)testTimeZoneWithWrongName
@@ -103,31 +125,6 @@
     {
 
     }
-}
-
-- (void)testTimeZoneWithNameWithData
-{
-    var timeZone = [CPTimeZone timeZoneWithName:@"America/Los_Angeles" data:_data];
-
-    // The current implementation can return daylight saving time or standard time depending on the current implmentation on CPDictionary
-    if ([timeZone abbreviation] === @"PDT") {
-        [self assert:[timeZone name] equals:@"America/Los_Angeles"];
-        [self assert:[timeZone abbreviation] equals:@"PDT"];
-        [self assert:[timeZone secondsFromGMT] equals:(-420 * 60)];
-        [self assert:[timeZone description] equals:@"America/Los_Angeles (PDT) offset -25200"];
-    } else {
-        [self assert:[timeZone name] equals:@"America/Los_Angeles"];
-        [self assert:[timeZone abbreviation] equals:@"PST"];
-        [self assert:[timeZone secondsFromGMT] equals:(-480 * 60)];
-        [self assert:[timeZone description] equals:@"America/Los_Angeles (PST) offset -28800"];
-    }
-    [self assert:[timeZone data] equals:_data];
-    [self assert:[timeZone localizedName:CPTimeZoneNameStyleStandard locale:_locale] equals:@"Pacific Standard Time"];
-    [self assert:[timeZone localizedName:CPTimeZoneNameStyleShortStandard locale:_locale] equals:@"PST"];
-    [self assert:[timeZone localizedName:CPTimeZoneNameStyleDaylightSaving locale:_locale] equals:@"Pacific Daylight Time"];
-    [self assert:[timeZone localizedName:CPTimeZoneNameStyleShortDaylightSaving locale:_locale] equals:@"PDT"];
-    [self assert:[timeZone localizedName:CPTimeZoneNameStyleGeneric locale:_locale] equals:@"Pacific Time"];
-    [self assert:[timeZone localizedName:CPTimeZoneNameStyleShortGeneric locale:_locale] equals:@"PT"];
 }
 
 - (void)testTimeZoneWithWrongNameWithData
@@ -170,30 +167,6 @@
     [self assert:timeZone equals:nil];
 }
 
-- (void)testInitTimeZoneWithName
-{
-    var timeZone = [[CPTimeZone alloc] initWithName:@"America/Los_Angeles"];
-
-    // The current implementation can return daylight saving time or standard time depending on the current implmentation on CPDictionary
-    if ([timeZone abbreviation] === @"PDT") {
-        [self assert:[timeZone name] equals:@"America/Los_Angeles"];
-        [self assert:[timeZone abbreviation] equals:@"PDT"];
-        [self assert:[timeZone secondsFromGMT] equals:(-420 * 60)];
-        [self assert:[timeZone description] equals:@"America/Los_Angeles (PDT) offset -25200"];
-    } else {
-        [self assert:[timeZone name] equals:@"America/Los_Angeles"];
-        [self assert:[timeZone abbreviation] equals:@"PST"];
-        [self assert:[timeZone secondsFromGMT] equals:(-480 * 60)];
-        [self assert:[timeZone description] equals:@"America/Los_Angeles (PST) offset -28800"];
-    }
-    [self assert:[timeZone localizedName:CPTimeZoneNameStyleStandard locale:_locale] equals:@"Pacific Standard Time"];
-    [self assert:[timeZone localizedName:CPTimeZoneNameStyleShortStandard locale:_locale] equals:@"PST"];
-    [self assert:[timeZone localizedName:CPTimeZoneNameStyleDaylightSaving locale:_locale] equals:@"Pacific Daylight Time"];
-    [self assert:[timeZone localizedName:CPTimeZoneNameStyleShortDaylightSaving locale:_locale] equals:@"PDT"];
-    [self assert:[timeZone localizedName:CPTimeZoneNameStyleGeneric locale:_locale] equals:@"Pacific Time"];
-    [self assert:[timeZone localizedName:CPTimeZoneNameStyleShortGeneric locale:_locale] equals:@"PT"];
-}
-
 - (void)testInitTimeZoneWithWrongName
 {
     var timeZone = [[CPTimeZone alloc] initWithName:@"America/Los_Angelesezdez"];
@@ -211,31 +184,6 @@
     {
 
     }
-}
-
-- (void)testInitTimeZoneWithNameWithData
-{
-    var timeZone = [[CPTimeZone alloc] initWithName:@"America/Los_Angeles" data:_data];
-
-    // The current implementation can return daylight saving time or standard time depending on the current implmentation on CPDictionary
-    if ([timeZone abbreviation] === @"PDT") {
-        [self assert:[timeZone name] equals:@"America/Los_Angeles"];
-        [self assert:[timeZone abbreviation] equals:@"PDT"];
-        [self assert:[timeZone secondsFromGMT] equals:(-420 * 60)];
-        [self assert:[timeZone description] equals:@"America/Los_Angeles (PDT) offset -25200"];
-    } else {
-        [self assert:[timeZone name] equals:@"America/Los_Angeles"];
-        [self assert:[timeZone abbreviation] equals:@"PST"];
-        [self assert:[timeZone secondsFromGMT] equals:(-480 * 60)];
-        [self assert:[timeZone description] equals:@"America/Los_Angeles (PST) offset -28800"];
-    }
-    [self assert:[timeZone data] equals:_data];
-    [self assert:[timeZone localizedName:CPTimeZoneNameStyleStandard locale:_locale] equals:@"Pacific Standard Time"];
-    [self assert:[timeZone localizedName:CPTimeZoneNameStyleShortStandard locale:_locale] equals:@"PST"];
-    [self assert:[timeZone localizedName:CPTimeZoneNameStyleDaylightSaving locale:_locale] equals:@"Pacific Daylight Time"];
-    [self assert:[timeZone localizedName:CPTimeZoneNameStyleShortDaylightSaving locale:_locale] equals:@"PDT"];
-    [self assert:[timeZone localizedName:CPTimeZoneNameStyleGeneric locale:_locale] equals:@"Pacific Time"];
-    [self assert:[timeZone localizedName:CPTimeZoneNameStyleShortGeneric locale:_locale] equals:@"PT"];
 }
 
 - (void)testInitTimeZoneWithWrongNameWithData
@@ -291,32 +239,10 @@
     [self assert:seconds equals:nil];
 }
 
-- (void)testSecondsFromGMT
-{
-    var timeZone = [[CPTimeZone alloc] initWithName:@"America/Los_Angeles"];
-
-    // The current implementation can return daylight saving time or standard time depending on the current implmentation on CPDictionary
-    if ([timeZone abbreviation] === @"PDT") {
-        [self assert:[timeZone secondsFromGMT] equals:(-420 * 60)];
-    } else {
-        [self assert:[timeZone secondsFromGMT] equals:(-480 * 60)];
-    }
-}
-
-- (void)testDescription
-{
-    var timeZone = [[CPTimeZone alloc] initWithName:@"America/Los_Angeles"];
-
-    // The current implementation can return daylight saving time or standard time depending on the current implmentation on CPDictionary
-    if ([timeZone abbreviation] === @"PDT") {
-        [self assert:[timeZone description] equals:@"America/Los_Angeles (PDT) offset -25200"];
-    } else {
-        [self assert:[timeZone description] equals:@"America/Los_Angeles (PST) offset -28800"];
-    }
-}
-
 - (void)testLocalizedName
 {
+    // This test works because the localized strings for PDT and PST are identical.
+    // The abbreviation chosen will depend on when the test is run.
     var timeZone = [[CPTimeZone alloc] initWithName:@"America/Los_Angeles"];
     [self assert:[timeZone localizedName:CPTimeZoneNameStyleStandard locale:_locale] equals:@"Pacific Standard Time"];
     [self assert:[timeZone localizedName:CPTimeZoneNameStyleShortStandard locale:_locale] equals:@"PST"];

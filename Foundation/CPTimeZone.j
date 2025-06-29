@@ -523,19 +523,48 @@ function abbreviationForDate(date)
     {
         _name = tzName;
 
-        var keys = [abbreviationDictionary keyEnumerator],
-            key;
+        var now = [CPDate date],
+            abbreviation = nil;
 
-        while (key = [keys nextObject])
+        // Try to get the abbreviation for the current date. This is the only reliable way to
+        // distinguish between standard and daylight saving time for a given time zone name.
+        // For example, for "America/Los_Angeles", this will return "PST" or "PDT" depending on the date.
+        try
         {
-            var value = [abbreviationDictionary valueForKey:key];
+            var dateString = now.toLocaleString('en-US', { timeZone: tzName, timeZoneName: 'short' }),
+                lastPart = dateString.substring(dateString.lastIndexOf(' ') + 1);
 
-            if ([value isEqualToString:_name])
+            // Verify that the abbreviation returned by the browser is one we know about
+            // and that it maps to the correct time zone name.
+            if ([[abbreviationDictionary valueForKey:lastPart] isEqualToString:tzName])
+                abbreviation = lastPart;
+        }
+        catch (e)
+        {
+            // The browser may not support the time zone name, or toLocaleString is not fully implemented.
+            // In this case, we'll fall back to the old logic below.
+        }
+
+        // Fallback: If we couldn't determine the abbreviation dynamically,
+        // resort to the old (and potentially incorrect) method of picking the first match.
+        if (!abbreviation)
+        {
+            var keys = [abbreviationDictionary keyEnumerator],
+                key;
+
+            while (key = [keys nextObject])
             {
-                _abbreviation = key;
-                break;
+                var value = [abbreviationDictionary valueForKey:key];
+
+                if ([value isEqualToString:_name])
+                {
+                    abbreviation = key;
+                    break;
+                }
             }
         }
+
+        _abbreviation = abbreviation;
     }
 
     return self;
