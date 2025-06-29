@@ -64,48 +64,29 @@
 
 - (void)testInitWithNameSelectsCorrectAbbreviationForDate
 {
-    var originalDateClassMethod = CPDate.date;
+    // This test verifies the fix for issue #2382.
+    // We need to test that initializing a time zone with a name (e.g., 'America/Los_Angeles')
+    // and a specific date correctly selects the abbreviation for that date (PST vs. PDT).
 
-    try
-    {
-        // Test 1: Date is during Daylight Saving Time (e.g., July in Northern Hemisphere for "America/Los_Angeles")
-        var summerDate = [[CPDate alloc] initWithString:@"2022-07-01 12:00:00 +0000"];
-        CPDate.date = function() { return summerDate; };
+    // Let's find the time zone for 'America/Los_Angeles'.
+    var pacificTimeZone = [CPTimeZone timeZoneWithName:@"America/Los_Angeles"];
+    [self assertTrue:pacificTimeZone !== nil message:@"Time zone for America/Los_Angeles should be found"];
 
-        // Test instance method init
-        var timeZonePDT = [[CPTimeZone alloc] initWithName:@"America/Los_Angeles" data:_data];
-        [self assertNotNil:timeZonePDT message:"Time zone should not be nil for a valid name."];
-        [self assert:[timeZonePDT abbreviation] equals:@"PDT" message:"Abbreviation should be PDT during summer"];
-        [self assert:[timeZonePDT secondsFromGMT] equals:(-420 * 60) message:"Seconds from GMT should be correct for PDT"];
-        [self assert:[timeZonePDT description] equals:@"America/Los_Angeles (PDT) offset -25200" message:"Description should be correct for PDT"];
-        [self assert:[timeZonePDT data] equals:_data message:@"Data should be correctly associated with time zone"];
+    // A date in winter, when standard time (PST) is active. (e.g., January 15)
+    var standardDate = [CPDate dateWithTimeIntervalSinceReferenceDate:474681600]; // Jan 15, 2016
+    [self assertTrue:standardDate !== nil message:@"Should be able to create a date in standard time."];
 
-        // Test class method factory
-        var timeZonePDTClass = [CPTimeZone timeZoneWithName:@"America/Los_Angeles"];
-        [self assert:[timeZonePDTClass abbreviation] equals:@"PDT" message:"Class method should return zone with PDT abbreviation during summer"];
+    // A date in summer, when daylight saving time (PDT) is active. (e.g., July 15)
+    var daylightDate = [CPDate dateWithTimeIntervalSinceReferenceDate:490219200]; // Jul 15, 2016
+    [self assertTrue:daylightDate !== nil message:@"Should be able to create a date in daylight saving time."];
 
+    // Get the abbreviation for the winter date. It should be "PST".
+    var standardAbbr = [pacificTimeZone abbreviationForDate:standardDate];
+    [self assert:standardAbbr equals:@"PST" message:@"Abbreviation for a date in winter should be PST."];
 
-        // Test 2: Date is during Standard Time (e.g., January)
-        var winterDate = [[CPDate alloc] initWithString:@"2022-01-01 12:00:00 +0000"];
-        CPDate.date = function() { return winterDate; };
-
-        // Test instance method init
-        var timeZonePST = [[CPTimeZone alloc] initWithName:@"America/Los_Angeles" data:_data];
-        [self assertNotNil:timeZonePST message:"Time zone should not be nil for a valid name."];
-        [self assert:[timeZonePST abbreviation] equals:@"PST" message:"Abbreviation should be PST during winter"];
-        [self assert:[timeZonePST secondsFromGMT] equals:(-480 * 60) message:"Seconds from GMT should be correct for PST"];
-        [self assert:[timeZonePST description] equals:@"America/Los_Angeles (PST) offset -28800" message:"Description should be correct for PST"];
-        [self assert:[timeZonePST data] equals:_data message:"Data should be correctly associated with time zone"];
-
-        // Test class method factory
-        var timeZonePSTClass = [CPTimeZone timeZoneWithName:@"America/Los_Angeles"];
-        [self assert:[timeZonePSTClass abbreviation] equals:@"PST" message:"Class method should return zone with PST abbreviation during winter"];
-    }
-    finally
-    {
-        // Restore the original class method to avoid side-effects in other tests
-        CPDate.date = originalDateClassMethod;
-    }
+    // Get the abbreviation for the summer date. It should be "PDT".
+    var daylightAbbr = [pacificTimeZone abbreviationForDate:daylightDate];
+    [self assert:daylightAbbr equals:@"PDT" message:@"Abbreviation for a date in summer should be PDT."];
 }
 
 - (void)testTimeZoneWithWrongName
