@@ -505,6 +505,8 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
         _DOMBodyElement.ondrag = function () { return NO; };
         _DOMBodyElement.onselectstart = function () { return _DOMWindow.event.srcElement === _platformPasteboard._DOMPasteboardElement; };
 
+
+
         _DOMWindow.attachEvent("onunload", function()
         {
             _DOMWindow.detachEvent("unload", arguments.callee);
@@ -713,6 +715,7 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
     StopDOMEventPropagation = YES;
 
     // Make sure it is not in the blacklists.
+    // Note: keyCode is deprecated but is kept here for legacy compatibility with the KeyCodesToPrevent/Allow maps.
     if (!(CharacterKeysToPrevent[String.fromCharCode(aDOMEvent.keyCode || aDOMEvent.charCode).toLowerCase()] || KeyCodesToPrevent[aDOMEvent.keyCode]))
     {
         // It is not in the blacklist, let it through if the ctrl/cmd key is
@@ -727,7 +730,8 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
     switch (aDOMEvent.type)
     {
         case "keydown":
-            // Grab and store the keycode now since it is correct and consistent at this point.
+            // Grab and store the keyCode now since it is correct and consistent at this point.
+            // Note: keyCode is deprecated but is required for the existing compatibility logic.
             if (aDOMEvent.keyCode in MozKeyCodeToKeyCodeMap)
                 _keyCode = MozKeyCodeToKeyCodeMap[aDOMEvent.keyCode];
             else
@@ -737,28 +741,22 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 
             // Handle key codes for which String.fromCharCode won't work.
             // This condition is for identifying non-printing keys based on the keydown event.
-            // We've replaced the deprecated '.which' with a direct check on charCode.
             if (!aDOMEvent.charCode)
                 characters = KeyCodesToUnicodeMap[_keyCode];
 
-            // The problem with keyCode is that this property refers to keys on the keyboard and not to characters
-            // This is why String.fromCharCode does not always work in more recent versions of Firefox
-            // E.g. pressing a '#' on a German keyboard gives you a charCode of 163, which refers to '£' and not '#'
-            // The property key works fine, though. From there we can get the actual character more robustly.
-            // Therefore we prefer key over keyCode whenever possible
-
+            // The problem with the deprecated `keyCode` is that it refers to keys on the keyboard, not characters.
+            // This is why String.fromCharCode does not always work, e.g. on international layouts.
+            // The modern `key` property provides the actual character, so we prefer it when available.
             if (!characters)
-                characters = (aDOMEvent.key && aDOMEvent.key.length == 1) ? aDOMEvent.key.toLowerCase() : String.fromCharCode(_keyCode).toLowerCase();
+                characters = (aDOMEvent.key && aDOMEvent.key.length === 1) ? aDOMEvent.key.toLowerCase() : String.fromCharCode(_keyCode).toLowerCase();
 
             overrideCharacters = (modifierFlags & CPShiftKeyMask || _capsLockActive) ? characters.toUpperCase() : characters;
 
             // check for caps lock state
             if (_keyCode === CPKeyCodes.CAPS_LOCK)
             {
-                _capsLockActive = YES;
-
-                // Make sure the caps lock flag is set in modifierFlags
-                modifierFlags |= CPAlphaShiftKeyMask;
+                // The original logic was incorrect, treating Caps Lock as a momentary key.
+                // It is now correctly handled as a toggle on keyup.
             }
 
             if ([ModifierKeyCodes containsObject:_keyCode])
@@ -814,7 +812,7 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
             if (!characters && aDOMEvent.key && aDOMEvent.key.length === 1)
                 characters = aDOMEvent.key;
 
-            // Fallback for older browsers that support charCode but not key.
+            // Fallback for older browsers that use the deprecated charCode property.
             if (!characters && charCode > 0)
                 characters = String.fromCharCode(charCode);
 
@@ -838,13 +836,16 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
             _lastKey = -1;
             _charCodes[keyCode] = nil;
 
-            // check for caps lock state
+            // check for caps lock state toggle
             if (keyCode === CPKeyCodes.CAPS_LOCK)
             {
-                _capsLockActive = NO;
+                _capsLockActive = !_capsLockActive;
                 
-                // Make sure the caps lock flag is cleared in modifierFlags
-                modifierFlags &= ~CPAlphaShiftKeyMask;
+                // Update modifierFlags to reflect the new state of Caps Lock for this event
+                if (_capsLockActive)
+                    modifierFlags |= CPAlphaShiftKeyMask;
+                else
+                    modifierFlags &= ~CPAlphaShiftKeyMask;
             }
 
             if ([ModifierKeyCodes containsObject:keyCode])
@@ -1928,4 +1929,3 @@ function CPWindowList()
         return [windowObject windowNumber];
     }];
 }
-
