@@ -20,6 +20,92 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+/*
+ * THIS DOCUMENTATION STOLEN DIRECTLY FROM GOOGLE CLOSURE (licensed under Apache 2)
+ *
+ * Different web browsers have very different keyboard event handling. Most
+ * importantly is that only certain browsers repeat keydown events:
+ * IE, Opera, FF/Win32, and Safari 3 repeat keydown events.
+ * FF/Mac and Safari 2 do not.
+ *
+ * For the purposes of this code, "Safari 3" means WebKit 525+, when WebKit
+ * decided that they should try to match IE's key handling behavior.
+ * Safari 3.0.4, which shipped with Leopard (WebKit 523), has the
+ * Safari 2 behavior.
+ *
+ * Firefox, Safari, Opera prevent on keypress
+ *
+ * IE prevents on keydown
+ *
+ * Firefox does not fire keypress for shift, ctrl, alt
+ * Firefox does fire keydown for shift, ctrl, alt, meta
+ * Firefox does not repeat keydown for shift, ctrl, alt, meta
+ *
+ * Firefox does not fire keypress for up and down in an input
+ *
+ * Opera fires keypress for shift, ctrl, alt, meta
+ * Opera does not repeat keypress for shift, ctrl, alt, meta
+ *
+ * Safari 2 and 3 do not fire keypress for shift, ctrl, alt
+ * Safari 2 does not fire keydown for shift, ctrl, alt
+ * Safari 3 *does* fire keydown for shift, ctrl, alt
+ *
+ * IE provides the keycode for keyup/down events and the charcode (in the
+ * keycode field) for keypress.
+ *
+ * Mozilla provides the keycode for keyup/down and the charcode for keypress
+ * unless it's a non text modifying key in which case the keycode is provided.
+ *
+ * Safari 3 provides the keycode and charcode for all events.
+ *
+ * Opera provides the keycode for keyup/down event and either the charcode or
+ * the keycode (in the keycode field) for keypress events.
+ *
+ * Firefox x11 doesn't fire keydown events if a another key is already held down
+ * until the first key is released. This can cause a key event to be fired with
+ * a keyCode for the first key and a charCode for the second key.
+ *
+ * Safari 2 in keypress (not supported)
+ *
+ *        charCode keyCode which
+ * ENTER:       13      13    13
+ * F1:       63236   63236 63236
+ * F8:       63243   63243 63243
+ * ...
+ * p:          112     112   112
+ * P:           80      80    80
+ *
+ * Firefox, keypress:
+ *
+ *        charCode keyCode which
+ * ENTER:        0      13    13
+ * F1:           0     112     0
+ * F8:           0     119     0
+ * ...
+ * p:          112       0   112
+ * P:           80       0    80
+ *
+ * Opera, Mac+Win32, keypress:
+ *
+ *         charCode keyCode which
+ * ENTER: undefined      13    13
+ * F1:    undefined     112     0
+ * F8:    undefined     119     0
+ * ...
+ * p:     undefined     112   112
+ * P:     undefined      80    80
+ *
+ * IE7, keydown
+ *
+ *         charCode keyCode     which
+ * ENTER: undefined      13 undefined
+ * F1:    undefined     112 undefined
+ * F8:    undefined     119 undefined
+ * ...
+ * p:     undefined      80 undefined
+ * P:     undefined      80 undefined
+ */
+
 @import <Foundation/CPNotificationCenter.j>
 @import <Foundation/CPObject.j>
 @import <Foundation/CPRunLoop.j>
@@ -64,29 +150,6 @@ var KeyCodesToPrevent = {},
         59: 186   // ;, semicolon
     },
     KeyCodesToUnicodeMap = {};
-
-// New map from event.key to our internal Unicode function keys.
-// This is more reliable than mapping from keyCode.
-var KeyToUnicodeMapFromKey = {
-    "Backspace":            CPDeleteCharacter,
-    "Delete":               CPDeleteFunctionKey,
-    "Tab":                  CPTabCharacter,
-    "Enter":                CPCarriageReturnCharacter,
-    "Escape":               CPEscapeFunctionKey,
-    "PageUp":               CPPageUpFunctionKey,
-    "PageDown":             CPPageDownFunctionKey,
-    "ArrowLeft":            CPLeftArrowFunctionKey,
-    "ArrowUp":              CPUpArrowFunctionKey,
-    "ArrowRight":           CPRightArrowFunctionKey,
-    "ArrowDown":            CPDownArrowFunctionKey,
-    "Home":                 CPHomeFunctionKey,
-    "End":                  CPEndFunctionKey
-};
-
-// Map F-keys dynamically. Assumes CP_F1_KEY (0xF704) to CP_F12_KEY (0xF70F) are defined elsewhere.
-for (var i = 1; i <= 12; i++)
-    KeyToUnicodeMapFromKey['F' + i] = 0xF703 + i;
-
 
 KeyCodesToPrevent[CPKeyCodes.A] = YES;
 
@@ -627,7 +690,6 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
         timestamp = [CPEvent currentTimestamp],
         sourceElement = aDOMEvent.target || aDOMEvent.srcElement,
         windowNumber = [[CPApp keyWindow] windowNumber],
-        eventKey = aDOMEvent.key,
         modifierFlags = (aDOMEvent.shiftKey ? CPShiftKeyMask : 0) |
                         (aDOMEvent.ctrlKey ? CPControlKeyMask : 0) |
                         (aDOMEvent.altKey ? CPAlternateKeyMask : 0) |
@@ -635,14 +697,22 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
                         (_capsLockActive ? CPAlphaShiftKeyMask : 0);
 
     // With a few exceptions, all key events are blocked from propagating to
-    // the browser. We check against blacklists and whitelists.
+    // the browser.  Here the following exceptions are being allowed:
+    //
+    //   - All keys pressed along with a ctrl or cmd key _unless_ they are in
+    //     one of the two blacklists.
+    //   - Any key listed in the whitelist.
+    //
+    // The ctrl/cmd keys are used for browser hotkeys as are the keys listed in
+    // the whitelist (F1-F12 at the time of writing).
+    //
+    // If a key is listed in both the blacklist and whitelist, the blacklist is
+    // checked first.  The key will be blocked from propagating in that case.
+
     StopDOMEventPropagation = YES;
 
-    // Use event.key for checking character keys. This is more reliable across keyboard layouts.
-    var charToTest = (eventKey && eventKey.length === 1) ? eventKey.toLowerCase() : null;
-
     // Make sure it is not in the blacklists.
-    if (!((charToTest && CharacterKeysToPrevent[charToTest]) || KeyCodesToPrevent[aDOMEvent.keyCode]))
+    if (!(CharacterKeysToPrevent[String.fromCharCode(aDOMEvent.keyCode || aDOMEvent.charCode).toLowerCase()] || KeyCodesToPrevent[aDOMEvent.keyCode]))
     {
         // It is not in the blacklist, let it through if the ctrl/cmd key is
         // also down or it's in the whitelist.
@@ -656,7 +726,7 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
     switch (aDOMEvent.type)
     {
         case "keydown":
-            // Grab and store the keycode for compatibility with other parts of the system.
+            // Grab and store the keycode now since it is correct and consistent at this point.
             if (aDOMEvent.keyCode in MozKeyCodeToKeyCodeMap)
                 _keyCode = MozKeyCodeToKeyCodeMap[aDOMEvent.keyCode];
             else
@@ -664,68 +734,62 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 
             var characters;
 
-            // Determine characters using modern event.key property first.
-            if (eventKey)
-            {
-                if (eventKey.length === 1)
-                    characters = eventKey; // Printable character, already correctly cased.
-                else
-                    characters = String.fromCharCode(KeyToUnicodeMapFromKey[eventKey]); // Special key.
-            }
+            // Handle key codes for which String.fromCharCode won't work.
+            // Refs #1036: In Internet Explorer, both 'which' and 'charCode' are undefined for special keys.
+            if (aDOMEvent.which === 0 || aDOMEvent.charCode === 0 || (aDOMEvent.which === undefined && aDOMEvent.charCode === undefined))
+                characters = KeyCodesToUnicodeMap[_keyCode];
 
-            // Fallback for older browsers or unhandled keys.
+            // The problem with keyCode is that this property refers to keys on the keyboard and not to characters
+            // This is why String.fromCharCode does not always work in more recent versions of Firefox
+            // E.g. pressing a '#' on a German keyboard gives you a charCode of 163, which refers to '£' and not '#'
+            // The property key works fine, though. From there we can get the actual character more robustly.
+            // Therefore we prefer key over keyCode whenever possible
+
             if (!characters)
+                characters = (aDOMEvent.key && aDOMEvent.key.length == 1) ? aDOMEvent.key.toLowerCase() : String.fromCharCode(_keyCode).toLowerCase();
+
+            overrideCharacters = (modifierFlags & CPShiftKeyMask || _capsLockActive) ? characters.toUpperCase() : characters;
+
+            // check for caps lock state
+            if (_keyCode === CPKeyCodes.CAPS_LOCK)
             {
-                if (aDOMEvent.charCode === 0) // Keydown for non-printable keys have charCode === 0
-                    characters = KeyCodesToUnicodeMap[_keyCode];
-                if (!characters)
-                    characters = String.fromCharCode(_keyCode);
+                _capsLockActive = YES;
+
+                // Make sure the caps lock flag is set in modifierFlags
+                modifierFlags |= CPAlphaShiftKeyMask;
             }
 
-            // Set characters for the event. event.key is already cased correctly for printable keys.
-            if (eventKey && eventKey.length === 1)
+            if ([ModifierKeyCodes containsObject:_keyCode])
             {
-                overrideCharacters = eventKey;
-                charactersIgnoringModifiers = eventKey.toLowerCase();
-            }
-            else
-            {
-                charactersIgnoringModifiers = (characters || "").toLowerCase();
-                overrideCharacters = (modifierFlags & CPShiftKeyMask || _capsLockActive) ? (characters || "").toUpperCase() : charactersIgnoringModifiers;
-            }
-
-            // Handle caps lock state.
-            if (eventKey === "CapsLock")
-            {
-                 // This is a simplification; getModifierState("CapsLock") would be ideal but is not used here to avoid further changes.
-                _capsLockActive = !_capsLockActive;
-                modifierFlags = (modifierFlags & ~CPAlphaShiftKeyMask) | (_capsLockActive ? CPAlphaShiftKeyMask : 0);
-            }
-
-            var isModifier = (eventKey === "Control" || eventKey === "Shift" || eventKey === "Alt" || eventKey === "Meta" || eventKey === "CapsLock");
-            if (isModifier)
-            {
-                // A modifier key will never fire keypress. We fire a CPFlagsChanged event and break.
+                // A modifier key will never fire keypress. We don't need to do any other processing so we just fire it here and break.
                 event = [CPEvent keyEventWithType:CPFlagsChanged location:location modifierFlags:modifierFlags
                             timestamp:timestamp windowNumber:windowNumber context:nil
                             characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:_keyCode];
+
                 break;
             }
             else if (modifierFlags & (CPControlKeyMask | CPCommandKeyMask))
             {
-                // Let Cmd/Ctrl combinations be sent on keydown to allow for early cancellation.
+                //we are simply going to skip all keypress events that use cmd/ctrl key
+                //this lets us be consistent in all browsers and send on the keydown
+                //which means we can cancel the event early enough, but only if sendEvent needs to
             }
-            else if (CPKeyCodes.firesKeyPressEvent(_keyCode, eventKey, _lastKey, aDOMEvent.shiftKey, aDOMEvent.ctrlKey, aDOMEvent.altKey))
+            else if (CPKeyCodes.firesKeyPressEvent(_keyCode, aDOMEvent.key, _lastKey, aDOMEvent.shiftKey, aDOMEvent.ctrlKey, aDOMEvent.altKey))
             {
-                // This branch is for keys that fire a `keypress` event.
-                // We allow propagation to let the browser handle input in text fields.
+                // this branch is taken by events which fire keydown, keypress, and keyup.
+                // this is the only time we'll ALLOW character keys to propagate (needed for text fields)
                 StopDOMEventPropagation = NO;
                 break;
             }
+            else
+            {
+                //this branch is taken by "remedial" key events
+                // In this state we continue to keypress and send the CPEvent
+            }
 
         case "keypress":
-            // We unconditionally break on keypress events with modifiers,
-            // as we forced the event to be sent on the keydown.
+            // we unconditionally break on keypress events with modifiers,
+            // because we forced the event to be sent on the keydown
             if (aDOMEvent.type === "keypress" && (modifierFlags & (CPControlKeyMask | CPCommandKeyMask)))
                 break;
 
@@ -736,20 +800,15 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
             _lastKey = keyCode;
             _charCodes[keyCode] = charCode;
 
-            // Use the character determined during keydown if available.
             var characters = overrideCharacters;
-            if (!characters)
-            {
-                 // Fallback for printable keys on keypress.
-                if (eventKey && eventKey.length === 1)
-                    characters = eventKey;
-                else if (charCode !== 0)
-                    characters = String.fromCharCode(charCode);
-                else
-                    characters = KeyCodesToUnicodeMap[keyCode] || "";
-            }
+            // Is this a special key?
+            if (!characters && (aDOMEvent.which === 0 || aDOMEvent.charCode === 0))
+                characters = KeyCodesToUnicodeMap[charCode];
 
-            charactersIgnoringModifiers = characters.toLowerCase();
+            if (!characters)
+                characters = String.fromCharCode(charCode);
+
+            charactersIgnoringModifiers = characters.toLowerCase(); // FIXME: This isn't correct. It SHOULD include Shift.
 
             // Safari won't send proper capitalization during cmd-key events
             if (!overrideCharacters && (modifierFlags & CPCommandKeyMask) && ((modifierFlags & CPShiftKeyMask) || _capsLockActive))
@@ -758,6 +817,7 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
             event = [CPEvent keyEventWithType:CPKeyDown location:location modifierFlags:modifierFlags
                         timestamp:timestamp windowNumber:windowNumber context:nil
                         characters:characters charactersIgnoringModifiers:charactersIgnoringModifiers isARepeat:isARepeat keyCode:charCode];
+
             break;
 
         case "keyup":
@@ -768,26 +828,26 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
             _lastKey = -1;
             _charCodes[keyCode] = nil;
 
-            if (eventKey === "CapsLock")
+            // check for caps lock state
+            if (keyCode === CPKeyCodes.CAPS_LOCK)
             {
-                 // The state was handled on keydown. Nothing to do for state change on keyup for a toggle key.
+                _capsLockActive = NO;
+                
+                // Make sure the caps lock flag is cleared in modifierFlags
+                modifierFlags &= ~CPAlphaShiftKeyMask;
             }
 
-            var isModifier = (eventKey === "Control" || eventKey === "Shift" || eventKey === "Alt" || eventKey === "Meta" || eventKey === "CapsLock");
-            if (isModifier)
+            if ([ModifierKeyCodes containsObject:keyCode])
             {
+                // A modifier key will never fire keypress. We don't need to do any other processing so we just fire it here and break.
                 event = [CPEvent keyEventWithType:CPFlagsChanged location:location modifierFlags:modifierFlags
                             timestamp:timestamp windowNumber:windowNumber context:nil
-                            characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:keyCode];
+                            characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:_keyCode];
+
                 break;
             }
 
-            var characters;
-            if (eventKey && eventKey.length === 1)
-                characters = eventKey;
-            else
-                characters = KeyCodesToUnicodeMap[keyCode] || String.fromCharCode(charCode) || "";
-
+            var characters = KeyCodesToUnicodeMap[charCode] || String.fromCharCode(charCode);
             charactersIgnoringModifiers = characters.toLowerCase();
 
             if (!(modifierFlags & CPShiftKeyMask) && (modifierFlags & CPCommandKeyMask) && !_capsLockActive)
@@ -796,6 +856,7 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
             event = [CPEvent keyEventWithType:CPKeyUp location:location modifierFlags:modifierFlags
                         timestamp: timestamp windowNumber:windowNumber context:nil
                         characters:characters charactersIgnoringModifiers:charactersIgnoringModifiers isARepeat:NO keyCode:keyCode];
+
             break;
     }
 
@@ -807,6 +868,7 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
     if (event && ![_platformPasteboard windowShouldSuppressKeyEvent])
     {
         [CPApp sendEvent:event];
+
         [_platformPasteboard windowDidSendKeyEvent:event];
     }
 
@@ -1163,7 +1225,7 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
                     return;
             }
         }
-
+        
         // cancel other touch cases preventively
 
         if (aDOMEvent.preventDefault)
@@ -1845,14 +1907,4 @@ function CPWindowObjectList()
     }
 
     return windowObjects;
-}
-
-function CPWindowList()
-{
-    var windowObjectList = CPWindowObjectList();
-
-    return [windowObjectList arrayByApplyingBlock:function(windowObject)
-    {
-        return [windowObject windowNumber];
-    }];
 }
