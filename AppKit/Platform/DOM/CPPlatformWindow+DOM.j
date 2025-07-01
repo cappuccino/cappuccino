@@ -206,6 +206,7 @@ KeyNameToUnicodeMap["ArrowRight"]               = CPRightArrowFunctionKey;
 KeyNameToUnicodeMap["ArrowDown"]                = CPDownArrowFunctionKey;
 KeyNameToUnicodeMap["Home"]                     = CPHomeFunctionKey;
 KeyNameToUnicodeMap["End"]                      = CPEndFunctionKey;
+// Add safeguards for punctuation
 KeyNameToUnicodeMap[";"]                        = ";";
 KeyNameToUnicodeMap["-"]                        = "-";
 KeyNameToUnicodeMap["="]                        = "=";
