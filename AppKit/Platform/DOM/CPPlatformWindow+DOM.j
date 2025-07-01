@@ -736,8 +736,9 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
             var characters;
 
             // Handle key codes for which String.fromCharCode won't work.
-            // Refs #1036: In Internet Explorer, both 'which' and 'charCode' are undefined for special keys.
-            if (aDOMEvent.which === 0 || aDOMEvent.charCode === 0 || (aDOMEvent.which === undefined && aDOMEvent.charCode === undefined))
+            // This condition is for identifying non-printing keys based on the keydown event.
+            // We've replaced the deprecated '.which' with a direct check on charCode.
+            if (!aDOMEvent.charCode)
                 characters = KeyCodesToUnicodeMap[_keyCode];
 
             // The problem with keyCode is that this property refers to keys on the keyboard and not to characters
@@ -802,11 +803,19 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
             _charCodes[keyCode] = charCode;
 
             var characters = overrideCharacters;
-            // Is this a special key?
-            if (!characters && (aDOMEvent.which === 0 || aDOMEvent.charCode === 0))
-                characters = KeyCodesToUnicodeMap[charCode];
 
-            if (!characters)
+            // This condition is met for non-printing keys (like Enter, Tab, arrows) that fall through
+            // from the 'keydown' case, as their charCode is 0 in the keydown DOM event.
+            if (!characters && (!aDOMEvent.charCode || aDOMEvent.charCode === 0))
+                characters = KeyCodesToUnicodeMap[charCode]; // Note: for fall-through, charCode is actually the keyCode from the keydown event.
+
+            // For modern browsers, event.key is the most reliable way to get the actual character,
+            // especially for international keyboards. We only use it for single-character keys.
+            if (!characters && aDOMEvent.key && aDOMEvent.key.length === 1)
+                characters = aDOMEvent.key;
+
+            // Fallback for older browsers that support charCode but not key.
+            if (!characters && charCode > 0)
                 characters = String.fromCharCode(charCode);
 
             charactersIgnoringModifiers = characters.toLowerCase(); // FIXME: This isn't correct. It SHOULD include Shift.
