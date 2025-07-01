@@ -2626,9 +2626,6 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
 
 
 var _CPNativeInputField,
-    _CPNativeInputFieldKeyDownCalled,
-    _CPNativeInputFieldKeyUpCalled,
-    _CPNativeInputFieldKeyPressedCalled,
     _CPNativeInputFieldActive;
 
 var _CPCopyPlaceholder = '-';
@@ -2639,22 +2636,26 @@ var _CPCopyPlaceholder = '-';
 {
     return _CPNativeInputFieldActive;
 }
+
 + (void)isDeadKey:(CPEvent)event
 {
 #if PLATFORM(DOM)
-    return event._DOMEvent && (event._DOMEvent.key == 'Dead' || event._DOMEvent.key == 'Process');
+    // This identifies dead key events during the keydown phase on some platforms/layouts.
+    return event._DOMEvent && (event._DOMEvent.key === 'Dead' || event._DOMEvent.key === 'Process');
 #endif
-
     return NO;
 }
+
 + (void)cancelCurrentNativeInputSession
 {
+    if (!_CPNativeInputFieldActive)
+        return;
 
 #if PLATFORM(DOM)
     _CPNativeInputField.innerHTML = '';
 #endif
 
-    [self _endInputSessionWithString:_CPNativeInputField.innerHTML];
+    [self _endInputSessionWithString:@""];
 }
 
 + (void)cancelCurrentInputSessionIfNeeded
@@ -2668,17 +2669,25 @@ var _CPCopyPlaceholder = '-';
 + (void)_endInputSessionWithString:(CPString)aStr
 {
     _CPNativeInputFieldActive = NO;
+    var currentFirstResponder = [[CPApp keyWindow] firstResponder];
 
-    var currentFirstResponder = [[CPApp keyWindow] firstResponder],
-        placeholderRange = CPMakeRange([currentFirstResponder selectedRange].location - 1, 1);
+    if (currentFirstResponder && [currentFirstResponder respondsToSelector:@selector(insertText:)])
+    {
+        var placeholderRange = CPMakeRange([currentFirstResponder selectedRange].location - 1, 1);
+        [currentFirstResponder setSelectedRange:placeholderRange];
 
-    [currentFirstResponder setSelectedRange:placeholderRange];
-    [currentFirstResponder insertText:aStr];
+        if(aStr)
+            [currentFirstResponder insertText:aStr];
+    }
+    
+#if PLATFORM(DOM)
     _CPNativeInputField.innerHTML = '';
-
+#endif
 
     [self hideInputElement];
-    [currentFirstResponder updateInsertionPointStateAndRestartTimer:YES];
+
+    if (currentFirstResponder)
+        [currentFirstResponder updateInsertionPointStateAndRestartTimer:YES];
 }
 
 + (void)initialize
@@ -2697,95 +2706,59 @@ var _CPCopyPlaceholder = '-';
 
     document.body.appendChild(_CPNativeInputField);
 
-    _CPNativeInputField.addEventListener("keyup", function(e)
-    {
-        _CPNativeInputFieldKeyUpCalled = YES;
-
-        // Filter out non-printable keys like modifiers, cursor keys, etc.
-        // A key with a name longer than one character is typically a non-printable control key.
-        // We exclude 'Dead' and 'Process' which are handled as part of dead-key composition.
-        if (e.key.length > 1 && e.key !== 'Dead' && e.key !== 'Process')
-        {
-            if (e.key === 'Enter')
-                _CPNativeInputField.innerHTML = '';
-
-            if (_CPNativeInputField.innerHTML.length == 0 || _CPNativeInputField.innerHTML.length > 2) // backspace
-                [self cancelCurrentInputSessionIfNeeded];
-
-            return false; // prevent the default behaviour
-        }
-
-        var currentFirstResponder = [[CPApp keyWindow] firstResponder];
-
-        if (![currentFirstResponder respondsToSelector:@selector(_activateNativeInputElement:)])
-            return false; // prevent the default behaviour
-
-        // chrome-trigger: keypressed is omitted for deadkeys
-        if (!_CPNativeInputFieldActive && _CPNativeInputFieldKeyPressedCalled == NO && _CPNativeInputField.innerHTML.length && _CPNativeInputField.innerHTML != _CPCopyPlaceholder && _CPNativeInputField.innerHTML.length < 3)
-        {
-            _CPNativeInputFieldActive = YES;
-            [currentFirstResponder _activateNativeInputElement:_CPNativeInputField];
-        }
-        else
-        {
-            if (_CPNativeInputFieldActive)
-                [self _endInputSessionWithString:_CPNativeInputField.innerHTML];
-
-            // prevent the copy placeholder beeing removed by cursor keys
-            if (_CPNativeInputFieldKeyPressedCalled)
-               _CPNativeInputField.innerHTML = '';
-        }
-
-        _CPNativeInputFieldKeyDownCalled = NO;
-
-        return false; // prevent the default behaviour
-    }, true);
-
+    // The 'keydown' event is used to detect non-printable/control keys
+    // that should either be handled by the text view directly or should
+    // cancel the native input session.
     _CPNativeInputField.addEventListener("keydown", function(e)
     {
-        // this protects from heavy typing and the shift key
-        if (_CPNativeInputFieldKeyDownCalled)
-            return true;
+        // Filter out non-printable keys like modifiers, cursor keys, etc.
+        // A key with a name longer than one character is typically a non-printable control key.
+        if (e.key.length > 1 && e.key !== 'Dead' && e.key !== 'Process')
+        {
+            if (e.key === 'Enter' || e.key === 'Escape')
+                [self cancelCurrentInputSessionIfNeeded];
 
-        _CPNativeInputFieldKeyDownCalled = YES;
-        _CPNativeInputFieldKeyUpCalled = NO;
-        _CPNativeInputFieldKeyPressedCalled = NO;
+            // For backspace, if the field is empty, cancel the session.
+            // Otherwise, let the 'input' event handle the change.
+            if (e.key === 'Backspace' && _CPNativeInputField.innerHTML.length === 0)
+                [self cancelCurrentInputSessionIfNeeded];
+
+            // Let the browser handle other control keys within the contentEditable,
+            // but don't propagate to our text view.
+            return;
+        }
+
         var currentFirstResponder = [[CPApp keyWindow] firstResponder];
-
-        // webkit-browsers: cursor keys do not emit keypressed and would otherwise activate deadkey mode
-        if (!CPBrowserIsEngine(CPGeckoBrowserEngine) && e.key.startsWith('Arrow'))
-            _CPNativeInputFieldKeyPressedCalled = YES;
 
         if (![currentFirstResponder respondsToSelector:@selector(_activateNativeInputElement:)])
             return;
 
-        // FF-trigger: here the best way to detect a dead key is the missing keyup event
-        if (CPBrowserIsEngine(CPGeckoBrowserEngine))
-            setTimeout(function(){
-                _CPNativeInputFieldKeyDownCalled = NO;
+        // If not already active, start a new input session.
+        if (!_CPNativeInputFieldActive)
+        {
+            _CPNativeInputFieldActive = YES;
+            [currentFirstResponder _activateNativeInputElement:_CPNativeInputField];
+        }
 
-                if (!_CPNativeInputFieldActive && _CPNativeInputFieldKeyUpCalled == NO && _CPNativeInputField.innerHTML.length && _CPNativeInputField.innerHTML != _CPCopyPlaceholder && _CPNativeInputField.innerHTML.length < 3 && !e.repeat)
-                {
-                    _CPNativeInputFieldActive = YES;
-                    [currentFirstResponder _activateNativeInputElement:_CPNativeInputField];
-                }
-                else if (!_CPNativeInputFieldActive)
-                    [self hideInputElement];
-            }, 200);
+    }, true);
 
-        return false;
-    }, true); // capture mode
-
-    _CPNativeInputField.addEventListener("keypress", function(e)
+    // The 'input' event is the modern, unified way to handle all character input.
+    // It fires after a regular keypress, a dead key composition, or an IME insertion.
+    // This replaces the need for complex keypress/keyup timing logic.
+    _CPNativeInputField.addEventListener("input", function(e)
     {
-        _CPNativeInputFieldKeyUpCalled = YES;
-        _CPNativeInputFieldKeyPressedCalled = YES;
-        return false;
+        var inputText = _CPNativeInputField.innerHTML;
 
-    }, true); // capture mode
+        // An empty input could be from a backspace, so we just end the session.
+        // We pass the final content of the div to the handler.
+        [self _endInputSessionWithString:inputText];
+
+    }, true);
 
     _CPNativeInputField.onpaste = function(e)
     {
+        e.preventDefault();
+
         var nativeClipboard = (e.originalEvent || e).clipboardData,
             richtext,
             pasteboard = [CPPasteboard generalPasteboard],
@@ -2795,21 +2768,18 @@ var _CPCopyPlaceholder = '-';
         if ([currentFirstResponder respondsToSelector:@selector(isRichText)] && ![currentFirstResponder isRichText])
             isPlain = YES;
 
-        // this is the rich chrome / FF codepath (where we can use RTF directly)
-        if ((richtext = nativeClipboard.getData('text/rtf')) && !(!!(e.originalEvent || e).shiftKey) && !isPlain)
+        // Rich text path for browsers supporting text/rtf
+        // handle shift key to trigger plain text paste
+        if (!isPlain && (richtext = nativeClipboard.getData('text/rtf')) && !(!!(e.originalEvent || e).shiftKey))
         {
-            e.preventDefault();
-
             // setTimeout to prevent flickering in FF
             setTimeout(function(){
                 [currentFirstResponder insertText:[[_CPRTFParser new] parseRTF:richtext]]
             }, 20);
-
-            return false;
+            return;
         }
 
-        // plain is the same in all browsers...
-
+        // Plain text for all other cases
         var data = e.clipboardData.getData('text/plain'),
             cappString = [pasteboard stringForType:CPStringPboardType];
 
@@ -2819,50 +2789,54 @@ var _CPCopyPlaceholder = '-';
             [pasteboard setString:data forType:CPStringPboardType];
         }
 
-        setTimeout(function(){   // prevent dom-flickering (only needed for FF)
+        setTimeout(function(){   // prevent dom-flickering
             [currentFirstResponder paste:self];
         }, 20);
-
-        return false;
     };
 
-    if (CPBrowserIsEngine(CPGeckoBrowserEngine))
+    // Unify oncopy/oncut for all browsers
+    _CPNativeInputField.oncopy = function(e)
     {
-        _CPNativeInputField.oncopy = function(e)
-        {
-            var pasteboard = [CPPasteboard generalPasteboard],
-                string,
-                currentFirstResponder = [[CPApp keyWindow] firstResponder];
+        e.preventDefault();
+        var pasteboard = [CPPasteboard generalPasteboard],
+            currentFirstResponder = [[CPApp keyWindow] firstResponder];
 
-            [currentFirstResponder copy:self];
+        [currentFirstResponder copy:self];
 
-            var stringForPasting = [pasteboard stringForType:CPStringPboardType];
-            e.clipboardData.setData('text/plain', stringForPasting);
+        var stringForPasting = [pasteboard stringForType:CPStringPboardType];
+        e.clipboardData.setData('text/plain', stringForPasting);
 
-            return false;
-        };
-
-        _CPNativeInputField.oncut = function(e)
-        {
-            var pasteboard = [CPPasteboard generalPasteboard],
-                string,
-                currentFirstResponder = [[CPApp keyWindow] firstResponder];
-
-            // prevent dom-flickering
-            setTimeout(function(){
-                [currentFirstResponder cut:self];
-            }, 20);
-
-            // this is necessary because cut will only execute in the future
-            [currentFirstResponder copy:self];
-
-            var stringForPasting = [pasteboard stringForType:CPStringPboardType];
-
-            e.clipboardData.setData('text/plain', stringForPasting);
-
-            return false;
+        var rtfForPasting = [pasteboard stringForType:CPRTFPboardType];
+        if (rtfForPasting) {
+            e.clipboardData.setData('text/rtf', rtfForPasting);
         }
-    }
+    };
+
+    _CPNativeInputField.oncut = function(e)
+    {
+        e.preventDefault();
+        var pasteboard = [CPPasteboard generalPasteboard],
+            currentFirstResponder = [[CPApp keyWindow] firstResponder];
+
+        // This is necessary because cut will only execute in the future.
+        // We copy first to populate the clipboard data for the event.
+        [currentFirstResponder copy:self];
+
+        var stringForPasting = [pasteboard stringForType:CPStringPboardType];
+        e.clipboardData.setData('text/plain', stringForPasting);
+        var rtfForPasting = [pasteboard stringForType:CPRTFPboardType];
+
+        if (rtfForPasting)
+        {
+            e.clipboardData.setData('text/rtf', rtfForPasting);
+        }
+
+        // Then, perform the actual cut operation from the text view.
+        // setTimeout prevents DOM flickering.
+        setTimeout(function(){
+            [currentFirstResponder cut:self];
+        }, 20);
+    };
 #endif
 }
 
