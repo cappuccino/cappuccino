@@ -1012,35 +1012,6 @@ Sets the selection to a range of characters in response to user action.
 }
 #endif
 
-
-// interface to the _CPNativeInputManager
-- (void)_activateNativeInputElement:(DOMElement)aNativeField
-{
-    var attributes = [[self typingAttributes] copy];
-
-    // make it invisible
-    [attributes setObject:[CPColor colorWithRed:1 green:1 blue:1 alpha:0] forKey:CPForegroundColorAttributeName];
-
-    // FIXME: this hack to provide the visual space for the inputmanager should at least bypass the undomanager
-    var placeholderString = [[CPAttributedString alloc] initWithString:aNativeField.innerHTML attributes:attributes];
-    [self insertText:placeholderString];
-
-    var caretOrigin = [_layoutManager boundingRectForGlyphRange:CPMakeRange(MAX(0, _selectionRange.location - 1), 1) inTextContainer:_textContainer].origin;
-    caretOrigin.y += [_layoutManager _characterOffsetAtLocation:MAX(0, _selectionRange.location - 1)];
-    caretOrigin.x += 2; // two pixel offset to the LHS character
-    var cumulativeOffset = [self _cumulativeOffset];
-
-
-#if PLATFORM(DOM)
-    aNativeField.style.left = (caretOrigin.x + cumulativeOffset.x) + "px";
-    aNativeField.style.top = (caretOrigin.y + cumulativeOffset.y) + "px";
-    aNativeField.style.font = [[_typingAttributes objectForKey:CPFontAttributeName] cssString];
-    aNativeField.style.color = [[_typingAttributes objectForKey:CPForegroundColorAttributeName] cssString];
-#endif
-
-    [_caret setVisibility:NO];  // hide our caret because now the system caret takes over
-}
-
 - (CPArray)selectedRanges
 {
     return [_selectionRange];
@@ -1054,7 +1025,12 @@ Sets the selection to a range of characters in response to user action.
 
     [[_window platformWindow] _propagateCurrentDOMEvent:YES];  // for the _CPNativeInputManager (necessary at least on FF and chrome)
 
-    if (![_CPNativeInputManager isNativeInputFieldActive] && ![_CPNativeInputManager isDeadKey:event])
+    // Only call interpretKeyEvents for non-printable keys (navigation, commands).
+    // Printable characters are handled exclusively by _CPNativeInputManager.
+
+    var key = event.key;
+
+    if (key && (key.length > 1 || (event.modifierFlags & (CPCommandKeyMask | CPAlternateKeyMask | CPControlKeyMask))))
         [self interpretKeyEvents:[event]];
 
     [_caret setPermanentlyVisible:YES];
@@ -2626,68 +2602,35 @@ var CPTextViewAllowsUndoKey = @"CPTextViewAllowsUndoKey",
 
 
 var _CPNativeInputField,
-    _CPNativeInputFieldActive;
+    _isComposing = NO; // Flag to track if an IME/dead key session is active.
 
 var _CPCopyPlaceholder = '-';
 
 @implementation _CPNativeInputManager : CPObject
 
+// This method is no longer used by the new design, but we keep it
+// for any other part of the system that might call it.
 + (BOOL)isNativeInputFieldActive
 {
-    return _CPNativeInputFieldActive;
+    return NO;
 }
 
 + (void)isDeadKey:(CPEvent)event
 {
 #if PLATFORM(DOM)
-    // This identifies dead key events during the keydown phase on some platforms/layouts.
     return event._DOMEvent && (event._DOMEvent.key === 'Dead' || event._DOMEvent.key === 'Process');
 #endif
     return NO;
 }
 
-+ (void)cancelCurrentNativeInputSession
-{
-    if (!_CPNativeInputFieldActive)
-        return;
-
-#if PLATFORM(DOM)
-    _CPNativeInputField.innerHTML = '';
-#endif
-
-    [self _endInputSessionWithString:@""];
-}
-
 + (void)cancelCurrentInputSessionIfNeeded
 {
-    if (!_CPNativeInputFieldActive)
-        return;
-
-    [self cancelCurrentNativeInputSession];
-}
-
-+ (void)_endInputSessionWithString:(CPString)aStr
-{
-    _CPNativeInputFieldActive = NO;
-    var currentFirstResponder = [[CPApp keyWindow] firstResponder];
-
-    if (currentFirstResponder && [currentFirstResponder respondsToSelector:@selector(insertText:)])
-    {
-        var placeholderRange = CPMakeRange([currentFirstResponder selectedRange].location - 1, 1);
-        [currentFirstResponder setSelectedRange:placeholderRange];
-
-        if(aStr)
-            [currentFirstResponder insertText:aStr];
-    }
-    
 #if PLATFORM(DOM)
-    _CPNativeInputField.innerHTML = '';
+    if (_CPNativeInputField) {
+        _CPNativeInputField.innerHTML = '';
+    }
+    _isComposing = NO;
 #endif
-
-    [self hideInputElement];
-
-    if (currentFirstResponder)
-        [currentFirstResponder updateInsertionPointStateAndRestartTimer:YES];
 }
 
 + (void)initialize
@@ -2695,115 +2638,89 @@ var _CPCopyPlaceholder = '-';
 #if PLATFORM(DOM)
     _CPNativeInputField = document.createElement("div");
     _CPNativeInputField.contentEditable = YES;
-    _CPNativeInputField.style.width = "64px";
-    _CPNativeInputField.style.zIndex = 10000;
+
+    // Style the input field to be invisible but focusable
     _CPNativeInputField.style.position = "absolute";
-    _CPNativeInputField.style.visibility = "visible";
-    _CPNativeInputField.style.padding = "0px";
-    _CPNativeInputField.style.margin = "0px";
+    _CPNativeInputField.style.top = "-1000px";
+    _CPNativeInputField.style.left = "-1000px";
+    _CPNativeInputField.style.width = "1px";
+    _CPNativeInputField.style.height = "1px";
+    _CPNativeInputField.style.opacity = "0";
+    _CPNativeInputField.style.overflow = "hidden";
     _CPNativeInputField.style.whiteSpace = "pre";
-    _CPNativeInputField.style.outline = "0px solid transparent";
+    _CPNativeInputField.style.zIndex = -1; // Put it behind everything
 
     document.body.appendChild(_CPNativeInputField);
 
-    // The 'keydown' event is used to detect non-printable/control keys
-    // that should either be handled by the text view directly or should
-    // cancel the native input session.
-    _CPNativeInputField.addEventListener("keydown", function(e)
+    // Central function to handle inserting text into the CPTextView
+    var handleInput = function(textToInsert)
     {
-        // Filter out non-printable keys like modifiers, cursor keys, etc.
-        // A key with a name longer than one character is typically a non-printable control key.
-        if (e.key.length > 1 && e.key !== 'Dead' && e.key !== 'Process')
-        {
-            if (e.key === 'Enter' || e.key === 'Escape')
-                [self cancelCurrentInputSessionIfNeeded];
-
-            // For backspace, if the field is empty, cancel the session.
-            // Otherwise, let the 'input' event handle the change.
-            if (e.key === 'Backspace' && _CPNativeInputField.innerHTML.length === 0)
-                [self cancelCurrentInputSessionIfNeeded];
-
-            // Let the browser handle other control keys within the contentEditable,
-            // but don't propagate to our text view.
+        if (!textToInsert)
             return;
-        }
 
         var currentFirstResponder = [[CPApp keyWindow] firstResponder];
 
-        if (![currentFirstResponder respondsToSelector:@selector(_activateNativeInputElement:)])
+        if (currentFirstResponder && [currentFirstResponder respondsToSelector:@selector(insertText:)])
+            [currentFirstResponder insertText:textToInsert];
+
+        // CRUCIAL: Clear the field immediately after grabbing its content.
+        _CPNativeInputField.innerHTML = '';
+    };
+
+    // Fires for simple key presses (a, b, 1, 2)
+    _CPNativeInputField.addEventListener('input', function(e) {
+        // If we are in a composition (e.g., IME), we do nothing.
+        // We wait for 'compositionend' to get the final, complete text.
+        if (_isComposing) {
             return;
-
-        // If not already active, start a new input session.
-        if (!_CPNativeInputFieldActive)
-        {
-            _CPNativeInputFieldActive = YES;
-            [currentFirstResponder _activateNativeInputElement:_CPNativeInputField];
         }
+        // If not composing, this is a simple character. Handle it immediately.
+        handleInput(e.target.innerHTML);
+    });
 
-    }, true);
+    // Fires when a composition session starts (e.g., user presses a dead key or starts an IME).
+    _CPNativeInputField.addEventListener('compositionstart', function(e) {
+        _isComposing = YES;
+    });
 
-    // The 'input' event is the modern, unified way to handle all character input.
-    // It fires after a regular keypress, a dead key composition, or an IME insertion.
-    // This replaces the need for complex keypress/keyup timing logic.
-    _CPNativeInputField.addEventListener("input", function(e)
-    {
-        var inputText = _CPNativeInputField.innerHTML;
+    // Fires when the composition is finished.
+    _CPNativeInputField.addEventListener('compositionend', function(e) {
+        // The composition is over. `e.data` has the final string (e.g., "é").
+        handleInput(e.data);
+        _isComposing = NO;
+    });
 
-        // An empty input could be from a backspace, so we just end the session.
-        // We pass the final content of the div to the handler.
-        [self _endInputSessionWithString:inputText];
-
-    }, true);
-
+    // PASTE handler
     _CPNativeInputField.onpaste = function(e)
     {
         e.preventDefault();
+        var nativeClipboard = (e.originalEvent || e).clipboardData;
+        var richtext;
+        var currentFirstResponder = [[CPApp keyWindow] firstResponder];
+        var isPlain = ![currentFirstResponder isRichText];
 
-        var nativeClipboard = (e.originalEvent || e).clipboardData,
-            richtext,
-            pasteboard = [CPPasteboard generalPasteboard],
-            currentFirstResponder = [[CPApp keyWindow] firstResponder],
-            isPlain = NO;
-
-        if ([currentFirstResponder respondsToSelector:@selector(isRichText)] && ![currentFirstResponder isRichText])
-            isPlain = YES;
-
-        // Rich text path for browsers supporting text/rtf
-        // handle shift key to trigger plain text paste
-        if (!isPlain && (richtext = nativeClipboard.getData('text/rtf')) && !(!!(e.originalEvent || e).shiftKey))
-        {
-            // setTimeout to prevent flickering in FF
-            setTimeout(function(){
+        // Correctly check for shift key to force plain text paste.
+        if (!isPlain && !e.shiftKey && (richtext = nativeClipboard.getData('text/rtf'))) {
+            setTimeout(function() {
                 [currentFirstResponder insertText:[[_CPRTFParser new] parseRTF:richtext]]
-            }, 20);
+            }, 0);
             return;
         }
 
-        // Plain text for all other cases
-        var data = e.clipboardData.getData('text/plain'),
-            cappString = [pasteboard stringForType:CPStringPboardType];
-
-        if (cappString != data)
-        {
-            [pasteboard declareTypes:[CPStringPboardType] owner:nil];
-            [pasteboard setString:data forType:CPStringPboardType];
-        }
-
-        setTimeout(function(){   // prevent dom-flickering
-            [currentFirstResponder paste:self];
-        }, 20);
+        var data = nativeClipboard.getData('text/plain');
+        [currentFirstResponder insertText:data];
     };
 
-    // Unify oncopy/oncut for all browsers
+    // COPY handler
     _CPNativeInputField.oncopy = function(e)
     {
         e.preventDefault();
-        var pasteboard = [CPPasteboard generalPasteboard],
-            currentFirstResponder = [[CPApp keyWindow] firstResponder];
+        var pasteboard = [CPPasteboard generalPasteboard];
+        var currentFirstResponder = [[CPApp keyWindow] firstResponder];
 
-        [currentFirstResponder copy:self];
+        [currentFirstResponder copy:self]; // This populates the CP pasteboard
 
-        var stringForPasting = [pasteboard stringForType:CPStringPboardType];
+        var stringForPasting = [pasteboard stringForType:CPStringPboardType] || '';
         e.clipboardData.setData('text/plain', stringForPasting);
 
         var rtfForPasting = [pasteboard stringForType:CPRTFPboardType];
@@ -2812,85 +2729,63 @@ var _CPCopyPlaceholder = '-';
         }
     };
 
+    // CUT handler
     _CPNativeInputField.oncut = function(e)
     {
         e.preventDefault();
-        var pasteboard = [CPPasteboard generalPasteboard],
-            currentFirstResponder = [[CPApp keyWindow] firstResponder];
+        var pasteboard = [CPPasteboard generalPasteboard];
+        var currentFirstResponder = [[CPApp keyWindow] firstResponder];
 
-        // This is necessary because cut will only execute in the future.
-        // We copy first to populate the clipboard data for the event.
+        // First, copy the data to populate the clipboard
         [currentFirstResponder copy:self];
 
-        var stringForPasting = [pasteboard stringForType:CPStringPboardType];
+        var stringForPasting = [pasteboard stringForType:CPStringPboardType] || '';
         e.clipboardData.setData('text/plain', stringForPasting);
         var rtfForPasting = [pasteboard stringForType:CPRTFPboardType];
-
-        if (rtfForPasting)
-        {
+        if (rtfForPasting) {
             e.clipboardData.setData('text/rtf', rtfForPasting);
         }
 
-        // Then, perform the actual cut operation from the text view.
-        // setTimeout prevents DOM flickering.
-        setTimeout(function(){
-            [currentFirstResponder cut:self];
-        }, 20);
+        // Then, perform the delete part of the cut operation in the text view
+        [currentFirstResponder delete:self];
     };
 #endif
 }
 
 + (void)focusForTextView:(CPTextView)currentFirstResponder
 {
-    if (![currentFirstResponder respondsToSelector:@selector(_activateNativeInputElement:)])
-        return;
-
-    [self hideInputElement];
-
 #if PLATFORM(DOM)
-    _CPNativeInputField.focus();
+    // The field no longer needs to move. It just needs focus.
+    if (_CPNativeInputField && document.activeElement !== _CPNativeInputField) {
+        _CPNativeInputField.focus();
+    }
 #endif
-
 }
 
 + (void)focusForClipboardOfTextView:(CPTextView)textview
 {
-
 #if PLATFORM(DOM)
-    if (!_CPNativeInputFieldActive && _CPNativeInputField.innerHTML.length == 0)
-        _CPNativeInputField.innerHTML = _CPCopyPlaceholder;  // make sure we have a selection to allow the native pasteboard work in safari
+    var selectedRange = [textview selectedRange];
+    if (selectedRange.length > 0) {
+        // Put the selected text into the hidden div so the browser can natively copy it.
+        var textToCopy = [[textview textStorage] substringWithRange:selectedRange];
+        _CPNativeInputField.innerHTML = textToCopy;
+    } else {
+        // For paste, we just need the field to be focusable.
+        _CPNativeInputField.innerHTML = _CPCopyPlaceholder;
+    }
 
     [self focusForTextView:textview];
 
-    // select all in the contenteditable div (http://stackoverflow.com/questions/12243898/how-to-select-all-text-in-contenteditable-div)
-    if (document.body.createTextRange)
-    {
-        var range = document.body.createTextRange();
-
-        range.moveToElementText(_CPNativeInputField);
-        range.select();
-    }
-    else if (window.getSelection)
-    {
-        var selection = window.getSelection(),
-            range = document.createRange();
-
+    // Select the content of the hidden div so copy/cut works.
+    if (window.getSelection && document.createRange) {
+        var selection = window.getSelection();
+        var range = document.createRange();
         range.selectNodeContents(_CPNativeInputField);
         selection.removeAllRanges();
         selection.addRange(range);
     }
 #endif
-
-}
-
-+ (void)hideInputElement
-{
-
-#if PLATFORM(DOM)
-    _CPNativeInputField.style.top = "-10000px";
-    _CPNativeInputField.style.left = "-10000px";
-#endif
-
 }
 
 @end
