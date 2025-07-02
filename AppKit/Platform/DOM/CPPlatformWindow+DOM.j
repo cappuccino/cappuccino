@@ -725,16 +725,13 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
     // With a few exceptions, all key events are blocked from propagating to
     // the browser. The logic here allows browser shortcuts (Cmd/Ctrl keys)
     // and function keys (F1-F12) to pass through, unless explicitly blacklisted.
-    StopDOMEventPropagation = YES;
 
+    StopDOMEventPropagation = YES;
     var keyCodeForPropagationCheck = aDOMEvent.keyCode || 0;
     var charForPropagationCheck = String.fromCharCode(keyCodeForPropagationCheck).toLowerCase();
 
-    // Make sure it is not in the blacklists.
     if (!(CharacterKeysToPrevent[charForPropagationCheck] || KeyCodesToPrevent[keyCodeForPropagationCheck]))
     {
-        // It is not in the blacklist, let it through if the ctrl/cmd key is
-        // also down or it's in the whitelist.
         if ((modifierFlags & (CPControlKeyMask | CPCommandKeyMask)) || KeyCodesToAllow[keyCodeForPropagationCheck])
             StopDOMEventPropagation = NO;
     }
@@ -742,57 +739,75 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
     var characters = @"",
         charactersIgnoringModifiers = @"";
 
-    // Grab and store the keyCode for mapping and compatibility.
-    // This property is deprecated but necessary for the key maps.
     var keyCode = aDOMEvent.keyCode;
     if (keyCode in MozKeyCodeToKeyCodeMap)
         keyCode = MozKeyCodeToKeyCodeMap[keyCode];
 
+    var isActionKey;
+    var key = aDOMEvent.key;
+
+    // Modern Browser Path (use event.key)
+    if (key) {
+        isActionKey =
+            key === 'Enter'      ||
+            key === 'Backspace'  ||
+            key === 'Tab'        ||
+            key === 'Escape'     ||
+            key === 'Delete'     ||
+            key.startsWith('Arrow') ||
+            key === 'Home'       ||
+            key === 'End'        ||
+            key === 'PageUp'     ||
+            key === 'PageDown';
+    }
+    // Legacy Browser Fallback (use event.keyCode)
+    else
+    {
+        isActionKey =
+            (keyCode === 13)  || // Enter
+            (keyCode === 8)   || // Backspace
+            (keyCode === 9)   || // Tab
+            (keyCode === 27)  || // Escape
+            (keyCode === 46)  || // Delete
+            (keyCode >= 37 && keyCode <= 40); // Arrow keys
+    }
+
+
     switch (aDOMEvent.type)
     {
         case "keydown":
-            // For modifier keys, we create a CPFlagsChanged event and stop processing.
+            // For modifier keys, create a CPFlagsChanged event and stop processing.
+            // These are always considered "action keys".
             if ([ModifierKeyCodes containsObject:keyCode])
             {
                 event = [CPEvent keyEventWithType:CPFlagsChanged location:location modifierFlags:modifierFlags
                             timestamp:timestamp windowNumber:windowNumber context:nil
-                            characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:keyCode];
+                            characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:keyCode isActionKey:YES];
                 break;
             }
 
-            // Determine if the event is a repeat. Use the modern `event.repeat` property
-            // with a fallback to our manual state tracking for older browsers.
             var isARepeat = !!aDOMEvent.repeat || (_charCodes[keyCode] != nil);
-            _charCodes[keyCode] = YES; // Mark the key as down for fallback repeat detection.
+            _charCodes[keyCode] = YES;
 
-            // Determine the character for the event.
-            // Priority 1: Use the modern `event.key` property. It's the most reliable.
             if (aDOMEvent.key)
             {
                 if (aDOMEvent.key.length === 1)
                 {
-                    // This is a printing character (e.g., "a", "P", "#").
                     characters = aDOMEvent.key;
                 }
                 else
                 {
-                    // This is a named, non-printing key (e.g., "Enter", "ArrowLeft").
-                    // Map the standard key name to our framework's internal constant.
                     characters = KeyNameToUnicodeMap[aDOMEvent.key] || aDOMEvent.key;
                 }
             }
-            // Priority 2: Fallback for older browsers without `event.key`.
             else
             {
-                // First, check if it's a known non-printing key in our legacy map.
                 characters = KeyCodesToUnicodeMap[keyCode];
 
-                // If not, it's likely a printing character. Use the deprecated fromCharCode.
-                // This is less reliable for international layouts but is the best fallback.
                 if (!characters)
                 {
                     characters = String.fromCharCode(keyCode);
-                    // Manually handle capitalization for this fallback path.
+
                     if (modifierFlags & CPShiftKeyMask || _capsLockActive)
                         characters = characters.toUpperCase();
                     else
@@ -800,24 +815,21 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
                 }
             }
 
-            // This is a simplification; a fully correct implementation would require extensive mapping.
             charactersIgnoringModifiers = characters.toLowerCase();
 
+            // Pass the determined `isActionKey` flag.
             event = [CPEvent keyEventWithType:CPKeyDown location:location modifierFlags:modifierFlags
                         timestamp:timestamp windowNumber:windowNumber context:nil
-                        characters:characters charactersIgnoringModifiers:charactersIgnoringModifiers isARepeat:isARepeat keyCode:keyCode];
+                        characters:characters charactersIgnoringModifiers:charactersIgnoringModifiers isARepeat:isARepeat keyCode:keyCode isActionKey:isActionKey];
 
             break;
 
         case "keyup":
-            // Clear the key's state for our fallback repeat detection.
             _charCodes[keyCode] = nil;
 
-            // Handle the toggling of Caps Lock state.
             if (keyCode === CPKeyCodes.CAPS_LOCK)
             {
                 _capsLockActive = !_capsLockActive;
-                // Update modifierFlags to reflect the new state for this event.
                 if (_capsLockActive)
                     modifierFlags |= CPAlphaShiftKeyMask;
                 else
@@ -825,16 +837,15 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
             }
 
             // For modifier keys, create a CPFlagsChanged event and stop.
+            // These are always considered "action keys".
             if ([ModifierKeyCodes containsObject:keyCode])
             {
                 event = [CPEvent keyEventWithType:CPFlagsChanged location:location modifierFlags:modifierFlags
                             timestamp:timestamp windowNumber:windowNumber context:nil
-                            characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:keyCode];
+                            characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:keyCode isActionKey:YES];
                 break;
             }
 
-            // Determine the character for the keyup event using the same logic as keydown
-            // for consistency, as this event no longer has access to `keypress` state.
             if (aDOMEvent.key)
             {
                 if (aDOMEvent.key.length === 1)
@@ -852,9 +863,10 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
             if (!(modifierFlags & CPShiftKeyMask) && (modifierFlags & CPCommandKeyMask) && !_capsLockActive)
                 characters = charactersIgnoringModifiers;
 
+            // Pass the determined `isActionKey` flag for keyup as well.
             event = [CPEvent keyEventWithType:CPKeyUp location:location modifierFlags:modifierFlags
                         timestamp: timestamp windowNumber:windowNumber context:nil
-                        characters:characters charactersIgnoringModifiers:charactersIgnoringModifiers isARepeat:NO keyCode:keyCode];
+                        characters:characters charactersIgnoringModifiers:charactersIgnoringModifiers isARepeat:NO keyCode:keyCode isActionKey:isActionKey];
 
             break;
     }
@@ -867,12 +879,11 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
     if (event && ![_platformPasteboard windowShouldSuppressKeyEvent])
     {
         [CPApp sendEvent:event];
-
         [_platformPasteboard windowDidSendKeyEvent:event];
     }
 
     var didStop = NO;
-    // Platform pasteboard can overrule the decision to stop propagation.
+
     if ([_platformPasteboard windowShouldStopPropagation] || (StopDOMEventPropagation && ![_platformPasteboard windowShouldNotStopPropagation]))
     {
         didStop = YES;

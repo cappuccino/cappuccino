@@ -1022,16 +1022,18 @@ Sets the selection to a range of characters in response to user action.
 
 - (void)keyDown:(CPEvent)event
 {
+    [[_window platformWindow] _propagateCurrentDOMEvent:YES];
 
-    [[_window platformWindow] _propagateCurrentDOMEvent:YES];  // for the _CPNativeInputManager (necessary at least on FF and chrome)
-
-    // Only call interpretKeyEvents for non-printable keys (navigation, commands).
-    // Printable characters are handled exclusively by _CPNativeInputManager.
-
-    var key = event.key;
-
-    if (key && (key.length > 1 || (event.modifierFlags & (CPCommandKeyMask | CPAlternateKeyMask | CPControlKeyMask))))
+    if ([event _isActionOrCommandEvent])
+    {
+        // This is a navigation key, action key, or command shortcut.
+        // Let the Cappuccino framework's key binding system handle it.
         [self interpretKeyEvents:[event]];
+    }
+
+    // This is a normal printable character ('a', '1', '$', 'é').
+    // We do nothing, preventing the double-insertion bug. The _CPNativeInputManager
+    // will capture it from the hidden input field and insert it correctly.
 
     [_caret setPermanentlyVisible:YES];
 }
@@ -2661,7 +2663,10 @@ var _CPCopyPlaceholder = '-';
         var currentFirstResponder = [[CPApp keyWindow] firstResponder];
 
         if (currentFirstResponder && [currentFirstResponder respondsToSelector:@selector(insertText:)])
-            [currentFirstResponder insertText:textToInsert];
+            // setTimeout to prevent flickering
+            setTimeout(function(){
+                [currentFirstResponder insertText:textToInsert]
+            }, 20);
 
         // CRUCIAL: Clear the field immediately after grabbing its content.
         _CPNativeInputField.innerHTML = '';
