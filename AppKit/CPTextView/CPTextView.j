@@ -2610,13 +2610,6 @@ var _CPCopyPlaceholder = '-';
 
 @implementation _CPNativeInputManager : CPObject
 
-// This method is no longer used by the new design, but we keep it
-// for any other part of the system that might call it.
-+ (BOOL)isNativeInputFieldActive
-{
-    return NO;
-}
-
 + (void)isDeadKey:(CPEvent)event
 {
 #if PLATFORM(DOM)
@@ -2707,13 +2700,13 @@ var _CPCopyPlaceholder = '-';
         // Correctly check for shift key to force plain text paste.
         if (!isPlain && !e.shiftKey && (richtext = nativeClipboard.getData('text/rtf'))) {
             setTimeout(function() {
-                [currentFirstResponder insertText:[[_CPRTFParser new] parseRTF:richtext]]
+                [currentFirstResponder paste:self];
             }, 0);
             return;
         }
 
         var data = nativeClipboard.getData('text/plain');
-        [currentFirstResponder insertText:data];
+        [currentFirstResponder paste:self];
     };
 
     // COPY handler
@@ -2747,9 +2740,9 @@ var _CPCopyPlaceholder = '-';
         var stringForPasting = [pasteboard stringForType:CPStringPboardType] || '';
         e.clipboardData.setData('text/plain', stringForPasting);
         var rtfForPasting = [pasteboard stringForType:CPRTFPboardType];
-        if (rtfForPasting) {
+
+        if (rtfForPasting)
             e.clipboardData.setData('text/rtf', rtfForPasting);
-        }
 
         // Then, perform the delete part of the cut operation in the text view
         [currentFirstResponder delete:self];
@@ -2760,10 +2753,9 @@ var _CPCopyPlaceholder = '-';
 + (void)focusForTextView:(CPTextView)currentFirstResponder
 {
 #if PLATFORM(DOM)
-    // The field no longer needs to move. It just needs focus.
-    if (_CPNativeInputField && document.activeElement !== _CPNativeInputField) {
+
+    if (_CPNativeInputField && document.activeElement !== _CPNativeInputField)
         _CPNativeInputField.focus();
-    }
 #endif
 }
 
@@ -2773,7 +2765,7 @@ var _CPCopyPlaceholder = '-';
     var selectedRange = [textview selectedRange];
     if (selectedRange.length > 0) {
         // Put the selected text into the hidden div so the browser can natively copy it.
-        var textToCopy = [[textview textStorage] substringWithRange:selectedRange];
+        var textToCopy = [[[textview textStorage] string] substringWithRange:selectedRange];
         _CPNativeInputField.innerHTML = textToCopy;
     } else {
         // For paste, we just need the field to be focusable.

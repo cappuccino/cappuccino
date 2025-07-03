@@ -746,7 +746,6 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
     var isActionKey;
     var key = aDOMEvent.key;
 
-    // Modern Browser Path (use event.key)
     if (key) {
         isActionKey =
             key === 'Enter'      ||
@@ -760,24 +759,16 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
             key === 'PageUp'     ||
             key === 'PageDown';
     }
-    // Legacy Browser Fallback (use event.keyCode)
     else
     {
         isActionKey =
-            (keyCode === 13)  || // Enter
-            (keyCode === 8)   || // Backspace
-            (keyCode === 9)   || // Tab
-            (keyCode === 27)  || // Escape
-            (keyCode === 46)  || // Delete
-            (keyCode >= 37 && keyCode <= 40); // Arrow keys
+            (keyCode === 13) || (keyCode === 8) || (keyCode === 9) ||
+            (keyCode === 27) || (keyCode === 46) || (keyCode >= 37 && keyCode <= 40);
     }
-
 
     switch (aDOMEvent.type)
     {
         case "keydown":
-            // For modifier keys, create a CPFlagsChanged event and stop processing.
-            // These are always considered "action keys".
             if ([ModifierKeyCodes containsObject:keyCode])
             {
                 event = [CPEvent keyEventWithType:CPFlagsChanged location:location modifierFlags:modifierFlags
@@ -795,9 +786,14 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
                 {
                     characters = aDOMEvent.key;
                 }
+                // Correctly handle dead keys to prevent inserting "Dead"
+                else if (aDOMEvent.key === "Dead" || aDOMEvent.key === "Process") {
+                    characters = @"";
+                }
+                // For other named keys, map them or fall back to an empty string.
                 else
                 {
-                    characters = KeyNameToUnicodeMap[aDOMEvent.key] || aDOMEvent.key;
+                    characters = KeyNameToUnicodeMap[aDOMEvent.key] || @"";
                 }
             }
             else
@@ -807,7 +803,6 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
                 if (!characters)
                 {
                     characters = String.fromCharCode(keyCode);
-
                     if (modifierFlags & CPShiftKeyMask || _capsLockActive)
                         characters = characters.toUpperCase();
                     else
@@ -817,7 +812,6 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 
             charactersIgnoringModifiers = characters.toLowerCase();
 
-            // Pass the determined `isActionKey` flag.
             event = [CPEvent keyEventWithType:CPKeyDown location:location modifierFlags:modifierFlags
                         timestamp:timestamp windowNumber:windowNumber context:nil
                         characters:characters charactersIgnoringModifiers:charactersIgnoringModifiers isARepeat:isARepeat keyCode:keyCode isActionKey:isActionKey];
@@ -836,8 +830,6 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
                     modifierFlags &= ~CPAlphaShiftKeyMask;
             }
 
-            // For modifier keys, create a CPFlagsChanged event and stop.
-            // These are always considered "action keys".
             if ([ModifierKeyCodes containsObject:keyCode])
             {
                 event = [CPEvent keyEventWithType:CPFlagsChanged location:location modifierFlags:modifierFlags
@@ -848,22 +840,26 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
 
             if (aDOMEvent.key)
             {
-                if (aDOMEvent.key.length === 1)
+                if (aDOMEvent.key.length === 1) {
                     characters = aDOMEvent.key;
+                }
+                // Ensure keyup events also don't produce "Dead"
+                else if (aDOMEvent.key === "Dead" || aDOMEvent.key === "Process") {
+                    characters = @"";
+                }
                 else
-                    characters = KeyNameToUnicodeMap[aDOMEvent.key] || aDOMEvent.key;
+                {
+                    characters = KeyNameToUnicodeMap[aDOMEvent.key] || @"";
+                }
             }
             else
-            {
                 characters = KeyCodesToUnicodeMap[keyCode] || String.fromCharCode(keyCode);
-            }
 
             charactersIgnoringModifiers = characters.toLowerCase();
 
             if (!(modifierFlags & CPShiftKeyMask) && (modifierFlags & CPCommandKeyMask) && !_capsLockActive)
                 characters = charactersIgnoringModifiers;
 
-            // Pass the determined `isActionKey` flag for keyup as well.
             event = [CPEvent keyEventWithType:CPKeyUp location:location modifierFlags:modifierFlags
                         timestamp: timestamp windowNumber:windowNumber context:nil
                         characters:characters charactersIgnoringModifiers:charactersIgnoringModifiers isARepeat:NO keyCode:keyCode isActionKey:isActionKey];
