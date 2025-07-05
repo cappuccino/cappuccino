@@ -166,7 +166,7 @@ var CPViewControllerCachedCibs;
 
         if (!cib)
         {
-            // if the cib isn't cached yet : fetch it and cache it
+            // if the cib isn't cached yet: fetch it and cache it
             cib = [[CPCib alloc] initWithCibNamed:_cibName bundle:_cibBundle];
             [CPViewControllerCachedCibs setObject:cib forKey:_cibName];
         }
@@ -260,6 +260,11 @@ var CPViewControllerCachedCibs;
 
         if (_view == nil && [cibOwner isKindOfClass:[CPDocument class]])
             [self setView:[cibOwner valueForKey:@"view"]];
+
+        // If the view was just loaded, we must set its next responder.
+        // This is the first half of inserting the controller into the responder chain.
+        if (_view)
+            [_view setNextResponder:self];
 
         if (!_view)
         {
@@ -408,10 +413,26 @@ var CPViewControllerCachedCibs;
         [self willChangeValueForKey:"isViewLoaded"];
 
     _view = aView;
+
+    // When the view is set manually, we must set its next responder.
+    if (_view)
+        [_view setNextResponder:self];
+
     _isViewLoaded = aView != nil;
 
     if (willChangeIsViewLoaded)
         [self didChangeValueForKey:"isViewLoaded"];
+}
+
+/*!
+    @method nextResponder
+    @discussion The CPViewController implementation of this method returns the superview
+    of the view controller's view. This is the second half of the insertion,
+    completing the chain: view -> viewController -> superview.
+*/
+- (id)nextResponder
+{
+    return [_view superview];
 }
 
 - (BOOL)automaticallyNotifiesObserversOfIsViewLoaded
@@ -465,6 +486,10 @@ var CPViewControllerViewKey     = @"CPViewControllerViewKey",
     if (self)
     {
         _view = [aCoder decodeObjectForKey:CPViewControllerViewKey];
+        // When the view is unarchived, we must also set its next responder.
+        if (_view)
+            [_view setNextResponder:self];
+            
         _title = [aCoder decodeObjectForKey:CPViewControllerTitleKey];
         _cibName = [aCoder decodeObjectForKey:CPViewControllerCibNameKey];
 
