@@ -449,7 +449,6 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 {
     [super copy:sender];
 
-
     var selectedRange = [self selectedRange],
         pasteboard = [CPPasteboard generalPasteboard],
         stringForPasting = [[self textStorage] attributedSubstringFromRange:CPMakeRangeCopy(selectedRange)],
@@ -517,6 +516,9 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)paste:(id)sender
 {
+    if ([[CPApp currentEvent] type] != CPAppKitDefined)
+        return;
+
     [self _pasteString:[self _stringForPasting]];
 }
 
@@ -1705,6 +1707,9 @@ Sets the selection to a range of characters in response to user action.
 
 - (void)cut:(id)sender
 {
+    if ([[CPApp currentEvent] type] != CPAppKitDefined)
+        return;
+
     var selectedRange = [self selectedRange];
 
     if (selectedRange.length < 1)
@@ -2670,7 +2675,8 @@ var _CPCopyPlaceholder = '-';
     };
 
     // Fires for simple key presses (a, b, 1, 2)
-    _CPNativeInputField.addEventListener('input', function(e) {
+    _CPNativeInputField.addEventListener('input', function(e)
+    {
         // If we are in a composition (e.g., IME), we do nothing.
         // We wait for 'compositionend' to get the final, complete text.
         if (_isComposing) {
@@ -2699,20 +2705,16 @@ var _CPCopyPlaceholder = '-';
         var nativeClipboard = (e.originalEvent || e).clipboardData;
         var richtext;
         var currentFirstResponder = [[CPApp keyWindow] firstResponder];
-        var isPlain = ![currentFirstResponder isRichText];
 
-        // Check for shift key to force plain text paste.
-        if (!isPlain && !e.shiftKey && (richtext = nativeClipboard.getData('text/rtf')))
+        // Check for richtext (shift key to force plain text paste).
+        if ([currentFirstResponder isRichText] && !e.shiftKey && (richtext = nativeClipboard.getData('text/rtf')))
         {
-            setTimeout(function()
-            {
-                [currentFirstResponder paste:self];
-            }, 0);
+            [currentFirstResponder _pasteString:richtext];
             return;
         }
 
         var data = nativeClipboard.getData('text/plain');
-        [currentFirstResponder paste:self];
+        [currentFirstResponder _pasteString:data];
     };
 
     // COPY handler
@@ -2720,10 +2722,11 @@ var _CPCopyPlaceholder = '-';
     {
         e.preventDefault();
         var pasteboard = [CPPasteboard generalPasteboard];
-        var currentFirstResponder = [[CPApp keyWindow] firstResponder];
 
-        [currentFirstResponder copy:self]; // This populates the CP pasteboard
+        // First, copy the data to populate the CP clipboard
+        [[[CPApp keyWindow] firstResponder] copy:self];
 
+        // Now, copy the data to the native clipboard
         var stringForPasting = [pasteboard stringForType:CPStringPboardType] || '';
         e.clipboardData.setData('text/plain', stringForPasting);
 
@@ -2738,20 +2741,22 @@ var _CPCopyPlaceholder = '-';
     {
         e.preventDefault();
         var pasteboard = [CPPasteboard generalPasteboard];
+        var nativeClipboard = (e.originalEvent || e).clipboardData;
         var currentFirstResponder = [[CPApp keyWindow] firstResponder];
-
-        // First, copy the data to populate the clipboard
+debugger
+        // First, copy the data to populate the CP clipboard
         [currentFirstResponder copy:self];
 
+        // Now, copy the data to the native clipboard
         var stringForPasting = [pasteboard stringForType:CPStringPboardType] || '';
-        e.clipboardData.setData('text/plain', stringForPasting);
+        nativeClipboard.setData('text/plain', stringForPasting);
         var rtfForPasting = [pasteboard stringForType:CPRTFPboardType];
 
         if (rtfForPasting)
-            e.clipboardData.setData('text/rtf', rtfForPasting);
+            nativeClipboard.setData('text/rtf', rtfForPasting);
 
         // Then, perform the delete part of the cut operation in the text view
-        [currentFirstResponder delete:self];
+        [currentFirstResponder deleteBackward:self];
     };
 #endif
 }
