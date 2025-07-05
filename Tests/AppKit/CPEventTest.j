@@ -44,13 +44,13 @@
 {
     [self assert:0 equals:[CPEvent modifierFlags] message:@"no modifier flags active in a newly started app"];
 
-    var anEvent = [CPEvent keyEventWithType:CPKeyDown location:CGPointMakeZero() modifierFlags:CPShiftKeyMask timestamp:0 windowNumber:0 context:nil characters:"A" charactersIgnoringModifiers:"a" isARepeat:NO keyCode:0];
+    var anEvent = [CPEvent keyEventWithType:CPKeyDown location:CGPointMakeZero() modifierFlags:CPShiftKeyMask timestamp:0 windowNumber:0 context:nil characters:"A" charactersIgnoringModifiers:"a" isARepeat:NO keyCode:0 isActionKey:NO];
     [CPApp sendEvent:anEvent];
 
     [self assert:CPShiftKeyMask equals:[CPEvent modifierFlags] message:@"shift key pressed"];
 
     // When the key up event is sent the modifier flags are cleared.
-    anEvent = [CPEvent keyEventWithType:CPKeyUp location:CGPointMakeZero() modifierFlags:0 timestamp:0 windowNumber:0 context:nil characters:"A" charactersIgnoringModifiers:"a" isARepeat:NO keyCode:0];
+    anEvent = [CPEvent keyEventWithType:CPKeyUp location:CGPointMakeZero() modifierFlags:0 timestamp:0 windowNumber:0 context:nil characters:"A" charactersIgnoringModifiers:"a" isARepeat:NO keyCode:0 isActionKey:NO];
     [CPApp sendEvent:anEvent];
 
     [self assert:0 equals:[CPEvent modifierFlags] message:@"shift key released"];
