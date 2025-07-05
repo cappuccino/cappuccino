@@ -174,7 +174,7 @@ var CPViewControllerCachedCibs;
         [cib instantiateCibWithExternalNameTable:_cibExternalNameTable];
     }
     else
-        _view = [CPView new];
+        [self setView:[CPView new]];
 }
 
 /*!
@@ -233,7 +233,7 @@ var CPViewControllerCachedCibs;
     }
     else
     {
-        _view = [CPView new];
+        [self setView:[CPView new]];
         [self _viewDidLoadWithCompletionHandler:aHandler];
     }
 }
