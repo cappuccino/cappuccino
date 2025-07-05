@@ -449,19 +449,26 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 {
     [super copy:sender];
 
-    if (![self isRichText])
-        return;
 
     var selectedRange = [self selectedRange],
         pasteboard = [CPPasteboard generalPasteboard],
         stringForPasting = [[self textStorage] attributedSubstringFromRange:CPMakeRangeCopy(selectedRange)],
         richData = [_CPRTFProducer produceRTF:stringForPasting documentAttributes:@{}];
 
+    if ([self isRichText])
+    {
         [pasteboard declareTypes:[CPStringPboardType, CPRTFPboardType, _CPSmartPboardType, _CPASPboardType] owner:nil];
         [pasteboard setString:[stringForPasting._string stringByReplacingOccurrencesOfString:_CPAttachmentCharacterAsString withString:''] forType:CPStringPboardType];
         [pasteboard setString:richData forType:CPRTFPboardType];
         [pasteboard setString:_previousSelectionGranularity + '' forType:_CPSmartPboardType];
         [pasteboard setString:[[CPKeyedArchiver archivedDataWithRootObject:stringForPasting] rawString] forType:_CPASPboardType];
+    }
+    else
+    {
+        [pasteboard declareTypes:[CPStringPboardType, _CPSmartPboardType] owner:nil];
+        [pasteboard setString:stringForPasting._string forType:CPStringPboardType];
+        [pasteboard setString:_previousSelectionGranularity + '' forType:_CPSmartPboardType];
+    }
 }
 
 - (void)_pasteString:(id)stringForPasting
@@ -510,9 +517,6 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 
 - (void)paste:(id)sender
 {
-    if (![sender isKindOfClass:_CPNativeInputManager] && [[CPApp currentEvent] type] != CPAppKitDefined)
-        return
-
     [self _pasteString:[self _stringForPasting]];
 }
 
@@ -2697,9 +2701,11 @@ var _CPCopyPlaceholder = '-';
         var currentFirstResponder = [[CPApp keyWindow] firstResponder];
         var isPlain = ![currentFirstResponder isRichText];
 
-        // Correctly check for shift key to force plain text paste.
-        if (!isPlain && !e.shiftKey && (richtext = nativeClipboard.getData('text/rtf'))) {
-            setTimeout(function() {
+        // Check for shift key to force plain text paste.
+        if (!isPlain && !e.shiftKey && (richtext = nativeClipboard.getData('text/rtf')))
+        {
+            setTimeout(function()
+            {
                 [currentFirstResponder paste:self];
             }, 0);
             return;
@@ -2722,9 +2728,9 @@ var _CPCopyPlaceholder = '-';
         e.clipboardData.setData('text/plain', stringForPasting);
 
         var rtfForPasting = [pasteboard stringForType:CPRTFPboardType];
-        if (rtfForPasting) {
+
+        if (rtfForPasting)
             e.clipboardData.setData('text/rtf', rtfForPasting);
-        }
     };
 
     // CUT handler
