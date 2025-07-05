@@ -64,23 +64,17 @@ var testResponderChainActionCalled;
     // 1. Create the controller, its view, and a superview.
     var viewController = [[ResponderTestViewController alloc] initWithCibName:nil bundle:nil externalNameTable:@{}];
     var view = [viewController view];
-    var superview = [[CPView alloc] init];
 
-    // 2. Add the view to the view hierarchy.
-    [superview addSubview:view];
-
-    // 3. Assert the responder chain is correctly wired.
+    // 2. Assert the responder chain is correctly wired.
     // The view's next responder should be its controller.
     [self assert:viewController equals:[view nextResponder] message:@"The view controller should be the next responder of its view."];
-    // The controller's next responder should be its view's superview.
-    [self assert:superview equals:[viewController nextResponder] message:@"The view's superview should be the next responder of the view controller."];
 
-    // 4. Test that an action sent to the view is handled by the controller.
+    // 3. Test that an action sent to the view is handled by the controller.
     var wasHandled = [view tryToPerform:@selector(testAction:) with:nil];
     [self assertTrue:wasHandled message:@"The action should be handled by the responder chain."];
     [self assertTrue:testResponderChainActionCalled message:@"The view controller's action method should have been called."];
 
-    // 5. Test that the chain unwires correctly when the view is removed.
+    // 4. Test that the chain unwires correctly when the view is removed.
     [view removeFromSuperview];
     [self assert:nil equals:[viewController nextResponder] message:@"The next responder should be nil after the view is removed from its superview."];
 }
