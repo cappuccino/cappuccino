@@ -62,7 +62,7 @@ var testResponderChainActionCalled;
     testResponderChainActionCalled = NO;
 
     // 1. Create the controller, its view, and a superview.
-    var viewController = [[ResponderTestViewController alloc] init];
+    var viewController = [[ResponderTestViewController alloc] initWithCibName:nil bundle:nil externalNameTable:@{}];
     var view = [viewController view];
     var superview = [[CPView alloc] init];
 
