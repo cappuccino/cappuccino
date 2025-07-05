@@ -166,7 +166,7 @@ var CPViewControllerCachedCibs;
 
         if (!cib)
         {
-            // if the cib isn't cached yet : fetch it and cache it
+            // if the cib isn't cached yet: fetch it and cache it
             cib = [[CPCib alloc] initWithCibNamed:_cibName bundle:_cibBundle];
             [CPViewControllerCachedCibs setObject:cib forKey:_cibName];
         }
