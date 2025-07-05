@@ -602,7 +602,8 @@ var CPViewHighDPIDrawingEnabled = YES;
 
     // We will have to adjust the z-index of all views starting at this index.
     var count = _subviews.length,
-        lastWindow;
+        lastWindow,
+        isNewAddOrMove = aSubview._superview !== self;
 
     // Dirty the key view loop, in case the window wants to auto recalculate it
     [[self window] _dirtyKeyViewLoop];
@@ -673,6 +674,9 @@ var CPViewHighDPIDrawingEnabled = YES;
     if (!_window && lastWindow)
         [aSubview _setWindow:nil];
 
+    if (isNewAddOrMove)
+        [aSubview _postViewDidAppearNotification];
+
     // This method might be called before we are fully unarchived, in which case the theme state isn't set up yet
     // and none of the below matters anyhow.
     if (_themeState)
@@ -735,6 +739,7 @@ var CPViewHighDPIDrawingEnabled = YES;
     // If the view is not hidden and one of its ancestors is hidden,
     // notify the view that it is now unhidden.
     [self _setSuperview:nil];
+    [self _postViewDidDisappearNotification];
 
     [self _notifyWindowDidResignKey];
     [self _notifyViewDidResignFirstResponder];
@@ -1719,11 +1724,7 @@ var CPViewHighDPIDrawingEnabled = YES;
 
     _superview = aSuperview;
 
-    if (hasOldSuperview)
-        [self _postViewDidDisappearNotification];
-
-    if (hasNewSuperview)
-        [self _postViewDidAppearNotification];
+    // Notifications are now posted manually from _insertSubview and _removeFromSuperview
 }
 
 - (void)_recursiveLostHiddenAncestor
