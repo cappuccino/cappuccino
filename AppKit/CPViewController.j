@@ -258,11 +258,13 @@ var CPViewControllerCachedCibs;
 
         [self loadView];
 
-        if (_view)
-            [_view setNextResponder:self];
-
         if (_view == nil && [cibOwner isKindOfClass:[CPDocument class]])
             [self setView:[cibOwner valueForKey:@"view"]];
+
+        // If the view was just loaded, we must set its next responder.
+        // This is the first half of inserting the controller into the responder chain.
+        if (_view)
+            [_view setNextResponder:self];
 
         if (!_view)
         {
@@ -412,6 +414,7 @@ var CPViewControllerCachedCibs;
 
     _view = aView;
 
+    // When the view is set manually, we must set its next responder.
     if (_view)
         [_view setNextResponder:self];
 
@@ -423,10 +426,9 @@ var CPViewControllerCachedCibs;
 
 /*!
     @method nextResponder
-    Returns the receiver’s next responder.
     @discussion The CPViewController implementation of this method returns the superview
-    of the view controller's view. This effectively inserts the view controller
-    into the responder chain between its view and the view's superview.
+    of the view controller's view. This is the second half of the insertion,
+    completing the chain: view -> viewController -> superview.
 */
 - (id)nextResponder
 {
@@ -484,6 +486,7 @@ var CPViewControllerViewKey     = @"CPViewControllerViewKey",
     if (self)
     {
         _view = [aCoder decodeObjectForKey:CPViewControllerViewKey];
+        // When the view is unarchived, we must also set its next responder.
         if (_view)
             [_view setNextResponder:self];
             
