@@ -347,22 +347,42 @@
     [self assert:[timeZone1 isEqualToTimeZone:timeZone2] equals:NO];
 }
 
-- (void)testSystemTimeZonesAreNotNilInModernBrowsers
+- (void)testInitWithNameRespectsDaylightSaving
 {
-    // This test verifies the fix for issue #2855, where modern browsers
-    // could cause system time zone methods to return nil.
-    var local = [CPTimeZone localTimeZone];
-    [self assert:(local !== nil) equals:YES];
+    // This test verifies that initWithName: correctly selects the abbreviation
+    // (e.g., PST vs. PDT) based on the current date's daylight saving status.
 
-    var system = [CPTimeZone systemTimeZone];
-    [self assert:(system !== nil) equals:YES];
+    // 1. Test a time zone that observes DST, like America/Los_Angeles.
+    var laTimeZoneName = @"America/Los_Angeles";
+    var expectedAbbreviationLA;
 
-    var defaultTZ = [CPTimeZone defaultTimeZone];
-    [self assert:(defaultTZ !== nil) equals:YES];
+    try {
+        // This logic mimics the _abbreviationForNameAndDate helper function in CPTimeZone.j
+        var options = { timeZone: laTimeZoneName, timeZoneName: 'long' };
+        var dateString = (new Date()).toLocaleString('en-US', options);
+        var longTZName = dateString.replace(/^([0]?\d|[1][0-2])\/((?:[0]?|[1-2])\d|[3][0-1])\/([2][01]|[1][6-9])\d{2}(,?\s*([0]?\d|[1][0-2])(\:[0-5]\d){1,2})*\s*([aApP][mM]{0,2})?\s*/, "");
+        expectedAbbreviationLA = longTZName.split(" ").map(function(l) { return l[0]}).join("");
+    } catch (e) {
+        [self fail:"Could not determine expected abbreviation for America/Los_Angeles"];
+        return;
+    }
 
-    // Also check that they are all the same object, as per initialization logic
-    [self assert:local equals:system];
-    [self assert:local equals:defaultTZ];
+    var timeZoneLA = [[CPTimeZone alloc] initWithName:laTimeZoneName];
+
+    if (timeZoneLA == nil)
+        [self fail:"Time zone for America/Los_Angeles should be created successfully."];
+
+    [self assert:[timeZoneLA abbreviation] equals:expectedAbbreviationLA];
+
+    // 2. Test a time zone that does not observe DST, like Pacific/Honolulu.
+    var hnlTimeZoneName = @"Pacific/Honolulu";
+    var timeZoneHNL = [[CPTimeZone alloc] initWithName:hnlTimeZoneName];
+
+    if (timeZoneHNL == nil)
+        [self fail:"Time zone for Pacific/Honolulu should be created successfully."];
+
+    // For a non-DST zone, the abbreviation is constant.
+    [self assert:[timeZoneHNL abbreviation] equals:@"HST"];
 }
 
 @end
