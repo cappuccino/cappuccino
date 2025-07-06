@@ -2703,18 +2703,37 @@ var _CPCopyPlaceholder = '-';
     {
         e.preventDefault();
         var nativeClipboard = (e.originalEvent || e).clipboardData;
-        var richtext;
         var currentFirstResponder = [[CPApp keyWindow] firstResponder];
 
-        // Check for richtext (shift key to force plain text paste).
-        if ([currentFirstResponder isRichText] && !e.shiftKey && (richtext = nativeClipboard.getData('text/rtf')))
+        // Can we accept richtext? Then this is our preference (fixme: shift key to force plain text paste)
+        if ([currentFirstResponder isRichText])
         {
-            [currentFirstResponder _pasteString:richtext];
-            return;
+            var richtext = nativeClipboard.getData('text/rtf');
+
+            // prefer RTF form the outside of cappuccino
+            if (richtext)
+                richtext = [[_CPRTFParser new] parseRTF:richtext];
+            else
+            {
+                var pasteboard = [CPPasteboard generalPasteboard];
+                // If no RTF is available, try to get the internal represatation of richtext from the pasteboard
+                var richData = [pasteboard stringForType:_CPASPboardType];
+
+                if (richData)
+                    richtext = [CPKeyedUnarchiver unarchiveObjectWithData:[CPData dataWithRawString:richData]];
+            }
+
+            if (richtext)
+            {
+                [currentFirstResponder _pasteString:richtext];
+
+                return;
+            }
+            // If no richtext is available, fall back to plain text
         }
 
-        var data = nativeClipboard.getData('text/plain');
-        [currentFirstResponder _pasteString:data];
+        var nativeString = nativeClipboard.getData('text/plain');
+        [currentFirstResponder _pasteString:nativeString || [pasteboard stringForType:CPStringPboardType] || ''];
     };
 
     // COPY handler
@@ -2722,18 +2741,19 @@ var _CPCopyPlaceholder = '-';
     {
         e.preventDefault();
         var pasteboard = [CPPasteboard generalPasteboard];
+        var nativeClipboard = (e.originalEvent || e).clipboardData;
 
         // First, copy the data to populate the CP clipboard
         [[[CPApp keyWindow] firstResponder] copy:self];
 
-        // Now, copy the data to the native clipboard
+        // Now, copy the data over to the native clipboard
         var stringForPasting = [pasteboard stringForType:CPStringPboardType] || '';
-        e.clipboardData.setData('text/plain', stringForPasting);
+        nativeClipboard.setData('text/plain', stringForPasting);
 
         var rtfForPasting = [pasteboard stringForType:CPRTFPboardType];
 
         if (rtfForPasting)
-            e.clipboardData.setData('text/rtf', rtfForPasting);
+            nativeClipboard.setData('text/rtf', rtfForPasting);
     };
 
     // CUT handler
@@ -2743,7 +2763,7 @@ var _CPCopyPlaceholder = '-';
         var pasteboard = [CPPasteboard generalPasteboard];
         var nativeClipboard = (e.originalEvent || e).clipboardData;
         var currentFirstResponder = [[CPApp keyWindow] firstResponder];
-debugger
+
         // First, copy the data to populate the CP clipboard
         [currentFirstResponder copy:self];
 
