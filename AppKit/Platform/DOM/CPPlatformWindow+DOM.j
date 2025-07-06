@@ -1258,10 +1258,18 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
     {
         switch (aDOMEvent.type)
         {
-            case CPDOMEventTouchStart:  newEvent.type = CPDOMEventMouseDown; break;
-            case CPDOMEventTouchEnd:    newEvent.type = CPDOMEventMouseUp; break;
-            case CPDOMEventTouchMove:   newEvent.type = CPDOMEventMouseMoved; break;
-            case CPDOMEventTouchCancel: newEvent.type = CPDOMEventMouseUp; break;
+            case CPDOMEventTouchStart:
+                newEvent.type = CPDOMEventMouseDown;
+                break;
+            case CPDOMEventTouchEnd:
+                newEvent.type = CPDOMEventMouseUp;
+                break;
+            case CPDOMEventTouchMove:
+                newEvent.type = CPDOMEventMouseMoved;
+                break;
+            case CPDOMEventTouchCancel:
+                newEvent.type = CPDOMEventMouseUp;
+                break;
         }
         [self mouseEvent:newEvent];
         return;
@@ -1271,8 +1279,11 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
         // Two-fingers -> simulate scrolling events
         if (_isTwoFingerScrolling && aDOMEvent.touches && aDOMEvent.touches.length == 2)
         {
-            if (aDOMEvent.preventDefault) aDOMEvent.preventDefault();
-            if (aDOMEvent.stopPropagation) aDOMEvent.stopPropagation();
+            if (aDOMEvent.preventDefault)
+                aDOMEvent.preventDefault();
+
+            if (aDOMEvent.stopPropagation)
+                aDOMEvent.stopPropagation();
 
             switch (aDOMEvent.type)
             {
@@ -1314,8 +1325,11 @@ _CPPlatformWindowWillCloseNotification = @"_CPPlatformWindowWillCloseNotificatio
         }
 
         // Preventively cancel other touch cases (e.g., 3+ fingers)
-        if (aDOMEvent.preventDefault) aDOMEvent.preventDefault();
-        if (aDOMEvent.stopPropagation) aDOMEvent.stopPropagation();
+        if (aDOMEvent.preventDefault)
+            aDOMEvent.preventDefault();
+
+        if (aDOMEvent.stopPropagation)
+            aDOMEvent.stopPropagation();
     }
 }
 
