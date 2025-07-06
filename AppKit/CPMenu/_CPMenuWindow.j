@@ -239,7 +239,7 @@ _CPMenuWindowAttachedMenuBackgroundStyle    = 2;
     var supermenu = [[self menu] supermenu];
     if (supermenu && (CGRectGetMaxX(_unconstrainedFrame) > CGRectGetMaxX(_constraintRect)))
     {
-        var supermenuWindow = [supermenu _menuWindow];
+        var supermenuWindow = supermenu._menuWindow;
         if (supermenuWindow)
         {
             var supermenuFrame = [supermenuWindow frame];
