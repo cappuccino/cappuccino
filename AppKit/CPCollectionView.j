@@ -566,14 +566,14 @@ var HORIZONTAL_MARGIN = 2;
 
 - (void)_computeGridWithSize:(CGSize)aSuperviewSize count:(Function)countRef
 {
-    var width           = aSuperviewSize.width,
-    height              = aSuperviewSize.height,
-    itemSize            = CGSizeMakeCopy(_minItemSize),
-    maxItemSizeWidth    = _maxItemSize.width,
-    maxItemSizeHeight   = _maxItemSize.height,
-    itemsCount          = [_items count],
-    numberOfRows,
-    numberOfColumns;
+    var width               = aSuperviewSize.width,
+        height              = aSuperviewSize.height,
+        itemSize            = CGSizeMakeCopy(_minItemSize),
+        maxItemSizeWidth    = _maxItemSize.width,
+        maxItemSizeHeight   = _maxItemSize.height,
+        itemsCount          = [_items count],
+        numberOfRows,
+        numberOfColumns;
 
     numberOfColumns = FLOOR(width / itemSize.width);
 
