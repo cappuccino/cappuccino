@@ -600,9 +600,12 @@ var HORIZONTAL_MARGIN = 2;
     if (_maxNumberOfRows > 0)
         numberOfRows = MIN(numberOfRows, _maxNumberOfRows);
 
-    height = MAX(height, numberOfRows * (_minItemSize.height + _verticalMargin));
+    // calculate the required height: (sum of item heights) + (sum of margins between items).
+    var requiredHeight = (numberOfRows * _minItemSize.height) + (MAX(0, numberOfRows - 1) * _verticalMargin);
+    height = MAX(height, requiredHeight);
 
-    var itemSizeHeight = FLOOR(height / numberOfRows) - _verticalMargin;
+    // calculate individual item height based on the total available height.
+    var itemSizeHeight = (numberOfRows > 0) ? FLOOR((height - (MAX(0, numberOfRows - 1) * _verticalMargin)) / numberOfRows) : 0;
 
     if (maxItemSizeHeight > 0)
         itemSizeHeight = MIN(itemSizeHeight, maxItemSizeHeight);
@@ -621,7 +624,7 @@ var HORIZONTAL_MARGIN = 2;
     _horizontalMargin = _uniformSubviewsResizing ? FLOOR((aFrameSize.width - numberOfColumns * anItemSize.width) / (numberOfColumns + 1)) : HORIZONTAL_MARGIN;
 
     var x = _horizontalMargin,
-        y = -anItemSize.height;
+    y = -anItemSize.height;
 
     [displayItems enumerateObjectsUsingBlock:function(item, idx, stop)
     {
@@ -636,7 +639,11 @@ var HORIZONTAL_MARGIN = 2;
         if (idx % numberOfColumns == 0)
         {
             x = _horizontalMargin;
-            y += _verticalMargin + anItemSize.height;
+            // For the first row, don't add a margin. For all subsequent rows, add the margin.
+            if (idx === 0)
+                y += anItemSize.height;
+            else
+                y += _verticalMargin + anItemSize.height;
         }
 
         [view setFrameOrigin:CGPointMake(x, y)];
