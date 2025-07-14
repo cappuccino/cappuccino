@@ -97,7 +97,7 @@ Pure JavaScript and Objective-J can be mixed and matched, even in the same file.
 **Q: What are the advantages over React or Vue?**  
 **A:** React and Vue are excellent libraries for building web UIs. Cappuccino is a comprehensive **framework** for building entire **applications**. It provides a fully integrated stack—including a mature UI library, event handling, and data management—designed for large-scale development.
 
-Beyond this, Cappuccino provides a more integrated and powerful data-binding layer inspired directly by Cocoa, which dramatically reduces boilerplate code for complex UIs as you can see in this [example code](https://github.com/daboe01/UIBuilder/tree/master/public/Frontend)
+Beyond this, Cappuccino provides a more integrated and powerful data-binding layer inspired directly by Cocoa, which dramatically reduces boilerplate code for complex UIs as you can see in this [example code](https://github.com/daboe01/UIBuilder/tree/master/public/Frontend) that uses these features:
 
 *   **Sophisticated Data Bindings:** Going beyond simple state-to-view mapping, Cappuccino's binding technology, based on Key-Value Coding (KVC), allows data models to be declaratively linked directly to UI components.
 *   **Powerful Controller Layer:** Dedicated controller objects (like `CPArrayController`) are used to mediate between data and views. These controllers automatically handle sorting, filtering, and selection state, completely decoupling the UI from the business logic.
