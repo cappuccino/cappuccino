@@ -16,7 +16,7 @@ Cappuccino faithfully implements the proven design patterns of NeXTSTEP/Apple's 
 
 Cappuccino is not intended for building simple websites. It is for building **applications**—especially complex, data-rich, line-of-business tools where productivity and user experience are paramount.
 
-*   **💻 True Desktop Behavior, Out-of-the-Box:** Applications built with Cappuccino behave like native desktop software by default. This includes a rich palette of UI controls, **full keyboard navigation and focus management**, and **multi-level undo/redo support** — all implemented without requiring a single extra line of code. [See the Kitchen Sink demo](https://cappuccino-testbook.5apps.com/#ThemeKitchenSink).
+*   **💻 True Desktop Behavior, Out-of-the-Box:** Applications built with Cappuccino behave like native desktop software by default. This includes a rich palette of UI controls, **full keyboard navigation and focus management**, and **multi-level undo/redo support** — all implemented without requiring a single extra line of code. See a [Demo](https://ansb.uniklinik-freiburg.de/UIBuilder/index.html) and the [Kitchen Sink](https://cappuccino-testbook.5apps.com/#ThemeKitchenSink).
 *   **🚀 Incredible Productivity:** Less code is needed. High-level abstractions and a powerful object-oriented model mean development is focused on application logic, not browser quirks.
 *   **🏛️ Stable & Mature:** Built on decades of proven API design from Cocoa®, Cappuccino provides a stable foundation, free from the churn common in the JavaScript ecosystem.
 *   **🧱 True Object-Oriented Architecture:** Objective-J's message-passing architecture promotes loose coupling and clean design, making large-scale applications easier to build and maintain.
