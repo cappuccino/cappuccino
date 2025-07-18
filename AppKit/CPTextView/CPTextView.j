@@ -1101,7 +1101,7 @@ Sets the selection to a range of characters in response to user action.
         return;
 
     // this is for the ipad-keyboard
-    [_CPNativeInputManager focusForTextView:self];
+    [_CPNativeInputManager focusForClipboardOfTextView:self];
 
     [_CPNativeInputManager cancelCurrentInputSessionIfNeeded];
     [_caret setVisibility:NO];
