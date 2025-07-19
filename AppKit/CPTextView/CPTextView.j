@@ -2680,12 +2680,21 @@ var _CPCopyPlaceholder = '-';
     // Fires for simple key presses (a, b, 1, 2)
     _CPNativeInputField.addEventListener('input', function(e)
     {
-        // If we are in a composition (e.g., IME), we do nothing.
+        // If we are in a composition (e.g., IME), do nothing.
         // We wait for 'compositionend' to get the final, complete text.
-        if (_isComposing) {
+        if (_isComposing)
+            return;
+
+        // The 'input' event fires for deletions too. On iPad, repeatedly
+        // backspacing on an empty field can insert strange content (like <br>).
+        // We only want to handle this event for actual insertions.
+        // Deletions are handled by the standard key binding mechanism (deleteBackward:).
+        if (e.inputType && e.inputType.startsWith('delete'))
+        {
+            _CPNativeInputField.innerHTML = '';
             return;
         }
-        // If not composing, this is a simple character. Handle it immediately.
+
         handleInput(e.target.innerHTML);
     });
 
