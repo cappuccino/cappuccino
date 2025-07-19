@@ -2677,37 +2677,35 @@ var _CPCopyPlaceholder = '-';
         _CPNativeInputField.innerHTML = '';
     };
 
-    // Proactively prevent the backspace bug on iPad
-    // Intercept the keydown event before the browser acts on it.
+    // Intercept problematic keys before the browser acts.
     _CPNativeInputField.addEventListener('keydown', function(e) {
-        // This bug occurs when backspace is pressed on an *empty* contentEditable div.
-        if (e.key === 'Backspace' && _CPNativeInputField.innerHTML === '') {
-            // Prevent the browser's default action (which is to insert a junk character).
-            // This stops an 'input' event from firing, solving the problem at the source.
-            // The keydown event will still be handled by Cappuccino's responder chain.
+
+        if (e.key === 'Enter' || (e.key === 'Backspace' && _CPNativeInputField.innerHTML === '')) {
+            // Prevent browser default action:
+            // - 'Enter': Prevents inserting <div><br></div>.
+            // - 'Backspace' on empty: Prevents inserting junk characters on iPadOS.
             e.preventDefault();
         }
     });
 
-    // Reactively handle input events as a fallback
-    // Fires for simple key presses, deletions, etc.
+    // This listener handles all other character input.
     _CPNativeInputField.addEventListener('input', function(e)
     {
-        // If we are in a composition (e.g., IME), do nothing.
-        // We wait for 'compositionend' to get the final, complete text.
+        // If we are in a composition (e.g., IME), do nothing yet.
         if (_isComposing)
             return;
 
-        // This is a safety net. The 'input' event fires for deletions too.
-        // We only want to handle this event for actual insertions. Deletions are
-        // handled by the standard key binding mechanism (deleteBackward:).
-        if (e.inputType && e.inputType.startsWith('delete')) {
-            // It was a deletion. Ensure the native field is empty and stop processing.
+        // Safety net: ignore deletion events, as they are handled by keydown.
+        if (e.inputType && e.inputType.startsWith('delete'))
+        {
             _CPNativeInputField.innerHTML = '';
             return;
         }
-
-        handleInput(e.target.innerHTML);
+        
+        // Robustness: Use 'textContent' instead of 'innerHTML' to strip any
+        // unexpected HTML tags the browser might have inserted.
+        var textToInsert = e.target.textContent;
+        handleInput(textToInsert);
     });
 
     // Fires when a composition session starts (e.g., user presses a dead key or starts an IME).
