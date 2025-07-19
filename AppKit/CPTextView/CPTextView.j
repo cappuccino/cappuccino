@@ -2677,7 +2677,20 @@ var _CPCopyPlaceholder = '-';
         _CPNativeInputField.innerHTML = '';
     };
 
-    // Fires for simple key presses (a, b, 1, 2)
+    // Proactively prevent the backspace bug on iPad
+    // Intercept the keydown event before the browser acts on it.
+    _CPNativeInputField.addEventListener('keydown', function(e) {
+        // This bug occurs when backspace is pressed on an *empty* contentEditable div.
+        if (e.key === 'Backspace' && _CPNativeInputField.innerHTML === '') {
+            // Prevent the browser's default action (which is to insert a junk character).
+            // This stops an 'input' event from firing, solving the problem at the source.
+            // The keydown event will still be handled by Cappuccino's responder chain.
+            e.preventDefault();
+        }
+    });
+
+    // Reactively handle input events as a fallback
+    // Fires for simple key presses, deletions, etc.
     _CPNativeInputField.addEventListener('input', function(e)
     {
         // If we are in a composition (e.g., IME), do nothing.
@@ -2685,12 +2698,6 @@ var _CPCopyPlaceholder = '-';
         if (_isComposing)
             return;
 
-        // The 'input' event fires for deletions too. On iPad, repeatedly
-        // backspacing on an empty field can insert strange content (like <br>).
-        // We only want to handle this event for actual insertions.
-        // Deletions are handled by the standard key binding mechanism (deleteBackward:).
-        if (e.inputType && e.inputType.startsWith('delete'))
-        {
             _CPNativeInputField.innerHTML = '';
             return;
         }
