@@ -2698,6 +2698,11 @@ var _CPCopyPlaceholder = '-';
         if (_isComposing)
             return;
 
+        // This is a safety net. The 'input' event fires for deletions too.
+        // We only want to handle this event for actual insertions. Deletions are
+        // handled by the standard key binding mechanism (deleteBackward:).
+        if (e.inputType && e.inputType.startsWith('delete')) {
+            // It was a deletion. Ensure the native field is empty and stop processing.
             _CPNativeInputField.innerHTML = '';
             return;
         }
