@@ -1,12 +1,28 @@
 @import <Foundation/CPObject.j>
-
 @import "CAPropertyAnimation.j"
+
+// Value calculation modes
+CPString kCAAnimationLinear = @"linear";
+CPString kCAAnimationDiscrete = @"discrete";
+CPString kCAAnimationPaced = @"paced";
+CPString kCAAnimationCubic = @"cubic";
+CPString kCAAnimationCubicPaced = @"cubicPaced";
+
+// Rotation Mode Values
+CPString kCAAnimationRotateAuto = @"auto";
+CPString kCAAnimationRotateAutoReverse = @"autoReverse";
 
 @implementation CAKeyframeAnimation : CAPropertyAnimation
 {
     CPArray _values   @accessors(property=values);
     CPArray _keyTimes @accessors(property=keyTimes);
     CPArray _timingFunctions @accessors(property=timingFunctions);
+    id _path @accessors(property=path);
+    CPString _calculationMode @accessors(property=calculationMode);
+    CPString _rotationMode @accessors(property=rotationMode);
+    CPArray _tensionValues @accessors(property=tensionValues);
+    CPArray _continuityValues @accessors(property=continuityValues);
+    CPArray _biasValues @accessors(property=biasValues);
 }
 
 - (id)init
@@ -16,6 +32,9 @@
     _values = [CPArray array];
     _keyTimes = [CPArray array];
     _timingFunctions = [CPArray array];
+    _tensionValues = [CPArray array];
+    _continuityValues = [CPArray array];
+    _biasValues = [CPArray array];
 
     return self;
 }
