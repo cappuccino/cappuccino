@@ -2,15 +2,15 @@
 @import "CAPropertyAnimation.j"
 
 // Value calculation modes
-CPString kCAAnimationLinear = @"linear";
-CPString kCAAnimationDiscrete = @"discrete";
-CPString kCAAnimationPaced = @"paced";
-CPString kCAAnimationCubic = @"cubic";
-CPString kCAAnimationCubicPaced = @"cubicPaced";
+var kCAAnimationLinear = @"linear";
+var kCAAnimationDiscrete = @"discrete";
+var kCAAnimationPaced = @"paced";
+var kCAAnimationCubic = @"cubic";
+var kCAAnimationCubicPaced = @"cubicPaced";
 
 // Rotation Mode Values
-CPString kCAAnimationRotateAuto = @"auto";
-CPString kCAAnimationRotateAutoReverse = @"autoReverse";
+var kCAAnimationRotateAuto = @"auto";
+var kCAAnimationRotateAutoReverse = @"autoReverse";
 
 @implementation CAKeyframeAnimation : CAPropertyAnimation
 {
