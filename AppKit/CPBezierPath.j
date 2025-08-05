@@ -378,3 +378,42 @@ var DefaultLineWidth = 1.0;
 }
 
 @end
+
+
+@implementation CPBezierPath (AnimationAdditions)
+
+- (CPString)SVGString
+{
+    var pathString = "",
+    points = _points,
+    i = 0,
+    count = [self elementCount];
+
+    for (var elementIndex = 0; elementIndex < count; ++elementIndex)
+    {
+        var type = [self elementAtIndex:elementIndex associatedPoints:points];
+
+        switch (type)
+        {
+            case CPMoveToBezierPathElement:
+                pathString += "M" + points[0].x + " " + points[0].y + " ";
+                break;
+
+            case CPLineToBezierPathElement:
+                pathString += "L" + points[0].x + " " + points[0].y + " ";
+                break;
+
+            case CPCurveToBezierPathElement:
+                pathString += "C" + points[0].x + " " + points[0].y + " " + points[1].x + " " + points[1].y + " " + points[2].x + " " + points[2].y + " ";
+                break;
+
+            case CPClosePathBezierPathElement:
+                pathString += "Z";
+                break;
+        }
+    }
+    return pathString;
+}
+
+@end
+

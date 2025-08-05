@@ -116,6 +116,13 @@ var DEFAULT_CSS_PROPERTIES = nil,
 {
     var target = anAction.object;
 
+    if (anAction.path)
+    {
+        // Path animations are handled differently. They don't map to standard properties like width/height.
+        // They use CSS offset-path.
+        return [self _addPathAnimation:animations forAction:anAction domElement:[target _DOMElement] identifier:[target UID]];
+    }
+
     return [self _addAnimations:animations forAction:anAction domElement:[target _DOMElement] identifier:[target UID]];
 }
 
@@ -132,6 +139,19 @@ var DEFAULT_CSS_PROPERTIES = nil,
         [animations addObject:animation];
     }
 
+    var calculationMode = anAction.calculationMode;
+
+    if (calculationMode === kCAAnimationDiscrete)
+    {
+        // For discrete animations, we use the steps() timing function.
+        // This makes the property jump between values.
+        animation.setTimingFunction("steps(1, end)");
+    }
+    // For other calculation modes like 'paced' or 'cubic', more complex logic would be needed here.
+    // 'paced' would require pre-calculating keyTimes based on distance.
+    // 'cubic' would require generating many keyframes to simulate a spline.
+    // For now, we let them fall through to the default behavior.
+
     var css_mapping = [self _cssPropertiesForKeyPath:anAction.keypath];
 
     [css_mapping enumerateObjectsUsingBlock:function(aDict, anIndex, stop)
@@ -142,6 +162,56 @@ var DEFAULT_CSS_PROPERTIES = nil,
 
         animation.addPropertyAnimation(property, getter, anAction.duration, anAction.keytimes, anAction.values, anAction.timingfunctions, completionFunction);
     }];
+}
+
++ (void)_addPathAnimation:(CPArray)animations forAction:(id)anAction domElement:(Object)aDomElement identifier:(CPString)anIdentifier
+{
+    var animation = [animations objectPassingTest:function(anim, idx, stop)
+                     {
+        return anim.identifier == anIdentifier;
+    }];
+
+    if (animation == nil)
+    {
+        animation = new CSSAnimation(aDomElement, anIdentifier, [anAction.object debug_description]);
+        [animations addObject:animation];
+    }
+
+    // 1. Get the SVG path string from the CPBezierPath object.
+    // This requires the helper method added in Step 1.
+    var svgPath = [anAction.path SVGString];
+
+    // 2. Set the offset-path property.
+    animation.setCSSProperty("offset-path", "path('" + svgPath + "')");
+
+    // 3. Set the rotation mode.
+    var rotationMode = anAction.rotationMode;
+    if (rotationMode === kCAAnimationRotateAuto)
+    {
+        animation.setCSSProperty("offset-rotate", "auto");
+    }
+    else if (rotationMode === kCAAnimationRotateAutoReverse)
+    {
+        animation.setCSSProperty("offset-rotate", "auto 180deg");
+    }
+    else
+    {
+        animation.setCSSProperty("offset-rotate", "0deg");
+    }
+
+    // 4. Create the @keyframes rule to animate along the path.
+    // The animated property is 'offset-distance'.
+    var getter = function(start, current) { return current; };
+    var values = ["0%", "100%"]; // Animate from the start to the end of the path
+    var keytimes = [0, 1];
+    var timingfunctions = [[0,0,1,1]]; // Linear timing is standard for path distance
+
+    // Use a 'paced' calculation mode to ensure constant speed, which is a common expectation for path animations.
+    if (anAction.calculationMode === kCAAnimationPaced) {
+        animation.setTimingFunction("linear");
+    }
+
+    animation.addPropertyAnimation("offset-distance", getter, anAction.duration, keytimes, values, timingfunctions, anAction.completion);
 }
 
 + (CPArray)_cssPropertiesForKeyPath:(CPString)aKeyPath
