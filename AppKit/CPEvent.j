@@ -125,6 +125,16 @@ var _CPEventPeriodicEventPeriod         = 0,
         characters:characters charactersIgnoringModifiers:unmodCharacters isARepeat:repeatKey keyCode:code isActionKey:isAnActionKey];
 }
 
+// for backwards compatibility only
++ (CPEvent)keyEventWithType:(CPEventType)anEventType location:(CGPoint)aPoint modifierFlags:(unsigned int)modifierFlags
+                  timestamp:(CPTimeInterval)aTimestamp windowNumber:(int)aWindowNumber context:(CPGraphicsContext)aGraphicsContext
+                 characters:(CPString)characters charactersIgnoringModifiers:(CPString)unmodCharacters isARepeat:(BOOL)repeatKey
+{
+    return [[self alloc] _initKeyEventWithType:anEventType location:aPoint modifierFlags:modifierFlags
+                                     timestamp:aTimestamp windowNumber:aWindowNumber context:aGraphicsContext
+                                    characters:characters charactersIgnoringModifiers:unmodCharacters isARepeat:repeatKey keyCode:code isActionKey:NO];
+}
+
 /*!
     Creates a new mouse event.
 
