@@ -88,13 +88,15 @@
     [self assertNull:[map_table objectForKey:@"key2"]];
 }
 
-- (void)testKeyEnumerator
+- (void)testKeyEnumeratorOnEmptyMap
 {
-    // Test empty case by creating a new enumerator for each assertion
+    [self assert:[map_table count] equals:0 message:@"Pre-condition failed: map should be empty."];
     [self assertNull:[[map_table keyEnumerator] nextObject]];
     [self assert:[[[map_table keyEnumerator] allObjects] count] equals:0];
+}
 
-    // Add objects and test populated case
+- (void)testKeyEnumeratorOnPopulatedMap
+{
     [map_table setObject:@"value1" forKey:@"key1"];
     [map_table setObject:@"value2" forKey:123];
     [map_table setObject:@"value3" forKey:objectKey];
@@ -107,13 +109,15 @@
     [self assertTrue:[allKeys containsObject:objectKey]];
 }
 
-- (void)testObjectEnumerator
+- (void)testObjectEnumeratorOnEmptyMap
 {
-    // Test empty case by creating a new enumerator for each assertion
+    [self assert:[map_table count] equals:0 message:@"Pre-condition failed: map should be empty."];
     [self assertNull:[[map_table objectEnumerator] nextObject]];
     [self assert:[[[map_table objectEnumerator] allObjects] count] equals:0];
+}
 
-    // Add objects and test populated case
+- (void)testObjectEnumeratorOnPopulatedMap
+{
     [map_table setObject:@"value1" forKey:@"key1"];
     [map_table setObject:@"value2" forKey:123];
     [map_table setObject:@"value3" forKey:objectKey];
