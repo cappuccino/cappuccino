@@ -28,16 +28,6 @@
     return self;
 }
 
-/*!
-   Releases the underlying map.
- */
-- (void)dealloc
-{
-    _map = nil;
-
-    [super dealloc];
-}
-
 #pragma mark -
 #pragma mark Accessing Content
 
