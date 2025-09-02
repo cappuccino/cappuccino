@@ -58,7 +58,7 @@
  */
 - (CPEnumerator)objectEnumerator
 {
-    return [[CPArray arrayWithJSArray:[..._map.values()]] objectEnumerator];
+    return [[..._map.values()] objectEnumerator];
 }
 
 /*!
