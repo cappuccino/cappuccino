@@ -1,4 +1,3 @@
-
 @import "_CPObjectAnimator.j"
 @import "CPView.j"
 @import "CPCompatibility.j"
@@ -140,12 +139,13 @@ var DEFAULT_CSS_PROPERTIES = nil,
     }
 
     var calculationMode = anAction.calculationMode;
+    var timingFunctions = anAction.timingfunctions;
 
     if (calculationMode === kCAAnimationDiscrete)
     {
         // For discrete animations, we use the steps() timing function.
         // This makes the property jump between values.
-        [animation setTimingFunctions:["steps(1, end)"]];
+        timingFunctions = "steps(1, end)";
     }
     // For other calculation modes like 'paced' or 'cubic', more complex logic would be needed here.
     // 'paced' would require pre-calculating keyTimes based on distance.
@@ -160,7 +160,7 @@ var DEFAULT_CSS_PROPERTIES = nil,
             property = [aDict objectForKey:@"property"],
             getter = [aDict objectForKey:@"value"];
 
-        animation.addPropertyAnimation(property, getter, anAction.duration, anAction.keytimes, anAction.values, anAction.timingfunctions, completionFunction);
+        animation.addPropertyAnimation(property, getter, anAction.duration, anAction.keytimes, anAction.values, timingFunctions, completionFunction);
     }];
 }
 
@@ -209,7 +209,7 @@ var DEFAULT_CSS_PROPERTIES = nil,
 
     // Use a 'paced' calculation mode to ensure constant speed, which is a common expectation for path animations.
     if (anAction.calculationMode === kCAAnimationPaced) {
-        [animation setTimingFunctions:["linear"]];
+        timingfunctions = "linear";
     }
 
     animation.addPropertyAnimation("offset-distance", getter, anAction.duration, keytimes, values, timingfunctions, anAction.completion);
