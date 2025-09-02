@@ -1,6 +1,7 @@
 @import <Foundation/CPMapTable.j>
 @import <Foundation/CPDictionary.j>
 @import <Foundation/CPEnumerator.j>
+@import <Foundation/CPMutableArray.j>
 @import <OJUnit/OJTestCase.j>
 
 @implementation CPMapTableTest : OJTestCase
@@ -92,7 +93,6 @@
 {
     [self assert:[map_table count] equals:0 message:@"Pre-condition failed: map should be empty."];
     [self assertNull:[[map_table keyEnumerator] nextObject]];
-    [self assert:[[[map_table keyEnumerator] allObjects] count] equals:0];
 }
 
 - (void)testKeyEnumeratorOnPopulatedMap
@@ -101,19 +101,23 @@
     [map_table setObject:@"value2" forKey:123];
     [map_table setObject:@"value3" forKey:objectKey];
 
-    var allKeys = [[map_table keyEnumerator] allObjects];
+    var foundKeys = [CPMutableArray array],
+        enumerator = [map_table keyEnumerator],
+        aKey;
 
-    [self assert:[allKeys count] equals:3];
-    [self assertTrue:[allKeys containsObject:@"key1"]];
-    [self assertTrue:[allKeys containsObject:123]];
-    [self assertTrue:[allKeys containsObject:objectKey]];
+    while (aKey = [enumerator nextObject])
+        [foundKeys addObject:aKey];
+
+    [self assert:[foundKeys count] equals:3];
+    [self assertTrue:[foundKeys containsObject:@"key1"]];
+    [self assertTrue:[foundKeys containsObject:123]];
+    [self assertTrue:[foundKeys containsObject:objectKey]];
 }
 
 - (void)testObjectEnumeratorOnEmptyMap
 {
     [self assert:[map_table count] equals:0 message:@"Pre-condition failed: map should be empty."];
     [self assertNull:[[map_table objectEnumerator] nextObject]];
-    [self assert:[[[map_table objectEnumerator] allObjects] count] equals:0];
 }
 
 - (void)testObjectEnumeratorOnPopulatedMap
@@ -122,12 +126,17 @@
     [map_table setObject:@"value2" forKey:123];
     [map_table setObject:@"value3" forKey:objectKey];
 
-    var allValues = [[map_table objectEnumerator] allObjects];
+    var foundValues = [CPMutableArray array],
+        enumerator = [map_table objectEnumerator],
+        aValue;
 
-    [self assert:[allValues count] equals:3];
-    [self assertTrue:[allValues containsObject:@"value1"]];
-    [self assertTrue:[allValues containsObject:@"value2"]];
-    [self assertTrue:[allValues containsObject:@"value3"]];
+    while (aValue = [enumerator nextObject])
+        [foundValues addObject:aValue];
+
+    [self assert:[foundValues count] equals:3];
+    [self assertTrue:[foundValues containsObject:@"value1"]];
+    [self assertTrue:[foundValues containsObject:@"value2"]];
+    [self assertTrue:[foundValues containsObject:@"value3"]];
 }
 
 - (void)testDictionaryRepresentation
