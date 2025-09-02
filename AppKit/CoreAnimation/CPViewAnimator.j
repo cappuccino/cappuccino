@@ -145,7 +145,7 @@ var DEFAULT_CSS_PROPERTIES = nil,
     {
         // For discrete animations, we use the steps() timing function.
         // This makes the property jump between values.
-        animation.setTimingFunction("steps(1, end)");
+        [animation setTimingFunctions:["steps(1, end)"]];
     }
     // For other calculation modes like 'paced' or 'cubic', more complex logic would be needed here.
     // 'paced' would require pre-calculating keyTimes based on distance.
@@ -182,21 +182,22 @@ var DEFAULT_CSS_PROPERTIES = nil,
     var svgPath = [anAction.path SVGString];
 
     // 2. Set the offset-path property.
-    animation.setCSSProperty("offset-path", "path('" + svgPath + "')");
+    aDomElement.style.offsetPath = "path('" + svgPath + "')";
 
     // 3. Set the rotation mode.
     var rotationMode = anAction.rotationMode;
     if (rotationMode === kCAAnimationRotateAuto)
     {
-        animation.setCSSProperty("offset-rotate", "auto");
+        aDomElement.style.offsetRotate = "auto";
+
     }
     else if (rotationMode === kCAAnimationRotateAutoReverse)
     {
-        animation.setCSSProperty("offset-rotate", "auto 180deg");
+        aDomElement.style.offsetRotate = "auto 180deg";
     }
     else
     {
-        animation.setCSSProperty("offset-rotate", "0deg");
+        aDomElement.style.offsetRotate = "0deg";
     }
 
     // 4. Create the @keyframes rule to animate along the path.
@@ -208,7 +209,7 @@ var DEFAULT_CSS_PROPERTIES = nil,
 
     // Use a 'paced' calculation mode to ensure constant speed, which is a common expectation for path animations.
     if (anAction.calculationMode === kCAAnimationPaced) {
-        animation.setTimingFunction("linear");
+        [animation setTimingFunctions:["linear"]];
     }
 
     animation.addPropertyAnimation("offset-distance", getter, anAction.duration, keytimes, values, timingfunctions, anAction.completion);
