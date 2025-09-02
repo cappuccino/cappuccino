@@ -8,6 +8,7 @@
 
 @import <Foundation/Foundation.j>
 @import <AppKit/AppKit.j>
+@import <AppKit/CAKeyframeAnimation.j>
 
 #define UIAssert(a) [self markTest:_cmd didPass:a];
 
@@ -137,8 +138,8 @@
     var endPoint = CGPointMake(p1.x, p1.y - 100);
 
     var discreteAnimation = [CAKeyframeAnimation animationWithKeyPath:@"frameOrigin"];
-    [discreteAnimation setValues:[CPArray arrayWithJSArray:[p1, p2, p3, endPoint]]];
-    [discreteAnimation setKeyTimes:[CPArray arrayWithJSArray:[0, 0.33, 0.66, 1.0]]];
+    [discreteAnimation setValues:[p1, p2, p3, endPoint]];
+    [discreteAnimation setKeyTimes:[0, 0.33, 0.66, 1.0]];
     [discreteAnimation setCalculationMode:kCAAnimationDiscrete];
 
     [CPAnimationContext beginGrouping];
