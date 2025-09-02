@@ -1,6 +1,7 @@
 @import "CPObject.j"
 @import "CPEnumerator.j"
 @import "CPDictionary.j"
+@import "CPArray.j"
 
 /*!
    @class CPMapTable
@@ -38,7 +39,8 @@
  */
 - (id)objectForKey:(id)aKey
 {
-    return _map.get(aKey);
+    var value = _map.get(aKey);
+    return value === undefined ? nil : value;
 }
 
 /*!
@@ -47,7 +49,7 @@
  */
 - (CPEnumerator)keyEnumerator
 {
-    return [CPEnumerator enumeratorWithIterator:_map.keys()];
+    return [[CPArray arrayWithJSArray:[..._map.keys()]] objectEnumerator];
 }
 
 /*!
@@ -56,7 +58,7 @@
  */
 - (CPEnumerator)objectEnumerator
 {
-    return [CPEnumerator enumeratorWithIterator:_map.values()];
+    return [[CPArray arrayWithJSArray:[..._map.values()]] objectEnumerator];
 }
 
 /*!
