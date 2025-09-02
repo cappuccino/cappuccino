@@ -49,7 +49,7 @@
  */
 - (CPEnumerator)keyEnumerator
 {
-    return [[CPArray arrayWithJSArray:[..._map.keys()]] objectEnumerator];
+    return [[..._map.keys()] objectEnumerator];
 }
 
 /*!
