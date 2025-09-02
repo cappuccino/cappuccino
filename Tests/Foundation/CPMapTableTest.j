@@ -90,17 +90,16 @@
 
 - (void)testKeyEnumerator
 {
-    var enumerator = [map_table keyEnumerator];
-    [self assertNull:[enumerator nextObject]];
-    [self assert:[[enumerator allObjects] count] equals:0];
+    // Test empty case by creating a new enumerator for each assertion
+    [self assertNull:[[map_table keyEnumerator] nextObject]];
+    [self assert:[[[map_table keyEnumerator] allObjects] count] equals:0];
 
-
+    // Add objects and test populated case
     [map_table setObject:@"value1" forKey:@"key1"];
     [map_table setObject:@"value2" forKey:123];
     [map_table setObject:@"value3" forKey:objectKey];
 
-    enumerator = [map_table keyEnumerator];
-    var allKeys = [enumerator allObjects];
+    var allKeys = [[map_table keyEnumerator] allObjects];
 
     [self assert:[allKeys count] equals:3];
     [self assertTrue:[allKeys containsObject:@"key1"]];
@@ -110,16 +109,16 @@
 
 - (void)testObjectEnumerator
 {
-    var enumerator = [map_table objectEnumerator];
-    [self assertNull:[enumerator nextObject]];
-    [self assert:[[enumerator allObjects] count] equals:0];
+    // Test empty case by creating a new enumerator for each assertion
+    [self assertNull:[[map_table objectEnumerator] nextObject]];
+    [self assert:[[[map_table objectEnumerator] allObjects] count] equals:0];
 
+    // Add objects and test populated case
     [map_table setObject:@"value1" forKey:@"key1"];
     [map_table setObject:@"value2" forKey:123];
     [map_table setObject:@"value3" forKey:objectKey];
 
-    enumerator = [map_table objectEnumerator];
-    var allValues = [enumerator allObjects];
+    var allValues = [[map_table objectEnumerator] allObjects];
 
     [self assert:[allValues count] equals:3];
     [self assertTrue:[allValues containsObject:@"value1"]];
