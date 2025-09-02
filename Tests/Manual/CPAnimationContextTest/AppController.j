@@ -115,7 +115,7 @@
     [CPAnimationContext beginGrouping];
     var context = [CPAnimationContext currentContext];
     [context setDuration:2.0];
-    var self = this;
+
     [context setCompletionHandler:function()
      {
         var finalOrigin = [_testView frame].origin;
@@ -145,7 +145,7 @@
     [CPAnimationContext beginGrouping];
     var context = [CPAnimationContext currentContext];
     [context setDuration:2.0];
-    var self = this;
+
     [context setCompletionHandler:function()
      {
         var finalOrigin = [_testView frame].origin;
@@ -175,7 +175,7 @@
     [CPAnimationContext beginGrouping];
     var context = [CPAnimationContext currentContext];
     [context setDuration:2.0];
-    var self = this;
+
     [context setCompletionHandler:function()
      {
         var finalOrigin = [_testView frame].origin;

@@ -384,35 +384,40 @@ var DefaultLineWidth = 1.0;
 
 - (CPString)SVGString
 {
-    var pathString = "",
-    points = _points,
-    i = 0,
-    count = [self elementCount];
+    var pathString = "";
+    var elements = _path.elements;
+    var count = _path.count;
 
-    for (var elementIndex = 0; elementIndex < count; ++elementIndex)
+    for (var i = 0; i < count; i++)
     {
-        var type = [self elementAtIndex:elementIndex associatedPoints:points];
+        var element = elements[i];
 
-        switch (type)
+        // Use the kCGPathElement* constants defined in CGPath.j
+        switch (element.type)
         {
-            case CPMoveToBezierPathElement:
-                pathString += "M" + points[0].x + " " + points[0].y + " ";
+            case kCGPathElementMoveToPoint:
+                pathString += "M " + element.x + " " + element.y + " ";
                 break;
 
-            case CPLineToBezierPathElement:
-                pathString += "L" + points[0].x + " " + points[0].y + " ";
+            case kCGPathElementAddLineToPoint:
+                pathString += "L " + element.x + " " + element.y + " ";
                 break;
 
-            case CPCurveToBezierPathElement:
-                pathString += "C" + points[0].x + " " + points[0].y + " " + points[1].x + " " + points[1].y + " " + points[2].x + " " + points[2].y + " ";
+            case kCGPathElementAddQuadCurveToPoint:
+                pathString += "Q " + element.cpx + " " + element.cpy + " " + element.x + " " + element.y + " ";
                 break;
 
-            case CPClosePathBezierPathElement:
-                pathString += "Z";
+            case kCGPathElementAddCurveToPoint:
+                pathString += "C " + element.cp1x + " " + element.cp1y + " " + element.cp2x + " " + element.cp2y + " " + element.x + " " + element.y + " ";
+                break;
+
+            case kCGPathElementCloseSubpath:
+                pathString += "Z ";
                 break;
         }
     }
-    return pathString;
+
+    return pathString.trim();
 }
 
 @end
