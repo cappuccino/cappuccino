@@ -21,17 +21,17 @@
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
-    theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(0, 0, 800, 600) styleMask:CPBorderlessBridgeWindowMask];
+    theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask];
     var contentView = [theWindow contentView];
 
     [theWindow orderFront:self];
 
     // Create a view that we can animate for the new tests.
-    _initialTestViewFrame = CGRectMake(350, 450, 50, 50);
+    _initialTestViewFrame = CGRectMake(90, 350, 50, 50);
     _testView = [[CPView alloc] initWithFrame:_initialTestViewFrame];
     // Use CALayer to give it a background color so we can see it.
     [_testView setWantsLayer:YES];
-    [[_testView layer] setBackgroundColor:[[CPColor blueColor] CGColor]];
+    [_testView setBackgroundColor:[CPColor blueColor]];
     [contentView addSubview:_testView];
 
     [self setup];
