@@ -46,6 +46,7 @@
     CPView   _testView; // A view to animate for our new tests
     PathView _pathView; // A view to draw the animation path
     CGRect   _initialTestViewFrame;
+    id       allLabels; // An array of labels to show test results
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
@@ -71,21 +72,27 @@
 
 - (void)cleanupAfterAnimation
 {
+debugger
+    [_testView removeAllAnimations];
+    [_testView setTransform:CGAffineTransformIdentity];
+    [_testView setNeedsDisplay:YES];
     // Clear the visual path from the screen.
     [_pathView setPath:nil];
 
     // Animate the test view back to its starting position.
+    [CPAnimationContext beginGrouping];
     var context = [CPAnimationContext currentContext];
     [context setDuration:0.4];
-    [context setTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut]];
+    [context setTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear]];
     [[_testView animator] setFrame:_initialTestViewFrame];
+    [CPAnimationContext endGrouping];
 }
 
 - (void)setup
 {
     var methods = class_copyMethodList([self class]);
     var testMethodCount = 0;
-    var allLabels = [];
+    allLabels = [];
 
     [methods enumerateObjectsUsingBlock:function(meth, _)
      {
@@ -185,7 +192,7 @@
         var finalOrigin = [_testView frame].origin;
         var passed = (Math.abs(finalOrigin.x - endOrigin.x) < 1 && Math.abs(finalOrigin.y - endOrigin.y) < 1);
         [self markTest:_cmd didPass:passed];
-        [self performSelector:@selector(cleanupAfterAnimation) withObject:nil afterDelay:0.5];
+        [self performSelector:@selector(cleanupAfterAnimationcleanupAfterAnimation) withObject:nil afterDelay:0.5];
     }];
 
     // 4. Associate the animation with 'frameOrigin' and trigger it with 'setFrameOrigin:'.
