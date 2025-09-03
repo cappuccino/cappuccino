@@ -20,7 +20,6 @@
 
 @import <AppKit/CPViewController.j>
 @import <AppKit/CPSplitView.j>
-@import "CPSplitViewItem.j"
 
 var CPSplitViewControllerAutomaticDimension = -1.0;
 
