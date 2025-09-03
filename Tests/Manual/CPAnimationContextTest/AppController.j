@@ -62,30 +62,31 @@
     [contentView addSubview:_pathView];
 
     // Create a view that we can animate for the new tests.
-    _initialTestViewFrame = CGRectMake(90, 350, 50, 50);
+    _initialTestViewFrame = CGRectMake(390, 450, 50, 50);
     _testView = [[CPView alloc] initWithFrame:_initialTestViewFrame];
     [_testView setBackgroundColor:[CPColor blueColor]];
     [contentView addSubview:_testView]; // Add it on top of the path view
+   // [_pathView setFrameOrigin:_initialTestViewFrame.origin];
 
     [self setup];
 }
 
 - (void)cleanupAfterAnimation
 {
-debugger
-    [_testView removeAllAnimations];
-    [_testView setTransform:CGAffineTransformIdentity];
-    [_testView setNeedsDisplay:YES];
-    // Clear the visual path from the screen.
+
     [_pathView setPath:nil];
 
     // Animate the test view back to its starting position.
-    [CPAnimationContext beginGrouping];
-    var context = [CPAnimationContext currentContext];
-    [context setDuration:0.4];
-    [context setTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear]];
-    [[_testView animator] setFrame:_initialTestViewFrame];
-    [CPAnimationContext endGrouping];
+    var animation = [[CPViewAnimation alloc] initWithViewAnimations:[@{
+        CPViewAnimationTargetKey:_testView,
+        CPViewAnimationStartFrameKey:[_testView frame],
+        CPViewAnimationEndFrameKey:_initialTestViewFrame
+    }]];
+
+    [animation setAnimationCurve:CPAnimationLinear];
+    [animation setDuration:0.1];
+    [animation startAnimation];
+
 }
 
 - (void)setup
@@ -192,7 +193,7 @@ debugger
         var finalOrigin = [_testView frame].origin;
         var passed = (Math.abs(finalOrigin.x - endOrigin.x) < 1 && Math.abs(finalOrigin.y - endOrigin.y) < 1);
         [self markTest:_cmd didPass:passed];
-        [self performSelector:@selector(cleanupAfterAnimationcleanupAfterAnimation) withObject:nil afterDelay:0.5];
+        [self performSelector:@selector(cleanupAfterAnimation) withObject:nil afterDelay:0.5];
     }];
 
     // 4. Associate the animation with 'frameOrigin' and trigger it with 'setFrameOrigin:'.

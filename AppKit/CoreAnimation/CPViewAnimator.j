@@ -177,42 +177,74 @@ var DEFAULT_CSS_PROPERTIES = nil,
         [animations addObject:animation];
     }
 
-    // 1. Get the SVG path string from the CPBezierPath object.
-    // This requires the helper method added in Step 1.
+    // 1. Get the SVG path string.
     var svgPath = [anAction.path SVGString];
 
     // 2. Set the offset-path property.
     aDomElement.style.offsetPath = "path('" + svgPath + "')";
 
-    // 3. Set the rotation mode.
+    // 3. Set the anchor point and neutralize the static position.
+    if (anAction.keypath === @"frameOrigin")
+    {
+        aDomElement.style.offsetAnchor = "0% 0%";
+        aDomElement.style.left = "0px";
+        aDomElement.style.top = "0px";
+    }
+    else
+    {
+        aDomElement.style.offsetAnchor = "50% 50%";
+    }
+
+    // 4. Set the rotation mode.
     var rotationMode = anAction.rotationMode;
     if (rotationMode === kCAAnimationRotateAuto)
     {
         aDomElement.style.offsetRotate = "auto";
-
     }
     else if (rotationMode === kCAAnimationRotateAutoReverse)
     {
-        aDomElement.style.offsetRotate = "auto 180deg";
+        aDomElement.style.offsetRotate = "auto reverse";
     }
     else
     {
         aDomElement.style.offsetRotate = "0deg";
     }
 
-    // 4. Create the @keyframes rule to animate along the path.
-    // The animated property is 'offset-distance'.
-    var getter = function(start, current) { return current; };
-    var values = ["0%", "100%"]; // Animate from the start to the end of the path
-    var keytimes = [0, 1];
-    var timingfunctions = [[0,0,1,1]]; // Linear timing is standard for path distance
+    // Create a new completion handler that cleans up after the animation.
+    var originalCompletion = anAction.completion;
+    var cleanupCompletion = function()
+    {
+        // STEP 1: Run the original completion handler first. This is critical.
+        // It sets the final frameOrigin, which updates the static 'left' and 'top'
+        // styles to their final values, locking the view in the correct place.
+        if (originalCompletion)
+            originalCompletion();
 
-    // Use a 'paced' calculation mode to ensure constant speed, which is a common expectation for path animations.
+        // STEP 2: Now that the view's static position is correct, we can safely
+        // remove the animation-specific properties. This prevents state leakage.
+        aDomElement.style.offsetPath = null;
+        aDomElement.style.offsetAnchor = null;
+        aDomElement.style.offsetRotate = null;
+    };
+
+    // 5. Create the @keyframes rule, passing in our NEW cleanup handler.
+    var getter = function(start, current) { return current; };
+    var values = ["0%", "100%"];
+    var keytimes = [0, 1];
+    var timingfunctions;
+
     if (anAction.calculationMode === kCAAnimationPaced) {
         timingfunctions = "linear";
+    } else {
+        timingfunctions = [[CPAnimationContext currentContext] timingFunction];
     }
 
-    animation.addPropertyAnimation("offset-distance", getter, anAction.duration, keytimes, values, timingfunctions, anAction.completion);
+    animation.addPropertyAnimation("offset-distance", getter, anAction.duration, keytimes, values, timingfunctions, cleanupCompletion);
+
+    // 6. Keep fill-mode as 'forwards'. This is essential to prevent the view
+    // from jumping to (0,0) in the tiny gap between the animation ending
+    // and our completion handler running.
+    animation.setFillMode("forwards");
 }
 
 + (CPArray)_cssPropertiesForKeyPath:(CPString)aKeyPath
