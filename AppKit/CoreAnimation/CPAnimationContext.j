@@ -128,13 +128,13 @@ var _CPAnimationContextStack   = nil,
 - (Object)_actionForObject:(id)anObject keyPath:(CPString)aKeyPath targetValue:(id)aTargetValue animationCompletion:(Function)animationCompletion
 {
     var animation,
-    duration,
-    animatedKeyPath,
-    values,
-    keyTimes,
-    timingFunctions,
-    needsPeriodicFrameUpdates,
-    objectId = [anObject UID];
+        duration,
+        animatedKeyPath,
+        values,
+        keyTimes,
+        timingFunctions,
+        needsPeriodicFrameUpdates,
+        objectId = [anObject UID];
 
     if (!aKeyPath || !anObject || !(animation = [anObject animationForKey:aKeyPath]) || ![animation isKindOfClass:[CAAnimation class]])
         return nil;

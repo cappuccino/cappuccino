@@ -12,10 +12,39 @@
 
 #define UIAssert(a) [self markTest:_cmd didPass:a];
 
+// A new custom view class to draw the animation path.
+@implementation PathView : CPView
+{
+    CPBezierPath _path;
+}
+
+- (void)setPath:(CPBezierPath)aPath
+{
+    _path = aPath;
+    [self setNeedsDisplay:YES];
+}
+
+- (void)drawRect:(CGRect)aRect
+{
+    if (_path)
+    {
+        [[CPColor lightGrayColor] set];
+        [_path setLineWidth:2.0];
+        // Use a dashed line to make it clearer it's a guide
+        var dashes = [2, 3];
+        [_path setLineDash:dashes count:2 phase:0];
+        [_path stroke];
+    }
+}
+
+@end
+
+
 @implementation AppController : CPObject
 {
     CPWindow theWindow;
     CPView   _testView; // A view to animate for our new tests
+    PathView _pathView; // A view to draw the animation path
     CGRect   _initialTestViewFrame;
 }
 
@@ -26,15 +55,30 @@
 
     [theWindow orderFront:self];
 
+    // Create a view to draw the intended animation path.
+    _pathView = [[PathView alloc] initWithFrame:[contentView bounds]];
+    [_pathView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+    [contentView addSubview:_pathView];
+
     // Create a view that we can animate for the new tests.
     _initialTestViewFrame = CGRectMake(90, 350, 50, 50);
     _testView = [[CPView alloc] initWithFrame:_initialTestViewFrame];
-    // Use CALayer to give it a background color so we can see it.
-    [_testView setWantsLayer:YES];
     [_testView setBackgroundColor:[CPColor blueColor]];
-    [contentView addSubview:_testView];
+    [contentView addSubview:_testView]; // Add it on top of the path view
 
     [self setup];
+}
+
+- (void)cleanupAfterAnimation
+{
+    // Clear the visual path from the screen.
+    [_pathView setPath:nil];
+
+    // Animate the test view back to its starting position.
+    var context = [CPAnimationContext currentContext];
+    [context setDuration:0.4];
+    [context setTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut]];
+    [[_testView animator] setFrame:_initialTestViewFrame];
 }
 
 - (void)setup
@@ -70,17 +114,20 @@
     var resetButton = [[CPButton alloc] initWithFrame:CGRectMake(10, 10 + 35 * testMethodCount, 0, 32)];
     [resetButton setTitle:@"Reset"];
     [resetButton setTarget:self];
-    [resetButton setAction:function() {
-        [_testView setFrame:_initialTestViewFrame];
-        [allLabels enumerateObjectsUsingBlock:function(label) {
-            [label setTextColor:[CPColor blackColor]];
-            [label setStringValue:@"………"];
-        }];
-    }];
+    [resetButton setAction:@selector(reset:)];
     [[theWindow contentView] addSubview:resetButton];
     [resetButton sizeToFit];
 }
 
+- (void)reset:(id)sender
+{
+    [_testView setFrame:_initialTestViewFrame];
+    [_pathView setPath:nil];
+    [allLabels enumerateObjectsUsingBlock:function(label) {
+            [label setTextColor:[CPColor blackColor]];
+            [label setStringValue:@"………"];
+        }];
+}
 
 - (void)markTest:(CPString)testSelector didPass:(BOOL)passed
 {
@@ -98,16 +145,33 @@
 {
     [_testView setFrame:_initialTestViewFrame];
 
-    var path = [CPBezierPath bezierPath];
-    var startPoint = _initialTestViewFrame.origin;
-    var endPoint = CGPointMake(startPoint.x + 200, startPoint.y - 300);
-    [path moveToPoint:startPoint];
-    [path curveToPoint:endPoint
-         controlPoint1:CGPointMake(startPoint.x - 100, startPoint.y)
-         controlPoint2:CGPointMake(endPoint.x + 100, endPoint.y + 100)];
+    // 1. Define the desired trajectory for the view's ORIGIN.
+    var startOrigin = _initialTestViewFrame.origin;
+    var endOrigin = CGPointMake(startOrigin.x + 200, startOrigin.y - 300);
+    var control1Origin = CGPointMake(startOrigin.x - 100, startOrigin.y);
+    var control2Origin = CGPointMake(endOrigin.x + 100, endOrigin.y + 100);
+
+    // 2. Calculate the path for the view's CENTER. This path is used for BOTH
+    // the visual guide and the animation data.
+    var offsetX = _initialTestViewFrame.size.width / 2.0;
+    var offsetY = _initialTestViewFrame.size.height / 2.0;
+
+    var startCenter = CGPointMake(startOrigin.x + offsetX, startOrigin.y + offsetY);
+    var endCenter = CGPointMake(endOrigin.x + offsetX, endOrigin.y + offsetY);
+    var control1Center = CGPointMake(control1Origin.x + offsetX, control1Origin.y + offsetY);
+    var control2Center = CGPointMake(control2Origin.x + offsetX, control2Origin.y + offsetY);
+
+    var centerPath = [CPBezierPath bezierPath];
+    [centerPath moveToPoint:startCenter];
+    [centerPath curveToPoint:endCenter
+               controlPoint1:control1Center
+               controlPoint2:control2Center];
+
+    // 3. Set the visual guide and the animation path.
+    [_pathView setPath:centerPath];
 
     var pathAnimation = [CAKeyframeAnimation animationWithKeyPath:@"frameOrigin"];
-    [pathAnimation setPath:path];
+    [pathAnimation setPath:centerPath]; // The system uses this path for the CENTER.
     [pathAnimation setDuration:2.0];
     [pathAnimation setCalculationMode:kCAAnimationPaced];
     [pathAnimation setRotationMode:kCAAnimationRotateAuto];
@@ -119,12 +183,14 @@
     [context setCompletionHandler:function()
      {
         var finalOrigin = [_testView frame].origin;
-        var passed = (Math.abs(finalOrigin.x - endPoint.x) < 1 && Math.abs(finalOrigin.y - endPoint.y) < 1);
+        var passed = (Math.abs(finalOrigin.x - endOrigin.x) < 1 && Math.abs(finalOrigin.y - endOrigin.y) < 1);
         [self markTest:_cmd didPass:passed];
+        [self performSelector:@selector(cleanupAfterAnimation) withObject:nil afterDelay:0.5];
     }];
 
+    // 4. Associate the animation with 'frameOrigin' and trigger it with 'setFrameOrigin:'.
     [_testView setAnimations:[CPDictionary dictionaryWithObject:pathAnimation forKey:@"frameOrigin"]];
-    [[_testView animator] setFrameOrigin:endPoint];
+    [[_testView animator] setFrameOrigin:endOrigin];
     [CPAnimationContext endGrouping];
 }
 
@@ -132,13 +198,26 @@
 {
     [_testView setFrame:_initialTestViewFrame];
 
-    var p1 = _initialTestViewFrame.origin;
-    var p2 = CGPointMake(p1.x + 100, p1.y);
-    var p3 = CGPointMake(p1.x + 100, p1.y - 100);
-    var endPoint = CGPointMake(p1.x, p1.y - 100);
+    // 1. Define origin points.
+    var p1Origin = _initialTestViewFrame.origin;
+    var p2Origin = CGPointMake(p1Origin.x + 100, p1Origin.y);
+    var p3Origin = CGPointMake(p1Origin.x + 100, p1Origin.y - 100);
+    var endOrigin = CGPointMake(p1Origin.x, p1Origin.y - 100);
 
+    // 2. Create the visual guide based on the center.
+    var offsetX = _initialTestViewFrame.size.width / 2.0;
+    var offsetY = _initialTestViewFrame.size.height / 2.0;
+    var visualPath = [CPBezierPath bezierPath];
+    [visualPath moveToPoint:CGPointMake(p1Origin.x + offsetX, p1Origin.y + offsetY)];
+    [visualPath lineToPoint:CGPointMake(p2Origin.x + offsetX, p2Origin.y + offsetY)];
+    [visualPath lineToPoint:CGPointMake(p3Origin.x + offsetX, p3Origin.y + offsetY)];
+    [visualPath lineToPoint:CGPointMake(endOrigin.x + offsetX, endOrigin.y + offsetY)];
+   // [_pathView setFrameOrigin:_initialTestViewFrame.origin];
+    [_pathView setPath:visualPath];
+
+    // 3. The animation uses the origin values directly.
     var discreteAnimation = [CAKeyframeAnimation animationWithKeyPath:@"frameOrigin"];
-    [discreteAnimation setValues:[p1, p2, p3, endPoint]];
+    [discreteAnimation setValues:[p1Origin, p2Origin, p3Origin, endOrigin]];
     [discreteAnimation setKeyTimes:[0, 0.33, 0.66, 1.0]];
     [discreteAnimation setCalculationMode:kCAAnimationDiscrete];
 
@@ -149,12 +228,13 @@
     [context setCompletionHandler:function()
      {
         var finalOrigin = [_testView frame].origin;
-        var passed = (Math.abs(finalOrigin.x - endPoint.x) < 1 && Math.abs(finalOrigin.y - endPoint.y) < 1);
+        var passed = (Math.abs(finalOrigin.x - endOrigin.x) < 1 && Math.abs(finalOrigin.y - endOrigin.y) < 1);
         [self markTest:_cmd didPass:passed];
+        [self performSelector:@selector(cleanupAfterAnimation) withObject:nil afterDelay:0.5];
     }];
 
     [_testView setAnimations:[CPDictionary dictionaryWithObject:discreteAnimation forKey:@"frameOrigin"]];
-    [[_testView animator] setFrameOrigin:endPoint];
+    [[_testView animator] setFrameOrigin:endOrigin];
     [CPAnimationContext endGrouping];
 }
 
@@ -162,14 +242,25 @@
 {
     [_testView setFrame:_initialTestViewFrame];
 
-    var path = [CPBezierPath bezierPath];
-    var startPoint = _initialTestViewFrame.origin;
-    var endPoint = CGPointMake(startPoint.x + 300, startPoint.y - 150);
-    [path moveToPoint:startPoint];
-    [path lineToPoint:endPoint];
+    // 1. Define origin trajectory.
+    var startOrigin = _initialTestViewFrame.origin;
+    var endOrigin = CGPointMake(startOrigin.x + 300, startOrigin.y - 150);
+
+    // 2. Calculate the corresponding center trajectory.
+    var offsetX = _initialTestViewFrame.size.width / 2.0;
+    var offsetY = _initialTestViewFrame.size.height / 2.0;
+    var startCenter = CGPointMake(startOrigin.x + offsetX, startOrigin.y + offsetY);
+    var endCenter = CGPointMake(endOrigin.x + offsetX, endOrigin.y + offsetY);
+
+    var centerPath = [CPBezierPath bezierPath];
+    [centerPath moveToPoint:startCenter];
+    [centerPath lineToPoint:endCenter];
+
+    // 3. Use the center path for the guide and the animation data.
+    [_pathView setPath:centerPath];
 
     var pathAnimation = [CAKeyframeAnimation animationWithKeyPath:@"frameOrigin"];
-    [pathAnimation setPath:path];
+    [pathAnimation setPath:centerPath];
     [pathAnimation setRotationMode:kCAAnimationRotateAutoReverse];
 
     [CPAnimationContext beginGrouping];
@@ -179,12 +270,14 @@
     [context setCompletionHandler:function()
      {
         var finalOrigin = [_testView frame].origin;
-        var passed = (Math.abs(finalOrigin.x - endPoint.x) < 1 && Math.abs(finalOrigin.y - endPoint.y) < 1);
+        var passed = (Math.abs(finalOrigin.x - endOrigin.x) < 1 && Math.abs(finalOrigin.y - endOrigin.y) < 1);
         [self markTest:_cmd didPass:passed];
+        [self performSelector:@selector(cleanupAfterAnimation) withObject:nil afterDelay:0.5];
     }];
 
+    // 4. Trigger by setting the final origin.
     [_testView setAnimations:[CPDictionary dictionaryWithObject:pathAnimation forKey:@"frameOrigin"]];
-    [[_testView animator] setFrameOrigin:endPoint];
+    [[_testView animator] setFrameOrigin:endOrigin];
     [CPAnimationContext endGrouping];
 }
 
