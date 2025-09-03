@@ -1,4 +1,3 @@
-
 @import "_CPObjectAnimator.j"
 @import "CPView.j"
 @import "CPCompatibility.j"
@@ -116,6 +115,13 @@ var DEFAULT_CSS_PROPERTIES = nil,
 {
     var target = anAction.object;
 
+    if (anAction.path)
+    {
+        // Path animations are handled differently. They don't map to standard properties like width/height.
+        // They use CSS offset-path.
+        return [self _addPathAnimation:animations forAction:anAction domElement:[target _DOMElement] identifier:[target UID]];
+    }
+
     return [self _addAnimations:animations forAction:anAction domElement:[target _DOMElement] identifier:[target UID]];
 }
 
@@ -132,6 +138,20 @@ var DEFAULT_CSS_PROPERTIES = nil,
         [animations addObject:animation];
     }
 
+    var calculationMode = anAction.calculationMode;
+    var timingFunctions = anAction.timingfunctions;
+
+    if (calculationMode === kCAAnimationDiscrete)
+    {
+        // For discrete animations, we use the steps() timing function.
+        // This makes the property jump between values.
+        timingFunctions = "steps(1, end)";
+    }
+    // For other calculation modes like 'paced' or 'cubic', more complex logic would be needed here.
+    // 'paced' would require pre-calculating keyTimes based on distance.
+    // 'cubic' would require generating many keyframes to simulate a spline.
+    // For now, we let them fall through to the default behavior.
+
     var css_mapping = [self _cssPropertiesForKeyPath:anAction.keypath];
 
     [css_mapping enumerateObjectsUsingBlock:function(aDict, anIndex, stop)
@@ -140,8 +160,91 @@ var DEFAULT_CSS_PROPERTIES = nil,
             property = [aDict objectForKey:@"property"],
             getter = [aDict objectForKey:@"value"];
 
-        animation.addPropertyAnimation(property, getter, anAction.duration, anAction.keytimes, anAction.values, anAction.timingfunctions, completionFunction);
+        animation.addPropertyAnimation(property, getter, anAction.duration, anAction.keytimes, anAction.values, timingFunctions, completionFunction);
     }];
+}
+
++ (void)_addPathAnimation:(CPArray)animations forAction:(id)anAction domElement:(Object)aDomElement identifier:(CPString)anIdentifier
+{
+    var animation = [animations objectPassingTest:function(anim, idx, stop)
+                     {
+        return anim.identifier == anIdentifier;
+    }];
+
+    if (animation == nil)
+    {
+        animation = new CSSAnimation(aDomElement, anIdentifier, [anAction.object debug_description]);
+        [animations addObject:animation];
+    }
+
+    // 1. Get the SVG path string.
+    var svgPath = [anAction.path SVGString];
+
+    // 2. Set the offset-path property.
+    aDomElement.style.offsetPath = "path('" + svgPath + "')";
+
+    // 3. Set the anchor point and neutralize the static position.
+    if (anAction.keypath === @"frameOrigin")
+    {
+        aDomElement.style.offsetAnchor = "0% 0%";
+        aDomElement.style.left = "0px";
+        aDomElement.style.top = "0px";
+    }
+    else
+    {
+        aDomElement.style.offsetAnchor = "50% 50%";
+    }
+
+    // 4. Set the rotation mode.
+    var rotationMode = anAction.rotationMode;
+    if (rotationMode === kCAAnimationRotateAuto)
+    {
+        aDomElement.style.offsetRotate = "auto";
+    }
+    else if (rotationMode === kCAAnimationRotateAutoReverse)
+    {
+        aDomElement.style.offsetRotate = "auto reverse";
+    }
+    else
+    {
+        aDomElement.style.offsetRotate = "0deg";
+    }
+
+    // Create a new completion handler that cleans up after the animation.
+    var originalCompletion = anAction.completion;
+    var cleanupCompletion = function()
+    {
+        // STEP 1: Run the original completion handler first. This is critical.
+        // It sets the final frameOrigin, which updates the static 'left' and 'top'
+        // styles to their final values, locking the view in the correct place.
+        if (originalCompletion)
+            originalCompletion();
+
+        // STEP 2: Now that the view's static position is correct, we can safely
+        // remove the animation-specific properties. This prevents state leakage.
+        aDomElement.style.offsetPath = null;
+        aDomElement.style.offsetAnchor = null;
+        aDomElement.style.offsetRotate = null;
+    };
+
+    // 5. Create the @keyframes rule, passing in our NEW cleanup handler.
+    var getter = function(start, current) { return current; };
+    var values = ["0%", "100%"];
+    var keytimes = [0, 1];
+    var timingfunctions;
+
+    if (anAction.calculationMode === kCAAnimationPaced) {
+        timingfunctions = "linear";
+    } else {
+        timingfunctions = [[CPAnimationContext currentContext] timingFunction];
+    }
+
+    animation.addPropertyAnimation("offset-distance", getter, anAction.duration, keytimes, values, timingfunctions, cleanupCompletion);
+
+    // 6. Keep fill-mode as 'forwards'. This is essential to prevent the view
+    // from jumping to (0,0) in the tiny gap between the animation ending
+    // and our completion handler running.
+    animation.setFillMode("forwards");
 }
 
 + (CPArray)_cssPropertiesForKeyPath:(CPString)aKeyPath

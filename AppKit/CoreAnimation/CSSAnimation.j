@@ -306,3 +306,8 @@ CSSAnimation.prototype.start = function()
 
     return true;
 };
+
+CSSAnimation.prototype.setFillMode = function(aProperty)
+{
+    this.target.style.setProperty(ANIMATION_FILL_MODE_PROPERTY, aProperty);
+};
