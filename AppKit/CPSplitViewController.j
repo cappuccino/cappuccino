@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import <AppKit/CPViewController.j>
-@import <AppKit/CPSplitView.j>
+@import "CPViewController"
+@import "CPSplitView.j"
 
 var CPSplitViewControllerAutomaticDimension = -1.0;
 
