@@ -2,7 +2,7 @@
  * CPSplitViewController.j
  *
  * Created by Daniel Boehringer on September 2, 2025.
- * Copyright (c) 2025 [Copyright Holder]. All rights reserved.
+ * Copyright (c) 2025 Daniel Boehringer. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -63,9 +63,12 @@ var CPSplitViewControllerAutomaticDimension = -1.0;
 
 - (void)loadView
 {
-    _splitView = [[CPSplitView alloc] initWithFrame:CGRectMake(0,0,400,400)];
+    if (!_splitView)
+    {
+        _splitView = [[CPSplitView alloc] initWithFrame:CGRectMake(0,0,400,400)];
+        [_splitView setDelegate:self];
+    }
     [self setView:_splitView];
-    [_splitView setDelegate:self];
 }
 
 - (void)viewDidLoad
@@ -91,6 +94,22 @@ var CPSplitViewControllerAutomaticDimension = -1.0;
 }
 
 /**
+ * Sets a custom split view for the controller.
+ *
+ * @param {CPSplitView} splitView The custom split view to use.
+ */
+- (void)setSplitView:(CPSplitView)splitView
+{
+    if (_splitView !== splitView)
+    {
+        _splitView = splitView;
+        [_splitView setDelegate:self];
+        if ([self isViewLoaded])
+            [self setView:_splitView];
+    }
+}
+
+/**
  * Returns the array of split view items.
  *
  * @returns {CPArray} The array of CPSplitViewItem objects.
@@ -98,6 +117,26 @@ var CPSplitViewControllerAutomaticDimension = -1.0;
 - (CPArray)splitViewItems
 {
     return _splitViewItems;
+}
+
+/**
+ * Sets the array of split view items, replacing any existing items.
+ *
+ * @param {CPArray} splitViewItems An array of CPSplitViewItem objects.
+ */
+- (void)setSplitViewItems:(CPArray)splitViewItems
+{
+    // Remove all existing items
+    while ([_splitViewItems count] > 0)
+    {
+        [self removeSplitViewItem:[_splitViewItems lastObject]];
+    }
+
+    // Add new items
+    for (var i = 0; i < [splitViewItems count]; i++)
+    {
+        [self addSplitViewItem:[splitViewItems objectAtIndex:i]];
+    }
 }
 
 // MARK: - Managing Split View Items
@@ -135,7 +174,11 @@ var CPSplitViewControllerAutomaticDimension = -1.0;
  */
 - (void)removeSplitViewItem:(CPSplitViewItem)splitViewItem
 {
-    [[splitViewItem viewController] removeFromParentViewController];
+    var viewController = [splitViewItem viewController];
+    if ([self isViewLoaded])
+        [[viewController view] removeFromSuperview];
+
+    [viewController removeFromParentViewController];
     [splitViewItem _setSplitViewController:nil];
     [_splitViewItems removeObject:splitViewItem];
 }
@@ -195,6 +238,33 @@ var CPSplitViewControllerAutomaticDimension = -1.0;
 - (CPNumber)minimumThicknessForInlineSidebars
 {
     return _minimumThicknessForInlineSidebars;
+}
+
+// MARK: - CPSplitViewDelegate Methods
+
+// Note: A more complete implementation would forward these delegate methods
+// to a separate delegate property on the CPSplitViewController itself.
+// For now, these are stubbed to demonstrate where they would be handled.
+
+- (BOOL)splitView:(CPSplitView)splitView canCollapseSubview:(CPView)subview
+{
+    // Default behavior: allow all subviews to be collapsed.
+    return YES;
+}
+
+- (CGFloat)splitView:(CPSplitView)splitView constrainMinCoordinate:(CGFloat)proposedMinimumPosition ofSubviewAt:(CPInteger)dividerIndex
+{
+    return proposedMinimumPosition;
+}
+
+- (CGFloat)splitView:(CPSplitView)splitView constrainMaxCoordinate:(CGFloat)proposedMaximumPosition ofSubviewAt:(CPInteger)dividerIndex
+{
+    return proposedMaximumPosition;
+}
+
+- (void)splitViewDidResizeSubviews:(CPNotification)notification
+{
+    // Can be used to respond to user-initiated resizing.
 }
 
 @end
