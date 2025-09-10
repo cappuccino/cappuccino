@@ -40,14 +40,12 @@ jobs:
             exit 1
           fi
 
-      - name: Build Cappuccino
-        run: |
-          echo "${PWD}/dist/cappuccino/bin" >> $GITHUB_PATH
-          echo "${PWD}/dist/objective-j/bin" >> $GITHUB_PATH
-          npm install
-          npm update
-          jake dist
-          jake test-only
+      - run: echo "${PWD}/dist/cappuccino/bin" >> $GITHUB_PATH
+      - run: echo "${PWD}/dist/objective-j/bin" >> $GITHUB_PATH
+      - run: npm install
+      - run: npm update
+      - run: jake dist
+      - run: jake test-only
     
       - name: Prepare Framework directory in Testbook
         run: |
