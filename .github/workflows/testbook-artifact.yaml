@@ -1,0 +1,74 @@
+name: Build Testbook Artifact with Fresh Frameworks
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+  build-artifact:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout cappuccino (this repo)
+        uses: actions/checkout@v5
+
+      - name: Checkout Cappuccino-Testbook
+        uses: actions/checkout@v5
+        with:
+          repository: ArgosOz/Cappuccino-Testbook
+          path: testbook
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+
+      - name: Verify directories exist
+        run: |
+          ls -la
+          echo "---- testbook root ----" && ls -la testbook || true
+          echo "---- dist ----" && ls -la dist || true
+
+      - name: Ensure dist exists
+        run: |
+          if [ ! -d "dist" ]; then
+            echo "❌ dist/ directory not found at repo root." >&2
+            exit 1
+          fi
+
+      - name: Build Cappuccino
+      - run: echo "${PWD}/dist/cappuccino/bin" >> $GITHUB_PATH
+      - run: echo "${PWD}/dist/objective-j/bin" >> $GITHUB_PATH
+      - run: npm install
+      - run: npm update
+      - run: jake dist
+      - run: jake test-only
+    
+      - name: Prepare Framework directory in Testbook
+        run: |
+          mkdir -p testbook/Framework
+          rm -rf testbook/Framework/*
+
+      - name: Copy fresh frameworks from dist into Testbook/Framework
+        run: |
+          # Copy everything from dist into the Framework folder
+          # -a preserves attributes; the trailing dots ensure contents are copied
+          cp -a dist/cappuccino/Frameworks/{Foundation,AppKit} testbook/Frameworks/
+          cp -a dist/objective-j/Frameworks/Objective-J testbook/Frameworks/
+          echo "Framework folder now contains:"
+          ls -la testbook/Framework
+
+      - name: Package modified Testbook as zip
+        run: |
+          zip -r testbook-artifact.zip testbook
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Cappuccino-Testbook-with-new-frameworks
+          path: testbook-artifact.zip
+          if-no-files-found: error
