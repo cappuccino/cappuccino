@@ -3291,7 +3291,13 @@ setBoundsOrigin:
 }
 
 /*!
-    Rotates the view's frame by a given angle (in degrees) around its center point.
+    Rotates the view's visual representation by a given angle (in degrees) around its center point.
+
+    This method achieves the rotation by applying a transform directly to the view's backing CALayer.
+    Because this is a direct layer manipulation, the view's own `frame` property is not updated to
+    reflect the new visual bounding box. Consequently, a `CPViewBoundsDidChangeNotification` is
+    **not** posted by this method. Note that this is a deviation from Cocoa's behavior.
+
     This method requires the view to be layer-backed. If the view is not
     already layer-backed, this method will automatically set wantsLayer to YES.
     @param angle The angle in degrees to rotate the view.
