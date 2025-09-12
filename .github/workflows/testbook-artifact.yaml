@@ -47,19 +47,69 @@ jobs:
       - run: jake dist
       - run: jake test-only
     
-      - name: Prepare Framework directory in Testbook
+      - name: Prepare Frameworks directory in Testbook
         run: |
-          mkdir -p testbook/Framework
-          rm -rf testbook/Framework/*
+          mkdir -p testbook/Frameworks
+          rm -rf testbook/Frameworks/*
 
-      - name: Copy fresh frameworks from dist into Testbook/Framework
+      - name: Copy fresh frameworks from dist into Testbook/Frameworks
         run: |
-          # Copy everything from dist into the Framework folder
-          # -a preserves attributes; the trailing dots ensure contents are copied
+          # Copy everything from dist into the Frameworks folder
+          # -a preserves attributes
           cp -a dist/cappuccino/Frameworks/{Foundation,AppKit} testbook/Frameworks/
           cp -a dist/objective-j/Frameworks/Objective-J testbook/Frameworks/
           echo "Framework folder now contains:"
-          ls -la testbook/Framework
+          ls -la testbook/Frameworks
+
+      - name: Generate manifest of manual test directories
+        if: ${{ hashFiles('Tests/Manual/**') != '' }}
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          OUT="testbook/Resources/recipes.txt"
+          : > "$OUT"
+
+          if [ ! -d "Tests/Manual" ]; then
+            echo "❌ Tests/Manual not found at repo root." >&2
+            exit 1
+          fi
+
+          # Iterate over immediate subdirectories of Tests/Manual (null-safe for spaces)
+          while IFS= read -r -d '' d; do
+            name=$(basename "$d")
+            ts=$(date +%s%3N)  # milliseconds since epoch
+            printf '%s|%s|\n' "$ts" "$name" >> "$OUT"
+            # Optional tiny sleep to help keep timestamps distinct:
+            sleep 0.01
+          done < <(find "Tests/Manual" -mindepth 1 -maxdepth 1 -type d -print0 | sort -z)
+
+          echo "Wrote $OUT:"
+          cat "$OUT"
+          
+      - name: Clear directories in testbook/Resources (keep files)
+        run: |
+          set -euo pipefail
+          mkdir -p testbook/Resources
+          # Remove only immediate subdirectories (handles spaces safely)
+          find testbook/Resources -mindepth 1 -maxdepth 1 -type d -print0 \
+            | xargs -0 -r rm -rf
+          echo "Remaining files in testbook/Resources (if any):"
+          find testbook/Resources -mindepth 1 -maxdepth 1 ! -type d -ls || true
+
+      - name: Copy all directories from Tests/Manual to testbook/Resources
+        run: |
+          set -euo pipefail
+          if [ ! -d "Tests/Manual" ]; then
+            echo "❌ Tests/Manual not found at repo root." >&2
+            exit 1
+          fi
+          # Copy each immediate subdirectory from Tests/Manual
+          while IFS= read -r -d '' d; do
+            cp -a "$d" testbook/Resources/
+          done < <(find Tests/Manual -mindepth 1 -maxdepth 1 -type d -print0)
+
+          echo "Contents of testbook/Resources after copy:"
+          ls -la testbook/Resources
 
       - name: Package modified Testbook as zip
         run: |
