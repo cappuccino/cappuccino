@@ -17,14 +17,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout cappuccino (this repo)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Checkout Cappuccino-Testbook into ./testbook
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: ArgosOz/Cappuccino-Testbook
           path: testbook
 
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+
+      - run: echo "${PWD}/dist/cappuccino/bin" >> $GITHUB_PATH
+      - run: echo "${PWD}/dist/objective-j/bin" >> $GITHUB_PATH
+      - run: npm install
+      - run: npm update
+      - run: jake dist
+      - run: jake test-only
+        
       # Refresh Frameworks from dist → testbook/Frameworks
       - name: Refresh Frameworks
         run: |
@@ -35,9 +45,35 @@ jobs:
           fi
           mkdir -p testbook/Frameworks
           rm -rf testbook/Frameworks/*
-          cp -a dist/. testbook/Frameworks/
+          cp -a dist/cappuccino/Frameworks/{Foundation,AppKit} testbook/Frameworks/
+          cp -a dist/objective-j/Frameworks/Objective-J testbook/Frameworks/
           echo "Frameworks populated:" && ls -la testbook/Frameworks || true
 
+      - name: Generate manifest of manual test directories
+        if: ${{ hashFiles('Tests/Manual/**') != '' }}
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          OUT="testbook/Resources/recipes.txt"
+          : > "$OUT"
+
+          if [ ! -d "Tests/Manual" ]; then
+            echo "❌ Tests/Manual not found at repo root" >&2
+            exit 1
+          fi
+
+          # Iterate over immediate subdirectories of Tests/Manual (null-safe for spaces)
+          while IFS= read -r -d '' d; do
+            name=$(basename "$d")
+            ts=$(date +%s%3N)  # milliseconds since epoch
+            printf '%s|%s|\n' "$ts" "$name" >> "$OUT"
+            # Optional tiny sleep to help keep timestamps distinct:
+            sleep 0.01
+          done < <(find "Tests/Manual" -mindepth 1 -maxdepth 1 -type d -print0 | sort -z)
+
+          echo "Wrote $OUT:"
+          cat "$OUT"        
+        
       # Replace subdirectories inside testbook/Resources with Tests/Manual subdirectories
       - name: Sync Resources from Tests/Manual
         run: |
