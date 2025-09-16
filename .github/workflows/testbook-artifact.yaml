@@ -67,7 +67,7 @@ jobs:
               continue
             fi
             perl -0777 -i -pe 's/OBJJ_MAIN_FILE\s*=\s*"main\.j";/OBJJ_INCLUDE_PATHS = ["..\/..\/Frameworks"];\nOBJJ_MAIN_FILE = "main.j";/i' "$f"
-            perl -0777 -i -pe 's/Frameworks\/Objective-J\/Objective-J.js/\.\.\/\.\.\/Frameworks\/Objective-J\/Objective-J.js/' "$file"
+            perl -0777 -i -pe 's/Frameworks\/Objective-J\/Objective-J.js/\.\.\/\.\.\/Frameworks\/Objective-J\/Objective-J.js/' "$f"
             echo "Updated: $f"
           done < <(find testbook/Resources -mindepth 2 -maxdepth 2 -type f -iname "index.html" -print0)
 
