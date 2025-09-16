@@ -85,7 +85,7 @@ jobs:
 
           echo "Wrote $OUT:"
           cat "$OUT"
-          
+
       - name: Clear directories in testbook/Resources (keep files)
         run: |
           set -euo pipefail
@@ -110,6 +110,30 @@ jobs:
 
           echo "Contents of testbook/Resources after copy:"
           ls -la testbook/Resources
+
+      - name: Update Index.html files under testbook/Resources/*/
+        run: |
+          set -euo pipefail
+          BASE="testbook/Resources"
+          if [ ! -d "$BASE" ]; then
+            echo "❌ $BASE does not exist." >&2
+            exit 1
+          fi
+
+          found=0
+          while IFS= read -r -d '' file; do
+            found=1
+            if grep -q 'OBJJ_INCLUDE_PATHS' "$file"; then
+              echo "Already updated: $file"
+              continue
+            fi
+            perl -0777 -i -pe 's/OBJJ_MAIN_FILE\s*=\s*"main\.j";/OBJJ_INCLUDE_PATHS = ["..\/..\/Frameworks"];\nOBJJ_MAIN_FILE = "main.j";/' "$file"
+            echo "Updated: $file"
+          done < <(find "$BASE" -mindepth 2 -maxdepth 2 -type f -iname "index.html" -print0)
+
+          if [ "$found" -eq 0 ]; then
+            echo "⚠️ No index.html files found under $BASE/*/"
+          fi
 
       - name: Package modified Testbook as zip
         run: |
