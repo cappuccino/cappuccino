@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write       # required by deploy-pages
   id-token: write    # required by deploy-pages
   pull-requests: write
