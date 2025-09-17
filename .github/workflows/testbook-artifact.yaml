@@ -126,30 +126,10 @@ jobs:
         with:
           path: testbook
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    concurrency:
-      group: pages
-      cancel-in-progress: true
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-
-      - name: Comment Pages URL on PR
-        if: ${{ github.event_name == 'pull_request' }}
-        uses: actions/github-script@v7
+      - name: Publish to gh-pages (preserve PR previews)
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
-          script: |
-            const url = `${{ toJSON(steps.deployment.outputs.page_url) }}`;
-            const body = `📄 GitHub Pages preview for this PR:\n\n${url}`;
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body
-            });
+          branch: gh-pages
+          folder: testbook
+          clean-exclude: pr-preview/   # keep PR preview folders
+          force: false                 # avoid force-push so previews survive
