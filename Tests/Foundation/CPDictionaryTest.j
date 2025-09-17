@@ -484,4 +484,43 @@
     [self assert:5 equals:[dict objectForKey:@"aKey"]];
 }
 
+- (void)testForOfIteration
+{
+    var dict = @{ @"a": 1, @"b": 2, @"c": 3 };
+    var result = [CPMutableDictionary dictionary];
+
+    // Test basic for...of iteration
+    for (var [key, value] of dict)
+    {
+        [result setObject:value forKey:key];
+    }
+
+    [self assert:dict equals:result message:@"Dictionary should be equal after for...of iteration"];
+
+    // Test with spread syntax, a common use for iterables
+    var entries = [...dict];
+    [self assert:3 equals:entries.length message:@"Spread syntax should produce 3 entries"];
+
+    // The order is not guaranteed, so we check the contents by converting to a dictionary
+    var spreadDict = [CPMutableDictionary dictionary];
+    for (var entry of entries)
+    {
+        [spreadDict setObject:entry[1] forKey:entry[0]];
+    }
+    [self assert:dict equals:spreadDict message:@"Dictionary rebuilt from spread entries should be equal"];
+
+    // Test on an empty dictionary
+    var emptyDict = @{};
+    var iterations = 0;
+    for (var entry of emptyDict)
+    {
+        iterations++;
+    }
+    [self assert:0 equals:iterations message:@"for...of on an empty dictionary should not iterate"];
+
+    // Test with spread on empty dictionary
+    var emptyEntries = [...emptyDict];
+    [self assert:0 equals:emptyEntries.length message:@"Spread on an empty dictionary should produce an empty array"];
+}
+
 @end
