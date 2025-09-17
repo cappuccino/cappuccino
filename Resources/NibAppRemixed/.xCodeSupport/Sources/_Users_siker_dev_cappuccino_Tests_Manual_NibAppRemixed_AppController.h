@@ -1,0 +1,7 @@
+
+@interface AppController : NSObject
+{
+
+}
+
+@end

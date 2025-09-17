@@ -1,0 +1,93 @@
+/*
+ * Jakefile
+ * CPWebViewTest2
+ *
+ * Created by Alexander Ljungberg on May 9, 2011.
+ * Copyright 2011, WireLoad All rights reserved.
+ */
+
+var ENV = require("system").env,
+    FILE = require("file"),
+    JAKE = require("jake"),
+    task = JAKE.task,
+    FileList = JAKE.FileList,
+    app = require("cappuccino/jake").app,
+    configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Debug",
+    OS = require("os");
+
+app ("CPWebViewTest2", function(task)
+{
+    task.setBuildIntermediatesPath(FILE.join("Build", "CPWebViewTest2.build", configuration));
+    task.setBuildPath(FILE.join("Build", configuration));
+
+    task.setProductName("CPWebViewTest2");
+    task.setIdentifier("com.yourcompany.CPWebViewTest2");
+    task.setVersion("1.0");
+    task.setAuthor("WireLoad");
+    task.setEmail("feedback @nospam@ yourcompany.com");
+    task.setSummary("CPWebViewTest2");
+    task.setSources((new FileList("**/*.j")).exclude(FILE.join("Build", "**")));
+    task.setResources(new FileList("Resources/**"));
+    task.setIndexFilePath("index.html");
+    task.setInfoPlistPath("Info.plist");
+
+    if (configuration === "Debug")
+        task.setCompilerFlags("-DDEBUG -g");
+    else
+        task.setCompilerFlags("-O");
+});
+
+task ("default", ["CPWebViewTest2"], function()
+{
+    printResults(configuration);
+});
+
+task ("build", ["default"]);
+
+task ("debug", function()
+{
+    ENV["CONFIGURATION"] = "Debug";
+    JAKE.subjake(["."], "build", ENV);
+});
+
+task ("release", function()
+{
+    ENV["CONFIGURATION"] = "Release";
+    JAKE.subjake(["."], "build", ENV);
+});
+
+task ("run", ["debug"], function()
+{
+    OS.system(["open", FILE.join("Build", "Debug", "CPWebViewTest2", "index.html")]);
+});
+
+task ("run-release", ["release"], function()
+{
+    OS.system(["open", FILE.join("Build", "Release", "CPWebViewTest2", "index.html")]);
+});
+
+task ("deploy", ["release"], function()
+{
+    FILE.mkdirs(FILE.join("Build", "Deployment", "CPWebViewTest2"));
+    OS.system(["press", "-f", FILE.join("Build", "Release", "CPWebViewTest2"), FILE.join("Build", "Deployment", "CPWebViewTest2")]);
+    printResults("Deployment")
+});
+
+task ("desktop", ["release"], function()
+{
+    FILE.mkdirs(FILE.join("Build", "Desktop", "CPWebViewTest2"));
+    require("cappuccino/nativehost").buildNativeHost(FILE.join("Build", "Release", "CPWebViewTest2"), FILE.join("Build", "Desktop", "CPWebViewTest2", "CPWebViewTest2.app"));
+    printResults("Desktop")
+});
+
+task ("run-desktop", ["desktop"], function()
+{
+    OS.system([FILE.join("Build", "Desktop", "CPWebViewTest2", "CPWebViewTest2.app", "Contents", "MacOS", "NativeHost"), "-i"]);
+});
+
+function printResults(configuration)
+{
+    print("----------------------------");
+    print(configuration+" app built at path: "+FILE.join("Build", configuration, "CPWebViewTest2"));
+    print("----------------------------");
+}

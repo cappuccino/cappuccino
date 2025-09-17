@@ -1,0 +1,93 @@
+/*
+ * Jakefile
+ * CPTokenFieldTest
+ *
+ * Created by Alexander Ljungberg on October 2, 2010.
+ * Copyright 2010, WireLoad, LLC All rights reserved.
+ */
+
+var ENV = require("system").env,
+    FILE = require("file"),
+    JAKE = require("jake"),
+    task = JAKE.task,
+    FileList = JAKE.FileList,
+    app = require("cappuccino/jake").app,
+    configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Debug",
+    OS = require("os");
+
+app ("CPTokenFieldTest", function(task)
+{
+    task.setBuildIntermediatesPath(FILE.join("Build", "CPTokenFieldTest.build", configuration));
+    task.setBuildPath(FILE.join("Build", configuration));
+
+    task.setProductName("CPTokenFieldTest");
+    task.setIdentifier("com.yourcompany.CPTokenFieldTest");
+    task.setVersion("1.0");
+    task.setAuthor("WireLoad, LLC");
+    task.setEmail("feedback @nospam@ yourcompany.com");
+    task.setSummary("CPTokenFieldTest");
+    task.setSources((new FileList("**/*.j")).exclude(FILE.join("Build", "**")));
+    task.setResources(new FileList("Resources/**"));
+    task.setIndexFilePath("index.html");
+    task.setInfoPlistPath("Info.plist");
+
+    if (configuration === "Debug")
+        task.setCompilerFlags("-DDEBUG -g");
+    else
+        task.setCompilerFlags("-O");
+});
+
+task ("default", ["CPTokenFieldTest"], function()
+{
+    printResults(configuration);
+});
+
+task ("build", ["default"]);
+
+task ("debug", function()
+{
+    ENV["CONFIGURATION"] = "Debug";
+    JAKE.subjake(["."], "build", ENV);
+});
+
+task ("release", function()
+{
+    ENV["CONFIGURATION"] = "Release";
+    JAKE.subjake(["."], "build", ENV);
+});
+
+task ("run", ["debug"], function()
+{
+    OS.system(["open", FILE.join("Build", "Debug", "CPTokenFieldTest", "index.html")]);
+});
+
+task ("run-release", ["release"], function()
+{
+    OS.system(["open", FILE.join("Build", "Release", "CPTokenFieldTest", "index.html")]);
+});
+
+task ("deploy", ["release"], function()
+{
+    FILE.mkdirs(FILE.join("Build", "Deployment", "CPTokenFieldTest"));
+    OS.system(["press", "-f", FILE.join("Build", "Release", "CPTokenFieldTest"), FILE.join("Build", "Deployment", "CPTokenFieldTest")]);
+    printResults("Deployment")
+});
+
+task ("desktop", ["release"], function()
+{
+    FILE.mkdirs(FILE.join("Build", "Desktop", "CPTokenFieldTest"));
+    require("cappuccino/nativehost").buildNativeHost(FILE.join("Build", "Release", "CPTokenFieldTest"), FILE.join("Build", "Desktop", "CPTokenFieldTest", "CPTokenFieldTest.app"));
+    printResults("Desktop")
+});
+
+task ("run-desktop", ["desktop"], function()
+{
+    OS.system([FILE.join("Build", "Desktop", "CPTokenFieldTest", "CPTokenFieldTest.app", "Contents", "MacOS", "NativeHost"), "-i"]);
+});
+
+function printResults(configuration)
+{
+    print("----------------------------");
+    print(configuration+" app built at path: "+FILE.join("Build", configuration, "CPTokenFieldTest"));
+    print("----------------------------");
+}

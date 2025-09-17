@@ -1,0 +1,98 @@
+/*
+ * Jakefile
+ * CopyAndPaste
+ *
+ * Created by Alexander Ljungberg on June 13, 2013.
+ * Copyright 2013, SlevenBits, Ltd. All rights reserved.
+ */
+
+var ENV = require("system").env,
+    FILE = require("file"),
+    JAKE = require("jake"),
+    task = JAKE.task,
+    FileList = JAKE.FileList,
+    app = require("cappuccino/jake").app,
+    configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Debug",
+    OS = require("os");
+
+app ("CopyAndPaste", function(task)
+{
+    ENV["OBJJ_INCLUDE_PATHS"] = "Frameworks";
+
+    if (configuration === "Debug")
+        ENV["OBJJ_INCLUDE_PATHS"] = FILE.join(ENV["OBJJ_INCLUDE_PATHS"], configuration);
+
+    task.setBuildIntermediatesPath(FILE.join("Build", "CopyAndPaste.build", configuration));
+    task.setBuildPath(FILE.join("Build", configuration));
+
+    task.setProductName("CopyAndPaste");
+    task.setIdentifier("com.yourcompany.CopyAndPaste");
+    task.setVersion("1.0");
+    task.setAuthor("SlevenBits, Ltd.");
+    task.setEmail("feedback @nospam@ yourcompany.com");
+    task.setSummary("CopyAndPaste");
+    task.setSources(new FileList("**/*.j").exclude(FILE.join("Build", "**")).exclude(FILE.join("Frameworks", "Source", "**")));
+    task.setResources(new FileList("Resources/**"));
+    task.setIndexFilePath("index.html");
+    task.setInfoPlistPath("Info.plist");
+
+    if (configuration === "Debug")
+        task.setCompilerFlags("-DDEBUG -g");
+    else
+        task.setCompilerFlags("-O");
+});
+
+task ("default", ["CopyAndPaste"], function()
+{
+    printResults(configuration);
+});
+
+task ("build", ["default"]);
+
+task ("debug", function()
+{
+    ENV["CONFIGURATION"] = "Debug";
+    JAKE.subjake(["."], "build", ENV);
+});
+
+task ("release", function()
+{
+    ENV["CONFIGURATION"] = "Release";
+    JAKE.subjake(["."], "build", ENV);
+});
+
+task ("run", ["debug"], function()
+{
+    OS.system(["open", FILE.join("Build", "Debug", "CopyAndPaste", "index.html")]);
+});
+
+task ("run-release", ["release"], function()
+{
+    OS.system(["open", FILE.join("Build", "Release", "CopyAndPaste", "index.html")]);
+});
+
+task ("deploy", ["release"], function()
+{
+    FILE.mkdirs(FILE.join("Build", "Deployment", "CopyAndPaste"));
+    OS.system(["press", "-f", FILE.join("Build", "Release", "CopyAndPaste"), FILE.join("Build", "Deployment", "CopyAndPaste")]);
+    printResults("Deployment")
+});
+
+task ("desktop", ["release"], function()
+{
+    FILE.mkdirs(FILE.join("Build", "Desktop", "CopyAndPaste"));
+    require("cappuccino/nativehost").buildNativeHost(FILE.join("Build", "Release", "CopyAndPaste"), FILE.join("Build", "Desktop", "CopyAndPaste", "CopyAndPaste.app"));
+    printResults("Desktop")
+});
+
+task ("run-desktop", ["desktop"], function()
+{
+    OS.system([FILE.join("Build", "Desktop", "CopyAndPaste", "CopyAndPaste.app", "Contents", "MacOS", "NativeHost"), "-i"]);
+});
+
+function printResults(configuration)
+{
+    print("----------------------------");
+    print(configuration+" app built at path: "+FILE.join("Build", configuration, "CopyAndPaste"));
+    print("----------------------------");
+}
