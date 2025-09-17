@@ -121,6 +121,9 @@ jobs:
           rm -rf testbook/.git testbook/.github || true
           find testbook -maxdepth 1 -type f -name ".git*" -delete || true
 
+      - name: Disable Jekyll (create .nojekyll)
+        run: touch testbook/.nojekyll
+
       - name: Upload Pages artifact (testbook/)
         uses: actions/upload-pages-artifact@v3
         with:
