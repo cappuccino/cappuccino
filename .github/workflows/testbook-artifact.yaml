@@ -132,13 +132,13 @@ jobs:
           clean-exclude: pr-preview/   # keep PR preview folders
           force: false                 # avoid force-push so previews survive
 
-      - name: Checkout gh-pages ./pg-pages
+      - name: Checkout gh-pages ./gh-pages
         uses: actions/checkout@v5
         with:
-          path: pg-pages
-          ref: pg-pages
+          path: gh-pages
+          ref: gh-pages
 
       - name: Upload Pages artifact (testbook/)
         uses: actions/upload-pages-artifact@v4
         with:
-          path: pg-pages
+          path: gh-pages
