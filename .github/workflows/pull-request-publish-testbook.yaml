@@ -1,0 +1,170 @@
+name: Pull Request - Build Testbook with fresh frameworks and manual tests & deploy to GitHub Pages
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, closed]
+  workflow_dispatch:
+  
+concurrency: preview-${{ github.ref }}
+
+permissions:
+  contents: write
+  pages: write       # required by deploy-pages
+  id-token: write    # required by deploy-pages
+  pull-requests: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout cappuccino (this repo)
+        uses: actions/checkout@v5
+
+      - name: Checkout Cappuccino-Testbook into ./testbook
+        uses: actions/checkout@v5
+        with:
+          repository: ArgosOz/Cappuccino-Testbook
+          path: testbook
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+
+      - run: echo "${PWD}/dist/cappuccino/bin" >> $GITHUB_PATH
+      - run: echo "${PWD}/dist/objective-j/bin" >> $GITHUB_PATH
+      - run: npm install
+      - run: npm update
+      - run: jake dist
+      - run: jake test-only
+        
+      # Refresh Frameworks from dist → testbook/Frameworks
+      - name: Refresh Frameworks
+        run: |
+          set -euo pipefail
+          if [ ! -d dist ]; then
+            echo "❌ dist/ not found at repo root" >&2
+            exit 1
+          fi
+          mkdir -p testbook/Frameworks
+          rm -rf testbook/Frameworks/*
+          cp -a dist/cappuccino/Frameworks/{Foundation,AppKit} testbook/Frameworks/
+          cp -a dist/objective-j/Frameworks/Objective-J testbook/Frameworks/
+          echo "Frameworks populated:" && ls -la testbook/Frameworks || true
+
+      - name: Generate manifest of manual test directories
+        if: ${{ hashFiles('Tests/Manual/**') != '' }}
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          OUT="testbook/Resources/recipes.txt"
+          : > "$OUT"
+
+          if [ ! -d "Tests/Manual" ]; then
+            echo "❌ Tests/Manual not found at repo root" >&2
+            exit 1
+          fi
+
+          # Iterate over immediate subdirectories of Tests/Manual (null-safe for spaces)
+          while IFS= read -r -d '' d; do
+            name=$(basename "$d")
+            ts=$(date +%s%3N)  # milliseconds since epoch
+            printf '%s|%s|\n' "$ts" "$name" >> "$OUT"
+            # Optional tiny sleep to help keep timestamps distinct:
+            sleep 0.01
+          done < <(find "Tests/Manual" -mindepth 1 -maxdepth 1 -type d -print0 | sort -z)
+
+          echo "Wrote $OUT:"
+          cat "$OUT"        
+        
+      # Replace subdirectories inside testbook/Resources with Tests/Manual subdirectories
+      - name: Sync Resources from Tests/Manual
+        run: |
+          set -euo pipefail
+          if [ ! -d "Tests/Manual" ]; then
+            echo "❌ Tests/Manual not found at repo root" >&2
+            exit 1
+          fi
+          mkdir -p testbook/Resources
+          # Remove only immediate subdirectories (keep stray files if any)
+          find testbook/Resources -mindepth 1 -maxdepth 1 -type d -print0 | xargs -0 -r rm -rf
+          # Copy each immediate subdirectory from Tests/Manual → testbook/Resources
+          while IFS= read -r -d '' d; do
+            cp -a "$d" testbook/Resources/
+          done < <(find Tests/Manual -mindepth 1 -maxdepth 1 -type d -print0)
+          echo "Resources now contains:" && ls -la testbook/Resources || true
+
+      # Ensure each test Index.html includes the include path line before OBJJ_MAIN_FILE
+      - name: Inject OBJJ_INCLUDE_PATHS into Index.html files
+        run: |
+          set -euo pipefail
+          found=0
+          while IFS= read -r -d '' f; do
+            found=1
+            if grep -q 'OBJJ_INCLUDE_PATHS' "$f"; then
+              echo "Already updated: $f"
+              continue
+            fi
+            perl -0777 -i -pe 's/OBJJ_MAIN_FILE\s*=\s*"main\.j";/OBJJ_INCLUDE_PATHS = ["..\/..\/Frameworks"];\nOBJJ_MAIN_FILE = "main.j";/i' "$f"
+            perl -0777 -i -pe 's/Frameworks\/Objective-J\/Objective-J.js/\.\.\/\.\.\/Frameworks\/Objective-J\/Objective-J.js/' "$f"
+            echo "Updated: $f"
+          done < <(find testbook/Resources -mindepth 2 -maxdepth 2 -type f -iname "index.html" -print0)
+
+          if [ "$found" -eq 0 ]; then
+            echo "⚠️ No index.html files found under testbook/Resources/*/" >&2
+          fi
+
+      # Optional: prune VCS/CI metadata from the served content
+      - name: Clean testbook for Pages (optional)
+        run: |
+          set -euo pipefail
+          test -f testbook/index.html
+          test -d testbook/Resources
+          test -d testbook/Frameworks
+          rm -rf testbook/.git testbook/.github || true
+          find testbook -maxdepth 1 -type f -name ".git*" -delete || true
+
+      # 🚀 Deploy/update/remove the PR preview at gh-pages/pr-preview/pr-<number>/
+      - name: Deploy PR preview to GitHub Pages
+        uses: rossjrw/pr-preview-action@v1
+        with:
+          source-dir: testbook
+          preview-branch: gh-pages
+          umbrella-dir: pr-preview
+
+      - name: Checkout gh-pages ./gh-pages
+        uses: actions/checkout@v5
+        with:
+          path: gh-pages
+          ref: gh-pages
+
+      - name: Upload Pages artifact (testbook/)
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: gh-pages
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: pages
+      cancel-in-progress: true
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Comment Pages URL on PR
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const url = `${{ toJSON(steps.deployment.outputs.page_url) }}/pr-preview/pr-${{ github.event.number }}`;
+            const body = `📄 Check manual tests for this PR:\n\n${url}`;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body
+            });
