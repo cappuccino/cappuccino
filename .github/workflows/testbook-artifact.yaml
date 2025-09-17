@@ -3,7 +3,6 @@ name: Build Testbook with fresh frameworks and manual tests & Deploy to GitHub P
 on:
   push:
     branches: [ main ]
-  pull_request:
   workflow_dispatch:
 
 permissions:
@@ -120,9 +119,6 @@ jobs:
           test -d testbook/Frameworks
           rm -rf testbook/.git testbook/.github || true
           find testbook -maxdepth 1 -type f -name ".git*" -delete || true
-
-      - name: Disable Jekyll (create .nojekyll)
-        run: touch testbook/.nojekyll
 
       - name: Publish to gh-pages (preserve PR previews)
         uses: JamesIves/github-pages-deploy-action@v4
