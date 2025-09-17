@@ -1,4 +1,4 @@
-name: Build Testbook with fresh frameworks and manual tests & Deploy to GitHub Pages
+name: Main branch - Build Testbook with fresh frameworks and manual tests & deploy to GitHub Pages
 
 on:
   push:
