@@ -124,11 +124,6 @@ jobs:
       - name: Disable Jekyll (create .nojekyll)
         run: touch testbook/.nojekyll
 
-      - name: Upload Pages artifact (testbook/)
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: testbook
-
       - name: Publish to gh-pages (preserve PR previews)
         uses: JamesIves/github-pages-deploy-action@v4
         with:
