@@ -262,6 +262,13 @@ var CPSplitViewControllerAutomaticDimension = -1.0;
     return proposedMaximumPosition;
 }
 
+- (CGRect)splitView:(CPSplitView)splitView effectiveRect:(CGRect)proposedEffectiveRect forDrawnRect:(CGRect)drawnRect ofDividerAtIndex:(CPInteger)dividerIndex
+{
+    // Default behavior: return the proposed rectangle.
+    // This can be overridden to provide a larger or custom hit area for the divider.
+    return proposedEffectiveRect;
+}
+
 - (void)splitViewDidResizeSubviews:(CPNotification)notification
 {
     // Can be used to respond to user-initiated resizing.
