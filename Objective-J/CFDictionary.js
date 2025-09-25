@@ -133,6 +133,25 @@ CFDictionary.prototype.valueForKey = function(/*String*/ aKey)
 
 DISPLAY_NAME(CFDictionary.prototype.valueForKey);
 
+// This allows the use of 'for...of' loops directly on CFDictionary instances.
+CFDictionary.prototype[Symbol.iterator] = function*()
+{
+    // Access the internal storage directly for maximum performance.
+    // 'this._keys' is the internal array of keys.
+    const keys = this._keys;
+
+    // 'this._buckets' is the internal hash map of key -> value.
+    const buckets = this._buckets;
+
+    // A 'for...of' loop on an array is itself a lazy and efficient way to iterate.
+    for (const key of keys)
+    {
+        // 'yield' pauses the generator and returns the [key, value] pair
+        // to the consumer (the for...of loop).
+        yield [key, buckets[key]];
+    }
+};
+
 CFDictionary.prototype.toString = function()
 {
     var string = "{\n",
