@@ -378,3 +378,47 @@ var DefaultLineWidth = 1.0;
 }
 
 @end
+
+
+@implementation CPBezierPath (AnimationAdditions)
+
+- (CPString)SVGString
+{
+    var pathString = "";
+    var elements = _path.elements;
+    var count = _path.count;
+
+    for (var i = 0; i < count; i++)
+    {
+        var element = elements[i];
+
+        // Use the kCGPathElement* constants defined in CGPath.j
+        switch (element.type)
+        {
+            case kCGPathElementMoveToPoint:
+                pathString += "M " + element.x + " " + element.y + " ";
+                break;
+
+            case kCGPathElementAddLineToPoint:
+                pathString += "L " + element.x + " " + element.y + " ";
+                break;
+
+            case kCGPathElementAddQuadCurveToPoint:
+                pathString += "Q " + element.cpx + " " + element.cpy + " " + element.x + " " + element.y + " ";
+                break;
+
+            case kCGPathElementAddCurveToPoint:
+                pathString += "C " + element.cp1x + " " + element.cp1y + " " + element.cp2x + " " + element.cp2y + " " + element.x + " " + element.y + " ";
+                break;
+
+            case kCGPathElementCloseSubpath:
+                pathString += "Z ";
+                break;
+        }
+    }
+
+    return pathString.trim();
+}
+
+@end
+
