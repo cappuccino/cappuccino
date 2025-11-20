@@ -118,6 +118,8 @@ var CALayerRegisteredRunLoopUpdates             = nil;
 
     CGAffineTransform   _transformToLayer;
     CGAffineTransform   _transformFromLayer;
+
+    CPMutableDictionary _activeAnimations;
 }
 
 @global document
@@ -159,6 +161,8 @@ var CALayerRegisteredRunLoopUpdates             = nil;
         _masksToBounds = NO;
 
         _sublayers = [];
+
+        _activeAnimations = [CPMutableDictionary dictionary];
 
 #if PLATFORM(DOM)
         _DOMElement = document.createElement("div");
@@ -975,6 +979,168 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
 - (id)delegate
 {
     return _delegate;
+}
+
+/*
+    Adds an animation to the layer.
+    Supports CABasicAnimation for Numbers (opacity) and Points (position/anchorPoint).
+*/
+- (void)addAnimation:(CAAnimation)anim forKey:(CPString)key
+{
+    if (!anim) return;
+
+    // Remove existing animation for this key
+    [self removeAnimationForKey:key];
+
+    // Determine KeyPath
+    var keyPath = key;
+    if ([anim respondsToSelector:@selector(keyPath)] && [anim keyPath])
+        keyPath = [anim keyPath];
+
+    // Determine Start Value
+    var startValue = nil;
+    if ([anim respondsToSelector:@selector(fromValue)])
+        startValue = [anim fromValue];
+        
+    // Fallback to current layer value
+    if (startValue == nil)
+        startValue = [self valueForKey:keyPath];
+
+    // Determine End Value
+    var endValue = nil;
+    if ([anim respondsToSelector:@selector(toValue)])
+        endValue = [anim toValue];
+
+    if (endValue == nil)
+        return;
+
+    // Determine Duration
+    var duration = 0.25;
+    if ([anim respondsToSelector:@selector(duration)])
+        duration = [anim duration];
+    
+    // Create a JS context object to hold state (lightweight)
+    var context = {
+        "animation": anim,
+        "keyPath": keyPath,
+        "startValue": startValue,
+        "endValue": endValue,
+        "startTime": [CPDate date],
+        "duration": duration,
+        "timer": nil
+    };
+
+    // Schedule Timer (approx 60fps)
+    var timer = [CPTimer scheduledTimerWithTimeInterval:1.0/60.0
+                                                 target:self
+                                               selector:@selector(_animationTick:)
+                                               userInfo:context
+                                                repeats:YES];
+    
+    context.timer = timer;
+
+    [_activeAnimations setObject:context forKey:key];
+}
+
+- (void)removeAnimationForKey:(CPString)key
+{
+    var context = [_activeAnimations objectForKey:key];
+    if (context)
+    {
+        var timer = context.timer;
+        if (timer) 
+            [timer invalidate];
+            
+        [_activeAnimations removeObjectForKey:key];
+    }
+}
+
+- (void)removeAllAnimations
+{
+    var keys = [_activeAnimations allKeys],
+        count = [keys count];
+        
+    while (count--)
+    {
+        [self removeAnimationForKey:[keys objectAtIndex:count]];
+    }
+}
+
+- (void)_animationTick:(CPTimer)timer
+{
+    var context = [timer userInfo],
+        anim = context.animation,
+        startTime = context.startTime,
+        duration = context.duration,
+        now = [CPDate date];
+
+    // Calculate Progress
+    var elapsed = [now timeIntervalSinceDate:startTime],
+        progress = elapsed / duration;
+
+    if (progress > 1.0) progress = 1.0;
+
+    // Interpolate
+    var start = context.startValue,
+        end = context.endValue,
+        current = nil;
+
+    // Interpolation Logic
+    if (typeof start === "number")
+    {
+        current = start + (end - start) * progress;
+    }
+    // Check for CGPoint (Simple JS Objects in Cappuccino)
+    else if (start && start.x !== undefined && start.y !== undefined)
+    {
+        var x = start.x + (end.x - start.x) * progress,
+            y = start.y + (end.y - start.y) * progress;
+        current = CGPointMake(x, y);
+    }
+    // Check for CGSize
+    else if (start && start.width !== undefined && start.height !== undefined)
+    {
+        var w = start.width + (end.width - start.width) * progress,
+            h = start.height + (end.height - start.height) * progress;
+        current = CGSizeMake(w, h);
+    }
+    // Check for CGRect
+    else if (start && start.origin !== undefined && start.size !== undefined)
+    {
+        var x = start.origin.x + (end.origin.x - start.origin.x) * progress,
+            y = start.origin.y + (end.origin.y - start.origin.y) * progress,
+            w = start.size.width + (end.size.width - start.size.width) * progress,
+            h = start.size.height + (end.size.height - start.size.height) * progress;
+        current = CGRectMake(x, y, w, h);
+    }
+
+    // Apply Value
+    if (current !== nil)
+        [self setValue:current forKey:context.keyPath];
+
+    // Completion
+    if (progress >= 1.0)
+    {
+        [timer invalidate];
+        
+        // Check removedOnCompletion
+        var shouldRemove = YES;
+        if ([anim respondsToSelector:@selector(isRemovedOnCompletion)])
+            shouldRemove = [anim isRemovedOnCompletion];
+            
+        if (shouldRemove)
+        {
+            // Remove from dictionary by finding the key for this context
+            var allKeys = [_activeAnimations allKeysForObject:context];
+            if ([allKeys count] > 0)
+                [_activeAnimations removeObjectForKey:[allKeys objectAtIndex:0]];
+        }
+        
+        // Notify Delegate
+        var delegate = [anim delegate];
+        if (delegate && [delegate respondsToSelector:@selector(animationDidStop:finished:)])
+            [delegate animationDidStop:anim finished:YES];
+    }
 }
 
 /* @ignore */
