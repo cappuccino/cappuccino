@@ -1,7 +1,9 @@
 /*
  * CAAnimationGroup.j
  * AppKit
- *
+ * Created by Daniel Boehringer.
+ * Copyright 2025.
+  *
  * Implements grouping for Core Animation.
  */
 

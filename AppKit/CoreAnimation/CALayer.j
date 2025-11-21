@@ -989,67 +989,73 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
 {
     if (!anim) return;
 
-    // Remove existing animation for this key
+    // 1. Remove existing animation for this key
     [self removeAnimationForKey:key];
 
-    // Determine KeyPath
+    // 2. Determine Properties
     var keyPath = key;
     if ([anim respondsToSelector:@selector(keyPath)] && [anim keyPath])
         keyPath = [anim keyPath];
 
-    // Determine Start Value
-    var startValue = nil;
-    if ([anim respondsToSelector:@selector(fromValue)])
-        startValue = [anim fromValue];
-        
-    // Fallback to current layer value
+    var startValue = ([anim respondsToSelector:@selector(fromValue)]) ? [anim fromValue] : nil;
+
     if (startValue == nil)
         startValue = [self valueForKey:keyPath];
 
-    // Determine End Value
-    var endValue = nil;
-    if ([anim respondsToSelector:@selector(toValue)])
-        endValue = [anim toValue];
+    var endValue = ([anim respondsToSelector:@selector(toValue)]) ? [anim toValue] : nil;
 
     if (endValue == nil)
         return;
 
-    // Determine Duration
-    var duration = 0.25;
-    if ([anim respondsToSelector:@selector(duration)])
-        duration = [anim duration];
-    
-    // Create a JS context object to hold state (lightweight)
+    var duration = ([anim respondsToSelector:@selector(duration)]) ? [anim duration] : 0.25;
+    // Convert seconds to milliseconds for rAF math
+    var durationMS = duration * 1000.0;
+
+    // 3. Create Context
     var context = {
         "animation": anim,
         "keyPath": keyPath,
         "startValue": startValue,
         "endValue": endValue,
-        "startTime": [CPDate date],
-        "duration": duration,
-        "timer": nil
+        "duration": durationMS,
+        "startTime": null,     // Will be set on first frame
+        "requestId": null      // To cancel if needed
     };
 
-    // Schedule Timer (approx 60fps)
-    var timer = [CPTimer scheduledTimerWithTimeInterval:1.0/60.0
-                                                 target:self
-                                               selector:@selector(_animationTick:)
-                                               userInfo:context
-                                                repeats:YES];
+    // 4. Define the Render Loop
+    // We use a JavaScript closure to capture 'self' and 'context'
+    var _self = self; 
     
-    context.timer = timer;
+    var renderLoop = function(timestamp) {
+        // Pass control back to Objective-J to handle the logic
+        // Returns YES if animation should continue, NO if finished.
+        var shouldContinue = [_self _renderAnimationStep:context timestamp:timestamp];
 
+        if (shouldContinue)
+            context.requestId = window.requestAnimationFrame(renderLoop);
+        else
+            context.requestId = null;
+            // Cleanup is handled inside _renderAnimationStep: when it returns NO
+    };
+
+    // 5. Kick off the loop
+    context.requestId = window.requestAnimationFrame(renderLoop);
+    
+    // 6. Store context
     [_activeAnimations setObject:context forKey:key];
 }
 
+/*
+    Cancels the specific animation frame and removes it from the dictionary.
+*/
 - (void)removeAnimationForKey:(CPString)key
 {
     var context = [_activeAnimations objectForKey:key];
+
     if (context)
     {
-        var timer = context.timer;
-        if (timer) 
-            [timer invalidate];
+        if (context.requestId !== null)
+            window.cancelAnimationFrame(context.requestId);
             
         [_activeAnimations removeObjectForKey:key];
     }
@@ -1061,51 +1067,48 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
         count = [keys count];
         
     while (count--)
-    {
         [self removeAnimationForKey:[keys objectAtIndex:count]];
-    }
 }
 
-- (void)_animationTick:(CPTimer)timer
+/*
+    Internal method called every frame by requestAnimationFrame.
+    Returns YES to continue, NO to stop.
+*/
+- (BOOL)_renderAnimationStep:(JSObject)context timestamp:(double)timestamp
 {
-    var context = [timer userInfo],
-        anim = context.animation,
-        startTime = context.startTime,
-        duration = context.duration,
-        now = [CPDate date];
+    // 1. Initialize Start Time on first frame
+    if (context.startTime === null)
+        context.startTime = timestamp;
 
-    // Calculate Progress
-    var elapsed = [now timeIntervalSinceDate:startTime],
-        progress = elapsed / duration;
+    // 2. Calculate Progress
+    var elapsed = timestamp - context.startTime,
+        progress = elapsed / context.duration;
 
+    // Clamp to 1.0
     if (progress > 1.0) progress = 1.0;
 
-    // Interpolate
+    // 3. Interpolate Values
     var start = context.startValue,
         end = context.endValue,
         current = nil;
 
-    // Interpolation Logic
     if (typeof start === "number")
     {
         current = start + (end - start) * progress;
     }
-    // Check for CGPoint (Simple JS Objects in Cappuccino)
-    else if (start && start.x !== undefined && start.y !== undefined)
+    else if (start && start.x !== undefined && start.y !== undefined) // CGPoint
     {
         var x = start.x + (end.x - start.x) * progress,
             y = start.y + (end.y - start.y) * progress;
         current = CGPointMake(x, y);
     }
-    // Check for CGSize
-    else if (start && start.width !== undefined && start.height !== undefined)
+    else if (start && start.width !== undefined && start.height !== undefined) // CGSize
     {
         var w = start.width + (end.width - start.width) * progress,
             h = start.height + (end.height - start.height) * progress;
         current = CGSizeMake(w, h);
     }
-    // Check for CGRect
-    else if (start && start.origin !== undefined && start.size !== undefined)
+    else if (start && start.origin !== undefined && start.size !== undefined) // CGRect
     {
         var x = start.origin.x + (end.origin.x - start.origin.x) * progress,
             y = start.origin.y + (end.origin.y - start.origin.y) * progress,
@@ -1114,33 +1117,39 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
         current = CGRectMake(x, y, w, h);
     }
 
-    // Apply Value
+    // 4. Apply Value
     if (current !== nil)
         [self setValue:current forKey:context.keyPath];
 
-    // Completion
+    // 5. Check for Completion
     if (progress >= 1.0)
     {
-        [timer invalidate];
-        
-        // Check removedOnCompletion
+        var anim = context.animation;
+
+        // Handle removedOnCompletion
         var shouldRemove = YES;
         if ([anim respondsToSelector:@selector(isRemovedOnCompletion)])
             shouldRemove = [anim isRemovedOnCompletion];
-            
+
         if (shouldRemove)
         {
-            // Remove from dictionary by finding the key for this context
+            // Remove from _activeAnimations
+            // We search by object equality to ensure we delete the right key
             var allKeys = [_activeAnimations allKeysForObject:context];
             if ([allKeys count] > 0)
                 [_activeAnimations removeObjectForKey:[allKeys objectAtIndex:0]];
         }
-        
+
         // Notify Delegate
         var delegate = [anim delegate];
+
         if (delegate && [delegate respondsToSelector:@selector(animationDidStop:finished:)])
             [delegate animationDidStop:anim finished:YES];
+
+        return NO; // Stop the loop
     }
+
+    return YES; // Continue the loop
 }
 
 /* @ignore */
