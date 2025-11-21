@@ -118,6 +118,8 @@ var CALayerRegisteredRunLoopUpdates             = nil;
 
     CGAffineTransform   _transformToLayer;
     CGAffineTransform   _transformFromLayer;
+
+    CPMutableDictionary _activeAnimations;
 }
 
 @global document
@@ -159,6 +161,8 @@ var CALayerRegisteredRunLoopUpdates             = nil;
         _masksToBounds = NO;
 
         _sublayers = [];
+
+        _activeAnimations = [CPMutableDictionary dictionary];
 
 #if PLATFORM(DOM)
         _DOMElement = document.createElement("div");
@@ -975,6 +979,177 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
 - (id)delegate
 {
     return _delegate;
+}
+
+/*
+    Adds an animation to the layer.
+    Supports CABasicAnimation for Numbers (opacity) and Points (position/anchorPoint).
+*/
+- (void)addAnimation:(CAAnimation)anim forKey:(CPString)key
+{
+    if (!anim) return;
+
+    // 1. Remove existing animation for this key
+    [self removeAnimationForKey:key];
+
+    // 2. Determine Properties
+    var keyPath = key;
+    if ([anim respondsToSelector:@selector(keyPath)] && [anim keyPath])
+        keyPath = [anim keyPath];
+
+    var startValue = ([anim respondsToSelector:@selector(fromValue)]) ? [anim fromValue] : nil;
+
+    if (startValue == nil)
+        startValue = [self valueForKey:keyPath];
+
+    var endValue = ([anim respondsToSelector:@selector(toValue)]) ? [anim toValue] : nil;
+
+    if (endValue == nil)
+        return;
+
+    var duration = ([anim respondsToSelector:@selector(duration)]) ? [anim duration] : 0.25;
+    // Convert seconds to milliseconds for rAF math
+    var durationMS = duration * 1000.0;
+
+    // 3. Create Context
+    var context = {
+        "animation": anim,
+        "keyPath": keyPath,
+        "startValue": startValue,
+        "endValue": endValue,
+        "duration": durationMS,
+        "startTime": null,     // Will be set on first frame
+        "requestId": null      // To cancel if needed
+    };
+
+    // 4. Define the Render Loop
+    // We use a JavaScript closure to capture 'self' and 'context'
+    var _self = self; 
+    
+    var renderLoop = function(timestamp) {
+        // Pass control back to Objective-J to handle the logic
+        // Returns YES if animation should continue, NO if finished.
+        var shouldContinue = [_self _renderAnimationStep:context timestamp:timestamp];
+
+        if (shouldContinue)
+            context.requestId = window.requestAnimationFrame(renderLoop);
+        else
+            context.requestId = null;
+            // Cleanup is handled inside _renderAnimationStep: when it returns NO
+    };
+
+    // 5. Kick off the loop
+    context.requestId = window.requestAnimationFrame(renderLoop);
+    
+    // 6. Store context
+    [_activeAnimations setObject:context forKey:key];
+}
+
+/*
+    Cancels the specific animation frame and removes it from the dictionary.
+*/
+- (void)removeAnimationForKey:(CPString)key
+{
+    var context = [_activeAnimations objectForKey:key];
+
+    if (context)
+    {
+        if (context.requestId !== null)
+            window.cancelAnimationFrame(context.requestId);
+            
+        [_activeAnimations removeObjectForKey:key];
+    }
+}
+
+- (void)removeAllAnimations
+{
+    var keys = [_activeAnimations allKeys],
+        count = [keys count];
+        
+    while (count--)
+        [self removeAnimationForKey:[keys objectAtIndex:count]];
+}
+
+/*
+    Internal method called every frame by requestAnimationFrame.
+    Returns YES to continue, NO to stop.
+*/
+- (BOOL)_renderAnimationStep:(JSObject)context timestamp:(double)timestamp
+{
+    // 1. Initialize Start Time on first frame
+    if (context.startTime === null)
+        context.startTime = timestamp;
+
+    // 2. Calculate Progress
+    var elapsed = timestamp - context.startTime,
+        progress = elapsed / context.duration;
+
+    // Clamp to 1.0
+    if (progress > 1.0) progress = 1.0;
+
+    // 3. Interpolate Values
+    var start = context.startValue,
+        end = context.endValue,
+        current = nil;
+
+    if (typeof start === "number")
+    {
+        current = start + (end - start) * progress;
+    }
+    else if (start && start.x !== undefined && start.y !== undefined) // CGPoint
+    {
+        var x = start.x + (end.x - start.x) * progress,
+            y = start.y + (end.y - start.y) * progress;
+        current = CGPointMake(x, y);
+    }
+    else if (start && start.width !== undefined && start.height !== undefined) // CGSize
+    {
+        var w = start.width + (end.width - start.width) * progress,
+            h = start.height + (end.height - start.height) * progress;
+        current = CGSizeMake(w, h);
+    }
+    else if (start && start.origin !== undefined && start.size !== undefined) // CGRect
+    {
+        var x = start.origin.x + (end.origin.x - start.origin.x) * progress,
+            y = start.origin.y + (end.origin.y - start.origin.y) * progress,
+            w = start.size.width + (end.size.width - start.size.width) * progress,
+            h = start.size.height + (end.size.height - start.size.height) * progress;
+        current = CGRectMake(x, y, w, h);
+    }
+
+    // 4. Apply Value
+    if (current !== nil)
+        [self setValue:current forKey:context.keyPath];
+
+    // 5. Check for Completion
+    if (progress >= 1.0)
+    {
+        var anim = context.animation;
+
+        // Handle removedOnCompletion
+        var shouldRemove = YES;
+        if ([anim respondsToSelector:@selector(isRemovedOnCompletion)])
+            shouldRemove = [anim isRemovedOnCompletion];
+
+        if (shouldRemove)
+        {
+            // Remove from _activeAnimations
+            // We search by object equality to ensure we delete the right key
+            var allKeys = [_activeAnimations allKeysForObject:context];
+            if ([allKeys count] > 0)
+                [_activeAnimations removeObjectForKey:[allKeys objectAtIndex:0]];
+        }
+
+        // Notify Delegate
+        var delegate = [anim delegate];
+
+        if (delegate && [delegate respondsToSelector:@selector(animationDidStop:finished:)])
+            [delegate animationDidStop:anim finished:YES];
+
+        return NO; // Stop the loop
+    }
+
+    return YES; // Continue the loop
 }
 
 /* @ignore */
