@@ -390,6 +390,9 @@ var _CPMenuBarVisible               = NO,
     if ([aMenuItem menu] !== self || !_items)
         return;
 
+    if (_menuWindow)
+        [[_menuWindow _menuView] tile];
+
     [aMenuItem setValue:[aMenuItem valueForKey:@"changeCount"] + 1 forKey:@"changeCount"];
 
     [[CPNotificationCenter defaultCenter]
