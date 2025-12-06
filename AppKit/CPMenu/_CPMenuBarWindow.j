@@ -390,11 +390,18 @@
             continue;
         }
 
-         if ([item isHidden])
+        // Fix for #1742: If a main menu item does not have a submenu, it should not appear in the menu bar.
+        if ([item isHidden] || ![item submenu])
+        {
+            [[item _menuItemView] setHidden:YES];
             continue;
+        }
 
-        var menuItemView = [item _menuItemView],
-            frame = [menuItemView frame];
+        var menuItemView = [item _menuItemView];
+
+        [menuItemView setHidden:NO];
+
+        var frame = [menuItemView frame];
 
         if (isLeftAligned)
         {
@@ -464,7 +471,7 @@
     {
         var item = items[index];
 
-        if ([item isHidden] || [item isSeparatorItem])
+        if ([item isHidden] || [item isSeparatorItem] || ![item submenu])
             continue;
 
         if (CGRectContainsPoint([self rectForItemAtIndex:index], aPoint))
