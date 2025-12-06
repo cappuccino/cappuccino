@@ -1062,7 +1062,13 @@ var _CPMenuBarVisible               = NO,
         if ([anEvent _triggersKeyEquivalent:[item keyEquivalent] withModifierMask:[item keyEquivalentModifierMask]])
         {
             if ([item isEnabled])
+            {
+                // Flash the top-level item if this is the Main Menu
+                if (self === [CPApp mainMenu])
+                    [self _flashItemAtIndex:index];
+
                 [self performActionForItemAtIndex:index];
+            }
             else
             {
                 //beep?
@@ -1072,7 +1078,13 @@ var _CPMenuBarVisible               = NO,
         }
 
         if ([[item submenu] performKeyEquivalent:anEvent])
+        {
+            // Flash the top-level item if a submenu handled the event
+            if (self === [CPApp mainMenu])
+                [self _flashItemAtIndex:index];
+
             return YES;
+        }
    }
 
    return NO;
@@ -1150,6 +1162,25 @@ var _CPMenuBarVisible               = NO,
     }
 
     return nil;
+}
+
+//
+/*
+    @ignore
+*/
+- (void)_flashItemAtIndex:(int)anIndex
+{
+    // If we are using a native bridge (like a desktop wrapper), let the OS handle the visual feedback.
+    if ([CPPlatform supportsNativeMainMenu])
+        return;
+
+    [self _highlightItemAtIndex:anIndex];
+    [self performSelector:@selector(_stopFlashingItem) withObject:nil afterDelay:0.2];
+}
+
+- (void)_stopFlashingItem
+{
+    [self _highlightItemAtIndex:CPNotFound];
 }
 
 @end
