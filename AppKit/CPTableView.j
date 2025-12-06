@@ -1136,25 +1136,41 @@ NOT YET IMPLEMENTED
     if (index === CPNotFound)
         return;
 
-    // we defer the actual removal until the end of the runloop in order to keep a reference to the column.
-    [_differedColumnDataToRemove addObject:{"column":aTableColumn, "shouldBeHidden": [aTableColumn isHidden]}];
-    _needsDifferedTableColumnRemove = YES;
+    // Unload views for the column being removed immediately.
+    // We must do this before removing the column from the array so that
+    // _unloadDataViewsInRows can correctly resolve the column index to the column object.
+    var rowIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self numberOfRows])];
+    [self _unloadDataViewsInRows:rowIndexes columns:[CPIndexSet indexSetWithIndex:index]];
 
-    [aTableColumn setHidden:YES];
+    // Remove the column from the array
+    [_tableColumns removeObjectAtIndex:index];
+    
+    // Detach the column
     [aTableColumn setTableView:nil];
 
+    // Clean up object values cache
     var tableColumnUID = [aTableColumn UID];
 
     if (_objectValues[tableColumnUID])
-        _objectValues[tableColumnUID] = nil;
+        delete _objectValues[tableColumnUID];
 
+    // Update dirty range index for layout calculations
     if (_dirtyTableColumnRangeIndex < 0)
         _dirtyTableColumnRangeIndex = index;
     else
         _dirtyTableColumnRangeIndex = MIN(index, _dirtyTableColumnRangeIndex);
 
-    [self reloadData];
-    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+    // Force the header view to update immediately
+    if (_headerView)
+    {
+        [_headerView setNeedsLayout];
+        [_headerView setNeedsDisplay:YES];
+    }
+
+    // Recalculate layout
+    [self tile];
+    [self setNeedsLayout];
+    [self setNeedsDisplay:YES];
 }
 
 /*!
@@ -3469,44 +3485,21 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     [self setNeedsDisplay:YES];
 
-    // if we have any columns to remove do that here
-
-    if (_needsDifferedTableColumnRemove)
-    {
-        var removeCount = [_differedColumnDataToRemove count],
-            removeIndexes = [CPIndexSet indexSet];
-
-        for (var i = 0; i < removeCount; i++)
-        {
-            var data = _differedColumnDataToRemove[i],
-                tableColumn = data.column,
-                columnIdx = [_tableColumns indexOfObject:tableColumn];
-
-            if (columnIdx !== CPNotFound)
-                [removeIndexes addIndex:columnIdx];
-        }
-
-        var rowIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self numberOfRows])];
-        [self _unloadDataViewsInRows:rowIndexes columns:removeIndexes];
-
-        [_tableColumns removeObjectsAtIndexes:removeIndexes];
-
-        _dirtyTableColumnRangeIndex = 0;
-        [self _recalculateTableColumnRanges];
-
-        [_differedColumnDataToRemove removeAllObjects];
-        _needsDifferedTableColumnRemove = NO;
-    }
+    // REMOVED: The block starting with "if (_needsDifferedTableColumnRemove)" has been removed
+    // as removal is now handled synchronously in removeTableColumn:.
 
     // Now clear all the leftovers
     // FIXME: this could be faster!
     for (var identifier in _cachedDataViews)
     {
-        var dataViews = _cachedDataViews[identifier],
-            count = dataViews.length;
+        if (_cachedDataViews.hasOwnProperty(identifier))
+        {
+            var dataViews = _cachedDataViews[identifier],
+                count = dataViews.length;
 
-        while (count--)
-            [dataViews[count] removeFromSuperview];
+            while (count--)
+                [dataViews[count] removeFromSuperview];
+        }
     }
 }
 
