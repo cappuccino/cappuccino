@@ -431,6 +431,13 @@ _CPMenuWindowAttachedMenuBackgroundStyle    = 2;
     return [_menuView itemIndexAtPoint:[_menuView convertPoint:aPoint fromView:nil]];
 }
 
+// Fix for context menus preventing events from reaching the first responder
+
+- (BOOL)canBecomeKeyWindow
+{
+    return NO;
+}
+
 @end
 
 #pragma mark -
