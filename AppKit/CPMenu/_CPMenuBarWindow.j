@@ -370,12 +370,41 @@
 
 - (void)tile
 {
+    var bounds = [[self contentView] bounds],
+        height = CGRectGetHeight(bounds),
+        x = [[CPTheme defaultTheme] valueForAttributeWithName:@"menu-bar-window-left-margin" forClass:_CPMenuView];
+
+    // 1. Layout the Icon (if present)
+    if (_iconImageView && ![_iconImageView isHidden])
+    {
+        var iconFrame = [_iconImageView frame];
+
+        iconFrame.origin.x = x;
+        // Vertically center
+        iconFrame.origin.y = (height - CGRectGetHeight(iconFrame)) / 2.0;
+
+        [_iconImageView setFrame:iconFrame];
+
+        x = CGRectGetMaxX(iconFrame) + 6.0; // Spacing between icon and title
+    }
+
+    // 2. Layout the Title (if present)
+    if (_titleField && [_titleField stringValue] && [[_titleField stringValue] length] > 0)
+    {
+        var titleFrame = [_titleField frame];
+
+        titleFrame.origin.x = x;
+        titleFrame.origin.y = (height - CGRectGetHeight(titleFrame)) / 2.0;
+
+        [_titleField setFrame:titleFrame];
+
+        x = CGRectGetMaxX(titleFrame) + 12.0; // Spacing between title and menu items
+    }
+
+    // 3. Layout the Menu Items
     var items = [_menu itemArray],
         index = 0,
-        count = items.length,
-
-        x = [[CPTheme defaultTheme] valueForAttributeWithName:@"menu-bar-window-left-margin" forClass:_CPMenuView],
-        y = 0.0,
+        count = items ? items.length : 0,
         isLeftAligned = YES;
 
     for (; index < count; ++index)
@@ -408,21 +437,6 @@
 
             x = CGRectGetMinX([menuItemView frame]);
         }
-    }
-
-    var bounds = [[self contentView] bounds],
-        titleFrame = [_titleField frame];
-
-    if ([_iconImageView isHidden])
-        [_titleField setFrameOrigin:CGPointMake((CGRectGetWidth(bounds) - CGRectGetWidth(titleFrame)) / 2.0, (CGRectGetHeight(bounds) - CGRectGetHeight(titleFrame)) / 2.0)];
-    else
-    {
-        var iconFrame = [_iconImageView frame],
-            iconWidth = CGRectGetWidth(iconFrame),
-            totalWidth = iconWidth + CGRectGetWidth(titleFrame);
-
-        [_iconImageView setFrameOrigin:CGPointMake((CGRectGetWidth(bounds) - totalWidth) / 2.0, (CGRectGetHeight(bounds) - CGRectGetHeight(iconFrame)) / 2.0)];
-        [_titleField setFrameOrigin:CGPointMake((CGRectGetWidth(bounds) - totalWidth) / 2.0 + iconWidth, (CGRectGetHeight(bounds) - CGRectGetHeight(titleFrame)) / 2.0)];
     }
 }
 
