@@ -305,7 +305,7 @@ var hasEditableTarget = function(aDOMEvent)
         location = [[CPApp currentEvent] locationInWindow],
         anEvent = [CPEvent keyEventWithType:CPKeyDown location:location modifierFlags:modifierFlags
                                   timestamp:timestamp windowNumber:windowNumber context:nil
-                                 characters:characters charactersIgnoringModifiers:characters isARepeat:NO keyCode:keyCode];
+                                 characters:characters charactersIgnoringModifiers:characters isARepeat:NO keyCode:keyCode isActionKey:YES];
 
     anEvent._data1 = @{ "simulated": YES };
     anEvent._DOMEvent = aDOMEvent;

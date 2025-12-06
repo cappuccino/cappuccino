@@ -332,7 +332,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
                                            characters:nil
                           charactersIgnoringModifiers:nil
                                             isARepeat:NO
-                                              keyCode:nil];
+                                              keyCode:nil
+                                          isActionKey:NO];
 
             [CPTextFieldInputOwner keyUp:cappEvent];
 
