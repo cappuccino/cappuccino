@@ -914,7 +914,7 @@ var _CPMenuBarVisible               = NO,
     {
         var globalLocation = [[anEvent window] convertBaseToGlobal:[anEvent locationInWindow]],
             localLocation = [menuWindow convertGlobalToBase:globalLocation],
-            index = [[menuWindow contentView] itemIndexAtPoint:localLocation];
+            index = [menuWindow itemIndexAtPoint:localLocation];
 
         if (index !== CPNotFound)
             [aMenu _highlightItemAtIndex:index];
