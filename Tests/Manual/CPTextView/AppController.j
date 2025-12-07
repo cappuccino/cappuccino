@@ -15,21 +15,6 @@
     CPTextView  _textView2;
 }
 
-- (CPMenu)textViewMenu
-{
-    var editMenu = [CPMenu new];
-
-    // FIXME I8N
-    [editMenu addItemWithTitle:@"Ausschneiden" action:@selector(cut:) keyEquivalent:@"x"];
-    [editMenu addItemWithTitle:@"Kopieren" action:@selector(copy:) keyEquivalent:@"c"];
-    [editMenu addItemWithTitle:@"Einfügen" action:@selector(paste:) keyEquivalent:@"v"];
-
-    [editMenu setAutoenablesItems:NO]
-
-    return editMenu;
-}
-
-
 - (void) openSheet:(id)sender
 {
     var plusPopover =[CPPopover new];
