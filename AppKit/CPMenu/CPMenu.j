@@ -910,6 +910,16 @@ var _CPMenuBarVisible               = NO,
 
     [menuWindow orderFront:self];
 
+    if ([anEvent type] === CPLeftMouseDown || [anEvent type] === CPRightMouseDown)
+    {
+        var globalLocation = [[anEvent window] convertBaseToGlobal:[anEvent locationInWindow]],
+            localLocation = [menuWindow convertGlobalToBase:globalLocation],
+            index = [[menuWindow contentView] itemIndexAtPoint:localLocation];
+
+        if (index !== CPNotFound)
+            [aMenu _highlightItemAtIndex:index];
+    }
+
     [[_CPMenuManager sharedMenuManager]
         beginTracking:anEvent
         menuContainer:menuWindow
