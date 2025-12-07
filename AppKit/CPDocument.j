@@ -874,7 +874,7 @@ var CPDocumentUntitledCount = 0;
     if (aDocument === self && shouldClose)
         [self close];
 
-    if (theDelegate != null)
+    else if (theDelegate != null)
         theDelegate.isa.objj_msgSend3(theDelegate, context.selector, aDocument, shouldClose, context.context);
 }
 
