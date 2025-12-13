@@ -35,6 +35,33 @@ CPLogRegister(CPLogConsole);
     [theWindow setBackgroundColor:[CPColor colorWithHexString:@"f3f4f5"]];
 
     [theBorderTypePopup selectItemWithTag:[theScrollView borderType]];
+
+    // for testing context menus
+    [theTableView setDelegate:self];
+}
+
+- (CPMenu)tableView:(CPTableView)aTableView menuForTableColumn:(CPTableColumn)aTableColumn row:(int)aRow
+{
+    var menu = [[CPMenu alloc] initWithTitle:@"Right Click Menu"],
+        menuItem = [[CPMenuItem alloc] initWithTitle:@"Item 1" action:@selector(menuAction:) keyEquivalent:@""];
+
+    [menuItem setTarget:self];
+    [menu addItem:menuItem];
+
+        menuItem = [[CPMenuItem alloc] initWithTitle:@"Item 2" action:@selector(menuAction:) keyEquivalent:@""];
+    [menuItem setTarget:self];
+    [menu addItem:menuItem];
+
+    menuItem = [[CPMenuItem alloc] initWithTitle:@"Item 3" action:@selector(menuAction:) keyEquivalent:@""];
+    [menuItem setTarget:self];
+    [menu addItem:menuItem];
+
+    return menu;
+}
+
+- (void)menuAction:(id)sender
+{
+    alert([sender title]);
 }
 
 - (int)numberOfRowsInTableView:(CPTableView)tableView
