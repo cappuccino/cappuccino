@@ -26,6 +26,7 @@
 @import "CPPasteboard.j"
 @import "CPView.j"
 @import "CPWindow_Constants.j"
+@import "CPViewAnimation.j"
 
 @class CPWindow  // This file is imported by CPWindow.j
 @class _CPDOMDataTransferPasteboard
@@ -132,10 +133,8 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
     unsigned        _dragOperation;
 
     CPTimer         _draggingUpdateTimer;
-    
-    // Animation Support
-    CGPoint         _animationStartOrigin;
-    CGPoint         _animationTargetOrigin;
+
+    // Animation State
     CGPoint         _pendingEndLocation;
     CPDragOperation _pendingEndOperation;
 }
@@ -331,39 +330,32 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
     [_draggingUpdateTimer invalidate];
     _draggingUpdateTimer = nil;
 
-    // Check if we should slide back.
-    // Logic: 
-    // 1. It must be an emulated drag (controls _draggedWindow).
-    // 2. SlideBack was requested in dragView:...
-    // 3. The operation failed (CPDragOperationNone) or was cancelled.
+    // Check if we should slide back (drag failed + slideBack requested)
     if (![CPPlatform supportsDragAndDrop] && _shouldSlideBack && anOperation === CPDragOperationNone)
     {
-        // Save these for the final cleanup after animation
+        // Store state to finalize drag after animation completes
         _pendingEndLocation = aLocation;
         _pendingEndOperation = anOperation;
 
-        _animationStartOrigin = [_draggedWindow frame].origin;
-        _animationTargetOrigin = _startDragLocation; // Captured when drag started
+        var currentFrame = [_draggedWindow frame],
+            targetFrame = CGRectMake(_startDragLocation.x, _startDragLocation.y, currentFrame.size.width, currentFrame.size.height);
 
-        var animation = [[CPAnimation alloc] initWithDuration:0.25 animationCurve:CPAnimationEaseOut];
+        // We use CPViewAnimation. Even though _draggedWindow is a CPWindow, 
+        // CPViewAnimation supports targets that respond to setFrame: (like NSViewAnimation does for NSWindow).
+        var animation = [[CPViewAnimation alloc] initWithViewAnimations:[
+            [CPDictionary dictionaryWithObjects:[_draggedWindow, currentFrame, targetFrame] 
+                                        forKeys:[CPViewAnimationTargetKey, CPViewAnimationStartFrameKey, CPViewAnimationEndFrameKey]]
+        ]];
+
+        [animation setAnimationCurve:CPAnimationEaseOut];
+        [animation setDuration:0.25];
         [animation setDelegate:self];
         [animation startAnimation];
-        
-        // Return early. We will call _performFinalCleanup in animationDidEnd:
+
         return;
     }
 
-    // Normal path (Success or no slide back)
     [self _performFinalCleanupWithLocation:aLocation operation:anOperation];
-}
-
-// Helper to interpolate the window movement manually
-- (void)animation:(CPAnimation)anAnimation valueForProgress:(float)aProgress
-{
-    var x = _animationStartOrigin.x + (_animationTargetOrigin.x - _animationStartOrigin.x) * aProgress,
-        y = _animationStartOrigin.y + (_animationTargetOrigin.y - _animationStartOrigin.y) * aProgress;
-    
-    [_draggedWindow setFrameOrigin:CGPointMake(x, y)];
 }
 
 - (void)animationDidEnd:(CPAnimation)anAnimation
@@ -371,7 +363,11 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
     [self _performFinalCleanupWithLocation:_pendingEndLocation operation:_pendingEndOperation];
 }
 
-// Consolidate cleanup logic to avoid duplication
+- (void)animationDidStop:(CPAnimation)anAnimation
+{
+    [self _performFinalCleanupWithLocation:_pendingEndLocation operation:_pendingEndOperation];
+}
+
 - (void)_performFinalCleanupWithLocation:(CGPoint)aLocation operation:(CPDragOperation)anOperation
 {
     [_draggedView removeFromSuperview];
