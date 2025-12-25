@@ -132,6 +132,12 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
     unsigned        _dragOperation;
 
     CPTimer         _draggingUpdateTimer;
+    
+    // Animation Support
+    CGPoint         _animationStartOrigin;
+    CGPoint         _animationTargetOrigin;
+    CGPoint         _pendingEndLocation;
+    CPDragOperation _pendingEndOperation;
 }
 
 /*
@@ -325,6 +331,49 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
     [_draggingUpdateTimer invalidate];
     _draggingUpdateTimer = nil;
 
+    // Check if we should slide back.
+    // Logic: 
+    // 1. It must be an emulated drag (controls _draggedWindow).
+    // 2. SlideBack was requested in dragView:...
+    // 3. The operation failed (CPDragOperationNone) or was cancelled.
+    if (![CPPlatform supportsDragAndDrop] && _shouldSlideBack && anOperation === CPDragOperationNone)
+    {
+        // Save these for the final cleanup after animation
+        _pendingEndLocation = aLocation;
+        _pendingEndOperation = anOperation;
+
+        _animationStartOrigin = [_draggedWindow frame].origin;
+        _animationTargetOrigin = _startDragLocation; // Captured when drag started
+
+        var animation = [[CPAnimation alloc] initWithDuration:0.25 animationCurve:CPAnimationEaseOut];
+        [animation setDelegate:self];
+        [animation startAnimation];
+        
+        // Return early. We will call _performFinalCleanup in animationDidEnd:
+        return;
+    }
+
+    // Normal path (Success or no slide back)
+    [self _performFinalCleanupWithLocation:aLocation operation:anOperation];
+}
+
+// Helper to interpolate the window movement manually
+- (void)animation:(CPAnimation)anAnimation valueForProgress:(float)aProgress
+{
+    var x = _animationStartOrigin.x + (_animationTargetOrigin.x - _animationStartOrigin.x) * aProgress,
+        y = _animationStartOrigin.y + (_animationTargetOrigin.y - _animationStartOrigin.y) * aProgress;
+    
+    [_draggedWindow setFrameOrigin:CGPointMake(x, y)];
+}
+
+- (void)animationDidEnd:(CPAnimation)anAnimation
+{
+    [self _performFinalCleanupWithLocation:_pendingEndLocation operation:_pendingEndOperation];
+}
+
+// Consolidate cleanup logic to avoid duplication
+- (void)_performFinalCleanupWithLocation:(CGPoint)aLocation operation:(CPDragOperation)anOperation
+{
     [_draggedView removeFromSuperview];
 
     if (![CPPlatform supportsDragAndDrop])
