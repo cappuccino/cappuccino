@@ -11,7 +11,6 @@
 
 // We import the class to be tested. 
 // Assuming CPStackView.j is in the same directory or properly included in the build.
-@import "CPStackView.j" 
 
 @implementation AppController : CPObject
 {
