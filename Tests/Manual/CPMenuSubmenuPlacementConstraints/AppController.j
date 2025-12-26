@@ -4,6 +4,7 @@
  *
  * Created by Daniel Boehringer 2025 for submenu constraints on the rightmost end of the screen.
  * Updated for Issue #3149 (Immediate menu updates).
+ * Updated for Issue #3153 (Hide main menu items without submenus).
  */
 
 
@@ -14,6 +15,14 @@
     CPWindow    theWindow;
     BOOL        _isEnabled;
 
+    // Ivars for Live Update Test (#3149)
+    CPMenuItem  _changeTitleItem;
+    CPMenuItem  _changeStateItem;
+    CPMenuItem  _changeEnabledItem;
+
+    // Ivars for Hidden Menu Test (#3153)
+    CPMenuItem  _ghostMenuItem;
+    CPMenu      _ghostMenu;
     // Ivars for Live Update Test
     CPMenuItem  _changeTitleItem;
     CPMenuItem  _changeStateItem;
@@ -27,13 +36,13 @@
 
         mainMenu = [[CPMenu alloc] initWithTitle:@"MainMenu"],
         appMenu = [[CPMenu alloc] initWithTitle:@"App"],
-        fileMenu = [[CPMenu alloc] initWithTitle:@"File"],
-        bindingsMenu = [[CPMenu alloc] initWithTitle:@"Bindings Test"];
+        fileMenu = [[CPMenu alloc] initWithTitle:@"File"];
 
     _isEnabled = YES;
 
     [CPApp setMainMenu:mainMenu];
 
+    // Standard App Menu
     [mainMenu addItemWithTitle:@"App" action:nil keyEquivalent:@""];
     [mainMenu setSubmenu:appMenu forItem:[mainMenu itemWithTitle:@"App"]];
 
@@ -41,6 +50,7 @@
     [appMenu addItem:[CPMenuItem separatorItem]];
     [appMenu addItemWithTitle:@"Quit" action:@selector(terminate:) keyEquivalent:@"q"];
 
+    // Standard File Menu
     [mainMenu addItemWithTitle:@"File" action:nil keyEquivalent:@""];
     [mainMenu setSubmenu:fileMenu forItem:[mainMenu itemWithTitle:@"File"]];
 
@@ -48,22 +58,58 @@
     [fileMenu addItemWithTitle:@"Open" action:@selector(openDocument:) keyEquivalent:@"o"];
     [fileMenu addItemWithTitle:@"Close" action:@selector(newDocument:) keyEquivalent:@"w"];
 
-    // 1. Add some dummy menus to push the test menu further to the right.
-    var dummyMenu1 = [[CPMenu alloc] initWithTitle:@"Dummy 1"],
-        dummyMenu2 = [[CPMenu alloc] initWithTitle:@"Dummy 2"];
+    // -------------------------------------------------------------------------
+    // TEST ADDITION FOR ISSUE #3149: Immediate Updates
+    // -------------------------------------------------------------------------
+    var liveUpdateMenu = [[CPMenu alloc] initWithTitle:@"Live Update"],
+        liveUpdateMenuItem = [mainMenu addItemWithTitle:@"Live Update" action:nil keyEquivalent:@""];
+    
+    [liveUpdateMenu setAutoenablesItems:NO];
+    [mainMenu setSubmenu:liveUpdateMenu forItem:liveUpdateMenuItem];
 
-    [dummyMenu1 addItemWithTitle:@"Dummy Action A" action:nil keyEquivalent:@""];
-    [dummyMenu1 addItemWithTitle:@"Dummy Action B" action:nil keyEquivalent:@""];
+    [liveUpdateMenu addItemWithTitle:@"1. Click 'Start Timer' below" action:nil keyEquivalent:@""];
+    [liveUpdateMenu addItemWithTitle:@"2. Keep this menu OPEN" action:nil keyEquivalent:@""];
+    [liveUpdateMenu addItem:[CPMenuItem separatorItem]];
 
-    [dummyMenu2 addItemWithTitle:@"Another Dummy Action" action:nil keyEquivalent:@""];
-
-    var dummyMenuItem1 = [mainMenu addItemWithTitle:@"Dummy Menu 1" action:nil keyEquivalent:@""];
-    [mainMenu setSubmenu:dummyMenu1 forItem:dummyMenuItem1];
-
-    var dummyMenuItem2 = [mainMenu addItemWithTitle:@"Dummy Menu 2" action:nil keyEquivalent:@""];
-    [mainMenu setSubmenu:dummyMenu2 forItem:dummyMenuItem2];
+    _changeTitleItem = [liveUpdateMenu addItemWithTitle:@"Title will change in 3s" action:nil keyEquivalent:@""];
+    _changeStateItem = [liveUpdateMenu addItemWithTitle:@"State will change in 3s" action:nil keyEquivalent:@""];
+    _changeEnabledItem = [liveUpdateMenu addItemWithTitle:@"Enabled will change in 3s" action:nil keyEquivalent:@""];
+    
+    [liveUpdateMenu addItem:[CPMenuItem separatorItem]];
+    [liveUpdateMenu addItemWithTitle:@"Start 3s Timer" action:@selector(startUpdateTimer:) keyEquivalent:@""];
 
     // -------------------------------------------------------------------------
+    // TEST ADDITION FOR ISSUE #3153: Hide main menu items with no submenus
+    // -------------------------------------------------------------------------
+    
+    // 1. Create a "Ghost" item in the main menu bar.
+    // We intentionally DO NOT set a submenu for it yet.
+    // EXPECTATION: "Ghost Item" should NOT be visible in the menu bar.
+    _ghostMenuItem = [mainMenu addItemWithTitle:@"Ghost Item" action:nil keyEquivalent:@""];
+    
+    // Prepare the menu that we will attach later
+    _ghostMenu = [[CPMenu alloc] initWithTitle:@"Ghost Menu"];
+    [_ghostMenu addItemWithTitle:@"I was hidden!" action:nil keyEquivalent:@""];
+
+    // 2. Create a control menu to toggle the submenu
+    var visibilityMenu = [[CPMenu alloc] initWithTitle:@"Visibility Test"],
+        visibilityMenuItem = [mainMenu addItemWithTitle:@"Visibility Test" action:nil keyEquivalent:@""];
+    
+    [mainMenu setSubmenu:visibilityMenu forItem:visibilityMenuItem];
+    [visibilityMenu addItemWithTitle:@"Toggle 'Ghost Item' Submenu" action:@selector(toggleGhost:) keyEquivalent:@""];
+    [visibilityMenu addItemWithTitle:@"(If 'Ghost Item' is visible in bar now, bug is present)" action:nil keyEquivalent:@""];
+
+
+    // -------------------------------------------------------------------------
+    // Layout Testing (Right-side constraints)
+    // -------------------------------------------------------------------------
+    
+    // Add some dummy menus to push the test menu further to the right.
+    var dummyMenu1 = [[CPMenu alloc] initWithTitle:@"Dummy 1"];
+    [dummyMenu1 addItemWithTitle:@"Dummy Action A" action:nil keyEquivalent:@""];
+    
+    var dummyMenuItem1 = [mainMenu addItemWithTitle:@"Dummy 1" action:nil keyEquivalent:@""];
+    [mainMenu setSubmenu:dummyMenu1 forItem:dummyMenuItem1];
     // TEST ADDITION FOR ISSUE #3149: Immediate Updates
     // -------------------------------------------------------------------------
     var liveUpdateMenu = [[CPMenu alloc] initWithTitle:@"Live Update"],
@@ -86,36 +132,20 @@
     // -------------------------------------------------------------------------
 
 
-    // 2. Create the right-most menu with submenus for testing.
+    // Create the right-most menu with submenus for testing layout.
     var rightTestMenu = [[CPMenu alloc] initWithTitle:@"Right-Side Test"],
         rightTestMenuItem = [mainMenu addItemWithTitle:@"Right-Side Test" action:nil keyEquivalent:@""];
     
     [mainMenu setSubmenu:rightTestMenu forItem:rightTestMenuItem];
 
-    // Add some simple items
-    [rightTestMenu addItemWithTitle:@"Simple Item (No Submenu)" action:nil keyEquivalent:@""];
+    [rightTestMenu addItemWithTitle:@"Simple Item" action:nil keyEquivalent:@""];
     [rightTestMenu addItem:[CPMenuItem separatorItem]];
 
-    // Create the first level submenu
     var submenu1 = [[CPMenu alloc] initWithTitle:@"Submenu 1"],
         submenu1Item = [rightTestMenu addItemWithTitle:@"Test First Submenu" action:nil keyEquivalent:@""];
     
     [submenu1 addItemWithTitle:@"Sub-item A" action:nil keyEquivalent:@""];
-    [submenu1 addItemWithTitle:@"Sub-item B" action:nil keyEquivalent:@""];
     [rightTestMenu setSubmenu:submenu1 forItem:submenu1Item];
-
-    // Create a nested submenu for deeper testing
-    var submenu2 = [[CPMenu alloc] initWithTitle:@"Submenu 2"],
-        submenu2Item = [rightTestMenu addItemWithTitle:@"Test Nested Submenu" action:nil keyEquivalent:@""],
-        deeperSubmenu = [[CPMenu alloc] initWithTitle:@"Deeper"],
-        deeperSubmenuItem = [submenu2 addItemWithTitle:@"Deeper Submenu..." action:nil keyEquivalent:@""];
-    
-    [submenu2 addItemWithTitle:@"Another Sub-item" action:nil keyEquivalent:@""];
-    [deeperSubmenu addItemWithTitle:@"Deep Item X" action:nil keyEquivalent:@""];
-    [deeperSubmenu addItemWithTitle:@"Deep Item Y" action:nil keyEquivalent:@""];
-
-    [submenu2 setSubmenu:deeperSubmenu forItem:deeperSubmenuItem];
-    [rightTestMenu setSubmenu:submenu2 forItem:submenu2Item];
 
     [CPMenu setMenuBarVisible:YES];
 }
@@ -135,7 +165,7 @@
 }
 
 // -------------------------------------------------------------------------
-// Live Update Test Actions
+// Live Update Test Actions (#3149)
 // -------------------------------------------------------------------------
 
 - (void)startUpdateTimer:(id)sender
@@ -160,6 +190,24 @@
     
     [_changeEnabledItem setEnabled:NO];
     [_changeEnabledItem setTitle:@"Enabled Changed! (Disabled)"];
+}
+
+// -------------------------------------------------------------------------
+// Visibility Test Actions (#3153)
+// -------------------------------------------------------------------------
+
+- (void)toggleGhost:(id)sender
+{
+    if ([_ghostMenuItem submenu])
+    {
+        // Remove submenu -> Item should disappear from the bar
+        [mainMenu setSubmenu:nil forItem:_ghostMenuItem];
+    }
+    else
+    {
+        // Add submenu -> Item should appear in the bar
+        [mainMenu setSubmenu:_ghostMenu forItem:_ghostMenuItem];
+    }
 }
 
 @end
