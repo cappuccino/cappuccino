@@ -473,7 +473,7 @@
 
     // If the mouse is within the menu bar bounds but not over an item
     // (e.g. dragging far left or right), force the menu to unhighlight.
-    if (CGRectContainsPoint([self bounds], aPoint))
+    if (CGRectContainsPoint([[self contentView] bounds], aPoint))
         [_menu _highlightItemAtIndex:CPNotFound];
 
     return CPNotFound;
