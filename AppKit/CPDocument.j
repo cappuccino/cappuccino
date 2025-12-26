@@ -871,10 +871,13 @@ var CPDocumentUntitledCount = 0;
 {
     var theDelegate = context.delegate;
 
-    if (aDocument === self && shouldClose)
+    // Only close the document explicitly if there is NO delegate to handle the action.
+    // If a delegate exists (e.g., the CPWindow), it is responsible for performing the close
+    // upon receiving the callback below. Calling [self close] here would cause a double-close.
+    if (aDocument === self && shouldClose && theDelegate == nil)
         [self close];
 
-    if (theDelegate != null)
+    if (theDelegate)
         theDelegate.isa.objj_msgSend3(theDelegate, context.selector, aDocument, shouldClose, context.context);
 }
 
