@@ -37,8 +37,9 @@ var cpOperationMainQueue = nil;
 // --------------------------------------------------------------------------------
 @implementation CPPromiseOperation : CPOperation
 {
-    BOOL        _executing;
-    BOOL        _finished;
+    // Renamed ivars to avoid collision with CPOperation's internal _executing/_finished
+    BOOL        _isExecuting;
+    BOOL        _isFinished;
     JSObject    _promiseFactory;
 }
 
@@ -60,8 +61,8 @@ var cpOperationMainQueue = nil;
     if (self)
     {
         _promiseFactory = aFactory;
-        _executing = NO;
-        _finished = NO;
+        _isExecuting = NO;
+        _isFinished = NO;
     }
     return self;
 }
@@ -76,7 +77,7 @@ var cpOperationMainQueue = nil;
 
     // Mark as executing
     [self willChangeValueForKey:@"isExecuting"];
-    _executing = YES;
+    _isExecuting = YES;
     [self didChangeValueForKey:@"isExecuting"];
 
     // Run the factory to get the promise
@@ -102,14 +103,14 @@ var cpOperationMainQueue = nil;
 {
     [self willChangeValueForKey:@"isExecuting"];
     [self willChangeValueForKey:@"isFinished"];
-    _executing = NO;
-    _finished = YES;
+    _isExecuting = NO;
+    _isFinished = YES;
     [self didChangeValueForKey:@"isExecuting"];
     [self didChangeValueForKey:@"isFinished"];
 }
 
-- (BOOL)isExecuting { return _executing; }
-- (BOOL)isFinished  { return _finished; }
+- (BOOL)isExecuting { return _isExecuting; }
+- (BOOL)isFinished  { return _isFinished; }
 // Concurrent is YES so it runs alongside the runloop (doesn't block the UI)
 - (BOOL)isConcurrent { return YES; }
 
@@ -130,7 +131,6 @@ var cpOperationMainQueue = nil;
 - (id)init
 {
     self = [super init];
-
     if (self)
     {
         _operations = [[CPArray alloc] init];
@@ -215,7 +215,7 @@ var cpOperationMainQueue = nil;
 }
 
 /*!
-    Adds an operation and returns a JavaScript Promise that resolves
+    **NEW**: Adds an operation and returns a JavaScript Promise that resolves 
     when the operation finishes.
     
     Usage in Async function:
