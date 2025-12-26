@@ -17,6 +17,8 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ *
+ * Modernized with Promises, Async/Await support, and KVO-based triggering.
  */
 
 @import "CPArray.j"
@@ -25,21 +27,104 @@
 @import "CPObject.j"
 @import "CPOperation.j"
 @import "CPString.j"
-@import "CPTimer.j"
 
 // the global queue (mainQueue)
 var cpOperationMainQueue = nil;
 
+// --------------------------------------------------------------------------------
+// CPPromiseOperation
+// A helper class to wrap JS Promises/Async functions into a CPOperation
+// --------------------------------------------------------------------------------
+@implementation CPPromiseOperation : CPOperation
+{
+    BOOL        _executing;
+    BOOL        _finished;
+    JSObject    _promiseFactory;
+}
+
 /*!
-    @class CPOperationQueue
-    @brief Represents an operation queue that can run CPOperations
+    Creates an operation that executes a JS function returning a Promise.
+    Example:
+    [CPPromiseOperation operationWithPromiseFactory:function() {
+        return fetch('/api/data').then(r => r.json());
+    }];
 */
++ (CPPromiseOperation)operationWithPromiseFactory:(JSObject)aFactory
+{
+    return [[self alloc] initWithPromiseFactory:aFactory];
+}
+
+- (id)initWithPromiseFactory:(JSObject)aFactory
+{
+    self = [super init];
+    if (self)
+    {
+        _promiseFactory = aFactory;
+        _executing = NO;
+        _finished = NO;
+    }
+    return self;
+}
+
+- (void)start
+{
+    if ([self isCancelled])
+    {
+        [self _finish];
+        return;
+    }
+
+    // Mark as executing
+    [self willChangeValueForKey:@"isExecuting"];
+    _executing = YES;
+    [self didChangeValueForKey:@"isExecuting"];
+
+    // Run the factory to get the promise
+    var promise = _promiseFactory();
+
+    // If the factory didn't return a promise (synchronous result), handle gracefully
+    if (!promise || typeof promise.then !== 'function')
+    {
+        [self _finish];
+        return;
+    }
+
+    // Handle Promise resolution
+    promise.then(function() {
+        [self _finish];
+    }).catch(function(err) {
+        CPLog.error("CPPromiseOperation Error: " + err);
+        [self _finish];
+    });
+}
+
+- (void)_finish
+{
+    [self willChangeValueForKey:@"isExecuting"];
+    [self willChangeValueForKey:@"isFinished"];
+    _executing = NO;
+    _finished = YES;
+    [self didChangeValueForKey:@"isExecuting"];
+    [self didChangeValueForKey:@"isFinished"];
+}
+
+- (BOOL)isExecuting { return _executing; }
+- (BOOL)isFinished  { return _finished; }
+// Concurrent is YES so it runs alongside the runloop (doesn't block the UI)
+- (BOOL)isConcurrent { return YES; }
+
+@end
+
+
+// --------------------------------------------------------------------------------
+// CPOperationQueue
+// --------------------------------------------------------------------------------
 @implementation CPOperationQueue : CPObject
 {
     CPArray _operations;
-    BOOL _suspended;
+    BOOL    _suspended;
+    int     _maxConcurrentOperationCount;
     CPString _name @accessors(property=name);
-    CPTimer _timer;
 }
 
 - (id)init
@@ -50,55 +135,57 @@ var cpOperationMainQueue = nil;
     {
         _operations = [[CPArray alloc] init];
         _suspended = NO;
-//        _currentlyModifyingOps = NO;
-        _timer = [CPTimer scheduledTimerWithTimeInterval:0.01
-                                                  target:self
-                                                selector:@selector(_runNextOpsInQueue)
-                                                userInfo:nil
-                                                 repeats:YES];
+        // Default to serial execution (1 at a time). 
+        // Increase this if you want multiple API calls running in parallel.
+        _maxConcurrentOperationCount = 1; 
     }
     return self;
 }
 
+/*!
+    Logic to determine if we should start new operations.
+    Triggered when an operation is added or when an operation finishes.
+*/
 - (void)_runNextOpsInQueue
 {
-    if (!_suspended && [self operationCount] > 0)
-    {
-        var i = 0,
-            count = [_operations count];
+    if (_suspended || [_operations count] == 0)
+        return;
 
-        for (; i < count; i++)
+    // Use a timeout to break the call stack and let the UI update
+    // if many operations finish/start rapidly.
+    window.setTimeout(function() {
+        
+        // Check how many are currently running
+        var runningCount = 0;
+        var i = 0;
+        var count = [_operations count];
+        
+        for (i = 0; i < count; i++)
         {
+            if ([[_operations objectAtIndex:i] isExecuting])
+                runningCount++;
+        }
+
+        // If we reached our max concurrency, stop starting new ones
+        if (runningCount >= _maxConcurrentOperationCount)
+            return;
+
+        // Try to start pending operations
+        for (i = 0; i < count; i++)
+        {
+            // Re-check concurrency limit inside the loop
+            if (runningCount >= _maxConcurrentOperationCount)
+                break;
+
             var op = [_operations objectAtIndex:i];
+            
             if ([op isReady] && ![op isFinished] && ![op isExecuting])
             {
                 [op start];
+                runningCount++;
             }
         }
-    }
-}
-
-- (void)_enableTimer:(BOOL)enable
-{
-    if (!enable)
-    {
-        if (_timer)
-        {
-            [_timer invalidate];
-            _timer = nil;
-        }
-    }
-    else
-    {
-        if (!_timer)
-        {
-            _timer = [CPTimer scheduledTimerWithTimeInterval:0.01
-                                                      target:self
-                                                    selector:@selector(_runNextOpsInQueue)
-                                                    userInfo:nil
-                                                     repeats:YES];
-        }
-    }
+    }, 0);
 }
 
 /*!
@@ -109,16 +196,82 @@ var cpOperationMainQueue = nil;
 {
     [self willChangeValueForKey:@"operations"];
     [self willChangeValueForKey:@"operationCount"];
+    
     [_operations addObject:anOperation];
     [self _sortOpsByPriority:_operations];
+    
+    // IMPORTANT: Observe the operation so we know when to start the next one.
+    // This replaces the old polling timer.
+    [anOperation addObserver:self 
+                  forKeyPath:@"isFinished" 
+                     options:0 
+                     context:nil];
+
     [self didChangeValueForKey:@"operations"];
     [self didChangeValueForKey:@"operationCount"];
+
+    // Trigger execution
+    [self _runNextOpsInQueue];
+}
+
+/*!
+    Adds an operation and returns a JavaScript Promise that resolves
+    when the operation finishes.
+    
+    Usage in Async function:
+    await [queue addOperationAwaitable:myOp];
+*/
+- (JSObject)addOperationAwaitable:(CPOperation)anOperation
+{
+    return new Promise(function(resolve, reject) {
+        
+        var observer = [[CPObject alloc] init];
+        
+        // Create a temporary observer to bridge Obj-J KVO to JS Promise
+        observer.observeValueForKeyPath_ofObject_change_context = function(keyPath, object, change, context)
+        {
+            if (keyPath === "isFinished" && [object isFinished])
+            {
+                [object removeObserver:observer forKeyPath:@"isFinished"];
+                resolve(object);
+            }
+            else if ([object isCancelled])
+            {
+                [object removeObserver:observer forKeyPath:@"isFinished"];
+                reject("Operation Cancelled");
+            }
+        };
+        
+        [anOperation addObserver:observer
+                      forKeyPath:@"isFinished" 
+                         options:CPKeyValueObservingOptionNew 
+                         context:nil];
+                         
+        [self addOperation:anOperation];
+    });
+}
+
+/*!
+    Internal KVO handler. When an operation finishes, we trigger the queue
+    to look for the next operation.
+*/
+- (void)observeValueForKeyPath:(CPString)keyPath 
+                      ofObject:(id)object 
+                        change:(CPDictionary)change 
+                       context:(id)context
+{
+    if (keyPath === @"isFinished" && [object isFinished])
+    {
+        // Stop observing the finished operation to prevent memory leaks
+        [object removeObserver:self forKeyPath:@"isFinished"];
+        
+        // Trigger the queue to run the next item
+        [self _runNextOpsInQueue];
+    }
 }
 
 /*!
     Adds the specified array of operations to the queue.
-    @param ops The array of CPOperation objects that you want to add to the receiver.
-    @param wait If YES, the method only returns once all of the specified operations finish executing. If NO, the operations are added to the queue and control returns immediately to the caller.
 */
 - (void)addOperations:(CPArray)ops waitUntilFinished:(BOOL)wait
 {
@@ -126,18 +279,23 @@ var cpOperationMainQueue = nil;
     {
         if (wait)
         {
+            // Note: This blocks synchronously. It will NOT wait for 
+            // CPPromiseOperations correctly as they return execution immediately.
+            // Use addOperationAwaitable if you need to wait for async ops.
             [self _sortOpsByPriority:ops];
             [self _runOpsSynchronously:ops];
         }
 
-        [_operations addObjectsFromArray:ops];
-        [self _sortOpsByPriority:_operations];
+        var i = 0;
+        for (; i < [ops count]; i++)
+        {
+            [self addOperation:[ops objectAtIndex:i]];
+        }
     }
 }
 
 /*!
     Wraps the given js function in a CPOperation and adds it to the queue
-    @param aFunction the JS function to add
 */
 - (void)addOperationWithFunction:(JSObject)aFunction
 {
@@ -151,17 +309,9 @@ var cpOperationMainQueue = nil;
 
 - (int)operationCount
 {
-    if (_operations)
-    {
-        return [_operations count];
-    }
-
-    return 0;
+    return _operations ? [_operations count] : 0;
 }
 
-/*!
-    Cancels all queued and executing operations.
-*/
 - (void)cancelAllOperations
 {
     if (_operations)
@@ -177,42 +327,33 @@ var cpOperationMainQueue = nil;
 }
 
 /*!
-    Blocks until all of the receiver’s queued and executing operations finish executing.
+    Deprecated in favor of async/await patterns, but kept for compatibility.
+    Be careful: this loops synchronously and can freeze the browser if ops take long.
 */
 - (void)waitUntilAllOperationsAreFinished
 {
-    // lets first stop the timer so it won't interfere
-    [self _enableTimer:NO];
     [self _runOpsSynchronously:_operations];
-    if (!_suspended)
-    {
-        [self _enableTimer:YES];
-    }
 }
 
-
-/*!
-    Returns the maximum number of concurrent operations that the receiver can execute.
-    Always returns 1 because JS doesn't have threads
-*/
 - (int)maxConcurrentOperationCount
 {
-    return 1;
+    return _maxConcurrentOperationCount;
 }
 
-/*!
-    Modifies the execution of pending operations
-    @param suspend if YES, queue execution is suspended. If NO, it is resumed
-*/
+- (void)setMaxConcurrentOperationCount:(int)count
+{
+    _maxConcurrentOperationCount = count;
+}
+
 - (void)setSuspended:(BOOL)suspend
 {
     _suspended = suspend;
-    [self _enableTimer:!suspend];
+    if (!_suspended)
+    {
+        [self _runNextOpsInQueue];
+    }
 }
 
-/*!
-    Returns a Boolean value indicating whether the receiver is scheduling queued operations for execution.
-*/
 - (BOOL)isSuspended
 {
     return _suspended;
@@ -224,21 +365,9 @@ var cpOperationMainQueue = nil;
     {
         [someOps sortUsingFunction:function(lhs, rhs)
         {
-            if ([lhs queuePriority] < [rhs queuePriority])
-            {
-                return 1;
-            }
-            else
-            {
-                if ([lhs queuePriority] > [rhs queuePriority])
-                {
-                    return -1;
-                }
-                else
-                {
-                    return 0;
-                }
-            }
+            if ([lhs queuePriority] < [rhs queuePriority]) return 1;
+            else if ([lhs queuePriority] > [rhs queuePriority]) return -1;
+            else return 0;
         }
         context:nil];
     }
@@ -280,7 +409,7 @@ var cpOperationMainQueue = nil;
 }
 
 /*!
-    Convenience method for one system wide singleton queue. Returns the same queue as currentQueue.
+    Convenience method for one system wide singleton queue.
 */
 + (CPOperationQueue)mainQueue
 {
@@ -289,13 +418,9 @@ var cpOperationMainQueue = nil;
         cpOperationMainQueue = [[CPOperationQueue alloc] init];
         [cpOperationMainQueue setName:@"main"];
     }
-
     return cpOperationMainQueue;
 }
 
-/*!
-    Convenience method for one system wide singleton queue. Returns the same queue as mainQueue.
-*/
 + (CPOperationQueue)currentQueue
 {
     return [CPOperationQueue mainQueue];
