@@ -269,7 +269,8 @@ var _CPMenuBarVisible               = NO,
     if (self)
     {
         _title = aTitle;
-        _items = [];
+        // Use CPMutableArray instead of raw JS array for consistency with removeAllItems
+        _items = [CPMutableArray array]; 
 
         _autoenablesItems = YES;
         _showsStateColumn = YES;
@@ -374,6 +375,10 @@ var _CPMenuBarVisible               = NO,
     [self willChangeValueForKey:@"items"];
     _items = [CPMutableArray array];
     [self didChangeValueForKey:@"items"];
+    
+    // Ensure the main menu updates if cleared
+    if (self === [CPApp mainMenu] && _CPMenuBarSharedWindow)
+        [_CPMenuBarSharedWindow setMenu:self];
 }
 
 /*!
@@ -1257,6 +1262,11 @@ var _CPMenuBarVisible               = NO,
         postNotificationName:CPMenuDidAddItemNotification
                       object:self
                     userInfo:@{ @"CPMenuItemIndex": anIndex }];
+
+    // FIX #1222: If this is the main menu, force the shared menu bar window to refresh its layout.
+    // This ensures new items are positioned correctly (e.g. not pushed to the far right by previous layout states).
+    if (self === [CPApp mainMenu] && _CPMenuBarSharedWindow)
+        [_CPMenuBarSharedWindow setMenu:self];
 }
 
 - (void)removeObjectFromItemsAtIndex:(CPUInteger)anIndex
@@ -1272,6 +1282,10 @@ var _CPMenuBarVisible               = NO,
         postNotificationName:CPMenuDidRemoveItemNotification
                       object:self
                     userInfo:@{ @"CPMenuItemIndex": anIndex }];
+    
+    // FIX #1222: Ensure the shared menu bar updates layout when items are removed.
+    if (self === [CPApp mainMenu] && _CPMenuBarSharedWindow)
+        [_CPMenuBarSharedWindow setMenu:self];
 }
 
 @end
@@ -1365,4 +1379,3 @@ var CPMenuTitleKey              = @"CPMenuTitleKey",
 
 @import "_CPMenuBarWindow.j"
 @import "_CPMenuWindow.j"
-
