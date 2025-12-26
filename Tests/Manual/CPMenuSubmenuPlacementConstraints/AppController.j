@@ -23,6 +23,10 @@
     // Ivars for Hidden Menu Test (#3153)
     CPMenuItem  _ghostMenuItem;
     CPMenu      _ghostMenu;
+    // Ivars for Live Update Test
+    CPMenuItem  _changeTitleItem;
+    CPMenuItem  _changeStateItem;
+    CPMenuItem  _changeEnabledItem;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
@@ -106,6 +110,27 @@
     
     var dummyMenuItem1 = [mainMenu addItemWithTitle:@"Dummy 1" action:nil keyEquivalent:@""];
     [mainMenu setSubmenu:dummyMenu1 forItem:dummyMenuItem1];
+    // TEST ADDITION FOR ISSUE #3149: Immediate Updates
+    // -------------------------------------------------------------------------
+    var liveUpdateMenu = [[CPMenu alloc] initWithTitle:@"Live Update"],
+        liveUpdateMenuItem = [mainMenu addItemWithTitle:@"Live Update" action:nil keyEquivalent:@""];
+    
+    // Disable auto-enable so we can manually test setEnabled: on items without actions
+    [liveUpdateMenu setAutoenablesItems:NO];
+    [mainMenu setSubmenu:liveUpdateMenu forItem:liveUpdateMenuItem];
+
+    [liveUpdateMenu addItemWithTitle:@"1. Click 'Start Timer' below" action:nil keyEquivalent:@""];
+    [liveUpdateMenu addItemWithTitle:@"2. Keep this menu OPEN" action:nil keyEquivalent:@""];
+    [liveUpdateMenu addItem:[CPMenuItem separatorItem]];
+
+    _changeTitleItem = [liveUpdateMenu addItemWithTitle:@"Title will change in 3s" action:nil keyEquivalent:@""];
+    _changeStateItem = [liveUpdateMenu addItemWithTitle:@"State will change in 3s" action:nil keyEquivalent:@""];
+    _changeEnabledItem = [liveUpdateMenu addItemWithTitle:@"Enabled will change in 3s" action:nil keyEquivalent:@""];
+    
+    [liveUpdateMenu addItem:[CPMenuItem separatorItem]];
+    [liveUpdateMenu addItemWithTitle:@"Start 3s Timer" action:@selector(startUpdateTimer:) keyEquivalent:@""];
+    // -------------------------------------------------------------------------
+
 
     // Create the right-most menu with submenus for testing layout.
     var rightTestMenu = [[CPMenu alloc] initWithTitle:@"Right-Side Test"],
@@ -145,12 +170,14 @@
 
 - (void)startUpdateTimer:(id)sender
 {
+    // Reset state
     [_changeTitleItem setTitle:@"Title will change in 3s"];
     [_changeStateItem setState:CPOffState];
     [_changeStateItem setTitle:@"State will change in 3s"];
     [_changeEnabledItem setEnabled:YES];
     [_changeEnabledItem setTitle:@"Enabled will change in 3s"];
 
+    // Trigger update
     [self performSelector:@selector(performLiveUpdate) withObject:nil afterDelay:3.0];
 }
 

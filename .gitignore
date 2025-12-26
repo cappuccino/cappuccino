@@ -25,4 +25,4 @@ node_modules
 /dist/objective-j/lib
 /dist/cappuccino/package.json
 /dist/cappuccino/lib
-
+/dist/cappuccino/bin
