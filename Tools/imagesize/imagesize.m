@@ -31,6 +31,7 @@ int getImageSize(const char* utf8Path, BOOL appendLineFeed)
     NSInteger width  = [representation pixelsWide];
     NSInteger height = [representation pixelsHigh];
     NSString *extension = [[path pathExtension] lowercaseString];
+    
     if ([extension isEqualToString:@"svg"])
     {
         width = [image size].width;
