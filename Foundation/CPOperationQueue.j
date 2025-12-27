@@ -247,10 +247,40 @@ var cpOperationMainQueue = nil;
 /*!
     Adds the specified array of operations to the queue.
     @param ops The array of CPOperation objects that you want to add to the receiver.
-    @param wait If YES, the method only returns once all of the specified operations finish executing. If NO, the operations are added to the queue and control returns immediately to the caller.
-    @note When using modern asynchronous operations (Promises), you must use the `await` keyword when `wait` is YES to pause execution correctly.
+    @param wait If YES, the method only returns once all of the specified operations finish executing. 
+                If NO, the operations are added to the queue and control returns immediately.
+    
+    @warning If `wait` is YES, this blocks synchronously. Do NOT use with async/Promise operations (CPFunctionOperation) 
+             as it will cause a DEADLOCK. Use `addOperationsAsync:waitUntilFinished:` instead.
 */
-- (async JSObject)addOperations:(CPArray)ops waitUntilFinished:(BOOL)wait
+- (void)addOperations:(CPArray)ops waitUntilFinished:(BOOL)wait
+{
+    if (ops && [ops count] > 0)
+    {
+        // Legacy Sync blocking mode
+        if (wait)
+        {
+            [self _sortOpsByPriority:ops];
+            [self _runOpsSynchronously:ops];
+        }
+
+        // Add them to the queue (even if finished, consistent with legacy impl)
+        var i = 0;
+        for (; i < [ops count]; i++)
+        {
+            [self addOperation:[ops objectAtIndex:i]];
+        }
+    }
+}
+
+/*!
+    **NEW**: Asynchronous version of addOperations:waitUntilFinished:.
+    Returns a Promise that resolves when all operations are finished.
+    Safe to use with Promise-based CPFunctionOperations.
+    
+    Usage: await [queue addOperationsAsync:ops waitUntilFinished:YES];
+*/
+- (async JSObject)addOperationsAsync:(CPArray)ops waitUntilFinished:(BOOL)wait
 {
     if (ops && [ops count] > 0)
     {
@@ -275,7 +305,6 @@ var cpOperationMainQueue = nil;
             // If not waiting, just add them normally
             var i = 0;
             var count = [ops count];
-
             for (i = 0; i < count; i++)
             {
                 [self addOperation:[ops objectAtIndex:i]];
@@ -283,9 +312,9 @@ var cpOperationMainQueue = nil;
         }
     }
     
-    // Return a resolved promise for void/wait=NO compatibility
     return Promise.resolve();
 }
+
 
 /*!
     Wraps the given js function in a CPOperation and adds it to the queue.
