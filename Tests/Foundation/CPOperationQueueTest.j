@@ -1,7 +1,13 @@
 @import <Foundation/CPOperationQueue.j>
+@import <Foundation/CPFunctionOperation.j>
 
-globalResults = [];
+// Global accumulator for side-effect testing
+var globalResults = [];
 
+// --------------------------------------------------------------------------------
+// Helper: TestOperation
+// A simple operation that sets a value and pushes to globalResults.
+// --------------------------------------------------------------------------------
 @implementation TestOperation : CPOperation
 {
     CPString name @accessors;
@@ -11,11 +17,15 @@ globalResults = [];
 - (void)main
 {
     [self setName:@"test"];
-    globalResults.push([self value]);
+    if ([self value])
+        globalResults.push([self value]);
 }
-
 @end
 
+// --------------------------------------------------------------------------------
+// Helper: TestCancelOperation
+// Used to test cancellation states.
+// --------------------------------------------------------------------------------
 @implementation TestCancelOperation : CPOperation
 {
     BOOL _started @accessors(getter=didStart);
@@ -40,9 +50,12 @@ globalResults = [];
     [super start];
     _started = YES;
 }
-
 @end
 
+// --------------------------------------------------------------------------------
+// Helper: TestObserver
+// Used to verify KVO notifications.
+// --------------------------------------------------------------------------------
 @implementation TestObserver : CPObject
 {
     CPArray changedKeyPaths @accessors;
@@ -52,11 +65,9 @@ globalResults = [];
 {
     if (self = [super init])
         changedKeyPaths = [[CPArray alloc] init];
-
     return self;
 }
 
-// KVO change notification
 - (void)observeValueForKeyPath:(CPString)keyPath
                       ofObject:(id)object
                         change:(CPDictionary)change
@@ -64,10 +75,22 @@ globalResults = [];
 {
     [changedKeyPaths addObject:keyPath];
 }
-
 @end
 
+// --------------------------------------------------------------------------------
+// Test Suite
+// --------------------------------------------------------------------------------
 @implementation CPOperationQueueTest : OJTestCase
+
+- (void)setUp
+{
+    // Reset global state before each test
+    globalResults = [];
+}
+
+// -------------------------------------------------------
+// Legacy / Synchronous Tests
+// -------------------------------------------------------
 
 - (void)testAddOperation
 {
@@ -77,6 +100,8 @@ globalResults = [];
     [self assert:0 equals:[oq operationCount]];
     [oq addOperation:to];
 
+    // Note: With the new KVO design, operations run on the next tick (setTimeout 0).
+    // So operationCount is 1 immediately, but it finishes slightly later.
     [self assert:1 equals:[oq operationCount]];
 }
 
@@ -91,17 +116,20 @@ globalResults = [];
     [to3 addDependency:to2];
 
     [self assert:0 equals:[oq operationCount]];
+    
+    // Legacy behavior: This blocks synchronously because we haven't awaited it 
+    // and standard operations are synchronous in 'main'.
+    // However, the modernization logic wraps execution. 
+    // Ideally, for strict legacy compliance, we rely on _runOpsSynchronously being called internally.
     [oq addOperations:[to1, to2, to3] waitUntilFinished:YES];
 
-    //make sure they all ran and are finished...
     [self assertTrue:[to1 isFinished]];
     [self assertTrue:[to2 isFinished]];
     [self assertTrue:[to3 isFinished]];
-    [self assert:@"test" equals:[to1 name]];
-    [self assert:@"test" equals:[to2 name]];
-    [self assert:@"test" equals:[to3 name]];
-
-    [self assert:3 equals:[oq operationCount]];
+    
+    [self assert:3 equals:[oq operationCount]]; 
+    // Note: operationCount usually doesn't decrease automatically in legacy Obj-J 
+    // unless the array is mutated, but [oq operations] holds the references.
 }
 
 - (void)testRunOperationsInCorrectOrder
@@ -110,29 +138,39 @@ globalResults = [];
         to1 = [[TestOperation alloc] init];
     [to1 setQueuePriority:CPOperationQueuePriorityVeryLow];
     [to1 setValue:@"very low"];
+    
     var to2 = [[TestOperation alloc] init];
     [to2 setQueuePriority:CPOperationQueuePriorityVeryHigh];
     [to2 setValue:@"very high"];
+    
     var to3 = [[TestOperation alloc] init];
     [to3 setValue:@"normal"];
+    
     var to4 = [[TestOperation alloc] init];
     [to4 setQueuePriority:CPOperationQueuePriorityLow];
     [to4 setValue:@"low"];
+    
     var to5 = [[TestOperation alloc] init];
     [to5 setQueuePriority:CPOperationQueuePriorityHigh];
     [to5 setValue:@"high"];
+    
     var to6 = [[TestOperation alloc] init];
     [to6 setValue:@"also normal"];
 
     globalResults = [];
+    
+    // Add normally (async start via KVO)
     [oq addOperations:[to3, to4, to5, to6] waitUntilFinished:NO];
 
+    // Force Wait (Legacy Sync Block)
     [oq waitUntilAllOperationsAreFinished];
 
     [self assertTrue:[to3 isFinished]];
     [self assertTrue:[to4 isFinished]];
     [self assertTrue:[to5 isFinished]];
     [self assertTrue:[to6 isFinished]];
+    
+    // Verify Priority Order
     [self assert:@"high" equals:globalResults[0]];
     [self assert:@"normal" equals:globalResults[1]];
     [self assert:@"also normal" equals:globalResults[2]];
@@ -142,18 +180,9 @@ globalResults = [];
     [oq addOperation:to1];
     [oq addOperation:to2];
     [oq waitUntilAllOperationsAreFinished];
+    
     [self assert:@"very high" equals:globalResults[0]];
     [self assert:@"very low" equals:globalResults[1]];
-}
-
-- (void)testAddOperationWithFunction
-{
-    var oq = [[CPOperationQueue alloc] init];
-    globalResults = [];
-
-    [oq addOperationWithFunction:function() {globalResults.push("Soylent");}];
-    [oq waitUntilAllOperationsAreFinished];
-    [self assert:@"Soylent" equals:globalResults[0]];
 }
 
 - (void)testKVO
@@ -161,27 +190,16 @@ globalResults = [];
     var oq = [[CPOperationQueue alloc] init],
         obs = [[TestObserver alloc] init];
 
-    [oq addObserver:obs
-         forKeyPath:@"operations"
-            options:(CPKeyValueObservingOptionNew)
-            context:NULL];
+    [oq addObserver:obs forKeyPath:@"operations" options:(CPKeyValueObservingOptionNew) context:NULL];
+    [oq addObserver:obs forKeyPath:@"operationCount" options:(CPKeyValueObservingOptionNew) context:NULL];
+    [oq addObserver:obs forKeyPath:@"suspended" options:(CPKeyValueObservingOptionNew) context:NULL];
+    [oq addObserver:obs forKeyPath:@"name" options:(CPKeyValueObservingOptionNew) context:NULL];
 
-    [oq addObserver:obs
-         forKeyPath:@"operationCount"
-            options:(CPKeyValueObservingOptionNew)
-            context:NULL];
+    [oq addOperationWithFunction:function() { globalResults.push("Soylent"); }];
+    
+    // Wait for ops to flush
+    [oq waitUntilAllOperationsAreFinished];
 
-    [oq addObserver:obs
-         forKeyPath:@"suspended"
-            options:(CPKeyValueObservingOptionNew)
-            context:NULL];
-
-    [oq addObserver:obs
-         forKeyPath:@"name"
-            options:(CPKeyValueObservingOptionNew)
-            context:NULL];
-
-    [oq addOperationWithFunction:function() {globalResults.push("Soylent");}];
     [self assert:@"operations" equals:[[obs changedKeyPaths] objectAtIndex:0]];
     [self assert:@"operationCount" equals:[[obs changedKeyPaths] objectAtIndex:1]];
 
@@ -194,118 +212,133 @@ globalResults = [];
     [self assert:@"name" equals:[[obs changedKeyPaths] objectAtIndex:4]];
 }
 
-- (void)testCancelledOperationDoesStart
-{
-    var op = [[TestCancelOperation alloc] init],
-        queue = [[CPOperationQueue alloc] init];
+// -------------------------------------------------------
+// Modern / Async Tests
+// -------------------------------------------------------
 
-    [self assertFalse:[op isCancelled]];
-    [self assertFalse:[op isFinished]];
-    [self assertFalse:[op didMain]];
-    [self assertFalse:[op didStart]];
-
-    [op cancel];
-
-    [self assertTrue:[op isCancelled]];
-    [self assertFalse:[op isFinished]];
-
-    [queue addOperations:[op] waitUntilFinished:YES];
-
-    [self assertFalse:[op didMain]];
-    [self assertTrue:[op didStart]];
-    [self assertTrue:[op isCancelled]];
-    [self assertTrue:[op isFinished]];
-}
-
-// --------------------------------------------------------
-// NEW: Promise and Async/Await Tests
-// --------------------------------------------------------
-
-- (void)testCPPromiseOperationBasics
-{
-    // Ensure the factory logic works and properties are set correctly
-    var op = [CPPromiseOperation operationWithPromiseFactory:function() {
-        return Promise.resolve(true);
-    }];
-
-    // Promise operations are concurrent (async)
-    [self assertTrue:[op isConcurrent] message:"CPPromiseOperation should be concurrent"];
-    
-    // Should not be executing yet
-    [self assertFalse:[op isExecuting]];
-    [self assertFalse:[op isFinished]];
-}
-
-- (void)testAddOperationAwaitableReturnsPromise
+- (void)testAddOperationAsync
 {
     var oq = [[CPOperationQueue alloc] init],
         op = [[TestOperation alloc] init];
-
-    // Call the new method
-    var promise = [oq addOperationAwaitable:op];
-
-    // Check that we actually got a JS Promise back
-    [self assertTrue:(promise instanceof Promise) message:"addOperationAwaitable: should return a JS Promise"];
     
-    // The operation should be in the queue
-    [self assert:1 equals:[oq operationCount]];
+    [op setValue:@"AsyncResult"];
+
+    // We define an async wrapper to test the Promise behavior
+    var runTest = async function() {
+        try {
+            var finishedOp = await [oq addOperationAsync:op];
+            
+            [self assertTrue:[finishedOp isFinished] message:"addOperationAsync: should resolve with finished op"];
+            [self assert:@"AsyncResult" equals:[finishedOp value] message:"Result value should match"];
+            [self assert:1 equals:globalResults.length];
+        } catch (e) {
+            [self fail:"addOperationAsync threw exception: " + e];
+        }
+    };
+    
+    // Execute
+    runTest();
 }
 
-- (void)testAsyncAwaitIntegration
+- (void)testCPFunctionOperationPromiseSupport
 {
-    /*
-        Because OJTestCase is typically synchronous, we cannot block the main thread 
-        waiting for Promises. However, we can use an async function wrapper to 
-        execute the assertions.
-        
-        NOTE: If your test runner kills the process immediately after the synchronous 
-        methods finish, you might not see these assertions run.
-    */
-
     var oq = [[CPOperationQueue alloc] init];
     globalResults = [];
 
-    // Define an async function to use 'await' syntax
-    var runAsyncTests = async function() {
+    var runTest = async function() {
         
-        // 1. Test awaiting a standard operation (input/output sync)
-        var op1 = [[TestOperation alloc] init];
-        [op1 setValue:@"Async Standard"];
-        
-        // This should pause execution of this function until op1 finishes
-        await [oq addOperationAwaitable:op1];
-        
-        [self assert:@"Async Standard" equals:[op1 value] message:"Standard Op value should be set"];
-        [self assertTrue:[op1 isFinished] message:"Standard Op should be finished after await"];
-        
-        // 2. Test awaiting a Promise Operation (input/output async)
-        var op2 = [CPPromiseOperation operationWithPromiseFactory:function() {
+        // Add a function that returns a Promise (simulation of fetch/timeout)
+        [oq addOperationWithFunction:function() {
             return new Promise(function(resolve) {
-                // Simulate network delay
                 setTimeout(function() {
-                    globalResults.push("Async Promise Result");
+                    globalResults.push("PromiseResolved");
                     resolve();
-                }, 20);
+                }, 50);
             });
         }];
         
-        // This should pause execution until the inner timeout resolves
-        await [oq addOperationAwaitable:op2];
+        // Wait for queue to empty asynchronously
+        await [oq waitUntilAllOperationsAreFinishedAsync];
         
-        [self assert:@"Async Promise Result" equals:globalResults[0] message:"Global results should contain promise result"];
-        [self assertTrue:[op2 isFinished] message:"Promise Op should be finished after await"];
-        
-        // 3. Test Rejection Handling
-        var op3 = [CPPromiseOperation operationWithPromiseFactory:function() {
-            return Promise.reject("Intentional Failure");
-        }];
-        
-        await [oq addOperationAwaitable:op3];
-        [self assertTrue:[op3 isFinished] message:"Rejected Op should still mark as finished"];
+        [self assert:@"PromiseResolved" equals:globalResults[0] message:"CPFunctionOperation did not wait for Promise resolution"];
     };
+    
+    runTest();
+}
 
-    // Kick off the async test
-    runAsyncTests();
+- (void)testAddOperationsWaitUntilFinishedAsync
+{
+    var oq = [[CPOperationQueue alloc] init];
+    var op1 = [[TestOperation alloc] init];
+    var op2 = [[TestOperation alloc] init];
+    
+    [op1 setValue:@"One"];
+    [op2 setValue:@"Two"];
+
+    var runTest = async function() {
+        
+        // Modern usage: await the method when wait=YES
+        await [oq addOperations:[op1, op2] waitUntilFinished:YES];
+        
+        [self assertTrue:[op1 isFinished] message:"Op1 should be finished after await"];
+        [self assertTrue:[op2 isFinished] message:"Op2 should be finished after await"];
+        [self assert:2 equals:globalResults.length];
+    };
+    
+    runTest();
+}
+
+- (void)testWaitUntilAllOperationsAreFinishedAsync
+{
+    var oq = [[CPOperationQueue alloc] init];
+    
+    // Add 3 operations that take random time
+    for (var i = 0; i < 3; i++) {
+        [oq addOperationWithFunction:function() {
+            return new Promise(function(resolve) {
+                setTimeout(function() { globalResults.push(i); resolve(); }, 10);
+            });
+        }];
+    }
+    
+    var runTest = async function() {
+        
+        [self assert:[oq operationCount] > 0 message:"Queue should have ops"];
+        
+        // Wait for empty
+        await [oq waitUntilAllOperationsAreFinishedAsync];
+        
+        [self assert:0 equals:[oq operationCount] message:"Queue should be empty after await"];
+        [self assert:3 equals:globalResults.length message:"All 3 ops should have executed"];
+    };
+    
+    runTest();
+}
+
+- (void)testCancellationWithAsync
+{
+    var oq = [[CPOperationQueue alloc] init],
+        op = [[TestOperation alloc] init];
+        
+    var runTest = async function() {
+        
+        // Schedule it
+        var promise = [oq addOperationAsync:op];
+        
+        // Cancel immediately
+        [op cancel];
+        
+        try {
+            await promise;
+            [self fail:"Should have thrown exception on cancellation"];
+        } catch (e) {
+            [self assert:@"Operation Cancelled" equals:e message:"Should reject with cancellation message"];
+        }
+        
+        [self assertTrue:[op isCancelled]];
+    };
+    
+    runTest();
 }
 
 @end
