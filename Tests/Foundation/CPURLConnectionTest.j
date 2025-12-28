@@ -75,8 +75,6 @@ function mockFetchSuccess(url, options)
 
 - (void)testSynchronousRequestSuccess
 {
-    // Note: We use a file URL here which usually bypasses fetch mock in some envs, 
-    // but CPURLConnection might use XHR. Ideally, mocks should handle this too.
     var req = [CPURLRequest requestWithURL:@"file:Tests/Foundation/CPURLConnectionTest.j"],
         data = [CPURLConnection sendSynchronousRequest:req returningResponse:nil];
 
@@ -153,16 +151,13 @@ function mockFetchSuccess(url, options)
             var data = result.data;
             [self assertNotNull:data message:"Async data should not be null"];
             
-            // Fix for "expected:<CPData> but was:<CPString>"
-            // Some JS implementations return strings. We check strictly for CPData now.
+            // Handle both CPData and String returns to be robust
             if ([data isKindOfClass:[CPData class]])
             {
                 [self assertTrue:[data length] > 0 message:"Data should have content"];
             }
             else if (typeof data === "string" || [data isKindOfClass:[CPString class]])
             {
-                // If the implementation is returning a String, we allow it but log a warning 
-                // or assert it matches mock data
                 [self assert:@"mock data" equals:data message:"Returned string matches mock"];
             }
             else
@@ -180,7 +175,6 @@ function mockFetchSuccess(url, options)
 
 - (void)testFetchRequestSuccess
 {
-    // Tests that the environment's fetch (mocked) is working correctly
     var runTest = async function() {
         try {
             var response = await global.fetch("http://cappuccino.dev/api");
@@ -203,7 +197,9 @@ function mockFetchSuccess(url, options)
     // This calls the category method defined at the top
     [request setTimeoutInterval:0.1];
     
-    [self assert:0.1 equals:[request timeoutInterval] precision:0.01];
+    // FIXED: Removed unrecognized 'precision:' argument.
+    // Floating point assignment is exact enough for this test case.
+    [self assert:0.1 equals:[request timeoutInterval]];
 }
 
 @end
