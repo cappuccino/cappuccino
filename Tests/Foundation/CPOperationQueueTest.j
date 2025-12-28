@@ -303,11 +303,16 @@ var globalResults = [];
         
         [op cancel];
         
+        var threw = false;
         try {
             await promise;
-            [self fail:"Should have thrown exception on cancellation"];
         } catch (e) {
+            threw = true;
             [self assert:@"Operation Cancelled" equals:e message:"Should reject with cancellation message"];
+        }
+        
+        if (!threw) {
+            [self fail:"Should have thrown exception on cancellation"];
         }
         
         [self assertTrue:[op isCancelled]];

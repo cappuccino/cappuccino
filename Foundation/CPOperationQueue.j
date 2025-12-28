@@ -59,17 +59,18 @@ var cpOperationMainQueue = nil;
                        context:(id)context
 {
     // Case 1: Waiting for a specific Operation to finish
-    if (keyPath === @"isFinished")
+    if (keyPath === @"isFinished" && [object isFinished])
     {
-        if ([object isFinished])
+        [object removeObserver:self forKeyPath:@"isFinished"];
+        
+        // Fix: Check for cancellation specifically to reject the promise
+        if ([object isCancelled])
         {
-            [object removeObserver:self forKeyPath:@"isFinished"];
-            _resolve(object);
-        }
-        else if ([object isCancelled])
-        {
-            [object removeObserver:self forKeyPath:@"isFinished"];
             _reject("Operation Cancelled");
+        }
+        else
+        {
+            _resolve(object);
         }
     }
     // Case 2: Waiting for the Queue to empty
