@@ -175,8 +175,111 @@ var CPURLConnectionDelegate = nil;
     return new Promise((resolve, reject) =>
         [[self alloc] _initWithRequest:aRequest
                                  queue:[CPOperationQueue mainQueue]
-                     completionHandler:(aResponse, aData, anError) => resolve( {response: aResponse, data: aData, error:anError })]
-    );
+                     completionHandler:(aResponse, aData, anError) => {
+                         resolve({ 
+                             response: aResponse, 
+                             data: aData, 
+                             error: anError 
+                         });
+                     }];
+    });
+}
+
+/*
+    Loads data using the native browser `fetch` API. 
+    This is lighter weight than the operation queue method and uses modern standards.
+    It bypasses CPOperationQueue entirely for maximum performance.
+    
+    Usage:
+    const { response, data, error } = await [CPURLConnection fetch:request];
+*/
++ (async JSObject)fetch:(CPURLRequest)aRequest
+{
+    var urlString = [[aRequest URL] absoluteString],
+        method = [aRequest HTTPMethod],
+        headers = [aRequest allHTTPHeaderFields],
+        body = [aRequest HTTPBody],
+        timeout = [aRequest timeoutInterval];
+
+    // 1. Prepare Fetch Options
+    var fetchOptions = {
+        method: method,
+        headers: {},
+        mode: 'cors'
+    };
+
+    // Convert CPDictionary headers to JS Object
+    var keyEnumerator = [headers keyEnumerator],
+        key;
+    
+    while ((key = [keyEnumerator nextObject]))
+        fetchOptions.headers[key] = [headers objectForKey:key];
+
+    // Handle Body
+    if (body)
+        fetchOptions.body = body;
+
+    // Handle Credentials
+    if ([aRequest withCredentials])
+        fetchOptions.credentials = 'include';
+
+    // Handle Timeout using AbortController (Modern Browser Standard)
+    if (timeout > 0 && window.AbortController) 
+    {
+        var controller = new AbortController();
+        fetchOptions.signal = controller.signal;
+        setTimeout(() => controller.abort(), timeout * 1000);
+    }
+
+    try 
+    {
+        // 2. Perform Fetch
+        const response = await fetch(urlString, fetchOptions);
+        
+        // 3. Get Data (Text format usually required for CPData dataWithRawString)
+        const text = await response.text();
+
+        // 4. Construct CPURLResponse
+        var cpResponse = [[CPHTTPURLResponse alloc] initWithURL:[aRequest URL]];
+        
+        // Set internal status code
+        [cpResponse _setStatusCode:response.status];
+
+        // Reconstruct headers string for CPHTTPURLResponse compatibility
+        var rawHeaderString = "";
+        response.headers.forEach((val, key) => {
+            rawHeaderString += key + ": " + val + "\r\n";
+        });
+        [cpResponse _setAllResponseHeaders:rawHeaderString];
+
+        // 5. Create CPData
+        var cpData = [CPData dataWithRawString:text];
+
+        return { 
+            response: cpResponse, 
+            data: cpData, 
+            error: nil 
+        };
+    } 
+    catch (err) 
+    {
+        // Create a proper CPError
+        var userInfo = @{ @"LocalizedDescription": err.message };
+        
+        // Check for AbortError (Timeout)
+        if (err.name === 'AbortError')
+            userInfo = @{ @"LocalizedDescription": @"The request timed out." };
+
+        var error = [CPError errorWithDomain:@"CPURLFetchError" 
+                                        code:-1 
+                                    userInfo:userInfo];
+
+        return { 
+            response: nil, 
+            data: nil, 
+            error: error 
+        };
+    }
 }
 
 /*
@@ -339,6 +442,7 @@ var CPURLConnectionDelegate = nil;
 
     [self _sendDelegateDidFailWithError:exception];
 }
+
 /* @ignore */
 - (void)_readyStateDidChange
 {
@@ -392,10 +496,15 @@ var CPURLConnectionDelegate = nil;
     [_connectionOperation _setResponse:aResponse data:aData error:anError];
 
     if (_operationQueue)
+    {
+        // This is where we integrate with the Modernized CPOperationQueue.
+        // Because _connectionOperation is already 'Ready' (we set the response data above),
+        // the queue will pick it up and run it immediately via KVO trigger.
         [_operationQueue addOperation:_connectionOperation];
+    }
     else
     {
-        // Do we need to send CPOperation KVO notifications ?
+        // Fallback for no queue
         [_connectionOperation main];
     }
 }
@@ -441,12 +550,15 @@ var CPURLConnectionDelegate = nil;
 /* @ignore */
 - (void)main
 {
+    // The standard CPOperation 'start' method (which the Queue calls) handles 
+    // the KVO for isExecuting/isFinished. We just need to do the work here.
     _operationFunction(_response, _data, _error);
 }
 
 /* @ignore */
 - (BOOL)isReady
 {
+    // Returns YES only when the XHR request has finished and data is set.
     return (_didReceiveResponse && [super isReady]);
 }
 
