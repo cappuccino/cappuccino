@@ -172,16 +172,16 @@ var CPURLConnectionDelegate = nil;
 */
 + (async JSObject /* { response: CPURLResponse, data: CPData, error: CPError } */)sendAsynchronousRequest:(CPURLRequest)aRequest
 {
-    return new Promise((resolve, reject) =>
+    return new Promise((resolve, reject) => {
         [[self alloc] _initWithRequest:aRequest
                                  queue:[CPOperationQueue mainQueue]
                      completionHandler:(aResponse, aData, anError) => {
-                         resolve({ 
-                             response: aResponse, 
-                             data: aData, 
-                             error: anError 
-                         });
-                     }];
+            resolve({
+                response: aResponse,
+                data: aData,
+                error: anError
+            });
+        }];
     });
 }
 
