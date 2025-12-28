@@ -73,4 +73,83 @@
     [self assert:[originalRequest withCredentials] notEqual:[currentRequest withCredentials]];
 }
 
+// New modern Async Tests
+
+- (async void)testSendAsynchronousRequestSuccess
+{
+    var req = [CPURLRequest requestWithURL:@"file:Tests/Foundation/CPURLConnectionTest.j"];
+    
+    // Await the promise wrapper
+    const { response, data, error } = await [CPURLConnection sendAsynchronousRequest:req];
+
+    // Assert structure
+    [self assertNull:error];
+    [self assertNotNull:response];
+    [self assertNotNull:data];
+    
+    // Validate Content
+    [self assert:CPData equals:[data class]];
+    [self assertTrue:[[data rawString] containsString:@"@implementation CPURLConnectionTest"]];
+}
+
+- (async void)testFetchRequestSuccess
+{
+    // Fetch API often has stricter security on file:// protocols than XHR, 
+    // but this should work in a local test runner environment if configured correctly.
+    var req = [CPURLRequest requestWithURL:@"file:Tests/Foundation/CPURLConnectionTest.j"];
+    
+    const { response, data, error } = await [CPURLConnection fetch:req];
+
+    if (error)
+        CPLog(@"Fetch Error (Likely CORS on file://): %@", [error description]);
+
+    [self assertNull:error];
+    [self assertNotNull:response];
+    [self assertNotNull:data];
+    
+    // Verify that fetch actually retrieved the data
+    [self assertTrue:[[data rawString] length] > 0];
+    [self assertTrue:[[data rawString] containsString:@"CPURLConnectionTest"]];
+}
+
+- (async void)testFetchRequestNotFound
+{
+    var req = [CPURLRequest requestWithURL:@"file:Tests/Foundation/FileThatDoesNotExist.j"];
+    
+    const { response, data, error } = await [CPURLConnection fetch:req];
+    
+    // Behavior depends on browser/environment implementation of fetch for file://
+    // It will either return a 404/0 status code OR an error object.
+    
+    if (error)
+    {
+        // If it threw a network error (common for file:// 404s in some browsers)
+        [self assertNotNull:error];
+        [self assertNull:data];
+    }
+    else
+    {
+        // If it returned a response object (common for http:// 404s)
+        var status = [response statusCode];
+        
+        // 0 is often returned for failed local file loads, 404 for HTTP
+        var isFailureCode = (status === 0 || status === 404);
+        [self assertTrue:isFailureCode]; 
+    }
+}
+
+- (async void)testFetchAbortTimeout
+{
+    // Create a request with a very short timeout
+    // Using a remote URL (non-existent domain) ensures it doesn't resolve instantly
+    var req = [CPURLRequest requestWithURL:@"http://nonexistent.cappuccino.dev"]; 
+    [req setTimeoutInterval:0.001]; // 1ms timeout
+    
+    const { response, data, error } = await [CPURLConnection fetch:req];
+
+    [self assertNotNull:error];
+    [self assertNull:data];
+    [self assert:@"The request timed out." equals:[[error userInfo] objectForKey:@"LocalizedDescription"]];
+}
+
 @end
