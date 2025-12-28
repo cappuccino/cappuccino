@@ -6,7 +6,6 @@ var globalResults = [];
 
 // --------------------------------------------------------------------------------
 // Helper: TestOperation
-// A simple operation that sets a value and pushes to globalResults.
 // --------------------------------------------------------------------------------
 @implementation TestOperation : CPOperation
 {
@@ -24,7 +23,6 @@ var globalResults = [];
 
 // --------------------------------------------------------------------------------
 // Helper: TestCancelOperation
-// Used to test cancellation states.
 // --------------------------------------------------------------------------------
 @implementation TestCancelOperation : CPOperation
 {
@@ -54,7 +52,6 @@ var globalResults = [];
 
 // --------------------------------------------------------------------------------
 // Helper: TestObserver
-// Used to verify KVO notifications.
 // --------------------------------------------------------------------------------
 @implementation TestObserver : CPObject
 {
@@ -84,7 +81,6 @@ var globalResults = [];
 
 - (void)setUp
 {
-    // Reset global state before each test
     globalResults = [];
 }
 
@@ -100,8 +96,6 @@ var globalResults = [];
     [self assert:0 equals:[oq operationCount]];
     [oq addOperation:to];
 
-    // Note: With the new KVO design, operations run on the next tick (setTimeout 0).
-    // So operationCount is 1 immediately, but it finishes slightly later.
     [self assert:1 equals:[oq operationCount]];
 }
 
@@ -117,10 +111,7 @@ var globalResults = [];
 
     [self assert:0 equals:[oq operationCount]];
     
-    // Legacy behavior: This blocks synchronously because we haven't awaited it 
-    // and standard operations are synchronous in 'main'.
-    // However, the modernization logic wraps execution. 
-    // Ideally, for strict legacy compliance, we rely on _runOpsSynchronously being called internally.
+    // Legacy behavior: blocks synchronously.
     [oq addOperations:[to1, to2, to3] waitUntilFinished:YES];
 
     [self assertTrue:[to1 isFinished]];
@@ -128,8 +119,6 @@ var globalResults = [];
     [self assertTrue:[to3 isFinished]];
     
     [self assert:3 equals:[oq operationCount]]; 
-    // Note: operationCount usually doesn't decrease automatically in legacy Obj-J 
-    // unless the array is mutated, but [oq operations] holds the references.
 }
 
 - (void)testRunOperationsInCorrectOrder
@@ -159,10 +148,7 @@ var globalResults = [];
 
     globalResults = [];
     
-    // Add normally (async start via KVO)
     [oq addOperations:[to3, to4, to5, to6] waitUntilFinished:NO];
-
-    // Force Wait (Legacy Sync Block)
     [oq waitUntilAllOperationsAreFinished];
 
     [self assertTrue:[to3 isFinished]];
@@ -170,7 +156,6 @@ var globalResults = [];
     [self assertTrue:[to5 isFinished]];
     [self assertTrue:[to6 isFinished]];
     
-    // Verify Priority Order
     [self assert:@"high" equals:globalResults[0]];
     [self assert:@"normal" equals:globalResults[1]];
     [self assert:@"also normal" equals:globalResults[2]];
@@ -196,8 +181,6 @@ var globalResults = [];
     [oq addObserver:obs forKeyPath:@"name" options:(CPKeyValueObservingOptionNew) context:NULL];
 
     [oq addOperationWithFunction:function() { globalResults.push("Soylent"); }];
-    
-    // Wait for ops to flush
     [oq waitUntilAllOperationsAreFinished];
 
     [self assert:@"operations" equals:[[obs changedKeyPaths] objectAtIndex:0]];
@@ -223,7 +206,6 @@ var globalResults = [];
     
     [op setValue:@"AsyncResult"];
 
-    // We define an async wrapper to test the Promise behavior
     var runTest = async function() {
         try {
             var finishedOp = await [oq addOperationAsync:op];
@@ -236,7 +218,6 @@ var globalResults = [];
         }
     };
     
-    // Execute
     runTest();
 }
 
@@ -247,7 +228,6 @@ var globalResults = [];
 
     var runTest = async function() {
         
-        // Add a function that returns a Promise (simulation of fetch/timeout)
         [oq addOperationWithFunction:function() {
             return new Promise(function(resolve) {
                 setTimeout(function() {
@@ -257,7 +237,6 @@ var globalResults = [];
             });
         }];
         
-        // Wait for queue to empty asynchronously
         await [oq waitUntilAllOperationsAreFinishedAsync];
         
         [self assert:@"PromiseResolved" equals:globalResults[0] message:"CPFunctionOperation did not wait for Promise resolution"];
@@ -277,8 +256,8 @@ var globalResults = [];
 
     var runTest = async function() {
         
-        // Modern usage: await the method when wait=YES
-        await [oq addOperations:[op1, op2] waitUntilFinished:YES];
+        // Correctly call the ASYNC method
+        await [oq addOperationsAsync:[op1, op2] waitUntilFinished:YES];
         
         [self assertTrue:[op1 isFinished] message:"Op1 should be finished after await"];
         [self assertTrue:[op2 isFinished] message:"Op2 should be finished after await"];
@@ -292,7 +271,6 @@ var globalResults = [];
 {
     var oq = [[CPOperationQueue alloc] init];
     
-    // Add 3 operations that take random time
     for (var i = 0; i < 3; i++) {
         [oq addOperationWithFunction:function() {
             return new Promise(function(resolve) {
@@ -303,9 +281,8 @@ var globalResults = [];
     
     var runTest = async function() {
         
-        [self assert:[oq operationCount] > 0 message:"Queue should have ops"];
+        [self assertTrue:[oq operationCount] > 0 message:"Queue should have ops"];
         
-        // Wait for empty
         await [oq waitUntilAllOperationsAreFinishedAsync];
         
         [self assert:0 equals:[oq operationCount] message:"Queue should be empty after await"];
@@ -322,10 +299,8 @@ var globalResults = [];
         
     var runTest = async function() {
         
-        // Schedule it
         var promise = [oq addOperationAsync:op];
         
-        // Cancel immediately
         [op cancel];
         
         try {
