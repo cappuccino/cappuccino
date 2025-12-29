@@ -403,6 +403,61 @@
     [CPAnimationContext endGrouping];
 }
 
+- (void)testGroupAnimation:(id)sender
+{
+    // Reset state
+    [_testView setFrame:_initialTestViewFrame];
+    [_testView setAlphaValue:1.0];
+    [_pathView setPath:nil]; // Clear the path view as we aren't using it here
+
+    var layer = [_testView layer];
+
+    // 1. Define the start and end positions
+    // CALayer 'position' corresponds to the center of the view (anchorPoint 0.5,0.5)
+    var startPos = [layer position];
+    var endPos = CGPointMake(startPos.x + 150, startPos.y + 50);
+
+    // 2. Create a Position Animation
+    var moveAnim = [CABasicAnimation animationWithKeyPath:@"position"];
+    [moveAnim setFromValue:startPos];
+    [moveAnim setToValue:endPos];
+    [moveAnim setDuration:1.0];
+
+    // 3. Create an Opacity Animation
+    var fadeAnim = [CABasicAnimation animationWithKeyPath:@"opacity"];
+    [fadeAnim setFromValue:1.0];
+    [fadeAnim setToValue:0.25];
+    [fadeAnim setDuration:1.0];
+
+    // 4. Group them
+    // This tests the recursive logic in CAAnimationGroup and the timer logic in CALayer
+    var group = [CAAnimationGroup group];
+    [group setAnimations:[moveAnim, fadeAnim]];
+    [group setDuration:1.0];
+
+    // 5. Run the animation on the layer
+    [layer addAnimation:group forKey:@"groupTest"];
+
+    // 6. Verify results after the animation completes (1.0s duration + 0.1s buffer)
+    [self performSelector:@selector(_verifyGroupAnimation:) withObject:endPos afterDelay:1.1];
+}
+
+- (void)_verifyGroupAnimation:(CGPoint)expectedPos
+{
+    var layer = [_testView layer],
+        currentPos = [layer position],
+        currentOpacity = [layer opacity];
+
+    // Allow for small floating point differences
+    var posPassed = (Math.abs(currentPos.x - expectedPos.x) < 1.0 && Math.abs(currentPos.y - expectedPos.y) < 1.0);
+    var opacityPassed = (Math.abs(currentOpacity - 0.25) < 0.05);
+
+    [self markTest:@selector(testGroupAnimation:) didPass:(posPassed && opacityPassed)];
+    
+    // Reset for next test
+    [self performSelector:@selector(cleanupAfterAnimation) withObject:nil afterDelay:0.5];
+}
+
 @end
 
 var unCamelCase = function(aString)
