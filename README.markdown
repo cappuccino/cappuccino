@@ -8,7 +8,7 @@ Cappuccino is an open-source framework that supports building powerful, desktop-
 Cappuccino faithfully implements the proven design patterns of NeXTSTEP/Apple's Cocoa frameworks, enabling the creation of incredibly complex and reliable applications with a fraction of the code.
 
 > **✨ Project Status: Active Development & Node.js Transition**
-> Cappuccino has been under continuous development since 2008 and is actively maintained. A major transition to a modern, **Node.js-based toolchain** has recently been finalized. The current release is a production-ready Release Candidate, with a formal release scheduled for 2025. It is stable, fast, and ready for new projects.
+> Cappuccino has been under continuous development since 2008 and is actively maintained. A major transition to a modern, **Node.js-based toolchain** has recently been finalized. The current release is a production-ready Release Candidate, with a formal release scheduled for 2026. It is stable, fast, and ready for new projects.
 
 ---
 
