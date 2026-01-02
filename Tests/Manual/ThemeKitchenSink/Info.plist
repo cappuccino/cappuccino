@@ -6,11 +6,11 @@
 	<string>MainMenu.cib</string>
 	<key>CPBundleName</key>
 	<string>ThemeKitchenSink</string>
-    <key>CPDefaultTheme</key>
-	<string>Aristo2</string>
-    <key>CPBundleVersion</key>
-    <string>1.0</string>
-    <key>CPHumanReadableCopyright</key>
-    <string>Copyright © 2014, SlevenBits, Ltd. All rights reserved.</string>
+	<key>CPDefaultTheme</key>
+	<string>Aristo3</string>
+	<key>CPBundleVersion</key>
+	<string>1.0</string>
+	<key>CPHumanReadableCopyright</key>
+	<string>Copyright © 2014, SlevenBits, Ltd. All rights reserved.</string>
 </dict>
 </plist>
