@@ -3122,9 +3122,9 @@ var themedButtonValues                      = nil,
 
     themeValues =
     [
-     [@"content-inset",     CGInsetMake(2.0, 1.0, 0.0, -1.0)],
-     [@"content-inset",     CGInsetMake(1.0, 1.0, 0.0, -1.0),                           CPThemeStateControlSizeSmall],
-     [@"content-inset",     CGInsetMake(1.0, 1.0, 0.0, -1.0),                           CPThemeStateControlSizeMini],
+     [@"content-inset",     CGInsetMake(2.0, 1.0, 0.0, 0.0)],
+     [@"content-inset",     CGInsetMake(1.0, 1.0, 0.0, 0.0),                           CPThemeStateControlSizeSmall],
+     [@"content-inset",     CGInsetMake(1.0, 1.0, 0.0, 0.0),                           CPThemeStateControlSizeMini],
      [@"min-size",          CGSizeMake(6.0, -1)],
      [@"font",              [CPFont systemFontForControlSize:CPRegularControlSize]],
      [@"font",              [CPFont systemFontForControlSize:CPSmallControlSize],       CPThemeStateControlSizeSmall],
@@ -3376,7 +3376,7 @@ var themedButtonValues                      = nil,
                                                            @"width": @"1px"
                                                        }
                                      afterDictionary:arrowCSS(A3ColorBorderBlue, "-8px", "25px")],
-                                     
+
     bezelFocusedCssColor = [CPColor colorWithCSSDictionary:@{
                                                                  @"background-color": A3ColorBackgroundWhite,
                                                                  @"border-color": A3ColorBorderBlue,
