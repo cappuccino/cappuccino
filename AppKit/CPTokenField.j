@@ -585,6 +585,12 @@ CPTokenFieldDeleteButtonType     = 1;
         // Snap to the token if it's only half visible due to mouse wheel scrolling.
         _shouldScrollTo = aToken;
     }
+
+    // this is a hack to compensate for a recent adoption in FR management as introduced by commit #26aab29
+    // this PR makes the tokenfield loose FR status prematurely, so we have to regain here in order to make deleteForward: and friends work
+    setTimeout(function(){
+        [[self window] makeFirstResponder:self];
+    }, 50);
 }
 
 // ===========
@@ -965,8 +971,8 @@ CPTokenFieldDeleteButtonType     = 1;
                 [self _selectToken:tokenView byExtendingSelection:NO];
             }
         }
-        else
-            [self _removeSelectedTokens:nil];
+        // we have to remove unconditionally because the backspace is not propagated anymore starting from commit #26aab29
+        [self _removeSelectedTokens:nil];
     }
     else
     {

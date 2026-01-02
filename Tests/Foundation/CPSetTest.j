@@ -396,4 +396,45 @@
     [self assert:2 equals:[output count] message:@"output when enumerating input1 and stopping after 2"];
 }
 
+// Iteration tests using for...of and spread syntax.
+
+- (void)testSetForOfIteration
+{
+    // We include duplicate items to ensure the set creation works correctly.
+    var sourceArray = [@"a", @"b", @"c", @"a", 1, 2, 1];
+    var set = [CPSet setWithArray:sourceArray];
+
+    // Assert that the set has the correct number of unique items.
+    [self assert:5 equals:[set count] message:@"Set should contain 5 unique items"];
+
+    var itemsSeen = [CPMutableSet set];
+
+    // 1. Test basic for...of iteration
+    for (var item of set)
+    {
+        [itemsSeen addObject:item];
+    }
+
+    [self assert:set equals:itemsSeen message:@"Set iterated with for...of should be equal to the original"];
+
+
+    // 2. Test with spread syntax
+    var spreadArray = [...set];
+    [self assert:5 equals:spreadArray.length message:@"Spread syntax should produce an array with 5 items"];
+
+    // Convert the spread array back to a set to verify contents, since order is not guaranteed.
+    var setFromSpread = [CPSet setWithArray:spreadArray];
+    [self assert:set equals:setFromSpread message:@"Set rebuilt from spread array should be equal to the original"];
+
+
+    // 3. Test on an empty set
+    var emptySet = [CPSet set];
+    var iterations = 0;
+    for (var entry of emptySet)
+    {
+        iterations++;
+    }
+    [self assert:0 equals:iterations message:@"for...of on an empty set should not iterate"];
+}
+
 @end

@@ -94,6 +94,10 @@ var TIMER_INTERVAL                              = 0.2,
 
     CPScrollViewFadeOutTime                     = 1.3;
 
+var CPScrollViewWillStartLiveScrollNotification = @"CPScrollViewWillStartLiveScrollNotification",
+    CPScrollViewDidLiveScrollNotification       = @"CPScrollViewDidLiveScrollNotification",
+    CPScrollViewDidEndLiveScrollNotification    = @"CPScrollViewDidEndLiveScrollNotification";
+
 var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
     CPScrollerStyleGlobalChangeNotification     = @"CPScrollerStyleGlobalChangeNotification";
 
@@ -1024,6 +1028,8 @@ Notifies the delegate when the scroll view has finished scrolling.
     [self _sendDelegateMessages];
 
     [_contentView scrollToPoint:contentBounds.origin];
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPScrollViewDidLiveScrollNotification object:self];
 }
 
 /* @ignore */
@@ -1062,6 +1068,8 @@ Notifies the delegate when the scroll view has finished scrolling.
 
     [_contentView scrollToPoint:contentBounds.origin];
     [_headerClipView scrollToPoint:CGPointMake(contentBounds.origin.x, 0.0)];
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPScrollViewDidLiveScrollNotification object:self];
 }
 
 /* @ignore */
@@ -1072,6 +1080,7 @@ Notifies the delegate when the scroll view has finished scrolling.
 
     if (!_scrollTimer)
     {
+        [[CPNotificationCenter defaultCenter] postNotificationName:CPScrollViewWillStartLiveScrollNotification object:self];
         [self _scrollViewWillScroll];
         _scrollTimer = [CPTimer scheduledTimerWithTimeInterval:TIMER_INTERVAL target:self selector:@selector(_scrollViewDidScroll) userInfo:nil repeats:YES];
     }
@@ -1110,6 +1119,8 @@ Notifies the delegate when the scroll view has finished scrolling.
     [_contentView scrollToPoint:constrainedOrigin];
     [_headerClipView scrollToPoint:CGPointMake(constrainedOrigin.x, 0.0)];
 
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPScrollViewDidLiveScrollNotification object:self];
+
     if (extraX || extraY)
         [enclosingScrollView _respondToScrollWheelEventWithDeltaX:extraX deltaY:extraY];
 }
@@ -1129,6 +1140,8 @@ Notifies the delegate when the scroll view has finished scrolling.
 
     if (_implementedDelegateMethods & CPScrollViewDelegate_scrollViewDidScroll_)
         [_delegate scrollViewDidScroll:self];
+    
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPScrollViewDidEndLiveScrollNotification object:self];
 }
 
 /*! @ignore*/

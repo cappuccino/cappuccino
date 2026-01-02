@@ -7,7 +7,7 @@
   "dependencies": {
     "@objj/jake": "latest",
     "@objj/ojtest": "latest",
-    "@objj/runtime": "^1.2.2",
+    "@objj/runtime": "^1.2.4",
     "acorn-walk": "^8.2.0",
     "terser": "^5.14.2"
   },

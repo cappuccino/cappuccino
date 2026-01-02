@@ -1774,7 +1774,12 @@ TODO: implement
 
 - (_CPRuleEditorViewSliceRow)_createNewSliceWithFrame:(CGRect)frame ruleEditorView:(CPRuleEditor)editor
 {
-    return [[_CPRuleEditorViewSliceRow alloc] initWithFrame:frame ruleEditorView:editor];
+    var slice = [[_CPRuleEditorViewSliceRow alloc] initWithFrame:frame ruleEditorView:editor];
+    
+    // Ensure the slice resizes with the editor
+    [slice setAutoresizingMask:CPViewWidthSizable];
+    
+    return slice;
 }
 
 - (void)_reconfigureSubviewsAnimate:(BOOL)animate

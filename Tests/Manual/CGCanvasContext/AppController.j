@@ -8,14 +8,26 @@
 
 @import <Foundation/CPObject.j>
 
-
 @implementation DiamondView : CPView
 {
 }
 
-- (void)drawRect:(CGRect)aRect
+- (id)initWithFrame:(CGRect)aFrame
 {
-    [super drawRect:aRect];
+    self = [super initWithFrame:aFrame];
+    if (self)
+    {
+        [self setWantsLayer:YES];
+        [[self layer] setDelegate:self];
+        [[self layer] setBackgroundColor:[CPColor lightGrayColor]];
+        [[self layer] setNeedsDisplay];
+    }
+    return self;
+}
+
+- (void)drawLayer:(CALayer)aLayer inContext:(CGContextRef)context
+{
+    var aRect = [aLayer bounds];
 
     var points = [CPArray array],
         minX = CGRectGetMinX(aRect),
@@ -32,9 +44,8 @@
     [points addObject:CGPointMake(minX, midY)];
     [points addObject:CGPointMake(midX, minY)];
 
-    [self lockFocus];
+    CGContextSaveGState(context);
 
-    var context = [[CPGraphicsContext currentContext] graphicsPort];
     CGContextSetLineWidth(context, 2);
     CGContextSetStrokeColor(context, [CPColor blueColor]);
 
@@ -54,14 +65,14 @@
     CGContextSetFillColor(context, [CPColor blueColor]);
     CGContextShowText(context, 'Hello World Canvas!');
 
-    [self unlockFocus];
+    CGContextRestoreGState(context);
 }
-
 @end
-
 
 @implementation AppController : CPObject
 {
+    DiamondView _diamondView;
+    var         _lastSliderAngle;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
@@ -69,23 +80,46 @@
     var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask],
         contentView = [theWindow contentView];
 
-    var label = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
+    // --- Create and place the DiamondView ---
+    _diamondView = [[DiamondView alloc] initWithFrame:CGRectMake(50, 100, 200, 200)];
+    [contentView addSubview:_diamondView];
 
+
+    // --- Create and configure the circular slider ---
+    var label2 = [[CPTextField alloc] initWithFrame:CGRectMake(350, 100, 130, 30)];
+    [label2 setStringValue:@"Rotate via rotateByAngle:"];
+    [label2 setFont:[CPFont boldSystemFontOfSize:24.0]];
+    [label2 sizeToFit];
+    [contentView addSubview:label2];
+
+    var rotationSlider = [[CPSlider alloc] initWithFrame:CGRectMake(350, 125, 30, 30)];
+    [rotationSlider setSliderType:CPCircularSlider];
+    [rotationSlider setMinValue:0.0];
+    [rotationSlider setMaxValue:360.0];
+    [rotationSlider setFloatValue:0.0];
+    [rotationSlider setTarget:self];
+    [rotationSlider setAction:@selector(sliderDidChange:)];
+    [contentView addSubview:rotationSlider];
+
+    var label = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
     [label setStringValue:@"Do you see the Hello World Canvas?"];
     [label setFont:[CPFont boldSystemFontOfSize:24.0]];
-
     [label sizeToFit];
-
     [label setAutoresizingMask:CPViewMinXMargin | CPViewMaxXMargin | CPViewMinYMargin | CPViewMaxYMargin];
     [label setCenter:[contentView center]];
-
     [contentView addSubview:label];
-    [contentView addSubview:[[DiamondView alloc] initWithFrame:CGRectMake(100, 100, 200, 200)]];
 
+    _lastSliderAngle = [rotationSlider floatValue];
     [theWindow orderFront:self];
+}
 
-    // Uncomment the following line to turn on the standard menu bar.
-    //[CPMenu setMenuBarVisible:YES];
+// This method is called every time the slider's value changes.
+- (void)sliderDidChange:(id)sender
+{
+    var newAngle = [sender floatValue];
+    var deltaAngle = newAngle - _lastSliderAngle;
+    [_diamondView rotateByAngle:deltaAngle];
+    _lastSliderAngle = newAngle;
 }
 
 @end

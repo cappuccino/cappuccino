@@ -3,6 +3,7 @@ require("./common.jake");
 var fs = require('fs');
 var path = require('path');
 var childProcess = require("child_process");
+var os = require('os');
 
 const term = ObjectiveJ.term;
 const utilsFile = ObjectiveJ.utils.file;
@@ -131,95 +132,122 @@ task ("documentation-no-frame", function()
 });
 
 task ("docset", function()
-{
-    generateDocs(true);
-    var documentationDir = path.resolve(path.join("Tools", "Documentation")),
-        docsetShell = path.join(documentationDir, "support", "docset.sh");
-
-    
-
-    OS.system([docsetShell, documentationDir]);
-});
-function generateDocs(/* boolean */ noFrame)
-{
-    // try to find a doxygen executable in the PATH;
-    var doxygen = executableExists("doxygen");
-
-    // If the Doxygen application is installed on Mac OS X, use that
-    if (!doxygen && executableExists("mdfind"))
-    {
-        try
-        {
-            var p = OS.popen(["mdfind", "kMDItemContentType == 'com.apple.application-bundle' && kMDItemCFBundleIdentifier == 'org.doxygen'"]);
-            if (p.wait() === 0)
-            {
-                var doxygenApps = p.stdout.read().split("\n");
-                if (doxygenApps[0])
-                    doxygen = path.join(doxygenApps[0], "Contents/Resources/doxygen");
-            }
-        }
-        finally
-        {
-            p.stdin.close();
-            p.stdout.close();
-            p.stderr.close();
-        }
+      {
+    // First, check if docsetutil is available. This is only required for this task.
+    if (!executableExists("docsetutil")) {
+        console.error("\nError: 'docsetutil' is not installed, but it's required to build the docset.".red);
+        console.log("This tool is no longer bundled with Xcode, but can be installed with Homebrew:");
+        console.log("\n    brew install swiftdocorg/formulae/docsetutil\n".yellow);
+        process.exit(1);
     }
 
-    if (!doxygen || !FILE.exists(doxygen))
-    {
-        colorPrint("Doxygen not installed, skipping documentation generation.", "yellow");
+    // If the tool exists, proceed with the build.
+    generateDocs(true, true);
+});
+
+function executableExists(command) {
+    try {
+        const checkCmd = process.platform === 'win32' ? 'where' : 'which';
+        childProcess.execSync(`${checkCmd} ${command}`, { stdio: 'pipe' });
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+
+function generateDocs(/* boolean */ noFrame, /* boolean */ buildDocset = false)
+{
+    var doxygen = null;
+    if (executableExists("doxygen")) {
+        doxygen = "doxygen";
+    }
+
+    if (!doxygen) {
+        console.log("Doxygen not installed or not found, skipping documentation generation.");
         return;
     }
 
-    colorPrint("Using " + doxygen + " for doxygen binary.", "green");
-    colorPrint("Pre-processing source files...", "green");
+    // --- Temporary Directory Setup ---
+    const projectRoot = process.cwd();
+    const tempDir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'capp-docs-')));
+    console.log(`Using temporary directory for build: ${tempDir}`);
 
-    var documentationDir = FILE.canonical(path.join("Tools", "Documentation")),
-        processors = FILE.glob(path.join(documentationDir, "preprocess/*"));
+    try {
+        var documentationDir = path.join(projectRoot, "Tools", "Documentation");
 
-    for (var i = 0; i < processors.length; ++i)
-        if (OS.system([processors[i], documentationDir]))
-            return;
+        // --- Pre-processing ---
+        console.log("Pre-processing source files...");
+        const preProcessorsDir = path.join(documentationDir, "preprocess");
+        var processors = fs.readdirSync(preProcessorsDir).sort();
 
-    if (noFrame)
-    {
-        // Back up the default settings, turn off the treeview
-        if (OS.system(["sed", "-i", ".bak", "s/GENERATE_TREEVIEW.*=.*YES/GENERATE_TREEVIEW = NO/", path.join(documentationDir, "Cappuccino.doxygen")]))
-            return;
-    }
-    else if (FILE.exists(path.join(documentationDir, "Cappuccino.doxygen.bak")))
-        utilsFile.mv(path.join(documentationDir, "Cappuccino.doxygen.bak"), path.join(documentationDir, "Cappuccino.doxygen"));
-
-    var doxygenDidSucceed = !OS.system([doxygen, path.join(documentationDir, "Cappuccino.doxygen")]);
-
-    // Restore the original doxygen settings
-    if (FILE.exists(path.join(documentationDir, "Cappuccino.doxygen.bak")))
-        utilsFile.mv(path.join(documentationDir, "Cappuccino.doxygen.bak"), path.join(documentationDir, "Cappuccino.doxygen"));
-
-    colorPrint("Post-processing generated documentation...", "green");
-
-    processors = FILE.glob(path.join(documentationDir, "postprocess/*"));
-
-    for (var i = 0; i < processors.length; ++i)
-        if (OS.system([processors[i], documentationDir, path.join("Documentation", "html")]))
-        {
-            utilsFile.rm_rf("Documentation");
-            return;
+        for (const processor of processors) {
+            const processorPath = path.join(preProcessorsDir, processor);
+            childProcess.execSync(`"${processorPath}" "${projectRoot}"`, { stdio: 'inherit', cwd: tempDir });
         }
 
-    if (doxygenDidSucceed)
-    {
-        if (!FILE.isDirectory($BUILD_DIR))
-            FILE.mkdirs($BUILD_DIR);
+        // --- Doxygen Execution ---
+        const doxygenConfigFile = path.join(documentationDir, "Cappuccino.doxygen");
+        const doxygenTempConfig = path.join(tempDir, "Cappuccino.doxygen");
+        fs.copyFileSync(doxygenConfigFile, doxygenTempConfig);
 
-        utilsFile.rm_rf($DOCUMENTATION_BUILD);
-        utilsFile.mv("debug.txt", path.join("Documentation", "debug.txt"));
-        utilsFile.mv("Documentation", $DOCUMENTATION_BUILD);
+        if (noFrame) {
+            console.log("Disabling treeview for no-frame documentation.");
+            childProcess.execSync(`sed -i.bak 's/GENERATE_TREEVIEW.*=.*YES/GENERATE_TREEVIEW = NO/' "${doxygenTempConfig}"`);
+        }
 
-        // There is a bug in doxygen 1.7.x preventing loading correctly the custom CSS
-        // So let's do it manually
-        utilsFile.cp(path.join(documentationDir, "doxygen.css"), path.join($DOCUMENTATION_BUILD, "html", "doxygen.css"));
+        console.log("Running Doxygen...");
+        childProcess.execSync(`"${doxygen}" "${doxygenTempConfig}"`, { stdio: 'inherit', cwd: tempDir });
+
+        const generatedDocsRoot = path.join(tempDir, "Documentation");
+        const htmlOutputDir = path.join(generatedDocsRoot, "html");
+        const makefilePath = path.join(htmlOutputDir, "Makefile");
+
+        // --- Makefile Execution (ONLY for docset) ---
+        // For a standard 'jake docs', we do NOT run make.
+        if (buildDocset && fs.existsSync(makefilePath)) {
+            console.log("Patching Makefile to use 'docsetutil' from PATH...");
+            childProcess.execSync(`sed -i.bak 's|"\\$(XCODE_INSTALL_DIR)"/usr/bin/docsetutil|docsetutil|' "${makefilePath}"`);
+
+            console.log("Building docset with 'make'...");
+            childProcess.execSync('make', { stdio: 'inherit', cwd: htmlOutputDir });
+        }
+
+        // --- Post-processing ---
+        console.log("Post-processing generated documentation...");
+        const postProcessorsDir = path.join(documentationDir, "postprocess");
+        processors = fs.readdirSync(postProcessorsDir).sort();
+
+        for (const processor of processors) {
+            const processorPath = path.join(postProcessorsDir, processor);
+            childProcess.execSync(`"${processorPath}" "${projectRoot}" "${htmlOutputDir}"`, { stdio: 'inherit', cwd: tempDir });
+        }
+
+        // --- Final Installation ---
+        if (fs.existsSync(generatedDocsRoot)) {
+            if (fs.existsSync($DOCUMENTATION_BUILD)) {
+                fs.rmSync($DOCUMENTATION_BUILD, { recursive: true, force: true });
+            }
+            fs.renameSync(generatedDocsRoot, $DOCUMENTATION_BUILD);
+
+            // Manually copy the custom CSS file
+            const finalHtmlPath = path.join($DOCUMENTATION_BUILD, "html");
+            const customCSS = path.join(documentationDir, "doxygen.css");
+            if (fs.existsSync(customCSS)) {
+                console.log("Applying custom stylesheet...");
+                fs.copyFileSync(customCSS, path.join(finalHtmlPath, "doxygen.css"));
+            }
+
+            console.log("Documentation successfully built in " + finalHtmlPath);
+        } else {
+            console.error("Doxygen or post-processing failed to produce the 'Documentation' directory.");
+        }
+    } catch (e) {
+        console.error("An error occurred during documentation generation:", e.message);
+        process.exit(1);
+    } finally {
+        // --- Cleanup ---
+        console.log(`Cleaning up temporary directory: ${tempDir}`);
+        fs.rmSync(tempDir, { recursive: true, force: true });
     }
 }
 

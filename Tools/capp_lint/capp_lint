@@ -27,6 +27,8 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+# Note: Python2 must be installed to run this
+
 from __future__ import with_statement
 from optparse import OptionParser
 from string import Template

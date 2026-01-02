@@ -164,9 +164,36 @@ var _CPAnimationContextStack   = nil,
 
     if ([animation isKindOfClass:[CAKeyframeAnimation class]])
     {
+
         values = [animation values];
         keyTimes = [animation keyTimes];
         timingFunctions = [animation timingFunctionsControlPoints];
+
+        var path = [animation path];
+        var calculationMode = [animation calculationMode] || kCAAnimationLinear; // Default to linear
+        var rotationMode = [animation rotationMode];
+        var tensionValues = [animation tensionValues];
+        var continuityValues = [animation continuityValues];
+        var biasValues = [animation biasValues];
+
+        return {
+                    object: anObject,
+                    root: anObject,
+                    keypath: animatedKeyPath,
+                    duration: duration,
+                    completion: completionFunction,
+
+                    // Keyframe-specific properties
+                    values: values,
+                    keytimes: keyTimes,
+                    timingfunctions: timingFunctions,
+                    path: path,
+                    calculationMode: calculationMode,
+                    rotationMode: rotationMode,
+                    tensionValues: tensionValues,
+                    continuityValues: continuityValues,
+                    biasValues: biasValues
+                };
     }
     else
     {
@@ -183,18 +210,19 @@ var _CPAnimationContextStack   = nil,
         values = [fromValue, toValue];
         keyTimes = [0, 1];
         timingFunctions = isBasicAnimation ? [animation timingFunctionControlPoints] : [_timingFunction controlPoints];
-    }
 
-    return {
-                object:anObject,
-                root:anObject,
-                keypath:animatedKeyPath,
-                values:values,
-                keytimes:keyTimes,
-                duration:duration,
-                timingfunctions:timingFunctions,
-                completion:completionFunction
-            };
+        // Return a basic animation action
+        return {
+                    object:anObject,
+                    root:anObject,
+                    keypath:animatedKeyPath,
+                    values:values,
+                    keytimes:keyTimes,
+                    duration:duration,
+                    timingfunctions:timingFunctions,
+                    completion:completionFunction
+                };
+    }
 }
 
 - (void)_flushAnimations

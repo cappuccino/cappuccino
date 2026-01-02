@@ -25,6 +25,7 @@
 @import "CPLocale.j"
 
 @class CPData
+@class CPNotificationCenter
 
 CPTimeZoneNameStyleStandard = 0;
 CPTimeZoneNameStyleShortStandard = 1;
@@ -46,14 +47,93 @@ var abbreviationDictionary,
 
 function abbreviationForDate(date)
 {
-    // Sometimes the browsers will give unmatched timezones in other languages so try one more thing
-    // Take the locale string for english in the US. It has the following format (9/21/2021, 2:40:44 PM Central European Summer Time)
-    // Remove the date and time with this regex and take first letter in each word in the time zone name.
-    // This is not 100% but is better than nothing as JAvascript has no good support for this.
-    var abbreviation = date.toLocaleString('en-US', {timeZoneName : 'long'}).replace(/^([0]?\d|[1][0-2])\/((?:[0]?|[1-2])\d|[3][0-1])\/([2][01]|[1][6-9])\d{2}(,?\s*([0]?\d|[1][0-2])(\:[0-5]\d){1,2})*\s*([aApP][mM]{0,2})?\s*/, "").split(" ").map(function(l) { return l[0]}).join("");
+    // Strategy 1: Parse date.toString() as it's more reliable than toLocaleString.
+    // Format is usually: "Day Mon dd yyyy hh:mm:ss GMT+XXXX (Time Zone Name)"
+    var dateString = date.toString();
 
-    return abbreviation;
+    // Check for a long name within parentheses, e.g., (Pacific Daylight Time)
+    var longNameMatch = dateString.match(/\(([^)]+)\)/);
+    if (longNameMatch) {
+        var timeZoneComponent = longNameMatch[1];
+
+        // If the component is already a known abbreviation (e.g., "EST"), return it.
+        if ([abbreviationDictionary objectForKey:timeZoneComponent]) {
+            return timeZoneComponent;
+        }
+
+        // If it's a long name (e.g., "Eastern Daylight Time"), create an acronym.
+        if (timeZoneComponent.indexOf(' ') > -1) {
+            var generatedAbbr = timeZoneComponent.split(' ').map(function(word) { return word[0]; }).join('');
+            if ([abbreviationDictionary objectForKey:generatedAbbr]) {
+                return generatedAbbr;
+            }
+        }
+    }
+
+    // Strategy 2: If string parsing fails (e.g., for "GMT-04:00"), use the modern and reliable Intl API.
+    try {
+        var ianaName = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+        var currentOffset = -date.getTimezoneOffset(); // in minutes
+
+        var keys = [abbreviationDictionary keyEnumerator],
+            key;
+
+        // Find all abbreviations for the current IANA time zone.
+        var possibleAbbrs = [];
+        while (key = [keys nextObject]) {
+            if ([abbreviationDictionary valueForKey:key] === ianaName) {
+                possibleAbbrs.push(key);
+            }
+        }
+
+        // If more than one (e.g., standard and daylight), use the current offset to find the right one.
+        for (var i = 0; i < possibleAbbrs.length; i++) {
+            var abbr = possibleAbbrs[i];
+            if ([timeDifferenceFromUTC valueForKey:abbr] === currentOffset) {
+                return abbr;
+            }
+        }
+
+        // If offset matching fails but we have a unique IANA match, use it as a best guess.
+        if (possibleAbbrs.length > 0) {
+            return possibleAbbrs[0];
+        }
+    } catch (e) {
+        // Intl API not supported, or it failed. We cannot proceed with this strategy.
+    }
+
+    // Return nil if no valid abbreviation could be determined.
+    return nil;
 }
+
+function _abbreviationForNameAndDate(tzName, date)
+{
+    // This is a helper function based on the existing `abbreviationForDate`.
+    // It determines the abbreviation for a given IANA name based on the provided date,
+    // which allows it to respect daylight saving time.
+    try {
+        var options = {
+            timeZone: tzName,
+            timeZoneName: 'long'
+        };
+        // The 'en-US' locale provides a predictable format for parsing.
+        var dateString = date.toLocaleString('en-US', options);
+
+        // This regex is copied from the global 'abbreviationForDate' function.
+        // It strips the date and time, leaving the long time zone name.
+        var longTZName = dateString.replace(/^([0]?\d|[1][0-2])\/((?:[0]?|[1-2])\d|[3][0-1])\/([2][01]|[1][6-9])\d{2}(,?\s*([0]?\d|[1][0-2])(\:[0-5]\d){1,2})*\s*([aApP][mM]{0,2})?\s*/, "");
+
+        // Create the abbreviation from the long name (e.g., "Pacific Daylight Time" -> "PDT")
+        var abbreviation = longTZName.split(" ").map(function(l) { return l[0]}).join("");
+
+        return abbreviation;
+    } catch (e) {
+        // The tzName might be invalid for toLocaleString, which throws a RangeError.
+        // In this case, we can't determine the abbreviation.
+        return nil;
+    }
+}
+
 /*!
     @class CPTimeZone
     @ingroup foundation
@@ -445,7 +525,7 @@ function abbreviationForDate(date)
 
     systemTimeZone = [self timeZoneWithAbbreviation:abbreviation];
 
-    [[CPNotification defaultCenter] postNotificationName:CPSystemTimeZoneDidChangeNotification object:systemTimeZone];
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPSystemTimeZoneDidChangeNotification object:systemTimeZone];
 }
 
 /*! Return the systemTimeZone
@@ -523,19 +603,38 @@ function abbreviationForDate(date)
     {
         _name = tzName;
 
-        var keys = [abbreviationDictionary keyEnumerator],
-            key;
+        // Determine the abbreviation based on the current date to handle DST.
+        var currentAbbreviation = _abbreviationForNameAndDate(tzName, [CPDate date]);
 
-        while (key = [keys nextObject])
+        // If we got a valid abbreviation from the date, and it's one we know about, use it.
+        // Otherwise, fall back to the old logic.
+        if (currentAbbreviation && [abbreviationDictionary containsKey:currentAbbreviation])
         {
-            var value = [abbreviationDictionary valueForKey:key];
+            _abbreviation = currentAbbreviation;
+        }
+        else
+        {
+            // FALLBACK: Find the first matching abbreviation in the dictionary.
+            // Note: This is not DST-aware and may not be correct, but it preserves
+            // the original behavior for cases where the dynamic lookup fails.
+            var keys = [abbreviationDictionary keyEnumerator],
+                key;
 
-            if ([value isEqualToString:_name])
+            while (key = [keys nextObject])
             {
-                _abbreviation = key;
-                break;
+                var value = [abbreviationDictionary valueForKey:key];
+
+                if ([value isEqualToString:_name])
+                {
+                    _abbreviation = key;
+                    break;
+                }
             }
         }
+
+        // If no abbreviation could be found by any means, initialization fails.
+        if (!_abbreviation)
+            return nil;
     }
 
     return self;

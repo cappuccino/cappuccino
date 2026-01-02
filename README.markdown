@@ -1,129 +1,144 @@
 [![build](https://github.com/cappuccino/cappuccino/actions/workflows/BuildAndTest.yml/badge.svg)](https://github.com/cappuccino/cappuccino/actions/workflows/BuildAndTest.yml)
-[![Join the chat at https://gitter.im/cappuccino/cappuccino](https://badges.gitter.im/cappuccino/cappuccino.svg)](
-  https://gitter.im/cappuccino/cappuccino?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Join the chat at https://gitter.im/cappuccino/cappuccino](https://badges.gitter.im/cappuccino/cappuccino.svg)](https://gitter.im/cappuccino/cappuccino?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-Welcome to Cappuccino!
-======================
+# Cappuccino: Build Desktop-Class Web Applications
 
-Introduction
-------------
-Cappuccino is an open source framework that makes it easy to build
-desktop-caliber applications that run in a web browser.
+Cappuccino is an open-source framework that supports building powerful, desktop-class applications running in any modern web browser. Instead of direct manipulation of HTML, CSS, and the DOM, applications are built using Objective-J, a superset of JavaScript modeled on Objective-C.
 
-With Cappuccino, you don't concern yourself with HTML, CSS, or the DOM. You  write applications with the APIs from 
-Apple's Cocoa frameworks and the Objective-J language.
+Cappuccino faithfully implements the proven design patterns of NeXTSTEP/Apple's Cocoa frameworks, enabling the creation of incredibly complex and reliable applications with a fraction of the code.
 
-Check out a [live demo of the widgets in Cappuccino](https://cappuccino-testbook.5apps.com/#ThemeKitchenSink)
+> **✨ Project Status: Active Development & Node.js Transition**
+> Cappuccino has been under continuous development since 2008 and is actively maintained. A major transition to a modern, **Node.js-based toolchain** has recently been finalized. The current release is a production-ready Release Candidate, with a formal release scheduled for 2026. It is stable, fast, and ready for new projects.
 
-Check out some [tutorials](https://cappuccino-cookbook.5apps.com)
+---
 
-For more information, see the
-  - [Official website](http://cappuccino-project.org)
-  - [Github Wiki](https://github.com/cappuccino/cappuccino/wiki)
-  - [FAQ](http://cappuccino-project.org/support/faq.html)
-  - [Documentation](http://cappuccino-project.org/learn/)
-  - [Mailing list](http://groups.google.com/group/objectivej)
-  - [Gitter](https://gitter.im/cappuccino/cappuccino)
+## Why Use Cappuccino?
 
-Follow [@cappuccino](https://twitter.com/cappuccino) on Twitter for updates on the project.
+Cappuccino is not intended for building simple websites. It is for building **applications**—especially complex, data-rich, line-of-business tools where productivity and user experience are paramount.
 
-If you discover any bugs, please [file a ticket](http://github.com/cappuccino/cappuccino/issues).
+*   **💻 True Desktop Behavior, Out-of-the-Box:** Applications built with Cappuccino behave like native desktop software by default. This includes a rich palette of UI controls, **full keyboard navigation and focus management**, and **multi-level undo/redo support** — as you can see in this [Demo application](https://ansb.uniklinik-freiburg.de/UIBuilder/index.html). Also take a look at the [Kitchen Sink demo](https://cappuccino-testbook.5apps.com/#ThemeKitchenSink).
+*   **🚀 Incredible Productivity:** Less code is needed. High-level abstractions and a powerful object-oriented model mean development is focused on application logic, not browser quirks.
+*   **🏛️ Stable & Mature:** Built on decades of proven API design from Cocoa®, Cappuccino provides a stable foundation, free from the churn common in the JavaScript ecosystem.
+*   **🧱 True Object-Oriented Architecture:** Objective-J's message-passing architecture promotes loose coupling and clean design, making large-scale applications easier to build and maintain.
+*   **🌐 Platform Independent:** Development can be done on macOS, Windows, or Linux. Deployment can target any modern web browser.
 
-System Requirements
--------------------
-To run Cappuccino applications, all you need is a HTML5 compliant web browser.
+## 🚀 Quick Start
 
-You can develop Cappuccino applications with only a simple text editor on any platform.
+A new Cappuccino application can be running in five minutes.
 
-If you are on a Mac, our integration with Xcode leverages the world-class visual development tools from Apple to create complex applications with minimal coding.
+### 1. Prerequisites
+[Node.js](https://nodejs.org/en/download/) (LTS versions are recommended) and `npm` are required.
 
-Node.js version alpha
------------------- 
+### 2. Configure npm (Recommended First-Time Setup)
+To avoid potential permission issues with global packages, setting a local directory for npm is the recommended approach.
 
-There is currently an ongoing effort to switch JavaScript platform from [Narwhal](https://narwhaljs.org/) to Node.js.
-To try the Node.js version, do the following:
+```bash
+# Tell npm where to install global packages
+npm set prefix ~/.npm
 
-1. Install Node.js and npm from the [Node.js website](https://nodejs.org/en/).
-  
-2. Run `npm set prefix ~/.npm`. This will set the default install location for npm to `~/.npm`. The reasoning behind 
-this is outlined in the section about permission issues below.
+# Add this directory to the shell's path in .zshrc, .bash_profile, etc.
+export PATH="~/.npm/bin:$PATH"
+```
+The shell must be restarted or the profile sourced (`source ~/.zshrc`) for the changes to take effect. For more details, see the [npm documentation](https://docs.npmjs.com/resolving-eacces-permissions-errors-when-installing-packages-globally).
 
-3. Add this line to your `.zshrc` or equivalent config file.
-    ```bash
-    export PATH="~/.npm/bin:$PATH"
+### 3. Install Cappuccino
+```bash
+npm install -g @objj/cappuccino
+```
+
+### 4. Create and Run the First App
+```bash
+# 1. A new project is generated
+capp gen HelloWorld
+
+# 2. Move into the new directory
+cd HelloWorld
+
+# 3. A local web server is started (Python 3 example)
+python3 -m http.server 8000
+
+# 4. The new app can be opened in any modern browser
+# http://localhost:8000
+```
+A fully-functional Cappuccino application has now been created.
+
+---
+
+## What is Objective-J?
+
+Objective-J is a strict superset of JavaScript, which means **all JavaScript code is valid Objective-J code**. It adds the powerful object-oriented features of Smalltalk and Objective-C, like explicit message-passing and class-based inheritance.
+
+The syntax might look different, but it is designed for clarity and power.
+
+*   **Objective-C:**
+    ```objc
+    NSString *greeting = [NSString stringWithFormat:@"Hello, %@!", name];
+    ```
+*   **Objective-J:**
+    ```objj
+    var greeting = [CPString stringWithFormat:@"Hello, %@!", name];
     ```
 
-4. Restart your shell.
+Pure JavaScript and Objective-J can be mixed and matched, even in the same file. The Objective-J code is transpiled into highly-optimized JavaScript for deployment, but can also be run directly in the browser during development.
 
-5. Run `npm install -g @objj/cappuccino`.
+## Find Out More
 
-6. Done! See below for basic usage.
+*   **Official Website:** [cappuccino.dev](http://cappuccino.dev)
+*   **Documentation & Tutorials:** [cappuccino.dev/learn/](http://cappuccino.dev/learn/),  [cappuccino cookbook](https://cappuccino-cookbook.5apps.com)
+*   **Gitter Community Chat:** [gitter.im/cappuccino/cappuccino](https://gitter.im/cappuccino/cappuccino)
+*   **GitHub Wiki:** [github.com/cappuccino/cappuccino/wiki](https://github.com/cappuccino/cappuccino/wiki)
+*   **FAQ:** [cappuccino.dev/support/faq.html](http://cappuccino.dev/support/faq.html)
+*   **Report a Bug:** [Create a GitHub Issue](http://github.com/cappuccino/cappuccino/issues)
 
-### Permisson issues
+---
 
-By default npm uses `/usr/local/lib/node_modules` as the install location for globally installed packages. This causes
-problems since users typically lack write permissions there. It is therefore recommended to either use a version
-manager, or change npm's default install location manually (which is what we did above). For more details on how to do
-this, see [this article](https://docs.npmjs.com/resolving-eacces-permissions-errors-when-installing-packages-globally).
+## Frequently Asked Questions (FAQ)
 
-### Basic usage
+**Q: What are the advantages over React or Vue?**  
+**A:** React and Vue are excellent libraries for building web UIs. Cappuccino is a comprehensive **framework** for building entire **applications**. It provides a fully integrated stack—including a mature UI library, event handling, and data management—designed for large-scale development.
 
-If the install succeeded you will be able to do the following to create a simple Cappuccino application:
+Beyond this, Cappuccino provides a more integrated and powerful data-binding layer inspired directly by Cocoa, which dramatically reduces boilerplate code for complex UIs as you can see in this [example code](https://github.com/daboe01/UIBuilder/tree/master/public/Frontend) that uses these features:
 
-1. `capp gen HelloWorld`
-2. `cd HelloWorld`
-3. `python3 -m http.server`
-4. Go to `localhost:8000` in your web browser.
+*   **Sophisticated Data Bindings:** Going beyond simple state-to-view mapping, Cappuccino's binding technology, based on Key-Value Coding (KVC), allows data models to be declaratively linked directly to UI components.
+*   **Powerful Controller Layer:** Dedicated controller objects (like `CPArrayController`) are used to mediate between data and views. These controllers automatically handle sorting, filtering, and selection state, completely decoupling the UI from the business logic.
+*   **Advanced Filtering with Predicates:** A table displaying thousands of items can be filtered simply by setting a predicate (a declarative filter rule, e.g., `lastName BEGINSWITH 'S'`) on its controller. The UI updates instantly. This eliminates tons of manual state management and filtering logic code.
+*   **Automatic Value Transformation:** Data can be easily formatted for display (e.g., dates, currency, booleans to "Yes/No") directly within the binding itself using value transformers, keeping model data pure and view logic minimal.
 
-### Building Cappuccino from source
+**Q: Can Cappuccino be used on Windows/Linux?**  
+**A:** Yes. The development tools run on Node.js and are platform-independent. Applications can be developed on any OS and deployed on any web server.
 
-If you want to build Cappuccino from source you should clone the GitHub repository at 
-https://github.com/cappuccino/cappuccino/ and checkout the `node` branch. Then you can use the command
-`jake install` to install Cappuccino and its tools locally. 
+**Q: Is Xcode required?**  
+**A:** No. Any code editor can be used. Xcode offers optional visual development tools for macOS users, but it is not a requirement.
 
-To build from source, do:
+**Q: Hasn't Apple moved on from Objective-C, making these APIs obsolete?**  
+**A:** While Swift is Apple's newer language, Objective-C and AppKit remain foundational, actively supported technologies used in many of Apple's flagship applications. Cappuccino leverages the stability and power of this time-tested API design, which is independent of Apple's future product roadmap.
 
-1. `git clone https://github.com/cappuccino/cappuccino.git`
-   
-2. `cd cappuccino`
-   
-3. `git checkout node`
+**Q: How can custom HTML, CSS, or JavaScript libraries be integrated?**  
+**A:** Cappuccino abstracts away the DOM, but other web technologies can still be integrated. The `CPWebView` control allows arbitrary HTML/CSS/JS content to be embedded. Since Objective-J is a superset of JavaScript, JS libraries can be used and JS functions can be called directly from Objective-J code.
 
-4. `npm install`
+**Q: Does the LGPL license permit closed-source commercial applications?**  
+**A:** Yes. The LGPLv2 license allows proprietary, closed-source applications to be built and distributed using Cappuccino. Sharing of source code is only required for any modifications made **to the Cappuccino framework itself**. The application code remains proprietary.
 
-5. Make any desired changes to the codebase.
-   
-6. Make sure the environment variable `CAPP_BUILD` is set. This is done by adding the line
-    ```bash
-    export CAPP_BUILD="/path/to/cappuccino/build/directory"
-    ```
-    to your `.zshrc` or equivalent config file and of course changing the path to where you want to build Cappuccino.
-7.  Run `jake install` to build and install Cappuccino.
+---
 
-Beware that building and installing Cappuccino from source will overwrite the binaries installed from npm. To undo this,
-simply run `npm install -g @objj/cappuccino` again.
+## Building from Source
 
-Getting Started
----------------
-To write you first application, [download the starter package](http://cappuccino.dev/#download).
+To contribute to Cappuccino or to use the absolute latest, un-released changes, the project can be built from source.
 
-To try our new Node (alpha) version of the Cappuccino framework, [check the Node installation instructions](https://github.com/cappuccino/cappuccino/wiki/node)
+1.  `git clone https://github.com/cappuccino/cappuccino.git`
+2.  `cd cappuccino`
+3.  `npm install` (This bootstraps the build process using the latest release)
+4.  `jake build`
+5.  `jake dist` (This will install the locally-built toolchain, potentially overwriting your npm version)
 
-To contribute to Cappuccino, please read here: [Getting and Building the Source](
-  https://github.com/cappuccino/cappuccino/wiki/Getting-and-building-the-source).
+To switch back to the official release, `npm install -g @objj/cappuccino` can be run again.
 
-License
--------
-This library is free software; you can redistribute it and/or modify it under
-the terms of the GNU Lesser General Public License as published by the Free
-Software Foundation; either version 2.1 of the License, or (at your option)
-any later version.
+---
 
-This library is distributed in the hope that it will be useful, but WITHOUT
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
-details.
+## License
 
-You should have received a copy of the GNU Lesser General Public License along
-with this library; if not, write to the Free Software Foundation, Inc., 51
-Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+Cappuccino is released under the **GNU Lesser General Public License (LGPL) version 2.1 (or later)**.
+
+This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+
+*Cocoa® is a registered trademark of Apple Inc.*

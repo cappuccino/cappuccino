@@ -312,6 +312,12 @@ var AFFINITY = 5;
     if (!trackRect || CGRectIsEmpty(trackRect))
         trackRect = bounds;
 
+    if (_allowsTickMarkValuesOnly)
+    {
+        [self closestTickMarkValueToValue:[self doubleValue]]; // we only need the side effect …
+        _currentTickMarkSegment = _closestTickMarkIndex;
+    }
+
     if (_isCircular)
     {
         var angle  = 3 * PI_2 - (1.0 - [self doubleValue] - _minValue) / (_maxValue - _minValue) * PI2,

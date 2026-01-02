@@ -214,5 +214,27 @@
 
 @end
 
-CFData.prototype.isa = CPData;
-CFMutableData.prototype.isa = CPData;
+if (CFData.prototype.isa !== CPData)
+{
+    Object.defineProperties(CFData.prototype,
+    {
+        isa:
+        {
+            value: CPData,
+            enumerable: false,
+            writable: true
+        }
+    })
+};
+if (CFMutableData.prototype.isa !== CPData)
+{
+    Object.defineProperties(CFMutableData.prototype,
+    {
+        isa:
+        {
+            value: CPData,
+            enumerable: false,
+            writable: true
+        }
+    });
+}

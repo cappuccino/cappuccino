@@ -26,6 +26,7 @@
 @import "CPPasteboard.j"
 @import "CPView.j"
 @import "CPWindow_Constants.j"
+@import "CPViewAnimation.j"
 
 @class CPWindow  // This file is imported by CPWindow.j
 @class _CPDOMDataTransferPasteboard
@@ -132,6 +133,10 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
     unsigned        _dragOperation;
 
     CPTimer         _draggingUpdateTimer;
+
+    // Animation State
+    CGPoint         _pendingEndLocation;
+    CPDragOperation _pendingEndOperation;
 }
 
 /*
@@ -261,10 +266,19 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
         {
             var contentView = [scrollView contentView],
                 bounds = [contentView bounds],
-                insetBounds = CGRectInset(bounds, 30, 30),
                 eventLocation = [contentView convertPoint:_draggingLocation fromView:nil],
                 deltaX = 0,
-                deltaY = 0;
+                deltaY = 0,
+                insetSize = 30;
+            
+            if ([contentView respondsToSelector:@selector(documentView)] &&
+                [[contentView documentView] respondsToSelector:@selector(rowHeight)])
+            {
+                // Adjust inset bounds based on CPTableView row height
+                insetSize = MAX(insetSize, [[contentView documentView] rowHeight]);
+            }
+            
+            var insetBounds = CGRectInset(bounds, insetSize, insetSize);
 
             if (!CGRectContainsPoint(insetBounds, eventLocation))
             {
@@ -316,6 +330,46 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
     [_draggingUpdateTimer invalidate];
     _draggingUpdateTimer = nil;
 
+    // Check if we should slide back (drag failed + slideBack requested)
+    if (![CPPlatform supportsDragAndDrop] && _shouldSlideBack && anOperation === CPDragOperationNone)
+    {
+        // Store state to finalize drag after animation completes
+        _pendingEndLocation = aLocation;
+        _pendingEndOperation = anOperation;
+
+        var currentFrame = [_draggedWindow frame],
+            targetFrame = CGRectMake(_startDragLocation.x, _startDragLocation.y, currentFrame.size.width, currentFrame.size.height);
+
+        // We use CPViewAnimation. Even though _draggedWindow is a CPWindow, 
+        // CPViewAnimation supports targets that respond to setFrame: (like NSViewAnimation does for NSWindow).
+        var animation = [[CPViewAnimation alloc] initWithViewAnimations:[
+            [CPDictionary dictionaryWithObjects:[_draggedWindow, currentFrame, targetFrame] 
+                                        forKeys:[CPViewAnimationTargetKey, CPViewAnimationStartFrameKey, CPViewAnimationEndFrameKey]]
+        ]];
+
+        [animation setAnimationCurve:CPAnimationEaseOut];
+        [animation setDuration:0.25];
+        [animation setDelegate:self];
+        [animation startAnimation];
+
+        return;
+    }
+
+    [self _performFinalCleanupWithLocation:aLocation operation:anOperation];
+}
+
+- (void)animationDidEnd:(CPAnimation)anAnimation
+{
+    [self _performFinalCleanupWithLocation:_pendingEndLocation operation:_pendingEndOperation];
+}
+
+- (void)animationDidStop:(CPAnimation)anAnimation
+{
+    [self _performFinalCleanupWithLocation:_pendingEndLocation operation:_pendingEndOperation];
+}
+
+- (void)_performFinalCleanupWithLocation:(CGPoint)aLocation operation:(CPDragOperation)anOperation
+{
     [_draggedView removeFromSuperview];
 
     if (![CPPlatform supportsDragAndDrop])

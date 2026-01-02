@@ -9,7 +9,20 @@ var updateTrackingAreasCalls,
     cursorUpdateCalls,
     involvedViewForMouseEntered,
     involvedViewForMouseExited,
-    involvedViewForCursorUpdate;
+    involvedViewForCursorUpdate,
+    windowPropertyWasNilInViewDidAppear;
+
+@implementation CPTestableViewController : CPViewController
+{
+}
+
+- (void)viewDidAppear
+{
+    [super viewDidAppear];
+    windowPropertyWasNilInViewDidAppear = ([self view] && [[self view] window] === nil);
+}
+
+@end
 
 @implementation CPViewTest : OJTestCase
 {
@@ -39,6 +52,7 @@ var updateTrackingAreasCalls,
 
     methodCalled = [];
     updateTrackingAreasCalls = 0;
+    windowPropertyWasNilInViewDidAppear = NO;
 
     [super setUp];
 }
@@ -1659,6 +1673,23 @@ var updateTrackingAreasCalls,
     [self resetCounters];
 
     [[CPApplication sharedApplication] sendEvent:anEvent];
+}
+
+- (void)testWindowIsSetBeforeViewDidAppear
+{
+    // 1. Create a view controller. This will also create its view.
+    var viewController = [[CPTestableViewController alloc] init];
+    var controllerView = [viewController view];
+
+    // 2. Add the controller's view to the window's view hierarchy.
+    // This will trigger the chain of notifications, including _CPViewDidAppearNotification,
+    // which in turn calls -[CPViewController viewDidAppear].
+    [[window contentView] addSubview:controllerView];
+
+    // 3. Check the flag set by our custom view controller.
+    // If the fix is correct, the window should have been set before viewDidAppear was called,
+    // so the flag should be NO.
+    [self assertFalse:windowPropertyWasNilInViewDidAppear message:@"The view's window property should be set before -[CPViewController viewDidAppear] is called."];
 }
 
 @end

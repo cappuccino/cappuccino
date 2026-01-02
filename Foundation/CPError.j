@@ -166,5 +166,16 @@ var CPErrorCodeKey = @"CPErrorCodeKey",
 
 @end
 
-CFError.prototype.isa = CPError;
+if (CFError.prototype.isa !== CPError)
+{
+    Object.defineProperties(CFError.prototype,
+    {
+        isa:
+        {
+            value: CPError,
+            enumerable: false,
+            writable: true
+        }
+    });
+}
 

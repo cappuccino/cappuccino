@@ -116,6 +116,7 @@ var kDelegateRespondsTo_textShouldBeginEditing                                  
 /*!
     @ingroup appkit
     @class CPTextView
+    Copy / Paste is only fully supported with a CPMenu (can be hidden)
 */
 @implementation CPTextView : CPText
 {
@@ -2717,8 +2718,6 @@ var _CPCopyPlaceholder = '-';
 
         if (![currentFirstResponder respondsToSelector:@selector(_activateNativeInputElement:)])
             return false; // prevent the default behaviour
-
-        var charCode = _CPNativeInputField.innerHTML.charCodeAt(0);
 
         // chrome-trigger: keypressed is omitted for deadkeys
         if (!_CPNativeInputFieldActive && _CPNativeInputFieldKeyPressedCalled == NO && _CPNativeInputField.innerHTML.length && _CPNativeInputField.innerHTML != _CPCopyPlaceholder && _CPNativeInputField.innerHTML.length < 3)

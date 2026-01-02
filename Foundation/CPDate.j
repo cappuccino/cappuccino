@@ -286,7 +286,18 @@ Date.parseISO8601 = function (date)
     return timestamp;
 };
 
-Date.prototype.isa = CPDate;
+if (Date.prototype.isa !== CPDate)
+{
+    Object.defineProperties(Date.prototype,
+    {
+        isa:
+        {
+            value: CPDate,
+            enumerable: false,
+            writable: true
+        }
+    });
+}
 
 function _isNumberType(value)
 {
