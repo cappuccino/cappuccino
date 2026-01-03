@@ -1347,7 +1347,7 @@ var themedButtonValues                      = nil,
             @"height": size,
             @"margin-top": marginTop + "px",
 
-            "-webkit-mask-image": svgArrowDown,
+            "-webkit-mask-image": svgSingleArrow,
             "mask-image": svgArrowDown,
             "-webkit-mask-size": "contain",
             "mask-size": "contain",
@@ -3466,7 +3466,7 @@ var themedButtonValues                      = nil,
                                                            @"z-index": "+1",
                                                            @"width": @"1px"
                                                        }
-                                     afterDictionary:arrowCSS(A3ColorBorderBlue, "-6px", "23px")],
+                                     afterDictionary:arrowCSS(A3ColorBorderBlue, "-7px", "23px")],
 
     smallBezelFocusedCssColor = [CPColor colorWithCSSDictionary:@{
                                                                  @"background-color": A3ColorBackgroundWhite,
@@ -3489,7 +3489,7 @@ var themedButtonValues                      = nil,
                                                                  @"z-index": "+1",
                                                                  @"width": @"1px"
                                                                }
-                                          afterDictionary:arrowCSS(A3ColorBorderBlue, "-6px", "23px")],
+                                          afterDictionary:arrowCSS(A3ColorBorderBlue, "-7px", "23px")],
 
     smallNotKeyButtonCssColor = [CPColor colorWithCSSDictionary:@{
                                                                  @"background-color": A3ColorBackgroundWhite,
@@ -3509,7 +3509,7 @@ var themedButtonValues                      = nil,
                                                                  @"z-index": "+1",
                                                                  @"width": @"1px"
                                                              }
-                                           afterDictionary:arrowCSS(A3ColorActiveBorder, "-6px", "23px")],
+                                           afterDictionary:arrowCSS(A3ColorActiveBorder, "-7px", "23px")],
 
     smallDisabledButtonCssColor = [CPColor colorWithCSSDictionary:@{
                                                                @"background-color": A3ColorBackgroundInactive,
@@ -3520,7 +3520,7 @@ var themedButtonValues                      = nil,
                                                                @"box-sizing": @"border-box"
                                                                }
                                             beforeDictionary:nil
-                                             afterDictionary:arrowCSS(A3ColorInactiveBorder, "-6px", "23px")],
+                                             afterDictionary:arrowCSS(A3ColorInactiveBorder, "-7px", "23px")],
 
     smallHighlightedButtonCssColor = [CPColor colorWithCSSDictionary:@{
                                                                   @"border-color": A3ColorBorderDark,
@@ -3553,7 +3553,7 @@ var themedButtonValues                      = nil,
                                                            @"z-index": "+1",
                                                            @"width": @"1px"
                                                        }
-                                     afterDictionary:arrowCSS(A3ColorBorderBlue, "-4px", "20px")],
+                                     afterDictionary:arrowCSS(A3ColorBorderBlue, "-6px", "20px")],
 
     miniBezelFocusedCssColor = [CPColor colorWithCSSDictionary:@{
                                                                  @"background-color": A3ColorBackgroundWhite,
@@ -3576,7 +3576,7 @@ var themedButtonValues                      = nil,
                                                                  @"z-index": "+1",
                                                                  @"width": @"1px"
                                                                }
-                                          afterDictionary:arrowCSS(A3ColorBorderBlue, "-4px", "20px")],
+                                          afterDictionary:arrowCSS(A3ColorBorderBlue, "-6px", "20px")],
 
     miniNotKeyButtonCssColor = [CPColor colorWithCSSDictionary:@{
                                                                  @"background-color": A3ColorBackgroundWhite,
@@ -3596,7 +3596,7 @@ var themedButtonValues                      = nil,
                                                                  @"z-index": "+1",
                                                                  @"width": @"1px"
                                                              }
-                                           afterDictionary:arrowCSS(A3ColorActiveBorder, "-4px", "20px")],
+                                           afterDictionary:arrowCSS(A3ColorActiveBorder, "-6px", "20px")],
 
     miniDisabledButtonCssColor = [CPColor colorWithCSSDictionary:@{
                                                                @"background-color": A3ColorBackgroundInactive,
@@ -3607,7 +3607,7 @@ var themedButtonValues                      = nil,
                                                                @"box-sizing": @"border-box"
                                                                }
                                             beforeDictionary:nil
-                                             afterDictionary:arrowCSS(A3ColorInactiveBorder, "-4px", "20px")],
+                                             afterDictionary:arrowCSS(A3ColorInactiveBorder, "-6px", "20px")],
 
     miniHighlightedButtonCssColor = [CPColor colorWithCSSDictionary:@{
                                                                   @"border-color": A3ColorBorderDark,
