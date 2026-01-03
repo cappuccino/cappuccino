@@ -4984,7 +4984,6 @@ var themedButtonValues                      = nil,
         defaultElementsMargin = 3.0,
 
         errorIcon = [CPImage imageWithCSSDictionary:@{
-            @"content": @"''", // REQUIRED for visibility
             @"background-image": svgAlertIconError,
             @"background-size": @"contain",
             @"background-repeat": @"no-repeat",
@@ -4992,7 +4991,6 @@ var themedButtonValues                      = nil,
         } size:CGSizeMake(53, 46)],
 
         helpIcon = [CPImage imageWithCSSDictionary:@{
-            @"content": @"''", // REQUIRED for visibility
             @"background-image": svgAlertIconError,
             @"background-size": @"contain",
             @"background-repeat": @"no-repeat",
@@ -5000,7 +4998,6 @@ var themedButtonValues                      = nil,
         } size:CGSizeMake(24, 24)],
 
         informationIcon = [CPImage imageWithCSSDictionary:@{
-            @"content": @"''", // REQUIRED for visibility
             @"background-image": svgAlertIconError,
             @"background-size": @"contain",
             @"background-repeat": @"no-repeat",
@@ -5008,7 +5005,6 @@ var themedButtonValues                      = nil,
         } size:CGSizeMake(53, 46)],
 
         warningIcon = [CPImage imageWithCSSDictionary:@{
-            @"content": @"''", // REQUIRED for visibility
             @"background-image":svgAlertIconError,
             @"background-size": @"contain",
             @"background-repeat": @"no-repeat",

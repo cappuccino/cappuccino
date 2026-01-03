@@ -400,12 +400,6 @@ var CPImageViewEmptyPlaceholderImage = nil;
         #if PLATFORM(DOM)
             _DOMImageElement.width = ROUND(width);
             _DOMImageElement.height = ROUND(height);
-
-            if ([image isCSSBased])
-            {
-                _DOMImageElement.style.width = _DOMImageElement.width + 'px';
-                _DOMImageElement.style.height = _DOMImageElement.height + 'px';
-            }
         #endif
 
         var x,
@@ -463,6 +457,12 @@ var CPImageViewEmptyPlaceholderImage = nil;
                                        onDOMElement:_DOMImageElement
                                           styleNode:_cssStyleNode
                                       previousState:@ref(_cssStylePreviousState)];
+    }
+
+    if ([image isCSSBased])
+    {
+        _DOMImageElement.style.width = _DOMImageElement.width + 'px';
+        _DOMImageElement.style.height = _DOMImageElement.height + 'px';
     }
 #endif
 
