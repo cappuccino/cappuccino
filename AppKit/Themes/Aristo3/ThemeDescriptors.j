@@ -75,7 +75,9 @@ var A3ColorActiveText   = [A3CPColorActiveText cssString],
     svgArrowRight   = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMCAxMCI+PHBhdGggZD0iTTIgMUw4IDVMMiA5WiIvPjwvc3ZnPg==')",
     svgPlus         = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNiAxNiI+PHBhdGggZD0iTTggM3YxMG0tNS01aDEwIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZT0iY3VycmVudENvbG9yIiBmaWxsPSJub25lIi8+PC9zdmc+')",
     svgMinus        = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNiAxNiI+PHBhdGggZD0iTTMgOGgxMCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgZmlsbD0ibm9uZSIvPjwvc3ZnPg==')",
-    svgGear         = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNiAxNiI+PHBhdGggZD0iTTggMEw2IDJMNCAyTDMgNEwzIDZMMSA4TDMgMTBMMyAxMkw0IDE0TDYgMTRMOCAxNkwxMCAxNEwxMiAxNEwxMyAxMkwxMyAxMEwxNSA4TDEzIDZMMTMgNEwxMiAyTDEwIDJaIiBmaWxsPSJjdXJyZW50Q29xvciIvPjwvc3ZnPg==')";
+    svgGear         = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNiAxNiI+PHBhdGggZD0iTTggMEw2IDJMNCAyTDMgNEwzIDZMMSA4TDMgMTBMMyAxMkw0IDE0TDYgMTRMOCAxNkwxMCAxNEwxMiAxNEwxMyAxMkwxMyAxMEwxNSA4TDEzIDZMMTMgNEwxMiAyTDEwIDJaIiBmaWxsPSJjdXJyZW50Q29xvciIvPjwvc3ZnPg==')",
+    svgAlertIconWarning = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB3aWR0aD0iNjRweCIgaGVpZ2h0PSI2NHB4IiB2aWV3Qm94PSIwIDAgMTAwIDEwMCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgogICAgPGNpcmNsZSBjeD0iNTAiIGN5PSI1MCIgcj0iNDgiIGZpbGw9IiMyOTcxQjciPjwvY2lyY2xlPgogICA8ZyBmaWxsPSIjRkZGRkZGIj4KICAgICAgICA8cGF0aCBkPSJNNDQsMjIgTDU2LDIyIEw1Myw1OCBMNDcsNTggWiI+PC9wYXRoPgogICAgICAgIDxjaXJjbGUgY3g9IjUwIiBjeT0iNzQiIHI9IjYuNSI+PC9jaXJjbGU+CiAgICA8L2c+Cjwvc3ZnPg==')",
+    svgAlertIconError = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB3aWR0aD0iNjRweCIgaGVpZ2h0PSI2NHB4IiB2aWV3Qm94PSIwIDAgMTAwIDEwMCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgogICAgPHBhdGggZmlsbD0iI0QwMDIxQiIgZD0iTTI5LjUsNC41IEw3MC41LDQuNSBMOTUuNSwyOS41IEw5NS41LDcwLjUgTDcwLjUsOTUuNSBMMjkuNSw5NS41IEw0LjUsNzAuNSBMNC41LDI5LjUgWiI+PC9wYXRoPgogICAgPGcgZmlsbD0iI0ZGRkZGRiI+CiAgICAgICAgPHBhdGggZD0iTTQ2LDI0IEw1NCwyNCBMNTIsNTggTDQ4LDU4IFoiPjwvcGF0aD4KICAgICAgICA8Y2lyY2xlIGN4PSI1MCIgY3k9Ijc0IiByPSI1Ij48L2NpcmNsZT4KICAgIDwvZz4KPC9zdmc+')";
 
 // Global State Variables
 var themedButtonValues                      = nil,
@@ -4978,37 +4980,52 @@ var themedButtonValues                      = nil,
 + (CPAlert)themedAlert
 {
     var alert = [CPAlert new],
-    buttonOffset = 10.0,
-    defaultElementsMargin = 3.0,
-    
-    // SVGs for Alert Icons
-    errorIcon = [CPImage imageWithCSSDictionary:@{
-        @"background-image": @"url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMzAiIGZpbGw9IiNjMDMiLz48cGF0aCBkPSJNMjAgMjBwMjQgMjRNNDQgMjBMMjAgNDQiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iNSIvPjwvc3ZnPg==')"
-    } size:CGSizeMake(53, 46)],
-    
-    helpIcon = [CPImage imageWithCSSDictionary:@{
-        @"background-image": @"url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMzAiIGZpbGw9IiM2NjYiLz48dGV4dCB4PSIzMiIgeT0iNDUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IndoaXRlIiBmb250LXNpemU9IjQwIiBmb250LXdlaWdodD0iYm9sZCI+PzwvdGV4dD48L3N2Zz4=')"
-    } size:CGSizeMake(24, 24)],
-    
-    informationIcon = [CPImage imageWithCSSDictionary:@{
-        @"background-image": @"url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMzAiIGZpbGw9IiMwNjkiLz48dGV4dCB4PSIzMiIgeT0iNDUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IndoaXRlIiBmb250LXNpemU9IjQwIiBmb250LXdlaWdodD0iYm9sZCI+aTwvdGV4dD48L3N2Zz4=')"
-    } size:CGSizeMake(53, 46)],
-    
-    warningIcon = [CPImage imageWithCSSDictionary:@{
-        @"background-image": @"url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHBhdGggZD0iTTMyIDRMNjAgNjRIMiIgbGluZWNhcD0icm91bmQiIGxpbmVqb2luPSJyb3VuZCIgZmlsbD0iI2ZjMCIvPjx0ZXh0IHg9IjMyIiB5PSI1MiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iYmxhY2siIGZvbnQtc2l6ZT0iNDAiIGZvbnQtd2VpZ2h0PSJib2xkIj4hPC90ZXh0Pjwvc3ZnPg==')"
-    } size:CGSizeMake(48, 43)],
+        buttonOffset = 10.0,
+        defaultElementsMargin = 3.0,
 
-    helpIconPressed = helpIcon, // Simplification
-    
-    helpLeftOffset = 15,
-    imageOffset = CGPointMake(15, 18),
-    informativeFont = [CPFont systemFontOfSize:CPFontCurrentSystemSize],
-    inset = CGInsetMake(15, 15, 15, 80),
-    messageFont = [CPFont boldSystemFontOfSize:CPFontDefaultSystemFontSize + 1],
-    size = CGSizeMake(400.0, 120.0),
-    suppressionButtonXOffset = 2.0,
-    suppressionButtonYOffset = 10.0,
-    suppressionButtonFont = [CPFont systemFontOfSize:CPFontCurrentSystemSize];
+        errorIcon = [CPImage imageWithCSSDictionary:@{
+            @"content": @"''", // REQUIRED for visibility
+            @"background-image": svgAlertIconError,
+            @"background-size": @"contain",
+            @"background-repeat": @"no-repeat",
+            @"background-position": @"center"
+        } size:CGSizeMake(53, 46)],
+
+        helpIcon = [CPImage imageWithCSSDictionary:@{
+            @"content": @"''", // REQUIRED for visibility
+            @"background-image": svgAlertIconError,
+            @"background-size": @"contain",
+            @"background-repeat": @"no-repeat",
+            @"background-position": @"center"
+        } size:CGSizeMake(24, 24)],
+
+        informationIcon = [CPImage imageWithCSSDictionary:@{
+            @"content": @"''", // REQUIRED for visibility
+            @"background-image": svgAlertIconError,
+            @"background-size": @"contain",
+            @"background-repeat": @"no-repeat",
+            @"background-position": @"center"
+        } size:CGSizeMake(53, 46)],
+
+        warningIcon = [CPImage imageWithCSSDictionary:@{
+            @"content": @"''", // REQUIRED for visibility
+            @"background-image":svgAlertIconError,
+            @"background-size": @"contain",
+            @"background-repeat": @"no-repeat",
+            @"background-position": @"center"
+        } size:CGSizeMake(48, 43)],
+
+        helpIconPressed = helpIcon, // Simplification
+
+        helpLeftOffset = 15,
+        imageOffset = CGPointMake(15, 18),
+        informativeFont = [CPFont systemFontOfSize:CPFontCurrentSystemSize],
+        inset = CGInsetMake(15, 15, 15, 80),
+        messageFont = [CPFont boldSystemFontOfSize:CPFontDefaultSystemFontSize + 1],
+        size = CGSizeMake(400.0, 120.0),
+        suppressionButtonXOffset = 2.0,
+        suppressionButtonYOffset = 10.0,
+        suppressionButtonFont = [CPFont systemFontOfSize:CPFontCurrentSystemSize];
 
     // Global
     themedAlertValues =
@@ -5578,6 +5595,9 @@ var themedButtonValues                      = nil,
 
     themedShadowViewValues =
     [
+     [@"bezel-color",        heavyColor],
+     [@"content-inset",      CGInsetMake(5.0, 7.0, 5.0, 7.0)],
+
      [@"bezel-color",        lightColor,                         CPThemeStateShadowViewLight],
      [@"bezel-color",        heavyColor,                         CPThemeStateShadowViewHeavy],
 

@@ -427,12 +427,15 @@ var bottomHeight = 71;
     [button setTag:count];
     [button setTarget:self];
     [button setAction:@selector(_takeReturnCodeFrom:)];
-    [button setBezelStyle:CPRoundedBezelStyle];
+    [button setBezelStyle:CPSmallSquareBezelStyle];
 
     [[_window contentView] addSubview:button];
 
     if (count == 0)
+    {
         [button setKeyEquivalent:CPCarriageReturnCharacter];
+        [button setBezelStyle:CPRoundedBezelStyle];
+    }
     else if ([aTitle lowercaseString] === @"cancel")
         [button setKeyEquivalent:CPEscapeFunctionKey];
 
@@ -540,7 +543,6 @@ var bottomHeight = 71;
         minimumSize = [_themeView currentValueForThemeAttribute:@"size"],
         buttonOffset = [_themeView currentValueForThemeAttribute:@"button-offset"],
         helpLeftOffset = [_themeView currentValueForThemeAttribute:@"help-image-left-offset"],
-        aRepresentativeButton = [_buttons objectAtIndex:0],
         defaultElementsMargin = [_themeView currentValueForThemeAttribute:@"default-elements-margin"],
         panelSize = [[_window contentView] frame].size,
         buttonsOriginY,
@@ -549,14 +551,26 @@ var bottomHeight = 71;
         theme = [self theme],
         offsetX;
 
-    [aRepresentativeButton setTheme:[self theme]];
-    [aRepresentativeButton sizeToFit];
+    // 1. Calculate the maximum button height first to ensure the row fits the tallest button
+    // (The default button is usually taller than secondary buttons).
+    var maxButtonHeight = 0.0;
+    
+    for (var i = 0; i < [_buttons count]; i++)
+    {
+        var btn = _buttons[i];
+        [btn setTheme:theme];
+        [btn sizeToFit];
+        maxButtonHeight = MAX(maxButtonHeight, CGRectGetHeight([btn frame]));
+    }
 
-    panelSize.height = CGRectGetMaxY([lastView frame]) + defaultElementsMargin + [aRepresentativeButton frameSize].height;
+    // 2. Calculate the base panel height based on content + max button height
+    panelSize.height = CGRectGetMaxY([lastView frame]) + defaultElementsMargin + maxButtonHeight;
+    
     if (panelSize.height < minimumSize.height)
         panelSize.height = minimumSize.height;
 
-    buttonsOriginY = panelSize.height - [aRepresentativeButton frameSize].height + buttonOffset;
+    // 3. Determine the top Y position for the button row
+    buttonsOriginY = panelSize.height - maxButtonHeight + buttonOffset;
     offsetX = panelSize.width - inset.right;
 
     switch ([_window styleMask])
@@ -572,18 +586,18 @@ var bottomHeight = 71;
             break;
     }
 
+    // 4. Position buttons, centering them vertically within maxButtonHeight
     for (var i = [_buttons count] - 1; i >= 0 ; i--)
     {
-        var button = _buttons[i];
-        [button setTheme:[self theme]];
-        [button sizeToFit];
-
-        var buttonFrame = [button frame],
+        var button = _buttons[i],
+            buttonFrame = [button frame],
             width = MAX(80.0, CGRectGetWidth(buttonFrame)),
-            height = CGRectGetHeight(buttonFrame);
+            height = CGRectGetHeight(buttonFrame),
+            // Calculate offset to center shorter buttons relative to the tallest one
+            yOffset = FLOOR((maxButtonHeight - height) / 2.0);
 
         offsetX -= width;
-        [button setFrame:CGRectMake(offsetX + buttonMarginX, buttonsOriginY + buttonMarginY, width, height)];
+        [button setFrame:CGRectMake(offsetX + buttonMarginX, buttonsOriginY + buttonMarginY + yOffset, width, height)];
         offsetX -= 10;
     }
 
@@ -592,7 +606,9 @@ var bottomHeight = 71;
         var helpImage = [_themeView currentValueForThemeAttribute:@"help-image"],
             helpImagePressed = [_themeView currentValueForThemeAttribute:@"help-image-pressed"],
             helpImageSize = helpImage ? [helpImage size] : CGSizeMakeZero(),
-            helpFrame = CGRectMake(helpLeftOffset, buttonsOriginY, helpImageSize.width, helpImageSize.height);
+            // Center help button vertically as well
+            helpYOffset = floor((maxButtonHeight - helpImageSize.height) / 2.0),
+            helpFrame = CGRectMake(helpLeftOffset, buttonsOriginY + buttonMarginY + helpYOffset, helpImageSize.width, helpImageSize.height);
 
         [_alertHelpButton setImage:helpImage];
         [_alertHelpButton setAlternateImage:helpImagePressed];
@@ -600,7 +616,7 @@ var bottomHeight = 71;
         [_alertHelpButton setFrame:helpFrame];
     }
 
-    panelSize.height += [aRepresentativeButton frameSize].height + inset.bottom + buttonOffset;
+    panelSize.height += maxButtonHeight + inset.bottom + buttonOffset;
     return panelSize;
 }
 

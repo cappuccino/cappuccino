@@ -237,6 +237,8 @@ var CPImageViewEmptyPlaceholderImage = nil;
 
     if (_hasShadow)
     {
+        [self setClipsToBounds:NO];
+
         _shadowView = [[CPShadowView alloc] initWithFrame:[self bounds]];
 
         [self addSubview:_shadowView];
@@ -398,6 +400,12 @@ var CPImageViewEmptyPlaceholderImage = nil;
         #if PLATFORM(DOM)
             _DOMImageElement.width = ROUND(width);
             _DOMImageElement.height = ROUND(height);
+
+            if ([image isCSSBased])
+            {
+                _DOMImageElement.style.width = _DOMImageElement.width + 'px';
+                _DOMImageElement.style.height = _DOMImageElement.height + 'px';
+            }
         #endif
 
         var x,
