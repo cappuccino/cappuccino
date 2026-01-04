@@ -1062,8 +1062,7 @@ var themedButtonValues                      = nil,
 {
     var button = [[CPPopUpButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 21.0) pullsDown:NO],
 
-    // --- Helper for Consistent Arrow Styling ---
-    // Added parameters to adjust position/size for different control sizes
+    // Helper for Consistent Arrow Styling
     arrowCSS = function(color, rightOffset, boxSize) {
         var size = boxSize || "25px",
             offset = rightOffset || "-8px",
@@ -1090,6 +1089,19 @@ var themedButtonValues                      = nil,
             @"background-color": color
         };
     },
+    
+    // Helper for Separator Styling (ensures consistency across states)
+    separatorCSS = function(rightOffset) {
+        return @{
+            @"background-color": @"rgb(225,225,225)",
+            @"bottom": @"3px",
+            @"content": @"''",
+            @"position": @"absolute",
+            @"right": rightOffset || @"17px",
+            @"top": @"3px",
+            @"width": @"1px"
+        };
+    },
 
     // ==========================================================
     // REGULAR SIZE DEFINITIONS
@@ -1103,15 +1115,7 @@ var themedButtonValues                      = nil,
                                                        @"border-radius": @"3px",
                                                        @"box-sizing": @"border-box"
                                                        }
-                                    beforeDictionary:@{
-                                                       @"background-color": @"rgb(225,225,225)",
-                                                       @"bottom": @"3px",
-                                                       @"content": @"''",
-                                                       @"position": @"absolute",
-                                                       @"right": @"17px", // Standard position
-                                                       @"top": @"3px",
-                                                       @"width": @"1px"
-                                                       }
+                                    beforeDictionary:separatorCSS(@"17px")
                                      afterDictionary:arrowCSS(A3ColorBorderBlue, "-8px", "25px")],
 
     notKeyButtonCssColor = [CPColor colorWithCSSDictionary:@{
@@ -1122,15 +1126,7 @@ var themedButtonValues                      = nil,
                                                              @"border-radius": @"3px",
                                                              @"box-sizing": @"border-box"
                                                              }
-                                          beforeDictionary:@{
-                                                             @"background-color": @"rgb(225,225,225)",
-                                                             @"bottom": @"3px",
-                                                             @"content": @"''",
-                                                             @"position": @"absolute",
-                                                             @"right": @"17px",
-                                                             @"top": @"3px",
-                                                             @"width": @"1px"
-                                                             }
+                                          beforeDictionary:separatorCSS(@"17px")
                                            afterDictionary:arrowCSS(A3ColorInactiveText, "-8px", "25px")],
 
     disabledButtonCssColor = [CPColor colorWithCSSDictionary:@{
@@ -1141,7 +1137,7 @@ var themedButtonValues                      = nil,
                                                                @"border-radius": @"3px",
                                                                @"box-sizing": @"border-box"
                                                                }
-                                            beforeDictionary:nil // No separator on disabled usually looks cleaner
+                                            beforeDictionary:nil 
                                              afterDictionary:arrowCSS(A3ColorInactiveText, "-8px", "25px")],
 
     highlightedButtonCssColor = [CPColor colorWithCSSDictionary:@{
@@ -1151,10 +1147,12 @@ var themedButtonValues                      = nil,
                                                                   @"border-radius": @"3px",
                                                                   @"box-sizing": @"border-box",
                                                                   @"background-color": A3ColorBackgroundHighlighted
-                                                                  }],
+                                                                  }
+                                               beforeDictionary:separatorCSS(@"17px")
+                                                afterDictionary:arrowCSS(A3ColorBorderBlue, "-8px", "25px")],
 
     // ==========================================================
-    // SMALL SIZE DEFINITIONS (Fixed Separator and Arrow)
+    // SMALL SIZE DEFINITIONS
     // ==========================================================
 
     smallButtonCssColor = [CPColor colorWithCSSDictionary:@{
@@ -1165,15 +1163,7 @@ var themedButtonValues                      = nil,
                                                        @"border-radius": @"3px",
                                                        @"box-sizing": @"border-box"
                                                        }
-                                    beforeDictionary:@{
-                                                       @"background-color": @"rgb(225,225,225)",
-                                                       @"bottom": @"3px",
-                                                       @"content": @"''",
-                                                       @"position": @"absolute",
-                                                       @"right": @"15px", // Moved closer to edge
-                                                       @"top": @"3px",
-                                                       @"width": @"1px"
-                                                       }
+                                    beforeDictionary:separatorCSS(@"15px")
                                      afterDictionary:arrowCSS(A3ColorBorderBlue, "-6px", "23px")],
 
     smallNotKeyButtonCssColor = [CPColor colorWithCSSDictionary:@{
@@ -1184,15 +1174,7 @@ var themedButtonValues                      = nil,
                                                              @"border-radius": @"3px",
                                                              @"box-sizing": @"border-box"
                                                              }
-                                          beforeDictionary:@{
-                                                             @"background-color": @"rgb(225,225,225)",
-                                                             @"bottom": @"3px",
-                                                             @"content": @"''",
-                                                             @"position": @"absolute",
-                                                             @"right": @"15px", // Moved closer to edge
-                                                             @"top": @"3px",
-                                                             @"width": @"1px"
-                                                             }
+                                          beforeDictionary:separatorCSS(@"15px")
                                            afterDictionary:arrowCSS(A3ColorInactiveText, "-6px", "23px")],
 
     smallDisabledButtonCssColor = [CPColor colorWithCSSDictionary:@{
@@ -1206,8 +1188,19 @@ var themedButtonValues                      = nil,
                                             beforeDictionary:nil
                                              afterDictionary:arrowCSS(A3ColorInactiveText, "-6px", "23px")],
 
+    smallHighlightedButtonCssColor = [CPColor colorWithCSSDictionary:@{
+                                                                  @"border-color": A3ColorBorderDark,
+                                                                  @"border-style": @"solid",
+                                                                  @"border-width": @"1px",
+                                                                  @"border-radius": @"3px",
+                                                                  @"box-sizing": @"border-box",
+                                                                  @"background-color": A3ColorBackgroundHighlighted
+                                                                  }
+                                                 beforeDictionary:separatorCSS(@"15px")
+                                                  afterDictionary:arrowCSS(A3ColorBorderBlue, "-6px", "23px")],
+
     // ==========================================================
-    // MINI SIZE DEFINITIONS (Fixed Separator and Arrow)
+    // MINI SIZE DEFINITIONS
     // ==========================================================
 
     miniButtonCssColor = [CPColor colorWithCSSDictionary:@{
@@ -1218,15 +1211,7 @@ var themedButtonValues                      = nil,
                                                        @"border-radius": @"3px",
                                                        @"box-sizing": @"border-box"
                                                        }
-                                    beforeDictionary:@{
-                                                       @"background-color": @"rgb(225,225,225)",
-                                                       @"bottom": @"2px", // Smaller line height
-                                                       @"content": @"''",
-                                                       @"position": @"absolute",
-                                                       @"right": @"13px", // Much closer to edge
-                                                       @"top": @"2px",    // Smaller line height
-                                                       @"width": @"1px"
-                                                       }
+                                    beforeDictionary:separatorCSS(@"13px")
                                      afterDictionary:arrowCSS(A3ColorBorderBlue, "-4px", "20px")],
 
     miniNotKeyButtonCssColor = [CPColor colorWithCSSDictionary:@{
@@ -1237,15 +1222,7 @@ var themedButtonValues                      = nil,
                                                              @"border-radius": @"3px",
                                                              @"box-sizing": @"border-box"
                                                              }
-                                          beforeDictionary:@{
-                                                             @"background-color": @"rgb(225,225,225)",
-                                                             @"bottom": @"2px",
-                                                             @"content": @"''",
-                                                             @"position": @"absolute",
-                                                             @"right": @"13px",
-                                                             @"top": @"2px",
-                                                             @"width": @"1px"
-                                                             }
+                                          beforeDictionary:separatorCSS(@"13px")
                                            afterDictionary:arrowCSS(A3ColorInactiveText, "-4px", "20px")],
 
     miniDisabledButtonCssColor = [CPColor colorWithCSSDictionary:@{
@@ -1258,6 +1235,17 @@ var themedButtonValues                      = nil,
                                                                }
                                             beforeDictionary:nil
                                              afterDictionary:arrowCSS(A3ColorInactiveText, "-4px", "20px")],
+
+    miniHighlightedButtonCssColor = [CPColor colorWithCSSDictionary:@{
+                                                                  @"border-color": A3ColorBorderDark,
+                                                                  @"border-style": @"solid",
+                                                                  @"border-width": @"1px",
+                                                                  @"border-radius": @"3px",
+                                                                  @"box-sizing": @"border-box",
+                                                                  @"background-color": A3ColorBackgroundHighlighted
+                                                                  }
+                                                 beforeDictionary:separatorCSS(@"13px")
+                                                  afterDictionary:arrowCSS(A3ColorBorderBlue, "-4px", "20px")],
 
 
     // ==========================================================
@@ -1279,34 +1267,37 @@ var themedButtonValues                      = nil,
      [@"bezel-color",                disabledButtonCssColor,                    [CPButtonStateBezelStyleRounded, CPThemeStateBordered, CPThemeStateDisabled, CPThemeStateKeyWindow]],
      
      [@"content-inset",              CGInsetMake(1.0, 19.0, 1.0, 9.0),          [CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
-     [@"min-size",                   CGSizeMake(32.0, 21.0),                    [CPButtonStateBezelStyleRounded]],
-     [@"max-size",                   CGSizeMake(-1.0, 21.0),                    [CPButtonStateBezelStyleRounded]],
-     [@"nib2cib-adjustment-frame",   CGRectMake(2.0, -8.0, -5.0, -5.0),         [CPButtonStateBezelStyleRounded]],
+
+     // FIX: We must include CPThemeStateBordered here to override CPButton's definition
+     [@"min-size",                   CGSizeMake(32.0, 21.0),                    [CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
+     [@"max-size",                   CGSizeMake(-1.0, 21.0),                    [CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
+     [@"nib2cib-adjustment-frame",   CGRectMake(2.0, -8.0, -5.0, -5.0),         [CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
 
      // Small size
-     // NOW USES small* Colors defined above
      [@"bezel-color",                smallButtonCssColor,                       [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall, CPThemeStateBordered, CPThemeStateKeyWindow]],
      [@"bezel-color",                smallNotKeyButtonCssColor,                 [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall, CPThemeStateBordered]],
-     [@"bezel-color",                highlightedButtonCssColor,                 [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall, CPThemeStateBordered, CPThemeStateHighlighted]],
+     [@"bezel-color",                smallHighlightedButtonCssColor,            [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall, CPThemeStateBordered, CPThemeStateHighlighted]],
      [@"bezel-color",                smallDisabledButtonCssColor,               [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall, CPThemeStateBordered, CPThemeStateDisabled]],
      
      [@"content-inset",              CGInsetMake(1.0, 17.0, 1.00, 8.0),         [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall, CPThemeStateBordered]],
-     // Fixed min/max height conflict (20 vs 18). Standardized to 19.
-     [@"min-size",                   CGSizeMake(38.0, 19.0),                    [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall]],
-     [@"max-size",                   CGSizeMake(-1.0, 19.0),                    [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall]],
-     [@"nib2cib-adjustment-frame",   CGRectMake(3.0, -7.0, -6.0, -4.0),         [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall]],
+     
+     // FIX: We must include CPThemeStateBordered here to override CPButton's definition
+     [@"min-size",                   CGSizeMake(38.0, 19.0),                    [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall, CPThemeStateBordered]],
+     [@"max-size",                   CGSizeMake(-1.0, 19.0),                    [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall, CPThemeStateBordered]],
+     [@"nib2cib-adjustment-frame",   CGRectMake(3.0, -7.0, -6.0, -4.0),         [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall, CPThemeStateBordered]],
 
      // Mini size
-     // NOW USES mini* Colors defined above
      [@"bezel-color",                miniButtonCssColor,                        [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeMini, CPThemeStateBordered, CPThemeStateKeyWindow]],
      [@"bezel-color",                miniNotKeyButtonCssColor,                  [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeMini, CPThemeStateBordered]],
-     [@"bezel-color",                highlightedButtonCssColor,                 [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeMini, CPThemeStateBordered, CPThemeStateHighlighted]],
+     [@"bezel-color",                miniHighlightedButtonCssColor,             [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeMini, CPThemeStateBordered, CPThemeStateHighlighted]],
      [@"bezel-color",                miniDisabledButtonCssColor,                [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeMini, CPThemeStateBordered, CPThemeStateDisabled]],
      
      [@"content-inset",              CGInsetMake(1.0, 15.0, 1.0, 10.0),         [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeMini, CPThemeStateBordered]],
-     [@"min-size",                   CGSizeMake(32.0, 15.0),                    [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeMini]],
-     [@"max-size",                   CGSizeMake(-1.0, 15.0),                    [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeMini]],
-     [@"nib2cib-adjustment-frame",   CGRectMake(1.0, -0.0, -3.0, -0.0),         [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeMini]],
+     
+     // FIX: We must include CPThemeStateBordered here to override CPButton's definition
+     [@"min-size",                   CGSizeMake(32.0, 15.0),                    [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeMini, CPThemeStateBordered]],
+     [@"max-size",                   CGSizeMake(-1.0, 15.0),                    [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeMini, CPThemeStateBordered]],
+     [@"nib2cib-adjustment-frame",   CGRectMake(1.0, -0.0, -3.0, -0.0),         [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeMini, CPThemeStateBordered]],
 
      // Flat styles
      [@"bezel-color",                buttonCssColor,                          [CPButtonStateBezelStyleRegularSquare, CPThemeStateKeyWindow]],

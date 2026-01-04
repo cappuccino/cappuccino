@@ -79,6 +79,8 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
     if (self)
     {
+        [self setBezelStyle:CPRoundedBezelStyle];
+
         [self selectItemAtIndex:CPNotFound];
 
         _preferredEdge = CPMaxYEdge;
