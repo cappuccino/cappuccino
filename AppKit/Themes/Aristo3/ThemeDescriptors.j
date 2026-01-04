@@ -4361,6 +4361,7 @@ var themedButtonValues                      = nil,
     [
      [@"bezel-color",               buttonBezelColor],
      [@"bezel-color",               highlightedButtonBezelColor,        [CPThemeStateHighlighted, CPThemeStateBordered]],
+     [@"bezel-color",               highlightedButtonBezelColor,        CPThemeStateHighlighted],
      [@"min-size",                  CGSizeMake(18, 28)],
      [@"max-size",                  CGSizeMake(18, 28)],
      [@"min-size",                  CGSizeMake(34, 28),                 CPThemeStateBordered],
