@@ -423,7 +423,12 @@ var CPButtonBarPopulateButtonBarSelector           = 1 << 1;
     // If we already have buttons (surely a live style change), we have to
     // reload them in order to have correct behaviors
     if ([_buttons count] > 0)
+    {
+        // Clear existing buttons before asking delegate to re-populate,
+        // otherwise we get duplicates (A, B -> A, B, A, B).
+        [self setButtons:@[]]; 
         [self _sendDelegatePopulateButtonBar];
+    }
 
     [self setNeedsRelayout:YES];
 }
@@ -996,8 +1001,6 @@ var CPButtonBarHasLeftResizeControlKey       = @"CPButtonBarHasLeftResizeControl
         _dividers                   = [aCoder decodeObjectForKey:CPButtonBarDividersKey] || @[];
         _flexibles                  = [aCoder decodeObjectForKey:CPButtonBarFlexiblesKey] || @[];
         _flexibleSpacesCount        = [aCoder decodeIntForKey:CPButtonBarFlexibleSpacesCountKey];
-
-        [self setDelegate:[aCoder decodeObjectForKey:CPButtonBarDelegateKey]];
 
         [self setNeedsRelayout:YES];
     }
