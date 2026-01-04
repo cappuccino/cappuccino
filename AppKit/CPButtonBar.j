@@ -1605,7 +1605,14 @@ var CPButtonBarHasLeftResizeControlKey       = @"CPButtonBarHasLeftResizeControl
 
     if (contentView)
     {
-        [contentView setImage:_image];
+        var imageToShow = _image;
+
+        // Check if the button is highlighted (menu open) and an alternate image exists
+        if (_isHighlighted && [self alternateImage])
+            imageToShow = [self alternateImage];
+            
+        [contentView setImage:imageToShow];
+
         [contentView setFrameSize:CGSizeMake(16,16)];
         [contentView setImagePosition:CPImageLeft];
         [contentView setDimsImage:[self hasThemeState:CPThemeStateDisabled] && _imageDimsWhenDisabled];

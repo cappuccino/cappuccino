@@ -76,6 +76,7 @@ var A3ColorActiveText   = [A3CPColorActiveText cssString],
     svgPlus         = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNiAxNiI+PHBhdGggZD0iTTggM3YxMG0tNS01aDEwIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZT0iY3VycmVudENvbG9yIiBmaWxsPSJub25lIi8+PC9zdmc+')",
     svgMinus        = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNiAxNiI+PHBhdGggZD0iTTMgOGgxMCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgZmlsbD0ibm9uZSIvPjwvc3ZnPg==')",
     svgGear         = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBkPSJNNDE2LjM0OSAyNTYuMDQ2Yy0uMDAxLTIxLjAxMyAxMy4xNDMtMzguOTQ4IDMxLjY1MS00Ni4wNjJhMTk2LjMwMiAxOTYuMzAyIDAgMCAwLTIzLjY2NC01Ny4xMzkgNDkuNDIzIDQ5LjQyMyAwIDAgMS0yMC4wODIgNC4yNTRjLTEyLjYyMSAwLTI1LjIzOC00LjgxMS0zNC44NzEtMTQuNDQyLTE0Ljg2My0xNC44NjMtMTguMjQ4LTM2Ljg0Ni0xMC4xOC01NC45N0ExOTYuMjc0IDE5Ni4yNzQgMCAwIDAgMzAyLjA3NCA2NEMyOTQuOTcxIDgyLjUyOSAyNzcuMDI3IDk1LjY5IDI1NiA5NS42OWMtMjEuMDI1IDAtMzguOTY5LTEzLjE2MS00Ni4wNzMtMzEuNjlhMTk2LjI0MyAxOTYuMjQzIDAgMCAwLTU3LjEyOCAyMy42ODhjOC4wNjggMTguMTIyIDQuNjgzIDQwLjEwNC0xMC4xODEgNTQuOTctOS42MzEgOS42MzEtMjIuMjUgMTQuNDQzLTM0Ljg3MSAxNC40NDNhNDkuNDI5IDQ5LjQyOSAwIDAgMS0yMC4wODMtNC4yNTVBMTk2LjI3MyAxOTYuMjczIDAgMCAwIDY0IDIwOS45ODRjMTguNTA5IDcuMTEyIDMxLjY1MiAyNS4wNDkgMzEuNjUyIDQ2LjA2MiAwIDIxLjAwOC0xMy4xMzIgMzguOTM2LTMxLjYzIDQ2LjA1NGExOTYuMzE4IDE5Ni4zMTggMCAwIDAgMjMuNjkyIDU3LjEyOCA0OS40MjggNDkuNDI4IDAgMCAxIDIwLjAzMi00LjIzMmMxMi42MjIgMCAyNS4yMzkgNC44MTIgMzQuODcxIDE0LjQ0MyAxNC44NDEgMTQuODQxIDE4LjIzOSAzNi43ODEgMTAuMjE1IDU0Ljg4OWExOTYuMjU3IDE5Ni4yNTcgMCAwIDAgNTcuMTMgMjMuNjczYzcuMTI4LTE4LjQ3OSAyNS4wNDYtMzEuNTk2IDQ2LjAzOC0zMS41OTYgMjAuOTkyIDAgMzguOTEgMTMuMTE1IDQ2LjAzNyAzMS41OTZhMTk2LjIzNCAxOTYuMjM0IDAgMCAwIDU3LjEzMi0yMy42NzVjLTguMDIzLTE4LjEwNi00LjYyNi00MC4wNDYgMTAuMjE2LTU0Ljg4NyA5LjYyOS05LjYzMiAyMi4yNDgtMTQuNDQ0IDM0Ljg2OC0xNC40NDQgNi44MzYgMCAxMy42NyAxLjQxMSAyMC4wMzMgNC4yMzNhMTk2LjMxOCAxOTYuMzE4IDAgMCAwIDIzLjY5Mi01Ny4xMjhjLTE4LjQ5OC03LjExOS0zMS42MjktMjUuMDQ4LTMxLjYyOS00Ni4wNTR6TTI1Ni45IDMzNS45Yy00NC4zIDAtODAtMzUuOS04MC04MCAwLTQ0LjEwMSAzNS43LTgwIDgwLTgwIDQ0LjI5OSAwIDgwIDM1Ljg5OSA4MCA4MCAwIDQ0LjEtMzUuNzAxIDgwLTgwIDgweiIvPjwvc3ZnPg==')",
+    svgGear2        = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyAKICB3aWR0aD0iMS4zZW0iIAogIGhlaWdodD0iMWVtIiAKICB2aWV3Qm94PSIwIDAgMTM1MCAxMDI0IiAKICB2ZXJzaW9uPSIxLjEiIAogIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIKPgogIDxwYXRoIAogICAgZmlsbD0ibm9uZSIgCiAgICBzdHJva2U9ImN1cnJlbnRDb2xvciIgCiAgICBzdHJva2Utd2lkdGg9IjUwIiAKICAgIHN0cm9rZS1saW5lam9pbj0icm91bmQiIAogICAgZD0iTTgzMi42OTggNTEyLjA5MmMtMC4wMDItNDIuMDI2IDI2LjI4Ni03Ny44OTYgNjMuMzAyLTkyLjEyNC05Ljc3NC00MC45MzItMjUuOTE0LTc5LjQtNDcuMzI4LTExNC4yNzgtMTIuNzUgNS42NzItMjYuNDYgOC41MDgtNDAuMTY0IDguNTA4LTI1LjI0MiAwLTUwLjQ3Ni05LjYyMi02OS43NDItMjguODg0LTI5LjcyNi0yOS43MjYtMzYuNDk2LTczLjY5Mi0yMC4zNi0xMDkuOTRDNjgzLjUzNiAxNTMuOTQ2IDY0NS4wOCAxMzcuNzkgNjA0LjE0OCAxMjggNTg5Ljk0MiAxNjUuMDU4IDU1NC4wNTQgMTkxLjM4IDUxMiAxOTEuMzhjLTQyLjA1IDAtNzcuOTM4LTI2LjMyMi05Mi4xNDYtNjMuMzgtNDAuOTMyIDkuNzktNzkuMzg2IDI1Ljk0Ni0xMTQuMjU2IDQ3LjM3NiAxNi4xMzYgMzYuMjQ0IDkuMzY2IDgwLjIwOC0yMC4zNjIgMTA5Ljk0LTE5LjI2MiAxOS4yNjItNDQuNSAyOC44ODYtNjkuNzQyIDI4Ljg4Ni0xMy43MDggMC0yNy40MTItMi44MzgtNDAuMTY2LTguNTFDMTUzLjkxNiAzNDAuNTY4IDEzNy43NzIgMzc5LjAzNCAxMjggNDE5Ljk2OGMzNy4wMTggMTQuMjI0IDYzLjMwNCA1MC4wOTggNjMuMzA0IDkyLjEyNCAwIDQyLjAxNi0yNi4yNjQgNzcuODcyLTYzLjI2IDkyLjEwOCA5Ljc5NiA0MC45MzIgMjUuOTUyIDc5LjM4NCA0Ny4zODQgMTE0LjI1NiAxMi43MjItNS42NDIgMjYuMzk2LTguNDY0IDQwLjA2NC04LjQ2NCAyNS4yNDQgMCA1MC40NzggOS42MjQgNjkuNzQyIDI4Ljg4NiAyOS42ODIgMjkuNjgyIDM2LjQ3OCA3My41NjIgMjAuNDMgMTA5Ljc3OCAzNC44NzYgMjEuNDIgNzMuMzI4IDM3LjU2NiAxMTQuMjYgNDcuMzQ2IDE0LjI1Ni0zNi45NTggNTAuMDkyLTYzLjE5MiA5Mi4wNzYtNjMuMTkyIDQxLjk4NCAwIDc3LjgyIDI2LjIzIDkyLjA3NCA2My4xOTIgNDAuOTM2LTkuNzggNzkuMzg2LTI1LjkyOCAxMTQuMjY0LTQ3LjM1LTE2LjA0Ni0zNi4yMTItOS4yNTItODAuMDkyIDIwLjQzMi0xMDkuNzc0IDE5LjI1OC0xOS4yNjQgNDQuNDk2LTI4Ljg4OCA2OS43MzYtMjguODg4IDEzLjY3MiAwIDI3LjM0IDIuODIyIDQwLjA2NiA4LjQ2NiAyMS40MzItMzQuODcyIDM3LjU4OC03My4zMjQgNDcuMzg0LTExNC4yNTZDODU4Ljk2IDU4OS45NjIgODMyLjY5OCA1NTQuMTA0IDgzMi42OTggNTEyLjA5MnpNNTEzLjggNjcxLjhjLTg4LjYgMC0xNjAtNzEuOC0xNjAtMTYwIDAtODguMjAyIDcxLjQtMTYwIDE2MC0xNjAgODguNTk4IDAgMTYwIDcxLjc5OCAxNjAgMTYwQzY3My44IDYwMCA2MDIuMzk4IDY3MS44IDUxMy44IDY3MS44eiIgCiAgLz4KPC9zdmc+')",
     svgAlertIconWarning = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB3aWR0aD0iNjRweCIgaGVpZ2h0PSI2NHB4IiB2aWV3Qm94PSIwIDAgMTAwIDEwMCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgogICAgPGNpcmNsZSBjeD0iNTAiIGN5PSI1MCIgcj0iNDgiIGZpbGw9IiMyOTcxQjciPjwvY2lyY2xlPgogICA8ZyBmaWxsPSIjRkZGRkZGIj4KICAgICAgICA8cGF0aCBkPSJNNDQsMjIgTDU2LDIyIEw1Myw1OCBMNDcsNTggWiI+PC9wYXRoPgogICAgICAgIDxjaXJjbGUgY3g9IjUwIiBjeT0iNzQiIHI9IjYuNSI+PC9jaXJjbGU+CiAgICA8L2c+Cjwvc3ZnPg==')",
     svgAlertIconError = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB3aWR0aD0iNjRweCIgaGVpZ2h0PSI2NHB4IiB2aWV3Qm94PSIwIDAgMTAwIDEwMCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgogICAgPHBhdGggZmlsbD0iI0QwMDIxQiIgZD0iTTI5LjUsNC41IEw3MC41LDQuNSBMOTUuNSwyOS41IEw5NS41LDcwLjUgTDcwLjUsOTUuNSBMMjkuNSw5NS41IEw0LjUsNzAuNSBMNC41LDI5LjUgWiI+PC9wYXRoPgogICAgPGcgZmlsbD0iI0ZGRkZGRiI+CiAgICAgICAgPHBhdGggZD0iTTQ2LDI0IEw1NCwyNCBMNTIsNTggTDQ4LDU4IFoiPjwvcGF0aD4KICAgICAgICA8Y2lyY2xlIGN4PSI1MCIgY3k9Ijc0IiByPSI1Ij48L2NpcmNsZT4KICAgIDwvZz4KPC9zdmc+')",
     svgAlertIconHelp = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB3aWR0aD0iNjRweCIgaGVpZ2h0PSI2NHB4IiB2aWV3Qm94PSIwIDAgMTAwIDEwMCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgogICAgPGNpcmNsZSBjeD0iNTAiIGN5PSI1MCIgcj0iNDgiIGZpbGw9IiMyOTcxQjciPjwvY2lyY2xlPgogICAgPGcgZmlsbD0iI0ZGRkZGRiI+CiAgICAgICAgPHBhdGggZD0iTTM1LDM1IEExNSwxNSAwIDAsMSA2NSwzNSBDNjUsNDUgNTYsNDggNTYsNTggTDQ0LDU4IEM0NCw0NiA1Myw0NCA1MywzNSBBMywzIDAgMCwwIDQ3LDM1IEgzNSBaIj48L3BhdGg+CiAgICAgICAgPGNpcmNsZSBjeD0iNTAiIGN5PSI3NCIgcj0iNi41Ij48L2NpcmNsZT4KICAgIDwvZz4KPC9zdmc+')",
@@ -4317,10 +4318,26 @@ var themedButtonValues                      = nil,
                                                   }
                                              size:CGSizeMake(16,16)],
 
+     actionIconHighlighted = [CPImage imageWithCSSDictionary:@{
+                                                   "-webkit-mask-image": svgGear2, // Use svgGear2 here
+                                                   "mask-image": svgGear2,         // Use svgGear2 here
+                                                   "background-color": A3ColorActiveText,
+                                                   "-webkit-mask-size": "contain",
+                                                   "mask-size": "contain",
+                                                   "-webkit-mask-repeat": "no-repeat",
+                                                   "mask-repeat": "no-repeat",
+                                                   "-webkit-mask-position": "center",
+                                                   "mask-position": "center"
+                                                  }
+                                                size:CGSizeMake(16,16)],
+
+
     themedButtonBarValues =
     [
      [@"bezel-color",               borderedBezelCssColor,              CPThemeStateBordered],
      [@"divider-color",             dividerCssColor],
+
+     [@"button-vertical-offset",    0.0],
 
      [@"resize-control-size",       CGSizeMake(15, 28)],
      [@"resize-control-inset",      CGInsetMake(0, -1, 0, -1)],
@@ -4337,9 +4354,9 @@ var themedButtonValues                      = nil,
 
      [@"button-image-plus",         plusIcon,         CPThemeStateNormal],
      [@"button-image-minus",        minusIcon,        CPThemeStateNormal],
-     [@"button-image-action",       actionIcon,       CPThemeStateNormal]
-     ];
-
+     [@"button-image-action",       actionIcon,       CPThemeStateNormal],
+     [@"button-image-action",       actionIconHighlighted, CPThemeStateHighlighted]
+    ];
     [self registerThemeValues:themedButtonBarValues forView:buttonBar];
 
     return buttonBar;
