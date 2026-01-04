@@ -707,12 +707,17 @@ CPButtonImageOffset   = 3.0;
 // Note : We have to split content and image visual states as, for example, radio buttons don't follow push buttons behavior
 - (CPThemeState)_contentVisualState
 {
-    var visualState  = [self themeState] || CPThemeStateNormal, // Needed during theme compilation
+    var visualState  = [self themeState] || CPThemeStateNormal,
         currentState = [self state],
         buttonIsOn   = (currentState !== CPOffState);
 
-    // If the button is pushed (_isHighlighted), always add the highlighted state
-    if (_isHighlighted || (((_showsStateBy & CPChangeGrayCellMask) || (_showsStateBy & CPChangeBackgroundCellMask)) && buttonIsOn))
+    // Define masks that imply the background changes color (Blue/Gray)
+    // If the background changes, we usually want the text to turn White (Highlighted state).
+    var highlightMask = CPPushInCellMask | CPChangeGrayCellMask | CPChangeBackgroundCellMask;
+
+    // Only add CPThemeStateHighlighted if the button is configured to highlight visually (Background change)
+    if ((_isHighlighted && (_highlightsBy & highlightMask)) || 
+        (((_showsStateBy & CPChangeGrayCellMask) || (_showsStateBy & CPChangeBackgroundCellMask)) && buttonIsOn))
         visualState = visualState.and(CPThemeStateHighlighted);
     else
         visualState = visualState.without(CPThemeStateHighlighted);
