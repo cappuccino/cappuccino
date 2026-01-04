@@ -75,7 +75,7 @@ var A3ColorActiveText   = [A3CPColorActiveText cssString],
     svgArrowRight   = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMCAxMCI+PHBhdGggZD0iTTIgMUw4IDVMMiA5WiIvPjwvc3ZnPg==')",
     svgPlus         = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNiAxNiI+PHBhdGggZD0iTTggM3YxMG0tNS01aDEwIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZT0iY3VycmVudENvbG9yIiBmaWxsPSJub25lIi8+PC9zdmc+')",
     svgMinus        = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNiAxNiI+PHBhdGggZD0iTTMgOGgxMCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgZmlsbD0ibm9uZSIvPjwvc3ZnPg==')",
-    svgGear         = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyBjbGFzcz0ic3ZnLWljb24iIHN0eWxlPSJ3aWR0aDogMS4zZW07IGhlaWdodDogMWVtOyB2ZXJ0aWNhbC1hbGlnbjogbWlkZGxlOyBmaWxsOiBjdXJyZW50Q29sb3I7IG92ZXJmbG93OiBoaWRkZW47IiB2aWV3Qm94PSIwIDAgMTM1MCAxMDI0IiB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik04MzIuNjk4IDUxMi4wOTJjLTAuMDAyLTQyLjAyNiAyNi4yODYtNzcuODk2IDYzLjMwMi05Mi4xMjQtOS43NzQtNDAuOTMyLTI1LjkxNC03OS40LTQ3LjMyOC0xMTQuMjc4LTEyLjc1IDUuNjcyLTI2LjQ2IDguNTA4LTQwLjE2NCA4LjUwOC0yNS4yNDIgMC01MC40NzYtOS42MjItNjkuNzQyLTI4Ljg4NC0yOS43MjYtMjkuNzI2LTM2LjQ5Ni03My42OTItMjAuMzYtMTA5Ljk0QzY4My41MzYgMTUzLjk0NiA2NDUuMDggMTM3Ljc5IDYwNC4xNDggMTI4IDU4OS45NDIgMTY1LjA1OCA1NTQuMDU0IDE5MS4zOCA1MTIgMTkxLjM4Yy00Mi4wNSAwLTc3LjkzOC0yNi4zMjItOTIuMTQ2LTYzLjM4LTQwLjkzMiA5Ljc5LTc5LjM4NiAyNS45NDYtMTE0LjI1NiA0Ny4zNzYgMTYuMTM2IDM2LjI0NCA5LjM2NiA4MC4yMDgtMjAuMzYyIDEwOS45NC0xOS4yNjIgMTkuMjYyLTQ0LjUgMjguODg2LTY5Ljc0MiAyOC44ODYtMTMuNzA4IDAtMjcuNDEyLTIuODM4LTQwLjE2Ni04LjUxQzE1My45MTYgMzQwLjU2OCAxMzcuNzcyIDM3OS4wMzQgMTI4IDQxOS45NjhjMzcuMDE4IDE0LjIyNCA2My4zMDQgNTAuMDk4IDYzLjMwNCA5Mi4xMjQgMCA0Mi4wMTYtMjYuMjY0IDc3Ljg3Mi02My4yNiA5Mi4xMDggOS43OTYgNDAuOTMyIDI1Ljk1MiA3OS4zODQgNDcuMzg0IDExNC4yNTYgMTIuNzIyLTUuNjQyIDI2LjM5Ni04LjQ2NCA0MC4wNjQtOC40NjQgMjUuMjQ0IDAgNTAuNDc4IDkuNjI0IDY5Ljc0MiAyOC44ODYgMjkuNjgyIDI5LjY4MiAzNi40NzggNzMuNTYyIDIwLjQzIDEwOS43NzggMzQuODc2IDIxLjQyIDczLjMyOCAzNy41NjYgMTE0LjI2IDQ3LjM0NiAxNC4yNTYtMzYuOTU4IDUwLjA5Mi02My4xOTIgOTIuMDc2LTYzLjE5MiA0MS45ODQgMCA3Ny44MiAyNi4yMyA5Mi4wNzQgNjMuMTkyIDQwLjkzNi05Ljc4IDc5LjM4Ni0yNS45MjggMTE0LjI2NC00Ny4zNS0xNi4wNDYtMzYuMjEyLTkuMjUyLTgwLjA5MiAyMC40MzItMTA5Ljc3NCAxOS4yNTgtMTkuMjY0IDQ0LjQ5Ni0yOC44ODggNjkuNzM2LTI4Ljg4OCAxMy42NzIgMCAyNy4zNCAyLjgyMiA0MC4wNjYgOC40NjYgMjEuNDMyLTM0Ljg3MiAzNy41ODgtNzMuMzI0IDQ3LjM4NC0xMTQuMjU2Qzg1OC45NiA1ODkuOTYyIDgzMi42OTggNTU0LjEwNCA4MzIuNjk4IDUxMi4wOTJ6TTUxMy44IDY3MS44Yy04OC42IDAtMTYwLTcxLjgtMTYwLTE2MCAwLTg4LjIwMiA3MS40LTE2MCAxNjAtMTYwIDg4LjU5OCAwIDE2MCA3MS43OTggMTYwIDE2MEM2NzMuOCA2MDAgNjAyLjM5OCA2NzEuOCA1MTMuOCA2NzEuOHoiIC8+CjxwYXRoIGQ9Ik0xMDE1IDQwMCBMMTMxNSA0MDAgTDExNjUgNjYwIFoiIC8+Cjwvc3ZnPg==')",
+    svgGear         = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBkPSJNNDE2LjM0OSAyNTYuMDQ2Yy0uMDAxLTIxLjAxMyAxMy4xNDMtMzguOTQ4IDMxLjY1MS00Ni4wNjJhMTk2LjMwMiAxOTYuMzAyIDAgMCAwLTIzLjY2NC01Ny4xMzkgNDkuNDIzIDQ5LjQyMyAwIDAgMS0yMC4wODIgNC4yNTRjLTEyLjYyMSAwLTI1LjIzOC00LjgxMS0zNC44NzEtMTQuNDQyLTE0Ljg2My0xNC44NjMtMTguMjQ4LTM2Ljg0Ni0xMC4xOC01NC45N0ExOTYuMjc0IDE5Ni4yNzQgMCAwIDAgMzAyLjA3NCA2NEMyOTQuOTcxIDgyLjUyOSAyNzcuMDI3IDk1LjY5IDI1NiA5NS42OWMtMjEuMDI1IDAtMzguOTY5LTEzLjE2MS00Ni4wNzMtMzEuNjlhMTk2LjI0MyAxOTYuMjQzIDAgMCAwLTU3LjEyOCAyMy42ODhjOC4wNjggMTguMTIyIDQuNjgzIDQwLjEwNC0xMC4xODEgNTQuOTctOS42MzEgOS42MzEtMjIuMjUgMTQuNDQzLTM0Ljg3MSAxNC40NDNhNDkuNDI5IDQ5LjQyOSAwIDAgMS0yMC4wODMtNC4yNTVBMTk2LjI3MyAxOTYuMjczIDAgMCAwIDY0IDIwOS45ODRjMTguNTA5IDcuMTEyIDMxLjY1MiAyNS4wNDkgMzEuNjUyIDQ2LjA2MiAwIDIxLjAwOC0xMy4xMzIgMzguOTM2LTMxLjYzIDQ2LjA1NGExOTYuMzE4IDE5Ni4zMTggMCAwIDAgMjMuNjkyIDU3LjEyOCA0OS40MjggNDkuNDI4IDAgMCAxIDIwLjAzMi00LjIzMmMxMi42MjIgMCAyNS4yMzkgNC44MTIgMzQuODcxIDE0LjQ0MyAxNC44NDEgMTQuODQxIDE4LjIzOSAzNi43ODEgMTAuMjE1IDU0Ljg4OWExOTYuMjU3IDE5Ni4yNTcgMCAwIDAgNTcuMTMgMjMuNjczYzcuMTI4LTE4LjQ3OSAyNS4wNDYtMzEuNTk2IDQ2LjAzOC0zMS41OTYgMjAuOTkyIDAgMzguOTEgMTMuMTE1IDQ2LjAzNyAzMS41OTZhMTk2LjIzNCAxOTYuMjM0IDAgMCAwIDU3LjEzMi0yMy42NzVjLTguMDIzLTE4LjEwNi00LjYyNi00MC4wNDYgMTAuMjE2LTU0Ljg4NyA5LjYyOS05LjYzMiAyMi4yNDgtMTQuNDQ0IDM0Ljg2OC0xNC40NDQgNi44MzYgMCAxMy42NyAxLjQxMSAyMC4wMzMgNC4yMzNhMTk2LjMxOCAxOTYuMzE4IDAgMCAwIDIzLjY5Mi01Ny4xMjhjLTE4LjQ5OC03LjExOS0zMS42MjktMjUuMDQ4LTMxLjYyOS00Ni4wNTR6TTI1Ni45IDMzNS45Yy00NC4zIDAtODAtMzUuOS04MC04MCAwLTQ0LjEwMSAzNS43LTgwIDgwLTgwIDQ0LjI5OSAwIDgwIDM1Ljg5OSA4MCA4MCAwIDQ0LjEtMzUuNzAxIDgwLTgwIDgweiIvPjwvc3ZnPg==')",
     svgAlertIconWarning = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB3aWR0aD0iNjRweCIgaGVpZ2h0PSI2NHB4IiB2aWV3Qm94PSIwIDAgMTAwIDEwMCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgogICAgPGNpcmNsZSBjeD0iNTAiIGN5PSI1MCIgcj0iNDgiIGZpbGw9IiMyOTcxQjciPjwvY2lyY2xlPgogICA8ZyBmaWxsPSIjRkZGRkZGIj4KICAgICAgICA8cGF0aCBkPSJNNDQsMjIgTDU2LDIyIEw1Myw1OCBMNDcsNTggWiI+PC9wYXRoPgogICAgICAgIDxjaXJjbGUgY3g9IjUwIiBjeT0iNzQiIHI9IjYuNSI+PC9jaXJjbGU+CiAgICA8L2c+Cjwvc3ZnPg==')",
     svgAlertIconError = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB3aWR0aD0iNjRweCIgaGVpZ2h0PSI2NHB4IiB2aWV3Qm94PSIwIDAgMTAwIDEwMCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgogICAgPHBhdGggZmlsbD0iI0QwMDIxQiIgZD0iTTI5LjUsNC41IEw3MC41LDQuNSBMOTUuNSwyOS41IEw5NS41LDcwLjUgTDcwLjUsOTUuNSBMMjkuNSw5NS41IEw0LjUsNzAuNSBMNC41LDI5LjUgWiI+PC9wYXRoPgogICAgPGcgZmlsbD0iI0ZGRkZGRiI+CiAgICAgICAgPHBhdGggZD0iTTQ2LDI0IEw1NCwyNCBMNTIsNTggTDQ4LDU4IFoiPjwvcGF0aD4KICAgICAgICA8Y2lyY2xlIGN4PSI1MCIgY3k9Ijc0IiByPSI1Ij48L2NpcmNsZT4KICAgIDwvZz4KPC9zdmc+')",
     svgAlertIconHelp = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB3aWR0aD0iNjRweCIgaGVpZ2h0PSI2NHB4IiB2aWV3Qm94PSIwIDAgMTAwIDEwMCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgogICAgPGNpcmNsZSBjeD0iNTAiIGN5PSI1MCIgcj0iNDgiIGZpbGw9IiMyOTcxQjciPjwvY2lyY2xlPgogICAgPGcgZmlsbD0iI0ZGRkZGRiI+CiAgICAgICAgPHBhdGggZD0iTTM1LDM1IEExNSwxNSAwIDAsMSA2NSwzNSBDNjUsNDUgNTYsNDggNTYsNTggTDQ0LDU4IEM0NCw0NiA1Myw0NCA1MywzNSBBMywzIDAgMCwwIDQ3LDM1IEgzNSBaIj48L3BhdGg+CiAgICAgICAgPGNpcmNsZSBjeD0iNTAiIGN5PSI3NCIgcj0iNi41Ij48L2NpcmNsZT4KICAgIDwvZz4KPC9zdmc+')",
@@ -4442,8 +4442,31 @@ var themedButtonValues                      = nil,
 {
     var button = [[_CPButtonBarPopUpButton alloc] initWithFrame:CGRectMake(0, 0, 34, 34)],
 
+    // Normal State: Transparent
+    buttonBezelColor = [CPColor colorWithCSSDictionary:@{
+                                                         @"background-color": A3ColorTransparent
+                                                        }],
+
+    // Highlighted State: Darkened Background
+    highlightedButtonBezelColor = [CPColor colorWithCSSDictionary:@{
+                                                                    @"background-color": A3ColorBackgroundDarkened
+                                                                   }],
+
     themedButtonBarPopUpButtonValues =
     [
+     // Normal
+     [@"bezel-color",       buttonBezelColor],
+
+     // Highlighted (Catch-all for simple highlight)
+     [@"bezel-color",       highlightedButtonBezelColor,        CPThemeStateHighlighted],
+     
+     // Highlighted (Specific for Key Window)
+     [@"bezel-color",       highlightedButtonBezelColor,        [CPThemeStateHighlighted, CPThemeStateKeyWindow]],
+
+     // Highlighted (Specific combinations to ensure override of parent class)
+     [@"bezel-color",       highlightedButtonBezelColor,        [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRegularSquare, CPThemeStateHighlighted]],
+
+     // Layout
      [@"content-inset",     CGInsetMake(-1.0, 12.0, 1.0, 2.0)],
      [@"menu-offset",       CGSizeMake(1, -5)],
      [@"min-size",          CGSizeMake(34, 28)],

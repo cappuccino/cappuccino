@@ -1546,18 +1546,13 @@ var CPButtonBarHasLeftResizeControlKey       = @"CPButtonBarHasLeftResizeControl
     return 0;
 }
 
-// overridden to prevent the first item to be hidden
-- (BOOL)pullsDown
-{
-    return NO;
-}
-
 - (id)initWithImage:(CPImage)image alternateImage:(CPImage)alternateImage
 {
     self = [super initWithFrame:CGRectMakeZero() pullsDown:YES];
 
     if (self)
     {
+        [self addItemWithTitle:@""];
         [self setControlSize:CPSmallControlSize];
         _image = image;
         [self setImagePosition:CPImageOnly];
@@ -1576,23 +1571,18 @@ var CPButtonBarHasLeftResizeControlKey       = @"CPButtonBarHasLeftResizeControl
     [self setFrameSize:[self currentValueForThemeAttribute:@"min-size"]];
 }
 
-// We override CPButton layoutSubviews in order to display an alternate image when mouse is done on the button.
-// This is needed as CPPopUpButton overrides setObjectValue, blocking setting the state of the button.
 - (void)layoutSubviews
 {
     var bezelColor = [self currentValueForThemeAttribute:@"bezel-color"],
         contentView;
 
+    // 1. Handle Background Color
     if ([bezelColor isCSSBased])
     {
-        // CSS Styling
-        // We don't need bezelView as we apply CSS styling directly on the button view itself
-
         [self setBackgroundColor:bezelColor];
-
         contentView = [self layoutEphemeralSubviewNamed:@"content-view"
-                                                 positioned:CPWindowAbove
-                            relativeToEphemeralSubviewNamed:nil];
+                                             positioned:CPWindowAbove
+                        relativeToEphemeralSubviewNamed:nil];
     }
     else if (bezelColor)
     {
@@ -1608,8 +1598,6 @@ var CPButtonBarHasLeftResizeControlKey       = @"CPButtonBarHasLeftResizeControl
     }
     else
     {
-        // As we have no bezelColor, we only need a contentView
-
         contentView = [self layoutEphemeralSubviewNamed:@"content-view"
                                              positioned:CPWindowAbove
                             relativeToEphemeralSubviewNamed:nil];
