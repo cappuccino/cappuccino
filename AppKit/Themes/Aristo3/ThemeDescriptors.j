@@ -64,7 +64,7 @@ var A3ColorActiveText   = [A3CPColorActiveText cssString],
 // SVGs
     var svgArrowDown    = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cGF0aCBkPSJNNyAxMEwxMiAxNUwxNyAxMEg3WiIgZmlsbD0iIzQ1NDU0NSIvPgo8L3N2Zz4=')",
     svgArrowUp      = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cGF0aCBkPSJNMTIgOUwxNyAxNEg3TDEyIDlaIiBmaWxsPSIjNDU0NTQ1Ii8+Cjwvc3ZnPg==')",
-    svgSingleArrow  = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cGF0aCBkPSJNOCAxMEwxMiAxNEwxNiAxMCIgc3Ryb2tlPSIjMDA3QkZGIiBzdHJva2Utd2lkdGg9IjIuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPg==')",
+    svgSingleArrow  = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cGF0aCBkPSJNOCAxMEwxMiAxNEwxNiAxMCIgc3Ryb2tlPSIjMDA3QkZGIiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPg==')",
     svgDoubleArrow  = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cGF0aCBkPSJNNCAxMEw4IDZMMTIgMTAiIHN0cm9rZT0iIzAwN0JGRiIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik00IDE0TDggMThMMTIgMTQiIHN0cm9rZT0iIzAwN0JGRiIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4=')",
     svgDoubleArrow2  = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cGF0aCBkPSJNNCA2TDggMTBMMTIgNiIgc3Ryb2tlPSIjMDA3QkZGIiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CiAgPHBhdGggZD0iTTQgMTRMMTIgMTQiIHN0cm9rZT0iIzAwN0JGRiIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4=')",
     svgCheckmark    = "url('data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMiAxMiI+PHBhdGggZD0iTTQgMTBMMCA2TDIgNEw0IDhMMTAgMkwxMiA0TDQgMTBaIi8+PC9zdmc+')",
@@ -1340,7 +1340,7 @@ var themedButtonValues                      = nil,
             @"margin-top": marginTop + "px",
 
             "-webkit-mask-image": svgSingleArrow,
-            "mask-image": svgArrowDown,
+            "mask-image": svgSingleArrow, // FIX: Ensure consistent mask image
             "-webkit-mask-size": "contain",
             "mask-size": "contain",
             "-webkit-mask-repeat": "no-repeat",
@@ -1373,7 +1373,8 @@ var themedButtonValues                      = nil,
                                                        @"top": @"3px",
                                                        @"width": @"1px"
                                                        }
-                                     afterDictionary:arrowCSS(A3ColorActiveText, "-8px", "25px")],
+                                     // FIX: Use A3ColorBorderBlue
+                                     afterDictionary:arrowCSS(A3ColorBorderBlue, "-4px", "25px")],
 
     notKeyButtonCssColor = [CPColor colorWithCSSDictionary:@{
                                                              @"background-color": A3ColorBackgroundWhite,
@@ -1422,7 +1423,8 @@ var themedButtonValues                      = nil,
                                                                   @"top": @"3px",
                                                                   @"width": @"1px"
                                                                   }
-                                                afterDictionary:arrowCSS(A3ColorActiveText, "-8px", "25px")],
+                                                // FIX: Use A3ColorBorderBlue
+                                                afterDictionary:arrowCSS(A3ColorBorderBlue, "-4px", "25px")],
 
     // ==========================================================
     // SMALL SIZE DEFINITIONS
@@ -1445,7 +1447,8 @@ var themedButtonValues                      = nil,
                                                             @"top": @"3px",
                                                             @"width": @"1px"
                                                             }
-                                          afterDictionary:arrowCSS(A3ColorActiveText, "-6px", "23px")],
+                                          // FIX: Use A3ColorBorderBlue
+                                          afterDictionary:arrowCSS(A3ColorBorderBlue, "-3px", "23px")],
 
     smallNotKeyButtonCssColor = [CPColor colorWithCSSDictionary:@{
                                                                   @"background-color": A3ColorBackgroundWhite,
@@ -1494,7 +1497,8 @@ var themedButtonValues                      = nil,
                                                                        @"top": @"3px",
                                                                        @"width": @"1px"
                                                                        }
-                                                     afterDictionary:arrowCSS(A3ColorActiveText, "-6px", "23px")],
+                                                     // FIX: Use A3ColorBorderBlue
+                                                     afterDictionary:arrowCSS(A3ColorBorderBlue, "-3px", "23px")],
 
     // ==========================================================
     // MINI SIZE DEFINITIONS
@@ -1517,7 +1521,8 @@ var themedButtonValues                      = nil,
                                                            @"top": @"2px",
                                                            @"width": @"1px"
                                                            }
-                                         afterDictionary:arrowCSS(A3ColorActiveText, "-4px", "20px")],
+                                         // FIX: Use A3ColorBorderBlue
+                                         afterDictionary:arrowCSS(A3ColorBorderBlue, "-1px", "20px")],
 
     miniNotKeyButtonCssColor = [CPColor colorWithCSSDictionary:@{
                                                                  @"background-color": A3ColorBackgroundWhite,
@@ -1566,11 +1571,11 @@ var themedButtonValues                      = nil,
                                                                       @"top": @"2px",
                                                                       @"width": @"1px"
                                                                       }
-                                                    afterDictionary:arrowCSS(A3ColorActiveText, "-4px", "20px")],
+                                                    // FIX: Use A3ColorBorderBlue
+                                                    afterDictionary:arrowCSS(A3ColorBorderBlue, "-1px", "20px")],
 
     // ==========================================================
-    // UNBORDERED BUTTONS (Not Bordered, IB Style "Bevel")
-    // Note: Can largely reuse previous logic, but just updating offsets for consistency
+    // UNBORDERED BUTTONS
     // ==========================================================
 
     nbButtonCssColor = [CPColor colorWithCSSDictionary:@{
