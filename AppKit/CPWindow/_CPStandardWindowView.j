@@ -72,19 +72,26 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
         bounds = [self bounds],
         bezelHeadColor = [[CPTheme defaultTheme] valueForAttributeWithName:_isSheet ? @"bezel-head-sheet-color" : @"bezel-head-color" inState:[_parentView themeState] forClass:_CPStandardWindowView];
 
-    [_gradientView setFrame:CGRectMake(0.0, 0.0, CGRectGetWidth(bounds), gradientHeight)];
-    [_gradientView setBackgroundColor:bezelHeadColor];
+    // FIX: Apply the border/background color to self (the container) so borders are drawn on the outside
+    [self setBackgroundColor:bezelHeadColor];
 
-    [_solidView setFrame:CGRectMake(0.0, gradientHeight, CGRectGetWidth(bounds), CGRectGetHeight(bounds) - gradientHeight)];
+    // FIX: Set x=0.0 to avoid 1px gap. Width is reduced by 2.0 to fit inside the 1px borders on each side.
+    [_gradientView setFrame:CGRectMake(0.0, 0.0, CGRectGetWidth(bounds) - 2.0, gradientHeight)];
+    
+    // FIX: Set x=0.0 to avoid 1px gap. Width is reduced by 2.0.
+    [_solidView setFrame:CGRectMake(0.0, gradientHeight, CGRectGetWidth(bounds) - 2.0, CGRectGetHeight(bounds) - gradientHeight)];
     [_solidView setBackgroundColor:[[CPTheme defaultTheme] valueForAttributeWithName:@"solid-color" forClass:_CPStandardWindowView]];
 }
 
 - (void)resizeSubviewsWithOldSize:(CGSize)aSize
 {
-    var bounds = [self bounds];
+    var bounds = [self bounds],
+        width = CGRectGetWidth(bounds) - 2.0; // FIX: Account for border inset
 
-    [_gradientView setFrameSize:CGSizeMake(CGRectGetWidth(bounds), [[CPTheme defaultTheme] valueForAttributeWithName:@"gradient-height" forClass:_CPStandardWindowView])];
-    [_solidView setFrameSize:CGSizeMake(CGRectGetWidth(bounds), CGRectGetHeight(bounds) - [[CPTheme defaultTheme] valueForAttributeWithName:@"gradient-height" forClass:_CPStandardWindowView])];
+    if (width < 0) width = 0;
+
+    [_gradientView setFrameSize:CGSizeMake(width, [[CPTheme defaultTheme] valueForAttributeWithName:@"gradient-height" forClass:_CPStandardWindowView])];
+    [_solidView setFrameSize:CGSizeMake(width, CGRectGetHeight(bounds) - [[CPTheme defaultTheme] valueForAttributeWithName:@"gradient-height" forClass:_CPStandardWindowView])];
 }
 
 @end
@@ -269,6 +276,7 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
 
     [_headView setFrameSize:CGSizeMake(width, headHeight)];
 
+    // FIX: Set divider to full width to prevent gaps/holes at the sides.
     [_dividerView setFrame:CGRectMake(0.0, headHeight, width, _CPStandardWindowViewDividerViewHeight)];
 
     var dividerMinY = 0,
@@ -284,34 +292,6 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
     var contentFrame = [_bodyView frame];
     [[theWindow contentView] setFrame:CGRectInset(contentFrame, 1.0, 1.0)];
 }
-
-/*
-- (void)setAnimatingToolbar:(BOOL)isAnimatingToolbar
-{
-    [super setAnimatingToolbar:isAnimatingToolbar];
-
-    if ([self isAnimatingToolbar])
-    {
-        [[self toolbarView] setAutoresizingMask:CPViewHeightSizable];
-
-        [_headView setAutoresizingMask:CPViewHeightSizable];
-        [_dividerView setAutoresizingMask:CPViewMinYMargin];
-        [_bodyView setAutoresizingMask:CPViewMinYMargin];
-
-        [[[self window] contentView] setAutoresizingMask:CPViewNotSizable];
-    }
-    else
-    {
-        [[self toolbarView] setAutoresizingMask:CPViewWidthSizable];
-
-        [_headView setAutoresizingMask:CPViewWidthSizable];
-        [_dividerView setAutoresizingMask:CPViewWidthSizable];
-        [_bodyView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
-
-        [[[self window] contentView] setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
-    }
-}
-*/
 
 - (void)_updateWindowButtons:(BOOL)shouldRefreshLayout
 {

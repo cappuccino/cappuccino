@@ -5922,7 +5922,6 @@ var themedButtonValues                      = nil,
 
     return standardWindowView;
 }
-
 + (_CPDocModalWindowView)themedDocModalWindowView
 {
     return [[_CPDocModalWindowView alloc] initWithFrame:CGRectMake(0, 0, 200, 200) styleMask:nil];
