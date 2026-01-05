@@ -3190,16 +3190,16 @@ var themedButtonValues                      = nil,
 
     themeValues =
     [
-     [@"bezel-color",    bezelColor,                    CPThemeStateBezeled],
+     [@"bezel-color",    bezelColor,                     CPThemeStateBezeled],
      [@"bezel-color",    bezelColorHighlighted,          [CPThemeStateBezeled, CPThemeStateHighlighted]],
-     [@"bezel-color",    bezelColor,             [CPThemeStateBezeled, CPThemeStateDisabled]],
+     [@"bezel-color",    bezelColor,                     [CPThemeStateBezeled, CPThemeStateDisabled]],
 
      [@"text-color",     A3CPColorActiveText],
      [@"text-color",     A3CPColorDefaultText,               CPThemeStateHighlighted],
-     [@"text-color",     A3CPColorInactiveText,                  CPThemeStateDisabled],
+     [@"text-color",     A3CPColorInactiveText,              CPThemeStateDisabled],
 
      [@"bezel-inset",    CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateBezeled],
-     [@"content-inset",  CGInsetMake(0.0, 16.0, 0.0, 16.0),  CPThemeStateBezeled], 
+     [@"content-inset",  CGInsetMake(-3.0, 16.0, 0.0, 16.0),  CPThemeStateBezeled],
 
      // Minimum height == maximum height since tokens are fixed height.
      [@"min-size",       CGSizeMake(0.0, 16.0)],
@@ -3213,47 +3213,49 @@ var themedButtonValues                      = nil,
     return token;
 }
 
-+ (_CPTokenFieldTokenDisclosureButton)themedTokenFieldDisclosureButton
++ (_CPTokenFieldTokenDisclosureButton)themedTokenFieldTokenDisclosureButton
 {
     var button = [[_CPTokenFieldTokenDisclosureButton alloc] initWithFrame:CGRectMake(0, 0, 9, 9)],
 
-    // Using SVG arrow instead of PatternColor
-    arrowImage = [CPImage imageWithCSSDictionary:@{
-        "-webkit-mask-image": svgArrowDown,
-        "mask-image": svgArrowDown,
-        "background-color": A3ColorActiveText,
-        "-webkit-mask-size": "contain",
-        "mask-size": "contain",
-        "-webkit-mask-repeat": "no-repeat",
-        "mask-repeat": "no-repeat",
-        "-webkit-mask-position": "center",
-        "mask-position": "center"
-    } size:CGSizeMake(7, 6)],
+    // Change CPImage to CPColor using colorWithCSSDictionary
+    arrowColor = [CPColor colorWithCSSDictionary:@{
+                                                    "-webkit-mask-image": svgArrowDown,
+                                                    "mask-image": svgArrowDown,
+                                                    "background-color": A3ColorActiveText,
+                                                    "-webkit-mask-size": "contain",
+                                                    "mask-size": "contain",
+                                                    "-webkit-mask-repeat": "no-repeat",
+                                                    "mask-repeat": "no-repeat",
+                                                    "-webkit-mask-position": "center",
+                                                    "mask-position": "center"
+                                                 }],
 
-    arrowImageHiglighted = [CPImage imageWithCSSDictionary:@{
-        "-webkit-mask-image": svgArrowDown,
-        "mask-image": svgArrowDown,
-        "background-color": A3ColorWhite,
-        "-webkit-mask-size": "contain",
-        "mask-size": "contain",
-        "-webkit-mask-repeat": "no-repeat",
-        "mask-repeat": "no-repeat",
-        "-webkit-mask-position": "center",
-        "mask-position": "center"
-    } size:CGSizeMake(7, 6)],
+    arrowColorHighlighted = [CPColor colorWithCSSDictionary:@{
+                                                                "-webkit-mask-image": svgArrowDown,
+                                                                "mask-image": svgArrowDown,
+                                                                "background-color": A3ColorWhite,
+                                                                "-webkit-mask-size": "contain",
+                                                                "mask-size": "contain",
+                                                                "-webkit-mask-repeat": "no-repeat",
+                                                                "mask-repeat": "no-repeat",
+                                                                "-webkit-mask-position": "center",
+                                                                "mask-position": "center"
+                                                            }],
 
     themeValues =
     [
      [@"content-inset",  CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateNormal],
 
      [@"bezel-color",    nil,                                CPThemeStateBordered],
-     [@"bezel-color",    arrowImage,                         [CPThemeStateBordered, CPThemeStateHovered]],
-     [@"bezel-color",    arrowImageHiglighted,               [CPThemeStateBordered, CPThemeStateHighlighted]],
+     
+     // Use the new CPColor objects
+     [@"bezel-color",    arrowColor,                         [CPThemeStateBordered, CPThemeStateHovered]],
+     [@"bezel-color",    arrowColorHighlighted,              [CPThemeStateBordered, CPThemeStateHighlighted]],
 
-     [@"min-size",       CGSizeMake(7.0, 6.0)],
-     [@"max-size",       CGSizeMake(7.0, 6.0)],
+     [@"min-size",       CGSizeMake(14.0, 12.0)],
+     [@"max-size",       CGSizeMake(14.0, 12.0)],
 
-     [@"offset",         CGPointMake(16, 7)]
+     [@"offset",         CGPointMake(16, 1)]
      ];
 
     [self registerThemeValues:themeValues forView:button];
@@ -3265,21 +3267,8 @@ var themedButtonValues                      = nil,
 {
     var button = [[_CPTokenFieldTokenCloseButton alloc] initWithFrame:CGRectMake(0, 0, 9, 9)],
 
-    // Normal State
-    bezelColor = [CPImage imageWithCSSDictionary:@{
-        "-webkit-mask-image": svgCancel,
-        "mask-image": svgCancel,
-        "background-color": A3ColorActiveText,
-        "-webkit-mask-size": "contain",
-        "mask-size": "contain",
-        "-webkit-mask-repeat": "no-repeat",
-        "mask-repeat": "no-repeat",
-        "-webkit-mask-position": "center",
-        "mask-position": "center"
-    } size:CGSizeMake(8, 8)],
-
-    // Highlighted State
-    bezelHighlightedColor = [CPImage imageWithCSSDictionary:@{
+    // Normal State - Changed color to A3ColorWhite
+    bezelColor = [CPColor colorWithCSSDictionary:@{
         "-webkit-mask-image": svgCancel,
         "mask-image": svgCancel,
         "background-color": A3ColorWhite,
@@ -3289,12 +3278,23 @@ var themedButtonValues                      = nil,
         "mask-repeat": "no-repeat",
         "-webkit-mask-position": "center",
         "mask-position": "center"
-    } size:CGSizeMake(8, 8)],
+    }],
 
-    // Disabled State (Fully Transparent) - FIXES THE CRASH
-    bezelDisabledColor = [CPImage imageWithCSSDictionary:@{
-        "background-color": @"transparent"
-    } size:CGSizeMake(8, 8)],
+    // Highlighted State
+    bezelHighlightedColor = [CPColor colorWithCSSDictionary:@{
+        "-webkit-mask-image": svgCancel,
+        "mask-image": svgCancel,
+        "background-color": A3ColorWhite,
+        "-webkit-mask-size": "contain",
+        "mask-size": "contain",
+        "-webkit-mask-repeat": "no-repeat",
+        "mask-repeat": "no-repeat",
+        "-webkit-mask-position": "center",
+        "mask-position": "center"
+    }],
+
+    // Disabled State
+    bezelDisabledColor = [CPColor clearColor],
 
     themeValues =
     [
@@ -3308,7 +3308,7 @@ var themedButtonValues                      = nil,
      [@"bezel-inset",    CGInsetMake(0.0, 0.0, 0.0, 0.0),        CPThemeStateBordered],
      [@"bezel-inset",    CGInsetMake(0.0, 0.0, 0.0, 0.0),        [CPThemeStateBordered, CPThemeStateHighlighted]],
 
-     [@"offset",         CGPointMake(16, 6),                     CPThemeStateBordered]
+     [@"offset",         CGPointMake(12, 3),                     CPThemeStateBordered]
      ];
 
     [self registerThemeValues:themeValues forView:button];
@@ -3327,26 +3327,26 @@ var themedButtonValues                      = nil,
             marginTop = -(parseInt(size) / 2.5);
 
         return @{
-            @"content": @"''",
-            @"position": @"absolute",
-            @"top": @"50%",
-            @"right": offset,
-            @"width": size,
-            @"height": size,
-            @"margin-top": marginTop + "px",
-            @"z-index": "+1",
+                    @"content": @"''",
+                    @"position": @"absolute",
+                    @"top": @"50%",
+                    @"right": offset,
+                    @"width": size,
+                    @"height": size,
+                    @"margin-top": marginTop + "px",
+                    @"z-index": "+1",
 
-            "-webkit-mask-image": svgDoubleArrow2,
-            "mask-image": svgDoubleArrow,
-            "-webkit-mask-size": "contain",
-            "mask-size": "contain",
-            "-webkit-mask-repeat": "no-repeat",
-            "mask-repeat": "no-repeat",
-            "-webkit-mask-position": "center",
-            "mask-position": "center",
-            
-            @"background-color": color
-        };
+                    "-webkit-mask-image": svgDoubleArrow2,
+                    "mask-image": svgDoubleArrow,
+                    "-webkit-mask-size": "contain",
+                    "mask-size": "contain",
+                    "-webkit-mask-repeat": "no-repeat",
+                    "mask-repeat": "no-repeat",
+                    "-webkit-mask-position": "center",
+                    "mask-position": "center",
+
+                    @"background-color": color
+                };
     },
 
     // ==========================================================
