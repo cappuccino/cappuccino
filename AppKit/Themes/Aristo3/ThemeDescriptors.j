@@ -2742,9 +2742,13 @@ var themedButtonValues                      = nil,
     var datePicker = [[CPDatePicker alloc] initWithFrame:CGRectMake(40.0, 140.0, 276.0 ,148.0)],
 
     // --- ARROWS (SVG) ---
+    svgArrowSolidDown = "data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTQgNiBMMjAgNiBMMTIgMjAgWiIgZmlsbD0iIzAwMDAwMCIvPjwvc3ZnPg==",
+
+    // Use 12x12 size. With the SVG, this results in an ~8px visual arrow,
+    // which matches the 8px circle dot perfectly.
     arrowImageLeft = [CPImage imageWithCSSDictionary:@{
-                                                       "-webkit-mask-image": svgArrowDown,
-                                                       "mask-image": svgArrowDown,
+                                                       "-webkit-mask-image": "url('" + svgArrowSolidDown + "')",
+                                                       "mask-image": "url('" + svgArrowSolidDown + "')",
                                                        "background-color": A3ColorCalendarButtons,
                                                        "-webkit-mask-size": "contain",
                                                        "mask-size": "contain",
@@ -2756,11 +2760,11 @@ var themedButtonValues                      = nil,
                                                        }
                                     beforeDictionary:nil
                                      afterDictionary:nil
-                                                size:CGSizeMake(6, 8)],
+                                                size:CGSizeMake(12, 12)],
 
     arrowImageRight = [CPImage imageWithCSSDictionary:@{
-                                                        "-webkit-mask-image": svgArrowDown,
-                                                        "mask-image": svgArrowDown,
+                                                        "-webkit-mask-image": "url('" + svgArrowSolidDown + "')",
+                                                        "mask-image": "url('" + svgArrowSolidDown + "')",
                                                         "background-color": A3ColorCalendarButtons,
                                                         "-webkit-mask-size": "contain",
                                                         "mask-size": "contain",
@@ -2772,17 +2776,17 @@ var themedButtonValues                      = nil,
                                                         }
                                      beforeDictionary:nil
                                       afterDictionary:nil
-                                                 size:CGSizeMake(6, 8)],
+                                                 size:CGSizeMake(12, 12)],
 
     circleImage = [CPImage imageWithCSSDictionary:@{
                                                     @"background": A3ColorCalendarButtons,
                                                     @"border-radius": @"50%"
                                                     }
-                                             size:CGSizeMake(8, 8)],
+                                             size:CGSizeMake(12, 12)],
 
     arrowImageLeftHighlighted = [CPImage imageWithCSSDictionary:@{
-                                                                  "-webkit-mask-image": svgArrowDown,
-                                                                  "mask-image": svgArrowDown,
+                                                                  "-webkit-mask-image": "url('" + svgArrowSolidDown + "')",
+                                                                  "mask-image": "url('" + svgArrowSolidDown + "')",
                                                                   "background-color": A3ColorCalendarHighlightedButtons,
                                                                   "-webkit-mask-size": "contain",
                                                                   "mask-size": "contain",
@@ -2794,11 +2798,11 @@ var themedButtonValues                      = nil,
                                                                   }
                                                beforeDictionary:nil
                                                 afterDictionary:nil
-                                                           size:CGSizeMake(6, 8)],
+                                                           size:CGSizeMake(12, 12)],
 
     arrowImageRightHighlighted = [CPImage imageWithCSSDictionary:@{
-                                                                   "-webkit-mask-image": svgArrowDown,
-                                                                   "mask-image": svgArrowDown,
+                                                                   "-webkit-mask-image": "url('" + svgArrowSolidDown + "')",
+                                                                   "mask-image": "url('" + svgArrowSolidDown + "')",
                                                                    "background-color": A3ColorCalendarHighlightedButtons,
                                                                    "-webkit-mask-size": "contain",
                                                                    "mask-size": "contain",
@@ -2810,34 +2814,57 @@ var themedButtonValues                      = nil,
                                                                    }
                                                 beforeDictionary:nil
                                                  afterDictionary:nil
-                                                            size:CGSizeMake(6, 8)],
-
+                                                            size:CGSizeMake(12, 12)],
     circleImageHighlighted = [CPImage imageWithCSSDictionary:@{
                                                                @"background": A3ColorCalendarHighlightedButtons,
                                                                @"border-radius": @"50%"
                                                                }
-                                                        size:CGSizeMake(8, 8)],
+                                                        size:CGSizeMake(12, 12)],
 
-    // --- CLOCK HANDS (Converted from PNG PatternImage to pure CSS) ---
-    secondHandSize = CGSizeMake(4.0, 84.0),
-    // Using simple colored blocks for hands. Adjust colors if A3Color... are available, or use hardcoded/themed colors.
-    // Assuming standard red for second hand, black/dark for others as per standard UI.
-    secondHandImage = [CPImage imageWithCSSDictionary:@{ @"background-color": @"#FF3B30" } size:secondHandSize],
+// --- CLOCK HANDS ---
+    // The SVGs below are designed with a 1:3 aspect ratio (viewBox="0 0 1 3").
+    // The visual hand (rect) occupies the top 2/3 (height="2"), leaving the bottom 1/3 transparent.
+    // When centered by the clock code, the pivot point ends up 1/4 from the bottom of the visual hand,
+    // creating a 3:1 Tip-to-Tail ratio (e.g., 45px Tip, 15px Tail).
 
-    minuteHandSize = CGSizeMake(4.0, 84.0),
-    minuteHandImage = [CPImage imageWithCSSDictionary:@{ @"background-color": @"#000000" } size:minuteHandSize],
+    // Red Hand (3:1 Ratio)
+    svgHandRed      = "data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxIiBoZWlnaHQ9IjMiIHZpZXdCb3g9IjAgMCAxIDMiPgo8cmVjdCB4PSIwLjI1IiB3aWR0aD0iMC41IiBoZWlnaHQ9IjIiIGZpbGw9IiNGRjNCMzAiLz4KPC9zdmc+",
+    // Red Hand Dim (Disabled)
+    svgHandRedDim   = "data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxIiBoZWlnaHQ9IjMiIHZpZXdCb3g9IjAgMCAxIDMiPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjIiIGZpbGw9IiNGRjNCMzAiIGZpbGwtb3BhY2l0eT0iMC41Ii8+PC9zdmc+",
+    
+    // Black Hand (3:1 Ratio)
+    svgHandBlack    = "data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxIiBoZWlnaHQ9IjMiIHZpZXdCb3g9IjAgMCAxIDMiPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjIiIGZpbGw9IiMwMDAwMDAiLz48L3N2Zz4=",
+    // Black Hand Dim (Disabled)
+    svgHandBlackDim = "data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxIiBoZWlnaHQ9IjMiIHZpZXdCb3g9IjAgMCAxIDMiPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjIiIGZpbGw9IiMwMDAwMDAiIGZpbGwtb3BhY2l0eT0iMC4zIi8+PC9zdmc+",
+    
+    // Dot (Centered)
+    svgHandDot      = "data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMCAxMCI+PGNpcmNsZSBjeD0iNSIgY3k9IjUiIHI9IjUiIGZpbGw9IiMwMDAwMDAiLz48L3N2Zz4=",
+    svgHandDotDim   = "data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMCAxMCI+PGNpcmNsZSBjeD0iNSIgY3k9IjUiIHI9IjUiIGZpbGw9IiMwMDAwMDAiIGZpbGwtb3BhY2l0eT0iMC4zIi8+PC9zdmc=",
 
-    hourHandSize = CGSizeMake(4.0, 50.0),
-    hourHandImage   = [CPImage imageWithCSSDictionary:@{ @"background-color": @"#000000" } size:hourHandSize],
+    // Calculated Sizes: 
+    // Image Height = Desired Tip Length * 2. (Since center is pivot, and pivot is at 50% of image).
+    // With 3:1 SVG, Visual Tip is 0.5 * Height. Visual Tail is 0.166 * Height.
+    
+    // Tip ~48px -> Height 96
+    secondHandSize = CGSizeMake(4.0, 96.0),
+    secondHandImage = [[CPImage alloc] initWithContentsOfFile:svgHandRed size:secondHandSize],
+
+    // Tip ~48px -> Height 96
+    minuteHandSize = CGSizeMake(4.0, 96.0),
+    minuteHandImage = [[CPImage alloc] initWithContentsOfFile:svgHandBlack size:minuteHandSize],
+
+    // Tip ~32px -> Height 64
+    hourHandSize = CGSizeMake(4.0, 64.0),
+    hourHandImage   = [[CPImage alloc] initWithContentsOfFile:svgHandBlack size:hourHandSize],
 
     middleHandSize = CGSizeMake(8.0, 8.0),
-    middleHandImage = [CPImage imageWithCSSDictionary:@{ @"background-color": @"#000000", @"border-radius": @"50%" } size:middleHandSize],
+    middleHandImage = [[CPImage alloc] initWithContentsOfFile:svgHandDot size:middleHandSize],
 
-    // Disabled states (using opacity or gray)
-    secondHandImageDisabled = [CPImage imageWithCSSDictionary:@{ @"background-color": @"#FF3B30", @"opacity": @"0.5" } size:secondHandSize],
-    minuteHandImageDisabled = [CPImage imageWithCSSDictionary:@{ @"background-color": @"#000000", @"opacity": @"0.3" } size:minuteHandSize],
-    hourHandImageDisabled   = [CPImage imageWithCSSDictionary:@{ @"background-color": @"#000000", @"opacity": @"0.3" } size:hourHandSize],
-    middleHandImageDisabled = [CPImage imageWithCSSDictionary:@{ @"background-color": @"#000000", @"opacity": @"0.3", @"border-radius": @"50%" } size:middleHandSize],
+    // Disabled states
+    secondHandImageDisabled = [[CPImage alloc] initWithContentsOfFile:svgHandRedDim size:secondHandSize],
+    minuteHandImageDisabled = [[CPImage alloc] initWithContentsOfFile:svgHandBlackDim size:minuteHandSize],
+    hourHandImageDisabled   = [[CPImage alloc] initWithContentsOfFile:svgHandBlackDim size:hourHandSize],
+    middleHandImageDisabled = [[CPImage alloc] initWithContentsOfFile:svgHandDotDim size:middleHandSize],
 
     // --- CLOCK FACE ---
     clockSize = CGSizeMake(120, 120),
@@ -3000,9 +3027,9 @@ var themedButtonValues                      = nil,
      [@"arrow-image-right-highlighted",     arrowImageRightHighlighted],
      [@"circle-image",                      circleImage],
      [@"circle-image-highlighted",          circleImageHighlighted],
-     [@"arrow-inset",                       CGInsetMake(7.0, 5.0, 0.0, 3.0)],
+     [@"arrow-inset",                       CGInsetMake(6.0, 5.0, 0.0, 3.0)],
      [@"previous-button-size",              CGSizeMake(6, 8)],
-     [@"current-button-size",               CGSizeMake(6, 6)],
+     [@"current-button-size",               CGSizeMake(6, 8)],
      [@"next-button-size",                  CGSizeMake(6, 8)],
 
      [@"second-hand-image",  secondHandImage],
@@ -3020,22 +3047,31 @@ var themedButtonValues                      = nil,
      [@"middle-hand-size",   middleHandSize],
      [@"minute-hand-size",   minuteHandSize],
 
-     [@"border-width",            0.0], // 1
-     [@"size-header",             CGSizeMake(138.0, 37.0)], // 141,39
-     [@"size-tile",               CGSizeMake(18.57, 16.0)], // 20,18
-     [@"tile-margin",               CGSizeMake(0, 1)],
+     [@"border-width",            0.0],
+     [@"size-header",             CGSizeMake(138.0, 37.0)],
+     [@"size-tile",               CGSizeMake(18.57, 16.0)],
+     [@"tile-margin",             CGSizeMake(0, 1)],
      [@"size-clock",              clockSize],
      [@"size-calendar",           CGSizeMake(138.0, 111.0)],
-     [@"calendar-clock-margin",     18],
+     [@"calendar-clock-margin",   18],
      [@"min-size-calendar",       CGSizeMake(138.0, 148.0)],
      [@"max-size-calendar",       CGSizeMake(138.0, 148.0)],
-     [@"title-inset",               CGInsetMake(2, 0, 0, 3)],
-     [@"day-label-inset",           CGInsetMake(22, 0, 0, 4)],
-     [@"tile-inset",                CGInsetMake(1, 0, 0, 4)],
+     
+     [@"title-inset",             CGInsetMake(2, 0, 0, 3)],
+     
+     // 2. Increase top inset from 2.0 to 6.0 to align buttons with text baseline
+     [@"day-label-inset",         CGInsetMake(22, 0, 0, 4)],
+     [@"tile-inset",              CGInsetMake(1, 0, 0, 4)],
+
+     [@"arrow-inset",             CGInsetMake(6.0, 5.0, 0.0, 3.0)],
+     [@"previous-button-size",    CGSizeMake(6, 8)],
+     [@"current-button-size",     CGSizeMake(8, 8)],
+     
+     [@"next-button-size",        CGSizeMake(6, 8)],
 
      [@"nib2cib-adjustment-frame",              CGRectMake(0.0, 0.0, 0.0, 0.0),        CPThemeStateAlternateState],
      [@"clock-only-nib2cib-adjustment-frame",   CGRectMake(1.0, -2.0, -2.0, -3.0)]
-     ];
+    ];
 
     [datePicker setDatePickerStyle:CPClockAndCalendarDatePickerStyle];
     [datePicker setBackgroundColor:[CPColor whiteColor]];
