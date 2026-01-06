@@ -4888,10 +4888,19 @@ var themedButtonValues                      = nil,
                                              beforeDictionary:nil
                                               afterDictionary:nil],
 
-        thickDividerCssColor = [CPColor colorWithCSSDictionary:@{}
+        thickDividerCssColor = [CPColor colorWithCSSDictionary:@{
+                                                                @"background-color": A3ColorSplitPaneDividerBackground,
+                                                                @"border-color": A3ColorSplitPaneDividerBorder,
+                                                                @"box-sizing": @"border-box",
+                                                                @"border-style": @"solid",
+                                                                @"border-top-width": @"1px",
+                                                                @"border-left-width": @"0px",
+                                                                @"border-right-width": @"0px",
+                                                                @"border-bottom-width": @"1px"
+                                                                }
                                               beforeDictionary:nil
                                                afterDictionary:@{
-                                                                 @"border-color": A3ColorInactiveBorder, 
+                                                                 @"border-color": A3ColorInactiveBorder,
                                                                  @"background-color": A3ColorInactiveBorder,
                                                                  @"width": @"6px",
                                                                  @"height": @"6px",
@@ -4909,10 +4918,19 @@ var themedButtonValues                      = nil,
                                                                  @"z-index": @"300"
                                                                  }],
 
-        verticalThickDividerCssColor = [CPColor colorWithCSSDictionary:@{}
+        verticalThickDividerCssColor = [CPColor colorWithCSSDictionary:@{
+                                                                        @"background-color": A3ColorSplitPaneDividerBackground,
+                                                                        @"border-color": A3ColorSplitPaneDividerBorder,
+                                                                        @"box-sizing": @"border-box",
+                                                                        @"border-style": @"solid",
+                                                                        @"border-top-width": @"0px",
+                                                                        @"border-left-width": @"1px",
+                                                                        @"border-right-width": @"1px",
+                                                                        @"border-bottom-width": @"0px"
+                                                                        }
                                                       beforeDictionary:nil
                                                        afterDictionary:@{
-                                                                         @"border-color": A3ColorInactiveBorder, 
+                                                                         @"border-color": A3ColorInactiveBorder,
                                                                          @"background-color": A3ColorInactiveBorder,
                                                                          @"width": @"6px",
                                                                          @"height": @"6px",
@@ -4929,7 +4947,6 @@ var themedButtonValues                      = nil,
                                                                          @"position": @"absolute",
                                                                          @"z-index": @"300"
                                                                          }],
-
     paneDividerCssColor = [CPColor colorWithCSSDictionary:@{
                                                             @"background-color": A3ColorSplitPaneDividerBackground,
                                                             @"border-color": A3ColorSplitPaneDividerBorder,
