@@ -2215,7 +2215,10 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     self = [super initWithFrame:aFrame];
 
     if (self)
+    {
         [self setBordered:NO];
+        [self setBezelStyle:CPDisclosureBezelStyle];
+    }
 
     return self;
 }

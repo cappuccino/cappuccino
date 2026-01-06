@@ -990,6 +990,11 @@ var themedButtonValues                      = nil,
      [@"min-size",                      CGSizeMake(0.0, 15.0),                  [CPButtonStateBezelStyleTextured, CPThemeStateBordered, CPThemeStateControlSizeMini]],
      [@"max-size",                      CGSizeMake(-1.0, 15.0),                 [CPButtonStateBezelStyleTextured, CPThemeStateBordered, CPThemeStateControlSizeMini]],
 
+     [@"bezel-color",                   unborderedButtonCssColor,               [CPButtonStateBezelStyleDisclosure]],
+     [@"bezel-color",                   unborderedButtonCssColor,               [CPButtonStateBezelStyleDisclosure, CPThemeStateHighlighted]],
+     [@"bezel-color",                   unborderedButtonCssColor,               [CPButtonStateBezelStyleDisclosure, CPThemeStateSelected]],
+     [@"bezel-color",                   unborderedButtonCssColor,               [CPButtonStateBezelStyleDisclosure, CPThemeStateSelected, CPThemeStateHighlighted]],
+
      // IB Style : Disclosure triangle (CPButtonStateBezelStyleDisclosure) - Bordered
      [@"image",                         disclosureImage,                        [CPButtonStateBezelStyleDisclosure, CPThemeStateBordered]],
      [@"image",                         disclosureDisabledImage,                [CPButtonStateBezelStyleDisclosure, CPThemeStateBordered, CPThemeStateDisabled]],
