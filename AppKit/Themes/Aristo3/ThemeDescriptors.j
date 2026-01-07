@@ -2154,8 +2154,8 @@ var themedButtonValues                      = nil,
      [@"text-color",         A3CPColorActiveText,                  [CPThemeStateTableDataView, CPThemeStateSelectedDataView]], // Row selected but not active
      [@"text-color",         A3CPColorDefaultText,                                       [CPThemeStateTableDataView, CPThemeStateSelectedDataView, CPThemeStateFirstResponder, CPThemeStateKeyWindow]],  // Row selected and active
 
-     [@"content-inset",      CGInsetMake(0.0, 0.0, 0.0, 0.0),                           [CPThemeStateTableDataView, CPThemeStateEditable]],
-     [@"bezel-inset",        CGInsetMake(0.0, 1.0, 0.0, 5.0),                        [CPThemeStateTableDataView, CPThemeStateEditable, CPThemeStateEditing]],
+     [@"content-inset",      CGInsetMake(0.0, 0.0, 0.0, 0.0),                            [CPThemeStateTableDataView, CPThemeStateEditable]],
+     [@"bezel-inset",        CGInsetMake(0.0, 1.0, 0.0, 5.0),                            [CPThemeStateTableDataView, CPThemeStateEditable, CPThemeStateEditing]],
      [@"bezel-inset",        CGInsetMake(0.0, 1.0, 0.0, 5.0),                            [CPThemeStateTableDataView, CPThemeStateEditable]],
 
      [@"text-color",         [CPColor colorWithCalibratedWhite:125.0 / 255.0 alpha:1.0], [CPThemeStateTableDataView, CPThemeStateGroupRow]],
@@ -2167,7 +2167,7 @@ var themedButtonValues                      = nil,
 
      [@"min-size",                   CGSizeMake(-1.0, 22.0)], // was 29
      [@"nib2cib-adjustment-frame",   CGRectMake(2.0, 0.0, -4.0, 0.0)],      // For labels
-     [@"nib2cib-adjustment-frame",   CGRectMake(0.0, 0.0, 0.0, 0.0),                   CPThemeStateBezeled],  // for bordered fields, frame = alignment
+     [@"nib2cib-adjustment-frame",   CGRectMake(0.0, 0.0, 0.0, 0.0),                     CPThemeStateBezeled],  // for bordered fields, frame = alignment
 
      // CPThemeStateControlSizeSmall
      [@"content-inset",              CGInsetMake(7.0, 7.0, 5.0, 8.0),                    [CPThemeStateControlSizeSmall, CPThemeStateBezeled]],
@@ -4098,7 +4098,7 @@ var themedButtonValues                      = nil,
      [@"text-color",                     A3CPColorDefaultText,                   [CPThemeStateSelected, CPThemeStateKeyWindow]], 
      [@"text-color",                     A3CPColorActiveText,                    CPThemeStateSelected], 
 
-     [@"content-inset",              CGInsetMake(-2.0, 11.0, 0.0, 12.0)],
+     [@"content-inset",              CGInsetMake(-1.0, 11.0, 0.0, 12.0)],
      [@"bezel-inset",                CGInsetMake(0.0, 0.0, 0.0, 0.0)],
 
      [@"min-size",                   CGSizeMake(-1.0, 21.0)],
