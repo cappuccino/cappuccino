@@ -4834,8 +4834,8 @@ var themedButtonValues                      = nil,
                                                       "mask-repeat": "no-repeat",
                                                       "-webkit-mask-position": "center",
                                                       "mask-position": "center"
-                                                      } size:CGSizeMake(9, 8)],
-                                                      
+                                                      } size:CGSizeMake(18, 16)],
+
         sortImageReversed = [CPImage imageWithCSSDictionary:@{
                                                               "-webkit-mask-image": svgArrowDown,
                                                               "mask-image": svgArrowDown,
@@ -4846,8 +4846,8 @@ var themedButtonValues                      = nil,
                                                               "mask-repeat": "no-repeat",
                                                               "-webkit-mask-position": "center",
                                                               "mask-position": "center"
-                                                              } size:CGSizeMake(9, 8)],
-                                                              
+                                                              } size:CGSizeMake(18, 16)],
+
         imageGenericFile = nil, // Placeholder for generic file if needed, or remove
         
         alternatingRowColors = [A3CPColorTableRow, A3CPColorTableAlternateRow],
