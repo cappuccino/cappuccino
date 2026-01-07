@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="19529" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="23727" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="19529"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="23727"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -16,7 +16,7 @@
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="200" y="500" width="380" height="253"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1792" height="1095"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1512" height="944"/>
             <view key="contentView" id="372">
                 <rect key="frame" x="0.0" y="0.0" width="380" height="253"/>
                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -35,7 +35,7 @@
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <popUpButtonCell key="cell" type="push" title="No Image" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="1153" id="1151">
                             <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                            <font key="font" metaFont="menu"/>
+                            <font key="font" metaFont="message"/>
                             <menu key="menu" title="OtherViews" id="1152">
                                 <items>
                                     <menuItem title="No Image" state="on" id="1153"/>
@@ -136,7 +136,7 @@
                     </customView>
                 </subviews>
             </view>
-            <point key="canvasLocation" x="-234" y="144"/>
+            <point key="canvasLocation" x="-244" y="136"/>
         </window>
         <customObject id="450" customClass="AppController">
             <connections>
@@ -164,7 +164,7 @@
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="200" y="1000" width="318" height="85"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1792" height="1095"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1512" height="944"/>
             <view key="contentView" id="1184">
                 <rect key="frame" x="0.0" y="0.0" width="318" height="85"/>
                 <autoresizingMask key="autoresizingMask"/>
@@ -216,14 +216,52 @@
         <window title="CPButton Button Type Test" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" animationBehavior="default" id="1210">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
-            <rect key="contentRect" x="1000" y="1000" width="271" height="156"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1792" height="1095"/>
+            <rect key="contentRect" x="1000" y="1000" width="381" height="264"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1512" height="944"/>
             <view key="contentView" id="1211">
-                <rect key="frame" x="0.0" y="0.0" width="271" height="156"/>
+                <rect key="frame" x="0.0" y="0.0" width="381" height="264"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
+                    <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="7wo-oX-fZX">
+                        <rect key="frame" x="7" y="18" width="54" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="push" title="Push" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="MkR-Sb-Gzm">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                    </button>
+                    <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="njk-7Q-HVQ">
+                        <rect key="frame" x="68" y="18" width="115" height="23"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="roundTextured" title="Texture rounded" bezelStyle="texturedRounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="XRR-KY-Nff">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                    </button>
+                    <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Wap-KF-mU0">
+                        <rect key="frame" x="283" y="18" width="84" height="23"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="roundTextured" title="OK" bezelStyle="texturedRounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="dYI-gT-JsW">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                            <string key="keyEquivalent" base64-UTF8="YES">
+DQ
+</string>
+                        </buttonCell>
+                    </button>
+                    <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="IGd-05-FEA">
+                        <rect key="frame" x="190" y="18" width="84" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="push" title="OK" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="qgi-cF-c6u">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                            <string key="keyEquivalent" base64-UTF8="YES">
+DQ
+</string>
+                        </buttonCell>
+                    </button>
                     <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1212">
-                        <rect key="frame" x="25" y="108" width="220" height="32"/>
+                        <rect key="frame" x="80" y="189" width="220" height="32"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <buttonCell key="cell" type="push" title="Momentary Push In (Normal)" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="1213">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -231,7 +269,7 @@
                         </buttonCell>
                     </button>
                     <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1214">
-                        <rect key="frame" x="25" y="76" width="220" height="32"/>
+                        <rect key="frame" x="80" y="157" width="220" height="32"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <buttonCell key="cell" type="push" title="Push On / Push Off" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="1215">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES" changeBackground="YES" changeGray="YES"/>
@@ -239,7 +277,7 @@
                         </buttonCell>
                     </button>
                     <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1216">
-                        <rect key="frame" x="25" y="44" width="220" height="32"/>
+                        <rect key="frame" x="80" y="125" width="220" height="32"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <buttonCell key="cell" type="push" title="Toggle" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="1217">
                             <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
@@ -247,7 +285,7 @@
                         </buttonCell>
                     </button>
                     <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1218">
-                        <rect key="frame" x="25" y="12" width="220" height="32"/>
+                        <rect key="frame" x="80" y="93" width="220" height="32"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <buttonCell key="cell" type="push" title="Momentary Change" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="1219">
                             <behavior key="behavior" lightByContents="YES"/>
@@ -256,13 +294,13 @@
                     </button>
                 </subviews>
             </view>
-            <point key="canvasLocation" x="-686" y="348"/>
+            <point key="canvasLocation" x="-631.5" y="402"/>
         </window>
         <window title="Monkey Button Test" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" animationBehavior="default" id="1224" userLabel="Window - Monkey Button Test">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="1000" y="500" width="480" height="220"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1792" height="1095"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1512" height="944"/>
             <view key="contentView" id="1225">
                 <rect key="frame" x="0.0" y="0.0" width="480" height="220"/>
                 <autoresizingMask key="autoresizingMask"/>
@@ -282,11 +320,11 @@
                         <rect key="frame" x="17" y="16" width="222" height="114"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <view key="contentView" id="Lxr-8q-OWd">
-                            <rect key="frame" x="3" y="3" width="216" height="96"/>
+                            <rect key="frame" x="4" y="5" width="214" height="94"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <subviews>
-                                <button fixedFrame="YES" tag="2" translatesAutoresizingMaskIntoConstraints="NO" id="1230">
-                                    <rect key="frame" x="16" y="70" width="137" height="18"/>
+                                <button tag="2" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1230">
+                                    <rect key="frame" x="16" y="68" width="137" height="18"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="check" title="CPPushInCellMask" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="1231">
                                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -296,8 +334,8 @@
                                         <action selector="setMonkeyButtonHighlightedBy:" target="450" id="1247"/>
                                     </connections>
                                 </button>
-                                <button fixedFrame="YES" tag="1" translatesAutoresizingMaskIntoConstraints="NO" id="1232">
-                                    <rect key="frame" x="16" y="50" width="152" height="18"/>
+                                <button tag="1" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1232">
+                                    <rect key="frame" x="16" y="48" width="152" height="18"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="check" title="CPContentsCellMask" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="1233">
                                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -307,8 +345,8 @@
                                         <action selector="setMonkeyButtonHighlightedBy:" target="450" id="1248"/>
                                     </connections>
                                 </button>
-                                <button fixedFrame="YES" tag="4" translatesAutoresizingMaskIntoConstraints="NO" id="1234">
-                                    <rect key="frame" x="16" y="30" width="172" height="18"/>
+                                <button tag="4" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1234">
+                                    <rect key="frame" x="16" y="28" width="172" height="18"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="check" title="CPChangeGrayCellMask" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="1235">
                                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -318,8 +356,8 @@
                                         <action selector="setMonkeyButtonHighlightedBy:" target="450" id="1249"/>
                                     </connections>
                                 </button>
-                                <button fixedFrame="YES" tag="8" translatesAutoresizingMaskIntoConstraints="NO" id="1236">
-                                    <rect key="frame" x="16" y="10" width="218" height="18"/>
+                                <button tag="8" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1236">
+                                    <rect key="frame" x="16" y="8" width="218" height="18"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="check" title="CPChangeBackgroundCellMask" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="1237">
                                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -336,11 +374,11 @@
                         <rect key="frame" x="241" y="16" width="222" height="114"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <view key="contentView" id="rZ3-3d-f31">
-                            <rect key="frame" x="3" y="3" width="216" height="96"/>
+                            <rect key="frame" x="4" y="5" width="214" height="94"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <subviews>
-                                <button fixedFrame="YES" tag="2" translatesAutoresizingMaskIntoConstraints="NO" id="1242">
-                                    <rect key="frame" x="16" y="70" width="137" height="18"/>
+                                <button tag="2" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1242">
+                                    <rect key="frame" x="16" y="68" width="137" height="18"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="check" title="CPPushInCellMask" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="1243">
                                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -350,8 +388,8 @@
                                         <action selector="setMonkeyButtonShowsStateBy:" target="450" id="1251"/>
                                     </connections>
                                 </button>
-                                <button fixedFrame="YES" tag="1" translatesAutoresizingMaskIntoConstraints="NO" id="1241">
-                                    <rect key="frame" x="16" y="50" width="152" height="18"/>
+                                <button tag="1" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1241">
+                                    <rect key="frame" x="16" y="48" width="152" height="18"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="check" title="CPContentsCellMask" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="1244">
                                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -361,8 +399,8 @@
                                         <action selector="setMonkeyButtonShowsStateBy:" target="450" id="1252"/>
                                     </connections>
                                 </button>
-                                <button fixedFrame="YES" tag="4" translatesAutoresizingMaskIntoConstraints="NO" id="1240">
-                                    <rect key="frame" x="16" y="30" width="172" height="18"/>
+                                <button tag="4" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1240">
+                                    <rect key="frame" x="16" y="28" width="172" height="18"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="check" title="CPChangeGrayCellMask" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="1245">
                                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -372,8 +410,8 @@
                                         <action selector="setMonkeyButtonShowsStateBy:" target="450" id="1253"/>
                                     </connections>
                                 </button>
-                                <button fixedFrame="YES" tag="8" translatesAutoresizingMaskIntoConstraints="NO" id="1239">
-                                    <rect key="frame" x="16" y="10" width="218" height="18"/>
+                                <button tag="8" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1239">
+                                    <rect key="frame" x="16" y="8" width="218" height="18"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="check" title="CPChangeBackgroundCellMask" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="1246">
                                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -423,7 +461,7 @@
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="1069" y="674" width="480" height="170"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1792" height="1095"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1512" height="944"/>
             <view key="contentView" id="cEp-gS-qmd">
                 <rect key="frame" x="0.0" y="0.0" width="480" height="170"/>
                 <autoresizingMask key="autoresizingMask"/>
@@ -503,7 +541,7 @@
     </objects>
     <resources>
         <image name="Image-132x44" width="26.879999160766602" height="80.639999389648438"/>
-        <image name="NSAddTemplate" width="14" height="13"/>
-        <image name="NSRemoveTemplate" width="14" height="4"/>
+        <image name="NSAddTemplate" width="18" height="17"/>
+        <image name="NSRemoveTemplate" width="18" height="5"/>
     </resources>
 </document>

@@ -841,6 +841,11 @@ var themedButtonValues                      = nil,
      [@"min-size",                      CGSizeMake(0.0, 0.0),                  [CPButtonStateBezelStyleSmallSquare, CPThemeStateBordered, CPThemeStateControlSizeMini]],
      [@"max-size",                      CGSizeMake(-1.0, -1.0),                 [CPButtonStateBezelStyleSmallSquare, CPThemeStateBordered, CPThemeStateControlSizeMini]],
 
+     // --- FORCE DARK TEXT FOR DEFAULT STATE ---
+     // This overrides the global rule that turns text white for "Default" (Return key) buttons
+     [@"text-color",                    A3CPColorActiveText,                    [CPButtonStateBezelStyleTexturedRounded, CPThemeStateBordered, CPThemeStateDefault]],
+     [@"text-color",                    A3CPColorActiveText,                    [CPButtonStateBezelStyleTexturedRounded, CPThemeStateBordered, CPThemeStateDefault, CPThemeStateKeyWindow]],
+
      // IB Style : Textured rounded (CPButtonStateBezelStyleTexturedRounded) - Bordered
      [@"bezel-color",                   trButtonCssColor,                       [CPButtonStateBezelStyleTexturedRounded, CPThemeStateBordered]],
      [@"bezel-color",                   trDisabledButtonCssColor,               [CPButtonStateBezelStyleTexturedRounded, CPThemeStateBordered, CPThemeStateDisabled]],
@@ -851,7 +856,7 @@ var themedButtonValues                      = nil,
      [@"text-color",                    A3CPColorInactiveText,                  [CPButtonStateBezelStyleTexturedRounded, CPThemeStateBordered, CPThemeStateDisabled]],
 
      [@"content-inset",                 CGInsetMake(0.0, 7.0, 1.0, 7.0),       [CPButtonStateBezelStyleTexturedRounded, CPThemeStateBordered]],
-     [@"nib2cib-adjustment-frame",      CGRectMake(0.0, -5.0, 0.0, -3.0),       [CPButtonStateBezelStyleTexturedRounded, CPThemeStateBordered]],
+     [@"nib2cib-adjustment-frame",      CGRectMake(0.0, -9.0, 0.0, -3.0),       [CPButtonStateBezelStyleTexturedRounded, CPThemeStateBordered]],
      [@"min-size",                      CGSizeMake(0.0, 22.0),                  [CPButtonStateBezelStyleTexturedRounded, CPThemeStateBordered]],
      [@"max-size",                      CGSizeMake(-1.0, 22.0),                 [CPButtonStateBezelStyleTexturedRounded, CPThemeStateBordered]],
 
