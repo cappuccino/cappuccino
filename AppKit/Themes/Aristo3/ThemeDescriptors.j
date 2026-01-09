@@ -5441,8 +5441,8 @@ var themedButtonValues                      = nil,
         "mask-repeat": "no-repeat",
         "-webkit-mask-position": "center",
         "mask-position": "center"
-    } size:CGSizeMake(20, 20)],
-    
+    } size:CGSizeMake(12, 12)],
+
     buttonRemoveImage = [CPImage imageWithCSSDictionary:@{
         "-webkit-mask-image": svgMinus,
         "mask-image": svgMinus,
@@ -5453,8 +5453,8 @@ var themedButtonValues                      = nil,
         "mask-repeat": "no-repeat",
         "-webkit-mask-position": "center",
         "mask-position": "center"
-    } size:CGSizeMake(20, 20)],
-    
+    } size:CGSizeMake(12, 12)],
+
     fontColor = [CPColor colorWithWhite:150 / 255 alpha:1],
 
     ruleEditorThemedValues =
