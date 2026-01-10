@@ -683,7 +683,35 @@ var themedButtonValues                      = nil,
                                                           }
                                        beforeDictionary:nil
                                         afterDictionary:nil
-                                                   size:CGSizeMake(7, 4)];
+                                                   size:CGSizeMake(7, 4)],
+    // --- HUD SPECIFIC STYLES ---
+    hudButtonCssColor = [CPColor colorWithCSSDictionary:@{
+                                                            @"background-color": @"rgba(0, 0, 0, 0.25)",
+                                                            @"border-color": @"rgba(255, 255, 255, 0.25)",
+                                                            @"border-style": @"solid",
+                                                            @"border-width": @"1px",
+                                                            @"border-radius": @"10px", // Capsule shape for HUD buttons
+                                                            @"box-sizing": @"border-box",
+                                                            @"box-shadow": @"0 1px 0 rgba(255,255,255,0.1) inset"
+                                                        }],
+
+    hudHighlightedButtonCssColor = [CPColor colorWithCSSDictionary:@{
+                                                                        @"background-color": @"rgba(0, 0, 0, 0.5)",
+                                                                        @"border-color": @"rgba(255, 255, 255, 0.4)",
+                                                                        @"border-style": @"solid",
+                                                                        @"border-width": @"1px",
+                                                                        @"border-radius": @"10px",
+                                                                        @"box-sizing": @"border-box"
+                                                                    }],
+
+    hudDisabledButtonCssColor = [CPColor colorWithCSSDictionary:@{
+                                                                    @"background-color": @"rgba(0, 0, 0, 0.1)",
+                                                                    @"border-color": @"rgba(255, 255, 255, 0.1)",
+                                                                    @"border-style": @"solid",
+                                                                    @"border-width": @"1px",
+                                                                    @"border-radius": @"10px",
+                                                                    @"box-sizing": @"border-box"
+                                                                }];
 
     // Global
     themedButtonValues =
@@ -1050,8 +1078,28 @@ var themedButtonValues                      = nil,
      [@"min-size",       CGSizeMake(0.0, 16.0),                          CPThemeStateControlSizeMini],
      [@"max-size",       CGSizeMake(-1.0, 16.0),                         CPThemeStateControlSizeMini],
 
-     [@"image-offset",   CPButtonImageOffset]
-     ];
+     [@"image-offset",   CPButtonImageOffset],
+
+     // --- HUD MAPPINGS ---
+     
+     // 1. Force Text Color White
+     [@"text-color",    [CPColor whiteColor],                   CPThemeStateHUD],
+     [@"text-color",    [CPColor colorWithWhite:1 alpha:0.4],   [CPThemeStateHUD, CPThemeStateDisabled]],
+
+     // 2. Rounded Bezel Style (Standard Push Button)
+     [@"bezel-color",   hudButtonCssColor,                      [CPButtonStateBezelStyleRounded, CPThemeStateHUD]],
+     [@"bezel-color",   hudHighlightedButtonCssColor,           [CPButtonStateBezelStyleRounded, CPThemeStateHUD, CPThemeStateHighlighted]],
+     [@"bezel-color",   hudDisabledButtonCssColor,              [CPButtonStateBezelStyleRounded, CPThemeStateHUD, CPThemeStateDisabled]],
+     
+     // 3. Textured Rounded (Often used in HUDs)
+     [@"bezel-color",   hudButtonCssColor,                      [CPButtonStateBezelStyleTexturedRounded, CPThemeStateHUD]],
+     [@"bezel-color",   hudHighlightedButtonCssColor,           [CPButtonStateBezelStyleTexturedRounded, CPThemeStateHUD, CPThemeStateHighlighted]],
+     [@"bezel-color",   hudDisabledButtonCssColor,              [CPButtonStateBezelStyleTexturedRounded, CPThemeStateHUD, CPThemeStateDisabled]],
+
+     // 4. Adjust Layout for HUD
+     [@"min-size",      CGSizeMake(0.0, 18.0),                  [CPButtonStateBezelStyleRounded, CPThemeStateHUD]],
+     [@"content-inset", CGInsetMake(0.0, 10.0, 1.0, 10.0),      [CPButtonStateBezelStyleRounded, CPThemeStateHUD]]
+    ];
 
     [self registerThemeValues:themedButtonValues forView:button];
 
@@ -1257,6 +1305,29 @@ var themedButtonValues                      = nil,
                                                                   }
                                                  beforeDictionary:separatorCSS(@"13px")
                                                   afterDictionary:arrowCSS(A3ColorBorderBlue, "-7px", "20px")],
+    // HUD Arrow Helper (White arrows)
+    hudArrowCSS = function(color) {
+        return arrowCSS(color, "-8px", "25px");
+    },
+    
+    hudButtonCssColor = [CPColor colorWithCSSDictionary:@{
+        @"background-color": @"rgba(0, 0, 0, 0.25)",
+        @"border-color": @"rgba(255, 255, 255, 0.25)",
+        @"border-style": @"solid",
+        @"border-width": @"1px",
+        @"border-radius": @"3px",
+        @"box-sizing": @"border-box",
+        @"box-shadow": @"0 1px 0 rgba(255,255,255,0.1) inset"
+    } beforeDictionary:nil afterDictionary:hudArrowCSS(@"#ffffff")],
+
+    hudHighlightedButtonCssColor = [CPColor colorWithCSSDictionary:@{
+        @"background-color": @"rgba(0, 0, 0, 0.5)",
+        @"border-color": @"rgba(255, 255, 255, 0.5)",
+        @"border-style": @"solid",
+        @"border-width": @"1px",
+        @"border-radius": @"3px",
+        @"box-sizing": @"border-box"
+    } beforeDictionary:nil afterDictionary:hudArrowCSS(@"#ffffff")],
 
 
     // ==========================================================
@@ -1319,8 +1390,15 @@ var themedButtonValues                      = nil,
      [@"content-inset",              CGInsetMake(2.0, 10, 1.0, 10.0),           [CPButtonStateBezelStyleRegularSquare]],
      [@"min-size",                   CGSizeMake(32.0, 21.0),                    [CPButtonStateBezelStyleRegularSquare]],
      [@"max-size",                   CGSizeMake(-1.0, 21.0),                    [CPButtonStateBezelStyleRegularSquare]],
-     [@"nib2cib-adjustment-frame",   CGRectMake(0.0, -0.0, -0.0, -0.0),         [CPButtonStateBezelStyleRegularSquare]]
-     ];
+     [@"nib2cib-adjustment-frame",   CGRectMake(0.0, -0.0, -0.0, -0.0),         [CPButtonStateBezelStyleRegularSquare]],
+
+     // --- HUD MAPPINGS ---
+     [@"text-color",    [CPColor whiteColor],       CPThemeStateHUD],
+     
+     [@"bezel-color",   hudButtonCssColor,          [CPButtonStateBezelStyleRounded, CPThemeStateHUD]],
+     [@"bezel-color",   hudButtonCssColor,          [CPButtonStateBezelStyleRounded, CPThemeStateHUD, CPThemeStateKeyWindow]],
+     [@"bezel-color",   hudHighlightedButtonCssColor, [CPButtonStateBezelStyleRounded, CPThemeStateHUD, CPThemeStateHighlighted]]
+    ];
 
     [self registerThemeValues:themeValues forView:button];
 
@@ -1976,6 +2054,13 @@ var themedButtonValues                      = nil,
                                                             @"border-top-color": A3ColorScrollerBorder,
                                                             @"border-top-width": @"1px"
                                                             }],
+    // Silver/Grey knob
+    hudKnobCssColor = [CPColor colorWithCSSDictionary:@{
+        @"background-color": @"#cccccc",
+        @"border": @"1px solid #555",
+        @"border-radius": @"50%",
+        @"box-shadow": @"inset 0 2px 3px rgba(255,255,255,0.8), 0 1px 2px rgba(0,0,0,0.5)"
+    }],
 
     themedHorizontalScrollerValues =
     [
@@ -2003,8 +2088,11 @@ var themedButtonValues                      = nil,
      [@"knob-color",             knobCssColorLegacy,                    CPThemeStateScrollViewLegacy],
      [@"knob-color",             knobCssColorLegacyOver,                    [CPThemeStateScrollViewLegacy, CPThemeStateSelected]],
      [@"decrement-line-size",    CGSizeMakeZero(),             CPThemeStateScrollViewLegacy],
-     [@"increment-line-size",    CGSizeMakeZero(),             CPThemeStateScrollViewLegacy]
-     ];
+     [@"increment-line-size",    CGSizeMakeZero(),             CPThemeStateScrollViewLegacy],
+
+     // --- HUD MAPPINGS ---
+     [@"knob-color",        hudKnobCssColor,        CPThemeStateHUD]
+    ];
 
     [self registerThemeValues:themedHorizontalScrollerValues forView:scroller];
 
@@ -2107,6 +2195,25 @@ var themedButtonValues                      = nil,
                                                                      @"transition-duration": @"0.35s, 0.35s",
                                                                      @"transition-property": @"box-shadow, border-color"
                                                                      }],
+    // --- HUD STYLES ---
+    hudBezelCssColor = [CPColor colorWithCSSDictionary:@{
+                                                                        @"background-color": @"rgba(0, 0, 0, 0.3)",
+                                                                        @"border-color": @"rgba(255, 255, 255, 0.3)",
+                                                                        @"border-style": @"solid",
+                                                                        @"border-width": @"1px",
+                                                                        @"border-radius": @"0px",
+                                                                        @"box-sizing": @"border-box"
+                                                                    }],
+
+    hudBezelFocusedCssColor = [CPColor colorWithCSSDictionary:@{
+                                                                    @"background-color": @"rgba(0, 0, 0, 0.5)",
+                                                                    @"border-color": @"#ffffff",
+                                                                    @"border-style": @"solid",
+                                                                    @"border-width": @"1px",
+                                                                    @"border-radius": @"0px",
+                                                                    @"box-sizing": @"border-box",
+                                                                    @"box-shadow": @"0px 0px 3px 0px rgba(255,255,255,0.5)"
+                                                                }],
 
     // Global for reuse by CPTokenField.
     themedTextFieldValues =
@@ -2187,7 +2294,20 @@ var themedButtonValues                      = nil,
      [@"content-inset",              CGInsetMake(6.0, 7.0, 5.0, 7.0),                    [CPThemeStateControlSizeMini, CPThemeStateBezeled, CPThemeStateEditing]],
      [@"min-size",                   CGSizeMake(-1.0, 22.0),                             CPThemeStateControlSizeMini],
      [@"nib2cib-adjustment-frame",   CGRectMake(2.0, 0.0, -4.0, 0.0),                    CPThemeStateControlSizeMini],
-     [@"nib2cib-adjustment-frame",   CGRectMake(-4.0, 4.0, 8.0, 7.0),                    [CPThemeStateControlSizeMini, CPThemeStateBezeled]]
+     [@"nib2cib-adjustment-frame",   CGRectMake(-4.0, 4.0, 8.0, 7.0),                    [CPThemeStateControlSizeMini, CPThemeStateBezeled]],
+
+          // --- HUD REGISTRATION ---
+     
+     // Standard Label Text in HUD (White)
+     [@"text-color",            [CPColor whiteColor],               CPThemeStateHUD],
+     [@"text-color",            [CPColor colorWithWhite:1 alpha:0.5], [CPThemeStateHUD, CPThemeStateDisabled]],
+     
+     // Input Fields in HUD (Bezeled)
+     [@"bezel-color",           hudBezelCssColor,                   [CPThemeStateHUD, CPThemeStateBezeled]],
+     [@"bezel-color",           hudBezelFocusedCssColor,            [CPThemeStateHUD, CPThemeStateBezeled, CPThemeStateEditing]],
+     
+     // Ensure input text is white
+     [@"text-color",            [CPColor whiteColor],               [CPThemeStateHUD, CPThemeStateBezeled]]
      ];
 
     [self registerThemeValues:themedTextFieldValues forView:textfield];
