@@ -1282,7 +1282,7 @@ var themedButtonValues                      = nil,
      // We must include CPThemeStateBordered here to override CPButton's definition
      [@"min-size",                   CGSizeMake(32.0, 21.0),                    [CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
      [@"max-size",                   CGSizeMake(-1.0, 21.0),                    [CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
-     [@"nib2cib-adjustment-frame",   CGRectMake(2.0, -14.0, -5.0, -5.0),        [CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
+     [@"nib2cib-adjustment-frame",   CGRectMake(2.0, -12.0, -5.0, -4.5),        [CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
 
      // Small size
      [@"bezel-color",                smallButtonCssColor,                       [CPButtonStateBezelStyleRounded, CPThemeStateControlSizeSmall, CPThemeStateBordered, CPThemeStateKeyWindow]],
