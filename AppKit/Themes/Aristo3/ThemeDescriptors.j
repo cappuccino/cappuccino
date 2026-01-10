@@ -1975,6 +1975,17 @@ var themedButtonValues                      = nil,
                                                             @"border-left-color": A3ColorScrollerBorder,
                                                             @"border-left-width": @"1px"
                                                             }],
+    hudKnobCssColor = [CPColor colorWithCSSDictionary:@{
+                                                            @"background-color": @"rgba(255, 255, 255, 0.35)",
+                                                            @"border-radius": @"3px",
+                                                            @"border": @"1px solid rgba(0,0,0,0.2)"
+                                                        }],
+
+    // HUD Track (Transparent/Dark)
+    hudTrackCssColor = [CPColor colorWithCSSDictionary:@{
+                                                            @"background-color": @"rgba(0, 0, 0, 0.15)",
+                                                            @"border-radius": @"3px"
+                                                        }],
 
     themedVerticalScrollerValues =
     [
@@ -2002,8 +2013,13 @@ var themedButtonValues                      = nil,
      [@"knob-color",             knobCssColorLegacy,                    [CPThemeStateVertical, CPThemeStateScrollViewLegacy]],
      [@"knob-color",             knobCssColorLegacyOver,                    [CPThemeStateVertical, CPThemeStateScrollViewLegacy, CPThemeStateSelected]],
      [@"decrement-line-size",    CGSizeMakeZero(),             [CPThemeStateVertical, CPThemeStateScrollViewLegacy]],
-     [@"increment-line-size",    CGSizeMakeZero(),             [CPThemeStateVertical, CPThemeStateScrollViewLegacy]]
-     ];
+     [@"increment-line-size",    CGSizeMakeZero(),             [CPThemeStateVertical, CPThemeStateScrollViewLegacy]],
+
+     // HUD
+     [@"knob-color",  hudKnobCssColor,  [CPThemeStateVertical, CPThemeStateHUD]],
+     [@"knob-slot-color", hudTrackCssColor, [CPThemeStateHUD, CPThemeStateVertical, CPThemeStateScrollViewLegacy]],
+     [@"knob-color",  hudKnobCssColor,  [CPThemeStateHUD, CPThemeStateVertical, CPThemeStateScrollViewLegacy]]
+    ];
 
     [self registerThemeValues:themedVerticalScrollerValues forView:scroller];
 
@@ -2054,14 +2070,17 @@ var themedButtonValues                      = nil,
                                                             @"border-top-color": A3ColorScrollerBorder,
                                                             @"border-top-width": @"1px"
                                                             }],
-    // Silver/Grey knob
     hudKnobCssColor = [CPColor colorWithCSSDictionary:@{
-        @"background-color": @"#cccccc",
-        @"border": @"1px solid #555",
-        @"border-radius": @"50%",
-        @"box-shadow": @"inset 0 2px 3px rgba(255,255,255,0.8), 0 1px 2px rgba(0,0,0,0.5)"
-    }],
+                                                            @"background-color": @"rgba(255, 255, 255, 0.35)",
+                                                            @"border-radius": @"3px",
+                                                            @"border": @"1px solid rgba(0,0,0,0.2)"
+                                                        }],
 
+    // HUD Track (Transparent/Dark)
+    hudTrackCssColor = [CPColor colorWithCSSDictionary:@{
+                                                            @"background-color": @"rgba(0, 0, 0, 0.15)",
+                                                            @"border-radius": @"3px"
+                                                        }],
     themedHorizontalScrollerValues =
     [
      // Common
@@ -2090,8 +2109,10 @@ var themedButtonValues                      = nil,
      [@"decrement-line-size",    CGSizeMakeZero(),             CPThemeStateScrollViewLegacy],
      [@"increment-line-size",    CGSizeMakeZero(),             CPThemeStateScrollViewLegacy],
 
-     // --- HUD MAPPINGS ---
-     [@"knob-color",        hudKnobCssColor,        CPThemeStateHUD]
+     // HUD
+     [@"knob-color",  hudKnobCssColor,  CPThemeStateHUD],
+     [@"knob-slot-color", hudTrackCssColor, [CPThemeStateHUD, CPThemeStateScrollViewLegacy]],
+     [@"knob-color",  hudKnobCssColor,  [CPThemeStateHUD, CPThemeStateScrollViewLegacy]]
     ];
 
     [self registerThemeValues:themedHorizontalScrollerValues forView:scroller];
@@ -5938,11 +5959,11 @@ var themedButtonValues                      = nil,
         "-webkit-mask-image": svgCancel,
         "mask-image": svgCancel,
         "background-color": A3ColorWhite
-    } size:CGSizeMake(18, 18)],
+    } size:CGSizeMake(14, 14)],
 
     themeValues =
     [
-     [@"close-image-size",           CGSizeMake(18.0, 18.0)],
+     [@"close-image-size",           CGSizeMake(16.0, 18.0)],
      [@"close-image-origin",         CGPointMake(6.0,4.0)],
      [@"close-image",                closeImage],
      [@"close-active-image",         closeImage],
