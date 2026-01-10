@@ -884,17 +884,17 @@ var themedButtonValues                      = nil,
      [@"text-color",                    A3CPColorInactiveText,                  [CPButtonStateBezelStyleTexturedRounded, CPThemeStateBordered, CPThemeStateDisabled]],
 
      [@"content-inset",                 CGInsetMake(0.0, 7.0, 1.0, 7.0),       [CPButtonStateBezelStyleTexturedRounded, CPThemeStateBordered]],
-     [@"nib2cib-adjustment-frame",      CGRectMake(0.0, -9.0, 0.0, -3.0),       [CPButtonStateBezelStyleTexturedRounded, CPThemeStateBordered]],
+     [@"nib2cib-adjustment-frame",      CGRectMake(0.0, -3.0, 0.0, -3.0),       [CPButtonStateBezelStyleTexturedRounded, CPThemeStateBordered]],
      [@"min-size",                      CGSizeMake(0.0, 22.0),                  [CPButtonStateBezelStyleTexturedRounded, CPThemeStateBordered]],
      [@"max-size",                      CGSizeMake(-1.0, 22.0),                 [CPButtonStateBezelStyleTexturedRounded, CPThemeStateBordered]],
 
      [@"content-inset",                 CGInsetMake(1.0, 7.0, 1.0, 7.0),       [CPButtonStateBezelStyleTexturedRounded, CPThemeStateBordered, CPThemeStateControlSizeSmall]],
-     [@"nib2cib-adjustment-frame",      CGRectMake(0.0, -2.0, 0.0, -1.0),       [CPButtonStateBezelStyleTexturedRounded, CPThemeStateBordered, CPThemeStateControlSizeSmall]],
+     [@"nib2cib-adjustment-frame",      CGRectMake(0.0, 4.0, 0.0, -1.0),       [CPButtonStateBezelStyleTexturedRounded, CPThemeStateBordered, CPThemeStateControlSizeSmall]],
      [@"min-size",                      CGSizeMake(0.0, 18.0),                  [CPButtonStateBezelStyleTexturedRounded, CPThemeStateBordered, CPThemeStateControlSizeSmall]],
      [@"max-size",                      CGSizeMake(-1.0, 18.0),                 [CPButtonStateBezelStyleTexturedRounded, CPThemeStateBordered, CPThemeStateControlSizeSmall]],
 
      [@"content-inset",                 CGInsetMake(1.0, 5.0, 1.0, 5.0),       [CPButtonStateBezelStyleTexturedRounded, CPThemeStateBordered, CPThemeStateControlSizeMini]],
-     [@"nib2cib-adjustment-frame",      CGRectMake(0.0, -2.0, 0.0, -1.0),       [CPButtonStateBezelStyleTexturedRounded, CPThemeStateBordered, CPThemeStateControlSizeMini]],
+     [@"nib2cib-adjustment-frame",      CGRectMake(0.0, 4.0, 0.0, -1.0),       [CPButtonStateBezelStyleTexturedRounded, CPThemeStateBordered, CPThemeStateControlSizeMini]],
      [@"min-size",                      CGSizeMake(0.0, 15.0),                  [CPButtonStateBezelStyleTexturedRounded, CPThemeStateBordered, CPThemeStateControlSizeMini]],
      [@"max-size",                      CGSizeMake(-1.0, 15.0),                 [CPButtonStateBezelStyleTexturedRounded, CPThemeStateBordered, CPThemeStateControlSizeMini]],
 
