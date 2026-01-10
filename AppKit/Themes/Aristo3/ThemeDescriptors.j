@@ -792,26 +792,26 @@ var themedButtonValues                      = nil,
 
      [@"content-inset",                 CGInsetMake(-1.0, 6.0, 1.0, 5.0),        [CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
      [@"image-offset",                  1.0,                                    [CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
-     [@"nib2cib-adjustment-frame",      CGRectMake(6.0, -6.0, -12.0, 0.0),      [CPButtonStateBezelStyleRounded, CPThemeStateBordered]], // Height is fixed by min/max -size
-     [@"nib2cib-adjustment-frame",      CGRectMake(7.0, -6.0, -13.0, 0.0),      [CPButtonStateBezelStyleRounded, CPThemeStateBordered, CPThemeStateDefault]],
+     [@"nib2cib-adjustment-frame",      CGRectMake(6.0, 0.0, -12.0, 0.0),      [CPButtonStateBezelStyleRounded, CPThemeStateBordered]], // Height is fixed by min/max -size
+     [@"nib2cib-adjustment-frame",      CGRectMake(7.0, 0.0, -13.0, 0.0),      [CPButtonStateBezelStyleRounded, CPThemeStateBordered, CPThemeStateDefault]],
      [@"min-size",                      CGSizeMake(0.0, 22.0),                  [CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
      [@"max-size",                      CGSizeMake(-1.0, 22.0),                 [CPButtonStateBezelStyleRounded, CPThemeStateBordered]],
 
      [@"content-inset",                 CGInsetMake(0.0, 5.0, 1.0, 4.0),        [CPButtonStateBezelStyleRounded, CPThemeStateBordered, CPThemeStateControlSizeSmall]],
      [@"image-offset",                  1.0,                                    [CPButtonStateBezelStyleRounded, CPThemeStateBordered, CPThemeStateControlSizeSmall]],
-     [@"nib2cib-adjustment-frame",      CGRectMake(5.0, -9.0, -10.0, 0.0),      [CPButtonStateBezelStyleRounded, CPThemeStateBordered, CPThemeStateControlSizeSmall]], // Height is fixed by min/max -size
+     [@"nib2cib-adjustment-frame",      CGRectMake(5.0, -3.0, -10.0, 0.0),      [CPButtonStateBezelStyleRounded, CPThemeStateBordered, CPThemeStateControlSizeSmall]], // Height is fixed by min/max -size
      [@"min-size",                      CGSizeMake(0.0, 18.0),                  [CPButtonStateBezelStyleRounded, CPThemeStateBordered, CPThemeStateControlSizeSmall]],
      [@"max-size",                      CGSizeMake(-1.0, 18.0),                 [CPButtonStateBezelStyleRounded, CPThemeStateBordered, CPThemeStateControlSizeSmall]],
 
      [@"content-inset",                 CGInsetMake(1.0, 8.0, 1.0, 7.0),        [CPButtonStateBezelStyleRounded, CPThemeStateBordered, CPThemeStateControlSizeMini]],
      [@"image-offset",                  1.0,                                    [CPButtonStateBezelStyleRounded, CPThemeStateBordered, CPThemeStateControlSizeMini]],
-     [@"nib2cib-adjustment-frame",      CGRectMake(1.0, -9.0, -2.0, 0.0),       [CPButtonStateBezelStyleRounded, CPThemeStateBordered, CPThemeStateControlSizeMini]], // Height is fixed by min/max -size
+     [@"nib2cib-adjustment-frame",      CGRectMake(1.0, -3.0, -2.0, 0.0),       [CPButtonStateBezelStyleRounded, CPThemeStateBordered, CPThemeStateControlSizeMini]], // Height is fixed by min/max -size
      [@"min-size",                      CGSizeMake(0.0, 15.0),                  [CPButtonStateBezelStyleRounded, CPThemeStateBordered, CPThemeStateControlSizeMini]],
      [@"max-size",                      CGSizeMake(-1.0, 15.0),                 [CPButtonStateBezelStyleRounded, CPThemeStateBordered, CPThemeStateControlSizeMini]],
      
      [@"content-inset",                 CGInsetMake(1.0, 6.0, 1.0, 5.0),        [CPButtonStateBezelStyleRounded, CPThemeStateBordered, CPThemeStateControlSizeLarge]],
      [@"image-offset",                  1.0,                                    [CPButtonStateBezelStyleRounded, CPThemeStateBordered, CPThemeStateControlSizeLarge]],
-     [@"nib2cib-adjustment-frame",      CGRectMake(5.0, -1.0, -10.0, 0.0),      [CPButtonStateBezelStyleRounded, CPThemeStateBordered, CPThemeStateControlSizeLarge]], // Height is fixed by min/max -size
+     [@"nib2cib-adjustment-frame",      CGRectMake(5.0, 5.0, -10.0, 0.0),      [CPButtonStateBezelStyleRounded, CPThemeStateBordered, CPThemeStateControlSizeLarge]], // Height is fixed by min/max -size
      [@"min-size",                      CGSizeMake(0.0, 30.0),                  [CPButtonStateBezelStyleRounded, CPThemeStateBordered, CPThemeStateControlSizeLarge]],
      [@"max-size",                      CGSizeMake(-1.0, 30.0),                 [CPButtonStateBezelStyleRounded, CPThemeStateBordered, CPThemeStateControlSizeLarge]],
 
