@@ -162,7 +162,21 @@ _CPMenuWindowAttachedMenuBackgroundStyle    = 2;
 
 - (void)setBackgroundStyle:(_CPMenuWindowBackgroundStyle)aBackgroundStyle
 {
-    [self setBackgroundColor:[[self class] backgroundColorForBackgroundStyle:aBackgroundStyle]];
+    var isHUD = [_menuView hasThemeState:CPThemeStateHUD],
+        color = nil;
+
+    if (isHUD && aBackgroundStyle == _CPMenuWindowPopUpBackgroundStyle)
+    {
+        // Directly query the attribute for the HUD state
+        // We use currentValueForThemeAttribute because _menuView already has the correct state set.
+        color = [_menuView currentValueForThemeAttribute:@"menu-window-pop-up-background-style-color"];
+    }
+
+    // Fallback to standard logic if not HUD or if attribute wasn't found
+    if (!color)
+        color = [[self class] backgroundColorForBackgroundStyle:aBackgroundStyle];
+
+    [self setBackgroundColor:color];
 }
 
 - (void)setMenu:(CPMenu)aMenu
@@ -500,6 +514,18 @@ _CPMenuWindowAttachedMenuBackgroundStyle    = 2;
             @"menu-window-submenu-delta-y": 0.0,
             @"menu-window-submenu-first-level-delta-y": 0.0
         };
+}
+
+- (void)setThemeState:(CPThemeState)aState
+{
+    [super setThemeState:aState];
+    [_menuItemViews makeObjectsPerformSelector:@selector(setThemeState:) withObject:aState];
+}
+
+- (void)unsetThemeState:(CPThemeState)aState
+{
+    [super unsetThemeState:aState];
+    [_menuItemViews makeObjectsPerformSelector:@selector(unsetThemeState:) withObject:aState];
 }
 
 - (unsigned)numberOfUnhiddenItems

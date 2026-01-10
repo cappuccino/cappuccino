@@ -691,6 +691,12 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     // FIXME: setFont: should set the font on the menu.
     [menu setFont:[self font]];
 
+    // Propagate the HUD theme state to the menu
+    if ([self hasThemeState:CPThemeStateHUD])
+        [menu setThemeState:CPThemeStateHUD];
+    else
+        [menu unsetThemeState:CPThemeStateHUD];
+
     if ([self pullsDown])
     {
         var positionedItem = nil,

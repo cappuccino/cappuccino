@@ -789,10 +789,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
             break;
     }
 
-    if ([self hasThemeState:CPTextFieldStatePlaceholder])
-        element.style.color = [[self valueForThemeAttribute:@"text-color" inState:CPTextFieldStatePlaceholder] cssString];
-    else
-        element.style.color = [[self valueForThemeAttribute:@"text-color" inState:CPThemeStateEditing] cssString];
+    // Use currentValueForThemeAttribute to respect all current states (HUD, Placeholder, Editing, etc.)
+    element.style.color = [[self currentValueForThemeAttribute:@"text-color"] cssString];
 
     switch ([self alignment])
     {

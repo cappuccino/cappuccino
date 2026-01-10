@@ -1439,6 +1439,45 @@ var themedButtonValues                      = nil,
             @"background-color": color
         };
     },
+    hudArrowCSS = function(color) {
+        return @{
+            @"content": @"''",
+            @"position": @"absolute",
+            @"top": @"50%",
+            @"right": @"-8px",
+            @"width": @"25px",
+            @"height": @"25px",
+            @"margin-top": @"-12.5px",
+            "-webkit-mask-image": svgSingleArrow, // Use Single Arrow for Pull Down
+            "mask-image": svgSingleArrow,
+            "-webkit-mask-size": "contain",
+            "mask-size": "contain",
+            "-webkit-mask-repeat": "no-repeat",
+            "mask-repeat": "no-repeat",
+            "-webkit-mask-position": "center",
+            "mask-position": "center",
+            @"background-color": color
+        };
+    },
+
+    hudButtonCssColor = [CPColor colorWithCSSDictionary:@{
+        @"background-color": @"rgba(0, 0, 0, 0.25)",
+        @"border-color": @"rgba(255, 255, 255, 0.25)",
+        @"border-style": @"solid",
+        @"border-width": @"1px",
+        @"border-radius": @"3px",
+        @"box-sizing": @"border-box",
+        @"box-shadow": @"0 1px 0 rgba(255,255,255,0.1) inset"
+    } beforeDictionary:nil afterDictionary:hudArrowCSS(@"#ffffff")],
+
+    hudHighlightedButtonCssColor = [CPColor colorWithCSSDictionary:@{
+        @"background-color": @"rgba(0, 0, 0, 0.5)",
+        @"border-color": @"rgba(255, 255, 255, 0.5)",
+        @"border-style": @"solid",
+        @"border-width": @"1px",
+        @"border-radius": @"3px",
+        @"box-sizing": @"border-box"
+    } beforeDictionary:nil afterDictionary:hudArrowCSS(@"#ffffff")],
 
     // ==========================================================
     // REGULAR SIZE DEFINITIONS
@@ -1834,9 +1873,15 @@ var themedButtonValues                      = nil,
      [@"bezel-color",               miniNbDisabledButtonCssColor,           [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRegularSquare, CPThemeStateControlSizeMini, CPThemeStateDisabled, CPThemeStateKeyWindow]],
      [@"nib2cib-adjustment-frame",  CGRectMake(1.0, 1.0, 0.0, 0.0),         [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRegularSquare, CPThemeStateControlSizeMini]],
      [@"content-inset",             CGInsetMake(1.0, 11, 1.0, 8.0),          [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRegularSquare, CPThemeStateControlSizeMini]],
-     [@"min-size",                  CGSizeMake(32.0, 16.0),                 [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRegularSquare, CPThemeStateControlSizeMini]]
+     [@"min-size",                  CGSizeMake(32.0, 16.0),                 [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRegularSquare, CPThemeStateControlSizeMini]],
 
-     ];
+     // Register HUD states
+     [@"text-color",    [CPColor whiteColor],       [CPPopUpButtonStatePullsDown, CPThemeStateHUD]],
+     
+     [@"bezel-color",   hudButtonCssColor,          [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateHUD]],
+     [@"bezel-color",   hudButtonCssColor,          [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateHUD, CPThemeStateKeyWindow]],
+     [@"bezel-color",   hudHighlightedButtonCssColor, [CPPopUpButtonStatePullsDown, CPButtonStateBezelStyleRounded, CPThemeStateHUD, CPThemeStateHighlighted]]
+    ];
 
     [self registerThemeValues:themeValues forView:button];
 
@@ -2235,7 +2280,9 @@ var themedButtonValues                      = nil,
                                                                     @"box-sizing": @"border-box",
                                                                     @"box-shadow": @"0px 0px 3px 0px rgba(255,255,255,0.5)"
                                                                 }],
-
+    hudSelectionColor = [CPColor colorWithCSSDictionary:@{
+                                                            @"background-color": @"rgba(255, 255, 255, 0.3)"
+                                                         }],
     // Global for reuse by CPTokenField.
     themedTextFieldValues =
     [
@@ -2317,19 +2364,20 @@ var themedButtonValues                      = nil,
      [@"nib2cib-adjustment-frame",   CGRectMake(2.0, 0.0, -4.0, 0.0),                    CPThemeStateControlSizeMini],
      [@"nib2cib-adjustment-frame",   CGRectMake(-4.0, 4.0, 8.0, 7.0),                    [CPThemeStateControlSizeMini, CPThemeStateBezeled]],
 
-          // --- HUD REGISTRATION ---
+     // --- HUD REGISTRATION ---
      
      // Standard Label Text in HUD (White)
-     [@"text-color",            [CPColor whiteColor],               CPThemeStateHUD],
+     [@"text-color",            [CPColor whiteColor],                 CPThemeStateHUD],
      [@"text-color",            [CPColor colorWithWhite:1 alpha:0.5], [CPThemeStateHUD, CPThemeStateDisabled]],
-     
+     [@"text-color",            [CPColor whiteColor],               [CPThemeStateHUD, CPThemeStateEditing]],
+     [@"text-color",            [CPColor whiteColor],               [CPThemeStateHUD, CPThemeStateBezeled, CPThemeStateEditing]],
+     // Change the background color of selected text in HUD mode to improve contrast
+     // [@"field-selection-color", hudSelectionColor,                  CPThemeStateHUD],
+
      // Input Fields in HUD (Bezeled)
      [@"bezel-color",           hudBezelCssColor,                   [CPThemeStateHUD, CPThemeStateBezeled]],
-     [@"bezel-color",           hudBezelFocusedCssColor,            [CPThemeStateHUD, CPThemeStateBezeled, CPThemeStateEditing]],
-     
-     // Ensure input text is white
-     [@"text-color",            [CPColor whiteColor],               [CPThemeStateHUD, CPThemeStateBezeled]]
-     ];
+     [@"bezel-color",           hudBezelFocusedCssColor,            [CPThemeStateHUD, CPThemeStateBezeled, CPThemeStateEditing]]
+    ];
 
     [self registerThemeValues:themedTextFieldValues forView:textfield];
 
@@ -4031,6 +4079,40 @@ var themedButtonValues                      = nil,
                                                              }
                                                       size:CGSizeMake(16,16)],
 
+    hudImageNormal = [CPImage imageWithCSSDictionary:@{
+                                                            @"border-color": @"rgba(255,255,255,0.5)",
+                                                            @"border-style": @"solid",
+                                                            @"border-width": @"1px",
+                                                            @"border-radius": @"2px",
+                                                            @"box-sizing": @"border-box",
+                                                            @"background-color": @"rgba(0,0,0,0.3)",
+                                                        } size:CGSizeMake(14,14)],
+
+    hudImageSelected = [CPImage imageWithCSSDictionary:@{
+                                                            @"border-color": @"rgba(255,255,255,0.8)",
+                                                            @"border-style": @"solid",
+                                                            @"border-width": @"1px",
+                                                            @"border-radius": @"2px",
+                                                            @"box-sizing": @"border-box",
+                                                            @"background-color": @"rgba(0,0,0,0.3)"
+                                                        } beforeDictionary:nil afterDictionary:@{
+                                                             "-webkit-mask-image": svgCheckmark,
+                                                             "mask-image": svgCheckmark,
+                                                             "-webkit-mask-size": "contain",
+                                                             "mask-size": "contain",
+                                                             "-webkit-mask-repeat": "no-repeat",
+                                                             "mask-repeat": "no-repeat",
+                                                             "-webkit-mask-position": "center",
+                                                             "mask-position": "center",
+                                                             @"background-color": @"#ffffff", // White checkmark
+                                                             @"width": @"10px",
+                                                             @"height": @"10px",
+                                                             @"content": @"''",
+                                                             @"left": @"1px",
+                                                             @"top": @"1px",
+                                                             @"position": @"absolute",
+                                                             @"z-index": @"300"
+                                                        } size:CGSizeMake(14,14)],
 
     // Global
     themedCheckBoxValues =
@@ -4049,9 +4131,18 @@ var themedButtonValues                      = nil,
      [@"max-size",                  CGSizeMake(-1.0, -1.0)],
      [@"nib2cib-adjustment-frame",  CGRectMake(1.0, -1.0, -2.0, -2.0)],
      [@"direct-nib2cib-adjustment", YES],
-     [@"image-offset",              3]
-     ];
+     [@"image-offset",              3],
 
+     // --- HUD MAPPINGS ---
+     [@"text-color",    [CPColor whiteColor],                   CPThemeStateHUD],
+     [@"text-color",    [CPColor colorWithWhite:1 alpha:0.4],   [CPThemeStateHUD, CPThemeStateDisabled]],
+     
+     [@"image",         hudImageNormal,                         CPThemeStateHUD],
+     [@"image",         hudImageSelected,                       [CPThemeStateHUD, CPThemeStateSelected]],
+     
+     // Adjust layout slightly for HUD
+     [@"image-offset",  4,                                      CPThemeStateHUD]
+    ];
     [button setThemeState:CPThemeStateNormal];
 
     [self registerThemeValues:themedCheckBoxValues forView:button];
@@ -4291,7 +4382,6 @@ var themedButtonValues                      = nil,
                                                       @"background-color": A3ColorActiveBorder
                                                       }],
 
-    // --- FIX START: Add Left Track Colors ---
     leftTrackCssColor = [CPColor colorWithCSSDictionary:@{
                                                           @"background-color": @"A3ColorBorderBlue"
                                                           }],
@@ -4299,8 +4389,20 @@ var themedButtonValues                      = nil,
     leftTrackNotKeyCssColor = [CPColor colorWithCSSDictionary:@{
                                                                 @"background-color": A3ColorSliderDisabledTrack // Or A3ColorInactiveBorder
                                                                 }],
-    // --- FIX END ---
+    hudKnobColor = [CPColor colorWithCSSDictionary:@{
+                                                        @"background-color": @"#FFFFFF",
+                                                        @"border": @"1px solid #000000",
+                                                        @"border-radius": @"50%",
+                                                        @"box-shadow": @"0 1px 2px rgba(0,0,0,0.5)"
+                                                    }],
+    hudLeftTrackColor = [CPColor colorWithCSSDictionary:@{
+                                                            @"background-color": @"#FFFFFF" // White fill
+                                                        }],
 
+    hudRightTrackColor = [CPColor colorWithCSSDictionary:@{
+                                                            @"background-color": @"#555555", // Brighter visible grey
+                                                            @"border": @"1px solid #000000"
+                                                          }],
     // Ticked sliders (Down pointing)
     knobDownCssColor = [CPColor colorWithCSSDictionary:@{
                                                          "-webkit-mask-image": svgArrowDown,
@@ -4319,10 +4421,8 @@ var themedButtonValues                      = nil,
      [@"track-width",                   3],
      [@"track-color",                   trackCssColor],
      
-     // --- FIX START: Register Left Track ---
      [@"left-track-color",              leftTrackCssColor,        CPThemeStateKeyWindow],
      [@"left-track-color",              leftTrackNotKeyCssColor], // Default (Non-Key)
-     // --- FIX END ---
 
      [@"knob-size",                     CGSizeMake(15, 15)],
      [@"knob-color",                    knobCssColor],
@@ -4335,8 +4435,20 @@ var themedButtonValues                      = nil,
      [@"knob-size",                     CGSizeMake(15, 19),                     CPThemeStateTickedSlider],
      [@"knob-color",                    knobDownCssColor,                       [CPThemeStateTickedSlider, CPThemeStateBelowRightTickedSlider]],
      
-     [@"tick-mark-color",               A3CPColorActiveBorder]
-     ];
+     [@"tick-mark-color",               A3CPColorActiveBorder],
+
+     // --- HUD SPECIFIC FIXES ---
+     [@"knob-color",        hudKnobColor,       CPThemeStateHUD],
+     
+     // Left Track (Filled part) - White
+     [@"left-track-color",  hudLeftTrackColor,  CPThemeStateHUD],
+     
+     // Right Track (Empty part) - Visible Grey
+     [@"track-color",       hudRightTrackColor, CPThemeStateHUD],
+     
+     // Ensure height is sufficient for visibility
+     [@"track-width",       4.0,                CPThemeStateHUD]
+    ];
 
     [self registerThemeValues:themedHorizontalSliderValues forView:slider];
 
@@ -5961,12 +6073,18 @@ var themedButtonValues                      = nil,
         "background-color": A3ColorWhite
     } size:CGSizeMake(14, 14)],
 
+    closeActiveImage = [CPImage imageWithCSSDictionary:@{
+        "-webkit-mask-image": svgCancel,
+        "mask-image": svgCancel,
+        "background-color": @"rgba(255, 0, 0, 1.0)" // Bright red
+    } size:CGSizeMake(14, 14)],
+
     themeValues =
     [
      [@"close-image-size",           CGSizeMake(16.0, 18.0)],
      [@"close-image-origin",         CGPointMake(6.0,4.0)],
      [@"close-image",                closeImage],
-     [@"close-active-image",         closeImage],
+     [@"close-active-image",         closeActiveImage],
      [@"bezel-color",                HUDBezelColor],
      [@"title-font",                 [CPFont systemFontOfSize:14]],
      [@"title-text-color",           [CPColor colorWithWhite:255.0 / 255.0 alpha:1]],
@@ -6286,6 +6404,29 @@ var themedButtonValues                      = nil,
                                                     "mask-position": "center"
                                                     }
                                                                   size:CGSizeMake(8, 10)],
+     menuItemHUDOnStateImage = [CPImage imageWithCSSDictionary:@{
+                                                                        "-webkit-mask-image": svgCheckmark,
+                                                                        "mask-image": svgCheckmark,
+                                                                        "background-color": A3ColorWhite, // White Checkmark
+                                                                        "-webkit-mask-size": "contain",
+                                                                        "mask-size": "contain",
+                                                                        "-webkit-mask-repeat": "no-repeat",
+                                                                        "mask-repeat": "no-repeat",
+                                                                        "-webkit-mask-position": "center",
+                                                                        "mask-position": "center"
+                                                                    } size:CGSizeMake(14,14)],
+
+    menuItemHUDMixedStateImage = [CPImage imageWithCSSDictionary:@{
+                                                                        "-webkit-mask-image": svgDash,
+                                                                        "mask-image": svgDash,
+                                                                        "background-color": A3ColorWhite, // White Dash
+                                                                        "-webkit-mask-size": "contain",
+                                                                        "mask-size": "contain",
+                                                                        "-webkit-mask-repeat": "no-repeat",
+                                                                        "mask-repeat": "no-repeat",
+                                                                        "-webkit-mask-position": "center",
+                                                                        "mask-position": "center"
+                                                                    } size:CGSizeMake(14,14)],
 
     themeValues =
     [
@@ -6317,8 +6458,14 @@ var themedButtonValues                      = nil,
      [@"vertical-margin",                                           1.0],
      [@"vertical-offset",                                           -1.0],
 
-     [@"right-columns-margin",                                      30.0]
-     ];
+     [@"right-columns-margin",                                      30.0],
+
+     // HUD
+     [@"menu-item-text-color",                                      A3CPColorActiveTextHighlighted, CPThemeStateHUD],
+     [@"menu-item-default-on-state-image",    menuItemHUDOnStateImage, CPThemeStateHUD],
+     [@"menu-item-default-mixed-state-image", menuItemHUDMixedStateImage, CPThemeStateHUD],
+     [@"submenu-indicator-color",             A3CPColorActiveTextHighlighted, CPThemeStateHUD],
+    ];
 
     [self registerThemeValues:themeValues forView:menuItemStandardView];
 
@@ -6342,6 +6489,15 @@ var themedButtonValues                      = nil,
                                                                  "background-color": A3ColorMenuCheckmark
                                                                  }
                                                           size:CGSizeMake(10, 18)],
+    menuWindowPopUpBackgroundStyleColorHUD = [CPColor colorWithCSSDictionary:@{
+                                                                                    @"background-color": @"rgba(30, 30, 30, 0.95)", // Dark background
+                                                                                    @"border-color": @"rgba(255, 255, 255, 0.3)",   // Light border
+                                                                                    @"border-style": @"solid",
+                                                                                    @"border-width": @"1px",
+                                                                                    @"border-radius": @"6px",
+                                                                                    @"box-shadow": @"0 5px 15px rgba(0,0,0,0.6)",
+                                                                                    @"box-sizing": @"border-box"
+                                                                                }],
 
     // Placeholder generic icons
     generalIconNew = [CPImage imageWithCSSDictionary:@{"background-color": A3ColorActiveText} size:CGSizeMake(16,16)],
@@ -6425,8 +6581,12 @@ var themedButtonValues                      = nil,
      [@"menu-bar-icon-image",                                nil],
      [@"menu-bar-icon-image-alpha-value",                    1.0],
 
-     [@"menu-general-icon-new",                              generalIconNew]
-     ];
+     [@"menu-general-icon-new",                              generalIconNew],
+
+     // HUD
+     [@"menu-window-pop-up-background-style-color", menuWindowPopUpBackgroundStyleColorHUD, CPThemeStateHUD],
+     [@"menu-bar-text-color", [CPColor whiteColor], CPThemeStateHUD]
+    ];
 
 
     [self registerThemeValues:themeValues forView:menuView];

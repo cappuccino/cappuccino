@@ -274,6 +274,8 @@ var _CPMenuBarVisible               = NO,
 
         _autoenablesItems = YES;
         _showsStateColumn = YES;
+        
+        _themeState = CPThemeStateNormal;
 
         [self setMinimumWidth:0];
     }
@@ -284,6 +286,37 @@ var _CPMenuBarVisible               = NO,
 - (id)init
 {
     return [self initWithTitle:@""];
+}
+
+// Managing Theme States (HUD Support)
+
+- (void)setThemeState:(CPThemeState)aState
+{
+    if ([self hasThemeState:aState])
+        return;
+
+    _themeState = _themeState.and(aState);
+
+    // Propagate to the view if the menu is currently visible
+    if (_menuWindow)
+        [[_menuWindow _menuView] setThemeState:_themeState];
+}
+
+- (void)unsetThemeState:(CPThemeState)aState
+{
+    if (![self hasThemeState:aState])
+        return;
+
+    _themeState = _themeState.without(aState);
+
+    // Propagate to the view if the menu is currently visible
+    if (_menuWindow)
+        [[_menuWindow _menuView] setThemeState:_themeState];
+}
+
+- (CPThemeState)themeState
+{
+    return _themeState;
 }
 
 // Setting Up Menu Commands
@@ -798,6 +831,10 @@ var _CPMenuBarVisible               = NO,
     // Create the window for our menu.
     var menuWindow = [_CPMenuWindow menuWindowWithMenu:self font:[self font]];
 
+    // This pushes the state (e.g., CPThemeStateHUD) to the actual view that renders the menu
+    if (_themeState)
+        [[menuWindow _menuView] setThemeState:_themeState];
+
     [menuWindow setBackgroundStyle:_CPMenuWindowPopUpBackgroundStyle];
 
     if (anItem)
@@ -887,6 +924,10 @@ var _CPMenuBarVisible               = NO,
 
     var theWindow = [aView window],
         menuWindow = [_CPMenuWindow menuWindowWithMenu:aMenu font:aFont];
+
+    // --- APPLY THEME STATE FROM MENU OBJECT TO VIEW ---
+    if ([aMenu respondsToSelector:@selector(themeState)])
+        [[menuWindow _menuView] setThemeState:[aMenu themeState]];
 
     [menuWindow setBackgroundStyle:_CPMenuWindowPopUpBackgroundStyle];
 
@@ -1317,6 +1358,9 @@ var CPMenuTitleKey              = @"CPMenuTitleKey",
         _showsStateColumn = ![aCoder containsValueForKey:CPMenuShowsStateColumnKey] || [aCoder decodeBoolForKey:CPMenuShowsStateColumnKey];
 
         _autoenablesItems = ![aCoder containsValueForKey:CPMenuAutoEnablesItemsKey] || [aCoder decodeBoolForKey:CPMenuAutoEnablesItemsKey];
+
+        // Ensure theme state is initialized to avoid undefined issues.
+        _themeState = CPThemeStateNormal;
 
         [self setMinimumWidth:0];
     }
