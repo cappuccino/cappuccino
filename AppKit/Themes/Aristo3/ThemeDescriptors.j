@@ -2268,7 +2268,9 @@ var themedButtonValues                      = nil,
                                                                         @"border-style": @"solid",
                                                                         @"border-width": @"1px",
                                                                         @"border-radius": @"0px",
-                                                                        @"box-sizing": @"border-box"
+                                                                        @"box-sizing": @"border-box",
+                                                                        @"transition-duration": @"0.35s, 0.35s",
+                                                                        @"transition-property": @"box-shadow, border"
                                                                     }],
 
     hudBezelFocusedCssColor = [CPColor colorWithCSSDictionary:@{
@@ -2278,7 +2280,10 @@ var themedButtonValues                      = nil,
                                                                     @"border-width": @"1px",
                                                                     @"border-radius": @"0px",
                                                                     @"box-sizing": @"border-box",
-                                                                    @"box-shadow": @"0px 0px 3px 0px rgba(255,255,255,0.5)"
+                                                                    @"box-shadow": @"0px 0px 3px 0px rgba(255,255,255,0.5)",
+                                                                    @"transition-duration": @"0.35s, 0.35s",
+                                                                    @"transition-property": @"box-shadow, border"
+
                                                                 }],
     hudSelectionColor = [CPColor colorWithCSSDictionary:@{
                                                             @"background-color": @"rgba(255, 255, 255, 0.3)"
@@ -4439,7 +4444,8 @@ var themedButtonValues                      = nil,
 
      // --- HUD SPECIFIC FIXES ---
      [@"knob-color",        hudKnobColor,       CPThemeStateHUD],
-     
+     [@"knob-size",  CGSizeMake(13, 13),        [CPThemeStateVertical, CPThemeStateHUD]],
+  
      // Left Track (Filled part) - White
      [@"left-track-color",  hudLeftTrackColor,  CPThemeStateHUD],
      
@@ -6070,13 +6076,15 @@ var themedButtonValues                      = nil,
     closeImage = [CPImage imageWithCSSDictionary:@{
         "-webkit-mask-image": svgCancel,
         "mask-image": svgCancel,
+        "transition": @"background-color 0.2s ease-in-out",
         "background-color": A3ColorWhite
     } size:CGSizeMake(14, 14)],
 
     closeActiveImage = [CPImage imageWithCSSDictionary:@{
         "-webkit-mask-image": svgCancel,
         "mask-image": svgCancel,
-        "background-color": @"rgba(255, 0, 0, 1.0)" // Bright red
+        "transition": @"background-color 0.2s ease-in-out",
+        "background-color": @"rgba(255, 200, 200, 1.0)" // reddish
     } size:CGSizeMake(14, 14)],
 
     themeValues =
