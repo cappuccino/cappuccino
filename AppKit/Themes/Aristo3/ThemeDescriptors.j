@@ -2309,9 +2309,9 @@ var themedButtonValues                      = nil,
 
      [@"content-inset",      CGInsetMake(1.0, 0.0, 0.0, 0.0)],                           // For labels
      [@"content-inset",      CGInsetMake(0.0, 1.0, 1.0, -1.0),                           CPThemeStateEditing], // For labels
-     [@"content-inset",      CGInsetMake(3.0, 5.0, 3.0, 3.0),                            CPThemeStateBezeled], // was 3.0, 5.0, 3.0, 4.0 (2.0, 5.0, 4.0, 4.0)
+     [@"content-inset",      CGInsetMake(3.0, 5.0, 3.0, 3.0),                            CPThemeStateBezeled],
      [@"content-inset",      CGInsetMake(3.0, 5.0, 3.0, 3.0),                            [CPThemeStateBezeled, CPThemeStateEditing]],
-     [@"content-inset",      CGInsetMake(3.0, 5.0, 3.0, 3.0),                            CPThemeStateBordered], // was 3.0, 5.0, 3.0, 4.0 (2.0, 5.0, 4.0, 4.0)
+     [@"content-inset",      CGInsetMake(3.0, 5.0, 3.0, 3.0),                            CPThemeStateBordered],
      [@"content-inset",      CGInsetMake(3.0, 5.0, 3.0, 3.0),                            [CPThemeStateBordered, CPThemeStateEditing]],
 
      [@"bezel-inset",        CGInsetMake(2.0, 5.0, 4.0, 4.0),                            CPThemeStateBezeled],
