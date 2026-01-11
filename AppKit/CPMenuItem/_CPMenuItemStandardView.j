@@ -144,7 +144,7 @@
 
     return self;
 }
-
+/*
 - (void)setThemeState:(CPThemeState)aState
 {
     var oldState = [self themeState];
@@ -164,6 +164,7 @@
     if (oldState !== [self themeState])
         [self update];
 }
+*/
 
 - (CPColor)textColor
 {

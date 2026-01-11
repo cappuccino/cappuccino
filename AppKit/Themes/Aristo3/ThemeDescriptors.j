@@ -7620,19 +7620,38 @@ var themedButtonValues                      = nil,
 {
     var menuView = [[_CPMenuView alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, 100.0)],
 
+    // FIX: Adjusted size to 10x16 to match the scroll-indicator-height (16.0).
+    // Added width/height: 100% to CSS to ensure the background color fills the view for the mask.
     menuWindowMoreAboveImage = [CPImage imageWithCSSDictionary:@{
                                                                  "-webkit-mask-image": svgArrowUp,
                                                                  "mask-image": svgArrowUp,
-                                                                 "background-color": A3ColorMenuCheckmark
+                                                                 "background-color": A3ColorMenuCheckmark,
+                                                                 "-webkit-mask-size": "contain",
+                                                                 "mask-size": "contain",
+                                                                 "-webkit-mask-repeat": "no-repeat",
+                                                                 "mask-repeat": "no-repeat",
+                                                                 "-webkit-mask-position": "center",
+                                                                 "mask-position": "center",
+                                                                 "width": "100%",
+                                                                 "height": "100%"
                                                                  }
-                                                          size:CGSizeMake(10, 18)],
+                                                          size:CGSizeMake(20, 32)],
 
     menuWindowMoreBelowImage = [CPImage imageWithCSSDictionary:@{
                                                                  "-webkit-mask-image": svgArrowDown,
                                                                  "mask-image": svgArrowDown,
-                                                                 "background-color": A3ColorMenuCheckmark
+                                                                 "background-color": A3ColorMenuCheckmark,
+                                                                 "-webkit-mask-size": "contain",
+                                                                 "mask-size": "contain",
+                                                                 "-webkit-mask-repeat": "no-repeat",
+                                                                 "mask-repeat": "no-repeat",
+                                                                 "-webkit-mask-position": "center",
+                                                                 "mask-position": "center",
+                                                                 "width": "100%",
+                                                                 "height": "100%"
                                                                  }
-                                                          size:CGSizeMake(10, 18)],
+                                                          size:CGSizeMake(20, 32)],
+
     menuWindowPopUpBackgroundStyleColorHUD = [CPColor colorWithCSSDictionary:@{
                                                                                     @"background-color": @"rgba(30, 30, 30, 0.95)", // Dark background
                                                                                     @"border-color": @"rgba(255, 255, 255, 0.3)",   // Light border
